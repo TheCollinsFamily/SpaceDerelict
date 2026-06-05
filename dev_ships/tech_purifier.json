@@ -1,0 +1,922 @@
+{
+  "name": "Techopuritan Purifier",
+  "core": [
+    0,
+    0
+  ],
+  "cells": [
+    {
+      "pos": [
+        -1,
+        0
+      ],
+      "type": "COMPONENT",
+      "state": "INTACT",
+      "component_kind": "power"
+    },
+    {
+      "pos": [
+        -1,
+        1
+      ],
+      "type": "ARTIFACT",
+      "state": "INTACT",
+      "artifact_kind": "reactor"
+    },
+    {
+      "pos": [
+        0,
+        0
+      ],
+      "type": "CORRIDOR",
+      "state": "INTACT"
+    },
+    {
+      "pos": [
+        0,
+        1
+      ],
+      "type": "CORRIDOR",
+      "state": "INTACT"
+    },
+    {
+      "pos": [
+        0,
+        2
+      ],
+      "type": "CORRIDOR",
+      "state": "INTACT"
+    },
+    {
+      "pos": [
+        2,
+        0
+      ],
+      "type": "ARTIFACT",
+      "state": "INTACT",
+      "artifact_kind": "nanite"
+    },
+    {
+      "pos": [
+        3,
+        0
+      ],
+      "type": "CORRIDOR",
+      "state": "INTACT"
+    },
+    {
+      "pos": [
+        3,
+        1
+      ],
+      "type": "ARTIFACT",
+      "state": "INTACT",
+      "artifact_kind": "booster"
+    },
+    {
+      "pos": [
+        3,
+        2
+      ],
+      "type": "CORRIDOR",
+      "state": "INTACT"
+    },
+    {
+      "pos": [
+        3,
+        3
+      ],
+      "type": "COMPONENT",
+      "state": "INTACT",
+      "component_kind": "cargo"
+    },
+    {
+      "pos": [
+        4,
+        0
+      ],
+      "type": "CORRIDOR",
+      "state": "INTACT"
+    },
+    {
+      "pos": [
+        4,
+        1
+      ],
+      "type": "COMPONENT",
+      "state": "INTACT",
+      "component_kind": "shield"
+    },
+    {
+      "pos": [
+        4,
+        2
+      ],
+      "type": "CORRIDOR",
+      "state": "INTACT"
+    },
+    {
+      "pos": [
+        4,
+        3
+      ],
+      "type": "COMPONENT",
+      "state": "INTACT",
+      "component_kind": "armor"
+    },
+    {
+      "pos": [
+        5,
+        -1
+      ],
+      "type": "ARTIFACT",
+      "state": "INTACT",
+      "artifact_kind": "distributor"
+    },
+    {
+      "pos": [
+        5,
+        0
+      ],
+      "type": "CORRIDOR",
+      "state": "INTACT"
+    },
+    {
+      "pos": [
+        5,
+        1
+      ],
+      "type": "COMPONENT",
+      "state": "INTACT",
+      "component_kind": "medical"
+    },
+    {
+      "pos": [
+        5,
+        2
+      ],
+      "type": "CORRIDOR",
+      "state": "INTACT"
+    },
+    {
+      "pos": [
+        5,
+        3
+      ],
+      "type": "CORRIDOR",
+      "state": "INTACT"
+    },
+    {
+      "pos": [
+        6,
+        0
+      ],
+      "type": "CORRIDOR",
+      "state": "INTACT"
+    },
+    {
+      "pos": [
+        6,
+        1
+      ],
+      "type": "ARTIFACT",
+      "state": "INTACT",
+      "artifact_kind": "prism"
+    },
+    {
+      "pos": [
+        6,
+        2
+      ],
+      "type": "CORRIDOR",
+      "state": "INTACT"
+    },
+    {
+      "pos": [
+        6,
+        3
+      ],
+      "type": "ARTIFACT",
+      "state": "INTACT",
+      "artifact_kind": "decoy"
+    },
+    {
+      "pos": [
+        7,
+        0
+      ],
+      "type": "COMPONENT",
+      "state": "INTACT",
+      "component_kind": "beam"
+    },
+    {
+      "pos": [
+        7,
+        1
+      ],
+      "type": "ARTIFACT",
+      "state": "INTACT",
+      "artifact_kind": "beam_focus"
+    },
+    {
+      "pos": [
+        7,
+        2
+      ],
+      "type": "CORRIDOR",
+      "state": "INTACT"
+    },
+    {
+      "pos": [
+        7,
+        3
+      ],
+      "type": "ARTIFACT",
+      "state": "INTACT",
+      "artifact_kind": "rating_vortex"
+    },
+    {
+      "pos": [
+        8,
+        0
+      ],
+      "type": "CORRIDOR",
+      "state": "INTACT"
+    },
+    {
+      "pos": [
+        8,
+        1
+      ],
+      "type": "ARTIFACT",
+      "state": "INTACT",
+      "artifact_kind": "neurotoxin"
+    },
+    {
+      "pos": [
+        8,
+        2
+      ],
+      "type": "COMPONENT",
+      "state": "INTACT",
+      "component_kind": "broadcast_array"
+    },
+    {
+      "pos": [
+        8,
+        3
+      ],
+      "type": "CORRIDOR",
+      "state": "INTACT"
+    },
+    {
+      "pos": [
+        9,
+        0
+      ],
+      "type": "ARTIFACT",
+      "state": "INTACT",
+      "artifact_kind": "jammer"
+    },
+    {
+      "pos": [
+        9,
+        1
+      ],
+      "type": "CORRIDOR",
+      "state": "INTACT"
+    },
+    {
+      "pos": [
+        9,
+        2
+      ],
+      "type": "ARTIFACT",
+      "state": "INTACT",
+      "artifact_kind": "volatile"
+    },
+    {
+      "pos": [
+        10,
+        0
+      ],
+      "type": "ARTIFACT",
+      "state": "INTACT",
+      "artifact_kind": "distributor"
+    },
+    {
+      "pos": [
+        10,
+        1
+      ],
+      "type": "CORRIDOR",
+      "state": "INTACT"
+    },
+    {
+      "pos": [
+        10,
+        2
+      ],
+      "type": "ARTIFACT",
+      "state": "INTACT",
+      "artifact_kind": "feast_chamber"
+    },
+    {
+      "pos": [
+        11,
+        0
+      ],
+      "type": "ARTIFACT",
+      "state": "INTACT",
+      "artifact_kind": "dampener"
+    },
+    {
+      "pos": [
+        11,
+        1
+      ],
+      "type": "CORRIDOR",
+      "state": "INTACT"
+    },
+    {
+      "pos": [
+        11,
+        2
+      ],
+      "type": "ARTIFACT",
+      "state": "INTACT",
+      "artifact_kind": "pulse"
+    },
+    {
+      "pos": [
+        12,
+        1
+      ],
+      "type": "ARTIFACT",
+      "state": "INTACT",
+      "artifact_kind": "scanner"
+    },
+    {
+      "pos": [
+        12,
+        2
+      ],
+      "type": "ARTIFACT",
+      "state": "INTACT",
+      "artifact_kind": "scatter"
+    },
+    {
+      "pos": [
+        13,
+        1
+      ],
+      "type": "ARTIFACT",
+      "state": "INTACT",
+      "artifact_kind": "bypass"
+    }
+  ],
+  "sub_chunks": [
+    {
+      "name": "tp_spine",
+      "offset": [
+        0,
+        0
+      ],
+      "ports": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          -1,
+          0
+        ],
+        [
+          -1,
+          1
+        ]
+      ],
+      "cells": [
+        {
+          "pos": [
+            -1,
+            0
+          ],
+          "type": "COMPONENT",
+          "state": "INTACT",
+          "component_kind": "power"
+        },
+        {
+          "pos": [
+            -1,
+            1
+          ],
+          "type": "ARTIFACT",
+          "state": "INTACT",
+          "artifact_kind": "reactor"
+        },
+        {
+          "pos": [
+            0,
+            0
+          ],
+          "type": "CORRIDOR",
+          "state": "INTACT"
+        },
+        {
+          "pos": [
+            0,
+            1
+          ],
+          "type": "CORRIDOR",
+          "state": "INTACT"
+        },
+        {
+          "pos": [
+            0,
+            2
+          ],
+          "type": "CORRIDOR",
+          "state": "INTACT"
+        }
+      ]
+    },
+    {
+      "name": "tp_shield1",
+      "offset": [
+        3,
+        0
+      ],
+      "ports": [
+        [
+          0,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          -1
+        ]
+      ],
+      "cells": [
+        {
+          "pos": [
+            -1,
+            0
+          ],
+          "type": "ARTIFACT",
+          "state": "INTACT",
+          "artifact_kind": "nanite"
+        },
+        {
+          "pos": [
+            0,
+            0
+          ],
+          "type": "CORRIDOR",
+          "state": "INTACT"
+        },
+        {
+          "pos": [
+            0,
+            1
+          ],
+          "type": "ARTIFACT",
+          "state": "INTACT",
+          "artifact_kind": "booster"
+        },
+        {
+          "pos": [
+            1,
+            0
+          ],
+          "type": "CORRIDOR",
+          "state": "INTACT"
+        },
+        {
+          "pos": [
+            1,
+            1
+          ],
+          "type": "COMPONENT",
+          "state": "INTACT",
+          "component_kind": "shield"
+        },
+        {
+          "pos": [
+            1,
+            2
+          ],
+          "type": "ARTIFACT",
+          "state": "INTACT",
+          "artifact_kind": "accumulator"
+        },
+        {
+          "pos": [
+            2,
+            -1
+          ],
+          "type": "ARTIFACT",
+          "state": "INTACT",
+          "artifact_kind": "distributor"
+        },
+        {
+          "pos": [
+            2,
+            0
+          ],
+          "type": "CORRIDOR",
+          "state": "INTACT"
+        },
+        {
+          "pos": [
+            2,
+            1
+          ],
+          "type": "COMPONENT",
+          "state": "INTACT",
+          "component_kind": "medical"
+        },
+        {
+          "pos": [
+            3,
+            0
+          ],
+          "type": "ARTIFACT",
+          "state": "INTACT",
+          "artifact_kind": "overdrive"
+        }
+      ]
+    },
+    {
+      "name": "tp_armor",
+      "offset": [
+        3,
+        2
+      ],
+      "ports": [
+        [
+          0,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          2,
+          1
+        ]
+      ],
+      "cells": [
+        {
+          "pos": [
+            0,
+            0
+          ],
+          "type": "CORRIDOR",
+          "state": "INTACT"
+        },
+        {
+          "pos": [
+            0,
+            1
+          ],
+          "type": "COMPONENT",
+          "state": "INTACT",
+          "component_kind": "cargo"
+        },
+        {
+          "pos": [
+            1,
+            0
+          ],
+          "type": "CORRIDOR",
+          "state": "INTACT"
+        },
+        {
+          "pos": [
+            1,
+            1
+          ],
+          "type": "COMPONENT",
+          "state": "INTACT",
+          "component_kind": "armor"
+        },
+        {
+          "pos": [
+            2,
+            0
+          ],
+          "type": "CORRIDOR",
+          "state": "INTACT"
+        },
+        {
+          "pos": [
+            2,
+            1
+          ],
+          "type": "CORRIDOR",
+          "state": "INTACT"
+        }
+      ]
+    },
+    {
+      "name": "tp_beam",
+      "offset": [
+        6,
+        0
+      ],
+      "ports": [
+        [
+          0,
+          0
+        ],
+        [
+          2,
+          0
+        ]
+      ],
+      "cells": [
+        {
+          "pos": [
+            0,
+            0
+          ],
+          "type": "CORRIDOR",
+          "state": "INTACT"
+        },
+        {
+          "pos": [
+            0,
+            1
+          ],
+          "type": "ARTIFACT",
+          "state": "INTACT",
+          "artifact_kind": "prism"
+        },
+        {
+          "pos": [
+            1,
+            0
+          ],
+          "type": "COMPONENT",
+          "state": "INTACT",
+          "component_kind": "beam"
+        },
+        {
+          "pos": [
+            1,
+            1
+          ],
+          "type": "ARTIFACT",
+          "state": "INTACT",
+          "artifact_kind": "beam_focus"
+        },
+        {
+          "pos": [
+            2,
+            0
+          ],
+          "type": "CORRIDOR",
+          "state": "INTACT"
+        },
+        {
+          "pos": [
+            2,
+            1
+          ],
+          "type": "ARTIFACT",
+          "state": "INTACT",
+          "artifact_kind": "neurotoxin"
+        }
+      ]
+    },
+    {
+      "name": "tp_bcast",
+      "offset": [
+        6,
+        2
+      ],
+      "ports": [
+        [
+          0,
+          0
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      "cells": [
+        {
+          "pos": [
+            0,
+            0
+          ],
+          "type": "CORRIDOR",
+          "state": "INTACT"
+        },
+        {
+          "pos": [
+            0,
+            1
+          ],
+          "type": "ARTIFACT",
+          "state": "INTACT",
+          "artifact_kind": "decoy"
+        },
+        {
+          "pos": [
+            1,
+            0
+          ],
+          "type": "CORRIDOR",
+          "state": "INTACT"
+        },
+        {
+          "pos": [
+            1,
+            1
+          ],
+          "type": "ARTIFACT",
+          "state": "INTACT",
+          "artifact_kind": "rating_vortex"
+        },
+        {
+          "pos": [
+            2,
+            0
+          ],
+          "type": "COMPONENT",
+          "state": "INTACT",
+          "component_kind": "broadcast_array"
+        },
+        {
+          "pos": [
+            2,
+            1
+          ],
+          "type": "CORRIDOR",
+          "state": "INTACT"
+        }
+      ]
+    },
+    {
+      "name": "tp_art",
+      "offset": [
+        9,
+        1
+      ],
+      "ports": [
+        [
+          0,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          1,
+          -1
+        ]
+      ],
+      "cells": [
+        {
+          "pos": [
+            0,
+            -1
+          ],
+          "type": "ARTIFACT",
+          "state": "INTACT",
+          "artifact_kind": "jammer"
+        },
+        {
+          "pos": [
+            0,
+            0
+          ],
+          "type": "CORRIDOR",
+          "state": "INTACT"
+        },
+        {
+          "pos": [
+            0,
+            1
+          ],
+          "type": "ARTIFACT",
+          "state": "INTACT",
+          "artifact_kind": "volatile"
+        },
+        {
+          "pos": [
+            1,
+            -1
+          ],
+          "type": "ARTIFACT",
+          "state": "INTACT",
+          "artifact_kind": "distributor"
+        },
+        {
+          "pos": [
+            1,
+            0
+          ],
+          "type": "CORRIDOR",
+          "state": "INTACT"
+        },
+        {
+          "pos": [
+            1,
+            1
+          ],
+          "type": "ARTIFACT",
+          "state": "INTACT",
+          "artifact_kind": "feast_chamber"
+        },
+        {
+          "pos": [
+            2,
+            -1
+          ],
+          "type": "ARTIFACT",
+          "state": "INTACT",
+          "artifact_kind": "dampener"
+        },
+        {
+          "pos": [
+            2,
+            0
+          ],
+          "type": "CORRIDOR",
+          "state": "INTACT"
+        },
+        {
+          "pos": [
+            2,
+            1
+          ],
+          "type": "ARTIFACT",
+          "state": "INTACT",
+          "artifact_kind": "pulse"
+        },
+        {
+          "pos": [
+            3,
+            0
+          ],
+          "type": "ARTIFACT",
+          "state": "INTACT",
+          "artifact_kind": "scanner"
+        },
+        {
+          "pos": [
+            3,
+            1
+          ],
+          "type": "ARTIFACT",
+          "state": "INTACT",
+          "artifact_kind": "scatter"
+        },
+        {
+          "pos": [
+            4,
+            0
+          ],
+          "type": "ARTIFACT",
+          "state": "INTACT",
+          "artifact_kind": "bypass"
+        }
+      ]
+    }
+  ],
+  "meta": {}
+}

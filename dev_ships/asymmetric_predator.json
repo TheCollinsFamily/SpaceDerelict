@@ -1,0 +1,288 @@
+{
+  "name": "Asymmetric Predator",
+  "meta": {
+    "description": "Hand-crafted asymmetric raider with volatile risks and good side pods for interesting salvage choices.",
+    "intended_faction": "raider",
+    "difficulty": 2,
+    "ai_profile": "opportunistic",
+    "tags": ["volatile", "high-spectacle", "asymmetric"]
+  },
+  "core": [
+    2,
+    0
+  ],
+  "cells": [
+    {
+      "pos": [
+        0,
+        -1
+      ],
+      "type": "COMPONENT",
+      "state": "INTACT",
+      "component_kind": "gun"
+    },
+    {
+      "pos": [
+        0,
+        0
+      ],
+      "type": "CORRIDOR",
+      "state": "INTACT"
+    },
+    {
+      "pos": [
+        0,
+        1
+      ],
+      "type": "COMPONENT",
+      "state": "INTACT",
+      "component_kind": "gun"
+    },
+    {
+      "pos": [
+        1,
+        -1
+      ],
+      "type": "COMPONENT",
+      "state": "INTACT",
+      "component_kind": "laser"
+    },
+    {
+      "pos": [
+        1,
+        0
+      ],
+      "type": "CORRIDOR",
+      "state": "INTACT"
+    },
+    {
+      "pos": [
+        1,
+        2
+      ],
+      "type": "CORRIDOR",
+      "state": "INTACT"
+    },
+    {
+      "pos": [
+        2,
+        -1
+      ],
+      "type": "CORRIDOR",
+      "state": "INTACT"
+    },
+    {
+      "pos": [
+        2,
+        0
+      ],
+      "type": "CORRIDOR",
+      "state": "INTACT"
+    },
+    {
+      "pos": [
+        2,
+        1
+      ],
+      "type": "CORRIDOR",
+      "state": "INTACT"
+    },
+    {
+      "pos": [
+        2,
+        2
+      ],
+      "type": "ARTIFACT",
+      "state": "INTACT",
+      "artifact_kind": "volatile"
+    },
+    {
+      "pos": [
+        3,
+        0
+      ],
+      "type": "COMPONENT",
+      "state": "INTACT",
+      "component_kind": "power"
+    },
+    {
+      "pos": [
+        3,
+        2
+      ],
+      "type": "ARTIFACT",
+      "state": "INTACT",
+      "artifact_kind": "feast_chamber"
+    },
+    {
+      "pos": [
+        4,
+        0
+      ],
+      "type": "COMPONENT",
+      "state": "INTACT",
+      "component_kind": "shield"
+    },
+    {
+      "pos": [
+        4,
+        1
+      ],
+      "type": "ARTIFACT",
+      "state": "INTACT",
+      "artifact_kind": "booster"
+    },
+    {
+      "pos": [
+        5,
+        0
+      ],
+      "type": "COMPONENT",
+      "state": "INTACT",
+      "component_kind": "engine"
+    },
+    {
+      "pos": [
+        6,
+        -1
+      ],
+      "type": "COMPONENT",
+      "state": "INTACT",
+      "component_kind": "armor"
+    },
+    {
+      "pos": [
+        6,
+        0
+      ],
+      "type": "CORRIDOR",
+      "state": "INTACT"
+    }
+  ],
+  "sub_chunks": [
+    {
+      "name": "forward_guns",
+      "offset": [
+        0,
+        -1
+      ],
+      "ports": [
+        [
+          0,
+          0
+        ]
+      ],
+      "cells": [
+        {
+          "pos": [
+            0,
+            -1
+          ],
+          "type": "COMPONENT",
+          "state": "INTACT",
+          "component_kind": "gun"
+        },
+        {
+          "pos": [
+            0,
+            0
+          ],
+          "type": "CORRIDOR",
+          "state": "INTACT"
+        },
+        {
+          "pos": [
+            1,
+            -1
+          ],
+          "type": "COMPONENT",
+          "state": "INTACT",
+          "component_kind": "laser"
+        }
+      ]
+    },
+    {
+      "name": "power_shield",
+      "offset": [
+        3,
+        0
+      ],
+      "ports": [
+        [
+          0,
+          0
+        ]
+      ],
+      "cells": [
+        {
+          "pos": [
+            0,
+            0
+          ],
+          "type": "COMPONENT",
+          "state": "INTACT",
+          "component_kind": "power"
+        },
+        {
+          "pos": [
+            1,
+            0
+          ],
+          "type": "COMPONENT",
+          "state": "INTACT",
+          "component_kind": "shield"
+        },
+        {
+          "pos": [
+            1,
+            1
+          ],
+          "type": "ARTIFACT",
+          "state": "INTACT",
+          "artifact_kind": "booster"
+        }
+      ]
+    },
+    {
+      "name": "volatile_bay",
+      "offset": [
+        2,
+        2
+      ],
+      "ports": [
+        [
+          -1,
+          0
+        ]
+      ],
+      "cells": [
+        {
+          "pos": [
+            -1,
+            0
+          ],
+          "type": "CORRIDOR",
+          "state": "INTACT"
+        },
+        {
+          "pos": [
+            0,
+            0
+          ],
+          "type": "ARTIFACT",
+          "state": "INTACT",
+          "artifact_kind": "volatile"
+        },
+        {
+          "pos": [
+            1,
+            0
+          ],
+          "type": "ARTIFACT",
+          "state": "INTACT",
+          "artifact_kind": "feast_chamber"
+        }
+      ]
+    }
+  ]
+}

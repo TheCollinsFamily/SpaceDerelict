@@ -1,0 +1,213 @@
+{
+  "name": "Compact Tech Hulk",
+  "meta": {
+    "description": "Dense tech hulk with heavy armor and shield focus. Good for testing sniping spines vs tanky enemies.",
+    "intended_faction": "techopuritan",
+    "difficulty": 3,
+    "ai_profile": "methodical",
+    "tags": ["armored", "defensive"]
+  },
+  "core": [
+    1,
+    1
+  ],
+  "cells": [
+    {
+      "pos": [
+        0,
+        0
+      ],
+      "type": "COMPONENT",
+      "state": "INTACT",
+      "component_kind": "laser"
+    },
+    {
+      "pos": [
+        0,
+        1
+      ],
+      "type": "CORRIDOR",
+      "state": "INTACT"
+    },
+    {
+      "pos": [
+        0,
+        2
+      ],
+      "type": "COMPONENT",
+      "state": "INTACT",
+      "component_kind": "gun"
+    },
+    {
+      "pos": [
+        1,
+        0
+      ],
+      "type": "CORRIDOR",
+      "state": "INTACT"
+    },
+    {
+      "pos": [
+        1,
+        1
+      ],
+      "type": "CORRIDOR",
+      "state": "INTACT"
+    },
+    {
+      "pos": [
+        1,
+        2
+      ],
+      "type": "CORRIDOR",
+      "state": "INTACT"
+    },
+    {
+      "pos": [
+        2,
+        0
+      ],
+      "type": "ARTIFACT",
+      "state": "INTACT",
+      "artifact_kind": "overdrive"
+    },
+    {
+      "pos": [
+        2,
+        1
+      ],
+      "type": "CORRIDOR",
+      "state": "INTACT"
+    },
+    {
+      "pos": [
+        2,
+        2
+      ],
+      "type": "ARTIFACT",
+      "state": "INTACT",
+      "artifact_kind": "nanite"
+    },
+    {
+      "pos": [
+        3,
+        0
+      ],
+      "type": "ARTIFACT",
+      "state": "INTACT",
+      "artifact_kind": "reactor"
+    },
+    {
+      "pos": [
+        3,
+        1
+      ],
+      "type": "CORRIDOR",
+      "state": "INTACT"
+    },
+    {
+      "pos": [
+        3,
+        2
+      ],
+      "type": "COMPONENT",
+      "state": "INTACT",
+      "component_kind": "shield"
+    },
+    {
+      "pos": [
+        4,
+        1
+      ],
+      "type": "COMPONENT",
+      "state": "INTACT",
+      "component_kind": "power"
+    },
+    {
+      "pos": [
+        5,
+        1
+      ],
+      "type": "COMPONENT",
+      "state": "INTACT",
+      "component_kind": "engine"
+    }
+  ],
+  "sub_chunks": [
+    {
+      "name": "left_weapons",
+      "offset": [
+        0,
+        0
+      ],
+      "ports": [
+        [
+          0,
+          0
+        ]
+      ],
+      "cells": [
+        {
+          "pos": [
+            0,
+            0
+          ],
+          "type": "COMPONENT",
+          "state": "INTACT",
+          "component_kind": "laser"
+        },
+        {
+          "pos": [
+            0,
+            2
+          ],
+          "type": "COMPONENT",
+          "state": "INTACT",
+          "component_kind": "gun"
+        }
+      ]
+    },
+    {
+      "name": "tech_bay",
+      "offset": [
+        2,
+        0
+      ],
+      "ports": [
+        [
+          1,
+          1
+        ]
+      ],
+      "cells": [
+        {
+          "pos": [
+            0,
+            0
+          ],
+          "type": "ARTIFACT",
+          "state": "INTACT",
+          "artifact_kind": "overdrive"
+        },
+        {
+          "pos": [
+            0,
+            2
+          ],
+          "type": "ARTIFACT",
+          "state": "INTACT",
+          "artifact_kind": "nanite"
+        },
+        {
+          "pos": [
+            1,
+            1
+          ],
+          "type": "COMPONENT",
+          "state": "INTACT",
+          "component_kind": "power"
+        }
+      ]
+    }
+  ]
+}

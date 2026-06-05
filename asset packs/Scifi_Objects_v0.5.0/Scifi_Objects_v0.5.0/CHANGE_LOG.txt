@@ -1,0 +1,29 @@
+v0.5.0 - Published 18.09.2025.
+- Rename Asset Pack > from Dithart's Sci-fi Items & Objects to Dithart's Sci-fi Objects
+
+v0.4.0 - Published 11.09.2025.
+Added:
+- lobby tables (6 variants)
+- lobby chairs 
+- corner sofa (2 variants)
+- plants in pots ( 2 variants)
+- trays (4 variants)
+- tray return counter ( 2 variants)
+
+v0.3.0 - Published 09.09.2021.
+Added:
+- grey debris (5 variants)
+- metal debris ( 2 variants)
+- electronic debris (8 variants)
+- white debris ( 5 variants)
+
+v0.2.0 - Published 03.08.2021.
+Added:
+- floor bloodstains ( 8 variants)
+- wall bloodstains ( 8 variants)
+- floor explosion stains ( 3 variants)
+- wall explosion stains ( 2 variants)
+- damaged floors and damaged walls (5 variants)
+
+v0.1.0 - Published 27.01.2021.
+Initial publish

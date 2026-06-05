@@ -1,0 +1,26 @@
+{
+  "resources": {
+    "scrap": 5,
+    "feast": 5,
+    "ratings": 25
+  },
+  "unlocks": [],
+  "career": {
+    "total_ratings_earned": 25,
+    "seasons_completed": 1,
+    "high_score": 0,
+    "faction_aggression": {
+      "felonia": 0,
+      "confederacy": 0,
+      "pop_fiz": 0,
+      "techopuritan": 0
+    },
+    "genocides_completed": {},
+    "deaths": 0
+  },
+  "unlocked_frames": [
+    "basic"
+  ],
+  "chosen_frame": "basic",
+  "market_purchases": []
+}

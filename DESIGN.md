@@ -109,6 +109,22 @@ Typical run:
 
 This document is the source of truth for implementation. Update it as we playtest and tune.
 
+## Implementation Status (terminal prototype)
+As of the current build the following are playable in `main.py` (rich) + `space_derelict/model.py`:
+- All core ship rules (network, adjacency, 6 dmg types, states carried into grafts)
+- 5+ distinct named chunk templates with roles + corridor docking ports; plus support for arbitrary hand-crafted full enemy ships (via dev_ship_builder.py + dev_ships/*.json) that participate in random encounters and use the full named sub-chunk salvage system
+- Logical sub-chunk salvage (player chooses "the gun_pod" or "the volatile bay" by name, sees damage states)
+- Auto-graft that prefers real corridor seams + rotation; grafts measurably change active network and available threats
+- Scrap + feast + RATINGS economy. Ratings (game show infamy/spectacle points) earned for brutality (shatter, explosions, overkill, Fire/Breach) especially in risky sectors. Persistent Graftyard City with Ratings spends on upgrades (vat tiers, hype, exotic pools, starting bonuses, districts) and Feast Tree tiers (starting feast, better clones, advanced vat). Unlocks affect future sector enemies and starting ships. Brutal play = meta power.
+- Combat phase with shields, fire spread, enemy retaliation from active guns (sniping feels good)
+- 3+ encounter run loop with fleshed sector map (real nodes like Raider/Techopuritan/Felonia with player route choices to avoid high-risk zones, faction-specific enemies, difficulty/ratings multipliers), persistent city with Ratings/Feast Tree spends (vat tiers, hype, districts, clone bonuses), unlocks affect starting ships and enemy variety in future sectors, sector consequences (surviving Tech unlocks better exotics), full death + tube reveal narrative with variations, post-run feast party flavor for high ratings runs ("you are the entertainment")
+- Expanded artifacts (15 kinds: ... + widebeam (doubles beam size to hit target+right comp), bypass (comps active without corridor), distributor (transfers any artifact powers any connected component has to all other connected components)) with mechanical effects (chain explosions/disables, protections vs ion/emp/fire, loot bonuses, self-repair/infection, overdrive risks, emp blasts, weapon shooting modifiers, corridor bypass, power distribution)
+- Full persistent home base (Graftyard City): multiple playthroughs with save/load (meta persists in json across sessions), earn Ratings from brutality/game-show audience, spend on permanent upgrades that boost future runs (starting resources, vat free repairs, exotic artifacts, hype multipliers). Retire for career summary (total ratings, seasons, high score, audience score). Unlocks/sector consequences carry over. 'Retire' ends with full report.
+- Multi-order combat turns, retaliation, better active threat feedback
+- Interactive full-run experience with player-driven map choices and graft control options
+
+The --demo and interactive paths now support full multi-encounter runs with sector map route choices (risky/safe), multi-order combat, research meta in hub, shield_bay content, booster mitigation, and complete death + tube narrative reveal. Use them to playtest the key fun questions below. When the mechanics feel right, proceed to pixel art + frontend.
+
 ---
 
 *Recovered and condensed from the previous design conversation (May/June 2026 session).*
