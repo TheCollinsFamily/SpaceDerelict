@@ -859,9 +859,7 @@ class SectorMapScreen(BaseScreen):
         super().__init__(game)
         self.node_buttons: List[pygame_gui.elements.UIButton] = []
         self.event_buttons: List[pygame_gui.elements.UIButton] = []
-        self.run_upgrade_buttons: List[pygame_gui.elements.UIButton] = []
-        self.repair_button: Optional[pygame_gui.elements.UIButton] = None
-        self.feast_button: Optional[pygame_gui.elements.UIButton] = None
+        self.styled_buttons: list = []  # custom-drawn upgrade/repair/feast buttons
         self.node_planet_surfs: List[pygame.Surface] = []
         self.planet_rects: List[pygame.Rect] = []
         self.travel_button: Optional[pygame_gui.elements.UIButton] = None  # big "depart" button for highlighted destination
@@ -880,9 +878,7 @@ class SectorMapScreen(BaseScreen):
     def on_enter(self):
         self.node_buttons = []
         self.event_buttons = []
-        self.run_upgrade_buttons = []
-        self.repair_button = None
-        self.feast_button = None
+        self.styled_buttons = []
         self.travel_button = None
         self.node_planet_surfs = []
         self.planet_rects = []
@@ -1104,15 +1100,7 @@ class SectorMapScreen(BaseScreen):
             el.kill()
         self.ui_elements.clear()
         self.node_buttons.clear()
-        for b in getattr(self, 'run_upgrade_buttons', []):
-            b.kill()
-        self.run_upgrade_buttons = []
-        if getattr(self, 'repair_button', None):
-            self.repair_button.kill()
-        self.repair_button = None
-        if getattr(self, 'feast_button', None):
-            self.feast_button.kill()
-        self.feast_button = None
+        self.styled_buttons = []
 
         if self.game.current_random_event:
             # Show random faction stop event instead of nodes
@@ -1157,70 +1145,71 @@ class SectorMapScreen(BaseScreen):
             )
         self.ui_elements.append(self.travel_button)
 
-        # Run-only morale upgrade tree + repair/feast — right column, left-aligned
-        right_w = 280
-        right_x = WINDOW_W - right_w - 10
-        right_y = 500
-        after_upgrades_y = self._build_run_upgrades_ui(right_x, right_y, right_w, 28)
+        # Build styled right-column button data (drawn manually in draw() for full visual control)
+        right_w = 258
+        right_x = WINDOW_W - right_w - 14
+        right_y = 430
+        self.styled_buttons = []  # list of dicts: {rect, label, sub, icon_col, enabled, action, hover}
+        self._build_styled_upgrades(right_x, right_y, right_w)
 
         # Quick in-run repair using scrap
         dstate = self.game.player_ship.count_states().get("disabled", 0) if self.game.player_ship else 0
         rcost = dstate * 2
         rcan = dstate > 0 and self.game.resources.scrap >= rcost
-        rlabel = f"Repair {dstate} disabled — {rcost} scrap" if dstate > 0 else "No damage to repair"
-        self.repair_button = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect(right_x, after_upgrades_y + 6, right_w, 28),
-            text=rlabel,
-            manager=self.game.ui_manager,
-        )
-        if not rcan:
-            self.repair_button.disable()
-        self.ui_elements.append(self.repair_button)
+        rlabel = f"Repair {dstate} cells" if dstate > 0 else "No damage"
+        rsub = f"{rcost} scrap" if dstate > 0 else ""
+        repair_y = right_y + len(self.styled_buttons) * 34
+        self.styled_buttons.append({
+            "rect": pygame.Rect(right_x, repair_y, right_w, 30),
+            "label": rlabel, "sub": rsub,
+            "icon_col": (100, 200, 255) if rcan else (60, 65, 80),
+            "enabled": rcan, "action": "repair", "hover": False,
+        })
 
         # Quick in-run feast processing
         fcan = self.game.resources.feast >= 8
-        flabel = f"Process feast → +6 scrap ({self.game.resources.feast}/8)"
-        self.feast_button = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect(right_x, after_upgrades_y + 6 + 34, right_w, 28),
-            text=flabel,
-            manager=self.game.ui_manager,
-        )
-        if not fcan:
-            self.feast_button.disable()
-        self.ui_elements.append(self.feast_button)
+        flabel = "Process feast"
+        fsub = f"+6 scrap ({self.game.resources.feast}/8)"
+        feast_y = repair_y + 34
+        self.styled_buttons.append({
+            "rect": pygame.Rect(right_x, feast_y, right_w, 30),
+            "label": flabel, "sub": fsub,
+            "icon_col": (200, 160, 80) if fcan else (60, 65, 80),
+            "enabled": fcan, "action": "feast", "hover": False,
+        })
 
-    def _build_run_upgrades_ui(self, cx: int, y: int, btn_w: int, btn_h: int) -> int:
-        """Build clickable buttons for available run morale upgrades (like terminal tree).
-        Player can spend here on the map between fights. Adds cells or sets mults.
-        Returns the y after the last button for subsequent right-column placement.
-        """
-        self.run_upgrade_buttons = []
+    def _build_styled_upgrades(self, x: int, y: int, w: int):
+        """Build styled button data for run morale upgrades."""
         current_m = getattr(self.game, 'run_morale', 65)
         avail = get_available_run_morale_upgrades(getattr(self.game, 'run_upgrades', set()), current_m)
-        if not avail:
-            # show a disabled hint if none or all bought
-            hint = pygame_gui.elements.UIButton(
-                relative_rect=pygame.Rect(cx, y, btn_w, btn_h),
-                text="No run upgrades available",
-                manager=self.game.ui_manager,
-            )
-            hint.disable()
-            self.run_upgrade_buttons.append(hint)
-            self.ui_elements.append(hint)
-            return y + btn_h + 4
-        for u in avail[:5]:  # cap display
-            label = f"{u.code}: {u.desc[:32]} ({u.cost}m)"
-            b = pygame_gui.elements.UIButton(
-                relative_rect=pygame.Rect(cx, y, btn_w, btn_h),
-                text=label,
-                manager=self.game.ui_manager,
-            )
-            b.upgrade_key = u.key
-            b.upgrade_code = u.code
-            self.run_upgrade_buttons.append(b)
-            self.ui_elements.append(b)
-            y += btn_h + 4
-        return y
+        # Color coding by upgrade type
+        code_colors = {
+            "M": (100, 200, 140),  # medical = green
+            "N": (140, 100, 200),  # nanite = purple
+            "S": (100, 160, 255),  # shield = blue
+            "B": (200, 180, 80),   # booster = gold
+            "D": (180, 140, 220),  # distributor = lilac
+            "C": (200, 100, 100),  # capture = red
+            "G": (255, 180, 100),  # guru = orange
+            "P": (100, 220, 200),  # pathfinder = teal
+            "R": (255, 200, 60),   # crowd = yellow
+            "V": (200, 80, 180),   # volatile = pink
+        }
+        for u in avail[:5]:
+            # Short readable label: code + short name
+            short_name = u.desc.split('(')[0].split('-')[0].strip()[:20]
+            ic = code_colors.get(u.code[0], COL_ACCENT)
+            can_afford = current_m >= u.cost
+            self.styled_buttons.append({
+                "rect": pygame.Rect(x, y, w, 30),
+                "label": f"{u.code}: {short_name}",
+                "sub": f"{u.cost} morale",
+                "icon_col": ic if can_afford else (60, 65, 80),
+                "enabled": can_afford,
+                "action": f"upgrade:{u.key}",
+                "hover": False,
+            })
+            y += 34
 
     def _build_event_ui(self):
         """Build UI for a random faction stop event. Flavor text drawn in draw()."""
@@ -1248,68 +1237,6 @@ class SectorMapScreen(BaseScreen):
                     if event.ui_element == btn:
                         self._resolve_random_event(btn.event_option)
                         return
-                return
-
-            # Run upgrade purchases (between fights)
-            for btn in getattr(self, 'run_upgrade_buttons', []):
-                if event.ui_element == btn and hasattr(btn, 'upgrade_key'):
-                    key = btn.upgrade_key
-                    if key in getattr(self.game, 'run_upgrades', set()):
-                        self.game.combat_log.append("Already have that run upgrade.")
-                        self._build_ui()
-                        return
-                    u = RUN_MORALE_UPGRADES_BY_KEY.get(key)
-                    if u and self.game.run_morale >= u.cost:
-                        self.game.run_morale -= u.cost
-                        self.game.run_upgrades.add(key)
-                        # Apply special side effects
-                        if key == "pathfinder":
-                            self.game.run_backtrack_cost = max(5, self.game.run_backtrack_cost - 5)
-                            self.game.combat_log.append(f"Pathfinder: backtrack cost now {self.game.run_backtrack_cost}")
-                        elif key == "crowd":
-                            self.game.run_ratings_mult += 0.2
-                            self.game.combat_log.append("+0.2 run ratings_mult (crowd pleaser)")
-                        elif key == "guru":
-                            self.game.run_morale_gain_mult += 0.2
-                            self.game.combat_log.append("+0.2x future morale gains (guru)")
-                        # Add cell if comp/art
-                        if u.comp_kind or u.art_kind:
-                            if self.game._add_run_upgrade(u.comp_kind, u.art_kind):
-                                self.game.combat_log.append(f"Installed run upgrade: {u.desc[:30]}")
-                            else:
-                                self.game.combat_log.append(f"Upgrade trained: {u.desc[:30]} (no spot for cell)")
-                        else:
-                            self.game.combat_log.append(f"Run upgrade: {u.desc[:30]}")
-                        self._build_ui()
-                    else:
-                        self.game.combat_log.append("Not enough run morale or already owned.")
-                        self._build_ui()
-                    return
-
-            # In-run quick repair
-            if event.ui_element == getattr(self, 'repair_button', None):
-                player = self.game.player_ship
-                if player:
-                    d = player.count_states().get("disabled", 0)
-                    cost = d * 2
-                    if d > 0 and self.game.resources.scrap >= cost:
-                        rep, c = player.repair_all_disabled(cost_per=2)
-                        self.game.resources.scrap -= c
-                        self.game.combat_log.append(f"Repaired {rep} cells for {c} scrap (in-run).")
-                    else:
-                        self.game.combat_log.append("Nothing to repair or not enough scrap.")
-                self._build_ui()
-                return
-
-            # In-run feast process for scrap (parity with terminal between-fight hub)
-            if event.ui_element == getattr(self, 'feast_button', None):
-                if self.game.resources.feast >= 8:
-                    self.game.resources.feast -= 8
-                    self.game.resources.scrap += 6
-                    self.game.combat_log.append("Processed captives in vats. +6 scrap (in-run).")
-                else:
-                    self.game.combat_log.append("Need 8 feast to process.")
-                self._build_ui()
                 return
 
             # Prominent "Travel" button for the highlighted planet/destination (the nice new map UI)
@@ -1360,12 +1287,71 @@ class SectorMapScreen(BaseScreen):
                 return  # can't change during travel or engaging phase
             pos = getattr(event, 'pos', None)
             if pos:
+                # Check styled buttons (upgrades, repair, feast)
+                for btn in getattr(self, 'styled_buttons', []):
+                    if btn["rect"].collidepoint(pos) and btn["enabled"]:
+                        self._handle_styled_button(btn["action"])
+                        return
+                # Check planet rects for highlight
                 for ii, r in enumerate(getattr(self, 'planet_rects', [])):
                     if r.collidepoint(pos):
                         self.highlighted_node_idx = ii
-                        print(f'[MAP] Planet image highlighted for node {ii} (click DEPART to travel)')
                         self._build_ui()
                         break
+
+    def _handle_styled_button(self, action: str):
+        """Handle click on a styled (custom-drawn) button."""
+        if action.startswith("upgrade:"):
+            key = action.split(":", 1)[1]
+            if key in getattr(self.game, 'run_upgrades', set()):
+                self.game.combat_log.append("Already have that run upgrade.")
+                self._build_ui()
+                return
+            u = RUN_MORALE_UPGRADES_BY_KEY.get(key)
+            if u and self.game.run_morale >= u.cost:
+                self.game.run_morale -= u.cost
+                self.game.run_upgrades.add(key)
+                if key == "pathfinder":
+                    self.game.run_backtrack_cost = max(5, self.game.run_backtrack_cost - 5)
+                    self.game.combat_log.append(f"Pathfinder: backtrack cost now {self.game.run_backtrack_cost}")
+                elif key == "crowd":
+                    self.game.run_ratings_mult += 0.2
+                    self.game.combat_log.append("+0.2 run ratings_mult (crowd pleaser)")
+                elif key == "guru":
+                    self.game.run_morale_gain_mult += 0.2
+                    self.game.combat_log.append("+0.2x future morale gains (guru)")
+                if u.comp_kind or u.art_kind:
+                    if self.game._add_run_upgrade(u.comp_kind, u.art_kind):
+                        self.game.combat_log.append(f"Installed run upgrade: {u.desc[:30]}")
+                    else:
+                        self.game.combat_log.append(f"Upgrade trained: {u.desc[:30]} (no spot for cell)")
+                else:
+                    self.game.combat_log.append(f"Run upgrade: {u.desc[:30]}")
+            else:
+                self.game.combat_log.append("Not enough run morale or already owned.")
+            self._build_ui()
+
+        elif action == "repair":
+            player = self.game.player_ship
+            if player:
+                d = player.count_states().get("disabled", 0)
+                cost = d * 2
+                if d > 0 and self.game.resources.scrap >= cost:
+                    rep, c = player.repair_all_disabled(cost_per=2)
+                    self.game.resources.scrap -= c
+                    self.game.combat_log.append(f"Repaired {rep} cells for {c} scrap (in-run).")
+                else:
+                    self.game.combat_log.append("Nothing to repair or not enough scrap.")
+            self._build_ui()
+
+        elif action == "feast":
+            if self.game.resources.feast >= 8:
+                self.game.resources.feast -= 8
+                self.game.resources.scrap += 6
+                self.game.combat_log.append("Processed captives in vats. +6 scrap (in-run).")
+            else:
+                self.game.combat_log.append("Need 8 feast to process.")
+            self._build_ui()
 
     def _resolve_random_event(self, option: dict):
         """Apply the player's choice in a general random event."""
@@ -1572,7 +1558,7 @@ class SectorMapScreen(BaseScreen):
             xs = [p[0] for p in self.planet_positions]
             ys = [p[1] for p in self.planet_positions]
             minx = max(20, min(xs) - 60)
-            maxx = min(WINDOW_W - 270, max(xs) + 90)
+            maxx = min(WINDOW_W - 290, max(xs) + 90)
             miny = max(120, min(ys) - 50)
             maxy = min(WINDOW_H - 50, max(ys) + 70)
             # Dark map area backdrop with subtle border
@@ -1614,31 +1600,60 @@ class SectorMapScreen(BaseScreen):
         icon_size = getattr(self, 'map_icon_size', 56)
         label_w = getattr(self, 'map_label_w', 160)
 
-        # Draw connections — thin/dim for inactive, glowing for reachable
+        # Draw connections in 3 passes: future grey → visited dim → active glow
         reachable = set(conns.get(curr, []))
-        # Pass 1: inactive lines (behind everything, thin and dim)
+
+        # Pass 1: future paths (from nodes you haven't reached yet) — solid grey
         for from_i, tos in conns.items():
             if from_i >= len(self.planet_positions): continue
+            if from_i == curr: continue  # active connections drawn in pass 3
+            if from_i in visited: continue  # visited connections drawn in pass 2
             fx, fy = self.planet_positions[from_i]
             for to_i in tos:
-                if to_i in reachable: continue  # draw active on top in pass 2
                 if to_i >= len(self.planet_positions): continue
                 tx, ty = self.planet_positions[to_i]
-                pygame.draw.line(surface, (45, 50, 65), (fx, fy), (tx, ty), 1)
-        # Pass 2: active/reachable lines (on top, bright with glow)
+                pygame.draw.line(surface, (55, 60, 75), (fx, fy), (tx, ty), 1)
+
+        # Pass 2: visited/backward connections — dim dotted
+        for from_i, tos in conns.items():
+            if from_i >= len(self.planet_positions): continue
+            if from_i == curr: continue
+            if from_i not in visited: continue
+            fx, fy = self.planet_positions[from_i]
+            for to_i in tos:
+                if to_i in reachable: continue
+                if to_i >= len(self.planet_positions): continue
+                tx, ty = self.planet_positions[to_i]
+                # Dotted line
+                ddx, ddy = tx - fx, ty - fy
+                length = max(1, (ddx * ddx + ddy * ddy) ** 0.5)
+                nx, ny = ddx / length, ddy / length
+                step = 8
+                for s in range(0, int(length), step):
+                    if (s // step) % 2 == 0:
+                        x1, y1 = int(fx + nx * s), int(fy + ny * s)
+                        x2, y2 = int(fx + nx * min(s + step // 2, length)), int(fy + ny * min(s + step // 2, length))
+                        pygame.draw.line(surface, (40, 45, 58), (x1, y1), (x2, y2), 1)
+
+        # Pass 3: active/reachable from current — bright glow + direction chevrons
         if curr < len(self.planet_positions):
             fx, fy = self.planet_positions[curr]
             for to_i in reachable:
                 if to_i >= len(self.planet_positions): continue
                 tx, ty = self.planet_positions[to_i]
-                # Soft glow layer
-                pygame.draw.line(surface, (30, 100, 50), (fx, fy), (tx, ty), 5)
-                # Bright core line
-                pygame.draw.line(surface, COL_SUCCESS, (fx, fy), (tx, ty), 2)
-                # Small direction arrow near target
-                ax = int(fx + (tx - fx) * 0.75)
-                ay = int(fy + (ty - fy) * 0.75)
-                pygame.draw.circle(surface, (120, 255, 160), (ax, ay), 3)
+                is_target = (to_i == hl)
+                glow_col = (25, 120, 55) if is_target else (25, 80, 40)
+                core_col = (100, 255, 140) if is_target else COL_SUCCESS
+                pygame.draw.line(surface, glow_col, (fx, fy), (tx, ty), 6 if is_target else 4)
+                pygame.draw.line(surface, core_col, (fx, fy), (tx, ty), 2)
+                # Direction chevrons along the path
+                ddx, ddy = tx - fx, ty - fy
+                length = max(1, (ddx * ddx + ddy * ddy) ** 0.5)
+                for frac in [0.35, 0.55, 0.75]:
+                    ax = int(fx + ddx * frac)
+                    ay = int(fy + ddy * frac)
+                    chev_sz = 3 if is_target else 2
+                    pygame.draw.circle(surface, (140, 255, 170), (ax, ay), chev_sz)
 
         # Draw planet icons + proper beacon-style labels (this is the "map" the player looks at)
         self.planet_rects = []
@@ -1660,6 +1675,17 @@ class SectorMapScreen(BaseScreen):
             is_hl = (i == hl)
             col = faction_colors.get(node.enemy_faction, COL_ACCENT)
 
+            # Dim overlay on visited/cleared planets
+            if i in visited and not is_curr:
+                dim = pygame.Surface((icon_size, icon_size), pygame.SRCALPHA)
+                dim.fill((10, 10, 20, 100))
+                surface.blit(dim, (px, py))
+
+            # Subtle faction-colored halo ring (always visible, helps identify at a glance)
+            if not is_curr and not is_hl:
+                halo_col = tuple(min(255, c // 3 + 15) for c in col)
+                pygame.draw.circle(surface, halo_col, (cx, cy), icon_size // 2 + 3, 1)
+
             # Strong selection / current rings (FTL beacon feel)
             if is_curr:
                 pygame.draw.circle(surface, COL_GOLD, (cx, cy), icon_size // 2 + 11, 4)
@@ -1672,18 +1698,21 @@ class SectorMapScreen(BaseScreen):
             label_y = py + icon_size + 3
 
             if is_hl or is_curr:
-                # Full beacon label card
-                label_h = 36
-                label_bg = pygame.Rect(px - 8, label_y - 2, label_w, label_h)
-                bg_col = (30, 34, 55) if is_hl else (25, 28, 45)
-                pygame.draw.rect(surface, bg_col, label_bg, border_radius=5)
-                pygame.draw.rect(surface, col, label_bg, 1, border_radius=5)
-                short = f"{sym} {node.name[:15]}"
-                nm = font_sm.render(short, True, COL_TEXT)
-                surface.blit(nm, (px - 4, label_y + 2))
+                # Compact beacon label — centered under planet, narrow to avoid overlap
+                font_lbl = pygame.font.SysFont("consolas", 11)
+                short = f"{sym} {node.name[:11]}"
                 dcol = COL_DANGER if node.difficulty >= 3 else (COL_GOLD if node.difficulty >= 2 else COL_SUCCESS)
-                st = font_sm.render(f"D{node.difficulty}  x{node.ratings_mult:.2f}", True, dcol)
-                surface.blit(st, (px - 4, label_y + 17))
+                stat_str = f"D{node.difficulty} x{node.ratings_mult:.1f}"
+                nm_surf = font_lbl.render(short, True, COL_TEXT)
+                st_surf = font_lbl.render(stat_str, True, dcol)
+                card_w = max(nm_surf.get_width(), st_surf.get_width()) + 16
+                label_h = 30
+                label_bg = pygame.Rect(cx - card_w // 2, label_y - 1, card_w, label_h)
+                bg_col = (30, 34, 55) if is_hl else (25, 28, 45)
+                pygame.draw.rect(surface, bg_col, label_bg, border_radius=4)
+                pygame.draw.rect(surface, col, label_bg, 1, border_radius=4)
+                surface.blit(nm_surf, (cx - nm_surf.get_width() // 2, label_y + 1))
+                surface.blit(st_surf, (cx - st_surf.get_width() // 2, label_y + 15))
             else:
                 # Compact single-line label — boosted contrast for readability
                 font_xs = pygame.font.SysFont("consolas", 12)
@@ -1694,24 +1723,25 @@ class SectorMapScreen(BaseScreen):
 
             # Current / cleared badges
             if is_curr:
-                hb = font_sm.render("★ YOU ARE HERE", True, COL_GOLD)
-                surface.blit(hb, (px + icon_size + 6, py + 4))
+                font_here = pygame.font.SysFont("consolas", 10, bold=True)
+                hb = font_here.render("YOU", True, COL_GOLD)
+                # Small badge centered above the planet
+                badge_w = hb.get_width() + 8
+                badge_r = pygame.Rect(cx - badge_w // 2, py - 16, badge_w, 14)
+                pygame.draw.rect(surface, (50, 42, 15), badge_r, border_radius=3)
+                pygame.draw.rect(surface, COL_GOLD, badge_r, 1, border_radius=3)
+                surface.blit(hb, (cx - hb.get_width() // 2, py - 15))
             elif i in visited:
-                cb = font_sm.render("✓", True, COL_SUCCESS)
-                surface.blit(cb, (cx - 4, py - 12))
+                # Small checkmark centered above
+                font_chk = pygame.font.SysFont("consolas", 11)
+                cb = font_chk.render("✓", True, COL_SUCCESS)
+                surface.blit(cb, (cx - cb.get_width() // 2, py - 14))
 
-        # Right side details panel for the highlighted destination
-        if self.planet_positions:
-            max_px = max(p[0] for p in self.planet_positions)
-            lw = getattr(self, 'map_label_w', 120)
-            details_x = max_px + lw + 15
-            if details_x + 310 > WINDOW_W - 10:
-                details_x = WINDOW_W - 320
-        else:
-            details_x = 920
-        details_y = 140
-        panel_w = min(310, WINDOW_W - details_x - 8)
-        panel_h = 280
+        # Right side details panel — fixed position matching the button column
+        panel_w = 260
+        details_x = WINDOW_W - panel_w - 14
+        details_y = 120
+        panel_h = 295
         if self.game.sector:
             hnode = self.game.sector[hl]
             # Panel background with gradient feel (two-layer rect)
@@ -1719,8 +1749,9 @@ class SectorMapScreen(BaseScreen):
             pygame.draw.rect(surface, (18, 22, 38), (details_x + 2, details_y + 2, panel_w - 4, 36), border_radius=8)
             pygame.draw.rect(surface, COL_ACCENT, (details_x, details_y, panel_w, panel_h), 2, border_radius=10)
 
-            df = pygame.font.SysFont("consolas", 15, bold=True)
-            dest_title = f"DESTINATION: {hnode.name}"
+            df = pygame.font.SysFont("consolas", 14, bold=True)
+            dest_name = hnode.name[:18] if len(hnode.name) > 18 else hnode.name
+            dest_title = f"DESTINATION: {dest_name}"
             surface.blit(df.render(dest_title, True, COL_GOLD), (details_x + 10, details_y + 10))
 
             sf = pygame.font.SysFont("consolas", 12)
@@ -1778,8 +1809,56 @@ class SectorMapScreen(BaseScreen):
             for li, line in enumerate(risk_lines[:4]):
                 surface.blit(sf.render(line, True, COL_TEXT), (details_x + 10, risk_y + 18 + li * 14))
 
-            tip = "Click planet to preview  •  DEPART to travel"
+            tip = "Click planet to preview"
             surface.blit(sf.render(tip, True, COL_SUCCESS), (details_x + 10, details_y + panel_h - 18))
+
+        # === Styled right-column buttons (upgrades, repair, feast) ===
+        mouse_pos = pygame.mouse.get_pos()
+        btn_font = pygame.font.SysFont("consolas", 12, bold=True)
+        btn_font_sub = pygame.font.SysFont("consolas", 10)
+        for btn in getattr(self, 'styled_buttons', []):
+            r = btn["rect"]
+            hovering = r.collidepoint(mouse_pos) and btn["enabled"]
+            btn["hover"] = hovering
+            ic = btn["icon_col"]
+
+            # Background
+            if hovering:
+                bg = (35, 40, 60)
+            elif btn["enabled"]:
+                bg = (22, 25, 40)
+            else:
+                bg = (18, 20, 30)
+            pygame.draw.rect(surface, bg, r, border_radius=6)
+
+            # Left accent bar (colored stripe)
+            accent_r = pygame.Rect(r.x, r.y + 3, 4, r.height - 6)
+            pygame.draw.rect(surface, ic, accent_r, border_radius=2)
+
+            # Hover glow outline
+            if hovering:
+                pygame.draw.rect(surface, ic, r, 1, border_radius=6)
+            else:
+                border = tuple(min(255, c // 3 + 20) for c in ic) if btn["enabled"] else (35, 38, 50)
+                pygame.draw.rect(surface, border, r, 1, border_radius=6)
+
+            # Label text
+            lbl_col = COL_TEXT if btn["enabled"] else (70, 75, 90)
+            lbl = btn_font.render(btn["label"], True, lbl_col)
+            surface.blit(lbl, (r.x + 14, r.y + 4))
+
+            # Sub text (cost/info) right-aligned
+            if btn["sub"]:
+                sub_col = ic if btn["enabled"] else (55, 58, 70)
+                sub = btn_font_sub.render(btn["sub"], True, sub_col)
+                surface.blit(sub, (r.x + r.width - sub.get_width() - 10, r.y + 8))
+
+            # Small diamond icon for upgrade buttons
+            if btn["action"].startswith("upgrade:") and btn["enabled"]:
+                dx = r.x + r.width - 8
+                dy = r.y + 4
+                pts = [(dx, dy - 3), (dx + 3, dy), (dx, dy + 3), (dx - 3, dy)]
+                pygame.draw.polygon(surface, ic, pts)
 
         # === Player ship travel effect ===
         # Small frankenstein ship "docked" outside the current planet, or animating along the path when traveling
