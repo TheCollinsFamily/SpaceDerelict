@@ -1059,7 +1059,7 @@ class SectorMapScreen(BaseScreen):
 
         # 4 fixed rows/lanes (straight horizontal tracks) + gaps for the exact model requested.
         v_spacing = 105
-        center_y = 370
+        center_y = 340
         row_ys = [
             center_y - 1.5 * v_spacing,
             center_y - 0.5 * v_spacing,
@@ -1129,18 +1129,20 @@ class SectorMapScreen(BaseScreen):
             surf = get_planet_icon(node, i, size=icon_sz)
             self.node_planet_surfs.append(surf)
 
-        # Prominent DEPART button placed right under the main map area (map now uses 8+ layers + sustained 4-deep branches, vertically centered stacks)
-        travel_y = 700
+        # DEPART button — centered, prominent, sits at bottom of screen
+        travel_y = WINDOW_H - 65
+        depart_w = 440
+        depart_h = 44
         if self.is_traveling:
             self.travel_button = pygame_gui.elements.UIButton(
-                relative_rect=pygame.Rect(cx - 160, travel_y, 320, 38),
-                text="IN TRANSIT — SHIP TRAVELING TO DESTINATION",
+                relative_rect=pygame.Rect(cx - depart_w // 2, travel_y, depart_w, depart_h),
+                text="IN TRANSIT — TRAVELING TO DESTINATION",
                 manager=self.game.ui_manager,
             )
             self.travel_button.disable()
         elif self.engaging:
             self.travel_button = pygame_gui.elements.UIButton(
-                relative_rect=pygame.Rect(cx - 160, travel_y, 320, 38),
+                relative_rect=pygame.Rect(cx - depart_w // 2, travel_y, depart_w, depart_h),
                 text="ENGAGING — PREPARING FOR COMBAT",
                 manager=self.game.ui_manager,
             )
@@ -1149,37 +1151,38 @@ class SectorMapScreen(BaseScreen):
             hl_node = self.game.sector[self.highlighted_node_idx] if self.game.sector else None
             hl_name = hl_node.name if hl_node else "DESTINATION"
             self.travel_button = pygame_gui.elements.UIButton(
-                relative_rect=pygame.Rect(cx - 200, travel_y, 400, 38),
-                text=f"DEPART TO {hl_name.upper()}",
+                relative_rect=pygame.Rect(cx - depart_w // 2, travel_y, depart_w, depart_h),
+                text=f">>> DEPART TO {hl_name.upper()} <<<",
                 manager=self.game.ui_manager,
             )
         self.ui_elements.append(self.travel_button)
 
-        # Run-only morale upgrade tree (between-fight spend) + repair - placed on right to avoid stacking below nodes
-        right_x = WINDOW_W - 260
-        right_y = 520  # below the main map content (planets now use more vertical too with 5 layers)
-        after_upgrades_y = self._build_run_upgrades_ui(right_x, right_y, 260, 26)
+        # Run-only morale upgrade tree + repair/feast — right column, left-aligned
+        right_w = 280
+        right_x = WINDOW_W - right_w - 10
+        right_y = 500
+        after_upgrades_y = self._build_run_upgrades_ui(right_x, right_y, right_w, 28)
 
-        # Quick in-run repair using scrap 
+        # Quick in-run repair using scrap
         dstate = self.game.player_ship.count_states().get("disabled", 0) if self.game.player_ship else 0
         rcost = dstate * 2
         rcan = dstate > 0 and self.game.resources.scrap >= rcost
-        rlabel = f"Repair {dstate} disabled ({rcost}s)" + (" ✓" if rcan else "")
+        rlabel = f"Repair {dstate} disabled — {rcost} scrap" if dstate > 0 else "No damage to repair"
         self.repair_button = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect(right_x, after_upgrades_y + 4, 260, 26),
-            text=rlabel[:45],
+            relative_rect=pygame.Rect(right_x, after_upgrades_y + 6, right_w, 28),
+            text=rlabel,
             manager=self.game.ui_manager,
         )
         if not rcan:
             self.repair_button.disable()
         self.ui_elements.append(self.repair_button)
 
-        # Quick in-run feast processing (parity with terminal do_hub between fights)
+        # Quick in-run feast processing
         fcan = self.game.resources.feast >= 8
-        flabel = "Process 8 feast -> +6 scrap (vats)" + (" ✓" if fcan else "")
+        flabel = f"Process feast → +6 scrap ({self.game.resources.feast}/8)"
         self.feast_button = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect(right_x, after_upgrades_y + 4 + 32, 260, 26),
-            text=flabel[:45],
+            relative_rect=pygame.Rect(right_x, after_upgrades_y + 6 + 34, right_w, 28),
+            text=flabel,
             manager=self.game.ui_manager,
         )
         if not fcan:
@@ -1197,8 +1200,8 @@ class SectorMapScreen(BaseScreen):
         if not avail:
             # show a disabled hint if none or all bought
             hint = pygame_gui.elements.UIButton(
-                relative_rect=pygame.Rect(cx - btn_w // 2, y, btn_w, btn_h),
-                text="(No more run upgrades available this sector or low morale)",
+                relative_rect=pygame.Rect(cx, y, btn_w, btn_h),
+                text="No run upgrades available",
                 manager=self.game.ui_manager,
             )
             hint.disable()
@@ -1206,9 +1209,9 @@ class SectorMapScreen(BaseScreen):
             self.ui_elements.append(hint)
             return y + btn_h + 4
         for u in avail[:5]:  # cap display
-            label = f"{u.code}: {u.desc[:40]} ({u.cost} morale)"
+            label = f"{u.code}: {u.desc[:32]} ({u.cost}m)"
             b = pygame_gui.elements.UIButton(
-                relative_rect=pygame.Rect(cx - btn_w // 2, y, btn_w, btn_h),
+                relative_rect=pygame.Rect(cx, y, btn_w, btn_h),
                 text=label,
                 manager=self.game.ui_manager,
             )
@@ -1519,25 +1522,39 @@ class SectorMapScreen(BaseScreen):
             return
 
         title = font_big.render("SECTOR MAP", True, COL_ACCENT)
-        surface.blit(title, (WINDOW_W // 2 - title.get_width() // 2, 60))
+        surface.blit(title, (WINDOW_W // 2 - title.get_width() // 2, 18))
 
-        sub = font_sm.render("Choose your next target (branching map: current's connections free; others cost morale). Avoid Tech... Factions: ☠=raider 🐱=felonia ✝=tech ⚖=confed 🐬=pop_fiz   [planets from PlanetsFull pack]", True, COL_TEXT_DIM)
-        surface.blit(sub, (WINDOW_W // 2 - sub.get_width() // 2, 110))
+        sub = font_sm.render("Select a destination and DEPART  |  Connected jumps are free — others cost morale", True, COL_TEXT_DIM)
+        surface.blit(sub, (WINDOW_W // 2 - sub.get_width() // 2, 58))
 
-        # Top info (resources + instructions) - keep compact
-        res = font_sm.render(
-            f"Scrap: {self.game.resources.scrap}  |  Feast: {self.game.resources.feast}  |  Ratings: {self.game.resources.ratings}  |  Morale(run): {self.game.run_morale}  |  Season: {self.game.season}",
-            True, COL_GOLD
-        )
-        surface.blit(res, (WINDOW_W // 2 - res.get_width() // 2, 145))
+        # Styled resource badges — individual color-coded items with subtle background pills
+        font_res = pygame.font.SysFont("consolas", 13, bold=True)
+        res_items = [
+            (f"SCRAP {self.game.resources.scrap}", (180, 200, 80), (40, 45, 25)),
+            (f"FEAST {self.game.resources.feast}", (200, 120, 80), (45, 30, 20)),
+            (f"RATINGS {self.game.resources.ratings}", COL_GOLD, (50, 42, 15)),
+            (f"MORALE {self.game.run_morale}", COL_ACCENT, (20, 40, 55)),
+            (f"SEASON {self.game.season}", COL_TEXT_DIM, (30, 32, 40)),
+        ]
+        rx = 40
+        for label, fg, bg in res_items:
+            tw = font_res.size(label)[0]
+            pill = pygame.Rect(rx - 6, 76, tw + 12, 20)
+            pygame.draw.rect(surface, bg, pill, border_radius=4)
+            border_col = tuple(max(0, c // 2) for c in fg[:3])
+            pygame.draw.rect(surface, border_col, pill, 1, border_radius=4)
+            surface.blit(font_res.render(label, True, fg), (rx, 78))
+            rx += tw + 22
 
         active = ", ".join(sorted(getattr(self.game, 'run_upgrades', set()))) or "none"
         bt = getattr(self.game, 'run_backtrack_cost', 25)
-        upg = font_sm.render(f"Run Upgrades: {active}   |   Backtrack cost: {bt} morale", True, COL_ACCENT)
-        surface.blit(upg, (WINDOW_W // 2 - upg.get_width() // 2, 162))
+        upg = font_sm.render(f"Upgrades: {active}  |  Backtrack: {bt}m", True, (100, 115, 140))
+        surface.blit(upg, (40, 102))
 
-        instr = font_sm.render("Click a planet to highlight your next jump  •  Click DEPART to travel (backtracks cost morale)", True, COL_TEXT_DIM)
-        surface.blit(instr, (WINDOW_W // 2 - instr.get_width() // 2, 180))
+        # Faction legend — compact, right-aligned
+        faction_legend = "☠ Raider  🐱 Felonia  ✝ Tech  ⚖ Confed  🐬 PopFiz"
+        fl = font_sm.render(faction_legend, True, (80, 85, 105))
+        surface.blit(fl, (WINDOW_W - fl.get_width() - 20, 102))
 
         cx = WINDOW_W // 2  # for positioning planet icons relative to the node list
         # planet_positions (centers) are computed once in _compute_layout / on_enter for stable animation + layout
@@ -1550,24 +1567,40 @@ class SectorMapScreen(BaseScreen):
         curr = self.game.current_node_idx
         hl = getattr(self, 'highlighted_node_idx', curr)
 
-        # Generous starfield background dedicated to the map area so it feels like a real sector map
-        try:
-            star_p = PLANETS_DIR / "Starfield" / "1.png"
-            if star_p.exists() and self.planet_positions:
-                star = pygame.image.load(str(star_p)).convert_alpha()
-                star = pygame.transform.scale(star, (20, 20))
-                xs = [p[0] for p in self.planet_positions]
-                ys = [p[1] for p in self.planet_positions]
-                minx = max(30, min(xs) - 50)
-                maxx = min(WINDOW_W - 280, max(xs) + 80)
-                miny = max(170, min(ys) - 40)
-                maxy = min(WINDOW_H - 60, max(ys) + 60)
-                for yy in range(int(miny), int(maxy), 20):
-                    for xx in range(int(minx), int(maxx), 20):
-                        if ((xx + yy) // 20) % 3 != 0:
-                            surface.blit(star, (xx, yy))
-        except Exception:
-            pass
+        # Starfield background with nebula glow
+        if self.planet_positions:
+            xs = [p[0] for p in self.planet_positions]
+            ys = [p[1] for p in self.planet_positions]
+            minx = max(20, min(xs) - 60)
+            maxx = min(WINDOW_W - 270, max(xs) + 90)
+            miny = max(120, min(ys) - 50)
+            maxy = min(WINDOW_H - 50, max(ys) + 70)
+            # Dark map area backdrop with subtle border
+            map_bg = pygame.Rect(minx - 12, miny - 12, maxx - minx + 24, maxy - miny + 24)
+            pygame.draw.rect(surface, (6, 8, 16), map_bg, border_radius=8)
+            pygame.draw.rect(surface, (25, 30, 45), map_bg, 1, border_radius=8)
+            # Subtle nebula glow blobs (seeded, drawn before stars)
+            neb_rng = random.Random(99887)
+            for _ in range(5):
+                nx = neb_rng.randint(int(minx) + 40, int(maxx) - 40)
+                ny = neb_rng.randint(int(miny) + 30, int(maxy) - 30)
+                nr = neb_rng.randint(60, 120)
+                nc = neb_rng.choice([(15, 8, 25), (8, 15, 25), (20, 10, 12), (10, 18, 15)])
+                neb_surf = pygame.Surface((nr * 2, nr * 2), pygame.SRCALPHA)
+                for ring in range(nr, 0, -3):
+                    alpha = max(2, int(12 * (ring / nr)))
+                    pygame.draw.circle(neb_surf, (*nc, alpha), (nr, nr), ring)
+                surface.blit(neb_surf, (nx - nr, ny - nr))
+            # Scattered stars (seeded so they don't flicker each frame)
+            star_rng = random.Random(54321)
+            for _ in range(280):
+                sx = star_rng.randint(int(minx), int(maxx))
+                sy = star_rng.randint(int(miny), int(maxy))
+                brightness = star_rng.randint(40, 130)
+                sz = 1 if star_rng.random() < 0.7 else 2
+                tint = star_rng.choice([(0, 0, 20), (0, 10, 0), (15, 5, 0), (0, 0, 0)])
+                c = (min(255, brightness + tint[0]), min(255, brightness + tint[1]), min(255, brightness + tint[2]))
+                pygame.draw.circle(surface, c, (sx, sy), sz)
 
         faction_colors = {
             "raider": (200, 80, 80),
@@ -1581,24 +1614,31 @@ class SectorMapScreen(BaseScreen):
         icon_size = getattr(self, 'map_icon_size', 56)
         label_w = getattr(self, 'map_label_w', 160)
 
-        # Draw connections (left-to-right tree lines) - elegant and clear
+        # Draw connections — thin/dim for inactive, glowing for reachable
+        reachable = set(conns.get(curr, []))
+        # Pass 1: inactive lines (behind everything, thin and dim)
         for from_i, tos in conns.items():
             if from_i >= len(self.planet_positions): continue
             fx, fy = self.planet_positions[from_i]
             for to_i in tos:
+                if to_i in reachable: continue  # draw active on top in pass 2
                 if to_i >= len(self.planet_positions): continue
                 tx, ty = self.planet_positions[to_i]
-                is_free = to_i in conns.get(curr, [])
-                col = COL_SUCCESS if is_free else (140, 145, 165)
-                # main path line
-                pygame.draw.line(surface, col, (fx, fy), (tx, ty), 4)
-                # subtle glow / thickness variation for forward free paths
-                if is_free:
-                    pygame.draw.line(surface, (80, 200, 120), (fx, fy), (tx, ty), 2)
-                # direction marker (small bright dot closer to target)
-                mx = int(fx + (tx - fx) * 0.22)
-                my = int(fy + (ty - fy) * 0.22)
-                pygame.draw.circle(surface, COL_ACCENT if is_free else (180, 185, 200), (mx, my), 3)
+                pygame.draw.line(surface, (45, 50, 65), (fx, fy), (tx, ty), 1)
+        # Pass 2: active/reachable lines (on top, bright with glow)
+        if curr < len(self.planet_positions):
+            fx, fy = self.planet_positions[curr]
+            for to_i in reachable:
+                if to_i >= len(self.planet_positions): continue
+                tx, ty = self.planet_positions[to_i]
+                # Soft glow layer
+                pygame.draw.line(surface, (30, 100, 50), (fx, fy), (tx, ty), 5)
+                # Bright core line
+                pygame.draw.line(surface, COL_SUCCESS, (fx, fy), (tx, ty), 2)
+                # Small direction arrow near target
+                ax = int(fx + (tx - fx) * 0.75)
+                ay = int(fy + (ty - fy) * 0.75)
+                pygame.draw.circle(surface, (120, 255, 160), (ax, ay), 3)
 
         # Draw planet icons + proper beacon-style labels (this is the "map" the player looks at)
         self.planet_rects = []
@@ -1627,81 +1667,119 @@ class SectorMapScreen(BaseScreen):
             if is_hl and not is_curr:
                 pygame.draw.circle(surface, COL_ACCENT, (cx, cy), icon_size // 2 + 8, 3)
 
-            # Beacon label card under the planet - readable, not cramped
-            label_y = py + icon_size + 4
-            label_h = 36
-            label_bg = pygame.Rect(px - 8, label_y - 2, label_w, label_h)
-            bg_col = (22, 25, 42) if not is_hl else (30, 34, 55)
-            border_col = col if is_hl else (75, 80, 100)
-            pygame.draw.rect(surface, bg_col, label_bg, border_radius=5)
-            pygame.draw.rect(surface, border_col, label_bg, 1, border_radius=5)
-
+            # Labels — full card for highlighted/current, compact for others
             sym = {"raider": "☠", "techopuritan": "✝", "felonia": "🐱", "confederacy": "⚖", "pop_fiz": "🐬"}.get(node.enemy_faction, "?")
-            short = f"{sym} {node.name[:15]}"
-            nm = font_sm.render(short, True, COL_TEXT if is_hl else COL_TEXT_DIM)
-            surface.blit(nm, (px - 4, label_y + 2))
+            label_y = py + icon_size + 3
 
-            dcol = COL_DANGER if node.difficulty >= 3 else (COL_GOLD if node.difficulty >= 2 else COL_SUCCESS)
-            st = font_sm.render(f"D{node.difficulty}  x{node.ratings_mult:.2f}", True, dcol)
-            surface.blit(st, (px - 4, label_y + 17))
+            if is_hl or is_curr:
+                # Full beacon label card
+                label_h = 36
+                label_bg = pygame.Rect(px - 8, label_y - 2, label_w, label_h)
+                bg_col = (30, 34, 55) if is_hl else (25, 28, 45)
+                pygame.draw.rect(surface, bg_col, label_bg, border_radius=5)
+                pygame.draw.rect(surface, col, label_bg, 1, border_radius=5)
+                short = f"{sym} {node.name[:15]}"
+                nm = font_sm.render(short, True, COL_TEXT)
+                surface.blit(nm, (px - 4, label_y + 2))
+                dcol = COL_DANGER if node.difficulty >= 3 else (COL_GOLD if node.difficulty >= 2 else COL_SUCCESS)
+                st = font_sm.render(f"D{node.difficulty}  x{node.ratings_mult:.2f}", True, dcol)
+                surface.blit(st, (px - 4, label_y + 17))
+            else:
+                # Compact single-line label — boosted contrast for readability
+                font_xs = pygame.font.SysFont("consolas", 12)
+                short = f"{sym} {node.name[:12]}"
+                lbl_col = (140, 145, 165) if i not in visited else (100, 110, 125)
+                nm = font_xs.render(short, True, lbl_col)
+                surface.blit(nm, (cx - nm.get_width() // 2, label_y + 1))
 
-            # Current / cleared badges (small, clear)
+            # Current / cleared badges
             if is_curr:
                 hb = font_sm.render("★ YOU ARE HERE", True, COL_GOLD)
-                surface.blit(hb, (px + icon_size + 6, py + 6))
+                surface.blit(hb, (px + icon_size + 6, py + 4))
             elif i in visited:
-                cb = font_sm.render("✓ CLEARED", True, COL_SUCCESS)
-                surface.blit(cb, (px + icon_size + 6, py + 6))
+                cb = font_sm.render("✓", True, COL_SUCCESS)
+                surface.blit(cb, (cx - 4, py - 12))
 
-        # Right side details panel for the highlighted destination (makes the UI feel premium and informative).
-        # Snug after the map columns (map now reserves budget so 8-9 layers + this panel + right upgrades column all fit on 1280px).
-        # Narrower panel (300) for deep maps.
+        # Right side details panel for the highlighted destination
         if self.planet_positions:
             max_px = max(p[0] for p in self.planet_positions)
-            # start the details box after the last planet's label card (adapts to large labels on shallow maps, small on 8-9 layer)
             lw = getattr(self, 'map_label_w', 120)
             details_x = max_px + lw + 15
-            if details_x + 300 > WINDOW_W - 40:
-                details_x = WINDOW_W - 340
+            if details_x + 310 > WINDOW_W - 10:
+                details_x = WINDOW_W - 320
         else:
             details_x = 920
-        details_y = 180
-        panel_w = 300
+        details_y = 140
+        panel_w = min(310, WINDOW_W - details_x - 8)
+        panel_h = 280
         if self.game.sector:
             hnode = self.game.sector[hl]
-            pygame.draw.rect(surface, (18, 20, 35), (details_x, details_y, panel_w, 240), border_radius=8)
-            pygame.draw.rect(surface, COL_ACCENT, (details_x, details_y, panel_w, 240), 2, border_radius=8)
+            # Panel background with gradient feel (two-layer rect)
+            pygame.draw.rect(surface, (14, 16, 28), (details_x, details_y, panel_w, panel_h), border_radius=10)
+            pygame.draw.rect(surface, (18, 22, 38), (details_x + 2, details_y + 2, panel_w - 4, 36), border_radius=8)
+            pygame.draw.rect(surface, COL_ACCENT, (details_x, details_y, panel_w, panel_h), 2, border_radius=10)
 
-            df = pygame.font.SysFont("consolas", 16, bold=True)
-            surface.blit(df.render(f"DESTINATION: {hnode.name}", True, COL_GOLD), (details_x + 10, details_y + 8))
+            df = pygame.font.SysFont("consolas", 15, bold=True)
+            dest_title = f"DESTINATION: {hnode.name}"
+            surface.blit(df.render(dest_title, True, COL_GOLD), (details_x + 10, details_y + 10))
 
             sf = pygame.font.SysFont("consolas", 12)
-            surface.blit(sf.render(f"{hnode.enemy_faction.upper()}  •  DIFF {hnode.difficulty}  •  x{hnode.ratings_mult} RATINGS", True, COL_TEXT), (details_x + 10, details_y + 30))
+            # Faction + stats line with colored difficulty
+            dcol = COL_DANGER if hnode.difficulty >= 3 else (COL_GOLD if hnode.difficulty >= 2 else COL_SUCCESS)
+            faction_txt = sf.render(f"{hnode.enemy_faction.upper()}", True, COL_TEXT)
+            diff_txt = sf.render(f"DIFF {hnode.difficulty}", True, dcol)
+            rat_txt = sf.render(f"x{hnode.ratings_mult} RATINGS", True, COL_TEXT_DIM)
+            sx = details_x + 10
+            surface.blit(faction_txt, (sx, details_y + 34))
+            sx += faction_txt.get_width() + 8
+            surface.blit(sf.render("•", True, (60, 65, 80)), (sx, details_y + 34))
+            sx += 14
+            surface.blit(diff_txt, (sx, details_y + 34))
+            sx += diff_txt.get_width() + 8
+            surface.blit(sf.render("•", True, (60, 65, 80)), (sx, details_y + 34))
+            sx += 14
+            surface.blit(rat_txt, (sx, details_y + 34))
 
-            # Full description wrapped (shorter for panel)
+            # Description — word-wrapped
             desc = hnode.description
-            lines = []
+            desc_lines = []
             words = desc.split()
             cur = ""
+            max_text_w = panel_w - 24
             for w in words:
                 test = cur + " " + w if cur else w
-                if sf.size(test)[0] < 280:
+                if sf.size(test)[0] < max_text_w:
                     cur = test
                 else:
-                    lines.append(cur)
+                    desc_lines.append(cur)
                     cur = w
-            if cur: lines.append(cur)
-            for li, line in enumerate(lines[:6]):
-                surface.blit(sf.render(line, True, COL_TEXT_DIM), (details_x + 10, details_y + 50 + li * 15))
+            if cur: desc_lines.append(cur)
+            for li, line in enumerate(desc_lines[:5]):
+                surface.blit(sf.render(line, True, COL_TEXT_DIM), (details_x + 10, details_y + 56 + li * 15))
 
-            # Risk
-            surface.blit(sf.render("RISK:", True, COL_DANGER), (details_x + 10, details_y + 145))
-            risk_lines = [hnode.risk_notes[i:i+48] for i in range(0, len(hnode.risk_notes), 48)][:4]
-            for li, line in enumerate(risk_lines):
-                surface.blit(sf.render(line, True, COL_TEXT), (details_x + 10, details_y + 162 + li * 14))
+            # Divider line before RISK
+            div_y = details_y + 56 + min(5, len(desc_lines)) * 15 + 6
+            pygame.draw.line(surface, (40, 45, 65), (details_x + 10, div_y), (details_x + panel_w - 10, div_y), 1)
+
+            # Risk section
+            risk_y = div_y + 10
+            surface.blit(sf.render("RISK:", True, COL_DANGER), (details_x + 10, risk_y))
+            risk_words = hnode.risk_notes.split()
+            risk_lines = []
+            cur = ""
+            for w in risk_words:
+                test = cur + " " + w if cur else w
+                if sf.size(test)[0] < max_text_w:
+                    cur = test
+                else:
+                    risk_lines.append(cur)
+                    cur = w
+            if cur: risk_lines.append(cur)
+            for li, line in enumerate(risk_lines[:4]):
+                surface.blit(sf.render(line, True, COL_TEXT), (details_x + 10, risk_y + 18 + li * 14))
 
             tip = "Click planet to preview  •  DEPART to travel"
-            surface.blit(sf.render(tip, True, COL_SUCCESS), (details_x + 10, details_y + 235))
+            surface.blit(sf.render(tip, True, COL_SUCCESS), (details_x + 10, details_y + panel_h - 18))
 
         # === Player ship travel effect ===
         # Small frankenstein ship "docked" outside the current planet, or animating along the path when traveling
