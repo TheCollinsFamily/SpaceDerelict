@@ -2,15 +2,15 @@
   "resources": {
     "scrap": 5,
     "feast": 5,
-    "ratings": 25
+    "ratings": 83
   },
   "unlocks": [],
   "career": {
-    "total_ratings_earned": 25,
+    "total_ratings_earned": 83,
     "seasons_completed": 1,
     "high_score": 0,
     "faction_aggression": {
-      "felonia": 0,
+      "felonia": 1,
       "confederacy": 0,
       "pop_fiz": 0,
       "techopuritan": 0
