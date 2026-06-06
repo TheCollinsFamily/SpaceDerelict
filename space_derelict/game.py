@@ -874,6 +874,190 @@ class SectorMapScreen(BaseScreen):
         self.engaging_target: int = 0
         self.settle_anim: bool = False
         self.settle_progress: float = 0.0
+        # Load generated nebula background (from RFAB API)
+        self._nebula_bg = None
+        try:
+            neb_path = os.path.join(os.path.dirname(__file__), "..", "assets", "ui", "nebula_dark.png")
+            if os.path.exists(neb_path):
+                raw = pygame.image.load(neb_path).convert()
+                self._nebula_bg = pygame.transform.smoothscale(raw, (WINDOW_W, WINDOW_H))
+                # Darken it so planets and UI pop over it
+                dark = pygame.Surface((WINDOW_W, WINDOW_H), pygame.SRCALPHA)
+                dark.fill((0, 0, 0, 140))
+                self._nebula_bg.blit(dark, (0, 0))
+        except Exception:
+            self._nebula_bg = None
+
+        # === CRT terminal frame overlay (80s retro spaceship console aesthetic) ===
+        self._crt_overlay = None     # programmatic CRT bezel + scan lines + phosphor glow
+        self._crt_scanlines = None   # separate scanline surface (very subtle, full-screen)
+        self._build_crt_frame()
+
+    def _build_crt_frame(self):
+        """Build an 80s retro CRT terminal frame overlay.
+        Simulates looking at an old ship's navigation console — thick dark bezel,
+        rounded CRT screen corners, amber phosphor glow on inner edges, subtle
+        scan lines, and small indicator details. Think Alien (1979) / WarGames.
+        """
+        # CRT bezel dimensions — thick enough to feel like a monitor housing,
+        # thin enough to not cover any game content
+        BZ_LEFT = 14
+        BZ_TOP = 10
+        BZ_RIGHT = 8
+        BZ_BOTTOM = 28       # wider bottom for "console status bar"
+        CORNER_R = 18        # CRT rounded corner radius
+
+        # Colors
+        bezel_dark = (8, 8, 14, 255)         # dark plastic/metal housing
+        bezel_mid = (22, 24, 32, 255)        # slight highlight on bezel face
+        bezel_edge = (35, 38, 50, 220)       # inner bevel edge
+        phosphor = (60, 180, 90, 50)         # green phosphor glow (subtle)
+        phosphor_amber = (180, 140, 40, 35)  # amber accent glow
+        screen_border = (45, 55, 70, 200)    # thin bright line at screen edge
+
+        # Screen area (inside the bezel)
+        sx, sy = BZ_LEFT, BZ_TOP
+        sw, sh = WINDOW_W - BZ_LEFT - BZ_RIGHT, WINDOW_H - BZ_TOP - BZ_BOTTOM
+
+        overlay = pygame.Surface((WINDOW_W, WINDOW_H), pygame.SRCALPHA)
+
+        # --- Bezel border (opaque dark frame around entire window) ---
+        # Top bezel
+        pygame.draw.rect(overlay, bezel_dark, (0, 0, WINDOW_W, BZ_TOP))
+        # Bottom bezel
+        pygame.draw.rect(overlay, bezel_dark, (0, WINDOW_H - BZ_BOTTOM, WINDOW_W, BZ_BOTTOM))
+        # Left bezel
+        pygame.draw.rect(overlay, bezel_dark, (0, BZ_TOP, BZ_LEFT, sh))
+        # Right bezel
+        pygame.draw.rect(overlay, bezel_dark, (WINDOW_W - BZ_RIGHT, BZ_TOP, BZ_RIGHT, sh))
+
+        # Bezel face highlight (subtle gradient stripe on top and left edges)
+        for i in range(min(BZ_TOP, 6)):
+            a = 30 - i * 5
+            pygame.draw.line(overlay, (40, 42, 55, max(0, a)),
+                           (0, i), (WINDOW_W, i))
+        for i in range(min(BZ_LEFT, 8)):
+            a = 25 - i * 3
+            pygame.draw.line(overlay, (35, 38, 50, max(0, a)),
+                           (i, BZ_TOP), (i, WINDOW_H - BZ_BOTTOM))
+
+        # --- CRT rounded corners (dark triangular fills to simulate rounded screen) ---
+        # Each corner gets a filled quarter-circle in bezel color
+        corner_surf = pygame.Surface((CORNER_R, CORNER_R), pygame.SRCALPHA)
+        for cy in range(CORNER_R):
+            for cx in range(CORNER_R):
+                # Distance from the inner corner point
+                dx = CORNER_R - cx
+                dy = CORNER_R - cy
+                dist = (dx * dx + dy * dy) ** 0.5
+                if dist > CORNER_R:
+                    corner_surf.set_at((cx, cy), bezel_dark)
+                elif dist > CORNER_R - 2:
+                    corner_surf.set_at((cx, cy), (30, 35, 50, 180))
+
+        # Top-left corner
+        overlay.blit(corner_surf, (sx, sy))
+        # Top-right corner (flip horizontal)
+        overlay.blit(pygame.transform.flip(corner_surf, True, False), (sx + sw - CORNER_R, sy))
+        # Bottom-left corner (flip vertical)
+        overlay.blit(pygame.transform.flip(corner_surf, False, True), (sx, sy + sh - CORNER_R))
+        # Bottom-right corner (flip both)
+        overlay.blit(pygame.transform.flip(corner_surf, True, True), (sx + sw - CORNER_R, sy + sh - CORNER_R))
+
+        # --- Screen border line (thin bright edge where CRT glass meets bezel) ---
+        # Top
+        pygame.draw.line(overlay, screen_border, (sx + CORNER_R, sy), (sx + sw - CORNER_R, sy), 1)
+        # Bottom
+        pygame.draw.line(overlay, screen_border, (sx + CORNER_R, sy + sh), (sx + sw - CORNER_R, sy + sh), 1)
+        # Left
+        pygame.draw.line(overlay, screen_border, (sx, sy + CORNER_R), (sx, sy + sh - CORNER_R), 1)
+        # Right
+        pygame.draw.line(overlay, screen_border, (sx + sw, sy + CORNER_R), (sx + sw, sy + sh - CORNER_R), 1)
+
+        # --- Phosphor glow (inner edge glow — green tint fading inward) ---
+        glow_depth = 12
+        for i in range(glow_depth):
+            a = int(phosphor[3] * (1.0 - i / glow_depth))
+            gc = (phosphor[0], phosphor[1], phosphor[2], a)
+            # Top glow
+            pygame.draw.line(overlay, gc, (sx + CORNER_R, sy + i), (sx + sw - CORNER_R, sy + i))
+            # Bottom glow
+            pygame.draw.line(overlay, gc, (sx + CORNER_R, sy + sh - i), (sx + sw - CORNER_R, sy + sh - i))
+            # Left glow
+            pygame.draw.line(overlay, gc, (sx + i, sy + CORNER_R), (sx + i, sy + sh - CORNER_R))
+        # Right edge — amber glow (different color for visual interest)
+        for i in range(glow_depth // 2):
+            a = int(phosphor_amber[3] * (1.0 - i / (glow_depth // 2)))
+            gc = (phosphor_amber[0], phosphor_amber[1], phosphor_amber[2], a)
+            pygame.draw.line(overlay, gc, (sx + sw - i, sy + CORNER_R), (sx + sw - i, sy + sh - CORNER_R))
+
+        # --- CRT curvature vignette (darken corners of screen slightly) ---
+        # Use a pre-rendered corner gradient surface for performance (instead of per-pixel set_at)
+        curve_r = 100
+        corner_grad = pygame.Surface((curve_r, curve_r), pygame.SRCALPHA)
+        for r in range(curve_r, 0, -1):
+            darkness = int(30 * (1.0 - r / curve_r) ** 2)
+            if darkness > 1:
+                pygame.draw.circle(corner_grad, (0, 0, 0, darkness), (curve_r, curve_r), r)
+        # Blit into each corner (clipping naturally handles the quarter-circle effect)
+        overlay.blit(corner_grad, (sx - curve_r, sy - curve_r))                          # top-left (only bottom-right quarter visible)
+        overlay.blit(pygame.transform.flip(corner_grad, True, False),
+                    (sx + sw, sy - curve_r))                                               # top-right
+        overlay.blit(pygame.transform.flip(corner_grad, False, True),
+                    (sx - curve_r, sy + sh))                                               # bottom-left
+        overlay.blit(pygame.transform.flip(corner_grad, True, True),
+                    (sx + sw, sy + sh))                                                    # bottom-right
+
+        # --- Status bar on bottom bezel (old-school system info) ---
+        try:
+            status_font = pygame.font.SysFont("consolas", 10)
+            status_texts = [
+                ("■ ONLINE", (60, 200, 80, 200)),
+                ("NAV DISPLAY MK-IV", (100, 110, 130, 180)),
+                ("SER#4721-D", (80, 85, 100, 150)),
+            ]
+            stx = 20
+            for txt, col in status_texts:
+                ts = status_font.render(txt, True, col[:3])
+                ts.set_alpha(col[3])
+                overlay.blit(ts, (stx, WINDOW_H - BZ_BOTTOM + 8))
+                stx += ts.get_width() + 25
+
+            # Right side of status bar
+            right_texts = [
+                ("HELM LOCK", (80, 90, 110, 150)),
+                ("◆", (60, 180, 90, 180)),
+            ]
+            rtx = WINDOW_W - 20
+            for txt, col in reversed(right_texts):
+                ts = status_font.render(txt, True, col[:3])
+                ts.set_alpha(col[3])
+                rtx -= ts.get_width()
+                overlay.blit(ts, (rtx, WINDOW_H - BZ_BOTTOM + 8))
+                rtx -= 12
+        except Exception:
+            pass
+
+        # --- Indicator LEDs on bezel ---
+        led_colors = [(60, 200, 80, 200), (200, 160, 40, 160), (60, 160, 220, 180)]
+        for idx, lc in enumerate(led_colors):
+            lx = BZ_LEFT + 8 + idx * 14
+            ly = BZ_TOP // 2
+            pygame.draw.circle(overlay, lc, (lx, ly), 2)
+            # Tiny glow
+            gsurf = pygame.Surface((8, 8), pygame.SRCALPHA)
+            gsurf.fill((lc[0], lc[1], lc[2], 20))
+            overlay.blit(gsurf, (lx - 4, ly - 4))
+        # Right side LED
+        pygame.draw.circle(overlay, (200, 60, 60, 140), (WINDOW_W - BZ_RIGHT - 6, BZ_TOP // 2), 2)
+
+        self._crt_overlay = overlay
+
+        # --- Separate full-screen scanline surface (very subtle) ---
+        scanlines = pygame.Surface((WINDOW_W, WINDOW_H), pygame.SRCALPHA)
+        for y in range(0, WINDOW_H, 2):
+            pygame.draw.line(scanlines, (0, 0, 0, 12), (0, y), (WINDOW_W, y))
+        self._crt_scanlines = scanlines
 
     def on_enter(self):
         self.node_buttons = []
@@ -1025,21 +1209,14 @@ class SectorMapScreen(BaseScreen):
             self.planet_positions = []
             return
 
-        # Use real layer-based columns (8 or 9) if the data has full depth (max_layer >=7 from current generator).
-        # Otherwise (old saves with fewer layers or flat), bin to exactly 8 visual columns to guarantee "8 columns long".
-        has_layers = all(hasattr(node, 'layer') for node in sector)
-        max_layer = max(getattr(node, 'layer', 0) for node in sector) if has_layers else 0
-        if has_layers and max_layer >= 7:
-            cols: list[list[int]] = [[] for _ in range(max_layer + 1)]
-            for i, node in enumerate(sector):
-                d = getattr(node, 'layer', 0)
-                cols[d].append(i)
-        else:
-            num_visual = 8
-            cols = [[] for _ in range(num_visual)]
-            for i in range(n):
-                d = min(num_visual-1, (i * num_visual) // max(1, n))
-                cols[d].append(i)
+        # Always bin to exactly 8 visual columns by node creation order (progression order from generator).
+        # This strictly guarantees "8 columns long" for the map, regardless of saved layer data or generator version.
+        # The .layer and .row are still used for connections (free vs backtrack) and preferred for row y when valid.
+        num_visual = 8
+        cols = [[] for _ in range(num_visual)]
+        for i in range(n):
+            d = min(num_visual-1, (i * num_visual) // max(1, n))
+            cols[d].append(i)
 
         # Budget horizontal space for the map so 8-9 columns fit without clipping the right-side DESTINATION inspector
         # or the run-upgrades/repair buttons column. Shallower maps get more breathing room per column.
@@ -1054,8 +1231,9 @@ class SectorMapScreen(BaseScreen):
         col_width = target_map_width / max(1, num_cols - 1) if num_cols > 1 else 150
 
         # 4 fixed rows/lanes (straight horizontal tracks) + gaps for the exact model requested.
-        v_spacing = 105
-        center_y = 340
+        # Larger v_spacing to make the 4 rows visibly "deep" (more vertical separation between lanes).
+        v_spacing = 130
+        center_y = 380
         row_ys = [
             center_y - 1.5 * v_spacing,
             center_y - 0.5 * v_spacing,
@@ -1553,7 +1731,7 @@ class SectorMapScreen(BaseScreen):
         curr = self.game.current_node_idx
         hl = getattr(self, 'highlighted_node_idx', curr)
 
-        # Starfield background with nebula glow
+        # Map area background — generated nebula image + sparse overlay stars
         if self.planet_positions:
             xs = [p[0] for p in self.planet_positions]
             ys = [p[1] for p in self.planet_positions]
@@ -1561,31 +1739,28 @@ class SectorMapScreen(BaseScreen):
             maxx = min(WINDOW_W - 290, max(xs) + 90)
             miny = max(120, min(ys) - 50)
             maxy = min(WINDOW_H - 50, max(ys) + 70)
-            # Dark map area backdrop with subtle border
             map_bg = pygame.Rect(minx - 12, miny - 12, maxx - minx + 24, maxy - miny + 24)
-            pygame.draw.rect(surface, (6, 8, 16), map_bg, border_radius=8)
-            pygame.draw.rect(surface, (25, 30, 45), map_bg, 1, border_radius=8)
-            # Subtle nebula glow blobs (seeded, drawn before stars)
-            neb_rng = random.Random(99887)
-            for _ in range(5):
-                nx = neb_rng.randint(int(minx) + 40, int(maxx) - 40)
-                ny = neb_rng.randint(int(miny) + 30, int(maxy) - 30)
-                nr = neb_rng.randint(60, 120)
-                nc = neb_rng.choice([(15, 8, 25), (8, 15, 25), (20, 10, 12), (10, 18, 15)])
-                neb_surf = pygame.Surface((nr * 2, nr * 2), pygame.SRCALPHA)
-                for ring in range(nr, 0, -3):
-                    alpha = max(2, int(12 * (ring / nr)))
-                    pygame.draw.circle(neb_surf, (*nc, alpha), (nr, nr), ring)
-                surface.blit(neb_surf, (nx - nr, ny - nr))
-            # Scattered stars (seeded so they don't flicker each frame)
+
+            # Blit nebula background (cropped to map area) or fallback to solid dark
+            if self._nebula_bg:
+                clip = pygame.Rect(minx - 12, miny - 12, maxx - minx + 24, maxy - miny + 24)
+                clip.clamp_ip(self._nebula_bg.get_rect())
+                bg_crop = self._nebula_bg.subsurface(clip)
+                surface.blit(bg_crop, (minx - 12, miny - 12))
+                # Subtle rounded border on top
+                pygame.draw.rect(surface, (40, 50, 80), map_bg, 1, border_radius=8)
+            else:
+                pygame.draw.rect(surface, (6, 8, 16), map_bg, border_radius=8)
+                pygame.draw.rect(surface, (25, 30, 45), map_bg, 1, border_radius=8)
+
+            # Sparse bright overlay stars for extra depth (seeded)
             star_rng = random.Random(54321)
-            for _ in range(280):
+            for _ in range(90):
                 sx = star_rng.randint(int(minx), int(maxx))
                 sy = star_rng.randint(int(miny), int(maxy))
-                brightness = star_rng.randint(40, 130)
-                sz = 1 if star_rng.random() < 0.7 else 2
-                tint = star_rng.choice([(0, 0, 20), (0, 10, 0), (15, 5, 0), (0, 0, 0)])
-                c = (min(255, brightness + tint[0]), min(255, brightness + tint[1]), min(255, brightness + tint[2]))
+                brightness = star_rng.randint(80, 200)
+                sz = 1 if star_rng.random() < 0.8 else 2
+                c = (brightness, brightness, min(255, brightness + 30))
                 pygame.draw.circle(surface, c, (sx, sy), sz)
 
         faction_colors = {
@@ -1744,10 +1919,24 @@ class SectorMapScreen(BaseScreen):
         panel_h = 295
         if self.game.sector:
             hnode = self.game.sector[hl]
-            # Panel background with gradient feel (two-layer rect)
-            pygame.draw.rect(surface, (14, 16, 28), (details_x, details_y, panel_w, panel_h), border_radius=10)
+            # Panel background — nebula-tinted or solid dark, with glowing border
+            panel_rect = pygame.Rect(details_x, details_y, panel_w, panel_h)
+            if self._nebula_bg:
+                # Crop nebula from top-right corner for a different look than the map area
+                neb_clip = pygame.Rect(WINDOW_W - panel_w - 20, 0, panel_w, panel_h)
+                neb_clip.clamp_ip(self._nebula_bg.get_rect())
+                panel_bg = self._nebula_bg.subsurface(neb_clip).copy()
+                # Extra darken for readability
+                dk = pygame.Surface((panel_w, panel_h), pygame.SRCALPHA)
+                dk.fill((0, 0, 8, 180))
+                panel_bg.blit(dk, (0, 0))
+                surface.blit(panel_bg, (details_x, details_y))
+            else:
+                pygame.draw.rect(surface, (14, 16, 28), panel_rect, border_radius=10)
+            # Title bar highlight
             pygame.draw.rect(surface, (18, 22, 38), (details_x + 2, details_y + 2, panel_w - 4, 36), border_radius=8)
-            pygame.draw.rect(surface, COL_ACCENT, (details_x, details_y, panel_w, panel_h), 2, border_radius=10)
+            # Glowing border
+            pygame.draw.rect(surface, COL_ACCENT, panel_rect, 2, border_radius=10)
 
             df = pygame.font.SysFont("consolas", 14, bold=True)
             dest_name = hnode.name[:18] if len(hnode.name) > 18 else hnode.name
@@ -1813,10 +2002,26 @@ class SectorMapScreen(BaseScreen):
             surface.blit(sf.render(tip, True, COL_SUCCESS), (details_x + 10, details_y + panel_h - 18))
 
         # === Styled right-column buttons (upgrades, repair, feast) ===
+        # Draw a subtle container background behind all buttons
+        sbtns = getattr(self, 'styled_buttons', [])
+        if sbtns:
+            btn_area_x = sbtns[0]["rect"].x - 4
+            btn_area_y = sbtns[0]["rect"].y - 6
+            btn_area_w = sbtns[0]["rect"].width + 8
+            btn_area_h = sbtns[-1]["rect"].bottom - sbtns[0]["rect"].y + 10
+            btn_bg = pygame.Surface((btn_area_w, btn_area_h), pygame.SRCALPHA)
+            btn_bg.fill((8, 10, 20, 160))
+            surface.blit(btn_bg, (btn_area_x, btn_area_y))
+            pygame.draw.rect(surface, (35, 40, 60), (btn_area_x, btn_area_y, btn_area_w, btn_area_h), 1, border_radius=6)
+            # Section label
+            lbl_font = pygame.font.SysFont("consolas", 9, bold=True)
+            lbl = lbl_font.render("UPGRADES & ACTIONS", True, (80, 90, 110))
+            surface.blit(lbl, (btn_area_x + btn_area_w // 2 - lbl.get_width() // 2, btn_area_y - 12))
+
         mouse_pos = pygame.mouse.get_pos()
         btn_font = pygame.font.SysFont("consolas", 12, bold=True)
         btn_font_sub = pygame.font.SysFont("consolas", 10)
-        for btn in getattr(self, 'styled_buttons', []):
+        for btn in sbtns:
             r = btn["rect"]
             hovering = r.collidepoint(mouse_pos) and btn["enabled"]
             btn["hover"] = hovering
@@ -1925,6 +2130,12 @@ class SectorMapScreen(BaseScreen):
             # Nice settle glow on the planet
             glow_r = icon_size // 2 + 5 * (1 - sp)
             pygame.draw.circle(surface, COL_SUCCESS, (cpos[0], cpos[1] + icon_size // 2), int(glow_r), 2)
+
+        # === CRT terminal frame overlay (on top of all content) ===
+        if self._crt_scanlines:
+            surface.blit(self._crt_scanlines, (0, 0))
+        if self._crt_overlay:
+            surface.blit(self._crt_overlay, (0, 0))
 
 
 # ─── Combat Screen ───────────────────────────────────────────────────────────
