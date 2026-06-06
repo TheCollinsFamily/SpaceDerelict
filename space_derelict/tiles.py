@@ -566,13 +566,34 @@ class ShipTileRenderer:
                 # Blinking electricity-out symbol
                 self._draw_disabled_symbol(surface, gx, gy, tile_sz)
 
-            # Active corridor glow indicator
-            if (cell.type == CellType.CORRIDOR and
-                cell.state == CellState.INTACT and
-                (cx, cy) in active_corridors):
-                glow = pygame.Surface((tile_sz, tile_sz), pygame.SRCALPHA)
-                glow.fill((0, 255, 0, 20))
-                surface.blit(glow, (gx, gy))
+            # Active corridor glow indicator — STRONG green for connected, grey for disconnected
+            if cell.type == CellType.CORRIDOR and cell.state == CellState.INTACT:
+                if (cx, cy) in active_corridors:
+                    # Connected to core: green glow
+                    glow = pygame.Surface((tile_sz, tile_sz), pygame.SRCALPHA)
+                    glow.fill((0, 200, 60, 55))
+                    surface.blit(glow, (gx, gy))
+                    # Green border to reinforce connectivity
+                    pygame.draw.rect(surface, (0, 180, 60, 120), pygame.Rect(gx, gy, tile_sz, tile_sz), 1)
+                else:
+                    # Disconnected from core: dark grey overlay — clearly "off"
+                    grey = pygame.Surface((tile_sz, tile_sz), pygame.SRCALPHA)
+                    grey.fill((40, 40, 50, 140))
+                    surface.blit(grey, (gx, gy))
+
+            # Core indicator (pilot's room / life support origin)
+            if (cx, cy) == getattr(ship, 'core', None):
+                # Draw a small bright diamond/pip at center to mark the core
+                core_color = (255, 220, 80)
+                mid_x = gx + tile_sz // 2
+                mid_y = gy + tile_sz // 2
+                pip_sz = max(3, tile_sz // 8)
+                pygame.draw.polygon(surface, core_color, [
+                    (mid_x, mid_y - pip_sz),
+                    (mid_x + pip_sz, mid_y),
+                    (mid_x, mid_y + pip_sz),
+                    (mid_x - pip_sz, mid_y),
+                ])
 
             # Component active indicator (small dot)
             if (cell.type in (CellType.COMPONENT, CellType.ARTIFACT) and
@@ -687,7 +708,8 @@ class ShipTileRenderer:
         elif cell.state == CellState.DISABLED:
             color = (40, 40, 60)
         elif cell.type == CellType.CORRIDOR:
-            color = (30, 60, 30) if pos in active_corridors else (30, 40, 30)
+            # Strong visual distinction: bright green = connected, dark grey = disconnected
+            color = (30, 120, 50) if pos in active_corridors else (50, 50, 55)
         elif cell.type == CellType.COMPONENT:
             color = (30, 40, 80)
         elif cell.type == CellType.ARTIFACT:
@@ -696,4 +718,5 @@ class ShipTileRenderer:
             color = (30, 30, 30)
         rect = pygame.Rect(gx, gy, tile_sz - 1, tile_sz - 1)
         pygame.draw.rect(surface, color, rect)
-        pygame.draw.rect(surface, (60, 60, 80), rect, 1)
+        border_col = (60, 180, 80) if (cell.type == CellType.CORRIDOR and cell.state == CellState.INTACT and pos in active_corridors) else (60, 60, 80)
+        pygame.draw.rect(surface, border_col, rect, 1)

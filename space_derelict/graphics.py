@@ -184,6 +184,28 @@ class PygameRenderer:
             else:
                 surf.blit(tile, (gx, gy))
 
+            # Corridor connectivity visual: green glow if connected to core, grey if cut off
+            if cell.type == CellType.CORRIDOR and cell.state == CellState.INTACT:
+                ts = self.tile_size * self.scale
+                if (x, y) in active:
+                    glow_s = pygame.Surface((ts, ts), pygame.SRCALPHA)
+                    glow_s.fill((0, 200, 60, 50))
+                    surf.blit(glow_s, (gx, gy))
+                else:
+                    dim_s = pygame.Surface((ts, ts), pygame.SRCALPHA)
+                    dim_s.fill((40, 40, 50, 130))
+                    surf.blit(dim_s, (gx, gy))
+
+            # Core indicator (pilot's room / life support)
+            if (x, y) == ship.core:
+                ts = self.tile_size * self.scale
+                mid_x = gx + ts // 2
+                mid_y = gy + ts // 2
+                pip = max(3, ts // 8)
+                pygame.draw.polygon(surf, (255, 220, 80), [
+                    (mid_x, mid_y - pip), (mid_x + pip, mid_y),
+                    (mid_x, mid_y + pip), (mid_x - pip, mid_y)])
+
             # Active glow for powered components/artifacts
             if cell.type != CellType.CORRIDOR and ship.is_component_active((x, y)):
                 glow = self._get_tile(self.overlays, *OVERLAY_MAP.get("glow", (1,1)))

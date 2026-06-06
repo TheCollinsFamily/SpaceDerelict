@@ -78,6 +78,7 @@ class Cell:
     state: CellState = CellState.INTACT
     component_kind: str | None = None   # e.g. "gun", "engine", "armor", "broadcast_array", "harvester_claw", "drone_bay"
     artifact_kind: str | None = None    # see ARTIFACT_KINDS below for full set (risk/reward, ratings, feast, betrayal, capture vs shatter)
+    hits_taken: int = 0  # For corridor HP system: tracks accumulated damage hits
 
     def is_destroyed(self) -> bool:
         return self.state == CellState.DESTROYED
@@ -246,6 +247,53 @@ class Ship:
                     stack.append(neigh)
 
         return active
+
+    def get_corridor_strength(self, pos: Tuple[int, int]) -> int:
+        """Get the effective HP of a corridor based on how many corridors are downstream of it.
+
+        'Downstream' = corridors that would be disconnected from core if THIS corridor were removed.
+        Corridors near core with many downstream dependents are strongest (hardest to break).
+        Corridors at extremities with nothing beyond them are weakest (1 HP).
+
+        This creates strategy:
+        - Can't just snipe the bottleneck near core (it's the toughest)
+        - Extending corridors past your last component makes inner nodes stronger
+        - Extremity corridors are vulnerable entry points for attackers
+        """
+        cell = self.cells.get(pos)
+        if not cell or cell.type != CellType.CORRIDOR or cell.state != CellState.INTACT:
+            return 1
+
+        # Count how many active corridors would lose core connection if this pos were removed
+        # Temporarily remove it and see what's reachable
+        active_with = self.get_active_corridors()
+        if pos not in active_with:
+            return 1  # Already disconnected, minimal HP
+
+        # BFS from core without this position
+        reachable_without: Set[Tuple[int, int]] = set()
+        stack = [self.core]
+        visited: Set[Tuple[int, int]] = set()
+        while stack:
+            p = stack.pop()
+            if p in visited:
+                continue
+            visited.add(p)
+            if p == pos:
+                continue  # skip the corridor we're testing
+            c = self.cells.get(p)
+            if not c or c.type != CellType.CORRIDOR or c.state != CellState.INTACT:
+                continue
+            reachable_without.add(p)
+            x, y = p
+            for n in [(x+1, y), (x-1, y), (x, y+1), (x, y-1)]:
+                if n not in visited and n in self.cells:
+                    stack.append(n)
+
+        # Downstream count = corridors that were active but no longer reachable without this pos
+        downstream = len(active_with) - len(reachable_without) - 1  # -1 for the pos itself
+        # Strength: 1 (base) + downstream count (capped for sanity)
+        return max(1, 1 + min(downstream, 8))
 
     def is_component_active(self, pos: Tuple[int, int]) -> bool:
         """A component is active only if adjacent to an active corridor.
@@ -584,6 +632,33 @@ class Ship:
         if cell.state == CellState.DESTROYED:
             logs.append(f"Already destroyed at {target}")
             return logs
+
+        # ── CORE PROTECTION: damage to the ship's core deals hull damage (flavor) ──
+        # The core (pilot's room / life support) is reinforced — it takes cosmetic hull
+        # damage but cannot be directly destroyed. Forces attackers to cut corridors instead.
+        if target == self.core and cell.type == CellType.CORRIDOR:
+            cell.hits_taken += 1
+            hull_msgs = [
+                "HULL STRESS — core bulkhead absorbs the hit!",
+                "Core armour buckles but holds — hull groans!",
+                "Life support housing dented — emergency seals engage!",
+                "Pilot's chamber rocked — structural reinforcement holds!",
+            ]
+            logs.append(hull_msgs[cell.hits_taken % len(hull_msgs)])
+            return logs
+
+        # ── CORRIDOR HP: corridors near core are stronger (more downstream dependents) ──
+        # A corridor must take hits equal to its strength before being disabled/destroyed.
+        if cell.type == CellType.CORRIDOR and cell.state == CellState.INTACT and dmg in (
+            DamageType.KINETIC, DamageType.BREACH, DamageType.EMP, DamageType.NERVE_GAS
+        ):
+            corridor_hp = self.get_corridor_strength(target)
+            cell.hits_taken += 1
+            if cell.hits_taken < corridor_hp:
+                remaining = corridor_hp - cell.hits_taken
+                logs.append(f"Corridor at {target} absorbs hit ({cell.hits_taken}/{corridor_hp} — {remaining} more to break)")
+                return logs
+            # Hits met threshold — fall through to normal damage application
 
         x, y = target
 
@@ -1541,10 +1616,11 @@ def resolve_combat_turn(enemy: Ship, player: Ship) -> List[str]:
     # mind_link artifact: chaotic betrayal/control - chance to make enemy gun fire on its own side (Pop Fiz loves this)
     mind_links = [p for p, c in player.cells.items()
                   if c.type == CellType.ARTIFACT and c.artifact_kind == "mind_link" and c.state == CellState.INTACT]
-    if mind_links and threats and random.random() < 0.35:
+    ml_threats = get_active_threats(enemy) if mind_links else []
+    if mind_links and ml_threats and random.random() < 0.35:
         # hijack one enemy threat to fire on another enemy cell instead of you
         try:
-            epos2, _ = random.choice(threats)
+            epos2, _ = random.choice(ml_threats)
             # find a different target on enemy
             other = [pp for pp, cc in enemy.cells.items() if cc.state == CellState.INTACT and pp != epos2]
             if other:
@@ -1555,10 +1631,8 @@ def resolve_combat_turn(enemy: Ship, player: Ship) -> List[str]:
         except Exception:
             pass
 
-    # Retaliation from enemy active guns (tension: leave their guns online and they hurt you back)
-    # Fleshed enemy AI / control logic here: faction-specific "personalities" for targeting and aggression.
-    # This is the main place where enemy behavior is decided and can be extended (e.g. by city contracts
-    # that "provoke" or "intimidate" a faction, changing their aggression profile).
+    # Retaliation from ALL enemy active guns (each weapon fires once per turn).
+    # Faction-specific "personalities" for targeting and aggression:
     # Tech: methodical, prefers stripping/disabling.
     # Pop Fiz: chaotic, sometimes self-risking or unpredictable.
     # Felonia: focuses on "soft" targets (medical/crew analogs).
@@ -1568,116 +1642,97 @@ def resolve_combat_turn(enemy: Ship, player: Ship) -> List[str]:
     profile = (getattr(enemy, "meta", {}) or {}).get("ai_profile") or faction
     threats = get_active_threats(enemy)
     if threats:
-        # Enemy "AI" chooses which of its weapons to fire (makes choosing which enemy guns to leave online matter)
-        if profile in ("techopuritan", "methodical"):
-            # Prioritize lasers for shield stripping / purity
-            laser_threats = [t for t in threats if "laser" in (t[1] or "").lower()]
-            epos, ekind = random.choice(laser_threats) if laser_threats else random.choice(threats)
-        elif profile in ("pop_fiz", "chaotic"):
-            # Chaotic: random but biased toward volatile/artifacts if present
-            art_threats = [t for t in threats if "artifact" in (t[1] or "").lower() or "volatile" in (t[1] or "").lower()]
-            epos, ekind = random.choice(art_threats) if art_threats and random.random() < 0.6 else random.choice(threats)
-        else:
-            epos, ekind = random.choice(threats)
+        for epos, ekind in threats:
+            # Determine damage type for this weapon
+            klower = (ekind or "").lower()
+            if "laser" in klower:
+                ret_dmg = DamageType.ION
+            elif "gun" in klower or "missile" in klower:
+                ret_dmg = DamageType.KINETIC
+            elif "flamer" in klower:
+                ret_dmg = DamageType.FIRE
+            elif "beam" in klower:
+                ret_dmg = DamageType.KINETIC
+            elif "scattergun" in klower:
+                ret_dmg = DamageType.KINETIC
+            else:
+                ret_dmg = DamageType.EMP if random.random() < 0.6 else DamageType.KINETIC
 
-        klower = (ekind or "").lower()
-        if "laser" in klower:
-            ret_dmg = DamageType.ION
-        elif "gun" in klower or "missile" in klower:
-            ret_dmg = DamageType.KINETIC
-        elif "flamer" in klower:
-            ret_dmg = DamageType.FIRE
-        elif "beam" in klower:
-            ret_dmg = DamageType.KINETIC  # beam retaliation can be line but here single for simplicity
-        elif "scattergun" in klower:
-            ret_dmg = DamageType.KINETIC
-        else:
-            ret_dmg = DamageType.EMP if random.random() < 0.6 else DamageType.KINETIC
+            # Beam subtype: enemy beam retaliation does line damage
+            if "beam" in klower and player:
+                try:
+                    pcells = list(player.cells.keys())
+                    if len(pcells) >= 2:
+                        p1 = random.choice(pcells)
+                        p2 = random.choice([c for c in pcells if c != p1])
+                        bline = get_line_cells(p1, p2)
+                        for bp in bline[:4]:
+                            if bp in player.cells:
+                                rmsgs = player.apply_damage(ret_dmg, bp)
+                                logs.extend(rmsgs)
+                        logs.append(f"ENEMY BEAM RETURNS LINE {ret_dmg.name} along path")
+                        continue
+                except Exception:
+                    pass
 
-        # Beam subtype: enemy beam retaliation does line damage (deeper combat diff)
-        if "beam" in klower and player:
-            try:
-                # pick a random line on player
-                pcells = list(player.cells.keys())
-                if len(pcells) >= 2:
-                    p1 = random.choice(pcells)
-                    p2 = random.choice([c for c in pcells if c != p1])
-                    bline = get_line_cells(p1, p2)
-                    for bp in bline[:4]:  # limit
-                        if bp in player.cells:
-                            rmsgs = player.apply_damage(ret_dmg, bp)
-                            logs.extend(rmsgs)
-                    logs.append(f"ENEMY BEAM RETURNS LINE {ret_dmg.name} along path")
-            except:
-                pass  # fallback to normal
-
-        if enemy.has_scatter(epos):
-            p_comps = [p for p, c in player.cells.items()
-                       if c.type == CellType.COMPONENT and player.is_component_active(p) and c.state == CellState.INTACT]
-            if p_comps:
-                for shot in range(2):
-                    tpos = random.choice(p_comps)
-                    for _ in range(2):
+            # Scatter weapons: spray double shots at random player components
+            if enemy.has_scatter(epos):
+                p_comps = [p for p, c in player.cells.items()
+                           if c.type == CellType.COMPONENT and player.is_component_active(p) and c.state == CellState.INTACT]
+                if p_comps:
+                    for shot in range(2):
+                        tpos = random.choice(p_comps)
                         rmsgs = player.apply_damage(ret_dmg, tpos)
                         logs.extend(rmsgs)
-                    logs.append(f"ENEMY {ekind.upper()} SCATTER RETURNS FIRE ({ret_dmg.name}) at {tpos}")
-            else:
-                logs.append("Enemy scatter guns active but no vulnerable player components found.")
-        else:
-            p_threats = get_active_threats(player)
-            if p_threats:
-                # Player target choice - the core of enemy AI logic
-                # Decoy bias: if you grafted a decoy artifact, enemies love shooting the flashy bait instead of your real guns
-                decoy_hits = [p for p, k in p_threats if player.has_decoy(p)]
-                if decoy_hits and random.random() < 0.7:
-                    tpos = random.choice(decoy_hits)
-                    logs.append("(enemy AI drawn to your DECOY graft - good bait!)")
-                elif profile in ("techopuritan", "methodical"):
-                    # Methodical: strip player offense and core first
-                    priority = [p for p, k in p_threats
-                                if k and any(x in (player.cells.get(p).component_kind or "").lower()
-                                            for x in ["gun", "laser", "power"])]
-                    tpos = random.choice(priority) if priority else random.choice(p_threats)[0]
-                elif profile in ("felonia", "breed_focus"):
-                    # "Breed/crew" focus: hit medical or support
-                    med_p = [p for p, k in p_threats
-                             if "medical" in (player.cells.get(p).component_kind or "").lower()]
-                    tpos = random.choice(med_p) if med_p else random.choice(p_threats)[0]
-                elif profile in ("confederacy", "defensive"):
-                    # "Fair" but vengeful: go for engines to prevent easy escape / slow you
-                    eng_p = [p for p, k in p_threats
-                             if "engine" in (player.cells.get(p).component_kind or "").lower()]
-                    tpos = random.choice(eng_p) if eng_p else random.choice(p_threats)[0]
+                    logs.append(f"ENEMY {ekind.upper()} SCATTER RETURNS FIRE ({ret_dmg.name})")
                 else:
-                    tpos = random.choice(p_threats)[0]
+                    logs.append("Enemy scatter guns active but no vulnerable player components found.")
+                continue
 
-                if "beam" in ekind.lower():
-                    # Enemy beam retaliation: pick a random line on the player for FTL feel
-                    player_cells = list(player.cells.keys())
-                    if len(player_cells) >= 2:
-                        bp1 = random.choice(player_cells)
-                        bp2 = random.choice([pp for pp in player_cells if pp != bp1] or player_cells)
-                        bmsgs = player.apply_line_damage(ret_dmg, bp1, bp2)
-                        logs.append(f"ENEMY {ekind.upper()} BEAM SWEEP from {bp1} to {bp2}")
-                        logs.extend(bmsgs)
-                    else:
-                        rmsgs = player.apply_damage(ret_dmg, tpos)
-                        logs.append(f"ENEMY {ekind.upper()} RETURNS FIRE ({ret_dmg.name}) at {tpos}")
-                        logs.extend(rmsgs)
-                else:
-                    rmsgs = player.apply_damage(ret_dmg, tpos)
-                    logs.append(f"ENEMY {ekind.upper()} RETURNS FIRE ({ret_dmg.name}) at {tpos}")
-                    logs.extend(rmsgs)
-                    if enemy.has_widebeam(epos):
-                        rpos = (tpos[0] + 1, tpos[1])
-                        if rpos in player.cells:
-                            rcell = player.cells[rpos]
-                            if rcell.type == CellType.COMPONENT and player.is_component_active(rpos) and rcell.state == CellState.INTACT:
-                                rmsgs2 = player.apply_damage(ret_dmg, rpos)
-                                logs.extend(rmsgs2)
-                                logs.append(f"  (widebeam doubled beam to right at {rpos})")
+            # Standard targeting: pick target using faction AI personality
+            p_targets = [p for p, c in player.cells.items()
+                         if c.state == CellState.INTACT and c.type in (CellType.COMPONENT, CellType.CORRIDOR)]
+            if not p_targets:
+                p_targets = [p for p, c in player.cells.items() if c.state == CellState.INTACT]
+            if not p_targets:
+                logs.append("Enemy guns active but no vulnerable player cells remain.")
+                break
+
+            # Decoy bias
+            decoy_targets = [p for p in p_targets if player.has_decoy(p)]
+            if decoy_targets and random.random() < 0.7:
+                tpos = random.choice(decoy_targets)
+                logs.append("(enemy AI drawn to your DECOY graft - good bait!)")
+            elif profile in ("techopuritan", "methodical"):
+                priority = [p for p in p_targets
+                            if player.cells[p].type == CellType.COMPONENT and
+                            any(x in (player.cells[p].component_kind or "").lower()
+                                for x in ["gun", "laser", "power"])]
+                tpos = random.choice(priority) if priority else random.choice(p_targets)
+            elif profile in ("felonia", "breed_focus"):
+                med_p = [p for p in p_targets
+                         if player.cells[p].type == CellType.COMPONENT and
+                         "medical" in (player.cells[p].component_kind or "").lower()]
+                tpos = random.choice(med_p) if med_p else random.choice(p_targets)
+            elif profile in ("confederacy", "defensive"):
+                eng_p = [p for p in p_targets
+                         if player.cells[p].type == CellType.COMPONENT and
+                         "engine" in (player.cells[p].component_kind or "").lower()]
+                tpos = random.choice(eng_p) if eng_p else random.choice(p_targets)
             else:
-                logs.append("Enemy guns active but no vulnerable player components found.")
+                tpos = random.choice(p_targets)
+
+            rmsgs = player.apply_damage(ret_dmg, tpos)
+            logs.append(f"ENEMY {ekind.upper()} RETURNS FIRE ({ret_dmg.name}) at {tpos}")
+            logs.extend(rmsgs)
+            if enemy.has_widebeam(epos):
+                rpos = (tpos[0] + 1, tpos[1])
+                if rpos in player.cells:
+                    rcell = player.cells[rpos]
+                    if rcell.type == CellType.COMPONENT and player.is_component_active(rpos) and rcell.state == CellState.INTACT:
+                        rmsgs2 = player.apply_damage(ret_dmg, rpos)
+                        logs.extend(rmsgs2)
+                        logs.append(f"  (widebeam doubled beam to right at {rpos})")
     else:
         logs.append("Enemy offensive systems offline (good sniping).")
 
@@ -1863,18 +1918,243 @@ def make_beam_lancer(name: str = "beam_lancer") -> Chunk:
 
 def assemble_enemy_ship(name: str, placements: List[Tuple[Chunk, Tuple[int, int]]], core: Tuple[int, int] = (0, 0)) -> Ship:
     """Build an enemy by placing named chunks at absolute offsets.
-    Records sub_chunks so post-combat we can offer the *logical* damaged pieces by name/role
-    (far better for player decision making than blind rects)."""
+    Records sub_chunks so post-combat we can offer the *logical* damaged pieces by name/role.
+    After placing all chunks, bridges any disconnected regions with corridor cells
+    to ensure full connectivity from the core (required for components to be active)."""
     ship = Ship(name=name, core=core)
     for template, (ox, oy) in placements:
-        # record the logical piece (we'll snapshot states at salvage time)
         ship.sub_chunks.append((template.name, (ox, oy), template))
         for (dx, dy), cell in template.cells.items():
             abs_pos = (ox + dx, oy + dy)
-            # Note: we share the Cell instance so combat mutations affect the template view too.
-            # When we later extract we copy the (now damaged) cell refs into new Chunk.
             ship.add_cell(abs_pos, cell)
+
+    # --- Ensure connectivity: bridge disconnected islands to the core ---
+    _bridge_disconnected_cells(ship)
     return ship
+
+
+def _bridge_disconnected_cells(ship: Ship) -> None:
+    """Ensure full corridor connectivity from the core to every corridor cluster in the ship.
+    The game's activation logic flood-fills from core through INTACT CORRIDOR cells only.
+    Components are only active when adjacent to an active corridor.
+    This function:
+    1. Finds all corridor clusters (connected groups of corridor cells)
+    2. Identifies which clusters are reachable from the core
+    3. Bridges unreachable clusters to the nearest reachable corridor via new corridor cells
+    4. Also connects any completely disconnected non-corridor cells (components/artifacts)
+       that have no adjacent corridor at all — adds a corridor stub next to them.
+    """
+    if not ship.cells:
+        return
+
+    # --- Step 1: Find all corridor positions ---
+    all_corridors = {p for p, c in ship.cells.items()
+                     if c.type == CellType.CORRIDOR and c.state == CellState.INTACT}
+
+    if not all_corridors:
+        # No corridors at all — place one at the core
+        ship.add_cell(ship.core, Cell(CellType.CORRIDOR))
+        all_corridors = {ship.core}
+
+    # Ensure core is a corridor (required for flood-fill to start)
+    if ship.core not in all_corridors:
+        core_cell = ship.cells.get(ship.core)
+        if core_cell is None:
+            ship.add_cell(ship.core, Cell(CellType.CORRIDOR))
+            all_corridors.add(ship.core)
+        else:
+            # Core exists but isn't a corridor — find nearest corridor and set core there
+            # (or add corridor adjacent to current core)
+            x, y = ship.core
+            for neigh in [(x+1, y), (x-1, y), (x, y+1), (x, y-1)]:
+                if neigh not in ship.cells:
+                    ship.add_cell(neigh, Cell(CellType.CORRIDOR))
+                    all_corridors.add(neigh)
+                    ship.core = neigh
+                    break
+            else:
+                # All adjacent occupied — just make the core cell a corridor
+                ship.cells[ship.core] = Cell(CellType.CORRIDOR)
+                all_corridors.add(ship.core)
+
+    # --- Step 2: BFS from core through corridors to find reachable corridor network ---
+    reachable_corridors: Set[Tuple[int, int]] = set()
+    stack = [ship.core]
+    while stack:
+        pos = stack.pop()
+        if pos in reachable_corridors:
+            continue
+        if pos not in all_corridors:
+            continue
+        reachable_corridors.add(pos)
+        x, y = pos
+        for neigh in [(x+1, y), (x-1, y), (x, y+1), (x, y-1)]:
+            if neigh in all_corridors and neigh not in reachable_corridors:
+                stack.append(neigh)
+
+    # --- Step 3: Find unreachable corridor clusters and bridge them ---
+    unreachable_corridors = all_corridors - reachable_corridors
+
+    if unreachable_corridors:
+        # Group into clusters
+        remaining = set(unreachable_corridors)
+        while remaining:
+            cluster: Set[Tuple[int, int]] = set()
+            seed = next(iter(remaining))
+            q = [seed]
+            while q:
+                p = q.pop()
+                if p in cluster:
+                    continue
+                if p not in remaining:
+                    continue
+                cluster.add(p)
+                remaining.discard(p)
+                px, py = p
+                for n in [(px+1, py), (px-1, py), (px, py+1), (px, py-1)]:
+                    if n in remaining and n not in cluster:
+                        q.append(n)
+
+            # Find nearest reachable corridor to this cluster
+            best_dist = float('inf')
+            best_cluster_pos = None
+            best_reach_pos = None
+            for cp in cluster:
+                for rp in reachable_corridors:
+                    d = abs(cp[0] - rp[0]) + abs(cp[1] - rp[1])
+                    if d < best_dist:
+                        best_dist = d
+                        best_cluster_pos = cp
+                        best_reach_pos = rp
+            if best_cluster_pos is None or best_reach_pos is None:
+                continue
+
+            # Lay corridor bridge from reachable to cluster, routing around obstacles
+            path = _find_corridor_path(ship, best_reach_pos, best_cluster_pos)
+            for pp in path:
+                if pp not in ship.cells:
+                    ship.add_cell(pp, Cell(CellType.CORRIDOR))
+                reachable_corridors.add(pp)
+
+            # Mark cluster as reachable
+            reachable_corridors.update(cluster)
+
+    # --- Step 4: Ensure every component/artifact has an adjacent corridor ---
+    for pos, cell in list(ship.cells.items()):
+        if cell.type in (CellType.COMPONENT, CellType.ARTIFACT) and cell.state == CellState.INTACT:
+            x, y = pos
+            has_adj_corridor = any(
+                n in reachable_corridors
+                for n in [(x+1, y), (x-1, y), (x, y+1), (x, y-1)]
+            )
+            if not has_adj_corridor:
+                # Add a corridor stub adjacent to this component and bridge it
+                for neigh in [(x+1, y), (x-1, y), (x, y+1), (x, y-1)]:
+                    if neigh not in ship.cells:
+                        ship.add_cell(neigh, Cell(CellType.CORRIDOR))
+                        # Bridge this new corridor to the reachable network
+                        if reachable_corridors:
+                            best_r = min(reachable_corridors,
+                                         key=lambda rp: abs(neigh[0]-rp[0])+abs(neigh[1]-rp[1]))
+                            path = _find_corridor_path(ship, best_r, neigh)
+                            for pp in path:
+                                if pp not in ship.cells:
+                                    ship.add_cell(pp, Cell(CellType.CORRIDOR))
+                                reachable_corridors.add(pp)
+                        reachable_corridors.add(neigh)
+                        break
+
+
+def _apply_protected_predamage(ship: Ship, dmg_type: DamageType, count: int = 1) -> None:
+    """Apply pre-damage to a ship while protecting essential systems.
+    Protects: core, one engine, one weapon, and the active corridor backbone."""
+    protected = {ship.core}
+    # Protect one engine
+    for p, c in ship.cells.items():
+        if c.type == CellType.COMPONENT and (c.component_kind or "").lower() == "engine" and c.state == CellState.INTACT:
+            protected.add(p)
+            break
+    # Protect one weapon
+    for p, c in ship.cells.items():
+        if c.type == CellType.COMPONENT and (c.component_kind or "").lower() in WEAPON_PROFILES and c.state == CellState.INTACT:
+            protected.add(p)
+            break
+    # Protect active corridors
+    protected.update(ship.get_active_corridors())
+
+    for _ in range(count):
+        poss = [p for p, c in ship.cells.items() if c.state == CellState.INTACT and p not in protected]
+        if poss:
+            ship.apply_damage(dmg_type, random.choice(poss))
+
+
+def _find_corridor_path(ship: Ship, start: Tuple[int, int], end: Tuple[int, int]) -> List[Tuple[int, int]]:
+    """Find a path from start to end for laying corridor cells.
+    Avoids positions already occupied by non-corridor cells.
+    Returns list of positions to place corridors at (excludes start/end if they already exist)."""
+    if start == end:
+        return []
+
+    # Simple BFS-based pathfinding avoiding obstacles (non-corridor occupied cells)
+    from collections import deque
+    blocked = {p for p, c in ship.cells.items()
+               if c.type != CellType.CORRIDOR}  # non-corridor cells are obstacles
+
+    # But start and end are allowed even if blocked
+    blocked.discard(start)
+    blocked.discard(end)
+
+    # BFS from start to end
+    queue = deque([(start, [start])])
+    visited = {start}
+    # Limit search area to a bounding box + margin to avoid infinite searches
+    min_x = min(start[0], end[0]) - 15
+    max_x = max(start[0], end[0]) + 15
+    min_y = min(start[1], end[1]) - 15
+    max_y = max(start[1], end[1]) + 15
+
+    while queue:
+        pos, path = queue.popleft()
+        if pos == end:
+            # Return positions between start and end (not including start/end themselves
+            # if they already have cells)
+            result = []
+            for p in path:
+                if p == start and p in ship.cells:
+                    continue
+                if p == end and p in ship.cells:
+                    continue
+                result.append(p)
+            return result
+
+        x, y = pos
+        # Prioritize moving toward target
+        neighbors = [(x+1, y), (x-1, y), (x, y+1), (x, y-1)]
+        # Sort by distance to end for better paths
+        neighbors.sort(key=lambda n: abs(n[0]-end[0]) + abs(n[1]-end[1]))
+
+        for n in neighbors:
+            if n in visited:
+                continue
+            if n[0] < min_x or n[0] > max_x or n[1] < min_y or n[1] > max_y:
+                continue
+            if n in blocked and n != end:
+                continue
+            visited.add(n)
+            queue.append((n, path + [n]))
+
+    # BFS failed (shouldn't happen with large enough bounds) — fall back to straight line
+    result = []
+    cx, cy = start
+    tx, ty = end
+    while (cx, cy) != (tx, ty):
+        if cx != tx:
+            cx += 1 if tx > cx else -1
+        elif cy != ty:
+            cy += 1 if ty > cy else -1
+        if (cx, cy) != end or (cx, cy) not in ship.cells:
+            result.append((cx, cy))
+    return result
 
 
 def make_raider_ship(name: str = "Rim Raider") -> Ship:
@@ -2735,13 +3015,32 @@ def generate_procedural_enemy_ship(faction: str = "raider", difficulty: int = 1,
     placements.append((core, (current_x, 0)))
     current_x += 4
 
+    # MANDATORY: every ship must have an engine (required for win condition + flight logic)
+    engine = make_engine_nacelle(f"{faction}_engine")
+    placements.append((engine, (current_x, 0)))
+    current_x += 4
+
+    # MANDATORY: every ship must have at least one weapon (otherwise combat is trivial)
+    # Faction-specific weapon choice for flavor
+    weapon_makers: Dict[str, Callable[[str], Chunk]] = {
+        "raider": make_gun_pod,
+        "techopuritan": make_beam_lancer,
+        "felonia": make_scattergun_pod,
+        "confederacy": make_gun_pod,
+        "pop_fiz": make_gun_pod,
+    }
+    weapon_maker = weapon_makers.get(faction, make_gun_pod)
+    weapon = weapon_maker(f"{faction}_weapon")
+    placements.append((weapon, (current_x, 0)))
+    current_x += 4
+
     # Faction-biased pools of module makers (reuse all the good templates for named salvage)
     # New diversity pieces mixed in so players see broadcast/harvester/incubator in salvage choices.
     pools: Dict[str, List[Callable[[str], Chunk]]] = {
         "raider": [make_gun_pod, make_armor_plate, make_engine_nacelle, make_artifact_bay, make_broadcast_pod, make_harvester_claw, make_scattergun_pod, make_beam_lancer],
         "techopuritan": [make_armor_plate, make_shield_bay, make_gun_pod, make_corridor_spine_chunk, make_broadcast_pod, make_beam_lancer],
         "felonia": [make_gun_pod, make_armor_plate, make_artifact_bay, make_engine_nacelle, make_dark_incubator, make_scattergun_pod],
-        "confederacy": [make_shield_bay, make_armor_plate, make_engine_nacelle, make_artifact_bay],
+        "confederacy": [make_shield_bay, make_armor_plate, make_engine_nacelle, make_gun_pod, make_artifact_bay],
         "pop_fiz": [make_artifact_bay, make_gun_pod, make_corridor_spine_chunk, make_armor_plate, make_dark_incubator, make_harvester_claw, make_beam_lancer],
     }
     pool = pools.get(faction, pools["raider"])
@@ -2787,9 +3086,32 @@ def generate_procedural_enemy_ship(faction: str = "raider", difficulty: int = 1,
     enemy.faction = faction  # for AI retaliation logic
 
     # Pre-damage based on difficulty (makes early fights easier, later harder)
+    # Protect: core corridors + the mandatory engine + the mandatory weapon
+    # so the ship always enters combat with functional systems
+    protected = {enemy.core}
+    # Find engine positions to protect
+    for p, c in enemy.cells.items():
+        if c.type == CellType.COMPONENT and (c.component_kind or "").lower() == "engine":
+            protected.add(p)
+            break  # protect at least one engine
+    # Find weapon positions to protect (at least one)
+    for p, c in enemy.cells.items():
+        if c.type == CellType.COMPONENT and (c.component_kind or "").lower() in WEAPON_PROFILES:
+            protected.add(p)
+            break  # protect at least one weapon
+    # Protect corridors adjacent to protected components (so they stay active)
+    for pp in list(protected):
+        x, y = pp
+        for n in [(x+1, y), (x-1, y), (x, y+1), (x, y-1)]:
+            if n in enemy.cells and enemy.cells[n].type == CellType.CORRIDOR:
+                protected.add(n)
+    # Protect the active corridor backbone (flood-fill from core) so the network stays alive
+    active_backbone = enemy.get_active_corridors()
+    protected.update(active_backbone)
+
     dmg_types = [DamageType.KINETIC, DamageType.ION, DamageType.BREACH]
     for _ in range(difficulty + random.randint(0, 1)):
-        poss = [p for p, c in enemy.cells.items() if c.state == CellState.INTACT]
+        poss = [p for p, c in enemy.cells.items() if c.state == CellState.INTACT and p not in protected]
         if poss:
             enemy.apply_damage(random.choice(dmg_types), random.choice(poss))
 
@@ -2993,11 +3315,21 @@ def get_node_enemy(node: SectorNode, fight_num: int, unlocks: set[str] | None = 
             dev.name = f"{node.name} Contact {fight_num} ({dev.name})"
             enemy = dev
             enemy.faction = node.enemy_faction
-            # apply some pre-damage based on difficulty like the procedural ones
-            for _ in range(max(0, node.difficulty - 1)):
-                poss = [p for p, c in enemy.cells.items() if c.state == CellState.INTACT]
-                if poss:
-                    enemy.apply_damage(DamageType.KINETIC, random.choice(poss))
+            # Validate: ensure dev ship has an engine (hand-crafted ships might omit one)
+            has_engine = any(
+                c.type == CellType.COMPONENT and (c.component_kind or "").lower() == "engine"
+                for c in enemy.cells.values()
+            )
+            if not has_engine:
+                eng = make_engine_nacelle("dev_engine")
+                max_x = max(p[0] for p in enemy.cells.keys()) + 2 if enemy.cells else 0
+                for (dx, dy), c in eng.cells.items():
+                    enemy.add_cell((max_x + dx, dy), c)
+                enemy.sub_chunks.append(("dev_engine", (max_x, 0), eng))
+            # Ensure connectivity
+            _bridge_disconnected_cells(enemy)
+            # apply some pre-damage based on difficulty (protected)
+            _apply_protected_predamage(enemy, DamageType.KINETIC, max(0, node.difficulty - 1))
 
     if enemy is None:
         # Main path: procedural composition for replayability and variety.
@@ -3012,53 +3344,49 @@ def get_node_enemy(node: SectorNode, fight_num: int, unlocks: set[str] | None = 
                 gun = make_gun_pod("tp_gun")
                 armor = make_armor_plate("tp_armor")
                 spine = make_corridor_spine_chunk("tp_spine")
-                placements = [(gun, (0, 0)), (armor, (3, 0)), (spine, (0, -2))]
-                enemy = assemble_enemy_ship(f"Techopuritan Patrol {fight_num}", placements, core=(1, 0))
-                for _ in range(node.difficulty):
-                    poss = [p for p, c in enemy.cells.items() if c.state == CellState.INTACT]
-                    if poss:
-                        enemy.apply_damage(DamageType.BREACH, random.choice(poss))
+                engine = make_engine_nacelle("tp_engine")
+                placements = [(spine, (0, 0)), (gun, (3, 0)), (armor, (6, 0)), (engine, (9, 0))]
+                enemy = assemble_enemy_ship(f"Techopuritan Patrol {fight_num}", placements, core=(0, 0))
+                _apply_protected_predamage(enemy, DamageType.BREACH, node.difficulty)
             elif node.enemy_faction == "felonia":
                 gun = make_gun_pod("fel_gun")
                 armor = make_armor_plate("fel_armor")
-                placements = [(gun, (0, 0)), (armor, (3, 0))]
-                enemy = assemble_enemy_ship(f"Felonia Hunter {fight_num}", placements, core=(1, 0))
-                for _ in range(max(0, node.difficulty - 1)):
-                    poss = list(enemy.cells.keys())
-                    if poss:
-                        enemy.apply_damage(DamageType.KINETIC, random.choice(poss))
+                engine = make_engine_nacelle("fel_engine")
+                placements = [(gun, (0, 0)), (armor, (3, 0)), (engine, (6, 0))]
+                enemy = assemble_enemy_ship(f"Felonia Hunter {fight_num}", placements, core=(0, 0))
+                _apply_protected_predamage(enemy, DamageType.KINETIC, max(0, node.difficulty - 1))
             elif node.enemy_faction == "confederacy":
                 shield = make_shield_bay("conf_shield")
                 armor = make_armor_plate("conf_armor")
                 engine = make_engine_nacelle("conf_engine")
-                placements = [(shield, (0, 0)), (armor, (3, 0)), (engine, (6, 0))]
-                enemy = assemble_enemy_ship(f"Confederacy Patrol {fight_num}", placements, core=(1, 0))
-                for _ in range(max(0, node.difficulty - 1)):
-                    poss = list(enemy.cells.keys())
-                    if poss:
-                        enemy.apply_damage(DamageType.ION, random.choice(poss))
+                gun = make_gun_pod("conf_gun")
+                placements = [(shield, (0, 0)), (gun, (3, 0)), (armor, (6, 0)), (engine, (9, 0))]
+                enemy = assemble_enemy_ship(f"Confederacy Patrol {fight_num}", placements, core=(0, 0))
+                _apply_protected_predamage(enemy, DamageType.ION, max(0, node.difficulty - 1))
             elif node.enemy_faction == "pop_fiz":
                 ab = make_artifact_bay("pop_artifact")
                 power = make_corridor_spine_chunk("pop_power")
-                placements = [(ab, (0, 0)), (power, (5, 0))]
-                enemy = assemble_enemy_ship(f"Pop Fiz Pod {fight_num}", placements, core=(1, 0))
-                for _ in range(node.difficulty):
-                    poss = [p for p, c in enemy.cells.items() if c.state == CellState.INTACT]
-                    if poss:
-                        dmg = random.choice([DamageType.FIRE, DamageType.BREACH, DamageType.KINETIC])
-                        enemy.apply_damage(dmg, random.choice(poss))
+                engine = make_engine_nacelle("pop_engine")
+                gun = make_gun_pod("pop_gun")
+                placements = [(power, (0, 0)), (gun, (3, 0)), (ab, (6, 0)), (engine, (11, 0))]
+                enemy = assemble_enemy_ship(f"Pop Fiz Pod {fight_num}", placements, core=(0, 0))
+                _apply_protected_predamage(enemy, random.choice([DamageType.FIRE, DamageType.BREACH, DamageType.KINETIC]), node.difficulty)
             else:
-                # Use random chunk for more variety even in classic fallback
+                # Raider fallback: gun + armor + engine + optional extra
                 enemy = make_raider_ship(f"{node.name} Contact {fight_num}")
+                # Ensure raider has engine (make_raider_ship doesn't include one)
+                engine = make_engine_nacelle("raider_engine")
+                for (dx, dy), c in engine.cells.items():
+                    enemy.add_cell((6 + dx, dy), c)
+                enemy.sub_chunks.append(("raider_engine", (6, 0), engine))
+                _bridge_disconnected_cells(enemy)
                 # mix one generated chunk
                 if random.random() < 0.5:
                     rc = generate_chunk("raider", node.difficulty, 4)
                     for (dx, dy), c in rc.cells.items():
-                        enemy.add_cell((4 + dx, dy), c)
-                for _ in range(max(0, node.difficulty - 1)):
-                    poss = list(enemy.cells.keys())
-                    if poss:
-                        enemy.apply_damage(DamageType.KINETIC, random.choice(poss))
+                        enemy.add_cell((10 + dx, dy), c)
+                    _bridge_disconnected_cells(enemy)
+                _apply_protected_predamage(enemy, DamageType.KINETIC, max(0, node.difficulty - 1))
 
     # Common faction flavor / unlocks (applied to both dev and procedural for consistency)
     if "exotic_pool" in unlocks and node.difficulty > 1:
@@ -3081,16 +3409,78 @@ def get_node_enemy(node: SectorNode, fight_num: int, unlocks: set[str] | None = 
 
     # Distinct Pop Fiz "psychotic" flavor: extra pre-fire/volatile risk for chaotic feel
     if node.enemy_faction == "pop_fiz":
+        _apply_protected_predamage(enemy, DamageType.FIRE, max(1, node.difficulty))
+        # bias more artifacts for "plaything" risk/reward
         for _ in range(max(1, node.difficulty)):
-            poss = [p for p, c in enemy.cells.items() if c.state == CellState.INTACT]
-            if poss:
-                enemy.apply_damage(DamageType.FIRE, random.choice(poss))
-            # bias more artifacts for "plaything" risk/reward
             if random.random() < 0.4:
                 ab = make_artifact_bay("pop_volatile")
                 for (dx, dy), c in list(ab.cells.items()):
                     if random.random() < 0.5:
                         enemy.add_cell((random.randint(4,8) + dx, random.randint(-2,2) + dy), c)
+
+    # FINAL connectivity pass: bridge any disconnected cells added by flavor/unlock sections
+    _bridge_disconnected_cells(enemy)
+
+    # FINAL VALIDATION: ensure ship is combat-ready (has active engine + weapon)
+    # If pre-damage or connectivity issues left essentials offline, repair them.
+    def _ensure_component_active(ship: Ship, kind_check) -> None:
+        """Repair a component matching kind_check and ensure it's adjacent to active corridor."""
+        for p, c in ship.cells.items():
+            if c.type == CellType.COMPONENT and kind_check((c.component_kind or "").lower()):
+                c.state = CellState.INTACT
+                x, y = p
+                # Repair or create adjacent corridor
+                has_adj = False
+                for n in [(x+1, y), (x-1, y), (x, y+1), (x, y-1)]:
+                    nc = ship.cells.get(n)
+                    if nc and nc.type == CellType.CORRIDOR:
+                        nc.state = CellState.INTACT
+                        has_adj = True
+                        break
+                if not has_adj:
+                    # Add a corridor stub
+                    for n in [(x+1, y), (x-1, y), (x, y+1), (x, y-1)]:
+                        if n not in ship.cells:
+                            ship.add_cell(n, Cell(CellType.CORRIDOR))
+                            has_adj = True
+                            break
+                # Ensure that corridor connects to core
+                active_corr = ship.get_active_corridors()
+                if not active_corr:
+                    # Core itself might be broken
+                    core_cell = ship.cells.get(ship.core)
+                    if core_cell and core_cell.type == CellType.CORRIDOR:
+                        core_cell.state = CellState.INTACT
+                    active_corr = ship.get_active_corridors()
+                # Check if component is now active
+                if not ship.is_component_active(p) and active_corr:
+                    # Bridge from nearest active corridor to component's adjacent corridor
+                    adj_corr = None
+                    for n in [(x+1, y), (x-1, y), (x, y+1), (x, y-1)]:
+                        nc = ship.cells.get(n)
+                        if nc and nc.type == CellType.CORRIDOR and nc.state == CellState.INTACT:
+                            adj_corr = n
+                            break
+                    if adj_corr and active_corr:
+                        nearest = min(active_corr, key=lambda rp: abs(adj_corr[0]-rp[0])+abs(adj_corr[1]-rp[1]))
+                        path = _find_corridor_path(ship, nearest, adj_corr)
+                        for pp in path:
+                            if pp not in ship.cells:
+                                ship.add_cell(pp, Cell(CellType.CORRIDOR))
+                            elif ship.cells[pp].type == CellType.CORRIDOR:
+                                ship.cells[pp].state = CellState.INTACT
+                return
+
+    has_active_engine = any(
+        c.type == CellType.COMPONENT and (c.component_kind or "").lower() == "engine"
+        and c.state == CellState.INTACT and enemy.is_component_active(p)
+        for p, c in enemy.cells.items()
+    )
+    if not has_active_engine:
+        _ensure_component_active(enemy, lambda k: k == "engine")
+
+    if not get_active_threats(enemy):
+        _ensure_component_active(enemy, lambda k: k in WEAPON_PROFILES)
 
     return enemy
 
