@@ -20,6 +20,7 @@ from space_derelict.model import (
     Ship, Cell, CellType, CellState, DamageType, Resources, Chunk, SectorNode,
     make_starter_player_ship, generate_sector, generate_branching_sector, get_node_enemy, get_random_dev_ship,
     resolve_combat_turn, get_active_threats, apply_player_graft_bonuses, execute_player_attack,
+    get_player_weapons, WEAPON_DAMAGE_MAP, WEAPON_PROFILES,
     COMPONENT_KINDS, ARTIFACT_KINDS,
     load_meta, save_meta,
     get_available_contracts, evaluate_contracts,
@@ -83,6 +84,28 @@ FACTION_PLANET_CATS: dict[str, list[str]] = {
     "confederacy": ["Terran_or_Earth-like", "Ice_or_Snow", "Rocky", "Barren_or_Moon"],
     "pop_fiz": ["Gas_Giant_or_Toxic", "Lava", "Comets", "Nebulae", "Asteroid_belts", "Supernova"],
 }
+
+_bg_cache: Dict[str, pygame.Surface] = {}
+
+def _draw_screen_bg(surface: pygame.Surface, image_name: str, overlay_alpha: int = 120):
+    """Load, cache and blit a background image with a dark overlay for UI readability."""
+    global _bg_cache
+    if image_name not in _bg_cache:
+        path = os.path.join("assets", "ui", image_name)
+        if not os.path.exists(path):
+            return False
+        try:
+            img = pygame.image.load(path).convert()
+            _bg_cache[image_name] = pygame.transform.smoothscale(img, (WINDOW_W, WINDOW_H))
+        except Exception:
+            return False
+    surface.blit(_bg_cache[image_name], (0, 0))
+    if overlay_alpha > 0:
+        ov = pygame.Surface((WINDOW_W, WINDOW_H), pygame.SRCALPHA)
+        ov.fill((10, 10, 20, overlay_alpha))
+        surface.blit(ov, (0, 0))
+    return True
+
 
 def get_planet_icon(node, node_idx: int, size: int = 44) -> pygame.Surface:
     """Return a consistently chosen, scaled planet icon for a sector node.
@@ -837,6 +860,9 @@ class MainMenuScreen(BaseScreen):
             self.game.new_game()
 
     def draw(self, surface: pygame.Surface):
+        # Background
+        _draw_screen_bg(surface, "main_menu_bg.png", overlay_alpha=140)
+
         # Title
         font_big = pygame.font.SysFont("consolas", 52, bold=True)
         font_sub = pygame.font.SysFont("consolas", 18)
@@ -859,6 +885,7 @@ class SectorMapScreen(BaseScreen):
         super().__init__(game)
         self.node_buttons: List[pygame_gui.elements.UIButton] = []
         self.event_buttons: List[pygame_gui.elements.UIButton] = []
+        self._event_art: pygame.Surface | None = None
         self.styled_buttons: list = []  # custom-drawn upgrade/repair/feast buttons
         self.node_planet_surfs: List[pygame.Surface] = []
         self.planet_rects: List[pygame.Rect] = []
@@ -1390,23 +1417,80 @@ class SectorMapScreen(BaseScreen):
             y += 34
 
     def _build_event_ui(self):
-        """Build UI for a random faction stop event. Flavor text drawn in draw()."""
+        """Build UI for a random faction stop event — styled panel with illustration."""
         event = self.game.current_random_event
+        btn_w = 520
+        btn_h = 44
+
+        # Buttons start below the art + text panel area
+        btn_start_y = WINDOW_H - 50 - len(event.get("options", [])) * (btn_h + 12)
         cx = WINDOW_W // 2
-        y = 120
-        btn_w = 450
-        btn_h = 50
 
         self.event_buttons = []
-        for i, opt in enumerate(event["options"]):
+        for i, opt in enumerate(event.get("options", [])):
+            eff = opt.get("effect", {})
+            etype = eff.get("type", "")
+            # Color-code button text hints
+            prefix = ""
+            if etype == "betray" or etype == "genocide":
+                prefix = "[BETRAY] "
+            elif etype == "risky":
+                prefix = "[RISKY] "
+            elif etype == "positive":
+                prefix = ""
+            elif etype == "neutral":
+                prefix = ""
+            text = f"{prefix}{opt['text']}"[:70]
+
             btn = pygame_gui.elements.UIButton(
-                relative_rect=pygame.Rect(cx - btn_w // 2, y + i * 70, btn_w, btn_h),
-                text=opt["text"][:60],
+                relative_rect=pygame.Rect(cx - btn_w // 2, btn_start_y + i * (btn_h + 12), btn_w, btn_h),
+                text=text,
                 manager=self.game.ui_manager,
             )
             btn.event_option = opt
             self.event_buttons.append(btn)
             self.ui_elements.append(btn)
+
+        # Load event illustration
+        self._event_art = self._load_event_art(event)
+
+    def _load_event_art(self, event: dict) -> pygame.Surface | None:
+        """Load the illustration image for an event based on its category/faction."""
+        events_dir = Path("assets/events")
+        # Map event to image file
+        faction = event.get("faction", "")
+        category = event.get("category", "")
+        special = event.get("special", "")
+
+        # Priority: specific faction → category → generic
+        candidates = []
+        if special == "genocide":
+            candidates.append("event_genocide")
+        if faction:
+            candidates.append(f"event_{faction}")
+        if category in ("distress", "artifact", "rival", "crew", "genetic", "trust"):
+            candidates.append(f"event_{category}")
+        if category == "trust":
+            candidates.append("event_merchant")
+        if category and category.startswith("base"):
+            candidates.append("event_base")
+        candidates.append("event_distress")  # fallback
+
+        for name in candidates:
+            path = events_dir / f"{name}.png"
+            if path.exists():
+                try:
+                    img = pygame.image.load(str(path)).convert_alpha()
+                    # Scale to fit the art area (wide banner)
+                    art_w = 680
+                    art_h = int(img.get_height() * (art_w / img.get_width()))
+                    if art_h > 320:
+                        art_h = 320
+                        art_w = int(img.get_width() * (320 / img.get_height()))
+                    return pygame.transform.smoothscale(img, (art_w, art_h))
+                except Exception:
+                    continue
+        return None
 
     def handle_event(self, event: pygame.event.Event):
         if event.type == pygame_gui.UI_BUTTON_PRESSED:
@@ -1664,24 +1748,100 @@ class SectorMapScreen(BaseScreen):
 
         if self.game.current_random_event:
             event = self.game.current_random_event
-            # Draw event title and desc here (proper draw pass)
-            title_font = pygame.font.SysFont("consolas", 24, bold=True)
-            t = title_font.render(event["title"], True, COL_DANGER)
-            surface.blit(t, (WINDOW_W // 2 - t.get_width() // 2, 60))
+            cx = WINDOW_W // 2
 
-            desc_font = pygame.font.SysFont("consolas", 14)
-            desc_lines = [event["desc"][i:i+75] for i in range(0, len(event["desc"]), 75)]
-            for i, line in enumerate(desc_lines[:4]):
+            # --- Event illustration (top area) ---
+            art = getattr(self, '_event_art', None)
+            art_bottom = 40
+            if art:
+                ax = cx - art.get_width() // 2
+                ay = 20
+                # Dark vignette behind art
+                vignette = pygame.Surface((art.get_width() + 20, art.get_height() + 20), pygame.SRCALPHA)
+                vignette.fill((0, 0, 0, 160))
+                surface.blit(vignette, (ax - 10, ay - 10))
+                surface.blit(art, (ax, ay))
+                # Gradient fade at bottom of art
+                fade_h = 40
+                for row in range(fade_h):
+                    alpha = int(255 * (row / fade_h))
+                    fade_line = pygame.Surface((art.get_width(), 1), pygame.SRCALPHA)
+                    fade_line.fill((COL_BG[0], COL_BG[1], COL_BG[2], alpha))
+                    surface.blit(fade_line, (ax, ay + art.get_height() - fade_h + row))
+                art_bottom = ay + art.get_height() - 10
+            else:
+                art_bottom = 40
+
+            # --- Title panel ---
+            title_font = pygame.font.SysFont("consolas", 26, bold=True)
+            # Color by event type
+            special = event.get("special", "")
+            category = event.get("category", "")
+            if special == "genocide":
+                title_col = (255, 50, 50)
+            elif category and category.startswith("base"):
+                title_col = COL_GOLD
+            elif event.get("faction") == "techopuritan":
+                title_col = (180, 220, 255)
+            elif event.get("faction") == "pop_fiz":
+                title_col = (100, 255, 200)
+            elif event.get("faction") == "felonia":
+                title_col = (200, 130, 255)
+            else:
+                title_col = COL_ACCENT
+
+            title_surf = title_font.render(event["title"], True, title_col)
+            title_y = art_bottom + 8
+            surface.blit(title_surf, (cx - title_surf.get_width() // 2, title_y))
+
+            # --- Category badge ---
+            badge_font = pygame.font.SysFont("consolas", 11)
+            badge_text = (event.get("faction") or category or "event").upper()
+            badge_surf = badge_font.render(badge_text, True, (180, 180, 200))
+            badge_x = cx - title_surf.get_width() // 2
+            surface.blit(badge_surf, (badge_x, title_y - 14))
+
+            # --- Description (word-wrapped) ---
+            desc_font = pygame.font.SysFont("consolas", 15)
+            desc_y = title_y + 38
+            max_desc_w = 620
+            words = event["desc"].split()
+            desc_lines = []
+            current_line = ""
+            for word in words:
+                test = current_line + (" " if current_line else "") + word
+                if desc_font.size(test)[0] > max_desc_w:
+                    if current_line:
+                        desc_lines.append(current_line)
+                    current_line = word
+                else:
+                    current_line = test
+            if current_line:
+                desc_lines.append(current_line)
+
+            # Draw description with slight panel background
+            desc_panel_h = len(desc_lines[:5]) * 20 + 16
+            desc_panel = pygame.Surface((max_desc_w + 40, desc_panel_h), pygame.SRCALPHA)
+            desc_panel.fill((15, 18, 30, 180))
+            pygame.draw.rect(desc_panel, COL_PANEL_BORDER, desc_panel.get_rect(), 1, border_radius=4)
+            surface.blit(desc_panel, (cx - (max_desc_w + 40) // 2, desc_y - 8))
+
+            for i, line in enumerate(desc_lines[:5]):
                 d = desc_font.render(line, True, COL_TEXT)
-                surface.blit(d, (WINDOW_W // 2 - 320, 95 + i * 16))
+                surface.blit(d, (cx - max_desc_w // 2, desc_y + i * 20))
 
-            if event.get("special") == "tech_bait":
-                warning = desc_font.render("They will not honor any deal. This is a trap. Choosing to engage will end badly.", True, COL_DANGER)
-                surface.blit(warning, (WINDOW_W // 2 - warning.get_width() // 2, 180))
-
-            if event.get("special") == "pop_fiz_backfire":
-                hint = desc_font.render("They seem friendly... but they are exactly like you. Betray at your peril.", True, COL_GOLD)
-                surface.blit(hint, (WINDOW_W // 2 - hint.get_width() // 2, 180))
+            # --- Special warnings ---
+            warn_y = desc_y + desc_panel_h + 4
+            warn_font = pygame.font.SysFont("consolas", 13, bold=True)
+            if special == "tech_bait":
+                warning = warn_font.render("!! WARNING: This is a trap. They will not honor any deal. !!", True, COL_DANGER)
+                surface.blit(warning, (cx - warning.get_width() // 2, warn_y))
+            elif special == "pop_fiz_backfire":
+                hint = warn_font.render("~ They seem friendly... but they are exactly like you. Betray at your peril. ~", True, COL_GOLD)
+                surface.blit(hint, (cx - hint.get_width() // 2, warn_y))
+            elif special == "genocide":
+                geno = warn_font.render("<<< THE HOME BASE IS WATCHING LIVE — FINISH THEM >>>", True, (255, 50, 50))
+                surface.blit(geno, (cx - geno.get_width() // 2, warn_y))
 
             return
 
@@ -2140,80 +2300,109 @@ class SectorMapScreen(BaseScreen):
 
 # ─── Combat Screen ───────────────────────────────────────────────────────────
 
+# Panel layout constants for combat UI
+_PANEL_BOTTOM_H = 180       # height of the bottom HUD panel
+_PANEL_PAD = 12             # inner padding
+_LOG_LINES = 5              # visible combat log lines
+_WEAPON_BTN_W = 160
+_WEAPON_BTN_H = 36
+
+
 class CombatScreen(BaseScreen):
     def __init__(self, game: Game):
         super().__init__(game)
         self.selected_target: Optional[Tuple[int, int]] = None
+        self.selected_weapon: Optional[dict] = None  # from get_player_weapons()
         self.selected_dmg: Optional[DamageType] = None
         self.turn: int = 0
         self.orders: List = []  # (dmg, pos) or (dmg, p1, p2, "beam") for FTL line weapons
-        self.dmg_buttons: Dict[DamageType, pygame_gui.elements.UIButton] = {}
+        self.weapon_buttons: List[Tuple[dict, pygame_gui.elements.UIButton]] = []  # (weapon_info, btn)
         self.enemy_cell_rects: Dict[Tuple[int, int], pygame.Rect] = {}
         self.beam_mode: bool = False
         self.beam_start: Optional[Tuple[int, int]] = None
+        # Cached weapon list (refreshed on enter and after resolve)
+        self._weapons: List[dict] = []
 
     def on_enter(self):
         self.selected_target = None
+        self.selected_weapon = None
         self.selected_dmg = None
         self.turn = 0
         self.orders = []
         self.enemy_cell_rects = {}
         self.beam_mode = False
         self.beam_start = None
+        self._refresh_weapons()
         self._build_ui()
         # Flesh transition "into combat": reference the planet we traveled to / are fighting at
         if self.game.sector and self.game.current_node_idx < len(self.game.sector):
             node = self.game.sector[self.game.current_node_idx]
             self.game.combat_log.append(f"--- HOSTILE CONTACT AT {node.name} ({node.enemy_faction}) ---")
 
+    def _refresh_weapons(self):
+        """Refresh the available weapons list from the player ship."""
+        self._weapons = get_player_weapons(self.game.player_ship) if self.game.player_ship else []
+
     def _build_ui(self):
         for el in self.ui_elements:
             el.kill()
         self.ui_elements.clear()
-        self.dmg_buttons.clear()
+        self.weapon_buttons.clear()
 
-        # Damage type buttons (bottom panel)
-        dmg_types = list(DamageType)
-        btn_w, btn_h = 140, 40
-        start_x = 40
-        y = WINDOW_H - 120
+        # --- Weapon buttons (bottom-left, based on actual equipped weapons) ---
+        btn_x = _PANEL_PAD + 10
+        btn_y = WINDOW_H - _PANEL_BOTTOM_H + _PANEL_PAD + 30  # leave room for section header
 
-        for i, dt in enumerate(dmg_types):
+        for i, wep in enumerate(self._weapons):
+            primary = wep["damage_type"]
+            secondary = wep["secondary"]
+            tags_str = f" +{wep['tags']}" if wep["tags"] else ""
+            # Label: WEAPON_LABEL (DAMAGE) or WEAPON_LABEL (DMG+SEC)
+            dmg_str = primary.name
+            if secondary:
+                dmg_str += f"+{secondary.name}"
+            label = f"{wep['label']} ({dmg_str}){tags_str}"
+
             btn = pygame_gui.elements.UIButton(
-                relative_rect=pygame.Rect(start_x + i * (btn_w + 10), y, btn_w, btn_h),
-                text=dt.name.replace("_", " "),
+                relative_rect=pygame.Rect(btn_x + (i % 4) * (_WEAPON_BTN_W + 8),
+                                          btn_y + (i // 4) * (_WEAPON_BTN_H + 6),
+                                          _WEAPON_BTN_W, _WEAPON_BTN_H),
+                text=label,
                 manager=self.game.ui_manager,
             )
-            self.dmg_buttons[dt] = btn
+            self.weapon_buttons.append((wep, btn))
             self.ui_elements.append(btn)
 
-        # Beam button for FTL-style "draw two points, laser everything in the path" (pairs amazingly with beam_focus, prism, neurotoxin etc)
-        self.btn_beam = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect(start_x + len(dmg_types) * (btn_w + 10), y, 120, btn_h),
-            text="BEAM (draw line)",
-            manager=self.game.ui_manager,
-        )
-        self.ui_elements.append(self.btn_beam)
+        # If player has NO weapons, show a disabled hint
+        if not self._weapons:
+            no_wep = pygame_gui.elements.UIButton(
+                relative_rect=pygame.Rect(btn_x, btn_y, 300, _WEAPON_BTN_H),
+                text="NO ACTIVE WEAPONS — graft weapons to fight!",
+                manager=self.game.ui_manager,
+            )
+            no_wep.disable()
+            self.ui_elements.append(no_wep)
 
-        # Resolve button
+        # --- Action buttons (bottom-right) ---
+        action_x = WINDOW_W - 180
+        action_y = WINDOW_H - _PANEL_BOTTOM_H + _PANEL_PAD + 10
+
         self.btn_resolve = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect(WINDOW_W - 200, WINDOW_H - 120, 160, 40),
+            relative_rect=pygame.Rect(action_x, action_y, 160, 40),
             text="RESOLVE TURN",
             manager=self.game.ui_manager,
         )
         self.ui_elements.append(self.btn_resolve)
 
-        # Auto resolve for depth (simulates random orders + resolve, for when you want to speed up or test)
         self.btn_auto = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect(WINDOW_W - 200, WINDOW_H - 160, 160, 30),
-            text="AUTO-RESOLVE (random)",
+            relative_rect=pygame.Rect(action_x, action_y + 48, 160, 32),
+            text="AUTO-RESOLVE",
             manager=self.game.ui_manager,
         )
         self.ui_elements.append(self.btn_auto)
 
-        # End combat button (for when enemy is wrecked enough)
         self.btn_end_combat = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect(WINDOW_W - 200, WINDOW_H - 70, 160, 40),
+            relative_rect=pygame.Rect(action_x, action_y + 88, 160, 40),
             text="END COMBAT",
             manager=self.game.ui_manager,
         )
@@ -2221,37 +2410,41 @@ class CombatScreen(BaseScreen):
 
     def handle_event(self, event: pygame.event.Event):
         if event.type == pygame_gui.UI_BUTTON_PRESSED:
-            # Damage type selection
-            for dt, btn in self.dmg_buttons.items():
+            # Weapon selection
+            for wep, btn in self.weapon_buttons:
                 if event.ui_element == btn:
-                    self.selected_dmg = dt
-                    self.beam_mode = False
-                    self.beam_start = None
+                    self.selected_weapon = wep
+                    self.selected_dmg = wep["damage_type"]
+                    if wep["is_beam"]:
+                        self.beam_mode = True
+                        self.beam_start = None
+                        self.game.combat_log.append(f"BEAM selected: click two points on the enemy to sweep.")
+                    else:
+                        self.beam_mode = False
+                        self.beam_start = None
                     return
-
-            if event.ui_element == self.btn_beam:
-                self.beam_mode = True
-                self.beam_start = None
-                self.selected_dmg = self.selected_dmg or DamageType.KINETIC  # beam carries a flavor (usually kinetic for cutting)
-                self.game.combat_log.append("BEAM MODE: click two points on the enemy to sweep a laser line between them.")
-                return
 
             if event.ui_element == self.btn_resolve:
                 self._resolve_turn()
                 return
 
             if event.ui_element == self.btn_auto:
-                # Auto: issue 1-2 random dmg orders on random targets, then resolve (for depth/speed)
+                # Auto: use player's actual weapons on random targets
                 enemy = self.game.enemy_ship
-                if enemy:
-                    for _ in range(random.randint(1,2)):
-                        dt = random.choice(list(DamageType))
+                if enemy and self._weapons:
+                    for _ in range(min(len(self._weapons), random.randint(1, 3))):
+                        wep = random.choice(self._weapons)
+                        dt = wep["damage_type"]
                         poss = list(enemy.cells.keys())
                         if poss:
                             tgt = random.choice(poss)
-                            logs = execute_player_attack(self.game.player_ship, enemy, dt, target=tgt)
+                            if wep["is_beam"] and len(poss) >= 2:
+                                p1, p2 = random.sample(poss, 2)
+                                logs = execute_player_attack(self.game.player_ship, enemy, dt, beam=(p1, p2), weapon=wep)
+                            else:
+                                logs = execute_player_attack(self.game.player_ship, enemy, dt, target=tgt, weapon=wep)
                             self.game.combat_log.extend(logs)
-                            self.game.combat_log.append(f"[AUTO] Random {dt.name} on {tgt}")
+                            self.game.combat_log.append(f"[AUTO] {wep['label']} ({dt.name}) on {tgt}")
                 self._resolve_turn()
                 return
 
@@ -2268,25 +2461,25 @@ class CombatScreen(BaseScreen):
                     if self.beam_mode:
                         if self.beam_start is None:
                             self.beam_start = pos
-                            self.game.combat_log.append(f"Beam origin: {pos} (click second point to fire line)")
+                            self.game.combat_log.append(f"Beam origin: {pos} — click endpoint to fire")
                         else:
-                            # queue beam order
                             b_dmg = self.selected_dmg or DamageType.KINETIC
-                            self.orders.append((b_dmg, self.beam_start, pos, "beam"))
+                            self.orders.append({"dmg": b_dmg, "p1": self.beam_start, "p2": pos, "beam": True, "weapon": self.selected_weapon})
                             self.game.combat_log.append(
-                                f"Queued BEAM {b_dmg.name} {self.beam_start} → {pos} (path damage!)"
+                                f"Queued BEAM {b_dmg.name} {self.beam_start} → {pos}"
                             )
                             self.beam_mode = False
                             self.beam_start = None
                     elif self.selected_dmg:
-                        self.orders.append((self.selected_dmg, pos))
+                        self.orders.append({"dmg": self.selected_dmg, "target": pos, "beam": False, "weapon": self.selected_weapon})
+                        wep_label = self.selected_weapon["label"] if self.selected_weapon else self.selected_dmg.name
                         self.game.combat_log.append(
-                            f"Queued {self.selected_dmg.name} → {pos}"
+                            f"Queued {wep_label} → {pos}"
                         )
                     break
 
     def _resolve_turn(self):
-        """Execute all queued orders, then full shared combat resolution (fire, medical, retaliation with scatter/widebeam etc)."""
+        """Execute all queued orders, then full shared combat resolution."""
         if not self.orders and not self.selected_target:
             return
 
@@ -2294,37 +2487,29 @@ class CombatScreen(BaseScreen):
         enemy = self.game.enemy_ship
         player = self.game.player_ship
 
-        # Apply player orders via the central wrapper so grafted artifact pairings (multishot + neurotoxin on scatterguns,
-        # beam + focus/prism, etc) create emergent overpowered but earned builds.
         for order in self.orders:
             if not enemy:
                 break
-            if len(order) >= 4 and order[3] == "beam":
-                # beam order: (dmg, p1, p2, "beam")
-                dmg, p1, p2, _ = order[:4]
-                logs = execute_player_attack(player, enemy, dmg, beam=(p1, p2))
+            wep = order.get("weapon")
+            if order.get("beam"):
+                logs = execute_player_attack(player, enemy, order["dmg"], beam=(order["p1"], order["p2"]), weapon=wep)
                 self.game.combat_log.extend(logs)
             else:
-                dmg, target = order[:2]
-                logs = execute_player_attack(player, enemy, dmg, target=target)
+                logs = execute_player_attack(player, enemy, order["dmg"], target=order["target"], weapon=wep)
                 self.game.combat_log.extend(logs)
 
         self.orders.clear()
 
-        # Now let the shared model logic do retaliation (smart targeting of threats, scatter/widebeam special, differentiated dmg types), fire spread on disconnected, medical/nanite repairs
         if enemy and player:
             res_logs = resolve_combat_turn(enemy, player)
             for l in res_logs:
-                # prefix enemy actions for clarity in UI log
                 if l.startswith("ENEMY") or "REPAIRED" in l or "Fire" in l or "NANITE" in l or "MEDICAL" in l:
                     self.game.combat_log.append(l if l.startswith("[") else f"[RESOLVE] {l}")
                 else:
                     self.game.combat_log.append(l)
 
-            # Morale affects combat: low run_morale = crew panic / less effective (fleshed)
             if self.game.run_morale < 30 and random.random() < 0.4:
                 self.game.combat_log.append("[LOW MORALE] Crew panic: extra fire spread risk this turn.")
-                # simulate extra environmental on player
                 if player:
                     poss = [p for p, c in player.cells.items() if c.state == CellState.INTACT and not player.is_component_active(p)]
                     if poss:
@@ -2335,15 +2520,19 @@ class CombatScreen(BaseScreen):
             states = enemy.count_states()
             total = sum(states.values())
             if total > 0 and (states["destroyed"] + states["disabled"]) / total > 0.7:
-                self.game.combat_log.append("── Enemy ship critically damaged! End combat to salvage. ──")
+                self.game.combat_log.append("── Enemy critically damaged! End combat to salvage. ──")
 
-        # Warn if player is critically damaged (death will be checked after post-combat salvage to allow loot)
+        # Warn if player is critically damaged
         if player:
             try:
                 if player.get_network_integrity() < 0.15 or (0, 0) not in player.get_active_corridors():
-                    self.game.combat_log.append("[bold red]Your core is failing... Finish this fight for salvage, then the tube awaits.[/bold red]")
+                    self.game.combat_log.append("Your core is failing... Finish this fight, then the tube awaits.")
             except Exception:
                 pass
+
+        # Refresh weapons (some may have been destroyed by retaliation)
+        self._refresh_weapons()
+        self._build_ui()
 
     def _get_enemy_faction(self) -> str:
         """Determine faction for enemy tileset based on sector node."""
@@ -2359,7 +2548,6 @@ class CombatScreen(BaseScreen):
         if not ship or not ship.cells:
             return cell_rects
 
-        # Determine faction for tileset selection
         faction = self._get_enemy_faction() if is_enemy else "player"
 
         # Title
@@ -2367,7 +2555,6 @@ class CombatScreen(BaseScreen):
         txt = font.render(title, True, COL_ACCENT if not is_enemy else COL_DANGER)
         surface.blit(txt, (x_offset, y_offset - 25))
 
-        # Use the tile renderer
         highlight = self.selected_target if is_enemy else None
         cell_rects = self.game.tile_renderer.render_ship(
             surface, ship, x_offset, y_offset,
@@ -2377,115 +2564,167 @@ class CombatScreen(BaseScreen):
 
         return cell_rects
 
+    def _draw_panel_bg(self, surface: pygame.Surface, rect: pygame.Rect, alpha: int = 200):
+        """Draw a semi-transparent dark panel background with border."""
+        panel = pygame.Surface((rect.w, rect.h), pygame.SRCALPHA)
+        panel.fill((15, 18, 30, alpha))
+        surface.blit(panel, rect.topleft)
+        pygame.draw.rect(surface, COL_PANEL_BORDER, rect, 1)
+
     def draw(self, surface: pygame.Surface):
-        font = pygame.font.SysFont("consolas", 14)
-        font_bold = pygame.font.SysFont("consolas", 14, bold=True)
+        # Faction-specific combat background
+        faction = self._get_enemy_faction()
+        bg_name = f"combat_bg_{faction}.png"
+        if not _draw_screen_bg(surface, bg_name, overlay_alpha=160):
+            _draw_screen_bg(surface, "combat_bg.png", overlay_alpha=160)
+
+        font = pygame.font.SysFont("consolas", 13)
+        font_bold = pygame.font.SysFont("consolas", 13, bold=True)
+        font_title = pygame.font.SysFont("consolas", 15, bold=True)
+
+        # ─── Top instruction bar ─────────────────────────────────────────
+        top_bar = pygame.Rect(0, 0, WINDOW_W, 32)
+        self._draw_panel_bg(surface, top_bar, 220)
+        instr_text = "Select weapon → Click enemy cell to target"
+        if self.beam_mode:
+            instr_text = "BEAM MODE: Click origin cell, then endpoint to sweep"
+        elif not self.selected_dmg:
+            instr_text = "Select a weapon below to begin targeting"
+        instr = font.render(instr_text, True, COL_TEXT_DIM)
+        surface.blit(instr, (12, 8))
+
+        # Turn counter (top-right)
+        turn_txt = font_bold.render(f"Turn {self.turn}", True, COL_ACCENT)
+        surface.blit(turn_txt, (WINDOW_W - 80, 8))
+
+        # ─── Ship viewport area (middle) ─────────────────────────────────
+        viewport_top = 36
+        viewport_bottom = WINDOW_H - _PANEL_BOTTOM_H - 4
 
         # Player ship (left side)
         if self.game.player_ship:
             self._render_ship_interactive(
-                surface, self.game.player_ship, 30, 60, "YOUR DERELICT", is_enemy=False
+                surface, self.game.player_ship, 30, viewport_top + 30, "YOUR DERELICT", is_enemy=False
             )
 
         # Enemy ship (right side) — clickable
         if self.game.enemy_ship:
             self.enemy_cell_rects = self._render_ship_interactive(
-                surface, self.game.enemy_ship, WINDOW_W // 2 + 30, 60,
+                surface, self.game.enemy_ship, WINDOW_W // 2 + 30, viewport_top + 30,
                 self.game.enemy_ship.name or "ENEMY", is_enemy=True
             )
 
-        # Fleshed visual effects: overlay smoke/explosion from loaded sprites on recent FIRE/BREACH/EXPLOSION (graphics polish)
+        # Visual effects overlay
         try:
             recent = " ".join(self.game.combat_log[-6:]).upper()
             effects = self.game.tile_renderer.effects
-            if effects and ( "FIRE" in recent or "BREACH" in recent or "EXPLOSION" in recent or "VOLATILE" in recent ):
+            if effects and ("FIRE" in recent or "BREACH" in recent or "EXPLOSION" in recent or "VOLATILE" in recent):
                 if effects.smoke_frames:
-                    import random
                     ex = WINDOW_W // 2 + 80 + random.randint(-40, 80)
                     ey = 150 + random.randint(-20, 40)
                     frame = effects.smoke_frames[len(recent) % len(effects.smoke_frames)]
-                    surface.blit(pygame.transform.scale(frame, (24,24)), (ex, ey))
-                if "EXPLOSION" in recent or "VOLATILE" in recent and effects.explosion_frames:
+                    surface.blit(pygame.transform.scale(frame, (24, 24)), (ex, ey))
+                if ("EXPLOSION" in recent or "VOLATILE" in recent) and effects.explosion_frames:
                     ex = WINDOW_W // 2 + 120 + random.randint(-30, 30)
                     ey = 180 + random.randint(-10, 20)
                     frame = effects.explosion_frames[0]
-                    surface.blit(pygame.transform.scale(frame, (32,32)), (ex, ey))
+                    surface.blit(pygame.transform.scale(frame, (32, 32)), (ex, ey))
         except Exception:
             pass
 
-        # Status bar
+        # Beam preview line
+        if self.beam_mode and self.beam_start and self.beam_start in self.enemy_cell_rects:
+            start_rect = self.enemy_cell_rects[self.beam_start]
+            start_center = start_rect.center
+            mx, my = pygame.mouse.get_pos()
+            end_center = (mx, my)
+            for pos, rect in list(self.enemy_cell_rects.items()):
+                if rect.collidepoint(mx, my):
+                    end_center = rect.center
+                    break
+            pygame.draw.line(surface, (255, 80, 80), start_center, end_center, 3)
+            pygame.draw.circle(surface, (255, 220, 80), start_center, 5)
+
+        # ─── Combat log (mid-bottom, between ships and HUD) ──────────────
+        log_panel_y = viewport_bottom - _LOG_LINES * 16 - 8
+        log_rect = pygame.Rect(10, log_panel_y, WINDOW_W - 20, _LOG_LINES * 16 + 12)
+        self._draw_panel_bg(surface, log_rect, 180)
+
+        log_entries = self.game.combat_log[-_LOG_LINES:]
+        for i, entry in enumerate(log_entries):
+            col = COL_DANGER if "[ENEMY]" in entry or "[RESOLVE]" in entry else COL_TEXT_DIM
+            if "EXPLOSION" in entry or "VOLATILE" in entry:
+                col = COL_GOLD
+            elif "Queued" in entry:
+                col = COL_SUCCESS
+            elif "critically" in entry.lower():
+                col = COL_DANGER
+            txt = font.render(entry[:120], True, col)
+            surface.blit(txt, (18, log_panel_y + 6 + i * 16))
+
+        # ─── Bottom HUD panel ────────────────────────────────────────────
+        hud_rect = pygame.Rect(0, WINDOW_H - _PANEL_BOTTOM_H, WINDOW_W, _PANEL_BOTTOM_H)
+        self._draw_panel_bg(surface, hud_rect, 230)
+        pygame.draw.line(surface, COL_PANEL_BORDER, (0, WINDOW_H - _PANEL_BOTTOM_H), (WINDOW_W, WINDOW_H - _PANEL_BOTTOM_H), 2)
+
+        # Section title: WEAPONS
+        wep_header = font_title.render("WEAPONS", True, COL_ACCENT)
+        surface.blit(wep_header, (_PANEL_PAD + 10, WINDOW_H - _PANEL_BOTTOM_H + _PANEL_PAD + 8))
+
+        # Selected weapon indicator
+        sel_y = WINDOW_H - _PANEL_BOTTOM_H + _PANEL_PAD + 8
+        if self.selected_weapon:
+            kind = self.selected_weapon["kind"].upper()
+            dmg_name = self.selected_dmg.name if self.selected_dmg else "?"
+            sel_txt = font_bold.render(f"Active: {kind} ({dmg_name})", True, COL_SUCCESS)
+            surface.blit(sel_txt, (220, sel_y))
+        elif not self._weapons:
+            sel_txt = font_bold.render("No weapons online!", True, COL_DANGER)
+            surface.blit(sel_txt, (220, sel_y))
+
+        # Orders queue count
+        if self.orders:
+            oq_txt = font_bold.render(f"Orders: {len(self.orders)}", True, COL_GOLD)
+            surface.blit(oq_txt, (450, sel_y))
+
+        # ─── Status info (right side of bottom panel) ────────────────────
+        info_x = WINDOW_W - 420
+        info_y = WINDOW_H - _PANEL_BOTTOM_H + _PANEL_PAD + 8
+
         if self.game.enemy_ship:
             states = self.game.enemy_ship.count_states()
             quality = self.game.enemy_ship.get_capture_quality()
-            node = self.game.sector[self.game.current_node_idx] if self.game.sector else None
-            fac = f" [{node.enemy_faction}]" if node else ""
-            status = font.render(
-                f"Enemy{fac}: {states['intact']}i / {states['disabled']}d / {states['destroyed']}x  |  Quality: {quality}  |  Turn: {self.turn} | RunMorale: {self.game.run_morale} | Upgrades: {','.join(sorted(getattr(self.game,'run_upgrades',set()))) or 'none'}",
+
+            # Enemy status line
+            status_txt = font.render(
+                f"Enemy: {states['intact']}ok / {states['disabled']}dis / {states['destroyed']}wrk  |  {quality}",
                 True, COL_TEXT
             )
-            surface.blit(status, (30, WINDOW_H - 160))
+            surface.blit(status_txt, (info_x, info_y))
 
-            # Shield chain info (layers + properties from artifacts touching the chain)
+            # Shield info
             try:
                 esh = self.game.enemy_ship.get_active_shield_count()
                 psh = self.game.player_ship.get_active_shield_count() if self.game.player_ship else 0
-                eprops = ", ".join(sorted(self.game.enemy_ship.get_shield_properties())) or "plain"
-                pprops = ", ".join(sorted(self.game.player_ship.get_shield_properties())) or "plain" if self.game.player_ship else "plain"
-                sh_txt = font.render(f"Shields: Enemy {esh} (props:{eprops}) | You {psh} (props:{pprops})  [chain each shield link = +1 layer; artifacts touching any link affect whole shield]", True, COL_ACCENT)
-                surface.blit(sh_txt, (30, WINDOW_H - 200))
+                sh_txt = font.render(f"Shields: You {psh} | Enemy {esh}", True, COL_ACCENT)
+                surface.blit(sh_txt, (info_x, info_y + 18))
             except Exception:
                 pass
 
-            # Active threats (now using shared model func for accuracy with scatter etc)
+            # Enemy threats
             try:
                 threats = get_active_threats(self.game.enemy_ship)
-                if threats:
-                    fac = getattr(self.game.enemy_ship, 'faction', 'raider')
-                    ai_hint = {'techopuritan': ' (strips & disables)', 'pop_fiz': ' (chaotic)', 'felonia': ' (targets support)', 'confederacy': ' (slows pursuit)'}.get(fac, ' (opportunistic)')
-                    ttxt = font.render(f'Enemy active guns/beams/scatter: {len(threats)}{ai_hint}  (snipe to reduce retaliation)', True, COL_DANGER)
-                    surface.blit(ttxt, (30, WINDOW_H - 180))
+                fac = getattr(self.game.enemy_ship, 'faction', 'raider')
+                ai_hint = {'techopuritan': 'methodical', 'pop_fiz': 'chaotic', 'felonia': 'precise', 'confederacy': 'defensive'}.get(fac, 'aggressive')
+                ttxt = font.render(f"Threats: {len(threats)} weapons ({ai_hint})", True, COL_DANGER if threats else COL_TEXT_DIM)
+                surface.blit(ttxt, (info_x, info_y + 36))
             except Exception:
                 pass
 
-        # Selected damage type indicator
-        if self.selected_dmg:
-            dmg_txt = font_bold.render(f"Selected: {self.selected_dmg.name}", True, COL_ACCENT)
-            surface.blit(dmg_txt, (30, WINDOW_H - 140))
-
-        # Beam mode indicator + preview line (FTL beam: click two points, everything between takes the dmg)
-        if self.beam_mode:
-            bm_txt = font_bold.render("BEAM MODE ACTIVE — click origin then end point for path laser", True, (255, 100, 100))
-            surface.blit(bm_txt, (30, WINDOW_H - 125))
-            if self.beam_start and self.beam_start in self.enemy_cell_rects:
-                start_rect = self.enemy_cell_rects[self.beam_start]
-                start_center = start_rect.center
-                mx, my = pygame.mouse.get_pos()
-                end_center = (mx, my)
-                for pos, rect in list(self.enemy_cell_rects.items()):
-                    if rect.collidepoint(mx, my):
-                        end_center = rect.center
-                        break
-                pygame.draw.line(surface, (255, 80, 80), start_center, end_center, 4)
-                pygame.draw.circle(surface, (255, 220, 80), start_center, 6)
-
-        # Orders queue
-        if self.orders:
-            orders_txt = font.render(f"Orders queued: {len(self.orders)}", True, COL_SUCCESS)
-            surface.blit(orders_txt, (250, WINDOW_H - 140))
-
-        # Combat log (last 6 entries)
-        log_y = WINDOW_H - 260
-        log_entries = self.game.combat_log[-6:]
-        for i, entry in enumerate(log_entries):
-            col = COL_DANGER if "[ENEMY]" in entry else COL_TEXT_DIM
-            if "EXPLOSION" in entry or "VOLATILE" in entry:
-                col = COL_GOLD
-            txt = font.render(entry[:90], True, col)
-            surface.blit(txt, (30, log_y + i * 16))
-
-        # Instructions
-        instr = font.render("Click cells to target | BEAM button for line laser (pairs with focus/prism/neurotoxin for broken sweeps) | RESOLVE", True, COL_TEXT_DIM)
-        surface.blit(instr, (30, 30))
+            # Morale
+            morale_col = COL_SUCCESS if self.game.run_morale >= 60 else COL_GOLD if self.game.run_morale >= 30 else COL_DANGER
+            m_txt = font.render(f"Morale: {self.game.run_morale}", True, morale_col)
+            surface.blit(m_txt, (info_x, info_y + 54))
 
 
 # ─── Post-Combat / Salvage Screen ────────────────────────────────────────────
@@ -2973,6 +3212,9 @@ class PostCombatScreen(BaseScreen):
         self.game.change_state(GameState.HUB)
 
     def draw(self, surface: pygame.Surface):
+        # Background
+        _draw_screen_bg(surface, "post_combat_bg.png", overlay_alpha=150)
+
         font_big = pygame.font.SysFont("consolas", 32, bold=True)
         font = pygame.font.SysFont("consolas", 16)
         font_sm = pygame.font.SysFont("consolas", 13)
@@ -4971,6 +5213,9 @@ class GameOverScreen(BaseScreen):
                 self.game.change_state(GameState.MAIN_MENU)
 
     def draw(self, surface: pygame.Surface):
+        # Background
+        _draw_screen_bg(surface, "game_over_bg.png", overlay_alpha=130)
+
         font_big = pygame.font.SysFont("consolas", 40, bold=True)
         font = pygame.font.SysFont("consolas", 18)
         font_sm = pygame.font.SysFont("consolas", 14)

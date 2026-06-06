@@ -95,6 +95,74 @@ COMPONENT_KINDS: list[str] = [
     "broadcast_array", "harvester_claw", "stealth_plate",
     "scattergun", "beam",  # new for pairing variety + FTL-style line weapons
 ]
+# Weapon profiles define two independent axes:
+#   MODE — how damage is applied to the grid:
+#     "single" — one aimed shot at one cell
+#     "spray"  — hits target + 1-3 random nearby cells (shotgun)
+#     "line"   — FTL-style beam, hits every cell along a drawn path
+#     "area"   — hits target + spreads to adjacent cells
+#   DAMAGE TYPE — what kind of damage (from DamageType enum)
+#     primary is always applied; secondary (if any) is a bonus effect on same/adjacent
+#
+# Variety comes from mixing modes × damage types. Most weapons are single-damage.
+# Secondary is rare and meaningful (missile detonation, drone follow-up).
+WEAPON_PROFILES: dict[str, dict] = {
+    "gun": {
+        "primary": DamageType.KINETIC,
+        "secondary": None,
+        "mode": "single",
+        "label": "GUN",
+        "desc": "Aimed kinetic shot",
+    },
+    "laser": {
+        "primary": DamageType.ION,
+        "secondary": None,
+        "mode": "single",
+        "label": "LASER",
+        "desc": "Aimed ion beam, strips shields",
+    },
+    "missile": {
+        "primary": DamageType.KINETIC,
+        "secondary": DamageType.FIRE,
+        "mode": "single",
+        "label": "MISSILE",
+        "desc": "Kinetic impact + fire on detonation",
+    },
+    "flamer": {
+        "primary": DamageType.FIRE,
+        "secondary": None,
+        "mode": "area",
+        "label": "FLAMER",
+        "desc": "Fire spreads to adjacent cells",
+    },
+    "scattergun": {
+        "primary": DamageType.KINETIC,
+        "secondary": None,
+        "mode": "spray",
+        "label": "SCATTER",
+        "desc": "Kinetic fragments hit multiple cells",
+    },
+    "beam": {
+        "primary": DamageType.ION,
+        "secondary": None,
+        "mode": "line",
+        "label": "BEAM",
+        "desc": "Ion line sweep across cells",
+    },
+    "drone_bay": {
+        "primary": DamageType.EMP,
+        "secondary": DamageType.KINETIC,
+        "mode": "single",
+        "label": "DRONES",
+        "desc": "EMP disable + kinetic follow-up",
+    },
+}
+
+# Simple lookup (primary only) for backward compat with get_active_threats etc.
+WEAPON_DAMAGE_MAP: dict[str, "DamageType"] = {
+    k: v["primary"] for k, v in WEAPON_PROFILES.items()
+}
+
 ARTIFACT_KINDS: list[str] = [
     "volatile", "booster", "dampener", "reactor", "feast_chamber",
     "scanner", "jammer", "nanite", "overdrive", "accumulator", "pulse", "scatter",
@@ -1197,6 +1265,38 @@ def get_active_threats(ship: Ship) -> List[Tuple[Tuple[int, int], str]]:
     return threats
 
 
+def get_player_weapons(ship: Ship) -> List[Dict[str, Any]]:
+    """Return list of active weapons on the ship with their full profiles and effect tags.
+    Used by combat UI to show only the weapons the player actually has equipped.
+    Each weapon entry contains the full WEAPON_PROFILES data plus position and artifact tags."""
+    weapons: List[Dict[str, Any]] = []
+    if not ship:
+        return weapons
+    for pos, cell in ship.cells.items():
+        if cell.type != CellType.COMPONENT or cell.state != CellState.INTACT:
+            continue
+        if not ship.is_component_active(pos):
+            continue
+        kind = (cell.component_kind or "").lower()
+        if kind not in WEAPON_PROFILES:
+            continue
+        profile = WEAPON_PROFILES[kind]
+        tags = ship.get_component_effect_tags(pos)
+        weapons.append({
+            "pos": pos,
+            "kind": kind,
+            "damage_type": profile["primary"],
+            "secondary": profile["secondary"],
+            "mode": profile["mode"],
+            "label": profile["label"],
+            "desc": profile["desc"],
+            "tags": tags,
+            "is_beam": profile["mode"] == "line",
+            "is_scatter": profile["mode"] == "spray",
+        })
+    return weapons
+
+
 def get_line_cells(p1: Tuple[int, int], p2: Tuple[int, int]) -> List[Tuple[int, int]]:
     """Bresenham-style line for grid cells. Used for FTL-inspired beam weapons that damage
     everything along the drawn path. Small grids so simple implementation is fine."""
@@ -1224,103 +1324,124 @@ def get_line_cells(p1: Tuple[int, int], p2: Tuple[int, int]) -> List[Tuple[int, 
 
 def execute_player_attack(player: Ship, enemy: Ship, dmg: DamageType,
                           target: Optional[Tuple[int, int]] = None,
-                          beam: Optional[Tuple[Tuple[int, int], Tuple[int, int]]] = None) -> List[str]:
-    """Central wrapper for all player outgoing damage. This is where artifact pairings create the 'cool broken builds that feel earned'.
+                          beam: Optional[Tuple[Tuple[int, int], Tuple[int, int]]] = None,
+                          weapon: Optional[Dict[str, Any]] = None) -> List[str]:
+    """Central wrapper for player attacks. Two independent axes drive behavior:
+      MODE (how): single, spray, area, line — determines targeting pattern
+      DAMAGE TYPE (what): the DamageType applied to each hit cell
 
-    Examples the user wanted:
-      - scattergun (low power, un-aimable spray) + multishot/doubler artifact (doubles or +N projectiles) + neurotoxin (kinetic also nerves corridors/crew)
-        → random multi low-power poison shotgun that clears swathes.
-      - beam component + beam_focus + prism → long path laser that hits *everything* between two points, possibly forked or amped.
-
-    Mods are detected via has_offensive_mod (network or adj to your guns/beams). Extras go to random good targets or re-sweep.
-    Also feeds spectacle logs for ratings.
-    Used by both graphical and terminal combat.
+    Secondary damage is rare (missile fire-on-impact, drone kinetic follow-up).
+    Artifact pairings (multishot, neurotoxin, beam_focus, prism, doubler, payload)
+    stack on top for emergent overpowered builds.
     """
     logs: List[str] = []
-    is_beam = beam is not None
+    wep_mode = weapon["mode"] if weapon else "single"
+    wep_secondary = weapon["secondary"] if weapon else None
 
-    if is_beam:
+    # ─── LINE mode (beam weapons): FTL-style path sweep ──────────────────
+    if beam is not None:
         p1, p2 = beam
         base_logs = enemy.apply_line_damage(dmg, p1, p2)
         logs.extend(base_logs)
 
-        # Beam specific pairings
+        # Beam artifact pairings
         if player.has_offensive_mod("beam_focus"):
-            # Re-sweep with bonus strength or just extra damage flavor
             focus_logs = enemy.apply_line_damage(dmg, p1, p2, strength=2)
-            logs.extend([l for l in focus_logs if "BEAM" not in l][:3])  # avoid spam
-            logs.append("BEAM FOCUS: the line burned harder across the entire path")
+            logs.extend([l for l in focus_logs if "BEAM" not in l][:3])
+            logs.append("BEAM FOCUS: line burned harder across entire path")
         if player.has_offensive_mod("prism"):
-            # Simple split: one offset parallel-ish line (small grid, just perturb end)
             ox, oy = p2
-            split_p2 = (ox + 1, oy)
-            if split_p2 in enemy.cells or (ox, oy + 1) in enemy.cells:
+            if (ox + 1, oy) in enemy.cells or (ox, oy + 1) in enemy.cells:
                 split_logs = enemy.apply_line_damage(dmg, p1, (ox + 1, oy))
                 logs.extend([l for l in split_logs if "BEAM" not in l][:2])
             logs.append("PRISM: beam split, extra path carved")
-        if dmg == DamageType.KINETIC and player.has_offensive_mod("neurotoxin"):
-            # Neurotoxin on the beam path too (nerve along the cut)
+        if player.has_offensive_mod("neurotoxin"):
             for pos in get_line_cells(p1, p2):
                 if pos in enemy.cells:
-                    nlogs = enemy.apply_damage(DamageType.NERVE_GAS, pos)
-                    logs.extend(nlogs)
-            logs.append("NEUROTOXIN: the beam carried paralytic agents along its whole length")
+                    logs.extend(enemy.apply_damage(DamageType.NERVE_GAS, pos))
+            logs.append("NEUROTOXIN: paralytic agents along beam path")
 
-        if any("BEAM" in l or "swept" in l.lower() for l in logs):
-            logs.append("The bridge crew cheers the cinematic beam sweep — ratings spike.")
-    else:
-        # Point / normal fire (or spray from scatter)
-        if target is None:
-            return logs
-        base = enemy.apply_damage(dmg, target)
-        logs.extend(base)
+        if any("swept" in l.lower() for l in logs):
+            logs.append("Cinematic beam sweep — ratings spike.")
+        return logs
 
-        # Determine multiplicity from pairings (scattergun inherent + artifacts)
-        mult = 1
-        has_scattergun = any(
-            c.type == CellType.COMPONENT and c.component_kind == "scattergun"
-            and c.state == CellState.INTACT and player.is_component_active(p)
-            for p, c in player.cells.items()
-        )
-        if has_scattergun:
-            mult += 1  # base spray
-            logs.append("SCATTERGUN: low-power un-aimable spray (random follow-ups)")
+    # ─── All non-beam modes need a target ─────────────────────────────────
+    if target is None:
+        return logs
 
-        if player.has_offensive_mod("scatter") or player.has_offensive_mod("multishot"):
-            mult += 1
-            logs.append("MULTISHOT/SCATTER: extra projectiles")
-        if player.has_offensive_mod("doubler"):
-            mult += 1
-            logs.append("DOUBLER: projectile count doubled")
+    # ─── Apply primary damage to target ───────────────────────────────────
+    base = enemy.apply_damage(dmg, target)
+    logs.extend(base)
 
-        # Fire the extras (random, preferably at components — feels like the dumb gun going wild)
-        for _ in range(mult - 1):
-            candidates = [pp for pp, cc in enemy.cells.items()
-                          if cc.state == CellState.INTACT and cc.type in (CellType.COMPONENT, CellType.ARTIFACT)]
+    # ─── MODE: area — primary spreads to adjacent cells ───────────────────
+    if wep_mode == "area":
+        x, y = target
+        spread_count = 0
+        for dx, dy in [(1,0),(-1,0),(0,1),(0,-1)]:
+            adj = (x+dx, y+dy)
+            if adj in enemy.cells and enemy.cells[adj].state != CellState.DESTROYED:
+                if random.random() < 0.6:
+                    logs.extend(enemy.apply_damage(dmg, adj))
+                    spread_count += 1
+                    if spread_count >= 2:
+                        break
+        if spread_count:
+            logs.append(f"{dmg.name} spreads to {spread_count} adjacent cells")
+
+    # ─── MODE: spray — primary hits 1-3 random other cells ────────────────
+    if wep_mode == "spray":
+        spray_count = random.randint(1, 3)
+        candidates = [pp for pp, cc in enemy.cells.items()
+                      if cc.state == CellState.INTACT and pp != target]
+        hits = 0
+        for _ in range(spray_count):
             if not candidates:
-                candidates = [pp for pp in enemy.cells if enemy.cells[pp].state == CellState.INTACT]
-            if candidates:
-                rt = random.choice(candidates)
-                elogs = enemy.apply_damage(dmg, rt)
-                logs.extend(elogs)
-                logs.append(f"  (spray extra at {rt})")
+                break
+            rt = random.choice(candidates)
+            candidates.remove(rt)
+            logs.extend(enemy.apply_damage(dmg, rt))
+            hits += 1
+        if hits:
+            logs.append(f"Spray: {hits} extra fragments hit nearby")
 
-        # Neurotoxin pairing: kinetics get nerve gas rider (corridor disable + crew hit flavor)
-        if dmg == DamageType.KINETIC and player.has_offensive_mod("neurotoxin"):
-            nlogs = enemy.apply_damage(DamageType.NERVE_GAS, target)
-            logs.extend(nlogs)
-            # Also hit one random nearby for the "toxin cloud" feel
-            x, y = target
-            for dx, dy in [(1,0),(-1,0),(0,1),(0,-1)]:
-                np = (x+dx, y+dy)
-                if np in enemy.cells and enemy.cells[np].state != CellState.DESTROYED:
-                    logs.extend(enemy.apply_damage(DamageType.NERVE_GAS, np))
-                    break
-            logs.append("NEUROTOXIN: kinetic rounds coated — nerves and corridors melting")
+    # ─── SECONDARY damage (rare: missile fire, drone kinetic) ─────────────
+    if wep_secondary:
+        sec_logs = enemy.apply_damage(wep_secondary, target)
+        logs.extend(sec_logs)
+        logs.append(f"{wep_secondary.name} follow-up on impact")
 
-        # Payload or other general
-        if player.has_offensive_mod("payload"):
-            logs.append("PAYLOAD: extra volatile kick on impact")
+    # ─── Artifact pairings (stack on any weapon) ──────────────────────────
+    mult = 0
+    if player.has_offensive_mod("scatter") or player.has_offensive_mod("multishot"):
+        mult += 1
+        logs.append("MULTISHOT: extra projectile")
+    if player.has_offensive_mod("doubler"):
+        mult += 1
+        logs.append("DOUBLER: doubled")
+
+    for _ in range(mult):
+        candidates = [pp for pp, cc in enemy.cells.items()
+                      if cc.state == CellState.INTACT and cc.type in (CellType.COMPONENT, CellType.ARTIFACT)]
+        if not candidates:
+            candidates = [pp for pp in enemy.cells if enemy.cells[pp].state == CellState.INTACT]
+        if candidates:
+            rt = random.choice(candidates)
+            logs.extend(enemy.apply_damage(dmg, rt))
+            logs.append(f"  (bonus shot at {rt})")
+
+    # Neurotoxin: kinetic hits get nerve gas rider
+    if dmg == DamageType.KINETIC and player.has_offensive_mod("neurotoxin"):
+        logs.extend(enemy.apply_damage(DamageType.NERVE_GAS, target))
+        x, y = target
+        for dx, dy in [(1,0),(-1,0),(0,1),(0,-1)]:
+            np = (x+dx, y+dy)
+            if np in enemy.cells and enemy.cells[np].state != CellState.DESTROYED:
+                logs.extend(enemy.apply_damage(DamageType.NERVE_GAS, np))
+                break
+        logs.append("NEUROTOXIN: kinetic rounds coated — corridors melting")
+
+    if player.has_offensive_mod("payload"):
+        logs.append("PAYLOAD: volatile kick on impact")
 
     return logs
 

@@ -63,6 +63,8 @@ from space_derelict.model import (
     get_active_threats,
     apply_player_graft_bonuses,
     execute_player_attack,
+    get_player_weapons,
+    WEAPON_PROFILES,
     STARTING_FRAMES,
     roll_random_event,
     FACTIONS,
@@ -243,6 +245,26 @@ def choose_damage() -> DamageType:
         console.print("[red]Invalid choice[/red]")
 
 
+def choose_weapon(player: Ship) -> dict | None:
+    """Let the player pick from their active weapons (shows damage profile)."""
+    weapons = get_player_weapons(player)
+    if not weapons:
+        console.print("[red]No active weapons! Graft weapons onto your ship.[/red]")
+        return None
+    console.print("\n[bold]Your weapons:[/bold]")
+    for i, w in enumerate(weapons, 1):
+        sec_str = f"/{w['secondary'].name}" if w['secondary'] else ""
+        tags = f" [{w['tags']}]" if w['tags'] else ""
+        console.print(f"  [cyan]{i}[/cyan]. {w['label']} ({w['damage_type'].name}{sec_str}) — {w['desc']}{tags}")
+    while True:
+        choice = console.input(f"Weapon (1-{len(weapons)}): ").strip()
+        if choice.isdigit():
+            idx = int(choice) - 1
+            if 0 <= idx < len(weapons):
+                return weapons[idx]
+        console.print("[red]Invalid choice[/red]")
+
+
 def choose_target(ship: Ship) -> Tuple[int, int]:
     console.print("\n[bold]Target a cell[/bold] (enter x,y e.g. 0,0 or 1,-1)")
     cells = list(ship.cells.keys())
@@ -284,50 +306,46 @@ def simple_combat_demo(player: Ship, enemy: Ship, max_turns: int = 7) -> list[st
         player_props = ", ".join(sorted(player.get_shield_properties())) or "none"
         console.print(f"[dim]Enemy weapons: {wlist} | Shields: {shield_level} (props: {enemy_props}) | Your shields: {player_shields} (props: {player_props})[/dim]")
 
-        dmg = choose_damage()
+        wep = choose_weapon(player)
+        if not wep:
+            continue
+        dmg = wep["damage_type"]
 
         # Shields are now model-driven via shield comps + Ion/EMP interactions (see DESIGN table)
         if shield_level > 0 and dmg not in (DamageType.ION, DamageType.EMP):
             console.print("[cyan]Shields up — some effects reduced or blocked (e.g. gas).[/cyan]")
 
-        # Beam support (FTL line laser): if player has beam comps or just for fun, allow drawing a path
-        use_beam = False
-        has_beam = any((c.component_kind or "").lower() == "beam" and c.state == CellState.INTACT and player.is_component_active(p)
-                       for p, c in player.cells.items())
-        if has_beam or random.random() < 0.15:  # occasionally offer even without for testing
-            bm = console.input("  Fire as BEAM (draw line between two points, hits everything in path) ? [y/N] ").lower().strip()
-            use_beam = bm == "y"
+        # Beam support for beam-type weapons
+        use_beam = wep["is_beam"]
+        if use_beam:
+            console.print("[bold]BEAM weapon — draw line between two points on the enemy[/bold]")
 
         if use_beam:
             p1 = choose_target(enemy, prompt="Beam start cell (x,y or click-style): ")
             p2 = choose_target(enemy, prompt="Beam end cell: ")
-            msgs = execute_player_attack(player, enemy, dmg, beam=(p1, p2))
+            msgs = execute_player_attack(player, enemy, dmg, beam=(p1, p2), weapon=wep)
             log.extend(msgs)
         else:
             target = choose_target(enemy)
-            msgs = execute_player_attack(player, enemy, dmg, target=target)
+            msgs = execute_player_attack(player, enemy, dmg, target=target, weapon=wep)
             log.extend(msgs)
 
         # Allow multi-order turns for more depth (player can issue 1-2 before time advances)
         extra = console.input("  Issue another order this turn before resolve? [y/N] ").lower().strip()
         if extra == "y":
-            dmg2 = choose_damage()
-            # repeat beam choice logic for extra order (simplified)
-            use_beam2 = False
-            if any((c.component_kind or "").lower() == "beam" and c.state == CellState.INTACT and player.is_component_active(p)
-                   for p, c in player.cells.items()):
-                bm2 = console.input("    Extra as BEAM line? [y/N] ").lower().strip()
-                use_beam2 = bm2 == "y"
-            if use_beam2:
-                bp1 = choose_target(enemy, prompt="Extra beam start: ")
-                bp2 = choose_target(enemy, prompt="Extra beam end: ")
-                msgs2 = execute_player_attack(player, enemy, dmg2, beam=(bp1, bp2))
-            else:
-                tgt2 = choose_target(enemy)
-                msgs2 = execute_player_attack(player, enemy, dmg2, target=tgt2)
-            log.extend(msgs2)
-            for m in msgs2:
-                console.print(f"  [green]{m}[/green]")
+            wep2 = choose_weapon(player)
+            if wep2:
+                dmg2 = wep2["damage_type"]
+                if wep2["is_beam"]:
+                    bp1 = choose_target(enemy, prompt="Extra beam start: ")
+                    bp2 = choose_target(enemy, prompt="Extra beam end: ")
+                    msgs2 = execute_player_attack(player, enemy, dmg2, beam=(bp1, bp2), weapon=wep2)
+                else:
+                    tgt2 = choose_target(enemy)
+                    msgs2 = execute_player_attack(player, enemy, dmg2, target=tgt2, weapon=wep2)
+                log.extend(msgs2)
+                for m in msgs2:
+                    console.print(f"  [green]{m}[/green]")
 
         # Resolve environmental + retaliation
         resolve_msgs = resolve_combat_turn(enemy, player)
