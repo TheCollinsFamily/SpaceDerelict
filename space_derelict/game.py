@@ -5107,6 +5107,28 @@ class HubScreen(BaseScreen):
             if self.game.resources.ratings > 50:
                 hype_tip = font_sm.render("High infamy: Producers are more willing to greenlight exotic templates.", True, COL_TEXT_DIM)
                 surface.blit(hype_tip, (40, 740))
+            # Frame portrait image (right side)
+            portrait_path = os.path.join("assets", "frames", f"{preview}.png")
+            if os.path.exists(portrait_path):
+                cache_key = f"frame_portrait_{preview}"
+                if cache_key not in _bg_cache:
+                    try:
+                        pimg = pygame.image.load(portrait_path).convert_alpha()
+                        _bg_cache[cache_key] = pygame.transform.smoothscale(pimg, (200, 200))
+                    except Exception:
+                        pass
+                if cache_key in _bg_cache:
+                    px = WINDOW_W - 260
+                    py = 420
+                    # Vignette behind portrait
+                    vig = pygame.Surface((220, 220), pygame.SRCALPHA)
+                    vig.fill((0, 0, 0, 160))
+                    pygame.draw.rect(vig, COL_PANEL_BORDER, vig.get_rect(), 1, border_radius=4)
+                    surface.blit(vig, (px - 10, py - 10))
+                    surface.blit(_bg_cache[cache_key], (px, py))
+                    # Label under portrait
+                    plabel = font_sm.render(pname, True, COL_ACCENT)
+                    surface.blit(plabel, (px + 100 - plabel.get_width() // 2, py + 205))
         elif loc_id == "contracts":
             tip = font_sm.render("CONTRACT OFFICE: The Producers' Board / live TV studio. Pick up to 2 televised horrific acts the audience demands this season. Complete them in-run for bonus Ratings + prime-time replays back home.", True, COL_GOLD)
             surface.blit(tip, (40, 680))
