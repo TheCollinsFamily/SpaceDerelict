@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:visual": "node tools/visual-check.mjs",
-    "test:input": "node tools/input-check.mjs"
+    "test:input": "node tools/input-check.mjs",
+    "test:endgame": "node tools/endgame-check.mjs"
   },
   "dependencies": {
     "pixi.js": "^8.6.6"
