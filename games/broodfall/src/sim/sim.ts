@@ -108,8 +108,8 @@ export class Sim {
 
   meat: Record<Caste, number> = { war: 0, science: 0, royal: 0 };
   biomass = 0;
-  coreHp = B.coreHp;
-  coreMaxHp = B.coreHp;
+  coreHp: number = B.coreHp;
+  coreMaxHp: number = B.coreHp;
 
   phase: Phase = 'growth';
   phaseElapsed = 0;
@@ -120,6 +120,8 @@ export class Sim {
   wavesCleared = 0;
   scienceBanked = 0;
   royalsKilled = 0;
+  /** Total risk of the current/last wave (telegraphed danger number). */
+  waveRisk = 0;
 
   private spawnQueue: EnemyKind[] = [];
   private spawnTimer = 0;
@@ -750,6 +752,21 @@ export class Sim {
       const d = this.flow.dist[gate];
       e.surfaceFlowDist = Number.isFinite(d) ? d * B.tunnelerSurfaceFrac : 12;
     }
+    if (spec.hitShield) e.hitShield = spec.hitShield;
+    this.enemies.push(e);
+    return e;
+  }
+
+  /** Spawn a minion at an exact spot (a consort's retinue growing mid-march). */
+  private spawnMinion(kind: EnemyKind, at: Vec): Enemy {
+    const spec = enemySpec(kind);
+    const e: Enemy = {
+      id: this.nextId++, kind,
+      pos: { x: at.x + this.rng.float(-8, 8), y: at.y + this.rng.float(-8, 8) },
+      hp: spec.hp, maxHp: spec.hp, targetId: null, targetIsOrgan: false,
+      attackCooldown: 0, studyLeft: 0, leaving: false,
+    };
+    if (spec.hitShield) e.hitShield = spec.hitShield;
     this.enemies.push(e);
     return e;
   }
@@ -762,26 +779,27 @@ export class Sim {
     const scale = 1 + this.wavesCleared * B.waveCountScale;
     this.spawnQueue = [];
     const counts: Partial<Record<EnemyKind, number>> = {};
+    let waveRisk = 0;
     for (const [kind, n] of Object.entries(comp)) {
-      // The hive scales its RANKS, not its specialists: fighters multiply with
-      // the clock, but tower-eaters and support castes stay punctuation — a late
-      // wave with 8 sappers deletes the player's board, which is the rejected
-      // "destroy their investment" failure wearing a uniform.
+      // THE RISK LAW: the clock multiplies cheap ranks at full rate, risky
+      // specialists slowly (riskBaseline/risk of it). Escalation stays "more
+      // bodies + higher types" without ever becoming eight sappers eating the
+      // player's board — the rejected investment-destruction in uniform.
       const spec = enemySpec(kind as EnemyKind);
-      const specialist = !!(spec.sapper || spec.bomber || spec.tunneler || spec.healer || spec.speedAura);
-      const scaled = specialist
-        ? Math.min(Math.round((n ?? 0) * scale), (n ?? 0) + B.specialistWaveBonusMax)
-        : Math.round((n ?? 0) * scale);
+      const growth = 1 + (scale - 1) * (B.riskBaseline / spec.risk);
+      const scaled = Math.round((n ?? 0) * growth);
       counts[kind as EnemyKind] = scaled;
+      waveRisk += scaled * spec.risk;
       for (let i = 0; i < scaled; i++) this.spawnQueue.push(kind as EnemyKind);
     }
+    this.waveRisk = waveRisk;
     for (let i = this.spawnQueue.length - 1; i > 0; i--) {
       const j = this.rng.int(0, i);
       [this.spawnQueue[i], this.spawnQueue[j]] = [this.spawnQueue[j], this.spawnQueue[i]];
     }
     this.spawnTimer = 0;
     const sides = [...new Set(this.incomingGates.map((g) => this.gateSide(g)))].join('+');
-    this.events.push({ kind: 'wave-start', tier: this.tier, wave: this.waveNumber, counts, sides });
+    this.events.push({ kind: 'wave-start', tier: this.tier, wave: this.waveNumber, counts, sides, risk: waveRisk });
   }
 
   // ---------- tick ----------
@@ -849,6 +867,9 @@ export class Sim {
       if (this.interest > 0) {
         const n = this.rng.int(2, 4);
         for (let i = 0; i < n; i++) this.spawnEnemy('researcher');
+        // A famous specimen attracts the unscrupulous too: past a fame
+        // threshold, a thief slips in with every study party.
+        if (this.interest >= B.thiefInterestMin) this.spawnEnemy('thief');
         this.events.push({ kind: 'researchers-arrive', count: n });
       }
     }
@@ -860,6 +881,7 @@ export class Sim {
       this.royalSpawned = true;
       const lane = this.incomingGates[0] ?? this.gates[0];
       this.spawnEnemy('royal', lane);
+      this.spawnEnemy('consort', lane); // the retinue breeds as it marches
       for (let i = 0; i < B.royalEscort; i++) this.spawnEnemy('elite', lane);
       this.events.push({ kind: 'royal-incoming' });
     }
@@ -886,7 +908,8 @@ export class Sim {
     let target: Enemy | null = null;
     let bestD = this.bodyRadius * B.coreReachScale;
     for (const e of this.enemies) {
-      if (e.kind === 'researcher' || e.burrowed) continue;
+      // Science-caste visitors are not combatants; the body saves its venom.
+      if (enemySpec(e.kind).caste === 'science' || e.burrowed) continue;
       const d = dist(e.pos, this.core);
       if (d <= bestD) { bestD = d; target = e; }
     }
@@ -1078,7 +1101,41 @@ export class Sim {
         continue;
       }
 
+      // Science-caste thief: sneaks to the creep, grabs banked war meat, flees.
+      // Kill it before it slips off the field and the meat comes home.
+      if (spec.thief) {
+        const tSpeed = this.moveSpeedOf(e);
+        if (e.leaving) {
+          this.leaveField(e, tSpeed);
+          continue;
+        }
+        const cell = this.cellAt(e.pos.x, e.pos.y);
+        if (this.isCreeped(cell)) {
+          const amt = Math.min(Math.floor(this.meat.war), B.thiefSteal);
+          if (amt > 0) {
+            this.meat.war -= amt;
+            e.stole = amt;
+            this.events.push({ kind: 'meat-stolen', amount: amt });
+          }
+          e.leaving = true;
+          continue;
+        }
+        const nxt = this.flow.next[cell];
+        if (nxt >= 0) this.stepConstrained(e, this.cellCenter(nxt), tSpeed);
+        else this.stepConstrained(e, this.core, tSpeed);
+        continue;
+      }
+
       const speed = this.moveSpeedOf(e);
+
+      // Royal retinue: a living consort keeps breeding minions as it marches.
+      if (spec.spawns) {
+        e.auxCooldown = (e.auxCooldown ?? 0) - DT;
+        if (e.auxCooldown <= 0) {
+          e.auxCooldown = spec.spawns.interval;
+          for (let i = 0; i < spec.spawns.count; i++) this.spawnMinion(spec.spawns.kind, e.pos);
+        }
+      }
 
       // Tunnelers travel under the streets, untargetable, and surface past the outer guns.
       if (e.burrowed) {
@@ -1218,6 +1275,30 @@ export class Sim {
         }
       }
 
+      // Standoff bombardier: besieges the nearest structure from OUTSIDE melee.
+      // Short-armed limbs cannot answer it; long guns and broodlings can.
+      if (spec.standoff) {
+        const prey = this.nearestStructure(e.pos, B.mortarStandoff);
+        if (prey) {
+          e.attackCooldown -= DT;
+          if (e.attackCooldown <= 0 && spec.rate > 0) {
+            e.attackCooldown = 1 / spec.rate;
+            const s = prey.kind === 't'
+              ? this.towers.find((t) => t.id === prey.id)
+              : this.organs.find((o) => o.id === prey.id);
+            if (s) {
+              this.arcs.push({ from: { ...e.pos }, to: { ...s.pos }, ttl: 0.12 });
+              s.hp -= spec.damage;
+              if (s.hp <= 0) {
+                if (prey.kind === 'o') this.removeOrgan(prey.id);
+                else this.removeTower(prey.id, true);
+              }
+            }
+          }
+          continue;
+        }
+      }
+
       const cell = this.cellAt(e.pos.x, e.pos.y);
       const nextCell = this.flow.next[cell];
 
@@ -1250,30 +1331,45 @@ export class Sim {
     this.applySeparation();
   }
 
+  /** Walk back up the flow field (away from the core) and slip out at the edge. */
+  private leaveField(e: Enemy, speed: number): void {
+    const cell = this.cellAt(e.pos.x, e.pos.y);
+    const cx = cell % this.cfg.gridW;
+    const cy = Math.floor(cell / this.cfg.gridW);
+    if (cx <= 1 || cy <= 1 || cx >= this.cfg.gridW - 2 || cy >= this.cfg.gridH - 2) {
+      const i = this.enemies.indexOf(e);
+      if (i >= 0) this.enemies.splice(i, 1);
+      return;
+    }
+    let best = -1;
+    let bestD = this.flow.dist[cell];
+    let nearVoid = false;
+    const neighbors = [cell - 1, cell + 1, cell - this.cfg.gridW, cell + this.cfg.gridW];
+    for (const nb of neighbors) {
+      if (nb < 0 || nb >= this.map.cells.length) continue;
+      if (this.map.cells[nb] === CellType.Void) nearVoid = true;
+      if (!isPassable(this.map.cells[nb])) continue;
+      if (Number.isFinite(this.flow.dist[nb]) && this.flow.dist[nb] > bestD) {
+        bestD = this.flow.dist[nb];
+        best = nb;
+      }
+    }
+    if (best >= 0) {
+      this.stepConstrained(e, this.cellCenter(best), speed);
+    } else if (nearVoid) {
+      // Top of the flow field at the frontier: slip out into the unclaimed city.
+      const i = this.enemies.indexOf(e);
+      if (i >= 0) this.enemies.splice(i, 1);
+    } else {
+      this.stepConstrained(e, { x: e.pos.x < this.worldW / 2 ? 0 : this.worldW, y: e.pos.y }, speed);
+    }
+  }
+
   private updateResearcher(e: Enemy, _spec: EnemySpec): void {
     const cell = this.cellAt(e.pos.x, e.pos.y);
     const speed = this.moveSpeedOf(e); // a snared researcher is a caught researcher
     if (e.leaving) {
-      // Walk back up the flow field (away from the core) and slip out at the edge.
-      const cx = cell % this.cfg.gridW;
-      const cy = Math.floor(cell / this.cfg.gridW);
-      if (cx <= 1 || cy <= 1 || cx >= this.cfg.gridW - 2 || cy >= this.cfg.gridH - 2) {
-        const i = this.enemies.indexOf(e);
-        if (i >= 0) this.enemies.splice(i, 1);
-        return;
-      }
-      let best = -1;
-      let bestD = this.flow.dist[cell];
-      const neighbors = [cell - 1, cell + 1, cell - this.cfg.gridW, cell + this.cfg.gridW];
-      for (const nb of neighbors) {
-        if (nb < 0 || nb >= this.map.cells.length || !isPassable(this.map.cells[nb])) continue;
-        if (Number.isFinite(this.flow.dist[nb]) && this.flow.dist[nb] > bestD) {
-          bestD = this.flow.dist[nb];
-          best = nb;
-        }
-      }
-      if (best >= 0) this.stepConstrained(e, this.cellCenter(best), speed);
-      else this.stepConstrained(e, { x: e.pos.x < this.worldW / 2 ? 0 : this.worldW, y: e.pos.y }, speed);
+      this.leaveField(e, speed);
       return;
     }
     // Approach along the streets; step ONTO the creep edge to take samples.
@@ -1563,6 +1659,12 @@ export class Sim {
   }
 
   private damageEnemy(e: Enemy, dmg: number, yieldMult: number, capBonus = 0): void {
+    // Ablative carapace: the shell eats whole HITS — few big blows strip it
+    // fastest (the phalanx's mirror). Poison seeps through, it is not a hit.
+    if (e.hitShield !== undefined && e.hitShield > 0) {
+      e.hitShield -= 1;
+      return;
+    }
     const cap = enemySpec(e.kind).armorCap;
     // Shredded armor raises the cap for EVERY source — the mister's whole job.
     const shred = e.shredUntil !== undefined && e.shredUntil > this.time ? e.shredAmount ?? 0 : 0;
@@ -1590,6 +1692,15 @@ export class Sim {
     const calmScale = this.glandMode() === 'calm' ? B.glandCalmThreatScale : 1;
     this.threatKills += spec.threatOnKill * calmScale * B.killThreatScale;
     this.biomass += B.biomassPerKill;
+    // A splitter killed by damage bursts into its children; eaten whole, it doesn't.
+    if (spec.splitInto && !eaten) {
+      for (let i = 0; i < spec.splitInto.count; i++) this.spawnMinion(spec.splitInto.kind, e.pos);
+    }
+    // A dead thief drops what it stole.
+    if (e.stole !== undefined && e.stole > 0) {
+      this.meat.war += e.stole;
+      this.events.push({ kind: 'meat-recovered', amount: e.stole });
+    }
     this.events.push({ kind: 'kill', enemy: e.kind, caste: spec.caste });
     if (!eaten && yieldMult > 0) {
       const slot = this.map.slots[slotOfCell(this.map, this.cellAt(e.pos.x, e.pos.y))];

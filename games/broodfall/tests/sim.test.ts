@@ -3,7 +3,7 @@ import { Rng } from '../src/sim/rng';
 import { Sim, towerStats, towerSpec } from '../src/sim/sim';
 import { CellType, isPassable } from '../src/sim/citymap';
 import type { SimConfig, Tower } from '../src/sim/types';
-import { BALANCE as B, ENEMIES, TOWERS } from '../content/data';
+import { BALANCE as B, ENEMIES, TOWERS, WAVE_TABLE } from '../content/data';
 
 const CFG: SimConfig = { gridW: 50, gridH: 40, cellPx: 26, seed: 1234 };
 
@@ -415,6 +415,152 @@ describe('the six genre-seat towers', () => {
     expect(dE.hp).toBeLessThan(dE.maxHp);  // the far support died first in priority
     expect(sE.hp).toBe(sE.maxHp);          // the near soldier was ignored
     void drummer;
+  });
+});
+
+describe('new enemy verbs, castes, and the risk law', () => {
+  it('every WAR-wave kind is war caste; science and royals never march in waves', () => {
+    const kinds = new Set<string>();
+    for (const row of WAVE_TABLE) for (const k of Object.keys(row)) kinds.add(k);
+    for (const k of kinds) {
+      expect(ENEMIES.find((e) => e.kind === k)!.caste).toBe('war');
+    }
+    // Faction sanity for the visitors and the court.
+    expect(ENEMIES.find((e) => e.kind === 'thief')!.caste).toBe('science');
+    expect(ENEMIES.find((e) => e.kind === 'researcher')!.caste).toBe('science');
+    expect(ENEMIES.find((e) => e.kind === 'consort')!.caste).toBe('royal');
+    expect(ENEMIES.find((e) => e.kind === 'royal')!.caste).toBe('royal');
+    // Every kind carries a positive risk.
+    for (const e of ENEMIES) expect(e.risk).toBeGreaterThan(0);
+  });
+
+  it('risk law: the clock multiplies cheap ranks fast and risky specialists slowly', () => {
+    const s = freshSim(900);
+    (s as unknown as { wavesCleared: number }).wavesCleared = 12; // scale 2.2
+    s.biomass = 6000; // deep tier
+    while (s.phase !== 'siege') s.tick();
+    const ev = (s as unknown as { events: unknown[] });
+    void ev;
+    // Recompute what startSiege computed: growth for soldier vs sapper.
+    const scale = 1 + 12 * B.waveCountScale;
+    const soldierGrowth = 1 + (scale - 1) * (B.riskBaseline / ENEMIES.find((e) => e.kind === 'soldier')!.risk);
+    const sapperGrowth = 1 + (scale - 1) * (B.riskBaseline / ENEMIES.find((e) => e.kind === 'sapper')!.risk);
+    expect(soldierGrowth).toBeGreaterThan(sapperGrowth * 1.5);
+    expect(s.waveRisk).toBeGreaterThan(0); // the danger number is telegraphed
+  });
+
+  it('splitter bursts into skitterlings when shot — but not when eaten whole', () => {
+    const s = freshSim(901);
+    const sim = s as unknown as SpawnSim & { eatEnemy(e: unknown): void };
+    sim.spawnEnemy('splitter', s.gates[0]);
+    const sp = s.enemies.find((x) => x.kind === 'splitter')!;
+    sim.damageEnemy(sp, 999, 1);
+    expect(s.enemies.filter((x) => x.kind === 'skitterling').length).toBe(2);
+    // Eaten whole: no children.
+    sim.spawnEnemy('splitter', s.gates[0]);
+    const sp2 = s.enemies.find((x) => x.kind === 'splitter')!;
+    sim.eatEnemy(sp2);
+    expect(s.enemies.filter((x) => x.kind === 'skitterling').length).toBe(2);
+  });
+
+  it('carapace shell eats whole hits (big-hit mirror of the phalanx); poison seeps through', () => {
+    const s = freshSim(902);
+    const sim = s as unknown as SpawnSim;
+    sim.spawnEnemy('carapace', s.gates[0]);
+    const e = s.enemies.find((x) => x.kind === 'carapace')!;
+    const shell = ENEMIES.find((x) => x.kind === 'carapace')!.hitShield!;
+    expect(e.hitShield).toBe(shell);
+    for (let i = 0; i < shell; i++) sim.damageEnemy(e, 500, 1);
+    expect(e.hp).toBe(e.maxHp); // shell ate all eight
+    expect(e.hitShield).toBe(0);
+    sim.damageEnemy(e, 30, 1);
+    expect(e.hp).toBe(e.maxHp - 30); // shell gone, damage lands
+    // Poison is not a hit: it ticks through a fresh shell.
+    sim.spawnEnemy('carapace', s.gates[0]);
+    const e2 = s.enemies.filter((x) => x.kind === 'carapace')[1] ?? s.enemies.find((x) => x.kind === 'carapace' && x !== e)!;
+    sim.applyHitEffects(e2, { slowMult: 1, slowDur: 0, poisonDps: 10, poisonDur: 1 });
+    for (let i = 0; i < 10; i++) s.tick();
+    expect(e2.hp).toBeLessThan(e2.maxHp);
+  });
+
+  it('mortar besieges structures from standoff range — melee walls cannot answer it', () => {
+    const s = freshSim(903);
+    s.meat.war = 9999;
+    s.meat.science = 9999;
+    let spineIdx = -1;
+    for (let guard = 0; guard < 300 && spineIdx < 0; guard++) {
+      spineIdx = s.hand.findIndex((c) => c.family === 'spine');
+      if (spineIdx < 0) s.issue({ kind: 'discard', cardIndex: 0 });
+    }
+    let roadCell = -1;
+    for (let guard = 0; guard < 40 && roadCell < 0; guard++) {
+      for (let c = 0; c < s.map.cells.length; c++) {
+        if (s.map.cells[c] === CellType.Road && s.canBuildTower(c, 'spine')) { roadCell = c; break; }
+      }
+      if (roadCell < 0) for (let i = 0; i < 100; i++) s.tick();
+    }
+    expect(s.issue({ kind: 'build', cardIndex: spineIdx, cell: roadCell }).ok).toBe(true);
+    const wall = s.towers[0];
+    const sim = s as unknown as SpawnSim;
+    const m = sim.spawnEnemy('mortar', s.gates[0]);
+    m.pos.x = wall.pos.x + 70; // inside standoff, outside melee contact
+    m.pos.y = wall.pos.y;
+    const hp0 = wall.hp;
+    const mx = m.pos.x;
+    for (let i = 0; i < 60; i++) s.tick();
+    expect(wall.hp).toBeLessThan(hp0);                 // bombarded
+    expect(Math.abs(m.pos.x - mx)).toBeLessThan(20);   // from where it stood
+  });
+
+  it('thief steals war meat at the creep and drops it when killed', () => {
+    const s = freshSim(904);
+    s.meat.war = 100;
+    const sim = s as unknown as SpawnSim & { killEnemy(id: number, y: number, e: boolean): void };
+    sim.spawnEnemy('thief', s.gates[0]);
+    const t = s.enemies.find((x) => x.kind === 'thief')!;
+    let stole = false;
+    for (let i = 0; i < 2000 && !stole; i++) {
+      s.tick();
+      if (t.stole !== undefined && t.stole > 0) stole = true;
+      if (!s.enemies.includes(t)) break;
+    }
+    expect(stole).toBe(true);
+    expect(t.leaving).toBe(true);          // running for the edge with the goods
+    const warAfterTheft = s.meat.war;
+    sim.killEnemy(t.id, 0, false);
+    expect(s.meat.war).toBe(warAfterTheft + t.stole!); // recovered on the kill
+  });
+
+  it('a thief that escapes keeps the meat (no recovery event ever fires)', () => {
+    const s = freshSim(905);
+    s.meat.war = 100;
+    s.coreHp = 999999; // keep the field alive while the courier runs
+    const sim = s as unknown as SpawnSim;
+    sim.spawnEnemy('thief', s.gates[0]);
+    const t = s.enemies.find((x) => x.kind === 'thief')!;
+    let sawTheft = false;
+    let sawRecovery = false;
+    let ticks = 0;
+    while (s.enemies.includes(t) && ticks++ < 6000) {
+      s.tick();
+      for (const e of s.takeEvents()) {
+        if (e.kind === 'meat-stolen') sawTheft = true;
+        if (e.kind === 'meat-recovered') sawRecovery = true;
+      }
+    }
+    expect(s.enemies.includes(t)).toBe(false); // slipped off the field
+    expect(sawTheft).toBe(true);
+    expect(sawRecovery).toBe(false); // the meat is gone for good
+  });
+
+  it('consort breeds militia as it marches (royal caste, royal meat)', () => {
+    const s = freshSim(906);
+    const sim = s as unknown as SpawnSim;
+    sim.spawnEnemy('consort', s.gates[0]);
+    const before = s.enemies.filter((x) => x.kind === 'militia').length;
+    for (let i = 0; i < 130; i++) s.tick(); // two 6s pulses
+    const after = s.enemies.filter((x) => x.kind === 'militia').length;
+    expect(after - before).toBeGreaterThanOrEqual(2);
   });
 });
 

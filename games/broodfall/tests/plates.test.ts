@@ -4,6 +4,7 @@ import { Rng } from '../src/sim/rng';
 import { canPlace, createBoard, computeFlow, draftOffers, frontierGates, stampPlate } from '../src/sim/citymap';
 import { DT, Sim } from '../src/sim/sim';
 import { Autoplayer } from '../src/sim/autoplayer';
+import { ENEMIES } from '../content/data';
 
 describe('plate patterns', () => {
   it('start plate and every rotation of every plate validate', () => {
@@ -83,7 +84,11 @@ describe('wave rhythm', () => {
       auto.act(sim, DT);
       sim.tick();
       sim.takeEvents();
-      const warCount = sim.enemies.filter((e) => e.kind !== 'researcher').length;
+      // Science-caste visitors (researchers, thieves) may wander in any time;
+      // the discreteness rule is about the WAR caste.
+      const warCount = sim.enemies.filter(
+        (e) => ENEMIES.find((s) => s.kind === e.kind)!.caste === 'war',
+      ).length;
       if (sim.phase === 'growth' && warCount > lastCount) violations++;
       lastCount = warCount;
       ticks++;

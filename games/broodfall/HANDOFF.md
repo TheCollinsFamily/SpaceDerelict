@@ -67,10 +67,11 @@ debrief → ship gene bay → redeploy.
 ## How to verify (all must be green before claiming anything)
 
 ```powershell
-npm test             # 54 tests: sim, plates algebra, wave rhythm, per-verb type
-                     # behaviors, butcher economy, creep logistics, the six genre-seat
-                     # towers, combination-algebra caps, full autoplayed runs, and the
-                     # PLACEMENT GUARDRAIL (now hold-16 — see ITERATION addendum 5)
+npm test             # 61 tests: sim, plates algebra, wave rhythm, per-verb behaviors
+                     # for 17 tower families + 19 enemy kinds, the risk law, faction
+                     # invariants, butcher economy, creep logistics, combination-algebra
+                     # caps, full autoplayed runs, and the PLACEMENT GUARDRAIL
+                     # (hold-12 again — metric history in ITERATION addenda 5-6)
 npm run build
 npm run test:visual  # headless chromium: HUD + per-region pixel checks (camera-aware)
 npm run test:input   # real player gestures: build, cannibalize, organ, cancel
@@ -95,12 +96,14 @@ URL params: `?seed= &auto=1 &autostart=1 &speed= &directive=hold|royal|harvest &
 
 ## Current balance state (don't trust memory — re-measure)
 
-Scripted player, hold-12, 1 entrance: 3/3 measured seeds win; 2-3 entrances: ~1/4 (the
-wager bites; humans do better than the bot). Guardrail: smart 8/8 wins, flips 1:0,
-totals above random (the bot now throws sling clots at the telegraphed gate and arms
-interior guns when tier 6 nears — ITERATION addenda 3-4 carry the tuning history).
+Scripted player, hold-12, 1 entrance: 2/3 measured seeds win (the enemy expansion
+restored real difficulty); 2-3 entrances much harder. Guardrail (hold-12): smart 6/8,
+outcome flips 4:1, totals +11% — the most decisive it has measured. The bot throws
+sling clots at the telegraphed gate, volleys the lobber at the closest hostile, and
+arms interior guns when tier 6 nears (ITERATION addenda 3-6 carry the tuning history).
 Creep is multi-source: core + sling patches + root lobes + seeping pipped limbs.
-Key economy shape: near-flat bounties (2-3 meat), clearing
+Waves are built by the RISK LAW (every enemy kind carries a risk weight; the HUD
+telegraphs each wave's total risk). Key economy shape: near-flat bounties (2-3 meat), clearing
 wage per wave, wave counts scale with clock (`waveCountScale`), tier from threat ladder
 (waves cleared + kills×0.3 + biomass×0.035, per-tier 46).
 

@@ -129,20 +129,30 @@ export const ORGANS: readonly OrganSpec[] = [
 ];
 
 export const ENEMIES: readonly EnemySpec[] = [
-  { kind: 'responder', caste: 'war', hp: 20, speed: 42, damage: 4, rate: 1.0, meat: 2, threatOnKill: 1 },
-  { kind: 'militia', caste: 'war', hp: 45, speed: 38, damage: 7, rate: 1.0, meat: 2, threatOnKill: 2 },
-  { kind: 'soldier', caste: 'war', hp: 90, speed: 34, damage: 14, rate: 1.1, meat: 2, threatOnKill: 3 },
-  { kind: 'elite', caste: 'war', hp: 200, speed: 30, damage: 24, rate: 1.2, meat: 3, threatOnKill: 5 },
-  { kind: 'researcher', caste: 'science', hp: 30, speed: 36, damage: 0, rate: 0, meat: 12, threatOnKill: 1 },
-  { kind: 'flier', caste: 'war', hp: 55, speed: 58, damage: 9, rate: 1.2, meat: 3, threatOnKill: 3, flies: true },
-  { kind: 'sapper', caste: 'war', hp: 130, speed: 44, damage: 20, rate: 1.4, meat: 4, threatOnKill: 4, sapper: true },
-  { kind: 'phalanx', caste: 'war', hp: 750, speed: 20, damage: 26, rate: 0.9, meat: 8, threatOnKill: 6, armorCap: 12 },
-  // Support castes: each one is a kill-priority decision, not a stat block.
-  { kind: 'drummer', caste: 'war', hp: 70, speed: 36, damage: 5, rate: 0.8, meat: 5, threatOnKill: 3, speedAura: true },
-  { kind: 'bomber', caste: 'war', hp: 60, speed: 46, damage: 0, rate: 0, meat: 3, threatOnKill: 3, bomber: true },
-  { kind: 'tunneler', caste: 'war', hp: 110, speed: 40, damage: 16, rate: 1.1, meat: 5, threatOnKill: 4, tunneler: true },
-  { kind: 'tender', caste: 'war', hp: 80, speed: 34, damage: 6, rate: 0.5, meat: 6, threatOnKill: 2, healer: true },
-  { kind: 'royal', caste: 'royal', hp: 1000, speed: 16, damage: 28, rate: 0.8, meat: 120, threatOnKill: 0 },
+  // WAR CASTE — the response ladder. Risk is the danger weight of ONE body:
+  // wave budgets multiply cheap ranks at full rate and risky specialists slowly.
+  { kind: 'responder', caste: 'war', hp: 20, speed: 42, damage: 4, rate: 1.0, meat: 2, threatOnKill: 1, risk: 1 },
+  { kind: 'skitterling', caste: 'war', hp: 12, speed: 66, damage: 3, rate: 1.6, meat: 1, threatOnKill: 0, risk: 1 },
+  { kind: 'militia', caste: 'war', hp: 45, speed: 38, damage: 7, rate: 1.0, meat: 2, threatOnKill: 2, risk: 2 },
+  { kind: 'soldier', caste: 'war', hp: 90, speed: 34, damage: 14, rate: 1.1, meat: 2, threatOnKill: 3, risk: 3 },
+  { kind: 'splitter', caste: 'war', hp: 75, speed: 36, damage: 8, rate: 1.0, meat: 3, threatOnKill: 3, risk: 5, splitInto: { kind: 'skitterling', count: 2 } },
+  { kind: 'flier', caste: 'war', hp: 55, speed: 58, damage: 9, rate: 1.2, meat: 3, threatOnKill: 3, risk: 4, flies: true },
+  { kind: 'elite', caste: 'war', hp: 200, speed: 30, damage: 24, rate: 1.2, meat: 3, threatOnKill: 5, risk: 6 },
+  { kind: 'mortar', caste: 'war', hp: 95, speed: 26, damage: 10, rate: 0.45, meat: 5, threatOnKill: 4, risk: 8, standoff: true },
+  { kind: 'sapper', caste: 'war', hp: 130, speed: 44, damage: 20, rate: 1.4, meat: 4, threatOnKill: 4, risk: 9, sapper: true },
+  { kind: 'carapace', caste: 'war', hp: 160, speed: 28, damage: 18, rate: 1.0, meat: 6, threatOnKill: 5, risk: 8, hitShield: 6 },
+  { kind: 'phalanx', caste: 'war', hp: 750, speed: 20, damage: 26, rate: 0.9, meat: 8, threatOnKill: 6, risk: 10, armorCap: 12 },
+  // War support: each one is a kill-priority decision, not a stat block.
+  { kind: 'drummer', caste: 'war', hp: 70, speed: 36, damage: 5, rate: 0.8, meat: 5, threatOnKill: 3, risk: 8, speedAura: true },
+  { kind: 'bomber', caste: 'war', hp: 60, speed: 46, damage: 0, rate: 0, meat: 3, threatOnKill: 3, risk: 7, bomber: true },
+  { kind: 'tunneler', caste: 'war', hp: 110, speed: 40, damage: 16, rate: 1.1, meat: 5, threatOnKill: 4, risk: 9, tunneler: true },
+  { kind: 'tender', caste: 'war', hp: 80, speed: 34, damage: 6, rate: 0.5, meat: 6, threatOnKill: 2, risk: 8, healer: true },
+  // SCIENCE CASTE — they come for YOU, not for the core. Never in war waves.
+  { kind: 'researcher', caste: 'science', hp: 30, speed: 36, damage: 0, rate: 0, meat: 12, threatOnKill: 1, risk: 2 },
+  { kind: 'thief', caste: 'science', hp: 45, speed: 52, damage: 0, rate: 0, meat: 10, threatOnKill: 1, risk: 4, thief: true },
+  // ROYAL CASTE — only with a royal event. The jackpot walks with a retinue.
+  { kind: 'royal', caste: 'royal', hp: 1000, speed: 16, damage: 28, rate: 0.8, meat: 120, threatOnKill: 0, risk: 40 },
+  { kind: 'consort', caste: 'royal', hp: 220, speed: 22, damage: 12, rate: 0.8, meat: 40, threatOnKill: 4, risk: 14, spawns: { kind: 'militia', count: 2, interval: 6 } },
 ];
 
 /** Wave composition per threat tier (spawned over the siege's spawn window). */
@@ -152,14 +162,15 @@ export const ENEMIES: readonly EnemySpec[] = [
  * verb: fliers ignore the streets, sappers climb your perches, the phalanx
  * shrugs off big hits.
  */
+/** WAR waves only — science visits with the researchers, royals with the siege. */
 export const WAVE_TABLE: readonly Partial<Record<string, number>>[] = [
   { responder: 8 },                                            // tier 0: first response
-  { responder: 8, militia: 6 },                                // tier 1: militia muster
-  { militia: 12, soldier: 6 },                                 // tier 2: the army arrives
-  { militia: 8, soldier: 8, elite: 2, flier: 4, drummer: 1 },  // tier 3: air support, war-drums
-  { soldier: 10, elite: 5, flier: 5, sapper: 3, bomber: 2, drummer: 1 },              // tier 4: sappers climb, charges set
-  { soldier: 12, elite: 7, flier: 6, sapper: 4, phalanx: 2, tender: 2, bomber: 2 },   // tier 5: the shield wall marches tended
-  { elite: 10, flier: 8, sapper: 5, phalanx: 3, drummer: 2, tender: 3, tunneler: 4, bomber: 4 }, // tier 6: everything they have
+  { responder: 8, militia: 6, skitterling: 4 },                // tier 1: militia muster
+  { militia: 12, soldier: 6, splitter: 1 },                    // tier 2: the army arrives
+  { militia: 8, soldier: 8, elite: 2, flier: 4, drummer: 1, splitter: 2 },  // tier 3: air support, war-drums
+  { soldier: 10, elite: 5, flier: 5, sapper: 3, bomber: 2, drummer: 1, splitter: 2, mortar: 1 },  // tier 4: sappers climb, siege engines
+  { soldier: 12, elite: 7, flier: 6, sapper: 4, phalanx: 2, tender: 2, bomber: 2, carapace: 1, mortar: 2 },  // tier 5: the shield wall marches tended
+  { elite: 10, flier: 8, sapper: 5, phalanx: 3, drummer: 2, tender: 3, tunneler: 4, bomber: 4, carapace: 3, mortar: 3, splitter: 4 }, // tier 6: everything they have
 ];
 
 export const BALANCE = {
@@ -195,9 +206,19 @@ export const BALANCE = {
   /** Verticality: range bonus per block height level above 1. */
   heightRangeBonus: 0.10,
   /** Waves grow with the campaign clock as well as the threat ladder. */
-  waveCountScale: 0.10,
-  /** Specialists (sapper/bomber/tunneler/tender/drummer) scale at most +this over their table row. */
-  specialistWaveBonusMax: 2,
+  waveCountScale: 0.09,
+  /**
+   * The RISK LAW (Collins, Sep 26 2026): count(kind) = row × (1 + (scale-1) ×
+   * riskBaseline/risk). A soldier (risk = baseline) multiplies at full clock
+   * rate; a risk-9 sapper grows at a third of it. One continuous law replaces
+   * the old per-flag specialist cap.
+   */
+  riskBaseline: 3,
+  /** Science-caste field units: thieves join researcher parties past this interest. */
+  thiefInterestMin: 12,
+  thiefSteal: 15,
+  /** Standoff bombardiers besiege structures from outside melee. */
+  mortarStandoff: 85,
   /** Sappers crawl at this fraction of speed while scaling a block face. */
   sapperClimbFactor: 0.45,
   /** Threat tiers: tier = floor(threat / threatPerTier), clamped to table. */

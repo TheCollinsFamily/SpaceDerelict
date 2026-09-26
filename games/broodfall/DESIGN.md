@@ -108,17 +108,35 @@ heading — defaults toward the nearest gate, click it to re-aim N→E→S→W. 
 core's radius, the root's lobes, the sling's thrown patches and seeping pipped limbs,
 creep is now a multi-source territory game, not one circle.
 
-Enemies (13 kinds; escalation adds VERBS, per the rule above):
-responder/militia/soldier/elite (the ladder of ordinary war bodies) · researcher (science; comes to study, edible) ·
-flier (t3: ignores terrain) · drummer (t3: speed aura — kill it first) · sapper (t4: climbs perches, eats towers) ·
-bomber (t4: charges walls/organs and detonates; perched guns only caught in passing) · phalanx (t5: per-hit damage cap) ·
-tender (t5: heal pulses on the march) · tunneler (t6: burrows past the outer line, untargetable until it surfaces) ·
-royal (the jackpot and the hardest fight). The tier-6 desperation row is threat-gated (420+) so a standard hold order
-peaks at tier 5; tier 6 is for long runs and deliberate escalation.
+Enemies (19 kinds; escalation adds VERBS, per the rule above). **Faction rule: war
+caste marches in waves; science caste visits with the attraction economy and never
+fights; royal caste only takes the field with a royal event.** An invariant test
+pins WAVE_TABLE to war caste only.
+- WAR ladder: skitterling (swarm chaff) · responder · militia · soldier · splitter
+  (t2+: shot dead it bursts into 2 skitterlings; EATEN WHOLE it doesn't — the maw is
+  the answer) · elite · flier (t3: ignores terrain) · mortar beetle (t4: besieges
+  structures from 85px standoff — long guns and broodlings answer it) · sapper (t4:
+  climbs perches at 45% climb speed; every limb shoots climbers first) · carapace
+  lord (t5: blocks the first 6 HITS outright — the phalanx's mirror: big blows strip
+  the shell, rapid fire feeds it; poison seeps through) · phalanx (t5: per-hit cap).
+- WAR support (kill-priority decisions): drummer (speed aura) · bomber (charges
+  walls/organs) · tender (heal pulses) · tunneler (t6: burrows past the outer line).
+- SCIENCE visitors: researcher (comes to study, edible) · specimen thief (slips in
+  with study parties past interest 12, steals 15 war meat at the creep and runs —
+  kill the courier before it slips off the frontier and the meat comes home).
+- ROYAL court: the royal (the jackpot and the hardest fight) · her consort (breeds
+  2 militia every 6s while it lives — the spawner that must die first; 40 royal meat).
 
-The genre survey behind the roster — beloved towers across TD games, what seat each
-fills here, and the ranked gap list (Broodmother first) — lives in
-`references/TOWER-GENRE-REVIEW.md`.
+**THE RISK LAW (Collins, Sep 26 2026): every kind carries a RISK weight, and spawn
+counts derive from it** — count = row × (1 + (clockScale−1) × riskBaseline/risk).
+Cheap ranks multiply at full clock rate; risky specialists (risk 7-14) grow at a
+fraction, so escalation never becomes eight sappers deleting the board. The wave's
+total risk (Σ count×risk) is telegraphed in the HUD as the danger number. The tier-6
+desperation row stays threat-gated (420+): a standard hold order peaks at tier 5.
+
+The genre surveys behind the roster live in `references/TOWER-GENRE-REVIEW.md`
+(beloved towers → our seats) and `references/ENEMY-GENRE-REVIEW.md` (beloved enemy
+types → our kinds, with risk values and the faction audit).
 
 ### Towers: cards, not shops
 - Towers buildable each round come from CARDS DRAWN with modified probability. Organs and roguelite (gene bank) unlocks shape the draw odds. The gene bank is your deck; organs decide which genes get expressed. You engineer your own randomness.

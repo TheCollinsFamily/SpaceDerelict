@@ -31,9 +31,10 @@ const FAMILY_COLORS: Record<TowerFamily, number> = {
 };
 
 const ENEMY_SIZE: Record<Enemy['kind'], number> = {
-  responder: 5, militia: 6, soldier: 8, elite: 11, flier: 6, sapper: 7,
+  responder: 5, militia: 6, skitterling: 3.5, soldier: 8, elite: 11, flier: 6, sapper: 7,
   phalanx: 13, drummer: 9, bomber: 6, tunneler: 8, tender: 7,
-  researcher: 6, royal: 20,
+  splitter: 9, mortar: 9, carapace: 10,
+  researcher: 6, thief: 6, royal: 20, consort: 12,
 };
 
 export interface PlacementPreview {
@@ -335,6 +336,39 @@ export class Renderer {
         g.circle(x, y, s).fill(color);
         const arm = 0.5 + 0.5 * Math.sin(this.pulse * 8 + e.id);
         g.circle(x, y, s * 0.5).fill({ color: 0xf2e04a, alpha: 0.5 + arm * 0.5 });
+      } else if (e.kind === 'thief') {
+        // Science-caste cutpurse: researcher colors, but running with a satchel.
+        g.circle(x, y, s + 1.5).fill({ color: 0x0d0805, alpha: 0.85 });
+        g.circle(x, y, s).fill(CASTE_COLORS.science);
+        g.rect(x - 3, y + 2, 6, 4).fill(e.stole ? 0xd1603c : 0x2a4a48);
+      } else if (e.kind === 'consort') {
+        // Royal retinue: gilded brood-carrier, egg glow pulsing as it breeds.
+        g.circle(x, y, s + 2).fill({ color: 0x0d0805, alpha: 0.9 });
+        g.circle(x, y, s).fill(CASTE_COLORS.royal);
+        g.circle(x, y, s * 0.5 + Math.sin(this.pulse * 2 + e.id) * 1.5).fill(0xf3d67a);
+        g.poly([x - 6, y - s - 1, x, y - s - 7, x + 6, y - s - 1]).fill(0xf3d67a);
+      } else if (e.kind === 'splitter') {
+        // Gravid husk: lumpy body, the children visible under the skin.
+        g.circle(x, y, s + 1.5).fill({ color: 0x0d0805, alpha: 0.85 });
+        g.circle(x, y, s).fill(color);
+        g.circle(x - 3, y - 2, 2.5).fill(0xf0c8a0);
+        g.circle(x + 3, y + 1, 2.5).fill(0xf0c8a0);
+      } else if (e.kind === 'mortar') {
+        // Siege beetle: squat dome with a lobber tube, besieges from standoff.
+        g.circle(x, y, s + 1.5).fill({ color: 0x0d0805, alpha: 0.85 });
+        g.circle(x, y, s).fill(0x7a5a38);
+        g.rect(x - 2, y - s - 6, 4, 8).fill(0x4a3520);
+      } else if (e.kind === 'carapace') {
+        // Ablative shell: hex plate; the ring is the hits it has left.
+        g.poly([x, y - s, x + s * 0.87, y - s * 0.5, x + s * 0.87, y + s * 0.5,
+          x, y + s, x - s * 0.87, y + s * 0.5, x - s * 0.87, y - s * 0.5])
+          .fill({ color: 0x0d0805, alpha: 0.9 });
+        g.poly([x, y - s + 2, x + s * 0.87 - 2, y - s * 0.5 + 1, x + s * 0.87 - 2, y + s * 0.5 - 1,
+          x, y + s - 2, x - s * 0.87 + 2, y + s * 0.5 - 1, x - s * 0.87 + 2, y - s * 0.5 + 1])
+          .fill(0x9a8a5a);
+        if (e.hitShield !== undefined && e.hitShield > 0) {
+          g.circle(x, y, s + 4).stroke({ width: 2, color: 0xe8dca0, alpha: 0.3 + 0.08 * e.hitShield });
+        }
       } else if (e.kind === 'tender') {
         // Tender: pale carer with a pulsing cross — a priority target.
         g.circle(x, y, s + 1.5).fill({ color: 0x0d0805, alpha: 0.85 });

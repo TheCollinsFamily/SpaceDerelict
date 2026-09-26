@@ -54,6 +54,12 @@ const FEED_LINES: Partial<Record<SimEvent['kind'], (e: SimEvent) => { text: stri
     ? { text: e.hits > 0 ? `bile strike: ${e.hits} specimens dissolving` : 'bile strike: no contacts', cls: 'hot' }
     : { text: '', cls: '' },
   'broodling-lost': () => ({ text: 'expendable subunit expended', cls: '' }),
+  'meat-stolen': (e) => e.kind === 'meat-stolen'
+    ? { text: `ASSET PILFERED: ${e.amount} war meat — intercept the courier`, cls: 'hot' }
+    : { text: '', cls: '' },
+  'meat-recovered': (e) => e.kind === 'meat-recovered'
+    ? { text: `courier neutralized — ${e.amount} meat recovered`, cls: 'sci' }
+    : { text: '', cls: '' },
   'royal-incoming': () => ({ text: 'priority asset detected: ROYAL', cls: 'royal' }),
   'structure-lost': (e) => e.kind === 'structure-lost'
     ? { text: `limb lost: ${e.what}`, cls: 'hot' }
@@ -188,7 +194,9 @@ export class Hud {
         ? `ASSAULT FORMING: ${sides}`
         : 'SIEGE';
     this.el.phaseName.classList.toggle('siege', sim.phase === 'siege');
-    this.el.waveInfo.textContent = `WAVE ${sim.waveNumber} · TIER ${sim.tier} · MASS ${Math.floor(sim.biomass)}`;
+    this.el.waveInfo.textContent = `WAVE ${sim.waveNumber} · TIER ${sim.tier}`
+      + (sim.waveRisk > 0 ? ` · RISK ${sim.waveRisk}` : '')
+      + ` · MASS ${Math.floor(sim.biomass)}`;
     this.el.threat.textContent = String(Math.floor(sim.threat));
     this.el.interest.textContent = String(Math.floor(sim.interest));
 

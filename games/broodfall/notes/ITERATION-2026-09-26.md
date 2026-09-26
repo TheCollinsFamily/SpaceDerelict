@@ -145,3 +145,39 @@ gate. Hold-12 stopped discriminating (both policies ~7/8); four more escalation 
 is where placement has to carry. Final: fullrun hold-12 3/3 wins; guardrail hold-16
 smart flips 3:2, totals 120k vs 115k. 54/54 tests; input check adds the lobber
 gesture; visual/endgame green.
+
+
+## Addendum 6: enemy genre expansion, the RISK law, faction audit
+
+**Collins:** "what enemy types or abilities do people like in tower defense — take
+them for inspiration, assign the correct RISK which drives how many spawn
+(#×risk + number×risk per wave), and make sure they're assigned to the right
+faction of the three."
+
+**Built — 6 new kinds, each a beloved genre seat** (survey in
+references/ENEMY-GENRE-REVIEW.md; explicit skips: camo needs a detection layer,
+element resists conflict with verb-based counters, regrow overlaps the tender):
+- skitterling (swarm chaff) + gravid husk/splitter (Bloons seat: shot dead → 2
+  skitterlings; maw-eaten whole → nothing);
+- mortar beetle (standoff siege: halts 85px out and bombards structures; long guns
+  and broodlings answer it);
+- carapace lord (hit-count shell 6: the phalanx's MIRROR — big hits strip it, rapid
+  fire feeds it; poison seeps through);
+- specimen thief (SCIENCE caste: joins study parties past interest 12, steals 15 war
+  meat at the creep, runs; killed courier drops the goods; escaping visitors now exit
+  through the frontier when the flow field tops out — fixed a stuck-walker bug);
+- royal consort (ROYAL caste retinue: breeds 2 militia/6s while alive, 40 royal meat).
+
+**The RISK system:** every EnemySpec carries `risk`; wave counts follow
+count = row × (1 + (scale−1)×riskBaseline/risk), replacing the per-flag specialist
+cap with one continuous law. Wave total risk is telegraphed in the HUD (RISK n).
+Faction audit: WAVE_TABLE is war-caste-only (invariant test); science visits via
+interest; royals only with the royal event; the core no longer wastes venom on
+science-caste non-combatants.
+
+**Balance:** the expansion RESTORED hold-12's difficulty — at hold-16 neither policy
+survives (0-0 discriminates nothing), so the guardrail went back to hold-12 and is
+the most decisive it has ever measured: smart 6/8, outcome flips 4:1, totals +11%.
+waveCountScale 0.10→0.09 as global relief; mortar/carapace/splitter row counts
+trimmed after a first pass overshot (fullrun hold-12: 2/3 naive wins). 61/61 tests,
+build + input/visual/endgame green.

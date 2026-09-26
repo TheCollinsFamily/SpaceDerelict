@@ -119,6 +119,7 @@ export interface Organ {
 export type EnemyKind =
   | 'responder'
   | 'militia'
+  | 'skitterling'
   | 'soldier'
   | 'elite'
   | 'flier'
@@ -128,8 +129,13 @@ export type EnemyKind =
   | 'bomber'
   | 'tunneler'
   | 'tender'
+  | 'splitter'
+  | 'mortar'
+  | 'carapace'
   | 'researcher'
-  | 'royal';
+  | 'thief'
+  | 'royal'
+  | 'consort';
 
 export interface EnemySpec {
   kind: EnemyKind;
@@ -142,6 +148,13 @@ export interface EnemySpec {
   meat: number;
   /** Threat added to the ladder when this enemy is killed. */
   threatOnKill: number;
+  /**
+   * RISK: the danger weight of one body (Collins, Sep 26 2026). Waves are a
+   * risk budget: as the clock scales the budget up, cheap ranks multiply at
+   * full rate while risky specialists grow slowly — count scales by
+   * riskBaseline/risk. Risk is also the wave's telegraphed danger number.
+   */
+  risk: number;
   /** Flies straight over blocks and walls to the core; cannot be blocked. */
   flies?: boolean;
   /** Climbs blocks to chew towers directly; perches are not safe from it. */
@@ -156,6 +169,16 @@ export interface EnemySpec {
   tunneler?: boolean;
   /** Heals nearby hive units on a pulse — a priority target. */
   healer?: boolean;
+  /** Splits into children when KILLED by damage (eaten whole = no split). */
+  splitInto?: { kind: EnemyKind; count: number };
+  /** Stands off and bombards structures from range instead of latching. */
+  standoff?: boolean;
+  /** Ablative shell: blocks this many HITS outright (poison seeps through). */
+  hitShield?: number;
+  /** Science caste: sneaks to the creep, steals banked meat, flees with it. */
+  thief?: boolean;
+  /** Royal retinue: keeps spawning minions of this kind while it lives. */
+  spawns?: { kind: EnemyKind; count: number; interval: number };
 }
 
 export interface Enemy {
@@ -186,6 +209,10 @@ export interface Enemy {
   /** Status: armor SHREDDED — every hit against this enemy gets +shredAmount cap until shredUntil. */
   shredUntil?: number;
   shredAmount?: number;
+  /** Carapace: hits left on the ablative shell. */
+  hitShield?: number;
+  /** Thief: war meat it is carrying away (recovered if it dies before escaping). */
+  stole?: number;
 }
 
 /** A broodling: the mother's spawn, fighting in the streets on your side. */
@@ -259,7 +286,9 @@ export type SimEvent =
   | { kind: 'broodling-lost'; motherId: number }
   | { kind: 'kill'; enemy: EnemyKind; caste: Caste }
   | { kind: 'banked'; caste: Caste; amount: number }
-  | { kind: 'wave-start'; tier: number; wave: number; counts: Partial<Record<EnemyKind, number>>; sides: string }
+  | { kind: 'wave-start'; tier: number; wave: number; counts: Partial<Record<EnemyKind, number>>; sides: string; risk: number }
+  | { kind: 'meat-stolen'; amount: number }
+  | { kind: 'meat-recovered'; amount: number }
   | { kind: 'royal-incoming' }
   | { kind: 'researchers-arrive'; count: number }
   | { kind: 'structure-lost'; what: string }

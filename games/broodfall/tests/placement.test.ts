@@ -66,11 +66,11 @@ class RandomPlacer {
 }
 
 function run(seed: number, smart: boolean) {
-  // Hold-16 on purpose: with the roster full (pits, slings, support castes),
-  // one-gate hold-12 became winnable by blind-but-legal play (~7/8), so it stopped
-  // discriminating. Four more waves of escalation is where placement knowledge
-  // has to carry you. (Metric change rationale: ITERATION-2026-09-26 addendum 5.)
-  const sim = new Sim({ ...CFG, seed, directive: { kind: 'hold', waves: 16 } });
+  // Back to hold-12: the enemy expansion (splitters, mortars, carapaces, the
+  // risk law) restored its bite — at hold-16 NEITHER policy survives now, and a
+  // 0-0 outcome row discriminates nothing. (Metric history: ITERATION-2026-09-26
+  // addenda 5-6.)
+  const sim = new Sim({ ...CFG, seed, directive: { kind: 'hold', waves: 12 } });
   const player = smart ? new Autoplayer(seed + 1) : new RandomPlacer(seed + 1);
   let ticks = 0;
   let towersLost = 0;
