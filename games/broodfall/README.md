@@ -1,13 +1,14 @@
 # Broodfall (working title)
 
-You are the escaped bioweapon. Grow across an insect civilization's city, pay for limbs in caste meat, feed your own towers into new builds, and reach sporulation mass before the locals put you down. Design: `DESIGN.md`. Build spec: `TECH.md`.
+You are the escaped bioweapon. Grow across an insect civilization's city, pay for limbs in caste meat, feed your own towers into new builds, and complete command's directive before the locals put you down. Design: `DESIGN.md`. Build spec: `TECH.md`.
 
 ## Run it
 
+Double-click **`Play Broodfall.bat`** in this folder (installs dependencies on first run, starts the server, opens the browser). Or from a terminal:
+
 ```powershell
 cd C:\Users\Merry\dev\space-derelict\games\broodfall
-npm install
-npm run dev          # http://localhost:5199
+npm start            # opens http://localhost:5199 in your browser
 ```
 
 Useful URLs:
