@@ -168,7 +168,11 @@ export class Hud {
     this.el.biomassText.textContent = `${Math.floor(prog.done)} / ${prog.goal}`;
 
     const sides = [...new Set(sim.incomingGates.map((g) => sim.gateSide(g)))].join('+') || '?';
-    this.el.phaseName.textContent = sim.phase === 'growth' ? `ASSAULT FORMING: ${sides}` : 'SIEGE';
+    this.el.phaseName.textContent = sim.phase === 'draft'
+      ? 'CHOOSE A DISTRICT'
+      : sim.phase === 'growth'
+        ? `ASSAULT FORMING: ${sides}`
+        : 'SIEGE';
     this.el.phaseName.classList.toggle('siege', sim.phase === 'siege');
     this.el.waveInfo.textContent = `WAVE ${sim.waveNumber} · TIER ${sim.tier} · MASS ${Math.floor(sim.biomass)}`;
     this.el.threat.textContent = String(Math.floor(sim.threat));

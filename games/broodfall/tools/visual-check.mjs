@@ -135,10 +135,18 @@ try {
   const canvas = page.locator('#stage canvas');
   const shot = await canvas.screenshot({ path: join(shots, '02-board.png') });
   const png = PNG.sync.read(shot);
-  const cx = Math.floor(png.width / 2);
-  const cy = Math.floor(png.height / 2);
+  const toPng = (s) => ({
+    x: Math.floor((s.x / s.vw) * png.width),
+    y: Math.floor((s.y / s.vh) * png.height),
+  });
+  const coreScr = toPng(await page.evaluate(() => {
+    const c = window.broodfall.sim.core;
+    return window.broodfall.worldToScreen(c.x, c.y);
+  }));
+  const cx = coreScr.x;
+  const cy = coreScr.y;
 
-  // Region 1: core (center) must be strongly red-dominant flesh.
+  // Region 1: the core must be strongly red-dominant flesh.
   const core = regionAvg(png, cx - 12, cy - 12, 24, 24);
   if (core.r > core.g + 25 && core.r > core.b + 25 && core.r > 80) {
     pass(`core region is flesh (rgb ${core.r.toFixed(0)},${core.g.toFixed(0)},${core.b.toFixed(0)})`);
@@ -147,19 +155,20 @@ try {
   }
 
   // Region 2: an actual creeped street cell must be redder than far bare ground.
-  const scale = png.width / state.worldW;
-  const creepCellPos = await page.evaluate(() => {
+  const creepScr = await page.evaluate(() => {
     const s = window.broodfall.sim;
     for (let c = 0; c < s.map.cells.length; c++) {
-      if (s.isCreeped(c) && s.map.cells[c] !== 0 && c !== s.map.coreCell && !s.isBody(c)) {
-        return s.cellCenter(c);
+      if (s.isCreeped(c) && s.map.cells[c] !== 0 && s.map.cells[c] !== 3 && c !== s.map.coreCell && !s.isBody(c)) {
+        const p = s.cellCenter(c);
+        return window.broodfall.worldToScreen(p.x, p.y);
       }
     }
     return null;
   });
-  if (creepCellPos) {
-    const rx = Math.floor(creepCellPos.x * scale);
-    const ry = Math.floor(creepCellPos.y * scale);
+  if (creepScr) {
+    const rp = toPng(creepScr);
+    const rx = rp.x;
+    const ry = rp.y;
     const ring = regionAvg(png, rx - 6, ry - 6, 12, 12);
     const corner = regionAvg(png, 8, 8, 40, 40);
     if (ring.r - ring.g > (corner.r - corner.g) + 8) {
@@ -190,14 +199,16 @@ try {
   else fail('board content', `only ${(litFrac * 100).toFixed(2)}% lit`);
 
   // Region 4: at least one tower drawn where the sim says one stands.
-  const tower = await page.evaluate(() => {
+  const towerScr = await page.evaluate(() => {
     const t = window.broodfall.sim.towers[0];
-    return t ? { x: t.pos.x, y: t.pos.y } : null;
+    return t ? window.broodfall.worldToScreen(t.pos.x, t.pos.y) : null;
   });
-  if (tower) {
-    const tx = Math.floor(tower.x * scale);
-    const ty = Math.floor(tower.y * scale);
-    const at = regionCount(png, Math.max(0, tx - 10), Math.max(0, ty - 10), 20, 20,
+  if (towerScr) {
+    const tp = toPng(towerScr);
+    const tx = tp.x;
+    const ty = tp.y;
+    // Towers render lifted onto their block tops, so sample a taller box shifted up.
+    const at = regionCount(png, Math.max(0, tx - 12), Math.max(0, ty - 22), 24, 34,
       (r, g, b) => r + g + b > 200);
     if (at > 12) pass(`tower rendered at its sim position (${at} bright px)`);
     else fail('tower rendered', `${at} bright px at (${tx},${ty})`);

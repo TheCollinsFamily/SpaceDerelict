@@ -1,16 +1,21 @@
 /**
- * Broodfall entry: wires sim + renderer + HUD, owns the fixed-timestep loop,
- * input, and demo mode (?auto=1&seed=N&speed=M).
+ * Broodfall entry: wires sim + renderer + HUD + full game loop
+ * (menu → deployment → debrief → ship gene bay → redeploy),
+ * owns the fixed-timestep loop, input, the district-draft overlay,
+ * wave banners, and demo mode (?auto=1&seed=N&speed=M).
  */
 import { Autoplayer } from './sim/autoplayer';
 import { DT, Sim, organSpec, towerSpec } from './sim/sim';
 import { Renderer } from './render/render';
 import { Hud } from './ui/hud';
-import type { Directive, OrganId, SimConfig } from './sim/types';
+import { GENES } from '../content/plates';
+import { PLATE_FEATURES } from './sim/citymap';
+import type { Directive, OrganId, SimConfig, SimEvent } from './sim/types';
 
 const params = new URLSearchParams(location.search);
 const SEED = Number(params.get('seed') ?? Math.floor(Math.random() * 1e9));
 const AUTO = params.get('auto') === '1';
+const AUTOSTART = AUTO || params.get('autostart') === '1';
 const START_SPEED = Number(params.get('speed') ?? 1);
 
 const DIRECTIVES: Record<string, Directive> = {
@@ -20,11 +25,33 @@ const DIRECTIVES: Record<string, Directive> = {
 };
 const directive = DIRECTIVES[params.get('directive') ?? ''];
 
-const CFG: SimConfig = { gridW: 40, gridH: 30, cellPx: 32, seed: SEED, directive };
+// ---------- persistent meta (ship progression) ----------
+
+interface Meta { standing: number; genes: string[]; runs: number }
+
+function loadMeta(): Meta {
+  try {
+    const raw = localStorage.getItem('broodfall-meta');
+    if (raw) return JSON.parse(raw) as Meta;
+  } catch { /* private mode etc. */ }
+  return { standing: 0, genes: [], runs: 0 };
+}
+
+function saveMeta(m: Meta): void {
+  try { localStorage.setItem('broodfall-meta', JSON.stringify(m)); } catch { /* ok */ }
+}
+
+const meta = loadMeta();
+
+const CFG: SimConfig = {
+  gridW: 50, gridH: 40, cellPx: 26, seed: SEED, directive, genes: meta.genes,
+};
 
 let sim = new Sim(CFG);
 const auto = AUTO ? new Autoplayer(SEED + 1) : null;
 let speed = Number.isFinite(START_SPEED) && START_SPEED >= 0 ? START_SPEED : 1;
+let started = AUTOSTART;
+let debriefShown = false;
 
 const renderer = new Renderer();
 
@@ -60,29 +87,191 @@ const hud = new Hud({
     speed = mult;
   },
   onRestart() {
-    location.href = location.pathname + (AUTO ? `?auto=1&speed=${speed}` : '');
+    showDebrief();
   },
 });
 
 function updateHint(): void {
   if (armedOrgan) {
-    hud.setHint(`place ${organSpec(armedOrgan).name} inside the body mass`);
+    hud.setHint(`place ${organSpec(armedOrgan).name} on open ground inside the body`);
   } else if (selectedCard !== null && cannibalizeMode && donorId === null) {
     hud.setHint('pick one of your limbs to feed into this build');
   } else if (selectedCard !== null && donorId !== null) {
     hud.setHint('place the new limb — the donor is consumed');
   } else if (selectedCard !== null) {
-    hud.setHint('place on the creep — FEED A LIMB to inherit traits');
+    const fam = sim.hand[selectedCard]?.family;
+    hud.setHint(fam === 'spine'
+      ? 'plug a street — the swarm must chew through'
+      : 'place on a creeped city block overlooking a street (higher = longer reach)');
   } else {
-    hud.setHint(AUTO ? 'demo mode: the asset is piloting itself' : '');
+    hud.setHint(AUTO
+      ? 'demo mode: the asset is piloting itself'
+      : 'select a limb card below, then click a creeped block by a street — the assault forms at the glowing gate');
   }
 }
+
+// ---------- banners ----------
+
+const bannerEl = document.getElementById('banner')!;
+function banner(text: string): void {
+  bannerEl.textContent = text;
+  bannerEl.classList.remove('hidden');
+  // retrigger the CSS animation
+  bannerEl.style.animation = 'none';
+  void (bannerEl as HTMLElement).offsetWidth;
+  bannerEl.style.animation = '';
+}
+
+function handleEvents(events: SimEvent[]): void {
+  hud.pushEvents(events);
+  for (const e of events) {
+    if (e.kind === 'wave-start') banner(`WAVE ${e.wave} — ASSAULT FROM ${e.sides}`);
+    if (e.kind === 'wave-cleared') banner(`WAVE ${e.wave} CLEARED · +${e.bonus} WAR MEAT`);
+    if (e.kind === 'royal-incoming') banner('THE ROYAL TAKES THE FIELD');
+    if (e.kind === 'plate-drafted') banner(`DISTRICT CONSUMED: ${e.name.toUpperCase()}`);
+    if ((e.kind === 'won' || e.kind === 'lost') && !AUTO) {
+      window.setTimeout(showDebrief, 1600);
+    }
+  }
+}
+
+// ---------- district draft overlay ----------
+
+const draftEl = document.getElementById('draft')!;
+const draftOptionsEl = document.getElementById('draft-options')!;
+let draftRendered = false;
+
+function slotCompass(slot: number): string {
+  const sx = (slot % sim.map.slotsX) + 0.5;
+  const sy = Math.floor(slot / sim.map.slotsX) + 0.5;
+  const cx = (sim.core.x / sim.cfg.cellPx) / 10;
+  const cy = (sim.core.y / sim.cfg.cellPx) / 10;
+  const dx = sx - cx;
+  const dy = sy - cy;
+  const ns = dy < -0.4 ? 'N' : dy > 0.4 ? 'S' : '';
+  const ew = dx > 0.4 ? 'E' : dx < -0.4 ? 'W' : '';
+  return (ns + ew) || 'CENTER';
+}
+
+function renderDraft(): void {
+  if (!sim.pendingDraft) return;
+  draftOptionsEl.innerHTML = '';
+  sim.pendingDraft.forEach((offer, i) => {
+    const card = document.createElement('div');
+    card.className = 'draft-option';
+    const feat = PLATE_FEATURES[offer.feature];
+    const grid = offer.pattern.rows.map((row) => [...row].map((ch) => {
+      const cls = ch === '.' ? 'c-road' : ch === 'P' ? 'c-plaza' : ch === 'A' ? 'c-b2' : ch === 'B' ? 'c-b3' : 'c-b1';
+      return `<div class="df-cell ${cls}"></div>`;
+    }).join('')).join('');
+    card.innerHTML = `<div class="df-name"></div><div class="df-desc"></div>`
+      + `<div class="df-grid">${grid}</div><div class="df-where"></div>`;
+    (card.querySelector('.df-name') as HTMLElement).textContent = feat.name;
+    (card.querySelector('.df-desc') as HTMLElement).textContent = feat.desc;
+    (card.querySelector('.df-where') as HTMLElement).textContent = `GROW ${slotCompass(offer.slot)}`;
+    card.addEventListener('click', () => {
+      sim.issue({ kind: 'choose-plate', index: i });
+      draftEl.classList.add('hidden');
+      draftRendered = false;
+    });
+    draftOptionsEl.appendChild(card);
+  });
+}
+
+// ---------- screens: menu / debrief / ship ----------
+
+const menuEl = document.getElementById('menu')!;
+const debriefEl = document.getElementById('debrief')!;
+const shipEl = document.getElementById('ship')!;
+
+function setupMenu(): void {
+  const genesNote = document.getElementById('menu-genes')!;
+  genesNote.textContent = meta.genes.length
+    ? `Spliced genes: ${meta.genes.map((id) => GENES.find((g) => g.id === id)?.name ?? id).join(', ')} · Standing: ${meta.standing}`
+    : 'Baseline organism. No splices on record.';
+  document.getElementById('menu-deploy')!.addEventListener('click', () => {
+    menuEl.classList.add('hidden');
+    started = true;
+  });
+  if (AUTOSTART) menuEl.classList.add('hidden');
+}
+
+function standingEarned(): number {
+  return sim.outcome === 'won' ? 10 + sim.wavesCleared : Math.floor(sim.wavesCleared / 2);
+}
+
+function showDebrief(): void {
+  if (debriefShown) return;
+  debriefShown = true;
+  const won = sim.outcome === 'won';
+  document.getElementById('debrief-title')!.textContent = won ? 'DIRECTIVE FULFILLED' : 'ASSET TERMINATED';
+  const p = sim.directiveProgress();
+  document.getElementById('debrief-body')!.innerHTML = '';
+  const lines = [
+    `Directive progress: ${Math.floor(p.done)} / ${p.goal}.`,
+    `Waves repelled: ${sim.wavesCleared}. Districts held: ${sim.map.slots.filter(Boolean).length}.`,
+    `Peak mass: ${Math.floor(sim.biomass)}. Residual integrity: ${Math.max(0, Math.floor(sim.coreHp))}.`,
+    `Standing earned: ${standingEarned()}. ${won ? 'The Board notes your efficiency.' : 'The Board notes the loss of Navy property.'}`,
+  ];
+  for (const line of lines) {
+    const div = document.createElement('div');
+    div.textContent = line;
+    document.getElementById('debrief-body')!.appendChild(div);
+  }
+  debriefEl.classList.remove('hidden');
+}
+
+function setupScreens(): void {
+  document.getElementById('debrief-ship')!.addEventListener('click', () => {
+    debriefEl.classList.add('hidden');
+    showShip();
+  });
+  document.getElementById('ship-deploy')!.addEventListener('click', () => {
+    const q = new URLSearchParams();
+    q.set('autostart', '1');
+    if (params.get('directive')) q.set('directive', params.get('directive')!);
+    location.href = `${location.pathname}?${q.toString()}`;
+  });
+}
+
+function showShip(): void {
+  meta.standing += standingEarned();
+  meta.runs += 1;
+  saveMeta(meta);
+  document.getElementById('ship-standing')!.textContent =
+    `Service standing: ${meta.standing}. Procreation license review at 200. `
+    + 'One splice is authorized for the replacement organism.';
+  const wrap = document.getElementById('ship-genes')!;
+  wrap.innerHTML = '';
+  const available = GENES.filter((g) => !meta.genes.includes(g.id));
+  const offer = available.slice((meta.runs * 3) % Math.max(1, available.length))
+    .concat(available)
+    .slice(0, 3);
+  let picked = false;
+  offer.forEach((gene) => {
+    const card = document.createElement('div');
+    card.className = 'gene-card';
+    card.innerHTML = '<div class="g-name"></div><div class="g-desc"></div>';
+    (card.querySelector('.g-name') as HTMLElement).textContent = gene.name;
+    (card.querySelector('.g-desc') as HTMLElement).textContent = gene.desc;
+    card.addEventListener('click', () => {
+      if (picked) return;
+      picked = true;
+      card.classList.add('picked');
+      meta.genes.push(gene.id);
+      saveMeta(meta);
+    });
+    wrap.appendChild(card);
+  });
+  shipEl.classList.remove('hidden');
+}
+
+// ---------- input on the board ----------
 
 function handleCanvasClick(clientX: number, clientY: number): void {
   const w = renderer.toWorld(clientX, clientY);
   const cell = sim.cellAt(w.x, w.y);
 
-  // Gland cycling: click a gland with nothing armed.
   if (selectedCard === null && armedOrgan === null) {
     for (const o of sim.organs) {
       if (o.organ === 'gland' && Math.hypot(o.pos.x - w.x, o.pos.y - w.y) < 20) {
@@ -103,7 +292,6 @@ function handleCanvasClick(clientX: number, clientY: number): void {
   }
 
   if (selectedCard !== null) {
-    // Cannibalize flow: first click picks the donor, second places.
     if (cannibalizeMode && donorId === null) {
       for (const t of sim.towers) {
         if (Math.hypot(t.pos.x - w.x, t.pos.y - w.y) < 22) {
@@ -133,9 +321,13 @@ function handleCanvasClick(clientX: number, clientY: number): void {
   }
 }
 
+// ---------- boot ----------
+
 async function boot(): Promise<void> {
   const mount = document.getElementById('stage')!;
   await renderer.init(mount, CFG.gridW * CFG.cellPx, CFG.gridH * CFG.cellPx);
+  setupMenu();
+  setupScreens();
 
   renderer.app.canvas.addEventListener('click', (ev) => handleCanvasClick(ev.clientX, ev.clientY));
   renderer.app.canvas.addEventListener('contextmenu', (ev) => {
@@ -161,6 +353,9 @@ async function boot(): Promise<void> {
       : { cell, kind: 'tower', family: fam, valid: sim.canBuildTower(cell, fam) };
   });
 
+  const callEarlyBtn = document.getElementById('call-early')! as HTMLButtonElement;
+  callEarlyBtn.addEventListener('click', () => sim.issue({ kind: 'call-early' }));
+
   if (AUTO) updateHint();
 
   let last = performance.now();
@@ -168,37 +363,58 @@ async function boot(): Promise<void> {
   const frame = (now: number) => {
     const dtReal = Math.min(0.1, (now - last) / 1000);
     last = now;
-    acc += dtReal * speed;
-    let steps = 0;
-    while (acc >= DT && steps < 64) {
-      if (auto) auto.act(sim, DT);
-      sim.tick();
-      acc -= DT;
-      steps++;
+    if (started) {
+      acc += dtReal * speed;
+      let steps = 0;
+      while (acc >= DT && steps < 64) {
+        if (auto) auto.act(sim, DT);
+        sim.tick();
+        acc -= DT;
+        steps++;
+      }
     }
-    hud.pushEvents(sim.takeEvents());
+    handleEvents(sim.takeEvents());
     hud.update(sim);
+    // Draft overlay lifecycle (manual play only; the autoplayer picks itself).
+    if (!AUTO) {
+      if (sim.phase === 'draft' && !draftRendered && sim.pendingDraft) {
+        renderDraft();
+        draftEl.classList.remove('hidden');
+        draftRendered = true;
+      } else if (sim.phase !== 'draft' && draftRendered) {
+        draftEl.classList.add('hidden');
+        draftRendered = false;
+      }
+      callEarlyBtn.classList.toggle('hidden', sim.phase !== 'growth' || sim.outcome !== 'playing');
+    } else {
+      callEarlyBtn.classList.add('hidden');
+    }
     renderer.draw(sim, dtReal);
     requestAnimationFrame(frame);
   };
   requestAnimationFrame(frame);
 
-  // AI-play pathway: everything a scripted player (or Claude) needs, without
-  // clicking pixels. step(n) advances the sim synchronously (no rAF throttle),
-  // play() issues a raw command, summary() is a compact JSON state dump.
+  // AI-play pathway: everything a scripted player (or Claude) needs without
+  // clicking pixels. step(n) advances synchronously (no rAF throttle).
   const api = {
     sim,
     step(n: number): void {
+      started = true;
+      menuEl.classList.add('hidden');
       for (let i = 0; i < n && sim.outcome === 'playing'; i++) {
         if (auto) auto.act(sim, DT);
+        else if (sim.phase === 'draft') break; // manual play: draft waits for a choice
         sim.tick();
       }
-      hud.pushEvents(sim.takeEvents());
+      handleEvents(sim.takeEvents());
       hud.update(sim);
       renderer.draw(sim, 0.016);
     },
     play(cmd: Parameters<Sim['issue']>[0]): { ok: boolean; err?: string } {
-      return sim.issue(cmd);
+      const r = sim.issue(cmd);
+      hud.update(sim);
+      renderer.draw(sim, 0.016);
+      return r;
     },
     summary() {
       return {
@@ -210,7 +426,18 @@ async function boot(): Promise<void> {
         enemies: sim.enemies.length,
         hand: sim.hand.map((c) => c.family),
         interest: sim.interest, threat: sim.threat,
+        draft: sim.pendingDraft?.map((o) => ({ id: o.pattern.id, slot: o.slot, feature: o.feature })) ?? null,
+        districts: sim.map.slots.filter(Boolean).length,
+        gates: sim.gates.length,
       };
+    },
+    camera() {
+      return renderer.camera();
+    },
+    /** World coords -> canvas-pixel coords (for scripted clicking/sampling). */
+    worldToScreen(x: number, y: number) {
+      const c = renderer.camera();
+      return { x: x * c.scale + c.x, y: y * c.scale + c.y, vw: c.vw, vh: c.vh };
     },
     buildableCells(limit = 40): number[] {
       const out: number[] = [];

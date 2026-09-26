@@ -81,14 +81,28 @@ export const BALANCE = {
   bodyBase: 70,
   bodyPerBiomass: 0.09,
   /** Phases. */
-  growthSeconds: 22,
+  growthSeconds: 27,
   siegeSpawnSeconds: 14,
   siegeMaxSeconds: 70,
+  /** District drafting (map expansion) and wave rhythm. */
+  draftEveryWaves: 3,
+  draftCreepSurge: 45,
+  callEarlyRate: 0.8,
+  squadSize: 3,
+  squadInterval: 3.1,
+  waveBonusBase: 14,
+  waveBonusPerWave: 3,
+  /** Verticality: range bonus per block height level above 1. */
+  heightRangeBonus: 0.10,
   /** Waves grow with the campaign clock as well as the threat ladder. */
   waveCountScale: 0.04,
   /** Threat tiers: tier = floor(threat / threatPerTier), clamped to table. */
-  threatPerTier: 52,
-  threatFromBiomass: 0.04,
+  threatPerTier: 46,
+  /** The hive escalates procedurally as the campaign drags on. */
+  threatPerWaveCleared: 5,
+  /** Kill vengeance is real but not the main driver of escalation. */
+  killThreatScale: 0.3,
+  threatFromBiomass: 0.035,
   glandChallengeThreatPerSec: 0.5,
   glandCalmThreatScale: 0.6,
   /** The asset is inherently fascinating: researchers come even before lures. */

@@ -3,8 +3,8 @@ import { Autoplayer } from '../src/sim/autoplayer';
 import { DT, Sim } from '../src/sim/sim';
 import type { Directive, SimConfig, SimEvent } from '../src/sim/types';
 
-const CFG: Omit<SimConfig, 'seed'> = { gridW: 40, gridH: 30, cellPx: 32 };
-const MAX_TICKS = 18000; // 30 sim minutes
+const CFG: Omit<SimConfig, 'seed'> = { gridW: 50, gridH: 40, cellPx: 26 };
+const MAX_TICKS = 24000; // 40 sim minutes (drafts freeze the clock)
 
 function runFull(seed: number, directive?: Directive) {
   const sim = new Sim({ ...CFG, seed, directive: directive ?? { kind: 'hold', waves: 12 } });

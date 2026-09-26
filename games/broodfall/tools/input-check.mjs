@@ -42,7 +42,7 @@ try {
   server = await startPreview();
   browser = await chromium.launch();
   const page = await browser.newPage({ viewport: { width: 1500, height: 1100 } });
-  await page.goto('http://localhost:5199/?seed=7', { waitUntil: 'load' });
+  await page.goto('http://localhost:5199/?seed=7&autostart=1', { waitUntil: 'load' });
   await page.waitForSelector('#stage canvas');
 
   // Give the wallet enough to build twice regardless of card mix.
@@ -51,11 +51,11 @@ try {
     s.meat.war = 500; s.meat.science = 500; s.meat.royal = 500;
   });
 
-  /** Click the canvas at a WORLD position via client coords. */
+  /** Click the canvas at a WORLD position (through the camera transform). */
   const clickWorld = async (wx, wy) => {
     const box = await page.locator('#stage canvas').boundingBox();
-    const s = await page.evaluate(() => ({ w: window.broodfall.sim.worldW, h: window.broodfall.sim.worldH }));
-    await page.mouse.click(box.x + (wx / s.w) * box.width, box.y + (wy / s.h) * box.height);
+    const s = await page.evaluate(([x, y]) => window.broodfall.worldToScreen(x, y), [wx, wy]);
+    await page.mouse.click(box.x + (s.x / s.vw) * box.width, box.y + (s.y / s.vh) * box.height);
   };
 
   const core = await page.evaluate(() => window.broodfall.sim.core);

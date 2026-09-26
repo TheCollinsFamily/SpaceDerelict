@@ -131,7 +131,7 @@ export interface CardInstance {
   family: TowerFamily;
 }
 
-export type Phase = 'growth' | 'siege';
+export type Phase = 'growth' | 'siege' | 'draft';
 
 export type Outcome = 'playing' | 'won' | 'lost';
 
@@ -148,14 +148,19 @@ export type SimEvent =
   | { kind: 'eaten'; enemy: EnemyKind }
   | { kind: 'won' }
   | { kind: 'lost' }
-  | { kind: 'discarded'; family: TowerFamily };
+  | { kind: 'discarded'; family: TowerFamily }
+  | { kind: 'wave-cleared'; wave: number; bonus: number }
+  | { kind: 'draft-open' }
+  | { kind: 'plate-drafted'; name: string; feature: string };
 
 export type Command =
   | { kind: 'build'; cardIndex: number; cell: number; cannibalizeTowerId?: number }
   | { kind: 'build-organ'; organ: OrganId; cell: number }
   | { kind: 'cycle-gland'; organInstanceId: number }
   | { kind: 'royal-surge' }
-  | { kind: 'discard'; cardIndex: number };
+  | { kind: 'discard'; cardIndex: number }
+  | { kind: 'choose-plate'; index: number }
+  | { kind: 'call-early' };
 
 /** The deployment order: the win condition, issued by command. */
 export type Directive =
@@ -170,4 +175,6 @@ export interface SimConfig {
   seed: number;
   /** Force a directive (tests, URL param); otherwise seeded-random. */
   directive?: Directive;
+  /** Gene ids spliced on the ship — persistent meta-progression. */
+  genes?: string[];
 }

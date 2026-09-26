@@ -1,145 +1,187 @@
 /**
- * City map generation: a real tower-defense board. Streets are the corridors,
- * buildings are solid, gates are where streets meet the map edge, and the core
- * sits in a central plaza. Deterministic from the run seed.
+ * The board: a slot grid of 10x10 district PLATES (Tower Dominion school).
+ * The run starts as one plate (the crash site) surrounded by VOID — unclaimed
+ * city under smoke. Every few waves the player drafts a district to grow into;
+ * its pattern brings new winding channels, high-ground blocks, and new gates
+ * on the new frontier. The map is player-built over the run.
  */
 import { Rng } from './rng';
+import {
+  PLATE_FEATURES, PlateFeature, PlatePattern, START_PLATE, platePool,
+} from '../../content/plates';
+
+export const PLATE = 10;
 
 export enum CellType {
-  Block = 0,   // building: impassable, unbuildable
-  Road = 1,    // street: enemy corridor, buildable (a tower here BLOCKS)
-  Plaza = 2,   // open ground: passable, buildable
-  Rubble = 3,  // digested building: passable, buildable
+  Block = 0,  // building: impassable to enemies, buildable once creeped (has height)
+  Road = 1,   // carved street channel: enemy corridor (spine walls only)
+  Plaza = 2,  // open ground: passable, organ ground inside the body
+  Void = 3,   // unclaimed district: nothing enters, nothing builds, nothing shows
+}
+
+export interface PlateInstance {
+  pattern: PlatePattern;
+  feature: PlateFeature;
+  slot: number;
 }
 
 export interface CityMap {
   w: number;
   h: number;
+  slotsX: number;
+  slotsY: number;
   cells: CellType[];
-  /** Edge road cells: where waves enter. */
-  gates: number[];
+  /** Block height 1-3 (0 elsewhere). Verticality: higher perch = longer reach. */
+  heights: Uint8Array;
+  slots: Array<PlateInstance | null>;
   coreCell: number;
 }
 
+export interface DraftOffer {
+  pattern: PlatePattern;
+  slot: number;
+  feature: PlateFeature;
+}
+
 export function isPassable(t: CellType): boolean {
-  return t !== CellType.Block;
+  return t === CellType.Road || t === CellType.Plaza;
 }
 
-export function generateCity(w: number, h: number, rng: Rng): CityMap {
-  const cells = new Array<CellType>(w * h).fill(CellType.Block);
-  const idx = (x: number, y: number) => y * w + x;
-  const inMargin = (x: number, y: number) => x >= 1 && y >= 1 && x <= w - 2 && y <= h - 2;
-  const cx = Math.floor(w / 2);
-  const cy = Math.floor(h / 2);
+const CHAR_TO_CELL: Record<string, { t: CellType; h: number }> = {
+  '#': { t: CellType.Block, h: 1 },
+  A: { t: CellType.Block, h: 2 },
+  B: { t: CellType.Block, h: 3 },
+  '.': { t: CellType.Road, h: 0 },
+  P: { t: CellType.Plaza, h: 0 },
+};
 
-  // Crash plaza: the asset's landing site — open ground where organs grow
-  // and where leaks do their damage.
-  for (let py = cy - 2; py <= cy + 2; py++) {
-    for (let px = cx - 2; px <= cx + 2; px++) cells[idx(px, py)] = CellType.Plaza;
+export function stampPlate(
+  map: CityMap, pattern: PlatePattern, slot: number, feature: PlateFeature, rng: Rng,
+): void {
+  const sx = (slot % map.slotsX) * PLATE;
+  const sy = Math.floor(slot / map.slotsX) * PLATE;
+  for (let y = 0; y < PLATE; y++) {
+    for (let x = 0; x < PLATE; x++) {
+      const spec = CHAR_TO_CELL[pattern.rows[y][x]];
+      const cell = (sy + y) * map.w + (sx + x);
+      map.cells[cell] = spec.t;
+      map.heights[cell] = spec.h;
+    }
   }
-
-  /** Carve an L between two points (axis order random), 1 cell wide. */
-  const carveL = (x0: number, y0: number, x1: number, y1: number): void => {
-    let x = x0;
-    let y = y0;
-    const xFirst = rng.next() < 0.5;
-    const walk = (tx: number, ty: number) => {
-      while (x !== tx) { x += Math.sign(tx - x); if (inMargin(x, y)) cells[idx(x, y)] = cells[idx(x, y)] === CellType.Plaza ? CellType.Plaza : CellType.Road; }
-      while (y !== ty) { y += Math.sign(ty - y); if (inMargin(x, y)) cells[idx(x, y)] = cells[idx(x, y)] === CellType.Plaza ? CellType.Plaza : CellType.Road; }
-    };
-    if (xFirst) { walk(x1, y); walk(x1, y1); } else { walk(x, y1); walk(x1, y1); }
-  };
-
-  /**
-   * Carve a SERPENTINE channel: waypoints step toward the target while
-   * zigzagging perpendicular with real amplitude. The switchbacks are the
-   * map's kill-zone geometry — blocks inside a bend touch several path legs.
-   */
-  const serpentine = (x0: number, y0: number, tx: number, ty: number): void => {
-    let x = x0;
-    let y = y0;
-    let swing = rng.next() < 0.5 ? 1 : -1;
-    let guard = 0;
-    while (Math.abs(x - tx) + Math.abs(y - ty) > 4 && guard++ < 40) {
-      const dx = tx - x;
-      const dy = ty - y;
-      const horizontalLeg = Math.abs(dx) > Math.abs(dy);
-      const forward = 3 + rng.int(0, 3);
-      const amp = 3 + rng.int(0, 3);
-      let nx: number;
-      let ny: number;
-      if (horizontalLeg) {
-        nx = x + Math.sign(dx) * Math.min(forward, Math.abs(dx));
-        ny = y + swing * amp;
-      } else {
-        nx = x + swing * amp;
-        ny = y + Math.sign(dy) * Math.min(forward, Math.abs(dy));
+  // Temple Heights: raise a handful of ordinary blocks into perches.
+  if (feature === 'highground') {
+    let raised = 0;
+    for (let tries = 0; tries < 60 && raised < 6; tries++) {
+      const x = sx + rng.int(1, PLATE - 2);
+      const y = sy + rng.int(1, PLATE - 2);
+      const cell = y * map.w + x;
+      if (map.cells[cell] === CellType.Block && map.heights[cell] === 1) {
+        map.heights[cell] = rng.next() < 0.4 ? 3 : 2;
+        raised++;
       }
-      nx = Math.max(2, Math.min(w - 3, nx));
-      ny = Math.max(2, Math.min(h - 3, ny));
-      carveL(x, y, nx, ny);
-      x = nx;
-      y = ny;
-      swing = -swing;
     }
-    carveL(x, y, tx, ty);
-  };
-
-  // Confluences: two mustering squares where gate channels merge before the
-  // shared final approach — the architectural chokepoints.
-  const angle = rng.float(0, Math.PI);
-  const conf: Array<{ x: number; y: number }> = [
-    { x: Math.round(cx + Math.cos(angle) * 10), y: Math.round(cy + Math.sin(angle) * 7) },
-    { x: Math.round(cx - Math.cos(angle) * 10), y: Math.round(cy - Math.sin(angle) * 7) },
-  ].map((c) => ({
-    x: Math.max(4, Math.min(w - 5, c.x)),
-    y: Math.max(4, Math.min(h - 5, c.y)),
-  }));
-  for (const c of conf) serpentine(c.x, c.y, cx, cy);
-
-  // Gates: three edges, each with a serpentine channel to its nearest confluence.
-  const gates: number[] = [];
-  const sides = [0, 1, 2, 3];
-  for (let i = sides.length - 1; i > 0; i--) {
-    const j = rng.int(0, i);
-    [sides[i], sides[j]] = [sides[j], sides[i]];
   }
-  for (let i = 0; i < 3; i++) {
-    const side = sides[i];
-    let gx: number;
-    let gy: number;
-    if (side === 0) { gx = rng.int(5, w - 6); gy = 0; }
-    else if (side === 1) { gx = rng.int(5, w - 6); gy = h - 1; }
-    else if (side === 2) { gx = 0; gy = rng.int(5, h - 6); }
-    else { gx = w - 1; gy = rng.int(5, h - 6); }
-    const gate = idx(gx, gy);
-    gates.push(gate);
-    const ix = Math.max(2, Math.min(w - 3, gx));
-    const iy = Math.max(2, Math.min(h - 3, gy));
-    // Carve the stub from the border gate to the serpentine start — every
-    // cell of it, so the lane is connected from the very first tile.
-    let sx = gx;
-    let sy = gy;
-    cells[gate] = CellType.Road;
-    let stubGuard = 0;
-    while ((sx !== ix || sy !== iy) && stubGuard++ < 8) {
-      sx += Math.sign(ix - sx);
-      sy += Math.sign(iy - sy);
-      cells[idx(sx, sy)] = CellType.Road;
-    }
-    const near = conf.reduce((a, b) =>
-      (Math.hypot(b.x - gx, b.y - gy) < Math.hypot(a.x - gx, a.y - gy) ? b : a));
-    serpentine(ix, iy, near.x, near.y);
-  }
-
-  return { w, h, cells, gates, coreCell: idx(cx, cy) };
+  map.slots[slot] = { pattern, feature, slot };
 }
+
+export function createBoard(slotsX: number, slotsY: number, startSlot: number, rng: Rng): CityMap {
+  const w = slotsX * PLATE;
+  const h = slotsY * PLATE;
+  const map: CityMap = {
+    w, h, slotsX, slotsY,
+    cells: new Array<CellType>(w * h).fill(CellType.Void),
+    heights: new Uint8Array(w * h),
+    slots: new Array<PlateInstance | null>(slotsX * slotsY).fill(null),
+    coreCell: 0,
+  };
+  stampPlate(map, START_PLATE, startSlot, 'plain', rng);
+  const sx = (startSlot % slotsX) * PLATE;
+  const sy = Math.floor(startSlot / slotsX) * PLATE;
+  map.coreCell = (sy + 5) * w + (sx + 5); // center of the crash plaza
+  return map;
+}
+
+/** Which slot a cell belongs to. */
+export function slotOfCell(map: CityMap, cell: number): number {
+  const x = cell % map.w;
+  const y = Math.floor(cell / map.w);
+  return Math.floor(y / PLATE) * map.slotsX + Math.floor(x / PLATE);
+}
+
+/** Port cell (the index-4 mouth cell) of a slot edge, in board coordinates. */
+function portCell(map: CityMap, slot: number, edge: 'n' | 's' | 'e' | 'w'): number {
+  const sx = (slot % map.slotsX) * PLATE;
+  const sy = Math.floor(slot / map.slotsX) * PLATE;
+  if (edge === 'n') return sy * map.w + (sx + 4);
+  if (edge === 's') return (sy + PLATE - 1) * map.w + (sx + 4);
+  if (edge === 'w') return (sy + 4) * map.w + sx;
+  return (sy + 4) * map.w + (sx + PLATE - 1);
+}
+
+const EDGES: Array<'n' | 's' | 'e' | 'w'> = ['n', 's', 'e', 'w'];
+
+function neighborSlot(map: CityMap, slot: number, edge: 'n' | 's' | 'e' | 'w'): number | null {
+  const sx = slot % map.slotsX;
+  const sy = Math.floor(slot / map.slotsX);
+  const nx = sx + (edge === 'e' ? 1 : edge === 'w' ? -1 : 0);
+  const ny = sy + (edge === 's' ? 1 : edge === 'n' ? -1 : 0);
+  if (nx < 0 || ny < 0 || nx >= map.slotsX || ny >= map.slotsY) return null;
+  return ny * map.slotsX + nx;
+}
+
+const OPPOSITE = { n: 's', s: 'n', e: 'w', w: 'e' } as const;
+
+/**
+ * Live gates: ports of active plates that face the void (or the board edge).
+ * This is the frontier — the hive attacks from the city you have not eaten yet.
+ */
+export function frontierGates(map: CityMap): number[] {
+  const gates: number[] = [];
+  for (let slot = 0; slot < map.slots.length; slot++) {
+    const inst = map.slots[slot];
+    if (!inst) continue;
+    for (const edge of EDGES) {
+      if (!inst.pattern.ports[edge]) continue;
+      const nb = neighborSlot(map, slot, edge);
+      if (nb === null || map.slots[nb] === null) gates.push(portCell(map, slot, edge));
+    }
+  }
+  return gates;
+}
+
+/** Valid draft offers: inactive slots reachable through a matching port pair. */
+export function draftOffers(map: CityMap, rng: Rng, count: number): DraftOffer[] {
+  const pool = platePool();
+  const features: PlateFeature[] = ['plain', 'science', 'meat', 'highground'];
+  const options: DraftOffer[] = [];
+  let guard = 0;
+  while (options.length < count && guard++ < 400) {
+    const pattern = pool[rng.int(0, pool.length - 1)];
+    const slot = rng.int(0, map.slots.length - 1);
+    if (map.slots[slot] !== null) continue;
+    let connects = false;
+    for (const edge of EDGES) {
+      const nb = neighborSlot(map, slot, edge);
+      if (nb === null || map.slots[nb] === null) continue;
+      if (pattern.ports[edge] && map.slots[nb]!.pattern.ports[OPPOSITE[edge]]) {
+        connects = true;
+        break;
+      }
+    }
+    if (!connects) continue;
+    if (options.some((o) => o.slot === slot && o.pattern.id === pattern.id)) continue;
+    options.push({ pattern, slot, feature: features[rng.int(0, features.length - 1)] });
+  }
+  return options;
+}
+
+export { PLATE_FEATURES };
+export type { PlateFeature, PlatePattern };
 
 /**
  * Weighted flow field toward a target cell (Dijkstra over passable cells).
- * `extraCost` lets the sim make cells expensive without blocking them —
- * a tower on a road is a wall the swarm reroutes around or chews through.
- * Returns { dist, next } where next[cell] is the neighbor to step to.
+ * `extraCost` makes cells expensive without blocking them — a spine wall in
+ * a single-lane channel is chewed through, not routed around.
  */
 export function computeFlow(
   map: CityMap,
@@ -153,17 +195,13 @@ export function computeFlow(
     const t = map.cells[c];
     if (t === CellType.Road) return 10;
     if (t === CellType.Plaza) return 12;
-    if (t === CellType.Rubble) return 14;
     return Infinity;
   };
-  // Simple binary-heap-free Dijkstra: bucket by rounded cost is overkill; the
-  // grid is 1200 cells, an array-scan priority queue is fine and deterministic.
   const open: number[] = [target];
   dist[target] = 0;
   const inOpen = new Uint8Array(n);
   inOpen[target] = 1;
   while (open.length > 0) {
-    // Pop the lowest-dist entry (deterministic tie-break by index order).
     let bi = 0;
     for (let i = 1; i < open.length; i++) {
       if (dist[open[i]] < dist[open[bi]] || (dist[open[i]] === dist[open[bi]] && open[i] < open[bi])) bi = i;
@@ -196,7 +234,7 @@ export function computeFlow(
   return { dist, next };
 }
 
-/** BFS hop-distance over ALL cells — the creep climbs the city blocks too. */
+/** BFS hop-distance over all ACTIVE cells — the creep climbs blocks, never the void. */
 export function allDistance(map: CityMap, from: number): Int32Array {
   const n = map.w * map.h;
   const dist = new Int32Array(n).fill(-1);
@@ -214,33 +252,7 @@ export function allDistance(map: CityMap, from: number): Int32Array {
       cy < map.h - 1 ? cur + map.w : -1,
     ];
     for (const nb of neighbors) {
-      if (nb < 0 || dist[nb] !== -1) continue;
-      dist[nb] = dist[cur] + 1;
-      q.push(nb);
-    }
-  }
-  return dist;
-}
-
-/** Plain BFS hop-distance from a cell over passable terrain (for pathing checks). */
-export function passableDistance(map: CityMap, from: number): Int32Array {
-  const n = map.w * map.h;
-  const dist = new Int32Array(n).fill(-1);
-  const q: number[] = [from];
-  dist[from] = 0;
-  let head = 0;
-  while (head < q.length) {
-    const cur = q[head++];
-    const cx = cur % map.w;
-    const cy = Math.floor(cur / map.w);
-    const neighbors = [
-      cx > 0 ? cur - 1 : -1,
-      cx < map.w - 1 ? cur + 1 : -1,
-      cy > 0 ? cur - map.w : -1,
-      cy < map.h - 1 ? cur + map.w : -1,
-    ];
-    for (const nb of neighbors) {
-      if (nb < 0 || dist[nb] !== -1 || !isPassable(map.cells[nb])) continue;
+      if (nb < 0 || dist[nb] !== -1 || map.cells[nb] === CellType.Void) continue;
       dist[nb] = dist[cur] + 1;
       q.push(nb);
     }

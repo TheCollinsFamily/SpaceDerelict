@@ -23,6 +23,7 @@
       <div id="phase-box">
         <div id="phase-name">GROWTH</div>
         <div id="wave-info">WAVE 0 · TIER 0</div>
+        <button id="call-early">CALL THE WAVE (+meat)</button>
       </div>
       <div id="dials">
         <div class="dial" id="dial-threat"><span>THREAT</span><b>0</b></div>
@@ -48,6 +49,42 @@
         </div>
       </div>
       <div id="hint"></div>
+      <div id="banner" class="hidden"></div>
+      <div id="draft" class="hidden">
+        <div id="draft-card-wrap">
+          <div id="draft-title">THE BODY IS READY TO GROW</div>
+          <div id="draft-sub">Choose the district to consume next. New streets mean new gates.</div>
+          <div id="draft-options"></div>
+        </div>
+      </div>
+      <div id="menu" class="screen">
+        <div class="screen-card">
+          <div class="screen-kicker">TECHNOPURITAN NAVY — XENOFAUNA CLEARANCE DIVISION</div>
+          <div class="screen-title">BROODFALL</div>
+          <div class="screen-body">Field asset BF-7 is cultured and viable. The eusocial infestation below
+            resists standard clearance. Deploy the asset, grow it through the city, and complete the
+            directive. Your service metrics accrue toward your procreation license application.</div>
+          <div id="menu-genes" class="screen-note"></div>
+          <button id="menu-deploy" class="screen-btn">DEPLOY ASSET</button>
+        </div>
+      </div>
+      <div id="debrief" class="screen hidden">
+        <div class="screen-card">
+          <div class="screen-kicker">POST-DEPLOYMENT REPORT — FORM XC-11</div>
+          <div class="screen-title" id="debrief-title">DEPLOYMENT COMPLETE</div>
+          <div class="screen-body" id="debrief-body"></div>
+          <button id="debrief-ship" class="screen-btn">RETURN TO SHIP</button>
+        </div>
+      </div>
+      <div id="ship" class="screen hidden">
+        <div class="screen-card">
+          <div class="screen-kicker">ORBITAL TENDER "MERCIFUL YOKE" — GENE BAY</div>
+          <div class="screen-title">SPLICE THE NEXT ORGANISM</div>
+          <div class="screen-body" id="ship-standing"></div>
+          <div id="ship-genes"></div>
+          <button id="ship-deploy" class="screen-btn">REDEPLOY</button>
+        </div>
+      </div>
     </main>
 
     <footer id="botbar">

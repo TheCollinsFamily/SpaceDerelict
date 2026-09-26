@@ -5,7 +5,7 @@ import { CellType, isPassable } from '../src/sim/citymap';
 import type { SimConfig, Tower } from '../src/sim/types';
 import { BALANCE as B, TOWERS } from '../content/data';
 
-const CFG: SimConfig = { gridW: 40, gridH: 30, cellPx: 32, seed: 1234 };
+const CFG: SimConfig = { gridW: 50, gridH: 40, cellPx: 26, seed: 1234 };
 
 function freshSim(seed = 1234): Sim {
   return new Sim({ ...CFG, seed });
@@ -91,7 +91,7 @@ describe('economy and building', () => {
     expect(s.issue({ kind: 'build', cardIndex: 0, cell: block }).ok).toBe(false);
 
     // A far passable cell outside the creep is not buildable yet.
-    const farRoad = s.map.gates[0];
+    const farRoad = s.gates[0];
     expect(s.isCreeped(farRoad)).toBe(false);
     expect(s.issue({ kind: 'build', cardIndex: 0, cell: farRoad }).ok).toBe(false);
 
@@ -118,10 +118,10 @@ describe('economy and building', () => {
     expect(s.issue({ kind: 'build-organ', organ: 'heart', cell: organCell(s) }).ok).toBe(true);
   });
 
-  it('city map: every gate reaches the core along passable streets', () => {
+  it('city map: every frontier gate reaches the core along passable streets', () => {
     const s = freshSim();
-    expect(s.map.gates.length).toBeGreaterThanOrEqual(2);
-    for (const gate of s.map.gates) {
+    expect(s.gates.length).toBeGreaterThanOrEqual(2);
+    for (const gate of s.gates) {
       expect(Number.isFinite(s.flowDistOf(gate))).toBe(true);
     }
   });
@@ -217,8 +217,7 @@ describe('draw odds', () => {
     const before = s.drawWeights();
     s.meat.war = 999;
     s.meat.science = 999;
-    const inside = s.cellAt(s.core.x + 55, s.core.y);
-    expect(s.issue({ kind: 'build-organ', organ: 'brain', cell: inside }).ok).toBe(true);
+    expect(s.issue({ kind: 'build-organ', organ: 'brain', cell: organCell(s) }).ok).toBe(true);
     const after = s.drawWeights();
     for (const t of TOWERS) {
       if (t.advanced) expect(after[t.family]).toBeGreaterThan(before[t.family]);

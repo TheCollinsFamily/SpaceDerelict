@@ -8,8 +8,10 @@
  */
 import { Rng } from './rng';
 import {
-  CellType, CityMap, allDistance, computeFlow, generateCity, isPassable,
+  CellType, CityMap, DraftOffer, allDistance, computeFlow, createBoard,
+  draftOffers, frontierGates, isPassable, slotOfCell, stampPlate,
 } from './citymap';
+import { GENES, PLATE_FEATURES } from '../../content/plates';
 import {
   BALANCE as B, ENEMIES, ORGANS, TOWERS, WAVE_TABLE,
 } from '../../content/data';
@@ -95,8 +97,17 @@ export class Sim {
 
   private spawnQueue: EnemyKind[] = [];
   private spawnTimer = 0;
+  /** Live frontier gates (ports facing unclaimed districts). */
+  gates: number[] = [];
   /** Gates the NEXT assault will pour through — telegraphed during growth. */
   incomingGates: number[] = [];
+  /** District draft on offer (phase === 'draft'). */
+  pendingDraft: DraftOffer[] | null = null;
+  private creepSurgePx = 0;
+  private geneMods = {
+    weightMult: {} as Partial<Record<TowerFamily, number>>,
+    startWar: 0, startScience: 0, spineHpBonus: 0, mawEatBonus: 0, rangeMult: 1,
+  };
   private researcherTimer = 20;
   private royalSpawned = false;
 
@@ -123,14 +134,32 @@ export class Sim {
     this.worldW = cfg.gridW * cfg.cellPx;
     this.worldH = cfg.gridH * cfg.cellPx;
     this.rng = new Rng(cfg.seed);
-    this.map = generateCity(cfg.gridW, cfg.gridH, this.rng);
+    const slotsX = Math.floor(cfg.gridW / 10);
+    const slotsY = Math.floor(cfg.gridH / 10);
+    const startSlot = Math.floor((slotsY - 1) / 2) * slotsX + Math.floor(slotsX / 2);
+    this.map = createBoard(slotsX, slotsY, startSlot, this.rng);
     this.core = this.cellCenter(this.map.coreCell);
+    this.gates = frontierGates(this.map);
+    for (const id of cfg.genes ?? []) {
+      const g = GENES.find((x) => x.id === id);
+      if (!g) continue;
+      for (const [fam, m] of Object.entries(g.weightMult ?? {})) {
+        this.geneMods.weightMult[fam as TowerFamily] = (this.geneMods.weightMult[fam as TowerFamily] ?? 1) * (m as number);
+      }
+      this.geneMods.startWar += g.startWar ?? 0;
+      this.geneMods.startScience += g.startScience ?? 0;
+      this.geneMods.spineHpBonus += g.spineHpBonus ?? 0;
+      this.geneMods.mawEatBonus += g.mawEatBonus ?? 0;
+      this.geneMods.rangeMult *= g.rangeMult ?? 1;
+    }
     this.directive = cfg.directive ?? this.rng.pick<Directive>([
       { kind: 'hold', waves: B.holdWaves },
       { kind: 'royal', count: 1 },
       { kind: 'harvest', science: B.harvestScience },
     ]);
     this.meat = { ...B.startMeat };
+    this.meat.war += this.geneMods.startWar;
+    this.meat.science += this.geneMods.startScience;
     this.creepDist = allDistance(this.map, this.map.coreCell);
     this.flow = this.computeFlowField();
     this.pickIncomingGates();
@@ -142,7 +171,8 @@ export class Sim {
   /** Creep reach in px (grows over time; hearts accelerate it). */
   get creepRadius(): number {
     const hearts = this.organs.filter((o) => o.organ === 'heart').length;
-    return B.creepBase + this.time * B.creepPerSec * (1 + B.creepPerHeartBonus * hearts);
+    return B.creepBase + this.creepSurgePx
+      + this.time * B.creepPerSec * (1 + B.creepPerHeartBonus * hearts);
   }
 
   get bodyRadius(): number {
@@ -182,6 +212,7 @@ export class Sim {
 
   get interest(): number {
     let n = B.baseInterest;
+    for (const s of this.map.slots) if (s && s.feature === 'science') n += 3;
     for (const t of this.towers) n += towerStats(t).interest;
     for (const o of this.organs) {
       if (o.organ === 'brain') n += B.brainInterest;
@@ -191,11 +222,23 @@ export class Sim {
   }
 
   get threat(): number {
-    return this.threatKills + this.threatChallenge + this.biomass * B.threatFromBiomass;
+    return this.threatKills + this.threatChallenge
+      + this.wavesCleared * B.threatPerWaveCleared
+      + this.biomass * B.threatFromBiomass;
   }
 
   get tier(): number {
     return Math.min(WAVE_TABLE.length - 1, Math.floor(this.threat / B.threatPerTier));
+  }
+
+  /** towerStats plus genes plus high-ground reach for THIS sim's board. */
+  statsOf(t: Tower) {
+    const s = towerStats(t);
+    const h = this.map.heights[t.cell] || 1;
+    s.range = s.range * this.geneMods.rangeMult * (1 + B.heightRangeBonus * (h - 1));
+    s.maxHp += t.family === 'spine' ? this.geneMods.spineHpBonus : 0;
+    s.eatThreshold += t.family === 'maw' ? this.geneMods.mawEatBonus : 0;
+    return s;
   }
 
   private glandMode(): GlandMode {
@@ -287,6 +330,7 @@ export class Sim {
 
   private refreshRouting(): void {
     this.flow = this.computeFlowField();
+    this.creepDist = allDistance(this.map, this.map.coreCell);
   }
 
   // ---------- cards ----------
@@ -294,7 +338,9 @@ export class Sim {
   private drawCard(): CardInstance {
     const brains = this.organs.filter((o) => o.organ === 'brain').length;
     const spec = this.rng.weighted(TOWERS, (t) =>
-      t.weight * (t.advanced && brains > 0 ? B.brainAdvancedWeightMult ** Math.min(brains, 2) : 1),
+      t.weight
+      * (this.geneMods.weightMult[t.family] ?? 1)
+      * (t.advanced && brains > 0 ? B.brainAdvancedWeightMult ** Math.min(brains, 2) : 1),
     );
     return { id: this.nextId++, family: spec.family };
   }
@@ -305,6 +351,7 @@ export class Sim {
     const out = {} as Record<TowerFamily, number>;
     for (const t of TOWERS) {
       out[t.family] = t.weight
+        * (this.geneMods.weightMult[t.family] ?? 1)
         * (t.advanced && brains > 0 ? B.brainAdvancedWeightMult ** Math.min(brains, 2) : 1);
     }
     return out;
@@ -335,7 +382,7 @@ export class Sim {
           id: this.nextId++, family: card.family, pos, cell: cmd.cell,
           hp: spec.maxHp, maxHp: spec.maxHp, pips, cooldown: 0, kills: 0,
         };
-        tower.maxHp = towerStats(tower).maxHp;
+        tower.maxHp = this.statsOf(tower).maxHp;
         tower.hp = tower.maxHp;
         this.towers.push(tower);
         this.occupied.set(cmd.cell, { kind: 't', id: tower.id });
@@ -371,6 +418,32 @@ export class Sim {
         if (this.meat.royal < B.royalSurgeCost) return { ok: false, err: 'cannot afford' };
         this.meat.royal -= B.royalSurgeCost;
         this.biomass += B.royalSurgeBiomass;
+        return { ok: true };
+      }
+      case 'choose-plate': {
+        if (this.phase !== 'draft' || !this.pendingDraft) return { ok: false, err: 'no draft open' };
+        const offer = this.pendingDraft[cmd.index];
+        if (!offer) return { ok: false, err: 'no such offer' };
+        stampPlate(this.map, offer.pattern, offer.slot, offer.feature, this.rng);
+        this.pendingDraft = null;
+        this.creepSurgePx += B.draftCreepSurge;
+        this.gates = frontierGates(this.map);
+        this.refreshRouting();
+        this.phase = 'growth';
+        this.phaseElapsed = 0;
+        this.pickIncomingGates();
+        this.events.push({
+          kind: 'plate-drafted',
+          name: PLATE_FEATURES[offer.feature].name,
+          feature: offer.feature,
+        });
+        return { ok: true };
+      }
+      case 'call-early': {
+        if (this.phase !== 'growth') return { ok: false, err: 'no wave to call' };
+        const bonus = Math.floor((B.growthSeconds - this.phaseElapsed) * B.callEarlyRate);
+        if (bonus > 0) this.meat.war += bonus;
+        this.startSiege();
         return { ok: true };
       }
       case 'discard': {
@@ -415,12 +488,11 @@ export class Sim {
   // ---------- spawning ----------
 
   gateSide(gate: number): 'N' | 'S' | 'E' | 'W' {
-    const cx = gate % this.cfg.gridW;
-    const cy = Math.floor(gate / this.cfg.gridW);
-    if (cy === 0) return 'N';
-    if (cy === this.cfg.gridH - 1) return 'S';
-    if (cx === 0) return 'W';
-    return 'E';
+    const c = this.cellCenter(gate);
+    const dx = c.x - this.core.x;
+    const dy = c.y - this.core.y;
+    if (Math.abs(dx) > Math.abs(dy)) return dx > 0 ? 'E' : 'W';
+    return dy > 0 ? 'S' : 'N';
   }
 
   /** The hive masses its response on specific approaches; the player sees it coming. */
@@ -429,8 +501,8 @@ export class Sim {
     const picked: number[] = [];
     const sides = new Set<string>();
     let guard = 0;
-    while (picked.length < Math.min(lanes, this.map.gates.length) && guard++ < 60) {
-      const g = this.map.gates[this.rng.int(0, this.map.gates.length - 1)];
+    while (picked.length < Math.min(lanes, this.gates.length) && guard++ < 60) {
+      const g = this.gates[this.rng.int(0, this.gates.length - 1)];
       const side = this.gateSide(g);
       if (picked.includes(g)) continue;
       if (sides.has(side) && guard < 30) continue; // spread lanes across sides first
@@ -442,7 +514,7 @@ export class Sim {
 
   private spawnEnemy(kind: EnemyKind, atGate?: number): Enemy {
     const spec = enemySpec(kind);
-    const gate = atGate ?? this.map.gates[this.rng.int(0, this.map.gates.length - 1)];
+    const gate = atGate ?? this.gates[this.rng.int(0, this.gates.length - 1)];
     const c = this.cellCenter(gate);
     const e: Enemy = {
       id: this.nextId++, kind,
@@ -481,6 +553,7 @@ export class Sim {
 
   tick(): void {
     if (this.outcome !== 'playing') return;
+    if (this.phase === 'draft') return; // the world holds its breath while you choose
     this.tickCount += 1;
     this.time += DT;
     this.phaseElapsed += DT;
@@ -497,24 +570,41 @@ export class Sim {
       if (this.spawnQueue.length > 0) {
         this.spawnTimer -= DT;
         if (this.spawnTimer <= 0) {
-          this.spawnTimer = B.siegeSpawnSeconds / Math.max(1, this.spawnQueue.length + 4);
+          // Squads: a column of several at once per lane, then a beat of quiet.
+          this.spawnTimer = B.squadInterval;
           const lane = this.incomingGates[this.rng.int(0, this.incomingGates.length - 1)];
-          this.spawnEnemy(this.spawnQueue.pop()!, lane);
+          for (let k = 0; k < B.squadSize && this.spawnQueue.length > 0; k++) {
+            this.spawnEnemy(this.spawnQueue.pop()!, lane);
+          }
         }
       }
       const hostiles = this.enemies.some((e) => e.kind !== 'researcher');
       if ((this.spawnQueue.length === 0 && !hostiles) || this.phaseElapsed > B.siegeMaxSeconds) {
-        this.phase = 'growth';
         this.phaseElapsed = 0;
         this.wavesCleared += 1;
+        const bonus = B.waveBonusBase + this.waveNumber * B.waveBonusPerWave;
+        this.meat.war += bonus;
+        this.events.push({ kind: 'wave-cleared', wave: this.waveNumber, bonus });
         this.checkDirective();
         if (this.outcome !== 'playing') return;
+        // Every few cleared waves: the body is ready to grow into a new district.
+        if (this.wavesCleared % B.draftEveryWaves === 0) {
+          const offers = draftOffers(this.map, this.rng, 3);
+          if (offers.length > 0) {
+            this.phase = 'draft';
+            this.pendingDraft = offers;
+            this.events.push({ kind: 'draft-open' });
+            return;
+          }
+        }
+        this.phase = 'growth';
         this.pickIncomingGates();
       }
     }
 
-    // Researchers, drawn by interest, in any phase.
-    this.researcherTimer -= DT;
+    // Researchers, drawn by interest — only while the streets are quiet,
+    // so sieges stay discrete, legible events.
+    if (this.phase === 'growth') this.researcherTimer -= DT;
     if (this.researcherTimer <= 0) {
       const interval = Math.max(
         B.researcherMinInterval,
@@ -531,9 +621,9 @@ export class Sim {
     // Royal event.
     const royalDue = this.threat >= B.royalThreat
       || (this.directive.kind === 'royal' && this.waveNumber >= B.royalGuaranteeWave);
-    if (!this.royalSpawned && royalDue) {
+    if (this.phase === 'siege' && !this.royalSpawned && royalDue) {
       this.royalSpawned = true;
-      const lane = this.incomingGates[0] ?? this.map.gates[0];
+      const lane = this.incomingGates[0] ?? this.gates[0];
       this.spawnEnemy('royal', lane);
       for (let i = 0; i < B.royalEscort; i++) this.spawnEnemy('elite', lane);
       this.events.push({ kind: 'royal-incoming' });
@@ -737,7 +827,7 @@ export class Sim {
 
   private updateTowers(): void {
     for (const t of this.towers) {
-      const stats = towerStats(t);
+      const stats = this.statsOf(t);
       if (stats.rate <= 0) continue;
       t.cooldown -= DT;
       if (t.cooldown > 0) continue;
@@ -827,13 +917,15 @@ export class Sim {
       this.checkDirective();
     }
     const calmScale = this.glandMode() === 'calm' ? B.glandCalmThreatScale : 1;
-    this.threatKills += spec.threatOnKill * calmScale;
+    this.threatKills += spec.threatOnKill * calmScale * B.killThreatScale;
     this.biomass += B.biomassPerKill;
     this.events.push({ kind: 'kill', enemy: e.kind, caste: spec.caste });
     if (!eaten && yieldMult > 0) {
+      const slot = this.map.slots[slotOfCell(this.map, this.cellAt(e.pos.x, e.pos.y))];
+      const district = slot && slot.feature === 'meat' && spec.caste === 'war' ? 1.25 : 1;
       this.drops.push({
         id: this.nextId++, pos: { ...e.pos }, caste: spec.caste,
-        amount: Math.round(spec.meat * yieldMult), ttl: B.dropFlySeconds,
+        amount: Math.round(spec.meat * yieldMult * district), ttl: B.dropFlySeconds,
       });
     }
   }

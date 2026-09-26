@@ -10,14 +10,15 @@ You are a growing body. Towers are limbs, creep is skin, organs are the build, m
 
 ## Planetside loop (one deployment = one run)
 
-### The board (Collins, Sep 26 2026: built to a reference screenshot of a real TD map)
-- **Figure-ground like the reference:** the map is a DENSE field of city blocks with dirt street channels CARVED through it in tight serpentines. Enemies march the channels; they cannot cross blocks. A uniform street grid is banned — it carries no geometric information and placement stops mattering (measured, twice).
-- **Few, long, winding lanes:** 3 gates, each with a switchbacking channel to one of 2 confluence squares, then ONE shared final approach to the crash plaza. Bends and merges are the architectural chokepoints; a block inside a switchback pocket touches several path legs and is prime real estate.
-- **Towers perch on creeped city blocks,** out of the traffic (reference behavior). Reading which block covers the most path legs is the game. Exception: the SPINE WALL is placed in the street to be chewed through — the one hold-the-line tool, and on a single-lane channel it cannot be routed around.
+### The board: drafted district PLATES (Collins, Sep 26 2026 — Tower Dominion / Nordhold school, built to his reference screenshot)
+- **The run STARTS SMALL and grows by draft.** One 10x10 district (the crash site) surrounded by unclaimed city under smoke. Every 3rd cleared wave: choose one of three districts to consume — each a hand-authored plate (`content/plates.ts`) with its own winding channels, block heights, and a feature (Research Quarter, Provision District, Temple Heights, plain warren). The camera frames the claimed region and zooms out as the body spreads. The map is player-built over the run.
+- **Figure-ground like the reference:** dense raised city blocks with dirt channels CARVED between them. Enemies march the channels in squads; they cannot cross blocks. A uniform street grid is banned — it carries no geometric information and placement stops mattering (measured, twice).
+- **Verticality is TD 101:** blocks have heights 1-3, drawn raised with faces and shadows; a taller perch is +10% reach per level. Temple Heights plates bring extra high ground.
+- **Towers perch on creeped city blocks,** out of the traffic. Reading which block covers the most path legs is the game. Exception: the SPINE WALL stands in the street to be chewed through — the hold-the-line tool; a single-lane channel cannot be routed around.
 - **Organs grow on open plaza ground inside the body — in the enemies' path.** Leaks threaten something real.
-- **The creep climbs everything** (blocks included) and gates where you may build; under the creep, streets stay visually readable (thin membrane on channels, thick hide on blocks).
-- **Waves attack down TELEGRAPHED lanes** (1-3 gates by tier, shown during the growth phase). Reinforcing the named approach before the assault is the core decision beat.
-- The map at minute zero is a NEIGHBORHOOD, not a battlefield: lit doorways, commuters, food traffic. The city is shown living so the horror lands.
+- **Gates live on the FRONTIER:** ports of claimed plates that face unclaimed city. Growing changes where the hive can come from — expansion is power AND exposure.
+- **Waves attack down TELEGRAPHED lanes** (1-3 frontier gates by tier; "ASSAULT FORMING: N+E" plus glowing gate beacons during growth). Reinforce the named approach, or CALL THE WAVE early for bonus meat. Waves spawn as squads, end with a CLEARED banner and a meat bonus.
+- The map at minute zero is a NEIGHBORHOOD, not a battlefield: lit doorways, and (planned) street life that flees the crash. The city is shown living so the horror lands.
 
 ### The genre guardrail (permanent test)
 `tests/placement.test.ts` runs a chokepoint-aware scripted player against a random-placement player on 8 seeds with identical cards and economy. Placement-aware play must win more seeds AND score higher, or the board has degenerated into decoration. This test exists because the first two boards (radial creep, uniform grid) both failed it.

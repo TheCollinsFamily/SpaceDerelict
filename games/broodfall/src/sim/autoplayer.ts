@@ -19,6 +19,11 @@ export class Autoplayer {
 
   act(sim: Sim, dt: number): void {
     if (sim.outcome !== 'playing') return;
+    // District draft: take the first offer (policies stay comparable).
+    if (sim.phase === 'draft') {
+      sim.issue({ kind: 'choose-plate', index: 0 });
+      return;
+    }
     this.actTimer -= dt;
     if (this.actTimer > 0) return;
     this.actTimer = 1.5;
@@ -158,7 +163,9 @@ export class Autoplayer {
         }
       }
       if (coverage === 0) continue;
-      const score = coverage + laneCoverage * 2 + this.rng.float(0, 1.2);
+      // Verticality: a taller perch shoots further — worth real points.
+      const height = sim.map.heights[cell] || 1;
+      const score = coverage + laneCoverage * 2 + (height - 1) * 2 + this.rng.float(0, 1.2);
       candidates.push({ cell, score });
     }
     if (candidates.length === 0) return null;

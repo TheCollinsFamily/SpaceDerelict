@@ -44,10 +44,15 @@ export class Renderer {
   /** Tower id highlighted as the cannibalize donor candidate. */
   donorHighlightId: number | null = null;
 
+  private camX = 0;
+  private camY = 0;
+  private camScale = 1;
+  private camInit = false;
+
   async init(mount: HTMLElement, worldW: number, worldH: number): Promise<void> {
     this.app = new Application();
     await this.app.init({
-      width: worldW, height: worldH, background: 0x14100b, antialias: true,
+      width: 1360, height: 1000, background: 0x0a0806, antialias: true,
     });
     mount.appendChild(this.app.canvas);
     this.app.stage.addChild(this.world);
@@ -55,18 +60,66 @@ export class Renderer {
     this.ready = true;
   }
 
-  /** Client (CSS) coords -> world coords, accounting for canvas scaling. */
+  /** Frame the ACTIVE districts (plus margin); ease toward it — the map
+   *  visibly grows on screen when a new district is consumed. */
+  private updateCamera(sim: Sim, dtReal: number): void {
+    const cp = sim.cfg.cellPx;
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+    for (let slot = 0; slot < sim.map.slots.length; slot++) {
+      if (!sim.map.slots[slot]) continue;
+      const sx = (slot % sim.map.slotsX) * 10 * cp;
+      const sy = Math.floor(slot / sim.map.slotsX) * 10 * cp;
+      minX = Math.min(minX, sx);
+      minY = Math.min(minY, sy);
+      maxX = Math.max(maxX, sx + 10 * cp);
+      maxY = Math.max(maxY, sy + 10 * cp);
+    }
+    const margin = 3 * cp;
+    minX -= margin; minY -= margin; maxX += margin; maxY += margin;
+    const vw = this.app.renderer.width;
+    const vh = this.app.renderer.height;
+    const scale = Math.min(vw / (maxX - minX), vh / (maxY - minY), 1.6);
+    const cx = (minX + maxX) / 2;
+    const cy = (minY + maxY) / 2;
+    const tx = vw / 2 - cx * scale;
+    const ty = vh / 2 - cy * scale;
+    if (!this.camInit) {
+      this.camScale = scale; this.camX = tx; this.camY = ty; this.camInit = true;
+    } else {
+      const k = Math.min(1, dtReal * 3.5);
+      this.camScale += (scale - this.camScale) * k;
+      this.camX += (tx - this.camX) * k;
+      this.camY += (ty - this.camY) * k;
+    }
+    this.world.scale.set(this.camScale);
+    this.world.position.set(this.camX, this.camY);
+  }
+
+  camera(): { x: number; y: number; scale: number; vw: number; vh: number } {
+    return {
+      x: this.camX, y: this.camY, scale: this.camScale,
+      vw: this.app.renderer.width, vh: this.app.renderer.height,
+    };
+  }
+
+  /** Client (CSS) coords -> world coords, through canvas scaling AND the camera. */
   toWorld(clientX: number, clientY: number): { x: number; y: number } {
     const rect = this.app.canvas.getBoundingClientRect();
+    const px = ((clientX - rect.left) / rect.width) * this.app.renderer.width;
+    const py = ((clientY - rect.top) / rect.height) * this.app.renderer.height;
     return {
-      x: ((clientX - rect.left) / rect.width) * this.app.renderer.width,
-      y: ((clientY - rect.top) / rect.height) * this.app.renderer.height,
+      x: (px - this.camX) / this.camScale,
+      y: (py - this.camY) / this.camScale,
     };
   }
 
   draw(sim: Sim, dtReal: number): void {
     if (!this.ready) return;
     this.pulse += dtReal * 3;
+    this.updateCamera(sim, dtReal);
     this.drawGround(sim);
     this.drawCreep(sim);
     this.drawEntities(sim);
@@ -85,24 +138,40 @@ export class Renderer {
         const x = cx * cp;
         const y = cy * cp;
         const n = (cx * 7919 + cy * 104729) % 13;
-        if (t === CellType.Road) {
-          // Sunken dirt channel: where the columns march.
-          g.rect(x, y, cp, cp).fill(0x4a3b24);
-          g.rect(x, y + cp - 3, cp, 3).fill({ color: 0x2c2113, alpha: 0.8 });
+        if (t === CellType.Void) {
+          // Unclaimed district: city under smoke. You have not eaten this yet.
+          g.rect(x, y, cp, cp).fill(0x0a0806);
+          if (n < 3) g.rect(x + 4 + (n % 3) * 6, y + 6 + (n % 4) * 5, 3, 3).fill({ color: 0x1c150d, alpha: 0.8 });
+        } else if (t === CellType.Road) {
+          // Sunken carved channel: where the columns march. Inner shadow sells the depth.
+          g.rect(x, y, cp, cp).fill(0x54432a);
+          g.rect(x, y, cp, 4).fill({ color: 0x241a0e, alpha: 0.85 });
+          g.rect(x, y, 3, cp).fill({ color: 0x2c2113, alpha: 0.6 });
+          g.rect(x, y + cp - 2, cp, 2).fill({ color: 0x6b573a, alpha: 0.5 });
           if ((cx * 3 + cy) % 4 === 0) g.circle(x + 8 + (n % 3) * 7, y + 10 + (n % 4) * 4, 1.5).fill({ color: 0x2c2113, alpha: 0.7 });
         } else if (t === CellType.Plaza) {
-          g.rect(x, y, cp, cp).fill(0x33291a);
+          g.rect(x, y, cp, cp).fill(0x3a2f1d);
+          g.rect(x, y, cp, 2).fill({ color: 0x241a0e, alpha: 0.5 });
         } else {
-          // City block: a raised mound the creep can climb and limbs perch on.
-          g.rect(x + 1, y + 1, cp - 2, cp - 2).fill(0x2a2214);
-          g.rect(x + 1, y + 1, cp - 2, 5).fill(0x3b3120);
+          // City block: RAISED architecture — the verticality is the read.
+          const hgt = sim.map.heights[cell] || 1;
+          const lift = hgt * 4;
+          // Drop shadow into the street below.
+          g.rect(x + 2, y + cp - 3, cp - 2, 4).fill({ color: 0x000000, alpha: 0.35 });
+          // South face: taller blocks show a taller wall.
+          const face = [0x1b140c, 0x241a0e, 0x2e2113][hgt - 1];
+          g.rect(x + 1, y + 1 - lift + 6, cp - 2, cp - 8 + lift).fill(face);
+          // Roof: higher = lighter (catches the light).
+          const roof = [0x352b19, 0x453823, 0x57472c][hgt - 1];
+          g.rect(x + 1, y + 1 - lift, cp - 2, cp - 8).fill(roof);
+          g.rect(x + 1, y + 1 - lift, cp - 2, 3).fill({ color: [0x453823, 0x57472c, 0x6b5836][hgt - 1], alpha: 0.9 });
           const flicker = 0.4 + 0.25 * Math.sin(this.pulse * 0.7 + cx * 3 + cy);
-          if (n < 5) g.rect(x + 6 + (n % 4) * 5, y + cp - 9, 4, 7).fill({ color: 0xd8a84e, alpha: flicker });
+          if (n < 4) g.rect(x + 6 + (n % 3) * 6, y + cp - 8, 3, 5).fill({ color: 0xd8a84e, alpha: flicker });
         }
       }
     }
-    // Gates: hazard notches where the streets meet the map edge.
-    for (const gate of sim.map.gates) {
+    // Gates: the frontier ports where unclaimed city meets your turf.
+    for (const gate of sim.gates) {
       const c = sim.cellCenter(gate);
       const incoming = sim.incomingGates.includes(gate);
       if (incoming) {
@@ -135,12 +204,14 @@ export class Renderer {
         if (!sim.isCreeped(cell)) continue;
         const x = cx * cp;
         const y = cy * cp;
+        if (sim.map.cells[cell] === CellType.Void) continue;
         const body = sim.isBody(cell);
         const isChannel = sim.map.cells[cell] === CellType.Road || sim.map.cells[cell] === CellType.Plaza;
+        const lift = isChannel ? 0 : (sim.map.heights[cell] || 1) * 4;
         const wob = 0.05 * Math.sin(this.pulse * 0.8 + cx * 1.7 + cy * 2.3);
-        // Streets stay readable under the creep: thin membrane there, thick hide on blocks.
-        const alpha = body ? 0.6 : isChannel ? 0.16 : 0.42;
-        g.rect(x - 1, y - 1, cp + 2, cp + 2)
+        // Streets stay readable under the creep: thin membrane there, thick hide on roofs.
+        const alpha = body ? 0.58 : isChannel ? 0.15 : 0.4;
+        g.rect(x, y - lift, cp, cp)
           .fill({ color: body ? 0x6e1e14 : 0x571812, alpha: alpha + wob });
         if (body) {
           g.circle(x + cp / 2, y + cp / 2, cp * 0.32 + Math.sin(this.pulse + cx + cy) * 2)
@@ -180,7 +251,10 @@ export class Renderer {
       this.hpArc(g, x, y, 18, o.hp / o.maxHp);
     }
 
-    for (const t of sim.towers) this.drawTower(g, t);
+    for (const t of sim.towers) {
+      const hgt = sim.map.heights[t.cell] || 0;
+      this.drawTower(g, t, hgt > 0 ? hgt * 4 : 0);
+    }
 
     for (const e of sim.enemies) {
       const { x, y } = e.pos;
@@ -209,8 +283,9 @@ export class Renderer {
     }
   }
 
-  private drawTower(g: Graphics, t: Tower): void {
-    const { x, y } = t.pos;
+  private drawTower(g: Graphics, t: Tower, lift: number): void {
+    const x = t.pos.x;
+    const y = t.pos.y - lift;
     const c = FAMILY_COLORS[t.family];
     // Ground shadow + rim so limbs read against the creep.
     g.circle(x, y + 2, 15).fill({ color: 0x000000, alpha: 0.35 });
