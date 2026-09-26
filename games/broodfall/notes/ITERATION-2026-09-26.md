@@ -81,3 +81,35 @@ hold-12 peaks at tier 5 (ungated it arrived by wave 11 and collapsed both run su
   random scatter dodges both by accident. The assertion still holds (informed placement
   flips more seeds), and the counterplay (kill runners on approach, interior coverage) is
   real for a human. Next bot iteration: rebuild blown walls promptly, keep one interior gun.
+
+
+## Addendum 4: creep logistics (sling + root) and the genre survey
+
+**Collins asked for:** a building that TOSSES creep to a chosen further-away location,
+a creep node that expands creep DIRECTIONALLY, and a review of well-loved towers from
+other TD games.
+
+**Built — creep is now multi-source** (core radius + any number of sources, each a BFS
+distance map over active cells):
+- **Spore Sling** (tower card, 22W 10S): click the built sling → range ring → click any
+  claimed ground within 300px → a clot arcs over and seeds a patch (3 cells, grows to
+  8). 20s recharge, arm cocks visibly when ready. No mode button — object-initiated,
+  per the interaction rule. Pip: the limb itself seeps creep, +1 cell per pip.
+- **Tendril Root** (organ, 15W 15S): a base pad plus a creep LOBE that lengthens 0.35
+  cells/s (max 14) in its compass direction — defaults toward the nearest gate, click
+  to cycle N→E→S→W, arrow drawn on the organ.
+
+**Balance journey (measured, three rounds):** naive sling builds were dead weight and
+sank the smart bot (6/8 → assertion fail). Teaching the autoplayer real technique —
+build ONE sling, throw toward the telegraphed gate each recharge, discard surplus
+sling cards — plus raising the tier-6 threat gate 330→420 (hold-12 tops out ~330, so
+desperation waves stop leaking into standard runs) landed at: **fullrun 3/3 wins,
+guardrail smart 8/8, flips 1:0, smart totals above random. 43/43 tests; input check
+now covers arm→throw→seeded-creep and root re-aim as real gestures.** An interior-gun
+reflex (2 guns within 5 hops of core) arms only when threat nears the tier-6 gate.
+
+**Genre survey:** `references/TOWER-GENRE-REVIEW.md` — 14 beloved archetypes mapped to
+our seats (9 HAVE, 3 PARTIAL, 2 GAP after today). Ranked gap list: Broodmother
+(barracks seat — the genre's most-loved archetype), Digestive Pit (trap seat),
+Galvanic Frond (chain), Bile Lobber (aimed damage), Caustic Mister (armor-shred aura),
+Ocular Stalk (global sniper). Explicit non-adopts: heroes, crit RNG, decay.

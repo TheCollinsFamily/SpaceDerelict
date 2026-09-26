@@ -5,6 +5,7 @@
 import { Rng } from './rng';
 import { Sim, towerSpec, organSpec } from './sim';
 import { CellType } from './citymap';
+import { BALANCE as B } from '../../content/data';
 import type { OrganId } from './types';
 
 export class Autoplayer {
@@ -41,6 +42,19 @@ export class Autoplayer {
       sim.issue({ kind: 'cycle-gland', organInstanceId: gland.id });
     }
 
+    // Sling technique: hurl creep toward the telegraphed approach, so forward
+    // ground near the incoming lane becomes buildable before the body arrives.
+    const sling = sim.towers.find((t) => t.family === 'sling');
+    if (sling && sling.cooldown <= 0 && sim.incomingGates.length > 0) {
+      const g = sim.cellCenter(sim.incomingGates[0]);
+      const dx = g.x - sling.pos.x;
+      const dy = g.y - sling.pos.y;
+      const d = Math.hypot(dx, dy) || 1;
+      const f = Math.min(1, (B.slingRange * 0.9) / d);
+      const cell = sim.cellAt(sling.pos.x + dx * f, sling.pos.y + dy * f);
+      sim.issue({ kind: 'sling-throw', towerId: sling.id, cell });
+    }
+
     // Technique: a spine card in hand plugs the telegraphed lane itself,
     // holding the swarm inside the shooters' kill zone.
     const spineIdx = sim.hand.findIndex((c) => c.family === 'spine');
@@ -57,8 +71,20 @@ export class Autoplayer {
     for (let i = 0; i < sim.hand.length; i++) {
       const spec = towerSpec(sim.hand[i].family);
       if (!sim.canAfford(spec.cost)) continue;
+      // One sling is logistics; a second is a dead limb — discard it.
+      if (sim.hand[i].family === 'sling' && sling) {
+        if (sim.meat.war >= B.discardCost + 10) sim.issue({ kind: 'discard', cardIndex: i });
+        return;
+      }
       const wantsBlocker = sim.hand[i].family === 'spine';
-      const cell = this.findTowerCell(sim, wantsBlocker);
+      // High tiers bring tunnelers (surface INSIDE) and massed fliers: keep a
+      // couple of guns on the body itself, not everything on the frontier.
+      const interiorGuns = sim.towers.filter(
+        (t) => towerSpec(t.family).rate > 0 && sim.creepDistOf(t.cell) >= 0 && sim.creepDistOf(t.cell) <= 5,
+      ).length;
+      const wantsInterior = !wantsBlocker && spec.rate > 0 && interiorGuns < 2
+        && sim.threat >= B.tier6Threat - 60; // tunnelers imminent: cover the inside
+      const cell = this.findTowerCell(sim, wantsBlocker, wantsInterior);
       if (cell === null) return;
       let cannibalizeTowerId: number | undefined;
       this.buildsSinceCannibalize += 1;
@@ -150,7 +176,7 @@ export class Autoplayer {
     return air;
   }
 
-  private findTowerCell(sim: Sim, asBlocker: boolean): number | null {
+  private findTowerCell(sim: Sim, asBlocker: boolean, interiorOnly = false): number | null {
     const w = sim.cfg.gridW;
     const lane = this.lanePathCells(sim);
     const air = this.airLaneCells(sim);
@@ -158,6 +184,7 @@ export class Autoplayer {
     const candidates: Array<{ cell: number; score: number }> = [];
     for (let cell = 0; cell < sim.map.cells.length; cell++) {
       if (!sim.canBuildTower(cell, asBlocker ? 'spine' : undefined)) continue;
+      if (interiorOnly && (sim.creepDistOf(cell) < 0 || sim.creepDistOf(cell) > 5)) continue;
       if (asBlocker) {
         if (sim.map.cells[cell] !== CellType.Road) continue;
       } else if (sim.map.cells[cell] === CellType.Road) continue;

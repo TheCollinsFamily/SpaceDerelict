@@ -18,6 +18,7 @@ const CARD_DESC: Record<TowerFamily, string> = {
   blighter: 'Spore clouds. The blight keeps eating — through armor.',
   impaler: 'Bone harpoon. Skewers a file, ignores shields.',
   choir: 'Resonance organ. Nearby limbs strike faster.',
+  sling: 'Hurls creep to chosen ground. Click it to aim.',
 };
 
 const FEED_LINES: Partial<Record<SimEvent['kind'], (e: SimEvent) => { text: string; cls: string }>> = {
@@ -41,6 +42,8 @@ const FEED_LINES: Partial<Record<SimEvent['kind'], (e: SimEvent) => { text: stri
     ? { text: `assault from ${e.sides} — tier ${e.tier}`, cls: 'hot' }
     : { text: '', cls: '' },
   'researchers-arrive': () => ({ text: 'curious specimens inbound', cls: 'sci' }),
+  'clot-hurled': () => ({ text: 'growth medium deployed downrange', cls: '' }),
+  'clot-landed': () => ({ text: 'remote site seeded — new ground taking', cls: 'hot' }),
   'royal-incoming': () => ({ text: 'priority asset detected: ROYAL', cls: 'royal' }),
   'structure-lost': (e) => e.kind === 'structure-lost'
     ? { text: `limb lost: ${e.what}`, cls: 'hot' }

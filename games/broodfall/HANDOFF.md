@@ -67,9 +67,9 @@ debrief → ship gene bay → redeploy.
 ## How to verify (all must be green before claiming anything)
 
 ```powershell
-npm test             # 40 tests: sim, plates algebra, wave rhythm, per-verb type
-                     # behaviors, butcher economy, full autoplayed runs, and the
-                     # PLACEMENT GUARDRAIL
+npm test             # 43 tests: sim, plates algebra, wave rhythm, per-verb type
+                     # behaviors, butcher economy, creep logistics (sling/root),
+                     # full autoplayed runs, and the PLACEMENT GUARDRAIL
 npm run build
 npm run test:visual  # headless chromium: HUD + per-region pixel checks (camera-aware)
 npm run test:input   # real player gestures: build, cannibalize, organ, cancel
@@ -94,10 +94,12 @@ URL params: `?seed= &auto=1 &autostart=1 &speed= &directive=hold|royal|harvest &
 
 ## Current balance state (don't trust memory — re-measure)
 
-Scripted player, hold-12, 1 entrance: 3/3 measured seeds win post-roster-expansion; 2-3
-entrances: ~1/4 (the wager bites; humans do better than the bot). Guardrail: smart 6/8
-wins, 2 outcome flips vs 1 (see ITERATION addendum 3 for why bombers/tunnelers narrowed
-it and what the bot should learn next). Key economy shape: near-flat bounties (2-3 meat), clearing
+Scripted player, hold-12, 1 entrance: 3/3 measured seeds win; 2-3 entrances: ~1/4 (the
+wager bites; humans do better than the bot). Guardrail: smart 8/8 wins, flips 1:0,
+totals above random (the bot now throws sling clots at the telegraphed gate and arms
+interior guns when tier 6 nears — ITERATION addenda 3-4 carry the tuning history).
+Creep is multi-source: core + sling patches + root lobes + seeping pipped limbs.
+Key economy shape: near-flat bounties (2-3 meat), clearing
 wage per wave, wave counts scale with clock (`waveCountScale`), tier from threat ladder
 (waves cleared + kills×0.3 + biomass×0.035, per-tier 46).
 
@@ -115,8 +117,10 @@ wage per wave, wave counts scale with clock (`waveCountScale`), tier from threat
 6. Real AI art pipeline per TECH.md (authoring = AI video/3D, runtime = spritesheets;
    RFab `services/emotionFrameService.js` is the bake-step prior art).
 7. Mid-siege cannibalize drama (surgery vulnerability window) — design doc, unbuilt.
-8. Autoplayer answers to the new verbs (rebuild blown walls, one interior gun for
-   tunnelers) to widen the guardrail margin back toward 4:0.
+8. Roster gap list from references/TOWER-GENRE-REVIEW.md, in its ranked order:
+   Broodmother (spawned broodlings — the barracks seat, the genre's most-loved
+   archetype), Digestive Pit, Galvanic Frond, Bile Lobber, Caustic Mister,
+   Ocular Stalk.
 
 ## Working with Collins (hard-won, respect these)
 

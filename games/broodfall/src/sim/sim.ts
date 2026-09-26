@@ -16,8 +16,8 @@ import {
   BALANCE as B, ENEMIES, ORGANS, TOWERS, WAVE_TABLE,
 } from '../../content/data';
 import type {
-  CardInstance, Caste, Command, Directive, Drop, Enemy, EnemyKind, EnemySpec,
-  GlandMode, ModPip, Organ, OrganId, Outcome, Phase, Projectile, SimConfig, SimEvent,
+  CardInstance, Caste, Command, CreepSource, Directive, Drop, Enemy, EnemyKind, EnemySpec,
+  GlandMode, ModPip, Organ, OrganId, Outcome, Phase, Projectile, RootDir, SimConfig, SimEvent,
   Tower, TowerFamily, TowerSpec, Vec,
 } from './types';
 
@@ -73,6 +73,8 @@ export function towerStats(t: Tower) {
     poisonDur: Math.max(spec.poisonDur ?? 0, blighterPips > 0 ? B.pipPoisonDur : 0),
     capBonus: spec.pierce ? Infinity : B.pipPierceCap * pips('impaler'),
     pierce: spec.pierce ?? false,
+    // Sling pip: the limb itself seeps creep onto its surroundings.
+    seepRadius: B.pipSeep * pips('sling'),
   };
 }
 
@@ -133,6 +135,12 @@ export class Sim {
   hand: CardInstance[] = [];
   /** Traits banked by butchering limbs; the NEXT build inherits and clears them. */
   pendingPips: ModPip[] = [];
+  /** Creep origins besides the core: hurled patches, root lobes, seeping limbs. */
+  creepSources: CreepSource[] = [];
+  /** Per-source hop-distance maps (id -> BFS from its cell). */
+  private sourceDist = new Map<number, Int32Array>();
+  /** Creep clots in flight from a spore sling. */
+  clotFlights: Array<{ id: number; from: Vec; to: Vec; cell: number; ttl: number }> = [];
 
   /** cell index -> structure ('t'|'o') + id */
   private occupied = new Map<number, { kind: 't' | 'o'; id: number }>();
@@ -204,7 +212,52 @@ export class Sim {
 
   isCreeped(cell: number): boolean {
     const d = this.creepDist[cell];
-    return d >= 0 && d <= this.creepRangeCells;
+    if (d >= 0 && d <= this.creepRangeCells) return true;
+    for (const s of this.creepSources) {
+      if (this.sourceCovers(s, cell)) return true;
+    }
+    return false;
+  }
+
+  /** Does one non-core creep source reach this cell right now? */
+  private sourceCovers(s: CreepSource, cell: number): boolean {
+    const dm = this.sourceDist.get(s.id);
+    if (!dm) return false;
+    const d = dm[cell];
+    if (d < 0) return false;
+    if (s.kind === 'patch') {
+      const r = Math.min(B.slingPatchMax, s.radius + (this.time - s.bornAt) * B.slingPatchGrow);
+      return d <= r;
+    }
+    if (s.kind === 'seep') return d <= s.radius;
+    // Root: a small pad all around, plus a lobe that lengthens in its direction.
+    if (d <= s.radius) return true;
+    const len = Math.min(B.rootMaxLen, (this.time - s.bornAt) * B.rootGrowPerSec);
+    if (len <= 0) return false;
+    const w = this.cfg.gridW;
+    const dx = (cell % w) - (s.cell % w);
+    const dy = Math.floor(cell / w) - Math.floor(s.cell / w);
+    const dir = s.dir ?? 'N';
+    const inCone = dir === 'N' ? (dy < 0 && Math.abs(dx) <= -dy)
+      : dir === 'S' ? (dy > 0 && Math.abs(dx) <= dy)
+        : dir === 'E' ? (dx > 0 && Math.abs(dy) <= dx)
+          : (dx < 0 && Math.abs(dy) <= -dx);
+    return inCone && d <= s.radius + len;
+  }
+
+  private addCreepSource(kind: CreepSource['kind'], cell: number, radius: number, dir?: RootDir, ownerId?: number): CreepSource {
+    const s: CreepSource = { id: this.nextId++, kind, cell, bornAt: this.time, radius, dir, ownerId };
+    this.creepSources.push(s);
+    this.sourceDist.set(s.id, allDistance(this.map, cell));
+    return s;
+  }
+
+  private removeCreepSourcesOf(ownerId: number): void {
+    this.creepSources = this.creepSources.filter((s) => {
+      if (s.ownerId !== ownerId) return true;
+      this.sourceDist.delete(s.id);
+      return false;
+    });
   }
 
   isBody(cell: number): boolean {
@@ -364,6 +417,17 @@ export class Sim {
   private refreshRouting(): void {
     this.flow = this.computeFlowField();
     this.creepDist = allDistance(this.map, this.map.coreCell);
+    // The map may have grown: recompute every source's reach over the new terrain,
+    // and rebuild the seep sources from limbs carrying sling pips.
+    this.creepSources = this.creepSources.filter((s) => {
+      if (s.kind === 'seep') { this.sourceDist.delete(s.id); return false; }
+      return true;
+    });
+    for (const s of this.creepSources) this.sourceDist.set(s.id, allDistance(this.map, s.cell));
+    for (const t of this.towers) {
+      const seep = towerStats(t).seepRadius;
+      if (seep > 0) this.addCreepSource('seep', t.cell, seep, undefined, t.id);
+    }
   }
 
   // ---------- cards ----------
@@ -451,6 +515,23 @@ export class Sim {
         };
         this.organs.push(organ);
         this.occupied.set(cmd.cell, { kind: 'o', id: organ.id });
+        if (cmd.organ === 'root') {
+          // Default the lobe toward the nearest frontier gate; click to re-aim.
+          let dir: RootDir = 'N';
+          let best = Infinity;
+          for (const gate of this.gates) {
+            const g = this.cellCenter(gate);
+            const d = dist(pos, g);
+            if (d < best) {
+              best = d;
+              const dx = g.x - pos.x;
+              const dy = g.y - pos.y;
+              dir = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'E' : 'W') : (dy > 0 ? 'S' : 'N');
+            }
+          }
+          organ.rootDir = dir;
+          this.addCreepSource('root', cmd.cell, B.rootBaseRadius, dir, organ.id);
+        }
         this.refreshRouting();
         this.events.push({ kind: 'organ-built', organ: cmd.organ });
         return { ok: true };
@@ -459,6 +540,29 @@ export class Sim {
         const g = this.organs.find((o) => o.id === cmd.organInstanceId && o.organ === 'gland');
         if (!g) return { ok: false, err: 'no such gland' };
         g.glandMode = g.glandMode === 'calm' ? 'lure' : g.glandMode === 'lure' ? 'challenge' : 'calm';
+        return { ok: true };
+      }
+      case 'cycle-root': {
+        const o = this.organs.find((x) => x.id === cmd.organInstanceId && x.organ === 'root');
+        if (!o) return { ok: false, err: 'no such root' };
+        const order: RootDir[] = ['N', 'E', 'S', 'W'];
+        o.rootDir = order[(order.indexOf(o.rootDir ?? 'N') + 1) % 4];
+        const src = this.creepSources.find((s) => s.kind === 'root' && s.ownerId === o.id);
+        if (src) src.dir = o.rootDir;
+        return { ok: true };
+      }
+      case 'sling-throw': {
+        const t = this.towers.find((x) => x.id === cmd.towerId && x.family === 'sling');
+        if (!t) return { ok: false, err: 'no such sling' };
+        if (t.cooldown > 0) return { ok: false, err: 'sling recharging' };
+        if (this.map.cells[cmd.cell] === CellType.Void) return { ok: false, err: 'unclaimed city' };
+        const to = this.cellCenter(cmd.cell);
+        if (dist(t.pos, to) > B.slingRange) return { ok: false, err: 'out of range' };
+        t.cooldown = B.slingCooldown;
+        this.clotFlights.push({
+          id: this.nextId++, from: { ...t.pos }, to, cell: cmd.cell, ttl: B.clotFlightSeconds,
+        });
+        this.events.push({ kind: 'clot-hurled', cell: cmd.cell });
         return { ok: true };
       }
       case 'royal-surge': {
@@ -552,6 +656,7 @@ export class Sim {
     const o = this.organs[i];
     this.occupied.delete(o.cell);
     this.organs.splice(i, 1);
+    this.removeCreepSourcesOf(id); // a dead root's lobe withers
     this.refreshRouting();
     for (const e of this.enemies) {
       if (e.targetIsOrgan && e.targetId === id) e.targetId = null;
@@ -714,6 +819,7 @@ export class Sim {
     this.updateTowers();
     this.updateProjectiles();
     this.updateDrops();
+    this.updateClots();
 
     if (this.coreHp <= 0) {
       this.outcome = 'lost';
@@ -1070,11 +1176,26 @@ export class Sim {
 
   // ---------- combat ----------
 
+  /** Creep clots in flight land and take root as new creep patches. */
+  private updateClots(): void {
+    const landed: number[] = [];
+    for (const c of this.clotFlights) {
+      c.ttl -= DT;
+      if (c.ttl <= 0) {
+        this.addCreepSource('patch', c.cell, B.slingPatchRadius);
+        this.events.push({ kind: 'clot-landed', cell: c.cell });
+        landed.push(c.id);
+      }
+    }
+    if (landed.length) this.clotFlights = this.clotFlights.filter((c) => !landed.includes(c.id));
+  }
+
   private updateTowers(): void {
     for (const t of this.towers) {
+      // Cooldown ticks for every limb — the sling's recharge lives here too.
+      t.cooldown -= DT;
       const stats = this.statsOf(t);
       if (stats.rate <= 0) continue;
-      t.cooldown -= DT;
       if (t.cooldown > 0) continue;
       let target: Enemy | null = null;
       let bestD = stats.range;

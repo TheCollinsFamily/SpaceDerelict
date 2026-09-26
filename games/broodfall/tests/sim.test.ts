@@ -262,6 +262,101 @@ describe('cannibalize inheritance', () => {
   });
 });
 
+describe('creep logistics (sling patches + directional roots)', () => {
+  function forceCard(s: Sim, family: string): number {
+    let idx = -1;
+    for (let guard = 0; guard < 400 && idx < 0; guard++) {
+      idx = s.hand.findIndex((c) => c.family === family);
+      if (idx < 0) s.issue({ kind: 'discard', cardIndex: 0 });
+    }
+    expect(idx).toBeGreaterThanOrEqual(0);
+    return idx;
+  }
+
+  it('a hurled clot seeds distant creep you can build on; cooldown and range are real', () => {
+    const s = freshSim(700);
+    s.meat.war = 9999;
+    s.meat.science = 9999;
+    const idx = forceCard(s, 'sling');
+    const slingCell = buildableCell(s);
+    expect(s.issue({ kind: 'build', cardIndex: idx, cell: slingCell }).ok).toBe(true);
+    const sling = s.towers.find((t) => t.family === 'sling')!;
+    // Find a far, uncreeped, non-void target inside throw range.
+    let target = -1;
+    for (let c = 0; c < s.map.cells.length; c++) {
+      if (s.map.cells[c] === CellType.Void || s.isCreeped(c)) continue;
+      const p = s.cellCenter(c);
+      const d = Math.hypot(p.x - sling.pos.x, p.y - sling.pos.y);
+      if (d < B.slingRange * 0.95 && d > B.slingRange * 0.5) { target = c; break; }
+    }
+    expect(target).toBeGreaterThanOrEqual(0);
+    expect(s.canBuildTower(target)).toBe(false);
+    expect(s.issue({ kind: 'sling-throw', towerId: sling.id, cell: target }).ok).toBe(true);
+    // Recharging: a second throw is refused.
+    expect(s.issue({ kind: 'sling-throw', towerId: sling.id, cell: target }).ok).toBe(false);
+    for (let i = 0; i < 15; i++) s.tick(); // the clot lands
+    expect(s.isCreeped(target)).toBe(true);
+    // Some cell near the landing is now buildable ground.
+    let buildableNearby = false;
+    for (let c = 0; c < s.map.cells.length && !buildableNearby; c++) {
+      const p = s.cellCenter(c);
+      const t = s.cellCenter(target);
+      if (Math.hypot(p.x - t.x, p.y - t.y) < 80 && s.canBuildTower(c)) buildableNearby = true;
+    }
+    expect(buildableNearby).toBe(true);
+    // Void stays untouchable.
+    const voidCell = s.map.cells.findIndex((c) => c === CellType.Void);
+    expect(s.issue({ kind: 'sling-throw', towerId: sling.id, cell: voidCell }).ok).toBe(false);
+  });
+
+  it('a tendril root grows creep in ITS direction, cycles on command', () => {
+    const s = freshSim(701);
+    s.meat.war = 9999;
+    s.meat.science = 9999;
+    expect(s.issue({ kind: 'build-organ', organ: 'root', cell: organCell(s) }).ok).toBe(true);
+    const root = s.organs.find((o) => o.organ === 'root')!;
+    expect(root.rootDir).toBeDefined();
+    const src = s.creepSources.find((x) => x.kind === 'root')!;
+    expect(src.dir).toBe(root.rootDir);
+    // The lobe reaches down-direction, not up-direction, at equal hop distance.
+    const covers = (s as unknown as { sourceCovers(x: unknown, cell: number): boolean });
+    src.bornAt = -60; // a minute of growth, without moving the core's own creep
+    const w = s.cfg.gridW;
+    const dirOff = root.rootDir === 'N' ? -6 * w : root.rootDir === 'S' ? 6 * w : root.rootDir === 'E' ? 6 : -6;
+    const ahead = root.cell + dirOff;
+    const behind = root.cell - dirOff;
+    if (s.map.cells[ahead] !== CellType.Void) {
+      expect(covers.sourceCovers(src, ahead)).toBe(true);
+    }
+    if (s.map.cells[behind] !== CellType.Void) {
+      expect(covers.sourceCovers(src, behind)).toBe(false);
+    }
+    // Cycling re-aims the lobe.
+    const before = root.rootDir;
+    expect(s.issue({ kind: 'cycle-root', organInstanceId: root.id }).ok).toBe(true);
+    expect(root.rootDir).not.toBe(before);
+    expect(src.dir).toBe(root.rootDir);
+  });
+
+  it('a sling pip makes any limb seep creep around itself', () => {
+    const base: Tower = {
+      id: 1, family: 'spitter', pos: { x: 0, y: 0 }, cell: 0,
+      hp: 1, maxHp: 1, pips: [], cooldown: 0, kills: 0,
+    };
+    expect(towerStats(base).seepRadius).toBe(0);
+    expect(towerStats({ ...base, pips: [{ family: 'sling' }] }).seepRadius).toBe(B.pipSeep);
+    // And the sim maintains a seep source for such a limb.
+    const s = freshSim(702);
+    s.meat.war = 9999;
+    s.meat.science = 9999;
+    expect(s.issue({ kind: 'build', cardIndex: 0, cell: buildableCell(s) }).ok).toBe(true);
+    const donor = s.towers[0];
+    donor.pips.push({ family: 'sling' });
+    s.issue({ kind: 'build', cardIndex: 0, cell: buildableCell(s) }); // triggers refreshRouting
+    expect(s.creepSources.some((x) => x.kind === 'seep' && x.ownerId === donor.id)).toBe(true);
+  });
+});
+
 describe('draw odds', () => {
   it('brain node multiplies advanced tower weights', () => {
     const s = freshSim();

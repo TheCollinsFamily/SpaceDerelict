@@ -4,11 +4,29 @@ export type Caste = 'war' | 'science' | 'royal';
 
 export type TowerFamily =
   | 'spitter' | 'burster' | 'lasher' | 'maw' | 'spine' | 'lure'
-  | 'tangler' | 'blighter' | 'impaler' | 'choir';
+  | 'tangler' | 'blighter' | 'impaler' | 'choir' | 'sling';
 
-export type OrganId = 'heart' | 'brain' | 'gland';
+export type OrganId = 'heart' | 'brain' | 'gland' | 'root';
 
 export type GlandMode = 'calm' | 'lure' | 'challenge';
+
+/** Compass direction a tendril root grows its creep lobe toward. */
+export type RootDir = 'N' | 'E' | 'S' | 'W';
+
+/** A live creep origin besides the core: a hurled patch, a root lobe, a seeping limb. */
+export interface CreepSource {
+  id: number;
+  kind: 'patch' | 'root' | 'seep';
+  cell: number;
+  /** Sim time the source appeared (patches grow from it). */
+  bornAt: number;
+  /** patch: starting radius. seep: fixed radius. root: base radius around the organ. */
+  radius: number;
+  /** root only: lobe direction. */
+  dir?: RootDir;
+  /** root: owning organ id. seep: owning tower id. */
+  ownerId?: number;
+}
 
 export interface Vec {
   x: number;
@@ -80,6 +98,8 @@ export interface Organ {
   hp: number;
   maxHp: number;
   glandMode: GlandMode;
+  /** Tendril root: which way the lobe grows (cycles on click). */
+  rootDir?: RootDir;
 }
 
 export type EnemyKind =
@@ -197,6 +217,8 @@ export type SimEvent =
   | { kind: 'organ-built'; organ: OrganId }
   | { kind: 'cannibalized'; donor: TowerFamily; into: TowerFamily }
   | { kind: 'butchered'; family: TowerFamily; refund: number }
+  | { kind: 'clot-hurled'; cell: number }
+  | { kind: 'clot-landed'; cell: number }
   | { kind: 'kill'; enemy: EnemyKind; caste: Caste }
   | { kind: 'banked'; caste: Caste; amount: number }
   | { kind: 'wave-start'; tier: number; wave: number; counts: Partial<Record<EnemyKind, number>>; sides: string }
@@ -214,6 +236,8 @@ export type SimEvent =
 export type Command =
   | { kind: 'build'; cardIndex: number; cell: number; cannibalizeTowerId?: number }
   | { kind: 'butcher'; towerId: number }
+  | { kind: 'sling-throw'; towerId: number; cell: number }
+  | { kind: 'cycle-root'; organInstanceId: number }
   | { kind: 'build-organ'; organ: OrganId; cell: number }
   | { kind: 'cycle-gland'; organInstanceId: number }
   | { kind: 'royal-surge' }

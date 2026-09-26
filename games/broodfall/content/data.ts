@@ -64,12 +64,21 @@ export const TOWERS: readonly TowerSpec[] = [
     rateAura: 0.15, auraRadius: 95,
     maxHp: 60, interest: 2, eatThreshold: 0, advanced: true,
   },
+  {
+    // Logistics: hurls a creep clot to a chosen distant spot — forward ground
+    // to build on before the body arrives. Click the built sling to arm a throw.
+    family: 'sling', name: 'Spore Sling', weight: 8,
+    cost: { war: 22, science: 10 }, range: 0, rate: 0, damage: 0, aoe: 0,
+    maxHp: 70, interest: 2, eatThreshold: 0, advanced: true,
+  },
 ];
 
 export const ORGANS: readonly OrganSpec[] = [
   { id: 'heart', name: 'Auxiliary Heart', cost: { war: 30, science: 10 }, maxHp: 200 },
   { id: 'brain', name: 'Brain Node', cost: { science: 30 }, maxHp: 150 },
   { id: 'gland', name: 'Pheromone Gland', cost: { science: 20 }, maxHp: 150 },
+  // Directional expansion: grows a creep lobe toward its compass heading (click to cycle).
+  { id: 'root', name: 'Tendril Root', cost: { war: 15, science: 15 }, maxHp: 150 },
 ];
 
 export const ENEMIES: readonly EnemySpec[] = [
@@ -190,10 +199,24 @@ export const BALANCE = {
   tenderRadius: 80,
   bomberBlastRadius: 55,
   bomberBlastDamage: 85,
-  /** The desperation row of the wave table needs this much threat, not just the ladder. */
-  tier6Threat: 330,
+  /** The desperation row of the wave table needs this much threat, not just the
+   *  ladder — a standard hold-12 tops out around 330, so tier 6 belongs to long
+   *  runs and deliberate escalation (royal bait, challenge gland). */
+  tier6Threat: 420,
   /** Tunnelers surface at this fraction of the gate->core flow distance. */
   tunnelerSurfaceFrac: 0.45,
+  /** Spore sling: player-aimed creep logistics. */
+  slingRange: 300,          // px: how far a clot can be hurled
+  slingCooldown: 20,        // s between throws per sling
+  clotFlightSeconds: 1.2,
+  slingPatchRadius: 3,      // cells: landing patch starts this big...
+  slingPatchGrow: 0.12,     // ...and grows this many cells/s...
+  slingPatchMax: 8,         // ...up to this.
+  pipSeep: 1,               // sling pip: the tower itself seeps creep, +1 cell per pip
+  /** Tendril root: directional creep lobe. */
+  rootBaseRadius: 2,        // cells of creep all around the organ
+  rootGrowPerSec: 0.35,     // cells/s of lobe length in the chosen direction
+  rootMaxLen: 14,
   dropFlySeconds: 1.1,
   /** The body itself fights: focused dps on the nearest intruder inside the body. */
   coreDps: 24,

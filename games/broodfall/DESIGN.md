@@ -56,14 +56,25 @@ Towers (10 families; each family's pip is what it teaches a build that eats it):
 | Blight Vent (blighter) | poison clouds; DoT ignores armor caps | +2 poison dps per pip |
 | Impaler | long-range harpoon, pierces a file of 4, ignores shields | +5 armor-cap pierce per pip |
 | Choir Node | +15% fire rate aura to limbs in 95px (max 2 voices) | +8% range per pip |
+| Spore Sling | player-aimed creep logistics: click it, click ground in 300px — a clot flies and seeds a growing patch to build on (20s recharge) | the limb itself seeps creep, +1 cell per pip |
+
+Organs grew too (Collins, Sep 26 2026: "tossing creep" + "a creep node that spawns creep
+directionally"): the **Tendril Root** (15W 15S) grows a creep LOBE toward its compass
+heading — defaults toward the nearest gate, click it to re-aim N→E→S→W. Between the
+core's radius, the root's lobes, the sling's thrown patches and seeping pipped limbs,
+creep is now a multi-source territory game, not one circle.
 
 Enemies (13 kinds; escalation adds VERBS, per the rule above):
 responder/militia/soldier/elite (the ladder of ordinary war bodies) · researcher (science; comes to study, edible) ·
 flier (t3: ignores terrain) · drummer (t3: speed aura — kill it first) · sapper (t4: climbs perches, eats towers) ·
 bomber (t4: charges walls/organs and detonates; perched guns only caught in passing) · phalanx (t5: per-hit damage cap) ·
 tender (t5: heal pulses on the march) · tunneler (t6: burrows past the outer line, untargetable until it surfaces) ·
-royal (the jackpot and the hardest fight). The tier-6 desperation row is threat-gated (330+) so a standard hold order
+royal (the jackpot and the hardest fight). The tier-6 desperation row is threat-gated (420+) so a standard hold order
 peaks at tier 5; tier 6 is for long runs and deliberate escalation.
+
+The genre survey behind the roster — beloved towers across TD games, what seat each
+fills here, and the ranked gap list (Broodmother first) — lives in
+`references/TOWER-GENRE-REVIEW.md`.
 
 ### Towers: cards, not shops
 - Towers buildable each round come from CARDS DRAWN with modified probability. Organs and roguelite (gene bank) unlocks shape the draw odds. The gene bank is your deck; organs decide which genes get expressed. You engineer your own randomness.

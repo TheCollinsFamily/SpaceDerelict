@@ -139,6 +139,69 @@ try {
   const towers2 = await page.evaluate(() => window.broodfall.sim.towers.length);
   if (towers2 === after.towers) pass('right-click cancels placement');
   else fail('right-click cancel', `towers went ${after.towers} -> ${towers2}`);
+
+  // 5. Spore sling: click the built sling to arm, click distant ground to throw,
+  //    the landed clot makes remote ground buildable. (Setup via the AI-play API,
+  //    the interactions themselves are real clicks.)
+  const slingSetup = await page.evaluate(() => {
+    const s = window.broodfall.sim;
+    s.meat.war = 900; s.meat.science = 900;
+    for (let guard = 0; guard < 400; guard++) {
+      const i = s.hand.findIndex((c) => c.family === 'sling');
+      if (i >= 0) {
+        for (let c = 0; c < s.map.cells.length; c++) {
+          if (s.canBuildTower(c)) {
+            return s.issue({ kind: 'build', cardIndex: i, cell: c }).ok
+              ? s.towers.find((t) => t.family === 'sling').pos : null;
+          }
+        }
+      }
+      s.issue({ kind: 'discard', cardIndex: 0 });
+    }
+    return null;
+  });
+  if (!slingSetup) fail('sling setup', 'could not draw/build a sling');
+  else {
+    const target = await page.evaluate(() => {
+      const s = window.broodfall.sim;
+      const sl = s.towers.find((t) => t.family === 'sling');
+      for (let c = 0; c < s.map.cells.length; c++) {
+        if (s.map.cells[c] === 3 || s.isCreeped(c)) continue;
+        const p = s.cellCenter(c);
+        const d = Math.hypot(p.x - sl.pos.x, p.y - sl.pos.y);
+        if (d < 280 && d > 140) return { ...p, cell: c };
+      }
+      return null;
+    });
+    await clickWorld(slingSetup.x, slingSetup.y); // arm the sling
+    await clickWorld(target.x, target.y);          // throw
+    await page.evaluate(() => window.broodfall.step(16)); // clot lands
+    const seeded = await page.evaluate((cell) => window.broodfall.sim.isCreeped(cell), target.cell);
+    if (seeded) pass('sling: click-to-arm, click-to-throw seeds remote creep');
+    else fail('sling throw', 'target cell not creeped after landing');
+  }
+
+  // 6. Tendril root: build via its organ button, then click it to re-aim the lobe.
+  await page.locator('.organ-btn[data-organ="root"]').click();
+  const rootSpot = await page.evaluate(() => {
+    const s = window.broodfall.sim;
+    for (let c = 0; c < s.map.cells.length; c++) {
+      if (s.canBuildOrgan(c)) return s.cellCenter(c);
+    }
+    return null;
+  });
+  await clickWorld(rootSpot.x, rootSpot.y);
+  const rootDir1 = await page.evaluate(() => {
+    const o = window.broodfall.sim.organs.find((x) => x.organ === 'root');
+    return o ? o.rootDir : null;
+  });
+  await clickWorld(rootSpot.x, rootSpot.y); // click the root: cycle its direction
+  const rootDir2 = await page.evaluate(() => {
+    const o = window.broodfall.sim.organs.find((x) => x.organ === 'root');
+    return o ? o.rootDir : null;
+  });
+  if (rootDir1 && rootDir2 && rootDir1 !== rootDir2) pass('root: organ built, click re-aims the lobe');
+  else fail('tendril root', `dir ${rootDir1} -> ${rootDir2}`);
 } catch (err) {
   fail('harness', err.message);
 } finally {

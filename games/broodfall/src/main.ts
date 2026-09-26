@@ -9,6 +9,7 @@ import { DT, Sim, organSpec, towerSpec } from './sim/sim';
 import { Renderer } from './render/render';
 import { Hud } from './ui/hud';
 import { GENES } from '../content/plates';
+import { BALANCE as B } from '../content/data';
 import { PLATE_FEATURES } from './sim/citymap';
 import type { Directive, OrganId, SimConfig, SimEvent, TowerFamily } from './sim/types';
 
@@ -63,6 +64,8 @@ let selectedCard: number | null = null;
 let armedOrgan: OrganId | null = null;
 /** Tower under the pointer that a click would cannibalize (card armed + hover). */
 let hoverDonorId: number | null = null;
+/** Spore sling waiting for a throw target (armed by clicking the built sling). */
+let armedSlingId: number | null = null;
 
 const hud = new Hud({
   onSelectCard(i) {
@@ -97,7 +100,9 @@ function salvageText(family: TowerFamily): string {
 }
 
 function updateHint(): void {
-  if (armedOrgan) {
+  if (armedSlingId !== null) {
+    hud.setHint('SPORE SLING ARMED: click any claimed ground in range — the clot seeds new skin to build on (right-click cancels)');
+  } else if (armedOrgan) {
     hud.setHint(`place ${organSpec(armedOrgan).name} on open ground inside the body`);
   } else if (selectedCard !== null && hoverDonorId !== null) {
     const donor = sim.towers.find((t) => t.id === hoverDonorId);
@@ -310,10 +315,38 @@ function handleCanvasClick(clientX: number, clientY: number): void {
   const w = renderer.toWorld(clientX, clientY);
   const cell = sim.cellAt(w.x, w.y);
 
+  // An armed sling throws at whatever claimed ground is clicked.
+  if (armedSlingId !== null) {
+    const res = sim.issue({ kind: 'sling-throw', towerId: armedSlingId, cell });
+    if (res.ok) {
+      armedSlingId = null;
+      renderer.slingArm = null;
+      updateHint();
+    }
+    return;
+  }
+
   if (selectedCard === null && armedOrgan === null) {
     for (const o of sim.organs) {
       if (o.organ === 'gland' && Math.hypot(o.pos.x - w.x, o.pos.y - w.y) < 20) {
         sim.issue({ kind: 'cycle-gland', organInstanceId: o.id });
+        return;
+      }
+      if (o.organ === 'root' && Math.hypot(o.pos.x - w.x, o.pos.y - w.y) < 20) {
+        sim.issue({ kind: 'cycle-root', organInstanceId: o.id });
+        return;
+      }
+    }
+    // Clicking a built spore sling arms a throw (object-initiated, no mode button).
+    for (const t of sim.towers) {
+      if (t.family === 'sling' && Math.hypot(t.pos.x - w.x, t.pos.y - w.y) < 22) {
+        if (t.cooldown > 0) {
+          hud.setHint(`spore sling recharging — ${Math.ceil(t.cooldown)}s`);
+          return;
+        }
+        armedSlingId = t.id;
+        renderer.slingArm = { x: t.pos.x, y: t.pos.y, range: B.slingRange };
+        updateHint();
         return;
       }
     }
@@ -373,6 +406,8 @@ async function boot(): Promise<void> {
     selectedCard = null;
     armedOrgan = null;
     hoverDonorId = null;
+    armedSlingId = null;
+    renderer.slingArm = null;
     renderer.donorHighlightId = null;
     hud.selectedCard = null;
     hud.armedOrgan = null;

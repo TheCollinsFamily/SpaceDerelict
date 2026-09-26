@@ -21,6 +21,7 @@ const FAMILY_COLORS: Record<TowerFamily, number> = {
   blighter: 0x8fa833,
   impaler: 0xc9c2a4,
   choir: 0xa87fc9,
+  sling: 0xb0685a,
 };
 
 const ENEMY_SIZE: Record<Enemy['kind'], number> = {
@@ -49,6 +50,8 @@ export class Renderer {
   preview: PlacementPreview | null = null;
   /** Tower id highlighted as the cannibalize donor candidate. */
   donorHighlightId: number | null = null;
+  /** Armed spore sling: draw its throw range while the player aims. */
+  slingArm: { x: number; y: number; range: number } | null = null;
 
   private camX = 0;
   private camY = 0;
@@ -248,6 +251,21 @@ export class Renderer {
         g.circle(x, y, 13).fill(0xc9a2b8);
         g.moveTo(x - 8, y).bezierCurveTo(x - 3, y - 9, x + 4, y + 7, x + 9, y - 2)
           .stroke({ width: 2, color: 0x7d5570 });
+      } else if (o.organ === 'root') {
+        // Tendril root: a bulb with a fat runner pointing where the lobe grows.
+        g.circle(x, y, 11).fill(0x8f4a3d);
+        g.circle(x, y, 6).fill(0xb0685a);
+        const d = o.rootDir ?? 'N';
+        const vx = d === 'E' ? 1 : d === 'W' ? -1 : 0;
+        const vy = d === 'S' ? 1 : d === 'N' ? -1 : 0;
+        const wob = Math.sin(this.pulse * 2) * 2;
+        g.moveTo(x, y).lineTo(x + vx * (18 + wob), y + vy * (18 + wob))
+          .stroke({ width: 4, color: 0x8f4a3d, alpha: 0.9 });
+        g.poly([
+          x + vx * 24 + vy * 5, y + vy * 24 + vx * 5,
+          x + vx * 30, y + vy * 30,
+          x + vx * 24 - vy * 5, y + vy * 24 - vx * 5,
+        ]).fill({ color: 0xb0685a, alpha: 0.9 });
       } else {
         const mode = o.glandMode;
         const c = mode === 'lure' ? 0x4fa9a4 : mode === 'challenge' ? 0xd1603c : 0x8a7f65;
@@ -405,6 +423,17 @@ export class Renderer {
         g.circle(x, y, 12 + Math.sin(this.pulse * 4) * 3).stroke({ width: 2, color: c, alpha: 0.6 });
         g.circle(x, y, 4).fill(0xe8d8f4);
         break;
+      case 'sling': {
+        // A tendon catapult: cocked arm with a clot in the basket.
+        g.circle(x, y, 9).fill(c);
+        const cocked = t.cooldown > 0;
+        const ang = cocked ? -0.5 : -1.2; // arm springs up when ready
+        g.moveTo(x, y).lineTo(x + Math.cos(ang) * 16, y + Math.sin(ang) * 16)
+          .stroke({ width: 3.5, color: 0x7a4438 });
+        g.circle(x + Math.cos(ang) * 16, y + Math.sin(ang) * 16, cocked ? 2.5 : 4.5)
+          .fill(cocked ? 0x5c2a1a : 0x9c3120);
+        break;
+      }
     }
     // Inheritance pips: the silhouette is the build history.
     t.pips.forEach((p, i) => {
@@ -436,6 +465,25 @@ export class Renderer {
     }
     for (const d of sim.drops) {
       g.rect(d.pos.x - 3, d.pos.y - 3, 6, 6).fill(CASTE_COLORS[d.caste]);
+    }
+
+    // Creep clots in flight: a lobbed blob on a parabola, shadow tracking below.
+    for (const c of sim.clotFlights) {
+      const f = 1 - c.ttl / 1.2;
+      const x = c.from.x + (c.to.x - c.from.x) * f;
+      const y = c.from.y + (c.to.y - c.from.y) * f;
+      const arc = Math.sin(f * Math.PI) * 46;
+      g.circle(x, y + 3, 5).fill({ color: 0x000000, alpha: 0.3 });
+      g.circle(x, y - arc, 7).fill(0x9c3120);
+      g.circle(x - 2, y - arc - 2, 2.5).fill({ color: 0xd0604a, alpha: 0.9 });
+    }
+
+    // Armed sling: show the throw range while the player aims.
+    if (this.slingArm) {
+      g.circle(this.slingArm.x, this.slingArm.y, this.slingArm.range)
+        .stroke({ width: 2, color: 0xd0604a, alpha: 0.5 });
+      g.circle(this.slingArm.x, this.slingArm.y, this.slingArm.range * (0.9 + 0.1 * Math.sin(this.pulse * 3)))
+        .stroke({ width: 1, color: 0xd0604a, alpha: 0.25 });
     }
 
     // Placement preview.
