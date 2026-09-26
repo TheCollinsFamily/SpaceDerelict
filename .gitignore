@@ -3,3 +3,5 @@ __pycache__/
 logs/
 tmp_*.py
 .DS_Store
+node_modules/
+dist/
