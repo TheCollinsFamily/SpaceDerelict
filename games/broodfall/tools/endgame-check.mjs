@@ -34,7 +34,7 @@ try {
   browser = await chromium.launch();
   const page = await browser.newPage({ viewport: { width: 1500, height: 1100 } });
   // Seed 3 wins with the naive policy in the headless tests; speed 60 saturates the step cap.
-  await page.goto('http://localhost:5199/?auto=1&seed=2&speed=60', { waitUntil: 'load' });
+  await page.goto('http://localhost:5199/?auto=1&seed=2&speed=60&directive=hold', { waitUntil: 'load' });
   await page.waitForSelector('#stage canvas');
 
   let outcome = 'playing';

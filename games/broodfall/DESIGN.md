@@ -37,8 +37,12 @@ The build dictates what comes (attraction economy), not the map. Which caste you
 - Wave composition is telegraphed by caste, so a wave is both a threat readout and a menu you read hungrily.
 - Wave escalation tells the story of a society realizing what is happening to it: first responders, then militia, then military, then everything they have. The horror arrives through the wave system with zero cutscene budget.
 
-### Win condition
-Growth, not survival: a deployment ends when you reach critical biomass and sporulate off-world, or consume the hive's queen. Victory as metamorphosis.
+### Win condition: deployment directives
+**Collins (Sep 26 2026): the win is a wave count or a specific quest objective — never a biomass bar.** Each deployment carries a directive from command, seeded per run (or chosen by the mission structure later):
+- **hold** — survive the local response for N waves (the default order)
+- **royal** — destroy the royal (guaranteed to take the field by a set wave)
+- **harvest** — bank a science-sample quota
+Biomass stays as the growth economy (body size, royal surge), not the goal. Lose = core dead. The earlier "sporulation mass" win was an AI suggestion and is rejected.
 
 ### Run openings
 Each run opens with an AI-generated video of the organism crashing down like a meteor into the starting environment (a neighborhood, farmland, a temple district, a harbor...) matched to the start you rolled. The crash biome biases the starting economy (which caste districts are nearby). Generate one video per biome variant, not per run.

@@ -6,14 +6,21 @@ import { Autoplayer } from './sim/autoplayer';
 import { DT, Sim, organSpec, towerSpec } from './sim/sim';
 import { Renderer } from './render/render';
 import { Hud } from './ui/hud';
-import type { OrganId, SimConfig } from './sim/types';
+import type { Directive, OrganId, SimConfig } from './sim/types';
 
 const params = new URLSearchParams(location.search);
 const SEED = Number(params.get('seed') ?? Math.floor(Math.random() * 1e9));
 const AUTO = params.get('auto') === '1';
 const START_SPEED = Number(params.get('speed') ?? 1);
 
-const CFG: SimConfig = { gridW: 40, gridH: 30, cellPx: 32, seed: SEED };
+const DIRECTIVES: Record<string, Directive> = {
+  hold: { kind: 'hold', waves: 12 },
+  royal: { kind: 'royal', count: 1 },
+  harvest: { kind: 'harvest', science: 80 },
+};
+const directive = DIRECTIVES[params.get('directive') ?? ''];
+
+const CFG: SimConfig = { gridW: 40, gridH: 30, cellPx: 32, seed: SEED, directive };
 
 let sim = new Sim(CFG);
 const auto = AUTO ? new Autoplayer(SEED + 1) : null;

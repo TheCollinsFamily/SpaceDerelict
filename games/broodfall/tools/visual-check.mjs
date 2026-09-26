@@ -78,7 +78,7 @@ try {
   const page = await browser.newPage({ viewport: { width: 1500, height: 1100 } });
 
   const SEED = 42;
-  await page.goto(`http://localhost:${PORT}/?auto=1&seed=${SEED}&speed=8`, { waitUntil: 'load' });
+  await page.goto(`http://localhost:${PORT}/?auto=1&seed=${SEED}&speed=8&directive=hold`, { waitUntil: 'load' });
   await page.waitForSelector('#stage canvas', { timeout: 15000 });
   pass('page boots and the canvas mounts');
 

@@ -155,9 +155,17 @@ export type Command =
   | { kind: 'cycle-gland'; organInstanceId: number }
   | { kind: 'royal-surge' };
 
+/** The deployment order: the win condition, issued by command. */
+export type Directive =
+  | { kind: 'hold'; waves: number }        // survive the local response for N waves
+  | { kind: 'royal'; count: number }       // destroy the royal(s)
+  | { kind: 'harvest'; science: number };  // bank a science-meat sample quota
+
 export interface SimConfig {
   gridW: number;
   gridH: number;
   cellPx: number;
   seed: number;
+  /** Force a directive (tests, URL param); otherwise seeded-random. */
+  directive?: Directive;
 }

@@ -65,7 +65,10 @@ export const WAVE_TABLE: readonly Partial<Record<string, number>>[] = [
 export const BALANCE = {
   startMeat: { war: 30, science: 0, royal: 0 },
   coreHp: 1500,
-  biomassGoal: 1000,
+  /** Directive targets (the win is a deployment order, never a biomass bar). */
+  holdWaves: 12,
+  harvestScience: 80,
+  royalGuaranteeWave: 8,
   /** Biomass per second, base / per heart. */
   biomassBase: 1.1,
   biomassPerHeart: 1.6,

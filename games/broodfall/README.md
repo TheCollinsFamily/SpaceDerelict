@@ -14,6 +14,7 @@ Useful URLs:
 
 - `http://localhost:5199/` — play (random seed)
 - `http://localhost:5199/?seed=42` — fixed seed
+- `http://localhost:5199/?directive=royal` — force a directive (hold / royal / harvest)
 - `http://localhost:5199/?auto=1&speed=8&seed=42` — demo mode: the autoplayer pilots the asset
 
 ## How to play
@@ -22,7 +23,7 @@ Useful URLs:
 - FEED A LIMB with a card selected: click one of your towers (the donor), then place. The donor is consumed and its family becomes a visible trait pip on the new limb. Pips stack deterministically: spitter pips add fire rate, lasher damage, burster blast radius, maw meat yield, spine hit points, lure interest.
 - Organs (bottom-left) grow inside the body mass only. The pheromone gland cycles calm / lure / challenge when clicked.
 - War caste attacks because you exist. Science caste comes to study you when you are interesting, and is edible. Royals move only when you are a crisis, and royal meat converts to raw mass (ROYAL SURGE).
-- Win: MASS TO SPORULATION reaches 1000. Lose: asset integrity hits zero. The core fights back on its own.
+- Win: complete the DIRECTIVE in the top bar — hold for N waves, destroy the royal, or bank the science quota. Each run rolls one (force it with `?directive=hold|royal|harvest`). Lose: asset integrity hits zero. The core fights back on its own.
 
 ## Verify it
 

@@ -7,9 +7,9 @@ import {
   BALANCE as B, ENEMIES, ORGANS, TOWERS, WAVE_TABLE,
 } from '../../content/data';
 import type {
-  CardInstance, Caste, Command, Drop, Enemy, EnemyKind, EnemySpec, GlandMode,
-  Organ, OrganId, Outcome, Phase, Projectile, SimConfig, SimEvent, Tower,
-  TowerFamily, TowerSpec, Vec,
+  CardInstance, Caste, Command, Directive, Drop, Enemy, EnemyKind, EnemySpec,
+  GlandMode, Organ, OrganId, Outcome, Phase, Projectile, SimConfig, SimEvent,
+  Tower, TowerFamily, TowerSpec, Vec,
 } from './types';
 
 export const DT = 0.1;
@@ -80,6 +80,10 @@ export class Sim {
   phase: Phase = 'growth';
   phaseElapsed = 0;
   waveNumber = 0;
+  directive: Directive;
+  wavesCleared = 0;
+  scienceBanked = 0;
+  royalsKilled = 0;
   private spawnQueue: EnemyKind[] = [];
   private spawnTimer = 0;
   private researcherTimer = 20;
@@ -104,6 +108,11 @@ export class Sim {
     this.worldH = cfg.gridH * cfg.cellPx;
     this.core = { x: this.worldW / 2, y: this.worldH / 2 };
     this.rng = new Rng(cfg.seed);
+    this.directive = cfg.directive ?? this.rng.pick<Directive>([
+      { kind: 'hold', waves: B.holdWaves },
+      { kind: 'royal', count: 1 },
+      { kind: 'harvest', science: B.harvestScience },
+    ]);
     this.meat = { ...B.startMeat };
     while (this.hand.length < B.handSize) this.hand.push(this.drawCard());
   }
@@ -140,6 +149,23 @@ export class Sim {
   private glandMode(): GlandMode {
     const g = this.organs.find((o) => o.organ === 'gland');
     return g ? g.glandMode : 'calm';
+  }
+
+  /** Directive progress as { done, goal } for the HUD bar and tests. */
+  directiveProgress(): { done: number; goal: number } {
+    const d = this.directive;
+    if (d.kind === 'hold') return { done: this.wavesCleared, goal: d.waves };
+    if (d.kind === 'royal') return { done: this.royalsKilled, goal: d.count };
+    return { done: Math.min(this.scienceBanked, d.science), goal: d.science };
+  }
+
+  private checkDirective(): void {
+    if (this.outcome !== 'playing') return;
+    const p = this.directiveProgress();
+    if (p.done >= p.goal) {
+      this.outcome = 'won';
+      this.events.push({ kind: 'won' });
+    }
   }
 
   takeEvents(): SimEvent[] {
@@ -359,11 +385,6 @@ export class Sim {
     // Biomass and win.
     const hearts = this.organs.filter((o) => o.organ === 'heart').length;
     this.biomass += (B.biomassBase + hearts * B.biomassPerHeart) * DT;
-    if (this.biomass >= B.biomassGoal) {
-      this.outcome = 'won';
-      this.events.push({ kind: 'won' });
-      return;
-    }
 
     // Gland challenge mode feeds threat.
     if (this.glandMode() === 'challenge') this.threatChallenge += B.glandChallengeThreatPerSec * DT;
@@ -383,6 +404,9 @@ export class Sim {
       if ((this.spawnQueue.length === 0 && !hostiles) || this.phaseElapsed > B.siegeMaxSeconds) {
         this.phase = 'growth';
         this.phaseElapsed = 0;
+        this.wavesCleared += 1;
+        this.checkDirective();
+        if (this.outcome !== 'playing') return;
       }
     }
 
@@ -402,7 +426,9 @@ export class Sim {
     }
 
     // Royal event.
-    if (!this.royalSpawned && this.threat >= B.royalThreat) {
+    const royalDue = this.threat >= B.royalThreat
+      || (this.directive.kind === 'royal' && this.waveNumber >= B.royalGuaranteeWave);
+    if (!this.royalSpawned && royalDue) {
       this.royalSpawned = true;
       this.spawnEnemy('royal');
       for (let i = 0; i < B.royalEscort; i++) this.spawnEnemy('elite');
@@ -638,6 +664,10 @@ export class Sim {
     const e = this.enemies[i];
     const spec = enemySpec(e.kind);
     this.enemies.splice(i, 1);
+    if (e.kind === 'royal') {
+      this.royalsKilled += 1;
+      this.checkDirective();
+    }
     const calmScale = this.glandMode() === 'calm' ? B.glandCalmThreatScale : 1;
     this.threatKills += spec.threatOnKill * calmScale;
     this.biomass += B.biomassPerKill;
@@ -663,6 +693,10 @@ export class Sim {
       }
       if (d.ttl <= 0) {
         this.meat[d.caste] += d.amount;
+        if (d.caste === 'science') {
+          this.scienceBanked += d.amount;
+          this.checkDirective();
+        }
         this.events.push({ kind: 'banked', caste: d.caste, amount: d.amount });
         banked.push(d.id);
       }

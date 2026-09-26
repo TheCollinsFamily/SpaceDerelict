@@ -76,6 +76,7 @@ export class Hud {
   armedOrgan: OrganId | null = null;
   cannibalizeMode = false;
   private lastHandKey = '';
+  private lastDirective: 'hold' | 'royal' | 'harvest' = 'hold';
 
   constructor(cb: HudCallbacks) {
     this.cb = cb;
@@ -110,9 +111,13 @@ export class Hud {
   pushEvents(events: SimEvent[]): void {
     for (const e of events) {
       if (e.kind === 'won') {
+        const d = this.lastDirective;
+        const title = d === 'royal' ? 'PRIORITY ASSET NEUTRALIZED'
+          : d === 'harvest' ? 'SAMPLE QUOTA FILLED'
+          : 'DEPLOYMENT ORDER FULFILLED';
         this.showOverlay(
-          'SPORULATION ACHIEVED',
-          'Deployment complete. Asset mass discharged to orbit. '
+          title,
+          'Deployment complete. Asset recalled for redeployment. '
           + 'Your service metrics have been forwarded to the Procreation Licensing Board.',
         );
         continue;
@@ -148,13 +153,22 @@ export class Hud {
     this.el.meat.science.textContent = String(Math.floor(sim.meat.science));
     this.el.meat.royal.textContent = String(Math.floor(sim.meat.royal));
 
-    const frac = Math.min(1, sim.biomass / B.biomassGoal);
+    // Directive bar: the deployment order is the win condition.
+    this.lastDirective = sim.directive.kind;
+    const label = document.getElementById('biomass-label')!;
+    label.textContent = sim.directive.kind === 'hold'
+      ? `DIRECTIVE: HOLD FOR ${sim.directive.waves} WAVES`
+      : sim.directive.kind === 'royal'
+        ? 'DIRECTIVE: DESTROY THE ROYAL'
+        : `DIRECTIVE: BANK ${sim.directive.science} SCIENCE SAMPLES`;
+    const prog = sim.directiveProgress();
+    const frac = Math.min(1, prog.done / prog.goal);
     this.el.biomassFill.style.width = `${(frac * 100).toFixed(1)}%`;
-    this.el.biomassText.textContent = `${Math.floor(sim.biomass)} / ${B.biomassGoal}`;
+    this.el.biomassText.textContent = `${Math.floor(prog.done)} / ${prog.goal}`;
 
     this.el.phaseName.textContent = sim.phase === 'growth' ? 'GROWTH' : 'SIEGE';
     this.el.phaseName.classList.toggle('siege', sim.phase === 'siege');
-    this.el.waveInfo.textContent = `WAVE ${sim.waveNumber} · TIER ${sim.tier}`;
+    this.el.waveInfo.textContent = `WAVE ${sim.waveNumber} · TIER ${sim.tier} · MASS ${Math.floor(sim.biomass)}`;
     this.el.threat.textContent = String(Math.floor(sim.threat));
     this.el.interest.textContent = String(Math.floor(sim.interest));
 

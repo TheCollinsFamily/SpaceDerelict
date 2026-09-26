@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { Autoplayer } from '../src/sim/autoplayer';
 import { DT, Sim } from '../src/sim/sim';
-import type { SimConfig, SimEvent } from '../src/sim/types';
+import type { Directive, SimConfig, SimEvent } from '../src/sim/types';
 
 const CFG: Omit<SimConfig, 'seed'> = { gridW: 40, gridH: 30, cellPx: 32 };
 const MAX_TICKS = 18000; // 30 sim minutes
 
-function runFull(seed: number) {
-  const sim = new Sim({ ...CFG, seed });
+function runFull(seed: number, directive?: Directive) {
+  const sim = new Sim({ ...CFG, seed, directive: directive ?? { kind: 'hold', waves: 12 } });
   const auto = new Autoplayer(seed + 1);
   const events: SimEvent[] = [];
   let ticks = 0;
@@ -50,10 +50,29 @@ describe('full headless runs (autoplayer)', () => {
       console.log(
         `seed ${seed}: ${sim.outcome} at t=${(ticks * DT / 60).toFixed(1)}min, ` +
         `waves=${waves.length}, maxTier=${Math.max(...tiers)}, built=${built}, ` +
-        `biomass=${sim.biomass.toFixed(0)}, coreHp=${sim.coreHp.toFixed(0)}`,
+        `cleared=${sim.wavesCleared}, biomass=${sim.biomass.toFixed(0)}, coreHp=${sim.coreHp.toFixed(0)}`,
       );
     });
   }
+
+  it('royal directive: the royal is guaranteed and the run ends', () => {
+    const { sim, events } = runFull(5, { kind: 'royal', count: 1 });
+    expect(sim.outcome).not.toBe('playing');
+    expect(events.some((e) => e.kind === 'royal-incoming')).toBe(true);
+    if (sim.outcome === 'won') expect(sim.royalsKilled).toBeGreaterThanOrEqual(1);
+  });
+
+  it('harvest directive: science banking is tracked and the run ends', () => {
+    const { sim } = runFull(6, { kind: 'harvest', science: 80 });
+    expect(sim.outcome).not.toBe('playing');
+    if (sim.outcome === 'won') expect(sim.scienceBanked).toBeGreaterThanOrEqual(80);
+  });
+
+  it('directive is seeded-random when not forced, and deterministic per seed', () => {
+    const a = new Sim({ ...CFG, seed: 11 });
+    const b = new Sim({ ...CFG, seed: 11 });
+    expect(a.directive).toEqual(b.directive);
+  });
 
   it('at least 2 of 3 seeds are winnable with the naive policy', () => {
     let wins = 0;
