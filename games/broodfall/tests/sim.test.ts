@@ -3,7 +3,7 @@ import { Rng } from '../src/sim/rng';
 import { Sim, towerStats, towerSpec } from '../src/sim/sim';
 import { CellType, isPassable } from '../src/sim/citymap';
 import type { SimConfig, Tower } from '../src/sim/types';
-import { BALANCE as B, TOWERS } from '../content/data';
+import { BALANCE as B, ENEMIES, TOWERS } from '../content/data';
 
 const CFG: SimConfig = { gridW: 50, gridH: 40, cellPx: 26, seed: 1234 };
 
@@ -257,5 +257,75 @@ describe('attraction and escalation', () => {
     // Simulate a pile of kills via biomass-driven threat.
     s.biomass = 2500;
     expect(s.tier).toBeGreaterThan(0);
+  });
+});
+
+describe('higher enemy types (escalation by kind, never hardening)', () => {
+  it('enemy HP is identical at wave 1 and wave 30 — no stat inflation', () => {
+    const s = freshSim(555);
+    (s as unknown as { waveNumber: number }).waveNumber = 30;
+    const before = s.enemies.length;
+    // Force-spawn through the wave machinery by ticking into a siege.
+    while (s.phase !== 'siege') s.tick();
+    while (s.enemies.filter((e) => e.kind !== 'researcher').length === before) s.tick();
+    const e = s.enemies.find((x) => x.kind !== 'researcher')!;
+    const spec = ENEMIES.find((x) => x.kind === e.kind)!;
+    expect(e.maxHp).toBe(spec.hp);
+  });
+
+  it('fliers cross building blocks; walkers never do', () => {
+    const s = freshSim(556);
+    s.meat.war = 0;
+    // Hand-place a flier far from any street path line and tick.
+    const gate = s.gates[0];
+    const sim = s as unknown as { spawnEnemy(kind: string, atGate?: number): { id: number } };
+    sim.spawnEnemy('flier', gate);
+    let crossedBlock = false;
+    for (let i = 0; i < 1200 && s.enemies.length > 0; i++) {
+      s.tick();
+      for (const e of s.enemies) {
+        if (e.kind === 'flier' && s.map.cells[s.cellAt(e.pos.x, e.pos.y)] === CellType.Block) {
+          crossedBlock = true;
+        }
+        if (e.kind !== 'flier' && e.kind !== 'researcher') {
+          expect(isPassable(s.map.cells[s.cellAt(e.pos.x, e.pos.y)])).toBe(true);
+        }
+      }
+    }
+    expect(crossedBlock).toBe(true);
+  });
+
+  it('phalanx armor caps per-hit damage', () => {
+    const s = freshSim(557);
+    const sim = s as unknown as {
+      spawnEnemy(kind: string): { id: number };
+      damageEnemy(e: unknown, dmg: number, y: number): void;
+    };
+    sim.spawnEnemy('phalanx');
+    const e = s.enemies.find((x) => x.kind === 'phalanx')!;
+    const hp0 = e.hp;
+    sim.damageEnemy(e, 500, 1); // one huge hit
+    expect(hp0 - e.hp).toBe(12); // capped
+    sim.damageEnemy(e, 8, 1); // small hits pass through whole
+    expect(hp0 - e.hp).toBe(20);
+  });
+
+  it('sappers attack towers on blocks (perches are not safe)', () => {
+    const s = freshSim(558);
+    s.meat.war = 999;
+    s.meat.science = 999;
+    const cell = buildableCell(s);
+    expect(s.issue({ kind: 'build', cardIndex: 0, cell }).ok).toBe(true);
+    const tower = s.towers[0];
+    const sim = s as unknown as { spawnEnemy(kind: string, atGate?: number): { pos: { x: number; y: number } } };
+    const sap = sim.spawnEnemy('sapper');
+    sap.pos.x = tower.pos.x + 60;
+    sap.pos.y = tower.pos.y;
+    let attacked = false;
+    for (let i = 0; i < 600 && !attacked; i++) {
+      s.tick();
+      if (s.towers.length === 0 || (s.towers[0] && s.towers[0].hp < s.towers[0].maxHp)) attacked = true;
+    }
+    expect(attacked).toBe(true);
   });
 });

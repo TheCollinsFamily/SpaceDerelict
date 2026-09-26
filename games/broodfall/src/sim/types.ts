@@ -74,6 +74,9 @@ export type EnemyKind =
   | 'militia'
   | 'soldier'
   | 'elite'
+  | 'flier'
+  | 'sapper'
+  | 'phalanx'
   | 'researcher'
   | 'royal';
 
@@ -88,6 +91,12 @@ export interface EnemySpec {
   meat: number;
   /** Threat added to the ladder when this enemy is killed. */
   threatOnKill: number;
+  /** Flies straight over blocks and walls to the core; cannot be blocked. */
+  flies?: boolean;
+  /** Climbs blocks to chew towers directly; perches are not safe from it. */
+  sapper?: boolean;
+  /** Shield-wall: incoming damage is capped per hit — rapid fire beats big hits. */
+  armorCap?: number;
 }
 
 export interface Enemy {

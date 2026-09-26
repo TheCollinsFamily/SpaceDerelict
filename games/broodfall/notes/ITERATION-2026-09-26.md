@@ -40,3 +40,12 @@ weight in hold runs (royal meat only arrives if the royal comes) — acceptable.
   (off-board gates keep waves coming; consider a "burrow through" reopen
   mechanic); wager difficulty jump 1→2 gates is steep for the scripted bot;
   block/street legibility under heavy creep still the top visual debt.
+
+
+## Addendum 2: escalation by TYPE, never hardening
+Collins killed +HP-per-wave ("hardening is boring"). Replaced with three higher
+types, each a new verb: flier (ignores terrain — punished my own bot until it
+learned to cover air lanes; genuinely deepens placement), sapper (climbs to eat
+towers), phalanx (per-hit damage cap; counters burst, rewards rate). Behavior
+tests pin each verb. Guardrail after the change: smart 7/8 wins, 4 outcome
+flips vs 0.

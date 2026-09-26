@@ -1,0 +1,118 @@
+# BROODFALL — handoff for a new instance (Sep 26 2026)
+
+Read this first, then DESIGN.md, then PLAYTEST_PROTOCOL.md (repo root). The protocol is
+not optional — this project shipped three broken boards in one day because the previous
+process only verified its own assumptions. Repo CLAUDE.md carries the standing rules.
+
+## Where things live
+
+- Repo: `C:\Users\Merry\dev\space-derelict` — the Technopuritan Universe monorepo.
+  Every universe game is a folder under `games/`. Work on main, push to main, never branch.
+- This game: `games/broodfall/`. Sibling: `games/space-derelict/` (older game, don't touch).
+- Docs here: `DESIGN.md` (game design + every Collins decision), `TECH.md` (stack + future
+  AI-asset pipeline), `PLAN.md` (original slice plan), `references/CONVENTIONS.md` (genre
+  checklist with current YES/PARTIAL/WEAK status), `notes/ITERATION-*.md` (what happened
+  and why), `README.md` (run instructions + surface inventory).
+
+## What the game is
+
+Tower defense roguelite. You are an escaped Technopuritan bioweapon growing across an
+insectoid city. Towers are limbs on creeped city blocks, organs grow on plaza ground,
+meat comes in three caste currencies, cards are the build system, cannibalizing towers
+into new builds carries visible trait pips. The empire frame (procurement-voice UI,
+procreation-license standing) is diegetic. Full loop exists: menu → deployment →
+debrief → ship gene bay → redeploy.
+
+## Collins's non-negotiable design rules (all already implemented; do not re-litigate)
+
+1. **No RNG destruction of player investment** (no "instability" mechanics).
+2. **Win = wave count or quest directive** (hold/royal/harvest), never a resource bar.
+3. **Escalation = more enemies + higher TYPES, never stat inflation.** No HP-per-wave.
+   Higher types carry new VERBS (flier ignores terrain, sapper climbs to eat towers,
+   phalanx caps per-hit damage).
+4. **The board is drafted plates** (Tower Dominion school): starts small, grows by choosing
+   1 of 3 district plates every 3rd cleared wave. Uniform street grids and radial fields
+   are banned — both measurably killed placement value.
+5. **Plate connection algebra**: openings are two-wide, CENTERED on edges; opening mates
+   opening, wall mates wall, nothing may wall off an opening in either direction, at least
+   one real connection, and a draft may never reduce the frontier to zero gates.
+6. **Never start one plate deep**: a two-opening connector district is pre-placed beyond
+   every crash-plate opening, so waves cross a district of guns before touching home.
+7. **Entrances are the difficulty wager**: 1 gate default; 2/3 selectable ("insertion
+   profile") for +25%/+50% meat.
+8. **Towers beside the path, never in it** (spine wall is the one in-street piece);
+   verticality matters (block heights 1-3, +10% range per level).
+9. **Waves are discrete**: telegraphed lanes, squad spawns, cleared banners + wage,
+   call-early button; researchers only during growth; royal only enters with a siege.
+
+## Architecture (all TypeScript, no engine, no editor)
+
+- `src/sim/` — deterministic fixed-timestep sim (10 Hz, seeded mulberry32, ZERO render
+  imports). `sim.ts` orchestrates; `citymap.ts` owns plates/algebra/flow-field/creep
+  distances; `autoplayer.ts` is the scripted player (coverage + lane + air-lane + height
+  scoring); content lives in `content/data.ts` (balance), `content/plates.ts` (plate
+  patterns + genes).
+- `src/render/render.ts` — PixiJS 8, procedural placeholder art, camera that frames the
+  active districts. `src/ui/hud.ts` + `src/main.ts` — DOM HUD, screens, input, game loop.
+- Determinism is sacred: sim never touches Math.random; every rng call order change
+  reshuffles all balance measurements.
+
+## How to verify (all must be green before claiming anything)
+
+```powershell
+npm test             # 31 tests: sim, plates algebra, wave rhythm, type behaviors,
+                     # full autoplayed runs, and the PLACEMENT GUARDRAIL
+npm run build
+npm run test:visual  # headless chromium: HUD + per-region pixel checks (camera-aware)
+npm run test:input   # real player gestures: build, cannibalize, organ, cancel
+npm run test:endgame # full in-browser run to the victory overlay
+```
+
+The **placement guardrail** (`tests/placement.test.ts`) is the genre's heartbeat: a
+chokepoint-aware bot vs a random-placement bot, identical economy, 8 seeds. Informed
+placement must flip more seeds to wins. If a change breaks it, the change degraded the
+game into decoration — rework the change, never the assertion (metric changes need a
+written rationale like notes/ITERATION-2026-09-26.md has).
+
+**Player-path rule**: nothing is "done" until started the way Collins starts it —
+`npm start` or `Play Broodfall.bat` — and played by hand in the page. Test harnesses
+don't count as the player path.
+
+**AI-play API** (browser console / Playwright): `window.broodfall` —
+`step(n)` (synchronous ticks, no rAF throttle), `play(cmd)` (raw sim command incl.
+choose-plate), `summary()`, `buildableCells()`, `camera()`, `worldToScreen(x,y)` (use for
+all scripted clicking/pixel sampling — the camera transform broke naive math once already).
+URL params: `?seed= &auto=1 &autostart=1 &speed= &directive=hold|royal|harvest &entrances=1..3`.
+
+## Current balance state (don't trust memory — re-measure)
+
+Scripted player, hold-12, 1 entrance: wins ~2/3 seeds with real damage taken; 2-3
+entrances: ~1/4 (the wager bites; humans do better than the bot). Guardrail: smart 7/8
+wins, 4 outcome flips vs 0. Key economy shape: near-flat bounties (2-3 meat), clearing
+wage per wave, wave counts scale with clock (`waveCountScale`), tier from threat ladder
+(waves cleared + kills×0.3 + biomass×0.035, per-tier 46).
+
+## Top of the backlog (from notes/, in order)
+
+1. Block/street legibility under heavy creep at far zoom (worst visual debt).
+2. Growth can wall itself in against the interior (off-board gates keep waves coming;
+   consider a "burrow through a sealed district" reopen mechanic).
+3. City life pass: civilians on streets pre-creep who flee the crash (the horror premise
+   needs the city visibly alive).
+4. Empire directives/hobby missions layer + break cinematics (DESIGN.md, unbuilt).
+5. Real AI art pipeline per TECH.md (authoring = AI video/3D, runtime = spritesheets;
+   RFab `services/emotionFrameService.js` is the bake-step prior art).
+6. Mid-siege cannibalize drama (surgery vulnerability window) — design doc, unbuilt.
+
+## Working with Collins (hard-won, respect these)
+
+- He reads sessions cold: report outcomes, not process. One report at the end; never
+  end a message with a question or an offer mid-task.
+- When he criticizes ("this is not how X works"), the criticism is usually structural,
+  not cosmetic — find the principle behind it, write it into DESIGN.md as a rule, and
+  build a measurement that would have caught it.
+- Iterate by PLAYING: change → play → "did that work?" → screenshot next to the
+  references → keep going until it's fun, not merely functional.
+- Commit and push to main constantly (`git add -A`); never leave work unpushed. Deploys
+  are gated; commits are free. Memory-file writes are banned (permission prompts stall
+  sessions) — durable lessons go in repo CLAUDE.md / DESIGN.md instead.

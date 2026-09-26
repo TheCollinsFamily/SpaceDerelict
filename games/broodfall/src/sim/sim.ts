@@ -524,13 +524,10 @@ export class Sim {
     const spec = enemySpec(kind);
     const gate = atGate ?? this.gates[this.rng.int(0, this.gates.length - 1)];
     const c = this.cellCenter(gate);
-    // The hive hardens: chitin thickens every wave (researchers stay soft).
-    const hpScale = kind === 'researcher' ? 1 : 1 + this.waveNumber * B.hpPerWave;
-    const hp = Math.round(spec.hp * hpScale);
     const e: Enemy = {
       id: this.nextId++, kind,
       pos: { x: c.x + this.rng.float(-6, 6), y: c.y + this.rng.float(-6, 6) },
-      hp, maxHp: hp, targetId: null, targetIsOrgan: false,
+      hp: spec.hp, maxHp: spec.hp, targetId: null, targetIsOrgan: false,
       attackCooldown: 0, studyLeft: kind === 'researcher' ? B.studySeconds : 0,
       leaving: false,
     };
@@ -670,12 +667,38 @@ export class Sim {
     return this.occupied.get(cell);
   }
 
+  /** Nearest limb or organ within a radius (sappers hunt these across blocks). */
+  private nearestStructure(p: Vec, within: number): { kind: 't' | 'o'; id: number } | null {
+    let best: { kind: 't' | 'o'; id: number } | null = null;
+    let bestD = within;
+    for (const t of this.towers) {
+      const d = dist(p, t.pos);
+      if (d < bestD) { bestD = d; best = { kind: 't', id: t.id }; }
+    }
+    for (const o of this.organs) {
+      const d = dist(p, o.pos);
+      if (d < bestD) { bestD = d; best = { kind: 'o', id: o.id }; }
+    }
+    return best;
+  }
+
   private structurePos(s: { kind: 't' | 'o'; id: number }): Vec | null {
     const obj = s.kind === 't'
       ? this.towers.find((t) => t.id === s.id)
       : this.organs.find((o) => o.id === s.id);
     return obj ? obj.pos : null;
   }
+
+  /** Straight-line movement for climbers and fliers: terrain does not apply. */
+  private stepUnconstrained(e: Enemy, target: Vec, speed: number): void {
+    const d = dist(e.pos, target);
+    if (d < 0.5) return;
+    e.pos.x += ((target.x - e.pos.x) / d) * speed * DT;
+    e.pos.y += ((target.y - e.pos.y) / d) * speed * DT;
+  }
+
+  /** Fliers keep loose formation on their own (no ground separation for them). */
+  private aheadCheckSeparationless(_e: Enemy): void { /* intentionally nothing */ }
 
   /** Move an enemy toward a point, clamped so it never enters a building cell. */
   private stepConstrained(e: Enemy, target: Vec, speed: number): void {
@@ -702,8 +725,10 @@ export class Sim {
     const n = this.enemies.length;
     for (let i = 0; i < n; i++) {
       const a = this.enemies[i];
+      if (enemySpec(a.kind).flies) continue;
       for (let j = i + 1; j < n; j++) {
         const b = this.enemies[j];
+        if (enemySpec(b.kind).flies) continue;
         const dx = b.pos.x - a.pos.x;
         const dy = b.pos.y - a.pos.y;
         const d = Math.hypot(dx, dy);
@@ -769,6 +794,32 @@ export class Sim {
         e.attackCooldown = 0;
         continue;
       }
+
+      // Fliers ignore the city plan entirely: straight over blocks and walls.
+      if (spec.flies) {
+        this.stepUnconstrained(e, this.core, spec.speed);
+        this.aheadCheckSeparationless(e);
+        continue;
+      }
+
+      // Sappers climb: any limb or organ nearby is a target, blocks be damned.
+      if (spec.sapper) {
+        const prey = this.nearestStructure(e.pos, 3 * this.cfg.cellPx);
+        if (prey) {
+          const pp = this.structurePos(prey);
+          if (pp) {
+            if (dist(e.pos, pp) <= STRUCTURE_CONTACT + ENEMY_RADIUS) {
+              e.targetId = prey.id;
+              e.targetIsOrgan = prey.kind === 'o';
+              e.attackCooldown = 0;
+            } else {
+              this.stepUnconstrained(e, pp, spec.speed); // climbs the block face
+            }
+            continue;
+          }
+        }
+      }
+
       const cell = this.cellAt(e.pos.x, e.pos.y);
       const nextCell = this.flow.next[cell];
 
@@ -907,7 +958,8 @@ export class Sim {
   }
 
   private damageEnemy(e: Enemy, dmg: number, yieldMult: number): void {
-    e.hp -= dmg;
+    const cap = enemySpec(e.kind).armorCap;
+    e.hp -= cap !== undefined ? Math.min(dmg, cap) : dmg;
     if (e.hp <= 0) this.killEnemy(e.id, yieldMult, false);
   }
 

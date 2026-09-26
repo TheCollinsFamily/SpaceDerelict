@@ -34,7 +34,11 @@ You are a growing body. Towers are limbs, creep is skin, organs are the build, m
 The build dictates what comes (attraction economy), not the map. Which caste you are hungry for IS your build path.
 
 ### The pressure curve (why waves stay scary)
-Bounties are near-flat per kill (2-3 war meat) while wave income is a fixed clearing wage, and enemies HARDEN +11% HP per wave — so defense cannot compound off wave size, and the strength/income gap forces efficient placement. This is what made the placement guardrail decisive (careful placement wins 8/8 seeds, careless loses 5/8).
+**Escalation is MORE enemies and HIGHER TYPES — never stat inflation. Collins (Sep 26 2026): "enemies should never harden per wave... hardening is boring." A rejected +HP-per-wave mechanic is explicitly out.** Each tier introduces a new VERB:
+- tier 3 **fliers**: wing straight over blocks and walls to the core — spine walls and channel-side placement don't answer them; airspace lines from gate to core must be covered.
+- tier 4 **sappers**: climb blocks and chew towers directly — perches are not safe.
+- tier 5 **phalanx**: shield-wall armor caps damage per hit — big single hits are wasted, rapid fire shreds it.
+Economically: bounties are near-flat per kill (2-3 war meat) while wave income is a fixed clearing wage, so defense cannot compound off wave size, and the strength/income gap forces efficient placement (guardrail: informed placement flips 4 seeds to wins, careless flips none).
 
 ### Towers: cards, not shops
 - Towers buildable each round come from CARDS DRAWN with modified probability. Organs and roguelite (gene bank) unlocks shape the draw odds. The gene bank is your deck; organs decide which genes get expressed. You engineer your own randomness.

@@ -49,17 +49,26 @@ export const ENEMIES: readonly EnemySpec[] = [
   { kind: 'soldier', caste: 'war', hp: 90, speed: 34, damage: 14, rate: 1.1, meat: 2, threatOnKill: 3 },
   { kind: 'elite', caste: 'war', hp: 200, speed: 30, damage: 24, rate: 1.2, meat: 3, threatOnKill: 5 },
   { kind: 'researcher', caste: 'science', hp: 30, speed: 36, damage: 0, rate: 0, meat: 12, threatOnKill: 1 },
+  { kind: 'flier', caste: 'war', hp: 55, speed: 58, damage: 9, rate: 1.2, meat: 3, threatOnKill: 3, flies: true },
+  { kind: 'sapper', caste: 'war', hp: 130, speed: 44, damage: 20, rate: 1.4, meat: 4, threatOnKill: 4, sapper: true },
+  { kind: 'phalanx', caste: 'war', hp: 750, speed: 20, damage: 26, rate: 0.9, meat: 8, threatOnKill: 6, armorCap: 12 },
   { kind: 'royal', caste: 'royal', hp: 1000, speed: 16, damage: 28, rate: 0.8, meat: 120, threatOnKill: 0 },
 ];
 
 /** Wave composition per threat tier (spawned over the siege's spawn window). */
+/**
+ * Escalation is MORE enemies and HIGHER TYPES, never stat inflation
+ * (Collins, Sep 26 2026: "hardening is boring"). Each tier introduces a new
+ * verb: fliers ignore the streets, sappers climb your perches, the phalanx
+ * shrugs off big hits.
+ */
 export const WAVE_TABLE: readonly Partial<Record<string, number>>[] = [
-  { responder: 8 },                                   // tier 0
-  { responder: 9, militia: 5 },                       // tier 1
-  { militia: 12, soldier: 5 },                        // tier 2
-  { militia: 10, soldier: 8, elite: 2 },              // tier 3
-  { soldier: 12, elite: 6 },                          // tier 4
-  { soldier: 14, elite: 9 },                          // tier 5 (desperation)
+  { responder: 8 },                                            // tier 0: first response
+  { responder: 8, militia: 6 },                                // tier 1: militia muster
+  { militia: 12, soldier: 6 },                                 // tier 2: the army arrives
+  { militia: 8, soldier: 8, elite: 2, flier: 4 },              // tier 3: air support
+  { soldier: 10, elite: 5, flier: 5, sapper: 3 },              // tier 4: sappers climb
+  { soldier: 12, elite: 7, flier: 6, sapper: 4, phalanx: 2 },  // tier 5: the shield wall
 ];
 
 export const BALANCE = {
@@ -94,8 +103,6 @@ export const BALANCE = {
   waveBonusPerWave: 4,
   /** Verticality: range bonus per block height level above 1. */
   heightRangeBonus: 0.10,
-  /** Enemies HARDEN as waves pass — the pressure curve placement must answer. */
-  hpPerWave: 0.11,
   /** Waves grow with the campaign clock as well as the threat ladder. */
   waveCountScale: 0.10,
   /** Threat tiers: tier = floor(threat / threatPerTier), clamped to table. */

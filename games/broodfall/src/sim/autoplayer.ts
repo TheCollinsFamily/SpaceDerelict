@@ -135,9 +135,25 @@ export class Autoplayer {
    * street cells sit within tower range — switchback pockets score double —
    * with a bonus when those street cells are on the telegraphed lanes.
    */
+  /** Cells under the straight gate->core lines — where the FLIERS come. */
+  private airLaneCells(sim: Sim): Set<number> {
+    const air = new Set<number>();
+    for (const gate of sim.incomingGates) {
+      const a = sim.cellCenter(gate);
+      const steps = Math.ceil(Math.hypot(sim.core.x - a.x, sim.core.y - a.y) / sim.cfg.cellPx);
+      for (let i = 0; i <= steps; i++) {
+        const x = a.x + ((sim.core.x - a.x) * i) / steps;
+        const y = a.y + ((sim.core.y - a.y) * i) / steps;
+        air.add(sim.cellAt(x, y));
+      }
+    }
+    return air;
+  }
+
   private findTowerCell(sim: Sim, asBlocker: boolean): number | null {
     const w = sim.cfg.gridW;
     const lane = this.lanePathCells(sim);
+    const air = this.airLaneCells(sim);
     const rangeCells = 3; // ~95px on 32px cells
     const candidates: Array<{ cell: number; score: number }> = [];
     for (let cell = 0; cell < sim.map.cells.length; cell++) {
@@ -149,6 +165,7 @@ export class Autoplayer {
       const cy = Math.floor(cell / w);
       let coverage = 0;
       let laneCoverage = 0;
+      let airCoverage = 0;
       for (let dy = -rangeCells; dy <= rangeCells; dy++) {
         for (let dx = -rangeCells; dx <= rangeCells; dx++) {
           const nx = cx + dx;
@@ -160,12 +177,14 @@ export class Autoplayer {
             coverage += 1;
             if (lane.has(nb)) laneCoverage += 1;
           }
+          if (air.has(nb)) airCoverage += 1; // fliers cross HERE, blocks or not
         }
       }
-      if (coverage === 0) continue;
+      if (coverage === 0 && airCoverage === 0) continue;
       // Verticality: a taller perch shoots further — worth real points.
       const height = sim.map.heights[cell] || 1;
-      const score = coverage + laneCoverage * 2 + (height - 1) * 2 + this.rng.float(0, 1.2);
+      const score = coverage + laneCoverage * 2 + Math.min(airCoverage, 4) * 1.5
+        + (height - 1) * 2 + this.rng.float(0, 1.2);
       candidates.push({ cell, score });
     }
     if (candidates.length === 0) return null;

@@ -20,7 +20,8 @@ const FAMILY_COLORS: Record<TowerFamily, number> = {
 };
 
 const ENEMY_SIZE: Record<Enemy['kind'], number> = {
-  responder: 5, militia: 6, soldier: 8, elite: 11, researcher: 6, royal: 20,
+  responder: 5, militia: 6, soldier: 8, elite: 11, flier: 6, sapper: 7,
+  phalanx: 13, researcher: 6, royal: 20,
 };
 
 export interface PlacementPreview {
@@ -272,6 +273,27 @@ export class Renderer {
         g.circle(x, y, s).fill(color);
         g.circle(x, y, s * 0.55).fill(0xf3d67a);
         g.poly([x - 8, y - s - 2, x, y - s - 10, x + 8, y - s - 2]).fill(0xf3d67a);
+      } else if (e.kind === 'flier') {
+        // Airborne: drawn lifted with a ground shadow and beating wings.
+        const fy = y - 10;
+        g.circle(x, y + 3, 4).fill({ color: 0x000000, alpha: 0.3 });
+        const flap = Math.sin(this.pulse * 6 + e.id) * 4;
+        g.poly([x - s - 4, fy - flap, x, fy - 2, x - 2, fy + 3]).fill({ color: 0xe8b06a, alpha: 0.9 });
+        g.poly([x + s + 4, fy - flap, x, fy - 2, x + 2, fy + 3]).fill({ color: 0xe8b06a, alpha: 0.9 });
+        g.circle(x, fy, s * 0.7).fill(color);
+      } else if (e.kind === 'sapper') {
+        g.poly([x, y - s - 1.5, x + s + 1.5, y + s + 1.5, x - s - 1.5, y + s + 1.5])
+          .fill({ color: 0x0d0805, alpha: 0.85 });
+        g.poly([x, y - s, x + s, y + s, x - s, y + s]).fill(0xc97b2e);
+        // Mandibles: this one eats LIMBS.
+        g.moveTo(x - 4, y - s + 2).lineTo(x - 7, y - s - 4).stroke({ width: 2, color: 0xf0d0a0 });
+        g.moveTo(x + 4, y - s + 2).lineTo(x + 7, y - s - 4).stroke({ width: 2, color: 0xf0d0a0 });
+      } else if (e.kind === 'phalanx') {
+        // Shield-wall: a broad plated slab.
+        g.rect(x - s, y - s * 0.8, s * 2, s * 1.6).fill({ color: 0x0d0805, alpha: 0.9 });
+        g.rect(x - s + 2, y - s * 0.8 + 2, s * 2 - 4, s * 1.6 - 4).fill(0x8a4a30);
+        g.rect(x - s + 2, y - s * 0.8 + 2, s * 2 - 4, 4).fill(0xb56a40);
+        g.moveTo(x - s + 4, y).lineTo(x + s - 4, y).stroke({ width: 2, color: 0x5c2a1a, alpha: 0.8 });
       } else {
         // War caste: chevron bodies with a dark rim, bigger kinds broader.
         g.poly([x, y - s - 1.5, x + s + 1.5, y + s + 1.5, x - s - 1.5, y + s + 1.5])
