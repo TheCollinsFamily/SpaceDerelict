@@ -17,6 +17,9 @@ Assessed against live play + `tools/screenshots/beat-*.png`. Every iteration re-
 | 8 | Distinct build phase vs combat phase | YES (growth countdown / siege; researchers only in growth) | rhythm test |
 | 9 | Placement measurably matters | YES (guardrail: outcome flips smart 2 : 1 random, smart 7/8 wins) | tests/placement.test.ts |
 | 10 | Complete loop: menu → run → debrief → meta → next run | YES (menu, debrief, ship gene bay, standing persists) | beat-1, beat-6/7 (prior shoot) |
+| 13 | Blocks are typed by openings; openings centered; opening-to-opening only; no blocked openings | YES (canPlace algebra + invariant test) | plates.test.ts |
+| 14 | Run starts with a district beyond every entrance (guns before contact) | YES (pre-placed connector ring) | beat-2b-onegate-start |
+| 15 | Entrance count is a chosen difficulty wager with a reward modifier | YES (insertion profile: 1-3 gates, +25% meat each) | menu/ship pickers |
 | 11 | Block-vs-street read stays clear UNDER the creep at far zoom | WEAK — membrane helps but at 3+ districts the distinction blurs | beat-5 |
 | 12 | The city looks alive before you eat it | PARTIAL (doorway lights; no wandering civilians yet) | beat-2 |
 

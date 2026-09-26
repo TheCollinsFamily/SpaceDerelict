@@ -84,7 +84,33 @@ export function stampPlate(
   map.slots[slot] = { pattern, feature, slot };
 }
 
-export function createBoard(slotsX: number, slotsY: number, startSlot: number, rng: Rng): CityMap {
+/** Seal unwanted mouths of a pattern (closed edges become wall; the stub street stays as an alley). */
+function sealPorts(pattern: PlatePattern, keep: Array<'n' | 's' | 'e' | 'w'>): PlatePattern {
+  const rows = pattern.rows.map((r) => r.split(''));
+  const ports = { n: false, s: false, e: false, w: false };
+  for (const edge of ['n', 's', 'e', 'w'] as const) {
+    if (!pattern.ports[edge]) continue;
+    if (keep.includes(edge)) {
+      ports[edge] = true;
+      continue;
+    }
+    if (edge === 'n') { rows[0][4] = '#'; rows[0][5] = '#'; }
+    if (edge === 's') { rows[9][4] = '#'; rows[9][5] = '#'; }
+    if (edge === 'w') { rows[4][0] = '#'; rows[5][0] = '#'; }
+    if (edge === 'e') { rows[4][9] = '#'; rows[5][9] = '#'; }
+  }
+  return { id: `${pattern.id}-sealed`, rows: rows.map((r) => r.join('')), ports };
+}
+
+/**
+ * The starting layout, roguelite-style:
+ * - The crash plate keeps exactly `entrances` openings (difficulty dial; 1 is baseline).
+ * - Beyond EVERY opening, a two-opening connector district is pre-placed, so the
+ *   hive marches through a full district of your guns before it reaches home.
+ */
+export function createBoard(
+  slotsX: number, slotsY: number, startSlot: number, rng: Rng, entrances = 1,
+): CityMap {
   const w = slotsX * PLATE;
   const h = slotsY * PLATE;
   const map: CityMap = {
@@ -94,10 +120,34 @@ export function createBoard(slotsX: number, slotsY: number, startSlot: number, r
     slots: new Array<PlateInstance | null>(slotsX * slotsY).fill(null),
     coreCell: 0,
   };
-  stampPlate(map, START_PLATE, startSlot, 'plain', rng);
+  // Choose which crash-plaza openings stay, preferring edges with room for a connector.
+  const edges: Array<'n' | 's' | 'e' | 'w'> = ['n', 's', 'e', 'w'];
+  for (let i = edges.length - 1; i > 0; i--) {
+    const j = rng.int(0, i);
+    [edges[i], edges[j]] = [edges[j], edges[i]];
+  }
+  const open: Array<'n' | 's' | 'e' | 'w'> = [];
+  for (const e of edges) {
+    if (open.length >= Math.max(1, Math.min(3, entrances))) break;
+    if (neighborSlotPub(map, startSlot, e) !== null) open.push(e);
+  }
+  stampPlate(map, sealPorts(START_PLATE, open), startSlot, 'plain', rng);
   const sx = (startSlot % slotsX) * PLATE;
   const sy = Math.floor(startSlot / slotsX) * PLATE;
   map.coreCell = (sy + 5) * w + (sx + 5); // center of the crash plaza
+
+  // Pre-place one connector district beyond each opening.
+  const pool = platePool().filter((p) => {
+    const n = (p.ports.n ? 1 : 0) + (p.ports.s ? 1 : 0) + (p.ports.e ? 1 : 0) + (p.ports.w ? 1 : 0);
+    return n === 2;
+  });
+  for (const e of open) {
+    const slot = neighborSlotPub(map, startSlot, e)!;
+    const need = OPPOSITE[e];
+    const usable = pool.filter((p) => p.ports[need] && canPlace(map, p, slot) === null);
+    const pick = usable.length > 0 ? usable[rng.int(0, usable.length - 1)] : null;
+    if (pick) stampPlate(map, pick, slot, 'plain', rng);
+  }
   return map;
 }
 
@@ -120,6 +170,10 @@ function portCell(map: CityMap, slot: number, edge: 'n' | 's' | 'e' | 'w'): numb
 
 const EDGES: Array<'n' | 's' | 'e' | 'w'> = ['n', 's', 'e', 'w'];
 
+export function neighborSlotPub(map: CityMap, slot: number, edge: 'n' | 's' | 'e' | 'w'): number | null {
+  return neighborSlot(map, slot, edge);
+}
+
 function neighborSlot(map: CityMap, slot: number, edge: 'n' | 's' | 'e' | 'w'): number | null {
   const sx = slot % map.slotsX;
   const sy = Math.floor(slot / map.slotsX);
@@ -130,6 +184,29 @@ function neighborSlot(map: CityMap, slot: number, edge: 'n' | 's' | 'e' | 'w'): 
 }
 
 const OPPOSITE = { n: 's', s: 'n', e: 'w', w: 'e' } as const;
+
+/**
+ * THE CONNECTION ALGEBRA (openings mate with openings, walls with walls):
+ * a placement is legal iff, on every edge that faces an ACTIVE plate, the two
+ * plates agree — opening-to-opening or wall-to-wall. An opening facing empty
+ * city or the board edge is fine (it becomes a frontier gate). At least one
+ * edge must be a real opening-to-opening connection to the network.
+ * Returns null when legal, else the reason.
+ */
+export function canPlace(map: CityMap, pattern: PlatePattern, slot: number): string | null {
+  if (map.slots[slot] !== null) return 'slot occupied';
+  let connections = 0;
+  for (const edge of EDGES) {
+    const nb = neighborSlot(map, slot, edge);
+    if (nb === null || map.slots[nb] === null) continue; // empty or off-board: fine
+    const mine = pattern.ports[edge];
+    const theirs = map.slots[nb]!.pattern.ports[OPPOSITE[edge]];
+    if (mine && !theirs) return `opening on ${edge} would be walled off`;
+    if (!mine && theirs) return `would wall off the neighbor's opening on ${edge}`;
+    if (mine && theirs) connections++;
+  }
+  return connections > 0 ? null : 'no connection to the network';
+}
 
 /**
  * Live gates: ports of active plates that face the void (or the board edge).
@@ -149,28 +226,53 @@ export function frontierGates(map: CityMap): number[] {
   return gates;
 }
 
-/** Valid draft offers: inactive slots reachable through a matching port pair. */
+/**
+ * Draft offers: EXHAUSTIVE enumeration of every legal (pattern, slot) pair
+ * under the connection algebra, then a seeded shuffle — if a legal placement
+ * exists anywhere, it is always offerable. Prefers distinct slots so the
+ * choice is usually about WHERE to grow, not only what shape.
+ */
 export function draftOffers(map: CityMap, rng: Rng, count: number): DraftOffer[] {
   const pool = platePool();
   const features: PlateFeature[] = ['plain', 'science', 'meat', 'highground'];
-  const options: DraftOffer[] = [];
-  let guard = 0;
-  while (options.length < count && guard++ < 400) {
-    const pattern = pool[rng.int(0, pool.length - 1)];
-    const slot = rng.int(0, map.slots.length - 1);
+  const currentGates = frontierGates(map).length;
+  const legal: Array<{ pattern: PlatePattern; slot: number }> = [];
+  for (let slot = 0; slot < map.slots.length; slot++) {
     if (map.slots[slot] !== null) continue;
-    let connects = false;
-    for (const edge of EDGES) {
-      const nb = neighborSlot(map, slot, edge);
-      if (nb === null || map.slots[nb] === null) continue;
-      if (pattern.ports[edge] && map.slots[nb]!.pattern.ports[OPPOSITE[edge]]) {
-        connects = true;
-        break;
+    for (const pattern of pool) {
+      if (canPlace(map, pattern, slot) !== null) continue;
+      // The frontier must survive: a plate that bridges the last open gates
+      // shut would leave the hive no way in (and the run no waves). Count
+      // gates consumed by its connections vs gates its own openings add.
+      let consumed = 0;
+      let added = 0;
+      for (const edge of EDGES) {
+        const nb = neighborSlot(map, slot, edge);
+        const nbActive = nb !== null && map.slots[nb] !== null;
+        if (pattern.ports[edge]) {
+          if (nbActive) consumed += 1; // mates with a former frontier port
+          else added += 1;             // new frontier opening (empty or off-board)
+        }
       }
+      if (currentGates - consumed + added <= 0) continue;
+      legal.push({ pattern, slot });
     }
-    if (!connects) continue;
-    if (options.some((o) => o.slot === slot && o.pattern.id === pattern.id)) continue;
-    options.push({ pattern, slot, feature: features[rng.int(0, features.length - 1)] });
+  }
+  for (let i = legal.length - 1; i > 0; i--) {
+    const j = rng.int(0, i);
+    [legal[i], legal[j]] = [legal[j], legal[i]];
+  }
+  const options: DraftOffer[] = [];
+  // First pass: distinct slots. Second pass: fill remaining from anywhere.
+  for (const cand of legal) {
+    if (options.length >= count) break;
+    if (options.some((o) => o.slot === cand.slot)) continue;
+    options.push({ ...cand, feature: features[rng.int(0, features.length - 1)] });
+  }
+  for (const cand of legal) {
+    if (options.length >= count) break;
+    if (options.some((o) => o.slot === cand.slot && o.pattern.id === cand.pattern.id)) continue;
+    options.push({ ...cand, feature: features[rng.int(0, features.length - 1)] });
   }
   return options;
 }

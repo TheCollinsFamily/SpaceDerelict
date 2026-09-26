@@ -231,3 +231,12 @@ body {
 .gene-card:hover, .gene-card.picked { outline: 3px solid #2b6c68; transform: translateY(-3px); }
 .gene-card .g-name { font-family: Impact, "Arial Black", sans-serif; font-size: 12px; letter-spacing: 1px; }
 .gene-card .g-desc { font-size: 9px; opacity: 0.85; margin-top: 4px; }
+
+.ent-picker { display: flex; gap: 6px; align-items: center; justify-content: center; margin-bottom: 14px; flex-wrap: wrap; }
+.ent-label { font-size: 10px; letter-spacing: 2px; font-weight: bold; }
+.ent-opt {
+  font-family: "Courier New", monospace; font-size: 10px; font-weight: bold;
+  background: #c7b788; border: 2px solid var(--panel-edge); border-radius: 3px;
+  padding: 4px 8px; cursor: pointer;
+}
+.ent-opt.on { background: var(--ink); color: var(--panel); }

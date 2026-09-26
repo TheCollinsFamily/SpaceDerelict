@@ -91,6 +91,8 @@ export class Sim {
   phaseElapsed = 0;
   waveNumber = 0;
   directive: Directive;
+  /** Starting entrance count — the difficulty wager. More gates, richer meat. */
+  entrances = 1;
   wavesCleared = 0;
   scienceBanked = 0;
   royalsKilled = 0;
@@ -137,7 +139,8 @@ export class Sim {
     const slotsX = Math.floor(cfg.gridW / 10);
     const slotsY = Math.floor(cfg.gridH / 10);
     const startSlot = Math.floor((slotsY - 1) / 2) * slotsX + Math.floor(slotsX / 2);
-    this.map = createBoard(slotsX, slotsY, startSlot, this.rng);
+    this.entrances = Math.max(1, Math.min(3, cfg.entrances ?? 1));
+    this.map = createBoard(slotsX, slotsY, startSlot, this.rng, this.entrances);
     this.core = this.cellCenter(this.map.coreCell);
     this.gates = frontierGates(this.map);
     for (const id of cfg.genes ?? []) {
@@ -225,6 +228,11 @@ export class Sim {
     return this.threatKills + this.threatChallenge
       + this.wavesCleared * B.threatPerWaveCleared
       + this.biomass * B.threatFromBiomass;
+  }
+
+  /** The wager payoff: +25% meat per extra starting entrance. */
+  get entranceMeatMult(): number {
+    return 1 + 0.25 * (this.entrances - 1);
   }
 
   get tier(): number {
@@ -516,10 +524,13 @@ export class Sim {
     const spec = enemySpec(kind);
     const gate = atGate ?? this.gates[this.rng.int(0, this.gates.length - 1)];
     const c = this.cellCenter(gate);
+    // The hive hardens: chitin thickens every wave (researchers stay soft).
+    const hpScale = kind === 'researcher' ? 1 : 1 + this.waveNumber * B.hpPerWave;
+    const hp = Math.round(spec.hp * hpScale);
     const e: Enemy = {
       id: this.nextId++, kind,
       pos: { x: c.x + this.rng.float(-6, 6), y: c.y + this.rng.float(-6, 6) },
-      hp: spec.hp, maxHp: spec.hp, targetId: null, targetIsOrgan: false,
+      hp, maxHp: hp, targetId: null, targetIsOrgan: false,
       attackCooldown: 0, studyLeft: kind === 'researcher' ? B.studySeconds : 0,
       leaving: false,
     };
@@ -582,7 +593,7 @@ export class Sim {
       if ((this.spawnQueue.length === 0 && !hostiles) || this.phaseElapsed > B.siegeMaxSeconds) {
         this.phaseElapsed = 0;
         this.wavesCleared += 1;
-        const bonus = B.waveBonusBase + this.waveNumber * B.waveBonusPerWave;
+        const bonus = Math.round((B.waveBonusBase + this.waveNumber * B.waveBonusPerWave) * this.entranceMeatMult);
         this.meat.war += bonus;
         this.events.push({ kind: 'wave-cleared', wave: this.waveNumber, bonus });
         this.checkDirective();
@@ -925,7 +936,7 @@ export class Sim {
       const district = slot && slot.feature === 'meat' && spec.caste === 'war' ? 1.25 : 1;
       this.drops.push({
         id: this.nextId++, pos: { ...e.pos }, caste: spec.caste,
-        amount: Math.round(spec.meat * yieldMult * district), ttl: B.dropFlySeconds,
+        amount: Math.round(spec.meat * yieldMult * district * this.entranceMeatMult), ttl: B.dropFlySeconds,
       });
     }
   }

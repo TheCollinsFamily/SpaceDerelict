@@ -25,3 +25,18 @@ weight in hold runs (royal meat only arrives if the royal comes) — acceptable.
 3. City life pass (#12): civilian dots on streets pre-creep, they flee the crash.
 4. Organ buttons: disabled state with cost tooltip.
 5. Mid-siege cannibalize drama: surgery vulnerability window (design doc idea, unbuilt).
+
+
+## Addendum (same day): connection algebra + entrance wager
+- Plate placement now obeys the real block logic: centered two-wide openings,
+  opening-to-opening or wall-to-wall on every active edge, no walled-off
+  openings in either direction, frontier never reduced to zero.
+- Start layout: crash plate sealed to N chosen entrances; a two-opening
+  connector district pre-placed beyond each, so waves cross a full district
+  under fire before reaching home. Entrances 1/2/3 = +0/25/50% meat wager.
+- Economy restructured (flat bounties, wage-per-wave, +11% enemy HP per wave):
+  guardrail went from noise to decisive — smart 8/8 wins, random loses 5/8.
+- Known quirks for next pass: growth can wall itself in against the interior
+  (off-board gates keep waves coming; consider a "burrow through" reopen
+  mechanic); wager difficulty jump 1→2 gates is steep for the scripted bot;
+  block/street legibility under heavy creep still the top visual debt.

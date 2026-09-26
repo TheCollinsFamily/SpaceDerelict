@@ -118,11 +118,23 @@ describe('economy and building', () => {
     expect(s.issue({ kind: 'build-organ', organ: 'heart', cell: organCell(s) }).ok).toBe(true);
   });
 
-  it('city map: every frontier gate reaches the core along passable streets', () => {
+  it('starting layout: exactly `entrances` frontier gates, all connected, guns-first', () => {
+    // Baseline: ONE entrance, and a pre-placed connector district beyond it,
+    // so the walk from the gate to the core crosses a full district.
     const s = freshSim();
-    expect(s.gates.length).toBeGreaterThanOrEqual(2);
-    for (const gate of s.gates) {
-      expect(Number.isFinite(s.flowDistOf(gate))).toBe(true);
+    expect(s.entrances).toBe(1);
+    expect(s.gates.length).toBe(1);
+    expect(Number.isFinite(s.flowDistOf(s.gates[0]))).toBe(true);
+    expect(s.map.slots.filter(Boolean).length).toBe(2); // crash site + connector
+    expect(s.creepDistOf(s.gates[0])).toBeGreaterThan(10); // a district away, not next door
+
+    // The wager: more entrances, more pre-placed districts, richer meat.
+    const s3 = new Sim({ ...CFG, seed: 77, entrances: 3 });
+    expect(s3.gates.length).toBe(3);
+    expect(s3.map.slots.filter(Boolean).length).toBe(4);
+    expect(s3.entranceMeatMult).toBeCloseTo(1.5);
+    for (const gate of s3.gates) {
+      expect(Number.isFinite(s3.flowDistOf(gate))).toBe(true);
     }
   });
 

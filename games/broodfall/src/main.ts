@@ -27,7 +27,7 @@ const directive = DIRECTIVES[params.get('directive') ?? ''];
 
 // ---------- persistent meta (ship progression) ----------
 
-interface Meta { standing: number; genes: string[]; runs: number }
+interface Meta { standing: number; genes: string[]; runs: number; entrances?: number }
 
 function loadMeta(): Meta {
   try {
@@ -43,8 +43,12 @@ function saveMeta(m: Meta): void {
 
 const meta = loadMeta();
 
+const ENTRANCES = Math.max(1, Math.min(3,
+  Number(params.get('entrances')) || meta.entrances || 1));
+
 const CFG: SimConfig = {
   gridW: 50, gridH: 40, cellPx: 26, seed: SEED, directive, genes: meta.genes,
+  entrances: ENTRANCES,
 };
 
 let sim = new Sim(CFG);
@@ -184,12 +188,35 @@ const menuEl = document.getElementById('menu')!;
 const debriefEl = document.getElementById('debrief')!;
 const shipEl = document.getElementById('ship')!;
 
+function wireEntrancePicker(containerId: string): void {
+  const wrap = document.getElementById(containerId);
+  if (!wrap) return;
+  wrap.querySelectorAll<HTMLElement>('.ent-opt').forEach((btn) => {
+    btn.classList.toggle('on', Number(btn.dataset.ent) === (meta.entrances ?? 1));
+    btn.addEventListener('click', () => {
+      meta.entrances = Number(btn.dataset.ent);
+      saveMeta(meta);
+      wrap.querySelectorAll('.ent-opt').forEach((b) => b.classList.remove('on'));
+      btn.classList.add('on');
+    });
+  });
+}
+
 function setupMenu(): void {
   const genesNote = document.getElementById('menu-genes')!;
   genesNote.textContent = meta.genes.length
     ? `Spliced genes: ${meta.genes.map((id) => GENES.find((g) => g.id === id)?.name ?? id).join(', ')} · Standing: ${meta.standing}`
     : 'Baseline organism. No splices on record.';
+  wireEntrancePicker('menu-entrances');
   document.getElementById('menu-deploy')!.addEventListener('click', () => {
+    // The wager applies from the NEXT board build; reload if it differs.
+    if ((meta.entrances ?? 1) !== ENTRANCES) {
+      const q = new URLSearchParams(location.search);
+      q.set('autostart', '1');
+      q.set('entrances', String(meta.entrances ?? 1));
+      location.href = `${location.pathname}?${q.toString()}`;
+      return;
+    }
     menuEl.classList.add('hidden');
     started = true;
   });
@@ -229,6 +256,7 @@ function setupScreens(): void {
   document.getElementById('ship-deploy')!.addEventListener('click', () => {
     const q = new URLSearchParams();
     q.set('autostart', '1');
+    q.set('entrances', String(meta.entrances ?? 1));
     if (params.get('directive')) q.set('directive', params.get('directive')!);
     location.href = `${location.pathname}?${q.toString()}`;
   });
@@ -241,6 +269,7 @@ function showShip(): void {
   document.getElementById('ship-standing')!.textContent =
     `Service standing: ${meta.standing}. Procreation license review at 200. `
     + 'One splice is authorized for the replacement organism.';
+  wireEntrancePicker('ship-entrances');
   const wrap = document.getElementById('ship-genes')!;
   wrap.innerHTML = '';
   const available = GENES.filter((g) => !meta.genes.includes(g.id));
@@ -427,6 +456,7 @@ async function boot(): Promise<void> {
         hand: sim.hand.map((c) => c.family),
         interest: sim.interest, threat: sim.threat,
         draft: sim.pendingDraft?.map((o) => ({ id: o.pattern.id, slot: o.slot, feature: o.feature })) ?? null,
+        entrances: sim.entrances,
         districts: sim.map.slots.filter(Boolean).length,
         gates: sim.gates.length,
       };

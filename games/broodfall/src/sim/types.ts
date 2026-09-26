@@ -177,4 +177,6 @@ export interface SimConfig {
   directive?: Directive;
   /** Gene ids spliced on the ship — persistent meta-progression. */
   genes?: string[];
+  /** Starting entrances (1-3). More is a difficulty wager paid in richer meat. */
+  entrances?: number;
 }
