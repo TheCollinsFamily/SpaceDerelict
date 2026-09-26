@@ -1,0 +1,7 @@
+﻿# Space Derelict ignores
+logs/
+__pycache__/
+*.pyc
+tmp_*.py
+space_derelict_current_run.json
+current_run_*.json

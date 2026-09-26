@@ -1,7 +1,5 @@
-﻿# Space Derelict ignores
-logs/
 __pycache__/
 *.pyc
+logs/
 tmp_*.py
-space_derelict_current_run.json
-current_run_*.json
+.DS_Store
