@@ -28,6 +28,8 @@ Authoring format is AI video; runtime format is spritesheet. That one rule keeps
 
 Every pipeline step is a re-runnable script in `games/broodfall/tools/`, manifest-driven, so regenerating one tower or all fifty is the same command.
 
+**Prior art to lift (Collins's pointer, verified Sep 26 2026):** the RFab backend already does video-loop→flipbook conversion in `services/emotionFrameService.js` (transparent VP9 WebM on S3 → N frames sampled evenly across the loop via fluent-ffmpeg, resized and packed for the M5Stack device), and the VTuber emotion-pack path already GENERATES transparent AI video loops. Broodfall's bake step is that same pattern with different output settings: keep alpha (PNG frames instead of flattened JPEG), pack frames into a spritesheet instead of a folder, game resolution instead of 320×240.
+
 ## Testing (per repo owner's standing rules)
 
 - Sim: vitest on the headless core — waves, economy, draw odds, inheritance stacking. Balance assertions, not just unit tests.
