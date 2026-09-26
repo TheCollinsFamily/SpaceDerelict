@@ -14,6 +14,10 @@ const CARD_DESC: Record<TowerFamily, string> = {
   maw: 'Eats weakened specimens whole. Mass gain.',
   spine: 'Dense barricade of bone. Holds a line.',
   lure: 'Scent bloom. Draws curious specimens.',
+  tangler: 'Snare mucus. Hit specimens wade, not march.',
+  blighter: 'Spore clouds. The blight keeps eating — through armor.',
+  impaler: 'Bone harpoon. Skewers a file, ignores shields.',
+  choir: 'Resonance organ. Nearby limbs strike faster.',
 };
 
 const FEED_LINES: Partial<Record<SimEvent['kind'], (e: SimEvent) => { text: string; cls: string }>> = {
@@ -26,6 +30,9 @@ const FEED_LINES: Partial<Record<SimEvent['kind'], (e: SimEvent) => { text: stri
     : { text: '', cls: '' },
   cannibalized: (e) => e.kind === 'cannibalized'
     ? { text: `biomass reallocated: ${e.donor} → ${e.into}`, cls: 'hot' }
+    : { text: '', cls: '' },
+  butchered: (e) => e.kind === 'butchered'
+    ? { text: `limb reclaimed: ${e.family} (+${e.refund} meat salvage)`, cls: 'hot' }
     : { text: '', cls: '' },
   'organ-built': (e) => e.kind === 'organ-built'
     ? { text: `internal structure grown: ${e.organ}`, cls: '' }
@@ -44,7 +51,6 @@ export interface HudCallbacks {
   onSelectCard(index: number | null): void;
   onDiscardCard(index: number): void;
   onArmOrgan(organ: OrganId | null): void;
-  onToggleCannibalize(): void;
   onRoyalSurge(): void;
   onSpeed(mult: number): void;
   onRestart(): void;
@@ -75,7 +81,6 @@ export class Hud {
 
   selectedCard: number | null = null;
   armedOrgan: OrganId | null = null;
-  cannibalizeMode = false;
   private lastHandKey = '';
   private lastDirective: 'hold' | 'royal' | 'harvest' = 'hold';
 
@@ -91,10 +96,6 @@ export class Hud {
       });
     }
     document.getElementById('royal-surge')!.addEventListener('click', () => cb.onRoyalSurge());
-    document.getElementById('cannibalize-toggle')!.addEventListener('click', () => {
-      this.cannibalizeMode = !this.cannibalizeMode;
-      cb.onToggleCannibalize();
-    });
     for (const btn of document.querySelectorAll<HTMLButtonElement>('#speed-box button')) {
       btn.addEventListener('click', () => {
         for (const b of document.querySelectorAll('#speed-box button')) b.classList.remove('on');
@@ -222,7 +223,15 @@ export class Hud {
     // Button states.
     const surge = document.getElementById('royal-surge')!;
     surge.classList.toggle('disabled', sim.meat.royal < B.royalSurgeCost);
-    document.getElementById('cannibalize-toggle')!.classList.toggle('armed', this.cannibalizeMode);
+    // Banked-traits indicator: lights up while a butchered limb's history waits
+    // to be folded into the next build.
+    const traits = document.getElementById('pending-traits');
+    if (traits) {
+      traits.classList.toggle('armed', sim.pendingPips.length > 0);
+      (traits.querySelector('.cost') as HTMLElement).textContent = sim.pendingPips.length > 0
+        ? `${sim.pendingPips.length} trait${sim.pendingPips.length > 1 ? 's' : ''} banked — next build inherits`
+        : 'click a limb while a card is armed: salvage + traits';
+    }
     for (const btn of document.querySelectorAll<HTMLElement>('.organ-btn[data-organ]')) {
       btn.classList.toggle('armed', this.armedOrgan === btn.dataset.organ);
     }

@@ -144,6 +144,9 @@ body {
 .organ-btn.disabled { opacity: 0.4; cursor: not-allowed; }
 .organ-btn.armed { background: var(--ink); color: var(--panel); }
 .organ-btn.armed .cost { opacity: 0.9; }
+.organ-btn.passive { cursor: default; }
+.organ-btn.passive:hover { background: #c7b788; }
+.organ-btn.passive.armed:hover { background: var(--ink); }
 
 #hand { flex: 1; display: flex; gap: 8px; justify-content: center; }
 .card {

@@ -37,7 +37,7 @@ Useful URLs:
 - Enemies march the carved street channels in squads; they cannot cross city blocks. Click a card, then click a CREEPED CITY BLOCK overlooking a street (taller blocks shoot further). Spine walls instead plug the street itself and must be chewed through. Right-click cancels. The ✕ on a card discards it for 3 war meat.
 - Watch the top bar during growth: ASSAULT FORMING names the gates, and the gates glow on the map. Reinforce that approach, or CALL THE WAVE early for bonus meat.
 - After a run: debrief, then the ship's gene bay — spend the trip splicing one of three genes into the next organism. Standing accrues toward the procreation license.
-- FEED A LIMB with a card selected: click one of your towers (the donor), then place. The donor is consumed and its family becomes a visible trait pip on the new limb. Pips stack deterministically: spitter pips add fire rate, lasher damage, burster blast radius, maw meat yield, spine hit points, lure interest.
+- CANNIBALIZE (no mode, no toggle): with a card selected, hover any of your towers — it highlights with a salvage preview — and click it. The limb is eaten on the spot: part of its cost comes back as meat immediately, and its whole trait history banks into your next build (eat two limbs, the build inherits both). The donor's family becomes a visible trait pip on the new limb. Pips stack deterministically: spitter pips add fire rate, lasher damage, burster blast radius, maw meat yield, spine hit points, lure interest, tangler slow, blighter poison, impaler armor-piercing, choir range.
 - Organs (bottom-left) grow inside the body mass only. The pheromone gland cycles calm / lure / challenge when clicked.
 - War caste attacks because you exist. Science caste comes to study you when you are interesting, and is edible. Royals move only when you are a crisis, and royal meat converts to raw mass (ROYAL SURGE).
 - Win: complete the DIRECTIVE in the top bar — hold for N waves, destroy the royal, or bank the science quota. Each run rolls one (force it with `?directive=hold|royal|harvest`). Lose: asset integrity hits zero. The core fights back on its own.
@@ -45,7 +45,7 @@ Useful URLs:
 ## Verify it
 
 ```powershell
-npm test             # 16 headless sim tests incl. full autoplayer runs
+npm test             # 40 headless sim tests incl. per-verb behavior pins + full autoplayer runs
 npm run build
 npm run test:visual  # headless chromium: sim + HUD + per-region pixel checks; screenshots in tools/screenshots/
 npm run test:input   # headless chromium: real player gestures (build, cannibalize, organ, cancel)

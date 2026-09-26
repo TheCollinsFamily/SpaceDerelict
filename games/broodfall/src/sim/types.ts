@@ -2,7 +2,9 @@
 
 export type Caste = 'war' | 'science' | 'royal';
 
-export type TowerFamily = 'spitter' | 'burster' | 'lasher' | 'maw' | 'spine' | 'lure';
+export type TowerFamily =
+  | 'spitter' | 'burster' | 'lasher' | 'maw' | 'spine' | 'lure'
+  | 'tangler' | 'blighter' | 'impaler' | 'choir';
 
 export type OrganId = 'heart' | 'brain' | 'gland';
 
@@ -32,6 +34,17 @@ export interface TowerSpec {
   eatThreshold: number;
   /** Advanced towers get boosted by the brain node's draw-odds shift. */
   advanced: boolean;
+  /** Tangler: hit enemies move at this fraction of speed for slowDur seconds. */
+  slowMult?: number;
+  slowDur?: number;
+  /** Blighter: hits apply this poison DPS for poisonDur seconds (ignores armor caps). */
+  poisonDps?: number;
+  poisonDur?: number;
+  /** Impaler: the shot flies through, hitting several in a line, and ignores armor caps. */
+  pierce?: boolean;
+  /** Choir: +this fraction fire rate to other towers within auraRadius. */
+  rateAura?: number;
+  auraRadius?: number;
 }
 
 /** What a donor family contributes when cannibalized into a new tower. */
@@ -77,6 +90,10 @@ export type EnemyKind =
   | 'flier'
   | 'sapper'
   | 'phalanx'
+  | 'drummer'
+  | 'bomber'
+  | 'tunneler'
+  | 'tender'
   | 'researcher'
   | 'royal';
 
@@ -97,6 +114,14 @@ export interface EnemySpec {
   sapper?: boolean;
   /** Shield-wall: incoming damage is capped per hit — rapid fire beats big hits. */
   armorCap?: number;
+  /** War-drummer: nearby hive units march faster while it lives — kill it first. */
+  speedAura?: boolean;
+  /** Charges the nearest structure and detonates against it — walls are not safe. */
+  bomber?: boolean;
+  /** Spawns burrowed and untargetable; surfaces PAST the outer defenses. */
+  tunneler?: boolean;
+  /** Heals nearby hive units on a pulse — a priority target. */
+  healer?: boolean;
 }
 
 export interface Enemy {
@@ -112,6 +137,18 @@ export interface Enemy {
   /** Researchers: seconds of studying remaining; they leave when it hits 0. */
   studyLeft: number;
   leaving: boolean;
+  /** Status: moving at slowMult fraction of speed until slowUntil (sim time). */
+  slowUntil?: number;
+  slowMult?: number;
+  /** Status: taking poisonDps until poisonUntil. Poison ignores armor caps. */
+  poisonDps?: number;
+  poisonUntil?: number;
+  /** Tunneler: underground and untargetable until it surfaces. */
+  burrowed?: boolean;
+  /** Tunneler surfaces once its flow-distance to the core drops below this. */
+  surfaceFlowDist?: number;
+  /** Tender: cooldown between heal pulses. */
+  auxCooldown?: number;
 }
 
 export interface Projectile {
@@ -124,6 +161,17 @@ export interface Projectile {
   fromFamily: TowerFamily;
   /** Meat multiplier inherited from the firing tower's maw pips. */
   yieldMult: number;
+  /** Status payload carried from the firing tower's stats. */
+  slowMult?: number;
+  slowDur?: number;
+  poisonDps?: number;
+  poisonDur?: number;
+  /** Impaler: remaining extra enemies this shot may pass through. */
+  pierceLeft?: number;
+  /** Enemies already hit by this piercing shot (hit once each). */
+  hitIds?: number[];
+  /** Added to the target's armor cap before capping (Infinity = ignore caps). */
+  capBonus?: number;
 }
 
 export interface Drop {
@@ -148,6 +196,7 @@ export type SimEvent =
   | { kind: 'built'; family: TowerFamily; pips: number }
   | { kind: 'organ-built'; organ: OrganId }
   | { kind: 'cannibalized'; donor: TowerFamily; into: TowerFamily }
+  | { kind: 'butchered'; family: TowerFamily; refund: number }
   | { kind: 'kill'; enemy: EnemyKind; caste: Caste }
   | { kind: 'banked'; caste: Caste; amount: number }
   | { kind: 'wave-start'; tier: number; wave: number; counts: Partial<Record<EnemyKind, number>>; sides: string }
@@ -164,6 +213,7 @@ export type SimEvent =
 
 export type Command =
   | { kind: 'build'; cardIndex: number; cell: number; cannibalizeTowerId?: number }
+  | { kind: 'butcher'; towerId: number }
   | { kind: 'build-organ'; organ: OrganId; cell: number }
   | { kind: 'cycle-gland'; organInstanceId: number }
   | { kind: 'royal-surge' }

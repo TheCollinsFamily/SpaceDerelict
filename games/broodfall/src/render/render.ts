@@ -17,11 +17,16 @@ const FAMILY_COLORS: Record<TowerFamily, number> = {
   maw: 0x8f2f3d,
   spine: 0x8a7f65,
   lure: 0x5fa898,
+  tangler: 0x6f9c4a,
+  blighter: 0x8fa833,
+  impaler: 0xc9c2a4,
+  choir: 0xa87fc9,
 };
 
 const ENEMY_SIZE: Record<Enemy['kind'], number> = {
   responder: 5, militia: 6, soldier: 8, elite: 11, flier: 6, sapper: 7,
-  phalanx: 13, researcher: 6, royal: 20,
+  phalanx: 13, drummer: 9, bomber: 6, tunneler: 8, tender: 7,
+  researcher: 6, royal: 20,
 };
 
 export interface PlacementPreview {
@@ -288,6 +293,30 @@ export class Renderer {
         // Mandibles: this one eats LIMBS.
         g.moveTo(x - 4, y - s + 2).lineTo(x - 7, y - s - 4).stroke({ width: 2, color: 0xf0d0a0 });
         g.moveTo(x + 4, y - s + 2).lineTo(x + 7, y - s - 4).stroke({ width: 2, color: 0xf0d0a0 });
+      } else if (e.kind === 'tunneler' && e.burrowed) {
+        // Underground: only a travelling mound of disturbed street.
+        g.circle(x, y + 2, s + 2).fill({ color: 0x3a2c18, alpha: 0.8 });
+        g.circle(x, y, s).fill({ color: 0x54432a, alpha: 0.9 });
+        g.circle(x - 3, y - 2, 1.5).fill({ color: 0x2c2113, alpha: 0.9 });
+        g.circle(x + 4, y + 1, 1.5).fill({ color: 0x2c2113, alpha: 0.9 });
+      } else if (e.kind === 'drummer') {
+        // War-drummer: broad body with a beating drum ring — kill it first.
+        g.circle(x, y, s + 1.5).fill({ color: 0x0d0805, alpha: 0.85 });
+        g.circle(x, y, s).fill(color);
+        g.circle(x, y, s + 6 + Math.sin(this.pulse * 5) * 3).stroke({ width: 1.5, color: 0xe0a03a, alpha: 0.5 });
+        g.circle(x, y, s * 0.45).fill(0xe0a03a);
+      } else if (e.kind === 'bomber') {
+        // A running charge: small, fast, glowing payload.
+        g.circle(x, y, s + 1.5).fill({ color: 0x0d0805, alpha: 0.85 });
+        g.circle(x, y, s).fill(color);
+        const arm = 0.5 + 0.5 * Math.sin(this.pulse * 8 + e.id);
+        g.circle(x, y, s * 0.5).fill({ color: 0xf2e04a, alpha: 0.5 + arm * 0.5 });
+      } else if (e.kind === 'tender') {
+        // Tender: pale carer with a pulsing cross — a priority target.
+        g.circle(x, y, s + 1.5).fill({ color: 0x0d0805, alpha: 0.85 });
+        g.circle(x, y, s).fill(0xd8b8a0);
+        g.rect(x - 1.5, y - 4, 3, 8).fill(0x8f2f3d);
+        g.rect(x - 4, y - 1.5, 8, 3).fill(0x8f2f3d);
       } else if (e.kind === 'phalanx') {
         // Shield-wall: a broad plated slab.
         g.rect(x - s, y - s * 0.8, s * 2, s * 1.6).fill({ color: 0x0d0805, alpha: 0.9 });
@@ -300,6 +329,14 @@ export class Renderer {
           .fill({ color: 0x0d0805, alpha: 0.85 });
         g.poly([x, y - s, x + s, y + s, x - s, y + s]).fill(color);
         if (e.kind === 'elite') g.circle(x, y + 2, s * 0.35).fill(0x5c1d10);
+      }
+      // Status reads: snared = web ring, blighted = spore motes.
+      if (e.slowUntil !== undefined && e.slowUntil > sim.time) {
+        g.circle(x, y, s + 3).stroke({ width: 1.5, color: 0x9cc45f, alpha: 0.8 });
+      }
+      if (e.poisonUntil !== undefined && e.poisonUntil > sim.time) {
+        g.circle(x + 3, y - s - 3, 2).fill({ color: 0xb8cc55, alpha: 0.9 });
+        g.circle(x - 3, y - s - 5, 1.5).fill({ color: 0xb8cc55, alpha: 0.7 });
       }
       if (e.hp < e.maxHp) this.hpArc(g, x, y, s + 5, e.hp / e.maxHp);
     }
@@ -341,6 +378,33 @@ export class Renderer {
         g.circle(x, y, 9).fill(c);
         g.circle(x, y, 13 + (this.pulse * 14 % 18)).stroke({ width: 1.5, color: c, alpha: 0.5 });
         break;
+      case 'tangler':
+        // A web bed: hub with radiating snare threads.
+        g.circle(x, y, 8).fill(c);
+        for (let i = 0; i < 5; i++) {
+          const a = (i * Math.PI * 2) / 5 + 0.3;
+          g.moveTo(x, y).lineTo(x + Math.cos(a) * 15, y + Math.sin(a) * 15)
+            .stroke({ width: 1.5, color: c, alpha: 0.7 });
+        }
+        break;
+      case 'blighter':
+        // Spore chimney venting motes.
+        g.circle(x, y, 10).fill(c);
+        g.rect(x - 3, y - 15, 6, 9).fill(c);
+        g.circle(x + Math.sin(this.pulse * 2 + t.id) * 5, y - 18, 2.5).fill({ color: 0xb8cc55, alpha: 0.7 });
+        break;
+      case 'impaler':
+        // A long bone harpoon on a squat base.
+        g.circle(x, y, 9).fill(c);
+        g.poly([x - 2.5, y - 2, x + 2.5, y - 2, x + 1, y - 22, x - 1, y - 22]).fill(0xe8e2cc);
+        g.poly([x - 3, y - 18, x + 3, y - 18, x, y - 25]).fill(0xf4efdd);
+        break;
+      case 'choir':
+        // Resonance organ: pulsing ring that syncs the limbs around it.
+        g.circle(x, y, 9).fill(c);
+        g.circle(x, y, 12 + Math.sin(this.pulse * 4) * 3).stroke({ width: 2, color: c, alpha: 0.6 });
+        g.circle(x, y, 4).fill(0xe8d8f4);
+        break;
     }
     // Inheritance pips: the silhouette is the build history.
     t.pips.forEach((p, i) => {
@@ -358,7 +422,17 @@ export class Renderer {
     g.clear();
 
     for (const p of sim.projectiles) {
-      g.circle(p.pos.x, p.pos.y, p.fromFamily === 'burster' ? 5 : 3).fill(0xf2c069);
+      if (p.fromFamily === 'impaler') {
+        // The harpoon reads as a streak, not a dot.
+        const len = 14;
+        const m = Math.hypot(p.vel.x, p.vel.y) || 1;
+        g.moveTo(p.pos.x - (p.vel.x / m) * len, p.pos.y - (p.vel.y / m) * len)
+          .lineTo(p.pos.x, p.pos.y).stroke({ width: 3, color: 0xf4efdd, alpha: 0.95 });
+      } else {
+        const col = p.fromFamily === 'tangler' ? 0x9cc45f
+          : p.fromFamily === 'blighter' ? 0xb8cc55 : 0xf2c069;
+        g.circle(p.pos.x, p.pos.y, p.fromFamily === 'burster' ? 5 : 3).fill(col);
+      }
     }
     for (const d of sim.drops) {
       g.rect(d.pos.x - 3, d.pos.y - 3, 6, 6).fill(CASTE_COLORS[d.caste]);

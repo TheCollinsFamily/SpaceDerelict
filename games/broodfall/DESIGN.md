@@ -41,6 +41,30 @@ The build dictates what comes (attraction economy), not the map. Which caste you
 - tier 5 **phalanx**: shield-wall armor caps damage per hit — big single hits are wasted, rapid fire shreds it.
 Economically: bounties are near-flat per kill (2-3 war meat) while wave income is a fixed clearing wage, so defense cannot compound off wave size, and the strength/income gap forces efficient placement (guardrail: informed placement flips 4 seeds to wins, careless flips none).
 
+### The roster (built Sep 26 2026 — every entry is a VERB, and every tower family is also a pip)
+
+Towers (10 families; each family's pip is what it teaches a build that eats it):
+| Family | Verb | Pip when cannibalized |
+|---|---|---|
+| Spitter | cheap reliable single-target | +25% fire rate |
+| Burster | lobbed area detonation | +12px blast radius (grants splash) |
+| Lasher | melee sweep, shreds crowds | +20% damage |
+| Maw | eats weakened enemies whole (biomass) | +30% meat yield |
+| Spine Wall | in-street blocker, must be chewed | +150 max HP |
+| Lure Gland | interest magnet (science bait) | +2 interest |
+| Snare Bed (tangler) | hits slow to 55% for 1.8s | hits slow 10% more per pip |
+| Blight Vent (blighter) | poison clouds; DoT ignores armor caps | +2 poison dps per pip |
+| Impaler | long-range harpoon, pierces a file of 4, ignores shields | +5 armor-cap pierce per pip |
+| Choir Node | +15% fire rate aura to limbs in 95px (max 2 voices) | +8% range per pip |
+
+Enemies (13 kinds; escalation adds VERBS, per the rule above):
+responder/militia/soldier/elite (the ladder of ordinary war bodies) · researcher (science; comes to study, edible) ·
+flier (t3: ignores terrain) · drummer (t3: speed aura — kill it first) · sapper (t4: climbs perches, eats towers) ·
+bomber (t4: charges walls/organs and detonates; perched guns only caught in passing) · phalanx (t5: per-hit damage cap) ·
+tender (t5: heal pulses on the march) · tunneler (t6: burrows past the outer line, untargetable until it surfaces) ·
+royal (the jackpot and the hardest fight). The tier-6 desperation row is threat-gated (330+) so a standard hold order
+peaks at tier 5; tier 6 is for long runs and deliberate escalation.
+
 ### Towers: cards, not shops
 - Towers buildable each round come from CARDS DRAWN with modified probability. Organs and roguelite (gene bank) unlocks shape the draw odds. The gene bank is your deck; organs decide which genes get expressed. You engineer your own randomness.
 - Each card carries a DISCARD button (small war-meat fee): hand-clog with unaffordable cards is a deadlock, and the discard is a real decision (found via autoplayer runs, seed 3 locked its whole hand on science-cost cards).
@@ -49,6 +73,7 @@ Economically: bounties are near-flat per kill (2-3 war meat) while wave income i
 
 ### Cannibalize-to-modify
 - When paying for a new tower you may cannibalize an existing tower to modify the new one; modifications stack based on how the eaten tower works and looks.
+- **Interaction rule (Collins, Sep 26 2026): no mode toggle, ever.** His words after trying the "FEED A LIMB" button flow: "you have to hit cannibalize first — that's super unintuitive. What I expected: a special UI when I hovered over something that could be cannibalized, and it was removed and its part of the payment cost was made on click." So: with a card armed, hovering one of your towers shows the cannibalize affordance (highlight + salvage preview in the hint); clicking it eats the limb ON THE SPOT — salvage meat (60% of its cost) is credited immediately as part of paying for the build, and its full trait history banks into the next build. Eating two limbs before placing stacks both histories. The general principle: actions live on the object they act on, discovered by hover — never behind an armed mode the player must know to enter first.
 - Inheritance is DETERMINISTIC and VISIBLE on the body: a spitter built from a cannibalized burster has the burster's sacs hanging off it. The silhouette is the build history.
 - Between-wave time is for the big surgery (butchering your own); the tension source is that the upgrade path and the defense line are the same pool of bodies.
 

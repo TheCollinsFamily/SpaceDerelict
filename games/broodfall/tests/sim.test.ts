@@ -204,6 +204,45 @@ describe('cannibalize inheritance', () => {
     expect(modded.interest).toBeGreaterThan(plain.interest);
   });
 
+  it('butcher by click: salvage refunded on the spot, traits bank into the next build', () => {
+    const s = freshSim(600);
+    s.meat.war = 200;
+    s.meat.science = 200;
+    // Force a spitter (known cost) into the hand.
+    let idx = -1;
+    for (let guard = 0; guard < 300 && idx < 0; guard++) {
+      idx = s.hand.findIndex((c) => c.family === 'spitter');
+      if (idx < 0) s.issue({ kind: 'discard', cardIndex: 0 });
+    }
+    expect(s.issue({ kind: 'build', cardIndex: idx, cell: buildableCell(s) }).ok).toBe(true);
+    const donor = s.towers[0];
+    const warBefore = s.meat.war;
+    expect(s.issue({ kind: 'butcher', towerId: donor.id }).ok).toBe(true);
+    // Spitter costs 13 war; salvage floor(13 * 0.6) = 7 back, immediately.
+    expect(s.meat.war).toBe(warBefore + Math.floor((towerSpec('spitter').cost.war ?? 0) * B.salvageRate));
+    expect(s.towers.length).toBe(0);
+    expect(s.pendingPips.length).toBe(1);
+    expect(s.pendingPips[0].family).toBe('spitter');
+    // The next build inherits and clears the bank.
+    expect(s.issue({ kind: 'build', cardIndex: 0, cell: buildableCell(s) }).ok).toBe(true);
+    expect(s.towers[0].pips.length).toBe(1);
+    expect(s.pendingPips.length).toBe(0);
+  });
+
+  it('butchering twice stacks both trait histories into one build', () => {
+    const s = freshSim(601);
+    s.meat.war = 999;
+    s.meat.science = 999;
+    expect(s.issue({ kind: 'build', cardIndex: 0, cell: buildableCell(s) }).ok).toBe(true);
+    expect(s.issue({ kind: 'build', cardIndex: 0, cell: buildableCell(s, 1) }).ok).toBe(true);
+    const [a, b] = [...s.towers];
+    s.issue({ kind: 'butcher', towerId: a.id });
+    s.issue({ kind: 'butcher', towerId: b.id });
+    expect(s.pendingPips.length).toBe(2);
+    expect(s.issue({ kind: 'build', cardIndex: 0, cell: buildableCell(s) }).ok).toBe(true);
+    expect(s.towers[0].pips.length).toBe(2);
+  });
+
   it('cannibalizing removes the donor and carries its pips forward', () => {
     const s = freshSim();
     s.meat.war = 9999;
@@ -308,6 +347,166 @@ describe('higher enemy types (escalation by kind, never hardening)', () => {
     expect(hp0 - e.hp).toBe(12); // capped
     sim.damageEnemy(e, 8, 1); // small hits pass through whole
     expect(hp0 - e.hp).toBe(20);
+  });
+
+  it('drummers speed up nearby hive units (kill the drummer first)', () => {
+    const s = freshSim(560);
+    const sim = s as unknown as { spawnEnemy(kind: string, atGate?: number): { pos: { x: number; y: number } } };
+    const soldier = sim.spawnEnemy('soldier', s.gates[0]);
+    const alone = s.moveSpeedOf(s.enemies[0]);
+    const drummer = sim.spawnEnemy('drummer', s.gates[0]);
+    drummer.pos.x = soldier.pos.x + 10;
+    drummer.pos.y = soldier.pos.y;
+    const drummed = s.moveSpeedOf(s.enemies[0]);
+    expect(drummed).toBeCloseTo(alone * B.drummerSpeedMult);
+    // The drummer does not drum for itself.
+    const drummerE = s.enemies.find((e) => e.kind === 'drummer')!;
+    expect(s.moveSpeedOf(drummerE)).toBeCloseTo(ENEMIES.find((e) => e.kind === 'drummer')!.speed);
+  });
+
+  it('bombers detonate against structures (walls are not safe)', () => {
+    const s = freshSim(561);
+    s.meat.war = 9999;
+    s.meat.science = 9999;
+    // Plug a street with a spine wall on the gate lane.
+    let spineIdx = -1;
+    for (let guard = 0; guard < 200 && spineIdx < 0; guard++) {
+      spineIdx = s.hand.findIndex((c) => c.family === 'spine');
+      if (spineIdx < 0) s.issue({ kind: 'discard', cardIndex: 0 });
+    }
+    let roadCell = -1;
+    for (let guard = 0; guard < 40 && roadCell < 0; guard++) {
+      for (let c = 0; c < s.map.cells.length; c++) {
+        if (s.map.cells[c] === CellType.Road && s.canBuildTower(c, 'spine')) { roadCell = c; break; }
+      }
+      if (roadCell < 0) for (let i = 0; i < 100; i++) s.tick();
+    }
+    expect(s.issue({ kind: 'build', cardIndex: spineIdx, cell: roadCell }).ok).toBe(true);
+    const wall = s.towers[0];
+    const hp0 = wall.hp;
+    const sim = s as unknown as { spawnEnemy(kind: string, atGate?: number): { pos: { x: number; y: number } } };
+    const bomber = sim.spawnEnemy('bomber', s.gates[0]);
+    // Drop the bomber on a walkable street cell near the wall (not inside a building).
+    const w = 50;
+    // Prefer two cells out: beyond the contact radius, inside the charge radius.
+    const near = [roadCell - 2, roadCell + 2, roadCell - 2 * w, roadCell + 2 * w,
+      roadCell - 1, roadCell + 1, roadCell - w, roadCell + w]
+      .find((c) => c >= 0 && c < s.map.cells.length && s.map.cells[c] === CellType.Road);
+    expect(near).toBeDefined();
+    const nc = s.cellCenter(near!);
+    bomber.pos.x = nc.x;
+    bomber.pos.y = nc.y;
+    let boomed = false;
+    for (let i = 0; i < 400 && !boomed; i++) {
+      s.tick();
+      const w = s.towers.find((t) => t.id === wall.id);
+      if (!w || w.hp <= hp0 - B.bomberBlastDamage + 1) boomed = true;
+    }
+    expect(boomed).toBe(true);
+    expect(s.enemies.some((e) => e.kind === 'bomber')).toBe(false); // spent
+  });
+
+  it('tunnelers spawn burrowed and untargetable, then surface past the outer line', () => {
+    const s = freshSim(562);
+    const sim = s as unknown as { spawnEnemy(kind: string, atGate?: number): { pos: { x: number; y: number } } };
+    sim.spawnEnemy('tunneler', s.gates[0]);
+    const t = s.enemies.find((e) => e.kind === 'tunneler')!;
+    expect(t.burrowed).toBe(true);
+    expect(t.surfaceFlowDist).toBeGreaterThan(0);
+    const spawnDist = s.flowDistOf(s.cellAt(t.pos.x, t.pos.y));
+    let surfacedAt = -1;
+    for (let i = 0; i < 3000 && surfacedAt < 0; i++) {
+      s.tick();
+      const cur = s.enemies.find((e) => e.kind === 'tunneler');
+      if (!cur) break;
+      expect(cur.hp).toBe(cur.maxHp); // nothing can hit it underground (no towers built, core can't either)
+      if (!cur.burrowed) surfacedAt = s.flowDistOf(s.cellAt(cur.pos.x, cur.pos.y));
+    }
+    expect(surfacedAt).toBeGreaterThanOrEqual(0);
+    expect(surfacedAt).toBeLessThan(spawnDist * 0.6); // well past the outer defenses
+  });
+
+  it('tenders heal wounded neighbours on a pulse', () => {
+    const s = freshSim(563);
+    const sim = s as unknown as {
+      spawnEnemy(kind: string, atGate?: number): { pos: { x: number; y: number } };
+      damageEnemy(e: unknown, dmg: number, y: number): void;
+    };
+    const soldier = sim.spawnEnemy('soldier', s.gates[0]);
+    const sE = s.enemies.find((e) => e.kind === 'soldier')!;
+    sim.damageEnemy(sE, 40, 0);
+    const wounded = sE.hp;
+    const tender = sim.spawnEnemy('tender', s.gates[0]);
+    tender.pos.x = soldier.pos.x + 10;
+    tender.pos.y = soldier.pos.y;
+    let healed = false;
+    for (let i = 0; i < 60 && !healed; i++) {
+      s.tick();
+      if (sE.hp > wounded) healed = true;
+    }
+    expect(healed).toBe(true);
+    expect(sE.hp).toBeLessThanOrEqual(sE.maxHp);
+  });
+
+  it('snare slows expire; blight ticks damage through armor caps', () => {
+    const s = freshSim(564);
+    const sim = s as unknown as {
+      spawnEnemy(kind: string, atGate?: number): { id: number };
+      applyHitEffects(e: unknown, fx: { slowMult: number; slowDur: number; poisonDps: number; poisonDur: number }): void;
+    };
+    sim.spawnEnemy('phalanx', s.gates[0]);
+    const e = s.enemies.find((x) => x.kind === 'phalanx')!;
+    sim.applyHitEffects(e, { slowMult: 0.55, slowDur: 1.0, poisonDps: 10, poisonDur: 1.0 });
+    const spec = ENEMIES.find((x) => x.kind === 'phalanx')!;
+    expect(s.moveSpeedOf(e)).toBeCloseTo(spec.speed * 0.55);
+    const hp0 = e.hp;
+    for (let i = 0; i < 15; i++) s.tick(); // 1.5s: poison window ends
+    expect(e.hp).toBeLessThan(hp0); // ticked well past the 12-per-hit armor cap rules
+    expect(s.moveSpeedOf(e)).toBeCloseTo(spec.speed); // slow expired
+  });
+
+  it('impaler shots ignore armor caps and pierce a file', () => {
+    const base: Tower = {
+      id: 1, family: 'impaler', pos: { x: 0, y: 0 }, cell: 0,
+      hp: 1, maxHp: 1, pips: [], cooldown: 0, kills: 0,
+    };
+    expect(towerStats(base).capBonus).toBe(Infinity);
+    const s = freshSim(565);
+    const sim = s as unknown as {
+      spawnEnemy(kind: string, atGate?: number): { id: number };
+      damageEnemy(e: unknown, dmg: number, y: number, capBonus?: number): void;
+    };
+    sim.spawnEnemy('phalanx', s.gates[0]);
+    const e = s.enemies.find((x) => x.kind === 'phalanx')!;
+    const hp0 = e.hp;
+    sim.damageEnemy(e, 34, 1, Infinity);
+    expect(hp0 - e.hp).toBe(34); // straight through the shield wall
+    // An impaler pip on another tower raises the cap it hits against.
+    const pipped = towerStats({ ...base, family: 'spitter', pips: [{ family: 'impaler' }] });
+    expect(pipped.capBonus).toBe(B.pipPierceCap);
+  });
+
+  it('choir nodes speed up the limbs around them (capped at two voices)', () => {
+    const s = freshSim(566);
+    s.meat.war = 9999;
+    s.meat.science = 9999;
+    const cellA = buildableCell(s);
+    // Force a spitter into the hand.
+    let idx = -1;
+    for (let guard = 0; guard < 300 && idx < 0; guard++) {
+      idx = s.hand.findIndex((c) => c.family === 'spitter');
+      if (idx < 0) s.issue({ kind: 'discard', cardIndex: 0 });
+    }
+    expect(s.issue({ kind: 'build', cardIndex: idx, cell: cellA }).ok).toBe(true);
+    const spitter = s.towers[0];
+    const rate0 = s.statsOf(spitter).rate;
+    // Conjure a choir right next to it (placement rules are not under test here).
+    const choir: Tower = {
+      id: 999, family: 'choir', pos: { x: spitter.pos.x + 30, y: spitter.pos.y }, cell: 0,
+      hp: 1, maxHp: 1, pips: [], cooldown: 0, kills: 0,
+    };
+    s.towers.push(choir);
+    expect(s.statsOf(spitter).rate).toBeGreaterThan(rate0);
   });
 
   it('sappers attack towers on blocks (perches are not safe)', () => {

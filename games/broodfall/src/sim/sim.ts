@@ -17,7 +17,7 @@ import {
 } from '../../content/data';
 import type {
   CardInstance, Caste, Command, Directive, Drop, Enemy, EnemyKind, EnemySpec,
-  GlandMode, Organ, OrganId, Outcome, Phase, Projectile, SimConfig, SimEvent,
+  GlandMode, ModPip, Organ, OrganId, Outcome, Phase, Projectile, SimConfig, SimEvent,
   Tower, TowerFamily, TowerSpec, Vec,
 } from './types';
 
@@ -55,6 +55,8 @@ export function organSpec(id: OrganId) {
 export function towerStats(t: Tower) {
   const spec = towerSpec(t.family);
   const pips = (f: TowerFamily) => t.pips.filter((p) => p.family === f).length;
+  const tanglerPips = pips('tangler');
+  const blighterPips = pips('blighter');
   return {
     rate: spec.rate * (1 + B.pipRate * pips('spitter')),
     damage: spec.damage * (1 + B.pipDamage * pips('lasher')),
@@ -62,8 +64,15 @@ export function towerStats(t: Tower) {
     yieldMult: 1 + B.pipYield * pips('maw'),
     maxHp: spec.maxHp + B.pipHp * pips('spine'),
     interest: spec.interest + B.pipInterest * pips('lure') + B.interestPerPip * t.pips.length,
-    range: spec.range,
+    range: spec.range * (1 + B.pipRange * pips('choir')),
     eatThreshold: spec.eatThreshold,
+    // Hit effects: the tower's own, deepened by inherited pips.
+    slowMult: Math.max(0.25, (spec.slowMult ?? 1) - B.pipSlow * tanglerPips),
+    slowDur: Math.max(spec.slowDur ?? 0, tanglerPips > 0 ? B.pipSlowDur : 0),
+    poisonDps: (spec.poisonDps ?? 0) + B.pipPoisonDps * blighterPips,
+    poisonDur: Math.max(spec.poisonDur ?? 0, blighterPips > 0 ? B.pipPoisonDur : 0),
+    capBonus: spec.pierce ? Infinity : B.pipPierceCap * pips('impaler'),
+    pierce: spec.pierce ?? false,
   };
 }
 
@@ -122,6 +131,8 @@ export class Sim {
   projectiles: Projectile[] = [];
   drops: Drop[] = [];
   hand: CardInstance[] = [];
+  /** Traits banked by butchering limbs; the NEXT build inherits and clears them. */
+  pendingPips: ModPip[] = [];
 
   /** cell index -> structure ('t'|'o') + id */
   private occupied = new Map<number, { kind: 't' | 'o'; id: number }>();
@@ -236,16 +247,30 @@ export class Sim {
   }
 
   get tier(): number {
-    return Math.min(WAVE_TABLE.length - 1, Math.floor(this.threat / B.threatPerTier));
+    const t = Math.floor(this.threat / B.threatPerTier);
+    // The last row is the hive's desperation — gated behind real escalation,
+    // not something a standard hold order walks into by wave 11.
+    if (t >= WAVE_TABLE.length - 1 && this.threat < B.tier6Threat) return WAVE_TABLE.length - 2;
+    return Math.min(WAVE_TABLE.length - 1, t);
   }
 
-  /** towerStats plus genes plus high-ground reach for THIS sim's board. */
+  /** towerStats plus genes plus high-ground reach plus choir auras for THIS sim's board. */
   statsOf(t: Tower) {
     const s = towerStats(t);
     const h = this.map.heights[t.cell] || 1;
     s.range = s.range * this.geneMods.rangeMult * (1 + B.heightRangeBonus * (h - 1));
     s.maxHp += t.family === 'spine' ? this.geneMods.spineHpBonus : 0;
     s.eatThreshold += t.family === 'maw' ? this.geneMods.mawEatBonus : 0;
+    if (s.rate > 0) {
+      let choirs = 0;
+      for (const c of this.towers) {
+        if (c.family !== 'choir' || c.id === t.id) continue;
+        const spec = towerSpec('choir');
+        if (dist(c.pos, t.pos) <= (spec.auraRadius ?? 0)) choirs++;
+      }
+      // Two voices at most: stacking a whole chapel on one limb is not a build.
+      s.rate *= 1 + (towerSpec('choir').rateAura ?? 0) * Math.min(choirs, 2);
+    }
     return s;
   }
 
@@ -375,14 +400,22 @@ export class Sim {
         if (!card) return { ok: false, err: 'no such card' };
         const spec = towerSpec(card.family);
         if (!this.canBuildTower(cmd.cell, card.family)) return { ok: false, err: 'cell not buildable' };
-        if (!this.canAfford(spec.cost)) return { ok: false, err: 'cannot afford' };
-        let pips = [] as Tower['pips'];
         if (cmd.cannibalizeTowerId !== undefined) {
+          // Legacy atomic path (autoplayer/tests): butcher-then-build in one command.
           const donor = this.towers.find((t) => t.id === cmd.cannibalizeTowerId);
           if (!donor) return { ok: false, err: 'no such donor' };
-          pips = [...donor.pips, { family: donor.family }];
-          this.removeTower(donor.id, false);
-          this.events.push({ kind: 'cannibalized', donor: donor.family, into: card.family });
+          const salv = this.salvageOf(donor.family);
+          const affordable = (['war', 'science', 'royal'] as Caste[]).every(
+            (c) => this.meat[c] + (salv[c] ?? 0) >= (spec.cost[c] ?? 0),
+          );
+          if (!affordable) return { ok: false, err: 'cannot afford' };
+          this.butcherTower(donor);
+        }
+        if (!this.canAfford(spec.cost)) return { ok: false, err: 'cannot afford' };
+        const pips = this.pendingPips;
+        this.pendingPips = [];
+        if (pips.length > 0) {
+          this.events.push({ kind: 'cannibalized', donor: pips[pips.length - 1].family, into: card.family });
         }
         this.pay(spec.cost);
         const pos = this.cellCenter(cmd.cell);
@@ -398,6 +431,12 @@ export class Sim {
         this.hand.splice(cmd.cardIndex, 1);
         this.hand.push(this.drawCard());
         this.events.push({ kind: 'built', family: card.family, pips: pips.length });
+        return { ok: true };
+      }
+      case 'butcher': {
+        const donor = this.towers.find((t) => t.id === cmd.towerId);
+        if (!donor) return { ok: false, err: 'no such tower' };
+        this.butcherTower(donor);
         return { ok: true };
       }
       case 'build-organ': {
@@ -467,6 +506,33 @@ export class Sim {
     }
   }
 
+  /** What eating a limb of this family pays back toward the next build. */
+  salvageOf(family: TowerFamily): Partial<Record<Caste, number>> {
+    const cost = towerSpec(family).cost;
+    const out: Partial<Record<Caste, number>> = {};
+    for (const c of ['war', 'science', 'royal'] as Caste[]) {
+      if (cost[c]) out[c] = Math.floor((cost[c] ?? 0) * B.salvageRate);
+    }
+    return out;
+  }
+
+  /**
+   * Eat a limb on the spot: its salvage is credited immediately and its whole
+   * trait history (plus itself) is banked for the next build. Butchering twice
+   * before building stacks the traits — a two-course meal.
+   */
+  private butcherTower(donor: Tower): void {
+    const salv = this.salvageOf(donor.family);
+    let refund = 0;
+    for (const c of ['war', 'science', 'royal'] as Caste[]) {
+      this.meat[c] += salv[c] ?? 0;
+      refund += salv[c] ?? 0;
+    }
+    this.pendingPips = [...this.pendingPips, ...donor.pips, { family: donor.family }];
+    this.removeTower(donor.id, false);
+    this.events.push({ kind: 'butchered', family: donor.family, refund });
+  }
+
   private removeTower(id: number, emit: boolean): void {
     const i = this.towers.findIndex((t) => t.id === id);
     if (i < 0) return;
@@ -531,6 +597,12 @@ export class Sim {
       attackCooldown: 0, studyLeft: kind === 'researcher' ? B.studySeconds : 0,
       leaving: false,
     };
+    if (spec.tunneler) {
+      // Dives underground at the gate; resurfaces PAST the outer gun line.
+      e.burrowed = true;
+      const d = this.flow.dist[gate];
+      e.surfaceFlowDist = Number.isFinite(d) ? d * B.tunnelerSurfaceFrac : 12;
+    }
     this.enemies.push(e);
     return e;
   }
@@ -654,7 +726,7 @@ export class Sim {
     let target: Enemy | null = null;
     let bestD = this.bodyRadius * B.coreReachScale;
     for (const e of this.enemies) {
-      if (e.kind === 'researcher') continue;
+      if (e.kind === 'researcher' || e.burrowed) continue;
       const d = dist(e.pos, this.core);
       if (d <= bestD) { bestD = d; target = e; }
     }
@@ -725,10 +797,10 @@ export class Sim {
     const n = this.enemies.length;
     for (let i = 0; i < n; i++) {
       const a = this.enemies[i];
-      if (enemySpec(a.kind).flies) continue;
+      if (enemySpec(a.kind).flies || a.burrowed) continue;
       for (let j = i + 1; j < n; j++) {
         const b = this.enemies[j];
-        if (enemySpec(b.kind).flies) continue;
+        if (enemySpec(b.kind).flies || b.burrowed) continue;
         const dx = b.pos.x - a.pos.x;
         const dy = b.pos.y - a.pos.y;
         const d = Math.hypot(dx, dy);
@@ -749,12 +821,122 @@ export class Sim {
     }
   }
 
+  /** Effective speed: base, times an active snare slow, times a war-drummer's beat. */
+  moveSpeedOf(e: Enemy): number {
+    const spec = enemySpec(e.kind);
+    let s = spec.speed;
+    if (e.slowUntil !== undefined && e.slowUntil > this.time && e.slowMult !== undefined) {
+      s *= e.slowMult;
+    }
+    if (e.kind !== 'researcher') {
+      for (const d of this.enemies) {
+        if (d === e || d.burrowed || !enemySpec(d.kind).speedAura) continue;
+        if (dist(d.pos, e.pos) <= B.drummerRadius) { s *= B.drummerSpeedMult; break; }
+      }
+    }
+    return s;
+  }
+
+  /** Snare and blight land on a hit; slows keep the strongest, poison stacks and refreshes. */
+  private applyHitEffects(
+    e: Enemy,
+    fx: { slowMult: number; slowDur: number; poisonDps: number; poisonDur: number },
+  ): void {
+    if (fx.slowMult < 1 && fx.slowDur > 0) {
+      const active = e.slowUntil !== undefined && e.slowUntil > this.time;
+      e.slowMult = active && e.slowMult !== undefined ? Math.min(e.slowMult, fx.slowMult) : fx.slowMult;
+      e.slowUntil = Math.max(active ? e.slowUntil ?? 0 : 0, this.time + fx.slowDur);
+    }
+    if (fx.poisonDps > 0 && fx.poisonDur > 0) {
+      const active = e.poisonUntil !== undefined && e.poisonUntil > this.time;
+      e.poisonDps = Math.min(40, (active ? e.poisonDps ?? 0 : 0) + fx.poisonDps);
+      e.poisonUntil = this.time + fx.poisonDur;
+    }
+  }
+
+  /** The bomber's whole job: area damage to STRUCTURES, then it is gone. */
+  private detonateBomber(e: Enemy): void {
+    for (const t of [...this.towers]) {
+      if (dist(e.pos, t.pos) <= B.bomberBlastRadius) {
+        t.hp -= B.bomberBlastDamage;
+        if (t.hp <= 0) this.removeTower(t.id, true);
+      }
+    }
+    for (const o of [...this.organs]) {
+      if (dist(e.pos, o.pos) <= B.bomberBlastRadius) {
+        o.hp -= B.bomberBlastDamage;
+        if (o.hp <= 0) this.removeOrgan(o.id);
+      }
+    }
+    if (dist(e.pos, this.core) <= B.bomberBlastRadius + 30) this.coreHp -= B.bomberBlastDamage;
+    const i = this.enemies.indexOf(e);
+    if (i >= 0) this.enemies.splice(i, 1);
+  }
+
   private updateEnemies(): void {
     for (const e of [...this.enemies]) {
       const spec = enemySpec(e.kind);
+
+      // Blight keeps eating whoever carries it (and slips under armor plates).
+      if (e.poisonUntil !== undefined && e.poisonUntil > this.time && e.poisonDps) {
+        e.hp -= e.poisonDps * DT;
+        if (e.hp <= 0) { this.killEnemy(e.id, 1, false); continue; }
+      }
+
       if (e.kind === 'researcher') {
         this.updateResearcher(e, spec);
         continue;
+      }
+
+      const speed = this.moveSpeedOf(e);
+
+      // Tunnelers travel under the streets, untargetable, and surface past the outer guns.
+      if (e.burrowed) {
+        const cell = this.cellAt(e.pos.x, e.pos.y);
+        const d = this.flow.dist[cell];
+        if (Number.isFinite(d) && d <= (e.surfaceFlowDist ?? 0)) {
+          e.burrowed = false;
+        } else {
+          const nxt = this.flow.next[cell];
+          if (nxt >= 0) this.stepConstrained(e, this.cellCenter(nxt), speed);
+          else this.stepConstrained(e, this.core, speed);
+          continue;
+        }
+      }
+
+      // Tenders drum out a heal pulse as they march.
+      if (spec.healer) {
+        e.auxCooldown = (e.auxCooldown ?? 0) - DT;
+        if (e.auxCooldown <= 0 && spec.rate > 0) {
+          e.auxCooldown = 1 / spec.rate;
+          for (const o of this.enemies) {
+            if (o === e || o.kind === 'researcher' || o.hp >= o.maxHp) continue;
+            if (dist(e.pos, o.pos) <= B.tenderRadius) {
+              o.hp = Math.min(o.maxHp, o.hp + B.tenderHeal);
+            }
+          }
+        }
+      }
+
+      // Bombers never latch: contact with anything of yours IS the attack.
+      // They CHARGE the nearest wall or organ (anything standing on walkable
+      // ground); perched guns they only catch in passing. The counterplay is
+      // killing the runner before it arrives.
+      if (spec.bomber) {
+        const near = this.nearestStructure(e.pos, STRUCTURE_CONTACT + ENEMY_RADIUS);
+        if (near || dist(e.pos, this.core) <= CORE_CONTACT) {
+          this.detonateBomber(e);
+          continue;
+        }
+        const prey = this.nearestStructure(e.pos, 4 * this.cfg.cellPx);
+        if (prey) {
+          const pp = this.structurePos(prey);
+          const preyCell = pp ? this.cellAt(pp.x, pp.y) : -1;
+          if (pp && preyCell >= 0 && isPassable(this.map.cells[preyCell])) {
+            this.stepConstrained(e, pp, speed);
+            continue;
+          }
+        }
       }
 
       // Latched onto a structure?
@@ -797,7 +979,7 @@ export class Sim {
 
       // Fliers ignore the city plan entirely: straight over blocks and walls.
       if (spec.flies) {
-        this.stepUnconstrained(e, this.core, spec.speed);
+        this.stepUnconstrained(e, this.core, speed);
         this.aheadCheckSeparationless(e);
         continue;
       }
@@ -813,7 +995,7 @@ export class Sim {
               e.targetIsOrgan = prey.kind === 'o';
               e.attackCooldown = 0;
             } else {
-              this.stepUnconstrained(e, pp, spec.speed); // climbs the block face
+              this.stepUnconstrained(e, pp, speed); // climbs the block face
             }
             continue;
           }
@@ -834,23 +1016,24 @@ export class Sim {
           continue;
         }
         if (wp) {
-          this.stepConstrained(e, wp, spec.speed);
+          this.stepConstrained(e, wp, speed);
           continue;
         }
       }
 
       if (nextCell >= 0) {
-        this.stepConstrained(e, this.cellCenter(nextCell), spec.speed);
+        this.stepConstrained(e, this.cellCenter(nextCell), speed);
       } else {
         // Unreachable pocket (shouldn't happen): press toward the core anyway.
-        this.stepConstrained(e, this.core, spec.speed);
+        this.stepConstrained(e, this.core, speed);
       }
     }
     this.applySeparation();
   }
 
-  private updateResearcher(e: Enemy, spec: EnemySpec): void {
+  private updateResearcher(e: Enemy, _spec: EnemySpec): void {
     const cell = this.cellAt(e.pos.x, e.pos.y);
+    const speed = this.moveSpeedOf(e); // a snared researcher is a caught researcher
     if (e.leaving) {
       // Walk back up the flow field (away from the core) and slip out at the edge.
       const cx = cell % this.cfg.gridW;
@@ -870,8 +1053,8 @@ export class Sim {
           best = nb;
         }
       }
-      if (best >= 0) this.stepConstrained(e, this.cellCenter(best), spec.speed);
-      else this.stepConstrained(e, { x: e.pos.x < this.worldW / 2 ? 0 : this.worldW, y: e.pos.y }, spec.speed);
+      if (best >= 0) this.stepConstrained(e, this.cellCenter(best), speed);
+      else this.stepConstrained(e, { x: e.pos.x < this.worldW / 2 ? 0 : this.worldW, y: e.pos.y }, speed);
       return;
     }
     // Approach along the streets; step ONTO the creep edge to take samples.
@@ -882,7 +1065,7 @@ export class Sim {
       if (e.studyLeft <= 0) e.leaving = true;
       return;
     }
-    if (nextCell >= 0) this.stepConstrained(e, this.cellCenter(nextCell), spec.speed);
+    if (nextCell >= 0) this.stepConstrained(e, this.cellCenter(nextCell), speed);
   }
 
   // ---------- combat ----------
@@ -896,6 +1079,7 @@ export class Sim {
       let target: Enemy | null = null;
       let bestD = stats.range;
       for (const e of this.enemies) {
+        if (e.burrowed) continue; // underground: nothing to shoot at
         const d = dist(t.pos, e.pos);
         if (d <= bestD) { bestD = d; target = e; }
       }
@@ -906,11 +1090,12 @@ export class Sim {
           this.eatEnemy(target);
           continue;
         }
-        this.damageEnemy(target, stats.damage, stats.yieldMult);
+        this.applyHitEffects(target, stats);
+        this.damageEnemy(target, stats.damage, stats.yieldMult, stats.capBonus);
         if (t.family === 'lasher' && stats.aoe > 0) {
           for (const e of [...this.enemies]) {
-            if (e !== target && dist(t.pos, e.pos) <= stats.aoe + 20) {
-              this.damageEnemy(e, stats.damage * 0.5, stats.yieldMult);
+            if (e !== target && !e.burrowed && dist(t.pos, e.pos) <= stats.aoe + 20) {
+              this.damageEnemy(e, stats.damage * 0.5, stats.yieldMult, stats.capBonus);
             }
           }
         }
@@ -923,9 +1108,17 @@ export class Sim {
           vel: { x: ((target.pos.x - t.pos.x) / d) * speed, y: ((target.pos.y - t.pos.y) / d) * speed },
           damage: stats.damage,
           aoe: stats.aoe,
-          ttl: (d / speed) + 0.4,
+          // Piercing shots fly the whole range; ordinary ones die at the target.
+          ttl: stats.pierce ? (stats.range * 1.25) / speed : (d / speed) + 0.4,
           fromFamily: t.family,
           yieldMult: stats.yieldMult,
+          slowMult: stats.slowMult < 1 ? stats.slowMult : undefined,
+          slowDur: stats.slowMult < 1 ? stats.slowDur : undefined,
+          poisonDps: stats.poisonDps > 0 ? stats.poisonDps : undefined,
+          poisonDur: stats.poisonDps > 0 ? stats.poisonDur : undefined,
+          pierceLeft: stats.pierce ? 3 : undefined,
+          hitIds: stats.pierce ? [] : undefined,
+          capBonus: stats.capBonus,
         });
       }
     }
@@ -939,27 +1132,42 @@ export class Sim {
       p.pos.y += p.vel.y * DT;
       let hit: Enemy | null = null;
       for (const e of this.enemies) {
+        if (e.burrowed) continue;
+        if (p.hitIds && p.hitIds.includes(e.id)) continue; // a skewer hits each body once
         if (dist(p.pos, e.pos) <= ENEMY_RADIUS + 4) { hit = e; break; }
       }
-      if (hit || p.ttl <= 0) {
-        if (hit) {
-          if (p.aoe > 0) {
-            for (const e of [...this.enemies]) {
-              if (dist(p.pos, e.pos) <= p.aoe) this.damageEnemy(e, p.damage, p.yieldMult);
-            }
-          } else {
-            this.damageEnemy(hit, p.damage, p.yieldMult);
+      if (hit) {
+        const fx = {
+          slowMult: p.slowMult ?? 1, slowDur: p.slowDur ?? 0,
+          poisonDps: p.poisonDps ?? 0, poisonDur: p.poisonDur ?? 0,
+        };
+        if (p.aoe > 0) {
+          for (const e of [...this.enemies]) {
+            if (e.burrowed || dist(p.pos, e.pos) > p.aoe) continue;
+            this.applyHitEffects(e, fx);
+            this.damageEnemy(e, p.damage, p.yieldMult, p.capBonus ?? 0);
           }
+        } else {
+          this.applyHitEffects(hit, fx);
+          this.damageEnemy(hit, p.damage, p.yieldMult, p.capBonus ?? 0);
         }
+        if (p.pierceLeft !== undefined && p.pierceLeft > 0) {
+          p.pierceLeft -= 1;
+          p.hitIds?.push(hit.id);
+        } else {
+          gone.push(p.id);
+        }
+      } else if (p.ttl <= 0) {
         gone.push(p.id);
       }
     }
     this.projectiles = this.projectiles.filter((p) => !gone.includes(p.id));
   }
 
-  private damageEnemy(e: Enemy, dmg: number, yieldMult: number): void {
+  private damageEnemy(e: Enemy, dmg: number, yieldMult: number, capBonus = 0): void {
     const cap = enemySpec(e.kind).armorCap;
-    e.hp -= cap !== undefined ? Math.min(dmg, cap) : dmg;
+    const effCap = cap !== undefined ? cap + capBonus : undefined;
+    e.hp -= effCap !== undefined && Number.isFinite(effCap) ? Math.min(dmg, effCap) : dmg;
     if (e.hp <= 0) this.killEnemy(e.id, yieldMult, false);
   }
 

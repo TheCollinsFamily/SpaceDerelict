@@ -89,17 +89,33 @@ try {
   if (towers === 1) pass('card click + canvas click builds a tower');
   else fail('build via input', `towers=${towers}`);
 
-  // 2. Feed-a-limb flow: select a card, toggle cannibalize, click donor, place left of core.
+  // 2. Cannibalize by DIRECT CLICK (no mode toggle): with a card armed, clicking
+  //    an existing limb eats it on the spot — salvage credited, traits banked —
+  //    then placing inherits the pip.
   await page.locator('#hand .card').first().click();
-  await page.locator('#cannibalize-toggle').click();
-  await clickWorld(towerSpot.x, towerSpot.y); // pick the donor we just built
+  const meatBefore = await page.evaluate(() => ({ ...window.broodfall.sim.meat }));
+  await clickWorld(towerSpot.x, towerSpot.y); // click the limb we just built: butcher it
+  const mid = await page.evaluate(() => {
+    const s = window.broodfall.sim;
+    return { towers: s.towers.length, pending: s.pendingPips.length, meat: { ...s.meat } };
+  });
+  const refunded = (mid.meat.war + mid.meat.science + mid.meat.royal)
+    > (meatBefore.war + meatBefore.science + meatBefore.royal);
+  if (mid.towers === 0 && mid.pending === 1 && refunded) {
+    pass('click on own limb butchers it: salvage refunded, trait banked');
+  } else {
+    fail('butcher via click', `towers=${mid.towers} pending=${mid.pending} refunded=${refunded}`);
+  }
   await clickWorld(towerSpot2.x, towerSpot2.y); // place the new limb
   const after = await page.evaluate(() => {
     const s = window.broodfall.sim;
-    return { towers: s.towers.length, pips: s.towers[0]?.pips.length ?? -1 };
+    return { towers: s.towers.length, pips: s.towers[0]?.pips.length ?? -1, pending: s.pendingPips.length };
   });
-  if (after.towers === 1 && after.pips === 1) pass('cannibalize flow: donor eaten, pip inherited');
-  else fail('cannibalize flow', `towers=${after.towers} pips=${after.pips}`);
+  if (after.towers === 1 && after.pips === 1 && after.pending === 0) {
+    pass('cannibalize flow: banked trait inherited by the next build');
+  } else {
+    fail('cannibalize flow', `towers=${after.towers} pips=${after.pips} pending=${after.pending}`);
+  }
 
   // 3. Organ placement inside the body.
   await page.locator('.organ-btn[data-organ="heart"]').click();

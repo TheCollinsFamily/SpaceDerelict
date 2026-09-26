@@ -35,6 +35,35 @@ export const TOWERS: readonly TowerSpec[] = [
     cost: { science: 15 }, range: 0, rate: 0, damage: 0, aoe: 0,
     maxHp: 50, interest: 4, eatThreshold: 0, advanced: true,
   },
+  {
+    // Control: hit enemies wade through mucus. Weak damage, strong tempo.
+    family: 'tangler', name: 'Snare Bed', weight: 12,
+    cost: { war: 16, science: 6 }, range: 80, rate: 0.9, damage: 4, aoe: 30,
+    slowMult: 0.55, slowDur: 1.8,
+    maxHp: 70, interest: 1, eatThreshold: 0, advanced: false,
+  },
+  {
+    // Damage over time: spore clouds that keep eating. Poison ignores armor caps,
+    // so this is the second answer to the phalanx besides rapid fire.
+    family: 'blighter', name: 'Blight Vent', weight: 10,
+    cost: { war: 14, science: 14 }, range: 90, rate: 0.6, damage: 3, aoe: 38,
+    poisonDps: 7, poisonDur: 3.5,
+    maxHp: 65, interest: 2, eatThreshold: 0, advanced: true,
+  },
+  {
+    // Artillery: a bone harpoon that skewers a whole file and ignores shields.
+    family: 'impaler', name: 'Impaler', weight: 8,
+    cost: { war: 36, science: 8 }, range: 150, rate: 0.35, damage: 34, aoe: 0,
+    pierce: true,
+    maxHp: 80, interest: 2, eatThreshold: 0, advanced: true,
+  },
+  {
+    // Support: a resonance organ that syncs the limbs around it to a faster beat.
+    family: 'choir', name: 'Choir Node', weight: 7,
+    cost: { science: 22 }, range: 0, rate: 0, damage: 0, aoe: 0,
+    rateAura: 0.15, auraRadius: 95,
+    maxHp: 60, interest: 2, eatThreshold: 0, advanced: true,
+  },
 ];
 
 export const ORGANS: readonly OrganSpec[] = [
@@ -52,6 +81,11 @@ export const ENEMIES: readonly EnemySpec[] = [
   { kind: 'flier', caste: 'war', hp: 55, speed: 58, damage: 9, rate: 1.2, meat: 3, threatOnKill: 3, flies: true },
   { kind: 'sapper', caste: 'war', hp: 130, speed: 44, damage: 20, rate: 1.4, meat: 4, threatOnKill: 4, sapper: true },
   { kind: 'phalanx', caste: 'war', hp: 750, speed: 20, damage: 26, rate: 0.9, meat: 8, threatOnKill: 6, armorCap: 12 },
+  // Support castes: each one is a kill-priority decision, not a stat block.
+  { kind: 'drummer', caste: 'war', hp: 70, speed: 36, damage: 5, rate: 0.8, meat: 5, threatOnKill: 3, speedAura: true },
+  { kind: 'bomber', caste: 'war', hp: 60, speed: 46, damage: 0, rate: 0, meat: 3, threatOnKill: 3, bomber: true },
+  { kind: 'tunneler', caste: 'war', hp: 110, speed: 40, damage: 16, rate: 1.1, meat: 5, threatOnKill: 4, tunneler: true },
+  { kind: 'tender', caste: 'war', hp: 80, speed: 34, damage: 6, rate: 0.5, meat: 6, threatOnKill: 2, healer: true },
   { kind: 'royal', caste: 'royal', hp: 1000, speed: 16, damage: 28, rate: 0.8, meat: 120, threatOnKill: 0 },
 ];
 
@@ -66,9 +100,10 @@ export const WAVE_TABLE: readonly Partial<Record<string, number>>[] = [
   { responder: 8 },                                            // tier 0: first response
   { responder: 8, militia: 6 },                                // tier 1: militia muster
   { militia: 12, soldier: 6 },                                 // tier 2: the army arrives
-  { militia: 8, soldier: 8, elite: 2, flier: 4 },              // tier 3: air support
-  { soldier: 10, elite: 5, flier: 5, sapper: 3 },              // tier 4: sappers climb
-  { soldier: 12, elite: 7, flier: 6, sapper: 4, phalanx: 2 },  // tier 5: the shield wall
+  { militia: 8, soldier: 8, elite: 2, flier: 4, drummer: 1 },  // tier 3: air support, war-drums
+  { soldier: 10, elite: 5, flier: 5, sapper: 3, bomber: 2, drummer: 1 },              // tier 4: sappers climb, charges set
+  { soldier: 12, elite: 7, flier: 6, sapper: 4, phalanx: 2, tender: 2, bomber: 2 },   // tier 5: the shield wall marches tended
+  { elite: 10, flier: 8, sapper: 5, phalanx: 3, drummer: 2, tender: 3, tunneler: 4, bomber: 4 }, // tier 6: everything they have
 ];
 
 export const BALANCE = {
@@ -133,6 +168,8 @@ export const BALANCE = {
   /** Cards. */
   handSize: 4,
   brainAdvancedWeightMult: 2.2,
+  /** Cannibalize: butchering a limb refunds this fraction of its cost toward the build. */
+  salvageRate: 0.6,
   /** Cannibalize pip effects (multiplicative per pip unless noted). */
   pipRate: 0.25,      // spitter pip: +25% fire rate
   pipAoe: 12,         // burster pip: +12px aoe radius (adds aoe to non-aoe towers)
@@ -140,6 +177,23 @@ export const BALANCE = {
   pipDamage: 0.2,     // lasher pip: +20% damage
   pipHp: 150,          // spine pip: +80 max hp
   pipInterest: 2,     // lure pip: +2 interest
+  pipSlow: 0.1,       // tangler pip: hits slow 10% more (floor 25% speed)
+  pipSlowDur: 1.5,
+  pipPoisonDps: 2,    // blighter pip: hits apply +2 poison dps
+  pipPoisonDur: 2.5,
+  pipPierceCap: 5,    // impaler pip: +5 to the armor cap this tower's hits respect
+  pipRange: 0.08,     // choir pip: +8% range
+  /** Support enemy tuning. */
+  drummerSpeedMult: 1.35,
+  drummerRadius: 90,
+  tenderHeal: 14,
+  tenderRadius: 80,
+  bomberBlastRadius: 55,
+  bomberBlastDamage: 85,
+  /** The desperation row of the wave table needs this much threat, not just the ladder. */
+  tier6Threat: 330,
+  /** Tunnelers surface at this fraction of the gate->core flow distance. */
+  tunnelerSurfaceFrac: 0.45,
   dropFlySeconds: 1.1,
   /** The body itself fights: focused dps on the nearest intruder inside the body. */
   coreDps: 24,

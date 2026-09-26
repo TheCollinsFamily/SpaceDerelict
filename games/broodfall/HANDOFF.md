@@ -44,6 +44,13 @@ debrief → ship gene bay → redeploy.
    verticality matters (block heights 1-3, +10% range per level).
 9. **Waves are discrete**: telegraphed lanes, squad spawns, cleared banners + wage,
    call-early button; researchers only during growth; royal only enters with a siege.
+10. **Caste spend rule: war is generic, science comes from mutations, royal is for
+    SPECIAL upgrades.** The royal special-upgrade sink layer is NOT built yet (the
+    biomass surge is a placeholder) — it is high on the backlog.
+11. **No mode toggles, ever.** Cannibalize is hover-a-limb (affordance + salvage
+    preview) then click: the limb is eaten on the spot, 60% of its cost credits the
+    payment, traits bank into the next build. Actions live on the object, found by
+    hover — never behind a button the player must arm first.
 
 ## Architecture (all TypeScript, no engine, no editor)
 
@@ -60,8 +67,9 @@ debrief → ship gene bay → redeploy.
 ## How to verify (all must be green before claiming anything)
 
 ```powershell
-npm test             # 31 tests: sim, plates algebra, wave rhythm, type behaviors,
-                     # full autoplayed runs, and the PLACEMENT GUARDRAIL
+npm test             # 40 tests: sim, plates algebra, wave rhythm, per-verb type
+                     # behaviors, butcher economy, full autoplayed runs, and the
+                     # PLACEMENT GUARDRAIL
 npm run build
 npm run test:visual  # headless chromium: HUD + per-region pixel checks (camera-aware)
 npm run test:input   # real player gestures: build, cannibalize, organ, cancel
@@ -86,23 +94,29 @@ URL params: `?seed= &auto=1 &autostart=1 &speed= &directive=hold|royal|harvest &
 
 ## Current balance state (don't trust memory — re-measure)
 
-Scripted player, hold-12, 1 entrance: wins ~2/3 seeds with real damage taken; 2-3
-entrances: ~1/4 (the wager bites; humans do better than the bot). Guardrail: smart 7/8
-wins, 4 outcome flips vs 0. Key economy shape: near-flat bounties (2-3 meat), clearing
+Scripted player, hold-12, 1 entrance: 3/3 measured seeds win post-roster-expansion; 2-3
+entrances: ~1/4 (the wager bites; humans do better than the bot). Guardrail: smart 6/8
+wins, 2 outcome flips vs 1 (see ITERATION addendum 3 for why bombers/tunnelers narrowed
+it and what the bot should learn next). Key economy shape: near-flat bounties (2-3 meat), clearing
 wage per wave, wave counts scale with clock (`waveCountScale`), tier from threat ladder
 (waves cleared + kills×0.3 + biomass×0.035, per-tier 46).
 
 ## Top of the backlog (from notes/, in order)
 
-1. Block/street legibility under heavy creep at far zoom (worst visual debt).
-2. Growth can wall itself in against the interior (off-board gates keep waves coming;
-   consider a "burrow through a sealed district" reopen mechanic).
-3. City life pass: civilians on streets pre-creep who flee the crash (the horror premise
+1. Royal SPECIAL-UPGRADE sinks (design rule 10): royal meat must buy rare, run-defining
+   upgrades; the biomass surge is a placeholder and iteration notes call it dead weight.
+2. Block/street legibility under heavy creep at far zoom (worst visual debt).
+3. Growth can wall itself in against the interior (off-board gates keep waves coming;
+   consider a "burrow through a sealed district" reopen mechanic — the tunneler enemy
+   now has the digging precedent).
+4. City life pass: civilians on streets pre-creep who flee the crash (the horror premise
    needs the city visibly alive).
-4. Empire directives/hobby missions layer + break cinematics (DESIGN.md, unbuilt).
-5. Real AI art pipeline per TECH.md (authoring = AI video/3D, runtime = spritesheets;
+5. Empire directives/hobby missions layer + break cinematics (DESIGN.md, unbuilt).
+6. Real AI art pipeline per TECH.md (authoring = AI video/3D, runtime = spritesheets;
    RFab `services/emotionFrameService.js` is the bake-step prior art).
-6. Mid-siege cannibalize drama (surgery vulnerability window) — design doc, unbuilt.
+7. Mid-siege cannibalize drama (surgery vulnerability window) — design doc, unbuilt.
+8. Autoplayer answers to the new verbs (rebuild blown walls, one interior gun for
+   tunnelers) to widen the guardrail margin back toward 4:0.
 
 ## Working with Collins (hard-won, respect these)
 

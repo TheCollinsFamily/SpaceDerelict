@@ -49,3 +49,35 @@ learned to cover air lanes; genuinely deepens placement), sapper (climbs to eat
 towers), phalanx (per-hit damage cap; counters burst, rewards rate). Behavior
 tests pin each verb. Guardrail after the change: smart 7/8 wins, 4 outcome
 flips vs 0.
+
+
+## Addendum 3: cannibalize UX rework + roster expansion (same day, Collins live feedback)
+
+**Cannibalize (Collins: mode toggle "super unintuitive").** The FEED A LIMB toggle is gone.
+New flow: card armed → hover your tower → highlight + salvage hint → click eats it on the
+spot (60% cost salvage credited immediately, trait history banked; stacks across multiple
+butcherings) → place inherits everything. Sim: new `butcher` command + `pendingPips`;
+legacy atomic build+cannibalizeTowerId path kept for the autoplayer/tests, now with the
+same salvage economy. The footer button is now a passive banked-traits indicator.
+
+**Roster (Collins: "list the behaviors and brainstorm more, let's get this in").**
+4 new tower families, each a new verb AND a new pip: Snare Bed (slow), Blight Vent
+(poison DoT that ignores armor caps — the second phalanx answer), Impaler (line-piercing
+harpoon, ignores shields), Choir Node (fire-rate aura, capped 2 voices). 4 new enemy
+kinds, each a new verb: drummer (speed aura → priority target), bomber (charges
+walls/organs, detonates; ground-level structures only — this is the anti-wall unit),
+tunneler (burrows under the outer line untargetable, surfaces at 45% flow-distance),
+tender (heal pulses). New tier-6 "everything they have" wave row, threat-gated at 330 so
+hold-12 peaks at tier 5 (ungated it arrived by wave 11 and collapsed both run suites).
+
+**Measurements after the change (all 40 tests green; visual/input/endgame green):**
+- Behavior pins added for every new verb (slow expiry, poison-through-armor, pierce cap
+  bonus, drummer aura excl. self, bomber charge+detonate, tunneler untargetability +
+  surface depth, tender heal cap, choir aura, butcher salvage math, trait stacking).
+- Naive-policy hold-12: 3/3 seeds win (tier 5-6 reached, seed 3 took 699 damage).
+- Guardrail: smart 6/8 wins, outcome flips smart 2 : random 1, totals within margin.
+  RATIONALE for the drop from 7/8, 4:0 — bombers specifically punish the smart bot's
+  signature move (spine walls in lanes) and tunnelers punish perimeter-only coverage;
+  random scatter dodges both by accident. The assertion still holds (informed placement
+  flips more seeds), and the counterplay (kill runners on approach, interior coverage) is
+  real for a human. Next bot iteration: rebuild blown walls promptly, keep one interior gun.

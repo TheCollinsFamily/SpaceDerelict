@@ -10,7 +10,7 @@ import { Renderer } from './render/render';
 import { Hud } from './ui/hud';
 import { GENES } from '../content/plates';
 import { PLATE_FEATURES } from './sim/citymap';
-import type { Directive, OrganId, SimConfig, SimEvent } from './sim/types';
+import type { Directive, OrganId, SimConfig, SimEvent, TowerFamily } from './sim/types';
 
 const params = new URLSearchParams(location.search);
 const SEED = Number(params.get('seed') ?? Math.floor(Math.random() * 1e9));
@@ -61,13 +61,12 @@ const renderer = new Renderer();
 
 let selectedCard: number | null = null;
 let armedOrgan: OrganId | null = null;
-let cannibalizeMode = false;
-let donorId: number | null = null;
+/** Tower under the pointer that a click would cannibalize (card armed + hover). */
+let hoverDonorId: number | null = null;
 
 const hud = new Hud({
   onSelectCard(i) {
     selectedCard = i;
-    donorId = null;
     updateHint();
   },
   onDiscardCard(i) {
@@ -76,12 +75,6 @@ const hud = new Hud({
   },
   onArmOrgan(o) {
     armedOrgan = o;
-    donorId = null;
-    updateHint();
-  },
-  onToggleCannibalize() {
-    cannibalizeMode = hud.cannibalizeMode;
-    donorId = null;
     updateHint();
   },
   onRoyalSurge() {
@@ -95,18 +88,34 @@ const hud = new Hud({
   },
 });
 
+function salvageText(family: TowerFamily): string {
+  const salv = sim.salvageOf(family);
+  const parts = (['war', 'science', 'royal'] as const)
+    .filter((c) => (salv[c] ?? 0) > 0)
+    .map((c) => `${salv[c]}${c[0].toUpperCase()}`);
+  return parts.join(' ') || 'no';
+}
+
 function updateHint(): void {
   if (armedOrgan) {
     hud.setHint(`place ${organSpec(armedOrgan).name} on open ground inside the body`);
-  } else if (selectedCard !== null && cannibalizeMode && donorId === null) {
-    hud.setHint('pick one of your limbs to feed into this build');
-  } else if (selectedCard !== null && donorId !== null) {
-    hud.setHint('place the new limb — the donor is consumed');
+  } else if (selectedCard !== null && hoverDonorId !== null) {
+    const donor = sim.towers.find((t) => t.id === hoverDonorId);
+    if (donor) {
+      hud.setHint(`CANNIBALIZE ${towerSpec(donor.family).name.toUpperCase()}: `
+        + `click to eat it — ${salvageText(donor.family)} meat back, traits fold into this build`);
+      return;
+    }
+    hoverDonorId = null;
+    updateHint();
+  } else if (selectedCard !== null && sim.pendingPips.length > 0) {
+    hud.setHint(`${sim.pendingPips.length} trait${sim.pendingPips.length > 1 ? 's' : ''} banked — `
+      + 'place the new limb to inherit them (or eat another)');
   } else if (selectedCard !== null) {
     const fam = sim.hand[selectedCard]?.family;
     hud.setHint(fam === 'spine'
       ? 'plug a street — the swarm must chew through'
-      : 'place on a creeped city block overlooking a street (higher = longer reach)');
+      : 'place on a creeped block by a street (higher = longer reach) — or click one of your limbs to feed it in');
   } else {
     hud.setHint(AUTO
       ? 'demo mode: the asset is piloting itself'
@@ -321,33 +330,33 @@ function handleCanvasClick(clientX: number, clientY: number): void {
   }
 
   if (selectedCard !== null) {
-    if (cannibalizeMode && donorId === null) {
-      for (const t of sim.towers) {
-        if (Math.hypot(t.pos.x - w.x, t.pos.y - w.y) < 22) {
-          donorId = t.id;
-          renderer.donorHighlightId = t.id;
-          updateHint();
-          return;
-        }
-      }
+    // Clicking one of your limbs with a card armed EATS it on the spot:
+    // salvage is credited immediately, its traits fold into the next build.
+    const donor = towerNearWorld(w.x, w.y);
+    if (donor) {
+      sim.issue({ kind: 'butcher', towerId: donor.id });
+      hoverDonorId = null;
+      renderer.donorHighlightId = null;
+      updateHint();
       return;
     }
-    const res = sim.issue({
-      kind: 'build', cardIndex: selectedCard, cell,
-      cannibalizeTowerId: donorId ?? undefined,
-    });
+    const res = sim.issue({ kind: 'build', cardIndex: selectedCard, cell });
     if (res.ok) {
       selectedCard = null;
       hud.selectedCard = null;
-      donorId = null;
+      hoverDonorId = null;
       renderer.donorHighlightId = null;
-      if (cannibalizeMode) {
-        cannibalizeMode = false;
-        hud.cannibalizeMode = false;
-      }
       updateHint();
     }
   }
+}
+
+/** The player's own tower under a world point (click/hover pick radius). */
+function towerNearWorld(x: number, y: number): { id: number } | null {
+  for (const t of sim.towers) {
+    if (Math.hypot(t.pos.x - x, t.pos.y - y) < 22) return t;
+  }
+  return null;
 }
 
 // ---------- boot ----------
@@ -363,7 +372,7 @@ async function boot(): Promise<void> {
     ev.preventDefault();
     selectedCard = null;
     armedOrgan = null;
-    donorId = null;
+    hoverDonorId = null;
     renderer.donorHighlightId = null;
     hud.selectedCard = null;
     hud.armedOrgan = null;
@@ -372,10 +381,29 @@ async function boot(): Promise<void> {
   renderer.app.canvas.addEventListener('pointermove', (ev) => {
     if (selectedCard === null && armedOrgan === null) {
       renderer.preview = null;
+      if (hoverDonorId !== null) {
+        hoverDonorId = null;
+        renderer.donorHighlightId = null;
+      }
       return;
     }
     const w = renderer.toWorld(ev.clientX, ev.clientY);
     const cell = sim.cellAt(w.x, w.y);
+    // Hovering one of your limbs with a card armed shows the cannibalize
+    // affordance instead of a placement preview.
+    if (selectedCard !== null && armedOrgan === null) {
+      const donor = towerNearWorld(w.x, w.y);
+      const donorId = donor ? donor.id : null;
+      if (donorId !== hoverDonorId) {
+        hoverDonorId = donorId;
+        renderer.donorHighlightId = donorId;
+        updateHint();
+      }
+      if (donorId !== null) {
+        renderer.preview = null;
+        return;
+      }
+    }
     const fam = sim.hand[selectedCard!]?.family;
     renderer.preview = armedOrgan
       ? { cell, kind: 'organ', valid: sim.canBuildOrgan(cell) }
