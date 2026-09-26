@@ -45,10 +45,15 @@ try {
   await page.goto('http://localhost:5199/?seed=7&autostart=1', { waitUntil: 'load' });
   await page.waitForSelector('#stage canvas');
 
-  // Give the wallet enough to build twice regardless of card mix.
+  // Give the wallet enough to build twice regardless of card mix, and make sure
+  // the first card is a block-buildable family (street pieces would foil the
+  // generic block-cell clicks below).
   await page.evaluate(() => {
     const s = window.broodfall.sim;
     s.meat.war = 500; s.meat.science = 500; s.meat.royal = 500;
+    for (let guard = 0; guard < 300 && ['pit', 'spine'].includes(s.hand[0].family); guard++) {
+      s.issue({ kind: 'discard', cardIndex: 0 });
+    }
   });
 
   /** Click the canvas at a WORLD position (through the camera transform). */
@@ -92,6 +97,12 @@ try {
   // 2. Cannibalize by DIRECT CLICK (no mode toggle): with a card armed, clicking
   //    an existing limb eats it on the spot — salvage credited, traits banked —
   //    then placing inherits the pip.
+  await page.evaluate(() => {
+    const s = window.broodfall.sim;
+    for (let guard = 0; guard < 300 && ['pit', 'spine'].includes(s.hand[0].family); guard++) {
+      s.issue({ kind: 'discard', cardIndex: 0 });
+    }
+  });
   await page.locator('#hand .card').first().click();
   const meatBefore = await page.evaluate(() => ({ ...window.broodfall.sim.meat }));
   await clickWorld(towerSpot.x, towerSpot.y); // click the limb we just built: butcher it
@@ -179,6 +190,36 @@ try {
     const seeded = await page.evaluate((cell) => window.broodfall.sim.isCreeped(cell), target.cell);
     if (seeded) pass('sling: click-to-arm, click-to-throw seeds remote creep');
     else fail('sling throw', 'target cell not creeped after landing');
+  }
+
+  // 5b. Bile lobber: same arm-and-aim interaction, but the payload is a volley.
+  const lobberPos = await page.evaluate(() => {
+    const s = window.broodfall.sim;
+    for (let guard = 0; guard < 400; guard++) {
+      const i = s.hand.findIndex((c) => c.family === 'lobber');
+      if (i >= 0) {
+        for (let c = 0; c < s.map.cells.length; c++) {
+          if (s.canBuildTower(c)) {
+            return s.issue({ kind: 'build', cardIndex: i, cell: c }).ok
+              ? s.towers.find((t) => t.family === 'lobber').pos : null;
+          }
+        }
+      }
+      s.issue({ kind: 'discard', cardIndex: 0 });
+    }
+    return null;
+  });
+  if (!lobberPos) fail('lobber setup', 'could not draw/build a lobber');
+  else {
+    await clickWorld(lobberPos.x, lobberPos.y);      // arm
+    await clickWorld(lobberPos.x + 100, lobberPos.y); // fire at ground in range
+    const fired = await page.evaluate(() => {
+      const s = window.broodfall.sim;
+      const l = s.towers.find((t) => t.family === 'lobber');
+      return s.bileFlights.length > 0 || (l && l.cooldown > 0);
+    });
+    if (fired) pass('lobber: click-to-arm, click-to-fire launches the volley');
+    else fail('lobber volley', 'no bile flight and no cooldown after gesture');
   }
 
   // 6. Tendril root: build via its organ button, then click it to re-aim the lobe.

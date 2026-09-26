@@ -24,24 +24,25 @@ and what the body-horror re-theme would be. Verdicts: HAVE / PARTIAL / GAP.
 | Tower that levels/evolves in place (KR upgrades, Vampire Survivors evolutions) | Investment with a visible payoff arc | Cannibalize pips ARE our evolution system (deterministic, visible, cross-family) | **HAVE** — arguably our most original seat |
 | Creep/territory spreader (StarCraft creep tumor — the direct ancestor) | Territory itself is a resource you push | Spore Sling (thrown patches) + Tendril Root (directional lobes) + sling-pip seeping | **HAVE** as of today |
 
-## Ranked build order for the gaps (each is one new VERB, per the escalation rule)
+## The gap list — ALL SIX BUILT (Sep 26 2026, same day)
 
-1. **Broodmother** — spawned broodlings that fight in the streets. Biggest genre seat
-   we lack, deepest body-fantasy fit (you are a mother-organism), and it creates the
-   micro layer every barracks game is loved for. Needs: friendly-unit sim loop
-   (target nearest enemy in radius, die fast, respawn on cooldown).
-2. **Digestive Pit** — an in-street trap like the spine wall is an in-street blocker;
-   holds the first N bodies that cross it and dissolves them for biomass. Pairs with
-   Snare Bed for a control build line. Pip: hits briefly root.
-3. **Galvanic Frond** — chain arcs, the genre's best-feeling visual. Counters squads,
-   complements per-hit caps (arcs count as separate small hits → phalanx shredder #3).
-   Pip: +1 chain to any tower's hits.
-4. **Bile Lobber** — player-aimed damage volley on a cooldown (the Spore Sling's
-   interaction, weaponized). We already built the aim-and-throw UI once.
-5. **Caustic Mister** — armor-cap shred aura (support seat #2, makes phalanx a
-   board-wide puzzle instead of a per-tower one).
-6. **Ocular Stalk** — one global-range eye, very slow, executes the drummer/tender
-   priority targets the player can see but not reach.
+1. **Broodmother** — BUILT. 3 broodlings on respawn (6s), leashed 110px, enemies stop
+   to fight them (real blocking). Pip: regen 2 hp/s.
+2. **Digestive Pit** — BUILT. In-street, PASSABLE (no flow detour), holds 2, 22 dps,
+   +biomass per digested kill, the held meal chews the pit back. Pip: 0.25s hard root.
+3. **Galvanic Frond** — BUILT. Hitscan arc to 3, ×0.65 damage per hop, arcs are
+   separate small hits (phalanx answer #3). Pip: +1 chain.
+4. **Bile Lobber** — BUILT. Click-to-arm, click-to-fire, 55 damage in 55px, 12s
+   recharge; the autoplayer volleys the hostile nearest home. Pip: 5px knockback.
+5. **Caustic Mister** — BUILT. Mist shreds armor +8 for 4s for EVERY source. Pip: +3.
+6. **Ocular Stalk** — BUILT. Board-wide hitscan, 60 damage every ~8s, support-caste
+   priority. Pip: teaches priority targeting.
+
+Balance lessons the build forced (measured in the guardrail, written into DESIGN.md):
+every limb prioritizes CLIMBING sappers (mutual cover — without it scatter beat
+informed placement 3/8 to 0/8 at hold-16); specialists cap at row+2 per wave; sappers
+climb at 45% speed. Guardrail now runs hold-16 (hold-12 stopped discriminating) and
+passes: smart flips 3:2, totals +5%.
 
 Not adopting: hero units (Kingdom Rush heroes — Broodfall's "hero" is the body
 itself), RNG-crit towers (violates the no-RNG-on-investment rule), mazing-from-scratch

@@ -113,3 +113,35 @@ our seats (9 HAVE, 3 PARTIAL, 2 GAP after today). Ranked gap list: Broodmother
 (barracks seat — the genre's most-loved archetype), Digestive Pit (trap seat),
 Galvanic Frond (chain), Bile Lobber (aimed damage), Caustic Mister (armor-shred aura),
 Ocular Stalk (global sniper). Explicit non-adopts: heroes, crit RNG, decay.
+
+
+## Addendum 5: all six genre-seat towers built; the guardrail caught a real degradation
+
+**Built (Collins: "let's build these, also think through how combinations work, and
+implement those effects"):** Broodmother (broodlings that block — enemies stop to
+fight them), Digestive Pit (passable in-street trap; flow does NOT detour; holds 2,
+digests, gets chewed back), Galvanic Frond (arc chains ×0.65/hop), Bile Lobber
+(click-arm click-fire volley, the sling interaction weaponized), Caustic Mister
+(armor shred +8/4s for ALL sources), Ocular Stalk (board-wide support-caste
+executioner). Every family's verb is also a pip; the full composition rules are in
+DESIGN.md "Combination algebra" (order-free multiset, strongest-slow-wins,
+poison/shred/chain/knock caps), pinned by tests.
+
+**The guardrail earned its keep.** With the roster in, blind-but-legal scatter BEAT
+informed lane placement — smart 0/8 vs random 3/8 at hold-16, because sappers eat
+whatever stands near the route: informed towers paid the whole tax, scatter dodged
+it. Per the rule, we reworked the game, not the assertion:
+1. Every limb now prioritizes CLIMBING sappers ("shoot it off the wall") — informed
+   clusters cover each other; lone scattered towers still die.
+2. Waves scale RANKS, never specialists (cap row+2): 8 sappers/wave was investment
+   destruction in uniform.
+3. Sappers crawl at 45% while climbing (the defender's window).
+Also: a failed damage-first bot "discipline" starved the science loop (4 science,
+45 discards incl. impalers) — reverted; the attraction economy IS the build order.
+The tier-6 gate stays at 420.
+
+**Metric change (rationale):** the guardrail scenario moved hold-12 → hold-16, one
+gate. Hold-12 stopped discriminating (both policies ~7/8); four more escalation waves
+is where placement has to carry. Final: fullrun hold-12 3/3 wins; guardrail hold-16
+smart flips 3:2, totals 120k vs 115k. 54/54 tests; input check adds the lobber
+gesture; visual/endgame green.

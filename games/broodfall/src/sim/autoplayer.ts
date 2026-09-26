@@ -55,28 +55,44 @@ export class Autoplayer {
       sim.issue({ kind: 'sling-throw', towerId: sling.id, cell });
     }
 
-    // Technique: a spine card in hand plugs the telegraphed lane itself,
-    // holding the swarm inside the shooters' kill zone.
-    const spineIdx = sim.hand.findIndex((c) => c.family === 'spine');
-    if (spineIdx >= 0 && sim.canAfford(towerSpec('spine').cost)) {
-      const laneRoad = this.laneRoadCell(sim);
+    // Aimed bile volley: dump it on the hostile closest to home once a wave is thick.
+    const lobber = sim.towers.find((t) => t.family === 'lobber');
+    if (lobber && lobber.cooldown <= 0 && sim.enemies.length >= 4) {
+      let aim: { x: number; y: number } | null = null;
+      let bd = Infinity;
+      for (const e of sim.enemies) {
+        if (e.kind === 'researcher') continue;
+        const dc = Math.hypot(e.pos.x - sim.core.x, e.pos.y - sim.core.y);
+        const dl = Math.hypot(e.pos.x - lobber.pos.x, e.pos.y - lobber.pos.y);
+        if (dl <= B.lobberRange && dc < bd) { bd = dc; aim = e.pos; }
+      }
+      if (aim) sim.issue({ kind: 'bile-throw', towerId: lobber.id, cell: sim.cellAt(aim.x, aim.y) });
+    }
+
+    // Technique: a spine card plugs the telegraphed lane itself; a pit card sits
+    // IN that lane and digests the column that walks over it.
+    for (const streetFamily of ['spine', 'pit'] as const) {
+      const idx = sim.hand.findIndex((c) => c.family === streetFamily);
+      if (idx < 0 || !sim.canAfford(towerSpec(streetFamily).cost)) continue;
+      const laneRoad = this.laneRoadCell(sim, streetFamily);
       if (laneRoad !== null) {
-        if (sim.issue({ kind: 'build', cardIndex: spineIdx, cell: laneRoad }).ok) {
+        if (sim.issue({ kind: 'build', cardIndex: idx, cell: laneRoad }).ok) {
           this.builds += 1;
           return;
         }
       }
     }
 
-    for (let i = 0; i < sim.hand.length; i++) {
-      const spec = towerSpec(sim.hand[i].family);
-      if (!sim.canAfford(spec.cost)) continue;
-      // One sling is logistics; a second is a dead limb — discard it.
-      if (sim.hand[i].family === 'sling' && sling) {
-        if (sim.meat.war >= B.discardCost + 10) sim.issue({ kind: 'discard', cardIndex: i });
-        return;
-      }
-      const wantsBlocker = sim.hand[i].family === 'spine';
+    // Build in hand order. Everything feeds the attraction economy (advanced
+    // towers and pips raise interest, interest brings the science that pays for
+    // the next advanced card) — an earlier damage-first "discipline" starved
+    // science to 4 and lost runs it used to win. Measured, not vibes.
+    const SURPLUS_CAP: Partial<Record<string, number>> = { sling: 1, lobber: 1 };
+
+    const tryBuild = (i: number): boolean => {
+      const fam = sim.hand[i].family;
+      const spec = towerSpec(fam);
+      const wantsBlocker = fam === 'spine';
       // High tiers bring tunnelers (surface INSIDE) and massed fliers: keep a
       // couple of guns on the body itself, not everything on the frontier.
       const interiorGuns = sim.towers.filter(
@@ -85,7 +101,7 @@ export class Autoplayer {
       const wantsInterior = !wantsBlocker && spec.rate > 0 && interiorGuns < 2
         && sim.threat >= B.tier6Threat - 60; // tunnelers imminent: cover the inside
       const cell = this.findTowerCell(sim, wantsBlocker, wantsInterior);
-      if (cell === null) return;
+      if (cell === null) return false;
       let cannibalizeTowerId: number | undefined;
       this.buildsSinceCannibalize += 1;
       if (this.buildsSinceCannibalize >= 4 && sim.towers.length > 7) {
@@ -95,7 +111,25 @@ export class Autoplayer {
           this.buildsSinceCannibalize = 0;
         }
       }
-      if (sim.issue({ kind: 'build', cardIndex: i, cell, cannibalizeTowerId }).ok) this.builds += 1;
+      if (sim.issue({ kind: 'build', cardIndex: i, cell, cannibalizeTowerId }).ok) {
+        this.builds += 1;
+        return true;
+      }
+      return false;
+    };
+
+    for (let i = 0; i < sim.hand.length; i++) {
+      const fam = sim.hand[i].family;
+      if (!sim.canAfford(towerSpec(fam).cost)) continue;
+      // A second sling or lobber sits idle — shed the surplus cheaply.
+      const cap = SURPLUS_CAP[fam];
+      if (cap !== undefined && sim.towers.filter((t) => t.family === fam).length >= cap) {
+        if (sim.meat.war >= B.discardCost + 10) sim.issue({ kind: 'discard', cardIndex: i });
+        return;
+      }
+      // A pit that found no lane road this act waits its turn rather than block the hand.
+      if (fam === 'pit') continue;
+      if (tryBuild(i)) return;
       return;
     }
 
@@ -124,29 +158,33 @@ export class Autoplayer {
    * street (covering traffic without blocking it); spine walls go ON a street
    * to force detours. Prefers cells the flow actually crosses near the core.
    */
-  /** Cells on the marching route from the telegraphed gates to the core. */
-  private lanePathCells(sim: Sim): Set<number> {
-    const path = new Set<number>();
-    for (const gate of sim.incomingGates) {
+  /** Cells on the marching routes to the core, with multiplicity: EVERY frontier
+   *  gate's route counts (the telegraph alternates — chasing only the current one
+   *  leaves last wave's guns pointing the wrong way), telegraphed lanes count
+   *  extra, and MERGE points where routes share a street shine brightest. */
+  private lanePathCells(sim: Sim): Map<number, number> {
+    const path = new Map<number, number>();
+    const walk = (gate: number, w: number) => {
       let c = gate;
       let guard = 0;
       while (c >= 0 && guard++ < 500) {
-        path.add(c);
+        path.set(c, (path.get(c) ?? 0) + w);
         c = sim.flowNextOf(c);
       }
-    }
+    };
+    for (const gate of sim.incomingGates) walk(gate, 1);
     return path;
   }
 
   /** A buildable STREET cell on the telegraphed march, as far out as the creep reaches. */
-  private laneRoadCell(sim: Sim): number | null {
+  private laneRoadCell(sim: Sim, family: 'spine' | 'pit' = 'spine'): number | null {
     let best: number | null = null;
     let bestCd = -1;
     for (const gate of sim.incomingGates) {
       let c = gate;
       let guard = 0;
       while (c >= 0 && guard++ < 500) {
-        if (sim.map.cells[c] === CellType.Road && sim.canBuildTower(c, 'spine')) {
+        if (sim.map.cells[c] === CellType.Road && sim.canBuildTower(c, family)) {
           const cd = sim.creepDistOf(c);
           if (cd > bestCd) { bestCd = cd; best = c; }
         }
@@ -202,7 +240,7 @@ export class Autoplayer {
           const nb = ny * w + nx;
           if (sim.map.cells[nb] === CellType.Road) {
             coverage += 1;
-            if (lane.has(nb)) laneCoverage += 1;
+            laneCoverage += lane.get(nb) ?? 0; // merge points count double+
           }
           if (air.has(nb)) airCoverage += 1; // fliers cross HERE, blocks or not
         }

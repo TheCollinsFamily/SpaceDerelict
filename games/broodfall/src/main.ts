@@ -64,8 +64,8 @@ let selectedCard: number | null = null;
 let armedOrgan: OrganId | null = null;
 /** Tower under the pointer that a click would cannibalize (card armed + hover). */
 let hoverDonorId: number | null = null;
-/** Spore sling waiting for a throw target (armed by clicking the built sling). */
-let armedSlingId: number | null = null;
+/** Aimed structure waiting for a target (armed by clicking the built sling/lobber). */
+let armedThrower: { id: number; family: 'sling' | 'lobber' } | null = null;
 
 const hud = new Hud({
   onSelectCard(i) {
@@ -100,8 +100,10 @@ function salvageText(family: TowerFamily): string {
 }
 
 function updateHint(): void {
-  if (armedSlingId !== null) {
-    hud.setHint('SPORE SLING ARMED: click any claimed ground in range — the clot seeds new skin to build on (right-click cancels)');
+  if (armedThrower !== null) {
+    hud.setHint(armedThrower.family === 'sling'
+      ? 'SPORE SLING ARMED: click any claimed ground in range — the clot seeds new skin to build on (right-click cancels)'
+      : 'BILE LOBBER ARMED: click ground in range — the volley detonates on whatever stands there (right-click cancels)');
   } else if (armedOrgan) {
     hud.setHint(`place ${organSpec(armedOrgan).name} on open ground inside the body`);
   } else if (selectedCard !== null && hoverDonorId !== null) {
@@ -315,11 +317,13 @@ function handleCanvasClick(clientX: number, clientY: number): void {
   const w = renderer.toWorld(clientX, clientY);
   const cell = sim.cellAt(w.x, w.y);
 
-  // An armed sling throws at whatever claimed ground is clicked.
-  if (armedSlingId !== null) {
-    const res = sim.issue({ kind: 'sling-throw', towerId: armedSlingId, cell });
+  // An armed sling/lobber throws at whatever claimed ground is clicked.
+  if (armedThrower !== null) {
+    const res = sim.issue(armedThrower.family === 'sling'
+      ? { kind: 'sling-throw', towerId: armedThrower.id, cell }
+      : { kind: 'bile-throw', towerId: armedThrower.id, cell });
     if (res.ok) {
-      armedSlingId = null;
+      armedThrower = null;
       renderer.slingArm = null;
       updateHint();
     }
@@ -337,15 +341,19 @@ function handleCanvasClick(clientX: number, clientY: number): void {
         return;
       }
     }
-    // Clicking a built spore sling arms a throw (object-initiated, no mode button).
+    // Clicking a built sling or lobber arms a throw (object-initiated, no mode button).
     for (const t of sim.towers) {
-      if (t.family === 'sling' && Math.hypot(t.pos.x - w.x, t.pos.y - w.y) < 22) {
+      if ((t.family === 'sling' || t.family === 'lobber') && Math.hypot(t.pos.x - w.x, t.pos.y - w.y) < 22) {
+        const name = t.family === 'sling' ? 'spore sling' : 'bile lobber';
         if (t.cooldown > 0) {
-          hud.setHint(`spore sling recharging — ${Math.ceil(t.cooldown)}s`);
+          hud.setHint(`${name} recharging — ${Math.ceil(t.cooldown)}s`);
           return;
         }
-        armedSlingId = t.id;
-        renderer.slingArm = { x: t.pos.x, y: t.pos.y, range: B.slingRange };
+        armedThrower = { id: t.id, family: t.family };
+        renderer.slingArm = {
+          x: t.pos.x, y: t.pos.y,
+          range: t.family === 'sling' ? B.slingRange : B.lobberRange,
+        };
         updateHint();
         return;
       }
@@ -406,7 +414,7 @@ async function boot(): Promise<void> {
     selectedCard = null;
     armedOrgan = null;
     hoverDonorId = null;
-    armedSlingId = null;
+    armedThrower = null;
     renderer.slingArm = null;
     renderer.donorHighlightId = null;
     hud.selectedCard = null;

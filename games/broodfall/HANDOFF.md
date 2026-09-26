@@ -67,9 +67,10 @@ debrief → ship gene bay → redeploy.
 ## How to verify (all must be green before claiming anything)
 
 ```powershell
-npm test             # 43 tests: sim, plates algebra, wave rhythm, per-verb type
-                     # behaviors, butcher economy, creep logistics (sling/root),
-                     # full autoplayed runs, and the PLACEMENT GUARDRAIL
+npm test             # 54 tests: sim, plates algebra, wave rhythm, per-verb type
+                     # behaviors, butcher economy, creep logistics, the six genre-seat
+                     # towers, combination-algebra caps, full autoplayed runs, and the
+                     # PLACEMENT GUARDRAIL (now hold-16 — see ITERATION addendum 5)
 npm run build
 npm run test:visual  # headless chromium: HUD + per-region pixel checks (camera-aware)
 npm run test:input   # real player gestures: build, cannibalize, organ, cancel
@@ -117,10 +118,10 @@ wage per wave, wave counts scale with clock (`waveCountScale`), tier from threat
 6. Real AI art pipeline per TECH.md (authoring = AI video/3D, runtime = spritesheets;
    RFab `services/emotionFrameService.js` is the bake-step prior art).
 7. Mid-siege cannibalize drama (surgery vulnerability window) — design doc, unbuilt.
-8. Roster gap list from references/TOWER-GENRE-REVIEW.md, in its ranked order:
-   Broodmother (spawned broodlings — the barracks seat, the genre's most-loved
-   archetype), Digestive Pit, Galvanic Frond, Bile Lobber, Caustic Mister,
-   Ocular Stalk.
+8. ~~Roster gap list~~ DONE Sep 26: all six genre-seat towers built (Broodmother,
+   Digestive Pit, Galvanic Frond, Bile Lobber, Caustic Mister, Ocular Stalk), each
+   verb also a pip; combination algebra in DESIGN.md. Remaining roster candidates
+   live in references/TOWER-GENRE-REVIEW.md non-adopts + brainstorm only.
 
 ## Working with Collins (hard-won, respect these)
 

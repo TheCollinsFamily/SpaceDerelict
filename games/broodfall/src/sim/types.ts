@@ -4,7 +4,8 @@ export type Caste = 'war' | 'science' | 'royal';
 
 export type TowerFamily =
   | 'spitter' | 'burster' | 'lasher' | 'maw' | 'spine' | 'lure'
-  | 'tangler' | 'blighter' | 'impaler' | 'choir' | 'sling';
+  | 'tangler' | 'blighter' | 'impaler' | 'choir' | 'sling'
+  | 'brood' | 'pit' | 'frond' | 'lobber' | 'mister' | 'ocular';
 
 export type OrganId = 'heart' | 'brain' | 'gland' | 'root';
 
@@ -63,6 +64,19 @@ export interface TowerSpec {
   /** Choir: +this fraction fire rate to other towers within auraRadius. */
   rateAura?: number;
   auraRadius?: number;
+  /** Broodmother: keeps this many broodlings alive in the streets around it. */
+  broodCount?: number;
+  /** Digestive pit: sits IN the street, passable; roots and digests what crosses it. */
+  pitTrap?: boolean;
+  /** Galvanic frond: hits arc to this many extra enemies (falling damage per hop). */
+  chains?: number;
+  /** Bile lobber: player-aimed volley — armed by clicking it, like the sling. */
+  aimedVolley?: boolean;
+  /** Caustic mister: hits SHRED armor — every source's hits get +shred cap for shredDur. */
+  shred?: number;
+  shredDur?: number;
+  /** Ocular stalk: board-wide hitscan that prefers support castes (drummer/tender/bomber). */
+  sniper?: boolean;
 }
 
 /** What a donor family contributes when cannibalized into a new tower. */
@@ -169,6 +183,19 @@ export interface Enemy {
   surfaceFlowDist?: number;
   /** Tender: cooldown between heal pulses. */
   auxCooldown?: number;
+  /** Status: armor SHREDDED — every hit against this enemy gets +shredAmount cap until shredUntil. */
+  shredUntil?: number;
+  shredAmount?: number;
+}
+
+/** A broodling: the mother's spawn, fighting in the streets on your side. */
+export interface Broodling {
+  id: number;
+  motherId: number;
+  pos: Vec;
+  hp: number;
+  maxHp: number;
+  cooldown: number;
 }
 
 export interface Projectile {
@@ -192,6 +219,15 @@ export interface Projectile {
   hitIds?: number[];
   /** Added to the target's armor cap before capping (Infinity = ignore caps). */
   capBonus?: number;
+  /** Frond pips: arcs jumping off each hit to nearby enemies. */
+  chains?: number;
+  /** Mister: armor shred applied on hit. */
+  shred?: number;
+  shredDur?: number;
+  /** Lobber pips: knockback px along the shot's direction on hit. */
+  knock?: number;
+  /** Pit pips: hard root applied on hit (seconds at ~zero speed). */
+  rootDur?: number;
 }
 
 export interface Drop {
@@ -219,6 +255,8 @@ export type SimEvent =
   | { kind: 'butchered'; family: TowerFamily; refund: number }
   | { kind: 'clot-hurled'; cell: number }
   | { kind: 'clot-landed'; cell: number }
+  | { kind: 'bile-landed'; cell: number; hits: number }
+  | { kind: 'broodling-lost'; motherId: number }
   | { kind: 'kill'; enemy: EnemyKind; caste: Caste }
   | { kind: 'banked'; caste: Caste; amount: number }
   | { kind: 'wave-start'; tier: number; wave: number; counts: Partial<Record<EnemyKind, number>>; sides: string }
@@ -237,6 +275,7 @@ export type Command =
   | { kind: 'build'; cardIndex: number; cell: number; cannibalizeTowerId?: number }
   | { kind: 'butcher'; towerId: number }
   | { kind: 'sling-throw'; towerId: number; cell: number }
+  | { kind: 'bile-throw'; towerId: number; cell: number }
   | { kind: 'cycle-root'; organInstanceId: number }
   | { kind: 'build-organ'; organ: OrganId; cell: number }
   | { kind: 'cycle-gland'; organInstanceId: number }

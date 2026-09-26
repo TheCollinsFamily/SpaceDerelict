@@ -57,6 +57,50 @@ Towers (10 families; each family's pip is what it teaches a build that eats it):
 | Impaler | long-range harpoon, pierces a file of 4, ignores shields | +5 armor-cap pierce per pip |
 | Choir Node | +15% fire rate aura to limbs in 95px (max 2 voices) | +8% range per pip |
 | Spore Sling | player-aimed creep logistics: click it, click ground in 300px — a clot flies and seeds a growing patch to build on (20s recharge) | the limb itself seeps creep, +1 cell per pip |
+| Broodmother | keeps 3 broodlings fighting in the streets (the barracks seat: enemies stop to fight them) | living tissue: the limb regrows 2 hp/s per pip |
+| Digestive Pit | a mouth IN the street — passable, so the column walks onto it; holds 2 and digests (22 dps + biomass); the meal chews back | hits hard-root 0.25s per pip |
+| Galvanic Frond | one strike arcs to 3 more bodies, damage falling per hop (arcs are small separate hits — shield walls soak them badly) | hits arc to +1 enemy per pip |
+| Bile Lobber | player-aimed VOLLEY: click it, click ground in 250px — the glob detonates for 55 in a 55px blast (12s recharge) | hits knock back 5px per pip |
+| Caustic Mister | mist that SHREDS armor: +8 to the armor cap EVERY source's hits respect, 4s | hits shred +3 per pip |
+| Ocular Stalk | board-wide hitscan eye, slow, 60 damage, executes support castes (drummer/tender/bomber) by priority | the limb learns priority targeting |
+
+**Targeting reflex (all limbs, born of a measured failure):** a sapper CLIMBING a block
+face is every tower's priority target. Without it, covering the lane just fed the
+sappers — the guardrail measured blind scatter BEATING informed placement (0/8 vs 3/8
+at hold-16) because route-adjacent towers paid the whole sapper tax. Mutual cover is
+now the reward for informed clustering; a lone scattered tower still dies to sappers.
+Two sibling rules from the same measurement: waves scale their RANKS, never their
+specialists (sapper/bomber/tunneler/tender/drummer cap at row+2 — 8 sappers per wave
+is the rejected "destroy their investment" failure in uniform), and sappers CRAWL at
+45% speed while climbing (the defender's window).
+
+### Combination algebra (cannibalize pips — how combinations compose)
+
+Pips are commutative and order-free: a tower's stats depend only on the MULTISET of
+families it has eaten, never the order. Each family contributes on its own axis, so
+any pair coexists; the axes only meet at these defined joints:
+
+- **Slows** (tangler pip, pit root, snare hits): the STRONGEST factor wins and the
+  longest clock survives; a pit-pip hard root (5% speed) beats any soft slow through
+  the same rule. Never multiplied together.
+- **Poison** (blighter): stacks additively across sources and refreshes, capped at 40
+  dps per body. Poison ticks ignore armor caps by design (the phalanx answer #2).
+- **Shred** (mister): the deepest cut wins, refreshes, capped +24 — and it widens the
+  armor cap for EVERY source, so one mister multiplies a whole battery.
+- **Chains** (frond): base + 1 per pip, capped at 5; each arc is a separate small hit
+  (cap-friendly); an arc never strikes the same body twice per shot.
+- **Knockback** (lobber pip): additive, capped 20px, along the shot's direction, never
+  into a building.
+- **Armor-pierce** (impaler): the impaler's own shots ignore caps outright; its pip
+  gives +5 cap to another tower's hits, stacking under shred on the same target.
+- **Multiplicative throughput** (spitter rate × lasher damage × choir range × burster
+  aoe × maw yield) compose freely — that is the intended "engineer your own tower"
+  fantasy; the caps above are only on the STATUS axes where stacking could snowball.
+
+Marquee lines (tested): impaler + frond pip = a skewer that arcs off every body in the
+file; anything + mister pip turns a shield wall into meat for the battery; brood pip
+on a spine wall = a barricade that heals between waves; sling pip on a frontier tower
+= the outpost extends its own ground.
 
 Organs grew too (Collins, Sep 26 2026: "tossing creep" + "a creep node that spawns creep
 directionally"): the **Tendril Root** (15W 15S) grows a creep LOBE toward its compass

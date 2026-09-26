@@ -71,6 +71,53 @@ export const TOWERS: readonly TowerSpec[] = [
     cost: { war: 22, science: 10 }, range: 0, rate: 0, damage: 0, aoe: 0,
     maxHp: 70, interest: 2, eatThreshold: 0, advanced: true,
   },
+  {
+    // The barracks seat: keeps a brood of skirmishers fighting in the streets.
+    family: 'brood', name: 'Broodmother', weight: 8,
+    cost: { war: 30, science: 12 }, range: 0, rate: 0, damage: 0, aoe: 0,
+    broodCount: 3,
+    maxHp: 140, interest: 2, eatThreshold: 0, advanced: true,
+  },
+  {
+    // The trap seat: a pit IN the street — passable, so the column walks onto it
+    // and is held and digested. The held meal chews back at the pit.
+    family: 'pit', name: 'Digestive Pit', weight: 10,
+    cost: { war: 18 }, range: 26, rate: 0, damage: 0, aoe: 0,
+    pitTrap: true,
+    maxHp: 260, interest: 1, eatThreshold: 0, advanced: false,
+  },
+  {
+    // The chain seat: one strike arcs through a whole squad in falling steps —
+    // arcs are separate small hits, so shield walls soak them badly.
+    family: 'frond', name: 'Galvanic Frond', weight: 9,
+    cost: { war: 24, science: 10 }, range: 90, rate: 0.7, damage: 12, aoe: 0,
+    chains: 3,
+    maxHp: 70, interest: 2, eatThreshold: 0, advanced: true,
+  },
+  {
+    // The player-aimed artillery seat: click it, click ground — a bile glob
+    // arcs out and detonates. The sling's interaction, weaponized.
+    family: 'lobber', name: 'Bile Lobber', weight: 8,
+    cost: { war: 28, science: 6 }, range: 0, rate: 0, damage: 0, aoe: 0,
+    aimedVolley: true,
+    maxHp: 90, interest: 2, eatThreshold: 0, advanced: true,
+  },
+  {
+    // The debuff seat: caustic mist SHREDS armor — everyone's hits bite deeper
+    // into a shredded target, so it turns the phalanx into a board-wide puzzle.
+    family: 'mister', name: 'Caustic Mister', weight: 8,
+    cost: { war: 12, science: 16 }, range: 85, rate: 0.5, damage: 2, aoe: 40,
+    shred: 8, shredDur: 4,
+    maxHp: 65, interest: 2, eatThreshold: 0, advanced: true,
+  },
+  {
+    // The global sniper seat: one slow board-wide eye that executes the support
+    // castes (drummers, tenders, bombers) the frontline can't reach.
+    family: 'ocular', name: 'Ocular Stalk', weight: 6,
+    cost: { war: 20, science: 25 }, range: 9999, rate: 0.12, damage: 60, aoe: 0,
+    sniper: true,
+    maxHp: 75, interest: 3, eatThreshold: 0, advanced: true,
+  },
 ];
 
 export const ORGANS: readonly OrganSpec[] = [
@@ -149,6 +196,10 @@ export const BALANCE = {
   heightRangeBonus: 0.10,
   /** Waves grow with the campaign clock as well as the threat ladder. */
   waveCountScale: 0.10,
+  /** Specialists (sapper/bomber/tunneler/tender/drummer) scale at most +this over their table row. */
+  specialistWaveBonusMax: 2,
+  /** Sappers crawl at this fraction of speed while scaling a block face. */
+  sapperClimbFactor: 0.45,
   /** Threat tiers: tier = floor(threat / threatPerTier), clamped to table. */
   threatPerTier: 46,
   /** The hive escalates procedurally as the campaign drags on. */
@@ -197,7 +248,8 @@ export const BALANCE = {
   drummerRadius: 90,
   tenderHeal: 14,
   tenderRadius: 80,
-  bomberBlastRadius: 55,
+  /** Small radius on purpose: a charge kills ONE structure, never a whole cluster. */
+  bomberBlastRadius: 42,
   bomberBlastDamage: 85,
   /** The desperation row of the wave table needs this much threat, not just the
    *  ladder — a standard hold-12 tops out around 330, so tier 6 belongs to long
@@ -217,6 +269,39 @@ export const BALANCE = {
   rootBaseRadius: 2,        // cells of creep all around the organ
   rootGrowPerSec: 0.35,     // cells/s of lobe length in the chosen direction
   rootMaxLen: 14,
+  /** Broodmother. */
+  broodHp: 34,
+  broodDamage: 7,
+  broodRate: 1.0,           // attacks/s
+  broodSpeed: 55,
+  broodLeash: 110,          // px from the mother the brood will roam
+  broodRespawn: 6,          // s to regrow a lost broodling
+  broodEngageDist: 15,      // px: a hive walker stops to fight a broodling this close
+  /** Digestive pit. */
+  pitDps: 22,
+  pitMaxHeld: 2,            // bodies digested (rooted) at once
+  pitBiomassPerKill: 3,     // digested kills feed the mass on top of normal meat
+  /** Galvanic frond chains. */
+  chainRadius: 60,          // px an arc can jump
+  chainFalloff: 0.65,       // damage multiplier per hop
+  /** Bile lobber (player-aimed volley). */
+  lobberRange: 250,
+  lobberCooldown: 12,
+  lobberDamage: 55,
+  lobberAoe: 55,
+  bileFlightSeconds: 0.9,
+  /** Pip effects for the new families. */
+  pipRegen: 2,              // brood pip: the limb regrows 2 hp/s per pip
+  pipRoot: 0.25,            // pit pip: hits hard-root for 0.25s per pip
+  pipChain: 1,              // frond pip: hits arc to +1 nearby enemy per pip
+  pipKnock: 5,              // lobber pip: hits knock back 5px per pip
+  pipShred: 3,              // mister pip: hits shred +3 armor cap for 2s per pip
+  pipShredDur: 2,
+  /** Caps that keep combination stacking sane (see DESIGN.md combination algebra). */
+  maxPoisonDps: 40,
+  maxChains: 5,
+  maxKnock: 20,
+  maxShred: 24,
   dropFlySeconds: 1.1,
   /** The body itself fights: focused dps on the nearest intruder inside the body. */
   coreDps: 24,

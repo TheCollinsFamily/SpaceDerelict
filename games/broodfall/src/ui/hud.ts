@@ -19,6 +19,12 @@ const CARD_DESC: Record<TowerFamily, string> = {
   impaler: 'Bone harpoon. Skewers a file, ignores shields.',
   choir: 'Resonance organ. Nearby limbs strike faster.',
   sling: 'Hurls creep to chosen ground. Click it to aim.',
+  brood: 'Keeps 3 broodlings fighting in the streets.',
+  pit: 'A mouth IN the street. Holds and digests.',
+  frond: 'One strike arcs through the whole squad.',
+  lobber: 'Aimed bile volley. Click it, click ground.',
+  mister: 'Shreds armor — everyone hits deeper.',
+  ocular: 'Board-wide eye. Executes drummers and tenders.',
 };
 
 const FEED_LINES: Partial<Record<SimEvent['kind'], (e: SimEvent) => { text: string; cls: string }>> = {
@@ -44,6 +50,10 @@ const FEED_LINES: Partial<Record<SimEvent['kind'], (e: SimEvent) => { text: stri
   'researchers-arrive': () => ({ text: 'curious specimens inbound', cls: 'sci' }),
   'clot-hurled': () => ({ text: 'growth medium deployed downrange', cls: '' }),
   'clot-landed': () => ({ text: 'remote site seeded — new ground taking', cls: 'hot' }),
+  'bile-landed': (e) => e.kind === 'bile-landed'
+    ? { text: e.hits > 0 ? `bile strike: ${e.hits} specimens dissolving` : 'bile strike: no contacts', cls: 'hot' }
+    : { text: '', cls: '' },
+  'broodling-lost': () => ({ text: 'expendable subunit expended', cls: '' }),
   'royal-incoming': () => ({ text: 'priority asset detected: ROYAL', cls: 'royal' }),
   'structure-lost': (e) => e.kind === 'structure-lost'
     ? { text: `limb lost: ${e.what}`, cls: 'hot' }

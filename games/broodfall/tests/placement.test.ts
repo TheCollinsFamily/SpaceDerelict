@@ -44,10 +44,13 @@ class RandomPlacer {
       sim.issue({ kind: 'cycle-gland', organInstanceId: gland.id });
     }
     for (let i = 0; i < sim.hand.length; i++) {
-      if (!sim.canAfford(towerSpec(sim.hand[i].family).cost)) continue;
+      const family = sim.hand[i].family;
+      if (!sim.canAfford(towerSpec(family).cost)) continue;
+      // Rules-aware, placement-random: legal cells for THIS card, chosen blind.
+      // (The guardrail isolates placement knowledge, not card-rule knowledge.)
       const opts: number[] = [];
-      for (let c = 0; c < sim.map.cells.length; c++) if (sim.canBuildTower(c)) opts.push(c);
-      if (!opts.length) return;
+      for (let c = 0; c < sim.map.cells.length; c++) if (sim.canBuildTower(c, family)) opts.push(c);
+      if (!opts.length) continue;
       sim.issue({ kind: 'build', cardIndex: i, cell: opts[this.rng.int(0, opts.length - 1)] });
       return;
     }
@@ -63,7 +66,11 @@ class RandomPlacer {
 }
 
 function run(seed: number, smart: boolean) {
-  const sim = new Sim({ ...CFG, seed, directive: { kind: 'hold', waves: 12 } });
+  // Hold-16 on purpose: with the roster full (pits, slings, support castes),
+  // one-gate hold-12 became winnable by blind-but-legal play (~7/8), so it stopped
+  // discriminating. Four more waves of escalation is where placement knowledge
+  // has to carry you. (Metric change rationale: ITERATION-2026-09-26 addendum 5.)
+  const sim = new Sim({ ...CFG, seed, directive: { kind: 'hold', waves: 16 } });
   const player = smart ? new Autoplayer(seed + 1) : new RandomPlacer(seed + 1);
   let ticks = 0;
   let towersLost = 0;

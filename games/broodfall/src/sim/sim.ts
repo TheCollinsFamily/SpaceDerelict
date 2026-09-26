@@ -16,9 +16,9 @@ import {
   BALANCE as B, ENEMIES, ORGANS, TOWERS, WAVE_TABLE,
 } from '../../content/data';
 import type {
-  CardInstance, Caste, Command, CreepSource, Directive, Drop, Enemy, EnemyKind, EnemySpec,
-  GlandMode, ModPip, Organ, OrganId, Outcome, Phase, Projectile, RootDir, SimConfig, SimEvent,
-  Tower, TowerFamily, TowerSpec, Vec,
+  Broodling, CardInstance, Caste, Command, CreepSource, Directive, Drop, Enemy, EnemyKind,
+  EnemySpec, GlandMode, ModPip, Organ, OrganId, Outcome, Phase, Projectile, RootDir,
+  SimConfig, SimEvent, Tower, TowerFamily, TowerSpec, Vec,
 } from './types';
 
 export const DT = 0.1;
@@ -75,6 +75,19 @@ export function towerStats(t: Tower) {
     pierce: spec.pierce ?? false,
     // Sling pip: the limb itself seeps creep onto its surroundings.
     seepRadius: B.pipSeep * pips('sling'),
+    // Brood pip: living tissue — the limb regrows.
+    regen: B.pipRegen * pips('brood'),
+    // Pit pip: hits hard-root briefly (vs the tangler's long soft slow).
+    rootDur: B.pipRoot * pips('pit'),
+    // Frond: arcs off every hit; frond pips teach any limb to arc.
+    chains: Math.min(B.maxChains, (spec.chains ?? 0) + B.pipChain * pips('frond')),
+    // Lobber pip: hits knock the body back along the shot.
+    knock: Math.min(B.maxKnock, B.pipKnock * pips('lobber')),
+    // Mister: hits shred armor for everyone; mister pips teach it to any limb.
+    shred: Math.min(B.maxShred, (spec.shred ?? 0) + B.pipShred * pips('mister')),
+    shredDur: Math.max(spec.shredDur ?? 0, pips('mister') > 0 ? B.pipShredDur : 0),
+    // Ocular pip: the limb learns priority targeting (supports first).
+    sniper: (spec.sniper ?? false) || pips('ocular') > 0,
   };
 }
 
@@ -141,6 +154,12 @@ export class Sim {
   private sourceDist = new Map<number, Int32Array>();
   /** Creep clots in flight from a spore sling. */
   clotFlights: Array<{ id: number; from: Vec; to: Vec; cell: number; ttl: number }> = [];
+  /** Bile globs in flight from an aimed lobber volley. */
+  bileFlights: Array<{ id: number; from: Vec; to: Vec; cell: number; ttl: number }> = [];
+  /** The mothers' spawn, fighting on your side in the streets. */
+  broodlings: Broodling[] = [];
+  /** Recent lightning arcs / sniper beams, for the renderer (fade fast). */
+  arcs: Array<{ from: Vec; to: Vec; ttl: number }> = [];
 
   /** cell index -> structure ('t'|'o') + id */
   private occupied = new Map<number, { kind: 't' | 'o'; id: number }>();
@@ -386,6 +405,7 @@ export class Sim {
     if (this.isOccupied(cell) || cell === this.map.coreCell || !this.isCreeped(cell)) return false;
     const t = this.map.cells[cell];
     if (family === 'spine') return t === CellType.Road || t === CellType.Block;
+    if (family === 'pit') return t === CellType.Road; // a pit only makes sense IN the traffic
     return t === CellType.Block;
   }
 
@@ -410,8 +430,13 @@ export class Sim {
   }
 
   private computeFlowField() {
-    return computeFlow(this.map, this.map.coreCell,
-      (cell) => (this.occupied.has(cell) ? STRUCTURE_FLOW_COST : 0));
+    return computeFlow(this.map, this.map.coreCell, (cell) => {
+      const s = this.occupied.get(cell);
+      if (!s) return 0;
+      // A digestive pit is a floor, not a wall: the column walks straight onto it.
+      if (s.kind === 't' && this.towers.find((t) => t.id === s.id)?.family === 'pit') return 0;
+      return STRUCTURE_FLOW_COST;
+    });
   }
 
   private refreshRouting(): void {
@@ -565,6 +590,19 @@ export class Sim {
         this.events.push({ kind: 'clot-hurled', cell: cmd.cell });
         return { ok: true };
       }
+      case 'bile-throw': {
+        const t = this.towers.find((x) => x.id === cmd.towerId && x.family === 'lobber');
+        if (!t) return { ok: false, err: 'no such lobber' };
+        if (t.cooldown > 0) return { ok: false, err: 'lobber recharging' };
+        if (this.map.cells[cmd.cell] === CellType.Void) return { ok: false, err: 'unclaimed city' };
+        const to = this.cellCenter(cmd.cell);
+        if (dist(t.pos, to) > B.lobberRange) return { ok: false, err: 'out of range' };
+        t.cooldown = B.lobberCooldown;
+        this.bileFlights.push({
+          id: this.nextId++, from: { ...t.pos }, to, cell: cmd.cell, ttl: B.bileFlightSeconds,
+        });
+        return { ok: true };
+      }
       case 'royal-surge': {
         if (this.meat.royal < B.royalSurgeCost) return { ok: false, err: 'cannot afford' };
         this.meat.royal -= B.royalSurgeCost;
@@ -643,6 +681,10 @@ export class Sim {
     const t = this.towers[i];
     this.occupied.delete(t.cell);
     this.towers.splice(i, 1);
+    if (t.family === 'brood') {
+      // The brood does not outlive its mother.
+      this.broodlings = this.broodlings.filter((b) => b.motherId !== id);
+    }
     this.refreshRouting();
     for (const e of this.enemies) {
       if (!e.targetIsOrgan && e.targetId === id) e.targetId = null;
@@ -721,7 +763,15 @@ export class Sim {
     this.spawnQueue = [];
     const counts: Partial<Record<EnemyKind, number>> = {};
     for (const [kind, n] of Object.entries(comp)) {
-      const scaled = Math.round((n ?? 0) * scale);
+      // The hive scales its RANKS, not its specialists: fighters multiply with
+      // the clock, but tower-eaters and support castes stay punctuation — a late
+      // wave with 8 sappers deletes the player's board, which is the rejected
+      // "destroy their investment" failure wearing a uniform.
+      const spec = enemySpec(kind as EnemyKind);
+      const specialist = !!(spec.sapper || spec.bomber || spec.tunneler || spec.healer || spec.speedAura);
+      const scaled = specialist
+        ? Math.min(Math.round((n ?? 0) * scale), (n ?? 0) + B.specialistWaveBonusMax)
+        : Math.round((n ?? 0) * scale);
       counts[kind as EnemyKind] = scaled;
       for (let i = 0; i < scaled; i++) this.spawnQueue.push(kind as EnemyKind);
     }
@@ -816,10 +866,14 @@ export class Sim {
 
     this.updateCoreAttack();
     this.updateEnemies();
+    this.updateBroodlings();
     this.updateTowers();
     this.updateProjectiles();
     this.updateDrops();
     this.updateClots();
+    this.updateBiles();
+    for (const a of this.arcs) a.ttl -= DT;
+    this.arcs = this.arcs.filter((a) => a.ttl > 0);
 
     if (this.coreHp <= 0) {
       this.outcome = 'lost';
@@ -843,6 +897,16 @@ export class Sim {
 
   private structureOn(cell: number): { kind: 't' | 'o'; id: number } | undefined {
     return this.occupied.get(cell);
+  }
+
+  /** Center of a passable cell adjacent to this one (where a broodling can stand). */
+  private passableNear(cell: number): Vec | null {
+    const w = this.cfg.gridW;
+    for (const nb of [cell + w, cell - w, cell - 1, cell + 1]) {
+      if (nb < 0 || nb >= this.map.cells.length) continue;
+      if (isPassable(this.map.cells[nb])) return this.cellCenter(nb);
+    }
+    return null;
   }
 
   /** Nearest limb or organ within a radius (sappers hunt these across blocks). */
@@ -878,8 +942,8 @@ export class Sim {
   /** Fliers keep loose formation on their own (no ground separation for them). */
   private aheadCheckSeparationless(_e: Enemy): void { /* intentionally nothing */ }
 
-  /** Move an enemy toward a point, clamped so it never enters a building cell. */
-  private stepConstrained(e: Enemy, target: Vec, speed: number): void {
+  /** Move a body toward a point, clamped so it never enters a building cell. */
+  private stepConstrained(e: { pos: Vec }, target: Vec, speed: number): void {
     const d = dist(e.pos, target);
     if (d < 0.5) return;
     const nx = e.pos.x + ((target.x - e.pos.x) / d) * speed * DT;
@@ -943,20 +1007,40 @@ export class Sim {
     return s;
   }
 
-  /** Snare and blight land on a hit; slows keep the strongest, poison stacks and refreshes. */
+  /**
+   * Statuses landing on a hit. Stacking rules (the combination algebra):
+   * slows keep the STRONGEST and the longest clock; poison ADDS and refreshes,
+   * capped; shred keeps the DEEPEST cut and refreshes; a root is just a very
+   * strong slow, so it composes through the same rule.
+   */
   private applyHitEffects(
     e: Enemy,
-    fx: { slowMult: number; slowDur: number; poisonDps: number; poisonDur: number },
+    fx: {
+      slowMult: number; slowDur: number; poisonDps: number; poisonDur: number;
+      shred?: number; shredDur?: number; rootDur?: number;
+    },
   ): void {
-    if (fx.slowMult < 1 && fx.slowDur > 0) {
+    let slowMult = fx.slowMult;
+    let slowDur = fx.slowDur;
+    if (fx.rootDur && fx.rootDur > 0) {
+      // Hard root: ~zero speed beats any soft slow via the strongest-wins rule.
+      slowMult = Math.min(slowMult, 0.05);
+      slowDur = Math.max(slowDur, fx.rootDur);
+    }
+    if (slowMult < 1 && slowDur > 0) {
       const active = e.slowUntil !== undefined && e.slowUntil > this.time;
-      e.slowMult = active && e.slowMult !== undefined ? Math.min(e.slowMult, fx.slowMult) : fx.slowMult;
-      e.slowUntil = Math.max(active ? e.slowUntil ?? 0 : 0, this.time + fx.slowDur);
+      e.slowMult = active && e.slowMult !== undefined ? Math.min(e.slowMult, slowMult) : slowMult;
+      e.slowUntil = Math.max(active ? e.slowUntil ?? 0 : 0, this.time + slowDur);
     }
     if (fx.poisonDps > 0 && fx.poisonDur > 0) {
       const active = e.poisonUntil !== undefined && e.poisonUntil > this.time;
-      e.poisonDps = Math.min(40, (active ? e.poisonDps ?? 0 : 0) + fx.poisonDps);
+      e.poisonDps = Math.min(B.maxPoisonDps, (active ? e.poisonDps ?? 0 : 0) + fx.poisonDps);
       e.poisonUntil = this.time + fx.poisonDur;
+    }
+    if (fx.shred && fx.shred > 0 && fx.shredDur && fx.shredDur > 0) {
+      const active = e.shredUntil !== undefined && e.shredUntil > this.time;
+      e.shredAmount = Math.min(B.maxShred, Math.max(active ? e.shredAmount ?? 0 : 0, fx.shred));
+      e.shredUntil = this.time + fx.shredDur;
     }
   }
 
@@ -1090,7 +1174,10 @@ export class Sim {
         continue;
       }
 
-      // Sappers climb: any limb or organ nearby is a target, blocks be damned.
+      // Sappers climb: any limb or organ nearby is a target, blocks be damned —
+      // but CLIMBING IS SLOW. On the street they sprint; scaling a block face
+      // they crawl, and that crawl is the defender's window to shoot them off
+      // the wall. (Without it, covering the lane just fed the sappers.)
       if (spec.sapper) {
         const prey = this.nearestStructure(e.pos, 3 * this.cfg.cellPx);
         if (prey) {
@@ -1101,18 +1188,44 @@ export class Sim {
               e.targetIsOrgan = prey.kind === 'o';
               e.attackCooldown = 0;
             } else {
-              this.stepUnconstrained(e, pp, speed); // climbs the block face
+              const onStreet = isPassable(this.map.cells[this.cellAt(e.pos.x, e.pos.y)]);
+              this.stepUnconstrained(e, pp, speed * (onStreet ? 1 : B.sapperClimbFactor));
             }
             continue;
           }
         }
       }
 
+      // A broodling underfoot gets fought, not walked past — blocking is its job.
+      if (spec.rate > 0 && !spec.bomber && this.broodlings.length > 0) {
+        let bl: Broodling | null = null;
+        let bd = B.broodEngageDist + ENEMY_RADIUS;
+        for (const b of this.broodlings) {
+          const d = dist(e.pos, b.pos);
+          if (d < bd) { bd = d; bl = b; }
+        }
+        if (bl) {
+          e.attackCooldown -= DT;
+          if (e.attackCooldown <= 0) {
+            e.attackCooldown = 1 / spec.rate;
+            bl.hp -= spec.damage;
+            if (bl.hp <= 0) {
+              this.broodlings = this.broodlings.filter((b) => b !== bl);
+              this.events.push({ kind: 'broodling-lost', motherId: bl.motherId });
+            }
+          }
+          continue;
+        }
+      }
+
       const cell = this.cellAt(e.pos.x, e.pos.y);
       const nextCell = this.flow.next[cell];
 
-      // A structure on my cell or the next cell is a wall in my way: chew through it.
-      const wall = this.structureOn(cell) ?? (nextCell >= 0 ? this.structureOn(nextCell) : undefined);
+      // A structure on my cell or the next cell is a wall in my way: chew through
+      // it — unless it is a digestive pit, which is a floor and WANTS the traffic.
+      const rawWall = this.structureOn(cell) ?? (nextCell >= 0 ? this.structureOn(nextCell) : undefined);
+      const wall = rawWall && rawWall.kind === 't'
+        && this.towers.find((x) => x.id === rawWall.id)?.family === 'pit' ? undefined : rawWall;
       if (wall) {
         const wp = this.structurePos(wall);
         if (wp && dist(e.pos, wp) <= STRUCTURE_CONTACT + ENEMY_RADIUS) {
@@ -1176,6 +1289,55 @@ export class Sim {
 
   // ---------- combat ----------
 
+  /** Broodlings hunt the nearest hive body inside the mother's leash. */
+  private updateBroodlings(): void {
+    for (const b of [...this.broodlings]) {
+      const mother = this.towers.find((t) => t.id === b.motherId);
+      if (!mother) continue; // dies with the mother in removeTower
+      b.cooldown -= DT;
+      let prey: Enemy | null = null;
+      let bestD = Infinity;
+      for (const e of this.enemies) {
+        if (e.burrowed || e.kind === 'researcher' || enemySpec(e.kind).flies) continue;
+        if (dist(mother.pos, e.pos) > B.broodLeash) continue; // stays near home
+        const d = dist(b.pos, e.pos);
+        if (d < bestD) { bestD = d; prey = e; }
+      }
+      if (prey) {
+        if (bestD <= B.broodEngageDist + ENEMY_RADIUS) {
+          if (b.cooldown <= 0) {
+            b.cooldown = 1 / B.broodRate;
+            this.damageEnemy(prey, B.broodDamage, 1);
+          }
+        } else {
+          this.stepConstrained(b, prey.pos, B.broodSpeed);
+        }
+      } else if (dist(b.pos, mother.pos) > 40) {
+        // Nothing to fight: drift back to mother's skirts.
+        this.stepConstrained(b, mother.pos, B.broodSpeed * 0.7);
+      }
+    }
+  }
+
+  /** Aimed bile globs land and detonate on whatever stands there. */
+  private updateBiles(): void {
+    const landed: number[] = [];
+    for (const g of this.bileFlights) {
+      g.ttl -= DT;
+      if (g.ttl <= 0) {
+        let hits = 0;
+        for (const e of [...this.enemies]) {
+          if (e.burrowed || dist(g.to, e.pos) > B.lobberAoe) continue;
+          hits++;
+          this.damageEnemy(e, B.lobberDamage, 1);
+        }
+        this.events.push({ kind: 'bile-landed', cell: g.cell, hits });
+        landed.push(g.id);
+      }
+    }
+    if (landed.length) this.bileFlights = this.bileFlights.filter((g) => !landed.includes(g.id));
+  }
+
   /** Creep clots in flight land and take root as new creep patches. */
   private updateClots(): void {
     const landed: number[] = [];
@@ -1190,22 +1352,123 @@ export class Sim {
     if (landed.length) this.clotFlights = this.clotFlights.filter((c) => !landed.includes(c.id));
   }
 
+  /** Arcs jump from a hit body to nearby bodies, damage falling per hop. */
+  private chainArcs(from: Enemy, chains: number, damage: number, yieldMult: number, capBonus: number): void {
+    let src = from;
+    const struck = new Set<number>([from.id]);
+    let dmg = damage * B.chainFalloff;
+    for (let i = 0; i < chains; i++) {
+      let best: Enemy | null = null;
+      let bestD: number = B.chainRadius;
+      for (const e of this.enemies) {
+        if (struck.has(e.id) || e.burrowed) continue;
+        const d = dist(src.pos, e.pos);
+        if (d <= bestD) { bestD = d; best = e; }
+      }
+      if (!best) break;
+      this.arcs.push({ from: { ...src.pos }, to: { ...best.pos }, ttl: 0.22 });
+      this.damageEnemy(best, dmg, yieldMult, capBonus);
+      struck.add(best.id);
+      src = best;
+      dmg *= B.chainFalloff;
+    }
+  }
+
+  /** Shove a body along a direction, never into a building. */
+  private knockBack(e: Enemy, dirX: number, dirY: number, px: number): void {
+    const m = Math.hypot(dirX, dirY) || 1;
+    const nx = e.pos.x + (dirX / m) * px;
+    const ny = e.pos.y + (dirY / m) * px;
+    if (enemySpec(e.kind).flies
+      || (nx >= 2 && ny >= 2 && nx <= this.worldW - 2 && ny <= this.worldH - 2
+        && isPassable(this.map.cells[this.cellAt(nx, ny)]))) {
+      e.pos.x = nx;
+      e.pos.y = ny;
+    }
+  }
+
+  /**
+   * Target priority. Every limb's reflex: a sapper CLIMBING a block face is
+   * exposed and about to eat someone — shoot it off the wall first. (This is
+   * what makes limbs cover each other; a lone tower still dies to sappers.)
+   * Snipers additionally prefer support castes (drummer/tender/bomber) over
+   * everything the reflex doesn't claim.
+   */
+  private pickTarget(t: Tower, range: number, sniper: boolean): Enemy | null {
+    let target: Enemy | null = null;
+    let bestD = range;
+    let bestTier = -1; // higher tier wins; distance breaks ties
+    for (const e of this.enemies) {
+      if (e.burrowed) continue; // underground: nothing to shoot at
+      const es = enemySpec(e.kind);
+      const d = dist(t.pos, e.pos);
+      if (d > range) continue;
+      const climbing = !!es.sapper && !isPassable(this.map.cells[this.cellAt(e.pos.x, e.pos.y)]);
+      const support = !!(es.speedAura || es.healer || es.bomber);
+      const tier = climbing ? 2 : sniper && support ? 1 : 0;
+      if (tier > bestTier || (tier === bestTier && d <= bestD)) {
+        target = e; bestD = d; bestTier = tier;
+      }
+    }
+    return target;
+  }
+
   private updateTowers(): void {
     for (const t of this.towers) {
-      // Cooldown ticks for every limb — the sling's recharge lives here too.
+      // Cooldown ticks for every limb — sling and lobber recharges live here too.
       t.cooldown -= DT;
       const stats = this.statsOf(t);
+      // Brood pip: living tissue regrows.
+      if (stats.regen > 0 && t.hp < t.maxHp) t.hp = Math.min(t.maxHp, t.hp + stats.regen * DT);
+
+      // The broodmother tends her brood instead of attacking.
+      if (t.family === 'brood') {
+        const mine = this.broodlings.filter((b) => b.motherId === t.id).length;
+        if (mine < (towerSpec('brood').broodCount ?? 0) && t.cooldown <= 0) {
+          t.cooldown = B.broodRespawn;
+          const spawn = this.passableNear(t.cell) ?? t.pos;
+          this.broodlings.push({
+            id: this.nextId++, motherId: t.id, pos: { x: spawn.x, y: spawn.y },
+            hp: B.broodHp, maxHp: B.broodHp, cooldown: 0,
+          });
+        }
+        continue;
+      }
+
+      // The pit holds and digests whatever stands on it; the meal chews back.
+      if (t.family === 'pit') {
+        let held = 0;
+        for (const e of this.enemies) {
+          if (held >= B.pitMaxHeld) break;
+          if (e.burrowed || enemySpec(e.kind).flies) continue;
+          if (dist(t.pos, e.pos) > (towerSpec('pit').range || 26)) continue;
+          held++;
+          this.applyHitEffects(e, { ...stats, slowMult: 0.05, slowDur: 0.3 });
+          this.damageEnemy(e, B.pitDps * DT, stats.yieldMult, stats.capBonus);
+          if (e.hp <= 0) this.biomass += B.pitBiomassPerKill;
+          const es = enemySpec(e.kind);
+          t.hp -= es.damage * es.rate * DT; // digestion is not free
+        }
+        if (t.hp <= 0) this.removeTower(t.id, true);
+        continue;
+      }
+
       if (stats.rate <= 0) continue;
       if (t.cooldown > 0) continue;
-      let target: Enemy | null = null;
-      let bestD = stats.range;
-      for (const e of this.enemies) {
-        if (e.burrowed) continue; // underground: nothing to shoot at
-        const d = dist(t.pos, e.pos);
-        if (d <= bestD) { bestD = d; target = e; }
-      }
+      const target = this.pickTarget(t, stats.range, stats.sniper);
       if (!target) continue;
       t.cooldown = 1 / stats.rate;
+
+      // Hitscan strikers: the frond's arc chain and the ocular's board-wide beam.
+      if (t.family === 'frond' || t.family === 'ocular') {
+        this.arcs.push({ from: { ...t.pos }, to: { ...target.pos }, ttl: t.family === 'ocular' ? 0.3 : 0.22 });
+        this.applyHitEffects(target, stats);
+        this.damageEnemy(target, stats.damage, stats.yieldMult, stats.capBonus);
+        if (stats.chains > 0) this.chainArcs(target, stats.chains, stats.damage, stats.yieldMult, stats.capBonus);
+        if (stats.knock > 0) this.knockBack(target, target.pos.x - t.pos.x, target.pos.y - t.pos.y, stats.knock);
+        continue;
+      }
+
       if (t.family === 'lasher' || t.family === 'maw') {
         if (t.family === 'maw' && target.hp <= stats.eatThreshold) {
           this.eatEnemy(target);
@@ -1213,6 +1476,8 @@ export class Sim {
         }
         this.applyHitEffects(target, stats);
         this.damageEnemy(target, stats.damage, stats.yieldMult, stats.capBonus);
+        if (stats.chains > 0) this.chainArcs(target, stats.chains, stats.damage, stats.yieldMult, stats.capBonus);
+        if (stats.knock > 0) this.knockBack(target, target.pos.x - t.pos.x, target.pos.y - t.pos.y, stats.knock);
         if (t.family === 'lasher' && stats.aoe > 0) {
           for (const e of [...this.enemies]) {
             if (e !== target && !e.burrowed && dist(t.pos, e.pos) <= stats.aoe + 20) {
@@ -1240,6 +1505,11 @@ export class Sim {
           pierceLeft: stats.pierce ? 3 : undefined,
           hitIds: stats.pierce ? [] : undefined,
           capBonus: stats.capBonus,
+          chains: stats.chains > 0 ? stats.chains : undefined,
+          shred: stats.shred > 0 ? stats.shred : undefined,
+          shredDur: stats.shred > 0 ? stats.shredDur : undefined,
+          knock: stats.knock > 0 ? stats.knock : undefined,
+          rootDur: stats.rootDur > 0 ? stats.rootDur : undefined,
         });
       }
     }
@@ -1261,6 +1531,7 @@ export class Sim {
         const fx = {
           slowMult: p.slowMult ?? 1, slowDur: p.slowDur ?? 0,
           poisonDps: p.poisonDps ?? 0, poisonDur: p.poisonDur ?? 0,
+          shred: p.shred, shredDur: p.shredDur, rootDur: p.rootDur,
         };
         if (p.aoe > 0) {
           for (const e of [...this.enemies]) {
@@ -1272,6 +1543,12 @@ export class Sim {
           this.applyHitEffects(hit, fx);
           this.damageEnemy(hit, p.damage, p.yieldMult, p.capBonus ?? 0);
         }
+        // Inherited verbs ride the shot: arcs jump off the struck body,
+        // knockback shoves it on along the shot's own direction.
+        if (p.chains && p.chains > 0) {
+          this.chainArcs(hit, p.chains, p.damage, p.yieldMult, p.capBonus ?? 0);
+        }
+        if (p.knock && p.knock > 0) this.knockBack(hit, p.vel.x, p.vel.y, p.knock);
         if (p.pierceLeft !== undefined && p.pierceLeft > 0) {
           p.pierceLeft -= 1;
           p.hitIds?.push(hit.id);
@@ -1287,7 +1564,9 @@ export class Sim {
 
   private damageEnemy(e: Enemy, dmg: number, yieldMult: number, capBonus = 0): void {
     const cap = enemySpec(e.kind).armorCap;
-    const effCap = cap !== undefined ? cap + capBonus : undefined;
+    // Shredded armor raises the cap for EVERY source — the mister's whole job.
+    const shred = e.shredUntil !== undefined && e.shredUntil > this.time ? e.shredAmount ?? 0 : 0;
+    const effCap = cap !== undefined ? cap + capBonus + shred : undefined;
     e.hp -= effCap !== undefined && Number.isFinite(effCap) ? Math.min(dmg, effCap) : dmg;
     if (e.hp <= 0) this.killEnemy(e.id, yieldMult, false);
   }

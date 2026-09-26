@@ -22,6 +22,12 @@ const FAMILY_COLORS: Record<TowerFamily, number> = {
   impaler: 0xc9c2a4,
   choir: 0xa87fc9,
   sling: 0xb0685a,
+  brood: 0xc75a68,
+  pit: 0x6b4a2c,
+  frond: 0x7fc4d8,
+  lobber: 0x9c8f3a,
+  mister: 0xb8d84f,
+  ocular: 0xe0d0b0,
 };
 
 const ENEMY_SIZE: Record<Enemy['kind'], number> = {
@@ -434,6 +440,56 @@ export class Renderer {
           .fill(cocked ? 0x5c2a1a : 0x9c3120);
         break;
       }
+      case 'brood':
+        // The mother: swollen sac, egg bumps breathing.
+        g.circle(x, y, 12 + Math.sin(this.pulse * 1.4 + t.id) * 1.5).fill(c);
+        g.circle(x - 4, y - 3, 3).fill(0xe8a0ac);
+        g.circle(x + 4, y - 1, 2.5).fill(0xe8a0ac);
+        g.circle(x, y + 5, 2.5).fill(0xe8a0ac);
+        break;
+      case 'pit':
+        // A mouth in the street: dark gullet ringed with teeth.
+        g.circle(x, y, 12).fill(c);
+        g.circle(x, y, 8 + Math.sin(this.pulse * 2 + t.id) * 1.5).fill(0x1a0e06);
+        for (let i = 0; i < 6; i++) {
+          const a = (i * Math.PI * 2) / 6 + this.pulse * 0.2;
+          g.poly([
+            x + Math.cos(a) * 10, y + Math.sin(a) * 10,
+            x + Math.cos(a + 0.3) * 10, y + Math.sin(a + 0.3) * 10,
+            x + Math.cos(a + 0.15) * 6, y + Math.sin(a + 0.15) * 6,
+          ]).fill(0xd8cdb0);
+        }
+        break;
+      case 'frond':
+        // A charged frond: forked antenna crackling.
+        g.circle(x, y, 8).fill(c);
+        g.moveTo(x, y).lineTo(x - 6, y - 16).stroke({ width: 2.5, color: c });
+        g.moveTo(x, y).lineTo(x + 6, y - 14).stroke({ width: 2.5, color: c });
+        g.circle(x - 6, y - 16, 2 + Math.abs(Math.sin(this.pulse * 5 + t.id)) * 1.5).fill(0xdff4fa);
+        g.circle(x + 6, y - 14, 2 + Math.abs(Math.cos(this.pulse * 5 + t.id)) * 1.5).fill(0xdff4fa);
+        break;
+      case 'lobber': {
+        // A fat bile bladder on a stalk; swells when the volley is ready.
+        const ready = t.cooldown <= 0;
+        g.circle(x, y, 9).fill(c);
+        g.circle(x, y - 10, ready ? 8 : 5).fill(ready ? 0xc4b83a : 0x7a713a);
+        g.circle(x - 2, y - 12, 2).fill({ color: 0xf0ea9a, alpha: ready ? 0.9 : 0.4 });
+        break;
+      }
+      case 'mister':
+        // Spray stalks puffing caustic haze.
+        g.circle(x, y, 9).fill(c);
+        g.rect(x - 6, y - 14, 3, 9).fill(c);
+        g.rect(x + 3, y - 12, 3, 7).fill(c);
+        g.circle(x + Math.sin(this.pulse * 1.5 + t.id) * 6, y - 17, 3.5)
+          .fill({ color: 0xd8ee9a, alpha: 0.4 });
+        break;
+      case 'ocular':
+        // The eye on a stalk: iris tracks with the pulse.
+        g.rect(x - 2.5, y - 14, 5, 14).fill(0x9a8f78);
+        g.circle(x, y - 17, 8).fill(0xf0e8d8);
+        g.circle(x + Math.sin(this.pulse * 0.8 + t.id) * 3, y - 17, 3.5).fill(0x3a2c14);
+        break;
     }
     // Inheritance pips: the silhouette is the build history.
     t.pips.forEach((p, i) => {
@@ -465,6 +521,31 @@ export class Renderer {
     }
     for (const d of sim.drops) {
       g.rect(d.pos.x - 3, d.pos.y - 3, 6, 6).fill(CASTE_COLORS[d.caste]);
+    }
+
+    // Broodlings: your mites in the streets.
+    for (const b of sim.broodlings) {
+      g.circle(b.pos.x, b.pos.y, 4.5).fill({ color: 0x0d0805, alpha: 0.8 });
+      g.circle(b.pos.x, b.pos.y, 3.5).fill(0xc75a68);
+      if (b.hp < b.maxHp) this.hpArc(g, b.pos.x, b.pos.y, 6, b.hp / b.maxHp);
+    }
+
+    // Lightning arcs and sniper beams (fade fast).
+    for (const a of sim.arcs) {
+      const midX = (a.from.x + a.to.x) / 2 + Math.sin(this.pulse * 30) * 4;
+      const midY = (a.from.y + a.to.y) / 2 + Math.cos(this.pulse * 27) * 4;
+      g.moveTo(a.from.x, a.from.y).lineTo(midX, midY).lineTo(a.to.x, a.to.y)
+        .stroke({ width: 2, color: 0xcfeef8, alpha: Math.min(1, a.ttl * 4) });
+    }
+
+    // Bile globs in flight: heavier arc than the clot, sickly color.
+    for (const gb of sim.bileFlights) {
+      const f = 1 - gb.ttl / 0.9;
+      const x = gb.from.x + (gb.to.x - gb.from.x) * f;
+      const y = gb.from.y + (gb.to.y - gb.from.y) * f;
+      const arc = Math.sin(f * Math.PI) * 40;
+      g.circle(x, y + 3, 5).fill({ color: 0x000000, alpha: 0.3 });
+      g.circle(x, y - arc, 6).fill(0xc4b83a);
     }
 
     // Creep clots in flight: a lobbed blob on a parabola, shadow tracking below.

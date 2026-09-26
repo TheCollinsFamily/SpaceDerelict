@@ -233,13 +233,19 @@ describe('cannibalize inheritance', () => {
     const s = freshSim(601);
     s.meat.war = 999;
     s.meat.science = 999;
-    expect(s.issue({ kind: 'build', cardIndex: 0, cell: buildableCell(s) }).ok).toBe(true);
-    expect(s.issue({ kind: 'build', cardIndex: 0, cell: buildableCell(s, 1) }).ok).toBe(true);
+    const blockCard = () => {
+      for (let guard = 0; guard < 300 && ['pit', 'spine'].includes(s.hand[0].family); guard++) {
+        s.issue({ kind: 'discard', cardIndex: 0 });
+      }
+      return 0;
+    };
+    expect(s.issue({ kind: 'build', cardIndex: blockCard(), cell: buildableCell(s) }).ok).toBe(true);
+    expect(s.issue({ kind: 'build', cardIndex: blockCard(), cell: buildableCell(s, 1) }).ok).toBe(true);
     const [a, b] = [...s.towers];
     s.issue({ kind: 'butcher', towerId: a.id });
     s.issue({ kind: 'butcher', towerId: b.id });
     expect(s.pendingPips.length).toBe(2);
-    expect(s.issue({ kind: 'build', cardIndex: 0, cell: buildableCell(s) }).ok).toBe(true);
+    expect(s.issue({ kind: 'build', cardIndex: blockCard(), cell: buildableCell(s) }).ok).toBe(true);
     expect(s.towers[0].pips.length).toBe(2);
   });
 
@@ -247,11 +253,18 @@ describe('cannibalize inheritance', () => {
     const s = freshSim();
     s.meat.war = 9999;
     s.meat.science = 9999;
+    // Discard until the first card is one that builds on a block (not a street piece).
+    for (let guard = 0; guard < 300 && ['pit', 'spine'].includes(s.hand[0].family); guard++) {
+      s.issue({ kind: 'discard', cardIndex: 0 });
+    }
     const cellA = buildableCell(s);
     const cellB = buildableCell(s, 1);
     expect(s.issue({ kind: 'build', cardIndex: 0, cell: cellA }).ok).toBe(true);
     const donor = s.towers[0];
     const donorFamily = donor.family;
+    for (let guard = 0; guard < 300 && ['pit', 'spine'].includes(s.hand[0].family); guard++) {
+      s.issue({ kind: 'discard', cardIndex: 0 });
+    }
     expect(s.issue({
       kind: 'build', cardIndex: 0, cell: cellB, cannibalizeTowerId: donor.id,
     }).ok).toBe(true);
@@ -259,6 +272,207 @@ describe('cannibalize inheritance', () => {
     const built = s.towers[0];
     expect(built.pips.length).toBe(1);
     expect(built.pips[0].family).toBe(donorFamily);
+  });
+});
+
+type SpawnSim = {
+  spawnEnemy(kind: string, atGate?: number): { id: number; pos: { x: number; y: number } };
+  damageEnemy(e: unknown, dmg: number, y: number, capBonus?: number): void;
+  applyHitEffects(e: unknown, fx: Record<string, number>): void;
+};
+
+describe('the six genre-seat towers', () => {
+  function place(s: Sim, family: string, cellPick?: (s: Sim) => number): Tower {
+    s.meat.war = 9999;
+    s.meat.science = 9999;
+    let idx = -1;
+    for (let guard = 0; guard < 500 && idx < 0; guard++) {
+      idx = s.hand.findIndex((c) => c.family === family);
+      if (idx < 0) s.issue({ kind: 'discard', cardIndex: 0 });
+    }
+    expect(idx).toBeGreaterThanOrEqual(0);
+    const cell = cellPick ? cellPick(s) : buildableCell(s);
+    expect(s.issue({ kind: 'build', cardIndex: idx, cell }).ok).toBe(true);
+    return s.towers[s.towers.length - 1];
+  }
+
+  function laneRoad(s: Sim): number {
+    for (let c = 0; c < s.map.cells.length; c++) {
+      if (s.map.cells[c] === CellType.Road && s.canBuildTower(c, 'pit')) return c;
+    }
+    throw new Error('no creeped road');
+  }
+
+  it('broodmother: spawns broodlings that fight, and enemies stop to fight THEM', () => {
+    const s = freshSim(800);
+    const mother = place(s, 'brood');
+    for (let i = 0; i < 80 && s.broodlings.length === 0; i++) s.tick();
+    expect(s.broodlings.length).toBeGreaterThan(0);
+    // A hive soldier near a broodling engages it instead of marching on.
+    const sim = s as unknown as SpawnSim;
+    const soldier = sim.spawnEnemy('soldier', s.gates[0]);
+    const b = s.broodlings[0];
+    soldier.pos.x = b.pos.x + 6;
+    soldier.pos.y = b.pos.y;
+    const bHp0 = b.hp;
+    const posBefore = { ...soldier.pos };
+    for (let i = 0; i < 20; i++) s.tick();
+    const moved = Math.hypot(soldier.pos.x - posBefore.x, soldier.pos.y - posBefore.y);
+    expect(b.hp).toBeLessThan(bHp0);       // the soldier fought it
+    expect(moved).toBeLessThan(30);        // and stood to do so
+    // The brood dies with the mother.
+    (s as unknown as { removeTower(id: number, e: boolean): void }).removeTower(mother.id, false);
+    expect(s.broodlings.length).toBe(0);
+  });
+
+  it('digestive pit: passable floor that roots and digests; the meal chews back', () => {
+    const s = freshSim(801);
+    s.meat.war = 9999;
+    s.meat.science = 9999;
+    // Flow must NOT route around a pit the way it does a wall.
+    const road = laneRoad(s);
+    const flowBefore = s.flowDistOf(road);
+    const pit = place(s, 'pit', () => road);
+    expect(s.flowDistOf(road)).toBeLessThan(flowBefore + 50); // no wall detour cost
+    const sim = s as unknown as SpawnSim;
+    const soldier = sim.spawnEnemy('soldier', s.gates[0]);
+    soldier.pos.x = pit.pos.x + 5;
+    soldier.pos.y = pit.pos.y;
+    const e = s.enemies.find((x) => x.kind === 'soldier')!;
+    const pitHp0 = pit.hp;
+    for (let i = 0; i < 30; i++) s.tick();
+    expect(e.hp).toBeLessThan(e.maxHp);        // being digested
+    expect(s.moveSpeedOf(e)).toBeLessThan(10); // rooted on the pit
+    expect(pit.hp).toBeLessThan(pitHp0);       // and biting back
+  });
+
+  it('galvanic frond: one strike arcs through a clustered squad', () => {
+    const s = freshSim(802);
+    const frond = place(s, 'frond');
+    const sim = s as unknown as SpawnSim;
+    for (let i = 0; i < 3; i++) {
+      const e = sim.spawnEnemy('militia', s.gates[0]);
+      e.pos.x = frond.pos.x + 30 + i * 18;
+      e.pos.y = frond.pos.y;
+    }
+    let sawArc = false;
+    for (let i = 0; i < 25; i++) {
+      s.tick();
+      if (s.arcs.length > 0) sawArc = true;
+    }
+    const hurt = s.enemies.filter((e) => e.kind === 'militia' && e.hp < e.maxHp).length
+      + (3 - s.enemies.filter((e) => e.kind === 'militia').length); // dead count as hurt
+    expect(hurt).toBeGreaterThanOrEqual(2); // primary + at least one arc
+    expect(sawArc).toBe(true);
+  });
+
+  it('bile lobber: aimed volley detonates on the chosen ground; recharge is real', () => {
+    const s = freshSim(803);
+    const lobber = place(s, 'lobber');
+    const sim = s as unknown as SpawnSim;
+    const cluster: Array<{ pos: { x: number; y: number } }> = [];
+    for (let i = 0; i < 3; i++) {
+      const e = sim.spawnEnemy('militia', s.gates[0]);
+      e.pos.x = lobber.pos.x + 90 + (i % 2) * 14;
+      e.pos.y = lobber.pos.y + Math.floor(i / 2) * 14;
+      cluster.push(e);
+    }
+    const cell = s.cellAt(cluster[0].pos.x, cluster[0].pos.y);
+    expect(s.issue({ kind: 'bile-throw', towerId: lobber.id, cell }).ok).toBe(true);
+    expect(s.issue({ kind: 'bile-throw', towerId: lobber.id, cell }).ok).toBe(false); // recharging
+    for (let i = 0; i < 12; i++) s.tick(); // glob lands
+    const hurtOrDead = 3 - s.enemies.filter((e) => e.kind === 'militia' && e.hp >= e.maxHp).length;
+    expect(hurtOrDead).toBeGreaterThanOrEqual(2);
+  });
+
+  it('caustic mister: shredded armor lets EVERY source hit past the cap', () => {
+    const s = freshSim(804);
+    const sim = s as unknown as SpawnSim;
+    sim.spawnEnemy('phalanx', s.gates[0]);
+    const e = s.enemies.find((x) => x.kind === 'phalanx')!;
+    // Unshredded: a huge hit is capped at 12.
+    let hp0 = e.hp;
+    sim.damageEnemy(e, 500, 1);
+    expect(hp0 - e.hp).toBe(12);
+    // Shredded (+8 for 4s): the same hit bites 20 deep — from ANY tower.
+    sim.applyHitEffects(e, { slowMult: 1, slowDur: 0, poisonDps: 0, poisonDur: 0, shred: 8, shredDur: 4 });
+    hp0 = e.hp;
+    sim.damageEnemy(e, 500, 1);
+    expect(hp0 - e.hp).toBe(20);
+  });
+
+  it('ocular stalk: board-wide reach and it executes the drummer before the closer soldier', () => {
+    const s = freshSim(805);
+    const ocular = place(s, 'ocular');
+    const sim = s as unknown as SpawnSim;
+    const soldier = sim.spawnEnemy('soldier', s.gates[0]);
+    soldier.pos.x = ocular.pos.x + 40; // right next door
+    soldier.pos.y = ocular.pos.y;
+    const drummer = sim.spawnEnemy('drummer', s.gates[0]); // far away at the gate
+    const dE = s.enemies.find((x) => x.kind === 'drummer')!;
+    const sE = s.enemies.find((x) => x.kind === 'soldier')!;
+    for (let i = 0; i < 95 && dE.hp >= dE.maxHp; i++) s.tick();
+    expect(dE.hp).toBeLessThan(dE.maxHp);  // the far support died first in priority
+    expect(sE.hp).toBe(sE.maxHp);          // the near soldier was ignored
+    void drummer;
+  });
+});
+
+describe('combination algebra (pips compose, stacking is bounded)', () => {
+  const bare = (family: string): Tower => ({
+    id: 1, family: family as Tower['family'], pos: { x: 0, y: 0 }, cell: 0,
+    hp: 1, maxHp: 1, pips: [], cooldown: 0, kills: 0,
+  });
+
+  it('every new family teaches its verb as a pip', () => {
+    const t = bare('spitter');
+    expect(towerStats({ ...t, pips: [{ family: 'brood' }] }).regen).toBe(B.pipRegen);
+    expect(towerStats({ ...t, pips: [{ family: 'pit' }] }).rootDur).toBeCloseTo(B.pipRoot);
+    expect(towerStats({ ...t, pips: [{ family: 'frond' }] }).chains).toBe(B.pipChain);
+    expect(towerStats({ ...t, pips: [{ family: 'lobber' }] }).knock).toBe(B.pipKnock);
+    expect(towerStats({ ...t, pips: [{ family: 'mister' }] }).shred).toBe(B.pipShred);
+    expect(towerStats({ ...t, pips: [{ family: 'ocular' }] }).sniper).toBe(true);
+  });
+
+  it('stacking caps hold: chains, knock, shred, poison never run away', () => {
+    const t = bare('frond');
+    const manyPips = Array.from({ length: 12 }, () => ({ family: 'frond' as const }));
+    expect(towerStats({ ...t, pips: manyPips }).chains).toBe(B.maxChains);
+    const knocky = Array.from({ length: 12 }, () => ({ family: 'lobber' as const }));
+    expect(towerStats({ ...bare('spitter'), pips: knocky }).knock).toBe(B.maxKnock);
+    const shreddy = Array.from({ length: 12 }, () => ({ family: 'mister' as const }));
+    expect(towerStats({ ...bare('spitter'), pips: shreddy }).shred).toBe(B.maxShred);
+    // Poison stacking on one body is capped too.
+    const s = freshSim(810);
+    const sim = s as unknown as SpawnSim;
+    sim.spawnEnemy('elite', s.gates[0]);
+    const e = s.enemies[0];
+    for (let i = 0; i < 30; i++) {
+      sim.applyHitEffects(e, { slowMult: 1, slowDur: 0, poisonDps: 7, poisonDur: 3 });
+    }
+    expect(e.poisonDps).toBeLessThanOrEqual(B.maxPoisonDps);
+  });
+
+  it('slow composition: the strongest snare wins, a weaker one never overwrites it', () => {
+    const s = freshSim(811);
+    const sim = s as unknown as SpawnSim;
+    sim.spawnEnemy('soldier', s.gates[0]);
+    const e = s.enemies[0];
+    sim.applyHitEffects(e, { slowMult: 0.4, slowDur: 2, poisonDps: 0, poisonDur: 0 });
+    sim.applyHitEffects(e, { slowMult: 0.8, slowDur: 2, poisonDps: 0, poisonDur: 0 });
+    expect(e.slowMult).toBe(0.4);
+    // A hard root (pit pip) beats both through the same rule.
+    sim.applyHitEffects(e, { slowMult: 1, slowDur: 0, poisonDps: 0, poisonDur: 0, rootDur: 0.5 });
+    expect(e.slowMult).toBe(0.05);
+  });
+
+  it('marquee combo: impaler + frond pip = a skewer that arcs off every body it passes', () => {
+    // Stat-level: the pierced shot carries chains.
+    const t = bare('impaler');
+    const st = towerStats({ ...t, pips: [{ family: 'frond' }] });
+    expect(st.pierce).toBe(true);
+    expect(st.chains).toBe(B.pipChain);
+    expect(st.capBonus).toBe(Infinity);
   });
 });
 
@@ -349,10 +563,16 @@ describe('creep logistics (sling patches + directional roots)', () => {
     const s = freshSim(702);
     s.meat.war = 9999;
     s.meat.science = 9999;
-    expect(s.issue({ kind: 'build', cardIndex: 0, cell: buildableCell(s) }).ok).toBe(true);
+    const blockCard = () => {
+      for (let guard = 0; guard < 300 && ['pit', 'spine'].includes(s.hand[0].family); guard++) {
+        s.issue({ kind: 'discard', cardIndex: 0 });
+      }
+      return 0;
+    };
+    expect(s.issue({ kind: 'build', cardIndex: blockCard(), cell: buildableCell(s) }).ok).toBe(true);
     const donor = s.towers[0];
     donor.pips.push({ family: 'sling' });
-    s.issue({ kind: 'build', cardIndex: 0, cell: buildableCell(s) }); // triggers refreshRouting
+    s.issue({ kind: 'build', cardIndex: blockCard(), cell: buildableCell(s) }); // triggers refreshRouting
     expect(s.creepSources.some((x) => x.kind === 'seep' && x.ownerId === donor.id)).toBe(true);
   });
 });
