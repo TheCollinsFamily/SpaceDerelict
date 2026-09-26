@@ -8,7 +8,8 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:visual": "node tools/visual-check.mjs"
+    "test:visual": "node tools/visual-check.mjs",
+    "test:input": "node tools/input-check.mjs"
   },
   "dependencies": {
     "pixi.js": "^8.6.6"

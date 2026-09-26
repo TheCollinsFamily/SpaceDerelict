@@ -30,4 +30,5 @@ Useful URLs:
 npm test             # 16 headless sim tests incl. full autoplayer runs
 npm run build
 npm run test:visual  # headless chromium: sim + HUD + per-region pixel checks; screenshots in tools/screenshots/
+npm run test:input   # headless chromium: real player gestures (build, cannibalize, organ, cancel)
 ```
