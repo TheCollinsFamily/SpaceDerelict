@@ -141,19 +141,21 @@ export type SimEvent =
   | { kind: 'cannibalized'; donor: TowerFamily; into: TowerFamily }
   | { kind: 'kill'; enemy: EnemyKind; caste: Caste }
   | { kind: 'banked'; caste: Caste; amount: number }
-  | { kind: 'wave-start'; tier: number; wave: number; counts: Partial<Record<EnemyKind, number>> }
+  | { kind: 'wave-start'; tier: number; wave: number; counts: Partial<Record<EnemyKind, number>>; sides: string }
   | { kind: 'royal-incoming' }
   | { kind: 'researchers-arrive'; count: number }
   | { kind: 'structure-lost'; what: string }
   | { kind: 'eaten'; enemy: EnemyKind }
   | { kind: 'won' }
-  | { kind: 'lost' };
+  | { kind: 'lost' }
+  | { kind: 'discarded'; family: TowerFamily };
 
 export type Command =
   | { kind: 'build'; cardIndex: number; cell: number; cannibalizeTowerId?: number }
   | { kind: 'build-organ'; organ: OrganId; cell: number }
   | { kind: 'cycle-gland'; organInstanceId: number }
-  | { kind: 'royal-surge' };
+  | { kind: 'royal-surge' }
+  | { kind: 'discard'; cardIndex: number };
 
 /** The deployment order: the win condition, issued by command. */
 export type Directive =

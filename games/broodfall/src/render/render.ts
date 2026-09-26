@@ -4,6 +4,7 @@
  * baked spritesheets later is a per-function change, not a rewrite.
  */
 import { Application, Container, Graphics } from 'pixi.js';
+import { CellType } from '../sim/citymap';
 import { Sim, towerStats } from '../sim/sim';
 import type { Enemy, Tower, TowerFamily } from '../sim/types';
 
@@ -75,58 +76,82 @@ export class Renderer {
   private drawGround(sim: Sim): void {
     const g = this.ground;
     g.clear();
-    g.rect(0, 0, sim.worldW, sim.worldH).fill(0x1c1710);
     const cp = sim.cfg.cellPx;
-    // Roads: the city has a plan the asset is ignoring.
-    for (let cx = 4; cx < sim.cfg.gridW; cx += 8) {
-      g.rect(cx * cp - 3, 0, 6, sim.worldH).fill({ color: 0x2a2318, alpha: 0.9 });
-    }
-    for (let cy = 4; cy < sim.cfg.gridH; cy += 7) {
-      g.rect(0, cy * cp - 3, sim.worldW, 6).fill({ color: 0x2a2318, alpha: 0.9 });
-    }
-    // The insect city, alive at the edges: mound-blocks with lit doorways
-    // (placeholder for the painted map).
-    for (let cy = 0; cy < sim.cfg.gridH; cy += 2) {
-      for (let cx = 0; cx < sim.cfg.gridW; cx += 2) {
-        const n = ((cx * 7919 + cy * 104729) % 13);
-        if (n < 4) {
-          const h = cp * (0.8 + (n % 3) * 0.35);
-          g.rect(cx * cp + 3, cy * cp + 3, cp * 1.5, h).fill({ color: 0x352a19, alpha: 0.95 });
-          g.rect(cx * cp + 3, cy * cp + 3, cp * 1.5, 4).fill({ color: 0x4a3b22, alpha: 0.9 });
-          // Warm doorway light, flickering faintly: someone lives here.
-          const flicker = 0.45 + 0.25 * Math.sin(this.pulse * 0.7 + cx * 3 + cy);
-          g.rect(cx * cp + 9 + (n % 4) * 6, cy * cp + h - 8, 5, 8)
-            .fill({ color: 0xd8a84e, alpha: flicker });
+    g.rect(0, 0, sim.worldW, sim.worldH).fill(0x100c08);
+    for (let cy = 0; cy < sim.cfg.gridH; cy++) {
+      for (let cx = 0; cx < sim.cfg.gridW; cx++) {
+        const cell = cy * sim.cfg.gridW + cx;
+        const t = sim.map.cells[cell];
+        const x = cx * cp;
+        const y = cy * cp;
+        const n = (cx * 7919 + cy * 104729) % 13;
+        if (t === CellType.Road) {
+          // Sunken dirt channel: where the columns march.
+          g.rect(x, y, cp, cp).fill(0x4a3b24);
+          g.rect(x, y + cp - 3, cp, 3).fill({ color: 0x2c2113, alpha: 0.8 });
+          if ((cx * 3 + cy) % 4 === 0) g.circle(x + 8 + (n % 3) * 7, y + 10 + (n % 4) * 4, 1.5).fill({ color: 0x2c2113, alpha: 0.7 });
+        } else if (t === CellType.Plaza) {
+          g.rect(x, y, cp, cp).fill(0x33291a);
+        } else {
+          // City block: a raised mound the creep can climb and limbs perch on.
+          g.rect(x + 1, y + 1, cp - 2, cp - 2).fill(0x2a2214);
+          g.rect(x + 1, y + 1, cp - 2, 5).fill(0x3b3120);
+          const flicker = 0.4 + 0.25 * Math.sin(this.pulse * 0.7 + cx * 3 + cy);
+          if (n < 5) g.rect(x + 6 + (n % 4) * 5, y + cp - 9, 4, 7).fill({ color: 0xd8a84e, alpha: flicker });
         }
       }
     }
-    // Grid whisper.
-    for (let x = 0; x <= sim.cfg.gridW; x++) {
-      g.moveTo(x * cp, 0).lineTo(x * cp, sim.worldH).stroke({ width: 1, color: 0x000000, alpha: 0.12 });
-    }
-    for (let y = 0; y <= sim.cfg.gridH; y++) {
-      g.moveTo(0, y * cp).lineTo(sim.worldW, y * cp).stroke({ width: 1, color: 0x000000, alpha: 0.12 });
+    // Gates: hazard notches where the streets meet the map edge.
+    for (const gate of sim.map.gates) {
+      const c = sim.cellCenter(gate);
+      const incoming = sim.incomingGates.includes(gate);
+      if (incoming) {
+        // The telegraphed assault lane: an angry beacon you plan around.
+        const r = 8 + Math.sin(this.pulse * 3) * 3;
+        g.circle(c.x, c.y, r + 6).fill({ color: 0xd1603c, alpha: 0.18 });
+        g.circle(c.x, c.y, r).stroke({ width: 3, color: 0xe06a3a, alpha: 0.95 });
+        // Arrow toward the city.
+        const dx = Math.sign(sim.core.x - c.x) * (Math.abs(c.x - sim.core.x) > 60 ? 1 : 0);
+        const dy = Math.sign(sim.core.y - c.y) * (Math.abs(c.y - sim.core.y) > 60 ? 1 : 0);
+        g.poly([
+          c.x + dx * 18 - dy * 6, c.y + dy * 18 - dx * 6,
+          c.x + dx * 30, c.y + dy * 30,
+          c.x + dx * 18 + dy * 6, c.y + dy * 18 + dx * 6,
+        ]).fill({ color: 0xe06a3a, alpha: 0.9 });
+      } else {
+        g.circle(c.x, c.y, 5 + Math.sin(this.pulse * 2) * 1.5).stroke({ width: 2, color: 0x8f2f2f, alpha: 0.6 });
+      }
     }
   }
 
   private drawCreep(sim: Sim): void {
     const g = this.creepG;
     g.clear();
-    const { x, y } = sim.core;
-    // Creep skin: layered translucent lobes so the edge looks organic, not compass-drawn.
-    for (let i = 0; i < 7; i++) {
-      const wob = Math.sin(this.pulse * 0.4 + i * 1.7) * 6;
-      g.circle(
-        x + Math.cos(i * 0.9) * 9, y + Math.sin(i * 1.3) * 9,
-        sim.creepRadius + wob - i * 3,
-      ).fill({ color: 0x4a1410, alpha: 0.10 });
+    const cp = sim.cfg.cellPx;
+    // Creep skin per cell, deeper red toward the core; edge cells wobble organically.
+    for (let cy = 0; cy < sim.cfg.gridH; cy++) {
+      for (let cx = 0; cx < sim.cfg.gridW; cx++) {
+        const cell = cy * sim.cfg.gridW + cx;
+        if (!sim.isCreeped(cell)) continue;
+        const x = cx * cp;
+        const y = cy * cp;
+        const body = sim.isBody(cell);
+        const isChannel = sim.map.cells[cell] === CellType.Road || sim.map.cells[cell] === CellType.Plaza;
+        const wob = 0.05 * Math.sin(this.pulse * 0.8 + cx * 1.7 + cy * 2.3);
+        // Streets stay readable under the creep: thin membrane there, thick hide on blocks.
+        const alpha = body ? 0.6 : isChannel ? 0.16 : 0.42;
+        g.rect(x - 1, y - 1, cp + 2, cp + 2)
+          .fill({ color: body ? 0x6e1e14 : 0x571812, alpha: alpha + wob });
+        if (body) {
+          g.circle(x + cp / 2, y + cp / 2, cp * 0.32 + Math.sin(this.pulse + cx + cy) * 2)
+            .fill({ color: 0x832619, alpha: 0.4 });
+        }
+      }
     }
-    g.circle(x, y, sim.creepRadius).fill({ color: 0x571812, alpha: 0.22 });
-    // Body mass.
-    g.circle(x, y, sim.bodyRadius + Math.sin(this.pulse) * 2).fill({ color: 0x6e1e14, alpha: 0.55 });
-    g.circle(x, y, sim.bodyRadius * 0.72).fill({ color: 0x832619, alpha: 0.5 });
     // Core: the heart of the asset.
-    const coreR = 26 + Math.sin(this.pulse * 1.6) * 3;
+    const { x, y } = sim.core;
+    const coreR = 24 + Math.sin(this.pulse * 1.6) * 3;
+    g.circle(x, y, coreR + 8).fill({ color: 0x571812, alpha: 0.6 });
     g.circle(x, y, coreR).fill(0x9c3120);
     g.circle(x, y, coreR * 0.6).fill(0xc4502e);
     g.circle(x - 6, y - 7, coreR * 0.22).fill({ color: 0xf0b090, alpha: 0.8 });
@@ -162,17 +187,21 @@ export class Renderer {
       const s = ENEMY_SIZE[e.kind];
       const color = CASTE_COLORS[e.kind === 'royal' ? 'royal' : e.kind === 'researcher' ? 'science' : 'war'];
       if (e.kind === 'researcher') {
+        g.circle(x, y, s + 1.5).fill({ color: 0x0d0805, alpha: 0.85 });
         g.circle(x, y, s).fill(color);
         if (!e.leaving) {
           // Study beam: curiosity made visible.
           g.circle(x, y - s - 4, 2).fill(0xdff5f2);
         }
       } else if (e.kind === 'royal') {
+        g.circle(x, y, s + 2).fill({ color: 0x0d0805, alpha: 0.9 });
         g.circle(x, y, s).fill(color);
         g.circle(x, y, s * 0.55).fill(0xf3d67a);
         g.poly([x - 8, y - s - 2, x, y - s - 10, x + 8, y - s - 2]).fill(0xf3d67a);
       } else {
-        // War caste: chevron bodies, bigger kinds broader.
+        // War caste: chevron bodies with a dark rim, bigger kinds broader.
+        g.poly([x, y - s - 1.5, x + s + 1.5, y + s + 1.5, x - s - 1.5, y + s + 1.5])
+          .fill({ color: 0x0d0805, alpha: 0.85 });
         g.poly([x, y - s, x + s, y + s, x - s, y + s]).fill(color);
         if (e.kind === 'elite') g.circle(x, y + 2, s * 0.35).fill(0x5c1d10);
       }
@@ -183,6 +212,9 @@ export class Renderer {
   private drawTower(g: Graphics, t: Tower): void {
     const { x, y } = t.pos;
     const c = FAMILY_COLORS[t.family];
+    // Ground shadow + rim so limbs read against the creep.
+    g.circle(x, y + 2, 15).fill({ color: 0x000000, alpha: 0.35 });
+    g.circle(x, y, 14).stroke({ width: 2, color: 0x1a0b08, alpha: 0.9 });
     switch (t.family) {
       case 'spitter':
         g.circle(x, y, 10).fill(c);

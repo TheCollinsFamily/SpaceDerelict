@@ -20,7 +20,8 @@ Useful URLs:
 
 ## How to play
 
-- Click a card, then click the creep to grow that limb. Right-click cancels.
+- Enemies march the dirt street channels; they cannot cross city blocks. Click a card, then click a CREEPED CITY BLOCK to grow that limb overlooking the street (spine walls instead plug the street itself). Right-click cancels. The ✕ on a card discards it for 3 war meat.
+- Watch the top bar during growth: ASSAULT FORMING names the gates the next wave pours through. Reinforce that approach.
 - FEED A LIMB with a card selected: click one of your towers (the donor), then place. The donor is consumed and its family becomes a visible trait pip on the new limb. Pips stack deterministically: spitter pips add fire rate, lasher damage, burster blast radius, maw meat yield, spine hit points, lure interest.
 - Organs (bottom-left) grow inside the body mass only. The pheromone gland cycles calm / lure / challenge when clicked.
 - War caste attacks because you exist. Science caste comes to study you when you are interesting, and is edible. Royals move only when you are a crisis, and royal meat converts to raw mass (ROYAL SURGE).

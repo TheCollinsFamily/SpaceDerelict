@@ -7,17 +7,17 @@ import type { EnemySpec, OrganSpec, TowerSpec } from '../src/sim/types';
 export const TOWERS: readonly TowerSpec[] = [
   {
     family: 'spitter', name: 'Spitter', weight: 30,
-    cost: { war: 10 }, range: 150, rate: 1.4, damage: 8, aoe: 0,
+    cost: { war: 13 }, range: 95, rate: 1.4, damage: 8, aoe: 0,
     maxHp: 60, interest: 0, eatThreshold: 0, advanced: false,
   },
   {
     family: 'burster', name: 'Burster', weight: 16,
-    cost: { war: 25 }, range: 120, rate: 0.5, damage: 12, aoe: 45,
+    cost: { war: 29 }, range: 85, rate: 0.5, damage: 12, aoe: 45,
     maxHp: 70, interest: 1, eatThreshold: 0, advanced: true,
   },
   {
     family: 'lasher', name: 'Lasher', weight: 22,
-    cost: { war: 15 }, range: 55, rate: 1.0, damage: 18, aoe: 30,
+    cost: { war: 19 }, range: 55, rate: 1.0, damage: 18, aoe: 30,
     maxHp: 110, interest: 0, eatThreshold: 0, advanced: false,
   },
   {
@@ -27,8 +27,8 @@ export const TOWERS: readonly TowerSpec[] = [
   },
   {
     family: 'spine', name: 'Spine Wall', weight: 12,
-    cost: { war: 8 }, range: 0, rate: 0, damage: 0, aoe: 0,
-    maxHp: 260, interest: 0, eatThreshold: 0, advanced: false,
+    cost: { war: 10 }, range: 0, rate: 0, damage: 0, aoe: 0,
+    maxHp: 520, interest: 0, eatThreshold: 0, advanced: false,
   },
   {
     family: 'lure', name: 'Lure Gland', weight: 8,
@@ -45,10 +45,10 @@ export const ORGANS: readonly OrganSpec[] = [
 
 export const ENEMIES: readonly EnemySpec[] = [
   { kind: 'responder', caste: 'war', hp: 20, speed: 42, damage: 4, rate: 1.0, meat: 3, threatOnKill: 1 },
-  { kind: 'militia', caste: 'war', hp: 45, speed: 38, damage: 7, rate: 1.0, meat: 5, threatOnKill: 2 },
-  { kind: 'soldier', caste: 'war', hp: 90, speed: 34, damage: 12, rate: 1.1, meat: 9, threatOnKill: 3 },
-  { kind: 'elite', caste: 'war', hp: 200, speed: 30, damage: 22, rate: 1.2, meat: 18, threatOnKill: 5 },
-  { kind: 'researcher', caste: 'science', hp: 30, speed: 36, damage: 0, rate: 0, meat: 12, threatOnKill: 2 },
+  { kind: 'militia', caste: 'war', hp: 45, speed: 38, damage: 7, rate: 1.0, meat: 6, threatOnKill: 2 },
+  { kind: 'soldier', caste: 'war', hp: 90, speed: 34, damage: 14, rate: 1.1, meat: 11, threatOnKill: 3 },
+  { kind: 'elite', caste: 'war', hp: 200, speed: 30, damage: 24, rate: 1.2, meat: 18, threatOnKill: 5 },
+  { kind: 'researcher', caste: 'science', hp: 30, speed: 36, damage: 0, rate: 0, meat: 12, threatOnKill: 1 },
   { kind: 'royal', caste: 'royal', hp: 1000, speed: 16, damage: 28, rate: 0.8, meat: 120, threatOnKill: 0 },
 ];
 
@@ -57,9 +57,9 @@ export const WAVE_TABLE: readonly Partial<Record<string, number>>[] = [
   { responder: 6 },                                   // tier 0
   { responder: 8, militia: 4 },                       // tier 1
   { militia: 10, soldier: 3 },                        // tier 2
-  { militia: 8, soldier: 8, elite: 1 },               // tier 3
-  { soldier: 12, elite: 4 },                          // tier 4
-  { soldier: 14, elite: 8 },                          // tier 5 (desperation)
+  { militia: 8, soldier: 7, elite: 1 },               // tier 3
+  { soldier: 10, elite: 4 },                          // tier 4
+  { soldier: 12, elite: 7 },                          // tier 5 (desperation)
 ];
 
 export const BALANCE = {
@@ -75,8 +75,8 @@ export const BALANCE = {
   biomassPerEat: 6,
   biomassPerKill: 0.8,
   /** Creep radius in px: base + growth/sec (hearts multiply growth). */
-  creepBase: 130,
-  creepPerSec: 1.1,
+  creepBase: 135,
+  creepPerSec: 1.0,
   creepPerHeartBonus: 0.5,
   bodyBase: 70,
   bodyPerBiomass: 0.09,
@@ -84,11 +84,17 @@ export const BALANCE = {
   growthSeconds: 22,
   siegeSpawnSeconds: 14,
   siegeMaxSeconds: 70,
+  /** Waves grow with the campaign clock as well as the threat ladder. */
+  waveCountScale: 0.04,
   /** Threat tiers: tier = floor(threat / threatPerTier), clamped to table. */
-  threatPerTier: 40,
+  threatPerTier: 52,
   threatFromBiomass: 0.04,
   glandChallengeThreatPerSec: 0.5,
   glandCalmThreatScale: 0.6,
+  /** The asset is inherently fascinating: researchers come even before lures. */
+  baseInterest: 2,
+  /** Discarding a clogged card costs a little war meat. */
+  discardCost: 3,
   /** Interest → researcher parties. */
   researcherBaseInterval: 80,
   researcherMinInterval: 18,
@@ -109,11 +115,11 @@ export const BALANCE = {
   pipAoe: 12,         // burster pip: +12px aoe radius (adds aoe to non-aoe towers)
   pipYield: 0.3,      // maw pip: +30% meat from kills by this tower
   pipDamage: 0.2,     // lasher pip: +20% damage
-  pipHp: 80,          // spine pip: +80 max hp
+  pipHp: 150,          // spine pip: +80 max hp
   pipInterest: 2,     // lure pip: +2 interest
   dropFlySeconds: 1.1,
   /** The body itself fights: focused dps on the nearest intruder inside the body. */
-  coreDps: 50,
-  coreReachScale: 0.8,
+  coreDps: 24,
+  coreReachScale: 0.6,
   projectileSpeed: 260,
 } as const;

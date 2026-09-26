@@ -6,7 +6,7 @@
  * Usage: npm run build && npm run test:visual
  * Artifacts: tools/screenshots/*.png
  */
-import { spawn } from 'node:child_process';
+import { spawn, execSync } from 'node:child_process';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -28,7 +28,19 @@ const fail = (name, detail) => {
 
 // ---------- helpers ----------
 
+function freePort() {
+  try {
+    const out = execSync('netstat -ano', { encoding: 'utf8' });
+    const rows = out.split(String.fromCharCode(10));
+    for (const line of rows) {
+      const m = line.match(/:5199\s+\S+\s+LISTENING\s+(\d+)/);
+      if (m) { try { execSync('taskkill /PID ' + m[1] + ' /T /F', { stdio: 'ignore' }); } catch {} }
+    }
+  } catch {}
+}
+
 function startPreview() {
+  freePort();
   const child = spawn(process.platform === 'win32' ? 'npx.cmd' : 'npx', ['vite', 'preview'], {
     cwd: root, stdio: 'pipe', shell: process.platform === 'win32',
   });
@@ -134,16 +146,42 @@ try {
     fail('core region', `rgb ${core.r.toFixed(0)},${core.g.toFixed(0)},${core.b.toFixed(0)}`);
   }
 
-  // Region 2: creep ring (halfway to creep radius) must be redder than the far corner ground.
+  // Region 2: an actual creeped street cell must be redder than far bare ground.
   const scale = png.width / state.worldW;
-  const ringR = Math.floor(state.creepRadius * 0.6 * scale);
-  const ring = regionAvg(png, cx + ringR - 8, cy - 8, 16, 16);
-  const corner = regionAvg(png, 8, 8, 40, 40);
-  if (ring.r - ring.g > (corner.r - corner.g) + 8) {
-    pass(`creep ring redder than bare ground (Δ ${(ring.r - ring.g).toFixed(0)} vs ${(corner.r - corner.g).toFixed(0)})`);
+  const creepCellPos = await page.evaluate(() => {
+    const s = window.broodfall.sim;
+    for (let c = 0; c < s.map.cells.length; c++) {
+      if (s.isCreeped(c) && s.map.cells[c] !== 0 && c !== s.map.coreCell && !s.isBody(c)) {
+        return s.cellCenter(c);
+      }
+    }
+    return null;
+  });
+  if (creepCellPos) {
+    const rx = Math.floor(creepCellPos.x * scale);
+    const ry = Math.floor(creepCellPos.y * scale);
+    const ring = regionAvg(png, rx - 6, ry - 6, 12, 12);
+    const corner = regionAvg(png, 8, 8, 40, 40);
+    if (ring.r - ring.g > (corner.r - corner.g) + 8) {
+      pass(`creeped street redder than bare ground (Δ ${(ring.r - ring.g).toFixed(0)} vs ${(corner.r - corner.g).toFixed(0)})`);
+    } else {
+      fail('creeped street', `cell rgb ${ring.r.toFixed(0)},${ring.g.toFixed(0)},${ring.b.toFixed(0)} vs corner ${corner.r.toFixed(0)},${corner.g.toFixed(0)},${corner.b.toFixed(0)}`);
+    }
   } else {
-    fail('creep ring', `ring rgb ${ring.r.toFixed(0)},${ring.g.toFixed(0)},${ring.b.toFixed(0)} vs corner ${corner.r.toFixed(0)},${corner.g.toFixed(0)},${corner.b.toFixed(0)}`);
+    fail('creeped street', 'no creeped cell found');
   }
+
+  // Region 2b: enemies stand on passable cells only (collision holds in the real build).
+  const collision = await page.evaluate(() => {
+    const s = window.broodfall.sim;
+    let bad = 0;
+    for (const e of s.enemies) {
+      if (s.map.cells[s.cellAt(e.pos.x, e.pos.y)] === 0) bad++;
+    }
+    return { total: s.enemies.length, bad };
+  });
+  if (collision.bad === 0) pass(`no enemy inside a building (${collision.total} checked)`);
+  else fail('enemy collision', `${collision.bad}/${collision.total} inside buildings`);
 
   // Region 3: the board is not blank — enough non-background pixels overall.
   const lit = regionCount(png, 0, 0, png.width, png.height, (r, g, b) => r + g + b > 140);

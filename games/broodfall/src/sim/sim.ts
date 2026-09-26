@@ -1,8 +1,15 @@
 /**
  * Broodfall sim core. Fixed-timestep, seeded, deterministic, zero rendering imports.
- * The renderer and HUD read state; the only way in is issue() and tick().
+ *
+ * The board is a real tower-defense map: streets are the corridors, buildings are
+ * solid, enemies follow a flow field along roads toward the core, towers placed on
+ * roads BLOCK (the swarm reroutes or chews through), and the creep spreads along
+ * the street network, digesting adjacent buildings into buildable rubble.
  */
 import { Rng } from './rng';
+import {
+  CellType, CityMap, allDistance, computeFlow, generateCity, isPassable,
+} from './citymap';
 import {
   BALANCE as B, ENEMIES, ORGANS, TOWERS, WAVE_TABLE,
 } from '../../content/data';
@@ -14,14 +21,14 @@ import type {
 
 export const DT = 0.1;
 
-const CONTACT_DIST = 34;
+const STRUCTURE_CONTACT = 24;    // px: latch-and-chew distance to a structure
+const CORE_CONTACT = 46;         // px: latch distance to the core
 const ENEMY_RADIUS = 8;
-const RESEARCH_STANDOFF = 60;
+const SEPARATION_DIST = 13;      // px: enemies shoulder each other apart
+const STRUCTURE_FLOW_COST = 400; // a tower on a road is a wall worth a 40-cell detour
 
 function dist(a: Vec, b: Vec): number {
-  const dx = a.x - b.x;
-  const dy = a.y - b.y;
-  return Math.hypot(dx, dy);
+  return Math.hypot(a.x - b.x, a.y - b.y);
 }
 
 export function towerSpec(family: TowerFamily): TowerSpec {
@@ -63,6 +70,7 @@ export class Sim {
   readonly worldW: number;
   readonly worldH: number;
   readonly core: Vec;
+  readonly map: CityMap;
 
   private rng: Rng;
   private nextId = 1;
@@ -84,8 +92,11 @@ export class Sim {
   wavesCleared = 0;
   scienceBanked = 0;
   royalsKilled = 0;
+
   private spawnQueue: EnemyKind[] = [];
   private spawnTimer = 0;
+  /** Gates the NEXT assault will pour through — telegraphed during growth. */
+  incomingGates: number[] = [];
   private researcherTimer = 20;
   private royalSpawned = false;
 
@@ -102,23 +113,33 @@ export class Sim {
   /** cell index -> structure ('t'|'o') + id */
   private occupied = new Map<number, { kind: 't' | 'o'; id: number }>();
 
+  /** Flow field toward the core (enemy routing). Recomputed on map/structure change. */
+  private flow: { dist: Float64Array; next: Int32Array };
+  /** Hop-distance from the core over passable terrain (creep spread topology). */
+  private creepDist: Int32Array;
+
   constructor(cfg: SimConfig) {
     this.cfg = cfg;
     this.worldW = cfg.gridW * cfg.cellPx;
     this.worldH = cfg.gridH * cfg.cellPx;
-    this.core = { x: this.worldW / 2, y: this.worldH / 2 };
     this.rng = new Rng(cfg.seed);
+    this.map = generateCity(cfg.gridW, cfg.gridH, this.rng);
+    this.core = this.cellCenter(this.map.coreCell);
     this.directive = cfg.directive ?? this.rng.pick<Directive>([
       { kind: 'hold', waves: B.holdWaves },
       { kind: 'royal', count: 1 },
       { kind: 'harvest', science: B.harvestScience },
     ]);
     this.meat = { ...B.startMeat };
+    this.creepDist = allDistance(this.map, this.map.coreCell);
+    this.flow = this.computeFlowField();
+    this.pickIncomingGates();
     while (this.hand.length < B.handSize) this.hand.push(this.drawCard());
   }
 
   // ---------- derived ----------
 
+  /** Creep reach in px (grows over time; hearts accelerate it). */
   get creepRadius(): number {
     const hearts = this.organs.filter((o) => o.organ === 'heart').length;
     return B.creepBase + this.time * B.creepPerSec * (1 + B.creepPerHeartBonus * hearts);
@@ -128,8 +149,39 @@ export class Sim {
     return B.bodyBase + this.biomass * B.bodyPerBiomass;
   }
 
+  /** Creep reach in street-hops from the core. */
+  get creepRangeCells(): number {
+    return Math.floor(this.creepRadius / this.cfg.cellPx);
+  }
+
+  get bodyRangeCells(): number {
+    return Math.max(1, Math.floor(this.bodyRadius / this.cfg.cellPx));
+  }
+
+  isCreeped(cell: number): boolean {
+    const d = this.creepDist[cell];
+    return d >= 0 && d <= this.creepRangeCells;
+  }
+
+  isBody(cell: number): boolean {
+    const d = this.creepDist[cell];
+    return d >= 0 && d <= this.bodyRangeCells;
+  }
+
+  flowDistOf(cell: number): number {
+    return this.flow.dist[cell];
+  }
+
+  creepDistOf(cell: number): number {
+    return this.creepDist[cell];
+  }
+
+  flowNextOf(cell: number): number {
+    return this.flow.next[cell];
+  }
+
   get interest(): number {
-    let n = 0;
+    let n = B.baseInterest;
     for (const t of this.towers) n += towerStats(t).interest;
     for (const o of this.organs) {
       if (o.organ === 'brain') n += B.brainInterest;
@@ -196,18 +248,24 @@ export class Sim {
     return this.occupied.has(cell);
   }
 
-  /** Towers build anywhere on creep, clear of the core mouth. */
-  canBuildTower(cell: number): boolean {
-    const c = this.cellCenter(cell);
-    const d = dist(c, this.core);
-    return !this.isOccupied(cell) && d <= this.creepRadius && d > 44;
+  /**
+   * Towers perch on creeped CITY BLOCKS, out of the enemy channels — reading
+   * which block covers the most path legs is the game. The one exception is
+   * the spine wall, which is placed IN a street to be chewed through.
+   */
+  canBuildTower(cell: number, family?: TowerFamily): boolean {
+    if (this.isOccupied(cell) || cell === this.map.coreCell || !this.isCreeped(cell)) return false;
+    const t = this.map.cells[cell];
+    if (family === 'spine') return t === CellType.Road || t === CellType.Block;
+    return t === CellType.Block;
   }
 
-  /** Organs grow only inside the body mass. */
+  /** Organs grow on the open plaza ground inside the body — in harm's way. */
   canBuildOrgan(cell: number): boolean {
-    const c = this.cellCenter(cell);
-    const d = dist(c, this.core);
-    return !this.isOccupied(cell) && d <= this.bodyRadius && d > 44;
+    return this.map.cells[cell] === CellType.Plaza
+      && this.isBody(cell)
+      && !this.isOccupied(cell)
+      && cell !== this.map.coreCell;
   }
 
   canAfford(cost: Partial<Record<Caste, number>>): boolean {
@@ -220,6 +278,15 @@ export class Sim {
     for (const c of ['war', 'science', 'royal'] as Caste[]) {
       this.meat[c] -= cost[c] ?? 0;
     }
+  }
+
+  private computeFlowField() {
+    return computeFlow(this.map, this.map.coreCell,
+      (cell) => (this.occupied.has(cell) ? STRUCTURE_FLOW_COST : 0));
+  }
+
+  private refreshRouting(): void {
+    this.flow = this.computeFlowField();
   }
 
   // ---------- cards ----------
@@ -252,7 +319,7 @@ export class Sim {
         const card = this.hand[cmd.cardIndex];
         if (!card) return { ok: false, err: 'no such card' };
         const spec = towerSpec(card.family);
-        if (!this.canBuildTower(cmd.cell)) return { ok: false, err: 'cell not buildable' };
+        if (!this.canBuildTower(cmd.cell, card.family)) return { ok: false, err: 'cell not buildable' };
         if (!this.canAfford(spec.cost)) return { ok: false, err: 'cannot afford' };
         let pips = [] as Tower['pips'];
         if (cmd.cannibalizeTowerId !== undefined) {
@@ -272,6 +339,7 @@ export class Sim {
         tower.hp = tower.maxHp;
         this.towers.push(tower);
         this.occupied.set(cmd.cell, { kind: 't', id: tower.id });
+        this.refreshRouting();
         this.hand.splice(cmd.cardIndex, 1);
         this.hand.push(this.drawCard());
         this.events.push({ kind: 'built', family: card.family, pips: pips.length });
@@ -289,6 +357,7 @@ export class Sim {
         };
         this.organs.push(organ);
         this.occupied.set(cmd.cell, { kind: 'o', id: organ.id });
+        this.refreshRouting();
         this.events.push({ kind: 'organ-built', organ: cmd.organ });
         return { ok: true };
       }
@@ -304,6 +373,16 @@ export class Sim {
         this.biomass += B.royalSurgeBiomass;
         return { ok: true };
       }
+      case 'discard': {
+        const card = this.hand[cmd.cardIndex];
+        if (!card) return { ok: false, err: 'no such card' };
+        if (this.meat.war < B.discardCost) return { ok: false, err: 'cannot afford' };
+        this.meat.war -= B.discardCost;
+        this.hand.splice(cmd.cardIndex, 1);
+        this.hand.push(this.drawCard());
+        this.events.push({ kind: 'discarded', family: card.family });
+        return { ok: true };
+      }
     }
   }
 
@@ -313,6 +392,7 @@ export class Sim {
     const t = this.towers[i];
     this.occupied.delete(t.cell);
     this.towers.splice(i, 1);
+    this.refreshRouting();
     for (const e of this.enemies) {
       if (!e.targetIsOrgan && e.targetId === id) e.targetId = null;
     }
@@ -325,6 +405,7 @@ export class Sim {
     const o = this.organs[i];
     this.occupied.delete(o.cell);
     this.organs.splice(i, 1);
+    this.refreshRouting();
     for (const e of this.enemies) {
       if (e.targetIsOrgan && e.targetId === id) e.targetId = null;
     }
@@ -333,19 +414,39 @@ export class Sim {
 
   // ---------- spawning ----------
 
-  private edgeSpawnPos(): Vec {
-    const side = this.rng.int(0, 3);
-    const m = 6;
-    if (side === 0) return { x: this.rng.float(0, this.worldW), y: m };
-    if (side === 1) return { x: this.rng.float(0, this.worldW), y: this.worldH - m };
-    if (side === 2) return { x: m, y: this.rng.float(0, this.worldH) };
-    return { x: this.worldW - m, y: this.rng.float(0, this.worldH) };
+  gateSide(gate: number): 'N' | 'S' | 'E' | 'W' {
+    const cx = gate % this.cfg.gridW;
+    const cy = Math.floor(gate / this.cfg.gridW);
+    if (cy === 0) return 'N';
+    if (cy === this.cfg.gridH - 1) return 'S';
+    if (cx === 0) return 'W';
+    return 'E';
   }
 
-  private spawnEnemy(kind: EnemyKind): Enemy {
+  /** The hive masses its response on specific approaches; the player sees it coming. */
+  private pickIncomingGates(): void {
+    const lanes = this.tier >= 4 ? 3 : this.tier >= 2 ? 2 : 1;
+    const picked: number[] = [];
+    const sides = new Set<string>();
+    let guard = 0;
+    while (picked.length < Math.min(lanes, this.map.gates.length) && guard++ < 60) {
+      const g = this.map.gates[this.rng.int(0, this.map.gates.length - 1)];
+      const side = this.gateSide(g);
+      if (picked.includes(g)) continue;
+      if (sides.has(side) && guard < 30) continue; // spread lanes across sides first
+      picked.push(g);
+      sides.add(side);
+    }
+    this.incomingGates = picked;
+  }
+
+  private spawnEnemy(kind: EnemyKind, atGate?: number): Enemy {
     const spec = enemySpec(kind);
+    const gate = atGate ?? this.map.gates[this.rng.int(0, this.map.gates.length - 1)];
+    const c = this.cellCenter(gate);
     const e: Enemy = {
-      id: this.nextId++, kind, pos: this.edgeSpawnPos(),
+      id: this.nextId++, kind,
+      pos: { x: c.x + this.rng.float(-6, 6), y: c.y + this.rng.float(-6, 6) },
       hp: spec.hp, maxHp: spec.hp, targetId: null, targetIsOrgan: false,
       attackCooldown: 0, studyLeft: kind === 'researcher' ? B.studySeconds : 0,
       leaving: false,
@@ -359,19 +460,21 @@ export class Sim {
     this.phaseElapsed = 0;
     this.waveNumber += 1;
     const comp = WAVE_TABLE[this.tier];
+    const scale = 1 + this.wavesCleared * B.waveCountScale;
     this.spawnQueue = [];
     const counts: Partial<Record<EnemyKind, number>> = {};
     for (const [kind, n] of Object.entries(comp)) {
-      counts[kind as EnemyKind] = n;
-      for (let i = 0; i < (n ?? 0); i++) this.spawnQueue.push(kind as EnemyKind);
+      const scaled = Math.round((n ?? 0) * scale);
+      counts[kind as EnemyKind] = scaled;
+      for (let i = 0; i < scaled; i++) this.spawnQueue.push(kind as EnemyKind);
     }
-    // Shuffle spawn order deterministically.
     for (let i = this.spawnQueue.length - 1; i > 0; i--) {
       const j = this.rng.int(0, i);
       [this.spawnQueue[i], this.spawnQueue[j]] = [this.spawnQueue[j], this.spawnQueue[i]];
     }
     this.spawnTimer = 0;
-    this.events.push({ kind: 'wave-start', tier: this.tier, wave: this.waveNumber, counts });
+    const sides = [...new Set(this.incomingGates.map((g) => this.gateSide(g)))].join('+');
+    this.events.push({ kind: 'wave-start', tier: this.tier, wave: this.waveNumber, counts, sides });
   }
 
   // ---------- tick ----------
@@ -382,11 +485,9 @@ export class Sim {
     this.time += DT;
     this.phaseElapsed += DT;
 
-    // Biomass and win.
     const hearts = this.organs.filter((o) => o.organ === 'heart').length;
     this.biomass += (B.biomassBase + hearts * B.biomassPerHeart) * DT;
 
-    // Gland challenge mode feeds threat.
     if (this.glandMode() === 'challenge') this.threatChallenge += B.glandChallengeThreatPerSec * DT;
 
     // Phase machine.
@@ -397,7 +498,8 @@ export class Sim {
         this.spawnTimer -= DT;
         if (this.spawnTimer <= 0) {
           this.spawnTimer = B.siegeSpawnSeconds / Math.max(1, this.spawnQueue.length + 4);
-          this.spawnEnemy(this.spawnQueue.pop()!);
+          const lane = this.incomingGates[this.rng.int(0, this.incomingGates.length - 1)];
+          this.spawnEnemy(this.spawnQueue.pop()!, lane);
         }
       }
       const hostiles = this.enemies.some((e) => e.kind !== 'researcher');
@@ -407,6 +509,7 @@ export class Sim {
         this.wavesCleared += 1;
         this.checkDirective();
         if (this.outcome !== 'playing') return;
+        this.pickIncomingGates();
       }
     }
 
@@ -430,8 +533,9 @@ export class Sim {
       || (this.directive.kind === 'royal' && this.waveNumber >= B.royalGuaranteeWave);
     if (!this.royalSpawned && royalDue) {
       this.royalSpawned = true;
-      this.spawnEnemy('royal');
-      for (let i = 0; i < B.royalEscort; i++) this.spawnEnemy('elite');
+      const lane = this.incomingGates[0] ?? this.map.gates[0];
+      this.spawnEnemy('royal', lane);
+      for (let i = 0; i < B.royalEscort; i++) this.spawnEnemy('elite', lane);
       this.events.push({ kind: 'royal-incoming' });
     }
 
@@ -459,17 +563,69 @@ export class Sim {
     if (target) this.damageEnemy(target, B.coreDps * DT, 1);
   }
 
-  private structureById(kind: 't' | 'o', id: number): Tower | Organ | undefined {
-    return kind === 't'
-      ? this.towers.find((t) => t.id === id)
-      : this.organs.find((o) => o.id === id);
+  // ---------- movement ----------
+
+  private structureOn(cell: number): { kind: 't' | 'o'; id: number } | undefined {
+    return this.occupied.get(cell);
+  }
+
+  private structurePos(s: { kind: 't' | 'o'; id: number }): Vec | null {
+    const obj = s.kind === 't'
+      ? this.towers.find((t) => t.id === s.id)
+      : this.organs.find((o) => o.id === s.id);
+    return obj ? obj.pos : null;
+  }
+
+  /** Move an enemy toward a point, clamped so it never enters a building cell. */
+  private stepConstrained(e: Enemy, target: Vec, speed: number): void {
+    const d = dist(e.pos, target);
+    if (d < 0.5) return;
+    const nx = e.pos.x + ((target.x - e.pos.x) / d) * speed * DT;
+    const ny = e.pos.y + ((target.y - e.pos.y) / d) * speed * DT;
+    const inBounds = (x: number, y: number) =>
+      x >= 2 && y >= 2 && x <= this.worldW - 2 && y <= this.worldH - 2;
+    const passAt = (x: number, y: number) =>
+      inBounds(x, y) && isPassable(this.map.cells[this.cellAt(x, y)]);
+    if (passAt(nx, ny)) {
+      e.pos.x = nx; e.pos.y = ny;
+    } else if (passAt(nx, e.pos.y)) {
+      e.pos.x = nx; // slide along the wall
+    } else if (passAt(e.pos.x, ny)) {
+      e.pos.y = ny;
+    }
+    // else: fully cornered; stand (the flow field will route them next tick)
+  }
+
+  /** Enemies shoulder each other apart so columns read as columns, not a stack. */
+  private applySeparation(): void {
+    const n = this.enemies.length;
+    for (let i = 0; i < n; i++) {
+      const a = this.enemies[i];
+      for (let j = i + 1; j < n; j++) {
+        const b = this.enemies[j];
+        const dx = b.pos.x - a.pos.x;
+        const dy = b.pos.y - a.pos.y;
+        const d = Math.hypot(dx, dy);
+        if (d > 0.001 && d < SEPARATION_DIST) {
+          const push = ((SEPARATION_DIST - d) / d) * 0.5;
+          const tryShift = (e: Enemy, sx: number, sy: number) => {
+            const x = e.pos.x + sx;
+            const y = e.pos.y + sy;
+            if (x >= 2 && y >= 2 && x <= this.worldW - 2 && y <= this.worldH - 2
+              && isPassable(this.map.cells[this.cellAt(x, y)])) {
+              e.pos.x = x; e.pos.y = y;
+            }
+          };
+          tryShift(a, -dx * push, -dy * push);
+          tryShift(b, dx * push, dy * push);
+        }
+      }
+    }
   }
 
   private updateEnemies(): void {
-    const dead: number[] = [];
-    for (const e of this.enemies) {
+    for (const e of [...this.enemies]) {
       const spec = enemySpec(e.kind);
-
       if (e.kind === 'researcher') {
         this.updateResearcher(e, spec);
         continue;
@@ -506,72 +662,78 @@ export class Sim {
         continue;
       }
 
-      // Advance toward the core; latch onto anything close enough on the way.
-      const near = this.nearestStructure(e.pos, CONTACT_DIST);
-      if (near) {
-        e.targetId = near.id;
-        e.targetIsOrgan = near.kind === 'o';
-        e.attackCooldown = 0;
-        continue;
-      }
-      if (dist(e.pos, this.core) <= this.bodyRadius * 0.55) {
+      // March the streets: follow the flow field toward the core.
+      if (dist(e.pos, this.core) <= CORE_CONTACT) {
         e.targetId = -1;
         e.attackCooldown = 0;
         continue;
       }
-      this.moveToward(e, this.core, spec.speed);
+      const cell = this.cellAt(e.pos.x, e.pos.y);
+      const nextCell = this.flow.next[cell];
+
+      // A structure on my cell or the next cell is a wall in my way: chew through it.
+      const wall = this.structureOn(cell) ?? (nextCell >= 0 ? this.structureOn(nextCell) : undefined);
+      if (wall) {
+        const wp = this.structurePos(wall);
+        if (wp && dist(e.pos, wp) <= STRUCTURE_CONTACT + ENEMY_RADIUS) {
+          e.targetId = wall.id;
+          e.targetIsOrgan = wall.kind === 'o';
+          e.attackCooldown = 0;
+          continue;
+        }
+        if (wp) {
+          this.stepConstrained(e, wp, spec.speed);
+          continue;
+        }
+      }
+
+      if (nextCell >= 0) {
+        this.stepConstrained(e, this.cellCenter(nextCell), spec.speed);
+      } else {
+        // Unreachable pocket (shouldn't happen): press toward the core anyway.
+        this.stepConstrained(e, this.core, spec.speed);
+      }
     }
-    for (const id of dead) this.killEnemy(id, 1, false);
+    this.applySeparation();
   }
 
   private updateResearcher(e: Enemy, spec: EnemySpec): void {
+    const cell = this.cellAt(e.pos.x, e.pos.y);
     if (e.leaving) {
-      // Walk off the nearest edge, despawn outside.
-      const exits: Vec[] = [
-        { x: e.pos.x, y: -20 }, { x: e.pos.x, y: this.worldH + 20 },
-        { x: -20, y: e.pos.y }, { x: this.worldW + 20, y: e.pos.y },
-      ];
-      let exit = exits[0];
-      for (const c of exits) if (dist(e.pos, c) < dist(e.pos, exit)) exit = c;
-      this.moveToward(e, exit, spec.speed);
-      if (e.pos.x < -10 || e.pos.y < -10 || e.pos.x > this.worldW + 10 || e.pos.y > this.worldH + 10) {
-        e.hp = -1; // silently gone; no meat, no threat
+      // Walk back up the flow field (away from the core) and slip out at the edge.
+      const cx = cell % this.cfg.gridW;
+      const cy = Math.floor(cell / this.cfg.gridW);
+      if (cx <= 1 || cy <= 1 || cx >= this.cfg.gridW - 2 || cy >= this.cfg.gridH - 2) {
         const i = this.enemies.indexOf(e);
         if (i >= 0) this.enemies.splice(i, 1);
+        return;
       }
+      let best = -1;
+      let bestD = this.flow.dist[cell];
+      const neighbors = [cell - 1, cell + 1, cell - this.cfg.gridW, cell + this.cfg.gridW];
+      for (const nb of neighbors) {
+        if (nb < 0 || nb >= this.map.cells.length || !isPassable(this.map.cells[nb])) continue;
+        if (Number.isFinite(this.flow.dist[nb]) && this.flow.dist[nb] > bestD) {
+          bestD = this.flow.dist[nb];
+          best = nb;
+        }
+      }
+      if (best >= 0) this.stepConstrained(e, this.cellCenter(best), spec.speed);
+      else this.stepConstrained(e, { x: e.pos.x < this.worldW / 2 ? 0 : this.worldW, y: e.pos.y }, spec.speed);
       return;
     }
-    // Approach the body perimeter and study.
-    const standoff = this.creepRadius + RESEARCH_STANDOFF * 0.4;
-    const d = dist(e.pos, this.core);
-    if (d > standoff) {
-      this.moveToward(e, this.core, spec.speed);
+    // Approach along the streets; step ONTO the creep edge to take samples.
+    // Standing on the mass is what science pays for — and what makes them huntable.
+    const nextCell = this.flow.next[cell];
+    if (this.isCreeped(cell)) {
+      e.studyLeft -= DT;
+      if (e.studyLeft <= 0) e.leaving = true;
       return;
     }
-    e.studyLeft -= DT;
-    if (e.studyLeft <= 0) e.leaving = true;
+    if (nextCell >= 0) this.stepConstrained(e, this.cellCenter(nextCell), spec.speed);
   }
 
-  private moveToward(e: Enemy, target: Vec, speed: number): void {
-    const d = dist(e.pos, target);
-    if (d < 1) return;
-    e.pos.x += ((target.x - e.pos.x) / d) * speed * DT;
-    e.pos.y += ((target.y - e.pos.y) / d) * speed * DT;
-  }
-
-  private nearestStructure(p: Vec, within: number): { kind: 't' | 'o'; id: number } | null {
-    let best: { kind: 't' | 'o'; id: number } | null = null;
-    let bestD = within;
-    for (const t of this.towers) {
-      const d = dist(p, t.pos) - ENEMY_RADIUS;
-      if (d < bestD) { bestD = d; best = { kind: 't', id: t.id }; }
-    }
-    for (const o of this.organs) {
-      const d = dist(p, o.pos) - ENEMY_RADIUS;
-      if (d < bestD) { bestD = d; best = { kind: 'o', id: o.id }; }
-    }
-    return best;
-  }
+  // ---------- combat ----------
 
   private updateTowers(): void {
     for (const t of this.towers) {
@@ -579,7 +741,6 @@ export class Sim {
       if (stats.rate <= 0) continue;
       t.cooldown -= DT;
       if (t.cooldown > 0) continue;
-      // Nearest enemy in range.
       let target: Enemy | null = null;
       let bestD = stats.range;
       for (const e of this.enemies) {
@@ -589,7 +750,6 @@ export class Sim {
       if (!target) continue;
       t.cooldown = 1 / stats.rate;
       if (t.family === 'lasher' || t.family === 'maw') {
-        // Melee: instant hit.
         if (t.family === 'maw' && target.hp <= stats.eatThreshold) {
           this.eatEnemy(target);
           continue;
@@ -603,7 +763,6 @@ export class Sim {
           }
         }
       } else {
-        // Projectile.
         const d = dist(t.pos, target.pos);
         const speed = B.projectileSpeed;
         this.projectiles.push({
@@ -631,14 +790,13 @@ export class Sim {
         if (dist(p.pos, e.pos) <= ENEMY_RADIUS + 4) { hit = e; break; }
       }
       if (hit || p.ttl <= 0) {
-        const ym = p.yieldMult;
         if (hit) {
           if (p.aoe > 0) {
             for (const e of [...this.enemies]) {
-              if (dist(p.pos, e.pos) <= p.aoe) this.damageEnemy(e, p.damage, ym);
+              if (dist(p.pos, e.pos) <= p.aoe) this.damageEnemy(e, p.damage, p.yieldMult);
             }
           } else {
-            this.damageEnemy(hit, p.damage, ym);
+            this.damageEnemy(hit, p.damage, p.yieldMult);
           }
         }
         gone.push(p.id);
@@ -684,7 +842,6 @@ export class Sim {
     const banked: number[] = [];
     for (const d of this.drops) {
       d.ttl -= DT;
-      // Fly toward the core (cosmetic in sim terms; banked on ttl).
       const dd = dist(d.pos, this.core);
       if (dd > 4) {
         const sp = dd / Math.max(0.05, d.ttl);

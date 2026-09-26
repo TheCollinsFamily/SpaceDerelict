@@ -39,6 +39,10 @@ const hud = new Hud({
     donorId = null;
     updateHint();
   },
+  onDiscardCard(i) {
+    sim.issue({ kind: 'discard', cardIndex: i });
+    if (selectedCard === i) selectedCard = null;
+  },
   onArmOrgan(o) {
     armedOrgan = o;
     donorId = null;
@@ -151,13 +155,10 @@ async function boot(): Promise<void> {
     }
     const w = renderer.toWorld(ev.clientX, ev.clientY);
     const cell = sim.cellAt(w.x, w.y);
+    const fam = sim.hand[selectedCard!]?.family;
     renderer.preview = armedOrgan
       ? { cell, kind: 'organ', valid: sim.canBuildOrgan(cell) }
-      : {
-        cell, kind: 'tower',
-        family: sim.hand[selectedCard!]?.family,
-        valid: sim.canBuildTower(cell),
-      };
+      : { cell, kind: 'tower', family: fam, valid: sim.canBuildTower(cell, fam) };
   });
 
   if (AUTO) updateHint();
@@ -182,8 +183,44 @@ async function boot(): Promise<void> {
   };
   requestAnimationFrame(frame);
 
-  // Expose for the visual-check script and console poking.
-  (window as unknown as { broodfall: { sim: Sim } }).broodfall = { sim };
+  // AI-play pathway: everything a scripted player (or Claude) needs, without
+  // clicking pixels. step(n) advances the sim synchronously (no rAF throttle),
+  // play() issues a raw command, summary() is a compact JSON state dump.
+  const api = {
+    sim,
+    step(n: number): void {
+      for (let i = 0; i < n && sim.outcome === 'playing'; i++) {
+        if (auto) auto.act(sim, DT);
+        sim.tick();
+      }
+      hud.pushEvents(sim.takeEvents());
+      hud.update(sim);
+      renderer.draw(sim, 0.016);
+    },
+    play(cmd: Parameters<Sim['issue']>[0]): { ok: boolean; err?: string } {
+      return sim.issue(cmd);
+    },
+    summary() {
+      return {
+        time: sim.time, outcome: sim.outcome, phase: sim.phase, wave: sim.waveNumber,
+        tier: sim.tier, directive: sim.directive, progress: sim.directiveProgress(),
+        meat: sim.meat, biomass: sim.biomass, coreHp: sim.coreHp,
+        towers: sim.towers.map((t) => ({ id: t.id, family: t.family, cell: t.cell, pips: t.pips.length, hp: t.hp })),
+        organs: sim.organs.map((o) => ({ id: o.id, organ: o.organ, cell: o.cell, mode: o.glandMode })),
+        enemies: sim.enemies.length,
+        hand: sim.hand.map((c) => c.family),
+        interest: sim.interest, threat: sim.threat,
+      };
+    },
+    buildableCells(limit = 40): number[] {
+      const out: number[] = [];
+      for (let c = 0; c < sim.map.cells.length && out.length < limit; c++) {
+        if (sim.canBuildTower(c)) out.push(c);
+      }
+      return out;
+    },
+  };
+  (window as unknown as { broodfall: typeof api }).broodfall = api;
 }
 
 void boot();

@@ -31,7 +31,7 @@ const FEED_LINES: Partial<Record<SimEvent['kind'], (e: SimEvent) => { text: stri
     ? { text: `internal structure grown: ${e.organ}`, cls: '' }
     : { text: '', cls: '' },
   'wave-start': (e) => e.kind === 'wave-start'
-    ? { text: `local response escalates — tier ${e.tier}`, cls: 'hot' }
+    ? { text: `assault from ${e.sides} — tier ${e.tier}`, cls: 'hot' }
     : { text: '', cls: '' },
   'researchers-arrive': () => ({ text: 'curious specimens inbound', cls: 'sci' }),
   'royal-incoming': () => ({ text: 'priority asset detected: ROYAL', cls: 'royal' }),
@@ -42,6 +42,7 @@ const FEED_LINES: Partial<Record<SimEvent['kind'], (e: SimEvent) => { text: stri
 
 export interface HudCallbacks {
   onSelectCard(index: number | null): void;
+  onDiscardCard(index: number): void;
   onArmOrgan(organ: OrganId | null): void;
   onToggleCannibalize(): void;
   onRoyalSurge(): void;
@@ -166,7 +167,8 @@ export class Hud {
     this.el.biomassFill.style.width = `${(frac * 100).toFixed(1)}%`;
     this.el.biomassText.textContent = `${Math.floor(prog.done)} / ${prog.goal}`;
 
-    this.el.phaseName.textContent = sim.phase === 'growth' ? 'GROWTH' : 'SIEGE';
+    const sides = [...new Set(sim.incomingGates.map((g) => sim.gateSide(g)))].join('+') || '?';
+    this.el.phaseName.textContent = sim.phase === 'growth' ? `ASSAULT FORMING: ${sides}` : 'SIEGE';
     this.el.phaseName.classList.toggle('siege', sim.phase === 'siege');
     this.el.waveInfo.textContent = `WAVE ${sim.waveNumber} · TIER ${sim.tier} · MASS ${Math.floor(sim.biomass)}`;
     this.el.threat.textContent = String(Math.floor(sim.threat));
@@ -193,8 +195,13 @@ export class Hud {
           .filter((c) => (spec.cost[c] ?? 0) > 0)
           .map((c) => `${spec.cost[c]}${c[0].toUpperCase()}`)
           .join(' ');
-        div.innerHTML = `<div class="card-name"></div><div class="card-desc"></div><div class="card-cost"></div>`;
+        div.innerHTML = `<div class="card-top"><div class="card-name"></div><button class="card-discard" title="Discard (3 war meat)">✕</button></div><div class="card-desc"></div><div class="card-cost"></div>`;
         (div.querySelector('.card-name') as HTMLElement).textContent = spec.name;
+        (div.querySelector('.card-discard') as HTMLElement).addEventListener('click', (ev) => {
+          ev.stopPropagation();
+          this.cb.onDiscardCard(i);
+          this.lastHandKey = '';
+        });
         (div.querySelector('.card-desc') as HTMLElement).textContent = CARD_DESC[card.family];
         (div.querySelector('.card-cost') as HTMLElement).textContent = cost;
         div.addEventListener('click', () => {

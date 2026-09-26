@@ -10,11 +10,17 @@ You are a growing body. Towers are limbs, creep is skin, organs are the build, m
 
 ## Planetside loop (one deployment = one run)
 
-### One map, one body
-- Your central body IS the base the insects are trying to kill. Organs are interior structures grown inside the body mass. Towers are extremities grown at the creep edge. One camera, one map.
-- Interior vs edge is the strategic axis: deep organs are safe but their auras reach less of the frontier; growing an organ forward is a power play that creates a vital target.
-- Sieges can cut creep and sever limbs from the body; severed towers starve.
-- The map at minute zero is a NEIGHBORHOOD, not a battlefield: commuters, larvae creches, food traffic. The city is shown living so the horror lands.
+### The board (Collins, Sep 26 2026: built to a reference screenshot of a real TD map)
+- **Figure-ground like the reference:** the map is a DENSE field of city blocks with dirt street channels CARVED through it in tight serpentines. Enemies march the channels; they cannot cross blocks. A uniform street grid is banned — it carries no geometric information and placement stops mattering (measured, twice).
+- **Few, long, winding lanes:** 3 gates, each with a switchbacking channel to one of 2 confluence squares, then ONE shared final approach to the crash plaza. Bends and merges are the architectural chokepoints; a block inside a switchback pocket touches several path legs and is prime real estate.
+- **Towers perch on creeped city blocks,** out of the traffic (reference behavior). Reading which block covers the most path legs is the game. Exception: the SPINE WALL is placed in the street to be chewed through — the one hold-the-line tool, and on a single-lane channel it cannot be routed around.
+- **Organs grow on open plaza ground inside the body — in the enemies' path.** Leaks threaten something real.
+- **The creep climbs everything** (blocks included) and gates where you may build; under the creep, streets stay visually readable (thin membrane on channels, thick hide on blocks).
+- **Waves attack down TELEGRAPHED lanes** (1-3 gates by tier, shown during the growth phase). Reinforcing the named approach before the assault is the core decision beat.
+- The map at minute zero is a NEIGHBORHOOD, not a battlefield: lit doorways, commuters, food traffic. The city is shown living so the horror lands.
+
+### The genre guardrail (permanent test)
+`tests/placement.test.ts` runs a chokepoint-aware scripted player against a random-placement player on 8 seeds with identical cards and economy. Placement-aware play must win more seeds AND score higher, or the board has degenerated into decoration. This test exists because the first two boards (radial creep, uniform grid) both failed it.
 
 ### Three meat currencies (exactly three, by caste)
 1. **War caste** — the default income and the default pressure. Warriors come because you exist.
@@ -25,6 +31,8 @@ The build dictates what comes (attraction economy), not the map. Which caste you
 
 ### Towers: cards, not shops
 - Towers buildable each round come from CARDS DRAWN with modified probability. Organs and roguelite (gene bank) unlocks shape the draw odds. The gene bank is your deck; organs decide which genes get expressed. You engineer your own randomness.
+- Each card carries a DISCARD button (small war-meat fee): hand-clog with unaffordable cards is a deadlock, and the discard is a real decision (found via autoplayer runs, seed 3 locked its whole hand on science-cost cards).
+- The asset has BASE INTEREST: researchers trickle in from minute one — a crashed alien bioweapon is inherently fascinating — so science meat exists before the first lure.
 - **REJECTED (Collins): "instability" — random tower death/mutation on over-modification.** Torching a run-long plan at the payoff moment is the one sin the genre cannot commit. No RNG destruction of player investment, ever.
 
 ### Cannibalize-to-modify

@@ -17,7 +17,19 @@ const failures = [];
 const pass = (n) => console.log(`  PASS  ${n}`);
 const fail = (n, d) => { failures.push(n); console.log(`  FAIL  ${n} — ${d}`); };
 
+function freePort() {
+  try {
+    const out = execSync('netstat -ano', { encoding: 'utf8' });
+    const rows = out.split(String.fromCharCode(10));
+    for (const line of rows) {
+      const m = line.match(/:5199\s+\S+\s+LISTENING\s+(\d+)/);
+      if (m) { try { execSync('taskkill /PID ' + m[1] + ' /T /F', { stdio: 'ignore' }); } catch {} }
+    }
+  } catch {}
+}
+
 function startPreview() {
+  freePort();
   const child = spawn(process.platform === 'win32' ? 'npx.cmd' : 'npx', ['vite', 'preview'], {
     cwd: root, stdio: 'pipe', shell: process.platform === 'win32',
   });

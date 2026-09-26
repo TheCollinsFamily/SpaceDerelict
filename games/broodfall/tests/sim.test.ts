@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../src/sim/rng';
 import { Sim, towerStats, towerSpec } from '../src/sim/sim';
+import { CellType, isPassable } from '../src/sim/citymap';
 import type { SimConfig, Tower } from '../src/sim/types';
 import { BALANCE as B, TOWERS } from '../content/data';
 
@@ -8,6 +9,24 @@ const CFG: SimConfig = { gridW: 40, gridH: 30, cellPx: 32, seed: 1234 };
 
 function freshSim(seed = 1234): Sim {
   return new Sim({ ...CFG, seed });
+}
+
+function buildableCell(s: Sim, skip = 0): number {
+  let n = 0;
+  for (let c = 0; c < s.map.cells.length; c++) {
+    if (s.canBuildTower(c)) {
+      if (n === skip) return c;
+      n++;
+    }
+  }
+  throw new Error('no buildable cell');
+}
+
+function organCell(s: Sim): number {
+  for (let c = 0; c < s.map.cells.length; c++) {
+    if (s.canBuildOrgan(c)) return c;
+  }
+  throw new Error('no organ cell');
 }
 
 describe('rng determinism', () => {
@@ -53,7 +72,7 @@ describe('economy and building', () => {
     s.meat.science = 999;
     const family = s.hand[0].family;
     const cost = towerSpec(family).cost;
-    const cell = s.cellAt(s.core.x + 100, s.core.y);
+    const cell = buildableCell(s);
     const before = { ...s.meat };
     const res = s.issue({ kind: 'build', cardIndex: 0, cell });
     expect(res.ok).toBe(true);
@@ -62,31 +81,95 @@ describe('economy and building', () => {
     expect(s.meat.war).toBe(before.war - (cost.war ?? 0));
   });
 
-  it('refuses to build off-creep, on occupied cells, or without meat', () => {
+  it('refuses to build off-creep, in buildings, on occupied cells, or without meat', () => {
     const s = freshSim();
-    const far = s.cellAt(5, 5); // corner: outside starting creep
-    expect(s.issue({ kind: 'build', cardIndex: 0, cell: far }).ok).toBe(false);
-
     s.meat.war = 999;
     s.meat.science = 999;
-    const cell = s.cellAt(s.core.x + 100, s.core.y);
+
+    // A building cell is never buildable, creeped or not.
+    const block = s.map.cells.findIndex((c) => c === CellType.Block);
+    expect(s.issue({ kind: 'build', cardIndex: 0, cell: block }).ok).toBe(false);
+
+    // A far passable cell outside the creep is not buildable yet.
+    const farRoad = s.map.gates[0];
+    expect(s.isCreeped(farRoad)).toBe(false);
+    expect(s.issue({ kind: 'build', cardIndex: 0, cell: farRoad }).ok).toBe(false);
+
+    const cell = buildableCell(s);
     expect(s.issue({ kind: 'build', cardIndex: 0, cell }).ok).toBe(true);
     expect(s.issue({ kind: 'build', cardIndex: 0, cell }).ok).toBe(false); // occupied
 
     s.meat.war = 0;
     s.meat.science = 0;
-    const cell2 = s.cellAt(s.core.x - 100, s.core.y);
-    expect(s.issue({ kind: 'build', cardIndex: 0, cell: cell2 }).ok).toBe(false);
+    expect(s.issue({ kind: 'build', cardIndex: 0, cell: buildableCell(s) }).ok).toBe(false);
   });
 
   it('organs only build inside the body', () => {
     const s = freshSim();
     s.meat.war = 999;
     s.meat.science = 999;
-    const outside = s.cellAt(s.core.x + s.bodyRadius + 60, s.core.y);
-    expect(s.issue({ kind: 'build-organ', organ: 'heart', cell: outside }).ok).toBe(false);
-    const inside = s.cellAt(s.core.x + 55, s.core.y);
-    expect(s.issue({ kind: 'build-organ', organ: 'heart', cell: inside }).ok).toBe(true);
+    // A creeped cell beyond the body range is tower-buildable but not organ-buildable.
+    let beyond = -1;
+    for (let c = 0; c < s.map.cells.length; c++) {
+      if (s.canBuildTower(c) && !s.isBody(c)) { beyond = c; break; }
+    }
+    expect(beyond).toBeGreaterThanOrEqual(0);
+    expect(s.issue({ kind: 'build-organ', organ: 'heart', cell: beyond }).ok).toBe(false);
+    expect(s.issue({ kind: 'build-organ', organ: 'heart', cell: organCell(s) }).ok).toBe(true);
+  });
+
+  it('city map: every gate reaches the core along passable streets', () => {
+    const s = freshSim();
+    expect(s.map.gates.length).toBeGreaterThanOrEqual(2);
+    for (const gate of s.map.gates) {
+      expect(Number.isFinite(s.flowDistOf(gate))).toBe(true);
+    }
+  });
+
+  it('a spine wall in a street raises the flow cost through it (plugging works)', () => {
+    const s = freshSim();
+    s.meat.war = 9999;
+    s.meat.science = 9999;
+    // Draw until a spine card is in hand (discards are deterministic).
+    let spineIdx = -1;
+    for (let guard = 0; guard < 200 && spineIdx < 0; guard++) {
+      spineIdx = s.hand.findIndex((c) => c.family === 'spine');
+      if (spineIdx < 0) s.issue({ kind: 'discard', cardIndex: 0 });
+    }
+    expect(spineIdx).toBeGreaterThanOrEqual(0);
+    // Let the creep reach a street cell.
+    let roadCell = -1;
+    for (let guard = 0; guard < 40 && roadCell < 0; guard++) {
+      for (let c = 0; c < s.map.cells.length; c++) {
+        if (s.map.cells[c] === CellType.Road && s.canBuildTower(c, 'spine')) { roadCell = c; break; }
+      }
+      if (roadCell < 0) for (let i = 0; i < 100; i++) s.tick();
+    }
+    expect(roadCell).toBeGreaterThanOrEqual(0);
+    const before = s.flowDistOf(roadCell);
+    expect(s.issue({ kind: 'build', cardIndex: spineIdx, cell: roadCell }).ok).toBe(true);
+    const after = s.flowDistOf(roadCell);
+    expect(after).toBeGreaterThan(before + 100); // wall cost applied to routing
+
+    // And a shooter can NOT stand in the street.
+    let shooterIdx = s.hand.findIndex((c) => c.family !== 'spine');
+    expect(shooterIdx).toBeGreaterThanOrEqual(0);
+    let roadCell2 = -1;
+    for (let c = 0; c < s.map.cells.length; c++) {
+      if (s.map.cells[c] === CellType.Road && s.canBuildTower(c, 'spine') && c !== roadCell) { roadCell2 = c; break; }
+    }
+    if (roadCell2 >= 0) {
+      expect(s.issue({ kind: 'build', cardIndex: shooterIdx, cell: roadCell2 }).ok).toBe(false);
+    }
+  });
+
+  it('enemies never stand inside buildings', () => {
+    const s = freshSim(4321);
+    for (let i = 0; i < 3000; i++) s.tick();
+    expect(s.enemies.length).toBeGreaterThan(0);
+    for (const e of s.enemies) {
+      expect(isPassable(s.map.cells[s.cellAt(e.pos.x, e.pos.y)])).toBe(true);
+    }
   });
 });
 
@@ -113,8 +196,8 @@ describe('cannibalize inheritance', () => {
     const s = freshSim();
     s.meat.war = 9999;
     s.meat.science = 9999;
-    const cellA = s.cellAt(s.core.x + 100, s.core.y);
-    const cellB = s.cellAt(s.core.x - 100, s.core.y);
+    const cellA = buildableCell(s);
+    const cellB = buildableCell(s, 1);
     expect(s.issue({ kind: 'build', cardIndex: 0, cell: cellA }).ok).toBe(true);
     const donor = s.towers[0];
     const donorFamily = donor.family;
@@ -150,8 +233,7 @@ describe('attraction and escalation', () => {
     const i0 = s.interest;
     s.meat.war = 9999;
     s.meat.science = 9999;
-    const inside = s.cellAt(s.core.x + 55, s.core.y);
-    s.issue({ kind: 'build-organ', organ: 'gland', cell: inside });
+    s.issue({ kind: 'build-organ', organ: 'gland', cell: organCell(s) });
     const gland = s.organs.find((o) => o.organ === 'gland')!;
     s.issue({ kind: 'cycle-gland', organInstanceId: gland.id });
     expect(gland.glandMode).toBe('lure');

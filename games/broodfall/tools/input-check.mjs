@@ -14,7 +14,19 @@ const failures = [];
 const pass = (n) => console.log(`  PASS  ${n}`);
 const fail = (n, d) => { failures.push(n); console.log(`  FAIL  ${n} — ${d}`); };
 
+function freePort() {
+  try {
+    const out = execSync('netstat -ano', { encoding: 'utf8' });
+    const rows = out.split(String.fromCharCode(10));
+    for (const line of rows) {
+      const m = line.match(/:5199\s+\S+\s+LISTENING\s+(\d+)/);
+      if (m) { try { execSync('taskkill /PID ' + m[1] + ' /T /F', { stdio: 'ignore' }); } catch {} }
+    }
+  } catch {}
+}
+
 function startPreview() {
+  freePort();
   const child = spawn(process.platform === 'win32' ? 'npx.cmd' : 'npx', ['vite', 'preview'], {
     cwd: root, stdio: 'pipe', shell: process.platform === 'win32',
   });
@@ -47,10 +59,32 @@ try {
   };
 
   const core = await page.evaluate(() => window.broodfall.sim.core);
+  const towerSpot = await page.evaluate(() => {
+    const s = window.broodfall.sim;
+    for (let c = 0; c < s.map.cells.length; c++) {
+      if (s.canBuildTower(c)) return s.cellCenter(c);
+    }
+    return null;
+  });
+  const towerSpot2 = await page.evaluate(() => {
+    const s = window.broodfall.sim;
+    let n = 0;
+    for (let c = 0; c < s.map.cells.length; c++) {
+      if (s.canBuildTower(c)) { if (n === 1) return s.cellCenter(c); n++; }
+    }
+    return null;
+  });
+  const organSpot = await page.evaluate(() => {
+    const s = window.broodfall.sim;
+    for (let c = 0; c < s.map.cells.length; c++) {
+      if (s.canBuildOrgan(c)) return s.cellCenter(c);
+    }
+    return null;
+  });
 
-  // 1. Select the first card and place it right of the core.
+  // 1. Select the first card and place it on a legal creep-skin cell.
   await page.locator('#hand .card').first().click();
-  await clickWorld(core.x + 100, core.y);
+  await clickWorld(towerSpot.x, towerSpot.y);
   let towers = await page.evaluate(() => window.broodfall.sim.towers.length);
   if (towers === 1) pass('card click + canvas click builds a tower');
   else fail('build via input', `towers=${towers}`);
@@ -58,8 +92,8 @@ try {
   // 2. Feed-a-limb flow: select a card, toggle cannibalize, click donor, place left of core.
   await page.locator('#hand .card').first().click();
   await page.locator('#cannibalize-toggle').click();
-  await clickWorld(core.x + 100, core.y); // pick the donor we just built
-  await clickWorld(core.x - 100, core.y); // place the new limb
+  await clickWorld(towerSpot.x, towerSpot.y); // pick the donor we just built
+  await clickWorld(towerSpot2.x, towerSpot2.y); // place the new limb
   const after = await page.evaluate(() => {
     const s = window.broodfall.sim;
     return { towers: s.towers.length, pips: s.towers[0]?.pips.length ?? -1 };
@@ -69,7 +103,7 @@ try {
 
   // 3. Organ placement inside the body.
   await page.locator('.organ-btn[data-organ="heart"]').click();
-  await clickWorld(core.x, core.y + 60);
+  await clickWorld(organSpot.x, organSpot.y);
   const organs = await page.evaluate(() => window.broodfall.sim.organs.length);
   if (organs === 1) pass('organ button + body click grows an organ');
   else fail('organ placement', `organs=${organs}`);
@@ -78,7 +112,14 @@ try {
   await page.locator('#hand .card').first().click();
   const box = await page.locator('#stage canvas').boundingBox();
   await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2, { button: 'right' });
-  await clickWorld(core.x, core.y - 100);
+  const towerSpot3 = await page.evaluate(() => {
+    const s = window.broodfall.sim;
+    for (let c = 0; c < s.map.cells.length; c++) {
+      if (s.canBuildTower(c)) return s.cellCenter(c);
+    }
+    return null;
+  });
+  await clickWorld(towerSpot3.x, towerSpot3.y);
   const towers2 = await page.evaluate(() => window.broodfall.sim.towers.length);
   if (towers2 === after.towers) pass('right-click cancels placement');
   else fail('right-click cancel', `towers went ${after.towers} -> ${towers2}`);
