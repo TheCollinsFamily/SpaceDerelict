@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BROODFALL — Field Operations Console</title>
+  <link rel="stylesheet" href="./src/style.css" />
+</head>
+<body>
+  <div id="frame">
+    <header id="topbar">
+      <div id="brand">
+        <div id="brand-title">XENOFAUNA CLEARANCE</div>
+        <div id="brand-sub">Field Operations Console v2.4 — Property of the Technopuritan Navy</div>
+      </div>
+      <div class="meat" id="meat-war"><span class="meat-label">WAR</span><span class="meat-val">0</span></div>
+      <div class="meat" id="meat-science"><span class="meat-label">SCI</span><span class="meat-val">0</span></div>
+      <div class="meat" id="meat-royal"><span class="meat-label">ROYAL</span><span class="meat-val">0</span></div>
+      <div id="biomass-wrap">
+        <div id="biomass-label">MASS TO SPORULATION</div>
+        <div id="biomass-bar"><div id="biomass-fill"></div><span id="biomass-text"></span></div>
+      </div>
+      <div id="phase-box">
+        <div id="phase-name">GROWTH</div>
+        <div id="wave-info">WAVE 0 · TIER 0</div>
+      </div>
+      <div id="dials">
+        <div class="dial" id="dial-threat"><span>THREAT</span><b>0</b></div>
+        <div class="dial" id="dial-interest"><span>INTEREST</span><b>0</b></div>
+      </div>
+      <div id="speed-box">
+        <button data-speed="0">❚❚</button>
+        <button data-speed="1" class="on">1×</button>
+        <button data-speed="3">3×</button>
+        <button data-speed="8">8×</button>
+      </div>
+    </header>
+
+    <main id="stage-wrap">
+      <div id="stage"></div>
+      <aside id="feed"></aside>
+      <div id="core-hp-wrap"><div id="core-hp-label">ASSET INTEGRITY</div><div id="core-hp-bar"><div id="core-hp-fill"></div></div></div>
+      <div id="overlay" class="hidden">
+        <div id="overlay-card">
+          <div id="overlay-title"></div>
+          <div id="overlay-body"></div>
+          <button id="overlay-restart">REDEPLOY ASSET</button>
+        </div>
+      </div>
+      <div id="hint"></div>
+    </main>
+
+    <footer id="botbar">
+      <div id="organs">
+        <div class="organ-btn" data-organ="heart"><b>AUX HEART</b><span class="cost">30W 10S</span></div>
+        <div class="organ-btn" data-organ="brain"><b>BRAIN NODE</b><span class="cost">30S</span></div>
+        <div class="organ-btn" data-organ="gland"><b>PHERO GLAND</b><span class="cost">20S</span></div>
+        <div class="organ-btn" id="royal-surge"><b>ROYAL SURGE</b><span class="cost">50R → +120 MASS</span></div>
+      </div>
+      <div id="hand"></div>
+      <div id="feed-controls">
+        <div class="organ-btn" id="cannibalize-toggle"><b>FEED A LIMB</b><span class="cost">eat a tower into the next build</span></div>
+      </div>
+    </footer>
+  </div>
+  <div id="grain"></div>
+  <script type="module" src="./src/main.ts"></script>
+</body>
+</html>
