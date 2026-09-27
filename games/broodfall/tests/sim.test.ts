@@ -799,7 +799,31 @@ describe('the cannon (war + science), bombard markers, ward shields', () => {
     expect(near.shield!).toBeGreaterThan(low);
   });
 
-  it('shields must be stripped before a researcher can steal the limb', () => {
+  it('science caste never targets a shielded limb; it drops a mark that gets shielded', () => {
+    const s = freshSim(1006);
+    const soft = stub(s, 5601, 'spitter', 300, 300);
+    const warded = stub(s, 5602, 'spitter', 500, 300);
+    warded.shield = 70; warded.shieldMax = 70;
+    s.towers.push(soft, warded);
+    const stand = (s as unknown as { standCellFor(c: number): number });
+    if (stand.standCellFor(soft.cell) >= 0) expect(s.vulnerableTower()!.id).toBe(soft.id);
+    // Shield everything: nothing left worth taking.
+    soft.shield = 70; soft.shieldMax = 70;
+    expect(s.vulnerableTower()).toBeNull();
+    // A researcher already marking a limb abandons it once it is shielded.
+    const s2 = freshSim(1007);
+    const t2 = stub(s2, 5701, 'spitter', 300, 300);
+    s2.towers.push(t2);
+    const sim2 = s2 as unknown as SpawnSim;
+    const r = sim2.spawnEnemy('researcher', s2.gates[0]);
+    const rE = s2.enemies.find((x) => x.id === r.id)!;
+    rE.extractId = t2.id;
+    t2.shield = 70; t2.shieldMax = 70; t2.cooldown = 1e9;
+    s2.tick();
+    expect(rE.extractId).not.toBe(t2.id);
+  });
+
+  it('hurtTower: a shield soaks harm before hp', () => {
     const s = freshSim(1004);
     const t = stub(s, 5401, 'spitter', 300, 300);
     t.shield = 40; t.shieldMax = 40;

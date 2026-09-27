@@ -1130,6 +1130,7 @@ export class Sim {
         let best: Tower | null = null;
         let bd = c.range;
         for (const t of this.towers) {
+          if ((t.shield ?? 0) > 0) continue; // darts can't get through a shield
           const d = dist(e.pos, t.pos);
           if (d <= bd) { bd = d; best = t; }
         }
@@ -1308,6 +1309,8 @@ export class Sim {
     let best: Tower | null = null;
     let bestKey = Infinity;
     for (const t of this.towers) {
+      // A shielded limb can't be sedated or darted — the caste doesn't bother with it.
+      if ((t.shield ?? 0) > 0) continue;
       const stand = this.standCellFor(t.cell);
       if (stand < 0) continue;
       const key = this.dangerAt(stand) * 1000 - this.creepDist[t.cell];
@@ -1347,6 +1350,8 @@ export class Sim {
       return;
     }
     let prey = e.extractId !== undefined ? this.towers.find((t) => t.id === e.extractId) : undefined;
+    // The mark got shielded (a ward went up) — pick a softer one.
+    if (prey && (prey.shield ?? 0) > 0) prey = undefined;
     if (!prey) {
       prey = this.vulnerableTower() ?? undefined;
       e.extractId = prey?.id;
