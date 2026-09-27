@@ -84,26 +84,28 @@ is the rejected "destroy their investment" failure in uniform), and sappers CRAW
 
 ### Combination algebra (cannibalize pips — how combinations compose)
 
-Pips are commutative and order-free: a tower's stats depend only on the MULTISET of
-families it has eaten, never the order. Each family contributes on its own axis, so
-any pair coexists; the axes only meet at these defined joints:
+**NO CAPS, EVER (Collins, Sep 27 2026): "no no caps — the point of these games is
+things that feel busted."** An earlier pass capped chains/poison/shred/knockback,
+limited the choir to two voices, made wards not stack, capped the prism ramp and
+relays, floored the tangler slow and made bombard range-doubling once-only. All of
+that is removed and a test pins the absence. Do not reintroduce a cap on stacking.
 
-- **Slows** (tangler pip, pit root, snare hits): the STRONGEST factor wins and the
-  longest clock survives; a pit-pip hard root (5% speed) beats any soft slow through
-  the same rule. Never multiplied together.
-- **Poison** (blighter): stacks additively across sources and refreshes, capped at 40
-  dps per body. Poison ticks ignore armor caps by design (the phalanx answer #2).
-- **Shred** (mister): the deepest cut wins, refreshes, capped +24 — and it widens the
-  armor cap for EVERY source, so one mister multiplies a whole battery.
-- **Chains** (frond): base + 1 per pip, capped at 5; each arc is a separate small hit
-  (cap-friendly); an arc never strikes the same body twice per shot.
-- **Knockback** (lobber pip): additive, capped 20px, along the shot's direction, never
-  into a building.
-- **Armor-pierce** (impaler): the impaler's own shots ignore caps outright; its pip
-  gives +5 cap to another tower's hits, stacking under shred on the same target.
-- **Multiplicative throughput** (spitter rate × lasher damage × choir range × burster
-  aoe × maw yield) compose freely — that is the intended "engineer your own tower"
-  fantasy; the caps above are only on the STATUS axes where stacking could snowball.
+Pips are commutative and order-free: a tower's stats depend only on the MULTISET of
+families it has eaten, never the order. Eating a limb passes on its ENTIRE history plus
+one pip of its own family; eating several before placing pools them all. Every pip
+also adds +0.5 interest (weird builds draw the science caste). Stacking rules:
+
+- **Additive per pip, forever:** fire rate, damage, splash, meat yield, max hp,
+  interest, poison dps, chains, knockback, shred, armor-pierce, regen, root time,
+  creep seep, focus ramp, permanent shield.
+- **Compounding per pip:** tangler slow ×0.9 each (approaches a standstill, never
+  reverses); bombard range ×2 each (×2, ×4, ×8...).
+- **Auras add:** every choir voice in reach adds +15% fire rate; every ward in reach
+  adds its 70 shield; every idle prism in the network relays.
+- **Two joints that are rules about repeated HITS, not caps on bonuses:** a slow keeps
+  the strongest active factor (so one tower hitting twice doesn't compound itself to
+  zero), and shred keeps the deepest active cut. Poison, by contrast, adds per hit.
+- Poison ticks and the impaler's own shots ignore armor caps outright.
 
 Marquee lines (tested): impaler + frond pip = a skewer that arcs off every body in the
 file; anything + mister pip turns a shield wall into meat for the battery; brood pip

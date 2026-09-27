@@ -65,12 +65,15 @@ export function towerStats(t: Tower) {
     maxHp: spec.maxHp + B.pipHp * pips('spine'),
     interest: spec.interest + B.pipInterest * pips('lure') + B.interestPerPip * t.pips.length,
     // Choir pips stretch reach; a BOMBARD pip doubles it outright (once).
-    range: spec.range * (1 + B.pipRange * pips('choir')) * (pips('bombard') > 0 ? B.pipRangeDouble : 1),
+    // Choir pips stretch reach; EVERY bombard pip doubles it again. No caps —
+    // busted is the point (Collins, Sep 27 2026).
+    range: spec.range * (1 + B.pipRange * pips('choir')) * B.pipRangeDouble ** pips('bombard'),
     // Ward pip: a permanent personal shield, carried with the limb forever.
     shieldPerm: B.pipShield * pips('ward'),
     eatThreshold: spec.eatThreshold,
     // Hit effects: the tower's own, deepened by inherited pips.
-    slowMult: Math.max(0.25, (spec.slowMult ?? 1) - B.pipSlow * tanglerPips),
+    // Each tangler pip multiplies the slow (×0.9): stacks forever, never reverses.
+    slowMult: (spec.slowMult ?? 1) * (1 - B.pipSlow) ** tanglerPips,
     slowDur: Math.max(spec.slowDur ?? 0, tanglerPips > 0 ? B.pipSlowDur : 0),
     poisonDps: (spec.poisonDps ?? 0) + B.pipPoisonDps * blighterPips,
     poisonDur: Math.max(spec.poisonDur ?? 0, blighterPips > 0 ? B.pipPoisonDur : 0),
@@ -83,11 +86,11 @@ export function towerStats(t: Tower) {
     // Pit pip: hits hard-root briefly (vs the tangler's long soft slow).
     rootDur: B.pipRoot * pips('pit'),
     // Frond: arcs off every hit; frond pips teach any limb to arc.
-    chains: Math.min(B.maxChains, (spec.chains ?? 0) + B.pipChain * pips('frond')),
+    chains: (spec.chains ?? 0) + B.pipChain * pips('frond'),
     // Lobber pip: hits knock the body back along the shot.
-    knock: Math.min(B.maxKnock, B.pipKnock * pips('lobber')),
+    knock: B.pipKnock * pips('lobber'),
     // Mister: hits shred armor for everyone; mister pips teach it to any limb.
-    shred: Math.min(B.maxShred, (spec.shred ?? 0) + B.pipShred * pips('mister')),
+    shred: (spec.shred ?? 0) + B.pipShred * pips('mister'),
     shredDur: Math.max(spec.shredDur ?? 0, pips('mister') > 0 ? B.pipShredDur : 0),
     // Ocular pip: the limb learns priority targeting (supports first).
     sniper: (spec.sniper ?? false) || pips('ocular') > 0,
@@ -350,8 +353,8 @@ export class Sim {
         const spec = towerSpec('choir');
         if (dist(c.pos, t.pos) <= (spec.auraRadius ?? 0)) choirs++;
       }
-      // Two voices at most: stacking a whole chapel on one limb is not a build.
-      s.rate *= 1 + (towerSpec('choir').rateAura ?? 0) * Math.min(choirs, 2);
+      // A whole chapel on one limb IS a build.
+      s.rate *= 1 + (towerSpec('choir').rateAura ?? 0) * choirs;
     }
     return s;
   }
@@ -1088,12 +1091,12 @@ export class Sim {
     }
     if (fx.poisonDps > 0 && fx.poisonDur > 0) {
       const active = e.poisonUntil !== undefined && e.poisonUntil > this.time;
-      e.poisonDps = Math.min(B.maxPoisonDps, (active ? e.poisonDps ?? 0 : 0) + fx.poisonDps);
+      e.poisonDps = (active ? e.poisonDps ?? 0 : 0) + fx.poisonDps;
       e.poisonUntil = this.time + fx.poisonDur;
     }
     if (fx.shred && fx.shred > 0 && fx.shredDur && fx.shredDur > 0) {
       const active = e.shredUntil !== undefined && e.shredUntil > this.time;
-      e.shredAmount = Math.min(B.maxShred, Math.max(active ? e.shredAmount ?? 0 : 0, fx.shred));
+      e.shredAmount = Math.max(active ? e.shredAmount ?? 0 : 0, fx.shred);
       e.shredUntil = this.time + fx.shredDur;
     }
   }
@@ -1871,10 +1874,9 @@ export class Sim {
     const link = towerSpec('prism').prismLink ?? 0;
     const frontier: Tower[] = [firing];
     let relays = 0;
-    while (frontier.length > 0 && relays < B.prismMaxRelays) {
+    while (frontier.length > 0) {
       const cur = frontier.shift()!;
       for (const p of this.towers) {
-        if (relays >= B.prismMaxRelays) break;
         if (p.family !== 'prism' || p === firing || claimed.has(p.id) || p.cooldown > 0) continue;
         if (dist(cur.pos, p.pos) > link) continue;
         if (this.hasTargetInRange(p, this.statsOf(p).range)) continue; // busy prisms fire their own
@@ -1903,7 +1905,7 @@ export class Sim {
       let projected = 0;
       for (const w of this.towers) {
         if (w.family !== 'ward' || w.id === t.id) continue;
-        if (dist(w.pos, t.pos) <= (wardSpec.auraRadius ?? 0)) projected = wardSpec.wardShield ?? 0;
+        if (dist(w.pos, t.pos) <= (wardSpec.auraRadius ?? 0)) projected += wardSpec.wardShield ?? 0; // wards stack
       }
       const shieldMax = stats.shieldPerm + projected;
       t.shieldMax = shieldMax;
@@ -1973,7 +1975,7 @@ export class Sim {
       // limb through prism pips). Switching targets resets the streak.
       t.streak = target.id === t.lastTargetId ? (t.streak ?? 0) + 1 : 0;
       t.lastTargetId = target.id;
-      let dmg = stats.damage * (1 + stats.streakRamp * Math.min(t.streak, B.prismRampMax));
+      let dmg = stats.damage * (1 + stats.streakRamp * t.streak);
 
       // Hitscan strikers: the frond's arc chain, the ocular's board-wide beam,
       // and the prism's focus beam (fed by relays from idle prisms).

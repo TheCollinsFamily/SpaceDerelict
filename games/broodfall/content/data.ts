@@ -276,16 +276,14 @@ export const BALANCE = {
   royalAuraArmor: 0.7,       // ...and take this fraction of incoming damage
   /** Arc prism. */
   prismRampPerHit: 0.12,     // +12% per consecutive shot on the same target
-  prismRampMax: 5,           // ramp counts at most this many shots
   prismRelayBonus: 0.5,      // +50% beam damage per idle prism relaying charge
-  prismMaxRelays: 6,
   pipStreak: 0.06,           // prism pip: any limb ramps +6% per consecutive shot per pip
   /** Shields (ward projection + membrane pips). */
   shieldRegen: 8,            // shield/s once undamaged for shieldRegenDelay
   shieldRegenDelay: 3,
   pipShield: 60,             // membrane pip: a PERMANENT personal shield on the new limb, per pip
   /** Bombard pip: sacrificing a bombard DOUBLES the new limb's range (once). */
-  pipRangeDouble: 2,
+  pipRangeDouble: 2,         // EVERY bombard pip doubles range again (x2, x4, x8...)
   /** Science cannons join study parties past this interest. */
   dartgunInterestMin: 14,
   shellFlightSeconds: 1.1,
@@ -326,9 +324,9 @@ export const BALANCE = {
   pipAoe: 12,         // burster pip: +12px aoe radius (adds aoe to non-aoe towers)
   pipYield: 0.3,      // maw pip: +30% meat from kills by this tower
   pipDamage: 0.2,     // lasher pip: +20% damage
-  pipHp: 150,          // spine pip: +80 max hp
+  pipHp: 150,          // spine pip: +150 max hp
   pipInterest: 2,     // lure pip: +2 interest
-  pipSlow: 0.1,       // tangler pip: hits slow 10% more (floor 25% speed)
+  pipSlow: 0.1,       // tangler pip: hits slow ×0.9 per pip (compounds, no floor)
   pipSlowDur: 1.5,
   pipPoisonDps: 2,    // blighter pip: hits apply +2 poison dps
   pipPoisonDur: 2.5,
@@ -388,11 +386,8 @@ export const BALANCE = {
   pipKnock: 5,              // lobber pip: hits knock back 5px per pip
   pipShred: 3,              // mister pip: hits shred +3 armor cap for 2s per pip
   pipShredDur: 2,
-  /** Caps that keep combination stacking sane (see DESIGN.md combination algebra). */
-  maxPoisonDps: 40,
-  maxChains: 5,
-  maxKnock: 20,
-  maxShred: 24,
+  // NO CAPS on cannibalize stacking (Collins, Sep 27 2026): "the point of these
+  // games is things that feel busted." Do not reintroduce one.
   dropFlySeconds: 1.1,
   /** The body itself fights: focused dps on the nearest intruder inside the body. */
   coreDps: 24,

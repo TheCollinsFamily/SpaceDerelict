@@ -840,8 +840,8 @@ describe('the cannon (war + science), bombard markers, ward shields', () => {
     expect(towerStats({ ...base, pips: [{ family: 'ward' }] }).shieldPerm).toBe(B.pipShield);
     const r0 = towerStats(base).range;
     expect(towerStats({ ...base, pips: [{ family: 'bombard' }] }).range).toBeCloseTo(r0 * 2);
-    // Doubling is once, not per pip.
-    expect(towerStats({ ...base, pips: [{ family: 'bombard' }, { family: 'bombard' }] }).range).toBeCloseTo(r0 * 2);
+    // And again per pip: two bombards eaten = x4.
+    expect(towerStats({ ...base, pips: [{ family: 'bombard' }, { family: 'bombard' }] }).range).toBeCloseTo(r0 * 4);
     // And the membrane shield is live on a real limb even with no ward nearby.
     const s = freshSim(1005);
     const t = { ...base, id: 5501, pos: { x: 300, y: 300 }, cell: s.cellAt(300, 300), hp: 60, maxHp: 60, pips: [{ family: 'ward' as const }] };
@@ -904,7 +904,7 @@ describe('arc prism (focus ramp + relay network)', () => {
   });
 });
 
-describe('combination algebra (pips compose, stacking is bounded)', () => {
+describe('combination algebra (pips compose, NO CAPS — busted is the point)', () => {
   const bare = (family: string): Tower => ({
     id: 1, family: family as Tower['family'], pos: { x: 0, y: 0 }, cell: 0,
     hp: 1, maxHp: 1, pips: [], cooldown: 0, kills: 0,
@@ -920,15 +920,22 @@ describe('combination algebra (pips compose, stacking is bounded)', () => {
     expect(towerStats({ ...t, pips: [{ family: 'ocular' }] }).sniper).toBe(true);
   });
 
-  it('stacking caps hold: chains, knock, shred, poison never run away', () => {
-    const t = bare('frond');
-    const manyPips = Array.from({ length: 12 }, () => ({ family: 'frond' as const }));
-    expect(towerStats({ ...t, pips: manyPips }).chains).toBe(B.maxChains);
-    const knocky = Array.from({ length: 12 }, () => ({ family: 'lobber' as const }));
-    expect(towerStats({ ...bare('spitter'), pips: knocky }).knock).toBe(B.maxKnock);
-    const shreddy = Array.from({ length: 12 }, () => ({ family: 'mister' as const }));
-    expect(towerStats({ ...bare('spitter'), pips: shreddy }).shred).toBe(B.maxShred);
-    // Poison stacking on one body is capped too.
+  it('NO CAPS (Collins): twelve of a pip is twelve times the effect, on every axis', () => {
+    const many = (f: Tower['family']) => Array.from({ length: 12 }, () => ({ family: f }));
+    const frond = bare('frond');
+    expect(towerStats({ ...frond, pips: many('frond') }).chains).toBe((towerSpec('frond').chains ?? 0) + 12 * B.pipChain);
+    expect(towerStats({ ...bare('spitter'), pips: many('lobber') }).knock).toBe(12 * B.pipKnock);
+    expect(towerStats({ ...bare('spitter'), pips: many('mister') }).shred).toBe(12 * B.pipShred);
+    expect(towerStats({ ...bare('spitter'), pips: many('spitter') }).rate)
+      .toBeCloseTo(towerSpec('spitter').rate * (1 + 12 * B.pipRate));
+    // Range doubles per bombard pip: x2, x4, x8.
+    const r0 = towerStats(bare('spitter')).range;
+    expect(towerStats({ ...bare('spitter'), pips: many('bombard').slice(0, 3) }).range).toBeCloseTo(r0 * 8);
+    // Slow compounds toward zero without ever flipping sign.
+    const sm = towerStats({ ...bare('tangler'), pips: many('tangler') }).slowMult;
+    expect(sm).toBeGreaterThan(0);
+    expect(sm).toBeLessThan(0.2);
+    // Poison on one body stacks without a ceiling.
     const s = freshSim(810);
     const sim = s as unknown as SpawnSim;
     sim.spawnEnemy('elite', s.gates[0]);
@@ -936,7 +943,21 @@ describe('combination algebra (pips compose, stacking is bounded)', () => {
     for (let i = 0; i < 30; i++) {
       sim.applyHitEffects(e, { slowMult: 1, slowDur: 0, poisonDps: 7, poisonDur: 3 });
     }
-    expect(e.poisonDps).toBeLessThanOrEqual(B.maxPoisonDps);
+    expect(e.poisonDps).toBe(210);
+  });
+
+  it('auras stack too: every choir voice and every ward adds', () => {
+    const s = freshSim(812);
+    const mk = (id: number, family: Tower['family'], x: number): Tower => ({
+      id, family, pos: { x, y: 300 }, cell: s.cellAt(x, 300), hp: 100, maxHp: 100,
+      pips: [], cooldown: 1e9, kills: 0,
+    });
+    const gun = mk(1, 'spitter', 300);
+    s.towers.push(gun, mk(2, 'choir', 320), mk(3, 'choir', 280), mk(4, 'choir', 300 + 40));
+    expect(s.statsOf(gun).rate).toBeCloseTo(towerSpec('spitter').rate * (1 + 3 * (towerSpec('choir').rateAura ?? 0)));
+    s.towers.push(mk(5, 'ward', 260), mk(6, 'ward', 340));
+    s.tick();
+    expect(gun.shieldMax).toBe(2 * (towerSpec('ward').wardShield ?? 0));
   });
 
   it('slow composition: the strongest snare wins, a weaker one never overwrites it', () => {
@@ -1287,7 +1308,7 @@ describe('higher enemy types (escalation by kind, never hardening)', () => {
     expect(pipped.capBonus).toBe(B.pipPierceCap);
   });
 
-  it('choir nodes speed up the limbs around them (capped at two voices)', () => {
+  it('choir nodes speed up the limbs around them', () => {
     const s = freshSim(566);
     s.meat.war = 9999;
     s.meat.science = 9999;
