@@ -62,7 +62,8 @@ debrief → ship gene bay → redeploy.
     engines (conduit, amplifier, mosaic — directional limbs that manipulate other
     limbs' bonuses) cost science only; engines chain; amplification applies last.
     Built engines: conduit (max 2 per type), amplifier, mosaic, twinning gland, marrow
-    tap. 24 more engine ideas are in notes/ITERATION addenda 12-13 for Collins to pick.
+    tap, mitosis node, capacitor sac, boomerang node, meat press, reliquary (a pair).
+    The rest of the engine ideas are in notes/ITERATION addenda 12-13 for Collins to pick.
 17. **Direction and effects are always visible:** directional limbs show a field of
     fire and rotate with right-click (Esc cancels); effect limbs (conduit, choir,
     ward) draw what they affect and say it in their panel.
@@ -86,7 +87,7 @@ debrief → ship gene bay → redeploy.
 ## How to verify (all must be green before claiming anything)
 
 ```powershell
-npm test             # 102 tests: sim, plates algebra, wave rhythm, per-verb behaviors
+npm test             # 107 tests: sim, plates algebra, wave rhythm, per-verb behaviors
                      # for 29 tower families + 26 enemy kinds (combo engines, burn, payload rule, detection,
                      # air/ground, dependency, cannons, shields, bombard markers),
                      # naive win RATE over 10 seeds, smart science routing +

@@ -147,6 +147,34 @@ smart flips 3:2, totals 120k vs 115k. 54/54 tests; input check adds the lobber
 gesture; visual/endgame green.
 
 
+## Addendum 14 (Sep 27): Mitosis, Capacitor, Boomerang, Meat Press, Reliquary
+
+Collins picked five from brainstorm round 2, with his own tweaks: mitosis copies are
+level one with NO upgrades and stop when the free spaces are full ("you will want to
+regularly harvest these"); the capacitor spends its bank at 400% speed, not one burst
+("all at once would not work"); the boomerang node is TARGETED at a limb, can't target
+every type, and can sit far away so returns cross the map; the reliquary is weak, so
+it comes as a double placement (two with one pick-up).
+
+Built: engine kinds mitosis/capacitor/boomerang/press/reliquary, each also a pip.
+Sim: `budMitosis` at wave clear (after the brood heal), `addTower`/`canPlaceFree`
+shared by builds and buds, `t.bank` capacitor logic in the fire loop
+(`B.capacitorSpeed` 4), projectile `returnTo` + one-time redirect on first hit,
+kill attribution (`srcId`) threaded through payload → damageEnemy → killEnemy for the
+press, `bankRelics` in the death path (emit=true only — sacrifice and theft don't
+trigger it), `card.free` + `spec.pair` for the reliquary twin (free cards cost
+nothing and draw no replacement). `Sim.firesProjectiles` gates the boomerang.
+
+Playtest finding: mitosis looked only at the node's own neighbours, and in the dense
+city those are mostly street — in the live page it budded nothing. Buds now go next to
+the node OR next to the parent. Beat script `tools/shot-engines.mjs` builds all five
+in the real page and checks panels, the FREE twin card, buds, banked shots, returning
+shots and page errors; screenshots `tools/screenshots/beat-engines-*.png`.
+
+The bot sheds all five (their value isn't a static dps gain it can measure) — they
+are human depth tools like the amplifier. 5 new tests (107 total). Naive 4/10;
+guardrail flips 2:0.
+
 ## Addendum 13 (Sep 27): conduit cap 2, Twinning Gland, Marrow Tap
 
 Collins: conduit gives max 2 copies of a bonus; "one that doubles the projectiles of

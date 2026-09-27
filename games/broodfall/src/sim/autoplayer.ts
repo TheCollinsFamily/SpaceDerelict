@@ -123,6 +123,7 @@ export class Autoplayer {
     // the next advanced card) — an earlier damage-first "discipline" starved
     // science to 4 and lost runs it used to win. Measured, not vibes.
     const SURPLUS_CAP: Partial<Record<string, number>> = { sling: 1, lobber: 1 };
+    const UNMEASURED_ENGINES = new Set<string>(['mitosis', 'capacitor', 'boomerang', 'press', 'reliquary']);
 
     const tryBuild = (i: number): boolean => {
       const fam = sim.hand[i].family;
@@ -163,6 +164,12 @@ export class Autoplayer {
       // Support limbs are placed by their OWN logic, never on a gun's perch:
       // the ward behind the guns it shields, the bombard deep in the body.
       const isEngine = !!towerSpec(fam).engine;
+      // Engines whose payoff is not a static dps gain (buds, banked shots,
+      // science, returns, relics) are human depth tools: the bot sheds them.
+      if (UNMEASURED_ENGINES.has(fam)) {
+        if (sim.meat.war >= B.discardCost + 10) { sim.issue({ kind: 'discard', cardIndex: i }); return; }
+        continue;
+      }
       if (fam === 'ward' || fam === 'bombard' || isEngine) {
         const have = sim.towers.filter((t) => t.family === fam).length;
         const cap = fam === 'ward' ? Math.floor(guns.length / 4)

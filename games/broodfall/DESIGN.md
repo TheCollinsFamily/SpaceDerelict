@@ -123,6 +123,11 @@ The three engines built:
 | Marrow Tap (farm) | 24 sci | holds its target in STASIS (it does nothing); the tap can be sacrificed ANY number of times and never disappears — each time banks a copy of the target's bonuses (pips + family). No salvage | — (a tap is never consumed) |
 | Resonance Amplifier (depth) | 42 sci | every bonus count ×1.5, ROUNDED DOWN, per type, per amplifier (1→1, 2→3, 3→4, 4→6, 6→9) | the eater's own counts ×1.5 |
 | Mosaic Node (breadth) | 26 sci | ONE bonus of EACH distinct type found within 90px — max one per type | draws one of each type among neighbours within 60px |
+| Mitosis Node (breeding) | 34 sci | points at an ADJACENT limb; once per cleared wave buds a level-one, no-upgrade copy of it into a free space next to the node (or next to the parent). Stops when the spaces are full — harvest the copies to keep it breeding | the limb buds a plain copy of ITSELF each wave |
+| Capacitor Sac (tempo) | 22 sci | while its target has nothing to shoot it banks shots at the target's rate (no cap); when the hive arrives it spends them at 400% speed until the bank runs dry — not all at once | the limb banks its own idle shots |
+| Boomerang Node (geometry) | 20 sci | reach 320: its target's projectiles fly BACK to the node after their first hit, piercing everything on the way home. Place it far away to draw a return lane across the map. Only projectile limbs qualify (not melee, beams, cones, shells, lobbers, skippers) | the limb's shots return to it |
+| Meat Press (economy) | 18 sci | war-caste kills by its target drop SCIENCE instead of war — fund more engines | the limb's war kills pay science |
+| Reliquary (insurance) | 16 sci | if its target DIES (not sacrificed, not stolen) its bonuses + family are banked for your next build. Weak alone, so it is a PAIR: picking the card up puts a FREE second Reliquary card in hand | the limb's bonuses are banked if it dies |
 
 Note the rounding: a single bonus stays single under an amplifier, so it only pays on
 stacks of 2+. It is a DEPTH tool: fill one limb with one type (conduits, repeated

@@ -37,6 +37,11 @@ const CARD_DESC: Record<TowerFamily, string> = {
   mosaic: 'Gives its target one of EVERY bonus type nearby.',
   twin: 'Its target fires DOUBLE the projectiles.',
   tap: 'Stops its target — sacrifice the tap again and again.',
+  mitosis: 'Buds a plain copy of the adjacent limb each wave.',
+  capacitor: 'Banks idle shots; fires them at 400% speed.',
+  boomerang: 'Its target\'s shots fly BACK to it after a hit.',
+  press: 'Its target\'s kills pay SCIENCE instead of war.',
+  reliquary: 'If its target dies, keep its bonuses. Comes as a PAIR.',
 };
 
 /** What each family's bonus does when it is EATEN (shown on the cannibalize hover). */
@@ -70,6 +75,11 @@ export const PIP_DESC: Record<TowerFamily, string> = {
   mosaic: 'one of each type it was channelling (harvested), plus: draws one of each type among its neighbours',
   twin: '+1 projectile on every shot',
   tap: 'a copy of the TAPPED limb\'s bonuses — and the tap stays (sacrifice it again)',
+  mitosis: 'buds a plain copy of ITSELF next to it every wave',
+  capacitor: 'banks its own idle shots and spends them at 400% speed',
+  boomerang: 'its projectiles fly back to it after a hit',
+  press: 'its war kills pay science instead',
+  reliquary: 'if it dies, its bonuses are banked for your next build',
 };
 
 /** What a family can shoot, as the card and panel tag. */
@@ -328,6 +338,34 @@ export class Hud {
           ? `HOLDING ${name(target).toUpperCase()} IN STASIS · sacrifice this tap to harvest +${target.pips.length + 1} bonus${target.pips.length ? 'es' : ''} (it stays)`
           : 'pointed at nothing — right-click to rotate toward a limb to milk';
       }
+      case 'mitosis': {
+        const target = links.targets[0];
+        return target
+          ? `BUDDING ${name(target).toUpperCase()} — a plain copy next to this node every cleared wave (harvest them: it stops when the spaces are full)`
+          : 'must point at an ADJACENT limb — right-click to rotate';
+      }
+      case 'capacitor': {
+        const target = links.targets[0];
+        return target
+          ? `CHARGING ${name(target).toUpperCase()} — ${Math.floor(target.bank ?? 0)} shots banked (fired at 400% speed)`
+          : 'pointed at nothing — right-click to rotate toward a limb';
+      }
+      case 'boomerang': {
+        const target = links.targets[0];
+        return target
+          ? `CALLING BACK ${name(target).toUpperCase()}'s shots — after a hit they fly home to this node`
+          : 'pointed at nothing — only projectile limbs qualify (not melee, beams, cones or shells)';
+      }
+      case 'press': {
+        const target = links.targets[0];
+        return target ? `PRESSING ${name(target).toUpperCase()} — its war kills pay science` : 'pointed at nothing — right-click to rotate';
+      }
+      case 'reliquary': {
+        const target = links.targets[0];
+        return target
+          ? `GUARDING ${name(target).toUpperCase()} — if it dies, its ${target.pips.length + 1} bonus${target.pips.length ? 'es are' : ' is'} banked for you`
+          : 'pointed at nothing — right-click to rotate';
+      }
       case 'choir':
         return `SPEEDING ${links.targets.length} limb${links.targets.length === 1 ? '' : 's'} · +${Math.round((towerSpec('choir').rateAura ?? 0) * sim.auraOf(t).strength * 100)}% fire rate each`
           + (t.pips.length ? ' · sharing its hit bonuses' : '');
@@ -351,6 +389,11 @@ export class Hud {
           n('mosaic') ? `${n('mosaic')} mosaic${n('mosaic') > 1 ? 's' : ''}` : '',
           n('amp') ? `${n('amp')} amplifier${n('amp') > 1 ? 's' : ''} (×1.5 each)` : '',
           n('twin') ? `${n('twin')} twinning gland${n('twin') > 1 ? 's' : ''} (×2 shots each)` : '',
+          n('capacitor') ? `${n('capacitor')} capacitor${n('capacitor') > 1 ? 's' : ''}` : '',
+          n('boomerang') ? 'a boomerang' : '',
+          n('press') ? 'a meat press' : '',
+          n('reliquary') ? `${n('reliquary')} reliquar${n('reliquary') > 1 ? 'ies' : 'y'}` : '',
+          n('mitosis') ? 'a mitosis node' : '',
         ].filter(Boolean);
         return `FED by ${parts.join(' + ')}`;
       }
@@ -399,7 +442,7 @@ export class Hud {
     this.el.coreFill.style.background = coreFrac > 0.4 ? 'var(--ok)' : 'var(--accent)';
 
     // Cards: re-render only when the hand or affordability changes.
-    const handKey = sim.hand.map((c) => `${c.id}:${sim.canAfford(towerSpec(c.family).cost) ? 1 : 0}`).join(',')
+    const handKey = sim.hand.map((c) => `${c.id}:${c.free || sim.canAfford(towerSpec(c.family).cost) ? 1 : 0}`).join(',')
       + `|${this.selectedCard}`;
     if (handKey !== this.lastHandKey) {
       this.lastHandKey = handKey;
@@ -407,7 +450,7 @@ export class Hud {
       sim.hand.forEach((card, i) => {
         const spec = towerSpec(card.family);
         const div = document.createElement('div');
-        const affordable = sim.canAfford(spec.cost);
+        const affordable = !!card.free || sim.canAfford(spec.cost);
         div.className = 'card'
           + (this.selectedCard === i ? ' selected' : '')
           + (affordable ? '' : ' unaffordable');
@@ -427,7 +470,7 @@ export class Hud {
           this.lastHandKey = '';
         });
         (div.querySelector('.card-desc') as HTMLElement).textContent = CARD_DESC[card.family];
-        (div.querySelector('.card-cost') as HTMLElement).textContent = cost;
+        (div.querySelector('.card-cost') as HTMLElement).textContent = card.free ? 'FREE (the pair)' : cost;
         div.addEventListener('click', () => {
           this.selectedCard = this.selectedCard === i ? null : i;
           this.armedOrgan = null;

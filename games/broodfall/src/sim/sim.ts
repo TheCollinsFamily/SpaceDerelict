@@ -429,6 +429,7 @@ export class Sim {
     let bestAlong = Infinity;
     for (const t of among) {
       if (t.id === c.id || towerSpec(t.family).engine) continue;
+      if (eng.projectileOnly && !Sim.firesProjectiles(t.family)) continue; // the boomerang is picky
       const rx = t.pos.x - c.pos.x;
       const ry = t.pos.y - c.pos.y;
       const along = rx * f.x + ry * f.y;
@@ -483,6 +484,18 @@ export class Sim {
       if (c.id !== t.id && towerSpec(c.family).engine?.kind === kind && this.conduitTarget(c) === t) n++;
     }
     return n;
+  }
+
+  /** Does this family's weapon fire real projectiles (not melee, beams, cones, shells, producers)? */
+  static firesProjectiles(f: TowerFamily): boolean {
+    const s = towerSpec(f);
+    if (s.rate <= 0 || s.cone !== undefined || s.engine) return false;
+    return !['lasher', 'maw', 'frond', 'ocular', 'prism', 'skipper', 'bombard', 'lobber'].includes(f);
+  }
+
+  /** Engines of this kind on a limb PLUS pips of the same-named family on it (mitosis, capacitor, boomerang, press, reliquary). */
+  layersOf(t: Tower, fam: TowerFamily): number {
+    return this.enginesOn(t, fam) + t.pips.filter((p) => p.family === fam).length;
   }
 
   /** Held in stasis by a marrow tap: it does nothing at all while tapped. */
@@ -746,26 +759,19 @@ export class Sim {
           if (!affordable) return { ok: false, err: 'cannot afford' };
           this.butcherTower(donor);
         }
-        if (!this.canAfford(spec.cost)) return { ok: false, err: 'cannot afford' };
+        if (!card.free && !this.canAfford(spec.cost)) return { ok: false, err: 'cannot afford' };
         const pips = this.pendingPips;
         this.pendingPips = [];
         if (pips.length > 0) {
           this.events.push({ kind: 'cannibalized', donor: pips[pips.length - 1].family, into: card.family });
         }
-        this.pay(spec.cost);
-        const pos = this.cellCenter(cmd.cell);
-        const tower: Tower = {
-          id: this.nextId++, family: card.family, pos, cell: cmd.cell,
-          hp: spec.maxHp, maxHp: spec.maxHp, pips, cooldown: 0, kills: 0,
-        };
-        tower.maxHp = this.statsOf(tower).maxHp;
-        tower.hp = tower.maxHp;
-        if (spec.directional) tower.facing = cmd.facing ?? this.facingTowardGate(pos);
-        this.towers.push(tower);
-        this.occupied.set(cmd.cell, { kind: 't', id: tower.id });
-        this.refreshRouting();
+        if (!card.free) this.pay(spec.cost);
+        this.addTower(card.family, cmd.cell, pips, cmd.facing);
         this.hand.splice(cmd.cardIndex, 1);
-        this.hand.push(this.drawCard());
+        // A free card (a pair's second half) is not replaced; a paired card hands
+        // you its free twin to place next.
+        if (!card.free) this.hand.push(this.drawCard());
+        if (spec.pair && !card.free) this.hand.push({ id: this.nextId++, family: card.family, free: true });
         this.events.push({ kind: 'built', family: card.family, pips: pips.length });
         return { ok: true };
       }
@@ -986,6 +992,8 @@ export class Sim {
     const i = this.towers.findIndex((t) => t.id === id);
     if (i < 0) return;
     const t = this.towers[i];
+    // Reliquaries watching a limb that DIES (not eaten, not stolen) bank its bonuses.
+    if (emit) this.bankRelics(t);
     this.occupied.delete(t.cell);
     this.towers.splice(i, 1);
     if (t.family === 'brood') {
@@ -1014,6 +1022,69 @@ export class Sim {
       if (towerStats(t).offCreep || this.isCreeped(t.cell)) continue;
       this.removeTower(t.id, true, ' (withered — its creep died)');
     }
+  }
+
+  /** Death insurance: each reliquary on a dying limb (or reliquary pip in it) banks a copy of its bonuses. */
+  private bankRelics(t: Tower): void {
+    const n = this.layersOf(t, 'reliquary');
+    if (n <= 0) return;
+    const relic = [...t.pips, { family: t.family }];
+    for (let k = 0; k < n; k++) this.pendingPips = [...this.pendingPips, ...relic];
+    this.events.push({ kind: 'relic-banked', family: t.family, pips: relic.length * n });
+  }
+
+  /**
+   * MITOSIS, once per cleared wave: each node buds a level-one, no-upgrade copy
+   * of the limb it holds into a free space next to the NODE (stops when full).
+   * A mitosis pip on a limb buds a plain copy of the limb itself next to it.
+   */
+  private budMitosis(): void {
+    const w = this.cfg.gridW;
+    const around = (cell: number) => [
+      cell - w - 1, cell - w, cell - w + 1, cell - 1, cell + 1, cell + w - 1, cell + w, cell + w + 1,
+    ].filter((c) => c >= 0 && c < this.map.cells.length && Math.abs((c % w) - (cell % w)) <= 1);
+    const jobs: Array<{ family: TowerFamily; near: number[] }> = [];
+    for (const m of this.towers) {
+      if (this.isTapped(m)) continue;
+      if (m.family === 'mitosis') {
+        const target = this.conduitTarget(m);
+        // Next to the node first, then next to the parent (city blocks are tight).
+        if (target) jobs.push({ family: target.family, near: [m.cell, target.cell] });
+      }
+      const selfBuds = m.pips.filter((p) => p.family === 'mitosis').length;
+      for (let k = 0; k < selfBuds; k++) jobs.push({ family: m.family, near: [m.cell] });
+    }
+    for (const job of jobs) {
+      const spot = job.near.flatMap(around).find((c) => this.canPlaceFree(c, job.family));
+      if (spot === undefined) continue; // full: harvest the copies to make room
+      this.addTower(job.family, spot, []);
+      this.events.push({ kind: 'budded', family: job.family });
+    }
+  }
+
+  /** Legal ground for a limb of this family, ignoring what is in hand (buds, copies). */
+  private canPlaceFree(cell: number, family: TowerFamily): boolean {
+    if (this.isOccupied(cell) || cell === this.map.coreCell || !this.isCreeped(cell)) return false;
+    const t = this.map.cells[cell];
+    if (family === 'spine') return t === CellType.Road || t === CellType.Block;
+    if (family === 'swamp') return t === CellType.Road;
+    return t === CellType.Block;
+  }
+
+  /** Put a limb on the board (shared by builds, buds and recoveries). */
+  private addTower(family: TowerFamily, cell: number, pips: ModPip[], facing?: RootDir): Tower {
+    const spec = towerSpec(family);
+    const pos = this.cellCenter(cell);
+    const tower: Tower = {
+      id: this.nextId++, family, pos, cell, hp: spec.maxHp, maxHp: spec.maxHp, pips, cooldown: 0, kills: 0,
+    };
+    tower.maxHp = this.statsOf(tower).maxHp;
+    tower.hp = tower.maxHp;
+    if (spec.directional) tower.facing = facing ?? this.facingTowardGate(pos);
+    this.towers.push(tower);
+    this.occupied.set(cell, { kind: 't', id: tower.id });
+    this.refreshRouting();
+    return tower;
   }
 
   /** How many limbs would wither if this one died (for the cannibalize hover warning). */
@@ -1184,6 +1255,8 @@ export class Sim {
           const heal = this.statsOf(t).waveHeal;
           if (heal > 0) t.hp = Math.min(t.maxHp, t.hp + t.maxHp * heal);
         }
+        // Mitosis: nodes bud their copies.
+        this.budMitosis();
         this.checkDirective();
         if (this.outcome !== 'playing') return;
         // Every few cleared waves: the body is ready to grow into a new district.
@@ -1428,12 +1501,12 @@ export class Sim {
       if (ts.speedAura || ts.healer || ts.bomber) dmg *= 1 + fx.supportDmg;
     }
     const at = { ...e.pos };
-    this.damageEnemy(e, dmg, fx.yieldMult, fx.capBonus);
+    this.damageEnemy(e, dmg, fx.yieldMult, fx.capBonus, fx.srcId);
     const alive = this.enemies.includes(e);
     // Swamp pips: whatever is left this weak is DIGESTED outright.
     if (alive && fx.execute > 0 && e.hp <= fx.execute) {
       this.biomass += B.swampBiomassPerKill;
-      this.killEnemy(e.id, fx.yieldMult, false);
+      this.killEnemy(e.id, fx.yieldMult, false, fx.srcId);
     }
     const died = !this.enemies.includes(e);
     if (fx.cloud > 0) this.spawnCloud(at, B.cloudRadius, fx.cloud);
@@ -2530,6 +2603,12 @@ export class Sim {
     // Projectile shooters (spitter, burster, tangler, blighter, impaler, mister,
     // quill fan, netcaster...). The quill fans its pellets across a cone.
     const layer: 'ground' | 'air' | 'both' = s.hitsAir && s.hitsGround ? 'both' : s.hitsAir ? 'air' : 'ground';
+    // Boomerang: a node pointed at this limb (or a boomerang pip in it) calls its
+    // shots back after their first hit — to the node, or to the limb itself.
+    let returnTo: Vec | undefined;
+    const node = this.towers.find((c) => c.family === 'boomerang' && !this.isTapped(c) && this.conduitTarget(c) === t);
+    if (node) returnTo = { ...node.pos };
+    else if (t.pips.some((p) => p.family === 'boomerang')) returnTo = { ...t.pos };
     const pellets = towerSpec(t.family).pellets ?? 1;
     const spread = towerSpec(t.family).spread ?? 0;
     const base = Math.atan2(dy, dx);
@@ -2549,6 +2628,7 @@ export class Sim {
         hits: layer,
         pierceLeft: s.pierce ? 3 : undefined,
         hitIds: s.pierce ? [] : undefined,
+        returnTo,
       });
     }
   }
@@ -2687,8 +2767,19 @@ export class Sim {
       } else {
         target = this.pickTarget(t, stats);
       }
-      if (!target) continue;
-      t.cooldown = 1 / stats.rate;
+      // CAPACITOR: with nothing to shoot, bank shots at the limb's own rate;
+      // with the hive in reach, spend them at 400% speed until the bank is dry.
+      const caps = this.layersOf(t, 'capacitor');
+      if (!target) {
+        if (caps > 0) t.bank = (t.bank ?? 0) + stats.rate * caps * DT;
+        continue;
+      }
+      if (caps > 0 && (t.bank ?? 0) >= 1) {
+        t.bank = (t.bank ?? 0) - 1;
+        t.cooldown = 1 / (stats.rate * B.capacitorSpeed);
+      } else {
+        t.cooldown = 1 / stats.rate;
+      }
 
       // Focus fire: consecutive shots on one body ramp (prisms natively, any
       // limb through prism pips). Switching targets resets the streak.
@@ -2733,6 +2824,20 @@ export class Sim {
           this.payloadHit(p.fx, hit, p.fx.damage, p.vel.x, p.vel.y);
         }
         this.echoSkip(at, p.vel.x, p.vel.y, p.fx, p.aoe);
+        // BOOMERANG: after the first hit the shot turns for home, striking
+        // every body on the way back (each once).
+        if (p.returnTo && !p.returned) {
+          p.returned = true;
+          p.hitIds = [...(p.hitIds ?? []), hit.id];
+          p.pierceLeft = 1e9;
+          const dx = p.returnTo.x - p.pos.x;
+          const dy = p.returnTo.y - p.pos.y;
+          const d = Math.hypot(dx, dy) || 1;
+          const sp = Math.hypot(p.vel.x, p.vel.y);
+          p.vel = { x: (dx / d) * sp, y: (dy / d) * sp };
+          p.ttl = d / sp;
+          continue;
+        }
         if (p.pierceLeft !== undefined && p.pierceLeft > 0) {
           p.pierceLeft -= 1;
           p.hitIds?.push(hit.id);
@@ -2747,7 +2852,7 @@ export class Sim {
   }
 
 
-  private damageEnemy(e: Enemy, dmg: number, yieldMult: number, capBonus = 0): void {
+  private damageEnemy(e: Enemy, dmg: number, yieldMult: number, capBonus = 0, srcId?: number): void {
     // Ablative carapace: the shell eats whole HITS — few big blows strip it
     // fastest (the phalanx's mirror). Poison seeps through, it is not a hit.
     if (e.hitShield !== undefined && e.hitShield > 0) {
@@ -2761,7 +2866,7 @@ export class Sim {
     const shred = e.shredUntil !== undefined && e.shredUntil > this.time ? e.shredAmount ?? 0 : 0;
     const effCap = cap !== undefined ? cap + capBonus + shred : undefined;
     e.hp -= effCap !== undefined && Number.isFinite(effCap) ? Math.min(dmg, effCap) : dmg;
-    if (e.hp <= 0) this.killEnemy(e.id, yieldMult, false);
+    if (e.hp <= 0) this.killEnemy(e.id, yieldMult, false, srcId);
   }
 
   private eatEnemy(e: Enemy): void {
@@ -2770,7 +2875,7 @@ export class Sim {
     this.killEnemy(e.id, 0, true);
   }
 
-  private killEnemy(id: number, yieldMult: number, eaten: boolean): void {
+  private killEnemy(id: number, yieldMult: number, eaten: boolean, srcId?: number): void {
     const i = this.enemies.findIndex((e) => e.id === id);
     if (i < 0) return;
     const e = this.enemies[i];
@@ -2819,8 +2924,11 @@ export class Sim {
     if (!eaten && yieldMult > 0) {
       const slot = this.map.slots[slotOfCell(this.map, this.cellAt(e.pos.x, e.pos.y))];
       const district = slot && slot.feature === 'meat' && spec.caste === 'war' ? 1.25 : 1;
+      // Meat Press: a pressed limb's war-caste kills pay SCIENCE instead.
+      const killer = srcId !== undefined ? this.towers.find((t) => t.id === srcId) : undefined;
+      const pressed = spec.caste === 'war' && killer !== undefined && this.layersOf(killer, 'press') > 0;
       this.drops.push({
-        id: this.nextId++, pos: { ...e.pos }, caste: spec.caste,
+        id: this.nextId++, pos: { ...e.pos }, caste: pressed ? 'science' : spec.caste,
         amount: Math.round(spec.meat * yieldMult * district * this.entranceMeatMult), ttl: B.dropFlySeconds,
       });
     }

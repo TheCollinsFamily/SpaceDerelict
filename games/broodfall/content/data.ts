@@ -235,6 +235,46 @@ export const TOWERS: readonly TowerSpec[] = [
     engine: { kind: 'tap', reach: 120 }, directional: true,
     maxHp: 90, interest: 2, eatThreshold: 0, advanced: true, hits: 'ground',
   },
+  {
+    // Collins, Sep 27 2026: takes the limb ADJACENT to it and, once per cleared
+    // wave, buds a level-one no-upgrade copy into a free space next to the node.
+    // Stops when those spaces are full — harvest the copies regularly.
+    family: 'mitosis', name: 'Mitosis Node', weight: 5,
+    cost: { science: 34 }, range: 0, rate: 0, damage: 0, aoe: 0,
+    engine: { kind: 'mitosis', reach: 40 }, directional: true,
+    maxHp: 80, interest: 3, eatThreshold: 0, advanced: true, hits: 'ground',
+  },
+  {
+    // While its target has nothing to shoot it BANKS shots; when the hive comes
+    // the target fires at 400% speed until the bank runs dry.
+    family: 'capacitor', name: 'Capacitor Sac', weight: 6,
+    cost: { science: 22 }, range: 0, rate: 0, damage: 0, aoe: 0,
+    engine: { kind: 'capacitor', reach: 160 }, directional: true,
+    maxHp: 70, interest: 2, eatThreshold: 0, advanced: true, hits: 'ground',
+  },
+  {
+    // Point it at a projectile limb: after a hit, that limb's shots fly BACK to the
+    // node, striking everything on the way. Long reach — place it far away.
+    family: 'boomerang', name: 'Boomerang Node', weight: 6,
+    cost: { science: 20 }, range: 0, rate: 0, damage: 0, aoe: 0,
+    engine: { kind: 'boomerang', reach: 320, projectileOnly: true }, directional: true,
+    maxHp: 70, interest: 2, eatThreshold: 0, advanced: true, hits: 'ground',
+  },
+  {
+    // Its target's war-caste kills pay SCIENCE instead — fund more engines.
+    family: 'press', name: 'Meat Press', weight: 6,
+    cost: { science: 18 }, range: 0, rate: 0, damage: 0, aoe: 0,
+    engine: { kind: 'press', reach: 160 }, directional: true,
+    maxHp: 80, interest: 1, eatThreshold: 0, advanced: true, hits: 'ground',
+  },
+  {
+    // Death insurance: if its target dies, the target's bonuses are banked for your
+    // next build. Weak alone, so it comes as a PAIR — one pick, two placements.
+    family: 'reliquary', name: 'Reliquary', weight: 6,
+    cost: { science: 16 }, range: 0, rate: 0, damage: 0, aoe: 0,
+    engine: { kind: 'reliquary', reach: 160 }, directional: true, pair: true,
+    maxHp: 80, interest: 1, eatThreshold: 0, advanced: true, hits: 'ground',
+  },
 ];
 
 export const ORGANS: readonly OrganSpec[] = [
@@ -443,6 +483,8 @@ export const BALANCE = {
   pipCloud: 4,        // ...and every hit leaves a toxic pheromone cloud (+4 dps per pip)
   /** Amplifier: bonus counts ×this per amp (rounded down). Amp pip = the same, on the eater. */
   ampFactor: 1.5,
+  /** Capacitor: banked shots fire at this multiple of the limb's rate. */
+  capacitorSpeed: 4,
   /** Conduit: gives at most this many copies of each bonus type (Collins, Sep 27 2026). */
   funnelMaxCopies: 2,
   /** Twin pip: +1 projectile per shot per pip (a twinning GLAND doubles instead). */

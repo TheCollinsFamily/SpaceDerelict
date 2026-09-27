@@ -40,11 +40,37 @@ const FAMILY_COLORS: Record<TowerFamily, number> = {
   mosaic: 0x60c0a8,
   twin: 0x9088e8,
   tap: 0x8a5a78,
+  mitosis: 0x78b060,
+  capacitor: 0x60a0d8,
+  boomerang: 0xd8a040,
+  press: 0x9a6a50,
+  reliquary: 0xc8c0a0,
 };
 
 /** Link colour per combo-engine kind (sources in, arrow out). */
 const ENGINE_COLOR: Record<string, number> = {
   funnel: 0xffd060, amplify: 0xff80c8, mosaic: 0x70e8c8, twin: 0xa8a0ff, tap: 0xc070a0,
+  mitosis: 0x98e070, capacitor: 0x80c8ff, boomerang: 0xffc050, press: 0x4fd0c8, reliquary: 0xf0e8c8,
+};
+
+/** A small glyph per engine so they read apart at a glance. */
+const ENGINE_GLYPH: Partial<Record<TowerFamily, (g: Graphics, x: number, y: number, pulse: number) => void>> = {
+  mitosis: (g, x, y, p) => {
+    const s = 3 + Math.abs(Math.sin(p)) * 1.5;
+    g.circle(x - s, y, 4).fill(0xd8f0c8); g.circle(x + s, y, 4).fill(0xd8f0c8);
+  },
+  capacitor: (g, x, y) => {
+    g.rect(x - 5, y - 4, 3, 8).fill(0xe0f0ff); g.rect(x + 2, y - 4, 3, 8).fill(0xe0f0ff);
+  },
+  boomerang: (g, x, y) => {
+    g.moveTo(x - 6, y + 4).lineTo(x, y - 5).lineTo(x + 6, y + 4).stroke({ width: 2.5, color: 0xfff0c0 });
+  },
+  press: (g, x, y) => {
+    g.rect(x - 6, y - 5, 12, 3).fill(0xe0d0c0); g.rect(x - 6, y + 2, 12, 3).fill(0xe0d0c0);
+  },
+  reliquary: (g, x, y) => {
+    g.rect(x - 1.5, y - 6, 3, 12).fill(0xfff8e0); g.rect(x - 5, y - 3, 10, 3).fill(0xfff8e0);
+  },
 };
 
 const ENEMY_SIZE: Record<Enemy['kind'], number> = {
@@ -631,6 +657,21 @@ export class Renderer {
           .fill({ color: 0xffd060, alpha: 0.9 });
         break;
       }
+      case 'mitosis':
+      case 'capacitor':
+      case 'boomerang':
+      case 'press':
+      case 'reliquary': {
+        const f = t.facing ?? 'N';
+        const vx = f === 'E' ? 1 : f === 'W' ? -1 : 0;
+        const vy = f === 'S' ? 1 : f === 'N' ? -1 : 0;
+        const col = ENGINE_COLOR[towerSpec(t.family).engine!.kind];
+        g.circle(x, y, 10).fill(c);
+        ENGINE_GLYPH[t.family]?.(g, x, y, this.pulse + t.id);
+        g.poly([x + vx * 10 + vy * 6, y + vy * 10 + vx * 6, x + vx * 20, y + vy * 20, x + vx * 10 - vy * 6, y + vy * 10 - vx * 6])
+          .fill({ color: col, alpha: 0.9 });
+        break;
+      }
       case 'amp':
       case 'mosaic':
       case 'twin':
@@ -755,6 +796,11 @@ export class Renderer {
     if ((t.shieldMax ?? 0) > 0 && (t.shield ?? 0) > 0) {
       const f = (t.shield ?? 0) / (t.shieldMax ?? 1);
       g.circle(x, y, 18).stroke({ width: 2, color: 0x9fc4ff, alpha: 0.25 + 0.55 * f });
+    }
+    // Capacitor bank: a blue charge bar under the limb (fills as it banks shots).
+    if ((t.bank ?? 0) >= 1) {
+      const w = Math.min(28, 4 + (t.bank ?? 0) * 1.5);
+      g.rect(x - w / 2, y + 14, w, 3).fill({ color: 0x80c8ff, alpha: 0.9 });
     }
     // Held in stasis by a marrow tap: a dim cocoon over it.
     if (sim.isTapped(t)) {

@@ -1351,6 +1351,152 @@ describe('conduit cap, TWINNING GLAND, MARROW TAP', () => {
   });
 });
 
+describe('MITOSIS, CAPACITOR, BOOMERANG, MEAT PRESS, RELIQUARY', () => {
+  const mk = (s: Sim, id: number, family: Tower['family'], x: number, y: number, pips: Tower['pips'] = []): Tower => ({
+    id, family, pos: { x, y }, cell: s.cellAt(x, y), hp: 100, maxHp: 100, pips, cooldown: 1e9, kills: 0,
+  });
+  type Priv = {
+    spawnEnemy(kind: string, atGate?: number): Enemy;
+    budMitosis(): void;
+    canPlaceFree(cell: number, family: string): boolean;
+    killEnemy(id: number, yieldMult: number, eaten: boolean, srcId?: number): void;
+    removeTower(id: number, emit: boolean): void;
+  };
+  const drawTo = (s: Sim, family: Tower['family']): number => {
+    let idx = -1;
+    for (let g = 0; g < 600 && idx < 0; g++) {
+      idx = s.hand.findIndex((c) => c.family === family && !c.free);
+      if (idx < 0) s.issue({ kind: 'discard', cardIndex: 0 });
+    }
+    expect(idx).toBeGreaterThanOrEqual(0);
+    return idx;
+  };
+  const rich = (s: Sim) => { s.meat.war = 99999; s.meat.science = 99999; s.meat.royal = 99999; };
+
+  it('mitosis buds a plain level-one copy of the adjacent limb each wave, and stops when the spaces are full', () => {
+    const s = freshSim(1600);
+    rich(s);
+    const w = CFG.gridW;
+    // A buildable pair of cells side by side: the limb on the right, the node on the left facing it.
+    let node = -1;
+    for (let c = 0; c < s.map.cells.length && node < 0; c++) {
+      if (s.canBuildTower(c) && s.canBuildTower(c + 1) && (c % w) < w - 2) node = c;
+    }
+    expect(s.issue({ kind: 'build', cardIndex: drawTo(s, 'spitter'), cell: node + 1 }).ok).toBe(true);
+    const parent = s.towers[s.towers.length - 1];
+    parent.pips = [{ family: 'lasher' }, { family: 'lasher' }];
+    expect(s.issue({ kind: 'build', cardIndex: drawTo(s, 'mitosis'), cell: node, facing: 'E' }).ok).toBe(true);
+    const p = s as unknown as Priv;
+    // Room = free legal cells next to the node OR next to the parent (distinct).
+    const ring = (c: number) => [c - w - 1, c - w, c - w + 1, c - 1, c + 1, c + w - 1, c + w, c + w + 1];
+    const room = new Set([...ring(node), ...ring(node + 1)].filter((c) => p.canPlaceFree(c, 'spitter'))).size;
+    expect(room).toBeGreaterThan(0);
+    for (let k = 0; k < room + 3; k++) p.budMitosis();
+    const spitters = s.towers.filter((t) => t.family === 'spitter');
+    expect(spitters.length).toBe(1 + room);             // stops at full
+    for (const bud of spitters.filter((t) => t !== parent)) expect(bud.pips.length).toBe(0); // no upgrades
+    // Harvest one copy and the next wave buds into the freed space again.
+    const bud = spitters.find((t) => t !== parent)!;
+    s.issue({ kind: 'butcher', towerId: bud.id });
+    p.budMitosis();
+    expect(s.towers.filter((t) => t.family === 'spitter').length).toBe(1 + room);
+  });
+
+  it('a capacitor banks shots while idle and spends them at 400% speed until the bank runs dry', () => {
+    const s = freshSim(1601);
+    const gun = mk(s, 1, 'spitter', 400, 300); gun.cooldown = 0;
+    const cap = mk(s, 2, 'capacitor', 300, 300); cap.facing = 'E';
+    s.towers.push(gun, cap);
+    s.enemies.length = 0;
+    const rate = s.statsOf(gun).rate;
+    for (let i = 0; i < 50; i++) s.tick();                // 5 s with nothing to shoot
+    expect(gun.bank ?? 0).toBeCloseTo(rate * 5, 0);
+    const banked = gun.bank!;
+    const e = (s as unknown as Priv).spawnEnemy('elite', s.gates[0]);
+    e.pos = { x: 440, y: 300 }; e.hp = 1e9;
+    s.tick();
+    expect(gun.bank!).toBeCloseTo(banked - 1, 5);
+    expect(gun.cooldown).toBeLessThanOrEqual(1 / (rate * B.capacitorSpeed) + 1e-9);
+    // Without the capacitor the same limb banks nothing.
+    const s2 = freshSim(1602);
+    const g2 = mk(s2, 1, 'spitter', 400, 300); g2.cooldown = 0;
+    s2.towers.push(g2);
+    s2.enemies.length = 0;
+    for (let i = 0; i < 50; i++) s2.tick();
+    expect(g2.bank ?? 0).toBe(0);
+  });
+
+  it('a boomerang node calls its target\'s shots back after a hit; only projectile limbs qualify', () => {
+    const s = freshSim(1603);
+    const gun = mk(s, 1, 'spitter', 400, 300); gun.cooldown = 0;
+    const boom = mk(s, 2, 'boomerang', 100, 300); boom.facing = 'E';
+    s.towers.push(gun, boom);
+    expect(s.conduitTarget(boom)).toBe(gun);
+    const e = (s as unknown as Priv).spawnEnemy('elite', s.gates[0]);
+    e.pos = { x: 440, y: 300 }; e.hp = 1e9;
+    let back = null as null | (typeof s.projectiles)[number];
+    for (let i = 0; i < 30 && !back; i++) {
+      s.tick();
+      back = s.projectiles.find((p) => p.returned) ?? null;
+    }
+    expect(back).not.toBeNull();
+    expect(back!.vel.x).toBeLessThan(0);                  // flying home to the far-off node
+    // Melee, beams and cones cannot be boomeranged: the node skips them.
+    const s2 = freshSim(1604);
+    const b2 = mk(s2, 1, 'boomerang', 100, 300); b2.facing = 'E';
+    s2.towers.push(b2, mk(s2, 2, 'lasher', 200, 300), mk(s2, 3, 'spitter', 300, 300));
+    expect(s2.conduitTarget(b2)?.family).toBe('spitter');
+  });
+
+  it('a meat press turns its target\'s war kills into science', () => {
+    const s = freshSim(1605);
+    const gun = mk(s, 1, 'spitter', 400, 300);
+    const press = mk(s, 2, 'press', 300, 300); press.facing = 'E';
+    const plain = mk(s, 3, 'spitter', 400, 500);
+    s.towers.push(gun, press, plain);
+    const p = s as unknown as Priv;
+    const war = ENEMIES.find((x) => x.caste === 'war' && !x.splitInto)!.kind;
+    s.drops.length = 0;
+    const a = p.spawnEnemy(war, s.gates[0]);
+    p.killEnemy(a.id, 1, false, gun.id);
+    const b = p.spawnEnemy(war, s.gates[0]);
+    p.killEnemy(b.id, 1, false, plain.id);
+    expect(s.drops.map((d) => d.caste)).toEqual(['science', 'war']);
+    // A press pip does it by itself.
+    const c = p.spawnEnemy(war, s.gates[0]);
+    plain.pips = [{ family: 'press' }];
+    p.killEnemy(c.id, 1, false, plain.id);
+    expect(s.drops[2].caste).toBe('science');
+  });
+
+  it('a reliquary comes as a PAIR (second one free) and banks its target\'s bonuses when it dies', () => {
+    const s = freshSim(1606);
+    rich(s);
+    const idx = drawTo(s, 'reliquary');
+    const handSize = s.hand.length;
+    const sci0 = s.meat.science;
+    expect(s.issue({ kind: 'build', cardIndex: idx, cell: buildableCell(s) }).ok).toBe(true);
+    const free = s.hand.findIndex((c) => c.free);
+    expect(free).toBeGreaterThanOrEqual(0);
+    expect(s.hand[free].family).toBe('reliquary');
+    expect(s.hand.length).toBe(handSize + 1);           // the pick-up replaced + the free twin
+    expect(sci0 - s.meat.science).toBe(towerSpec('reliquary').cost.science);
+    s.meat.science = 0;                                  // broke: the twin still goes down
+    expect(s.issue({ kind: 'build', cardIndex: free, cell: buildableCell(s, 5) }).ok).toBe(true);
+    expect(s.meat.science).toBe(0);                      // cost nothing
+    expect(s.hand.length).toBe(handSize);               // no replacement drawn, no new twin
+    expect(s.hand.some((c) => c.free)).toBe(false);
+    // Death insurance: a guarded limb that DIES banks its bonuses + its family.
+    const s2 = freshSim(1607);
+    const gun = mk(s2, 1, 'spitter', 400, 300, [{ family: 'frond' }, { family: 'lasher' }]);
+    const rel = mk(s2, 2, 'reliquary', 300, 300); rel.facing = 'E';
+    s2.towers.push(gun, rel);
+    s2.pendingPips = [];
+    (s2 as unknown as Priv).removeTower(gun.id, true);
+    expect(s2.pendingPips.map((x) => x.family).sort()).toEqual(['frond', 'lasher', 'spitter']);
+  });
+});
+
 describe('arc prism (focus ramp + relay network)', () => {
   it('ramps on a held target and resets on a switch', () => {
     const s = freshSim(960);

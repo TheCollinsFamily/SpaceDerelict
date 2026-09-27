@@ -7,7 +7,8 @@ export type TowerFamily =
   | 'tangler' | 'blighter' | 'impaler' | 'choir' | 'sling'
   | 'brood' | 'swamp' | 'frond' | 'lobber' | 'mister' | 'ocular' | 'prism'
   | 'bombard' | 'ward' | 'quill' | 'skipper' | 'net' | 'ember' | 'conduit'
-  | 'amp' | 'mosaic' | 'twin' | 'tap';
+  | 'amp' | 'mosaic' | 'twin' | 'tap'
+  | 'mitosis' | 'capacitor' | 'boomerang' | 'press' | 'reliquary';
 
 /** What a limb can shoot at. Fliers are only reachable by 'air'/'both' limbs. */
 export type HitsLayer = 'ground' | 'air' | 'both';
@@ -143,7 +144,16 @@ export interface TowerSpec {
    *   'tap'     (tap)     — holds the target in STASIS; sacrificing the tap harvests the
    *                         target's bonuses and the tap never disappears (a bonus farm)
    */
-  engine?: { kind: 'funnel' | 'amplify' | 'mosaic' | 'twin' | 'tap'; reach: number; gather?: number };
+  engine?: {
+    kind: 'funnel' | 'amplify' | 'mosaic' | 'twin' | 'tap'
+      | 'mitosis' | 'capacitor' | 'boomerang' | 'press' | 'reliquary';
+    reach: number;
+    gather?: number;
+    /** Only limbs that fire real projectiles can be targeted (the boomerang). */
+    projectileOnly?: boolean;
+  };
+  /** Picking the card gives a SECOND copy free (the reliquary is weak alone). */
+  pair?: boolean;
   /** Hits set bodies burning at this dps for burnDur seconds. */
   burnDps?: number;
   burnDur?: number;
@@ -196,6 +206,8 @@ export interface Tower {
   stunnedUntil?: number;
   /** Skipping mortar: the one direction it fires. */
   facing?: RootDir;
+  /** Capacitor: shots banked while idle, spent at 400% speed when the hive arrives. */
+  bank?: number;
 }
 
 /** Caltrops: a mini-wall of barbs a spine-pipped limb leaves where it kills. */
@@ -421,6 +433,9 @@ export interface Projectile {
   pierceLeft?: number;
   /** Enemies already hit by this piercing shot (hit once each). */
   hitIds?: number[];
+  /** Boomerang: after its first hit the shot flies back here, striking everything on the way. */
+  returnTo?: Vec;
+  returned?: boolean;
 }
 
 export interface Drop {
@@ -435,6 +450,8 @@ export interface Drop {
 export interface CardInstance {
   id: number;
   family: TowerFamily;
+  /** A free card (the reliquary's pair): costs nothing and is not replaced when used. */
+  free?: boolean;
 }
 
 export type Phase = 'growth' | 'siege' | 'draft';
@@ -459,6 +476,8 @@ export type SimEvent =
   | { kind: 'tower-recovered'; family: TowerFamily; refunded: boolean }
   | { kind: 'promoted'; from: EnemyKind; to: EnemyKind }
   | { kind: 'cannon-deployed'; enemy: EnemyKind }
+  | { kind: 'budded'; family: TowerFamily }
+  | { kind: 'relic-banked'; family: TowerFamily; pips: number }
   | { kind: 'royal-incoming' }
   | { kind: 'researchers-arrive'; count: number }
   | { kind: 'structure-lost'; what: string }
