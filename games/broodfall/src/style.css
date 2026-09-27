@@ -113,6 +113,33 @@ body {
 }
 #hint:empty { display: none; }
 
+/* ---------- limb inspect panel (click a tower) ---------- */
+
+#inspect {
+  position: absolute; top: 10px; left: 10px; width: 236px; z-index: 3;
+  background: var(--panel); border: 3px double var(--panel-edge); padding: 8px 10px;
+  font-size: 11px; box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.45);
+}
+#inspect.hidden { display: none; }
+#inspect-head { display: flex; justify-content: space-between; align-items: center; }
+#inspect-name { font-family: Impact, "Arial Black", sans-serif; font-size: 16px; letter-spacing: 1px; }
+#inspect-close { background: none; border: none; cursor: pointer; font-size: 14px; color: var(--ink); }
+#inspect-hp { position: relative; height: 14px; margin: 6px 0; background: var(--field-bg); border: 2px solid var(--panel-edge); }
+#inspect-hp-fill { height: 100%; width: 100%; background: #7fae52; }
+#inspect-hp-text {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  color: #f0e2c8; font-family: "Courier New", monospace; font-size: 10px; font-weight: bold;
+}
+#inspect-traits, #inspect-stats { font-size: 10px; opacity: 0.85; margin-bottom: 4px; text-transform: uppercase; }
+.inspect-label { font-size: 9px; letter-spacing: 2px; margin-top: 6px; opacity: 0.75; }
+.inspect-opts { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 3px; }
+.inspect-opts button {
+  font-size: 9px; letter-spacing: 1px; text-transform: uppercase; padding: 3px 6px; cursor: pointer;
+  background: #c7b788; border: 2px solid var(--panel-edge); border-radius: 3px; color: var(--ink);
+}
+.inspect-opts button.on { background: var(--ink); color: var(--panel); }
+.inspect-opts.muted { opacity: 0.4; pointer-events: none; }
+
 #overlay { position: absolute; inset: 0; background: rgba(8, 5, 3, 0.82); display: flex; align-items: center; justify-content: center; z-index: 5; }
 #overlay.hidden { display: none; }
 #overlay-card { background: var(--panel); border: 4px double var(--panel-edge); padding: 28px 40px; text-align: center; max-width: 520px; }

@@ -5,7 +5,11 @@ export type Caste = 'war' | 'science' | 'royal';
 export type TowerFamily =
   | 'spitter' | 'burster' | 'lasher' | 'maw' | 'spine' | 'lure'
   | 'tangler' | 'blighter' | 'impaler' | 'choir' | 'sling'
-  | 'brood' | 'pit' | 'frond' | 'lobber' | 'mister' | 'ocular';
+  | 'brood' | 'pit' | 'frond' | 'lobber' | 'mister' | 'ocular' | 'prism';
+
+/** Player-chosen targeting for a limb (click the tower to set it). */
+export type TargetMode = 'auto' | 'first' | 'strongest' | 'weakest' | 'focus';
+export type CasteFocus = 'any' | Caste;
 
 export type OrganId = 'heart' | 'brain' | 'gland' | 'root';
 
@@ -77,6 +81,8 @@ export interface TowerSpec {
   shredDur?: number;
   /** Ocular stalk: board-wide hitscan that prefers support castes (drummer/tender/bomber). */
   sniper?: boolean;
+  /** Arc prism: focus-fire beam; idle prisms in link range relay charge to firing ones. */
+  prismLink?: number;
 }
 
 /** What a donor family contributes when cannibalized into a new tower. */
@@ -95,6 +101,12 @@ export interface Tower {
   pips: ModPip[];
   cooldown: number;
   kills: number;
+  /** Player-chosen targeting (default 'auto'). */
+  priority?: TargetMode;
+  casteFocus?: CasteFocus;
+  /** Focus-fire memory: the last target and how many shots in a row it has taken. */
+  lastTargetId?: number;
+  streak?: number;
 }
 
 export interface OrganSpec {
@@ -177,8 +189,15 @@ export interface EnemySpec {
   hitShield?: number;
   /** Science caste: sneaks to the creep, steals banked meat, flees with it. */
   thief?: boolean;
-  /** Royal retinue: keeps spawning minions of this kind while it lives. */
-  spawns?: { kind: EnemyKind; count: number; interval: number };
+  /** Royal presence: war-caste bodies near it hit harder and shrug off damage. */
+  royalAura?: boolean;
+  /** Royal consort: promotes a nearby war body one rank every `interval` s. */
+  promotes?: { interval: number };
+  /**
+   * Science caste default: SMART. Routes around your gun coverage to your most
+   * vulnerable limb, sedates it (drains its hp) and carries it off.
+   */
+  stealsLimbs?: boolean;
 }
 
 export interface Enemy {
@@ -213,6 +232,9 @@ export interface Enemy {
   hitShield?: number;
   /** Thief: war meat it is carrying away (recovered if it dies before escaping). */
   stole?: number;
+  /** Collector: the limb it is extracting, and the limb it is carrying off once taken. */
+  extractId?: number;
+  carrying?: { family: TowerFamily; pips: ModPip[]; cell: number; priority?: TargetMode; casteFocus?: CasteFocus };
 }
 
 /** A broodling: the mother's spawn, fighting in the streets on your side. */
@@ -289,6 +311,9 @@ export type SimEvent =
   | { kind: 'wave-start'; tier: number; wave: number; counts: Partial<Record<EnemyKind, number>>; sides: string; risk: number }
   | { kind: 'meat-stolen'; amount: number }
   | { kind: 'meat-recovered'; amount: number }
+  | { kind: 'tower-stolen'; family: TowerFamily }
+  | { kind: 'tower-recovered'; family: TowerFamily; refunded: boolean }
+  | { kind: 'promoted'; from: EnemyKind; to: EnemyKind }
   | { kind: 'royal-incoming' }
   | { kind: 'researchers-arrive'; count: number }
   | { kind: 'structure-lost'; what: string }
@@ -303,6 +328,7 @@ export type SimEvent =
 export type Command =
   | { kind: 'build'; cardIndex: number; cell: number; cannibalizeTowerId?: number }
   | { kind: 'butcher'; towerId: number }
+  | { kind: 'set-priority'; towerId: number; mode?: TargetMode; caste?: CasteFocus }
   | { kind: 'sling-throw'; towerId: number; cell: number }
   | { kind: 'bile-throw'; towerId: number; cell: number }
   | { kind: 'cycle-root'; organInstanceId: number }

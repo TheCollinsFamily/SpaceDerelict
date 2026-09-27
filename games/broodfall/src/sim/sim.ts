@@ -88,6 +88,9 @@ export function towerStats(t: Tower) {
     shredDur: Math.max(spec.shredDur ?? 0, pips('mister') > 0 ? B.pipShredDur : 0),
     // Ocular pip: the limb learns priority targeting (supports first).
     sniper: (spec.sniper ?? false) || pips('ocular') > 0,
+    // Focus-fire ramp per consecutive shot on one target: the prism's own
+    // nature, and what a prism pip teaches any limb.
+    streakRamp: (t.family === 'prism' ? B.prismRampPerHit : 0) + B.pipStreak * pips('prism'),
   };
 }
 
@@ -442,6 +445,8 @@ export class Sim {
   }
 
   private refreshRouting(): void {
+    this.routeCache.clear();
+    this.dangerMap = null;
     this.flow = this.computeFlowField();
     this.creepDist = allDistance(this.map, this.map.coreCell);
     // The map may have grown: recompute every source's reach over the new terrain,
@@ -528,6 +533,15 @@ export class Sim {
         const donor = this.towers.find((t) => t.id === cmd.towerId);
         if (!donor) return { ok: false, err: 'no such tower' };
         this.butcherTower(donor);
+        return { ok: true };
+      }
+      case 'set-priority': {
+        const t = this.towers.find((x) => x.id === cmd.towerId);
+        if (!t) return { ok: false, err: 'no such tower' };
+        if (cmd.mode) t.priority = cmd.mode;
+        if (cmd.caste) t.casteFocus = cmd.caste;
+        t.lastTargetId = undefined;
+        t.streak = 0;
         return { ok: true };
       }
       case 'build-organ': {
@@ -1086,7 +1100,163 @@ export class Sim {
     if (i >= 0) this.enemies.splice(i, 1);
   }
 
+  /** Living royal-presence sources this tick (royal, consort). */
+  private auraSources: Enemy[] = [];
+  /** Route fields toward specific cells (collectors walking to a limb), keyed by cell. */
+  private routeCache = new Map<number, { dist: Float64Array; next: Int32Array }>();
+
+  /** War bodies near a living royal hit harder. Royals themselves are simply strong. */
+  empowerOf(e: Enemy): number {
+    if (this.auraSources.length === 0 || enemySpec(e.kind).caste !== 'war') return 1;
+    for (const r of this.auraSources) {
+      if (r !== e && dist(r.pos, e.pos) <= B.royalAuraRadius) return B.royalAuraDamageMult;
+    }
+    return 1;
+  }
+
+  private inRoyalAura(e: Enemy): boolean {
+    return this.empowerOf(e) > 1;
+  }
+
+  /** A passable cell a walker can stand on to reach this limb (or the limb's own street cell). */
+  private standCellFor(cell: number): number {
+    if (isPassable(this.map.cells[cell])) return cell;
+    const w = this.cfg.gridW;
+    for (const nb of [cell + w, cell - w, cell - 1, cell + 1]) {
+      if (nb >= 0 && nb < this.map.cells.length && isPassable(this.map.cells[nb])) return nb;
+    }
+    return -1;
+  }
+
+  /** Gun coverage per cell: summed dps of every armed limb that can reach it. */
+  private dangerMap: Float64Array | null = null;
+
+  dangerAt(cell: number): number {
+    if (!this.dangerMap) {
+      const n = this.map.cells.length;
+      const m = new Float64Array(n);
+      const w = this.cfg.gridW;
+      const cp = this.cfg.cellPx;
+      for (const t of this.towers) {
+        const st = this.statsOf(t);
+        if (st.rate <= 0 || st.damage <= 0) continue;
+        const dps = st.damage * st.rate;
+        const reach = Math.min(st.range, 160); // a board-wide eye still only "watches" nearby
+        const rc = Math.ceil(reach / cp);
+        const tx = t.cell % w;
+        const ty = Math.floor(t.cell / w);
+        for (let dy = -rc; dy <= rc; dy++) {
+          for (let dx = -rc; dx <= rc; dx++) {
+            const x = tx + dx;
+            const y = ty + dy;
+            if (x < 0 || y < 0 || x >= w || y >= this.cfg.gridH) continue;
+            if (Math.hypot(dx, dy) * cp > reach) continue;
+            m[y * w + x] += dps;
+          }
+        }
+      }
+      this.dangerMap = m;
+    }
+    return this.dangerMap[cell];
+  }
+
+  /**
+   * The science caste's read of your defense: the reachable limb whose
+   * approach is least covered by your guns. Ties go to the periphery.
+   */
+  vulnerableTower(): Tower | null {
+    let best: Tower | null = null;
+    let bestKey = Infinity;
+    for (const t of this.towers) {
+      const stand = this.standCellFor(t.cell);
+      if (stand < 0) continue;
+      const key = this.dangerAt(stand) * 1000 - this.creepDist[t.cell];
+      if (key < bestKey || (key === bestKey && best !== null && t.id < best.id)) { bestKey = key; best = t; }
+    }
+    return best;
+  }
+
+  /** Smart route to a cell: streets under fire cost more, so they walk the gaps. */
+  private routeTo(cell: number): { dist: Float64Array; next: Int32Array } {
+    let r = this.routeCache.get(cell);
+    if (!r) {
+      r = computeFlow(this.map, cell, (c) =>
+        (this.occupied.has(c) && c !== cell ? STRUCTURE_FLOW_COST : 0) + this.dangerAt(c) * B.dangerWeight);
+      this.routeCache.set(cell, r);
+    }
+    return r;
+  }
+
+  /** Step along the smart route toward a cell. */
+  private walkSmart(e: Enemy, goal: number, fallback: Vec, speed: number): void {
+    const here = this.cellAt(e.pos.x, e.pos.y);
+    const next = this.routeTo(goal).next[here];
+    if (here === goal || next < 0) this.stepConstrained(e, fallback, speed);
+    else this.stepConstrained(e, this.cellCenter(next), speed);
+  }
+
+  /**
+   * Science caste default: probe for the weakest point, route around the guns,
+   * sedate that limb and carry it off. With nothing worth taking they fall back
+   * to studying the creep edge and leaving.
+   */
+  private updateScience(e: Enemy, spec: EnemySpec): void {
+    const speed = this.moveSpeedOf(e);
+    if (e.leaving) {
+      this.leaveField(e, speed);
+      return;
+    }
+    let prey = e.extractId !== undefined ? this.towers.find((t) => t.id === e.extractId) : undefined;
+    if (!prey) {
+      prey = this.vulnerableTower() ?? undefined;
+      e.extractId = prey?.id;
+    }
+    if (!prey) {
+      this.updateResearcher(e, spec);
+      return;
+    }
+    if (dist(e.pos, prey.pos) <= B.scienceReach) {
+      prey.hp -= B.scienceExtractDps * DT;
+      if (prey.hp <= 0) {
+        e.carrying = {
+          family: prey.family, pips: [...prey.pips], cell: prey.cell,
+          priority: prey.priority, casteFocus: prey.casteFocus,
+        };
+        this.removeTower(prey.id, false);
+        e.extractId = undefined;
+        e.leaving = true;
+        this.events.push({ kind: 'tower-stolen', family: e.carrying.family });
+      }
+      return;
+    }
+    this.walkSmart(e, this.standCellFor(prey.cell), prey.pos, speed);
+  }
+
+  /** Consort promotion ladder: the nearest war body steps up one rank. */
+  private static readonly PROMOTION: Partial<Record<EnemyKind, EnemyKind>> = {
+    skitterling: 'militia', responder: 'militia', militia: 'soldier', soldier: 'elite',
+  };
+
+  private promoteNear(c: Enemy): void {
+    let best: Enemy | null = null;
+    let bestD: number = B.royalAuraRadius;
+    for (const o of this.enemies) {
+      if (o === c || o.burrowed || !Sim.PROMOTION[o.kind]) continue;
+      const d = dist(o.pos, c.pos);
+      if (d <= bestD) { bestD = d; best = o; }
+    }
+    if (!best) return;
+    const from = best.kind;
+    const to = Sim.PROMOTION[from]!;
+    const frac = best.hp / best.maxHp;
+    best.kind = to;
+    best.maxHp = enemySpec(to).hp;
+    best.hp = Math.max(1, frac * best.maxHp);
+    this.events.push({ kind: 'promoted', from, to });
+  }
+
   private updateEnemies(): void {
+    this.auraSources = this.enemies.filter((x) => enemySpec(x.kind).royalAura && !x.burrowed);
     for (const e of [...this.enemies]) {
       const spec = enemySpec(e.kind);
 
@@ -1096,8 +1266,8 @@ export class Sim {
         if (e.hp <= 0) { this.killEnemy(e.id, 1, false); continue; }
       }
 
-      if (e.kind === 'researcher') {
-        this.updateResearcher(e, spec);
+      if (spec.stealsLimbs) {
+        this.updateScience(e, spec);
         continue;
       }
 
@@ -1120,20 +1290,27 @@ export class Sim {
           e.leaving = true;
           continue;
         }
-        const nxt = this.flow.next[cell];
-        if (nxt >= 0) this.stepConstrained(e, this.cellCenter(nxt), tSpeed);
-        else this.stepConstrained(e, this.core, tSpeed);
+        // Smart like the rest of its caste: slip in where your guns aren't.
+        const weak = this.vulnerableTower();
+        const goal = weak ? this.standCellFor(weak.cell) : -1;
+        if (goal >= 0) {
+          this.walkSmart(e, goal, weak!.pos, tSpeed);
+        } else {
+          const nxt = this.flow.next[cell];
+          if (nxt >= 0) this.stepConstrained(e, this.cellCenter(nxt), tSpeed);
+          else this.stepConstrained(e, this.core, tSpeed);
+        }
         continue;
       }
 
       const speed = this.moveSpeedOf(e);
 
-      // Royal retinue: a living consort keeps breeding minions as it marches.
-      if (spec.spawns) {
+      // Royal consort: promotes the nearest war body one rank on a pulse.
+      if (spec.promotes) {
         e.auxCooldown = (e.auxCooldown ?? 0) - DT;
         if (e.auxCooldown <= 0) {
-          e.auxCooldown = spec.spawns.interval;
-          for (let i = 0; i < spec.spawns.count; i++) this.spawnMinion(spec.spawns.kind, e.pos);
+          e.auxCooldown = spec.promotes.interval;
+          this.promoteNear(e);
         }
       }
 
@@ -1197,7 +1374,7 @@ export class Sim {
           e.attackCooldown -= DT;
           if (e.attackCooldown <= 0) {
             e.attackCooldown = 1 / spec.rate;
-            s.hp -= spec.damage;
+            s.hp -= spec.damage * this.empowerOf(e);
             if (s.hp <= 0) {
               if (e.targetIsOrgan) this.removeOrgan(s.id);
               else this.removeTower(s.id, true);
@@ -1212,7 +1389,7 @@ export class Sim {
         e.attackCooldown -= DT;
         if (e.attackCooldown <= 0) {
           e.attackCooldown = 1 / spec.rate;
-          this.coreHp -= spec.damage;
+          this.coreHp -= spec.damage * this.empowerOf(e);
         }
         continue;
       }
@@ -1265,7 +1442,7 @@ export class Sim {
           e.attackCooldown -= DT;
           if (e.attackCooldown <= 0) {
             e.attackCooldown = 1 / spec.rate;
-            bl.hp -= spec.damage;
+            bl.hp -= spec.damage * this.empowerOf(e);
             if (bl.hp <= 0) {
               this.broodlings = this.broodlings.filter((b) => b !== bl);
               this.events.push({ kind: 'broodling-lost', motherId: bl.motherId });
@@ -1288,7 +1465,7 @@ export class Sim {
               : this.organs.find((o) => o.id === prey.id);
             if (s) {
               this.arcs.push({ from: { ...e.pos }, to: { ...s.pos }, ttl: 0.12 });
-              s.hp -= spec.damage;
+              s.hp -= spec.damage * this.empowerOf(e);
               if (s.hp <= 0) {
                 if (prey.kind === 'o') this.removeOrgan(prey.id);
                 else this.removeTower(prey.id, true);
@@ -1491,25 +1668,87 @@ export class Sim {
    * everything the reflex doesn't claim.
    */
   private pickTarget(t: Tower, range: number, sniper: boolean): Enemy | null {
+    const mode = t.priority ?? 'auto';
+    const caste = t.casteFocus ?? 'any';
+    // FOCUS: hold the last target while it lives and stays in reach.
+    if (mode === 'focus' && t.lastTargetId !== undefined) {
+      const held = this.enemies.find((e) => e.id === t.lastTargetId);
+      if (held && !held.burrowed && dist(t.pos, held.pos) <= range) return held;
+    }
     let target: Enemy | null = null;
-    let bestD = range;
-    let bestTier = -1; // higher tier wins; distance breaks ties
+    let bestKey = -Infinity;
     for (const e of this.enemies) {
       if (e.burrowed) continue; // underground: nothing to shoot at
       const es = enemySpec(e.kind);
       const d = dist(t.pos, e.pos);
       if (d > range) continue;
-      const climbing = !!es.sapper && !isPassable(this.map.cells[this.cellAt(e.pos.x, e.pos.y)]);
-      const support = !!(es.speedAura || es.healer || es.bomber);
-      const tier = climbing ? 2 : sniper && support ? 1 : 0;
-      if (tier > bestTier || (tier === bestTier && d <= bestD)) {
-        target = e; bestD = d; bestTier = tier;
+      let sub: number;
+      if (mode === 'first') {
+        sub = -this.progressOf(e);             // furthest along the march
+      } else if (mode === 'strongest') {
+        sub = e.hp;                             // most health left
+      } else if (mode === 'weakest') {
+        sub = -e.hp;                            // finish the wounded
+      } else {
+        // AUTO (and focus acquiring a new lock): threats first, then nearest.
+        // A sapper CLIMBING a block face is every limb's reflex target; snipers
+        // then prefer support castes.
+        const climbing = !!es.sapper && !isPassable(this.map.cells[this.cellAt(e.pos.x, e.pos.y)]);
+        const support = !!(es.speedAura || es.healer || es.bomber);
+        const tier = climbing ? 2 : sniper && support ? 1 : 0;
+        sub = tier * 1e6 - d;
       }
+      // A chosen caste outranks every other ordering.
+      const key = (caste !== 'any' && es.caste === caste ? 1e9 : 0) + sub;
+      if (key >= bestKey) { bestKey = key; target = e; }
     }
     return target;
   }
 
+  /** How far a body still has to go (flow units; fliers by straight line). Lower = further along. */
+  private progressOf(e: Enemy): number {
+    const cell = this.cellAt(e.pos.x, e.pos.y);
+    const d = this.flow.dist[cell];
+    if (isPassable(this.map.cells[cell]) && Number.isFinite(d)) return d;
+    return (dist(e.pos, this.core) / this.cfg.cellPx) * 10;
+  }
+
+  /** Is anything in this limb's own reach? (Idle prisms relay their charge.) */
+  private hasTargetInRange(t: Tower, range: number): boolean {
+    for (const e of this.enemies) {
+      if (!e.burrowed && dist(t.pos, e.pos) <= range) return true;
+    }
+    return false;
+  }
+
+  /**
+   * Prism relay: idle, charged prisms chained within link range of a firing
+   * prism (directly or through each other) pour their charge into its beam and
+   * spend their own shot doing it. Breadth-first, so the network routes itself.
+   */
+  private gatherPrismRelays(firing: Tower, claimed: Set<number>): number {
+    const link = towerSpec('prism').prismLink ?? 0;
+    const frontier: Tower[] = [firing];
+    let relays = 0;
+    while (frontier.length > 0 && relays < B.prismMaxRelays) {
+      const cur = frontier.shift()!;
+      for (const p of this.towers) {
+        if (relays >= B.prismMaxRelays) break;
+        if (p.family !== 'prism' || p === firing || claimed.has(p.id) || p.cooldown > 0) continue;
+        if (dist(cur.pos, p.pos) > link) continue;
+        if (this.hasTargetInRange(p, this.statsOf(p).range)) continue; // busy prisms fire their own
+        claimed.add(p.id);
+        p.cooldown = 1 / towerSpec('prism').rate;
+        this.arcs.push({ from: { ...p.pos }, to: { ...cur.pos }, ttl: 0.25 });
+        relays++;
+        frontier.push(p);
+      }
+    }
+    return relays;
+  }
+
   private updateTowers(): void {
+    const relayClaimed = new Set<number>();
     for (const t of this.towers) {
       // Cooldown ticks for every limb — sling and lobber recharges live here too.
       t.cooldown -= DT;
@@ -1551,16 +1790,28 @@ export class Sim {
 
       if (stats.rate <= 0) continue;
       if (t.cooldown > 0) continue;
+      if (relayClaimed.has(t.id)) continue; // spent this beat feeding a sibling prism
       const target = this.pickTarget(t, stats.range, stats.sniper);
       if (!target) continue;
       t.cooldown = 1 / stats.rate;
 
-      // Hitscan strikers: the frond's arc chain and the ocular's board-wide beam.
-      if (t.family === 'frond' || t.family === 'ocular') {
+      // Focus fire: consecutive shots on one body ramp (prisms natively, any
+      // limb through prism pips). Switching targets resets the streak.
+      t.streak = target.id === t.lastTargetId ? (t.streak ?? 0) + 1 : 0;
+      t.lastTargetId = target.id;
+      let dmg = stats.damage * (1 + stats.streakRamp * Math.min(t.streak, B.prismRampMax));
+
+      // Hitscan strikers: the frond's arc chain, the ocular's board-wide beam,
+      // and the prism's focus beam (fed by relays from idle prisms).
+      if (t.family === 'frond' || t.family === 'ocular' || t.family === 'prism') {
+        if (t.family === 'prism') {
+          relayClaimed.add(t.id);
+          dmg *= 1 + B.prismRelayBonus * this.gatherPrismRelays(t, relayClaimed);
+        }
         this.arcs.push({ from: { ...t.pos }, to: { ...target.pos }, ttl: t.family === 'ocular' ? 0.3 : 0.22 });
         this.applyHitEffects(target, stats);
-        this.damageEnemy(target, stats.damage, stats.yieldMult, stats.capBonus);
-        if (stats.chains > 0) this.chainArcs(target, stats.chains, stats.damage, stats.yieldMult, stats.capBonus);
+        this.damageEnemy(target, dmg, stats.yieldMult, stats.capBonus);
+        if (stats.chains > 0) this.chainArcs(target, stats.chains, dmg, stats.yieldMult, stats.capBonus);
         if (stats.knock > 0) this.knockBack(target, target.pos.x - t.pos.x, target.pos.y - t.pos.y, stats.knock);
         continue;
       }
@@ -1571,13 +1822,13 @@ export class Sim {
           continue;
         }
         this.applyHitEffects(target, stats);
-        this.damageEnemy(target, stats.damage, stats.yieldMult, stats.capBonus);
-        if (stats.chains > 0) this.chainArcs(target, stats.chains, stats.damage, stats.yieldMult, stats.capBonus);
+        this.damageEnemy(target, dmg, stats.yieldMult, stats.capBonus);
+        if (stats.chains > 0) this.chainArcs(target, stats.chains, dmg, stats.yieldMult, stats.capBonus);
         if (stats.knock > 0) this.knockBack(target, target.pos.x - t.pos.x, target.pos.y - t.pos.y, stats.knock);
         if (t.family === 'lasher' && stats.aoe > 0) {
           for (const e of [...this.enemies]) {
             if (e !== target && !e.burrowed && dist(t.pos, e.pos) <= stats.aoe + 20) {
-              this.damageEnemy(e, stats.damage * 0.5, stats.yieldMult, stats.capBonus);
+              this.damageEnemy(e, dmg * 0.5, stats.yieldMult, stats.capBonus);
             }
           }
         }
@@ -1588,7 +1839,7 @@ export class Sim {
           id: this.nextId++,
           pos: { ...t.pos },
           vel: { x: ((target.pos.x - t.pos.x) / d) * speed, y: ((target.pos.y - t.pos.y) / d) * speed },
-          damage: stats.damage,
+          damage: dmg,
           aoe: stats.aoe,
           // Piercing shots fly the whole range; ordinary ones die at the target.
           ttl: stats.pierce ? (stats.range * 1.25) / speed : (d / speed) + 0.4,
@@ -1665,6 +1916,8 @@ export class Sim {
       e.hitShield -= 1;
       return;
     }
+    // Royal presence steels the war bodies around it.
+    if (this.inRoyalAura(e)) dmg *= B.royalAuraArmor;
     const cap = enemySpec(e.kind).armorCap;
     // Shredded armor raises the cap for EVERY source — the mister's whole job.
     const shred = e.shredUntil !== undefined && e.shredUntil > this.time ? e.shredAmount ?? 0 : 0;
@@ -1700,6 +1953,29 @@ export class Sim {
     if (e.stole !== undefined && e.stole > 0) {
       this.meat.war += e.stole;
       this.events.push({ kind: 'meat-recovered', amount: e.stole });
+    }
+    // A dead collector drops the limb: it re-roots where it stood, traits and
+    // targeting intact — or, if that ground is taken now, its cost comes back.
+    if (e.carrying) {
+      const c = e.carrying;
+      if (!this.occupied.has(c.cell) && c.cell !== this.map.coreCell) {
+        const spec = towerSpec(c.family);
+        const tower: Tower = {
+          id: this.nextId++, family: c.family, pos: this.cellCenter(c.cell), cell: c.cell,
+          hp: spec.maxHp, maxHp: spec.maxHp, pips: c.pips, cooldown: 0, kills: 0,
+          priority: c.priority, casteFocus: c.casteFocus,
+        };
+        tower.maxHp = this.statsOf(tower).maxHp;
+        tower.hp = tower.maxHp;
+        this.towers.push(tower);
+        this.occupied.set(c.cell, { kind: 't', id: tower.id });
+        this.refreshRouting();
+        this.events.push({ kind: 'tower-recovered', family: c.family, refunded: false });
+      } else {
+        const cost = towerSpec(c.family).cost;
+        for (const k of ['war', 'science', 'royal'] as Caste[]) this.meat[k] += cost[k] ?? 0;
+        this.events.push({ kind: 'tower-recovered', family: c.family, refunded: true });
+      }
     }
     this.events.push({ kind: 'kill', enemy: e.kind, caste: spec.caste });
     if (!eaten && yieldMult > 0) {

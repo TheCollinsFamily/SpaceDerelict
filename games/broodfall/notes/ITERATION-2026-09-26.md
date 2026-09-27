@@ -147,6 +147,36 @@ smart flips 3:2, totals 120k vs 115k. 54/54 tests; input check adds the lobber
 gesture; visual/endgame green.
 
 
+## Addendum 7 (Sep 27): smart science caste, limb panel + targeting, arc prism, royal role
+
+**Science caste = smart, by default.** First pass misread Collins as "a special unit
+that steals towers" (a collector); he corrected it mid-build: "that is their default
+behavior... they are smart and will try to walk around your tower defences to the most
+vulnerable locations." Rebuilt: a per-cell coverage map (summed dps of armed limbs)
+drives a route cost; researchers (and thieves) walk the gaps, target the least-covered
+reachable limb, sedate it, carry it off; killing the courier re-roots it. Collector
+unit deleted. Tests pin: target = least-covered approach; smart path exposure ≤ the
+straight march's; steal → kill → limb restored with traits.
+
+**Limb panel:** click a limb → hp, stats, traits, targeting (AUTO/FIRST/STRONGEST/
+WEAKEST/FOCUS + caste priority), via a new sim command so it is deterministic and
+scriptable. AUTO is the old tuned behavior exactly.
+
+**Arc Prism:** focus ramp (+12%/consecutive shot, 5 max) + relay network (idle prisms
+chain charge breadth-first to the firing prism, +50% each, spending their shot). Pip:
+any limb ramps.
+
+**Royals:** Collins asked "royals are mostly about powering up others and super
+strong, but otherwise act like warriors right?" — they were NOT (royal was just a big
+body; the consort bred militia). Now they are: presence aura (war bodies ×1.5 damage to
+structures, ×0.7 damage taken within 120px), consort promotes a rank every 5s.
+
+**Measured:** 68/68 tests; guardrail smart 5/8, flips **5:0**, totals +29% — the
+strongest separation yet (smart science punishes gappy scatter exactly as intended);
+fullrun hold-12 naive 2/3. Browser checks green; the demo endgame run now loses its
+seed (overlay still verified).
+
+
 ## Addendum 6: enemy genre expansion, the RISK law, faction audit
 
 **Collins:** "what enemy types or abilities do people like in tower defense — take

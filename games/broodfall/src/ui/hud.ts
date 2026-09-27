@@ -5,7 +5,7 @@
  */
 import { Sim, towerSpec } from '../sim/sim';
 import { BALANCE as B } from '../../content/data';
-import type { Caste, OrganId, SimEvent, TowerFamily } from '../sim/types';
+import type { Caste, CasteFocus, OrganId, SimEvent, TargetMode, TowerFamily } from '../sim/types';
 
 const CARD_DESC: Record<TowerFamily, string> = {
   spitter: 'Ranged acid limb. Cheap, reliable.',
@@ -25,6 +25,7 @@ const CARD_DESC: Record<TowerFamily, string> = {
   lobber: 'Aimed bile volley. Click it, click ground.',
   mister: 'Shreds armor — everyone hits deeper.',
   ocular: 'Board-wide eye. Executes drummers and tenders.',
+  prism: 'Focus beam that ramps. Idle prisms relay it charge.',
 };
 
 const FEED_LINES: Partial<Record<SimEvent['kind'], (e: SimEvent) => { text: string; cls: string }>> = {
@@ -60,6 +61,15 @@ const FEED_LINES: Partial<Record<SimEvent['kind'], (e: SimEvent) => { text: stri
   'meat-recovered': (e) => e.kind === 'meat-recovered'
     ? { text: `courier neutralized — ${e.amount} meat recovered`, cls: 'sci' }
     : { text: '', cls: '' },
+  'tower-stolen': (e) => e.kind === 'tower-stolen'
+    ? { text: `SPECIMEN LOSS: a ${e.family} is being carried off — intercept`, cls: 'hot' }
+    : { text: '', cls: '' },
+  'tower-recovered': (e) => e.kind === 'tower-recovered'
+    ? { text: e.refunded ? `${e.family} recovered — ground taken, biomass refunded` : `${e.family} recovered and re-rooted`, cls: 'sci' }
+    : { text: '', cls: '' },
+  promoted: (e) => e.kind === 'promoted'
+    ? { text: `local response promoted: ${e.from} → ${e.to}`, cls: 'royal' }
+    : { text: '', cls: '' },
   'royal-incoming': () => ({ text: 'priority asset detected: ROYAL', cls: 'royal' }),
   'structure-lost': (e) => e.kind === 'structure-lost'
     ? { text: `limb lost: ${e.what}`, cls: 'hot' }
@@ -73,6 +83,7 @@ export interface HudCallbacks {
   onRoyalSurge(): void;
   onSpeed(mult: number): void;
   onRestart(): void;
+  onSetPriority(towerId: number, mode?: TargetMode, caste?: CasteFocus): void;
 }
 
 export class Hud {
@@ -100,6 +111,8 @@ export class Hud {
 
   selectedCard: number | null = null;
   armedOrgan: OrganId | null = null;
+  /** Limb whose inspect panel is open (null = closed). */
+  inspectedId: number | null = null;
   private lastHandKey = '';
   private lastDirective: 'hold' | 'royal' | 'harvest' = 'hold';
 
@@ -115,6 +128,17 @@ export class Hud {
       });
     }
     document.getElementById('royal-surge')!.addEventListener('click', () => cb.onRoyalSurge());
+    document.getElementById('inspect-close')!.addEventListener('click', () => { this.inspectedId = null; });
+    for (const btn of document.querySelectorAll<HTMLButtonElement>('#inspect-modes button')) {
+      btn.addEventListener('click', () => {
+        if (this.inspectedId !== null) cb.onSetPriority(this.inspectedId, btn.dataset.mode as TargetMode);
+      });
+    }
+    for (const btn of document.querySelectorAll<HTMLButtonElement>('#inspect-castes button')) {
+      btn.addEventListener('click', () => {
+        if (this.inspectedId !== null) cb.onSetPriority(this.inspectedId, undefined, btn.dataset.caste as CasteFocus);
+      });
+    }
     for (const btn of document.querySelectorAll<HTMLButtonElement>('#speed-box button')) {
       btn.addEventListener('click', () => {
         for (const b of document.querySelectorAll('#speed-box button')) b.classList.remove('on');
@@ -160,6 +184,44 @@ export class Hud {
       this.el.feed.prepend(div);
       window.setTimeout(() => div.remove(), 6500);
       while (this.el.feed.children.length > 9) this.el.feed.lastChild?.remove();
+    }
+  }
+
+  /** The limb inspect panel: hp, stats, traits, and its targeting controls. */
+  private updateInspect(sim: Sim): void {
+    const panel = document.getElementById('inspect')!;
+    const t = this.inspectedId !== null ? sim.towers.find((x) => x.id === this.inspectedId) : undefined;
+    if (!t) {
+      this.inspectedId = null;
+      panel.classList.add('hidden');
+      return;
+    }
+    panel.classList.remove('hidden');
+    const spec = towerSpec(t.family);
+    const st = sim.statsOf(t);
+    document.getElementById('inspect-name')!.textContent = spec.name.toUpperCase();
+    const frac = Math.max(0, t.hp / t.maxHp);
+    const fill = document.getElementById('inspect-hp-fill')!;
+    fill.style.width = `${(frac * 100).toFixed(0)}%`;
+    fill.style.background = frac > 0.4 ? '#7fae52' : 'var(--accent)';
+    document.getElementById('inspect-hp-text')!.textContent = `${Math.ceil(t.hp)} / ${Math.ceil(t.maxHp)} HP`;
+    document.getElementById('inspect-stats')!.textContent = st.rate > 0
+      ? `dmg ${st.damage.toFixed(0)} · ${st.rate.toFixed(2)}/s · reach ${Math.round(st.range)}`
+        + ((t.streak ?? 0) > 0 && st.streakRamp > 0 ? ` · streak ${t.streak}` : '')
+      : 'no weapon — support limb';
+    const counts = new Map<string, number>();
+    for (const p of t.pips) counts.set(p.family, (counts.get(p.family) ?? 0) + 1);
+    document.getElementById('inspect-traits')!.textContent = t.pips.length
+      ? `traits: ${[...counts].map(([f, n]) => (n > 1 ? `${f}×${n}` : f)).join(', ')}`
+      : 'no inherited traits';
+    const armed = st.rate > 0;
+    document.getElementById('inspect-modes')!.classList.toggle('muted', !armed);
+    document.getElementById('inspect-castes')!.classList.toggle('muted', !armed);
+    for (const b of document.querySelectorAll<HTMLElement>('#inspect-modes button')) {
+      b.classList.toggle('on', (t.priority ?? 'auto') === b.dataset.mode);
+    }
+    for (const b of document.querySelectorAll<HTMLElement>('#inspect-castes button')) {
+      b.classList.toggle('on', (t.casteFocus ?? 'any') === b.dataset.caste);
     }
   }
 
@@ -240,6 +302,8 @@ export class Hud {
         this.el.hand.appendChild(div);
       });
     }
+
+    this.updateInspect(sim);
 
     // Button states.
     const surge = document.getElementById('royal-surge')!;

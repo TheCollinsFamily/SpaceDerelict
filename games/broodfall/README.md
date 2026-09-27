@@ -41,14 +41,16 @@ Useful URLs:
 - Organs (bottom-left) grow inside the body mass only. The pheromone gland cycles calm / lure / challenge when clicked. The TENDRIL ROOT grows a creep lobe toward its arrow — click it to re-aim (N→E→S→W).
 - The SPORE SLING (card) is creep logistics: build it, click it to arm (a range ring appears), then click any claimed ground — a clot arcs out and seeds a growing creep patch you can build on long before the body reaches it. 20s recharge. Its pip makes any limb seep creep around its own block. The BILE LOBBER uses the same click-to-arm interaction but throws a detonating volley instead.
 - Full roster (17 limb families): spitter, burster, lasher, maw, spine wall, lure gland, snare bed (slow), blight vent (poison), impaler (pierce), choir node (rate aura), spore sling, broodmother (fields broodlings that block and fight), digestive pit (a passable mouth IN the street), galvanic frond (chain arcs), bile lobber, caustic mister (armor shred for everyone), ocular stalk (board-wide support-killer). Every family's verb is also its cannibalize pip — DESIGN.md carries the combination algebra.
-- War caste attacks because you exist. Science caste comes to study you when you are interesting, and is edible — but past a fame threshold their parties include SPECIMEN THIEVES who steal banked war meat and run (kill the courier to get it back). Royals move only when you are a crisis, arrive with a CONSORT that breeds militia while it lives, and royal meat converts to raw mass (ROYAL SURGE).
+- War caste attacks because you exist. Science caste comes when you are interesting, and it is SMART: researchers read your gun coverage, walk around it, and go for your least-defended limb — sedate it and carry it off (kill the courier and the limb re-roots). Past a fame threshold their parties include THIEVES who steal banked war meat the same way. Royals move only when you are a crisis: super-strong warriors whose presence makes nearby war bodies hit harder and take less, while the CONSORT promotes them a rank at a time. Royal meat converts to raw mass (ROYAL SURGE).
+- CLICK ANY LIMB (nothing armed) for its panel: hp, stats, traits, and targeting — Auto / First / Strongest / Weakest / Focus plus a caste priority (e.g. set periphery guns to SCIENCE to stop limb theft). Right-click closes it.
+- The ARC PRISM ramps its beam on a held target, and idle prisms relay their charge through each other to whichever prism is firing — build them as a network.
 - The top bar telegraphs each wave's RISK — every enemy kind carries a risk weight, and waves scale by the risk law: cheap ranks multiply with the clock, risky specialists (sappers, mortars, drummers) stay punctuation. Watch for: splitters (burst into skitterlings unless eaten whole), mortar beetles (besiege from standoff — long guns answer), carapace lords (block the first 6 hits — big blows strip the shell).
 - Win: complete the DIRECTIVE in the top bar — hold for N waves, destroy the royal, or bank the science quota. Each run rolls one (force it with `?directive=hold|royal|harvest`). Lose: asset integrity hits zero. The core fights back on its own.
 
 ## Verify it
 
 ```powershell
-npm test             # 61 headless sim tests incl. per-verb behavior pins + full autoplayer runs
+npm test             # 68 headless sim tests incl. per-verb behavior pins + full autoplayer runs
 npm run build
 npm run test:visual  # headless chromium: sim + HUD + per-region pixel checks; screenshots in tools/screenshots/
 npm run test:input   # headless chromium: real player gestures (build, cannibalize, organ, cancel)

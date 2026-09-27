@@ -47,6 +47,11 @@ debrief → ship gene bay → redeploy.
 10. **Caste spend rule: war is generic, science comes from mutations, royal is for
     SPECIAL upgrades.** The royal special-upgrade sink layer is NOT built yet (the
     biomass surge is a placeholder) — it is high on the backlog.
+12. **Science caste is SMART by default** (not a special unit): coverage-aware routing
+    to your least-defended limb, which they sedate and steal. Royals are super-strong
+    warriors whose weight is empowering others (aura + consort promotions).
+13. **Click a limb** for its panel: hp, traits, and player targeting (auto/first/
+    strongest/weakest/focus + caste priority).
 11. **No mode toggles, ever.** Cannibalize is hover-a-limb (affordance + salvage
     preview) then click: the limb is eaten on the spot, 60% of its cost credits the
     payment, traits bank into the next build. Actions live on the object, found by
@@ -67,8 +72,9 @@ debrief → ship gene bay → redeploy.
 ## How to verify (all must be green before claiming anything)
 
 ```powershell
-npm test             # 61 tests: sim, plates algebra, wave rhythm, per-verb behaviors
-                     # for 17 tower families + 19 enemy kinds, the risk law, faction
+npm test             # 68 tests: sim, plates algebra, wave rhythm, per-verb behaviors
+                     # for 18 tower families + 19 enemy kinds, smart science routing +
+                     # limb theft, targeting modes, prism relays, the risk law, faction
                      # invariants, butcher economy, creep logistics, combination-algebra
                      # caps, full autoplayed runs, and the PLACEMENT GUARDRAIL
                      # (hold-12 again — metric history in ITERATION addenda 5-6)
@@ -97,8 +103,9 @@ URL params: `?seed= &auto=1 &autostart=1 &speed= &directive=hold|royal|harvest &
 ## Current balance state (don't trust memory — re-measure)
 
 Scripted player, hold-12, 1 entrance: 2/3 measured seeds win (the enemy expansion
-restored real difficulty); 2-3 entrances much harder. Guardrail (hold-12): smart 6/8,
-outcome flips 4:1, totals +11% — the most decisive it has measured. The bot throws
+restored real difficulty); 2-3 entrances much harder. Guardrail (hold-12): smart 5/8,
+outcome flips 5:0, totals +29% — the most decisive it has measured (smart science
+caste punishes gappy coverage). The bot throws
 sling clots at the telegraphed gate, volleys the lobber at the closest hostile, and
 arms interior guns when tier 6 nears (ITERATION addenda 3-6 carry the tuning history).
 Creep is multi-source: core + sling patches + root lobes + seeping pipped limbs.

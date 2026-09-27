@@ -89,6 +89,9 @@ const hud = new Hud({
   onRestart() {
     showDebrief();
   },
+  onSetPriority(towerId, mode, caste) {
+    sim.issue({ kind: 'set-priority', towerId, mode, caste });
+  },
 });
 
 function salvageText(family: TowerFamily): string {
@@ -341,9 +344,14 @@ function handleCanvasClick(clientX: number, clientY: number): void {
         return;
       }
     }
-    // Clicking a built sling or lobber arms a throw (object-initiated, no mode button).
-    for (const t of sim.towers) {
-      if ((t.family === 'sling' || t.family === 'lobber') && Math.hypot(t.pos.x - w.x, t.pos.y - w.y) < 22) {
+    // Clicking one of your limbs opens its panel (hp, traits, targeting).
+    // A sling or lobber ALSO arms its throw — object-initiated, no mode button.
+    const clicked = towerNearWorld(w.x, w.y);
+    if (clicked) {
+      const t = sim.towers.find((x) => x.id === clicked.id)!;
+      hud.inspectedId = t.id;
+      renderer.selectedTowerId = t.id;
+      if (t.family === 'sling' || t.family === 'lobber') {
         const name = t.family === 'sling' ? 'spore sling' : 'bile lobber';
         if (t.cooldown > 0) {
           hud.setHint(`${name} recharging — ${Math.ceil(t.cooldown)}s`);
@@ -355,9 +363,12 @@ function handleCanvasClick(clientX: number, clientY: number): void {
           range: t.family === 'sling' ? B.slingRange : B.lobberRange,
         };
         updateHint();
-        return;
       }
+      return;
     }
+    // Empty ground with nothing armed: close the panel.
+    hud.inspectedId = null;
+    renderer.selectedTowerId = null;
   }
 
   if (armedOrgan) {
@@ -419,6 +430,8 @@ async function boot(): Promise<void> {
     renderer.donorHighlightId = null;
     hud.selectedCard = null;
     hud.armedOrgan = null;
+    hud.inspectedId = null;
+    renderer.selectedTowerId = null;
     updateHint();
   });
   renderer.app.canvas.addEventListener('pointermove', (ev) => {

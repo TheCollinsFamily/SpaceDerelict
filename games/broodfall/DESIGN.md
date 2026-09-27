@@ -30,7 +30,9 @@ You are a growing body. Towers are limbs, creep is skin, organs are the build, m
 Collins (Sep 26 2026), the spend-side rule: **war is generic, science comes based on mutations, royalty is for special upgrades.**
 1. **War caste** — the GENERIC currency: default income, default pressure, pays for the standard body (basic towers, walls, day-to-day builds). Warriors come because you exist.
 2. **Science caste** — the MUTATION currency, bait-able. Researchers are attracted by novel biology: every mutated tower and exotic organ raises your "interesting" rating and pulls them to the perimeter, where you eat them. Farming science meat = building weird; science meat buys weirder (advanced towers, organs, mutation paths). The loop feeds itself.
-3. **Royal caste** — the SPECIAL-UPGRADE currency, earned escalation. Royals only move when you are a civilizational crisis. Baiting a royal means deliberately crossing threat thresholds that also unlock the hive's worst response waves. The jackpot and the hardest fight are the same event. Royal meat buys SPECIAL upgrades — rare, run-defining purchases no amount of war/science meat can substitute for. (Status Sep 26 2026: the slice's only royal sink is the biomass surge, which iteration notes already call dead weight — the special-upgrade sink layer is NOT built yet and is the intended design.)
+   **Their default behavior is SMART (Collins, Sep 27 2026): "they are smart and will try to walk around your tower defences to the most vulnerable locations"** — to steal limbs, so they live on the periphery. Implemented as a coverage map (summed dps of every armed limb over each cell) feeding a route cost (+3 per dps on a street cell vs 10 for the street itself): researchers walk the gaps in your fire, target the reachable limb whose approach is LEAST covered (ties → the periphery), sedate it (4 hp/s each, so a party is dangerous), and carry it off. Kill the courier and the limb re-roots where it stood with its traits and targeting intact (or its cost comes back if the ground was retaken). There is no special tower-thief unit — this is the whole caste. It is the genre-new layer: war caste tests your killing power on the march; science caste tests your COVERAGE for holes.
+3. **Royal caste** — on the field (Collins, Sep 27 2026): royals are **super-strong warriors that otherwise act like the war caste, whose real weight is powering up others.** The royal and her consort march and chew like warriors; both project a presence aura (war bodies within 120px hit structures ×1.5 and take ×0.7 damage), and the consort PROMOTES the nearest war body one rank every 5s (militia → soldier → elite). Kill-order matters: the court makes the army around it worse.
+   As a currency — the SPECIAL-UPGRADE currency, earned escalation. Royals only move when you are a civilizational crisis. Baiting a royal means deliberately crossing threat thresholds that also unlock the hive's worst response waves. The jackpot and the hardest fight are the same event. Royal meat buys SPECIAL upgrades — rare, run-defining purchases no amount of war/science meat can substitute for. (Status Sep 26 2026: the slice's only royal sink is the biomass surge, which iteration notes already call dead weight — the special-upgrade sink layer is NOT built yet and is the intended design.)
 
 The build dictates what comes (attraction economy), not the map. Which caste you are hungry for IS your build path.
 
@@ -63,6 +65,9 @@ Towers (10 families; each family's pip is what it teaches a build that eats it):
 | Bile Lobber | player-aimed VOLLEY: click it, click ground in 250px — the glob detonates for 55 in a 55px blast (12s recharge) | hits knock back 5px per pip |
 | Caustic Mister | mist that SHREDS armor: +8 to the armor cap EVERY source's hits respect, 4s | hits shred +3 per pip |
 | Ocular Stalk | board-wide hitscan eye, slow, 60 damage, executes support castes (drummer/tender/bomber) by priority | the limb learns priority targeting |
+| Arc Prism | focus-fire beam that ramps +12% per consecutive shot on one target (5 max); when a prism has NOTHING in its own reach it RELAYS — idle prisms chain their charge through each other (150px links, breadth-first, up to 6) into the prism that is firing, +50% beam each, spending their own shot (Red Alert 2's prism tower, routed through a network) | any limb ramps +6% per consecutive shot per pip |
+
+**Limb panel (Collins, Sep 27 2026): click any limb** (nothing armed) to open its panel — hp bar, live stats, inherited traits — and set its **targeting**: AUTO (threats first: climbing sappers, then nearest — the tuned default), FIRST (furthest along the march), STRONGEST, WEAKEST, FOCUS (lock one body until it dies or leaves reach), plus a **caste priority** (any / war / science / royal) that outranks the ordering — e.g. set your periphery guns to SCIENCE to guard against limb theft. Tower HP matters now in three ways: sappers/mortars chew it, bombers blast it, and researchers sedate it to steal it.
 
 **Targeting reflex (all limbs, born of a measured failure):** a sapper CLIMBING a block
 face is every tower's priority target. Without it, covering the lane just fed the
@@ -121,11 +126,13 @@ pins WAVE_TABLE to war caste only.
   the shell, rapid fire feeds it; poison seeps through) · phalanx (t5: per-hit cap).
 - WAR support (kill-priority decisions): drummer (speed aura) · bomber (charges
   walls/organs) · tender (heal pulses) · tunneler (t6: burrows past the outer line).
-- SCIENCE visitors: researcher (comes to study, edible) · specimen thief (slips in
-  with study parties past interest 12, steals 15 war meat at the creep and runs —
-  kill the courier before it slips off the frontier and the meat comes home).
-- ROYAL court: the royal (the jackpot and the hardest fight) · her consort (breeds
-  2 militia every 6s while it lives — the spawner that must die first; 40 royal meat).
+- SCIENCE visitors (smart by default — route around coverage to your weakest point):
+  researcher (probes the gaps, sedates and steals the least-covered limb; edible) ·
+  specimen thief (joins study parties past interest 12, slips through the same gaps,
+  steals 15 war meat and runs — kill the courier and the meat comes home).
+- ROYAL court (super-strong warriors that power up others): the royal (1100 hp, the
+  jackpot) · her consort (420 hp, promotes war bodies a rank every 5s; 40 royal meat);
+  both carry the presence aura.
 
 **THE RISK LAW (Collins, Sep 26 2026): every kind carries a RISK weight, and spawn
 counts derive from it** — count = row × (1 + (clockScale−1) × riskBaseline/risk).

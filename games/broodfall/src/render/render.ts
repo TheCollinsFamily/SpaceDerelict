@@ -28,13 +28,14 @@ const FAMILY_COLORS: Record<TowerFamily, number> = {
   lobber: 0x9c8f3a,
   mister: 0xb8d84f,
   ocular: 0xe0d0b0,
+  prism: 0x8fd8f0,
 };
 
 const ENEMY_SIZE: Record<Enemy['kind'], number> = {
   responder: 5, militia: 6, skitterling: 3.5, soldier: 8, elite: 11, flier: 6, sapper: 7,
   phalanx: 13, drummer: 9, bomber: 6, tunneler: 8, tender: 7,
   splitter: 9, mortar: 9, carapace: 10,
-  researcher: 6, thief: 6, royal: 20, consort: 12,
+  researcher: 6, thief: 6, royal: 20, consort: 13,
 };
 
 export interface PlacementPreview {
@@ -59,6 +60,8 @@ export class Renderer {
   donorHighlightId: number | null = null;
   /** Armed spore sling: draw its throw range while the player aims. */
   slingArm: { x: number; y: number; range: number } | null = null;
+  /** Limb whose inspect panel is open: ring it and show its reach. */
+  selectedTowerId: number | null = null;
 
   private camX = 0;
   private camY = 0;
@@ -287,6 +290,12 @@ export class Renderer {
       this.drawTower(g, t, hgt > 0 ? hgt * 4 : 0);
     }
 
+    // Royal presence: a faint gold field around royals and consorts.
+    for (const e of sim.enemies) {
+      if (e.kind !== 'royal' && e.kind !== 'consort') continue;
+      g.circle(e.pos.x, e.pos.y, 120).fill({ color: 0xd4a72c, alpha: 0.05 + 0.02 * Math.sin(this.pulse) });
+    }
+
     for (const e of sim.enemies) {
       const { x, y } = e.pos;
       const s = ENEMY_SIZE[e.kind];
@@ -294,9 +303,16 @@ export class Renderer {
       if (e.kind === 'researcher') {
         g.circle(x, y, s + 1.5).fill({ color: 0x0d0805, alpha: 0.85 });
         g.circle(x, y, s).fill(color);
-        if (!e.leaving) {
-          // Study beam: curiosity made visible.
-          g.circle(x, y - s - 4, 2).fill(0xdff5f2);
+        // Specimen cage on its back; full once it has a limb.
+        g.rect(x - 4, y - s - 6, 8, 6).stroke({ width: 1.2, color: 0xdff5f2, alpha: 0.85 });
+        if (e.carrying) g.circle(x, y - s - 3, 2.5).fill(0xc98f6a);
+        if (e.extractId !== undefined && !e.carrying) {
+          // The sedation line to the limb it is taking.
+          const prey = sim.towers.find((tw) => tw.id === e.extractId);
+          if (prey && Math.hypot(prey.pos.x - x, prey.pos.y - y) < 40) {
+            g.moveTo(x, y).lineTo(prey.pos.x, prey.pos.y)
+              .stroke({ width: 1.5, color: 0x4fa9a4, alpha: 0.6 + 0.3 * Math.sin(this.pulse * 6) });
+          }
         }
       } else if (e.kind === 'royal') {
         g.circle(x, y, s + 2).fill({ color: 0x0d0805, alpha: 0.9 });
@@ -342,7 +358,7 @@ export class Renderer {
         g.circle(x, y, s).fill(CASTE_COLORS.science);
         g.rect(x - 3, y + 2, 6, 4).fill(e.stole ? 0xd1603c : 0x2a4a48);
       } else if (e.kind === 'consort') {
-        // Royal retinue: gilded brood-carrier, egg glow pulsing as it breeds.
+        // Royal consort: gilded, crowned; promotes the ranks around it.
         g.circle(x, y, s + 2).fill({ color: 0x0d0805, alpha: 0.9 });
         g.circle(x, y, s).fill(CASTE_COLORS.royal);
         g.circle(x, y, s * 0.5 + Math.sin(this.pulse * 2 + e.id) * 1.5).fill(0xf3d67a);
@@ -524,6 +540,14 @@ export class Renderer {
         g.circle(x, y - 17, 8).fill(0xf0e8d8);
         g.circle(x + Math.sin(this.pulse * 0.8 + t.id) * 3, y - 17, 3.5).fill(0x3a2c14);
         break;
+      case 'prism': {
+        // A crystalline growth; the core brightens as a focus streak builds.
+        const glow = Math.min(1, (t.streak ?? 0) / 5);
+        g.poly([x, y - 20, x + 8, y - 4, x + 5, y + 8, x - 5, y + 8, x - 8, y - 4]).fill(c);
+        g.poly([x, y - 14, x + 4, y - 3, x, y + 4, x - 4, y - 3])
+          .fill({ color: 0xeafaff, alpha: 0.45 + 0.55 * glow });
+        break;
+      }
     }
     // Inheritance pips: the silhouette is the build history.
     t.pips.forEach((p, i) => {
@@ -533,6 +557,11 @@ export class Renderer {
     if (t.hp < t.maxHp) this.hpArc(g, x, y, 20, t.hp / t.maxHp);
     if (this.donorHighlightId === t.id) {
       g.circle(x, y, 22).stroke({ width: 2, color: 0xffe9a8, alpha: 0.9 });
+    }
+    if (this.selectedTowerId === t.id) {
+      g.circle(x, y, 24).stroke({ width: 2, color: 0x9fd8ff, alpha: 0.9 });
+      const reach = towerStats(t).range;
+      if (reach > 0 && reach < 1000) g.circle(t.pos.x, t.pos.y, reach).stroke({ width: 1, color: 0x9fd8ff, alpha: 0.3 });
     }
   }
 

@@ -118,6 +118,15 @@ export const TOWERS: readonly TowerSpec[] = [
     sniper: true,
     maxHp: 75, interest: 3, eatThreshold: 0, advanced: true,
   },
+  {
+    // Focus-fire beam that ramps on a held target. When nothing is in its own
+    // reach it RELAYS: idle prisms chain their charge through each other to the
+    // prism that is firing (Red Alert 2's prism tower, routed through a network).
+    family: 'prism', name: 'Arc Prism', weight: 9,
+    cost: { war: 26, science: 12 }, range: 105, rate: 0.8, damage: 14, aoe: 0,
+    prismLink: 150,
+    maxHp: 80, interest: 2, eatThreshold: 0, advanced: true,
+  },
 ];
 
 export const ORGANS: readonly OrganSpec[] = [
@@ -148,11 +157,16 @@ export const ENEMIES: readonly EnemySpec[] = [
   { kind: 'tunneler', caste: 'war', hp: 110, speed: 40, damage: 16, rate: 1.1, meat: 5, threatOnKill: 4, risk: 9, tunneler: true },
   { kind: 'tender', caste: 'war', hp: 80, speed: 34, damage: 6, rate: 0.5, meat: 6, threatOnKill: 2, risk: 8, healer: true },
   // SCIENCE CASTE — they come for YOU, not for the core. Never in war waves.
-  { kind: 'researcher', caste: 'science', hp: 30, speed: 36, damage: 0, rate: 0, meat: 12, threatOnKill: 1, risk: 2 },
+  // Smart by default (Collins, Sep 27 2026): they read your gun coverage, walk
+  // AROUND it, and go for your most vulnerable limb to steal it — so they live
+  // on the periphery, probing for gaps. Kill the courier and the limb comes home.
+  { kind: 'researcher', caste: 'science', hp: 34, speed: 36, damage: 0, rate: 0, meat: 12, threatOnKill: 1, risk: 3, stealsLimbs: true },
   { kind: 'thief', caste: 'science', hp: 45, speed: 52, damage: 0, rate: 0, meat: 10, threatOnKill: 1, risk: 4, thief: true },
-  // ROYAL CASTE — only with a royal event. The jackpot walks with a retinue.
-  { kind: 'royal', caste: 'royal', hp: 1000, speed: 16, damage: 28, rate: 0.8, meat: 120, threatOnKill: 0, risk: 40 },
-  { kind: 'consort', caste: 'royal', hp: 220, speed: 22, damage: 12, rate: 0.8, meat: 40, threatOnKill: 4, risk: 14, spawns: { kind: 'militia', count: 2, interval: 6 } },
+  // ROYAL CASTE — only with a royal event. Royals are super-strong WARRIORS
+  // (they march and chew like the war caste) whose real weight is empowering
+  // the war caste around them: presence aura, and the consort promotes ranks.
+  { kind: 'royal', caste: 'royal', hp: 1100, speed: 17, damage: 34, rate: 0.9, meat: 120, threatOnKill: 0, risk: 40, royalAura: true },
+  { kind: 'consort', caste: 'royal', hp: 420, speed: 24, damage: 20, rate: 0.9, meat: 40, threatOnKill: 4, risk: 14, royalAura: true, promotes: { interval: 5 } },
 ];
 
 /** Wave composition per threat tier (spawned over the siege's spawn window). */
@@ -219,6 +233,21 @@ export const BALANCE = {
   thiefSteal: 15,
   /** Standoff bombardiers besiege structures from outside melee. */
   mortarStandoff: 85,
+  /** Science caste: smart routing + limb theft (their default behavior). */
+  scienceReach: 36,          // px from the limb they sedate
+  scienceExtractDps: 4,      // limb hp drained per second per sedating researcher
+  /** Route cost per unit of gun dps covering a street cell (a plain street cell costs 10). */
+  dangerWeight: 3,
+  /** Royal presence aura (royal + consort). */
+  royalAuraRadius: 120,
+  royalAuraDamageMult: 1.5,  // war bodies near a royal hit structures this much harder
+  royalAuraArmor: 0.7,       // ...and take this fraction of incoming damage
+  /** Arc prism. */
+  prismRampPerHit: 0.12,     // +12% per consecutive shot on the same target
+  prismRampMax: 5,           // ramp counts at most this many shots
+  prismRelayBonus: 0.5,      // +50% beam damage per idle prism relaying charge
+  prismMaxRelays: 6,
+  pipStreak: 0.06,           // prism pip: any limb ramps +6% per consecutive shot per pip
   /** Sappers crawl at this fraction of speed while scaling a block face. */
   sapperClimbFactor: 0.45,
   /** Threat tiers: tier = floor(threat / threatPerTier), clamped to table. */

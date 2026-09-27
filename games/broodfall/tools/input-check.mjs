@@ -222,6 +222,35 @@ try {
     else fail('lobber volley', 'no bile flight and no cooldown after gesture');
   }
 
+  // 5c. Limb panel: with nothing armed, click a tower → the panel opens; click
+  //     STRONGEST and SCIENCE → that limb's targeting changes in the sim.
+  {
+    const box0 = await page.locator('#stage canvas').boundingBox();
+    await page.mouse.click(box0.x + 5, box0.y + 5, { button: 'right' }); // disarm everything
+    const tgt = await page.evaluate(() => {
+      const t = window.broodfall.sim.towers.find((x) => x.family !== 'sling' && x.family !== 'lobber');
+      return t ? { id: t.id, x: t.pos.x, y: t.pos.y } : null;
+    });
+    if (!tgt) fail('inspect setup', 'no tower to inspect');
+    else {
+      await clickWorld(tgt.x, tgt.y);
+      const open = await page.locator('#inspect').isVisible();
+      await page.locator('#inspect-modes button[data-mode="strongest"]').click();
+      await page.locator('#inspect-castes button[data-caste="science"]').click();
+      const set = await page.evaluate((id) => {
+        const t = window.broodfall.sim.towers.find((x) => x.id === id);
+        return t ? { p: t.priority, c: t.casteFocus } : null;
+      }, tgt.id);
+      if (open && set && set.p === 'strongest' && set.c === 'science') {
+        pass('limb panel: click tower opens it; targeting buttons drive the sim');
+      } else fail('limb panel', `open=${open} set=${JSON.stringify(set)}`);
+      await page.mouse.click(box0.x + 5, box0.y + 5, { button: 'right' });
+      const closed = !(await page.locator('#inspect').isVisible());
+      if (closed) pass('limb panel: right-click closes it');
+      else fail('limb panel close', 'still visible after right-click');
+    }
+  }
+
   // 6. Tendril root: build via its organ button, then click it to re-aim the lobe.
   await page.locator('.organ-btn[data-organ="root"]').click();
   const rootSpot = await page.evaluate(() => {

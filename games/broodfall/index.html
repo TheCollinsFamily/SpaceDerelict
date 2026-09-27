@@ -49,6 +49,27 @@
         </div>
       </div>
       <div id="hint"></div>
+      <div id="inspect" class="hidden">
+        <div id="inspect-head"><span id="inspect-name"></span><button id="inspect-close" title="Close">✕</button></div>
+        <div id="inspect-hp"><div id="inspect-hp-fill"></div><span id="inspect-hp-text"></span></div>
+        <div id="inspect-stats"></div>
+        <div id="inspect-traits"></div>
+        <div class="inspect-label">TARGETING</div>
+        <div class="inspect-opts" id="inspect-modes">
+          <button data-mode="auto" title="Threats first (climbing sappers), then nearest">Auto</button>
+          <button data-mode="first" title="Whoever is furthest along the march">First</button>
+          <button data-mode="strongest" title="Most health left">Strongest</button>
+          <button data-mode="weakest" title="Finish the wounded">Weakest</button>
+          <button data-mode="focus" title="Lock one target until it dies or leaves reach">Focus</button>
+        </div>
+        <div class="inspect-label">CASTE PRIORITY</div>
+        <div class="inspect-opts" id="inspect-castes">
+          <button data-caste="any">Any</button>
+          <button data-caste="war">War</button>
+          <button data-caste="science">Science</button>
+          <button data-caste="royal">Royal</button>
+        </div>
+      </div>
       <div id="banner" class="hidden"></div>
       <div id="draft" class="hidden">
         <div id="draft-card-wrap">

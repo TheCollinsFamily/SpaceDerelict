@@ -427,6 +427,7 @@ describe('new enemy verbs, castes, and the risk law', () => {
     }
     // Faction sanity for the visitors and the court.
     expect(ENEMIES.find((e) => e.kind === 'thief')!.caste).toBe('science');
+    expect(ENEMIES.find((e) => e.kind === 'researcher')!.stealsLimbs).toBe(true);
     expect(ENEMIES.find((e) => e.kind === 'researcher')!.caste).toBe('science');
     expect(ENEMIES.find((e) => e.kind === 'consort')!.caste).toBe('royal');
     expect(ENEMIES.find((e) => e.kind === 'royal')!.caste).toBe('royal');
@@ -553,14 +554,205 @@ describe('new enemy verbs, castes, and the risk law', () => {
     expect(sawRecovery).toBe(false); // the meat is gone for good
   });
 
-  it('consort breeds militia as it marches (royal caste, royal meat)', () => {
+  it('consort PROMOTES the war bodies around it one rank per pulse', () => {
     const s = freshSim(906);
     const sim = s as unknown as SpawnSim;
-    sim.spawnEnemy('consort', s.gates[0]);
-    const before = s.enemies.filter((x) => x.kind === 'militia').length;
-    for (let i = 0; i < 130; i++) s.tick(); // two 6s pulses
-    const after = s.enemies.filter((x) => x.kind === 'militia').length;
-    expect(after - before).toBeGreaterThanOrEqual(2);
+    const c = sim.spawnEnemy('consort', s.gates[0]);
+    const m = sim.spawnEnemy('militia', s.gates[0]);
+    m.pos.x = c.pos.x + 20;
+    m.pos.y = c.pos.y;
+    const militia = s.enemies.find((x) => x.id === m.id)!;
+    for (let i = 0; i < 2; i++) s.tick(); // first pulse fires immediately
+    expect(militia.kind).toBe('soldier');
+    expect(militia.maxHp).toBe(ENEMIES.find((x) => x.kind === 'soldier')!.hp);
+  });
+
+  it('royal presence: war bodies nearby hit harder and take less damage; far ones do not', () => {
+    const s = freshSim(907);
+    const sim = s as unknown as SpawnSim & { updateEnemies(): void };
+    const r = sim.spawnEnemy('royal', s.gates[0]);
+    const near = sim.spawnEnemy('soldier', s.gates[0]);
+    near.pos.x = r.pos.x + 30; near.pos.y = r.pos.y;
+    sim.updateEnemies(); // refresh the aura sources
+    const nearE = s.enemies.find((x) => x.id === near.id)!;
+    expect(s.empowerOf(nearE)).toBe(B.royalAuraDamageMult);
+    const hp0 = nearE.hp;
+    sim.damageEnemy(nearE, 10, 0);
+    expect(hp0 - nearE.hp).toBeCloseTo(10 * B.royalAuraArmor);
+    // Royals themselves are simply strong, not self-buffed; far bodies unaffected.
+    expect(s.empowerOf(s.enemies.find((x) => x.id === r.id)!)).toBe(1);
+    nearE.pos.x = r.pos.x + B.royalAuraRadius + 50;
+    expect(s.empowerOf(nearE)).toBe(1);
+  });
+
+  it('science caste default: target the LEAST-COVERED limb, sedate it, carry it off; a kill brings it home', () => {
+    const s = freshSim(908);
+    s.meat.war = 9999;
+    s.meat.science = 9999;
+    // Build three limbs a walker can stand beside.
+    const stand = (s as unknown as { standCellFor(c: number): number });
+    const cells: number[] = [];
+    for (let c = 0; c < s.map.cells.length; c++) {
+      if (s.canBuildTower(c) && stand.standCellFor(c) >= 0) cells.push(c);
+    }
+    cells.sort((a, b) => s.creepDistOf(a) - s.creepDistOf(b));
+    for (const cell of [cells[0], cells[1], cells[cells.length - 1]]) {
+      for (let g = 0; g < 300 && ['pit', 'spine'].includes(s.hand[0].family); g++) {
+        s.issue({ kind: 'discard', cardIndex: 0 });
+      }
+      expect(s.issue({ kind: 'build', cardIndex: 0, cell }).ok).toBe(true);
+    }
+    // The chosen mark really is the least covered approach.
+    const weak = s.vulnerableTower()!;
+    const weakDanger = s.dangerAt(stand.standCellFor(weak.cell));
+    for (const t of s.towers) {
+      expect(weakDanger).toBeLessThanOrEqual(s.dangerAt(stand.standCellFor(t.cell)));
+    }
+    weak.pips.push({ family: 'lasher' }); // a trait that must survive the round trip
+    const weakCell = weak.cell;
+    // Silence the limbs so we can watch the theft (normally your guns shoot
+    // the researcher off the job — that IS the counterplay).
+    for (const t of s.towers) t.cooldown = 1e9;
+    const sim = s as unknown as SpawnSim & { killEnemy(id: number, y: number, e: boolean): void };
+    const r = sim.spawnEnemy('researcher', s.gates[0]);
+    const rE = s.enemies.find((x) => x.id === r.id)!;
+    let stolen = false;
+    for (let i = 0; i < 8000 && !stolen; i++) {
+      s.tick();
+      if (rE.carrying) stolen = true;
+      for (const t of s.towers) t.cooldown = 1e9;
+    }
+    expect(stolen).toBe(true);
+    expect(s.towers.some((t) => t.cell === weakCell)).toBe(false);
+    sim.killEnemy(rE.id, 0, false);
+    const back = s.towers.find((t) => t.cell === weakCell)!;
+    expect(back).toBeDefined();
+    expect(back.pips.some((p) => p.family === 'lasher')).toBe(true);
+    expect(back.hp).toBe(back.maxHp);
+  });
+
+  it('science caste routes AROUND gun coverage: its path is never more exposed than the straight march', () => {
+    const s = freshSim(909);
+    s.meat.war = 9999;
+    s.meat.science = 9999;
+    for (let k = 0; k < 4; k++) {
+      for (let g = 0; g < 300 && ['pit', 'spine'].includes(s.hand[0].family); g++) {
+        s.issue({ kind: 'discard', cardIndex: 0 });
+      }
+      s.issue({ kind: 'build', cardIndex: 0, cell: buildableCell(s, k * 3) });
+    }
+    const goal = s.map.coreCell;
+    const smart = (s as unknown as { routeTo(c: number): { next: Int32Array } }).routeTo(goal);
+    const exposure = (next: (c: number) => number) => {
+      let c = s.gates[0];
+      let sum = 0;
+      for (let guard = 0; c >= 0 && guard < 2000; guard++) { sum += s.dangerAt(c); c = next(c); }
+      return sum;
+    };
+    const smartExposure = exposure((c) => smart.next[c]);
+    const marchExposure = exposure((c) => s.flowNextOf(c));
+    expect(smartExposure).toBeLessThanOrEqual(marchExposure);
+  });
+});
+
+describe('player targeting (click a limb, choose how it picks)', () => {
+  function setup(seed: number) {
+    const s = freshSim(seed);
+    s.meat.war = 9999;
+    s.meat.science = 9999;
+    let idx = -1;
+    for (let g = 0; g < 400 && idx < 0; g++) {
+      idx = s.hand.findIndex((c) => c.family === 'spitter');
+      if (idx < 0) s.issue({ kind: 'discard', cardIndex: 0 });
+    }
+    expect(s.issue({ kind: 'build', cardIndex: idx, cell: buildableCell(s) }).ok).toBe(true);
+    return { s, t: s.towers[0] };
+  }
+  const pick = (s: Sim, t: Tower) =>
+    (s as unknown as { pickTarget(t: Tower, r: number, sn: boolean): { id: number } | null })
+      .pickTarget(t, 500, false);
+
+  it('strongest / weakest / caste focus choose the right body', () => {
+    const { s, t } = setup(950);
+    const sim = s as unknown as SpawnSim;
+    const weak = sim.spawnEnemy('responder', s.gates[0]);
+    const strong = sim.spawnEnemy('elite', s.gates[0]);
+    const sci = sim.spawnEnemy('researcher', s.gates[0]);
+    for (const e of [weak, strong, sci]) { e.pos.x = t.pos.x + 40; e.pos.y = t.pos.y; }
+    expect(s.issue({ kind: 'set-priority', towerId: t.id, mode: 'strongest' }).ok).toBe(true);
+    expect(pick(s, t)!.id).toBe(strong.id);
+    s.issue({ kind: 'set-priority', towerId: t.id, mode: 'weakest' });
+    expect(pick(s, t)!.id).toBe(weak.id);
+    // Caste priority outranks the ordering: science first, even though it is not weakest.
+    s.issue({ kind: 'set-priority', towerId: t.id, caste: 'science' });
+    expect(pick(s, t)!.id).toBe(sci.id);
+  });
+
+  it('first = furthest along the march; focus holds its lock', () => {
+    const { s, t } = setup(951);
+    const sim = s as unknown as SpawnSim;
+    const behind = sim.spawnEnemy('militia', s.gates[0]);
+    const ahead = sim.spawnEnemy('militia', s.gates[0]);
+    const aheadCell = s.flowNextOf(s.flowNextOf(s.flowNextOf(s.gates[0])));
+    const ac = s.cellCenter(aheadCell);
+    ahead.pos.x = ac.x; ahead.pos.y = ac.y;
+    s.issue({ kind: 'set-priority', towerId: t.id, mode: 'first' });
+    expect(pick(s, t)!.id).toBe(ahead.id);
+    // Focus: once locked, it holds even when something nearer walks up.
+    s.issue({ kind: 'set-priority', towerId: t.id, mode: 'focus' });
+    t.lastTargetId = behind.id;
+    expect(pick(s, t)!.id).toBe(behind.id);
+  });
+});
+
+describe('arc prism (focus ramp + relay network)', () => {
+  it('ramps on a held target and resets on a switch', () => {
+    const s = freshSim(960);
+    s.meat.war = 9999;
+    s.meat.science = 9999;
+    let idx = -1;
+    for (let g = 0; g < 400 && idx < 0; g++) {
+      idx = s.hand.findIndex((c) => c.family === 'prism');
+      if (idx < 0) s.issue({ kind: 'discard', cardIndex: 0 });
+    }
+    expect(s.issue({ kind: 'build', cardIndex: idx, cell: buildableCell(s) }).ok).toBe(true);
+    const p = s.towers[0];
+    const sim = s as unknown as SpawnSim;
+    const e = sim.spawnEnemy('phalanx', s.gates[0]); // big hp, holds still-ish under test
+    e.pos.x = p.pos.x + 40; e.pos.y = p.pos.y;
+    for (let i = 0; i < 60; i++) {
+      s.tick();
+      const eE = s.enemies.find((x) => x.id === e.id);
+      if (eE) { eE.pos.x = p.pos.x + 40; eE.pos.y = p.pos.y; }
+    }
+    expect(p.streak ?? 0).toBeGreaterThanOrEqual(3);
+  });
+
+  it('idle prisms in link range relay charge through each other to the firing prism', () => {
+    const s = freshSim(961);
+    const towerStub = (id: number, x: number, y: number): Tower => ({
+      id, family: 'prism', pos: { x, y }, cell: s.cellAt(x, y), hp: 80, maxHp: 80,
+      pips: [], cooldown: 0, kills: 0,
+    });
+    // A chain: firing prism A — idle B (120px) — idle C (240px, only reachable THROUGH B).
+    const a = towerStub(9001, 200, 200);
+    const b = towerStub(9002, 320, 200);
+    const c = towerStub(9003, 440, 200);
+    s.towers.push(a, b, c);
+    const sim = s as unknown as { gatherPrismRelays(t: Tower, claimed: Set<number>): number };
+    const relays = sim.gatherPrismRelays(a, new Set([a.id]));
+    expect(relays).toBe(2);           // C reached through B: a routed network, not a radius
+    expect(b.cooldown).toBeGreaterThan(0); // relayers spend their shot
+    expect(c.cooldown).toBeGreaterThan(0);
+    // A prism with its own target does not relay.
+    const s2 = freshSim(962);
+    const a2 = towerStub(9101, 200, 200);
+    const b2 = towerStub(9102, 320, 200);
+    s2.towers.push(a2, b2);
+    const sim2 = s2 as unknown as SpawnSim & { gatherPrismRelays(t: Tower, claimed: Set<number>): number };
+    const intruder = sim2.spawnEnemy('militia', s2.gates[0]);
+    intruder.pos.x = 330; intruder.pos.y = 210;
+    expect(sim2.gatherPrismRelays(a2, new Set([a2.id]))).toBe(0);
   });
 });
 
