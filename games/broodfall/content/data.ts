@@ -284,6 +284,7 @@ export const BALANCE = {
   pipShield: 60,             // membrane pip: a PERMANENT personal shield on the new limb, per pip
   /** Bombard pip: sacrificing a bombard DOUBLES the new limb's range (once). */
   pipRangeDouble: 2,         // EVERY bombard pip doubles range again (x2, x4, x8...)
+  pipOcularDmg: 0.25,        // ocular pip: +25% damage vs support castes, per pip
   /** Science cannons join study parties past this interest. */
   dartgunInterestMin: 14,
   shellFlightSeconds: 1.1,

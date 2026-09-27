@@ -928,6 +928,7 @@ describe('combination algebra (pips compose, NO CAPS — busted is the point)', 
     expect(towerStats({ ...bare('spitter'), pips: many('mister') }).shred).toBe(12 * B.pipShred);
     expect(towerStats({ ...bare('spitter'), pips: many('spitter') }).rate)
       .toBeCloseTo(towerSpec('spitter').rate * (1 + 12 * B.pipRate));
+    expect(towerStats({ ...bare('spitter'), pips: many('ocular') }).supportDmg).toBeCloseTo(12 * B.pipOcularDmg);
     // Range doubles per bombard pip: x2, x4, x8.
     const r0 = towerStats(bare('spitter')).range;
     expect(towerStats({ ...bare('spitter'), pips: many('bombard').slice(0, 3) }).range).toBeCloseTo(r0 * 8);

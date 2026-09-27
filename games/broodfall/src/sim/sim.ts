@@ -94,6 +94,8 @@ export function towerStats(t: Tower) {
     shredDur: Math.max(spec.shredDur ?? 0, pips('mister') > 0 ? B.pipShredDur : 0),
     // Ocular pip: the limb learns priority targeting (supports first).
     sniper: (spec.sniper ?? false) || pips('ocular') > 0,
+    // ...and every ocular pip is +25% damage against the support castes it hunts.
+    supportDmg: B.pipOcularDmg * pips('ocular'),
     // Focus-fire ramp per consecutive shot on one target: the prism's own
     // nature, and what a prism pip teaches any limb.
     streakRamp: (t.family === 'prism' ? B.prismRampPerHit : 0) + B.pipStreak * pips('prism'),
@@ -1976,6 +1978,10 @@ export class Sim {
       t.streak = target.id === t.lastTargetId ? (t.streak ?? 0) + 1 : 0;
       t.lastTargetId = target.id;
       let dmg = stats.damage * (1 + stats.streakRamp * t.streak);
+      if (stats.supportDmg > 0) {
+        const ts = enemySpec(target.kind);
+        if (ts.speedAura || ts.healer || ts.bomber) dmg *= 1 + stats.supportDmg;
+      }
 
       // Hitscan strikers: the frond's arc chain, the ocular's board-wide beam,
       // and the prism's focus beam (fed by relays from idle prisms).
