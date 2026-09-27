@@ -52,15 +52,15 @@ Towers (10 families; each family's pip is what it teaches a build that eats it):
 | Burster | lobbed area detonation | +12px blast radius (grants splash) |
 | Lasher | melee sweep, shreds crowds | +20% damage |
 | Maw | eats weakened enemies whole (biomass) | +30% meat yield |
-| Spine Wall | in-street blocker, must be chewed | +150 max HP |
-| Lure Gland | interest magnet (science bait) | +2 interest |
+| Spine Wall | in-street blocker, must be chewed; chewers take its thorns (its payload) | +75 hp, and its KILLS leave caltrops (a 40-hp barb-mat mini-wall per pip) |
+| Lure Gland | interest magnet (science bait) that bites: pulses a toxic pheromone cloud onto the hive (poison, REVEALS cloaked) | +2 interest, and its hits leave toxic pheromone clouds |
 | Snare Bed (tangler) | hits slow to 55% for 1.8s | hits slow 10% more per pip |
 | Blight Vent (blighter) | poison clouds; DoT ignores armor caps | +2 poison dps per pip |
 | Impaler | long-range harpoon, pierces a file of 4, ignores shields | +5 armor-cap pierce per pip |
 | Choir Node | +15% fire rate aura to limbs in 95px (max 2 voices) | +8% range per pip |
-| Spore Sling | player-aimed creep logistics: click it, click ground in 300px — a clot flies and seeds a growing patch to build on (20s recharge) | the limb itself seeps creep, +1 cell per pip |
-| Broodmother | keeps 3 broodlings fighting in the streets (the barracks seat: enemies stop to fight them) | living tissue: the limb regrows 2 hp/s per pip |
-| Digestive Pit | a mouth IN the street — passable, so the column walks onto it; holds 2 and digests (22 dps + biomass); the meal chews back | hits hard-root 0.25s per pip |
+| Spore Sling | player-aimed creep logistics: click it, click ground in 300px — a clot lands with a thud (its payload) and seeds a patch that BELONGS to the sling. **If the sling dies, its patches die and every limb standing only on them withers** (Collins, Sep 27 2026) | the limb needs NO creep to stand on and seeps creep; its death withers what stood on its seep |
+| Broodmother | keeps 3 broodlings fighting in the streets (the barracks seat: enemies stop to fight them). Broodlings are her payload: every bonus she has eaten rides their bites (potency, tempo, reach, poison, arcs, digest...) | heals 50% max hp at every cleared wave (on a Broodmother: +1 broodling) |
+| Digestive Swamp | the ANTI-WALL (Collins, Sep 27 2026): a swamp IN the street the column wades through — everything in it is slowed 50% and burned, and anything at or under 30 hp is DIGESTED outright, in mass, no hold limit. No chew-back: they walk through, not into | its hits digest anything left under +10 hp per pip |
 | Galvanic Frond | one strike arcs to 3 more bodies, damage falling per hop (arcs are small separate hits — shield walls soak them badly) | hits arc to +1 enemy per pip |
 | Bile Lobber | player-aimed VOLLEY: click it, click ground in 250px — the glob detonates for 55 in a 55px blast (12s recharge) | hits knock back 5px per pip |
 | Caustic Mister | mist that SHREDS armor: +8 to the armor cap EVERY source's hits respect, 4s | hits shred +3 per pip |
@@ -83,6 +83,48 @@ is the rejected "destroy their investment" failure in uniform), and sappers CRAW
 45% speed while climbing (the defender's window).
 
 ### Combination algebra (cannibalize pips — how combinations compose)
+
+New limbs (Sep 27): **Quill Fan** (the shotgun: 5 pellets fanned across a cone,
+brutal point-blank; pip: every shot also hits +1 more target) · **Skipping Mortar**
+(fires ONE direction only — set its facing in its panel — very far, and the shell skips
+on down the line twice; pip: every impact skips once more) · **Netcaster** (anti-air
+ONLY: flak webs that drag fliers to the ground for 2s, where ground limbs can reach
+them; pip: the limb can hit AIR and its hits ground fliers 1s).
+
+**AIR / GROUND is visible (Collins: "I can't tell what towers can shoot flying").**
+Every limb is tagged: AIR + GROUND (spitter, impaler, frond, mister, ocular, prism,
+quill), GROUND ONLY (burster, lasher, maw, tangler, blighter, bombard, lobber,
+skipper, swamp, spine, lure), AIR ONLY (netcaster). The tag is on every card and in
+the limb panel; on the board a sky-blue chevron under a limb means it reaches fliers
+(with a hollow ring: air only).
+
+**DETECTION (Collins: "invisible enemies that can only be hit by towers with
+detection or boosted with detection").** Cloaked bodies — the war caste's Stalker
+(t3+) and the science caste's Infiltrator (a cloaked researcher; limb theft you can't
+see coming) — can only be TARGETED by a limb with true sight (the Ocular Stalk, or
+any limb carrying an ocular pip) or while revealed: inside an Ocular Stalk's 180px
+detection aura (for every limb), or marked by a pheromone cloud or caustic mist (3s).
+Area effects — swamps, clouds, splash — still touch them, so area builds are a
+partial answer. Unseen, they show only as a heat-shimmer outline.
+
+**THE PAYLOAD RULE (Collins, Sep 27 2026: "nothing should ever do nothing ... what's
+20% damage to an effect producer?").** Every limb touches the hive through a payload —
+shots, beams, a swamp's contact, a wall's thorns, a broodling's bite, a lobbed shell,
+a thrown clot, a pheromone pulse — and every pip modifies that payload:
+- tempo (spitter): fire rate — or a producer's cycle (lure pulse, sling/lobber recharge,
+  broodling bite + respawn, swamp pulse, ward regrowth)
+- potency (lasher): damage — or a producer's strength (swamp burn, thorns, cloud,
+  ward shield, choir aura %, broodling bite)
+- splash (burster): blast radius — or a producer's effect radius (swamp, cloud, auras,
+  sling patch)
+- reach (choir, bombard): range — or a producer's reach (aura radius, throw range,
+  broodling roam)
+- every hit verb (slow, poison, shred, arcs, knockback, digest, clouds, caltrops,
+  grounding, skips, pierce) rides whatever the limb touches the hive with.
+- SUPPORT limbs SHARE: every choir and ward shares its hit-verb pips with every limb
+  in its aura — a snare pip on a choir makes the whole chapel slow what it hits.
+The cannibalize hover says exactly what the eaten limb's bonus will do, and warns
+when limbs standing on its creep would wither.
 
 **NO CAPS, EVER (Collins, Sep 27 2026): "no no caps — the point of these games is
 things that feel busted."** An earlier pass capped chains/poison/shred/knockback,

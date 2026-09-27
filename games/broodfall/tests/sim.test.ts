@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../src/sim/rng';
-import { Sim, towerStats, towerSpec } from '../src/sim/sim';
+import { Sim, fxOf, towerStats, towerSpec } from '../src/sim/sim';
 import { CellType, isPassable } from '../src/sim/citymap';
-import type { SimConfig, Tower } from '../src/sim/types';
+import type { Enemy, SimConfig, Tower } from '../src/sim/types';
 import { BALANCE as B, ENEMIES, TOWERS, WAVE_TABLE } from '../content/data';
 
 const CFG: SimConfig = { gridW: 50, gridH: 40, cellPx: 26, seed: 1234 };
@@ -234,7 +234,7 @@ describe('cannibalize inheritance', () => {
     s.meat.war = 999;
     s.meat.science = 999;
     const blockCard = () => {
-      for (let guard = 0; guard < 300 && ['pit', 'spine'].includes(s.hand[0].family); guard++) {
+      for (let guard = 0; guard < 300 && ['swamp', 'spine'].includes(s.hand[0].family); guard++) {
         s.issue({ kind: 'discard', cardIndex: 0 });
       }
       return 0;
@@ -254,7 +254,7 @@ describe('cannibalize inheritance', () => {
     s.meat.war = 9999;
     s.meat.science = 9999;
     // Discard until the first card is one that builds on a block (not a street piece).
-    for (let guard = 0; guard < 300 && ['pit', 'spine'].includes(s.hand[0].family); guard++) {
+    for (let guard = 0; guard < 300 && ['swamp', 'spine'].includes(s.hand[0].family); guard++) {
       s.issue({ kind: 'discard', cardIndex: 0 });
     }
     const cellA = buildableCell(s);
@@ -262,7 +262,7 @@ describe('cannibalize inheritance', () => {
     expect(s.issue({ kind: 'build', cardIndex: 0, cell: cellA }).ok).toBe(true);
     const donor = s.towers[0];
     const donorFamily = donor.family;
-    for (let guard = 0; guard < 300 && ['pit', 'spine'].includes(s.hand[0].family); guard++) {
+    for (let guard = 0; guard < 300 && ['swamp', 'spine'].includes(s.hand[0].family); guard++) {
       s.issue({ kind: 'discard', cardIndex: 0 });
     }
     expect(s.issue({
@@ -298,7 +298,7 @@ describe('the six genre-seat towers', () => {
 
   function laneRoad(s: Sim): number {
     for (let c = 0; c < s.map.cells.length; c++) {
-      if (s.map.cells[c] === CellType.Road && s.canBuildTower(c, 'pit')) return c;
+      if (s.map.cells[c] === CellType.Road && s.canBuildTower(c, 'swamp')) return c;
     }
     throw new Error('no creeped road');
   }
@@ -325,25 +325,36 @@ describe('the six genre-seat towers', () => {
     expect(s.broodlings.length).toBe(0);
   });
 
-  it('digestive pit: passable floor that roots and digests; the meal chews back', () => {
+  it('digestive swamp: the ANTI-WALL — walked through, bogs and burns everyone, digests the weak IN MASS', () => {
     const s = freshSim(801);
     s.meat.war = 9999;
     s.meat.science = 9999;
-    // Flow must NOT route around a pit the way it does a wall.
+    // Flow must NOT route around a swamp the way it does a wall.
     const road = laneRoad(s);
     const flowBefore = s.flowDistOf(road);
-    const pit = place(s, 'pit', () => road);
+    const swamp = place(s, 'swamp', () => road);
     expect(s.flowDistOf(road)).toBeLessThan(flowBefore + 50); // no wall detour cost
     const sim = s as unknown as SpawnSim;
+    // A crowd of weak bodies and one soldier all standing in it at once.
+    const weak: number[] = [];
+    for (let i = 0; i < 6; i++) {
+      const r = sim.spawnEnemy('responder', s.gates[0]);
+      r.pos.x = swamp.pos.x + (i % 3) * 6 - 6; r.pos.y = swamp.pos.y + Math.floor(i / 3) * 6;
+      weak.push(r.id);
+    }
     const soldier = sim.spawnEnemy('soldier', s.gates[0]);
-    soldier.pos.x = pit.pos.x + 5;
-    soldier.pos.y = pit.pos.y;
-    const e = s.enemies.find((x) => x.kind === 'soldier')!;
-    const pitHp0 = pit.hp;
-    for (let i = 0; i < 30; i++) s.tick();
-    expect(e.hp).toBeLessThan(e.maxHp);        // being digested
-    expect(s.moveSpeedOf(e)).toBeLessThan(10); // rooted on the pit
-    expect(pit.hp).toBeLessThan(pitHp0);       // and biting back
+    soldier.pos.x = swamp.pos.x; soldier.pos.y = swamp.pos.y;
+    const sE = s.enemies.find((x) => x.id === soldier.id)!;
+    s.tick();
+    // Every responder (20 hp, under the 30-hp digest line) is gone in ONE tick — no hold limit.
+    expect(s.enemies.filter((x) => weak.includes(x.id)).length).toBe(0);
+    // The soldier wades on: hurt and slowed, not rooted, and the swamp takes no bite.
+    const swampHp0 = swamp.hp;
+    for (let i = 0; i < 5; i++) { s.tick(); sE.pos.x = swamp.pos.x; sE.pos.y = swamp.pos.y; }
+    expect(sE.hp).toBeLessThan(sE.maxHp);
+    const sp = ENEMIES.find((x) => x.kind === 'soldier')!.speed;
+    expect(s.moveSpeedOf(sE)).toBeCloseTo(sp * 0.5, 0);
+    expect(swamp.hp).toBe(swampHp0);
   });
 
   it('galvanic frond: one strike arcs through a clustered squad', () => {
@@ -597,7 +608,7 @@ describe('new enemy verbs, castes, and the risk law', () => {
     }
     cells.sort((a, b) => s.creepDistOf(a) - s.creepDistOf(b));
     for (const cell of [cells[0], cells[1], cells[cells.length - 1]]) {
-      for (let g = 0; g < 300 && ['pit', 'spine'].includes(s.hand[0].family); g++) {
+      for (let g = 0; g < 300 && ['swamp', 'spine'].includes(s.hand[0].family); g++) {
         s.issue({ kind: 'discard', cardIndex: 0 });
       }
       expect(s.issue({ kind: 'build', cardIndex: 0, cell }).ok).toBe(true);
@@ -636,7 +647,7 @@ describe('new enemy verbs, castes, and the risk law', () => {
     s.meat.war = 9999;
     s.meat.science = 9999;
     for (let k = 0; k < 4; k++) {
-      for (let g = 0; g < 300 && ['pit', 'spine'].includes(s.hand[0].family); g++) {
+      for (let g = 0; g < 300 && ['swamp', 'spine'].includes(s.hand[0].family); g++) {
         s.issue({ kind: 'discard', cardIndex: 0 });
       }
       s.issue({ kind: 'build', cardIndex: 0, cell: buildableCell(s, k * 3) });
@@ -669,8 +680,8 @@ describe('player targeting (click a limb, choose how it picks)', () => {
     return { s, t: s.towers[0] };
   }
   const pick = (s: Sim, t: Tower) =>
-    (s as unknown as { pickTarget(t: Tower, r: number, sn: boolean): { id: number } | null })
-      .pickTarget(t, 500, false);
+    (s as unknown as { pickTarget(t: Tower, st: unknown): { id: number } | null })
+      .pickTarget(t, { ...s.statsOf(t), range: 500 });
 
   it('strongest / weakest / caste focus choose the right body', () => {
     const { s, t } = setup(950);
@@ -853,6 +864,188 @@ describe('the cannon (war + science), bombard markers, ward shields', () => {
   });
 });
 
+describe('Sep 27 batch: payload rule, detection, air/ground, dependency, new limbs', () => {
+  const mk = (s: Sim, id: number, family: Tower['family'], x: number, y: number, pips: Tower['pips'] = []): Tower => ({
+    id, family, pos: { x, y }, cell: s.cellAt(x, y), hp: 100, maxHp: 100, pips, cooldown: 0, kills: 0,
+  });
+  type Spawner = { spawnEnemy(kind: string, atGate?: number): { id: number; pos: { x: number; y: number } } };
+
+  it('DETECTION: a stalker cannot be targeted by a blind limb; an ocular aura, a mark, or an ocular pip reveals it', () => {
+    const s = freshSim(1100);
+    const gun = mk(s, 1, 'spitter', 300, 300);
+    s.towers.push(gun);
+    const st = (s as unknown as Spawner).spawnEnemy('stalker', s.gates[0]);
+    const e = s.enemies.find((x) => x.id === st.id)!;
+    e.pos.x = 330; e.pos.y = 300;
+    expect(s.canTarget(gun, s.statsOf(gun), e)).toBe(false);
+    // A mark (pheromone/mist) reveals it to everyone for a while.
+    e.revealedUntil = s.time + 2;
+    expect(s.canTarget(gun, s.statsOf(gun), e)).toBe(true);
+    e.revealedUntil = undefined;
+    // An ocular stalk's detection aura reveals it.
+    s.towers.push(mk(s, 2, 'ocular', 320, 330));
+    expect(s.canTarget(gun, s.statsOf(gun), e)).toBe(true);
+    s.towers.pop();
+    // An ocular PIP gives the limb true sight of its own.
+    const seer = mk(s, 3, 'spitter', 300, 300, [{ family: 'ocular' }]);
+    expect(s.canTarget(seer, s.statsOf(seer), e)).toBe(true);
+  });
+
+  it('AIR/GROUND: ground-only limbs cannot target fliers; the netcaster hits ONLY fliers and drags them down', () => {
+    const s = freshSim(1101);
+    const burster = mk(s, 1, 'burster', 300, 300);
+    const net = mk(s, 2, 'net', 300, 300);
+    s.towers.push(burster, net);
+    const sim = s as unknown as Spawner;
+    const fl = ((sim as unknown as Spawner).spawnEnemy('flier', s.gates[0]) as unknown as Enemy);
+    const walker = ((sim as unknown as Spawner).spawnEnemy('militia', s.gates[0]) as unknown as Enemy);
+    expect(s.canTarget(burster, s.statsOf(burster), fl)).toBe(false);
+    expect(s.canTarget(burster, s.statsOf(burster), walker)).toBe(true);
+    expect(s.canTarget(net, s.statsOf(net), fl)).toBe(true);
+    expect(s.canTarget(net, s.statsOf(net), walker)).toBe(false);
+    // A netted flier is grounded — now the burster CAN reach it, and it stands on a street.
+    s.payloadHit(fxOf(net, s.statsOf(net)), fl);
+    expect(s.isAirborne(fl)).toBe(false);
+    expect(s.canTarget(burster, s.statsOf(burster), fl)).toBe(true);
+    expect(isPassable(s.map.cells[s.cellAt(fl.pos.x, fl.pos.y)])).toBe(true);
+    // A net PIP teaches any limb to hit air.
+    const b2 = mk(s, 3, 'burster', 300, 300, [{ family: 'net' }]);
+    expect(s.statsOf(b2).hitsAir).toBe(true);
+  });
+
+  it('SLING DEPENDENCY: limbs standing only on a sling\'s thrown creep wither when the sling dies; sling-pipped limbs need no creep', () => {
+    const s = freshSim(1102);
+    s.meat.war = 9999; s.meat.science = 9999;
+    const sling = mk(s, 10, 'sling', 300, 300);
+    s.towers.push(sling);
+    // Find an uncreeped block far out and seed a patch there owned by the sling.
+    let far = -1;
+    for (let c = 0; c < s.map.cells.length; c++) {
+      if (s.map.cells[c] === CellType.Block && !s.isCreeped(c) && !s.isOccupied(c)) { far = c; break; }
+    }
+    expect(far).toBeGreaterThanOrEqual(0);
+    (s as unknown as { addCreepSource(k: string, c: number, r: number, d?: string, o?: number): void })
+      .addCreepSource('patch', far, 3, undefined, sling.id);
+    expect(s.isCreeped(far)).toBe(true);
+    const outpost = mk(s, 11, 'spitter', s.cellCenter(far).x, s.cellCenter(far).y);
+    s.towers.push(outpost);
+    expect(s.dependentsOf(sling.id)).toBe(1);
+    (s as unknown as { removeTower(id: number, e: boolean): void }).removeTower(sling.id, true);
+    expect(s.towers.some((t) => t.id === outpost.id)).toBe(false);  // withered with its ground
+
+    // A sling-pipped limb makes its own ground: buildable off creep, never withers.
+    const s2 = freshSim(1112);
+    let bare = -1;
+    for (let c = 0; c < s2.map.cells.length; c++) {
+      if (s2.map.cells[c] === CellType.Block && !s2.isCreeped(c) && !s2.isOccupied(c)) { bare = c; break; }
+    }
+    expect(s2.canBuildTower(bare)).toBe(false);
+    s2.pendingPips = [{ family: 'sling' }];
+    expect(s2.canBuildTower(bare)).toBe(true);
+    const anchored = mk(s2, 20, 'spitter', s2.cellCenter(bare).x, s2.cellCenter(bare).y, [{ family: 'sling' }]);
+    s2.towers.push(anchored);
+    s2.witherUnrooted();
+    expect(s2.towers.includes(anchored)).toBe(true);
+  });
+
+  it('PAYLOAD RULE: bonuses mean something on producers (ward potency, choir broadcast, broodling bites, swamp execute)', () => {
+    const s = freshSim(1103);
+    // Ward with a lasher pip: its projected shield is 20% stronger.
+    const gun = mk(s, 1, 'spitter', 300, 300);
+    gun.cooldown = 1e9;
+    s.towers.push(gun, mk(s, 2, 'ward', 330, 300, [{ family: 'lasher' }]));
+    s.tick();
+    expect(gun.shieldMax).toBeCloseTo((towerSpec('ward').wardShield ?? 0) * (1 + B.pipDamage));
+    // Choir with a tangler pip: every limb it covers now slows what it hits.
+    const s2 = freshSim(1104);
+    const g2 = mk(s2, 1, 'spitter', 300, 300);
+    s2.towers.push(g2, mk(s2, 2, 'choir', 330, 300, [{ family: 'tangler' }]));
+    expect(s2.statsOf(g2).slowMult).toBeLessThan(1);
+    // A broodmother with a blighter pip: her brood's bites poison.
+    const s3 = freshSim(1105);
+    const mother = mk(s3, 1, 'brood', 300, 300, [{ family: 'blighter' }]);
+    s3.towers.push(mother);
+    const prey = ((s3 as unknown as Spawner).spawnEnemy('soldier', s3.gates[0]) as unknown as Enemy);
+    s3.payloadHit(fxOf(mother, s3.statsOf(mother)), prey, 5);
+    expect(prey.poisonDps ?? 0).toBeGreaterThan(0);
+    // A swamp pip on a spitter: its hit digests anything left at or below 10 hp.
+    const s4 = freshSim(1106);
+    const exec = mk(s4, 1, 'spitter', 300, 300, [{ family: 'swamp' }]);
+    s4.towers.push(exec);
+    const v = ((s4 as unknown as Spawner).spawnEnemy('militia', s4.gates[0]) as unknown as Enemy);
+    v.hp = 15;
+    s4.payloadHit(fxOf(exec, s4.statsOf(exec)), v, 6); // 15 - 6 = 9 <= 10: digested
+    expect(s4.enemies.includes(v)).toBe(false);
+  });
+
+  it('SPINE pip: kills leave caltrops; LURE pip: hits leave toxic clouds that burn and reveal', () => {
+    const s = freshSim(1107);
+    const t = mk(s, 1, 'spitter', 300, 300, [{ family: 'spine' }, { family: 'lure' }]);
+    s.towers.push(t);
+    const road = s.map.cells.findIndex((c, i) => c === CellType.Road && s.isCreeped(i));
+    const at = s.cellCenter(road);
+    const v = ((s as unknown as Spawner).spawnEnemy('responder', s.gates[0]) as unknown as Enemy);
+    v.pos.x = at.x; v.pos.y = at.y; v.hp = 1;
+    s.payloadHit(fxOf(t, s.statsOf(t)), v, 5);
+    expect(s.caltrops.length).toBe(1);
+    expect(s.clouds.length).toBe(1);
+    const st = (s as unknown as Spawner).spawnEnemy('stalker', s.gates[0]);
+    const sE = s.enemies.find((x) => x.id === st.id)!;
+    sE.pos.x = at.x; sE.pos.y = at.y;
+    s.tick();
+    expect(sE.hp).toBeLessThan(sE.maxHp);   // the cloud burns
+    expect(s.isRevealed(sE)).toBe(true);     // and marks the unseen
+  });
+
+  it('BROOD pip: heal 50% of max hp at every cleared wave', () => {
+    const s = freshSim(1108);
+    const t = mk(s, 1, 'spitter', 300, 300, [{ family: 'brood' }]);
+    t.hp = 10; t.cooldown = 1e9;
+    s.towers.push(t);
+    while (s.wavesCleared === 0) { s.tick(); t.cooldown = 1e9; for (const e of s.enemies) e.hp = 0; s.enemies = []; }
+    expect(t.hp).toBeCloseTo(60);
+  });
+
+  it('QUILL fans pellets; SKIPPER fires only down its facing and its shells skip on', () => {
+    const s = freshSim(1109);
+    const q = mk(s, 1, 'quill', 300, 300);
+    s.towers.push(q);
+    const tgt = ((s as unknown as Spawner).spawnEnemy('militia', s.gates[0]) as unknown as Enemy);
+    tgt.pos.x = 340; tgt.pos.y = 300;
+    s.tick();
+    expect(s.projectiles.filter((p) => p.fromFamily === 'quill').length).toBe(towerSpec('quill').pellets);
+    // Skipper facing E ignores a body due north, fires on one due east.
+    const s2 = freshSim(1110);
+    const k = mk(s2, 1, 'skipper', 300, 300);
+    k.facing = 'E';
+    s2.towers.push(k);
+    const north = ((s2 as unknown as Spawner).spawnEnemy('militia', s2.gates[0]) as unknown as Enemy);
+    north.pos.x = 300; north.pos.y = 150;
+    s2.tick();
+    expect(s2.shells.length).toBe(0);
+    const east = ((s2 as unknown as Spawner).spawnEnemy('militia', s2.gates[0]) as unknown as Enemy);
+    east.pos.x = 450; east.pos.y = 300;
+    k.cooldown = 0;
+    s2.tick();
+    expect(s2.shells.some((sh) => sh.side === 'body' && sh.dir?.x === 1)).toBe(true);
+  });
+
+  it('science visitors never hold a wave open', () => {
+    const s = freshSim(1111);
+    while (s.phase !== 'siege') s.tick();
+    const sim = s as unknown as Spawner;
+    sim.spawnEnemy('thief', s.gates[0]);
+    // Clear the war caste instantly; the lingering thief must not block the clear.
+    let cleared = false;
+    for (let i = 0; i < 400 && !cleared; i++) {
+      s.enemies = s.enemies.filter((e) => ENEMIES.find((x) => x.kind === e.kind)!.caste === 'science');
+      s.tick();
+      if (s.wavesCleared > 0) cleared = true;
+    }
+    expect(cleared).toBe(true);
+  });
+});
+
 describe('arc prism (focus ramp + relay network)', () => {
   it('ramps on a held target and resets on a switch', () => {
     const s = freshSim(960);
@@ -912,8 +1105,8 @@ describe('combination algebra (pips compose, NO CAPS — busted is the point)', 
 
   it('every new family teaches its verb as a pip', () => {
     const t = bare('spitter');
-    expect(towerStats({ ...t, pips: [{ family: 'brood' }] }).regen).toBe(B.pipRegen);
-    expect(towerStats({ ...t, pips: [{ family: 'pit' }] }).rootDur).toBeCloseTo(B.pipRoot);
+    expect(towerStats({ ...t, pips: [{ family: 'brood' }] }).waveHeal).toBe(B.pipWaveHeal);
+    expect(towerStats({ ...t, pips: [{ family: 'swamp' }] }).execute).toBe(B.pipExecute);
     expect(towerStats({ ...t, pips: [{ family: 'frond' }] }).chains).toBe(B.pipChain);
     expect(towerStats({ ...t, pips: [{ family: 'lobber' }] }).knock).toBe(B.pipKnock);
     expect(towerStats({ ...t, pips: [{ family: 'mister' }] }).shred).toBe(B.pipShred);
@@ -1072,7 +1265,7 @@ describe('creep logistics (sling patches + directional roots)', () => {
     s.meat.war = 9999;
     s.meat.science = 9999;
     const blockCard = () => {
-      for (let guard = 0; guard < 300 && ['pit', 'spine'].includes(s.hand[0].family); guard++) {
+      for (let guard = 0; guard < 300 && ['swamp', 'spine'].includes(s.hand[0].family); guard++) {
         s.issue({ kind: 'discard', cardIndex: 0 });
       }
       return 0;

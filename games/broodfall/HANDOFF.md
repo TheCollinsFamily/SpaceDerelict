@@ -52,6 +52,12 @@ debrief → ship gene bay → redeploy.
     warriors whose weight is empowering others (aura + consort promotions).
 13. **Click a limb** for its panel: hp, traits, and player targeting (auto/first/
     strongest/weakest/focus + caste priority).
+14. **Nothing ever does nothing** (the payload rule): every pip modifies whatever the
+    limb touches the hive with; support limbs share their hit-verb pips. **No caps.**
+15. **Air/ground is always visible** (card tag, panel, board chevron); **cloaked
+    enemies need detection** (Ocular aura/pip, or pheromone/mist marks).
+16. **Creep dependency:** a sling's patches die with it, and limbs standing only on
+    creep that dies wither. Sling-pipped limbs make their own ground.
 11. **No mode toggles, ever.** Cannibalize is hover-a-limb (affordance + salvage
     preview) then click: the limb is eaten on the spot, 60% of its cost credits the
     payment, traits bank into the next build. Actions live on the object, found by
@@ -72,9 +78,10 @@ debrief → ship gene bay → redeploy.
 ## How to verify (all must be green before claiming anything)
 
 ```powershell
-npm test             # 75 tests: sim, plates algebra, wave rhythm, per-verb behaviors
-                     # for 20 tower families + 21 enemy kinds (cannons, shields,
-                     # bombard markers), naive win RATE over 10 seeds, smart science routing +
+npm test             # 85 tests: sim, plates algebra, wave rhythm, per-verb behaviors
+                     # for 23 tower families + 23 enemy kinds (payload rule, detection,
+                     # air/ground, dependency, cannons, shields, bombard markers),
+                     # naive win RATE over 10 seeds, smart science routing +
                      # limb theft, targeting modes, prism relays, the risk law, faction
                      # invariants, butcher economy, creep logistics, combination-algebra
                      # caps, full autoplayed runs, and the PLACEMENT GUARDRAIL
@@ -106,7 +113,8 @@ URL params: `?seed= &auto=1 &autostart=1 &speed= &directive=hold|royal|harvest &
 Scripted player, hold-12, 1 entrance: 2/3 measured seeds win (the enemy expansion
 restored real difficulty); 2-3 entrances much harder. MEASURE WIN RATE OVER 10 SEEDS,
 never 3-4 (addendum 8: small samples swung 3/3 ↔ 0/3 on draw noise). Current: naive
-hold-12 4/10; guardrail smart flips 2:0, totals +16%. The bot uses support limbs by
+hold-12 7/10; guardrail smart flips 5:0, totals +35%. Difficulty knob =
+threatPerTier (37; 36 flips it to 3/10 — see addendum 9). The bot uses support limbs by
 their own logic (ward behind guns, bombard deep + counter-battery on cannons). The bot throws
 sling clots at the telegraphed gate, volleys the lobber at the closest hostile, and
 arms interior guns when tier 6 nears (ITERATION addenda 3-6 carry the tuning history).

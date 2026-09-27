@@ -7,7 +7,7 @@
 import { Autoplayer } from './sim/autoplayer';
 import { DT, Sim, organSpec, towerSpec } from './sim/sim';
 import { Renderer } from './render/render';
-import { Hud } from './ui/hud';
+import { Hud, PIP_DESC } from './ui/hud';
 import { GENES } from '../content/plates';
 import { BALANCE as B } from '../content/data';
 import { PLATE_FEATURES } from './sim/citymap';
@@ -92,6 +92,9 @@ const hud = new Hud({
   onSetPriority(towerId, mode, caste) {
     sim.issue({ kind: 'set-priority', towerId, mode, caste });
   },
+  onSetFacing(towerId, dir) {
+    sim.issue({ kind: 'set-facing', towerId, dir });
+  },
 });
 
 function salvageText(family: TowerFamily): string {
@@ -114,8 +117,11 @@ function updateHint(): void {
   } else if (selectedCard !== null && hoverDonorId !== null) {
     const donor = sim.towers.find((t) => t.id === hoverDonorId);
     if (donor) {
+      const deps = sim.dependentsOf(donor.id);
       hud.setHint(`CANNIBALIZE ${towerSpec(donor.family).name.toUpperCase()}: `
-        + `click to eat it — ${salvageText(donor.family)} meat back, traits fold into this build`);
+        + `${salvageText(donor.family)} meat back · new limb gets: ${PIP_DESC[donor.family]}`
+        + (donor.pips.length ? ` (+${donor.pips.length} inherited)` : '')
+        + (deps > 0 ? ` · WARNING: ${deps} limb${deps > 1 ? 's' : ''} stand on its creep and will WITHER` : ''));
       return;
     }
     hoverDonorId = null;
@@ -365,7 +371,7 @@ function handleCanvasClick(clientX: number, clientY: number): void {
         armedThrower = { id: t.id, family: t.family };
         renderer.slingArm = {
           x: t.pos.x, y: t.pos.y,
-          range: t.family === 'sling' ? B.slingRange : t.family === 'lobber' ? B.lobberRange : sim.statsOf(t).range,
+          range: t.family === 'sling' ? sim.slingRangeOf(t) : sim.statsOf(t).range,
         };
         updateHint();
       }

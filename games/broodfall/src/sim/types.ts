@@ -5,8 +5,45 @@ export type Caste = 'war' | 'science' | 'royal';
 export type TowerFamily =
   | 'spitter' | 'burster' | 'lasher' | 'maw' | 'spine' | 'lure'
   | 'tangler' | 'blighter' | 'impaler' | 'choir' | 'sling'
-  | 'brood' | 'pit' | 'frond' | 'lobber' | 'mister' | 'ocular' | 'prism'
-  | 'bombard' | 'ward';
+  | 'brood' | 'swamp' | 'frond' | 'lobber' | 'mister' | 'ocular' | 'prism'
+  | 'bombard' | 'ward' | 'quill' | 'skipper' | 'net';
+
+/** What a limb can shoot at. Fliers are only reachable by 'air'/'both' limbs. */
+export type HitsLayer = 'ground' | 'air' | 'both';
+
+/**
+ * THE PAYLOAD (Collins, Sep 27 2026: "nothing should ever do nothing"). Every
+ * limb touches the hive through a payload — its shots, a swamp's contact, a
+ * wall's thorns, a broodling's bite, a lobbed shell, a thrown clot, a pheromone
+ * cloud — and EVERY cannibalize pip modifies that payload. So a pip is never
+ * dead weight on an effect producer: it changes what the effect does.
+ */
+export interface HitFx {
+  srcId: number;
+  damage: number;
+  yieldMult: number;
+  capBonus: number;
+  slowMult: number;
+  slowDur: number;
+  poisonDps: number;
+  poisonDur: number;
+  shred: number;
+  shredDur: number;
+  chains: number;
+  knock: number;
+  /** Swamp pips: anything left at or below this hp after the hit is digested outright. */
+  execute: number;
+  /** Lure pips: dps of the toxic pheromone cloud the hit leaves behind (also reveals cloaked). */
+  cloud: number;
+  /** Spine pips: a kill leaves caltrops (a mini-wall) with this much hp. */
+  caltrop: number;
+  /** Ocular pips: bonus damage fraction vs support castes. */
+  supportDmg: number;
+  /** Net pips: seconds a struck flier is dragged to the ground. */
+  grounding: number;
+  /** Skipper pips: the impact echoes this many more times further along its line. */
+  skips: number;
+}
 
 /** Player-chosen targeting for a limb (click the tower to set it). */
 export type TargetMode = 'auto' | 'first' | 'strongest' | 'weakest' | 'focus';
@@ -71,8 +108,21 @@ export interface TowerSpec {
   auraRadius?: number;
   /** Broodmother: keeps this many broodlings alive in the streets around it. */
   broodCount?: number;
-  /** Digestive pit: sits IN the street, passable; roots and digests what crosses it. */
-  pitTrap?: boolean;
+  /** What it can shoot (default 'both'). */
+  hits?: HitsLayer;
+  /** Reveals cloaked enemies within this radius for EVERY limb (detection aura). */
+  detects?: number;
+  /** Digestive swamp: a walk-through floor that bogs, burns and DIGESTS the weak. */
+  swamp?: { dps: number; slow: number; execute: number; radius: number };
+  /** Quill fan: each shot is this many pellets across `spread` radians. */
+  pellets?: number;
+  spread?: number;
+  /** Skipping mortar: fires along its FACING only; the shell skips this many times. */
+  skips?: number;
+  /** Netcaster: struck fliers are dragged to the ground for this many seconds. */
+  grounds?: number;
+  /** Lure gland: pulses a toxic pheromone cloud onto the nearest street. */
+  pheromone?: { dps: number; radius: number; interval: number };
   /** Galvanic frond: hits arc to this many extra enemies (falling damage per hop). */
   chains?: number;
   /** Bile lobber: player-aimed volley — armed by clicking it, like the sling. */
@@ -120,6 +170,29 @@ export interface Tower {
   lastHitAt?: number;
   /** Stunned by a sedation dart: holds fire until this sim time. */
   stunnedUntil?: number;
+  /** Skipping mortar: the one direction it fires. */
+  facing?: RootDir;
+}
+
+/** Caltrops: a mini-wall of barbs a spine-pipped limb leaves where it kills. */
+export interface Caltrop {
+  id: number;
+  pos: Vec;
+  cell: number;
+  hp: number;
+  /** Chewers take this back per bite. */
+  thorns: number;
+  /** Rots away when this runs out. */
+  ttl: number;
+}
+
+/** A lingering toxic pheromone cloud (lure gland pulses, lure-pipped impacts). */
+export interface Cloud {
+  id: number;
+  pos: Vec;
+  radius: number;
+  ttl: number;
+  dps: number;
 }
 
 export interface OrganSpec {
@@ -161,6 +234,8 @@ export type EnemyKind =
   | 'thief'
   | 'cannon'
   | 'dartgun'
+  | 'stalker'
+  | 'infiltrator'
   | 'royal'
   | 'consort';
 
@@ -220,6 +295,8 @@ export interface EnemySpec {
    * fire sedation darts that STUN a limb (shields stop them).
    */
   cannon?: { range: number; interval: number; damage: number; aoe: number; stun?: number; ammo?: number };
+  /** Invisible: only limbs with detection (or inside a detection aura) can TARGET it. Area effects still touch it. */
+  cloaked?: boolean;
 }
 
 export interface Enemy {
@@ -261,6 +338,10 @@ export interface Enemy {
   deployed?: boolean;
   /** Cannon shots fired (science batteries carry a limited kit, then leave). */
   shotsFired?: number;
+  /** Flier dragged down by a net: walks the streets (ground-targetable) until this time. */
+  groundedUntil?: number;
+  /** Cloaked body marked (pheromone, mist): targetable by anyone until this time. */
+  revealedUntil?: number;
 }
 
 /** A lobbed shell in flight — the hive's cannons and the bombard both use these. */
@@ -276,6 +357,10 @@ export interface Shell {
   side: 'hive' | 'body';
   /** Sedation dart: stun seconds on the limb it lands on (shields block it). */
   stun?: number;
+  /** Body shells: the firing limb's full payload. */
+  fx?: HitFx;
+  /** Direction skips travel after landing (default: the flight direction). */
+  dir?: Vec;
 }
 
 /** A broodling: the mother's spawn, fighting in the streets on your side. */
@@ -292,32 +377,17 @@ export interface Projectile {
   id: number;
   pos: Vec;
   vel: Vec;
-  damage: number;
   aoe: number;
   ttl: number;
   fromFamily: TowerFamily;
-  /** Meat multiplier inherited from the firing tower's maw pips. */
-  yieldMult: number;
-  /** Status payload carried from the firing tower's stats. */
-  slowMult?: number;
-  slowDur?: number;
-  poisonDps?: number;
-  poisonDur?: number;
+  /** The firing limb's full payload (damage + every inherited verb). */
+  fx: HitFx;
+  /** Which layer this shot can strike. */
+  hits: HitsLayer;
   /** Impaler: remaining extra enemies this shot may pass through. */
   pierceLeft?: number;
   /** Enemies already hit by this piercing shot (hit once each). */
   hitIds?: number[];
-  /** Added to the target's armor cap before capping (Infinity = ignore caps). */
-  capBonus?: number;
-  /** Frond pips: arcs jumping off each hit to nearby enemies. */
-  chains?: number;
-  /** Mister: armor shred applied on hit. */
-  shred?: number;
-  shredDur?: number;
-  /** Lobber pips: knockback px along the shot's direction on hit. */
-  knock?: number;
-  /** Pit pips: hard root applied on hit (seconds at ~zero speed). */
-  rootDur?: number;
 }
 
 export interface Drop {
@@ -372,6 +442,7 @@ export type Command =
   | { kind: 'butcher'; towerId: number }
   | { kind: 'set-priority'; towerId: number; mode?: TargetMode; caste?: CasteFocus }
   | { kind: 'set-marker'; towerId: number; cell: number }
+  | { kind: 'set-facing'; towerId: number; dir: RootDir }
   | { kind: 'sling-throw'; towerId: number; cell: number }
   | { kind: 'bile-throw'; towerId: number; cell: number }
   | { kind: 'cycle-root'; organInstanceId: number }

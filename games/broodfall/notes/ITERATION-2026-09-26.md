@@ -147,6 +147,35 @@ smart flips 3:2, totals 120k vs 115k. 54/54 tests; input check adds the lobber
 gesture; visual/endgame green.
 
 
+## Addendum 9 (Sep 27): the payload rule, detection, air/ground, swamp, dependency
+
+**Collins's batch:** swamp as the anti-wall; lure pip = toxic pheromones; spine pip =
+caltrops on kill; a shotgun; a one-direction long lobber with a quirk; sling pips build
+off creep + sling death kills what stood on its creep; brood pip = 50%/wave; "nothing
+should ever do nothing" for sacrifices on effect producers; detection/invisible
+enemies; visible air/ground + an anti-air specialist.
+
+**Built:** HitFx payload (every contact goes through `payloadHit`); stats gain
+tempo/potency/reach used by producers; choir/ward SHARE hit-verb pips; Digestive Swamp
+(no hold limit, digests ≤30hp in mass); lure pulses; thorns; caltrops; clouds;
+Quill Fan, Skipping Mortar (facing in panel; skips), Netcaster (air-only, grounds
+fliers); hits layers + card/panel/board tags; Stalker (war) + Infiltrator (science)
+cloaked, Ocular detection aura + true sight, marks from clouds/mist; sling patch
+ownership + `witherUnrooted` + cannibalize-hover warning; brood 50%/wave + extra
+broodling on a mother. Fixed a latent bug: science visitors held waves open until the
+70s timeout (hostile check was "not a researcher", now "not science caste").
+
+**Balance (10-seed sweeps):** the rework made the body far stronger (naive 10/10;
+ablation: swamp, quill, net+skipper each carried part; "none" 5/10). Quill trimmed
+(7×5 for 18 → 5×5 for 20). More bodies did NOT bite (waveCountScale 0.09→0.21 all
+~9-10/10: extra kills fed the economy) — the lever is HIGHER TYPES SOONER:
+threatPerTier 46→37 (tier6 338). 36 vs 37 straddles a tier boundary (3/10 vs 7/10);
+37 kept. Final: naive 7/10; guardrail smart flips **5:0**, totals +35%. 85/85 tests
+(8 new pinning detection, layers, dependency, payload-on-producers, caltrops/clouds,
+wave heal, quill/skipper, science-not-hostile); input check turns the mortar's facing
+with real clicks.
+
+
 ## Addendum 8 (Sep 27): the cannon (both castes), spore bombard, ward membrane
 
 **Built:** siege cannon (war) + sedation battery (science) — walk, deploy, shell over

@@ -5,22 +5,22 @@
  */
 import { Sim, towerSpec } from '../sim/sim';
 import { BALANCE as B } from '../../content/data';
-import type { Caste, CasteFocus, OrganId, SimEvent, TargetMode, TowerFamily } from '../sim/types';
+import type { Caste, CasteFocus, OrganId, RootDir, SimEvent, TargetMode, TowerFamily } from '../sim/types';
 
 const CARD_DESC: Record<TowerFamily, string> = {
   spitter: 'Ranged acid limb. Cheap, reliable.',
   burster: 'Lobs detonating polyps. Area denial.',
   lasher: 'Melee flail. Shreds crowds up close.',
   maw: 'Eats weakened specimens whole. Mass gain.',
-  spine: 'Dense barricade of bone. Holds a line.',
-  lure: 'Scent bloom. Draws curious specimens.',
+  spine: 'Bone barricade IN the street. Chewers get barbs.',
+  lure: 'Bait that bites: toxic clouds that reveal the unseen.',
   tangler: 'Snare mucus. Hit specimens wade, not march.',
   blighter: 'Spore clouds. The blight keeps eating — through armor.',
   impaler: 'Bone harpoon. Skewers a file, ignores shields.',
   choir: 'Resonance organ. Nearby limbs strike faster.',
   sling: 'Hurls creep to chosen ground. Click it to aim.',
   brood: 'Keeps 3 broodlings fighting in the streets.',
-  pit: 'A mouth IN the street. Holds and digests.',
+  swamp: 'Anti-wall: they wade through; the weak dissolve.',
   frond: 'One strike arcs through the whole squad.',
   lobber: 'Aimed bile volley. Click it, click ground.',
   mister: 'Shreds armor — everyone hits deeper.',
@@ -28,7 +28,45 @@ const CARD_DESC: Record<TowerFamily, string> = {
   prism: 'Focus beam that ramps. Idle prisms relay it charge.',
   bombard: 'Long-range shelling. Click it, set its marker.',
   ward: 'Shields the limbs around it. Regrows when quiet.',
+  quill: 'Shotgun fan of quills. Brutal up close.',
+  skipper: 'Fires ONE way, very far; shells skip on.',
+  net: 'Anti-air only. Nets drag fliers to the ground.',
 };
+
+/** What each family's bonus does when it is EATEN (shown on the cannibalize hover). */
+export const PIP_DESC: Record<TowerFamily, string> = {
+  spitter: '+25% fire rate (or a producer cycles faster)',
+  burster: '+12px splash (or a bigger effect radius)',
+  lasher: '+20% damage (or a stronger effect)',
+  maw: '+30% meat from its kills',
+  spine: '+75 hp, and its kills leave caltrops',
+  lure: '+2 interest, and its hits leave toxic pheromone clouds',
+  tangler: 'its hits slow ×0.9',
+  blighter: 'its hits poison +2/s',
+  impaler: '+5 armor pierce',
+  choir: '+8% reach',
+  sling: 'needs no creep to stand on, and seeps creep',
+  brood: 'heals 50% every wave (on a Broodmother: +1 broodling)',
+  swamp: 'its hits digest anything left under +10 hp',
+  frond: 'its hits arc to +1 more',
+  lobber: 'its hits knock back 8px',
+  mister: 'its hits break armor +3 (and reveal the unseen)',
+  ocular: 'detects the unseen, shoots supports first, +25% vs them',
+  prism: '+6% damage per shot held on one target',
+  bombard: '×2 range',
+  ward: '+60 permanent shield',
+  quill: 'every shot also hits +1 more target',
+  skipper: 'every impact skips on once more',
+  net: 'can hit AIR, and its hits drag fliers down 1s',
+};
+
+/** What a family can shoot, as the card and panel tag. */
+export function layerTag(family: TowerFamily): string {
+  const spec = towerSpec(family);
+  if (spec.rate <= 0 && family !== 'lobber' && family !== 'bombard' && family !== 'spine' && family !== 'swamp' && family !== 'lure') return 'SUPPORT';
+  const h = spec.hits ?? 'both';
+  return h === 'both' ? 'AIR + GROUND' : h === 'air' ? 'AIR ONLY' : 'GROUND';
+}
 
 const FEED_LINES: Partial<Record<SimEvent['kind'], (e: SimEvent) => { text: string; cls: string }>> = {
   kill: (e) => e.kind === 'kill'
@@ -89,6 +127,7 @@ export interface HudCallbacks {
   onSpeed(mult: number): void;
   onRestart(): void;
   onSetPriority(towerId: number, mode?: TargetMode, caste?: CasteFocus): void;
+  onSetFacing(towerId: number, dir: RootDir): void;
 }
 
 export class Hud {
@@ -142,6 +181,11 @@ export class Hud {
     for (const btn of document.querySelectorAll<HTMLButtonElement>('#inspect-castes button')) {
       btn.addEventListener('click', () => {
         if (this.inspectedId !== null) cb.onSetPriority(this.inspectedId, undefined, btn.dataset.caste as CasteFocus);
+      });
+    }
+    for (const btn of document.querySelectorAll<HTMLButtonElement>('#inspect-facing button')) {
+      btn.addEventListener('click', () => {
+        if (this.inspectedId !== null) cb.onSetFacing(this.inspectedId, btn.dataset.dir as RootDir);
       });
     }
     for (const btn of document.querySelectorAll<HTMLButtonElement>('#speed-box button')) {
@@ -211,10 +255,16 @@ export class Hud {
     fill.style.background = frac > 0.4 ? '#7fae52' : 'var(--accent)';
     document.getElementById('inspect-hp-text')!.textContent = `${Math.ceil(t.hp)} / ${Math.ceil(t.maxHp)} HP`
       + ((t.shieldMax ?? 0) > 0 ? ` · SHIELD ${Math.ceil(t.shield ?? 0)}/${Math.ceil(t.shieldMax ?? 0)}` : '');
+    const layer = !st.hitsGround ? 'AIR ONLY' : st.hitsAir ? 'AIR + GROUND' : 'GROUND';
     document.getElementById('inspect-stats')!.textContent = st.rate > 0
-      ? `dmg ${st.damage.toFixed(0)} · ${st.rate.toFixed(2)}/s · reach ${Math.round(st.range)}`
+      ? `${layer}${st.trueSight ? ' · DETECTS' : ''} · dmg ${st.damage.toFixed(0)} · ${st.rate.toFixed(2)}/s · reach ${Math.round(st.range)}`
         + ((t.streak ?? 0) > 0 && st.streakRamp > 0 ? ` · streak ${t.streak}` : '')
-      : 'no weapon — support limb';
+      : `support limb · potency ×${st.potency.toFixed(2)} · tempo ×${st.tempo.toFixed(2)} · reach ×${st.reach.toFixed(2)}`;
+    const facingRow = document.getElementById('inspect-facing-wrap')!;
+    facingRow.classList.toggle('hidden', t.family !== 'skipper');
+    for (const b of document.querySelectorAll<HTMLElement>('#inspect-facing button')) {
+      b.classList.toggle('on', (t.facing ?? 'N') === b.dataset.dir);
+    }
     const counts = new Map<string, number>();
     for (const p of t.pips) counts.set(p.family, (counts.get(p.family) ?? 0) + 1);
     document.getElementById('inspect-traits')!.textContent = t.pips.length
@@ -289,8 +339,12 @@ export class Hud {
           .filter((c) => (spec.cost[c] ?? 0) > 0)
           .map((c) => `${spec.cost[c]}${c[0].toUpperCase()}`)
           .join(' ');
-        div.innerHTML = `<div class="card-top"><div class="card-name"></div><button class="card-discard" title="Discard (3 war meat)">✕</button></div><div class="card-desc"></div><div class="card-cost"></div>`;
+        div.innerHTML = `<div class="card-top"><div class="card-name"></div><button class="card-discard" title="Discard (3 war meat)">✕</button></div><div class="card-tag"></div><div class="card-desc"></div><div class="card-cost"></div>`;
         (div.querySelector('.card-name') as HTMLElement).textContent = spec.name;
+        const tag = layerTag(card.family);
+        const tagEl = div.querySelector('.card-tag') as HTMLElement;
+        tagEl.textContent = tag + (spec.detects !== undefined ? ' · DETECTS' : '');
+        tagEl.classList.add(tag === 'GROUND' ? 'ground' : tag === 'SUPPORT' ? 'support' : 'air');
         (div.querySelector('.card-discard') as HTMLElement).addEventListener('click', (ev) => {
           ev.stopPropagation();
           this.cb.onDiscardCard(i);

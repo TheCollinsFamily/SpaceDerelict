@@ -60,11 +60,12 @@ export class Autoplayer {
     if (lobber && lobber.cooldown <= 0 && sim.enemies.length >= 4) {
       let aim: { x: number; y: number } | null = null;
       let bd = Infinity;
+      const reach = sim.statsOf(lobber).range;
       for (const e of sim.enemies) {
-        if (e.kind === 'researcher') continue;
+        if (e.kind === 'researcher' || sim.isAirborne(e)) continue;
         const dc = Math.hypot(e.pos.x - sim.core.x, e.pos.y - sim.core.y);
         const dl = Math.hypot(e.pos.x - lobber.pos.x, e.pos.y - lobber.pos.y);
-        if (dl <= B.lobberRange && dc < bd) { bd = dc; aim = e.pos; }
+        if (dl <= reach && dc < bd) { bd = dc; aim = e.pos; }
       }
       if (aim) sim.issue({ kind: 'bile-throw', towerId: lobber.id, cell: sim.cellAt(aim.x, aim.y) });
     }
@@ -105,7 +106,7 @@ export class Autoplayer {
 
     // Technique: a spine card plugs the telegraphed lane itself; a pit card sits
     // IN that lane and digests the column that walks over it.
-    for (const streetFamily of ['spine', 'pit'] as const) {
+    for (const streetFamily of ['spine', 'swamp'] as const) {
       const idx = sim.hand.findIndex((c) => c.family === streetFamily);
       if (idx < 0 || !sim.canAfford(towerSpec(streetFamily).cost)) continue;
       const laneRoad = this.laneRoadCell(sim, streetFamily);
@@ -182,7 +183,7 @@ export class Autoplayer {
         return;
       }
       // A pit that found no lane road this act waits its turn rather than block the hand.
-      if (fam === 'pit') continue;
+      if (fam === 'swamp') continue;
       if (tryBuild(i)) return;
       return;
     }
@@ -231,7 +232,7 @@ export class Autoplayer {
   }
 
   /** A buildable STREET cell on the telegraphed march, as far out as the creep reaches. */
-  private laneRoadCell(sim: Sim, family: 'spine' | 'pit' = 'spine'): number | null {
+  private laneRoadCell(sim: Sim, family: 'spine' | 'swamp' = 'spine'): number | null {
     let best: number | null = null;
     let bestCd = -1;
     for (const gate of sim.incomingGates) {

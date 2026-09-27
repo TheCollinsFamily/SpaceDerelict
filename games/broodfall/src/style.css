@@ -139,6 +139,13 @@ body {
 }
 .inspect-opts button.on { background: var(--ink); color: var(--panel); }
 .inspect-opts.muted { opacity: 0.4; pointer-events: none; }
+#inspect-facing-wrap.hidden { display: none; }
+
+/* What a card can shoot: sky-blue = reaches fliers, earth = ground only. */
+.card-tag { font-size: 8px; letter-spacing: 1px; font-weight: bold; margin: 1px 0 2px; }
+.card-tag.air { color: #2f7fa0; }
+.card-tag.ground { color: #7a5a30; }
+.card-tag.support { color: #6a5a8a; }
 
 #overlay { position: absolute; inset: 0; background: rgba(8, 5, 3, 0.82); display: flex; align-items: center; justify-content: center; z-index: 5; }
 #overlay.hidden { display: none; }

@@ -5,7 +5,7 @@
  */
 import { Application, Container, Graphics } from 'pixi.js';
 import { CellType } from '../sim/citymap';
-import { Sim, towerStats } from '../sim/sim';
+import { Sim, towerSpec, towerStats } from '../sim/sim';
 import type { Enemy, Tower, TowerFamily } from '../sim/types';
 
 export const CASTE_COLORS = { war: 0xd1603c, science: 0x4fa9a4, royal: 0xd4a72c } as const;
@@ -23,7 +23,7 @@ const FAMILY_COLORS: Record<TowerFamily, number> = {
   choir: 0xa87fc9,
   sling: 0xb0685a,
   brood: 0xc75a68,
-  pit: 0x6b4a2c,
+  swamp: 0x6b4a2c,
   frond: 0x7fc4d8,
   lobber: 0x9c8f3a,
   mister: 0xb8d84f,
@@ -31,13 +31,16 @@ const FAMILY_COLORS: Record<TowerFamily, number> = {
   prism: 0x8fd8f0,
   bombard: 0x8a6a48,
   ward: 0x9ab8e8,
+  quill: 0xb89868,
+  skipper: 0x7a6040,
+  net: 0x88c8e0,
 };
 
 const ENEMY_SIZE: Record<Enemy['kind'], number> = {
   responder: 5, militia: 6, skitterling: 3.5, soldier: 8, elite: 11, flier: 6, sapper: 7,
   phalanx: 13, drummer: 9, bomber: 6, tunneler: 8, tender: 7,
-  splitter: 9, mortar: 9, carapace: 10,
-  researcher: 6, thief: 6, cannon: 10, dartgun: 9, royal: 20, consort: 13,
+  splitter: 9, mortar: 9, carapace: 10, stalker: 8,
+  researcher: 6, thief: 6, infiltrator: 6, cannon: 10, dartgun: 9, royal: 20, consort: 13,
 };
 
 export interface PlacementPreview {
@@ -298,10 +301,48 @@ export class Renderer {
       g.circle(e.pos.x, e.pos.y, 120).fill({ color: 0xd4a72c, alpha: 0.05 + 0.02 * Math.sin(this.pulse) });
     }
 
+    // Toxic pheromone clouds.
+    for (const c of sim.clouds) {
+      g.circle(c.pos.x, c.pos.y, c.radius).fill({ color: 0x9a6ac8, alpha: 0.12 + 0.1 * Math.min(1, c.ttl) });
+      g.circle(c.pos.x, c.pos.y, c.radius * 0.6).fill({ color: 0xb8e060, alpha: 0.08 });
+    }
+    // Caltrops: barb-mats in the street.
+    for (const k of sim.caltrops) {
+      for (let i = 0; i < 3; i++) {
+        const a = i * 2.1 + k.id;
+        g.moveTo(k.pos.x - Math.cos(a) * 5, k.pos.y - Math.sin(a) * 5)
+          .lineTo(k.pos.x + Math.cos(a) * 5, k.pos.y + Math.sin(a) * 5)
+          .stroke({ width: 1.8, color: 0xc8b890, alpha: 0.9 });
+      }
+    }
+
     for (const e of sim.enemies) {
       const { x, y } = e.pos;
       const s = ENEMY_SIZE[e.kind];
       const color = CASTE_COLORS[e.kind === 'royal' ? 'royal' : e.kind === 'researcher' ? 'science' : 'war'];
+      // CLOAKED and unseen: only a heat-shimmer outline. Revealed: a violet rim.
+      if (e.kind === 'stalker' || e.kind === 'infiltrator') {
+        const seen = sim.isRevealed(e);
+        const col = e.kind === 'infiltrator' ? CASTE_COLORS.science : 0x8a6ab0;
+        if (!seen) {
+          g.circle(x, y, s).stroke({ width: 1.2, color: 0xcfc0e8, alpha: 0.28 + 0.12 * Math.sin(this.pulse * 3 + e.id) });
+        } else {
+          g.circle(x, y, s + 2).stroke({ width: 1.5, color: 0xd8a0ff, alpha: 0.9 });
+          g.circle(x, y, s).fill({ color: col, alpha: 0.85 });
+          if (e.carrying) g.circle(x, y - s - 3, 2.5).fill(0xc98f6a);
+        }
+        if (seen && e.hp < e.maxHp) this.hpArc(g, x, y, s + 5, e.hp / e.maxHp);
+        continue;
+      }
+      // A netted flier: on the ground, tangled.
+      if (e.kind === 'flier' && !sim.isAirborne(e)) {
+        g.circle(x, y, s + 1.5).fill({ color: 0x0d0805, alpha: 0.85 });
+        g.circle(x, y, s * 0.8).fill(color);
+        g.moveTo(x - s - 2, y - s - 2).lineTo(x + s + 2, y + s + 2).stroke({ width: 1, color: 0xe0f4fa, alpha: 0.8 });
+        g.moveTo(x + s + 2, y - s - 2).lineTo(x - s - 2, y + s + 2).stroke({ width: 1, color: 0xe0f4fa, alpha: 0.8 });
+        if (e.hp < e.maxHp) this.hpArc(g, x, y, s + 5, e.hp / e.maxHp);
+        continue;
+      }
       if (e.kind === 'researcher') {
         g.circle(x, y, s + 1.5).fill({ color: 0x0d0805, alpha: 0.85 });
         g.circle(x, y, s).fill(color);
@@ -512,18 +553,48 @@ export class Renderer {
         g.circle(x + 4, y - 1, 2.5).fill(0xe8a0ac);
         g.circle(x, y + 5, 2.5).fill(0xe8a0ac);
         break;
-      case 'pit':
-        // A mouth in the street: dark gullet ringed with teeth.
-        g.circle(x, y, 12).fill(c);
-        g.circle(x, y, 8 + Math.sin(this.pulse * 2 + t.id) * 1.5).fill(0x1a0e06);
-        for (let i = 0; i < 6; i++) {
-          const a = (i * Math.PI * 2) / 6 + this.pulse * 0.2;
-          g.poly([
-            x + Math.cos(a) * 10, y + Math.sin(a) * 10,
-            x + Math.cos(a + 0.3) * 10, y + Math.sin(a + 0.3) * 10,
-            x + Math.cos(a + 0.15) * 6, y + Math.sin(a + 0.15) * 6,
-          ]).fill(0xd8cdb0);
+      case 'swamp': {
+        // A digestive swamp across the street: murky pool, bubbles rising.
+        const r = (towerSpec('swamp').swamp?.radius ?? 30) + (towerStats(t).aoe - towerSpec('swamp').aoe);
+        g.circle(t.pos.x, t.pos.y, r).fill({ color: 0x3a4a1c, alpha: 0.45 });
+        g.circle(t.pos.x, t.pos.y, r * 0.7).fill({ color: 0x4f5e22, alpha: 0.4 });
+        for (let i = 0; i < 4; i++) {
+          const a = i * 1.7 + t.id;
+          const bob = (this.pulse * 0.6 + i * 0.25) % 1;
+          g.circle(t.pos.x + Math.cos(a) * r * 0.5, t.pos.y + Math.sin(a) * r * 0.5 - bob * 4, 2 + bob * 1.5)
+            .stroke({ width: 1, color: 0xc8d890, alpha: 1 - bob });
         }
+        break;
+      }
+      case 'quill':
+        // A fan of bristling quills.
+        g.circle(x, y, 9).fill(c);
+        for (let i = -2; i <= 2; i++) {
+          const a = -Math.PI / 2 + i * 0.35;
+          g.moveTo(x, y).lineTo(x + Math.cos(a) * 17, y + Math.sin(a) * 17)
+            .stroke({ width: 2, color: 0xe8dcc0, alpha: 0.9 });
+        }
+        break;
+      case 'skipper': {
+        // A long mortar tube locked to one heading (arrow = its facing).
+        const f = t.facing ?? 'N';
+        const vx = f === 'E' ? 1 : f === 'W' ? -1 : 0;
+        const vy = f === 'S' ? 1 : f === 'N' ? -1 : 0;
+        g.circle(x, y, 10).fill(c);
+        g.moveTo(x, y).lineTo(x + vx * 18, y + vy * 18).stroke({ width: 6, color: 0x4a3620 });
+        g.poly([
+          x + vx * 22 + vy * 5, y + vy * 22 + vx * 5,
+          x + vx * 30, y + vy * 30,
+          x + vx * 22 - vy * 5, y + vy * 22 - vx * 5,
+        ]).fill({ color: 0xd8b060, alpha: 0.85 });
+        break;
+      }
+      case 'net':
+        // Netcaster: a web dish pointed at the sky.
+        g.circle(x, y, 9).fill(c);
+        g.circle(x, y - 6, 9).stroke({ width: 1.5, color: 0xe0f4fa, alpha: 0.8 });
+        g.moveTo(x - 8, y - 6).lineTo(x + 8, y - 6).stroke({ width: 1, color: 0xe0f4fa, alpha: 0.6 });
+        g.moveTo(x, y - 14).lineTo(x, y + 2).stroke({ width: 1, color: 0xe0f4fa, alpha: 0.6 });
         break;
       case 'frond':
         // A charged frond: forked antenna crackling.
@@ -582,6 +653,16 @@ export class Renderer {
           .fill({ color: 0xeafaff, alpha: 0.45 + 0.55 * glow });
         break;
       }
+    }
+    // What it can shoot, at a glance: a sky-blue chevron = hits AIR; a hollow
+    // ring under it too = AIR ONLY. No chevron = ground only.
+    const st = towerStats(t);
+    if (st.rate > 0 || t.family === 'lobber' || t.family === 'bombard') {
+      if (st.hitsAir) {
+        g.poly([x - 16, y + 12, x - 12, y + 7, x - 8, y + 12]).fill({ color: 0x9fe0ff, alpha: 0.95 });
+        if (!st.hitsGround) g.circle(x - 12, y + 15, 3).stroke({ width: 1.2, color: 0x9fe0ff });
+      }
+      if (st.trueSight) g.circle(x + 12, y + 10, 3).fill({ color: 0xd8a0ff, alpha: 0.95 }); // detection
     }
     // Inheritance pips: the silhouette is the build history.
     t.pips.forEach((p, i) => {

@@ -51,7 +51,7 @@ try {
   await page.evaluate(() => {
     const s = window.broodfall.sim;
     s.meat.war = 500; s.meat.science = 500; s.meat.royal = 500;
-    for (let guard = 0; guard < 300 && ['pit', 'spine'].includes(s.hand[0].family); guard++) {
+    for (let guard = 0; guard < 300 && ['swamp', 'spine'].includes(s.hand[0].family); guard++) {
       s.issue({ kind: 'discard', cardIndex: 0 });
     }
   });
@@ -99,7 +99,7 @@ try {
   //    then placing inherits the pip.
   await page.evaluate(() => {
     const s = window.broodfall.sim;
-    for (let guard = 0; guard < 300 && ['pit', 'spine'].includes(s.hand[0].family); guard++) {
+    for (let guard = 0; guard < 300 && ['swamp', 'spine'].includes(s.hand[0].family); guard++) {
       s.issue({ kind: 'discard', cardIndex: 0 });
     }
   });
@@ -260,6 +260,40 @@ try {
       const marker = await page.evaluate(() => window.broodfall.sim.towers.find((t) => t.family === 'bombard').marker);
       if (marker === target.cell) pass('bombard: click it, click the map — the marker is set');
       else fail('bombard marker', `marker=${marker} expected=${target.cell}`);
+    }
+  }
+
+  // 5b3. Skipping mortar: click it, then a FACING button in its panel.
+  {
+    const kpos = await page.evaluate(() => {
+      const s = window.broodfall.sim;
+      s.meat.war = 900; s.meat.science = 900;
+      for (let guard = 0; guard < 400; guard++) {
+        const i = s.hand.findIndex((c) => c.family === 'skipper');
+        if (i >= 0) {
+          for (let c = 0; c < s.map.cells.length; c++) {
+            if (s.canBuildTower(c)) {
+              return s.issue({ kind: 'build', cardIndex: i, cell: c }).ok
+                ? s.towers.find((t) => t.family === 'skipper').pos : null;
+            }
+          }
+        }
+        s.issue({ kind: 'discard', cardIndex: 0 });
+      }
+      return null;
+    });
+    if (!kpos) fail('skipper setup', 'could not draw/build a skipping mortar');
+    else {
+      const box2 = await page.locator('#stage canvas').boundingBox();
+      await page.mouse.click(box2.x + 5, box2.y + 5, { button: 'right' });
+      await clickWorld(kpos.x, kpos.y);
+      const before = await page.evaluate(() => window.broodfall.sim.towers.find((t) => t.family === 'skipper').facing);
+      const turnTo = before === 'W' ? 'E' : 'W';
+      await page.locator(`#inspect-facing button[data-dir="${turnTo}"]`).click();
+      const after2 = await page.evaluate(() => window.broodfall.sim.towers.find((t) => t.family === 'skipper').facing);
+      if (after2 === turnTo) pass('skipping mortar: panel FACING buttons turn it');
+      else fail('skipper facing', `facing ${before} -> ${after2}, wanted ${turnTo}`);
+      await page.mouse.click(box2.x + 5, box2.y + 5, { button: 'right' });
     }
   }
 
