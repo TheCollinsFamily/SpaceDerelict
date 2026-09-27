@@ -93,6 +93,9 @@ export function towerStats(t: Tower) {
     slowDur: Math.max(spec.slowDur ?? 0, tanglerPips > 0 ? B.pipSlowDur : 0),
     poisonDps: (spec.poisonDps ?? 0) + B.pipPoisonDps * blighterPips,
     poisonDur: Math.max(spec.poisonDur ?? 0, blighterPips > 0 ? B.pipPoisonDur : 0),
+    // Ember pip: hits ignite (contagious burn).
+    burnDps: (spec.burnDps ?? 0) + B.pipBurnDps * pips('ember'),
+    burnDur: Math.max(spec.burnDur ?? 0, pips('ember') > 0 ? B.pipBurnDur : 0),
     capBonus: spec.pierce ? Infinity : B.pipPierceCap * pips('impaler'),
     pierce: spec.pierce ?? false,
     // Sling pip: seeps creep, AND the limb no longer needs creep to stand on.
@@ -134,6 +137,7 @@ export function fxOf(t: Tower, s: TowerStats, damage = s.damage): HitFx {
   return {
     srcId: t.id, damage, yieldMult: s.yieldMult, capBonus: s.capBonus,
     slowMult: s.slowMult, slowDur: s.slowDur, poisonDps: s.poisonDps, poisonDur: s.poisonDur,
+    burnDps: s.burnDps, burnDur: s.burnDur,
     shred: s.shred, shredDur: s.shredDur, chains: s.chains, knock: s.knock,
     execute: s.execute, cloud: s.cloud, caltrop: s.caltrop, supportDmg: s.supportDmg,
     grounding: s.grounding, skips: s.skips,
@@ -1055,7 +1059,8 @@ export class Sim {
       this.royalSpawned = true;
       const lane = this.incomingGates[0] ?? this.gates[0];
       this.spawnEnemy('royal', lane);
-      this.spawnEnemy('consort', lane); // the retinue breeds as it marches
+      this.spawnEnemy('consort', lane); // promotes the ranks around it
+      this.spawnEnemy('matron', lane);  // veils the ranks around her
       for (let i = 0; i < B.royalEscort; i++) this.spawnEnemy('elite', lane);
       this.events.push({ kind: 'royal-incoming' });
     }
@@ -1204,13 +1209,25 @@ export class Sim {
   canTarget(t: Tower, s: TowerStats, e: Enemy): boolean {
     if (e.burrowed) return false;
     if (this.isAirborne(e) ? !s.hitsAir : !s.hitsGround) return false;
-    if (!enemySpec(e.kind).cloaked) return true;
+    if (!this.isCloaked(e)) return true;
     return s.trueSight || this.isRevealed(e);
   }
 
-  /** Is a cloaked body visible to EVERY limb right now (marked, or under a detection aura)? */
+  /** Cloaked right now: by nature, or veiled by a living matron's aura (war caste only). */
+  isCloaked(e: Enemy): boolean {
+    const spec = enemySpec(e.kind);
+    if (spec.cloaked) return true;
+    if (spec.caste !== 'war') return false;
+    for (const m of this.enemies) {
+      const r = enemySpec(m.kind).veilAura;
+      if (r !== undefined && m !== e && dist(m.pos, e.pos) <= r) return true;
+    }
+    return false;
+  }
+
+  /** Is a cloaked body visible to EVERY limb right now (marked, burning, or under a detection aura)? */
   isRevealed(e: Enemy): boolean {
-    if (!enemySpec(e.kind).cloaked) return true;
+    if (!this.isCloaked(e)) return true;
     if (e.revealedUntil !== undefined && e.revealedUntil > this.time) return true;
     for (const d of this.towers) {
       const r = towerSpec(d.family).detects;
@@ -1331,9 +1348,11 @@ export class Sim {
     e: Enemy,
     fx: {
       slowMult: number; slowDur: number; poisonDps: number; poisonDur: number;
-      shred?: number; shredDur?: number; rootDur?: number;
+      shred?: number; shredDur?: number; rootDur?: number; burnDps?: number; burnDur?: number;
     },
   ): void {
+    // Burn: the hottest fire wins and the clock refreshes (poison, by contrast, adds).
+    if (fx.burnDps && fx.burnDps > 0 && fx.burnDur && fx.burnDur > 0) this.ignite(e, fx.burnDps, fx.burnDur);
     let slowMult = fx.slowMult;
     let slowDur = fx.slowDur;
     if (fx.rootDur && fx.rootDur > 0) {
@@ -1356,6 +1375,39 @@ export class Sim {
       e.shredAmount = Math.max(active ? e.shredAmount ?? 0 : 0, fx.shred);
       e.shredUntil = this.time + fx.shredDur;
     }
+  }
+
+  /** Set a body burning (hottest fire wins; the clock refreshes). Fire lights up the cloaked. */
+  ignite(e: Enemy, dps: number, dur: number): void {
+    const active = e.burnUntil !== undefined && e.burnUntil > this.time;
+    e.burnDps = active ? Math.max(e.burnDps ?? 0, dps) : dps;
+    e.burnUntil = Math.max(active ? e.burnUntil ?? 0 : 0, this.time + dur);
+    e.burnSpreadAt ??= this.time + B.burnSpreadInterval;
+  }
+
+  /**
+   * Fire: burns what carries it (a medium, like poison — armor caps and shells
+   * don't stop it), reveals it, and SPREADS: on a pulse, a burning body ignites
+   * its unburnt neighbours with a little less heat and its remaining clock.
+   */
+  private tickBurn(e: Enemy): boolean {
+    if (e.burnUntil === undefined || e.burnUntil <= this.time || !e.burnDps) return false;
+    e.hp -= e.burnDps * DT;
+    e.revealedUntil = Math.max(e.revealedUntil ?? 0, this.time + 0.5);
+    if (e.burnSpreadAt !== undefined && this.time >= e.burnSpreadAt) {
+      e.burnSpreadAt = this.time + B.burnSpreadInterval;
+      const left = e.burnUntil - this.time;
+      for (const o of this.enemies) {
+        if (o === e || o.burrowed || (o.burnUntil !== undefined && o.burnUntil > this.time)) continue;
+        if (dist(o.pos, e.pos) > B.burnSpreadRadius) continue;
+        this.ignite(o, e.burnDps * B.burnSpreadFrac, left);
+      }
+    }
+    if (e.hp <= 0) {
+      this.killEnemy(e.id, 1, false);
+      return true;
+    }
+    return false;
   }
 
   /** The bomber's whole job: area damage to STRUCTURES, then it is gone. */
@@ -1677,6 +1729,8 @@ export class Sim {
         e.hp -= e.poisonDps * DT;
         if (e.hp <= 0) { this.killEnemy(e.id, 1, false); continue; }
       }
+      // Fire burns, reveals, and spreads.
+      if (this.tickBurn(e)) continue;
 
       // THE CANNON (both castes): walk, deploy, shell until destroyed.
       if (spec.cannon && this.updateCannon(e, spec)) continue;
@@ -2261,6 +2315,24 @@ export class Sim {
         }
       }
       this.echoSkip(at, dx, dy, fx, s.aoe);
+      return;
+    }
+
+    // The ember sac sprays a CONE: every targetable body inside it takes the hit.
+    const cone = towerSpec(t.family).cone;
+    if (cone !== undefined) {
+      const aim = Math.atan2(dy, dx);
+      this.arcs.push({ from: { ...t.pos }, to: { ...target.pos }, ttl: 0.15 });
+      for (const e of [...this.enemies]) {
+        const rx = e.pos.x - t.pos.x;
+        const ry = e.pos.y - t.pos.y;
+        if (Math.hypot(rx, ry) > s.range || !this.canTarget(t, s, e)) continue;
+        let da = Math.atan2(ry, rx) - aim;
+        while (da > Math.PI) da -= 2 * Math.PI;
+        while (da < -Math.PI) da += 2 * Math.PI;
+        if (Math.abs(da) > cone) continue;
+        this.payloadHit(fx, e, fx.damage, rx, ry);
+      }
       return;
     }
 

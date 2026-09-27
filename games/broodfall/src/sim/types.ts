@@ -6,7 +6,7 @@ export type TowerFamily =
   | 'spitter' | 'burster' | 'lasher' | 'maw' | 'spine' | 'lure'
   | 'tangler' | 'blighter' | 'impaler' | 'choir' | 'sling'
   | 'brood' | 'swamp' | 'frond' | 'lobber' | 'mister' | 'ocular' | 'prism'
-  | 'bombard' | 'ward' | 'quill' | 'skipper' | 'net';
+  | 'bombard' | 'ward' | 'quill' | 'skipper' | 'net' | 'ember';
 
 /** What a limb can shoot at. Fliers are only reachable by 'air'/'both' limbs. */
 export type HitsLayer = 'ground' | 'air' | 'both';
@@ -27,6 +27,9 @@ export interface HitFx {
   slowDur: number;
   poisonDps: number;
   poisonDur: number;
+  /** BURN: contagious fire — a burning body ignites its neighbours. Lights up the cloaked. */
+  burnDps: number;
+  burnDur: number;
   shred: number;
   shredDur: number;
   chains: number;
@@ -123,6 +126,11 @@ export interface TowerSpec {
   grounds?: number;
   /** Lure gland: pulses a toxic pheromone cloud onto the nearest street. */
   pheromone?: { dps: number; radius: number; interval: number };
+  /** Ember sac: sprays a CONE (half-angle, radians) — every targetable body in it is hit. */
+  cone?: number;
+  /** Hits set bodies burning at this dps for burnDur seconds. */
+  burnDps?: number;
+  burnDur?: number;
   /** Galvanic frond: hits arc to this many extra enemies (falling damage per hop). */
   chains?: number;
   /** Bile lobber: player-aimed volley — armed by clicking it, like the sling. */
@@ -235,9 +243,12 @@ export type EnemyKind =
   | 'cannon'
   | 'dartgun'
   | 'stalker'
+  | 'shadewing'
+  | 'ghostsapper'
   | 'infiltrator'
   | 'royal'
-  | 'consort';
+  | 'consort'
+  | 'matron';
 
 export interface EnemySpec {
   kind: EnemyKind;
@@ -297,6 +308,8 @@ export interface EnemySpec {
   cannon?: { range: number; interval: number; damage: number; aoe: number; stun?: number; ammo?: number };
   /** Invisible: only limbs with detection (or inside a detection aura) can TARGET it. Area effects still touch it. */
   cloaked?: boolean;
+  /** Veil matron: every war body within this radius is CLOAKED while she lives. */
+  veilAura?: number;
 }
 
 export interface Enemy {
@@ -340,8 +353,12 @@ export interface Enemy {
   shotsFired?: number;
   /** Flier dragged down by a net: walks the streets (ground-targetable) until this time. */
   groundedUntil?: number;
-  /** Cloaked body marked (pheromone, mist): targetable by anyone until this time. */
+  /** Cloaked body marked (pheromone, mist, fire): targetable by anyone until this time. */
   revealedUntil?: number;
+  /** Status: burning at burnDps until burnUntil; spreads to neighbours on a pulse. */
+  burnDps?: number;
+  burnUntil?: number;
+  burnSpreadAt?: number;
 }
 
 /** A lobbed shell in flight — the hive's cannons and the bombard both use these. */

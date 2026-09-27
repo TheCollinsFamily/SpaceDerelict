@@ -60,7 +60,7 @@ Towers (10 families; each family's pip is what it teaches a build that eats it):
 | Choir Node | +15% fire rate aura to limbs in 95px (max 2 voices) | +8% range per pip |
 | Spore Sling | player-aimed creep logistics: click it, click ground in 300px — a clot lands with a thud (its payload) and seeds a patch that BELONGS to the sling. **If the sling dies, its patches die and every limb standing only on them withers** (Collins, Sep 27 2026) | the limb needs NO creep to stand on and seeps creep; its death withers what stood on its seep |
 | Broodmother | keeps 3 broodlings fighting in the streets (the barracks seat: enemies stop to fight them). Broodlings are her payload: every bonus she has eaten rides their bites (potency, tempo, reach, poison, arcs, digest...) | heals 50% max hp at every cleared wave (on a Broodmother: +1 broodling) |
-| Digestive Swamp | the ANTI-WALL (Collins, Sep 27 2026): a swamp IN the street the column wades through — everything in it is slowed 50% and burned, and anything at or under 30 hp is DIGESTED outright, in mass, no hold limit. No chew-back: they walk through, not into | its hits digest anything left under +10 hp per pip |
+| Digestive Swamp | the ANTI-WALL (Collins, Sep 27 2026): a swamp IN the street the column wades through — everything in it is slowed 50% and dissolved by acid (not fire), and anything at or under 30 hp is DIGESTED outright, in mass, no hold limit. No chew-back: they walk through, not into | its hits digest anything left under +10 hp per pip |
 | Galvanic Frond | one strike arcs to 3 more bodies, damage falling per hop (arcs are small separate hits — shield walls soak them badly) | hits arc to +1 enemy per pip |
 | Bile Lobber | player-aimed VOLLEY: click it, click ground in 250px — the glob detonates for 55 in a 55px blast (12s recharge) | hits knock back 5px per pip |
 | Caustic Mister | mist that SHREDS armor: +8 to the armor cap EVERY source's hits respect, 4s | hits shred +3 per pip |
@@ -91,6 +91,15 @@ on down the line twice; pip: every impact skips once more) · **Netcaster** (ant
 ONLY: flak webs that drag fliers to the ground for 2s, where ground limbs can reach
 them; pip: the limb can hit AIR and its hits ground fliers 1s).
 
+**BURN (Sep 27 — "does anything add burn?" It didn't; the swamp's "burn" was acid).**
+Fire is its own status, distinct from poison: poison ADDS per hit, stays on its
+carrier and ignores armor; burn keeps the HOTTEST fire, refreshes its clock, and
+SPREADS — every 0.5s a burning body ignites unburnt neighbours within 22px at 80% of
+its heat for its remaining time (the chain cools as it runs). Burning bodies can't
+hide: fire reveals the cloaked. Source: the **Ember Sac** (a flamethrower that sprays
+a cone — every targetable body in it ignites, 8/s for 3s); its pip makes any limb's
+hits ignite (+3/s per pip).
+
 **AIR / GROUND is visible (Collins: "I can't tell what towers can shoot flying").**
 Every limb is tagged: AIR + GROUND (spitter, impaler, frond, mister, ocular, prism,
 quill), GROUND ONLY (burster, lasher, maw, tangler, blighter, bombard, lobber,
@@ -99,11 +108,15 @@ the limb panel; on the board a sky-blue chevron under a limb means it reaches fl
 (with a hollow ring: air only).
 
 **DETECTION (Collins: "invisible enemies that can only be hit by towers with
-detection or boosted with detection").** Cloaked bodies — the war caste's Stalker
-(t3+) and the science caste's Infiltrator (a cloaked researcher; limb theft you can't
-see coming) — can only be TARGETED by a limb with true sight (the Ocular Stalk, or
+detection or boosted with detection").** Cloaked bodies — five kinds across all three castes: the war caste's
+Stalker (t3+), Shadewing (a cloaked FLIER, t4+: needs air reach AND sight), and Ghost
+Sapper (a cloaked climber that eats limbs unseen, t5+); the science caste's
+Infiltrator (a cloaked researcher: limb theft you can't see coming); and the royal
+Veil Matron (arrives with the royal event; every WAR body within 90px of her is
+cloaked while she lives — she is visible, kill her first) — can only be TARGETED by a limb with true sight (the Ocular Stalk, or
 any limb carrying an ocular pip) or while revealed: inside an Ocular Stalk's 180px
-detection aura (for every limb), or marked by a pheromone cloud or caustic mist (3s).
+detection aura (for every limb), marked by a pheromone cloud or caustic mist (3s), or
+BURNING.
 Area effects — swamps, clouds, splash — still touch them, so area builds are a
 partial answer. Unseen, they show only as a heat-shimmer outline.
 

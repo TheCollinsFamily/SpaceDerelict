@@ -1046,6 +1046,97 @@ describe('Sep 27 batch: payload rule, detection, air/ground, dependency, new lim
   });
 });
 
+describe('BURN (contagious fire) and the new cloaked kinds', () => {
+  type Spawner = { spawnEnemy(kind: string, atGate?: number): Enemy };
+  const mk = (s: Sim, id: number, family: Tower['family'], x: number, y: number, pips: Tower['pips'] = []): Tower => ({
+    id, family, pos: { x, y }, cell: s.cellAt(x, y), hp: 100, maxHp: 100, pips, cooldown: 0, kills: 0,
+  });
+
+  it('burn damages, reveals, and SPREADS to neighbours (cooling as it goes); poison does not spread', () => {
+    const s = freshSim(1200);
+    const sim = s as unknown as Spawner;
+    const a = sim.spawnEnemy('elite', s.gates[0]);
+    const b = sim.spawnEnemy('elite', s.gates[0]);
+    const far = sim.spawnEnemy('elite', s.gates[0]);
+    a.pos = { x: 300, y: 300 }; b.pos = { x: 312, y: 300 }; far.pos = { x: 600, y: 300 };
+    s.ignite(a, 10, 3);
+    for (let i = 0; i < 8; i++) { s.tick(); a.pos = { x: 300, y: 300 }; b.pos = { x: 312, y: 300 }; far.pos = { x: 600, y: 300 }; }
+    expect(a.hp).toBeLessThan(a.maxHp);
+    expect(b.burnUntil ?? 0).toBeGreaterThan(s.time);       // caught fire from its neighbour
+    expect(b.burnDps ?? 0).toBeCloseTo(10 * B.burnSpreadFrac); // a little cooler
+    expect(far.burnUntil ?? 0).toBeLessThanOrEqual(s.time);  // too far to catch
+    // Poison stays on its carrier.
+    const s2 = freshSim(1201);
+    const sim2 = s2 as unknown as Spawner & { applyHitEffects(e: unknown, fx: Record<string, number>): void };
+    const p = sim2.spawnEnemy('elite', s2.gates[0]);
+    const q = sim2.spawnEnemy('elite', s2.gates[0]);
+    p.pos = { x: 300, y: 300 }; q.pos = { x: 310, y: 300 };
+    sim2.applyHitEffects(p, { slowMult: 1, slowDur: 0, poisonDps: 10, poisonDur: 3 });
+    for (let i = 0; i < 8; i++) { s2.tick(); p.pos = { x: 300, y: 300 }; q.pos = { x: 310, y: 300 }; }
+    expect(q.poisonDps ?? 0).toBe(0);
+  });
+
+  it('ember sac sprays a CONE: bodies inside it ignite, bodies behind it do not', () => {
+    const s = freshSim(1202);
+    const em = mk(s, 1, 'ember', 300, 300);
+    s.towers.push(em);
+    const sim = s as unknown as Spawner;
+    const front1 = sim.spawnEnemy('militia', s.gates[0]);
+    const front2 = sim.spawnEnemy('militia', s.gates[0]);
+    const behind = sim.spawnEnemy('militia', s.gates[0]);
+    // Nearest body is in front, so the sac aims forward; one sits behind, still in reach.
+    front1.pos = { x: 340, y: 300 }; front2.pos = { x: 355, y: 312 }; behind.pos = { x: 245, y: 300 };
+    s.tick();
+    expect(front1.burnUntil ?? 0).toBeGreaterThan(s.time);
+    expect(front2.burnUntil ?? 0).toBeGreaterThan(s.time);
+    expect(behind.burnUntil ?? 0).toBeLessThanOrEqual(s.time);
+    // An ember pip teaches any limb to ignite.
+    expect(towerStats({ ...mk(s, 2, 'spitter', 0, 0), pips: [{ family: 'ember' }] }).burnDps).toBe(B.pipBurnDps);
+  });
+
+  it('shadewing needs AIR reach and DETECTION; ghost sapper is a cloaked climber; fire reveals both', () => {
+    const s = freshSim(1203);
+    const sim = s as unknown as Spawner;
+    const sw = sim.spawnEnemy('shadewing', s.gates[0]);
+    const gs = sim.spawnEnemy('ghostsapper', s.gates[0]);
+    sw.pos = { x: 320, y: 300 }; gs.pos = { x: 330, y: 300 };
+    const spitter = mk(s, 1, 'spitter', 300, 300);      // air+ground, blind
+    const burster = mk(s, 2, 'burster', 300, 300, [{ family: 'ocular' }]); // sees, ground only
+    const net = mk(s, 3, 'net', 300, 300, [{ family: 'ocular' }]);         // sees, air
+    expect(s.canTarget(spitter, s.statsOf(spitter), sw)).toBe(false);
+    expect(s.canTarget(burster, s.statsOf(burster), sw)).toBe(false);
+    expect(s.canTarget(net, s.statsOf(net), sw)).toBe(true);
+    expect(s.canTarget(spitter, s.statsOf(spitter), gs)).toBe(false);
+    s.ignite(gs, 5, 2);
+    s.tick();
+    expect(s.canTarget(spitter, s.statsOf(spitter), gs)).toBe(true); // burning bodies can't hide
+  });
+
+  it('veil matron cloaks the WAR bodies around her (not herself, not other castes)', () => {
+    const s = freshSim(1204);
+    const sim = s as unknown as Spawner;
+    const m = sim.spawnEnemy('matron', s.gates[0]);
+    const soldier = sim.spawnEnemy('soldier', s.gates[0]);
+    const researcher = sim.spawnEnemy('researcher', s.gates[0]);
+    m.pos = { x: 300, y: 300 }; soldier.pos = { x: 340, y: 300 }; researcher.pos = { x: 330, y: 300 };
+    expect(s.isCloaked(soldier)).toBe(true);
+    expect(s.isCloaked(m)).toBe(false);
+    expect(s.isCloaked(researcher)).toBe(false);
+    soldier.pos = { x: 500, y: 300 };
+    expect(s.isCloaked(soldier)).toBe(false);
+  });
+
+  it('factions: shadewing + ghost sapper are war and march in waves; matron is royal and never does', () => {
+    const inWaves = new Set<string>();
+    for (const row of WAVE_TABLE) for (const k of Object.keys(row)) inWaves.add(k);
+    expect(ENEMIES.find((e) => e.kind === 'shadewing')!.caste).toBe('war');
+    expect(ENEMIES.find((e) => e.kind === 'ghostsapper')!.caste).toBe('war');
+    expect(ENEMIES.find((e) => e.kind === 'matron')!.caste).toBe('royal');
+    expect(inWaves.has('shadewing') && inWaves.has('ghostsapper')).toBe(true);
+    expect(inWaves.has('matron')).toBe(false);
+  });
+});
+
 describe('arc prism (focus ramp + relay network)', () => {
   it('ramps on a held target and resets on a switch', () => {
     const s = freshSim(960);

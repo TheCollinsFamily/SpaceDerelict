@@ -34,13 +34,14 @@ const FAMILY_COLORS: Record<TowerFamily, number> = {
   quill: 0xb89868,
   skipper: 0x7a6040,
   net: 0x88c8e0,
+  ember: 0xd86a30,
 };
 
 const ENEMY_SIZE: Record<Enemy['kind'], number> = {
   responder: 5, militia: 6, skitterling: 3.5, soldier: 8, elite: 11, flier: 6, sapper: 7,
   phalanx: 13, drummer: 9, bomber: 6, tunneler: 8, tender: 7,
-  splitter: 9, mortar: 9, carapace: 10, stalker: 8,
-  researcher: 6, thief: 6, infiltrator: 6, cannon: 10, dartgun: 9, royal: 20, consort: 13,
+  splitter: 9, mortar: 9, carapace: 10, stalker: 8, shadewing: 6, ghostsapper: 7,
+  researcher: 6, thief: 6, infiltrator: 6, cannon: 10, dartgun: 9, royal: 20, consort: 13, matron: 13,
 };
 
 export interface PlacementPreview {
@@ -320,22 +321,37 @@ export class Renderer {
       const { x, y } = e.pos;
       const s = ENEMY_SIZE[e.kind];
       const color = CASTE_COLORS[e.kind === 'royal' ? 'royal' : e.kind === 'researcher' ? 'science' : 'war'];
-      // CLOAKED and unseen: only a heat-shimmer outline. Revealed: a violet rim.
-      if (e.kind === 'stalker' || e.kind === 'infiltrator') {
-        const seen = sim.isRevealed(e);
-        const col = e.kind === 'infiltrator' ? CASTE_COLORS.science : 0x8a6ab0;
-        if (!seen) {
+      // Burning: flames licking up off the body.
+      if (e.burnUntil !== undefined && e.burnUntil > sim.time) {
+        const fl = Math.abs(Math.sin(this.pulse * 7 + e.id));
+        g.poly([x - 4, y - s, x, y - s - 6 - fl * 4, x + 4, y - s]).fill({ color: 0xff8a30, alpha: 0.85 });
+        g.poly([x - 2, y - s, x + 1, y - s - 3 - fl * 3, x + 3, y - s]).fill({ color: 0xffe070, alpha: 0.9 });
+      }
+      // CLOAKED (by nature or under a matron's veil) and unseen: only a heat
+      // shimmer. Seen: a violet rim over its normal body.
+      if (sim.isCloaked(e)) {
+        if (!sim.isRevealed(e)) {
           g.circle(x, y, s).stroke({ width: 1.2, color: 0xcfc0e8, alpha: 0.28 + 0.12 * Math.sin(this.pulse * 3 + e.id) });
-        } else {
-          g.circle(x, y, s + 2).stroke({ width: 1.5, color: 0xd8a0ff, alpha: 0.9 });
-          g.circle(x, y, s).fill({ color: col, alpha: 0.85 });
-          if (e.carrying) g.circle(x, y - s - 3, 2.5).fill(0xc98f6a);
+          continue;
         }
-        if (seen && e.hp < e.maxHp) this.hpArc(g, x, y, s + 5, e.hp / e.maxHp);
+        g.circle(x, y, s + 3).stroke({ width: 1.5, color: 0xd8a0ff, alpha: 0.9 });
+      }
+      if (e.kind === 'stalker') {
+        g.circle(x, y, s).fill({ color: 0x8a6ab0, alpha: 0.9 });
+        if (e.hp < e.maxHp) this.hpArc(g, x, y, s + 5, e.hp / e.maxHp);
+        continue;
+      }
+      if (e.kind === 'matron') {
+        // Veil matron: gilded, trailing a violet veil ring (her cloaking reach).
+        g.circle(x, y, 90).stroke({ width: 1, color: 0xb890e0, alpha: 0.25 + 0.1 * Math.sin(this.pulse * 1.5) });
+        g.circle(x, y, s + 2).fill({ color: 0x0d0805, alpha: 0.9 });
+        g.circle(x, y, s).fill(CASTE_COLORS.royal);
+        g.circle(x, y, s * 0.5).fill(0xb890e0);
+        if (e.hp < e.maxHp) this.hpArc(g, x, y, s + 5, e.hp / e.maxHp);
         continue;
       }
       // A netted flier: on the ground, tangled.
-      if (e.kind === 'flier' && !sim.isAirborne(e)) {
+      if ((e.kind === 'flier' || e.kind === 'shadewing') && !sim.isAirborne(e)) {
         g.circle(x, y, s + 1.5).fill({ color: 0x0d0805, alpha: 0.85 });
         g.circle(x, y, s * 0.8).fill(color);
         g.moveTo(x - s - 2, y - s - 2).lineTo(x + s + 2, y + s + 2).stroke({ width: 1, color: 0xe0f4fa, alpha: 0.8 });
@@ -343,9 +359,9 @@ export class Renderer {
         if (e.hp < e.maxHp) this.hpArc(g, x, y, s + 5, e.hp / e.maxHp);
         continue;
       }
-      if (e.kind === 'researcher') {
+      if (e.kind === 'researcher' || e.kind === 'infiltrator') {
         g.circle(x, y, s + 1.5).fill({ color: 0x0d0805, alpha: 0.85 });
-        g.circle(x, y, s).fill(color);
+        g.circle(x, y, s).fill(CASTE_COLORS.science);
         // Specimen cage on its back; full once it has a limb.
         g.rect(x - 4, y - s - 6, 8, 6).stroke({ width: 1.2, color: 0xdff5f2, alpha: 0.85 });
         if (e.carrying) g.circle(x, y - s - 3, 2.5).fill(0xc98f6a);
@@ -362,7 +378,7 @@ export class Renderer {
         g.circle(x, y, s).fill(color);
         g.circle(x, y, s * 0.55).fill(0xf3d67a);
         g.poly([x - 8, y - s - 2, x, y - s - 10, x + 8, y - s - 2]).fill(0xf3d67a);
-      } else if (e.kind === 'flier') {
+      } else if (e.kind === 'flier' || e.kind === 'shadewing') {
         // Airborne: drawn lifted with a ground shadow and beating wings.
         const fy = y - 10;
         g.circle(x, y + 3, 4).fill({ color: 0x000000, alpha: 0.3 });
@@ -370,7 +386,7 @@ export class Renderer {
         g.poly([x - s - 4, fy - flap, x, fy - 2, x - 2, fy + 3]).fill({ color: 0xe8b06a, alpha: 0.9 });
         g.poly([x + s + 4, fy - flap, x, fy - 2, x + 2, fy + 3]).fill({ color: 0xe8b06a, alpha: 0.9 });
         g.circle(x, fy, s * 0.7).fill(color);
-      } else if (e.kind === 'sapper') {
+      } else if (e.kind === 'sapper' || e.kind === 'ghostsapper') {
         g.poly([x, y - s - 1.5, x + s + 1.5, y + s + 1.5, x - s - 1.5, y + s + 1.5])
           .fill({ color: 0x0d0805, alpha: 0.85 });
         g.poly([x, y - s, x + s, y + s, x - s, y + s]).fill(0xc97b2e);
@@ -589,6 +605,12 @@ export class Renderer {
         ]).fill({ color: 0xd8b060, alpha: 0.85 });
         break;
       }
+      case 'ember':
+        // Ember sac: a swollen fuel bladder with a lit nozzle.
+        g.circle(x, y, 10).fill(c);
+        g.rect(x - 2, y - 15, 4, 8).fill(0x5a2a10);
+        g.circle(x, y - 17, 2.5 + Math.abs(Math.sin(this.pulse * 6 + t.id)) * 1.5).fill(0xffb040);
+        break;
       case 'net':
         // Netcaster: a web dish pointed at the sky.
         g.circle(x, y, 9).fill(c);

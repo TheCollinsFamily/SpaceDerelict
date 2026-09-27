@@ -178,6 +178,15 @@ export const TOWERS: readonly TowerSpec[] = [
     grounds: 2,
     maxHp: 70, interest: 1, eatThreshold: 0, advanced: false, hits: 'air',
   },
+  {
+    // The flamethrower: sprays burning oil across a cone. BURN is contagious —
+    // a burning body sets its neighbours alight — so it melts swarms, and fire
+    // lights up the cloaked.
+    family: 'ember', name: 'Ember Sac', weight: 10,
+    cost: { war: 22, science: 6 }, range: 70, rate: 0.8, damage: 4, aoe: 0,
+    cone: 0.45, burnDps: 8, burnDur: 3,
+    maxHp: 80, interest: 1, eatThreshold: 0, advanced: false, hits: 'ground',
+  },
 ];
 
 export const ORGANS: readonly OrganSpec[] = [
@@ -216,6 +225,10 @@ export const ENEMIES: readonly EnemySpec[] = [
   // Stalker: CLOAKED. Only limbs with detection (or inside a detection aura) can
   // target it; area effects (swamp, clouds, splash) still touch it.
   { kind: 'stalker', caste: 'war', hp: 85, speed: 40, damage: 12, rate: 1.0, meat: 4, threatOnKill: 3, risk: 7, cloaked: true },
+  // Shadewing: a CLOAKED FLIER — needs a limb that reaches the air AND can see it.
+  { kind: 'shadewing', caste: 'war', hp: 60, speed: 56, damage: 10, rate: 1.2, meat: 4, threatOnKill: 3, risk: 9, flies: true, cloaked: true },
+  // Ghost sapper: a CLOAKED sapper — climbs your perches and eats limbs unseen.
+  { kind: 'ghostsapper', caste: 'war', hp: 120, speed: 42, damage: 18, rate: 1.3, meat: 5, threatOnKill: 4, risk: 12, sapper: true, cloaked: true },
   { kind: 'tender', caste: 'war', hp: 80, speed: 34, damage: 6, rate: 0.5, meat: 6, threatOnKill: 2, risk: 8, healer: true },
   // SCIENCE CASTE — they come for YOU, not for the core. Never in war waves.
   // Smart by default (Collins, Sep 27 2026): they read your gun coverage, walk
@@ -239,6 +252,9 @@ export const ENEMIES: readonly EnemySpec[] = [
   // the war caste around them: presence aura, and the consort promotes ranks.
   { kind: 'royal', caste: 'royal', hp: 1100, speed: 17, damage: 34, rate: 0.9, meat: 120, threatOnKill: 0, risk: 40, royalAura: true },
   { kind: 'consort', caste: 'royal', hp: 420, speed: 24, damage: 20, rate: 0.9, meat: 40, threatOnKill: 4, risk: 14, royalAura: true, promotes: { interval: 5 } },
+  // Veil matron: royal power-up-others in its purest form — every war body within
+  // 90px of her is CLOAKED while she lives. She is visible; kill her first.
+  { kind: 'matron', caste: 'royal', hp: 380, speed: 22, damage: 16, rate: 0.9, meat: 40, threatOnKill: 4, risk: 13, veilAura: 90 },
 ];
 
 /** Wave composition per threat tier (spawned over the siege's spawn window). */
@@ -254,9 +270,9 @@ export const WAVE_TABLE: readonly Partial<Record<string, number>>[] = [
   { responder: 8, militia: 6, skitterling: 4 },                // tier 1: militia muster
   { militia: 12, soldier: 6, splitter: 1 },                    // tier 2: the army arrives
   { militia: 8, soldier: 8, elite: 2, flier: 4, drummer: 1, splitter: 2, stalker: 1 },  // tier 3: air support, war-drums, the first shadows
-  { soldier: 10, elite: 5, flier: 5, sapper: 3, bomber: 2, drummer: 1, splitter: 2, mortar: 1, cannon: 1, stalker: 2 },  // tier 4: sappers climb, siege engines
-  { soldier: 12, elite: 7, flier: 6, sapper: 4, phalanx: 2, tender: 2, bomber: 2, carapace: 1, mortar: 2, cannon: 1, stalker: 2 },  // tier 5: the shield wall marches tended
-  { elite: 10, flier: 8, sapper: 5, phalanx: 3, drummer: 2, tender: 3, tunneler: 4, bomber: 4, carapace: 3, mortar: 3, splitter: 4, cannon: 2, stalker: 4 }, // tier 6: everything they have
+  { soldier: 10, elite: 5, flier: 5, sapper: 3, bomber: 2, drummer: 1, splitter: 2, mortar: 1, cannon: 1, stalker: 2, shadewing: 1 },  // tier 4: sappers climb, siege engines, shadows take wing
+  { soldier: 12, elite: 7, flier: 6, sapper: 4, phalanx: 2, tender: 2, bomber: 2, carapace: 1, mortar: 2, cannon: 1, stalker: 2, shadewing: 2, ghostsapper: 1 },  // tier 5: the shield wall marches tended
+  { elite: 10, flier: 8, sapper: 5, phalanx: 3, drummer: 2, tender: 3, tunneler: 4, bomber: 4, carapace: 3, mortar: 3, splitter: 4, cannon: 2, stalker: 4, shadewing: 3, ghostsapper: 2 }, // tier 6: everything they have
 ];
 
 export const BALANCE = {
@@ -377,6 +393,12 @@ export const BALANCE = {
   spineThornsFrac: 1,  // a spine wall's own thorns: its payload damage per bite taken
   pipInterest: 2,     // lure pip: +2 interest...
   pipCloud: 4,        // ...and every hit leaves a toxic pheromone cloud (+4 dps per pip)
+  /** BURN: contagious fire. */
+  pipBurnDps: 3,      // ember pip: hits ignite +3 burn dps per pip
+  pipBurnDur: 3,
+  burnSpreadRadius: 22,   // px: a burning body ignites neighbours this close...
+  burnSpreadInterval: 0.5, // ...on this pulse...
+  burnSpreadFrac: 0.8,    // ...passing on this fraction of its fire (the chain cools as it runs)
   cloudRadius: 26,
   cloudTtl: 3,
   revealSeconds: 3,   // pheromone- or mist-marked cloaked bodies stay visible this long

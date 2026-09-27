@@ -31,6 +31,7 @@ const CARD_DESC: Record<TowerFamily, string> = {
   quill: 'Shotgun fan of quills. Brutal up close.',
   skipper: 'Fires ONE way, very far; shells skip on.',
   net: 'Anti-air only. Nets drag fliers to the ground.',
+  ember: 'Flamethrower cone. Fire spreads body to body.',
 };
 
 /** What each family's bonus does when it is EATEN (shown on the cannibalize hover). */
@@ -58,6 +59,7 @@ export const PIP_DESC: Record<TowerFamily, string> = {
   quill: 'every shot also hits +1 more target',
   skipper: 'every impact skips on once more',
   net: 'can hit AIR, and its hits drag fliers down 1s',
+  ember: 'its hits IGNITE +3/s — contagious fire that lights up the unseen',
 };
 
 /** What a family can shoot, as the card and panel tag. */

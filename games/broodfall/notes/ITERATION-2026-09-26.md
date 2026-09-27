@@ -147,6 +147,19 @@ smart flips 3:2, totals 120k vs 115k. 54/54 tests; input check adds the lobber
 gesture; visual/endgame green.
 
 
+## Addendum 10 (Sep 27): burn, and three more cloaked kinds
+
+Collins asked whether anything applied burn — nothing did (the swamp's "burn" was
+loose wording for acid; fixed in the docs). Built: BURN status (hottest-wins,
+contagious: spreads every 0.5s to neighbours within 22px at 80% heat, reveals the
+cloaked); the Ember Sac (cone flamethrower, ground, 8/s for 3s) and its pip (+3/s
+ignite on any limb). Three more cloaked kinds: Shadewing (war, cloaked flier, t4+),
+Ghost Sapper (war, cloaked climber, t5+), Veil Matron (royal, arrives with the royal
+event, cloaks every war body within 90px — cloaking became a live state,
+`isCloaked(e)`, not just a spec flag). 90/90 tests (5 new); naive hold-12 5/10;
+guardrail flips 4:0, totals +30%. Browser checks green.
+
+
 ## Addendum 9 (Sep 27): the payload rule, detection, air/ground, swamp, dependency
 
 **Collins's batch:** swamp as the anti-wall; lure pip = toxic pheromones; spine pip =

@@ -46,7 +46,8 @@ Useful URLs:
 - The ARC PRISM ramps its beam on a held target, and idle prisms relay their charge through each other to whichever prism is firing — build them as a network.
 - The SPORE BOMBARD shells a spot YOU choose: click it, click the map to set its marker (gold crosshair). Put it on an emplaced enemy cannon — nothing else outranges them as well. The WARD MEMBRANE shields every other limb near it (blue bubble); shields soak all harm first, including the sedation that science uses to steal limbs. Sacrifice a ward for a permanent shield on the new limb; sacrifice a bombard to double the new limb's range.
 - EVERY CARD says what it can shoot: AIR + GROUND, GROUND, AIR ONLY, or SUPPORT. On the board a sky-blue chevron under a limb = it reaches fliers. The NETCASTER hits only fliers and drags them to the ground where ground limbs can finish them.
-- CLOAKED enemies (faint shimmer outlines) can only be targeted by limbs with detection (violet dot): the Ocular Stalk reveals everything within 180px for all your limbs; Lure clouds and Caustic mist mark them for a few seconds.
+- CLOAKED enemies (faint shimmer outlines) can only be targeted by limbs with detection (violet dot): the Ocular Stalk reveals everything within 180px for all your limbs; Lure clouds, Caustic mist and FIRE mark them. Five cloaked kinds: Stalker, Shadewing (a cloaked flier), Ghost Sapper (a cloaked climber), Infiltrator (a cloaked researcher), and the royal Veil Matron, who cloaks every war body near her — kill her first.
+- The EMBER SAC sprays a flame cone. Fire spreads body to body through a crowd and lights up anything cloaked.
 - Hovering a limb to cannibalize it now tells you exactly what its bonus gives the new limb — and warns if other limbs stand on its creep and would wither.
 - Both castes field CANNONS: they walk up, brace, and lob shells over the blocks until killed. The science one (pale) darts your weakest limb to stun it for the researchers, then goes home when its kit is spent.
 - The top bar telegraphs each wave's RISK — every enemy kind carries a risk weight, and waves scale by the risk law: cheap ranks multiply with the clock, risky specialists (sappers, mortars, drummers) stay punctuation. Watch for: splitters (burst into skitterlings unless eaten whole), mortar beetles (besiege from standoff — long guns answer), carapace lords (block the first 6 hits — big blows strip the shell).
@@ -55,7 +56,7 @@ Useful URLs:
 ## Verify it
 
 ```powershell
-npm test             # 85 headless sim tests incl. per-verb behavior pins + full autoplayer runs
+npm test             # 90 headless sim tests incl. per-verb behavior pins + full autoplayer runs
 npm run build
 npm run test:visual  # headless chromium: sim + HUD + per-region pixel checks; screenshots in tools/screenshots/
 npm run test:input   # headless chromium: real player gestures (build, cannibalize, organ, cancel)
