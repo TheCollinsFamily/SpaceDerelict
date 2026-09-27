@@ -147,6 +147,23 @@ smart flips 3:2, totals 120k vs 115k. 54/54 tests; input check adds the lobber
 gesture; visual/endgame green.
 
 
+## Addendum 11 (Sep 27): Marrow Conduit, placement facing + field of fire, effect links
+
+Built the conduit (copy-funnel of nearby pips into its pointed target; harvested on
+sacrifice; its pip draws the nearest neighbour's bonus). Directional limbs take a
+facing at build (`build.facing`), rotate with right-click during placement and when
+built, Esc cancels; field of fire drawn for them; `effectLinks` drives board links +
+panel text for conduit/choir/ward, and "FED by N conduits" on targets.
+Design call made explicitly: "takes" read as COPY (neighbours keep theirs).
+Balance: the bot first placed conduits on gun perches (naive 5→1/10); taught it the
+ward-style cluster placement + aim at the highest-dps target → 5/10, guardrail 3:0.
+Test note: wave-rhythm check now ignores skitterlings (split children of a husk
+dying after a siege timeout are not arrivals). 94/94 tests; input check covers
+rotate-while-placing, right-click-rotate on a built limb, Esc cancel; screenshot beats
+tools/screenshots/beat-fieldoffire.png + beat-conduit-preview.png (via
+tools/shot-preview.mjs) show the lane, gather ring, source/target links.
+
+
 ## Addendum 10 (Sep 27): burn, and three more cloaked kinds
 
 Collins asked whether anything applied burn — nothing did (the swamp's "burn" was

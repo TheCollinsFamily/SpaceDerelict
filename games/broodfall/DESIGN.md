@@ -100,6 +100,26 @@ hide: fire reveals the cloaked. Source: the **Ember Sac** (a flamethrower that s
 a cone — every targetable body in it ignites, 8/s for 3s); its pip makes any limb's
 hits ignite (+3/s per pip).
 
+**THE MARROW CONDUIT (Collins, Sep 27 2026 — the combo engine).** A directional
+support limb: it COPIES every bonus from the limbs within its gather radius (80px) —
+each one's inherited pips plus its own family bonus — and feeds the whole pool to the
+one limb it points at (the nearest down its facing lane, 160px). Neighbours keep
+theirs. Sacrifice the conduit and the next build HARVESTS the whole pool
+permanently (so conduit → eat → conduit is a deliberate duplication engine; no caps).
+Its own pip: the limb passively draws its nearest neighbour's family bonus. Reach
+pips stretch both radii; splash pips widen the gather.
+
+**Direction is placed and shown (Collins).** Limbs whose facing matters (Skipping
+Mortar, Marrow Conduit) show their FIELD OF FIRE as a lane with chevrons while being
+placed; RIGHT-CLICK rotates the placement (Esc cancels a directional placement), and
+right-clicking a BUILT directional limb rotates it. Default facing: the nearest gate.
+
+**Effect limbs show what they affect (Collins).** During placement and while a limb's
+panel is open, the board draws its links — conduit: thin gold lines from every source,
+a thick gold arrow + ring on its target; choir/ward: rings on every covered limb —
+and the panel states it in words ("FUNNELLING 5 bonuses from 3 limbs → LASHER ·
+sacrifice to harvest", "SHIELDING 4 limbs · +70 each", "FED by 2 conduits").
+
 **AIR / GROUND is visible (Collins: "I can't tell what towers can shoot flying").**
 Every limb is tagged: AIR + GROUND (spitter, impaler, frond, mister, ocular, prism,
 quill), GROUND ONLY (burster, lasher, maw, tangler, blighter, bombard, lobber,

@@ -5,7 +5,7 @@
  */
 import { Sim, towerSpec } from '../sim/sim';
 import { BALANCE as B } from '../../content/data';
-import type { Caste, CasteFocus, OrganId, RootDir, SimEvent, TargetMode, TowerFamily } from '../sim/types';
+import type { Caste, CasteFocus, OrganId, RootDir, SimEvent, TargetMode, Tower, TowerFamily } from '../sim/types';
 
 const CARD_DESC: Record<TowerFamily, string> = {
   spitter: 'Ranged acid limb. Cheap, reliable.',
@@ -32,6 +32,7 @@ const CARD_DESC: Record<TowerFamily, string> = {
   skipper: 'Fires ONE way, very far; shells skip on.',
   net: 'Anti-air only. Nets drag fliers to the ground.',
   ember: 'Flamethrower cone. Fire spreads body to body.',
+  conduit: 'Funnels every bonus around it into the limb it points at.',
 };
 
 /** What each family's bonus does when it is EATEN (shown on the cannibalize hover). */
@@ -60,6 +61,7 @@ export const PIP_DESC: Record<TowerFamily, string> = {
   skipper: 'every impact skips on once more',
   net: 'can hit AIR, and its hits drag fliers down 1s',
   ember: 'its hits IGNITE +3/s — contagious fire that lights up the unseen',
+  conduit: 'EVERYTHING it was channelling (harvested), plus: draws its nearest neighbour\'s bonus',
 };
 
 /** What a family can shoot, as the card and panel tag. */
@@ -262,8 +264,10 @@ export class Hud {
       ? `${layer}${st.trueSight ? ' · DETECTS' : ''} · dmg ${st.damage.toFixed(0)} · ${st.rate.toFixed(2)}/s · reach ${Math.round(st.range)}`
         + ((t.streak ?? 0) > 0 && st.streakRamp > 0 ? ` · streak ${t.streak}` : '')
       : `support limb · potency ×${st.potency.toFixed(2)} · tempo ×${st.tempo.toFixed(2)} · reach ×${st.reach.toFixed(2)}`;
+    // What it is affecting, in words (the board draws the links).
+    document.getElementById('inspect-effect')!.textContent = this.effectText(sim, t);
     const facingRow = document.getElementById('inspect-facing-wrap')!;
-    facingRow.classList.toggle('hidden', t.family !== 'skipper');
+    facingRow.classList.toggle('hidden', !spec.directional);
     for (const b of document.querySelectorAll<HTMLElement>('#inspect-facing button')) {
       b.classList.toggle('on', (t.facing ?? 'N') === b.dataset.dir);
     }
@@ -280,6 +284,38 @@ export class Hud {
     }
     for (const b of document.querySelectorAll<HTMLElement>('#inspect-castes button')) {
       b.classList.toggle('on', (t.casteFocus ?? 'any') === b.dataset.caste);
+    }
+  }
+
+  /** One line: what this limb is doing to its neighbours right now. */
+  private effectText(sim: Sim, t: Tower): string {
+    const links = sim.effectLinks(t);
+    const name = (u: Tower) => towerSpec(u.family).name;
+    switch (t.family) {
+      case 'conduit': {
+        const pool = sim.conduitPool(t).length;
+        const target = links.targets[0];
+        return target
+          ? `FUNNELLING ${pool} bonus${pool === 1 ? '' : 'es'} from ${links.sources.length} limb${links.sources.length === 1 ? '' : 's'} → ${name(target).toUpperCase()} · sacrifice to harvest them all`
+          : `pointed at nothing — rotate it (right-click) toward a limb · holding ${pool} to harvest`;
+      }
+      case 'choir':
+        return `SPEEDING ${links.targets.length} limb${links.targets.length === 1 ? '' : 's'} · +${Math.round((towerSpec('choir').rateAura ?? 0) * sim.auraOf(t).strength * 100)}% fire rate each`
+          + (t.pips.length ? ' · sharing its hit bonuses' : '');
+      case 'ward':
+        return `SHIELDING ${links.targets.length} limb${links.targets.length === 1 ? '' : 's'} · +${Math.round((towerSpec('ward').wardShield ?? 0) * sim.auraOf(t).strength)} shield each`
+          + (t.pips.length ? ' · sharing its hit bonuses' : '');
+      case 'bombard':
+        return t.marker === undefined ? 'NO MARKER — click it, then click the map' : 'shelling its marker (gold crosshair)';
+      case 'skipper':
+        return `firing ${t.facing ?? 'N'} only — right-click to rotate`;
+      case 'brood':
+        return `${sim.broodlings.filter((b) => b.motherId === t.id).length} broodlings in the streets`;
+      default: {
+        // Is anything feeding THIS limb?
+        const fedBy = sim.towers.filter((c) => c.family === 'conduit' && sim.conduitTarget(c) === t);
+        return fedBy.length ? `FED by ${fedBy.length} conduit${fedBy.length > 1 ? 's' : ''}` : '';
+      }
     }
   }
 

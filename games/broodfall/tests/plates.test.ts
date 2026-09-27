@@ -85,9 +85,11 @@ describe('wave rhythm', () => {
       sim.tick();
       sim.takeEvents();
       // Science-caste visitors (researchers, thieves) may wander in any time;
-      // the discreteness rule is about the WAR caste.
+      // the discreteness rule is about war-caste ARRIVALS. Skitterlings are
+      // excluded: they are born when a gravid husk (already on the field after a
+      // siege timeout) dies — children of an existing body, not a new arrival.
       const warCount = sim.enemies.filter(
-        (e) => ENEMIES.find((s) => s.kind === e.kind)!.caste === 'war',
+        (e) => e.kind !== 'skitterling' && ENEMIES.find((s) => s.kind === e.kind)!.caste === 'war',
       ).length;
       if (sim.phase === 'growth' && warCount > lastCount) violations++;
       lastCount = warCount;

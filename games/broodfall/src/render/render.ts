@@ -6,7 +6,7 @@
 import { Application, Container, Graphics } from 'pixi.js';
 import { CellType } from '../sim/citymap';
 import { Sim, towerSpec, towerStats } from '../sim/sim';
-import type { Enemy, Tower, TowerFamily } from '../sim/types';
+import type { Enemy, RootDir, Tower, TowerFamily } from '../sim/types';
 
 export const CASTE_COLORS = { war: 0xd1603c, science: 0x4fa9a4, royal: 0xd4a72c } as const;
 
@@ -35,6 +35,7 @@ const FAMILY_COLORS: Record<TowerFamily, number> = {
   skipper: 0x7a6040,
   net: 0x88c8e0,
   ember: 0xd86a30,
+  conduit: 0xc8a060,
 };
 
 const ENEMY_SIZE: Record<Enemy['kind'], number> = {
@@ -49,6 +50,10 @@ export interface PlacementPreview {
   kind: 'tower' | 'organ';
   family?: TowerFamily;
   valid: boolean;
+  /** Directional limbs: the facing it will be placed with (right-click rotates). */
+  facing?: RootDir;
+  /** Banked cannibalize traits the placed limb will carry (so the preview is honest). */
+  pips?: Tower['pips'];
 }
 
 export class Renderer {
@@ -605,6 +610,18 @@ export class Renderer {
         ]).fill({ color: 0xd8b060, alpha: 0.85 });
         break;
       }
+      case 'conduit': {
+        // Marrow conduit: a bone funnel, glowing with the pool it channels.
+        const f = t.facing ?? 'N';
+        const vx = f === 'E' ? 1 : f === 'W' ? -1 : 0;
+        const vy = f === 'S' ? 1 : f === 'N' ? -1 : 0;
+        const fed = sim.conduitPool(t).length;
+        g.circle(x, y, 10).fill(c);
+        g.circle(x, y, 5 + Math.min(5, fed * 0.6)).fill({ color: 0xffd060, alpha: 0.35 + 0.1 * Math.sin(this.pulse * 3) });
+        g.poly([x + vx * 10 + vy * 7, y + vy * 10 + vx * 7, x + vx * 22, y + vy * 22, x + vx * 10 - vy * 7, y + vy * 10 - vx * 7])
+          .fill({ color: 0xffd060, alpha: 0.9 });
+        break;
+      }
       case 'ember':
         // Ember sac: a swollen fuel bladder with a lit nozzle.
         g.circle(x, y, 10).fill(c);
@@ -708,7 +725,71 @@ export class Renderer {
     if (this.selectedTowerId === t.id) {
       g.circle(x, y, 24).stroke({ width: 2, color: 0x9fd8ff, alpha: 0.9 });
       const reach = towerStats(t).range;
-      if (reach > 0 && reach < 1000) g.circle(t.pos.x, t.pos.y, reach).stroke({ width: 1, color: 0x9fd8ff, alpha: 0.3 });
+      if (reach > 0 && reach < 1000 && !towerSpec(t.family).directional) {
+        g.circle(t.pos.x, t.pos.y, reach).stroke({ width: 1, color: 0x9fd8ff, alpha: 0.3 });
+      }
+    }
+  }
+
+  /**
+   * FIELD OF FIRE for limbs whose facing matters: the skipping mortar's firing
+   * lane and the conduit's pointing lane, drawn as a corridor down its heading.
+   */
+  private drawFieldOfFire(g: Graphics, sim: Sim, t: Tower, valid = true): void {
+    const spec = towerSpec(t.family);
+    if (!spec.directional) return;
+    const f = Sim.facingVec(t.facing ?? 'N');
+    const len = t.family === 'conduit'
+      ? (spec.conduit?.reach ?? 0) * towerStats(t).reach
+      : sim.statsOf(t).range;
+    const half = t.family === 'conduit' ? 30 : 28;
+    const px = -f.y;
+    const py = f.x;
+    const col = valid ? (t.family === 'conduit' ? 0xe8c060 : 0xffb070) : 0xb03a2a;
+    g.poly([
+      t.pos.x + px * half, t.pos.y + py * half,
+      t.pos.x + f.x * len + px * half, t.pos.y + f.y * len + py * half,
+      t.pos.x + f.x * len - px * half, t.pos.y + f.y * len - py * half,
+      t.pos.x - px * half, t.pos.y - py * half,
+    ]).fill({ color: col, alpha: 0.1 }).stroke({ width: 1.2, color: col, alpha: 0.55 });
+    // Chevrons down the lane: which way it points.
+    for (let d = 40; d < len; d += 60) {
+      const cx = t.pos.x + f.x * d;
+      const cy = t.pos.y + f.y * d;
+      g.moveTo(cx + px * 8 - f.x * 6, cy + py * 8 - f.y * 6).lineTo(cx, cy)
+        .lineTo(cx - px * 8 - f.x * 6, cy - py * 8 - f.y * 6)
+        .stroke({ width: 1.5, color: col, alpha: 0.6 });
+    }
+  }
+
+  /**
+   * WHAT IT AFFECTS (Collins: "the UI should indicate what they are affecting"):
+   * a conduit's sources (thin lines in) and its target (thick arrow out); a
+   * choir's or ward's covered limbs (rings), plus the reach it covers.
+   */
+  private drawEffectLinks(g: Graphics, sim: Sim, t: Tower): void {
+    const spec = towerSpec(t.family);
+    const links = sim.effectLinks(t);
+    if (t.family === 'conduit') {
+      const s = towerStats(t);
+      const gather = (spec.conduit?.gather ?? 0) * s.reach + (s.aoe - spec.aoe);
+      g.circle(t.pos.x, t.pos.y, gather).stroke({ width: 1, color: 0xe8c060, alpha: 0.35 });
+      for (const u of links.sources) {
+        g.moveTo(u.pos.x, u.pos.y).lineTo(t.pos.x, t.pos.y).stroke({ width: 1.5, color: 0xe8c060, alpha: 0.7 });
+        g.circle(u.pos.x, u.pos.y, 16).stroke({ width: 1.2, color: 0xe8c060, alpha: 0.6 });
+      }
+      for (const u of links.targets) {
+        g.moveTo(t.pos.x, t.pos.y).lineTo(u.pos.x, u.pos.y).stroke({ width: 4, color: 0xffd060, alpha: 0.9 });
+        g.circle(u.pos.x, u.pos.y, 22 + Math.sin(this.pulse * 3) * 2).stroke({ width: 2.5, color: 0xffd060, alpha: 0.95 });
+      }
+      return;
+    }
+    if (t.family === 'choir' || t.family === 'ward') {
+      const col = t.family === 'choir' ? 0xc8a0f0 : 0x9fc4ff;
+      g.circle(t.pos.x, t.pos.y, sim.auraOf(t).radius).stroke({ width: 1, color: col, alpha: 0.4 });
+      for (const u of links.targets) {
+        g.circle(u.pos.x, u.pos.y, 20).stroke({ width: 2, color: col, alpha: 0.85 });
+      }
     }
   }
 
@@ -798,20 +879,33 @@ export class Renderer {
         .stroke({ width: 1, color: 0xd0604a, alpha: 0.25 });
     }
 
-    // Placement preview.
+    // The open panel's limb: its field of fire and what it is affecting.
+    const sel = this.selectedTowerId !== null ? sim.towers.find((t) => t.id === this.selectedTowerId) : undefined;
+    if (sel) {
+      this.drawFieldOfFire(g, sim, sel);
+      this.drawEffectLinks(g, sim, sel);
+    }
+
+    // Placement preview: the limb as it WILL be — range, field of fire, and
+    // (for effect limbs) exactly what it would affect from this spot.
     if (this.preview) {
       const c = sim.cellCenter(this.preview.cell);
       const ok = this.preview.valid;
       g.rect(c.x - sim.cfg.cellPx / 2, c.y - sim.cfg.cellPx / 2, sim.cfg.cellPx, sim.cfg.cellPx)
         .fill({ color: ok ? 0x76b04a : 0xb03a2a, alpha: 0.4 });
       if (this.preview.kind === 'tower' && this.preview.family) {
-        const spec = towerStats({
-          id: 0, family: this.preview.family, pos: c, cell: 0,
-          hp: 1, maxHp: 1, pips: [], cooldown: 0, kills: 0,
-        });
-        if (spec.range > 0) {
-          g.circle(c.x, c.y, spec.range).stroke({ width: 1.5, color: 0xffffff, alpha: 0.25 });
+        const ghost: Tower = {
+          id: -1, family: this.preview.family, pos: c, cell: this.preview.cell,
+          hp: 1, maxHp: 1, pips: this.preview.pips ?? [], cooldown: 0, kills: 0, facing: this.preview.facing,
+        };
+        const spec = towerSpec(ghost.family);
+        const st = towerStats(ghost);
+        if (spec.directional) {
+          this.drawFieldOfFire(g, sim, ghost, ok);
+        } else if (st.range > 0 && st.range < 1000) {
+          g.circle(c.x, c.y, st.range).stroke({ width: 1.5, color: 0xffffff, alpha: 0.25 });
         }
+        this.drawEffectLinks(g, sim, ghost);
       }
     }
   }

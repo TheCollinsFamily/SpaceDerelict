@@ -162,12 +162,18 @@ export class Autoplayer {
       if (!sim.canAfford(towerSpec(fam).cost)) continue;
       // Support limbs are placed by their OWN logic, never on a gun's perch:
       // the ward behind the guns it shields, the bombard deep in the body.
-      if (fam === 'ward' || fam === 'bombard') {
+      if (fam === 'ward' || fam === 'bombard' || fam === 'conduit') {
         const have = sim.towers.filter((t) => t.family === fam).length;
-        const cap = fam === 'ward' ? Math.floor(guns.length / 4) : Math.min(2, Math.floor(guns.length / 5));
-        const cell = have < cap ? (fam === 'ward' ? this.wardCell(sim, guns) : this.bombardCell(sim)) : null;
+        const cap = fam === 'ward' ? Math.floor(guns.length / 4)
+          : fam === 'conduit' ? Math.floor(guns.length / 6)
+            : Math.min(2, Math.floor(guns.length / 5));
+        const cell = have < cap
+          ? (fam === 'bombard' ? this.bombardCell(sim) : this.wardCell(sim, guns))
+          : null;
         if (cell !== null && sim.issue({ kind: 'build', cardIndex: i, cell }).ok) {
           this.builds += 1;
+          // A conduit is aimed at the hardest-hitting gun it can reach.
+          if (fam === 'conduit') this.aimConduit(sim, sim.towers[sim.towers.length - 1]);
           return;
         }
         if (sim.meat.war >= B.discardCost + 10) {
@@ -339,6 +345,21 @@ export class Autoplayer {
       if (score > bestScore) { bestScore = score; best = cell; }
     }
     return best;
+  }
+
+  /** Point a conduit at whichever gun (of the four headings) turns its pool into the most dps. */
+  private aimConduit(sim: Sim, c: { id: number; family: string }): void {
+    let best: 'N' | 'E' | 'S' | 'W' | null = null;
+    let bestDps = -1;
+    for (const dir of ['N', 'E', 'S', 'W'] as const) {
+      sim.issue({ kind: 'set-facing', towerId: c.id, dir });
+      const t = sim.conduitTarget(sim.towers.find((x) => x.id === c.id)!);
+      if (!t) continue;
+      const st = sim.statsOf(t);
+      const dps = st.damage * st.rate;
+      if (dps > bestDps) { bestDps = dps; best = dir; }
+    }
+    if (best) sim.issue({ kind: 'set-facing', towerId: c.id, dir: best });
   }
 
   /** Bombard: deep and high — its reach covers the lanes from the safety of the body. */

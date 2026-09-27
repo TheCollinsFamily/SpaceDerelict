@@ -135,10 +135,11 @@ try {
   if (organs === 1) pass('organ button + body click grows an organ');
   else fail('organ placement', `organs=${organs}`);
 
-  // 4. Right-click cancels selection (no accidental build on next click).
-  await page.locator('#hand .card').first().click();
+  // 4. Esc cancels selection (no accidental build on next click). Right-click
+  //    also cancels for non-directional cards; directional ones rotate (5d).
   const box = await page.locator('#stage canvas').boundingBox();
-  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2, { button: 'right' });
+  await page.locator('#hand .card').first().click();
+  await page.keyboard.press('Escape');
   const towerSpot3 = await page.evaluate(() => {
     const s = window.broodfall.sim;
     for (let c = 0; c < s.map.cells.length; c++) {
@@ -148,8 +149,51 @@ try {
   });
   await clickWorld(towerSpot3.x, towerSpot3.y);
   const towers2 = await page.evaluate(() => window.broodfall.sim.towers.length);
-  if (towers2 === after.towers) pass('right-click cancels placement');
-  else fail('right-click cancel', `towers went ${after.towers} -> ${towers2}`);
+  if (towers2 === after.towers) pass('Esc cancels placement');
+  else fail('Esc cancel', `towers went ${after.towers} -> ${towers2}`);
+
+  // 4b. Directional card: right-click ROTATES the placement, then the click
+  //     places it with that facing (and does not cancel).
+  {
+    const r = await page.evaluate(() => {
+      const s = window.broodfall.sim;
+      s.meat.war = 900; s.meat.science = 900;
+      for (let guard = 0; guard < 400; guard++) {
+        const i = s.hand.findIndex((c) => c.family === 'skipper' || c.family === 'conduit');
+        if (i >= 0) return i;
+        s.issue({ kind: 'discard', cardIndex: 0 });
+      }
+      return -1;
+    });
+    if (r < 0) fail('directional setup', 'no directional card');
+    else {
+      const spot = await page.evaluate(() => {
+        const s = window.broodfall.sim;
+        for (let c = 0; c < s.map.cells.length; c++) if (s.canBuildTower(c)) return { ...s.cellCenter(c), cell: c };
+        return null;
+      });
+      await page.locator('#hand .card').nth(r).click();
+      const sp = await page.evaluate(([x, y]) => window.broodfall.worldToScreen(x, y), [spot.x, spot.y]);
+      await page.mouse.move(box.x + (sp.x / sp.vw) * box.width, box.y + (sp.y / sp.vh) * box.height);
+      const start = await page.evaluate((c) => window.broodfall.sim.facingTowardGate(window.broodfall.sim.cellCenter(c)), spot.cell);
+      await page.mouse.click(box.x + (sp.x / sp.vw) * box.width, box.y + (sp.y / sp.vh) * box.height, { button: 'right' });
+      await clickWorld(spot.x, spot.y);
+      const placed = await page.evaluate((c) => {
+        const t = window.broodfall.sim.towers.find((x) => x.cell === c);
+        return t ? t.facing : null;
+      }, spot.cell);
+      const order = ['N', 'E', 'S', 'W'];
+      const expected = order[(order.indexOf(start) + 1) % 4];
+      if (placed === expected) pass('directional placement: right-click rotates, click places with that facing');
+      else fail('directional placement', `placed facing ${placed}, expected ${expected} (start ${start})`);
+      // 4c. Right-click the BUILT directional limb rotates it again.
+      await page.mouse.click(box.x + (sp.x / sp.vw) * box.width, box.y + (sp.y / sp.vh) * box.height, { button: 'right' });
+      const rotated = await page.evaluate((c) => window.broodfall.sim.towers.find((x) => x.cell === c)?.facing, spot.cell);
+      if (rotated === order[(order.indexOf(expected) + 1) % 4]) pass('built directional limb: right-click rotates it');
+      else fail('built rotate', `facing ${rotated}`);
+      await page.keyboard.press('Escape');
+    }
+  }
 
   // 5. Spore sling: click the built sling to arm, click distant ground to throw,
   //    the landed clot makes remote ground buildable. (Setup via the AI-play API,

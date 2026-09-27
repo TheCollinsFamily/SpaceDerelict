@@ -414,15 +414,84 @@ export class Sim {
    * covers this limb speeds it (choir) and SHARES its hit-verb pips with it —
    * a snare pip on a choir makes the whole chapel slow what it hits.
    */
+  /** The limb a conduit is pointed at: the nearest one down its facing line, within reach. */
+  conduitTarget(c: Tower, among: Tower[] = this.towers): Tower | null {
+    const spec = towerSpec('conduit').conduit!;
+    const reach = spec.reach * towerStats(c).reach;
+    const f = Sim.facingVec(c.facing ?? 'N');
+    let best: Tower | null = null;
+    let bestAlong = Infinity;
+    for (const t of among) {
+      if (t.id === c.id || t.family === 'conduit') continue;
+      const rx = t.pos.x - c.pos.x;
+      const ry = t.pos.y - c.pos.y;
+      const along = rx * f.x + ry * f.y;
+      const across = Math.abs(rx * f.y - ry * f.x);
+      if (along <= 0 || along > reach || across > 30) continue;
+      if (along < bestAlong) { bestAlong = along; best = t; }
+    }
+    return best;
+  }
+
+  /** The limbs a conduit is drawing from (all around it, except its own target and other conduits). */
+  conduitSources(c: Tower, among: Tower[] = this.towers): Tower[] {
+    const spec = towerSpec('conduit');
+    const s = towerStats(c);
+    const radius = spec.conduit!.gather * s.reach + (s.aoe - spec.aoe);
+    const target = this.conduitTarget(c, among);
+    return among.filter((u) => u.id !== c.id && u !== target && u.family !== 'conduit'
+      && dist(u.pos, c.pos) <= radius);
+  }
+
+  /** Everything a conduit is channelling: each source's inherited pips plus its own family bonus. */
+  conduitPool(c: Tower, among: Tower[] = this.towers): ModPip[] {
+    const pool: ModPip[] = [];
+    for (const u of this.conduitSources(c, among)) pool.push(...u.pips, { family: u.family });
+    return pool;
+  }
+
+  /**
+   * What a limb is AFFECTING right now, for the UI (works for a hypothetical
+   * limb during placement too): the limbs it feeds (targets) and, for a
+   * conduit, the limbs it draws from (sources).
+   */
+  effectLinks(t: Tower): { targets: Tower[]; sources: Tower[] } {
+    const among = this.towers.filter((u) => u.id !== t.id);
+    if (t.family === 'conduit') {
+      const target = this.conduitTarget(t, among);
+      return { targets: target ? [target] : [], sources: this.conduitSources(t, among) };
+    }
+    if (t.family === 'choir' || t.family === 'ward') {
+      const r = this.auraOf(t).radius;
+      return { targets: among.filter((u) => dist(u.pos, t.pos) <= r), sources: [] };
+    }
+    return { targets: [], sources: [] };
+  }
+
   statsOf(t: Tower) {
     const shared: ModPip[] = [];
     let choirBonus = 0;
     for (const c of this.towers) {
-      if (c.id === t.id || (c.family !== 'choir' && c.family !== 'ward')) continue;
+      if (c.id === t.id) continue;
+      // Conduits pointed at this limb feed it their whole pool.
+      if (c.family === 'conduit') {
+        if (this.conduitTarget(c) === t) shared.push(...this.conduitPool(c));
+        continue;
+      }
+      if (c.family !== 'choir' && c.family !== 'ward') continue;
       const aura = this.auraOf(c);
       if (dist(c.pos, t.pos) > aura.radius) continue;
       if (c.family === 'choir') choirBonus += (towerSpec('choir').rateAura ?? 0) * aura.strength;
       for (const p of c.pips) if (Sim.BROADCAST.has(p.family)) shared.push(p);
+    }
+    // Conduit PIPS: the limb passively draws the family bonus of its nearest neighbours.
+    const draws = t.pips.filter((p) => p.family === 'conduit').length * B.pipDrawNeighbors;
+    if (draws > 0) {
+      const near = this.towers
+        .filter((u) => u.id !== t.id && dist(u.pos, t.pos) <= B.pipDrawRadius)
+        .sort((a, b) => dist(a.pos, t.pos) - dist(b.pos, t.pos) || a.id - b.id)
+        .slice(0, draws);
+      for (const u of near) shared.push({ family: u.family });
     }
     const s = towerStats(shared.length ? { ...t, pips: [...t.pips, ...shared] } : t);
     const h = this.map.heights[t.cell] || 1;
@@ -612,7 +681,7 @@ export class Sim {
         };
         tower.maxHp = this.statsOf(tower).maxHp;
         tower.hp = tower.maxHp;
-        if (card.family === 'skipper') tower.facing = this.facingTowardGate(pos);
+        if (spec.directional) tower.facing = cmd.facing ?? this.facingTowardGate(pos);
         this.towers.push(tower);
         this.occupied.set(cmd.cell, { kind: 't', id: tower.id });
         this.refreshRouting();
@@ -727,8 +796,8 @@ export class Sim {
         return { ok: true };
       }
       case 'set-facing': {
-        const t = this.towers.find((x) => x.id === cmd.towerId && x.family === 'skipper');
-        if (!t) return { ok: false, err: 'no such mortar' };
+        const t = this.towers.find((x) => x.id === cmd.towerId && towerSpec(x.family).directional);
+        if (!t) return { ok: false, err: 'not a directional limb' };
         t.facing = cmd.dir;
         return { ok: true };
       }
@@ -804,7 +873,9 @@ export class Sim {
       this.meat[c] += salv[c] ?? 0;
       refund += salv[c] ?? 0;
     }
-    this.pendingPips = [...this.pendingPips, ...donor.pips, { family: donor.family }];
+    // A conduit is HARVESTED: everything it was channelling comes along, permanently.
+    const harvest = donor.family === 'conduit' ? this.conduitPool(donor) : [];
+    this.pendingPips = [...this.pendingPips, ...donor.pips, ...harvest, { family: donor.family }];
     this.removeTower(donor.id, false);
     this.events.push({ kind: 'butchered', family: donor.family, refund });
   }
@@ -2259,12 +2330,12 @@ export class Sim {
   }
 
   /** A skipping mortar's facing as a unit vector. */
-  private static facingVec(dir: RootDir): Vec {
+  static facingVec(dir: RootDir): Vec {
     return dir === 'N' ? { x: 0, y: -1 } : dir === 'S' ? { x: 0, y: 1 } : dir === 'E' ? { x: 1, y: 0 } : { x: -1, y: 0 };
   }
 
   /** Default facing: toward the nearest frontier gate (then click its panel to turn it). */
-  private facingTowardGate(pos: Vec): RootDir {
+  facingTowardGate(pos: Vec): RootDir {
     let dir: RootDir = 'N';
     let best = Infinity;
     for (const gate of this.gates) {

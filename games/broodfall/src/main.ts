@@ -11,7 +11,7 @@ import { Hud, PIP_DESC } from './ui/hud';
 import { GENES } from '../content/plates';
 import { BALANCE as B } from '../content/data';
 import { PLATE_FEATURES } from './sim/citymap';
-import type { Directive, OrganId, SimConfig, SimEvent, TowerFamily } from './sim/types';
+import type { Directive, OrganId, RootDir, SimConfig, SimEvent, TowerFamily } from './sim/types';
 
 const params = new URLSearchParams(location.search);
 const SEED = Number(params.get('seed') ?? Math.floor(Math.random() * 1e9));
@@ -66,10 +66,20 @@ let armedOrgan: OrganId | null = null;
 let hoverDonorId: number | null = null;
 /** Aimed structure waiting for a target (armed by clicking the built sling/lobber). */
 let armedThrower: { id: number; family: 'sling' | 'lobber' | 'bombard' } | null = null;
+/** Facing a DIRECTIONAL card will be placed with (right-click rotates while placing). */
+let placeFacing: RootDir | null = null;
+const FACING_ORDER: RootDir[] = ['N', 'E', 'S', 'W'];
+const nextFacing = (d: RootDir): RootDir => FACING_ORDER[(FACING_ORDER.indexOf(d) + 1) % 4];
+
+function selectedIsDirectional(): boolean {
+  const fam = selectedCard !== null ? sim.hand[selectedCard]?.family : undefined;
+  return fam !== undefined && !!towerSpec(fam).directional;
+}
 
 const hud = new Hud({
   onSelectCard(i) {
     selectedCard = i;
+    placeFacing = null; // a fresh pick starts facing the nearest gate
     updateHint();
   },
   onDiscardCard(i) {
@@ -118,9 +128,11 @@ function updateHint(): void {
     const donor = sim.towers.find((t) => t.id === hoverDonorId);
     if (donor) {
       const deps = sim.dependentsOf(donor.id);
+      const harvest = donor.family === 'conduit' ? sim.conduitPool(donor).length : 0;
       hud.setHint(`CANNIBALIZE ${towerSpec(donor.family).name.toUpperCase()}: `
         + `${salvageText(donor.family)} meat back · new limb gets: ${PIP_DESC[donor.family]}`
         + (donor.pips.length ? ` (+${donor.pips.length} inherited)` : '')
+        + (harvest ? ` · HARVESTS ${harvest} channelled bonus${harvest > 1 ? 'es' : ''}` : '')
         + (deps > 0 ? ` · WARNING: ${deps} limb${deps > 1 ? 's' : ''} stand on its creep and will WITHER` : ''));
       return;
     }
@@ -131,9 +143,11 @@ function updateHint(): void {
       + 'place the new limb to inherit them (or eat another)');
   } else if (selectedCard !== null) {
     const fam = sim.hand[selectedCard]?.family;
-    hud.setHint(fam === 'spine'
-      ? 'plug a street — the swarm must chew through'
-      : 'place on a creeped block by a street (higher = longer reach) — or click one of your limbs to feed it in');
+    hud.setHint(selectedIsDirectional()
+      ? `place it — it faces ${placeFacing ?? 'the nearest gate'} · RIGHT-CLICK to rotate · Esc to cancel`
+      : fam === 'spine' || fam === 'swamp'
+        ? 'plug a street — the swarm must go through it'
+        : 'place on a creeped block by a street (higher = longer reach) — or click one of your limbs to feed it in');
   } else {
     hud.setHint(AUTO
       ? 'demo mode: the asset is piloting itself'
@@ -403,15 +417,42 @@ function handleCanvasClick(clientX: number, clientY: number): void {
       updateHint();
       return;
     }
-    const res = sim.issue({ kind: 'build', cardIndex: selectedCard, cell });
+    const res = sim.issue({
+      kind: 'build', cardIndex: selectedCard, cell,
+      facing: selectedIsDirectional() ? currentPlaceFacing(cell) : undefined,
+    });
     if (res.ok) {
       selectedCard = null;
       hud.selectedCard = null;
       hoverDonorId = null;
+      placeFacing = null;
       renderer.donorHighlightId = null;
+      renderer.preview = null;
       updateHint();
     }
   }
+}
+
+/** The facing a directional placement will use: the player's rotation, else toward the nearest gate. */
+function currentPlaceFacing(cell: number): RootDir {
+  return placeFacing ?? sim.facingTowardGate(sim.cellCenter(cell));
+}
+
+/** Cancel whatever is armed (cards, organs, throwers) and close the panel. */
+function cancelAll(): void {
+  selectedCard = null;
+  armedOrgan = null;
+  hoverDonorId = null;
+  armedThrower = null;
+  placeFacing = null;
+  renderer.slingArm = null;
+  renderer.donorHighlightId = null;
+  renderer.preview = null;
+  hud.selectedCard = null;
+  hud.armedOrgan = null;
+  hud.inspectedId = null;
+  renderer.selectedTowerId = null;
+  updateHint();
 }
 
 /** The player's own tower under a world point (click/hover pick radius). */
@@ -431,19 +472,31 @@ async function boot(): Promise<void> {
   setupScreens();
 
   renderer.app.canvas.addEventListener('click', (ev) => handleCanvasClick(ev.clientX, ev.clientY));
+  // RIGHT-CLICK: rotates a directional card being placed, or a built directional
+  // limb under the cursor; otherwise it cancels. (Esc always cancels.)
   renderer.app.canvas.addEventListener('contextmenu', (ev) => {
     ev.preventDefault();
-    selectedCard = null;
-    armedOrgan = null;
-    hoverDonorId = null;
-    armedThrower = null;
-    renderer.slingArm = null;
-    renderer.donorHighlightId = null;
-    hud.selectedCard = null;
-    hud.armedOrgan = null;
-    hud.inspectedId = null;
-    renderer.selectedTowerId = null;
-    updateHint();
+    const w = renderer.toWorld(ev.clientX, ev.clientY);
+    if (selectedCard !== null && selectedIsDirectional() && hoverDonorId === null) {
+      placeFacing = nextFacing(currentPlaceFacing(sim.cellAt(w.x, w.y)));
+      if (renderer.preview) renderer.preview.facing = placeFacing;
+      updateHint();
+      return;
+    }
+    if (selectedCard === null && armedOrgan === null && armedThrower === null) {
+      const near = towerNearWorld(w.x, w.y);
+      const t = near ? sim.towers.find((x) => x.id === near.id) : undefined;
+      if (t && towerSpec(t.family).directional) {
+        sim.issue({ kind: 'set-facing', towerId: t.id, dir: nextFacing(t.facing ?? 'N') });
+        hud.inspectedId = t.id;
+        renderer.selectedTowerId = t.id;
+        return;
+      }
+    }
+    cancelAll();
+  });
+  window.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Escape') cancelAll();
   });
   renderer.app.canvas.addEventListener('pointermove', (ev) => {
     if (selectedCard === null && armedOrgan === null) {
@@ -474,7 +527,11 @@ async function boot(): Promise<void> {
     const fam = sim.hand[selectedCard!]?.family;
     renderer.preview = armedOrgan
       ? { cell, kind: 'organ', valid: sim.canBuildOrgan(cell) }
-      : { cell, kind: 'tower', family: fam, valid: sim.canBuildTower(cell, fam) };
+      : {
+        cell, kind: 'tower', family: fam, valid: sim.canBuildTower(cell, fam),
+        facing: selectedIsDirectional() ? currentPlaceFacing(cell) : undefined,
+        pips: sim.pendingPips,
+      };
   });
 
   const callEarlyBtn = document.getElementById('call-early')! as HTMLButtonElement;

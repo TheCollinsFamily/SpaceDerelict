@@ -1137,6 +1137,73 @@ describe('BURN (contagious fire) and the new cloaked kinds', () => {
   });
 });
 
+describe('MARROW CONDUIT: funnel every nearby bonus into one limb; harvest on sacrifice', () => {
+  const mk = (s: Sim, id: number, family: Tower['family'], x: number, y: number, pips: Tower['pips'] = []): Tower => ({
+    id, family, pos: { x, y }, cell: s.cellAt(x, y), hp: 100, maxHp: 100, pips, cooldown: 1e9, kills: 0,
+  });
+
+  it('points down its facing at the nearest limb and feeds it every bonus around the conduit', () => {
+    const s = freshSim(1300);
+    const conduit = mk(s, 1, 'conduit', 300, 300);
+    conduit.facing = 'E';
+    const target = mk(s, 2, 'spitter', 400, 300);
+    const srcA = mk(s, 3, 'spitter', 300, 250, [{ family: 'tangler' }]); // gives: tangler + spitter
+    const srcB = mk(s, 4, 'lasher', 250, 300);                          // gives: lasher
+    const offLine = mk(s, 5, 'spitter', 300, 420);                       // not pointed at, out of gather
+    s.towers.push(conduit, target, srcA, srcB, offLine);
+    expect(s.conduitTarget(conduit)?.id).toBe(target.id);
+    const pool = s.conduitPool(conduit).map((p) => p.family).sort();
+    expect(pool).toEqual(['lasher', 'spitter', 'tangler']);
+    const fed = s.statsOf(target);
+    const alone = s.statsOf(offLine);
+    expect(fed.rate).toBeGreaterThan(alone.rate);     // spitter bonus
+    expect(fed.damage).toBeGreaterThan(alone.damage); // lasher bonus
+    expect(fed.slowMult).toBeLessThan(1);             // tangler bonus
+    // Turn it away: the target stops being fed.
+    s.issue({ kind: 'set-facing', towerId: conduit.id, dir: 'W' });
+    expect(s.conduitTarget(conduit)?.id).toBe(srcB.id);
+    expect(s.statsOf(target).rate).toBeCloseTo(alone.rate);
+  });
+
+  it('sacrificing a conduit HARVESTS its whole pool into the next build, permanently', () => {
+    const s = freshSim(1301);
+    s.meat.war = 9999; s.meat.science = 9999;
+    const conduit = mk(s, 1, 'conduit', 300, 300);
+    conduit.facing = 'E';
+    s.towers.push(conduit, mk(s, 3, 'spitter', 300, 250, [{ family: 'blighter' }]), mk(s, 4, 'lasher', 250, 300));
+    const poolSize = s.conduitPool(conduit).length;
+    expect(poolSize).toBe(3);
+    s.issue({ kind: 'butcher', towerId: conduit.id });
+    // Pool (3) + the conduit's own family pip.
+    expect(s.pendingPips.length).toBe(poolSize + 1);
+    expect(s.pendingPips.some((p) => p.family === 'blighter')).toBe(true);
+    expect(s.pendingPips.some((p) => p.family === 'conduit')).toBe(true);
+  });
+
+  it('conduit PIP: the limb passively draws its nearest neighbour\'s family bonus', () => {
+    const s = freshSim(1302);
+    const drawer = mk(s, 1, 'spitter', 300, 300, [{ family: 'conduit' }]);
+    const neighbour = mk(s, 2, 'lasher', 330, 300);
+    const plain = mk(s, 3, 'spitter', 700, 300);
+    s.towers.push(drawer, neighbour, plain);
+    expect(s.statsOf(drawer).damage).toBeGreaterThan(s.statsOf(plain).damage); // drew the lasher's +20%
+  });
+
+  it('effectLinks tells the UI what a limb is affecting', () => {
+    const s = freshSim(1303);
+    const conduit = mk(s, 1, 'conduit', 300, 300);
+    conduit.facing = 'E';
+    const target = mk(s, 2, 'spitter', 400, 300);
+    const src = mk(s, 3, 'lasher', 250, 300);
+    const ward = mk(s, 4, 'ward', 400, 360); // off the conduit's pointing lane, covering the target
+    s.towers.push(conduit, target, src, ward);
+    const cl = s.effectLinks(conduit);
+    expect(cl.targets.map((t) => t.id)).toEqual([target.id]);
+    expect(cl.sources.map((t) => t.id)).toContain(src.id);
+    expect(s.effectLinks(ward).targets.map((t) => t.id)).toContain(target.id);
+  });
+});
+
 describe('arc prism (focus ramp + relay network)', () => {
   it('ramps on a held target and resets on a switch', () => {
     const s = freshSim(960);

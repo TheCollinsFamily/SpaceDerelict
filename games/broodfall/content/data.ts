@@ -167,7 +167,7 @@ export const TOWERS: readonly TowerSpec[] = [
     // bounces on down the line and lands again. Set its facing in its panel.
     family: 'skipper', name: 'Skipping Mortar', weight: 8,
     cost: { war: 26, science: 6 }, range: 330, rate: 0.35, damage: 26, aoe: 32,
-    skips: 2,
+    skips: 2, directional: true,
     maxHp: 85, interest: 2, eatThreshold: 0, advanced: true, hits: 'ground',
   },
   {
@@ -186,6 +186,16 @@ export const TOWERS: readonly TowerSpec[] = [
     cost: { war: 22, science: 6 }, range: 70, rate: 0.8, damage: 4, aoe: 0,
     cone: 0.45, burnDps: 8, burnDur: 3,
     maxHp: 80, interest: 1, eatThreshold: 0, advanced: false, hits: 'ground',
+  },
+  {
+    // The combo engine (Collins, Sep 27 2026): copies EVERY bonus from the limbs
+    // around it — their inherited pips plus each one's own family bonus — and
+    // feeds them to the one limb it points at. Sacrifice it and the next build
+    // HARVESTS everything it was channelling, permanently.
+    family: 'conduit', name: 'Marrow Conduit', weight: 7,
+    cost: { war: 14, science: 18 }, range: 0, rate: 0, damage: 0, aoe: 0,
+    conduit: { gather: 80, reach: 160 }, directional: true,
+    maxHp: 70, interest: 2, eatThreshold: 0, advanced: true, hits: 'ground',
   },
 ];
 
@@ -393,6 +403,9 @@ export const BALANCE = {
   spineThornsFrac: 1,  // a spine wall's own thorns: its payload damage per bite taken
   pipInterest: 2,     // lure pip: +2 interest...
   pipCloud: 4,        // ...and every hit leaves a toxic pheromone cloud (+4 dps per pip)
+  /** Conduit pip: the limb passively draws the family bonus of its N nearest neighbours. */
+  pipDrawNeighbors: 1,
+  pipDrawRadius: 90,
   /** BURN: contagious fire. */
   pipBurnDps: 3,      // ember pip: hits ignite +3 burn dps per pip
   pipBurnDur: 3,

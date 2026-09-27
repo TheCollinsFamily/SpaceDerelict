@@ -6,7 +6,7 @@ export type TowerFamily =
   | 'spitter' | 'burster' | 'lasher' | 'maw' | 'spine' | 'lure'
   | 'tangler' | 'blighter' | 'impaler' | 'choir' | 'sling'
   | 'brood' | 'swamp' | 'frond' | 'lobber' | 'mister' | 'ocular' | 'prism'
-  | 'bombard' | 'ward' | 'quill' | 'skipper' | 'net' | 'ember';
+  | 'bombard' | 'ward' | 'quill' | 'skipper' | 'net' | 'ember' | 'conduit';
 
 /** What a limb can shoot at. Fliers are only reachable by 'air'/'both' limbs. */
 export type HitsLayer = 'ground' | 'air' | 'both';
@@ -128,6 +128,10 @@ export interface TowerSpec {
   pheromone?: { dps: number; radius: number; interval: number };
   /** Ember sac: sprays a CONE (half-angle, radians) — every targetable body in it is hit. */
   cone?: number;
+  /** Its FACING matters: set on placement (right-click rotates), shown as a field of fire. */
+  directional?: boolean;
+  /** Marrow conduit: copies every bonus within `gather` px into the limb it points at (within `reach`). */
+  conduit?: { gather: number; reach: number };
   /** Hits set bodies burning at this dps for burnDur seconds. */
   burnDps?: number;
   burnDur?: number;
@@ -455,7 +459,7 @@ export type SimEvent =
   | { kind: 'plate-drafted'; name: string; feature: string };
 
 export type Command =
-  | { kind: 'build'; cardIndex: number; cell: number; cannibalizeTowerId?: number }
+  | { kind: 'build'; cardIndex: number; cell: number; cannibalizeTowerId?: number; facing?: RootDir }
   | { kind: 'butcher'; towerId: number }
   | { kind: 'set-priority'; towerId: number; mode?: TargetMode; caste?: CasteFocus }
   | { kind: 'set-marker'; towerId: number; cell: number }

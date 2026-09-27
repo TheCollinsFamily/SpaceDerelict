@@ -140,6 +140,8 @@ body {
 .inspect-opts button.on { background: var(--ink); color: var(--panel); }
 .inspect-opts.muted { opacity: 0.4; pointer-events: none; }
 #inspect-facing-wrap.hidden { display: none; }
+#inspect-effect { font-size: 10px; font-weight: bold; color: #6a4a10; margin-bottom: 3px; text-transform: uppercase; }
+#inspect-effect:empty { display: none; }
 
 /* What a card can shoot: sky-blue = reaches fliers, earth = ground only. */
 .card-tag { font-size: 8px; letter-spacing: 1px; font-weight: bold; margin: 1px 0 2px; }
