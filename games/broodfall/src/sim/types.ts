@@ -5,7 +5,8 @@ export type Caste = 'war' | 'science' | 'royal';
 export type TowerFamily =
   | 'spitter' | 'burster' | 'lasher' | 'maw' | 'spine' | 'lure'
   | 'tangler' | 'blighter' | 'impaler' | 'choir' | 'sling'
-  | 'brood' | 'pit' | 'frond' | 'lobber' | 'mister' | 'ocular' | 'prism';
+  | 'brood' | 'pit' | 'frond' | 'lobber' | 'mister' | 'ocular' | 'prism'
+  | 'bombard' | 'ward';
 
 /** Player-chosen targeting for a limb (click the tower to set it). */
 export type TargetMode = 'auto' | 'first' | 'strongest' | 'weakest' | 'focus';
@@ -83,6 +84,10 @@ export interface TowerSpec {
   sniper?: boolean;
   /** Arc prism: focus-fire beam; idle prisms in link range relay charge to firing ones. */
   prismLink?: number;
+  /** Spore bombard: fires only at a player-set MARKER point (click it, click the map). */
+  markerFire?: boolean;
+  /** Ward membrane: projects a regenerating shield onto every OTHER limb in auraRadius. */
+  wardShield?: number;
 }
 
 /** What a donor family contributes when cannibalized into a new tower. */
@@ -107,6 +112,14 @@ export interface Tower {
   /** Focus-fire memory: the last target and how many shots in a row it has taken. */
   lastTargetId?: number;
   streak?: number;
+  /** Bombard: the cell it is ordered to shell (null/undefined = no orders, holds fire). */
+  marker?: number;
+  /** Shield pool (ward projection + membrane pips); absorbs harm before hp. */
+  shield?: number;
+  shieldMax?: number;
+  lastHitAt?: number;
+  /** Stunned by a sedation dart: holds fire until this sim time. */
+  stunnedUntil?: number;
 }
 
 export interface OrganSpec {
@@ -146,6 +159,8 @@ export type EnemyKind =
   | 'carapace'
   | 'researcher'
   | 'thief'
+  | 'cannon'
+  | 'dartgun'
   | 'royal'
   | 'consort';
 
@@ -198,6 +213,13 @@ export interface EnemySpec {
    * vulnerable limb, sedates it (drains its hp) and carries it off.
    */
   stealsLimbs?: boolean;
+  /**
+   * THE CANNON: walks to a firing position, DEPLOYS (braces, never moves again)
+   * and lobs shells over blocks and walls until destroyed. War cannons shell
+   * the nearest structure; science cannons pick the gap in your coverage and
+   * fire sedation darts that STUN a limb (shields stop them).
+   */
+  cannon?: { range: number; interval: number; damage: number; aoe: number; stun?: number; ammo?: number };
 }
 
 export interface Enemy {
@@ -235,6 +257,25 @@ export interface Enemy {
   /** Collector: the limb it is extracting, and the limb it is carrying off once taken. */
   extractId?: number;
   carrying?: { family: TowerFamily; pips: ModPip[]; cell: number; priority?: TargetMode; casteFocus?: CasteFocus };
+  /** Cannon: braced in its firing position (it never moves again). */
+  deployed?: boolean;
+  /** Cannon shots fired (science batteries carry a limited kit, then leave). */
+  shotsFired?: number;
+}
+
+/** A lobbed shell in flight — the hive's cannons and the bombard both use these. */
+export interface Shell {
+  id: number;
+  from: Vec;
+  to: Vec;
+  flight: number;
+  ttl: number;
+  damage: number;
+  aoe: number;
+  /** 'hive' shells hurt your structures; 'body' shells hurt the hive. */
+  side: 'hive' | 'body';
+  /** Sedation dart: stun seconds on the limb it lands on (shields block it). */
+  stun?: number;
 }
 
 /** A broodling: the mother's spawn, fighting in the streets on your side. */
@@ -314,6 +355,7 @@ export type SimEvent =
   | { kind: 'tower-stolen'; family: TowerFamily }
   | { kind: 'tower-recovered'; family: TowerFamily; refunded: boolean }
   | { kind: 'promoted'; from: EnemyKind; to: EnemyKind }
+  | { kind: 'cannon-deployed'; enemy: EnemyKind }
   | { kind: 'royal-incoming' }
   | { kind: 'researchers-arrive'; count: number }
   | { kind: 'structure-lost'; what: string }
@@ -329,6 +371,7 @@ export type Command =
   | { kind: 'build'; cardIndex: number; cell: number; cannibalizeTowerId?: number }
   | { kind: 'butcher'; towerId: number }
   | { kind: 'set-priority'; towerId: number; mode?: TargetMode; caste?: CasteFocus }
+  | { kind: 'set-marker'; towerId: number; cell: number }
   | { kind: 'sling-throw'; towerId: number; cell: number }
   | { kind: 'bile-throw'; towerId: number; cell: number }
   | { kind: 'cycle-root'; organInstanceId: number }

@@ -127,6 +127,22 @@ export const TOWERS: readonly TowerSpec[] = [
     prismLink: 150,
     maxHp: 80, interest: 2, eatThreshold: 0, advanced: true,
   },
+  {
+    // Point artillery: YOU choose where it lands. Click it, click the map — it
+    // shells that marker whenever the hive is there, at very long range.
+    family: 'bombard', name: 'Spore Bombard', weight: 8,
+    cost: { war: 30, science: 10 }, range: 320, rate: 0.4, damage: 30, aoe: 42,
+    markerFire: true,
+    maxHp: 85, interest: 2, eatThreshold: 0, advanced: true,
+  },
+  {
+    // Force field: a regenerating shield on every OTHER limb in its radius. The
+    // answer to the science caste picking off your outer layer.
+    family: 'ward', name: 'Ward Membrane', weight: 9,
+    cost: { war: 16, science: 14 }, range: 0, rate: 0, damage: 0, aoe: 0,
+    wardShield: 70, auraRadius: 95,
+    maxHp: 90, interest: 2, eatThreshold: 0, advanced: true,
+  },
 ];
 
 export const ORGANS: readonly OrganSpec[] = [
@@ -151,6 +167,13 @@ export const ENEMIES: readonly EnemySpec[] = [
   { kind: 'sapper', caste: 'war', hp: 130, speed: 44, damage: 20, rate: 1.4, meat: 4, threatOnKill: 4, risk: 9, sapper: true },
   { kind: 'carapace', caste: 'war', hp: 160, speed: 28, damage: 18, rate: 1.0, meat: 6, threatOnKill: 5, risk: 8, hitShield: 6 },
   { kind: 'phalanx', caste: 'war', hp: 750, speed: 20, damage: 26, rate: 0.9, meat: 8, threatOnKill: 6, risk: 10, armorCap: 12 },
+  // Siege cannon: walks until something of yours is in reach, then DEPLOYS and
+  // lobs shells over blocks until destroyed. Outranges most limbs.
+  // Tuned (measured over 10 seeds): 20 dmg / 2.6s from 165px out-demolished
+  // everything that could reach it; 12 / 3.2s from 150px is pressure that the
+  // long limbs (impaler, bombard counter-battery, lobber, ocular) can answer.
+  { kind: 'cannon', caste: 'war', hp: 160, speed: 24, damage: 0, rate: 0, meat: 7, threatOnKill: 5, risk: 11,
+    cannon: { range: 150, interval: 3.2, damage: 12, aoe: 28 } },
   // War support: each one is a kill-priority decision, not a stat block.
   { kind: 'drummer', caste: 'war', hp: 70, speed: 36, damage: 5, rate: 0.8, meat: 5, threatOnKill: 3, risk: 8, speedAura: true },
   { kind: 'bomber', caste: 'war', hp: 60, speed: 46, damage: 0, rate: 0, meat: 3, threatOnKill: 3, risk: 7, bomber: true },
@@ -162,6 +185,15 @@ export const ENEMIES: readonly EnemySpec[] = [
   // on the periphery, probing for gaps. Kill the courier and the limb comes home.
   { kind: 'researcher', caste: 'science', hp: 34, speed: 36, damage: 0, rate: 0, meat: 12, threatOnKill: 1, risk: 3, stealsLimbs: true },
   { kind: 'thief', caste: 'science', hp: 45, speed: 52, damage: 0, rate: 0, meat: 10, threatOnKill: 1, risk: 4, thief: true },
+  // Sedation battery: the science cannon. Routes through your gaps like the rest
+  // of its caste, deploys in reach of your weakest limb, and darts it: each hit
+  // STUNS (holds fire) so the researchers can walk in. Shields stop the darts.
+  { kind: 'dartgun', caste: 'science', hp: 90, speed: 30, damage: 0, rate: 0, meat: 16, threatOnKill: 2, risk: 7, stealsLimbs: true,
+    // Stun uptime ~30% on one limb, and reach 130 so long guns can answer it:
+    // harassment that opens a window, never a lock (measured: 2.5s/3.2s at
+    // 150px stun-locked the outer layer for minutes and collapsed every run).
+    // A science VISIT, not a siege: 8 darts, then it packs up and goes home.
+    cannon: { range: 130, interval: 4, damage: 4, aoe: 0, stun: 1.2, ammo: 8 } },
   // ROYAL CASTE — only with a royal event. Royals are super-strong WARRIORS
   // (they march and chew like the war caste) whose real weight is empowering
   // the war caste around them: presence aura, and the consort promotes ranks.
@@ -182,9 +214,9 @@ export const WAVE_TABLE: readonly Partial<Record<string, number>>[] = [
   { responder: 8, militia: 6, skitterling: 4 },                // tier 1: militia muster
   { militia: 12, soldier: 6, splitter: 1 },                    // tier 2: the army arrives
   { militia: 8, soldier: 8, elite: 2, flier: 4, drummer: 1, splitter: 2 },  // tier 3: air support, war-drums
-  { soldier: 10, elite: 5, flier: 5, sapper: 3, bomber: 2, drummer: 1, splitter: 2, mortar: 1 },  // tier 4: sappers climb, siege engines
-  { soldier: 12, elite: 7, flier: 6, sapper: 4, phalanx: 2, tender: 2, bomber: 2, carapace: 1, mortar: 2 },  // tier 5: the shield wall marches tended
-  { elite: 10, flier: 8, sapper: 5, phalanx: 3, drummer: 2, tender: 3, tunneler: 4, bomber: 4, carapace: 3, mortar: 3, splitter: 4 }, // tier 6: everything they have
+  { soldier: 10, elite: 5, flier: 5, sapper: 3, bomber: 2, drummer: 1, splitter: 2, mortar: 1, cannon: 1 },  // tier 4: sappers climb, siege engines
+  { soldier: 12, elite: 7, flier: 6, sapper: 4, phalanx: 2, tender: 2, bomber: 2, carapace: 1, mortar: 2, cannon: 1 },  // tier 5: the shield wall marches tended
+  { elite: 10, flier: 8, sapper: 5, phalanx: 3, drummer: 2, tender: 3, tunneler: 4, bomber: 4, carapace: 3, mortar: 3, splitter: 4, cannon: 2 }, // tier 6: everything they have
 ];
 
 export const BALANCE = {
@@ -248,6 +280,15 @@ export const BALANCE = {
   prismRelayBonus: 0.5,      // +50% beam damage per idle prism relaying charge
   prismMaxRelays: 6,
   pipStreak: 0.06,           // prism pip: any limb ramps +6% per consecutive shot per pip
+  /** Shields (ward projection + membrane pips). */
+  shieldRegen: 8,            // shield/s once undamaged for shieldRegenDelay
+  shieldRegenDelay: 3,
+  pipShield: 60,             // membrane pip: a PERMANENT personal shield on the new limb, per pip
+  /** Bombard pip: sacrificing a bombard DOUBLES the new limb's range (once). */
+  pipRangeDouble: 2,
+  /** Science cannons join study parties past this interest. */
+  dartgunInterestMin: 14,
+  shellFlightSeconds: 1.1,
   /** Sappers crawl at this fraction of speed while scaling a block face. */
   sapperClimbFactor: 0.45,
   /** Threat tiers: tier = floor(threat / threatPerTier), clamped to table. */

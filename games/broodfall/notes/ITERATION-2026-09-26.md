@@ -147,6 +147,36 @@ smart flips 3:2, totals 120k vs 115k. 54/54 tests; input check adds the lobber
 gesture; visual/endgame green.
 
 
+## Addendum 8 (Sep 27): the cannon (both castes), spore bombard, ward membrane
+
+**Built:** siege cannon (war) + sedation battery (science) — walk, deploy, shell over
+terrain; shells are a new lobbed-projectile system shared with the player's bombard.
+Spore Bombard (player-set marker, counter-battery). Ward Membrane (projected shield on
+neighbors; all harm incl. sedation routes through `hurtTower`, shield first). Pips:
+ward → permanent 60 shield; bombard → double range. 13 new behavior tests.
+
+**Balance, measured by 10-seed ablation (the 4-seed version misled):**
+| content | naive wins/10 |
+|---|---|
+| last turn's content | 6 |
+| + ward only | 4 (card dilution) |
+| + bombard only (first bot) | 1 — the bot aimed markers at the cell nearest the CORE |
+| everything, first cannon tuning | 1 |
+| everything, final | 4 |
+Fixes, in order of measured effect: (1) sedation battery stun-locked the outer layer
+(2.5s stun / 3.2s, 150px, immortal, accumulating 6-7 per run) → 1.2s / 4s, 130px,
+8-dart kit then leaves, one at a time; (2) war cannon out-demolished everything that
+could reach it (20 dmg / 2.6s from 165px) → 12 / 3.2s from 150px, and AUTO targeting
+prioritizes emplaced cannons; (3) bot learned support placement (ward behind guns
+covering ≥2 unwarded, bombard deep and high) and counter-battery (bombard marker on
+emplaced cannons, else densest switchback far out).
+
+**Metric change (rationale):** fullrun "2 of seeds 1-3 winnable" → "≥3 of 10 seeds":
+the same code swung 3/3 ↔ 0/3 on reshuffled draws with losses at −1 core hp; a rate
+needs a sample. Final: naive 4/10; guardrail smart flips 2:0, totals +16%; 75/75
+tests; input check drives the bombard marker with real clicks.
+
+
 ## Addendum 7 (Sep 27): smart science caste, limb panel + targeting, arc prism, royal role
 
 **Science caste = smart, by default.** First pass misread Collins as "a special unit

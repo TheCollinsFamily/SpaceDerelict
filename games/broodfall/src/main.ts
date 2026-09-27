@@ -65,7 +65,7 @@ let armedOrgan: OrganId | null = null;
 /** Tower under the pointer that a click would cannibalize (card armed + hover). */
 let hoverDonorId: number | null = null;
 /** Aimed structure waiting for a target (armed by clicking the built sling/lobber). */
-let armedThrower: { id: number; family: 'sling' | 'lobber' } | null = null;
+let armedThrower: { id: number; family: 'sling' | 'lobber' | 'bombard' } | null = null;
 
 const hud = new Hud({
   onSelectCard(i) {
@@ -106,7 +106,9 @@ function updateHint(): void {
   if (armedThrower !== null) {
     hud.setHint(armedThrower.family === 'sling'
       ? 'SPORE SLING ARMED: click any claimed ground in range — the clot seeds new skin to build on (right-click cancels)'
-      : 'BILE LOBBER ARMED: click ground in range — the volley detonates on whatever stands there (right-click cancels)');
+      : armedThrower.family === 'lobber'
+        ? 'BILE LOBBER ARMED: click ground in range — the volley detonates on whatever stands there (right-click cancels)'
+        : 'BOMBARD: click ground in range to set its MARKER — it shells that spot whenever the hive is there (right-click cancels)');
   } else if (armedOrgan) {
     hud.setHint(`place ${organSpec(armedOrgan).name} on open ground inside the body`);
   } else if (selectedCard !== null && hoverDonorId !== null) {
@@ -324,7 +326,9 @@ function handleCanvasClick(clientX: number, clientY: number): void {
   if (armedThrower !== null) {
     const res = sim.issue(armedThrower.family === 'sling'
       ? { kind: 'sling-throw', towerId: armedThrower.id, cell }
-      : { kind: 'bile-throw', towerId: armedThrower.id, cell });
+      : armedThrower.family === 'lobber'
+        ? { kind: 'bile-throw', towerId: armedThrower.id, cell }
+        : { kind: 'set-marker', towerId: armedThrower.id, cell });
     if (res.ok) {
       armedThrower = null;
       renderer.slingArm = null;
@@ -351,16 +355,17 @@ function handleCanvasClick(clientX: number, clientY: number): void {
       const t = sim.towers.find((x) => x.id === clicked.id)!;
       hud.inspectedId = t.id;
       renderer.selectedTowerId = t.id;
-      if (t.family === 'sling' || t.family === 'lobber') {
+      if (t.family === 'sling' || t.family === 'lobber' || t.family === 'bombard') {
         const name = t.family === 'sling' ? 'spore sling' : 'bile lobber';
-        if (t.cooldown > 0) {
+        // The bombard's marker can be re-set any time; the throwers recharge.
+        if (t.family !== 'bombard' && t.cooldown > 0) {
           hud.setHint(`${name} recharging — ${Math.ceil(t.cooldown)}s`);
           return;
         }
         armedThrower = { id: t.id, family: t.family };
         renderer.slingArm = {
           x: t.pos.x, y: t.pos.y,
-          range: t.family === 'sling' ? B.slingRange : B.lobberRange,
+          range: t.family === 'sling' ? B.slingRange : t.family === 'lobber' ? B.lobberRange : sim.statsOf(t).range,
         };
         updateHint();
       }

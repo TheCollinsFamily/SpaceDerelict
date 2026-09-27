@@ -69,6 +69,40 @@ export class Autoplayer {
       if (aim) sim.issue({ kind: 'bile-throw', towerId: lobber.id, cell: sim.cellAt(aim.x, aim.y) });
     }
 
+    // Bombard technique. COUNTER-BATTERY first: an emplaced siege cannon in
+    // reach gets the marker (it outranges the guns — this is what answers it).
+    // Otherwise the densest switchback on the telegraphed lanes, as far OUT as
+    // reach allows, so the shelling starts early instead of at the front door.
+    const bombards = sim.towers.filter((t) => t.family === 'bombard');
+    if (bombards.length > 0) {
+      const lane = this.lanePathCells(sim);
+      for (const b of bombards) {
+        const reach = sim.statsOf(b).range;
+        const aoe = sim.statsOf(b).aoe;
+        let best = -1;
+        let bestKey = -Infinity;
+        for (const e of sim.enemies) {
+          if (!e.deployed || e.kind !== 'cannon') continue;
+          const d = Math.hypot(e.pos.x - b.pos.x, e.pos.y - b.pos.y);
+          if (d <= reach && -d > bestKey) { bestKey = -d; best = sim.cellAt(e.pos.x, e.pos.y); }
+        }
+        if (best < 0) {
+          for (const [cell] of lane) {
+            const p = sim.cellCenter(cell);
+            if (Math.hypot(p.x - b.pos.x, p.y - b.pos.y) > reach) continue;
+            let density = 0;
+            for (const [other, n] of lane) {
+              const q = sim.cellCenter(other);
+              if (Math.hypot(q.x - p.x, q.y - p.y) <= aoe) density += n;
+            }
+            const key = density * 1000 + sim.flowDistOf(cell);
+            if (key > bestKey) { bestKey = key; best = cell; }
+          }
+        }
+        if (best >= 0 && b.marker !== best) sim.issue({ kind: 'set-marker', towerId: b.id, cell: best });
+      }
+    }
+
     // Technique: a spine card plugs the telegraphed lane itself; a pit card sits
     // IN that lane and digests the column that walks over it.
     for (const streetFamily of ['spine', 'pit'] as const) {
@@ -118,9 +152,29 @@ export class Autoplayer {
       return false;
     };
 
+    const guns = sim.towers.filter((t) => {
+      const sp = towerSpec(t.family);
+      return sp.rate > 0 && sp.damage > 0 && !sp.markerFire;
+    });
     for (let i = 0; i < sim.hand.length; i++) {
       const fam = sim.hand[i].family;
       if (!sim.canAfford(towerSpec(fam).cost)) continue;
+      // Support limbs are placed by their OWN logic, never on a gun's perch:
+      // the ward behind the guns it shields, the bombard deep in the body.
+      if (fam === 'ward' || fam === 'bombard') {
+        const have = sim.towers.filter((t) => t.family === fam).length;
+        const cap = fam === 'ward' ? Math.floor(guns.length / 4) : Math.min(2, Math.floor(guns.length / 5));
+        const cell = have < cap ? (fam === 'ward' ? this.wardCell(sim, guns) : this.bombardCell(sim)) : null;
+        if (cell !== null && sim.issue({ kind: 'build', cardIndex: i, cell }).ok) {
+          this.builds += 1;
+          return;
+        }
+        if (sim.meat.war >= B.discardCost + 10) {
+          sim.issue({ kind: 'discard', cardIndex: i });
+          return;
+        }
+        continue;
+      }
       // A second sling or lobber sits idle — shed the surplus cheaply.
       const cap = SURPLUS_CAP[fam];
       if (cap !== undefined && sim.towers.filter((t) => t.family === fam).length >= cap) {
@@ -255,6 +309,49 @@ export class Autoplayer {
     if (candidates.length === 0) return null;
     candidates.sort((a, b) => b.score - a.score || a.cell - b.cell);
     return candidates[0].cell;
+  }
+
+  /** Ward: the block that shields the most unwarded guns, preferring cells OFF the lanes (don't take a gun's perch). */
+  private wardCell(sim: Sim, guns: Array<{ id: number; pos: { x: number; y: number }; shieldMax?: number }>): number | null {
+    const radius = towerSpec('ward').auraRadius ?? 0;
+    const lane = this.lanePathCells(sim);
+    let best: number | null = null;
+    let bestScore = 0;
+    for (let cell = 0; cell < sim.map.cells.length; cell++) {
+      if (!sim.canBuildTower(cell) || sim.map.cells[cell] === CellType.Road) continue;
+      const p = sim.cellCenter(cell);
+      let covered = 0;
+      for (const g of guns) {
+        if ((g.shieldMax ?? 0) > 0) continue; // already under a ward
+        if (Math.hypot(g.pos.x - p.x, g.pos.y - p.y) <= radius) covered++;
+      }
+      if (covered < 2) continue;
+      let laneNear = 0;
+      const w = sim.cfg.gridW;
+      for (let dy = -3; dy <= 3; dy++) {
+        for (let dx = -3; dx <= 3; dx++) {
+          const nb = cell + dy * w + dx;
+          if (nb >= 0 && nb < sim.map.cells.length && lane.has(nb)) laneNear++;
+        }
+      }
+      const score = covered * 10 - laneNear;
+      if (score > bestScore) { bestScore = score; best = cell; }
+    }
+    return best;
+  }
+
+  /** Bombard: deep and high — its reach covers the lanes from the safety of the body. */
+  private bombardCell(sim: Sim): number | null {
+    let best: number | null = null;
+    let bestScore = -Infinity;
+    for (let cell = 0; cell < sim.map.cells.length; cell++) {
+      if (!sim.canBuildTower(cell) || sim.map.cells[cell] === CellType.Road) continue;
+      const cd = sim.creepDistOf(cell);
+      if (cd < 0) continue;
+      const score = -cd + (sim.map.heights[cell] || 1) * 3;
+      if (score > bestScore) { bestScore = score; best = cell; }
+    }
+    return best;
   }
 
   private findOrganCell(sim: Sim): number | null {

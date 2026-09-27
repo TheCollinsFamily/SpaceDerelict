@@ -29,13 +29,15 @@ const FAMILY_COLORS: Record<TowerFamily, number> = {
   mister: 0xb8d84f,
   ocular: 0xe0d0b0,
   prism: 0x8fd8f0,
+  bombard: 0x8a6a48,
+  ward: 0x9ab8e8,
 };
 
 const ENEMY_SIZE: Record<Enemy['kind'], number> = {
   responder: 5, militia: 6, skitterling: 3.5, soldier: 8, elite: 11, flier: 6, sapper: 7,
   phalanx: 13, drummer: 9, bomber: 6, tunneler: 8, tender: 7,
   splitter: 9, mortar: 9, carapace: 10,
-  researcher: 6, thief: 6, royal: 20, consort: 13,
+  researcher: 6, thief: 6, cannon: 10, dartgun: 9, royal: 20, consort: 13,
 };
 
 export interface PlacementPreview {
@@ -287,7 +289,7 @@ export class Renderer {
 
     for (const t of sim.towers) {
       const hgt = sim.map.heights[t.cell] || 0;
-      this.drawTower(g, t, hgt > 0 ? hgt * 4 : 0);
+      this.drawTower(g, t, hgt > 0 ? hgt * 4 : 0, sim);
     }
 
     // Royal presence: a faint gold field around royals and consorts.
@@ -357,6 +359,19 @@ export class Renderer {
         g.circle(x, y, s + 1.5).fill({ color: 0x0d0805, alpha: 0.85 });
         g.circle(x, y, s).fill(CASTE_COLORS.science);
         g.rect(x - 3, y + 2, 6, 4).fill(e.stole ? 0xd1603c : 0x2a4a48);
+      } else if (e.kind === 'cannon' || e.kind === 'dartgun') {
+        // THE CANNON: a beetle carrying a barrel; braced legs once deployed.
+        const sci = e.kind === 'dartgun';
+        const body = sci ? CASTE_COLORS.science : 0x6a4a30;
+        if (e.deployed) {
+          for (const a of [0.6, 2.5, 3.8, 5.6]) {
+            g.moveTo(x, y).lineTo(x + Math.cos(a) * (s + 6), y + Math.sin(a) * (s + 6))
+              .stroke({ width: 2, color: 0x1a0e06, alpha: 0.9 });
+          }
+        }
+        g.circle(x, y, s + 1.5).fill({ color: 0x0d0805, alpha: 0.9 });
+        g.circle(x, y, s).fill(body);
+        g.rect(x - 2.5, y - s - (sci ? 5 : 8), 5, sci ? 7 : 10).fill(sci ? 0xdff5f2 : 0x2a1a0e);
       } else if (e.kind === 'consort') {
         // Royal consort: gilded, crowned; promotes the ranks around it.
         g.circle(x, y, s + 2).fill({ color: 0x0d0805, alpha: 0.9 });
@@ -416,7 +431,7 @@ export class Renderer {
     }
   }
 
-  private drawTower(g: Graphics, t: Tower, lift: number): void {
+  private drawTower(g: Graphics, t: Tower, lift: number, sim: Sim): void {
     const x = t.pos.x;
     const y = t.pos.y - lift;
     const c = FAMILY_COLORS[t.family];
@@ -540,6 +555,25 @@ export class Renderer {
         g.circle(x, y - 17, 8).fill(0xf0e8d8);
         g.circle(x + Math.sin(this.pulse * 0.8 + t.id) * 3, y - 17, 3.5).fill(0x3a2c14);
         break;
+      case 'bombard': {
+        // A squat spore mortar: wide tube angled at its marker.
+        g.circle(x, y, 11).fill(c);
+        let ang = -Math.PI / 2;
+        if (t.marker !== undefined) {
+          const m = sim.cellCenter(t.marker);
+          ang = Math.atan2(m.y - t.pos.y, m.x - t.pos.x);
+        }
+        g.moveTo(x, y).lineTo(x + Math.cos(ang) * 15, y + Math.sin(ang) * 15)
+          .stroke({ width: 6, color: 0x5a4430 });
+        g.circle(x, y, 4).fill(t.marker === undefined ? 0x3a2c1c : 0xd8b060);
+        break;
+      }
+      case 'ward':
+        // A membrane node: translucent dome, shimmering.
+        g.circle(x, y, 10).fill(c);
+        g.circle(x, y, 13 + Math.sin(this.pulse * 1.8 + t.id) * 1.5)
+          .stroke({ width: 2, color: 0xcfe0ff, alpha: 0.7 });
+        break;
       case 'prism': {
         // A crystalline growth; the core brightens as a focus streak builds.
         const glow = Math.min(1, (t.streak ?? 0) / 5);
@@ -555,6 +589,16 @@ export class Renderer {
       g.circle(x + Math.cos(a) * 16, y + Math.sin(a) * 16, 3).fill(FAMILY_COLORS[p.family]);
     });
     if (t.hp < t.maxHp) this.hpArc(g, x, y, 20, t.hp / t.maxHp);
+    // Shield bubble: brighter the fuller it is.
+    if ((t.shieldMax ?? 0) > 0 && (t.shield ?? 0) > 0) {
+      const f = (t.shield ?? 0) / (t.shieldMax ?? 1);
+      g.circle(x, y, 18).stroke({ width: 2, color: 0x9fc4ff, alpha: 0.25 + 0.55 * f });
+    }
+    // Stunned by a sedation dart: a pale halo.
+    if (t.stunnedUntil !== undefined && t.stunnedUntil > sim.time) {
+      g.circle(x, y - 18, 4).stroke({ width: 1.5, color: 0xdff5f2, alpha: 0.9 });
+      g.circle(x + 5, y - 20, 2).fill({ color: 0xdff5f2, alpha: 0.7 });
+    }
     if (this.donorHighlightId === t.id) {
       g.circle(x, y, 22).stroke({ width: 2, color: 0xffe9a8, alpha: 0.9 });
     }
@@ -599,6 +643,27 @@ export class Renderer {
       const midY = (a.from.y + a.to.y) / 2 + Math.cos(this.pulse * 27) * 4;
       g.moveTo(a.from.x, a.from.y).lineTo(midX, midY).lineTo(a.to.x, a.to.y)
         .stroke({ width: 2, color: 0xcfeef8, alpha: Math.min(1, a.ttl * 4) });
+    }
+
+    // Shells in flight: hive shells dark, darts pale, bombard shells spore-gold.
+    for (const s of sim.shells) {
+      const f = 1 - s.ttl / s.flight;
+      const x = s.from.x + (s.to.x - s.from.x) * f;
+      const y = s.from.y + (s.to.y - s.from.y) * f;
+      const arc = Math.sin(f * Math.PI) * 50;
+      const col = s.side === 'body' ? 0xd8b060 : s.stun ? 0xdff5f2 : 0x2a1a0e;
+      g.circle(x, y + 3, 3.5).fill({ color: 0x000000, alpha: 0.3 });
+      g.circle(x, y - arc, s.stun ? 2.5 : 4.5).fill(col);
+    }
+
+    // Bombard markers: the crosshair you ordered it to shell.
+    for (const t of sim.towers) {
+      if (t.family !== 'bombard' || t.marker === undefined) continue;
+      const m = sim.cellCenter(t.marker);
+      const r = towerStats(t).aoe;
+      g.circle(m.x, m.y, r).stroke({ width: 1.5, color: 0xd8b060, alpha: 0.55 });
+      g.moveTo(m.x - 8, m.y).lineTo(m.x + 8, m.y).stroke({ width: 1.5, color: 0xd8b060, alpha: 0.8 });
+      g.moveTo(m.x, m.y - 8).lineTo(m.x, m.y + 8).stroke({ width: 1.5, color: 0xd8b060, alpha: 0.8 });
     }
 
     // Bile globs in flight: heavier arc than the clot, sickly color.

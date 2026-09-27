@@ -67,6 +67,9 @@ Towers (10 families; each family's pip is what it teaches a build that eats it):
 | Ocular Stalk | board-wide hitscan eye, slow, 60 damage, executes support castes (drummer/tender/bomber) by priority | the limb learns priority targeting |
 | Arc Prism | focus-fire beam that ramps +12% per consecutive shot on one target (5 max); when a prism has NOTHING in its own reach it RELAYS — idle prisms chain their charge through each other (150px links, breadth-first, up to 6) into the prism that is firing, +50% beam each, spending their own shot (Red Alert 2's prism tower, routed through a network) | any limb ramps +6% per consecutive shot per pip |
 
+| Spore Bombard | point artillery YOU aim: click it, click the map to set its MARKER (320px reach); it shells that spot (30 dmg, 42px blast) whenever the hive is there and holds fire otherwise. Its signature use is COUNTER-BATTERY — marker on an emplaced siege cannon | sacrificing it DOUBLES the new limb's range (once) |
+| Ward Membrane | force field: a 70-point shield on every OTHER limb within 95px, regrowing 8/s after 3s unhurt; wards don't stack. All harm to a limb (chewing, shells, bombs, pit bite-back, SEDATION) hits the shield first — so a warded outer layer can't be quietly stolen, and a shielded limb shrugs off sedation darts | sacrificing it gives the new limb a PERMANENT 60-point shield of its own |
+
 **Limb panel (Collins, Sep 27 2026): click any limb** (nothing armed) to open its panel — hp bar, live stats, inherited traits — and set its **targeting**: AUTO (threats first: climbing sappers, then nearest — the tuned default), FIRST (furthest along the march), STRONGEST, WEAKEST, FOCUS (lock one body until it dies or leaves reach), plus a **caste priority** (any / war / science / royal) that outranks the ordering — e.g. set your periphery guns to SCIENCE to guard against limb theft. Tower HP matters now in three ways: sappers/mortars chew it, bombers blast it, and researchers sedate it to steal it.
 
 **Targeting reflex (all limbs, born of a measured failure):** a sapper CLIMBING a block
@@ -124,6 +127,15 @@ pins WAVE_TABLE to war caste only.
   climbs perches at 45% climb speed; every limb shoots climbers first) · carapace
   lord (t5: blocks the first 6 HITS outright — the phalanx's mirror: big blows strip
   the shell, rapid fire feeds it; poison seeps through) · phalanx (t5: per-hit cap).
+- THE CANNON (Collins, Sep 27 2026 — one per caste): walks until something of yours
+  is in reach, DEPLOYS (braces, never moves again) and lobs shells over blocks until
+  destroyed; packs up only if nothing is left in reach. War: siege cannon (t4+,
+  150px, 12 dmg/3.2s in a 28px blast on structures). Science: sedation battery
+  (joins study parties past interest 14, one on the field at a time, routes through
+  your gaps like its caste, deploys in reach of your weakest limb, darts STUN it 1.2s
+  every 4s so researchers can walk in; carries an 8-dart kit then goes home — a
+  science VISIT, not a siege). Shields stop darts. Every limb's AUTO targeting treats
+  an emplaced cannon in reach as a priority threat.
 - WAR support (kill-priority decisions): drummer (speed aura) · bomber (charges
   walls/organs) · tender (heal pulses) · tunneler (t6: burrows past the outer line).
 - SCIENCE visitors (smart by default — route around coverage to your weakest point):

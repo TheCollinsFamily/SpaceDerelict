@@ -26,6 +26,8 @@ const CARD_DESC: Record<TowerFamily, string> = {
   mister: 'Shreds armor — everyone hits deeper.',
   ocular: 'Board-wide eye. Executes drummers and tenders.',
   prism: 'Focus beam that ramps. Idle prisms relay it charge.',
+  bombard: 'Long-range shelling. Click it, set its marker.',
+  ward: 'Shields the limbs around it. Regrows when quiet.',
 };
 
 const FEED_LINES: Partial<Record<SimEvent['kind'], (e: SimEvent) => { text: string; cls: string }>> = {
@@ -66,6 +68,9 @@ const FEED_LINES: Partial<Record<SimEvent['kind'], (e: SimEvent) => { text: stri
     : { text: '', cls: '' },
   'tower-recovered': (e) => e.kind === 'tower-recovered'
     ? { text: e.refunded ? `${e.family} recovered — ground taken, biomass refunded` : `${e.family} recovered and re-rooted`, cls: 'sci' }
+    : { text: '', cls: '' },
+  'cannon-deployed': (e) => e.kind === 'cannon-deployed'
+    ? { text: e.enemy === 'dartgun' ? 'sedation battery emplaced — shield your limbs' : 'siege cannon emplaced — silence it', cls: 'hot' }
     : { text: '', cls: '' },
   promoted: (e) => e.kind === 'promoted'
     ? { text: `local response promoted: ${e.from} → ${e.to}`, cls: 'royal' }
@@ -204,7 +209,8 @@ export class Hud {
     const fill = document.getElementById('inspect-hp-fill')!;
     fill.style.width = `${(frac * 100).toFixed(0)}%`;
     fill.style.background = frac > 0.4 ? '#7fae52' : 'var(--accent)';
-    document.getElementById('inspect-hp-text')!.textContent = `${Math.ceil(t.hp)} / ${Math.ceil(t.maxHp)} HP`;
+    document.getElementById('inspect-hp-text')!.textContent = `${Math.ceil(t.hp)} / ${Math.ceil(t.maxHp)} HP`
+      + ((t.shieldMax ?? 0) > 0 ? ` · SHIELD ${Math.ceil(t.shield ?? 0)}/${Math.ceil(t.shieldMax ?? 0)}` : '');
     document.getElementById('inspect-stats')!.textContent = st.rate > 0
       ? `dmg ${st.damage.toFixed(0)} · ${st.rate.toFixed(2)}/s · reach ${Math.round(st.range)}`
         + ((t.streak ?? 0) > 0 && st.streakRamp > 0 ? ` · streak ${t.streak}` : '')

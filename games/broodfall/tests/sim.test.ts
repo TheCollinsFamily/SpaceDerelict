@@ -705,6 +705,130 @@ describe('player targeting (click a limb, choose how it picks)', () => {
   });
 });
 
+describe('the cannon (war + science), bombard markers, ward shields', () => {
+  const stub = (s: Sim, id: number, family: Tower['family'], x: number, y: number): Tower => ({
+    id, family, pos: { x, y }, cell: s.cellAt(x, y), hp: 100, maxHp: 100,
+    pips: [], cooldown: 0, kills: 0,
+  });
+
+  it('both castes field a cannon; war cannons march in waves, the science one comes with study parties', () => {
+    expect(ENEMIES.find((e) => e.kind === 'cannon')!.caste).toBe('war');
+    expect(ENEMIES.find((e) => e.kind === 'dartgun')!.caste).toBe('science');
+    expect(WAVE_TABLE.some((row) => (row.cannon ?? 0) > 0)).toBe(true);
+    expect(WAVE_TABLE.some((row) => (row.dartgun ?? 0) > 0)).toBe(false);
+  });
+
+  it('war cannon DEPLOYS when something is in reach, stops moving, and shells over blocks until killed', () => {
+    const s = freshSim(1000);
+    const sim = s as unknown as SpawnSim;
+    const t = stub(s, 5001, 'spitter', 400, 400);
+    t.cooldown = 1e9; // silent target, so we watch the cannon
+    s.towers.push(t);
+    const c = sim.spawnEnemy('cannon', s.gates[0]);
+    c.pos.x = 400 + 140; c.pos.y = 400; // in reach
+    const cE = s.enemies.find((x) => x.id === c.id)!;
+    s.tick();
+    expect(cE.deployed).toBe(true);
+    const at = { ...cE.pos };
+    for (let i = 0; i < 60; i++) { s.tick(); t.cooldown = 1e9; }
+    expect(Math.hypot(cE.pos.x - at.x, cE.pos.y - at.y)).toBeLessThan(1); // braced
+    expect(t.hp).toBeLessThan(t.maxHp); // shells landed
+  });
+
+  it('science dartgun STUNS an unshielded limb; a shield blocks the dart', () => {
+    const s = freshSim(1001);
+    const sim = s as unknown as SpawnSim & { updateShells(): void };
+    const bare = stub(s, 5101, 'spitter', 300, 300);
+    const warded = stub(s, 5102, 'spitter', 600, 300);
+    warded.shield = 50; warded.shieldMax = 50;
+    s.towers.push(bare, warded);
+    s.shells.push(
+      { id: 1, from: { x: 0, y: 0 }, to: { ...bare.pos }, flight: 1, ttl: 0.01, damage: 4, aoe: 0, side: 'hive', stun: 2.5 },
+      { id: 2, from: { x: 0, y: 0 }, to: { ...warded.pos }, flight: 1, ttl: 0.01, damage: 4, aoe: 0, side: 'hive', stun: 2.5 },
+    );
+    sim.updateShells();
+    expect(bare.stunnedUntil ?? 0).toBeGreaterThan(s.time);
+    expect(warded.stunnedUntil ?? 0).toBeLessThanOrEqual(s.time);
+    expect(warded.hp).toBe(100);   // the shield soaked the damage too
+    expect(warded.shield).toBe(46);
+  });
+
+  it('bombard holds fire without a marker, shells ONLY its marker, refuses one out of reach', () => {
+    const s = freshSim(1002);
+    const b = stub(s, 5201, 'bombard', 300, 300);
+    s.towers.push(b);
+    const sim = s as unknown as SpawnSim;
+    const e = sim.spawnEnemy('militia', s.gates[0]);
+    e.pos.x = 400; e.pos.y = 300; // well in reach, but no orders yet
+    for (let i = 0; i < 20; i++) s.tick();
+    expect(s.shells.filter((x) => x.side === 'body').length).toBe(0);
+    // Far out of reach: refused.
+    const far = s.cellAt(300 + 900, 300);
+    expect(s.issue({ kind: 'set-marker', towerId: b.id, cell: far }).ok).toBe(false);
+    // On the militia: it opens fire at the marker point.
+    const mcell = s.cellAt(e.pos.x, e.pos.y);
+    if (s.map.cells[mcell] !== CellType.Void) {
+      expect(s.issue({ kind: 'set-marker', towerId: b.id, cell: mcell }).ok).toBe(true);
+      const eE = s.enemies.find((x) => x.id === e.id)!;
+      let fired = false;
+      for (let i = 0; i < 20 && !fired; i++) {
+        eE.pos.x = s.cellCenter(mcell).x; eE.pos.y = s.cellCenter(mcell).y;
+        s.tick();
+        if (s.shells.some((x) => x.side === 'body')) fired = true;
+      }
+      expect(fired).toBe(true);
+    }
+  });
+
+  it('ward projects a regenerating shield onto the OTHER limbs in its radius (not itself)', () => {
+    const s = freshSim(1003);
+    const w = stub(s, 5301, 'ward', 300, 300);
+    const near = stub(s, 5302, 'spitter', 360, 300);
+    const far = stub(s, 5303, 'spitter', 600, 300);
+    near.cooldown = far.cooldown = 1e9;
+    s.towers.push(w, near, far);
+    s.tick();
+    expect(near.shieldMax).toBe(towerSpec('ward').wardShield);
+    expect(far.shieldMax ?? 0).toBe(0);
+    expect(w.shieldMax ?? 0).toBe(0);
+    // Harm hits the shield first; after a quiet spell it regrows.
+    s.hurtTower(near, 30);
+    expect(near.hp).toBe(100);
+    const low = near.shield!;
+    for (let i = 0; i < 50; i++) { s.tick(); near.cooldown = 1e9; }
+    expect(near.shield!).toBeGreaterThan(low);
+  });
+
+  it('shields must be stripped before a researcher can steal the limb', () => {
+    const s = freshSim(1004);
+    const t = stub(s, 5401, 'spitter', 300, 300);
+    t.shield = 40; t.shieldMax = 40;
+    s.hurtTower(t, 25); // sedation-sized bite
+    expect(t.hp).toBe(100);
+    expect(t.shield).toBe(15);
+  });
+
+  it('sacrifice pips: ward → permanent personal shield; bombard → DOUBLE range', () => {
+    const base: Tower = {
+      id: 1, family: 'spitter', pos: { x: 0, y: 0 }, cell: 0,
+      hp: 1, maxHp: 1, pips: [], cooldown: 0, kills: 0,
+    };
+    expect(towerStats({ ...base, pips: [{ family: 'ward' }] }).shieldPerm).toBe(B.pipShield);
+    const r0 = towerStats(base).range;
+    expect(towerStats({ ...base, pips: [{ family: 'bombard' }] }).range).toBeCloseTo(r0 * 2);
+    // Doubling is once, not per pip.
+    expect(towerStats({ ...base, pips: [{ family: 'bombard' }, { family: 'bombard' }] }).range).toBeCloseTo(r0 * 2);
+    // And the membrane shield is live on a real limb even with no ward nearby.
+    const s = freshSim(1005);
+    const t = { ...base, id: 5501, pos: { x: 300, y: 300 }, cell: s.cellAt(300, 300), hp: 60, maxHp: 60, pips: [{ family: 'ward' as const }] };
+    t.cooldown = 1e9;
+    s.towers.push(t);
+    s.tick();
+    expect(t.shieldMax).toBe(B.pipShield);
+    expect(t.shield).toBe(B.pipShield);
+  });
+});
+
 describe('arc prism (focus ramp + relay network)', () => {
   it('ramps on a held target and resets on a switch', () => {
     const s = freshSim(960);

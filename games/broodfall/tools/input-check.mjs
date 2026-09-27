@@ -222,6 +222,47 @@ try {
     else fail('lobber volley', 'no bile flight and no cooldown after gesture');
   }
 
+  // 5b2. Bombard: click it (arms marker placement), click the map → marker set.
+  {
+    const bpos = await page.evaluate(() => {
+      const s = window.broodfall.sim;
+      s.meat.war = 900; s.meat.science = 900;
+      for (let guard = 0; guard < 400; guard++) {
+        const i = s.hand.findIndex((c) => c.family === 'bombard');
+        if (i >= 0) {
+          for (let c = 0; c < s.map.cells.length; c++) {
+            if (s.canBuildTower(c)) {
+              return s.issue({ kind: 'build', cardIndex: i, cell: c }).ok
+                ? s.towers.find((t) => t.family === 'bombard').pos : null;
+            }
+          }
+        }
+        s.issue({ kind: 'discard', cardIndex: 0 });
+      }
+      return null;
+    });
+    if (!bpos) fail('bombard setup', 'could not draw/build a bombard');
+    else {
+      const target = await page.evaluate((p) => {
+        const s = window.broodfall.sim;
+        for (let c = 0; c < s.map.cells.length; c++) {
+          if (s.map.cells[c] === 3) continue;
+          const q = s.cellCenter(c);
+          const d = Math.hypot(q.x - p.x, q.y - p.y);
+          if (d > 120 && d < 260) return { ...q, cell: c };
+        }
+        return null;
+      }, bpos);
+      const box1 = await page.locator('#stage canvas').boundingBox();
+      await page.mouse.click(box1.x + 5, box1.y + 5, { button: 'right' });
+      await clickWorld(bpos.x, bpos.y);    // arm marker placement
+      await clickWorld(target.x, target.y); // set the marker
+      const marker = await page.evaluate(() => window.broodfall.sim.towers.find((t) => t.family === 'bombard').marker);
+      if (marker === target.cell) pass('bombard: click it, click the map — the marker is set');
+      else fail('bombard marker', `marker=${marker} expected=${target.cell}`);
+    }
+  }
+
   // 5c. Limb panel: with nothing armed, click a tower → the panel opens; click
   //     STRONGEST and SCIENCE → that limb's targeting changes in the sim.
   {

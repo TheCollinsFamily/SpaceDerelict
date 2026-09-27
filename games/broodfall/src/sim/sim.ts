@@ -18,7 +18,7 @@ import {
 import type {
   Broodling, CardInstance, Caste, Command, CreepSource, Directive, Drop, Enemy, EnemyKind,
   EnemySpec, GlandMode, ModPip, Organ, OrganId, Outcome, Phase, Projectile, RootDir,
-  SimConfig, SimEvent, Tower, TowerFamily, TowerSpec, Vec,
+  Shell, SimConfig, SimEvent, Tower, TowerFamily, TowerSpec, Vec,
 } from './types';
 
 export const DT = 0.1;
@@ -64,7 +64,10 @@ export function towerStats(t: Tower) {
     yieldMult: 1 + B.pipYield * pips('maw'),
     maxHp: spec.maxHp + B.pipHp * pips('spine'),
     interest: spec.interest + B.pipInterest * pips('lure') + B.interestPerPip * t.pips.length,
-    range: spec.range * (1 + B.pipRange * pips('choir')),
+    // Choir pips stretch reach; a BOMBARD pip doubles it outright (once).
+    range: spec.range * (1 + B.pipRange * pips('choir')) * (pips('bombard') > 0 ? B.pipRangeDouble : 1),
+    // Ward pip: a permanent personal shield, carried with the limb forever.
+    shieldPerm: B.pipShield * pips('ward'),
     eatThreshold: spec.eatThreshold,
     // Hit effects: the tower's own, deepened by inherited pips.
     slowMult: Math.max(0.25, (spec.slowMult ?? 1) - B.pipSlow * tanglerPips),
@@ -165,6 +168,8 @@ export class Sim {
   broodlings: Broodling[] = [];
   /** Recent lightning arcs / sniper beams, for the renderer (fade fast). */
   arcs: Array<{ from: Vec; to: Vec; ttl: number }> = [];
+  /** Lobbed shells in flight: hive cannons at your limbs, your bombards at the hive. */
+  shells: Shell[] = [];
 
   /** cell index -> structure ('t'|'o') + id */
   private occupied = new Map<number, { kind: 't' | 'o'; id: number }>();
@@ -535,6 +540,14 @@ export class Sim {
         this.butcherTower(donor);
         return { ok: true };
       }
+      case 'set-marker': {
+        const t = this.towers.find((x) => x.id === cmd.towerId && x.family === 'bombard');
+        if (!t) return { ok: false, err: 'no such bombard' };
+        if (this.map.cells[cmd.cell] === CellType.Void) return { ok: false, err: 'unclaimed city' };
+        if (dist(t.pos, this.cellCenter(cmd.cell)) > this.statsOf(t).range) return { ok: false, err: 'out of range' };
+        t.marker = cmd.cell;
+        return { ok: true };
+      }
       case 'set-priority': {
         const t = this.towers.find((x) => x.id === cmd.towerId);
         if (!t) return { ok: false, err: 'no such tower' };
@@ -884,6 +897,9 @@ export class Sim {
         // A famous specimen attracts the unscrupulous too: past a fame
         // threshold, a thief slips in with every study party.
         if (this.interest >= B.thiefInterestMin) this.spawnEnemy('thief');
+        // A famous specimen gets a sedation battery sent along to pin it down.
+        if (this.interest >= B.dartgunInterestMin && this.towers.length > 0
+          && !this.enemies.some((x) => x.kind === 'dartgun')) this.spawnEnemy('dartgun');
         this.events.push({ kind: 'researchers-arrive', count: n });
       }
     }
@@ -908,6 +924,7 @@ export class Sim {
     this.updateDrops();
     this.updateClots();
     this.updateBiles();
+    this.updateShells();
     for (const a of this.arcs) a.ttl -= DT;
     this.arcs = this.arcs.filter((a) => a.ttl > 0);
 
@@ -1004,10 +1021,10 @@ export class Sim {
     const n = this.enemies.length;
     for (let i = 0; i < n; i++) {
       const a = this.enemies[i];
-      if (enemySpec(a.kind).flies || a.burrowed) continue;
+      if (enemySpec(a.kind).flies || a.burrowed || a.deployed) continue;
       for (let j = i + 1; j < n; j++) {
         const b = this.enemies[j];
-        if (enemySpec(b.kind).flies || b.burrowed) continue;
+        if (enemySpec(b.kind).flies || b.burrowed || b.deployed) continue;
         const dx = b.pos.x - a.pos.x;
         const dy = b.pos.y - a.pos.y;
         const d = Math.hypot(dx, dy);
@@ -1082,10 +1099,133 @@ export class Sim {
   }
 
   /** The bomber's whole job: area damage to STRUCTURES, then it is gone. */
+  /** All harm to a limb goes through here: its shield soaks first, then hp. */
+  hurtTower(t: Tower, amount: number): void {
+    t.lastHitAt = this.time;
+    const sh = t.shield ?? 0;
+    if (sh > 0) {
+      const soak = Math.min(sh, amount);
+      t.shield = sh - soak;
+      amount -= soak;
+    }
+    t.hp -= amount;
+  }
+
+  /**
+   * The cannon. Returns true when it handled this tick (deployed, or a science
+   * cannon walking the gaps); false lets a war cannon march like everyone else.
+   */
+  private updateCannon(e: Enemy, spec: EnemySpec): boolean {
+    const c = spec.cannon!;
+    const science = spec.caste === 'science';
+    if (e.leaving) {
+      this.leaveField(e, this.moveSpeedOf(e));
+      return true;
+    }
+    // What would it shell from here?
+    const pickTarget = (): { pos: Vec } | null => {
+      if (science) {
+        const weak = this.vulnerableTower();
+        if (weak && dist(e.pos, weak.pos) <= c.range) return weak;
+        let best: Tower | null = null;
+        let bd = c.range;
+        for (const t of this.towers) {
+          const d = dist(e.pos, t.pos);
+          if (d <= bd) { bd = d; best = t; }
+        }
+        return best;
+      }
+      const s = this.nearestStructure(e.pos, c.range);
+      if (s) {
+        const p = this.structurePos(s);
+        if (p) return { pos: p };
+      }
+      return dist(e.pos, this.core) <= c.range ? { pos: this.core } : null;
+    };
+
+    const target = pickTarget();
+    if (e.deployed) {
+      if (!target) {
+        e.deployed = false; // nothing left in reach: limber up and move on
+        return false;
+      }
+      e.auxCooldown = (e.auxCooldown ?? 0) - DT;
+      if (e.auxCooldown <= 0) {
+        if (c.ammo !== undefined && (e.shotsFired ?? 0) >= c.ammo) {
+          e.deployed = false; // kit spent: pack up and go home
+          e.leaving = true;
+          return true;
+        }
+        e.shotsFired = (e.shotsFired ?? 0) + 1;
+        e.auxCooldown = c.interval;
+        this.shells.push({
+          id: this.nextId++, from: { ...e.pos }, to: { ...target.pos },
+          flight: B.shellFlightSeconds, ttl: B.shellFlightSeconds,
+          damage: c.damage * this.empowerOf(e), aoe: c.aoe, side: 'hive', stun: c.stun,
+        });
+      }
+      return true;
+    }
+    if (target) {
+      e.deployed = true;
+      e.auxCooldown = c.interval * 0.5; // brace, then open fire
+      this.events.push({ kind: 'cannon-deployed', enemy: e.kind });
+      return true;
+    }
+    if (science) {
+      // Walk the gaps toward the weakest limb, like the rest of the caste.
+      const speed = this.moveSpeedOf(e);
+      const weak = this.vulnerableTower();
+      const goal = weak ? this.standCellFor(weak.cell) : -1;
+      if (goal >= 0) this.walkSmart(e, goal, weak!.pos, speed);
+      else this.leaveField(e, speed);
+      return true;
+    }
+    return false;
+  }
+
+  /** Shells land: hive shells hurt your structures (darts stun unshielded limbs); bombard shells hurt the hive. */
+  private updateShells(): void {
+    const landed: number[] = [];
+    for (const s of this.shells) {
+      s.ttl -= DT;
+      if (s.ttl > 0) continue;
+      landed.push(s.id);
+      if (s.side === 'body') {
+        for (const e of [...this.enemies]) {
+          if (e.burrowed || dist(s.to, e.pos) > s.aoe) continue;
+          this.damageEnemy(e, s.damage, 1);
+        }
+        continue;
+      }
+      const reach = Math.max(s.aoe, 16);
+      for (const t of [...this.towers]) {
+        if (dist(s.to, t.pos) > reach) continue;
+        if (s.stun && (t.shield ?? 0) <= 0) t.stunnedUntil = this.time + s.stun; // shields stop darts
+        this.hurtStructure(t, false, s.damage);
+      }
+      for (const o of [...this.organs]) {
+        if (dist(s.to, o.pos) <= reach) this.hurtStructure(o, true, s.damage);
+      }
+      if (dist(s.to, this.core) <= reach + 30) this.coreHp -= s.damage;
+    }
+    if (landed.length) this.shells = this.shells.filter((s) => !landed.includes(s.id));
+  }
+
+  /** Hurt a limb or organ and remove it if that finishes it. */
+  private hurtStructure(s: Tower | Organ, isOrgan: boolean, amount: number): void {
+    if (isOrgan) s.hp -= amount;
+    else this.hurtTower(s as Tower, amount);
+    if (s.hp <= 0) {
+      if (isOrgan) this.removeOrgan(s.id);
+      else this.removeTower(s.id, true);
+    }
+  }
+
   private detonateBomber(e: Enemy): void {
     for (const t of [...this.towers]) {
       if (dist(e.pos, t.pos) <= B.bomberBlastRadius) {
-        t.hp -= B.bomberBlastDamage;
+        this.hurtTower(t, B.bomberBlastDamage);
         if (t.hp <= 0) this.removeTower(t.id, true);
       }
     }
@@ -1216,7 +1356,7 @@ export class Sim {
       return;
     }
     if (dist(e.pos, prey.pos) <= B.scienceReach) {
-      prey.hp -= B.scienceExtractDps * DT;
+      this.hurtTower(prey, B.scienceExtractDps * DT); // a shield must be stripped first
       if (prey.hp <= 0) {
         e.carrying = {
           family: prey.family, pips: [...prey.pips], cell: prey.cell,
@@ -1265,6 +1405,9 @@ export class Sim {
         e.hp -= e.poisonDps * DT;
         if (e.hp <= 0) { this.killEnemy(e.id, 1, false); continue; }
       }
+
+      // THE CANNON (both castes): walk, deploy, shell until destroyed.
+      if (spec.cannon && this.updateCannon(e, spec)) continue;
 
       if (spec.stealsLimbs) {
         this.updateScience(e, spec);
@@ -1374,11 +1517,7 @@ export class Sim {
           e.attackCooldown -= DT;
           if (e.attackCooldown <= 0) {
             e.attackCooldown = 1 / spec.rate;
-            s.hp -= spec.damage * this.empowerOf(e);
-            if (s.hp <= 0) {
-              if (e.targetIsOrgan) this.removeOrgan(s.id);
-              else this.removeTower(s.id, true);
-            }
+            this.hurtStructure(s, e.targetIsOrgan, spec.damage * this.empowerOf(e));
           }
           continue;
         }
@@ -1465,11 +1604,7 @@ export class Sim {
               : this.organs.find((o) => o.id === prey.id);
             if (s) {
               this.arcs.push({ from: { ...e.pos }, to: { ...s.pos }, ttl: 0.12 });
-              s.hp -= spec.damage * this.empowerOf(e);
-              if (s.hp <= 0) {
-                if (prey.kind === 'o') this.removeOrgan(prey.id);
-                else this.removeTower(prey.id, true);
-              }
+              this.hurtStructure(s, prey.kind === 'o', spec.damage * this.empowerOf(e));
             }
           }
           continue;
@@ -1695,7 +1830,8 @@ export class Sim {
         // then prefer support castes.
         const climbing = !!es.sapper && !isPassable(this.map.cells[this.cellAt(e.pos.x, e.pos.y)]);
         const support = !!(es.speedAura || es.healer || es.bomber);
-        const tier = climbing ? 2 : sniper && support ? 1 : 0;
+        // An emplaced cannon in reach is a standing threat: silence it.
+        const tier = climbing || e.deployed ? 2 : sniper && support ? 1 : 0;
         sub = tier * 1e6 - d;
       }
       // A chosen caste outranks every other ordering.
@@ -1756,6 +1892,39 @@ export class Sim {
       // Brood pip: living tissue regrows.
       if (stats.regen > 0 && t.hp < t.maxHp) t.hp = Math.min(t.maxHp, t.hp + stats.regen * DT);
 
+      // Shields: a permanent membrane from ward pips, plus projection from any
+      // ward within reach (strongest one applies — wards don't stack).
+      const wardSpec = towerSpec('ward');
+      let projected = 0;
+      for (const w of this.towers) {
+        if (w.family !== 'ward' || w.id === t.id) continue;
+        if (dist(w.pos, t.pos) <= (wardSpec.auraRadius ?? 0)) projected = wardSpec.wardShield ?? 0;
+      }
+      const shieldMax = stats.shieldPerm + projected;
+      t.shieldMax = shieldMax;
+      if (t.shield === undefined) t.shield = shieldMax;
+      if (this.time - (t.lastHitAt ?? -1e9) >= B.shieldRegenDelay) t.shield += B.shieldRegen * DT;
+      t.shield = Math.min(t.shield, shieldMax);
+
+      // Sedation darts: a stunned limb holds fire.
+      if (t.stunnedUntil !== undefined && t.stunnedUntil > this.time) continue;
+
+      // Bombard: shells its MARKER when the hive is there; no marker, no fire.
+      if (t.family === 'bombard') {
+        if (t.marker === undefined || t.cooldown > 0) continue;
+        const at = this.cellCenter(t.marker);
+        if (dist(t.pos, at) > stats.range) continue;
+        const hostile = this.enemies.some((e) => !e.burrowed && dist(e.pos, at) <= stats.aoe + 10);
+        if (!hostile) continue;
+        t.cooldown = 1 / stats.rate;
+        this.shells.push({
+          id: this.nextId++, from: { ...t.pos }, to: at,
+          flight: B.shellFlightSeconds, ttl: B.shellFlightSeconds,
+          damage: stats.damage, aoe: stats.aoe, side: 'body',
+        });
+        continue;
+      }
+
       // The broodmother tends her brood instead of attacking.
       if (t.family === 'brood') {
         const mine = this.broodlings.filter((b) => b.motherId === t.id).length;
@@ -1782,7 +1951,7 @@ export class Sim {
           this.damageEnemy(e, B.pitDps * DT, stats.yieldMult, stats.capBonus);
           if (e.hp <= 0) this.biomass += B.pitBiomassPerKill;
           const es = enemySpec(e.kind);
-          t.hp -= es.damage * es.rate * DT; // digestion is not free
+          this.hurtTower(t, es.damage * es.rate * DT); // digestion is not free
         }
         if (t.hp <= 0) this.removeTower(t.id, true);
         continue;
