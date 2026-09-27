@@ -162,18 +162,29 @@ export class Autoplayer {
       if (!sim.canAfford(towerSpec(fam).cost)) continue;
       // Support limbs are placed by their OWN logic, never on a gun's perch:
       // the ward behind the guns it shields, the bombard deep in the body.
-      if (fam === 'ward' || fam === 'bombard' || fam === 'conduit') {
+      const isEngine = !!towerSpec(fam).engine;
+      if (fam === 'ward' || fam === 'bombard' || isEngine) {
         const have = sim.towers.filter((t) => t.family === fam).length;
         const cap = fam === 'ward' ? Math.floor(guns.length / 4)
-          : fam === 'conduit' ? Math.floor(guns.length / 6)
+          : isEngine ? Math.floor(guns.length / 3)
             : Math.min(2, Math.floor(guns.length / 5));
-        const cell = have < cap
+        let cell = have < cap
           ? (fam === 'bombard' ? this.bombardCell(sim) : this.wardCell(sim, guns))
           : null;
-        if (cell !== null && sim.issue({ kind: 'build', cardIndex: i, cell }).ok) {
+        // A combo engine is only worth its science if it actually multiplies
+        // something from here: trial-place it, measure, build only on a real gain.
+        let plan = isEngine && cell !== null ? this.engineGain(sim, fam, cell) : null;
+        // Amplifiers go where the CARRY is: try spots around the limb the other
+        // engines already feed and keep the best measured gain.
+        if (fam === 'amp' && have < cap) {
+          const best = this.ampSpot(sim);
+          if (best && (!plan || best.gain > plan.gain)) { cell = best.cell; plan = best; }
+        }
+        const worthIt = !isEngine || (plan !== null && plan.gain >= 0.15);
+        if (cell !== null && worthIt && sim.issue({
+          kind: 'build', cardIndex: i, cell, facing: plan?.facing,
+        }).ok) {
           this.builds += 1;
-          // A conduit is aimed at the hardest-hitting gun it can reach.
-          if (fam === 'conduit') this.aimConduit(sim, sim.towers[sim.towers.length - 1]);
           return;
         }
         if (sim.meat.war >= B.discardCost + 10) {
@@ -347,17 +358,77 @@ export class Autoplayer {
     return best;
   }
 
-  /** Point a conduit at whichever gun (of the four headings) turns its pool into the most dps. */
+  /**
+   * Trial-place a combo engine at `cell` (a ghost limb, removed afterwards) and
+   * measure, over the four headings, the best relative dps gain on its target.
+   */
+  private engineGain(sim: Sim, family: string, cell: number): { gain: number; facing: 'N' | 'E' | 'S' | 'W' } | null {
+    const ghost = {
+      id: -999, family: family as never, pos: sim.cellCenter(cell), cell,
+      hp: 1, maxHp: 1, pips: [], cooldown: 0, kills: 0, facing: 'N' as 'N' | 'E' | 'S' | 'W',
+    };
+    let best: { gain: number; facing: 'N' | 'E' | 'S' | 'W' } | null = null;
+    for (const dir of ['N', 'E', 'S', 'W'] as const) {
+      ghost.facing = dir;
+      const target = sim.conduitTarget(ghost);
+      if (!target) continue;
+      const before = sim.statsOf(target);
+      sim.towers.push(ghost);
+      const after = sim.statsOf(target);
+      sim.towers.pop();
+      const dpsB = before.damage * before.rate;
+      const dpsA = after.damage * after.rate;
+      const gain = dpsB > 0 ? dpsA / dpsB - 1 : 0;
+      if (!best || gain > best.gain) best = { gain, facing: dir };
+    }
+    return best;
+  }
+
+  /** The best spot for an amplifier: around the carry (the limb with the most engines on it). */
+  private ampSpot(sim: Sim): { cell: number; gain: number; facing: 'N' | 'E' | 'S' | 'W' } | null {
+    let carry: { pos: { x: number; y: number } } | null = null;
+    let most = 0;
+    for (const t of sim.towers) {
+      if (towerSpec(t.family).engine) continue;
+      const fed = sim.towers.filter((c) => towerSpec(c.family).engine && sim.conduitTarget(c) === t).length;
+      if (fed > most) { most = fed; carry = t; }
+    }
+    if (!carry) return null;
+    const near: number[] = [];
+    for (let cell = 0; cell < sim.map.cells.length; cell++) {
+      if (!sim.canBuildTower(cell) || sim.map.cells[cell] === CellType.Road) continue;
+      const p = sim.cellCenter(cell);
+      if (Math.hypot(p.x - carry.pos.x, p.y - carry.pos.y) <= 150) near.push(cell);
+    }
+    near.sort((a, b) => {
+      const pa = sim.cellCenter(a);
+      const pb = sim.cellCenter(b);
+      return Math.hypot(pa.x - carry!.pos.x, pa.y - carry!.pos.y) - Math.hypot(pb.x - carry!.pos.x, pb.y - carry!.pos.y);
+    });
+    let best: { cell: number; gain: number; facing: 'N' | 'E' | 'S' | 'W' } | null = null;
+    for (const cell of near.slice(0, 24)) {
+      const g = this.engineGain(sim, 'amp', cell);
+      if (g && (!best || g.gain > best.gain)) best = { cell, ...g };
+    }
+    return best;
+  }
+
+  /**
+   * The combo line: pick ONE carry and point every engine at it. Among the
+   * four headings, prefer a limb other engines already feed (concentration is
+   * what makes amplifiers pay: they only grow stacks of 2+), then raw dps.
+   */
   private aimConduit(sim: Sim, c: { id: number; family: string }): void {
     let best: 'N' | 'E' | 'S' | 'W' | null = null;
-    let bestDps = -1;
+    let bestKey = -1;
     for (const dir of ['N', 'E', 'S', 'W'] as const) {
       sim.issue({ kind: 'set-facing', towerId: c.id, dir });
       const t = sim.conduitTarget(sim.towers.find((x) => x.id === c.id)!);
       if (!t) continue;
       const st = sim.statsOf(t);
-      const dps = st.damage * st.rate;
-      if (dps > bestDps) { bestDps = dps; best = dir; }
+      const fedBy = sim.towers.filter((o) => o.id !== c.id && towerSpec(o.family).engine && sim.conduitTarget(o) === t).length;
+      const key = fedBy * 1e6 + st.damage * st.rate;
+      if (key > bestKey) { bestKey = key; best = dir; }
     }
     if (best) sim.issue({ kind: 'set-facing', towerId: c.id, dir: best });
   }

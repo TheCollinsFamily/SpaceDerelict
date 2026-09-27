@@ -192,9 +192,29 @@ export const TOWERS: readonly TowerSpec[] = [
     // around it — their inherited pips plus each one's own family bonus — and
     // feeds them to the one limb it points at. Sacrifice it and the next build
     // HARVESTS everything it was channelling, permanently.
+    // SCIENCE is the combo currency (Collins, Sep 27 2026: "the real core of the
+    // game is building combo runaways, and this is what we use the science
+    // currency for"). Every combo engine is priced in science meat.
     family: 'conduit', name: 'Marrow Conduit', weight: 7,
-    cost: { war: 14, science: 18 }, range: 0, rate: 0, damage: 0, aoe: 0,
-    conduit: { gather: 80, reach: 160 }, directional: true,
+    cost: { science: 30 }, range: 0, rate: 0, damage: 0, aoe: 0,
+    conduit: { gather: 80, reach: 160 }, engine: { kind: 'funnel', reach: 160, gather: 80 }, directional: true,
+    maxHp: 70, interest: 2, eatThreshold: 0, advanced: true, hits: 'ground',
+  },
+  {
+    // DEPTH engine: every bonus count on the limb it points at ×1.5, ROUNDED
+    // DOWN, per type (1→1, 2→3, 3→4, 4→6, 6→9...). Applies after conduits and
+    // mosaics feed the target, so engines chain. Two amps: ×1.5 twice.
+    family: 'amp', name: 'Resonance Amplifier', weight: 5,
+    cost: { science: 42 }, range: 0, rate: 0, damage: 0, aoe: 0,
+    engine: { kind: 'amplify', reach: 160 }, directional: true,
+    maxHp: 70, interest: 3, eatThreshold: 0, advanced: true, hits: 'ground',
+  },
+  {
+    // BREADTH engine: gives the limb it points at ONE bonus of EACH distinct type
+    // found around it (families and their pips), max one per type.
+    family: 'mosaic', name: 'Mosaic Node', weight: 6,
+    cost: { science: 26 }, range: 0, rate: 0, damage: 0, aoe: 0,
+    engine: { kind: 'mosaic', reach: 160, gather: 90 }, directional: true,
     maxHp: 70, interest: 2, eatThreshold: 0, advanced: true, hits: 'ground',
   },
 ];
@@ -403,6 +423,10 @@ export const BALANCE = {
   spineThornsFrac: 1,  // a spine wall's own thorns: its payload damage per bite taken
   pipInterest: 2,     // lure pip: +2 interest...
   pipCloud: 4,        // ...and every hit leaves a toxic pheromone cloud (+4 dps per pip)
+  /** Amplifier: bonus counts ×this per amp (rounded down). Amp pip = the same, on the eater. */
+  ampFactor: 1.5,
+  /** Mosaic pip: the limb draws one of each distinct family among neighbours within this radius. */
+  mosaicPipRadius: 60,
   /** Conduit pip: the limb passively draws the family bonus of its N nearest neighbours. */
   pipDrawNeighbors: 1,
   pipDrawRadius: 90,

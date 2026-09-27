@@ -100,6 +100,36 @@ hide: fire reveals the cloaked. Source: the **Ember Sac** (a flamethrower that s
 a cone — every targetable body in it ignites, 8/s for 3s); its pip makes any limb's
 hits ignite (+3/s per pip).
 
+## THE CORE: COMBO RUNAWAYS, PAID IN SCIENCE (Collins, Sep 27 2026)
+
+"The real core of the game is going to be trying to build combo runaways, and this is
+what we can use the science category of currency for." So:
+- **Science meat is the combo currency.** Combo ENGINES — directional limbs that
+  manipulate other limbs' bonuses — cost science only. (Science already comes from
+  building weird: mutated limbs raise interest, interest draws researchers, eating
+  researchers pays science. The loop now closes: weirdness buys engines that make
+  weirdness compound.)
+- **Engines chain.** Order of application on a target: its own pips → everything fed
+  in (conduit pools, mosaic sets, choir/ward shares, conduit/mosaic pip draws) →
+  amplification LAST, so an amplifier multiplies everything the other engines fed.
+- Engines can't target engines (no feedback loops); sacrificing a funnel or mosaic
+  harvests what it was channelling.
+
+The three engines built:
+| Engine | Cost | What it does to the limb it points at | Its own pip |
+|---|---|---|---|
+| Marrow Conduit (funnel) | 30 sci | copies EVERY bonus from limbs within 80px (their pips + their family) | draws the nearest neighbour's family bonus |
+| Resonance Amplifier (depth) | 42 sci | every bonus count ×1.5, ROUNDED DOWN, per type, per amplifier (1→1, 2→3, 3→4, 4→6, 6→9) | the eater's own counts ×1.5 |
+| Mosaic Node (breadth) | 26 sci | ONE bonus of EACH distinct type found within 90px — max one per type | draws one of each type among neighbours within 60px |
+
+Note the rounding: a single bonus stays single under an amplifier, so it only pays on
+stacks of 2+. It is a DEPTH tool: fill one limb with one type (conduits, repeated
+cannibalizing), then amplify. The scripted player (shallow, breadth-y stacks) measured
+0% amp gains across 10 runs and correctly never buys one — the amplifier is where
+deliberate human combo play separates from default play.
+
+Next engine candidates (brainstorm, Sep 27): see notes/ITERATION addendum 12.
+
 **THE MARROW CONDUIT (Collins, Sep 27 2026 — the combo engine).** A directional
 support limb: it COPIES every bonus from the limbs within its gather radius (80px) —
 each one's inherited pips plus its own family bonus — and feeds the whole pool to the

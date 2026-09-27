@@ -33,6 +33,8 @@ const CARD_DESC: Record<TowerFamily, string> = {
   net: 'Anti-air only. Nets drag fliers to the ground.',
   ember: 'Flamethrower cone. Fire spreads body to body.',
   conduit: 'Funnels every bonus around it into the limb it points at.',
+  amp: 'Target\'s bonuses ×1.5 (round down). Stack them!',
+  mosaic: 'Gives its target one of EVERY bonus type nearby.',
 };
 
 /** What each family's bonus does when it is EATEN (shown on the cannibalize hover). */
@@ -62,6 +64,8 @@ export const PIP_DESC: Record<TowerFamily, string> = {
   net: 'can hit AIR, and its hits drag fliers down 1s',
   ember: 'its hits IGNITE +3/s — contagious fire that lights up the unseen',
   conduit: 'EVERYTHING it was channelling (harvested), plus: draws its nearest neighbour\'s bonus',
+  amp: 'ALL its bonus counts ×1.5, rounded down (2→3, 4→6)',
+  mosaic: 'one of each type it was channelling (harvested), plus: draws one of each type among its neighbours',
 };
 
 /** What a family can shoot, as the card and panel tag. */
@@ -292,12 +296,21 @@ export class Hud {
     const links = sim.effectLinks(t);
     const name = (u: Tower) => towerSpec(u.family).name;
     switch (t.family) {
-      case 'conduit': {
+      case 'conduit':
+      case 'mosaic': {
         const pool = sim.conduitPool(t).length;
         const target = links.targets[0];
+        const verb = t.family === 'conduit' ? 'FUNNELLING' : 'WEAVING';
+        const what = t.family === 'conduit' ? 'bonus' : 'distinct type';
         return target
-          ? `FUNNELLING ${pool} bonus${pool === 1 ? '' : 'es'} from ${links.sources.length} limb${links.sources.length === 1 ? '' : 's'} → ${name(target).toUpperCase()} · sacrifice to harvest them all`
-          : `pointed at nothing — rotate it (right-click) toward a limb · holding ${pool} to harvest`;
+          ? `${verb} ${pool} ${what}${pool === 1 ? '' : (t.family === 'conduit' ? 'es' : 's')} from ${links.sources.length} limb${links.sources.length === 1 ? '' : 's'} → ${name(target).toUpperCase()} · sacrifice to harvest`
+          : `pointed at nothing — right-click to rotate toward a limb · holding ${pool} to harvest`;
+      }
+      case 'amp': {
+        const target = links.targets[0];
+        return target
+          ? `AMPLIFYING ${name(target).toUpperCase()} — its bonus counts ×1.5 (${sim.ampLayers(target)} layer${sim.ampLayers(target) > 1 ? 's' : ''} on it)`
+          : 'pointed at nothing — right-click to rotate toward a limb';
       }
       case 'choir':
         return `SPEEDING ${links.targets.length} limb${links.targets.length === 1 ? '' : 's'} · +${Math.round((towerSpec('choir').rateAura ?? 0) * sim.auraOf(t).strength * 100)}% fire rate each`
@@ -312,9 +325,16 @@ export class Hud {
       case 'brood':
         return `${sim.broodlings.filter((b) => b.motherId === t.id).length} broodlings in the streets`;
       default: {
-        // Is anything feeding THIS limb?
-        const fedBy = sim.towers.filter((c) => c.family === 'conduit' && sim.conduitTarget(c) === t);
-        return fedBy.length ? `FED by ${fedBy.length} conduit${fedBy.length > 1 ? 's' : ''}` : '';
+        // Which combo engines are working on THIS limb?
+        const on = sim.towers.filter((c) => towerSpec(c.family).engine && sim.conduitTarget(c) === t);
+        if (!on.length) return '';
+        const n = (f: string) => on.filter((c) => c.family === f).length;
+        const parts = [
+          n('conduit') ? `${n('conduit')} conduit${n('conduit') > 1 ? 's' : ''}` : '',
+          n('mosaic') ? `${n('mosaic')} mosaic${n('mosaic') > 1 ? 's' : ''}` : '',
+          n('amp') ? `${n('amp')} amplifier${n('amp') > 1 ? 's' : ''} (×1.5 each)` : '',
+        ].filter(Boolean);
+        return `FED by ${parts.join(' + ')}`;
       }
     }
   }

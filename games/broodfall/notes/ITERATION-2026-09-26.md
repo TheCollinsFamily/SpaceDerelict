@@ -147,6 +147,50 @@ smart flips 3:2, totals 120k vs 115k. 54/54 tests; input check adds the lobber
 gesture; visual/endgame green.
 
 
+## Addendum 12 (Sep 27): combo runaways are the core; science is the combo currency
+
+Collins: "the real core of the game is building combo runaways — use the science
+currency for that." Built: engine framework (`TowerSpec.engine`, generic pointing via
+`conduitTarget`, pools via `conduitPool`, amplification applied last in `statsOf`),
+conduit repriced to 30 science, **Resonance Amplifier** (×1.5 round-down per type,
+stacking per amp; pip = the eater's own ×1.5) and **Mosaic Node** (one of each
+distinct type, max one per type; pip = draws one of each neighbour type). 5 new tests
+(science pricing, the rounding table incl. two layers, conduit→amp chaining, mosaic
+distinctness + harvest, both pips).
+
+Bot: first pass (more engines, cap guns/4) collapsed it to 1/10 — engines displaced
+guns and didn't pay on shallow stacks. Fix = evaluate-before-buy: trial-place the
+engine as a ghost, measure target dps with/without, build only on ≥15% gain, and aim
+every engine at one carry. Result: naive 6/10; guardrail smart flips 5:0, totals
++33%. Measured engine use over 10 runs: 30 engines built, up to 20 bonuses funnelled
+into one limb — but 0 amplifiers (every amp gain it saw was 0%: its carries hold one
+of many types, and 1×1.5 rounds down to 1). Kept the rule as specified; the amp is
+the human's depth tool.
+
+**Brainstorm — more combo engines (not built; for Collins to pick):**
+1. Mirror Node — copies the target's ENTIRE build (all pips, fed included) onto a
+   second limb it also points at: clone your carry.
+2. Crucible — transmutes pips 2:1 from one family into another (set both in its
+   panel): turn surplus lure pips into bombard range doublings.
+3. Leech / Siphon — MOVES (not copies) one pip per cleared wave from the limbs around
+   it into its target: slow, permanent, free accumulation.
+4. Resonator — +X% to everything per DISTINCT family on the target (breadth payoff —
+   the mosaic's natural partner, as the amp is the conduit's).
+5. Catalyst — one chosen family's pips count DOUBLE on every limb in its radius.
+6. Incubator — every cleared wave, its target gains +1 copy of its most numerous
+   pip family (deterministic compounding — the literal runaway).
+7. Relay Conduit — a conduit that MAY target other conduits (opt-in chaining,
+   conduit→conduit→carry networks).
+8. Threshold Mutations — not an engine, a rule: at 5 (10, 20...) pips of one family
+   a limb MUTATES and gains a new verb (5 tanglers → hits freeze solid; 5 fronds →
+   arcs chain back through already-struck bodies; 5 bombards → shells split).
+   Science's name was always "mutation" — this makes it literal and gives depth
+   stacking a payoff beyond numbers.
+9. Grafting Altar (organ) — limbs butchered next to it yield their pips TWICE.
+10. Broadcast Node — the reverse conduit: lends its target's pips to every limb
+    around it (one carry powers a whole battery).
+
+
 ## Addendum 11 (Sep 27): Marrow Conduit, placement facing + field of fire, effect links
 
 Built the conduit (copy-funnel of nearby pips into its pointed target; harvested on

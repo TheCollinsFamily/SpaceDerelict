@@ -36,7 +36,12 @@ const FAMILY_COLORS: Record<TowerFamily, number> = {
   net: 0x88c8e0,
   ember: 0xd86a30,
   conduit: 0xc8a060,
+  amp: 0xe070b0,
+  mosaic: 0x60c0a8,
 };
+
+/** Link colour per combo-engine kind (sources in, arrow out). */
+const ENGINE_COLOR: Record<string, number> = { funnel: 0xffd060, amplify: 0xff80c8, mosaic: 0x70e8c8 };
 
 const ENEMY_SIZE: Record<Enemy['kind'], number> = {
   responder: 5, militia: 6, skitterling: 3.5, soldier: 8, elite: 11, flier: 6, sapper: 7,
@@ -622,6 +627,25 @@ export class Renderer {
           .fill({ color: 0xffd060, alpha: 0.9 });
         break;
       }
+      case 'amp':
+      case 'mosaic': {
+        // Combo engines: a resonance bell (amp) / a faceted node (mosaic), arrow = heading.
+        const f = t.facing ?? 'N';
+        const vx = f === 'E' ? 1 : f === 'W' ? -1 : 0;
+        const vy = f === 'S' ? 1 : f === 'N' ? -1 : 0;
+        const col = t.family === 'amp' ? 0xff80c8 : 0x70e8c8;
+        if (t.family === 'amp') {
+          g.circle(x, y, 10).fill(c);
+          g.circle(x, y, 7 + Math.sin(this.pulse * 4 + t.id) * 2).stroke({ width: 1.5, color: col, alpha: 0.8 });
+          g.circle(x, y, 12 + Math.sin(this.pulse * 4 + t.id + 1) * 2).stroke({ width: 1, color: col, alpha: 0.5 });
+        } else {
+          g.poly([x, y - 11, x + 10, y - 3, x + 6, y + 9, x - 6, y + 9, x - 10, y - 3]).fill(c);
+          g.poly([x, y - 5, x + 4, y, x, y + 5, x - 4, y]).fill({ color: 0xffffff, alpha: 0.6 });
+        }
+        g.poly([x + vx * 10 + vy * 6, y + vy * 10 + vx * 6, x + vx * 21, y + vy * 21, x + vx * 10 - vy * 6, y + vy * 10 - vx * 6])
+          .fill({ color: col, alpha: 0.9 });
+        break;
+      }
       case 'ember':
         // Ember sac: a swollen fuel bladder with a lit nozzle.
         g.circle(x, y, 10).fill(c);
@@ -739,13 +763,12 @@ export class Renderer {
     const spec = towerSpec(t.family);
     if (!spec.directional) return;
     const f = Sim.facingVec(t.facing ?? 'N');
-    const len = t.family === 'conduit'
-      ? (spec.conduit?.reach ?? 0) * towerStats(t).reach
-      : sim.statsOf(t).range;
-    const half = t.family === 'conduit' ? 30 : 28;
+    const eng = spec.engine;
+    const len = eng ? eng.reach * towerStats(t).reach : sim.statsOf(t).range;
+    const half = eng ? 30 : 28;
     const px = -f.y;
     const py = f.x;
-    const col = valid ? (t.family === 'conduit' ? 0xe8c060 : 0xffb070) : 0xb03a2a;
+    const col = valid ? (eng ? ENGINE_COLOR[eng.kind] : 0xffb070) : 0xb03a2a;
     g.poly([
       t.pos.x + px * half, t.pos.y + py * half,
       t.pos.x + f.x * len + px * half, t.pos.y + f.y * len + py * half,
@@ -770,17 +793,20 @@ export class Renderer {
   private drawEffectLinks(g: Graphics, sim: Sim, t: Tower): void {
     const spec = towerSpec(t.family);
     const links = sim.effectLinks(t);
-    if (t.family === 'conduit') {
+    if (spec.engine) {
+      const col = ENGINE_COLOR[spec.engine.kind];
       const s = towerStats(t);
-      const gather = (spec.conduit?.gather ?? 0) * s.reach + (s.aoe - spec.aoe);
-      g.circle(t.pos.x, t.pos.y, gather).stroke({ width: 1, color: 0xe8c060, alpha: 0.35 });
+      if (spec.engine.gather !== undefined) {
+        const gather = spec.engine.gather * s.reach + (s.aoe - spec.aoe);
+        g.circle(t.pos.x, t.pos.y, gather).stroke({ width: 1, color: col, alpha: 0.35 });
+      }
       for (const u of links.sources) {
-        g.moveTo(u.pos.x, u.pos.y).lineTo(t.pos.x, t.pos.y).stroke({ width: 1.5, color: 0xe8c060, alpha: 0.7 });
-        g.circle(u.pos.x, u.pos.y, 16).stroke({ width: 1.2, color: 0xe8c060, alpha: 0.6 });
+        g.moveTo(u.pos.x, u.pos.y).lineTo(t.pos.x, t.pos.y).stroke({ width: 1.5, color: col, alpha: 0.7 });
+        g.circle(u.pos.x, u.pos.y, 16).stroke({ width: 1.2, color: col, alpha: 0.6 });
       }
       for (const u of links.targets) {
-        g.moveTo(t.pos.x, t.pos.y).lineTo(u.pos.x, u.pos.y).stroke({ width: 4, color: 0xffd060, alpha: 0.9 });
-        g.circle(u.pos.x, u.pos.y, 22 + Math.sin(this.pulse * 3) * 2).stroke({ width: 2.5, color: 0xffd060, alpha: 0.95 });
+        g.moveTo(t.pos.x, t.pos.y).lineTo(u.pos.x, u.pos.y).stroke({ width: 4, color: col, alpha: 0.9 });
+        g.circle(u.pos.x, u.pos.y, 22 + Math.sin(this.pulse * 3) * 2).stroke({ width: 2.5, color: col, alpha: 0.95 });
       }
       return;
     }

@@ -414,15 +414,19 @@ export class Sim {
    * covers this limb speeds it (choir) and SHARES its hit-verb pips with it —
    * a snare pip on a choir makes the whole chapel slow what it hits.
    */
-  /** The limb a conduit is pointed at: the nearest one down its facing line, within reach. */
+  /**
+   * The limb a COMBO ENGINE (conduit, amplifier, mosaic) is pointed at: the
+   * nearest non-engine limb down its facing lane, within reach.
+   */
   conduitTarget(c: Tower, among: Tower[] = this.towers): Tower | null {
-    const spec = towerSpec('conduit').conduit!;
-    const reach = spec.reach * towerStats(c).reach;
+    const eng = towerSpec(c.family).engine;
+    if (!eng) return null;
+    const reach = eng.reach * towerStats(c).reach;
     const f = Sim.facingVec(c.facing ?? 'N');
     let best: Tower | null = null;
     let bestAlong = Infinity;
     for (const t of among) {
-      if (t.id === c.id || t.family === 'conduit') continue;
+      if (t.id === c.id || towerSpec(t.family).engine) continue;
       const rx = t.pos.x - c.pos.x;
       const ry = t.pos.y - c.pos.y;
       const along = rx * f.x + ry * f.y;
@@ -433,21 +437,56 @@ export class Sim {
     return best;
   }
 
-  /** The limbs a conduit is drawing from (all around it, except its own target and other conduits). */
+  /** The limbs an engine draws from (all around it, except its target and other engines). Amplifiers draw from none. */
   conduitSources(c: Tower, among: Tower[] = this.towers): Tower[] {
-    const spec = towerSpec('conduit');
+    const spec = towerSpec(c.family);
+    const eng = spec.engine;
+    if (!eng || eng.gather === undefined) return [];
     const s = towerStats(c);
-    const radius = spec.conduit!.gather * s.reach + (s.aoe - spec.aoe);
+    const radius = eng.gather * s.reach + (s.aoe - spec.aoe);
     const target = this.conduitTarget(c, among);
-    return among.filter((u) => u.id !== c.id && u !== target && u.family !== 'conduit'
+    return among.filter((u) => u.id !== c.id && u !== target && !towerSpec(u.family).engine
       && dist(u.pos, c.pos) <= radius);
   }
 
-  /** Everything a conduit is channelling: each source's inherited pips plus its own family bonus. */
+  /**
+   * What an engine is channelling into its target (and what sacrificing it harvests):
+   * funnel = every source's pips plus each source's family; mosaic = ONE of each
+   * distinct type found among them; amplify = nothing (it multiplies instead).
+   */
   conduitPool(c: Tower, among: Tower[] = this.towers): ModPip[] {
-    const pool: ModPip[] = [];
-    for (const u of this.conduitSources(c, among)) pool.push(...u.pips, { family: u.family });
-    return pool;
+    const kind = towerSpec(c.family).engine?.kind;
+    const all: ModPip[] = [];
+    for (const u of this.conduitSources(c, among)) all.push(...u.pips, { family: u.family });
+    if (kind === 'funnel') return all;
+    if (kind === 'mosaic') {
+      const seen = new Set<TowerFamily>();
+      return all.filter((p) => (seen.has(p.family) ? false : (seen.add(p.family), true)));
+    }
+    return [];
+  }
+
+  /** How many ×1.5 amplifications a limb gets (amplifiers pointed at it + its own amp pips). */
+  ampLayers(t: Tower): number {
+    let n = t.pips.filter((p) => p.family === 'amp').length;
+    for (const c of this.towers) {
+      if (c.id !== t.id && towerSpec(c.family).engine?.kind === 'amplify' && this.conduitTarget(c) === t) n++;
+    }
+    return n;
+  }
+
+  /** Bonus counts ×factor, rounded down, per type — once per layer (1→1, 2→3, 3→4, 4→6...). */
+  static amplify(pips: ModPip[], layers: number): ModPip[] {
+    if (layers <= 0) return pips;
+    const counts = new Map<TowerFamily, number>();
+    for (const p of pips) counts.set(p.family, (counts.get(p.family) ?? 0) + 1);
+    const out: ModPip[] = [];
+    for (const [fam, n0] of counts) {
+      let n = n0;
+      if (fam !== 'amp') for (let i = 0; i < layers; i++) n = Math.floor(n * B.ampFactor);
+      for (let i = 0; i < n; i++) out.push({ family: fam });
+    }
+    return out;
   }
 
   /**
@@ -457,7 +496,7 @@ export class Sim {
    */
   effectLinks(t: Tower): { targets: Tower[]; sources: Tower[] } {
     const among = this.towers.filter((u) => u.id !== t.id);
-    if (t.family === 'conduit') {
+    if (towerSpec(t.family).engine) {
       const target = this.conduitTarget(t, among);
       return { targets: target ? [target] : [], sources: this.conduitSources(t, among) };
     }
@@ -473,8 +512,9 @@ export class Sim {
     let choirBonus = 0;
     for (const c of this.towers) {
       if (c.id === t.id) continue;
-      // Conduits pointed at this limb feed it their whole pool.
-      if (c.family === 'conduit') {
+      // Combo engines pointed at this limb feed it their pool (amplifiers are
+      // counted separately and applied last, so they multiply everything fed).
+      if (towerSpec(c.family).engine) {
         if (this.conduitTarget(c) === t) shared.push(...this.conduitPool(c));
         continue;
       }
@@ -493,7 +533,19 @@ export class Sim {
         .slice(0, draws);
       for (const u of near) shared.push({ family: u.family });
     }
-    const s = towerStats(shared.length ? { ...t, pips: [...t.pips, ...shared] } : t);
+    // Mosaic PIPS: one of each distinct family among the limb's close neighbours.
+    if (t.pips.some((p) => p.family === 'mosaic')) {
+      const seen = new Set<TowerFamily>();
+      for (const u of this.towers) {
+        if (u.id === t.id || dist(u.pos, t.pos) > B.mosaicPipRadius || seen.has(u.family)) continue;
+        seen.add(u.family);
+        shared.push({ family: u.family });
+      }
+    }
+    // Amplification last: it multiplies EVERYTHING the limb carries and was fed.
+    const layers = this.ampLayers(t);
+    const all = shared.length || layers ? Sim.amplify([...t.pips, ...shared], layers) : t.pips;
+    const s = towerStats(all === t.pips ? t : { ...t, pips: all });
     const h = this.map.heights[t.cell] || 1;
     s.range = s.range * this.geneMods.rangeMult * (1 + B.heightRangeBonus * (h - 1));
     s.maxHp += t.family === 'spine' ? this.geneMods.spineHpBonus : 0;
@@ -873,8 +925,8 @@ export class Sim {
       this.meat[c] += salv[c] ?? 0;
       refund += salv[c] ?? 0;
     }
-    // A conduit is HARVESTED: everything it was channelling comes along, permanently.
-    const harvest = donor.family === 'conduit' ? this.conduitPool(donor) : [];
+    // A funnel or mosaic engine is HARVESTED: what it was channelling comes along, permanently.
+    const harvest = towerSpec(donor.family).engine ? this.conduitPool(donor) : [];
     this.pendingPips = [...this.pendingPips, ...donor.pips, ...harvest, { family: donor.family }];
     this.removeTower(donor.id, false);
     this.events.push({ kind: 'butchered', family: donor.family, refund });

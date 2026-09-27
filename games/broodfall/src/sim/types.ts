@@ -6,7 +6,8 @@ export type TowerFamily =
   | 'spitter' | 'burster' | 'lasher' | 'maw' | 'spine' | 'lure'
   | 'tangler' | 'blighter' | 'impaler' | 'choir' | 'sling'
   | 'brood' | 'swamp' | 'frond' | 'lobber' | 'mister' | 'ocular' | 'prism'
-  | 'bombard' | 'ward' | 'quill' | 'skipper' | 'net' | 'ember' | 'conduit';
+  | 'bombard' | 'ward' | 'quill' | 'skipper' | 'net' | 'ember' | 'conduit'
+  | 'amp' | 'mosaic';
 
 /** What a limb can shoot at. Fliers are only reachable by 'air'/'both' limbs. */
 export type HitsLayer = 'ground' | 'air' | 'both';
@@ -132,6 +133,14 @@ export interface TowerSpec {
   directional?: boolean;
   /** Marrow conduit: copies every bonus within `gather` px into the limb it points at (within `reach`). */
   conduit?: { gather: number; reach: number };
+  /**
+   * COMBO ENGINE (science-priced): a directional limb that manipulates the
+   * bonuses of the limb it points at. `reach` = pointing lane length.
+   *   'funnel'  (conduit) — copies ALL bonuses around it into the target
+   *   'amplify' (amp)     — the target's bonus counts ×1.5, rounded down, per type
+   *   'mosaic'  (mosaic)  — one bonus of EACH distinct type around it (max one per type)
+   */
+  engine?: { kind: 'funnel' | 'amplify' | 'mosaic'; reach: number; gather?: number };
   /** Hits set bodies burning at this dps for burnDur seconds. */
   burnDps?: number;
   burnDur?: number;

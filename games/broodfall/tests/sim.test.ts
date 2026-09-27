@@ -1204,6 +1204,83 @@ describe('MARROW CONDUIT: funnel every nearby bonus into one limb; harvest on sa
   });
 });
 
+describe('COMBO ENGINES (science-priced): amplifier (depth) and mosaic (breadth)', () => {
+  const mk = (s: Sim, id: number, family: Tower['family'], x: number, y: number, pips: Tower['pips'] = []): Tower => ({
+    id, family, pos: { x, y }, cell: s.cellAt(x, y), hp: 100, maxHp: 100, pips, cooldown: 1e9, kills: 0,
+  });
+  const count = (pips: Tower['pips'], f: string) => pips.filter((p) => p.family === f).length;
+
+  it('every combo engine is paid in science meat (science = the combo currency)', () => {
+    for (const f of ['conduit', 'amp', 'mosaic'] as const) {
+      const cost = towerSpec(f).cost;
+      expect(cost.science ?? 0).toBeGreaterThan(0);
+      expect(cost.war ?? 0).toBe(0);
+    }
+  });
+
+  it('amplify: counts ×1.5 ROUNDED DOWN per type, once per layer (1→1, 2→3, 4→6; two layers 4→6→9)', () => {
+    const pips = [
+      { family: 'spitter' as const },
+      { family: 'lasher' as const }, { family: 'lasher' as const },
+      ...Array.from({ length: 4 }, () => ({ family: 'frond' as const })),
+    ];
+    const one = Sim.amplify(pips, 1);
+    expect(count(one, 'spitter')).toBe(1);
+    expect(count(one, 'lasher')).toBe(3);
+    expect(count(one, 'frond')).toBe(6);
+    expect(count(Sim.amplify(pips, 2), 'frond')).toBe(9);
+  });
+
+  it('an amplifier pointed at a limb multiplies EVERYTHING it carries — including what a conduit feeds it (engines chain)', () => {
+    const s = freshSim(1400);
+    const target = mk(s, 1, 'spitter', 400, 300, [{ family: 'spitter' }, { family: 'spitter' }]);
+    const amp = mk(s, 2, 'amp', 400, 400); amp.facing = 'N';
+    const conduit = mk(s, 3, 'conduit', 300, 300); conduit.facing = 'E';
+    const srcA = mk(s, 4, 'spitter', 300, 250);
+    const srcB = mk(s, 5, 'spitter', 250, 300);
+    s.towers.push(target);
+    const base = s.statsOf(target).rate;
+    s.towers.push(amp);
+    // 2 own spitter pips → 3 under one amp.
+    expect(s.statsOf(target).rate).toBeCloseTo(towerSpec('spitter').rate * (1 + B.pipRate * 3));
+    s.towers.push(conduit, srcA, srcB);
+    // Conduit adds 2 spitter family bonuses → 4 spitter pips, amplified → 6.
+    expect(s.statsOf(target).rate).toBeCloseTo(towerSpec('spitter').rate * (1 + B.pipRate * 6));
+    expect(s.statsOf(target).rate).toBeGreaterThan(base);
+    expect(s.ampLayers(target)).toBe(1);
+  });
+
+  it('mosaic: its target gets ONE of each distinct type around it, never more than one per type', () => {
+    const s = freshSim(1401);
+    const mosaic = mk(s, 1, 'mosaic', 300, 300); mosaic.facing = 'E';
+    const target = mk(s, 2, 'spitter', 400, 300);
+    // Three spitters (one carrying two tanglers) and a lasher around it.
+    s.towers.push(mosaic, target,
+      mk(s, 3, 'spitter', 300, 250, [{ family: 'tangler' }, { family: 'tangler' }]),
+      mk(s, 4, 'spitter', 250, 300), mk(s, 5, 'spitter', 300, 350), mk(s, 6, 'lasher', 240, 260));
+    const pool = s.conduitPool(mosaic);
+    expect(count(pool, 'spitter')).toBe(1);
+    expect(count(pool, 'tangler')).toBe(1);
+    expect(count(pool, 'lasher')).toBe(1);
+    expect(pool.length).toBe(3);
+    // Sacrificed, it harvests that distinct set.
+    s.issue({ kind: 'butcher', towerId: mosaic.id });
+    expect(s.pendingPips.length).toBe(3 + 1); // pool + its own family pip
+  });
+
+  it('amp pip on the eater: its own bonuses ×1.5; mosaic pip: draws one of each neighbour type', () => {
+    const s = freshSim(1402);
+    const eater = mk(s, 1, 'spitter', 300, 300, [{ family: 'amp' }, { family: 'lasher' }, { family: 'lasher' }]);
+    s.towers.push(eater);
+    expect(s.statsOf(eater).damage).toBeCloseTo(towerSpec('spitter').damage * (1 + B.pipDamage * 3));
+    const weaver = mk(s, 2, 'spitter', 600, 300, [{ family: 'mosaic' }]);
+    s.towers.push(weaver, mk(s, 3, 'lasher', 630, 300), mk(s, 4, 'lasher', 600, 330), mk(s, 5, 'tangler', 570, 300));
+    const st = s.statsOf(weaver);
+    expect(st.damage).toBeCloseTo(towerSpec('spitter').damage * (1 + B.pipDamage)); // ONE lasher, not two
+    expect(st.slowMult).toBeLessThan(1);                                             // plus the tangler
+  });
+});
+
 describe('arc prism (focus ramp + relay network)', () => {
   it('ramps on a held target and resets on a switch', () => {
     const s = freshSim(960);
