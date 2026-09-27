@@ -217,6 +217,24 @@ export const TOWERS: readonly TowerSpec[] = [
     engine: { kind: 'mosaic', reach: 160, gather: 90 }, directional: true,
     maxHp: 70, interest: 2, eatThreshold: 0, advanced: true, hits: 'ground',
   },
+  {
+    // VOLUME engine (Collins, Sep 27 2026): the limb it points at fires TWICE the
+    // projectiles (×2 per gland — two glands ×4). On producers it doubles output.
+    family: 'twin', name: 'Twinning Gland', weight: 6,
+    cost: { science: 38 }, range: 0, rate: 0, damage: 0, aoe: 0,
+    engine: { kind: 'twin', reach: 160 }, directional: true,
+    maxHp: 70, interest: 2, eatThreshold: 0, advanced: true, hits: 'ground',
+  },
+  {
+    // The BONUS FARM (Collins, Sep 27 2026): holds the limb it points at in
+    // stasis (it stops working entirely) — and can be sacrificed as many times as
+    // you like WITHOUT disappearing: each sacrifice harvests a copy of the tapped
+    // limb's bonuses (its inherited pips + its own family bonus). No salvage.
+    family: 'tap', name: 'Marrow Tap', weight: 6,
+    cost: { science: 24 }, range: 0, rate: 0, damage: 0, aoe: 0,
+    engine: { kind: 'tap', reach: 120 }, directional: true,
+    maxHp: 90, interest: 2, eatThreshold: 0, advanced: true, hits: 'ground',
+  },
 ];
 
 export const ORGANS: readonly OrganSpec[] = [
@@ -425,6 +443,11 @@ export const BALANCE = {
   pipCloud: 4,        // ...and every hit leaves a toxic pheromone cloud (+4 dps per pip)
   /** Amplifier: bonus counts ×this per amp (rounded down). Amp pip = the same, on the eater. */
   ampFactor: 1.5,
+  /** Conduit: gives at most this many copies of each bonus type (Collins, Sep 27 2026). */
+  funnelMaxCopies: 2,
+  /** Twin pip: +1 projectile per shot per pip (a twinning GLAND doubles instead). */
+  pipTwin: 1,
+  twinSpread: 0.12,         // radians between twinned projectiles
   /** Mosaic pip: the limb draws one of each distinct family among neighbours within this radius. */
   mosaicPipRadius: 60,
   /** Conduit pip: the limb passively draws the family bonus of its N nearest neighbours. */

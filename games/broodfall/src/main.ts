@@ -126,6 +126,13 @@ function updateHint(): void {
     hud.setHint(`place ${organSpec(armedOrgan).name} on open ground inside the body`);
   } else if (selectedCard !== null && hoverDonorId !== null) {
     const donor = sim.towers.find((t) => t.id === hoverDonorId);
+    if (donor && donor.family === 'tap') {
+      const target = sim.conduitTarget(donor);
+      hud.setHint(target
+        ? `MILK THE TAP: +${target.pips.length + 1} bonus${target.pips.length ? 'es' : ''} from ${towerSpec(target.family).name.toUpperCase()} — the tap STAYS (milk it again any time) · no salvage`
+        : 'this tap points at nothing — rotate it (right-click, no card armed) toward a limb to milk');
+      return;
+    }
     if (donor) {
       const deps = sim.dependentsOf(donor.id);
       const harvest = donor.family === 'conduit' ? sim.conduitPool(donor).length : 0;

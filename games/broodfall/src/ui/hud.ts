@@ -35,6 +35,8 @@ const CARD_DESC: Record<TowerFamily, string> = {
   conduit: 'Funnels every bonus around it into the limb it points at.',
   amp: 'Target\'s bonuses ×1.5 (round down). Stack them!',
   mosaic: 'Gives its target one of EVERY bonus type nearby.',
+  twin: 'Its target fires DOUBLE the projectiles.',
+  tap: 'Stops its target — sacrifice the tap again and again.',
 };
 
 /** What each family's bonus does when it is EATEN (shown on the cannibalize hover). */
@@ -66,6 +68,8 @@ export const PIP_DESC: Record<TowerFamily, string> = {
   conduit: 'EVERYTHING it was channelling (harvested), plus: draws its nearest neighbour\'s bonus',
   amp: 'ALL its bonus counts ×1.5, rounded down (2→3, 4→6)',
   mosaic: 'one of each type it was channelling (harvested), plus: draws one of each type among its neighbours',
+  twin: '+1 projectile on every shot',
+  tap: 'a copy of the TAPPED limb\'s bonuses — and the tap stays (sacrifice it again)',
 };
 
 /** What a family can shoot, as the card and panel tag. */
@@ -312,6 +316,18 @@ export class Hud {
           ? `AMPLIFYING ${name(target).toUpperCase()} — its bonus counts ×1.5 (${sim.ampLayers(target)} layer${sim.ampLayers(target) > 1 ? 's' : ''} on it)`
           : 'pointed at nothing — right-click to rotate toward a limb';
       }
+      case 'twin': {
+        const target = links.targets[0];
+        return target
+          ? `TWINNING ${name(target).toUpperCase()} — ${sim.statsOf(target).volley}× projectiles per shot`
+          : 'pointed at nothing — right-click to rotate toward a limb';
+      }
+      case 'tap': {
+        const target = links.targets[0];
+        return target
+          ? `HOLDING ${name(target).toUpperCase()} IN STASIS · sacrifice this tap to harvest +${target.pips.length + 1} bonus${target.pips.length ? 'es' : ''} (it stays)`
+          : 'pointed at nothing — right-click to rotate toward a limb to milk';
+      }
       case 'choir':
         return `SPEEDING ${links.targets.length} limb${links.targets.length === 1 ? '' : 's'} · +${Math.round((towerSpec('choir').rateAura ?? 0) * sim.auraOf(t).strength * 100)}% fire rate each`
           + (t.pips.length ? ' · sharing its hit bonuses' : '');
@@ -328,11 +344,13 @@ export class Hud {
         // Which combo engines are working on THIS limb?
         const on = sim.towers.filter((c) => towerSpec(c.family).engine && sim.conduitTarget(c) === t);
         if (!on.length) return '';
+        if (sim.isTapped(t)) return 'TAPPED — held in stasis (it does nothing while a tap milks it)';
         const n = (f: string) => on.filter((c) => c.family === f).length;
         const parts = [
           n('conduit') ? `${n('conduit')} conduit${n('conduit') > 1 ? 's' : ''}` : '',
           n('mosaic') ? `${n('mosaic')} mosaic${n('mosaic') > 1 ? 's' : ''}` : '',
           n('amp') ? `${n('amp')} amplifier${n('amp') > 1 ? 's' : ''} (×1.5 each)` : '',
+          n('twin') ? `${n('twin')} twinning gland${n('twin') > 1 ? 's' : ''} (×2 shots each)` : '',
         ].filter(Boolean);
         return `FED by ${parts.join(' + ')}`;
       }

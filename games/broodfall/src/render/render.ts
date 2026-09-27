@@ -38,10 +38,14 @@ const FAMILY_COLORS: Record<TowerFamily, number> = {
   conduit: 0xc8a060,
   amp: 0xe070b0,
   mosaic: 0x60c0a8,
+  twin: 0x9088e8,
+  tap: 0x8a5a78,
 };
 
 /** Link colour per combo-engine kind (sources in, arrow out). */
-const ENGINE_COLOR: Record<string, number> = { funnel: 0xffd060, amplify: 0xff80c8, mosaic: 0x70e8c8 };
+const ENGINE_COLOR: Record<string, number> = {
+  funnel: 0xffd060, amplify: 0xff80c8, mosaic: 0x70e8c8, twin: 0xa8a0ff, tap: 0xc070a0,
+};
 
 const ENEMY_SIZE: Record<Enemy['kind'], number> = {
   responder: 5, militia: 6, skitterling: 3.5, soldier: 8, elite: 11, flier: 6, sapper: 7,
@@ -628,13 +632,27 @@ export class Renderer {
         break;
       }
       case 'amp':
-      case 'mosaic': {
-        // Combo engines: a resonance bell (amp) / a faceted node (mosaic), arrow = heading.
+      case 'mosaic':
+      case 'twin':
+      case 'tap': {
+        // Combo engines: bell (amp), faceted node (mosaic), paired sacs (twin),
+        // a lamprey tap (tap); the arrow is the heading.
         const f = t.facing ?? 'N';
         const vx = f === 'E' ? 1 : f === 'W' ? -1 : 0;
         const vy = f === 'S' ? 1 : f === 'N' ? -1 : 0;
-        const col = t.family === 'amp' ? 0xff80c8 : 0x70e8c8;
-        if (t.family === 'amp') {
+        const col = ENGINE_COLOR[towerSpec(t.family).engine!.kind];
+        if (t.family === 'twin') {
+          g.circle(x - 5, y, 7).fill(c);
+          g.circle(x + 5, y, 7).fill(c);
+          g.circle(x - 5, y, 3).fill({ color: 0xe8e4ff, alpha: 0.8 });
+          g.circle(x + 5, y, 3).fill({ color: 0xe8e4ff, alpha: 0.8 });
+        } else if (t.family === 'tap') {
+          g.circle(x, y, 10).fill(c);
+          for (let i = 0; i < 6; i++) {
+            const a = (i * Math.PI) / 3 + this.pulse * 0.4;
+            g.circle(x + Math.cos(a) * 5, y + Math.sin(a) * 5, 1.4).fill(0xf0d0e0);
+          }
+        } else if (t.family === 'amp') {
           g.circle(x, y, 10).fill(c);
           g.circle(x, y, 7 + Math.sin(this.pulse * 4 + t.id) * 2).stroke({ width: 1.5, color: col, alpha: 0.8 });
           g.circle(x, y, 12 + Math.sin(this.pulse * 4 + t.id + 1) * 2).stroke({ width: 1, color: col, alpha: 0.5 });
@@ -737,6 +755,11 @@ export class Renderer {
     if ((t.shieldMax ?? 0) > 0 && (t.shield ?? 0) > 0) {
       const f = (t.shield ?? 0) / (t.shieldMax ?? 1);
       g.circle(x, y, 18).stroke({ width: 2, color: 0x9fc4ff, alpha: 0.25 + 0.55 * f });
+    }
+    // Held in stasis by a marrow tap: a dim cocoon over it.
+    if (sim.isTapped(t)) {
+      g.circle(x, y, 17).fill({ color: 0x3a2030, alpha: 0.55 });
+      g.circle(x, y, 17).stroke({ width: 1.5, color: 0xc070a0, alpha: 0.8 });
     }
     // Stunned by a sedation dart: a pale halo.
     if (t.stunnedUntil !== undefined && t.stunnedUntil > sim.time) {

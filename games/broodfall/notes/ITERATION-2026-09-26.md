@@ -147,6 +147,38 @@ smart flips 3:2, totals 120k vs 115k. 54/54 tests; input check adds the lobber
 gesture; visual/endgame green.
 
 
+## Addendum 13 (Sep 27): conduit cap 2, Twinning Gland, Marrow Tap
+
+Collins: conduit gives max 2 copies of a bonus; "one that doubles the projectiles of
+whatever it's connected to"; "one that makes whatever it's connected to stop working
+but can be sacrificed as many times as you want without disappearing." Built all
+three (engine kinds 'twin' and 'tap'; `volley` stat; `isTapped` stasis covers
+firing, auras, brood, swamp, lure; tap butcher = no removal, no salvage, banks the
+target's pips + family). 3 new tests. Naive 4/10; guardrail flips 3:0.
+
+**Brainstorm round 2 — more engine effects (not built):**
+1. Mitosis Node — once per cleared wave, if its target carries ≥N bonuses it BUDS a
+   copy of the target (same family, same pips) on a free adjacent block. Towers that
+   breed towers: the literal runaway.
+2. Echo Chamber — every hit its target lands repeats 1s later as a ghost hit.
+3. Capacitor — while its target has nothing to shoot, it banks shots; when the hive
+   arrives it dumps them as one burst.
+4. Queen's Brand — its target's kills hatch broodlings where they fall.
+5. Lens Node — target range ×2, fire rate ×0.5 (a trade, not a buff: builds choose).
+6. Bloat Node — target splash ×2, range ×0.5.
+7. Overcharge Node — target fires ×3 but loses hp every shot (risk you control;
+   pairs with ward shields and brood heals).
+8. Boomerang Node — target's projectiles fly back to it, hitting on the return too.
+9. Splinter Node — target's projectiles burst into 3 fragments on impact.
+10. Meat Press — target's kills pay science instead of war (fund more engines).
+11. Death Insurance (Reliquary) — if its target dies, the target's bonuses are banked
+    for your next build instead of lost.
+12. Swap Node — trades the bonus sets of the two limbs at either end of it.
+13. Homing Node — target's projectiles curve onto their targets (never miss).
+14. Taunt Gland — hive bodies within reach of its target must attack the target
+    (turns any limb into a tank; pairs with thorns/wards/brood heals).
+
+
 ## Addendum 12 (Sep 27): combo runaways are the core; science is the combo currency
 
 Collins: "the real core of the game is building combo runaways — use the science

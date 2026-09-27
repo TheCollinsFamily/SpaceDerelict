@@ -127,6 +127,8 @@ export function towerStats(t: Tower) {
     skips: (spec.skips ?? 0) + B.pipSkip * pips('skipper'),
     // Quill pip: every shot also strikes one more target per pip.
     extraTargets: B.pipExtraTarget * pips('quill'),
+    // Twin pip: +1 projectile per shot per pip (twinning GLANDS pointed at it double it).
+    volley: 1 + B.pipTwin * pips('twin'),
   };
 }
 
@@ -458,12 +460,34 @@ export class Sim {
     const kind = towerSpec(c.family).engine?.kind;
     const all: ModPip[] = [];
     for (const u of this.conduitSources(c, among)) all.push(...u.pips, { family: u.family });
-    if (kind === 'funnel') return all;
+    if (kind === 'funnel') {
+      // At most 2 copies of each bonus type (Collins, Sep 27 2026).
+      const n = new Map<TowerFamily, number>();
+      return all.filter((p) => {
+        const k = (n.get(p.family) ?? 0) + 1;
+        n.set(p.family, k);
+        return k <= B.funnelMaxCopies;
+      });
+    }
     if (kind === 'mosaic') {
       const seen = new Set<TowerFamily>();
       return all.filter((p) => (seen.has(p.family) ? false : (seen.add(p.family), true)));
     }
     return [];
+  }
+
+  /** Engines of a given kind pointed at this limb (and not themselves held in stasis). */
+  private enginesOn(t: Tower, kind: string): number {
+    let n = 0;
+    for (const c of this.towers) {
+      if (c.id !== t.id && towerSpec(c.family).engine?.kind === kind && this.conduitTarget(c) === t) n++;
+    }
+    return n;
+  }
+
+  /** Held in stasis by a marrow tap: it does nothing at all while tapped. */
+  isTapped(t: Tower): boolean {
+    return this.enginesOn(t, 'tap') > 0;
   }
 
   /** How many ×1.5 amplifications a limb gets (amplifiers pointed at it + its own amp pips). */
@@ -519,6 +543,7 @@ export class Sim {
         continue;
       }
       if (c.family !== 'choir' && c.family !== 'ward') continue;
+      if (this.isTapped(c)) continue; // a tapped support limb projects nothing
       const aura = this.auraOf(c);
       if (dist(c.pos, t.pos) > aura.radius) continue;
       if (c.family === 'choir') choirBonus += (towerSpec('choir').rateAura ?? 0) * aura.strength;
@@ -554,6 +579,8 @@ export class Sim {
     // same tempo also quickens a producer's cycle.
     s.rate *= 1 + choirBonus;
     s.tempo *= 1 + choirBonus;
+    // Twinning glands: ×2 projectiles (and producer output) per gland.
+    s.volley *= 2 ** this.enginesOn(t, 'twin');
     return s;
   }
 
@@ -825,10 +852,19 @@ export class Sim {
         // lands with a thud that carries every hit verb the sling has eaten.
         t.cooldown = B.slingCooldown / st.tempo;
         const spec = towerSpec('sling');
-        this.clotFlights.push({
-          id: this.nextId++, from: { ...t.pos }, to, cell: cmd.cell, ttl: B.clotFlightSeconds,
-          ownerId: t.id, fx: fxOf(t, st), aoe: st.aoe, patchBonus: (st.aoe - spec.aoe) / 12,
-        });
+        // Twinned: extra clots land in a line past the first, each its own patch.
+        const dx = to.x - t.pos.x;
+        const dy = to.y - t.pos.y;
+        const m = Math.hypot(dx, dy) || 1;
+        for (let k = 0; k < st.volley; k++) {
+          const at = { x: to.x + (dx / m) * 40 * k, y: to.y + (dy / m) * 40 * k };
+          const cell = this.cellAt(at.x, at.y);
+          if (k > 0 && this.map.cells[cell] === CellType.Void) break;
+          this.clotFlights.push({
+            id: this.nextId++, from: { ...t.pos }, to: at, cell, ttl: B.clotFlightSeconds,
+            ownerId: t.id, fx: fxOf(t, st), aoe: st.aoe, patchBonus: (st.aoe - spec.aoe) / 12,
+          });
+        }
         this.events.push({ kind: 'clot-hurled', cell: cmd.cell });
         return { ok: true };
       }
@@ -841,10 +877,15 @@ export class Sim {
         const st = this.statsOf(t);
         if (dist(t.pos, to) > st.range) return { ok: false, err: 'out of range' };
         t.cooldown = B.lobberCooldown / st.tempo;
-        this.bileFlights.push({
-          id: this.nextId++, from: { ...t.pos }, to, cell: cmd.cell, ttl: B.bileFlightSeconds,
-          fx: fxOf(t, st), aoe: st.aoe,
-        });
+        for (let k = 0; k < st.volley; k++) {
+          // Twinned globs splash in a small ring around the aim point.
+          const a = (k / Math.max(1, st.volley)) * Math.PI * 2;
+          const r = k === 0 ? 0 : 24;
+          this.bileFlights.push({
+            id: this.nextId++, from: { ...t.pos }, to: { x: to.x + Math.cos(a) * r, y: to.y + Math.sin(a) * r },
+            cell: cmd.cell, ttl: B.bileFlightSeconds, fx: fxOf(t, st), aoe: st.aoe,
+          });
+        }
         return { ok: true };
       }
       case 'set-facing': {
@@ -919,6 +960,15 @@ export class Sim {
    * before building stacks the traits — a two-course meal.
    */
   private butcherTower(donor: Tower): void {
+    // A MARROW TAP is milked, not eaten: no salvage, it never disappears, and each
+    // sacrifice banks a copy of the tapped limb's bonuses. Do it as often as you like.
+    if (donor.family === 'tap') {
+      const target = this.conduitTarget(donor);
+      const milk = target ? [...target.pips, { family: target.family }] : [];
+      this.pendingPips = [...this.pendingPips, ...milk];
+      this.events.push({ kind: 'butchered', family: donor.family, refund: 0 });
+      return;
+    }
     const salv = this.salvageOf(donor.family);
     let refund = 0;
     for (const c of ['war', 'science', 'royal'] as Caste[]) {
@@ -2177,6 +2227,7 @@ export class Sim {
     for (const b of [...this.broodlings]) {
       const mother = this.towers.find((t) => t.id === b.motherId);
       if (!mother) continue; // dies with the mother in removeTower
+      if (this.isTapped(mother)) continue; // a tapped mother's brood stands idle
       const ms = this.statsOf(mother);
       b.cooldown -= DT;
       let prey: Enemy | null = null;
@@ -2404,7 +2455,12 @@ export class Sim {
   }
 
   /** Fire one shot of this limb's weapon at one target (every weapon kind). */
-  private fireAt(t: Tower, s: TowerStats, target: Enemy, dmg: number, relayClaimed: Set<number>): void {
+  private fireAt(
+    t: Tower, s: TowerStats, target: Enemy, dmg: number, relayClaimed: Set<number>,
+    shot = 0, shots = 1,
+  ): void {
+    // Twinned shots fan out slightly around the aim line.
+    const twinOffset = shots > 1 ? (shot - (shots - 1) / 2) * B.twinSpread : 0;
     const fx = fxOf(t, s, dmg);
     const dx = target.pos.x - t.pos.x;
     const dy = target.pos.y - t.pos.y;
@@ -2480,7 +2536,7 @@ export class Sim {
     const d = Math.hypot(dx, dy) || 1;
     const speed = B.projectileSpeed;
     for (let i = 0; i < pellets; i++) {
-      const a = pellets > 1 ? base - spread / 2 + (spread * i) / (pellets - 1) : base;
+      const a = (pellets > 1 ? base - spread / 2 + (spread * i) / (pellets - 1) : base) + twinOffset;
       this.projectiles.push({
         id: this.nextId++,
         pos: { ...t.pos },
@@ -2522,6 +2578,9 @@ export class Sim {
       if (this.time - (t.lastHitAt ?? -1e9) >= B.shieldRegenDelay) t.shield += B.shieldRegen * regenMult * DT;
       t.shield = Math.min(t.shield, shieldMax);
 
+      // A marrow tap holds this limb in stasis: it does nothing at all.
+      if (this.isTapped(t)) continue;
+
       // Sedation darts: a stunned limb holds fire.
       if (t.stunnedUntil !== undefined && t.stunnedUntil > this.time) continue;
 
@@ -2533,18 +2592,22 @@ export class Sim {
         const hostile = this.enemies.some((e) => !e.burrowed && !this.isAirborne(e) && dist(e.pos, at) <= stats.aoe + 10);
         if (!hostile) continue;
         t.cooldown = 1 / stats.rate;
-        this.shells.push({
-          id: this.nextId++, from: { ...t.pos }, to: at,
-          flight: B.shellFlightSeconds, ttl: B.shellFlightSeconds,
-          damage: stats.damage, aoe: stats.aoe, side: 'body', fx: fxOf(t, stats),
-        });
+        for (let k = 0; k < stats.volley; k++) {
+          // Twinned shells walk a little around the marker.
+          const off = stats.volley > 1 ? (k - (stats.volley - 1) / 2) * 14 : 0;
+          this.shells.push({
+            id: this.nextId++, from: { ...t.pos }, to: { x: at.x + off, y: at.y - off * 0.5 },
+            flight: B.shellFlightSeconds, ttl: B.shellFlightSeconds,
+            damage: stats.damage, aoe: stats.aoe, side: 'body', fx: fxOf(t, stats),
+          });
+        }
         continue;
       }
 
       // The broodmother tends her brood (a brood pip on her = one more).
       if (t.family === 'brood') {
         const mine = this.broodlings.filter((b) => b.motherId === t.id).length;
-        const want = (towerSpec('brood').broodCount ?? 0) + stats.extraBroodlings;
+        const want = ((towerSpec('brood').broodCount ?? 0) + stats.extraBroodlings) * stats.volley;
         if (mine < want && t.cooldown <= 0) {
           t.cooldown = B.broodRespawn / stats.tempo;
           const spawn = this.passableNear(t.cell) ?? t.pos;
@@ -2594,7 +2657,9 @@ export class Sim {
         if (!near) continue;
         t.cooldown = ph.interval / stats.tempo;
         const radius = ph.radius + (stats.aoe - towerSpec('lure').aoe);
-        this.spawnCloud(near.pos, radius, ph.dps * stats.potency + stats.cloud);
+        for (let k = 0; k < stats.volley; k++) {
+          this.spawnCloud({ x: near.pos.x + k * 10, y: near.pos.y }, radius, ph.dps * stats.potency + stats.cloud);
+        }
         // Its eaten verbs ride the pulse onto everything the cloud blooms over.
         this.blast(near.pos, radius, { ...fxOf(t, stats, 0), cloud: 0 }, 0, 'ground');
         continue;
@@ -2630,7 +2695,8 @@ export class Sim {
       t.streak = target.id === t.lastTargetId ? (t.streak ?? 0) + 1 : 0;
       t.lastTargetId = target.id;
       const dmg = stats.damage * (1 + stats.streakRamp * t.streak);
-      this.fireAt(t, stats, target, dmg, relayClaimed);
+      // Twinned: the whole shot goes out `volley` times.
+      for (let k = 0; k < stats.volley; k++) this.fireAt(t, stats, target, dmg, relayClaimed, k, stats.volley);
 
       // Quill pips: every shot also strikes that many MORE targets.
       if (stats.extraTargets > 0) {

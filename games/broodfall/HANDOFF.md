@@ -61,7 +61,8 @@ debrief → ship gene bay → redeploy.
 18. **THE CORE IS COMBO RUNAWAYS, and science meat is the combo currency.** Combo
     engines (conduit, amplifier, mosaic — directional limbs that manipulate other
     limbs' bonuses) cost science only; engines chain; amplification applies last.
-    Ten more engine ideas are in notes/ITERATION addendum 12 for Collins to pick.
+    Built engines: conduit (max 2 per type), amplifier, mosaic, twinning gland, marrow
+    tap. 24 more engine ideas are in notes/ITERATION addenda 12-13 for Collins to pick.
 17. **Direction and effects are always visible:** directional limbs show a field of
     fire and rotate with right-click (Esc cancels); effect limbs (conduit, choir,
     ward) draw what they affect and say it in their panel.
@@ -85,8 +86,8 @@ debrief → ship gene bay → redeploy.
 ## How to verify (all must be green before claiming anything)
 
 ```powershell
-npm test             # 99 tests: sim, plates algebra, wave rhythm, per-verb behaviors
-                     # for 27 tower families + 26 enemy kinds (combo engines, burn, payload rule, detection,
+npm test             # 102 tests: sim, plates algebra, wave rhythm, per-verb behaviors
+                     # for 29 tower families + 26 enemy kinds (combo engines, burn, payload rule, detection,
                      # air/ground, dependency, cannons, shields, bombard markers),
                      # naive win RATE over 10 seeds, smart science routing +
                      # limb theft, targeting modes, prism relays, the risk law, faction
@@ -120,7 +121,7 @@ URL params: `?seed= &auto=1 &autostart=1 &speed= &directive=hold|royal|harvest &
 Scripted player, hold-12, 1 entrance: 2/3 measured seeds win (the enemy expansion
 restored real difficulty); 2-3 entrances much harder. MEASURE WIN RATE OVER 10 SEEDS,
 never 3-4 (addendum 8: small samples swung 3/3 ↔ 0/3 on draw noise). Current: naive
-hold-12 6/10; guardrail smart flips 5:0, totals +33%. The bot buys combo engines
+hold-12 4/10; guardrail smart flips 3:0, totals +23%. The bot buys combo engines
 only on a measured ≥15% gain (trial-places a ghost) and aims them all at one carry. Difficulty knob =
 threatPerTier (37; 36 flips it to 3/10 — see addendum 9). The bot uses support limbs by
 their own logic (ward behind guns, bombard deep + counter-battery on cannons). The bot throws

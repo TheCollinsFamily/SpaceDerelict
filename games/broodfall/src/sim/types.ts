@@ -7,7 +7,7 @@ export type TowerFamily =
   | 'tangler' | 'blighter' | 'impaler' | 'choir' | 'sling'
   | 'brood' | 'swamp' | 'frond' | 'lobber' | 'mister' | 'ocular' | 'prism'
   | 'bombard' | 'ward' | 'quill' | 'skipper' | 'net' | 'ember' | 'conduit'
-  | 'amp' | 'mosaic';
+  | 'amp' | 'mosaic' | 'twin' | 'tap';
 
 /** What a limb can shoot at. Fliers are only reachable by 'air'/'both' limbs. */
 export type HitsLayer = 'ground' | 'air' | 'both';
@@ -136,11 +136,14 @@ export interface TowerSpec {
   /**
    * COMBO ENGINE (science-priced): a directional limb that manipulates the
    * bonuses of the limb it points at. `reach` = pointing lane length.
-   *   'funnel'  (conduit) — copies ALL bonuses around it into the target
+   *   'funnel'  (conduit) — copies bonuses around it into the target (max 2 per type)
    *   'amplify' (amp)     — the target's bonus counts ×1.5, rounded down, per type
    *   'mosaic'  (mosaic)  — one bonus of EACH distinct type around it (max one per type)
+   *   'twin'    (twin)    — the target fires ×2 projectiles (producers: ×2 output)
+   *   'tap'     (tap)     — holds the target in STASIS; sacrificing the tap harvests the
+   *                         target's bonuses and the tap never disappears (a bonus farm)
    */
-  engine?: { kind: 'funnel' | 'amplify' | 'mosaic'; reach: number; gather?: number };
+  engine?: { kind: 'funnel' | 'amplify' | 'mosaic' | 'twin' | 'tap'; reach: number; gather?: number };
   /** Hits set bodies burning at this dps for burnDur seconds. */
   burnDps?: number;
   burnDur?: number;

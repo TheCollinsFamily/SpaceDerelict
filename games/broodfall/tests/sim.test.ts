@@ -1281,6 +1281,76 @@ describe('COMBO ENGINES (science-priced): amplifier (depth) and mosaic (breadth)
   });
 });
 
+describe('conduit cap, TWINNING GLAND, MARROW TAP', () => {
+  const mk = (s: Sim, id: number, family: Tower['family'], x: number, y: number, pips: Tower['pips'] = []): Tower => ({
+    id, family, pos: { x, y }, cell: s.cellAt(x, y), hp: 100, maxHp: 100, pips, cooldown: 1e9, kills: 0,
+  });
+  type Spawner = { spawnEnemy(kind: string, atGate?: number): Enemy };
+
+  it('the conduit passes at most 2 copies of each bonus type', () => {
+    const s = freshSim(1500);
+    const c = mk(s, 1, 'conduit', 300, 300); c.facing = 'E';
+    s.towers.push(c, mk(s, 2, 'lasher', 400, 300),
+      mk(s, 3, 'spitter', 300, 250, [{ family: 'spitter' }, { family: 'spitter' }]),
+      mk(s, 4, 'spitter', 250, 300), mk(s, 5, 'spitter', 300, 350));
+    const pool = s.conduitPool(c);
+    expect(pool.filter((p) => p.family === 'spitter').length).toBe(2); // 5 available, 2 given
+  });
+
+  it('a twinning gland doubles its target\'s projectiles (two glands: ×4)', () => {
+    const s = freshSim(1501);
+    const gun = mk(s, 1, 'spitter', 400, 300);
+    gun.cooldown = 0;
+    const g1 = mk(s, 2, 'twin', 300, 300); g1.facing = 'E';
+    s.towers.push(gun, g1);
+    expect(s.statsOf(gun).volley).toBe(2);
+    const g2 = mk(s, 3, 'twin', 500, 300); g2.facing = 'W';
+    s.towers.push(g2);
+    expect(s.statsOf(gun).volley).toBe(4);
+    const e = (s as unknown as Spawner).spawnEnemy('elite', s.gates[0]);
+    e.pos = { x: 440, y: 300 };
+    s.tick();
+    expect(s.projectiles.filter((p) => p.fromFamily === 'spitter').length).toBe(4);
+    // On a producer it doubles output: a twinned broodmother keeps twice the brood.
+    const s2 = freshSim(1502);
+    const mother = mk(s2, 1, 'brood', 400, 300); mother.cooldown = 0;
+    const tw = mk(s2, 2, 'twin', 300, 300); tw.facing = 'E';
+    s2.towers.push(mother, tw);
+    for (let i = 0; i < 800; i++) s2.tick();
+    expect(s2.broodlings.filter((b) => b.motherId === mother.id).length).toBe((towerSpec('brood').broodCount ?? 0) * 2);
+    // Twin pip: +1 projectile.
+    expect(towerStats({ ...gun, pips: [{ family: 'twin' }] }).volley).toBe(2);
+  });
+
+  it('a marrow tap holds its target in STASIS and can be milked again and again without disappearing', () => {
+    const s = freshSim(1503);
+    const gun = mk(s, 1, 'spitter', 400, 300, [{ family: 'frond' }, { family: 'lasher' }]);
+    gun.cooldown = 0;
+    const tap = mk(s, 2, 'tap', 300, 300); tap.facing = 'E';
+    s.towers.push(gun, tap);
+    expect(s.isTapped(gun)).toBe(true);
+    const e = (s as unknown as Spawner).spawnEnemy('elite', s.gates[0]);
+    e.pos = { x: 440, y: 300 };
+    s.tick();
+    expect(s.projectiles.length).toBe(0); // it does nothing while tapped
+    const war0 = s.meat.war;
+    for (let i = 0; i < 3; i++) s.issue({ kind: 'butcher', towerId: tap.id });
+    expect(s.towers.includes(tap)).toBe(true);           // never disappears
+    expect(s.pendingPips.length).toBe(3 * 3);            // (2 pips + its family) × 3 milkings
+    expect(s.pendingPips.filter((p) => p.family === 'frond').length).toBe(3);
+    expect(s.meat.war).toBe(war0);                       // no salvage
+    // A tapped support limb projects nothing.
+    const s2 = freshSim(1504);
+    const choir = mk(s2, 1, 'choir', 400, 300);
+    const g = mk(s2, 2, 'spitter', 430, 300);
+    s2.towers.push(choir, g);
+    const sped = s2.statsOf(g).rate;
+    const t2 = mk(s2, 3, 'tap', 300, 300); t2.facing = 'E';
+    s2.towers.push(t2);
+    expect(s2.statsOf(g).rate).toBeLessThan(sped);
+  });
+});
+
 describe('arc prism (focus ramp + relay network)', () => {
   it('ramps on a held target and resets on a switch', () => {
     const s = freshSim(960);

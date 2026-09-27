@@ -118,7 +118,9 @@ what we can use the science category of currency for." So:
 The three engines built:
 | Engine | Cost | What it does to the limb it points at | Its own pip |
 |---|---|---|---|
-| Marrow Conduit (funnel) | 30 sci | copies EVERY bonus from limbs within 80px (their pips + their family) | draws the nearest neighbour's family bonus |
+| Marrow Conduit (funnel) | 30 sci | copies the bonuses of limbs within 80px (their pips + their family) — **max 2 copies per type** (Collins, Sep 27 2026; the one deliberate engine cap) | draws the nearest neighbour's family bonus |
+| Twinning Gland (volume) | 38 sci | ×2 projectiles per shot per gland (two glands ×4); on producers ×2 output (brood, clouds, bile globs, bombard shells, sling clots) | +1 projectile on every shot |
+| Marrow Tap (farm) | 24 sci | holds its target in STASIS (it does nothing); the tap can be sacrificed ANY number of times and never disappears — each time banks a copy of the target's bonuses (pips + family). No salvage | — (a tap is never consumed) |
 | Resonance Amplifier (depth) | 42 sci | every bonus count ×1.5, ROUNDED DOWN, per type, per amplifier (1→1, 2→3, 3→4, 4→6, 6→9) | the eater's own counts ×1.5 |
 | Mosaic Node (breadth) | 26 sci | ONE bonus of EACH distinct type found within 90px — max one per type | draws one of each type among neighbours within 60px |
 
