@@ -5,6 +5,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import { Autoplayer } from '../src/sim/autoplayer';
+import { organTurn } from '../src/sim/organPolicy';
 import { Rng } from '../src/sim/rng';
 import { DT, Sim, towerSpec, organSpec } from '../src/sim/sim';
 import type { SimConfig } from '../src/sim/types';
@@ -27,22 +28,8 @@ class RandomPlacer {
     if (this.actTimer > 0) return;
     this.actTimer = 1.5;
     if (sim.meat.royal >= 1) sim.issue({ kind: 'royal-surge' });
-    const tryOrgan = (organ: 'heart' | 'brain' | 'gland', upTo: number): boolean => {
-      if (sim.organs.filter((o) => o.organ === organ).length >= upTo) return false;
-      if (!sim.canAfford(organSpec(organ).cost)) return false;
-      const opts: number[] = [];
-      for (let c = 0; c < sim.under.cells.length; c++) if (sim.canBuildOrgan(c)) opts.push(c);
-      if (!opts.length) return false;
-      return sim.issue({ kind: 'build-organ', organ, cell: opts[this.rng.int(0, opts.length - 1)] }).ok;
-    };
-    if (tryOrgan('heart', 1)) return;
-    if (sim.time > 90 && tryOrgan('gland', 1)) return;
-    if (sim.time > 140 && tryOrgan('brain', 1)) return;
-    if (sim.time > 180 && tryOrgan('heart', 2)) return;
-    const gland = sim.organs.find((o) => o.organ === 'gland');
-    if (gland && gland.glandMode === 'calm' && sim.time > 100) {
-      sim.issue({ kind: 'cycle-gland', organInstanceId: gland.id });
-    }
+    // Same organ-stage economy as the smart bot, but organs placed at random.
+    if (organTurn(sim, this.rng)) return;
     for (let i = 0; i < sim.hand.length; i++) {
       const family = sim.hand[i].family;
       if (!sim.canAfford(towerSpec(family).cost)) continue;
@@ -70,7 +57,7 @@ function run(seed: number, smart: boolean) {
   // risk law) restored its bite — at hold-16 NEITHER policy survives now, and a
   // 0-0 outcome row discriminates nothing. (Metric history: ITERATION-2026-09-26
   // addenda 5-6.)
-  const sim = new Sim({ ...CFG, seed, directive: { kind: 'hold', waves: 12 } });
+  const sim = new Sim({ ...CFG, seed, directive: { kind: 'hold', waves: 12 }, organStage: true });
   const player = smart ? new Autoplayer(seed + 1) : new RandomPlacer(seed + 1);
   let ticks = 0;
   let towersLost = 0;

@@ -18,46 +18,73 @@ You are a growing body. Towers are limbs, creep is skin, organs are the build, m
 - **Figure-ground like the reference:** dense raised city blocks with dirt channels CARVED between them. Enemies march the channels in squads; they cannot cross blocks. A uniform street grid is banned — it carries no geometric information and placement stops mattering (measured, twice).
 - **Verticality is TD 101:** blocks have heights 1-3, drawn raised with faces and shadows; a taller perch is +10% reach per level. Temple Heights plates bring extra high ground.
 - **Towers perch on creeped city blocks,** out of the traffic. Reading which block covers the most path legs is the game. Exception: the SPINE WALL stands in the street to be chewed through — the hold-the-line tool; a single-lane channel cannot be routed around.
-- ~~Organs grow on open plaza ground inside the body — in the enemies' path.~~
-  Superseded Sep 28 2026 by **THE BODY BELOW** (next section).
+- Organs are NOT on the surface map: they live in the ORGAN STAGE (next section).
 
-### The body below: organs grow DOWN, between waves (Collins, Sep 28 2026)
-Collins: the body grows underground "so we don't need to change what the monster's
-core looks like all the time"; "it should always start with some central organ
-that's like the meteor it came down in, half out of and half under ground";
-"organs in their placement must be touching something touching the surface, and
-underground there are both resources you can collect by digging to certain places
-and things that are fixed and offer adjacency bonuses — so you have this tension of
-ignoring organ adjacency to dig straight down, or optimising adjacency, while you
-also need to think about saving space for future things"; and "organ management is
-a BETWEEN WAVES thing: organs → place towers → wave, not something on screen during
-a wave". (He rejected a drop-into-a-pit/connect-four version: it did not fit the theme.)
+### The organ stage: a town stage between waves (Collins, Sep 28 2026)
+Collins: "organs is a totally different stage … think of it like the town stage in
+BALL x PIT … what organs should be tied to is what towers can be built and their
+power … certain organs allow for certain towers grouped by theme — you build a
+spawning pool to make zerglings … you use unused currency from a run on these but
+your currency goes to zero for the next wave (except your starting currency) … have
+the game start with wave setup → wave 1"; "design organs, shapes for them, and
+adjacency bonuses". (Earlier the same day he placed organs underground around a
+half-buried meteor, touching the body, with deposits to dig to and fixed features
+that give adjacency; the board keeps all of that. He rejected a drop-into-a-pit
+version: it did not fit the theme.)
 
-- **The screen**: a side-view cross-section under the city (11 × 8), opened
-  automatically at the start and after every cleared wave (after any district
-  draft); the clock holds while it is open; "TO THE SURFACE" returns to limb
-  placement. The bottom-bar "THE BODY BELOW" button reopens it any time before the
-  wave (never during one). Street level runs across the top; the meteor's dome
-  shows above it and its buried half fills the top-middle cells.
-- **Connection rule**: an organ grows on soil or a deposit that touches (4-way) the
-  meteor or an organ. The body is one connected thing.
-- **Deposits** (pay when an organ is grown onto them; richer deeper): Carrion
-  Pocket +25 war · Carrion Seam +40 war then +6 war every wave · Buried Laboratory
-  +15 science then +4 every wave · Biomass Bed +150 mass · Royal Ossuary +1 royal
-  point · Gene Cache: two named bonuses banked for the next limb (you can see which
-  before you dig).
-- **Features** (fixed, can't be dug; power the organs touching them): +1 power to any
-  organ touching it, +2 to its kind — Severed Power Main → brain, Sewer Main → root,
-  Aquifer → gland, Geothermal Vent → heart. Organs of the same kind touching each
-  other +0.5 each. Rock can't be dug (dig around it).
-- **Organ power** replaces organ counts everywhere: hearts' biomass and creep speed,
-  brains' interest and advanced-card odds (now per point of power, uncapped),
-  the gland's mode strength, a root's lobe size (roots now grow their lobe from the
-  core).
-- Organs are out of the enemies' reach (sappers, shells and bombers only hit limbs
-  and the core). The old "leaks threaten organs" pressure is gone; a future
-  burrowing enemy that raids the body below is the natural replacement.
-- Generated from its own seeded stream (never shifts the surface sim's rng).
+**The loop.** Wave setup (starting meat: place limbs) → wave 1 → ORGAN STAGE → wave
+setup → wave 2 → organ stage → … The organ stage opens automatically after every
+wave (after any district draft); the clock holds while it is open; "TO THE SURFACE"
+goes to wave setup; the bottom-bar ORGANS button reopens it until the wave starts.
+**Use it or lose it:** war and science left when a wave starts are lost (the
+starting meat carries into wave 1; royal points are kept).
+
+**The board.** A 13 × 9 cross-section under the city. The meteor it crashed in sits
+half above the street line (the core you defend) and half buried (top middle). An
+organ's whole footprint must sit on open ground (soil or a deposit) and touch the
+meteor or an organ. Rock can't be grown into. The board is small on purpose: plan
+for organs you haven't built yet.
+
+**Theme organs** — one of each; each UNLOCKS a group of limbs into your card draw
+(nothing else is drawn) and powers them: every LEVEL is +10% potency and tempo for
+its limbs and makes them drawn more often. Click a grown theme organ (or the
+meteor) to level it: its cost × its current level. Each has a SIGNATURE verb.
+
+| Organ | Shape | Cost | Unlocks | Signature |
+|---|---|---|---|---|
+| Meteor Core | 3×2, given | — (level: 30 war × level) | Spitter, Lasher, Spine Wall | tempo (spitter) |
+| Bone Forge | L (4) | 40 war | Impaler, Quill Fan, Skipping Mortar, Spore Bombard | armor-pierce (impaler) |
+| Venom Sac | T (4) | 40 war | Blight Vent, Caustic Mister, Ember Sac | poison (blighter) |
+| Gut | S (4) | 35 war | Maw, Digestive Swamp, Burster, Bile Lobber | richer meat (maw) |
+| Nerve Cluster | + (5) | 45 war | Galvanic Frond, Arc Prism, Ocular Stalk, Netcaster | arcs (frond) |
+| Mucus Lattice | square (4) | 30 war | Snare Bed, Ward Membrane, Choir Node | slow (tangler) |
+| Brood Womb | U (5) | 40 war | Broodmother, Spore Sling, Lure Gland | regrowth (brood) |
+| Marrow Vault | I (4) | 30 science | Conduit, Tap, Mitosis, Reliquary, Meat Press | hp + caltrops (spine) |
+| Resonance Chamber | P (5) | 40 science | Amplifier, Mosaic, Twinning Gland, Capacitor, Boomerang | focus ramp (prism) |
+
+**Adjacency.** Two theme organs that touch (edge to edge, or joined by a chain of
+roots) share signatures: every limb of each theme gains +1 of the other's verb (the
+normal pip rules: amplifiers multiply it, it stacks without caps). So WHERE you
+grow the Venom Sac decides whose limbs poison.
+
+**Zone organs** (repeatable; Ball x Pit's Captain's Quarters): each projects a zone
+one cell around its footprint; every organ touching the zone is boosted.
+- Auxiliary Heart (domino, 30 war): +1 level to organs touching its zone.
+- Brain Node (domino, 35 war): limbs of organs touching its zone are drawn ×2.
+- Pheromone Gland (1 cell, 25 war): organs touching its zone share their signature TWICE.
+
+**Tendril Root** (1 cell, 8 war): cheap tissue to reach further, and it CARRIES
+adjacency — two themes joined by a root chain share as if touching.
+
+**Terrain.** Features are fixed: +1 level to every organ touching one, +2 to its
+favoured organ (Severed Power Main → Nerve, Sewer Main → Gut, Aquifer → Lattice,
+Geothermal Vent → Venom). Deposits pay once when an organ is grown over them
+(Carrion Pocket +20 war, Carrion Seam +45 war, Buried Laboratory +25 science,
+Biomass Bed +150 mass, Royal Ossuary +1 royal point, Gene Cache: two named bonuses
+banked for your next limb); the good ones are deep.
+
+Organs are out of the enemies' reach. What organs used to do on the surface
+(hearts → biomass/creep, brains → interest, gland modes, root creep lobes) is gone.
 - **Gates live on the FRONTIER:** ports of claimed plates that face unclaimed city. Growing changes where the hive can come from — expansion is power AND exposure.
 - **Waves attack down TELEGRAPHED lanes** (1-3 frontier gates by tier; "ASSAULT FORMING: N+E" plus glowing gate beacons during growth). Reinforce the named approach, or CALL THE WAVE early for bonus meat. Waves spawn as squads, end with a CLEARED banner and a meat bonus.
 - The map at minute zero is a NEIGHBORHOOD, not a battlefield: lit doorways, and (planned) street life that flees the crash. The city is shown living so the horror lands.
@@ -177,8 +204,9 @@ deliberate human combo play separates from default play.
 Next engine candidates (brainstorm, Sep 27): see notes/ITERATION addendum 12.
 
 ### What science buys (Collins, Sep 28 2026)
-Science is spent ONLY on combo engines and on evolutions (below), and on
-"certain upgrades we have not gotten to yet". Basic limbs and organs cost war
+Science is spent ONLY on combo engines, on evolutions (below), on the two engine
+organs (Marrow Vault, Resonance Chamber), and on "certain upgrades we have not
+gotten to yet". Basic limbs and organs cost war
 only. (Their old science share was dropped, not converted: converting 1:1 starved
 war and the scripted player built a quarter as many limbs.)
 

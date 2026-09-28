@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../src/sim/rng';
 import { Sim, fxOf, organSpec, towerStats, towerSpec } from '../src/sim/sim';
-import { DEPOSITS } from '../content/underground';
+import { DEPOSITS, ORGAN_LEVEL_POTENCY } from '../content/underground';
 import { CellType, isPassable } from '../src/sim/citymap';
 import type { Enemy, SimConfig, Tower } from '../src/sim/types';
 import { BALANCE as B, ENEMIES, TOWERS, WAVE_TABLE } from '../content/data';
@@ -23,12 +23,20 @@ function buildableCell(s: Sim, skip = 0): number {
   throw new Error('no buildable cell');
 }
 
-/** A cell of the body below where an organ can grow right now. */
-function organCell(s: Sim): number {
+/** A legal spot for an organ on the organ-stage board (first found). */
+function organSpot(s: Sim, organ: Parameters<Sim['canBuildOrgan']>[0]): { cell: number; rot: number } {
   for (let c = 0; c < s.under.cells.length; c++) {
-    if (s.canBuildOrgan(c)) return c;
+    for (let rot = 0; rot < 4; rot++) if (s.canBuildOrgan(organ, c, rot)) return { cell: c, rot };
   }
-  throw new Error('no organ cell');
+  throw new Error('no organ spot');
+}
+
+/** Grow an organ at its first legal spot (touching whatever is already there). */
+function grow(s: Sim, organ: Parameters<Sim['canBuildOrgan']>[0]) {
+  const spot = organSpot(s, organ);
+  const r = s.issue({ kind: 'build-organ', organ, ...spot });
+  if (!r.ok) throw new Error(`grow ${organ}: ${r.err}`);
+  return s.organs[s.organs.length - 1];
 }
 
 describe('rng determinism', () => {
@@ -106,43 +114,154 @@ describe('economy and building', () => {
     expect(s.issue({ kind: 'build', cardIndex: 0, cell: buildableCell(s) }).ok).toBe(false);
   });
 
-  it('organs grow BELOW: touching the meteor or an organ that does, and only between waves', () => {
+  it('organ stage: a whole SHAPE on open ground, touching the meteor or an organ, between waves; themes once', () => {
     const s = freshSim();
-    s.meat.war = 999;
+    s.meat.war = 9999;
     const u = s.under;
-    // The meteor is there from the start, half buried at the top middle.
     expect(u.cells.filter((c) => c.kind === 'meteor').length).toBe(6);
-    // A far cell touching nothing: refused. A cell touching the meteor: grows.
-    const far = u.cells.findIndex((c, i) => (c.kind === 'soil' || c.kind === 'deposit') && Math.floor(i / u.w) === u.h - 1);
-    expect(s.issue({ kind: 'build-organ', organ: 'heart', cell: far }).ok).toBe(false);
-    const first = organCell(s);
-    expect(s.issue({ kind: 'build-organ', organ: 'heart', cell: first }).ok).toBe(true);
-    // The body is one connected thing: the next organ may grow off the first.
-    const next = [first - 1, first + 1, first + u.w].find((n) => n >= 0 && s.canBuildOrgan(n)
-      && !u.cells.some((c, i) => c.kind === 'meteor' && (i === n - 1 || i === n + 1 || i === n - u.w || i === n + u.w)));
-    if (next !== undefined) expect(s.issue({ kind: 'build-organ', organ: 'heart', cell: next }).ok).toBe(true);
+    // A footprint touching nothing is refused; one touching the meteor grows, with its full shape.
+    const far = u.cells.findIndex((c, i) => c.kind === 'soil' && Math.floor(i / u.w) === u.h - 1);
+    expect(s.issue({ kind: 'build-organ', organ: 'gut', cell: far, rot: 0 }).ok).toBe(false);
+    const gut = grow(s, 'gut');
+    expect(gut.cells.length).toBe(4);
+    // Theme organs are one of each; zone organs and roots repeat.
+    expect(() => grow(s, 'gut')).toThrow();
+    grow(s, 'root');
+    grow(s, 'root');
     // Never during an assault.
-    const legal = organCell(s);
+    const spot = organSpot(s, 'heart');
     (s as unknown as { phase: string }).phase = 'siege';
-    expect(s.issue({ kind: 'build-organ', organ: 'heart', cell: legal }).ok).toBe(false);
+    expect(s.issue({ kind: 'build-organ', organ: 'heart', ...spot }).ok).toBe(false);
   });
 
-  it('the body below: deposits pay when dug onto; features power the organs touching them', () => {
+  it('organ stage: theme organs UNLOCK their limbs into the draw (the meteor gives spitter, lasher, spine)', () => {
+    const s = new Sim({ ...CFG, seed: 4100, organStage: true });
+    const w0 = s.drawWeights();
+    expect(w0.spitter).toBeGreaterThan(0);
+    expect(w0.impaler).toBe(0);
+    expect(w0.conduit).toBe(0);
+    expect(s.hand.every((c) => ['spitter', 'lasher', 'spine'].includes(c.family))).toBe(true);
+    s.meat.war = 999;
+    grow(s, 'forge');
+    const w1 = s.drawWeights();
+    for (const f of ['impaler', 'quill', 'skipper', 'bombard'] as const) expect(w1[f]).toBeGreaterThan(0);
+    expect(w1.blighter).toBe(0);
+    // Engine themes cost science.
+    expect(s.issue({ kind: 'build-organ', organ: 'marrow', ...organSpot(s, 'marrow') }).err).toBe('cannot afford');
+  });
+
+  it('organ stage: LEVELS power a theme\'s limbs (+15% potency and tempo per level)', () => {
+    const s = freshSim(4101);
+    s.meat.war = 9999;
+    const gut = grow(s, 'gut');
+    const b: Tower = { id: 1, family: 'burster', pos: { x: 300, y: 300 }, cell: s.cellAt(300, 300), hp: 70, maxHp: 70, pips: [], cooldown: 9, kills: 0 };
+    s.towers.push(b);
+    const base = s.statsOf(b).damage;
+    const war0 = s.meat.war;
+    expect(s.issue({ kind: 'upgrade-organ', organInstanceId: gut.id }).ok).toBe(true);
+    expect(war0 - s.meat.war).toBe(35); // cost x current level
+    expect(gut.level).toBe(2);
+    expect(s.statsOf(b).damage).toBeCloseTo(base * (1 + ORGAN_LEVEL_POTENCY));
+    // The meteor levels too (id -1), powering spitters.
+    expect(s.issue({ kind: 'upgrade-organ', organInstanceId: -1 }).ok).toBe(true);
+    expect(s.coreLevel).toBe(2);
+  });
+
+  it('organ stage ADJACENCY: touching themes share signature verbs; roots carry it; a gland doubles it', () => {
+    const s = freshSim(4102);
+    s.meat.war = 9999;
+    grow(s, 'forge'); // touches the meteor
+    const fx = s.organEffects();
+    // Forge and the core share: forge limbs get the core's tempo verb, core limbs the forge's pierce.
+    expect(fx.get('forge')!.pips.map((p) => p.family)).toContain('spitter');
+    expect(fx.get('core')!.pips.map((p) => p.family)).toContain('impaler');
+    // A limb of the forge's theme really carries it.
+    const q: Tower = { id: 1, family: 'quill', pos: { x: 300, y: 300 }, cell: s.cellAt(300, 300), hp: 80, maxHp: 80, pips: [], cooldown: 9, kills: 0 };
+    s.towers.push(q);
+    expect(s.statsOf(q).tempo).toBeGreaterThan(1);
+    // A gland whose zone touches the forge doubles what the forge shares.
+    const before = fx.get('core')!.pips.filter((p) => p.family === 'impaler').length;
+    let placed = false;
+    const forge = s.organs.find((o) => o.organ === 'forge')!;
+    for (let c = 0; c < s.under.cells.length && !placed; c++) {
+      if (!s.canBuildOrgan('gland', c, 0)) continue;
+      const near = forge.cells.some((fc) => Math.max(Math.abs((fc % s.under.w) - (c % s.under.w)), Math.abs(Math.floor(fc / s.under.w) - Math.floor(c / s.under.w))) <= 1);
+      if (near) placed = s.issue({ kind: 'build-organ', organ: 'gland', cell: c, rot: 0 }).ok;
+    }
+    expect(placed).toBe(true);
+    expect(s.organEffects().get('core')!.pips.filter((p) => p.family === 'impaler').length).toBe(before * 2);
+  });
+
+  it('organ stage: a ROOT chain carries adjacency between organs that do not touch', () => {
+    const s = freshSim(4103);
+    s.meat.war = 9999;
+    const u = s.under;
+    const md = (a: number, b: number) => Math.abs((a % u.w) - (b % u.w)) + Math.abs(Math.floor(a / u.w) - Math.floor(b / u.w));
+    // Run a line of roots straight down from under the meteor, then grow a theme at its end.
+    let tip = u.cells.findIndex((c, i) => c.kind === 'meteor' && Math.floor(i / u.w) === 1) + u.w;
+    for (let k = 0; k < 4 && s.canBuildOrgan('root', tip, 0); k++) {
+      s.issue({ kind: 'build-organ', organ: 'root', cell: tip, rot: 0 });
+      tip += u.w;
+    }
+    const roots = s.organs.filter((o) => o.organ === 'root');
+    expect(roots.length).toBeGreaterThanOrEqual(2);
+    const last = roots[roots.length - 1].cells[0];
+    // Grow the venom sac touching the last root but not the meteor.
+    let ok = false;
+    for (let c = 0; c < u.cells.length && !ok; c++) {
+      for (let r = 0; r < 4 && !ok; r++) {
+        if (!s.canBuildOrgan('venom', c, r)) continue;
+        const cells = s.organFootprint('venom', c, r)!;
+        const touchesLast = cells.some((x) => md(x, last) === 1);
+        const touchesMeteor = cells.some((x) => [x - 1, x + 1, x - u.w, x + u.w].some((n) => u.cells[n]?.kind === 'meteor'));
+        if (touchesLast && !touchesMeteor) ok = s.issue({ kind: 'build-organ', organ: 'venom', cell: c, rot: r }).ok;
+      }
+    }
+    expect(ok).toBe(true);
+    expect(s.organEffects().get('venom')!.links).toContain('core');
+    expect(s.organEffects().get('core')!.pips.map((p) => p.family)).toContain('blighter');
+  });
+
+  it('organ stage ZONES: a heart raises the level of organs touching its zone; a brain doubles their draw', () => {
+    const s = freshSim(4104);
+    s.meat.war = 9999;
+    const forge = grow(s, 'forge');
+    const lvl0 = s.organEffects().get('forge')!.level;
+    const w = s.under.w;
+    const near = (c: number) => forge.cells.some((fc) => Math.max(Math.abs((fc % w) - (c % w)), Math.abs(Math.floor(fc / w) - Math.floor(c / w))) <= 2);
+    const put = (organ: 'heart' | 'brain') => {
+      for (let c = 0; c < s.under.cells.length; c++) {
+        for (let r = 0; r < 4; r++) {
+          if (!s.canBuildOrgan(organ, c, r)) continue;
+          const cells = s.organFootprint(organ, c, r)!;
+          if (cells.some(near)) {
+            s.issue({ kind: 'build-organ', organ, cell: c, rot: r });
+            return true;
+          }
+        }
+      }
+      return false;
+    };
+    expect(put('heart')).toBe(true);
+    expect(s.organEffects().get('forge')!.level).toBe(lvl0 + 1);
+    const d0 = s.organBonusOf('impaler').draw;
+    expect(put('brain')).toBe(true);
+    expect(s.organBonusOf('impaler').draw).toBeCloseTo(d0 * 2);
+  });
+
+  it('organ stage: deposits pay when an organ is grown over them', () => {
     const s = freshSim(4242);
     s.meat.war = 99999;
     const u = s.under;
-    // Dig a line of roots toward the first deposit until an organ sits on it.
     const target = u.cells.findIndex((c) => c.kind === 'deposit' && c.deposit !== 'cache');
-    expect(target).toBeGreaterThanOrEqual(0);
-    const md = (a: number, b: number) => Math.abs((a % u.w) - (b % u.w)) + Math.abs(Math.floor(a / u.w) - Math.floor(b / u.w));
     const pay = DEPOSITS[u.cells[target].deposit!].now;
+    const md = (a: number, b: number) => Math.abs((a % u.w) - (b % u.w)) + Math.abs(Math.floor(a / u.w) - Math.floor(b / u.w));
     for (let k = 0; k < 40 && !u.cells[target].claimed; k++) {
-      const legal = u.cells.map((_, i) => i).filter((i) => s.canBuildOrgan(i));
+      const legal = u.cells.map((_, i) => i).filter((i) => s.canBuildOrgan('root', i, 0));
       const step = legal.reduce((b, l) => (md(l, target) < md(b, target) ? l : b), legal[0]);
       const before = { ...s.meat, biomass: s.biomass };
-      expect(s.issue({ kind: 'build-organ', organ: 'root', cell: step }).ok).toBe(true);
+      expect(s.issue({ kind: 'build-organ', organ: 'root', cell: step, rot: 0 }).ok).toBe(true);
       if (step === target) {
-        // Exactly the deposit's payout, on top of the root's price.
         expect(s.meat.war - before.war).toBe((pay.war ?? 0) - (organSpec('root').cost.war ?? 0));
         expect(s.meat.science - before.science).toBe(pay.science ?? 0);
         expect(s.meat.royal - before.royal).toBe(pay.royal ?? 0);
@@ -150,11 +269,24 @@ describe('economy and building', () => {
       }
     }
     expect(u.cells[target].claimed).toBe(true);
-    // A feature: an organ touching it has more power than one that does not.
-    const f = u.cells.findIndex((c) => c.kind === 'feature');
-    const touching = [f - 1, f + 1, f - u.w, f + u.w].find((n) => n >= 0 && n < u.cells.length && (u.cells[n].kind === 'soil' || u.cells[n].kind === 'deposit'));
-    expect(touching).toBeDefined();
-    expect(s.organPowerOf({ organ: 'heart', cell: touching! })).toBeGreaterThan(1);
+  });
+
+  it('organ stage: unspent war and science are LOST when a wave starts (after the first); royal points stay', () => {
+    const s = new Sim({ ...CFG, seed: 4105, organStage: true });
+    s.meat.war = 77; s.meat.science = 12; s.meat.royal = 2;
+    s.issue({ kind: 'call-early' }); // wave 1: the starting meat carries in
+    expect(s.meat.war).toBeGreaterThanOrEqual(77);
+    const priv = s as unknown as { phase: string; enemies: Enemy[]; spawnQueue: unknown[] };
+    priv.enemies.length = 0; priv.spawnQueue.length = 0;
+    for (let i = 0; i < 40 && s.phase === 'siege'; i++) s.tick();
+    while (s.phase === 'draft') s.issue({ kind: 'choose-plate', index: 0 });
+    s.meat.war = 50; s.meat.science = 9;
+    (s as unknown as { phaseElapsed: number }).phaseElapsed = 999; // no call-early bonus
+    s.tick(); // growth runs out: wave 2 starts
+    expect(s.phase).toBe('siege');
+    expect(s.meat.war).toBe(0);
+    expect(s.meat.science).toBe(0);
+    expect(s.meat.royal).toBe(2);
   });
 
   it('starting layout: exactly `entrances` frontier gates, all connected, guns-first', () => {
@@ -1714,36 +1846,6 @@ describe('creep logistics (sling patches + directional roots)', () => {
     expect(s.issue({ kind: 'sling-throw', towerId: sling.id, cell: voidCell }).ok).toBe(false);
   });
 
-  it('a tendril root (grown below) sends a creep lobe from the core in ITS direction, cycles on command', () => {
-    const s = freshSim(701);
-    s.meat.war = 9999;
-    s.meat.science = 9999;
-    expect(s.issue({ kind: 'build-organ', organ: 'root', cell: organCell(s) }).ok).toBe(true);
-    const root = s.organs.find((o) => o.organ === 'root')!;
-    expect(root.rootDir).toBeDefined();
-    const src = s.creepSources.find((x) => x.kind === 'root')!;
-    expect(src.dir).toBe(root.rootDir);
-    expect(src.cell).toBe(s.map.coreCell);
-    // The lobe reaches down-direction, not up-direction, at equal hop distance.
-    const covers = (s as unknown as { sourceCovers(x: unknown, cell: number): boolean });
-    src.bornAt = -60; // a minute of growth, without moving the core's own creep
-    const w = s.cfg.gridW;
-    const dirOff = root.rootDir === 'N' ? -6 * w : root.rootDir === 'S' ? 6 * w : root.rootDir === 'E' ? 6 : -6;
-    const ahead = src.cell + dirOff;
-    const behind = src.cell - dirOff;
-    if (s.map.cells[ahead] !== CellType.Void) {
-      expect(covers.sourceCovers(src, ahead)).toBe(true);
-    }
-    if (s.map.cells[behind] !== CellType.Void) {
-      expect(covers.sourceCovers(src, behind)).toBe(false);
-    }
-    // Cycling re-aims the lobe.
-    const before = root.rootDir;
-    expect(s.issue({ kind: 'cycle-root', organInstanceId: root.id }).ok).toBe(true);
-    expect(root.rootDir).not.toBe(before);
-    expect(src.dir).toBe(root.rootDir);
-  });
-
   it('a sling pip makes any limb seep creep around itself', () => {
     const base: Tower = {
       id: 1, family: 'spitter', pos: { x: 0, y: 0 }, cell: 0,
@@ -1770,30 +1872,21 @@ describe('creep logistics (sling patches + directional roots)', () => {
 });
 
 describe('draw odds', () => {
-  it('brain node multiplies advanced tower weights', () => {
+  it('a brain zone doubles the draw odds of the themes it touches', () => {
     const s = freshSim();
-    const before = s.drawWeights();
     s.meat.war = 999;
-    s.meat.science = 999;
-    expect(s.issue({ kind: 'build-organ', organ: 'brain', cell: organCell(s) }).ok).toBe(true);
+    const before = s.drawWeights();
+    grow(s, 'brain'); // touches the meteor, so its zone touches the core theme
     const after = s.drawWeights();
-    for (const t of TOWERS) {
-      if (t.advanced) expect(after[t.family]).toBeGreaterThan(before[t.family]);
-      else expect(after[t.family]).toBe(before[t.family]);
-    }
+    expect(after.spitter).toBeCloseTo(before.spitter * 2);
   });
 });
 
 describe('attraction and escalation', () => {
-  it('interest rises with lure glands and pips', () => {
+  it('interest rises with lure pips', () => {
     const s = freshSim();
     const i0 = s.interest;
-    s.meat.war = 9999;
-    s.meat.science = 9999;
-    s.issue({ kind: 'build-organ', organ: 'gland', cell: organCell(s) });
-    const gland = s.organs.find((o) => o.organ === 'gland')!;
-    s.issue({ kind: 'cycle-gland', organInstanceId: gland.id });
-    expect(gland.glandMode).toBe('lure');
+    s.towers.push({ id: 1, family: 'spitter', pos: { x: 300, y: 300 }, cell: s.cellAt(300, 300), hp: 60, maxHp: 60, pips: [{ family: 'lure' }], cooldown: 9, kills: 0 });
     expect(s.interest).toBeGreaterThan(i0);
   });
 

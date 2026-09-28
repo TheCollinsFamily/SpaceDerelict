@@ -147,6 +147,38 @@ smart flips 3:2, totals 120k vs 115k. 54/54 tests; input check adds the lobber
 gesture; visual/endgame green.
 
 
+## Addendum 17 (Sep 28): the organ stage — organs unlock and power limbs
+
+Collins: organs are a separate stage like BALL x PIT's town; they decide which limbs
+you can build (Spawning Pool → zerglings) and how strong they are; leftover currency
+goes on organs and is lost at the next wave; the run starts at wave setup. "Design
+organs, shapes for them, and adjacency bonuses." Full design: DESIGN.md "The organ
+stage". Reference: Ball x Pit housing buildings unlock characters, stat buildings buff
+everyone, the Captain's Quarters zone boosts the buildings it touches.
+
+- Built: 8 theme organs (polyomino shapes, one each, unlock a limb group + level
+  power + a signature verb), 3 zone organs (heart +1 level, brain ×2 draw, gland ×2
+  sharing), roots that carry adjacency; the meteor is the first theme (spitter,
+  lasher, spine). Adjacency = touching themes share signature verbs as pips.
+  Features raise levels; deposits pay once. \`organStage\` config flag: only unlocked
+  limbs are drawn and war/science clear at each wave start after the first (the real
+  game and the full-run tests use it; unit tests leave every limb drawable).
+- Screen: palette with shape pictures, ghost footprint on hover, right-click/R to
+  rotate, click to grow; click a grown theme or the meteor to level it (hover shows
+  price and effect); zones light up while placing or hovering; a summary lists every
+  theme's level, limbs, shared verbs and draw odds.
+- Bot (\`src/sim/organPolicy.ts\`, shared with the guardrail's random player, which
+  places organs at random): unlock themes early in each window (gut, forge, lattice,
+  venom, nerve, womb, marrow, resonance), a heart per two themes, then pour the
+  would-be-lost meat into levels just before the wave.
+- Balance: with the organ stage the bot won 9/10. Escalation alone saturated (6-8/10
+  across 19-24). The real driver is levels fed by use-it-or-lose-it meat: level bonus
+  15% → 10% and threatPerTier 21 (tier 6 at 192) → naive 4/10; guardrail flips 2:0.
+- Playtest findings: the meteor's label was cut off; zones were invisible — both fixed.
+- Superseded from addendum 16: organ power by adjacency count, per-wave deposit wages,
+  the start-of-run organ screen, surface organ effects (heart biomass, brain interest,
+  gland modes, root creep lobes).
+
 ## Addendum 16 (Sep 28): the body below (organs grow down, between waves)
 
 Collins redirected organs: dig-down underground body, the meteor half above/half

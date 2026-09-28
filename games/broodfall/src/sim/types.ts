@@ -54,7 +54,9 @@ export interface HitFx {
 export type TargetMode = 'auto' | 'first' | 'strongest' | 'weakest' | 'focus';
 export type CasteFocus = 'any' | Caste;
 
-export type OrganId = 'heart' | 'brain' | 'gland' | 'root';
+/** Organs of the organ stage (content/underground.ts): themes unlock limbs, zones boost organs, roots connect. */
+export type OrganId = 'forge' | 'venom' | 'gut' | 'nerve' | 'lattice' | 'womb' | 'marrow' | 'resonance'
+  | 'heart' | 'brain' | 'gland' | 'root';
 
 export type GlandMode = 'calm' | 'lure' | 'challenge';
 
@@ -272,22 +274,18 @@ export interface Cloud {
   dps: number;
 }
 
-export interface OrganSpec {
-  id: OrganId;
-  name: string;
-  cost: Partial<Record<Caste, number>>;
-  maxHp: number;
-}
-
-/** An organ of the body below (underground cross-section; see content/underground.ts). */
+/** A grown organ: a shaped footprint on the organ-stage board. */
 export interface Organ {
   id: number;
   organ: OrganId;
-  /** Cell index in the underground grid (not the city map). */
+  /** Anchor cell (board index) of its footprint. */
   cell: number;
-  glandMode: GlandMode;
-  /** Tendril root: which way the lobe grows (cycles on click). */
-  rootDir?: RootDir;
+  /** Quarter turns applied to its shape (0-3). */
+  rot: number;
+  /** Theme organs power their limbs by level (1 when grown). */
+  level: number;
+  /** Board cells its footprint covers. */
+  cells: number[];
 }
 
 export type EnemyKind =
@@ -507,6 +505,8 @@ export type Outcome = 'playing' | 'won' | 'lost';
 export type SimEvent =
   | { kind: 'built'; family: TowerFamily; pips: number }
   | { kind: 'organ-built'; organ: OrganId }
+  | { kind: 'organ-upgraded'; organ: OrganId; level: number }
+  | { kind: 'meat-cleared'; war: number; science: number }
   | { kind: 'cannibalized'; donor: TowerFamily; into: TowerFamily }
   | { kind: 'butchered'; family: TowerFamily; refund: number }
   | { kind: 'clot-hurled'; cell: number }
@@ -547,9 +547,8 @@ export type Command =
   | { kind: 'set-facing'; towerId: number; dir: RootDir }
   | { kind: 'sling-throw'; towerId: number; cell: number }
   | { kind: 'bile-throw'; towerId: number; cell: number }
-  | { kind: 'cycle-root'; organInstanceId: number }
-  | { kind: 'build-organ'; organ: OrganId; cell: number }
-  | { kind: 'cycle-gland'; organInstanceId: number }
+  | { kind: 'build-organ'; organ: OrganId; cell: number; rot?: number }
+  | { kind: 'upgrade-organ'; organInstanceId: number }
   | { kind: 'royal-surge' }
   | { kind: 'discard'; cardIndex: number }
   | { kind: 'choose-plate'; index: number }
@@ -570,6 +569,12 @@ export interface SimConfig {
   directive?: Directive;
   /** Gene ids spliced on the ship — persistent meta-progression. */
   genes?: string[];
+  /**
+   * The organ stage rules: only limbs your organs unlock are drawn, and unspent
+   * war/science is lost when a wave starts (after the first). The real game and
+   * the full-run tests turn this on; unit tests leave every limb drawable.
+   */
+  organStage?: boolean;
   /** Starting entrances (1-3). More is a difficulty wager paid in richer meat. */
   entrances?: number;
 }

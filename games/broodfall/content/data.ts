@@ -2,7 +2,7 @@
  * Broodfall content — pure data, no logic. Adding a tower/enemy/organ is a row here
  * plus (later) a manifest row for its art. Balance lives here, not in sim code.
  */
-import type { EnemySpec, OrganSpec, TowerSpec } from '../src/sim/types';
+import type { EnemySpec, TowerSpec } from '../src/sim/types';
 
 export const TOWERS: readonly TowerSpec[] = [
   // hits: what a limb can shoot. Fliers need 'air' or 'both'. Default 'both'.
@@ -277,13 +277,7 @@ export const TOWERS: readonly TowerSpec[] = [
   },
 ];
 
-export const ORGANS: readonly OrganSpec[] = [
-  { id: 'heart', name: 'Auxiliary Heart', cost: { war: 30 }, maxHp: 200 },
-  { id: 'brain', name: 'Brain Node', cost: { war: 30 }, maxHp: 150 },
-  { id: 'gland', name: 'Pheromone Gland', cost: { war: 20 }, maxHp: 150 },
-  // Directional expansion: grows a creep lobe toward its compass heading (click to cycle).
-  { id: 'root', name: 'Tendril Root', cost: { war: 15 }, maxHp: 150 },
-];
+// Organs live in content/underground.ts (the organ stage).
 
 export const ENEMIES: readonly EnemySpec[] = [
   // WAR CASTE — the response ladder. Risk is the danger weight of ONE body:
@@ -440,7 +434,7 @@ export const BALANCE = {
    *  just fed the economy). 10-seed sweep: 46 → 9/10, 38 → 7, 32 → 4.
    *  36 vs 37 straddles a tier boundary (naive 3/10 vs 7/10): 37 kept for
    *  margin — THIS is the difficulty knob. */
-  threatPerTier: 28,
+  threatPerTier: 21,
   /** The hive escalates procedurally as the campaign drags on. */
   threatPerWaveCleared: 5,
   /** Kill vengeance is real but not the main driver of escalation. */
@@ -529,7 +523,7 @@ export const BALANCE = {
   /** The desperation row of the wave table needs this much threat, not just the
    *  ladder — a standard hold-12 tops out around 330, so tier 6 belongs to long
    *  runs and deliberate escalation (royal bait, challenge gland). */
-  tier6Threat: 256,          // scaled with the tier ladder (338 × 28/37, Sep 28: evolutions)
+  tier6Threat: 192,          // scaled with the tier ladder (338 x threatPerTier/37); organ stage, Sep 28
   /** Tunnelers surface at this fraction of the gate->core flow distance. */
   tunnelerSurfaceFrac: 0.45,
   /** Spore sling: player-aimed creep logistics. */

@@ -298,79 +298,80 @@ body {
 }
 .ent-opt.on { background: var(--ink); color: var(--panel); }
 
-/* ---------- the body below (between-waves organ screen) ---------- */
+/* ---------- the organ stage (between waves) ---------- */
 #under {
   position: absolute; inset: 0; z-index: 6; display: flex; align-items: center; justify-content: center;
   background: radial-gradient(ellipse at 50% 10%, rgba(60, 20, 12, 0.92), rgba(8, 5, 3, 0.97));
 }
 #under.hidden { display: none; }
 #under-card {
-  width: min(760px, calc(100% - 32px)); background: var(--panel); border: 3px double var(--panel-edge);
+  width: min(1240px, calc(100% - 32px)); max-height: calc(100% - 24px); overflow: auto;
+  display: grid; grid-template-columns: minmax(300px, 420px) 1fr; gap: 16px;
+  background: var(--panel); border: 3px double var(--panel-edge);
   padding: 12px 16px; box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.5); color: var(--ink);
 }
-#under-title { font-family: Impact, "Arial Black", sans-serif; font-size: 26px; letter-spacing: 2px; margin: 2px 0 8px; }
-#under-palette { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 10px; }
+@media (max-width: 900px) { #under-card { grid-template-columns: 1fr; } }
+#under-title { font-family: Impact, "Arial Black", sans-serif; font-size: 26px; letter-spacing: 2px; margin: 2px 0 4px; }
+#under-note { font-size: 10px; font-weight: bold; color: var(--accent); text-transform: uppercase; margin-bottom: 6px; }
+.pal-title { font-size: 9px; letter-spacing: 2px; margin: 8px 0 3px; opacity: 0.8; }
+.pal-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; }
 .under-organ {
-  display: flex; flex-direction: column; align-items: flex-start; gap: 3px; text-align: left; cursor: pointer;
-  font: inherit; font-size: 10px; padding: 6px 7px; color: var(--ink);
+  display: grid; grid-template-columns: 1fr auto; grid-template-areas: "name shape" "what shape" "price price";
+  gap: 2px 6px; text-align: left; cursor: pointer; align-items: start;
+  font: inherit; font-size: 9px; padding: 5px 6px; color: var(--ink);
   background: #c7b788; border: 2px solid var(--panel-edge); border-radius: 3px;
 }
-.under-organ b { font-size: 11px; text-transform: uppercase; }
-.under-organ span { line-height: 1.25; opacity: 0.85; }
-.under-organ i { font-style: normal; font-weight: bold; font-size: 9px; }
+.under-organ b { grid-area: name; font-size: 10px; text-transform: uppercase; }
+.under-organ .shape { grid-area: shape; margin-top: 2px; }
+.under-organ span:not(.og) { grid-area: what; line-height: 1.2; opacity: 0.85; }
+.under-organ i { grid-area: price; font-style: normal; font-weight: bold; font-size: 9px; }
 .under-organ.on { background: var(--ink); color: var(--panel); }
 .under-organ.poor i { color: var(--accent); }
-.under-organ.on.poor i { color: #ff9a80; }
-.og { display: inline-block; width: 16px; text-align: center; }
-.og-heart { color: #c0392b; } .og-brain { color: #b07a9c; } .og-gland { color: #3d8c86; } .og-root { color: #8f4a3d; }
-.under-organ.on .og-heart { color: #ff7a6a; } .under-organ.on .og-brain { color: #e7b5d4; }
-.under-organ.on .og-gland { color: #7fd8d0; } .under-organ.on .og-root { color: #e0a08e; }
+.under-organ.built { opacity: 0.7; cursor: default; border-style: dashed; }
+.under-organ.built i { color: #1d5c58; }
+.og { display: inline-block; width: 14px; text-align: center; text-shadow: 0 0 1px #26200f; }
+#under-summary { font-size: 10px; line-height: 1.35; }
+#under-summary b { text-transform: uppercase; }
 #under-surface {
-  position: relative; height: 34px; background: linear-gradient(#3b3530, #2a241f);
+  position: relative; height: 30px; background: linear-gradient(#3b3530, #2a241f);
   border-bottom: 3px solid #6b5a3a; overflow: hidden;
 }
 #under-surface span { position: absolute; left: 8px; bottom: 4px; font-size: 9px; letter-spacing: 3px; color: #b8a878; opacity: 0.7; }
-/* The meteor's TOP half, above the street line; the grid below holds the buried half. */
 #under-dome {
-  position: absolute; left: calc(100% * 4 / 11); width: calc(100% * 3 / 11); bottom: -2px; height: 30px;
+  position: absolute; left: calc(100% * 5 / 13); width: calc(100% * 3 / 13); bottom: -2px; height: 26px;
   border-radius: 999px 999px 0 0; background: radial-gradient(circle at 40% 30%, #d8704a, #9c3120 60%, #571812);
   box-shadow: 0 0 14px rgba(220, 90, 50, 0.6);
 }
-#under-grid { display: grid; gap: 0; border: 2px solid #1b120c; }
+#under-grid { display: grid; gap: 0; border: 2px solid #1b120c; user-select: none; }
 .uc {
-  position: relative; aspect-ratio: 1.35; display: flex; flex-direction: column; align-items: center; justify-content: center;
-  border: 1px solid rgba(0, 0, 0, 0.25); cursor: default; overflow: hidden; color: #f0e2c8;
+  position: relative; aspect-ratio: 1.25; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  border: 1px solid rgba(0, 0, 0, 0.22); overflow: hidden; color: #f0e2c8;
 }
 .uc.depth-0 { background: #6b4a2c; } .uc.depth-1 { background: #574030; }
 .uc.depth-2 { background: #45302a; } .uc.depth-3 { background: #33241f; }
 .uc.k-rock { background: repeating-linear-gradient(45deg, #5c5a55, #5c5a55 5px, #4a4843 5px, #4a4843 10px); }
-.uc.k-meteor { background: radial-gradient(circle at 50% 0%, #b8472c, #6d1f14 70%, #3a0f0a); border-color: #2a0906; }
-.uc.k-feature { background: #25343a; }
+.uc.k-meteor { background: radial-gradient(circle at 50% 0%, #b8472c, #6d1f14 70%, #3a0f0a); border-color: #2a0906; cursor: pointer; }
 .uc.f-vent { background: radial-gradient(circle, #a0482a, #3a1d15 75%); }
 .uc.f-aquifer { background: radial-gradient(circle, #3b7a8a, #1d3238 75%); }
 .uc.f-cable { background: repeating-linear-gradient(0deg, #3b3a2a, #3b3a2a 6px, #4d4b36 6px, #4d4b36 8px); }
 .uc.f-sewer { background: radial-gradient(ellipse, #4d5a3a, #262c1d 80%); }
-.uc.k-deposit .glyph { font-size: 18px; }
+.uc .glyph { font-size: 16px; line-height: 1; }
 .uc.d-carrion .glyph, .uc.d-seam .glyph { color: #ff8a6a; }
 .uc.d-lab .glyph { color: #7fe0d8; } .uc.d-bed .glyph { color: #a8d88a; }
 .uc.d-ossuary .glyph { color: #ffd760; } .uc.d-cache .glyph { color: #d6a8ff; }
-.uc .glyph { font-size: 16px; line-height: 1; }
-.uc .tag { font-size: 7px; letter-spacing: 0.5px; text-transform: uppercase; text-align: center; line-height: 1.05; opacity: 0.9; padding: 0 2px; }
-.uc .organ {
-  width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-  font-size: 17px; background: #d9b89a; box-shadow: 0 0 8px rgba(255, 120, 80, 0.5); color: #26200f;
-}
-.uc .organ.og-heart { background: #b8352a; color: #ffd8cc; } .uc .organ.og-brain { background: #c9a2b8; color: #3b2230; }
-.uc .organ.og-gland { background: #4fa9a4; color: #0d2624; } .uc .organ.og-root { background: #8f4a3d; color: #ffd8c8; }
-.uc .pow { position: absolute; right: 3px; top: 2px; font-size: 9px; font-weight: bold; color: #ffe6a0; }
-.uc .mode { position: absolute; left: 3px; bottom: 2px; font-size: 8px; text-transform: uppercase; color: #ffe6a0; }
-.uc.legal { cursor: pointer; box-shadow: inset 0 0 0 2px rgba(255, 210, 120, 0.75); }
-.uc.legal.hover { box-shadow: inset 0 0 0 3px #ffd878; background-color: #7a5634; }
-.uc.has-organ { cursor: pointer; }
-.uc.hover:not(.legal) { box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.35); }
-#under-wage { font-family: "Courier New", monospace; font-size: 11px; letter-spacing: 0; margin-left: 10px; color: #1d5c58; }
-.uc .dug { position: absolute; right: 3px; bottom: 1px; font-size: 11px; color: #ffd760; }
+.uc .tag { font-size: 7px; letter-spacing: 0.5px; text-transform: uppercase; text-align: center; line-height: 1.05; padding: 0 2px; }
+.uc .tag.core { position: absolute; top: 3px; left: 3px; width: 290%; text-align: left; white-space: nowrap; color: #ffe0c0; font-weight: bold; z-index: 2; }
+.uc.k-meteor { overflow: visible; }
+.uc.zone { box-shadow: inset 0 0 0 2px rgba(255, 150, 190, 0.8); }
+.uc.zone.has-organ { box-shadow: inset 0 0 0 3px #ff96be; }
+.uc.has-organ { border-color: transparent; cursor: pointer; box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.25); }
+.uc.has-organ.bt { border-top: 2px solid #26200f; } .uc.has-organ.bb { border-bottom: 2px solid #26200f; }
+.uc.has-organ.bl { border-left: 2px solid #26200f; } .uc.has-organ.br { border-right: 2px solid #26200f; }
+.uc .organ { font-size: 18px; color: #26200f; text-shadow: 0 0 3px rgba(255, 255, 255, 0.5); }
+.uc .pow { position: absolute; right: 3px; top: 2px; font-size: 9px; font-weight: bold; color: #26200f; }
+.uc.ghost-ok { box-shadow: inset 0 0 0 3px #ffd878; background: #8a6a3a !important; }
+.uc.ghost-bad { box-shadow: inset 0 0 0 3px #e0503a; }
+.uc.hover { box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.45); }
 #under-status { min-height: 30px; margin: 8px 0; font-size: 11px; font-weight: bold; text-transform: uppercase; }
 #under-status.warn { color: var(--accent); }
-#under-done { margin-top: 2px; }
 #open-under.disabled { opacity: 0.4; pointer-events: none; }

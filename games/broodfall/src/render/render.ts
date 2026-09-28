@@ -297,25 +297,6 @@ export class Renderer {
     const g = this.entG;
     g.clear();
 
-    // Organs live in the body below (their own screen). On the surface only a
-    // root shows: a runner out of the core toward where its lobe grows.
-    for (const o of sim.organs) {
-      if (o.organ !== 'root') continue;
-      const { x, y } = sim.core;
-      const d = o.rootDir ?? 'N';
-      const vx = d === 'E' ? 1 : d === 'W' ? -1 : 0;
-      const vy = d === 'S' ? 1 : d === 'N' ? -1 : 0;
-      const wob = Math.sin(this.pulse * 2 + o.id) * 2;
-      const r0 = 30;
-      g.moveTo(x + vx * r0, y + vy * r0).lineTo(x + vx * (r0 + 22 + wob), y + vy * (r0 + 22 + wob))
-        .stroke({ width: 5, color: 0x8f4a3d, alpha: 0.9 });
-      g.poly([
-        x + vx * (r0 + 26) + vy * 6, y + vy * (r0 + 26) + vx * 6,
-        x + vx * (r0 + 34), y + vy * (r0 + 34),
-        x + vx * (r0 + 26) - vy * 6, y + vy * (r0 + 26) - vx * 6,
-      ]).fill({ color: 0xb0685a, alpha: 0.9 });
-    }
-
     for (const t of sim.towers) {
       const hgt = sim.map.heights[t.cell] || 0;
       this.drawTower(g, t, hgt > 0 ? hgt * 4 : 0, sim);

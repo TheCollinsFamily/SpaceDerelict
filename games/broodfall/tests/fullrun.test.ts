@@ -7,7 +7,7 @@ const CFG: Omit<SimConfig, 'seed'> = { gridW: 50, gridH: 40, cellPx: 26 };
 const MAX_TICKS = 24000; // 40 sim minutes (drafts freeze the clock)
 
 function runFull(seed: number, directive?: Directive) {
-  const sim = new Sim({ ...CFG, seed, directive: directive ?? { kind: 'hold', waves: 12 } });
+  const sim = new Sim({ ...CFG, seed, directive: directive ?? { kind: 'hold', waves: 12 }, organStage: true });
   const auto = new Autoplayer(seed + 1);
   const events: SimEvent[] = [];
   let ticks = 0;

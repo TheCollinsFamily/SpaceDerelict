@@ -13,16 +13,17 @@ import {
 } from './citymap';
 import { GENES, PLATE_FEATURES } from '../../content/plates';
 import {
-  BALANCE as B, ENEMIES, ORGANS, TOWERS, WAVE_TABLE,
+  BALANCE as B, ENEMIES, TOWERS, WAVE_TABLE,
 } from '../../content/data';
 import type {
   Broodling, Caltrop, CardInstance, Caste, Cloud, Command, CreepSource, Directive, Drop, Enemy,
-  EnemyKind, EnemySpec, GlandMode, HitFx, ModPip, Organ, OrganId, Outcome, Phase, Projectile,
+  EnemyKind, EnemySpec, HitFx, ModPip, Organ, OrganId, Outcome, Phase, Projectile,
   RootDir, Shell, SimConfig, SimEvent, Tower, TowerFamily, TowerSpec, UpgradeChoice, UpgradeOption, Vec,
 } from './types';
 import { UPGRADES, UPGRADE_COST } from '../../content/upgrades';
 import {
-  DEPOSITS, FEATURES, FEATURE_FAVORED_POWER, FEATURE_POWER, SAME_KIND_POWER,
+  BRAIN_DRAW_MULT, DEPOSITS, FEATURES, FEATURE_FAVORED_LEVEL, FEATURE_LEVEL, METEOR_THEME, ORGAN_BY_ID,
+  ORGAN_DEFS, ORGAN_LEVEL_POTENCY, ORGAN_LEVEL_TEMPO, type OrganDef,
 } from '../../content/underground';
 import { createUnderground, neighbours4, type Underground } from './underground';
 
@@ -50,10 +51,17 @@ export function enemySpec(kind: EnemyKind): EnemySpec {
   return s;
 }
 
-export function organSpec(id: OrganId) {
-  const s = ORGANS.find((o) => o.id === id);
+export function organSpec(id: OrganId): OrganDef {
+  const s = ORGAN_BY_ID[id];
   if (!s) throw new Error(`no organ spec: ${id}`);
   return s;
+}
+
+/** Which theme a limb family belongs to: 'core' (the meteor) or the theme organ that unlocks it. */
+export function themeOf(family: TowerFamily): OrganId | 'core' {
+  if (METEOR_THEME.unlocks.includes(family)) return 'core';
+  const d = ORGAN_DEFS.find((x) => x.unlocks?.includes(family));
+  return d ? d.id : 'core';
 }
 
 /** Derived stats of a tower after its inheritance pips. Deterministic; no RNG. */
@@ -263,6 +271,9 @@ export class Sim {
 
   towers: Tower[] = [];
   organs: Organ[] = [];
+  /** The meteor's own level (upgradeable like any theme organ). */
+  coreLevel = 1;
+  private organCache: Map<OrganId | 'core', { level: number; pips: ModPip[]; draw: number; links: Array<OrganId | 'core'> }> | null = null;
   /** The body below: the underground cross-section organs grow into (between waves). */
   under: Underground;
   enemies: Enemy[] = [];
@@ -344,9 +355,7 @@ export class Sim {
 
   /** Creep reach in px (grows over time; hearts accelerate it). */
   get creepRadius(): number {
-    const hearts = this.organPower('heart');
-    return B.creepBase + this.creepSurgePx
-      + this.time * B.creepPerSec * (1 + B.creepPerHeartBonus * hearts);
+    return B.creepBase + this.creepSurgePx + this.time * B.creepPerSec;
   }
 
   get bodyRadius(): number {
@@ -433,8 +442,6 @@ export class Sim {
     let n = B.baseInterest;
     for (const s of this.map.slots) if (s && s.feature === 'science') n += 3;
     for (const t of this.towers) n += towerStats(t).interest;
-    n += B.brainInterest * this.organPower('brain');
-    if (this.glandMode() === 'lure') n += B.glandLureInterestBonus * this.organPower('gland');
     return n;
   }
 
@@ -707,6 +714,9 @@ export class Sim {
         for (let k = 0; k < mosaics; k++) shared.push({ family: u.family });
       }
     }
+    // The organ stage: verbs shared into this limb's theme by the organs it touches.
+    const ob = this.organBonusOf(t.family);
+    shared.push(...ob.pips);
     // Amplification last: it multiplies EVERYTHING the limb carries and was fed.
     const stack = this.ampStack(t);
     const all = Sim.amplifyStack([...own, ...shared], stack);
@@ -720,16 +730,19 @@ export class Sim {
     s.rate *= 1 + choirBonus;
     s.tempo *= 1 + choirBonus;
     // Twinning glands: ×2 projectiles (and producer output) per gland.
+    // Organ levels: +15% potency and tempo per level above 1 for the theme's limbs.
+    if (ob.potency !== 1 || ob.tempo !== 1) {
+      s.potency *= ob.potency;
+      s.damage *= ob.potency;
+      s.tempo *= ob.tempo;
+      s.rate *= ob.tempo;
+    }
     for (const g of this.enginesPointedAt(t, 'twin')) s.volley *= towerStats(g).twinPower;
     // A GENTLE tap lets its target keep working at half speed.
     for (const c of this.enginesPointedAt(t, 'tap')) if (towerStats(c).gentleTap) { s.rate *= 0.5; s.tempo *= 0.5; }
     return s;
   }
 
-  private glandMode(): GlandMode {
-    const g = this.organs.find((o) => o.organ === 'gland');
-    return g ? g.glandMode : 'calm';
-  }
 
   /** Directive progress as { done, goal } for the HUD bar and tests. */
   directiveProgress(): { done: number; goal: number } {
@@ -795,57 +808,163 @@ export class Sim {
     return t === CellType.Block;
   }
 
+  /** An organ's footprint on the board: its shape turned `rot` quarter-turns, anchored at `cell` (null if off the board). */
+  organFootprint(organ: OrganId, cell: number, rot = 0): number[] | null {
+    const u = this.under;
+    let pts = organSpec(organ).shape.map(([x, y]) => [x, y] as [number, number]);
+    for (let r = 0; r < ((rot % 4) + 4) % 4; r++) pts = pts.map(([x, y]) => [-y, x] as [number, number]);
+    const mx = Math.min(...pts.map((p) => p[0]));
+    const my = Math.min(...pts.map((p) => p[1]));
+    const ax = cell % u.w;
+    const ay = Math.floor(cell / u.w);
+    const out: number[] = [];
+    for (const [x, y] of pts) {
+      const cx = ax + x - mx;
+      const cy = ay + y - my;
+      if (cx < 0 || cy < 0 || cx >= u.w || cy >= u.h) return null;
+      out.push(cy * u.w + cx);
+    }
+    return out;
+  }
+
+  /** The organ covering a board cell, if any. */
+  organAt(cell: number): Organ | undefined {
+    return this.organs.find((o) => o.cells.includes(cell));
+  }
+
   /**
-   * The body below: an organ grows on dig-able ground (soil or a deposit) that
-   * TOUCHES the meteor or an organ — one connected body — and only between
-   * waves (never while an assault is on).
+   * The organ stage: an organ grows where its whole footprint is open ground
+   * (soil or a deposit), at least one cell TOUCHING the meteor or an organ,
+   * and only between waves. Theme organs are one of each.
    */
-  canBuildOrgan(cell: number): boolean {
-    const c = this.under.cells[cell];
-    if (!c || (c.kind !== 'soil' && c.kind !== 'deposit')) return false;
+  canBuildOrgan(organ: OrganId, cell: number, rot = 0): boolean {
     if (this.phase === 'siege') return false;
-    if (this.organs.some((o) => o.cell === cell)) return false;
-    return neighbours4(this.under, cell).some((n) =>
-      this.under.cells[n].kind === 'meteor' || this.organs.some((o) => o.cell === n));
-  }
-
-  /** An organ's POWER: 1, +1 per touching feature (+2 if it favors this kind), +0.5 per touching organ of its kind. */
-  organPowerOf(o: { organ: OrganId; cell: number }): number {
-    let p = 1;
-    for (const n of neighbours4(this.under, o.cell)) {
-      const c = this.under.cells[n];
-      if (c.kind === 'feature' && c.feature) p += FEATURES[c.feature].favors === o.organ ? FEATURE_FAVORED_POWER : FEATURE_POWER;
-      if (this.organs.some((x) => x !== o && x.cell === n && x.organ === o.organ)) p += SAME_KIND_POWER;
+    const def = ORGAN_BY_ID[organ];
+    if (!def) return false;
+    if (def.kind === 'theme' && this.organs.some((o) => o.organ === organ)) return false;
+    const cells = this.organFootprint(organ, cell, rot);
+    if (!cells) return false;
+    for (const c of cells) {
+      const k = this.under.cells[c].kind;
+      if ((k !== 'soil' && k !== 'deposit') || this.organAt(c)) return false;
     }
-    return p;
+    return cells.some((c) => neighbours4(this.under, c).some((n) =>
+      !cells.includes(n) && (this.under.cells[n].kind === 'meteor' || this.organAt(n) !== undefined)));
   }
 
-  /** Total power of one organ kind (what every organ effect scales with). */
-  organPower(kind: OrganId): number {
-    let n = 0;
-    for (const o of this.organs) if (o.organ === kind) n += this.organPowerOf(o);
-    return n;
+  /** Price of the next level: the organ's cost times its current level (the meteor: 30 war per level). */
+  organUpgradeCost(o: Organ | null): { war?: number; science?: number } {
+    if (!o) return { war: 30 * this.coreLevel };
+    const c = organSpec(o.organ).cost;
+    return { war: c.war ? c.war * o.level : undefined, science: c.science ? c.science * o.level : undefined };
   }
 
-  /** Roots grow their lobe from the core; its size follows the root's power. */
-  private refreshRootLobes(): void {
+  /** Meteor cells (the core's buried half — the first theme organ). */
+  private meteorCells(): number[] {
+    const out: number[] = [];
+    this.under.cells.forEach((c, i) => { if (c.kind === 'meteor') out.push(i); });
+    return out;
+  }
+
+  /** Cells within one step (8-way) of a footprint: a zone organ's zone. */
+  private zoneOf(cells: number[]): Set<number> {
+    const u = this.under;
+    const z = new Set<number>();
+    for (const c of cells) {
+      const x = c % u.w;
+      const y = Math.floor(c / u.w);
+      for (let dy = -1; dy <= 1; dy++) {
+        for (let dx = -1; dx <= 1; dx++) {
+          const nx = x + dx;
+          const ny = y + dy;
+          if (nx < 0 || ny < 0 || nx >= u.w || ny >= u.h) continue;
+          z.add(ny * u.w + nx);
+        }
+      }
+    }
+    for (const c of cells) z.delete(c);
+    return z;
+  }
+
+  /** The theme "nodes": the meteor (core) plus every theme organ, with their footprints. */
+  themeNodes(): Array<{ theme: OrganId | 'core'; cells: number[]; baseLevel: number; signature: TowerFamily; organ?: Organ }> {
+    const nodes: Array<{ theme: OrganId | 'core'; cells: number[]; baseLevel: number; signature: TowerFamily; organ?: Organ }> = [
+      { theme: 'core', cells: this.meteorCells(), baseLevel: this.coreLevel, signature: METEOR_THEME.signature },
+    ];
     for (const o of this.organs) {
-      if (o.organ !== 'root') continue;
-      const src = this.creepSources.find((x) => x.kind === 'root' && x.ownerId === o.id);
-      if (src) src.radius = B.rootBaseRadius * this.organPowerOf(o);
+      const d = ORGAN_BY_ID[o.organ];
+      if (d.kind === 'theme' && d.signature) nodes.push({ theme: o.organ, cells: o.cells, baseLevel: o.level, signature: d.signature, organ: o });
     }
+    return nodes;
   }
 
-  /** Deposits with an organ on them pay again every cleared wave. */
-  private payDepositWages(): void {
-    for (const o of this.organs) {
-      const c = this.under.cells[o.cell];
-      const wage = c.deposit ? DEPOSITS[c.deposit].perWave : undefined;
-      if (!wage) continue;
-      this.meat.war += wage.war ?? 0;
-      this.meat.science += wage.science ?? 0;
+  /**
+   * Everything the organ stage does to the surface, per theme: its effective
+   * LEVEL (own level + heart zones + touching features), the SIGNATURE verbs
+   * it receives from the theme organs it touches (directly or through a root
+   * chain; doubled from any organ in a gland's zone), and its DRAW multiplier
+   * (brain zones). Cached; rebuilt whenever an organ is grown or upgraded.
+   */
+  organEffects(): Map<OrganId | 'core', { level: number; pips: ModPip[]; draw: number; links: Array<OrganId | 'core'> }> {
+    if (this.organCache) return this.organCache;
+    const u = this.under;
+    const nodes = this.themeNodes();
+    const zones = this.organs.filter((o) => ORGAN_BY_ID[o.organ].kind === 'zone')
+      .map((o) => ({ effect: ORGAN_BY_ID[o.organ].zone!, zone: this.zoneOf(o.cells) }));
+    const roots = this.organs.filter((o) => o.organ === 'root');
+    const touches = (a: number[], b: number[]) => a.some((c) => neighbours4(u, c).some((n) => b.includes(n)));
+    const inZone = (cells: number[], effect: string) => zones.filter((z) => z.effect === effect && cells.some((c) => z.zone.has(c))).length;
+    // Roots conduct: each theme node reaches the roots it touches, and roots reach roots.
+    const reachRoots = (cells: number[]): number[] => {
+      const seen = new Set<number>();
+      const stack = roots.filter((r) => touches(cells, r.cells));
+      while (stack.length) {
+        const r = stack.pop()!;
+        if (seen.has(r.id)) continue;
+        seen.add(r.id);
+        for (const r2 of roots) if (!seen.has(r2.id) && touches(r.cells, r2.cells)) stack.push(r2);
+      }
+      return roots.filter((r) => seen.has(r.id)).flatMap((r) => r.cells);
+    };
+    const out = new Map<OrganId | 'core', { level: number; pips: ModPip[]; draw: number; links: Array<OrganId | 'core'> }>();
+    for (const n of nodes) {
+      let level = n.baseLevel + inZone(n.cells, 'level');
+      for (const c of n.cells) {
+        for (const nb of neighbours4(u, c)) {
+          const f = u.cells[nb];
+          if (f.kind === 'feature' && f.feature) level += FEATURES[f.feature].favors === n.theme ? FEATURE_FAVORED_LEVEL : FEATURE_LEVEL;
+        }
+      }
+      const reach = [...n.cells, ...reachRoots(n.cells)];
+      const pips: ModPip[] = [];
+      const links: Array<OrganId | 'core'> = [];
+      for (const m of nodes) {
+        if (m === n || !touches(reach, m.cells)) continue;
+        links.push(m.theme);
+        const times = 1 + inZone(m.cells, 'share');
+        for (let k = 0; k < times; k++) pips.push({ family: m.signature });
+      }
+      out.set(n.theme, { level, pips, draw: BRAIN_DRAW_MULT ** inZone(n.cells, 'draw'), links });
     }
+    this.organCache = out;
+    return out;
   }
+
+  /** Limb families you can draw: the meteor's, plus every theme organ's (all of them without the organ stage). */
+  isUnlocked(family: TowerFamily): boolean {
+    if (!this.cfg.organStage) return true;
+    const th = themeOf(family);
+    return th === 'core' || this.organs.some((o) => o.organ === th);
+  }
+
+  /** The organ-stage effect on one limb family (level multiplier + shared verbs). */
+  organBonusOf(family: TowerFamily): { potency: number; tempo: number; pips: ModPip[]; draw: number } {
+    const e = this.organEffects().get(themeOf(family));
+    if (!e) return { potency: 1, tempo: 1, pips: [], draw: 1 };
+    const up = Math.max(0, e.level - 1);
+    return { potency: 1 + ORGAN_LEVEL_POTENCY * up, tempo: 1 + ORGAN_LEVEL_TEMPO * up, pips: e.pips, draw: e.draw * (1 + 0.25 * up) };
+  }
+
 
 
   canAfford(cost: Partial<Record<Caste, number>>): boolean {
@@ -891,23 +1010,21 @@ export class Sim {
   // ---------- cards ----------
 
   private drawCard(): CardInstance {
-    const brains = this.organPower('brain');
     const spec = this.rng.weighted(TOWERS, (t) =>
-      t.weight
+      (this.isUnlocked(t.family) ? t.weight : 0)
       * (this.geneMods.weightMult[t.family] ?? 1)
-      * (t.advanced && brains > 0 ? B.brainAdvancedWeightMult ** brains : 1),
+      * this.organBonusOf(t.family).draw,
     );
     return { id: this.nextId++, family: spec.family };
   }
 
   /** Current draw weight per family (for the HUD odds inspector and tests). */
   drawWeights(): Record<TowerFamily, number> {
-    const brains = this.organPower('brain');
     const out = {} as Record<TowerFamily, number>;
     for (const t of TOWERS) {
-      out[t.family] = t.weight
+      out[t.family] = (this.isUnlocked(t.family) ? t.weight : 0)
         * (this.geneMods.weightMult[t.family] ?? 1)
-        * (t.advanced && brains > 0 ? B.brainAdvancedWeightMult ** brains : 1);
+        * this.organBonusOf(t.family).draw;
     }
     return out;
   }
@@ -991,60 +1108,42 @@ export class Sim {
       }
       case 'build-organ': {
         const spec = organSpec(cmd.organ);
+        const rot = cmd.rot ?? 0;
         if (this.phase === 'siege') return { ok: false, err: 'organs grow between waves' };
-        if (!this.canBuildOrgan(cmd.cell)) return { ok: false, err: 'must touch the body' };
+        if (!this.canBuildOrgan(cmd.organ, cmd.cell, rot)) return { ok: false, err: 'must fit on open ground touching the body' };
         if (!this.canAfford(spec.cost)) return { ok: false, err: 'cannot afford' };
         this.pay(spec.cost);
-        const organ: Organ = { id: this.nextId++, organ: cmd.organ, cell: cmd.cell, glandMode: 'calm' };
-        this.organs.push(organ);
-        // Dug onto a deposit: it pays out now (and some pay every wave after).
-        const cell = this.under.cells[cmd.cell];
-        if (cell.kind === 'deposit' && cell.deposit && !cell.claimed) {
-          cell.claimed = true;
-          const pay = DEPOSITS[cell.deposit].now;
+        const cells = this.organFootprint(cmd.organ, cmd.cell, rot)!;
+        this.organs.push({ id: this.nextId++, organ: cmd.organ, cell: cmd.cell, rot, level: 1, cells });
+        this.organCache = null;
+        // Grown over deposits: each pays out now.
+        for (const c of cells) {
+          const d = this.under.cells[c];
+          if (d.kind !== 'deposit' || !d.deposit || d.claimed) continue;
+          d.claimed = true;
+          const pay = DEPOSITS[d.deposit].now;
           this.meat.war += pay.war ?? 0;
           this.meat.science += pay.science ?? 0;
           this.meat.royal += pay.royal ?? 0;
           this.biomass += pay.biomass ?? 0;
-          if (cell.pips) this.pendingPips = [...this.pendingPips, ...cell.pips];
-          this.events.push({ kind: 'deposit-claimed', name: DEPOSITS[cell.deposit].name });
+          if (d.pips) this.pendingPips = [...this.pendingPips, ...d.pips];
+          this.events.push({ kind: 'deposit-claimed', name: DEPOSITS[d.deposit].name });
         }
-        if (cmd.organ === 'root') {
-          // The lobe grows from the core; default toward the nearest frontier gate (click to turn).
-          const pos = this.core;
-          let dir: RootDir = 'N';
-          let best = Infinity;
-          for (const gate of this.gates) {
-            const g = this.cellCenter(gate);
-            const d = dist(pos, g);
-            if (d < best) {
-              best = d;
-              const dx = g.x - pos.x;
-              const dy = g.y - pos.y;
-              dir = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'E' : 'W') : (dy > 0 ? 'S' : 'N');
-            }
-          }
-          organ.rootDir = dir;
-          this.addCreepSource('root', this.map.coreCell, B.rootBaseRadius, dir, organ.id);
-        }
-        this.refreshRootLobes();
-        this.refreshRouting();
         this.events.push({ kind: 'organ-built', organ: cmd.organ });
         return { ok: true };
       }
-      case 'cycle-gland': {
-        const g = this.organs.find((o) => o.id === cmd.organInstanceId && o.organ === 'gland');
-        if (!g) return { ok: false, err: 'no such gland' };
-        g.glandMode = g.glandMode === 'calm' ? 'lure' : g.glandMode === 'lure' ? 'challenge' : 'calm';
-        return { ok: true };
-      }
-      case 'cycle-root': {
-        const o = this.organs.find((x) => x.id === cmd.organInstanceId && x.organ === 'root');
-        if (!o) return { ok: false, err: 'no such root' };
-        const order: RootDir[] = ['N', 'E', 'S', 'W'];
-        o.rootDir = order[(order.indexOf(o.rootDir ?? 'N') + 1) % 4];
-        const src = this.creepSources.find((s) => s.kind === 'root' && s.ownerId === o.id);
-        if (src) src.dir = o.rootDir;
+      case 'upgrade-organ': {
+        if (this.phase === 'siege') return { ok: false, err: 'organs grow between waves' };
+        // -1 = the meteor core itself.
+        const o = cmd.organInstanceId === -1 ? null : this.organs.find((x) => x.id === cmd.organInstanceId);
+        if (cmd.organInstanceId !== -1 && (!o || ORGAN_BY_ID[o.organ].kind !== 'theme')) return { ok: false, err: 'only theme organs level up' };
+        const cost = this.organUpgradeCost(o ?? null);
+        if (!this.canAfford(cost)) return { ok: false, err: 'cannot afford' };
+        this.pay(cost);
+        if (o) o.level += 1;
+        else this.coreLevel += 1;
+        this.organCache = null;
+        this.events.push({ kind: 'organ-upgraded', organ: o ? o.organ : 'heart', level: o ? o.level : this.coreLevel });
         return { ok: true };
       }
       case 'sling-throw': {
@@ -1129,8 +1228,8 @@ export class Sim {
       case 'call-early': {
         if (this.phase !== 'growth') return { ok: false, err: 'no wave to call' };
         const bonus = Math.floor((B.growthSeconds - this.phaseElapsed) * B.callEarlyRate);
-        if (bonus > 0) this.meat.war += bonus;
         this.startSiege();
+        if (bonus > 0) this.meat.war += bonus; // after the wave starts, so it is not cleared
         return { ok: true };
       }
       case 'discard': {
@@ -1412,6 +1511,16 @@ export class Sim {
     this.phase = 'siege';
     this.phaseElapsed = 0;
     this.waveNumber += 1;
+    // The organ stage's economy: what you did not spend between waves is lost
+    // when the next wave starts. The starting meat carries into wave 1; royal
+    // points are kept.
+    if (this.cfg.organStage && this.waveNumber > 1) {
+      const war = Math.floor(this.meat.war);
+      const science = Math.floor(this.meat.science);
+      if (war > 0 || science > 0) this.events.push({ kind: 'meat-cleared', war, science });
+      this.meat.war = 0;
+      this.meat.science = 0;
+    }
     const comp = WAVE_TABLE[this.tier];
     const scale = 1 + this.wavesCleared * B.waveCountScale;
     this.spawnQueue = [];
@@ -1448,10 +1557,8 @@ export class Sim {
     this.time += DT;
     this.phaseElapsed += DT;
 
-    const hearts = this.organPower('heart');
-    this.biomass += (B.biomassBase + hearts * B.biomassPerHeart) * DT;
+    this.biomass += B.biomassBase * DT;
 
-    if (this.glandMode() === 'challenge') this.threatChallenge += B.glandChallengeThreatPerSec * this.organPower('gland') * DT;
 
     // Phase machine.
     if (this.phase === 'growth') {
@@ -1476,7 +1583,6 @@ export class Sim {
         const bonus = Math.round((B.waveBonusBase + this.waveNumber * B.waveBonusPerWave) * this.entranceMeatMult);
         this.meat.war += bonus;
         this.events.push({ kind: 'wave-cleared', wave: this.waveNumber, bonus });
-        this.payDepositWages();
         // Brood pips: living tissue regrows between waves — 50% max hp per pip.
         for (const t of this.towers) {
           const heal = this.statsOf(t).waveHeal;
@@ -3125,9 +3231,7 @@ export class Sim {
       this.royalsKilled += 1;
       this.checkDirective();
     }
-    const calmScale = this.glandMode() === 'calm' && this.organs.some((o) => o.organ === 'gland')
-      ? B.glandCalmThreatScale ** this.organPower('gland') : 1;
-    this.threatKills += spec.threatOnKill * calmScale * B.killThreatScale;
+    this.threatKills += spec.threatOnKill * B.killThreatScale;
     this.biomass += B.biomassPerKill;
     // A splitter killed by damage bursts into its children; eaten whole, it doesn't.
     if (spec.splitInto && !eaten) {

@@ -45,38 +45,64 @@ try {
   await page.goto('http://localhost:5199/?seed=7&autostart=1', { waitUntil: 'load' });
   await page.waitForSelector('#stage canvas');
 
-  // 0. THE BODY BELOW opens first (organs -> limbs -> wave). The sim holds while
-  //    it is open; an organ grows only touching the meteor (or an organ that does).
-  await page.waitForSelector('#under:not(.hidden)', { timeout: 5000 });
+  // 0. The run starts at WAVE SETUP (no organ screen first), with only the
+  //    meteor's limbs in the draw. The ORGANS button opens the organ stage
+  //    between waves; the clock holds while it is open. Grow a Bone Forge by
+  //    hover (ghost + preview), right-click (rotate), click; it unlocks its limbs.
+  //    Click the grown forge to level it.
+  const startsAtSetup = await page.locator('#under').isHidden();
+  const hand0 = await page.evaluate(() => window.broodfall.sim.hand.map((c) => c.family));
+  if (startsAtSetup && hand0.every((f) => ['spitter', 'lasher', 'spine'].includes(f))) {
+    pass('run starts at wave setup; the draw holds only the meteor\'s limbs');
+  } else fail('start state', `under hidden=${startsAtSetup} hand=${hand0}`);
   await page.evaluate(() => { window.broodfall.sim.meat.war = 500; });
+  await page.locator('#open-under').click();
+  await page.waitForSelector('#under:not(.hidden)', { timeout: 5000 });
   const t0 = await page.evaluate(() => window.broodfall.sim.time);
-  await page.waitForTimeout(600);
+  await page.waitForTimeout(500);
   const t1 = await page.evaluate(() => window.broodfall.sim.time);
-  if (t1 === t0) pass('the body below opens at the start and the clock holds while it is open');
-  else fail('under pause', `time moved ${t0} -> ${t1}`);
-  const cells = await page.evaluate(() => {
+  if (t1 === t0) pass('ORGANS opens the organ stage and the clock holds');
+  else fail('organ pause', `time moved ${t0} -> ${t1}`);
+  await page.locator('#under-palette [data-organ="forge"]').click();
+  // Find a spot where the forge fits at SOME rotation; rotate with right-clicks until it fits.
+  const spot = await page.evaluate(() => {
     const s = window.broodfall.sim;
-    const u = s.under;
-    let legal = -1; let far = -1;
-    for (let i = 0; i < u.cells.length; i++) {
-      if (legal < 0 && s.canBuildOrgan(i)) legal = i;
-      if (far < 0 && (u.cells[i].kind === 'soil' || u.cells[i].kind === 'deposit') && Math.floor(i / u.w) === u.h - 1) far = i;
-    }
-    return { legal, far };
+    for (let c = 0; c < s.under.cells.length; c++) for (let r = 0; r < 4; r++) if (s.canBuildOrgan('forge', c, r)) return { c, r };
+    return null;
   });
-  await page.locator('#under-palette [data-organ="heart"]').click();
-  await page.locator(`#under-grid [data-cell="${cells.far}"]`).click();
-  const refused = await page.evaluate(() => window.broodfall.sim.organs.length === 0);
-  await page.locator(`#under-grid [data-cell="${cells.legal}"]`).hover();
+  const cellEl = page.locator(`#under-grid [data-cell="${spot.c}"]`);
+  await cellEl.hover();
+  for (let k = 0; k < spot.r; k++) await cellEl.click({ button: 'right' });
+  const ghost = await page.locator('#under-grid .ghost-ok').count();
   const preview = await page.locator('#under-status').innerText();
-  await page.locator(`#under-grid [data-cell="${cells.legal}"]`).click();
-  const grown = await page.evaluate(() => window.broodfall.sim.organs.map((o) => o.organ));
-  if (refused && /GROW AUXILIARY HEART HERE/i.test(preview) && grown.join() === 'heart') {
-    pass('hover previews the organ\'s power; click grows it touching the meteor; a cut-off cell is refused');
-  } else fail('grow organ below', `refused=${refused} preview="${preview}" organs=${grown}`);
+  await cellEl.click();
+  const w = await page.evaluate(() => ({ organs: window.broodfall.sim.organs.map((o) => o.organ), impaler: window.broodfall.sim.drawWeights().impaler }));
+  if (ghost === 4 && /GROW BONE FORGE HERE/i.test(preview) && /unlocks/i.test(preview) && w.organs.join() === 'forge' && w.impaler > 0) {
+    pass('hover shows the 4-cell ghost + preview, right-click rotates, click grows the forge — its limbs unlock');
+  } else fail('grow forge', `ghost=${ghost} preview="${preview}" ${JSON.stringify(w)}`);
+  const forgeCell = await page.evaluate(() => window.broodfall.sim.organs[0].cells[0]);
+  await page.locator(`#under-grid [data-cell="${forgeCell}"]`).click();
+  const lvl = await page.evaluate(() => window.broodfall.sim.organs[0].level);
+  if (lvl === 2) pass('clicking a grown theme organ levels it');
+  else fail('level organ', `level=${lvl}`);
   await page.locator('#under-done').click();
-  if (await page.locator('#under').isHidden()) pass('TO THE SURFACE closes the body below');
+  if (await page.locator('#under').isHidden()) pass('TO THE SURFACE closes the organ stage');
   else fail('under close', 'still open');
+  // The later limb checks need every theme's limbs drawable: grow the other themes.
+  const grownAll = await page.evaluate(() => {
+    const s = window.broodfall.sim;
+    s.meat.war = 9999; s.meat.science = 9999;
+    for (const id of ['gut', 'venom', 'nerve', 'lattice', 'womb', 'marrow', 'resonance']) {
+      let done = false;
+      for (let c = 0; c < s.under.cells.length && !done; c++) {
+        for (let r = 0; r < 4 && !done; r++) {
+          if (s.canBuildOrgan(id, c, r)) done = s.issue({ kind: 'build-organ', organ: id, cell: c, rot: r }).ok;
+        }
+      }
+    }
+    return s.organs.length;
+  });
+  if (grownAll !== 8) fail('grow all themes', `organs=${grownAll}`);
 
   // Give the wallet enough to build twice regardless of card mix, and make sure
   // the first card is a block-buildable family (street pieces would foil the
@@ -389,23 +415,15 @@ try {
     }
   }
 
-  // 6. Tendril root, grown below: reopen the body below from the bottom bar
-  //    (between waves), grow a root, click it to turn its lobe.
+  // 6. The meteor is an organ too: click it in the organ stage to level the core.
   await page.evaluate(() => { window.broodfall.sim.meat.war = 500; });
   await page.locator('#open-under').click();
   await page.waitForSelector('#under:not(.hidden)', { timeout: 3000 });
-  await page.locator('#under-palette [data-organ="root"]').click();
-  const rootCell = await page.evaluate(() => {
-    const s = window.broodfall.sim;
-    for (let i = 0; i < s.under.cells.length; i++) if (s.canBuildOrgan(i)) return i;
-    return -1;
-  });
-  await page.locator(`#under-grid [data-cell="${rootCell}"]`).click();
-  const rootDir1 = await page.evaluate(() => window.broodfall.sim.organs.find((x) => x.organ === 'root')?.rootDir ?? null);
-  await page.locator(`#under-grid [data-cell="${rootCell}"]`).click(); // click the root: turn its lobe
-  const rootDir2 = await page.evaluate(() => window.broodfall.sim.organs.find((x) => x.organ === 'root')?.rootDir ?? null);
-  if (rootDir1 && rootDir2 && rootDir1 !== rootDir2) pass('root: grown below, click turns its lobe');
-  else fail('tendril root', `dir ${rootDir1} -> ${rootDir2}`);
+  const meteor = await page.evaluate(() => window.broodfall.sim.under.cells.findIndex((c) => c.kind === 'meteor'));
+  await page.locator(`#under-grid [data-cell="${meteor}"]`).click();
+  const coreLv = await page.evaluate(() => window.broodfall.sim.coreLevel);
+  if (coreLv === 2) pass('clicking the meteor levels the core theme');
+  else fail('core level', `coreLevel=${coreLv}`);
   await page.locator('#under-done').click();
 } catch (err) {
   fail('harness', err.message);

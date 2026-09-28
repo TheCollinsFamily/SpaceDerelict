@@ -50,7 +50,7 @@ const ENTRANCES = Math.max(1, Math.min(3,
 
 const CFG: SimConfig = {
   gridW: 50, gridH: 40, cellPx: 26, seed: SEED, directive, genes: meta.genes,
-  entrances: ENTRANCES,
+  entrances: ENTRANCES, organStage: true,
 };
 
 let sim = new Sim(CFG);
@@ -161,7 +161,9 @@ function updateHint(): void {
   } else {
     hud.setHint(AUTO
       ? 'demo mode: the asset is piloting itself'
-      : 'select a limb card below, then click a creeped block by a street — the assault forms at the glowing gate');
+      : sim.phase === 'growth' && sim.waveNumber > 0
+        ? 'WAVE SETUP: place limbs — unspent war and science are lost when the wave starts'
+        : 'select a limb card below, then click a creeped block by a street — the assault forms at the glowing gate');
   }
 }
 
@@ -458,17 +460,12 @@ function towerNearWorld(x: number, y: number): { id: number } | null {
 const under = new UndergroundScreen(() => sim, () => updateHint());
 const openUnderBtn = document.getElementById('open-under')!;
 openUnderBtn.addEventListener('click', () => { if (sim.phase !== 'siege') { cancelAll(); under.show(); } });
-/** Last phase seen by the loop — a siege/draft ending into growth opens the organ stage. */
+/** Last phase seen by the loop — a wave (and any draft) ending into wave setup opens the organ stage. */
 let lastPhase = sim.phase;
-let underOpenedAtStart = false;
 function underLifecycle(): void {
   if (AUTO || !started || sim.outcome !== 'playing') return;
-  if (!underOpenedAtStart) {
-    underOpenedAtStart = true;
-    under.show();
-  } else if (sim.phase === 'growth' && lastPhase !== 'growth') {
-    under.show();
-  }
+  // The run starts at wave setup; the organ stage comes after every wave.
+  if (sim.phase === 'growth' && lastPhase !== 'growth') under.show();
   lastPhase = sim.phase;
   openUnderBtn.classList.toggle('disabled', sim.phase === 'siege');
 }
@@ -618,7 +615,7 @@ async function boot(): Promise<void> {
         tier: sim.tier, directive: sim.directive, progress: sim.directiveProgress(),
         meat: sim.meat, biomass: sim.biomass, coreHp: sim.coreHp,
         towers: sim.towers.map((t) => ({ id: t.id, family: t.family, cell: t.cell, pips: t.pips.length, hp: t.hp })),
-        organs: sim.organs.map((o) => ({ id: o.id, organ: o.organ, cell: o.cell, mode: o.glandMode })),
+        organs: sim.organs.map((o) => ({ id: o.id, organ: o.organ, cell: o.cell, level: o.level })),
         enemies: sim.enemies.length,
         hand: sim.hand.map((c) => c.family),
         interest: sim.interest, threat: sim.threat,

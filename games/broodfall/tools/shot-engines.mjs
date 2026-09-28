@@ -42,6 +42,13 @@ try {
   const setup = await page.evaluate(() => {
     const s = window.broodfall.sim;
     s.meat.war = 9000; s.meat.science = 9000; s.meat.royal = 9000;
+    // Organ stage: the engines live behind the Marrow Vault and Resonance Chamber (and the burster behind the Gut).
+    for (const id of ['gut', 'marrow', 'resonance']) {
+      let done = false;
+      for (let c = 0; c < s.under.cells.length && !done; c++) {
+        for (let r = 0; r < 4 && !done; r++) if (s.canBuildOrgan(id, c, r)) done = s.issue({ kind: 'build-organ', organ: id, cell: c, rot: r }).ok;
+      }
+    }
     const w = s.map.w ?? s.cfg.gridW;
     const draw = (fam) => {
       for (let g = 0; g < 600; g++) {

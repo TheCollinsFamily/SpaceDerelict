@@ -146,6 +146,12 @@ const FEED_LINES: Partial<Record<SimEvent['kind'], (e: SimEvent) => { text: stri
   budded: (e) => e.kind === 'budded'
     ? { text: `mitosis: a ${e.family} buds`, cls: 'sci' }
     : { text: '', cls: '' },
+  'meat-cleared': (e) => e.kind === 'meat-cleared'
+    ? { text: `unspent meat spoiled: ${e.war} war, ${e.science} science`, cls: 'hot' }
+    : { text: '', cls: '' },
+  'organ-upgraded': (e) => e.kind === 'organ-upgraded'
+    ? { text: `organ levelled: ${e.organ} → LV${e.level}`, cls: 'sci' }
+    : { text: '', cls: '' },
   'relic-banked': (e) => e.kind === 'relic-banked'
     ? { text: `reliquary banks ${e.pips} bonuses from the fallen ${e.family}`, cls: 'sci' }
     : { text: '', cls: '' },
