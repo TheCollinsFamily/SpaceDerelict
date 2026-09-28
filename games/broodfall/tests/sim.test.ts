@@ -779,7 +779,8 @@ describe('new enemy verbs, castes, and the risk law', () => {
     }
     cells.sort((a, b) => s.creepDistOf(a) - s.creepDistOf(b));
     for (const cell of [cells[0], cells[1], cells[cells.length - 1]]) {
-      for (let g = 0; g < 300 && ['swamp', 'spine'].includes(s.hand[0].family); g++) {
+      // Plain spitters: shields and engines would change what the caste may steal.
+      for (let g = 0; g < 300 && s.hand[0].family !== 'spitter'; g++) {
         s.issue({ kind: 'discard', cardIndex: 0 });
       }
       expect(s.issue({ kind: 'build', cardIndex: 0, cell }).ok).toBe(true);
@@ -2126,5 +2127,183 @@ describe('higher enemy types (escalation by kind, never hardening)', () => {
       if (s.towers.length === 0 || (s.towers[0] && s.towers[0].hp < s.towers[0].maxHp)) attacked = true;
     }
     expect(attacked).toBe(true);
+  });
+});
+
+describe('CREEP: free creep nodes grown by creep organs (Collins, Sep 28 2026)', () => {
+  const growSpot = (s: Sim, organ: Parameters<Sim['canBuildOrgan']>[0], touching?: Tower | { cells: number[] }) => {
+    const u = s.under;
+    for (let c = 0; c < u.cells.length; c++) {
+      for (let r = 0; r < 4; r++) {
+        if (!s.canBuildOrgan(organ, c, r)) continue;
+        const cells = s.organFootprint(organ, c, r)!;
+        if (touching && !cells.some((x) => (touching as { cells: number[] }).cells.some((y) => Math.abs((x % u.w) - (y % u.w)) + Math.abs(Math.floor(x / u.w) - Math.floor(y / u.w)) === 1))) continue;
+        expect(s.issue({ kind: 'build-organ', organ, cell: c, rot: r }).ok).toBe(true);
+        return s.organs[s.organs.length - 1];
+      }
+    }
+    throw new Error(`no spot for ${organ}`);
+  };
+  const run = (s: Sim, seconds: number) => {
+    const priv = s as unknown as { phase: string; phaseElapsed: number };
+    for (let i = 0; i < seconds / 0.1; i++) { priv.phase = 'growth'; priv.phaseElapsed = 0; s.tick(); }
+  };
+
+  it('a spore bladder grows a node every 50s; a pacemaker touching it speeds it up; a budding gland doubles it', () => {
+    const s = freshSim(4300);
+    s.meat.war = 9999;
+    const bl = growSpot(s, 'bladder');
+    run(s, 49);
+    expect(s.creepNodes).toBe(0);
+    run(s, 1.2);
+    expect(s.creepNodes).toBe(1);
+    growSpot(s, 'pacemaker', bl);
+    expect(s.bladderRate(bl).interval).toBeCloseTo(35);
+    growSpot(s, 'budder', bl);
+    expect(s.bladderRate(bl).per).toBe(2);
+    const before = s.creepNodes;
+    run(s, 36);
+    expect(s.creepNodes).toBe(before + 2);
+    // A pacemaker that touches no bladder does nothing for it.
+    const far = new Sim({ gridW: 50, gridH: 40, cellPx: 26, seed: 4301 });
+    far.meat.war = 9999;
+    const b2 = growSpot(far, 'bladder');
+    const pm = growSpot(far, 'root');
+    expect(far.bladderRate(b2).interval).toBe(50);
+    expect(pm).toBeDefined();
+  });
+
+  it('a spore cyst hands over a node at every wave clear; the Seeded Meteor gene starts the run with 3', () => {
+    const s = freshSim(4302);
+    s.meat.war = 9999;
+    growSpot(s, 'cyst');
+    s.issue({ kind: 'call-early' });
+    const priv = s as unknown as { enemies: Enemy[]; spawnQueue: unknown[] };
+    priv.enemies.length = 0; priv.spawnQueue.length = 0;
+    for (let i = 0; i < 40 && s.phase === 'siege'; i++) s.tick();
+    expect(s.creepNodes).toBe(1);
+    const g = new Sim({ gridW: 50, gridH: 40, cellPx: 26, seed: 4303, genes: ['seeded-meteor'] });
+    expect(g.creepNodes).toBe(3);
+  });
+
+  it('a node goes down free within reach of the creep and creeps its ground; swelling widens every node; catapults throw them farther', () => {
+    const s = freshSim(4304);
+    s.meat.war = 9999;
+    s.creepNodes = 3;
+    const w = s.cfg.gridW;
+    // The first non-void, uncreeped cell at exactly `k` cells from the creep edge.
+    const atDistance = (k: number) => {
+      for (let c = 0; c < s.map.cells.length; c++) {
+        if (s.map.cells[c] === CellType.Void || s.isCreeped(c)) continue;
+        let dmin = Infinity;
+        for (let dy = -k; dy <= k; dy++) for (let dx = -k; dx <= k; dx++) {
+          const x = (c % w) + dx; const y = Math.floor(c / w) + dy;
+          if (x < 0 || y < 0 || x >= w || y >= s.cfg.gridH) continue;
+          if (s.isCreeped(y * w + x)) dmin = Math.min(dmin, Math.abs(dx) + Math.abs(dy));
+        }
+        if (dmin === k) return c;
+      }
+      return -1;
+    };
+    const near = atDistance(2);
+    const far = atDistance(6);
+    expect(near).toBeGreaterThanOrEqual(0);
+    expect(s.canPlaceNode(near)).toBe(true);
+    if (far >= 0) expect(s.canPlaceNode(far)).toBe(false);
+    expect(s.issue({ kind: 'place-node', cell: near }).ok).toBe(true);
+    expect(s.creepNodes).toBe(2);
+    expect(s.isCreeped(near)).toBe(true);
+    // Recipes: a swelling sac and a catapult TOUCHING a bladder shape the nodes it grows.
+    const bl = growSpot(s, 'bladder');
+    expect(s.bladderStrain(bl)).toEqual({ radius: 3, reach: 3, slow: 1, dps: 0 });
+    growSpot(s, 'swell', bl);
+    growSpot(s, 'catapult', bl);
+    expect(s.bladderStrain(bl).radius).toBe(4);
+    expect(s.bladderStrain(bl).reach).toBe(8);
+    // Catapult also unlocks the Spore Sling.
+    const gated = new Sim({ gridW: 50, gridH: 40, cellPx: 26, seed: 4304, organStage: true });
+    expect(gated.drawWeights().sling).toBe(0);
+    gated.meat.war = 9999;
+    growSpot(gated, 'catapult');
+    expect(gated.drawWeights().sling).toBeGreaterThan(0);
+    // A thrown node reaches ground a plain one cannot.
+    if (far >= 0) {
+      s.nodeStock = [s.bladderStrain(bl)];
+      expect(s.canPlaceNode(far, s.nodeStock[0].reach)).toBe(true);
+      expect(s.issue({ kind: 'place-node', cell: far }).ok).toBe(true);
+    }
+    s.creepNodes = 0;
+    expect(s.issue({ kind: 'place-node', cell: near }).ok).toBe(false);
+  });
+
+  it('mire and burning creep: a gland TOUCHING the meteor strains the core creep; nodes carry the strain of their bladder', () => {
+    const s = freshSim(4305);
+    s.meat.war = 9999;
+    const e = (s as unknown as { spawnEnemy(k: string, g?: number): Enemy }).spawnEnemy('soldier', s.gates[0]);
+    e.pos = { ...s.core };
+    const v0 = s.moveSpeedOf(e);
+    // grow() puts the first organ against the meteor.
+    const mire = growSpot(s, 'mire');
+    const u = s.under;
+    const touchesMeteor = mire.cells.some((c) => [c - 1, c + 1, c - u.w, c + u.w].some((n) => u.cells[n]?.kind === 'meteor'));
+    expect(touchesMeteor).toBe(true);
+    expect(s.moveSpeedOf(e)).toBeCloseTo(v0 * 0.75);
+    growSpot(s, 'acid');
+    const hp0 = e.hp;
+    (s as unknown as { digestOnCreep(): void }).digestOnCreep();
+    const burn = s.coreStrainBonus().dps;
+    expect(hp0 - e.hp).toBeCloseTo(burn * 0.1);
+    // A node of a burning strain burns its own ground (away from the core).
+    const t = new Sim({ gridW: 50, gridH: 40, cellPx: 26, seed: 4307 });
+    t.nodeStock = [{ radius: 3, reach: 3, slow: 0.75, dps: 4 }];
+    let spot = -1;
+    for (let c = 0; c < t.map.cells.length && spot < 0; c++) if (!t.isCreeped(c) && t.canPlaceNode(c, 3)) spot = c;
+    expect(t.issue({ kind: 'place-node', cell: spot }).ok).toBe(true);
+    expect(t.creepEffectAt(spot)).toEqual({ slow: 0.75, dps: 4 });
+  });
+
+  it('a node matures, then spreads ONE child of its strain; bodies trampling it wear it down and it takes its creep with it', () => {
+    const s = freshSim(4308);
+    s.nodeStock = [{ radius: 3, reach: 3, slow: 1, dps: 0 }];
+    let spot = -1;
+    for (let c = 0; c < s.map.cells.length && spot < 0; c++) if (!s.isCreeped(c) && s.canPlaceNode(c, 3)) spot = c;
+    expect(s.issue({ kind: 'place-node', cell: spot }).ok).toBe(true);
+    const n = s.creepSources.find((x) => x.kind === 'node')!;
+    const w = s.cfg.gridW;
+    let child = -1;
+    for (let c = 0; c < s.map.cells.length && child < 0; c++) if (c !== spot && s.canSpreadTo(n, c) && !s.isCreeped(c)) child = c;
+    if (child < 0) for (let c = 0; c < s.map.cells.length && child < 0; c++) if (c !== spot && s.canSpreadTo(n, c)) child = c;
+    expect(s.issue({ kind: 'spread-node', sourceId: n.id, cell: child }).err).toBe('not mature yet');
+    for (let i = 0; i < 210; i++) s.tick();
+    expect(s.issue({ kind: 'spread-node', sourceId: n.id, cell: child }).ok).toBe(true);
+    expect(s.issue({ kind: 'spread-node', sourceId: n.id, cell: child }).err).toBe('this node has already spread');
+    expect(s.creepSources.filter((x) => x.kind === 'node').length).toBe(2);
+    expect(Math.abs((child % w) - (spot % w)) + Math.abs(Math.floor(child / w) - Math.floor(spot / w))).toBeLessThanOrEqual(6);
+    // Trampled to death: it goes, and so does its creep.
+    s.hurtNode(n, 1e9);
+    expect(s.creepSources.includes(n)).toBe(false);
+  });
+
+  it('a creep lance lays a STRIP of creep along its facing (not all around); the Runner Gland unlocks it', () => {
+    const s = freshSim(4306);
+    const gated = new Sim({ gridW: 50, gridH: 40, cellPx: 26, seed: 4306, organStage: true });
+    expect(gated.drawWeights().lance).toBe(0);
+    gated.meat.war = 9999;
+    growSpot(gated, 'runner');
+    expect(gated.drawWeights().lance).toBeGreaterThan(0);
+    s.meat.war = 9999;
+    let idx = -1;
+    for (let g = 0; g < 600 && idx < 0; g++) { idx = s.hand.findIndex((c) => c.family === 'lance'); if (idx < 0) s.issue({ kind: 'discard', cardIndex: 0 }); }
+    const cell = buildableCell(s);
+    expect(s.issue({ kind: 'build', cardIndex: idx, cell, facing: 'E' }).ok).toBe(true);
+    const lance = s.towers.find((t) => t.family === 'lance')!;
+    const src = s.creepSources.find((x) => x.kind === 'line' && x.ownerId === lance.id)!;
+    src.bornAt = -1000; // fully grown
+    const cov = (c: number) => (s as unknown as { lineCovers(x: unknown, c: number): boolean }).lineCovers(src, c);
+    expect(cov(cell + 6)).toBe(true);     // 6 cells ahead (east)
+    expect(cov(cell - 6)).toBe(false);    // not behind
+    expect(cov(cell + 6 * s.cfg.gridW)).toBe(false); // not to the side
+    s.issue({ kind: 'set-facing', towerId: lance.id, dir: 'S' });
+    expect(cov(cell + 6 * s.cfg.gridW)).toBe(true);  // turning it turns the strip
   });
 });

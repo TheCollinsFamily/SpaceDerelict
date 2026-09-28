@@ -31,6 +31,7 @@ const CARD_DESC: Record<TowerFamily, string> = {
   ward: 'Shields the limbs around it. Regrows when quiet.',
   quill: 'Shotgun fan of quills. Brutal up close.',
   skipper: 'Fires ONE way, very far; shells skip on.',
+  lance: 'Shoots CREEP in a line ahead — new ground in a strip.',
   net: 'Anti-air only. Nets drag fliers to the ground.',
   ember: 'Flamethrower cone. Fire spreads body to body.',
   conduit: 'Funnels every bonus around it into the limb it points at.',
@@ -69,6 +70,7 @@ export const PIP_DESC: Record<TowerFamily, string> = {
   ward: '+60 permanent shield',
   quill: 'every shot also hits +1 more target',
   skipper: 'every impact skips on once more',
+  lance: 'it seeps creep around itself (+1 cell)',
   net: 'can hit AIR, and its hits drag fliers down 1s',
   ember: 'its hits IGNITE +3/s — contagious fire that lights up the unseen',
   conduit: 'EVERYTHING it was channelling (harvested), plus: draws its nearest neighbour\'s bonus',
@@ -148,6 +150,9 @@ const FEED_LINES: Partial<Record<SimEvent['kind'], (e: SimEvent) => { text: stri
     : { text: '', cls: '' },
   'meat-cleared': (e) => e.kind === 'meat-cleared'
     ? { text: `unspent meat spoiled: ${e.war} war, ${e.science} science`, cls: 'hot' }
+    : { text: '', cls: '' },
+  'node-grown': (e) => e.kind === 'node-grown'
+    ? { text: `spore bladder: +${e.count} creep node${e.count > 1 ? 's' : ''}`, cls: 'sci' }
     : { text: '', cls: '' },
   'organ-upgraded': (e) => e.kind === 'organ-upgraded'
     ? { text: `organ levelled: ${e.organ} → LV${e.level}`, cls: 'sci' }

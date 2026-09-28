@@ -31,7 +31,9 @@ export const METEOR_ROWS = [0, 1] as const;
 /** Share of cells below the topsoil that are rock (can't be grown into). */
 export const ROCK_SHARE = 0.1;
 
-export type OrganKind = 'theme' | 'zone' | 'root';
+export type OrganKind = 'theme' | 'zone' | 'root' | 'creep';
+/** What a creep organ does for creep nodes (see CREEP below). */
+export type CreepRole = 'produce' | 'pace' | 'bud' | 'cyst' | 'swell' | 'catapult' | 'mire' | 'acid' | 'runner';
 export type ZoneEffect = 'level' | 'draw' | 'share';
 
 export interface OrganDef {
@@ -47,6 +49,8 @@ export interface OrganDef {
   signature?: TowerFamily;
   /** Zone organs: what they do to organs touching their zone. */
   zone?: ZoneEffect;
+  /** Creep organs: their part in making creep nodes. */
+  creep?: CreepRole;
   blurb: string;
 }
 
@@ -60,6 +64,10 @@ const I4 = [[0, 0], [1, 0], [2, 0], [3, 0]] as const;
 const P5 = [[0, 0], [1, 0], [0, 1], [1, 1], [0, 2]] as const;
 const D2 = [[0, 0], [1, 0]] as const;
 const M1 = [[0, 0]] as const;
+const V2 = [[0, 0], [0, 1]] as const;
+const L3 = [[0, 0], [1, 0], [0, 1]] as const;
+const I3 = [[0, 0], [1, 0], [2, 0]] as const;
+const V3 = [[0, 0], [0, 1], [0, 2]] as const;
 
 /** The meteor is the first theme organ: already there, never built. */
 export const METEOR_THEME = {
@@ -85,8 +93,8 @@ export const ORGAN_DEFS: readonly OrganDef[] = [
     unlocks: ['tangler', 'ward', 'choir'], signature: 'tangler',
     blurb: 'holds the line: snares, shield membranes, the choir' },
   { id: 'womb', name: 'Brood Womb', kind: 'theme', shape: U5, cost: { war: 40 },
-    unlocks: ['brood', 'sling', 'lure'], signature: 'brood',
-    blurb: 'breeds and spreads: broodmothers, spore slings, lures' },
+    unlocks: ['brood', 'lure'], signature: 'brood',
+    blurb: 'breeds and baits: broodmothers, lures' },
   { id: 'marrow', name: 'Marrow Vault', kind: 'theme', shape: I4, cost: { science: 30 },
     unlocks: ['conduit', 'tap', 'mitosis', 'reliquary', 'press'], signature: 'spine',
     blurb: 'combo engines that move bonuses: conduit, tap, mitosis, reliquary, press' },
@@ -101,9 +109,46 @@ export const ORGAN_DEFS: readonly OrganDef[] = [
     blurb: 'organs touching its zone share their signature verb TWICE' },
   { id: 'root', name: 'Tendril Root', kind: 'root', shape: M1, cost: { war: 8 },
     blurb: 'cheap tissue: reach further, and it CARRIES adjacency between organs at either end' },
+  // CREEP (Collins, Sep 28 2026): creep nodes are FREE — these organs make them.
+  { id: 'bladder', name: 'Spore Bladder', kind: 'creep', creep: 'produce', shape: V2, cost: { war: 25 },
+    blurb: 'grows a free CREEP NODE every 50s of battle; the creep organs TOUCHING it decide its strain' },
+  { id: 'pacemaker', name: 'Pacemaker', kind: 'creep', creep: 'pace', shape: M1, cost: { war: 20 },
+    blurb: 'a bladder TOUCHING it grows nodes 30% faster (stacks)' },
+  { id: 'budder', name: 'Budding Gland', kind: 'creep', creep: 'bud', shape: L3, cost: { war: 30 },
+    blurb: 'a bladder TOUCHING it grows one MORE node each time (stacks)' },
+  { id: 'cyst', name: 'Spore Cyst', kind: 'creep', creep: 'cyst', shape: M1, cost: { war: 15 },
+    blurb: 'hands you a creep node at the start of every wave setup' },
+  { id: 'swell', name: 'Swelling Sac', kind: 'creep', creep: 'swell', shape: D2, cost: { war: 25 },
+    blurb: 'nodes from a bladder TOUCHING it spread 1 cell wider; touching the METEOR, the core creep grows wider (stacks)' },
+  { id: 'catapult', name: 'Catapult Sac', kind: 'creep', creep: 'catapult', shape: I3, cost: { war: 30 },
+    unlocks: ['sling'],
+    blurb: 'UNLOCKS the Spore Sling (the creep thrower); nodes from a bladder TOUCHING it are thrown 5 cells further (stacks)' },
+  { id: 'runner', name: 'Runner Gland', kind: 'creep', creep: 'runner', shape: V3, cost: { war: 30 },
+    unlocks: ['lance'],
+    blurb: 'UNLOCKS the Creep Lance: a thrower that shoots creep in a LINE along its facing' },
+  { id: 'mire', name: 'Mire Gland', kind: 'creep', creep: 'mire', shape: V2, cost: { war: 25 },
+    blurb: 'creep from a bladder TOUCHING it (or the METEOR, if it touches that) slows ground enemies 25% (stacks)' },
+  { id: 'acid', name: 'Digestive Lining', kind: 'creep', creep: 'acid', shape: D2, cost: { war: 30 },
+    blurb: 'creep from a bladder TOUCHING it (or the METEOR, if it touches that) burns ground enemies 4/s (stacks)' },
 ];
 
 export const ORGAN_BY_ID = Object.fromEntries(ORGAN_DEFS.map((d) => [d.id, d])) as Record<OrganId, OrganDef>;
+
+/**
+ * CREEP NODES (Collins, Sep 28 2026: "creep nodes should be free but produced at
+ * intervals by special organs"). A node is placed from your stock onto the map
+ * near your creep and spreads creep around itself for good.
+ */
+export const NODE_INTERVAL = 50;     // seconds of battle per node, per bladder
+export const PACEMAKER_MULT = 0.7;   // interval x this per touching pacemaker
+export const NODE_RADIUS = 3;        // cells of creep a node spreads
+export const NODE_REACH = 3;         // cells past the creep edge a node may be placed
+export const CATAPULT_REACH = 5;     // extra cells of reach per catapult sac
+export const MIRE_SLOW = 0.75;       // enemy speed on mire creep x this per mire gland in the recipe
+export const LINING_DPS = 4;         // damage/s to enemies on burning creep per lining in the recipe
+export const NODE_HP = 140;           // shells, bombers and trampling bodies wear nodes down
+export const NODE_TRAMPLE = 0.5;     // x a body's damage/s while it stands on a node
+export const NODE_MATURE = 20;       // battle seconds before a placed node can spread its ONE child
 
 /** Level upgrade price: the organ's cost times its current level. */
 export const ORGAN_LEVEL_POTENCY = 0.10;

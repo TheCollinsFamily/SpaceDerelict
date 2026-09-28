@@ -8,7 +8,7 @@ export type TowerFamily =
   | 'brood' | 'swamp' | 'frond' | 'lobber' | 'mister' | 'ocular' | 'prism'
   | 'bombard' | 'ward' | 'quill' | 'skipper' | 'net' | 'ember' | 'conduit'
   | 'amp' | 'mosaic' | 'twin' | 'tap'
-  | 'mitosis' | 'capacitor' | 'boomerang' | 'press' | 'reliquary';
+  | 'mitosis' | 'capacitor' | 'boomerang' | 'press' | 'reliquary' | 'lance';
 
 /** What a limb can shoot at. Fliers are only reachable by 'air'/'both' limbs. */
 export type HitsLayer = 'ground' | 'air' | 'both';
@@ -56,17 +56,31 @@ export type CasteFocus = 'any' | Caste;
 
 /** Organs of the organ stage (content/underground.ts): themes unlock limbs, zones boost organs, roots connect. */
 export type OrganId = 'forge' | 'venom' | 'gut' | 'nerve' | 'lattice' | 'womb' | 'marrow' | 'resonance'
-  | 'heart' | 'brain' | 'gland' | 'root';
+  | 'heart' | 'brain' | 'gland' | 'root'
+  | 'bladder' | 'pacemaker' | 'budder' | 'cyst' | 'swell' | 'catapult' | 'mire' | 'acid' | 'runner';
 
 export type GlandMode = 'calm' | 'lure' | 'challenge';
 
 /** Compass direction a tendril root grows its creep lobe toward. */
 export type RootDir = 'N' | 'E' | 'S' | 'W';
 
+/**
+ * A creep node's STRAIN (Collins, Sep 28 2026): set by the creep organs touching
+ * the spore bladder that grew it. Radius = cells of creep; reach = how far past
+ * the creep it may be placed (and how far it spreads its one child); slow and
+ * dps = what its creep does to ground enemies on it.
+ */
+export interface NodeStrain {
+  radius: number;
+  reach: number;
+  slow: number;
+  dps: number;
+}
+
 /** A live creep origin besides the core: a hurled patch, a root lobe, a seeping limb. */
 export interface CreepSource {
   id: number;
-  kind: 'patch' | 'root' | 'seep';
+  kind: 'patch' | 'root' | 'seep' | 'node' | 'line';
   cell: number;
   /** Sim time the source appeared (patches grow from it). */
   bornAt: number;
@@ -76,6 +90,12 @@ export interface CreepSource {
   dir?: RootDir;
   /** root: owning organ id. seep: owning tower id. */
   ownerId?: number;
+  /** node: its strain, hit points, when it matures, and whether it has spread its child. */
+  strain?: NodeStrain;
+  hp?: number;
+  maxHp?: number;
+  matureAt?: number;
+  spent?: boolean;
 }
 
 export interface Vec {
@@ -507,6 +527,10 @@ export type SimEvent =
   | { kind: 'organ-built'; organ: OrganId }
   | { kind: 'organ-upgraded'; organ: OrganId; level: number }
   | { kind: 'meat-cleared'; war: number; science: number }
+  | { kind: 'node-grown'; count: number }
+  | { kind: 'node-placed'; cell: number }
+  | { kind: 'node-spread'; cell: number }
+  | { kind: 'node-lost'; cell: number }
   | { kind: 'cannibalized'; donor: TowerFamily; into: TowerFamily }
   | { kind: 'butchered'; family: TowerFamily; refund: number }
   | { kind: 'clot-hurled'; cell: number }
@@ -549,6 +573,8 @@ export type Command =
   | { kind: 'bile-throw'; towerId: number; cell: number }
   | { kind: 'build-organ'; organ: OrganId; cell: number; rot?: number }
   | { kind: 'upgrade-organ'; organInstanceId: number }
+  | { kind: 'place-node'; cell: number; stock?: number }
+  | { kind: 'spread-node'; sourceId: number; cell: number }
   | { kind: 'royal-surge' }
   | { kind: 'discard'; cardIndex: number }
   | { kind: 'choose-plate'; index: number }

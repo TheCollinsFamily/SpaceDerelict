@@ -215,6 +215,14 @@ export const UPGRADES: Record<TowerFamily, UpgradeTree> = {
     [o('Inferno', '+15 burn dps, burns 3s longer', { add: { burnDps: 15, burnDur: 3 } }),
       o('Wildfire', 'flames arc to 3 more bodies', { pips: ['frond', 'frond', 'frond'] })],
   ],
+  lance: [
+    [o('Long Runner', 'the strip reaches 50% farther', { reach: 1.5 }),
+      o('Broad Runner', 'the strip is one cell wider each side', { add: { aoe: 12 } })],
+    [o('Quick Runner', 'the strip grows twice as fast', { tempo: 2 }),
+      o('Deep Runner', 'twice the hp — the strip it holds is safer', { mult: { maxHp: 2 } })],
+    [o('Great Runner', 'the strip reaches twice as far', { reach: 2 }),
+      o('Delta', 'two cells wider each side and 30% longer', { add: { aoe: 24 }, reach: 1.3 })],
+  ],
   // ---- combo engines: evolutions bend the ENGINE's rule ----
   conduit: [
     [o('Wide Gather', 'draws from 50% farther around it', { mult: { gather: 1.5 } }),

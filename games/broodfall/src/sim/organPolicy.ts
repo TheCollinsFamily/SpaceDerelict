@@ -11,6 +11,8 @@ import type { Rng } from './rng';
 import type { OrganId } from './types';
 
 export const THEME_ORDER: OrganId[] = ['gut', 'forge', 'lattice', 'venom', 'nerve', 'womb', 'marrow', 'resonance'];
+/** Creep organs the bot grows once it has two themes (one each, in this order). */
+export const CREEP_ORDER: OrganId[] = ['bladder', 'pacemaker', 'cyst', 'mire', 'catapult', 'runner', 'acid', 'budder', 'swell'];
 
 /** Every legal (cell, rot) for an organ right now. */
 function legalSpots(sim: Sim, organ: OrganId): Array<{ cell: number; rot: number; cells: number[] }> {
@@ -41,6 +43,11 @@ export function bestOrganSpot(sim: Sim, organ: OrganId, random?: Rng): { cell: n
     for (const n of nodes) {
       if (kind === 'zone' ? near(s.cells, n.cells, 2) : near(s.cells, n.cells, 1)) score += 10;
     }
+    // Pacemakers and budding glands only work on the bladders they touch.
+    if (organ === 'pacemaker' || organ === 'budder') {
+      const bl = sim.organs.filter((o) => o.organ === 'bladder');
+      score += bl.filter((b) => near(s.cells, b.cells, 1) && s.cells.some((c) => b.cells.some((bc) => Math.abs((c % u.w) - (bc % u.w)) + Math.abs(Math.floor(c / u.w) - Math.floor(bc / u.w)) === 1))).length * 40 - 30;
+    }
     for (const c of s.cells) {
       for (const nb of [c - 1, c + 1, c - u.w, c + u.w]) {
         if (nb >= 0 && nb < u.cells.length && u.cells[nb].kind === 'feature') score += 8;
@@ -57,6 +64,43 @@ export function bestOrganSpot(sim: Sim, organ: OrganId, random?: Rng): { cell: n
   return { cell: best.cell, rot: best.rot };
 }
 
+/** Put a free creep node down toward the telegraphed gate (random: anywhere legal). */
+export function placeNode(sim: Sim, random?: Rng): boolean {
+  const gate = sim.incomingGates[0] ?? sim.gates[0];
+  if (gate === undefined) return false;
+  const g = sim.cellCenter(gate);
+  // A mature node that has not spread yet: push its child toward the gate.
+  const now = sim.time;
+  for (const n of sim.creepSources) {
+    if (n.kind !== 'node' || n.spent || now < (n.matureAt ?? 0)) continue;
+    let bestC = -1;
+    let bestD = Infinity;
+    const opts: number[] = [];
+    for (let c = 0; c < sim.map.cells.length; c++) {
+      if (!sim.canSpreadTo(n, c)) continue;
+      opts.push(c);
+      const p = sim.cellCenter(c);
+      const d = Math.hypot(p.x - g.x, p.y - g.y);
+      if (d < bestD) { bestD = d; bestC = c; }
+    }
+    if (random && opts.length) bestC = opts[random.int(0, opts.length - 1)];
+    if (bestC >= 0 && sim.issue({ kind: 'spread-node', sourceId: n.id, cell: bestC }).ok) return true;
+  }
+  if (sim.creepNodes < 1) return false;
+  let best = -1;
+  let bestD = Infinity;
+  const legal: number[] = [];
+  for (let c = 0; c < sim.map.cells.length; c++) {
+    if (sim.isCreeped(c) || !sim.canPlaceNode(c)) continue;
+    legal.push(c);
+    const p = sim.cellCenter(c);
+    const d = Math.hypot(p.x - g.x, p.y - g.y);
+    if (d < bestD) { bestD = d; best = c; }
+  }
+  if (random && legal.length) best = legal[random.int(0, legal.length - 1)];
+  return best >= 0 && sim.issue({ kind: 'place-node', cell: best }).ok;
+}
+
 /** One organ-stage decision; true if it acted. */
 export function organTurn(sim: Sim, random?: Rng): boolean {
   if (sim.phase !== 'growth') return false;
@@ -69,6 +113,13 @@ export function organTurn(sim: Sim, random?: Rng): boolean {
       if (spot && sim.issue({ kind: 'build-organ', organ: next, ...spot }).ok) return true;
     }
     const themes = sim.organs.filter((o) => ORGAN_BY_ID[o.organ].kind === 'theme').length;
+    if (themes >= 2) {
+      const nextCreep = CREEP_ORDER.find((id) => !have(id));
+      if (nextCreep && sim.canAfford(organSpec(nextCreep).cost)) {
+        const spot = bestOrganSpot(sim, nextCreep, random);
+        if (spot && sim.issue({ kind: 'build-organ', organ: nextCreep, ...spot }).ok) return true;
+      }
+    }
     const hearts = sim.organs.filter((o) => o.organ === 'heart').length;
     if (themes >= 2 && hearts < Math.floor(themes / 2) && sim.canAfford(organSpec('heart').cost)) {
       const spot = bestOrganSpot(sim, 'heart', random);

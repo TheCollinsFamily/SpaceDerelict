@@ -5,7 +5,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import { Autoplayer } from '../src/sim/autoplayer';
-import { organTurn } from '../src/sim/organPolicy';
+import { organTurn, placeNode } from '../src/sim/organPolicy';
 import { Rng } from '../src/sim/rng';
 import { DT, Sim, towerSpec, organSpec } from '../src/sim/sim';
 import type { SimConfig } from '../src/sim/types';
@@ -30,6 +30,7 @@ class RandomPlacer {
     if (sim.meat.royal >= 1) sim.issue({ kind: 'royal-surge' });
     // Same organ-stage economy as the smart bot, but organs placed at random.
     if (organTurn(sim, this.rng)) return;
+    if (placeNode(sim, this.rng)) return;
     for (let i = 0; i < sim.hand.length; i++) {
       const family = sim.hand[i].family;
       if (!sim.canAfford(towerSpec(family).cost)) continue;

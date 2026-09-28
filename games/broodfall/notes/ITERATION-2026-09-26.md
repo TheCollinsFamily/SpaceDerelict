@@ -147,6 +147,29 @@ smart flips 3:2, totals 120k vs 115k. 54/54 tests; input check adds the lobber
 gesture; visual/endgame green.
 
 
+## Addendum 18 (Sep 28): creep — free nodes, recipes, spreading, losing them
+
+Collins asked for free creep nodes produced by special organs (interval, two at
+once, range, throwers, start-with), slow and burning creep, sling access through
+these organs, and a line-shooting creep thrower — "make it maximally engaging, it's
+what I want the core of the organ gameplay to be about". Design in DESIGN.md "Creep".
+
+- First pass made the creep organs GLOBAL (all creep slows, all nodes bigger). Then
+  re-thought for engagement (SC2 creep tumours): global modifiers are one-time buys
+  with no decision. Now they shape only the bladder (or meteor) they TOUCH, nodes
+  carry strains, nodes mature and spread one child, and nodes can be trampled/
+  shelled away (taking their creep and dependent limbs with them).
+- Sling moved from the Brood Womb to the Catapult Sac; new limb Creep Lance (strip of
+  creep along its facing) unlocked by the Runner Gland. Gene: Seeded Meteor (+3 nodes).
+- Bot: grows creep organs (recipes touching its bladder), places nodes and spreads
+  mature ones toward the telegraphed gate. It loses ~40% of its nodes to trampling;
+  node hp 80 → 140 moved naive 3/10 → 4/10 (guardrail 3:0). 163 tests.
+- Playtest findings (tools/shot-creep.mjs, real clicks): a maturity ring drawn as a
+  PixiJS arc with no moveTo joined the previous shape — a long stray line across the
+  screen; fixed. Mire creep first darkened the red creep into something that read as
+  bare ground; it now has its own glossy bog-green look. The beat also caught that
+  fast-forwarding past a wave correctly reopens the organ stage over the map.
+
 ## Addendum 17 (Sep 28): the organ stage — organs unlock and power limbs
 
 Collins: organs are a separate stage like BALL x PIT's town; they decide which limbs

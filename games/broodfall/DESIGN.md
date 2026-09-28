@@ -83,6 +83,50 @@ Geothermal Vent → Venom). Deposits pay once when an organ is grown over them
 Biomass Bed +150 mass, Royal Ossuary +1 royal point, Gene Cache: two named bonuses
 banked for your next limb); the good ones are deep.
 
+### Creep: the core of the organ game (Collins, Sep 28 2026)
+Collins: "creep nodes should be free but produced at intervals by special organs;
+some organ should let you start the game with them, some decrease the interval,
+some produce two at once, some increase range, some make throwers"; "one for making
+creep slow and one for making creep hurt enemies"; "it's through these that you
+should even gain access to the creep throwers"; "one that creates a creep thrower
+that shoots creep in a medium-length line"; "really think it through and make it
+maximally engaging — it's what I want the core of the organ gameplay to be about."
+
+The model is StarCraft 2's creep tumours (free, made on a timer, each one spreads
+exactly one more, and the enemy tries to clear them) — the most loved "tend it
+constantly" minigame in the genre. Four rules make it engaging here:
+
+1. **Every bladder is a RECIPE.** A Spore Bladder grows a free creep node every
+   50s of battle. The creep organs TOUCHING it decide the node's strain — so the
+   organ board is a packing puzzle of recipes, not a shopping list:
+   - Pacemaker: that bladder grows 30% faster (stacks). Budding Gland: one more
+     node per growth (stacks).
+   - Swelling Sac: its nodes spread +1 cell. Catapult Sac: its nodes are thrown
+     +5 cells past the creep (and it UNLOCKS the Spore Sling — the creep thrower).
+   - Mire Gland: its nodes' creep slows ground enemies 25%. Digestive Lining: its
+     nodes' creep burns them 4/s (both stack; both work like poison — armor
+     doesn't help).
+   - Swelling, mire and lining that touch the METEOR shape the core's own creep.
+   - Spore Cyst: a plain node at every wave setup. Runner Gland: UNLOCKS the Creep
+     Lance (below). Ship gene Seeded Meteor: start the run with 3 nodes.
+2. **Every placement is a choice.** The stock holds distinct strains (a tray chip
+   per strain: "3-cell · thrown 8 · mire −25%"). Burning and mire nodes want the
+   street chokepoints; big nodes want your gun clusters; thrown nodes reach
+   forward ground. A node goes on any claimed ground within its reach of your creep.
+3. **Nodes spread themselves.** A placed node matures after 20s of battle; click a
+   mature (glowing) node, then the ground, to spread ONE child of the same strain
+   up to radius + reach cells away. The creep front keeps walking forward.
+4. **Nodes can be lost.** 140 hp; siege shells, bomber blasts and war/royal bodies
+   standing on a node wear it down; full heal at every wave clear. A dead node
+   takes its creep with it, and limbs standing only on that creep WITHER. Forward
+   creep is power and exposure (the bot, which spreads straight at the gate, loses
+   ~40% of its nodes — a human can do better).
+
+**The Creep Lance** (limb, unlocked by the Runner Gland): a directional creep
+thrower that lays a straight STRIP of creep along its facing (8 cells × reach,
+growing 0.6 cells/s × tempo; splash widens it; right-click turns it). If it dies,
+what stood only on its strip withers. Evolutions: longer, broader, faster, tougher.
+
 Organs are out of the enemies' reach. What organs used to do on the surface
 (hearts → biomass/creep, brains → interest, gland modes, root creep lobes) is gone.
 - **Gates live on the FRONTIER:** ports of claimed plates that face unclaimed city. Growing changes where the hive can come from — expansion is power AND exposure.

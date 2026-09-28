@@ -16,16 +16,21 @@ import {
   ORGAN_LEVEL_POTENCY,
 } from '../../content/underground';
 import { TOWERS } from '../../content/data';
+import { strainLabel } from './strain';
 import type { OrganId, TowerFamily } from '../sim/types';
 
 const COLOR: Record<OrganId, string> = {
   forge: '#d8cfb0', venom: '#6aa84f', gut: '#b5654a', nerve: '#e0c040', lattice: '#8fc7c0',
   womb: '#c07aa0', marrow: '#efe6d2', resonance: '#9a88e8', heart: '#b8352a', brain: '#c9a2b8',
   gland: '#4fa9a4', root: '#8f4a3d',
+  bladder: '#a8c878', pacemaker: '#e89a6a', budder: '#c8e0a0', cyst: '#98b060', swell: '#b8d890', catapult: '#d0b070',
+  mire: '#7a9a70', acid: '#c8d040', runner: '#a0c070',
 };
 const GLYPH: Record<OrganId, string> = {
   forge: '⚒', venom: '☣', gut: '∞', nerve: 'ϟ', lattice: '▦', womb: '◉', marrow: '⊞', resonance: '◎',
   heart: '♥', brain: '✺', gland: '◆', root: '⟟',
+  bladder: '✿', pacemaker: '♪', budder: '❀', cyst: '•', swell: '◍', catapult: '➶',
+  mire: '≋', acid: '☠', runner: '⇶',
 };
 const VERB: Partial<Record<TowerFamily, string>> = {
   spitter: 'tempo', impaler: 'armor-pierce', blighter: 'poison', maw: 'richer meat', frond: 'arcs',
@@ -157,7 +162,7 @@ export class UndergroundScreen {
       const built = d.kind === 'theme' && sim.organs.some((o) => o.organ === id);
       const afford = sim.canAfford(d.cost);
       const lvl = built ? sim.organs.find((o) => o.organ === id)!.level : 0;
-      const what = d.unlocks ? d.unlocks.map(famName).join(', ') : d.blurb;
+      const what = d.kind === 'theme' && d.unlocks ? d.unlocks.map(famName).join(', ') : d.blurb;
       return `<button class="under-organ${this.selected === id ? ' on' : ''}${afford ? '' : ' poor'}${built ? ' built' : ''}" data-organ="${id}" title="${d.blurb}">
         <b><span class="og" style="color:${COLOR[id]}">${GLYPH[id]}</span> ${d.name}</b>
         ${this.shapeSvg(id)}
@@ -166,7 +171,8 @@ export class UndergroundScreen {
       </button>`;
     }).join('')}</div>`;
     this.palette.innerHTML = section('THEMES — unlock limbs, power them by level', ORGAN_DEFS.filter((d) => d.kind === 'theme').map((d) => d.id))
-      + section('ZONES & TISSUE', ORGAN_DEFS.filter((d) => d.kind !== 'theme').map((d) => d.id));
+      + section('ZONES & TISSUE', ORGAN_DEFS.filter((d) => d.kind === 'zone' || d.kind === 'root').map((d) => d.id))
+      + section('CREEP — organs that make FREE creep nodes', ORGAN_DEFS.filter((d) => d.kind === 'creep').map((d) => d.id));
 
     const cells: string[] = [];
     for (let i = 0; i < u.cells.length; i++) {
@@ -226,6 +232,15 @@ export class UndergroundScreen {
       rows.push(`<div><b>${name} LV${e.level}</b> → ${fams.map(famName).join(', ')}`
         + `${e.level > 1 ? ` · +${Math.round(ORGAN_LEVEL_POTENCY * (e.level - 1) * 100)}% power` : ''}`
         + `${shared ? ` · ${shared}` : ''}${e.draw > 1.01 ? ` · drawn ×${e.draw.toFixed(1)}` : ''}</div>`);
+    }
+    const bl = sim.organs.filter((o) => o.organ === 'bladder');
+    if (bl.length || sim.creepNodes > 0 || sim.organs.some((o) => ORGAN_BY_ID[o.organ].kind === 'creep')) {
+      const recipes = bl.map((o) => { const r = sim.bladderRate(o); return `${r.per} ${strainLabel(sim.bladderStrain(o))} per ${Math.round(r.interval)}s`; });
+      rows.push(`<div><b>CREEP NODES</b> → ${sim.creepNodes} in stock${recipes.length ? ` · bladders: ${recipes.join('; ')}` : ' · no bladder yet'}</div>`);
+    }
+    const core = sim.coreStrainBonus();
+    if (core.radius || core.slow < 1 || core.dps) {
+      rows.push(`<div><b>CORE CREEP</b> → ${[core.radius ? `+${core.radius} cells` : '', core.slow < 1 ? `mire −${Math.round((1 - core.slow) * 100)}%` : '', core.dps ? `burn ${core.dps}/s` : ''].filter(Boolean).join(' · ')}</div>`);
     }
     this.summary.innerHTML = rows.join('');
   }
@@ -325,6 +340,18 @@ export class UndergroundScreen {
     if (d.kind === 'theme' && touched.size) parts.push(`touches ${[...touched].join(', ')} — sharing ${VERB[d.signature!] ?? d.signature}`);
     else if (touched.size) parts.push(`touches ${[...touched].join(', ')}`);
     if (d.kind === 'zone') parts.push(d.blurb);
+    if (d.kind === 'creep') {
+      const bladders = new Set<number>();
+      for (const cell of g.cells) for (const n of neighbours4(u, cell)) { const o = sim.organAt(n); if (o && o.organ === 'bladder') bladders.add(o.id); }
+      const meteorTouch = g.cells.some((cell) => neighbours4(u, cell).some((n) => u.cells[n].kind === 'meteor'));
+      const recipe = d.creep === 'pace' || d.creep === 'bud' || d.creep === 'swell' || d.creep === 'catapult' || d.creep === 'mire' || d.creep === 'acid';
+      if (recipe) {
+        const coreToo = meteorTouch && (d.creep === 'swell' || d.creep === 'mire' || d.creep === 'acid');
+        parts.push(bladders.size || coreToo
+          ? `shapes ${bladders.size ? `${bladders.size} bladder${bladders.size > 1 ? 's' : ''}` : ''}${bladders.size && coreToo ? ' and ' : ''}${coreToo ? 'the CORE creep' : ''}`
+          : 'touches NO bladder — it only shapes the bladders (or meteor) it touches');
+      } else parts.push(d.blurb);
+    }
     const deps = g.cells.map((x) => u.cells[x]).filter((x) => x.kind === 'deposit' && x.deposit && !x.claimed);
     for (const dep of deps) parts.push(`covers ${this.depositText(dep.deposit!, dep.pips?.map((p) => p.family))}`);
     this.status.textContent = `GROW ${d.name.toUpperCase()} HERE (${this.priceText(d.cost)}): ${parts.join(' · ')}`;

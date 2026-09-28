@@ -33,6 +33,7 @@ const FAMILY_COLORS: Record<TowerFamily, number> = {
   ward: 0x9ab8e8,
   quill: 0xb89868,
   skipper: 0x7a6040,
+  lance: 0x9ab860,
   net: 0x88c8e0,
   ember: 0xd86a30,
   conduit: 0xc8a060,
@@ -82,13 +83,16 @@ const ENEMY_SIZE: Record<Enemy['kind'], number> = {
 
 export interface PlacementPreview {
   cell: number;
-  kind: 'tower' | 'organ';
+  kind: 'tower' | 'organ' | 'node';
   family?: TowerFamily;
   valid: boolean;
   /** Directional limbs: the facing it will be placed with (right-click rotates). */
   facing?: RootDir;
   /** Banked cannibalize traits the placed limb will carry (so the preview is honest). */
   pips?: Tower['pips'];
+  /** Creep node: cells of creep it will spread; spreading: the parent node's cell. */
+  radius?: number;
+  from?: number;
 }
 
 export class Renderer {
@@ -262,6 +266,8 @@ export class Renderer {
     const g = this.creepG;
     g.clear();
     const cp = sim.cfg.cellPx;
+    const anyStrain = sim.creepSources.some((s) => s.kind === 'node' && s.strain && (s.strain.slow < 1 || s.strain.dps > 0))
+      || sim.coreStrainBonus().slow < 1 || sim.coreStrainBonus().dps > 0;
     // Creep skin per cell, deeper red toward the core; edge cells wobble organically.
     for (let cy = 0; cy < sim.cfg.gridH; cy++) {
       for (let cx = 0; cx < sim.cfg.gridW; cx++) {
@@ -282,6 +288,16 @@ export class Renderer {
           g.circle(x + cp / 2, y + cp / 2, cp * 0.32 + Math.sin(this.pulse + cx + cy) * 2)
             .fill({ color: 0x832619, alpha: 0.4 });
         }
+        // Strained creep shows what it does: mire is dark and glossy, burning creep glows.
+        if (anyStrain) {
+          const fx = sim.creepEffectAt(cell);
+          if (fx.slow < 1) {
+            // Mire: glossy bog-green skin with a wet sheen, unmistakable from bare ground.
+            g.rect(x, y - lift, cp, cp).fill({ color: 0x2f6a44, alpha: 0.5 });
+            g.rect(x + 4, y - lift + 5 + (cx % 3), cp * 0.45, 2).fill({ color: 0xa8e0b0, alpha: 0.35 + 0.15 * Math.sin(this.pulse + cx) });
+          }
+          if (fx.dps > 0) g.rect(x + 3, y - lift + 3, cp - 6, cp - 6).fill({ color: 0xd8d040, alpha: 0.18 + 0.08 * Math.sin(this.pulse * 2 + cx + cy) });
+        }
       }
     }
     // Core: the heart of the asset.
@@ -296,6 +312,31 @@ export class Renderer {
   private drawEntities(sim: Sim): void {
     const g = this.entG;
     g.clear();
+
+    // Creep nodes: spore pods, coloured by strain; a ring fills as they mature, and
+    // a mature node that has not spread yet glows (click it to spread its child).
+    for (const s of sim.creepSources) {
+      if (s.kind !== 'node') continue;
+      const p = sim.cellCenter(s.cell);
+      const r = 7 + Math.sin(this.pulse * 1.6 + s.id) * 1.2;
+      const st = s.strain;
+      const col = st && st.dps > 0 ? 0xd0d040 : st && st.slow < 1 ? 0x6a7a50 : 0x8aa860;
+      g.circle(p.x, p.y, r + 3).fill({ color: 0x3a1a10, alpha: 0.5 });
+      g.circle(p.x, p.y, r).fill(col);
+      g.circle(p.x - 2, p.y - 2, r * 0.45).fill({ color: 0xd8f0b0, alpha: 0.8 });
+      const mature = sim.time >= (s.matureAt ?? 0);
+      if (!s.spent) {
+        if (mature) {
+          g.circle(p.x, p.y, r + 6 + Math.sin(this.pulse * 3) * 1.5).stroke({ width: 2, color: 0xc8f090, alpha: 0.85 });
+        } else {
+          const f = 1 - Math.max(0, ((s.matureAt ?? 0) - sim.time) / 20);
+          // Start a fresh path at the ring's top, or the arc joins the last shape drawn.
+          g.moveTo(p.x, p.y - (r + 5)).arc(p.x, p.y, r + 5, -Math.PI / 2, -Math.PI / 2 + f * Math.PI * 2)
+            .stroke({ width: 2, color: 0xc8f090, alpha: 0.6 });
+        }
+      }
+      if ((s.hp ?? 1) < (s.maxHp ?? 1)) this.hpArc(g, p.x, p.y, 11, (s.hp ?? 0) / (s.maxHp ?? 1));
+    }
 
     for (const t of sim.towers) {
       const hgt = sim.map.heights[t.cell] || 0;
@@ -597,6 +638,20 @@ export class Renderer {
             .stroke({ width: 2, color: 0xe8dcc0, alpha: 0.9 });
         }
         break;
+      case 'lance': {
+        // A creep spout: a bulb with a long nozzle pointing down its strip.
+        const f = t.facing ?? 'N';
+        const vx = f === 'E' ? 1 : f === 'W' ? -1 : 0;
+        const vy = f === 'S' ? 1 : f === 'N' ? -1 : 0;
+        g.circle(x, y, 10).fill(c);
+        g.moveTo(x, y).lineTo(x + vx * 20, y + vy * 20).stroke({ width: 5, color: 0x5a7038 });
+        for (let k = 1; k <= 3; k++) {
+          const px = x + vx * (22 + k * 7);
+          const py = y + vy * (22 + k * 7);
+          g.circle(px, py, 3 - k * 0.5).fill({ color: 0xc8e090, alpha: 0.8 - k * 0.15 });
+        }
+        break;
+      }
       case 'skipper': {
         // A long mortar tube locked to one heading (arrow = its facing).
         const f = t.facing ?? 'N';
@@ -967,6 +1022,14 @@ export class Renderer {
       const ok = this.preview.valid;
       g.rect(c.x - sim.cfg.cellPx / 2, c.y - sim.cfg.cellPx / 2, sim.cfg.cellPx, sim.cfg.cellPx)
         .fill({ color: ok ? 0x76b04a : 0xb03a2a, alpha: 0.4 });
+      if (this.preview.kind === 'node') {
+        g.circle(c.x, c.y, (this.preview.radius ?? 3) * sim.cfg.cellPx).stroke({ width: 2, color: ok ? 0x9ad068 : 0xb03a2a, alpha: 0.6 });
+        g.circle(c.x, c.y, 8).fill({ color: 0x8aa860, alpha: ok ? 0.9 : 0.4 });
+        if (this.preview.from !== undefined) {
+          const f = sim.cellCenter(this.preview.from);
+          g.moveTo(f.x, f.y).lineTo(c.x, c.y).stroke({ width: 2, color: 0x9ad068, alpha: ok ? 0.7 : 0.25 });
+        }
+      }
       if (this.preview.kind === 'tower' && this.preview.family) {
         const ghost: Tower = {
           id: -1, family: this.preview.family, pos: c, cell: this.preview.cell,

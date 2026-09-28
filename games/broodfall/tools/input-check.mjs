@@ -92,7 +92,7 @@ try {
   const grownAll = await page.evaluate(() => {
     const s = window.broodfall.sim;
     s.meat.war = 9999; s.meat.science = 9999;
-    for (const id of ['gut', 'venom', 'nerve', 'lattice', 'womb', 'marrow', 'resonance']) {
+    for (const id of ['gut', 'venom', 'nerve', 'lattice', 'womb', 'marrow', 'resonance', 'catapult', 'runner']) {
       let done = false;
       for (let c = 0; c < s.under.cells.length && !done; c++) {
         for (let r = 0; r < 4 && !done; r++) {
@@ -102,7 +102,7 @@ try {
     }
     return s.organs.length;
   });
-  if (grownAll !== 8) fail('grow all themes', `organs=${grownAll}`);
+  if (grownAll !== 10) fail('grow all themes + sling/lance organs', `organs=${grownAll}`);
 
   // Give the wallet enough to build twice regardless of card mix, and make sure
   // the first card is a block-buildable family (street pieces would foil the

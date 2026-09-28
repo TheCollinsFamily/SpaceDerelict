@@ -210,6 +210,8 @@ export interface Gene {
   spineHpBonus?: number;
   mawEatBonus?: number;
   rangeMult?: number;
+  /** Creep nodes in stock at the start of the run. */
+  startNodes?: number;
 }
 
 export const GENES: Gene[] = [
@@ -220,5 +222,6 @@ export const GENES: Gene[] = [
   { id: 'symbiont-culture', name: 'Symbiont Culture', desc: 'Deploy with +15 science meat.', startScience: 15 },
   { id: 'burst-polyps', name: 'Burst Polyps', desc: 'Burster genes express twice as often.', weightMult: { burster: 2 } },
   { id: 'long-sinews', name: 'Long Sinews', desc: 'All limbs +8% reach.', rangeMult: 1.08 },
+  { id: 'seeded-meteor', name: 'Seeded Meteor', desc: 'Deploy with 3 creep nodes in stock.', startNodes: 3 },
   { id: 'lure-musk', name: 'Lure Musk', desc: 'Lure genes express three times as often.', weightMult: { lure: 3 } },
 ];

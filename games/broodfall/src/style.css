@@ -375,3 +375,16 @@ body {
 #under-status { min-height: 30px; margin: 8px 0; font-size: 11px; font-weight: bold; text-transform: uppercase; }
 #under-status.warn { color: var(--accent); }
 #open-under.disabled { opacity: 0.4; pointer-events: none; }
+
+#creep-nodes.disabled { opacity: 0.45; }
+#creep-nodes.on { background: var(--ink); color: var(--panel); }
+#node-count { color: #6aa84f; }
+#creep-nodes.on #node-count { color: #b8e890; }
+
+#node-tray { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 3px; }
+.node-chip {
+  font: inherit; font-size: 9px; padding: 2px 5px; cursor: pointer; text-transform: uppercase;
+  background: #c7d8a0; border: 2px solid var(--panel-edge); border-radius: 3px; color: var(--ink);
+}
+.node-chip.on { background: var(--ink); color: #c7e8a0; }
+.node-chip.mire { background: #a8b890; } .node-chip.burn { background: #e0e080; }

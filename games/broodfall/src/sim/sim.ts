@@ -18,12 +18,13 @@ import {
 import type {
   Broodling, Caltrop, CardInstance, Caste, Cloud, Command, CreepSource, Directive, Drop, Enemy,
   EnemyKind, EnemySpec, HitFx, ModPip, Organ, OrganId, Outcome, Phase, Projectile,
-  RootDir, Shell, SimConfig, SimEvent, Tower, TowerFamily, TowerSpec, UpgradeChoice, UpgradeOption, Vec,
+  NodeStrain, RootDir, Shell, SimConfig, SimEvent, Tower, TowerFamily, TowerSpec, UpgradeChoice, UpgradeOption, Vec,
 } from './types';
 import { UPGRADES, UPGRADE_COST } from '../../content/upgrades';
 import {
-  BRAIN_DRAW_MULT, DEPOSITS, FEATURES, FEATURE_FAVORED_LEVEL, FEATURE_LEVEL, METEOR_THEME, ORGAN_BY_ID,
-  ORGAN_DEFS, ORGAN_LEVEL_POTENCY, ORGAN_LEVEL_TEMPO, type OrganDef,
+  BRAIN_DRAW_MULT, CATAPULT_REACH, DEPOSITS, FEATURES, FEATURE_FAVORED_LEVEL, FEATURE_LEVEL, METEOR_THEME,
+  LINING_DPS, MIRE_SLOW, NODE_HP, NODE_INTERVAL, NODE_MATURE, NODE_RADIUS, NODE_TRAMPLE, NODE_REACH, ORGAN_BY_ID, ORGAN_DEFS, ORGAN_LEVEL_POTENCY, ORGAN_LEVEL_TEMPO,
+  PACEMAKER_MULT, type OrganDef,
 } from '../../content/underground';
 import { createUnderground, neighbours4, type Underground } from './underground';
 
@@ -138,7 +139,8 @@ export function towerStats(t: Tower, pipsResolved = false) {
     capBonus: spec.pierce ? Infinity : B.pipPierceCap * pips('impaler'),
     pierce: spec.pierce ?? false,
     // Sling pip: seeps creep, AND the limb no longer needs creep to stand on.
-    seepRadius: B.pipSeep * pips('sling'),
+    // Sling and lance pips: the limb seeps creep around itself (+1 cell per pip).
+    seepRadius: B.pipSeep * (pips('sling') + pips('lance')),
     offCreep: pips('sling') > 0,
     // Brood pip: heal 50% max hp per pip at every cleared wave (past full, the
     // limb GROWS); on a mother, +1 broodling.
@@ -261,7 +263,7 @@ export class Sim {
   private creepSurgePx = 0;
   private geneMods = {
     weightMult: {} as Partial<Record<TowerFamily, number>>,
-    startWar: 0, startScience: 0, spineHpBonus: 0, mawEatBonus: 0, rangeMult: 1,
+    startWar: 0, startScience: 0, spineHpBonus: 0, mawEatBonus: 0, rangeMult: 1, startNodes: 0,
   };
   private researcherTimer = 20;
   private royalSpawned = false;
@@ -273,6 +275,21 @@ export class Sim {
   organs: Organ[] = [];
   /** The meteor's own level (upgradeable like any theme organ). */
   coreLevel = 1;
+  /** Free creep nodes in stock, each with its strain (grown by creep organs; placed for nothing). */
+  nodeStock: NodeStrain[] = [];
+
+  /** How many nodes are in stock (setting it fills with plain nodes — tests, genes). */
+  get creepNodes(): number {
+    return this.nodeStock.length;
+  }
+
+  set creepNodes(n: number) {
+    while (this.nodeStock.length > n) this.nodeStock.pop();
+    while (this.nodeStock.length < n) this.nodeStock.push(this.plainStrain());
+  }
+  /** Battle seconds each spore bladder has put toward its next node. */
+  private nodeClock = new Map<number, number>();
+  private coreStrainCache: { radius: number; slow: number; dps: number } | null = null;
   private organCache: Map<OrganId | 'core', { level: number; pips: ModPip[]; draw: number; links: Array<OrganId | 'core'> }> | null = null;
   /** The body below: the underground cross-section organs grow into (between waves). */
   under: Underground;
@@ -336,6 +353,7 @@ export class Sim {
       this.geneMods.spineHpBonus += g.spineHpBonus ?? 0;
       this.geneMods.mawEatBonus += g.mawEatBonus ?? 0;
       this.geneMods.rangeMult *= g.rangeMult ?? 1;
+      this.geneMods.startNodes += g.startNodes ?? 0;
     }
     this.directive = cfg.directive ?? this.rng.pick<Directive>([
       { kind: 'hold', waves: B.holdWaves },
@@ -345,6 +363,7 @@ export class Sim {
     this.meat = { ...B.startMeat };
     this.meat.war += this.geneMods.startWar;
     this.meat.science += this.geneMods.startScience;
+    for (let i = 0; i < this.geneMods.startNodes; i++) this.nodeStock.push(this.plainStrain());
     this.creepDist = allDistance(this.map, this.map.coreCell);
     this.flow = this.computeFlowField();
     this.pickIncomingGates();
@@ -364,7 +383,7 @@ export class Sim {
 
   /** Creep reach in street-hops from the core. */
   get creepRangeCells(): number {
-    return Math.floor(this.creepRadius / this.cfg.cellPx);
+    return Math.floor(this.creepRadius / this.cfg.cellPx) + this.coreStrainBonus().radius;
   }
 
   get bodyRangeCells(): number {
@@ -391,6 +410,8 @@ export class Sim {
       return d <= r;
     }
     if (s.kind === 'seep') return d <= s.radius;
+    if (s.kind === 'node') return d <= (s.strain?.radius ?? NODE_RADIUS);
+    if (s.kind === 'line') return this.lineCovers(s, cell);
     // Root: a small pad all around, plus a lobe that lengthens in its direction.
     if (d <= s.radius) return true;
     const len = Math.min(B.rootMaxLen * (s.radius / B.rootBaseRadius), (this.time - s.bornAt) * B.rootGrowPerSec);
@@ -404,6 +425,22 @@ export class Sim {
         : dir === 'E' ? (dx > 0 && Math.abs(dy) <= dx)
           : (dx < 0 && Math.abs(dy) <= -dx);
     return inCone && d <= s.radius + len;
+  }
+
+  /** A creep lance's strip: straight ahead of it along its facing, growing to its length. */
+  private lineCovers(s: CreepSource, cell: number): boolean {
+    const t = this.towers.find((x) => x.id === s.ownerId);
+    if (!t) return false;
+    const st = towerStats(t);
+    const len = Math.min(B.lanceLength * st.reach, (this.time - s.bornAt) * B.lanceGrowPerSec * st.tempo);
+    const half = Math.floor(st.aoe / 12); // splash widens the strip a cell each side per 12px
+    const w = this.cfg.gridW;
+    const dx = (cell % w) - (s.cell % w);
+    const dy = Math.floor(cell / w) - Math.floor(s.cell / w);
+    const f = Sim.facingVec(t.facing ?? 'N');
+    const along = dx * f.x + dy * f.y;
+    const across = Math.abs(dx * f.y - dy * f.x);
+    return along >= -1 && along <= len && across <= half + (along <= 0 ? 1 : 0);
   }
 
   private addCreepSource(kind: CreepSource['kind'], cell: number, radius: number, dir?: RootDir, ownerId?: number): CreepSource {
@@ -852,6 +889,176 @@ export class Sim {
       !cells.includes(n) && (this.under.cells[n].kind === 'meteor' || this.organAt(n) !== undefined)));
   }
 
+  /** Organs of one kind touching (edge to edge) an organ. */
+  private touchingOrgans(o: Organ, kind: OrganId): number {
+    const u = this.under;
+    return this.organs.filter((x) => x !== o && x.organ === kind
+      && x.cells.some((c) => o.cells.some((oc) => neighbours4(u, oc).includes(c)))).length;
+  }
+
+  /** A plain node (cysts, genes): no recipe. */
+  plainStrain(): NodeStrain {
+    return { radius: NODE_RADIUS, reach: NODE_REACH, slow: 1, dps: 0 };
+  }
+
+  /** The strain a bladder's nodes carry: the creep organs TOUCHING it are the recipe. */
+  bladderStrain(o: Organ): NodeStrain {
+    return {
+      radius: NODE_RADIUS + this.touchingOrgans(o, 'swell'),
+      reach: NODE_REACH + CATAPULT_REACH * this.touchingOrgans(o, 'catapult'),
+      slow: MIRE_SLOW ** this.touchingOrgans(o, 'mire'),
+      dps: LINING_DPS * this.touchingOrgans(o, 'acid'),
+    };
+  }
+
+  /** Creep organs touching the METEOR shape the core's own creep. */
+  coreStrainBonus(): { radius: number; slow: number; dps: number } {
+    if (this.coreStrainCache) return this.coreStrainCache;
+    const meteor = this.under.cells.map((c, i) => (c.kind === 'meteor' ? i : -1)).filter((i) => i >= 0);
+    const touching = (kind: OrganId) => this.organs.filter((o) => o.organ === kind
+      && o.cells.some((c) => neighbours4(this.under, c).some((n) => meteor.includes(n)))).length;
+    this.coreStrainCache = { radius: touching('swell'), slow: MIRE_SLOW ** touching('mire'), dps: LINING_DPS * touching('acid') };
+    return this.coreStrainCache;
+  }
+
+  /** A spore bladder's rhythm: seconds per growth and nodes per growth (pacemakers + budding glands touching it). */
+  bladderRate(o: Organ): { interval: number; per: number } {
+    return {
+      interval: NODE_INTERVAL * PACEMAKER_MULT ** this.touchingOrgans(o, 'pacemaker'),
+      per: 1 + this.touchingOrgans(o, 'budder'),
+    };
+  }
+
+  /** Seconds until each bladder's next node (for the HUD). */
+  nextNodeIn(): number | null {
+    let best: number | null = null;
+    for (const o of this.organs) {
+      if (o.organ !== 'bladder') continue;
+      const left = this.bladderRate(o).interval - (this.nodeClock.get(o.id) ?? 0);
+      if (best === null || left < best) best = left;
+    }
+    return best;
+  }
+
+  private growCreepNodes(): void {
+    for (const o of this.organs) {
+      if (o.organ !== 'bladder') continue;
+      const r = this.bladderRate(o);
+      let t = (this.nodeClock.get(o.id) ?? 0) + DT;
+      if (t >= r.interval) {
+        t -= r.interval;
+        const strain = this.bladderStrain(o);
+        for (let k = 0; k < r.per; k++) this.nodeStock.push({ ...strain });
+        this.events.push({ kind: 'node-grown', count: r.per });
+      }
+      this.nodeClock.set(o.id, t);
+    }
+  }
+
+  /** How many organs of one kind are grown. */
+  organCount(kind: OrganId): number {
+    let n = 0;
+    for (const o of this.organs) if (o.organ === kind) n++;
+    return n;
+  }
+
+  /**
+   * Burning creep eats the ground bodies standing on it; war and royal bodies
+   * standing ON a node trample it (a node that dies takes its creep with it).
+   */
+  private digestOnCreep(): void {
+    const nodes = this.creepSources.filter((s) => s.kind === 'node');
+    const anyBurn = nodes.some((n) => (n.strain?.dps ?? 0) > 0) || this.coreStrainBonus().dps > 0;
+    for (const e of [...this.enemies]) {
+      if (e.burrowed || this.isAirborne(e)) continue;
+      if (anyBurn) {
+        const dps = this.creepEffectAt(this.cellAt(e.pos.x, e.pos.y)).dps;
+        if (dps > 0) {
+          e.hp -= dps * DT; // a medium, like poison: armor does not stop it
+          if (e.hp <= 0) { this.killEnemy(e.id, 1, false); continue; }
+        }
+      }
+      const spec = enemySpec(e.kind);
+      if (spec.caste === 'science') continue;
+      for (const n of nodes) {
+        if (dist(e.pos, this.cellCenter(n.cell)) <= 14) this.hurtNode(n, spec.damage * NODE_TRAMPLE * DT);
+      }
+    }
+  }
+
+  /** Harm a creep node; at zero it dies and its creep recedes (what stood only on it withers). */
+  hurtNode(n: CreepSource, amount: number): void {
+    if (n.kind !== 'node' || !this.creepSources.includes(n)) return;
+    n.hp = (n.hp ?? NODE_HP) - amount;
+    if (n.hp > 0) return;
+    this.creepSources = this.creepSources.filter((x) => x !== n);
+    this.sourceDist.delete(n.id);
+    this.events.push({ kind: 'node-lost', cell: n.cell });
+    this.refreshRouting();
+    this.witherUnrooted();
+  }
+
+  /** What the creep on a cell does to a ground enemy: speed multiplier and burn per second. */
+  creepEffectAt(cell: number): { slow: number; dps: number } {
+    let slow = 1;
+    let dps = 0;
+    const d = this.creepDist[cell];
+    if (d >= 0 && d <= this.creepRangeCells) {
+      const core = this.coreStrainBonus();
+      slow *= core.slow;
+      dps += core.dps;
+    }
+    for (const s of this.creepSources) {
+      if (s.kind !== 'node' || !s.strain) continue;
+      if (s.strain.slow === 1 && s.strain.dps === 0) continue;
+      if (!this.sourceCovers(s, cell)) continue;
+      slow *= s.strain.slow;
+      dps += s.strain.dps;
+    }
+    return { slow, dps };
+  }
+
+
+  /** Put a node down: its creep, hit points and the clock until it can spread its one child. */
+  private plantNode(cell: number, strain: NodeStrain): CreepSource {
+    const n = this.addCreepSource('node', cell, strain.radius);
+    n.strain = strain;
+    n.hp = NODE_HP;
+    n.maxHp = NODE_HP;
+    n.matureAt = this.time + NODE_MATURE;
+    n.spent = false;
+    this.refreshRouting();
+    return n;
+  }
+
+  /** A mature node spreads its child anywhere within its creep radius + reach (claimed ground). */
+  canSpreadTo(p: CreepSource, cell: number): boolean {
+    if (cell < 0 || cell >= this.map.cells.length || this.map.cells[cell] === CellType.Void || !p.strain) return false;
+    const w = this.cfg.gridW;
+    const md = Math.abs((cell % w) - (p.cell % w)) + Math.abs(Math.floor(cell / w) - Math.floor(p.cell / w));
+    return md > 0 && md <= p.strain.radius + p.strain.reach;
+  }
+
+  /** A node may go on any claimed ground within its strain's reach of the creep. */
+  canPlaceNode(cell: number, reach: number = this.nodeStock[0]?.reach ?? NODE_REACH): boolean {
+    if (cell < 0 || cell >= this.map.cells.length || this.map.cells[cell] === CellType.Void) return false;
+    if (this.isCreeped(cell)) return true;
+    const w = this.cfg.gridW;
+    const r = reach;
+    const cx = cell % w;
+    const cy = Math.floor(cell / w);
+    for (let dy = -r; dy <= r; dy++) {
+      for (let dx = -r; dx <= r; dx++) {
+        const x = cx + dx;
+        const y = cy + dy;
+        if (x < 0 || y < 0 || x >= w || y >= this.cfg.gridH) continue;
+        if (Math.abs(dx) + Math.abs(dy) > r) continue;
+        if (this.isCreeped(y * w + x)) return true;
+      }
+    }
+    return false;
+  }
+
   /** Price of the next level: the organ's cost times its current level (the meteor: 30 war per level). */
   organUpgradeCost(o: Organ | null): { war?: number; science?: number } {
     if (!o) return { war: 30 * this.coreLevel };
@@ -1116,6 +1323,7 @@ export class Sim {
         const cells = this.organFootprint(cmd.organ, cmd.cell, rot)!;
         this.organs.push({ id: this.nextId++, organ: cmd.organ, cell: cmd.cell, rot, level: 1, cells });
         this.organCache = null;
+        this.coreStrainCache = null;
         // Grown over deposits: each pays out now.
         for (const c of cells) {
           const d = this.under.cells[c];
@@ -1130,6 +1338,27 @@ export class Sim {
           this.events.push({ kind: 'deposit-claimed', name: DEPOSITS[d.deposit].name });
         }
         this.events.push({ kind: 'organ-built', organ: cmd.organ });
+        return { ok: true };
+      }
+      case 'place-node': {
+        const i = cmd.stock ?? 0;
+        const strain = this.nodeStock[i];
+        if (!strain) return { ok: false, err: 'no creep nodes in stock' };
+        if (!this.canPlaceNode(cmd.cell, strain.reach)) return { ok: false, err: 'too far from your creep' };
+        this.nodeStock.splice(i, 1);
+        this.plantNode(cmd.cell, strain);
+        this.events.push({ kind: 'node-placed', cell: cmd.cell });
+        return { ok: true };
+      }
+      case 'spread-node': {
+        const p = this.creepSources.find((x) => x.id === cmd.sourceId && x.kind === 'node');
+        if (!p || !p.strain) return { ok: false, err: 'no such node' };
+        if (p.spent) return { ok: false, err: 'this node has already spread' };
+        if (this.time < (p.matureAt ?? 0)) return { ok: false, err: 'not mature yet' };
+        if (!this.canSpreadTo(p, cmd.cell)) return { ok: false, err: 'out of its reach' };
+        p.spent = true;
+        this.plantNode(cmd.cell, { ...p.strain });
+        this.events.push({ kind: 'node-spread', cell: cmd.cell });
         return { ok: true };
       }
       case 'upgrade-organ': {
@@ -1421,6 +1650,7 @@ export class Sim {
     tower.hp = tower.maxHp;
     if (spec.directional) tower.facing = facing ?? this.facingTowardGate(pos);
     this.towers.push(tower);
+    if (family === 'lance') this.addCreepSource('line', cell, 0, tower.facing, tower.id);
     this.occupied.set(cell, { kind: 't', id: tower.id });
     this.refreshRouting();
     return tower;
@@ -1558,6 +1788,7 @@ export class Sim {
     this.phaseElapsed += DT;
 
     this.biomass += B.biomassBase * DT;
+    this.growCreepNodes();
 
 
     // Phase machine.
@@ -1583,6 +1814,12 @@ export class Sim {
         const bonus = Math.round((B.waveBonusBase + this.waveNumber * B.waveBonusPerWave) * this.entranceMeatMult);
         this.meat.war += bonus;
         this.events.push({ kind: 'wave-cleared', wave: this.waveNumber, bonus });
+        for (const n of this.creepSources) if (n.kind === 'node') n.hp = n.maxHp ?? NODE_HP;
+        const cysts = this.organs.filter((o) => o.organ === 'cyst').length;
+        if (cysts > 0) {
+          for (let k = 0; k < cysts; k++) this.nodeStock.push(this.plainStrain());
+          this.events.push({ kind: 'node-grown', count: cysts });
+        }
         // Brood pips: living tissue regrows between waves — 50% max hp per pip.
         for (const t of this.towers) {
           const heal = this.statsOf(t).waveHeal;
@@ -1661,6 +1898,7 @@ export class Sim {
     this.updateBiles();
     this.updateShells();
     this.updateClouds();
+    this.digestOnCreep();
     this.caltrops = this.caltrops.filter((c) => c.hp > 0 && (c.ttl -= DT) > 0);
     for (const a of this.arcs) a.ttl -= DT;
     this.arcs = this.arcs.filter((a) => a.ttl > 0);
@@ -1909,6 +2147,8 @@ export class Sim {
     if (e.slowUntil !== undefined && e.slowUntil > this.time && e.slowMult !== undefined) {
       s *= e.slowMult;
     }
+    // Mire creep is sticky underfoot (fliers pass over it).
+    if (!this.isAirborne(e)) s *= this.creepEffectAt(this.cellAt(e.pos.x, e.pos.y)).slow;
     if (e.kind !== 'researcher') {
       for (const d of this.enemies) {
         if (d === e || d.burrowed || !enemySpec(d.kind).speedAura) continue;
@@ -2104,6 +2344,9 @@ export class Sim {
         if (s.stun && (t.shield ?? 0) <= 0) t.stunnedUntil = this.time + s.stun; // shields stop darts
         this.hurtStructure(t, false, s.damage);
       }
+      for (const n of this.creepSources.filter((x) => x.kind === 'node')) {
+        if (dist(s.to, this.cellCenter(n.cell)) <= reach) this.hurtNode(n, s.damage);
+      }
       if (dist(s.to, this.core) <= reach + 30) this.coreHp -= s.damage;
     }
     if (landed.length) this.shells = this.shells.filter((s) => !landed.includes(s.id));
@@ -2116,6 +2359,9 @@ export class Sim {
   }
 
   private detonateBomber(e: Enemy): void {
+    for (const n of this.creepSources.filter((x) => x.kind === 'node')) {
+      if (dist(e.pos, this.cellCenter(n.cell)) <= B.bomberBlastRadius) this.hurtNode(n, B.bomberBlastDamage);
+    }
     for (const t of [...this.towers]) {
       if (dist(e.pos, t.pos) <= B.bomberBlastRadius) {
         this.hurtTower(t, B.bomberBlastDamage);

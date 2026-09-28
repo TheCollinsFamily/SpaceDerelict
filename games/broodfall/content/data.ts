@@ -275,6 +275,17 @@ export const TOWERS: readonly TowerSpec[] = [
     engine: { kind: 'reliquary', reach: 160 }, directional: true, pair: true,
     maxHp: 80, interest: 1, eatThreshold: 0, advanced: true, hits: 'ground',
   },
+  {
+    // The CREEP LANCE (Collins, Sep 28 2026): a creep thrower that shoots creep in a
+    // medium-length LINE along its facing instead of spreading all around —
+    // new ground in a straight strip (right-click turns it). Its reach grows the
+    // line, its splash widens it, its tempo grows it faster. Unlocked by the
+    // Runner Gland. If it dies, what stood only on its strip withers.
+    family: 'lance', name: 'Creep Lance', weight: 8,
+    cost: { war: 20 }, range: 0, rate: 0, damage: 0, aoe: 0,
+    directional: true,
+    maxHp: 90, interest: 1, eatThreshold: 0, advanced: true, hits: 'ground',
+  },
 ];
 
 // Organs live in content/underground.ts (the organ stage).
@@ -538,6 +549,9 @@ export const BALANCE = {
   rootBaseRadius: 2,        // cells of creep all around the organ
   rootGrowPerSec: 0.35,     // cells/s of lobe length in the chosen direction
   rootMaxLen: 14,
+  /** Creep lance: a strip of creep along its facing. */
+  lanceLength: 8,           // cells (x reach)
+  lanceGrowPerSec: 0.6,     // cells/s the strip lengthens (x tempo)
   /** Broodmother. */
   broodHp: 34,
   broodDamage: 7,
