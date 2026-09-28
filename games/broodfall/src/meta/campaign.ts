@@ -1,0 +1,333 @@
+/**
+ * THE CAMPAIGN — rules (no DOM; the ship screens and main.ts call these; the
+ * browser keeps the state in localStorage). Design: DESIGN.md "THE CAMPAIGN";
+ * inventory: notes/CAMPAIGN-BUILD-PLAN.md.
+ *
+ * Loop: the ship → pick a territory on the globe → briefing (board goals, dares,
+ * an experiment, faction perks) → the deployment → debrief (credits, the territory,
+ * faction beats, the colony's pushback) → the ship.
+ */
+import { Rng } from '../sim/rng';
+import type { EnemyKind, OrganId, SimConfig } from '../sim/types';
+import {
+  DARES, EXPERIMENTS, FACTIONS, HOME, LICENCE_STANDING, LINEAGES, LOGS_LOST, LOGS_WON, PROFILES,
+  REQUISITIONS, TERRITORIES, BOARD_LETTERS,
+  type BeatDef, type ExperimentDef, type FactionDef, type FactionId, type PerkId, type Scene, type TerritoryDef,
+} from '../../content/campaign';
+import { evaluate, instance, type GoalInstance, type GoalResult, type RunReport } from './goals';
+import { queueDiscussion, type AiTrigger, type AiTurn } from './shipAi';
+
+export interface CampaignState {
+  version: 1;
+  seed: number;
+  standing: number;
+  notes: number;
+  lineages: OrganId[];
+  profiles: string[];
+  profile: string;
+  held: string[];
+  revealed: string[];
+  captures: number;
+  deployments: number;
+  /** The colony's telegraphed counter-attack on a territory you hold. */
+  underAttack: string | null;
+  faction: FactionId | null;
+  /** Captures when you allied (beats count from here). */
+  factionSince: number;
+  contacted: FactionId[];
+  beatsSeen: string[];
+  choices: Record<string, string>;
+  experimentsDone: string[];
+  daresDone: string[];
+  ended: FactionId | null;
+  licence: boolean;
+  /** Scenes waiting to be shown on the ship (contacts, beats, endings). */
+  pendingScenes: Array<{ faction: FactionId; beat?: string; scene: Scene; contact?: boolean; choice?: BeatDef['choice'] }>;
+  ai: { queue: AiTrigger[]; seen: AiTrigger[]; transcripts: Array<{ trigger: AiTrigger; turns: AiTurn[] }> };
+  log: string[];
+}
+
+export function newCampaign(seed: number): CampaignState {
+  const start = (Object.entries(LINEAGES) as Array<[OrganId, { catalogue: string }]>)
+    .filter(([, l]) => l.catalogue === 'start').map(([id]) => id);
+  return {
+    version: 1, seed, standing: 0, notes: 0, lineages: start, profiles: ['standard'], profile: 'standard',
+    held: [HOME], revealed: [], captures: 0, deployments: 0, underAttack: null, faction: null, factionSince: 0,
+    contacted: [], beatsSeen: [], choices: {}, experimentsDone: [], daresDone: [], ended: null, licence: false,
+    pendingScenes: [], ai: { queue: [], seen: [], transcripts: [] },
+    log: ['Personal log. Assigned to xenofauna clearance, sector 9. Asset BF-7 is cultured and viable. Here we go!'],
+  };
+}
+
+export const territory = (id: string): TerritoryDef => {
+  const t = TERRITORIES.find((x) => x.id === id);
+  if (!t) throw new Error(`no territory ${id}`);
+  return t;
+};
+export const faction = (id: FactionId): FactionDef => FACTIONS.find((f) => f.id === id)!;
+
+/** Perks from the beats of your faction you have reached. */
+export function perksOf(s: CampaignState): PerkId[] {
+  if (!s.faction) return [];
+  return faction(s.faction).beats.filter((b) => s.beatsSeen.includes(b.id)).flatMap((b) => b.perks ?? []);
+}
+
+/** Highest evolution stage per theme: 1 everywhere, raised by the territories you hold. */
+export function evolutionCaps(s: CampaignState): Record<string, number> {
+  const caps: Record<string, number> = {};
+  for (const th of ['core', 'forge', 'venom', 'gut', 'nerve', 'lattice', 'womb', 'marrow', 'resonance', 'catapult', 'runner', 'cage']) caps[th] = 1;
+  for (const id of s.held) {
+    for (const u of territory(id).unlocks) caps[u.theme] = Math.max(caps[u.theme] ?? 1, u.stage);
+  }
+  return caps;
+}
+
+/** Where you can land now: next to what you hold (anywhere with Seed Labs), your faction's finale at the end of its route. */
+export function targets(s: CampaignState): TerritoryDef[] {
+  if (s.ended) return [];
+  const seed = perksOf(s).includes('seedlabs');
+  return TERRITORIES.filter((t) => {
+    if (s.held.includes(t.id)) return false;
+    if (t.hidden && !s.revealed.includes(t.id)) return false;
+    if (t.finaleOf) {
+      if (t.finaleOf !== s.faction) return false;
+      if (!faction(t.finaleOf).beats.every((b) => s.beatsSeen.includes(b.id))) return false;
+    }
+    return seed || t.neighbours.some((n) => s.held.includes(n));
+  });
+}
+
+export function experimentsAvailable(s: CampaignState): ExperimentDef[] {
+  return EXPERIMENTS.filter((e) => !s.experimentsDone.includes(e.id)
+    && (e.requires?.captures ?? 0) <= s.captures
+    && (!e.requires?.territory || s.held.includes(e.requires.territory)));
+}
+
+export interface DeploymentPlan {
+  territory: string;
+  defence: boolean;
+  config: Partial<SimConfig>;
+  board: GoalInstance[];
+  dares: GoalInstance[];
+  experiment?: { def: ExperimentDef; goal: GoalInstance };
+}
+
+/** The three board goals for this deployment (seeded — the same briefing if you back out and return). */
+export function boardFor(s: CampaignState, territoryId: string): GoalInstance[] {
+  const t = territory(territoryId);
+  const rng = new Rng(hash(`${s.seed}|${s.deployments}|${territoryId}`));
+  const pool = [...REQUISITIONS];
+  const out: GoalInstance[] = [];
+  while (out.length < 3 && pool.length) out.push(instance(pool.splice(rng.int(0, pool.length - 1), 1)[0], t.tier));
+  return out;
+}
+
+/** Everything the run needs: territory, board, dares, experiment, faction perks, profile, unlocks. */
+export function plan(s: CampaignState, territoryId: string, opts: { dares?: string[]; experiment?: string; objectors?: EnemyKind[] } = {}): DeploymentPlan {
+  const t = territory(territoryId);
+  const defence = s.held.includes(territoryId) && s.underAttack === territoryId;
+  const perks = perksOf(s);
+  const profile = PROFILES.find((p) => p.id === s.profile) ?? PROFILES[0];
+  const objectorsAllowed = perks.includes('objectors2') ? 2 : perks.includes('objectors1') ? 1 : 0;
+  const bonus: Partial<Record<'war' | 'science' | 'royal', number>> = {};
+  if (perks.includes('volunteers1')) bonus.science = 30;
+  if (perks.includes('volunteers2')) { bonus.war = 40; bonus.royal = 1; }
+  const exp = opts.experiment ? EXPERIMENTS.find((e) => e.id === opts.experiment) : undefined;
+  const config: Partial<SimConfig> = {
+    seed: hash(`${s.seed}|${s.deployments}|${territoryId}|run`),
+    organStage: true,
+    organPool: [...s.lineages],
+    startOrgans: profile.organs,
+    evolutionCap: evolutionCaps(s),
+    waveIntel: perks.includes('translator') ? 'full' : 'hidden',
+    sleepers: perks.includes('sleepers2') ? 0.15 : perks.includes('sleepers1') ? 0.08 : 0,
+    startBonus: bonus,
+    bannedEnemies: (opts.objectors ?? []).slice(0, objectorsAllowed),
+    entrances: t.entrances,
+    directive: defence ? { kind: 'hold', waves: 5 } : t.directive,
+    ...(exp ? exp.setup : {}),
+  };
+  const dares = (opts.dares ?? []).slice(0, 2).map((id) => DARES.find((d) => d.id === id)!).filter(Boolean).map((d) => instance(d, t.tier));
+  return {
+    territory: territoryId, defence, config, board: boardFor(s, territoryId), dares,
+    experiment: exp ? { def: exp, goal: instance(exp.goal, t.tier) } : undefined,
+  };
+}
+
+export interface Debrief {
+  board: GoalResult[];
+  dares: GoalResult[];
+  experiment?: GoalResult;
+  standing: number;
+  notes: number;
+  captured: string | null;
+  lost: string | null;
+  repelled: string | null;
+  unlocked: string[];
+  log: string;
+}
+
+/** Apply a finished run to the campaign (returns the new state and what to show in the debrief). */
+export function finish(prev: CampaignState, p: DeploymentPlan, r: RunReport): { state: CampaignState; debrief: Debrief } {
+  const s: CampaignState = structuredClone(prev);
+  const rng = new Rng(hash(`${s.seed}|${s.deployments}|after`));
+  s.deployments += 1;
+  const board = evaluate(p.board, r);
+  const dares = evaluate(p.dares, r);
+  const exp = p.experiment ? evaluate([p.experiment.goal], r)[0] : undefined;
+  const standing = board.filter((g) => g.met).reduce((a, g) => a + g.def.pays, 0);
+  let notes = dares.filter((g) => g.met).reduce((a, g) => a + g.def.pays, 0);
+  const unlocked: string[] = [];
+  for (const d of dares) if (d.met && !s.daresDone.includes(d.def.id)) s.daresDone.push(d.def.id);
+  if (exp?.met && p.experiment) {
+    notes += exp.def.pays;
+    const e = p.experiment.def;
+    if (!s.experimentsDone.includes(e.id)) s.experimentsDone.push(e.id);
+    if (e.unlocks.lineage && !s.lineages.includes(e.unlocks.lineage)) { s.lineages.push(e.unlocks.lineage); unlocked.push(`lineage:${e.unlocks.lineage}`); }
+    if (e.unlocks.territory && !s.revealed.includes(e.unlocks.territory)) { s.revealed.push(e.unlocks.territory); unlocked.push(`territory:${e.unlocks.territory}`); }
+    if (e.unlocks.profile && !s.profiles.includes(e.unlocks.profile)) { s.profiles.push(e.unlocks.profile); unlocked.push(`profile:${e.unlocks.profile}`); }
+  }
+  // Feats that unlock profiles.
+  if (s.daresDone.includes('everything-burns') && !s.profiles.includes('venom')) { s.profiles.push('venom'); unlocked.push('profile:venom'); }
+  s.standing += standing;
+  s.notes += notes;
+
+  // The territory.
+  let captured: string | null = null;
+  let lost: string | null = null;
+  let repelled: string | null = null;
+  const t = territory(p.territory);
+  if (p.defence) {
+    if (r.won) repelled = p.territory;
+    else { s.held = s.held.filter((h) => h !== p.territory); lost = p.territory; }
+    s.underAttack = null;
+  } else {
+    // Deploying elsewhere while a territory was under attack: it falls.
+    if (s.underAttack && s.underAttack !== p.territory) {
+      s.held = s.held.filter((h) => h !== s.underAttack);
+      lost = s.underAttack;
+      s.underAttack = null;
+    }
+    if (r.won) {
+      s.held.push(p.territory);
+      s.captures += 1;
+      captured = p.territory;
+    }
+  }
+  s.log.push(`${(r.won ? LOGS_WON : LOGS_LOST)[rng.int(0, (r.won ? LOGS_WON : LOGS_LOST).length - 1)]} (${t.name})`);
+
+  // The colony pushes back after you take new ground: a telegraphed counter-attack
+  // on one of your territories (defend it next, or lose it).
+  if (captured && !s.underAttack && s.captures >= 2 && !s.ended) {
+    const exposed = s.held.filter((h) => h !== HOME && h !== captured && !territory(h).finaleOf);
+    if (exposed.length) {
+      const target = exposed[rng.int(0, exposed.length - 1)];
+      if (perksOf(s).includes('garrison')) s.log.push(`The Faithful's militants held ${territory(target).name} against a counter-attack.`);
+      else s.underAttack = target;
+    }
+  }
+
+  // The factions: contacts, beats, the finale.
+  if (!s.faction) {
+    for (const f of FACTIONS) {
+      if (s.captures >= f.contactAfterCaptures && !s.contacted.includes(f.id)) {
+        s.contacted.push(f.id);
+        s.pendingScenes.push({ faction: f.id, scene: f.contact, contact: true });
+      }
+    }
+  } else {
+    const f = faction(s.faction);
+    for (const b of f.beats) {
+      if (s.beatsSeen.includes(b.id) || s.captures - s.factionSince < b.afterCaptures) continue;
+      s.beatsSeen.push(b.id);
+      s.pendingScenes.push({ faction: f.id, beat: b.id, scene: b.scene, choice: b.choice });
+      if (b.id === 'reveal' || b.id === 'ultimatum' || b.id === 'prepare') s.ai.queue = queueDiscussion(s.ai.queue, 'midpoint', s.ai.seen);
+    }
+    if (captured && t.finaleOf === f.id) {
+      s.ended = f.id;
+      s.pendingScenes.push({ faction: f.id, scene: f.ending });
+      s.ai.queue = queueDiscussion(s.ai.queue, 'ending', s.ai.seen);
+    }
+  }
+
+  // The licence and the Board.
+  if (!s.licence && s.standing >= LICENCE_STANDING) {
+    s.licence = true;
+    s.log.push('The Board is pleased to APPROVE your procreation licence. Please collect it in person. The office is closed.');
+    s.ai.queue = queueDiscussion(s.ai.queue, 'licence', s.ai.seen);
+  } else if (standing > 0) {
+    s.log.push(BOARD_LETTERS[rng.int(0, BOARD_LETTERS.length - 1)]);
+  }
+  if (s.deployments === 1) s.ai.queue = queueDiscussion(s.ai.queue, 'first-deployment', s.ai.seen);
+
+  return {
+    state: s,
+    debrief: { board, dares, experiment: exp, standing, notes, captured, lost, repelled, unlocked, log: s.log[s.log.length - 1] },
+  };
+}
+
+/** Ally with a faction (exclusive): its first beat plays at once. */
+export function ally(prev: CampaignState, id: FactionId): CampaignState {
+  const s: CampaignState = structuredClone(prev);
+  if (s.faction) return s;
+  s.faction = id;
+  s.factionSince = s.captures;
+  s.pendingScenes = s.pendingScenes.filter((p) => !p.contact);
+  const first = faction(id).beats.find((b) => b.afterCaptures === 0);
+  if (first) {
+    s.beatsSeen.push(first.id);
+    s.pendingScenes.push({ faction: id, beat: first.id, scene: first.scene, choice: first.choice });
+  }
+  s.ai.queue = queueDiscussion(s.ai.queue, 'faction-allied', s.ai.seen);
+  return s;
+}
+
+/** Dismiss a contact without allying (it can be taken up later from Comms while you have no faction). */
+export function dismissScene(prev: CampaignState): CampaignState {
+  const s: CampaignState = structuredClone(prev);
+  s.pendingScenes.shift();
+  return s;
+}
+
+export function choose(prev: CampaignState, beatId: string, option: string): CampaignState {
+  const s: CampaignState = structuredClone(prev);
+  s.choices[beatId] = option;
+  s.pendingScenes = s.pendingScenes.filter((p) => p.beat !== beatId);
+  return s;
+}
+
+/** Buy a lineage with standing (sanctioned) or field notes (unsanctioned). */
+export function buyLineage(prev: CampaignState, id: OrganId): { state: CampaignState; ok: boolean; err?: string } {
+  const l = LINEAGES[id];
+  if (!l || l.catalogue === 'start') return { state: prev, ok: false, err: 'not for sale' };
+  if (prev.lineages.includes(id)) return { state: prev, ok: false, err: 'already yours' };
+  const wallet = l.catalogue === 'sanctioned' ? prev.standing : prev.notes;
+  if (wallet < l.price) return { state: prev, ok: false, err: l.catalogue === 'sanctioned' ? 'not enough standing' : 'not enough field notes' };
+  const s: CampaignState = structuredClone(prev);
+  if (l.catalogue === 'sanctioned') s.standing -= l.price; else s.notes -= l.price;
+  s.lineages.push(id);
+  return { state: s, ok: true };
+}
+
+export function selectProfile(prev: CampaignState, id: string): CampaignState {
+  if (!prev.profiles.includes(id)) return prev;
+  return { ...prev, profile: id };
+}
+
+/** A plain-language summary for the ship's AI. */
+export function summaryFor(s: CampaignState): string {
+  return [
+    `Deployments: ${s.deployments}. Territories held: ${s.held.map((h) => territory(h).name).join(', ')}.`,
+    `Faction: ${s.faction ? faction(s.faction).name : 'none'}. Standing ${s.standing}, field notes ${s.notes}.`,
+    `Licence: ${s.licence ? 'approved' : 'pending'}. Experiments done: ${s.experimentsDone.join(', ') || 'none'}.`,
+  ].join(' ');
+}
+
+export function hash(str: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
