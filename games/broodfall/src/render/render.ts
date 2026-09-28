@@ -297,38 +297,23 @@ export class Renderer {
     const g = this.entG;
     g.clear();
 
+    // Organs live in the body below (their own screen). On the surface only a
+    // root shows: a runner out of the core toward where its lobe grows.
     for (const o of sim.organs) {
-      const { x, y } = o.pos;
-      if (o.organ === 'heart') {
-        const r = 13 + Math.sin(this.pulse * 2.2) * 2.5;
-        g.circle(x, y, r).fill(0xa8322a);
-        g.circle(x, y, r * 0.55).fill(0xd0604a);
-      } else if (o.organ === 'brain') {
-        g.circle(x, y, 13).fill(0xc9a2b8);
-        g.moveTo(x - 8, y).bezierCurveTo(x - 3, y - 9, x + 4, y + 7, x + 9, y - 2)
-          .stroke({ width: 2, color: 0x7d5570 });
-      } else if (o.organ === 'root') {
-        // Tendril root: a bulb with a fat runner pointing where the lobe grows.
-        g.circle(x, y, 11).fill(0x8f4a3d);
-        g.circle(x, y, 6).fill(0xb0685a);
-        const d = o.rootDir ?? 'N';
-        const vx = d === 'E' ? 1 : d === 'W' ? -1 : 0;
-        const vy = d === 'S' ? 1 : d === 'N' ? -1 : 0;
-        const wob = Math.sin(this.pulse * 2) * 2;
-        g.moveTo(x, y).lineTo(x + vx * (18 + wob), y + vy * (18 + wob))
-          .stroke({ width: 4, color: 0x8f4a3d, alpha: 0.9 });
-        g.poly([
-          x + vx * 24 + vy * 5, y + vy * 24 + vx * 5,
-          x + vx * 30, y + vy * 30,
-          x + vx * 24 - vy * 5, y + vy * 24 - vx * 5,
-        ]).fill({ color: 0xb0685a, alpha: 0.9 });
-      } else {
-        const mode = o.glandMode;
-        const c = mode === 'lure' ? 0x4fa9a4 : mode === 'challenge' ? 0xd1603c : 0x8a7f65;
-        g.poly([x, y - 14, x + 11, y, x, y + 14, x - 11, y]).fill(c);
-        g.circle(x, y, 4).fill(0x26200f);
-      }
-      this.hpArc(g, x, y, 18, o.hp / o.maxHp);
+      if (o.organ !== 'root') continue;
+      const { x, y } = sim.core;
+      const d = o.rootDir ?? 'N';
+      const vx = d === 'E' ? 1 : d === 'W' ? -1 : 0;
+      const vy = d === 'S' ? 1 : d === 'N' ? -1 : 0;
+      const wob = Math.sin(this.pulse * 2 + o.id) * 2;
+      const r0 = 30;
+      g.moveTo(x + vx * r0, y + vy * r0).lineTo(x + vx * (r0 + 22 + wob), y + vy * (r0 + 22 + wob))
+        .stroke({ width: 5, color: 0x8f4a3d, alpha: 0.9 });
+      g.poly([
+        x + vx * (r0 + 26) + vy * 6, y + vy * (r0 + 26) + vx * 6,
+        x + vx * (r0 + 34), y + vy * (r0 + 34),
+        x + vx * (r0 + 26) - vy * 6, y + vy * (r0 + 26) - vx * 6,
+      ]).fill({ color: 0xb0685a, alpha: 0.9 });
     }
 
     for (const t of sim.towers) {

@@ -147,6 +147,33 @@ smart flips 3:2, totals 120k vs 115k. 54/54 tests; input check adds the lobber
 gesture; visual/endgame green.
 
 
+## Addendum 16 (Sep 28): the body below (organs grow down, between waves)
+
+Collins redirected organs: dig-down underground body, the meteor half above/half
+below, organs must connect back to it, deposits to dig to, fixed features that give
+adjacency, a between-waves stage (organs → limbs → wave). Full rules in DESIGN.md.
+
+- Built: `content/underground.ts` (deposits, features, power rules), `src/sim/
+  underground.ts` (seeded generator; rock never cuts anything off), sim organ power
+  + connection rule + deposit payouts/wages, roots lobe from the core, organs out of
+  enemy reach; `src/ui/underground.ts` screen (palette, grid, hover preview with the
+  power breakdown and what a deposit pays, click to grow, click a gland/root to
+  switch/turn); main loop holds the clock while it is open and opens it at the
+  start and after each wave.
+- Bot: grows each organ where its power is highest, and with spare war digs roots
+  toward the richest reachable deposit. Naive 5/10; guardrail flips 5:0. 151 tests.
+- Playtest findings: (1) after a refused click the warning hid the next cell's
+  preview for 1.4s — hovering a new cell now clears it; (2) a claimed deposit
+  vanished under its organ — organs on deposits carry the deposit's mark and the
+  title shows what the claimed deposits pay each wave; (3) that line first said
+  "no deposit claimed" after a one-off Carrion Pocket was claimed — corrected.
+- `tools/shot-under.mjs`: real clicks dig to a deposit, preview a heart, go up,
+  fight a wave at 8x, and check the screen returns between waves.
+- Open questions for Collins: organs are safe from enemies now (a burrower that
+  raids the body below would restore that pressure); roots are the cheap digging
+  organ and stack big lobes when clustered by the Sewer Main — watch whether that
+  makes creep trivial for a human.
+
 ## Addendum 15 (Sep 28): science = engines + evolutions; the doubling rule; evolutions
 
 Collins: "science should be for combo organs only and certain upgrades we have not

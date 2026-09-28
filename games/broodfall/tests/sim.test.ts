@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../src/sim/rng';
-import { Sim, fxOf, towerStats, towerSpec } from '../src/sim/sim';
+import { Sim, fxOf, organSpec, towerStats, towerSpec } from '../src/sim/sim';
+import { DEPOSITS } from '../content/underground';
 import { CellType, isPassable } from '../src/sim/citymap';
 import type { Enemy, SimConfig, Tower } from '../src/sim/types';
 import { BALANCE as B, ENEMIES, TOWERS, WAVE_TABLE } from '../content/data';
@@ -22,8 +23,9 @@ function buildableCell(s: Sim, skip = 0): number {
   throw new Error('no buildable cell');
 }
 
+/** A cell of the body below where an organ can grow right now. */
 function organCell(s: Sim): number {
-  for (let c = 0; c < s.map.cells.length; c++) {
+  for (let c = 0; c < s.under.cells.length; c++) {
     if (s.canBuildOrgan(c)) return c;
   }
   throw new Error('no organ cell');
@@ -104,18 +106,55 @@ describe('economy and building', () => {
     expect(s.issue({ kind: 'build', cardIndex: 0, cell: buildableCell(s) }).ok).toBe(false);
   });
 
-  it('organs only build inside the body', () => {
+  it('organs grow BELOW: touching the meteor or an organ that does, and only between waves', () => {
     const s = freshSim();
     s.meat.war = 999;
-    s.meat.science = 999;
-    // A creeped cell beyond the body range is tower-buildable but not organ-buildable.
-    let beyond = -1;
-    for (let c = 0; c < s.map.cells.length; c++) {
-      if (s.canBuildTower(c) && !s.isBody(c)) { beyond = c; break; }
+    const u = s.under;
+    // The meteor is there from the start, half buried at the top middle.
+    expect(u.cells.filter((c) => c.kind === 'meteor').length).toBe(6);
+    // A far cell touching nothing: refused. A cell touching the meteor: grows.
+    const far = u.cells.findIndex((c, i) => (c.kind === 'soil' || c.kind === 'deposit') && Math.floor(i / u.w) === u.h - 1);
+    expect(s.issue({ kind: 'build-organ', organ: 'heart', cell: far }).ok).toBe(false);
+    const first = organCell(s);
+    expect(s.issue({ kind: 'build-organ', organ: 'heart', cell: first }).ok).toBe(true);
+    // The body is one connected thing: the next organ may grow off the first.
+    const next = [first - 1, first + 1, first + u.w].find((n) => n >= 0 && s.canBuildOrgan(n)
+      && !u.cells.some((c, i) => c.kind === 'meteor' && (i === n - 1 || i === n + 1 || i === n - u.w || i === n + u.w)));
+    if (next !== undefined) expect(s.issue({ kind: 'build-organ', organ: 'heart', cell: next }).ok).toBe(true);
+    // Never during an assault.
+    const legal = organCell(s);
+    (s as unknown as { phase: string }).phase = 'siege';
+    expect(s.issue({ kind: 'build-organ', organ: 'heart', cell: legal }).ok).toBe(false);
+  });
+
+  it('the body below: deposits pay when dug onto; features power the organs touching them', () => {
+    const s = freshSim(4242);
+    s.meat.war = 99999;
+    const u = s.under;
+    // Dig a line of roots toward the first deposit until an organ sits on it.
+    const target = u.cells.findIndex((c) => c.kind === 'deposit' && c.deposit !== 'cache');
+    expect(target).toBeGreaterThanOrEqual(0);
+    const md = (a: number, b: number) => Math.abs((a % u.w) - (b % u.w)) + Math.abs(Math.floor(a / u.w) - Math.floor(b / u.w));
+    const pay = DEPOSITS[u.cells[target].deposit!].now;
+    for (let k = 0; k < 40 && !u.cells[target].claimed; k++) {
+      const legal = u.cells.map((_, i) => i).filter((i) => s.canBuildOrgan(i));
+      const step = legal.reduce((b, l) => (md(l, target) < md(b, target) ? l : b), legal[0]);
+      const before = { ...s.meat, biomass: s.biomass };
+      expect(s.issue({ kind: 'build-organ', organ: 'root', cell: step }).ok).toBe(true);
+      if (step === target) {
+        // Exactly the deposit's payout, on top of the root's price.
+        expect(s.meat.war - before.war).toBe((pay.war ?? 0) - (organSpec('root').cost.war ?? 0));
+        expect(s.meat.science - before.science).toBe(pay.science ?? 0);
+        expect(s.meat.royal - before.royal).toBe(pay.royal ?? 0);
+        expect(s.biomass - before.biomass).toBeCloseTo(pay.biomass ?? 0);
+      }
     }
-    expect(beyond).toBeGreaterThanOrEqual(0);
-    expect(s.issue({ kind: 'build-organ', organ: 'heart', cell: beyond }).ok).toBe(false);
-    expect(s.issue({ kind: 'build-organ', organ: 'heart', cell: organCell(s) }).ok).toBe(true);
+    expect(u.cells[target].claimed).toBe(true);
+    // A feature: an organ touching it has more power than one that does not.
+    const f = u.cells.findIndex((c) => c.kind === 'feature');
+    const touching = [f - 1, f + 1, f - u.w, f + u.w].find((n) => n >= 0 && n < u.cells.length && (u.cells[n].kind === 'soil' || u.cells[n].kind === 'deposit'));
+    expect(touching).toBeDefined();
+    expect(s.organPowerOf({ organ: 'heart', cell: touching! })).toBeGreaterThan(1);
   });
 
   it('starting layout: exactly `entrances` frontier gates, all connected, guns-first', () => {
@@ -1675,7 +1714,7 @@ describe('creep logistics (sling patches + directional roots)', () => {
     expect(s.issue({ kind: 'sling-throw', towerId: sling.id, cell: voidCell }).ok).toBe(false);
   });
 
-  it('a tendril root grows creep in ITS direction, cycles on command', () => {
+  it('a tendril root (grown below) sends a creep lobe from the core in ITS direction, cycles on command', () => {
     const s = freshSim(701);
     s.meat.war = 9999;
     s.meat.science = 9999;
@@ -1684,13 +1723,14 @@ describe('creep logistics (sling patches + directional roots)', () => {
     expect(root.rootDir).toBeDefined();
     const src = s.creepSources.find((x) => x.kind === 'root')!;
     expect(src.dir).toBe(root.rootDir);
+    expect(src.cell).toBe(s.map.coreCell);
     // The lobe reaches down-direction, not up-direction, at equal hop distance.
     const covers = (s as unknown as { sourceCovers(x: unknown, cell: number): boolean });
     src.bornAt = -60; // a minute of growth, without moving the core's own creep
     const w = s.cfg.gridW;
     const dirOff = root.rootDir === 'N' ? -6 * w : root.rootDir === 'S' ? 6 * w : root.rootDir === 'E' ? 6 : -6;
-    const ahead = root.cell + dirOff;
-    const behind = root.cell - dirOff;
+    const ahead = src.cell + dirOff;
+    const behind = src.cell - dirOff;
     if (s.map.cells[ahead] !== CellType.Void) {
       expect(covers.sourceCovers(src, ahead)).toBe(true);
     }

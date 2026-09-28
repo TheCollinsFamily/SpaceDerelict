@@ -8,6 +8,7 @@ import { Autoplayer } from './sim/autoplayer';
 import { DT, Sim, organSpec, towerSpec } from './sim/sim';
 import { Renderer } from './render/render';
 import { Hud, PIP_DESC } from './ui/hud';
+import { UndergroundScreen } from './ui/underground';
 import { GENES } from '../content/plates';
 import { BALANCE as B } from '../content/data';
 import { PLATE_FEATURES } from './sim/citymap';
@@ -126,8 +127,6 @@ function updateHint(): void {
       : armedThrower.family === 'lobber'
         ? 'BILE LOBBER ARMED: click ground in range — the volley detonates on whatever stands there (right-click cancels)'
         : 'BOMBARD: click ground in range to set its MARKER — it shells that spot whenever the hive is there (right-click cancels)');
-  } else if (armedOrgan) {
-    hud.setHint(`place ${organSpec(armedOrgan).name} on open ground inside the body`);
   } else if (selectedCard !== null && hoverDonorId !== null) {
     const donor = sim.towers.find((t) => t.id === hoverDonorId);
     if (donor && donor.family === 'tap') {
@@ -369,16 +368,6 @@ function handleCanvasClick(clientX: number, clientY: number): void {
   }
 
   if (selectedCard === null && armedOrgan === null) {
-    for (const o of sim.organs) {
-      if (o.organ === 'gland' && Math.hypot(o.pos.x - w.x, o.pos.y - w.y) < 20) {
-        sim.issue({ kind: 'cycle-gland', organInstanceId: o.id });
-        return;
-      }
-      if (o.organ === 'root' && Math.hypot(o.pos.x - w.x, o.pos.y - w.y) < 20) {
-        sim.issue({ kind: 'cycle-root', organInstanceId: o.id });
-        return;
-      }
-    }
     // Clicking one of your limbs opens its panel (hp, traits, targeting).
     // A sling or lobber ALSO arms its throw — object-initiated, no mode button.
     const clicked = towerNearWorld(w.x, w.y);
@@ -405,16 +394,6 @@ function handleCanvasClick(clientX: number, clientY: number): void {
     // Empty ground with nothing armed: close the panel.
     hud.inspectedId = null;
     renderer.selectedTowerId = null;
-  }
-
-  if (armedOrgan) {
-    const res = sim.issue({ kind: 'build-organ', organ: armedOrgan, cell });
-    if (res.ok) {
-      armedOrgan = null;
-      hud.armedOrgan = null;
-      updateHint();
-    }
-    return;
   }
 
   if (selectedCard !== null) {
@@ -472,6 +451,26 @@ function towerNearWorld(x: number, y: number): { id: number } | null {
     if (Math.hypot(t.pos.x - x, t.pos.y - y) < 22) return t;
   }
   return null;
+}
+
+// ---------- the body below (between waves) ----------
+
+const under = new UndergroundScreen(() => sim, () => updateHint());
+const openUnderBtn = document.getElementById('open-under')!;
+openUnderBtn.addEventListener('click', () => { if (sim.phase !== 'siege') { cancelAll(); under.show(); } });
+/** Last phase seen by the loop — a siege/draft ending into growth opens the organ stage. */
+let lastPhase = sim.phase;
+let underOpenedAtStart = false;
+function underLifecycle(): void {
+  if (AUTO || !started || sim.outcome !== 'playing') return;
+  if (!underOpenedAtStart) {
+    underOpenedAtStart = true;
+    under.show();
+  } else if (sim.phase === 'growth' && lastPhase !== 'growth') {
+    under.show();
+  }
+  lastPhase = sim.phase;
+  openUnderBtn.classList.toggle('disabled', sim.phase === 'siege');
 }
 
 // ---------- boot ----------
@@ -536,13 +535,11 @@ async function boot(): Promise<void> {
       }
     }
     const fam = sim.hand[selectedCard!]?.family;
-    renderer.preview = armedOrgan
-      ? { cell, kind: 'organ', valid: sim.canBuildOrgan(cell) }
-      : {
-        cell, kind: 'tower', family: fam, valid: sim.canBuildTower(cell, fam),
-        facing: selectedIsDirectional() ? currentPlaceFacing(cell) : undefined,
-        pips: sim.pendingPips,
-      };
+    renderer.preview = {
+      cell, kind: 'tower', family: fam, valid: sim.canBuildTower(cell, fam),
+      facing: selectedIsDirectional() ? currentPlaceFacing(cell) : undefined,
+      pips: sim.pendingPips,
+    };
   });
 
   const callEarlyBtn = document.getElementById('call-early')! as HTMLButtonElement;
@@ -555,7 +552,8 @@ async function boot(): Promise<void> {
   const frame = (now: number) => {
     const dtReal = Math.min(0.1, (now - last) / 1000);
     last = now;
-    if (started) {
+    underLifecycle();
+    if (started && !under.open) {
       acc += dtReal * speed;
       let steps = 0;
       while (acc >= DT && steps < 64) {
@@ -567,6 +565,7 @@ async function boot(): Promise<void> {
     }
     handleEvents(sim.takeEvents());
     hud.update(sim);
+    under.update();
     // Draft overlay lifecycle (manual play only; the autoplayer picks itself).
     if (!AUTO) {
       if (sim.phase === 'draft' && !draftRendered && sim.pendingDraft) {
@@ -590,9 +589,14 @@ async function boot(): Promise<void> {
   // clicking pixels. step(n) advances synchronously (no rAF throttle).
   const api = {
     sim,
+    /** Close the between-waves organ screen (scripted play). */
+    surface(): void {
+      if (under.open) under.hide();
+    },
     step(n: number): void {
       started = true;
       menuEl.classList.add('hidden');
+      if (under.open) under.hide();
       for (let i = 0; i < n && sim.outcome === 'playing'; i++) {
         if (auto) auto.act(sim, DT);
         else if (sim.phase === 'draft') break; // manual play: draft waits for a choice

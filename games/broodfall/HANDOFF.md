@@ -71,6 +71,10 @@ debrief → ship gene bay → redeploy.
     `content/upgrades.ts`; bought in the limb panel's EVOLVE section; crest on the limb.
 20. **The doubling rule** (Sep 28): a second copy of any bonus always changes
     something — DESIGN.md has the table; `tests/evolution.test.ts` enforces it.
+21. **The body below** (Sep 28): organs grow DOWN in an underground cross-section, in a
+    BETWEEN-WAVES stage (organs → limbs → wave; the clock holds while the screen is open).
+    Everything connects back to the meteor (half above ground = the core, half buried).
+    Deposits pay when dug onto; fixed features power the organs touching them.
 17. **Direction and effects are always visible:** directional limbs show a field of
     fire and rotate with right-click (Esc cancels); effect limbs (conduit, choir,
     ward) draw what they affect and say it in their panel.
@@ -94,7 +98,7 @@ debrief → ship gene bay → redeploy.
 ## How to verify (all must be green before claiming anything)
 
 ```powershell
-npm test             # 150 tests: sim, evolutions + the doubling rule, plates algebra, wave rhythm, per-verb behaviors
+npm test             # 151 tests: sim, evolutions + the doubling rule, plates algebra, wave rhythm, per-verb behaviors
                      # for 29 tower families + 26 enemy kinds (combo engines, burn, payload rule, detection,
                      # air/ground, dependency, cannons, shields, bombard markers),
                      # naive win RATE over 10 seeds, smart science routing +
@@ -108,6 +112,7 @@ npm run test:input   # real player gestures: build, cannibalize, organ, cancel
 npm run test:endgame # full in-browser run to the victory overlay
 node tools/shot-evolve.mjs   # real clicks through all three EVOLVE stages
 node tools/shot-engines.mjs  # the five utility engines in the real page
+node tools/shot-under.mjs    # the body below: dig to a deposit, fight a wave, screen returns
 ```
 
 The **placement guardrail** (`tests/placement.test.ts`) is the genre's heartbeat: a
@@ -131,7 +136,7 @@ URL params: `?seed= &auto=1 &autostart=1 &speed= &directive=hold|royal|harvest &
 Scripted player, hold-12, 1 entrance: 2/3 measured seeds win (the enemy expansion
 restored real difficulty); 2-3 entrances much harder. MEASURE WIN RATE OVER 10 SEEDS,
 never 3-4 (addendum 8: small samples swung 3/3 ↔ 0/3 on draw noise). Current: naive
-hold-12 5/10; guardrail smart flips 3:0 (Sep 28, after evolutions). The bot buys combo engines
+hold-12 5/10; guardrail smart flips 5:0 (Sep 28, after the body below). The bot buys combo engines
 only on a measured ≥15% gain (trial-places a ghost) and aims them all at one carry. Difficulty knob =
 threatPerTier (28 since evolutions, tier 6 at 256; was 37 before — addendum 15). The bot
 spends science on evolutions for its top-killing limbs (A/B by a dps read). The bot uses support limbs by

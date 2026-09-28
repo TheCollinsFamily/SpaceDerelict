@@ -26,12 +26,12 @@ class RandomPlacer {
     this.actTimer -= dt;
     if (this.actTimer > 0) return;
     this.actTimer = 1.5;
-    if (sim.meat.royal >= 50) sim.issue({ kind: 'royal-surge' });
+    if (sim.meat.royal >= 1) sim.issue({ kind: 'royal-surge' });
     const tryOrgan = (organ: 'heart' | 'brain' | 'gland', upTo: number): boolean => {
       if (sim.organs.filter((o) => o.organ === organ).length >= upTo) return false;
       if (!sim.canAfford(organSpec(organ).cost)) return false;
       const opts: number[] = [];
-      for (let c = 0; c < sim.map.cells.length; c++) if (sim.canBuildOrgan(c)) opts.push(c);
+      for (let c = 0; c < sim.under.cells.length; c++) if (sim.canBuildOrgan(c)) opts.push(c);
       if (!opts.length) return false;
       return sim.issue({ kind: 'build-organ', organ, cell: opts[this.rng.int(0, opts.length - 1)] }).ok;
     };

@@ -18,7 +18,46 @@ You are a growing body. Towers are limbs, creep is skin, organs are the build, m
 - **Figure-ground like the reference:** dense raised city blocks with dirt channels CARVED between them. Enemies march the channels in squads; they cannot cross blocks. A uniform street grid is banned — it carries no geometric information and placement stops mattering (measured, twice).
 - **Verticality is TD 101:** blocks have heights 1-3, drawn raised with faces and shadows; a taller perch is +10% reach per level. Temple Heights plates bring extra high ground.
 - **Towers perch on creeped city blocks,** out of the traffic. Reading which block covers the most path legs is the game. Exception: the SPINE WALL stands in the street to be chewed through — the hold-the-line tool; a single-lane channel cannot be routed around.
-- **Organs grow on open plaza ground inside the body — in the enemies' path.** Leaks threaten something real.
+- ~~Organs grow on open plaza ground inside the body — in the enemies' path.~~
+  Superseded Sep 28 2026 by **THE BODY BELOW** (next section).
+
+### The body below: organs grow DOWN, between waves (Collins, Sep 28 2026)
+Collins: the body grows underground "so we don't need to change what the monster's
+core looks like all the time"; "it should always start with some central organ
+that's like the meteor it came down in, half out of and half under ground";
+"organs in their placement must be touching something touching the surface, and
+underground there are both resources you can collect by digging to certain places
+and things that are fixed and offer adjacency bonuses — so you have this tension of
+ignoring organ adjacency to dig straight down, or optimising adjacency, while you
+also need to think about saving space for future things"; and "organ management is
+a BETWEEN WAVES thing: organs → place towers → wave, not something on screen during
+a wave". (He rejected a drop-into-a-pit/connect-four version: it did not fit the theme.)
+
+- **The screen**: a side-view cross-section under the city (11 × 8), opened
+  automatically at the start and after every cleared wave (after any district
+  draft); the clock holds while it is open; "TO THE SURFACE" returns to limb
+  placement. The bottom-bar "THE BODY BELOW" button reopens it any time before the
+  wave (never during one). Street level runs across the top; the meteor's dome
+  shows above it and its buried half fills the top-middle cells.
+- **Connection rule**: an organ grows on soil or a deposit that touches (4-way) the
+  meteor or an organ. The body is one connected thing.
+- **Deposits** (pay when an organ is grown onto them; richer deeper): Carrion
+  Pocket +25 war · Carrion Seam +40 war then +6 war every wave · Buried Laboratory
+  +15 science then +4 every wave · Biomass Bed +150 mass · Royal Ossuary +1 royal
+  point · Gene Cache: two named bonuses banked for the next limb (you can see which
+  before you dig).
+- **Features** (fixed, can't be dug; power the organs touching them): +1 power to any
+  organ touching it, +2 to its kind — Severed Power Main → brain, Sewer Main → root,
+  Aquifer → gland, Geothermal Vent → heart. Organs of the same kind touching each
+  other +0.5 each. Rock can't be dug (dig around it).
+- **Organ power** replaces organ counts everywhere: hearts' biomass and creep speed,
+  brains' interest and advanced-card odds (now per point of power, uncapped),
+  the gland's mode strength, a root's lobe size (roots now grow their lobe from the
+  core).
+- Organs are out of the enemies' reach (sappers, shells and bombers only hit limbs
+  and the core). The old "leaks threaten organs" pressure is gone; a future
+  burrowing enemy that raids the body below is the natural replacement.
+- Generated from its own seeded stream (never shifts the surface sim's rng).
 - **Gates live on the FRONTIER:** ports of claimed plates that face unclaimed city. Growing changes where the hive can come from — expansion is power AND exposure.
 - **Waves attack down TELEGRAPHED lanes** (1-3 frontier gates by tier; "ASSAULT FORMING: N+E" plus glowing gate beacons during growth). Reinforce the named approach, or CALL THE WAVE early for bonus meat. Waves spawn as squads, end with a CLEARED banner and a meat bonus.
 - The map at minute zero is a NEIGHBORHOOD, not a battlefield: lit doorways, and (planned) street life that flees the crash. The city is shown living so the horror lands.

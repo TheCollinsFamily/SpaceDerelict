@@ -5,6 +5,7 @@
 import { Rng } from './rng';
 import { Sim, towerSpec, organSpec } from './sim';
 import { UPGRADE_COST } from '../../content/upgrades';
+import { DEPOSITS } from '../../content/underground';
 import { CellType } from './citymap';
 import { BALANCE as B } from '../../content/data';
 import type { OrganId, Tower, UpgradeChoice } from './types';
@@ -40,6 +41,7 @@ export class Autoplayer {
     if (sim.time > 140 && this.tryOrgan(sim, 'brain', 1)) return;
     if (sim.time > 180 && this.tryOrgan(sim, 'heart', 2)) return;
     if (sim.time > 320 && this.tryOrgan(sim, 'heart', 3)) return;
+    if (this.tryDig(sim)) return;
 
     const gland = sim.organs.find((o) => o.organ === 'gland');
     if (gland && gland.glandMode === 'calm' && sim.time > 100) {
@@ -266,9 +268,44 @@ export class Autoplayer {
     const have = sim.organs.filter((o) => o.organ === organ).length;
     if (have >= upTo) return false;
     if (!sim.canAfford(organSpec(organ).cost)) return false;
-    const cell = this.findOrganCell(sim);
+    const cell = this.findOrganCell(sim, organ);
     if (cell === null) return false;
     return sim.issue({ kind: 'build-organ', organ, cell }).ok;
+  }
+
+  /** What digging onto a deposit is worth to the bot (in war-meat terms). */
+  private depositValue(sim: Sim, cell: number): number {
+    const c = sim.under.cells[cell];
+    if (c.kind !== 'deposit' || !c.deposit || c.claimed) return 0;
+    const d = DEPOSITS[c.deposit];
+    return (d.now.war ?? 0) + (d.now.science ?? 0) * 2 + (d.now.royal ?? 0) * 40 + (d.now.biomass ?? 0) / 5
+      + (d.now.pips ?? 0) * 15 + ((d.perWave?.war ?? 0) + (d.perWave?.science ?? 0) * 2) * 6;
+  }
+
+  /**
+   * Digging: with spare war between waves, grow the cheapest organ (a root) one
+   * cell toward the richest unclaimed deposit it can reach.
+   */
+  private tryDig(sim: Sim): boolean {
+    if (sim.phase === 'siege' || sim.meat.war < 75) return false;
+    if (!sim.canAfford(organSpec('root').cost)) return false;
+    const u = sim.under;
+    const legal: number[] = [];
+    for (let i = 0; i < u.cells.length; i++) if (sim.canBuildOrgan(i)) legal.push(i);
+    if (legal.length === 0) return false;
+    let target = -1;
+    let targetScore = 0;
+    for (let i = 0; i < u.cells.length; i++) {
+      const v = this.depositValue(sim, i);
+      if (v <= 0) continue;
+      const near = Math.min(...legal.map((l) => Math.abs((l % u.w) - (i % u.w)) + Math.abs(Math.floor(l / u.w) - Math.floor(i / u.w))));
+      const score = v / (1 + near);
+      if (score > targetScore) { targetScore = score; target = i; }
+    }
+    if (target < 0) return false;
+    const dist = (a: number) => Math.abs((a % u.w) - (target % u.w)) + Math.abs(Math.floor(a / u.w) - Math.floor(target / u.w));
+    const step = legal.reduce((b, l) => (dist(l) < dist(b) ? l : b), legal[0]);
+    return sim.issue({ kind: 'build-organ', organ: 'root', cell: step }).ok;
   }
 
   /**
@@ -493,12 +530,15 @@ export class Autoplayer {
     return best;
   }
 
-  private findOrganCell(sim: Sim): number | null {
-    const options: number[] = [];
-    for (let cell = 0; cell < sim.map.cells.length; cell++) {
-      if (sim.canBuildOrgan(cell)) options.push(cell);
+  /** The legal cell below where this organ would be strongest (deposits count too). */
+  private findOrganCell(sim: Sim, organ: OrganId): number | null {
+    let best: number | null = null;
+    let bestScore = -Infinity;
+    for (let cell = 0; cell < sim.under.cells.length; cell++) {
+      if (!sim.canBuildOrgan(cell)) continue;
+      const score = sim.organPowerOf({ organ, cell }) * 30 + this.depositValue(sim, cell) - cell * 0.01;
+      if (score > bestScore) { bestScore = score; best = cell; }
     }
-    if (options.length === 0) return null;
-    return options[this.rng.int(0, options.length - 1)];
+    return best;
   }
 }

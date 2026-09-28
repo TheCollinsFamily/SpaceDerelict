@@ -279,13 +279,12 @@ export interface OrganSpec {
   maxHp: number;
 }
 
+/** An organ of the body below (underground cross-section; see content/underground.ts). */
 export interface Organ {
   id: number;
   organ: OrganId;
-  pos: Vec;
+  /** Cell index in the underground grid (not the city map). */
   cell: number;
-  hp: number;
-  maxHp: number;
   glandMode: GlandMode;
   /** Tendril root: which way the lobe grows (cycles on click). */
   rootDir?: RootDir;
@@ -527,6 +526,7 @@ export type SimEvent =
   | { kind: 'relic-banked'; family: TowerFamily; pips: number }
   | { kind: 'evolved'; family: TowerFamily; stage: number; choice: UpgradeChoice; name: string }
   | { kind: 'reborn'; family: TowerFamily }
+  | { kind: 'deposit-claimed'; name: string }
   | { kind: 'royal-incoming' }
   | { kind: 'researchers-arrive'; count: number }
   | { kind: 'structure-lost'; what: string }
