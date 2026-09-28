@@ -445,7 +445,7 @@ export const BALANCE = {
    *  just fed the economy). 10-seed sweep: 46 → 9/10, 38 → 7, 32 → 4.
    *  36 vs 37 straddles a tier boundary (naive 3/10 vs 7/10): 37 kept for
    *  margin — THIS is the difficulty knob. */
-  threatPerTier: 22,
+  threatPerTier: 21,
   /** The hive escalates procedurally as the campaign drags on. */
   threatPerWaveCleared: 5,
   /** Kill vengeance is real but not the main driver of escalation. */
@@ -534,7 +534,7 @@ export const BALANCE = {
   /** The desperation row of the wave table needs this much threat, not just the
    *  ladder — a standard hold-12 tops out around 330, so tier 6 belongs to long
    *  runs and deliberate escalation (royal bait, challenge gland). */
-  tier6Threat: 201,          // scaled with the tier ladder (338 x threatPerTier/37); per-turn creep, Sep 28
+  tier6Threat: 192,          // scaled with the tier ladder (338 x threatPerTier/37); bladders every 2 turns, Sep 28
   /** Tunnelers surface at this fraction of the gate->core flow distance. */
   tunnelerSurfaceFrac: 0.45,
   /** Spore sling: player-aimed creep logistics. */

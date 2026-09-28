@@ -23,7 +23,7 @@ import type {
 import { UPGRADES, UPGRADE_COST } from '../../content/upgrades';
 import {
   BRAIN_DRAW_MULT, CATAPULT_REACH, REVEAL_RANGE, DEPOSITS, FEATURES, FEATURE_FAVORED_LEVEL, FEATURE_LEVEL, METEOR_THEME,
-  CYST_NODES, LINING_DPS, MIRE_SLOW, NODE_HP, NODE_RADIUS, NODE_TRAMPLE, NODE_REACH, ORGAN_BY_ID, ORGAN_DEFS, ORGAN_LEVEL_POTENCY, ORGAN_LEVEL_TEMPO,
+  BLADDER_TURNS, CYST_NODES, LINING_DPS, MIRE_SLOW, NODE_HP, NODE_RADIUS, NODE_TRAMPLE, NODE_REACH, ORGAN_BY_ID, ORGAN_DEFS, ORGAN_LEVEL_POTENCY, ORGAN_LEVEL_TEMPO,
   type OrganDef,
 } from '../../content/underground';
 import { createUnderground, neighbours4, type Underground } from './underground';
@@ -288,6 +288,8 @@ export class Sim {
     while (this.nodeStock.length < n) this.nodeStock.push(this.plainStrain());
   }
   private coreStrainCache: { radius: number; slow: number; dps: number } | null = null;
+  /** Turns each spore bladder has waited since it last grew. */
+  private bladderTurns = new Map<number, number>();
   private organCache: Map<OrganId | 'core', { level: number; pips: ModPip[]; draw: number; links: Array<OrganId | 'core'> }> | null = null;
   /** The body below: the underground cross-section organs grow into (between waves). */
   under: Underground;
@@ -931,14 +933,29 @@ export class Sim {
     return this.coreStrainCache;
   }
 
-  /** What a bladder grows each turn (budding glands touching it) and at each wave start (pacemakers). */
-  bladderRate(o: Organ): { perTurn: number; atWaveStart: number } {
-    return { perTurn: 1 + this.touchingOrgans(o, 'budder'), atWaveStart: this.touchingOrgans(o, 'pacemaker') };
+  /**
+   * A bladder's rhythm: it grows `per` nodes (1 + budding glands touching it)
+   * every `every` turns — 2 by default, 1 with a pacemaker touching it; each
+   * pacemaker past the first adds a node when the wave starts.
+   */
+  bladderRate(o: Organ): { every: number; per: number; atWaveStart: number } {
+    const pace = this.touchingOrgans(o, 'pacemaker');
+    return {
+      every: Math.max(1, BLADDER_TURNS - pace),
+      per: 1 + this.touchingOrgans(o, 'budder'),
+      atWaveStart: Math.max(0, pace - (BLADDER_TURNS - 1)),
+    };
+  }
+
+  /** Turns until this bladder next grows (1 = at the next wave clear). */
+  bladderTurnsLeft(o: Organ): number {
+    return Math.max(1, this.bladderRate(o).every - (this.bladderTurns.get(o.id) ?? 0));
   }
 
   /** Nodes the bladders will grow at the next wave clear (for the tray). */
   nodesNextTurn(): number {
-    return this.organs.filter((o) => o.organ === 'bladder').reduce((n, o) => n + this.bladderRate(o).perTurn, 0);
+    return this.organs.filter((o) => o.organ === 'bladder' && this.bladderTurnsLeft(o) === 1)
+      .reduce((n, o) => n + this.bladderRate(o).per, 0);
   }
 
   /** Every bladder grows its turn's nodes (wave clear), or its pacemaker nodes (wave start). */
@@ -947,7 +964,12 @@ export class Sim {
     for (const o of this.organs) {
       if (o.organ !== 'bladder') continue;
       const r = this.bladderRate(o);
-      const n = when === 'turn' ? r.perTurn : r.atWaveStart;
+      let n = r.atWaveStart;
+      if (when === 'turn') {
+        const t = (this.bladderTurns.get(o.id) ?? 0) + 1;
+        n = t >= r.every ? r.per : 0;
+        this.bladderTurns.set(o.id, t >= r.every ? 0 : t);
+      }
       const strain = this.bladderStrain(o);
       for (let k = 0; k < n; k++) this.nodeStock.push({ ...strain });
       grown += n;

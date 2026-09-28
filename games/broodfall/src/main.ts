@@ -518,7 +518,10 @@ let lastTrayKey = '';
 function updateNodeButton(): void {
   document.getElementById('node-count')!.textContent = String(sim.creepNodes);
   const next = sim.nodesNextTurn();
-  document.getElementById('node-next')!.textContent = next === 0 ? 'grow a Spore Bladder in the organ stage' : `+${next} next turn`;
+  const bladders = sim.organs.filter((o) => o.organ === 'bladder');
+  const soonest = bladders.length ? Math.min(...bladders.map((o) => sim.bladderTurnsLeft(o))) : 0;
+  document.getElementById('node-next')!.textContent = !bladders.length ? 'grow a Spore Bladder in the organ stage'
+    : next > 0 ? `+${next} next turn` : `next in ${soonest} turns`;
   nodeBtn.classList.toggle('disabled', sim.creepNodes < 1);
   // One chip per strain in stock.
   const groups = new Map<string, { n: number; label: string; icons: string; mire: boolean; burn: boolean }>();

@@ -77,7 +77,8 @@ try {
   await page.screenshot({ path: join(here, 'screenshots', 'beat-creep-organs.png') });
   await page.locator('#under-done').click();
 
-  // Fight a wave: at the wave clear (a new turn) the bladder grows its node.
+  const surface = async () => { await page.waitForTimeout(120); if (await page.locator('#under').isVisible()) await page.locator('#under-done').click(); };
+  // Fight two waves: a bladder grows a node every 2 turns (wave clears).
   const clearWave = async () => {
     await page.evaluate(() => {
       const s = window.broodfall.sim;
@@ -87,11 +88,14 @@ try {
         if (s.phase === 'draft') s.issue({ kind: 'choose-plate', index: 0 });
         window.broodfall.step(1);
       }
+      // A cleared wave can open a district draft: pick, so the map is clear to click.
+      while (s.phase === "draft") s.issue({ kind: "choose-plate", index: 0 });
     });
   };
   await page.evaluate(() => { const s = window.broodfall.sim; s.meat.war = 800; const cells = window.broodfall.buildableCells(40); let k = 0; for (let g = 0; g < 300 && k < 6; g++) { const i = s.hand.findIndex((h) => h.family === 'spitter' || h.family === 'lasher'); if (i >= 0) { if (s.issue({ kind: 'build', cardIndex: i, cell: cells[k * 2] }).ok) k++; else s.issue({ kind: 'discard', cardIndex: i }); } else s.issue({ kind: 'discard', cardIndex: 0 }); } });
   await clearWave();
-  const surface = async () => { await page.waitForTimeout(120); if (await page.locator('#under').isVisible()) await page.locator('#under-done').click(); };
+  await surface();
+  await clearWave();
   await surface();
   const stock = await page.evaluate(() => window.broodfall.sim.nodeStock.map((s) => ({ ...s })));
   check(stock.length >= 1 && stock[0].slow < 1 && stock[0].reach === 8, `a strained node is in stock: ${JSON.stringify(stock[0])}`);
@@ -128,8 +132,10 @@ try {
   const child = await page.evaluate((from) => {
     const s = window.broodfall.sim;
     const n = s.creepSources.find((x) => x.kind === 'node');
-    for (let c = 0; c < s.map.cells.length; c++) if (!s.isCreeped(c) && s.canSpreadTo(n, c)) return s.cellCenter(c);
-    for (let c = 0; c < s.map.cells.length; c++) if (c !== from && s.canSpreadTo(n, c)) return s.cellCenter(c);
+    // Only cells on screen (the camera re-frames as districts grow).
+    const onScreen = (c) => { const p = s.cellCenter(c); const q = window.broodfall.worldToScreen(p.x, p.y); return q.x > 20 && q.y > 20 && q.x < q.vw - 20 && q.y < q.vh - 20; };
+    for (let c = 0; c < s.map.cells.length; c++) if (!s.isCreeped(c) && s.canSpreadTo(n, c) && onScreen(c)) return s.cellCenter(c);
+    for (let c = 0; c < s.map.cells.length; c++) if (c !== from && s.canSpreadTo(n, c) && onScreen(c)) return s.cellCenter(c);
     return null;
   }, far.c);
   await clickWorld(child.x, child.y);

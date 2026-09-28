@@ -214,7 +214,7 @@ export class UndergroundScreen {
         } else if (organ.organ === 'bladder' && i === organ.cells[1]) {
           // The bladder's RECIPE, in the same marks as its nodes on the map and in the tray.
           const r = sim.bladderRate(organ);
-          inner = `<span class="recipe">${strainIcons(sim.bladderStrain(organ))}</span><span class="rate">${r.perTurn}/turn${r.atWaveStart ? ` +${r.atWaveStart}@wave` : ''}</span>`;
+          inner = `<span class="recipe">${strainIcons(sim.bladderStrain(organ))}</span><span class="rate">${r.per}/${r.every === 1 ? 'turn' : `${r.every} turns`}${r.atWaveStart ? ` +${r.atWaveStart}@wave` : ''}</span>`;
         }
       }
       cells.push(`<div class="${cls}" style="${style}" data-cell="${i}">${inner}</div>`);
@@ -243,7 +243,7 @@ export class UndergroundScreen {
     }
     const bl = sim.organs.filter((o) => o.organ === 'bladder');
     if (bl.length || sim.creepNodes > 0 || sim.organs.some((o) => ORGAN_BY_ID[o.organ].kind === 'creep')) {
-      const recipes = bl.map((o) => { const r = sim.bladderRate(o); return `${r.perTurn}/turn${r.atWaveStart ? ` +${r.atWaveStart} at wave start` : ''}: ${strainIcons(sim.bladderStrain(o))} (${strainLabel(sim.bladderStrain(o))})`; });
+      const recipes = bl.map((o) => { const r = sim.bladderRate(o); return `${r.per} every ${r.every === 1 ? 'turn' : `${r.every} turns`}${r.atWaveStart ? ` +${r.atWaveStart} at wave start` : ''}: ${strainIcons(sim.bladderStrain(o))} (${strainLabel(sim.bladderStrain(o))})`; });
       rows.push(`<div><b>CREEP NODES</b> → ${sim.creepNodes} in stock${recipes.length ? ` · bladders: ${recipes.join('; ')}` : ' · no bladder yet'}</div>`);
     }
     const core = sim.coreStrainBonus();
@@ -318,7 +318,7 @@ export class UndergroundScreen {
       }
       if (organ && organ.organ === 'bladder') {
         const r = sim.bladderRate(organ);
-        this.status.textContent = `SPORE BLADDER: grows ${r.perTurn} node${r.perTurn > 1 ? 's' : ''} a turn${r.atWaveStart ? ` (+${r.atWaveStart} when the wave starts)` : ''} — ${strainIcons(sim.bladderStrain(organ))} ${strainLabel(sim.bladderStrain(organ))} (lit: the organs shaping it)`;
+        this.status.textContent = `SPORE BLADDER: grows ${r.per} node${r.per > 1 ? 's' : ''} every ${r.every === 1 ? 'turn' : `${r.every} turns`} (next in ${sim.bladderTurnsLeft(organ)})${r.atWaveStart ? ` (+${r.atWaveStart} when the wave starts)` : ''} — ${strainIcons(sim.bladderStrain(organ))} ${strainLabel(sim.bladderStrain(organ))} (lit: the organs shaping it)`;
         return;
       }
       if (organ) { this.status.textContent = `${organSpec(organ.organ).name}: ${ORGAN_BY_ID[organ.organ].blurb}`; return; }

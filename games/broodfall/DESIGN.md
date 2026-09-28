@@ -96,11 +96,13 @@ The model is StarCraft 2's creep tumours (free, made on a timer, each one spread
 exactly one more, and the enemy tries to clear them) — the most loved "tend it
 constantly" minigame in the genre. Four rules make it engaging here:
 
-1. **Every bladder is a RECIPE.** A Spore Bladder grows ONE free creep node per
-   TURN (at every wave clear — Collins: "based on turns … default one per turn"). The creep organs TOUCHING it decide the node's strain — so the
+1. **Every bladder is a RECIPE.** A Spore Bladder grows ONE free creep node every
+   TWO turns (at the wave clear — Collins: "the default every two turns, not one;
+   only one with the thing that increases speed"). The creep organs TOUCHING it decide the node's strain — so the
    organ board is a packing puzzle of recipes, not a shopping list:
-   - Pacemaker: that bladder also grows a node when the WAVE STARTS (creep to place
-     mid-fight; stacks). Budding Gland: one more node per turn (stacks).
+   - Pacemaker: that bladder grows EVERY turn; each pacemaker past the first adds a
+     node when the wave starts (creep to place mid-fight). Budding Gland: one more
+     node each time it grows (stacks).
    - Swelling Sac: its nodes spread +1 cell. Catapult Sac: its nodes are thrown
      +5 cells past the creep (and it UNLOCKS the Spore Sling — the creep thrower).
    - Mire Gland: its nodes' creep slows ground enemies 25%. Digestive Lining: its

@@ -147,6 +147,18 @@ smart flips 3:2, totals 120k vs 115k. 54/54 tests; input check adds the lobber
 gesture; visual/endgame green.
 
 
+## Addendum 20 (Sep 28): bladders every two turns
+
+Collins: "make the default every two turns, not one — only one with the thing that
+increases speed". Bladders count turns and grow every 2; a pacemaker touching one
+makes it every turn; extra pacemakers add a node at wave start. Tray says "+N next
+turn" or "next in K turns"; the bladder badge reads "1/2 turns".
+- The bot won MORE with half the nodes (6/10, guardrail 6:0): its nodes had been a net
+  liability (it spreads them into the lane, they get trampled, limbs wither). Tightened
+  threatPerTier 22 → 21 (tier 6 at 192): naive 4/10, guardrail 4:0. 165 tests.
+- The creep beat now fights two waves for a node, resolves district drafts, and picks
+  an on-screen child cell (the camera re-frames as districts grow).
+
 ## Addendum 19 (Sep 28): creep per turn, the icon language, atrophy, the dig
 
 Collins: nodes grow per TURN (default one per turn), placing is free, node stock vs

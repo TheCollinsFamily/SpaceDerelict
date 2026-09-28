@@ -114,9 +114,9 @@ export const ORGAN_DEFS: readonly OrganDef[] = [
     blurb: 'cheap tissue: reach further, and it CARRIES adjacency between organs at either end' },
   // CREEP (Collins, Sep 28 2026): creep nodes are FREE — these organs make them.
   { id: 'bladder', name: 'Spore Bladder', kind: 'creep', creep: 'produce', shape: V2, cost: { war: 25 },
-    blurb: 'grows one free CREEP NODE every turn (at each wave clear); the creep organs TOUCHING it decide what kind' },
+    blurb: 'grows one free CREEP NODE every 2 turns (at the wave clear); the creep organs TOUCHING it decide what kind' },
   { id: 'pacemaker', name: 'Pacemaker', kind: 'creep', creep: 'pace', shape: M1, cost: { war: 20 },
-    blurb: 'a bladder TOUCHING it also grows a node when the WAVE STARTS — creep to place mid-fight (stacks)' },
+    blurb: 'a bladder TOUCHING it grows EVERY turn instead of every 2; more pacemakers each add a node when the wave starts' },
   { id: 'budder', name: 'Budding Gland', kind: 'creep', creep: 'bud', shape: L3, cost: { war: 30 },
     blurb: 'a bladder TOUCHING it grows one MORE node each time (stacks)' },
   { id: 'cyst', name: 'Spore Cyst', kind: 'creep', creep: 'cyst', shape: M1, cost: { war: 15 },
@@ -143,6 +143,8 @@ export const ORGAN_BY_ID = Object.fromEntries(ORGAN_DEFS.map((d) => [d.id, d])) 
  * onto the map near your creep and spreads creep around itself.
  */
 export const CYST_NODES = 3;         // plain nodes a spore cyst gives when it grows
+/** Collins: "the default every two turns, not one — only one with the thing that increases speed". */
+export const BLADDER_TURNS = 2;
 export const NODE_RADIUS = 3;        // cells of creep a node spreads
 export const NODE_REACH = 3;         // cells past the creep edge a node may be placed
 export const CATAPULT_REACH = 5;     // extra cells of reach per catapult sac

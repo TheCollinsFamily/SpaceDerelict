@@ -2156,29 +2156,36 @@ describe('CREEP: free creep nodes grown by creep organs (Collins, Sep 28 2026)',
     for (let i = 0; i < seconds / 0.1; i++) { priv.phase = 'growth'; priv.phaseElapsed = 0; s.tick(); }
   };
 
-  it('a spore bladder grows ONE node per turn (wave clear); a budding gland touching it makes two; a pacemaker adds one at wave start', () => {
+  it('a spore bladder grows ONE node every 2 turns; a pacemaker touching it makes it every turn; a budding gland makes two; more pacemakers add a node at wave start', () => {
     const s = freshSim(4300);
     s.meat.war = 9999;
     const bl = growSpot(s, 'bladder');
     run(s, 120);
     expect(s.creepNodes).toBe(0); // time alone grows nothing
     clearWave(s);
-    expect(s.creepNodes).toBe(1);
-    growSpot(s, 'budder', bl);
-    expect(s.bladderRate(bl)).toEqual({ perTurn: 2, atWaveStart: 0 });
+    expect(s.creepNodes).toBe(0); // one turn is not enough
+    clearWave(s);
+    expect(s.creepNodes).toBe(1); // every 2 turns
+    expect(s.bladderRate(bl)).toEqual({ every: 2, per: 1, atWaveStart: 0 });
     growSpot(s, 'pacemaker', bl);
-    expect(s.bladderRate(bl).atWaveStart).toBe(1);
+    expect(s.bladderRate(bl).every).toBe(1);
+    clearWave(s);
+    expect(s.creepNodes).toBe(2); // now every turn
+    growSpot(s, 'budder', bl);
+    expect(s.bladderRate(bl).per).toBe(2);
+    growSpot(s, 'pacemaker', bl);
+    expect(s.bladderRate(bl)).toEqual({ every: 1, per: 2, atWaveStart: 1 });
     s.issue({ kind: 'call-early' });
-    expect(s.creepNodes).toBe(2); // the pacemaker's node, as the wave starts
+    expect(s.creepNodes).toBe(3); // the second pacemaker's node, as the wave starts
     const priv = s as unknown as { enemies: Enemy[]; spawnQueue: unknown[] };
     priv.enemies.length = 0; priv.spawnQueue.length = 0;
     for (let i = 0; i < 60 && s.phase === 'siege'; i++) s.tick();
-    expect(s.creepNodes).toBe(4); // and two at the wave clear
+    expect(s.creepNodes).toBe(5); // and two at the wave clear
     // A pacemaker that touches no bladder does nothing for it.
     const far = new Sim({ gridW: 50, gridH: 40, cellPx: 26, seed: 4301 });
     far.meat.war = 9999;
     const b2 = growSpot(far, 'bladder');
-    expect(far.bladderRate(b2)).toEqual({ perTurn: 1, atWaveStart: 0 });
+    expect(far.bladderRate(b2)).toEqual({ every: 2, per: 1, atWaveStart: 0 });
   });
 
   it('a spore cyst is a starter stock of 3 plain nodes; the Seeded Meteor gene starts the run with 3', () => {
