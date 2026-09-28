@@ -77,6 +77,13 @@ debrief → ship gene bay → redeploy.
     themes share signature verbs; zone organs (heart/brain/gland) boost what touches their
     zone; roots carry adjacency. Unspent war/science is LOST when a wave starts (royal
     points kept). DESIGN.md "The organ stage" has the full table.
+23. **The campaign** (Sep 28, BUILT): menu → CAMPAIGN → the ship (Directive Desk globe,
+    Gene Bay, Specimen Locker, Procreation Board, Comms, AI Core) → a briefing → a run →
+    the debrief. Standing (Requisition Board) vs field notes (dares, experiments); 16
+    territories hold the evolution unlock points; the colony pushes back; three factions,
+    each with its own route and ending; the ship AI's discussions are wired (scripted
+    provider now, the lore book in content/lore/). Code: content/campaign.ts, src/meta/,
+    src/ui/campaignUi.ts.
 22. **Creep is the core of the organ game** (Sep 28): free creep NODES grown by Spore
     Bladders, one every 2 TURNS (every turn with a pacemaker); creep organs TOUCHING a bladder set its nodes' strain (faster, doubled,
     bigger, thrown, mire, burning); nodes mature and spread one child; trampling and
@@ -105,7 +112,7 @@ debrief → ship gene bay → redeploy.
 ## How to verify (all must be green before claiming anything)
 
 ```powershell
-npm test             # 165 tests: sim, evolutions + the doubling rule, plates algebra, wave rhythm, per-verb behaviors
+npm test             # 187 tests: sim, evolutions + the doubling rule, plates algebra, wave rhythm, per-verb behaviors
                      # for 29 tower families + 26 enemy kinds (combo engines, burn, payload rule, detection,
                      # air/ground, dependency, cannons, shields, bombard markers),
                      # naive win RATE over 10 seeds, smart science routing +
@@ -121,6 +128,7 @@ node tools/shot-evolve.mjs   # real clicks through all three EVOLVE stages
 node tools/shot-engines.mjs  # the five utility engines in the real page
 node tools/shot-under.mjs    # organ stage through the real loop: wave 1, grow + share, meat spoils at wave 2
 node tools/shot-creep.mjs    # creep: bladder recipe, tray chip, thrown node, mature, spread its child
+node tools/shot-campaign.mjs # the campaign loop: ship → globe → briefing → run → debrief → faction → YOKE
 ```
 
 The **placement guardrail** (`tests/placement.test.ts`) is the genre's heartbeat: a

@@ -54,7 +54,7 @@ export class UndergroundScreen {
     document.getElementById('under-done')!.addEventListener('click', () => this.hide());
     this.palette.addEventListener('click', (ev) => {
       const b = (ev.target as HTMLElement).closest<HTMLElement>('[data-organ]');
-      if (!b || b.classList.contains('built')) return;
+      if (!b || b.classList.contains('built') || b.classList.contains('locked')) return;
       const id = b.dataset.organ as OrganId;
       this.selected = this.selected === id ? null : id;
       this.rot = 0;
@@ -161,13 +161,14 @@ export class UndergroundScreen {
       const d = ORGAN_BY_ID[id];
       const built = d.kind === 'theme' && sim.organs.some((o) => o.organ === id);
       const afford = sim.canAfford(d.cost);
+      const locked = !!sim.cfg.organPool && !sim.cfg.organPool.includes(id) && !(sim.cfg.startOrgans ?? []).includes(id);
       const lvl = built ? sim.organs.find((o) => o.organ === id)!.level : 0;
       const what = d.kind === 'theme' && d.unlocks ? d.unlocks.map(famName).join(', ') : d.blurb;
-      return `<button class="under-organ${this.selected === id ? ' on' : ''}${afford ? '' : ' poor'}${built ? ' built' : ''}" data-organ="${id}" title="${d.blurb}">
+      return `<button class="under-organ${this.selected === id ? ' on' : ''}${afford ? '' : ' poor'}${built ? ' built' : ''}${locked ? ' locked' : ''}" data-organ="${id}" title="${d.blurb}">
         <b><span class="og" style="color:${COLOR[id]}">${GLYPH[id]}</span> ${d.name}</b>
         ${this.shapeSvg(id)}
         <span>${what}</span>
-        <i>${built ? `GROWN · LV ${lvl} — click it to level` : this.priceText(d.cost)}${d.signature ? ` · shares ${VERB[d.signature] ?? d.signature}` : ''}</i>
+        <i>${locked ? 'LOCKED — get it in the Gene Bay on the ship' : built ? `GROWN · LV ${lvl} — click it to level` : this.priceText(d.cost)}${d.signature ? ` · shares ${VERB[d.signature] ?? d.signature}` : ''}</i>
       </button>`;
     }).join('')}</div>`;
     this.palette.innerHTML = section('THEMES — unlock limbs, power them by level', ORGAN_DEFS.filter((d) => d.kind === 'theme').map((d) => d.id))

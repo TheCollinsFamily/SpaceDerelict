@@ -9,6 +9,10 @@ import { DT, Sim, organSpec, towerSpec } from './sim/sim';
 import { Renderer } from './render/render';
 import { Hud, PIP_DESC } from './ui/hud';
 import { UndergroundScreen } from './ui/underground';
+import { CampaignUi } from './ui/campaignUi';
+import { finish, newCampaign, plan, type CampaignState, type DeploymentPlan } from './meta/campaign';
+import { goalText, measure, type RunReport } from './meta/goals';
+import { clearCampaign, clearPending, loadCampaign, loadPending, saveCampaign, savePending } from './meta/storage';
 import { strainIcons, strainKey, strainLabel } from './ui/strain';
 import { GENES } from '../content/plates';
 import { BALANCE as B } from '../content/data';
@@ -18,7 +22,9 @@ import type { Directive, OrganId, RootDir, SimConfig, SimEvent, TowerFamily } fr
 const params = new URLSearchParams(location.search);
 const SEED = Number(params.get('seed') ?? Math.floor(Math.random() * 1e9));
 const AUTO = params.get('auto') === '1';
-const AUTOSTART = AUTO || params.get('autostart') === '1';
+/** 'ship' = open the ship; 'run' = play the pending campaign deployment. */
+const CAMPAIGN = params.get('campaign');
+const AUTOSTART = AUTO || params.get('autostart') === '1' || CAMPAIGN === 'run';
 const START_SPEED = Number(params.get('speed') ?? 1);
 
 const DIRECTIVES: Record<string, Directive> = {
@@ -54,6 +60,17 @@ const CFG: SimConfig = {
   entrances: ENTRANCES, organStage: true,
 };
 
+// A campaign deployment: the pending plan (territory, dares, experiment, perks) shapes the run.
+let campaignState: CampaignState | null = null;
+let campaignPlan: DeploymentPlan | null = null;
+if (CAMPAIGN === 'run') {
+  campaignState = loadCampaign();
+  const pending = loadPending();
+  if (campaignState && pending) {
+    campaignPlan = plan(campaignState, pending.territory, pending);
+    Object.assign(CFG, campaignPlan.config, { gridW: CFG.gridW, gridH: CFG.gridH, cellPx: CFG.cellPx, genes: meta.genes });
+  }
+}
 let sim = new Sim(CFG);
 const auto = AUTO ? new Autoplayer(SEED + 1) : null;
 let speed = Number.isFinite(START_SPEED) && START_SPEED >= 0 ? START_SPEED : 1;
@@ -199,7 +216,7 @@ function handleEvents(events: SimEvent[]): void {
     if (e.kind === 'royal-incoming') banner('THE ROYAL TAKES THE FIELD');
     if (e.kind === 'plate-drafted') banner(`DISTRICT CONSUMED: ${e.name.toUpperCase()}`);
     if ((e.kind === 'won' || e.kind === 'lost') && !AUTO) {
-      window.setTimeout(showDebrief, 1600);
+      window.setTimeout(campaignPlan ? campaignDebrief : showDebrief, 1600);
     }
   }
 }
@@ -267,6 +284,67 @@ function wireEntrancePicker(containerId: string): void {
   });
 }
 
+// ---------- the campaign (the ship, the globe, the debrief) ----------
+
+let campaignUi: CampaignUi | null = null;
+const campaignHooks = {
+  deploy(p: Parameters<typeof savePending>[0]) {
+    savePending(p);
+    location.href = `${location.pathname}?campaign=run`;
+  },
+  newCampaign() {
+    clearCampaign();
+    openShip(newCampaign(Math.floor(Math.random() * 1e9)));
+  },
+  quit() {
+    location.href = location.pathname;
+  },
+};
+
+function openShip(state?: CampaignState): void {
+  const s = state ?? loadCampaign() ?? newCampaign(Math.floor(Math.random() * 1e9));
+  saveCampaign(s);
+  menuEl.classList.add('hidden');
+  campaignUi = new CampaignUi(s, campaignHooks);
+  campaignUi.show();
+}
+
+let campaignDebriefShown = false;
+function campaignDebrief(): void {
+  if (!campaignPlan || !campaignState || campaignDebriefShown) return;
+  campaignDebriefShown = true;
+  const report: RunReport = {
+    won: sim.outcome === 'won', wavesCleared: sim.wavesCleared, coreEndFrac: Math.max(0, sim.coreHp / sim.coreMaxHp),
+    scienceBanked: sim.scienceBanked, stats: sim.stats,
+  };
+  const { state, debrief } = finish(campaignState, campaignPlan, report);
+  saveCampaign(state);
+  clearPending();
+  campaignUi = new CampaignUi(state, campaignHooks);
+  campaignUi.showDebrief(debrief, () => { location.href = `${location.pathname}?campaign=ship`; });
+}
+
+/** The Requisition Board and the picked dares/experiment, live during a campaign run. */
+const boardEl = document.getElementById('board-goals')!;
+function updateBoardPanel(): void {
+  if (!campaignPlan) return;
+  boardEl.classList.remove('hidden');
+  const r: RunReport = { won: false, wavesCleared: sim.wavesCleared, coreEndFrac: sim.coreHp / sim.coreMaxHp, scienceBanked: sim.scienceBanked, stats: sim.stats };
+  const line = (g: DeploymentPlan['board'][number], cls: string) => {
+    const v = Math.round(measure(g.def.measure, r));
+    const le = (g.def.cmp ?? '>=') === '<=';
+    const met = le ? v <= g.target : v >= g.target;
+    return `<div class="bg ${cls}${met && !le ? ' met' : ''}">${goalText(g)} <b>${v}/${g.target}</b></div>`;
+  };
+  const html = [
+    `<div class="bg-title">${campaignPlan.defence ? 'DEFENCE' : 'DEPLOYMENT'} — REQUISITION BOARD</div>`,
+    ...campaignPlan.board.map((g) => line(g, 'std')),
+    ...campaignPlan.dares.map((g) => line(g, 'dare')),
+    ...(campaignPlan.experiment ? [line(campaignPlan.experiment.goal, 'exp')] : []),
+  ].join('');
+  if (boardEl.innerHTML !== html) boardEl.innerHTML = html;
+}
+
 function setupMenu(): void {
   const genesNote = document.getElementById('menu-genes')!;
   genesNote.textContent = meta.genes.length
@@ -286,6 +364,14 @@ function setupMenu(): void {
     started = true;
   });
   if (AUTOSTART) menuEl.classList.add('hidden');
+  const saved = loadCampaign();
+  const campaignBtn = document.getElementById('menu-campaign')!;
+  campaignBtn.textContent = saved ? 'CONTINUE CAMPAIGN' : 'CAMPAIGN';
+  document.getElementById('menu-campaign-note')!.textContent = saved
+    ? `${saved.held.length} territories held · standing ${saved.standing} · field notes ${saved.notes}`
+    : 'Land on a hostile world, take it territory by territory, and choose who to trust.';
+  campaignBtn.addEventListener('click', () => openShip());
+  if (CAMPAIGN === 'ship') openShip();
 }
 
 function standingEarned(): number {
@@ -668,6 +754,7 @@ async function boot(): Promise<void> {
     handleEvents(sim.takeEvents());
     hud.update(sim);
     under.update();
+    updateBoardPanel();
     updateNodeButton();
     // Draft overlay lifecycle (manual play only; the autoplayer picks itself).
     if (!AUTO) {

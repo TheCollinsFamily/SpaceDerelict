@@ -10,7 +10,8 @@ import {
 import { evaluate, instance, measure, type RunReport } from '../src/meta/goals';
 import { ScriptedShipAi, seedFor } from '../src/meta/shipAi';
 import { DARES, FACTIONS, HOME, LINEAGES, TERRITORIES } from '../content/campaign';
-import { Sim } from '../src/sim/sim';
+import { DT, Sim } from '../src/sim/sim';
+import { Autoplayer } from '../src/sim/autoplayer';
 import type { RunStats } from '../src/sim/types';
 import { readFileSync } from 'node:fs';
 
@@ -225,5 +226,24 @@ describe('goals and the ship AI wiring', () => {
     expect(first[0]).toMatch(/telemetry/);
     const second = await ai.reply({ trigger: 'first-deployment', summary: '', lore }, [{ speaker: 'YOKE', text: first[0] }], 'I do not.');
     expect(second[0]).toMatch(/logged/);
+  });
+
+  it('a real deployment: the scripted player plays a campaign plan to the end and the campaign takes the result', () => {
+    const c = newCampaign(12);
+    const p = plan(c, 'cul-de-sac', { dares: ['zoo'] });
+    const sim = new Sim({ gridW: 50, gridH: 40, cellPx: 26, seed: 1, ...p.config });
+    const auto = new Autoplayer(3);
+    for (let i = 0; i < 20000 && sim.outcome === 'playing'; i++) { auto.act(sim, DT); sim.tick(); sim.takeEvents(); }
+    expect(sim.outcome).not.toBe('playing');
+    // Only pooled or profile organs were grown; no limb evolved past its cap.
+    for (const o of sim.organs) expect([...(p.config.organPool ?? []), ...(p.config.startOrgans ?? [])]).toContain(o.organ);
+    for (const t of sim.towers) expect((t.upgrades ?? []).length).toBeLessThanOrEqual(sim.evolutionCapOf(t.family));
+    const { state, debrief } = finish(c, p, {
+      won: sim.outcome === 'won', wavesCleared: sim.wavesCleared, coreEndFrac: Math.max(0, sim.coreHp / sim.coreMaxHp),
+      scienceBanked: sim.scienceBanked, stats: sim.stats,
+    });
+    expect(debrief.board.length).toBe(3);
+    expect(state.deployments).toBe(1);
+    expect(sim.stats.limbsGrown).toBeGreaterThan(0);
   });
 });

@@ -540,7 +540,15 @@ Setting: the Technopuritan Empire (shared universe, see /docs/UNIVERSE.md).
 ### The long arc (sketch)
 The organism accumulates something across runs the handlers do not know about. A late-game fork about whose side the body is on has weight because the game spent hours making the player complicit in the empire's tone.
 
-## THE CAMPAIGN: ship, credits, the globe, the factions (Collins, Sep 28 2026 — design, not built yet)
+## THE CAMPAIGN: ship, credits, the globe, the factions (Collins, Sep 28 2026 — BUILT Sep 28)
+
+Where it lives: `content/campaign.ts` (every goal, dare, experiment, profile, lineage,
+territory, faction beat and line), `src/meta/` (the rules, no DOM; `campaign.ts`,
+`goals.ts`, `shipAi.ts`, `storage.ts`), `src/ui/campaignUi.ts` (the ship's rooms, the
+globe, the briefing, the debrief, the scenes), `content/lore/ship-ai-lorebook.md` (the
+ship AI's lore book). Menu → CAMPAIGN; each deployment reloads the page into a run
+built from the pending plan (`?campaign=run`) and returns to the ship after the debrief.
+Build inventory and status: `notes/CAMPAIGN-BUILD-PLAN.md`.
 
 Collins's calls are quoted; everything else is a proposal filling his frame.
 

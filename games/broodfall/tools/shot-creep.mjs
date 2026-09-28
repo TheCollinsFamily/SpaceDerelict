@@ -115,7 +115,18 @@ try {
     return null;
   });
   const box = await page.locator('#stage canvas').boundingBox();
+  // The camera eases into new framing after a district is drafted: wait until it holds still.
+  const settle = async () => {
+    let last = "";
+    for (let i = 0; i < 40; i++) {
+      const c = JSON.stringify(await page.evaluate(() => window.broodfall.camera()));
+      if (c === last) return;
+      last = c;
+      await page.waitForTimeout(100);
+    }
+  };
   const clickWorld = async (x, y) => {
+    await settle();
     const ss = await page.evaluate(([a, b]) => window.broodfall.worldToScreen(a, b), [x, y]);
     await page.mouse.move(box.x + (ss.x / ss.vw) * box.width, box.y + (ss.y / ss.vh) * box.height);
     await page.waitForTimeout(80);

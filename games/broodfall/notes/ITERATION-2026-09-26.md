@@ -147,6 +147,30 @@ smart flips 3:2, totals 120k vs 115k. 54/54 tests; input check adds the lobber
 gesture; visual/endgame green.
 
 
+## Addendum 21 (Sep 28): the campaign, built
+
+Collins: "build the rest of this we outlined … the story parts, the map, the ship, the
+beats, the upgrade unlocking points, missions, everything — first think through what
+needs building", plus the ship AI's meta plot (wiring now, the rest later). Inventory:
+notes/CAMPAIGN-BUILD-PLAN.md; design: DESIGN.md "THE CAMPAIGN".
+
+- Sim hooks: RunStats; campaign SimConfig (organ pool, start organs, evolution caps,
+  banned enemies, hidden wave intel, sleepers, start bonus, mating musk, trap cage);
+  the Trap Cage limb and puppet royals; martyrs; mating musk; kill causes.
+- Content + rules: 14 requisition forms, 9 dares, 5 experiments, 4 profiles, lineages in
+  three catalogues, 16 territories with the evolution unlock points, three factions
+  (contact, beats, perks, the Institute's ultimatum choice, finales, endings). Pushback
+  only after new ground (a first version re-attacked after every defence, so a player
+  who always defended could never advance — caught by the tests).
+- Ship AI: triggers queue discussions; engage / not now; transcripts saved; a provider
+  interface with a scripted stand-in reading the lore book's seeds.
+- Screens: menu CAMPAIGN; the ship's six rooms; a rotatable orthographic globe; the
+  briefing (board, dares, experiment, objectors); the live board during the run; the
+  debrief; faction scenes as modals; locked organs and evolution stages say so.
+- Checks: 187 tests (campaign rules, hooks, a real autoplayed deployment through the
+  rules); tools/shot-campaign.mjs clicks the whole loop. The creep beat needed to wait for
+  the camera to settle after a district draft (a click landed one cell off).
+
 ## Addendum 20 (Sep 28): bladders every two turns
 
 Collins: "make the default every two turns, not one — only one with the thing that

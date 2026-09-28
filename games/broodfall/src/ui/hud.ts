@@ -350,8 +350,9 @@ export class Hud {
     const path = t.upgrades ?? [];
     const stage = path.length;
     const cost = stage < 3 ? UPGRADE_COST[stage] : null;
-    const affordable = cost ? sim.canAfford(cost) : false;
-    const key = `${t.id}|${path.join('')}|${affordable ? 1 : 0}`;
+    const cap = sim.evolutionCapOf(t.family);
+    const affordable = cost ? sim.canAfford(cost) && stage < cap : false;
+    const key = `${t.id}|${path.join('')}|${affordable ? 1 : 0}|${cap}`;
     if (key === this.lastEvolveKey) return;
     this.lastEvolveKey = key;
     document.getElementById('inspect-path')!.textContent = path.length ? `· ${path.join('')}` : '';
@@ -364,13 +365,15 @@ export class Hud {
       if (i < stage) {
         const got = path[i] === 'A' ? a : b;
         rows.push(`<div class="evo-done">${i + 1}${path[i]} · <b>${got.name}</b> — ${got.text}</div>`);
+      } else if (i === stage && i >= cap) {
+        rows.push(`<div class="evo-later locked">${i + 1}: ${a.name} / ${b.name} — LOCKED: take the territory on the globe that unlocks it</div>`);
       } else if (i === stage) {
         const price = priceText(UPGRADE_COST[i]);
         const opt = (o: typeof a, c: 'A' | 'B') => `<button class="evo-opt${affordable ? '' : ' off'}" data-choice="${c}"
           title="${o.text}"><b>${c} · ${o.name}</b><span>${o.text}</span><i>${price}</i></button>`;
         rows.push(`<div class="evo-stage">${opt(a, 'A')}${opt(b, 'B')}</div>`);
       } else {
-        rows.push(`<div class="evo-later">${i + 1}: ${a.name} / ${b.name}${i === 2 ? ' (needs a royal point)' : ''}</div>`);
+        rows.push(`<div class="evo-later">${i + 1}: ${a.name} / ${b.name}${i >= cap ? ' — LOCKED on the globe' : i === 2 ? ' (needs a royal point)' : ''}</div>`);
       }
     }
     if (stage >= 3) rows.push('<div class="evo-later">fully evolved</div>');
