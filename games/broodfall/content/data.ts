@@ -286,6 +286,14 @@ export const TOWERS: readonly TowerSpec[] = [
     directional: true,
     maxHp: 90, interest: 1, eatThreshold: 0, advanced: true, hits: 'ground',
   },
+  {
+    // The TRAP CAGE (experiment "Puppet Queen"): never drawn — the experiment hands
+    // you one. A royal brought below half hp within its reach is CAUGHT and grafted:
+    // she fights her own, leading your side (a puppet, no leash).
+    family: 'cage', name: 'Trap Cage', weight: 0,
+    cost: { war: 15 }, range: 50, rate: 0, damage: 0, aoe: 0,
+    maxHp: 200, interest: 3, eatThreshold: 0, advanced: true, hits: 'ground',
+  },
 ];
 
 // Organs live in content/underground.ts (the organ stage).
@@ -552,6 +560,14 @@ export const BALANCE = {
   /** Creep lance: a strip of creep along its facing. */
   lanceLength: 8,           // cells (x reach)
   lanceGrowPerSec: 0.6,     // cells/s the strip lengthens (x tempo)
+  /** Trap cage pip: hits root the target this long per pip. */
+  pipRoot: 0.6,
+  /** Martyrs (the Sleepers): seconds after spawning they blow, radius, damage. */
+  sleeperFuse: 9,
+  sleeperRadius: 60,
+  sleeperDamage: 70,
+  /** Mating musk: a paired-off body stands still this long; each pair adds a body next wave. */
+  mateStun: 4,
   /** Broodmother. */
   broodHp: 34,
   broodDamage: 7,

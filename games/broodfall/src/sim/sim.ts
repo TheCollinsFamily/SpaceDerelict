@@ -18,7 +18,7 @@ import {
 import type {
   Broodling, Caltrop, CardInstance, Caste, Cloud, Command, CreepSource, Directive, Drop, Enemy,
   EnemyKind, EnemySpec, HitFx, ModPip, Organ, OrganId, Outcome, Phase, Projectile,
-  NodeStrain, RootDir, Shell, SimConfig, SimEvent, Tower, TowerFamily, TowerSpec, UpgradeChoice, UpgradeOption, Vec,
+  NodeStrain, RootDir, RunStats, Shell, SimConfig, SimEvent, Tower, TowerFamily, TowerSpec, UpgradeChoice, UpgradeOption, Vec,
 } from './types';
 import { UPGRADES, UPGRADE_COST } from '../../content/upgrades';
 import {
@@ -196,6 +196,11 @@ export function towerStats(t: Tower, pipsResolved = false) {
     pressRoyalEvery: 0,
     relicCopies: 1,
     rebirth: 0,
+    // Trap cage: catches a royal below this share of hp; how many it can catch.
+    captureAt: 0.5,
+    captures: 1,
+    // Cage pip: hits root the target.
+    rootDur: B.pipRoot * pips('cage'),
   };
   const num = s as unknown as Record<string, number>;
   for (const o of ups) {
@@ -216,7 +221,7 @@ export function fxOf(t: Tower, s: TowerStats, damage = s.damage): HitFx {
     burnDps: s.burnDps, burnDur: s.burnDur,
     shred: s.shred, shredDur: s.shredDur, chains: s.chains, knock: s.knock,
     execute: s.execute, cloud: s.cloud, caltrop: s.caltrop, supportDmg: s.supportDmg,
-    grounding: s.grounding, skips: s.skips,
+    grounding: s.grounding, skips: s.skips, rootDur: s.rootDur,
   };
 }
 
@@ -275,6 +280,19 @@ export class Sim {
   organs: Organ[] = [];
   /** The meteor's own level (upgradeable like any theme organ). */
   coreLevel = 1;
+  /** What happened this run (the campaign's goals read it). */
+  stats: RunStats = {
+    kills: {}, killsByFamily: {}, killsByCause: {}, healed: 0, limbsGrown: 0, evolutions: 0,
+    limbsLost: 0, cannibalized: 0, coreMinFrac: 1, depositsClaimed: 0, earlyCalls: 0, maxLimbs: 0,
+    maxBurning: 0, maxPips: 0, families: [], pacifistWaves: 0, lastWaveKillsByCause: {},
+    royalsEaten: 0, matingStuns: 0, limbsCarriedOff: 0, gateBurnKills: 0, royalsCaptured: 0,
+    nodesPlaced: 0, nodesLost: 0,
+  };
+  private waveLimbDamage = 0;
+  private waveKillsByCause: Record<string, number> = {};
+  private mateBacklog = 0;
+  private sleeperCount = 0;
+
   /** Free creep nodes in stock, each with its strain (grown by creep organs; placed for nothing). */
   nodeStock: NodeStrain[] = [];
 
@@ -364,6 +382,9 @@ export class Sim {
     this.meat.war += this.geneMods.startWar;
     this.meat.science += this.geneMods.startScience;
     for (let i = 0; i < this.geneMods.startNodes; i++) this.nodeStock.push(this.plainStrain());
+    for (const [c, n] of Object.entries(cfg.startBonus ?? {})) this.meat[c as Caste] += n as number;
+    if (cfg.trapCage) this.hand.push({ id: this.nextId++, family: 'cage', free: true });
+    for (const id of cfg.startOrgans ?? []) this.growFree(id);
     this.creepDist = allDistance(this.map, this.map.coreCell);
     this.flow = this.computeFlowField();
     this.pickIncomingGates();
@@ -891,6 +912,7 @@ export class Sim {
     const def = ORGAN_BY_ID[organ];
     if (!def) return false;
     if (def.kind === 'theme' && this.organs.some((o) => o.organ === organ)) return false;
+    if (this.cfg.organPool && !this.cfg.organPool.includes(organ) && !(this.cfg.startOrgans ?? []).includes(organ)) return false;
     const cells = this.organFootprint(organ, cell, rot);
     if (!cells) return false;
     for (const c of cells) {
@@ -899,6 +921,28 @@ export class Sim {
     }
     return cells.some((c) => neighbours4(this.under, c).some((n) =>
       !cells.includes(n) && (this.under.cells[n].kind === 'meteor' || this.organAt(n) !== undefined)));
+  }
+
+  /** Highest evolution stage a limb may reach (the campaign's globe unlocks; skirmish = 3). */
+  evolutionCapOf(family: TowerFamily): number {
+    return this.cfg.evolutionCap?.[themeOf(family)] ?? 3;
+  }
+
+  /** Grow a starting-profile organ for free at the first spot touching the body. */
+  private growFree(id: OrganId): void {
+    const phase = this.phase;
+    for (let cell = 0; cell < this.under.cells.length; cell++) {
+      for (let rot = 0; rot < 4; rot++) {
+        if (!this.canBuildOrgan(id, cell, rot)) continue;
+        const cells = this.organFootprint(id, cell, rot)!;
+        this.organs.push({ id: this.nextId++, organ: id, cell, rot, level: 1, cells });
+        this.organCache = null;
+        this.coreStrainCache = null;
+        if (id === 'cyst') for (let k = 0; k < CYST_NODES; k++) this.nodeStock.push(this.plainStrain());
+        this.phase = phase;
+        return;
+      }
+    }
   }
 
   /** Organs of one kind touching (edge to edge) an organ. */
@@ -978,6 +1022,14 @@ export class Sim {
   }
 
 
+  private sampleStats(): void {
+    const st = this.stats;
+    st.maxLimbs = Math.max(st.maxLimbs, this.towers.length);
+    st.maxBurning = Math.max(st.maxBurning, this.enemies.filter((e) => (e.burnUntil ?? 0) > this.time).length);
+    for (const t of this.towers) st.maxPips = Math.max(st.maxPips, t.pips.length);
+    st.coreMinFrac = Math.min(st.coreMinFrac, Math.max(0, this.coreHp / this.coreMaxHp));
+  }
+
   /** How many organs of one kind are grown. */
   organCount(kind: OrganId): number {
     let n = 0;
@@ -998,7 +1050,7 @@ export class Sim {
         const dps = this.creepEffectAt(this.cellAt(e.pos.x, e.pos.y)).dps;
         if (dps > 0) {
           e.hp -= dps * DT; // a medium, like poison: armor does not stop it
-          if (e.hp <= 0) { this.killEnemy(e.id, 1, false); continue; }
+          if (e.hp <= 0) { this.killEnemy(e.id, 1, false, undefined, 'creep'); continue; }
         }
       }
       const spec = enemySpec(e.kind);
@@ -1017,6 +1069,7 @@ export class Sim {
     this.creepSources = this.creepSources.filter((x) => x !== n);
     this.sourceDist.delete(n.id);
     this.events.push({ kind: 'node-lost', cell: n.cell });
+    this.stats.nodesLost += 1;
     this.refreshRouting();
     this.witherUnrooted();
   }
@@ -1286,6 +1339,7 @@ export class Sim {
         this.pendingPips = [];
         if (pips.length > 0) {
           this.events.push({ kind: 'cannibalized', donor: pips[pips.length - 1].family, into: card.family });
+          this.stats.cannibalized += 1;
         }
         if (!card.free) this.pay(spec.cost);
         this.addTower(card.family, cmd.cell, pips, cmd.facing);
@@ -1295,6 +1349,8 @@ export class Sim {
         if (!card.free) this.hand.push(this.drawCard());
         if (spec.pair && !card.free) this.hand.push({ id: this.nextId++, family: card.family, free: true });
         this.events.push({ kind: 'built', family: card.family, pips: pips.length });
+        this.stats.limbsGrown += 1;
+        if (!this.stats.families.includes(card.family)) this.stats.families.push(card.family);
         return { ok: true };
       }
       case 'evolve': {
@@ -1302,6 +1358,7 @@ export class Sim {
         if (!t) return { ok: false, err: 'no such limb' };
         const stage = t.upgrades?.length ?? 0;
         if (stage >= 3) return { ok: false, err: 'fully evolved' };
+        if (stage >= this.evolutionCapOf(t.family)) return { ok: false, err: 'locked — take the territory that unlocks it' };
         const cost = UPGRADE_COST[stage];
         if (!this.canAfford(cost)) return { ok: false, err: 'cannot afford' };
         this.pay(cost);
@@ -1312,6 +1369,7 @@ export class Sim {
         t.hp = Math.min(after, t.hp + Math.max(0, after - before));
         const opt = UPGRADES[t.family][stage][cmd.choice === 'A' ? 0 : 1];
         this.events.push({ kind: 'evolved', family: t.family, stage: stage + 1, choice: cmd.choice, name: opt.name });
+        this.stats.evolutions += 1;
         return { ok: true };
       }
       case 'butcher': {
@@ -1360,6 +1418,7 @@ export class Sim {
           this.biomass += pay.biomass ?? 0;
           if (d.pips) this.pendingPips = [...this.pendingPips, ...d.pips];
           this.events.push({ kind: 'deposit-claimed', name: DEPOSITS[d.deposit].name });
+          this.stats.depositsClaimed += 1;
         }
         if (cmd.organ === 'cyst') {
           for (let k = 0; k < CYST_NODES; k++) this.nodeStock.push(this.plainStrain());
@@ -1376,6 +1435,7 @@ export class Sim {
         this.nodeStock.splice(i, 1);
         this.plantNode(cmd.cell, strain);
         this.events.push({ kind: 'node-placed', cell: cmd.cell });
+        this.stats.nodesPlaced += 1;
         return { ok: true };
       }
       case 'spread-node': {
@@ -1485,6 +1545,7 @@ export class Sim {
       case 'call-early': {
         if (this.phase !== 'growth') return { ok: false, err: 'no wave to call' };
         const bonus = Math.floor((B.growthSeconds - this.phaseElapsed) * B.callEarlyRate);
+        this.stats.earlyCalls += 1;
         this.startSiege();
         if (bonus > 0) this.meat.war += bonus; // after the wave starts, so it is not cleared
         return { ok: true };
@@ -1557,10 +1618,8 @@ export class Sim {
     if (emit) this.bankRelics(t);
     this.occupied.delete(t.cell);
     this.towers.splice(i, 1);
-    if (t.family === 'brood') {
-      // The brood does not outlive its mother.
-      this.broodlings = this.broodlings.filter((b) => b.motherId !== id);
-    }
+    // The brood (and a cage's puppets) do not outlive the limb that holds them.
+    this.broodlings = this.broodlings.filter((b) => b.motherId !== id);
     // Its thrown patches die with it (a sling's outposts are its own flesh).
     this.removeCreepSourcesOf(id);
     this.refreshRouting();
@@ -1568,6 +1627,7 @@ export class Sim {
       if (!e.targetIsOrgan && e.targetId === id) e.targetId = null;
     }
     if (emit) this.events.push({ kind: 'structure-lost', what: towerSpec(t.family).name + why });
+    if (emit) this.stats.limbsLost += 1;
     const raiser = keepers
       .filter((k) => this.towers.includes(k) && towerStats(k).rebirth > 0 && k.rebornWave !== this.waveNumber)
       .sort((a, b) => towerStats(b).rebirth - towerStats(a).rebirth)[0];
@@ -1730,6 +1790,16 @@ export class Sim {
   }
 
   private spawnEnemy(kind: EnemyKind, atGate?: number): Enemy {
+    const e = this.spawnEnemyRaw(kind, atGate);
+    // The Sleepers: every Nth war body is a martyr who blows up among its own.
+    if (this.cfg.sleepers && enemySpec(kind).caste === 'war') {
+      this.sleeperCount += this.cfg.sleepers;
+      if (this.sleeperCount >= 1) { this.sleeperCount -= 1; e.sleeperAt = this.time + B.sleeperFuse; }
+    }
+    return e;
+  }
+
+  private spawnEnemyRaw(kind: EnemyKind, atGate?: number): Enemy {
     const spec = enemySpec(kind);
     const gate = atGate ?? this.gates[this.rng.int(0, this.gates.length - 1)];
     const c = this.cellCenter(gate);
@@ -1765,6 +1835,28 @@ export class Sim {
     return e;
   }
 
+  /** The campaign hides the next wave's makeup and entrance unless the Translator is with you. */
+  get waveIntelHidden(): boolean {
+    return this.cfg.waveIntel === 'hidden';
+  }
+
+  /** What the next wave will bring (the same law startSiege uses), for the Translator / skirmish HUD. */
+  previewNextWave(): Partial<Record<EnemyKind, number>> {
+    const comp = WAVE_TABLE[this.tier];
+    const scale = 1 + this.wavesCleared * B.waveCountScale;
+    const out: Partial<Record<EnemyKind, number>> = {};
+    for (const [kind, n] of Object.entries(comp)) {
+      if ((this.cfg.bannedEnemies ?? []).includes(kind as EnemyKind)) continue;
+      const spec = enemySpec(kind as EnemyKind);
+      const growth = 1 + (scale - 1) * (B.riskBaseline / spec.risk);
+      const scaled = Math.round((n ?? 0) * growth);
+      if (scaled > 0) out[kind as EnemyKind] = scaled;
+    }
+    const born = Math.floor(this.mateBacklog);
+    if (born > 0) out.militia = (out.militia ?? 0) + born;
+    return out;
+  }
+
   private startSiege(): void {
     this.phase = 'siege';
     this.phaseElapsed = 0;
@@ -1792,12 +1884,19 @@ export class Sim {
       // player's board — the rejected investment-destruction in uniform.
       const spec = enemySpec(kind as EnemyKind);
       const growth = 1 + (scale - 1) * (B.riskBaseline / spec.risk);
-      const scaled = Math.round((n ?? 0) * growth);
+      const banned = (this.cfg.bannedEnemies ?? []).includes(kind as EnemyKind);
+      const scaled = banned ? 0 : Math.round((n ?? 0) * growth);
       counts[kind as EnemyKind] = scaled;
       waveRisk += scaled * spec.risk;
       for (let i = 0; i < scaled; i++) this.spawnQueue.push(kind as EnemyKind);
     }
+    // Mating musk: every pair that paired off last wave is one more body now.
+    const born = Math.floor(this.mateBacklog);
+    this.mateBacklog -= born;
+    for (let i = 0; i < born; i++) this.spawnQueue.push('militia');
     this.waveRisk = waveRisk;
+    this.waveLimbDamage = 0;
+    this.waveKillsByCause = {};
     for (let i = this.spawnQueue.length - 1; i > 0; i--) {
       const j = this.rng.int(0, i);
       [this.spawnQueue[i], this.spawnQueue[j]] = [this.spawnQueue[j], this.spawnQueue[i]];
@@ -1817,6 +1916,7 @@ export class Sim {
     this.phaseElapsed += DT;
 
     this.biomass += B.biomassBase * DT;
+    if (this.tickCount % 10 === 0) this.sampleStats();
 
 
     // Phase machine.
@@ -1839,6 +1939,8 @@ export class Sim {
       if ((this.spawnQueue.length === 0 && !hostiles) || this.phaseElapsed > B.siegeMaxSeconds) {
         this.phaseElapsed = 0;
         this.wavesCleared += 1;
+        if (this.waveLimbDamage === 0) this.stats.pacifistWaves += 1;
+        this.stats.lastWaveKillsByCause = { ...this.waveKillsByCause };
         const bonus = Math.round((B.waveBonusBase + this.waveNumber * B.waveBonusPerWave) * this.entranceMeatMult);
         this.meat.war += bonus;
         this.events.push({ kind: 'wave-cleared', wave: this.waveNumber, bonus });
@@ -1855,6 +1957,7 @@ export class Sim {
             t.grownHp = (t.grownHp ?? 0) + (raw - t.maxHp) * B.overgrowFrac;
             t.maxHp = this.statsOf(t).maxHp;
           }
+          this.stats.healed += Math.min(t.maxHp, raw) - t.hp;
           t.hp = Math.min(t.maxHp, raw);
         }
         // Mitosis: nodes bud their copies.
@@ -2158,8 +2261,20 @@ export class Sim {
       for (const e of [...this.enemies]) {
         if (e.burrowed || dist(c.pos, e.pos) > c.radius) continue;
         e.revealedUntil = this.time + B.revealSeconds;
+        if (this.cfg.matingMusk) {
+          // Mating musk: the war caste stops fighting and pairs off (once each);
+          // every pair is another body in the next wave.
+          if (!e.mated && enemySpec(e.kind).caste === 'war') {
+            e.mated = true;
+            e.slowMult = 0.02;
+            e.slowUntil = this.time + B.mateStun;
+            this.mateBacklog += 0.5;
+            this.stats.matingStuns += 1;
+          }
+          continue;
+        }
         e.hp -= c.dps * DT; // a gas, not a hit: armor and shells don't stop it
-        if (e.hp <= 0) this.killEnemy(e.id, 1, false);
+        if (e.hp <= 0) this.killEnemy(e.id, 1, false, undefined, 'cloud');
       }
     }
     this.clouds = this.clouds.filter((c) => c.ttl > 0);
@@ -2249,7 +2364,7 @@ export class Sim {
       }
     }
     if (e.hp <= 0) {
-      this.killEnemy(e.id, 1, false);
+      this.killEnemy(e.id, 1, false, undefined, 'burn');
       return true;
     }
     return false;
@@ -2565,7 +2680,20 @@ export class Sim {
       // Blight keeps eating whoever carries it (and slips under armor plates).
       if (e.poisonUntil !== undefined && e.poisonUntil > this.time && e.poisonDps) {
         e.hp -= e.poisonDps * DT;
-        if (e.hp <= 0) { this.killEnemy(e.id, 1, false); continue; }
+        if (e.hp <= 0) { this.killEnemy(e.id, 1, false, undefined, 'poison'); continue; }
+      }
+      // A martyr's fuse runs out: it detonates among its own.
+      if (e.sleeperAt !== undefined && this.time >= e.sleeperAt) {
+        let hits = 0;
+        for (const o of [...this.enemies]) {
+          if (o === e || dist(o.pos, e.pos) > B.sleeperRadius) continue;
+          o.hp -= B.sleeperDamage;
+          hits++;
+          if (o.hp <= 0) this.killEnemy(o.id, 1, false, undefined, 'martyr');
+        }
+        this.events.push({ kind: 'martyr', hits });
+        this.killEnemy(e.id, 1, false, undefined, 'martyr');
+        continue;
       }
       // Fire burns, reveals, and spreads.
       if (this.tickBurn(e)) continue;
@@ -2832,6 +2960,7 @@ export class Sim {
     if (cx <= 1 || cy <= 1 || cx >= this.cfg.gridW - 2 || cy >= this.cfg.gridH - 2) {
       const i = this.enemies.indexOf(e);
       if (i >= 0) this.enemies.splice(i, 1);
+      if (e.carrying) this.stats.limbsCarriedOff += 1; // a courier got away with one of yours
       return;
     }
     let best = -1;
@@ -2895,19 +3024,19 @@ export class Sim {
       let bestD = Infinity;
       for (const e of this.enemies) {
         if (e.burrowed || enemySpec(e.kind).caste === 'science' || this.isAirborne(e)) continue;
-        if (dist(mother.pos, e.pos) > B.broodLeash * ms.reach) continue; // stays near home
+        if (!b.puppet && dist(mother.pos, e.pos) > B.broodLeash * ms.reach) continue; // stays near home
         const d = dist(b.pos, e.pos);
         if (d < bestD) { bestD = d; prey = e; }
       }
       if (prey) {
         if (bestD <= B.broodEngageDist + ENEMY_RADIUS) {
           if (b.cooldown <= 0) {
-            b.cooldown = 1 / (B.broodRate * ms.tempo);
-            this.payloadHit(fxOf(mother, ms), prey, B.broodDamage * ms.potency,
+            b.cooldown = 1 / ((b.puppet?.rate ?? B.broodRate) * ms.tempo);
+            this.payloadHit(fxOf(mother, ms), prey, (b.puppet?.bite ?? B.broodDamage) * ms.potency,
               prey.pos.x - b.pos.x, prey.pos.y - b.pos.y);
           }
         } else {
-          this.stepConstrained(b, prey.pos, B.broodSpeed);
+          this.stepConstrained(b, prey.pos, (b.puppet?.speed ?? B.broodSpeed) * (b.puppet ? ms.tempo : 1));
         }
       } else if (dist(b.pos, mother.pos) > 40) {
         // Nothing to fight: drift back to mother's skirts.
@@ -3284,6 +3413,25 @@ export class Sim {
         continue;
       }
 
+      // A TRAP CAGE catches a weakened royal in reach and grafts her: she fights her own.
+      if (t.family === 'cage' && (t.captures ?? 0) < stats.captures) {
+        const reach = towerSpec('cage').range * stats.reach;
+        const royal = this.enemies.find((e) => enemySpec(e.kind).caste === 'royal'
+          && dist(e.pos, t.pos) <= reach && e.hp <= e.maxHp * stats.captureAt);
+        if (royal) {
+          const rs = enemySpec(royal.kind);
+          this.enemies.splice(this.enemies.indexOf(royal), 1);
+          t.captures = (t.captures ?? 0) + 1;
+          this.stats.royalsCaptured += 1;
+          this.broodlings.push({
+            id: this.nextId++, motherId: t.id, pos: { ...royal.pos }, hp: royal.maxHp * 0.6, maxHp: royal.maxHp * 0.6,
+            cooldown: 0, puppet: { bite: rs.damage, rate: rs.rate, speed: rs.speed * 1.4 },
+          });
+          this.events.push({ kind: 'royal-captured', enemy: royal.kind });
+        }
+        continue;
+      }
+
       // The broodmother tends her brood (a brood pip on her = one more).
       if (t.family === 'brood') {
         const mine = this.broodlings.filter((b) => b.motherId === t.id).length;
@@ -3316,7 +3464,7 @@ export class Sim {
           if (this.enemies.includes(e) && e.hp <= stats.execute) {
             this.biomass += B.swampBiomassPerKill;
             const at = { ...e.pos };
-            this.killEnemy(e.id, stats.yieldMult, false);
+            this.killEnemy(e.id, stats.yieldMult, false, t.id, 'swamp');
             if (stats.caltrop > 0) this.dropCaltrop(at, stats.caltrop);
           }
         }
@@ -3482,22 +3630,34 @@ export class Sim {
     // Shredded armor raises the cap for EVERY source — the mister's whole job.
     const shred = e.shredUntil !== undefined && e.shredUntil > this.time ? e.shredAmount ?? 0 : 0;
     const effCap = cap !== undefined ? cap + capBonus + shred : undefined;
-    e.hp -= effCap !== undefined && Number.isFinite(effCap) ? Math.min(dmg, effCap) : dmg;
+    const dealt = effCap !== undefined && Number.isFinite(effCap) ? Math.min(dmg, effCap) : dmg;
+    e.hp -= dealt;
+    if (srcId !== undefined) this.waveLimbDamage += dealt;
     if (e.hp <= 0) this.killEnemy(e.id, yieldMult, false, srcId);
   }
 
   private eatEnemy(e: Enemy): void {
     this.biomass += B.biomassPerEat;
+    if (enemySpec(e.kind).caste === 'royal') this.stats.royalsEaten += 1;
     this.events.push({ kind: 'eaten', enemy: e.kind });
     this.killEnemy(e.id, 0, true);
   }
 
-  private killEnemy(id: number, yieldMult: number, eaten: boolean, srcId?: number): void {
+  private killEnemy(id: number, yieldMult: number, eaten: boolean, srcId?: number, cause?: string): void {
     const i = this.enemies.findIndex((e) => e.id === id);
     if (i < 0) return;
     const e = this.enemies[i];
     const spec = enemySpec(e.kind);
     this.enemies.splice(i, 1);
+    // Run stats for the campaign's goals.
+    const why = cause ?? (eaten ? 'eaten' : srcId !== undefined ? 'limb' : 'other');
+    const st = this.stats;
+    st.kills[e.kind] = (st.kills[e.kind] ?? 0) + 1;
+    st.killsByCause[why] = (st.killsByCause[why] ?? 0) + 1;
+    this.waveKillsByCause[why] = (this.waveKillsByCause[why] ?? 0) + 1;
+    const killer = srcId !== undefined ? this.towers.find((t) => t.id === srcId) : undefined;
+    if (killer) st.killsByFamily[killer.family] = (st.killsByFamily[killer.family] ?? 0) + 1;
+    if (why === 'burn' && this.gates.some((g) => dist(this.cellCenter(g), e.pos) <= 4 * this.cfg.cellPx)) st.gateBurnKills += 1;
     if (e.kind === 'royal') {
       this.royalsKilled += 1;
       this.checkDirective();

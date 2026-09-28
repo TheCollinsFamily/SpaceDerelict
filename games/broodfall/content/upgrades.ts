@@ -223,6 +223,14 @@ export const UPGRADES: Record<TowerFamily, UpgradeTree> = {
     [o('Great Runner', 'the strip reaches twice as far', { reach: 2 }),
       o('Delta', 'two cells wider each side and 30% longer', { add: { aoe: 24 }, reach: 1.3 })],
   ],
+  cage: [
+    [o('Wide Jaws', 'catches royals 50% farther away', { reach: 1.5 }),
+      o('Early Snap', 'catches a royal at 70% hp instead of 50%', { add: { captureAt: 0.2 } })],
+    [o('Iron Bars', 'twice the hp', { mult: { maxHp: 2 } }),
+      o('Twin Cage', 'catches TWO royals', { add: { captures: 1 } })],
+    [o('Puppet Master', 'your puppets bite twice as hard', { potency: 2 }),
+      o('Hive Mind', 'your puppets move and bite 50% faster', { tempo: 1.5 })],
+  ],
   // ---- combo engines: evolutions bend the ENGINE's rule ----
   conduit: [
     [o('Wide Gather', 'draws from 50% farther around it', { mult: { gather: 1.5 } }),

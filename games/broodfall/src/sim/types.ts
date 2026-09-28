@@ -8,7 +8,7 @@ export type TowerFamily =
   | 'brood' | 'swamp' | 'frond' | 'lobber' | 'mister' | 'ocular' | 'prism'
   | 'bombard' | 'ward' | 'quill' | 'skipper' | 'net' | 'ember' | 'conduit'
   | 'amp' | 'mosaic' | 'twin' | 'tap'
-  | 'mitosis' | 'capacitor' | 'boomerang' | 'press' | 'reliquary' | 'lance';
+  | 'mitosis' | 'capacitor' | 'boomerang' | 'press' | 'reliquary' | 'lance' | 'cage';
 
 /** What a limb can shoot at. Fliers are only reachable by 'air'/'both' limbs. */
 export type HitsLayer = 'ground' | 'air' | 'both';
@@ -22,6 +22,8 @@ export type HitsLayer = 'ground' | 'air' | 'both';
  */
 export interface HitFx {
   srcId: number;
+  /** Cage pips: hits root the target this long. */
+  rootDur?: number;
   damage: number;
   yieldMult: number;
   capBonus: number;
@@ -239,6 +241,8 @@ export interface Tower {
   pressed?: number;
   /** Reliquary: the wave it last raised its limb (Resurrection/Phoenix: once per wave). */
   rebornWave?: number;
+  /** Trap cage: royals captured so far. */
+  captures?: number;
 }
 
 export type UpgradeChoice = 'A' | 'B';
@@ -252,7 +256,7 @@ export type UpgradeStat =
   | 'gather' | 'engineCap' | 'ampFactor' | 'ampExtraLayers' | 'mosaicCopies' | 'twinPower'
   | 'tapCopies' | 'tapWar' | 'budCount' | 'budRing' | 'budPips' | 'capSpeed' | 'capCharge'
   | 'capTrickle' | 'returnLegs' | 'returnDmg' | 'pressBonus' | 'pressRoyalEvery' | 'relicCopies'
-  | 'rebirth' | 'poolMult';
+  | 'rebirth' | 'poolMult' | 'captureAt' | 'captures' | 'rootDur';
 
 /** One side of one evolution stage. Every option CHANGES the limb (never "+5%"). */
 export interface UpgradeOption {
@@ -402,6 +406,10 @@ export interface EnemySpec {
 export interface Enemy {
   id: number;
   kind: EnemyKind;
+  /** A martyr (the Sleepers): detonates among its own at this sim time. */
+  sleeperAt?: number;
+  /** Mating musk: this body has already paired off. */
+  mated?: boolean;
   pos: Vec;
   hp: number;
   maxHp: number;
@@ -471,6 +479,8 @@ export interface Shell {
 export interface Broodling {
   id: number;
   motherId: number;
+  /** A grafted royal fighting its own (Puppet Queen): no leash, its own bite and speed. */
+  puppet?: { bite: number; rate: number; speed: number };
   pos: Vec;
   hp: number;
   maxHp: number;
@@ -532,6 +542,9 @@ export type SimEvent =
   | { kind: 'node-placed'; cell: number }
   | { kind: 'node-spread'; cell: number }
   | { kind: 'node-lost'; cell: number }
+  | { kind: 'royal-captured'; enemy: EnemyKind }
+  | { kind: 'martyr'; hits: number }
+  | { kind: 'mated'; count: number }
   | { kind: 'cannibalized'; donor: TowerFamily; into: TowerFamily }
   | { kind: 'butchered'; family: TowerFamily; refund: number }
   | { kind: 'clot-hurled'; cell: number }
@@ -604,4 +617,54 @@ export interface SimConfig {
   organStage?: boolean;
   /** Starting entrances (1-3). More is a difficulty wager paid in richer meat. */
   entrances?: number;
+  // ---- the campaign (src/meta) sets these; skirmish leaves them unset ----
+  /** Organs the organ stage may grow (unset = every organ). */
+  organPool?: OrganId[];
+  /** Organs grown for free at the start (the starting profile). */
+  startOrgans?: OrganId[];
+  /** Highest evolution stage per theme (the globe's unlock points); unset theme = 3. */
+  evolutionCap?: Partial<Record<string, number>>;
+  /** Enemy kinds that will not come this deployment (Conscientious Objectors). */
+  bannedEnemies?: EnemyKind[];
+  /** 'hidden' = the next wave's makeup and entrance are not shown (the Translator shows them). */
+  waveIntel?: 'full' | 'hidden';
+  /** Share of war bodies that are martyrs and detonate among their own (the Sleepers). */
+  sleepers?: number;
+  /** Extra meat at the start (Volunteers). */
+  startBonus?: Partial<Record<Caste, number>>;
+  /** Experiment: lure clouds carry the colony's MATING pheromone instead of poison. */
+  matingMusk?: boolean;
+  /** Experiment: start with a free Trap Cage card. */
+  trapCage?: boolean;
+}
+
+/**
+ * What happened in a run, for the campaign's goals (the Requisition Board, the
+ * dares, the experiments). Counters only; the sim never reads them back.
+ */
+export interface RunStats {
+  kills: Partial<Record<EnemyKind, number>>;
+  killsByFamily: Partial<Record<TowerFamily, number>>;
+  killsByCause: Record<string, number>;
+  healed: number;
+  limbsGrown: number;
+  evolutions: number;
+  limbsLost: number;
+  cannibalized: number;
+  coreMinFrac: number;
+  depositsClaimed: number;
+  earlyCalls: number;
+  maxLimbs: number;
+  maxBurning: number;
+  maxPips: number;
+  families: TowerFamily[];
+  pacifistWaves: number;
+  lastWaveKillsByCause: Record<string, number>;
+  royalsEaten: number;
+  matingStuns: number;
+  limbsCarriedOff: number;
+  gateBurnKills: number;
+  royalsCaptured: number;
+  nodesPlaced: number;
+  nodesLost: number;
 }

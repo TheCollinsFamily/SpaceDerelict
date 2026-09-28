@@ -32,6 +32,7 @@ const CARD_DESC: Record<TowerFamily, string> = {
   quill: 'Shotgun fan of quills. Brutal up close.',
   skipper: 'Fires ONE way, very far; shells skip on.',
   lance: 'Shoots CREEP in a line ahead — new ground in a strip.',
+  cage: 'Catches a weakened ROYAL — grafted, she fights her own.',
   net: 'Anti-air only. Nets drag fliers to the ground.',
   ember: 'Flamethrower cone. Fire spreads body to body.',
   conduit: 'Funnels every bonus around it into the limb it points at.',
@@ -71,6 +72,7 @@ export const PIP_DESC: Record<TowerFamily, string> = {
   quill: 'every shot also hits +1 more target',
   skipper: 'every impact skips on once more',
   lance: 'it seeps creep around itself (+1 cell)',
+  cage: 'its hits root the target in place',
   net: 'can hit AIR, and its hits drag fliers down 1s',
   ember: 'its hits IGNITE +3/s — contagious fire that lights up the unseen',
   conduit: 'EVERYTHING it was channelling (harvested), plus: draws its nearest neighbour\'s bonus',
@@ -494,16 +496,20 @@ export class Hud {
     this.el.biomassFill.style.width = `${(frac * 100).toFixed(1)}%`;
     this.el.biomassText.textContent = `${Math.floor(prog.done)} / ${prog.goal}`;
 
-    const sides = [...new Set(sim.incomingGates.map((g) => sim.gateSide(g)))].join('+') || '?';
+    const sides = sim.waveIntelHidden ? '?' : [...new Set(sim.incomingGates.map((g) => sim.gateSide(g)))].join('+') || '?';
     this.el.phaseName.textContent = sim.phase === 'draft'
       ? 'CHOOSE A DISTRICT'
       : sim.phase === 'growth'
         ? `ASSAULT FORMING: ${sides}`
         : 'SIEGE';
     this.el.phaseName.classList.toggle('siege', sim.phase === 'siege');
+    const next = sim.phase === 'growth' && !sim.waveIntelHidden
+      ? Object.entries(sim.previewNextWave()).sort((a, b) => (b[1] ?? 0) - (a[1] ?? 0)).slice(0, 4).map(([k, n]) => `${n} ${k}`).join(', ')
+      : '';
     this.el.waveInfo.textContent = `WAVE ${sim.waveNumber} · TIER ${sim.tier}`
       + (sim.waveRisk > 0 ? ` · RISK ${sim.waveRisk}` : '')
-      + ` · MASS ${Math.floor(sim.biomass)}`;
+      + ` · MASS ${Math.floor(sim.biomass)}`
+      + (next ? ` · NEXT: ${next}` : sim.waveIntelHidden && sim.phase === 'growth' ? ' · NEXT: unknown' : '');
     this.el.threat.textContent = String(Math.floor(sim.threat));
     this.el.interest.textContent = String(Math.floor(sim.interest));
 

@@ -34,6 +34,7 @@ const FAMILY_COLORS: Record<TowerFamily, number> = {
   quill: 0xb89868,
   skipper: 0x7a6040,
   lance: 0x9ab860,
+  cage: 0x6a6a78,
   net: 0x88c8e0,
   ember: 0xd86a30,
   conduit: 0xc8a060,
@@ -242,7 +243,7 @@ export class Renderer {
     // Gates: the frontier ports where unclaimed city meets your turf.
     for (const gate of sim.gates) {
       const c = sim.cellCenter(gate);
-      const incoming = sim.incomingGates.includes(gate);
+      const incoming = !sim.waveIntelHidden && sim.incomingGates.includes(gate);
       if (incoming) {
         // The telegraphed assault lane: an angry beacon you plan around.
         const r = 8 + Math.sin(this.pulse * 3) * 3;
@@ -664,6 +665,13 @@ export class Renderer {
             .stroke({ width: 2, color: 0xe8dcc0, alpha: 0.9 });
         }
         break;
+      case 'cage': {
+        // Bars around a hollow: the trap waiting for a royal.
+        g.circle(x, y, 11).stroke({ width: 2, color: c });
+        for (let k = -2; k <= 2; k++) g.moveTo(x + k * 4, y - 10).lineTo(x + k * 4, y + 10).stroke({ width: 1.5, color: 0xb8b8c8 });
+        if ((t.captures ?? 0) > 0) g.circle(x, y, 4).fill(0xd4a72c);
+        break;
+      }
       case 'lance': {
         // A creep spout: a bulb with a long nozzle pointing down its strip.
         const f = t.facing ?? 'N';
