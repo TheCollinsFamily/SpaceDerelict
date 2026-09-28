@@ -102,6 +102,24 @@ try {
   const genes = await page.locator('.cp-body').innerText();
   check(/SANCTIONED LINEAGES/.test(genes) && /UNSANCTIONED/.test(genes), 'the Gene Bay lists both catalogues');
   await shot(page, 'genes');
+  // A second deployment while allied: the Delegation writes, and the letter lands in the debrief and in Comms.
+  await page.locator('[data-room="desk"]').click();
+  await page.locator('.globe .site.open').first().click();
+  await Promise.all([page.waitForURL(/campaign=run/), page.locator('[data-act="deploy"]').click()]);
+  await page.waitForSelector('#stage canvas');
+  await page.waitForTimeout(500);
+  await page.evaluate(() => { const s = window.broodfall.sim; s.outcome = 'won'; s.events.push({ kind: 'won' }); window.broodfall.step(1); });
+  await page.waitForSelector('#campaign:not(.hidden) .cp-aside', { timeout: 5000 });
+  const aside = await page.locator('.cp-aside').innerText();
+  check(/Delegate \(letter\)/.test(aside), `the debrief carries the ally's letter: "${aside.slice(0, 90)}"`);
+  await shot(page, 'aside');
+  await Promise.all([page.waitForURL(/campaign=ship/), page.locator('[data-act="back"]').click()]);
+  await page.waitForSelector('#campaign:not(.hidden)');
+  while (await page.locator('.cp-scene [data-act="scene-ok"]').count()) await page.locator('.cp-scene [data-act="scene-ok"]').click();
+  await page.locator('[data-room="comms"]').click();
+  const comms = await page.locator('.cp-body').innerText();
+  check(/FROM YOUR ALLY/.test(comms) && /Delegate \(letter\)/.test(comms), 'Comms keeps the letters');
+  await shot(page, 'comms');
   check(errors.length === 0, errors.length ? `PAGE ERRORS: ${errors.join(' | ')}` : 'no page errors');
   console.log(failed ? `CAMPAIGN BEAT: ${failed} failed` : 'CAMPAIGN BEAT: all verified.');
 } finally {

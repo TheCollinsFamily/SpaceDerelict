@@ -4,7 +4,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import {
-  ally, buyLineage, choose, evolutionCaps, finish, newCampaign, perksOf, plan, selectProfile, targets, territory,
+  ally, buyLineage, choose, endingOf, evolutionCaps, finish, newCampaign, perksOf, plan, selectProfile, summaryFor, targets, territory,
   type CampaignState,
 } from '../src/meta/campaign';
 import { evaluate, instance, measure, type RunReport } from '../src/meta/goals';
@@ -245,5 +245,68 @@ describe('goals and the ship AI wiring', () => {
     expect(debrief.board.length).toBe(3);
     expect(state.deployments).toBe(1);
     expect(sim.stats.limbsGrown).toBeGreaterThan(0);
+  });
+});
+
+describe('the factions keep in touch, and choices change the route (audit, Sep 28 2026)', () => {
+  const march = (s: CampaignState, until: (s: CampaignState) => boolean, max = 12) => {
+    for (let i = 0; i < max && !until(s); i++) {
+      s = s.underAttack ? finish(s, plan(s, s.underAttack), report(true)).state : winAt(s, targets(s).find((t) => !t.finaleOf)!.id);
+    }
+    return s;
+  };
+
+  it('the Delegation reaches "the greater plan" before the reveal, and writes between beats', () => {
+    let s = newCampaign(7);
+    s = winAt(s, 'cul-de-sac');
+    s = ally(s, 'delegation');
+    s = march(s, (x) => x.beatsSeen.includes('reveal'));
+    expect(s.beatsSeen.indexOf('gaia')).toBeGreaterThan(-1);
+    expect(s.beatsSeen.indexOf('gaia')).toBeLessThan(s.beatsSeen.indexOf('reveal'));
+    const gaia = FACTIONS[0].beats.find((b) => b.id === 'gaia')!;
+    expect(gaia.scene.lines.join(' ')).toMatch(/protecting the planet/);
+    expect((s.comms ?? []).length).toBeGreaterThanOrEqual(3);
+    expect(s.comms!.every((l) => FACTIONS[0].asides.includes(l))).toBe(true);
+    // The debrief carries the latest one, and YOKE's summary knows it.
+    const d = finish(s, plan(s, s.underAttack ?? targets(s).find((t) => !t.finaleOf)!.id), report(true)).debrief;
+    expect(FACTIONS[0].asides).toContain(d.aside);
+    expect(summaryFor(s)).toMatch(/Latest from the ally/);
+  });
+
+  it('every faction has running jokes; the Institute\'s include the game, the females and the Director by name', () => {
+    for (const f of FACTIONS) expect(f.asides.length).toBeGreaterThanOrEqual(5);
+    const inst = FACTIONS.find((f) => f.id === 'institute')!;
+    const all = inst.asides.join(' ');
+    expect(all).toMatch(/League of Larvae|mid-match/);
+    expect(all).toMatch(/females/);
+    expect(inst.contact.lines.join(' ')).toMatch(/Eli Bankfried/);
+  });
+
+  it('the ultimatum changes the route: "rule" funds a royal point, "pacify" shrinks the waves and changes the ending', () => {
+    let s = newCampaign(8);
+    s = winAt(s); s = winAt(s); s = winAt(s);
+    s = ally(s, 'institute');
+    s = march(s, (x) => x.beatsSeen.includes('ultimatum'));
+    const t = () => targets(s).find((x) => !x.finaleOf)!.id;
+    const before = plan(s, t()).config;
+    expect(before.waveScale).toBe(1);
+    const rule = choose(s, 'ultimatum', 'rule');
+    expect(perksOf(rule)).toContain('kingdom');
+    expect(plan(rule, t()).config.startBonus?.royal).toBe((before.startBonus?.royal ?? 0) + 1);
+    const pac = choose(s, 'ultimatum', 'pacify');
+    expect(perksOf(pac)).toContain('pacified');
+    expect(plan(pac, t()).config.waveScale).toBe(0.9);
+    const inst = FACTIONS.find((f) => f.id === 'institute')!;
+    expect(endingOf(inst, pac).title).toBe('The Pacified Timeline');
+    expect(endingOf(inst, rule).title).toBe(inst.ending.title);
+  });
+
+  it('Pacification really sends fewer bodies (the sim reads waveScale)', () => {
+    const count = (waveScale: number) => {
+      const sim = new Sim({ gridW: 50, gridH: 40, cellPx: 26, seed: 5000, waveScale });
+      const next = sim.previewNextWave();
+      return Object.values(next).reduce((a, n) => a + (n ?? 0), 0);
+    };
+    expect(count(0.9)).toBeLessThan(count(1));
   });
 });

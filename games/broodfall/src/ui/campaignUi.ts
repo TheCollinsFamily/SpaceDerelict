@@ -27,6 +27,7 @@ const THEME_NAME: Record<string, string> = {
   lattice: 'Mucus Lattice', womb: 'Brood Womb', marrow: 'Marrow Vault', resonance: 'Resonance Chamber',
   catapult: 'Spore Sling', runner: 'Creep Lance', cage: 'Trap Cage',
 };
+const speakLine = (l: string) => { const i = l.indexOf(':'); return i > 0 ? `<b>${esc(l.slice(0, i))}:</b>${esc(l.slice(i + 1))}` : esc(l); };
 const esc = (t: string) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
 
 export class CampaignUi {
@@ -277,7 +278,9 @@ export class CampaignUi {
         ${contacted && !s.faction ? `<button data-ally="${f.id}">ALLY WITH THEM</button>` : ''}
         ${mine ? `<button data-replay="${f.id}">REPLAY SCENES</button>` : ''}</div>`;
     });
-    return `<div class="cp-label">COMMS — three voices from the planet. You may ally with ONE; it decides your route and your ending.</div>${cards.join('')}`;
+    const inbox = (s.comms ?? []).slice(-8).reverse();
+    return `<div class="cp-label">COMMS — three voices from the planet. You may ally with ONE; it decides your route and your ending.</div>${cards.join('')}
+      ${inbox.length ? `<div class="cp-label">FROM YOUR ALLY</div><div class="cp-log cp-comms">${inbox.map((l) => `<div>${speakLine(l)}</div>`).join('')}</div>` : ''}`;
   }
 
   private buildAi(): FallbackShipAi {
@@ -450,6 +453,7 @@ export class CampaignUi {
       ${d.experiment ? `<div class="cp-label">EXPERIMENT</div>${row(d.experiment, 'field notes', goalText(d.experiment))}` : ''}
       <div class="cp-facts">Earned: <b>+${d.standing} standing</b> · <b>+${d.notes} field notes</b>${d.unlocked.length ? ` · unlocked: ${d.unlocked.map((u) => esc(u.split(':')[1])).join(', ')}` : ''}</div>
       <p class="cp-story">${esc(d.log)}</p>
+      ${d.aside ? `<p class="cp-story cp-aside">${speakLine(d.aside)}</p>` : ''}
       <button class="screen-btn" data-act="back">RETURN TO THE SHIP</button></div>`;
     const btn = this.el.querySelector('[data-act="back"]') as HTMLElement;
     btn.addEventListener('click', (ev) => { ev.stopPropagation(); onBack(); }, { once: true });

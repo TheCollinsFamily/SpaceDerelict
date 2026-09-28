@@ -41,6 +41,8 @@ export interface CampaignState {
   daresDone: string[];
   ended: FactionId | null;
   licence: boolean;
+  /** Everything the ally has sent between beats, oldest first (optional: older saves have none). */
+  comms?: string[];
   /** Scenes waiting to be shown on the ship (contacts, beats, endings). */
   pendingScenes: Array<{ faction: FactionId; beat?: string; scene: Scene; contact?: boolean; choice?: BeatDef['choice'] }>;
   ai: { queue: AiTrigger[]; seen: AiTrigger[]; transcripts: Array<{ trigger: AiTrigger; turns: AiTurn[] }> };
@@ -69,7 +71,10 @@ export const faction = (id: FactionId): FactionDef => FACTIONS.find((f) => f.id 
 /** Perks from the beats of your faction you have reached. */
 export function perksOf(s: CampaignState): PerkId[] {
   if (!s.faction) return [];
-  return faction(s.faction).beats.filter((b) => s.beatsSeen.includes(b.id)).flatMap((b) => b.perks ?? []);
+  const beats = faction(s.faction).beats.filter((b) => s.beatsSeen.includes(b.id));
+  // A choice made at a beat adds the chosen option's perks (the Institute's ultimatum).
+  const chosen = beats.flatMap((b) => b.choice?.options.find((o) => o.id === s.choices[b.id])?.perks ?? []);
+  return [...beats.flatMap((b) => b.perks ?? []), ...chosen];
 }
 
 /** Highest evolution stage per theme: 1 everywhere, raised by the territories you hold. */
@@ -132,6 +137,7 @@ export function plan(s: CampaignState, territoryId: string, opts: { dares?: stri
   const bonus: Partial<Record<'war' | 'science' | 'royal', number>> = {};
   if (perks.includes('volunteers1')) bonus.science = 30;
   if (perks.includes('volunteers2')) { bonus.war = 40; bonus.royal = 1; }
+  if (perks.includes('kingdom')) bonus.royal = (bonus.royal ?? 0) + 1;
   const exp = opts.experiment ? EXPERIMENTS.find((e) => e.id === opts.experiment) : undefined;
   const config: Partial<SimConfig> = {
     seed: hash(`${s.seed}|${s.deployments}|${territoryId}|run`),
@@ -143,6 +149,7 @@ export function plan(s: CampaignState, territoryId: string, opts: { dares?: stri
     sleepers: perks.includes('sleepers2') ? 0.15 : perks.includes('sleepers1') ? 0.08 : 0,
     startBonus: bonus,
     bannedEnemies: (opts.objectors ?? []).slice(0, objectorsAllowed),
+    waveScale: perks.includes('pacified') ? 0.9 : 1,
     entrances: t.entrances,
     directive: defence ? { kind: 'hold', waves: 5 } : t.directive,
     ...(exp ? exp.setup : {}),
@@ -165,6 +172,14 @@ export interface Debrief {
   repelled: string | null;
   unlocked: string[];
   log: string;
+  /** The ally's letter / broadcast / call after this deployment. */
+  aside?: string;
+}
+
+/** A faction's ending, as the choices made along its route shaped it. */
+export function endingOf(f: FactionDef, s: CampaignState): Scene {
+  const by = f.endingByChoice;
+  return (by && by.scenes[s.choices[by.beat]]) || f.ending;
 }
 
 /** Apply a finished run to the campaign (returns the new state and what to show in the debrief). */
@@ -178,6 +193,7 @@ export function finish(prev: CampaignState, p: DeploymentPlan, r: RunReport): { 
   const standing = board.filter((g) => g.met).reduce((a, g) => a + g.def.pays, 0);
   let notes = dares.filter((g) => g.met).reduce((a, g) => a + g.def.pays, 0);
   const unlocked: string[] = [];
+  let aside: string | undefined;
   for (const d of dares) if (d.met && !s.daresDone.includes(d.def.id)) s.daresDone.push(d.def.id);
   if (exp?.met && p.experiment) {
     notes += exp.def.pays;
@@ -243,9 +259,15 @@ export function finish(prev: CampaignState, p: DeploymentPlan, r: RunReport): { 
       s.pendingScenes.push({ faction: f.id, beat: b.id, scene: b.scene, choice: b.choice });
       if (b.id === 'reveal' || b.id === 'ultimatum' || b.id === 'prepare') s.ai.queue = queueDiscussion(s.ai.queue, 'midpoint', s.ai.seen);
     }
+    // Between beats the ally keeps in touch: a letter, a broadcast, a call.
+    if (!s.ended && f.asides.length) {
+      s.comms = s.comms ?? [];
+      aside = f.asides[s.comms.length % f.asides.length];
+      s.comms.push(aside);
+    }
     if (captured && t.finaleOf === f.id) {
       s.ended = f.id;
-      s.pendingScenes.push({ faction: f.id, scene: f.ending });
+      s.pendingScenes.push({ faction: f.id, scene: endingOf(f, s) });
       s.ai.queue = queueDiscussion(s.ai.queue, 'ending', s.ai.seen);
     }
   }
@@ -262,7 +284,7 @@ export function finish(prev: CampaignState, p: DeploymentPlan, r: RunReport): { 
 
   return {
     state: s,
-    debrief: { board, dares, experiment: exp, standing, notes, captured, lost, repelled, unlocked, log: s.log[s.log.length - 1] },
+    debrief: { board, dares, experiment: exp, standing, notes, captured, lost, repelled, unlocked, log: s.log[s.log.length - 1], aside },
   };
 }
 
@@ -320,6 +342,13 @@ export function summaryFor(s: CampaignState): string {
     `Deployments: ${s.deployments}. Territories held: ${s.held.map((h) => territory(h).name).join(', ')}.`,
     `Faction: ${s.faction ? faction(s.faction).name : 'none'}. Standing ${s.standing}, field notes ${s.notes}.`,
     `Licence: ${s.licence ? 'approved' : 'pending'}. Experiments done: ${s.experimentsDone.join(', ') || 'none'}.`,
+    // What a live YOKE (Kimi) needs to talk about the story so far; the scripted one ignores it.
+    ...(s.faction ? [`Route so far: ${faction(s.faction).beats.filter((b) => s.beatsSeen.includes(b.id)).map((b) => b.title).join(' → ') || 'just allied'}.`] : []),
+    ...(Object.keys(s.choices).length ? [`Choices made: ${Object.entries(s.choices).map(([b, o]) => `${b}=${o}`).join(', ')}.`] : []),
+    ...(s.underAttack ? [`Under attack: ${territory(s.underAttack).name}.`] : []),
+    ...(s.ended ? [`The campaign has ended on the ${faction(s.ended).name} route.`] : []),
+    ...(s.comms?.length ? [`Latest from the ally: ${s.comms[s.comms.length - 1]}`] : []),
+    ...(s.log.length ? [`Last log: ${s.log[s.log.length - 1]}`] : []),
   ].join(' ');
 }
 

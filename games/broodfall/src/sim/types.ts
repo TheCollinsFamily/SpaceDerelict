@@ -630,6 +630,8 @@ export interface SimConfig {
   waveIntel?: 'full' | 'hidden';
   /** Share of war bodies that are martyrs and detonate among their own (the Sleepers). */
   sleepers?: number;
+  /** Every wave's body count is multiplied by this (campaign: the Institute's Pacification, 0.9). */
+  waveScale?: number;
   /** Extra meat at the start (Volunteers). */
   startBonus?: Partial<Record<Caste, number>>;
   /** Experiment: lure clouds carry the colony's MATING pheromone instead of poison. */

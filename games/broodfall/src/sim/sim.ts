@@ -1849,7 +1849,7 @@ export class Sim {
       if ((this.cfg.bannedEnemies ?? []).includes(kind as EnemyKind)) continue;
       const spec = enemySpec(kind as EnemyKind);
       const growth = 1 + (scale - 1) * (B.riskBaseline / spec.risk);
-      const scaled = Math.round((n ?? 0) * growth);
+      const scaled = Math.round((n ?? 0) * growth * (this.cfg.waveScale ?? 1));
       if (scaled > 0) out[kind as EnemyKind] = scaled;
     }
     const born = Math.floor(this.mateBacklog);
@@ -1885,7 +1885,7 @@ export class Sim {
       const spec = enemySpec(kind as EnemyKind);
       const growth = 1 + (scale - 1) * (B.riskBaseline / spec.risk);
       const banned = (this.cfg.bannedEnemies ?? []).includes(kind as EnemyKind);
-      const scaled = banned ? 0 : Math.round((n ?? 0) * growth);
+      const scaled = banned ? 0 : Math.round((n ?? 0) * growth * (this.cfg.waveScale ?? 1));
       counts[kind as EnemyKind] = scaled;
       waveRisk += scaled * spec.risk;
       for (let i = 0; i < scaled; i++) this.spawnQueue.push(kind as EnemyKind);

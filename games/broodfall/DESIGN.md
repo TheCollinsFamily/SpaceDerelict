@@ -549,7 +549,10 @@ globe, the briefing, the debrief, the scenes), `content/lore/ship-ai-lorebook.md
 ship AI's lore book; YOKE speaks through Kimi K2.6 on rfab.ai via `RfabShipAi`, with
 `FallbackShipAi` dropping to the scripted seeds when rfab.ai cannot answer). Menu → CAMPAIGN; each deployment reloads the page into a run
 built from the pending plan (`?campaign=run`) and returns to the ship after the debrief.
-Build inventory and status: `notes/CAMPAIGN-BUILD-PLAN.md`.
+Build inventory and status: `notes/CAMPAIGN-BUILD-PLAN.md`. Between beats each ally keeps in
+touch: `FactionDef.asides` (letters, broadcasts, the Director's calls), one per allied
+deployment, shown in the debrief and in Comms. Choice options carry perks (the ultimatum:
+Kingdom Fund / Pacification) and `endingByChoice` picks the ending.
 
 Collins's calls are quoted; everything else is a proposal filling his frame.
 
@@ -652,7 +655,8 @@ messing with them, and they thank you for it.
   pretence ("I'm a pest-control operator. I'm exterminating you."), and the chief
   delegate, beaming, doesn't even look up: "Well — nobody's perfect."
 - **Route (goals shift):** Understand the Visitor (peace summits you are invited to,
-  each an opening) → Stop the War (they sabotage their own defence) → *the reveal* →
+  each an opening) → Stop the War (they sabotage their own defence) → The Greater Plan
+  (the cult turn: you must be protecting the planet from THEM) → *the reveal* →
   Hurry It Along (now open collaborators: they want it faster, cleaner, and with
   fewer births along the way) → Bear Witness.
 - **Ending:** the planet goes quiet; the last delegate writes the history — "The

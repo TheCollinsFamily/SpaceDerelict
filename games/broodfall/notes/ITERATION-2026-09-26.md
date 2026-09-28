@@ -147,6 +147,42 @@ smart flips 3:2, totals 120k vs 115k. 54/54 tests; input check adds the lobber
 gesture; visual/endgame green.
 
 
+## Addendum 22 (Sep 28): YOKE on Kimi, and an audit of the campaign against Collins's words
+
+**YOKE is live.** `RfabShipAi` asks rfab.ai's `POST /api/broodfall/ship-ai` (Kimi K2.6, billed to
+the RFab account; backend 50461d09, deploy owed) through the Vite proxy `/rfab-api`, which adds
+this PC's RFAB_API_KEY. `FallbackShipAi` drops to the scripted seeds and says why (no key, out of
+tokens, "rfab.ai does not have YOKE yet"). The AI Core shows the link, a USE SCRIPTED switch and a
+key box. Live beat `tools/shot-yoke-live.mjs`. Bug caught on the way: the provider was built in a
+field initialiser before `state` existed, which crashed the ship whenever live YOKE was on; the
+scripted beat could not see it.
+
+**Audit.** Collins: "I kind of doubt you actually wired up everything … please double check."
+His five campaign messages were read back verbatim and checked line by line against the code.
+Mechanics were all wired: objectors, translator (wave and entrance), sleepers, garrison,
+volunteers, seed labs, evolution unlock points, the organ pool, the trap cage, mating musk,
+pushback, profiles, lineages, the globe and the hidden territories. What was missing, now built:
+- **The Delegation's cult phase.** "They never stop believing you are good … they transition to
+  believing you are part of some greater plan of good, like doing this to protect Gaia." The route
+  went summit → leaked plans → reveal. It now has **The Greater Plan** ("you are protecting the
+  planet FROM us") between the leaked plans and the reveal.
+- **Running jokes that recur, not once.** "He has to KEEP learning more about the world's
+  religion"; the Director "KEEPS trying to befriend you … League of Legends parody while on calls
+  about destroying cities"; "keeps offering females". Each faction now sends an **aside** (a
+  letter, a broadcast or a call) after every deployment while allied. It shows in the debrief and
+  in a FROM YOUR ALLY feed in Comms, and goes into YOKE's summary. There are 6–7 per faction.
+- **The ultimatum changes the route.** "None of the paths turn against you but their goals change."
+  The choice used to be stored and ignored. **Rule** → Kingdom Fund (+1 royal point every
+  mission). **Pacify** → Pacification (every wave a tenth smaller, the sim's `waveScale`) and its
+  own ending, *The Pacified Timeline*.
+- **The Director by name.** He is "Eli Bankfried", the Eliezer × SBF composite Collins named. The
+  Voice's network is named: forty stations of the Last Hour Radio Network.
+- YOKE's campaign summary now carries the route, choices, the attack, the ending, the latest
+  aside and the last log, so a live YOKE can talk about the story.
+
+Tests 198/198 (4 new audit tests). The campaign beat now plays a second, allied deployment and
+checks the letter in the debrief and in Comms.
+
 ## Addendum 21 (Sep 28): the campaign, built
 
 Collins: "build the rest of this we outlined … the story parts, the map, the ship, the
