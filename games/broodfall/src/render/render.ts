@@ -791,6 +791,19 @@ export class Renderer {
       const a = -Math.PI / 2 + i * 0.55;
       g.circle(x + Math.cos(a) * 16, y + Math.sin(a) * 16, 3).fill(FAMILY_COLORS[p.family]);
     });
+    // Evolutions show on the body: a crest above the limb, one mark per stage —
+    // A a spike, B a diamond; stages 1-2 science teal, stage 3 royal gold.
+    const path = t.upgrades ?? [];
+    if (path.length > 0) {
+      g.circle(x, y, 13).stroke({ width: 1.5, color: path.length >= 3 ? 0xd4a72c : 0x4fa9a4, alpha: 0.9 });
+      path.forEach((c, i) => {
+        const mx = x + (i - (path.length - 1) / 2) * 10;
+        const my = y - 24;
+        const col = i === 2 ? 0xd4a72c : 0x4fa9a4;
+        if (c === 'A') g.poly([mx - 4.5, my + 4, mx, my - 5, mx + 4.5, my + 4]).fill(col).stroke({ width: 1, color: 0x10100a });
+        else g.poly([mx, my - 5, mx + 4.5, my, mx, my + 5, mx - 4.5, my]).fill(col).stroke({ width: 1, color: 0x10100a });
+      });
+    }
     if (t.hp < t.maxHp) this.hpArc(g, x, y, 20, t.hp / t.maxHp);
     // Shield bubble: brighter the fuller it is.
     if ((t.shieldMax ?? 0) > 0 && (t.shield ?? 0) > 0) {

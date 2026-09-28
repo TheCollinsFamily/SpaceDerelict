@@ -4,8 +4,9 @@
  * back to main.ts via callbacks.
  */
 import { Sim, towerSpec } from '../sim/sim';
+import { UPGRADES, UPGRADE_COST } from '../../content/upgrades';
 import { BALANCE as B } from '../../content/data';
-import type { Caste, CasteFocus, OrganId, RootDir, SimEvent, TargetMode, Tower, TowerFamily } from '../sim/types';
+import type { Caste, CasteFocus, OrganId, RootDir, SimEvent, TargetMode, Tower, TowerFamily, UpgradeChoice } from '../sim/types';
 
 const CARD_DESC: Record<TowerFamily, string> = {
   spitter: 'Ranged acid limb. Cheap, reliable.',
@@ -136,6 +137,18 @@ const FEED_LINES: Partial<Record<SimEvent['kind'], (e: SimEvent) => { text: stri
     ? { text: `local response promoted: ${e.from} → ${e.to}`, cls: 'royal' }
     : { text: '', cls: '' },
   'royal-incoming': () => ({ text: 'priority asset detected: ROYAL', cls: 'royal' }),
+  evolved: (e) => e.kind === 'evolved'
+    ? { text: `${e.family} evolved — stage ${e.stage}${e.choice}: ${e.name}`, cls: e.stage === 3 ? 'royal' : 'sci' }
+    : { text: '', cls: '' },
+  reborn: (e) => e.kind === 'reborn'
+    ? { text: `${e.family} reborn from the reliquary`, cls: 'sci' }
+    : { text: '', cls: '' },
+  budded: (e) => e.kind === 'budded'
+    ? { text: `mitosis: a ${e.family} buds`, cls: 'sci' }
+    : { text: '', cls: '' },
+  'relic-banked': (e) => e.kind === 'relic-banked'
+    ? { text: `reliquary banks ${e.pips} bonuses from the fallen ${e.family}`, cls: 'sci' }
+    : { text: '', cls: '' },
   'structure-lost': (e) => e.kind === 'structure-lost'
     ? { text: `limb lost: ${e.what}`, cls: 'hot' }
     : { text: '', cls: '' },
@@ -150,6 +163,7 @@ export interface HudCallbacks {
   onRestart(): void;
   onSetPriority(towerId: number, mode?: TargetMode, caste?: CasteFocus): void;
   onSetFacing(towerId: number, dir: RootDir): void;
+  onEvolve(towerId: number, choice: UpgradeChoice): void;
 }
 
 export class Hud {
@@ -180,6 +194,7 @@ export class Hud {
   /** Limb whose inspect panel is open (null = closed). */
   inspectedId: number | null = null;
   private lastHandKey = '';
+  private lastEvolveKey = '';
   private lastDirective: 'hold' | 'royal' | 'harvest' = 'hold';
 
   constructor(cb: HudCallbacks) {
@@ -218,6 +233,12 @@ export class Hud {
       });
     }
     document.getElementById('overlay-restart')!.addEventListener('click', () => cb.onRestart());
+    // Evolution choices: delegated, because the buttons re-render as meat changes.
+    document.getElementById('inspect-evolve')!.addEventListener('click', (ev) => {
+      const btn = (ev.target as HTMLElement).closest<HTMLElement>('[data-choice]');
+      if (!btn || btn.classList.contains('off') || this.inspectedId === null) return;
+      cb.onEvolve(this.inspectedId, btn.dataset.choice as UpgradeChoice);
+    });
   }
 
   setHint(text: string): void {
@@ -294,6 +315,7 @@ export class Hud {
     document.getElementById('inspect-traits')!.textContent = t.pips.length
       ? `traits: ${[...counts].map(([f, n]) => (n > 1 ? `${f}×${n}` : f)).join(', ')}`
       : 'no inherited traits';
+    this.renderEvolve(sim, t);
     const armed = st.rate > 0;
     document.getElementById('inspect-modes')!.classList.toggle('muted', !armed);
     document.getElementById('inspect-castes')!.classList.toggle('muted', !armed);
@@ -303,6 +325,43 @@ export class Hud {
     for (const b of document.querySelectorAll<HTMLElement>('#inspect-castes button')) {
       b.classList.toggle('on', (t.casteFocus ?? 'any') === b.dataset.caste);
     }
+  }
+
+  /**
+   * EVOLVE: the limb's three-stage tree (Tower Dominion style). The path so far
+   * reads as letters; the next stage offers its two options with their price;
+   * later stages are shown faint so the player can plan a path.
+   */
+  private renderEvolve(sim: Sim, t: Tower): void {
+    const tree = UPGRADES[t.family];
+    const path = t.upgrades ?? [];
+    const stage = path.length;
+    const cost = stage < 3 ? UPGRADE_COST[stage] : null;
+    const affordable = cost ? sim.canAfford(cost) : false;
+    const key = `${t.id}|${path.join('')}|${affordable ? 1 : 0}`;
+    if (key === this.lastEvolveKey) return;
+    this.lastEvolveKey = key;
+    document.getElementById('inspect-path')!.textContent = path.length ? `· ${path.join('')}` : '';
+    const box = document.getElementById('inspect-evolve')!;
+    const priceText = (c: { science?: number; royal?: number }) =>
+      [c.science ? `${c.science}S` : '', c.royal ? `${c.royal}R` : ''].filter(Boolean).join(' + ');
+    const rows: string[] = [];
+    for (let i = 0; i < 3; i++) {
+      const [a, b] = tree[i];
+      if (i < stage) {
+        const got = path[i] === 'A' ? a : b;
+        rows.push(`<div class="evo-done">${i + 1}${path[i]} · <b>${got.name}</b> — ${got.text}</div>`);
+      } else if (i === stage) {
+        const price = priceText(UPGRADE_COST[i]);
+        const opt = (o: typeof a, c: 'A' | 'B') => `<button class="evo-opt${affordable ? '' : ' off'}" data-choice="${c}"
+          title="${o.text}"><b>${c} · ${o.name}</b><span>${o.text}</span><i>${price}</i></button>`;
+        rows.push(`<div class="evo-stage">${opt(a, 'A')}${opt(b, 'B')}</div>`);
+      } else {
+        rows.push(`<div class="evo-later">${i + 1}: ${a.name} / ${b.name}${i === 2 ? ' (needs a royal point)' : ''}</div>`);
+      }
+    }
+    if (stage >= 3) rows.push('<div class="evo-later">fully evolved</div>');
+    box.innerHTML = rows.join('');
   }
 
   /** One line: what this limb is doing to its neighbours right now. */

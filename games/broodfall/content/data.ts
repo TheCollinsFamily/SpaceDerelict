@@ -23,7 +23,7 @@ export const TOWERS: readonly TowerSpec[] = [
   },
   {
     family: 'maw', name: 'Maw', weight: 14,
-    cost: { war: 20, science: 5 }, range: 45, rate: 0.8, damage: 10, aoe: 0,
+    cost: { war: 20 }, range: 45, rate: 0.8, damage: 10, aoe: 0,
     maxHp: 130, interest: 1, eatThreshold: 25, advanced: true, hits: 'ground',
   },
   {
@@ -36,14 +36,14 @@ export const TOWERS: readonly TowerSpec[] = [
     // Bait that bites: pulses a toxic pheromone cloud onto the nearest street
     // (poisons, and REVEALS cloaked bodies it touches).
     family: 'lure', name: 'Lure Gland', weight: 8,
-    cost: { science: 15 }, range: 85, rate: 0, damage: 0, aoe: 0,
+    cost: { war: 15 }, range: 85, rate: 0, damage: 0, aoe: 0,
     pheromone: { dps: 5, radius: 30, interval: 3.5 },
     maxHp: 50, interest: 4, eatThreshold: 0, advanced: true, hits: 'ground',
   },
   {
     // Control: hit enemies wade through mucus. Weak damage, strong tempo.
     family: 'tangler', name: 'Snare Bed', weight: 12,
-    cost: { war: 16, science: 6 }, range: 80, rate: 0.9, damage: 4, aoe: 30,
+    cost: { war: 16 }, range: 80, rate: 0.9, damage: 4, aoe: 30,
     slowMult: 0.55, slowDur: 1.8,
     maxHp: 70, interest: 1, eatThreshold: 0, advanced: false, hits: 'ground',
   },
@@ -51,21 +51,21 @@ export const TOWERS: readonly TowerSpec[] = [
     // Damage over time: spore clouds that keep eating. Poison ignores armor caps,
     // so this is the second answer to the phalanx besides rapid fire.
     family: 'blighter', name: 'Blight Vent', weight: 10,
-    cost: { war: 14, science: 14 }, range: 90, rate: 0.6, damage: 3, aoe: 38,
+    cost: { war: 14 }, range: 90, rate: 0.6, damage: 3, aoe: 38,
     poisonDps: 7, poisonDur: 3.5,
     maxHp: 65, interest: 2, eatThreshold: 0, advanced: true, hits: 'ground',
   },
   {
     // Artillery: a bone harpoon that skewers a whole file and ignores shields.
     family: 'impaler', name: 'Impaler', weight: 8,
-    cost: { war: 36, science: 8 }, range: 150, rate: 0.35, damage: 34, aoe: 0,
+    cost: { war: 36 }, range: 150, rate: 0.35, damage: 34, aoe: 0,
     pierce: true,
     maxHp: 80, interest: 2, eatThreshold: 0, advanced: true, hits: 'both',
   },
   {
     // Support: a resonance organ that syncs the limbs around it to a faster beat.
     family: 'choir', name: 'Choir Node', weight: 7,
-    cost: { science: 22 }, range: 0, rate: 0, damage: 0, aoe: 0,
+    cost: { war: 22 }, range: 0, rate: 0, damage: 0, aoe: 0,
     rateAura: 0.15, auraRadius: 95,
     maxHp: 60, interest: 2, eatThreshold: 0, advanced: true,
   },
@@ -75,13 +75,13 @@ export const TOWERS: readonly TowerSpec[] = [
     family: 'sling', name: 'Spore Sling', weight: 8,
     // damage/aoe: the clot lands with a thud (12 in a 36px splash) — the payload
     // its eaten verbs ride on.
-    cost: { war: 22, science: 10 }, range: 0, rate: 0, damage: 12, aoe: 36,
+    cost: { war: 22 }, range: 0, rate: 0, damage: 12, aoe: 36,
     maxHp: 70, interest: 2, eatThreshold: 0, advanced: true,
   },
   {
     // The barracks seat: keeps a brood of skirmishers fighting in the streets.
     family: 'brood', name: 'Broodmother', weight: 8,
-    cost: { war: 30, science: 12 }, range: 0, rate: 0, damage: 0, aoe: 0,
+    cost: { war: 30 }, range: 0, rate: 0, damage: 0, aoe: 0,
     broodCount: 3,
     maxHp: 140, interest: 2, eatThreshold: 0, advanced: true,
   },
@@ -98,7 +98,7 @@ export const TOWERS: readonly TowerSpec[] = [
     // The chain seat: one strike arcs through a whole squad in falling steps —
     // arcs are separate small hits, so shield walls soak them badly.
     family: 'frond', name: 'Galvanic Frond', weight: 9,
-    cost: { war: 24, science: 10 }, range: 90, rate: 0.7, damage: 12, aoe: 0,
+    cost: { war: 24 }, range: 90, rate: 0.7, damage: 12, aoe: 0,
     chains: 3,
     maxHp: 70, interest: 2, eatThreshold: 0, advanced: true, hits: 'both',
   },
@@ -106,7 +106,7 @@ export const TOWERS: readonly TowerSpec[] = [
     // The player-aimed artillery seat: click it, click ground — a bile glob
     // arcs out and detonates. The sling's interaction, weaponized.
     family: 'lobber', name: 'Bile Lobber', weight: 8,
-    cost: { war: 28, science: 6 }, range: 250, rate: 0, damage: 55, aoe: 55,
+    cost: { war: 28 }, range: 250, rate: 0, damage: 55, aoe: 55,
     aimedVolley: true,
     maxHp: 90, interest: 2, eatThreshold: 0, advanced: true, hits: 'ground',
   },
@@ -115,7 +115,7 @@ export const TOWERS: readonly TowerSpec[] = [
     // into a shredded target, so it turns the phalanx into a board-wide puzzle.
     // Mist clings: it also REVEALS cloaked bodies it coats.
     family: 'mister', name: 'Caustic Mister', weight: 8,
-    cost: { war: 12, science: 16 }, range: 85, rate: 0.5, damage: 2, aoe: 40,
+    cost: { war: 12 }, range: 85, rate: 0.5, damage: 2, aoe: 40,
     shred: 8, shredDur: 4,
     maxHp: 65, interest: 2, eatThreshold: 0, advanced: true, hits: 'both',
   },
@@ -124,7 +124,7 @@ export const TOWERS: readonly TowerSpec[] = [
     // castes (drummers, tenders, bombers) the frontline can't reach. It also SEES:
     // cloaked bodies within 180px are revealed to every limb.
     family: 'ocular', name: 'Ocular Stalk', weight: 6,
-    cost: { war: 20, science: 25 }, range: 9999, rate: 0.12, damage: 60, aoe: 0,
+    cost: { war: 20 }, range: 9999, rate: 0.12, damage: 60, aoe: 0,
     sniper: true, detects: 180,
     maxHp: 75, interest: 3, eatThreshold: 0, advanced: true, hits: 'both',
   },
@@ -133,7 +133,7 @@ export const TOWERS: readonly TowerSpec[] = [
     // reach it RELAYS: idle prisms chain their charge through each other to the
     // prism that is firing (Red Alert 2's prism tower, routed through a network).
     family: 'prism', name: 'Arc Prism', weight: 9,
-    cost: { war: 26, science: 12 }, range: 105, rate: 0.8, damage: 14, aoe: 0,
+    cost: { war: 26 }, range: 105, rate: 0.8, damage: 14, aoe: 0,
     prismLink: 150,
     maxHp: 80, interest: 2, eatThreshold: 0, advanced: true, hits: 'both',
   },
@@ -141,7 +141,7 @@ export const TOWERS: readonly TowerSpec[] = [
     // Point artillery: YOU choose where it lands. Click it, click the map — it
     // shells that marker whenever the hive is there, at very long range.
     family: 'bombard', name: 'Spore Bombard', weight: 8,
-    cost: { war: 30, science: 10 }, range: 320, rate: 0.4, damage: 30, aoe: 42,
+    cost: { war: 30 }, range: 320, rate: 0.4, damage: 30, aoe: 42,
     markerFire: true,
     maxHp: 85, interest: 2, eatThreshold: 0, advanced: true, hits: 'ground',
   },
@@ -149,7 +149,7 @@ export const TOWERS: readonly TowerSpec[] = [
     // Force field: a regenerating shield on every OTHER limb in its radius. The
     // answer to the science caste picking off your outer layer.
     family: 'ward', name: 'Ward Membrane', weight: 9,
-    cost: { war: 16, science: 14 }, range: 0, rate: 0, damage: 0, aoe: 0,
+    cost: { war: 16 }, range: 0, rate: 0, damage: 0, aoe: 0,
     wardShield: 70, auraRadius: 95,
     maxHp: 90, interest: 2, eatThreshold: 0, advanced: true,
   },
@@ -166,7 +166,7 @@ export const TOWERS: readonly TowerSpec[] = [
     // One direction only, very long, and the shell SKIPS like a stone: it lands,
     // bounces on down the line and lands again. Set its facing in its panel.
     family: 'skipper', name: 'Skipping Mortar', weight: 8,
-    cost: { war: 26, science: 6 }, range: 330, rate: 0.35, damage: 26, aoe: 32,
+    cost: { war: 26 }, range: 330, rate: 0.35, damage: 26, aoe: 32,
     skips: 2, directional: true,
     maxHp: 85, interest: 2, eatThreshold: 0, advanced: true, hits: 'ground',
   },
@@ -174,7 +174,7 @@ export const TOWERS: readonly TowerSpec[] = [
     // The anti-air specialist: flak webs that only hit FLIERS — and drag them
     // down into the streets for a couple of seconds, where ground limbs can reach.
     family: 'net', name: 'Netcaster', weight: 10,
-    cost: { war: 20, science: 6 }, range: 170, rate: 0.8, damage: 14, aoe: 26,
+    cost: { war: 20 }, range: 170, rate: 0.8, damage: 14, aoe: 26,
     grounds: 2,
     maxHp: 70, interest: 1, eatThreshold: 0, advanced: false, hits: 'air',
   },
@@ -183,7 +183,7 @@ export const TOWERS: readonly TowerSpec[] = [
     // a burning body sets its neighbours alight — so it melts swarms, and fire
     // lights up the cloaked.
     family: 'ember', name: 'Ember Sac', weight: 10,
-    cost: { war: 22, science: 6 }, range: 70, rate: 0.8, damage: 4, aoe: 0,
+    cost: { war: 22 }, range: 70, rate: 0.8, damage: 4, aoe: 0,
     cone: 0.45, burnDps: 8, burnDur: 3,
     maxHp: 80, interest: 1, eatThreshold: 0, advanced: false, hits: 'ground',
   },
@@ -278,11 +278,11 @@ export const TOWERS: readonly TowerSpec[] = [
 ];
 
 export const ORGANS: readonly OrganSpec[] = [
-  { id: 'heart', name: 'Auxiliary Heart', cost: { war: 30, science: 10 }, maxHp: 200 },
-  { id: 'brain', name: 'Brain Node', cost: { science: 30 }, maxHp: 150 },
-  { id: 'gland', name: 'Pheromone Gland', cost: { science: 20 }, maxHp: 150 },
+  { id: 'heart', name: 'Auxiliary Heart', cost: { war: 30 }, maxHp: 200 },
+  { id: 'brain', name: 'Brain Node', cost: { war: 30 }, maxHp: 150 },
+  { id: 'gland', name: 'Pheromone Gland', cost: { war: 20 }, maxHp: 150 },
   // Directional expansion: grows a creep lobe toward its compass heading (click to cycle).
-  { id: 'root', name: 'Tendril Root', cost: { war: 15, science: 15 }, maxHp: 150 },
+  { id: 'root', name: 'Tendril Root', cost: { war: 15 }, maxHp: 150 },
 ];
 
 export const ENEMIES: readonly EnemySpec[] = [
@@ -338,11 +338,11 @@ export const ENEMIES: readonly EnemySpec[] = [
   // ROYAL CASTE — only with a royal event. Royals are super-strong WARRIORS
   // (they march and chew like the war caste) whose real weight is empowering
   // the war caste around them: presence aura, and the consort promotes ranks.
-  { kind: 'royal', caste: 'royal', hp: 1100, speed: 17, damage: 34, rate: 0.9, meat: 120, threatOnKill: 0, risk: 40, royalAura: true },
-  { kind: 'consort', caste: 'royal', hp: 420, speed: 24, damage: 20, rate: 0.9, meat: 40, threatOnKill: 4, risk: 14, royalAura: true, promotes: { interval: 5 } },
+  { kind: 'royal', caste: 'royal', hp: 1100, speed: 17, damage: 34, rate: 0.9, meat: 3, threatOnKill: 0, risk: 40, royalAura: true },
+  { kind: 'consort', caste: 'royal', hp: 420, speed: 24, damage: 20, rate: 0.9, meat: 1, threatOnKill: 4, risk: 14, royalAura: true, promotes: { interval: 5 } },
   // Veil matron: royal power-up-others in its purest form — every war body within
   // 90px of her is CLOAKED while she lives. She is visible; kill her first.
-  { kind: 'matron', caste: 'royal', hp: 380, speed: 22, damage: 16, rate: 0.9, meat: 40, threatOnKill: 4, risk: 13, veilAura: 90 },
+  { kind: 'matron', caste: 'royal', hp: 380, speed: 22, damage: 16, rate: 0.9, meat: 1, threatOnKill: 4, risk: 13, veilAura: 90 },
 ];
 
 /** Wave composition per threat tier (spawned over the siege's spawn window). */
@@ -440,7 +440,7 @@ export const BALANCE = {
    *  just fed the economy). 10-seed sweep: 46 → 9/10, 38 → 7, 32 → 4.
    *  36 vs 37 straddles a tier boundary (naive 3/10 vs 7/10): 37 kept for
    *  margin — THIS is the difficulty knob. */
-  threatPerTier: 37,
+  threatPerTier: 28,
   /** The hive escalates procedurally as the campaign drags on. */
   threatPerWaveCleared: 5,
   /** Kill vengeance is real but not the main driver of escalation. */
@@ -462,7 +462,9 @@ export const BALANCE = {
   /** Royal event. */
   royalThreat: 240,
   royalEscort: 6,
-  royalSurgeCost: 50,
+  // Royal meat is counted in POINTS (a consort/matron pays 1, the royal 3): a
+  // point buys a surge or a limb's third evolution stage.
+  royalSurgeCost: 1,
   royalSurgeBiomass: 120,
   /** Cards. */
   handSize: 4,
@@ -485,6 +487,8 @@ export const BALANCE = {
   ampFactor: 1.5,
   /** Capacitor: banked shots fire at this multiple of the limb's rate. */
   capacitorSpeed: 4,
+  // Doubling a meat press: every layer past the first adds this much to the pressed pay.
+  pressExtraLayer: 0.5,
   /** Conduit: gives at most this many copies of each bonus type (Collins, Sep 27 2026). */
   funnelMaxCopies: 2,
   /** Twin pip: +1 projectile per shot per pip (a twinning GLAND doubles instead). */
@@ -498,6 +502,10 @@ export const BALANCE = {
   /** BURN: contagious fire. */
   pipBurnDps: 3,      // ember pip: hits ignite +3 burn dps per pip
   pipBurnDur: 3,
+  // Every copy of a status verb (snare, blight, ember, mister) also holds it this much longer.
+  pipDurStep: 0.5,
+  // Healing past full (brood pips) GROWS the limb: this share of the excess becomes max hp.
+  overgrowFrac: 0.5,
   burnSpreadRadius: 22,   // px: a burning body ignites neighbours this close...
   burnSpreadInterval: 0.5, // ...on this pulse...
   burnSpreadFrac: 0.8,    // ...passing on this fraction of its fire (the chain cools as it runs)
@@ -521,7 +529,7 @@ export const BALANCE = {
   /** The desperation row of the wave table needs this much threat, not just the
    *  ladder — a standard hold-12 tops out around 330, so tier 6 belongs to long
    *  runs and deliberate escalation (royal bait, challenge gland). */
-  tier6Threat: 338,          // scaled with the tier ladder (420 × 37/46)
+  tier6Threat: 256,          // scaled with the tier ladder (338 × 28/37, Sep 28: evolutions)
   /** Tunnelers surface at this fraction of the gate->core flow distance. */
   tunnelerSurfaceFrac: 0.45,
   /** Spore sling: player-aimed creep logistics. */

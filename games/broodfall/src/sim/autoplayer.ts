@@ -4,9 +4,10 @@
  */
 import { Rng } from './rng';
 import { Sim, towerSpec, organSpec } from './sim';
+import { UPGRADE_COST } from '../../content/upgrades';
 import { CellType } from './citymap';
 import { BALANCE as B } from '../../content/data';
-import type { OrganId } from './types';
+import type { OrganId, Tower, UpgradeChoice } from './types';
 
 export class Autoplayer {
   private rng: Rng;
@@ -29,7 +30,10 @@ export class Autoplayer {
     if (this.actTimer > 0) return;
     this.actTimer = 1.5;
 
-    if (sim.meat.royal >= 50) sim.issue({ kind: 'royal-surge' });
+    // Science buys evolutions for the limbs doing the killing; royal points go to
+    // a third stage first, and only spare points to a surge.
+    if (this.tryEvolve(sim)) return;
+    if (sim.meat.royal >= B.royalSurgeCost + (this.stage3Ready(sim) ? 1 : 0)) sim.issue({ kind: 'royal-surge' });
 
     if (this.tryOrgan(sim, 'heart', 1)) return;
     if (sim.time > 90 && this.tryOrgan(sim, 'gland', 1)) return;
@@ -221,6 +225,41 @@ export class Autoplayer {
         }
       }
     }
+  }
+
+  /** A rough damage-per-second read of a limb (for choosing between evolutions). */
+  private dpsOf(sim: Sim, t: Tower): number {
+    const s = sim.statsOf(t);
+    const hit = s.damage * s.volley * (1 + s.extraTargets) * (1 + 0.5 * s.chains) * (1 + s.aoe / 40) * (1 + 0.3 * s.skips);
+    const dots = s.poisonDps * s.poisonDur + s.burnDps * s.burnDur;
+    const control = (1 - s.slowMult) * 10 + s.shred + s.execute * 0.3 + s.grounding * 3;
+    return s.rate * (hit + dots + control) * (1 + s.reach) * (s.hitsAir ? 1.2 : 1) * (s.hitsGround ? 1 : 0.6);
+  }
+
+  private stage3Ready(sim: Sim): boolean {
+    return sim.towers.some((t) => (t.upgrades?.length ?? 0) === 2);
+  }
+
+  /** Evolve the best-killing limb that can afford its next stage, taking the option that reads stronger. */
+  private tryEvolve(sim: Sim): boolean {
+    const guns = sim.towers
+      .filter((t) => towerSpec(t.family).rate > 0 && !towerSpec(t.family).engine && (t.upgrades?.length ?? 0) < 3)
+      .sort((a, b) => b.kills - a.kills || a.id - b.id);
+    for (const t of guns.slice(0, 4)) {
+      const stage = t.upgrades?.length ?? 0;
+      if (!sim.canAfford(UPGRADE_COST[stage])) continue;
+      const before = t.upgrades;
+      let best: UpgradeChoice = 'A';
+      let bestScore = -Infinity;
+      for (const c of ['A', 'B'] as UpgradeChoice[]) {
+        t.upgrades = [...(before ?? []), c];
+        const score = this.dpsOf(sim, t);
+        if (score > bestScore) { bestScore = score; best = c; }
+      }
+      t.upgrades = before;
+      if (sim.issue({ kind: 'evolve', towerId: t.id, choice: best }).ok) return true;
+    }
+    return false;
   }
 
   private tryOrgan(sim: Sim, organ: OrganId, upTo: number): boolean {

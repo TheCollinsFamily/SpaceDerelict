@@ -142,6 +142,24 @@ body {
 #inspect-facing-wrap.hidden { display: none; }
 #inspect-effect { font-size: 10px; font-weight: bold; color: #6a4a10; margin-bottom: 3px; text-transform: uppercase; }
 #inspect-effect:empty { display: none; }
+#inspect { width: 272px; }
+#inspect-path { letter-spacing: 3px; font-weight: bold; opacity: 1; }
+.evo-stage { display: flex; gap: 4px; margin-top: 3px; }
+.evo-opt {
+  flex: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left;
+  font: inherit; font-size: 9px; padding: 4px 5px; cursor: pointer; color: var(--ink);
+  background: #c7b788; border: 2px solid var(--panel-edge); border-radius: 3px;
+}
+.evo-opt b { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+.evo-opt span { line-height: 1.25; }
+.evo-opt i { font-style: normal; font-weight: bold; color: #1d5c58; }
+.evo-opt:hover { background: var(--ink); color: var(--panel); }
+.evo-opt:hover i { color: #9fe0da; }
+.evo-opt.off { opacity: 0.5; cursor: not-allowed; }
+.evo-opt.off:hover { background: #c7b788; color: var(--ink); }
+.evo-opt.off:hover i { color: #1d5c58; }
+.evo-done { font-size: 9px; margin-top: 2px; text-transform: uppercase; }
+.evo-later { font-size: 9px; margin-top: 2px; opacity: 0.6; text-transform: uppercase; }
 
 /* What a card can shoot: sky-blue = reaches fliers, earth = ground only. */
 .card-tag { font-size: 8px; letter-spacing: 1px; font-weight: bold; margin: 1px 0 2px; }

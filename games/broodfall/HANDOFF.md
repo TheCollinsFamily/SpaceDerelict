@@ -64,6 +64,13 @@ debrief → ship gene bay → redeploy.
     Built engines: conduit (max 2 per type), amplifier, mosaic, twinning gland, marrow
     tap, mitosis node, capacitor sac, boomerang node, meat press, reliquary (a pair).
     The rest of the engine ideas are in notes/ITERATION addenda 12-13 for Collins to pick.
+    **Science buys ONLY engines and evolutions** (Sep 28); basic limbs and organs cost war.
+19. **Evolutions** (Sep 28, from Tower Dominion): every limb/engine has 3 stages, pick A
+    or B at each (a path reads "ABA"). Stages 1-2 science only; stage 3 also needs ONE
+    royal point (royal meat is counted in points: consort/matron 1, royal 3). Trees in
+    `content/upgrades.ts`; bought in the limb panel's EVOLVE section; crest on the limb.
+20. **The doubling rule** (Sep 28): a second copy of any bonus always changes
+    something — DESIGN.md has the table; `tests/evolution.test.ts` enforces it.
 17. **Direction and effects are always visible:** directional limbs show a field of
     fire and rotate with right-click (Esc cancels); effect limbs (conduit, choir,
     ward) draw what they affect and say it in their panel.
@@ -87,7 +94,7 @@ debrief → ship gene bay → redeploy.
 ## How to verify (all must be green before claiming anything)
 
 ```powershell
-npm test             # 107 tests: sim, plates algebra, wave rhythm, per-verb behaviors
+npm test             # 150 tests: sim, evolutions + the doubling rule, plates algebra, wave rhythm, per-verb behaviors
                      # for 29 tower families + 26 enemy kinds (combo engines, burn, payload rule, detection,
                      # air/ground, dependency, cannons, shields, bombard markers),
                      # naive win RATE over 10 seeds, smart science routing +
@@ -99,6 +106,8 @@ npm run build
 npm run test:visual  # headless chromium: HUD + per-region pixel checks (camera-aware)
 npm run test:input   # real player gestures: build, cannibalize, organ, cancel
 npm run test:endgame # full in-browser run to the victory overlay
+node tools/shot-evolve.mjs   # real clicks through all three EVOLVE stages
+node tools/shot-engines.mjs  # the five utility engines in the real page
 ```
 
 The **placement guardrail** (`tests/placement.test.ts`) is the genre's heartbeat: a
@@ -122,9 +131,10 @@ URL params: `?seed= &auto=1 &autostart=1 &speed= &directive=hold|royal|harvest &
 Scripted player, hold-12, 1 entrance: 2/3 measured seeds win (the enemy expansion
 restored real difficulty); 2-3 entrances much harder. MEASURE WIN RATE OVER 10 SEEDS,
 never 3-4 (addendum 8: small samples swung 3/3 ↔ 0/3 on draw noise). Current: naive
-hold-12 4/10; guardrail smart flips 3:0, totals +23%. The bot buys combo engines
+hold-12 5/10; guardrail smart flips 3:0 (Sep 28, after evolutions). The bot buys combo engines
 only on a measured ≥15% gain (trial-places a ghost) and aims them all at one carry. Difficulty knob =
-threatPerTier (37; 36 flips it to 3/10 — see addendum 9). The bot uses support limbs by
+threatPerTier (28 since evolutions, tier 6 at 256; was 37 before — addendum 15). The bot
+spends science on evolutions for its top-killing limbs (A/B by a dps read). The bot uses support limbs by
 their own logic (ward behind guns, bombard deep + counter-battery on cannons). The bot throws
 sling clots at the telegraphed gate, volleys the lobber at the closest hostile, and
 arms interior guns when tier 6 nears (ITERATION addenda 3-6 carry the tuning history).

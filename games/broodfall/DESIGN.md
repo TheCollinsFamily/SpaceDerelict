@@ -137,6 +137,86 @@ deliberate human combo play separates from default play.
 
 Next engine candidates (brainstorm, Sep 27): see notes/ITERATION addendum 12.
 
+### What science buys (Collins, Sep 28 2026)
+Science is spent ONLY on combo engines and on evolutions (below), and on
+"certain upgrades we have not gotten to yet". Basic limbs and organs cost war
+only. (Their old science share was dropped, not converted: converting 1:1 starved
+war and the scripted player built a quarter as many limbs.)
+
+### Evolutions: three stages, choose A or B (Collins, Sep 28 2026 — from Tower Dominion)
+Every limb and engine has a three-stage tree; at each stage you pick one of two
+options, and a path reads as letters (a Spitter "ABA"). Stages 1 and 2 cost
+science only (10, then 20); stage 3 costs 30 science + ONE royal point. Bought in
+the limb's panel (click the limb → EVOLVE). The path shows on the limb as a crest:
+a spike for A, a diamond for B, teal for stages 1-2, gold for stage 3.
+
+Tree shape: stage 1 is a SHAPE trade (faster vs harder, wider vs farther), stage 2
+grows a VERB (the limb grows two pips' worth of slow/poison/fire/shred...), stage 3
+TRANSFORMS it (three projectiles, double range + true sight, swallow elites whole,
+a wall that regrows and grows). Every option changes what the limb does — a test
+fails any option that changes nothing. Verbs an evolution grows count as the
+limb's own (amplifiers multiply them, choirs and wards broadcast them) but are NOT
+banked when it is eaten: an evolution is an investment in THIS limb.
+
+Engine evolutions bend the engine's rule instead: a conduit that passes 3 or 5
+copies per type or DOUBLES everything it passes, an amplifier that rounds UP (a
+single bonus becomes two) or multiplies ×2, a mosaic with two or three of each
+tile, a twinning gland at ×3/×4, a gentle tap (the target keeps working at half
+speed), a mitosis node whose buds carry the parent's bonuses, a capacitor at
+1000% speed, a boomerang that ping-pongs, a press that pays royal points, a
+reliquary that resurrects its limb (Phoenix: with bonuses and evolutions, once per
+wave). Full list: `content/upgrades.ts`.
+
+**Royal points.** Royal meat is counted in points: a consort or matron pays 1, the
+royal 3. A point buys a third evolution stage or a Royal Surge.
+
+### What a second copy does (Collins, Sep 28 2026: "what does doubling an upgrade that gives bullet burning do? decide and implement for each")
+The rule: **every copy adds its amount again; a multiplier multiplies again; a
+status verb (slow, poison, burn, shred) also lasts 0.5s longer per copy; anything
+that was an on/off switch has a number that grows.** A permanent test fails any
+bonus whose second copy changes nothing.
+
+| Bonus | One copy | Each extra copy |
+|---|---|---|
+| Spitter | +25% tempo | +25% more |
+| Lasher | +20% potency | +20% more |
+| Burster | +12px splash | +12px more |
+| Choir | +8% reach | +8% more |
+| Bombard | reach ×2 | ×2 again (×4, ×8…) |
+| Maw | +30% meat from kills | +30% more |
+| Spine | +75 hp; kills leave 40-hp caltrops | +75 hp; caltrops +40 hp |
+| Lure | +2 interest; hits leave 4-dps clouds | +2 interest; clouds +4 dps |
+| Ward | +60 permanent shield | +60 more |
+| Snare (tangler) | hits slow ×0.9 for 1.5s | ×0.9 again, +0.5s |
+| Blight | +2 poison dps for 2.5s | +2 dps, +0.5s |
+| **Ember** | **hits burn +3 dps for 3s (contagious)** | **+3 dps and +0.5s: two copies = 6 dps for 4s.** Fires from DIFFERENT limbs don't add on one body — the hottest wins — so heat is built on one limb |
+| Impaler | +5 armor cap | +5 more |
+| Sling | seeps 1 cell of creep; no creep needed | +1 cell |
+| Brood | heals 50% max hp each cleared wave (+1 broodling on a mother) | +50% more; healing PAST full grows the limb (half the excess becomes permanent max hp) |
+| Swamp | digests anything left at ≤10 hp | +10 hp more |
+| Frond | +1 arc | +1 more |
+| Lobber | 8px knockback | +8px more |
+| Mister | +3 shred for 2s | +3 more, +0.5s |
+| Ocular | sees the cloaked; +25% vs supports | +25% more |
+| Prism | +6% per consecutive shot | +6% more |
+| Net | hits air; drags fliers down 1s | +1s more |
+| Skipper | +1 skip | +1 more |
+| Quill | +1 extra target | +1 more |
+| Twin | +1 projectile | +1 more |
+| Conduit | draws the nearest neighbour's family bonus | one more neighbour |
+| Amp | own bonuses ×1.5 (round down) | ×1.5 again |
+| Mosaic | one of each neighbour type | one MORE of each |
+| Mitosis | buds a plain copy of itself each wave | one more bud |
+| Capacitor | banks idle shots at its fire rate | banks that much faster again |
+| Boomerang | shots return after a hit | one more trip (the shot ping-pongs) |
+| Meat Press | war kills pay science | +50% science |
+| Reliquary | bonuses banked if it dies | one more copy banked |
+| Marrow Tap | — (a tap is never eaten, so its bonus can't be carried) | — |
+
+Two ENGINES on one limb stack the same way: two twinning glands ×4, two amps ×1.5
+twice, conduit and mosaic pools add, capacitor charge adds, boomerang trips add,
+each extra press +50%, reliquary copies add, each mitosis node buds.
+
 **THE MARROW CONDUIT (Collins, Sep 27 2026 — the combo engine).** A directional
 support limb: it COPIES every bonus from the limbs within its gather radius (80px) —
 each one's inherited pips plus its own family bonus — and feeds the whole pool to the

@@ -18,8 +18,9 @@ import {
 import type {
   Broodling, Caltrop, CardInstance, Caste, Cloud, Command, CreepSource, Directive, Drop, Enemy,
   EnemyKind, EnemySpec, GlandMode, HitFx, ModPip, Organ, OrganId, Outcome, Phase, Projectile,
-  RootDir, Shell, SimConfig, SimEvent, Tower, TowerFamily, TowerSpec, Vec,
+  RootDir, Shell, SimConfig, SimEvent, Tower, TowerFamily, TowerSpec, UpgradeChoice, UpgradeOption, Vec,
 } from './types';
+import { UPGRADES, UPGRADE_COST } from '../../content/upgrades';
 
 export const DT = 0.1;
 
@@ -65,16 +66,39 @@ export function organSpec(id: OrganId) {
  * and every hit-verb pip (slow, poison, shred, chains, knock, execute, cloud,
  * caltrops, grounding, skips, pierce...) rides whatever the limb touches the hive with.
  */
-export function towerStats(t: Tower) {
+/** The evolution options a limb has bought, in stage order. */
+export function upgradeOptions(t: Tower): UpgradeOption[] {
+  if (!t.upgrades || t.upgrades.length === 0) return [];
+  const tree = UPGRADES[t.family];
+  return t.upgrades.map((c, i) => tree[i][c === 'A' ? 0 : 1]);
+}
+
+/** Verbs a limb's evolutions grew into it (count as its own pips; never banked when eaten). */
+export function upgradePips(t: Tower): ModPip[] {
+  const out: ModPip[] = [];
+  for (const o of upgradeOptions(t)) for (const f of o.pips ?? []) out.push({ family: f });
+  return out;
+}
+
+/**
+ * @param pipsResolved true when t.pips already includes evolution pips (statsOf
+ *   folds them in before amplification); false for a bare limb.
+ */
+export function towerStats(t: Tower, pipsResolved = false) {
   const spec = towerSpec(t.family);
-  const pips = (f: TowerFamily) => t.pips.filter((p) => p.family === f).length;
+  const ups = upgradeOptions(t);
+  const all = pipsResolved || ups.length === 0 ? t.pips : [...t.pips, ...upgradePips(t)];
+  const pips = (f: TowerFamily) => all.filter((p) => p.family === f).length;
+  const upMul = (k: 'tempo' | 'potency' | 'reach') => ups.reduce((m, o) => m * (o[k] ?? 1), 1);
   const tanglerPips = pips('tangler');
   const blighterPips = pips('blighter');
-  const tempo = 1 + B.pipRate * pips('spitter');
-  const potency = 1 + B.pipDamage * pips('lasher');
-  const reach = (1 + B.pipRange * pips('choir')) * B.pipRangeDouble ** pips('bombard');
+  const emberPips = pips('ember');
+  const misterPips = pips('mister');
+  const tempo = (1 + B.pipRate * pips('spitter')) * upMul('tempo');
+  const potency = (1 + B.pipDamage * pips('lasher')) * upMul('potency');
+  const reach = (1 + B.pipRange * pips('choir')) * B.pipRangeDouble ** pips('bombard') * upMul('reach');
   const layer = spec.hits ?? 'both';
-  return {
+  const s = {
     tempo,
     potency,
     reach,
@@ -82,26 +106,30 @@ export function towerStats(t: Tower) {
     damage: spec.damage * potency,
     aoe: spec.aoe + B.pipAoe * pips('burster'),
     yieldMult: 1 + B.pipYield * pips('maw'),
-    maxHp: spec.maxHp + B.pipHp * pips('spine'),
+    maxHp: spec.maxHp + B.pipHp * pips('spine') + (t.grownHp ?? 0),
     interest: spec.interest + B.pipInterest * pips('lure') + B.interestPerPip * t.pips.length,
     range: spec.range * reach,
     // Ward pip: a permanent personal shield, carried with the limb forever.
     shieldPerm: B.pipShield * pips('ward'),
     eatThreshold: spec.eatThreshold,
-    // Each tangler pip multiplies the slow (×0.9): stacks forever, never reverses.
+    // DOUBLING RULE (Collins, Sep 28 2026: "we need to know what doubling an
+    // upgrade does"): every copy adds its amount AGAIN and every status verb's
+    // clock also grows by pipDurStep per copy — see DESIGN.md, "What a second copy does".
+    // Tangler: each copy multiplies the slow (x0.9) and holds it longer.
     slowMult: (spec.slowMult ?? 1) * (1 - B.pipSlow) ** tanglerPips,
-    slowDur: Math.max(spec.slowDur ?? 0, tanglerPips > 0 ? B.pipSlowDur : 0),
+    slowDur: Math.max(spec.slowDur ?? 0, tanglerPips > 0 ? B.pipSlowDur : 0) + B.pipDurStep * tanglerPips,
     poisonDps: (spec.poisonDps ?? 0) + B.pipPoisonDps * blighterPips,
-    poisonDur: Math.max(spec.poisonDur ?? 0, blighterPips > 0 ? B.pipPoisonDur : 0),
-    // Ember pip: hits ignite (contagious burn).
-    burnDps: (spec.burnDps ?? 0) + B.pipBurnDps * pips('ember'),
-    burnDur: Math.max(spec.burnDur ?? 0, pips('ember') > 0 ? B.pipBurnDur : 0),
+    poisonDur: Math.max(spec.poisonDur ?? 0, blighterPips > 0 ? B.pipPoisonDur : 0) + B.pipDurStep * blighterPips,
+    // Ember: each copy burns +3 dps hotter AND longer.
+    burnDps: (spec.burnDps ?? 0) + B.pipBurnDps * emberPips,
+    burnDur: Math.max(spec.burnDur ?? 0, emberPips > 0 ? B.pipBurnDur : 0) + B.pipDurStep * emberPips,
     capBonus: spec.pierce ? Infinity : B.pipPierceCap * pips('impaler'),
     pierce: spec.pierce ?? false,
     // Sling pip: seeps creep, AND the limb no longer needs creep to stand on.
     seepRadius: B.pipSeep * pips('sling'),
     offCreep: pips('sling') > 0,
-    // Brood pip: heal 50% max hp per pip at every cleared wave; on a mother, +1 broodling.
+    // Brood pip: heal 50% max hp per pip at every cleared wave (past full, the
+    // limb GROWS); on a mother, +1 broodling.
     waveHeal: B.pipWaveHeal * pips('brood'),
     extraBroodlings: B.pipBroodling * pips('brood'),
     // Swamp pip: the payload DIGESTS anything left at or below this hp.
@@ -112,8 +140,8 @@ export function towerStats(t: Tower) {
     caltrop: B.pipCaltrop * pips('spine'),
     chains: (spec.chains ?? 0) + B.pipChain * pips('frond'),
     knock: B.pipKnock * pips('lobber'),
-    shred: (spec.shred ?? 0) + B.pipShred * pips('mister'),
-    shredDur: Math.max(spec.shredDur ?? 0, pips('mister') > 0 ? B.pipShredDur : 0),
+    shred: (spec.shred ?? 0) + B.pipShred * misterPips,
+    shredDur: Math.max(spec.shredDur ?? 0, misterPips > 0 ? B.pipShredDur : 0) + B.pipDurStep * misterPips,
     // Ocular: priority targeting, +25%/pip vs supports, and TRUE SIGHT (detects cloaked in its reach).
     sniper: (spec.sniper ?? false) || pips('ocular') > 0,
     supportDmg: B.pipOcularDmg * pips('ocular'),
@@ -129,7 +157,39 @@ export function towerStats(t: Tower) {
     extraTargets: B.pipExtraTarget * pips('quill'),
     // Twin pip: +1 projectile per shot per pip (twinning GLANDS pointed at it double it).
     volley: 1 + B.pipTwin * pips('twin'),
+    // ---- engine knobs (evolutions bend an engine's rule; these are the defaults) ----
+    gather: 1,
+    engineCap: B.funnelMaxCopies,
+    poolMult: 1,
+    ampFactor: B.ampFactor,
+    ampExtraLayers: 0,
+    ampRoundUp: false,
+    mosaicCopies: 1,
+    targetSelf: false,
+    twinPower: 2,
+    tapCopies: 1,
+    tapWar: 0,
+    gentleTap: false,
+    budCount: 1,
+    budRing: 1,
+    budPips: 0,
+    capSpeed: B.capacitorSpeed,
+    capCharge: 1,
+    capTrickle: 0,
+    returnLegs: 0,
+    returnDmg: 1,
+    pressBonus: 0,
+    pressRoyalEvery: 0,
+    relicCopies: 1,
+    rebirth: 0,
   };
+  const num = s as unknown as Record<string, number>;
+  for (const o of ups) {
+    for (const [k, v] of Object.entries(o.add ?? {})) num[k] += v as number;
+    for (const [k, v] of Object.entries(o.mult ?? {})) num[k] *= v as number;
+    Object.assign(s, o.set ?? {});
+  }
+  return s;
 }
 
 export type TowerStats = ReturnType<typeof towerStats>;
@@ -446,7 +506,7 @@ export class Sim {
     const eng = spec.engine;
     if (!eng || eng.gather === undefined) return [];
     const s = towerStats(c);
-    const radius = eng.gather * s.reach + (s.aoe - spec.aoe);
+    const radius = eng.gather * s.reach * s.gather + (s.aoe - spec.aoe);
     const target = this.conduitTarget(c, among);
     return among.filter((u) => u.id !== c.id && u !== target && !towerSpec(u.family).engine
       && dist(u.pos, c.pos) <= radius);
@@ -459,20 +519,25 @@ export class Sim {
    */
   conduitPool(c: Tower, among: Tower[] = this.towers): ModPip[] {
     const kind = towerSpec(c.family).engine?.kind;
+    const cs = towerStats(c);
     const all: ModPip[] = [];
-    for (const u of this.conduitSources(c, among)) all.push(...u.pips, { family: u.family });
+    for (const u of this.conduitSources(c, among)) all.push(...u.pips, ...upgradePips(u), { family: u.family });
+    const repeat = (ps: ModPip[], n: number) => Array.from({ length: Math.max(1, n) }, () => ps).flat();
     if (kind === 'funnel') {
-      // At most 2 copies of each bonus type (Collins, Sep 27 2026).
+      // At most 2 copies of each bonus type (Collins, Sep 27 2026) — Deep Channel
+      // evolutions raise it; a Marrow Pump doubles whatever passes.
       const n = new Map<TowerFamily, number>();
-      return all.filter((p) => {
+      const capped = all.filter((p) => {
         const k = (n.get(p.family) ?? 0) + 1;
         n.set(p.family, k);
-        return k <= B.funnelMaxCopies;
+        return k <= cs.engineCap;
       });
+      return repeat(capped, cs.poolMult);
     }
     if (kind === 'mosaic') {
       const seen = new Set<TowerFamily>();
-      return all.filter((p) => (seen.has(p.family) ? false : (seen.add(p.family), true)));
+      const distinct = all.filter((p) => (seen.has(p.family) ? false : (seen.add(p.family), true)));
+      return repeat(distinct, cs.mosaicCopies);
     }
     return [];
   }
@@ -495,32 +560,81 @@ export class Sim {
 
   /** Engines of this kind on a limb PLUS pips of the same-named family on it (mitosis, capacitor, boomerang, press, reliquary). */
   layersOf(t: Tower, fam: TowerFamily): number {
-    return this.enginesOn(t, fam) + t.pips.filter((p) => p.family === fam).length;
+    return this.enginesOn(t, fam) + [...t.pips, ...upgradePips(t)].filter((p) => p.family === fam).length;
+  }
+
+  /** A limb's meat-press stack (nodes + press pips), or null if it is not pressed. */
+  pressOf(t: Tower): { layers: number; bonus: number; royalEvery: number } | null {
+    const nodes = this.enginesPointedAt(t, 'press');
+    const own = [...t.pips, ...upgradePips(t)].filter((p) => p.family === 'press').length;
+    if (nodes.length + own === 0) return null;
+    let bonus = 0;
+    let royalEvery = 0;
+    for (const n of nodes) {
+      const ns = towerStats(n);
+      bonus += ns.pressBonus;
+      if (ns.pressRoyalEvery > 0) royalEvery = royalEvery > 0 ? Math.min(royalEvery, ns.pressRoyalEvery) : ns.pressRoyalEvery;
+    }
+    return { layers: nodes.length + own, bonus, royalEvery };
+  }
+
+  /** A limb's capacitor stack: banked shots per idle second (x rate), spend speed, trickle while firing. */
+  capacitorOf(t: Tower): { charge: number; speed: number; trickle: number } | null {
+    const nodes = this.enginesPointedAt(t, 'capacitor').filter((c) => !this.isTapped(c));
+    const own = [...t.pips, ...upgradePips(t)].filter((p) => p.family === 'capacitor').length;
+    if (nodes.length + own === 0) return null;
+    let charge = own;
+    let speed: number = B.capacitorSpeed;
+    let trickle = 0;
+    for (const n of nodes) {
+      const ns = towerStats(n);
+      charge += ns.capCharge;
+      speed = Math.max(speed, ns.capSpeed);
+      trickle = Math.max(trickle, ns.capTrickle);
+    }
+    return { charge, speed, trickle };
   }
 
   /** Held in stasis by a marrow tap: it does nothing at all while tapped. */
   isTapped(t: Tower): boolean {
-    return this.enginesOn(t, 'tap') > 0;
+    return this.enginesPointedAt(t, 'tap').some((c) => !towerStats(c).gentleTap);
+  }
+
+  /** The engines of one kind pointed at this limb. */
+  enginesPointedAt(t: Tower, kind: string): Tower[] {
+    return this.towers.filter((c) => c.id !== t.id && towerSpec(c.family).engine?.kind === kind && this.conduitTarget(c) === t);
   }
 
   /** How many ×1.5 amplifications a limb gets (amplifiers pointed at it + its own amp pips). */
   ampLayers(t: Tower): number {
-    let n = t.pips.filter((p) => p.family === 'amp').length;
-    for (const c of this.towers) {
-      if (c.id !== t.id && towerSpec(c.family).engine?.kind === 'amplify' && this.conduitTarget(c) === t) n++;
+    return this.ampStack(t).length;
+  }
+
+  /** Every x1.5 layer on a limb, with that layer's factor and rounding (evolved amps bend both). */
+  ampStack(t: Tower): Array<{ factor: number; roundUp: boolean }> {
+    const layers: Array<{ factor: number; roundUp: boolean }> = [];
+    const own = [...t.pips, ...upgradePips(t)].filter((p) => p.family === 'amp').length;
+    for (let i = 0; i < own; i++) layers.push({ factor: B.ampFactor, roundUp: false });
+    for (const c of this.enginesPointedAt(t, 'amplify')) {
+      const cs = towerStats(c);
+      for (let i = 0; i <= cs.ampExtraLayers; i++) layers.push({ factor: cs.ampFactor, roundUp: cs.ampRoundUp });
     }
-    return n;
+    return layers;
   }
 
   /** Bonus counts ×factor, rounded down, per type — once per layer (1→1, 2→3, 3→4, 4→6...). */
   static amplify(pips: ModPip[], layers: number): ModPip[] {
-    if (layers <= 0) return pips;
+    return Sim.amplifyStack(pips, Array.from({ length: Math.max(0, layers) }, () => ({ factor: B.ampFactor, roundUp: false })));
+  }
+
+  static amplifyStack(pips: ModPip[], stack: Array<{ factor: number; roundUp: boolean }>): ModPip[] {
+    if (stack.length === 0) return pips;
     const counts = new Map<TowerFamily, number>();
     for (const p of pips) counts.set(p.family, (counts.get(p.family) ?? 0) + 1);
     const out: ModPip[] = [];
     for (const [fam, n0] of counts) {
       let n = n0;
-      if (fam !== 'amp') for (let i = 0; i < layers; i++) n = Math.floor(n * B.ampFactor);
+      if (fam !== 'amp') for (const l of stack) n = l.roundUp ? Math.ceil(n * l.factor) : Math.floor(n * l.factor);
       for (let i = 0; i < n; i++) out.push({ family: fam });
     }
     return out;
@@ -552,7 +666,12 @@ export class Sim {
       // Combo engines pointed at this limb feed it their pool (amplifiers are
       // counted separately and applied last, so they multiply everything fed).
       if (towerSpec(c.family).engine) {
-        if (this.conduitTarget(c) === t) shared.push(...this.conduitPool(c));
+        if (this.conduitTarget(c) === t) {
+          shared.push(...this.conduitPool(c));
+          // Engine evolutions can push verbs straight into the target.
+          for (const o of upgradeOptions(c)) for (const f of o.targetPips ?? []) shared.push({ family: f });
+          if (towerStats(c).targetSelf) shared.push({ family: t.family });
+        }
         continue;
       }
       if (c.family !== 'choir' && c.family !== 'ward') continue;
@@ -560,7 +679,7 @@ export class Sim {
       const aura = this.auraOf(c);
       if (dist(c.pos, t.pos) > aura.radius) continue;
       if (c.family === 'choir') choirBonus += (towerSpec('choir').rateAura ?? 0) * aura.strength;
-      for (const p of c.pips) if (Sim.BROADCAST.has(p.family)) shared.push(p);
+      for (const p of [...c.pips, ...upgradePips(c)]) if (Sim.BROADCAST.has(p.family)) shared.push(p);
     }
     // Conduit PIPS: the limb passively draws the family bonus of its nearest neighbours.
     const draws = t.pips.filter((p) => p.family === 'conduit').length * B.pipDrawNeighbors;
@@ -571,19 +690,22 @@ export class Sim {
         .slice(0, draws);
       for (const u of near) shared.push({ family: u.family });
     }
-    // Mosaic PIPS: one of each distinct family among the limb's close neighbours.
-    if (t.pips.some((p) => p.family === 'mosaic')) {
+    // Mosaic PIPS: one of each distinct family among the limb's close neighbours —
+    // per pip (a second mosaic pip draws a second of each).
+    const own = [...t.pips, ...upgradePips(t)];
+    const mosaics = own.filter((p) => p.family === 'mosaic').length;
+    if (mosaics > 0) {
       const seen = new Set<TowerFamily>();
       for (const u of this.towers) {
         if (u.id === t.id || dist(u.pos, t.pos) > B.mosaicPipRadius || seen.has(u.family)) continue;
         seen.add(u.family);
-        shared.push({ family: u.family });
+        for (let k = 0; k < mosaics; k++) shared.push({ family: u.family });
       }
     }
     // Amplification last: it multiplies EVERYTHING the limb carries and was fed.
-    const layers = this.ampLayers(t);
-    const all = shared.length || layers ? Sim.amplify([...t.pips, ...shared], layers) : t.pips;
-    const s = towerStats(all === t.pips ? t : { ...t, pips: all });
+    const stack = this.ampStack(t);
+    const all = Sim.amplifyStack([...own, ...shared], stack);
+    const s = towerStats({ ...t, pips: all }, true);
     const h = this.map.heights[t.cell] || 1;
     s.range = s.range * this.geneMods.rangeMult * (1 + B.heightRangeBonus * (h - 1));
     s.maxHp += t.family === 'spine' ? this.geneMods.spineHpBonus : 0;
@@ -593,7 +715,9 @@ export class Sim {
     s.rate *= 1 + choirBonus;
     s.tempo *= 1 + choirBonus;
     // Twinning glands: ×2 projectiles (and producer output) per gland.
-    s.volley *= 2 ** this.enginesOn(t, 'twin');
+    for (const g of this.enginesPointedAt(t, 'twin')) s.volley *= towerStats(g).twinPower;
+    // A GENTLE tap lets its target keep working at half speed.
+    for (const c of this.enginesPointedAt(t, 'tap')) if (towerStats(c).gentleTap) { s.rate *= 0.5; s.tempo *= 0.5; }
     return s;
   }
 
@@ -773,6 +897,23 @@ export class Sim {
         if (!card.free) this.hand.push(this.drawCard());
         if (spec.pair && !card.free) this.hand.push({ id: this.nextId++, family: card.family, free: true });
         this.events.push({ kind: 'built', family: card.family, pips: pips.length });
+        return { ok: true };
+      }
+      case 'evolve': {
+        const t = this.towers.find((x) => x.id === cmd.towerId);
+        if (!t) return { ok: false, err: 'no such limb' };
+        const stage = t.upgrades?.length ?? 0;
+        if (stage >= 3) return { ok: false, err: 'fully evolved' };
+        const cost = UPGRADE_COST[stage];
+        if (!this.canAfford(cost)) return { ok: false, err: 'cannot afford' };
+        this.pay(cost);
+        const before = this.statsOf(t).maxHp;
+        t.upgrades = [...(t.upgrades ?? []), cmd.choice];
+        const after = this.statsOf(t).maxHp;
+        t.maxHp = after;
+        t.hp = Math.min(after, t.hp + Math.max(0, after - before));
+        const opt = UPGRADES[t.family][stage][cmd.choice === 'A' ? 0 : 1];
+        this.events.push({ kind: 'evolved', family: t.family, stage: stage + 1, choice: cmd.choice, name: opt.name });
         return { ok: true };
       }
       case 'butcher': {
@@ -970,9 +1111,11 @@ export class Sim {
     // sacrifice banks a copy of the tapped limb's bonuses. Do it as often as you like.
     if (donor.family === 'tap') {
       const target = this.conduitTarget(donor);
+      const ts = towerStats(donor);
       const milk = target ? [...target.pips, { family: target.family }] : [];
-      this.pendingPips = [...this.pendingPips, ...milk];
-      this.events.push({ kind: 'butchered', family: donor.family, refund: 0 });
+      for (let k = 0; k < ts.tapCopies; k++) this.pendingPips = [...this.pendingPips, ...milk];
+      if (target && ts.tapWar > 0) this.meat.war += ts.tapWar;
+      this.events.push({ kind: 'butchered', family: donor.family, refund: target ? ts.tapWar : 0 });
       return;
     }
     const salv = this.salvageOf(donor.family);
@@ -992,7 +1135,9 @@ export class Sim {
     const i = this.towers.findIndex((t) => t.id === id);
     if (i < 0) return;
     const t = this.towers[i];
-    // Reliquaries watching a limb that DIES (not eaten, not stolen) bank its bonuses.
+    // Reliquaries watching a limb that DIES (not eaten, not stolen) bank its bonuses —
+    // and an evolved one (Resurrection / Phoenix) raises it again, once per wave.
+    const keepers = emit ? this.enginesPointedAt(t, 'reliquary') : [];
     if (emit) this.bankRelics(t);
     this.occupied.delete(t.cell);
     this.towers.splice(i, 1);
@@ -1007,6 +1152,20 @@ export class Sim {
       if (!e.targetIsOrgan && e.targetId === id) e.targetId = null;
     }
     if (emit) this.events.push({ kind: 'structure-lost', what: towerSpec(t.family).name + why });
+    const raiser = keepers
+      .filter((k) => this.towers.includes(k) && towerStats(k).rebirth > 0 && k.rebornWave !== this.waveNumber)
+      .sort((a, b) => towerStats(b).rebirth - towerStats(a).rebirth)[0];
+    if (raiser && !this.isOccupied(t.cell)) {
+      raiser.rebornWave = this.waveNumber;
+      const full = towerStats(raiser).rebirth >= 2;
+      const again = this.addTower(t.family, t.cell, full ? [...t.pips] : [], t.facing);
+      if (full && t.upgrades) {
+        again.upgrades = [...t.upgrades];
+        again.maxHp = this.statsOf(again).maxHp;
+        again.hp = again.maxHp;
+      }
+      this.events.push({ kind: 'reborn', family: t.family });
+    }
     this.witherUnrooted();
   }
 
@@ -1026,7 +1185,8 @@ export class Sim {
 
   /** Death insurance: each reliquary on a dying limb (or reliquary pip in it) banks a copy of its bonuses. */
   private bankRelics(t: Tower): void {
-    const n = this.layersOf(t, 'reliquary');
+    const n = [...t.pips, ...upgradePips(t)].filter((p) => p.family === 'reliquary').length
+      + this.enginesPointedAt(t, 'reliquary').reduce((a, r) => a + towerStats(r).relicCopies, 0);
     if (n <= 0) return;
     const relic = [...t.pips, { family: t.family }];
     for (let k = 0; k < n; k++) this.pendingPips = [...this.pendingPips, ...relic];
@@ -1040,24 +1200,44 @@ export class Sim {
    */
   private budMitosis(): void {
     const w = this.cfg.gridW;
-    const around = (cell: number) => [
-      cell - w - 1, cell - w, cell - w + 1, cell - 1, cell + 1, cell + w - 1, cell + w, cell + w + 1,
-    ].filter((c) => c >= 0 && c < this.map.cells.length && Math.abs((c % w) - (cell % w)) <= 1);
-    const jobs: Array<{ family: TowerFamily; near: number[] }> = [];
+    // Rings outward (ring 1 = the 8 neighbours; a Wide Womb reaches ring 2).
+    const around = (cell: number, ring: number) => {
+      const out: number[] = [];
+      for (let r = 1; r <= ring; r++) {
+        for (let dy = -r; dy <= r; dy++) {
+          for (let dx = -r; dx <= r; dx++) {
+            if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+            const x = (cell % w) + dx;
+            const c = cell + dy * w + dx;
+            if (x < 0 || x >= w || c < 0 || c >= this.map.cells.length) continue;
+            out.push(c);
+          }
+        }
+      }
+      return out;
+    };
+    const jobs: Array<{ family: TowerFamily; near: number[]; ring: number; pips: ModPip[] }> = [];
     for (const m of this.towers) {
       if (this.isTapped(m)) continue;
       if (m.family === 'mitosis') {
         const target = this.conduitTarget(m);
+        const ms = towerStats(m);
         // Next to the node first, then next to the parent (city blocks are tight).
-        if (target) jobs.push({ family: target.family, near: [m.cell, target.cell] });
+        if (target) {
+          const pips: ModPip[] = ms.budPips >= 999 ? [...target.pips]
+            : Array.from({ length: ms.budPips }, () => ({ family: target.family }));
+          for (let k = 0; k < ms.budCount; k++) {
+            jobs.push({ family: target.family, near: [m.cell, target.cell], ring: ms.budRing, pips: [...pips] });
+          }
+        }
       }
-      const selfBuds = m.pips.filter((p) => p.family === 'mitosis').length;
-      for (let k = 0; k < selfBuds; k++) jobs.push({ family: m.family, near: [m.cell] });
+      const selfBuds = [...m.pips, ...upgradePips(m)].filter((p) => p.family === 'mitosis').length;
+      for (let k = 0; k < selfBuds; k++) jobs.push({ family: m.family, near: [m.cell], ring: 1, pips: [] });
     }
     for (const job of jobs) {
-      const spot = job.near.flatMap(around).find((c) => this.canPlaceFree(c, job.family));
+      const spot = job.near.flatMap((c) => around(c, job.ring)).find((c) => this.canPlaceFree(c, job.family));
       if (spot === undefined) continue; // full: harvest the copies to make room
-      this.addTower(job.family, spot, []);
+      this.addTower(job.family, spot, job.pips);
       this.events.push({ kind: 'budded', family: job.family });
     }
   }
@@ -1253,7 +1433,14 @@ export class Sim {
         // Brood pips: living tissue regrows between waves — 50% max hp per pip.
         for (const t of this.towers) {
           const heal = this.statsOf(t).waveHeal;
-          if (heal > 0) t.hp = Math.min(t.maxHp, t.hp + t.maxHp * heal);
+          if (heal <= 0) continue;
+          const raw = t.hp + t.maxHp * heal;
+          // Past full, living tissue GROWS: part of the excess becomes max hp for life.
+          if (raw > t.maxHp) {
+            t.grownHp = (t.grownHp ?? 0) + (raw - t.maxHp) * B.overgrowFrac;
+            t.maxHp = this.statsOf(t).maxHp;
+          }
+          t.hp = Math.min(t.maxHp, raw);
         }
         // Mitosis: nodes bud their copies.
         this.budMitosis();
@@ -2605,10 +2792,20 @@ export class Sim {
     const layer: 'ground' | 'air' | 'both' = s.hitsAir && s.hitsGround ? 'both' : s.hitsAir ? 'air' : 'ground';
     // Boomerang: a node pointed at this limb (or a boomerang pip in it) calls its
     // shots back after their first hit — to the node, or to the limb itself.
+    // DOUBLING: every boomerang layer (node or pip) is one more trip — the shot
+    // ping-pongs between the node and the first body it hit.
     let returnTo: Vec | undefined;
-    const node = this.towers.find((c) => c.family === 'boomerang' && !this.isTapped(c) && this.conduitTarget(c) === t);
-    if (node) returnTo = { ...node.pos };
-    else if (t.pips.some((p) => p.family === 'boomerang')) returnTo = { ...t.pos };
+    const nodes = this.enginesPointedAt(t, 'boomerang').filter((c) => !this.isTapped(c));
+    const ownBoom = [...t.pips, ...upgradePips(t)].filter((p) => p.family === 'boomerang').length;
+    if (nodes.length > 0) returnTo = { ...nodes[0].pos };
+    else if (ownBoom > 0) returnTo = { ...t.pos };
+    let legs = nodes.length + ownBoom;
+    let returnDmg = 1;
+    for (const n of nodes) {
+      const ns = towerStats(n);
+      legs += ns.returnLegs;
+      returnDmg = Math.max(returnDmg, ns.returnDmg);
+    }
     const pellets = towerSpec(t.family).pellets ?? 1;
     const spread = towerSpec(t.family).spread ?? 0;
     const base = Math.atan2(dy, dx);
@@ -2629,6 +2826,8 @@ export class Sim {
         pierceLeft: s.pierce ? 3 : undefined,
         hitIds: s.pierce ? [] : undefined,
         returnTo,
+        legsLeft: returnTo ? legs - 1 : undefined,
+        returnDmg: returnTo ? returnDmg : undefined,
       });
     }
   }
@@ -2769,16 +2968,18 @@ export class Sim {
       }
       // CAPACITOR: with nothing to shoot, bank shots at the limb's own rate;
       // with the hive in reach, spend them at 400% speed until the bank is dry.
-      const caps = this.layersOf(t, 'capacitor');
+      const cap = this.capacitorOf(t);
       if (!target) {
-        if (caps > 0) t.bank = (t.bank ?? 0) + stats.rate * caps * DT;
+        if (cap) t.bank = (t.bank ?? 0) + stats.rate * cap.charge * DT;
         continue;
       }
-      if (caps > 0 && (t.bank ?? 0) >= 1) {
+      if (cap && (t.bank ?? 0) >= 1) {
         t.bank = (t.bank ?? 0) - 1;
-        t.cooldown = 1 / (stats.rate * B.capacitorSpeed);
+        t.cooldown = 1 / (stats.rate * cap.speed);
       } else {
         t.cooldown = 1 / stats.rate;
+        // Trickle evolution: keeps banking a little even while firing normally.
+        if (cap && cap.trickle > 0) t.bank = (t.bank ?? 0) + cap.trickle * cap.charge;
       }
 
       // Focus fire: consecutive shots on one body ramp (prisms natively, any
@@ -2828,14 +3029,11 @@ export class Sim {
         // every body on the way back (each once).
         if (p.returnTo && !p.returned) {
           p.returned = true;
+          p.turnAt = at;
           p.hitIds = [...(p.hitIds ?? []), hit.id];
           p.pierceLeft = 1e9;
-          const dx = p.returnTo.x - p.pos.x;
-          const dy = p.returnTo.y - p.pos.y;
-          const d = Math.hypot(dx, dy) || 1;
-          const sp = Math.hypot(p.vel.x, p.vel.y);
-          p.vel = { x: (dx / d) * sp, y: (dy / d) * sp };
-          p.ttl = d / sp;
+          if (p.returnDmg && p.returnDmg !== 1) p.fx = { ...p.fx, damage: p.fx.damage * p.returnDmg };
+          this.steerProjectile(p, p.returnTo);
           continue;
         }
         if (p.pierceLeft !== undefined && p.pierceLeft > 0) {
@@ -2845,10 +3043,28 @@ export class Sim {
           gone.push(p.id);
         }
       } else if (p.ttl <= 0) {
-        gone.push(p.id);
+        // Ping-pong: a boomerang with trips left turns around at either end.
+        if (p.returned && p.returnTo && p.turnAt && (p.legsLeft ?? 0) > 0) {
+          p.legsLeft = (p.legsLeft ?? 0) - 1;
+          const home = dist(p.pos, p.returnTo) < dist(p.pos, p.turnAt);
+          p.hitIds = [];
+          this.steerProjectile(p, home ? p.turnAt : p.returnTo);
+        } else {
+          gone.push(p.id);
+        }
       }
     }
     this.projectiles = this.projectiles.filter((p) => !gone.includes(p.id));
+  }
+
+  /** Point a projectile at a spot at its current speed, with just enough life to get there. */
+  private steerProjectile(p: Projectile, to: Vec): void {
+    const dx = to.x - p.pos.x;
+    const dy = to.y - p.pos.y;
+    const d = Math.hypot(dx, dy) || 1;
+    const sp = Math.hypot(p.vel.x, p.vel.y) || B.projectileSpeed;
+    p.vel = { x: (dx / d) * sp, y: (dy / d) * sp };
+    p.ttl = d / sp;
   }
 
 
@@ -2926,11 +3142,21 @@ export class Sim {
       const district = slot && slot.feature === 'meat' && spec.caste === 'war' ? 1.25 : 1;
       // Meat Press: a pressed limb's war-caste kills pay SCIENCE instead.
       const killer = srcId !== undefined ? this.towers.find((t) => t.id === srcId) : undefined;
-      const pressed = spec.caste === 'war' && killer !== undefined && this.layersOf(killer, 'press') > 0;
+      const press = killer ? this.pressOf(killer) : null;
+      const pressed = spec.caste === 'war' && press !== null;
+      // DOUBLING: every press layer past the first adds +50% to the pressed pay.
+      const pressMult = pressed ? 1 + B.pressExtraLayer * (press.layers - 1) + press.bonus : 1;
       this.drops.push({
         id: this.nextId++, pos: { ...e.pos }, caste: pressed ? 'science' : spec.caste,
-        amount: Math.round(spec.meat * yieldMult * district * this.entranceMeatMult), ttl: B.dropFlySeconds,
+        amount: Math.round(spec.meat * yieldMult * district * this.entranceMeatMult * pressMult), ttl: B.dropFlySeconds,
       });
+      // Royal Press: every Nth pressed kill also pays a royal point.
+      if (pressed && killer && press.royalEvery > 0) {
+        killer.pressed = (killer.pressed ?? 0) + 1;
+        if (killer.pressed % press.royalEvery === 0) {
+          this.drops.push({ id: this.nextId++, pos: { ...e.pos }, caste: 'royal', amount: 1, ttl: B.dropFlySeconds });
+        }
+      }
     }
   }
 

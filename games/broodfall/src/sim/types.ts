@@ -208,7 +208,48 @@ export interface Tower {
   facing?: RootDir;
   /** Capacitor: shots banked while idle, spent at 400% speed when the hive arrives. */
   bank?: number;
+  /** Evolution path, one letter per stage bought (Tower Dominion style): e.g. ['A','B']. */
+  upgrades?: UpgradeChoice[];
+  /** Max hp grown by healing past full (brood pips), kept for life. */
+  grownHp?: number;
+  /** Meat press: pressed kills so far (every Nth pays a royal point on a Royal Press). */
+  pressed?: number;
+  /** Reliquary: the wave it last raised its limb (Resurrection/Phoenix: once per wave). */
+  rebornWave?: number;
 }
+
+export type UpgradeChoice = 'A' | 'B';
+
+/** Numeric stat keys an evolution may add to or multiply (see towerStats). */
+export type UpgradeStat =
+  | 'aoe' | 'maxHp' | 'eatThreshold' | 'interest' | 'slowMult' | 'slowDur' | 'poisonDps' | 'poisonDur'
+  | 'burnDps' | 'burnDur' | 'shred' | 'shredDur' | 'chains' | 'execute' | 'skips' | 'extraTargets'
+  | 'grounding' | 'streakRamp' | 'extraBroodlings' | 'yieldMult' | 'knock'
+  // Engine knobs (read by the engine code paths; defaults in towerStats).
+  | 'gather' | 'engineCap' | 'ampFactor' | 'ampExtraLayers' | 'mosaicCopies' | 'twinPower'
+  | 'tapCopies' | 'tapWar' | 'budCount' | 'budRing' | 'budPips' | 'capSpeed' | 'capCharge'
+  | 'capTrickle' | 'returnLegs' | 'returnDmg' | 'pressBonus' | 'pressRoyalEvery' | 'relicCopies'
+  | 'rebirth' | 'poolMult';
+
+/** One side of one evolution stage. Every option CHANGES the limb (never "+5%"). */
+export interface UpgradeOption {
+  name: string;
+  text: string;
+  /** Multipliers folded into the payload bases before rate/damage/range derive. */
+  tempo?: number;
+  potency?: number;
+  reach?: number;
+  /** Verbs the evolution grows into the limb (count as its own pips, amplifiable). */
+  pips?: TowerFamily[];
+  /** For engines: verbs pushed into the limb the engine points at. */
+  targetPips?: TowerFamily[];
+  add?: Partial<Record<UpgradeStat, number>>;
+  mult?: Partial<Record<UpgradeStat, number>>;
+  set?: Partial<{ hitsAir: boolean; hitsGround: boolean; trueSight: boolean; pierce: boolean; ampRoundUp: boolean; gentleTap: boolean; targetSelf: boolean }>;
+}
+
+/** A family's three stages, each an [A, B] pair. */
+export type UpgradeTree = [[UpgradeOption, UpgradeOption], [UpgradeOption, UpgradeOption], [UpgradeOption, UpgradeOption]];
 
 /** Caltrops: a mini-wall of barbs a spine-pipped limb leaves where it kills. */
 export interface Caltrop {
@@ -436,6 +477,12 @@ export interface Projectile {
   /** Boomerang: after its first hit the shot flies back here, striking everything on the way. */
   returnTo?: Vec;
   returned?: boolean;
+  /** Boomerang legs left after this one (each extra layer = one more trip). */
+  legsLeft?: number;
+  /** Where the outbound leg turned (the far end of the ping-pong line). */
+  turnAt?: Vec;
+  /** Damage multiplier applied to return legs (Heavy Return evolutions). */
+  returnDmg?: number;
 }
 
 export interface Drop {
@@ -478,6 +525,8 @@ export type SimEvent =
   | { kind: 'cannon-deployed'; enemy: EnemyKind }
   | { kind: 'budded'; family: TowerFamily }
   | { kind: 'relic-banked'; family: TowerFamily; pips: number }
+  | { kind: 'evolved'; family: TowerFamily; stage: number; choice: UpgradeChoice; name: string }
+  | { kind: 'reborn'; family: TowerFamily }
   | { kind: 'royal-incoming' }
   | { kind: 'researchers-arrive'; count: number }
   | { kind: 'structure-lost'; what: string }
@@ -492,6 +541,7 @@ export type SimEvent =
 export type Command =
   | { kind: 'build'; cardIndex: number; cell: number; cannibalizeTowerId?: number; facing?: RootDir }
   | { kind: 'butcher'; towerId: number }
+  | { kind: 'evolve'; towerId: number; choice: UpgradeChoice }
   | { kind: 'set-priority'; towerId: number; mode?: TargetMode; caste?: CasteFocus }
   | { kind: 'set-marker'; towerId: number; cell: number }
   | { kind: 'set-facing'; towerId: number; dir: RootDir }

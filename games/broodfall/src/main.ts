@@ -105,6 +105,10 @@ const hud = new Hud({
   onSetFacing(towerId, dir) {
     sim.issue({ kind: 'set-facing', towerId, dir });
   },
+  onEvolve(towerId, choice) {
+    const r = sim.issue({ kind: 'evolve', towerId, choice });
+    if (!r.ok) hud.setHint(r.err === 'cannot afford' ? 'NOT ENOUGH SCIENCE (STAGE 3 ALSO NEEDS A ROYAL POINT)' : String(r.err).toUpperCase());
+  },
 });
 
 function salvageText(family: TowerFamily): string {

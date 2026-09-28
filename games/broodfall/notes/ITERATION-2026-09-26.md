@@ -147,6 +147,40 @@ smart flips 3:2, totals 120k vs 115k. 54/54 tests; input check adds the lobber
 gesture; visual/endgame green.
 
 
+## Addendum 15 (Sep 28): science = engines + evolutions; the doubling rule; evolutions
+
+Collins: "science should be for combo organs only and certain upgrades we have not
+gotten to yet"; "we need to make sure we know what doubling upgrades does… decide
+and implement for each"; then a three-stage A/B upgrade system per limb after
+Tower Dominion, "the final upgrade always requiring one royal point", "upgrade 1
+and 2 can always be all science".
+
+- **Science off basic limbs and organs.** First try converted the science share to
+  war 1:1: the bot built 21 limbs instead of 80 (war starved), 1/10 wins. Dropping
+  the share instead: 2/10 with 300-800 science unspent per run (science had been
+  paying for a share of every limb). A bigger war wave bounty fixed it but went to
+  8/10. The real fix was a science sink: evolutions.
+- **The doubling rule** (DESIGN.md table). Fixed the bonuses whose second copy did
+  nothing: mosaic pip (was on/off → one more of each type per pip), boomerang (was
+  on/off → one more trip per layer, ping-pong), meat press (on/off → +50% per extra
+  layer), brood heal past full (was clamped → grows max hp). Status verbs now also
+  lengthen 0.5s per copy. Permanent test: `tests/evolution.test.ts` checks every
+  family's x2 against x1 (ignoring interest, which every pip raises — the first
+  version of the test passed a deliberately broken mosaic because of it).
+- **Evolutions** (`content/upgrades.ts`, 34 trees × 3 stages × 2). Options act
+  through tempo/potency/reach multipliers, grown verbs (virtual pips), stat
+  add/mult, flags, and engine knobs (cap, factor, round-up, copies, twin power,
+  gentle tap, buds, bank speed, trips, press bonus/royal, relic copies, rebirth).
+  Panel: EVOLVE section with both options, price, faint later stages; crest on the
+  limb. Bot: evolves its top-killing limbs, choosing A/B by a dps read; saves a
+  royal point for a waiting stage 3.
+- **Royal points**: consort/matron drop 1, the royal 3; surge costs 1.
+- **Balance**: with evolutions the bot won 8-9/10 → threatPerTier 37 → 28 (tier 6
+  at 256): naive 5/10, guardrail flips 3:0. 150 tests.
+- Browser: `tools/shot-evolve.mjs` clicks through all three stages (and the royal
+  refusal) in the real panel. First screenshot had dark-on-dark option buttons —
+  restyled to the panel's button colours.
+
 ## Addendum 14 (Sep 27): Mitosis, Capacitor, Boomerang, Meat Press, Reliquary
 
 Collins picked five from brainstorm round 2, with his own tweaks: mitosis copies are
