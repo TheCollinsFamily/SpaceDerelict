@@ -608,41 +608,82 @@ each having only a little story to it, with the ability for the enemy to push ba
 - **Pushback**: after each deployment the colony counterattacks one territory you hold
   (telegraphed on the globe). Defend it (a defence deployment) or lose it and its bonus.
 
-### The factions (Emperor's recruitable sub-houses)
+### The factions (Emperor's recruitable sub-houses) — revised Sep 28 2026
 "Recruitable factions through some missions … give you a couple of extra units, and
 you choose one or the other, and it colours the campaign." "Each faction would have
 its own central campaign to beating the game." Three factions of the colony itself,
-each a parody of an extremism; siding with one angers the others, and the faction
-you back decides your route to the end of the game and your ending.
+each a parody of an extremism. **None of them ever turns against you — their GOALS
+change as the game goes on** (Collins). The faction you back decides your route and
+your ending; each lends two perks that unlock along its route.
 
-1. **The Friendship Delegation** — hopeless progressives: "this is all just a
-   misunderstanding, and if an alien with higher intelligence is doing it, it must be
-   for a greater good the world just doesn't see". You are constantly messing with
-   them (France in Mars Attacks!).
-   - Lends: Welcome Party (unarmed diplomats; war bodies near them hesitate — until
-     you eat one) and a Translator (shows the next two waves).
-   - Their campaign: a peace summit you are invited to at every turn, each one an
-     opportunity. Ending: the summit hall, and the last delegate still smiling.
-2. **The Congregation of the Last Swarm** — apocalyptic religious conservatives: "the
-   world needs to end for the messiah to come", "the joke being that he has to keep
-   learning more about the world's religion, which he finds very beneath him". The
-   character, a Technopuritan materialist, has to do theology homework to keep them.
-   - Lends: Martyrs (bodies that detonate in the enemy lanes) and a Prophet (your
-     brood fights harder near him).
-   - Their campaign: fulfil the prophecies in order (destroy the seven temple
-     districts). Ending: the messiah does not come; the character files a report on
-     local folklore.
-3. **The Institute for Long-Term Hive Flourishing** — an EA parody: their civilization
-   "just invented simple AI models and sees aiding you as less dangerous than AI
-   continuing to develop" — "then show their true colours once it's clear you are
-   much more of a threat than that, negotiating for power to 'rule what's left' so
-   they can 'rebuild it right next time'".
-   - Lends: a Red Team (detection; stuns enemy artillery) and a Compute Grant (+science
-     each turn).
-   - Their campaign: shut down the colony's AI labs for them; mid-campaign they turn
-     and demand territory. Grant it (they become the final rival) or refuse (they
-     betray you with the units they lent). Ending: they are left in charge of the
-     rubble, drafting a charter for next time.
+**A base-game change this implies:** "the translator gives you access to what's coming
+in the next wave (which we will normally have you not able to see) and which
+entrance it comes from". Today the game telegraphs the next wave's gates and draws
+the beacons; under the campaign that becomes a perk, and the default is a countdown
+with no composition and no entrance.
+
+#### 1. The Friendship Delegation — the believers who never stop believing
+Hopeless progressives: "this is all a misunderstanding; a higher intelligence doing
+this must be serving a greater good". "They never stop believing you are good — think
+of them like people who stay with a cult even after the prediction fails." Every
+atrocity is reinterpreted: first you were misunderstood, then you were a hard
+lesson, then you were the planet's immune response — protecting Gaia from their
+polluting, warring species. Played like France in Mars Attacks!: you are constantly
+messing with them, and they thank you for it.
+- **Perk: Conscientious Objectors.** Their sympathisers inside the colony ground the
+  flights and refuse to send reinforcements: before a deployment, pick enemy unit
+  types that will not come this mission (more types as the route goes on).
+- **Perk: the Translator.** See the next wave's composition and which entrance it
+  comes from.
+- **Route (goals shift):** Understand the Visitor (peace summits you are invited to,
+  each an opening) → Stop the War (they sabotage their own defence) → Heal the World
+  (they believe the clearance is a cleansing and ask to help "tend the wound") →
+  Bear Witness (their last congress, reading their manifesto to an empty hall).
+- **Ending:** the planet goes quiet; the last delegate writes the history — "The
+  Visitors came to heal us from ourselves."
+
+#### 2. The Faithful of the Last Hour — the apocalyptics
+A parody of Christian and Islamic end-times extremism, "vague enough that players of
+each group assume it's the other". "The Hour" is the name both traditions use for the
+end. They welcome you as the sign: the world must end for the Awaited One to come.
+The character, a Technopuritan materialist, has to keep learning their scripture to
+keep them on side, and finds all of it beneath him.
+- **First contact:** "the operator of a network of radio shows" — the Voice, host of
+  *The Hour Is Near*, broadcasting to the faithful on every frequency.
+- **Perk: Sleepers.** Martyrs hidden among the enemy troops — some bodies in each wave
+  detonate among their own ranks.
+- **Perk: the Garrison.** Their militants hold the territories you take, so you don't
+  have to play the defence deployments (pushback is repelled automatically).
+- **Route (goals shift):** Read the Signs (tune the broadcasts; theology homework) →
+  Fulfil the Prophecies (the deployments they want are the ones scripture lists —
+  temple districts, the great river, the seventh city) → Prepare the Way → the Hour.
+- **Ending:** "you end up creating an artificial messiah for them — to their
+  knowledge everything worked out." The Voice's last broadcast is a hymn.
+
+#### 3. The Institute for Long-Term Hive Flourishing — the EA parody
+"Their constant hypocrisy and self-serving nature is the focus." Their civilisation
+just invented simple AI models; they say they back you because you are less dangerous
+than their own AI. You tell them you have the technology to UPLOAD their species into
+a virtual world where they live forever, and they believe it — or decide believing it
+is the higher-expected-value option.
+- **Their voice:** obsequious and slimy; the person who thinks he is smarter than
+  everyone, and secretly better than everyone, who are just too stupid to see what he
+  sees. "We're not saying it's good. We're saying it's the least-bad timeline, and
+  frankly we're the only ones doing the maths." "Of course we'll be first in the
+  queue — someone has to supervise the queue." "Think of the future lives."
+- **Perk: Volunteers.** They start by sending you their cryo-lab subjects "for upload",
+  then recruit volunteers: missions start with science, and later with war and royal
+  currency on top.
+- **Perk: Seed Labs.** Their labs can seed the infection anywhere: you may deploy to
+  territories that are NOT adjacent to what you hold.
+- **Route (goals shift):** Stop the Machines (shut down their planet's AI labs "for
+  safety") → Build the Pipeline (upload recruitment, quotas, a waiting list) → the
+  Ultimatum. Midway they offer, in the same smiling memo: "we rule what's left after
+  you take what you want", OR "we help you pacify the population — we understand them,
+  after all". Either way they stay with you; only the plan changes.
+- **Ending:** they preside over the rubble, drafting a charter to "rebuild it right
+  next time"; the Director is last into the upload chamber, delivering a speech about
+  his own foresight.
 
 ### Suggested build order
 1. The two credits: the Requisition Board (standing) and Dares (field notes), which
