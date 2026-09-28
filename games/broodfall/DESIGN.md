@@ -635,12 +635,19 @@ messing with them, and they thank you for it.
   types that will not come this mission (more types as the route goes on).
 - **Perk: the Translator.** See the next wave's composition and which entrance it
   comes from.
+- **The midpoint reveal (Collins):** about halfway through, the character finally
+  says it plainly — "I am REALLY trying to destroy your species." And it turns out
+  that is no problem at all: the Delegation is their planet's voluntary extinction
+  movement, extremist antinatalists who were hoping for exactly this. Staged as a
+  parody of the last scene of *Some Like It Hot* — the character pulls off the
+  pretence ("I'm a pest-control operator. I'm exterminating you."), and the chief
+  delegate, beaming, doesn't even look up: "Well — nobody's perfect."
 - **Route (goals shift):** Understand the Visitor (peace summits you are invited to,
-  each an opening) → Stop the War (they sabotage their own defence) → Heal the World
-  (they believe the clearance is a cleansing and ask to help "tend the wound") →
-  Bear Witness (their last congress, reading their manifesto to an empty hall).
+  each an opening) → Stop the War (they sabotage their own defence) → *the reveal* →
+  Hurry It Along (now open collaborators: they want it faster, cleaner, and with
+  fewer births along the way) → Bear Witness.
 - **Ending:** the planet goes quiet; the last delegate writes the history — "The
-  Visitors came to heal us from ourselves."
+  Visitors came to heal us from ourselves" — and switches off the lights.
 
 #### 2. The Faithful of the Last Hour — the apocalyptics
 A parody of Christian and Islamic end-times extremism, "vague enough that players of
@@ -666,11 +673,30 @@ just invented simple AI models; they say they back you because you are less dang
 than their own AI. You tell them you have the technology to UPLOAD their species into
 a virtual world where they live forever, and they believe it — or decide believing it
 is the higher-expected-value option.
-- **Their voice:** obsequious and slimy; the person who thinks he is smarter than
-  everyone, and secretly better than everyone, who are just too stupid to see what he
-  sees. "We're not saying it's good. We're saying it's the least-bad timeline, and
-  frankly we're the only ones doing the maths." "Of course we'll be first in the
-  queue — someone has to supervise the queue." "Think of the future lives."
+- **The Director (Collins: "think Luke Rattigan from *The Sontaran Stratagem*"):** not a
+  grovelling servant — a boy genius who despises his own people and believes the
+  character is, at last, "a being who matches his intellect". The model for the
+  parody is a composite of well-known rationalist/EA and crypto-founder figures
+  Collins named; the in-game Director is a fictional alien.
+- **The running jokes:**
+  - He keeps trying to be your FRIEND: invites you to his culture's nerdy things —
+    a parody of *League of Legends* (working name *League of Larvae*) that he plays
+    on the calls where you discuss which cities to destroy ("sorry, one sec, I'm
+    carrying my whole team — anyway, the eastern districts, sure").
+  - He and his inner circle are all in polyamorous relationships with their
+    underlings, and he keeps offering you females. The character is baffled by
+    recreational sex. The exchange (Collins's):
+    > "Females … for breeding?"
+    > "No, for fun, you know, like — oh gosh man, you've got to try it. Your
+    > civilisation dropped recreational sex?"
+    > "But … that would lead to dysgenics, right? I thought you cared about logic."
+    > "No — again — you don't get them pregnant."
+    > "But … but that's a disease risk and an enormous waste of time … oh my — wait.
+    > Has your species not discovered masturbation?"
+  - Everything is framed as expected value, and every calculation comes out in his
+    favour. "We're not saying it's good. We're saying it's the least-bad timeline,
+    and frankly we're the only ones doing the maths." "Of course we'll be first in
+    the upload queue — someone has to supervise the queue."
 - **Perk: Volunteers.** They start by sending you their cryo-lab subjects "for upload",
   then recruit volunteers: missions start with science, and later with war and royal
   currency on top.
