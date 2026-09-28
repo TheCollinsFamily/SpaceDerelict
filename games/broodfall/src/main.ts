@@ -9,7 +9,7 @@ import { DT, Sim, organSpec, towerSpec } from './sim/sim';
 import { Renderer } from './render/render';
 import { Hud, PIP_DESC } from './ui/hud';
 import { UndergroundScreen } from './ui/underground';
-import { strainKey, strainLabel } from './ui/strain';
+import { strainIcons, strainKey, strainLabel } from './ui/strain';
 import { GENES } from '../content/plates';
 import { BALANCE as B } from '../content/data';
 import { PLATE_FEATURES } from './sim/citymap';
@@ -72,6 +72,8 @@ let armedThrower: { id: number; family: 'sling' | 'lobber' | 'bombard' } | null 
 let armedNode: number | null = null;
 /** A mature node chosen to spread its one child (its creep-source id). */
 let armedSpread: number | null = null;
+/** The pointer is over a creep node (its readout is in the hint line). */
+let hoveringNode = false;
 /** Facing a DIRECTIONAL card will be placed with (right-click rotates while placing). */
 let placeFacing: RootDir | null = null;
 const FACING_ORDER: RootDir[] = ['N', 'E', 'S', 'W'];
@@ -387,7 +389,7 @@ function handleCanvasClick(clientX: number, clientY: number): void {
     const node = sim.creepSources.find((s) => s.kind === 'node' && Math.hypot(sim.cellCenter(s.cell).x - w.x, sim.cellCenter(s.cell).y - w.y) < 13);
     if (node) {
       if (node.spent) { hud.setHint('this node has already spread its child'); return; }
-      if (sim.time < (node.matureAt ?? 0)) { hud.setHint(`node maturing — it can spread in ${Math.ceil((node.matureAt ?? 0) - sim.time)}s of battle`); return; }
+      if (sim.wavesCleared < (node.matureAt ?? 0)) { hud.setHint('node still maturing — once it survives a wave it can spread its child'); return; }
       armedSpread = node.id;
       updateHint();
       return;
@@ -515,14 +517,14 @@ nodeBtn.addEventListener('click', (ev) => {
 let lastTrayKey = '';
 function updateNodeButton(): void {
   document.getElementById('node-count')!.textContent = String(sim.creepNodes);
-  const next = sim.nextNodeIn();
-  document.getElementById('node-next')!.textContent = next === null ? 'free · grown by spore bladders' : `free · next in ${Math.ceil(next)}s`;
+  const next = sim.nodesNextTurn();
+  document.getElementById('node-next')!.textContent = next === 0 ? 'grow a Spore Bladder in the organ stage' : `+${next} next turn`;
   nodeBtn.classList.toggle('disabled', sim.creepNodes < 1);
   // One chip per strain in stock.
-  const groups = new Map<string, { n: number; label: string; mire: boolean; burn: boolean }>();
+  const groups = new Map<string, { n: number; label: string; icons: string; mire: boolean; burn: boolean }>();
   for (const s of sim.nodeStock) {
     const k = strainKey(s);
-    const g = groups.get(k) ?? { n: 0, label: strainLabel(s), mire: s.slow < 1, burn: s.dps > 0 };
+    const g = groups.get(k) ?? { n: 0, label: strainLabel(s), icons: strainIcons(s), mire: s.slow < 1, burn: s.dps > 0 };
     g.n++;
     groups.set(k, g);
   }
@@ -531,7 +533,7 @@ function updateNodeButton(): void {
   if (trayKey === lastTrayKey) return;
   lastTrayKey = trayKey;
   nodeTray.innerHTML = [...groups].map(([k, g]) =>
-    `<button class="node-chip${g.mire ? ' mire' : ''}${g.burn ? ' burn' : ''}${k === armedKey ? ' on' : ''}" data-strain="${k}">${g.n}× ${g.label}</button>`).join('');
+    `<button class="node-chip${g.mire ? ' mire' : ''}${g.burn ? ' burn' : ''}${k === armedKey ? ' on' : ''}" data-strain="${k}" title="${g.label}">${g.n}× ${g.icons}</button>`).join('');
 }
 const openUnderBtn = document.getElementById('open-under')!;
 openUnderBtn.addEventListener('click', () => { if (sim.phase !== 'siege') { cancelAll(); under.show(); } });
@@ -597,6 +599,17 @@ async function boot(): Promise<void> {
     }
     if (selectedCard === null && armedOrgan === null) {
       renderer.preview = null;
+      const wh = renderer.toWorld(ev.clientX, ev.clientY);
+      const hovered = sim.creepSources.find((s) => s.kind === 'node' && Math.hypot(sim.cellCenter(s.cell).x - wh.x, sim.cellCenter(s.cell).y - wh.y) < 13);
+      if (hovered && hovered.strain) {
+        const state = hovered.spent ? 'already spread its child'
+          : sim.wavesCleared >= (hovered.matureAt ?? 0) ? 'READY — click it to spread its child' : 'maturing — spreads after it survives a wave';
+        hud.setHint(`CREEP NODE ${strainIcons(hovered.strain)} (${strainLabel(hovered.strain)}) · HP ${Math.ceil(hovered.hp ?? 0)}/${hovered.maxHp ?? 0} · ${state}`);
+        hoveringNode = true;
+      } else if (hoveringNode) {
+        hoveringNode = false;
+        updateHint();
+      }
       if (hoverDonorId !== null) {
         hoverDonorId = null;
         renderer.donorHighlightId = null;

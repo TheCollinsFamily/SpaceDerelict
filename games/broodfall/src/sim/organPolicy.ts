@@ -54,7 +54,8 @@ export function bestOrganSpot(sim: Sim, organ: OrganId, random?: Rng): { cell: n
       }
       const d = u.cells[c];
       if (d.kind === 'deposit' && d.deposit && !d.claimed) {
-        const p = DEPOSITS[d.deposit].now;
+        if (!sim.isUncovered(c)) continue; // the bot digs toward what it has found, like a player
+        const p = d.pay ?? DEPOSITS[d.deposit].now;
         score += (p.war ?? 0) / 5 + (p.science ?? 0) / 2 + (p.royal ?? 0) * 10 + (p.biomass ?? 0) / 30 + (p.pips ?? 0) * 4;
       }
       score -= Math.floor(c / u.w) * 0.1; // keep room below for later organs
@@ -70,9 +71,8 @@ export function placeNode(sim: Sim, random?: Rng): boolean {
   if (gate === undefined) return false;
   const g = sim.cellCenter(gate);
   // A mature node that has not spread yet: push its child toward the gate.
-  const now = sim.time;
   for (const n of sim.creepSources) {
-    if (n.kind !== 'node' || n.spent || now < (n.matureAt ?? 0)) continue;
+    if (n.kind !== 'node' || n.spent || sim.wavesCleared < (n.matureAt ?? 0)) continue;
     let bestC = -1;
     let bestD = Infinity;
     const opts: number[] = [];

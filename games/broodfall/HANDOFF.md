@@ -78,7 +78,7 @@ debrief → ship gene bay → redeploy.
     zone; roots carry adjacency. Unspent war/science is LOST when a wave starts (royal
     points kept). DESIGN.md "The organ stage" has the full table.
 22. **Creep is the core of the organ game** (Sep 28): free creep NODES grown by Spore
-    Bladders; creep organs TOUCHING a bladder set its nodes' strain (faster, doubled,
+    Bladders, one per TURN; creep organs TOUCHING a bladder set its nodes' strain (faster, doubled,
     bigger, thrown, mire, burning); nodes mature and spread one child; trampling and
     shells can kill a node and its creep. Catapult Sac unlocks the Spore Sling; Runner
     Gland unlocks the Creep Lance (a strip of creep). DESIGN.md "Creep".
@@ -105,7 +105,7 @@ debrief → ship gene bay → redeploy.
 ## How to verify (all must be green before claiming anything)
 
 ```powershell
-npm test             # 163 tests: sim, evolutions + the doubling rule, plates algebra, wave rhythm, per-verb behaviors
+npm test             # 165 tests: sim, evolutions + the doubling rule, plates algebra, wave rhythm, per-verb behaviors
                      # for 29 tower families + 26 enemy kinds (combo engines, burn, payload rule, detection,
                      # air/ground, dependency, cannons, shields, bombard markers),
                      # naive win RATE over 10 seeds, smart science routing +
@@ -144,9 +144,9 @@ URL params: `?seed= &auto=1 &autostart=1 &speed= &directive=hold|royal|harvest &
 Scripted player, hold-12, 1 entrance: 2/3 measured seeds win (the enemy expansion
 restored real difficulty); 2-3 entrances much harder. MEASURE WIN RATE OVER 10 SEEDS,
 never 3-4 (addendum 8: small samples swung 3/3 ↔ 0/3 on draw noise). Current: naive
-hold-12 4/10; guardrail smart flips 3:0 (Sep 28, creep nodes; node hp 140). The bot buys combo engines
+hold-12 4/10; guardrail smart flips 3:0 (Sep 28, per-turn creep; threatPerTier 22). The bot buys combo engines
 only on a measured ≥15% gain (trial-places a ghost) and aims them all at one carry. Difficulty knob =
-threatPerTier (21 since the organ stage, tier 6 at 192; organ level bonus 10% — addendum 17). The bot
+threatPerTier (22 since per-turn creep, tier 6 at 201; organ level bonus 10% — addenda 17-19). The bot
 spends science on evolutions for its top-killing limbs (A/B by a dps read). The bot uses support limbs by
 their own logic (ward behind guns, bombard deep + counter-battery on cannons). The bot throws
 sling clots at the telegraphed gate, volleys the lobber at the closest hostile, and

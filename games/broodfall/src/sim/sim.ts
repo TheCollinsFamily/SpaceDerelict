@@ -22,9 +22,9 @@ import type {
 } from './types';
 import { UPGRADES, UPGRADE_COST } from '../../content/upgrades';
 import {
-  BRAIN_DRAW_MULT, CATAPULT_REACH, DEPOSITS, FEATURES, FEATURE_FAVORED_LEVEL, FEATURE_LEVEL, METEOR_THEME,
-  LINING_DPS, MIRE_SLOW, NODE_HP, NODE_INTERVAL, NODE_MATURE, NODE_RADIUS, NODE_TRAMPLE, NODE_REACH, ORGAN_BY_ID, ORGAN_DEFS, ORGAN_LEVEL_POTENCY, ORGAN_LEVEL_TEMPO,
-  PACEMAKER_MULT, type OrganDef,
+  BRAIN_DRAW_MULT, CATAPULT_REACH, REVEAL_RANGE, DEPOSITS, FEATURES, FEATURE_FAVORED_LEVEL, FEATURE_LEVEL, METEOR_THEME,
+  CYST_NODES, LINING_DPS, MIRE_SLOW, NODE_HP, NODE_RADIUS, NODE_TRAMPLE, NODE_REACH, ORGAN_BY_ID, ORGAN_DEFS, ORGAN_LEVEL_POTENCY, ORGAN_LEVEL_TEMPO,
+  type OrganDef,
 } from '../../content/underground';
 import { createUnderground, neighbours4, type Underground } from './underground';
 
@@ -287,8 +287,6 @@ export class Sim {
     while (this.nodeStock.length > n) this.nodeStock.pop();
     while (this.nodeStock.length < n) this.nodeStock.push(this.plainStrain());
   }
-  /** Battle seconds each spore bladder has put toward its next node. */
-  private nodeClock = new Map<number, number>();
   private coreStrainCache: { radius: number; slow: number; dps: number } | null = null;
   private organCache: Map<OrganId | 'core', { level: number; pips: ModPip[]; draw: number; links: Array<OrganId | 'core'> }> | null = null;
   /** The body below: the underground cross-section organs grow into (between waves). */
@@ -864,6 +862,18 @@ export class Sim {
     return out;
   }
 
+  /** Has the body grown close enough to this board cell to know what is buried there? */
+  isUncovered(cell: number): boolean {
+    const u = this.under;
+    const x = cell % u.w;
+    const y = Math.floor(cell / u.w);
+    for (let i = 0; i < u.cells.length; i++) {
+      if (u.cells[i].kind !== 'meteor' && !this.organAt(i)) continue;
+      if (Math.max(Math.abs((i % u.w) - x), Math.abs(Math.floor(i / u.w) - y)) <= REVEAL_RANGE) return true;
+    }
+    return false;
+  }
+
   /** The organ covering a board cell, if any. */
   organAt(cell: number): Organ | undefined {
     return this.organs.find((o) => o.cells.includes(cell));
@@ -921,39 +931,30 @@ export class Sim {
     return this.coreStrainCache;
   }
 
-  /** A spore bladder's rhythm: seconds per growth and nodes per growth (pacemakers + budding glands touching it). */
-  bladderRate(o: Organ): { interval: number; per: number } {
-    return {
-      interval: NODE_INTERVAL * PACEMAKER_MULT ** this.touchingOrgans(o, 'pacemaker'),
-      per: 1 + this.touchingOrgans(o, 'budder'),
-    };
+  /** What a bladder grows each turn (budding glands touching it) and at each wave start (pacemakers). */
+  bladderRate(o: Organ): { perTurn: number; atWaveStart: number } {
+    return { perTurn: 1 + this.touchingOrgans(o, 'budder'), atWaveStart: this.touchingOrgans(o, 'pacemaker') };
   }
 
-  /** Seconds until each bladder's next node (for the HUD). */
-  nextNodeIn(): number | null {
-    let best: number | null = null;
-    for (const o of this.organs) {
-      if (o.organ !== 'bladder') continue;
-      const left = this.bladderRate(o).interval - (this.nodeClock.get(o.id) ?? 0);
-      if (best === null || left < best) best = left;
-    }
-    return best;
+  /** Nodes the bladders will grow at the next wave clear (for the tray). */
+  nodesNextTurn(): number {
+    return this.organs.filter((o) => o.organ === 'bladder').reduce((n, o) => n + this.bladderRate(o).perTurn, 0);
   }
 
-  private growCreepNodes(): void {
+  /** Every bladder grows its turn's nodes (wave clear), or its pacemaker nodes (wave start). */
+  private growCreepNodes(when: 'turn' | 'waveStart'): void {
+    let grown = 0;
     for (const o of this.organs) {
       if (o.organ !== 'bladder') continue;
       const r = this.bladderRate(o);
-      let t = (this.nodeClock.get(o.id) ?? 0) + DT;
-      if (t >= r.interval) {
-        t -= r.interval;
-        const strain = this.bladderStrain(o);
-        for (let k = 0; k < r.per; k++) this.nodeStock.push({ ...strain });
-        this.events.push({ kind: 'node-grown', count: r.per });
-      }
-      this.nodeClock.set(o.id, t);
+      const n = when === 'turn' ? r.perTurn : r.atWaveStart;
+      const strain = this.bladderStrain(o);
+      for (let k = 0; k < n; k++) this.nodeStock.push({ ...strain });
+      grown += n;
     }
+    if (grown > 0) this.events.push({ kind: 'node-grown', count: grown });
   }
+
 
   /** How many organs of one kind are grown. */
   organCount(kind: OrganId): number {
@@ -1025,7 +1026,7 @@ export class Sim {
     n.strain = strain;
     n.hp = NODE_HP;
     n.maxHp = NODE_HP;
-    n.matureAt = this.time + NODE_MATURE;
+    n.matureAt = this.wavesCleared + 1;
     n.spent = false;
     this.refreshRouting();
     return n;
@@ -1151,7 +1152,8 @@ export class Sim {
         const times = 1 + inZone(m.cells, 'share');
         for (let k = 0; k < times; k++) pips.push({ family: m.signature });
       }
-      out.set(n.theme, { level, pips, draw: BRAIN_DRAW_MULT ** inZone(n.cells, 'draw'), links });
+      const draw = inZone(n.cells, 'suppress') > 0 ? 0 : BRAIN_DRAW_MULT ** inZone(n.cells, 'draw');
+      out.set(n.theme, { level, pips, draw, links });
     }
     this.organCache = out;
     return out;
@@ -1217,11 +1219,11 @@ export class Sim {
   // ---------- cards ----------
 
   private drawCard(): CardInstance {
-    const spec = this.rng.weighted(TOWERS, (t) =>
-      (this.isUnlocked(t.family) ? t.weight : 0)
-      * (this.geneMods.weightMult[t.family] ?? 1)
-      * this.organBonusOf(t.family).draw,
-    );
+    const w = this.drawWeights();
+    // An atrophy gland must never leave nothing to draw: if everything is starved, ignore it.
+    const total = TOWERS.reduce((a, t) => a + w[t.family], 0);
+    const spec = this.rng.weighted(TOWERS, (t) => (total > 0 ? w[t.family]
+      : (this.isUnlocked(t.family) ? t.weight : 0) * (this.geneMods.weightMult[t.family] ?? 1)));
     return { id: this.nextId++, family: spec.family };
   }
 
@@ -1329,13 +1331,17 @@ export class Sim {
           const d = this.under.cells[c];
           if (d.kind !== 'deposit' || !d.deposit || d.claimed) continue;
           d.claimed = true;
-          const pay = DEPOSITS[d.deposit].now;
+          const pay = d.pay ?? DEPOSITS[d.deposit].now;
           this.meat.war += pay.war ?? 0;
           this.meat.science += pay.science ?? 0;
           this.meat.royal += pay.royal ?? 0;
           this.biomass += pay.biomass ?? 0;
           if (d.pips) this.pendingPips = [...this.pendingPips, ...d.pips];
           this.events.push({ kind: 'deposit-claimed', name: DEPOSITS[d.deposit].name });
+        }
+        if (cmd.organ === 'cyst') {
+          for (let k = 0; k < CYST_NODES; k++) this.nodeStock.push(this.plainStrain());
+          this.events.push({ kind: 'node-grown', count: CYST_NODES });
         }
         this.events.push({ kind: 'organ-built', organ: cmd.organ });
         return { ok: true };
@@ -1354,7 +1360,7 @@ export class Sim {
         const p = this.creepSources.find((x) => x.id === cmd.sourceId && x.kind === 'node');
         if (!p || !p.strain) return { ok: false, err: 'no such node' };
         if (p.spent) return { ok: false, err: 'this node has already spread' };
-        if (this.time < (p.matureAt ?? 0)) return { ok: false, err: 'not mature yet' };
+        if (this.wavesCleared < (p.matureAt ?? 0)) return { ok: false, err: 'not mature yet — it must survive a wave' };
         if (!this.canSpreadTo(p, cmd.cell)) return { ok: false, err: 'out of its reach' };
         p.spent = true;
         this.plantNode(cmd.cell, { ...p.strain });
@@ -1744,6 +1750,7 @@ export class Sim {
     // The organ stage's economy: what you did not spend between waves is lost
     // when the next wave starts. The starting meat carries into wave 1; royal
     // points are kept.
+    this.growCreepNodes('waveStart');
     if (this.cfg.organStage && this.waveNumber > 1) {
       const war = Math.floor(this.meat.war);
       const science = Math.floor(this.meat.science);
@@ -1788,7 +1795,6 @@ export class Sim {
     this.phaseElapsed += DT;
 
     this.biomass += B.biomassBase * DT;
-    this.growCreepNodes();
 
 
     // Phase machine.
@@ -1815,11 +1821,8 @@ export class Sim {
         this.meat.war += bonus;
         this.events.push({ kind: 'wave-cleared', wave: this.waveNumber, bonus });
         for (const n of this.creepSources) if (n.kind === 'node') n.hp = n.maxHp ?? NODE_HP;
-        const cysts = this.organs.filter((o) => o.organ === 'cyst').length;
-        if (cysts > 0) {
-          for (let k = 0; k < cysts; k++) this.nodeStock.push(this.plainStrain());
-          this.events.push({ kind: 'node-grown', count: cysts });
-        }
+        // A new turn: every spore bladder grows its nodes.
+        this.growCreepNodes('turn');
         // Brood pips: living tissue regrows between waves — 50% max hp per pip.
         for (const t of this.towers) {
           const heal = this.statsOf(t).waveHeal;

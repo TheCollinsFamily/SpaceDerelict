@@ -16,19 +16,19 @@ import {
   ORGAN_LEVEL_POTENCY,
 } from '../../content/underground';
 import { TOWERS } from '../../content/data';
-import { strainLabel } from './strain';
+import { strainIcons, strainLabel } from './strain';
 import type { OrganId, TowerFamily } from '../sim/types';
 
 const COLOR: Record<OrganId, string> = {
   forge: '#d8cfb0', venom: '#6aa84f', gut: '#b5654a', nerve: '#e0c040', lattice: '#8fc7c0',
   womb: '#c07aa0', marrow: '#efe6d2', resonance: '#9a88e8', heart: '#b8352a', brain: '#c9a2b8',
-  gland: '#4fa9a4', root: '#8f4a3d',
+  gland: '#4fa9a4', root: '#8f4a3d', atrophy: '#5a4a48',
   bladder: '#a8c878', pacemaker: '#e89a6a', budder: '#c8e0a0', cyst: '#98b060', swell: '#b8d890', catapult: '#d0b070',
   mire: '#7a9a70', acid: '#c8d040', runner: '#a0c070',
 };
 const GLYPH: Record<OrganId, string> = {
   forge: '⚒', venom: '☣', gut: '∞', nerve: 'ϟ', lattice: '▦', womb: '◉', marrow: '⊞', resonance: '◎',
-  heart: '♥', brain: '✺', gland: '◆', root: '⟟',
+  heart: '♥', brain: '✺', gland: '◆', root: '⟟', atrophy: '⊘',
   bladder: '✿', pacemaker: '♪', budder: '❀', cyst: '•', swell: '◍', catapult: '➶',
   mire: '≋', acid: '☠', runner: '⇶',
 };
@@ -186,6 +186,10 @@ export class UndergroundScreen {
         const f = FEATURES[c.feature];
         inner = `<span class="glyph">${f.glyph}</span><span class="tag">${f.name}</span>`;
         cls += ` f-${c.feature}`;
+      } else if (c.kind === 'deposit' && c.deposit && !organ && !sim.isUncovered(i)) {
+        // Something is buried here — grow closer to find out what.
+        inner = '<span class="glyph">?</span>';
+        cls += ' d-unknown';
       } else if (c.kind === 'deposit' && c.deposit && !organ) {
         const d = DEPOSITS[c.deposit];
         inner = `<span class="glyph">${d.glyph}</span><span class="tag">${d.name}</span>`;
@@ -207,6 +211,10 @@ export class UndergroundScreen {
         if (i === organ.cells[0]) {
           const lv = ORGAN_BY_ID[organ.organ].kind === 'theme' ? `<span class="pow">LV${organ.level}</span>` : '';
           inner = `<span class="organ">${GLYPH[organ.organ]}</span>${lv}`;
+        } else if (organ.organ === 'bladder' && i === organ.cells[1]) {
+          // The bladder's RECIPE, in the same marks as its nodes on the map and in the tray.
+          const r = sim.bladderRate(organ);
+          inner = `<span class="recipe">${strainIcons(sim.bladderStrain(organ))}</span><span class="rate">${r.perTurn}/turn${r.atWaveStart ? ` +${r.atWaveStart}@wave` : ''}</span>`;
         }
       }
       cells.push(`<div class="${cls}" style="${style}" data-cell="${i}">${inner}</div>`);
@@ -231,11 +239,11 @@ export class UndergroundScreen {
       const shared = [...counts].map(([f, n]) => `+${n > 1 ? `${n}× ` : ''}${VERB[f as TowerFamily] ?? f}`).join(', ');
       rows.push(`<div><b>${name} LV${e.level}</b> → ${fams.map(famName).join(', ')}`
         + `${e.level > 1 ? ` · +${Math.round(ORGAN_LEVEL_POTENCY * (e.level - 1) * 100)}% power` : ''}`
-        + `${shared ? ` · ${shared}` : ''}${e.draw > 1.01 ? ` · drawn ×${e.draw.toFixed(1)}` : ''}</div>`);
+        + `${shared ? ` · ${shared}` : ''}${e.draw > 1.01 ? ` · drawn ×${e.draw.toFixed(1)}` : ''}${e.draw === 0 ? ' · ATROPHIED: never drawn' : ''}</div>`);
     }
     const bl = sim.organs.filter((o) => o.organ === 'bladder');
     if (bl.length || sim.creepNodes > 0 || sim.organs.some((o) => ORGAN_BY_ID[o.organ].kind === 'creep')) {
-      const recipes = bl.map((o) => { const r = sim.bladderRate(o); return `${r.per} ${strainLabel(sim.bladderStrain(o))} per ${Math.round(r.interval)}s`; });
+      const recipes = bl.map((o) => { const r = sim.bladderRate(o); return `${r.perTurn}/turn${r.atWaveStart ? ` +${r.atWaveStart} at wave start` : ''}: ${strainIcons(sim.bladderStrain(o))} (${strainLabel(sim.bladderStrain(o))})`; });
       rows.push(`<div><b>CREEP NODES</b> → ${sim.creepNodes} in stock${recipes.length ? ` · bladders: ${recipes.join('; ')}` : ' · no bladder yet'}</div>`);
     }
     const core = sim.coreStrainBonus();
@@ -271,6 +279,14 @@ export class UndergroundScreen {
         }
       }
     }
+    for (const el of this.grid.querySelectorAll('.linked')) el.classList.remove('linked');
+    if (!g && hovered && ORGAN_BY_ID[hovered.organ].kind === 'creep') {
+      const u = sim.under;
+      const touching = (a: number[], b: number[]) => a.some((c) => neighbours4(u, c).some((n) => b.includes(n)));
+      const partners = sim.organs.filter((o) => o !== hovered && touching(o.cells, hovered.cells)
+        && (hovered.organ === 'bladder' ? ORGAN_BY_ID[o.organ].kind === 'creep' : o.organ === 'bladder'));
+      for (const o of partners) for (const c of o.cells) this.grid.querySelector(`[data-cell="${c}"]`)?.classList.add('linked');
+    }
     if (g) {
       for (const c of g.cells) this.grid.querySelector(`[data-cell="${c}"]`)?.classList.add(g.ok ? 'ghost-ok' : 'ghost-bad');
     } else if (this.hoverCell !== null) {
@@ -300,13 +316,19 @@ export class UndergroundScreen {
         this.status.textContent = `CLICK TO LEVEL ${name.toUpperCase()} to LV${lv + 1} for ${this.priceText(cost)}: its limbs +${Math.round(ORGAN_LEVEL_POTENCY * 100)}% potency and tempo, drawn more often`;
         return;
       }
+      if (organ && organ.organ === 'bladder') {
+        const r = sim.bladderRate(organ);
+        this.status.textContent = `SPORE BLADDER: grows ${r.perTurn} node${r.perTurn > 1 ? 's' : ''} a turn${r.atWaveStart ? ` (+${r.atWaveStart} when the wave starts)` : ''} — ${strainIcons(sim.bladderStrain(organ))} ${strainLabel(sim.bladderStrain(organ))} (lit: the organs shaping it)`;
+        return;
+      }
       if (organ) { this.status.textContent = `${organSpec(organ.organ).name}: ${ORGAN_BY_ID[organ.organ].blurb}`; return; }
       if (c.kind === 'feature' && c.feature) {
         const f = FEATURES[c.feature];
         this.status.textContent = `${f.name}: fixed. Organs touching it are +${FEATURE_LEVEL} level, a ${organSpec(f.favors).name} +${FEATURE_FAVORED_LEVEL}.`;
         return;
       }
-      if (c.kind === 'deposit' && c.deposit) { this.status.textContent = this.depositText(c.deposit, c.pips?.map((p) => p.family)); return; }
+      if (c.kind === 'deposit' && c.deposit && !sim.isUncovered(i)) { this.status.textContent = 'Something is buried here. Grow within 2 cells to find out what — the deeper, the richer.'; return; }
+      if (c.kind === 'deposit' && c.deposit) { this.status.textContent = this.depositText(c.deposit, c.pips?.map((p) => p.family), c.pay); return; }
       if (c.kind === 'rock') { this.status.textContent = 'Bedrock: nothing grows here.'; return; }
       this.status.textContent = 'Open ground.';
       return;
@@ -353,15 +375,16 @@ export class UndergroundScreen {
       } else parts.push(d.blurb);
     }
     const deps = g.cells.map((x) => u.cells[x]).filter((x) => x.kind === 'deposit' && x.deposit && !x.claimed);
-    for (const dep of deps) parts.push(`covers ${this.depositText(dep.deposit!, dep.pips?.map((p) => p.family))}`);
+    for (const dep of deps) parts.push(`covers ${dep === undefined ? '' : this.depositText(dep.deposit!, dep.pips?.map((p) => p.family), dep.pay)}`);
     this.status.textContent = `GROW ${d.name.toUpperCase()} HERE (${this.priceText(d.cost)}): ${parts.join(' · ')}`;
   }
 
-  private depositText(kind: keyof typeof DEPOSITS, pips?: string[]): string {
+  private depositText(kind: keyof typeof DEPOSITS, pips?: string[], pay?: { war?: number; science?: number; royal?: number; biomass?: number }): string {
     const d = DEPOSITS[kind];
+    const p = pay ?? d.now;
     const now = [
-      d.now.war ? `+${d.now.war} war` : '', d.now.science ? `+${d.now.science} science` : '',
-      d.now.royal ? `+${d.now.royal} royal point` : '', d.now.biomass ? `+${d.now.biomass} mass` : '',
+      p.war ? `+${p.war} war` : '', p.science ? `+${p.science} science` : '',
+      p.royal ? `+${p.royal} royal point${p.royal > 1 ? 's' : ''}` : '', p.biomass ? `+${p.biomass} mass` : '',
       pips?.length ? `banks ${pips.map((f) => famName(f as TowerFamily)).join(' + ')} for your next limb` : '',
     ].filter(Boolean).join(', ');
     return `${d.name.toUpperCase()}: ${now}`;

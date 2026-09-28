@@ -14,3 +14,12 @@ export function strainLabel(s: NodeStrain): string {
   if (parts.length === 1 && s.radius === NODE_RADIUS) return 'plain';
   return parts.join(' · ');
 }
+
+/** The icon string for a strain — the same marks on the bladder badge, the tray chip and the map pod. */
+export function strainIcons(s: NodeStrain): string {
+  const out = [`◍${s.radius}`];
+  if (s.reach > NODE_REACH) out.push(`➶${s.reach}`);
+  if (s.slow < 1) out.push('≋');
+  if (s.dps > 0) out.push('☠');
+  return out.join(' ');
+}

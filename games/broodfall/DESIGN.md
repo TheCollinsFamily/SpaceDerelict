@@ -96,31 +96,56 @@ The model is StarCraft 2's creep tumours (free, made on a timer, each one spread
 exactly one more, and the enemy tries to clear them) — the most loved "tend it
 constantly" minigame in the genre. Four rules make it engaging here:
 
-1. **Every bladder is a RECIPE.** A Spore Bladder grows a free creep node every
-   50s of battle. The creep organs TOUCHING it decide the node's strain — so the
+1. **Every bladder is a RECIPE.** A Spore Bladder grows ONE free creep node per
+   TURN (at every wave clear — Collins: "based on turns … default one per turn"). The creep organs TOUCHING it decide the node's strain — so the
    organ board is a packing puzzle of recipes, not a shopping list:
-   - Pacemaker: that bladder grows 30% faster (stacks). Budding Gland: one more
-     node per growth (stacks).
+   - Pacemaker: that bladder also grows a node when the WAVE STARTS (creep to place
+     mid-fight; stacks). Budding Gland: one more node per turn (stacks).
    - Swelling Sac: its nodes spread +1 cell. Catapult Sac: its nodes are thrown
      +5 cells past the creep (and it UNLOCKS the Spore Sling — the creep thrower).
    - Mire Gland: its nodes' creep slows ground enemies 25%. Digestive Lining: its
      nodes' creep burns them 4/s (both stack; both work like poison — armor
      doesn't help).
    - Swelling, mire and lining that touch the METEOR shape the core's own creep.
-   - Spore Cyst: a plain node at every wave setup. Runner Gland: UNLOCKS the Creep
-     Lance (below). Ship gene Seeded Meteor: start the run with 3 nodes.
+   - Spore Cyst: a starter stock — 3 plain nodes the moment it grows. Runner Gland:
+     UNLOCKS the Creep Lance (below). Ship gene Seeded Meteor: start with 3 nodes.
 2. **Every placement is a choice.** The stock holds distinct strains (a tray chip
    per strain: "3-cell · thrown 8 · mire −25%"). Burning and mire nodes want the
    street chokepoints; big nodes want your gun clusters; thrown nodes reach
    forward ground. A node goes on any claimed ground within its reach of your creep.
-3. **Nodes spread themselves.** A placed node matures after 20s of battle; click a
-   mature (glowing) node, then the ground, to spread ONE child of the same strain
+3. **Nodes spread themselves.** A placed node MATURES once it survives a wave; click
+   a mature (glowing) node, then the ground, to spread ONE child of the same strain
    up to radius + reach cells away. The creep front keeps walking forward.
 4. **Nodes can be lost.** 140 hp; siege shells, bomber blasts and war/royal bodies
    standing on a node wear it down; full heal at every wave clear. A dead node
    takes its creep with it, and limbs standing only on that creep WITHER. Forward
    creep is power and exposure (the bot, which spreads straight at the gate, loses
    ~40% of its nodes — a human can do better).
+
+**Two trays, two economies** (Collins): creep nodes are a STOCK of every node you
+have ready (the green "CREEP NODES — FREE" box, one chip per kind, placing costs
+nothing); limbs are a HAND of 4 cards drawn from what your theme organs unlock.
+
+**One icon language for node kinds**, on the bladder's badge in the organ stage, on
+the tray chip, and on the map pod: ◍N spread, ➶N thrown (a chevron on the pod),
+≋ mire (a dotted ring; bog-green creep), ☠ burning (a spike ring; glowing creep). A
+pod's size is its spread; a dashed ring = maturing, a bright ring = ready to spread.
+Hover a pod for its kind, HP and state; hover a bladder in the organ stage to light
+the organs shaping it (hover a creep organ to light the bladders it shapes).
+
+**Draw control.** The Brain Node doubles the draw odds of every theme touching its
+zone (stacks). The ATROPHY GLAND (Collins: "one that reduces probability to nothing,
+used to disable basic organs later in the game"): themes touching its zone are never
+drawn — e.g. starve spitters/lashers/spines out of the hand late. If every theme is
+starved, the draw ignores it (never an empty hand).
+
+**The dig** (Collins: "rewards that can be found as you dig deeper … royal kills,
+styled as ancient royal tombs … and underground research labs for science"). Deposits
+more than 2 cells from the body show only as a glinting "?" — you find out what they
+are by growing toward them. Deeper is richer: Ancient Royal Tombs (2, rows 5-8) pay
+1 royal point, 2 in the bottom rows; Underground Research Labs (2, rows 3-8) pay
+15 science + 6 per row deeper; plus carrion pockets/seams, a biomass bed and a gene
+cache with two named bonuses.
 
 **The Creep Lance** (limb, unlocked by the Runner Gland): a directional creep
 thrower that lays a straight STRIP of creep along its facing (8 cells × reach,

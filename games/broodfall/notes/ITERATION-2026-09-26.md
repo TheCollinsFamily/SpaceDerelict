@@ -147,6 +147,26 @@ smart flips 3:2, totals 120k vs 115k. 54/54 tests; input check adds the lobber
 gesture; visual/endgame green.
 
 
+## Addendum 19 (Sep 28): creep per turn, the icon language, atrophy, the dig
+
+Collins: nodes grow per TURN (default one per turn), placing is free, node stock vs
+the 4-card limb hand, "are we visually differentiating them"; an organ that raises the
+draw odds of adjacent themes (the Brain Node already does) and one that drops them to
+nothing (Atrophy Gland); dig rewards: ancient royal tombs (royal points) and
+underground research labs (science).
+
+- Bladders grow at the wave clear; Pacemaker repurposed (a node at wave START — mid-
+  fight creep), Spore Cyst repurposed (a 3-node starter stock), nodes mature by
+  surviving a wave. Seeded Meteor gene unchanged.
+- Icon language shared by bladder badge / tray chip / map pod; hover readouts on pods
+  and bladders; link highlighting between bladders and the organs shaping them; the
+  tray is its own green box.
+- The dig: deposits hidden as "?" beyond 2 cells of the body; tombs and labs richer
+  with depth (`depositPayAt`); the bot only digs toward deposits it has uncovered.
+- Balance: the slower creep (per turn, wave maturity, hidden deposits) took the bot
+  to 2/10; threatPerTier 21 → 22 (tier 6 at 201): naive 4/10, guardrail 3:0. 165 tests.
+- The creep beat now fights real waves to grow and mature nodes.
+
 ## Addendum 18 (Sep 28): creep — free nodes, recipes, spreading, losing them
 
 Collins asked for free creep nodes produced by special organs (interval, two at

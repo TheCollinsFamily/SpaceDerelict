@@ -388,3 +388,20 @@ body {
 }
 .node-chip.on { background: var(--ink); color: #c7e8a0; }
 .node-chip.mire { background: #a8b890; } .node-chip.burn { background: #e0e080; }
+
+/* The creep-node tray is its own thing — green, apart from the limb cards. */
+#creep-nodes { background: #b9c98f; border-color: #55703a; min-width: 150px; }
+#creep-nodes b { color: #2c4418; }
+.node-chip { font-family: "Courier New", monospace; font-weight: bold; }
+
+.uc .recipe { font-family: "Courier New", monospace; font-size: 9px; font-weight: bold; color: #1f3a12; white-space: nowrap; }
+.uc .rate { font-size: 7px; font-weight: bold; color: #1f3a12; }
+.uc.linked { box-shadow: inset 0 0 0 3px #d8ff90 !important; }
+
+/* The dig: unknown deposits glint; tombs and labs look like what they are. */
+.uc.d-unknown .glyph { color: #d8c8a0; opacity: 0.6; animation: glint 2.4s ease-in-out infinite; }
+@keyframes glint { 0%, 100% { opacity: 0.35; } 50% { opacity: 0.85; } }
+.uc.d-ossuary { background: linear-gradient(#5a4a2a, #2e2414); box-shadow: inset 0 0 0 2px #c8a040; }
+.uc.d-ossuary .glyph { color: #ffd760; text-shadow: 0 0 6px #ffcc40; }
+.uc.d-lab { background: linear-gradient(#2a4a4a, #142626); box-shadow: inset 0 0 0 2px #4fa9a4; }
+.uc.d-lab .glyph { color: #9ff0e8; text-shadow: 0 0 6px #4fe0d8; }

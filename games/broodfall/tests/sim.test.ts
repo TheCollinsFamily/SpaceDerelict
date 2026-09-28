@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../src/sim/rng';
 import { Sim, fxOf, organSpec, towerStats, towerSpec } from '../src/sim/sim';
-import { DEPOSITS, ORGAN_LEVEL_POTENCY } from '../content/underground';
+import { DEPOSITS, ORGAN_LEVEL_POTENCY, depositPayAt } from '../content/underground';
 import { CellType, isPassable } from '../src/sim/citymap';
 import type { Enemy, SimConfig, Tower } from '../src/sim/types';
 import { BALANCE as B, ENEMIES, TOWERS, WAVE_TABLE } from '../content/data';
@@ -254,7 +254,7 @@ describe('economy and building', () => {
     s.meat.war = 99999;
     const u = s.under;
     const target = u.cells.findIndex((c) => c.kind === 'deposit' && c.deposit !== 'cache');
-    const pay = DEPOSITS[u.cells[target].deposit!].now;
+    const pay = u.cells[target].pay ?? DEPOSITS[u.cells[target].deposit!].now;
     const md = (a: number, b: number) => Math.abs((a % u.w) - (b % u.w)) + Math.abs(Math.floor(a / u.w) - Math.floor(b / u.w));
     for (let k = 0; k < 40 && !u.cells[target].claimed; k++) {
       const legal = u.cells.map((_, i) => i).filter((i) => s.canBuildOrgan('root', i, 0));
@@ -2144,44 +2144,49 @@ describe('CREEP: free creep nodes grown by creep organs (Collins, Sep 28 2026)',
     }
     throw new Error(`no spot for ${organ}`);
   };
+  const clearWave = (s: Sim) => {
+    const priv = s as unknown as { phase: string; enemies: Enemy[]; spawnQueue: unknown[] };
+    s.issue({ kind: 'call-early' });
+    priv.enemies.length = 0; priv.spawnQueue.length = 0;
+    for (let i = 0; i < 60 && s.phase === 'siege'; i++) s.tick();
+    while (s.phase === 'draft') s.issue({ kind: 'choose-plate', index: 0 });
+  };
   const run = (s: Sim, seconds: number) => {
     const priv = s as unknown as { phase: string; phaseElapsed: number };
     for (let i = 0; i < seconds / 0.1; i++) { priv.phase = 'growth'; priv.phaseElapsed = 0; s.tick(); }
   };
 
-  it('a spore bladder grows a node every 50s; a pacemaker touching it speeds it up; a budding gland doubles it', () => {
+  it('a spore bladder grows ONE node per turn (wave clear); a budding gland touching it makes two; a pacemaker adds one at wave start', () => {
     const s = freshSim(4300);
     s.meat.war = 9999;
     const bl = growSpot(s, 'bladder');
-    run(s, 49);
-    expect(s.creepNodes).toBe(0);
-    run(s, 1.2);
+    run(s, 120);
+    expect(s.creepNodes).toBe(0); // time alone grows nothing
+    clearWave(s);
     expect(s.creepNodes).toBe(1);
-    growSpot(s, 'pacemaker', bl);
-    expect(s.bladderRate(bl).interval).toBeCloseTo(35);
     growSpot(s, 'budder', bl);
-    expect(s.bladderRate(bl).per).toBe(2);
-    const before = s.creepNodes;
-    run(s, 36);
-    expect(s.creepNodes).toBe(before + 2);
+    expect(s.bladderRate(bl)).toEqual({ perTurn: 2, atWaveStart: 0 });
+    growSpot(s, 'pacemaker', bl);
+    expect(s.bladderRate(bl).atWaveStart).toBe(1);
+    s.issue({ kind: 'call-early' });
+    expect(s.creepNodes).toBe(2); // the pacemaker's node, as the wave starts
+    const priv = s as unknown as { enemies: Enemy[]; spawnQueue: unknown[] };
+    priv.enemies.length = 0; priv.spawnQueue.length = 0;
+    for (let i = 0; i < 60 && s.phase === 'siege'; i++) s.tick();
+    expect(s.creepNodes).toBe(4); // and two at the wave clear
     // A pacemaker that touches no bladder does nothing for it.
     const far = new Sim({ gridW: 50, gridH: 40, cellPx: 26, seed: 4301 });
     far.meat.war = 9999;
     const b2 = growSpot(far, 'bladder');
-    const pm = growSpot(far, 'root');
-    expect(far.bladderRate(b2).interval).toBe(50);
-    expect(pm).toBeDefined();
+    expect(far.bladderRate(b2)).toEqual({ perTurn: 1, atWaveStart: 0 });
   });
 
-  it('a spore cyst hands over a node at every wave clear; the Seeded Meteor gene starts the run with 3', () => {
+  it('a spore cyst is a starter stock of 3 plain nodes; the Seeded Meteor gene starts the run with 3', () => {
     const s = freshSim(4302);
     s.meat.war = 9999;
     growSpot(s, 'cyst');
-    s.issue({ kind: 'call-early' });
-    const priv = s as unknown as { enemies: Enemy[]; spawnQueue: unknown[] };
-    priv.enemies.length = 0; priv.spawnQueue.length = 0;
-    for (let i = 0; i < 40 && s.phase === 'siege'; i++) s.tick();
-    expect(s.creepNodes).toBe(1);
+    expect(s.creepNodes).toBe(3);
+    expect(s.nodeStock.every((n) => n.slow === 1 && n.dps === 0)).toBe(true);
     const g = new Sim({ gridW: 50, gridH: 40, cellPx: 26, seed: 4303, genes: ['seeded-meteor'] });
     expect(g.creepNodes).toBe(3);
   });
@@ -2262,7 +2267,7 @@ describe('CREEP: free creep nodes grown by creep organs (Collins, Sep 28 2026)',
     expect(t.creepEffectAt(spot)).toEqual({ slow: 0.75, dps: 4 });
   });
 
-  it('a node matures, then spreads ONE child of its strain; bodies trampling it wear it down and it takes its creep with it', () => {
+  it('a node matures when it survives a wave, then spreads ONE child of its strain; bodies trampling it wear it down and it takes its creep with it', () => {
     const s = freshSim(4308);
     s.nodeStock = [{ radius: 3, reach: 3, slow: 1, dps: 0 }];
     let spot = -1;
@@ -2273,8 +2278,10 @@ describe('CREEP: free creep nodes grown by creep organs (Collins, Sep 28 2026)',
     let child = -1;
     for (let c = 0; c < s.map.cells.length && child < 0; c++) if (c !== spot && s.canSpreadTo(n, c) && !s.isCreeped(c)) child = c;
     if (child < 0) for (let c = 0; c < s.map.cells.length && child < 0; c++) if (c !== spot && s.canSpreadTo(n, c)) child = c;
-    expect(s.issue({ kind: 'spread-node', sourceId: n.id, cell: child }).err).toBe('not mature yet');
-    for (let i = 0; i < 210; i++) s.tick();
+    expect(s.issue({ kind: 'spread-node', sourceId: n.id, cell: child }).err).toBe('not mature yet — it must survive a wave');
+    for (let i = 0; i < 300; i++) s.tick();
+    expect(s.issue({ kind: 'spread-node', sourceId: n.id, cell: child }).ok).toBe(false); // time alone does not mature it
+    clearWave(s);
     expect(s.issue({ kind: 'spread-node', sourceId: n.id, cell: child }).ok).toBe(true);
     expect(s.issue({ kind: 'spread-node', sourceId: n.id, cell: child }).err).toBe('this node has already spread');
     expect(s.creepSources.filter((x) => x.kind === 'node').length).toBe(2);
@@ -2305,5 +2312,50 @@ describe('CREEP: free creep nodes grown by creep organs (Collins, Sep 28 2026)',
     expect(cov(cell + 6 * s.cfg.gridW)).toBe(false); // not to the side
     s.issue({ kind: 'set-facing', towerId: lance.id, dir: 'S' });
     expect(cov(cell + 6 * s.cfg.gridW)).toBe(true);  // turning it turns the strip
+  });
+
+  it('an atrophy gland: themes touching its zone are NEVER drawn (starve the basics out late); never an empty draw', () => {
+    const s = new Sim({ gridW: 50, gridH: 40, cellPx: 26, seed: 4310, organStage: true });
+    s.meat.war = 9999;
+    growSpot(s, 'forge');
+    // Atrophy against the meteor: spitter/lasher/spine stop coming.
+    const u = s.under;
+    const meteor = u.cells.map((c, i) => (c.kind === 'meteor' ? i : -1)).filter((i) => i >= 0);
+    const forge = s.organs.find((o) => o.organ === 'forge')!;
+    let placed = false;
+    for (let c = 0; c < u.cells.length && !placed; c++) {
+      if (!s.canBuildOrgan('atrophy', c, 0)) continue;
+      const nearMeteor = meteor.some((m) => Math.max(Math.abs((m % u.w) - (c % u.w)), Math.abs(Math.floor(m / u.w) - Math.floor(c / u.w))) <= 1);
+      const nearForge = forge.cells.some((m) => Math.max(Math.abs((m % u.w) - (c % u.w)), Math.abs(Math.floor(m / u.w) - Math.floor(c / u.w))) <= 1);
+      if (nearMeteor && !nearForge) placed = s.issue({ kind: 'build-organ', organ: 'atrophy', cell: c, rot: 0 }).ok;
+    }
+    expect(placed).toBe(true);
+    const w = s.drawWeights();
+    expect(w.spitter).toBe(0);
+    expect(w.impaler).toBeGreaterThan(0);
+    for (let i = 0; i < 30; i++) s.issue({ kind: 'discard', cardIndex: 0 });
+    expect(s.hand.some((c) => ['spitter', 'lasher', 'spine'].includes(c.family))).toBe(false);
+  });
+
+  it('THE DIG: deposits are unknown until the body grows within 2 cells; tombs pay royal points and labs science, richer deeper', () => {
+    const tomb = DEPOSITS.ossuary;
+    expect(depositPayAt(tomb, tomb.rows[0]).royal).toBe(1);
+    expect(depositPayAt(tomb, 8).royal).toBe(2);
+    expect(depositPayAt(DEPOSITS.lab, 8).science!).toBeGreaterThan(depositPayAt(DEPOSITS.lab, 3).science!);
+    const s = freshSim(4320);
+    s.meat.war = 99999;
+    const u = s.under;
+    const deep = u.cells.findIndex((c, i) => c.kind === 'deposit' && Math.floor(i / u.w) >= 6);
+    expect(deep).toBeGreaterThanOrEqual(0);
+    expect(s.isUncovered(deep)).toBe(false);
+    const md = (a: number, b: number) => Math.abs((a % u.w) - (b % u.w)) + Math.abs(Math.floor(a / u.w) - Math.floor(b / u.w));
+    for (let k = 0; k < 40 && !s.isUncovered(deep); k++) {
+      const legal = u.cells.map((_, i) => i).filter((i) => s.canBuildOrgan('root', i, 0));
+      const step = legal.reduce((b, l) => (md(l, deep) < md(b, deep) ? l : b), legal[0]);
+      s.issue({ kind: 'build-organ', organ: 'root', cell: step, rot: 0 });
+    }
+    expect(s.isUncovered(deep)).toBe(true);
+    const nearest = Math.min(...s.organs.flatMap((o) => o.cells).map((c) => Math.max(Math.abs((c % u.w) - (deep % u.w)), Math.abs(Math.floor(c / u.w) - Math.floor(deep / u.w)))));
+    expect(nearest).toBeLessThanOrEqual(2);
   });
 });

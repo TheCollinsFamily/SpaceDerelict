@@ -34,7 +34,7 @@ export const ROCK_SHARE = 0.1;
 export type OrganKind = 'theme' | 'zone' | 'root' | 'creep';
 /** What a creep organ does for creep nodes (see CREEP below). */
 export type CreepRole = 'produce' | 'pace' | 'bud' | 'cyst' | 'swell' | 'catapult' | 'mire' | 'acid' | 'runner';
-export type ZoneEffect = 'level' | 'draw' | 'share';
+export type ZoneEffect = 'level' | 'draw' | 'share' | 'suppress';
 
 export interface OrganDef {
   id: OrganId;
@@ -107,17 +107,20 @@ export const ORGAN_DEFS: readonly OrganDef[] = [
     blurb: 'limbs of every organ touching its zone are drawn twice as often' },
   { id: 'gland', name: 'Pheromone Gland', kind: 'zone', zone: 'share', shape: M1, cost: { war: 25 },
     blurb: 'organs touching its zone share their signature verb TWICE' },
+  // Collins, Sep 28 2026: "one that reduces probability to nothing (used to disable basic organs later in the game)".
+  { id: 'atrophy', name: 'Atrophy Gland', kind: 'zone', zone: 'suppress', shape: M1, cost: { war: 20 },
+    blurb: 'limbs of every organ touching its zone are NEVER drawn — starve the basics out of your hand' },
   { id: 'root', name: 'Tendril Root', kind: 'root', shape: M1, cost: { war: 8 },
     blurb: 'cheap tissue: reach further, and it CARRIES adjacency between organs at either end' },
   // CREEP (Collins, Sep 28 2026): creep nodes are FREE — these organs make them.
   { id: 'bladder', name: 'Spore Bladder', kind: 'creep', creep: 'produce', shape: V2, cost: { war: 25 },
-    blurb: 'grows a free CREEP NODE every 50s of battle; the creep organs TOUCHING it decide its strain' },
+    blurb: 'grows one free CREEP NODE every turn (at each wave clear); the creep organs TOUCHING it decide what kind' },
   { id: 'pacemaker', name: 'Pacemaker', kind: 'creep', creep: 'pace', shape: M1, cost: { war: 20 },
-    blurb: 'a bladder TOUCHING it grows nodes 30% faster (stacks)' },
+    blurb: 'a bladder TOUCHING it also grows a node when the WAVE STARTS — creep to place mid-fight (stacks)' },
   { id: 'budder', name: 'Budding Gland', kind: 'creep', creep: 'bud', shape: L3, cost: { war: 30 },
     blurb: 'a bladder TOUCHING it grows one MORE node each time (stacks)' },
   { id: 'cyst', name: 'Spore Cyst', kind: 'creep', creep: 'cyst', shape: M1, cost: { war: 15 },
-    blurb: 'hands you a creep node at the start of every wave setup' },
+    blurb: 'a starter stock: 3 plain creep nodes the moment it grows' },
   { id: 'swell', name: 'Swelling Sac', kind: 'creep', creep: 'swell', shape: D2, cost: { war: 25 },
     blurb: 'nodes from a bladder TOUCHING it spread 1 cell wider; touching the METEOR, the core creep grows wider (stacks)' },
   { id: 'catapult', name: 'Catapult Sac', kind: 'creep', creep: 'catapult', shape: I3, cost: { war: 30 },
@@ -135,12 +138,11 @@ export const ORGAN_DEFS: readonly OrganDef[] = [
 export const ORGAN_BY_ID = Object.fromEntries(ORGAN_DEFS.map((d) => [d.id, d])) as Record<OrganId, OrganDef>;
 
 /**
- * CREEP NODES (Collins, Sep 28 2026: "creep nodes should be free but produced at
- * intervals by special organs"). A node is placed from your stock onto the map
- * near your creep and spreads creep around itself for good.
+ * CREEP NODES (Collins, Sep 28 2026): free, grown by special organs PER TURN — a
+ * spore bladder grows one at every wave clear. A node is placed from your stock
+ * onto the map near your creep and spreads creep around itself.
  */
-export const NODE_INTERVAL = 50;     // seconds of battle per node, per bladder
-export const PACEMAKER_MULT = 0.7;   // interval x this per touching pacemaker
+export const CYST_NODES = 3;         // plain nodes a spore cyst gives when it grows
 export const NODE_RADIUS = 3;        // cells of creep a node spreads
 export const NODE_REACH = 3;         // cells past the creep edge a node may be placed
 export const CATAPULT_REACH = 5;     // extra cells of reach per catapult sac
@@ -148,7 +150,7 @@ export const MIRE_SLOW = 0.75;       // enemy speed on mire creep x this per mir
 export const LINING_DPS = 4;         // damage/s to enemies on burning creep per lining in the recipe
 export const NODE_HP = 140;           // shells, bombers and trampling bodies wear nodes down
 export const NODE_TRAMPLE = 0.5;     // x a body's damage/s while it stands on a node
-export const NODE_MATURE = 20;       // battle seconds before a placed node can spread its ONE child
+// A placed node MATURES once it survives a wave: from the next turn it can spread its ONE child.
 
 /** Level upgrade price: the organ's cost times its current level. */
 export const ORGAN_LEVEL_POTENCY = 0.10;
@@ -159,21 +161,45 @@ export const BRAIN_DRAW_MULT = 2;
 export type DepositKind = 'carrion' | 'seam' | 'lab' | 'bed' | 'ossuary' | 'cache';
 export type FeatureKind = 'vent' | 'aquifer' | 'cable' | 'sewer';
 
+export type DepositPay = { war?: number; science?: number; royal?: number; biomass?: number; pips?: number };
+
 export interface DepositSpec {
   name: string;
   glyph: string;
-  /** Paid once, the moment an organ is grown over it. */
-  now: { war?: number; science?: number; royal?: number; biomass?: number; pips?: number };
+  /** Paid once, the moment an organ is grown over it (at the shallowest row it can appear on). */
+  now: DepositPay;
+  /** Deeper is richer: what one more row down adds. */
+  perRow?: DepositPay;
   rows: [number, number];
   count: number;
+}
+
+/**
+ * THE DIG (Collins, Sep 28 2026: "rewards that can be found as you dig deeper …
+ * the equivalent of royal kills, styled as ancient royal tombs … and ones for
+ * science points, underground research labs"). Deposits more than REVEAL_RANGE
+ * cells from the body show only as "?" — you find out what they are by growing
+ * toward them. The deeper, the richer.
+ */
+export const REVEAL_RANGE = 2;
+
+/** What a deposit on this row pays. */
+export function depositPayAt(spec: DepositSpec, row: number): DepositPay {
+  const extra = Math.max(0, row - spec.rows[0]);
+  const out: DepositPay = { ...spec.now };
+  for (const [k, v] of Object.entries(spec.perRow ?? {})) {
+    const key = k as keyof DepositPay;
+    out[key] = Math.floor((out[key] ?? 0) + (v as number) * extra);
+  }
+  return out;
 }
 
 export const DEPOSITS: Record<DepositKind, DepositSpec> = {
   carrion: { name: 'Carrion Pocket', glyph: '☗', now: { war: 20 }, rows: [2, 4], count: 2 },
   seam: { name: 'Carrion Seam', glyph: '≋', now: { war: 45 }, rows: [4, 6], count: 2 },
-  lab: { name: 'Buried Laboratory', glyph: '⚗', now: { science: 25 }, rows: [4, 7], count: 1 },
+  lab: { name: 'Underground Research Lab', glyph: '⚗', now: { science: 15 }, perRow: { science: 6 }, rows: [3, 8], count: 2 },
   bed: { name: 'Biomass Bed', glyph: '❦', now: { biomass: 150 }, rows: [4, 7], count: 1 },
-  ossuary: { name: 'Royal Ossuary', glyph: '♛', now: { royal: 1 }, rows: [7, 8], count: 1 },
+  ossuary: { name: 'Ancient Royal Tomb', glyph: '♛', now: { royal: 1 }, perRow: { royal: 0.5 }, rows: [5, 8], count: 2 },
   cache: { name: 'Gene Cache', glyph: '⧉', now: { pips: 2 }, rows: [7, 8], count: 1 },
 };
 

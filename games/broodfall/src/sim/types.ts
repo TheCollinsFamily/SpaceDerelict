@@ -56,7 +56,7 @@ export type CasteFocus = 'any' | Caste;
 
 /** Organs of the organ stage (content/underground.ts): themes unlock limbs, zones boost organs, roots connect. */
 export type OrganId = 'forge' | 'venom' | 'gut' | 'nerve' | 'lattice' | 'womb' | 'marrow' | 'resonance'
-  | 'heart' | 'brain' | 'gland' | 'root'
+  | 'heart' | 'brain' | 'gland' | 'root' | 'atrophy'
   | 'bladder' | 'pacemaker' | 'budder' | 'cyst' | 'swell' | 'catapult' | 'mire' | 'acid' | 'runner';
 
 export type GlandMode = 'calm' | 'lure' | 'challenge';
@@ -94,6 +94,7 @@ export interface CreepSource {
   strain?: NodeStrain;
   hp?: number;
   maxHp?: number;
+  /** node: the waves-cleared count at which it matures (it must survive one wave). */
   matureAt?: number;
   spent?: boolean;
 }

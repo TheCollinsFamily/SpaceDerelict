@@ -5,7 +5,7 @@
  */
 import { Rng } from './rng';
 import {
-  DEPOSITS, FEATURES, METEOR_COLS, METEOR_ROWS, ROCK_SHARE, UNDER_H, UNDER_W,
+  DEPOSITS, FEATURES, depositPayAt, type DepositPay, METEOR_COLS, METEOR_ROWS, ROCK_SHARE, UNDER_H, UNDER_W,
   type DepositKind, type FeatureKind,
 } from '../../content/underground';
 import type { ModPip, TowerFamily } from './types';
@@ -20,6 +20,8 @@ export interface UnderCell {
   claimed?: boolean;
   /** Gene cache: the bonuses waiting in it (shown before you dig). */
   pips?: ModPip[];
+  /** What this deposit pays (deeper is richer). */
+  pay?: DepositPay;
 }
 
 export interface Underground {
@@ -82,10 +84,12 @@ export function createUnderground(seed: number, pipPool: readonly TowerFamily[])
       const opts = inRows(DEPOSITS[kind].rows);
       if (!opts.length) continue;
       const cell: UnderCell = { kind: 'deposit', deposit: kind };
+      const at = rng.pick(opts);
+      cell.pay = depositPayAt(DEPOSITS[kind], Math.floor(at / u.w));
       if (kind === 'cache') {
         cell.pips = Array.from({ length: DEPOSITS.cache.now.pips ?? 0 }, () => ({ family: rng.pick(pipPool) }));
       }
-      u.cells[rng.pick(opts)] = cell;
+      u.cells[at] = cell;
     }
   }
   // Rock, one lump at a time, never cutting any deposit or soil off from the meteor.

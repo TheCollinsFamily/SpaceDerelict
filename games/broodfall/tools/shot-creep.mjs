@@ -77,8 +77,20 @@ try {
   await page.screenshot({ path: join(here, 'screenshots', 'beat-creep-organs.png') });
   await page.locator('#under-done').click();
 
-  // Play 51 seconds of battle: the bladder grows its node.
-  await page.evaluate(() => window.broodfall.step(515));
+  // Fight a wave: at the wave clear (a new turn) the bladder grows its node.
+  const clearWave = async () => {
+    await page.evaluate(() => {
+      const s = window.broodfall.sim;
+      const w0 = s.wavesCleared;
+      s.issue({ kind: 'call-early' });
+      for (let i = 0; i < 6000 && s.wavesCleared === w0 && s.outcome === 'playing'; i++) {
+        if (s.phase === 'draft') s.issue({ kind: 'choose-plate', index: 0 });
+        window.broodfall.step(1);
+      }
+    });
+  };
+  await page.evaluate(() => { const s = window.broodfall.sim; s.meat.war = 800; const cells = window.broodfall.buildableCells(40); let k = 0; for (let g = 0; g < 300 && k < 6; g++) { const i = s.hand.findIndex((h) => h.family === 'spitter' || h.family === 'lasher'); if (i >= 0) { if (s.issue({ kind: 'build', cardIndex: i, cell: cells[k * 2] }).ok) k++; else s.issue({ kind: 'discard', cardIndex: i }); } else s.issue({ kind: 'discard', cardIndex: 0 }); } });
+  await clearWave();
   const surface = async () => { await page.waitForTimeout(120); if (await page.locator('#under').isVisible()) await page.locator('#under-done').click(); };
   await surface();
   const stock = await page.evaluate(() => window.broodfall.sim.nodeStock.map((s) => ({ ...s })));
@@ -86,7 +98,7 @@ try {
   await page.waitForTimeout(200);
   const chip = page.locator('#node-tray .node-chip').first();
   const chipText = await chip.innerText();
-  check(/thrown 8/i.test(chipText) && /mire/i.test(chipText), `tray chip names the strain: "${chipText}"`);
+  check(/➶8/.test(chipText) && /≋/.test(chipText), `tray chip shows the strain in its marks: "${chipText}"`);
   await chip.click();
   // Throw it far: a cell 6-8 cells past the creep (a plain node could not reach it).
   const far = await page.evaluate(() => {
@@ -109,8 +121,8 @@ try {
   await clickWorld(far.p.x, far.p.y);
   const placed = await page.evaluate((c) => ({ n: window.broodfall.sim.creepSources.filter((s) => s.kind === 'node').length, creeped: window.broodfall.sim.isCreeped(c) }), far.c);
   check(placed.n === 1 && placed.creeped, 'clicking the map throws the node there — its ground is creeped');
-  // Mature it, click it, spread its child.
-  await page.evaluate(() => window.broodfall.step(210));
+  // It matures once it survives a wave: fight one, then click it and spread its child.
+  await clearWave();
   await surface();
   await clickWorld(far.p.x, far.p.y);
   const child = await page.evaluate((from) => {

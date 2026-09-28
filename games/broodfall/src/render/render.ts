@@ -318,21 +318,47 @@ export class Renderer {
     for (const s of sim.creepSources) {
       if (s.kind !== 'node') continue;
       const p = sim.cellCenter(s.cell);
-      const r = 7 + Math.sin(this.pulse * 1.6 + s.id) * 1.2;
       const st = s.strain;
-      const col = st && st.dps > 0 ? 0xd0d040 : st && st.slow < 1 ? 0x6a7a50 : 0x8aa860;
+      // Size says how far it spreads; the marks say what else it is.
+      const r = 4 + (st?.radius ?? 3) * 1.2 + Math.sin(this.pulse * 1.6 + s.id) * 1.0;
+      const col = st && st.dps > 0 ? 0xd0d040 : st && st.slow < 1 ? 0x4f8a5a : 0x8aa860;
       g.circle(p.x, p.y, r + 3).fill({ color: 0x3a1a10, alpha: 0.5 });
       g.circle(p.x, p.y, r).fill(col);
-      g.circle(p.x - 2, p.y - 2, r * 0.45).fill({ color: 0xd8f0b0, alpha: 0.8 });
-      const mature = sim.time >= (s.matureAt ?? 0);
+      g.circle(p.x - 2, p.y - 2, r * 0.4).fill({ color: 0xd8f0b0, alpha: 0.8 });
+      if (st && st.slow < 1) {
+        // Mire: a wavy ring.
+        for (let k = 0; k < 10; k++) {
+          const a0 = (k / 10) * Math.PI * 2 + this.pulse * 0.3;
+          const rr = r + 4 + (k % 2 ? 1.5 : -0.5);
+          g.circle(p.x + Math.cos(a0) * rr, p.y + Math.sin(a0) * rr, 1.4).fill({ color: 0x9ae0a8, alpha: 0.9 });
+        }
+      }
+      if (st && st.dps > 0) {
+        // Burning: a ring of spikes.
+        for (let k = 0; k < 8; k++) {
+          const a0 = (k / 8) * Math.PI * 2 - this.pulse * 0.5;
+          g.moveTo(p.x + Math.cos(a0) * (r + 1), p.y + Math.sin(a0) * (r + 1))
+            .lineTo(p.x + Math.cos(a0) * (r + 6), p.y + Math.sin(a0) * (r + 6))
+            .stroke({ width: 2, color: 0xf0a030, alpha: 0.9 });
+        }
+      }
+      if (st && st.reach > 3) {
+        // Thrown: a little chevron on top.
+        g.poly([p.x - 4, p.y - r - 3, p.x, p.y - r - 8, p.x + 4, p.y - r - 3]).fill({ color: 0xf0e0a0, alpha: 0.95 });
+      }
+      const mature = sim.wavesCleared >= (s.matureAt ?? 0);
       if (!s.spent) {
         if (mature) {
-          g.circle(p.x, p.y, r + 6 + Math.sin(this.pulse * 3) * 1.5).stroke({ width: 2, color: 0xc8f090, alpha: 0.85 });
+          g.circle(p.x, p.y, r + 8 + Math.sin(this.pulse * 3) * 1.5).stroke({ width: 2, color: 0xc8f090, alpha: 0.85 });
         } else {
-          const f = 1 - Math.max(0, ((s.matureAt ?? 0) - sim.time) / 20);
-          // Start a fresh path at the ring's top, or the arc joins the last shape drawn.
-          g.moveTo(p.x, p.y - (r + 5)).arc(p.x, p.y, r + 5, -Math.PI / 2, -Math.PI / 2 + f * Math.PI * 2)
-            .stroke({ width: 2, color: 0xc8f090, alpha: 0.6 });
+          // Maturing: a faint dashed ring (it matures once it survives a wave).
+          for (let k = 0; k < 12; k += 2) {
+            const a0 = (k / 12) * Math.PI * 2;
+            const a1 = ((k + 1) / 12) * Math.PI * 2;
+            g.moveTo(p.x + Math.cos(a0) * (r + 8), p.y + Math.sin(a0) * (r + 8))
+              .lineTo(p.x + Math.cos(a1) * (r + 8), p.y + Math.sin(a1) * (r + 8))
+              .stroke({ width: 1.5, color: 0xc8f090, alpha: 0.45 });
+          }
         }
       }
       if ((s.hp ?? 1) < (s.maxHp ?? 1)) this.hpArc(g, p.x, p.y, 11, (s.hp ?? 0) / (s.maxHp ?? 1));
