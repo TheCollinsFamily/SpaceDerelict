@@ -540,6 +540,117 @@ Setting: the Technopuritan Empire (shared universe, see /docs/UNIVERSE.md).
 ### The long arc (sketch)
 The organism accumulates something across runs the handlers do not know about. A late-game fork about whose side the body is on has weight because the game spent hours making the player complicit in the empire's tone.
 
+## THE CAMPAIGN: ship, credits, the globe, the factions (Collins, Sep 28 2026 — design, not built yet)
+
+Collins's calls are quoted; everything else is a proposal filling his frame.
+
+### Two credits from two kinds of mission
+"Sanctioned missions generating one type of credit and hobbies generating another."
+
+**STANDING** (command's credit) comes from the **Requisition Board**: every deployment
+carries a board of 3 sanctioned goals, "like a game's normal board — kill X of unit X,
+heal X, place X towers during a run". Written as procurement forms. Standing buys
+SANCTIONED lineages and tools on the ship, and is the ladder to the procreation
+licence (so every purchase delays the licence — spend now or save).
+- Form 7-C, Pest Volume Quota: neutralize 40 militia · 6 fliers with netcasters · 3
+  sappers before they touch a limb.
+- Form 12-A, Tissue Maintenance: restore 1,500 hp to limbs.
+- Form 3-F, Deployment Density: grow 12 limbs · evolve 3 limbs to stage 2.
+- Form 9-B, Asset Preservation: finish with the core above 75% · lose at most 2 limbs.
+- Form 4-D, Sample Quota: bank 120 science · claim 2 deposits.
+- Form 1-H, Schedule Compliance: call 3 waves early.
+
+**FIELD NOTES** (the character's own credit) come from **hobbies**, in two kinds.
+
+1. **Dares** — "sanctioned-like but stupid goals … the type of goal a kid sets for
+   themselves". Chosen before a deployment, checked at the end:
+   - "Final wave: creep damage only" (only creep kills in the last wave).
+   - "One stupidly powerful limb" (a single limb with 20+ bonuses by the last wave).
+   - "Forest" (40+ limbs on the map at once).
+   - "Only spitters." · "Never cannibalize." · "Everything burns" (100 bodies on fire
+     at once) · "Pacifist wave" (clear a wave where your limbs deal no damage — brood,
+     swamps and creep only) · "Let them in" (win after the core drops below 10%).
+2. **Experiments** — pay Field Notes AND change the run, with a setup item you start
+   with: "capture a royal and see what happens if you control its nervous system and
+   send it back against its own forces (which starts you with a trap cage)", "replace
+   toxic gas towers with one that releases the insects' mating pheromones".
+   - **Puppet Queen**: start with a Trap Cage limb. Cage a royal, graft her, and she
+     marches back up her own lane leading your brood. Unlocks the Neural Graft lineage.
+   - **Love Gas**: your lure glands release the colony's MATING pheromone instead of
+     poison — war bodies in the cloud stop fighting and pair off (a long stun), but
+     every pair adds a body to the next wave. Unlocks the Pheromone Forger lineage.
+   - **Follow the Courier**: let a science thief escape with one of your limbs, and
+     follow it on the globe to a hidden research campus (unlocks a territory).
+   - **Nursery Visit**: run a burning Creep Lance strip through a spawn gate. Unlocks
+     a gene.
+   - **Royal Diet**: a maw that eats only royals. Unlocks the Royal Jelly gene.
+   Field Notes buy UNSANCTIONED lineages (the combo engines, the weird organs) —
+   the organism's strangest parts come from the character's curiosity, never command.
+
+(The dig stays an in-run reward only — Collins didn't like it feeding the meta.)
+
+### Starting profiles ("love the starting profiles")
+Culture profiles set the organs you start a run with (everything else is earned):
+Standard Strain (Gut + Bone Forge), Venom Strain (Venom Sac + Mucus Lattice), Spore
+Strain (Spore Bladder + Catapult Sac + Runner Gland, weak guns), Brood Strain (Brood
+Womb + Heart). Each is unlocked by a feat.
+
+### The globe (Emperor: Battle for Dune's territory map)
+"A globe with different places you can land … unlockable, and maybe some you beat to
+unlock upgrades … gate upgrades to towers after the first one behind an unlock, and
+each having only a little story to it, with the ability for the enemy to push back."
+- The eusocial world as a globe of ~14 territories. Each is a landing site with a
+  biome (which castes are near, what the city looks like), a two-line story, and a
+  standing bonus while you hold it. You invade territories adjacent to ones you hold.
+- **Evolution gating**: stage 1 of every limb's evolution is always open; stages 2 and
+  3 of each theme unlock by taking specific territories ("hold the Ossuary Coast:
+  Bone Forge limbs can evolve to stage 3").
+- **Pushback**: after each deployment the colony counterattacks one territory you hold
+  (telegraphed on the globe). Defend it (a defence deployment) or lose it and its bonus.
+
+### The factions (Emperor's recruitable sub-houses)
+"Recruitable factions through some missions … give you a couple of extra units, and
+you choose one or the other, and it colours the campaign." "Each faction would have
+its own central campaign to beating the game." Three factions of the colony itself,
+each a parody of an extremism; siding with one angers the others, and the faction
+you back decides your route to the end of the game and your ending.
+
+1. **The Friendship Delegation** — hopeless progressives: "this is all just a
+   misunderstanding, and if an alien with higher intelligence is doing it, it must be
+   for a greater good the world just doesn't see". You are constantly messing with
+   them (France in Mars Attacks!).
+   - Lends: Welcome Party (unarmed diplomats; war bodies near them hesitate — until
+     you eat one) and a Translator (shows the next two waves).
+   - Their campaign: a peace summit you are invited to at every turn, each one an
+     opportunity. Ending: the summit hall, and the last delegate still smiling.
+2. **The Congregation of the Last Swarm** — apocalyptic religious conservatives: "the
+   world needs to end for the messiah to come", "the joke being that he has to keep
+   learning more about the world's religion, which he finds very beneath him". The
+   character, a Technopuritan materialist, has to do theology homework to keep them.
+   - Lends: Martyrs (bodies that detonate in the enemy lanes) and a Prophet (your
+     brood fights harder near him).
+   - Their campaign: fulfil the prophecies in order (destroy the seven temple
+     districts). Ending: the messiah does not come; the character files a report on
+     local folklore.
+3. **The Institute for Long-Term Hive Flourishing** — an EA parody: their civilization
+   "just invented simple AI models and sees aiding you as less dangerous than AI
+   continuing to develop" — "then show their true colours once it's clear you are
+   much more of a threat than that, negotiating for power to 'rule what's left' so
+   they can 'rebuild it right next time'".
+   - Lends: a Red Team (detection; stuns enemy artillery) and a Compute Grant (+science
+     each turn).
+   - Their campaign: shut down the colony's AI labs for them; mid-campaign they turn
+     and demand territory. Grant it (they become the final rival) or refuse (they
+     betray you with the units they lent). Ending: they are left in charge of the
+     rubble, drafting a charter for next time.
+
+### Suggested build order
+1. The two credits: the Requisition Board (standing) and Dares (field notes), which
+   use stats the sim already tracks; starting organs + lineage unlocks on the ship.
+2. The globe: territories, landing sites, evolution gating, pushback.
+3. Experiments (each needs its own mechanic: trap cage, mating musk, courier trail).
+4. The factions and their three campaigns.
+
 ## Prototype order
 1. **Rectangles first:** 3 meats, card draws, cannibalize inheritance, one attraction dial. 5 towers, 10 waves. The scope test: if caste meat + cannibalism cannot hold a session alone, no organ layer saves it.
 2. Creep + organs (the unified body map).
