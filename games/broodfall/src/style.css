@@ -478,6 +478,14 @@ body {
 .cp-say { display: flex; gap: 6px; margin-top: 6px; }
 .cp-say input { flex: 1; font: inherit; padding: 6px; }
 .cp-say button { font: inherit; font-weight: bold; padding: 6px 10px; background: var(--ink); color: var(--panel); border: none; cursor: pointer; }
+.cp-say button:disabled, .cp-say input:disabled { opacity: 0.5; cursor: wait; }
+.cp-talk .thinking { opacity: 0.6; animation: yoke-think 1s steps(2) infinite; }
+@keyframes yoke-think { 50% { opacity: 0.25; } }
+.cp-yoke-link { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 0.9em; }
+.cp-yoke-link span:nth-child(2) { flex: 1; }
+.cp-yoke-link button { font: inherit; font-size: 0.85em; padding: 3px 8px; background: none; border: 1px solid var(--ink); color: var(--ink); cursor: pointer; }
+.cp-yoke-dot { width: 8px; height: 8px; border-radius: 50%; background: #8a7f6a; flex: none; }
+.cp-yoke-dot.live { background: #5fbf6a; box-shadow: 0 0 6px #5fbf6a; }
 .cp-scene { position: absolute; inset: 0; background: rgba(5, 5, 8, 0.72); display: flex; align-items: center; justify-content: center; }
 .cp-scene-card { width: min(640px, calc(100% - 32px)); background: #efe4c4; border: 4px double var(--panel-edge); padding: 18px 22px; }
 .cp-scene-card p { font-size: 13px; line-height: 1.5; margin: 6px 0; }

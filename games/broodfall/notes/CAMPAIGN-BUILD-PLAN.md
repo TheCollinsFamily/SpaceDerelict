@@ -1,8 +1,8 @@
 # Campaign build plan (Sep 28 2026) — BUILT (all five blocks, same day)
 
 Status: 1 sim hooks (2d8155f) · 2+3 content, rules, ship AI wiring (305630a) · 4 screens +
-5 checks (this commit). Not built yet, by design: the ship AI's model-backed provider (the
-wiring and a scripted stand-in are in), and the lore book's TO WRITE sections.
+5 checks. The ship AI's model-backed provider: BUILT the same day (Kimi K2.6 through rfab.ai,
+backend 50461d09, deploy owed). Not built yet, by Collins's call: the lore book's TO WRITE sections.
 
 Collins: "now let's build the rest of this we outlined … the story parts, the map, the
 ship, the beats, the upgrade unlocking points, missions, everything — first think

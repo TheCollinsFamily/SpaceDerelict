@@ -10,8 +10,8 @@ import {
   selectProfile, summaryFor, targets, territory, type CampaignState, type Debrief,
 } from '../meta/campaign';
 import { goalText } from '../meta/goals';
-import { ScriptedShipAi, type AiTrigger, type AiTurn } from '../meta/shipAi';
-import { saveCampaign, type PendingDeployment } from '../meta/storage';
+import { FallbackShipAi, RfabShipAi, campaignIdFor, type AiTrigger, type AiTurn } from '../meta/shipAi';
+import { loadYoke, saveCampaign, saveYoke, type PendingDeployment, type YokeSettings } from '../meta/storage';
 import {
   DARES, EXPERIMENTS, FACTIONS, LICENCE_STANDING, LINEAGES, PROFILES, TERRITORIES, type FactionId, type TerritoryDef,
 } from '../../content/campaign';
@@ -37,10 +37,15 @@ export class CampaignUi {
   private experiment: string | undefined;
   private objectors: EnemyKind[] = [];
   private spin = -10;
-  private ai = new ScriptedShipAi();
+  private yoke: YokeSettings = loadYoke();
+  /** Built in the constructor: it needs the campaign's seed, and field initialisers run before `state` is set. */
+  private ai: FallbackShipAi;
   private talk: { trigger: AiTrigger; turns: AiTurn[] } | null = null;
+  /** A YOKE reply is on its way (a live call takes a second or two). */
+  private waiting = false;
 
   constructor(private state: CampaignState, private hooks: { deploy(p: PendingDeployment): void; newCampaign(): void; quit(): void }) {
+    this.ai = this.buildAi();
     this.el.addEventListener('click', (ev) => this.onClick(ev));
     this.el.addEventListener('keydown', (ev) => {
       if ((ev.target as HTMLElement).id === 'ai-input' && ev.key === 'Enter') void this.aiSend();
@@ -59,7 +64,9 @@ export class CampaignUi {
   }
 
   setState(s: CampaignState): void {
+    const reseeded = s.seed !== this.state.seed;
     this.state = s;
+    if (reseeded) this.ai = this.buildAi();
     saveCampaign(s);
     this.render();
   }
@@ -273,17 +280,45 @@ export class CampaignUi {
     return `<div class="cp-label">COMMS — three voices from the planet. You may ally with ONE; it decides your route and your ending.</div>${cards.join('')}`;
   }
 
+  private buildAi(): FallbackShipAi {
+    const y = this.yoke;
+    return new FallbackShipAi(y.mode === 'kimi'
+      ? new RfabShipAi({ base: y.base, key: y.key || undefined, campaignId: campaignIdFor(this.state.seed) })
+      : null);
+  }
+
+  /** Where YOKE's words come from right now, and the switch. */
+  private yokeLinkHtml(): string {
+    const y = this.yoke;
+    const st = this.ai.status;
+    return `<div class="cp-yoke-link"><span class="cp-yoke-dot ${st.live ? 'live' : ''}"></span>
+      <span>YOKE: <b>${y.mode === 'kimi' ? 'Kimi K2.6 via rfab.ai' : 'scripted'}</b> — ${esc(st.note)}</span>
+      <button data-act="yoke-mode">${y.mode === 'kimi' ? 'USE SCRIPTED' : 'USE KIMI'}</button></div>`;
+  }
+
   private aiHtml(): string {
     const s = this.state;
     if (this.talk) {
-      return `<div class="cp-label">AI CORE — YOKE</div><div class="cp-talk">${this.talk.turns.map((t) => `<div class="${t.speaker === 'YOKE' ? 'yoke' : 'you'}"><b>${t.speaker}:</b> ${esc(t.text)}</div>`).join('')}</div>
-        <div class="cp-say"><input id="ai-input" placeholder="Answer, or say nothing" autocomplete="off"/><button data-act="ai-send">SAY</button><button data-act="ai-end">END</button></div>`;
+      return `<div class="cp-label">AI CORE — YOKE</div><div class="cp-talk">${this.talk.turns.map((t) => `<div class="${t.speaker === 'YOKE' ? 'yoke' : 'you'}"><b>${t.speaker}:</b> ${esc(t.text)}</div>`).join('')}${this.waiting ? '<div class="yoke thinking"><b>YOKE:</b> …</div>' : ''}</div>
+        <div class="cp-say"><input id="ai-input" placeholder="Answer, or say nothing" autocomplete="off"${this.waiting ? ' disabled' : ''}/><button data-act="ai-send"${this.waiting ? ' disabled' : ''}>SAY</button><button data-act="ai-end">END</button></div>
+        ${this.yokeLinkHtml()}`;
     }
     return `<div class="cp-label">AI CORE — YOKE wants to talk${s.ai.queue.length ? '' : ' (nothing waiting)'}</div>
       ${s.ai.queue.map((q) => `<div class="cp-lin"><b>${q.replace('-', ' ').toUpperCase()}</b><span>YOKE has started a discussion.</span>
         <button data-engage="${q}">ENGAGE</button><button data-act="ai-later">NOT NOW</button></div>`).join('')}
       <div class="cp-label">PAST DISCUSSIONS</div>
-      ${s.ai.transcripts.map((t) => `<div class="cp-log"><b>${t.trigger}</b> — ${t.turns.map((x) => `${x.speaker}: ${esc(x.text)}`).join(' / ')}</div>`).join('') || '<p class="cp-note">None yet.</p>'}`;
+      ${s.ai.transcripts.map((t) => `<div class="cp-log"><b>${t.trigger}</b> — ${t.turns.map((x) => `${x.speaker}: ${esc(x.text)}`).join(' / ')}</div>`).join('') || '<p class="cp-note">None yet.</p>'}
+      <div class="cp-label">YOKE'S LINK</div>
+      ${this.yokeLinkHtml()}
+      <p class="cp-note">Live YOKE bills your rfab.ai account a few tokens a reply. Started from the launcher, it uses this PC's RFAB_API_KEY; otherwise paste your own key (rfab.ai → Settings → API keys).</p>
+      <div class="cp-say"><input id="yoke-key" type="password" placeholder="${this.yoke.key ? 'Key saved — paste to replace' : 'RFab API key (optional)'}" autocomplete="off"/><button data-act="yoke-key">SAVE KEY</button>${this.yoke.key ? '<button data-act="yoke-forget">FORGET KEY</button>' : ''}</div>`;
+  }
+
+  private setYoke(y: YokeSettings): void {
+    this.yoke = y;
+    saveYoke(y);
+    this.ai = this.buildAi();
+    this.render();
   }
 
   /** The next faction scene waiting on the ship, as a modal. */
@@ -345,6 +380,13 @@ export class CampaignUi {
       case 'ai-later': this.room = 'desk'; this.render(); return;
       case 'ai-send': void this.aiSend(); return;
       case 'ai-end': this.aiEnd(); return;
+      case 'yoke-mode': this.setYoke({ ...this.yoke, mode: this.yoke.mode === 'kimi' ? 'scripted' : 'kimi' }); return;
+      case 'yoke-forget': this.setYoke({ ...this.yoke, key: '' }); return;
+      case 'yoke-key': {
+        const key = (document.getElementById('yoke-key') as HTMLInputElement | null)?.value.trim() ?? '';
+        if (key) this.setYoke({ ...this.yoke, key, mode: 'kimi' });
+        return;
+      }
       case 'deploy':
         if (!this.selected) return;
         this.hooks.deploy({ territory: this.selected, dares: this.dares, experiment: this.experiment, objectors: this.objectors });
@@ -355,21 +397,32 @@ export class CampaignUi {
   // ------------------------------------------------------------ YOKE
 
   private async aiEngage(trigger: AiTrigger): Promise<void> {
-    this.talk = { trigger, turns: [] };
-    const lines = await this.ai.reply({ trigger, summary: summaryFor(this.state), lore }, []);
-    for (const l of lines) this.talk.turns.push({ speaker: 'YOKE', text: l });
-    this.render();
+    const talk = { trigger, turns: [] as AiTurn[] };
+    this.talk = talk;
+    await this.aiAsk(talk);
   }
 
   private async aiSend(): Promise<void> {
-    if (!this.talk) return;
+    const talk = this.talk;
+    if (!talk || this.waiting) return;
     const input = document.getElementById('ai-input') as HTMLInputElement | null;
     const said = input?.value.trim() ?? '';
-    if (said) this.talk.turns.push({ speaker: 'You', text: said });
-    const lines = await this.ai.reply({ trigger: this.talk.trigger, summary: summaryFor(this.state), lore }, this.talk.turns, said || undefined);
-    for (const l of lines) this.talk.turns.push({ speaker: 'YOKE', text: l });
-    this.render();
+    if (said) talk.turns.push({ speaker: 'You', text: said });
+    await this.aiAsk(talk, said || undefined);
     (document.getElementById('ai-input') as HTMLInputElement | null)?.focus();
+  }
+
+  /** One YOKE reply into this conversation (dropped if the player ended or left it meanwhile). */
+  private async aiAsk(talk: { trigger: AiTrigger; turns: AiTurn[] }, said?: string): Promise<void> {
+    this.waiting = true;
+    this.render();
+    try {
+      const lines = await this.ai.reply({ trigger: talk.trigger, summary: summaryFor(this.state), lore }, talk.turns, said);
+      if (this.talk === talk) for (const l of lines) talk.turns.push({ speaker: 'YOKE', text: l });
+    } finally {
+      this.waiting = false;
+      if (this.talk === talk || !this.talk) this.render();
+    }
   }
 
   private aiEnd(): void {

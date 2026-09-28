@@ -81,9 +81,13 @@ debrief → ship gene bay → redeploy.
     Gene Bay, Specimen Locker, Procreation Board, Comms, AI Core) → a briefing → a run →
     the debrief. Standing (Requisition Board) vs field notes (dares, experiments); 16
     territories hold the evolution unlock points; the colony pushes back; three factions,
-    each with its own route and ending; the ship AI's discussions are wired (scripted
-    provider now, the lore book in content/lore/). Code: content/campaign.ts, src/meta/,
-    src/ui/campaignUi.ts.
+    each with its own route and ending; the ship AI (YOKE) talks on Kimi K2.6 through
+    rfab.ai (POST /api/broodfall/ship-ai, billed to the RFab account; the Vite proxy
+    /rfab-api adds this PC's RFAB_API_KEY) and falls back to the scripted YOKE, saying
+    why, when rfab.ai cannot answer (backend deploy owed: until then it says "rfab.ai does
+    not have YOKE yet"). The AI Core shows the link, a USE SCRIPTED switch and a key box.
+    The lore book (content/lore/) is Collins's to write, later. Code: content/campaign.ts,
+    src/meta/, src/ui/campaignUi.ts.
 22. **Creep is the core of the organ game** (Sep 28): free creep NODES grown by Spore
     Bladders, one every 2 TURNS (every turn with a pacemaker); creep organs TOUCHING a bladder set its nodes' strain (faster, doubled,
     bigger, thrown, mire, burning); nodes mature and spread one child; trampling and
@@ -128,7 +132,8 @@ node tools/shot-evolve.mjs   # real clicks through all three EVOLVE stages
 node tools/shot-engines.mjs  # the five utility engines in the real page
 node tools/shot-under.mjs    # organ stage through the real loop: wave 1, grow + share, meat spoils at wave 2
 node tools/shot-creep.mjs    # creep: bladder recipe, tray chip, thrown node, mature, spread its child
-node tools/shot-campaign.mjs # the campaign loop: ship → globe → briefing → run → debrief → faction → YOKE
+node tools/shot-campaign.mjs # the campaign loop: ship → globe → briefing → run → debrief → faction → YOKE (scripted)
+RFAB_API_BASE=http://localhost:3011 RFAB_API_BEARER=<jwt> node tools/shot-yoke-live.mjs  # PAID: live YOKE on Kimi, fallback, switch
 ```
 
 The **placement guardrail** (`tests/placement.test.ts`) is the genre's heartbeat: a

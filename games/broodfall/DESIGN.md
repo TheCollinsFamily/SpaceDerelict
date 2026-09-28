@@ -546,7 +546,8 @@ Where it lives: `content/campaign.ts` (every goal, dare, experiment, profile, li
 territory, faction beat and line), `src/meta/` (the rules, no DOM; `campaign.ts`,
 `goals.ts`, `shipAi.ts`, `storage.ts`), `src/ui/campaignUi.ts` (the ship's rooms, the
 globe, the briefing, the debrief, the scenes), `content/lore/ship-ai-lorebook.md` (the
-ship AI's lore book). Menu → CAMPAIGN; each deployment reloads the page into a run
+ship AI's lore book; YOKE speaks through Kimi K2.6 on rfab.ai via `RfabShipAi`, with
+`FallbackShipAi` dropping to the scripted seeds when rfab.ai cannot answer). Menu → CAMPAIGN; each deployment reloads the page into a run
 built from the pending plan (`?campaign=run`) and returns to the ship after the debrief.
 Build inventory and status: `notes/CAMPAIGN-BUILD-PLAN.md`.
 

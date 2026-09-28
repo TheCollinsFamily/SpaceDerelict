@@ -2,7 +2,8 @@
  * Campaign beat, real clicks through the loop: menu → CAMPAIGN → the ship's globe →
  * pick a landing site, a dare → DEPLOY (the run: profile organs, hidden intel, the
  * live Requisition Board) → a won deployment → the debrief → back on the ship →
- * the Delegation makes contact → ally → YOKE's discussion in the AI Core.
+ * the Delegation makes contact → ally → YOKE's discussion in the AI Core (the scripted
+ * YOKE; tools/shot-yoke-live.mjs covers the Kimi one).
  * Writes tools/screenshots/beat-campaign-*.png.
  */
 import { spawn, execSync } from 'node:child_process';
@@ -36,7 +37,7 @@ try {
   const page = await browser.newPage({ viewport: { width: 1500, height: 1100 } });
   page.on('pageerror', (e) => errors.push(String(e)));
   await page.goto('http://localhost:5199/?seed=3', { waitUntil: 'load' });
-  await page.evaluate(() => { localStorage.removeItem('broodfall-campaign'); localStorage.removeItem('broodfall-campaign-pending'); });
+  await page.evaluate(() => { localStorage.removeItem('broodfall-campaign'); localStorage.removeItem('broodfall-campaign-pending'); localStorage.setItem('broodfall-yoke', JSON.stringify({ mode: 'scripted' })); });
   await page.reload({ waitUntil: 'load' });
   await page.locator('#menu-campaign').click();
   await page.waitForSelector('#campaign:not(.hidden) .globe');

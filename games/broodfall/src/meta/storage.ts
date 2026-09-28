@@ -43,3 +43,24 @@ export function loadPending(): PendingDeployment | null {
 export function clearPending(): void {
   try { localStorage.removeItem(PENDING); } catch { /* ok */ }
 }
+
+/** YOKE's link to rfab.ai: which provider, the player's own API key, and the API root. */
+export interface YokeSettings { mode: 'kimi' | 'scripted'; key: string; base: string }
+const YOKE = 'broodfall-yoke';
+export const DEFAULT_YOKE: YokeSettings = { mode: 'kimi', key: '', base: '/rfab-api' };
+
+export function loadYoke(): YokeSettings {
+  try {
+    const raw = JSON.parse(localStorage.getItem(YOKE) ?? 'null');
+    if (!raw || typeof raw !== 'object') return { ...DEFAULT_YOKE };
+    return {
+      mode: raw.mode === 'scripted' ? 'scripted' : 'kimi',
+      key: typeof raw.key === 'string' ? raw.key : '',
+      base: typeof raw.base === 'string' && raw.base ? raw.base : DEFAULT_YOKE.base,
+    };
+  } catch { return { ...DEFAULT_YOKE }; }
+}
+
+export function saveYoke(y: YokeSettings): void {
+  try { localStorage.setItem(YOKE, JSON.stringify(y)); } catch { /* private mode */ }
+}
