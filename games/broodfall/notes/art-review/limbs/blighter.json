@@ -1,0 +1,53 @@
+{
+ "family": "blighter",
+ "frames": 30,
+ "atlasKB": 229,
+ "failed": 0,
+ "checks": [
+  {
+   "name": "idle: loop closes",
+   "ok": true,
+   "value": 1.38
+  },
+  {
+   "name": "idle: it moves",
+   "ok": true,
+   "value": 0.31
+  },
+  {
+   "name": "idle: it is calm",
+   "ok": true,
+   "value": 0.31
+  },
+  {
+   "name": "idle: inside the frame",
+   "ok": true,
+   "value": "140,140-502,540"
+  },
+  {
+   "name": "idle: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "idle: ends the size it began",
+   "ok": true,
+   "value": "1% change"
+  },
+  {
+   "name": "fire: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "fire: ends the size it began",
+   "ok": true,
+   "value": "0% change"
+  },
+  {
+   "name": "atlas is under 900 KB",
+   "ok": true,
+   "value": "229 KB"
+  }
+ ]
+}

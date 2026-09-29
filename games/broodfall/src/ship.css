@@ -1,0 +1,157 @@
+/* ---------- the ship, dressed (assets/style-bible.md: "The ship") ----------
+   Applies only when the ship's pictures have loaded (#campaign.ship-art). The room is a
+   photograph; what the character reads floats in it as razor-thin projections: black,
+   white, exact. His own screens are pages of his notebook. */
+#campaign.ship-art {
+  background: #050607 var(--room) left center / cover no-repeat;
+  justify-content: flex-end; align-items: stretch;
+  --line: rgba(235, 245, 248, 0.34); --ink-s: #e9eef0; --dim: rgba(233, 238, 240, 0.62);
+  --glass: rgba(7, 9, 11, 0.74); --holo: #9fe8f5;
+  font-family: Bahnschrift, "DIN Alternate", "Segoe UI", Arial, sans-serif;
+}
+#campaign.ship-art::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(90deg, rgba(5, 6, 7, 0) 0%, rgba(5, 6, 7, 0.2) 26%, rgba(5, 6, 7, 0.78) 52%, rgba(5, 6, 7, 0.9) 100%);
+}
+#campaign.ship-art .cp-card {
+  width: min(1040px, 70%); margin: 14px 18px 14px 0; max-height: calc(100% - 28px);
+  background: var(--glass); border: 1px solid var(--line); color: var(--ink-s);
+  padding: 16px 20px; backdrop-filter: blur(2px); box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6), 0 0 40px rgba(0, 0, 0, 0.5);
+}
+#campaign.ship-art[data-in="desk"] .cp-card { width: min(1200px, 82%); }
+#campaign.ship-art .screen-kicker { letter-spacing: 3px; color: var(--dim); }
+#campaign.ship-art .screen-kicker::before { content: '⚙  '; color: var(--ink-s); }
+#campaign.ship-art .cp-title, #campaign.ship-art .cp-sub {
+  font-family: inherit; font-weight: 300; letter-spacing: 6px; text-transform: uppercase;
+}
+#campaign.ship-art .cp-title { font-size: 26px; }
+#campaign.ship-art .cp-sub { font-size: 17px; letter-spacing: 4px; }
+#campaign.ship-art .cp-cur, #campaign.ship-art .cp-room, #campaign.ship-art .cp-pick,
+#campaign.ship-art .cp-lin, #campaign.ship-art .cp-goal, #campaign.ship-art .cp-caps span {
+  background: rgba(255, 255, 255, 0.035); border: 1px solid var(--line); color: var(--ink-s);
+}
+#campaign.ship-art .cp-cur.std b { color: #fff; }
+#campaign.ship-art .cp-cur.notes b { color: var(--holo); }
+#campaign.ship-art .cp-room { letter-spacing: 2px; }
+#campaign.ship-art .cp-room.on, #campaign.ship-art .cp-pick.on { background: var(--ink-s); color: #07090b; }
+#campaign.ship-art .cp-room:hover, #campaign.ship-art .cp-pick:hover { border-color: #fff; }
+#campaign.ship-art .cp-goal { border-left: 3px solid #fff; }
+#campaign.ship-art .cp-goal i, #campaign.ship-art .cp-pick i { color: var(--holo); }
+#campaign.ship-art .cp-pick.on i { color: #0a3a44; }
+#campaign.ship-art .cp-goal.met { border-left-color: #8ff0a0; }
+#campaign.ship-art .cp-goal.miss { border-left-color: rgba(255, 255, 255, 0.3); }
+#campaign.ship-art .cp-lin.have { background: rgba(255, 255, 255, 0.11); }
+#campaign.ship-art .cp-lin button, #campaign.ship-art .cp-say button, #campaign.ship-art .screen-btn {
+  background: var(--ink-s); color: #07090b; border: none; letter-spacing: 2px; font-family: inherit;
+}
+#campaign.ship-art .screen-btn:hover { background: #fff; }
+#campaign.ship-art .screen-btn[disabled] { background: rgba(255, 255, 255, 0.25); }
+#campaign.ship-art .cp-label { color: var(--dim); border-bottom: 1px solid rgba(255, 255, 255, 0.14); padding-bottom: 3px; }
+#campaign.ship-art .cp-perks { color: var(--holo); }
+#campaign.ship-art .cp-bar { background: rgba(255, 255, 255, 0.06); border: 1px solid var(--line); height: 10px; }
+#campaign.ship-art .cp-bar div { background: #fff; }
+#campaign.ship-art .cp-log div { border-bottom: 1px solid rgba(255, 255, 255, 0.12); }
+#campaign.ship-art .cp-bad { color: #ff8a70; }
+#campaign.ship-art .cp-say input { background: rgba(255, 255, 255, 0.06); border: 1px solid var(--line); color: var(--ink-s); }
+#campaign.ship-art .cp-yoke-link button { border-color: var(--line); color: var(--ink-s); }
+#campaign.ship-art .cp-talk { background: rgba(0, 0, 0, 0.35); border: 1px solid var(--line); color: #dff6fb; font-family: inherit; }
+#campaign.ship-art .cp-talk .you { color: #fff; }
+#campaign.ship-art .cp-talk .yoke b { color: var(--holo); }
+
+/* The holographic planet. */
+.globe-box { position: relative; width: 420px; max-width: 100%; aspect-ratio: 1; cursor: grab; }
+.globe-box canvas, .globe-box svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.globe-box canvas { filter: drop-shadow(0 0 14px rgba(120, 220, 245, 0.35)); }
+#campaign.ship-art .cp-globe { background: none; border: none; padding: 0; }
+#campaign.ship-art .globe .grat { stroke: rgba(180, 240, 255, 0.1); }
+#campaign.ship-art .globe .link { stroke: rgba(200, 245, 255, 0.4); }
+#campaign.ship-art .globe .site circle { fill: rgba(10, 16, 20, 0.85); stroke: #9fb8c0; stroke-width: 1.5; }
+#campaign.ship-art .globe .site.held circle { fill: #c8322c; stroke: #ffb0a8; }
+#campaign.ship-art .globe .site.open circle { fill: #dff8ff; stroke: #fff; }
+#campaign.ship-art .globe .site.attack circle { stroke: #ffa030; stroke-width: 3.5; }
+#campaign.ship-art .globe .site.finale circle { fill: #f0d070; }
+#campaign.ship-art .globe .site.sel circle { stroke: #fff; stroke-width: 3; }
+#campaign.ship-art .globe .site .name { fill: #eafaff; stroke: #04070a; font-family: Bahnschrift, "Segoe UI", sans-serif; letter-spacing: 0.5px; }
+#campaign.ship-art .cp-spin button { background: none; border: 1px solid var(--line); color: var(--ink-s); }
+#campaign.ship-art .cp-legend { color: var(--dim); }
+
+/* His notebook: the same thin display, but everything on it is drawn by hand. */
+#campaign.ship-art .cp-notebook { font-family: "Ink Free", "Segoe Print", "Bradley Hand", "Comic Sans MS", cursive; }
+#campaign.ship-art .cp-brief .cp-notebook, #campaign.ship-art .cp-page {
+  position: relative; margin: 14px 2px 6px; padding: 10px 12px 12px; transform: rotate(-0.6deg);
+  border: 1px solid rgba(159, 232, 245, 0.55); color: #dff6fb;
+  background:
+    repeating-linear-gradient(0deg, rgba(159, 232, 245, 0.07) 0 1px, transparent 1px 22px),
+    repeating-linear-gradient(90deg, rgba(159, 232, 245, 0.07) 0 1px, transparent 1px 22px),
+    rgba(6, 14, 18, 0.72);
+  box-shadow: 0 0 18px rgba(120, 220, 245, 0.12);
+}
+#campaign.ship-art .cp-page:nth-child(2) { transform: rotate(0.8deg); }
+#campaign.ship-art .cp-notebook .cp-label { font-family: inherit; font-size: 13px; letter-spacing: 1px; text-transform: none; color: #bfeefa; border-bottom: none; }
+#campaign.ship-art .cp-notebook .cp-label::before { content: '★ '; }
+#campaign.ship-art .cp-notebook .cp-pick, #campaign.ship-art .cp-notebook .cp-lin {
+  background: none; border: none; border-bottom: 1px dashed rgba(159, 232, 245, 0.3); color: #dff6fb; font-family: inherit;
+}
+#campaign.ship-art .cp-notebook .cp-pick { display: flex; align-items: center; gap: 6px; font-size: 13px; padding: 3px 8px 3px 2px; text-align: left; }
+#campaign.ship-art .cp-notebook .cp-pick::before { content: '☐'; font-size: 17px; line-height: 1; }
+#campaign.ship-art .cp-notebook .cp-pick.on { background: none; color: #fff; }
+#campaign.ship-art .cp-notebook .cp-pick.on::before { content: '☑'; color: var(--holo); }
+#campaign.ship-art .cp-notebook .cp-pick.done { text-decoration: line-through; text-decoration-color: rgba(159, 232, 245, 0.6); }
+#campaign.ship-art .cp-notebook .cp-pick.on i { color: var(--holo); }
+#campaign.ship-art .cp-notebook .cp-lin { grid-template-columns: 56px 150px 1fr auto; font-size: 13px; }
+#campaign.ship-art .cp-notebook .cp-lin.have { background: none; }
+#campaign.ship-art .cp-notebook .cp-lin.have b::after { content: ' ★'; color: #ffe27a; }
+.cp-sketch { display: inline-block; width: 44px; height: 44px; flex: none; background-image: var(--sketches); background-repeat: no-repeat; opacity: 0.95; }
+#campaign.ship-art .cp-notebook .cp-lin .cp-sketch { width: 56px; height: 56px; }
+.cp-tally { display: flex; flex-wrap: wrap; gap: 3px; margin: 2px 0 8px; min-height: 16px; }
+.cp-tally i { width: 2px; height: 15px; background: #dff6fb; transform: rotate(8deg); }
+.cp-tally i:nth-child(5n) { width: 22px; height: 2px; margin: 6px 5px 0 -20px; transform: rotate(-24deg); }
+
+/* YOKE: a projection is light, so black is nothing. She stands in the room, over the
+   dais, and not on the screen: light can only be added to what is behind it. */
+.cp-yoke {
+  position: absolute; left: 33%; bottom: 17%; width: min(400px, 27vw); aspect-ratio: 1; transform: translateX(-50%);
+  background-image: var(--yoke); background-repeat: no-repeat; mix-blend-mode: screen; pointer-events: none;
+  animation: yoke-hum 5s ease-in-out infinite; z-index: 1;
+}
+.cp-yoke::after { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.25) 0 1px, transparent 1px 3px); }
+@keyframes yoke-hum { 50% { transform: translateX(-50%) translateY(-6px); opacity: 0.92; } }
+#campaign.ship-art[data-in="ai"] .cp-card { width: min(820px, 50%); }
+#campaign.ship-art .cp-card { z-index: 2; }
+#campaign:not(.ship-art) .cp-yoke { display: none; }
+
+/* The ship fills the window: there is no field console up here. */
+body.in-ship #campaign { position: fixed; inset: 0; }
+
+/* The title screen: the ship in orbit. */
+#menu.ship-art { background: #050607 var(--exterior) center / cover no-repeat; justify-content: flex-start; }
+#menu.ship-art .screen-card {
+  margin-left: 6%; background: rgba(7, 9, 11, 0.72); border: 1px solid rgba(235, 245, 248, 0.34); color: #e9eef0;
+  font-family: Bahnschrift, "DIN Alternate", "Segoe UI", Arial, sans-serif; text-align: left; backdrop-filter: blur(2px);
+}
+#menu.ship-art .screen-title { font-family: inherit; font-weight: 300; letter-spacing: 14px; }
+#menu.ship-art .screen-kicker::before { content: '⚙  '; }
+#menu.ship-art .screen-btn { background: #e9eef0; color: #07090b; border: none; letter-spacing: 2px; font-family: inherit; }
+#menu.ship-art .screen-btn.alt { background: none; color: #e9eef0; border: 1px solid rgba(235, 245, 248, 0.5); }
+#menu.ship-art .ent-opt { background: none; color: #e9eef0; border: 1px solid rgba(235, 245, 248, 0.34); font-family: inherit; }
+#menu.ship-art .ent-opt.on { background: #e9eef0; color: #07090b; }
+#menu.ship-art .menu-btns { justify-content: flex-start; }
+
+/* The voices from the planet: stills from their own films. */
+.cp-leader { width: 86px; height: 86px; object-fit: cover; border: 3px solid #1a1208; outline: 1px solid rgba(255, 255, 255, 0.4); filter: saturate(1.15) contrast(1.05); }
+#campaign.ship-art .cp-voice { grid-template-columns: 86px 170px 1fr auto; }
+.cp-scene-card .cp-leader { float: right; width: 150px; height: 150px; margin: 0 0 8px 14px; }
+#campaign.ship-art .cp-scene-card { background: #efe4c4; color: #26200f; font-family: Georgia, "Times New Roman", serif; border: 4px double #6e6140; }
+#campaign.ship-art .cp-scene-card .screen-kicker { color: #26200f; }
+#campaign.ship-art .cp-scene-card .screen-kicker::before { content: ''; }
+#campaign.ship-art .cp-scene-card .cp-sub { font-family: Impact, "Arial Black", sans-serif; letter-spacing: 2px; font-weight: normal; }
+#campaign.ship-art .cp-scene-card .cp-pick, #campaign.ship-art .cp-scene-card .cp-room { background: #c7b788; border: 2px solid #6e6140; color: #26200f; }
+#campaign.ship-art .cp-scene-card .screen-btn { background: #26200f; color: #efe4c4; }
+#campaign.ship-art .cp-scene-card .cp-label { color: #26200f; border: none; }
+
+/* While the title screen is up there is no field console: the ship fills the window. */
+body:has(#menu.ship-art:not(.hidden)) #topbar, body:has(#menu.ship-art:not(.hidden)) #botbar { visibility: hidden; }
+#menu.ship-art { position: fixed; inset: 0; }
+#campaign.ship-art .cp-notebook .cp-sketch { filter: brightness(1.5); }
+/* A scene from the planet is laid over the whole ship screen. */
+#campaign .cp-scene { z-index: 5; }

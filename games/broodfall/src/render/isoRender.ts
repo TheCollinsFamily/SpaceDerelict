@@ -1,0 +1,963 @@
+/**
+ * The isometric board, drawn with the baked art (public/art/, made by tools/art/).
+ *
+ * The city is BUILT here from pieces, because limbs stand on it: every block is a flat
+ * roof at an exact height, with walls below it. Units, limbs and blocks are sorted by how
+ * far back they stand, so a block hides what is behind it; a faint copy of every unit is
+ * drawn on top of everything, so a column behind a tall block can still be followed.
+ *
+ * Anything without art is drawn as its old shape, so the game plays the same with any part
+ * of the art missing.
+ */
+import { Application, Container, Graphics, Matrix, Sprite, Texture } from 'pixi.js';
+import { CellType, PLATE } from '../sim/citymap';
+import { Sim, enemySpec, towerSpec, towerStats } from '../sim/sim';
+import type { CreepSource, Enemy, Tower } from '../sim/types';
+import { BoardArtSet, type Clip, type LimbArt, type UnitArt } from './art';
+import {
+  depth, headingOf, isoGeo, openSides, pick, project, unproject, viewOf, wallIndex,
+  type Heading, type IsoGeo, type Pt,
+} from './iso';
+import { CASTE_COLORS, ENEMY_SIZE, FAMILY_COLORS, Renderer } from './render';
+
+/** The old marks were drawn for a 26 px cell; on this board they are drawn this much bigger. */
+const K = 1.9;
+/** Art pixels of body width for each world pixel of a unit's radius. */
+const UNIT_PX = 3.6;
+/** The mound a roof limb grows from, as a share of its cell's width. */
+const LIMB_FILL = 0.8;
+/** How high fliers fly, in levels. */
+const FLY_UP = 2.4;
+/** How strongly a unit shows through what stands in front of it. */
+const GHOST_ALPHA = 0.26;
+/** The first tile set's numbers: what the board is drawn with when the manifest names no tile set. */
+const ROOF_TINT = [0xb9a783, 0xd0bd96, 0xe6d3aa];
+const ROOF_PROPS: Record<string, string[]> = {
+  plain: ['aircon', 'dish', 'solar', 'tank', 'dome-paper', 'aircon', 'solar'],
+  science: ['dish', 'mast', 'solar', 'dish', 'aircon', 'mast'],
+  meat: ['tank', 'tank', 'aircon', 'solar', 'dome-paper'],
+  highground: ['dome-gold', 'spire', 'dome-paper', 'dome-gold', 'spire'],
+};
+const STREET_PROPS = ['lamp', 'signal', 'sign', 'car'];
+
+interface UnitView {
+  sprite: Sprite; ghost: Sprite; art: UnitArt;
+  heading: Heading; want: Heading; wantFor: number;
+  last: Pt; phase: number; attackT: number; seen: number;
+}
+interface LimbView {
+  sprite: Sprite; shade: Sprite; art: LimbArt; family: string;
+  cooldown: number; fireT: number; fireDur: number; mirror: boolean; seen: number;
+}
+interface ShotView { up0: number; ttl0: number; seen: number }
+
+export class IsoRenderer extends Renderer {
+  private geo!: IsoGeo;
+  private floors = new Container();
+  private creepFloor = new Container();
+  private flat = new Container();
+  private groundBox = new Container();
+  private groundG = new Graphics();
+  /** The shade a wall throws on the street at its foot: what makes a street read as a channel. */
+  private shadeG = new Graphics();
+  private sorted = new Container();
+  private ghosts = new Container();
+  private aimBox = new Container();
+  private aimG = new Graphics();
+  private marksBox = new Container();
+  private marksG = new Graphics();
+
+  private mapRef: unknown = null;
+  private mapSig = '';
+  private blockSprites: Sprite[] = [];
+  private props = new Map<number, Sprite>();
+  private creepState = new Uint16Array(0);
+  private creepSprites = new Map<number, Sprite[]>();
+  private units = new Map<number, UnitView>();
+  private limbs = new Map<number, LimbView>();
+  private nodes = new Map<number, Sprite>();
+  private shots = new Map<number, ShotView>();
+  private core: Sprite | null = null;
+  /** A soft dark pool: what stands on the ground darkens it where it stands. */
+  private shadeTex: Texture | null = null;
+  private frameNo = 0;
+  private lastSimTime = 0;
+  private simClock = 0;
+
+  /** The player's own zoom and pan, on top of the framing of the claimed districts. */
+  private zoom = 1;
+  private pan: Pt = { x: 0, y: 0 };
+  /** The scale that frames the claimed districts, and the middle of them on the board. */
+  private fit = 1;
+  private mid: Pt = { x: 0, y: 0 };
+
+  constructor(private art: BoardArtSet) {
+    super();
+  }
+
+  async init(mount: HTMLElement, _worldW: number, _worldH: number): Promise<void> {
+    this.app = new Application();
+    await this.app.init({ width: 1360, height: 1000, background: 0x0a0806, antialias: true });
+    mount.appendChild(this.app.canvas);
+    this.app.stage.addChild(this.world);
+    this.sorted.sortableChildren = true;
+    this.flat.sortableChildren = true;
+    this.evolvedRing = false;
+    this.groundBox.addChild(this.shadeG, this.groundG);
+    this.aimBox.addChild(this.aimG);
+    this.marksBox.addChild(this.marksG);
+    this.marksBox.scale.set(K);
+    this.world.addChild(this.floors, this.creepFloor, this.flat, this.groundBox, this.sorted, this.ghosts, this.aimBox, this.marksBox);
+    this.ready = true;
+  }
+
+  // ------------------------------------------------------------ geometry
+
+  private setGeo(sim: Sim): void {
+    const t = this.art.terrain!;
+    this.geo = isoGeo(t.tile, t.level, sim.cfg.cellPx);
+    const g = this.geo;
+    // World coordinates laid on the ground: what the old drawing code draws is drawn flat on the street.
+    const ground = new Matrix(g.a / g.cell, g.b / g.cell, -g.a / g.cell, g.b / g.cell, 0, 0);
+    this.groundBox.setFromMatrix(ground);
+    this.aimBox.setFromMatrix(ground);
+  }
+
+  private heightOf(sim: Sim, cell: number): number {
+    return sim.map.cells[cell] === CellType.Block ? (sim.map.heights[cell] || 1) : 0;
+  }
+
+  private heightAt(sim: Sim, wx: number, wy: number): number {
+    const c = sim.cfg.cellPx;
+    if (wx < 0 || wy < 0 || wx >= sim.cfg.gridW * c || wy >= sim.cfg.gridH * c) return 0;
+    return this.heightOf(sim, sim.cellAt(wx, wy));
+  }
+
+  /** A world point on the screen, standing on whatever is under it. */
+  private onGround(sim: Sim, wx: number, wy: number): Pt {
+    return project(this.geo, wx, wy, this.heightAt(sim, wx, wy));
+  }
+
+  private simRef: Sim | null = null;
+
+  protected updateCamera(sim: Sim, dtReal: number): void {
+    const g = this.geo;
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (let slot = 0; slot < sim.map.slots.length; slot++) {
+      if (!sim.map.slots[slot]) continue;
+      const x0 = (slot % sim.map.slotsX) * PLATE * g.cell;
+      const y0 = Math.floor(slot / sim.map.slotsX) * PLATE * g.cell;
+      const side = PLATE * g.cell;
+      for (const [x, y] of [[x0, y0], [x0 + side, y0], [x0, y0 + side], [x0 + side, y0 + side]]) {
+        const p = project(g, x, y);
+        minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x);
+        minY = Math.min(minY, p.y); maxY = Math.max(maxY, p.y);
+      }
+    }
+    // Room above for the tallest blocks and what stands on them, and a margin all round.
+    minY -= 3 * g.level + 2 * g.a;
+    const m = 1.5 * g.a;
+    minX -= m; maxX += m; minY -= m; maxY += m;
+    const vw = this.app.renderer.width;
+    const vh = this.app.renderer.height;
+    this.fit = Math.min(vw / (maxX - minX), vh / (maxY - minY), 1.1);
+    this.mid = { x: (minX + maxX) / 2, y: (minY + maxY) / 2 };
+    const scale = this.fit * this.zoom;
+    const tx = vw / 2 - (this.mid.x + this.pan.x) * scale;
+    const ty = vh / 2 - (this.mid.y + this.pan.y) * scale;
+    if (!this.camInit) {
+      this.camScale = scale; this.camX = tx; this.camY = ty; this.camInit = true;
+    } else {
+      const k = Math.min(1, dtReal * 3.5);
+      this.camScale += (scale - this.camScale) * k;
+      this.camX += (tx - this.camX) * k;
+      this.camY += (ty - this.camY) * k;
+    }
+    this.world.scale.set(this.camScale);
+    this.world.position.set(this.camX, this.camY);
+  }
+
+  /** Zoom in or out, keeping the point under the pointer where it is. */
+  zoomAt(clientX: number, clientY: number, factor: number): void {
+    const rect = this.app.canvas.getBoundingClientRect();
+    const px = ((clientX - rect.left) / rect.width) * this.app.renderer.width;
+    const py = ((clientY - rect.top) / rect.height) * this.app.renderer.height;
+    const at = { x: (px - this.camX) / this.camScale, y: (py - this.camY) / this.camScale };
+    this.zoom = Math.max(0.6, Math.min(6, this.zoom * factor));
+    const scale = this.fit * this.zoom;
+    this.pan = {
+      x: (this.app.renderer.width / 2 - px) / scale + at.x - this.mid.x,
+      y: (this.app.renderer.height / 2 - py) / scale + at.y - this.mid.y,
+    };
+    this.camInit = false;
+  }
+
+  /** Slide the view by a distance in canvas pixels. */
+  panBy(dx: number, dy: number): void {
+    const scale = this.fit * this.zoom;
+    this.pan = { x: this.pan.x - dx / scale, y: this.pan.y - dy / scale };
+    this.camInit = false;
+  }
+
+  /** Back to the framing of the claimed districts. */
+  resetView(): void {
+    this.zoom = 1;
+    this.pan = { x: 0, y: 0 };
+  }
+
+  /** What of the baked art could not be loaded. */
+  missing(): string[] {
+    return this.art.failed.slice();
+  }
+
+  /** The tile set the city is drawn with. */
+  biome(): string {
+    return this.art.biome?.id ?? '';
+  }
+
+  /** Client (CSS) coordinates to the board's own pixels (before the camera). */
+  private toBoard(clientX: number, clientY: number): Pt {
+    const rect = this.app.canvas.getBoundingClientRect();
+    const px = ((clientX - rect.left) / rect.width) * this.app.renderer.width;
+    const py = ((clientY - rect.top) / rect.height) * this.app.renderer.height;
+    return { x: (px - this.camX) / this.camScale, y: (py - this.camY) / this.camScale };
+  }
+
+  toWorld(clientX: number, clientY: number): { x: number; y: number } {
+    const sim = this.simRef;
+    const s = this.toBoard(clientX, clientY);
+    if (!sim) return unproject(this.geo, s.x, s.y);
+    const hit = pick(this.geo, s.x, s.y, (x, y) => this.heightAt(sim, x, y));
+    const under = sim.cellAt(hit.x, hit.y);
+    if (hit.top && sim.towers.some((t) => t.cell === under)) return { x: hit.x, y: hit.y };
+    // A limb is taller than its cell: a click on its body is a click on the limb.
+    let best: Tower | null = null;
+    for (const t of sim.towers) {
+      const v = this.limbs.get(t.id);
+      if (!v || v.art.flat) continue;
+      const p = this.onGround(sim, t.pos.x, t.pos.y);
+      const w = v.art.frame * Math.abs(v.sprite.scale.x) * v.art.body;
+      const h = v.art.frame * v.sprite.scale.y * 0.8;
+      if (Math.abs(s.x - p.x) < w * 0.42 && s.y < p.y && s.y > p.y - h) {
+        if (!best || depth(this.geo, t.pos.x, t.pos.y) > depth(this.geo, best.pos.x, best.pos.y)) best = t;
+      }
+    }
+    if (best) return { x: best.pos.x, y: best.pos.y };
+    return { x: hit.x, y: hit.y };
+  }
+
+  worldToScreen(x: number, y: number): { x: number; y: number; vw: number; vh: number } {
+    const p = this.simRef ? this.onGround(this.simRef, x, y) : project(this.geo, x, y);
+    return {
+      x: p.x * this.camScale + this.camX, y: p.y * this.camScale + this.camY,
+      vw: this.app.renderer.width, vh: this.app.renderer.height,
+    };
+  }
+
+  // ------------------------------------------------------------ the frame
+
+  draw(sim: Sim, dtReal: number): void {
+    if (!this.ready || !this.art.terrain) return;
+    if (this.mapRef !== sim.map) this.reset(sim);
+    this.simRef = sim;
+    this.pulse += dtReal * 3;
+    this.frameNo += 1;
+    // Everything that moves follows the sim's clock: a paused game stands still.
+    const dt = Math.max(0, Math.min(1, sim.time - this.lastSimTime));
+    this.lastSimTime = sim.time;
+    this.simClock += dt;
+
+    this.updateCamera(sim, dtReal);
+    this.syncMap(sim);
+    this.syncCreep(sim);
+    this.groundG.clear();
+    this.aimG.clear();
+    this.marksG.clear();
+    this.drawGates(this.groundG, sim);
+    this.drawGroundFx(this.groundG, sim);
+    this.syncCore(sim);
+    this.syncNodes(sim);
+    this.syncLimbs(sim, dt);
+    this.syncUnits(sim, dt);
+    this.drawShots(this.marksG, sim);
+    this.drawAim(this.aimG, sim);
+  }
+
+  private reset(sim: Sim): void {
+    this.mapRef = sim.map;
+    this.mapSig = '';
+    this.setGeo(sim);
+    for (const c of [this.floors, this.creepFloor, this.flat, this.sorted, this.ghosts]) c.removeChildren().forEach((x) => x.destroy());
+    this.blockSprites = [];
+    this.props.clear();
+    this.creepSprites.clear();
+    this.creepState = new Uint16Array(sim.map.cells.length);
+    this.units.clear();
+    this.limbs.clear();
+    this.nodes.clear();
+    this.shots.clear();
+    this.core = null;
+    this.camInit = false;
+    this.lastSimTime = sim.time;
+  }
+
+  // ------------------------------------------------------------ the city
+
+  /** The top-left corner of a cell's tile on the screen, `up` levels above the ground. */
+  private tileAt(cx: number, cy: number, up = 0): Pt {
+    const g = this.geo;
+    return { x: (cx - cy) * g.a - g.a, y: (cx + cy) * g.b - up * g.level };
+  }
+
+  private add(layer: Container, tex: Texture | null, x: number, y: number, z = 0): Sprite | null {
+    if (!tex) return null;
+    const s = new Sprite(tex);
+    s.position.set(x, y);
+    s.zIndex = z;
+    layer.addChild(s);
+    return s;
+  }
+
+  /** Streets, squares, smoke over the unclaimed city, and the blocks. Built again when a district is claimed. */
+  private syncMap(sim: Sim): void {
+    const sig = sim.map.slots.map((s) => (s ? '1' : '0')).join('');
+    if (sig === this.mapSig) return;
+    this.mapSig = sig;
+    this.floors.removeChildren().forEach((x) => x.destroy());
+    for (const s of this.blockSprites) s.destroy();
+    this.blockSprites = [];
+    for (const s of this.props.values()) s.destroy();
+    this.props.clear();
+    const g = this.geo;
+    const W = sim.cfg.gridW;
+    const H = sim.cfg.gridH;
+    const span = this.art.terrain!.wallSpan;
+    const hAt = (x: number, y: number) => (x < 0 || y < 0 || x >= W || y >= H ? 0 : this.heightOf(sim, y * W + x));
+    for (let cy = 0; cy < H; cy++) for (let cx = 0; cx < W; cx++) {
+      const cell = cy * W + cx;
+      const type = sim.map.cells[cell];
+      const p = this.tileAt(cx, cy);
+      const ij = `${cx % 4}${cy % 4}`;
+      if (type !== CellType.Block) {
+        const name = type === CellType.Void ? 'smoke' : type === CellType.Plaza ? 'plaza' : 'street';
+        this.add(this.floors, this.art.sprite('floors', `${name}-${ij}`), p.x, p.y);
+        if (type !== CellType.Void) this.addStreetProp(sim, cx, cy, type === CellType.Plaza, hAt(cx, cy - 1) > 0, hAt(cx - 1, cy) > 0);
+        continue;
+      }
+      const h = hAt(cx, cy);
+      const z = (cx + cy + 1) * 100;
+      const slot = Math.floor(cy / PLATE) * sim.map.slotsX + Math.floor(cx / PLATE);
+      const kind = sim.map.slots[slot]?.feature ?? 'plain';
+      for (let l = hAt(cx, cy + 1); l < h; l++) {
+        const s = this.add(this.sorted, this.art.sprite('walls', `wall-${kind}-south-${l}-${wallIndex('south', cx, cy, span)}`), p.x, p.y + g.b - (l + 1) * g.level, z);
+        if (s) this.blockSprites.push(s);
+      }
+      for (let l = hAt(cx + 1, cy); l < h; l++) {
+        const s = this.add(this.sorted, this.art.sprite('walls', `wall-${kind}-east-${l}-${wallIndex('east', cx, cy, span)}`), p.x + g.a, p.y + g.b - (l + 1) * g.level, z);
+        if (s) this.blockSprites.push(s);
+      }
+      const roof = this.add(this.sorted, this.art.sprite('floors', `roof-${ij}`), p.x, p.y - h * g.level, z + 1);
+      if (roof) {
+        // Higher roofs catch more light: height reads at a glance.
+        const tints = this.art.biome?.art.roofTint ?? ROOF_TINT;
+        roof.tint = tints[Math.min(h, tints.length) - 1] ?? 0xffffff;
+        this.blockSprites.push(roof);
+      }
+      this.addProp(sim, cx, cy, h, kind, z);
+    }
+    this.drawShade(sim);
+    // Everything standing on the map is placed again over the new ground.
+    this.creepState.fill(0);
+    for (const list of this.creepSprites.values()) for (const s of list) s.destroy();
+    this.creepSprites.clear();
+  }
+
+  /** Streets are channels between blocks: the walls shade the street at their feet. */
+  private drawShade(sim: Sim): void {
+    const g = this.shadeG;
+    g.clear();
+    const W = sim.cfg.gridW;
+    const H = sim.cfg.gridH;
+    const c = sim.cfg.cellPx;
+    const tall = (x: number, y: number) => (x < 0 || y < 0 || x >= W || y >= H ? 0 : this.heightOf(sim, y * W + x));
+    for (let cy = 0; cy < H; cy++) for (let cx = 0; cx < W; cx++) {
+      const t = sim.map.cells[cy * W + cx];
+      if (t !== CellType.Road && t !== CellType.Plaza) continue;
+      // The walls we see are the south and east faces of the blocks to the north and west.
+      const n = tall(cx, cy - 1);
+      const w = tall(cx - 1, cy);
+      for (let k = 0; k < 4; k++) {
+        const d = (k * c) / 10;
+        if (n) g.rect(cx * c, cy * c + d, c, c / 10).fill({ color: 0x1a1208, alpha: (0.42 - k * 0.1) * Math.min(1, 0.6 + n * 0.2) });
+        if (w) g.rect(cx * c + d, cy * c, c / 10, c).fill({ color: 0x1a1208, alpha: (0.42 - k * 0.1) * Math.min(1, 0.6 + w * 0.2) });
+      }
+      // The far side of the street lies under the lip of the block in front of it.
+      if (tall(cx, cy + 1)) g.rect(cx * c, (cy + 1) * c - c / 8, c, c / 8).fill({ color: 0x1a1208, alpha: 0.3 });
+      if (tall(cx + 1, cy)) g.rect((cx + 1) * c - c / 8, cy * c, c / 8, c).fill({ color: 0x1a1208, alpha: 0.3 });
+    }
+  }
+
+  /** What stands on the roofs of the living city. A roof the body has taken is bare. */
+  private addProp(sim: Sim, cx: number, cy: number, h: number, kind: string, z: number): void {
+    const r = ((cx * 7919 + cy * 104729 + cx * cy * 31) >>> 0) % 100;
+    if (r >= 22) return;
+    const sets = this.art.biome?.art.roofProps ?? ROOF_PROPS;
+    const list = sets[kind] ?? sets.plain ?? [];
+    if (!list.length) return;
+    const id = `prop-${list[r % list.length]}`;
+    const tex = this.art.sprite('props', id);
+    const rect = this.art.rect('props', id);
+    if (!tex || !rect) return;
+    const s = new Sprite(tex);
+    s.anchor.set(rect.anchor?.[0] ?? 0.5, rect.anchor?.[1] ?? 0.94);
+    const p = project(this.geo, (cx + 0.5) * this.geo.cell, (cy + 0.5) * this.geo.cell, h);
+    s.position.set(p.x, p.y);
+    s.zIndex = z + 5;
+    this.sorted.addChild(s);
+    this.props.set(cy * sim.cfg.gridW + cx, s);
+  }
+
+  /**
+   * What stands in the streets of the living city: small things at the foot of the wall
+   * behind the street, out of the lane; big things only on the squares. The body's skin
+   * hides them, as it hides what stands on the roofs.
+   */
+  private addStreetProp(sim: Sim, cx: number, cy: number, square: boolean, wallNorth: boolean, wallWest: boolean): void {
+    const r = ((cx * 15485863 + cy * 32452843 + cx * cy * 131) >>> 0) % 1000;
+    if (square ? r >= 90 : r >= 110 || !(wallNorth || wallWest)) return;
+    const all = this.art.biome?.art.streetProps ?? STREET_PROPS;
+    const fits = all.filter((id) => {
+      const rect = this.art.rect('props', `prop-${id}`);
+      return rect !== null && (square || rect.w <= this.geo.a * 0.62);
+    });
+    if (!fits.length) return;
+    const id = `prop-${fits[(r * 7 + cx + cy) % fits.length]}`;
+    const tex = this.art.sprite('props', id);
+    const rect = this.art.rect('props', id);
+    if (!tex || !rect) return;
+    const s = new Sprite(tex);
+    s.anchor.set(rect.anchor?.[0] ?? 0.5, rect.anchor?.[1] ?? 0.94);
+    const at = square ? [0.5, 0.5] : wallNorth ? [0.5, 0.14] : [0.14, 0.5];
+    const p = project(this.geo, (cx + at[0]) * this.geo.cell, (cy + at[1]) * this.geo.cell, 0);
+    s.position.set(p.x, p.y);
+    s.zIndex = (cx + cy + at[0] + at[1]) * 100 + 45;
+    this.sorted.addChild(s);
+    this.props.set(cy * sim.cfg.gridW + cx, s);
+  }
+
+  /** The skin. Only the cells that changed since the last frame are drawn again. */
+  private syncCreep(sim: Sim): void {
+    const W = sim.cfg.gridW;
+    const H = sim.cfg.gridH;
+    const n = W * H;
+    const on = new Uint8Array(n);
+    for (let c = 0; c < n; c++) on[c] = sim.map.cells[c] !== CellType.Void && sim.isCreeped(c) ? 1 : 0;
+    const g = this.geo;
+    for (let cy = 0; cy < H; cy++) for (let cx = 0; cx < W; cx++) {
+      const cell = cy * W + cx;
+      let state = 0;
+      if (on[cell]) {
+        const h = this.heightOf(sim, cell);
+        const open = openSides((dx, dy) => {
+          const x = cx + dx, y = cy + dy;
+          if (x < 0 || y < 0 || x >= W || y >= H) return false;
+          const o = y * W + x;
+          return on[o] === 1 && this.heightOf(sim, o) === h;
+        });
+        const fx = sim.creepEffectAt(cell);
+        state = 1 + open + (fx.slow < 1 ? 32 : 0) + (fx.dps > 0 ? 64 : 0) + (sim.isBody(cell) ? 128 : 0);
+      }
+      if (state === this.creepState[cell]) continue;
+      this.creepState[cell] = state;
+      for (const s of this.creepSprites.get(cell) ?? []) s.destroy();
+      this.creepSprites.delete(cell);
+      const prop = this.props.get(cell);
+      if (prop) prop.visible = state === 0;
+      if (!state) continue;
+      const h = this.heightOf(sim, cell);
+      const open = (state - 1) & 15;
+      const m = open === 0 ? 4 : 2;
+      const p = this.tileAt(cx, cy, h);
+      const made: Sprite[] = [];
+      const tint = state & 64 ? 0xffd890 : state & 32 ? 0x9fd8a8 : state & 128 ? 0xd8c0c0 : 0xffffff;
+      const z = (cx + cy + 1) * 100;
+      const skin = this.add(h ? this.sorted : this.creepFloor, this.art.sprite('creep', `creep-${open}-${cx % m}${cy % m}`), p.x, p.y, z + 2);
+      if (skin) {
+        // Streets stay readable under the creep: a thin film there, thick hide on the roofs.
+        skin.alpha = h ? 1 : 0.34;
+        skin.tint = tint;
+        made.push(skin);
+      }
+      if (h) {
+        const lower = (x: number, y: number) => x < 0 || y < 0 || x >= W || y >= H || this.heightOf(sim, y * W + x) < h;
+        if (lower(cx, cy + 1)) {
+          const d = this.add(this.sorted, this.art.sprite('creep', `drip-south-${cx % 4}`), p.x, p.y + g.b, z + 3);
+          if (d) { d.tint = tint; made.push(d); }
+        }
+        if (lower(cx + 1, cy)) {
+          const d = this.add(this.sorted, this.art.sprite('creep', `drip-east-${3 - (cy % 4)}`), p.x + g.a, p.y + g.b, z + 3);
+          if (d) { d.tint = tint; made.push(d); }
+        }
+      }
+      this.creepSprites.set(cell, made);
+    }
+  }
+
+  private frameOf(atlas: { frame(i: number, size: number, cols: number): Texture }, art: { frame: number; cols: number }, clip: Clip, at: number): Texture {
+    const i = clip.start + (((Math.floor(at) % clip.count) + clip.count) % clip.count);
+    return atlas.frame(i, art.frame, art.cols);
+  }
+
+  private syncCore(sim: Sim): void {
+    const c = this.art.core;
+    if (!c) {
+      // No picture of the landing site: the old heart, laid on the ground.
+      const r = 24 + Math.sin(this.pulse * 1.6) * 3;
+      this.groundG.circle(sim.core.x, sim.core.y, r + 8).fill({ color: 0x571812, alpha: 0.6 });
+      this.groundG.circle(sim.core.x, sim.core.y, r).fill(0x9c3120);
+      return;
+    }
+    if (!this.core) {
+      this.core = new Sprite(c.atlas.frame(0, c.art.frame, c.art.cols));
+      this.core.anchor.set(c.art.anchor[0], c.art.anchor[1]);
+      this.sorted.addChild(this.core);
+    }
+    const p = this.onGround(sim, sim.core.x, sim.core.y);
+    this.core.position.set(p.x, p.y);
+    this.core.scale.set((c.art.cells * this.geo.a * 1.4) / c.art.frame);
+    this.core.zIndex = depth(this.geo, sim.core.x, sim.core.y) * 100 + 40;
+    const at = Math.floor(this.simClock * c.art.fps) % c.art.count;
+    this.core.texture = c.atlas.frame(at, c.art.frame, c.art.cols);
+  }
+
+  // ------------------------------------------------------------ creep nodes
+
+  private syncNodes(sim: Sim): void {
+    const g = this.marksG;
+    const seen = new Set<number>();
+    for (const s of sim.creepSources) {
+      if (s.kind !== 'node') continue;
+      seen.add(s.id);
+      const c = sim.cellCenter(s.cell);
+      const p = this.onGround(sim, c.x, c.y);
+      this.nodeSprite(sim, s, p);
+      this.nodeMarks(g, sim, s, p.x / K, (p.y - 14) / K);
+    }
+    for (const [id, sp] of this.nodes) if (!seen.has(id)) { sp.destroy(); this.nodes.delete(id); }
+  }
+
+  private nodeSprite(sim: Sim, s: CreepSource, p: Pt): void {
+    const tex = this.art.sprite('props', 'prop-pod');
+    if (!tex) return;
+    let sp = this.nodes.get(s.id);
+    if (!sp) {
+      sp = new Sprite(tex);
+      sp.anchor.set(0.5, 0.9);
+      this.sorted.addChild(sp);
+      this.nodes.set(s.id, sp);
+    }
+    const st = s.strain;
+    sp.position.set(p.x, p.y);
+    const c = sim.cellCenter(s.cell);
+    sp.zIndex = depth(this.geo, c.x, c.y) * 100 + 8;
+    // Size says how far it spreads.
+    const size = 0.55 + (st?.radius ?? 3) * 0.09 + Math.sin(this.pulse * 1.6 + s.id) * 0.02;
+    sp.scale.set((this.geo.a * size) / tex.width);
+    sp.tint = st && st.dps > 0 ? 0xffe070 : st && st.slow < 1 ? 0x80d8a0 : 0xffffff;
+  }
+
+  /** What a node says about itself: its strain, and whether it is ready to spread. */
+  private nodeMarks(g: Graphics, sim: Sim, s: CreepSource, x: number, y: number): void {
+    const st = s.strain;
+    const r = 7 + (st?.radius ?? 3) * 1.2;
+    if (!this.art.sprite('props', 'prop-pod')) {
+      g.circle(x, y, r).fill(st && st.dps > 0 ? 0xd0d040 : st && st.slow < 1 ? 0x4f8a5a : 0x8aa860);
+    }
+    if (st && st.slow < 1) {
+      for (let k = 0; k < 10; k++) {
+        const a = (k / 10) * Math.PI * 2 + this.pulse * 0.3;
+        g.circle(x + Math.cos(a) * (r + 4), y + Math.sin(a) * (r + 4) * 0.6, 1.4).fill({ color: 0x9ae0a8, alpha: 0.9 });
+      }
+    }
+    if (st && st.dps > 0) {
+      for (let k = 0; k < 8; k++) {
+        const a = (k / 8) * Math.PI * 2 - this.pulse * 0.5;
+        g.moveTo(x + Math.cos(a) * (r + 1), y + Math.sin(a) * (r + 1) * 0.6)
+          .lineTo(x + Math.cos(a) * (r + 6), y + Math.sin(a) * (r + 6) * 0.6)
+          .stroke({ width: 2, color: 0xf0a030, alpha: 0.9 });
+      }
+    }
+    if (st && st.reach > 3) g.poly([x - 4, y - r - 3, x, y - r - 8, x + 4, y - r - 3]).fill({ color: 0xf0e0a0, alpha: 0.95 });
+    if (!s.spent) {
+      const mature = sim.wavesCleared >= (s.matureAt ?? 0);
+      const rr = r + 8 + (mature ? Math.sin(this.pulse * 3) * 1.5 : 0);
+      for (let k = 0; k < 12; k += mature ? 1 : 2) {
+        const a0 = (k / 12) * Math.PI * 2;
+        const a1 = ((k + 1) / 12) * Math.PI * 2;
+        g.moveTo(x + Math.cos(a0) * rr, y + Math.sin(a0) * rr * 0.6).lineTo(x + Math.cos(a1) * rr, y + Math.sin(a1) * rr * 0.6)
+          .stroke({ width: mature ? 2 : 1.5, color: 0xc8f090, alpha: mature ? 0.85 : 0.45 });
+      }
+    }
+    if ((s.hp ?? 1) < (s.maxHp ?? 1)) this.hpArc(g, x, y - 4, 11, (s.hp ?? 0) / (s.maxHp ?? 1));
+  }
+
+  // ------------------------------------------------------------ limbs
+
+  private shade(): Texture {
+    if (this.shadeTex) return this.shadeTex;
+    const c = document.createElement('canvas');
+    c.width = 128;
+    c.height = 64;
+    const g = c.getContext('2d')!;
+    const grad = g.createRadialGradient(64, 32, 4, 64, 32, 64);
+    grad.addColorStop(0, 'rgba(12, 4, 6, 0.62)');
+    grad.addColorStop(0.55, 'rgba(12, 4, 6, 0.3)');
+    grad.addColorStop(1, 'rgba(12, 4, 6, 0)');
+    g.setTransform(1, 0, 0, 0.5, 0, 0);
+    g.fillStyle = grad;
+    g.beginPath();
+    g.arc(64, 64, 64, 0, Math.PI * 2);
+    g.fill();
+    this.shadeTex = Texture.from(c);
+    return this.shadeTex;
+  }
+
+  private syncLimbs(sim: Sim, dt: number): void {
+    const g = this.geo;
+    for (const t of sim.towers) {
+      const cx = t.cell % sim.cfg.gridW;
+      const cy = Math.floor(t.cell / sim.cfg.gridW);
+      const h = this.heightOf(sim, t.cell);
+      const p = project(g, t.pos.x, t.pos.y, h);
+      const found = this.art.limbs.get(t.family);
+      let v = this.limbs.get(t.id);
+      if (v && v.family !== t.family) { v.sprite.destroy(); v.shade.destroy(); this.limbs.delete(t.id); v = undefined; }
+      if (!found) {
+        // No picture of this limb: its old shape, at the size of the rest.
+        this.drawTowerBody(this.marksG, t, p.x / K, (p.y - 20) / K, sim);
+        this.drawTowerMarks(this.marksG, t, p.x / K, (p.y - 20) / K, sim);
+        continue;
+      }
+      const { art, atlas } = found;
+      if (!v) {
+        const sprite = new Sprite(atlas.frame(art.anims.idle.start, art.frame, art.cols));
+        sprite.anchor.set(art.anchor[0], art.flat ? 0.6 : art.anchor[1]);
+        const shade = new Sprite(this.shade());
+        shade.anchor.set(0.5, 0.5);
+        shade.visible = !art.flat;
+        (art.flat ? this.flat : this.sorted).addChild(shade, sprite);
+        v = { sprite, shade, art, family: t.family, cooldown: t.cooldown, fireT: -1, fireDur: 0, mirror: false, seen: 0 };
+        this.limbs.set(t.id, v);
+      }
+      v.seen = this.frameNo;
+      const stats = towerStats(t);
+      // How wide it is drawn: a swamp covers the ground it slows; a wall spans its lane; the rest fill a cell.
+      let width = 2 * g.a * LIMB_FILL;
+      if (art.flat) width = 2 * ((towerSpec(t.family).swamp?.radius ?? 30) + (stats.aoe - towerSpec(t.family).aoe)) * Math.SQRT2 * (g.a / g.cell);
+      else if (art.on === 'street') width = 2 * g.a * 0.8;
+      const scale = width / (art.body * art.frame);
+
+      // A limb that has just fired plays its firing clip, fitted into the time before it fires again.
+      const held = sim.isTapped(t) || (t.stunnedUntil !== undefined && t.stunnedUntil > sim.time);
+      if (t.cooldown > v.cooldown + 0.05 && art.anims.fire) {
+        const native = art.anims.fire.count / art.anims.fire.fps;
+        v.fireDur = Math.max(0.3, Math.min(native, 0.85 * t.cooldown));
+        v.fireT = 0;
+      }
+      v.cooldown = t.cooldown;
+      let tex: Texture;
+      if (v.fireT >= 0 && art.anims.fire && !held) {
+        v.fireT += dt;
+        const f = Math.min(art.anims.fire.count - 1, Math.floor((v.fireT / v.fireDur) * art.anims.fire.count));
+        tex = atlas.frame(art.anims.fire.start + f, art.frame, art.cols);
+        if (v.fireT >= v.fireDur) v.fireT = -1;
+      } else {
+        const at = held ? 0 : (this.simClock + t.id * 0.37) * art.anims.idle.fps * Math.max(0.6, Math.min(2.5, stats.rate > 0 ? stats.rate / Math.max(0.01, towerSpec(t.family).rate) : 1));
+        tex = this.frameOf(atlas, art, art.anims.idle, at);
+      }
+      v.sprite.texture = tex;
+
+      // It faces what it is fighting; a limb with a facing faces that way.
+      if (art.facing && t.facing) v.mirror = t.facing === 'E' || t.facing === 'N';
+      else if (art.on === 'street' && !art.flat) v.mirror = this.laneRunsAlongX(sim, t.cell);
+      else if (t.lastTargetId !== undefined) {
+        const e = sim.enemies.find((x) => x.id === t.lastTargetId);
+        if (e) v.mirror = project(g, e.pos.x, e.pos.y).x > p.x;
+      }
+      v.sprite.scale.set(v.mirror ? -scale : scale, scale);
+      v.sprite.position.set(p.x, p.y);
+      v.sprite.zIndex = art.flat ? depth(g, t.pos.x, t.pos.y) : (cx + cy + 1) * 100 + (h ? 10 : 45);
+      v.shade.position.set(p.x, p.y);
+      v.shade.width = width * 1.7;
+      v.shade.height = width * 0.85;
+      v.shade.zIndex = v.sprite.zIndex - 1;
+      v.sprite.tint = held ? 0x9a90a8 : 0xffffff;
+      if (!art.flat) this.drawTowerMarks(this.marksG, t, p.x / K, (p.y - width * 0.42) / K, sim);
+      else if (t.hp < t.maxHp) this.hpArc(this.marksG, p.x / K, p.y / K - 8, 20, t.hp / t.maxHp);
+    }
+    for (const [id, v] of this.limbs) if (v.seen !== this.frameNo) { v.sprite.destroy(); v.shade.destroy(); this.limbs.delete(id); }
+  }
+
+  /** Does the street through this cell run along world x? Then a wall across it lies along world y. */
+  private laneRunsAlongX(sim: Sim, cell: number): boolean {
+    const next = sim.flowNextOf(cell);
+    if (next >= 0) return Math.abs((next % sim.cfg.gridW) - (cell % sim.cfg.gridW)) > 0;
+    const W = sim.cfg.gridW;
+    const open = (c: number) => c >= 0 && c < sim.map.cells.length && sim.map.cells[c] !== CellType.Block;
+    return open(cell - 1) && open(cell + 1) && !(open(cell - W) && open(cell + W));
+  }
+
+  protected drawReach(_g: Graphics, t: Tower, reach: number): void {
+    this.aimG.circle(t.pos.x, t.pos.y, reach).stroke({ width: 1.2, color: 0x9fd8ff, alpha: 0.45 });
+  }
+
+  protected drawPreviewCell(_g: Graphics, sim: Sim, cell: number, ok: boolean): void {
+    const cx = cell % sim.cfg.gridW;
+    const cy = Math.floor(cell / sim.cfg.gridW);
+    const p = this.tileAt(cx, cy, this.heightOf(sim, cell));
+    const g = this.geo;
+    this.marksG.poly([
+      (p.x + g.a) / K, p.y / K, (p.x + 2 * g.a) / K, (p.y + g.b) / K,
+      (p.x + g.a) / K, (p.y + 2 * g.b) / K, p.x / K, (p.y + g.b) / K,
+    ]).fill({ color: ok ? 0x76b04a : 0xb03a2a, alpha: 0.45 }).stroke({ width: 1, color: ok ? 0xc8f090 : 0xff8070, alpha: 0.9 });
+  }
+
+  /** What a limb affects, drawn limb to limb (they stand on roofs, not on the street). */
+  protected drawEffectLinks(_g: Graphics, sim: Sim, t: Tower): void {
+    const spec = towerSpec(t.family);
+    const links = sim.effectLinks(t);
+    const at = (u: Tower) => {
+      const p = this.onGround(sim, u.pos.x, u.pos.y);
+      return { x: p.x / K, y: (p.y - this.geo.a * 0.5) / K };
+    };
+    const m = this.marksG;
+    const me = at(t);
+    if (spec.engine) {
+      const col = ({ funnel: 0xffd060, amplify: 0xff80c8, mosaic: 0x70e8c8, twin: 0xa8a0ff, tap: 0xc070a0, mitosis: 0x98e070, capacitor: 0x80c8ff, boomerang: 0xffc050, press: 0x4fd0c8, reliquary: 0xf0e8c8 } as Record<string, number>)[spec.engine.kind] ?? 0xffffff;
+      if (spec.engine.gather !== undefined) {
+        const s = towerStats(t);
+        this.aimG.circle(t.pos.x, t.pos.y, spec.engine.gather * s.reach + (s.aoe - spec.aoe)).stroke({ width: 1, color: col, alpha: 0.4 });
+      }
+      for (const u of links.sources) {
+        const p = at(u);
+        m.moveTo(p.x, p.y).lineTo(me.x, me.y).stroke({ width: 1.5, color: col, alpha: 0.75 });
+        m.circle(p.x, p.y, 17).stroke({ width: 1.2, color: col, alpha: 0.6 });
+      }
+      for (const u of links.targets) {
+        const p = at(u);
+        m.moveTo(me.x, me.y).lineTo(p.x, p.y).stroke({ width: 3.5, color: col, alpha: 0.9 });
+        m.circle(p.x, p.y, 22 + Math.sin(this.pulse * 3) * 2).stroke({ width: 2.5, color: col, alpha: 0.95 });
+      }
+      return;
+    }
+    if (t.family === 'choir' || t.family === 'ward') {
+      const col = t.family === 'choir' ? 0xc8a0f0 : 0x9fc4ff;
+      this.aimG.circle(t.pos.x, t.pos.y, sim.auraOf(t).radius).stroke({ width: 1, color: col, alpha: 0.45 });
+      for (const u of links.targets) { const p = at(u); m.circle(p.x, p.y, 20).stroke({ width: 2, color: col, alpha: 0.85 }); }
+    }
+  }
+
+  // ------------------------------------------------------------ units
+
+  private syncUnits(sim: Sim, dt: number): void {
+    const g = this.geo;
+    for (const e of sim.enemies) {
+      const spec = enemySpec(e.kind);
+      const r = ENEMY_SIZE[e.kind];
+      const air = sim.isAirborne(e);
+      const up = air ? FLY_UP : this.heightAt(sim, e.pos.x, e.pos.y);
+      const p = project(g, e.pos.x, e.pos.y, up);
+      const found = this.art.units.get(e.kind);
+      if (air) this.groundG.circle(e.pos.x, e.pos.y, r * 0.9).fill({ color: 0x000000, alpha: 0.28 });
+      if (e.burrowed) {
+        // Underground: only a travelling mound of broken street.
+        this.groundG.circle(e.pos.x, e.pos.y, r + 3).fill({ color: 0x3a2c18, alpha: 0.85 });
+        this.groundG.circle(e.pos.x - 2, e.pos.y - 2, r).fill({ color: 0x6b573a, alpha: 0.9 });
+      }
+      if (!found) {
+        const col = CASTE_COLORS[spec.caste];
+        this.marksG.circle(p.x / K, p.y / K - r, r + 1.5).fill({ color: 0x0d0805, alpha: 0.85 });
+        this.marksG.circle(p.x / K, p.y / K - r, r).fill(col);
+        this.unitMarks(sim, e, p.x / K, p.y / K - r, r);
+        continue;
+      }
+      const { art, atlas } = found;
+      let v = this.units.get(e.id);
+      if (!v) {
+        const sprite = new Sprite();
+        const ghost = new Sprite();
+        for (const s of [sprite, ghost]) s.anchor.set(art.anchor[0], art.anchor[1]);
+        ghost.alpha = GHOST_ALPHA;
+        this.sorted.addChild(sprite);
+        this.ghosts.addChild(ghost);
+        // It starts out facing the way the street leads.
+        const next = sim.flowNextOf(sim.cellAt(e.pos.x, e.pos.y));
+        const to = next >= 0 ? sim.cellCenter(next) : sim.core;
+        const first = headingOf(g, to.x - e.pos.x, to.y - e.pos.y);
+        v = { sprite, ghost, art, heading: first, want: first, wantFor: 0, last: { ...e.pos }, phase: (e.id * 0.618) % 1, attackT: 0, seen: 0 };
+        this.units.set(e.id, v);
+      }
+      v.seen = this.frameNo;
+
+      const dx = e.pos.x - v.last.x;
+      const dy = e.pos.y - v.last.y;
+      const moved = Math.hypot(dx, dy);
+      v.last = { ...e.pos };
+      const attacking = (e.targetId !== null && e.targetId !== undefined) || !!e.deployed;
+      if (moved > 0.02) {
+        // A new heading has to hold for a moment before it is taken: no flicker at a corner.
+        const h = headingOf(g, dx, dy);
+        if (h === v.want) v.wantFor += dt; else { v.want = h; v.wantFor = 0; }
+        if (v.want !== v.heading && v.wantFor >= 0.12) v.heading = v.want;
+        // The legs keep time with the ground covered, so feet do not slide.
+        const clip0 = art.anims.walk[viewOf(v.heading).view];
+        const loopDist = Math.max(8, spec.speed * ((clip0?.count ?? 12) / (clip0?.fps ?? 12)));
+        v.phase = (v.phase + moved / loopDist) % 1;
+      } else if (attacking) {
+        const s = this.targetOf(sim, e);
+        if (s) v.heading = headingOf(g, s.x - e.pos.x, s.y - e.pos.y);
+      }
+      const { view, mirror } = viewOf(v.heading);
+      const walk = art.anims.walk[view] ?? art.anims.walk.SW ?? Object.values(art.anims.walk)[0]!;
+      const strike = attacking ? art.anims.attack?.[view] : undefined;
+      let tex: Texture;
+      if (strike) {
+        v.attackT += dt;
+        const period = spec.rate > 0 ? 1 / spec.rate : strike.count / strike.fps;
+        tex = this.frameOf(atlas, art, strike, ((v.attackT % period) / period) * strike.count);
+      } else {
+        v.attackT = 0;
+        tex = this.frameOf(atlas, art, walk, v.phase * walk.count);
+      }
+      const scale = (2 * r * UNIT_PX) / (art.body * art.frame);
+      const hidden = !!e.burrowed || (sim.isCloaked(e) && !sim.isRevealed(e));
+      for (const s of [v.sprite, v.ghost]) {
+        s.texture = tex;
+        s.position.set(p.x, p.y);
+        s.scale.set(mirror ? -scale : scale, scale);
+        s.visible = !hidden;
+      }
+      v.sprite.zIndex = depth(g, e.pos.x, e.pos.y) * 100 + (air ? 400 : 50);
+      v.sprite.tint = sim.isCloaked(e) ? 0xd8b0ff : 0xffffff;
+      this.unitMarks(sim, e, p.x / K, (p.y - r * UNIT_PX * 0.9) / K, r);
+    }
+    for (const [id, v] of this.units) {
+      if (v.seen !== this.frameNo) { v.sprite.destroy(); v.ghost.destroy(); this.units.delete(id); }
+    }
+    this.drawBroodlings(sim);
+  }
+
+  private targetOf(sim: Sim, e: Enemy): Pt | null {
+    if (e.targetId === -1) return sim.core;
+    if (e.targetId === null || e.targetId === undefined) return null;
+    return sim.towers.find((t) => t.id === e.targetId)?.pos ?? null;
+  }
+
+  /** What is drawn ON a unit whatever it looks like: its health and what has been done to it. */
+  private unitMarks(sim: Sim, e: Enemy, x: number, y: number, r: number): void {
+    const g = this.marksG;
+    const s = r + 3;
+    if (sim.isCloaked(e)) {
+      if (!sim.isRevealed(e)) {
+        g.circle(x, y, s).stroke({ width: 1.2, color: 0xcfc0e8, alpha: 0.28 + 0.12 * Math.sin(this.pulse * 3 + e.id) });
+        return;
+      }
+      g.circle(x, y, s + 3).stroke({ width: 1.5, color: 0xd8a0ff, alpha: 0.9 });
+    }
+    if (e.burrowed) return;
+    if (e.burnUntil !== undefined && e.burnUntil > sim.time) {
+      const fl = Math.abs(Math.sin(this.pulse * 7 + e.id));
+      g.poly([x - 4, y - s, x, y - s - 6 - fl * 4, x + 4, y - s]).fill({ color: 0xff8a30, alpha: 0.85 });
+      g.poly([x - 2, y - s, x + 1, y - s - 3 - fl * 3, x + 3, y - s]).fill({ color: 0xffe070, alpha: 0.9 });
+    }
+    if (e.kind === 'matron') this.groundG.circle(e.pos.x, e.pos.y, 90).stroke({ width: 1, color: 0xb890e0, alpha: 0.3 + 0.1 * Math.sin(this.pulse * 1.5) });
+    if (e.kind === 'drummer') this.groundG.circle(e.pos.x, e.pos.y, r + 8 + Math.sin(this.pulse * 5) * 3).stroke({ width: 1.5, color: 0xe0a03a, alpha: 0.55 });
+    if (e.kind === 'carapace' && e.hitShield !== undefined && e.hitShield > 0) {
+      g.circle(x, y, s + 3).stroke({ width: 2, color: 0xe8dca0, alpha: 0.3 + 0.08 * e.hitShield });
+    }
+    if (e.carrying) g.circle(x, y - s - 4, 3).fill(FAMILY_COLORS[e.carrying.family]);
+    if (e.extractId !== undefined && !e.carrying) {
+      const prey = sim.towers.find((t) => t.id === e.extractId);
+      if (prey && Math.hypot(prey.pos.x - e.pos.x, prey.pos.y - e.pos.y) < 40) {
+        const p = this.onGround(sim, prey.pos.x, prey.pos.y);
+        g.moveTo(x, y).lineTo(p.x / K, (p.y - this.geo.a * 0.5) / K).stroke({ width: 1.5, color: 0x4fa9a4, alpha: 0.6 + 0.3 * Math.sin(this.pulse * 6) });
+      }
+    }
+    if (e.slowUntil !== undefined && e.slowUntil > sim.time) g.circle(x, y, s + 1).stroke({ width: 1.5, color: 0x9cc45f, alpha: 0.8 });
+    if (e.poisonUntil !== undefined && e.poisonUntil > sim.time) {
+      g.circle(x + 3, y - s - 3, 2).fill({ color: 0xb8cc55, alpha: 0.9 });
+      g.circle(x - 3, y - s - 5, 1.5).fill({ color: 0xb8cc55, alpha: 0.7 });
+    }
+    if (e.hp < e.maxHp) this.hpArc(g, x, y - 4, s + 2, e.hp / e.maxHp);
+  }
+
+  private drawBroodlings(sim: Sim): void {
+    const g = this.marksG;
+    for (const b of sim.broodlings) {
+      const p = this.onGround(sim, b.pos.x, b.pos.y);
+      const x = p.x / K;
+      const y = p.y / K - 3;
+      g.ellipse(x, y + 3, 5, 2.5).fill({ color: 0x000000, alpha: 0.3 });
+      g.circle(x, y, b.puppet ? 8 : 4.5).fill({ color: 0x0d0805, alpha: 0.8 });
+      g.circle(x, y, b.puppet ? 7 : 3.5).fill(b.puppet ? 0xd4a72c : 0xc75a68);
+      if (b.hp < b.maxHp) this.hpArc(g, x, y, b.puppet ? 10 : 6, b.hp / b.maxHp);
+    }
+  }
+
+  // ------------------------------------------------------------ what flies
+
+  /** How high above the ground (in board pixels) a limb on this cell shoots from. */
+  private muzzle(sim: Sim, wx: number, wy: number): number {
+    return this.heightAt(sim, wx, wy) * this.geo.level + this.geo.a * 0.55;
+  }
+
+  protected drawShots(g: Graphics, sim: Sim): void {
+    const geo = this.geo;
+    const at = (wx: number, wy: number, upPx: number): Pt => {
+      const p = project(geo, wx, wy);
+      return { x: p.x / K, y: (p.y - upPx) / K };
+    };
+    for (const p of sim.projectiles) {
+      let v = this.shots.get(p.id);
+      if (!v) { v = { up0: this.muzzle(sim, p.pos.x, p.pos.y), ttl0: Math.max(0.05, p.ttl), seen: 0 }; this.shots.set(p.id, v); }
+      v.seen = this.frameNo;
+      // It leaves the limb up on its roof and comes down to the street as it flies.
+      const f = Math.min(1, 1 - p.ttl / v.ttl0);
+      const up = v.up0 + (14 - v.up0) * Math.min(1, f * 2.2);
+      const s = at(p.pos.x, p.pos.y, up);
+      if (p.fromFamily === 'impaler') {
+        const m = Math.hypot(p.vel.x, p.vel.y) || 1;
+        const t = at(p.pos.x - (p.vel.x / m) * 14, p.pos.y - (p.vel.y / m) * 14, up);
+        g.moveTo(t.x, t.y).lineTo(s.x, s.y).stroke({ width: 3, color: 0xf4efdd, alpha: 0.95 });
+      } else {
+        const col = p.fromFamily === 'tangler' ? 0x9cc45f : p.fromFamily === 'blighter' ? 0xb8cc55 : 0xf2c069;
+        g.circle(s.x, s.y, p.fromFamily === 'burster' ? 5 : 3).fill(col);
+      }
+    }
+    for (const [id, v] of this.shots) if (v.seen !== this.frameNo) this.shots.delete(id);
+
+    for (const d of sim.drops) {
+      const s = at(d.pos.x, d.pos.y, 8);
+      g.rect(s.x - 3, s.y - 3, 6, 6).fill(CASTE_COLORS[d.caste]);
+    }
+    for (const a of sim.arcs) {
+      const from = at(a.from.x, a.from.y, this.muzzle(sim, a.from.x, a.from.y));
+      const to = at(a.to.x, a.to.y, this.muzzle(sim, a.to.x, a.to.y) * 0.6);
+      const midX = (from.x + to.x) / 2 + Math.sin(this.pulse * 30) * 4;
+      const midY = (from.y + to.y) / 2 + Math.cos(this.pulse * 27) * 4;
+      g.moveTo(from.x, from.y).lineTo(midX, midY).lineTo(to.x, to.y).stroke({ width: 2, color: 0xcfeef8, alpha: Math.min(1, a.ttl * 4) });
+    }
+    const lobbed = (from: Pt, to: Pt, f: number, arc: number, r: number, col: number): void => {
+      const a = at(from.x, from.y, this.muzzle(sim, from.x, from.y));
+      const b = at(to.x, to.y, this.heightAt(sim, to.x, to.y) * geo.level + 6);
+      const x = a.x + (b.x - a.x) * f;
+      const y = a.y + (b.y - a.y) * f - Math.sin(f * Math.PI) * arc;
+      const sh = at(from.x + (to.x - from.x) * f, from.y + (to.y - from.y) * f, 0);
+      g.ellipse(sh.x, sh.y, r, r * 0.5).fill({ color: 0x000000, alpha: 0.28 });
+      g.circle(x, y, r).fill(col);
+    };
+    for (const s of sim.shells) lobbed(s.from, s.to, 1 - s.ttl / s.flight, 22, s.stun ? 2.5 : 4.5, s.side === 'body' ? 0xd8b060 : s.stun ? 0xdff5f2 : 0x2a1a0e);
+    for (const b of sim.bileFlights) lobbed(b.from, b.to, 1 - b.ttl / 0.9, 18, 6, 0xc4b83a);
+    for (const c of sim.clotFlights) lobbed(c.from, c.to, 1 - c.ttl / 1.2, 20, 7, 0x9c3120);
+  }
+}

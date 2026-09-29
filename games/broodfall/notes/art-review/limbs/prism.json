@@ -1,0 +1,58 @@
+{
+ "family": "prism",
+ "frames": 30,
+ "atlasKB": 217,
+ "failed": 0,
+ "checks": [
+  {
+   "name": "idle: loop closes",
+   "ok": true,
+   "value": 4
+  },
+  {
+   "name": "idle: it moves",
+   "ok": true,
+   "value": 0.48
+  },
+  {
+   "name": "idle: it is calm",
+   "ok": true,
+   "value": 0.48
+  },
+  {
+   "name": "idle: inside the frame",
+   "ok": true,
+   "value": "88,104-534,554"
+  },
+  {
+   "name": "idle: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "idle: ends the size it began",
+   "ok": true,
+   "value": "5% change"
+  },
+  {
+   "name": "fire: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "fire: frames swallowed by a flash or a cloud are few",
+   "ok": true,
+   "value": "3 left out"
+  },
+  {
+   "name": "fire: ends the size it began",
+   "ok": true,
+   "value": "4% change"
+  },
+  {
+   "name": "atlas is under 900 KB",
+   "ok": true,
+   "value": "217 KB"
+  }
+ ]
+}

@@ -1,0 +1,43 @@
+{
+ "family": "mitosis",
+ "frames": 16,
+ "atlasKB": 150,
+ "failed": 0,
+ "checks": [
+  {
+   "name": "idle: loop closes",
+   "ok": true,
+   "value": 0.41
+  },
+  {
+   "name": "idle: it moves",
+   "ok": true,
+   "value": 0.65
+  },
+  {
+   "name": "idle: it is calm",
+   "ok": true,
+   "value": 0.65
+  },
+  {
+   "name": "idle: inside the frame",
+   "ok": true,
+   "value": "100,100-570,528"
+  },
+  {
+   "name": "idle: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "idle: ends the size it began",
+   "ok": true,
+   "value": "3% change"
+  },
+  {
+   "name": "atlas is under 900 KB",
+   "ok": true,
+   "value": "150 KB"
+  }
+ ]
+}

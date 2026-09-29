@@ -10,7 +10,7 @@ import type { Enemy, RootDir, Tower, TowerFamily } from '../sim/types';
 
 export const CASTE_COLORS = { war: 0xd1603c, science: 0x4fa9a4, royal: 0xd4a72c } as const;
 
-const FAMILY_COLORS: Record<TowerFamily, number> = {
+export const FAMILY_COLORS: Record<TowerFamily, number> = {
   spitter: 0xc98f6a,
   burster: 0xb35633,
   lasher: 0x9c4f6d,
@@ -75,7 +75,7 @@ const ENGINE_GLYPH: Partial<Record<TowerFamily, (g: Graphics, x: number, y: numb
   },
 };
 
-const ENEMY_SIZE: Record<Enemy['kind'], number> = {
+export const ENEMY_SIZE: Record<Enemy['kind'], number> = {
   responder: 5, militia: 6, skitterling: 3.5, soldier: 8, elite: 11, flier: 6, sapper: 7,
   phalanx: 13, drummer: 9, bomber: 6, tunneler: 8, tender: 7,
   splitter: 9, mortar: 9, carapace: 10, stalker: 8, shadewing: 6, ghostsapper: 7,
@@ -98,13 +98,15 @@ export interface PlacementPreview {
 
 export class Renderer {
   app!: Application;
-  private world = new Container();
-  private ground = new Graphics();
-  private creepG = new Graphics();
-  private entG = new Graphics();
-  private fxG = new Graphics();
-  private ready = false;
-  private pulse = 0;
+  protected world = new Container();
+  protected ground = new Graphics();
+  protected creepG = new Graphics();
+  protected entG = new Graphics();
+  protected fxG = new Graphics();
+  protected ready = false;
+  protected pulse = 0;
+  /** A ring round every evolved limb. The isometric board leaves it out: the crest says it. */
+  protected evolvedRing = true;
 
   preview: PlacementPreview | null = null;
   /** Tower id highlighted as the cannibalize donor candidate. */
@@ -114,10 +116,10 @@ export class Renderer {
   /** Limb whose inspect panel is open: ring it and show its reach. */
   selectedTowerId: number | null = null;
 
-  private camX = 0;
-  private camY = 0;
-  private camScale = 1;
-  private camInit = false;
+  protected camX = 0;
+  protected camY = 0;
+  protected camScale = 1;
+  protected camInit = false;
 
   async init(mount: HTMLElement, worldW: number, worldH: number): Promise<void> {
     this.app = new Application();
@@ -132,7 +134,7 @@ export class Renderer {
 
   /** Frame the ACTIVE districts (plus margin); ease toward it — the map
    *  visibly grows on screen when a new district is consumed. */
-  private updateCamera(sim: Sim, dtReal: number): void {
+  protected updateCamera(sim: Sim, dtReal: number): void {
     const cp = sim.cfg.cellPx;
     let minX = Infinity;
     let minY = Infinity;
@@ -175,6 +177,14 @@ export class Renderer {
     };
   }
 
+  /** World coords -> canvas pixels: where to click to reach that point of the world. */
+  worldToScreen(x: number, y: number): { x: number; y: number; vw: number; vh: number } {
+    return {
+      x: x * this.camScale + this.camX, y: y * this.camScale + this.camY,
+      vw: this.app.renderer.width, vh: this.app.renderer.height,
+    };
+  }
+
   /** Client (CSS) coords -> world coords, through canvas scaling AND the camera. */
   toWorld(clientX: number, clientY: number): { x: number; y: number } {
     const rect = this.app.canvas.getBoundingClientRect();
@@ -196,7 +206,7 @@ export class Renderer {
     this.drawFx(sim);
   }
 
-  private drawGround(sim: Sim): void {
+  protected drawGround(sim: Sim): void {
     const g = this.ground;
     g.clear();
     const cp = sim.cfg.cellPx;
@@ -240,7 +250,11 @@ export class Renderer {
         }
       }
     }
-    // Gates: the frontier ports where unclaimed city meets your turf.
+    this.drawGates(g, sim);
+  }
+
+  /** Gates: the frontier ports where unclaimed city meets your turf. */
+  protected drawGates(g: Graphics, sim: Sim): void {
     for (const gate of sim.gates) {
       const c = sim.cellCenter(gate);
       const incoming = !sim.waveIntelHidden && sim.incomingGates.includes(gate);
@@ -263,7 +277,7 @@ export class Renderer {
     }
   }
 
-  private drawCreep(sim: Sim): void {
+  protected drawCreep(sim: Sim): void {
     const g = this.creepG;
     g.clear();
     const cp = sim.cfg.cellPx;
@@ -310,9 +324,20 @@ export class Renderer {
     g.circle(x - 6, y - 7, coreR * 0.22).fill({ color: 0xf0b090, alpha: 0.8 });
   }
 
-  private drawEntities(sim: Sim): void {
+  protected drawEntities(sim: Sim): void {
     const g = this.entG;
     g.clear();
+    this.drawNodes(g, sim);
+    for (const t of sim.towers) {
+      const hgt = sim.map.heights[t.cell] || 0;
+      this.drawTower(g, t, hgt > 0 ? hgt * 4 : 0, sim);
+    }
+    this.drawGroundFx(g, sim);
+    for (const e of sim.enemies) this.drawEnemy(g, e, e.pos.x, e.pos.y, sim);
+  }
+
+  /** Creep nodes: one call per node, at a place the caller chooses. */
+  protected drawNodes(g: Graphics, sim: Sim): void {
 
     // Creep nodes: spore pods, coloured by strain; a ring fills as they mature, and
     // a mature node that has not spread yet glows (click it to spread its child).
@@ -364,12 +389,10 @@ export class Renderer {
       }
       if ((s.hp ?? 1) < (s.maxHp ?? 1)) this.hpArc(g, p.x, p.y, 11, (s.hp ?? 0) / (s.maxHp ?? 1));
     }
+  }
 
-    for (const t of sim.towers) {
-      const hgt = sim.map.heights[t.cell] || 0;
-      this.drawTower(g, t, hgt > 0 ? hgt * 4 : 0, sim);
-    }
-
+  /** What lies on the ground: royal presence, pheromone clouds, caltrops. */
+  protected drawGroundFx(g: Graphics, sim: Sim): void {
     // Royal presence: a faint gold field around royals and consorts.
     for (const e of sim.enemies) {
       if (e.kind !== 'royal' && e.kind !== 'consort') continue;
@@ -391,8 +414,11 @@ export class Renderer {
       }
     }
 
-    for (const e of sim.enemies) {
-      const { x, y } = e.pos;
+  }
+
+  /** One enemy, drawn at (x, y). */
+  protected drawEnemy(g: Graphics, e: Enemy, x: number, y: number, sim: Sim): void {
+    {
       const s = ENEMY_SIZE[e.kind];
       const color = CASTE_COLORS[e.kind === 'royal' ? 'royal' : e.kind === 'researcher' ? 'science' : 'war'];
       // Burning: flames licking up off the body.
@@ -406,14 +432,14 @@ export class Renderer {
       if (sim.isCloaked(e)) {
         if (!sim.isRevealed(e)) {
           g.circle(x, y, s).stroke({ width: 1.2, color: 0xcfc0e8, alpha: 0.28 + 0.12 * Math.sin(this.pulse * 3 + e.id) });
-          continue;
+          return;
         }
         g.circle(x, y, s + 3).stroke({ width: 1.5, color: 0xd8a0ff, alpha: 0.9 });
       }
       if (e.kind === 'stalker') {
         g.circle(x, y, s).fill({ color: 0x8a6ab0, alpha: 0.9 });
         if (e.hp < e.maxHp) this.hpArc(g, x, y, s + 5, e.hp / e.maxHp);
-        continue;
+        return;
       }
       if (e.kind === 'matron') {
         // Veil matron: gilded, trailing a violet veil ring (her cloaking reach).
@@ -422,7 +448,7 @@ export class Renderer {
         g.circle(x, y, s).fill(CASTE_COLORS.royal);
         g.circle(x, y, s * 0.5).fill(0xb890e0);
         if (e.hp < e.maxHp) this.hpArc(g, x, y, s + 5, e.hp / e.maxHp);
-        continue;
+        return;
       }
       // A netted flier: on the ground, tangled.
       if ((e.kind === 'flier' || e.kind === 'shadewing') && !sim.isAirborne(e)) {
@@ -431,7 +457,7 @@ export class Renderer {
         g.moveTo(x - s - 2, y - s - 2).lineTo(x + s + 2, y + s + 2).stroke({ width: 1, color: 0xe0f4fa, alpha: 0.8 });
         g.moveTo(x + s + 2, y - s - 2).lineTo(x - s - 2, y + s + 2).stroke({ width: 1, color: 0xe0f4fa, alpha: 0.8 });
         if (e.hp < e.maxHp) this.hpArc(g, x, y, s + 5, e.hp / e.maxHp);
-        continue;
+        return;
       }
       if (e.kind === 'researcher' || e.kind === 'infiltrator') {
         g.circle(x, y, s + 1.5).fill({ color: 0x0d0805, alpha: 0.85 });
@@ -562,9 +588,13 @@ export class Renderer {
     }
   }
 
-  private drawTower(g: Graphics, t: Tower, lift: number, sim: Sim): void {
-    const x = t.pos.x;
-    const y = t.pos.y - lift;
+  protected drawTower(g: Graphics, t: Tower, lift: number, sim: Sim): void {
+    this.drawTowerBody(g, t, t.pos.x, t.pos.y - lift, sim);
+    this.drawTowerMarks(g, t, t.pos.x, t.pos.y - lift, sim);
+  }
+
+  /** The limb itself, as a drawn shape (what is shown when it has no picture). */
+  protected drawTowerBody(g: Graphics, t: Tower, x: number, y: number, sim: Sim): void {
     const c = FAMILY_COLORS[t.family];
     // Ground shadow + rim so limbs read against the creep.
     g.circle(x, y + 2, 15).fill({ color: 0x000000, alpha: 0.35 });
@@ -831,6 +861,13 @@ export class Renderer {
         break;
       }
     }
+  }
+
+  /**
+   * What is drawn ON a limb whatever it looks like: what it can shoot, its inherited pips,
+   * its evolution crest, its health, shield, charge, stasis, stun and selection.
+   */
+  protected drawTowerMarks(g: Graphics, t: Tower, x: number, y: number, sim: Sim): void {
     // What it can shoot, at a glance: a sky-blue chevron = hits AIR; a hollow
     // ring under it too = AIR ONLY. No chevron = ground only.
     const st = towerStats(t);
@@ -850,7 +887,7 @@ export class Renderer {
     // A a spike, B a diamond; stages 1-2 science teal, stage 3 royal gold.
     const path = t.upgrades ?? [];
     if (path.length > 0) {
-      g.circle(x, y, 13).stroke({ width: 1.5, color: path.length >= 3 ? 0xd4a72c : 0x4fa9a4, alpha: 0.9 });
+      if (this.evolvedRing) g.circle(x, y, 13).stroke({ width: 1.5, color: path.length >= 3 ? 0xd4a72c : 0x4fa9a4, alpha: 0.9 });
       path.forEach((c, i) => {
         const mx = x + (i - (path.length - 1) / 2) * 10;
         const my = y - 24;
@@ -886,9 +923,7 @@ export class Renderer {
     if (this.selectedTowerId === t.id) {
       g.circle(x, y, 24).stroke({ width: 2, color: 0x9fd8ff, alpha: 0.9 });
       const reach = towerStats(t).range;
-      if (reach > 0 && reach < 1000 && !towerSpec(t.family).directional) {
-        g.circle(t.pos.x, t.pos.y, reach).stroke({ width: 1, color: 0x9fd8ff, alpha: 0.3 });
-      }
+      if (reach > 0 && reach < 1000 && !towerSpec(t.family).directional) this.drawReach(g, t, reach);
     }
   }
 
@@ -896,7 +931,7 @@ export class Renderer {
    * FIELD OF FIRE for limbs whose facing matters: the skipping mortar's firing
    * lane and the conduit's pointing lane, drawn as a corridor down its heading.
    */
-  private drawFieldOfFire(g: Graphics, sim: Sim, t: Tower, valid = true): void {
+  protected drawFieldOfFire(g: Graphics, sim: Sim, t: Tower, valid = true): void {
     const spec = towerSpec(t.family);
     if (!spec.directional) return;
     const f = Sim.facingVec(t.facing ?? 'N');
@@ -927,7 +962,7 @@ export class Renderer {
    * a conduit's sources (thin lines in) and its target (thick arrow out); a
    * choir's or ward's covered limbs (rings), plus the reach it covers.
    */
-  private drawEffectLinks(g: Graphics, sim: Sim, t: Tower): void {
+  protected drawEffectLinks(g: Graphics, sim: Sim, t: Tower): void {
     const spec = towerSpec(t.family);
     const links = sim.effectLinks(t);
     if (spec.engine) {
@@ -956,9 +991,24 @@ export class Renderer {
     }
   }
 
-  private drawFx(sim: Sim): void {
+  protected drawFx(sim: Sim): void {
     const g = this.fxG;
     g.clear();
+    this.drawFxInto(g, sim);
+  }
+
+  /** Where a thing thrown in an arc is drawn when it is `up` above the ground at (x, y). */
+  protected lob(x: number, y: number, up: number): { x: number; y: number } {
+    return { x, y: y - up };
+  }
+
+  protected drawFxInto(g: Graphics, sim: Sim): void {
+    this.drawShots(g, sim);
+    this.drawAim(g, sim);
+  }
+
+  /** What is in flight: shots, meat, broodlings, arcs, shells, globs and clots. */
+  protected drawShots(g: Graphics, sim: Sim): void {
 
     for (const p of sim.projectiles) {
       if (p.fromFamily === 'impaler') {
@@ -999,18 +1049,9 @@ export class Renderer {
       const y = s.from.y + (s.to.y - s.from.y) * f;
       const arc = Math.sin(f * Math.PI) * 50;
       const col = s.side === 'body' ? 0xd8b060 : s.stun ? 0xdff5f2 : 0x2a1a0e;
+      const top = this.lob(x, y, arc);
       g.circle(x, y + 3, 3.5).fill({ color: 0x000000, alpha: 0.3 });
-      g.circle(x, y - arc, s.stun ? 2.5 : 4.5).fill(col);
-    }
-
-    // Bombard markers: the crosshair you ordered it to shell.
-    for (const t of sim.towers) {
-      if (t.family !== 'bombard' || t.marker === undefined) continue;
-      const m = sim.cellCenter(t.marker);
-      const r = towerStats(t).aoe;
-      g.circle(m.x, m.y, r).stroke({ width: 1.5, color: 0xd8b060, alpha: 0.55 });
-      g.moveTo(m.x - 8, m.y).lineTo(m.x + 8, m.y).stroke({ width: 1.5, color: 0xd8b060, alpha: 0.8 });
-      g.moveTo(m.x, m.y - 8).lineTo(m.x, m.y + 8).stroke({ width: 1.5, color: 0xd8b060, alpha: 0.8 });
+      g.circle(top.x, top.y, s.stun ? 2.5 : 4.5).fill(col);
     }
 
     // Bile globs in flight: heavier arc than the clot, sickly color.
@@ -1019,8 +1060,9 @@ export class Renderer {
       const x = gb.from.x + (gb.to.x - gb.from.x) * f;
       const y = gb.from.y + (gb.to.y - gb.from.y) * f;
       const arc = Math.sin(f * Math.PI) * 40;
+      const top = this.lob(x, y, arc);
       g.circle(x, y + 3, 5).fill({ color: 0x000000, alpha: 0.3 });
-      g.circle(x, y - arc, 6).fill(0xc4b83a);
+      g.circle(top.x, top.y, 6).fill(0xc4b83a);
     }
 
     // Creep clots in flight: a lobbed blob on a parabola, shadow tracking below.
@@ -1029,9 +1071,24 @@ export class Renderer {
       const x = c.from.x + (c.to.x - c.from.x) * f;
       const y = c.from.y + (c.to.y - c.from.y) * f;
       const arc = Math.sin(f * Math.PI) * 46;
+      const top = this.lob(x, y, arc);
       g.circle(x, y + 3, 5).fill({ color: 0x000000, alpha: 0.3 });
-      g.circle(x, y - arc, 7).fill(0x9c3120);
-      g.circle(x - 2, y - arc - 2, 2.5).fill({ color: 0xd0604a, alpha: 0.9 });
+      g.circle(top.x, top.y, 7).fill(0x9c3120);
+      g.circle(top.x - 2, top.y - 2, 2.5).fill({ color: 0xd0604a, alpha: 0.9 });
+    }
+
+  }
+
+  /** What the player is aiming or has ordered: markers, ranges, fields of fire, the placement preview. */
+  protected drawAim(g: Graphics, sim: Sim): void {
+    // Bombard markers: the crosshair you ordered it to shell.
+    for (const t of sim.towers) {
+      if (t.family !== 'bombard' || t.marker === undefined) continue;
+      const m = sim.cellCenter(t.marker);
+      const r = towerStats(t).aoe;
+      g.circle(m.x, m.y, r).stroke({ width: 1.5, color: 0xd8b060, alpha: 0.55 });
+      g.moveTo(m.x - 8, m.y).lineTo(m.x + 8, m.y).stroke({ width: 1.5, color: 0xd8b060, alpha: 0.8 });
+      g.moveTo(m.x, m.y - 8).lineTo(m.x, m.y + 8).stroke({ width: 1.5, color: 0xd8b060, alpha: 0.8 });
     }
 
     // Armed sling: show the throw range while the player aims.
@@ -1054,8 +1111,7 @@ export class Renderer {
     if (this.preview) {
       const c = sim.cellCenter(this.preview.cell);
       const ok = this.preview.valid;
-      g.rect(c.x - sim.cfg.cellPx / 2, c.y - sim.cfg.cellPx / 2, sim.cfg.cellPx, sim.cfg.cellPx)
-        .fill({ color: ok ? 0x76b04a : 0xb03a2a, alpha: 0.4 });
+      this.drawPreviewCell(g, sim, this.preview.cell, ok);
       if (this.preview.kind === 'node') {
         g.circle(c.x, c.y, (this.preview.radius ?? 3) * sim.cfg.cellPx).stroke({ width: 2, color: ok ? 0x9ad068 : 0xb03a2a, alpha: 0.6 });
         g.circle(c.x, c.y, 8).fill({ color: 0x8aa860, alpha: ok ? 0.9 : 0.4 });
@@ -1081,7 +1137,19 @@ export class Renderer {
     }
   }
 
-  private hpArc(g: Graphics, x: number, y: number, r: number, frac: number): void {
+  /** How far the selected limb reaches: a ring on the ground round it. */
+  protected drawReach(g: Graphics, t: Tower, reach: number): void {
+    g.circle(t.pos.x, t.pos.y, reach).stroke({ width: 1, color: 0x9fd8ff, alpha: 0.3 });
+  }
+
+  /** The cell a placement would take, lit green or red. */
+  protected drawPreviewCell(g: Graphics, sim: Sim, cell: number, ok: boolean): void {
+    const c = sim.cellCenter(cell);
+    g.rect(c.x - sim.cfg.cellPx / 2, c.y - sim.cfg.cellPx / 2, sim.cfg.cellPx, sim.cfg.cellPx)
+      .fill({ color: ok ? 0x76b04a : 0xb03a2a, alpha: 0.4 });
+  }
+
+  protected hpArc(g: Graphics, x: number, y: number, r: number, frac: number): void {
     const f = Math.max(0, Math.min(1, frac));
     g.moveTo(x - r, y - r).lineTo(x - r + 2 * r * f, y - r)
       .stroke({ width: 3, color: f > 0.4 ? 0x7fae52 : 0xc84b2f, alpha: 0.95 });

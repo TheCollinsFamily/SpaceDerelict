@@ -7,6 +7,8 @@
 import { Autoplayer } from './sim/autoplayer';
 import { DT, Sim, organSpec, towerSpec } from './sim/sim';
 import { Renderer } from './render/render';
+import { IsoRenderer } from './render/isoRender';
+import { BoardArtSet, artUrl, loadManifest, pickBiome } from './render/art';
 import { Hud, PIP_DESC } from './ui/hud';
 import { UndergroundScreen } from './ui/underground';
 import { CampaignUi } from './ui/campaignUi';
@@ -26,6 +28,8 @@ const AUTO = params.get('auto') === '1';
 const CAMPAIGN = params.get('campaign');
 const AUTOSTART = AUTO || params.get('autostart') === '1' || CAMPAIGN === 'run';
 const START_SPEED = Number(params.get('speed') ?? 1);
+/** 'top' = the old top-down board drawn as shapes; anything else = the isometric board, when its art is there. */
+const VIEW = params.get('view');
 
 const DIRECTIVES: Record<string, Directive> = {
   hold: { kind: 'hold', waves: 12 },
@@ -63,10 +67,13 @@ const CFG: SimConfig = {
 // A campaign deployment: the pending plan (territory, dares, experiment, perks) shapes the run.
 let campaignState: CampaignState | null = null;
 let campaignPlan: DeploymentPlan | null = null;
+/** The territory being fought over: it decides which tile set the board is drawn with. */
+let territory: string | null = null;
 if (CAMPAIGN === 'run') {
   campaignState = loadCampaign();
   const pending = loadPending();
   if (campaignState && pending) {
+    territory = pending.territory;
     campaignPlan = plan(campaignState, pending.territory, pending);
     Object.assign(CFG, campaignPlan.config, { gridW: CFG.gridW, gridH: CFG.gridH, cellPx: CFG.cellPx, genes: meta.genes });
   }
@@ -77,7 +84,8 @@ let speed = Number.isFinite(START_SPEED) && START_SPEED >= 0 ? START_SPEED : 1;
 let started = AUTOSTART;
 let debriefShown = false;
 
-const renderer = new Renderer();
+/** The top-down board until boot() has loaded the art; then the isometric one, if its art is there. */
+let renderer: Renderer = new Renderer();
 
 let selectedCard: number | null = null;
 let armedOrgan: OrganId | null = null;
@@ -640,11 +648,62 @@ function underLifecycle(): void {
 
 async function boot(): Promise<void> {
   const mount = document.getElementById('stage')!;
-  await renderer.init(mount, CFG.gridW * CFG.cellPx, CFG.gridH * CFG.cellPx);
+  // The menu answers at once; the art loads behind it.
   setupMenu();
   setupScreens();
+  // The title screen shows the ship in orbit, when there is a picture of it.
+  void loadManifest().then((m) => {
+    const file = m?.ship?.ship?.exterior;
+    if (!file) return;
+    menuEl.style.setProperty('--exterior', `url("${new URL(artUrl(file), document.baseURI).href}")`);
+    menuEl.classList.add('ship-art');
+  });
+  if (VIEW !== 'top') {
+    const manifest = await loadManifest();
+    // ?biome=megacity names a tile set; a campaign deployment is drawn with its territory's; a skirmish with one chosen by its seed.
+    const art = manifest
+      ? await BoardArtSet.load(manifest, pickBiome(manifest, { biome: params.get('biome'), territory, seed: SEED }))
+      : null;
+    if (art?.terrain) renderer = new IsoRenderer(art);
+  }
+  document.body.classList.toggle('view-iso', renderer instanceof IsoRenderer);
+  await renderer.init(mount, CFG.gridW * CFG.cellPx, CFG.gridH * CFG.cellPx);
 
-  renderer.app.canvas.addEventListener('click', (ev) => handleCanvasClick(ev.clientX, ev.clientY));
+  renderer.app.canvas.addEventListener('click', (ev) => { if (!dragged) handleCanvasClick(ev.clientX, ev.clientY); });
+  // The isometric board can be looked at closely: the wheel zooms on the pointer, the
+  // middle button (or Shift + drag) slides the view, Home frames the claimed districts again.
+  let dragFrom: { x: number; y: number } | null = null;
+  let dragged = false;
+  const canvasScale = () => renderer.app.renderer.width / renderer.app.canvas.getBoundingClientRect().width;
+  renderer.app.canvas.addEventListener('wheel', (ev) => {
+    if (!(renderer instanceof IsoRenderer)) return;
+    ev.preventDefault();
+    renderer.zoomAt(ev.clientX, ev.clientY, ev.deltaY < 0 ? 1.15 : 1 / 1.15);
+  }, { passive: false });
+  renderer.app.canvas.addEventListener('pointerdown', (ev) => {
+    dragged = false;
+    if (renderer instanceof IsoRenderer && (ev.button === 1 || (ev.button === 0 && ev.shiftKey))) {
+      dragFrom = { x: ev.clientX, y: ev.clientY };
+      ev.preventDefault();
+    }
+  });
+  window.addEventListener('pointermove', (ev) => {
+    if (!dragFrom || !(renderer instanceof IsoRenderer)) return;
+    const k = canvasScale();
+    renderer.panBy((ev.clientX - dragFrom.x) * k, (ev.clientY - dragFrom.y) * k);
+    if (Math.abs(ev.clientX - dragFrom.x) + Math.abs(ev.clientY - dragFrom.y) > 2) dragged = true;
+    dragFrom = { x: ev.clientX, y: ev.clientY };
+  });
+  window.addEventListener('pointerup', () => { dragFrom = null; });
+  window.addEventListener('keydown', (ev) => {
+    if (!(renderer instanceof IsoRenderer) || (ev.target as HTMLElement).tagName === 'INPUT') return;
+    const step = 90;
+    if (ev.key === 'Home') renderer.resetView();
+    else if (ev.key === 'ArrowLeft') renderer.panBy(step, 0);
+    else if (ev.key === 'ArrowRight') renderer.panBy(-step, 0);
+    else if (ev.key === 'ArrowUp') renderer.panBy(0, step);
+    else if (ev.key === 'ArrowDown') renderer.panBy(0, -step);
+  });
   // RIGHT-CLICK: rotates a directional card being placed, or a built directional
   // limb under the cursor; otherwise it cancels. (Esc always cancels.)
   renderer.app.canvas.addEventListener('contextmenu', (ev) => {
@@ -823,8 +882,24 @@ async function boot(): Promise<void> {
     },
     /** World coords -> canvas-pixel coords (for scripted clicking/sampling). */
     worldToScreen(x: number, y: number) {
-      const c = renderer.camera();
-      return { x: x * c.scale + c.x, y: y * c.scale + c.y, vw: c.vw, vh: c.vh };
+      return renderer.worldToScreen(x, y);
+    },
+    /** The cell a click at these client coordinates would reach. */
+    cellAtClient(clientX: number, clientY: number): number {
+      const w = renderer.toWorld(clientX, clientY);
+      return sim.cellAt(w.x, w.y);
+    },
+    /** 'iso' (the baked art) or 'top' (the old shapes). */
+    view(): 'iso' | 'top' {
+      return renderer instanceof IsoRenderer ? 'iso' : 'top';
+    },
+    /** The tile set the board is drawn with ('' on the old board, or when the manifest names none). */
+    biome(): string {
+      return renderer instanceof IsoRenderer ? renderer.biome() : '';
+    },
+    /** What of the baked art the board could not load (empty when all of it is there). */
+    artMissing(): string[] {
+      return renderer instanceof IsoRenderer ? renderer.missing() : [];
     },
     buildableCells(limit = 40): number[] {
       const out: number[] = [];

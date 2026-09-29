@@ -19,6 +19,8 @@ import { ORGAN_BY_ID } from '../../content/underground';
 import { ENEMIES } from '../../content/data';
 import type { EnemyKind, OrganId } from '../sim/types';
 import lore from '../../content/lore/ship-ai-lorebook.md?raw';
+import { artUrl, loadManifest, type ShipArt } from '../render/art';
+import { GLOBE, Globe, projectSite, type Zone } from './globe';
 
 type Room = 'desk' | 'genes' | 'locker' | 'board' | 'comms' | 'ai';
 
@@ -28,6 +30,10 @@ const THEME_NAME: Record<string, string> = {
   catapult: 'Spore Sling', runner: 'Creep Lance', cage: 'Trap Cage',
 };
 const speakLine = (l: string) => { const i = l.indexOf(':'); return i > 0 ? `<b>${esc(l.slice(0, i))}:</b>${esc(l.slice(i + 1))}` : esc(l); };
+/** Which of her faces YOKE wears for each kind of talk. */
+const YOKE_FACE: Record<string, string> = {
+  'first-deployment': 'curious', 'faction-allied': 'amused', midpoint: 'concerned', licence: 'calm', ending: 'sad', idle: 'calm',
+};
 const esc = (t: string) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
 
 export class CampaignUi {
@@ -44,16 +50,43 @@ export class CampaignUi {
   private talk: { trigger: AiTrigger; turns: AiTurn[] } | null = null;
   /** A YOKE reply is on its way (a live call takes a second or two). */
   private waiting = false;
+  /** The ship's pictures, once they have loaded; null when there are none (the screens are plain then). */
+  private art: ShipArt | null = null;
+  private globe = new Globe();
+  /** The post-deployment report is up: the rooms must not be drawn over it. */
+  private debriefing = false;
 
   constructor(private state: CampaignState, private hooks: { deploy(p: PendingDeployment): void; newCampaign(): void; quit(): void }) {
     this.ai = this.buildAi();
+    void loadManifest().then(async (m) => {
+      const art = m?.ship?.ship ?? null;
+      if (!art) return;
+      if (art.planet) await this.globe.load(artUrl(art.planet));
+      this.art = art;
+      if (this.el.classList.contains('hidden')) return;
+      if (this.debriefing) this.dress(); else this.render();
+    });
     this.el.addEventListener('click', (ev) => this.onClick(ev));
+    this.el.addEventListener('pointerdown', (ev) => {
+      if (!(ev.target as HTMLElement).closest('.globe-box') || (ev.target as HTMLElement).closest('.site')) return;
+      const from = ev.clientX;
+      const spin0 = this.spin;
+      const move = (e: PointerEvent) => {
+        this.spin = spin0 - (e.clientX - from) * 0.4;
+        const canvas = this.el.querySelector<HTMLCanvasElement>('canvas.globe-map');
+        if (canvas) this.globe.paint(canvas, this.spin, this.zones(), this.selected);
+      };
+      const up = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); this.render(); };
+      window.addEventListener('pointermove', move);
+      window.addEventListener('pointerup', up);
+    });
     this.el.addEventListener('keydown', (ev) => {
       if ((ev.target as HTMLElement).id === 'ai-input' && ev.key === 'Enter') void this.aiSend();
     });
   }
 
   show(): void {
+    this.debriefing = false;
     document.body.classList.add('in-ship');
     this.el.classList.remove('hidden');
     this.render();
@@ -81,7 +114,8 @@ export class CampaignUi {
       ['board', 'Procreation Board'], ['comms', 'Comms'], ['ai', `AI Core${s.ai.queue.length ? ` (${s.ai.queue.length})` : ''}`],
     ];
     const fac = s.faction ? faction(s.faction).name : 'no allies';
-    this.el.innerHTML = `
+    const face = this.room !== 'ai' ? '' : this.talk ? (this.waiting ? 'thinking' : YOKE_FACE[this.talk.trigger] ?? 'calm') : s.ai.queue.length ? 'curious' : 'calm';
+    this.el.innerHTML = `${face ? this.yokeHtml(face) : ''}
       <div class="cp-card">
         <div class="cp-head">
           <div><div class="screen-kicker">ORBITAL TENDER "MERCIFUL YOKE" — XENOFAUNA CLEARANCE, SECTOR 9</div>
@@ -98,6 +132,55 @@ export class CampaignUi {
         <div class="cp-body">${this.roomHtml()}</div>
       </div>
       ${this.sceneHtml()}`;
+    this.dress();
+  }
+
+  /** The room's picture behind the screen, and the globe painted into its canvas. */
+  private dress(): void {
+    const art = this.art;
+    this.el.classList.toggle('ship-art', !!art);
+    this.el.dataset.in = this.room;
+    // A picture named in a style variable is looked for beside the STYLESHEET that uses it, so the whole address is given.
+    const at = (file: string | undefined) => (file ? `url("${new URL(artUrl(file), document.baseURI).href}")` : 'none');
+    this.el.style.setProperty('--room', at(art?.rooms[this.room]));
+    this.el.style.setProperty('--sketches', at(art?.sketches?.atlas));
+    this.el.style.setProperty('--yoke', at(art?.yoke?.atlas));
+    const canvas = this.el.querySelector<HTMLCanvasElement>('canvas.globe-map');
+    if (canvas) this.globe.paint(canvas, this.spin, this.zones(), this.selected);
+  }
+
+  /** Every landing site the player knows of, and what it is to him. */
+  private zones(): Zone[] {
+    const s = this.state;
+    const open = new Set(targets(s).map((t) => t.id));
+    return TERRITORIES.filter((t) => !t.hidden || s.revealed.includes(t.id)).map((t) => ({
+      id: t.id, lat: t.lat, lon: t.lon,
+      state: s.underAttack === t.id ? 'attack' : s.held.includes(t.id) ? 'held' : open.has(t.id) ? 'open' : 'locked',
+    }));
+  }
+
+  /** One of the character's own sketches, by the id of the dare or experiment it is for. */
+  private sketch(id: string): string {
+    const sk = this.art?.sketches;
+    const i = sk ? sk.ids.indexOf(id) : -1;
+    if (!sk || i < 0) return '';
+    const rows = Math.ceil(sk.ids.length / sk.cols);
+    return `<span class="cp-sketch" style="background-position:${(i % sk.cols) * (100 / (sk.cols - 1))}% ${Math.floor(i / sk.cols) * (100 / Math.max(1, rows - 1))}%;background-size:${sk.cols * 100}% ${rows * 100}%"></span>`;
+  }
+
+  /** YOKE's projection, wearing one of her faces. */
+  private yokeHtml(face: string): string {
+    const y = this.art?.yoke;
+    const i = y ? Math.max(0, y.faces.indexOf(face)) : -1;
+    if (!y) return '';
+    const rows = Math.ceil(y.faces.length / y.cols);
+    return `<div class="cp-yoke" data-face="${esc(face)}" style="background-position:${(i % y.cols) * (100 / (y.cols - 1))}% ${Math.floor(i / y.cols) * (100 / Math.max(1, rows - 1))}%;background-size:${y.cols * 100}% ${rows * 100}%"></div>`;
+  }
+
+  /** A faction's leader, as a still from their world's films. */
+  private leaderHtml(id: string): string {
+    const file = this.art?.leaders[id];
+    return file ? `<img class="cp-leader" src="${artUrl(file)}" alt="">` : '';
   }
 
   private roomHtml(): string {
@@ -114,23 +197,13 @@ export class CampaignUi {
   /** The globe: an orthographic planet; your territories, where you can land, what is under attack. */
   private globeSvg(): string {
     const s = this.state;
-    const R = 190;
-    const cx = 210;
-    const cy = 210;
-    const lat0 = (18 * Math.PI) / 180;
-    const lon0 = (this.spin * Math.PI) / 180;
+    const R = GLOBE.r;
+    const cx = GLOBE.size / 2;
+    const cy = GLOBE.size / 2;
     const open = new Set(targets(s).map((t) => t.id));
     if (s.underAttack) open.add(s.underAttack);
-    const proj = (lat: number, lon: number) => {
-      const la = (lat * Math.PI) / 180;
-      const lo = (lon * Math.PI) / 180 - lon0;
-      const cosc = Math.sin(lat0) * Math.sin(la) + Math.cos(lat0) * Math.cos(la) * Math.cos(lo);
-      return {
-        x: cx + R * Math.cos(la) * Math.sin(lo),
-        y: cy - R * (Math.cos(lat0) * Math.sin(la) - Math.sin(lat0) * Math.cos(la) * Math.cos(lo)),
-        front: cosc > 0,
-      };
-    };
+    const proj = (lat: number, lon: number) => projectSite(lat, lon, this.spin);
+    const mapped = !!this.art?.planet;
     const lines: string[] = [];
     // Graticule.
     for (let lat = -60; lat <= 60; lat += 30) {
@@ -167,11 +240,11 @@ export class CampaignUi {
         <circle r="${held ? 9 : 8}"/>${t.finaleOf ? '<text class="star" y="4">★</text>' : ''}
         <text class="name" y="-13">${esc(t.name)}</text></g>`;
     }).join('');
-    return `<svg class="globe" viewBox="0 0 420 420" width="420" height="420">
+    return `<div class="globe-box">${mapped ? '<canvas class="globe-map" width="420" height="420"></canvas>' : ''}<svg class="globe" viewBox="0 0 420 420" width="420" height="420">
       <defs><radialGradient id="planet" cx="38%" cy="32%"><stop offset="0" stop-color="#6d8a58"/><stop offset="0.7" stop-color="#3b4a2f"/><stop offset="1" stop-color="#1a2016"/></radialGradient></defs>
-      <circle cx="${cx}" cy="${cy}" r="${R}" fill="url(#planet)" class="disc"/>
+      ${mapped ? '' : `<circle cx="${cx}" cy="${cy}" r="${R}" fill="url(#planet)" class="disc"/>`}
       ${lines.join('')}${links.join('')}${marks}
-    </svg>`;
+    </svg></div>`;
   }
 
   private deskHtml(): string {
@@ -209,10 +282,10 @@ export class CampaignUi {
       ${unlocks ? `<div class="cp-facts">Holding it unlocks: <b>${esc(unlocks)}</b></div>` : ''}
       <div class="cp-label">REQUISITION BOARD — pays standing</div>
       ${p.board.map((g) => `<div class="cp-goal std"><b>${esc(g.def.title)}</b> ${esc(goalText(g))} <i>+${g.def.pays}</i></div>`).join('')}
-      <div class="cp-label">DARES — pick up to 2, pay field notes</div>
-      <div class="cp-picks">${DARES.map((d) => `<button class="cp-pick${this.dares.includes(d.id) ? ' on' : ''}${s.daresDone.includes(d.id) ? ' done' : ''}" data-dare="${d.id}" title="${esc(d.text.replace('{n}', String(d.target)))}">${esc(d.title)} <i>+${d.pays}</i></button>`).join('')}</div>
+      <div class="cp-notebook"><div class="cp-label">DARES — pick up to 2, pay field notes</div>
+      <div class="cp-picks">${DARES.map((d) => `<button class="cp-pick${this.dares.includes(d.id) ? ' on' : ''}${s.daresDone.includes(d.id) ? ' done' : ''}" data-dare="${d.id}" title="${esc(d.text.replace('{n}', String(d.target)))}">${this.sketch(d.id)}${esc(d.title)} <i>+${d.pays}</i></button>`).join('')}</div>
       ${exps.length ? `<div class="cp-label">EXPERIMENT — optional, changes the run</div>
-      <div class="cp-picks">${exps.map((e) => `<button class="cp-pick exp${this.experiment === e.id ? ' on' : ''}" data-exp="${e.id}" title="${esc(e.pitch)}">${esc(e.name)} <i>+${e.goal.pays}</i></button>`).join('')}</div>` : ''}
+      <div class="cp-picks">${exps.map((e) => `<button class="cp-pick exp${this.experiment === e.id ? ' on' : ''}" data-exp="${e.id}" title="${esc(e.pitch)}">${this.sketch(e.id)}${esc(e.name)} <i>+${e.goal.pays}</i></button>`).join('')}</div>` : ''}</div>
       ${objAllowed ? `<div class="cp-label">CONSCIENTIOUS OBJECTORS — pick ${objAllowed} kind${objAllowed > 1 ? 's' : ''} that will not come</div>
       <div class="cp-picks">${warKinds.map((k) => `<button class="cp-pick${this.objectors.includes(k) ? ' on' : ''}" data-obj="${k}">${k}</button>`).join('')}</div>` : ''}
       <div class="cp-facts">Starting profile: <b>${esc(PROFILES.find((x) => x.id === s.profile)?.name ?? '')}</b> (change in the Gene Bay) · wave intel: <b>${p.config.waveIntel === 'full' ? 'the Translator' : 'hidden'}</b>${perks.includes('sleepers1') ? ' · Sleepers in their waves' : ''}${perks.includes('volunteers1') ? ' · Volunteers' : ''}</div>
@@ -246,15 +319,15 @@ export class CampaignUi {
 
   private lockerHtml(): string {
     const s = this.state;
-    return `<div class="cp-cols"><div><div class="cp-label">EXPERIMENTS</div>
+    return `<div class="cp-cols cp-notebook"><div class="cp-page"><div class="cp-label">EXPERIMENTS</div>
       ${EXPERIMENTS.map((e) => {
         const avail = experimentsAvailable(s).some((x) => x.id === e.id);
         const done = s.experimentsDone.includes(e.id);
-        return `<div class="cp-lin${done ? ' have' : ''}"><b>${esc(e.name)}</b><span>${esc(e.pitch)}</span>
+        return `<div class="cp-lin${done ? ' have' : ''}">${this.sketch(e.id)}<b>${esc(e.name)}</b><span>${esc(e.pitch)}</span>
           <i>${done ? 'DONE' : avail ? 'AVAILABLE — pick it in a briefing' : `after ${e.requires?.captures ?? 0} territories`}</i></div>`;
       }).join('')}</div>
-      <div><div class="cp-label">DARES DONE</div>
-      ${DARES.map((d) => `<div class="cp-lin${s.daresDone.includes(d.id) ? ' have' : ''}"><b>${esc(d.title)}</b><span>${esc(d.text.replace('{n}', String(d.target)))}</span><i>${s.daresDone.includes(d.id) ? 'DONE' : `+${d.pays}`}</i></div>`).join('')}
+      <div class="cp-page"><div class="cp-label">DARES DONE</div><div class="cp-tally" title="field notes">${'<i></i>'.repeat(Math.min(40, s.notes))}</div>
+      ${DARES.map((d) => `<div class="cp-lin${s.daresDone.includes(d.id) ? ' have' : ''}">${this.sketch(d.id)}<b>${esc(d.title)}</b><span>${esc(d.text.replace('{n}', String(d.target)))}</span><i>${s.daresDone.includes(d.id) ? 'DONE' : `+${d.pays}`}</i></div>`).join('')}
       </div></div>`;
   }
 
@@ -272,7 +345,7 @@ export class CampaignUi {
       const contacted = s.contacted.includes(f.id);
       const mine = s.faction === f.id;
       const beats = f.beats.filter((b) => s.beatsSeen.includes(b.id));
-      return `<div class="cp-lin${mine ? ' have' : ''}"><b>${esc(f.name)}</b>
+      return `<div class="cp-lin cp-voice${mine ? ' have' : ''}">${contacted ? this.leaderHtml(f.id) : ''}<b>${esc(f.name)}</b>
         <span>${!contacted ? 'Has not made contact yet.' : mine ? `Allied. Route: ${beats.map((b) => esc(b.title)).join(' → ') || '—'}` : s.faction ? 'You chose another.' : 'Made contact. Waiting for your answer.'}</span>
         ${mine ? `<span class="cp-perks">${perksOf(s).map((p) => esc(f.perks[p] ?? p)).join('<br>')}</span>` : ''}
         ${contacted && !s.faction ? `<button data-ally="${f.id}">ALLY WITH THEM</button>` : ''}
@@ -335,6 +408,7 @@ export class CampaignUi {
         ? next.choice.options.map((o) => `<button class="cp-pick" data-choice="${next.beat}|${o.id}">${esc(o.label)}</button>`).join('')
         : '<button class="screen-btn" data-act="scene-ok">CONTINUE</button>';
     return `<div class="cp-scene"><div class="cp-scene-card">
+      ${this.leaderHtml(f.id)}
       <div class="screen-kicker">${esc(f.name.toUpperCase())}</div>
       <div class="cp-sub">${esc(next.scene.title.toUpperCase())}</div>
       ${next.scene.lines.map((l) => { const i = l.indexOf(':'); return `<p><b>${esc(l.slice(0, i))}:</b>${esc(l.slice(i + 1))}</p>`; }).join('')}
@@ -455,6 +529,9 @@ export class CampaignUi {
       <p class="cp-story">${esc(d.log)}</p>
       ${d.aside ? `<p class="cp-story cp-aside">${speakLine(d.aside)}</p>` : ''}
       <button class="screen-btn" data-act="back">RETURN TO THE SHIP</button></div>`;
+    this.room = 'board';
+    this.debriefing = true;
+    this.dress();
     const btn = this.el.querySelector('[data-act="back"]') as HTMLElement;
     btn.addEventListener('click', (ev) => { ev.stopPropagation(); onBack(); }, { once: true });
   }

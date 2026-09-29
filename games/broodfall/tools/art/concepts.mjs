@@ -487,7 +487,7 @@ const FIX =
 for (const s of SHEETS) {
   const figures = [
     ...s.kinds.map((k) => { const u = unit(k); return `${u.name.toUpperCase()}: ${u.look}`; }),
-    ...(s.extra || []),
+    ...(s.extra || []).map((e) => e.look),
   ];
   JOBS[`r5-${s.slug}`] = { w: 1536, h: 1024, quality: 'medium', ref: UNIT_STYLE_REF,
     prompt:
@@ -595,7 +595,7 @@ const CENTURY =
 for (const s of SHEETS) {
   const figures = [
     ...s.kinds.map((k) => { const u = unit(k); return `${u.name.toUpperCase()}: ${u.look}`; }),
-    ...(s.extra || []),
+    ...(s.extra || []).map((e) => e.look),
   ];
   const science = s.slug.includes('science')
     ? 'This is the science caste, which is secular and modern and NOT religious in dress: no dome helmets, no ' +

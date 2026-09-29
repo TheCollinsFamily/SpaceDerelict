@@ -1,0 +1,58 @@
+{
+ "family": "lasher",
+ "frames": 30,
+ "atlasKB": 139,
+ "failed": 0,
+ "checks": [
+  {
+   "name": "idle: loop closes",
+   "ok": true,
+   "value": 0.44
+  },
+  {
+   "name": "idle: it moves",
+   "ok": true,
+   "value": 0.25
+  },
+  {
+   "name": "idle: it is calm",
+   "ok": true,
+   "value": 0.25
+  },
+  {
+   "name": "idle: inside the frame",
+   "ok": true,
+   "value": "170,86-446,508"
+  },
+  {
+   "name": "idle: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "idle: ends the size it began",
+   "ok": true,
+   "value": "1% change"
+  },
+  {
+   "name": "fire: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "fire: frames swallowed by a flash or a cloud are few",
+   "ok": true,
+   "value": "4 left out"
+  },
+  {
+   "name": "fire: ends the size it began",
+   "ok": true,
+   "value": "3% change"
+  },
+  {
+   "name": "atlas is under 900 KB",
+   "ok": true,
+   "value": "139 KB"
+  }
+ ]
+}

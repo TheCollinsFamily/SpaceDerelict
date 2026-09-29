@@ -1,0 +1,53 @@
+{
+ "family": "net",
+ "frames": 30,
+ "atlasKB": 247,
+ "failed": 0,
+ "checks": [
+  {
+   "name": "idle: loop closes",
+   "ok": true,
+   "value": 0.59
+  },
+  {
+   "name": "idle: it moves",
+   "ok": true,
+   "value": 0.7
+  },
+  {
+   "name": "idle: it is calm",
+   "ok": true,
+   "value": 0.7
+  },
+  {
+   "name": "idle: inside the frame",
+   "ok": true,
+   "value": "116,96-528,594"
+  },
+  {
+   "name": "idle: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "idle: ends the size it began",
+   "ok": true,
+   "value": "1% change"
+  },
+  {
+   "name": "fire: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "fire: ends the size it began",
+   "ok": true,
+   "value": "3% change"
+  },
+  {
+   "name": "atlas is under 900 KB",
+   "ok": true,
+   "value": "247 KB"
+  }
+ ]
+}

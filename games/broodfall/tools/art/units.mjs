@@ -13,6 +13,8 @@
  * r: its radius on the map in px at a 26 px cell (src/render/render.ts ENEMY_SIZE).
  * look: what is DRAWN. weapon: what it fights with. attack: what the attack looks like.
  * states: every picture the sprite needs beyond walking and attacking.
+ * gait: how it moves when that is not plain from its body (fly, ride, scuttle). one: what
+ * ONE body looks like when the design shows a group. attackMotion: what its attack clip shows.
  */
 const SHOT = 'Fires from one cell away. The muzzle flash and a short tracer are drawn by code.';
 const BLADE = 'Swings it at what is in front of it. The glowing arc of the edge is drawn by code.';
@@ -25,7 +27,7 @@ export const UNITS = [
     look: 'a small upright parish watchman in a plain orange high-visibility kaftan with reflective stripes and a soft cap with a radio headset, carrying an electric lantern on a pole in one hand and a small pistol in another',
     weapon: 'Pistol', attack: SHOT,
     basis: 'worker ant', states: ['dying'] },
-  { kind: 'skitterling', name: 'Skitterling', caste: 'war', tier: 1, r: 3.5, hp: 12, body: 'beast',
+  { kind: 'skitterling', one: 'ONE single tiny round hatchling on six quick legs, bare, with one dab of orange paint on its back', name: 'Skitterling', caste: 'war', tier: 1, r: 3.5, hp: 12, body: 'beast',
     job: 'Fast swarm chaff. Also what a splitter bursts into.',
     look: 'a tiny round hatchling on six quick legs, bare, with one dab of orange paint on its back; always drawn as a pack of five',
     weapon: 'None', attack: BITE,
@@ -45,7 +47,7 @@ export const UNITS = [
     look: 'a stout porter on four legs with a wicker pannier strapped to its back over an orange blanket, two hatchlings peeking out of the pannier',
     weapon: 'None', attack: BITE,
     basis: 'wolf spider carrying her young', states: ['dying: the pannier breaks and two skitterlings run out'] },
-  { kind: 'flier', name: 'Flier', caste: 'war', tier: 3, r: 6, hp: 55, body: 'human-like',
+  { kind: 'flier', gait: 'fly', name: 'Flier', caste: 'war', tier: 3, r: 6, hp: 55, body: 'human-like',
     job: 'Flies straight over blocks and walls to the core.',
     look: 'a winged trooper: a wasp with an upright torso in an orange tabard over a flight harness, a small dome helmet with goggles, carrying a short carbine, a whip antenna on its back flying a long orange pennant, drawn in the air with its shadow on the ground below',
     weapon: 'Carbine', attack: SHOT,
@@ -55,7 +57,7 @@ export const UNITS = [
     look: 'a big upright guardsman with stag-beetle horns coming through a gilded dome helmet, a coat of small gold-edged armour plates, an orange cloak, and a great two-handed power axe whose blade edge glows hot orange-white, fed by a cable from a small power pack on his back',
     weapon: 'Power axe', attack: BLADE,
     basis: 'stag beetle', states: ['dying'] },
-  { kind: 'mortar', name: 'Mortar beetle', caste: 'war', tier: 4, r: 9, hp: 95, body: 'machine',
+  { kind: 'mortar', attackMotion: 'The beetle braces its legs; the crewman drops a shell into the mortar tube and ducks; the mortar fires upward with a puff of smoke and a jolt of recoil; then everything returns to exactly its starting pose.', gait: 'ride', name: 'Mortar beetle', caste: 'war', tier: 4, r: 9, hp: 95, body: 'machine',
     job: 'Stops 85 px out and lobs shells at your limbs from standoff.',
     look: 'a squat beetle on six legs carrying a short fat modern mortar tube on a base plate on its back, an orange band around the tube, one small insect crewman in a kaftan and ear defenders loading a finned shell',
     weapon: 'Mortar', attack: 'Lobs a shell from 85 px. The mortar smokes and the crewman ducks.',
@@ -65,22 +67,22 @@ export const UNITS = [
     look: 'a steeplejack: a termite with big cutting jaws, a leather apron over an orange shirt, a tool belt, a coil of rope over one shoulder, a climbing hook in one upper hand and a power cutter with a glowing cutting disc in another, welding goggles pushed up on its head',
     weapon: 'Power cutter', attack: 'Cuts into the limb with the glowing disc. The sparks are drawn by code.',
     basis: 'termite soldier', states: ['climbing a wall, seen on the face of a block', 'dying'] },
-  { kind: 'carapace', name: 'Carapace lord', caste: 'war', tier: 5, r: 10, hp: 160, body: 'machine',
+  { kind: 'carapace', gait: 'scuttle', name: 'Carapace lord', caste: 'war', tier: 5, r: 10, hp: 160, body: 'machine',
     job: 'Blocks the first six hits outright. Big blows strip the shell; rapid fire wastes itself on it.',
     look: 'an ironclad beetle whose shell is a gilded onion dome in six armour segments, with an orange band around its base and a small radio antenna on top; a small head with big eyes peers out from under the rim, with a stubby gun barrel beside it',
     weapon: 'Stub gun under the rim', attack: SHOT,
     basis: 'ironclad beetle', states: ['six pictures of the shell: six segments down to none, plain brown shell beneath', 'dying'] },
-  { kind: 'phalanx', name: 'Phalanx', caste: 'war', tier: 5, r: 13, hp: 750, body: 'machine',
+  { kind: 'phalanx', gait: 'ride', name: 'Phalanx', caste: 'war', tier: 5, r: 13, hp: 750, body: 'machine',
     job: 'The shield wall. No single hit does more than 12. Slow and enormous.',
     look: 'a huge flat pill bug carrying a wall of tall painted shield panels in gold, deep blue and orange, like a screen of icons whose saints are insects, and one small insect gunner in a dome helmet and radio headset aiming a rifle over the top',
     weapon: 'Rifle over the top of the panels', attack: SHOT,
     basis: 'pill bug', states: ['dying: the panels fall flat'] },
-  { kind: 'cannon', name: 'Siege cannon', caste: 'war', tier: 4, r: 10, hp: 160, body: 'machine',
+  { kind: 'cannon', attackMotion: 'The beetle braces its legs and its long barrel fires once with a big muzzle flash, smoke and heavy recoil, the crew flinching, then everything returns to exactly its starting pose.', name: 'Siege cannon', caste: 'war', tier: 4, r: 10, hp: 160, body: 'machine',
     job: 'Walks until something of yours is in reach, braces, and shells it until destroyed.',
     look: 'a bombardier beetle whose abdomen is a long modern artillery barrel with a muzzle brake and ornate orange bands, with two small insect crew in kaftans and ear defenders walking beside it, one carrying a tablet',
     weapon: 'Artillery', attack: 'Shells from 150 px once deployed.',
     basis: 'bombardier beetle', states: ['deployed: legs braced wide, barrel raised, one crewman covering his ears', 'packing up', 'dying'] },
-  { kind: 'drummer', name: 'Drummer', caste: 'war', tier: 3, r: 9, hp: 70, body: 'human-like',
+  { kind: 'drummer', attackMotion: 'The unit stops and strikes its bells hard with both hammers, three times, the bells swinging, then returns to exactly its starting pose.', name: 'Drummer', caste: 'war', tier: 3, r: 9, hp: 70, body: 'human-like',
     job: 'Everything near it marches faster. Kill it first.',
     look: 'an upright cicada bell-ringer carrying a wooden yoke of three bronze bells and two grey loudspeaker horns across its shoulders, striking the bells with two hammers, in an orange kaftan with a radio headset',
     weapon: 'Hammers', attack: 'Strikes with a hammer. The rings of sound are drawn by code.',
@@ -100,7 +102,7 @@ export const UNITS = [
     look: 'a stick-thin figure in a long dark hooded habit with an orange cord at the waist, night-vision goggles glowing green under the hood, carrying a short power knife whose edge glows',
     weapon: 'Power knife', attack: BLADE,
     basis: 'stick insect', states: ['cloaked: a shimmer outline drawn by code', 'revealed', 'dying'] },
-  { kind: 'shadewing', name: 'Shadewing', caste: 'war', tier: 4, r: 6, hp: 60, body: 'human-like',
+  { kind: 'shadewing', gait: 'fly', name: 'Shadewing', caste: 'war', tier: 4, r: 6, hp: 60, body: 'human-like',
     job: 'A cloaked flier. Needs a limb that reaches the air AND can see it.',
     look: 'a moth with dusk-grey wings and a dark veil over its head, an orange thread along the hem of the veil, carrying a small silenced pistol, drawn in the air with its shadow below',
     weapon: 'Silenced pistol', attack: SHOT,
@@ -110,13 +112,13 @@ export const UNITS = [
     look: 'the steeplejack again, in a dark hooded habit over the leather apron, climbing hooks wrapped in cloth to keep them quiet, a small power cutter with a dim glowing disc',
     weapon: 'Power cutter', attack: 'Cuts into the limb with the dim disc.',
     basis: 'termite soldier', states: ['cloaked', 'revealed', 'climbing a wall', 'dying'] },
-  { kind: 'tender', name: 'Tender', caste: 'war', tier: 5, r: 7, hp: 80, body: 'human-like',
+  { kind: 'tender', attackMotion: 'The unit stops and raises its spray injector, releasing a small puff of pale mist, then lowers it and returns to exactly its starting pose.', name: 'Tender', caste: 'war', tier: 5, r: 7, hp: 80, body: 'human-like',
     job: 'Heals the bodies around it in pulses. Kill it first.',
     look: 'a sister of mercy in a pale habit and white veil with an orange cord at the waist, a medic\'s backpack with a drip bag on a short pole, and a spray injector in one hand',
     weapon: 'Spray injector', attack: 'Barely fights. Heals: the pulse is drawn by code.',
     basis: 'nurse bee', states: ['dying'] },
   // ---- SCIENCE CASTE (teal). Distinctly LESS Orthodox: modern, secular, laboratory. ----
-  { kind: 'researcher', name: 'Researcher', caste: 'science', tier: 'visits', r: 6, hp: 34, body: 'human-like',
+  { kind: 'researcher', attackMotion: 'The unit stops, aims its dart pistol forward and fires one dart with a small puff, then lowers it and returns to exactly its starting pose.', name: 'Researcher', caste: 'science', tier: 'visits', r: 6, hp: 34, body: 'human-like',
     job: 'Walks around your guns to your least defended limb, sedates it and carries it off.',
     look: 'a tall thin upright scientist in a white lab coat with a teal lanyard and badge, safety goggles pushed up on its forehead, no helmet, an empty clear specimen container with steel clamps on its back, a tablet in one hand and a tranquilliser dart pistol in another',
     weapon: 'Dart pistol', attack: 'Sedates a limb: the line to the limb is drawn by code.',
@@ -126,18 +128,18 @@ export const UNITS = [
     look: 'a small hunched quick figure in a dark hooded sweatshirt with a teal scarf and night-vision goggles, clutching an empty duffel bag with both hands, carrying no weapon',
     weapon: 'None', attack: 'Steals meat; never fights.',
     basis: 'silverfish', states: ['running away with a full bag', 'dying: the meat spills back'] },
-  { kind: 'infiltrator', name: 'Infiltrator', caste: 'science', tier: 'visits', r: 6, hp: 40, body: 'human-like',
+  { kind: 'infiltrator', attackMotion: 'The unit stops, aims its dart pistol forward and fires one dart with a small puff, then lowers it and returns to exactly its starting pose.', name: 'Infiltrator', caste: 'science', tier: 'visits', r: 6, hp: 40, body: 'human-like',
     job: 'A cloaked researcher: limb theft you cannot see coming.',
     look: 'the scientist in a long dark raincoat buttoned to the chin over the lab coat, teal lining showing at the collar, thin dark goggles, the specimen container under a cloth',
     weapon: 'Dart pistol', attack: 'Sedates a limb.',
     basis: 'mantis', states: ['cloaked', 'revealed', 'carrying a limb', 'dying'] },
-  { kind: 'dartgun', name: 'Sedation battery', caste: 'science', tier: 'visits', r: 9, hp: 90, body: 'machine',
+  { kind: 'dartgun', attackMotion: 'The beetle braces its legs and its rack launches one glass dart forward with a small puff, then everything returns to exactly its starting pose.', name: 'Sedation battery', caste: 'science', tier: 'visits', r: 9, hp: 90, body: 'machine',
     job: 'Braces in reach of your weakest limb and stuns it with darts so researchers can walk in. Eight darts, then it goes home.',
     look: 'a pale beetle carrying a launcher rack of eight glass dart tubes with teal fluid, teal markings on its shell and a small sensor dish, one insect operator in a lab coat with a tablet walking beside it',
     weapon: 'Dart launcher', attack: 'Fires a dart from 130 px once deployed.',
     basis: 'pale ground beetle', states: ['deployed: legs braced, rack tilted up', 'spent: tubes empty, walking home', 'dying'] },
   // ---- ROYAL CASTE (gold). Only with a royal event. ----
-  { kind: 'royal', name: 'The royal', caste: 'royal', tier: 'royal event', r: 20, hp: 1100, body: 'human-like',
+  { kind: 'royal', attackMotion: 'The queen stops, raises her small gold pistol and fires twice with small muzzle flashes, then lowers it and returns to exactly her starting pose.', name: 'The royal', caste: 'royal', tier: 'royal event', r: 20, hp: 1100, body: 'human-like',
     job: 'The jackpot and the hardest fight. War bodies near her hit harder and take less.',
     look: 'the queen: three times the height of a soldier, an upright torso in a white and gold robe with a jewelled collar, a tall domed jewelled crown, and a huge swollen abdomen carried behind her like the train of a gown, a small ornate gold pistol in her folded hands and a radio pack strapped to her abdomen; regal and tired',
     weapon: 'Ornate gold pistol', attack: SHOT,
@@ -147,7 +149,7 @@ export const UNITS = [
     look: 'an upright officer in a dark green dress uniform with gold epaulettes and a gold sash, half the height of the queen, goggles pushed up on his cap, holding a gold dress pistol',
     weapon: 'Dress pistol', attack: SHOT,
     basis: 'drone ant', states: ['promoting: raises his free hand in salute', 'dying'] },
-  { kind: 'matron', name: 'Veil matron', caste: 'royal', tier: 'royal event', r: 13, hp: 380, body: 'human-like',
+  { kind: 'matron', attackMotion: 'The veiled figure stops and strikes forward with one arm from under the veil, then returns to exactly its starting pose.', name: 'Veil matron', caste: 'royal', tier: 'royal event', r: 13, hp: 380, body: 'human-like',
     job: 'Every war body near her is cloaked while she lives. She is visible: kill her first.',
     look: 'a tall still figure under a long grey veil edged in gold that reaches the ground, hands folded, only her amber eyes showing',
     weapon: 'None', attack: 'Strikes with her arms.',
@@ -158,16 +160,26 @@ export const UNITS = [
 export const SHEETS = [
   { slug: 'units-1-first-waves', title: 'The first waves (tiers 0 to 2)', kinds: ['responder', 'skitterling', 'militia', 'soldier', 'splitter'] },
   { slug: 'units-2-army', title: 'The army (tier 3)', kinds: ['elite', 'flier', 'drummer', 'stalker'],
-    extra: ['THE FLIER NETTED: the same winged trooper on the ground, tangled in white web, wings folded, carbine dropped'] },
+    extra: [{ of: 'flier', state: 'netted', look: 'THE FLIER NETTED: the same winged trooper on the ground, tangled in white web, wings folded, carbine dropped' }] },
   { slug: 'units-3-siege', title: 'Siege and sappers (tier 4)', kinds: ['sapper', 'bomber', 'mortar', 'cannon', 'shadewing'],
-    extra: ['THE SIEGE CANNON DEPLOYED: the same beetle with its legs braced wide and the barrel raised, one crewman covering his ears'] },
+    extra: [{ of: 'cannon', state: 'deployed', look: 'THE SIEGE CANNON DEPLOYED: the same beetle with its legs braced wide and the barrel raised, one crewman covering his ears' }] },
   { slug: 'units-4-last', title: 'Everything they have (tiers 5 and 6)', kinds: ['phalanx', 'carapace', 'tender', 'ghostsapper', 'tunneler'],
-    extra: ['THE CARAPACE LORD STRIPPED: the same beetle with its gilded dome knocked off, plain brown shell showing',
-      'THE TUNNELER BURROWED: only a mound of broken paving stones with a little lamp light showing through'] },
+    extra: [{ of: 'carapace', state: 'stripped', look: 'THE CARAPACE LORD STRIPPED: the same beetle with its gilded dome knocked off, plain brown shell showing' },
+      { of: 'tunneler', state: 'burrowed', look: 'THE TUNNELER BURROWED: only a mound of broken paving stones with a little lamp light showing through' }] },
   { slug: 'units-5-science', title: 'The science caste', kinds: ['researcher', 'thief', 'infiltrator', 'dartgun'],
-    extra: ['THE RESEARCHER CARRYING: the same scientist walking away with a small pink fleshy organ locked in the container on its back',
-      'THE SEDATION BATTERY DEPLOYED: the same beetle with its legs braced and the launcher rack tilted up'] },
+    extra: [{ of: 'researcher', state: 'carrying', look: 'THE RESEARCHER CARRYING: the same scientist walking away with a small pink fleshy organ locked in the container on its back' },
+      { of: 'dartgun', state: 'deployed', look: 'THE SEDATION BATTERY DEPLOYED: the same beetle with its legs braced and the launcher rack tilted up' }] },
   { slug: 'units-6-royal', title: 'The royal caste', kinds: ['royal', 'consort', 'matron'] },
 ];
 
 export const unit = (kind) => UNITS.find((u) => u.kind === kind);
+
+/** Where a unit (or one of its states) stands on its approved sheet: the sheet and the figure's number. */
+export function placeOnSheet(kind, state) {
+  for (const s of SHEETS) {
+    const figures = [...s.kinds.map((k) => ({ of: k })), ...(s.extra || [])];
+    const index = figures.findIndex((g) => g.of === kind && g.state === state);
+    if (index >= 0) return { sheet: s.slug.replace('units-', 'units-v2-'), index, count: figures.length };
+  }
+  return null;
+}

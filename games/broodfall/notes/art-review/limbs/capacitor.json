@@ -1,0 +1,43 @@
+{
+ "family": "capacitor",
+ "frames": 16,
+ "atlasKB": 133,
+ "failed": 0,
+ "checks": [
+  {
+   "name": "idle: loop closes",
+   "ok": true,
+   "value": 1.6
+  },
+  {
+   "name": "idle: it moves",
+   "ok": true,
+   "value": 0.16
+  },
+  {
+   "name": "idle: it is calm",
+   "ok": true,
+   "value": 0.16
+  },
+  {
+   "name": "idle: inside the frame",
+   "ok": true,
+   "value": "144,88-496,516"
+  },
+  {
+   "name": "idle: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "idle: ends the size it began",
+   "ok": true,
+   "value": "2% change"
+  },
+  {
+   "name": "atlas is under 900 KB",
+   "ok": true,
+   "value": "133 KB"
+  }
+ ]
+}

@@ -15,8 +15,10 @@ const API_KEY = process.env.RFAB_API_KEY;
 export const RAW_DIR = path.join(ROOT, 'art-src', 'probes');
 export const OUT_DIR = path.join(ROOT, 'notes', 'probes', process.env.PROBE_DATE || '2026-09-29');
 const STILL_MODEL = process.env.PROBE_STILL_MODEL || 'openai:gpt-image-2';
-// Only seegen: models take an END frame (start == end is what closes the loop).
-const VIDEO_MODELS = (process.env.PROBE_VIDEO_MODELS || 'seegen:sd2-mini,seegen:sd2-fast').split(',');
+// Only seegen: models take an END frame (start == end is what closes the loop). The last one
+// does not: it is there for the few pictures SeeGen refuses without saying why, and a walk
+// repeats itself anyway, so the loop is still found.
+const VIDEO_MODELS = (process.env.PROBE_VIDEO_MODELS || 'seegen:sd2-mini,seegen:sd2-fast,atlascloud:seedance-2.0-mini-i2v').split(',');
 
 export const CAMERA = 'seen from above at a 45 degree isometric angle (a three-quarter top-down game view)';
 export const LIGHT = 'Realistic creature-design render, wet and unglamorous, soft even light from directly overhead.';
@@ -81,18 +83,22 @@ const firstUrl = (r, ...keys) => {
 
 /**
  * One still on a flat key-colour background. `refFile`: redraw from that picture (same
- * creature, new view). `key: null`: a full picture with its own background (concept art).
+ * creature, new view); `refFiles`: several reference pictures. `key: null`: a full picture
+ * with its own background. `out`: where to save it (default: art-src/probes/<slug>-still.png).
  */
-export async function makeStill({ slug, prompt, key = '00FF00', keyName = 'green', refFile, width = 1024, height = 1024, quality = 'medium' }) {
-  const out = path.join(RAW_DIR, `${slug}-still.png`);
+export async function makeStill({ slug, prompt, key = '00FF00', keyName = 'green', refFile, refFiles, width = 1024, height = 1024, quality = 'medium', out }) {
+  out = out ?? path.join(RAW_DIR, `${slug}-still.png`);
   if (fs.existsSync(out)) { console.log(`[still] ${slug}: cached`); return out; }
+  fs.mkdirSync(path.dirname(out), { recursive: true });
   const body = {
     prompt: key ? `${prompt} ${bg(key, keyName)}` : prompt,
     modelId: STILL_MODEL, quality, width, height,
     imageCount: 1, saveToGallery: false, nsfw: false, async: true,
   };
-  if (refFile) body.imageBase64 = `data:image/png;base64,${fs.readFileSync(refFile).toString('base64')}`;
-  const start = await api(refFile ? '/api/image-generation/img2img' : '/api/image-generation/generate', {
+  if (refFiles?.length) body.imageUrls = await Promise.all(refFiles.map((r, i) => upload(r, `${slug}-ref${i}`)));
+  else if (refFile) body.imageBase64 = `data:image/png;base64,${fs.readFileSync(refFile).toString('base64')}`;
+  spent.stills += 1;
+  const start = await api(refFile || refFiles?.length ? '/api/image-generation/img2img' : '/api/image-generation/generate', {
     method: 'POST', body: JSON.stringify(body),
   });
   const result = start.jobId ? await pollJob(start.jobId, `${slug} still`) : start;
@@ -114,11 +120,16 @@ async function upload(file, slug) {
   return body.imageUrl;
 }
 
-/** One clip from a still, with the END frame set to the START frame. */
-export async function makeClip({ slug, stillFile, prompt, seconds = 4, key = '00FF00', keyName = 'green' }) {
-  const out = path.join(RAW_DIR, `${slug}-clip.mp4`);
+/**
+ * One clip from a still, with the END frame set to the START frame (`loop: false` leaves
+ * the end free). `raw: true` sends the prompt as it is, without the locked-camera tail.
+ */
+export async function makeClip({ slug, stillFile, prompt, seconds = 4, key = '00FF00', keyName = 'green', out, loop = true, raw = false, resolution = '480p', aspect = '1:1', audio = false }) {
+  out = out ?? path.join(RAW_DIR, `${slug}-clip.mp4`);
   if (fs.existsSync(out)) { console.log(`[clip] ${slug}: cached`); return out; }
+  fs.mkdirSync(path.dirname(out), { recursive: true });
   const imageUrl = await upload(stillFile, slug);
+  spent.clips += 1;
   let lastErr;
   for (const model of VIDEO_MODELS) {
     try {
@@ -127,10 +138,10 @@ export async function makeClip({ slug, stillFile, prompt, seconds = 4, key = '00
       const d = await api('/api/image-generation/generate-video', {
         method: 'POST',
         body: JSON.stringify({
-          imageUrl, lastFrameUrl: imageUrl,
-          prompt: `${prompt} ${lock(key, keyName)}`,
-          videoModelId: model, duration: seconds, resolution: '480p', aspect_ratio: '1:1',
-          audio: false, nsfw: false, variationCount: 1,
+          imageUrl, ...(loop ? { lastFrameUrl: imageUrl } : {}),
+          prompt: raw ? prompt : `${prompt} ${lock(key, keyName)}`,
+          videoModelId: model, duration: seconds, resolution, aspect_ratio: aspect,
+          audio, nsfw: false, variationCount: 1,
         }),
       });
       const result = d.jobId ? await pollJob(d.jobId, `${slug} clip`) : d;
@@ -148,6 +159,28 @@ export async function makeClip({ slug, stillFile, prompt, seconds = 4, key = '00
     }
   }
   throw lastErr;
+}
+
+/** What this run asked the API to make (cached results are not counted). */
+export const spent = { stills: 0, clips: 0 };
+
+/** The account's token balance, to report what a run really cost. */
+export async function balance() {
+  const r = await api('/api/tokens/balance');
+  return r.tokenBalance;
+}
+
+/** Run jobs a few at a time; a failed job does not stop the others. */
+export async function pool(items, size, worker) {
+  const results = new Array(items.length);
+  let next = 0;
+  await Promise.all(Array.from({ length: Math.min(size, items.length) }, async () => {
+    while (next < items.length) {
+      const i = next++;
+      try { results[i] = { ok: true, value: await worker(items[i], i) }; } catch (e) { results[i] = { ok: false, error: e }; }
+    }
+  }));
+  return results;
 }
 
 export function ffmpeg(args, label) {

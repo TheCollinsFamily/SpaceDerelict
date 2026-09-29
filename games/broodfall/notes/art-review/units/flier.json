@@ -1,0 +1,168 @@
+{
+ "kind": "flier",
+ "frames": 70,
+ "atlasKB": 186,
+ "failed": 0,
+ "checks": [
+  {
+   "name": "walk S: loop closes",
+   "ok": true,
+   "value": 1.01
+  },
+  {
+   "name": "walk S: it moves",
+   "ok": true,
+   "value": 1.15
+  },
+  {
+   "name": "walk S: loop is long enough",
+   "ok": true,
+   "value": 28
+  },
+  {
+   "name": "walk S: inside the frame",
+   "ok": true,
+   "value": "154,92-488,534"
+  },
+  {
+   "name": "walk S: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "walk S: stays on the spot",
+   "ok": true,
+   "value": "0.2% of the frame"
+  },
+  {
+   "name": "walk SW: loop closes",
+   "ok": true,
+   "value": 0.87
+  },
+  {
+   "name": "walk SW: it moves",
+   "ok": true,
+   "value": 2.41
+  },
+  {
+   "name": "walk SW: loop is long enough",
+   "ok": true,
+   "value": 29
+  },
+  {
+   "name": "walk SW: inside the frame",
+   "ok": true,
+   "value": "148,120-496,530"
+  },
+  {
+   "name": "walk SW: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "walk SW: stays on the spot",
+   "ok": true,
+   "value": "0.2% of the frame"
+  },
+  {
+   "name": "walk W: loop closes",
+   "ok": true,
+   "value": 1.56
+  },
+  {
+   "name": "walk W: it moves",
+   "ok": true,
+   "value": 1.88
+  },
+  {
+   "name": "walk W: loop is long enough",
+   "ok": true,
+   "value": 38
+  },
+  {
+   "name": "walk W: inside the frame",
+   "ok": true,
+   "value": "142,102-486,544"
+  },
+  {
+   "name": "walk W: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "walk W: stays on the spot",
+   "ok": true,
+   "value": "0.8% of the frame"
+  },
+  {
+   "name": "walk NW: loop closes",
+   "ok": true,
+   "value": 0.9
+  },
+  {
+   "name": "walk NW: it moves",
+   "ok": true,
+   "value": 1.15
+  },
+  {
+   "name": "walk NW: loop is long enough",
+   "ok": true,
+   "value": 24
+  },
+  {
+   "name": "walk NW: inside the frame",
+   "ok": true,
+   "value": "162,118-480,535"
+  },
+  {
+   "name": "walk NW: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "walk NW: stays on the spot",
+   "ok": true,
+   "value": "0.2% of the frame"
+  },
+  {
+   "name": "walk N: loop closes",
+   "ok": true,
+   "value": 0.89
+  },
+  {
+   "name": "walk N: it moves",
+   "ok": true,
+   "value": 0.65
+  },
+  {
+   "name": "walk N: loop is long enough",
+   "ok": true,
+   "value": 33
+  },
+  {
+   "name": "walk N: inside the frame",
+   "ok": true,
+   "value": "172,102-468,526"
+  },
+  {
+   "name": "walk N: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "walk N: stays on the spot",
+   "ok": true,
+   "value": "0.0% of the frame"
+  },
+  {
+   "name": "views are one size",
+   "ok": true,
+   "value": "0.72 0.67 0.72 0.68 0.69"
+  },
+  {
+   "name": "atlas is under 900 KB",
+   "ok": true,
+   "value": "186 KB"
+  }
+ ]
+}

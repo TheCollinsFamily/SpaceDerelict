@@ -1,4 +1,4 @@
-# Broodfall style bible — v4 (Sep 29 2026)
+# Broodfall style bible — v5 (Sep 29 2026)
 
 The visual language of the game, and the prompt blocks every generated asset shares.
 Concept pictures are in `notes/concepts/2026-09-29/`; the script is
@@ -64,6 +64,20 @@ Concept pictures are in `notes/concepts/2026-09-29/`; the script is
     `board-orthodox.png`: "the one thing that was a total bust was the buildings: too many blue
     domes for one, too human looking. I expected you to merge the style with their distinct
     architecture [`r4-units-rts-on-board.png`] and more tech, remember again 21st century civ."
+19. **The body is ONE art style with its creep.** Of the first board in the engine: "holy shit
+    man that looks good, but the towers are too … they don't really fit the style of the city
+    and creep, it looks like two different art styles imposed … same with the central body of
+    the creature … maybe they could be modified to fit that style." See "The body is made of
+    its creep" below.
+20. **The ship art is approved.** "The ship art is awesome BTW."
+21. **The creep is approved, and the planet has many kinds of place.** "The creep actually looks
+    fine … please build tile sets for different environments: you are going to want one that
+    looks sort of american suburb inspired / one that looks cyber punk mega city inspired / one
+    that looks 'oriental', by that I mean not exactly japanese or chinese but sort of the 1950s
+    westernized view of the orient … and remember in the architectural style of this species,
+    so not those directly … any other tile sets that would be cool? if you can think of them
+    make them." See "The tile sets" below.
+22. **Towers are drawn from one side only.** "Towers (which don't need multiple angles)."
 
 ## NO REAL RELIGIOUS SYMBOL, EVER (a rule from Claude, Sep 29 2026; Collins can overrule it)
 
@@ -86,7 +100,7 @@ hexagon (a honeycomb cell), and domes end in a plain gold ball.
 
 | Where | Look | Reference pictures |
 |---|---|---|
-| The board: city, limbs, landing site | Realistic, detailed, overcast daylight. The insects' own paper-and-honeycomb city, with Orthodox domes and mosaic grown into it and 21st-century technology bolted on; your body wet and red on it. | `board-hive-a.png`, `board-hive-b.png`, `city-hive-blocks.png`, `city-hive-block-close.png`, `limbs.png` |
+| The board: city, limbs, landing site | Realistic, detailed, overcast daylight. The insects' own paper-and-honeycomb city in eight tile sets (the first with Orthodox domes and mosaic grown into it), 21st-century technology bolted on; your body, made of its own creep, wet and dark red on it. | `board-hive-a.png`, `board-hive-b.png`, `city-hive-blocks.png`, `city-hive-block-close.png`, `limbs.png` |
 | The board: units | A little cartoonish, like late-1990s strategy game units: dressed little people with guns and power blades, chunky, big heads and tools, caste colour as clothing | `units-v2-1-first-waves.png` to `units-v2-6-royal.png` (all 26 kinds) |
 | Films and news clippings | 1950s colour horror B-movie; realistic insect people in 1950s clothes | `r2-film-still.png`, `r2-keyart-poster.png`, `r2-castes-human.png`, `r2-faction-leaders.png`, `poster.png` |
 | The ship | Lifelike hard science fiction: black, white, bare, exact. The one drawn thing aboard is the AI. | `r3-ship-operations-black.png`, `r3-ship-operations-white.png`, `r4-hero-bunk.png`, `r4-yoke-in-room.png` |
@@ -112,12 +126,75 @@ hexagon (a honeycomb cell), and domes end in a plain gold ball.
   honeycomb, over the mosaic and an air-conditioning unit.
 - **REJECTED** (rule 18, "a total bust"): `city-orthodox-blocks.png` and `board-orthodox.png`,
   the white human-looking city with blue domes. Kept in the folder only as what not to do.
-- **The body:** salmon-pink wet muscle, dark chitin, ivory bone. Creep is dark maroon,
-  matte and veined: thick on roofs, a thin film on streets.
+- **Creep is dark maroon, matte and veined:** thick on roofs, a thin film on streets (in the
+  game at 34% so that the street and the units on it still read). APPROVED (rule 21).
 - **Light and dark, darkest first:** unclaimed city under smoke; creep; insects; limbs;
   streets.
 - **Sprites are lit evenly from overhead.** Coloured light baked into a sprite breaks the
   green-screen key and looks wrong when the sprite is mirrored.
+
+### The body is made of its creep (rule 19)
+
+The first limbs and the first landing site were salmon-pink muscle on a grey rubble base:
+clean, pale and lit like a product photograph. On the board they looked pasted onto the dark
+veined creep. What fixed it, in the order of how much each did:
+
+1. **The material.** Every limb, and the core, is REDRAWN from two pictures: its own design
+   (its shape) and the creep texture (its material). The prompt is `MATERIAL` in
+   `tools/art/limbs.mjs` (`CORE_MATERIAL` in `tools/art/templates/terrain.mjs`): "made of
+   exactly the living tissue shown in the second picture … the same body as that tissue,
+   risen up into a shape". Raised parts are a lighter crimson than hollows so the form reads.
+2. **The skirt.** Its roots melt into a low ragged skirt of the same tissue lying flat on the
+   ground, so there is no edge where the limb stops and the creep begins. No rubble, no base.
+3. **A contact shadow.** The renderer darkens the ground under each limb (`isoRender.ts`).
+4. **Light from the top.** The bake brightens a limb toward its top, so it reads as standing
+   up out of a dark floor rather than as a flat patch of it.
+
+The theme accent (next section) stays: it is the one thing on a limb that is not creep.
+Design stills are kept as `art-src/limbs/<family>/still.png`, the redrawn ones as
+`styled.png`; clips are made from the redrawn one. To compare in the engine:
+`node tools/shot-limbs.mjs`.
+
+## The tile sets (rule 21)
+
+The planet has eight kinds of place. Every one is THE SAME SPECIES building in its own way
+(wasp paper, wax, walls of honeycomb cells, ribbed arches of beads, round doorways) and
+borrowing one look, the way the first set borrowed the Orthodox one. None of them is a human
+building with insects in it. The data is `tools/art/biomes.mjs`; the template is
+`tools/art/templates/biome.mjs`; to look at each: `notes/art-review/biomes/<set>.jpg`.
+
+| Set | Borrows from | Territories |
+|---|---|---|
+| `orthodox` The Temple Cities | Eastern Orthodox: paper onion domes, gold mosaic (the first set) | Temple Terraces, Seventh City, Assembly Hall |
+| `suburb` The Suburbs | An American suburb of the 1950s: pastels, porches, picket fences of wax, awnings, beetle cars, dandelion trees | Crash Site, Cul-de-Sac Heights, Commuter Ring |
+| `megacity` The Megacity | A cyberpunk megacity: smoked resin and black glass, neon glyphs, cables, steam, a noodle counter | University Hill, Glass Spires, Hidden Campus |
+| `orient` The Lantern Cities | The Far East as a Western film of the 1950s imagined it, not any real country: upswept paper eaves, lacquer red, jade tiles, lanterns, moon gates; carved beetles where a film would carve dragons | Pilgrim Road, Mirewater Delta |
+| `industrial` The Works | A port and factory town: soot, riveted iron, pipes, furnace light, hazard stripes | Old Harbor, Foundry Plains |
+| `farmland` The Granary Belt | A farming town of the American Midwest: red barns, silos, wind pumps, hay | Granary Belt |
+| `necropolis` The Ossuary Coast | A city of the dead: bone-white chalk, niches of urns, candles, black iron, fungus cypresses | Ossuary Coast |
+| `deephive` The Deep Hive | Nothing: the oldest part of their civilisation, grown rather than built: amber comb, brood cells, royal jelly, queen cells | Queen's Hollow |
+
+Rules every set keeps:
+
+- **A set is nine pictures:** three floors (street, square, roof), four walls (one per kind
+  of district in the game: plain, science, meat, highground) and two sheets of props (eight
+  for roofs, six for streets). The walls are drawn with the first set's plain wall as a
+  reference, for its flat view and the size of its doors and windows only.
+- **The body is the same everywhere:** creep, core, limbs and spore pods are not part of any
+  set. Neither is the smoke over the unclaimed city.
+- **Streets are pale.** Units are dark and walk in the streets. A street that comes out dark
+  (the megacity's wet concrete came out at 85 of 255) is brought up in the bake to at least
+  132, along a curve that lifts its darks and leaves its lights alone.
+- **Roofs are flat and bare in the middle.** Limbs stand on them.
+- **Signs and screens show abstract glyphs,** never lettering. Banners carry insects.
+- **No real religious symbol** (the rule above) and none from the borrowed culture either:
+  no yin-yang, no torii, no real characters. Checked zoomed in, picture by picture.
+  Found and removed so far: the compass arms (and a letter N) of a weathervane on the
+  suburb's cupola, which read as a cross on a dome (`tools/art/paint-out.mjs`).
+- **Key colours:** green eats a set's green things. The suburb, the farmland and the
+  necropolis are keyed on magenta; the Lantern Cities and the Deep Hive on blue.
+- **Which set a board is drawn with:** a campaign deployment, its territory's; a skirmish,
+  one chosen by its seed; `?biome=megacity` in the address names one.
 
 ## One flesh, nine accents
 

@@ -8,3 +8,6 @@ dist/
 
 # Broodfall raw art sources (stills, clips, models): too big for git, re-creatable from the manifest
 games/broodfall/art-src/
+
+# Broodfall screenshot beats: the PNGs are rewritten on every run (about 90 MB); a JPEG copy of each is committed instead (games/broodfall/tools/shots-to-jpg.mjs)
+games/broodfall/tools/screenshots/*.png

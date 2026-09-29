@@ -1,0 +1,58 @@
+{
+ "family": "lure",
+ "frames": 30,
+ "atlasKB": 171,
+ "failed": 0,
+ "checks": [
+  {
+   "name": "idle: loop closes",
+   "ok": true,
+   "value": 1.08
+  },
+  {
+   "name": "idle: it moves",
+   "ok": true,
+   "value": 0.2
+  },
+  {
+   "name": "idle: it is calm",
+   "ok": true,
+   "value": 0.2
+  },
+  {
+   "name": "idle: inside the frame",
+   "ok": true,
+   "value": "186,116-446,528"
+  },
+  {
+   "name": "idle: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "idle: ends the size it began",
+   "ok": true,
+   "value": "5% change"
+  },
+  {
+   "name": "fire: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "fire: frames swallowed by a flash or a cloud are few",
+   "ok": true,
+   "value": "26 left out"
+  },
+  {
+   "name": "fire: ends the size it began",
+   "ok": true,
+   "value": "3% change"
+  },
+  {
+   "name": "atlas is under 900 KB",
+   "ok": true,
+   "value": "171 KB"
+  }
+ ]
+}

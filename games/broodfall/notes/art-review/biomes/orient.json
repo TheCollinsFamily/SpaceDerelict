@@ -1,0 +1,36 @@
+{
+ "id": "orient",
+ "name": "The Lantern Cities",
+ "checks": [
+  {
+   "name": "three floors",
+   "ok": true,
+   "detail": "48 of 48 tiles"
+  },
+  {
+   "name": "four kinds of wall",
+   "ok": true,
+   "detail": "192 of 192 faces"
+  },
+  {
+   "name": "every roof prop cut out",
+   "ok": true,
+   "detail": "8 of 8"
+  },
+  {
+   "name": "every street prop cut out",
+   "ok": true,
+   "detail": "6 of 6"
+  },
+  {
+   "name": "the street is pale",
+   "ok": true,
+   "detail": "brightness 166 of 255 (at least 132)"
+  },
+  {
+   "name": "light to load",
+   "ok": true,
+   "detail": "361 KB"
+  }
+ ]
+}

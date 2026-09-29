@@ -1,0 +1,43 @@
+{
+ "family": "tap",
+ "frames": 16,
+ "atlasKB": 110,
+ "failed": 0,
+ "checks": [
+  {
+   "name": "idle: loop closes",
+   "ok": true,
+   "value": 0.7
+  },
+  {
+   "name": "idle: it moves",
+   "ok": true,
+   "value": 0.22
+  },
+  {
+   "name": "idle: it is calm",
+   "ok": true,
+   "value": 0.22
+  },
+  {
+   "name": "idle: inside the frame",
+   "ok": true,
+   "value": "148,76-496,530"
+  },
+  {
+   "name": "idle: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "idle: ends the size it began",
+   "ok": true,
+   "value": "1% change"
+  },
+  {
+   "name": "atlas is under 900 KB",
+   "ok": true,
+   "value": "110 KB"
+  }
+ ]
+}

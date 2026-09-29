@@ -146,8 +146,16 @@ try {
   const cx = coreScr.x;
   const cy = coreScr.y;
 
-  // Region 1: the core must be strongly red-dominant flesh.
-  const core = regionAvg(png, cx - 12, cy - 12, 24, 24);
+  // Region 1: the core must be strongly red-dominant flesh. On the isometric board the
+  // heart sits above the point where the landing site meets the ground, so the reddest
+  // patch at or above that point is the one that is judged.
+  let core = regionAvg(png, cx - 12, cy - 12, 24, 24);
+  for (let dy = -130; dy <= 0; dy += 6) {
+    for (let dx = -40; dx <= 40; dx += 8) {
+      const c = regionAvg(png, Math.max(0, cx + dx - 12), Math.max(0, cy + dy - 12), 24, 24);
+      if (c.r - Math.max(c.g, c.b) > core.r - Math.max(core.g, core.b)) core = c;
+    }
+  }
   if (core.r > core.g + 25 && core.r > core.b + 25 && core.r > 80) {
     pass(`core region is flesh (rgb ${core.r.toFixed(0)},${core.g.toFixed(0)},${core.b.toFixed(0)})`);
   } else {
