@@ -59,7 +59,146 @@ const boardB = (made) =>
   'and ivory bone, lighter than the skin they stand on. Squads of small dark insect soldiers with safety-orange ' +
   `markings march up the pale streets toward the crater. ${made} ${BMOVIE} No text, no interface, no borders.`;
 
+// Round three (Collins, Sep 29 2026): the ship "should be so different from the rest of the game
+// it is jarring, very lifelike, very sci fi … a far future ultra religious human society (the
+// technopuritan logo is a black gear), they hate luxury, idolatry, and are obsessed with making
+// things efficient and higher tech"; "the game play map on the ship (a holographic projection of
+// the planet with zones)"; "some exteriors of the ship"; units: "try a few more times".
+const REAL = 'Photoreal and lifelike, like a frame from a serious hard science-fiction film shot on a real set.';
+const EMPIRE =
+  'a far-future, ultra-religious, ascetic human society that despises luxury and decoration, forbids images and ' +
+  'idols, and is obsessed with efficiency and ever more advanced technology';
+const AUSTERE =
+  'Extremely advanced technology and extreme plainness. Nothing soft, nothing ornamental, nothing wasted: no ' +
+  'pictures, no statues, no icons, no patterns, no coloured accent lighting, no neon. The only marking anywhere ' +
+  'is one small plain black gear symbol (a cogwheel).';
+const UNITS =
+  `All share ${COLONY} and safety-orange painted markings unless stated. Realistic creature design with the ` +
+  'detail and materials of a modern strategy game, soft even light, plain pale grey background, all on one ' +
+  'ground line, all at the same scale. No text, no labels.';
+
 const JOBS = {
+  'r3-ship-operations-black': { w: 1536, h: 1024, quality: 'medium',
+    prompt:
+      `${REAL} The operations room of a small orbital vessel belonging to ${EMPIRE}. ${AUSTERE} Seamless matte ` +
+      'black composite and bare pale ceramic, precise machined edges, perfect order. No cushioned chairs: a ' +
+      'standing workstation and one hard bench. Even white functional light from flush strips. Razor-thin ' +
+      'holographic readouts float above the workstation. One crew member stands working with his back to us in ' +
+      'a plain high-collared black garment with a narrow white collar. A narrow window slit shows the curve of a ' +
+      'green and brown planet. Cold, silent, severe, immaculate. No readable text.' },
+  'r3-ship-operations-white': { w: 1536, h: 1024, quality: 'medium',
+    prompt:
+      `${REAL} A work cell aboard a small orbital vessel belonging to ${EMPIRE}. It feels like a monk's cell built ` +
+      `by the most advanced engineers alive. ${AUSTERE} Bare white ceramic walls with flush seams, a floor of ` +
+      'plain dark metal, one standing console grown seamlessly out of the wall, one fold-down plank to sit on, ' +
+      'one recessed shelf holding a single plain black book. Shadowless white light. A thin holographic display ' +
+      'hangs in the air showing fine lines of data. One crew member in a plain black high-collared garment with ' +
+      'a narrow white collar stands at the console, hands behind his back. Cold, exact, immaculate, a little ' +
+      'frightening. No readable text.' },
+  'r3-ship-gene-bay': { w: 1536, h: 1024, quality: 'medium',
+    prompt:
+      `${REAL} The gene bay of a small orbital vessel belonging to ${EMPIRE}, where a biological weapon is grown. ` +
+      `${AUSTERE} Seamless matte black and bare pale ceramic, shadowless white light. In the centre stands a ` +
+      'sealed transparent cylinder holding a mass of glistening red living muscle the size of a football, ' +
+      'suspended in clear fluid and tended by thin precise robotic arms: the only organic, coloured thing in ' +
+      'the room. One crew member in a plain black high-collared garment with a narrow white collar watches it ' +
+      'with a thin tablet in hand. Cold, clinical, immaculate. No readable text.' },
+  'r3-ship-globe-room': { w: 1536, h: 1024, quality: 'medium',
+    prompt:
+      `${REAL} A bare dark room aboard a small orbital vessel belonging to ${EMPIRE}. ${AUSTERE} In the centre of ` +
+      'the room floats a large holographic projection of a planet, two metres across: a translucent globe ' +
+      'showing continents and seas, divided into about sixteen irregular territories by razor-thin bright lines. ' +
+      'Three neighbouring territories are filled dark red as if infected, spreading from one point. One ' +
+      'territory pulses amber as a warning. Four territories next to the red ones are outlined brighter as ' +
+      'places to land. The rest are dim. Small plain geometric markers hover over some territories. One crew ' +
+      'member in a plain black high-collared garment with a narrow white collar stands beside the globe with ' +
+      'one hand raised, selecting a territory. The hologram is the only light. No readable text.' },
+  'r3-ship-globe-close': { w: 1536, h: 1024, quality: 'medium',
+    prompt:
+      'A holographic tactical display of a planet, filling the frame, floating in front of a plain matte black ' +
+      `background, made by ${EMPIRE}: exact, plain and extremely advanced, with no decoration at all. A ` +
+      'translucent globe showing continents and seas in fine relief, divided into about sixteen irregular ' +
+      'territories by razor-thin bright lines. Three neighbouring territories are filled dark red, spreading ' +
+      'from one point. One territory pulses amber. Four territories next to the red ones are outlined brighter. ' +
+      'The rest are dim. Thin lines join neighbouring territories. Small plain geometric markers hover over ' +
+      'some: a triangle, a ring, a diamond. One small plain black gear symbol sits in a corner. Photoreal ' +
+      'light, fine scan detail, no lens flare, no readable text.' },
+  'r3-ship-exterior-side': { w: 1536, h: 1024, quality: 'medium',
+    prompt:
+      `${REAL} A small orbital vessel in low orbit above a green and brown planet, seen from outside in hard ` +
+      `sunlight against black space. It belongs to ${EMPIRE}. The design is severe, plain and extremely ` +
+      'advanced: a long clean hull of bare pale ceramic and matte black, simple geometric volumes, flush ' +
+      'seamless panels, large plain radiator fins, no ornament, no clutter of pipes or antennas, no rows of lit ' +
+      'windows, one narrow window slit. The only marking is one plain black gear symbol (a cogwheel) on the pale ' +
+      'hull. Crisp shadows, real scale, real physics. No readable text.' },
+  'r3-ship-exterior-drop': { w: 1536, h: 1024, quality: 'medium',
+    prompt:
+      `${REAL} Seen from outside and slightly below: a small orbital vessel belonging to ${EMPIRE}, in low orbit ` +
+      'over a green and brown planet. Severe, plain and extremely advanced: bare pale ceramic and matte black, ' +
+      'simple geometric volumes, flush seamless panels, no ornament, one plain black gear symbol (a cogwheel) ' +
+      'on the hull. From an open bay on its underside it has just released a dark rocky pod the size of a bus, ' +
+      'disguised as a meteor, which falls toward the planet with the first orange glow of re-entry. Hard ' +
+      'sunlight, crisp shadows, real scale. No readable text.' },
+  'r3-ship-exterior-ring': { w: 1536, h: 1024, quality: 'medium',
+    prompt:
+      `${REAL} A small orbital vessel in orbit above a green and brown planet at the edge of night, seen from a ` +
+      `distance. It belongs to ${EMPIRE}. A plain pale cylinder with one slowly rotating ring for gravity and ` +
+      'broad flat black radiator panels: every part is there because it is needed, and nothing else is. Bare ' +
+      'pale ceramic and matte black, flush seamless panels, no ornament, no lit windows, one plain black gear ' +
+      'symbol (a cogwheel) on the hull. Sunlight rakes across it; city lights glow faintly on the dark side of ' +
+      'the planet below. No readable text.' },
+  'r3-units-army-1': { w: 1536, h: 1024, quality: 'medium',
+    prompt:
+      'Creature design line-up sheet. The army of an intelligent insect civilisation, showing how its fighting ' +
+      'castes run from human-like to beast to machine. From left to right: (1) a nervous militia volunteer, ' +
+      'upright and human-like, in a steel helmet too big for him, holding a spear; (2) a professional soldier, ' +
+      'hunched and half upright, heavily armoured, helmet fused to the head; (3) a pack of six tiny skittering ' +
+      'swarm creatures, animal, no clothes; (4) a shield-bearer as big as a car: a low pill-bug body carrying ' +
+      'slab armour on all six legs, with one small human-like driver riding behind the plate; (5) a siege ' +
+      'cannon as big as a truck: a bombardier beetle whose abdomen is a gun barrel, legs braced, with two small ' +
+      `human-like crew beside it, one covering his ears; (6) a wasp-like flier wearing pilot goggles and a scarf. ${UNITS}` },
+  'r3-units-army-2': { w: 1536, h: 1024, quality: 'medium',
+    prompt:
+      'Creature design line-up sheet. Six fighting castes of one intelligent insect civilisation, each built ' +
+      'like the real insect that does its job, each with a touch of the human about it. From left to right: ' +
+      '(1) a first responder: small, upright, human-like, in a fire helmet, carrying a hose; (2) a soldier: a ' +
+      'broad armoured ant-like body walking on four legs with two arms holding a pike, wearing a plain helmet; ' +
+      '(3) an elite: taller, heavier, a stag-beetle head with great jaws and a decorated breastplate; (4) a ' +
+      'sapper: a termite-like climber with huge cutting jaws and climbing hooks, a tool belt across its chest; ' +
+      '(5) a bomber: a small round ant whose swollen abdomen glows yellow from within, running, with a fuse-like ' +
+      `tail and goggles; (6) a war drummer: a cicada-like body with a drum-skin chest, beating it with two arms. ${UNITS}` },
+  'r3-units-army-3': { w: 1536, h: 1024, quality: 'medium',
+    prompt:
+      'Creature design line-up sheet. Heavy fighting castes of one intelligent insect civilisation: living ' +
+      'vehicles with small human-like crew. From left to right: (1) a shield wall: a giant flat pill bug with ' +
+      'overlapping slab plates, a small upright driver peering over the top; (2) a carapace lord: an ironclad ' +
+      'beetle as big as a van under a thick domed shell, a small upright commander standing in a hatch; (3) a ' +
+      'mortar beetle: squat, with a short fat tube on its back, one small crew member loading it; (4) a siege ' +
+      'cannon: a bombardier beetle whose abdomen is a long gun barrel, legs braced wide, two small crew beside ' +
+      'it; (5) a tunneler: a mole-cricket with great digging claws, half out of a mound of earth, a small rider ' +
+      `with a lamp on its helmet. The small crew are upright and human-like in helmets. ${UNITS}` },
+  'r3-units-science-royal': { w: 1536, h: 1024, quality: 'medium',
+    prompt:
+      'Creature design line-up sheet. The science caste and the royal caste of one intelligent insect ' +
+      'civilisation. From left to right: (1) a researcher: tall, thin, upright and human-like, in a white lab ' +
+      'coat with a teal armband, carrying a specimen cage on its back and a clipboard; (2) a specimen thief: ' +
+      'small, quick, human-like, in a dark coat with a teal scarf, clutching a satchel; (3) a sedation battery: ' +
+      'a pale beetle carrying a rack of dart tubes, with a lab-coated operator beside it, teal markings; (4) a ' +
+      'veil matron: a tall robed figure under a long grey veil, gold trim; (5) a royal consort: upright, in a ' +
+      'gold-trimmed dress uniform with a sash, half the size of the queen; (6) the queen: three times the ' +
+      'height of the researcher, a long swollen abdomen carried behind her like a train, a tall crest like a ' +
+      'crown, gold regalia, regal and tired. The science caste wear teal markings and the royal caste gold, not ' +
+      `orange. ${UNITS}` },
+  'r3-units-in-game': { w: 1536, h: 1024, quality: 'medium',
+    prompt:
+      `${ISO} A close view of one pale dusty street, two lanes wide, in an insect civilisation's city built of ` +
+      'pale grey-cream wasp paper, wax and clay, with raised flat-topped blocks on both sides. Marching along ' +
+      'the street toward the lower left, in loose squads: a pack of tiny skittering swarm creatures in front; ' +
+      'then a dozen soldiers, dark-shelled with safety-orange markings, walking on four legs and carrying pikes; ' +
+      'then a big pill-bug shield-bearer with a small driver; then a bombardier-beetle siege cannon with two ' +
+      'small crew walking beside it; two wasp-like fliers overhead casting shadows on the street. Beside the ' +
+      'street, in a doorway, two human-like insect civilians in clothes watch them pass. Dark bodies read ' +
+      `clearly against the pale street. ${STRAIGHT}` },
   'r2-board-bmovie-lit': { w: 1536, h: 1024, quality: 'medium',
     prompt: boardB('The town and the creatures are real and fully detailed; only the photography is 1950s.') },
   'r2-board-bmovie-miniature': { w: 1536, h: 1024, quality: 'medium',
