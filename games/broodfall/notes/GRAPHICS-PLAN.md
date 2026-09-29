@@ -1,9 +1,15 @@
-# Broodfall graphics plan (Sep 29 2026) — PROPOSAL, nothing built yet
+# Broodfall graphics plan (Sep 29 2026) — PROPOSAL
 
 Collins: "help me think through how we build out the graphics … knowing what we have
-access to with the rfab api." This is the thinking, checked against the code and the RFab
-backend as they are today. Decisions marked **OPEN** are Collins's. Nothing here has been
-generated, spent or built.
+access to with the rfab api." Then: "my intuition was buildings are better with video" and
+"maybe everything is best with video".
+
+This is the thinking, checked against the code, the RFab backend and two paid probes
+(section 6). Decisions marked **OPEN** are Collins's. Nothing is built into the game yet.
+
+**The first draft of this plan dropped video for limbs in favour of 3D models. That was
+wrong.** Collins's intuition held up in the probes: video is the first choice for
+everything alive on the board, and Tripo is the fallback.
 
 ## 1. Where the game is today
 
@@ -21,8 +27,8 @@ generated, spent or built.
 
 ## 2. The decisions that come before any asset
 
-Every generated picture is made FOR a camera, a size and a style. Get these wrong and the
-whole batch is redone. None of them needs a generated asset to settle.
+Every generated picture is made FOR a camera, a size and a style. None of these needs a
+generated asset to settle.
 
 ### 2a. Camera — OPEN, recommendation: isometric, settled by a grey-box test
 - **Isometric** (the grid turned 45°, seen from above at an angle) matches the reference.
@@ -35,10 +41,9 @@ whole batch is redone. None of them needs a generated asset to settle.
   checks already go through `worldToScreen` / `toWorld`, so they follow.
 - **How to settle it without spending anything:** draw today's board as plain extruded
   boxes in the isometric view, with today's circles and triangles on top, and play it.
-  The question to answer is whether streets behind tall blocks stay readable. Start at a
-  steep camera (about 45° down) and tune.
-- The pipeline below makes the camera a PARAMETER: board sprites come out of a bake script,
-  so changing the angle later means re-running the bake, not repainting.
+  The question to answer is whether streets behind tall blocks stay readable.
+- **With video the camera is frozen into every clip.** It must be final before mass
+  production; changing it afterwards means generating everything again.
 
 ### 2b. Style — the design doc already answers it
 DESIGN.md's tone stack says the break moments are "the same footage with the filter off".
@@ -46,28 +51,27 @@ So the art is made ONCE, in the straight register (real, wet, unglamorous), and 
 propaganda look is a FILTER over the canvas (colour grade, grain, halftone, vignette) plus
 the HUD. Dropping the filter is then a one-line effect, and a strong shared filter also
 hides the small inconsistencies between generated assets.
-- **OPEN:** which straight look. Make three one-page style sheets (a limb, an insect, a
-  block, in each look) and pick one. About $1.
+- **OPEN:** whether the look of the two probe stills is the look. If not, make three
+  one-page style sheets and pick one. About $1.
+- Light comes from directly overhead in every still, so a mirrored sprite never looks lit
+  from the wrong side.
 
 ### 2c. Size
 - Raise the closest zoom so the first district fills the screen (about 68 px per cell),
   and let the canvas fill the window. The zoom-out as the body spreads then reads as growth.
 - Author at 96 px per cell. Limb frames 192 px, swarm insects 64 px, the royal 256 px.
-- Everything is shrunk hard from what the generator makes (1024 px → 192 px). Silhouette and
-  big shapes survive; fine detail does not. Judge every asset at game size, never at full size.
-- Add wheel zoom and drag pan (a genre convention, and players will want to look at their monster).
+- Judge every asset at game size, never at full size: silhouette survives, fine detail does not.
+- Add wheel zoom and drag pan.
 
 ### 2d. What is code and what is generated
 - **Code:** the blocks themselves (flat-topped terraces at exact heights), street channels,
-  creep, shadows, range rings, links, projectiles, particles, the filter.
+  creep, shadows, range rings, links, projectiles, particles, the filter, and everything
+  translucent (ward bubbles, clouds, slime strands: they cannot be keyed).
 - **Generated:** textures for roofs, walls and streets; roof props; limbs; insects; organs;
   card art; portraits; rooms; posters; films.
-- Why blocks are code: limbs stand ON blocks. The reference's buildable tiles are flat-topped
-  for that reason. A detailed generated building with a limb perched on its dome looks wrong,
-  and its height would not be exact.
-- Creep is a shader driven by the sim's creep grid (pulsing veins, thick hide on roofs, thin
-  membrane in streets). RFab has no seamless-texture support, so a painted creep tile would
-  show seams; a shader does not.
+- Why blocks are code: limbs stand ON blocks, so roofs must be flat and heights exact.
+- Creep is a shader driven by the sim's creep grid. RFab has no seamless-texture support,
+  so a painted creep tile would show seams.
 
 ## 3. What the RFab API can do (checked Sep 29 2026)
 
@@ -78,92 +82,95 @@ retail (tokens × $0.00002); the provider's real cost is about half.
 |---|---|---|
 | Still image | `POST /api/image-generation/generate` | Send `async: true` and `imageCount: 1` (the default is 4). `openai:gpt-image-2` is the house standard: $0.012 low, $0.106 medium, $0.42 high. Seedream 4.5 $0.07. SDXL checkpoints $0.007 and they honour a seed. |
 | Same style across assets | `POST /api/image-generation/img2img` with `imageUrls[]` | Up to 16 reference pictures on gpt-image-2. Passing 2–3 approved style-bible pictures with every call is the way to hold one look. No custom LoRA training exists. |
-| Transparent background | `POST /api/image-generation/isolate-figure` | $0.01. Generate on a flat background, then cut out. Proven in `_gen_lb_ask_icons.js`. No model returns alpha directly. |
-| Upscale | `POST /api/image-generation/upscale` | 2×/3×/4×, $0.04–0.16. |
-| 3D model | `POST /api/model-generation/generate` | Text, image or multi-view to a textured GLB. Image-to-3D 20 credits, texture 10 (1 credit = $0.01 real, $0.02 retail). `faceLimit` controls polygon count. |
-| Rig and animate | `POST /api/model-generation/:id/rig`, `/animate` | Rig 25 credits, 10 per motion. See section 6: RFab only supports two-legged rigs today. |
-| Video from a still | `POST /api/image-generation/generate-video` | Always send `resolution`. About $0.25 for 4 s at 480p. An END frame works only on `seegen:` models. No frame-rate or camera-lock setting: the camera is held by the prompt only. |
-| Transparent video | none | Every transparent loop on RFab is a green background plus a chroma key in ffmpeg. Moving edges and translucent effects key badly. |
-| Narrator voice | `POST /api/audio/synthesize`, `POST /api/voices/clone` | $0.06 per 1,000 characters. A 12–120 s sample can be cloned, so a public-domain newsreel voice is possible. |
+| Transparent still | `POST /api/image-generation/isolate-figure` | $0.01. Generate on a flat background, then cut out. No model returns alpha directly. |
+| Video from a still | `POST /api/image-generation/generate-video` | Always send `resolution`. $0.25 for 4 s at 480p on `seegen:sd2-mini`. An END frame (`lastFrameUrl`) works only on `seegen:` models. No frame-rate or camera-lock setting: the camera is held by the prompt. About 4 minutes per clip. |
+| Transparent video | none | A flat colour background plus a chroma key in ffmpeg. |
+| 3D model | `POST /api/model-generation/generate` | Image to textured GLB, 30 credits (1 credit = $0.01 real). Rig 25, 10 per motion. RFab only supports two-legged rigs today. |
+| Narrator voice | `POST /api/audio/synthesize`, `POST /api/voices/clone` | $0.06 per 1,000 characters. A 12–120 s sample can be cloned. |
 | Music | `POST /api/music/generate`, `/songs/:id/loop` | Instrumental supported; the loop is a free crossfade. |
 | Sound effects | none | No route generates sound effects. |
 
-**Never tested on any model:** gore and body horror. Every moderation probe in the backend
-is a nudity probe. OpenAI is filtered and a picture blocked at the output stage is still
-charged. The uncensored lanes are grok-imagine, Venice, the Runware checkpoints and Seedream
-on Atlas.
-
 **On this PC:** ffmpeg 8.1.1 (full build), Playwright with Chromium, an RTX 4070, Python.
-No Blender, no ImageMagick, no three.js in the game folder.
+No Blender, no ImageMagick.
 
-## 4. How each kind of asset gets made
+## 4. Video or Tripo
 
-The sorting question is: **is it ever seen from more than one angle?**
-No → a generated picture. Yes → a generated 3D model, photographed by a script.
+| | Video | Tripo |
+|---|---|---|
+| Best at | Wet, living motion. Surface quality comes from the still, which is far better than a Tripo texture. | The same object from any angle, exactly. Rigid, chunky things. |
+| Worst at | Several angles of one thing: every angle is a separate generation. | Thin parts (legs, antennae, wings, membranes) fuse or vanish. Soft flesh comes out as a lump. |
+| On RFab | Proven in production (the loading loops) and in the probes below. | Never tried on an insect. Six-legged rigs need a backend change and a deploy. The wallet is shared with production. |
+
+In isometric, four facings are two views plus their mirror images. So a thing that turns
+needs two clips, not four.
 
 | Asset | Count | Made by |
 |---|---|---|
-| Blocks, streets | — | Code, with generated roof/wall/street textures (about 12) |
-| Roof props, doorway lights, street life | ~30 | Picture, cut out |
-| Creep | — | Shader |
-| The core / meteor | 1 | 3D model, baked; the one board element worth a video loop |
-| Limbs | 36 | Picture → 3D model → baked in 8 facings |
-| Graft parts (what an eaten limb leaves on the new one) | 36 | Small picture or model per donor family, pinned to standard slots |
-| Insects | 26 kinds, ~18 bodies | Picture → 3D model → baked in 8 directions (section 6) |
-| Shots, hits, deaths, meat pickups | — | Code particles |
-| Card art | 36 | The limb's concept picture (already made for the 3D step) |
-| Organ stage | ~25 organs | One painted cross-section; organ flesh masked to each organ's exact shape in code |
-| Territories, dares, experiments | ~30 | Picture |
-| Faction leaders, YOKE | ~12 | Picture; short video loops later |
-| Ship rooms | 6 | Picture with CSS motion first; video loops later |
-| Posters, headline cards | ~10 | Picture (Ideogram V4 for exact lettering) |
+| Limbs that don't turn | 24 | Still → video: an idle loop and a firing clip |
+| Limbs with a facing (the ten engines, skipping mortar, creep lance) | 12 | Still → video, two views each |
+| Graft parts (what an eaten limb leaves on the new one) | 36 | Small still per donor family, cut out, pinned to standard slots |
+| Insects | 26 kinds, ~18 bodies | Still → video walking in place, two views each. Ranks share a body (militia, soldier, elite: scale, tint, armour) |
+| The core / meteor | 1 | Still → video |
+| Blocks, streets | — | Code, with generated textures (about 12) |
+| Roof props, doorway lights, street life | ~30 | Still, cut out |
+| Creep, shots, hits, deaths, meat pickups | — | Code |
+| Card art | 36 | The limb's own still |
+| Organ stage | ~25 organs | One painted cross-section; organ flesh (a video loop) masked to each organ's exact shape in code |
+| Territories, dares, experiments | ~30 | Still |
+| Faction leaders, YOKE | ~12 | Still, then short loops |
+| Ship rooms | 6 | Still with CSS motion first; video loops later |
+| Posters, headline cards | ~10 | Still (Ideogram V4 for exact lettering) |
 | Crash openings, break moments, endings | ~12 | Video |
 | The globe | 1 | Generated planet texture on a real sphere |
 
-Organ shapes are fixed (L, T, S, +, U…). Image models cannot draw an exact tetromino, so the
-shape is a mask in code and the generator only supplies the flesh and the organ's motif.
+**What to try with Tripo:** only what video fails at. If the away-facing view of an insect
+will not match its toward-facing view, Tripo makes the body and a script photographs it
+from both sides. It is also the natural choice for rigid things that aim (the enemy
+cannons). The ladder for a Tripo insect, cheapest first: the static model and its mirror
+image as a two-frame scuttle; legs stepped by code; a Tripo hexapod rig (`rig_type:
+hexapod`, one motion: `preset:hexapod:walk`), which needs RFab's `tripo3dService.js` to
+pass the rig type and a backend deploy.
 
-## 5. The spine: picture → model → bake
+## 5. The pipeline: still → video → key → loop → atlas
 
-1. **Concept picture.** Style-bible prompt plus 2–3 reference pictures, on a flat background.
-   This picture is also the card art and the input to step 2.
-2. **3D model.** `image_to_model` with texture. 30 credits.
-3. **Bake.** A small page (three.js) loads the model, sets the game's camera and ONE light
-   rig, and renders it in 8 facings to transparent frames. Playwright drives the page and
-   saves the frames; sharp packs them into a WebP atlas and writes `assets/manifest.json`.
-   This is the same toolchain as `tools/shot-*.mjs`. No Blender needed.
-4. **Runtime.** Pixi sprites from the atlas. Breathing is a squash shader driven by the
-   SIM: a limb with more tempo breathes faster, a hurt limb raggedly, a limb in stasis not
-   at all. No baked idle frames, so atlases stay small.
+1. **Still.** Style-bible prompt plus 2–3 reference pictures, on a flat background in the
+   colour farthest from the subject (green; blue for the green limbs: blight, mister,
+   snare, mire). This picture is also the card art.
+2. **Clip.** 4 s, 480p, square, on a `seegen:` model with the END frame set to the START
+   frame. That is what closes the loop and what keeps a walker on the spot.
+3. **Key and loop.** ffmpeg: drop frame 0 (it is the still itself), chroma key, despill,
+   shrink to game size, pack frames into a WebP atlas, write `assets/manifest.json`.
+4. **Runtime.** Pixi animated sprites. Playback speed follows the SIM: a limb with more
+   tempo cycles faster, a limb in stasis freezes.
 
-What the bake buys over generating sprites directly: exact camera and lighting on every
-asset, real shadows, any number of facings (so shooters can aim), exact alpha with no
-cut-out fringe, and a camera that can change later.
+Every step is a re-runnable script in `tools/art/`, driven by the manifest, that skips
+what already exists. `tools/art/probe-video.mjs` is the seed of it.
 
-**TECH.md planned a video loop per limb** (picture → 2–4 s video → loop → key → sheet).
-That is dropped for limbs: at 45–190 px the subtle motion is invisible, video models drift
-and repaint the background, and the chroma key fringes. Video is kept for things that
-fill the screen.
+## 6. Probe results (Sep 29 2026, $0.70 of tokens)
 
-## 6. Insects: the one real technical risk
+`node tools/art/probe-video.mjs spitter-idle soldier-walk`. Pictures in
+`notes/probes/2026-09-29/`. One try each, so these are existence proofs, not rates.
 
-- Tripo itself can rig six-legged models (`rig_type: hexapod`) and has ONE motion for them,
-  `preset:hexapod:walk`. There is no attack, death or idle for non-humans, and no preset
-  at all for winged rigs.
-- RFab's integration does not pass `rig_type` and its allow-list drops the hexapod preset
-  (`services/tripo3dService.js`), so today it can only rig two-legged models. Nobody has
-  ever rigged an insect through it.
-- So the ladder, cheapest first:
-  1. **Mirrored scuttle.** Bake the static model and its mirror image: two frames per
-     direction, plus a body bob. Free, no rig. Enough for swarm insects at 7–16 px.
-  2. **Procedural legs.** Legs drawn and stepped by code (insects are the easiest gait
-     there is). Guaranteed to work; all code.
-  3. **Tripo hexapod rig** for the big ones (royal, consort, cannon, phalanx). Needs a
-     three-line backend change and an RFab backend deploy, which is Collins's call, or a
-     local backend. One probe costs about 65 credits.
-- Deaths and attacks are code in every case: a lunge; a flip onto the back with the legs
-  twitching.
-- Ranks share a body: militia, soldier and elite are one model with scale, tint and armour.
+| Question | Result |
+|---|---|
+| Will gpt-image-2 draw wet flesh and chitin? | Yes, both stills on the first try, no refusal. |
+| Does the flat green key cleanly? | Yes. No fringe visible at 480 px or at game size. |
+| Does end frame = start frame close the loop? | Limb: yes (seam similarity 0.93 of 1). Insect: nearly (0.68): it comes back to the same spot slightly smaller and turned a few degrees. |
+| Will an insect walk in place from a fixed angle? | Yes. It stayed centred for the whole clip with its legs stepping. |
+| Does the camera hold? | Yes in both clips. |
+
+What the probes taught that the plan did not know:
+- **Flesh on creep has no contrast.** A red limb on red creep and a rust insect on a brown
+  street both sink into the ground. Bodies need a dark rim, a ground shadow or a caste-
+  coloured marker, and the contrast measurement in section 8 is not optional.
+- **The motion came out too big for an idle.** Asked to "breathe", the spitter opened like
+  a pine cone and closed again. That is a good FIRING clip. Idles need a quieter prompt.
+- **The model repaints the background a darker green.** The key still held at the house
+  settings (0.22 / 0.08), but the key colour should be sampled from the clip, not assumed.
+- **The insect's loop needs a loop-point search** (find the two most similar frames and cut
+  there) or a short crossfade. At 24–96 px the pop is small.
+- At the smallest size (14 px) an insect is a speck. Swarm bodies read by colour and
+  motion, not by drawing.
 
 ## 7. Renderer work that comes first (costs nothing)
 
@@ -175,22 +182,18 @@ fill the screen.
 4. Zoom and pan; canvas fills the window.
 5. The filter, with an off switch for the break moments.
 
-## 8. Probes before any batch (about $10)
+## 8. Still to probe, then the vertical slice
 
 | Probe | Settles |
 |---|---|
-| Three style sheets | The look (2b) |
-| Six body-horror prompts on three models | Which model will draw wet meat without refusing |
-| One limb through the whole spine, placed on the board at game size | Whether the spine works |
-| One insect with the mirrored scuttle | Whether rung 1 is enough |
-| One hexapod rig (local backend) | Whether rung 3 exists |
-| One room loop with start frame = end frame on a `seegen:` model | Seamless loops (supported in code, never run) |
+| The soldier seen from BEHIND (made from the first still as a reference), walking away | Whether two views of one insect match. This decides video or Tripo for insects. |
+| A quiet idle for the spitter | Whether idles can be held small |
+| A flier | Whether wings survive the key |
+| A directional limb in two views | The twelve limbs with a facing |
 
-## 9. The vertical slice, and how it is judged
-
-One district, finished: blocks, streets, creep, core, one gate; spitter, lasher, spine
-wall and one directional limb; skitterling, militia and flier; shots, hits and deaths; the
-filter. Then PLAYTEST_PROTOCOL.md applies as written:
+**The slice:** one district, finished: blocks, streets, creep, core, one gate; spitter,
+lasher, spine wall and one directional limb; skitterling, militia and flier; shots, hits
+and deaths; the filter. Then PLAYTEST_PROTOCOL.md applies as written:
 - a graphics reference wall and its checklist in `references/`;
 - the three persona passes, with screenshots at near AND far zoom beside the reference;
 - new permanent measurements: every pair of limb silhouettes is distinct at 32 px; caste
@@ -198,31 +201,33 @@ filter. Then PLAYTEST_PROTOCOL.md applies as written:
   on creep; atlases stay under a size budget; 300 bodies on screen hold the frame rate.
 Mass production starts only after Collins has seen the slice and the style bible is locked.
 
-## 10. Production order (by time on screen)
+## 9. Production order (by time on screen)
 
 Board → the limbs of the four starting profiles → the war ladder → the other limbs → combo
 engines → science and royal castes → organ stage → cards and HUD → ship, globe, portraits →
 films → sound.
 
-## 11. Budget and limits
+## 10. Budget and limits
 
-- About $150–200 of real provider cost for the whole game (roughly 600 pictures, 120 models,
-  90 clips, with re-rolls). Money is not the limit.
-- **The Tripo wallet is the limit.** It is prepaid, shared with production, burns about 500
-  credits a day, and refuses every 3D request for every user below 100 credits (the Sep 8–11
-  outage). The models here need about 4,000 credits. Top up first, check the balance before
-  every batch (`_check_tripo_balance.js`), and pace the batches.
-- SeeGen video credits are also a shared prepaid balance.
-- **Storage.** This repo is public and already 160 MB. Raw models are 15–19 MB each and do
-  not go in git. RFab's links can expire, so raw sources need a durable home (OPEN: a local
-  folder plus an S3 prefix). Only baked atlases, prompts and the manifest are committed.
-- Every step is a re-runnable script in `tools/art/`, driven by the manifest, that skips
-  what already exists.
+- One living asset (a still and a clip) costs $0.35 and about 5 minutes.
+- The whole board is about 170 clips: 36 limbs × idle and fire, 12 extra views, 18 bodies ×
+  2 views × walk and attack. With re-rolls, roughly $130 of tokens and 6 hours of
+  generation at five at a time. Stills, films and rooms add about as much again.
+- **SeeGen is the dependency now.** Only `seegen:` models take an end frame, and SeeGen is
+  a prepaid balance shared with production. Check it before a batch.
+- The Tripo wallet (prepaid, shared with production, refuses every request below 100
+  credits) is off the critical path unless insects fall back to it.
+- **Storage.** This repo is public and already 160 MB. Raw stills and clips live in
+  `art-src/` (ignored by git). RFab's links can expire, so raw sources need a durable
+  home (OPEN: a local folder plus an S3 prefix). Only atlases, prompts and the manifest
+  are committed.
 
-## 12. What this changes in TECH.md
+## 11. What this changes in TECH.md
 
-- Item 2 (a video loop per limb) → picture → model → bake, breathing by shader.
-- Item 3b (Blender) → the same bake page as limbs; rigging is rung 3, not the plan.
+- Item 2 (a video loop per limb) stands, with two additions: the end frame closes the
+  loop, and frames are baked to an atlas rather than played as video.
+- Item 3b (insects as 3D models baked in Blender) → video walking in place, two views
+  and their mirrors. 3D is the fallback.
 - Item 6 (one painted ground image per district with a passability mask) → dropped. The
   board is drafted, rotated plates now; the ground is code plus textures.
 - Items 1, 4, 5, 7, 8 and 9 stand.

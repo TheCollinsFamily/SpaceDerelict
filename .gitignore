@@ -5,3 +5,6 @@ tmp_*.py
 .DS_Store
 node_modules/
 dist/
+
+# Broodfall raw art sources (stills, clips, models): too big for git, re-creatable from the manifest
+games/broodfall/art-src/
