@@ -77,7 +77,150 @@ const UNITS =
   'detail and materials of a modern strategy game, soft even light, plain pale grey background, all on one ' +
   'ground line, all at the same scale. No text, no labels.';
 
+// Round four (Collins, Sep 29 2026): map units "have to be a little cartoonish (look at units in
+// starcraft or red alert 2) but you are making them super realistic"; the ring exterior "is not
+// bad"; the character is "a bit of a nerd, likely designed his own tchotchkes on his desk, sleeps
+// on a simple flat piece of metal that retracts back into the wall … a young guy hoping for
+// promotion and a partner"; the AI is "a female anime girl projection, torso up".
+const RTS =
+  'Drawn as unit sprites for a late-1990s real-time strategy game with pre-rendered 3D units: a little ' +
+  'cartoonish, chunky and exaggerated, with oversized heads, jaws, weapons and shoulders, thick sturdy legs, ' +
+  'bold simple shapes, little fine detail, strong light and dark, and the caste colour in large flat patches. ' +
+  'Each one must still read clearly when shrunk to the size of a thumbnail.';
+const RTS_SHEET =
+  `${ISO} Plain pale grey background, each unit standing apart on its own small dark contact shadow, all facing ` +
+  'the lower left, all at the same scale. Dark umber shells and pale amber eyes. No text, no labels.';
+const HERO =
+  'a young man of about twenty-five, slight, earnest and a bit of a nerd, short dark hair slightly untidy, a ' +
+  'plain black high-collared garment with a narrow white collar, its sleeves pushed up to the elbows, a stylus ' +
+  'tucked behind one ear';
+const YOKE =
+  'A holographic projection of a young woman drawn in Japanese anime style, shown from the waist up, floating ' +
+  'in the air, slightly translucent with faint scan lines and a soft glow at the edges. She wears a plain ' +
+  'black high-collared dress with a narrow white collar and has one small plain black gear as a hair clip. ' +
+  'She is polite, precise and quietly curious.';
+
 const JOBS = {
+  'r4-units-rts-war': { w: 1536, h: 1024, quality: 'medium',
+    prompt:
+      `Unit design sheet for the war caste of an insect civilisation. ${RTS} Seven units: (1) a militia ` +
+      'volunteer, upright, in a helmet far too big for him, holding a spear; (2) a soldier, broad and low, ' +
+      'walking on four legs with a pike, big jaws; (3) an elite with a huge stag-beetle head and a breastplate; ' +
+      '(4) a pack of five tiny round swarm creatures; (5) a shield-bearer, a big round pill bug behind a slab of ' +
+      'plate with a tiny insect driver on top; (6) a siege cannon, a fat beetle whose abdomen is a big gun ' +
+      'barrel, legs braced, with a tiny insect crewman covering his ears; (7) a wasp flier in goggles and a ' +
+      `scarf, with its shadow on the ground beneath it. Safety-orange markings on all of them. ${RTS_SHEET}` },
+  'r4-units-rts-war-2': { w: 1536, h: 1024, quality: 'medium',
+    prompt:
+      `Unit design sheet for the war caste of an insect civilisation. ${RTS} More cartoonish than realistic, ` +
+      'with friendly rounded forms, like toy soldiers. Six units: (1) a first responder in a fire helmet ' +
+      'dragging a hose; (2) a sapper, a termite with enormous cutting jaws and a tool belt, climbing hooks on ' +
+      'its arms; (3) a bomber, a small round ant carrying its own glowing yellow abdomen like a bomb, goggles ' +
+      'on, running; (4) a war drummer, a cicada beating the drum of its own chest; (5) a tender, a pale nurse ' +
+      'with a red cross armband and a satchel; (6) a tunneler, a mole cricket with great digging claws ' +
+      `bursting out of a mound of earth. Safety-orange markings on all but the nurse. ${RTS_SHEET}` },
+  'r4-units-rts-science-royal': { w: 1536, h: 1024, quality: 'medium',
+    prompt:
+      `Unit design sheet for the science caste and the royal caste of an insect civilisation. ${RTS} Six units: ` +
+      '(1) a researcher, tall and thin in a white lab coat with a specimen cage on its back, teal markings; ' +
+      '(2) a specimen thief, small and hunched, running with a satchel, teal scarf; (3) a sedation battery, a ' +
+      'pale beetle carrying a rack of dart tubes, teal markings; (4) a royal consort in a dress uniform with a ' +
+      'gold sash; (5) a veil matron, a tall figure under a long grey veil with gold trim; (6) the queen, three ' +
+      'times the size of the others, a huge swollen abdomen behind her, a tall gold crest like a crown. ' +
+      `${RTS_SHEET}` },
+  'r4-units-rts-on-board': { w: 1536, h: 1024, quality: 'medium',
+    prompt:
+      `A view from a late-1990s style real-time strategy game, with no interface. ${ISO} A detailed, realistic ` +
+      'district of an insect civilisation built of pale grey-cream wasp paper, wax and clay: chunky flat-topped ' +
+      'blocks of three heights, sunken pale streets two lanes wide. A dark maroon veined living skin covers the ' +
+      'rooftops on the right, and on it stand three rooted organisms of salmon-pink wet muscle, dark chitin and ' +
+      'ivory bone. Marching up the street toward them is an army of insect units that are a little cartoonish: ' +
+      'chunky, exaggerated, with oversized heads, jaws and weapons, bold simple shapes, dark shells and large ' +
+      'flat patches of safety orange, each on a small dark contact shadow: a pack of tiny swarm creatures, a ' +
+      'dozen soldiers with pikes, a pill-bug shield-bearer, a beetle siege cannon, two wasp fliers overhead. ' +
+      'The units read instantly against the pale street. No text, no interface, no borders.' },
+  'r4-ship-exterior-ring-2': { w: 1536, h: 1024, quality: 'medium',
+    prompt:
+      `${REAL} A small orbital vessel in orbit above a green and brown planet at the edge of night, seen from a ` +
+      `distance. It belongs to ${EMPIRE}. A plain pale cylinder standing upright with one slowly rotating ring ` +
+      'around its middle and two broad flat black panels. It is far more advanced than any present-day ' +
+      'spacecraft: seamless bare pale ceramic with no visible bolts, joints or antennas, razor-exact edges, the ' +
+      'ring joined to the cylinder by three thin smooth spokes. Nothing on it that is not needed. One plain ' +
+      'black gear symbol (a cogwheel) on the cylinder. Sunlight rakes across it; faint city lights glow on the ' +
+      'dark side of the planet below. No readable text.' },
+  'r4-ship-exterior-ring-drop': { w: 1536, h: 1024, quality: 'medium',
+    prompt:
+      `${REAL} Seen from outside and slightly below: a small orbital vessel belonging to ${EMPIRE}, in low orbit ` +
+      'over a green and brown planet. A plain pale cylinder standing upright with one slowly rotating ring ' +
+      'around its middle and two broad flat black panels; seamless bare pale ceramic, razor-exact edges, no ' +
+      'ornament, one plain black gear symbol (a cogwheel) on the cylinder. From an open bay in the bottom of ' +
+      'the cylinder it has just released a dark rocky pod the size of a bus, disguised as a meteor, which falls ' +
+      'toward the planet with the first orange glow of re-entry. Hard sunlight, crisp shadows, real scale. No ' +
+      'readable text.' },
+  'r4-hero-portrait': { w: 1536, h: 1024, quality: 'medium',
+    prompt:
+      `${REAL} Two views of the same person side by side on a plain pale wall aboard an austere white ceramic ` +
+      `spacecraft: on the left a head-and-shoulders portrait, on the right the full figure standing. He is ${HERO}. ` +
+      'He is a junior technician, cheerful and curious, a believer in his austere society who is still just a ' +
+      'young man hoping for a promotion. A small half-smile, as if he has just thought of an experiment. He ' +
+      'holds a thin tablet. Even white light. No readable text.' },
+  'r4-hero-desk': { w: 1536, h: 1024, quality: 'medium',
+    prompt:
+      `${REAL} A close view of a standing workstation in the operations room of a small orbital vessel belonging ` +
+      `to ${EMPIRE}: seamless matte black composite, exact edges, even white light, a razor-thin holographic ` +
+      'readout, one small plain black gear symbol on the wall. Everything is regulation and immaculate, except ' +
+      'for a neat row of small things the young technician has made himself out of spare parts and lined up ' +
+      'along the back edge of the desk: a gear puzzle machined from steel, a tiny articulated insect built of ' +
+      'wire and washers, a drinking cup with cooling fins of his own design, a palm-sized orrery of the planet ' +
+      'below, and a sealed jar holding a thumbnail-sized scrap of red living tissue. A stylus and one hand-' +
+      'written note lie beside them. His hand is just reaching in to adjust the little insect. No readable text.' },
+  'r4-hero-bunk': { w: 1536, h: 1024, quality: 'medium',
+    prompt:
+      `${REAL} The sleeping cell of a junior technician aboard a small orbital vessel belonging to ${EMPIRE}. Bare ` +
+      'white ceramic walls with flush seams, a dark plain floor, shadowless white light, one small plain black ' +
+      'gear symbol. The bed is a flat slab of bare metal folded down from the wall, with no mattress, one thin ' +
+      'grey blanket folded square at its foot, and the slot in the wall it retracts into clearly visible. One ' +
+      'recessed shelf holds a single plain black book and, beside it, a small gear puzzle he made himself. ' +
+      `The technician, ${HERO}, sits on the edge of the slab working at a thin tablet, absorbed and content. No ` +
+      'readable text.' },
+  'r4-hobby-interface': { w: 1536, h: 1024, quality: 'medium',
+    prompt:
+      'A holographic personal notebook floating above a matte black desk aboard an austere spacecraft, filling ' +
+      'the frame: the private hobby notes of a young, nerdy technician, shown on the same razor-thin display ' +
+      'his society uses for its exact official forms, but everything on it is drawn by hand. Loose notebook ' +
+      'pages overlap at slight angles. On them, in quick confident pen lines: sketches of insects in little ' +
+      'hats and helmets, a diagram of a cage trap with arrows, a drawing of a red blob with a question mark, a ' +
+      'column of checkboxes like a list of dares with some ticked, margins full of small doodles and ' +
+      'exclamation marks, a tally of marks in one corner. One page is pinned on top with a drawn paperclip. ' +
+      'White and pale cyan lines on a dark ground. The handwriting is scribble only: no readable words.' },
+  'r4-yoke-austere': { w: 1024, h: 1024, quality: 'medium',
+    prompt:
+      `${YOKE} Her hair is dark and tied back. The whole projection is one colour, a pale cool white-blue light. ` +
+      'Behind her is the matte black wall of an austere spacecraft, photoreal, with one thin white light strip. ' +
+      'Calm neutral expression, hands folded. No text.' },
+  'r4-yoke-colour': { w: 1024, h: 1024, quality: 'medium',
+    prompt:
+      `${YOKE} Her hair is long and pale silver with a slight blue tint, her eyes are large and amber, and the ` +
+      'projection is in soft full colour. She looks as if a young man chose how she should look. Behind her is ' +
+      'the matte black wall of an austere spacecraft, photoreal, with one thin white light strip. A small ' +
+      'attentive smile, one hand raised as if about to ask a question. No text.' },
+  'r4-yoke-in-room': { w: 1536, h: 1024, quality: 'medium',
+    prompt:
+      `${REAL} The operations room of a small orbital vessel belonging to ${EMPIRE}: seamless matte black ` +
+      'composite and bare pale ceramic, exact edges, even white light, one small plain black gear symbol on the ' +
+      `wall, a long window slit showing the curve of a green and brown planet. At the standing workstation is ${HERO}, ` +
+      'seen from the side, talking with easy familiarity to the ship\'s artificial intelligence, which appears ' +
+      'above the desk as a projection: a young woman drawn in Japanese anime style, from the waist up, ' +
+      'slightly translucent, pale silver hair, a plain black high-collared dress with a narrow white collar. ' +
+      'She is the one thing in the room that is drawn rather than real. No readable text.' },
+  'r4-yoke-expressions': { w: 1536, h: 1024, quality: 'medium',
+    prompt:
+      'Expression sheet of one character, six waist-up drawings in two rows of three on a plain dark ' +
+      'background, the same character and costume in every one. A holographic projection of a young woman ' +
+      'drawn in Japanese anime style, slightly translucent with faint scan lines: long pale silver hair with a ' +
+      'slight blue tint, large amber eyes, a plain black high-collared dress with a narrow white collar, one ' +
+      'small plain black gear as a hair clip. The six expressions: calm and neutral; curious, head tilted; ' +
+      'quietly amused; concerned; thinking, eyes to one side; very slightly sad. No text, no labels.' },
   'r3-ship-operations-black': { w: 1536, h: 1024, quality: 'medium',
     prompt:
       `${REAL} The operations room of a small orbital vessel belonging to ${EMPIRE}. ${AUSTERE} Seamless matte ` +
