@@ -13,7 +13,18 @@ Constraint that drives every choice here: the whole game must be buildable and t
 
 ## Asset pipeline (the heart of it)
 
-**Sep 29 2026: `notes/GRAPHICS-PLAN.md` proposes changes to items 2, 3b and 6 below, checked against what the RFab API can do today. It is a proposal until Collins decides; this section is unchanged until then.**
+**BUILT Sep 29 2026, and it is not what the list below says.** The list is the plan of Sep 26, kept for its reasoning. What was built, and why each item changed:
+
+| Item below | What was built |
+|---|---|
+| 2. A video loop per limb | Stands. The clip's last frame is its first (the video model takes an end frame), and frames are baked to an atlas, never played as video. Each limb is first REDRAWN in the material of the creep. |
+| 3. Video textures for the central body | Dropped: the landing site is an atlas like everything else, from a 720p clip. |
+| 3b. Insects as 3D models baked in Blender | Dropped. Insects are video too: five views drawn in ONE picture, a walking clip of each, three views mirrored. Collins's intuition; the probes agreed (`notes/GRAPHICS-PLAN.md` 6b). |
+| 6. One painted ground image per district, with a passability mask | Dropped. The board is drafted plates: the city is BUILT from baked pieces (floor tiles, wall faces, props) in eight tile sets, because limbs stand on roofs at exact heights. |
+| 7. Multi-cell footprints | Built: BIG limbs, 2 by 2 (`DESIGN.md`). Creep is baked tiles with ragged edges, not a shader. |
+| The camera | Isometric, and it turns in quarter turns (Q and E). Not in the list at all. |
+
+Where it all is: `HANDOFF.md`, "The art". The rules of the look: `assets/style-bible.md`. The probes and the costs: `notes/GRAPHICS-PLAN.md`.
 
 Authoring format is AI video; runtime format is spritesheet. That one rule keeps 50+ animated towers cheap AND performant.
 

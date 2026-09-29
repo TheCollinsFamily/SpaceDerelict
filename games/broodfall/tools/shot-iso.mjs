@@ -149,6 +149,53 @@ try {
   });
   const software = /SwiftShader|llvmpipe|Software/i.test(gl);
   check(fps >= (software ? 5 : 30), 'the frame rate holds', `${fps.toFixed(0)} frames a second on ${gl}`);
+
+  // THE CAMERA TURNS (Q and E). From every side: the board is drawn, a click aimed at a
+  // limb reaches its cell, and a limb is seen from another side than before.
+  await page.keyboard.press('Home');
+  // The view eases back: it is measured when it has arrived.
+  await page.waitForTimeout(2500);
+  const aimAll = async () => {
+    const at = await page.evaluate(() => window.broodfall.sim.towers.slice(0, 12).map((t) => {
+      const p = window.broodfall.worldToScreen(t.pos.x, t.pos.y);
+      return { cell: t.cell, x: p.x, y: p.y, vw: p.vw, vh: p.vh };
+    }));
+    const b = await canvas.boundingBox();
+    let hit = 0, tried = 0;
+    for (const a of at) {
+      if (a.x < 10 || a.y < 10 || a.x > a.vw - 10 || a.y > a.vh - 10) continue;
+      tried++;
+      const got = await page.evaluate(([x, y]) => window.broodfall.cellAtClient(x, y), [b.x + (a.x / a.vw) * b.width, b.y + (a.y / a.vh) * b.height]);
+      if (got === a.cell) hit++;
+    }
+    return { hit, tried };
+  };
+  const where = () => page.evaluate(() => {
+    const c = window.broodfall.sim.core;
+    const p = window.broodfall.worldToScreen(c.x, c.y);
+    return { x: Math.round(p.x), y: Math.round(p.y) };
+  });
+  const home = await where();
+  for (let turn = 1; turn <= 4; turn++) {
+    await page.keyboard.press('e');
+    await page.waitForTimeout(900);
+    const now = await page.evaluate(() => window.broodfall.turn());
+    check(now === turn % 4, `E turns the board: turn ${turn % 4}`, String(now));
+    if (turn < 4) {
+      await shot(`6-turn-${turn}`);
+      const a = await aimAll();
+      check(a.tried > 0 && a.hit === a.tried, `turn ${turn}: a click aimed at a limb reaches its cell`, `${a.hit}/${a.tried}`);
+    }
+  }
+  await page.keyboard.press('Home');
+  await page.waitForTimeout(2500);
+  const back = await where();
+  check(Math.abs(back.x - home.x) <= 2 && Math.abs(back.y - home.y) <= 2, 'four turns bring the board back where it was', `${home.x},${home.y} and ${back.x},${back.y}`);
+  await page.keyboard.press('q');
+  await page.waitForTimeout(600);
+  check(await page.evaluate(() => window.broodfall.turn()) === 3, 'Q turns it the other way');
+  await page.keyboard.press('e');
+  await page.waitForTimeout(600);
   check(errors.length === 0, 'no errors in the page', errors.slice(0, 3).join(' | '));
 } finally {
   await browser.close();

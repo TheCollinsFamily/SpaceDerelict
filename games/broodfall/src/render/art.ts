@@ -18,16 +18,19 @@ export interface UnitArt {
   flies: boolean;
   anims: { walk: Partial<Record<View, Clip>>; attack?: Partial<Record<View, Clip>> };
 }
-export interface LimbArt {
-  atlas: string; frame: number; cols: number; anchor: [number, number]; body: number;
+/** One view of a limb: the point of its frame that stands on the middle of its ground, how wide what it stands on is (a share of the frame), and its clips. */
+export interface LimbSide { anchor: [number, number]; body: number; anims: { idle: Clip; fire?: Clip } }
+export interface LimbArt extends LimbSide {
+  atlas: string; frame: number; cols: number;
   on: 'roof' | 'street'; flat?: boolean; facing?: boolean;
-  anims: { idle: Clip; fire?: Clip };
+  /** The view from behind, of a limb that is not the same all the way round. */
+  back?: LimbSide;
 }
 export interface Rect { x: number; y: number; w: number; h: number; anchor?: [number, number]; on?: string }
 export interface BoardArt {
   tile: [number, number]; level: number; wallSpan: number;
   sheets: Partial<Record<'floors' | 'creep' | 'walls' | 'props', { atlas: string; sprites: Record<string, Rect> }>>;
-  core?: { atlas: string; frame: number; cols: number; count: number; fps: number; anchor: [number, number]; cells: number };
+  core?: { atlas: string; frame: number; cols: number; count: number; fps: number; anchor: [number, number]; cells: number; /** How wide what it stands on is, as a share of the frame. */ body?: number };
 }
 /** What one tile set holds of its own; everything else is the terrain entry's. */
 export interface BiomeData { sheets: Partial<Record<'floors' | 'walls' | 'props', { atlas: string; sprites: Record<string, Rect> }>> }

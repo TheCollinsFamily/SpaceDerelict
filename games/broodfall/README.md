@@ -29,9 +29,18 @@ Useful URLs:
 | Ship gene bay (standing + splices, localStorage) | BUILT (prototype persistence; account-side later) |
 | Empire directives / hobby missions | MISSING (design doc) |
 | Break cinematics / propaganda video layer | MISSING (design doc) |
-| Real AI art pipeline | MISSING (TECH.md phase) |
+| The painted isometric board (26 units, 36 limbs, 8 tile sets, the ship) | BUILT (Sep 29; `HANDOFF.md` "The art") |
+| Turning the view (Q, E, two buttons on the board) | BUILT (Sep 29) |
+| BIG limbs: Broodmother, Ward Membrane, Trap Cage stand on 2 by 2 cells | BUILT (Sep 29; `DESIGN.md` "BIG limbs") |
+| Attack clips for 25 of 26 units, death clips, state sprites | MISSING (code-drawn stand-ins) |
 
 ## How to play
+
+- **The view:** Q and E turn the board a quarter turn (so do the two buttons at its top
+  left); the wheel zooms on the pointer; Shift-drag, the middle button or the arrow keys
+  move it; Home frames the whole body again. `?view=top` is the old board drawn as shapes.
+- **BIG limbs** (Broodmother, Ward Membrane, Trap Cage) need 2 by 2 cells of one flat roof
+  that the creep holds. Point anywhere on such a roof: the preview lights the four cells.
 
 - The map starts as ONE district and grows: every 3rd cleared wave you draft one of three districts to consume. New districts bring new winding streets, high blocks, and new gates. The camera zooms out as the body spreads.
 - Enemies march the carved street channels in squads; they cannot cross city blocks. Click a card, then click a CREEPED CITY BLOCK overlooking a street (taller blocks shoot further). Spine walls instead plug the street itself and must be chewed through. Right-click cancels. The ✕ on a card discards it for 3 war meat.
@@ -58,8 +67,9 @@ Useful URLs:
 ## Verify it
 
 ```powershell
-npm test             # 187 headless tests (sim + campaign rules) (incl. evolutions + the doubling rule) incl. per-verb behavior pins + full autoplayer runs
-node tools/shot-preview.mjs  # screenshot beats: field of fire + conduit placement preview
+npm test             # 250 headless tests: the sim, the campaign, the camera, the baked art, big limbs, full autoplayer runs
+# The whole list of browser beats, and what each proves, is in HANDOFF.md ("How to verify").
+# tools/shot-preview.mjs is older than the organ stage and does not run: it is not in that list.
 npm run build
 npm run test:visual  # headless chromium: sim + HUD + per-region pixel checks; screenshots in tools/screenshots/
 npm run test:input   # headless chromium: real player gestures (build, cannibalize, organ, cancel)

@@ -157,6 +157,13 @@ export interface TowerSpec {
   cone?: number;
   /** Its FACING matters: set on placement (right-click rotates), shown as a field of fire. */
   directional?: boolean;
+  /**
+   * A BIG limb: the cells it stands on, [across, along], when it faces north or south; a
+   * quarter turn swaps them. All of them must be one flat roof (or one street) that the
+   * creep holds. Absent: one cell. (Collins, Sep 29 2026: towers over several squares "are
+   * a core part of the strategy in tower defence".)
+   */
+  span?: [number, number];
   /** Marrow conduit: copies every bonus within `gather` px into the limb it points at (within `reach`). */
   conduit?: { gather: number; reach: number };
   /**
@@ -208,7 +215,10 @@ export interface Tower {
   id: number;
   family: TowerFamily;
   pos: Vec;
+  /** The cell it stands on; of a big limb, the first of its cells (the one nearest the north-west corner). */
   cell: number;
+  /** A big limb: every cell it stands on. Absent: it stands on `cell` alone. */
+  cells?: number[];
   hp: number;
   maxHp: number;
   /** Inherited pips, in acquisition order. Deterministic, visible, uncapped by design. */
@@ -441,7 +451,7 @@ export interface Enemy {
   stole?: number;
   /** Collector: the limb it is extracting, and the limb it is carrying off once taken. */
   extractId?: number;
-  carrying?: { family: TowerFamily; pips: ModPip[]; cell: number; priority?: TargetMode; casteFocus?: CasteFocus };
+  carrying?: { family: TowerFamily; pips: ModPip[]; cell: number; facing?: RootDir; priority?: TargetMode; casteFocus?: CasteFocus };
   /** Cannon: braced in its firing position (it never moves again). */
   deployed?: boolean;
   /** Cannon shots fired (science batteries carry a limited kit, then leave). */
@@ -577,6 +587,7 @@ export type SimEvent =
   | { kind: 'plate-drafted'; name: string; feature: string };
 
 export type Command =
+  /** cell: the cell pointed at. A big limb takes the legal footprint that holds it (see Sim.footprintAt). */
   | { kind: 'build'; cardIndex: number; cell: number; cannibalizeTowerId?: number; facing?: RootDir }
   | { kind: 'butcher'; towerId: number }
   | { kind: 'evolve'; towerId: number; choice: UpgradeChoice }

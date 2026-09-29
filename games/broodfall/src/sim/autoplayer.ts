@@ -8,7 +8,7 @@ import { UPGRADE_COST } from '../../content/upgrades';
 import { organTurn, placeNode } from './organPolicy';
 import { CellType } from './citymap';
 import { BALANCE as B } from '../../content/data';
-import type { Tower, UpgradeChoice } from './types';
+import type { Tower, TowerFamily, UpgradeChoice } from './types';
 
 export class Autoplayer {
   private rng: Rng;
@@ -134,7 +134,8 @@ export class Autoplayer {
       ).length;
       const wantsInterior = !wantsBlocker && spec.rate > 0 && interiorGuns < 2
         && sim.threat >= B.tier6Threat - 60; // tunnelers imminent: cover the inside
-      const cell = this.findTowerCell(sim, wantsBlocker, wantsInterior);
+      // A big limb is looked for where all of it fits.
+      const cell = this.findTowerCell(sim, wantsBlocker, wantsInterior, spec.span ? fam : undefined);
       if (cell === null) return false;
       let cannibalizeTowerId: number | undefined;
       this.buildsSinceCannibalize += 1;
@@ -206,6 +207,11 @@ export class Autoplayer {
       }
       // A pit that found no lane road this act waits its turn rather than block the hand.
       if (fam === 'swamp') continue;
+      // So does a big limb that fits nowhere yet: the cards behind it are played, and it is shed when meat allows.
+      if (towerSpec(fam).span && !this.fitsSomewhere(sim, fam)) {
+        if (sim.meat.war >= B.discardCost + 40) { sim.issue({ kind: 'discard', cardIndex: i }); return; }
+        continue;
+      }
       if (tryBuild(i)) return;
       return;
     }
@@ -219,6 +225,12 @@ export class Autoplayer {
         }
       }
     }
+  }
+
+  /** Is there ground anywhere on the board that a limb of this family could be built on? */
+  private fitsSomewhere(sim: Sim, family: TowerFamily): boolean {
+    for (let cell = 0; cell < sim.map.cells.length; cell++) if (sim.canBuildTower(cell, family)) return true;
+    return false;
   }
 
   /** A rough damage-per-second read of a limb (for choosing between evolutions). */
@@ -317,14 +329,14 @@ export class Autoplayer {
     return air;
   }
 
-  private findTowerCell(sim: Sim, asBlocker: boolean, interiorOnly = false): number | null {
+  private findTowerCell(sim: Sim, asBlocker: boolean, interiorOnly = false, big?: TowerFamily): number | null {
     const w = sim.cfg.gridW;
     const lane = this.lanePathCells(sim);
     const air = this.airLaneCells(sim);
     const rangeCells = 3; // ~95px on 32px cells
     const candidates: Array<{ cell: number; score: number }> = [];
     for (let cell = 0; cell < sim.map.cells.length; cell++) {
-      if (!sim.canBuildTower(cell, asBlocker ? 'spine' : undefined)) continue;
+      if (!sim.canBuildTower(cell, asBlocker ? 'spine' : big)) continue;
       if (interiorOnly && (sim.creepDistOf(cell) < 0 || sim.creepDistOf(cell) > 5)) continue;
       if (asBlocker) {
         if (sim.map.cells[cell] !== CellType.Road) continue;
@@ -367,7 +379,7 @@ export class Autoplayer {
     let best: number | null = null;
     let bestScore = 0;
     for (let cell = 0; cell < sim.map.cells.length; cell++) {
-      if (!sim.canBuildTower(cell) || sim.map.cells[cell] === CellType.Road) continue;
+      if (!sim.canBuildTower(cell, 'ward') || sim.map.cells[cell] === CellType.Road) continue;
       const p = sim.cellCenter(cell);
       let covered = 0;
       for (const g of guns) {

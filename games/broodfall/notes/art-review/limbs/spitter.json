@@ -1,9 +1,14 @@
 {
  "family": "spitter",
- "frames": 30,
- "atlasKB": 118,
+ "frames": 60,
+ "atlasKB": 294,
  "failed": 0,
  "checks": [
+  {
+   "name": "where it stands is marked",
+   "ok": true,
+   "value": "0.49, 0.78, 0.88"
+  },
   {
    "name": "idle: loop closes",
    "ok": true,
@@ -45,9 +50,74 @@
    "value": "4% change"
   },
   {
+   "name": "it stands in its cell",
+   "ok": true,
+   "value": "0.2% of it lies in front of its cell"
+  },
+  {
+   "name": "from behind, where it stands is marked",
+   "ok": true,
+   "value": "0.5, 0.77, 0.88"
+  },
+  {
+   "name": "from behind, idle: loop closes",
+   "ok": true,
+   "value": 0.25
+  },
+  {
+   "name": "from behind, idle: it moves",
+   "ok": true,
+   "value": 0.13
+  },
+  {
+   "name": "from behind, idle: it is calm",
+   "ok": true,
+   "value": 0.13
+  },
+  {
+   "name": "from behind, idle: inside the frame",
+   "ok": true,
+   "value": "198,104-442,440"
+  },
+  {
+   "name": "from behind, idle: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "from behind, idle: ends the size it began",
+   "ok": true,
+   "value": "1% change"
+  },
+  {
+   "name": "from behind, fire: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "from behind, fire: frames swallowed by a flash or a cloud are few",
+   "ok": true,
+   "value": "2 left out"
+  },
+  {
+   "name": "from behind, fire: ends the size it began",
+   "ok": true,
+   "value": "2% change"
+  },
+  {
+   "name": "from behind, it stands in its cell",
+   "ok": true,
+   "value": "2.1% of it lies in front of its cell"
+  },
+  {
+   "name": "from behind: it has a view",
+   "ok": true,
+   "value": "drawn"
+  },
+  {
    "name": "atlas is under 900 KB",
    "ok": true,
-   "value": "118 KB"
+   "value": "294 KB"
   }
  ]
 }

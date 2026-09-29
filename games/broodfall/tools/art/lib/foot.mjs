@@ -117,3 +117,35 @@ export function drawCell(img, cx, cy, half, rgb = [255, 255, 255], alpha = 0.55)
   }
   return img;
 }
+
+/**
+ * How much of its cell's width the footprint of a limb fills. The same number as LIMB_FILL
+ * in src/render/isoRender.ts. At 0.75 the solid skirt lies inside the cell and the thin
+ * tips of its roots reach a little over the edge.
+ */
+export const FILL = 0.75;
+
+/**
+ * The footing of a limb in one frame: its MARK if it has one (tools/art/limbs.mjs, foot and
+ * backFoot), else the computer's guess. A flat limb (a pool lying in the street) stands on
+ * all of itself.
+ */
+export function footingOf(l, frame, box, view = 'front') {
+  const w = box.x1 - box.x0;
+  const h = box.y1 - box.y0;
+  if (l.flat) return { x: (box.x0 + box.x1) / 2, y: (box.y0 + box.y1) / 2, a: w / 2, b: h / 2, marked: true };
+  const mark = view === 'back' ? l.backFoot : l.foot;
+  if (mark) {
+    const a = (mark[2] * w) / 2;
+    return { x: box.x0 + mark[0] * w, y: box.y0 + mark[1] * h, a, b: a * FLAT, marked: true };
+  }
+  const guess = l.on === 'street' ? lineFooting(frame, box) : discFooting(frame, box);
+  return { ...guess, marked: false };
+}
+
+/** The mark that says what a footing says, to write into limbs.mjs. */
+export const markOf = (f, box) => [
+  Number(((f.x - box.x0) / (box.x1 - box.x0)).toFixed(2)),
+  Number(((f.y - box.y0) / (box.y1 - box.y0)).toFixed(2)),
+  Number(((2 * f.a) / (box.x1 - box.x0)).toFixed(2)),
+];

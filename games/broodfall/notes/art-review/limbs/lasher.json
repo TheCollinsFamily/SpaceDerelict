@@ -1,9 +1,14 @@
 {
  "family": "lasher",
  "frames": 30,
- "atlasKB": 139,
+ "atlasKB": 191,
  "failed": 0,
  "checks": [
+  {
+   "name": "where it stands is marked",
+   "ok": true,
+   "value": "0.52, 0.84, 0.85"
+  },
   {
    "name": "idle: loop closes",
    "ok": true,
@@ -50,9 +55,14 @@
    "value": "3% change"
   },
   {
+   "name": "it stands in its cell",
+   "ok": true,
+   "value": "1.0% of it lies in front of its cell"
+  },
+  {
    "name": "atlas is under 900 KB",
    "ok": true,
-   "value": "139 KB"
+   "value": "191 KB"
   }
  ]
 }

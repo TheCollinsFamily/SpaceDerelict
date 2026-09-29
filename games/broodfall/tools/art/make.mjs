@@ -33,7 +33,7 @@ const TEMPLATES = {
   },
   limb: async () => {
     const { makeLimb } = await import('./templates/limb.mjs');
-    return settle(ids, 4, (id) => makeLimb(id, { bakeOnly: flags.has('--bake') }));
+    return settle(ids, 4, (id) => makeLimb(id, { bakeOnly: flags.has('--bake'), stillsOnly: flags.has('--stills') }));
   },
   terrain: async () => {
     const { makeTerrain } = await import('./templates/terrain.mjs');

@@ -172,3 +172,50 @@ export function fringe(img, key) {
   }
   return edge ? bad / edge : 0;
 }
+
+/**
+ * Takes the specks off a keyed frame: whatever is not joined to the body and is smaller
+ * than `share` of it (a drop the video model threw across the picture, a fleck of the
+ * background that did not key). The body itself, and any part nearly as big, is kept.
+ */
+export function dropSpecks(img, share = 0.03) {
+  const G = 4;
+  const gw = Math.ceil(img.w / G);
+  const gh = Math.ceil(img.h / G);
+  const solid = new Uint8Array(gw * gh);
+  for (let y = 0; y < img.h; y++) for (let x = 0; x < img.w; x++) {
+    if (img.data[(y * img.w + x) * 4 + 3] > 96) solid[Math.floor(y / G) * gw + Math.floor(x / G)] = 1;
+  }
+  const label = new Int32Array(gw * gh).fill(-1);
+  const sizes = [];
+  for (let s = 0; s < solid.length; s++) {
+    if (!solid[s] || label[s] >= 0) continue;
+    const id = sizes.length;
+    let n = 0;
+    const stack = [s];
+    label[s] = id;
+    while (stack.length) {
+      const c = stack.pop();
+      n++;
+      const cx = c % gw, cy = (c - cx) / gw;
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+        const x = cx + dx, y = cy + dy;
+        if (x < 0 || y < 0 || x >= gw || y >= gh) continue;
+        const o = y * gw + x;
+        if (solid[o] && label[o] < 0) { label[o] = id; stack.push(o); }
+      }
+    }
+    sizes.push(n);
+  }
+  if (sizes.length < 2) return 0;
+  const most = Math.max(...sizes);
+  let gone = 0;
+  for (let y = 0; y < img.h; y++) for (let x = 0; x < img.w; x++) {
+    const id = label[Math.floor(y / G) * gw + Math.floor(x / G)];
+    if (id >= 0 && sizes[id] < most * share) {
+      const i = (y * img.w + x) * 4 + 3;
+      if (img.data[i]) { img.data[i] = 0; gone++; }
+    }
+  }
+  return gone;
+}

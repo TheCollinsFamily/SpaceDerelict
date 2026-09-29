@@ -80,10 +80,14 @@ export const TOWERS: readonly TowerSpec[] = [
   },
   {
     // The barracks seat: keeps a brood of skirmishers fighting in the streets.
+    // A BIG limb (Collins, Sep 29 2026: towers over several squares "are a core part of
+    // the strategy in tower defence"): she takes four cells of one flat roof. For that she
+    // keeps six broodlings where she kept three, and is more than twice as hard to kill.
+    // Before she was big: broodCount 3, maxHp 140.
     family: 'brood', name: 'Broodmother', weight: 8,
     cost: { war: 30 }, range: 0, rate: 0, damage: 0, aoe: 0,
-    broodCount: 3,
-    maxHp: 140, interest: 2, eatThreshold: 0, advanced: true,
+    broodCount: 5, span: [2, 2],
+    maxHp: 320, interest: 2, eatThreshold: 0, advanced: true,
   },
   {
     // The ANTI-WALL (Collins, Sep 27 2026): a swamp IN the street the column
@@ -148,10 +152,12 @@ export const TOWERS: readonly TowerSpec[] = [
   {
     // Force field: a regenerating shield on every OTHER limb in its radius. The
     // answer to the science caste picking off your outer layer.
+    // A BIG limb: the dome takes four cells of one flat roof. For that it shields a wider
+    // ground and is more than twice as hard to kill. Before it was big: auraRadius 95, maxHp 90.
     family: 'ward', name: 'Ward Membrane', weight: 9,
-    cost: { war: 16 }, range: 0, rate: 0, damage: 0, aoe: 0,
-    wardShield: 70, auraRadius: 95,
-    maxHp: 90, interest: 2, eatThreshold: 0, advanced: true,
+    cost: { war: 16 }, range: 0, rate: 0, damage: 0, aoe: 0, span: [2, 2],
+    wardShield: 70, auraRadius: 120,
+    maxHp: 220, interest: 2, eatThreshold: 0, advanced: true,
   },
   {
     // The shotgun: a fan of quills — brutal up close, spreads thin at range.
@@ -290,9 +296,11 @@ export const TOWERS: readonly TowerSpec[] = [
     // The TRAP CAGE (experiment "Puppet Queen"): never drawn — the experiment hands
     // you one. A royal brought below half hp within its reach is CAUGHT and grafted:
     // she fights her own, leading your side (a puppet, no leash).
+    // A BIG limb: a cage that holds a queen takes four cells of one flat roof. For that it
+    // reaches further and is twice as hard to kill. Before it was big: range 50, maxHp 200.
     family: 'cage', name: 'Trap Cage', weight: 0,
-    cost: { war: 15 }, range: 50, rate: 0, damage: 0, aoe: 0,
-    maxHp: 200, interest: 3, eatThreshold: 0, advanced: true, hits: 'ground',
+    cost: { war: 15 }, range: 70, rate: 0, damage: 0, aoe: 0, span: [2, 2],
+    maxHp: 400, interest: 3, eatThreshold: 0, advanced: true, hits: 'ground',
   },
 ];
 

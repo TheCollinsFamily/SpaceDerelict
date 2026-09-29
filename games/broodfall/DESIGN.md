@@ -495,6 +495,56 @@ types → our kinds, with risk values and the faction audit).
 - The asset has BASE INTEREST: researchers trickle in from minute one — a crashed alien bioweapon is inherently fascinating — so science meat exists before the first lure.
 - **REJECTED (Collins): "instability" — random tower death/mutation on over-modification.** Torching a run-long plan at the payoff moment is the one sin the genre cannot commit. No RNG destruction of player investment, ever.
 
+### BIG limbs: towers that stand on several cells (Collins, Sep 29 2026 — BUILT Sep 29)
+
+His words: "how do we handle towers that appear over multiple squares? we should have some
+of those, they are a core part of the strategy in tower defence." And: "towers will need to
+be rotated to fit certain positions."
+
+- **The rule.** A big limb stands on a rectangle of cells (`span` in `content/data.ts`,
+  [across, along]). Every cell of it must be the SAME flat roof (one kind of ground, one
+  height), held by the creep, and free. It stands in the middle of its ground. Reading the
+  city for a roof wide enough is the new placement question.
+- **Pointing.** The player points at a cell; the limb takes a legal footprint that HOLDS
+  that cell (of several that would do, the first from the north-west). The preview lights
+  every cell it will take, green or red. There is no separate "anchor" to learn.
+- **A limb longer than it is wide is turned to fit** with the same right-click that turns a
+  limb that aims one way; a quarter turn swaps its two sides. No limb in the game is long
+  yet: the rule is built and tested (`tests/span.test.ts`) and waits for the first one.
+- **A big limb lives while the creep holds ANY of its ground,** and gives all of its ground
+  back when it is eaten or dies. An enemy reaches it from a street beside any of its cells.
+- **It is paid for the ground it takes.** Same price as before, four times the ground: so
+  each is worth more than it was on one cell. What each was is in the comment over it.
+
+| Big limb | Ground | What it was on one cell | What it is |
+|---|---|---|---|
+| Broodmother | 2 by 2 | 3 broodlings, 140 hp | 5 broodlings, 320 hp |
+| Ward Membrane | 2 by 2 | shields within 95, 90 hp | shields within 120, 220 hp |
+| Trap Cage | 2 by 2 | reaches 50, 200 hp | reaches 70, 400 hp |
+
+- **Which limbs are big is Collins's to change:** one field, `span`, and `big: true` on the
+  same limb in `tools/art/limbs.mjs` (a test holds the two lists to each other), then
+  `node tools/art/make.mjs limb <family> --bake`.
+- **MEASURED, and why the Spore Bombard is not big.** It was the first choice (the siege
+  piece). Big, it cost the scripted player one win in ten (3/10, the guard's floor) whatever
+  it was paid: five payments were tried and four of them fell UNDER the guard. With the
+  three above the balance is where it was: naive hold-12 4/10, placement guardrail 4:0.
+  The bombard stands on one cell, unchanged.
+
+### The camera turns (Collins, Sep 29 2026 — BUILT Sep 29)
+
+His words: "as the user with E or Q moves the screen around (necessary for most gameplay) we
+would get a 'doom effect'" if towers had one picture.
+
+- **Q and E turn the board a quarter turn** (and two buttons on the board do the same, with
+  HOME beside them). What was hidden behind a block is seen from the other side. The place
+  in the middle of the screen stays in the middle through a turn.
+- **A limb faces a way in the WORLD,** one of four: the way the player turned it, else the
+  way of what it last fought, else south. Two pictures of it are drawn, from the front and
+  from behind; the other two ways are those mirrored. When the camera turns, another side
+  of the limb is seen. It never turns to face the camera.
+- A limb that is the same all the way round has one picture: 15 of the 36 have two.
+
 ### Cannibalize-to-modify
 - When paying for a new tower you may cannibalize an existing tower to modify the new one; modifications stack based on how the eaten tower works and looks.
 - **Interaction rule (Collins, Sep 26 2026): no mode toggle, ever.** His words after trying the "FEED A LIMB" button flow: "you have to hit cannibalize first — that's super unintuitive. What I expected: a special UI when I hovered over something that could be cannibalized, and it was removed and its part of the payment cost was made on click." So: with a card armed, hovering one of your towers shows the cannibalize affordance (highlight + salvage preview in the hint); clicking it eats the limb ON THE SPOT — salvage meat (60% of its cost) is credited immediately as part of paying for the build, and its full trait history banks into the next build. Eating two limbs before placing stacks both histories. The general principle: actions live on the object they act on, discovered by hover — never behind an armed mode the player must know to enter first.

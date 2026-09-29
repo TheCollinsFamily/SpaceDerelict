@@ -19,7 +19,12 @@ const PORT = 5199;
 const args = process.argv.slice(2);
 const nameAt = args.indexOf('--name');
 const name = nameAt >= 0 ? args[nameAt + 1] : 'staged';
-const families = args.filter((a, i) => !a.startsWith('--') && (nameAt < 0 || i !== nameAt + 1));
+// --turn 1: the camera is turned that many quarter turns. --facing N: every limb is turned to face that way.
+const valueOf = (flag) => { const i = args.indexOf(flag); return i >= 0 ? args[i + 1] : undefined; };
+const turn = Number(valueOf('--turn') ?? 0);
+const facing = valueOf('--facing');
+const values = new Set(['--name', '--turn', '--facing'].map((f) => args.indexOf(f)).filter((i) => i >= 0).map((i) => i + 1));
+const families = args.filter((a, i) => !a.startsWith('--') && !values.has(i));
 
 function freePort() {
   try {
@@ -47,28 +52,37 @@ try {
   await page.goto(`http://localhost:${PORT}/?seed=11&autostart=1&speed=0`);
   await page.waitForFunction(() => window.broodfall !== undefined, null, { timeout: 30000 });
   await page.evaluate(() => window.broodfall.step(3));
-  const placed = await page.evaluate((fams) => {
+  const placed = await page.evaluate(([fams, facing]) => {
     const s = window.broodfall.sim;
     s.meat.war = 9000; s.meat.science = 9000; s.meat.royal = 50;
     // Roofs with creep on them, nearest the core first, a cell apart from each other.
     const W = s.cfg.gridW;
     const cells = [];
     for (let c = 0; c < s.map.cells.length; c++) if (s.canBuildTower(c)) cells.push(c);
+    const at = (c) => [c % W, Math.floor(c / W)];
     const d = (c) => Math.hypot((c % W) - (s.map.coreCell % W), Math.floor(c / W) - Math.floor(s.map.coreCell / W));
     cells.sort((a, b) => d(a) - d(b));
     const taken = [];
-    const free = (c) => taken.every((t) => Math.abs((t % W) - (c % W)) + Math.abs(Math.floor(t / W) - Math.floor(c / W)) >= 2);
+    // A cell apart from every cell that is taken: of a big limb, every cell of its ground.
+    const apart = (c) => taken.every((t) => Math.max(Math.abs(at(t)[0] - at(c)[0]), Math.abs(at(t)[1] - at(c)[1])) >= 2);
     const out = [];
     for (const family of fams) {
-      const cell = cells.find(free);
-      if (cell === undefined) break;
+      const cell = cells.find((c) => { const g = s.groundFor(c, family, 'S'); return g !== null && g.every(apart); });
+      if (cell === undefined) { out.push(`${family}: no room`); continue; }
+      const ground = s.groundFor(cell, family, 'S');
       s.hand[0] = { id: 900000 + out.length, family, free: true };
       const r = s.issue({ kind: 'build', cardIndex: 0, cell, facing: 'S' });
-      if (r.ok) { taken.push(cell); out.push(family); } else out.push(`${family}: ${r.err}`);
+      if (r.ok) {
+        taken.push(...ground);
+        out.push(family);
+        // Turned by hand, to be looked at from that side (the renderer draws the way a limb faces).
+        if (facing) s.towers[s.towers.length - 1].facing = facing;
+      } else out.push(`${family}: ${r.err}`);
     }
     return out;
-  }, families);
+  }, [families, facing ?? null]);
   console.log(`placed: ${placed.join(', ')}`);
+  if (turn) await page.evaluate((n) => window.broodfall.turnBy(n), turn);
   await page.evaluate(() => window.broodfall.step(2));
   const canvas = page.locator('#stage canvas');
   await page.waitForTimeout(500);

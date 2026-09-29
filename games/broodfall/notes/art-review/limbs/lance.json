@@ -1,9 +1,14 @@
 {
  "family": "lance",
- "frames": 16,
- "atlasKB": 112,
+ "frames": 32,
+ "atlasKB": 234,
  "failed": 0,
  "checks": [
+  {
+   "name": "where it stands is marked",
+   "ok": true,
+   "value": "0.6, 0.53, 0.76"
+  },
   {
    "name": "idle: loop closes",
    "ok": true,
@@ -30,9 +35,54 @@
    "value": "0.0%"
   },
   {
+   "name": "it stands in its cell",
+   "ok": true,
+   "value": "9.3% of it lies in front of its cell"
+  },
+  {
+   "name": "from behind, where it stands is marked",
+   "ok": true,
+   "value": "0.47, 0.73, 0.87"
+  },
+  {
+   "name": "from behind, idle: loop closes",
+   "ok": true,
+   "value": 0.55
+  },
+  {
+   "name": "from behind, idle: it moves",
+   "ok": true,
+   "value": 0.19
+  },
+  {
+   "name": "from behind, idle: it is calm",
+   "ok": true,
+   "value": 0.19
+  },
+  {
+   "name": "from behind, idle: inside the frame",
+   "ok": true,
+   "value": "128,96-522,480"
+  },
+  {
+   "name": "from behind, idle: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "from behind, it stands in its cell",
+   "ok": true,
+   "value": "1.5% of it lies in front of its cell"
+  },
+  {
+   "name": "from behind: it has a view",
+   "ok": true,
+   "value": "drawn"
+  },
+  {
    "name": "atlas is under 900 KB",
    "ok": true,
-   "value": "112 KB"
+   "value": "234 KB"
   }
  ]
 }

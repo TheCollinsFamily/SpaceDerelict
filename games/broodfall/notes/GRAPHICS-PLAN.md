@@ -1,11 +1,37 @@
-# Broodfall graphics plan (Sep 29 2026) — PROPOSAL
+# Broodfall graphics plan (Sep 29 2026) — the plan, and what was built from it
 
 Collins: "help me think through how we build out the graphics … knowing what we have
 access to with the rfab api." Then: "my intuition was buildings are better with video" and
 "maybe everything is best with video".
 
 This is the thinking, checked against the code, the RFab backend and two paid probes
-(section 6). Decisions marked **OPEN** are Collins's. Nothing is built into the game yet.
+(section 6). It was written BEFORE the build and is kept as the reasoning.
+
+## 0. What was built (Sep 29 2026, the same day)
+
+Everything below was built, and the OPEN decisions of this plan were settled by building:
+the camera is isometric (2a) and turns; everything alive is video (4); the pipeline is
+section 5 with two steps added (a limb is redrawn in the creep's material before its
+clips; where it stands is marked by eye after them).
+
+| What | How many | What it cost (tokens at $0.00002) |
+|---|---|---|
+| Units: five views in one picture, a walking clip of each | 26 | about $45 |
+| Limbs: design, redrawn in the creep's material, idle and firing clips | 36 | about $65 |
+| Limbs from behind: a still from the front view, the same clips | 15 | about $14 |
+| Tile sets: three floors, four walls, two sheets of props each | 7 new and the first | about $36 |
+| The landing site, the creep, the first set's terrain | | about $6 |
+| The ship: six rooms, planet, exterior, leaders, sketches | | about $12 |
+| Concepts and probes before the build | | about $30 |
+
+Measured prices: a still at high quality 21,100 tokens ($0.42), at medium 6,150 ($0.12); a
+4 s clip at 480p 12,320 ($0.25), at 720p 24,640 ($0.49). Re-rolls ran at about one clip
+in twelve. Where it all is, and what is still missing: `HANDOFF.md`, "The art".
+
+**What the plan got wrong, besides its first draft:** it budgeted limbs with "a facing × 2
+views" only for the twelve that aim one way (section 10), and one view for the rest.
+Collins saw the single view the same day: with a camera that turns, a tower that always
+shows the camera the same side is the "doom effect". Every lopsided limb has two views now.
 
 **The first draft of this plan dropped video for limbs in favour of 3D models. That was
 wrong.** Collins's intuition held up in the probes: video is the first choice for

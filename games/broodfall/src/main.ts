@@ -106,7 +106,24 @@ const nextFacing = (d: RootDir): RootDir => FACING_ORDER[(FACING_ORDER.indexOf(d
 
 function selectedIsDirectional(): boolean {
   const fam = selectedCard !== null ? sim.hand[selectedCard]?.family : undefined;
-  return fam !== undefined && !!towerSpec(fam).directional;
+  if (fam === undefined) return false;
+  const span = towerSpec(fam).span;
+  // A limb that is longer than it is wide is turned to fit, as one that aims one way is turned to aim.
+  return !!towerSpec(fam).directional || (span !== undefined && span[0] !== span[1]);
+}
+
+/** The ground a build at this cell would take, and where it could not be built, the ground it would want. */
+function groundAt(cell: number, fam: TowerFamily | undefined, facing: RootDir | undefined): { cells: number[]; valid: boolean } {
+  const legal = sim.groundFor(cell, fam, facing);
+  if (legal) return { cells: legal, valid: true };
+  if (!fam) return { cells: [cell], valid: false };
+  const [sw, sh] = sim.spanOf(fam, facing);
+  const w = sim.cfg.gridW;
+  const x0 = Math.min(cell % w, w - sw);
+  const y0 = Math.min(Math.floor(cell / w), sim.cfg.gridH - sh);
+  const cells: number[] = [];
+  for (let y = y0; y < y0 + sh; y++) for (let x = x0; x < x0 + sw; x++) cells.push(y * w + x);
+  return { cells, valid: false };
 }
 
 const hud = new Hud({
@@ -190,8 +207,11 @@ function updateHint(): void {
       + 'place the new limb to inherit them (or eat another)');
   } else if (selectedCard !== null) {
     const fam = sim.hand[selectedCard]?.family;
+    const span = fam ? towerSpec(fam).span : undefined;
     hud.setHint(selectedIsDirectional()
       ? `place it — it faces ${placeFacing ?? 'the nearest gate'} · RIGHT-CLICK to rotate · Esc to cancel`
+      : span
+        ? `a BIG limb: it needs ${span[0]} by ${span[1]} cells of one flat creeped roof · Q and E turn the view`
       : fam === 'spine' || fam === 'swamp'
         ? 'plug a street — the swarm must go through it'
         : 'place on a creeped block by a street (higher = longer reach) — or click one of your limbs to feed it in');
@@ -587,6 +607,11 @@ function cancelAll(): void {
 
 /** The player's own tower under a world point (click/hover pick radius). */
 function towerNearWorld(x: number, y: number): { id: number } | null {
+  // A big limb is pointed at anywhere on the ground it stands on.
+  const under = sim.cellAt(x, y);
+  for (const t of sim.towers) {
+    if (t.cells?.includes(under)) return t;
+  }
   for (const t of sim.towers) {
     if (Math.hypot(t.pos.x - x, t.pos.y - y) < 22) return t;
   }
@@ -698,12 +723,22 @@ async function boot(): Promise<void> {
   window.addEventListener('keydown', (ev) => {
     if (!(renderer instanceof IsoRenderer) || (ev.target as HTMLElement).tagName === 'INPUT') return;
     const step = 90;
-    if (ev.key === 'Home') renderer.resetView();
+    // Q and E turn the board a quarter turn: what stands behind a block is seen from the other side.
+    if (ev.key === 'q' || ev.key === 'Q') renderer.turnBy(-1);
+    else if (ev.key === 'e' || ev.key === 'E') renderer.turnBy(1);
+    else if (ev.key === 'Home') renderer.resetView();
     else if (ev.key === 'ArrowLeft') renderer.panBy(step, 0);
     else if (ev.key === 'ArrowRight') renderer.panBy(-step, 0);
     else if (ev.key === 'ArrowUp') renderer.panBy(0, step);
     else if (ev.key === 'ArrowDown') renderer.panBy(0, -step);
   });
+  // The same, for a player who has not found the keys.
+  const viewButton = (id: string, act: (r: IsoRenderer) => void): void => {
+    document.getElementById(id)?.addEventListener('click', () => { if (renderer instanceof IsoRenderer) act(renderer); });
+  };
+  viewButton('view-turn-left', (r) => r.turnBy(-1));
+  viewButton('view-turn-right', (r) => r.turnBy(1));
+  viewButton('view-home', (r) => r.resetView());
   // RIGHT-CLICK: rotates a directional card being placed, or a built directional
   // limb under the cursor; otherwise it cancels. (Esc always cancels.)
   renderer.app.canvas.addEventListener('contextmenu', (ev) => {
@@ -782,9 +817,11 @@ async function boot(): Promise<void> {
       }
     }
     const fam = sim.hand[selectedCard!]?.family;
+    const facing = selectedIsDirectional() ? currentPlaceFacing(cell) : undefined;
+    const ground = groundAt(cell, fam, facing);
     renderer.preview = {
-      cell, kind: 'tower', family: fam, valid: sim.canBuildTower(cell, fam),
-      facing: selectedIsDirectional() ? currentPlaceFacing(cell) : undefined,
+      cell, cells: ground.cells, kind: 'tower', family: fam, valid: ground.valid,
+      facing,
       pips: sim.pendingPips,
     };
   });
@@ -892,6 +929,13 @@ async function boot(): Promise<void> {
     /** 'iso' (the baked art) or 'top' (the old shapes). */
     view(): 'iso' | 'top' {
       return renderer instanceof IsoRenderer ? 'iso' : 'top';
+    },
+    /** How many quarter turns the view has turned (0 on the old board), and turning it. */
+    turn(): number {
+      return renderer instanceof IsoRenderer ? renderer.turn() : 0;
+    },
+    turnBy(quarters: number): void {
+      if (renderer instanceof IsoRenderer) renderer.turnBy(quarters);
     },
     /** The tile set the board is drawn with ('' on the old board, or when the manifest names none). */
     biome(): string {

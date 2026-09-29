@@ -1,4 +1,4 @@
-# Broodfall style bible — v5 (Sep 29 2026)
+# Broodfall style bible — v6 (Sep 29 2026)
 
 The visual language of the game, and the prompt blocks every generated asset shares.
 Concept pictures are in `notes/concepts/2026-09-29/`; the script is
@@ -77,7 +77,28 @@ Concept pictures are in `notes/concepts/2026-09-29/`; the script is
     westernized view of the orient … and remember in the architectural style of this species,
     so not those directly … any other tile sets that would be cool? if you can think of them
     make them." See "The tile sets" below.
-22. **Towers are drawn from one side only.** "Towers (which don't need multiple angles)."
+22. ~~**Towers are drawn from one side only.** "Towers (which don't need multiple angles)."~~
+    WITHDRAWN by rule 26, the same day.
+23. **A limb stands IN its cell.** Of the restyled limbs on the board: "the towers look way
+    better in terms of how they fit in frame now! that said the way they sit is not working,
+    especially when they are on the side closer to the viewer of a lane … there are two
+    things I think causing this: 1. the convention of the creep not actually going to the
+    edge makes the usable space in a square highly variable and thus visual mess-ups like
+    this, 2. and … um, something? I am sure you will figure it out … also the placement of
+    the central body just makes it look like it's floating." The something was the anchor.
+    See "Where a limb stands" below.
+24. **Where a limb stands is MARKED BY EYE, not computed.** "You actually probably want to
+    manually have something paint the visual center of the bottom of a tower (a vision
+    model). Why? Well consider tall towers or oddly shaped ones, this could cause issues."
+25. **Some towers stand on several squares.** "How do we handle towers that appear over
+    multiple squares? we should have some of those, they are a core part of the strategy in
+    tower defence." DESIGN.md, "BIG limbs".
+26. **Towers need more than one view, and the camera turns.** "I also thought we would be
+    able to get away with just one view of the towers but I am wrong, because towers will
+    need to be rotated to fit certain positions, and as the user with E or Q moves the screen
+    around (necessary for most gameplay) we would get a 'doom effect' if we did that."
+27. **Everything on the board is as sharp as everything else.** "The core is looking a
+    different resolution than the towers, which looks awful."
 
 ## NO REAL RELIGIOUS SYMBOL, EVER (a rule from Claude, Sep 29 2026; Collins can overrule it)
 
@@ -154,6 +175,59 @@ The theme accent (next section) stays: it is the one thing on a limb that is not
 Design stills are kept as `art-src/limbs/<family>/still.png`, the redrawn ones as
 `styled.png`; clips are made from the redrawn one. To compare in the engine:
 `node tools/shot-limbs.mjs`.
+
+### Where a limb stands (rules 23 and 24)
+
+A limb is a picture of something standing on the ground. The game puts ONE point of that
+picture on the middle of a cell. Three things were wrong, and all three had to be right:
+
+1. **The point was its lowest pixel** (the front tip of its skirt of roots). So every limb
+   stood on the back half of its cell and hung over whatever was behind it; on the near
+   side of a street it hung over the street. The point is now **the middle of what it
+   stands on**: the middle of the WIDEST row of its skirt.
+2. **That point is marked by eye** (rule 24), in `tools/art/limbs.mjs`: `foot: [x, y, width]`
+   and, of a view from behind, `backFoot`. `node tools/art/feet.mjs` draws every limb under
+   a grid of tenths with its cell under it; whoever runs it (a vision model, or a person)
+   reads the grid and writes the mark. The computer's own guess is drawn when there is no
+   mark: on Sep 29 it was wrong on a third of them (it put the spitter and the mister on a
+   cell half their size, and gave up on five). A limb with no mark FAILS its bake.
+3. **The creep stopped short of every edge,** so the ground a limb had was whatever the
+   ragged edge left of the cell. It now runs to the edge of every roof it holds and down the
+   wall; it stops ragged only where the same surface goes on bare; and the cells a limb
+   stands on are whole.
+
+What holding roofs to their edges cost, and what paid it back: a board the body has taken
+became one flat red carpet, because the bare rim had been outlining every block. Roofs read
+as roofs again by three things: the skin is lighter the higher it lies; a lit lip runs along
+the two front edges of every roof, where the skin rolls over; and a roof at the foot of a
+taller block lies in its shade.
+
+**The landing site** had the same fault (anchored a third of itself too far back, it lay
+over the roofs behind its square) and one more: it was drawn from the middle of the core's
+cell, which is half a cell off the middle of the square it fell on. It is marked
+(`CORE_FOOT` in `tools/art/templates/terrain.mjs`), drawn in the middle of its square and as
+wide as the square, and the skin under it is as thick as on a roof.
+
+To look at: `notes/art-review/limbs/<family>-standing.jpg` (every way it can face, with
+its cell), `notes/art-review/terrain/core-standing.jpg`, `notes/art-review/feet/`.
+
+### Two views of a limb, and the camera that turns (rule 26)
+
+- A limb faces one of four ways IN THE WORLD. Two pictures are drawn: from the front (it
+  faces the lower left) and from behind (it faces the upper right). The other two ways are
+  those mirrored.
+- The view from behind is drawn FROM the front view (`BACK` in `tools/art/limbs.mjs`), so it
+  is the same organism; each limb says what is seen of it from behind (`back:`). Look at the
+  still before paying for its clips: `node tools/art/make.mjs limb <family> --stills`.
+- 15 of the 36 are lopsided and have both. The rest are the same all the way round.
+- Cost of a view from behind: a still and one or two clips, about $0.90.
+
+### As sharp as each other (rule 27)
+
+What is drawn bigger needs bigger frames and a bigger clip. A limb of one cell: a 640 px
+clip, 256 px frames. A big limb (two cells wide): 384 px frames. The landing site (four
+cells wide): a 960 px clip (`resolution: '720p'`), 640 px frames. At 320 it had half the
+sharpness of the limbs round it.
 
 ## The tile sets (rule 21)
 

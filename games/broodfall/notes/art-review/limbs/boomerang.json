@@ -1,9 +1,14 @@
 {
  "family": "boomerang",
  "frames": 16,
- "atlasKB": 155,
+ "atlasKB": 184,
  "failed": 0,
  "checks": [
+  {
+   "name": "where it stands is marked",
+   "ok": true,
+   "value": "0.51, 0.8, 0.88"
+  },
   {
    "name": "idle: loop closes",
    "ok": true,
@@ -35,9 +40,14 @@
    "value": "0% change"
   },
   {
+   "name": "it stands in its cell",
+   "ok": true,
+   "value": "0.5% of it lies in front of its cell"
+  },
+  {
    "name": "atlas is under 900 KB",
    "ok": true,
-   "value": "155 KB"
+   "value": "184 KB"
   }
  ]
 }

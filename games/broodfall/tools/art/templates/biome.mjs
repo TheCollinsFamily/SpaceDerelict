@@ -19,7 +19,7 @@ import { readImage } from '../lib/img.mjs';
 import { LEVEL_H, TILE_H, TILE_W, WALL_SPAN } from '../lib/iso.mjs';
 import { ART, REVIEW, SRC, putEntry } from '../lib/manifest.mjs';
 import { BIOMES, NO_SYMBOLS, SPECIES, SPECIES_THINGS, biome, roofSets } from '../biomes.mjs';
-import { creepTiles, cutProps, dripTiles, floorTiles, packSprites, townPicture, wallTiles } from './terrain.mjs';
+import { creepTiles, cutProps, dripTiles, edgeTiles, floorTiles, packSprites, townPicture, wallTiles } from './terrain.mjs';
 
 const TERRAIN = path.join(SRC, 'terrain');
 const KINDS = ['plain', 'science', 'meat', 'highground'];
@@ -126,7 +126,7 @@ export function bakeBiome(id) {
   const creep = path.join(TERRAIN, 'creep.png');
   if (fs.existsSync(creep)) {
     const skin = readImage(creep, { w: 512, h: 512 });
-    for (const s of [...creepTiles(skin), ...dripTiles(skin)]) by[s.id] = s.img;
+    for (const s of [...creepTiles(skin), ...dripTiles(skin), ...edgeTiles()]) by[s.id] = s.img;
   }
   const picture = townPicture(by, roofs.map((s) => s.id), path.join(REVIEW, 'biomes', `${b.id}.jpg`), streets.map((s) => s.id));
   fs.writeFileSync(path.join(REVIEW, 'biomes', `${b.id}.json`), `${JSON.stringify({ id: b.id, name: b.name, checks: checks.map(([name, ok, detail]) => ({ name, ok, detail })) }, null, 1)}\n`);

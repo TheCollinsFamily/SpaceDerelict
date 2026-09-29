@@ -90,7 +90,9 @@ describe('campaign config: the run obeys the campaign', () => {
     const card = s.hand.findIndex((c) => c.family === 'cage');
     expect(card).toBeGreaterThanOrEqual(0);
     let cell = -1;
-    for (let c = 0; c < s.map.cells.length && cell < 0; c++) if (s.canBuildTower(c)) cell = c;
+    // The cage is a BIG limb: it is pointed at a roof it fits on (there is one from the first second).
+    for (let c = 0; c < s.map.cells.length && cell < 0; c++) if (s.canBuildTower(c, 'cage')) cell = c;
+    expect(cell).toBeGreaterThanOrEqual(0);
     expect(s.issue({ kind: 'build', cardIndex: card, cell }).ok).toBe(true);
     const cage = s.towers.find((t) => t.family === 'cage')!;
     const p = s as unknown as Priv;

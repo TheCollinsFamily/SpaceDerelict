@@ -36,14 +36,19 @@ process only verified its own assumptions. The repo's CLAUDE.md carries the stan
 
 - Everything is committed and pushed (game and backend; the backend was not touched on
   Sep 29). Both trees clean.
-- 220/220 unit tests pass. Every browser beat below passed on its last run.
+- 250/250 unit tests pass. Every browser beat below passed on its last run.
 - **The game has art.** The board is isometric and drawn with baked pictures: all 26 enemy
   kinds, all 36 limb families, the core, the creep, eight tile sets, and the ship. See
   "The art" below for what is there, what is missing, and what is Collins's to decide.
 - **`art-src/` exists ONLY on Collins's PC** (about 420 MB of raw stills and clips; it is
   git-ignored because the repo is public and the files are big). Everything baked from it
-  IS committed (`public/art/`, about 17 MB). Losing `art-src/` loses the ability to re-bake
-  without paying again (about $130 of tokens so far). It needs a durable home: OPEN.
+  IS committed (`public/art/`, about 20 MB). Losing `art-src/` loses the ability to re-bake
+  without paying again (about $150 of tokens so far). It needs a durable home: OPEN.
+- **Built on Sep 29 after Collins saw the first painted board** (his words are rules 23 to
+  27 of `assets/style-bible.md`): limbs stand in the middle of their cells by a footing
+  MARKED BY EYE; the creep runs to the edge of every roof; the landing site lies in its
+  square and is as sharp as the limbs; the camera turns (Q and E); limbs have a view from
+  behind; three limbs are BIG (DESIGN.md, "BIG limbs").
 - **Owed, and Collins's call:** the RFab **backend deploy** that ships
   `POST /api/broodfall/ship-ai` (backend only, no migration). Until then, live YOKE hits
   api.rfab.ai, gets a 404, and falls back to the scripted YOKE, which says "rfab.ai does
@@ -218,8 +223,19 @@ own words. `notes/GRAPHICS-PLAN.md` holds the pipeline, the probes and the costs
   its frame, no tint of the background left on its outline, light to load) and writes
   `notes/art-review/<kind>/<id>.jpg` and `.json`. Look at the picture: checks pass on
   things that are wrong.
+- **Where a limb stands is marked by eye, never computed** (Collins's rule 24). After
+  making or remaking a limb: `node tools/art/feet.mjs <family>` (and `--back`), LOOK at
+  `notes/art-review/feet/`, read the grid of tenths, write `foot: [x, y, width]` (and
+  `backFoot`) on the limb in `tools/art/limbs.mjs`: the middle of the WIDEST row of its
+  skirt, and that row's width without the thin tips of its roots. Then `--bake`, and look
+  at `notes/art-review/limbs/<family>-standing.jpg`. A limb with no mark fails its bake.
+- **A lopsided limb has a view from behind** (`back:` on the limb says what is seen of it).
+  `node tools/art/make.mjs limb <family> --stills` draws only that picture: look at it
+  before paying for its clips.
+- **A BIG limb** (`big: true` on the limb, `span` in `content/data.ts`; a test holds the
+  two to each other) is baked from 384 px frames.
 - **What is there:** 26 units (walking, five views each; the soldier also attacks), 36
-  limbs (idle, and firing where they fire), the core, the creep, 8 tile sets, the ship
+  limbs (idle, and firing where they fire; 15 of them from behind too), the core, the creep, 8 tile sets, the ship
   (six rooms, planet, exterior, three faction leaders, YOKE's six faces, 14 sketches).
 - **What is NOT there** (code-drawn stand-ins are used): attack clips for 25 of the 26
   units (`node tools/art/make.mjs unit <ids> --attack`, about $1.25 each); death clips;
@@ -252,6 +268,14 @@ own words. `notes/GRAPHICS-PLAN.md` holds the pipeline, the probes and the costs
 - **Taking a colour's tint out of a whole picture changes its colours:** magenta out of a
   red tractor leaves a tan one. Stills of painted things are cleaned along their outline
   only (`keyFrame(..., { spill: 'edge' })`); clips everywhere.
+- **A test that builds "whatever card is first" on "any buildable cell" breaks when a limb
+  becomes big.** Point it at ground the limb fits (`canBuildTower(cell, family)`), or shed
+  big cards as the helpers in `tests/sim.test.ts` shed street limbs. Its assertions stay.
+- **The scripted player's win rate is not a dial.** Making the Spore Bombard stronger made
+  the bot win LESS (five payments tried, four under the guard). Any change to a limb
+  reshuffles ten deterministic runs: measure, do not reason.
+- **Never rebuild (`npm run build`) while browser beats are running:** they play the built
+  game, and it changes under them.
 - **Two processes writing `public/art/manifest.json` at once can lose an entry.** After
   running bakes side by side, bake once more (`--bake`, free) and run `npm test`: it
   counts every unit, limb and tile set.
@@ -265,10 +289,12 @@ npm run build
 npm run test:visual  # headless chromium: HUD + per-region pixel checks
 npm run test:input   # real player gestures
 npm run test:endgame # full in-browser run to the victory overlay
-node tools/shot-iso.mjs       # the isometric board: art loads, clicks reach limbs on roofs, frame rate
+node tools/shot-iso.mjs       # the isometric board: art loads, clicks reach limbs on roofs FROM ALL FOUR SIDES, frame rate
+node tools/shot-player-path.mjs  # the DEV server, the menu, a click on deploy, play: what Collins double-clicks
 node tools/shot-biomes.mjs    # every tile set played into its first siege
 node tools/shot-ship.mjs      # the ship's rooms, the planet, YOKE, the sketches
-node tools/shot-limbs.mjs spitter maw --name look   # a staged scene for LOOKING at limbs
+node tools/shot-limbs.mjs spitter maw --name look   # a staged scene for LOOKING at limbs (--facing N: from behind; --turn 1: the camera turned)
+node tools/shots-to-jpg.mjs                         # before committing: the beats' PNGs are ignored by git, their JPEG copies are committed
 node tools/art/lib/selftest.mjs                     # the sheet cutter and the keyer (free)
 node tools/shot-evolve.mjs    # EVOLVE by clicks
 node tools/shot-engines.mjs   # the utility engines
@@ -287,7 +313,7 @@ RFAB_API_BASE=http://localhost:3011 RFAB_API_BEARER=<jwt> node tools/shot-yoke-l
   starts it (`npm start` or `Play Broodfall.bat`) and played in the page.
 - **The AI-play API** is `window.broodfall`: `step(n)`, `play(cmd)`, `summary()`,
   `buildableCells()`, `camera()`, `worldToScreen(x,y)`, `cellAtClient(x,y)`, `view()`,
-  `biome()`, `artMissing()`. URL params: `?seed= &auto=1 &autostart=1 &speed= &directive=
+  `biome()`, `turn()`, `turnBy(n)`, `artMissing()`. URL params: `?seed= &auto=1 &autostart=1 &speed= &directive=
   &entrances= &campaign=run|ship &view=top &biome=<tile set>`.
 - Browser beats that start in the campaign should set
   `localStorage['broodfall-yoke'] = {"mode":"scripted"}`, so they neither spend tokens
@@ -295,7 +321,8 @@ RFAB_API_BASE=http://localhost:3011 RFAB_API_BEARER=<jwt> node tools/shot-yoke-l
 
 ## Balance (re-measure; don't trust memory)
 
-- Naive hold-12 wins 4/10 seeds (the guard is ≥3/10). Guardrail flips are 4:0.
+- Naive hold-12 wins 4/10 seeds (the guard is ≥3/10). Guardrail flips are 4:0. Measured
+  again on Sep 29 with three limbs BIG: the same. (With the Spore Bombard big: 3/10.)
 - `threatPerTier` 21, tier 6 at 192.
 - Always measure over 10 seeds, never 3–4. ITERATION addenda 3–20 carry the tuning history.
 
@@ -310,6 +337,10 @@ RFAB_API_BASE=http://localhost:3011 RFAB_API_BEARER=<jwt> node tools/shot-yoke-l
 5. **City life:** civilians fleeing the crash.
 6. **The rest of the art** (see "The art" above for what is missing): attack clips for 25
    units, death clips, state sprites, shadows under units, the HUD's look.
+   - **The first LONG limb** (longer than it is wide, turned to fit): the rule is built and
+     tested and no limb uses it. Collins asked for turning to fit; which limb is his call.
+   - **Props do not turn with the camera:** a roof prop or a parked car is one picture, seen
+     the same from all four sides. Walls and floors are right from every side.
 7. **Surgery vulnerability:** mid-siege cannibalize drama.
 8. **Campaign polish found in the audit, not yet asked for:**
    - Faction contact comes after N captures, not through "some missions".

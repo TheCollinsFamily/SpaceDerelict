@@ -15,8 +15,9 @@ import { Sim, enemySpec, towerSpec, towerStats } from '../sim/sim';
 import type { CreepSource, Enemy, Tower } from '../sim/types';
 import { BoardArtSet, type Clip, type LimbArt, type UnitArt } from './art';
 import {
-  depth, headingOf, isoGeo, openSides, pick, project, unproject, viewOf, wallIndex,
-  type Heading, type IsoGeo, type Pt,
+  boardCell, creepRunsOn, depth, facingOf, headingOf, isoGeo, limbView, openSides, pick, project, unproject,
+  viewCell, viewOf, viewSize, wallIndex,
+  type Facing, type Heading, type IsoGeo, type Pt, type Turn,
 } from './iso';
 import { CASTE_COLORS, ENEMY_SIZE, FAMILY_COLORS, Renderer } from './render';
 
@@ -24,8 +25,14 @@ import { CASTE_COLORS, ENEMY_SIZE, FAMILY_COLORS, Renderer } from './render';
 const K = 1.9;
 /** Art pixels of body width for each world pixel of a unit's radius. */
 const UNIT_PX = 3.6;
-/** The mound a roof limb grows from, as a share of its cell's width. */
-const LIMB_FILL = 0.8;
+/**
+ * What a roof limb stands on (its skirt of roots), as a share of the width of the ground it
+ * takes. The same number as FILL in tools/art/lib/foot.mjs: the solid skirt lies inside the
+ * cell and the thin tips of its roots reach a little over the edge.
+ */
+const LIMB_FILL = 0.75;
+/** What the landing site stands on, as a share of the width of the square it fell on. */
+const CORE_FILL = 0.92;
 /** How high fliers fly, in levels. */
 const FLY_UP = 2.4;
 /** How strongly a unit shows through what stands in front of it. */
@@ -39,6 +46,15 @@ const ROOF_PROPS: Record<string, string[]> = {
   highground: ['dome-gold', 'spire', 'dome-paper', 'dome-gold', 'spire'],
 };
 const STREET_PROPS = ['lamp', 'signal', 'sign', 'car'];
+/** What the skin is multiplied by on the street and at one, two and three levels: the higher it lies, the lighter. */
+const SKIN_LIGHT = [0xffffff, 0xb4b4b4, 0xdcdcdc, 0xffffff];
+
+/** Two colours multiplied, as a tint is. */
+function mix(a: number, b: number): number {
+  const ch = (n: number, k: number) => (n >> k) & 255;
+  const m = (k: number) => Math.round((ch(a, k) * ch(b, k)) / 255) << k;
+  return m(16) | m(8) | m(0);
+}
 
 interface UnitView {
   sprite: Sprite; ghost: Sprite; art: UnitArt;
@@ -47,7 +63,9 @@ interface UnitView {
 }
 interface LimbView {
   sprite: Sprite; shade: Sprite; art: LimbArt; family: string;
-  cooldown: number; fireT: number; fireDur: number; mirror: boolean; seen: number;
+  cooldown: number; fireT: number; fireDur: number; seen: number;
+  /** The way it faces in the WORLD: when the camera turns, another side of it is seen. */
+  facing: Facing;
 }
 interface ShotView { up0: number; ttl0: number; seen: number }
 
@@ -59,7 +77,15 @@ export class IsoRenderer extends Renderer {
   private groundBox = new Container();
   private groundG = new Graphics();
   /** The shade a wall throws on the street at its foot: what makes a street read as a channel. */
+  private shadeBox = new Container();
   private shadeG = new Graphics();
+  /** How many quarter turns the camera has turned (Q and E). */
+  private turned: Turn = 0;
+  /** The world point to keep in the middle of the screen through a turn. */
+  private keep: Pt | null = null;
+  /** The square the landing site fell on: its middle, and how many cells across it is. */
+  private square: { x: number; y: number; across: number } | null = null;
+  private coreShade: Sprite | null = null;
   private sorted = new Container();
   private ghosts = new Container();
   private aimBox = new Container();
@@ -103,11 +129,12 @@ export class IsoRenderer extends Renderer {
     this.sorted.sortableChildren = true;
     this.flat.sortableChildren = true;
     this.evolvedRing = false;
-    this.groundBox.addChild(this.shadeG, this.groundG);
+    this.shadeBox.addChild(this.shadeG);
+    this.groundBox.addChild(this.groundG);
     this.aimBox.addChild(this.aimG);
     this.marksBox.addChild(this.marksG);
     this.marksBox.scale.set(K);
-    this.world.addChild(this.floors, this.creepFloor, this.flat, this.groundBox, this.sorted, this.ghosts, this.aimBox, this.marksBox);
+    this.world.addChild(this.floors, this.creepFloor, this.flat, this.shadeBox, this.groundBox, this.sorted, this.ghosts, this.aimBox, this.marksBox);
     this.ready = true;
   }
 
@@ -115,12 +142,38 @@ export class IsoRenderer extends Renderer {
 
   private setGeo(sim: Sim): void {
     const t = this.art.terrain!;
-    this.geo = isoGeo(t.tile, t.level, sim.cfg.cellPx);
+    this.geo = isoGeo(t.tile, t.level, sim.cfg.cellPx, this.turned, sim.cfg.gridW, sim.cfg.gridH);
     const g = this.geo;
-    // World coordinates laid on the ground: what the old drawing code draws is drawn flat on the street.
-    const ground = new Matrix(g.a / g.cell, g.b / g.cell, -g.a / g.cell, g.b / g.cell, 0, 0);
+    // World coordinates laid on the ground, as the turned camera sees it: what the old
+    // drawing code draws is drawn flat on the street.
+    const o = project(g, 0, 0);
+    const x = project(g, 1, 0);
+    const y = project(g, 0, 1);
+    const ground = new Matrix(x.x - o.x, x.y - o.y, y.x - o.x, y.y - o.y, o.x, o.y);
     this.groundBox.setFromMatrix(ground);
     this.aimBox.setFromMatrix(ground);
+    // The view's own cells laid on the ground: a cell is one unit each way.
+    this.shadeBox.setFromMatrix(new Matrix(g.a, g.b, -g.a, g.b, 0, 0));
+  }
+
+  /** How many quarter turns the camera has turned. */
+  turn(): number {
+    return this.turned;
+  }
+
+  /**
+   * Turn the camera by quarter turns (E: one way, Q: the other). What is in the middle of
+   * the screen stays there; everything standing on the board is drawn again from its new side.
+   */
+  turnBy(quarters: number): void {
+    const sim = this.simRef;
+    if (!sim || !this.ready) return;
+    const mid = { x: (this.app.renderer.width / 2 - this.camX) / this.camScale, y: (this.app.renderer.height / 2 - this.camY) / this.camScale };
+    this.keep = unproject(this.geo, mid.x, mid.y);
+    this.turned = ((((this.turned + Math.round(quarters)) % 4) + 4) % 4) as Turn;
+    this.setGeo(sim);
+    this.mapSig = '';
+    this.camInit = false;
   }
 
   private heightOf(sim: Sim, cell: number): number {
@@ -162,6 +215,12 @@ export class IsoRenderer extends Renderer {
     const vh = this.app.renderer.height;
     this.fit = Math.min(vw / (maxX - minX), vh / (maxY - minY), 1.1);
     this.mid = { x: (minX + maxX) / 2, y: (minY + maxY) / 2 };
+    if (this.keep) {
+      // After a turn: the place that was in the middle of the screen is in the middle of it still.
+      const p = project(g, this.keep.x, this.keep.y);
+      this.pan = { x: p.x - this.mid.x, y: p.y - this.mid.y };
+      this.keep = null;
+    }
     const scale = this.fit * this.zoom;
     const tx = vw / 2 - (this.mid.x + this.pan.x) * scale;
     const ty = vh / 2 - (this.mid.y + this.pan.y) * scale;
@@ -229,16 +288,17 @@ export class IsoRenderer extends Renderer {
     if (!sim) return unproject(this.geo, s.x, s.y);
     const hit = pick(this.geo, s.x, s.y, (x, y) => this.heightAt(sim, x, y));
     const under = sim.cellAt(hit.x, hit.y);
-    if (hit.top && sim.towers.some((t) => t.cell === under)) return { x: hit.x, y: hit.y };
+    if (hit.top && sim.towers.some((t) => sim.cellsOf(t).includes(under))) return { x: hit.x, y: hit.y };
     // A limb is taller than its cell: a click on its body is a click on the limb.
     let best: Tower | null = null;
     for (const t of sim.towers) {
       const v = this.limbs.get(t.id);
       if (!v || v.art.flat) continue;
       const p = this.onGround(sim, t.pos.x, t.pos.y);
-      const w = v.art.frame * Math.abs(v.sprite.scale.x) * v.art.body;
-      const h = v.art.frame * v.sprite.scale.y * 0.8;
-      if (Math.abs(s.x - p.x) < w * 0.42 && s.y < p.y && s.y > p.y - h) {
+      // Its body rises from the middle of what it stands on: as wide as that, and most of a frame high.
+      const w = (2 * this.geo.a * LIMB_FILL * this.sizeOf(sim, t)) / Math.SQRT2;
+      const h = v.art.frame * v.sprite.scale.y * 0.7;
+      if (Math.abs(s.x - p.x) < w * 0.5 && s.y < p.y + w * 0.2 && s.y > p.y - h) {
         if (!best || depth(this.geo, t.pos.x, t.pos.y) > depth(this.geo, best.pos.x, best.pos.y)) best = t;
       }
     }
@@ -297,16 +357,52 @@ export class IsoRenderer extends Renderer {
     this.nodes.clear();
     this.shots.clear();
     this.core = null;
+    this.coreShade = null;
+    this.square = this.squareOf(sim);
     this.camInit = false;
     this.lastSimTime = sim.time;
   }
 
+  /**
+   * The open square the landing site fell on: the square of open ground round the core's
+   * cell. The core is drawn in the MIDDLE of it and as wide as it, so that it lies on the
+   * square and not over the roofs round it.
+   */
+  private squareOf(sim: Sim): { x: number; y: number; across: number } {
+    const W = sim.cfg.gridW;
+    const H = sim.cfg.gridH;
+    const open = (x: number, y: number) => x >= 0 && y >= 0 && x < W && y < H && sim.map.cells[y * W + x] === CellType.Plaza;
+    const cx = sim.map.coreCell % W;
+    const cy = Math.floor(sim.map.coreCell / W);
+    let x0 = cx, x1 = cx, y0 = cy, y1 = cy;
+    if (open(cx, cy)) {
+      while (open(x0 - 1, cy)) x0--;
+      while (open(x1 + 1, cy)) x1++;
+      while (open(cx, y0 - 1)) y0--;
+      while (open(cx, y1 + 1)) y1++;
+    }
+    const c = sim.cfg.cellPx;
+    return { x: ((x0 + x1 + 1) / 2) * c, y: ((y0 + y1 + 1) / 2) * c, across: Math.max(2, Math.min(x1 - x0 + 1, y1 - y0 + 1)) };
+  }
+
   // ------------------------------------------------------------ the city
 
-  /** The top-left corner of a cell's tile on the screen, `up` levels above the ground. */
-  private tileAt(cx: number, cy: number, up = 0): Pt {
+  /** The top-left corner of the tile of a cell OF THE VIEW on the screen, `up` levels above the ground. */
+  private tileAt(vx: number, vy: number, up = 0): Pt {
     const g = this.geo;
-    return { x: (cx - cy) * g.a - g.a, y: (cx + cy) * g.b - up * g.level };
+    return { x: (vx - vy) * g.a - g.a, y: (vx + vy) * g.b - up * g.level };
+  }
+
+  /** The same, of a cell of the board. */
+  private tileOf(sim: Sim, cell: number, up = 0): Pt {
+    const v = viewCell(this.geo, cell % sim.cfg.gridW, Math.floor(cell / sim.cfg.gridW));
+    return this.tileAt(v.x, v.y, up);
+  }
+
+  /** How many cells across the ground a limb takes is: a big limb is drawn as big as its ground. */
+  private sizeOf(sim: Sim, t: Tower): number {
+    const n = sim.cellsOf(t).length;
+    return n > 1 ? Math.sqrt(n) : 1;
   }
 
   private add(layer: Container, tex: Texture | null, x: number, y: number, z = 0): Sprite | null {
@@ -318,9 +414,13 @@ export class IsoRenderer extends Renderer {
     return s;
   }
 
-  /** Streets, squares, smoke over the unclaimed city, and the blocks. Built again when a district is claimed. */
+  /**
+   * Streets, squares, smoke over the unclaimed city, and the blocks. Built again when a
+   * district is claimed and when the camera turns. It is built cell by cell OF THE VIEW: the
+   * two faces of a block that are seen are the ones toward the camera, whichever those are.
+   */
   private syncMap(sim: Sim): void {
-    const sig = sim.map.slots.map((s) => (s ? '1' : '0')).join('');
+    const sig = `${this.turned}:${sim.map.slots.map((s) => (s ? '1' : '0')).join('')}`;
     if (sig === this.mapSig) return;
     this.mapSig = sig;
     this.floors.removeChildren().forEach((x) => x.destroy());
@@ -330,30 +430,32 @@ export class IsoRenderer extends Renderer {
     this.props.clear();
     const g = this.geo;
     const W = sim.cfg.gridW;
-    const H = sim.cfg.gridH;
+    const size = viewSize(g);
     const span = this.art.terrain!.wallSpan;
-    const hAt = (x: number, y: number) => (x < 0 || y < 0 || x >= W || y >= H ? 0 : this.heightOf(sim, y * W + x));
-    for (let cy = 0; cy < H; cy++) for (let cx = 0; cx < W; cx++) {
-      const cell = cy * W + cx;
+    const hV = (vx: number, vy: number) => this.heightV(sim, vx, vy);
+    for (let vy = 0; vy < size.h; vy++) for (let vx = 0; vx < size.w; vx++) {
+      const b = boardCell(g, vx, vy);
+      const cell = b.y * W + b.x;
       const type = sim.map.cells[cell];
-      const p = this.tileAt(cx, cy);
-      const ij = `${cx % 4}${cy % 4}`;
+      const p = this.tileAt(vx, vy);
+      const ij = `${vx % 4}${vy % 4}`;
       if (type !== CellType.Block) {
         const name = type === CellType.Void ? 'smoke' : type === CellType.Plaza ? 'plaza' : 'street';
         this.add(this.floors, this.art.sprite('floors', `${name}-${ij}`), p.x, p.y);
-        if (type !== CellType.Void) this.addStreetProp(sim, cx, cy, type === CellType.Plaza, hAt(cx, cy - 1) > 0, hAt(cx - 1, cy) > 0);
+        if (type !== CellType.Void) this.addStreetProp(sim, cell, vx, vy, type === CellType.Plaza, hV(vx, vy - 1) > 0, hV(vx - 1, vy) > 0);
         continue;
       }
-      const h = hAt(cx, cy);
-      const z = (cx + cy + 1) * 100;
-      const slot = Math.floor(cy / PLATE) * sim.map.slotsX + Math.floor(cx / PLATE);
+      const h = hV(vx, vy);
+      const z = (vx + vy + 1) * 100;
+      const slot = Math.floor(b.y / PLATE) * sim.map.slotsX + Math.floor(b.x / PLATE);
       const kind = sim.map.slots[slot]?.feature ?? 'plain';
-      for (let l = hAt(cx, cy + 1); l < h; l++) {
-        const s = this.add(this.sorted, this.art.sprite('walls', `wall-${kind}-south-${l}-${wallIndex('south', cx, cy, span)}`), p.x, p.y + g.b - (l + 1) * g.level, z);
+      // The face on the left of the screen (toward +view y) and the one on the right (toward +view x).
+      for (let l = hV(vx, vy + 1); l < h; l++) {
+        const s = this.add(this.sorted, this.art.sprite('walls', `wall-${kind}-south-${l}-${wallIndex('south', vx, vy, span)}`), p.x, p.y + g.b - (l + 1) * g.level, z);
         if (s) this.blockSprites.push(s);
       }
-      for (let l = hAt(cx + 1, cy); l < h; l++) {
-        const s = this.add(this.sorted, this.art.sprite('walls', `wall-${kind}-east-${l}-${wallIndex('east', cx, cy, span)}`), p.x + g.a, p.y + g.b - (l + 1) * g.level, z);
+      for (let l = hV(vx + 1, vy); l < h; l++) {
+        const s = this.add(this.sorted, this.art.sprite('walls', `wall-${kind}-east-${l}-${wallIndex('east', vx, vy, span)}`), p.x + g.a, p.y + g.b - (l + 1) * g.level, z);
         if (s) this.blockSprites.push(s);
       }
       const roof = this.add(this.sorted, this.art.sprite('floors', `roof-${ij}`), p.x, p.y - h * g.level, z + 1);
@@ -363,7 +465,10 @@ export class IsoRenderer extends Renderer {
         roof.tint = tints[Math.min(h, tints.length) - 1] ?? 0xffffff;
         this.blockSprites.push(roof);
       }
-      this.addProp(sim, cx, cy, h, kind, z);
+      // A roof at the foot of a taller block lies in its shade (over the skin too: the skin is drawn at z + 2).
+      if (hV(vx, vy - 1) > h) { const e = this.add(this.sorted, this.art.sprite('creep', 'edge-shade-north'), p.x, p.y - h * g.level, z + 4); if (e) this.blockSprites.push(e); }
+      if (hV(vx - 1, vy) > h) { const e = this.add(this.sorted, this.art.sprite('creep', 'edge-shade-west'), p.x, p.y - h * g.level, z + 4); if (e) this.blockSprites.push(e); }
+      this.addProp(sim, b.x, b.y, h, kind, z);
     }
     this.drawShade(sim);
     // Everything standing on the map is placed again over the new ground.
@@ -372,28 +477,35 @@ export class IsoRenderer extends Renderer {
     this.creepSprites.clear();
   }
 
-  /** Streets are channels between blocks: the walls shade the street at their feet. */
+  /** The height in levels of a cell of the view (0: a street, a square, or off the board). */
+  private heightV(sim: Sim, vx: number, vy: number): number {
+    const size = viewSize(this.geo);
+    if (vx < 0 || vy < 0 || vx >= size.w || vy >= size.h) return 0;
+    const b = boardCell(this.geo, vx, vy);
+    return this.heightOf(sim, b.y * sim.cfg.gridW + b.x);
+  }
+
+  /** Streets are channels between blocks: the walls shade the street at their feet. Drawn in cells of the view. */
   private drawShade(sim: Sim): void {
     const g = this.shadeG;
     g.clear();
+    const size = viewSize(this.geo);
     const W = sim.cfg.gridW;
-    const H = sim.cfg.gridH;
-    const c = sim.cfg.cellPx;
-    const tall = (x: number, y: number) => (x < 0 || y < 0 || x >= W || y >= H ? 0 : this.heightOf(sim, y * W + x));
-    for (let cy = 0; cy < H; cy++) for (let cx = 0; cx < W; cx++) {
-      const t = sim.map.cells[cy * W + cx];
+    for (let vy = 0; vy < size.h; vy++) for (let vx = 0; vx < size.w; vx++) {
+      const b = boardCell(this.geo, vx, vy);
+      const t = sim.map.cells[b.y * W + b.x];
       if (t !== CellType.Road && t !== CellType.Plaza) continue;
-      // The walls we see are the south and east faces of the blocks to the north and west.
-      const n = tall(cx, cy - 1);
-      const w = tall(cx - 1, cy);
+      // The walls we see are the near faces of the blocks behind the street.
+      const n = this.heightV(sim, vx, vy - 1);
+      const w = this.heightV(sim, vx - 1, vy);
       for (let k = 0; k < 4; k++) {
-        const d = (k * c) / 10;
-        if (n) g.rect(cx * c, cy * c + d, c, c / 10).fill({ color: 0x1a1208, alpha: (0.42 - k * 0.1) * Math.min(1, 0.6 + n * 0.2) });
-        if (w) g.rect(cx * c + d, cy * c, c / 10, c).fill({ color: 0x1a1208, alpha: (0.42 - k * 0.1) * Math.min(1, 0.6 + w * 0.2) });
+        const d = k / 10;
+        if (n) g.rect(vx, vy + d, 1, 0.1).fill({ color: 0x1a1208, alpha: (0.42 - k * 0.1) * Math.min(1, 0.6 + n * 0.2) });
+        if (w) g.rect(vx + d, vy, 0.1, 1).fill({ color: 0x1a1208, alpha: (0.42 - k * 0.1) * Math.min(1, 0.6 + w * 0.2) });
       }
       // The far side of the street lies under the lip of the block in front of it.
-      if (tall(cx, cy + 1)) g.rect(cx * c, (cy + 1) * c - c / 8, c, c / 8).fill({ color: 0x1a1208, alpha: 0.3 });
-      if (tall(cx + 1, cy)) g.rect((cx + 1) * c - c / 8, cy * c, c / 8, c).fill({ color: 0x1a1208, alpha: 0.3 });
+      if (this.heightV(sim, vx, vy + 1)) g.rect(vx, vy + 1 - 0.125, 1, 0.125).fill({ color: 0x1a1208, alpha: 0.3 });
+      if (this.heightV(sim, vx + 1, vy)) g.rect(vx + 1 - 0.125, vy, 0.125, 1).fill({ color: 0x1a1208, alpha: 0.3 });
     }
   }
 
@@ -422,9 +534,11 @@ export class IsoRenderer extends Renderer {
    * behind the street, out of the lane; big things only on the squares. The body's skin
    * hides them, as it hides what stands on the roofs.
    */
-  private addStreetProp(sim: Sim, cx: number, cy: number, square: boolean, wallNorth: boolean, wallWest: boolean): void {
+  private addStreetProp(sim: Sim, cell: number, vx: number, vy: number, square: boolean, wallBehind: boolean, wallBeside: boolean): void {
+    const cx = cell % sim.cfg.gridW;
+    const cy = Math.floor(cell / sim.cfg.gridW);
     const r = ((cx * 15485863 + cy * 32452843 + cx * cy * 131) >>> 0) % 1000;
-    if (square ? r >= 90 : r >= 110 || !(wallNorth || wallWest)) return;
+    if (square ? r >= 90 : r >= 110 || !(wallBehind || wallBeside)) return;
     const all = this.art.biome?.art.streetProps ?? STREET_PROPS;
     const fits = all.filter((id) => {
       const rect = this.art.rect('props', `prop-${id}`);
@@ -437,35 +551,54 @@ export class IsoRenderer extends Renderer {
     if (!tex || !rect) return;
     const s = new Sprite(tex);
     s.anchor.set(rect.anchor?.[0] ?? 0.5, rect.anchor?.[1] ?? 0.94);
-    const at = square ? [0.5, 0.5] : wallNorth ? [0.5, 0.14] : [0.14, 0.5];
-    const p = project(this.geo, (cx + at[0]) * this.geo.cell, (cy + at[1]) * this.geo.cell, 0);
-    s.position.set(p.x, p.y);
-    s.zIndex = (cx + cy + at[0] + at[1]) * 100 + 45;
+    const at = square ? [0.5, 0.5] : wallBehind ? [0.5, 0.14] : [0.14, 0.5];
+    const g = this.geo;
+    s.position.set((vx + at[0] - vy - at[1]) * g.a, (vx + at[0] + vy + at[1]) * g.b);
+    s.zIndex = (vx + vy + at[0] + at[1]) * 100 + 45;
     this.sorted.addChild(s);
-    this.props.set(cy * sim.cfg.gridW + cx, s);
+    this.props.set(cell, s);
   }
 
-  /** The skin. Only the cells that changed since the last frame are drawn again. */
+  /**
+   * The skin. Only the cells that changed since the last frame are drawn again.
+   *
+   * It runs to the edge of every roof it holds, and down the wall. It stops at a ragged edge
+   * only where the same surface goes on bare. The cells a limb stands on, and the ground
+   * under the landing site, are whole and thick: what stands on the skin stands on all of it.
+   */
   private syncCreep(sim: Sim): void {
     const W = sim.cfg.gridW;
     const H = sim.cfg.gridH;
     const n = W * H;
     const on = new Uint8Array(n);
     for (let c = 0; c < n; c++) on[c] = sim.map.cells[c] !== CellType.Void && sim.isCreeped(c) ? 1 : 0;
+    const held = new Uint8Array(n);
+    for (const t of sim.towers) for (const c of sim.cellsOf(t)) held[c] = 1;
     const g = this.geo;
-    for (let cy = 0; cy < H; cy++) for (let cx = 0; cx < W; cx++) {
-      const cell = cy * W + cx;
+    const size = viewSize(g);
+    // Under the landing site the skin is as thick as on a roof: the body lies IN it.
+    const sq = this.square;
+    const underCore = (cell: number): boolean => {
+      if (!sq) return false;
+      const c = sim.cellCenter(cell);
+      return Math.hypot(c.x - sq.x, c.y - sq.y) <= (sq.across / 2 + 0.2) * sim.cfg.cellPx;
+    };
+    for (let vy = 0; vy < size.h; vy++) for (let vx = 0; vx < size.w; vx++) {
+      const b = boardCell(g, vx, vy);
+      const cell = b.y * W + b.x;
       let state = 0;
       if (on[cell]) {
         const h = this.heightOf(sim, cell);
-        const open = openSides((dx, dy) => {
-          const x = cx + dx, y = cy + dy;
-          if (x < 0 || y < 0 || x >= W || y >= H) return false;
-          const o = y * W + x;
-          return on[o] === 1 && this.heightOf(sim, o) === h;
+        const open = held[cell] ? 0 : openSides((dx, dy) => {
+          const x = vx + dx, y = vy + dy;
+          if (x < 0 || y < 0 || x >= size.w || y >= size.h) return true;
+          const o = boardCell(g, x, y);
+          const oc = o.y * W + o.x;
+          return creepRunsOn({ height: h }, { height: this.heightOf(sim, oc), creeped: on[oc] === 1 });
         });
         const fx = sim.creepEffectAt(cell);
-        state = 1 + open + (fx.slow < 1 ? 32 : 0) + (fx.dps > 0 ? 64 : 0) + (sim.isBody(cell) ? 128 : 0);
+        state = 1 + open + (fx.slow < 1 ? 32 : 0) + (fx.dps > 0 ? 64 : 0) + (sim.isBody(cell) ? 128 : 0)
+          + (h === 0 && (held[cell] || underCore(cell)) ? 256 : 0);
       }
       if (state === this.creepState[cell]) continue;
       this.creepState[cell] = state;
@@ -477,26 +610,32 @@ export class IsoRenderer extends Renderer {
       const h = this.heightOf(sim, cell);
       const open = (state - 1) & 15;
       const m = open === 0 ? 4 : 2;
-      const p = this.tileAt(cx, cy, h);
+      const p = this.tileAt(vx, vy, h);
       const made: Sprite[] = [];
-      const tint = state & 64 ? 0xffd890 : state & 32 ? 0x9fd8a8 : state & 128 ? 0xd8c0c0 : 0xffffff;
-      const z = (cx + cy + 1) * 100;
-      const skin = this.add(h ? this.sorted : this.creepFloor, this.art.sprite('creep', `creep-${open}-${cx % m}${cy % m}`), p.x, p.y, z + 2);
+      // What the skin does to what walks on it, and how high it lies: the higher, the lighter.
+      const tint = mix(state & 64 ? 0xffd890 : state & 32 ? 0x9fd8a8 : state & 128 ? 0xd8c0c0 : 0xffffff, SKIN_LIGHT[Math.min(h, SKIN_LIGHT.length - 1)]);
+      const z = (vx + vy + 1) * 100;
+      const skin = this.add(h ? this.sorted : this.creepFloor, this.art.sprite('creep', `creep-${open}-${vx % m}${vy % m}`), p.x, p.y, z + 2);
       if (skin) {
-        // Streets stay readable under the creep: a thin film there, thick hide on the roofs.
-        skin.alpha = h ? 1 : 0.34;
+        // Streets stay readable under the creep: a thin film there, thick hide on the roofs
+        // and under whatever of the body stands in the street.
+        skin.alpha = h ? 1 : state & 256 ? 0.92 : 0.34;
         skin.tint = tint;
         made.push(skin);
       }
       if (h) {
-        const lower = (x: number, y: number) => x < 0 || y < 0 || x >= W || y >= H || this.heightOf(sim, y * W + x) < h;
-        if (lower(cx, cy + 1)) {
-          const d = this.add(this.sorted, this.art.sprite('creep', `drip-south-${cx % 4}`), p.x, p.y + g.b, z + 3);
+        // Where the roof ends the skin rolls over its edge, lit, and runs down the wall.
+        if (this.heightV(sim, vx, vy + 1) < h) {
+          const d = this.add(this.sorted, this.art.sprite('creep', `drip-south-${vx % 4}`), p.x, p.y + g.b, z + 3);
           if (d) { d.tint = tint; made.push(d); }
+          const lip = this.add(this.sorted, this.art.sprite('creep', 'edge-lip-south'), p.x, p.y, z + 3);
+          if (lip) made.push(lip);
         }
-        if (lower(cx + 1, cy)) {
-          const d = this.add(this.sorted, this.art.sprite('creep', `drip-east-${3 - (cy % 4)}`), p.x + g.a, p.y + g.b, z + 3);
+        if (this.heightV(sim, vx + 1, vy) < h) {
+          const d = this.add(this.sorted, this.art.sprite('creep', `drip-east-${3 - (vy % 4)}`), p.x + g.a, p.y + g.b, z + 3);
           if (d) { d.tint = tint; made.push(d); }
+          const lip = this.add(this.sorted, this.art.sprite('creep', 'edge-lip-east'), p.x, p.y, z + 3);
+          if (lip) made.push(lip);
         }
       }
       this.creepSprites.set(cell, made);
@@ -518,16 +657,29 @@ export class IsoRenderer extends Renderer {
       return;
     }
     if (!this.core) {
+      this.coreShade = new Sprite(this.shade());
+      this.coreShade.anchor.set(0.5, 0.5);
       this.core = new Sprite(c.atlas.frame(0, c.art.frame, c.art.cols));
+      // The point of the picture that lies on the middle of the square: the middle of what it stands on.
       this.core.anchor.set(c.art.anchor[0], c.art.anchor[1]);
-      this.sorted.addChild(this.core);
+      this.sorted.addChild(this.coreShade, this.core);
     }
-    const p = this.onGround(sim, sim.core.x, sim.core.y);
+    // It lies in the middle of the square it fell on, and is as wide as the square: a round
+    // thing `across` cells wide on the ground is `across` times the root of two half-tiles wide on the screen.
+    const sq = this.square ?? { x: sim.core.x, y: sim.core.y, across: 3 };
+    const p = project(this.geo, sq.x, sq.y);
+    const width = sq.across * Math.SQRT2 * this.geo.a * CORE_FILL;
     this.core.position.set(p.x, p.y);
-    this.core.scale.set((c.art.cells * this.geo.a * 1.4) / c.art.frame);
-    this.core.zIndex = depth(this.geo, sim.core.x, sim.core.y) * 100 + 40;
+    this.core.scale.set(width / ((c.art.body ?? 0.86) * c.art.frame));
+    this.core.zIndex = depth(this.geo, sq.x, sq.y) * 100 + 40;
     const at = Math.floor(this.simClock * c.art.fps) % c.art.count;
     this.core.texture = c.atlas.frame(at, c.art.frame, c.art.cols);
+    if (this.coreShade) {
+      this.coreShade.position.set(p.x, p.y);
+      this.coreShade.width = width * 1.35;
+      this.coreShade.height = width * 1.35 * (this.geo.b / this.geo.a);
+      this.coreShade.zIndex = this.core.zIndex - 1;
+    }
   }
 
   // ------------------------------------------------------------ creep nodes
@@ -622,11 +774,23 @@ export class IsoRenderer extends Renderer {
     return this.shadeTex;
   }
 
+  /**
+   * The way a limb faces in the world. One that was turned by the player faces that way;
+   * one that fights faces what it last fought; the rest face south. It is a fact about the
+   * limb, not about the camera: when the camera turns, another side of the limb is seen.
+   */
+  private facingOfLimb(sim: Sim, t: Tower, was: Facing | undefined): Facing {
+    if (t.facing) return t.facing;
+    if (t.lastTargetId !== undefined) {
+      const e = sim.enemies.find((x) => x.id === t.lastTargetId);
+      if (e) return facingOf(e.pos.x - t.pos.x, e.pos.y - t.pos.y);
+    }
+    return was ?? 'S';
+  }
+
   private syncLimbs(sim: Sim, dt: number): void {
     const g = this.geo;
     for (const t of sim.towers) {
-      const cx = t.cell % sim.cfg.gridW;
-      const cy = Math.floor(t.cell / sim.cfg.gridW);
       const h = this.heightOf(sim, t.cell);
       const p = project(g, t.pos.x, t.pos.y, h);
       const found = this.art.limbs.get(t.family);
@@ -641,21 +805,30 @@ export class IsoRenderer extends Renderer {
       const { art, atlas } = found;
       if (!v) {
         const sprite = new Sprite(atlas.frame(art.anims.idle.start, art.frame, art.cols));
-        sprite.anchor.set(art.anchor[0], art.flat ? 0.6 : art.anchor[1]);
         const shade = new Sprite(this.shade());
         shade.anchor.set(0.5, 0.5);
         shade.visible = !art.flat;
         (art.flat ? this.flat : this.sorted).addChild(shade, sprite);
-        v = { sprite, shade, art, family: t.family, cooldown: t.cooldown, fireT: -1, fireDur: 0, mirror: false, seen: 0 };
+        v = { sprite, shade, art, family: t.family, cooldown: t.cooldown, fireT: -1, fireDur: 0, seen: 0, facing: this.facingOfLimb(sim, t, undefined) };
         this.limbs.set(t.id, v);
       }
       v.seen = this.frameNo;
+      v.facing = this.facingOfLimb(sim, t, v.facing);
+
+      // Which of its pictures the camera sees: from the front or from behind, as drawn or mirrored.
+      let { back, mirror } = limbView(g, v.facing);
+      if (art.flat) { back = false; mirror = false; }
+      // A wall across a street lies across it: along the view's x as it is drawn, along its y mirrored.
+      else if (art.on === 'street') { back = false; mirror = this.laneRunsAlongX(sim, t.cell) !== (g.turn % 2 === 1); }
+      const side = back && art.back ? art.back : art;
+
       const stats = towerStats(t);
-      // How wide it is drawn: a swamp covers the ground it slows; a wall spans its lane; the rest fill a cell.
-      let width = 2 * g.a * LIMB_FILL;
+      const size = this.sizeOf(sim, t);
+      // How wide what it stands on is drawn: a swamp covers the ground it slows; a wall spans its lane; the rest fill their ground.
+      let width = 2 * g.a * LIMB_FILL * size;
       if (art.flat) width = 2 * ((towerSpec(t.family).swamp?.radius ?? 30) + (stats.aoe - towerSpec(t.family).aoe)) * Math.SQRT2 * (g.a / g.cell);
       else if (art.on === 'street') width = 2 * g.a * 0.8;
-      const scale = width / (art.body * art.frame);
+      const scale = width / (side.body * art.frame);
 
       // A limb that has just fired plays its firing clip, fitted into the time before it fires again.
       const held = sim.isTapped(t) || (t.stunnedUntil !== undefined && t.stunnedUntil > sim.time);
@@ -665,34 +838,36 @@ export class IsoRenderer extends Renderer {
         v.fireT = 0;
       }
       v.cooldown = t.cooldown;
+      const fire = side.anims.fire ?? art.anims.fire;
       let tex: Texture;
-      if (v.fireT >= 0 && art.anims.fire && !held) {
+      if (v.fireT >= 0 && fire && !held) {
         v.fireT += dt;
-        const f = Math.min(art.anims.fire.count - 1, Math.floor((v.fireT / v.fireDur) * art.anims.fire.count));
-        tex = atlas.frame(art.anims.fire.start + f, art.frame, art.cols);
+        const f = Math.min(fire.count - 1, Math.floor((v.fireT / v.fireDur) * fire.count));
+        tex = atlas.frame(fire.start + f, art.frame, art.cols);
         if (v.fireT >= v.fireDur) v.fireT = -1;
       } else {
-        const at = held ? 0 : (this.simClock + t.id * 0.37) * art.anims.idle.fps * Math.max(0.6, Math.min(2.5, stats.rate > 0 ? stats.rate / Math.max(0.01, towerSpec(t.family).rate) : 1));
-        tex = this.frameOf(atlas, art, art.anims.idle, at);
+        const at = held ? 0 : (this.simClock + t.id * 0.37) * side.anims.idle.fps * Math.max(0.6, Math.min(2.5, stats.rate > 0 ? stats.rate / Math.max(0.01, towerSpec(t.family).rate) : 1));
+        tex = this.frameOf(atlas, art, side.anims.idle, at);
       }
       v.sprite.texture = tex;
 
-      // It faces what it is fighting; a limb with a facing faces that way.
-      if (art.facing && t.facing) v.mirror = t.facing === 'E' || t.facing === 'N';
-      else if (art.on === 'street' && !art.flat) v.mirror = this.laneRunsAlongX(sim, t.cell);
-      else if (t.lastTargetId !== undefined) {
-        const e = sim.enemies.find((x) => x.id === t.lastTargetId);
-        if (e) v.mirror = project(g, e.pos.x, e.pos.y).x > p.x;
-      }
-      v.sprite.scale.set(v.mirror ? -scale : scale, scale);
+      // The point of the picture that stands on the middle of its ground is the middle of what it stands on.
+      v.sprite.anchor.set(side.anchor[0], side.anchor[1]);
+      v.sprite.scale.set(mirror ? -scale : scale, scale);
       v.sprite.position.set(p.x, p.y);
-      v.sprite.zIndex = art.flat ? depth(g, t.pos.x, t.pos.y) : (cx + cy + 1) * 100 + (h ? 10 : 45);
+      // It is as far back as the nearest to the camera of the cells it stands on.
+      let z = -Infinity;
+      for (const c of sim.cellsOf(t)) {
+        const vc = viewCell(g, c % sim.cfg.gridW, Math.floor(c / sim.cfg.gridW));
+        z = Math.max(z, (vc.x + vc.y + 1) * 100);
+      }
+      v.sprite.zIndex = art.flat ? depth(g, t.pos.x, t.pos.y) : z + (h ? 10 : 45);
       v.shade.position.set(p.x, p.y);
-      v.shade.width = width * 1.7;
-      v.shade.height = width * 0.85;
+      v.shade.width = width * 1.5;
+      v.shade.height = width * 1.5 * (g.b / g.a);
       v.shade.zIndex = v.sprite.zIndex - 1;
       v.sprite.tint = held ? 0x9a90a8 : 0xffffff;
-      if (!art.flat) this.drawTowerMarks(this.marksG, t, p.x / K, (p.y - width * 0.42) / K, sim);
+      if (!art.flat) this.drawTowerMarks(this.marksG, t, p.x / K, (p.y - width * 0.55) / K, sim);
       else if (t.hp < t.maxHp) this.hpArc(this.marksG, p.x / K, p.y / K - 8, 20, t.hp / t.maxHp);
     }
     for (const [id, v] of this.limbs) if (v.seen !== this.frameNo) { v.sprite.destroy(); v.shade.destroy(); this.limbs.delete(id); }
@@ -712,9 +887,7 @@ export class IsoRenderer extends Renderer {
   }
 
   protected drawPreviewCell(_g: Graphics, sim: Sim, cell: number, ok: boolean): void {
-    const cx = cell % sim.cfg.gridW;
-    const cy = Math.floor(cell / sim.cfg.gridW);
-    const p = this.tileAt(cx, cy, this.heightOf(sim, cell));
+    const p = this.tileOf(sim, cell, this.heightOf(sim, cell));
     const g = this.geo;
     this.marksG.poly([
       (p.x + g.a) / K, p.y / K, (p.x + 2 * g.a) / K, (p.y + g.b) / K,

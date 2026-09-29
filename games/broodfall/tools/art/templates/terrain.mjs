@@ -14,11 +14,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { makeClip, makeStill, pool } from '../rfab.mjs';
 import { bbox, blank, crop, paste, readFrames, readImage, resize, toWebp, writeJpg, writePng } from '../lib/img.mjs';
-import { A, B, BLEED, LEVEL_H, TILE_H, TILE_W, WALL_SPAN, floorPoint, mirrorTile, noise, render, sample, wallPoint } from '../lib/iso.mjs';
+import { A, B, BLEED, SKIN_BLEED, LEVEL_H, TILE_H, TILE_W, WALL_SPAN, floorPoint, mirrorTile, noise, render, sample, wallPoint } from '../lib/iso.mjs';
 import { keyClip, keyFrame, keyOf, loopWindow, pick, unionBox } from '../lib/key.mjs';
 import { figure, findFigures } from '../lib/sheet.mjs';
 import { borderColour } from '../lib/img.mjs';
 import { ART, REVIEW, ROOT, SRC, putEntry } from '../lib/manifest.mjs';
+import { GROUNDS } from '../lib/atlas.mjs';
+import { drawCell } from '../lib/foot.mjs';
 
 const DIR = path.join(SRC, 'terrain');
 const CONCEPTS = path.join(ROOT, 'notes', 'concepts', '2026-09-29');
@@ -118,7 +120,9 @@ async function generate(only) {
       const design = await makeStill({ slug: 'core', out: path.join(DIR, 'core.png'), prompt: CORE, width: 1024, height: 1024, quality: 'high', refFiles: [path.join(CONCEPTS, 'board-paper-city.png')] });
       // The core is redrawn in the creep's own tissue, as the limbs are (tools/art/limbs.mjs MATERIAL).
       const still = await makeStill({ slug: 'core in the material of the creep', out: path.join(DIR, 'core-styled.png'), prompt: CORE_MATERIAL, quality: 'high', refFiles: [design, path.join(DIR, 'creep.png')] });
-      return makeClip({ slug: 'core idle', out: path.join(DIR, 'core-idle.mp4'), stillFile: still,
+      // The landing site is four cells wide on the board and a limb is one: its clip is made at 720p, or it
+      // is seen at half the sharpness of the limbs round it (Collins: 'a different resolution than the towers').
+      return makeClip({ slug: 'core idle', out: path.join(DIR, 'core-idle.mp4'), stillFile: still, resolution: '720p',
         prompt: 'The crimson heart inside the split meteor beats slowly and heavily; the flesh around it swells and relaxes with each beat; the tendons shift slightly. The meteor and the ground do not move. It stays at exactly the same spot and the same size.' });
     });
   }
@@ -182,15 +186,18 @@ export function creepTiles(tex) {
     const n = open === 0 ? 4 : 2;
     for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) {
       out.push({ id: `creep-${open}-${i}${j}`, img: render(TILE_W, TILE_H, (px, py) => {
-        const p = floorPoint(px, py, BLEED);
+        const p = floorPoint(px, py, SKIN_BLEED);
         if (!p) return null;
         let d = 1;
         if (open & 1) d = Math.min(d, p.y);
         if (open & 2) d = Math.min(d, 1 - p.x);
         if (open & 4) d = Math.min(d, 1 - p.y);
         if (open & 8) d = Math.min(d, p.x);
-        const lump = noise((i + p.x) * 5, (j + p.y) * 5, 10) * 0.22;
-        const t = Math.max(0, Math.min(1, (d - 0.05 - lump) / 0.1));
+        // A ragged edge, and a shallow one: at most a fifth of the cell is left bare, so that
+        // the ground the skin holds is nearly all of the ground (Collins: creep that stops short
+        // of the edge "makes the usable space in a square highly variable").
+        const lump = noise((i + p.x) * 5, (j + p.y) * 5, 10) * 0.13;
+        const t = Math.max(0, Math.min(1, (d - 0.02 - lump) / 0.07));
         if (t <= 0) return null;
         const c = sample(tex, mirrorTile(i, p.x) * tex.w, mirrorTile(j, p.y) * tex.h);
         // The rim is thicker: darker, as if it cast a small shadow on itself.
@@ -220,6 +227,29 @@ export function wallTiles(id, tex) {
     }
   }
   return out;
+}
+
+/**
+ * What makes a roof read as a roof when the skin covers it to its edge: a lit lip along
+ * each of its two front edges, where the skin rolls over and down the wall, and shade along
+ * each of its two back edges, at the foot of a taller block behind it. Four tiles, laid
+ * over the floor or the skin of a cell.
+ */
+export function edgeTiles() {
+  const band = (id, along, colour, reach, strength, power) => ({ id, img: render(TILE_W, TILE_H, (px, py) => {
+    const p = floorPoint(px, py, BLEED);
+    if (!p) return null;
+    const d = along(p);
+    if (d >= reach) return null;
+    const t = Math.pow(1 - Math.max(0, d) / reach, power);
+    return [colour[0], colour[1], colour[2], 255 * strength * t];
+  }) });
+  return [
+    band('edge-lip-south', (p) => 1 - p.y, [236, 150, 140], 0.11, 0.62, 1.4),
+    band('edge-lip-east', (p) => 1 - p.x, [200, 110, 104], 0.11, 0.5, 1.4),
+    band('edge-shade-north', (p) => p.y, [14, 6, 8], 0.5, 0.62, 2),
+    band('edge-shade-west', (p) => p.x, [14, 6, 8], 0.5, 0.62, 2),
+  ];
 }
 
 /** Creep running down the top of a wall. */
@@ -266,26 +296,55 @@ export function cutProps(file, items, setId, keying = {}) {
   });
 }
 
+/**
+ * WHERE THE LANDING SITE LIES, marked by eye as the limbs' footings are (tools/art/limbs.mjs,
+ * foot): [x, y, width] as shares of the box that holds it in the first frame of its clip:
+ * the middle of the skirt it lies in, and how wide that skirt is without the tips of its
+ * roots. It was anchored by the front of its skirt, a third of itself too far back, and lay
+ * over the roofs behind it (Collins: "it looks like it's floating").
+ */
+const CORE_FOOT = [0.5, 0.64, 0.9];
+
 function bakeCore() {
   const clip = path.join(DIR, 'core-idle.mp4');
   if (!fs.existsSync(clip)) return null;
-  const F = 320;
+  // As sharp on the board as a limb is: a limb has about 1.6 pixels of its frame to each pixel of the board.
+  const F = 640;
+  const COLS = 4;
   const keyed = keyClip(readFrames(clip, 12));
   const loop = loopWindow(keyed.frames, { min: 12, max: 46 });
   const frames = keyed.frames.slice(loop.start, loop.end);
   const box = unionBox(frames);
-  const side = Math.ceil(Math.max(box.x1 - box.x0, box.y1 - box.y0) * 1.04);
-  const x0 = Math.round((box.x0 + box.x1) / 2 - side / 2);
-  const y0 = Math.round(box.y1 + 0.02 * side - side);
+  const first = unionBox([keyed.frames[0]]);
+  const foot = {
+    x: first.x0 + CORE_FOOT[0] * (first.x1 - first.x0),
+    y: first.y0 + CORE_FOOT[1] * (first.y1 - first.y0),
+    width: CORE_FOOT[2] * (first.x1 - first.x0),
+  };
+  const side = Math.ceil(Math.max(2 * Math.max(foot.x - box.x0, box.x1 - foot.x), box.y1 - box.y0) * 1.04);
+  const x0 = Math.round(foot.x - side / 2);
+  const y0 = Math.round((box.y0 + box.y1) / 2 - side / 2);
   const kept = pick(frames, 16).map((f) => resize(crop(f, x0, y0, side, side), F, F));
-  const sheet = blank(8 * F, 2 * F);
-  kept.forEach((f, i) => paste(sheet, f, (i % 8) * F, Math.floor(i / 8) * F));
+  const sheet = blank(COLS * F, Math.ceil(kept.length / COLS) * F);
+  kept.forEach((f, i) => paste(sheet, f, (i % COLS) * F, Math.floor(i / COLS) * F));
   const png = path.join(ART, 'board', 'core.png');
   writePng(png, sheet);
   toWebp(png, png.replace(/\.png$/, '.webp'), { q: 88 });
   fs.rmSync(png);
   console.log(`[terrain] core: ${kept.length} frames, loop seam ${loop.seam.toFixed(2)}`);
-  return { atlas: 'board/core.webp', frame: F, cols: 8, count: kept.length, fps: Number((kept.length / (frames.length / 12)).toFixed(2)), anchor: [0.5, 0.8], cells: 3.2, seam: Number(loop.seam.toFixed(2)) };
+  // To look at: the landing site on the square it fell on, four cells across, with the square drawn under it.
+  const half = (foot.width / side) * F / 2 / 0.92;
+  const look = blank(F, F, [...GROUNDS.street, 255]);
+  const ay = (foot.y - y0) / side;
+  drawCell(look, F / 2, ay * F, half * Math.SQRT2, [255, 255, 255], 0.8);
+  over8(look, kept[0], 0, 0);
+  writeJpg(path.join(REVIEW, 'terrain', 'core-standing.jpg'), look, 3);
+  return {
+    atlas: 'board/core.webp', frame: F, cols: COLS, count: kept.length, fps: Number((kept.length / (frames.length / 12)).toFixed(2)),
+    /** The point of the frame that lies on the middle of the square, and how wide what it lies in is (a share of the frame). */
+    anchor: [0.5, Number(ay.toFixed(4))], body: Number((foot.width / side).toFixed(3)),
+    cells: 3.2, seam: Number(loop.seam.toFixed(2)),
+  };
 }
 
 export function bakeTerrain() {
@@ -298,7 +357,7 @@ export function bakeTerrain() {
   if (have('roof.png')) floors.push(...floorTiles('roof', tex('roof.png', 512, 512)));
   if (have('smoke.png')) floors.push(...floorTiles('smoke', tex('smoke.png', 512, 512), 0.55));
   const creepTex = have('creep.png') ? tex('creep.png', 512, 512) : null;
-  const creep = creepTex ? [...creepTiles(creepTex), ...dripTiles(creepTex)] : [];
+  const creep = creepTex ? [...creepTiles(creepTex), ...dripTiles(creepTex), ...edgeTiles()] : [];
   const walls = [];
   for (const id of Object.keys(WALLS)) if (have(`wall-${id}.png`)) walls.push(...wallTiles(id, tex(`wall-${id}.png`, 1024, 384)));
   const props = [...propSprites('roof'), ...propSprites('street')];
@@ -351,18 +410,29 @@ export function townPicture(by, roofIds, file, streetIds = []) {
       put(by[`roof-${x % 4}${y % 4}`], sx, sy - h * LEVEL_H);
     }
     if (creeped(x, y)) {
+      // The skin stops at a ragged edge only where the same surface goes on bare; at the edge
+      // of a roof it runs to the edge and down the wall (the game: src/render/iso.ts creepRunsOn).
       let open = 0;
-      const lower = (nx, ny) => nx < 0 || ny < 0 || nx >= N || ny >= N || !creeped(nx, ny) || height(nx, ny) !== h;
-      if (lower(x, y - 1)) open |= 1; if (lower(x + 1, y)) open |= 2; if (lower(x, y + 1)) open |= 4; if (lower(x - 1, y)) open |= 8;
+      const bare = (nx, ny) => nx >= 0 && ny >= 0 && nx < N && ny < N && height(nx, ny) === h && !creeped(nx, ny);
+      if (bare(x, y - 1)) open |= 1; if (bare(x + 1, y)) open |= 2; if (bare(x, y + 1)) open |= 4; if (bare(x - 1, y)) open |= 8;
       const n = open === 0 ? 4 : 2;
       if (h > 0) {
         if (height(x, y + 1) < h) put(by[`drip-south-${x % 4}`], sx, sy + B - h * LEVEL_H);
         if (height(x + 1, y) < h) put(by[`drip-east-${3 - (y % 4)}`], sx + A, sy + B - h * LEVEL_H);
       }
       put(by[`creep-${open}-${x % n}${y % n}`], sx, sy - h * LEVEL_H);
+      if (h > 0) {
+        if (height(x, y + 1) < h) put(by['edge-lip-south'], sx, sy - h * LEVEL_H);
+        if (height(x + 1, y) < h) put(by['edge-lip-east'], sx, sy - h * LEVEL_H);
+      }
     } else if (h > 0 && (x * 7 + y * 3) % 4 === 0) {
       const img = by[roofIds[(x * 5 + y * 11) % roofIds.length]];
       if (img) put(img, sx + A - img.w / 2, sy + B - h * LEVEL_H - img.h * 0.94);
+    }
+    // A roof at the foot of a taller block lies in its shade.
+    if (h > 0) {
+      if (height(x, y - 1) > h) put(by['edge-shade-north'], sx, sy - h * LEVEL_H);
+      if (height(x - 1, y) > h) put(by['edge-shade-west'], sx, sy - h * LEVEL_H);
     }
     // Street furniture stands at the back of the street, against the wall behind it.
     if (h === 0 && streetIds.length && !creeped(x, y) && (x * 3 + y * 5) % 3 === 0 && (height(x, y - 1) > 0 || height(x - 1, y) > 0)) {

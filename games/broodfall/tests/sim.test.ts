@@ -405,7 +405,7 @@ describe('cannibalize inheritance', () => {
     s.meat.war = 999;
     s.meat.science = 999;
     const blockCard = () => {
-      for (let guard = 0; guard < 300 && ['swamp', 'spine'].includes(s.hand[0].family); guard++) {
+      for (let guard = 0; guard < 300 && (['swamp', 'spine'].includes(s.hand[0].family) || towerSpec(s.hand[0].family).span !== undefined); guard++) {
         s.issue({ kind: 'discard', cardIndex: 0 });
       }
       return 0;
@@ -425,7 +425,7 @@ describe('cannibalize inheritance', () => {
     s.meat.war = 9999;
     s.meat.science = 9999;
     // Discard until the first card is one that builds on a block (not a street piece).
-    for (let guard = 0; guard < 300 && ['swamp', 'spine'].includes(s.hand[0].family); guard++) {
+    for (let guard = 0; guard < 300 && (['swamp', 'spine'].includes(s.hand[0].family) || towerSpec(s.hand[0].family).span !== undefined); guard++) {
       s.issue({ kind: 'discard', cardIndex: 0 });
     }
     const cellA = buildableCell(s);
@@ -433,7 +433,7 @@ describe('cannibalize inheritance', () => {
     expect(s.issue({ kind: 'build', cardIndex: 0, cell: cellA }).ok).toBe(true);
     const donor = s.towers[0];
     const donorFamily = donor.family;
-    for (let guard = 0; guard < 300 && ['swamp', 'spine'].includes(s.hand[0].family); guard++) {
+    for (let guard = 0; guard < 300 && (['swamp', 'spine'].includes(s.hand[0].family) || towerSpec(s.hand[0].family).span !== undefined); guard++) {
       s.issue({ kind: 'discard', cardIndex: 0 });
     }
     expect(s.issue({
@@ -819,7 +819,7 @@ describe('new enemy verbs, castes, and the risk law', () => {
     s.meat.war = 9999;
     s.meat.science = 9999;
     for (let k = 0; k < 4; k++) {
-      for (let g = 0; g < 300 && ['swamp', 'spine'].includes(s.hand[0].family); g++) {
+      for (let g = 0; g < 300 && (['swamp', 'spine'].includes(s.hand[0].family) || towerSpec(s.hand[0].family).span !== undefined); g++) {
         s.issue({ kind: 'discard', cardIndex: 0 });
       }
       s.issue({ kind: 'build', cardIndex: 0, cell: buildableCell(s, k * 3) });
@@ -1859,7 +1859,7 @@ describe('creep logistics (sling patches + directional roots)', () => {
     s.meat.war = 9999;
     s.meat.science = 9999;
     const blockCard = () => {
-      for (let guard = 0; guard < 300 && ['swamp', 'spine'].includes(s.hand[0].family); guard++) {
+      for (let guard = 0; guard < 300 && (['swamp', 'spine'].includes(s.hand[0].family) || towerSpec(s.hand[0].family).span !== undefined); guard++) {
         s.issue({ kind: 'discard', cardIndex: 0 });
       }
       return 0;

@@ -1,9 +1,14 @@
 {
  "family": "swamp",
  "frames": 16,
- "atlasKB": 141,
+ "atlasKB": 137,
  "failed": 0,
  "checks": [
+  {
+   "name": "where it stands is marked",
+   "ok": true,
+   "value": "0.5, 0.5, 1"
+  },
   {
    "name": "idle: loop closes",
    "ok": true,
@@ -37,7 +42,7 @@
   {
    "name": "atlas is under 900 KB",
    "ok": true,
-   "value": "141 KB"
+   "value": "137 KB"
   }
  ]
 }

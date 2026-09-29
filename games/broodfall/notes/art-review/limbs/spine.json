@@ -1,9 +1,14 @@
 {
  "family": "spine",
  "frames": 30,
- "atlasKB": 263,
+ "atlasKB": 254,
  "failed": 0,
  "checks": [
+  {
+   "name": "where it stands is marked",
+   "ok": true,
+   "value": "0.5, 0.73, 1"
+  },
   {
    "name": "idle: loop closes",
    "ok": true,
@@ -52,7 +57,7 @@
   {
    "name": "atlas is under 900 KB",
    "ok": true,
-   "value": "263 KB"
+   "value": "254 KB"
   }
  ]
 }

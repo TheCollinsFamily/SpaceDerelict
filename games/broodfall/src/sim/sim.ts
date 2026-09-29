@@ -852,7 +852,22 @@ export class Sim {
    * which block covers the most path legs is the game. The one exception is
    * the spine wall, which is placed IN a street to be chewed through.
    */
-  canBuildTower(cell: number, family?: TowerFamily): boolean {
+  canBuildTower(cell: number, family?: TowerFamily, facing?: RootDir): boolean {
+    return this.groundFor(cell, family, facing) !== null;
+  }
+
+  /**
+   * The cells a limb would be built on if this cell were pointed at (a big limb takes a
+   * footprint that holds it), or null if it cannot be built there.
+   */
+  groundFor(cell: number, family?: TowerFamily, facing?: RootDir): number[] | null {
+    if (cell < 0 || cell >= this.map.cells.length) return null;
+    if (!family || !towerSpec(family).span) return this.canBuildOn(cell, family) ? [cell] : null;
+    return this.footprintAt(cell, family, facing, (c) => this.canBuildOn(c, family));
+  }
+
+  /** May a limb stand on this one cell? */
+  private canBuildOn(cell: number, family?: TowerFamily): boolean {
     if (this.isOccupied(cell) || cell === this.map.coreCell) return false;
     // A limb carrying a sling pip (banked for this build) makes its own ground:
     // it needs no creep under it, only claimed city (Collins: otherwise "the
@@ -864,6 +879,57 @@ export class Sim {
     if (family === 'spine') return t === CellType.Road || t === CellType.Block;
     if (family === 'swamp') return t === CellType.Road; // a swamp only makes sense IN the traffic
     return t === CellType.Block;
+  }
+
+  /** How many cells a limb of this family covers, across and down the board, facing this way. */
+  spanOf(family: TowerFamily, facing?: RootDir): [number, number] {
+    const span = towerSpec(family).span;
+    if (!span) return [1, 1];
+    return facing === 'E' || facing === 'W' ? [span[1], span[0]] : [span[0], span[1]];
+  }
+
+  /**
+   * The cells a limb would stand on if it were built at the cell pointed at, or null if it
+   * cannot stand there. A limb of one cell stands on that cell. A BIG limb takes a footprint
+   * that HOLDS the cell pointed at, every cell of which is legal ground (`ok`) of one kind
+   * and one height; of several that would do, the first from the north-west.
+   */
+  footprintAt(cell: number, family: TowerFamily, facing: RootDir | undefined, ok: (cell: number) => boolean): number[] | null {
+    const [sw, sh] = this.spanOf(family, facing);
+    if (sw === 1 && sh === 1) return ok(cell) ? [cell] : null;
+    const w = this.cfg.gridW;
+    const px = cell % w;
+    const py = Math.floor(cell / w);
+    for (let y0 = py - sh + 1; y0 <= py; y0++) {
+      for (let x0 = px - sw + 1; x0 <= px; x0++) {
+        if (x0 < 0 || y0 < 0 || x0 + sw > w || y0 + sh > this.cfg.gridH) continue;
+        const cells: number[] = [];
+        for (let y = y0; y < y0 + sh; y++) for (let x = x0; x < x0 + sw; x++) cells.push(y * w + x);
+        const kind = this.map.cells[cells[0]];
+        const high = this.map.heights[cells[0]];
+        if (cells.every((c) => ok(c) && this.map.cells[c] === kind && this.map.heights[c] === high)) return cells;
+      }
+    }
+    return null;
+  }
+
+  /** Every cell a limb stands on. */
+  cellsOf(t: { cell: number; cells?: number[] }): number[] {
+    return t.cells ?? [t.cell];
+  }
+
+  /** A limb lives while the creep holds any of the ground it stands on. */
+  private rooted(t: Tower): boolean {
+    return this.cellsOf(t).some((c) => this.isCreeped(c));
+  }
+
+  /** Where an enemy can stand to reach a limb: a street cell beside any cell of it (-1: none). */
+  private standCellOf(t: { cell: number; cells?: number[] }): number {
+    for (const c of this.cellsOf(t)) {
+      const s = this.standCellFor(c);
+      if (s >= 0) return s;
+    }
+    return -1;
   }
 
   /** An organ's footprint on the board: its shape turned `rot` quarter-turns, anchored at `cell` (null if off the board). */
@@ -1322,7 +1388,8 @@ export class Sim {
         const card = this.hand[cmd.cardIndex];
         if (!card) return { ok: false, err: 'no such card' };
         const spec = towerSpec(card.family);
-        if (!this.canBuildTower(cmd.cell, card.family)) return { ok: false, err: 'cell not buildable' };
+        const ground = this.groundFor(cmd.cell, card.family, cmd.facing);
+        if (!ground) return { ok: false, err: 'cell not buildable' };
         if (cmd.cannibalizeTowerId !== undefined) {
           // Legacy atomic path (autoplayer/tests): butcher-then-build in one command.
           const donor = this.towers.find((t) => t.id === cmd.cannibalizeTowerId);
@@ -1342,7 +1409,7 @@ export class Sim {
           this.stats.cannibalized += 1;
         }
         if (!card.free) this.pay(spec.cost);
-        this.addTower(card.family, cmd.cell, pips, cmd.facing);
+        this.addTower(card.family, ground[0], pips, cmd.facing);
         this.hand.splice(cmd.cardIndex, 1);
         // A free card (a pair's second half) is not replaced; a paired card hands
         // you its free twin to place next.
@@ -1616,7 +1683,7 @@ export class Sim {
     // and an evolved one (Resurrection / Phoenix) raises it again, once per wave.
     const keepers = emit ? this.enginesPointedAt(t, 'reliquary') : [];
     if (emit) this.bankRelics(t);
-    this.occupied.delete(t.cell);
+    for (const c of this.cellsOf(t)) this.occupied.delete(c);
     this.towers.splice(i, 1);
     // The brood (and a cage's puppets) do not outlive the limb that holds them.
     this.broodlings = this.broodlings.filter((b) => b.motherId !== id);
@@ -1631,7 +1698,7 @@ export class Sim {
     const raiser = keepers
       .filter((k) => this.towers.includes(k) && towerStats(k).rebirth > 0 && k.rebornWave !== this.waveNumber)
       .sort((a, b) => towerStats(b).rebirth - towerStats(a).rebirth)[0];
-    if (raiser && !this.isOccupied(t.cell)) {
+    if (raiser && this.cellsOf(t).every((c) => !this.isOccupied(c))) {
       raiser.rebornWave = this.waveNumber;
       const full = towerStats(raiser).rebirth >= 2;
       const again = this.addTower(t.family, t.cell, full ? [...t.pips] : [], t.facing);
@@ -1654,7 +1721,7 @@ export class Sim {
   witherUnrooted(): void {
     for (const t of [...this.towers]) {
       if (!this.towers.includes(t)) continue;
-      if (towerStats(t).offCreep || this.isCreeped(t.cell)) continue;
+      if (towerStats(t).offCreep || this.rooted(t)) continue;
       this.removeTower(t.id, true, ' (withered — its creep died)');
     }
   }
@@ -1713,13 +1780,23 @@ export class Sim {
     for (const job of jobs) {
       const spot = job.near.flatMap((c) => around(c, job.ring)).find((c) => this.canPlaceFree(c, job.family));
       if (spot === undefined) continue; // full: harvest the copies to make room
-      this.addTower(job.family, spot, job.pips);
+      this.addTower(job.family, this.freeGroundFor(spot, job.family)![0], job.pips);
       this.events.push({ kind: 'budded', family: job.family });
     }
   }
 
   /** Legal ground for a limb of this family, ignoring what is in hand (buds, copies). */
   private canPlaceFree(cell: number, family: TowerFamily): boolean {
+    return this.freeGroundFor(cell, family) !== null;
+  }
+
+  /** The cells a bud or a copy of this family would stand on at this cell, or null. */
+  private freeGroundFor(cell: number, family: TowerFamily): number[] | null {
+    if (!towerSpec(family).span) return this.canPlaceFreeOn(cell, family) ? [cell] : null;
+    return this.footprintAt(cell, family, undefined, (c) => this.canPlaceFreeOn(c, family));
+  }
+
+  private canPlaceFreeOn(cell: number, family: TowerFamily): boolean {
     if (this.isOccupied(cell) || cell === this.map.coreCell || !this.isCreeped(cell)) return false;
     const t = this.map.cells[cell];
     if (family === 'spine') return t === CellType.Road || t === CellType.Block;
@@ -1730,16 +1807,24 @@ export class Sim {
   /** Put a limb on the board (shared by builds, buds and recoveries). */
   private addTower(family: TowerFamily, cell: number, pips: ModPip[], facing?: RootDir): Tower {
     const spec = towerSpec(family);
-    const pos = this.cellCenter(cell);
+    // A big limb: `cell` is the first of its cells, and it stands in the middle of them all.
+    const [sw, sh] = this.spanOf(family, facing);
+    const cells: number[] = [];
+    for (let y = 0; y < sh; y++) for (let x = 0; x < sw; x++) cells.push(cell + y * this.cfg.gridW + x);
+    const first = this.cellCenter(cell);
+    const pos = { x: first.x + ((sw - 1) * this.cfg.cellPx) / 2, y: first.y + ((sh - 1) * this.cfg.cellPx) / 2 };
     const tower: Tower = {
       id: this.nextId++, family, pos, cell, hp: spec.maxHp, maxHp: spec.maxHp, pips, cooldown: 0, kills: 0,
     };
+    if (cells.length > 1) tower.cells = cells;
     tower.maxHp = this.statsOf(tower).maxHp;
     tower.hp = tower.maxHp;
     if (spec.directional) tower.facing = facing ?? this.facingTowardGate(pos);
+    // A limb that is longer than it is wide lies the way it was turned, whatever it aims at.
+    else if (sw !== sh) tower.facing = facing ?? 'S';
     this.towers.push(tower);
     if (family === 'lance') this.addCreepSource('line', cell, 0, tower.facing, tower.id);
-    this.occupied.set(cell, { kind: 't', id: tower.id });
+    for (const c of cells) this.occupied.set(c, { kind: 't', id: tower.id });
     this.refreshRouting();
     return tower;
   }
@@ -1754,7 +1839,7 @@ export class Sim {
     this.towers = savedTowers.filter((x) => x.id !== id);
     let n = 0;
     for (const x of this.towers) {
-      if (!towerStats(x).offCreep && !this.isCreeped(x.cell)) n++;
+      if (!towerStats(x).offCreep && !this.rooted(x)) n++;
     }
     this.creepSources = saved;
     this.towers = savedTowers;
@@ -2449,7 +2534,7 @@ export class Sim {
       // Walk the gaps toward the weakest limb, like the rest of the caste.
       const speed = this.moveSpeedOf(e);
       const weak = this.vulnerableTower();
-      const goal = weak ? this.standCellFor(weak.cell) : -1;
+      const goal = weak ? this.standCellOf(weak) : -1;
       if (goal >= 0) this.walkSmart(e, goal, weak!.pos, speed);
       else this.leaveField(e, speed);
       return true;
@@ -2583,7 +2668,7 @@ export class Sim {
     for (const t of this.towers) {
       // A shielded limb can't be sedated or darted — the caste doesn't bother with it.
       if ((t.shield ?? 0) > 0) continue;
-      const stand = this.standCellFor(t.cell);
+      const stand = this.standCellOf(t);
       if (stand < 0) continue;
       const key = this.dangerAt(stand) * 1000 - this.creepDist[t.cell];
       if (key < bestKey || (key === bestKey && best !== null && t.id < best.id)) { bestKey = key; best = t; }
@@ -2636,7 +2721,7 @@ export class Sim {
       this.hurtTower(prey, B.scienceExtractDps * DT); // a shield must be stripped first
       if (prey.hp <= 0) {
         e.carrying = {
-          family: prey.family, pips: [...prey.pips], cell: prey.cell,
+          family: prey.family, pips: [...prey.pips], cell: prey.cell, facing: prey.facing,
           priority: prey.priority, casteFocus: prey.casteFocus,
         };
         this.removeTower(prey.id, false);
@@ -2646,7 +2731,7 @@ export class Sim {
       }
       return;
     }
-    this.walkSmart(e, this.standCellFor(prey.cell), prey.pos, speed);
+    this.walkSmart(e, this.standCellOf(prey), prey.pos, speed);
   }
 
   /** Consort promotion ladder: the nearest war body steps up one rank. */
@@ -2727,7 +2812,7 @@ export class Sim {
         }
         // Smart like the rest of its caste: slip in where your guns aren't.
         const weak = this.vulnerableTower();
-        const goal = weak ? this.standCellFor(weak.cell) : -1;
+        const goal = weak ? this.standCellOf(weak) : -1;
         if (goal >= 0) {
           this.walkSmart(e, goal, weak!.pos, tSpeed);
         } else {
@@ -3438,7 +3523,7 @@ export class Sim {
         const want = ((towerSpec('brood').broodCount ?? 0) + stats.extraBroodlings) * stats.volley;
         if (mine < want && t.cooldown <= 0) {
           t.cooldown = B.broodRespawn / stats.tempo;
-          const spawn = this.passableNear(t.cell) ?? t.pos;
+          const spawn = this.cellsOf(t).map((c) => this.passableNear(c)).find((p) => p !== null) ?? t.pos;
           const hp = B.broodHp * (stats.maxHp / towerSpec('brood').maxHp); // spine pips = tougher brood
           this.broodlings.push({
             id: this.nextId++, motherId: t.id, pos: { x: spawn.x, y: spawn.y },
@@ -3677,7 +3762,16 @@ export class Sim {
     // targeting intact — or, if that ground is taken now, its cost comes back.
     if (e.carrying) {
       const c = e.carrying;
-      if (!this.occupied.has(c.cell) && c.cell !== this.map.coreCell) {
+      const [sw, sh] = this.spanOf(c.family, c.facing);
+      const ground: number[] = [];
+      for (let y = 0; y < sh; y++) for (let x = 0; x < sw; x++) ground.push(c.cell + y * this.cfg.gridW + x);
+      if (ground.every((g) => !this.occupied.has(g) && g !== this.map.coreCell)) {
+        if (ground.length > 1) {
+          // A big limb re-roots as it is built: on all of its cells, in the middle of them.
+          const tower = this.addTower(c.family, c.cell, c.pips, c.facing);
+          tower.priority = c.priority;
+          tower.casteFocus = c.casteFocus;
+        } else {
         const spec = towerSpec(c.family);
         const tower: Tower = {
           id: this.nextId++, family: c.family, pos: this.cellCenter(c.cell), cell: c.cell,
@@ -3689,6 +3783,7 @@ export class Sim {
         this.towers.push(tower);
         this.occupied.set(c.cell, { kind: 't', id: tower.id });
         this.refreshRouting();
+        }
         this.events.push({ kind: 'tower-recovered', family: c.family, refunded: false });
       } else {
         const cost = towerSpec(c.family).cost;

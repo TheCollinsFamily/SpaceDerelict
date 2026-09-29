@@ -84,6 +84,8 @@ export const ENEMY_SIZE: Record<Enemy['kind'], number> = {
 
 export interface PlacementPreview {
   cell: number;
+  /** A big limb: every cell it would stand on (absent: `cell` alone). */
+  cells?: number[];
   kind: 'tower' | 'organ' | 'node';
   family?: TowerFamily;
   valid: boolean;
@@ -1109,9 +1111,16 @@ export class Renderer {
     // Placement preview: the limb as it WILL be — range, field of fire, and
     // (for effect limbs) exactly what it would affect from this spot.
     if (this.preview) {
-      const c = sim.cellCenter(this.preview.cell);
       const ok = this.preview.valid;
-      this.drawPreviewCell(g, sim, this.preview.cell, ok);
+      const ground = this.preview.cells ?? [this.preview.cell];
+      // It will stand in the middle of the ground it takes.
+      const c = { x: 0, y: 0 };
+      for (const cell of ground) {
+        const p = sim.cellCenter(cell);
+        c.x += p.x / ground.length;
+        c.y += p.y / ground.length;
+        this.drawPreviewCell(g, sim, cell, ok);
+      }
       if (this.preview.kind === 'node') {
         g.circle(c.x, c.y, (this.preview.radius ?? 3) * sim.cfg.cellPx).stroke({ width: 2, color: ok ? 0x9ad068 : 0xb03a2a, alpha: 0.6 });
         g.circle(c.x, c.y, 8).fill({ color: 0x8aa860, alpha: ok ? 0.9 : 0.4 });
@@ -1122,7 +1131,7 @@ export class Renderer {
       }
       if (this.preview.kind === 'tower' && this.preview.family) {
         const ghost: Tower = {
-          id: -1, family: this.preview.family, pos: c, cell: this.preview.cell,
+          id: -1, family: this.preview.family, pos: c, cell: ground[0], ...(ground.length > 1 ? { cells: ground } : {}),
           hp: 1, maxHp: 1, pips: this.preview.pips ?? [], cooldown: 0, kills: 0, facing: this.preview.facing,
         };
         const spec = towerSpec(ghost.family);

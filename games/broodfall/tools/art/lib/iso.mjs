@@ -14,8 +14,14 @@ export const LEVEL_H = 30;
 export const WALL_SPAN = 4;
 export const A = TILE_W / 2;
 export const B = TILE_H / 2;
-/** How far a floor tile is drawn past its own edge, in cells: about one pixel. */
-export const BLEED = 0.014;
+/** How far a floor tile is drawn past its own edge, in cells: two pixels across the screen and one down it. At half that, the pale roof showed through between tiles of skin as a grid of hairlines. */
+export const BLEED = 0.034;
+/**
+ * The skin is drawn further past its edge than the floor under it. A roof tile bleeds a pixel
+ * over the skin of the roof behind it; where its own skin ended on the same line, the pale
+ * roof showed through as a grid of hairlines. The skin now ends beyond where the roof does.
+ */
+export const SKIN_BLEED = 0.07;
 
 /** Bilinear sample of an RGBA image at (x, y) in pixels; clamps at the edges. */
 export function sample(img, x, y) {

@@ -1,9 +1,14 @@
 {
  "family": "brood",
- "frames": 30,
- "atlasKB": 343,
+ "frames": 60,
+ "atlasKB": 803,
  "failed": 0,
  "checks": [
+  {
+   "name": "where it stands is marked",
+   "ok": true,
+   "value": "0.5, 0.71, 0.89"
+  },
   {
    "name": "idle: loop closes",
    "ok": true,
@@ -45,9 +50,69 @@
    "value": "1% change"
   },
   {
+   "name": "it stands in its cell",
+   "ok": true,
+   "value": "0.4% of it lies in front of its cell"
+  },
+  {
+   "name": "from behind, where it stands is marked",
+   "ok": true,
+   "value": "0.51, 0.7, 0.9"
+  },
+  {
+   "name": "from behind, idle: loop closes",
+   "ok": true,
+   "value": 0.36
+  },
+  {
+   "name": "from behind, idle: it moves",
+   "ok": true,
+   "value": 0.31
+  },
+  {
+   "name": "from behind, idle: it is calm",
+   "ok": true,
+   "value": 0.31
+  },
+  {
+   "name": "from behind, idle: inside the frame",
+   "ok": true,
+   "value": "150,150-486,474"
+  },
+  {
+   "name": "from behind, idle: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "from behind, idle: ends the size it began",
+   "ok": true,
+   "value": "1% change"
+  },
+  {
+   "name": "from behind, fire: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "from behind, fire: ends the size it began",
+   "ok": true,
+   "value": "1% change"
+  },
+  {
+   "name": "from behind, it stands in its cell",
+   "ok": true,
+   "value": "0.5% of it lies in front of its cell"
+  },
+  {
+   "name": "from behind: it has a view",
+   "ok": true,
+   "value": "drawn"
+  },
+  {
    "name": "atlas is under 900 KB",
    "ok": true,
-   "value": "343 KB"
+   "value": "803 KB"
   }
  ]
 }

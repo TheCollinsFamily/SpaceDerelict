@@ -1,9 +1,14 @@
 {
  "family": "choir",
  "frames": 16,
- "atlasKB": 157,
+ "atlasKB": 174,
  "failed": 0,
  "checks": [
+  {
+   "name": "where it stands is marked",
+   "ok": true,
+   "value": "0.5, 0.73, 0.89"
+  },
   {
    "name": "idle: loop closes",
    "ok": true,
@@ -35,9 +40,14 @@
    "value": "1% change"
   },
   {
+   "name": "it stands in its cell",
+   "ok": true,
+   "value": "0.6% of it lies in front of its cell"
+  },
+  {
    "name": "atlas is under 900 KB",
    "ok": true,
-   "value": "157 KB"
+   "value": "174 KB"
   }
  ]
 }

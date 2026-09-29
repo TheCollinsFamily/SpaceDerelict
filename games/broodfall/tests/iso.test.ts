@@ -10,7 +10,8 @@ import { describe, expect, it } from 'vitest';
 import { ENEMIES, TOWERS } from '../content/data';
 import { DARES, EXPERIMENTS, FACTIONS, TERRITORIES } from '../content/campaign';
 import {
-  depth, headingOf, isoGeo, openSides, pick, project, unproject, viewOf, wallIndex, type Heading,
+  boardCell, creepRunsOn, depth, dirToView, facingOf, fromView, headingOf, isoGeo, limbView, openSides, pick, project,
+  toView, unproject, viewCell, viewOf, viewSize, wallIndex, type Facing, type Heading, type Turn,
 } from '../src/render/iso';
 import { GLOBE, projectSite, unprojectSite, zoneAt } from '../src/ui/globe';
 import { pickBiome } from '../src/render/biome';
@@ -110,6 +111,159 @@ describe('the eight headings', () => {
   });
 });
 
+describe('the camera turns (Q and E)', () => {
+  const W = 50;
+  const H = 40;
+  const turned = (turn: Turn) => isoGeo([128, 76], 30, 26, turn, W, H);
+
+  it('takes a point to the screen and back, at every turn and every height', () => {
+    for (const turn of [0, 1, 2, 3] as Turn[]) {
+      const t = turned(turn);
+      for (const up of [0, 1, 2, 3]) {
+        for (const [x, y] of [[0, 0], [13, 13], [400, 90], [1299, 1039]]) {
+          const s = project(t, x, y, up);
+          const w = unproject(t, s.x, s.y, up);
+          expect(w.x).toBeCloseTo(x, 6);
+          expect(w.y).toBeCloseTo(y, 6);
+        }
+      }
+    }
+  });
+
+  it('is the old camera when it has not turned', () => {
+    for (const [x, y] of [[0, 0], [260, 130], [1299, 1039]]) {
+      expect(project(turned(0), x, y, 2)).toEqual(project(g, x, y, 2));
+      expect(depth(turned(0), x, y)).toBe(depth(g, x, y));
+    }
+  });
+
+  it('gives every cell of the board one cell of the view, and back', () => {
+    for (const turn of [0, 1, 2, 3] as Turn[]) {
+      const t = turned(turn);
+      const size = viewSize(t);
+      expect(size).toEqual(turn % 2 ? { w: H, h: W } : { w: W, h: H });
+      const seen = new Set<number>();
+      for (let cy = 0; cy < H; cy++) for (let cx = 0; cx < W; cx++) {
+        const v = viewCell(t, cx, cy);
+        expect(v.x).toBeGreaterThanOrEqual(0);
+        expect(v.y).toBeGreaterThanOrEqual(0);
+        expect(v.x).toBeLessThan(size.w);
+        expect(v.y).toBeLessThan(size.h);
+        seen.add(v.y * size.w + v.x);
+        expect(boardCell(t, v.x, v.y)).toEqual({ x: cx, y: cy });
+      }
+      expect(seen.size).toBe(W * H);
+    }
+  });
+
+  it('keeps neighbours neighbours: a step on the board is one step in the view', () => {
+    for (const turn of [0, 1, 2, 3] as Turn[]) {
+      const t = turned(turn);
+      for (const [dx, dy] of [[1, 0], [0, 1], [-1, 0], [0, -1]]) {
+        const a = toView(t, 10, 10);
+        const b = toView(t, 10 + dx, 10 + dy);
+        const d = dirToView(t, dx, dy);
+        expect(b.x - a.x).toBeCloseTo(d.x, 9);
+        expect(b.y - a.y).toBeCloseTo(d.y, 9);
+        expect(Math.abs(d.x) + Math.abs(d.y)).toBe(1);
+      }
+      const p = fromView(t, 7.25, 3.5);
+      const v = toView(t, p.x, p.y);
+      expect(v.x).toBeCloseTo(7.25, 9);
+      expect(v.y).toBeCloseTo(3.5, 9);
+    }
+  });
+
+  it('shows another side at every turn: what ran down-right runs down-left after one', () => {
+    // East on the board: down-right on the screen, then down-left, up-left, up-right.
+    expect(headingOf(turned(0), 1, 0)).toBe('SE');
+    expect(headingOf(turned(1), 1, 0)).toBe('SW');
+    expect(headingOf(turned(2), 1, 0)).toBe('NW');
+    expect(headingOf(turned(3), 1, 0)).toBe('NE');
+    // Four turns are no turn: the fourth heading of each step is its first.
+    for (const [dx, dy] of [[1, 0], [0, 1], [1, 1], [-1, 2]]) {
+      const all = ([0, 1, 2, 3] as Turn[]).map((turn) => headingOf(turned(turn), dx, dy));
+      expect(new Set(all).size).toBe(4);
+    }
+  });
+
+  it('puts what is nearer the camera later, whichever way the camera faces', () => {
+    // The corner of the board nearest the camera is a different corner at every turn.
+    const corners: Array<[number, number]> = [[0, 0], [W * 26, 0], [W * 26, H * 26], [0, H * 26]];
+    const nearest = ([0, 1, 2, 3] as Turn[]).map((turn) => {
+      const t = turned(turn);
+      return corners.map((c) => depth(t, c[0], c[1])).reduce((best, d, i, all) => (d > all[best] ? i : best), 0);
+    });
+    expect(new Set(nearest).size).toBe(4);
+    expect(nearest[0]).toBe(2); // not turned: the south-east corner
+  });
+});
+
+describe('a limb is seen from the side it shows the camera', () => {
+  const W = 50;
+  const H = 40;
+  const turned = (turn: Turn) => isoGeo([128, 76], 30, 26, turn, W, H);
+
+  it('faces the way of the four that a step is nearest to', () => {
+    expect(facingOf(5, 1)).toBe('E');
+    expect(facingOf(-5, 1)).toBe('W');
+    expect(facingOf(1, 5)).toBe('S');
+    expect(facingOf(1, -5)).toBe('N');
+  });
+
+  it('draws its front when it faces the camera and its back when it faces away', () => {
+    const t = turned(0);
+    // South runs down-left: the front, as it is drawn. East runs down-right: the front, mirrored.
+    expect(limbView(t, 'S')).toEqual({ back: false, mirror: false });
+    expect(limbView(t, 'E')).toEqual({ back: false, mirror: true });
+    // North runs up-right: from behind, as it is drawn. West runs up-left: from behind, mirrored.
+    expect(limbView(t, 'N')).toEqual({ back: true, mirror: false });
+    expect(limbView(t, 'W')).toEqual({ back: true, mirror: true });
+  });
+
+  it('shows four different pictures of one limb as the camera turns round it: no "doom effect"', () => {
+    for (const facing of ['N', 'E', 'S', 'W'] as Facing[]) {
+      const seen = ([0, 1, 2, 3] as Turn[]).map((turn) => {
+        const v = limbView(turned(turn), facing);
+        return `${v.back ? 'back' : 'front'}${v.mirror ? ' mirrored' : ''}`;
+      });
+      expect(new Set(seen).size, `a limb facing ${facing}`).toBe(4);
+    }
+  });
+
+  it('shows four different pictures of four limbs that face four ways', () => {
+    for (const turn of [0, 1, 2, 3] as Turn[]) {
+      const seen = (['N', 'E', 'S', 'W'] as Facing[]).map((f) => JSON.stringify(limbView(turned(turn), f)));
+      expect(new Set(seen).size).toBe(4);
+    }
+  });
+});
+
+describe('the skin runs to the edge of a roof', () => {
+  it('runs on to a roof of another height, creeped or bare: there it goes to the edge and down the wall', () => {
+    expect(creepRunsOn({ height: 2 }, { height: 0, creeped: false })).toBe(true);
+    expect(creepRunsOn({ height: 2 }, { height: 1, creeped: true })).toBe(true);
+    expect(creepRunsOn({ height: 1 }, { height: 3, creeped: false })).toBe(true);
+    expect(creepRunsOn({ height: 0 }, { height: 1, creeped: false })).toBe(true);
+  });
+
+  it('stops ragged only where the same surface goes on bare', () => {
+    expect(creepRunsOn({ height: 1 }, { height: 1, creeped: false })).toBe(false);
+    expect(creepRunsOn({ height: 0 }, { height: 0, creeped: false })).toBe(false);
+    expect(creepRunsOn({ height: 1 }, { height: 1, creeped: true })).toBe(true);
+  });
+
+  it('runs to the edge of the board', () => {
+    expect(creepRunsOn({ height: 1 }, null)).toBe(true);
+  });
+
+  it('holds a roof that stands alone whole: no side of it is ragged', () => {
+    // A creeped roof one level up, streets all round it.
+    const open = openSides(() => creepRunsOn({ height: 1 }, { height: 0, creeped: false }));
+    expect(open).toBe(0);
+  });
+});
+
 describe('the pieces of the city', () => {
   it('walks a wall texture on from cell to cell, both ways round a corner', () => {
     expect(wallIndex('south', 0, 0, 4)).toBe(0);
@@ -202,6 +356,61 @@ describe.skipIf(!hasArt)('the baked art', () => {
     expect(Object.keys(manifest.limbs).sort()).toEqual(TOWERS.map((t) => t.family).sort());
   });
 
+  it('knows where every limb stands: the middle of what it stands on, not its lowest point', () => {
+    for (const t of TOWERS) {
+      const l = manifest.limbs[t.family];
+      const sides = [l, ...(l.back ? [l.back] : [])];
+      for (const side of sides) {
+        expect(side.anchor[0], `${t.family} stands in the middle of its frame, left to right`).toBe(0.5);
+        // Anchored by its lowest point it stood at 0.86 of its frame, on the back half of its cell.
+        expect(side.anchor[1], `${t.family} anchor`).toBeGreaterThan(0.3);
+        expect(side.anchor[1], `${t.family} anchor`).toBeLessThan(0.84);
+        expect(side.body, `${t.family} footing`).toBeGreaterThan(0.25);
+        expect(side.body, `${t.family} footing`).toBeLessThanOrEqual(1);
+      }
+    }
+  });
+
+  it('has a view from behind of every limb that is not the same all the way round', () => {
+    const lopsided = ['spitter', 'impaler', 'quill', 'skipper', 'ember', 'maw', 'lobber', 'ocular', 'brood', 'sling', 'conduit', 'tap', 'press', 'amp', 'lance'];
+    for (const family of lopsided) {
+      const l = manifest.limbs[family];
+      expect(l.back, `${family} from behind`).toBeTruthy();
+      expect(l.back.anims.idle.count, `${family} from behind, idle`).toBeGreaterThanOrEqual(8);
+      // A limb that fires fires from behind too.
+      if (l.anims.fire) expect(l.back.anims.fire, `${family} from behind, firing`).toBeTruthy();
+      // Its frames follow the front's in the same atlas.
+      expect(l.back.anims.idle.start).toBeGreaterThanOrEqual(l.anims.idle.count);
+    }
+    expect(Object.keys(manifest.limbs).filter((f) => manifest.limbs[f].back).sort()).toEqual([...lopsided].sort());
+  });
+
+  it('draws a BIG limb from bigger frames, and only a big limb', () => {
+    for (const t of TOWERS) {
+      const l = manifest.limbs[t.family];
+      expect(!!l.big, `${t.family} big`).toBe(!!t.span);
+      expect(l.frame, `${t.family} frame`).toBe(t.span ? 384 : 256);
+    }
+  });
+
+  it('has a landing site as sharp as the limbs round it, that knows where it lies', () => {
+    const c = manifest.board.terrain.core;
+    // Four cells wide on the board: at 320 it had half the sharpness of a limb (Collins, Sep 29 2026).
+    expect(c.frame).toBeGreaterThanOrEqual(640);
+    expect(c.anchor[0]).toBe(0.5);
+    expect(c.anchor[1]).toBeGreaterThan(0.4);
+    expect(c.anchor[1]).toBeLessThan(0.75);
+    expect(c.body).toBeGreaterThan(0.6);
+    const { w, h } = webpSize(join(ART, c.atlas));
+    expect(w).toBe(c.frame * c.cols);
+    expect(h).toBeGreaterThanOrEqual(Math.ceil(c.count / c.cols) * c.frame);
+  });
+
+  it('has the four edges that make a roof read as a roof under the skin', () => {
+    const creep = manifest.board.terrain.sheets.creep.sprites;
+    for (const id of ['edge-lip-south', 'edge-lip-east', 'edge-shade-north', 'edge-shade-west']) expect(creep[id], id).toBeTruthy();
+  });
+
   it('keeps every frame inside its atlas, and every atlas small', () => {
     const sets: Array<[string, { atlas: string; frame: number; cols: number; anims: Record<string, unknown> }]> = [
       ...Object.entries(manifest.units as Record<string, never>), ...Object.entries(manifest.limbs as Record<string, never>),
@@ -212,7 +421,8 @@ describe.skipIf(!hasArt)('the baked art', () => {
       expect(statSync(file).size, `${a.atlas} size`).toBeLessThan(900 * 1024);
       const { w, h } = webpSize(file);
       expect(w, `${id} atlas width`).toBe(a.frame * a.cols);
-      const clips = Object.values(a.anims).flatMap((c) => (c && typeof c === 'object' && 'start' in c ? [c] : Object.values(c as object))) as Array<{ start: number; count: number; fps: number }>;
+      const back = (a as { back?: { anims: Record<string, unknown> } }).back;
+      const clips = [...Object.values(a.anims), ...Object.values(back?.anims ?? {})].flatMap((c) => (c && typeof c === 'object' && 'start' in c ? [c] : Object.values(c as object))) as Array<{ start: number; count: number; fps: number }>;
       expect(clips.length).toBeGreaterThan(0);
       for (const c of clips) {
         expect(c.count, `${id} frames`).toBeGreaterThan(0);
