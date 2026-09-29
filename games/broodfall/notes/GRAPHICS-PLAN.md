@@ -101,15 +101,18 @@ No Blender, no ImageMagick.
 | Worst at | Several angles of one thing: every angle is a separate generation. | Thin parts (legs, antennae, wings, membranes) fuse or vanish. Soft flesh comes out as a lump. |
 | On RFab | Proven in production (the loading loops) and in the probes below. | Never tried on an insect. Six-legged rigs need a backend change and a deploy. The wallet is shared with production. |
 
-In isometric, four facings are two views plus their mirror images. So a thing that turns
-needs two clips, not four.
+**Directions.** Insects head at any angle (the sim steers each body toward the next cell's
+centre from wherever it stands; fliers and climbers go in straight lines), so they get the
+genre's standard 8 headings: FIVE generated views (toward, toward-left, left, away-left,
+away) and three mirror images. Limbs with a facing only ever face along the grid (N, E, S,
+W), which in isometric is two views and their mirrors.
 
 | Asset | Count | Made by |
 |---|---|---|
 | Limbs that don't turn | 24 | Still → video: an idle loop and a firing clip |
 | Limbs with a facing (the ten engines, skipping mortar, creep lance) | 12 | Still → video, two views each |
 | Graft parts (what an eaten limb leaves on the new one) | 36 | Small still per donor family, cut out, pinned to standard slots |
-| Insects | 26 kinds, ~18 bodies | Still → video walking in place, two views each. Ranks share a body (militia, soldier, elite: scale, tint, armour) |
+| Insects | 26 kinds, ~18 bodies | Still → video walking in place, five views each. Ranks share a body (militia, soldier, elite: scale, tint, armour) |
 | The core / meteor | 1 | Still → video |
 | Blocks, streets | — | Code, with generated textures (about 12) |
 | Roof props, doorway lights, street life | ~30 | Still, cut out |
@@ -172,6 +175,47 @@ What the probes taught that the plan did not know:
 - At the smallest size (14 px) an insect is a speck. Swarm bodies read by colour and
   motion, not by drawing.
 
+### 6b. One insect in 8 directions (Sep 29 2026, about $1.85 of tokens)
+
+Collins: "the first test we need to run is changing the angle of the walker because we
+probably want 8 animations for each unit." `node tools/art/probe-walker8.mjs` and
+`node tools/art/probe-turnaround.mjs`. Pictures in `notes/probes/2026-09-29/walker8/` and
+`notes/probes/2026-09-29/turnaround/`.
+
+| Question | Result |
+|---|---|
+| Will it walk in place from every angle? | Yes, all four new views on the first try, about 2.5 minutes each. |
+| Does the loop-point search hide the seam? | Yes. Loops of 18–28 frames; the two cut frames differ by 1–4 of 255. |
+| Do 8 headings read as one insect turning? | At 24 and 48 px, yes. At 96 px and up, no: see next row. |
+| Do five SEPARATE stills hold one camera? | No. Made one at a time from the first still, the side view came out nearly level with the ground and the straight-away view nearly top-down. Colour and material held; body proportions drifted. |
+| Do five views in ONE picture hold one camera? | Yes, much better: same height, same size, same creature. Two faults: the "left" view came out as a second toward-left, and the two away views have four legs. |
+
+So: swarm bodies (48 px and under) can be made from video today. Bodies the player looks
+at closely (the royal, the cannons) need their angles from somewhere exact.
+
+### 6c. What StarCraft 1 did, and what to take from it
+
+(From how the modding community documents its files; the numbers are likely, not checked.)
+Units were built and animated as 3D models, then photographed by one fixed camera into
+small sprites. 32 headings, 17 stored, the rest mirrored. Short walk cycles, with the unit
+moved a set number of pixels per animation frame so feet never slid. Buildings had one
+facing plus overlays for working, damage and fire. Tanks were a body and a turret, each
+with its own heading. One 256-colour palette for everything; team colour was a reserved
+band of it. Sprites were tiny, so shapes were exaggerated.
+
+- **Angles came from 3D.** That is the one thing pure image generation does not give us
+  (6b). The hybrid to try: a rough Tripo model photographed at the five exact angles, each
+  photograph used as the START FRAME of a walking clip. 3D gives the angle, video gives
+  the legs, and nothing needs rigging.
+- **Tie movement to the animation.** Play the walk loop at a rate set by the body's speed.
+- **One facing plus overlays for buildings** is the limb plan already: a loop, a firing
+  clip, grafts pinned on top.
+- **One palette.** The filter (2b) should include a shared colour grade or palette, not
+  only grain. It is what made 1998's assets read as one game.
+- **A reserved colour band for caste.** Flesh on creep has no contrast (section 6); a
+  caste-coloured rim or marking, recoloured in code, fixes reading and caste at once.
+- **Exaggerate.** At 24 px an insect is a silhouette: thick legs, big mandibles.
+
 ## 7. Renderer work that comes first (costs nothing)
 
 1. Sprites that persist between frames, in layers: ground (cached), creep, shadows, bodies
@@ -186,7 +230,8 @@ What the probes taught that the plan did not know:
 
 | Probe | Settles |
 |---|---|
-| The soldier seen from BEHIND (made from the first still as a reference), walking away | Whether two views of one insect match. This decides video or Tripo for insects. |
+| Walking clips from the five views of the single-picture sheet | Whether the sheet's consistency survives animation |
+| A rough Tripo model photographed at five exact angles, each photograph animated | The hybrid in 6c. Needs the Tripo wallet balance checked first. |
 | A quiet idle for the spitter | Whether idles can be held small |
 | A flier | Whether wings survive the key |
 | A directional limb in two views | The twelve limbs with a facing |
@@ -209,10 +254,11 @@ films → sound.
 
 ## 10. Budget and limits
 
-- One living asset (a still and a clip) costs $0.35 and about 5 minutes.
-- The whole board is about 170 clips: 36 limbs × idle and fire, 12 extra views, 18 bodies ×
-  2 views × walk and attack. With re-rolls, roughly $130 of tokens and 6 hours of
-  generation at five at a time. Stills, films and rooms add about as much again.
+- One living asset (a still and a clip) costs $0.35 and about 3–5 minutes.
+- The whole board is about 280 clips: 24 limbs × idle and fire, 12 limbs with a facing ×
+  2 views × idle and fire, 18 bodies × 5 views × walk and attack. With re-rolls, roughly
+  $175 of tokens and 7 hours of generation at five at a time. Stills, films and rooms add
+  about half as much again.
 - **SeeGen is the dependency now.** Only `seegen:` models take an end frame, and SeeGen is
   a prepaid balance shared with production. Check it before a batch.
 - The Tripo wallet (prepaid, shared with production, refuses every request below 100

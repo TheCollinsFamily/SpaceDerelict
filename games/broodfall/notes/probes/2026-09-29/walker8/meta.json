@@ -1,0 +1,58 @@
+{
+ "SW": {
+  "sheet": "SW.png",
+  "frames": 28,
+  "cols": 8,
+  "mirror": false,
+  "seam": 3.9
+ },
+ "S": {
+  "sheet": "S.png",
+  "frames": 22,
+  "cols": 8,
+  "mirror": false,
+  "seam": 2.27
+ },
+ "W": {
+  "sheet": "W.png",
+  "frames": 18,
+  "cols": 8,
+  "mirror": false,
+  "seam": 2.61
+ },
+ "NW": {
+  "sheet": "NW.png",
+  "frames": 28,
+  "cols": 8,
+  "mirror": false,
+  "seam": 1.16
+ },
+ "N": {
+  "sheet": "N.png",
+  "frames": 20,
+  "cols": 8,
+  "mirror": false,
+  "seam": 1.2
+ },
+ "SE": {
+  "sheet": "SW.png",
+  "frames": 28,
+  "cols": 8,
+  "mirror": true,
+  "seam": 3.9
+ },
+ "E": {
+  "sheet": "W.png",
+  "frames": 18,
+  "cols": 8,
+  "mirror": true,
+  "seam": 2.61
+ },
+ "NE": {
+  "sheet": "NW.png",
+  "frames": 28,
+  "cols": 8,
+  "mirror": true,
+  "seam": 1.16
+ }
+}

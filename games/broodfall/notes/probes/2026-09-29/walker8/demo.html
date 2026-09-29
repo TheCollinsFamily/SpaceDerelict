@@ -1,0 +1,49 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Broodfall probe: one insect, eight directions, from video</title>
+<style>body{margin:0;background:#0a0806;color:#d8c9a0;font:14px/1.4 sans-serif}canvas{display:block;margin:12px auto;image-rendering:auto}p{text-align:center;margin:8px}</style>
+<p>One soldier walking a loop, turning through all eight headings. Five views are generated; NE, E and SE are mirror images. Three sizes: 96, 48 and 24 px.</p>
+<canvas id="c" width="1040" height="600"></canvas>
+<script>
+const META = {"SW":{"sheet":"SW.png","frames":28,"cols":8,"mirror":false,"seam":3.9},"S":{"sheet":"S.png","frames":22,"cols":8,"mirror":false,"seam":2.27},"W":{"sheet":"W.png","frames":18,"cols":8,"mirror":false,"seam":2.61},"NW":{"sheet":"NW.png","frames":28,"cols":8,"mirror":false,"seam":1.16},"N":{"sheet":"N.png","frames":20,"cols":8,"mirror":false,"seam":1.2},"SE":{"sheet":"SW.png","frames":28,"cols":8,"mirror":true,"seam":3.9},"E":{"sheet":"W.png","frames":18,"cols":8,"mirror":true,"seam":2.61},"NE":{"sheet":"NW.png","frames":28,"cols":8,"mirror":true,"seam":1.16}};
+const FRAME = 128, FPS = 12;
+const ORDER = ['E','SE','S','SW','W','NW','N','NE'];
+const ctx = document.getElementById('c').getContext('2d');
+const load = (src) => new Promise((ok) => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => ok(null); i.src = src; });
+const sheets = {};
+let board;
+const ready = Promise.all([load('board.png').then((i) => { board = i; }),
+  ...Object.entries(META).map(([d, m]) => load(m.sheet).then((i) => { sheets[d] = i; }))]);
+// An octagon-ish loop of waypoints over the board crop.
+const path = (cx, cy, r) => [[r,0],[r*0.7,r*0.7],[0,r],[-r*0.7,r*0.7],[-r,0],[-r*0.7,-r*0.7],[0,-r],[r*0.7,-r*0.7]].map(([x,y]) => [cx + x * 1.6, cy + y * 0.8]);
+function along(pts, t) {
+  const n = pts.length, seg = Math.floor(t * n) % n, f = t * n - Math.floor(t * n);
+  const a = pts[seg], b = pts[(seg + 1) % n];
+  return { x: a[0] + (b[0] - a[0]) * f, y: a[1] + (b[1] - a[1]) * f, dx: b[0] - a[0], dy: b[1] - a[1] };
+}
+function draw(p, size, time) {
+  const ang = Math.atan2(p.dy, p.dx);
+  const dir = ORDER[((Math.round(ang / (Math.PI / 4)) % 8) + 8) % 8];
+  const m = META[dir], img = sheets[dir];
+  if (!m || !img) { ctx.fillStyle = '#d1603c'; ctx.fillRect(p.x - 3, p.y - 3, 6, 6); return; }
+  const f = Math.floor(time * FPS) % m.frames;
+  const sx = (f % m.cols) * FRAME, sy = Math.floor(f / m.cols) * FRAME;
+  ctx.save();
+  ctx.translate(p.x, p.y);
+  ctx.fillStyle = 'rgba(0,0,0,0.35)';
+  ctx.beginPath(); ctx.ellipse(0, size * 0.18, size * 0.3, size * 0.12, 0, 0, Math.PI * 2); ctx.fill();
+  if (m.mirror) ctx.scale(-1, 1);
+  ctx.drawImage(img, sx, sy, FRAME, FRAME, -size / 2, -size / 2, size, size);
+  ctx.restore();
+}
+window.renderAt = (time) => {
+  ctx.imageSmoothingEnabled = true;
+  if (board) { ctx.imageSmoothingEnabled = false; ctx.drawImage(board, 560, 380, 520, 300, 0, 0, 1040, 600); ctx.imageSmoothingEnabled = true; }
+  else { ctx.fillStyle = '#54432a'; ctx.fillRect(0, 0, 1040, 600); }
+  draw(along(path(300, 300, 150), (time / 16) % 1), 96, time);
+  draw(along(path(760, 220, 90), (time / 12) % 1), 48, time);
+  draw(along(path(800, 460, 60), (time / 9) % 1), 24, time);
+};
+window.ready = ready;
+ready.then(() => { const t0 = performance.now(); const tick = () => { if (!window.manual) window.renderAt((performance.now() - t0) / 1000); requestAnimationFrame(tick); }; tick(); });
+</script>
