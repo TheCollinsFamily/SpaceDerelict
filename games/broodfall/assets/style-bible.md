@@ -1,4 +1,4 @@
-# Broodfall style bible — v2 (Sep 29 2026)
+# Broodfall style bible — v3 (Sep 29 2026)
 
 The visual language of the game, and the prompt blocks every generated asset shares.
 Concept pictures are in `notes/concepts/2026-09-29/`; the script is
@@ -36,25 +36,55 @@ Concept pictures are in `notes/concepts/2026-09-29/`; the script is
    because they make sense to him but he is still just a young guy hoping for promotion and
    a partner."
 8. **The ship's AI** is "a female anime girl projection, torso up".
-9. **Also needed on the ship:** "the game play map on the ship (a holographic projection of
+9. **We see the character from behind.** Of `r4-hero-portrait.png`: "love these, but remember we
+   usually only see him from behind because he is our character."
+10. **YOKE is the silver-haired one.** Of `r4-yoke-expressions.png` and `r4-yoke-colour.png`: "like
+    this for the AI."
+11. **Approved as they are:** `r4-hero-bunk.png`, `r4-yoke-in-room.png`, `r4-hobby-interface.png`
+    ("love these").
+12. **The two sides must contrast.** Of `r4-units-rts-on-board.png`: "this is very good for creep and
+    towers but highlights an issue: both forces look too monstrous and so you don't get good
+    contrast … I can see it working for the architecture of insects and their dress style (at
+    least the warrior caste): think eastern orthodox."
+13. **Spec real units.** "I would focus on trying to spec actual game units rather than in the
+    abstract, that is your issue." The spec is `assets/unit-spec.md`: all 26 kinds in the game.
+14. **Also needed on the ship:** "the game play map on the ship (a holographic projection of
    the planet with zones) and some exteriors of the ship."
+
+## NO REAL RELIGIOUS SYMBOL, EVER (a rule from Claude, Sep 29 2026; Collins can overrule it)
+
+The colony's dress and buildings are Eastern Orthodox in STYLE. They never carry a real
+religious symbol: no crosses, no stars, no crescents. Their one emblem is a plain gold
+hexagon (a honeycomb cell), and domes end in a plain gold ball.
+
+- Why: the player exterminates these people. With a cross on every helmet the game is about
+  killing Christians; the first replacement tried, a six-pointed star, came out as a Star of
+  David. Those pictures were withdrawn before they were committed to this public repo.
+- DESIGN.md already asks for this of the Faithful: "vague enough that players of each group
+  assume it's the other".
+- The image model adds crosses BY ITSELF whenever it is asked for Orthodox dress. Every
+  picture is checked for them, zoomed in, before it is kept. Telling it WHERE the crosses
+  are ("on the five helmets") removes them; "everywhere" does not.
 
 ## Four looks, kept apart on purpose
 
 | Where | Look | Reference pictures |
 |---|---|---|
-| The board: city, limbs, landing site | Realistic, detailed, overcast daylight. An insect-made city of paper, wax and clay; your body wet and red on it. | `board-paper-city.png`, `board-clay-city.png`, `limbs.png` |
-| The board: units | A little cartoonish, like late-1990s strategy game units: chunky, big heads and weapons, bold shapes, caste colour in large patches | `r4-units-rts-war.png`, `r4-units-rts-war-2.png`, `r4-units-rts-science-royal.png` |
+| The board: city, limbs, landing site | Realistic, detailed, overcast daylight. A clean, ordered, beautiful Eastern Orthodox city; your body wet and red on it. | `board-orthodox.png`, `city-orthodox-blocks.png`, `limbs.png`; creep and limbs as in `board-paper-city.png` |
+| The board: units | A little cartoonish, like late-1990s strategy game units: dressed little people, chunky, big heads and tools, caste colour as clothing | `units-1-first-waves.png` to `units-6-royal.png` (all 26 kinds) |
 | Films and news clippings | 1950s colour horror B-movie; realistic insect people in 1950s clothes | `r2-film-still.png`, `r2-keyart-poster.png`, `r2-castes-human.png`, `r2-faction-leaders.png`, `poster.png` |
 | The ship | Lifelike hard science fiction: black, white, bare, exact. The one drawn thing aboard is the AI. | `r3-ship-operations-black.png`, `r3-ship-operations-white.png`, `r4-hero-bunk.png`, `r4-yoke-in-room.png` |
 
 ## The board
 
-- **The city is insect-made:** wasp paper, wax, dried clay; hexagonal cells, ribbed arches,
-  round doorways lit amber. Flat-topped blocks of three heights, because limbs stand on them.
-- **Paper and clay are both liked.** Proposal: they are different territories. Pale paper
-  for the Crash Site and the suburbs, terracotta clay for the Granary Belt and Foundry
-  Plains. On clay, red flesh has less contrast, so limbs there need a stronger rim.
+- **The city is Eastern Orthodox in style** (rule 12): white-washed walls, round arches, gold
+  and deep blue onion domes, bands of painted tile, amber windows. Clean, ordered, beautiful.
+  It is what makes your organism the only monster on the board.
+- **Every block has a wide flat roof terrace** ringed by a parapet, domes only at the corners,
+  because limbs stand on the roof. Three heights. Four kinds: residential, research quarter,
+  provision district, temple heights (`city-orthodox-blocks.png`).
+- The earlier insect-made city (wasp paper, hexagonal cells) is superseded for buildings; its
+  creep, limbs and landing site stand (rule 2).
 - **The body:** salmon-pink wet muscle, dark chitin, ivory bone. Creep is dark maroon,
   matte and veined: thick on roofs, a thin film on streets.
 - **Light and dark, darkest first:** unclaimed city under smoke; creep; insects; limbs;
@@ -99,7 +129,29 @@ monster.
 - **Every kind exists twice:** a cartoon sprite for the map and a realistic body for films.
   Same design, same markings, two renderings.
 
-### Map units (rule 3)
+### Map units (rules 3, 12 and 13)
+
+**The spec is `assets/unit-spec.md`:** one entry for each of the 26 kinds in
+`content/data.ts`, with what it does, what is drawn, the insect it borrows from, its size on
+the map, and every picture it needs beyond walking. It is generated from
+`tools/art/units.mjs` by `node tools/art/unit-spec.mjs`, which fails if the list and the game
+ever disagree.
+
+| Sheet | Units |
+|---|---|
+| `units-1-first-waves.png` | Responder, skitterlings, militia, soldier, splitter |
+| `units-2-army.png` | Elite, flier, drummer, stalker; the flier netted |
+| `units-3-siege.png` | Sapper, bomber, mortar beetle, siege cannon, shadewing; the cannon deployed |
+| `units-4-last.png` | Phalanx, carapace lord, tender, ghost sapper, tunneler; the carapace stripped; the tunneler burrowed |
+| `units-5-science.png` | Researcher, thief, infiltrator, sedation battery; the researcher carrying a limb; the battery deployed |
+| `units-6-royal.png` | The queen, consort, veil matron |
+
+How the job shows in the drawing: the drummer is a bell-ringer with a yoke of bronze bells;
+the bomber swings a smoking censer that is the bomb; the carapace lord's shell is a gilded
+onion dome; the phalanx carries a screen of painted panels whose saints are insects; the
+splitter is a porter with two hatchlings in a pannier.
+
+#### Earlier tries (before the Orthodox dress)
 
 | Picture | What is on it |
 |---|---|
@@ -162,6 +214,9 @@ A junior clearance technician. About twenty-five, slight, earnest, a bit of a ne
 believes in the Empire because its values make sense to him, and he is still just a young
 man hoping for a promotion and a partner (`r4-hero-portrait.png`).
 
+- **Seen from behind** (rule 9): the back of his untidy hair, the stylus behind his ear, his
+  pushed-up sleeves (`hero-behind-desk.png`, `hero-yoke-over-shoulder.png`). His face is for
+  rare moments only.
 - **The uniform, worn slightly wrong:** plain black, narrow white collar, sleeves pushed
   up, a stylus behind one ear.
 - **His cell is regulation:** a flat metal slab that folds out of the wall, one thin
@@ -201,8 +256,9 @@ that is drawn rather than real.
 
 | Picture | Design |
 |---|---|
-| `r4-yoke-colour.png` | Long pale silver hair, amber eyes, soft colour, a gear hair clip, the Empire's black dress |
-| `r4-yoke-austere.png` | Dark hair tied back, one colour of pale light, severe |
+| `r4-yoke-colour.png` | CHOSEN (rule 10). Long pale silver hair, amber eyes, soft colour, a gear hair clip, the Empire's black dress |
+| `r4-yoke-austere.png` | Not chosen. Dark hair tied back, one colour of pale light, severe |
+| `hero-yoke-over-shoulder.png` | The dialogue view: her facing us over the back of his shoulder |
 | `r4-yoke-expressions.png` | Six expressions of the silver-haired design, for dialogue |
 | `r4-yoke-in-room.png` | Talking with the character at the workstation |
 
@@ -212,7 +268,8 @@ a nerd, and it explains why she looks like nothing else aboard.
 
 ## OPEN — Collins's calls
 
-1. **Which YOKE:** silver-haired in colour, or dark-haired in one colour of light.
+1. **The science and royal castes** are drawn in Orthodox dress too. Rule 12 said "at least the
+   warrior caste".
 2. **Did he install the projection himself** (proposal above).
 3. **"He makes, never buys"** as the rule for his things (proposal above).
 4. **Are limbs cartoonish too?** Rule 2 likes the realistic limbs; rule 3 makes units
@@ -221,7 +278,6 @@ a nerd, and it explains why she looks like nothing else aboard.
    it could follow the ship (black, white, exact, the gear) instead.
 6. **War caste colour:** safety orange rather than orange-red, so war markings never read
    as your flesh. It is also the WAR meat counter in the HUD.
-7. **Paper and clay as different territories** (proposed above).
 
 ## Prompt blocks (shared by every asset; from `tools/art/concepts.mjs`)
 
@@ -259,6 +315,7 @@ a nerd, and it explains why she looks like nothing else aboard.
 - It draws all of this without refusing, lettering included.
 - It adds lettering nobody asked for (a shop sign reading "RIVERSIDE INSECTICIDE CO." in
   the key art). Pictures need checking for stray words.
+- Asked for Orthodox dress, it adds crosses by itself (see the rule at the top).
 - Asked for "small human-like crew", it drew humans. Say "insect" every time.
 - Asked for cartoon units inside a realistic scene, it made everything realistic. A style
   holds when the whole picture is in it; mixed styles have to be composited from parts.

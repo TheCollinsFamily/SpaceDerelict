@@ -10,6 +10,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { ROOT, makeStill, ready } from './rfab.mjs';
+import { SHEETS, unit } from './units.mjs';
 
 const OUT = path.join(ROOT, 'notes', 'concepts', process.env.PROBE_DATE || '2026-09-29');
 
@@ -462,14 +463,140 @@ const JOBS = {
       'camera, shallow depth of field. Calm, ordinary, unposed. No text.' },
 };
 
+// Round five (Collins, Sep 29 2026): "I would focus on trying to spec actual game units rather
+// than in the abstract"; "both forces look too monstrous and so you don't get good contrast … I
+// can see it working for the architecture of insects and their dress style (at least the warrior
+// caste): think eastern orthodox"; of the hero: "we usually only see him from behind because he
+// is our character". Unit sheets are built from tools/art/units.mjs, one figure per real unit,
+// in the style of the sheet he called "the closest I have seen for units".
+const UNIT_STYLE_REF = 'r4-units-rts-science-royal.png';
+// NO REAL RELIGIOUS SYMBOL, EVER. Round five drew Christian crosses on every helmet, and a
+// "six-pointed star" asked for in their place came out as a Star of David. This is a game about
+// exterminating these people: they carry an invented emblem, a plain gold hexagon (a honeycomb cell).
+const EMBLEM =
+  'Their one emblem is a small plain gold hexagon, the shape of a honeycomb cell. There are no crosses, no ' +
+  'stars and no crescents anywhere in the picture';
+const ORTHODOX =
+  'Eastern Orthodox in style: thick white-washed walls, round arches, small gold and deep blue onion domes, ' +
+  `bands of painted tile and tiny arched windows lit amber. On top of every dome is a plain gold ball. ${EMBLEM}`;
+const FIX =
+  'Redraw the reference picture exactly: the same figures in the same places, the same poses, the same ' +
+  'drawing style, the same plain background. Change only what is listed here. Every cross, wherever it ' +
+  'appears (on helmets, crowns, bells, banners, robes, shells), becomes a small plain gold hexagon, the shape ' +
+  'of a honeycomb cell. There must be no crosses, no stars and no crescents anywhere.';
+for (const s of SHEETS) {
+  const figures = [
+    ...s.kinds.map((k) => { const u = unit(k); return `${u.name.toUpperCase()}: ${u.look}`; }),
+    ...(s.extra || []),
+  ];
+  JOBS[`r5-${s.slug}`] = { w: 1536, h: 1024, quality: 'medium', ref: UNIT_STYLE_REF,
+    prompt:
+      'In exactly the same drawing style as the reference picture: the same rendering, the same chunky ' +
+      'proportions with big heads, the same amount of detail, the same plain grey background with a soft shadow ' +
+      `under each figure. ${figures.length} unit sprites for the map of a strategy game. ${ISO} Each figure stands ` +
+      'apart from the others, all facing the lower left. They belong to an insect civilisation whose dress ' +
+      'and ornament are Eastern Orthodox: kaftans, gold braid, pointed dome helmets, bronze bells, censers, ' +
+      `veils. ${EMBLEM}. They are charming rather than frightening: round heads, big amber eyes, small mandibles, no bare ` +
+      'claws and no spikes; dressed little people with dark umber shells. Draw exactly these figures, in ' +
+      `this order, left to right and top to bottom: ${figures.map((f, i) => `(${i + 1}) ${f}`).join('; ')}. ` +
+      `Relative sizes: ${s.kinds.map((k) => `${unit(k).name} ${unit(k).r}`).join(', ')}. No text, no labels, no numbers.` };
+}
+// Round six: the round-five pictures with the emblem corrected and each sheet's faults fixed.
+const FIXES = {
+  'units-1-first-waves': 'The pack of hatchlings becomes five hatchlings, each with a dab of orange paint on its back.',
+  'units-2-army': 'The horned guardsman loses the second helmet behind his shoulder; he has one helmet, on his head.',
+  'units-3-siege': 'The running figure with the smoking censer wears an ORANGE coat, not a dark green one.',
+  'units-4-last': 'The painted panels of the shield wall show saints who are INSECTS: upright figures with insect heads and antennae, in robes, never humans. The digger with the head lamp wears an orange cloth, not a blue one.',
+  'units-5-science': 'The small figure standing beside the beetle holds a clipboard, not a censer.',
+  'units-6-royal': '',
+};
+for (const [slug, extra] of Object.entries(FIXES)) {
+  JOBS[`r6-${slug}`] = { w: 1536, h: 1024, quality: 'medium', ref: `r5-${slug}.png`, prompt: `${FIX} ${extra} No text, no labels.` };
+}
+// Second pass on the two sheets where crosses survived the first one. Naming WHERE they are works
+// better than "everywhere".
+JOBS['r7-units-2-army'] = { w: 1536, h: 1024, quality: 'medium', ref: 'r6-units-2-army.png',
+  prompt: 'Redraw the reference picture exactly: the same five figures in the same places, poses and style. Change ' +
+    'only this: the horned guardsman at the top left holds an axe whose handle ends in a small gold cross; ' +
+    'replace that with a plain gold ball. There must be no crosses anywhere. No text, no labels.' };
+JOBS['r7-units-3-siege'] = { w: 1536, h: 1024, quality: 'medium', ref: 'r6-units-3-siege.png',
+  prompt: 'Redraw the reference picture exactly: the same six figures in the same places, poses and style. Change ' +
+    'only this: five of the helmets have a small gold cross on top (the crewman on the mortar at the top ' +
+    'right, the two crewmen beside the cannon at the bottom left, the veiled moth in the middle, and the ' +
+    'crewman covering his ears at the bottom right). Replace each of those crosses with a plain gold ball. ' +
+    'There must be no crosses anywhere. No text, no labels.' };
+Object.assign(JOBS, {
+  'r6-city-orthodox-blocks': { w: 1536, h: 1024, quality: 'medium', ref: 'r5-city-orthodox-blocks.png',
+    prompt:
+      'Redraw the reference picture exactly: the same sixteen buildings in the same places, the same style, the ' +
+      'same plain background. Change only this: every star on top of a dome or tower becomes a plain gold ' +
+      'ball. There must be no stars, no crosses and no crescents anywhere. No text.' },
+  'r6-board-orthodox': { w: 1536, h: 1024, quality: 'medium', ref: 'r5-board-orthodox.png',
+    prompt:
+      'Redraw the reference picture exactly: the same city, the same street, the same dark red living skin and ' +
+      'the same three organisms on the right. Change only these things. Every star or cross on top of a dome ' +
+      'becomes a plain gold ball; there must be no stars, no crosses and no crescents anywhere. The cannon on ' +
+      'wheels becomes a large beetle walking on six legs whose abdomen is an ornate bronze cannon barrel, with ' +
+      'its two small crew walking beside it. No text, no interface.' },
+  'r5-city-orthodox-blocks': { w: 1536, h: 1024, quality: 'medium',
+    prompt:
+      `Architecture design sheet on a plain pale background. ${ISO} Four separate city blocks of an insect ` +
+      `civilisation, built at insect scale, ${ORTHODOX}. Each block is a chunky building with a wide FLAT roof ` +
+      'terrace in the middle, ringed by a low parapet, with its small domes only at the corners, so that ' +
+      'something large could stand on the terrace: (1) a residential block: dense small homes, washing lines; ' +
+      '(2) a research quarter: glass domes and brass instruments among the onion domes; (3) a provision ' +
+      'district: granary towers with tented roofs; (4) temple heights: a taller block with a bell tower and ' +
+      'one large gold dome. Each block is shown at three heights side by side: one, two and three storeys. ' +
+      `Clean, ordered and beautiful. ${STRAIGHT}` },
+  'r5-board-orthodox': { w: 1536, h: 1024, quality: 'medium', ref: 'r4-units-rts-on-board.png',
+    prompt:
+      'Redraw the reference picture. Keep its right half exactly as it is: the dark red veined living skin on ' +
+      'the rooftops and the three rooted organisms of pink wet flesh, dark chitin and ivory bone. Replace the ' +
+      `city with one that is ${ORTHODOX}: clean, ordered and beautiful, with flat roof terraces and pale stone ` +
+      'streets. Replace the army in the street with small dressed insect people who are charming rather than ' +
+      'frightening: a squad of soldiers in long orange kaftans and pointed dome helmets carrying long axes, a ' +
+      'bell-ringer with a yoke of bronze bells, a beetle carrying an ornate bronze cannon with two small crew, ' +
+      'and two winged lancers overhead with orange pennants. The city and its people look civilised; the ' +
+      `organism looks monstrous; the contrast between them is the point of the picture. ${ISO} No text, no interface.` },
+  'r5-hero-behind-desk': { w: 1536, h: 1024, quality: 'medium',
+    prompt:
+      `${REAL} Seen from directly behind, so that we never see his face: ${HERO}, standing at the workstation in ` +
+      `the operations room of a small orbital vessel belonging to ${EMPIRE}. Seamless matte black composite and ` +
+      'bare pale ceramic, exact edges, even white light, one small plain black gear symbol on the wall, a long ' +
+      'window slit ahead of him showing the curve of a green and brown planet, razor-thin holographic readouts ' +
+      'above the desk. Along the back edge of the desk is a neat row of small things he made himself from ' +
+      'spare parts: a gear puzzle, a tiny wire insect, a cup with cooling fins, a palm-sized orrery. We see ' +
+      'the back of his untidy hair, the stylus behind his ear and his pushed-up sleeves. No readable text.' },
+  'r5-hero-yoke-over-shoulder': { w: 1536, h: 1024, quality: 'medium', ref: 'r4-yoke-colour.png',
+    prompt:
+      'An over-the-shoulder view. In the near foreground on the left, seen from behind and slightly out of ' +
+      'focus, are the shoulder and the back of the head of a young man with short untidy dark hair, a stylus ' +
+      'behind his ear, in a plain black high-collared garment: we never see his face. Beyond him, facing us, ' +
+      'floating above a matte black desk, is the holographic projection from the reference picture: the same ' +
+      'anime girl, the same long pale silver hair, amber eyes, black high-collared dress and black gear hair ' +
+      'clip, shown from the waist up, drawn in anime style, slightly translucent. She is mid-sentence, ' +
+      'attentive, one hand raised. The room around them is photoreal and austere: seamless matte black ' +
+      'panels, one thin white light strip. No readable text.' },
+});
+
+// A fresh draw of the city sheet with the corrected emblem wording (the edit pass left a few crosses).
+JOBS['r7-city-orthodox-blocks'] = { ...JOBS['r5-city-orthodox-blocks'] };
+
 ready();
 fs.mkdirSync(OUT, { recursive: true });
 const want = process.argv.slice(2);
 const slugs = want.length ? want : Object.keys(JOBS);
+// A reference is an earlier concept: the published picture, or its raw still when the picture was
+// withdrawn from the repo (art-src/ is not committed).
+const refPath = (name) => {
+  const pub = path.join(OUT, name);
+  return fs.existsSync(pub) ? pub : path.join(ROOT, 'art-src', 'probes', `concept-${name.replace(/.png$/, '')}-still.png`);
+};
 const results = await Promise.allSettled(slugs.map(async (slug) => {
   const j = JOBS[slug];
   if (!j) throw new Error(`unknown concept "${slug}" (have: ${Object.keys(JOBS).join(', ')})`);
-  const file = await makeStill({ slug: `concept-${slug}`, prompt: j.prompt, key: null, width: j.w, height: j.h, quality: j.quality });
+  const file = await makeStill({ slug: `concept-${slug}`, prompt: j.prompt, key: null, width: j.w, height: j.h, quality: j.quality,
+    refFile: j.ref ? refPath(j.ref) : undefined });
   const out = path.join(OUT, `${slug}.png`);
   fs.copyFileSync(file, out);
   return out;

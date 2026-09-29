@@ -19,6 +19,8 @@ process only verified its own assumptions. The repo's CLAUDE.md carries the stan
   - `notes/CAMPAIGN-BUILD-PLAN.md`: the campaign inventory and its status.
   - `notes/GRAPHICS-PLAN.md`: the graphics pipeline (Sep 29): what the RFab API can
     generate, video-first, the probe results. Its OPEN items are Collins's.
+  - `assets/unit-spec.md`: the drawing spec of all 26 enemy kinds (generated; edit
+    `tools/art/units.mjs`).
   - `assets/style-bible.md`: the visual language (Sep 29): 1950s horror B-movie, insects
     human enough to empathise with, the shared prompt blocks. v0 until Collins locks it.
   - `tools/art/`: the art scripts. They SPEND RFab tokens; each skips what already exists.
