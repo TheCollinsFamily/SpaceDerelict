@@ -340,6 +340,8 @@ node tools/shot-evolve.mjs    # EVOLVE by clicks
 node tools/shot-engines.mjs   # the utility engines
 node tools/shot-under.mjs     # organ stage through the real loop
 node tools/shot-creep.mjs     # creep: bladder recipe, tray, thrown node, spread
+node tools/shot-preview.mjs   # a mortar's field of fire (click on it) + a conduit held and hovered (placement preview)
+node tools/shot-play-new.mjs  # DEV server from the menu: Scaffold + Seeding Gland grown by clicks, plinths raise a gun and level a roof, a BIG limb on it, a Seedling shot up and landed, the scripted player late (JPGs in notes/screens/2026-09-29/play-*)
 node tools/shot-campaign.mjs  # menu → ship → globe → briefing → run → debrief → faction → YOKE (scripted) → allied 2nd deployment → aside in debrief + Comms
 # PAID (a few RFab tokens): live YOKE. Against a local backend started with PORT=3011 node scripts/start.js
 # and a JWT from `npm run auth:token -- --email collinsmalcolm@gmail.com` (backend repo):

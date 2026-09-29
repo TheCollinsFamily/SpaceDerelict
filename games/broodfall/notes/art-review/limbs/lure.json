@@ -1,33 +1,33 @@
 {
  "family": "lure",
  "frames": 30,
- "atlasKB": 195,
- "failed": 1,
+ "atlasKB": 152,
+ "failed": 0,
  "checks": [
   {
    "name": "where it stands is marked",
    "ok": true,
-   "value": "0.5, 0.73, 0.77"
+   "value": "0.5, 0.87, 0.86"
   },
   {
    "name": "idle: loop closes",
    "ok": true,
-   "value": 1.08
+   "value": 0.6
   },
   {
    "name": "idle: it moves",
    "ok": true,
-   "value": 0.2
+   "value": 0.23
   },
   {
    "name": "idle: it is calm",
    "ok": true,
-   "value": 0.2
+   "value": 0.23
   },
   {
    "name": "idle: inside the frame",
    "ok": true,
-   "value": "186,116-446,528"
+   "value": "232,70-406,548"
   },
   {
    "name": "idle: no background tint on the outline",
@@ -37,7 +37,7 @@
   {
    "name": "idle: ends the size it began",
    "ok": true,
-   "value": "5% change"
+   "value": "1% change"
   },
   {
    "name": "fire: no background tint on the outline",
@@ -47,7 +47,7 @@
   {
    "name": "fire: frames swallowed by a flash or a cloud are few",
    "ok": true,
-   "value": "26 left out"
+   "value": "28 left out"
   },
   {
    "name": "fire: ends the size it began",
@@ -56,13 +56,13 @@
   },
   {
    "name": "it stands in its cell",
-   "ok": false,
-   "value": "14.2% of it lies in front of its cell"
+   "ok": true,
+   "value": "0.7% of it lies in front of its cell"
   },
   {
    "name": "atlas is under 900 KB",
    "ok": true,
-   "value": "195 KB"
+   "value": "152 KB"
   }
  ]
 }

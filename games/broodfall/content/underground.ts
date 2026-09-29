@@ -136,10 +136,10 @@ export const ORGAN_DEFS: readonly OrganDef[] = [
   { id: 'acid', name: 'Digestive Lining', kind: 'creep', creep: 'acid', shape: D2, cost: { war: 30 },
     blurb: 'creep from a bladder TOUCHING it (or the METEOR, if it touches that) burns ground enemies 4/s (stacks)' },
   // SEEDLINGS (Collins, Sep 29 2026): must touch the surface; shoots a free weak limb up every two waves.
-  { id: 'seeder', name: 'Seeding Gland', kind: 'seeder', shape: V2, cost: { war: 35 }, surface: true,
+  { id: 'seeder', name: 'Seeding Gland', kind: 'seeder', shape: V2, cost: { war: 25 }, surface: true,
     blurb: 'must TOUCH THE SURFACE; every 2 turns it shoots a free SEEDLING limb up into the city (a free card: place it anywhere your creep holds)' },
   // PLINTHS (Collins, Sep 29 2026): free, one every two waves.
-  { id: 'scaffold', name: 'Scaffold Gland', kind: 'scaffold', shape: L3, cost: { war: 30 },
+  { id: 'scaffold', name: 'Scaffold Gland', kind: 'scaffold', shape: L3, cost: { war: 20 },
     blurb: 'grows one free PLINTH every 2 turns (at the wave clear): a pedestal that raises one limb, or one bare roof, by one level' },
 ];
 

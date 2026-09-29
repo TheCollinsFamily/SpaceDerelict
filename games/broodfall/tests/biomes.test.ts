@@ -189,3 +189,21 @@ describe.skipIf(!hasArt)('the tile sets', () => {
     expect(sets.wetland.territories).toEqual(['mirewater']);
   });
 });
+
+describe('guest districts (Sep 29 2026: a wetland board came out mostly in its guest look)', () => {
+  it('take at most one district in four, never the body\'s own nor its neighbours, the same every time', async () => {
+    const { planGuests } = await import('../src/render/biome');
+    for (const seed of [1, 2, 3, 42, 1234]) {
+      for (const [slotsX, slotsY, start] of [[5, 4, 7], [5, 4, 12], [3, 3, 4], [6, 5, 0]]) {
+        const plan = planGuests({ slotsX, slotsY, start, seed }, ['orient']);
+        expect(plan.size).toBeLessThanOrEqual(Math.floor((slotsX * slotsY) / 4));
+        for (const slot of plan.keys()) {
+          const d = Math.max(Math.abs((slot % slotsX) - (start % slotsX)), Math.abs(Math.floor(slot / slotsX) - Math.floor(start / slotsX)));
+          expect(d).toBeGreaterThan(1);
+        }
+        expect([...planGuests({ slotsX, slotsY, start, seed }, ['orient']).entries()]).toEqual([...plan.entries()]);
+      }
+    }
+    expect(planGuests({ slotsX: 5, slotsY: 4, start: 7, seed: 1 }, []).size).toBe(0);
+  });
+});

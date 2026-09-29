@@ -6,7 +6,8 @@
  */
 import { BALANCE as B } from '../../content/data';
 import { DEPOSITS, ORGAN_BY_ID } from '../../content/underground';
-import { Sim, organSpec, themeOf } from './sim';
+import { Sim, organSpec, themeOf, towerSpec } from './sim';
+import { CellType } from './citymap';
 import type { Rng } from './rng';
 import type { OrganId } from './types';
 
@@ -107,6 +108,17 @@ export function organTurn(sim: Sim, random?: Rng): boolean {
   const late = sim.phaseElapsed >= B.growthSeconds - 4;
   const have = (id: OrganId) => sim.organs.some((o) => o.organ === id);
   if (!late) {
+    // The organs that make free things (plinths, seedlings), one each, after the fourth theme (measured:
+    // after the second they starve the themes, 4/10; after the eighth they come at wave 8 and barely pay):
+    // what they make pays back over the waves that are left, so early is worth more than late.
+    const themesNow = sim.organs.filter((o) => ORGAN_BY_ID[o.organ].kind === 'theme').length;
+    if (themesNow >= 4) {
+      const nextFree = FREE_ORDER.find((id) => !have(id));
+      if (nextFree && sim.canAfford(organSpec(nextFree).cost)) {
+        const spot = bestOrganSpot(sim, nextFree, random);
+        if (spot && sim.issue({ kind: 'build-organ', organ: nextFree, ...spot }).ok) return true;
+      }
+    }
     const next = THEME_ORDER.find((id) => !have(id));
     if (next && sim.canAfford(organSpec(next).cost)) {
       const spot = bestOrganSpot(sim, next, random);
@@ -142,4 +154,55 @@ export function organTurn(sim: Sim, random?: Rng): boolean {
     if (!did) break;
   }
   return acted;
+}
+
+/**
+ * Organs that make free things (Sep 29 2026): a Scaffold Gland (plinths) and a Seeding Gland
+ * (free Seedlings, must touch the surface), grown once the bot has two themes, after its
+ * creep organs. The random player grows them too, at random spots: the guardrail measures
+ * placement, not the economy.
+ */
+export const FREE_ORDER: OrganId[] = ['scaffold', 'seeder'];
+
+/**
+ * Spend a plinth (true if it did). Smart: level a roof so the big limb in hand fits (a square
+ * of four creeped roofs with exactly one a level low), else raise the strongest gun it can.
+ * Random: any legal cell.
+ */
+export function placePlinth(sim: Sim, random?: Rng): boolean {
+  if (sim.plinths < 1) return false;
+  const W = sim.cfg.gridW;
+  if (random) {
+    const legal: number[] = [];
+    for (let c = 0; c < sim.map.cells.length; c++) if (sim.plinthGround(c)) legal.push(c);
+    if (!legal.length) return false;
+    return sim.issue({ kind: 'place-plinth', cell: legal[random.int(0, legal.length - 1)] }).ok;
+  }
+  const bigInHand = sim.hand.some((card) => {
+    const span = towerSpec(card.family).span;
+    return span && span[0] * span[1] >= 4 && sim.canAfford(towerSpec(card.family).cost)
+      && !sim.map.cells.some((_, c) => sim.canBuildTower(c, card.family));
+  });
+  if (bigInHand) {
+    for (let c = 0; c < sim.map.cells.length - W - 1; c++) {
+      if (c % W === W - 1) continue;
+      const sq = [c, c + 1, c + W, c + W + 1];
+      if (!sq.every((q) => sim.map.cells[q] === CellType.Block && sim.isCreeped(q) && !sim.isOccupied(q) && q !== sim.map.coreCell)) continue;
+      const hs = sq.map((q) => sim.map.heights[q] || 1);
+      const top = Math.max(...hs);
+      const low = sq.filter((_, i) => hs[i] === top - 1);
+      if (low.length === 1 && hs.filter((h) => h === top).length === 3 && sim.plinthGround(low[0])) {
+        return sim.issue({ kind: 'place-plinth', cell: low[0] }).ok;
+      }
+    }
+  }
+  let best: { cell: number; score: number } | null = null;
+  for (const t of sim.towers) {
+    const st = sim.statsOf(t);
+    if (st.rate <= 0 || st.damage <= 0 || st.range >= 1000) continue;
+    if (!sim.plinthGround(t.cell)) continue;
+    const score = st.damage * st.rate * st.range;
+    if (!best || score > best.score) best = { cell: t.cell, score };
+  }
+  return best !== null && sim.issue({ kind: 'place-plinth', cell: best.cell }).ok;
 }

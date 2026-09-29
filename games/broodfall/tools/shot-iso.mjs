@@ -41,6 +41,20 @@ function startPreview() {
   });
 }
 
+
+/** The click reached the limb, or a limb standing IN FRONT of it whose body covers that point (it is drawn on top: that is what the player clicks). */
+const reachedOrCovered = (page, aim, got) => page.evaluate(([cells, c]) => {
+  const s = window.broodfall.sim;
+  if (cells.includes(c)) return 'reached';
+  const aimed = s.towers.find((x) => s.cellsOf(x).includes(cells[0]));
+  const front = s.towers.find((x) => s.cellsOf(x).includes(c));
+  if (!aimed || !front) return 'missed';
+  // How far forward a limb stands in the turned view (on the ground, whatever its height): src/render/iso.ts toView.
+  const W = s.cfg.gridW, H = s.cfg.gridH, turn = window.broodfall.turn();
+  const fwd = (t) => { const cx = t.pos.x / s.cfg.cellPx, cy = t.pos.y / s.cfg.cellPx; return [cx + cy, H - cy + cx, W - cx + H - cy, cy + W - cx][turn]; };
+  return fwd(front) > fwd(aimed) ? 'covered' : 'missed';
+}, [aim.cells, got]);
+
 const server = await startPreview();
 const browser = await chromium.launch({ args: ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist', '--enable-webgl'] });
 try {
@@ -107,7 +121,8 @@ try {
     const out = [];
     for (const t of s.towers.slice(0, 12)) {
       const p = window.broodfall.worldToScreen(t.pos.x, t.pos.y);
-      out.push({ id: t.id, cell: t.cell, x: p.x, y: p.y, vw: p.vw, vh: p.vh });
+      // A limb on several cells is reached by a click on any of them (the game selects it by any).
+      out.push({ id: t.id, cell: t.cell, cells: s.cellsOf(t), x: p.x, y: p.y, vw: p.vw, vh: p.vh });
     }
     return out;
   });
@@ -125,9 +140,9 @@ try {
       el.dispatchEvent(ev);
       return window.broodfall.cellAtClient(x, y);
     }, [cx, cy]);
-    if (got === a.cell) reached++;
+    if ((await reachedOrCovered(page, a, got)) !== 'missed') reached++;
   }
-  check(tried > 0 && reached === tried, 'a click aimed at a limb reaches its cell', `${reached}/${tried}`);
+  check(tried > 0 && reached === tried, 'a click aimed at a limb reaches it (or the limb standing in front of it)', `${reached}/${tried}`);
 
   // Close up: zoom in on the middle of the board.
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
@@ -158,7 +173,7 @@ try {
   const aimAll = async () => {
     const at = await page.evaluate(() => window.broodfall.sim.towers.slice(0, 12).map((t) => {
       const p = window.broodfall.worldToScreen(t.pos.x, t.pos.y);
-      return { cell: t.cell, x: p.x, y: p.y, vw: p.vw, vh: p.vh };
+      return { cell: t.cell, cells: window.broodfall.sim.cellsOf(t), x: p.x, y: p.y, vw: p.vw, vh: p.vh };
     }));
     const b = await canvas.boundingBox();
     let hit = 0, tried = 0;
@@ -166,7 +181,8 @@ try {
       if (a.x < 10 || a.y < 10 || a.x > a.vw - 10 || a.y > a.vh - 10) continue;
       tried++;
       const got = await page.evaluate(([x, y]) => window.broodfall.cellAtClient(x, y), [b.x + (a.x / a.vw) * b.width, b.y + (a.y / a.vh) * b.height]);
-      if (got === a.cell) hit++;
+      if ((await reachedOrCovered(page, a, got)) !== 'missed') hit++;
+      else console.log('    missed at a turn: aimed ' + a.cells.join('/') + ', reached ' + got + ' ' + (await page.evaluate(([c, d]) => { const s = window.broodfall.sim; const f = (x) => s.towers.find((t) => s.cellsOf(t).includes(x)); const t1 = f(d), t2 = f(c); return (t1 ? t1.family + ' ' + JSON.stringify(t1.cells ?? [t1.cell]) : '?') + ' vs ' + (t2 ? t2.family : 'no limb') + ' height ' + s.map.heights[c]; }, [got, a.cells[0]])));
     }
     return { hit, tried };
   };
@@ -184,7 +200,7 @@ try {
     if (turn < 4) {
       await shot(`6-turn-${turn}`);
       const a = await aimAll();
-      check(a.tried > 0 && a.hit === a.tried, `turn ${turn}: a click aimed at a limb reaches its cell`, `${a.hit}/${a.tried}`);
+      check(a.tried > 0 && a.hit === a.tried, `turn ${turn}: a click aimed at a limb reaches it (or the limb in front)`, `${a.hit}/${a.tried}`);
     }
   }
   await page.keyboard.press('Home');

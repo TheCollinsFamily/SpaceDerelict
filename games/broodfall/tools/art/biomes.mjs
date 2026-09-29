@@ -866,3 +866,21 @@ export const variantsOf = (b) => ({
 export const spriteName = (name, v) => (v ? `${name}~${v}` : name);
 /** The picture a piece is baked from (see the top of this file for why it is not named as its sprites are). */
 export const pictureName = (name, v) => (v ? `${name}.${v}.png` : `${name}.png`);
+
+/**
+ * PROPS THAT LOOK THE SAME FROM EVERY SIDE (Sep 29 2026). When the camera turns, a prop is
+ * seen from another side; a lopsided one (a car, a bench, a sign) has a picture of its back
+ * (`prop-<id>~b`, from the sheet `props-<where>.back.png`), a round one is simply mirrored.
+ * `round: true` on an item says the same of any prop not in this list.
+ */
+export const ROUND = new Set([
+  'dome-paper', 'dome-gold', 'spire', 'tank', 'cistern', 'skylight', 'cowl', 'lamp', 'lamps', 'lantern', 'lanterns',
+  'chimney', 'cupola', 'mast', 'aerial', 'beacon', 'cone', 'planter', 'pot', 'potted', 'urn', 'vase', 'barrel', 'drum',
+  'bale', 'hay', 'haystack', 'stooks', 'tree', 'oak', 'fungustree', 'cypress', 'willow', 'bush', 'boulders', 'rocks',
+  'cairn', 'pond', 'tufts', 'bramble', 'stump', 'pillar', 'column', 'stalagmite', 'obelisk', 'candles', 'candlestand',
+  'silo', 'well', 'fountain', 'font', 'pollen', 'queencell', 'eggs', 'cocoons', 'skeps', 'reeds', 'rushes', 'pool',
+  'holo', 'dome', 'hydrant', 'bollard', 'buoy', 'raintank', 'pod',
+]);
+export const isRound = (p) => p.round ?? ROUND.has(p.id);
+/** The file of the back of a sheet of props: props-roof.png -> props-roof.back.png. */
+export const backName = (file) => file.replace(/\.png$/, '.back.png');

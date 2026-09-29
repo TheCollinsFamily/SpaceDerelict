@@ -1,8 +1,8 @@
 {
  "family": "conduit",
  "frames": 32,
- "atlasKB": 301,
- "failed": 1,
+ "atlasKB": 344,
+ "failed": 0,
  "checks": [
   {
    "name": "where it stands is marked",
@@ -42,32 +42,32 @@
   {
    "name": "it stands in its cell",
    "ok": true,
-   "value": "0.5% of it lies in front of its cell"
+   "value": "0.1% of it lies in front of its cell"
   },
   {
    "name": "from behind, where it stands is marked",
    "ok": true,
-   "value": "0.48, 0.61, 0.71"
+   "value": "0.51, 0.73, 0.86"
   },
   {
    "name": "from behind, idle: loop closes",
    "ok": true,
-   "value": 0.57
+   "value": 0.39
   },
   {
    "name": "from behind, idle: it moves",
    "ok": true,
-   "value": 0.24
+   "value": 0.27
   },
   {
    "name": "from behind, idle: it is calm",
    "ok": true,
-   "value": 0.24
+   "value": 0.27
   },
   {
    "name": "from behind, idle: inside the frame",
    "ok": true,
-   "value": "132,84-592,528"
+   "value": "170,120-470,500"
   },
   {
    "name": "from behind, idle: no background tint on the outline",
@@ -81,8 +81,8 @@
   },
   {
    "name": "from behind, it stands in its cell",
-   "ok": false,
-   "value": "15.9% of it lies in front of its cell"
+   "ok": true,
+   "value": "2.1% of it lies in front of its cell"
   },
   {
    "name": "from behind: it has a view",
@@ -92,7 +92,7 @@
   {
    "name": "atlas is under 900 KB",
    "ok": true,
-   "value": "301 KB"
+   "value": "344 KB"
   }
  ]
 }

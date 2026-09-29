@@ -27,7 +27,7 @@ import { makeStill, pool } from '../rfab.mjs';
 import { blank, readImage, writeJpg } from '../lib/img.mjs';
 import { A, B, LEVEL_H, TILE_H, TILE_W, WALL_SPAN } from '../lib/iso.mjs';
 import { ART, REVIEW, SRC, putEntry } from '../lib/manifest.mjs';
-import { BIOMES, KINDS, NO_SYMBOLS, SPECIES, SPECIES_THINGS, biome, pictureName, roofSets, spriteName, variantsOf, wallsOf } from '../biomes.mjs';
+import { BIOMES, KINDS, NO_SYMBOLS, SPECIES, SPECIES_THINGS, backName, biome, isRound, pictureName, roofSets, spriteName, variantsOf, wallsOf } from '../biomes.mjs';
 import { creepTiles, cutProps, dripTiles, edgeTiles, floorTiles, over8, packSprites, wallTiles } from './terrain.mjs';
 
 const TERRAIN = path.join(SRC, 'terrain');
@@ -151,6 +151,33 @@ function borrowFirst(b) {
   }
 }
 
+/**
+ * THE BACKS OF THE PROPS (Sep 29 2026: the camera turns, and a car seen from both sides must
+ * not be the same car). Every sheet of props with a lopsided thing on it has a second sheet: the
+ * same things, in the same places and order, each turned half a turn. It is drawn FROM the front
+ * sheet, so that they are the same things; it is cut by the same cutter.
+ */
+const backSheet = (items) =>
+  `The SAME sheet of ${items.length} separate objects as the reference picture: the same objects, in the same ` +
+  'places, in the same order, at the same sizes, in the same drawing and on the same flat background colour. Each ' +
+  'object is turned exactly half a turn about its own upright axis, so that the camera now sees its BACK: what ' +
+  'faced the lower left of the picture now faces away, toward the upper right. The camera itself is the same: ' +
+  'isometric, 45 degrees above the ground. Nothing is added or taken away. Soft even light from directly overhead, ' +
+  `no ground, no cast shadows. ${NO_SYMBOLS} No labels, no numbers.`;
+const needsBack = (p) => p.group === 'props' && p.items.some((item) => !isRound(item));
+
+export async function generateBacks(id) {
+  const b = biome(id);
+  const dir = dirOf(b);
+  const [key, keyName] = b.key;
+  const jobs = pieces(b).filter(needsBack).filter((p) => fs.existsSync(path.join(dir, p.file))).map((p) => () => makeStill({
+    slug: `${b.id} ${p.part.replace('-', ' ')}${p.v ? ` ${p.v + 1}` : ''} from behind`, out: path.join(dir, backName(p.file)),
+    prompt: backSheet(p.items), key, keyName, quality: 'high', width: 1536, height: 1024, refFiles: [path.join(dir, p.file)],
+  }));
+  const results = await pool(jobs, AT_ONCE, (j) => inTurn(j));
+  results.filter((r) => !r.ok).forEach((r) => console.warn(`[biome] ${b.id}: a back failed: ${r.error.message.slice(0, 200)}`));
+}
+
 /** What a picture is drawn from: the whole of what the image model is told. */
 const wordsFor = (b, p) => (p.group === 'floors' ? `${p.words} ${FLAT}` : p.group === 'walls' ? (p.land ? landFace(b, p.words) : facade(b, p.words, p.v)) : propSheet(b, p.where, p.items));
 
@@ -207,7 +234,16 @@ export function bakeBiome(id) {
   const shared = new Set(all.flatMap((p) => p.items ?? []).filter((item) => item.shared).map((item) => `prop-${item.id}`));
   const roofs = roofSheets.flatMap((p) => p.cut);
   const streets = streetSheets.flatMap((p) => p.cut).filter((s) => !shared.has(s.id));
-  const sheets = { floors, walls, props: [...roofs, ...streets] };
+  // The backs of the lopsided ones: prop-<id>~b. A back sheet that did not cut into as many things as its front is left out.
+  const backs = [...roofSheets, ...streetSheets].flatMap((p) => {
+    const file = path.join(dir, backName(p.file));
+    if (!needsBack(p) || !fs.existsSync(file)) return [];
+    const cut = cutProps(file, p.items, `${p.where} back`, keying);
+    if (cut.length !== p.items.length) return [];
+    return cut.filter((s, i) => !isRound(p.items[i]) && !shared.has(s.id)).map((s) => ({ ...s, id: `${s.id}~b` }));
+  });
+  const backsMeant = [...roofSheets, ...streetSheets].filter(needsBack).reduce((n, p) => n + p.items.filter((item) => !isRound(item)).length, 0);
+  const sheets = { floors, walls, props: [...roofs, ...streets, ...backs] };
 
   // Light to load: a set that comes out heavy is packed again a little harder, until it is not.
   const data = { tile: [TILE_W, TILE_H], level: LEVEL_H, wallSpan: WALL_SPAN, sheets: {} };
@@ -251,6 +287,7 @@ export function bakeBiome(id) {
     ['every face of every kind of district', walls.length === wallFaces * sumWalls(meant), `${walls.length} of ${wallFaces * sumWalls(meant)} faces`],
     ['every sheet of roof props is there and cut out', roofSheets.length === all.filter((p) => p.part === 'props-roof').length && cutOut(roofSheets), `${roofSheets.length} sheets, ${count(roofSheets)} props`],
     ['every sheet of street props is there and cut out', streetSheets.length === all.filter((p) => p.part === 'props-street').length && cutOut(streetSheets), `${streetSheets.length} sheets, ${count(streetSheets)} props`],
+    ['every lopsided prop has its back', backs.length >= backsMeant - streetSheets.flatMap((p) => p.items).filter((i) => i.shared && !isRound(i)).length, `${backs.length} of ${backsMeant} backs`],
     ['a name of a prop is used once among the later sheets', twice.length === 0, twice.length ? `used twice: ${twice.join(', ')}` : `${later.length} names`],
     ['every street is pale', streetLuma.length > 0 && streetLuma.every((l) => l >= PALE - 2), `brightness ${streetLuma.map((l) => l.toFixed(0)).join(', ')} of 255 (at least ${PALE})`],
     ['light to load', bytes < 900 * 1024 && heaviest < 900 * 1024, `${Math.round(bytes / 1024)} KB in all, the heaviest sheet ${Math.round(heaviest / 1024)} KB, packed at quality ${quality}`],

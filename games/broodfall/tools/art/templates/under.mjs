@@ -146,7 +146,114 @@ export function bakeUnder() {
   kept.forEach((t, i) => paste(sheet, t, (i % cols) * S, Math.floor(i / cols) * S));
   fs.mkdirSync(path.join(REVIEW, 'under'), { recursive: true });
   if (kept.length) writeJpg(path.join(REVIEW, 'under', 'tiles.jpg'), sheet, 3);
-  putEntry('under', 'scan', { tile: S, tiles, meteor });
+  // Keep what bakeAbove wrote (skylines, dome).
+  putEntry('under', 'scan', { ...readManifestUnder(), tile: S, tiles, meteor });
   console.log(`[under] ${Object.keys(tiles).length} tiles${meteor ? ' and the meteor' : ''} baked to ${OUT}`);
   return { tiles, meteor };
+}
+
+// ---------------------------------------------------------------- above the street line
+
+/**
+ * THE CITY ABOVE, per tile set: the skyline along the top of the scan is the board's own
+ * kind of place, as a thin glowing wireframe (Sep 29 2026: it was one fixed silhouette).
+ * Drawn on black and blended by the game with 'screen', so no key colour is needed.
+ */
+export const SKYLINES = {
+  orthodox: 'rows of blocky insect-city buildings of three heights with round onion domes on paper drums and a slender bell spire',
+  suburb: 'a street of small family houses with pitched roofs, chimneys, porches, a round water tower on legs and garden trees',
+  megacity: 'a dense wall of very tall slim towers and capsule blocks, antenna masts and one giant spire, crowded and high',
+  orient: 'temples and houses with tiers of upswept eaves, a tall many-tiered pagoda, lanterns strung between roofs',
+  industrial: 'factory sheds with saw-tooth roofs, tall smokestacks with thin smoke, gantry cranes and round storage tanks',
+  farmland: 'open prairie: long low hills, a big red-barn shape, two round silos, a wind pump, fences and a few lone trees',
+  // The first one put a cross on every tomb: the tombs of this city are topped with plain balls and hexagons.
+  necropolis: 'a city of the dead: low flat-roofed tombs, small domed mausoleums each topped with a plain round ball, plain obelisks with pointed tops, tall slender cypress-like trees and long walls of round niches. NOTHING on any roof, dome or gable is a cross: no crosses anywhere, no stars, no crescents',
+  deephive: 'a grown hive: great rounded combs and mounds like termite towers, hanging queen cells, no straight lines',
+  terraces: 'rolling hills stepped into terraces, hedgerows, clumps of big round trees, a single field shelter and a haystack',
+  wetland: 'houses on tall stilts over flat water, reed beds, a boardwalk, a small wind turbine and long flat horizon',
+};
+const SKY = (look) =>
+  'A very wide, low strip of a ground-penetrating scan display on a far-future spaceship, in the rendering of the ' +
+  'reference pictures: pure black background, drawn only in thin glowing pale cyan-grey wireframe lines, like ' +
+  `a holographic outline. It shows the skyline above ground as a silhouette in outline: ${look}. All of it stands ` +
+  'on one straight horizontal ground line across the whole width, at exactly two thirds of the way down the ' +
+  'picture; above the skyline and below the line is pure black. The middle fifth of the width, directly above ' +
+  'the centre, is EMPTY: nothing is drawn there. No text, no numbers, no letters, no religious symbol.';
+
+export async function makeSkylines() {
+  fs.mkdirSync(DIR, { recursive: true });
+  const jobs = Object.entries(SKYLINES).map(([id, look]) => () => makeStill({
+    slug: `scan skyline ${id}`, out: path.join(DIR, `sky-${id}.png`), prompt: SKY(look), key: null, refFiles: REFS,
+    width: 1536, height: 1024, quality: 'medium',
+  }));
+  const results = await pool(jobs, 4, (j) => j());
+  results.forEach((r) => { if (!r.ok) console.warn(`[under] a skyline failed: ${r.error.message.slice(0, 200)}`); });
+  return bakeAbove();
+}
+
+/**
+ * The skylines cut to the band that holds them (the rows that have light in them), and the
+ * dome: the meteor above the street line, cut from the approved concept picture itself.
+ */
+export function bakeAbove() {
+  fs.mkdirSync(OUT, { recursive: true });
+  const skylines = {};
+  for (const id of Object.keys(SKYLINES)) {
+    const file = path.join(DIR, `sky-${id}.png`);
+    if (!fs.existsSync(file)) continue;
+    const img = readImage(file);
+    // The band: from the first row with light in it to the ground line (the brightest long row).
+    let top = -1, ground = -1, most = 0;
+    for (let y = 0; y < img.h; y++) {
+      let lit = 0;
+      for (let x = 0; x < img.w; x++) {
+        const i = (y * img.w + x) * 4;
+        if (img.data[i] + img.data[i + 1] + img.data[i + 2] > 150) lit++;
+      }
+      if (lit > img.w * 0.01 && top < 0) top = y;
+      if (lit > most) { most = lit; ground = y; }
+    }
+    if (top < 0 || ground <= top) continue;
+    const y0 = Math.max(0, top - 6);
+    const h = Math.min(img.h - y0, ground + 4 - y0);
+    const band = resize(cropRows(img, y0, h), 1536, 160);
+    const png = path.join(OUT, `sky-${id}.png`);
+    writePng(png, band);
+    toWebp(png, path.join(OUT, `sky-${id}.webp`), { q: 84 });
+    fs.rmSync(png);
+    skylines[id] = `under/sky-${id}.webp`;
+  }
+  let dome = null;
+  const concept = path.join(CONCEPTS, '1-scanner-board.png');
+  if (fs.existsSync(concept)) {
+    const img = readImage(concept);
+    // The meteor above the street line, exactly as the approved concept draws it.
+    const cut = { w: 360, h: 124, data: Buffer.alloc(360 * 124 * 4) };
+    for (let y = 0; y < 124; y++) img.data.copy(cut.data, y * 360 * 4, (y * img.w + 588) * 4, (y * img.w + 948) * 4);
+    const png = path.join(OUT, 'dome.png');
+    writePng(png, resize(cut, 720, 248));
+    toWebp(png, path.join(OUT, 'dome.webp'), { q: 88 });
+    fs.rmSync(png);
+    dome = 'under/dome.webp';
+  }
+  const m = readManifestUnder();
+  putEntry('under', 'scan', { ...m, skylines, dome });
+  // To look at: every skyline stacked, the dome at the top.
+  const sheet = blank(1536, 160 * Object.keys(skylines).length, [0, 0, 0, 255]);
+  Object.keys(skylines).forEach((id, i) => paste(sheet, readImage(path.join(OUT, `sky-${id}.webp`)), 0, i * 160));
+  if (Object.keys(skylines).length) writeJpg(path.join(REVIEW, 'under', 'skylines.jpg'), sheet, 3);
+  console.log(`[under] ${Object.keys(skylines).length} skylines${dome ? ' and the dome' : ''} baked`);
+  return { skylines, dome };
+}
+
+function cropRows(img, y0, h) {
+  const out = { w: img.w, h, data: Buffer.alloc(img.w * h * 4) };
+  img.data.copy(out.data, 0, y0 * img.w * 4, (y0 + h) * img.w * 4);
+  return out;
+}
+
+function readManifestUnder() {
+  const f = path.join(ART, 'manifest.json');
+  const m = fs.existsSync(f) ? JSON.parse(fs.readFileSync(f, 'utf8')) : {};
+  return m.under?.scan ?? {};
 }

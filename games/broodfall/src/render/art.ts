@@ -16,7 +16,13 @@ export interface UnitArt {
   /** The body's width as a share of the frame's. */
   body: number;
   flies: boolean;
-  anims: { walk: Partial<Record<View, Clip>>; attack?: Partial<Record<View, Clip>> };
+  anims: {
+    walk: Partial<Record<View, Clip>>; attack?: Partial<Record<View, Clip>>;
+    /** A fall that ends still: played once where the unit died. */
+    death?: Partial<Record<View, Clip>>;
+    /** One frame each, drawn toward the lower left: grounded, deployed, stripped, burrowed, carrying. */
+    states?: Partial<Record<'grounded' | 'deployed' | 'stripped' | 'burrowed' | 'carrying', Clip>>;
+  };
 }
 /** One view of a limb: the point of its frame that stands on the middle of its ground, how wide what it stands on is (a share of the frame), and its clips. */
 export interface LimbSide { anchor: [number, number]; body: number; anims: { idle: Clip; fire?: Clip } }

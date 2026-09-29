@@ -227,3 +227,36 @@ export function plinthTiles() {
   if (!fs.existsSync(file)) return [];
   return wallTiles('plinth', readImage(file, { w: 1024, h: 384 }));
 }
+
+// ---------------------------------------------------------------- the seedling pod
+
+const POD =
+  'A single small seed pod of a living creature, flying through the air, for a strategy game: an oval pod of ' +
+  'glistening wet deep maroon and crimson tissue, exactly the tissue of the reference picture, with a few ' +
+  'plates of dark chitin and a tuft of pale young root tips at its back end, and a short fading streak of pink ' +
+  'mist trailing behind it. It flies toward the upper right. Isometric view, from 45 degrees above. It is centred ' +
+  'and small in the picture. Soft even light from directly overhead, no cast shadows, no text.';
+
+export async function generatePod() {
+  fs.mkdirSync(DIR, { recursive: true });
+  return makeStill({
+    slug: 'the seedling pod', out: path.join(DIR, 'seed-pod.png'), prompt: POD, quality: 'high',
+    width: 1024, height: 1024, refFiles: [path.join(TERRAIN, 'creep.png')],
+  });
+}
+
+/**
+ * The pod a Seedling is shot up in (Collins, Sep 29 2026: "with the idea like it shoots out"):
+ * cut off its background, flying toward the upper right. The game turns it along its arc.
+ */
+export function podSprites() {
+  const file = path.join(DIR, 'seed-pod.png');
+  if (!fs.existsSync(file)) return [];
+  const img = readImage(file);
+  keyFrame(img, keyOf(borderColour(img)), { spill: 'edge' });
+  dropSpecks(img, 0.05);
+  const b = bbox(img, 60);
+  const cut = crop(img, b.x0, b.y0, b.x1 - b.x0, b.y1 - b.y0);
+  const w = 96;
+  return [{ id: 'seed-pod', img: resize(cut, w, Math.round((cut.h / cut.w) * w)), extra: { anchor: [0.5, 0.5] } }];
+}

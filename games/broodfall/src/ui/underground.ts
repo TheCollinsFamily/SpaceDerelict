@@ -58,7 +58,17 @@ const GLOW: Record<string, string> = {
   mire: '#70b050', acid: '#f0e040', runner: '#80e050',
   scaffold: '#f0e8d0', seeder: '#ff6a50',
 };
-interface ScanArt { tile: number; tiles: Record<string, string>; meteor: string | null }
+interface ScanArt {
+  tile: number; tiles: Record<string, string>; meteor: string | null;
+  /** The city above, per tile set (tools/art/templates/under.mjs SKYLINES), and the meteor above the street line. */
+  skylines: Record<string, string>; dome: string | null;
+}
+
+/** The tile set the board is drawn with, as the game says (empty on the old board). */
+function boardBiome(): string {
+  const api = (window as unknown as { broodfall?: { biome?: () => string } }).broodfall;
+  try { return api?.biome?.() ?? ''; } catch { return ''; }
+}
 /** How long an organ takes to scan in when it grows, and a deposit when it resolves, in ms. */
 const SCAN_IN = 700;
 
@@ -114,9 +124,18 @@ export class UndergroundScreen {
         tile: art.tile,
         tiles: Object.fromEntries(Object.entries(art.tiles).map(([k, f]) => [k, abs(f)])),
         meteor: art.meteor ? abs(art.meteor) : null,
+        skylines: Object.fromEntries(Object.entries(art.skylines ?? {}).map(([k, f]) => [k, abs(f)])),
+        dome: art.dome ? abs(art.dome) : null,
       };
       this.el.classList.add('scan');
-      document.getElementById('under-surface')!.insertAdjacentHTML('afterbegin', skylineSvg());
+      // The city above: the board's own kind of place when there is a picture of it, else a plain wireframe.
+      document.getElementById('under-surface')!.insertAdjacentHTML('afterbegin', `${skylineSvg()}<div class="skyline-img"></div>`);
+      const dome = document.getElementById('under-dome')!;
+      if (this.scan.dome) {
+        dome.classList.add('art');
+        dome.style.backgroundImage = `url('${this.scan.dome}')`;
+      }
+      this.paintAbove();
       const rows = this.getSim().under.h;
       document.getElementById('under-ruler')!.innerHTML = Array.from({ length: rows * 2 + 1 }, (_, i) =>
         `<i style="top:${(i / (rows * 2)) * 100}%" class="${i % 2 ? '' : 'major'}"></i>`).join('');
@@ -225,7 +244,23 @@ export class UndergroundScreen {
     return `<svg class="shape" width="${w * 7}" height="${h * 7}" viewBox="0 0 ${w * 7} ${h * 7}">${cells}</svg>`;
   }
 
+  /** The skyline of the board's tile set along the street line. */
+  private paintAbove(): void {
+    if (!this.scan) return;
+    const surface = document.getElementById('under-surface');
+    const img = surface?.querySelector<HTMLElement>('.skyline-img');
+    if (!surface || !img) return;
+    const set = boardBiome();
+    const url = this.scan.skylines[set] ?? this.scan.skylines.orthodox ?? null;
+    if (img.dataset.set === set && img.dataset.url === (url ?? '')) return;
+    img.dataset.set = set;
+    img.dataset.url = url ?? '';
+    img.style.backgroundImage = url ? `url('${url}')` : '';
+    surface.classList.toggle('has-skyline', !!url);
+  }
+
   private render(): void {
+    this.paintAbove();
     const sim = this.getSim();
     const u = sim.under;
     const key = [

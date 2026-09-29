@@ -88,7 +88,8 @@ body {
 #stage canvas { max-width: 100%; max-height: 100%; }
 
 /* Turning and framing the isometric board. */
-#view-controls { display: none; position: absolute; left: 10px; top: 10px; gap: 4px; align-items: center; z-index: 4; }
+/* Bottom left, above the hint line: the top left is where the inspect panel opens. */
+#view-controls { display: none; position: absolute; left: 10px; bottom: 44px; gap: 4px; align-items: center; z-index: 4; }
 body.view-iso #view-controls { display: flex; }
 #view-controls button {
   background: rgba(20, 16, 12, 0.78); color: #e8dcb8; border: 1px solid rgba(184, 168, 120, 0.7);
@@ -553,6 +554,16 @@ body.in-ship #topbar, body.in-ship #botbar { visibility: hidden; }
 #under.scan #under-surface { height: 56px; background: transparent; border-bottom: 1px solid #5f8a92; overflow: visible; margin-left: 16px; }
 #under.scan #under-surface .skyline { position: absolute; inset: 4px 0 0 0; width: 100%; height: calc(100% - 4px); fill: none; stroke: #4e7a82; stroke-width: 1; vector-effect: non-scaling-stroke; opacity: 0.8; }
 #under.scan #under-surface span { color: #6f9aa2; }
+/* The city above as the board's own kind of place (a generated wireframe per tile set, drawn on black: 'screen' drops the black). */
+#under.scan #under-surface .skyline-img { position: absolute; inset: -18px 0 0 0; background: center bottom / 100% 100% no-repeat; mix-blend-mode: screen; opacity: 0.95; pointer-events: none; }
+#under.scan #under-surface.has-skyline .skyline { display: none; }
+/* The meteor above the street line, as the approved scan concept draws it: cracked, veined, glowing. */
+#under.scan #under-dome.art {
+  height: 62px; bottom: 0; border: 0; border-radius: 0; box-shadow: none;
+  background: center bottom / 100% 100% no-repeat; mix-blend-mode: screen; z-index: 1;
+  animation: dome-beat 2.4s ease-in-out infinite;
+}
+@keyframes dome-beat { 0%, 100% { filter: brightness(1); } 45% { filter: brightness(1.35) drop-shadow(0 0 6px rgba(255, 70, 60, 0.6)); } }
 #under.scan #under-dome {
   height: 44px; bottom: 0; background: radial-gradient(ellipse at 50% 100%, rgba(255, 60, 50, 0.35), rgba(40, 8, 8, 0.6) 60%, rgba(0, 0, 0, 0.2));
   border: 1px solid rgba(255, 90, 80, 0.8); border-bottom: 0; box-shadow: 0 0 18px rgba(255, 60, 50, 0.45);

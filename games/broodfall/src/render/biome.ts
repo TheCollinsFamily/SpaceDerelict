@@ -84,3 +84,23 @@ export function pickBiome(
   }
   return ids[Math.abs(Math.floor(want.seed ?? 0)) % ids.length];
 }
+
+/**
+ * WHICH DISTRICTS A GUEST SET TAKES (Sep 29 2026: a wetland board came out mostly in its guest's
+ * look). The board is one place with other places at its edges: a guest takes at most one
+ * district in four, never the district the body fell in, and never one next to it, so that
+ * what is seen at the start is the board's own set. Which ones: by the seed, the same every time.
+ */
+export function planGuests(
+  board: { slotsX: number; slotsY: number; start: number; seed: number }, guests: string[],
+): Map<number, string> {
+  const out = new Map<number, string>();
+  if (!guests.length) return out;
+  const sx = board.slotsX;
+  const total = sx * board.slotsY;
+  const near = (slot: number) => Math.max(Math.abs((slot % sx) - (board.start % sx)), Math.abs(Math.floor(slot / sx) - Math.floor(board.start / sx))) <= 1;
+  const hash = (slot: number) => (Math.imul(slot + 1, 2654435761) ^ Math.imul(board.seed + 7, 40503)) >>> 0;
+  const open = Array.from({ length: total }, (_, i) => i).filter((i) => !near(i)).sort((a, b) => hash(a) - hash(b));
+  open.slice(0, Math.min(open.length, Math.floor(total / 4))).forEach((slot) => out.set(slot, guests[hash(slot) % guests.length]));
+  return out;
+}

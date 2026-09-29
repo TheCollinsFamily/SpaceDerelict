@@ -72,8 +72,10 @@ describe('the seeding gland', () => {
   it('is a weak limb that is never drawn', () => {
     const sp = towerSpec('sprout');
     expect(sp.weight).toBe(0);
-    expect(sp.damage).toBeLessThan(towerSpec('spitter').damage);
-    expect(sp.maxHp).toBeLessThan(towerSpec('spitter').maxHp);
+    // Weaker than the cheapest limb there is: it fires much slower (measured and tuned Sep 29 2026).
+    const dps = (f: 'sprout' | 'spitter') => towerSpec(f).damage * towerSpec(f).rate;
+    expect(dps('sprout')).toBeLessThan(0.7 * dps('spitter'));
+    expect(sp.maxHp).toBeLessThanOrEqual(towerSpec('spitter').maxHp);
     expect(new Sim(CFG).drawWeights().sprout).toBe(0);
   });
 

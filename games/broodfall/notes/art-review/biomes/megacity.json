@@ -23,6 +23,11 @@
    "detail": "2 sheets, 12 of 12 props"
   },
   {
+   "name": "every lopsided prop has its back",
+   "ok": true,
+   "detail": "23 of 23 backs"
+  },
+  {
    "name": "a name of a prop is used once among the later sheets",
    "ok": true,
    "detail": "14 names"
@@ -35,7 +40,7 @@
   {
    "name": "light to load",
    "ok": true,
-   "detail": "616 KB in all, the heaviest sheet 408 KB, packed at quality 90"
+   "detail": "662 KB in all, the heaviest sheet 408 KB, packed at quality 90"
   }
  ]
 }

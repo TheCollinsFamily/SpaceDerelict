@@ -19,7 +19,7 @@ import { keyClip, keyFrame, keyOf, loopWindow, pick, unionBox } from '../lib/key
 import { figure, findFigures } from '../lib/sheet.mjs';
 import { borderColour } from '../lib/img.mjs';
 import { ART, REVIEW, ROOT, SRC, putEntry } from '../lib/manifest.mjs';
-import { bakeCore, generateCore, plinthTiles } from './core.mjs';
+import { bakeCore, generateCore, plinthTiles, podSprites } from './core.mjs';
 
 const DIR = path.join(SRC, 'terrain');
 const CONCEPTS = path.join(ROOT, 'notes', 'concepts', '2026-09-29');
@@ -281,7 +281,7 @@ export function bakeTerrain() {
   if (have('smoke.png')) floors.push(...floorTiles('smoke', tex('smoke.png', 512, 512), 0.55));
   const creepTex = have('creep.png') ? tex('creep.png', 512, 512) : null;
   // The body's own pieces: its skin, what runs down walls, the edges of roofs, and the plinths it raises limbs on.
-  const creep = creepTex ? [...creepTiles(creepTex), ...dripTiles(creepTex), ...edgeTiles(), ...plinthTiles()] : [];
+  const creep = creepTex ? [...creepTiles(creepTex), ...dripTiles(creepTex), ...edgeTiles(), ...plinthTiles(), ...podSprites()] : [];
   const walls = [];
   for (const id of Object.keys(WALLS)) if (have(`wall-${id}.png`)) walls.push(...wallTiles(id, tex(`wall-${id}.png`, 1024, 384)));
   const props = [...propSprites('roof'), ...propSprites('street')];

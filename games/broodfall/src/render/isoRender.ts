@@ -19,7 +19,7 @@ import {
   viewCell, viewOf, viewSize, wallIndex,
   type Facing, type Heading, type IsoGeo, type Pt, type Turn,
 } from './iso';
-import { buildingsOf, pickVariant, variantName } from './biome';
+import { buildingsOf, pickVariant, planGuests, variantName } from './biome';
 import { SEEDLING_FLIGHT } from '../../content/underground';
 import { CASTE_COLORS, ENEMY_SIZE, FAMILY_COLORS, Renderer } from './render';
 
@@ -34,6 +34,8 @@ const UNIT_PX = 3.6;
  */
 const LIMB_FILL = 0.64;
 /** A limb of two cells: how many cells across it is drawn, and how far behind the middle of its ground it stands. */
+/** Which way the seedling pod flies in its picture (tools/art/templates/core.mjs POD): toward the lower left. */
+const POD_HEADING = Math.atan2(0.45, -1);
 const LONG_SIZE = 1.35;
 const LONG_BACK = 0.25;
 /** What the landing site stands on, as a share of the width of the square it fell on. */
@@ -65,7 +67,16 @@ interface UnitView {
   sprite: Sprite; ghost: Sprite; art: UnitArt;
   heading: Heading; want: Heading; wantFor: number;
   last: Pt; phase: number; attackT: number; seen: number;
+  /** A soft dark pool under a unit on the ground: it stands ON the street. */
+  shade: Sprite;
+  /** The sim's unit itself: it keeps its hp after the sim drops it, so one gone with none left died (in the same tick it was struck), and falls where it stood. */
+  ent: Enemy;
 }
+/** A unit that died: its fall plays once where it stood, it lies a moment, then fades. */
+interface Dying { sprite: Sprite; shade: Sprite; art: UnitArt; clip: Clip | null; t: number }
+/** How long the fallen lie still before they fade, and how long the fade takes, seconds. */
+const LIE_STILL = 1.4;
+const FADE = 0.6;
 interface LimbView {
   sprite: Sprite; shade: Sprite; art: LimbArt; family: string;
   cooldown: number; fireT: number; fireDur: number; seen: number;
@@ -110,6 +121,7 @@ export class IsoRenderer extends Renderer {
   private creepState = new Uint16Array(0);
   private creepSprites = new Map<number, Sprite[]>();
   private units = new Map<number, UnitView>();
+  private dying: Dying[] = [];
   private limbs = new Map<number, LimbView>();
   private nodes = new Map<number, Sprite>();
   private shots = new Map<number, ShotView>();
@@ -298,6 +310,13 @@ export class IsoRenderer extends Renderer {
     const s = this.toBoard(clientX, clientY);
     if (!sim) return unproject(this.geo, s.x, s.y);
     const hit = pick(this.geo, s.x, s.y, (x, y) => this.heightAt(sim, x, y), 5);
+    // A pool lying in a street (a flat limb) is clicked where it lies, even where the wall of a tall block
+    // behind it comes down over its back half: a wall is not something the player means to click.
+    if (!hit.top) {
+      const g0 = unproject(this.geo, s.x, s.y, 0);
+      const pool = sim.towers.find((t) => this.limbs.get(t.id)?.art.flat && sim.cellsOf(t).includes(sim.cellAt(g0.x, g0.y)));
+      if (pool) return { x: g0.x, y: g0.y };
+    }
     const under = sim.cellAt(hit.x, hit.y);
     if (hit.top && sim.towers.some((t) => sim.cellsOf(t).includes(under))) return { x: hit.x, y: hit.y };
     // A limb is taller than its cell: a click on its body is a click on the limb.
@@ -364,6 +383,8 @@ export class IsoRenderer extends Renderer {
     this.creepSprites.clear();
     this.creepState = new Uint16Array(sim.map.cells.length);
     this.units.clear();
+    for (const d of this.dying) { d.sprite.destroy(); d.shade.destroy(); }
+    this.dying = [];
     this.limbs.clear();
     this.nodes.clear();
     this.shots.clear();
@@ -520,12 +541,13 @@ export class IsoRenderer extends Renderer {
     const home = this.art.biome?.id ?? null;
     if (!home) return null;
     const guests = this.art.guests();
-    const start = Math.floor(Math.floor(sim.map.coreCell / sim.cfg.gridW) / PLATE) * sim.map.slotsX + Math.floor((sim.map.coreCell % sim.cfg.gridW) / PLATE);
-    if (!guests.length || slot === start) return home;
-    const r = (Math.imul(slot + 1, 2654435761) ^ Math.imul(sim.cfg.seed | 0, 40503)) >>> 0;
-    if (r % 3 !== 0) return home;
-    return guests[(r >>> 8) % guests.length];
+    if (!guests.length) return home;
+    if (this.guestPlan?.map !== sim.map || this.guestPlan.guests !== guests.join()) this.guestPlan = { map: sim.map, guests: guests.join(), slots: planGuests({ slotsX: sim.map.slotsX, slotsY: sim.map.slotsY, start: Math.floor(Math.floor(sim.map.coreCell / sim.cfg.gridW) / PLATE) * sim.map.slotsX + Math.floor((sim.map.coreCell % sim.cfg.gridW) / PLATE), seed: sim.cfg.seed | 0 }, guests) };
+    return this.guestPlan.slots.get(slot) ?? home;
   }
+
+  /** Which districts of this board are drawn with a guest set (setOfSlot). */
+  private guestPlan: { map: unknown; guests: string; slots: Map<number, string> } | null = null;
 
   /** The height in levels of a cell of the view (0: a street, a square, or off the board). */
   private heightV(sim: Sim, vx: number, vy: number): number {
@@ -560,6 +582,29 @@ export class IsoRenderer extends Renderer {
   }
 
   /** What stands on the roofs of the living city. A roof the body has taken is bare. */
+  /**
+   * A prop as the turned camera sees it. Every prop faces south in the world, as a limb that
+   * faces south does: seen from the front for two quarter-turns of the camera (once mirrored),
+   * from behind for the other two. A lopsided prop has a picture of its back (prop-<id>~b,
+   * tools/art/biomes.mjs ROUND); a round one, or one whose back is missing, is its front mirrored.
+   */
+  private propSprite(id: string, set: string | null): Sprite | null {
+    const front = this.art.sprite('props', id, set);
+    const rect = this.art.rect('props', id, set);
+    if (!front || !rect) return null;
+    const view = limbView(this.geo, 'S');
+    const backTex = view.back ? this.art.sprite('props', `${id}~b`, set) : null;
+    const backRect = view.back ? this.art.rect('props', `${id}~b`, set) : null;
+    const tex = backTex && backRect ? backTex : front;
+    const r = backTex && backRect ? backRect : rect;
+    // Without a back, the front is shown mirrored whenever the back would be: the turn is seen.
+    const mirror = backTex && backRect ? view.mirror : view.back ? !view.mirror : view.mirror;
+    const s = new Sprite(tex);
+    s.anchor.set(r.anchor?.[0] ?? 0.5, r.anchor?.[1] ?? 0.94);
+    if (mirror) s.scale.x = -1;
+    return s;
+  }
+
   private addProp(sim: Sim, cx: number, cy: number, h: number, kind: string, z: number, set: string | null): void {
     const r = ((cx * 7919 + cy * 104729 + cx * cy * 31) >>> 0) % 100;
     if (r >= 22) return;
@@ -570,11 +615,8 @@ export class IsoRenderer extends Renderer {
     if (!list.length) return;
     // Which of them: by the place, and spread over the whole list (the first pick was the remainder of a number under 22).
     const id = `prop-${list[((cx * 2246822519 + cy * 3266489917) >>> 0) % list.length]}`;
-    const tex = this.art.sprite('props', id, set);
-    const rect = this.art.rect('props', id, set);
-    if (!tex || !rect) return;
-    const s = new Sprite(tex);
-    s.anchor.set(rect.anchor?.[0] ?? 0.5, rect.anchor?.[1] ?? 0.94);
+    const s = this.propSprite(id, set);
+    if (!s) return;
     const p = project(this.geo, (cx + 0.5) * this.geo.cell, (cy + 0.5) * this.geo.cell, h);
     s.position.set(p.x, p.y);
     s.zIndex = z + 5;
@@ -599,11 +641,8 @@ export class IsoRenderer extends Renderer {
     });
     if (!fits.length) return;
     const id = `prop-${fits[(r * 7 + cx + cy) % fits.length]}`;
-    const tex = this.art.sprite('props', id, set);
-    const rect = this.art.rect('props', id, set);
-    if (!tex || !rect) return;
-    const s = new Sprite(tex);
-    s.anchor.set(rect.anchor?.[0] ?? 0.5, rect.anchor?.[1] ?? 0.94);
+    const s = this.propSprite(id, set);
+    if (!s) return;
     const at = square ? [0.5, 0.5] : wallBehind ? [0.5, 0.14] : [0.14, 0.5];
     const g = this.geo;
     s.position.set((vx + at[0] - vy - at[1]) * g.a, (vx + at[0] + vy + at[1]) * g.b);
@@ -1028,8 +1067,8 @@ export class IsoRenderer extends Renderer {
       const p = project(g, e.pos.x, e.pos.y, up);
       const found = this.art.units.get(e.kind);
       if (air) this.groundG.circle(e.pos.x, e.pos.y, r * 0.9).fill({ color: 0x000000, alpha: 0.28 });
-      if (e.burrowed) {
-        // Underground: only a travelling mound of broken street.
+      if (e.burrowed && !found?.art.anims.states?.burrowed) {
+        // Underground: only a travelling mound of broken street (drawn, when it has no picture of its own).
         this.groundG.circle(e.pos.x, e.pos.y, r + 3).fill({ color: 0x3a2c18, alpha: 0.85 });
         this.groundG.circle(e.pos.x - 2, e.pos.y - 2, r).fill({ color: 0x6b573a, alpha: 0.9 });
       }
@@ -1042,21 +1081,26 @@ export class IsoRenderer extends Renderer {
       }
       const { art, atlas } = found;
       let v = this.units.get(e.id);
+      // A unit promoted into another kind is drawn as that kind from now on.
+      if (v && v.art !== art) { v.sprite.destroy(); v.ghost.destroy(); v.shade.destroy(); this.units.delete(e.id); v = undefined; }
       if (!v) {
         const sprite = new Sprite();
         const ghost = new Sprite();
         for (const s of [sprite, ghost]) s.anchor.set(art.anchor[0], art.anchor[1]);
         ghost.alpha = GHOST_ALPHA;
-        this.sorted.addChild(sprite);
+        const shade = new Sprite(this.shade());
+        shade.anchor.set(0.5, 0.5);
+        this.sorted.addChild(shade, sprite);
         this.ghosts.addChild(ghost);
         // It starts out facing the way the street leads.
         const next = sim.flowNextOf(sim.cellAt(e.pos.x, e.pos.y));
         const to = next >= 0 ? sim.cellCenter(next) : sim.core;
         const first = headingOf(g, to.x - e.pos.x, to.y - e.pos.y);
-        v = { sprite, ghost, art, heading: first, want: first, wantFor: 0, last: { ...e.pos }, phase: (e.id * 0.618) % 1, attackT: 0, seen: 0 };
+        v = { sprite, ghost, art, heading: first, want: first, wantFor: 0, last: { ...e.pos }, phase: (e.id * 0.618) % 1, attackT: 0, seen: 0, shade, ent: e };
         this.units.set(e.id, v);
       }
       v.seen = this.frameNo;
+      v.ent = e;
 
       const dx = e.pos.x - v.last.x;
       const dy = e.pos.y - v.last.y;
@@ -1079,8 +1123,19 @@ export class IsoRenderer extends Renderer {
       const { view, mirror } = viewOf(v.heading);
       const walk = art.anims.walk[view] ?? art.anims.walk.SW ?? Object.values(art.anims.walk)[0]!;
       const strike = attacking ? art.anims.attack?.[view] : undefined;
+      // The state the sim holds it in, when there is a picture of it (drawn toward the lower left, mirrored by heading).
+      const states = art.anims.states;
+      const state = !states ? undefined
+        : e.burrowed ? states.burrowed
+          : !air && (e.groundedUntil ?? 0) > sim.time ? states.grounded
+            : e.deployed ? states.deployed
+              : e.kind === 'carapace' && e.hitShield !== undefined && e.hitShield <= 0 ? states.stripped
+                : e.carrying || (e.stole ?? 0) > 0 ? states.carrying
+                  : undefined;
       let tex: Texture;
-      if (strike) {
+      if (state) {
+        tex = this.frameOf(atlas, art, state, 0);
+      } else if (strike) {
         v.attackT += dt;
         const period = spec.rate > 0 ? 1 / spec.rate : strike.count / strike.fps;
         tex = this.frameOf(atlas, art, strike, ((v.attackT % period) / period) * strike.count);
@@ -1089,21 +1144,75 @@ export class IsoRenderer extends Renderer {
         tex = this.frameOf(atlas, art, walk, v.phase * walk.count);
       }
       const scale = (2 * r * UNIT_PX) / (art.body * art.frame);
-      const hidden = !!e.burrowed || (sim.isCloaked(e) && !sim.isRevealed(e));
+      // A burrowed unit with a picture of its mound is seen as that mound; without one, not at all.
+      const hidden = (!!e.burrowed && !state) || (sim.isCloaked(e) && !sim.isRevealed(e));
+      // A state is drawn once, toward the lower left: it is mirrored when the unit faces right, as the views are.
+      const stateMirror = mirror;
       for (const s of [v.sprite, v.ghost]) {
         s.texture = tex;
         s.position.set(p.x, p.y);
-        s.scale.set(mirror ? -scale : scale, scale);
+        s.scale.set(stateMirror ? -scale : scale, scale);
         s.visible = !hidden;
       }
+      v.ghost.visible = !hidden && !e.burrowed;
       v.sprite.zIndex = depth(g, e.pos.x, e.pos.y) * 100 + (air ? 400 : 50);
+      // It stands ON the ground: a soft shadow under its feet (a flier's is drawn on the ground below it).
+      const onGround = project(g, e.pos.x, e.pos.y, this.heightAt(sim, e.pos.x, e.pos.y));
+      const sw = 2 * r * UNIT_PX * 1.25;
+      v.shade.position.set(onGround.x, onGround.y);
+      v.shade.width = sw;
+      v.shade.height = sw * (g.b / g.a);
+      v.shade.zIndex = v.sprite.zIndex - 1;
+      v.shade.visible = !air && !hidden && !e.burrowed;
+      v.shade.alpha = 0.85;
       v.sprite.tint = sim.isCloaked(e) ? 0xd8b0ff : 0xffffff;
       this.unitMarks(sim, e, p.x / K, (p.y - r * UNIT_PX * 0.9) / K, r);
     }
     for (const [id, v] of this.units) {
-      if (v.seen !== this.frameNo) { v.sprite.destroy(); v.ghost.destroy(); this.units.delete(id); }
+      if (v.seen === this.frameNo) continue;
+      v.ghost.destroy();
+      this.units.delete(id);
+      // Gone with no hp left: it died, and falls where it stood.
+      if (v.ent.hp <= 0 && this.dying.length < 60) {
+        const { view } = viewOf(v.heading);
+        const clip = v.art.anims.death?.[view] ?? v.art.anims.death?.SW ?? null;
+        this.dying.push({ sprite: v.sprite, shade: v.shade, art: v.art, clip, t: 0 });
+      } else {
+        v.sprite.destroy();
+        v.shade.destroy();
+      }
     }
+    this.syncDying(sim, dt);
     this.drawBroodlings(sim);
+  }
+
+  /** The fallen: each plays its fall once, lies still, then fades. */
+  private syncDying(sim: Sim, dt: number): void {
+    const keep: Dying[] = [];
+    for (const d of this.dying) {
+      d.t += dt;
+      const found = this.art.units.get(this.kindOfArt(d.art));
+      const playFor = d.clip ? d.clip.count / d.clip.fps : 0;
+      if (d.clip && found) {
+        const f = Math.min(d.clip.count - 1, Math.floor(d.t * d.clip.fps));
+        d.sprite.texture = found.atlas.frame(d.clip.start + f, d.art.frame, d.art.cols);
+      }
+      const gone = d.t - playFor - LIE_STILL;
+      // Without a fall to play, it simply fades where it stood.
+      const a = gone <= 0 ? 1 : Math.max(0, 1 - gone / FADE);
+      d.sprite.alpha = a;
+      d.shade.alpha = 0.85 * a;
+      d.sprite.zIndex = Math.min(d.sprite.zIndex, d.shade.zIndex + 1);
+      if (a <= 0) { d.sprite.destroy(); d.shade.destroy(); continue; }
+      keep.push(d);
+    }
+    this.dying = keep;
+  }
+
+  /** Which kind a unit's art is (the art set is keyed by kind). */
+  private kindOfArt(art: UnitArt): string {
+    for (const [kind, u] of this.art.units) if (u.art === art) return kind;
+    return '';
   }
 
   private targetOf(sim: Sim, e: Enemy): Pt | null {
@@ -1218,11 +1327,43 @@ export class IsoRenderer extends Renderer {
     for (const s of sim.shells) lobbed(s.from, s.to, 1 - s.ttl / s.flight, 22, s.stun ? 2.5 : 4.5, s.side === 'body' ? 0xd8b060 : s.stun ? 0xdff5f2 : 0x2a1a0e);
     for (const b of sim.bileFlights) lobbed(b.from, b.to, 1 - b.ttl / 0.9, 18, 6, 0xc4b83a);
     for (const c of sim.clotFlights) lobbed(c.from, c.to, 1 - c.ttl / 1.2, 20, 7, 0x9c3120);
-    // A seedling shot up from the landing site: high, and pink, and it trails a little.
+    // A seedling shot up from the landing site: the pod itself (art: 'seed-pod'), turned along its arc,
+    // with its shadow on the ground. Without the picture, a pink dot.
+    const pod = this.art.sprite('creep', 'seed-pod');
+    const live = new Set<number>();
     for (const f of sim.seedFlights) {
       const t = 1 - f.ttl / SEEDLING_FLIGHT;
-      lobbed(f.from, f.to, Math.max(0, t - 0.1), 70, 6, 0x7a2a2a);
-      lobbed(f.from, f.to, t, 70, 9, 0xf0b4b0);
+      if (!pod) {
+        lobbed(f.from, f.to, Math.max(0, t - 0.1), 70, 6, 0x7a2a2a);
+        lobbed(f.from, f.to, t, 70, 9, 0xf0b4b0);
+        continue;
+      }
+      live.add(f.id);
+      const a = at(f.from.x, f.from.y, this.muzzle(sim, f.from.x, f.from.y));
+      const b = at(f.to.x, f.to.y, this.heightAt(sim, f.to.x, f.to.y) * geo.level + 6);
+      const place = (u: number) => ({ x: a.x + (b.x - a.x) * u, y: a.y + (b.y - a.y) * u - Math.sin(u * Math.PI) * 70 });
+      const here = place(t);
+      const ahead = place(Math.min(1, t + 0.02));
+      const sh = at(f.from.x + (f.to.x - f.from.x) * t, f.from.y + (f.to.y - f.from.y) * t, 0);
+      g.ellipse(sh.x, sh.y, 7, 3.5).fill({ color: 0x000000, alpha: 0.28 });
+      let s = this.pods.get(f.id);
+      if (!s) {
+        s = new Sprite(pod);
+        s.anchor.set(0.5, 0.5);
+        s.zIndex = 1e9;
+        this.sorted.addChild(s);
+        this.pods.set(f.id, s);
+      }
+      // The picture flies toward its lower left (POD_HEADING); it is turned to fly along the arc.
+      s.rotation = Math.atan2(ahead.y - here.y, ahead.x - here.x) - POD_HEADING;
+      s.position.set(here.x * K, here.y * K);
+      // It pulses as it flies: a living thing.
+      const k = (geo.a * 0.8) / pod.width;
+      s.scale.set(k * (1 + 0.08 * Math.sin(t * 20)), k);
     }
+    for (const [id, s] of this.pods) if (!live.has(id)) { s.destroy(); this.pods.delete(id); }
   }
+
+  /** Seedling pods in the air, by the id of their flight. */
+  private pods = new Map<number, Sprite>();
 }

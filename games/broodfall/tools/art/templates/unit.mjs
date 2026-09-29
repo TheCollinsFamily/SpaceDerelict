@@ -12,9 +12,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { lock, makeClip, makeStill, pool } from '../rfab.mjs';
 import { placeOnSheet, unit } from '../units.mjs';
-import { blank, crop, paste, readFrames, readImage, resize, writePng } from '../lib/img.mjs';
+import { blank, borderColour, crop, paste, readFrames, readImage, resize, writePng } from '../lib/img.mjs';
 import { figure, findFigures } from '../lib/sheet.mjs';
-import { fringe, keyClip, keyOf, loopWindow, pick, unionBox } from '../lib/key.mjs';
+import { dropSpecks, fringe, keyClip, keyFrame, keyOf, loopWindow, pick, unionBox } from '../lib/key.mjs';
 import { packAtlas, reviewFrames, reviewSheet } from '../lib/atlas.mjs';
 import { ART, REVIEW, ROOT, SRC, putEntry } from '../lib/manifest.mjs';
 import { ffmpeg } from '../rfab.mjs';
@@ -131,6 +131,34 @@ async function makeViews(u, dir, key) {
   writePng(path.join(dir, 'views.png'), strip);
 }
 
+/**
+ * STATES: what a unit looks like while the sim holds it in a state (src/sim/types.ts Enemy:
+ * groundedUntil, deployed, hitShield, burrowed, carrying, stole). One still each, redrawn from
+ * its view toward the lower left, seen by the same camera; the game mirrors it by heading.
+ * id: the name in the manifest (anims.states.<id>); the renderer knows which sim field each is.
+ */
+export const STATES = {
+  flier: [{ id: 'grounded', prompt: 'The same winged trooper, brought down: sprawled on the ground tangled in a sticky white web net, its wings folded and stuck, struggling.' }],
+  shadewing: [{ id: 'grounded', prompt: 'The same moth-like unit, brought down: sprawled on the ground tangled in a sticky white web net, its wings folded and stuck, struggling.' }],
+  cannon: [{ id: 'deployed', prompt: 'The same cannon beetle, set up to fire: its legs braced wide and planted, the barrel raised steeply, one crewman crouching with his hands over his ears.' }],
+  dartgun: [{ id: 'deployed', prompt: 'The same dart battery beetle, set up to fire: its legs braced wide and planted, its rack of tubes tilted steeply up, the crewman kneeling beside it.' }],
+  carapace: [{ id: 'stripped', prompt: 'The same armoured beetle with its armour shell stripped away: the plates gone, only its plain brown bare body and legs, looking smaller and vulnerable.' }],
+  tunneler: [{ id: 'burrowed', prompt: 'Only a travelling mound of broken street where the unit tunnels just under the surface: a low hump of cracked pale paving slabs and loose earth heaving up, a little dust. The unit itself cannot be seen at all.' }],
+  researcher: [{ id: 'carrying', prompt: 'The same researcher carrying off a stolen specimen: a small wet dark-maroon lump of living flesh with little roots, strapped in a glass-fronted container on its back, glowing faintly.' }],
+  infiltrator: [{ id: 'carrying', prompt: 'The same infiltrator carrying off a stolen specimen: a small wet dark-maroon lump of living flesh with little roots, bundled in a net on its back.' }],
+  thief: [{ id: 'carrying', prompt: 'The same thief running off with its sack bulging full of dark red meat, dripping a little, slung over its back.' }],
+};
+
+async function makeStates(u, dir, key) {
+  const list = STATES[u.kind] ?? [];
+  const results = await pool(list, 4, (st) => makeStill({
+    slug: `${u.kind} ${st.id}`, out: path.join(dir, `state-${st.id}.png`), refFiles: [path.join(dir, 'view-SW.png'), path.join(SRC, 'refs', 'board-camera.png')],
+    prompt: `${st.prompt} The same unit as the first reference picture, the same clothes, colours and drawing style, the same size in the frame, seen by exactly the same camera: from high above looking steeply down, as the second reference picture sees the board. It faces the lower left. ${EMBLEM}. Even light from directly overhead, no cast shadows, no text.`,
+    key: key.hex, keyName: key.name, quality: 'medium',
+  }));
+  results.forEach((r, i) => { if (!r.ok) console.warn(`[unit] ${u.kind} state ${list[i].id} failed: ${r.error.message.slice(0, 160)}`); });
+}
+
 /** Step 3: the clips. */
 async function makeClips(u, dir, key, anims) {
   const g = gaitOf(u);
@@ -143,9 +171,10 @@ async function makeClips(u, dir, key, anims) {
   }
   if (anims.includes('death')) {
     jobs.push({ v: 'SW', anim: 'death', still: path.join(dir, 'view-SW.png'), loop: false,
-      prompt: `The ${g.noun} is struck, staggers, collapses onto the ground and lies still. It stays where it fell. The camera is completely locked: no zoom, no pan, no cuts. The solid pure ${key.name} #${key.hex} background stays flat and empty.`, raw: true });
+      prompt: `The ${g.noun} is struck, staggers, and collapses onto the ground where it stands, then lies completely still for the rest of the clip: it does not get up and does not move again. It falls on the spot and does not travel across the frame. Seen from above by the same camera as the picture, all the time. The camera is completely locked: no zoom, no pan, no cuts. The solid pure ${key.name} #${key.hex} background stays flat and empty. No blood spray, no text.`, raw: true });
   }
-  const results = await pool(jobs, 5, (j) => makeClip({
+  // ART_POOL: how many clips are made at once (several sessions share the video service).
+  const results = await pool(jobs, Number(process.env.ART_POOL || 5), (j) => makeClip({
     slug: `${u.kind} ${j.anim} ${j.v}`, out: path.join(dir, `${j.anim}-${j.v}.mp4`), stillFile: j.still,
     prompt: j.prompt, key: key.hex, keyName: key.name, loop: j.loop !== false, raw: j.raw,
   }));
@@ -219,6 +248,26 @@ export function bakeUnit(kind) {
     }
   }
   for (const v of VIEWS) if (!anims.walk?.[v]) check(`walk ${v}: exists`, false, 'missing');
+  // A fall is drawn once (toward the lower left): every view falls with it, mirrored by heading.
+  if (anims.death) {
+    const one = anims.death.SW ?? Object.values(anims.death)[0];
+    for (const v of VIEWS) anims.death[v] ??= one;
+  }
+  // The states: one frame each, cut with the lower-left view's centre and feet.
+  const walkClip = walks.find((c) => c.v === 'SW') ?? walks[0];
+  for (const st of STATES[kind] ?? []) {
+    const file = path.join(dir, `state-${st.id}.png`);
+    if (!fs.existsSync(file)) { check(`state ${st.id}: exists`, false, 'missing'); continue; }
+    // The still is the size of the view it was drawn from; the clips are smaller: brought to the clip's size.
+    const img = readImage(file, { w: walkClip.w, h: walkClip.h });
+    keyFrame(img, keyOf(borderColour(img)));
+    dropSpecks(img);
+    const b = base.SW ?? base[walkClip.v];
+    const f = resize(crop(img, Math.round(b.cx - side / 2), Math.round(b.feet + BELOW * side - side), side, side), F, F);
+    (anims.states ??= {})[st.id] = { start: frames.length, count: 1, fps: 1 };
+    frames.push(f);
+    check(`state ${st.id}: made`, true, 'yes');
+  }
   // Views of one unit must be one size: compare how much of the frame each one fills.
   const fill = walks.map((c) => Math.max(c.box.x1 - c.box.x0, c.box.y1 - c.box.y0) / side);
   check('views are one size', Math.max(...fill) / Math.min(...fill) < 1.6, fill.map((f) => f.toFixed(2)).join(' '));
@@ -240,7 +289,7 @@ export function bakeUnit(kind) {
   putEntry('units', kind, entry);
 
   for (const v of VIEWS) {
-    const a = ['walk', 'attack'].map((n) => clips.find((c) => c.anim === n && c.v === v)?.kept).filter(Boolean);
+    const a = ['walk', 'attack', 'death'].map((n) => clips.find((c) => c.anim === n && c.v === v)?.kept).filter(Boolean);
     if (a.length) rows.push({ label: v, anims: a });
   }
   fs.mkdirSync(path.join(REVIEW, 'units'), { recursive: true });
@@ -275,6 +324,7 @@ export async function makeUnit(kind, { anims = ['walk'], bakeOnly = false, views
     await makeViews(u, dir, key);
     if (viewsOnly) return { kind, views: path.join(dir, 'turnaround.png') };
     await makeClips(u, dir, key, anims);
+    if (anims.includes('states')) await makeStates(u, dir, key);
   }
   return bakeUnit(kind);
 }

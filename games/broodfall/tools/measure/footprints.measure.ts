@@ -18,7 +18,7 @@
 import { appendFileSync, mkdirSync } from 'node:fs';
 import { it } from 'vitest';
 import { Autoplayer } from '../../src/sim/autoplayer';
-import { organTurn, placeNode } from '../../src/sim/organPolicy';
+import { organTurn, placeNode, placePlinth } from '../../src/sim/organPolicy';
 import { Rng } from '../../src/sim/rng';
 import { DT, Sim, towerSpec } from '../../src/sim/sim';
 import type { SimConfig, TowerFamily, TowerSpec } from '../../src/sim/types';
@@ -71,6 +71,7 @@ class RandomPlacer {
     if (sim.meat.royal >= 1) sim.issue({ kind: 'royal-surge' });
     if (organTurn(sim, this.rng)) return;
     if (placeNode(sim, this.rng)) return;
+    if (placePlinth(sim, this.rng)) return;
     for (let i = 0; i < sim.hand.length; i++) {
       const family = sim.hand[i].family;
       if (!sim.canAfford(towerSpec(family).cost)) continue;

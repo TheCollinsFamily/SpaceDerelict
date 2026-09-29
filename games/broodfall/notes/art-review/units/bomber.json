@@ -1,18 +1,18 @@
 {
  "kind": "bomber",
- "frames": 61,
- "atlasKB": 149,
+ "frames": 73,
+ "atlasKB": 181,
  "failed": 1,
  "checks": [
   {
    "name": "walk S: loop closes",
    "ok": false,
-   "value": 4.47
+   "value": 4.34
   },
   {
    "name": "walk S: it moves",
    "ok": true,
-   "value": 4.31
+   "value": 3.03
   },
   {
    "name": "walk S: loop is long enough",
@@ -22,7 +22,7 @@
   {
    "name": "walk S: inside the frame",
    "ok": true,
-   "value": "60,78-528,570"
+   "value": "120,92-500,566"
   },
   {
    "name": "walk S: no background tint on the outline",
@@ -32,7 +32,7 @@
   {
    "name": "walk S: stays on the spot",
    "ok": true,
-   "value": "0.9% of the frame"
+   "value": "1.1% of the frame"
   },
   {
    "name": "walk SW: loop closes",
@@ -92,7 +92,7 @@
   {
    "name": "walk W: stays on the spot",
    "ok": true,
-   "value": "1.6% of the frame"
+   "value": "1.7% of the frame"
   },
   {
    "name": "walk NW: loop closes",
@@ -152,17 +152,22 @@
   {
    "name": "walk N: stays on the spot",
    "ok": true,
-   "value": "0.1% of the frame"
+   "value": "0.2% of the frame"
+  },
+  {
+   "name": "death SW: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
   },
   {
    "name": "views are one size",
    "ok": true,
-   "value": "0.72 0.58 0.60 0.63 0.64"
+   "value": "0.72 0.60 0.62 0.65 0.66"
   },
   {
    "name": "atlas is under 900 KB",
    "ok": true,
-   "value": "149 KB"
+   "value": "181 KB"
   }
  ]
 }

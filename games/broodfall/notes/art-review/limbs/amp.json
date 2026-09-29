@@ -1,33 +1,33 @@
 {
  "family": "amp",
  "frames": 32,
- "atlasKB": 272,
- "failed": 1,
+ "atlasKB": 234,
+ "failed": 0,
  "checks": [
   {
    "name": "where it stands is marked",
    "ok": true,
-   "value": "0.42, 0.6, 0.63"
+   "value": "0.5, 0.86, 0.83"
   },
   {
    "name": "idle: loop closes",
    "ok": true,
-   "value": 0.89
+   "value": 0.58
   },
   {
    "name": "idle: it moves",
    "ok": true,
-   "value": 0.63
+   "value": 0.24
   },
   {
    "name": "idle: it is calm",
    "ok": true,
-   "value": 0.63
+   "value": 0.24
   },
   {
    "name": "idle: inside the frame",
    "ok": true,
-   "value": "96,108-542,498"
+   "value": "186,72-458,568"
   },
   {
    "name": "idle: no background tint on the outline",
@@ -37,37 +37,37 @@
   {
    "name": "idle: ends the size it began",
    "ok": true,
-   "value": "2% change"
+   "value": "1% change"
   },
   {
    "name": "it stands in its cell",
-   "ok": false,
-   "value": "19.3% of it lies in front of its cell"
+   "ok": true,
+   "value": "0.3% of it lies in front of its cell"
   },
   {
    "name": "from behind, where it stands is marked",
    "ok": true,
-   "value": "0.43, 0.83, 0.69"
+   "value": "0.5, 0.84, 0.84"
   },
   {
    "name": "from behind, idle: loop closes",
    "ok": true,
-   "value": 0.3
+   "value": 0.89
   },
   {
    "name": "from behind, idle: it moves",
    "ok": true,
-   "value": 0.57
+   "value": 0.37
   },
   {
    "name": "from behind, idle: it is calm",
    "ok": true,
-   "value": 0.57
+   "value": 0.37
   },
   {
    "name": "from behind, idle: inside the frame",
    "ok": true,
-   "value": "136,72-528,512"
+   "value": "184,50-462,584"
   },
   {
    "name": "from behind, idle: no background tint on the outline",
@@ -77,7 +77,7 @@
   {
    "name": "from behind, idle: ends the size it began",
    "ok": true,
-   "value": "0% change"
+   "value": "1% change"
   },
   {
    "name": "from behind, it stands in its cell",
@@ -92,7 +92,7 @@
   {
    "name": "atlas is under 900 KB",
    "ok": true,
-   "value": "272 KB"
+   "value": "234 KB"
   }
  ]
 }

@@ -323,8 +323,8 @@ export const TOWERS: readonly TowerSpec[] = [
     // it up from the landing site to where it is placed. Weak on purpose: a spitter's half.
     // It is worth having because it is free, and worth EATING: its pip is a little tempo.
     family: 'sprout', name: 'Seedling', weight: 0,
-    cost: {}, range: 75, rate: 0.8, damage: 6, aoe: 0,
-    maxHp: 45, interest: 0, eatThreshold: 0, advanced: false, hits: 'both',
+    cost: {}, range: 75, rate: 0.8, damage: 8, aoe: 0,
+    maxHp: 60, interest: 0, eatThreshold: 0, advanced: false, hits: 'both',
   },
 ];
 

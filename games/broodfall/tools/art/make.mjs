@@ -27,9 +27,10 @@ const ids = rest.filter((a) => !a.startsWith('--'));
 const TEMPLATES = {
   unit: async () => {
     const { makeUnit } = await import('./templates/unit.mjs');
-    return settle(ids, flags.has('--views') || flags.has('--bake') ? 5 : 3, (id) => makeUnit(id, {
+    // ART_POOL set: one unit at a time, so no more clips are made at once than ART_POOL.
+    return settle(ids, flags.has('--views') || flags.has('--bake') ? 5 : process.env.ART_POOL ? 1 : 3, (id) => makeUnit(id, {
       bakeOnly: flags.has('--bake'), viewsOnly: flags.has('--views'),
-      anims: ['walk', ...(flags.has('--attack') ? ['attack'] : []), ...(flags.has('--death') ? ['death'] : [])],
+      anims: ['walk', ...(flags.has('--attack') ? ['attack'] : []), ...(flags.has('--death') ? ['death'] : []), ...(flags.has('--states') ? ['states'] : [])],
     }));
   },
   limb: async () => {
@@ -44,6 +45,11 @@ const TEMPLATES = {
     const { ALL_BIOMES, makeBiome } = await import('./templates/biome.mjs');
     const parts = ids.filter((id) => !ALL_BIOMES.includes(id));
     const sets = ids.filter((id) => ALL_BIOMES.includes(id));
+    // --backs: draw the backs of the props (the sheets turned half a turn), then bake.
+    if (flags.has('--backs')) {
+      const { generateBacks, bakeBiome } = await import('./templates/biome.mjs');
+      return settle(sets.length ? sets : ALL_BIOMES, 3, async (id) => { await generateBacks(id); return bakeBiome(id); });
+    }
     return settle(sets.length ? sets : ALL_BIOMES, 3, (id) => makeBiome(id, { bakeOnly: flags.has('--bake'), only: parts }));
   },
   // The organ stage as the ship's ground scan (tools/art/templates/under.mjs): one tile per organ, soil, deposit.

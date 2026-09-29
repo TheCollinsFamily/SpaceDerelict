@@ -162,6 +162,51 @@ try {
     await page.keyboard.press('Escape');
   } else check(false, 'room for a Brood Womb');
 
+  // THE CITY ABOVE follows the board's tile set; the dome is the scan's meteor. Screenshots for Collins.
+  const screens = join(root, 'notes', 'screens', '2026-09-29');
+  mkdirSync(screens, { recursive: true });
+  const jpg = (png, name) => execSync(`ffmpeg -hide_banner -loglevel error -y -i "${png}" -q:v 3 "${join(screens, name)}"`);
+  let n = 10;
+  for (const [set, what] of [['suburb', 'suburb'], ['megacity', 'megacity'], ['terraces', 'rural'], ['orthodox', 'temple'], ['necropolis', 'necropolis']]) {
+    // Twice the pixels: the dome close-up is cut from these.
+    const p = await browser.newPage({ viewport: { width: 1600, height: 1000 }, deviceScaleFactor: 2 });
+    p.on('pageerror', (e) => errors.push(String(e)));
+    await p.goto(`http://localhost:${PORT}/?seed=7&autostart=1&speed=0&biome=${set}`, { waitUntil: 'load' });
+    await p.waitForSelector('#stage canvas');
+    await p.waitForFunction(() => window.broodfall.biome() !== '', null, { timeout: 20000 }).catch(() => {});
+    await p.locator('#open-under').click();
+    await p.waitForSelector('#under:not(.hidden)');
+    await p.waitForFunction(() => document.querySelector('#under-surface .skyline-img')?.dataset.set, null, { timeout: 15000 }).catch(() => {});
+    const sky = await p.evaluate(async () => {
+      const el = document.querySelector('#under-surface .skyline-img');
+      const url = el ? getComputedStyle(el).backgroundImage.replace(/^url\("?|"?\)$/g, '') : '';
+      const img = new Image(); img.src = url;
+      let w = 0; try { await img.decode(); w = img.naturalWidth; } catch {}
+      const dome = document.getElementById('under-dome');
+      const durl = getComputedStyle(dome).backgroundImage.replace(/^url\("?|"?\)$/g, '');
+      const d = new Image(); d.src = durl;
+      let dw = 0; try { await d.decode(); dw = d.naturalWidth; } catch {}
+      return { set: el?.dataset.set, url, w, dome: dome.classList.contains('art'), dw };
+    });
+    check(sky.set === set && sky.url.includes(`sky-${set}`) && sky.w > 0, `the skyline is the ${set} one (${sky.url.split('/').pop()}, ${sky.w} px)`);
+    check(sky.dome && sky.dw > 0, `the dome is the scan's meteor picture (${sky.dw} px)`);
+    await p.waitForTimeout(900);
+    const png = join(shots, `scanner-sky-${set}.png`);
+    await p.screenshot({ path: png });
+    jpg(png, `scanner-${n++}-skyline-${what}.jpg`);
+    if (set === 'suburb') {
+      const box = await p.locator('#under-surface').boundingBox();
+      const dpng = join(shots, 'scanner-dome.png');
+      await p.screenshot({ path: dpng, clip: { x: box.x + box.width * 0.3, y: box.y - 20, width: box.width * 0.4, height: box.height + 120 } });
+      jpg(dpng, `scanner-${n++}-dome-close.jpg`);
+    }
+    await p.close();
+  }
+  for (const [png, name] of [['scanner-1-empty.png', 'scanner-01-empty.jpg'], ['scanner-2-third.png', 'scanner-02-a-third-grown.jpg'],
+    ['scanner-3-growing.png', 'scanner-03-growing-blink.jpg'], ['scanner-4-seeder.png', 'scanner-04-seeding-gland.jpg']]) {
+    try { jpg(join(shots, png), name); } catch {}
+  }
+
   check(errors.length === 0, errors.length ? `PAGE ERRORS: ${errors.join(' | ')}` : 'no page errors');
   console.log(failed ? `SCANNER BEAT: ${failed} failed` : 'SCANNER BEAT: all verified.');
 } finally {

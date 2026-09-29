@@ -1,28 +1,28 @@
 {
  "kind": "soldier",
  "frames": 122,
- "atlasKB": 232,
+ "atlasKB": 238,
  "failed": 0,
  "checks": [
   {
    "name": "walk S: loop closes",
    "ok": true,
-   "value": 0.92
+   "value": 1.52
   },
   {
    "name": "walk S: it moves",
    "ok": true,
-   "value": 1.8
+   "value": 2.5
   },
   {
    "name": "walk S: loop is long enough",
    "ok": true,
-   "value": 12
+   "value": 10
   },
   {
    "name": "walk S: inside the frame",
    "ok": true,
-   "value": "158,103-442,562"
+   "value": "98,94-464,568"
   },
   {
    "name": "walk S: no background tint on the outline",
@@ -32,27 +32,27 @@
   {
    "name": "walk S: stays on the spot",
    "ok": true,
-   "value": "0.2% of the frame"
+   "value": "0.8% of the frame"
   },
   {
    "name": "walk SW: loop closes",
    "ok": true,
-   "value": 1.64
+   "value": 0.43
   },
   {
    "name": "walk SW: it moves",
    "ok": true,
-   "value": 1.68
+   "value": 2.73
   },
   {
    "name": "walk SW: loop is long enough",
    "ok": true,
-   "value": 10
+   "value": 30
   },
   {
    "name": "walk SW: inside the frame",
    "ok": true,
-   "value": "144,110-462,554"
+   "value": "144,100-465,576"
   },
   {
    "name": "walk SW: no background tint on the outline",
@@ -62,27 +62,27 @@
   {
    "name": "walk SW: stays on the spot",
    "ok": true,
-   "value": "0.2% of the frame"
+   "value": "0.5% of the frame"
   },
   {
    "name": "walk W: loop closes",
    "ok": true,
-   "value": 0.34
+   "value": 0.31
   },
   {
    "name": "walk W: it moves",
    "ok": true,
-   "value": 1.44
+   "value": 1.92
   },
   {
    "name": "walk W: loop is long enough",
    "ok": true,
-   "value": 12
+   "value": 10
   },
   {
    "name": "walk W: inside the frame",
    "ok": true,
-   "value": "168,108-446,538"
+   "value": "148,116-480,546"
   },
   {
    "name": "walk W: no background tint on the outline",
@@ -92,27 +92,27 @@
   {
    "name": "walk W: stays on the spot",
    "ok": true,
-   "value": "0.6% of the frame"
+   "value": "0.1% of the frame"
   },
   {
    "name": "walk NW: loop closes",
    "ok": true,
-   "value": 0.33
+   "value": 0.4
   },
   {
    "name": "walk NW: it moves",
    "ok": true,
-   "value": 1.62
+   "value": 1.29
   },
   {
    "name": "walk NW: loop is long enough",
    "ok": true,
-   "value": 32
+   "value": 24
   },
   {
    "name": "walk NW: inside the frame",
    "ok": true,
-   "value": "182,103-472,542"
+   "value": "170,108-456,556"
   },
   {
    "name": "walk NW: no background tint on the outline",
@@ -122,27 +122,27 @@
   {
    "name": "walk NW: stays on the spot",
    "ok": true,
-   "value": "0.3% of the frame"
+   "value": "0.2% of the frame"
   },
   {
    "name": "walk N: loop closes",
    "ok": true,
-   "value": 0.39
+   "value": 0.47
   },
   {
    "name": "walk N: it moves",
    "ok": true,
-   "value": 1.47
+   "value": 1.25
   },
   {
    "name": "walk N: loop is long enough",
    "ok": true,
-   "value": 34
+   "value": 33
   },
   {
    "name": "walk N: inside the frame",
    "ok": true,
-   "value": "188,105-458,540"
+   "value": "192,104-452,552"
   },
   {
    "name": "walk N: no background tint on the outline",
@@ -152,7 +152,7 @@
   {
    "name": "walk N: stays on the spot",
    "ok": true,
-   "value": "0.6% of the frame"
+   "value": "0.3% of the frame"
   },
   {
    "name": "attack S: no background tint on the outline",
@@ -162,7 +162,7 @@
   {
    "name": "attack S: stays on the spot",
    "ok": true,
-   "value": "0.2% of the frame"
+   "value": "0.1% of the frame"
   },
   {
    "name": "attack SW: no background tint on the outline",
@@ -192,7 +192,7 @@
   {
    "name": "attack NW: stays on the spot",
    "ok": true,
-   "value": "0.2% of the frame"
+   "value": "0.0% of the frame"
   },
   {
    "name": "attack N: no background tint on the outline",
@@ -207,12 +207,12 @@
   {
    "name": "views are one size",
    "ok": true,
-   "value": "0.72 0.70 0.68 0.69 0.69"
+   "value": "0.72 0.72 0.65 0.68 0.68"
   },
   {
    "name": "atlas is under 900 KB",
    "ok": true,
-   "value": "232 KB"
+   "value": "238 KB"
   }
  ]
 }

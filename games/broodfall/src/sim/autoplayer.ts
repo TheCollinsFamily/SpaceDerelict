@@ -5,7 +5,7 @@
 import { Rng } from './rng';
 import { Sim, towerSpec } from './sim';
 import { UPGRADE_COST } from '../../content/upgrades';
-import { organTurn, placeNode } from './organPolicy';
+import { organTurn, placeNode, placePlinth } from './organPolicy';
 import { CellType } from './citymap';
 import { BALANCE as B } from '../../content/data';
 import type { Tower, TowerFamily, UpgradeChoice } from './types';
@@ -39,6 +39,7 @@ export class Autoplayer {
     // The organ stage (between waves): unlock themes, then spend what the wave would clear.
     if (sim.cfg.organStage && organTurn(sim)) return;
     if (placeNode(sim)) return;
+    if (placePlinth(sim)) return;
 
     // Sling technique: hurl creep toward the telegraphed approach, so forward
     // ground near the incoming lane becomes buildable before the body arrives.
