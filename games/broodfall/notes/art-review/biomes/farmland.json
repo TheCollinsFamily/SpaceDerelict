@@ -3,34 +3,39 @@
  "name": "The Granary Belt",
  "checks": [
   {
-   "name": "three floors",
+   "name": "every floor",
    "ok": true,
-   "detail": "48 of 48 tiles"
+   "detail": "112 of 112 tiles: 5 of 5 roofs, 1 of 1 streets, 1 of 1 squares"
   },
   {
-   "name": "four kinds of wall",
+   "name": "every face of every kind of district",
    "ok": true,
-   "detail": "192 of 192 faces"
+   "detail": "960 of 960 faces"
   },
   {
-   "name": "every roof prop cut out",
+   "name": "every sheet of roof props is there and cut out",
    "ok": true,
-   "detail": "8 of 8"
+   "detail": "2 sheets, 16 of 16 props"
   },
   {
-   "name": "every street prop cut out",
+   "name": "every sheet of street props is there and cut out",
    "ok": true,
-   "detail": "6 of 6"
+   "detail": "2 sheets, 12 of 12 props"
   },
   {
-   "name": "the street is pale",
+   "name": "a name of a prop is used once among the later sheets",
+   "ok": true,
+   "detail": "14 names"
+  },
+  {
+   "name": "every street is pale",
    "ok": true,
    "detail": "brightness 152 of 255 (at least 132)"
   },
   {
    "name": "light to load",
    "ok": true,
-   "detail": "363 KB"
+   "detail": "819 KB in all, the heaviest sheet 597 KB, packed at quality 78"
   }
  ]
 }

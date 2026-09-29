@@ -1,0 +1,41 @@
+{
+ "id": "wetland",
+ "name": "The Mirewater Delta",
+ "checks": [
+  {
+   "name": "every floor",
+   "ok": true,
+   "detail": "96 of 96 tiles: 3 of 3 roofs, 2 of 2 streets, 1 of 1 squares"
+  },
+  {
+   "name": "every face of every kind of district",
+   "ok": true,
+   "detail": "384 of 384 faces"
+  },
+  {
+   "name": "every sheet of roof props is there and cut out",
+   "ok": true,
+   "detail": "2 sheets, 16 of 16 props"
+  },
+  {
+   "name": "every sheet of street props is there and cut out",
+   "ok": true,
+   "detail": "2 sheets, 12 of 12 props"
+  },
+  {
+   "name": "a name of a prop is used once among the later sheets",
+   "ok": true,
+   "detail": "14 names"
+  },
+  {
+   "name": "every street is pale",
+   "ok": true,
+   "detail": "brightness 193, 206 of 255 (at least 132)"
+  },
+  {
+   "name": "light to load",
+   "ok": true,
+   "detail": "685 KB in all, the heaviest sheet 428 KB, packed at quality 90"
+  }
+ ]
+}

@@ -106,6 +106,8 @@ try {
     await page.waitForFunction(() => localStorage.getItem('broodfall-campaign') !== null, null, { timeout: 30000 });
     for (const [id, set] of Object.entries(manifest.biomes)) {
       const territory = set.territories[0];
+      // A set that is only ever a guest (the farming town) is the home of no territory.
+      if (!territory) continue;
       await page.evaluate((t) => localStorage.setItem('broodfall-campaign-pending', JSON.stringify({ territory: t, dares: [], objectors: [] })), territory);
       await page.goto(`http://localhost:${PORT}/?campaign=run&speed=0`, { waitUntil: 'load' });
       await page.waitForFunction(() => window.broodfall !== undefined, null, { timeout: 30000 });

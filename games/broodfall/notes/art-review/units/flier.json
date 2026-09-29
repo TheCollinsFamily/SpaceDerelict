@@ -1,28 +1,28 @@
 {
  "kind": "flier",
- "frames": 70,
- "atlasKB": 186,
+ "frames": 66,
+ "atlasKB": 196,
  "failed": 0,
  "checks": [
   {
    "name": "walk S: loop closes",
    "ok": true,
-   "value": 1.01
+   "value": 1.79
   },
   {
    "name": "walk S: it moves",
    "ok": true,
-   "value": 1.15
+   "value": 3.26
   },
   {
    "name": "walk S: loop is long enough",
    "ok": true,
-   "value": 28
+   "value": 18
   },
   {
    "name": "walk S: inside the frame",
    "ok": true,
-   "value": "154,92-488,534"
+   "value": "108,96-538,548"
   },
   {
    "name": "walk S: no background tint on the outline",
@@ -32,27 +32,27 @@
   {
    "name": "walk S: stays on the spot",
    "ok": true,
-   "value": "0.2% of the frame"
+   "value": "1.6% of the frame"
   },
   {
    "name": "walk SW: loop closes",
    "ok": true,
-   "value": 0.87
+   "value": 1.03
   },
   {
    "name": "walk SW: it moves",
    "ok": true,
-   "value": 2.41
+   "value": 2.55
   },
   {
    "name": "walk SW: loop is long enough",
    "ok": true,
-   "value": 29
+   "value": 20
   },
   {
    "name": "walk SW: inside the frame",
    "ok": true,
-   "value": "148,120-496,530"
+   "value": "152,114-512,558"
   },
   {
    "name": "walk SW: no background tint on the outline",
@@ -62,27 +62,27 @@
   {
    "name": "walk SW: stays on the spot",
    "ok": true,
-   "value": "0.2% of the frame"
+   "value": "1.6% of the frame"
   },
   {
    "name": "walk W: loop closes",
    "ok": true,
-   "value": 1.56
+   "value": 1.06
   },
   {
    "name": "walk W: it moves",
    "ok": true,
-   "value": 1.88
+   "value": 1.89
   },
   {
    "name": "walk W: loop is long enough",
    "ok": true,
-   "value": 38
+   "value": 20
   },
   {
    "name": "walk W: inside the frame",
    "ok": true,
-   "value": "142,102-486,544"
+   "value": "146,106-508,542"
   },
   {
    "name": "walk W: no background tint on the outline",
@@ -92,27 +92,27 @@
   {
    "name": "walk W: stays on the spot",
    "ok": true,
-   "value": "0.8% of the frame"
+   "value": "0.6% of the frame"
   },
   {
    "name": "walk NW: loop closes",
    "ok": true,
-   "value": 0.9
+   "value": 1.33
   },
   {
    "name": "walk NW: it moves",
    "ok": true,
-   "value": 1.15
+   "value": 1.53
   },
   {
    "name": "walk NW: loop is long enough",
    "ok": true,
-   "value": 24
+   "value": 30
   },
   {
    "name": "walk NW: inside the frame",
    "ok": true,
-   "value": "162,118-480,535"
+   "value": "168,116-478,531"
   },
   {
    "name": "walk NW: no background tint on the outline",
@@ -127,22 +127,22 @@
   {
    "name": "walk N: loop closes",
    "ok": true,
-   "value": 0.89
+   "value": 1.15
   },
   {
    "name": "walk N: it moves",
    "ok": true,
-   "value": 0.65
+   "value": 3.03
   },
   {
    "name": "walk N: loop is long enough",
    "ok": true,
-   "value": 33
+   "value": 10
   },
   {
    "name": "walk N: inside the frame",
    "ok": true,
-   "value": "172,102-468,526"
+   "value": "136,102-506,504"
   },
   {
    "name": "walk N: no background tint on the outline",
@@ -152,17 +152,17 @@
   {
    "name": "walk N: stays on the spot",
    "ok": true,
-   "value": "0.0% of the frame"
+   "value": "0.6% of the frame"
   },
   {
    "name": "views are one size",
    "ok": true,
-   "value": "0.72 0.67 0.72 0.68 0.69"
+   "value": "0.72 0.71 0.70 0.66 0.64"
   },
   {
    "name": "atlas is under 900 KB",
    "ok": true,
-   "value": "186 KB"
+   "value": "196 KB"
   }
  ]
 }

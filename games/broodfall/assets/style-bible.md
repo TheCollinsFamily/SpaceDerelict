@@ -116,6 +116,20 @@ Concept pictures are in `notes/concepts/2026-09-29/`; the script is
 31. **The ship's AI is someone to talk to.** "Keep building out and personality for the
     hologram; we will use the rfab living avatar system to make her something the player
     can chat with and she will feel real."
+33. **Units are drawn from ABOVE.** "Most of your character sheets are not usable … they are
+    in profile and not from above with an angle … making units that are visually distinct
+    and understandable from above is one of the key challenges of the StarCraft / Warcraft
+    style of art we opted into." The prompt had said "tilted about 45 degrees down"; the
+    model drew the angle of its REFERENCE (the concept sheet, drawn near eye level) instead.
+    What worked (probe: `notes/probes/2026-09-29/unit-camera/old-A-B.jpg`): the camera said
+    three ways (the angle; what faces the camera: the top of the helmet and the shoulders;
+    what is small: body foreshortened, feet tucked under) AND a picture of the real board as
+    a second reference ("seen by exactly that camera"). Units that still came out upright get
+    a unit drawn at the right angle as a third reference (`steep` in `tools/art/units.mjs`).
+    Readability from above: the helmet or crest and the weapon exaggerated, caste colour in
+    large flat areas on the top of the helmet and the shoulders. Look at a unit's five views
+    before paying for its clips. A rule for every picture: **the reference wins over the
+    words**; to change an angle, change the reference.
 32. **Tile sets must not look samey, and one is rural.** "You need at least one rural tile
     set and more assets for the others so they look less samey. With AI this is laughably
     cheap compared to what it used to cost so let's take advantage of that."

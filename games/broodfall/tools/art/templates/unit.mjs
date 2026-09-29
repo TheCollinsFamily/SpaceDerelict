@@ -70,14 +70,28 @@ const turnaroundPrompt = (u, g) =>
   'row, evenly spaced and not overlapping, all five at exactly the same size, in exactly the same drawing ' +
   'style as the reference: a chunky, slightly cartoonish unit sprite for a strategy game. It is the identical ' +
   `${g.noun} every time: ${u.one ?? u.look}. The same clothes, colours and kit, held the same way, the same ` +
-  'proportions. Every one of the five is seen by the SAME camera: from above, tilted about 45 degrees down, ' +
-  `as in the reference, so that we always see the top of it. From left to right the ${g.noun} is: ` +
+  'proportions. ' + TOP_CAMERA + ' Every one of the five is seen by that SAME camera, the camera of the SECOND ' +
+  'reference picture, which shows the board it walks on as the game sees it. ' + READABLE + ' ' +
+  `From left to right the ${g.noun} is: ` +
   `(1) ${g.heading} straight toward the viewer, seen from the front; ` +
   `(2) ${g.heading} toward the lower left, seen from the front-left; ` +
   `(3) ${g.heading} to the left, seen from its left side; ` +
   `(4) ${g.heading} away toward the upper left, seen from behind and to the left; ` +
   `(5) ${g.heading} straight away from the viewer, seen from behind. Each is caught ${g.caught}. Even light ` +
   `from directly overhead. ${EMBLEM}. No ground, no cast shadows, no labels, no numbers, no text.`;
+
+/** The camera and the readability every unit is drawn for (probed: tools/art/probe-unit-camera.mjs). */
+const TOP_CAMERA =
+  'THE CAMERA: high above and looking steeply DOWN at the unit, about 50 degrees below the horizon, as the ' +
+  'camera of StarCraft, Warcraft III and Red Alert 2 looks at its units. So: the TOP of the head or helmet and ' +
+  'the tops of the shoulders face the viewer and are the biggest, clearest part of it; the body is short and ' +
+  'foreshortened beneath them; the legs and feet are small and tucked under; we see down onto the weapon and ' +
+  'the pack from above. It is NOT seen from the side and NOT at eye level: no horizon, the face is seen from ' +
+  'above, never straight on.';
+const READABLE =
+  'It reads at a glance when it is small: a bold, simple silhouette seen from above; its head, helmet or crest ' +
+  'and its weapon exaggerated in size; its caste colour in large flat areas on the top of the helmet and the ' +
+  'shoulders, where the camera sees it.';
 
 const STEADY = ' It never travels across the frame and never turns. It only walks: it does not fire, and there is no smoke, no sparks and no flash. The drawing style stays exactly the same in every frame.';
 
@@ -96,8 +110,11 @@ async function makeViews(u, dir, key) {
 
   const g = gaitOf(u);
   const turn = await makeStill({
-    slug: `${u.kind} views`, out: path.join(dir, 'turnaround.png'), refFile: ref,
-    prompt: turnaroundPrompt(u, g), key: key.hex, keyName: key.name, width: 1536, height: 1024,
+    // The second reference is the board as the game's camera sees it: without it the model draws units at eye
+    // level, as the concept sheet is drawn (Collins, Sep 29 2026: 'in profile and not from above with an angle').
+    slug: `${u.kind} views`, out: path.join(dir, 'turnaround.png'), refFiles: [ref, path.join(SRC, 'refs', 'board-camera.png'), ...(u.steep ? [path.join(SRC, 'refs', 'camera-example.png')] : [])],
+    // A unit that still came out upright (u.steep) also gets a unit drawn at the right angle as a third reference.
+    prompt: turnaroundPrompt(u, g) + (u.steep ? ' The THIRD reference picture is another unit seen by exactly the right camera: see the top of the head and shoulders as much as it does. ' + (typeof u.steep === 'string' ? u.steep : '') : ''), key: key.hex, keyName: key.name, width: 1536, height: 1024,
   });
   const img = readImage(turn);
   const five = findFigures(img, { expect: 5 });

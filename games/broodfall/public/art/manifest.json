@@ -9,34 +9,34 @@
     0.5,
     0.94
    ],
-   "body": 0.581,
+   "body": 0.576,
    "flies": false,
    "anims": {
     "walk": {
      "S": {
       "start": 0,
-      "count": 13,
+      "count": 10,
       "fps": 12
      },
      "SW": {
-      "start": 13,
-      "count": 14,
-      "fps": 9.33
+      "start": 10,
+      "count": 10,
+      "fps": 12
      },
      "W": {
-      "start": 27,
-      "count": 14,
-      "fps": 7.3
+      "start": 20,
+      "count": 13,
+      "fps": 12
      },
      "NW": {
-      "start": 41,
+      "start": 33,
       "count": 14,
-      "fps": 7
+      "fps": 7.64
      },
      "N": {
-      "start": 55,
+      "start": 47,
       "count": 14,
-      "fps": 7.3
+      "fps": 4.54
      }
     }
    }
@@ -49,33 +49,33 @@
     0.5,
     0.94
    ],
-   "body": 0.761,
+   "body": 0.64,
    "flies": false,
    "anims": {
     "walk": {
      "S": {
       "start": 0,
-      "count": 10,
+      "count": 11,
       "fps": 12
      },
      "SW": {
-      "start": 10,
-      "count": 13,
+      "start": 11,
+      "count": 12,
       "fps": 12
      },
      "W": {
       "start": 23,
       "count": 14,
-      "fps": 6.72
+      "fps": 4.67
      },
      "NW": {
       "start": 37,
       "count": 14,
-      "fps": 7
+      "fps": 12
      },
      "N": {
       "start": 51,
-      "count": 13,
+      "count": 10,
       "fps": 12
      }
     }
@@ -89,34 +89,34 @@
     0.5,
     0.94
    ],
-   "body": 0.632,
+   "body": 0.611,
    "flies": false,
    "anims": {
     "walk": {
      "S": {
       "start": 0,
       "count": 14,
-      "fps": 4.67
+      "fps": 4.2
      },
      "SW": {
       "start": 14,
       "count": 14,
-      "fps": 4.67
+      "fps": 7
      },
      "W": {
       "start": 28,
-      "count": 10,
-      "fps": 12
-     },
-     "NW": {
-      "start": 38,
       "count": 12,
       "fps": 12
      },
-     "N": {
-      "start": 50,
+     "NW": {
+      "start": 40,
       "count": 14,
-      "fps": 4.8
+      "fps": 4.94
+     },
+     "N": {
+      "start": 54,
+      "count": 14,
+      "fps": 5.6
      }
     }
    }
@@ -129,34 +129,34 @@
     0.5,
     0.94
    ],
-   "body": 0.345,
+   "body": 0.42,
    "flies": false,
    "anims": {
     "walk": {
      "S": {
       "start": 0,
-      "count": 14,
-      "fps": 4.67
-     },
-     "SW": {
-      "start": 14,
       "count": 12,
       "fps": 12
      },
+     "SW": {
+      "start": 12,
+      "count": 14,
+      "fps": 10.5
+     },
      "W": {
       "start": 26,
-      "count": 14,
+      "count": 11,
       "fps": 12
      },
      "NW": {
-      "start": 40,
-      "count": 14,
-      "fps": 4.54
+      "start": 37,
+      "count": 12,
+      "fps": 12
      },
      "N": {
-      "start": 54,
-      "count": 14,
-      "fps": 4.8
+      "start": 49,
+      "count": 12,
+      "fps": 12
      }
     }
    }
@@ -169,34 +169,34 @@
     0.5,
     0.94
    ],
-   "body": 0.646,
+   "body": 0.68,
    "flies": false,
    "anims": {
     "walk": {
      "S": {
       "start": 0,
+      "count": 10,
+      "fps": 12
+     },
+     "SW": {
+      "start": 10,
       "count": 14,
       "fps": 7
      },
-     "SW": {
-      "start": 14,
-      "count": 13,
-      "fps": 12
-     },
      "W": {
-      "start": 27,
+      "start": 24,
       "count": 12,
       "fps": 12
      },
      "NW": {
-      "start": 39,
+      "start": 36,
       "count": 14,
-      "fps": 10.5
+      "fps": 9.88
      },
      "N": {
-      "start": 53,
-      "count": 14,
-      "fps": 6.72
+      "start": 50,
+      "count": 12,
+      "fps": 12
      }
     }
    }
@@ -209,34 +209,34 @@
     0.5,
     0.94
    ],
-   "body": 0.65,
+   "body": 0.62,
    "flies": false,
    "anims": {
     "walk": {
      "S": {
       "start": 0,
-      "count": 11,
+      "count": 10,
       "fps": 12
      },
      "SW": {
-      "start": 11,
+      "start": 10,
       "count": 14,
-      "fps": 6.72
+      "fps": 6.22
      },
      "W": {
-      "start": 25,
+      "start": 24,
+      "count": 14,
+      "fps": 5.79
+     },
+     "NW": {
+      "start": 38,
       "count": 12,
       "fps": 12
      },
-     "NW": {
-      "start": 37,
-      "count": 14,
-      "fps": 7
-     },
      "N": {
-      "start": 51,
+      "start": 50,
       "count": 14,
-      "fps": 4.54
+      "fps": 6
      }
     }
    }
@@ -249,34 +249,34 @@
     0.5,
     0.94
    ],
-   "body": 0.661,
+   "body": 0.526,
    "flies": false,
    "anims": {
     "walk": {
      "S": {
       "start": 0,
-      "count": 12,
+      "count": 13,
       "fps": 12
      },
      "SW": {
-      "start": 12,
-      "count": 14,
+      "start": 13,
+      "count": 11,
       "fps": 12
      },
      "W": {
-      "start": 26,
+      "start": 24,
       "count": 12,
       "fps": 12
      },
      "NW": {
-      "start": 38,
-      "count": 12,
+      "start": 36,
+      "count": 14,
       "fps": 12
      },
      "N": {
       "start": 50,
       "count": 14,
-      "fps": 4.67
+      "fps": 8.84
      }
     }
    }
@@ -289,34 +289,34 @@
     0.5,
     0.94
    ],
-   "body": 0.546,
+   "body": 0.578,
    "flies": true,
    "anims": {
     "walk": {
      "S": {
       "start": 0,
       "count": 14,
-      "fps": 6
+      "fps": 9.33
      },
      "SW": {
       "start": 14,
       "count": 14,
-      "fps": 5.79
+      "fps": 8.4
      },
      "W": {
       "start": 28,
       "count": 14,
-      "fps": 4.42
+      "fps": 8.4
      },
      "NW": {
       "start": 42,
       "count": 14,
-      "fps": 7
+      "fps": 5.6
      },
      "N": {
       "start": 56,
-      "count": 14,
-      "fps": 5.09
+      "count": 10,
+      "fps": 12
      }
     }
    }
@@ -329,34 +329,34 @@
     0.5,
     0.94
    ],
-   "body": 0.428,
+   "body": 0.416,
    "flies": false,
    "anims": {
     "walk": {
      "S": {
       "start": 0,
       "count": 14,
-      "fps": 8.4
+      "fps": 4.42
      },
      "SW": {
       "start": 14,
-      "count": 12,
-      "fps": 12
+      "count": 14,
+      "fps": 9.33
      },
      "W": {
-      "start": 26,
+      "start": 28,
       "count": 14,
-      "fps": 6
+      "fps": 5.25
      },
      "NW": {
-      "start": 40,
+      "start": 42,
       "count": 14,
-      "fps": 8.4
+      "fps": 4.94
      },
      "N": {
-      "start": 54,
+      "start": 56,
       "count": 14,
-      "fps": 6.72
+      "fps": 7
      }
     }
    }
@@ -369,34 +369,34 @@
     0.5,
     0.94
    ],
-   "body": 0.381,
+   "body": 0.395,
    "flies": false,
    "anims": {
     "walk": {
      "S": {
       "start": 0,
-      "count": 11,
+      "count": 10,
       "fps": 12
      },
      "SW": {
-      "start": 11,
+      "start": 10,
       "count": 14,
-      "fps": 4.67
+      "fps": 4.54
      },
      "W": {
-      "start": 25,
-      "count": 14,
-      "fps": 4.31
-     },
-     "NW": {
-      "start": 39,
+      "start": 24,
       "count": 12,
       "fps": 12
      },
-     "N": {
-      "start": 51,
+     "NW": {
+      "start": 36,
       "count": 14,
-      "fps": 6.46
+      "fps": 7.3
+     },
+     "N": {
+      "start": 50,
+      "count": 12,
+      "fps": 12
      }
     }
    }
@@ -409,34 +409,34 @@
     0.5,
     0.94
    ],
-   "body": 0.379,
+   "body": 0.452,
    "flies": false,
    "anims": {
     "walk": {
      "S": {
       "start": 0,
-      "count": 13,
+      "count": 12,
       "fps": 12
      },
      "SW": {
-      "start": 13,
+      "start": 12,
       "count": 14,
-      "fps": 4.94
+      "fps": 4.31
      },
      "W": {
-      "start": 27,
+      "start": 26,
       "count": 14,
-      "fps": 6.46
+      "fps": 4.8
      },
      "NW": {
-      "start": 41,
+      "start": 40,
       "count": 14,
       "fps": 4.67
      },
      "N": {
-      "start": 55,
+      "start": 54,
       "count": 14,
-      "fps": 12
+      "fps": 4.67
      }
     }
    }
@@ -449,7 +449,7 @@
     0.5,
     0.94
    ],
-   "body": 0.443,
+   "body": 0.39,
    "flies": false,
    "anims": {
     "walk": {
@@ -460,23 +460,23 @@
      },
      "SW": {
       "start": 11,
-      "count": 12,
-      "fps": 12
+      "count": 14,
+      "fps": 4.2
      },
      "W": {
-      "start": 23,
-      "count": 14,
-      "fps": 7
+      "start": 25,
+      "count": 10,
+      "fps": 12
      },
      "NW": {
-      "start": 37,
+      "start": 35,
       "count": 14,
-      "fps": 4.67
+      "fps": 6
      },
      "N": {
-      "start": 51,
+      "start": 49,
       "count": 14,
-      "fps": 7
+      "fps": 4.67
      }
     }
    }
@@ -489,34 +489,34 @@
     0.5,
     0.94
    ],
-   "body": 0.606,
+   "body": 0.587,
    "flies": false,
    "anims": {
     "walk": {
      "S": {
       "start": 0,
       "count": 14,
-      "fps": 11.2
+      "fps": 7.64
      },
      "SW": {
       "start": 14,
       "count": 14,
-      "fps": 6.46
+      "fps": 5.6
      },
      "W": {
       "start": 28,
       "count": 14,
-      "fps": 5.09
+      "fps": 4.42
      },
      "NW": {
       "start": 42,
-      "count": 14,
-      "fps": 4.42
+      "count": 10,
+      "fps": 12
      },
      "N": {
-      "start": 56,
+      "start": 52,
       "count": 14,
-      "fps": 8.84
+      "fps": 4.67
      }
     }
    }
@@ -529,34 +529,34 @@
     0.5,
     0.94
    ],
-   "body": 0.664,
+   "body": 0.579,
    "flies": false,
    "anims": {
     "walk": {
      "S": {
       "start": 0,
-      "count": 14,
-      "fps": 11.2
-     },
-     "SW": {
-      "start": 14,
-      "count": 14,
-      "fps": 8
-     },
-     "W": {
-      "start": 28,
-      "count": 12,
+      "count": 13,
       "fps": 12
      },
-     "NW": {
-      "start": 40,
+     "SW": {
+      "start": 13,
       "count": 14,
-      "fps": 5.42
+      "fps": 4.67
+     },
+     "W": {
+      "start": 27,
+      "count": 14,
+      "fps": 4.54
+     },
+     "NW": {
+      "start": 41,
+      "count": 14,
+      "fps": 4.31
      },
      "N": {
-      "start": 54,
+      "start": 55,
       "count": 14,
-      "fps": 7.64
+      "fps": 7
      }
     }
    }
@@ -569,34 +569,34 @@
     0.5,
     0.94
    ],
-   "body": 0.392,
+   "body": 0.378,
    "flies": false,
    "anims": {
     "walk": {
      "S": {
       "start": 0,
-      "count": 10,
-      "fps": 12
-     },
-     "SW": {
-      "start": 10,
-      "count": 14,
-      "fps": 12
-     },
-     "W": {
-      "start": 24,
       "count": 14,
       "fps": 5.25
      },
-     "NW": {
-      "start": 38,
-      "count": 14,
+     "SW": {
+      "start": 14,
+      "count": 11,
       "fps": 12
      },
-     "N": {
-      "start": 52,
+     "W": {
+      "start": 25,
       "count": 14,
-      "fps": 7.64
+      "fps": 6.72
+     },
+     "NW": {
+      "start": 39,
+      "count": 14,
+      "fps": 4.67
+     },
+     "N": {
+      "start": 53,
+      "count": 14,
+      "fps": 7.3
      }
     }
    }
@@ -4704,26 +4704,42 @@
      "pillar",
      "lamps",
      "turret",
-     "dome"
+     "dome",
+     "chimney",
+     "cocoons",
+     "waxblocks",
+     "generator",
+     "horn"
     ],
     "science": [
      "pillar",
      "lamps",
      "dome",
      "mast",
-     "vat"
+     "vat",
+     "chimney",
+     "cocoons",
+     "generator",
+     "eggs"
     ],
     "meat": [
      "pillar",
      "lamps",
      "pollen",
-     "vat"
+     "vat",
+     "chimney",
+     "font",
+     "waxblocks"
     ],
     "highground": [
      "queencell",
      "pillar",
      "lamps",
-     "turret"
+     "turret",
+     "chimney",
+     "canopy",
+     "font",
+     "horn"
     ]
    },
    "streetProps": [
@@ -4732,15 +4748,31 @@
     "pot",
     "post",
     "banner",
-    "column"
+    "column",
+    "cart",
+    "statue",
+    "stalagmite",
+    "trolley",
+    "barrier",
+    "buggy"
    ],
+   "variants": {
+    "walls": {
+     "plain": 2,
+     "science": 2,
+     "meat": 2,
+     "highground": 2
+    },
+    "roof": 3,
+    "street": 1,
+    "plaza": 1
+   },
+   "guests": [],
    "data": "board/deephive/biome.json"
   },
   "farmland": {
    "name": "The Granary Belt",
-   "territories": [
-    "granary"
-   ],
+   "territories": [],
    "roofTint": [
     12894388,
     14736591,
@@ -4748,29 +4780,52 @@
    ],
    "roofProps": {
     "plain": [
-     "windmill",
-     "tank",
-     "hay",
-     "vane",
      "hutch",
      "chimney",
-     "solar"
+     "oak",
+     "clock",
+     "boulders",
+     "bush",
+     "pond",
+     "log",
+     "cairn",
+     "bale"
     ],
     "science": [
      "windmill",
-     "tank",
-     "solar"
+     "solar",
+     "oak",
+     "clock",
+     "boulders",
+     "bush",
+     "pond",
+     "log",
+     "cairn",
+     "bale"
     ],
     "meat": [
-     "silo",
      "tank",
      "hay",
-     "chimney"
+     "oak",
+     "clock",
+     "boulders",
+     "bush",
+     "pond",
+     "log",
+     "cairn",
+     "bale"
     ],
     "highground": [
      "silo",
-     "tank",
-     "vane"
+     "vane",
+     "oak",
+     "clock",
+     "boulders",
+     "bush",
+     "pond",
+     "log",
+     "cairn",
+     "bale"
     ]
    },
    "streetProps": [
@@ -4778,7 +4833,27 @@
     "tractor",
     "hay",
     "fence",
-    "trough"
+    "trough",
+    "gate",
+    "stile",
+    "tufts",
+    "bramble",
+    "rocks",
+    "stump"
+   ],
+   "variants": {
+    "walls": {
+     "plain": 5,
+     "science": 5,
+     "meat": 5,
+     "highground": 5
+    },
+    "roof": 5,
+    "street": 1,
+    "plaza": 1
+   },
+   "guests": [
+    "terraces"
    ],
    "data": "board/farmland/biome.json"
   },
@@ -4798,14 +4873,22 @@
      "vent",
      "skylight",
      "siren",
-     "crates"
+     "crates",
+     "transformer",
+     "floodlight",
+     "cabin",
+     "emblem"
     ],
     "science": [
      "tank",
      "vent",
      "skylight",
      "pipes",
-     "siren"
+     "siren",
+     "transformer",
+     "cooler",
+     "floodlight",
+     "cylinders"
     ],
     "meat": [
      "stack",
@@ -4813,14 +4896,24 @@
      "tank",
      "vent",
      "skylight",
-     "crates"
+     "crates",
+     "hopper",
+     "floodlight",
+     "cylinders",
+     "cabin",
+     "winch"
     ],
     "highground": [
      "stack",
      "crane",
      "vent",
      "skylight",
-     "pipes"
+     "pipes",
+     "hopper",
+     "cooler",
+     "floodlight",
+     "winch",
+     "emblem"
     ]
    },
    "streetProps": [
@@ -4829,8 +4922,26 @@
     "crates",
     "barrel",
     "bollard",
-    "car"
+    "car",
+    "mobilecrane",
+    "skip",
+    "pallets",
+    "hosereel",
+    "barrier",
+    "buoy"
    ],
+   "variants": {
+    "walls": {
+     "plain": 2,
+     "science": 2,
+     "meat": 2,
+     "highground": 2
+    },
+    "roof": 3,
+    "street": 2,
+    "plaza": 1
+   },
+   "guests": [],
    "data": "board/industrial/biome.json"
   },
   "megacity": {
@@ -4851,25 +4962,43 @@
      "hvac",
      "tank",
      "billboard",
-     "pod"
+     "pod",
+     "cooler",
+     "shack",
+     "solar",
+     "ticker",
+     "stall"
     ],
     "science": [
      "array",
      "hvac",
      "holo",
-     "beacon"
+     "beacon",
+     "drone",
+     "cooler",
+     "solar",
+     "searchlight"
     ],
     "meat": [
      "neon",
      "hvac",
      "tank",
-     "billboard"
+     "billboard",
+     "cooler",
+     "solar",
+     "ticker",
+     "stall"
     ],
     "highground": [
      "array",
      "hvac",
      "holo",
-     "beacon"
+     "beacon",
+     "drone",
+     "cooler",
+     "solar",
+     "cradle",
+     "searchlight"
     ]
    },
    "streetProps": [
@@ -4878,8 +5007,26 @@
     "sign",
     "car",
     "barrier",
-    "vent"
+    "vent",
+    "kiosk",
+    "bike",
+    "camera",
+    "bins",
+    "terminal",
+    "police"
    ],
+   "variants": {
+    "walls": {
+     "plain": 2,
+     "science": 2,
+     "meat": 2,
+     "highground": 2
+    },
+    "roof": 3,
+    "street": 2,
+    "plaza": 1
+   },
+   "guests": [],
    "data": "board/megacity/biome.json"
   },
   "necropolis": {
@@ -4899,18 +5046,33 @@
      "candles",
      "cypress",
      "tomb",
-     "lamp"
+     "lamp",
+     "bell",
+     "sarcophagus",
+     "vase",
+     "column",
+     "lantern",
+     "willow"
     ],
     "science": [
      "urn",
      "cypress",
-     "lamp"
+     "lamp",
+     "vase",
+     "column",
+     "lantern",
+     "sundial",
+     "willow"
     ],
     "meat": [
      "urn",
      "candles",
      "cypress",
-     "brazier"
+     "brazier",
+     "vase",
+     "column",
+     "offerings",
+     "willow"
     ],
     "highground": [
      "obelisk",
@@ -4918,7 +5080,13 @@
      "statue",
      "cypress",
      "tomb",
-     "brazier"
+     "brazier",
+     "bell",
+     "sarcophagus",
+     "vase",
+     "column",
+     "sundial",
+     "willow"
     ]
    },
    "streetProps": [
@@ -4927,15 +5095,32 @@
     "wreath",
     "urn",
     "railing",
-    "statue"
+    "statue",
+    "bench",
+    "cart",
+    "stele",
+    "bier",
+    "candlestand",
+    "fountain"
    ],
+   "variants": {
+    "walls": {
+     "plain": 2,
+     "science": 2,
+     "meat": 2,
+     "highground": 2
+    },
+    "roof": 3,
+    "street": 2,
+    "plaza": 1
+   },
+   "guests": [],
    "data": "board/necropolis/biome.json"
   },
   "orient": {
    "name": "The Lantern Cities",
    "territories": [
-    "pilgrim",
-    "mirewater"
+    "pilgrim"
    ],
    "roofTint": [
     12895428,
@@ -4949,24 +5134,40 @@
      "potted",
      "banner",
      "barrel",
-     "dish"
+     "dish",
+     "rocks",
+     "kites",
+     "pavilion",
+     "silks",
+     "aircon"
     ],
     "science": [
      "lantern",
      "potted",
-     "dish"
+     "dish",
+     "rocks",
+     "armillary",
+     "aircon"
     ],
     "meat": [
      "lantern",
      "gong",
      "banner",
-     "barrel"
+     "barrel",
+     "drum",
+     "jars",
+     "silks",
+     "aircon"
     ],
     "highground": [
      "pagoda",
      "lantern",
      "gong",
-     "urn"
+     "urn",
+     "drum",
+     "armillary",
+     "pavilion",
+     "aircon"
     ]
    },
    "streetProps": [
@@ -4975,7 +5176,27 @@
     "stall",
     "statue",
     "banner",
-    "car"
+    "car",
+    "well",
+    "bicycle",
+    "lanterns",
+    "tree",
+    "truck",
+    "teacart"
+   ],
+   "variants": {
+    "walls": {
+     "plain": 2,
+     "science": 2,
+     "meat": 2,
+     "highground": 2
+    },
+    "roof": 3,
+    "street": 2,
+    "plaza": 1
+   },
+   "guests": [
+    "terraces"
    ],
    "data": "board/orient/biome.json"
   },
@@ -4999,7 +5220,13 @@
      "tank",
      "dome-paper",
      "aircon",
-     "solar"
+     "solar",
+     "belfry",
+     "cistern",
+     "skylight",
+     "loudspeakers",
+     "washing",
+     "cowl"
     ],
     "science": [
      "dish",
@@ -5007,37 +5234,54 @@
      "solar",
      "dish",
      "aircon",
-     "mast"
+     "mast",
+     "skylight",
+     "telescope",
+     "cowl"
     ],
     "meat": [
      "tank",
      "tank",
      "aircon",
      "solar",
-     "dome-paper"
+     "dome-paper",
+     "cistern",
+     "skylight",
+     "jars",
+     "cowl"
     ],
     "highground": [
      "dome-gold",
      "spire",
      "dome-paper",
      "dome-gold",
-     "spire"
+     "spire",
+     "belfry",
+     "skylight",
+     "loudspeakers",
+     "cowl"
     ]
    },
    "streetProps": [
     "lamp",
     "signal",
     "sign",
-    "car"
+    "car",
+    "kiosk",
+    "fountain",
+    "bench",
+    "van",
+    "scooter",
+    "postbox"
    ],
    "variants": {
     "walls": {
-     "plain": 1,
-     "science": 1,
-     "meat": 1,
-     "highground": 1
+     "plain": 2,
+     "science": 2,
+     "meat": 2,
+     "highground": 2
     },
-    "roof": 1,
+    "roof": 3,
     "street": 1,
     "plaza": 1
    },
@@ -5063,25 +5307,40 @@
      "dish",
      "cooler",
      "deckchairs",
-     "skylight"
+     "skylight",
+     "heater",
+     "washing",
+     "pool",
+     "planter",
+     "loft",
+     "greenhouse"
     ],
     "science": [
      "dish",
      "cooler",
      "tank",
      "cupola",
-     "skylight"
+     "skylight",
+     "heater",
+     "planter",
+     "siren",
+     "greenhouse"
     ],
     "meat": [
      "chimney",
      "cooler",
      "tank",
-     "skylight"
+     "skylight",
+     "planter",
+     "cone"
     ],
     "highground": [
      "cooler",
      "cupola",
-     "skylight"
+     "skylight",
+     "planter",
+     "loft",
+     "siren"
     ]
    },
    "streetProps": [
@@ -5090,23 +5349,209 @@
     "hydrant",
     "car",
     "tree",
-    "fence"
+    "fence",
+    "busstop",
+    "phonebox",
+    "van",
+    "bench",
+    "trike",
+    "bins"
    ],
    "variants": {
     "walls": {
-     "plain": 1,
-     "science": 1,
-     "meat": 1,
-     "highground": 1
+     "plain": 2,
+     "science": 2,
+     "meat": 2,
+     "highground": 2
     },
-    "roof": 1,
-    "street": 1,
+    "roof": 3,
+    "street": 2,
     "plaza": 1
    },
    "guests": [
     "terraces"
    ],
    "data": "board/suburb/biome.json"
+  },
+  "terraces": {
+   "name": "The Terraced Fields",
+   "territories": [
+    "granary"
+   ],
+   "roofTint": [
+    13026488,
+    14868692,
+    16777215
+   ],
+   "roofProps": {
+    "plain": [
+     "stooks",
+     "fungustree",
+     "kite",
+     "shelter",
+     "oak",
+     "clock",
+     "boulders",
+     "bush",
+     "pond",
+     "log",
+     "cairn",
+     "bale"
+    ],
+    "science": [
+     "fungustree",
+     "shelter",
+     "waterwheel",
+     "skeps",
+     "oak",
+     "clock",
+     "boulders",
+     "bush",
+     "pond",
+     "log",
+     "cairn",
+     "bale"
+    ],
+    "meat": [
+     "haystack",
+     "fungustree",
+     "shelter",
+     "oak",
+     "clock",
+     "boulders",
+     "bush",
+     "pond",
+     "log",
+     "cairn",
+     "bale"
+    ],
+    "highground": [
+     "fungustree",
+     "well",
+     "shelter",
+     "oak",
+     "clock",
+     "boulders",
+     "bush",
+     "pond",
+     "log",
+     "cairn",
+     "bale"
+    ]
+   },
+   "streetProps": [
+    "lamp",
+    "cart",
+    "milestone",
+    "fence",
+    "trough",
+    "signpost",
+    "gate",
+    "stile",
+    "tufts",
+    "bramble",
+    "rocks",
+    "stump"
+   ],
+   "variants": {
+    "walls": {
+     "plain": 5,
+     "science": 5,
+     "meat": 5,
+     "highground": 5
+    },
+    "roof": 5,
+    "street": 2,
+    "plaza": 1
+   },
+   "guests": [
+    "farmland"
+   ],
+   "data": "board/terraces/biome.json"
+  },
+  "wetland": {
+   "name": "The Mirewater Delta",
+   "territories": [
+    "mirewater"
+   ],
+   "roofTint": [
+    12894388,
+    14736591,
+    16777215
+   ],
+   "roofProps": {
+    "plain": [
+     "dryingrack",
+     "reeds",
+     "pump",
+     "wader",
+     "hut",
+     "nets",
+     "raintank",
+     "dish",
+     "solar",
+     "crabpots",
+     "canoe"
+    ],
+    "science": [
+     "reeds",
+     "pump",
+     "turbine",
+     "raintank",
+     "dish",
+     "solar",
+     "windsock",
+     "floodhorn"
+    ],
+    "meat": [
+     "dryingrack",
+     "reeds",
+     "nets",
+     "granary",
+     "smoker",
+     "raintank",
+     "crabpots"
+    ],
+    "highground": [
+     "reeds",
+     "turbine",
+     "wader",
+     "hut",
+     "raintank",
+     "windsock",
+     "canoe",
+     "floodhorn"
+    ]
+   },
+   "streetProps": [
+    "lamp",
+    "boat",
+    "fishtrap",
+    "rushes",
+    "fishcart",
+    "mooring",
+    "stall",
+    "skater",
+    "crates",
+    "marshcar",
+    "gauge",
+    "buoy"
+   ],
+   "variants": {
+    "walls": {
+     "plain": 2,
+     "science": 2,
+     "meat": 2,
+     "highground": 2
+    },
+    "roof": 3,
+    "street": 2,
+    "plaza": 1
+   },
+   "guests": [
+    "orient"
+   ],
+   "data": "board/wetland/biome.json"
   }
  },
  "under": {
