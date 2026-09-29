@@ -2,7 +2,7 @@
  "state": "look_left",
  "frames": 91,
  "seconds": 3.79,
- "kb": 733,
+ "kb": 730,
  "failed": 0,
  "checks": [
   {
@@ -26,9 +26,14 @@
    "value": "25% of it"
   },
   {
+   "name": "her hair is the colour of her still",
+   "ok": true,
+   "value": "gains 1.022, 1.079, 1.146"
+  },
+  {
    "name": "light to load (under 900 KB)",
    "ok": true,
-   "value": "733 KB"
+   "value": "730 KB"
   }
  ]
 }

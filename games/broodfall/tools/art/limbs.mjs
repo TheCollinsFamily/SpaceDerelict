@@ -234,6 +234,11 @@ export const LIMBS = [
   { family: 'boomerang', foot: [0.51, 0.8, 0.88], name: 'Boomerang Node', theme: 'chamber', on: 'roof', facing: true, job: 'Its target\'s shots fly back to it, piercing everything on the way.',
     look: 'a curved crescent of bone standing on a pedestal wrapped in taut violet membrane',
     idle: 'The bone crescent turns slowly a little to the left and back; the violet membrane pulses.', fire: null },
+  // ---- The Seeding Gland's free limb (Collins, Sep 29 2026: 'a free low power tower … it shoots out') ----
+  { family: 'sprout', foot: [0.5, 0.72, 0.85], name: 'Seedling', theme: 'core', on: 'roof', job: 'Free, from a Seeding Gland: a weak little shooter, shot up from below.',
+    look: 'a small young sprout of the creature, half the size of the others: a short soft stalk of pale young muscle with one small puckered nozzle, two tiny leaf-like flaps of chitin, and a few thin new roots',
+    idle: 'The little stalk sways gently from side to side like a young plant in a breeze; the nozzle opens and closes; the two small flaps twitch.',
+    fire: 'The little stalk tightens and spits one small glob forward with a snap, then relaxes back to exactly its starting pose.' },
   // ---- Special ----
   { family: 'lance', long: true, foot: [0.6, 0.53, 0.76], backFoot: [0.47, 0.73, 0.87], name: 'Creep Lance', theme: 'other', on: 'roof', facing: true, drips: true, job: 'Lays a straight strip of creep along its facing.',
     back: 'The nozzle lies along the ground pointing away toward the upper right, its tip far from the camera; we see the back of the mound it grows from.',

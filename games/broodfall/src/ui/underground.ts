@@ -17,6 +17,7 @@ import {
 } from '../../content/underground';
 import { TOWERS } from '../../content/data';
 import { strainIcons, strainLabel } from './strain';
+import { artUrl, loadManifest } from '../render/art';
 import type { OrganId, TowerFamily } from '../sim/types';
 
 const COLOR: Record<OrganId, string> = {
@@ -26,6 +27,7 @@ const COLOR: Record<OrganId, string> = {
   bladder: '#a8c878', pacemaker: '#e89a6a', budder: '#c8e0a0', cyst: '#98b060', swell: '#b8d890', catapult: '#d0b070',
   mire: '#7a9a70', acid: '#c8d040', runner: '#a0c070',
   scaffold: '#e6dcc0',
+  seeder: '#e8a0a0',
 };
 const GLYPH: Record<OrganId, string> = {
   forge: '⚒', venom: '☣', gut: '∞', nerve: 'ϟ', lattice: '▦', womb: '◉', marrow: '⊞', resonance: '◎',
@@ -33,12 +35,50 @@ const GLYPH: Record<OrganId, string> = {
   bladder: '✿', pacemaker: '♪', budder: '❀', cyst: '•', swell: '◍', catapult: '➶',
   mire: '≋', acid: '☠', runner: '⇶',
   scaffold: '▲',
+  seeder: '⇡',
 };
 const VERB: Partial<Record<TowerFamily, string>> = {
   spitter: 'tempo', impaler: 'armor-pierce', blighter: 'poison', maw: 'richer meat', frond: 'arcs',
   tangler: 'slow', brood: 'regrowth', spine: 'hp + caltrops', prism: 'focus ramp',
 };
 const famName = (f: TowerFamily) => TOWERS.find((t) => t.family === f)?.name ?? f;
+
+/**
+ * THE SCAN (Collins, Sep 29 2026, of the scanner concept: "go with the scanner board design,
+ * it looks AWESOME and could be grown up with like a blink or scan"). The stage is the ship's
+ * ground-penetrating scan: black, faint strata, organs glowing in false colour. The tiles are
+ * made by tools/art/templates/under.mjs; without them the stage keeps its old look.
+ * GLOW: the false colour an organ's outline and light take (the colour of its tile).
+ */
+const GLOW: Record<string, string> = {
+  forge: '#f0dcb0', venom: '#c8f040', gut: '#e0404a', nerve: '#9cc8ff', lattice: '#60e0d8',
+  womb: '#ff80b0', marrow: '#ffa030', resonance: '#b078ff', heart: '#ff4040', brain: '#e0a8d8',
+  gland: '#40e0c0', root: '#d05050', atrophy: '#9a8a80',
+  bladder: '#a8f060', pacemaker: '#ff8030', budder: '#b8f080', cyst: '#c0d040', swell: '#b8f090', catapult: '#e8c080',
+  mire: '#70b050', acid: '#f0e040', runner: '#80e050',
+  scaffold: '#f0e8d0', seeder: '#ff6a50',
+};
+interface ScanArt { tile: number; tiles: Record<string, string>; meteor: string | null }
+/** How long an organ takes to scan in when it grows, and a deposit when it resolves, in ms. */
+const SCAN_IN = 700;
+
+/** The skyline of the city above, as a thin wireframe: blocks of a few heights, the same every time. */
+function skylineSvg(): string {
+  let x = 0;
+  let seed = 7;
+  const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+  const parts: string[] = [];
+  while (x < 1000) {
+    const w = 30 + rnd() * 70;
+    // The meteor's dome stands where the middle three columns are: no buildings over it.
+    if (x + w > 370 && x < 630) { x = 630; continue; }
+    const h = 10 + rnd() * 34;
+    parts.push(`<rect x="${x.toFixed(1)}" y="${(50 - h).toFixed(1)}" width="${(w - 4).toFixed(1)}" height="${h.toFixed(1)}"/>`);
+    for (let k = 1; k < 4; k++) if (rnd() < 0.6) parts.push(`<line x1="${x.toFixed(1)}" y1="${(50 - h * k / 4).toFixed(1)}" x2="${(x + w - 4).toFixed(1)}" y2="${(50 - h * k / 4).toFixed(1)}"/>`);
+    x += w;
+  }
+  return `<svg class="skyline" viewBox="0 0 1000 50" preserveAspectRatio="none">${parts.join('')}</svg>`;
+}
 
 export class UndergroundScreen {
   open = false;
@@ -51,8 +91,38 @@ export class UndergroundScreen {
   private summary = document.getElementById('under-summary')!;
   private hoverCell: number | null = null;
   private lastKey = '';
+  /** The scan's pictures (absolute URLs), once loaded; null keeps the old look. */
+  private scan: ScanArt | null = null;
+  /** When each organ was first seen, and each deposit first resolved: what is still scanning in. */
+  private bornAt = new Map<number, number>();
+  private revealedAt = new Map<number, number>();
+  /** Organs and deposits that were there when the stage opened do not scan in again. */
+  private settled = false;
 
   constructor(private getSim: () => Sim, private onClose: () => void) {
+    // The scan wraps the board: a depth ruler down its left and a scan line sweeping down it.
+    const box = document.createElement('div');
+    box.id = 'under-scanbox';
+    this.grid.parentElement!.insertBefore(box, this.grid);
+    box.innerHTML = '<div id="under-ruler"></div><div class="scanline"></div>';
+    box.appendChild(this.grid);
+    void loadManifest().then((m) => {
+      const art = (m as unknown as { under?: { scan?: ScanArt } } | null)?.under?.scan;
+      if (!art || !Object.keys(art.tiles).length) return;
+      const abs = (f: string) => new URL(artUrl(f), document.baseURI).href;
+      this.scan = {
+        tile: art.tile,
+        tiles: Object.fromEntries(Object.entries(art.tiles).map(([k, f]) => [k, abs(f)])),
+        meteor: art.meteor ? abs(art.meteor) : null,
+      };
+      this.el.classList.add('scan');
+      document.getElementById('under-surface')!.insertAdjacentHTML('afterbegin', skylineSvg());
+      const rows = this.getSim().under.h;
+      document.getElementById('under-ruler')!.innerHTML = Array.from({ length: rows * 2 + 1 }, (_, i) =>
+        `<i style="top:${(i / (rows * 2)) * 100}%" class="${i % 2 ? '' : 'major'}"></i>`).join('');
+      this.lastKey = '';
+      if (this.open) this.render();
+    });
     document.getElementById('under-done')!.addEventListener('click', () => this.hide());
     this.palette.addEventListener('click', (ev) => {
       const b = (ev.target as HTMLElement).closest<HTMLElement>('[data-organ]');
@@ -96,7 +166,13 @@ export class UndergroundScreen {
   show(): void {
     this.open = true;
     this.lastKey = '';
+    this.settled = false;
     this.el.classList.remove('hidden');
+    // The scan boots: one sweep down the whole board as the stage opens.
+    this.el.classList.remove('booting');
+    void this.el.offsetWidth;
+    this.el.classList.add('booting');
+    window.setTimeout(() => this.el.classList.remove('booting'), 1100);
     this.render();
   }
 
@@ -168,7 +244,7 @@ export class UndergroundScreen {
       const what = d.kind === 'theme' && d.unlocks ? d.unlocks.map(famName).join(', ') : d.blurb;
       return `<button class="under-organ${this.selected === id ? ' on' : ''}${afford ? '' : ' poor'}${built ? ' built' : ''}${locked ? ' locked' : ''}" data-organ="${id}" title="${d.blurb}">
         <b><span class="og" style="color:${COLOR[id]}">${GLYPH[id]}</span> ${d.name}</b>
-        ${this.shapeSvg(id)}
+        ${this.shapeSvg(id)}${this.scan?.tiles[id] ? `<img class="pal-tile" alt="" src="${this.scan.tiles[id]}" style="--acc:${GLOW[id] ?? COLOR[id]}">` : ""}
         <span>${what}</span>
         <i>${locked ? 'LOCKED — get it in the Gene Bay on the ship' : built ? `GROWN · LV ${lvl} — click it to level` : this.priceText(d.cost)}${d.signature ? ` · shares ${VERB[d.signature] ?? d.signature}` : ''}</i>
       </button>`;
@@ -176,7 +252,8 @@ export class UndergroundScreen {
     this.palette.innerHTML = section('THEMES — unlock limbs, power them by level', ORGAN_DEFS.filter((d) => d.kind === 'theme').map((d) => d.id))
       + section('ZONES & TISSUE', ORGAN_DEFS.filter((d) => d.kind === 'zone' || d.kind === 'root').map((d) => d.id))
       + section('CREEP — organs that make FREE creep nodes', ORGAN_DEFS.filter((d) => d.kind === 'creep').map((d) => d.id))
-      + section('SCAFFOLD — FREE plinths: raise a limb, or level a roof for a big one', ORGAN_DEFS.filter((d) => d.kind === 'scaffold').map((d) => d.id));
+      + section('SCAFFOLD — FREE plinths: raise a limb, or level a roof for a big one', ORGAN_DEFS.filter((d) => d.kind === 'scaffold').map((d) => d.id))
+      + section('SEEDING — must touch the SURFACE: shoots a free Seedling limb up every 2 turns', ORGAN_DEFS.filter((d) => d.kind === 'seeder').map((d) => d.id));
 
     const cells: string[] = [];
     for (let i = 0; i < u.cells.length; i++) {
@@ -201,9 +278,59 @@ export class UndergroundScreen {
       } else if (c.kind === 'meteor' && i === u.cells.findIndex((x) => x.kind === 'meteor')) {
         inner = `<span class="tag core">METEOR CORE · LV ${sim.coreLevel}</span>`;
       }
+      const scan = this.scan;
+      if (scan) {
+        // The ground under everything: soil darker as it goes down, the hard return of rock,
+        // what is buried (or the unknown return until the body grows near), the fixed features.
+        const tileOf = (): string | undefined => {
+          if (c.kind === 'rock') return scan.tiles.rock;
+          if (c.kind === 'feature' && c.feature) return scan.tiles[c.feature];
+          if (c.kind === 'deposit' && c.deposit) return sim.isUncovered(i) ? scan.tiles[c.deposit] : scan.tiles.unknown;
+          return scan.tiles[`soil-${Math.min(3, Math.floor(row / 2))}`];
+        };
+        const t = c.kind === 'meteor' ? undefined : tileOf();
+        if (t) style = `background-image:url('${t}');`;
+        if (c.kind === 'deposit' && c.deposit && !organ && sim.isUncovered(i)) {
+          if (!this.revealedAt.has(i)) this.revealedAt.set(i, this.settled ? performance.now() : 0);
+          const age = performance.now() - this.revealedAt.get(i)!;
+          if (age < SCAN_IN) { cls += ' scan-in'; style += `animation-delay:-${Math.round(age)}ms;`; }
+        }
+        if (c.kind === 'meteor' && i === u.cells.findIndex((x) => x.kind === 'meteor') && scan.meteor) {
+          inner += `<div class="meteor-img" style="background-image:url('${scan.meteor}')"></div>`;
+        }
+        // The top row lies under the street: a Seeding Gland must touch it.
+        if (row === 0 && this.selected && (ORGAN_BY_ID[this.selected] as { surface?: boolean }).surface) cls += ' surface-lane';
+      }
       if (organ) {
         cls += ' has-organ';
         style = `background:${COLOR[organ.organ]};`;
+        if (scan) {
+          const t = scan.tiles[organ.organ];
+          style = `--acc:${GLOW[organ.organ] ?? COLOR[organ.organ]};${t ? `background-image:url('${t}');` : ''}`;
+          if (!this.bornAt.has(organ.id)) this.bornAt.set(organ.id, this.settled ? performance.now() : 0);
+          const age = performance.now() - this.bornAt.get(organ.id)!;
+          // It grows in cell by cell from the top: each row a little after the one above.
+          const lag = (row - Math.min(...organ.cells.map((x) => Math.floor(x / u.w)))) * 90;
+          if (age < SCAN_IN + lag) { cls += ' scan-in'; style += `animation-delay:${Math.round(lag - age)}ms;`; }
+          // Where two organs that share touch, the edge between them pulses.
+          const shares = (n: number): boolean => {
+            if (n < 0 || n >= u.cells.length) return false;
+            if (u.cells[n].kind === 'meteor') return ORGAN_BY_ID[organ.organ].kind === 'theme' || organ.organ === 'root';
+            const o = sim.organAt(n);
+            if (!o || o === organ) return false;
+            const a = ORGAN_BY_ID[organ.organ].kind, b = ORGAN_BY_ID[o.organ].kind;
+            return (a === 'theme' || a === 'root') && (b === 'theme' || b === 'root')
+              || (organ.organ === 'bladder' && b === 'creep') || (o.organ === 'bladder' && a === 'creep');
+          };
+          const w = u.w;
+          const sides = [
+            shares(i - w) ? 's-t' : '', shares(i + w) ? 's-b' : '',
+            i % w !== 0 && shares(i - 1) ? 's-l' : '', i % w !== w - 1 && shares(i + 1) ? 's-r' : '',
+          ].filter(Boolean);
+          if (sides.length) inner += `<span class="share ${sides.join(' ')}"></span>`;
+          // A Seeding Gland's launch tube: what it fires goes up through the street.
+          if (organ.organ === ('seeder' as OrganId) && row === 0) inner += '<span class="launch"></span>';
+        }
         // Borders only where the organ ends, so each shape reads as one body.
         const same = (n: number) => organ.cells.includes(n);
         const w = u.w;
@@ -214,17 +341,35 @@ export class UndergroundScreen {
         cls += ` ${edge}`;
         if (i === organ.cells[0]) {
           const lv = ORGAN_BY_ID[organ.organ].kind === 'theme' ? `<span class="pow">LV${organ.level}</span>` : '';
-          inner = `<span class="organ">${GLYPH[organ.organ]}</span>${lv}`;
+          inner += `<span class="organ">${GLYPH[organ.organ]}</span>${lv}`;
         } else if (organ.organ === 'bladder' && i === organ.cells[1]) {
           // The bladder's RECIPE, in the same marks as its nodes on the map and in the tray.
           const r = sim.bladderRate(organ);
-          inner = `<span class="recipe">${strainIcons(sim.bladderStrain(organ))}</span><span class="rate">${r.per}/${r.every === 1 ? 'turn' : `${r.every} turns`}${r.atWaveStart ? ` +${r.atWaveStart}@wave` : ''}</span>`;
+          inner += `<span class="recipe">${strainIcons(sim.bladderStrain(organ))}</span><span class="rate">${r.per}/${r.every === 1 ? 'turn' : `${r.every} turns`}${r.atWaveStart ? ` +${r.atWaveStart}@wave` : ''}</span>`;
         }
       }
       cells.push(`<div class="${cls}" style="${style}" data-cell="${i}">${inner}</div>`);
     }
+    // A zone organ's zone is always faintly on the scan: a soft pulsing ring round it.
+    if (this.scan) {
+      const w = u.w;
+      for (const o of sim.organs) {
+        if (ORGAN_BY_ID[o.organ].kind !== 'zone') continue;
+        for (let i = 0; i < u.cells.length; i++) {
+          if (o.cells.includes(i)) continue;
+          if (o.cells.some((c) => Math.max(Math.abs((c % w) - (i % w)), Math.abs(Math.floor(c / w) - Math.floor(i / w))) <= 1)) {
+            cells[i] = cells[i].replace('class="uc ', `class="uc zq `).replace('style="', `style="--zc:${GLOW[o.organ]};`);
+          }
+        }
+      }
+    }
+    this.settled = true;
     this.grid.style.gridTemplateColumns = `repeat(${u.w}, 1fr)`;
     this.grid.innerHTML = cells.join('');
+    // Something is still scanning in: draw again when it has.
+    if (this.scan && this.grid.querySelector('.scan-in')) {
+      window.setTimeout(() => { this.lastKey = ''; if (this.open) this.render(); }, SCAN_IN + 600);
+    }
     this.renderSummary();
     this.paintGhost();
     this.updateStatus();
@@ -346,6 +491,10 @@ export class UndergroundScreen {
     const sel = this.selected;
     const d = ORGAN_BY_ID[sel];
     if (!g) { this.status.textContent = `${d.name} does not fit here (off the board) — right-click to rotate`; return; }
+    if (!g.ok && (d as { surface?: boolean }).surface && !g.cells.some((x) => x < u.w)) {
+      this.status.textContent = `${d.name} must touch the SURFACE: one of its cells in the top row, under the street (lit) — it fires what it grows up through the street`;
+      return;
+    }
     if (!g.ok) {
       this.status.textContent = `${d.name} can't grow here: every cell must be open ground, and it must touch the meteor or an organ`;
       return;

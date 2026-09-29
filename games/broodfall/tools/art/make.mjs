@@ -46,6 +46,11 @@ const TEMPLATES = {
     const sets = ids.filter((id) => ALL_BIOMES.includes(id));
     return settle(sets.length ? sets : ALL_BIOMES, 3, (id) => makeBiome(id, { bakeOnly: flags.has('--bake'), only: parts }));
   },
+  // The organ stage as the ship's ground scan (tools/art/templates/under.mjs): one tile per organ, soil, deposit.
+  under: async () => {
+    const { makeUnder } = await import('./templates/under.mjs');
+    return Promise.allSettled([makeUnder({ bakeOnly: flags.has('--bake'), only: ids })]);
+  },
   ship: async () => {
     const { makeShip } = await import('./templates/ship.mjs');
     return Promise.allSettled([makeShip({ bakeOnly: flags.has('--bake'), only: ids })]);

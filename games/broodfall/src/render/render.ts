@@ -35,6 +35,7 @@ export const FAMILY_COLORS: Record<TowerFamily, number> = {
   skipper: 0x7a6040,
   lance: 0x9ab860,
   cage: 0x6a6a78,
+  sprout: 0xc98a86,
   net: 0x88c8e0,
   ember: 0xd86a30,
   conduit: 0xc8a060,

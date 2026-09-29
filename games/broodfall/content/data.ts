@@ -318,6 +318,14 @@ export const TOWERS: readonly TowerSpec[] = [
     cost: { war: 15 }, range: 70, rate: 0, damage: 0, aoe: 0, span: [2, 2],
     maxHp: 400, interest: 3, eatThreshold: 0, advanced: true, hits: 'ground',
   },
+  {
+    // The SEEDLING: never drawn. The Seeding Gland grows one every two turns, free, and shoots
+    // it up from the landing site to where it is placed. Weak on purpose: a spitter's half.
+    // It is worth having because it is free, and worth EATING: its pip is a little tempo.
+    family: 'sprout', name: 'Seedling', weight: 0,
+    cost: {}, range: 75, rate: 0.8, damage: 6, aoe: 0,
+    maxHp: 45, interest: 0, eatThreshold: 0, advanced: false, hits: 'both',
+  },
 ];
 
 // Organs live in content/underground.ts (the organ stage).

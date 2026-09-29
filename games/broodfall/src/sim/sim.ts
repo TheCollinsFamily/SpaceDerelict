@@ -23,7 +23,7 @@ import type {
 import { UPGRADES, UPGRADE_COST } from '../../content/upgrades';
 import {
   BRAIN_DRAW_MULT, CATAPULT_REACH, REVEAL_RANGE, DEPOSITS, FEATURES, FEATURE_FAVORED_LEVEL, FEATURE_LEVEL, METEOR_THEME,
-  BLADDER_TURNS, PLINTH_MAX_HEIGHT, PLINTH_TURNS, CYST_NODES, LINING_DPS, MIRE_SLOW, NODE_HP, NODE_RADIUS, NODE_TRAMPLE, NODE_REACH, ORGAN_BY_ID, ORGAN_DEFS, ORGAN_LEVEL_POTENCY, ORGAN_LEVEL_TEMPO,
+  BLADDER_TURNS, PLINTH_MAX_HEIGHT, PLINTH_TURNS, SEEDLING_FLIGHT, SEEDLING_TURNS, CYST_NODES, LINING_DPS, MIRE_SLOW, NODE_HP, NODE_RADIUS, NODE_TRAMPLE, NODE_REACH, ORGAN_BY_ID, ORGAN_DEFS, ORGAN_LEVEL_POTENCY, ORGAN_LEVEL_TEMPO,
   type OrganDef,
 } from '../../content/underground';
 import { createUnderground, neighbours4, type Underground } from './underground';
@@ -107,7 +107,8 @@ export function towerStats(t: Tower, pipsResolved = false) {
   const blighterPips = pips('blighter');
   const emberPips = pips('ember');
   const misterPips = pips('mister');
-  const tempo = (1 + B.pipRate * pips('spitter')) * upMul('tempo');
+  // A seedling's pip is a little of a spitter's: it is free, so eating it should be worth a little.
+  const tempo = (1 + B.pipRate * pips('spitter') + B.pipRate * 0.4 * pips('sprout')) * upMul('tempo');
   const potency = (1 + B.pipDamage * pips('lasher')) * upMul('potency');
   const reach = (1 + B.pipRange * pips('choir')) * B.pipRangeDouble ** pips('bombard') * upMul('reach');
   const layer = spec.hits ?? 'both';
@@ -314,6 +315,10 @@ export class Sim {
   plinthsPlaced = 0;
   /** Turns each scaffold gland has waited since it last grew. */
   private scaffoldTurns = new Map<number, number>();
+  /** Turns each seeding gland has waited since it last grew. */
+  private seederTurns = new Map<number, number>();
+  /** Seedlings in the air: shot up from the landing site; the limb is drawn when it lands. */
+  seedFlights: Array<{ id: number; towerId: number; from: Vec; to: Vec; ttl: number }> = [];
   private organCache: Map<OrganId | 'core', { level: number; pips: ModPip[]; draw: number; links: Array<OrganId | 'core'> }> | null = null;
   /** The body below: the underground cross-section organs grow into (between waves). */
   under: Underground;
@@ -1016,6 +1021,8 @@ export class Sim {
       const k = this.under.cells[c].kind;
       if ((k !== 'soil' && k !== 'deposit') || this.organAt(c)) return false;
     }
+    // An organ that shoots things up into the city must touch the surface: a cell in the top row.
+    if (def.surface && !cells.some((c) => c < this.under.w)) return false;
     return cells.some((c) => neighbours4(this.under, c).some((n) =>
       !cells.includes(n) && (this.under.cells[n].kind === 'meteor' || this.organAt(n) !== undefined)));
   }
@@ -1107,6 +1114,26 @@ export class Sim {
   /** Plinths the scaffold glands will grow at the next wave clear. */
   plinthsNextTurn(): number {
     return this.organs.filter((o) => o.organ === 'scaffold' && this.scaffoldTurnsLeft(o) === 1).length;
+  }
+
+  /** Turns until this seeding gland next grows its seedling (1 = at the next wave clear). */
+  seederTurnsLeft(o: Organ): number {
+    return Math.max(1, SEEDLING_TURNS - (this.seederTurns.get(o.id) ?? 0));
+  }
+
+  /** Every seeding gland counts a turn; one that has waited its turns puts a free Seedling in the hand. */
+  private growSeedlings(): void {
+    let grown = 0;
+    for (const o of this.organs) {
+      if (o.organ !== 'seeder') continue;
+      const t = (this.seederTurns.get(o.id) ?? 0) + 1;
+      if (t >= SEEDLING_TURNS) {
+        this.hand.push({ id: this.nextId++, family: 'sprout', free: true });
+        grown += 1;
+      }
+      this.seederTurns.set(o.id, t >= SEEDLING_TURNS ? 0 : t);
+    }
+    if (grown > 0) this.events.push({ kind: 'seedling-grown', count: grown });
   }
 
   /** Every scaffold gland counts a turn; one that has waited its turns grows a plinth. */
@@ -1924,6 +1951,8 @@ export class Sim {
     else if (sw !== sh) tower.facing = facing ?? 'S';
     this.towers.push(tower);
     if (family === 'lance') this.addCreepSource('line', cell, 0, tower.facing, tower.id);
+    // A seedling is shot up from the landing site to where it was placed.
+    if (family === 'sprout') this.seedFlights.push({ id: this.nextId++, towerId: tower.id, from: { ...this.core }, to: { ...pos }, ttl: SEEDLING_FLIGHT });
     for (const c of cells) this.occupied.set(c, { kind: 't', id: tower.id });
     this.refreshRouting();
     return tower;
@@ -2133,6 +2162,7 @@ export class Sim {
         // A new turn: every spore bladder grows its nodes, every scaffold gland counts toward its plinth.
         this.growCreepNodes('turn');
         this.growPlinths();
+        this.growSeedlings();
         // Brood pips: living tissue regrows between waves — 50% max hp per pip.
         for (const t of this.towers) {
           const heal = this.statsOf(t).waveHeal;
@@ -3248,6 +3278,9 @@ export class Sim {
 
   /** Creep clots land with a thud (the sling's payload), then take root as ITS patch. */
   private updateClots(): void {
+    // Seedlings in the air come down.
+    for (const f of this.seedFlights) f.ttl -= DT;
+    if (this.seedFlights.some((f) => f.ttl <= 0)) this.seedFlights = this.seedFlights.filter((f) => f.ttl > 0);
     const landed: number[] = [];
     for (const c of this.clotFlights) {
       c.ttl -= DT;

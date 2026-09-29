@@ -2,8 +2,8 @@
  "state": "shake_head",
  "frames": 96,
  "seconds": 4,
- "kb": 946,
- "failed": 1,
+ "kb": 887,
+ "failed": 0,
  "checks": [
   {
    "name": "it ends where it began",
@@ -21,9 +21,14 @@
    "value": "25% of it"
   },
   {
+   "name": "her hair is the colour of her still",
+   "ok": true,
+   "value": "gains 1.032, 1.046, 1.043"
+  },
+  {
    "name": "light to load (under 900 KB)",
-   "ok": false,
-   "value": "946 KB"
+   "ok": true,
+   "value": "887 KB"
   }
  ]
 }

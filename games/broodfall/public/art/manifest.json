@@ -1994,6 +1994,29 @@
     }
    }
   },
+  "sprout": {
+   "atlas": "limbs/sprout.webp",
+   "frame": 256,
+   "cols": 16,
+   "anchor": [
+    0.5,
+    0.567
+   ],
+   "body": 0.454,
+   "on": "roof",
+   "anims": {
+    "idle": {
+     "start": 0,
+     "count": 16,
+     "fps": 10.11
+    },
+    "fire": {
+     "start": 16,
+     "count": 14,
+     "fps": 3.5
+    }
+   }
+  },
   "swamp": {
    "atlas": "limbs/swamp.webp",
    "frame": 256,
@@ -5084,6 +5107,54 @@
     "terraces"
    ],
    "data": "board/suburb/biome.json"
+  }
+ },
+ "under": {
+  "scan": {
+   "tile": 160,
+   "tiles": {
+    "forge": "under/forge.webp",
+    "venom": "under/venom.webp",
+    "gut": "under/gut.webp",
+    "nerve": "under/nerve.webp",
+    "lattice": "under/lattice.webp",
+    "womb": "under/womb.webp",
+    "marrow": "under/marrow.webp",
+    "resonance": "under/resonance.webp",
+    "heart": "under/heart.webp",
+    "brain": "under/brain.webp",
+    "gland": "under/gland.webp",
+    "atrophy": "under/atrophy.webp",
+    "root": "under/root.webp",
+    "bladder": "under/bladder.webp",
+    "pacemaker": "under/pacemaker.webp",
+    "budder": "under/budder.webp",
+    "cyst": "under/cyst.webp",
+    "swell": "under/swell.webp",
+    "catapult": "under/catapult.webp",
+    "mire": "under/mire.webp",
+    "acid": "under/acid.webp",
+    "runner": "under/runner.webp",
+    "scaffold": "under/scaffold.webp",
+    "seeder": "under/seeder.webp",
+    "soil-0": "under/soil-0.webp",
+    "soil-1": "under/soil-1.webp",
+    "soil-2": "under/soil-2.webp",
+    "soil-3": "under/soil-3.webp",
+    "rock": "under/rock.webp",
+    "unknown": "under/unknown.webp",
+    "carrion": "under/carrion.webp",
+    "seam": "under/seam.webp",
+    "lab": "under/lab.webp",
+    "bed": "under/bed.webp",
+    "ossuary": "under/ossuary.webp",
+    "cache": "under/cache.webp",
+    "vent": "under/vent.webp",
+    "aquifer": "under/aquifer.webp",
+    "cable": "under/cable.webp",
+    "sewer": "under/sewer.webp"
+   },
+   "meteor": "under/meteor.webp"
   }
  },
  "ship": {

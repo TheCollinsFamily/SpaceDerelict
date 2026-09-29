@@ -456,9 +456,10 @@ function bakeState(s) {
   for (const f of kept) bleed(f);
   fs.mkdirSync(OUT, { recursive: true });
   const out = path.join(OUT, `${s.id}.webm`);
+  // A gesture plays once and is seen for a second: it is packed a little harder, to stay light to load.
   // VP8 with an alpha plane: what RFab's own studio exports, and what its overlay and every Chromium play.
   const r = spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-f', 'rawvideo', '-pix_fmt', 'rgba', '-s', `${W}x${H}`, '-r', String(FPS), '-i', '-',
-    '-c:v', 'libvpx', '-pix_fmt', 'yuva420p', '-auto-alt-ref', '0', '-b:v', '1100k', '-crf', '14', '-qmin', '4', '-qmax', '40', '-g', String(FPS * 2), '-an', out],
+    '-c:v', 'libvpx', '-pix_fmt', 'yuva420p', '-auto-alt-ref', '0', '-b:v', s.oneShot ? '780k' : '1100k', '-crf', s.oneShot ? '20' : '14', '-qmin', '4', '-qmax', '40', '-g', String(FPS * 2), '-an', out],
   { input: Buffer.concat(kept.map((f) => f.data)), maxBuffer: 64 * 1024 * 1024 });
   if (r.status !== 0) throw new Error(`${s.id}: ffmpeg could not write the WebM: ${String(r.stderr).slice(-300)}`);
   const bytes = fs.statSync(out).size;

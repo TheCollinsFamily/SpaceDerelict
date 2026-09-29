@@ -2,7 +2,7 @@
  "state": "wink",
  "frames": 96,
  "seconds": 4,
- "kb": 710,
+ "kb": 623,
  "failed": 0,
  "checks": [
   {
@@ -28,7 +28,7 @@
   {
    "name": "light to load (under 900 KB)",
    "ok": true,
-   "value": "710 KB"
+   "value": "623 KB"
   }
  ]
 }

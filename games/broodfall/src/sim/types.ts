@@ -8,7 +8,8 @@ export type TowerFamily =
   | 'brood' | 'swamp' | 'frond' | 'lobber' | 'mister' | 'ocular' | 'prism'
   | 'bombard' | 'ward' | 'quill' | 'skipper' | 'net' | 'ember' | 'conduit'
   | 'amp' | 'mosaic' | 'twin' | 'tap'
-  | 'mitosis' | 'capacitor' | 'boomerang' | 'press' | 'reliquary' | 'lance' | 'cage';
+  | 'mitosis' | 'capacitor' | 'boomerang' | 'press' | 'reliquary' | 'lance' | 'cage'
+  | 'sprout';
 
 /** What a limb can shoot at. Fliers are only reachable by 'air'/'both' limbs. */
 export type HitsLayer = 'ground' | 'air' | 'both';
@@ -60,7 +61,7 @@ export type CasteFocus = 'any' | Caste;
 export type OrganId = 'forge' | 'venom' | 'gut' | 'nerve' | 'lattice' | 'womb' | 'marrow' | 'resonance'
   | 'heart' | 'brain' | 'gland' | 'root' | 'atrophy'
   | 'bladder' | 'pacemaker' | 'budder' | 'cyst' | 'swell' | 'catapult' | 'mire' | 'acid' | 'runner'
-  | 'scaffold';
+  | 'scaffold' | 'seeder';
 
 export type GlandMode = 'calm' | 'lure' | 'challenge';
 
@@ -551,6 +552,7 @@ export type SimEvent =
   | { kind: 'meat-cleared'; war: number; science: number }
   | { kind: 'node-grown'; count: number }
   | { kind: 'plinth-grown'; count: number }
+  | { kind: 'seedling-grown'; count: number }
   | { kind: 'plinth-placed'; cell: number; height: number }
   | { kind: 'node-placed'; cell: number }
   | { kind: 'node-spread'; cell: number }

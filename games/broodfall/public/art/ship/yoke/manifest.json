@@ -46,5 +46,42 @@
   "look_right": 3.79,
   "calm": 4,
   "thoughtful": 4
+ },
+ "rfab": {
+  "states": {
+   "idle": "https://rfab-media.s3.us-east-1.amazonaws.com/videos/vtuber-models/f00afa59-f1d7-410d-875b-0be48d968c8a/1790715841695_0d30a8a85d99.webm",
+   "speaking": "https://rfab-media.s3.us-east-1.amazonaws.com/videos/vtuber-models/f00afa59-f1d7-410d-875b-0be48d968c8a/1790715842058_e095a10199bf.webm",
+   "thinking": "https://rfab-media.s3.us-east-1.amazonaws.com/videos/vtuber-models/f00afa59-f1d7-410d-875b-0be48d968c8a/1790715842244_96446cb836a8.webm",
+   "happy": "https://rfab-media.s3.us-east-1.amazonaws.com/videos/vtuber-models/f00afa59-f1d7-410d-875b-0be48d968c8a/1790715842444_787bbf97b15c.webm",
+   "sad": "https://rfab-media.s3.us-east-1.amazonaws.com/videos/vtuber-models/f00afa59-f1d7-410d-875b-0be48d968c8a/1790715842673_d9fcff5b1954.webm",
+   "surprised": "https://rfab-media.s3.us-east-1.amazonaws.com/videos/vtuber-models/f00afa59-f1d7-410d-875b-0be48d968c8a/1790715842805_4e1e390fc11b.webm",
+   "angry": "https://rfab-media.s3.us-east-1.amazonaws.com/videos/vtuber-models/f00afa59-f1d7-410d-875b-0be48d968c8a/1790715842961_4a21e85bf633.webm",
+   "laughing": "https://rfab-media.s3.us-east-1.amazonaws.com/videos/vtuber-models/f00afa59-f1d7-410d-875b-0be48d968c8a/1790715843167_b2be61b1e584.webm",
+   "blushing": "https://rfab-media.s3.us-east-1.amazonaws.com/videos/vtuber-models/f00afa59-f1d7-410d-875b-0be48d968c8a/1790715843357_0ee95c169fdf.webm",
+   "nod": "https://rfab-media.s3.us-east-1.amazonaws.com/videos/vtuber-models/f00afa59-f1d7-410d-875b-0be48d968c8a/1790715843553_de67ae9cac5e.webm",
+   "shake_head": "https://rfab-media.s3.us-east-1.amazonaws.com/videos/vtuber-models/f00afa59-f1d7-410d-875b-0be48d968c8a/1790715843704_a065d904083d.webm",
+   "wink": "https://rfab-media.s3.us-east-1.amazonaws.com/videos/vtuber-models/f00afa59-f1d7-410d-875b-0be48d968c8a/1790715843906_7ed8f0cca02b.webm",
+   "wave": "https://rfab-media.s3.us-east-1.amazonaws.com/videos/vtuber-models/f00afa59-f1d7-410d-875b-0be48d968c8a/1790715844080_0d2f6261c029.webm",
+   "look_left": "https://rfab-media.s3.us-east-1.amazonaws.com/videos/vtuber-models/f00afa59-f1d7-410d-875b-0be48d968c8a/1790715844222_9681c5e7112e.webm",
+   "look_right": "https://rfab-media.s3.us-east-1.amazonaws.com/videos/vtuber-models/f00afa59-f1d7-410d-875b-0be48d968c8a/1790715844353_7fbc55e7738b.webm"
+  },
+  "sizes": {
+   "idle": 877712,
+   "speaking": 579704,
+   "thinking": 618487,
+   "happy": 672201,
+   "sad": 672858,
+   "surprised": 578511,
+   "angry": 627809,
+   "laughing": 650166,
+   "blushing": 533004,
+   "nod": 892044,
+   "shake_head": 908562,
+   "wink": 637914,
+   "wave": 795688,
+   "look_left": 747520,
+   "look_right": 728511
+  },
+  "liveModelId": "vm_4aaa49e60a21"
  }
 }

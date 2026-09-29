@@ -508,28 +508,58 @@ be rotated to fit certain positions."
 - **Pointing.** The player points at a cell; the limb takes a legal footprint that HOLDS
   that cell (of several that would do, the first from the north-west). The preview lights
   every cell it will take, green or red. There is no separate "anchor" to learn.
-- **A limb longer than it is wide is turned to fit** with the same right-click that turns a
-  limb that aims one way; a quarter turn swaps its two sides. No limb in the game is long
-  yet: the rule is built and tested (`tests/span.test.ts`) and waits for the first one.
+- **A LONG limb (1 by 2) lies along the way it faces:** turned with the same right-click
+  that turns a limb that aims one way. Not turned, it lies the first way that fits where it
+  is pointed (a wall in a street lies ACROSS the street if it can).
 - **A big limb lives while the creep holds ANY of its ground,** and gives all of its ground
   back when it is eaten or dies. An enemy reaches it from a street beside any of its cells.
-- **It is paid for the ground it takes.** Same price as before, four times the ground: so
-  each is worth more than it was on one cell. What each was is in the comment over it.
+- **It is paid for the ground it takes.** Same price, more ground: so each is worth more than
+  it was on one cell. What each was is in the comment over it in `content/data.ts`.
 
-| Big limb | Ground | What it was on one cell | What it is |
-|---|---|---|---|
-| Broodmother | 2 by 2 | 3 broodlings, 140 hp | 5 broodlings, 320 hp |
-| Ward Membrane | 2 by 2 | shields within 95, 90 hp | shields within 120, 220 hp |
-| Trap Cage | 2 by 2 | reaches 50, 200 hp | reaches 70, 400 hp |
+Collins, the same evening: "I don't see any of them being more than one square, which is a
+huge part of tower defence gameplay: getting that raised location that happens to fit the
+tower you want at a high height and then adjacency bonuses and everything." So eleven are.
 
-- **Which limbs are big is Collins's to change:** one field, `span`, and `big: true` on the
-  same limb in `tools/art/limbs.mjs` (a test holds the two lists to each other), then
-  `node tools/art/make.mjs limb <family> --bake`.
-- **MEASURED, and why the Spore Bombard is not big.** It was the first choice (the siege
-  piece). Big, it cost the scripted player one win in ten (3/10, the guard's floor) whatever
-  it was paid: five payments were tried and four of them fell UNDER the guard. With the
-  three above the balance is where it was: naive hold-12 4/10, placement guardrail 4:0.
-  The bombard stands on one cell, unchanged.
+| Limb | Ground | Paid for it with (hp ×2.4 on four cells, ×1.6 on two; hits ×1.5 / ×1.25; reach ×1.15 / ×1.1) |
+|---|---|---|
+| Broodmother, Ward Membrane, Trap Cage | 2 by 2 | their own numbers (brood 5, ward shields within 120, cage reaches 70) |
+| Maw, Caustic Mister, Snare Bed, Galvanic Frond | 2 by 2 | the sums above |
+| Skipping Mortar, Impaler, Creep Lance, Spine Wall | 1 by 2 | the sums above |
+
+- **MEASURED** (`tools/measure/footprints.measure.ts`, ten choices side by side): every
+  choice held the guards. This one (its candidate c4): naive hold-12 5/10, placement
+  guardrail 3:0; the scripted player built 221 limbs of more than one cell over ten runs.
+  The Spore Bombard stays on one cell: made big alone it cost the scripted player a win in
+  ten whatever it was paid.
+- **Which limbs are big is Collins's to change:** `span` in `content/data.ts`, and `big: true`
+  (four cells) or `long: true` (two) on the same limb in `tools/art/limbs.mjs`. Then
+  `node tools/art/make.mjs limb <family> --bake` and the measure above.
+
+### Plinths: height is won (Collins, Sep 29 2026 — BUILT Sep 29)
+
+"Platforms that raise the height of one thing by one amount: let's have an organ that
+generates 1 every two waves for free."
+
+- **The Scaffold Gland** (organ stage, 30 war, three cells) grows one free PLINTH every two
+  turns. Plinths wait in a stock on the bar (PLINTHS — FREE), as creep nodes do.
+- **A plinth raises ONE THING one level:** the limb clicked (a big limb rises whole, all four
+  cells, for one plinth), or a bare roof the creep holds. Never a street. Never above 4
+  levels (one above the city's tallest block). Every level is +10% reach, as it always was.
+- **A plinth on a bare roof levels a roof:** three cells at 2 and one at 1 take a big limb
+  once the low one is raised. That is how a plinth and a big limb work together.
+- It is drawn as a level of bone and callus under the roof, not as more city.
+
+### Seedlings: an organ that shoots (Collins, Sep 29 2026 — BUILT Sep 29)
+
+"An organ that must be placed adjacent to the surface and once every two turns you get a
+free low power tower, with the idea like it shoots out."
+
+- **The Seeding Gland** (35 war, two cells) must TOUCH THE SURFACE: one of its cells in the
+  top row of the organ stage, under the street.
+- Every two turns it puts a free **Seedling** card in the hand (never drawn otherwise). A
+  Seedling is a small weak limb: half a spitter (6 damage, 45 hp, reach 75), with its own
+  three evolutions, and a pip worth eating.
+- Placed, it is SHOT up from the landing site in a high arc and stands where it lands.
 
 ### The camera turns (Collins, Sep 29 2026 — BUILT Sep 29)
 
@@ -671,6 +701,8 @@ each having only a little story to it, with the ability for the enemy to push ba
   (telegraphed on the globe). Defend it (a defence deployment) or lose it and its bonus.
 
 ### The factions (Emperor's recruitable sub-houses) — revised Sep 28 2026
+
+**How each reaches him (Sep 29 2026).** Collins: contact "would not be hand delivered; how they contact you will be unique to each faction but needs to make sense." He is in orbit, so each faction reaches him its own way: the **Friendship Delegation** SPELLS its letters OUT IN A FIELD, thousands of members holding coloured cards for the orbital cameras (their letters stay letters); the **Faithful** BROADCAST on every frequency of their radio network; the **Institute** makes a VIDEO CALL over the deep-space dish it booked for the purpose, mid-game. Every scene has its own picture (the `picture` of each scene in content/campaign.ts; the files in public/art/ship/scenes/), shown on its card; a scene with none shows the leader's portrait.
 "Recruitable factions through some missions … give you a couple of extra units, and
 you choose one or the other, and it colours the campaign." "Each faction would have
 its own central campaign to beating the game." Three factions of the colony itself,

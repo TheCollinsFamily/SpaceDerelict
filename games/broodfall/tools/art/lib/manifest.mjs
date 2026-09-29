@@ -52,7 +52,7 @@ function putEntryNow(section, id, entry) {
   const m = readManifest();
   m[section] = { ...(m[section] ?? {}), [id]: entry };
   const sorted = { version: m.version };
-  for (const k of ['units', 'limbs', 'board', 'biomes', 'ship']) {
+  for (const k of ['units', 'limbs', 'board', 'biomes', 'under', 'ship']) {
     sorted[k] = Object.fromEntries(Object.entries(m[k] ?? {}).sort(([a], [b]) => a.localeCompare(b)));
   }
   fs.mkdirSync(ART, { recursive: true });

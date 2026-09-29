@@ -1,0 +1,63 @@
+{
+ "family": "sprout",
+ "frames": 30,
+ "atlasKB": 128,
+ "failed": 0,
+ "checks": [
+  {
+   "name": "where it stands is marked",
+   "ok": true,
+   "value": "0.5, 0.72, 0.85"
+  },
+  {
+   "name": "idle: loop closes",
+   "ok": true,
+   "value": 0.41
+  },
+  {
+   "name": "idle: it moves",
+   "ok": true,
+   "value": 0.27
+  },
+  {
+   "name": "idle: it is calm",
+   "ok": true,
+   "value": 0.27
+  },
+  {
+   "name": "idle: inside the frame",
+   "ok": true,
+   "value": "182,172-480,468"
+  },
+  {
+   "name": "idle: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "idle: ends the size it began",
+   "ok": true,
+   "value": "1% change"
+  },
+  {
+   "name": "fire: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "fire: ends the size it began",
+   "ok": true,
+   "value": "3% change"
+  },
+  {
+   "name": "it stands in its cell",
+   "ok": true,
+   "value": "2.0% of it lies in front of its cell"
+  },
+  {
+   "name": "atlas is under 900 KB",
+   "ok": true,
+   "value": "128 KB"
+  }
+ ]
+}

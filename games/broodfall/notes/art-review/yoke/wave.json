@@ -2,7 +2,7 @@
  "state": "wave",
  "frames": 96,
  "seconds": 4,
- "kb": 847,
+ "kb": 777,
  "failed": 0,
  "checks": [
   {
@@ -21,9 +21,14 @@
    "value": "25% of it"
   },
   {
+   "name": "her hair is the colour of her still",
+   "ok": true,
+   "value": "gains 1.051, 1.054, 1.059"
+  },
+  {
    "name": "light to load (under 900 KB)",
    "ok": true,
-   "value": "847 KB"
+   "value": "777 KB"
   }
  ]
 }

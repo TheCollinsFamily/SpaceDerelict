@@ -31,7 +31,7 @@ export const METEOR_ROWS = [0, 1] as const;
 /** Share of cells below the topsoil that are rock (can't be grown into). */
 export const ROCK_SHARE = 0.1;
 
-export type OrganKind = 'theme' | 'zone' | 'root' | 'creep' | 'scaffold';
+export type OrganKind = 'theme' | 'zone' | 'root' | 'creep' | 'scaffold' | 'seeder';
 /** What a creep organ does for creep nodes (see CREEP below). */
 export type CreepRole = 'produce' | 'pace' | 'bud' | 'cyst' | 'swell' | 'catapult' | 'mire' | 'acid' | 'runner';
 export type ZoneEffect = 'level' | 'draw' | 'share' | 'suppress';
@@ -51,6 +51,8 @@ export interface OrganDef {
   zone?: ZoneEffect;
   /** Creep organs: their part in making creep nodes. */
   creep?: CreepRole;
+  /** It must be grown touching the surface: one of its cells in the top row, under the street. */
+  surface?: boolean;
   blurb: string;
 }
 
@@ -133,6 +135,9 @@ export const ORGAN_DEFS: readonly OrganDef[] = [
     blurb: 'creep from a bladder TOUCHING it (or the METEOR, if it touches that) slows ground enemies 25% (stacks)' },
   { id: 'acid', name: 'Digestive Lining', kind: 'creep', creep: 'acid', shape: D2, cost: { war: 30 },
     blurb: 'creep from a bladder TOUCHING it (or the METEOR, if it touches that) burns ground enemies 4/s (stacks)' },
+  // SEEDLINGS (Collins, Sep 29 2026): must touch the surface; shoots a free weak limb up every two waves.
+  { id: 'seeder', name: 'Seeding Gland', kind: 'seeder', shape: V2, cost: { war: 35 }, surface: true,
+    blurb: 'must TOUCH THE SURFACE; every 2 turns it shoots a free SEEDLING limb up into the city (a free card: place it anywhere your creep holds)' },
   // PLINTHS (Collins, Sep 29 2026): free, one every two waves.
   { id: 'scaffold', name: 'Scaffold Gland', kind: 'scaffold', shape: L3, cost: { war: 30 },
     blurb: 'grows one free PLINTH every 2 turns (at the wave clear): a pedestal that raises one limb, or one bare roof, by one level' },
@@ -157,6 +162,15 @@ export const BLADDER_TURNS = 2;
 export const PLINTH_TURNS = 2;
 /** Nothing is raised higher than this: one level above the tallest block of the city. */
 export const PLINTH_MAX_HEIGHT = 4;
+/**
+ * SEEDLINGS (Collins, Sep 29 2026: "an organ that must be placed adjacent to the surface and
+ * once every two turns you get a free low power tower, with the idea like it shoots out").
+ * The Seeding Gland grows a Seedling every SEEDLING_TURNS turns: a free card in the hand.
+ * Placed, it is SHOT up from the landing site and lands where it was placed.
+ */
+export const SEEDLING_TURNS = 2;
+/** How long a seedling is in the air, seconds. */
+export const SEEDLING_FLIGHT = 0.9;
 export const NODE_RADIUS = 3;        // cells of creep a node spreads
 export const NODE_REACH = 3;         // cells past the creep edge a node may be placed
 export const CATAPULT_REACH = 5;     // extra cells of reach per catapult sac

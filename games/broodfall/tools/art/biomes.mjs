@@ -717,7 +717,8 @@ export const BIOMES = [
     roof: 'A deck of woven reed seen from straight above: flat mats of pale golden-brown reed woven in a big herringbone, bound at the joins with dark cord. Even and matte.',
     roofs: [
       'A roof of reed thatch seen from straight above: bundles of grey-brown weathered reed laid in wide bands and held down by thin poles, with a little green moss. Muted colours, matte.',
-      'A deck of split canes seen from straight above: bleached pale canes lashed side by side with cord, with a few patches of tarred cloth and a fishing net spread flat to dry across one corner.',
+      // The first had black patches of tarred cloth: on the board they read as holes in the deck.
+      'A deck of split canes seen from straight above: bleached pale canes lashed side by side with cord, even all over, with a few canes of a warmer honey colour mixed in. Every part of it is pale: no dark patches, no stains, no holes.',
     ],
     walls: {
       plain: 'It is a row of stilt homes. Ground storey: stilts of timber and bundled reed standing in dark water, with small boats moored between them, ladders, hanging fish traps, floats. Upper storeys: round houses of woven reed and pale wasp paper with round doors and round windows lit amber, nets and washing hung out, a satellite dish, a blue plastic barrel, a solar lamp, pots of herbs.',

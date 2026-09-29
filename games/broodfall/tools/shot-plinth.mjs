@@ -159,8 +159,64 @@ try {
   check(!street.can && /ROOF/i.test(hint), 'a plinth is refused in a street, and the screen says why', hint.slice(0, 60));
   check((await page.locator('#plinth-count').textContent()) === '1', 'and the plinth is kept', await page.locator('#plinth-count').textContent());
 
-  // 4. From behind.
+  // 4. A Seedling from the Seeding Gland: a free card, shot up from the landing site.
   await page.keyboard.press('Escape');
+  const seed = await page.evaluate(() => {
+    const s = window.broodfall.sim;
+    s.hand.push({ id: 990001, family: 'sprout', free: true });
+    const W = s.cfg.gridW;
+    const d = (c) => Math.hypot((c % W) - (s.map.coreCell % W), Math.floor(c / W) - Math.floor(s.map.coreCell / W));
+    const cells = [];
+    for (let c = 0; c < s.map.cells.length; c++) if (s.canBuildTower(c, 'sprout') && d(c) >= 4) cells.push(c);
+    cells.sort((a, b) => d(a) - d(b));
+    return { index: s.hand.length - 1, cell: cells[0] };
+  });
+  const b3 = await canvas.boundingBox();
+  // A roof on the screen that a click reaches, with no limb near it to be eaten by mistake.
+  const target = await page.evaluate((b) => {
+    const s = window.broodfall.sim;
+    const W = s.cfg.gridW;
+    for (let c = 0; c < s.map.cells.length; c++) {
+      if (!s.canBuildTower(c, 'sprout')) continue;
+      const near = s.towers.some((t) => Math.hypot((t.cell % W) - (c % W), Math.floor(t.cell / W) - Math.floor(c / W)) < 2.5);
+      if (near) continue;
+      const p = s.cellCenter(c);
+      const q = window.broodfall.worldToScreen(p.x, p.y);
+      const x = q.x / q.vw, y = q.y / q.vh;
+      if (x < 0.1 || y < 0.15 || x > 0.9 || y > 0.85) continue;
+      if (window.broodfall.cellAtClient(b.x + x * b.width, b.y + y * b.height) !== c) continue;
+      return { x, y, cell: c };
+    }
+    return null;
+  }, b3);
+  if (!target) throw new Error('no clear roof on the screen for the seedling');
+  // The hand is drawn again on the next frame: wait for the new card, then pick it by its name.
+  await page.waitForTimeout(500);
+  const cards = page.locator('#hand .card');
+  const n = await cards.count();
+  let picked = -1;
+  for (let k = 0; k < n; k++) if ((await cards.nth(k).locator('.card-name').textContent()) === 'Seedling') picked = k;
+  check(picked >= 0, 'the free Seedling is in the hand', `${n} cards`);
+  await cards.nth(picked).click();
+  await page.waitForTimeout(150);
+  await page.mouse.move(b3.x + target.x * b3.width, b3.y + target.y * b3.height);
+  await page.waitForTimeout(150);
+  await page.mouse.click(b3.x + target.x * b3.width, b3.y + target.y * b3.height);
+  await page.waitForTimeout(100);
+  console.log('  hint after the click: ' + (await page.locator('#hint').textContent()).slice(0, 90));
+  const shot = await page.evaluate(() => window.broodfall.sim.seedFlights.length);
+  check(shot > 0, 'a Seedling placed is SHOT up from the landing site', `${shot} in the air`);
+  // Let it fly part of the way, on the sim's clock, and look.
+  await page.evaluate(() => window.broodfall.step(4));
+  await page.waitForTimeout(250);
+  await canvas.screenshot({ path: join(shots, 'plinth-4-seedling-in-the-air.png') });
+  await page.evaluate(() => window.broodfall.step(12));
+  const landed = await page.evaluate(() => ({ flying: window.broodfall.sim.seedFlights.length, sprouts: window.broodfall.sim.towers.filter((t) => t.family === 'sprout').length }));
+  check(landed.flying === 0 && landed.sprouts === 1, 'and it lands, and stands where it was placed', `${landed.sprouts} standing`);
+  await page.waitForTimeout(300);
+  await canvas.screenshot({ path: join(shots, 'plinth-5-seedling-landed.png') });
+
+  // 5. From behind.
   await page.keyboard.press('e');
   await page.waitForTimeout(900);
   await page.keyboard.press('e');

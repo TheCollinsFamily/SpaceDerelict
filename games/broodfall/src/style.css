@@ -520,3 +520,124 @@ body.view-iso #view-controls { display: flex; }
 
 /* On the ship, the skirmish HUD behind it is not yours to read. */
 body.in-ship #topbar, body.in-ship #botbar { visibility: hidden; }
+
+/* ---------- the organ stage as the ship's ground scan (Collins, Sep 29 2026: the scanner board) ----------
+   Everything here is under #under.scan, which src/ui/underground.ts sets only when the scan's
+   tiles loaded (tools/art/templates/under.mjs); without them the stage keeps the look above. */
+#under.scan { background: radial-gradient(ellipse at 50% 0%, rgba(20, 40, 48, 0.95), rgba(2, 4, 6, 0.98)); }
+#under.scan #under-card {
+  background: #070a0c; color: #b9cdd0; border: 1px solid #2c3e44; border-radius: 4px;
+  box-shadow: 0 0 0 1px #0d1417, 0 0 40px rgba(0, 0, 0, 0.8);
+}
+#under.scan .screen-kicker, #under.scan .pal-title { color: #6f9aa2; letter-spacing: 3px; }
+#under.scan #under-title { font-family: "Courier New", monospace; font-weight: bold; color: #d8eef0; letter-spacing: 6px; font-size: 22px; }
+#under.scan #under-note { color: #ff9a6a; }
+#under.scan .under-organ {
+  background: #0c1215; color: #b9cdd0; border: 1px solid #243238; border-radius: 3px;
+  grid-template-columns: 1fr auto auto; grid-template-areas: "name shape tile" "what shape tile" "price price price";
+}
+#under.scan .under-organ:hover { border-color: #4b6a72; }
+#under.scan .under-organ.on { background: #13232a; color: #e8f8fa; border-color: #9ad8e0; box-shadow: 0 0 10px rgba(120, 220, 230, 0.35); }
+#under.scan .under-organ.poor i { color: #ff8a6a; }
+#under.scan .under-organ.built i { color: #7fd8c8; }
+#under.scan .under-organ .shape rect { stroke: #070a0c; }
+#under.scan .og { text-shadow: 0 0 6px currentColor; }
+#under.scan .pal-tile { grid-area: tile; width: 38px; height: 38px; border-radius: 3px; object-fit: cover; box-shadow: 0 0 0 1px var(--acc), 0 0 8px -2px var(--acc); opacity: 0.9; }
+#under.scan #under-summary { color: #9ab8bc; }
+#under.scan #under-summary b { color: #d8eef0; }
+#under.scan #under-status { color: #9ad8e0; font-family: "Courier New", monospace; }
+#under.scan #under-status.warn { color: #ff8a6a; }
+#under.scan #under-done { background: #0f1c20; color: #d8eef0; border: 1px solid #4b6a72; }
+
+/* The city above, a thin wireframe along the street line; the meteor's dome in the middle of it. */
+#under.scan #under-surface { height: 56px; background: transparent; border-bottom: 1px solid #5f8a92; overflow: visible; margin-left: 16px; }
+#under.scan #under-surface .skyline { position: absolute; inset: 4px 0 0 0; width: 100%; height: calc(100% - 4px); fill: none; stroke: #4e7a82; stroke-width: 1; vector-effect: non-scaling-stroke; opacity: 0.8; }
+#under.scan #under-surface span { color: #6f9aa2; }
+#under.scan #under-dome {
+  height: 44px; bottom: 0; background: radial-gradient(ellipse at 50% 100%, rgba(255, 60, 50, 0.35), rgba(40, 8, 8, 0.6) 60%, rgba(0, 0, 0, 0.2));
+  border: 1px solid rgba(255, 90, 80, 0.8); border-bottom: 0; box-shadow: 0 0 18px rgba(255, 60, 50, 0.45);
+}
+
+/* The board, its depth ruler and the scan line that sweeps down it. */
+#under-scanbox { position: relative; }
+#under-ruler, #under-scanbox .scanline { display: none; }
+#under.scan #under-scanbox { margin-left: 16px; overflow: visible; }
+#under.scan #under-ruler { display: block; position: absolute; left: -14px; top: 0; bottom: 0; width: 12px; border-right: 1px solid #3c5a60; }
+#under.scan #under-ruler i { position: absolute; right: 0; width: 5px; border-top: 1px solid #3c5a60; }
+#under.scan #under-ruler i.major { width: 10px; border-top-color: #6f9aa2; }
+#under.scan #under-grid { border: 1px solid #2c3e44; background: #030506; }
+#under.scan .scanline {
+  display: block; position: absolute; left: 0; right: 0; top: 0; height: 22%; z-index: 4; pointer-events: none;
+  background: linear-gradient(rgba(120, 230, 240, 0), rgba(120, 230, 240, 0.10) 70%, rgba(170, 250, 255, 0.35) 97%, rgba(120, 230, 240, 0));
+  mix-blend-mode: screen; animation: scan-sweep 6s linear infinite;
+}
+@keyframes scan-sweep { 0% { transform: translateY(-100%); } 70%, 100% { transform: translateY(460%); } }
+#under.scan.booting .scanline { animation: scan-sweep 1s linear 1; }
+
+/* Every cell is a tile of the scan: the ground, what is buried, the organs. */
+#under.scan .uc {
+  background-color: #030506; background-size: cover; background-position: center;
+  border: 1px solid rgba(90, 140, 150, 0.10); color: #d8eef0;
+}
+#under.scan .uc.k-rock { filter: brightness(0.85); }
+#under.scan .uc .glyph, #under.scan .uc .tag { display: none; }
+#under.scan .uc.d-unknown::after {
+  content: ""; position: absolute; left: 50%; top: 50%; width: 36%; aspect-ratio: 1; transform: translate(-50%, -50%) rotate(45deg);
+  border: 1px solid rgba(200, 230, 235, 0.7); animation: glint 2.4s ease-in-out infinite;
+}
+#under.scan .uc.d-unknown::before {
+  content: "?"; position: absolute; inset: 0; display: grid; place-items: center; z-index: 1;
+  font: bold 12px "Courier New", monospace; color: #cfe8ec; animation: glint 2.4s ease-in-out infinite;
+}
+#under.scan .uc.d-ossuary, #under.scan .uc.d-lab { box-shadow: none; }
+#under.scan .uc.k-meteor { background: transparent; border-color: transparent; }
+#under.scan .uc .meteor-img {
+  position: absolute; left: 0; top: 0; width: 300%; height: 200%; z-index: 3; pointer-events: none;
+  background-size: 100% 100%; animation: heart-beat 1.6s ease-in-out infinite;
+}
+@keyframes heart-beat { 0%, 100% { filter: drop-shadow(0 0 5px rgba(255, 60, 50, 0.35)) brightness(1); } 15% { filter: drop-shadow(0 0 12px rgba(255, 60, 50, 0.7)) brightness(1.25); } }
+#under.scan .uc .tag.core { display: block; z-index: 5; color: #ffb0a0; text-shadow: 0 0 4px #000; font-family: "Courier New", monospace; }
+
+/* An organ: its tile, lit in its own false colour, outlined where the shape ends. */
+#under.scan .uc.has-organ { border: 1px solid transparent; box-shadow: inset 0 0 14px -4px var(--acc); }
+#under.scan .uc.has-organ.bt { border-top: 2px solid var(--acc); } #under.scan .uc.has-organ.bb { border-bottom: 2px solid var(--acc); }
+#under.scan .uc.has-organ.bl { border-left: 2px solid var(--acc); } #under.scan .uc.has-organ.br { border-right: 2px solid var(--acc); }
+#under.scan .uc .organ { display: none; }
+#under.scan .uc .pow { color: var(--acc); text-shadow: 0 0 4px #000, 0 0 2px #000; font-family: "Courier New", monospace; z-index: 2; }
+#under.scan .uc .recipe, #under.scan .uc .rate { color: #e8ffd0; text-shadow: 0 0 3px #000; z-index: 2; }
+
+/* Two organs that share: the edge between them pulses. */
+#under.scan .uc .share { position: absolute; inset: 0; pointer-events: none; z-index: 1; animation: share-pulse 2.2s ease-in-out infinite; }
+#under.scan .uc .share.s-t { border-top: 2px solid #fff; } #under.scan .uc .share.s-b { border-bottom: 2px solid #fff; }
+#under.scan .uc .share.s-l { border-left: 2px solid #fff; } #under.scan .uc .share.s-r { border-right: 2px solid #fff; }
+@keyframes share-pulse { 0%, 100% { opacity: 0.08; } 50% { opacity: 0.55; } }
+
+/* A zone organ's zone, always faintly on the scan. */
+#under.scan .uc.zq { animation: zone-pulse 2.8s ease-in-out infinite; }
+@keyframes zone-pulse { 0%, 100% { box-shadow: inset 0 0 0 1px transparent; } 50% { box-shadow: inset 0 0 0 1px var(--zc), inset 0 0 12px -6px var(--zc); } }
+
+/* Growing in: the cells resolve from noise to tissue, with a blink. A deposit resolves the same way. */
+#under.scan .uc.scan-in { animation: scan-in 0.7s ease-out both; }
+@keyframes scan-in {
+  0% { filter: brightness(3) contrast(0.25) blur(3px) grayscale(1); opacity: 0.15; clip-path: inset(0 0 100% 0); }
+  35% { filter: brightness(2.2) contrast(0.6) blur(1px); opacity: 1; clip-path: inset(0 0 0 0); }
+  48% { opacity: 0.35; }
+  60% { opacity: 1; filter: brightness(1.6); }
+  100% { filter: none; opacity: 1; clip-path: inset(0 0 0 0); }
+}
+
+/* The Seeding Gland: the lane it must touch, and its launch tube firing up through the street. */
+#under.scan .uc.surface-lane { box-shadow: inset 0 3px 0 #ff9a6a, inset 0 10px 14px -8px #ff9a6a; }
+#under.scan .uc .launch {
+  position: absolute; left: 50%; top: -2px; width: 8px; height: 60%; z-index: 2; pointer-events: none;
+  background: linear-gradient(to top, rgba(255, 106, 80, 0), rgba(255, 160, 120, 0.9)); border-radius: 4px;
+  animation: launch 2s ease-in infinite;
+}
+@keyframes launch { 0% { transform: translate(-50%, 60%); opacity: 0; } 30% { opacity: 1; } 100% { transform: translate(-50%, -80%); opacity: 0; } }
+
+/* Placing, in the scan's own colours. */
+#under.scan .uc.ghost-ok { box-shadow: inset 0 0 0 2px #9ae8f0, inset 0 0 16px rgba(150, 230, 240, 0.4); background-color: #0c2a30 !important; }
+#under.scan .uc.ghost-bad { box-shadow: inset 0 0 0 2px #ff6a50, inset 0 0 16px rgba(255, 106, 80, 0.4); }
+#under.scan .uc.hover { box-shadow: inset 0 0 0 1px rgba(200, 240, 245, 0.6); }
+#under.scan .uc.zone { box-shadow: inset 0 0 0 2px rgba(255, 150, 190, 0.8); }
+#under.scan .uc.linked { box-shadow: inset 0 0 0 2px #d8ff90 !important; }

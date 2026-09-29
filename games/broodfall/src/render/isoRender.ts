@@ -20,6 +20,7 @@ import {
   type Facing, type Heading, type IsoGeo, type Pt, type Turn,
 } from './iso';
 import { buildingsOf, pickVariant, variantName } from './biome';
+import { SEEDLING_FLIGHT } from '../../content/underground';
 import { CASTE_COLORS, ENEMY_SIZE, FAMILY_COLORS, Renderer } from './render';
 
 /** The old marks were drawn for a 26 px cell; on this board they are drawn this much bigger. */
@@ -948,6 +949,10 @@ export class IsoRenderer extends Renderer {
       v.shade.height = width * 1.5 * (g.b / g.a);
       v.shade.zIndex = v.sprite.zIndex - 1;
       v.sprite.tint = held ? 0x9a90a8 : 0xffffff;
+      // A seedling in the air is not on its roof yet.
+      const flying = sim.seedFlights.some((f) => f.towerId === t.id);
+      v.sprite.visible = !flying;
+      v.shade.visible = !flying && !art.flat;
       if (!art.flat) this.drawTowerMarks(this.marksG, t, p.x / K, (p.y - width * 0.55) / K, sim);
       else if (t.hp < t.maxHp) this.hpArc(this.marksG, p.x / K, p.y / K - 8, 20, t.hp / t.maxHp);
     }
@@ -1213,5 +1218,11 @@ export class IsoRenderer extends Renderer {
     for (const s of sim.shells) lobbed(s.from, s.to, 1 - s.ttl / s.flight, 22, s.stun ? 2.5 : 4.5, s.side === 'body' ? 0xd8b060 : s.stun ? 0xdff5f2 : 0x2a1a0e);
     for (const b of sim.bileFlights) lobbed(b.from, b.to, 1 - b.ttl / 0.9, 18, 6, 0xc4b83a);
     for (const c of sim.clotFlights) lobbed(c.from, c.to, 1 - c.ttl / 1.2, 20, 7, 0x9c3120);
+    // A seedling shot up from the landing site: high, and pink, and it trails a little.
+    for (const f of sim.seedFlights) {
+      const t = 1 - f.ttl / SEEDLING_FLIGHT;
+      lobbed(f.from, f.to, Math.max(0, t - 0.1), 70, 6, 0x7a2a2a);
+      lobbed(f.from, f.to, t, 70, 9, 0xf0b4b0);
+    }
   }
 }

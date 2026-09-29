@@ -231,6 +231,14 @@ export const UPGRADES: Record<TowerFamily, UpgradeTree> = {
     [o('Puppet Master', 'your puppets bite twice as hard', { potency: 2 }),
       o('Hive Mind', 'your puppets move and bite 50% faster', { tempo: 1.5 })],
   ],
+  sprout: [
+    [o('Hardy Shoot', 'twice the hp', { mult: { maxHp: 2 } }),
+      o('Quick Shoot', 'fires 40% faster', { tempo: 1.4 })],
+    [o('Long Stem', 'reaches 30% farther', { reach: 1.3 }),
+      o('Sharp Seed', 'hits 60% harder', { potency: 1.6 })],
+    [o('Grown Up', 'hits twice as hard and has twice the hp', { potency: 2, mult: { maxHp: 2 } }),
+      o('Seed Burst', 'fires twice as fast', { tempo: 2 })],
+  ],
   // ---- combo engines: evolutions bend the ENGINE's rule ----
   conduit: [
     [o('Wide Gather', 'draws from 50% farther around it', { mult: { gather: 1.5 } }),
