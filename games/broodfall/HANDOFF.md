@@ -17,6 +17,8 @@ process only verified its own assumptions. The repo's CLAUDE.md carries the stan
   - `notes/ITERATION-2026-09-26.md`: why things are the way they are. Addenda run
     newest-first; 22 is the latest.
   - `notes/CAMPAIGN-BUILD-PLAN.md`: the campaign inventory and its status.
+  - `notes/GRAPHICS-PLAN.md`: the graphics proposal (Sep 29) and what the RFab API can
+    generate. A PROPOSAL: nothing is built or spent, and its OPEN items are Collins's.
   - `README.md`: how to run it, plus a list of every surface.
 - The RFab backend holds one Broodfall route, for YOKE (see "The ship AI" below):
   `C:\Users\Merry\dev\reality-fabricator\reality-fabricator-backend`. That repo has its
@@ -219,7 +221,8 @@ RFAB_API_BASE=http://localhost:3011 RFAB_API_BEARER=<jwt> node tools/shot-yoke-l
 4. **The interior can seal itself:** growth can wall itself in against the interior
    (idea: a burrow-reopen mechanic).
 5. **City life:** civilians fleeing the crash.
-6. **Real AI art pipeline** per TECH.md.
+6. **Real AI art pipeline.** Collins opened this on Sep 29: see `notes/GRAPHICS-PLAN.md`.
+   Waiting on his calls (camera, look) before the grey-box test and the probes.
 7. **Surgery vulnerability:** mid-siege cannibalize drama.
 8. **Campaign polish found in the audit, not yet asked for:**
    - Faction contact comes after N captures, not through "some missions".

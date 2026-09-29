@@ -13,6 +13,8 @@ Constraint that drives every choice here: the whole game must be buildable and t
 
 ## Asset pipeline (the heart of it)
 
+**Sep 29 2026: `notes/GRAPHICS-PLAN.md` proposes changes to items 2, 3b and 6 below, checked against what the RFab API can do today. It is a proposal until Collins decides; this section is unchanged until then.**
+
 Authoring format is AI video; runtime format is spritesheet. That one rule keeps 50+ animated towers cheap AND performant.
 
 1. **Style bible first** (`assets/style-bible.md`): one locked prompt scaffold for the whole planetside look (palette, lighting, lens, "wet chitin + muscle" material language). Every tower/organ/enemy prompt extends it. This is what makes 50 towers read as one game.
