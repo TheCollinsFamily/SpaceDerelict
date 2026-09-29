@@ -45,7 +45,16 @@ generated asset to settle.
 - **With video the camera is frozen into every clip.** It must be final before mass
   production; changing it afterwards means generating everything again.
 
-### 2b. Style — the design doc already answers it
+### 2b. Style — see `assets/style-bible.md`
+
+**Superseded the same day.** Collins: "remember the 1950s horror B movie aesthetic" and
+the insects "need castes that are human enough for the player to empathise with them".
+The look, the caste rule, the value plan and the open calls are in `assets/style-bible.md`.
+What still stands from the text below: sprites are lit evenly from overhead, and a shared
+filter unifies the frame. What changed: the default look is the B-movie, and a break
+moment is a second, plain render rather than a filter switched off.
+
+#### The first draft of 2b (kept for the reasoning)
 DESIGN.md's tone stack says the break moments are "the same footage with the filter off".
 So the art is made ONCE, in the straight register (real, wet, unglamorous), and the goofy
 propaganda look is a FILTER over the canvas (colour grade, grain, halftone, vignette) plus

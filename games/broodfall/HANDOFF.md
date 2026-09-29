@@ -17,8 +17,11 @@ process only verified its own assumptions. The repo's CLAUDE.md carries the stan
   - `notes/ITERATION-2026-09-26.md`: why things are the way they are. Addenda run
     newest-first; 22 is the latest.
   - `notes/CAMPAIGN-BUILD-PLAN.md`: the campaign inventory and its status.
-  - `notes/GRAPHICS-PLAN.md`: the graphics proposal (Sep 29) and what the RFab API can
-    generate. A PROPOSAL: nothing is built or spent, and its OPEN items are Collins's.
+  - `notes/GRAPHICS-PLAN.md`: the graphics pipeline (Sep 29): what the RFab API can
+    generate, video-first, the probe results. Its OPEN items are Collins's.
+  - `assets/style-bible.md`: the visual language (Sep 29): 1950s horror B-movie, insects
+    human enough to empathise with, the shared prompt blocks. v0 until Collins locks it.
+  - `tools/art/`: the art scripts. They SPEND RFab tokens; each skips what already exists.
   - `README.md`: how to run it, plus a list of every surface.
 - The RFab backend holds one Broodfall route, for YOKE (see "The ship AI" below):
   `C:\Users\Merry\dev\reality-fabricator\reality-fabricator-backend`. That repo has its

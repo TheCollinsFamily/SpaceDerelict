@@ -79,12 +79,15 @@ const firstUrl = (r, ...keys) => {
   return null;
 };
 
-/** One still on a flat key-colour background. `refFile`: redraw from that picture (same creature, new view). */
+/**
+ * One still on a flat key-colour background. `refFile`: redraw from that picture (same
+ * creature, new view). `key: null`: a full picture with its own background (concept art).
+ */
 export async function makeStill({ slug, prompt, key = '00FF00', keyName = 'green', refFile, width = 1024, height = 1024, quality = 'medium' }) {
   const out = path.join(RAW_DIR, `${slug}-still.png`);
   if (fs.existsSync(out)) { console.log(`[still] ${slug}: cached`); return out; }
   const body = {
-    prompt: `${prompt} ${bg(key, keyName)}`,
+    prompt: key ? `${prompt} ${bg(key, keyName)}` : prompt,
     modelId: STILL_MODEL, quality, width, height,
     imageCount: 1, saveToGallery: false, nsfw: false, async: true,
   };
