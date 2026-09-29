@@ -183,6 +183,46 @@ insectoid city.
   - Note: `docs/notes/BROODFALL_SHIP_AI_2026-09-28.md`. Wiki: `wiki/systems/broodfall-ship-ai.md`.
   - Real cost: about 30–100 tokens (~$0.001) per reply.
 
+### YOKE as her Living Avatar (Sep 29 2026) — the default
+
+Collins: "we will use the rfab living avatar system to make her something the player can
+chat with and she will feel real." She now has a body, a voice and a mind of her own on
+rfab.ai, and she is who answers in the AI Core by default.
+
+- **Who she is:** `content/lore/ship-ai-lorebook.md` (the long form, every TO WRITE
+  section filled; what adds a fact Collins has not said is marked PROPOSAL; his OPEN calls
+  are written so either answer works). `content/lore/yoke-brain.md` is the short form her
+  mind runs on: a brain text under 4,000 characters (the box on her rfab.ai page holds
+  4,000; a test holds it) and her notes.
+- **On rfab.ai** (Collins's own account; ids in `content/lore/yoke-avatar.json`): one
+  agent (her mind, Claude Haiku 4.5, not running on its own), one body `vm_…` (her 15
+  clips), one avatar binding them with the voice `aura-2-athena-en`. Private: visitors
+  and the public cannot talk to her (their chat would be billed to him).
+- **Her body:** `node tools/art/make.mjs yoke [states] [--stills] [--bake]`
+  (`tools/art/templates/yoke.mjs`): a still per face from her approved design, a 4 s
+  clip, our keyer, then "the projection" (cooled colours, lifted blacks, scan lines, a
+  halo), VP8 WebM with alpha in `public/art/ship/yoke/`. States: idle, speaking,
+  thinking, happy, sad, surprised, angry, laughing, blushing; gestures nod, shake_head,
+  wink, wave; looks look_left, look_right. Look at `notes/art-review/yoke/`.
+- **To change her on rfab.ai:** edit `yoke-brain.md` (or re-bake a clip), then
+  `node tools/art/make.mjs yoke --publish` (updates what exists, never makes a second;
+  `--voice=<aura id>` changes her voice). Nothing is ever deleted there.
+- **In the game** (`src/meta/yokeAvatar.ts`, no screen, all tested; `src/ui/yokeAvatar.ts`,
+  her stage): his line goes to `POST /api/avatars/:id/message` with a `<<SHIP LOG … >>`
+  block in front (the campaign summary; the avatar API takes a message and nothing else);
+  her reply comes a sentence at a time on `GET …/events`; her clip follows each
+  sentence's emotion (the nearest face her body has when she names another); her voice
+  is `POST …/speak` once a sentence, while the talking clip plays; then she holds the
+  face of what she said. The log is stripped from everything shown, even when she quotes
+  it. VOICE ON/OFF in the room; her history on reopening it.
+- **It fails soft:** no network, 401, 402, 404 or silence → the next rung answers
+  (Kimi, then the scripted YOKE); the player is told nothing; the reason goes to the
+  console once. 401/404 stop the asking for the session; 402 does not (a top-up mends it).
+- **Cost, measured live:** about 1,300 tokens (~$0.026) an exchange: ~1,240 for her mind,
+  ~3 a character for her voice. Billed to the account the key belongs to.
+- **Checks:** `tests/yokeAvatar.test.ts`; `node tools/shot-yoke-avatar.mjs` (the room,
+  with rfab.ai mocked: nothing is spent). The campaign beat still sets her to scripted.
+
 ## Architecture
 
 - **`src/sim/`:** a deterministic fixed-timestep sim (10 Hz, seeded, ZERO render imports).

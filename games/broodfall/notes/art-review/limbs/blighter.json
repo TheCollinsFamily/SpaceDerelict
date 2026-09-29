@@ -1,13 +1,13 @@
 {
  "family": "blighter",
  "frames": 30,
- "atlasKB": 260,
+ "atlasKB": 262,
  "failed": 0,
  "checks": [
   {
    "name": "where it stands is marked",
    "ok": true,
-   "value": "0.5, 0.72, 0.9"
+   "value": "0.5, 0.75, 0.87"
   },
   {
    "name": "idle: loop closes",
@@ -52,12 +52,12 @@
   {
    "name": "it stands in its cell",
    "ok": true,
-   "value": "1.8% of it lies in front of its cell"
+   "value": "0.8% of it lies in front of its cell"
   },
   {
    "name": "atlas is under 900 KB",
    "ok": true,
-   "value": "260 KB"
+   "value": "262 KB"
   }
  ]
 }

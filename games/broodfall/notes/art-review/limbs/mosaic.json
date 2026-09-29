@@ -1,13 +1,13 @@
 {
  "family": "mosaic",
  "frames": 16,
- "atlasKB": 166,
+ "atlasKB": 167,
  "failed": 0,
  "checks": [
   {
    "name": "where it stands is marked",
    "ok": true,
-   "value": "0.5, 0.8, 0.9"
+   "value": "0.52, 0.85, 0.62"
   },
   {
    "name": "idle: loop closes",
@@ -42,12 +42,12 @@
   {
    "name": "it stands in its cell",
    "ok": true,
-   "value": "0.4% of it lies in front of its cell"
+   "value": "0.9% of it lies in front of its cell"
   },
   {
    "name": "atlas is under 900 KB",
    "ok": true,
-   "value": "166 KB"
+   "value": "167 KB"
   }
  ]
 }

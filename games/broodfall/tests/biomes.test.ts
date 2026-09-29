@@ -68,11 +68,15 @@ describe.skipIf(!hasArt)('the tile sets', () => {
     expect(sets.wetland.name).toBe('The Mirewater Delta');
   });
 
-  it('say how many of each piece they have: two buildings for each kind of district, three roofs, one or two streets', () => {
+  it('say how many of each piece they have: two buildings for each kind of district (five faces in open country), three roofs (five), one or two streets', () => {
+    // Open country (Collins, Sep 29 2026: "all farms ... fine for like 20% of it but not the majority"):
+    // four faces in five are land and one a farm building, and the roofs are grass, meadow, pasture, a wood and one field.
+    const RURAL = ['terraces', 'farmland'];
     for (const [id, set] of Object.entries(sets)) {
       expect(set.variants, `${id}: variants`).toBeTruthy();
-      for (const kind of KINDS) expect(set.variants.walls[kind], `${id}: buildings of ${kind} districts`).toBe(2);
-      expect(set.variants.roof, `${id}: roofs`).toBe(3);
+      const rural = RURAL.includes(id);
+      for (const kind of KINDS) expect(set.variants.walls[kind], `${id}: faces of ${kind} districts`).toBe(rural ? 5 : 2);
+      expect(set.variants.roof, `${id}: roofs`).toBe(rural ? 5 : 3);
       expect([1, 2], `${id}: streets`).toContain(set.variants.street);
       expect(set.variants.plaza, `${id}: squares`).toBe(1);
     }
@@ -125,6 +129,18 @@ describe.skipIf(!hasArt)('the tile sets', () => {
       const onRoofs = new Set(KINDS.flatMap((kind) => set.roofProps[kind]));
       expect(onRoofs.size, `${id}: different roof props`).toBeGreaterThan(8);
       expect(new Set(set.streetProps).size, `${id}: different street props`).toBeGreaterThan(6);
+    }
+  });
+
+  it('show open country in the rural sets: most of what stands on a roof is the land\'s own', () => {
+    // Collins, Sep 29 2026: "the rural biome is all farms ... those are fine for like 20% of it but not the majority".
+    const LAND = new Set(['oak', 'clock', 'boulders', 'bush', 'pond', 'log', 'cairn', 'bale', 'fungustree', 'shelter']);
+    for (const id of ['terraces', 'farmland']) {
+      for (const kind of KINDS) {
+        const list = sets[id].roofProps[kind];
+        const land = list.filter((p) => LAND.has(p)).length;
+        expect(land / list.length, `${id}: share of land among the roof props of ${kind} districts`).toBeGreaterThanOrEqual(0.7);
+      }
     }
   });
 

@@ -38,6 +38,13 @@
  * Windows gives every long file name a short one of that shape, and street.orig.png, which
  * paint-out.mjs leaves behind, already answers to STREET~1.PNG.)
  *
+ * OPEN COUNTRY (Collins, Sep 29 2026: "the rural biome is all farms, no grass fields, hills etc. It's all
+ * barns and farms, this is bad ... those are fine for like 20% of it but not the majority"). In the two
+ * rural sets (terraces, farmland) every kind of district has FIVE faces (walls, walls2, wallsMore), four
+ * of them LAND ({ land: true, words }: a grassy bank, an outcrop, a hedge, a wooded slope) and one a farm
+ * building; the game picks one face for each block, evenly, so four blocks in five are land. Their roofs
+ * are grass, meadow, pasture, a copse and one field; what stands on them is mostly trees, stones, a pond.
+ *
  * Two sets are open country, not town (terraces, wetland). They say what their walls, their
  * roofs and their streets ARE (front, band, species, place), because the words every other
  * set shares say "building", "storey" and "city".
@@ -417,12 +424,18 @@ export const BIOMES = [
     // The farming TOWN. It has no territory of its own since the open country round it has a set (terraces),
     // which is the home of the Granary Belt: this one is met as a guest there, and in a skirmish.
     territories: [],
+    // Open prairie country round the farms (Collins, Sep 29 2026: "the rural biome is all farms, no grass fields, hills
+    // etc. ... those are fine for like 20% of it but not the majority"): four of the five faces of every kind of
+    // district are LAND (walls with land: true), one is the farm building it always had.
+    land: 'rolling prairie country of an insect people: grassy hillsides, sod banks, fence rows and woodland edges, ' +
+      'in the colours of prairie: straw gold, sage green, tan earth, pale limestone. It is the countryside of a civilisation of the 21st century',
     look:
       'The style of this district borrows from a farming town of the American Midwest: barns of red-stained paper boards with ' +
       'white trim, round silos, windmills, grain elevators, hay, split-rail fences',
     street: 'A farm road: pale packed earth with scattered straw, a few pebbles and faint hoof-like prints.',
     plaza: 'A round threshing floor of pale packed earth ringed with golden straw, swept in circles.',
-    roof: 'A flat roof of pale golden thatch laid in neat bands and held down with wooden battens.',
+    // The first was a roof of thatch; now that four faces in five are land, every roof is land too (a field, grass, a wood).
+    roof: "A field of ripe wheat seen from straight above: dense golden grain heads in even rows, soft and matte, with a few paler straws. Muted gold, nothing bright and nothing dark.",
     walls: {
       plain: 'It is a row of farmhouses. Ground storey: porches with rocking chairs, round doors, milk churns, a boot scraper. Upper storeys: round windows with gingham curtains, a hay loft door with a pulley, drying bunches of herbs.',
       science: 'It is an agricultural station. Ground storey: a glass door, seed trays, a weather screen. Upper storeys: round greenhouse panes with seedlings under lamps, rain gauges, a small dish, charts of abstract glyphs.',
@@ -430,14 +443,14 @@ export const BIOMES = [
       highground: 'It is a grain elevator. Ground storey: a weighbridge and wide doors. Upper storeys: tall plain walls of red-stained boards with white trim, chutes, a painted emblem of a plain gold hexagon, a small bell under a little roof.',
     },
     roofProps: [
-      { id: 'silo', width: 0.7, on: ['meat', 'highground'], look: 'the domed top of a round grain silo, silver, with a ladder' },
-      { id: 'windmill', width: 0.7, on: ['plain', 'science'], look: 'a farm wind pump with a many-bladed wheel on a lattice tower' },
-      { id: 'tank', width: 0.55, on: ALL, look: 'a wooden water tank on legs' },
-      { id: 'hay', width: 0.6, on: ['meat', 'plain'], look: 'a stack of golden hay bales' },
-      { id: 'vane', width: 0.3, on: ['plain', 'highground'], look: 'a weathervane shaped like a beetle on a short post' },
+      { id: 'silo', width: 0.7, on: ['highground'], look: 'the domed top of a round grain silo, silver, with a ladder' },
+      { id: 'windmill', width: 0.7, on: ['science'], look: 'a farm wind pump with a many-bladed wheel on a lattice tower' },
+      { id: 'tank', width: 0.55, on: ['meat'], look: 'a wooden water tank on legs' },
+      { id: 'hay', width: 0.6, on: ['meat'], look: 'a stack of golden hay bales' },
+      { id: 'vane', width: 0.3, on: ['highground'], look: 'a weathervane shaped like a beetle on a short post' },
       { id: 'hutch', width: 0.55, on: ['plain'], look: 'a little hutch with a run, holding a few fat green aphids' },
-      { id: 'chimney', width: 0.4, on: ['plain', 'meat'], look: 'a stone-like chimney with a wisp of smoke' },
-      { id: 'solar', width: 0.7, on: ['science', 'plain'], look: 'a dark blue solar panel on a low tilted frame' },
+      { id: 'chimney', width: 0.4, on: ['plain'], look: 'a stone-like chimney with a wisp of smoke' },
+      { id: 'solar', width: 0.7, on: ['science'], look: 'a dark blue solar panel on a low tilted frame' },
     ],
     streetProps: [
       { id: 'lamp', width: 0.3, look: 'a lantern hanging from a wooden post' },
@@ -450,32 +463,57 @@ export const BIOMES = [
     ],
     guests: ['terraces'],
     roofs: [
-      'A flat barn roof of corrugated sheets painted a soft, faded brick red, sun-bleached and chalky, with rows of small bolts and a few paler sheets. Matte, even, no dark patches.',
-      'A flat roof of old wooden shingles weathered to a pale silver-grey, laid in neat overlapping rows, with a little pale green lichen and a few newer honey-coloured shingles.',
+      "Tall prairie grass seen from straight above: long soft grass of straw gold and sage green, swirled by the wind, with purple and yellow wildflowers. No paths and no bare earth.",
+      "A wildflower meadow seen from straight above: short green grass thick with small purple, yellow, white and orange flowers. No paths and no bare earth.",
+      "A cattle pasture seen from straight above: short cropped green grass with darker tussocks and a few pale stones, and one worn path of pale bare earth crossing it from one edge of the picture to the other.",
+      "A small wood seen from straight above: the round caps of a grove of fungus trees in rust, gold and tan, touching and overlapping, with glimpses of mossy ground between them. Muted colours.",
     ],
     walls2: {
-      plain: 'It is a general store and post office with a boarding house above it, and its walls are whitewashed boards with dark green trim. Ground storey: two wide shop windows full of tins, boots and tools on either side of one double door; a long bench; a rack of seed packets; a letter slot. Upper storeys: the wall is a tall flat false front of plain white boards, with only four small square windows to a storey set far apart, green shutters, and one large painted panel of a sheaf and a beetle.',
-      science: 'It is a seed bank and a weather and radio station, and its walls are whitewashed boards with pale blue trim. Ground storey: a heavy round vault door of steel in the middle, a row of numbered seed drawers behind glass, a barometer, a rain gauge. Upper storeys: a band of louvred white weather screens; rows of narrow slit windows; a big round dial showing only glyphs with one pointer; aerial wires strung across the wall on white insulators.',
-      meat: 'It is a flour mill and bakery, and its walls are boards painted mustard yellow over a ground storey of pale stone blocks laid like honeycomb. Ground storey: a great wooden mill wheel against the wall, a row of fat flour sacks, a bakery hatch with loaves on a shelf, everything dusted white. Upper storeys: a slanting covered chute crosses the wall from top left to bottom right; small square windows white with flour; a hoist with a sack; a row of round vent holes.',
-      highground: 'It is the fair hall of the county, and its walls are white-painted boards with gold and red trim. Ground storey: a wide porch with a row of six turned posts, broad steps, three double doors standing open, prize rosettes pinned beside them. Upper storeys: one very large round window of honeycomb glass in the middle of the wall; strings of coloured bunting swagged across the whole width; a clock showing only glyphs; a painted emblem of a plain gold hexagon; two loudspeakers.',
+      plain: { land: true, words: "A prairie hillside: three steps of rolling grassland, long straw-gold and sage-green grass bending in the wind, purple coneflowers and yellow blanket flowers. Nothing built at all." },
+      science: { land: true, words: "A limestone bluff: three steps of pale cream limestone in flat layers, weathered and cracked, with tough grass and small cedar-like bushes that are really fungi on the ledges. Nothing built at all." },
+      meat: { land: true, words: "A sod bank with a fence row: three steps of dark earth held by thick grass roots; along the top of each step a row of weathered fence posts with a single rail, wild plum bushes in white flower along it. Nothing built at all." },
+      highground: { land: true, words: "A woodland edge: three steps of mossy earth under tall trees that are giant fungi with broad rounded caps of tan and rust, their pale stems rising the full height, brambles and ferns between them. Nothing built at all." },
+    },
+    wallsMore: {
+      plain: [
+        { land: true, words: "A creek bank: three steps of tan earth and rounded river stones, willows that are really fungi with long hanging pale threads, a thin creek running along the foot. Nothing built at all." },
+        { land: true, words: "A windbreak of shrubs: three steps of grassy earth topped by a thick row of dark green shrubs and small fungus trees planted in a line. Nothing built at all." },
+        { land: true, words: "A grassy bank with a storm cellar: three steps of thick green grass; low in the bottom step, one slanting double door of weathered planks set into the bank. The rest is grass and earth." },
+      ],
+      science: [
+        { land: true, words: "A washed-out bank of red clay: three steps of rust-red and ochre clay in layers, cut by small gullies, with clumps of grass on the ledges. Nothing built at all." },
+        { land: true, words: "A hillside of tall bluestem grass: three steps of tall grass in blue-green, copper and gold, a few pale boulders showing through. Nothing built at all." },
+        { land: true, words: "A bank of sunflowers: three steps of earth each topped by a thick row of tall sunflowers with big yellow heads. Nothing built at all." },
+      ],
+      meat: [
+        { land: true, words: "A pasture bank: three steps of short grazed green grass with a worn cattle path slanting across them and a few pale stones. Nothing built at all." },
+        { land: true, words: "A hedge of osage trees: three steps of earth under a thick tangled hedge of thorny trees that are really fungi, with round green fruits fallen in the grass. Nothing built at all." },
+        { land: true, words: "A hay bank: three steps of cut hay meadow, golden, with round bales of hay lying on the ledges. Nothing built at all." },
+      ],
+      highground: [
+        { land: true, words: "A high butte: three steps of banded tan and cream rock, sheer and weathered, with a cap of green grass and a few twisted bushes on top. Nothing built at all." },
+        { land: true, words: "A wooded hill: three steps of earth under a dense grove of tall fungus trees with caps of rust, gold and tan like an autumn wood, fallen caps in the grass. Nothing built at all." },
+        { land: true, words: "A hillside of wildflowers: three steps of grass thick with purple, yellow, white and orange wildflowers, a lone fungus tree on the top step. Nothing built at all." },
+      ],
     },
     roofProps2: [
-      { id: 'hives', width: 0.55, on: ['plain', 'science'], look: 'three white box hives on a low stand, the hives of small tame bees kept for their wax' },
-      { id: 'conveyor', width: 0.75, on: ['meat', 'highground'], look: 'a slanting grain conveyor on wheels with a small hopper' },
-      { id: 'bell', width: 0.3, on: ['plain'], look: 'a dinner bell of brass on a wooden post with a rope' },
-      { id: 'barrels', width: 0.55, on: ['plain', 'meat'], look: 'three rain barrels in a row under a bent gutter pipe' },
-      { id: 'sacks', width: 0.55, on: ['meat'], look: 'a pile of grain sacks half under a tarpaulin' },
-      { id: 'mast', width: 0.35, on: ['science'], look: 'a weather mast with spinning wind cups, a vane and a small dish' },
-      { id: 'gourds', width: 0.5, on: ['plain', 'meat'], look: 'a heap of big orange gourds' },
-      { id: 'crib', width: 0.6, on: ['meat', 'highground', 'plain'], look: 'a corn crib: a narrow cage of laths full of yellow cobs, under a little red roof' },
+      // Open country (Collins): mostly the land's own.
+      { id: 'oak', width: 0.8, on: ALL, look: 'a big spreading tree that is really a giant fungus: a thick gnarled pale stem and a wide rounded cap of rust and tan' },
+      { id: 'clock', width: 0.6, on: ALL, look: 'a tree that is a giant dandelion clock: a tall green stem and a round white seed head' },
+      { id: 'boulders', width: 0.6, on: ALL, look: 'three big pale limestone boulders with a tuft of grass between them' },
+      { id: 'bush', width: 0.55, on: ALL, look: 'a round wild plum bush in white flower' },
+      { id: 'pond', width: 0.75, on: ALL, look: 'a small round stock pond with reeds and a muddy edge' },
+      { id: 'log', width: 0.7, on: ALL, look: 'a fallen log of a fungus tree, weathered grey, with small mushrooms on it' },
+      { id: 'cairn', width: 0.4, on: ALL, look: 'a cairn: a tall pile of flat pale stones' },
+      { id: 'bale', width: 0.5, on: ALL, look: 'a round bale of golden hay lying on its side' },
     ],
     streetProps2: [
-      { id: 'pickup', width: 0.85, look: 'a parked pick-up truck shaped like a beetle, faded blue, with sacks in the back' },
-      { id: 'fuelpump', width: 0.3, look: 'a fuel pump of the 1950s with a round glass top, red and white' },
-      { id: 'mailbox', width: 0.22, look: 'a tin letter box on a leaning wooden post' },
-      { id: 'stand', width: 0.7, look: 'a roadside produce stand with a striped awning, baskets of gourds and jars of honey' },
-      { id: 'plough', width: 0.55, look: 'a rusty plough left by the road with tall grass growing through it' },
-      { id: 'churns', width: 0.45, look: 'three silver milk churns on a low wooden platform' },
+      { id: 'gate', width: 0.7, look: 'a field gate of five bars between two stone posts, standing half open' },
+      { id: 'stile', width: 0.45, look: 'a wooden stile: two steps over a low stretch of dry-stone wall' },
+      { id: 'tufts', width: 0.45, look: 'a clump of tall wild grass tufts with a few white and yellow flowers' },
+      { id: 'bramble', width: 0.55, look: 'a low bramble bush with dark berries' },
+      { id: 'rocks', width: 0.45, look: 'three mossy stones at the side of a track' },
+      { id: 'stump', width: 0.4, look: 'the stump of a fungus tree with a ring of small mushrooms round it' },
     ],
   },
   {
@@ -636,8 +674,10 @@ export const BIOMES = [
     // The first one had nineteen thin rows of bright green: at game size a fine stripe that flickers, and a green that drowns the board.
     roof: 'A field of a young crop seen from straight above: eight wide straight parallel rows of low leafy plants, a muted dusty sage green, with strips of pale straw-coloured earth between the rows as wide as the rows themselves, running from one edge of the picture to the other. Muted colours, matte, soft: nothing bright and nothing dark.',
     roofs: [
-      'A field of stubble after the harvest, seen from straight above: straight parallel rows of short pale golden stalks with scattered loose straw and pale earth showing between them, running from one edge of the picture to the other.',
-      'A hay meadow seen from straight above: short soft grass of a muted green, even, sprinkled with tiny white and yellow flowers and patches of clover, with no paths and no bare earth.',
+      "Long wild grass seen from straight above: tall soft grass of muted green and straw gold, flattened in swirls by the wind, full of small white, yellow and pale blue wildflowers. No paths and no bare earth.",
+      "A hay meadow seen from straight above: short soft grass of a muted green, even, sprinkled with tiny white and yellow flowers and patches of clover, with no paths and no bare earth.",
+      "A sheep pasture seen from straight above: short cropped grass of a muted green with darker tussocks, and one narrow worn path of pale bare earth winding across it from one edge of the picture to the other.",
+      "A copse seen from straight above: the round caps of a small grove of fungus trees, tan, cream and pale ochre, touching and overlapping, with glimpses of mossy green ground between them. Muted colours.",
     ],
     walls: {
       plain: 'It is where the farm people live, in homes dug into the bank. Ground storey: a dry-stone wall laid like honeycomb, with round front doors of planks set into it, each with a little porch, a round window with shutters, a bench, boots, a bicycle, a letter box. Upper storeys: more of the stone bank, with field shelters shaped like beehives built into it, small round windows lit amber, stove pipes poking out of the earth with a wisp of smoke, a satellite dish, a drain pipe, washing on a line.',
@@ -645,31 +685,55 @@ export const BIOMES = [
       meat: 'It is where food is stored: root cellars and granaries in the bank. Ground storey: a rammed-earth wall in bands of ochre and cream, with wide round cellar doors of planks standing half open on shelves of jars, sacks and barrels; crates of roots; milk churns. Upper storeys: rows of small round vent holes with louvres, racks of yellow cobs and herbs hung to dry under the coping, storage jars in niches, a hoist.',
       highground: 'It is the great house of the estate, built against the highest terrace. Ground storey: an arcade of wide round arches of pale dressed stone with one big double door, lanterns, a climbing plant. Upper storeys: walls of whitewashed rammed earth with bands of honeycomb stonework, round-arched windows with green shutters, a long balcony, a bell, a clock showing only glyphs, an emblem of a plain gold hexagon.',
     },
+    // Four of the five faces of every kind of district are LAND (Collins: "all farms ... fine for 20% but not the majority").
     walls2: {
-      plain: 'It is a row of field workers\' cottages, and the bank is pale whitewashed rammed earth over a foot of grey stone. Ground storey: five small round doors painted different faded colours, red, ochre, blue, green and white, each with one step and one small round window beside it; a row of rain butts; a hand pump. Upper storeys: a smooth whitewashed bank with long hanging racks of drying gourds and onions running its whole width, a few deep round windows, swallow-like nests of paper under the coping, a television aerial.',
-      science: 'It is a pumping and irrigation station, and the bank is pale grey concrete cast in honeycomb panels, stained by water. Ground storey: three big round pipe mouths side by side with water running from them into a stone channel, a steel control cabinet with lamps, valve wheels. Upper storeys: a slanting row of fat blue-grey pipes climbs the bank from bottom left to top right; level gauges marked with plain ticks; a row of solar panels fixed flat to the bank; a camera on a pole.',
-      meat: 'It is a wine and cheese cellar, and the bank is dark brown earth faced with big rounded river boulders. Ground storey: two very large round barrel-ends of pale wood set into the bank as doors, bound with iron hoops, with a row of small barrels and a press beside them. Upper storeys: long open shelves cut into the bank run the whole width of each storey, stacked with round yellow cheeses and rows of dusty bottles; bunches of purple fruit hung to dry; a lantern.',
-      highground: 'It is the great tithe barn of the district, and the bank is faced in golden-yellow dressed stone with buttresses. Ground storey: one enormous round wagon doorway in the middle, tall as the storey, with doors of dark planks braced in a honeycomb of pale battens, a loaded hay cart standing in it. Upper storeys: a row of heavy sloping buttresses, six across, with a narrow slit between each pair; a row of round owl holes under the coping; an emblem of a plain gold hexagon; a weather cock that is a beetle.',
+      plain: { land: true, words: "A grassy bank of a hillside: three steps of turf, each held up by a low dry-stone wall laid like honeycomb, half grown over with grass, moss and small wildflowers; tufts of long grass hang over the edge of each step. One small round burrow door of weathered planks low in the bottom step, and nothing else built." },
+      science: { land: true, words: "A rocky outcrop in a hillside: three steps of pale grey rock, cracked and layered, with lichen, tough grass and small ferns in the cracks, and a thin trickle of water running down one side into a pool at the foot. Nothing built at all." },
+      meat: { land: true, words: "A hedge-topped earth bank of the fields: three steps of red-brown earth held by roots, each step topped with a dense hedge of dark green shrubs and brambles with small white flowers, roots hanging out of the earth face. Nothing built at all." },
+      highground: { land: true, words: "A wooded slope: three steps of dark earth and roots under trees that are giant pale fungi with wide tan caps, their thick stems rising from the bank, fallen caps and moss on the ledges, ferns. Nothing built at all." },
+    },
+    wallsMore: {
+      plain: [
+        { land: true, words: "An old dry-stone terrace wall with grass over it: three courses of big weathered stones laid like honeycomb, so overgrown that grass, clover and wild thyme cover most of them, with a few stones showing through. Nothing built at all." },
+        { land: true, words: "A steep meadow bank: three steps of long green and gold grass bending in the wind, poppy-red and white wildflowers, a narrow sheep path climbing across it. Nothing built at all." },
+        { land: true, words: "A bank of pale chalk and flint: three steps of white chalk with dark flints in it, crumbling at the edges, with short grass and small blue flowers on each ledge. One small field shelter shaped like a beehive of dry stone sits on the middle ledge." },
+      ],
+      science: [
+        { land: true, words: "A bank with a spring: three steps of mossy dark stone, green with moss and liverwort, water seeping out between the stones and dripping from ledge to ledge into a stone basin at the foot, reeds in it. Nothing built at all." },
+        { land: true, words: "A sandy bank of a river terrace: three steps of pale ochre sand and gravel in layers, small round holes of burrows in it, tufts of dune grass on top of each step. Nothing built at all." },
+        { land: true, words: "A bank of tumbled boulders: three steps of large rounded grey and ochre boulders heaped together, with grass, heather and small bushes growing between them. Nothing built at all." },
+      ],
+      meat: [
+        { land: true, words: "A bank of an orchard: three steps of grassy earth, each ledge planted with a row of small twisted fruit trees that are really fungi, hung with small orange fruits, fallen fruit in the grass. Nothing built at all." },
+        { land: true, words: "A turf bank with a root cellar: three steps of thick green turf; low in the bottom step, one small round cellar door of planks set in a ring of stones, a basket beside it. The rest is grass and earth." },
+        { land: true, words: "A bank of brambles and wild roses: three steps of earth almost hidden under a tangle of brambles heavy with dark berries, wild roses and long grass. Nothing built at all." },
+      ],
+      highground: [
+        { land: true, words: "A high rocky ridge: three steps of dark grey crags, weathered and cracked, with heather, gorse in yellow flower and small twisted pines that are really fungi clinging to the ledges. Nothing built at all." },
+        { land: true, words: "A hillside of standing stones: three steps of turf, with two tall rough grey standing stones on the middle ledge carved with rows of abstract glyphs, lichen on them, long grass round their feet. No crosses, no symbols other than abstract glyphs." },
+        { land: true, words: "A wooded bank of tall fungus trees seen from the side: three steps of mossy earth, thick pale stems rising the full height, their caps making a canopy at the top, dappled light, ferns and fallen caps. Nothing built at all." },
+      ],
     },
     roofProps: [
-      { id: 'haystack', width: 0.7, on: ['plain', 'meat', 'highground'], look: 'a tall round haystack shaped like a beehive, golden, with a little thatched cap' },
-      { id: 'stooks', width: 0.6, on: ['plain', 'meat'], look: 'three stooks of cut corn: sheaves stood on end leaning together' },
+      { id: 'haystack', width: 0.7, on: ['meat'], look: 'a tall round haystack shaped like a beehive, golden, with a little thatched cap' },
+      { id: 'stooks', width: 0.6, on: ['plain'], look: 'three stooks of cut corn: sheaves stood on end leaning together' },
       { id: 'fungustree', width: 0.7, on: ALL, look: 'a fruit tree that is really a giant fungus: a thick pale stem and a wide tan cap hung with small orange fruits' },
-      { id: 'kite', width: 0.4, on: ['plain', 'meat'], look: 'a bird-scaring kite on a tall bending pole: a paper kite shaped like a hawk moth with big eye spots' },
-      { id: 'well', width: 0.5, on: ['plain', 'highground'], look: 'a round stone well with a windlass, a bucket and a little roof of paper shingles' },
+      { id: 'kite', width: 0.4, on: ['plain'], look: 'a bird-scaring kite on a tall bending pole: a paper kite shaped like a hawk moth with big eye spots' },
+      { id: 'well', width: 0.5, on: ['highground'], look: 'a round stone well with a windlass, a bucket and a little roof of paper shingles' },
       { id: 'shelter', width: 0.65, on: ALL, look: 'a field shelter of dry stone shaped like a beehive, with a round doorway' },
-      { id: 'waterwheel', width: 0.65, on: ['science', 'meat', 'highground'], look: 'an irrigation wheel of wood with clay pots tied to its rim, on a stone stand' },
-      { id: 'skeps', width: 0.55, on: ['plain', 'science'], look: 'three straw skeps on a bench: the dome-shaped hives of small tame bees, kept for their wax' },
+      { id: 'waterwheel', width: 0.65, on: ['science'], look: 'an irrigation wheel of wood with clay pots tied to its rim, on a stone stand' },
+      { id: 'skeps', width: 0.55, on: ['science'], look: 'three straw skeps on a bench: the dome-shaped hives of small tame bees, kept for their wax' },
     ],
     roofProps2: [
-      { id: 'pump', width: 0.55, on: ['science', 'plain'], look: 'a small solar pump: a dark blue solar panel on a post over a pump and a coil of hose' },
-      { id: 'tunnel', width: 0.8, on: ['science', 'meat', 'plain'], look: 'a short plastic crop tunnel: clear sheeting over hoops, with rows of seedlings inside' },
-      { id: 'mast', width: 0.5, on: ['science', 'highground'], look: 'a telephone mast disguised as a giant dandelion clock, with grey antennas hidden in its white head' },
-      { id: 'tractor', width: 0.8, on: ['plain', 'meat'], look: 'a small tractor shaped like a beetle, faded orange, with big rear wheels' },
-      { id: 'dandelion', width: 0.6, on: ALL, look: 'a tree that is a giant dandelion in flower: a thick green stem and a big yellow head' },
-      { id: 'mushrooms', width: 0.6, on: ['meat', 'science'], look: 'a raised bed of dark compost growing rows of pale mushrooms' },
-      { id: 'aphids', width: 0.6, on: ['plain', 'highground'], look: 'a small pen of woven hurdles holding four fat green aphids, with a pail' },
-      { id: 'cistern', width: 0.55, on: ALL, look: 'a round stone cistern of water with a wooden lid and a tap' },
+      // Open country (Collins: "it's all barns and farms, this is bad"): what stands on the land is mostly the land's own.
+      { id: 'oak', width: 0.8, on: ALL, look: 'a big spreading tree that is really a giant fungus: a thick gnarled pale stem and a wide rounded cap of tan and cream, with moss at its foot' },
+      { id: 'clock', width: 0.6, on: ALL, look: 'a tree that is a giant dandelion clock: a tall green stem and a round white seed head' },
+      { id: 'boulders', width: 0.6, on: ALL, look: 'three big rounded grey boulders with lichen and a tuft of grass between them' },
+      { id: 'bush', width: 0.55, on: ALL, look: 'a round dense bush of dark green leaves with small white flowers' },
+      { id: 'pond', width: 0.75, on: ALL, look: 'a small round pond with reeds and lily pads, edged with pale stones' },
+      { id: 'log', width: 0.7, on: ALL, look: 'a fallen log of a fungus tree, mossy, with small mushrooms growing on it' },
+      { id: 'cairn', width: 0.4, on: ALL, look: 'a cairn: a tall pile of flat grey stones' },
+      { id: 'bale', width: 0.5, on: ALL, look: 'a round bale of golden hay lying on its side' },
     ],
     streetProps: [
       { id: 'lamp', width: 0.3, look: 'a lantern hanging from a bent wooden post, with a small solar panel on top' },
@@ -683,11 +747,11 @@ export const BIOMES = [
     ],
     streetProps2: [
       { id: 'gate', width: 0.7, look: 'a field gate of five bars between two stone posts, standing half open' },
-      { id: 'churns', width: 0.45, look: 'three silver milk churns on a low stone stand' },
-      { id: 'barrow', width: 0.45, look: 'a wooden wheelbarrow full of orange roots' },
-      { id: 'pickup', width: 0.85, look: 'a parked pick-up truck shaped like a beetle, muddy cream, with crates in the back' },
-      { id: 'handpump', width: 0.3, look: 'a cast-iron hand pump on a stone slab, with a bucket' },
-      { id: 'postbox', width: 0.22, look: 'a letter box on a post, made of an old tin painted red' },
+      { id: 'stile', width: 0.45, look: 'a wooden stile: two steps over a low stretch of dry-stone wall' },
+      { id: 'tufts', width: 0.45, look: 'a clump of tall wild grass tufts with a few white and yellow flowers' },
+      { id: 'bramble', width: 0.55, look: 'a low bramble bush with dark berries' },
+      { id: 'rocks', width: 0.45, look: 'three mossy stones at the side of a track' },
+      { id: 'stump', width: 0.4, look: 'the stump of a fungus tree with a ring of small mushrooms round it' },
     ],
   },
   {
@@ -784,9 +848,12 @@ export const roofSets = (b) => Object.fromEntries(KINDS.map((kind) => [kind, [
   ...(b.roofProps2 ?? []).filter((p) => p.on.includes(kind)).map((p) => p.id),
 ]]));
 
+/** Every face a kind of district has, in order: the first, the second (walls2), then the rest (wallsMore). */
+export const wallsOf = (b, kind) => [b.walls[kind], b.walls2?.[kind], ...(b.wallsMore?.[kind] ?? [])].filter(Boolean);
+
 /** How many of each piece a set is meant to have, as the game is told (the first one counts). */
 export const variantsOf = (b) => ({
-  walls: Object.fromEntries(KINDS.map((kind) => [kind, 1 + (b.walls2?.[kind] ? 1 : 0)])),
+  walls: Object.fromEntries(KINDS.map((kind) => [kind, wallsOf(b, kind).length])),
   roof: 1 + (b.roofs?.length ?? 0),
   street: 1 + (b.streets?.length ?? 0),
   plaza: 1,

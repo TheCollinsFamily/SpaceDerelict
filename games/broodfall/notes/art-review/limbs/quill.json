@@ -1,13 +1,13 @@
 {
  "family": "quill",
  "frames": 60,
- "atlasKB": 481,
+ "atlasKB": 486,
  "failed": 0,
  "checks": [
   {
    "name": "where it stands is marked",
    "ok": true,
-   "value": "0.4, 0.75, 0.77"
+   "value": "0.41, 0.76, 0.64"
   },
   {
    "name": "idle: loop closes",
@@ -57,12 +57,12 @@
   {
    "name": "it stands in its cell",
    "ok": true,
-   "value": "0.3% of it lies in front of its cell"
+   "value": "2.5% of it lies in front of its cell"
   },
   {
    "name": "from behind, where it stands is marked",
    "ok": true,
-   "value": "0.55, 0.75, 0.84"
+   "value": "0.55, 0.77, 0.74"
   },
   {
    "name": "from behind, idle: loop closes",
@@ -107,7 +107,7 @@
   {
    "name": "from behind, it stands in its cell",
    "ok": true,
-   "value": "0.2% of it lies in front of its cell"
+   "value": "0.6% of it lies in front of its cell"
   },
   {
    "name": "from behind: it has a view",
@@ -117,7 +117,7 @@
   {
    "name": "atlas is under 900 KB",
    "ok": true,
-   "value": "481 KB"
+   "value": "486 KB"
   }
  ]
 }

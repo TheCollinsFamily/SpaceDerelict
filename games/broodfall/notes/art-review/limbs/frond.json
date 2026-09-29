@@ -1,13 +1,13 @@
 {
  "family": "frond",
  "frames": 30,
- "atlasKB": 540,
+ "atlasKB": 543,
  "failed": 0,
  "checks": [
   {
    "name": "where it stands is marked",
    "ok": true,
-   "value": "0.5, 0.77, 0.89"
+   "value": "0.52, 0.86, 0.76"
   },
   {
    "name": "idle: loop closes",
@@ -57,12 +57,12 @@
   {
    "name": "it stands in its cell",
    "ok": true,
-   "value": "2.1% of it lies in front of its cell"
+   "value": "0.3% of it lies in front of its cell"
   },
   {
    "name": "atlas is under 900 KB",
    "ok": true,
-   "value": "540 KB"
+   "value": "543 KB"
   }
  ]
 }

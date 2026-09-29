@@ -1,13 +1,13 @@
 {
  "family": "ember",
  "frames": 60,
- "atlasKB": 479,
+ "atlasKB": 478,
  "failed": 0,
  "checks": [
   {
    "name": "where it stands is marked",
    "ok": true,
-   "value": "0.49, 0.76, 0.83"
+   "value": "0.5, 0.73, 0.68"
   },
   {
    "name": "idle: loop closes",
@@ -52,12 +52,12 @@
   {
    "name": "it stands in its cell",
    "ok": true,
-   "value": "0.4% of it lies in front of its cell"
+   "value": "5.7% of it lies in front of its cell"
   },
   {
    "name": "from behind, where it stands is marked",
    "ok": true,
-   "value": "0.51, 0.77, 0.89"
+   "value": "0.51, 0.74, 0.77"
   },
   {
    "name": "from behind, idle: loop closes",
@@ -102,7 +102,7 @@
   {
    "name": "from behind, it stands in its cell",
    "ok": true,
-   "value": "0.1% of it lies in front of its cell"
+   "value": "3.1% of it lies in front of its cell"
   },
   {
    "name": "from behind: it has a view",
@@ -112,7 +112,7 @@
   {
    "name": "atlas is under 900 KB",
    "ok": true,
-   "value": "479 KB"
+   "value": "478 KB"
   }
  ]
 }

@@ -1,13 +1,13 @@
 {
  "family": "reliquary",
  "frames": 16,
- "atlasKB": 194,
+ "atlasKB": 193,
  "failed": 0,
  "checks": [
   {
    "name": "where it stands is marked",
    "ok": true,
-   "value": "0.5, 0.75, 0.89"
+   "value": "0.49, 0.73, 0.82"
   },
   {
    "name": "idle: loop closes",
@@ -42,12 +42,12 @@
   {
    "name": "it stands in its cell",
    "ok": true,
-   "value": "0.0% of it lies in front of its cell"
+   "value": "1.6% of it lies in front of its cell"
   },
   {
    "name": "atlas is under 900 KB",
    "ok": true,
-   "value": "194 KB"
+   "value": "193 KB"
   }
  ]
 }

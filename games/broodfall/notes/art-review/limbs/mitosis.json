@@ -1,13 +1,13 @@
 {
  "family": "mitosis",
  "frames": 16,
- "atlasKB": 127,
+ "atlasKB": 134,
  "failed": 0,
  "checks": [
   {
    "name": "where it stands is marked",
    "ok": true,
-   "value": "0.5, 0.76, 0.87"
+   "value": "0.52, 0.77, 0.71"
   },
   {
    "name": "idle: loop closes",
@@ -42,12 +42,12 @@
   {
    "name": "it stands in its cell",
    "ok": true,
-   "value": "0.4% of it lies in front of its cell"
+   "value": "1.5% of it lies in front of its cell"
   },
   {
    "name": "atlas is under 900 KB",
    "ok": true,
-   "value": "127 KB"
+   "value": "134 KB"
   }
  ]
 }

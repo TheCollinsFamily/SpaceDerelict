@@ -1,13 +1,13 @@
 {
  "family": "prism",
  "frames": 30,
- "atlasKB": 205,
+ "atlasKB": 209,
  "failed": 0,
  "checks": [
   {
    "name": "where it stands is marked",
    "ok": true,
-   "value": "0.5, 0.76, 0.88"
+   "value": "0.5, 0.84, 0.77"
   },
   {
    "name": "idle: loop closes",
@@ -57,12 +57,12 @@
   {
    "name": "it stands in its cell",
    "ok": true,
-   "value": "5.4% of it lies in front of its cell"
+   "value": "1.0% of it lies in front of its cell"
   },
   {
    "name": "atlas is under 900 KB",
    "ok": true,
-   "value": "205 KB"
+   "value": "209 KB"
   }
  ]
 }

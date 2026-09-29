@@ -7,7 +7,7 @@
   {
    "name": "where it stands is marked",
    "ok": true,
-   "value": "0.5, 0.73, 0.89"
+   "value": "0.5, 0.72, 0.82"
   },
   {
    "name": "idle: loop closes",
@@ -42,7 +42,7 @@
   {
    "name": "it stands in its cell",
    "ok": true,
-   "value": "0.6% of it lies in front of its cell"
+   "value": "2.0% of it lies in front of its cell"
   },
   {
    "name": "atlas is under 900 KB",

@@ -1,13 +1,13 @@
 {
  "family": "ward",
  "frames": 16,
- "atlasKB": 203,
+ "atlasKB": 206,
  "failed": 0,
  "checks": [
   {
    "name": "where it stands is marked",
    "ok": true,
-   "value": "0.5, 0.69, 0.9"
+   "value": "0.5, 0.74, 0.9"
   },
   {
    "name": "idle: loop closes",
@@ -42,12 +42,12 @@
   {
    "name": "it stands in its cell",
    "ok": true,
-   "value": "0.6% of it lies in front of its cell"
+   "value": "0.0% of it lies in front of its cell"
   },
   {
    "name": "atlas is under 900 KB",
    "ok": true,
-   "value": "203 KB"
+   "value": "206 KB"
   }
  ]
 }

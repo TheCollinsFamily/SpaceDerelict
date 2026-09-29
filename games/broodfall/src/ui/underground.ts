@@ -329,7 +329,7 @@ export class UndergroundScreen {
           ].filter(Boolean);
           if (sides.length) inner += `<span class="share ${sides.join(' ')}"></span>`;
           // A Seeding Gland's launch tube: what it fires goes up through the street.
-          if (organ.organ === ('seeder' as OrganId) && row === 0) inner += '<span class="launch"></span>';
+          if (organ.organ === ('seeder' as OrganId) && row === 0) { inner += '<span class="launch"></span>'; cls += ' has-launch'; }
         }
         // Borders only where the organ ends, so each shape reads as one body.
         const same = (n: number) => organ.cells.includes(n);

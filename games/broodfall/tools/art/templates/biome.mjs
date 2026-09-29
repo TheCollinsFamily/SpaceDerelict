@@ -27,7 +27,7 @@ import { makeStill, pool } from '../rfab.mjs';
 import { blank, readImage, writeJpg } from '../lib/img.mjs';
 import { A, B, LEVEL_H, TILE_H, TILE_W, WALL_SPAN } from '../lib/iso.mjs';
 import { ART, REVIEW, SRC, putEntry } from '../lib/manifest.mjs';
-import { BIOMES, KINDS, NO_SYMBOLS, SPECIES, SPECIES_THINGS, biome, pictureName, roofSets, spriteName, variantsOf } from '../biomes.mjs';
+import { BIOMES, KINDS, NO_SYMBOLS, SPECIES, SPECIES_THINGS, biome, pictureName, roofSets, spriteName, variantsOf, wallsOf } from '../biomes.mjs';
 import { creepTiles, cutProps, dripTiles, edgeTiles, floorTiles, over8, packSprites, wallTiles } from './terrain.mjs';
 
 const TERRAIN = path.join(SRC, 'terrain');
@@ -39,6 +39,20 @@ const HEAVY = 880 * 1024;
 const FLAT =
   'Seen from exactly straight above, as a flat texture that fills the whole picture edge to edge with no border. ' +
   `Even flat light, no cast shadows, no objects standing on it, no perspective. ${NO_SYMBOLS}`;
+
+/**
+ * The face of a bank of LAND (open country): three steps as high as three storeys, so that it
+ * is cut into levels as a wall is, and nothing built on it but what its words say. The
+ * reference picture gives the flat view and the height of a step, and nothing else: it is a
+ * row of doors, and a face of land that took after it would be a row of doors in a bank.
+ */
+const landFace = (b, words) =>
+  'A flat elevation, in full colour and realistic detail, seen exactly from the front with no perspective, filling ' +
+  'the whole picture edge to edge with no sky, no horizon and no border: the face of a bank of land, exactly three ' +
+  'steps high, the three steps exactly the same height, each with a narrow ledge along its top. It is NOT a ' +
+  `building and has no doors, windows or walls except what is said here. ${b.land ?? 'Open country of an insect people of the 21st century'}. ${words} ` +
+  'The reference picture shows only how high one step is and the flat frontal view: nothing that is built in it is ' +
+  `taken. Even flat light, no cast shadows. ${NO_SYMBOLS}`;
 
 /**
  * The front of one building. Open country says itself what its "building" is (front), what
@@ -96,8 +110,9 @@ function pieces(b) {
   floor('plaza', 0, b.plaza);
   [b.roof, ...(b.roofs ?? [])].forEach((words, v) => floor('roof', v, words));
   for (const kind of KINDS) {
-    [b.walls[kind], b.walls2?.[kind]].forEach((words, v) => {
-      if (words) out.push({ part: `wall-${kind}`, kind, v, group: 'walls', file: pictureName(`wall-${kind}`, v), words });
+    wallsOf(b, kind).forEach((w, v) => {
+      const land = typeof w === 'object' && w.land;
+      out.push({ part: `wall-${kind}`, kind, v, group: 'walls', file: pictureName(`wall-${kind}`, v), words: land ? w.words : w, land });
     });
   }
   for (const [where, sheets] of [['roof', [b.roofProps, b.roofProps2]], ['street', [ownStreet(b), b.streetProps2]]]) {
@@ -137,7 +152,7 @@ function borrowFirst(b) {
 }
 
 /** What a picture is drawn from: the whole of what the image model is told. */
-const wordsFor = (b, p) => (p.group === 'floors' ? `${p.words} ${FLAT}` : p.group === 'walls' ? facade(b, p.words, p.v) : propSheet(b, p.where, p.items));
+const wordsFor = (b, p) => (p.group === 'floors' ? `${p.words} ${FLAT}` : p.group === 'walls' ? (p.land ? landFace(b, p.words) : facade(b, p.words, p.v)) : propSheet(b, p.where, p.items));
 
 /** Every picture of a set with the words it is drawn from, to read them before paying for them. */
 export const wordsOf = (id) => pieces(biome(id)).map((p) => ({ file: p.file, words: wordsFor(biome(id), p) }));
@@ -233,7 +248,7 @@ export function bakeBiome(id) {
 
   const checks = [
     ['every floor', floors.length === 16 * (meant.roof + meant.street + meant.plaza), `${floors.length} of ${16 * (meant.roof + meant.street + meant.plaza)} tiles: ${variants.roof} of ${meant.roof} roofs, ${variants.street} of ${meant.street} streets, ${variants.plaza} of ${meant.plaza} squares`],
-    ['two buildings for each kind of district', walls.length === wallFaces * sumWalls(meant), `${walls.length} of ${wallFaces * sumWalls(meant)} faces`],
+    ['every face of every kind of district', walls.length === wallFaces * sumWalls(meant), `${walls.length} of ${wallFaces * sumWalls(meant)} faces`],
     ['every sheet of roof props is there and cut out', roofSheets.length === all.filter((p) => p.part === 'props-roof').length && cutOut(roofSheets), `${roofSheets.length} sheets, ${count(roofSheets)} props`],
     ['every sheet of street props is there and cut out', streetSheets.length === all.filter((p) => p.part === 'props-street').length && cutOut(streetSheets), `${streetSheets.length} sheets, ${count(streetSheets)} props`],
     ['a name of a prop is used once among the later sheets', twice.length === 0, twice.length ? `used twice: ${twice.join(', ')}` : `${later.length} names`],

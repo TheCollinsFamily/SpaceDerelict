@@ -29,10 +29,10 @@ const K = 1.9;
 const UNIT_PX = 3.6;
 /**
  * What a roof limb stands on (its skirt of roots), as a share of the width of the ground it
- * takes. The same number as FILL in tools/art/lib/foot.mjs: the solid skirt lies inside the
+ * takes. The same number as FILL in tools/art/lib/foot.mjs (measured without the root tips, Sep 29): the solid skirt lies inside the
  * cell and the thin tips of its roots reach a little over the edge.
  */
-const LIMB_FILL = 0.75;
+const LIMB_FILL = 0.64;
 /** A limb of two cells: how many cells across it is drawn, and how far behind the middle of its ground it stands. */
 const LONG_SIZE = 1.35;
 const LONG_BACK = 0.25;

@@ -1,13 +1,13 @@
 {
  "family": "spitter",
  "frames": 60,
- "atlasKB": 294,
+ "atlasKB": 293,
  "failed": 0,
  "checks": [
   {
    "name": "where it stands is marked",
    "ok": true,
-   "value": "0.49, 0.78, 0.88"
+   "value": "0.51, 0.77, 0.85"
   },
   {
    "name": "idle: loop closes",
@@ -52,12 +52,12 @@
   {
    "name": "it stands in its cell",
    "ok": true,
-   "value": "0.2% of it lies in front of its cell"
+   "value": "0.5% of it lies in front of its cell"
   },
   {
    "name": "from behind, where it stands is marked",
    "ok": true,
-   "value": "0.5, 0.77, 0.88"
+   "value": "0.49, 0.75, 0.87"
   },
   {
    "name": "from behind, idle: loop closes",
@@ -107,7 +107,7 @@
   {
    "name": "from behind, it stands in its cell",
    "ok": true,
-   "value": "2.1% of it lies in front of its cell"
+   "value": "4.8% of it lies in front of its cell"
   },
   {
    "name": "from behind: it has a view",
@@ -117,7 +117,7 @@
   {
    "name": "atlas is under 900 KB",
    "ok": true,
-   "value": "294 KB"
+   "value": "293 KB"
   }
  ]
 }
