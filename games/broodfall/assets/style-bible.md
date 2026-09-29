@@ -1,4 +1,4 @@
-# Broodfall style bible — v3 (Sep 29 2026)
+# Broodfall style bible — v4 (Sep 29 2026)
 
 The visual language of the game, and the prompt blocks every generated asset shares.
 Concept pictures are in `notes/concepts/2026-09-29/`; the script is
@@ -50,6 +50,20 @@ Concept pictures are in `notes/concepts/2026-09-29/`; the script is
     abstract, that is your issue." The spec is `assets/unit-spec.md`: all 26 kinds in the game.
 14. **Also needed on the ship:** "the game play map on the ship (a holographic projection of
    the planet with zones) and some exteriors of the ship."
+15. **The units in Orthodox dress are liked.** Of the phalanx sheet, the army sheet and the
+    science sheet: "a lot of these are great."
+16. **A 21st-century civilisation.** "Remember this is a 21st century civilisation on the edge of
+    AI; if they have melee weapons they are closer to power blades and stuff, and many would
+    likely have short range guns (keep in mind this will make animations make a lot more sense
+    when they attack towers on the side of the trail, and we already have the programming for
+    it for our projectile units; these ones just have a range that means in terms of gameplay
+    they are functionally melee)."
+17. **The science caste is less Orthodox.** "The science caste would be distinctively less
+    orthodox in tone, but I think they came out great."
+18. **Buildings merge Orthodox INTO their own architecture.** Of `city-orthodox-blocks.png` and
+    `board-orthodox.png`: "the one thing that was a total bust was the buildings: too many blue
+    domes for one, too human looking. I expected you to merge the style with their distinct
+    architecture [`r4-units-rts-on-board.png`] and more tech, remember again 21st century civ."
 
 ## NO REAL RELIGIOUS SYMBOL, EVER (a rule from Claude, Sep 29 2026; Collins can overrule it)
 
@@ -65,26 +79,39 @@ hexagon (a honeycomb cell), and domes end in a plain gold ball.
 - The image model adds crosses BY ITSELF whenever it is asked for Orthodox dress. Every
   picture is checked for them, zoomed in, before it is kept. Telling it WHERE the crosses
   are ("on the five helmets") removes them; "everywhere" does not.
+- They come back on every redraw: as helmet badges, and as a plus sign on a medic's pack.
+  Check again after every edit, not only after the first draw.
 
 ## Four looks, kept apart on purpose
 
 | Where | Look | Reference pictures |
 |---|---|---|
-| The board: city, limbs, landing site | Realistic, detailed, overcast daylight. A clean, ordered, beautiful Eastern Orthodox city; your body wet and red on it. | `board-orthodox.png`, `city-orthodox-blocks.png`, `limbs.png`; creep and limbs as in `board-paper-city.png` |
-| The board: units | A little cartoonish, like late-1990s strategy game units: dressed little people, chunky, big heads and tools, caste colour as clothing | `units-1-first-waves.png` to `units-6-royal.png` (all 26 kinds) |
+| The board: city, limbs, landing site | Realistic, detailed, overcast daylight. The insects' own paper-and-honeycomb city, with Orthodox domes and mosaic grown into it and 21st-century technology bolted on; your body wet and red on it. | `board-hive-a.png`, `board-hive-b.png`, `city-hive-blocks.png`, `city-hive-block-close.png`, `limbs.png` |
+| The board: units | A little cartoonish, like late-1990s strategy game units: dressed little people with guns and power blades, chunky, big heads and tools, caste colour as clothing | `units-v2-1-first-waves.png` to `units-v2-6-royal.png` (all 26 kinds) |
 | Films and news clippings | 1950s colour horror B-movie; realistic insect people in 1950s clothes | `r2-film-still.png`, `r2-keyart-poster.png`, `r2-castes-human.png`, `r2-faction-leaders.png`, `poster.png` |
 | The ship | Lifelike hard science fiction: black, white, bare, exact. The one drawn thing aboard is the AI. | `r3-ship-operations-black.png`, `r3-ship-operations-white.png`, `r4-hero-bunk.png`, `r4-yoke-in-room.png` |
 
 ## The board
 
-- **The city is Eastern Orthodox in style** (rule 12): white-washed walls, round arches, gold
-  and deep blue onion domes, bands of painted tile, amber windows. Clean, ordered, beautiful.
-  It is what makes your organism the only monster on the board.
-- **Every block has a wide flat roof terrace** ringed by a parapet, domes only at the corners,
-  because limbs stand on the roof. Three heights. Four kinds: residential, research quarter,
-  provision district, temple heights (`city-orthodox-blocks.png`).
-- The earlier insect-made city (wasp paper, hexagonal cells) is superseded for buildings; its
-  creep, limbs and landing site stand (rule 2).
+- **The city is three things at once** (rule 18):
+  1. **Their own architecture first:** pale wasp paper, wax and resin; walls of honeycomb
+     cells; ribbed organic arches; round cell doorways. Never a human building.
+  2. **Orthodox grown into it:** roofs that swell into onion domes of layered paper like
+     hanging nests, a few gilded; arcades of round arches; bands of gold and coloured mosaic
+     pressed into the wax; bell towers like nest spires. Pale cream, honey amber and gold.
+     Blue only as small accents in the mosaic: NO blue domes.
+  3. **The 21st century bolted on:** solar panels, satellite dishes, radio masts,
+     air-conditioning units, cables between buildings, street lamps, traffic lights, screens
+     and signs showing abstract glyphs, small parked cars shaped like beetles.
+- **Every block has a wide flat roof terrace** ringed by a parapet, with domes and masts kept
+  to the corners and edges, because limbs stand on the roof. Three heights. Four kinds:
+  residential, research quarter, provision district, temple heights (`city-hive-blocks.png`).
+- **Two amounts of Orthodox were drawn:** as accents (`board-hive-a.png`) and generous
+  (`board-hive-b.png`). In the generous one the street is so busy that units are hard to
+  pick out. `city-hive-block-close.png` is one block being taken: creep running down the
+  honeycomb, over the mosaic and an air-conditioning unit.
+- **REJECTED** (rule 18, "a total bust"): `city-orthodox-blocks.png` and `board-orthodox.png`,
+  the white human-looking city with blue domes. Kept in the folder only as what not to do.
 - **The body:** salmon-pink wet muscle, dark chitin, ivory bone. Creep is dark maroon,
   matte and veined: thick on roofs, a thin film on streets.
 - **Light and dark, darkest first:** unclaimed city under smoke; creep; insects; limbs;
@@ -129,27 +156,42 @@ monster.
 - **Every kind exists twice:** a cartoon sprite for the map and a realistic body for films.
   Same design, same markings, two renderings.
 
-### Map units (rules 3, 12 and 13)
+### Map units (rules 3, 12, 13, 15, 16 and 17)
 
 **The spec is `assets/unit-spec.md`:** one entry for each of the 26 kinds in
-`content/data.ts`, with what it does, what is drawn, the insect it borrows from, its size on
-the map, and every picture it needs beyond walking. It is generated from
-`tools/art/units.mjs` by `node tools/art/unit-spec.mjs`, which fails if the list and the game
-ever disagree.
+`content/data.ts`, with what it does, what is drawn, its weapon, what its attack looks
+like, the insect it borrows from, its size on the map, and every picture it needs beyond
+walking and attacking. It is generated from `tools/art/units.mjs` by
+`node tools/art/unit-spec.mjs`, which fails if the list and the game ever disagree.
 
 | Sheet | Units |
 |---|---|
-| `units-1-first-waves.png` | Responder, skitterlings, militia, soldier, splitter |
-| `units-2-army.png` | Elite, flier, drummer, stalker; the flier netted |
-| `units-3-siege.png` | Sapper, bomber, mortar beetle, siege cannon, shadewing; the cannon deployed |
-| `units-4-last.png` | Phalanx, carapace lord, tender, ghost sapper, tunneler; the carapace stripped; the tunneler burrowed |
-| `units-5-science.png` | Researcher, thief, infiltrator, sedation battery; the researcher carrying a limb; the battery deployed |
-| `units-6-royal.png` | The queen, consort, veil matron |
+| `units-v2-1-first-waves.png` | Responder, skitterlings, militia, soldier, splitter |
+| `units-v2-2-army.png` | Elite, flier, drummer, stalker; the flier netted |
+| `units-v2-3-siege.png` | Sapper, bomber, mortar beetle, siege cannon, shadewing; the cannon deployed |
+| `units-v2-4-last.png` | Phalanx, carapace lord, tender, ghost sapper, tunneler; the carapace stripped; the tunneler burrowed |
+| `units-v2-5-science.png` | Researcher, thief, infiltrator, sedation battery; the researcher carrying a limb; the battery deployed |
+| `units-v2-6-royal.png` | The queen, consort, veil matron |
 
-How the job shows in the drawing: the drummer is a bell-ringer with a yoke of bronze bells;
-the bomber swings a smoking censer that is the bomb; the carapace lord's shell is a gilded
-onion dome; the phalanx carries a screen of painted panels whose saints are insects; the
-splitter is a porter with two hatchlings in a pannier.
+The sheets without `v2` in the name are the same units before the 21st-century kit
+(spears, plain axes, candle lanterns).
+
+How the job shows in the drawing: the drummer is a bell-ringer with a yoke of bronze bells
+and loudspeakers; the bomber swings a smoking censer that is the bomb, wired, with a
+blinking light; the carapace lord's shell is a gilded onion dome with a stub gun under the
+rim; the phalanx carries a screen of painted panels whose saints are insects; the elite's
+axe has a glowing edge fed from a power pack; the splitter is a porter with two hatchlings
+in a pannier.
+
+**War and royal castes dress Orthodox; the science caste does not** (rule 17): lab coats,
+lanyards, goggles, tablets, dart pistols, hooded sweatshirts. No dome helmets, no robes.
+
+**What attacking means in the game today** (checked in `src/sim/sim.ts`): an ordinary war
+body attacks from 32 px, a little over one cell, and only what stands in the street in its
+way, or the core. It walks past limbs up on the blocks. Only sappers, mortar beetles, siege
+cannons, bombers and the science caste hurt limbs on blocks. So a short gun is the same
+rule with a different picture, but soldiers shooting limbs beside the street as they pass
+would be a change to the game (OPEN below).
 
 #### Earlier tries (before the Orthodox dress)
 
@@ -268,15 +310,20 @@ a nerd, and it explains why she looks like nothing else aboard.
 
 ## OPEN — Collins's calls
 
-1. **The science and royal castes** are drawn in Orthodox dress too. Rule 12 said "at least the
-   warrior caste".
-2. **Did he install the projection himself** (proposal above).
-3. **"He makes, never buys"** as the rule for his things (proposal above).
-4. **Are limbs cartoonish too?** Rule 2 likes the realistic limbs; rule 3 makes units
+1. **Should ordinary soldiers shoot limbs beside the street as they pass?** Today they do not
+   (see "What attacking means in the game today"). Rule 16 reads as if they do. It is a change
+   to the game: every lane-side limb would take fire, so it has to be measured against the
+   placement guardrail before it is kept.
+2. **How much Orthodox on the buildings:** accents (`board-hive-a.png`) or generous
+   (`board-hive-b.png`).
+3. **The royal caste** is drawn in Orthodox dress. Rule 12 said "at least the warrior caste".
+4. **Did he install the projection himself** (proposal above).
+5. **"He makes, never buys"** as the rule for his things (proposal above).
+6. **Are limbs cartoonish too?** Rule 2 likes the realistic limbs; rule 3 makes units
    cartoonish. Cartoon units beside realistic limbs has not been seen on one screen yet.
-5. **The HUD.** It is khaki paper and stencil type today. It is the Empire's software, so
+7. **The HUD.** It is khaki paper and stencil type today. It is the Empire's software, so
    it could follow the ship (black, white, exact, the gear) instead.
-6. **War caste colour:** safety orange rather than orange-red, so war markings never read
+8. **War caste colour:** safety orange rather than orange-red, so war markings never read
    as your flesh. It is also the WAR meat counter in the HUD.
 
 ## Prompt blocks (shared by every asset; from `tools/art/concepts.mjs`)

@@ -35,13 +35,22 @@ lines.push('abstract." And, on contrast with the organism: "both forces look too
 lines.push('working for the architecture of insects and their dress style (at least the warrior caste):');
 lines.push('think eastern orthodox."');
 lines.push('');
+lines.push('And: "this is a 21st century civilisation on the edge of AI; if they have melee weapons they are');
+lines.push('closer to power blades and stuff, and many would likely have short range guns … these ones just');
+lines.push('have a range that means in terms of gameplay they are functionally melee"; "the science caste');
+lines.push('would be distinctively less orthodox in tone".');
+lines.push('');
 lines.push('## Rules for every unit');
 lines.push('');
 lines.push('- **Charming, not frightening.** Round heads, big amber eyes, small mandibles, no bare claws or');
 lines.push('  spikes. They are dressed little people. The monster on this board is you.');
 lines.push('- **A little cartoonish,** like late-1990s strategy game units: chunky, big heads and tools,');
 lines.push('  bold shapes, caste colour in large patches. Realistic versions are for films only.');
-lines.push('- **Dress is Eastern Orthodox:** kaftans, gold braid, pointed dome helmets, bells, censers, veils.');
+lines.push('- **A 21st-century civilisation on the edge of AI.** Short guns, power blades with glowing');
+lines.push('  edges, radios, headsets, goggles, electric lamps. Nobody carries a spear, a plain axe or a');
+lines.push('  candle lantern.');
+lines.push('- **War and royal castes dress Eastern Orthodox:** kaftans, gold braid, pointed dome helmets,');
+lines.push('  bells, censers, veils. **The science caste does not:** lab coats, badges, goggles, tablets.');
 lines.push('- **The dome is their shape:** dome helmets, domed crowns, a domed shell, as on their roofs.');
 lines.push('- **NO REAL RELIGIOUS SYMBOL, EVER.** No crosses, no stars, no crescents. Their one emblem is a');
 lines.push('  plain gold hexagon (a honeycomb cell); domes end in a plain gold ball. This is a game about');
@@ -51,14 +60,29 @@ lines.push('- **Caste colour is clothing,** never the body: war orange, science 
 lines.push('- **Machines have crew.** A cannon or a shield wall always shows a small dressed insect.');
 lines.push('- **Drawn by code, not in the sprite:** cloak shimmer, burning, slow, poison, health arcs,');
 lines.push('  aura rings, the sedation line.');
-lines.push('- Every unit walks in 8 directions: 5 drawn, 3 mirrored.');
+lines.push('- Every unit walks and attacks in 8 directions: 5 drawn, 3 mirrored.');
+lines.push('');
+lines.push('## What attacking means in the game today');
+lines.push('');
+lines.push('Checked in `src/sim/sim.ts` on Sep 29 2026:');
+lines.push('');
+lines.push('- An ordinary war body attacks from 32 px, a little over one cell. A short gun at that range is');
+lines.push('  the same rule with a different picture: drawing it needs no change to the sim.');
+lines.push('- It attacks only what stands IN THE STREET in its way (a spine wall, a broodling) and the');
+lines.push('  core. It walks past limbs up on the blocks.');
+lines.push('- Limbs on blocks are hurt only by sappers (who climb), mortar beetles (85 px), siege cannons');
+lines.push('  (150 px), bombers, and the science caste.');
+lines.push('- **OPEN, Collins:** should ordinary soldiers also shoot limbs beside the street as they pass?');
+lines.push('  That is a change to the game, not to the art. Every lane-side limb would take fire, so it');
+lines.push('  has to be measured against the placement guardrail before it is kept.');
 lines.push('');
 lines.push(`${UNITS.length} units: ${UNITS.filter((u) => u.caste === 'war').length} war, ${UNITS.filter((u) => u.caste === 'science').length} science, ${UNITS.filter((u) => u.caste === 'royal').length} royal.`);
 lines.push('');
 for (const s of SHEETS) {
   lines.push(`## ${s.title}`);
   lines.push('');
-  lines.push(`Concept sheet: \`notes/concepts/2026-09-29/${s.slug}.png\``);
+  lines.push(`Concept sheet: \`notes/concepts/2026-09-29/${s.slug.replace('units-', 'units-v2-')}.png\``);
+  lines.push(`(before the 21st-century kit: \`notes/concepts/2026-09-29/${s.slug}.png\`)`);
   lines.push('');
   for (const k of s.kinds) {
     const u = UNITS.find((x) => x.kind === k);
@@ -71,9 +95,11 @@ for (const s of SHEETS) {
     lines.push(`| What it does | ${u.job} |`);
     lines.push(`| Kind of body | ${u.body} |`);
     lines.push(`| Looks like | ${u.look[0].toUpperCase()}${u.look.slice(1)}. |`);
+    lines.push(`| Weapon | ${u.weapon} |`);
+    lines.push(`| Attack | ${u.attack} |`);
     lines.push(`| Borrowed from | ${u.basis} |`);
     lines.push(`| Size on the map | ${px(u.r)} px across at 96 px per cell (radius ${u.r} in the game today); ${u.hp} hp |`);
-    lines.push(`| Pictures beyond walking | ${u.states.map((x) => x[0].toUpperCase() + x.slice(1)).join('. ')}. |`);
+    lines.push(`| Pictures beyond walking and attacking |${u.states.map((x) => x[0].toUpperCase() + x.slice(1)).join('. ')}. |`);
     lines.push('');
   }
 }

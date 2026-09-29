@@ -582,6 +582,112 @@ Object.assign(JOBS, {
 // A fresh draw of the city sheet with the corrected emblem wording (the edit pass left a few crosses).
 JOBS['r7-city-orthodox-blocks'] = { ...JOBS['r5-city-orthodox-blocks'] };
 
+// Round eight (Collins, Sep 29 2026). Units: "a lot of these are great … but remember this is a
+// 21st century civilisation on the edge of AI; if they have melee weapons they are closer to power
+// blades and stuff, and many would likely have short range guns"; "the science caste would be
+// distinctively less orthodox in tone". Buildings: "a total bust … too many blue domes for one, too
+// human looking; I expected you to merge the style with their distinct architecture
+// [r4-units-rts-on-board.png] and more tech, remember again 21st century civ".
+// (The unit looks in units.mjs are now version 2, so the round-five prompts above no longer read
+// as they did when their pictures were made.)
+const CENTURY =
+  'This is a civilisation of the 21st century, on the edge of inventing artificial intelligence';
+for (const s of SHEETS) {
+  const figures = [
+    ...s.kinds.map((k) => { const u = unit(k); return `${u.name.toUpperCase()}: ${u.look}`; }),
+    ...(s.extra || []),
+  ];
+  const science = s.slug.includes('science')
+    ? 'This is the science caste, which is secular and modern and NOT religious in dress: no dome helmets, no ' +
+      'robes; lab coats, badges, goggles and tablets. '
+    : '';
+  JOBS[s.slug.replace('units-', 'units-v2-')] = { w: 1536, h: 1024, quality: 'medium', ref: `${s.slug}.png`,
+    prompt:
+      'Redraw the reference picture: the same figures in the same places, the same drawing style, the same ' +
+      'chunky proportions with big heads, the same plain grey background with a soft shadow under each figure, ' +
+      `and the same dress. Change their weapons and kit. ${CENTURY}: they carry short guns and power blades ` +
+      'with glowing edges, radios, headsets, goggles and electric lamps. Nobody carries a spear, a pike, a ' +
+      `plain axe, a sword or a candle lantern. They stay charming rather than frightening. ${science}${EMBLEM}. ` +
+      `The figures, in the same order as in the reference, left to right and top to bottom: ${figures.map((f, i) => `(${i + 1}) ${f}`).join('; ')}. ` +
+      'No text, no labels, no numbers.' };
+}
+// Fix passes on round eight: crosses came back on two helmets and a medic's pack, and the thief
+// (who never fights) was given a pistol. Each names WHERE the fault is.
+const KEEP = 'Redraw the reference picture exactly: the same figures in the same places, poses, weapons and style. Change only this: ';
+JOBS['fix-units-v2-2-army'] = { w: 1536, h: 1024, quality: 'medium', ref: 'units-v2-2-army.png',
+  prompt: `${KEEP}two helmets have a small gold cross-shaped badge on the brow, above the eyes: the horned ` +
+    'guardsman at the top left, and the winged trooper caught in the web at the bottom right. Replace each ' +
+    'badge with a small plain gold hexagon. There must be no crosses anywhere. No text, no labels.' };
+JOBS['fix-units-v2-4-last'] = { w: 1536, h: 1024, quality: 'medium', ref: 'units-v2-4-last.png',
+  prompt: `${KEEP}the nurse in the white veil at the top right carries a medical backpack with a glowing plus ` +
+    'sign on it. Replace the plus sign with a small plain glowing hexagon. There must be no crosses and no ' +
+    'plus signs anywhere. No text, no labels.' };
+JOBS['fix2-units-v2-4-last'] = { w: 1536, h: 1024, quality: 'medium', ref: 'fix-units-v2-4-last.png',
+  prompt: `${KEEP}on the backpack of the nurse in the white veil, at the top right, there is a small round ` +
+    'glowing white light with a plus sign inside it. Make it a plain round glowing white light with nothing ' +
+    'inside it: no plus sign, no cross, no symbol. No text, no labels.' };
+JOBS['fix-units-v2-5-science'] = { w: 1536, h: 1024, quality: 'medium', ref: 'units-v2-5-science.png',
+  prompt: `${KEEP}the small hunched figure in the dark hooded sweatshirt, second from the left in the top row, ` +
+    'holds a pistol. Remove the pistol: it clutches the strap of its duffel bag with both hands instead. It ' +
+    'carries no weapon at all. No text, no labels.' };
+
+const HIVE =
+  'the architecture of an insect civilisation, unmistakably THEIR OWN and not human: grown and built from pale ' +
+  'wasp paper, wax and resin, with walls of honeycomb cells, ribbed organic arches, round cell doorways and ' +
+  'layered paper shells, exactly like the buildings in the reference picture';
+const HIVE_ORTHODOX =
+  'Merged into it is an Eastern Orthodox sacred style: some roofs swell into onion domes made of layered wasp ' +
+  'paper, like hanging nests, a few of them gilded; arcades of round arches; bands of gold and coloured ' +
+  'mosaic pressed into the wax; bell towers like nest spires. The colours are pale cream paper, honey-amber ' +
+  `wax and gold. Blue appears only as small accents in the mosaic bands: there are NO blue domes. ${EMBLEM}`;
+const TECH_CITY =
+  `${CENTURY}, and the city shows it: solar panels, satellite dishes, radio masts, air-conditioning units, ` +
+  'cables strung between buildings, electric street lamps, glowing screens and signs that show only abstract ' +
+  'glyphs, traffic lights, and small parked cars shaped like beetles';
+const ARMY_V2 =
+  'small dressed insect people who are charming rather than frightening: a squad of soldiers in long orange ' +
+  'kaftans, dark armoured vests and pointed dome helmets carrying short carbines, a bell-ringer with a yoke ' +
+  'of bronze bells and loudspeakers, a large beetle whose abdomen is a modern artillery barrel with two small ' +
+  'crew walking beside it, and two winged troopers overhead with carbines and orange pennants';
+Object.assign(JOBS, {
+  'city-hive-blocks': { w: 1536, h: 1024, quality: 'medium', ref: 'r4-units-rts-on-board.png',
+    prompt:
+      `Architecture design sheet on a plain pale background. ${ISO} Four separate city blocks in ${HIVE}. ` +
+      `${HIVE_ORTHODOX}. ${TECH_CITY}. Each block is a chunky building with a wide FLAT roof terrace in the ` +
+      'middle, ringed by a low parapet, with any domes and masts kept to the corners and edges, so that ' +
+      'something large could stand on the terrace: (1) a residential block: stacked apartment cells with ' +
+      'balconies, washing lines and satellite dishes; (2) a research quarter: glass domes, a server hall with ' +
+      'rows of cooling fans, an antenna array; (3) a provision district: honey-pot silos, a loading dock and ' +
+      'delivery trucks shaped like beetles; (4) temple heights: a taller block with a nest-spire bell tower ' +
+      'and one gilded paper dome. Each block is shown at three heights side by side: one, two and three ' +
+      `storeys. ${STRAIGHT}` },
+  'board-hive-a': { w: 1536, h: 1024, quality: 'medium', ref: 'r4-units-rts-on-board.png',
+    prompt:
+      'Redraw the reference picture. Keep its right half exactly as it is: the dark red veined living skin on ' +
+      'the rooftops and the three rooted organisms of pink wet flesh, dark chitin and ivory bone. Keep the ' +
+      "city's own architecture of pale wasp paper and honeycomb cells, and make it a living modern city. " +
+      `${HIVE_ORTHODOX}, used here as ACCENTS on a city that is mostly paper and honeycomb. ${TECH_CITY}. ` +
+      `Replace the army in the street with ${ARMY_V2}. The city and its people look civilised; the organism ` +
+      `looks monstrous; the contrast between them is the point of the picture. ${ISO} No text, no interface.` },
+  'board-hive-b': { w: 1536, h: 1024, quality: 'medium', ref: 'r4-units-rts-on-board.png',
+    prompt:
+      'Redraw the reference picture. Keep its right half exactly as it is: the dark red veined living skin on ' +
+      'the rooftops and the three rooted organisms of pink wet flesh, dark chitin and ivory bone. Keep the ' +
+      "city's own architecture of pale wasp paper and honeycomb cells, and make it a rich, devout modern city. " +
+      `${HIVE_ORTHODOX}, used here GENEROUSLY: gilded paper domes on many roofs, mosaic bands on every wall. ` +
+      `${TECH_CITY}. Replace the army in the street with ${ARMY_V2}. The city and its people look civilised; ` +
+      `the organism looks monstrous; the contrast between them is the point of the picture. ${ISO} No text, no interface.` },
+  'city-hive-block-close': { w: 1536, h: 1024, quality: 'medium', ref: 'r4-units-rts-on-board.png',
+    prompt:
+      `${ISO} A close view of ONE city block, three storeys high, in ${HIVE}. ${HIVE_ORTHODOX}. ${TECH_CITY}. ` +
+      'The block has a wide flat roof terrace ringed by a low parapet. On the terrace stands one rooted ' +
+      'organism of glistening pink wet muscle, dark chitin and ivory bone, like the ones in the reference ' +
+      'picture, and a dark red veined living skin has spread across the roof and begun to run down the walls ' +
+      'over the honeycomb cells, the mosaic and an air-conditioning unit. Below, in the pale street, a few ' +
+      'small dressed insect people look up at it; one is filming it on a phone. Realistic, detailed, overcast ' +
+      'daylight. No text, no interface.' },
+});
+
 ready();
 fs.mkdirSync(OUT, { recursive: true });
 const want = process.argv.slice(2);

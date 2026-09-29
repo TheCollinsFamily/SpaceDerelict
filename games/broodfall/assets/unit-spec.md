@@ -8,13 +8,22 @@ abstract." And, on contrast with the organism: "both forces look too monstrous â
 working for the architecture of insects and their dress style (at least the warrior caste):
 think eastern orthodox."
 
+And: "this is a 21st century civilisation on the edge of AI; if they have melee weapons they are
+closer to power blades and stuff, and many would likely have short range guns â€¦ these ones just
+have a range that means in terms of gameplay they are functionally melee"; "the science caste
+would be distinctively less orthodox in tone".
+
 ## Rules for every unit
 
 - **Charming, not frightening.** Round heads, big amber eyes, small mandibles, no bare claws or
   spikes. They are dressed little people. The monster on this board is you.
 - **A little cartoonish,** like late-1990s strategy game units: chunky, big heads and tools,
   bold shapes, caste colour in large patches. Realistic versions are for films only.
-- **Dress is Eastern Orthodox:** kaftans, gold braid, pointed dome helmets, bells, censers, veils.
+- **A 21st-century civilisation on the edge of AI.** Short guns, power blades with glowing
+  edges, radios, headsets, goggles, electric lamps. Nobody carries a spear, a plain axe or a
+  candle lantern.
+- **War and royal castes dress Eastern Orthodox:** kaftans, gold braid, pointed dome helmets,
+  bells, censers, veils. **The science caste does not:** lab coats, badges, goggles, tablets.
 - **The dome is their shape:** dome helmets, domed crowns, a domed shell, as on their roofs.
 - **NO REAL RELIGIOUS SYMBOL, EVER.** No crosses, no stars, no crescents. Their one emblem is a
   plain gold hexagon (a honeycomb cell); domes end in a plain gold ball. This is a game about
@@ -24,13 +33,28 @@ think eastern orthodox."
 - **Machines have crew.** A cannon or a shield wall always shows a small dressed insect.
 - **Drawn by code, not in the sprite:** cloak shimmer, burning, slow, poison, health arcs,
   aura rings, the sedation line.
-- Every unit walks in 8 directions: 5 drawn, 3 mirrored.
+- Every unit walks and attacks in 8 directions: 5 drawn, 3 mirrored.
+
+## What attacking means in the game today
+
+Checked in `src/sim/sim.ts` on Sep 29 2026:
+
+- An ordinary war body attacks from 32 px, a little over one cell. A short gun at that range is
+  the same rule with a different picture: drawing it needs no change to the sim.
+- It attacks only what stands IN THE STREET in its way (a spine wall, a broodling) and the
+  core. It walks past limbs up on the blocks.
+- Limbs on blocks are hurt only by sappers (who climb), mortar beetles (85 px), siege cannons
+  (150 px), bombers, and the science caste.
+- **OPEN, Collins:** should ordinary soldiers also shoot limbs beside the street as they pass?
+  That is a change to the game, not to the art. Every lane-side limb would take fire, so it
+  has to be measured against the placement guardrail before it is kept.
 
 26 units: 19 war, 4 science, 3 royal.
 
 ## The first waves (tiers 0 to 2)
 
-Concept sheet: `notes/concepts/2026-09-29/units-1-first-waves.png`
+Concept sheet: `notes/concepts/2026-09-29/units-v2-1-first-waves.png`
+(before the 21st-century kit: `notes/concepts/2026-09-29/units-1-first-waves.png`)
 
 ### Responder (`responder`)
 
@@ -40,10 +64,12 @@ Concept sheet: `notes/concepts/2026-09-29/units-1-first-waves.png`
 | Appears | wave tier 0 |
 | What it does | The first on the scene. Weak, brave, and the whole of the first wave. |
 | Kind of body | human-like |
-| Looks like | A small upright parish watchman in a plain orange kaftan and a soft cap, carrying a lantern on a pole in one hand and a hand bell in another. |
+| Looks like | A small upright parish watchman in a plain orange high-visibility kaftan with reflective stripes and a soft cap with a radio headset, carrying an electric lantern on a pole in one hand and a small pistol in another. |
+| Weapon | Pistol |
+| Attack | Fires from one cell away. The muzzle flash and a short tracer are drawn by code. |
 | Borrowed from | worker ant |
 | Size on the map | 36 px across at 96 px per cell (radius 5 in the game today); 20 hp |
-| Pictures beyond walking | Chewing a limb. Dying. |
+| Pictures beyond walking and attacking |Dying. |
 
 ### Skitterling (`skitterling`)
 
@@ -53,10 +79,12 @@ Concept sheet: `notes/concepts/2026-09-29/units-1-first-waves.png`
 | Appears | wave tier 1 |
 | What it does | Fast swarm chaff. Also what a splitter bursts into. |
 | Kind of body | beast |
-| Looks like | A tiny round hatchling on six quick legs, bare, with one dab of orange paint on its back; always drawn as a pack. |
+| Looks like | A tiny round hatchling on six quick legs, bare, with one dab of orange paint on its back; always drawn as a pack of five. |
+| Weapon | None |
+| Attack | Bites. No weapon. |
 | Borrowed from | ant hatchling |
 | Size on the map | 24 px across at 96 px per cell (radius 3.5 in the game today); 12 hp |
-| Pictures beyond walking | Dying. |
+| Pictures beyond walking and attacking |Dying. |
 
 ### Militia (`militia`)
 
@@ -66,10 +94,12 @@ Concept sheet: `notes/concepts/2026-09-29/units-1-first-waves.png`
 | Appears | wave tier 1 |
 | What it does | The town levy. The bulk of the early waves. |
 | Kind of body | human-like |
-| Looks like | An upright townsman in his own plain clothes with an orange sash across the chest, a pointed dome helmet far too big for him, and a spear with a small orange pennant. |
+| Looks like | An upright townsman in his own plain clothes with an orange sash across the chest, a pointed dome helmet far too big for him, holding an old pump shotgun with a small orange pennant tied to the barrel. |
+| Weapon | Pump shotgun |
+| Attack | Fires from one cell away. The muzzle flash and a short tracer are drawn by code. |
 | Borrowed from | worker ant |
 | Size on the map | 44 px across at 96 px per cell (radius 6 in the game today); 45 hp |
-| Pictures beyond walking | Chewing a limb. Dying. Being promoted to soldier. |
+| Pictures beyond walking and attacking |Dying. Being promoted to soldier. |
 
 ### Soldier (`soldier`)
 
@@ -79,10 +109,12 @@ Concept sheet: `notes/concepts/2026-09-29/units-1-first-waves.png`
 | Appears | wave tier 2 |
 | What it does | The regular army. The bulk of the middle waves. |
 | Kind of body | human-like |
-| Looks like | An upright regular in a long orange kaftan with gold braid across the chest, a pointed dome helmet that fits, and a long-handled crescent axe. |
+| Looks like | An upright regular in a long orange kaftan with gold braid worn under a dark armoured vest, a pointed dome helmet that fits with a clear visor, holding a short carbine with a glowing power bayonet fixed under the barrel. |
+| Weapon | Carbine with a power bayonet |
+| Attack | Fires from one cell away. The muzzle flash and a short tracer are drawn by code. |
 | Borrowed from | soldier ant |
 | Size on the map | 60 px across at 96 px per cell (radius 8 in the game today); 90 hp |
-| Pictures beyond walking | Chewing a limb. Dying. Being promoted to elite. |
+| Pictures beyond walking and attacking |Dying. Being promoted to elite. |
 
 ### Splitter (`splitter`)
 
@@ -93,13 +125,16 @@ Concept sheet: `notes/concepts/2026-09-29/units-1-first-waves.png`
 | What it does | Shot dead, it bursts into two skitterlings. Swallowed whole by a maw, it does not. |
 | Kind of body | beast |
 | Looks like | A stout porter on four legs with a wicker pannier strapped to its back over an orange blanket, two hatchlings peeking out of the pannier. |
+| Weapon | None |
+| Attack | Bites. No weapon. |
 | Borrowed from | wolf spider carrying her young |
 | Size on the map | 68 px across at 96 px per cell (radius 9 in the game today); 75 hp |
-| Pictures beyond walking | Dying: the pannier breaks and two skitterlings run out. |
+| Pictures beyond walking and attacking |Dying: the pannier breaks and two skitterlings run out. |
 
 ## The army (tier 3)
 
-Concept sheet: `notes/concepts/2026-09-29/units-2-army.png`
+Concept sheet: `notes/concepts/2026-09-29/units-v2-2-army.png`
+(before the 21st-century kit: `notes/concepts/2026-09-29/units-2-army.png`)
 
 ### Elite (`elite`)
 
@@ -109,10 +144,12 @@ Concept sheet: `notes/concepts/2026-09-29/units-2-army.png`
 | Appears | wave tier 3 |
 | What it does | The guard. Hits hard, takes a lot of killing. |
 | Kind of body | human-like |
-| Looks like | A big upright guardsman with stag-beetle horns coming through a gilded dome helmet, a coat of small gold-edged plates, an orange cloak and a great two-handed axe. |
+| Looks like | A big upright guardsman with stag-beetle horns coming through a gilded dome helmet, a coat of small gold-edged armour plates, an orange cloak, and a great two-handed power axe whose blade edge glows hot orange-white, fed by a cable from a small power pack on his back. |
+| Weapon | Power axe |
+| Attack | Swings it at what is in front of it. The glowing arc of the edge is drawn by code. |
 | Borrowed from | stag beetle |
 | Size on the map | 80 px across at 96 px per cell (radius 11 in the game today); 200 hp |
-| Pictures beyond walking | Chewing a limb. Dying. |
+| Pictures beyond walking and attacking |Dying. |
 
 ### Flier (`flier`)
 
@@ -122,10 +159,12 @@ Concept sheet: `notes/concepts/2026-09-29/units-2-army.png`
 | Appears | wave tier 3 |
 | What it does | Flies straight over blocks and walls to the core. |
 | Kind of body | human-like |
-| Looks like | A winged lancer: a wasp with an upright torso in an orange tabard and a small dome helmet, carrying a lance with a long orange pennant, drawn in the air with its shadow on the ground below. |
+| Looks like | A winged trooper: a wasp with an upright torso in an orange tabard over a flight harness, a small dome helmet with goggles, carrying a short carbine, a whip antenna on its back flying a long orange pennant, drawn in the air with its shadow on the ground below. |
+| Weapon | Carbine |
+| Attack | Fires from one cell away. The muzzle flash and a short tracer are drawn by code. |
 | Borrowed from | wasp |
 | Size on the map | 44 px across at 96 px per cell (radius 6 in the game today); 55 hp |
-| Pictures beyond walking | Netted: on the ground, tangled in web, wings folded. Dying. |
+| Pictures beyond walking and attacking |Netted: on the ground, tangled in web, wings folded. Dying. |
 
 ### Drummer (`drummer`)
 
@@ -135,10 +174,12 @@ Concept sheet: `notes/concepts/2026-09-29/units-2-army.png`
 | Appears | wave tier 3 |
 | What it does | Everything near it marches faster. Kill it first. |
 | Kind of body | human-like |
-| Looks like | An upright cicada bell-ringer carrying a wooden yoke of three bronze bells across its shoulders, striking them with two hammers, in an orange kaftan. |
+| Looks like | An upright cicada bell-ringer carrying a wooden yoke of three bronze bells and two grey loudspeaker horns across its shoulders, striking the bells with two hammers, in an orange kaftan with a radio headset. |
+| Weapon | Hammers |
+| Attack | Strikes with a hammer. The rings of sound are drawn by code. |
 | Borrowed from | cicada |
 | Size on the map | 68 px across at 96 px per cell (radius 9 in the game today); 70 hp |
-| Pictures beyond walking | Ringing: the rings of sound are drawn by code. Dying. |
+| Pictures beyond walking and attacking |Dying. |
 
 ### Stalker (`stalker`)
 
@@ -148,14 +189,17 @@ Concept sheet: `notes/concepts/2026-09-29/units-2-army.png`
 | Appears | wave tier 3 |
 | What it does | Cloaked. Only limbs that can see it can shoot it. |
 | Kind of body | human-like |
-| Looks like | A stick-thin figure in a long dark hooded habit with an orange cord at the waist, carrying a curved knife. |
+| Looks like | A stick-thin figure in a long dark hooded habit with an orange cord at the waist, night-vision goggles glowing green under the hood, carrying a short power knife whose edge glows. |
+| Weapon | Power knife |
+| Attack | Swings it at what is in front of it. The glowing arc of the edge is drawn by code. |
 | Borrowed from | stick insect |
 | Size on the map | 60 px across at 96 px per cell (radius 8 in the game today); 85 hp |
-| Pictures beyond walking | Cloaked: a shimmer outline drawn by code. Revealed. Chewing a limb. Dying. |
+| Pictures beyond walking and attacking |Cloaked: a shimmer outline drawn by code. Revealed. Dying. |
 
 ## Siege and sappers (tier 4)
 
-Concept sheet: `notes/concepts/2026-09-29/units-3-siege.png`
+Concept sheet: `notes/concepts/2026-09-29/units-v2-3-siege.png`
+(before the 21st-century kit: `notes/concepts/2026-09-29/units-3-siege.png`)
 
 ### Sapper (`sapper`)
 
@@ -165,10 +209,12 @@ Concept sheet: `notes/concepts/2026-09-29/units-3-siege.png`
 | Appears | wave tier 4 |
 | What it does | Climbs your blocks and eats limbs directly. Every limb shoots a climbing sapper first. |
 | Kind of body | human-like |
-| Looks like | A steeplejack: a termite with big cutting jaws, a leather apron over an orange shirt, a tool belt, a coil of rope over one shoulder and a climbing hook in each upper hand. |
+| Looks like | A steeplejack: a termite with big cutting jaws, a leather apron over an orange shirt, a tool belt, a coil of rope over one shoulder, a climbing hook in one upper hand and a power cutter with a glowing cutting disc in another, welding goggles pushed up on its head. |
+| Weapon | Power cutter |
+| Attack | Cuts into the limb with the glowing disc. The sparks are drawn by code. |
 | Borrowed from | termite soldier |
 | Size on the map | 52 px across at 96 px per cell (radius 7 in the game today); 130 hp |
-| Pictures beyond walking | Climbing a wall, seen on the face of a block. Chewing a limb. Dying. |
+| Pictures beyond walking and attacking |Climbing a wall, seen on the face of a block. Dying. |
 
 ### Bomber (`bomber`)
 
@@ -178,10 +224,12 @@ Concept sheet: `notes/concepts/2026-09-29/units-3-siege.png`
 | Appears | wave tier 4 |
 | What it does | Runs at walls and organs and blows itself up. |
 | Kind of body | human-like |
-| Looks like | A small running censer-bearer swinging a smoking golden censer on three chains, which is the bomb and glows yellow from inside; goggles, an orange scarf. |
+| Looks like | A small running censer-bearer swinging a smoking golden censer on three chains, which is the bomb: it glows yellow from inside and has wires and a small blinking red light; goggles, an orange scarf. |
+| Weapon | The censer |
+| Attack | Detonates on contact. |
 | Borrowed from | exploding ant |
 | Size on the map | 44 px across at 96 px per cell (radius 6 in the game today); 60 hp |
-| Pictures beyond walking | Detonating. Dying without detonating. |
+| Pictures beyond walking and attacking |Dying without detonating. |
 
 ### Mortar beetle (`mortar`)
 
@@ -191,10 +239,12 @@ Concept sheet: `notes/concepts/2026-09-29/units-3-siege.png`
 | Appears | wave tier 4 |
 | What it does | Stops 85 px out and lobs shells at your limbs from standoff. |
 | Kind of body | machine |
-| Looks like | A squat beetle on six legs carrying a short fat bronze mortar shaped like an upturned bell on its back, an orange band around the mortar, one small insect crewman in a kaftan loading it. |
+| Looks like | A squat beetle on six legs carrying a short fat modern mortar tube on a base plate on its back, an orange band around the tube, one small insect crewman in a kaftan and ear defenders loading a finned shell. |
+| Weapon | Mortar |
+| Attack | Lobs a shell from 85 px. The mortar smokes and the crewman ducks. |
 | Borrowed from | dung beetle |
 | Size on the map | 68 px across at 96 px per cell (radius 9 in the game today); 95 hp |
-| Pictures beyond walking | Firing: the mortar smokes, the crewman ducks. Dying. |
+| Pictures beyond walking and attacking |Dying. |
 
 ### Siege cannon (`cannon`)
 
@@ -204,10 +254,12 @@ Concept sheet: `notes/concepts/2026-09-29/units-3-siege.png`
 | Appears | wave tier 4 |
 | What it does | Walks until something of yours is in reach, braces, and shells it until destroyed. |
 | Kind of body | machine |
-| Looks like | A bombardier beetle whose abdomen is an ornate cast-bronze cannon barrel with orange bands, with two small insect crew in kaftans walking beside it. |
+| Looks like | A bombardier beetle whose abdomen is a long modern artillery barrel with a muzzle brake and ornate orange bands, with two small insect crew in kaftans and ear defenders walking beside it, one carrying a tablet. |
+| Weapon | Artillery |
+| Attack | Shells from 150 px once deployed. |
 | Borrowed from | bombardier beetle |
 | Size on the map | 72 px across at 96 px per cell (radius 10 in the game today); 160 hp |
-| Pictures beyond walking | Deployed: legs braced wide, barrel raised, one crewman covering his ears. Firing. Packing up. Dying. |
+| Pictures beyond walking and attacking |Deployed: legs braced wide, barrel raised, one crewman covering his ears. Packing up. Dying. |
 
 ### Shadewing (`shadewing`)
 
@@ -217,14 +269,17 @@ Concept sheet: `notes/concepts/2026-09-29/units-3-siege.png`
 | Appears | wave tier 4 |
 | What it does | A cloaked flier. Needs a limb that reaches the air AND can see it. |
 | Kind of body | human-like |
-| Looks like | A moth with dusk-grey wings and a dark veil over its head, an orange thread along the hem of the veil, drawn in the air with its shadow below. |
+| Looks like | A moth with dusk-grey wings and a dark veil over its head, an orange thread along the hem of the veil, carrying a small silenced pistol, drawn in the air with its shadow below. |
+| Weapon | Silenced pistol |
+| Attack | Fires from one cell away. The muzzle flash and a short tracer are drawn by code. |
 | Borrowed from | moth |
 | Size on the map | 44 px across at 96 px per cell (radius 6 in the game today); 60 hp |
-| Pictures beyond walking | Cloaked: a shimmer outline drawn by code. Revealed. Netted on the ground. Dying. |
+| Pictures beyond walking and attacking |Cloaked: a shimmer outline drawn by code. Revealed. Netted on the ground. Dying. |
 
 ## Everything they have (tiers 5 and 6)
 
-Concept sheet: `notes/concepts/2026-09-29/units-4-last.png`
+Concept sheet: `notes/concepts/2026-09-29/units-v2-4-last.png`
+(before the 21st-century kit: `notes/concepts/2026-09-29/units-4-last.png`)
 
 ### Phalanx (`phalanx`)
 
@@ -234,10 +289,12 @@ Concept sheet: `notes/concepts/2026-09-29/units-4-last.png`
 | Appears | wave tier 5 |
 | What it does | The shield wall. No single hit does more than 12. Slow and enormous. |
 | Kind of body | machine |
-| Looks like | A huge flat pill bug carrying a wall of tall painted shield panels in gold, deep blue and orange, like a screen of icons, with one small insect driver in a kaftan peering over the top. |
+| Looks like | A huge flat pill bug carrying a wall of tall painted shield panels in gold, deep blue and orange, like a screen of icons whose saints are insects, and one small insect gunner in a dome helmet and radio headset aiming a rifle over the top. |
+| Weapon | Rifle over the top of the panels |
+| Attack | Fires from one cell away. The muzzle flash and a short tracer are drawn by code. |
 | Borrowed from | pill bug |
 | Size on the map | 96 px across at 96 px per cell (radius 13 in the game today); 750 hp |
-| Pictures beyond walking | Chewing a limb. Dying: the panels fall flat. |
+| Pictures beyond walking and attacking |Dying: the panels fall flat. |
 
 ### Carapace lord (`carapace`)
 
@@ -247,10 +304,12 @@ Concept sheet: `notes/concepts/2026-09-29/units-4-last.png`
 | Appears | wave tier 5 |
 | What it does | Blocks the first six hits outright. Big blows strip the shell; rapid fire wastes itself on it. |
 | Kind of body | machine |
-| Looks like | An ironclad beetle whose shell is a gilded onion dome in six segments, with an orange band around its base; a small head with big eyes peers out from under the rim. |
+| Looks like | An ironclad beetle whose shell is a gilded onion dome in six armour segments, with an orange band around its base and a small radio antenna on top; a small head with big eyes peers out from under the rim, with a stubby gun barrel beside it. |
+| Weapon | Stub gun under the rim |
+| Attack | Fires from one cell away. The muzzle flash and a short tracer are drawn by code. |
 | Borrowed from | ironclad beetle |
 | Size on the map | 72 px across at 96 px per cell (radius 10 in the game today); 160 hp |
-| Pictures beyond walking | Six pictures of the shell: six segments down to none, plain brown shell beneath. Dying. |
+| Pictures beyond walking and attacking |Six pictures of the shell: six segments down to none, plain brown shell beneath. Dying. |
 
 ### Tender (`tender`)
 
@@ -260,10 +319,12 @@ Concept sheet: `notes/concepts/2026-09-29/units-4-last.png`
 | Appears | wave tier 5 |
 | What it does | Heals the bodies around it in pulses. Kill it first. |
 | Kind of body | human-like |
-| Looks like | A sister of mercy in a pale habit and white veil with an orange cord at the waist, carrying a satchel of bandages and a small flask of oil. |
+| Looks like | A sister of mercy in a pale habit and white veil with an orange cord at the waist, a medic's backpack with a drip bag on a short pole, and a spray injector in one hand. |
+| Weapon | Spray injector |
+| Attack | Barely fights. Heals: the pulse is drawn by code. |
 | Borrowed from | nurse bee |
 | Size on the map | 52 px across at 96 px per cell (radius 7 in the game today); 80 hp |
-| Pictures beyond walking | Healing: the pulse is drawn by code. Dying. |
+| Pictures beyond walking and attacking |Dying. |
 
 ### Ghost sapper (`ghostsapper`)
 
@@ -273,10 +334,12 @@ Concept sheet: `notes/concepts/2026-09-29/units-4-last.png`
 | Appears | wave tier 5 |
 | What it does | A cloaked sapper: climbs your blocks and eats limbs unseen. |
 | Kind of body | human-like |
-| Looks like | The steeplejack again, in a dark hooded habit over the leather apron, climbing hooks wrapped in cloth to keep them quiet. |
+| Looks like | The steeplejack again, in a dark hooded habit over the leather apron, climbing hooks wrapped in cloth to keep them quiet, a small power cutter with a dim glowing disc. |
+| Weapon | Power cutter |
+| Attack | Cuts into the limb with the dim disc. |
 | Borrowed from | termite soldier |
 | Size on the map | 52 px across at 96 px per cell (radius 7 in the game today); 120 hp |
-| Pictures beyond walking | Cloaked. Revealed. Climbing a wall. Chewing a limb. Dying. |
+| Pictures beyond walking and attacking |Cloaked. Revealed. Climbing a wall. Dying. |
 
 ### Tunneler (`tunneler`)
 
@@ -286,14 +349,17 @@ Concept sheet: `notes/concepts/2026-09-29/units-4-last.png`
 | Appears | wave tier 6 |
 | What it does | Burrows under your outer line where nothing can hit it, and comes up behind it. |
 | Kind of body | beast |
-| Looks like | A cave digger: a mole cricket with two great digging claws, a lamp strapped to its head and a monk's hood pushed back, orange cord at the waist. |
+| Looks like | A cave digger: a mole cricket with two great digging claws tipped with steel drill teeth, an electric lamp strapped to its head and a monk's hood pushed back, orange cord at the waist. |
+| Weapon | Drill claws |
+| Attack | Tears with the drill claws. |
 | Borrowed from | mole cricket |
 | Size on the map | 60 px across at 96 px per cell (radius 8 in the game today); 110 hp |
-| Pictures beyond walking | Burrowed: only a travelling mound of broken street. Surfacing out of the mound. Chewing a limb. Dying. |
+| Pictures beyond walking and attacking |Burrowed: only a travelling mound of broken street. Surfacing out of the mound. Dying. |
 
 ## The science caste
 
-Concept sheet: `notes/concepts/2026-09-29/units-5-science.png`
+Concept sheet: `notes/concepts/2026-09-29/units-v2-5-science.png`
+(before the 21st-century kit: `notes/concepts/2026-09-29/units-5-science.png`)
 
 ### Researcher (`researcher`)
 
@@ -303,10 +369,12 @@ Concept sheet: `notes/concepts/2026-09-29/units-5-science.png`
 | Appears | visits |
 | What it does | Walks around your guns to your least defended limb, sedates it and carries it off. |
 | Kind of body | human-like |
-| Looks like | A tall thin upright scholar in a white lab coat with a teal scarf, an empty brass specimen cage on its back and a long syringe pole. |
+| Looks like | A tall thin upright scientist in a white lab coat with a teal lanyard and badge, safety goggles pushed up on its forehead, no helmet, an empty clear specimen container with steel clamps on its back, a tablet in one hand and a tranquilliser dart pistol in another. |
+| Weapon | Dart pistol |
+| Attack | Sedates a limb: the line to the limb is drawn by code. |
 | Borrowed from | mantis |
 | Size on the map | 44 px across at 96 px per cell (radius 6 in the game today); 34 hp |
-| Pictures beyond walking | Sedating a limb. Carrying a limb in the cage. Dying: the limb falls out and re-roots. |
+| Pictures beyond walking and attacking |Carrying a limb in the container. Dying: the limb falls out and re-roots. |
 
 ### Specimen thief (`thief`)
 
@@ -316,10 +384,12 @@ Concept sheet: `notes/concepts/2026-09-29/units-5-science.png`
 | Appears | visits |
 | What it does | Slips through the same gaps, steals 15 war meat and runs. |
 | Kind of body | human-like |
-| Looks like | A small hunched quick figure in a dark coat with a teal scarf, clutching an empty sack. |
+| Looks like | A small hunched quick figure in a dark hooded sweatshirt with a teal scarf and night-vision goggles, clutching an empty duffel bag with both hands, carrying no weapon. |
+| Weapon | None |
+| Attack | Steals meat; never fights. |
 | Borrowed from | silverfish |
 | Size on the map | 44 px across at 96 px per cell (radius 6 in the game today); 45 hp |
-| Pictures beyond walking | Running away with a full sack. Dying: the meat spills back. |
+| Pictures beyond walking and attacking |Running away with a full bag. Dying: the meat spills back. |
 
 ### Infiltrator (`infiltrator`)
 
@@ -329,10 +399,12 @@ Concept sheet: `notes/concepts/2026-09-29/units-5-science.png`
 | Appears | visits |
 | What it does | A cloaked researcher: limb theft you cannot see coming. |
 | Kind of body | human-like |
-| Looks like | The researcher in a long dark coat buttoned to the chin, only the teal lining showing at the collar, specimen cage under a cloth. |
+| Looks like | The scientist in a long dark raincoat buttoned to the chin over the lab coat, teal lining showing at the collar, thin dark goggles, the specimen container under a cloth. |
+| Weapon | Dart pistol |
+| Attack | Sedates a limb. |
 | Borrowed from | mantis |
 | Size on the map | 44 px across at 96 px per cell (radius 6 in the game today); 40 hp |
-| Pictures beyond walking | Cloaked. Revealed. Sedating a limb. Carrying a limb. Dying. |
+| Pictures beyond walking and attacking |Cloaked. Revealed. Carrying a limb. Dying. |
 
 ### Sedation battery (`dartgun`)
 
@@ -342,14 +414,17 @@ Concept sheet: `notes/concepts/2026-09-29/units-5-science.png`
 | Appears | visits |
 | What it does | Braces in reach of your weakest limb and stuns it with darts so researchers can walk in. Eight darts, then it goes home. |
 | Kind of body | machine |
-| Looks like | A pale beetle carrying a brass rack of eight glass dart tubes with teal fluid, teal markings on its shell, one insect operator in a lab coat walking beside it. |
+| Looks like | A pale beetle carrying a launcher rack of eight glass dart tubes with teal fluid, teal markings on its shell and a small sensor dish, one insect operator in a lab coat with a tablet walking beside it. |
+| Weapon | Dart launcher |
+| Attack | Fires a dart from 130 px once deployed. |
 | Borrowed from | pale ground beetle |
 | Size on the map | 68 px across at 96 px per cell (radius 9 in the game today); 90 hp |
-| Pictures beyond walking | Deployed: legs braced, rack tilted up. Firing a dart. Spent: tubes empty, walking home. Dying. |
+| Pictures beyond walking and attacking |Deployed: legs braced, rack tilted up. Spent: tubes empty, walking home. Dying. |
 
 ## The royal caste
 
-Concept sheet: `notes/concepts/2026-09-29/units-6-royal.png`
+Concept sheet: `notes/concepts/2026-09-29/units-v2-6-royal.png`
+(before the 21st-century kit: `notes/concepts/2026-09-29/units-6-royal.png`)
 
 ### The royal (`royal`)
 
@@ -359,10 +434,12 @@ Concept sheet: `notes/concepts/2026-09-29/units-6-royal.png`
 | Appears | royal event |
 | What it does | The jackpot and the hardest fight. War bodies near her hit harder and take less. |
 | Kind of body | human-like |
-| Looks like | The queen: three times the height of a soldier, an upright torso in a white and gold robe with a jewelled collar, a tall domed jewelled crown, and a huge swollen abdomen carried behind her like the train of a gown; regal and tired. |
+| Looks like | The queen: three times the height of a soldier, an upright torso in a white and gold robe with a jewelled collar, a tall domed jewelled crown, and a huge swollen abdomen carried behind her like the train of a gown, a small ornate gold pistol in her folded hands and a radio pack strapped to her abdomen; regal and tired. |
+| Weapon | Ornate gold pistol |
+| Attack | Fires from one cell away. The muzzle flash and a short tracer are drawn by code. |
 | Borrowed from | termite queen |
 | Size on the map | 148 px across at 96 px per cell (radius 20 in the game today); 1100 hp |
-| Pictures beyond walking | Chewing a limb. Caught in the trap cage. Grafted: marching for you, a red graft on her neck. Dying. |
+| Pictures beyond walking and attacking |Caught in the trap cage. Grafted: marching for you, a red graft on her neck. Dying. |
 
 ### Consort (`consort`)
 
@@ -372,10 +449,12 @@ Concept sheet: `notes/concepts/2026-09-29/units-6-royal.png`
 | Appears | royal event |
 | What it does | Promotes the nearest war body one rank every five seconds. |
 | Kind of body | human-like |
-| Looks like | An upright officer in a dark green dress uniform with gold epaulettes and a gold sash, half the height of the queen, holding a short gold baton. |
+| Looks like | An upright officer in a dark green dress uniform with gold epaulettes and a gold sash, half the height of the queen, goggles pushed up on his cap, holding a gold dress pistol. |
+| Weapon | Dress pistol |
+| Attack | Fires from one cell away. The muzzle flash and a short tracer are drawn by code. |
 | Borrowed from | drone ant |
 | Size on the map | 96 px across at 96 px per cell (radius 13 in the game today); 420 hp |
-| Pictures beyond walking | Promoting: raises the baton. Chewing a limb. Dying. |
+| Pictures beyond walking and attacking |Promoting: raises his free hand in salute. Dying. |
 
 ### Veil matron (`matron`)
 
@@ -386,7 +465,9 @@ Concept sheet: `notes/concepts/2026-09-29/units-6-royal.png`
 | What it does | Every war body near her is cloaked while she lives. She is visible: kill her first. |
 | Kind of body | human-like |
 | Looks like | A tall still figure under a long grey veil edged in gold that reaches the ground, hands folded, only her amber eyes showing. |
+| Weapon | None |
+| Attack | Strikes with her arms. |
 | Borrowed from | lacewing |
 | Size on the map | 96 px across at 96 px per cell (radius 13 in the game today); 380 hp |
-| Pictures beyond walking | Veiling: the ring is drawn by code. Dying: the veil drops. |
+| Pictures beyond walking and attacking |Veiling: the ring is drawn by code. Dying: the veil drops. |
 
