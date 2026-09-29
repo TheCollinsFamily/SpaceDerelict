@@ -23,7 +23,7 @@ import type {
 import { UPGRADES, UPGRADE_COST } from '../../content/upgrades';
 import {
   BRAIN_DRAW_MULT, CATAPULT_REACH, REVEAL_RANGE, DEPOSITS, FEATURES, FEATURE_FAVORED_LEVEL, FEATURE_LEVEL, METEOR_THEME,
-  BLADDER_TURNS, CYST_NODES, LINING_DPS, MIRE_SLOW, NODE_HP, NODE_RADIUS, NODE_TRAMPLE, NODE_REACH, ORGAN_BY_ID, ORGAN_DEFS, ORGAN_LEVEL_POTENCY, ORGAN_LEVEL_TEMPO,
+  BLADDER_TURNS, PLINTH_MAX_HEIGHT, PLINTH_TURNS, CYST_NODES, LINING_DPS, MIRE_SLOW, NODE_HP, NODE_RADIUS, NODE_TRAMPLE, NODE_REACH, ORGAN_BY_ID, ORGAN_DEFS, ORGAN_LEVEL_POTENCY, ORGAN_LEVEL_TEMPO,
   type OrganDef,
 } from '../../content/underground';
 import { createUnderground, neighbours4, type Underground } from './underground';
@@ -308,6 +308,12 @@ export class Sim {
   private coreStrainCache: { radius: number; slow: number; dps: number } | null = null;
   /** Turns each spore bladder has waited since it last grew. */
   private bladderTurns = new Map<number, number>();
+  /** Free plinths in stock (grown by scaffold glands; placed for nothing). */
+  plinths = 0;
+  /** How many plinths have been placed: what is drawn changes when this does. */
+  plinthsPlaced = 0;
+  /** Turns each scaffold gland has waited since it last grew. */
+  private scaffoldTurns = new Map<number, number>();
   private organCache: Map<OrganId | 'core', { level: number; pips: ModPip[]; draw: number; links: Array<OrganId | 'core'> }> | null = null;
   /** The body below: the underground cross-section organs grow into (between waves). */
   under: Underground;
@@ -861,9 +867,34 @@ export class Sim {
    * footprint that holds it), or null if it cannot be built there.
    */
   groundFor(cell: number, family?: TowerFamily, facing?: RootDir): number[] | null {
+    return this.placementFor(cell, family, facing)?.cells ?? null;
+  }
+
+  /**
+   * The ground a build would take and the way the limb would lie, or null. A limb LONGER
+   * than it is wide that is given no facing is tried every way round, the way it would
+   * face by itself first: it lies the first way that fits.
+   */
+  placementFor(cell: number, family?: TowerFamily, facing?: RootDir): { cells: number[]; facing?: RootDir } | null {
     if (cell < 0 || cell >= this.map.cells.length) return null;
-    if (!family || !towerSpec(family).span) return this.canBuildOn(cell, family) ? [cell] : null;
-    return this.footprintAt(cell, family, facing, (c) => this.canBuildOn(c, family));
+    const span = family ? towerSpec(family).span : undefined;
+    if (!family || !span) return this.canBuildOn(cell, family) ? { cells: [cell], facing } : null;
+    let ways: Array<RootDir | undefined> = [facing];
+    if (!facing && span[0] !== span[1]) {
+      let first: RootDir = towerSpec(family).directional ? this.facingTowardGate(this.cellCenter(cell)) : 'S';
+      // A wall in a street lies ACROSS the street if it can: across is what stops a column.
+      if (isPassable(this.map.cells[cell])) {
+        const next = this.flow.next[cell];
+        const runsAlongX = next >= 0 && Math.abs((next % this.cfg.gridW) - (cell % this.cfg.gridW)) > 0;
+        first = runsAlongX ? 'S' : 'E';
+      }
+      ways = [first, ...(['S', 'E', 'N', 'W'] as RootDir[]).filter((d) => d !== first)];
+    }
+    for (const way of ways) {
+      const cells = this.footprintAt(cell, family, way, (c) => this.canBuildOn(c, family));
+      if (cells) return { cells, facing: way };
+    }
+    return null;
   }
 
   /** May a limb stand on this one cell? */
@@ -1066,6 +1097,54 @@ export class Sim {
   nodesNextTurn(): number {
     return this.organs.filter((o) => o.organ === 'bladder' && this.bladderTurnsLeft(o) === 1)
       .reduce((n, o) => n + this.bladderRate(o).per, 0);
+  }
+
+  /** Turns until this scaffold gland next grows its plinth (1 = at the next wave clear). */
+  scaffoldTurnsLeft(o: Organ): number {
+    return Math.max(1, PLINTH_TURNS - (this.scaffoldTurns.get(o.id) ?? 0));
+  }
+
+  /** Plinths the scaffold glands will grow at the next wave clear. */
+  plinthsNextTurn(): number {
+    return this.organs.filter((o) => o.organ === 'scaffold' && this.scaffoldTurnsLeft(o) === 1).length;
+  }
+
+  /** Every scaffold gland counts a turn; one that has waited its turns grows a plinth. */
+  private growPlinths(): void {
+    let grown = 0;
+    for (const o of this.organs) {
+      if (o.organ !== 'scaffold') continue;
+      const t = (this.scaffoldTurns.get(o.id) ?? 0) + 1;
+      if (t >= PLINTH_TURNS) grown += 1;
+      this.scaffoldTurns.set(o.id, t >= PLINTH_TURNS ? 0 : t);
+    }
+    if (grown > 0) {
+      this.plinths += grown;
+      this.events.push({ kind: 'plinth-grown', count: grown });
+    }
+  }
+
+  /**
+   * What a plinth put at this cell would raise, or null if none can be put there.
+   * It raises ONE THING: the limb that stands on the cell, all of it, or the bare roof of
+   * the cell. Only roofs (a street is not raised), only ground the body holds, and nothing
+   * higher than PLINTH_MAX_HEIGHT.
+   */
+  plinthGround(cell: number): number[] | null {
+    if (cell < 0 || cell >= this.map.cells.length) return null;
+    const on = this.occupied.get(cell);
+    const limb = on && on.kind === 't' ? this.towers.find((t) => t.id === on.id) : undefined;
+    const cells = limb ? this.cellsOf(limb) : [cell];
+    for (const c of cells) {
+      if (this.map.cells[c] !== CellType.Block) return null;
+      if (!limb && !this.isCreeped(c)) return null;
+      if ((this.map.heights[c] || 1) + 1 > PLINTH_MAX_HEIGHT) return null;
+    }
+    return cells;
+  }
+
+  canPlacePlinth(cell: number): boolean {
+    return this.plinths > 0 && this.plinthGround(cell) !== null;
   }
 
   /** Every bladder grows its turn's nodes (wave clear), or its pacemaker nodes (wave start). */
@@ -1388,8 +1467,9 @@ export class Sim {
         const card = this.hand[cmd.cardIndex];
         if (!card) return { ok: false, err: 'no such card' };
         const spec = towerSpec(card.family);
-        const ground = this.groundFor(cmd.cell, card.family, cmd.facing);
-        if (!ground) return { ok: false, err: 'cell not buildable' };
+        const place = this.placementFor(cmd.cell, card.family, cmd.facing);
+        if (!place) return { ok: false, err: spec.span ? `it needs ${spec.span[0]} by ${spec.span[1]} cells of one flat roof your creep holds` : 'cell not buildable' };
+        const ground = place.cells;
         if (cmd.cannibalizeTowerId !== undefined) {
           // Legacy atomic path (autoplayer/tests): butcher-then-build in one command.
           const donor = this.towers.find((t) => t.id === cmd.cannibalizeTowerId);
@@ -1409,7 +1489,7 @@ export class Sim {
           this.stats.cannibalized += 1;
         }
         if (!card.free) this.pay(spec.cost);
-        this.addTower(card.family, ground[0], pips, cmd.facing);
+        this.addTower(card.family, ground[0], pips, place.facing ?? cmd.facing);
         this.hand.splice(cmd.cardIndex, 1);
         // A free card (a pair's second half) is not replaced; a paired card hands
         // you its free twin to place next.
@@ -1503,6 +1583,26 @@ export class Sim {
         this.plantNode(cmd.cell, strain);
         this.events.push({ kind: 'node-placed', cell: cmd.cell });
         this.stats.nodesPlaced += 1;
+        return { ok: true };
+      }
+      case 'place-plinth': {
+        if (this.plinths < 1) return { ok: false, err: 'no plinths in stock' };
+        const ground = this.plinthGround(cmd.cell);
+        if (!ground) {
+          const t = this.map.cells[cmd.cell];
+          if (t !== CellType.Block) return { ok: false, err: 'a plinth stands on a roof' };
+          if ((this.map.heights[cmd.cell] || 1) + 1 > PLINTH_MAX_HEIGHT) return { ok: false, err: 'it can be raised no higher' };
+          return { ok: false, err: 'your creep does not hold this roof' };
+        }
+        for (const c of ground) {
+          this.map.heights[c] = (this.map.heights[c] || 1) + 1;
+          this.map.plinths[c] += 1;
+        }
+        this.plinths -= 1;
+        this.plinthsPlaced += 1;
+        // What stands higher reaches further: what the enemy reads of the guns changes with it.
+        this.refreshRouting();
+        this.events.push({ kind: 'plinth-placed', cell: cmd.cell, height: this.map.heights[ground[0]] });
         return { ok: true };
       }
       case 'spread-node': {
@@ -2030,8 +2130,9 @@ export class Sim {
         this.meat.war += bonus;
         this.events.push({ kind: 'wave-cleared', wave: this.waveNumber, bonus });
         for (const n of this.creepSources) if (n.kind === 'node') n.hp = n.maxHp ?? NODE_HP;
-        // A new turn: every spore bladder grows its nodes.
+        // A new turn: every spore bladder grows its nodes, every scaffold gland counts toward its plinth.
         this.growCreepNodes('turn');
+        this.growPlinths();
         // Brood pips: living tissue regrows between waves — 50% max hp per pip.
         for (const t of this.towers) {
           const heal = this.statsOf(t).waveHeal;

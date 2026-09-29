@@ -149,7 +149,7 @@ export function viewOf(h: Heading): { view: 'S' | 'SW' | 'W' | 'NW' | 'N'; mirro
 
 /** The four ways a limb can face in the world. */
 export type Facing = 'N' | 'E' | 'S' | 'W';
-const FACING_STEP: Record<Facing, [number, number]> = { N: [0, -1], E: [1, 0], S: [0, 1], W: [-1, 0] };
+export const FACING_STEP: Record<Facing, [number, number]> = { N: [0, -1], E: [1, 0], S: [0, 1], W: [-1, 0] };
 
 /** The way of the four that a step in the world is nearest to. */
 export function facingOf(dx: number, dy: number): Facing {

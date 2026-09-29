@@ -11,3 +11,7 @@ games/broodfall/art-src/
 
 # Broodfall screenshot beats: the PNGs are rewritten on every run (about 90 MB); a JPEG copy of each is committed instead (games/broodfall/tools/shots-to-jpg.mjs)
 games/broodfall/tools/screenshots/*.png
+
+# Broodfall: the build folder of each session that runs browser beats beside another (BROODFALL_DIST)
+dist-*/
+games/broodfall/public/art/manifest.json.lock/

@@ -11,13 +11,16 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from '@playwright/test';
 
+/** The port the built game is served on: its own for every session that runs beats at the same time. */
+const PORT = Number(process.env.BROODFALL_PORT || 5199);
+
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, '..');
 function freePort() {
   try {
     const out = execSync('netstat -ano', { encoding: 'utf8' });
     for (const line of out.split(String.fromCharCode(10))) {
-      const m = line.match(/:5199\s+\S+\s+LISTENING\s+(\d+)/);
+      const m = line.match(new RegExp(':' + PORT + '\\s+\\S+\\s+LISTENING\\s+(\\d+)'));
       if (m) { try { execSync('taskkill /PID ' + m[1] + ' /T /F', { stdio: 'ignore' }); } catch {} }
     }
   } catch {}
@@ -36,7 +39,7 @@ const shot = (page, name) => page.screenshot({ path: join(here, 'screenshots', `
 try {
   const page = await browser.newPage({ viewport: { width: 1500, height: 1100 } });
   page.on('pageerror', (e) => errors.push(String(e)));
-  await page.goto('http://localhost:5199/?seed=3', { waitUntil: 'load' });
+  await page.goto('http://localhost:' + PORT + '/?seed=3', { waitUntil: 'load' });
   await page.evaluate(() => { localStorage.removeItem('broodfall-campaign'); localStorage.removeItem('broodfall-campaign-pending'); localStorage.setItem('broodfall-yoke', JSON.stringify({ mode: 'scripted' })); });
   await page.reload({ waitUntil: 'load' });
   await page.locator('#menu-campaign').click();
@@ -79,6 +82,10 @@ try {
   await page.waitForSelector('#campaign:not(.hidden) .cp-scene');
   const contact = await page.locator('.cp-scene').innerText();
   check(/FRIENDSHIP DELEGATION/i.test(contact), 'back on the ship, the Delegation makes contact');
+  // He is in orbit: the letter is spelled out in a field, and the card shows the field.
+  check(/SPELLED OUT IN A FIELD/i.test(contact) && !/hand-delivered/i.test(contact), 'their letter reaches orbit: it is spelled out in a field');
+  await page.waitForSelector('.cp-scene-card img[data-picture="delegation-contact"]', { timeout: 5000 }).catch(() => {});
+  check(await page.locator('.cp-scene-card img[data-picture="delegation-contact"]').count() === 1, 'the contact card shows the picture of the field');
   await shot(page, 'contact');
   await page.locator('.cp-scene [data-ally="delegation"]').click();
   await page.waitForTimeout(150);
@@ -111,14 +118,14 @@ try {
   await page.evaluate(() => { const s = window.broodfall.sim; s.outcome = 'won'; s.events.push({ kind: 'won' }); window.broodfall.step(1); });
   await page.waitForSelector('#campaign:not(.hidden) .cp-aside', { timeout: 5000 });
   const aside = await page.locator('.cp-aside').innerText();
-  check(/Delegate \(letter\)/.test(aside), `the debrief carries the ally's letter: "${aside.slice(0, 90)}"`);
+  check(/Delegate \(letter, by field\)/.test(aside), `the debrief carries the ally's letter: "${aside.slice(0, 90)}"`);
   await shot(page, 'aside');
   await Promise.all([page.waitForURL(/campaign=ship/), page.locator('[data-act="back"]').click()]);
   await page.waitForSelector('#campaign:not(.hidden)');
   while (await page.locator('.cp-scene [data-act="scene-ok"]').count()) await page.locator('.cp-scene [data-act="scene-ok"]').click();
   await page.locator('[data-room="comms"]').click();
   const comms = await page.locator('.cp-body').innerText();
-  check(/FROM YOUR ALLY/.test(comms) && /Delegate \(letter\)/.test(comms), 'Comms keeps the letters');
+  check(/FROM YOUR ALLY/.test(comms) && /Delegate \(letter, by field\)/.test(comms), 'Comms keeps the letters');
   await shot(page, 'comms');
   check(errors.length === 0, errors.length ? `PAGE ERRORS: ${errors.join(' | ')}` : 'no page errors');
   console.log(failed ? `CAMPAIGN BEAT: ${failed} failed` : 'CAMPAIGN BEAT: all verified.');

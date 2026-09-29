@@ -1,0 +1,34 @@
+{
+ "state": "look_left",
+ "frames": 91,
+ "seconds": 3.79,
+ "kb": 733,
+ "failed": 0,
+ "checks": [
+  {
+   "name": "the loop closes",
+   "ok": true,
+   "value": 0.61
+  },
+  {
+   "name": "she moves",
+   "ok": true,
+   "value": 0.432
+  },
+  {
+   "name": "no green on her outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "she fills the stage as a person does",
+   "ok": true,
+   "value": "25% of it"
+  },
+  {
+   "name": "light to load (under 900 KB)",
+   "ok": true,
+   "value": "733 KB"
+  }
+ ]
+}

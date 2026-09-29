@@ -462,7 +462,9 @@ describe('the six genre-seat towers', () => {
       if (idx < 0) s.issue({ kind: 'discard', cardIndex: 0 });
     }
     expect(idx).toBeGreaterThanOrEqual(0);
-    const cell = cellPick ? cellPick(s) : buildableCell(s);
+    // A limb that takes more than one cell is pointed at ground it fits.
+    let cell = cellPick ? cellPick(s) : buildableCell(s);
+    if (!cellPick && !s.canBuildTower(cell, family as never)) cell = s.map.cells.findIndex((_, c) => s.canBuildTower(c, family as never));
     expect(s.issue({ kind: 'build', cardIndex: idx, cell }).ok).toBe(true);
     return s.towers[s.towers.length - 1];
   }
@@ -2308,9 +2310,11 @@ describe('CREEP: free creep nodes grown by creep organs (Collins, Sep 28 2026)',
     s.meat.war = 9999;
     let idx = -1;
     for (let g = 0; g < 600 && idx < 0; g++) { idx = s.hand.findIndex((c) => c.family === 'lance'); if (idx < 0) s.issue({ kind: 'discard', cardIndex: 0 }); }
-    const cell = buildableCell(s);
-    expect(s.issue({ kind: 'build', cardIndex: idx, cell, facing: 'E' }).ok).toBe(true);
+    // The lance lies on two cells along its facing: pointed at ground where it fits lying east.
+    const at = s.map.cells.findIndex((_, c) => s.groundFor(c, 'lance', 'E') !== null);
+    expect(s.issue({ kind: 'build', cardIndex: idx, cell: at, facing: 'E' }).ok).toBe(true);
     const lance = s.towers.find((t) => t.family === 'lance')!;
+    const cell = lance.cell;
     const src = s.creepSources.find((x) => x.kind === 'line' && x.ownerId === lance.id)!;
     src.bornAt = -1000; // fully grown
     const cov = (c: number) => (s as unknown as { lineCovers(x: unknown, c: number): boolean }).lineCovers(src, c);

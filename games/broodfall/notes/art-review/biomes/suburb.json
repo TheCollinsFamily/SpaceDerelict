@@ -3,34 +3,39 @@
  "name": "The Suburbs",
  "checks": [
   {
-   "name": "three floors",
-   "ok": true,
-   "detail": "48 of 48 tiles"
+   "name": "every floor",
+   "ok": false,
+   "detail": "48 of 96 tiles: 1 of 3 roofs, 1 of 2 streets, 1 of 1 squares"
   },
   {
-   "name": "four kinds of wall",
-   "ok": true,
-   "detail": "192 of 192 faces"
+   "name": "two buildings for each kind of district",
+   "ok": false,
+   "detail": "192 of 384 faces"
   },
   {
-   "name": "every roof prop cut out",
-   "ok": true,
-   "detail": "8 of 8"
+   "name": "every sheet of roof props is there and cut out",
+   "ok": false,
+   "detail": "1 sheets, 8 of 8 props"
   },
   {
-   "name": "every street prop cut out",
-   "ok": true,
-   "detail": "6 of 6"
+   "name": "every sheet of street props is there and cut out",
+   "ok": false,
+   "detail": "1 sheets, 6 of 6 props"
   },
   {
-   "name": "the street is pale",
+   "name": "a name of a prop is used once among the later sheets",
+   "ok": true,
+   "detail": "14 names"
+  },
+  {
+   "name": "every street is pale",
    "ok": true,
    "detail": "brightness 154 of 255 (at least 132)"
   },
   {
    "name": "light to load",
    "ok": true,
-   "detail": "356 KB"
+   "detail": "356 KB in all, the heaviest sheet 238 KB, packed at quality 90"
   }
  ]
 }

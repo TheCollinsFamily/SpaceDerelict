@@ -31,7 +31,7 @@ export const METEOR_ROWS = [0, 1] as const;
 /** Share of cells below the topsoil that are rock (can't be grown into). */
 export const ROCK_SHARE = 0.1;
 
-export type OrganKind = 'theme' | 'zone' | 'root' | 'creep';
+export type OrganKind = 'theme' | 'zone' | 'root' | 'creep' | 'scaffold';
 /** What a creep organ does for creep nodes (see CREEP below). */
 export type CreepRole = 'produce' | 'pace' | 'bud' | 'cyst' | 'swell' | 'catapult' | 'mire' | 'acid' | 'runner';
 export type ZoneEffect = 'level' | 'draw' | 'share' | 'suppress';
@@ -133,6 +133,9 @@ export const ORGAN_DEFS: readonly OrganDef[] = [
     blurb: 'creep from a bladder TOUCHING it (or the METEOR, if it touches that) slows ground enemies 25% (stacks)' },
   { id: 'acid', name: 'Digestive Lining', kind: 'creep', creep: 'acid', shape: D2, cost: { war: 30 },
     blurb: 'creep from a bladder TOUCHING it (or the METEOR, if it touches that) burns ground enemies 4/s (stacks)' },
+  // PLINTHS (Collins, Sep 29 2026): free, one every two waves.
+  { id: 'scaffold', name: 'Scaffold Gland', kind: 'scaffold', shape: L3, cost: { war: 30 },
+    blurb: 'grows one free PLINTH every 2 turns (at the wave clear): a pedestal that raises one limb, or one bare roof, by one level' },
 ];
 
 export const ORGAN_BY_ID = Object.fromEntries(ORGAN_DEFS.map((d) => [d.id, d])) as Record<OrganId, OrganDef>;
@@ -145,6 +148,15 @@ export const ORGAN_BY_ID = Object.fromEntries(ORGAN_DEFS.map((d) => [d.id, d])) 
 export const CYST_NODES = 3;         // plain nodes a spore cyst gives when it grows
 /** Collins: "the default every two turns, not one — only one with the thing that increases speed". */
 export const BLADDER_TURNS = 2;
+/**
+ * PLINTHS (Collins, Sep 29 2026: "platforms that raise the height of one thing by one
+ * amount: let's have an organ that generates 1 every two waves for free"). A plinth is a
+ * pedestal of bone and callus. Put under a limb it raises the limb, all of it, one level;
+ * put on a bare roof it raises that roof, which is how a roof is levelled to take a BIG limb.
+ */
+export const PLINTH_TURNS = 2;
+/** Nothing is raised higher than this: one level above the tallest block of the city. */
+export const PLINTH_MAX_HEIGHT = 4;
 export const NODE_RADIUS = 3;        // cells of creep a node spreads
 export const NODE_REACH = 3;         // cells past the creep edge a node may be placed
 export const CATAPULT_REACH = 5;     // extra cells of reach per catapult sac

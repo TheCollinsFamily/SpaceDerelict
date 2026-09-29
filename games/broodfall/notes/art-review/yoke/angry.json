@@ -1,0 +1,34 @@
+{
+ "state": "angry",
+ "frames": 85,
+ "seconds": 3.54,
+ "kb": 620,
+ "failed": 1,
+ "checks": [
+  {
+   "name": "the loop closes",
+   "ok": false,
+   "value": 3.01
+  },
+  {
+   "name": "she moves",
+   "ok": true,
+   "value": 0.178
+  },
+  {
+   "name": "no green on her outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "she fills the stage as a person does",
+   "ok": true,
+   "value": "25% of it"
+  },
+  {
+   "name": "light to load (under 900 KB)",
+   "ok": true,
+   "value": "620 KB"
+  }
+ ]
+}

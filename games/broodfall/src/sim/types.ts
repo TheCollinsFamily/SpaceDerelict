@@ -59,7 +59,8 @@ export type CasteFocus = 'any' | Caste;
 /** Organs of the organ stage (content/underground.ts): themes unlock limbs, zones boost organs, roots connect. */
 export type OrganId = 'forge' | 'venom' | 'gut' | 'nerve' | 'lattice' | 'womb' | 'marrow' | 'resonance'
   | 'heart' | 'brain' | 'gland' | 'root' | 'atrophy'
-  | 'bladder' | 'pacemaker' | 'budder' | 'cyst' | 'swell' | 'catapult' | 'mire' | 'acid' | 'runner';
+  | 'bladder' | 'pacemaker' | 'budder' | 'cyst' | 'swell' | 'catapult' | 'mire' | 'acid' | 'runner'
+  | 'scaffold';
 
 export type GlandMode = 'calm' | 'lure' | 'challenge';
 
@@ -549,6 +550,8 @@ export type SimEvent =
   | { kind: 'organ-upgraded'; organ: OrganId; level: number }
   | { kind: 'meat-cleared'; war: number; science: number }
   | { kind: 'node-grown'; count: number }
+  | { kind: 'plinth-grown'; count: number }
+  | { kind: 'plinth-placed'; cell: number; height: number }
   | { kind: 'node-placed'; cell: number }
   | { kind: 'node-spread'; cell: number }
   | { kind: 'node-lost'; cell: number }
@@ -599,6 +602,8 @@ export type Command =
   | { kind: 'build-organ'; organ: OrganId; cell: number; rot?: number }
   | { kind: 'upgrade-organ'; organInstanceId: number }
   | { kind: 'place-node'; cell: number; stock?: number }
+  /** A free plinth from stock: raises the limb that stands on this cell (all of it), or this bare roof, by one level. */
+  | { kind: 'place-plinth'; cell: number }
   | { kind: 'spread-node'; sourceId: number; cell: number }
   | { kind: 'royal-surge' }
   | { kind: 'discard'; cardIndex: number }

@@ -95,6 +95,8 @@ let hoverDonorId: number | null = null;
 let armedThrower: { id: number; family: 'sling' | 'lobber' | 'bombard' } | null = null;
 /** A free creep node picked from the stock (its stock index), waiting for a spot on the map. */
 let armedNode: number | null = null;
+/** A free plinth picked from the stock, waiting for a roof or a limb to raise. */
+let armedPlinth = false;
 /** A mature node chosen to spread its one child (its creep-source id). */
 let armedSpread: number | null = null;
 /** The pointer is over a creep node (its readout is in the hint line). */
@@ -170,7 +172,9 @@ function salvageText(family: TowerFamily): string {
 }
 
 function updateHint(): void {
-  if (armedNode !== null && sim.nodeStock[armedNode]) {
+  if (armedPlinth) {
+    hud.setHint('PLINTH: click one of your limbs to raise it a level (a big limb rises whole), or a bare roof your creep holds to raise the roof — free · higher reaches further · Esc cancels');
+  } else if (armedNode !== null && sim.nodeStock[armedNode]) {
     const st = sim.nodeStock[armedNode];
     hud.setHint(`CREEP NODE (${strainLabel(st)}): click claimed ground on or within ${st.reach} cells of your creep — free · it can spread one child once it matures · Esc cancels`);
   } else if (armedSpread !== null) {
@@ -480,6 +484,16 @@ function handleCanvasClick(clientX: number, clientY: number): void {
   const w = renderer.toWorld(clientX, clientY);
   const cell = sim.cellAt(w.x, w.y);
 
+  // A picked plinth raises what is clicked.
+  if (armedPlinth) {
+    const res = sim.issue({ kind: 'place-plinth', cell });
+    if (res.ok) {
+      // Keep raising while there are more.
+      if (sim.plinths < 1) { armedPlinth = false; renderer.preview = null; }
+      updateHint();
+    } else hud.setHint(String(res.err).toUpperCase());
+    return;
+  }
   // A picked creep node goes down wherever is clicked (if in reach).
   if (armedNode !== null) {
     const key = sim.nodeStock[armedNode] ? strainKey(sim.nodeStock[armedNode]) : '';
@@ -581,13 +595,20 @@ function handleCanvasClick(clientX: number, clientY: number): void {
   }
 }
 
-/** The facing a directional placement will use: the player's rotation, else toward the nearest gate. */
+/**
+ * The facing a placement will use: the way the player turned it; else, a limb that AIMS one
+ * way faces the nearest gate, and a limb that is only long lies whichever way fits there.
+ */
 function currentPlaceFacing(cell: number): RootDir {
-  return placeFacing ?? sim.facingTowardGate(sim.cellCenter(cell));
+  if (placeFacing) return placeFacing;
+  const fam = selectedCard !== null ? sim.hand[selectedCard]?.family : undefined;
+  if (fam && !towerSpec(fam).directional) return sim.placementFor(cell, fam)?.facing ?? 'S';
+  return sim.facingTowardGate(sim.cellCenter(cell));
 }
 
 /** Cancel whatever is armed (cards, organs, throwers) and close the panel. */
 function cancelAll(): void {
+  armedPlinth = false;
   armedNode = null;
   armedSpread = null;
   selectedCard = null;
@@ -633,8 +654,27 @@ nodeBtn.addEventListener('click', (ev) => {
   armedNode = wasSame ? null : idx;
   updateHint();
 });
+const plinthBtn = document.getElementById('plinths')!;
+plinthBtn.addEventListener('click', () => {
+  if (sim.plinths < 1) { hud.setHint('NO PLINTHS — grow a Scaffold Gland in the organ stage: it makes one every 2 turns, free'); return; }
+  const was = armedPlinth;
+  cancelAll();
+  armedPlinth = !was;
+  updateHint();
+});
+function updatePlinthButton(): void {
+  document.getElementById('plinth-count')!.textContent = String(sim.plinths);
+  const glands = sim.organs.filter((o) => o.organ === 'scaffold');
+  const soonest = glands.length ? Math.min(...glands.map((o) => sim.scaffoldTurnsLeft(o))) : 0;
+  document.getElementById('plinth-next')!.textContent = !glands.length ? 'grow a Scaffold Gland in the organ stage'
+    : sim.plinthsNextTurn() > 0 ? `+${sim.plinthsNextTurn()} next turn` : `next in ${soonest} turns`;
+  plinthBtn.classList.toggle('disabled', sim.plinths < 1);
+  plinthBtn.classList.toggle('on', armedPlinth);
+}
+
 let lastTrayKey = '';
 function updateNodeButton(): void {
+  updatePlinthButton();
   document.getElementById('node-count')!.textContent = String(sim.creepNodes);
   const next = sim.nodesNextTurn();
   const bladders = sim.organs.filter((o) => o.organ === 'bladder');
@@ -766,6 +806,13 @@ async function boot(): Promise<void> {
     if (ev.key === 'Escape') cancelAll();
   });
   renderer.app.canvas.addEventListener('pointermove', (ev) => {
+    if (armedPlinth) {
+      const wp = renderer.toWorld(ev.clientX, ev.clientY);
+      const cp = sim.cellAt(wp.x, wp.y);
+      const ground = sim.plinthGround(cp);
+      renderer.preview = { cell: cp, cells: ground ?? [cp], kind: 'plinth', valid: ground !== null };
+      return;
+    }
     if (armedNode !== null && sim.nodeStock[armedNode]) {
       const wn = renderer.toWorld(ev.clientX, ev.clientY);
       const cn = sim.cellAt(wn.x, wn.y);

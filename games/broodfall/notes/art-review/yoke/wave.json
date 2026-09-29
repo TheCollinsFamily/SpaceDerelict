@@ -1,0 +1,29 @@
+{
+ "state": "wave",
+ "frames": 96,
+ "seconds": 4,
+ "kb": 847,
+ "failed": 0,
+ "checks": [
+  {
+   "name": "it ends where it began",
+   "ok": true,
+   "value": 6.19
+  },
+  {
+   "name": "no green on her outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "she fills the stage as a person does",
+   "ok": true,
+   "value": "25% of it"
+  },
+  {
+   "name": "light to load (under 900 KB)",
+   "ok": true,
+   "value": "847 KB"
+  }
+ ]
+}

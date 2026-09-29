@@ -245,6 +245,12 @@ export interface Scene {
   title: string;
   /** Lines, each "Speaker: text" (the character is "You"). */
   lines: string[];
+  /**
+   * The scene's own picture, <faction>-<scene>: an id of `scenes` in the manifest's ship entry
+   * (drawn and baked by tools/art/templates/ship.mjs to public/art/ship/scenes/<id>.webp).
+   * A scene with no picture, or whose picture is not drawn yet, shows its leader's portrait.
+   */
+  picture?: string;
 }
 
 export interface BeatDef {
@@ -271,10 +277,24 @@ export interface FactionDef {
   /** An ending that depends on a choice made along the route (the Institute's ultimatum). */
   endingByChoice?: { beat: string; scenes: Record<string, Scene> };
   perks: Partial<Record<PerkId, string>>;
-  /** The running jokes between beats: one letter / broadcast / call after every deployment while allied. */
+  /** The running jokes between beats: one letter / broadcast / call after every deployment while allied, through the faction's own channel. */
   asides: string[];
 }
 
+/**
+ * HOW EACH FACTION REACHES HIM (Collins, Sep 29 2026: "how they contact you will be unique to
+ * each faction but needs to make sense"). He is in orbit: nobody can hand him anything.
+ *   The Delegation   have no transmitter and would not know where to point one. They write
+ *                    letters, and eleven thousand members spell each one out in a field with
+ *                    coloured cards, for his survey cameras.
+ *   The Faithful     own forty radio stations. Everything the Voice says to him is said on
+ *                    the air, in front of the whole congregation, his homework included.
+ *   The Institute    booked their deep-space dish and call him by video on his own command
+ *                    channel, with an expected-value table attached.
+ * His answers go down through the ship's transmitter, on whatever they are listening to.
+ * A later scene comes through the same channel unless the scene itself says otherwise (the
+ * summit and the last congress he attends through the asset, which is there).
+ */
 export const FACTIONS: FactionDef[] = [
   {
     id: 'delegation', name: 'The Friendship Delegation', contactAfterCaptures: 1,
@@ -283,25 +303,27 @@ export const FACTIONS: FactionDef[] = [
       objectors2: 'More Objectors: pick 2 enemy kinds that will not come.',
       translator: 'The Translator: see the next wave\'s makeup and which entrance it comes from.',
     },
-    contact: { title: 'A Letter, Hand-Delivered', lines: [
+    contact: { title: 'A Letter, Spelled Out in a Field', picture: 'delegation-contact', lines: [
+      'You: (log) Survey cameras flag an anomaly: eleven thousand fauna in a field, holding coloured cards over their heads. Seen from orbit it is a letter. It is addressed to me.',
       'Delegate: Dear Visitor. We know how this looks. We know what the newspapers are saying.',
       'Delegate: But we also know that an intelligence able to cross the stars cannot be doing this without a reason.',
       'Delegate: We would like to understand it. Some of our pilots, in the meantime, have decided not to fly.',
+      'Delegate: P.S. Please forgive the handwriting. Page two took until Thursday, and the second comma had to sit down.',
       'You: (log) Received a fan letter from the local fauna. Filing it under "enrichment".',
     ] },
     beats: [
-      { id: 'understand', title: 'Understand the Visitor', afterCaptures: 0, perks: ['objectors1'], scene: { title: 'The First Summit', lines: [
+      { id: 'understand', title: 'Understand the Visitor', afterCaptures: 0, perks: ['objectors1'], scene: { title: 'The First Summit', picture: 'delegation-understand', lines: [
         'Delegate: We have prepared a summit. There will be snacks.',
         'You: I will attend the summit.',
         'Delegate: You ate the summit.',
         'Delegate: … We are choosing to see this as a first draft.',
       ] } },
-      { id: 'stop-war', title: 'Stop the War', afterCaptures: 1, perks: ['translator'], scene: { title: 'The Leaked Plans', lines: [
+      { id: 'stop-war', title: 'Stop the War', afterCaptures: 1, perks: ['translator'], scene: { title: 'The Leaked Plans', picture: 'delegation-stop-war', lines: [
         'Delegate: Our generals are planning to attack you from the east. We are telling you because violence solves nothing.',
         'You: Thank you. I will use this to kill the generals.',
         'Delegate: And that, too, is a kind of peace.',
       ] } },
-      { id: 'gaia', title: 'The Greater Plan', afterCaptures: 2, scene: { title: 'For the Planet', lines: [
+      { id: 'gaia', title: 'The Greater Plan', afterCaptures: 2, scene: { title: 'For the Planet', picture: 'delegation-gaia', lines: [
         'Delegate: We have been thinking about the harbour. And the terraces. And the bus.',
         'Delegate: We finally understand. You are not hurting us. You are protecting the planet FROM us.',
         'Delegate: Look at what we did to it. The rivers. The wars. Of course something wise came down to stop it.',
@@ -309,7 +331,7 @@ export const FACTIONS: FactionDef[] = [
         'Delegate: A school that taught our children to consume. We see it now. We see all of it now.',
         'You: (log) Every time I explain myself, the fauna explain it better. I have stopped explaining.',
       ] } },
-      { id: 'reveal', title: 'Nobody\'s Perfect', afterCaptures: 3, perks: ['objectors2'], scene: { title: 'The Reveal', lines: [
+      { id: 'reveal', title: 'Nobody\'s Perfect', afterCaptures: 3, perks: ['objectors2'], scene: { title: 'The Reveal', picture: 'delegation-reveal', lines: [
         'You: I think there has been a misunderstanding. I need to be very clear with you.',
         'Delegate: (smiling, not looking up from the tea) Mm?',
         'You: I am not here to heal your world. I am a pest-control operator. I am exterminating your species.',
@@ -318,22 +340,22 @@ export const FACTIONS: FactionDef[] = [
         'Delegate: (later) We should have told you. We are the Voluntary Extinction Society. We have been campaigning for this for sixty years.',
         'Delegate: You are, frankly, the best thing that has ever happened to the movement.',
       ] } },
-      { id: 'hurry', title: 'Hurry It Along', afterCaptures: 4, scene: { title: 'Fewer Births Along the Way', lines: [
+      { id: 'hurry', title: 'Hurry It Along', afterCaptures: 4, scene: { title: 'Fewer Births Along the Way', picture: 'delegation-hurry', lines: [
         'Delegate: The members have voted. We would like it to go faster, and with fewer births along the way.',
         'Delegate: We have drawn up a schedule. We have colour-coded it.',
         'You: (log) The fauna have produced a better project plan than Command. Not filing this.',
       ] } },
     ],
     asides: [
-      'Delegate (letter): The Harbour Committee has voted to thank you for the harbour. The vote was unanimous; the committee was eaten during the count.',
-      'Delegate (letter): Some of our pilots have taken up gardening instead of flying. You have given them so much.',
-      'Delegate (letter): A girl in our reading circle asked if you are sad. We told her you are carrying something heavy, for all of us.',
-      'Delegate (letter): We are writing you a song. It is mostly apologies, and one verse about the ozone.',
-      'Delegate (letter): The newspapers call it an invasion. We call it a correction. Enclosed: our newsletter, "Gentle Endings".',
-      'Delegate (letter): Our generals are massing again. We have hidden their boots. Violence solves nothing, but logistics solves a great deal.',
+      'Delegate (letter, by field): The Harbour Committee has voted to thank you for the harbour. The vote was unanimous; the committee was eaten during the count.',
+      'Delegate (letter, by field): Some of our pilots have taken up gardening instead of flying. You have given them so much.',
+      'Delegate (letter, by field): A girl in our reading circle asked if you are sad. We told her you are carrying something heavy, for all of us.',
+      'Delegate (letter, by field): We are writing you a song. It is mostly apologies, and one verse about the ozone.',
+      'Delegate (letter, by field): The newspapers call it an invasion. We call it a correction. Enclosed, in the next field along: our newsletter, "Gentle Endings".',
+      'Delegate (letter, by field): Our generals are massing again. We have hidden their boots. Violence solves nothing, but logistics solves a great deal.',
     ],
     finale: 'assembly',
-    ending: { title: 'Bear Witness', lines: [
+    ending: { title: 'Bear Witness', picture: 'delegation-ending', lines: [
       'Delegate: The last congress is called to order. Attendance: one.',
       'Delegate: Let the record show: the Visitors came to heal us from ourselves.',
       'Delegate: (switches off the lights)',
@@ -347,25 +369,26 @@ export const FACTIONS: FactionDef[] = [
       sleepers2: 'More Sleepers: more martyrs in every wave.',
       garrison: 'The Garrison: their militants hold the territories you take — no defence deployments.',
     },
-    contact: { title: 'A Broadcast on Every Frequency', lines: [
+    contact: { title: 'A Broadcast on Every Frequency', picture: 'faithful-contact', lines: [
       'The Voice: …and they said the sign would come from the sky, and brothers and sisters, LOOK UP.',
       'The Voice: This is The Hour Is Near, on forty stations of the Last Hour Radio Network. And to the one who came down — I know you can hear me.',
       'The Voice: You are the sign. The world must end for the Awaited One to come. Let us help you end it.',
       'You: (log) The fauna have a radio preacher. I have been asked to read a book. It is very long.',
     ] },
     beats: [
-      { id: 'signs', title: 'Read the Signs', afterCaptures: 0, perks: ['sleepers1'], scene: { title: 'Theology Homework', lines: [
+      { id: 'signs', title: 'Read the Signs', afterCaptures: 0, perks: ['sleepers1'], scene: { title: 'Theology Homework', picture: 'faithful-signs', lines: [
         'The Voice: To walk with us you must know the Book. Chapter one: the Seven Cities.',
+        'The Voice: We will read it to you on the air, brother, a chapter a night. Have a pencil ready.',
         'You: I have read chapter one. It is a list of cities with adjectives.',
         'The Voice: It is the WORD.',
         'You: (log) Chapter two is the same list, in a different order. I am losing my mind.',
       ] } },
-      { id: 'prophecy', title: 'Fulfil the Prophecies', afterCaptures: 1, perks: ['garrison'], scene: { title: 'The Deployment Is Scripture', lines: [
+      { id: 'prophecy', title: 'Fulfil the Prophecies', afterCaptures: 1, perks: ['garrison'], scene: { title: 'The Deployment Is Scripture', picture: 'faithful-prophecy', lines: [
         'The Voice: "And the river shall run with fire, and the terraces shall fall silent."',
         'You: Which river?',
         'The Voice: Whichever one you burn, brother. That is how prophecy works.',
       ] } },
-      { id: 'prepare', title: 'Prepare the Way', afterCaptures: 3, perks: ['sleepers2'], scene: { title: 'The Awaited One', lines: [
+      { id: 'prepare', title: 'Prepare the Way', afterCaptures: 3, perks: ['sleepers2'], scene: { title: 'The Awaited One', picture: 'faithful-prepare', lines: [
         'The Voice: The Seventh City stands. When it falls, He comes.',
         'You: And if He does not come?',
         'The Voice: Then we will have misread the date. We have misread it before. It only makes us stronger.',
@@ -374,15 +397,15 @@ export const FACTIONS: FactionDef[] = [
     ],
     asides: [
       'The Voice (broadcast): …and the Visitor walks the terraces as it was written. Keep your radios on, brothers and sisters. Keep your donations coming.',
-      'The Voice: Homework, brother. Chapter nine: the Four Beasts. You are, we believe, beasts two and three.',
+      'The Voice (to you, on the air): Homework, brother. Chapter nine: the Four Beasts. You are, we believe, beasts two and three.',
       'You: (log) Chapter fourteen contradicts chapter nine. The Voice says this is the most sacred part. Requesting transfer.',
       'The Voice (broadcast): Line one, you are on The Hour Is Near. "Is the Visitor the Deceiver or the Deliverer?" Sister — why not BOTH.',
-      'The Voice: A test, brother. Which city falls on the day of the three lamps? … No. No. Read it AGAIN.',
+      'The Voice (to you, on the air): A test, brother. Which city falls on the day of the three lamps? … No. No. Read it AGAIN.',
       'The Voice (broadcast): The other faith says THEIR book foretold the Visitor first. Their book is a forgery of our forgery.',
       'You: (log) Have now read the Book four times, the commentaries twice, and a pamphlet about the commentaries. I outrank their clergy. I hate it here.',
     ],
     finale: 'seventh-city',
-    ending: { title: 'The Hour', lines: [
+    ending: { title: 'The Hour', picture: 'faithful-ending', lines: [
       'The Voice: Brothers and sisters — HE IS HERE.',
       'The Awaited One: (a little stiffly) Hello. I am the Awaited One. Well done, everyone.',
       'The Voice: (weeping) Everything worked out. Everything worked out exactly as it was written.',
@@ -398,8 +421,10 @@ export const FACTIONS: FactionDef[] = [
       kingdom: 'Kingdom Fund: the Institute invests in its future throne — every mission starts with another royal point.',
       pacified: 'Pacification: the Institute "talks to" the population — every wave comes a tenth smaller.',
     },
-    contact: { title: 'A Call, Mid-Game', lines: [
+    contact: { title: 'A Video Call, Mid-Game', picture: 'institute-contact', lines: [
+      'You: (log) Incoming video call on the command channel, which is encrypted. The caller has attached an expected-value table.',
       'The Director: Hi — sorry, one sec, I\'m in a match — okay. Hi. You\'re the one from the crater.',
+      'The Director: I booked our deep-space dish for this. Nobody minded. We were only using it to listen for aliens.',
       'The Director: Eli Bankfried. Director, founder, rationalist, investor. Mostly founder.',
       'The Director: Look, I\'ll be honest with you, because I think you\'re the first being I\'ve met who can handle honesty.',
       'The Director: Our species just built its first real AI models. On the numbers, you are the SAFER apocalypse.',
@@ -408,13 +433,13 @@ export const FACTIONS: FactionDef[] = [
       'The Director: Oh, you are going to LOVE League of Larvae.',
     ] },
     beats: [
-      { id: 'machines', title: 'Stop the Machines', afterCaptures: 0, perks: ['volunteers1'], scene: { title: 'The Upload', lines: [
+      { id: 'machines', title: 'Stop the Machines', afterCaptures: 0, perks: ['volunteers1'], scene: { title: 'The Upload', picture: 'institute-machines', lines: [
         'You: If I had technology to upload your people into a virtual world, to live forever, would that interest you?',
         'The Director: … Would that INTEREST me? That is the single highest-expected-value sentence anyone has ever said to me.',
         'The Director: We have some cryo-lab subjects. Consenting, broadly. I\'ll send them over. For the upload.',
         'You: (log) Received a shipment of frozen fauna "for upload". Fed them to the asset. The Director says the pipeline is "very exciting".',
       ] } },
-      { id: 'pipeline', title: 'Build the Pipeline', afterCaptures: 1, perks: ['seedlabs'], scene: { title: 'Females', lines: [
+      { id: 'pipeline', title: 'Build the Pipeline', afterCaptures: 1, perks: ['seedlabs'], scene: { title: 'Females', picture: 'institute-pipeline', lines: [
         'The Director: Also — I\'ve been meaning to say — if you ever want company, I can send over some females.',
         'You: Females … for breeding?',
         'The Director: No, for FUN, you know, like — oh gosh, man, you\'ve got to try it. Your civilisation dropped recreational sex?',
@@ -428,7 +453,7 @@ export const FACTIONS: FactionDef[] = [
           { id: 'rule', label: '"We rule what\'s left after you take what you want."', perks: ['kingdom'] },
           { id: 'pacify', label: '"We help you pacify the population — we understand them, after all."', perks: ['pacified'] },
         ] },
-        scene: { title: 'The Least-Bad Timeline', lines: [
+        scene: { title: 'The Least-Bad Timeline', picture: 'institute-ultimatum', lines: [
           'The Director: So, strategically. You\'re going to win. We both know that. I did the maths before you did.',
           'The Director: Two options, and I want you to know I\'m comfortable with either — which is what makes me different.',
           'The Director: One: after you take what you want, we rule what\'s left. Somebody has to rebuild it right next time.',
@@ -446,14 +471,14 @@ export const FACTIONS: FactionDef[] = [
       'The Director: Our old AI lab? Shut down. Honestly, thanks to you. I was always the one warning about it. I want that on the record.',
     ],
     finale: 'glass-spires',
-    ending: { title: 'Rebuild It Right Next Time', lines: [
+    ending: { title: 'Rebuild It Right Next Time', picture: 'institute-ending', lines: [
       'The Director: So this is the charter. Article one: next time, we do it properly.',
       'The Director: I\'ll go last into the upload chamber — someone has to supervise the queue.',
       'The Director: I just want to say: I saw this coming. I want that on the record. I was the only one who saw it.',
       'You: (log) The upload chamber is a door into the asset\'s gut. Did not mention this. He did not ask.',
     ] },
     endingByChoice: { beat: 'ultimatum', scenes: {
-      pacify: { title: 'The Pacified Timeline', lines: [
+      pacify: { title: 'The Pacified Timeline', picture: 'institute-ending-pacify', lines: [
         'The Director: Pacification rate ninety-nine point four. I want it noted that this was a hard ethical call, and that I made it.',
         'The Director: They went quietly. We told them it was the upload queue. Which, from a certain frame —',
         'The Director: Anyway. The Institute will be taking the Spires, the servers and a modest stipend. Strictly for continuity.',

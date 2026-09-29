@@ -388,15 +388,19 @@ describe.skipIf(!hasArt)('the baked art', () => {
   it('draws a BIG limb from bigger frames, and only a big limb', () => {
     for (const t of TOWERS) {
       const l = manifest.limbs[t.family];
-      expect(!!l.big, `${t.family} big`).toBe(!!t.span);
-      expect(l.frame, `${t.family} frame`).toBe(t.span ? 384 : 256);
+      // Big: four cells or more. A LONG limb (two cells) is drawn from the frames of a limb of one.
+      const big = !!t.span && t.span[0] * t.span[1] >= 4;
+      expect(!!l.big, `${t.family} big`).toBe(big);
+      expect(l.frame, `${t.family} frame`).toBe(big ? 384 : 256);
     }
   });
 
   it('has a landing site as sharp as the limbs round it, that knows where it lies', () => {
     const c = manifest.board.terrain.core;
-    // Four cells wide on the board: at 320 it had half the sharpness of a limb (Collins, Sep 29 2026).
-    expect(c.frame).toBeGreaterThanOrEqual(640);
+    // As many pixels of its picture to a cell of the board as a limb has: at 320 it had half (Collins, Sep 29 2026).
+    const perCell = (frame: number, body: number, cells: number) => (frame * body) / cells;
+    const limb = manifest.limbs.spitter;
+    expect(perCell(c.frame, c.body, c.cells)).toBeGreaterThanOrEqual(0.9 * perCell(limb.frame, limb.body, 0.75));
     expect(c.anchor[0]).toBe(0.5);
     expect(c.anchor[1]).toBeGreaterThan(0.4);
     expect(c.anchor[1]).toBeLessThan(0.75);

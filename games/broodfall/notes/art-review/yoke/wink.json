@@ -1,0 +1,34 @@
+{
+ "state": "wink",
+ "frames": 96,
+ "seconds": 4,
+ "kb": 710,
+ "failed": 0,
+ "checks": [
+  {
+   "name": "it ends where it began",
+   "ok": true,
+   "value": 6.47
+  },
+  {
+   "name": "no green on her outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "she fills the stage as a person does",
+   "ok": true,
+   "value": "25% of it"
+  },
+  {
+   "name": "her hair is the colour of her still",
+   "ok": true,
+   "value": "gains 1.032, 1.041, 1.036"
+  },
+  {
+   "name": "light to load (under 900 KB)",
+   "ok": true,
+   "value": "710 KB"
+  }
+ ]
+}

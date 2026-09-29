@@ -387,6 +387,12 @@ body.view-iso #view-controls { display: flex; }
 #open-under.disabled { opacity: 0.4; pointer-events: none; }
 
 #creep-nodes.disabled { opacity: 0.45; }
+/* Plinths: free pedestals, picked from stock like a creep node. */
+#plinths { background: #d8cfb0; border-color: #6e6448; min-width: 130px; cursor: pointer; }
+#plinths b { color: #3a3220; }
+#plinths.disabled { opacity: 0.45; }
+#plinths.on { background: var(--ink); color: var(--panel); }
+#plinths.on b { color: var(--panel); }
 #creep-nodes.on { background: var(--ink); color: var(--panel); }
 #node-count { color: #6aa84f; }
 #creep-nodes.on #node-count { color: #b8e890; }

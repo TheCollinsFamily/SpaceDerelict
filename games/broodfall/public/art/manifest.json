@@ -1372,14 +1372,15 @@
   },
   "frond": {
    "atlas": "limbs/frond.webp",
-   "frame": 256,
-   "cols": 16,
+   "frame": 384,
+   "cols": 8,
    "anchor": [
     0.5,
     0.7637
    ],
    "body": 0.501,
    "on": "roof",
+   "big": true,
    "anims": {
     "idle": {
      "start": 0,
@@ -1558,14 +1559,15 @@
   },
   "maw": {
    "atlas": "limbs/maw.webp",
-   "frame": 256,
-   "cols": 16,
+   "frame": 384,
+   "cols": 8,
    "anchor": [
     0.5,
     0.7202
    ],
    "body": 0.531,
    "on": "roof",
+   "big": true,
    "anims": {
     "idle": {
      "start": 0,
@@ -1600,14 +1602,15 @@
   },
   "mister": {
    "atlas": "limbs/mister.webp",
-   "frame": 256,
-   "cols": 16,
+   "frame": 384,
+   "cols": 8,
    "anchor": [
     0.5,
     0.721
    ],
    "body": 0.615,
    "on": "roof",
+   "big": true,
    "anims": {
     "idle": {
      "start": 0,
@@ -2012,14 +2015,15 @@
   },
   "tangler": {
    "atlas": "limbs/tangler.webp",
-   "frame": 256,
-   "cols": 16,
+   "frame": 384,
+   "cols": 8,
    "anchor": [
     0.5,
     0.6099
    ],
    "body": 0.667,
    "on": "roof",
+   "big": true,
    "anims": {
     "idle": {
      "start": 0,
@@ -3033,6 +3037,294 @@
        "y": 391,
        "w": 128,
        "h": 76
+      },
+      "wall-plinth-south-0-0": {
+       "x": 1179,
+       "y": 391,
+       "w": 64,
+       "h": 68
+      },
+      "wall-plinth-south-0-1": {
+       "x": 1245,
+       "y": 391,
+       "w": 64,
+       "h": 68
+      },
+      "wall-plinth-south-0-2": {
+       "x": 1311,
+       "y": 391,
+       "w": 64,
+       "h": 68
+      },
+      "wall-plinth-south-0-3": {
+       "x": 1377,
+       "y": 391,
+       "w": 64,
+       "h": 68
+      },
+      "wall-plinth-south-0-4": {
+       "x": 1443,
+       "y": 391,
+       "w": 64,
+       "h": 68
+      },
+      "wall-plinth-south-0-5": {
+       "x": 1509,
+       "y": 391,
+       "w": 64,
+       "h": 68
+      },
+      "wall-plinth-south-0-6": {
+       "x": 1575,
+       "y": 391,
+       "w": 64,
+       "h": 68
+      },
+      "wall-plinth-south-0-7": {
+       "x": 1641,
+       "y": 391,
+       "w": 64,
+       "h": 68
+      },
+      "wall-plinth-south-1-0": {
+       "x": 1707,
+       "y": 391,
+       "w": 64,
+       "h": 68
+      },
+      "wall-plinth-south-1-1": {
+       "x": 1773,
+       "y": 391,
+       "w": 64,
+       "h": 68
+      },
+      "wall-plinth-south-1-2": {
+       "x": 1839,
+       "y": 391,
+       "w": 64,
+       "h": 68
+      },
+      "wall-plinth-south-1-3": {
+       "x": 1905,
+       "y": 391,
+       "w": 64,
+       "h": 68
+      },
+      "wall-plinth-south-1-4": {
+       "x": 1971,
+       "y": 391,
+       "w": 64,
+       "h": 68
+      },
+      "wall-plinth-south-1-5": {
+       "x": 1,
+       "y": 469,
+       "w": 64,
+       "h": 68
+      },
+      "wall-plinth-south-1-6": {
+       "x": 67,
+       "y": 469,
+       "w": 64,
+       "h": 68
+      },
+      "wall-plinth-south-1-7": {
+       "x": 133,
+       "y": 469,
+       "w": 64,
+       "h": 68
+      },
+      "wall-plinth-south-2-0": {
+       "x": 199,
+       "y": 469,
+       "w": 64,
+       "h": 68
+      },
+      "wall-plinth-south-2-1": {
+       "x": 265,
+       "y": 469,
+       "w": 64,
+       "h": 68
+      },
+      "wall-plinth-south-2-2": {
+       "x": 331,
+       "y": 469,
+       "w": 64,
+       "h": 68
+      },
+      "wall-plinth-south-2-3": {
+       "x": 397,
+       "y": 469,
+       "w": 64,
+       "h": 68
+      },
+      "wall-plinth-south-2-4": {
+       "x": 463,
+       "y": 469,
+       "w": 64,
+       "h": 68
+      },
+      "wall-plinth-south-2-5": {
+       "x": 529,
+       "y": 469,
+       "w": 64,
+       "h": 68
+      },
+      "wall-plinth-south-2-6": {
+       "x": 595,
+       "y": 469,
+       "w": 64,
+       "h": 68
+      },
+      "wall-plinth-south-2-7": {
+       "x": 661,
+       "y": 469,
+       "w": 64,
+       "h": 68
+      },
+      "wall-plinth-east-0-0": {
+       "x": 727,
+       "y": 469,
+       "w": 64,
+       "h": 68
+      },
+      "wall-plinth-east-0-1": {
+       "x": 793,
+       "y": 469,
+       "w": 64,
+       "h": 68
+      },
+      "wall-plinth-east-0-2": {
+       "x": 859,
+       "y": 469,
+       "w": 64,
+       "h": 68
+      },
+      "wall-plinth-east-0-3": {
+       "x": 925,
+       "y": 469,
+       "w": 64,
+       "h": 68
+      },
+      "wall-plinth-east-0-4": {
+       "x": 991,
+       "y": 469,
+       "w": 64,
+       "h": 68
+      },
+      "wall-plinth-east-0-5": {
+       "x": 1057,
+       "y": 469,
+       "w": 64,
+       "h": 68
+      },
+      "wall-plinth-east-0-6": {
+       "x": 1123,
+       "y": 469,
+       "w": 64,
+       "h": 68
+      },
+      "wall-plinth-east-0-7": {
+       "x": 1189,
+       "y": 469,
+       "w": 64,
+       "h": 68
+      },
+      "wall-plinth-east-1-0": {
+       "x": 1255,
+       "y": 469,
+       "w": 64,
+       "h": 68
+      },
+      "wall-plinth-east-1-1": {
+       "x": 1321,
+       "y": 469,
+       "w": 64,
+       "h": 68
+      },
+      "wall-plinth-east-1-2": {
+       "x": 1387,
+       "y": 469,
+       "w": 64,
+       "h": 68
+      },
+      "wall-plinth-east-1-3": {
+       "x": 1453,
+       "y": 469,
+       "w": 64,
+       "h": 68
+      },
+      "wall-plinth-east-1-4": {
+       "x": 1519,
+       "y": 469,
+       "w": 64,
+       "h": 68
+      },
+      "wall-plinth-east-1-5": {
+       "x": 1585,
+       "y": 469,
+       "w": 64,
+       "h": 68
+      },
+      "wall-plinth-east-1-6": {
+       "x": 1651,
+       "y": 469,
+       "w": 64,
+       "h": 68
+      },
+      "wall-plinth-east-1-7": {
+       "x": 1717,
+       "y": 469,
+       "w": 64,
+       "h": 68
+      },
+      "wall-plinth-east-2-0": {
+       "x": 1783,
+       "y": 469,
+       "w": 64,
+       "h": 68
+      },
+      "wall-plinth-east-2-1": {
+       "x": 1849,
+       "y": 469,
+       "w": 64,
+       "h": 68
+      },
+      "wall-plinth-east-2-2": {
+       "x": 1915,
+       "y": 469,
+       "w": 64,
+       "h": 68
+      },
+      "wall-plinth-east-2-3": {
+       "x": 1981,
+       "y": 469,
+       "w": 64,
+       "h": 68
+      },
+      "wall-plinth-east-2-4": {
+       "x": 1,
+       "y": 539,
+       "w": 64,
+       "h": 68
+      },
+      "wall-plinth-east-2-5": {
+       "x": 67,
+       "y": 539,
+       "w": 64,
+       "h": 68
+      },
+      "wall-plinth-east-2-6": {
+       "x": 133,
+       "y": 539,
+       "w": 64,
+       "h": 68
+      },
+      "wall-plinth-east-2-7": {
+       "x": 199,
+       "y": 539,
+       "w": 64,
+       "h": 68
       }
      }
     },
@@ -4358,14 +4650,18 @@
     "frame": 640,
     "cols": 4,
     "count": 16,
-    "fps": 8.35,
+    "fps": 5.05,
     "anchor": [
      0.5,
-     0.6104
+     0.7274
     ],
-    "body": 0.834,
-    "cells": 3.2,
-    "seam": 0.39
+    "body": 0.876,
+    "cells": 2.4,
+    "seam": 0.17,
+    "ground": {
+     "file": "board/core-ground.webp",
+     "cells": 6.63
+    }
    }
   }
  },
@@ -4711,7 +5007,19 @@
     "sign",
     "car"
    ],
-   "data": null
+   "variants": {
+    "walls": {
+     "plain": 1,
+     "science": 1,
+     "meat": 1,
+     "highground": 1
+    },
+    "roof": 1,
+    "street": 1,
+    "plaza": 1
+   },
+   "guests": [],
+   "data": "board/orthodox/biome.json"
   },
   "suburb": {
    "name": "The Suburbs",
@@ -4761,6 +5069,20 @@
     "tree",
     "fence"
    ],
+   "variants": {
+    "walls": {
+     "plain": 1,
+     "science": 1,
+     "meat": 1,
+     "highground": 1
+    },
+    "roof": 1,
+    "street": 1,
+    "plaza": 1
+   },
+   "guests": [
+    "terraces"
+   ],
    "data": "board/suburb/biome.json"
   }
  },
@@ -4778,6 +5100,26 @@
     "delegation": "ship/leader-delegation.webp",
     "faithful": "ship/leader-faithful.webp",
     "institute": "ship/leader-institute.webp"
+   },
+   "scenes": {
+    "delegation-contact": "ship/scenes/delegation-contact.webp",
+    "delegation-understand": "ship/scenes/delegation-understand.webp",
+    "delegation-stop-war": "ship/scenes/delegation-stop-war.webp",
+    "delegation-gaia": "ship/scenes/delegation-gaia.webp",
+    "delegation-reveal": "ship/scenes/delegation-reveal.webp",
+    "delegation-hurry": "ship/scenes/delegation-hurry.webp",
+    "delegation-ending": "ship/scenes/delegation-ending.webp",
+    "faithful-contact": "ship/scenes/faithful-contact.webp",
+    "faithful-signs": "ship/scenes/faithful-signs.webp",
+    "faithful-prophecy": "ship/scenes/faithful-prophecy.webp",
+    "faithful-prepare": "ship/scenes/faithful-prepare.webp",
+    "faithful-ending": "ship/scenes/faithful-ending.webp",
+    "institute-contact": "ship/scenes/institute-contact.webp",
+    "institute-machines": "ship/scenes/institute-machines.webp",
+    "institute-pipeline": "ship/scenes/institute-pipeline.webp",
+    "institute-ultimatum": "ship/scenes/institute-ultimatum.webp",
+    "institute-ending": "ship/scenes/institute-ending.webp",
+    "institute-ending-pacify": "ship/scenes/institute-ending-pacify.webp"
    },
    "exterior": "ship/exterior.webp",
    "planet": "ship/planet.webp",

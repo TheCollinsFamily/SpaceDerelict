@@ -1,0 +1,50 @@
+{
+ "name": "YOKE (Broodfall)",
+ "width": 1280,
+ "height": 720,
+ "fps": 24,
+ "states": {
+  "idle": "idle.webm",
+  "speaking": "speaking.webm",
+  "thinking": "thinking.webm",
+  "happy": "happy.webm",
+  "sad": "sad.webm",
+  "surprised": "surprised.webm",
+  "angry": "angry.webm",
+  "laughing": "laughing.webm",
+  "blushing": "blushing.webm",
+  "nod": "nod.webm",
+  "shake_head": "shake_head.webm",
+  "wink": "wink.webm",
+  "wave": "wave.webm",
+  "look_left": "look_left.webm",
+  "look_right": "look_right.webm",
+  "calm": "idle.webm",
+  "thoughtful": "thinking.webm"
+ },
+ "oneShot": [
+  "nod",
+  "shake_head",
+  "wink",
+  "wave"
+ ],
+ "seconds": {
+  "idle": 3.21,
+  "speaking": 3.92,
+  "thinking": 2.63,
+  "happy": 3.5,
+  "sad": 3.79,
+  "surprised": 3.25,
+  "angry": 3.54,
+  "laughing": 2.58,
+  "blushing": 3,
+  "nod": 4,
+  "shake_head": 4,
+  "wink": 4,
+  "wave": 4,
+  "look_left": 3.79,
+  "look_right": 3.79,
+  "calm": 4,
+  "thoughtful": 4
+ }
+}

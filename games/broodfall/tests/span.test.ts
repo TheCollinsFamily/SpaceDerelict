@@ -39,7 +39,8 @@ describe('which limbs are big', () => {
 
   it('names them, and they are what the design says', () => {
     const big = TOWERS.filter((t) => t.span).map((t) => `${t.family} ${t.span![0]}x${t.span![1]}`).sort();
-    expect(big).toEqual(['brood 2x2', 'cage 2x2', 'ward 2x2']);
+    // Measured Sep 29 2026 (tools/measure/footprints.measure.ts, candidate c4): the game held.
+    expect(big).toEqual(['brood 2x2', 'cage 2x2', 'frond 2x2', 'impaler 1x2', 'lance 1x2', 'maw 2x2', 'mister 2x2', 'skipper 1x2', 'spine 1x2', 'tangler 2x2', 'ward 2x2']);
   });
 
   it('pays a big limb for the ground it takes', () => {

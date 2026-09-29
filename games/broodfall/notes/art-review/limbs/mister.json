@@ -1,7 +1,7 @@
 {
  "family": "mister",
  "frames": 30,
- "atlasKB": 308,
+ "atlasKB": 398,
  "failed": 0,
  "checks": [
   {
@@ -57,7 +57,7 @@
   {
    "name": "atlas is under 900 KB",
    "ok": true,
-   "value": "308 KB"
+   "value": "398 KB"
   }
  ]
 }

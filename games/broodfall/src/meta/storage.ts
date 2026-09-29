@@ -1,6 +1,7 @@
 /** The campaign save and the pending deployment, in localStorage (never trusted to exist). */
 import type { EnemyKind } from '../sim/types';
 import type { CampaignState } from './campaign';
+import { YOKE_AVATAR, type YokeMode } from './yokeAvatar';
 
 const KEY = 'broodfall-campaign';
 const PENDING = 'broodfall-campaign-pending';
@@ -44,23 +45,41 @@ export function clearPending(): void {
   try { localStorage.removeItem(PENDING); } catch { /* ok */ }
 }
 
-/** YOKE's link to rfab.ai: which provider, the player's own API key, and the API root. */
-export interface YokeSettings { mode: 'kimi' | 'scripted'; key: string; base: string }
+/**
+ * YOKE's link to rfab.ai: who answers, the player's own API key, the API root, and
+ * whether her voice is off.
+ *   avatar    her Living Avatar on rfab.ai: a body, a voice, a mind that remembers him
+ *   kimi      text from Kimi K2.6 (POST /api/broodfall/ship-ai)
+ *   scripted  the lore book's own lines; spends nothing, needs no network
+ */
+export interface YokeSettings { mode: YokeMode; key: string; base: string; muted: boolean }
 const YOKE = 'broodfall-yoke';
-export const DEFAULT_YOKE: YokeSettings = { mode: 'kimi', key: '', base: '/rfab-api' };
+/** Settings saved since the avatar exists carry this mark; older ones never chose between her and Kimi. */
+const YOKE_SAVED = 2;
+/** The avatar is who answers by default, when content/lore/yoke-avatar.json names one. */
+export const DEFAULT_YOKE: YokeSettings = { mode: YOKE_AVATAR ? 'avatar' : 'kimi', key: '', base: '/rfab-api', muted: false };
+
+/** Settings as they were saved, made whole. `hasAvatar`: an avatar is named (a mode that needs one falls to Kimi without). */
+export function yokeFrom(raw: unknown, hasAvatar: boolean = !!YOKE_AVATAR): YokeSettings {
+  const best: YokeMode = hasAvatar ? 'avatar' : 'kimi';
+  const base = { ...DEFAULT_YOKE, mode: best };
+  if (!raw || typeof raw !== 'object') return base;
+  const r = raw as Record<string, unknown>;
+  // "scripted" was always a choice (it spends nothing) and is kept. "kimi" was the only live
+  // YOKE before she had a body: only one saved since then is a choice against the avatar.
+  const mode: YokeMode = r.mode === 'scripted' ? 'scripted' : r.mode === 'kimi' && r.v === YOKE_SAVED ? 'kimi' : best;
+  return {
+    mode,
+    key: typeof r.key === 'string' ? r.key : '',
+    base: typeof r.base === 'string' && r.base ? r.base : DEFAULT_YOKE.base,
+    muted: r.muted === true,
+  };
+}
 
 export function loadYoke(): YokeSettings {
-  try {
-    const raw = JSON.parse(localStorage.getItem(YOKE) ?? 'null');
-    if (!raw || typeof raw !== 'object') return { ...DEFAULT_YOKE };
-    return {
-      mode: raw.mode === 'scripted' ? 'scripted' : 'kimi',
-      key: typeof raw.key === 'string' ? raw.key : '',
-      base: typeof raw.base === 'string' && raw.base ? raw.base : DEFAULT_YOKE.base,
-    };
-  } catch { return { ...DEFAULT_YOKE }; }
+  try { return yokeFrom(JSON.parse(localStorage.getItem(YOKE) ?? 'null')); } catch { return { ...DEFAULT_YOKE }; }
 }
 
 export function saveYoke(y: YokeSettings): void {
-  try { localStorage.setItem(YOKE, JSON.stringify(y)); } catch { /* private mode */ }
+  try { localStorage.setItem(YOKE, JSON.stringify({ ...y, v: YOKE_SAVED })); } catch { /* private mode */ }
 }

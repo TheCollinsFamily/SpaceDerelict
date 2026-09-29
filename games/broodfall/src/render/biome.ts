@@ -12,6 +12,58 @@ export interface BiomeArt {
   streetProps: string[];
   /** The file that lists its own floors, walls and props. null: it is drawn with the terrain entry's. */
   data: string | null;
+  /**
+   * How many looks it has of each piece: a second facade for a kind of wall, more roofs.
+   * Absent: one of each. The sprites of look v > 0 are named with ~v after the name:
+   * roof~1-02, wall-plain~1-south-0-3 (tools/art/biomes.mjs).
+   */
+  variants?: { walls?: Record<string, number>; roof?: number; street?: number; plaza?: number };
+  /** Other sets whose districts may be mixed into a board whose own set is this one. */
+  guests?: string[];
+}
+
+/** The name of look `v` of a piece: the name itself for the first, name~v after. */
+export const variantName = (name: string, v: number): string => (v > 0 ? `${name}~${v}` : name);
+
+/** Which of `n` looks a thing with this number has: the same thing always has the same look. */
+export function pickVariant(n: number, id: number): number {
+  if (!(n > 1)) return 0;
+  return ((Math.imul(id | 0, 2654435761) >>> 0) >>> 7) % Math.floor(n);
+}
+
+/**
+ * Which BUILDING every cell of the board belongs to. A building is the block cells of one
+ * height that touch each other inside one district: it has one facade and one roof, so that
+ * a street of four buildings is four buildings and not one texture four times. Cells that
+ * are not blocks have -1. The number of a building is the cell it was found from, so that
+ * it is the same building, with the same look, when the board is built again.
+ */
+export function buildingsOf(
+  cells: ArrayLike<number>, heights: ArrayLike<number>, w: number, h: number, block: number, plate: number,
+): Int32Array {
+  const out = new Int32Array(w * h).fill(-1);
+  const stack: number[] = [];
+  for (let start = 0; start < w * h; start++) {
+    if (cells[start] !== block || out[start] >= 0) continue;
+    const high = heights[start];
+    const slot = Math.floor(Math.floor(start / w) / plate) * 1000 + Math.floor((start % w) / plate);
+    out[start] = start;
+    stack.push(start);
+    while (stack.length) {
+      const c = stack.pop()!;
+      const x = c % w;
+      const y = (c - x) / w;
+      for (const [nx, ny] of [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]]) {
+        if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+        const n = ny * w + nx;
+        if (cells[n] !== block || out[n] >= 0 || heights[n] !== high) continue;
+        if (Math.floor(ny / plate) * 1000 + Math.floor(nx / plate) !== slot) continue;
+        out[n] = start;
+        stack.push(n);
+      }
+    }
+  }
+  return out;
 }
 
 /**

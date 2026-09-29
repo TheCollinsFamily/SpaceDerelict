@@ -31,8 +31,10 @@ export interface CityMap {
   slotsX: number;
   slotsY: number;
   cells: CellType[];
-  /** Block height 1-3 (0 elsewhere). Verticality: higher perch = longer reach. */
+  /** Block height 1-3, and up to 4 where the body has raised it on plinths (0 elsewhere). Verticality: higher perch = longer reach. */
   heights: Uint8Array;
+  /** How many of a cell's levels, from the top, are plinths the body grew (the rest is the city's own block). */
+  plinths: Uint8Array;
   slots: Array<PlateInstance | null>;
   coreCell: number;
 }
@@ -117,6 +119,7 @@ export function createBoard(
     w, h, slotsX, slotsY,
     cells: new Array<CellType>(w * h).fill(CellType.Void),
     heights: new Uint8Array(w * h),
+    plinths: new Uint8Array(w * h),
     slots: new Array<PlateInstance | null>(slotsX * slotsY).fill(null),
     coreCell: 0,
   };

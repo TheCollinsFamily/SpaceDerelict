@@ -1,7 +1,7 @@
 {
  "family": "frond",
  "frames": 30,
- "atlasKB": 380,
+ "atlasKB": 540,
  "failed": 0,
  "checks": [
   {
@@ -62,7 +62,7 @@
   {
    "name": "atlas is under 900 KB",
    "ok": true,
-   "value": "380 KB"
+   "value": "540 KB"
   }
  ]
 }

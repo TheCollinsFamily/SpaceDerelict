@@ -20,7 +20,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, '..');
 const shots = join(here, 'screenshots');
 mkdirSync(shots, { recursive: true });
-const PORT = 5188;
+const PORT = Number(process.env.BROODFALL_PORT || 5199) - 11;
 const failures = [];
 const check = (ok, name, detail = '') => {
   if (!ok) failures.push(name);

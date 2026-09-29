@@ -15,10 +15,11 @@ import { Sim, enemySpec, towerSpec, towerStats } from '../sim/sim';
 import type { CreepSource, Enemy, Tower } from '../sim/types';
 import { BoardArtSet, type Clip, type LimbArt, type UnitArt } from './art';
 import {
-  boardCell, creepRunsOn, depth, facingOf, headingOf, isoGeo, limbView, openSides, pick, project, unproject,
+  FACING_STEP, boardCell, creepRunsOn, depth, facingOf, headingOf, isoGeo, limbView, openSides, pick, project, unproject,
   viewCell, viewOf, viewSize, wallIndex,
   type Facing, type Heading, type IsoGeo, type Pt, type Turn,
 } from './iso';
+import { buildingsOf, pickVariant, variantName } from './biome';
 import { CASTE_COLORS, ENEMY_SIZE, FAMILY_COLORS, Renderer } from './render';
 
 /** The old marks were drawn for a 26 px cell; on this board they are drawn this much bigger. */
@@ -31,6 +32,9 @@ const UNIT_PX = 3.6;
  * cell and the thin tips of its roots reach a little over the edge.
  */
 const LIMB_FILL = 0.75;
+/** A limb of two cells: how many cells across it is drawn, and how far behind the middle of its ground it stands. */
+const LONG_SIZE = 1.35;
+const LONG_BACK = 0.25;
 /** What the landing site stands on, as a share of the width of the square it fell on. */
 const CORE_FILL = 0.92;
 /** How high fliers fly, in levels. */
@@ -74,6 +78,11 @@ export class IsoRenderer extends Renderer {
   private floors = new Container();
   private creepFloor = new Container();
   private flat = new Container();
+  /** What lies ON the ground as a painting from straight above (the landing site's crater and roots). */
+  private decalBox = new Container();
+  private coreGround: Sprite | null = null;
+  /** Which building every cell belongs to: the roofs of one height that touch, in one district. */
+  private buildings: Int32Array = new Int32Array(0);
   private groundBox = new Container();
   private groundG = new Graphics();
   /** The shade a wall throws on the street at its foot: what makes a street read as a channel. */
@@ -134,7 +143,7 @@ export class IsoRenderer extends Renderer {
     this.aimBox.addChild(this.aimG);
     this.marksBox.addChild(this.marksG);
     this.marksBox.scale.set(K);
-    this.world.addChild(this.floors, this.creepFloor, this.flat, this.shadeBox, this.groundBox, this.sorted, this.ghosts, this.aimBox, this.marksBox);
+    this.world.addChild(this.floors, this.creepFloor, this.decalBox, this.flat, this.shadeBox, this.groundBox, this.sorted, this.ghosts, this.aimBox, this.marksBox);
     this.ready = true;
   }
 
@@ -152,6 +161,7 @@ export class IsoRenderer extends Renderer {
     const ground = new Matrix(x.x - o.x, x.y - o.y, y.x - o.x, y.y - o.y, o.x, o.y);
     this.groundBox.setFromMatrix(ground);
     this.aimBox.setFromMatrix(ground);
+    this.decalBox.setFromMatrix(ground);
     // The view's own cells laid on the ground: a cell is one unit each way.
     this.shadeBox.setFromMatrix(new Matrix(g.a, g.b, -g.a, g.b, 0, 0));
   }
@@ -286,7 +296,7 @@ export class IsoRenderer extends Renderer {
     const sim = this.simRef;
     const s = this.toBoard(clientX, clientY);
     if (!sim) return unproject(this.geo, s.x, s.y);
-    const hit = pick(this.geo, s.x, s.y, (x, y) => this.heightAt(sim, x, y));
+    const hit = pick(this.geo, s.x, s.y, (x, y) => this.heightAt(sim, x, y), 5);
     const under = sim.cellAt(hit.x, hit.y);
     if (hit.top && sim.towers.some((t) => sim.cellsOf(t).includes(under))) return { x: hit.x, y: hit.y };
     // A limb is taller than its cell: a click on its body is a click on the limb.
@@ -358,6 +368,8 @@ export class IsoRenderer extends Renderer {
     this.shots.clear();
     this.core = null;
     this.coreShade = null;
+    this.decalBox.removeChildren().forEach((x) => x.destroy());
+    this.coreGround = null;
     this.square = this.squareOf(sim);
     this.camInit = false;
     this.lastSimTime = sim.time;
@@ -399,9 +411,15 @@ export class IsoRenderer extends Renderer {
     return this.tileAt(v.x, v.y, up);
   }
 
-  /** How many cells across the ground a limb takes is: a big limb is drawn as big as its ground. */
+  /**
+   * How many cells across a limb is drawn. A big limb is drawn as big as its ground. A LONG
+   * limb (two cells, one behind the other) is a mound with a long thing lying forward from
+   * it: it is drawn a third bigger, standing a quarter of a cell behind the middle of its
+   * ground, so that the mound fills its back cell and what lies forward lies over its front one.
+   */
   private sizeOf(sim: Sim, t: Tower): number {
     const n = sim.cellsOf(t).length;
+    if (n === 2) return LONG_SIZE;
     return n > 1 ? Math.sqrt(n) : 1;
   }
 
@@ -420,7 +438,7 @@ export class IsoRenderer extends Renderer {
    * two faces of a block that are seen are the ones toward the camera, whichever those are.
    */
   private syncMap(sim: Sim): void {
-    const sig = `${this.turned}:${sim.map.slots.map((s) => (s ? '1' : '0')).join('')}`;
+    const sig = `${this.turned}:${sim.plinthsPlaced}:${sim.map.slots.map((s) => (s ? '1' : '0')).join('')}`;
     if (sig === this.mapSig) return;
     this.mapSig = sig;
     this.floors.removeChildren().forEach((x) => x.destroy());
@@ -433,48 +451,79 @@ export class IsoRenderer extends Renderer {
     const size = viewSize(g);
     const span = this.art.terrain!.wallSpan;
     const hV = (vx: number, vy: number) => this.heightV(sim, vx, vy);
+    this.buildings = buildingsOf(sim.map.cells, sim.map.heights, sim.map.w, sim.map.h, CellType.Block, PLATE);
     for (let vy = 0; vy < size.h; vy++) for (let vx = 0; vx < size.w; vx++) {
       const b = boardCell(g, vx, vy);
       const cell = b.y * W + b.x;
       const type = sim.map.cells[cell];
       const p = this.tileAt(vx, vy);
       const ij = `${vx % 4}${vy % 4}`;
+      const slot = Math.floor(b.y / PLATE) * sim.map.slotsX + Math.floor(b.x / PLATE);
+      // Every district is drawn with one tile set: the board's own, or one of its guests.
+      const set = this.setOfSlot(sim, slot);
       if (type !== CellType.Block) {
         const name = type === CellType.Void ? 'smoke' : type === CellType.Plaza ? 'plaza' : 'street';
-        this.add(this.floors, this.art.sprite('floors', `${name}-${ij}`), p.x, p.y);
-        if (type !== CellType.Void) this.addStreetProp(sim, cell, vx, vy, type === CellType.Plaza, hV(vx, vy - 1) > 0, hV(vx - 1, vy) > 0);
+        const floor = type === CellType.Void ? name : variantName(name, pickVariant(this.art.variantsOf(set, name), slot * 31 + 7));
+        this.add(this.floors, this.art.sprite('floors', `${floor}-${ij}`, set) ?? this.art.sprite('floors', `${name}-${ij}`, set), p.x, p.y);
+        if (type !== CellType.Void) this.addStreetProp(sim, cell, vx, vy, type === CellType.Plaza, hV(vx, vy - 1) > 0, hV(vx - 1, vy) > 0, set);
         continue;
       }
       const h = hV(vx, vy);
       const z = (vx + vy + 1) * 100;
-      const slot = Math.floor(b.y / PLATE) * sim.map.slotsX + Math.floor(b.x / PLATE);
       const kind = sim.map.slots[slot]?.feature ?? 'plain';
+      // Every BUILDING (the roofs of one height that touch, in one district) has one facade and one roof of its set's.
+      const building = this.buildings[cell];
+      const wall = variantName(kind, pickVariant(this.art.variantsOf(set, `wall-${kind}`), building * 17 + 3));
+      const roofName = variantName('roof', pickVariant(this.art.variantsOf(set, 'roof'), building * 29 + 11));
+      // How many of its levels, from the top, the body has raised on plinths: those are the body's own making.
+      const raised = sim.map.plinths[cell];
+      const face = (side: 'south' | 'east', l: number): Texture | null => {
+        const i = wallIndex(side, vx, vy, span);
+        if (l >= h - raised) return this.art.sprite('creep', `wall-plinth-${side}-${l % 3}-${i}`);
+        return this.art.sprite('walls', `wall-${wall}-${side}-${l}-${i}`, set) ?? this.art.sprite('walls', `wall-${kind}-${side}-${l}-${i}`, set);
+      };
       // The face on the left of the screen (toward +view y) and the one on the right (toward +view x).
       for (let l = hV(vx, vy + 1); l < h; l++) {
-        const s = this.add(this.sorted, this.art.sprite('walls', `wall-${kind}-south-${l}-${wallIndex('south', vx, vy, span)}`), p.x, p.y + g.b - (l + 1) * g.level, z);
+        const s = this.add(this.sorted, face('south', l), p.x, p.y + g.b - (l + 1) * g.level, z);
         if (s) this.blockSprites.push(s);
       }
       for (let l = hV(vx + 1, vy); l < h; l++) {
-        const s = this.add(this.sorted, this.art.sprite('walls', `wall-${kind}-east-${l}-${wallIndex('east', vx, vy, span)}`), p.x + g.a, p.y + g.b - (l + 1) * g.level, z);
+        const s = this.add(this.sorted, face('east', l), p.x + g.a, p.y + g.b - (l + 1) * g.level, z);
         if (s) this.blockSprites.push(s);
       }
-      const roof = this.add(this.sorted, this.art.sprite('floors', `roof-${ij}`), p.x, p.y - h * g.level, z + 1);
+      const roof = this.add(this.sorted, this.art.sprite('floors', `${roofName}-${ij}`, set) ?? this.art.sprite('floors', `roof-${ij}`, set), p.x, p.y - h * g.level, z + 1);
       if (roof) {
         // Higher roofs catch more light: height reads at a glance.
-        const tints = this.art.biome?.art.roofTint ?? ROOF_TINT;
+        const tints = this.art.biomeArt(set)?.roofTint ?? ROOF_TINT;
         roof.tint = tints[Math.min(h, tints.length) - 1] ?? 0xffffff;
         this.blockSprites.push(roof);
       }
       // A roof at the foot of a taller block lies in its shade (over the skin too: the skin is drawn at z + 2).
       if (hV(vx, vy - 1) > h) { const e = this.add(this.sorted, this.art.sprite('creep', 'edge-shade-north'), p.x, p.y - h * g.level, z + 4); if (e) this.blockSprites.push(e); }
       if (hV(vx - 1, vy) > h) { const e = this.add(this.sorted, this.art.sprite('creep', 'edge-shade-west'), p.x, p.y - h * g.level, z + 4); if (e) this.blockSprites.push(e); }
-      this.addProp(sim, b.x, b.y, h, kind, z);
+      this.addProp(sim, b.x, b.y, h, kind, z, set);
     }
     this.drawShade(sim);
     // Everything standing on the map is placed again over the new ground.
     this.creepState.fill(0);
     for (const list of this.creepSprites.values()) for (const s of list) s.destroy();
     this.creepSprites.clear();
+  }
+
+  /**
+   * The tile set a district is drawn with: the board's own, or one of the sets that are its
+   * guests (tools/art/biomes.mjs). The district the body fell in is always the board's own,
+   * and two districts in three are: a board is one place, with other places at its edges.
+   */
+  private setOfSlot(sim: Sim, slot: number): string | null {
+    const home = this.art.biome?.id ?? null;
+    if (!home) return null;
+    const guests = this.art.guests();
+    const start = Math.floor(Math.floor(sim.map.coreCell / sim.cfg.gridW) / PLATE) * sim.map.slotsX + Math.floor((sim.map.coreCell % sim.cfg.gridW) / PLATE);
+    if (!guests.length || slot === start) return home;
+    const r = (Math.imul(slot + 1, 2654435761) ^ Math.imul(sim.cfg.seed | 0, 40503)) >>> 0;
+    if (r % 3 !== 0) return home;
+    return guests[(r >>> 8) % guests.length];
   }
 
   /** The height in levels of a cell of the view (0: a street, a square, or off the board). */
@@ -510,15 +559,18 @@ export class IsoRenderer extends Renderer {
   }
 
   /** What stands on the roofs of the living city. A roof the body has taken is bare. */
-  private addProp(sim: Sim, cx: number, cy: number, h: number, kind: string, z: number): void {
+  private addProp(sim: Sim, cx: number, cy: number, h: number, kind: string, z: number, set: string | null): void {
     const r = ((cx * 7919 + cy * 104729 + cx * cy * 31) >>> 0) % 100;
     if (r >= 22) return;
-    const sets = this.art.biome?.art.roofProps ?? ROOF_PROPS;
+    // A roof the body has raised on a plinth is the body's: nothing of the city's stands on it.
+    if (sim.map.plinths[cy * sim.cfg.gridW + cx] > 0) return;
+    const sets = this.art.biomeArt(set)?.roofProps ?? ROOF_PROPS;
     const list = sets[kind] ?? sets.plain ?? [];
     if (!list.length) return;
-    const id = `prop-${list[r % list.length]}`;
-    const tex = this.art.sprite('props', id);
-    const rect = this.art.rect('props', id);
+    // Which of them: by the place, and spread over the whole list (the first pick was the remainder of a number under 22).
+    const id = `prop-${list[((cx * 2246822519 + cy * 3266489917) >>> 0) % list.length]}`;
+    const tex = this.art.sprite('props', id, set);
+    const rect = this.art.rect('props', id, set);
     if (!tex || !rect) return;
     const s = new Sprite(tex);
     s.anchor.set(rect.anchor?.[0] ?? 0.5, rect.anchor?.[1] ?? 0.94);
@@ -534,20 +586,20 @@ export class IsoRenderer extends Renderer {
    * behind the street, out of the lane; big things only on the squares. The body's skin
    * hides them, as it hides what stands on the roofs.
    */
-  private addStreetProp(sim: Sim, cell: number, vx: number, vy: number, square: boolean, wallBehind: boolean, wallBeside: boolean): void {
+  private addStreetProp(sim: Sim, cell: number, vx: number, vy: number, square: boolean, wallBehind: boolean, wallBeside: boolean, set: string | null): void {
     const cx = cell % sim.cfg.gridW;
     const cy = Math.floor(cell / sim.cfg.gridW);
     const r = ((cx * 15485863 + cy * 32452843 + cx * cy * 131) >>> 0) % 1000;
     if (square ? r >= 90 : r >= 110 || !(wallBehind || wallBeside)) return;
-    const all = this.art.biome?.art.streetProps ?? STREET_PROPS;
+    const all = this.art.biomeArt(set)?.streetProps ?? STREET_PROPS;
     const fits = all.filter((id) => {
-      const rect = this.art.rect('props', `prop-${id}`);
+      const rect = this.art.rect('props', `prop-${id}`, set);
       return rect !== null && (square || rect.w <= this.geo.a * 0.62);
     });
     if (!fits.length) return;
     const id = `prop-${fits[(r * 7 + cx + cy) % fits.length]}`;
-    const tex = this.art.sprite('props', id);
-    const rect = this.art.rect('props', id);
+    const tex = this.art.sprite('props', id, set);
+    const rect = this.art.rect('props', id, set);
     if (!tex || !rect) return;
     const s = new Sprite(tex);
     s.anchor.set(rect.anchor?.[0] ?? 0.5, rect.anchor?.[1] ?? 0.94);
@@ -576,13 +628,6 @@ export class IsoRenderer extends Renderer {
     for (const t of sim.towers) for (const c of sim.cellsOf(t)) held[c] = 1;
     const g = this.geo;
     const size = viewSize(g);
-    // Under the landing site the skin is as thick as on a roof: the body lies IN it.
-    const sq = this.square;
-    const underCore = (cell: number): boolean => {
-      if (!sq) return false;
-      const c = sim.cellCenter(cell);
-      return Math.hypot(c.x - sq.x, c.y - sq.y) <= (sq.across / 2 + 0.2) * sim.cfg.cellPx;
-    };
     for (let vy = 0; vy < size.h; vy++) for (let vx = 0; vx < size.w; vx++) {
       const b = boardCell(g, vx, vy);
       const cell = b.y * W + b.x;
@@ -598,7 +643,7 @@ export class IsoRenderer extends Renderer {
         });
         const fx = sim.creepEffectAt(cell);
         state = 1 + open + (fx.slow < 1 ? 32 : 0) + (fx.dps > 0 ? 64 : 0) + (sim.isBody(cell) ? 128 : 0)
-          + (h === 0 && (held[cell] || underCore(cell)) ? 256 : 0);
+          + (h === 0 && held[cell] ? 256 : 0) + (sim.map.plinths[cell] > 0 ? 512 : 0);
       }
       if (state === this.creepState[cell]) continue;
       this.creepState[cell] = state;
@@ -624,15 +669,17 @@ export class IsoRenderer extends Renderer {
         made.push(skin);
       }
       if (h) {
-        // Where the roof ends the skin rolls over its edge, lit, and runs down the wall.
+        // Where the roof ends the skin rolls over its edge, lit, and runs down the wall. Not down a
+        // plinth: a plinth is bone, and is seen to be what holds the limb up.
+        const bone = sim.map.plinths[cell] > 0;
         if (this.heightV(sim, vx, vy + 1) < h) {
-          const d = this.add(this.sorted, this.art.sprite('creep', `drip-south-${vx % 4}`), p.x, p.y + g.b, z + 3);
+          const d = bone ? null : this.add(this.sorted, this.art.sprite('creep', `drip-south-${vx % 4}`), p.x, p.y + g.b, z + 3);
           if (d) { d.tint = tint; made.push(d); }
           const lip = this.add(this.sorted, this.art.sprite('creep', 'edge-lip-south'), p.x, p.y, z + 3);
           if (lip) made.push(lip);
         }
         if (this.heightV(sim, vx + 1, vy) < h) {
-          const d = this.add(this.sorted, this.art.sprite('creep', `drip-east-${3 - (vy % 4)}`), p.x + g.a, p.y + g.b, z + 3);
+          const d = bone ? null : this.add(this.sorted, this.art.sprite('creep', `drip-east-${3 - (vy % 4)}`), p.x + g.a, p.y + g.b, z + 3);
           if (d) { d.tint = tint; made.push(d); }
           const lip = this.add(this.sorted, this.art.sprite('creep', 'edge-lip-east'), p.x, p.y, z + 3);
           if (lip) made.push(lip);
@@ -647,6 +694,13 @@ export class IsoRenderer extends Renderer {
     return atlas.frame(i, art.frame, art.cols);
   }
 
+  /**
+   * The landing site, in two parts (tools/art/templates/core.mjs). What lies on the ground
+   * (the crater and its roots) is a painting from straight above, laid on the ground by the
+   * same matrix that lays everything else there: it cannot float, blocks stand on it, and it
+   * turns with the camera. What stands up (the meteor and the heart in it) is a sprite like a
+   * limb's, standing where its footing is marked. Both in the middle of the square it fell on.
+   */
   private syncCore(sim: Sim): void {
     const c = this.art.core;
     if (!c) {
@@ -656,19 +710,34 @@ export class IsoRenderer extends Renderer {
       this.groundG.circle(sim.core.x, sim.core.y, r).fill(0x9c3120);
       return;
     }
+    const sq = this.square ?? { x: sim.core.x, y: sim.core.y, across: 3 };
     if (!this.core) {
+      if (this.art.coreGround && c.art.ground) {
+        this.coreGround = new Sprite(this.art.coreGround);
+        this.coreGround.anchor.set(0.5, 0.5);
+        this.decalBox.addChild(this.coreGround);
+      }
       this.coreShade = new Sprite(this.shade());
       this.coreShade.anchor.set(0.5, 0.5);
       this.core = new Sprite(c.atlas.frame(0, c.art.frame, c.art.cols));
-      // The point of the picture that lies on the middle of the square: the middle of what it stands on.
+      // The point of the picture that stands on the middle of the square: the middle of its collar.
       this.core.anchor.set(c.art.anchor[0], c.art.anchor[1]);
       this.sorted.addChild(this.coreShade, this.core);
     }
-    // It lies in the middle of the square it fell on, and is as wide as the square: a round
-    // thing `across` cells wide on the ground is `across` times the root of two half-tiles wide on the screen.
-    const sq = this.square ?? { x: sim.core.x, y: sim.core.y, across: 3 };
+    // The heart beats: the ground it grew swells a little with it.
+    const beat = 0.5 + 0.5 * Math.sin(this.simClock * Math.PI * 2 * (c.art.fps / Math.max(1, c.art.count)));
+    if (this.coreGround && c.art.ground) {
+      // In world pixels: the box it is in lays it on the ground as the camera sees the ground.
+      const across = c.art.ground.cells * sim.cfg.cellPx;
+      this.coreGround.position.set(sq.x, sq.y);
+      this.coreGround.width = across;
+      this.coreGround.height = across;
+      const k = Math.round(232 + 23 * beat);
+      this.coreGround.tint = (255 << 16) | (k << 8) | k;
+    }
     const p = project(this.geo, sq.x, sq.y);
-    const width = sq.across * Math.SQRT2 * this.geo.a * CORE_FILL;
+    // A round thing `cells` wide on the ground is `cells` times the root of two half-tiles wide on the screen.
+    const width = c.art.cells * Math.SQRT2 * this.geo.a * CORE_FILL;
     this.core.position.set(p.x, p.y);
     this.core.scale.set(width / ((c.art.body ?? 0.86) * c.art.frame));
     this.core.zIndex = depth(this.geo, sq.x, sq.y) * 100 + 40;
@@ -676,8 +745,8 @@ export class IsoRenderer extends Renderer {
     this.core.texture = c.atlas.frame(at, c.art.frame, c.art.cols);
     if (this.coreShade) {
       this.coreShade.position.set(p.x, p.y);
-      this.coreShade.width = width * 1.35;
-      this.coreShade.height = width * 1.35 * (this.geo.b / this.geo.a);
+      this.coreShade.width = width * 1.3;
+      this.coreShade.height = width * 1.3 * (this.geo.b / this.geo.a);
       this.coreShade.zIndex = this.core.zIndex - 1;
     }
   }
@@ -792,14 +861,14 @@ export class IsoRenderer extends Renderer {
     const g = this.geo;
     for (const t of sim.towers) {
       const h = this.heightOf(sim, t.cell);
-      const p = project(g, t.pos.x, t.pos.y, h);
+      const p0 = project(g, t.pos.x, t.pos.y, h);
       const found = this.art.limbs.get(t.family);
       let v = this.limbs.get(t.id);
       if (v && v.family !== t.family) { v.sprite.destroy(); v.shade.destroy(); this.limbs.delete(t.id); v = undefined; }
       if (!found) {
         // No picture of this limb: its old shape, at the size of the rest.
-        this.drawTowerBody(this.marksG, t, p.x / K, (p.y - 20) / K, sim);
-        this.drawTowerMarks(this.marksG, t, p.x / K, (p.y - 20) / K, sim);
+        this.drawTowerBody(this.marksG, t, p0.x / K, (p0.y - 20) / K, sim);
+        this.drawTowerMarks(this.marksG, t, p0.x / K, (p0.y - 20) / K, sim);
         continue;
       }
       const { art, atlas } = found;
@@ -819,15 +888,27 @@ export class IsoRenderer extends Renderer {
       let { back, mirror } = limbView(g, v.facing);
       if (art.flat) { back = false; mirror = false; }
       // A wall across a street lies across it: along the view's x as it is drawn, along its y mirrored.
-      else if (art.on === 'street') { back = false; mirror = this.laneRunsAlongX(sim, t.cell) !== (g.turn % 2 === 1); }
+      else if (art.on === 'street') {
+        back = false;
+        // A wall two cells long lies the way its two cells lie; one of a single cell, across its street.
+        const ground = sim.cellsOf(t);
+        const alongX = ground.length === 2 ? Math.abs(ground[1] - ground[0]) === 1 : !this.laneRunsAlongX(sim, t.cell);
+        mirror = !alongX !== (g.turn % 2 === 1);
+      }
       const side = back && art.back ? art.back : art;
 
       const stats = towerStats(t);
       const size = this.sizeOf(sim, t);
+      // Where it stands: the middle of its ground; a long limb, a little behind it.
+      const long = sim.cellsOf(t).length === 2 && !art.flat && art.on !== 'street';
+      const step = FACING_STEP[v.facing];
+      const p = long
+        ? project(g, t.pos.x - step[0] * g.cell * LONG_BACK, t.pos.y - step[1] * g.cell * LONG_BACK, h)
+        : p0;
       // How wide what it stands on is drawn: a swamp covers the ground it slows; a wall spans its lane; the rest fill their ground.
       let width = 2 * g.a * LIMB_FILL * size;
       if (art.flat) width = 2 * ((towerSpec(t.family).swamp?.radius ?? 30) + (stats.aoe - towerSpec(t.family).aoe)) * Math.SQRT2 * (g.a / g.cell);
-      else if (art.on === 'street') width = 2 * g.a * 0.8;
+      else if (art.on === 'street') width = 2 * g.a * 0.8 * (sim.cellsOf(t).length === 2 ? 1.8 : 1);
       const scale = width / (side.body * art.frame);
 
       // A limb that has just fired plays its firing clip, fitted into the time before it fires again.

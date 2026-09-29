@@ -13,7 +13,7 @@ import { DARES, FACTIONS, HOME, LINEAGES, TERRITORIES } from '../content/campaig
 import { DT, Sim } from '../src/sim/sim';
 import { Autoplayer } from '../src/sim/autoplayer';
 import type { RunStats } from '../src/sim/types';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 
 const blankStats = (): RunStats => ({
   kills: {}, killsByFamily: {}, killsByCause: {}, healed: 0, limbsGrown: 0, evolutions: 0, limbsLost: 0,
@@ -308,5 +308,52 @@ describe('the factions keep in touch, and choices change the route (audit, Sep 2
       return Object.values(next).reduce((a, n) => a + (n ?? 0), 0);
     };
     expect(count(0.9)).toBeLessThan(count(1));
+  });
+});
+
+describe('how the factions reach him, and the picture of every scene', () => {
+  /** Every scene of every faction, with the id its picture has to have. */
+  const scenes = FACTIONS.flatMap((f) => [
+    { id: `${f.id}-contact`, scene: f.contact },
+    ...f.beats.map((b) => ({ id: `${f.id}-${b.id}`, scene: b.scene })),
+    { id: `${f.id}-ending`, scene: f.ending },
+    ...Object.entries(f.endingByChoice?.scenes ?? {}).map(([choice, scene]) => ({ id: `${f.id}-ending-${choice}`, scene })),
+  ]);
+
+  it('every scene of every faction names its own picture, <faction>-<scene>', () => {
+    expect(scenes.length).toBe(18);
+    for (const s of scenes) expect(s.scene.picture).toBe(s.id);
+  });
+
+  it('every picture a scene names is in the manifest and on disk', () => {
+    const listed = JSON.parse(readFileSync('public/art/manifest.json', 'utf8')).ship?.ship?.scenes ?? {};
+    for (const s of scenes) {
+      expect(listed[s.id], `${s.id} in the manifest`).toBe(`ship/scenes/${s.id}.webp`);
+      expect(existsSync(`public/art/${listed[s.id]}`), `${s.id} on disk`).toBe(true);
+    }
+  });
+
+  it('he is in orbit: each faction reaches him in its own way, and nobody hands him anything', () => {
+    const by = (id: string) => FACTIONS.find((f) => f.id === id)!;
+    expect(by('delegation').contact.title).toBe('A Letter, Spelled Out in a Field');
+    expect(by('faithful').contact.title).toBe('A Broadcast on Every Frequency');
+    expect(by('institute').contact.title).toBe('A Video Call, Mid-Game');
+    for (const f of FACTIONS) {
+      const all = [f.contact.title, ...f.contact.lines, ...f.asides].join(' ');
+      expect(all).not.toMatch(/hand-delivered|by hand|\bpostman\b|\bcourier\b/i);
+    }
+    // The letters stay letters; each says how it came.
+    expect(by('delegation').asides.every((a) => a.startsWith('Delegate (letter, by field): '))).toBe(true);
+    expect(by('delegation').contact.lines.join(' ')).toMatch(/Dear Visitor/);
+    expect(by('institute').contact.lines.join(' ')).toMatch(/deep-space dish/);
+    // Everything the Voice says to him is said on the air.
+    expect(by('faithful').asides.filter((a) => a.startsWith('The Voice')).every((a) => /^The Voice \((broadcast|to you, on the air)\): /.test(a))).toBe(true);
+  });
+
+  it('no scene grew by more than two lines, and every line still names its speaker', () => {
+    for (const s of scenes) {
+      expect(s.scene.lines.length).toBeLessThanOrEqual(9);
+      for (const l of s.scene.lines) expect(l).toMatch(/^[^:]{2,40}: \S/);
+    }
   });
 });

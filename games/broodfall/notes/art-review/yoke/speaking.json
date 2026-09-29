@@ -1,0 +1,34 @@
+{
+ "state": "speaking",
+ "frames": 94,
+ "seconds": 3.92,
+ "kb": 602,
+ "failed": 0,
+ "checks": [
+  {
+   "name": "the loop closes",
+   "ok": true,
+   "value": 1.69
+  },
+  {
+   "name": "she moves",
+   "ok": true,
+   "value": 0.168
+  },
+  {
+   "name": "no green on her outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "she fills the stage as a person does",
+   "ok": true,
+   "value": "25% of it"
+  },
+  {
+   "name": "light to load (under 900 KB)",
+   "ok": true,
+   "value": "602 KB"
+  }
+ ]
+}

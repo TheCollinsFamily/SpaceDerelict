@@ -1,0 +1,29 @@
+{
+ "state": "nod",
+ "frames": 96,
+ "seconds": 4,
+ "kb": 919,
+ "failed": 1,
+ "checks": [
+  {
+   "name": "it ends where it began",
+   "ok": true,
+   "value": 9.39
+  },
+  {
+   "name": "no green on her outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "she fills the stage as a person does",
+   "ok": true,
+   "value": "25% of it"
+  },
+  {
+   "name": "light to load (under 900 KB)",
+   "ok": false,
+   "value": "919 KB"
+  }
+ ]
+}

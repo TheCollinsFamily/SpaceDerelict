@@ -22,8 +22,19 @@ const rfab: ProxyOptions = {
   },
 };
 
+/**
+ * Several sessions work in this folder at once. Each that runs browser beats sets its own
+ * port and its own build folder, so that none serves, rebuilds or kills another's game:
+ *   BROODFALL_PORT=5211 BROODFALL_DIST=dist-ship npm run build
+ *   BROODFALL_PORT=5211 BROODFALL_DIST=dist-ship node tools/shot-ship.mjs
+ * Unset, they are 5199 and dist: what Collins runs.
+ */
+const PORT = Number(process.env.BROODFALL_PORT || 5199);
+const DIST = process.env.BROODFALL_DIST || 'dist';
+
 export default defineConfig({
   base: './',
-  server: { port: 5199, strictPort: false, proxy: { '/rfab-api': rfab } },  // players fall through to the next port; scripts use preview
-  preview: { port: 5199, strictPort: true, proxy: { '/rfab-api': rfab } },
+  build: { outDir: DIST },
+  server: { port: PORT, strictPort: false, proxy: { '/rfab-api': rfab } },  // players fall through to the next port; scripts use preview
+  preview: { port: PORT, strictPort: true, proxy: { '/rfab-api': rfab } },
 });

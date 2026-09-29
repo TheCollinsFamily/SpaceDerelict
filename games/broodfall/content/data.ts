@@ -22,15 +22,19 @@ export const TOWERS: readonly TowerSpec[] = [
     maxHp: 110, interest: 0, eatThreshold: 0, advanced: false, hits: 'ground',
   },
   {
+    // A BIG limb: a mouth that eats bodies whole takes four cells of one flat roof. It is paid for its ground.
+    // Before it took more than one cell: range 45, damage 10, maxHp 130.
     family: 'maw', name: 'Maw', weight: 14,
-    cost: { war: 20 }, range: 45, rate: 0.8, damage: 10, aoe: 0,
-    maxHp: 130, interest: 1, eatThreshold: 25, advanced: true, hits: 'ground',
+    cost: { war: 20 }, range: 52, rate: 0.8, damage: 15, aoe: 0,
+    span: [2, 2], maxHp: 312, interest: 1, eatThreshold: 25, advanced: true, hits: 'ground',
   },
   {
     // In-street barricade; chewers get barbs back (thorns).
+    // A LONG limb: a wall two cells long, across a street two lanes wide or along a roof. It is paid for its ground.
+    // Before it took more than one cell: damage 4, maxHp 520.
     family: 'spine', name: 'Spine Wall', weight: 12,
-    cost: { war: 10 }, range: 0, rate: 0, damage: 4, aoe: 0,
-    maxHp: 520, interest: 0, eatThreshold: 0, advanced: false, hits: 'ground',
+    cost: { war: 10 }, range: 0, rate: 0, damage: 5, aoe: 0,
+    span: [1, 2], maxHp: 832, interest: 0, eatThreshold: 0, advanced: false, hits: 'ground',
   },
   {
     // Bait that bites: pulses a toxic pheromone cloud onto the nearest street
@@ -42,10 +46,12 @@ export const TOWERS: readonly TowerSpec[] = [
   },
   {
     // Control: hit enemies wade through mucus. Weak damage, strong tempo.
+    // A BIG limb: a bed is a bed: four cells of one flat roof. It is paid for its ground.
+    // Before it took more than one cell: range 80, damage 4, aoe 30, maxHp 70.
     family: 'tangler', name: 'Snare Bed', weight: 12,
-    cost: { war: 16 }, range: 80, rate: 0.9, damage: 4, aoe: 30,
+    cost: { war: 16 }, range: 92, rate: 0.9, damage: 6, aoe: 38,
     slowMult: 0.55, slowDur: 1.8,
-    maxHp: 70, interest: 1, eatThreshold: 0, advanced: false, hits: 'ground',
+    span: [2, 2], maxHp: 168, interest: 1, eatThreshold: 0, advanced: false, hits: 'ground',
   },
   {
     // Damage over time: spore clouds that keep eating. Poison ignores armor caps,
@@ -57,10 +63,12 @@ export const TOWERS: readonly TowerSpec[] = [
   },
   {
     // Artillery: a bone harpoon that skewers a whole file and ignores shields.
+    // A LONG limb: the ballista lies along its harpoon, on two cells of one flat roof. It is turned to fit. It is paid for its ground.
+    // Before it took more than one cell: range 150, damage 34, maxHp 80.
     family: 'impaler', name: 'Impaler', weight: 8,
-    cost: { war: 36 }, range: 150, rate: 0.35, damage: 34, aoe: 0,
+    cost: { war: 36 }, range: 165, rate: 0.35, damage: 43, aoe: 0,
     pierce: true,
-    maxHp: 80, interest: 2, eatThreshold: 0, advanced: true, hits: 'both',
+    span: [1, 2], maxHp: 128, interest: 2, eatThreshold: 0, advanced: true, hits: 'both',
   },
   {
     // Support: a resonance organ that syncs the limbs around it to a faster beat.
@@ -101,10 +109,12 @@ export const TOWERS: readonly TowerSpec[] = [
   {
     // The chain seat: one strike arcs through a whole squad in falling steps —
     // arcs are separate small hits, so shield walls soak them badly.
+    // A BIG limb: the frond spreads over four cells of one flat roof. It is paid for its ground.
+    // Before it took more than one cell: range 90, damage 12, maxHp 70.
     family: 'frond', name: 'Galvanic Frond', weight: 9,
-    cost: { war: 24 }, range: 90, rate: 0.7, damage: 12, aoe: 0,
+    cost: { war: 24 }, range: 103, rate: 0.7, damage: 18, aoe: 0,
     chains: 3,
-    maxHp: 70, interest: 2, eatThreshold: 0, advanced: true, hits: 'both',
+    span: [2, 2], maxHp: 168, interest: 2, eatThreshold: 0, advanced: true, hits: 'both',
   },
   {
     // The player-aimed artillery seat: click it, click ground — a bile glob
@@ -118,10 +128,12 @@ export const TOWERS: readonly TowerSpec[] = [
     // The debuff seat: caustic mist SHREDS armor — everyone's hits bite deeper
     // into a shredded target, so it turns the phalanx into a board-wide puzzle.
     // Mist clings: it also REVEALS cloaked bodies it coats.
+    // A BIG limb: the sprinkler takes four cells of one flat roof. It is paid for its ground.
+    // Before it took more than one cell: range 85, damage 2, aoe 40, maxHp 65.
     family: 'mister', name: 'Caustic Mister', weight: 8,
-    cost: { war: 12 }, range: 85, rate: 0.5, damage: 2, aoe: 40,
+    cost: { war: 12 }, range: 98, rate: 0.5, damage: 3, aoe: 50,
     shred: 8, shredDur: 4,
-    maxHp: 65, interest: 2, eatThreshold: 0, advanced: true, hits: 'both',
+    span: [2, 2], maxHp: 156, interest: 2, eatThreshold: 0, advanced: true, hits: 'both',
   },
   {
     // The global sniper seat: one slow board-wide eye that executes the support
@@ -171,10 +183,12 @@ export const TOWERS: readonly TowerSpec[] = [
   {
     // One direction only, very long, and the shell SKIPS like a stone: it lands,
     // bounces on down the line and lands again. Set its facing in its panel.
+    // A LONG limb: the mortar lies along the way it fires, on two cells of one flat roof. It is paid for its ground.
+    // Before it took more than one cell: range 330, damage 26, aoe 32, maxHp 85.
     family: 'skipper', name: 'Skipping Mortar', weight: 8,
-    cost: { war: 26 }, range: 330, rate: 0.35, damage: 26, aoe: 32,
+    cost: { war: 26 }, range: 363, rate: 0.35, damage: 33, aoe: 35,
     skips: 2, directional: true,
-    maxHp: 85, interest: 2, eatThreshold: 0, advanced: true, hits: 'ground',
+    span: [1, 2], maxHp: 136, interest: 2, eatThreshold: 0, advanced: true, hits: 'ground',
   },
   {
     // The anti-air specialist: flak webs that only hit FLIERS — and drag them
@@ -287,10 +301,12 @@ export const TOWERS: readonly TowerSpec[] = [
     // new ground in a straight strip (right-click turns it). Its reach grows the
     // line, its splash widens it, its tempo grows it faster. Unlocked by the
     // Runner Gland. If it dies, what stood only on its strip withers.
+    // A LONG limb: the nozzle lies along the way it lays its creep, on two cells of one flat roof. It is paid for its ground.
+    // Before it took more than one cell: maxHp 90.
     family: 'lance', name: 'Creep Lance', weight: 8,
     cost: { war: 20 }, range: 0, rate: 0, damage: 0, aoe: 0,
     directional: true,
-    maxHp: 90, interest: 1, eatThreshold: 0, advanced: true, hits: 'ground',
+    span: [1, 2], maxHp: 144, interest: 1, eatThreshold: 0, advanced: true, hits: 'ground',
   },
   {
     // The TRAP CAGE (experiment "Puppet Queen"): never drawn — the experiment hands

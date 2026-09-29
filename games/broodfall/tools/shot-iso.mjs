@@ -16,7 +16,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, '..');
 const shots = join(here, 'screenshots');
 mkdirSync(shots, { recursive: true });
-const PORT = 5199;
+const PORT = Number(process.env.BROODFALL_PORT || 5199);
 const failures = [];
 const pass = (name) => console.log(`  PASS  ${name}`);
 const fail = (name, detail) => { failures.push(name); console.log(`  FAIL  ${name} — ${detail}`); };
@@ -26,7 +26,7 @@ function freePort() {
   try {
     const out = execSync('netstat -ano', { encoding: 'utf8' });
     for (const line of out.split(String.fromCharCode(10))) {
-      const m = line.match(/:5199\s+\S+\s+LISTENING\s+(\d+)/);
+      const m = line.match(new RegExp(':' + PORT + '\\s+\\S+\\s+LISTENING\\s+(\\d+)'));
       if (m) { try { execSync('taskkill /PID ' + m[1] + ' /T /F', { stdio: 'ignore' }); } catch {} }
     }
   } catch {}

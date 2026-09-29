@@ -25,12 +25,14 @@ const COLOR: Record<OrganId, string> = {
   gland: '#4fa9a4', root: '#8f4a3d', atrophy: '#5a4a48',
   bladder: '#a8c878', pacemaker: '#e89a6a', budder: '#c8e0a0', cyst: '#98b060', swell: '#b8d890', catapult: '#d0b070',
   mire: '#7a9a70', acid: '#c8d040', runner: '#a0c070',
+  scaffold: '#e6dcc0',
 };
 const GLYPH: Record<OrganId, string> = {
   forge: '⚒', venom: '☣', gut: '∞', nerve: 'ϟ', lattice: '▦', womb: '◉', marrow: '⊞', resonance: '◎',
   heart: '♥', brain: '✺', gland: '◆', root: '⟟', atrophy: '⊘',
   bladder: '✿', pacemaker: '♪', budder: '❀', cyst: '•', swell: '◍', catapult: '➶',
   mire: '≋', acid: '☠', runner: '⇶',
+  scaffold: '▲',
 };
 const VERB: Partial<Record<TowerFamily, string>> = {
   spitter: 'tempo', impaler: 'armor-pierce', blighter: 'poison', maw: 'richer meat', frond: 'arcs',
@@ -173,7 +175,8 @@ export class UndergroundScreen {
     }).join('')}</div>`;
     this.palette.innerHTML = section('THEMES — unlock limbs, power them by level', ORGAN_DEFS.filter((d) => d.kind === 'theme').map((d) => d.id))
       + section('ZONES & TISSUE', ORGAN_DEFS.filter((d) => d.kind === 'zone' || d.kind === 'root').map((d) => d.id))
-      + section('CREEP — organs that make FREE creep nodes', ORGAN_DEFS.filter((d) => d.kind === 'creep').map((d) => d.id));
+      + section('CREEP — organs that make FREE creep nodes', ORGAN_DEFS.filter((d) => d.kind === 'creep').map((d) => d.id))
+      + section('SCAFFOLD — FREE plinths: raise a limb, or level a roof for a big one', ORGAN_DEFS.filter((d) => d.kind === 'scaffold').map((d) => d.id));
 
     const cells: string[] = [];
     for (let i = 0; i < u.cells.length; i++) {
@@ -246,6 +249,11 @@ export class UndergroundScreen {
     if (bl.length || sim.creepNodes > 0 || sim.organs.some((o) => ORGAN_BY_ID[o.organ].kind === 'creep')) {
       const recipes = bl.map((o) => { const r = sim.bladderRate(o); return `${r.per} every ${r.every === 1 ? 'turn' : `${r.every} turns`}${r.atWaveStart ? ` +${r.atWaveStart} at wave start` : ''}: ${strainIcons(sim.bladderStrain(o))} (${strainLabel(sim.bladderStrain(o))})`; });
       rows.push(`<div><b>CREEP NODES</b> → ${sim.creepNodes} in stock${recipes.length ? ` · bladders: ${recipes.join('; ')}` : ' · no bladder yet'}</div>`);
+    }
+    const glands = sim.organs.filter((o) => o.organ === 'scaffold');
+    if (glands.length || sim.plinths > 0) {
+      const soonest = glands.length ? Math.min(...glands.map((o) => sim.scaffoldTurnsLeft(o))) : 0;
+      rows.push(`<div><b>PLINTHS</b> → ${sim.plinths} in stock${glands.length ? ` · next in ${soonest} turn${soonest === 1 ? '' : 's'}` : ' · no scaffold gland yet'}</div>`);
     }
     const core = sim.coreStrainBonus();
     if (core.radius || core.slow < 1 || core.dps) {

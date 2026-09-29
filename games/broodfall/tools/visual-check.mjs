@@ -18,7 +18,7 @@ const root = join(here, '..');
 const shots = join(here, 'screenshots');
 mkdirSync(shots, { recursive: true });
 
-const PORT = 5199;
+const PORT = Number(process.env.BROODFALL_PORT || 5199);
 const failures = [];
 const pass = (name) => console.log(`  PASS  ${name}`);
 const fail = (name, detail) => {
@@ -33,7 +33,7 @@ function freePort() {
     const out = execSync('netstat -ano', { encoding: 'utf8' });
     const rows = out.split(String.fromCharCode(10));
     for (const line of rows) {
-      const m = line.match(/:5199\s+\S+\s+LISTENING\s+(\d+)/);
+      const m = line.match(new RegExp(':' + PORT + '\\s+\\S+\\s+LISTENING\\s+(\\d+)'));
       if (m) { try { execSync('taskkill /PID ' + m[1] + ' /T /F', { stdio: 'ignore' }); } catch {} }
     }
   } catch {}

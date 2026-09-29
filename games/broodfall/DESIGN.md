@@ -774,6 +774,31 @@ is the higher-expected-value option.
   next time"; the Director is last into the upload chamber, delivering a speech about
   his own foresight.
 
+#### How each faction reaches him (added Sep 29 2026)
+Collins, of the first contact card ("A Letter, Hand-Delivered"): "obviously would not be
+hand delivered; how they contact you will be unique to each faction but needs to make
+sense." He is in orbit, so nobody can hand him anything, and each faction's way of reaching
+him is a joke about who they are:
+- **The Delegation write letters, and spell them out in a field.** They have no transmitter
+  and would not know where to point one, but they have members: eleven thousand of them
+  hold coloured cards over their heads, a paragraph at a time, for his survey cameras
+  ("page two took until Thursday"). Every later letter comes the same way, the newsletter
+  "in the next field along". It is the slowest channel there is, used by the faction that
+  wants everything to go faster.
+- **The Faithful broadcast.** The Voice owns forty radio stations, so everything he says to
+  the character is said on the air: the Book is read to him a chapter a night, and his
+  theology homework is marked in front of the whole congregation.
+- **The Institute call by video,** through the deep-space dish they built to listen for
+  aliens, on the ship's own encrypted command channel, with an expected-value table
+  attached. The Director is in a match while he does it.
+- His answers go down through the ship's transmitter, to whatever they are listening on.
+  Two scenes he attends through the asset, which is there: the first summit (it eats it)
+  and the last congress.
+- **Every scene has its own picture** (a still in the look of the films, `picture` on the
+  scene in `content/campaign.ts`; made by `tools/art/templates/ship.mjs`, baked to
+  `public/art/ship/scenes/`). The leader's portrait stays in Comms and beside the letters
+  in a debrief.
+
 ### Suggested build order
 1. The two credits: the Requisition Board (standing) and Dares (field notes), which
    use stats the sim already tracks; starting organs + lineage unlocks on the ship.

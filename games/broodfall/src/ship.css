@@ -119,6 +119,19 @@
 #campaign.ship-art[data-in="ai"] .cp-card { width: min(820px, 50%); }
 #campaign.ship-art .cp-card { z-index: 2; }
 #campaign:not(.ship-art) .cp-yoke { display: none; }
+/* YOKE as her Living Avatar (src/ui/yokeAvatar.ts): her clips, in place of the six still
+   faces. A clip is 16:9 with her in its middle; her stage is the square cut from that
+   middle. The clips are light already (tools/art/templates/yoke.mjs, "the projection"), so
+   no scan lines are drawn over them; her lower edge fades out into the light of the dais.
+   Two layers, one over the other: a change of face is a short fade and never a blink. */
+.cp-yoke.cp-yoke-live {
+  background-image: none; width: min(460px, 31vw); overflow: hidden;
+  -webkit-mask-image: linear-gradient(180deg, #000 80%, transparent 99%); mask-image: linear-gradient(180deg, #000 80%, transparent 99%);
+}
+.cp-yoke.cp-yoke-live::after { content: none; }
+.cp-yoke-live video { position: absolute; left: 50%; bottom: 0; height: 100%; transform: translateX(-50%); opacity: 0; transition: opacity 0.2s linear; }
+.cp-yoke-live video.on { opacity: 1; }
+.cp-mute[aria-pressed="true"] { opacity: 0.6; }
 
 /* The ship fills the window: there is no field console up here. */
 body.in-ship #campaign { position: fixed; inset: 0; }
@@ -148,6 +161,17 @@ body.in-ship #campaign { position: fixed; inset: 0; }
 #campaign.ship-art .cp-scene-card .cp-pick, #campaign.ship-art .cp-scene-card .cp-room { background: #c7b788; border: 2px solid #6e6140; color: #26200f; }
 #campaign.ship-art .cp-scene-card .screen-btn { background: #26200f; color: #efe4c4; }
 #campaign.ship-art .cp-scene-card .cp-label { color: #26200f; border: none; }
+
+/* A scene's own picture: a still of what is happening in it, the size of a lobby card.
+   The card is wider for it, so that the lines still run long enough to read easily.
+   Clicked, the picture is as wide as the card (.big), and the lines go under it. */
+.cp-scene-card:has(.cp-scene-pic) { width: min(900px, calc(100% - 32px)); max-height: calc(100% - 24px); overflow-y: auto; }
+.cp-scene-pic {
+  float: right; width: min(320px, 44%); aspect-ratio: 640 / 427; object-fit: cover; margin: 2px 0 10px 18px; cursor: zoom-in;
+  border: 3px solid #1a1208; outline: 1px solid rgba(255, 255, 255, 0.4); filter: saturate(1.1) contrast(1.04);
+}
+.cp-scene-pic.big { float: none; display: block; width: 100%; margin: 0 0 12px; cursor: zoom-out; }
+.cp-scene-card:has(.cp-scene-pic) .cp-scene-btns { clear: both; }
 
 /* While the title screen is up there is no field console: the ship fills the window. */
 body:has(#menu.ship-art:not(.hidden)) #topbar, body:has(#menu.ship-art:not(.hidden)) #botbar { visibility: hidden; }

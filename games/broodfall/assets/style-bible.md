@@ -1,4 +1,4 @@
-# Broodfall style bible — v6 (Sep 29 2026)
+# Broodfall style bible — v7 (Sep 29 2026)
 
 The visual language of the game, and the prompt blocks every generated asset shares.
 Concept pictures are in `notes/concepts/2026-09-29/`; the script is
@@ -99,6 +99,26 @@ Concept pictures are in `notes/concepts/2026-09-29/`; the script is
     around (necessary for most gameplay) we would get a 'doom effect' if we did that."
 27. **Everything on the board is as sharp as everything else.** "The core is looking a
     different resolution than the towers, which looks awful."
+28. **The limbs sit well; the core did not.** "Great job making the limbs sit well (little
+    improvement room but generally good) … the core (whatever we are calling the center
+    thing) is not sitting well AT ALL and I am kind of shocked you didn't notice: in every
+    picture it's just kind of floating there over parts of the environment etc. It may need
+    to be redrawn because it looks a little jaunty." See "The landing site, in two parts".
+29. **Many towers take more than one square, and height is won.** "I don't see any of them
+    being more than one square, which is a huge part of tower defence gameplay: getting that
+    raised location that happens to fit the tower you want at a high height and then
+    adjacency bonuses and everything (also platforms that raise the height of one thing by
+    one amount: let's have an organ that generates 1 every two waves for free)." DESIGN.md,
+    "BIG limbs" and "Plinths".
+30. **Faction scenes are liked; contact must make sense.** Of the Friendship Delegation's
+    contact card: "love stuff like [this] (I mean obviously would not be hand delivered;
+    how they contact you will be unique to each faction but needs to make sense)."
+31. **The ship's AI is someone to talk to.** "Keep building out and personality for the
+    hologram; we will use the rfab living avatar system to make her something the player
+    can chat with and she will feel real."
+32. **Tile sets must not look samey, and one is rural.** "You need at least one rural tile
+    set and more assets for the others so they look less samey. With AI this is laughably
+    cheap compared to what it used to cost so let's take advantage of that."
 
 ## NO REAL RELIGIOUS SYMBOL, EVER (a rule from Claude, Sep 29 2026; Collins can overrule it)
 
@@ -202,11 +222,34 @@ as roofs again by three things: the skin is lighter the higher it lies; a lit li
 the two front edges of every roof, where the skin rolls over; and a roof at the foot of a
 taller block lies in its shade.
 
-**The landing site** had the same fault (anchored a third of itself too far back, it lay
-over the roofs behind its square) and one more: it was drawn from the middle of the core's
-cell, which is half a cell off the middle of the square it fell on. It is marked
-(`CORE_FOOT` in `tools/art/templates/terrain.mjs`), drawn in the middle of its square and as
-wide as the square, and the skin under it is as thick as on a roof.
+### The landing site, in two parts (rule 28)
+
+The landing site was ONE picture: the meteor on a mound of roots four cells wide, drawn by
+the image model at its own angle and laid over the square. Marking where it stands (as the
+limbs are marked) was tried first and was not enough: Collins saw it still floating, and
+leaning. **A picture that wide cannot be made to sit.** Whatever of it lies on the ground
+has to lie in the ground's own perspective exactly, and no image model draws a disc four
+cells wide exactly; where it is a few degrees off, its far edge hangs over the roofs behind
+it and its near edge over the street.
+
+So it is two things now (`tools/art/templates/core.mjs`):
+
+1. **The ground:** the crater and the roots that spread from it, painted from STRAIGHT
+   ABOVE like a floor texture, and laid on the ground by the game with the same matrix that
+   lays the floors. It cannot float: it is the ground. Blocks stand on it, and it turns with
+   the camera.
+2. **The heart:** only what stands up, the split meteor and the heart in it, on a collar no
+   wider than a limb's skirt, drawn upright and level. A sprite like a limb's, standing
+   where its footing is marked (`HEART_FOOT`), in the middle of the square.
+
+The rule this gives for everything to come: **what is wider than about two cells and lies
+on the ground is painted from above and laid by the game; only what stands up is a sprite.**
+It holds for big pools, scorch marks, shadows, roads of creep, anything flat.
+
+The lesson about looking: the orchestrator looked at the landing site on its review sheet
+and in the late game, where the board is covered in skin and it has nothing to float over.
+It floats at MINUTE ZERO, on the bare square. Look at a thing where it has the most to be
+wrong against.
 
 To look at: `notes/art-review/limbs/<family>-standing.jpg` (every way it can face, with
 its cell), `notes/art-review/terrain/core-standing.jpg`, `notes/art-review/feet/`.

@@ -10,6 +10,7 @@
  *   node tools/art/make.mjs terrain
  *   node tools/art/make.mjs biome megacity orient         tile sets (none named: every one)
  *   node tools/art/make.mjs ship
+ *   node tools/art/make.mjs yoke idle happy --stills      the ship AI's body (tools/art/templates/yoke.mjs)
  *
  * Raw pictures and clips: art-src/ (not committed). Baked: public/art/. To look at:
  * notes/art-review/.
@@ -48,6 +49,15 @@ const TEMPLATES = {
   ship: async () => {
     const { makeShip } = await import('./templates/ship.mjs');
     return Promise.allSettled([makeShip({ bakeOnly: flags.has('--bake'), only: ids })]);
+  },
+  // The ship AI's body for RFab's Living Avatars: --stills to look before paying for clips, --publish to save her on RFab.
+  yoke: async () => {
+    const { makeYoke } = await import('./templates/yoke.mjs');
+    const opt = (name) => [...flags].find((f) => f.startsWith(`--${name}=`))?.slice(name.length + 3);
+    return Promise.allSettled([makeYoke({
+      bakeOnly: flags.has('--bake'), stillsOnly: flags.has('--stills'), publish: flags.has('--publish'),
+      only: ids, voiceId: opt('voice'), model: opt('model'),
+    })]);
   },
 };
 if (!TEMPLATES[what]) {

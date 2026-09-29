@@ -9,6 +9,9 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from '@playwright/test';
 
+/** The port the built game is served on: its own for every session that runs beats at the same time. */
+const PORT = Number(process.env.BROODFALL_PORT || 5199);
+
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, '..');
 const shots = join(here, 'screenshots');
@@ -22,7 +25,7 @@ function freePort() {
     const out = execSync('netstat -ano', { encoding: 'utf8' });
     const rows = out.split(String.fromCharCode(10));
     for (const line of rows) {
-      const m = line.match(/:5199\s+\S+\s+LISTENING\s+(\d+)/);
+      const m = line.match(new RegExp(':' + PORT + '\\s+\\S+\\s+LISTENING\\s+(\\d+)'));
       if (m) { try { execSync('taskkill /PID ' + m[1] + ' /T /F', { stdio: 'ignore' }); } catch {} }
     }
   } catch {}
@@ -46,7 +49,7 @@ try {
   browser = await chromium.launch();
   const page = await browser.newPage({ viewport: { width: 1500, height: 1100 } });
   // Seed 3 wins with the naive policy in the headless tests; speed 60 saturates the step cap.
-  await page.goto('http://localhost:5199/?auto=1&seed=1&speed=60&directive=hold', { waitUntil: 'load' });
+  await page.goto('http://localhost:' + PORT + '/?auto=1&seed=1&speed=60&directive=hold', { waitUntil: 'load' });
   await page.waitForSelector('#stage canvas');
 
   let outcome = 'playing';

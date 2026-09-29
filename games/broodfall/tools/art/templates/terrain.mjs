@@ -19,8 +19,7 @@ import { keyClip, keyFrame, keyOf, loopWindow, pick, unionBox } from '../lib/key
 import { figure, findFigures } from '../lib/sheet.mjs';
 import { borderColour } from '../lib/img.mjs';
 import { ART, REVIEW, ROOT, SRC, putEntry } from '../lib/manifest.mjs';
-import { GROUNDS } from '../lib/atlas.mjs';
-import { drawCell } from '../lib/foot.mjs';
+import { bakeCore, generateCore, plinthTiles } from './core.mjs';
 
 const DIR = path.join(SRC, 'terrain');
 const CONCEPTS = path.join(ROOT, 'notes', 'concepts', '2026-09-29');
@@ -84,23 +83,6 @@ const PROPS = {
   },
 };
 
-const CORE =
-  'The landing site, for a strategy game. Isometric three-quarter top-down view, the camera 45 degrees above ' +
-  'the ground. A dark meteor the size of a house, half buried, split open around a pulsing crimson heart of ' +
-  'glistening wet muscle. Thick root-like tendons of salmon-pink flesh armoured with dark chitin spread out ' +
-  'from it over a low ring of broken pale paving and thrown-up earth. It is about as wide as it is tall. ' +
-  'Realistic, detailed, wet and unglamorous, in exactly the materials and rendering of the reference picture. ' +
-  'Soft even light from directly overhead. No cast shadows, no text.';
-
-const CORE_MATERIAL =
-  'Redraw the landing site of the FIRST picture so that the creature in it is made of exactly the living tissue ' +
-  'shown in the SECOND picture: the same deep maroon and dark crimson flesh, lumpy and wet, crossed by the same ' +
-  'net of darker raised veins, with the same small glossy highlights. Keep the split dark meteor and the ' +
-  'glowing crimson heart inside it. The grey rubble is gone: around the meteor the ground is a thick mound of ' +
-  'that tissue, from which heavy roots of the same flesh spread outward and melt into a low ragged skirt of it ' +
-  'lying flat on the ground. Keep its size in the frame. The same view as the first picture: isometric, from ' +
-  '45 degrees above. Soft even light from directly overhead, no cast shadows, no text.';
-
 const SIZE = { floor: 1024, wall: [1536, 1024] };
 
 async function generate(only) {
@@ -115,17 +97,8 @@ async function generate(only) {
   for (const [id, set] of Object.entries(PROPS)) {
     if (want(`props-${id}`) || want('props')) jobs.push(() => makeStill({ slug: `props ${id}`, out: path.join(DIR, `props-${id}.png`), prompt: set.prompt(set.items), width: 1536, height: 1024, quality: 'high', refFiles: [path.join(CONCEPTS, 'city-hive-blocks.png')] }));
   }
-  if (want('core')) {
-    jobs.push(async () => {
-      const design = await makeStill({ slug: 'core', out: path.join(DIR, 'core.png'), prompt: CORE, width: 1024, height: 1024, quality: 'high', refFiles: [path.join(CONCEPTS, 'board-paper-city.png')] });
-      // The core is redrawn in the creep's own tissue, as the limbs are (tools/art/limbs.mjs MATERIAL).
-      const still = await makeStill({ slug: 'core in the material of the creep', out: path.join(DIR, 'core-styled.png'), prompt: CORE_MATERIAL, quality: 'high', refFiles: [design, path.join(DIR, 'creep.png')] });
-      // The landing site is four cells wide on the board and a limb is one: its clip is made at 720p, or it
-      // is seen at half the sharpness of the limbs round it (Collins: 'a different resolution than the towers').
-      return makeClip({ slug: 'core idle', out: path.join(DIR, 'core-idle.mp4'), stillFile: still, resolution: '720p',
-        prompt: 'The crimson heart inside the split meteor beats slowly and heavily; the flesh around it swells and relaxes with each beat; the tendons shift slightly. The meteor and the ground do not move. It stays at exactly the same spot and the same size.' });
-    });
-  }
+  // The landing site has a template of its own: the crater painted from above, and the heart that stands in it.
+  if (want('core')) jobs.push(() => generateCore());
   const results = await pool(jobs, 5, (j) => j());
   results.forEach((r) => { if (!r.ok) console.warn(`[terrain] a picture failed: ${r.error.message.slice(0, 200)}`); });
 }
@@ -144,7 +117,8 @@ function shelf(items, width) {
   return { at, height: y + row };
 }
 
-export function packSprites(sprites, file, width = 2048) {
+/** q: how hard the sheet is squeezed (a tile set with two of everything squeezes a little harder to stay light). */
+export function packSprites(sprites, file, width = 2048, q = 90) {
   const pad = sprites.map((s) => ({ w: s.img.w + 2, h: s.img.h + 2 }));
   const { at, height } = shelf(pad, width);
   const sheet = blank(width, height);
@@ -155,7 +129,7 @@ export function packSprites(sprites, file, width = 2048) {
   });
   const png = file.replace(/\.webp$/, '.png');
   writePng(png, sheet);
-  toWebp(png, file, { q: 90 });
+  toWebp(png, file, { q });
   fs.rmSync(png);
   return { rects, bytes: fs.statSync(file).size };
 }
@@ -296,57 +270,6 @@ export function cutProps(file, items, setId, keying = {}) {
   });
 }
 
-/**
- * WHERE THE LANDING SITE LIES, marked by eye as the limbs' footings are (tools/art/limbs.mjs,
- * foot): [x, y, width] as shares of the box that holds it in the first frame of its clip:
- * the middle of the skirt it lies in, and how wide that skirt is without the tips of its
- * roots. It was anchored by the front of its skirt, a third of itself too far back, and lay
- * over the roofs behind it (Collins: "it looks like it's floating").
- */
-const CORE_FOOT = [0.5, 0.64, 0.9];
-
-function bakeCore() {
-  const clip = path.join(DIR, 'core-idle.mp4');
-  if (!fs.existsSync(clip)) return null;
-  // As sharp on the board as a limb is: a limb has about 1.6 pixels of its frame to each pixel of the board.
-  const F = 640;
-  const COLS = 4;
-  const keyed = keyClip(readFrames(clip, 12));
-  const loop = loopWindow(keyed.frames, { min: 12, max: 46 });
-  const frames = keyed.frames.slice(loop.start, loop.end);
-  const box = unionBox(frames);
-  const first = unionBox([keyed.frames[0]]);
-  const foot = {
-    x: first.x0 + CORE_FOOT[0] * (first.x1 - first.x0),
-    y: first.y0 + CORE_FOOT[1] * (first.y1 - first.y0),
-    width: CORE_FOOT[2] * (first.x1 - first.x0),
-  };
-  const side = Math.ceil(Math.max(2 * Math.max(foot.x - box.x0, box.x1 - foot.x), box.y1 - box.y0) * 1.04);
-  const x0 = Math.round(foot.x - side / 2);
-  const y0 = Math.round((box.y0 + box.y1) / 2 - side / 2);
-  const kept = pick(frames, 16).map((f) => resize(crop(f, x0, y0, side, side), F, F));
-  const sheet = blank(COLS * F, Math.ceil(kept.length / COLS) * F);
-  kept.forEach((f, i) => paste(sheet, f, (i % COLS) * F, Math.floor(i / COLS) * F));
-  const png = path.join(ART, 'board', 'core.png');
-  writePng(png, sheet);
-  toWebp(png, png.replace(/\.png$/, '.webp'), { q: 88 });
-  fs.rmSync(png);
-  console.log(`[terrain] core: ${kept.length} frames, loop seam ${loop.seam.toFixed(2)}`);
-  // To look at: the landing site on the square it fell on, four cells across, with the square drawn under it.
-  const half = (foot.width / side) * F / 2 / 0.92;
-  const look = blank(F, F, [...GROUNDS.street, 255]);
-  const ay = (foot.y - y0) / side;
-  drawCell(look, F / 2, ay * F, half * Math.SQRT2, [255, 255, 255], 0.8);
-  over8(look, kept[0], 0, 0);
-  writeJpg(path.join(REVIEW, 'terrain', 'core-standing.jpg'), look, 3);
-  return {
-    atlas: 'board/core.webp', frame: F, cols: COLS, count: kept.length, fps: Number((kept.length / (frames.length / 12)).toFixed(2)),
-    /** The point of the frame that lies on the middle of the square, and how wide what it lies in is (a share of the frame). */
-    anchor: [0.5, Number(ay.toFixed(4))], body: Number((foot.width / side).toFixed(3)),
-    cells: 3.2, seam: Number(loop.seam.toFixed(2)),
-  };
-}
-
 export function bakeTerrain() {
   fs.mkdirSync(path.join(ART, 'board'), { recursive: true });
   const have = (f) => fs.existsSync(path.join(DIR, f));
@@ -357,7 +280,8 @@ export function bakeTerrain() {
   if (have('roof.png')) floors.push(...floorTiles('roof', tex('roof.png', 512, 512)));
   if (have('smoke.png')) floors.push(...floorTiles('smoke', tex('smoke.png', 512, 512), 0.55));
   const creepTex = have('creep.png') ? tex('creep.png', 512, 512) : null;
-  const creep = creepTex ? [...creepTiles(creepTex), ...dripTiles(creepTex), ...edgeTiles()] : [];
+  // The body's own pieces: its skin, what runs down walls, the edges of roofs, and the plinths it raises limbs on.
+  const creep = creepTex ? [...creepTiles(creepTex), ...dripTiles(creepTex), ...edgeTiles(), ...plinthTiles()] : [];
   const walls = [];
   for (const id of Object.keys(WALLS)) if (have(`wall-${id}.png`)) walls.push(...wallTiles(id, tex(`wall-${id}.png`, 1024, 384)));
   const props = [...propSprites('roof'), ...propSprites('street')];

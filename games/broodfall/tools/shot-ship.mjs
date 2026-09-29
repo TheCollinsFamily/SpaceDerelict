@@ -1,21 +1,23 @@
 /**
  * Screenshot beats of THE SHIP with its art, and its checks: every room has its picture,
- * the planet is a projection with zones, YOKE is there, the notebook has its sketches.
+ * the planet is a projection with zones, YOKE is there, the notebook has its sketches,
+ * and every scene of every faction has its own picture, which its card shows.
  *
  * Usage: npm run build && node tools/shot-ship.mjs
- * Artifacts: tools/screenshots/ship-*.png
+ * Artifacts: tools/screenshots/ship-*.png (ship-contact-<faction>.png: each faction's first contact)
  */
 import { spawn, execSync } from 'node:child_process';
-import { mkdirSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { transform } from 'esbuild';
 import { chromium } from '@playwright/test';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, '..');
 const shots = join(here, 'screenshots');
 mkdirSync(shots, { recursive: true });
-const PORT = 5199;
+const PORT = Number(process.env.BROODFALL_PORT || 5199);
 const failures = [];
 const check = (ok, name, detail = '') => {
   if (ok) console.log(`  PASS  ${name}${detail ? ` (${detail})` : ''}`);
@@ -26,7 +28,7 @@ function freePort() {
   try {
     const out = execSync('netstat -ano', { encoding: 'utf8' });
     for (const line of out.split(String.fromCharCode(10))) {
-      const m = line.match(/:5199\s+\S+\s+LISTENING\s+(\d+)/);
+      const m = line.match(new RegExp(':' + PORT + '\\s+\\S+\\s+LISTENING\\s+(\\d+)'));
       if (m) { try { execSync('taskkill /PID ' + m[1] + ' /T /F', { stdio: 'ignore' }); } catch {} }
     }
   } catch {}
@@ -40,6 +42,27 @@ function startPreview() {
     child.on('exit', (code) => reject(new Error(`vite preview exited early (${code})`)));
   });
 }
+
+/** The folder the game was built into (each session that runs beats has its own). */
+const DIST = process.env.BROODFALL_DIST || 'dist';
+
+/**
+ * The factions as the game has them. content/campaign.ts is data with types on it: the
+ * types are taken off and what is left is loaded, so that the check reads the very scenes
+ * the game shows and not a list of its own that could go stale.
+ */
+async function loadFactions() {
+  const { code } = await transform(readFileSync(join(root, 'content', 'campaign.ts'), 'utf8'), { loader: 'ts', format: 'esm' });
+  const mod = await import(`data:text/javascript;base64,${Buffer.from(code).toString('base64')}`);
+  return mod.FACTIONS;
+}
+/** Every scene of a faction, in the order it plays. Only the first is a contact (it is answered, not continued). */
+const scenesOf = (f) => [
+  { faction: f.id, scene: f.contact, contact: true },
+  ...f.beats.map((b) => ({ faction: f.id, scene: b.scene })),
+  { faction: f.id, scene: f.ending },
+  ...Object.values(f.endingByChoice?.scenes ?? {}).map((scene) => ({ faction: f.id, scene })),
+];
 
 /** The address inside a style value like url("..."). */
 const addressIn = (v) => (v.includes('"') ? v.slice(v.indexOf('"') + 1, v.lastIndexOf('"')) : '');
@@ -127,6 +150,74 @@ try {
     await page.waitForTimeout(500);
     await page.screenshot({ path: join(shots, 'ship-8-yoke-talk.png') });
   }
+  // ---- The factions' scenes: each has its own picture, and its card shows it.
+  const FACTIONS = await loadFactions();
+  const listed = JSON.parse(readFileSync(join(root, 'public', 'art', 'manifest.json'), 'utf8')).ship?.ship?.scenes ?? {};
+  for (const f of FACTIONS) {
+    const all = scenesOf(f);
+    const missing = all.filter(({ scene }) => {
+      const file = scene.picture && listed[scene.picture];
+      // On disk where it is kept, and in the build that is being served.
+      return !file || !existsSync(join(root, 'public', 'art', file)) || !existsSync(join(root, DIST, 'art', file));
+    });
+    check(missing.length === 0, `every scene of ${f.name} has its picture in the manifest and on disk`,
+      missing.length ? `missing: ${missing.map((m) => m.scene.picture ?? `"${m.scene.title}" names none`).join(', ')}` : `${all.length} scenes`);
+  }
+  check(FACTIONS.map((f) => f.contact.title).join(' | ') === 'A Letter, Spelled Out in a Field | A Broadcast on Every Frequency | A Video Call, Mid-Game',
+    'each faction reaches the ship in its own way', FACTIONS.map((f) => f.contact.title).join(' | '));
+
+  // The card in the page: the picture is fetched and measured, as the rooms' are. Every scene
+  // of the faction is put in the queue of a saved game, and the cards are gone through by hand.
+  for (const f of FACTIONS) {
+    const queue = scenesOf(f);
+    await page.evaluate((q) => {
+      const state = JSON.parse(localStorage.getItem('broodfall-campaign'));
+      state.pendingScenes = q;
+      state.faction = null;
+      state.contacted = [q[0].faction];
+      localStorage.setItem('broodfall-campaign', JSON.stringify(state));
+    }, queue);
+    await page.goto(`http://localhost:${PORT}/?campaign=ship`);
+    await page.waitForSelector('#campaign.ship-art .cp-scene-card', { timeout: 10000 });
+    const bad = [];
+    for (const [i, q] of queue.entries()) {
+      const want = q.scene.picture;
+      await page.waitForSelector(`.cp-scene-card img[data-picture="${want}"]`, { timeout: 5000 }).catch(() => {});
+      const got = await page.evaluate(async () => {
+        const img = document.querySelector('.cp-scene-card img');
+        const title = document.querySelector('.cp-scene-card .cp-sub')?.textContent ?? '';
+        if (!img) return { title, cls: '', src: '', w: 0, shown: 0 };
+        let w = 0;
+        try { const i = new Image(); i.src = img.src; await i.decode(); w = i.naturalWidth; } catch { /* not there */ }
+        return { title, cls: img.className, src: img.src, w, shown: Math.round(img.getBoundingClientRect().width) };
+      });
+      const ok = got.cls.includes('cp-scene-pic') && got.src.endsWith(`scenes/${want}.webp`) && got.w === 640 && got.shown >= 280
+        && got.title === q.scene.title.toUpperCase();
+      if (i === 0) {
+        check(ok, `the contact card of ${f.name} shows its own picture`, `"${got.title}", ${got.src.split('/').pop()}, ${got.w} px wide, shown ${got.shown} px wide`);
+        const lines = await page.locator('.cp-scene-card').innerText();
+        check(!/hand-delivered/i.test(lines), `nobody hands him anything (${f.name})`, lines.split(String.fromCharCode(10))[1] ?? '');
+        await page.screenshot({ path: join(shots, `ship-contact-${f.id}.png`) });
+      } else if (!ok) bad.push(`${want}: "${got.title}" ${got.src.split('/').pop()} ${got.w} px`);
+      await page.locator('.cp-scene-card').screenshot({ path: join(shots, `ship-scene-${want}.png`) });
+      if (i === 1 && await page.locator('.cp-scene-pic').count()) {
+        // Clicked, a picture is as wide as the card; clicked again, it is small again.
+        await page.locator('.cp-scene-pic').click();
+        const big = await page.evaluate(() => Math.round(document.querySelector('.cp-scene-pic').getBoundingClientRect().width));
+        await page.locator('.cp-scene-pic').click();
+        const small = await page.evaluate(() => Math.round(document.querySelector('.cp-scene-pic').getBoundingClientRect().width));
+        check(big >= 600 && small === got.shown, `a scene's picture enlarges when it is clicked (${f.name})`, `${small} px, ${big} px`);
+      }
+      await page.locator(i === 0 ? '.cp-scene [data-act="scene-later"]' : '.cp-scene [data-act="scene-ok"]').click();
+      await page.waitForTimeout(120);
+    }
+    check(bad.length === 0, `every later scene of ${f.name} shows its own picture`, bad.length ? bad.join('; ') : `${queue.length - 1} scenes`);
+    check(await page.locator('.cp-scene').count() === 0, `the scenes of ${f.name} are gone through`);
+  }
+  // Comms keeps the leaders' portraits.
+  await page.locator('[data-room="comms"]').click();
+  await page.waitForTimeout(200);
+  check(await page.locator('.cp-voice img.cp-leader').count() >= 1, 'Comms keeps the portrait of a faction that made contact');
   check(errors.length === 0, 'no errors in the page', errors.slice(0, 3).join(' | '));
 } finally {
   await browser.close();

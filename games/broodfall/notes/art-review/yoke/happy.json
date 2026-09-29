@@ -1,0 +1,39 @@
+{
+ "state": "happy",
+ "frames": 84,
+ "seconds": 3.5,
+ "kb": 656,
+ "failed": 0,
+ "checks": [
+  {
+   "name": "the loop closes",
+   "ok": true,
+   "value": 1.34
+  },
+  {
+   "name": "she moves",
+   "ok": true,
+   "value": 0.173
+  },
+  {
+   "name": "no green on her outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "she fills the stage as a person does",
+   "ok": true,
+   "value": "25% of it"
+  },
+  {
+   "name": "her hair is the colour of her still",
+   "ok": true,
+   "value": "gains 1.09, 1.094, 1.081"
+  },
+  {
+   "name": "light to load (under 900 KB)",
+   "ok": true,
+   "value": "656 KB"
+  }
+ ]
+}

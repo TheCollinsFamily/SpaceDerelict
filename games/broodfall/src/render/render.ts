@@ -86,7 +86,7 @@ export interface PlacementPreview {
   cell: number;
   /** A big limb: every cell it would stand on (absent: `cell` alone). */
   cells?: number[];
-  kind: 'tower' | 'organ' | 'node';
+  kind: 'tower' | 'organ' | 'node' | 'plinth';
   family?: TowerFamily;
   valid: boolean;
   /** Directional limbs: the facing it will be placed with (right-click rotates). */
