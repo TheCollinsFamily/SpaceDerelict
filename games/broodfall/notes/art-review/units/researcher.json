@@ -1,8 +1,8 @@
 {
  "kind": "researcher",
- "frames": 67,
- "atlasKB": 110,
- "failed": 1,
+ "frames": 143,
+ "atlasKB": 319,
+ "failed": 0,
  "checks": [
   {
    "name": "walk S: loop closes",
@@ -32,27 +32,27 @@
   {
    "name": "walk S: stays on the spot",
    "ok": true,
-   "value": "0.5% of the frame"
+   "value": "0.7% of the frame"
   },
   {
    "name": "walk SW: loop closes",
    "ok": true,
-   "value": 2.64
+   "value": 0.72
   },
   {
    "name": "walk SW: it moves",
    "ok": true,
-   "value": 7.18
+   "value": 2.63
   },
   {
    "name": "walk SW: loop is long enough",
    "ok": true,
-   "value": 11
+   "value": 23
   },
   {
    "name": "walk SW: inside the frame",
-   "ok": false,
-   "value": "72,59-516,640"
+   "ok": true,
+   "value": "166,122-476,546"
   },
   {
    "name": "walk SW: no background tint on the outline",
@@ -62,7 +62,7 @@
   {
    "name": "walk SW: stays on the spot",
    "ok": true,
-   "value": "0.5% of the frame"
+   "value": "0.6% of the frame"
   },
   {
    "name": "walk W: loop closes",
@@ -92,7 +92,7 @@
   {
    "name": "walk W: stays on the spot",
    "ok": true,
-   "value": "0.3% of the frame"
+   "value": "0.4% of the frame"
   },
   {
    "name": "walk NW: loop closes",
@@ -122,7 +122,7 @@
   {
    "name": "walk NW: stays on the spot",
    "ok": true,
-   "value": "0.1% of the frame"
+   "value": "0.2% of the frame"
   },
   {
    "name": "walk N: loop closes",
@@ -152,17 +152,77 @@
   {
    "name": "walk N: stays on the spot",
    "ok": true,
-   "value": "0.8% of the frame"
+   "value": "1.1% of the frame"
+  },
+  {
+   "name": "attack S: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "attack S: stays on the spot",
+   "ok": true,
+   "value": "0.1% of the frame"
+  },
+  {
+   "name": "attack SW: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "attack SW: stays on the spot",
+   "ok": true,
+   "value": "0.0% of the frame"
+  },
+  {
+   "name": "attack W: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "attack W: stays on the spot",
+   "ok": true,
+   "value": "0.0% of the frame"
+  },
+  {
+   "name": "attack NW: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "attack NW: stays on the spot",
+   "ok": true,
+   "value": "0.1% of the frame"
+  },
+  {
+   "name": "attack N: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "attack N: stays on the spot",
+   "ok": true,
+   "value": "0.0% of the frame"
+  },
+  {
+   "name": "death SW: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "state carrying: made",
+   "ok": true,
+   "value": "yes"
   },
   {
    "name": "views are one size",
    "ok": true,
-   "value": "0.54 0.72 0.50 0.47 0.50"
+   "value": "0.72 0.71 0.67 0.63 0.67"
   },
   {
    "name": "atlas is under 900 KB",
    "ok": true,
-   "value": "110 KB"
+   "value": "319 KB"
   }
  ]
 }
