@@ -181,7 +181,7 @@ try {
       const at = (c) => [c % W, Math.floor(c / W)];
       const d = (c) => Math.hypot(at(c)[0] - at(s.map.coreCell)[0], at(c)[1] - at(s.map.coreCell)[1]);
       // A BIG limb (four cells of one roof): the creep is let reach farther for the staging, so six whole roofs are held.
-      if (family === 'frond') s.creepRadius += 6 * s.cfg.cellPx;
+      if (family === 'frond') { const r = s.creepRangeCells + 6; Object.defineProperty(s, 'creepRangeCells', { get: () => r, configurable: true }); }
       const cells = [];
       for (let c = 0; c < s.map.cells.length; c++) if (s.canBuildTower(c, family)) cells.push(c);
       cells.sort((a, b) => d(a) - d(b));
