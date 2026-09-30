@@ -78,6 +78,5 @@ three campaign outlines, covers and promotional art.
 - **RFab backend deploy** (migration `20260930120000_broodfall_yoke_players`), then fund the house
   account `broodfall-house@rfab.ai`, then the **RFab frontend deploy** (the `/connect` page and the
   Leaflit studio's black-clothes keying fix). Also still owed from Sep 28: the Kimi fallback route.
-- **The game's name**: "Broodfall" is a working title; every cover says it.
 - **The leaked RFab key** in the public repo (`games/space-derelict/generate_*.py`): rotate it.
 - **`art-src/` has no durable home** (now well over 600 MB, only on this PC).

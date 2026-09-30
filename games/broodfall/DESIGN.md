@@ -1,4 +1,4 @@
-# BROODFALL (working title)
+# BROODFALL
 
 Tower defense roguelite where you are the monster: an escaped imperial bioweapon growing across the city of an intelligent eusocial insect civilization. Play the Zerg side of They Are Billions.
 
