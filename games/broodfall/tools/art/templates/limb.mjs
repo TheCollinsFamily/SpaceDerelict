@@ -153,6 +153,100 @@ const colour = (f) => {
   return n ? sum / n : 0;
 };
 
+/**
+ * THE IDLE'S LOOP, cut finely (Sep 30 2026, notes/screens/2026-09-30/anim-README.md). The old cut
+ * (lib/key.mjs loopWindow) compared 48 px grey thumbnails, which cannot see a glow crawling or a
+ * sac creeping: the fast idles drifted one way and snapped back every 1.4 s. And the bake kept 16
+ * frames of a window of up to 46, so the slow idles stepped at 4 fps. Now:
+ *   - frames are compared in colour at up to 160 px over what is solid (the units of
+ *     tools/art/idle-loops.mjs), and the window is the LONGEST whose seam is no bigger than a
+ *     step and a bit (the calmest loop that does not pop); failing that, the cleanest;
+ *   - every frame of the window is kept (the clip's own frames at 12 fps: real in-betweens);
+ *   - a window whose seam is still a jump is closed by a cross-fade: its last frames dissolve into
+ *     the frames that came just before its first ("fade"), or, for a family listed in PONG, it is
+ *     played forward and back by the game (the clip's `pingpong`).
+ */
+const SEAM_OK = 1.35;
+/** A seam this many steps big is closed (below it the loop is left as the clip made it). */
+const SEAM_FIX = 1.6;
+/** Families whose jumping idle reads better played forward and back than dissolved (looked at, Sep 30 2026). */
+const PONG = new Set([]);
+
+/** Frames for comparing: cropped to what holds the subject, at most 160 px, premultiplied, as floats. */
+export function fineFrames(frames) {
+  const box = unionBox(frames);
+  const bw = box.x1 - box.x0, bh = box.y1 - box.y0;
+  const k = Math.min(1, 160 / Math.max(bw, bh));
+  const w = Math.max(8, Math.round(bw * k)), h = Math.max(8, Math.round(bh * k));
+  return frames.map((f) => {
+    const s = resize(crop(f, box.x0, box.y0, bw, bh), w, h);
+    const out = new Float32Array(w * h * 4);
+    for (let i = 0; i < out.length; i += 4) {
+      const a = s.data[i + 3] / 255;
+      out[i] = s.data[i] * a; out[i + 1] = s.data[i + 1] * a; out[i + 2] = s.data[i + 2] * a; out[i + 3] = s.data[i + 3];
+    }
+    return out;
+  });
+}
+/** Mean change over the pixels solid in either (as tools/art/idle-loops.mjs measures an atlas). */
+export function fineDiff(a, b) {
+  let sum = 0, n = 0;
+  for (let i = 0; i < a.length; i += 4) {
+    if (a[i + 3] < 20 && b[i + 3] < 20) continue;
+    n++;
+    sum += (Math.abs(a[i] - b[i]) + Math.abs(a[i + 1] - b[i + 1]) + Math.abs(a[i + 2] - b[i + 2]) + Math.abs(a[i + 3] - b[i + 3])) / 4;
+  }
+  return sum / Math.max(1, n);
+}
+
+/**
+ * Where to cut the idle, and how its seam is closed: { start, end, step, seam, treat } with the
+ * loop frames [start, end) at 12 fps, `seam` the change from its last frame back to its first,
+ * `treat` 'as is' | 'fade' | 'pong'. `family`: for PONG.
+ */
+export function idleCut(frames, fine = fineFrames(frames), { min = 16, max = 46, family = '', fadeFrames = 8 } = {}) {
+  const n = frames.length;
+  const steps = []; for (let i = 0; i < n - 1; i++) steps.push(fineDiff(fine[i], fine[i + 1]));
+  const sum = [0]; for (const s of steps) sum.push(sum[sum.length - 1] + s);
+  let best = null, clean = null;
+  for (let i = 0; i < n; i++) for (let j = i + min; j <= n && j - i <= max; j++) {
+    const step = (sum[j - 1] - sum[i]) / (j - 1 - i);
+    const seam = fineDiff(fine[j - 1], fine[i]);
+    const c = { start: i, end: j, step, seam, r: seam / Math.max(0.01, step) };
+    if (c.r <= SEAM_OK && (!clean || j - i > clean.end - clean.start || (j - i === clean.end - clean.start && c.r < clean.r))) clean = c;
+    // Failing a clean one: the lowest seam for its step, a longer loop among near-equals, and room before it for a cross-fade.
+    const score = c.r - 0.004 * (j - i) + (i >= fadeFrames ? 0 : 0.25);
+    if (!best || score < best.score) best = { ...c, score };
+  }
+  const cut = clean ?? best;
+  let treat = 'as is';
+  if (cut.r > SEAM_FIX) treat = PONG.has(family) || cut.start < 2 ? 'pong' : 'fade';
+  return { ...cut, treat, fade: treat === 'fade' ? Math.min(fadeFrames, cut.start, cut.end - cut.start - 4) : 0 };
+}
+
+/**
+ * The cross-fade that closes a seam: the last `k` frames of the loop dissolve into the `k` frames
+ * that came just before its first, so its last frame flows into its first as the clip itself did.
+ * Blended with the alpha premultiplied (no dark fringe where one frame is solid and the other not).
+ */
+function fadeSeam(frames, start, end, k) {
+  const out = frames.slice(start, end);
+  for (let m = 0; m < k; m++) {
+    const t = (m + 1) / (k + 1);
+    const w = t * t * (3 - 2 * t);
+    const a = frames[end - k + m], b = frames[start - k + m];
+    const d = Buffer.alloc(a.data.length);
+    for (let i = 0; i < d.length; i += 4) {
+      const aa = a.data[i + 3] / 255, ba = b.data[i + 3] / 255;
+      const oa = aa * (1 - w) + ba * w;
+      d[i + 3] = Math.round(oa * 255);
+      if (oa > 0) for (let c = 0; c < 3; c++) d[i + c] = Math.round((a.data[i + c] * aa * (1 - w) + b.data[i + c] * ba * w) / oa);
+    }
+    out[out.length - k + m] = { w: a.w, h: a.h, data: d };
+  }
+  return out;
+}
+
 /** How many pixels of a frame are solid. */
 const area = (f) => { let n = 0; for (let i = 3; i < f.data.length; i += 4) if (f.data[i] > 128) n++; return n; };
 
@@ -174,10 +268,19 @@ function bakeView(l, dir, view, check, F) {
     let frames = keyed.frames;
     let loop = null;
     let dropped = 0;
+    let pong = false;
     if (anim === 'idle') {
       first = keyed.frames[0];
-      loop = loopWindow(frames, { min: 16, max: 46 });
-      frames = frames.slice(loop.start, loop.end);
+      // The fine cut (idleCut above); `loop` keeps the old cut's thumbnail measures for the checks.
+      const cut = idleCut(frames, undefined, { family: l.family });
+      const thumbs = [frames[cut.start], frames[cut.end - 1]].map((f) => thumb(f));
+      let motion = 0;
+      for (let i = cut.start; i < cut.end - 1; i++) motion += diffThumb(thumb(frames[i]), thumb(frames[i + 1]));
+      frames = cut.treat === 'fade' ? fadeSeam(frames, cut.start, cut.end, cut.fade) : frames.slice(cut.start, cut.end);
+      pong = cut.treat === 'pong';
+      const closed = cut.treat === 'as is' ? diffThumb(thumbs[1], thumbs[0]) : 0;
+      loop = { start: cut.start, end: cut.end, seam: closed, motion: motion / Math.max(1, cut.end - cut.start - 1), fine: cut };
+      console.log(`[limb] ${l.family} ${view} idle: ${cut.end - cut.start} frames (${((cut.end - cut.start) / FPS).toFixed(2)} s), step ${cut.step.toFixed(1)}, seam ${cut.seam.toFixed(1)} (${cut.r.toFixed(2)} steps): ${cut.treat}${cut.fade ? ` over ${cut.fade}` : ''}`);
     } else if (anim === 'fire') {
       // A flash, a beam or a cloud cannot be cut off its background: the frames it swallowed
       // are left out. What a limb throws is drawn by the game; the clip is the body's own motion.
@@ -187,7 +290,7 @@ function bakeView(l, dir, view, check, F) {
       dropped = frames.length - kept.length;
       if (kept.length >= 12) frames = kept;
     }
-    clips.push({ anim, frames, dropped, box: unionBox(frames), loop, key: keyed.key, w: keyed.w, h: keyed.h, seconds: keyed.frames.length / FPS * (frames.length / keyed.frames.length) });
+    clips.push({ anim, frames, dropped, pong, box: unionBox(frames), loop, key: keyed.key, w: keyed.w, h: keyed.h, seconds: keyed.frames.length / FPS * (frames.length / keyed.frames.length) });
   }
   const idle = clips.find((c) => c.anim === 'idle');
   if (!idle) return null;

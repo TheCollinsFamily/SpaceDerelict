@@ -107,13 +107,12 @@ fs.rmSync(TMP, { recursive: true, force: true });
 console.log(`music ${rows.music.length}, effects ${rows.sfx.length} (${rows.sfx.reduce((a, r) => a + r.files.length, 0)} files), voice ${rows.voice.length}; data in ${path.join(RAW, 'sheet.json')}`);
 
 // ------------------------------------------------------------------ the listening sheet
-const NOTESDIR = 'C:\Users\Merry\dev\space-derelict\games\broodfall\notes\screens\2026-09-30';
 const full = (f) => f.replace(/\//g, '\');
 const fmt = (v, d = 1) => (v === null || v === undefined || Number.isNaN(v) ? '' : Number(v).toFixed(d));
 const esc = (s) => String(s ?? '').replace(/\|/g, '/').replace(/\n/g, ' ');
 const md = [];
 md.push('# Broodfall sound: the listening sheet (Sep 30 2026)', '');
-md.push(fs.readFileSync(path.join(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')), 'sheet-head.md'), 'utf8').trim(), '');
+md.push(fs.readFileSync(path.join(ROOT, 'tools', 'audio', 'sheet-head.md'), 'utf8').trim(), '');
 md.push('## Music', '', '| id | what it is for | seconds | loop (seam jump ×) | LUFS | peak dBFS | model | asked for |', '|---|---|---|---|---|---|---|---|');
 for (const r of rows.music) md.push(`| \`${r.id}\` | ${esc(r.for)} | ${fmt(r.seconds)} | ${r.loop ? `yes (${fmt(r.seam, 2)})` : 'no'} | ${fmt(r.lufs)} | ${fmt(r.peak)} | ${r.model} | ${esc(r.style)}. ${esc(r.prompt)} |`);
 md.push('', 'Files:', '');
