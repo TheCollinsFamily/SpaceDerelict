@@ -15486,6 +15486,18 @@
      "file": "under/core-stage-2.webp",
      "line": 0.421,
      "aspect": 1.0859
+    },
+    {
+     "id": 3,
+     "file": "under/core-stage-3.webp",
+     "line": 0.4342,
+     "aspect": 1.0611
+    },
+    {
+     "id": 4,
+     "file": "under/core-stage-4.webp",
+     "line": 0.474,
+     "aspect": 0.9865
     }
    ]
   },

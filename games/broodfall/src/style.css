@@ -608,6 +608,9 @@ body.in-ship #topbar, body.in-ship #botbar { visibility: hidden; }
   position: absolute; left: 0; top: 0; width: 300%; height: 200%; z-index: 3; pointer-events: none;
   background-size: 100% 100%; animation: heart-beat 1.6s ease-in-out infinite;
 }
+/* One picture per stage of the core, cut at its ground line: the top of it over the street, the bottom in the cells. */
+#under.scan #under-dome.art.staged { height: auto; background-size: 100% auto; background-position: center top; }
+#under.scan .uc .meteor-img.staged { background-size: 100% auto; background-position: center bottom; }
 @keyframes heart-beat { 0%, 100% { filter: drop-shadow(0 0 5px rgba(255, 60, 50, 0.35)) brightness(1); } 15% { filter: drop-shadow(0 0 12px rgba(255, 60, 50, 0.7)) brightness(1.25); } }
 #under.scan .uc .tag.core { display: block; z-index: 5; color: #ffb0a0; text-shadow: 0 0 4px #000; font-family: "Courier New", monospace; }
 

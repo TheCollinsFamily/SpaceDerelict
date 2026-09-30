@@ -355,8 +355,8 @@ export function bakeCoreScan() {
     }
     // Below the line: 3 cells wide, 2 cells deep (a cell is 1.25 as wide as tall): 1.6 of the 3.
     const below = Math.round((img.w * 1.6) / 3);
-    const h = Math.min(img.h, ground + below);
-    const cut = crop(img, 0, 0, img.w, h);
+    const h = ground + below;
+    const cut = crop(img, 0, 0, img.w, h, [0, 0, 0, 255]);
     const png = path.join(SCAN_OUT, `core-stage-${s.id}.png`);
     writePng(png, cut);
     toWebp(png, png.replace(/\.png$/, '.webp'), { q: 88 });

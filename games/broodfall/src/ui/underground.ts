@@ -18,6 +18,7 @@ import {
 import { TOWERS } from '../../content/data';
 import { strainIcons, strainLabel } from './strain';
 import { artUrl, loadManifest } from '../render/art';
+import { coreStageOf } from '../render/coreStage';
 import type { OrganId, TowerFamily } from '../sim/types';
 
 const COLOR: Record<OrganId, string> = {
@@ -62,6 +63,12 @@ interface ScanArt {
   tile: number; tiles: Record<string, string>; meteor: string | null;
   /** The city above, per tile set (tools/art/templates/under.mjs SKYLINES), and the meteor above the street line. */
   skylines: Record<string, string>; dome: string | null;
+  /**
+   * The meteor as ONE picture per stage of the core (tools/art/templates/core-evo.mjs, bakeCoreScan):
+   * what is above its ground line stands over the street, what is below fills the meteor's cells.
+   * line: the share of its height above the line; aspect: its width over its height.
+   */
+  stages: Array<{ file: string; line: number; aspect: number }>;
 }
 
 /** The tile set the board is drawn with, as the game says (empty on the old board). */
@@ -120,7 +127,8 @@ export class UndergroundScreen {
     box.innerHTML = '<div id="under-ruler"></div><div class="scanline"></div>';
     box.appendChild(this.grid);
     void loadManifest().then((m) => {
-      const art = (m as unknown as { under?: { scan?: ScanArt } } | null)?.under?.scan;
+      const under = (m as unknown as { under?: { scan?: ScanArt; core?: { stages?: ScanArt['stages'] } } } | null)?.under;
+      const art = under?.scan;
       if (!art || !Object.keys(art.tiles).length) return;
       const abs = (f: string) => new URL(artUrl(f), document.baseURI).href;
       this.scan = {
@@ -129,12 +137,13 @@ export class UndergroundScreen {
         meteor: art.meteor ? abs(art.meteor) : null,
         skylines: Object.fromEntries(Object.entries(art.skylines ?? {}).map(([k, f]) => [k, abs(f)])),
         dome: art.dome ? abs(art.dome) : null,
+        stages: (under?.core?.stages ?? []).map((s) => ({ ...s, file: abs(s.file) })),
       };
       this.el.classList.add('scan');
       // The city above: the board's own kind of place when there is a picture of it, else a plain wireframe.
       document.getElementById('under-surface')!.insertAdjacentHTML('afterbegin', `${skylineSvg()}<div class="skyline-img"></div>`);
       const dome = document.getElementById('under-dome')!;
-      if (this.scan.dome) {
+      if (this.scan.dome && !this.scan.stages.length) {
         dome.classList.add('art');
         dome.style.backgroundImage = `url('${this.scan.dome}')`;
       }
@@ -247,9 +256,32 @@ export class UndergroundScreen {
     return `<svg class="shape" width="${w * 7}" height="${h * 7}" viewBox="0 0 ${w * 7} ${h * 7}">${cells}</svg>`;
   }
 
+  /** The meteor's picture for the core's stage now, when there are stage pictures. */
+  private stageArt(): ScanArt['stages'][number] | null {
+    const stages = this.scan?.stages ?? [];
+    if (!stages.length) return null;
+    return stages[Math.min(stages.length, coreStageOf(this.getSim().stats.limbsGrown)) - 1];
+  }
+
+  /**
+   * The meteor above the street line: the top of the SAME picture the cells below the line show
+   * the bottom of (Collins, Sep 30 2026: it was "rendered twice, one above ground, one under").
+   * As wide as the meteor's three columns; as tall as the picture is above its ground line.
+   */
+  private paintDome(): void {
+    const art = this.stageArt();
+    const dome = document.getElementById('under-dome');
+    if (!art || !dome || dome.dataset.file === art.file) return;
+    dome.dataset.file = art.file;
+    dome.classList.add('art', 'staged');
+    dome.style.backgroundImage = `url('${art.file}')`;
+    dome.style.aspectRatio = String(art.aspect / art.line);
+  }
+
   /** The skyline of the board's tile set along the street line. */
   private paintAbove(): void {
     if (!this.scan) return;
+    this.paintDome();
     const surface = document.getElementById('under-surface');
     const img = surface?.querySelector<HTMLElement>('.skyline-img');
     if (!surface || !img) return;
@@ -267,7 +299,7 @@ export class UndergroundScreen {
     const sim = this.getSim();
     const u = sim.under;
     const key = [
-      this.selected, this.rot, Math.floor(sim.meat.war), Math.floor(sim.meat.science), sim.coreLevel,
+      this.selected, this.rot, Math.floor(sim.meat.war), Math.floor(sim.meat.science), sim.coreLevel, coreStageOf(sim.stats.limbsGrown),
       sim.organs.map((o) => `${o.cell}${o.organ}${o.rot}${o.level}`).join(','),
     ].join('|');
     if (key === this.lastKey) return;
@@ -333,7 +365,11 @@ export class UndergroundScreen {
           const age = performance.now() - this.revealedAt.get(i)!;
           if (age < SCAN_IN) { cls += ' scan-in'; style += `animation-delay:-${Math.round(age)}ms;`; }
         }
-        if (c.kind === 'meteor' && i === u.cells.findIndex((x) => x.kind === 'meteor') && scan.meteor) {
+        const staged = this.stageArt();
+        if (c.kind === 'meteor' && i === u.cells.findIndex((x) => x.kind === 'meteor') && staged) {
+          // The bottom of the stage's one picture: exactly the meteor's 3 by 2 cells below its ground line.
+          inner += `<div class="meteor-img staged" style="background-image:url('${staged.file}')"></div>`;
+        } else if (c.kind === 'meteor' && i === u.cells.findIndex((x) => x.kind === 'meteor') && scan.meteor) {
           inner += `<div class="meteor-img" style="background-image:url('${scan.meteor}')"></div>`;
         }
         // The top row lies under the street: a Seeding Gland must touch it.
