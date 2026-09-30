@@ -277,7 +277,9 @@ try {
     const mid = { x: ps.reduce((a, p) => a + p.x, 0) / ps.length, y: ps.reduce((a, p) => a + p.y, 0) / ps.length };
     await closeOn(mid, 8, 40);
     // Played at its own pace: ten seconds of siege (the sim runs at speed 1).
-    await page.evaluate(() => { for (let i = 0; i < 100; i++) window.broodfall.step(1); });
+    // The core holds (only the staged column fights), and the view settles before the film starts.
+    await page.evaluate(() => { const s = window.broodfall.sim; s.coreHp = 1e9; if (s.spawnQueue) s.spawnQueue.length = 0; for (let i = 0; i < 5; i++) window.broodfall.step(1); });
+    await closeOn(mid, 8, 40);
     const t0 = Date.now();
     // Where the siege begins in the film (the page loads for a while first: that part is cut off).
     const cutAt = ((t0 - filmStart) / 1000).toFixed(2);
