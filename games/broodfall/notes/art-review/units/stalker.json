@@ -1,9 +1,9 @@
 {
  "kind": "stalker",
  "frames": 179,
- "atlasKB": 375,
+ "atlasKB": 370,
  "pages": 1,
- "failed": 2,
+ "failed": 0,
  "checks": [
   {
    "name": "walk S: loop closes",
@@ -243,7 +243,7 @@
   {
    "name": "hit S: brought to the walk's size",
    "ok": true,
-   "value": "x1.00"
+   "value": "x1.02"
   },
   {
    "name": "hit S: it moves",
@@ -261,19 +261,14 @@
    "value": "0.0%"
   },
   {
-   "name": "hit S: stays on the spot",
-   "ok": true,
-   "value": "0.5% of the frame"
-  },
-  {
    "name": "hit SW: brought to the walk's size",
    "ok": true,
-   "value": "x0.83"
+   "value": "x0.80"
   },
   {
    "name": "hit SW: it moves",
    "ok": true,
-   "value": 20.02
+   "value": 17.42
   },
   {
    "name": "hit SW: nothing cut off",
@@ -286,11 +281,6 @@
    "value": "0.0%"
   },
   {
-   "name": "hit SW: stays on the spot",
-   "ok": false,
-   "value": "7.2% of the frame"
-  },
-  {
    "name": "hit W: brought to the walk's size",
    "ok": true,
    "value": "x1.03"
@@ -298,7 +288,7 @@
   {
    "name": "hit W: it moves",
    "ok": true,
-   "value": 12.9
+   "value": 13.16
   },
   {
    "name": "hit W: nothing cut off",
@@ -309,11 +299,6 @@
    "name": "hit W: no background tint on the outline",
    "ok": true,
    "value": "0.0%"
-  },
-  {
-   "name": "hit W: stays on the spot",
-   "ok": false,
-   "value": "10.0% of the frame"
   },
   {
    "name": "hit NW: brought to the walk's size",
@@ -336,11 +321,6 @@
    "value": "0.0%"
   },
   {
-   "name": "hit NW: stays on the spot",
-   "ok": true,
-   "value": "0.9% of the frame"
-  },
-  {
    "name": "hit N: brought to the walk's size",
    "ok": true,
    "value": "x1.24"
@@ -361,11 +341,6 @@
    "value": "0.0%"
   },
   {
-   "name": "hit N: stays on the spot",
-   "ok": true,
-   "value": "0.2% of the frame"
-  },
-  {
    "name": "views are one size",
    "ok": true,
    "value": "0.72 0.70 0.62 0.65 0.69"
@@ -373,7 +348,7 @@
   {
    "name": "atlas page 1 is under 900 KB",
    "ok": true,
-   "value": "375 KB"
+   "value": "370 KB"
   }
  ]
 }

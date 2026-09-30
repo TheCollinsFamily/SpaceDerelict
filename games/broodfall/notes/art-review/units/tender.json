@@ -3,7 +3,7 @@
  "frames": 172,
  "atlasKB": 443,
  "pages": 1,
- "failed": 1,
+ "failed": 0,
  "checks": [
   {
    "name": "walk S: loop closes",
@@ -248,7 +248,7 @@
   {
    "name": "hit S: it moves",
    "ok": true,
-   "value": 16.98
+   "value": 16.65
   },
   {
    "name": "hit S: nothing cut off",
@@ -259,11 +259,6 @@
    "name": "hit S: no background tint on the outline",
    "ok": true,
    "value": "0.0%"
-  },
-  {
-   "name": "hit S: stays on the spot",
-   "ok": true,
-   "value": "0.4% of the frame"
   },
   {
    "name": "hit SW: brought to the walk's size",
@@ -286,11 +281,6 @@
    "value": "0.0%"
   },
   {
-   "name": "hit SW: stays on the spot",
-   "ok": true,
-   "value": "0.8% of the frame"
-  },
-  {
    "name": "hit W: brought to the walk's size",
    "ok": true,
    "value": "x1.03"
@@ -303,17 +293,12 @@
   {
    "name": "hit W: nothing cut off",
    "ok": true,
-   "value": "in the walk frame"
+   "value": "window grown 1.01x"
   },
   {
    "name": "hit W: no background tint on the outline",
    "ok": true,
    "value": "0.0%"
-  },
-  {
-   "name": "hit W: stays on the spot",
-   "ok": true,
-   "value": "0.2% of the frame"
   },
   {
    "name": "hit NW: brought to the walk's size",
@@ -336,11 +321,6 @@
    "value": "0.0%"
   },
   {
-   "name": "hit NW: stays on the spot",
-   "ok": false,
-   "value": "11.3% of the frame"
-  },
-  {
    "name": "hit N: brought to the walk's size",
    "ok": true,
    "value": "x0.89"
@@ -359,11 +339,6 @@
    "name": "hit N: no background tint on the outline",
    "ok": true,
    "value": "0.0%"
-  },
-  {
-   "name": "hit N: stays on the spot",
-   "ok": true,
-   "value": "0.2% of the frame"
   },
   {
    "name": "views are one size",

@@ -417,22 +417,27 @@ describe.skipIf(!hasArt)('the baked art', () => {
   });
 
   it('keeps every frame inside its atlas, and every atlas small', () => {
-    const sets: Array<[string, { atlas: string; frame: number; cols: number; anims: Record<string, unknown> }]> = [
-      ...Object.entries(manifest.units as Record<string, never>), ...Object.entries(manifest.limbs as Record<string, never>),
+    const sets: Array<[string, { atlas: string; pages?: string[]; frame: number; cols: number; anims: Record<string, unknown> }]> = [
+      ...Object.entries(manifest.units as Record<string, never>), ...Object.entries((manifest.allies ?? {}) as Record<string, never>),
+      ...Object.entries(manifest.limbs as Record<string, never>),
     ];
     for (const [id, a] of sets) {
-      const file = join(ART, a.atlas);
-      expect(existsSync(file), a.atlas).toBe(true);
-      expect(statSync(file).size, `${a.atlas} size`).toBeLessThan(900 * 1024);
-      const { w, h } = webpSize(file);
-      expect(w, `${id} atlas width`).toBe(a.frame * a.cols);
+      // A unit with more frames than one light picture holds is packed on several pages (Sep 30 2026): each is checked.
+      const files = [a.atlas, ...(a.pages ?? [])].map((f) => join(ART, f));
+      const heights = files.map((file) => {
+        expect(existsSync(file), file).toBe(true);
+        expect(statSync(file).size, `${file} size`).toBeLessThan(900 * 1024);
+        const { w, h } = webpSize(file);
+        expect(w, `${id} atlas width`).toBe(a.frame * a.cols);
+        return h;
+      });
       const back = (a as { back?: { anims: Record<string, unknown> } }).back;
-      const clips = [...Object.values(a.anims), ...Object.values(back?.anims ?? {})].flatMap((c) => (c && typeof c === 'object' && 'start' in c ? [c] : Object.values(c as object))) as Array<{ start: number; count: number; fps: number }>;
+      const clips = [...Object.values(a.anims), ...Object.values(back?.anims ?? {})].flatMap((c) => (c && typeof c === 'object' && 'start' in c ? [c] : Object.values(c as object))) as Array<{ start: number; count: number; fps: number; page?: number }>;
       expect(clips.length).toBeGreaterThan(0);
       for (const c of clips) {
         expect(c.count, `${id} frames`).toBeGreaterThan(0);
         expect(c.fps, `${id} rate`).toBeGreaterThan(0);
-        expect(Math.ceil((c.start + c.count) / a.cols) * a.frame, `${id} rows`).toBeLessThanOrEqual(h);
+        expect(Math.ceil((c.start + c.count) / a.cols) * a.frame, `${id} rows`).toBeLessThanOrEqual(heights[c.page ?? 0]);
       }
     }
   });
@@ -586,6 +591,10 @@ describe.skipIf(!hasArt)('the baked art', () => {
     // (about 11 MB for all 26), and the budget went to 30 rather than the units' quality down.
     // Sep 30 2026: every limb gained its withering and 13 limbs their acting clips (limbs 10.7 ->
     // 15.0 MB), and the effects and donor parts came (0.4 MB): +5 MB, rather than fewer frames.
-    expect(total / 1024 / 1024).toBeLessThan(35);
+    // Sep 30 2026, the units: a flinch for all 26 in 5 views, the royal and consort as bosses from
+    // 320 and 256 px frames with an arrival and a special, the carapace walking cracked and stripped,
+    // the braced guns' shots, and the hive's own walkers (broodling, three puppet queens): units
+    // 11 -> 18.3 MB, the whole 38.5 MB. The budget went to 42 rather than fewer or smaller frames.
+    expect(total / 1024 / 1024).toBeLessThan(42);
   });
 });

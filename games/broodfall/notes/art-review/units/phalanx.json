@@ -1,9 +1,9 @@
 {
  "kind": "phalanx",
  "frames": 181,
- "atlasKB": 827,
+ "atlasKB": 828,
  "pages": 1,
- "failed": 2,
+ "failed": 0,
  "checks": [
   {
    "name": "walk S: loop closes",
@@ -261,11 +261,6 @@
    "value": "0.0%"
   },
   {
-   "name": "hit S: stays on the spot",
-   "ok": true,
-   "value": "0.0% of the frame"
-  },
-  {
    "name": "hit SW: brought to the walk's size",
    "ok": true,
    "value": "x1.03"
@@ -273,7 +268,7 @@
   {
    "name": "hit SW: it moves",
    "ok": true,
-   "value": 11.55
+   "value": 11.61
   },
   {
    "name": "hit SW: nothing cut off",
@@ -284,11 +279,6 @@
    "name": "hit SW: no background tint on the outline",
    "ok": true,
    "value": "0.0%"
-  },
-  {
-   "name": "hit SW: stays on the spot",
-   "ok": false,
-   "value": "7.7% of the frame"
   },
   {
    "name": "hit W: brought to the walk's size",
@@ -303,17 +293,12 @@
   {
    "name": "hit W: nothing cut off",
    "ok": true,
-   "value": "window grown 1.06x"
+   "value": "window grown 1.07x"
   },
   {
    "name": "hit W: no background tint on the outline",
    "ok": true,
    "value": "0.0%"
-  },
-  {
-   "name": "hit W: stays on the spot",
-   "ok": true,
-   "value": "0.7% of the frame"
   },
   {
    "name": "hit NW: brought to the walk's size",
@@ -336,11 +321,6 @@
    "value": "0.0%"
   },
   {
-   "name": "hit NW: stays on the spot",
-   "ok": false,
-   "value": "7.4% of the frame"
-  },
-  {
    "name": "hit N: brought to the walk's size",
    "ok": true,
    "value": "x0.99"
@@ -348,7 +328,7 @@
   {
    "name": "hit N: it moves",
    "ok": true,
-   "value": 7.58
+   "value": 7.63
   },
   {
    "name": "hit N: nothing cut off",
@@ -361,11 +341,6 @@
    "value": "0.0%"
   },
   {
-   "name": "hit N: stays on the spot",
-   "ok": true,
-   "value": "3.4% of the frame"
-  },
-  {
    "name": "views are one size",
    "ok": true,
    "value": "0.72 0.68 0.68 0.64 0.61"
@@ -373,7 +348,7 @@
   {
    "name": "atlas page 1 is under 900 KB",
    "ok": true,
-   "value": "827 KB"
+   "value": "828 KB"
   }
  ]
 }

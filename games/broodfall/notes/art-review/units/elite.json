@@ -1,7 +1,7 @@
 {
  "kind": "elite",
  "frames": 176,
- "atlasKB": 739,
+ "atlasKB": 749,
  "pages": 1,
  "failed": 0,
  "checks": [
@@ -241,9 +241,14 @@
    "value": "0.0%"
   },
   {
+   "name": "hit S: brought to the walk's size",
+   "ok": true,
+   "value": "x1.01"
+  },
+  {
    "name": "hit S: it moves",
    "ok": true,
-   "value": 11.06
+   "value": 10.81
   },
   {
    "name": "hit S: nothing cut off",
@@ -256,14 +261,14 @@
    "value": "0.0%"
   },
   {
-   "name": "hit S: stays on the spot",
+   "name": "hit SW: brought to the walk's size",
    "ok": true,
-   "value": "0.4% of the frame"
+   "value": "x1.05"
   },
   {
    "name": "hit SW: it moves",
    "ok": true,
-   "value": 13.98
+   "value": 15.49
   },
   {
    "name": "hit SW: nothing cut off",
@@ -276,14 +281,14 @@
    "value": "0.0%"
   },
   {
-   "name": "hit SW: stays on the spot",
+   "name": "hit W: brought to the walk's size",
    "ok": true,
-   "value": "1.3% of the frame"
+   "value": "x1.00"
   },
   {
    "name": "hit W: it moves",
    "ok": true,
-   "value": 15.02
+   "value": 15.06
   },
   {
    "name": "hit W: nothing cut off",
@@ -296,19 +301,19 @@
    "value": "0.0%"
   },
   {
-   "name": "hit W: stays on the spot",
+   "name": "hit NW: brought to the walk's size",
    "ok": true,
-   "value": "1.2% of the frame"
+   "value": "x1.14"
   },
   {
    "name": "hit NW: it moves",
    "ok": true,
-   "value": 12.59
+   "value": 12.58
   },
   {
    "name": "hit NW: nothing cut off",
    "ok": true,
-   "value": "window grown 1.05x"
+   "value": "window grown 1.02x"
   },
   {
    "name": "hit NW: no background tint on the outline",
@@ -316,14 +321,14 @@
    "value": "0.0%"
   },
   {
-   "name": "hit NW: stays on the spot",
+   "name": "hit N: brought to the walk's size",
    "ok": true,
-   "value": "0.7% of the frame"
+   "value": "x1.00"
   },
   {
    "name": "hit N: it moves",
    "ok": true,
-   "value": 13.18
+   "value": 13.12
   },
   {
    "name": "hit N: nothing cut off",
@@ -336,11 +341,6 @@
    "value": "0.0%"
   },
   {
-   "name": "hit N: stays on the spot",
-   "ok": true,
-   "value": "2.7% of the frame"
-  },
-  {
    "name": "views are one size",
    "ok": true,
    "value": "0.65 0.62 0.70 0.72 0.67"
@@ -348,7 +348,7 @@
   {
    "name": "atlas page 1 is under 900 KB",
    "ok": true,
-   "value": "739 KB"
+   "value": "749 KB"
   }
  ]
 }

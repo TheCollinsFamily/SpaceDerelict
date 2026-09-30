@@ -1,9 +1,9 @@
 {
  "kind": "consort",
- "frames": 323,
- "atlasKB": 1820,
+ "frames": 321,
+ "atlasKB": 1830,
  "pages": 3,
- "failed": 1,
+ "failed": 0,
  "checks": [
   {
    "name": "walk S: loop closes",
@@ -261,11 +261,6 @@
    "value": "0.0%"
   },
   {
-   "name": "hit S: stays on the spot",
-   "ok": true,
-   "value": "0.5% of the frame"
-  },
-  {
    "name": "hit SW: brought to the walk's size",
    "ok": true,
    "value": "x0.99"
@@ -286,11 +281,6 @@
    "value": "0.0%"
   },
   {
-   "name": "hit SW: stays on the spot",
-   "ok": true,
-   "value": "0.5% of the frame"
-  },
-  {
    "name": "hit W: brought to the walk's size",
    "ok": true,
    "value": "x0.97"
@@ -298,7 +288,7 @@
   {
    "name": "hit W: it moves",
    "ok": true,
-   "value": 12.26
+   "value": 11.21
   },
   {
    "name": "hit W: nothing cut off",
@@ -309,11 +299,6 @@
    "name": "hit W: no background tint on the outline",
    "ok": true,
    "value": "0.0%"
-  },
-  {
-   "name": "hit W: stays on the spot",
-   "ok": false,
-   "value": "7.9% of the frame"
   },
   {
    "name": "hit NW: brought to the walk's size",
@@ -336,11 +321,6 @@
    "value": "0.0%"
   },
   {
-   "name": "hit NW: stays on the spot",
-   "ok": true,
-   "value": "1.2% of the frame"
-  },
-  {
    "name": "hit N: brought to the walk's size",
    "ok": true,
    "value": "x1.07"
@@ -359,11 +339,6 @@
    "name": "hit N: no background tint on the outline",
    "ok": true,
    "value": "0.0%"
-  },
-  {
-   "name": "hit N: stays on the spot",
-   "ok": true,
-   "value": "5.3% of the frame"
   },
   {
    "name": "enter S: brought to the walk's size",
@@ -386,14 +361,9 @@
    "value": "0.0%"
   },
   {
-   "name": "enter S: stays on the spot",
-   "ok": true,
-   "value": "5.4% of the frame"
-  },
-  {
    "name": "enter SW: brought to the walk's size",
    "ok": true,
-   "value": "x0.78"
+   "value": "x0.87"
   },
   {
    "name": "enter SW: it moves",
@@ -411,14 +381,9 @@
    "value": "0.0%"
   },
   {
-   "name": "enter SW: stays on the spot",
-   "ok": true,
-   "value": "3.2% of the frame"
-  },
-  {
    "name": "enter W: brought to the walk's size",
    "ok": true,
-   "value": "x0.87"
+   "value": "x0.90"
   },
   {
    "name": "enter W: it moves",
@@ -428,17 +393,12 @@
   {
    "name": "enter W: nothing cut off",
    "ok": true,
-   "value": "window grown 1.06x"
+   "value": "window grown 1.07x"
   },
   {
    "name": "enter W: no background tint on the outline",
    "ok": true,
    "value": "0.0%"
-  },
-  {
-   "name": "enter W: stays on the spot",
-   "ok": true,
-   "value": "0.9% of the frame"
   },
   {
    "name": "enter NW: brought to the walk's size",
@@ -448,22 +408,17 @@
   {
    "name": "enter NW: it moves",
    "ok": true,
-   "value": 10.96
+   "value": 10.86
   },
   {
    "name": "enter NW: nothing cut off",
    "ok": true,
-   "value": "window grown 1.02x"
+   "value": "window grown 1.01x"
   },
   {
    "name": "enter NW: no background tint on the outline",
    "ok": true,
    "value": "0.0%"
-  },
-  {
-   "name": "enter NW: stays on the spot",
-   "ok": true,
-   "value": "4.2% of the frame"
   },
   {
    "name": "enter N: brought to the walk's size",
@@ -486,11 +441,6 @@
    "value": "0.0%"
   },
   {
-   "name": "enter N: stays on the spot",
-   "ok": true,
-   "value": "1.2% of the frame"
-  },
-  {
    "name": "special S: brought to the walk's size",
    "ok": true,
    "value": "x1.05"
@@ -509,11 +459,6 @@
    "name": "special S: no background tint on the outline",
    "ok": true,
    "value": "0.0%"
-  },
-  {
-   "name": "special S: stays on the spot",
-   "ok": true,
-   "value": "0.0% of the frame"
   },
   {
    "name": "special SW: brought to the walk's size",
@@ -536,11 +481,6 @@
    "value": "0.0%"
   },
   {
-   "name": "special SW: stays on the spot",
-   "ok": true,
-   "value": "0.3% of the frame"
-  },
-  {
    "name": "special W: brought to the walk's size",
    "ok": true,
    "value": "x1.05"
@@ -559,11 +499,6 @@
    "name": "special W: no background tint on the outline",
    "ok": true,
    "value": "0.0%"
-  },
-  {
-   "name": "special W: stays on the spot",
-   "ok": true,
-   "value": "4.6% of the frame"
   },
   {
    "name": "special NW: brought to the walk's size",
@@ -586,11 +521,6 @@
    "value": "0.0%"
   },
   {
-   "name": "special NW: stays on the spot",
-   "ok": true,
-   "value": "2.5% of the frame"
-  },
-  {
    "name": "special N: brought to the walk's size",
    "ok": true,
    "value": "x1.07"
@@ -611,11 +541,6 @@
    "value": "0.0%"
   },
   {
-   "name": "special N: stays on the spot",
-   "ok": true,
-   "value": "3.9% of the frame"
-  },
-  {
    "name": "views are one size",
    "ok": true,
    "value": "0.72 0.65 0.62 0.61 0.63"
@@ -628,12 +553,12 @@
   {
    "name": "atlas page 2 is under 900 KB",
    "ok": true,
-   "value": "631 KB"
+   "value": "634 KB"
   },
   {
    "name": "atlas page 3 is under 900 KB",
    "ok": true,
-   "value": "627 KB"
+   "value": "633 KB"
   }
  ]
 }

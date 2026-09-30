@@ -200,6 +200,18 @@ try {
     const at = await middle(ids);
     let b = await closeOn(at, 0);
     await shot(1, 'braced-beside-walking-game-zoom', middleCrop(b));
+    // The same, the four guns' corner of it blown up (pixels doubled, nothing redrawn): what the eye sees at the game's zoom.
+    {
+      // Around the four guns as they stand on the screen (their feet), with room above for the barrels.
+      const pts = await page.evaluate((want) => window.broodfall.sim.enemies.filter((e) => want.includes(e.id)).map((e) => window.broodfall.worldToScreen(e.pos.x, e.pos.y)), ids);
+      const xs = pts.map((q) => b.x + (q.x / q.vw) * b.width);
+      const ys = pts.map((q) => b.y + (q.y / q.vh) * b.height);
+      const cx = (Math.min(...xs) + Math.max(...xs)) / 2;
+      const cy = (Math.min(...ys) + Math.max(...ys)) / 2 - 12;
+      const png = join(shots, 'units-01b.png');
+      await page.screenshot({ path: png, clip: { x: cx - 60, y: cy - 40, width: 120, height: 80 } });
+      spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-i', png, '-vf', 'scale=480:320:flags=neighbor', '-q:v', '3', join(screens, 'units-01b-braced-beside-walking-game-zoom-enlarged.jpg')]);
+    }
     await shot(2, 'braced-beside-walking-game-zoom-whole');
     b = await closeOn(at, 8);
     await shot(3, 'braced-beside-walking-close');
@@ -267,7 +279,7 @@ try {
     await page.evaluate(() => window.broodfall.step(1));
     const ids = await put([{ kind: 'royal', cell: st[1], dx: -12 }, { kind: 'consort', cell: st[1], dx: 22, dy: 6 }]);
     await hold(ids);
-    await closeOn(await middle(ids), 8);
+    await closeOn(await middle(ids), 5);
     await ticks(5);
     await shot(12, 'bosses-arriving');
     await ticks(20);

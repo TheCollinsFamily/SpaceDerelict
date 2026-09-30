@@ -1,7 +1,7 @@
 {
  "kind": "mortar",
  "frames": 178,
- "atlasKB": 463,
+ "atlasKB": 467,
  "pages": 1,
  "failed": 0,
  "checks": [
@@ -261,34 +261,24 @@
    "value": "0.0%"
   },
   {
-   "name": "hit S: stays on the spot",
-   "ok": true,
-   "value": "4.7% of the frame"
-  },
-  {
    "name": "hit SW: brought to the walk's size",
    "ok": true,
-   "value": "x0.99"
+   "value": "x1.06"
   },
   {
    "name": "hit SW: it moves",
    "ok": true,
-   "value": 19.3
+   "value": 13.03
   },
   {
    "name": "hit SW: nothing cut off",
    "ok": true,
-   "value": "window grown 1.04x"
+   "value": "in the walk frame"
   },
   {
    "name": "hit SW: no background tint on the outline",
    "ok": true,
    "value": "0.0%"
-  },
-  {
-   "name": "hit SW: stays on the spot",
-   "ok": true,
-   "value": "4.3% of the frame"
   },
   {
    "name": "hit W: brought to the walk's size",
@@ -298,7 +288,7 @@
   {
    "name": "hit W: it moves",
    "ok": true,
-   "value": 10.7
+   "value": 10.79
   },
   {
    "name": "hit W: nothing cut off",
@@ -309,11 +299,6 @@
    "name": "hit W: no background tint on the outline",
    "ok": true,
    "value": "0.0%"
-  },
-  {
-   "name": "hit W: stays on the spot",
-   "ok": true,
-   "value": "4.3% of the frame"
   },
   {
    "name": "hit NW: brought to the walk's size",
@@ -336,11 +321,6 @@
    "value": "0.0%"
   },
   {
-   "name": "hit NW: stays on the spot",
-   "ok": true,
-   "value": "0.2% of the frame"
-  },
-  {
    "name": "hit N: brought to the walk's size",
    "ok": true,
    "value": "x0.99"
@@ -348,7 +328,7 @@
   {
    "name": "hit N: it moves",
    "ok": true,
-   "value": 7.27
+   "value": 7.88
   },
   {
    "name": "hit N: nothing cut off",
@@ -361,11 +341,6 @@
    "value": "0.0%"
   },
   {
-   "name": "hit N: stays on the spot",
-   "ok": true,
-   "value": "1.3% of the frame"
-  },
-  {
    "name": "views are one size",
    "ok": true,
    "value": "0.69 0.71 0.67 0.71 0.72"
@@ -373,7 +348,7 @@
   {
    "name": "atlas page 1 is under 900 KB",
    "ok": true,
-   "value": "463 KB"
+   "value": "467 KB"
   }
  ]
 }

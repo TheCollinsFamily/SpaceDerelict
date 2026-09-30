@@ -1,7 +1,7 @@
 {
  "kind": "soldier",
  "frames": 174,
- "atlasKB": 339,
+ "atlasKB": 351,
  "pages": 1,
  "failed": 0,
  "checks": [
@@ -241,14 +241,19 @@
    "value": "0.0%"
   },
   {
+   "name": "hit S: brought to the walk's size",
+   "ok": true,
+   "value": "x1.11"
+  },
+  {
    "name": "hit S: it moves",
    "ok": true,
-   "value": 10.92
+   "value": 10.1
   },
   {
    "name": "hit S: nothing cut off",
    "ok": true,
-   "value": "window grown 1.07x"
+   "value": "in the walk frame"
   },
   {
    "name": "hit S: no background tint on the outline",
@@ -256,19 +261,19 @@
    "value": "0.0%"
   },
   {
-   "name": "hit S: stays on the spot",
+   "name": "hit SW: brought to the walk's size",
    "ok": true,
-   "value": "1.4% of the frame"
+   "value": "x1.01"
   },
   {
    "name": "hit SW: it moves",
    "ok": true,
-   "value": 18.41
+   "value": 7.92
   },
   {
    "name": "hit SW: nothing cut off",
    "ok": true,
-   "value": "window grown 1.06x"
+   "value": "in the walk frame"
   },
   {
    "name": "hit SW: no background tint on the outline",
@@ -276,14 +281,14 @@
    "value": "0.0%"
   },
   {
-   "name": "hit SW: stays on the spot",
+   "name": "hit W: brought to the walk's size",
    "ok": true,
-   "value": "0.5% of the frame"
+   "value": "x1.10"
   },
   {
    "name": "hit W: it moves",
    "ok": true,
-   "value": 10.7
+   "value": 10.69
   },
   {
    "name": "hit W: nothing cut off",
@@ -296,19 +301,19 @@
    "value": "0.0%"
   },
   {
-   "name": "hit W: stays on the spot",
+   "name": "hit NW: brought to the walk's size",
    "ok": true,
-   "value": "0.5% of the frame"
+   "value": "x1.06"
   },
   {
    "name": "hit NW: it moves",
    "ok": true,
-   "value": 11.76
+   "value": 11.85
   },
   {
    "name": "hit NW: nothing cut off",
    "ok": true,
-   "value": "window grown 1.01x"
+   "value": "window grown 1.03x"
   },
   {
    "name": "hit NW: no background tint on the outline",
@@ -316,14 +321,14 @@
    "value": "0.0%"
   },
   {
-   "name": "hit NW: stays on the spot",
+   "name": "hit N: brought to the walk's size",
    "ok": true,
-   "value": "0.9% of the frame"
+   "value": "x1.21"
   },
   {
    "name": "hit N: it moves",
    "ok": true,
-   "value": 9.95
+   "value": 9.92
   },
   {
    "name": "hit N: nothing cut off",
@@ -336,11 +341,6 @@
    "value": "0.0%"
   },
   {
-   "name": "hit N: stays on the spot",
-   "ok": true,
-   "value": "0.2% of the frame"
-  },
-  {
    "name": "views are one size",
    "ok": true,
    "value": "0.72 0.72 0.65 0.68 0.68"
@@ -348,7 +348,7 @@
   {
    "name": "atlas page 1 is under 900 KB",
    "ok": true,
-   "value": "339 KB"
+   "value": "351 KB"
   }
  ]
 }

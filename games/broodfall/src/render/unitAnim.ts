@@ -17,7 +17,7 @@ export const HIT_SHARE = 0.03;
 /** The royal's command, every this many seconds while she fights. */
 export const ROYAL_SPECIAL_EVERY = 9;
 /** How much bigger the bosses are drawn than their radius says. */
-export const BOSS_SCALE: Record<string, number> = { royal: 1.25, consort: 1.2 };
+export const BOSS_SCALE: Record<string, number> = { royal: 1.2, consort: 1.2 };
 
 /** What the board remembers of one unit between frames, to see what happened to it. */
 export interface UnitFx {

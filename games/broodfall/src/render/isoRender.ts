@@ -1448,7 +1448,7 @@ export class IsoRenderer extends Renderer {
     if (boss && fx.enterT < 1.6) {
       const k = fx.enterT / 1.6;
       this.groundG.circle(e.pos.x, e.pos.y, r * (0.8 + k * 3)).stroke({ width: 3 * (1 - k) + 0.5, color: 0xf0c850, alpha: 0.9 * (1 - k) });
-      g.rect(x - r * 0.35, y - 60 * (1 - k * 0.3), r * 0.7, 60 + r).fill({ color: 0xffe8a0, alpha: 0.28 * (1 - k) });
+      this.groundG.circle(e.pos.x, e.pos.y, r * (0.4 + k * 1.8)).stroke({ width: 2, color: 0xfff0b0, alpha: 0.7 * (1 - k) });
     }
     if (boss && fx.specialT < 0.9) {
       const k = fx.specialT / 0.9;
