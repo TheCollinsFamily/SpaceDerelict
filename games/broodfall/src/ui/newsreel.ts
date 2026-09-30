@@ -140,7 +140,8 @@ function film(opts: { id: string; look: Look; series?: string; issue?: string; c
     if (music) audio.add(music);
     let top = 0;
     const load = (c: Cut | undefined, v: HTMLVideoElement) => { if (c && v.dataset.clip !== c.id) { v.src = c.clip.video; if (c.clip.poster) v.poster = c.clip.poster; v.dataset.clip = c.id; v.load(); } };
-    const show = (c: Cut, raw: boolean, next: () => void, ungraded = false) => {
+    /** A shot into the layer not showing; when it is up, `after` loads into the one it replaced (never into the one on screen). */
+    const show = (c: Cut, raw: boolean, next: () => void, ungraded = false, after?: Cut) => {
       const v = layers[1 - top];
       load(c, v);
       try { v.currentTime = 0; } catch { /* starts at 0 */ }
@@ -148,7 +149,7 @@ function film(opts: { id: string; look: Look; series?: string; issue?: string; c
       // A shot lasts its clip, or as long as its line needs (the clip then runs a little slower).
       const secs = raw ? 8 : Math.max(c.clip.seconds, narr ? 0.45 + narr.seconds + 0.35 : 0);
       v.playbackRate = Math.max(0.5, Math.min(1, c.clip.seconds / secs));
-      const up = () => { v.classList.add('on'); layers[top].classList.remove('on'); top = 1 - top; };
+      const up = () => { v.classList.add('on'); layers[top].classList.remove('on'); top = 1 - top; later(400, () => load(after, layers[1 - top])); };
       void v.play().then(up, up);
       el.classList.toggle('raw', raw || ungraded);
       el.dataset.shot = c.id;
@@ -171,12 +172,11 @@ function film(opts: { id: string; look: Look; series?: string; issue?: string; c
       i++;
       if (i >= cuts.length) { lastCard(); return; }
       const c = cuts[i];
-      load(cuts[i + 1], layers[top]);
       if (c.raw) {
         if (music) music.pause();
         const f = field();
-        show(c, true, () => { if (f) fadeOut(f, 300); playSafe(music); next(); });
-      } else show(c, false, next);
+        show(c, true, () => { if (f) fadeOut(f, 300); playSafe(music); next(); }, false, cuts[i + 1]);
+      } else show(c, false, next, false, cuts[i + 1]);
     };
     const lastCard = () => {
       title.classList.remove('on');
@@ -196,8 +196,7 @@ function film(opts: { id: string; look: Look; series?: string; issue?: string; c
         const again = () => {
           k++;
           if (k >= cuts.length) { if (f) fadeOut(f, 600); later(700, end); return; }
-          show(cuts[k], false, again, true);
-          load(cuts[k + 1], layers[top]);
+          show(cuts[k], false, again, true, cuts[k + 1]);
         };
         later(900, again);
       });

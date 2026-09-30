@@ -1185,7 +1185,8 @@ async function boot(): Promise<void> {
   // there must not fall to the browser's menu and leave the panel open).
   document.getElementById('inspect')?.addEventListener('contextmenu', (ev) => { ev.preventDefault(); cancelAll(); });
   window.addEventListener('keydown', (ev) => {
-    if (ev.key !== 'Escape' || settingsOpen()) return;
+    // On the organ stage Esc first puts down the organ in hand (src/ui/underground.ts), whichever listener runs first.
+    if (ev.key !== 'Escape' || settingsOpen() || ev.defaultPrevented || (under.open && under.selected)) return;
     // Esc with nothing in hand, armed or open: the settings (the run paused). Otherwise it cancels, as always.
     const idle = selectedCard === null && armedOrgan === null && armedThrower === null && !armedPlinth
       && armedNode === null && armedSpread === null && hud.inspectedId === null;

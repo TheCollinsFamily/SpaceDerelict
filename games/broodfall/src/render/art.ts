@@ -214,6 +214,25 @@ export class BoardArtSet {
   terrain: BoardArt | null = null;
   /** What could not be loaded, for the console and the tests. */
   failed: string[] = [];
+  /**
+   * The limbs' upgrade looks (`<family>@<key>`), not loaded until a limb earns one: at a few MB of video
+   * memory each, all of them at the start would slow a small GPU (Sep 30 2026, shot-iso's frame rate).
+   */
+  variantArt = new Map<string, LimbArt>();
+  private variantAsked = new Set<string>();
+
+  /** An upgrade look, when loaded; the first ask starts loading it (the limb keeps the look it has meanwhile). */
+  limbVariant(name: string): { art: LimbArt; atlas: Atlas } | undefined {
+    const done = this.limbs.get(name);
+    if (done || this.variantAsked.has(name)) return done;
+    const art = this.variantArt.get(name);
+    if (!art) return undefined;
+    this.variantAsked.add(name);
+    Assets.load<Texture>(artUrl(art.atlas))
+      .then((tex) => { this.limbs.set(name, { art, atlas: new Atlas(tex) }); })
+      .catch(() => { this.failed.push(art.atlas); });
+    return undefined;
+  }
   /** The effects and the donor parts (named sprites), when they loaded. */
   fx = new Map<'effects' | 'parts' | 'tongue' | 'meat', { atlas: Atlas; sprites: FxSheet['sprites'] }>();
 
@@ -246,10 +265,9 @@ export class BoardArtSet {
     }
     for (const [id, art] of Object.entries(m.limbs ?? {})) {
       jobs.push(get(art.atlas).then((atlas) => { if (atlas) set.limbs.set(id, { art, atlas }); }));
-      // Its upgrade looks, each drawn like a limb of its own: `<family>@<key>` (src/render/isoRender.ts picks one).
+      // Its upgrade looks, each drawn like a limb of its own: `<family>@<key>`, loaded the first time a limb earns it (limbVariant).
       for (const [key, v] of Object.entries(art.variants ?? {})) {
-        const vart: LimbArt = { ...v, on: art.on, ...(art.flat ? { flat: true } : {}), ...(art.facing ? { facing: true } : {}) };
-        jobs.push(get(v.atlas).then((atlas) => { if (atlas) set.limbs.set(`${id}@${key}`, { art: vart, atlas }); }));
+        set.variantArt.set(`${id}@${key}`, { ...v, on: art.on, ...(art.flat ? { flat: true } : {}), ...(art.facing ? { facing: true } : {}) });
       }
     }
     for (const name of ['effects', 'parts', 'tongue'] as const) {

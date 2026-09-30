@@ -437,7 +437,7 @@ export class IsoRenderer extends Renderer {
     if (LOOKS) {
       const l = lookOf(t);
       for (const key of [l.key, l.top]) {
-        const f = key ? this.art.limbs.get(`${t.family}@${key}`) : undefined;
+        const f = key ? this.art.limbVariant(`${t.family}@${key}`) : undefined;
         if (f) return { ...f, look: key };
       }
     }

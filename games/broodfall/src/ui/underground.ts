@@ -220,7 +220,7 @@ export class UndergroundScreen {
     });
     window.addEventListener('keydown', (ev) => {
       if (!this.open) return;
-      if (ev.key === 'Escape') { this.selected = null; this.lastKey = ''; this.render(); }
+      if (ev.key === 'Escape' && this.selected) { ev.preventDefault(); this.selected = null; this.lastKey = ''; this.render(); }
       if (ev.key === 'r' || ev.key === 'R') { this.rot = (this.rot + 1) % 4; this.paintGhost(); this.updateStatus(); }
     });
   }
