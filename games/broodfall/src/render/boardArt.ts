@@ -528,9 +528,9 @@ export class Skyline {
 /**
  * A roof raised on a plinth rises out of its block: for RISE seconds everything the map built
  * for that cell (its new level of bone, its roof, the skin on it, what stands there) is drawn
- * that much lower, and comes up. The level of bone below it is seen to grow.
+ * that much lower, and comes up slowly, as a thing that grows: the level of bone under it is seen to swell out of the block.
  */
-export const RISE = 1.1;
+export const RISE = 1.8;
 export class PlinthRise {
   private last = new Uint8Array(0);
   /** The cells rising, and when they started (renderer clock). */
@@ -557,7 +557,7 @@ export class PlinthRise {
     if (t0 === undefined) return 0;
     const f = Math.min(1, (this.clock - t0) / RISE);
     // It rises quickly, overshoots a hair, and settles: grown, not lifted.
-    const e = 1 - Math.pow(1 - f, 3) + Math.sin(f * Math.PI) * 0.06;
+    const e = f * f * (3 - 2 * f) + Math.sin(f * Math.PI) * 0.05;
     return 1 - Math.min(1.04, e);
   }
 
