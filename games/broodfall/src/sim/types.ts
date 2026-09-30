@@ -492,7 +492,8 @@ export interface Broodling {
   id: number;
   motherId: number;
   /** A grafted royal fighting its own (Puppet Queen): no leash, its own bite and speed. */
-  puppet?: { bite: number; rate: number; speed: number };
+  /** kind: which royal it was (the board draws her grafted: tools/art/units.mjs ALLIES). */
+  puppet?: { bite: number; rate: number; speed: number; kind?: EnemyKind };
   pos: Vec;
   hp: number;
   maxHp: number;

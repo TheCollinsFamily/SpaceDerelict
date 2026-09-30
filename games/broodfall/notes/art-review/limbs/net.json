@@ -1,7 +1,7 @@
 {
  "family": "net",
- "frames": 30,
- "atlasKB": 292,
+ "frames": 40,
+ "atlasKB": 356,
  "failed": 0,
  "checks": [
   {
@@ -50,14 +50,24 @@
    "value": "3% change"
   },
   {
+   "name": "die: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "die: it ends as a husk",
+   "ok": true,
+   "value": "50% of its first frame"
+  },
+  {
    "name": "it stands in its cell",
    "ok": true,
-   "value": "6.3% of it lies in front of its cell"
+   "value": "2.8% of it lies in front of its cell"
   },
   {
    "name": "atlas is under 900 KB",
    "ok": true,
-   "value": "292 KB"
+   "value": "356 KB"
   }
  ]
 }

@@ -165,16 +165,26 @@ export function showFailure(f: Failure, onContinue?: () => void): void {
   });
 }
 
-/** Some pictures failed, the rest is there: a line at the top of the board, not a screen. */
-export function showArtNotice(failed: string[]): void {
+/** A line at the top of the board, not a screen: something is missing, the game goes on. */
+function notice(html: string, title = ''): void {
   const el = document.getElementById('art-notice');
-  if (!el || !failed.length) return;
-  el.innerHTML = `<b>${failed.length} PICTURE${failed.length > 1 ? 'S' : ''} DID NOT LOAD</b> — drawn as plain marks instead.`
-    + ' <button data-act="retry">RELOAD</button><button data-act="close" title="Close">✕</button>';
-  el.title = failed.join('\n');
+  if (!el) return;
+  el.innerHTML = `${html} <button data-act="retry">RELOAD</button><button data-act="close" title="Close">✕</button>`;
+  el.title = title;
   el.classList.remove('hidden');
   el.querySelector('[data-act="retry"]')!.addEventListener('click', () => location.reload());
   el.querySelector('[data-act="close"]')!.addEventListener('click', () => el.classList.add('hidden'));
   // It is said once; it does not stay over the game.
   window.setTimeout(() => el.classList.add('hidden'), 14000);
+}
+
+/** Some pictures failed, the rest is there. */
+export function showArtNotice(failed: string[]): void {
+  if (!failed.length) return;
+  notice(`<b>${failed.length} PICTURE${failed.length > 1 ? 'S' : ''} DID NOT LOAD</b> — drawn as plain marks instead.`, failed.join(', '));
+}
+
+/** No WebGL, but the board could be drawn without it (slowly): say so, and how to mend it. */
+export function showSlowDrawingNotice(): void {
+  notice('<b>DRAWING WITHOUT WEBGL</b> — the board will be slow. Turn on hardware acceleration in the browser’s settings and reload.');
 }

@@ -183,7 +183,7 @@ export const SHEETS = [
  */
 const graft = (who) => `${who}, but GRAFTED by the hive and fighting for it now: a big pulsing dark-red living graft sits on the back of the neck, wet dark maroon flesh and veins have grown out from it over the shoulders and down the clothes, thin red roots creep over the headgear, and the eyes glow red. Everything else is exactly as in the reference picture: the same figure, clothes, colours and kit.`;
 export const ALLIES = [
-  { kind: 'broodling', ally: true, name: 'Broodling', caste: 'hive', r: 4.5, body: 'beast', gait: 'scuttle', key: 'green',
+  { kind: 'broodling', ally: true, noEmblem: true, name: 'Broodling', caste: 'hive', r: 4.5, body: 'beast', gait: 'scuttle', key: 'green',
     look: 'a small newborn hive creature the size of a large dog: a glossy wet pink body, its back covered in dark scaly plates held in a lattice of pale veins like the shell of the brood sac, six short hooked pink legs, and at its front a big round mouth ringed with small pale teeth; no eyes, no clothes, no kit',
     attackMotion: 'The creature lunges a short way forward and bites hard with its round toothed mouth, then pulls back to exactly its starting pose.',
     design: { refs: ['limbs/brood/still.png', 'units/skitterling/view-SW.png'],

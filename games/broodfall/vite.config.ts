@@ -35,6 +35,7 @@ const DIST = process.env.BROODFALL_DIST || 'dist';
 export default defineConfig({
   base: './',
   build: { outDir: DIST },
-  server: { port: PORT, strictPort: false, proxy: { '/rfab-api': rfab } },  // players fall through to the next port; scripts use preview
+  // BROODFALL_NO_HMR=1: a beat on the dev server is not reloaded when another session saves a file mid-beat.
+  server: { port: PORT, strictPort: false, proxy: { '/rfab-api': rfab }, hmr: process.env.BROODFALL_NO_HMR ? false : undefined },  // players fall through to the next port; scripts use preview
   preview: { port: PORT, strictPort: true, proxy: { '/rfab-api': rfab } },
 });

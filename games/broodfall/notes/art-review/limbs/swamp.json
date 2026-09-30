@@ -1,8 +1,8 @@
 {
  "family": "swamp",
- "frames": 16,
- "atlasKB": 137,
- "failed": 0,
+ "frames": 26,
+ "atlasKB": 170,
+ "failed": 1,
  "checks": [
   {
    "name": "where it stands is marked",
@@ -40,9 +40,19 @@
    "value": "1% change"
   },
   {
+   "name": "die: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "die: it ends as a husk",
+   "ok": false,
+   "value": "89% of its first frame"
+  },
+  {
    "name": "atlas is under 900 KB",
    "ok": true,
-   "value": "137 KB"
+   "value": "170 KB"
   }
  ]
 }

@@ -68,7 +68,7 @@
   width: min(640px, calc(100% - 32px)); background: var(--panel); border: 4px double var(--panel-edge);
   padding: 22px 30px; color: var(--ink); box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.6);
 }
-.fault-card .logo-small { --emblem-size: 72px; --word-size: 34px; margin: -6px 0 6px -6px; }
+.fault-card .logo-small { --emblem-size: 72px; --word-size: 34px; margin: -4px 0 14px -6px; }
 .fault-card .logo-small .logo-emblem { filter: grayscale(0.7) drop-shadow(0 3px 6px rgba(0, 0, 0, 0.5)); }
 .fault-title { font-family: Impact, "Arial Black", sans-serif; font-size: 28px; letter-spacing: 2px; margin: 6px 0 10px; color: #7a1a10; }
 .fault-card p { font-size: 13px; line-height: 1.5; margin-bottom: 8px; }

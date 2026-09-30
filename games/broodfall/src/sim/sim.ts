@@ -3644,7 +3644,7 @@ export class Sim {
           this.stats.royalsCaptured += 1;
           this.broodlings.push({
             id: this.nextId++, motherId: t.id, pos: { ...royal.pos }, hp: royal.maxHp * 0.6, maxHp: royal.maxHp * 0.6,
-            cooldown: 0, puppet: { bite: rs.damage, rate: rs.rate, speed: rs.speed * 1.4 },
+            cooldown: 0, puppet: { bite: rs.damage, rate: rs.rate, speed: rs.speed * 1.4, kind: royal.kind },
           });
           this.events.push({ kind: 'royal-captured', enemy: royal.kind });
         }

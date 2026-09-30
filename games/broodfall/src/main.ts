@@ -19,7 +19,7 @@ import { strainIcons, strainKey, strainLabel } from './ui/strain';
 import { GENES } from '../content/plates';
 import { BALANCE as B } from '../content/data';
 import { PLATE, PLATE_FEATURES } from './sim/citymap';
-import { LoadingScreen, applyName, dressLogos, loadScreenArt, showArtNotice, showFailure } from './ui/screens';
+import { LoadingScreen, applyName, dressLogos, loadScreenArt, showArtNotice, showFailure, showSlowDrawingNotice } from './ui/screens';
 import { debriefPictures, type Outcome } from './ui/debrief';
 import { platePicture } from './render/platePreview';
 import type { Directive, OrganId, RootDir, SimConfig, SimEvent, TowerFamily } from './sim/types';
@@ -93,6 +93,8 @@ let renderer: Renderer = new Renderer();
 let boardArt: BoardArtSet | null = null;
 /** The board is drawn and the loop runs: until then a deployment waits behind the loading screen. */
 let bootDone = false;
+/** Pictures of the board that failed to load: said over the board when a run starts, not over the menu or the ship. */
+let artFailed: string[] = [];
 const loading = new LoadingScreen();
 /** The board as it was when the run ended, for the report (a data URL). */
 let endSnapshot: string | null = null;
@@ -475,6 +477,7 @@ function setupMenu(): void {
     started = true;
     // Clicked before the board's art has arrived: the deployment waits behind the loading screen.
     if (!bootDone) loading.show('THE DEPLOYMENT');
+    else showArtNotice(artFailed);
   });
   if (AUTOSTART) menuEl.classList.add('hidden');
   const saved = loadCampaign();
@@ -839,7 +842,7 @@ async function boot(): Promise<void> {
       if (art.terrain) {
         renderer = new IsoRenderer(art);
         boardArt = art;
-        if (art.failed.length) showArtNotice(art.failed);
+        artFailed = art.failed;
       } else {
         await passable(`The board's floors and walls did not load.\n${art.failed.join('\n')}`);
       }
@@ -853,7 +856,10 @@ async function boot(): Promise<void> {
     showFailure({ kind: webglMissing() ? 'no-webgl' : 'crash', detail: String((e as Error)?.stack ?? e) });
     return;
   }
+  // No WebGL: the board is drawn on a plain canvas instead (PixiJS falls back), slowly. Said once, over the board.
+  if ((renderer.app.renderer as { name?: string }).name === 'canvas') showSlowDrawingNotice();
   bootDone = true;
+  if (started) showArtNotice(artFailed);
   (window as unknown as { __bfBooted?: boolean }).__bfBooted = true;
   loading.hide();
 

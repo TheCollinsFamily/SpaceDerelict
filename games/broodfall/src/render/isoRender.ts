@@ -13,7 +13,8 @@ import { Application, Container, Graphics, Matrix, Sprite, Texture } from 'pixi.
 import { CellType, PLATE } from '../sim/citymap';
 import { Sim, enemySpec, towerSpec, towerStats } from '../sim/sim';
 import type { CreepSource, Enemy, Tower } from '../sim/types';
-import { BoardArtSet, type Clip, type LimbArt, type UnitArt } from './art';
+import { BoardArtSet, type Clip, type LimbArt, type LoadedUnit, type UnitArt } from './art';
+import { BOSS_SCALE, choose, newFx, observe, playFor, skinOf, type UnitFx } from './unitAnim';
 import {
   FACING_STEP, boardCell, creepRunsOn, depth, facingOf, headingOf, isoGeo, limbView, openSides, pick, project, unproject,
   viewCell, viewOf, viewSize, wallIndex,
@@ -21,6 +22,7 @@ import {
 } from './iso';
 import { buildingsOf, pickVariant, planGuests, variantName } from './biome';
 import { SEEDLING_FLIGHT } from '../../content/underground';
+import { BALANCE } from '../../content/data';
 import { CASTE_COLORS, ENEMY_SIZE, FAMILY_COLORS, Renderer } from './render';
 import { FxLayer, type FxView } from './fx';
 import { LimbFates } from './limbFx';
@@ -73,9 +75,19 @@ interface UnitView {
   shade: Sprite;
   /** The sim's unit itself: it keeps its hp after the sim drops it, so one gone with none left died (in the same tick it was struck), and falls where it stood. */
   ent: Enemy;
+  /** Its pictures (all atlas pages), and what the board remembers of it to see what happened to it (src/render/unitAnim.ts). */
+  unit: LoadedUnit; fx: UnitFx;
+  /** Its size on the board without a clip's own bigger window: what its fall is drawn at. */
+  scale0: number;
 }
 /** A unit that died: its fall plays once where it stood, it lies a moment, then fades. */
-interface Dying { sprite: Sprite; shade: Sprite; art: UnitArt; clip: Clip | null; t: number }
+interface Dying { sprite: Sprite; shade: Sprite; art: UnitArt; clip: Clip | null; t: number; unit: LoadedUnit; scale: number }
+/** A broodling or a puppet queen: walks and bites like a unit, for the hive. */
+interface AllyView {
+  sprite: Sprite; shade: Sprite; unit: LoadedUnit; heading: Heading; last: Pt; phase: number;
+  /** Its bite's cooldown last frame (a jump up is a bite), seconds since it bit, its hp last frame, seconds since it was struck. */
+  cd: number; biteT: number; hp: number; hitT: number; seen: number;
+}
 /** How long the fallen lie still before they fade, and how long the fade takes, seconds. */
 const LIE_STILL = 1.4;
 const FADE = 0.6;
@@ -127,6 +139,8 @@ export class IsoRenderer extends Renderer {
   private creepSprites = new Map<number, Sprite[]>();
   private units = new Map<number, UnitView>();
   private dying: Dying[] = [];
+  /** The broodlings and puppet queens drawn with their pictures, by the sim's id. */
+  private allyViews = new Map<number, AllyView>();
   private limbs = new Map<number, LimbView>();
   private nodes = new Map<number, Sprite>();
   private shots = new Map<number, ShotView>();
@@ -437,6 +451,7 @@ export class IsoRenderer extends Renderer {
     this.creepSprites.clear();
     this.creepState = new Uint16Array(sim.map.cells.length);
     this.units.clear();
+    this.allyViews.clear();
     for (const d of this.dying) { d.sprite.destroy(); d.shade.destroy(); }
     this.dying = [];
     this.limbs.clear();
@@ -1152,7 +1167,7 @@ export class IsoRenderer extends Renderer {
         this.unitMarks(sim, e, p.x / K, p.y / K - r, r);
         continue;
       }
-      const { art, atlas } = found;
+      const { art } = found;
       let v = this.units.get(e.id);
       // A unit promoted into another kind is drawn as that kind from now on.
       if (v && v.art !== art) { v.sprite.destroy(); v.ghost.destroy(); v.shade.destroy(); this.units.delete(e.id); v = undefined; }
@@ -1169,7 +1184,7 @@ export class IsoRenderer extends Renderer {
         const next = sim.flowNextOf(sim.cellAt(e.pos.x, e.pos.y));
         const to = next >= 0 ? sim.cellCenter(next) : sim.core;
         const first = headingOf(g, to.x - e.pos.x, to.y - e.pos.y);
-        v = { sprite, ghost, art, heading: first, want: first, wantFor: 0, last: { ...e.pos }, phase: (e.id * 0.618) % 1, attackT: 0, seen: 0, shade, ent: e };
+        v = { sprite, ghost, art, heading: first, want: first, wantFor: 0, last: { ...e.pos }, phase: (e.id * 0.618) % 1, attackT: 0, seen: 0, shade, ent: e, unit: found, fx: newFx(e, art), scale0: 1 };
         this.units.set(e.id, v);
       }
       v.seen = this.frameNo;
@@ -1198,31 +1213,33 @@ export class IsoRenderer extends Renderer {
       const strike = attacking ? art.anims.attack?.[view] : undefined;
       // The state the sim holds it in, when there is a picture of it (drawn toward the lower left, mirrored by heading).
       const states = art.anims.states;
+      // A skin it walks in (the carapace lord's shell cracked, then gone) stands in for its frozen state picture.
+      const skin = skinOf(art, e, view, spec.hitShield);
+      const stripped = e.kind === 'carapace' && e.hitShield !== undefined && e.hitShield <= 0 && !skin;
       const state = !states ? undefined
         : e.burrowed ? states.burrowed
           : !air && (e.groundedUntil ?? 0) > sim.time ? states.grounded
-            : e.deployed ? states.deployed
-              : e.kind === 'carapace' && e.hitShield !== undefined && e.hitShield <= 0 ? states.stripped
-                : e.carrying || (e.stole ?? 0) > 0 ? states.carrying
-                  : undefined;
-      let tex: Texture;
-      if (state) {
-        tex = this.frameOf(atlas, art, state, 0);
-      } else if (strike) {
-        v.attackT += dt;
-        const period = spec.rate > 0 ? 1 / spec.rate : strike.count / strike.fps;
-        tex = this.frameOf(atlas, art, strike, ((v.attackT % period) / period) * strike.count);
-      } else {
-        v.attackT = 0;
-        tex = this.frameOf(atlas, art, walk, v.phase * walk.count);
-      }
-      const scale = (2 * r * UNIT_PX) / (art.body * art.frame);
+            : stripped ? states.stripped
+              : e.carrying || (e.stole ?? 0) > 0 ? states.carrying
+                : undefined;
+      // What happened to it since the last frame (read from the sim, never written to it): struck, fired, promoted.
+      observe(v.fx, e, dt, e.kind, attacking);
+      if (strike) v.attackT += dt; else v.attackT = 0;
+      const period = strike && spec.rate > 0 ? 1 / spec.rate : strike ? strike.count / strike.fps : 1;
+      const pick = choose(art, view, v.fx, {
+        state, deployed: e.deployed ? states?.deployed : undefined, walk, skin, strike, phase: v.phase, attackT: v.attackT, period,
+      });
+      const tex = this.unitFrame(found, pick.clip, pick.at);
+      const scale = ((2 * r * UNIT_PX) / (art.body * art.frame)) * (BOSS_SCALE[e.kind] ?? 1) * (pick.clip.scale ?? 1);
+      const anchor = pick.clip.anchor ?? art.anchor;
+      v.scale0 = scale / (pick.clip.scale ?? 1);
       // A burrowed unit with a picture of its mound is seen as that mound; without one, not at all.
       const hidden = (!!e.burrowed && !state) || (sim.isCloaked(e) && !sim.isRevealed(e));
       // A state is drawn once, toward the lower left: it is mirrored when the unit faces right, as the views are.
       const stateMirror = mirror;
       for (const s of [v.sprite, v.ghost]) {
         s.texture = tex;
+        s.anchor.set(anchor[0], anchor[1]);
         s.position.set(p.x, p.y);
         s.scale.set(stateMirror ? -scale : scale, scale);
         s.visible = !hidden;
@@ -1238,8 +1255,10 @@ export class IsoRenderer extends Renderer {
       v.shade.zIndex = v.sprite.zIndex - 1;
       v.shade.visible = !air && !hidden && !e.burrowed;
       v.shade.alpha = 0.85;
-      v.sprite.tint = sim.isCloaked(e) ? 0xd8b0ff : 0xffffff;
+      // Struck: a pale red flash for the first moment of the flinch (every unit, with a flinch clip or not).
+      v.sprite.tint = v.fx.hitT < 0.09 ? 0xffb4a4 : sim.isCloaked(e) ? 0xd8b0ff : 0xffffff;
       this.unitMarks(sim, e, p.x / K, (p.y - r * UNIT_PX * 0.9) / K, r);
+      this.unitMoments(e, v.fx, p.x / K, (p.y - r * UNIT_PX * 0.9) / K, r, !!art.anims['walk-stripped']);
     }
     for (const [id, v] of this.units) {
       if (v.seen === this.frameNo) continue;
@@ -1249,14 +1268,20 @@ export class IsoRenderer extends Renderer {
       if (v.ent.hp <= 0 && this.dying.length < 60) {
         const { view } = viewOf(v.heading);
         const clip = v.art.anims.death?.[view] ?? v.art.anims.death?.SW ?? null;
-        this.dying.push({ sprite: v.sprite, shade: v.shade, art: v.art, clip, t: 0 });
+        this.dying.push({ sprite: v.sprite, shade: v.shade, art: v.art, clip, t: 0, unit: v.unit, scale: v.scale0 });
       } else {
         v.sprite.destroy();
         v.shade.destroy();
       }
     }
     this.syncDying(sim, dt);
-    this.drawBroodlings(sim);
+    this.drawBroodlings(sim, dt);
+    for (const [id, v] of this.allyViews) {
+      if (v.seen === this.frameNo) continue;
+      v.sprite.destroy();
+      v.shade.destroy();
+      this.allyViews.delete(id);
+    }
   }
 
   /** The fallen: each plays its fall once, lies still, then fades. */
@@ -1264,13 +1289,17 @@ export class IsoRenderer extends Renderer {
     const keep: Dying[] = [];
     for (const d of this.dying) {
       d.t += dt;
-      const found = this.art.units.get(this.kindOfArt(d.art));
-      const playFor = d.clip ? d.clip.count / d.clip.fps : 0;
-      if (d.clip && found) {
+      const falling = d.clip ? d.clip.count / d.clip.fps : 0;
+      if (d.clip) {
         const f = Math.min(d.clip.count - 1, Math.floor(d.t * d.clip.fps));
-        d.sprite.texture = found.atlas.frame(d.clip.start + f, d.art.frame, d.art.cols);
+        d.sprite.texture = this.unitFrame(d.unit, d.clip, f);
+        // A fall cut with a bigger window than the walk (a flier falling to the ground) keeps the walk's size and feet.
+        const a = d.clip.anchor ?? d.art.anchor;
+        d.sprite.anchor.set(a[0], a[1]);
+        const sx = Math.sign(d.sprite.scale.x) || 1;
+        d.sprite.scale.set(sx * d.scale * (d.clip.scale ?? 1), d.scale * (d.clip.scale ?? 1));
       }
-      const gone = d.t - playFor - LIE_STILL;
+      const gone = d.t - falling - LIE_STILL;
       // Without a fall to play, it simply fades where it stood.
       const a = gone <= 0 ? 1 : Math.max(0, 1 - gone / FADE);
       d.sprite.alpha = a;
@@ -1280,6 +1309,43 @@ export class IsoRenderer extends Renderer {
       keep.push(d);
     }
     this.dying = keep;
+  }
+
+  /** Frame `at` of a unit's clip, from whichever atlas page the clip is on. */
+  private unitFrame(u: LoadedUnit, clip: Clip, at: number): Texture {
+    const i = clip.start + (((Math.floor(at) % clip.count) + clip.count) % clip.count);
+    return (u.pages[clip.page ?? 0] ?? u.atlas).frame(i, u.art.frame, u.art.cols);
+  }
+
+  /**
+   * What is drawn in code with a unit's moments (src/render/unitAnim.ts): chips of its shell flying
+   * off, the dust of a gun digging in, a boss's arrival and the royal's command spreading out.
+   */
+  private unitMoments(e: Enemy, fx: UnitFx, x: number, y: number, r: number, shellIsPicture: boolean): void {
+    const g = this.marksG;
+    if (shellIsPicture && fx.chipT < 0.35) {
+      const k = fx.chipT / 0.35;
+      for (let i = 0; i < 6; i++) {
+        const a = (i / 6) * Math.PI * 2 + e.id;
+        const d = r * 0.6 + k * (r + 10);
+        g.rect(x + Math.cos(a) * d - 1.2, y + Math.sin(a) * d * 0.7 - 1.2 - k * 4, 2.4, 2.4).fill({ color: 0xd9a441, alpha: 1 - k });
+      }
+    }
+    if (fx.digT < 0.6) {
+      const k = fx.digT / 0.6;
+      this.groundG.ellipse(e.pos.x, e.pos.y, r * (1.2 + k * 1.6), r * (1.2 + k * 1.6)).fill({ color: 0xb8a27a, alpha: 0.45 * (1 - k) });
+    }
+    const boss = e.kind === 'royal' || e.kind === 'consort';
+    if (boss && fx.enterT < 1.6) {
+      const k = fx.enterT / 1.6;
+      this.groundG.circle(e.pos.x, e.pos.y, r * (0.8 + k * 3)).stroke({ width: 3 * (1 - k) + 0.5, color: 0xf0c850, alpha: 0.9 * (1 - k) });
+      g.rect(x - r * 0.35, y - 60 * (1 - k * 0.3), r * 0.7, 60 + r).fill({ color: 0xffe8a0, alpha: 0.28 * (1 - k) });
+    }
+    if (boss && fx.specialT < 0.9) {
+      const k = fx.specialT / 0.9;
+      const reach = e.kind === 'royal' ? BALANCE.royalAuraRadius : 40;
+      this.groundG.circle(e.pos.x, e.pos.y, r + k * (reach - r)).stroke({ width: 2.5, color: 0xf0c850, alpha: 0.75 * (1 - k) });
+    }
   }
 
   /** Which kind a unit's art is (the art set is keyed by kind). */
@@ -1319,7 +1385,8 @@ export class IsoRenderer extends Renderer {
     }
     if (e.kind === 'matron') this.groundG.circle(e.pos.x, e.pos.y, 90).stroke({ width: 1, color: 0xb890e0, alpha: 0.3 + 0.1 * Math.sin(this.pulse * 1.5) });
     if (e.kind === 'drummer') this.groundG.circle(e.pos.x, e.pos.y, r + 8 + Math.sin(this.pulse * 5) * 3).stroke({ width: 1.5, color: 0xe0a03a, alpha: 0.55 });
-    if (e.kind === 'carapace' && e.hitShield !== undefined && e.hitShield > 0) {
+    // The shell is its picture (whole, cracked, gone) when it has walking skins; the ring is for when it has none.
+    if (e.kind === 'carapace' && e.hitShield !== undefined && e.hitShield > 0 && !this.art.units.get('carapace')?.art.anims['walk-stripped']) {
       g.circle(x, y, s + 3).stroke({ width: 2, color: 0xe8dca0, alpha: 0.3 + 0.08 * e.hitShield });
     }
     // A carried limb: a pip over the head, unless the unit has a picture of itself carrying one.
@@ -1340,9 +1407,65 @@ export class IsoRenderer extends Renderer {
     if (e.hp < e.maxHp) this.hpArc(g, x, y - 4, s + 2, e.hp / e.maxHp);
   }
 
-  private drawBroodlings(sim: Sim): void {
+  private drawBroodlings(sim: Sim, dt: number): void {
     const g = this.marksG;
+    const geo = this.geo;
     for (const b of sim.broodlings) {
+      const id = b.puppet ? `puppet-${b.puppet.kind ?? 'royal'}` : 'broodling';
+      const found = this.art.allies.get(id);
+      if (found) {
+        const { art } = found;
+        let v = this.allyViews.get(b.id);
+        if (!v) {
+          const sprite = new Sprite();
+          const shade = new Sprite(this.shade());
+          shade.anchor.set(0.5, 0.5);
+          this.sorted.addChild(shade, sprite);
+          v = { sprite, shade, unit: found, heading: 'SW' as Heading, last: { ...b.pos }, phase: (b.id * 0.618) % 1, cd: b.cooldown, biteT: Infinity, hp: b.hp, hitT: Infinity, seen: 0 };
+          this.allyViews.set(b.id, v);
+        }
+        v.seen = this.frameNo;
+        const dx = b.pos.x - v.last.x;
+        const dy = b.pos.y - v.last.y;
+        const moved = Math.hypot(dx, dy);
+        v.last = { ...b.pos };
+        const speed = b.puppet?.speed ?? BALANCE.broodSpeed;
+        const { view, mirror } = viewOf(v.heading);
+        const walk = art.anims.walk[view] ?? art.anims.walk.SW ?? Object.values(art.anims.walk)[0]!;
+        if (moved > 0.02) {
+          v.heading = headingOf(geo, dx, dy);
+          v.phase = (v.phase + moved / Math.max(8, speed * (walk.count / walk.fps))) % 1;
+        }
+        // Read from the sim only: a bite winds its cooldown up again; a blow takes hp off.
+        v.biteT += dt;
+        v.hitT += dt;
+        if (b.cooldown > v.cd + 0.05) v.biteT = 0;
+        if (b.hp < v.hp) v.hitT = 0;
+        v.cd = b.cooldown;
+        v.hp = b.hp;
+        const bite = art.anims.attack?.[view];
+        const biteFor = bite ? playFor(bite, 0.7) : 0;
+        const clip = bite && v.biteT < biteFor ? bite : walk;
+        const at = clip === bite ? (v.biteT / biteFor) * clip.count : v.phase * clip.count;
+        const r = b.puppet ? ENEMY_SIZE[b.puppet.kind ?? 'royal'] : 4.5;
+        const scale = ((2 * r * UNIT_PX) / (art.body * art.frame)) * (clip.scale ?? 1);
+        const p = this.onGround(sim, b.pos.x, b.pos.y);
+        const a = clip.anchor ?? art.anchor;
+        v.sprite.texture = this.unitFrame(found, clip, at);
+        v.sprite.anchor.set(a[0], a[1]);
+        v.sprite.position.set(p.x, p.y);
+        v.sprite.scale.set(mirror ? -scale : scale, scale);
+        v.sprite.tint = v.hitT < 0.09 ? 0xffb4a4 : 0xffffff;
+        v.sprite.zIndex = depth(geo, b.pos.x, b.pos.y) * 100 + 50;
+        const sw = 2 * r * UNIT_PX * 1.25;
+        v.shade.position.set(p.x, p.y);
+        v.shade.width = sw;
+        v.shade.height = sw * (geo.b / geo.a);
+        v.shade.zIndex = v.sprite.zIndex - 1;
+        v.shade.alpha = 0.85;
+        if (b.hp < b.maxHp) this.hpArc(g, p.x / K, (p.y - r * UNIT_PX * 1.8) / K, r + 4, b.hp / b.maxHp);
+        continue;
+      }
       const p = this.onGround(sim, b.pos.x, b.pos.y);
       const x = p.x / K;
       const y = p.y / K - 3;

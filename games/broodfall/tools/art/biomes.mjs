@@ -360,7 +360,9 @@ export const BIOMES = [
       'iron, pipes, gantries, corrugated paper sheds, roller doors, hazard stripes, furnace light',
     street: 'The floor of a works yard: pale worn concrete slabs in a loose honeycomb pattern with oil stains, tyre marks and a little rust.',
     plaza: 'A loading yard: pale concrete with hexagon bay markings painted in worn yellow and a round iron drain in the middle.',
-    roof: 'A flat factory roof: rust-red corrugated sheets and black tar in bands, with a few square panes of wired glass.',
+    // Sep 30 2026: the first was rust-red corrugated iron, dark and red: at far zoom a claimed roof and a bare one looked alike
+    // (tests/iso.test.ts, "no floor reads as the creep"). Now its paint is the one colour the creep never is.
+    roof: 'A flat factory roof: weathered corrugated sheets painted a faded slate teal and grey-green, laid in wide bands with strips of black tar between them, a few square panes of wired glass, and a little pale rust at the bolts. Muted colours, matte.',
     walls: {
       plain: 'It is a block of workers\' tenements. Ground storey: narrow round doorways, a row of bicycles, a lit canteen window. Upper storeys: rows of small round windows, soot stains, drain pipes, washing, an iron fire escape.',
       science: 'It is a refinery control house. Ground storey: a steel door, pressure gauges, valve wheels. Upper storeys: round windows showing control panels with glowing dials, fat pipes wrapped in lagging, a tank with a level gauge.',
@@ -466,7 +468,8 @@ export const BIOMES = [
       "Tall prairie grass seen from straight above: long soft grass of straw gold and sage green, swirled by the wind, with purple and yellow wildflowers. No paths and no bare earth.",
       "A wildflower meadow seen from straight above: short green grass thick with small purple, yellow, white and orange flowers. No paths and no bare earth.",
       "A cattle pasture seen from straight above: short cropped green grass with darker tussocks and a few pale stones, and one worn path of pale bare earth crossing it from one edge of the picture to the other.",
-      "A small wood seen from straight above: the round caps of a grove of fungus trees in rust, gold and tan, touching and overlapping, with glimpses of mossy ground between them. Muted colours.",
+      // Sep 30 2026: the first had caps of rust, gold and tan: brown discs that at far zoom read as the creep's cells.
+      "A small wood seen from straight above: the round crowns of a grove of fungus trees in sage green, olive, moss green and a few pale grey-green, touching and overlapping, with glimpses of mossy ground between them. Muted cool greens; nothing red, nothing rust and nothing brown.",
     ],
     walls2: {
       plain: { land: true, words: "A prairie hillside: three steps of rolling grassland, long straw-gold and sage-green grass bending in the wind, purple coneflowers and yellow blanket flowers. Nothing built at all." },
@@ -620,7 +623,8 @@ export const BIOMES = [
     ],
     guests: [],
     roofs: [
-      'The top of an old comb sealed with propolis: a crust of dark red-brown resin, matte, with the ribs of the cells under it showing as a faint honeycomb of paler lines, and a few drops of amber.',
+      // Sep 30 2026: the first was a crust of dark red-brown propolis, which read as the creep at far zoom.
+      'The top of an old comb packed with pollen: every cell filled to the brim with pollen in pale sulphur yellow, sage, dusty olive and a little cream, matte and powdery, the wax walls between them pale. Nothing red, nothing brown and nothing dark.',
       'The top of a comb covered with silk: a smooth pale cream sheet of spun silk stretched over the cells, their hexagons showing faintly through it, with a few thicker white threads. Pale and even.',
     ],
     walls2: {

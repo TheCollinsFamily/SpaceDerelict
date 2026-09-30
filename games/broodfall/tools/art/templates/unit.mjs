@@ -28,6 +28,8 @@ const KEEP = { walk: 14, attack: 12, death: 12, hit: 8, braced: 10, enter: 16, s
 const EMBLEM =
   'Its one emblem is a small plain gold hexagon, the shape of a honeycomb cell. There are no crosses, no stars ' +
   'and no crescents anywhere';
+/** The hive's own creatures carry nothing of the empire's (the broodling came out with a gold hexagon on its back). */
+const emblemOf = (u) => (u.noEmblem ? 'It carries no emblem, no badge, no metal and no markings of any kind: it is all living flesh' : EMBLEM);
 const KEYS = { green: { hex: '00FF00', name: 'green' }, magenta: { hex: 'FF00FF', name: 'magenta' } };
 
 /** Green is the proven background; anything teal, green or royal is cut off magenta instead. */
@@ -89,7 +91,7 @@ const turnaroundPrompt = (u, g) =>
   `(3) ${g.heading} to the left, seen from its left side; ` +
   `(4) ${g.heading} away toward the upper left, seen from behind and to the left; ` +
   `(5) ${g.heading} straight away from the viewer, seen from behind. Each is caught ${g.caught}. Even light ` +
-  `from directly overhead. ${EMBLEM}. No ground, no cast shadows, no labels, no numbers, no text.`;
+  `from directly overhead. ${emblemOf(u)}. No ground, no cast shadows, no labels, no numbers, no text.`;
 
 /** The camera and the readability every unit is drawn for (probed: tools/art/probe-unit-camera.mjs). */
 const TOP_CAMERA =
@@ -115,7 +117,7 @@ async function makeViews(u, dir, key) {
     // No concept sheet: its figure is drawn first, from its references. Look at ref.png before the views are paid for.
     await makeStill({
       slug: `${u.kind} design`, out: ref, refFiles: u.design.refs.map((r) => path.join(SRC, r)),
-      prompt: `${u.design.prompt} ${EMBLEM}. Even light from directly overhead, no cast shadows, no text.`, key: key.hex, keyName: key.name, quality: 'high',
+      prompt: `${u.design.prompt} ${emblemOf(u)}. Even light from directly overhead, no cast shadows, no text.`, key: key.hex, keyName: key.name, quality: 'high',
     });
   } else {
     const place = placeOnSheet(u.kind);

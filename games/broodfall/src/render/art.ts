@@ -8,11 +8,18 @@ import type { BiomeArt } from './biome';
 
 export { pickBiome, type BiomeArt } from './biome';
 
-export interface Clip { start: number; count: number; fps: number }
+/**
+ * page: which atlas page the frames are on (a unit's `pages`, Sep 30 2026), when not the first.
+ * anchor, scale: a clip cut with a window bigger than the walk's (a fall below a flier, a braced
+ * gun's splayed legs): where the walk's feet are in its frame, and how much bigger its frame is.
+ */
+export interface Clip { start: number; count: number; fps: number; page?: number; anchor?: [number, number]; scale?: number }
 export type View = 'S' | 'SW' | 'W' | 'NW' | 'N';
 
 export interface UnitArt {
   atlas: string; frame: number; cols: number; anchor: [number, number];
+  /** More atlas pages, when the frames do not fit in one light picture (a clip's `page` is 1 for the first of these). */
+  pages?: string[];
   /** The body's width as a share of the frame's. */
   body: number;
   flies: boolean;
@@ -22,8 +29,20 @@ export interface UnitArt {
     death?: Partial<Record<View, Clip>>;
     /** One frame each, drawn toward the lower left: grounded, deployed, stripped, burrowed, carrying. */
     states?: Partial<Record<'grounded' | 'deployed' | 'stripped' | 'burrowed' | 'carrying', Clip>>;
+    /** A flinch when struck, played once (Sep 30 2026). */
+    hit?: Partial<Record<View, Clip>>;
+    /** A braced gun firing once, from its braced picture (drawn toward the lower left in every view). */
+    braced?: Partial<Record<View, Clip>>;
+    /** A boss's arrival, played once when it comes on the board, and its special attack. */
+    enter?: Partial<Record<View, Clip>>;
+    special?: Partial<Record<View, Clip>>;
+  } & {
+    /** A skin: walking in another look the unit is in (walk-cracked, walk-stripped of the carapace lord). */
+    [skin: `walk-${string}`]: Partial<Record<View, Clip>> | undefined;
   };
 }
+/** A unit's art and its atlas pages, loaded. */
+export interface LoadedUnit { art: UnitArt; atlas: Atlas; pages: Atlas[] }
 /** One view of a limb: the point of its frame that stands on the middle of its ground, how wide what it stands on is (a share of the frame), and its clips. */
 export interface LimbSide {
   anchor: [number, number]; body: number;
@@ -66,6 +85,8 @@ export interface ShipArt {
 export interface Manifest {
   version: number;
   units: Record<string, UnitArt>;
+  /** What walks the streets on the hive's side: the broodling and the puppet queens (tools/art/units.mjs ALLIES). */
+  allies?: Record<string, UnitArt>;
   limbs: Record<string, LimbArt>;
   board: { terrain?: BoardArt };
   biomes?: Record<string, BiomeArt>;
@@ -121,7 +142,9 @@ export class Atlas {
 
 /** Everything the board draws with, loaded. A file that fails to load is left out. */
 export class BoardArtSet {
-  units = new Map<string, { art: UnitArt; atlas: Atlas }>();
+  units = new Map<string, LoadedUnit>();
+  /** The broodling and the puppet queens, by id (broodling, puppet-royal, puppet-consort, puppet-matron). */
+  allies = new Map<string, LoadedUnit>();
   limbs = new Map<string, { art: LimbArt; atlas: Atlas }>();
   sheets = new Map<string, { atlas: Atlas; sprites: Record<string, Rect> }>();
   /** The sheets of every tile set on this board (its own set and that set's guests): looked in first. */
@@ -156,8 +179,13 @@ export class BoardArtSet {
       }
     };
     const jobs: Array<Promise<void>> = [];
-    for (const [id, art] of Object.entries(m.units ?? {})) {
-      jobs.push(get(art.atlas).then((atlas) => { if (atlas) set.units.set(id, { art, atlas }); }));
+    // A unit is drawn only when every page of it loaded: a clip on a missing page would draw nothing.
+    for (const [into, list] of [[set.units, m.units], [set.allies, m.allies]] as const) {
+      for (const [id, art] of Object.entries(list ?? {})) {
+        jobs.push(Promise.all([art.atlas, ...(art.pages ?? [])].map(get)).then(([atlas, ...pages]) => {
+          if (atlas && pages.every(Boolean)) into.set(id, { art, atlas, pages: [atlas, ...(pages as Atlas[])] });
+        }));
+      }
     }
     for (const [id, art] of Object.entries(m.limbs ?? {})) {
       jobs.push(get(art.atlas).then((atlas) => { if (atlas) set.limbs.set(id, { art, atlas }); }));
