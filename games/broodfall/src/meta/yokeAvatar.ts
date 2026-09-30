@@ -16,6 +16,7 @@
  */
 import idsRaw from '../../content/lore/yoke-avatar.json?raw';
 import type { AiContext, AiTrigger, AiTurn, ShipAiProvider } from './shipAi';
+import { cutKindOf, type CutKind, type PlayerLink } from './yokePlayer';
 
 // ---------------------------------------------------------------------------
 // Who she is on rfab.ai
@@ -249,6 +250,12 @@ export interface AvatarLinkOptions {
   avatarId: string;
   /** The player's own RFab key; none behind the proxy. */
   key?: string;
+  /**
+   * The player's link (src/meta/yokePlayer.ts, Sep 30 2026): she is then HIS private YOKE on
+   * /api/broodfall/yoke, paid by the house up to $3 and by his own RFab account once linked.
+   * Without it (or on an RFab that has no such route yet) she is the avatar's own star.
+   */
+  player?: PlayerLink;
   fetcher?: typeof fetch;
 }
 
@@ -262,20 +269,33 @@ export class AvatarLink {
   private fetcher: typeof fetch;
   constructor(private o: AvatarLinkOptions) { this.fetcher = o.fetcher ?? ((...a) => fetch(...a)); }
 
+  /** His own YOKE (the player route), not the avatar's star. */
+  private get mine(): boolean { return !!this.o.player && !this.o.player.legacy; }
+
   private url(tail: string): string {
-    return `${this.o.base.replace(/\/$/, '')}/api/avatars/${encodeURIComponent(this.o.avatarId)}${tail}`;
+    const base = this.o.base.replace(/\/$/, '');
+    return this.mine ? `${base}/api/broodfall/yoke${tail}` : `${base}/api/avatars/${encodeURIComponent(this.o.avatarId)}${tail}`;
   }
 
   private headers(json: boolean): Record<string, string> {
+    if (this.mine) return this.o.player!.headers(json);
     const h: Record<string, string> = {};
     if (json) h['Content-Type'] = 'application/json';
     if (this.o.key) h['X-API-Key'] = this.o.key;
     return h;
   }
 
+  /** A player is registered before his first call (and the link learns whether rfab.ai has the route at all). */
+  private async ready(): Promise<void> {
+    if (this.o.player && !this.o.player.legacy) await this.o.player.ensure();
+  }
+
   private async ask(tail: string, init: RequestInit): Promise<Response> {
+    await this.ready();
+    // The headers are made again after ready(): the player's token may have only just been issued.
+    const withAuth: RequestInit = { ...init, headers: { ...(init.headers as Record<string, string> | undefined), ...this.headers(!!init.body) } };
     let res: Response;
-    try { res = await this.fetcher(this.url(tail), init); } catch { throw new AvatarError(0, 'NETWORK', 'rfab.ai is unreachable'); }
+    try { res = await this.fetcher(this.url(tail), withAuth); } catch { throw new AvatarError(0, 'NETWORK', 'rfab.ai is unreachable'); }
     if (res.ok) return res;
     let body: { error?: string; code?: string } | null = null;
     try { body = await res.json(); } catch { /* a proxy page, or an HTML 404 */ }
@@ -314,6 +334,7 @@ export class AvatarLink {
     const lost = (err: AvatarError) => { settle(err); if (!stopped) onLost(err); };
     const run = async () => {
       let drops = 0;
+      await this.ready();
       while (!stopped) {
         let res: Response;
         try {
@@ -518,13 +539,39 @@ export function rungs(mode: YokeMode, hasAvatar: boolean): YokeMode[] {
 export class YokeLadder implements ShipAiProvider {
   private off = false;
   private told = new Set<string>();
+  /**
+   * Nobody pays for her mind any more (Sep 30 2026): the player's free talk is spent, his RFab
+   * account is short, or the house is closed. Her live mind is not asked again until
+   * `uncut()` (he linked an account, or topped up); meanwhile she says `cutOff`'s words once,
+   * then the scripted YOKE answers, which costs nothing and needs no network.
+   */
+  cut: CutKind | null = null;
+  private cutSaid = false;
+  /** Her words when the money stops. */
+  cutOff: (kind: CutKind) => string[] = () => [];
+  /** The screen is told (it shows the link prompt). */
+  onCut: (kind: CutKind) => void = () => {};
 
   constructor(
     private avatar: AvatarTalk | null,
     private rest: ShipAiProvider,
     private tell: (line: string) => void = (l) => console.warn(l),
+    /** Who answers while she is cut off: never the network. */
+    private free: ShipAiProvider | null = null,
   ) {
     if (avatar) avatar.onLost = (err) => this.note(err);
+  }
+
+  /** Money is back (linked, topped up): her live mind answers again. */
+  uncut(): void { this.cut = null; this.cutSaid = false; }
+
+  /** The server said nobody pays: she says so once, the screen is told. */
+  cutNow(kind: CutKind): string[] {
+    const first = this.cut !== kind || !this.cutSaid;
+    this.cut = kind;
+    this.cutSaid = true;
+    this.onCut(kind);
+    return first ? this.cutOff(kind) : [];
   }
 
   /** The avatar is the one answering. */
