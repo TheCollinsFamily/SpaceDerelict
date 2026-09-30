@@ -131,7 +131,7 @@ export function bakeScreens() {
     if (!fs.existsSync(file)) continue;
     if (id === 'emblem') {
       const img = bakeEmblem(file);
-      total += save(img, path.join(OUT, 'emblem.webp'), 90);
+      total += save(img, path.join(OUT, 'emblem.webp'), 86);
       // To look at: on the title's dark blue and on the khaki of the console.
       const sheet = blank(1280, 640, [0, 0, 0, 255]);
       for (let y = 0; y < 640; y++) for (let x = 0; x < 1280; x++) {
@@ -145,9 +145,10 @@ export function bakeScreens() {
       entry.emblem = 'screens/emblem.webp';
       continue;
     }
-    const [w, h] = id === 'title' ? [1536, 1024] : [1152, 768];
+    // The report's lead is seen about 900 by 230 (a band of it): 960 wide is sharp; the title fills the screen.
+    const [w, h] = id === 'title' ? [1536, 1024] : [960, 640];
     const img = readImage(file, { w, h });
-    total += save(img, path.join(OUT, `${id}.webp`), 84);
+    total += save(img, path.join(OUT, `${id}.webp`), id === 'title' ? 80 : 78);
     writeJpg(path.join(REVIEW, 'screens', `${id}.jpg`), img, 3);
     entry[id] = `screens/${id}.webp`;
   }

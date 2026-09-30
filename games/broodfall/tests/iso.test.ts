@@ -484,6 +484,33 @@ describe.skipIf(!hasArt)('the baked art', () => {
     for (const id of ['orthodox', 'suburb', 'megacity', 'orient']) expect(sets[id], `tile set ${id}`).toBeTruthy();
   });
 
+  it('has no floor that reads as the creep from far away', () => {
+    // Sep 30 2026: a farmland wood of brown fungus caps, a rusty comb and a rust-red factory roof all looked
+    // like claimed ground at far zoom. A floor as dark and as red as the skin (its mean colour, a roof under its
+    // darkest tint, within 35 of the creep in CIE Lab and on its red side) cannot tell the player what is his.
+    const lab = ([r, g, b]: number[]): number[] => {
+      const lin = (c: number) => { c /= 255; return c > 0.04045 ? ((c + 0.055) / 1.055) ** 2.4 : c / 12.92; };
+      const [R, G, B] = [lin(r), lin(g), lin(b)];
+      const q = (t: number) => (t > 0.008856 ? Math.cbrt(t) : 7.787 * t + 16 / 116);
+      const X = q((R * 0.4124 + G * 0.3576 + B * 0.1805) / 0.95047);
+      const Y = q(R * 0.2126 + G * 0.7152 + B * 0.0722);
+      const Z = q((R * 0.0193 + G * 0.1192 + B * 0.9505) / 1.08883);
+      return [116 * Y - 16, 500 * (X - Y), 200 * (Y - Z)];
+    };
+    const creep = lab(manifest.board.terrain.creepColour);
+    const sets = manifest.biomes as Record<string, { floorColour?: Record<string, number[]> }>;
+    let floors = 0;
+    for (const [id, set] of Object.entries(sets)) {
+      for (const [name, rgb] of Object.entries(set.floorColour ?? {})) {
+        floors++;
+        const c = lab(rgb);
+        const dE = Math.hypot(c[0] - creep[0], c[1] - creep[1], c[2] - creep[2]);
+        expect(dE < 35 && c[1] > 3, `${id}: ${name} (${rgb.join(', ')}) reads as the creep: ΔE ${dE.toFixed(0)}, a* ${c[1].toFixed(0)}`).toBe(false);
+      }
+    }
+    expect(floors, 'every set says what its floors look like').toBeGreaterThan(60);
+  });
+
   it('has every piece of every tile set', () => {
     type Sheet = { atlas: string; sprites: Record<string, { x: number; y: number; w: number; h: number }> };
     const terrain = manifest.board.terrain.sheets as Record<string, Sheet>;

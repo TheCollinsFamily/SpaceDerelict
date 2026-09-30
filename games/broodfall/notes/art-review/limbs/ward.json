@@ -1,8 +1,8 @@
 {
  "family": "ward",
- "frames": 16,
- "atlasKB": 206,
- "failed": 2,
+ "frames": 38,
+ "atlasKB": 476,
+ "failed": 0,
  "checks": [
   {
    "name": "where it stands is marked",
@@ -40,24 +40,34 @@
    "value": "1% change"
   },
   {
+   "name": "fire: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "fire: ends the size it began",
+   "ok": true,
+   "value": "1% change"
+  },
+  {
+   "name": "die: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "die: it ends as a husk",
+   "ok": true,
+   "value": "64% of its size, 60% of its colour"
+  },
+  {
    "name": "it stands in its cell",
    "ok": true,
    "value": "0.0% of it lies in front of its cell"
   },
   {
-   "name": "fire: exists",
-   "ok": false,
-   "value": "missing"
-  },
-  {
-   "name": "die: exists",
-   "ok": false,
-   "value": "missing: node tools/art/make.mjs limb ward"
-  },
-  {
    "name": "atlas is under 900 KB",
    "ok": true,
-   "value": "206 KB"
+   "value": "476 KB"
   }
  ]
 }

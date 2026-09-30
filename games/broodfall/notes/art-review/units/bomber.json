@@ -1,7 +1,8 @@
 {
  "kind": "bomber",
- "frames": 77,
- "atlasKB": 217,
+ "frames": 117,
+ "atlasKB": 327,
+ "pages": 1,
  "failed": 0,
  "checks": [
   {
@@ -155,9 +156,114 @@
    "value": "0.2% of the frame"
   },
   {
+   "name": "death SW: nothing cut off",
+   "ok": true,
+   "value": "window grown 1.09x"
+  },
+  {
    "name": "death SW: no background tint on the outline",
    "ok": true,
    "value": "0.0%"
+  },
+  {
+   "name": "hit S: it moves",
+   "ok": true,
+   "value": 13.4
+  },
+  {
+   "name": "hit S: nothing cut off",
+   "ok": true,
+   "value": "in the walk frame"
+  },
+  {
+   "name": "hit S: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "hit S: stays on the spot",
+   "ok": true,
+   "value": "1.5% of the frame"
+  },
+  {
+   "name": "hit SW: it moves",
+   "ok": true,
+   "value": 11.57
+  },
+  {
+   "name": "hit SW: nothing cut off",
+   "ok": true,
+   "value": "in the walk frame"
+  },
+  {
+   "name": "hit SW: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "hit SW: stays on the spot",
+   "ok": true,
+   "value": "3.2% of the frame"
+  },
+  {
+   "name": "hit W: it moves",
+   "ok": true,
+   "value": 14.77
+  },
+  {
+   "name": "hit W: nothing cut off",
+   "ok": true,
+   "value": "window grown 1.07x"
+  },
+  {
+   "name": "hit W: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "hit W: stays on the spot",
+   "ok": true,
+   "value": "0.2% of the frame"
+  },
+  {
+   "name": "hit NW: it moves",
+   "ok": true,
+   "value": 16.36
+  },
+  {
+   "name": "hit NW: nothing cut off",
+   "ok": true,
+   "value": "window grown 1.04x"
+  },
+  {
+   "name": "hit NW: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "hit NW: stays on the spot",
+   "ok": true,
+   "value": "0.8% of the frame"
+  },
+  {
+   "name": "hit N: it moves",
+   "ok": true,
+   "value": 11.82
+  },
+  {
+   "name": "hit N: nothing cut off",
+   "ok": true,
+   "value": "window grown 1.01x"
+  },
+  {
+   "name": "hit N: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "hit N: stays on the spot",
+   "ok": true,
+   "value": "0.3% of the frame"
   },
   {
    "name": "views are one size",
@@ -165,9 +271,9 @@
    "value": "0.72 0.65 0.68 0.71 0.72"
   },
   {
-   "name": "atlas is under 900 KB",
+   "name": "atlas page 1 is under 900 KB",
    "ok": true,
-   "value": "217 KB"
+   "value": "327 KB"
   }
  ]
 }

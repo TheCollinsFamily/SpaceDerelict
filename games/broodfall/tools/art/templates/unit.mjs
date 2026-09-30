@@ -442,10 +442,20 @@ export function bakeUnit(kind) {
     const file = path.join(dir, `state-${st.id}.png`);
     if (!fs.existsSync(file)) { check(`state ${st.id}: exists`, false, 'missing'); continue; }
     // The still is the size of the view it was drawn from; the clips are smaller: brought to the clip's size.
-    const img = readImage(file, { w: walkClip.w, h: walkClip.h });
+    let img = readImage(file, { w: walkClip.w, h: walkClip.h });
     keyFrame(img, keyOf(borderColour(img)));
     dropSpecks(img);
-    const b = base.SW ?? base[walkClip.v];
+    let b = base.SW ?? base[walkClip.v];
+    // The model draws a still at its own size: one drawn much smaller than the unit walks (the braced
+    // dart battery, Sep 30 2026) is brought up to the walk's size, by how much of the picture each covers.
+    const cover = (f) => { let n = 0; for (let i = 3; i < f.data.length; i += 4) if (f.data[i] > 128) n++; return n; };
+    const k = st.id === 'burrowed' ? 1 : Math.sqrt(cover(walkClip.frames[0]) / Math.max(1, cover(img)));
+    if (k > 1.15) {
+      img = resize(img, Math.round(img.w * k), Math.round(img.h * k));
+      // It is drawn where the walk stands in the picture: that point, grown with it.
+      b = { cx: b.cx * k, feet: b.feet * k };
+      check(`state ${st.id}: brought to the walk's size`, true, `x${k.toFixed(2)}`);
+    }
     const win = windowOf(b, unionBox([img]));
     const f = resize(crop(img, Math.round(win.x0), Math.round(win.y0), win.s, win.s), F, F);
     const rec = record(win, b, 1, 1);

@@ -1,7 +1,7 @@
 {
  "family": "cage",
- "frames": 30,
- "atlasKB": 455,
+ "frames": 40,
+ "atlasKB": 580,
  "failed": 0,
  "checks": [
   {
@@ -50,14 +50,24 @@
    "value": "2% change"
   },
   {
+   "name": "die: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "die: it ends as a husk",
+   "ok": true,
+   "value": "60% of its first frame"
+  },
+  {
    "name": "it stands in its cell",
    "ok": true,
-   "value": "1.0% of it lies in front of its cell"
+   "value": "0.1% of it lies in front of its cell"
   },
   {
    "name": "atlas is under 900 KB",
    "ok": true,
-   "value": "455 KB"
+   "value": "580 KB"
   }
  ]
 }

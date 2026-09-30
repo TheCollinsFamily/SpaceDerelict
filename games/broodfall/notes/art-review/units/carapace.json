@@ -1,9 +1,9 @@
 {
  "kind": "carapace",
- "frames": 308,
- "atlasKB": 1208,
+ "frames": 294,
+ "atlasKB": 1156,
  "pages": 2,
- "failed": 2,
+ "failed": 1,
  "checks": [
   {
    "name": "walk S: loop closes",
@@ -461,36 +461,6 @@
    "value": "0.2% of the frame"
   },
   {
-   "name": "walk-cracked N: loop closes",
-   "ok": false,
-   "value": 4.19
-  },
-  {
-   "name": "walk-cracked N: it moves",
-   "ok": true,
-   "value": 3.66
-  },
-  {
-   "name": "walk-cracked N: loop is long enough",
-   "ok": true,
-   "value": 19
-  },
-  {
-   "name": "walk-cracked N: nothing cut off",
-   "ok": true,
-   "value": "in the walk frame"
-  },
-  {
-   "name": "walk-cracked N: no background tint on the outline",
-   "ok": true,
-   "value": "0.0%"
-  },
-  {
-   "name": "walk-cracked N: stays on the spot",
-   "ok": true,
-   "value": "1.1% of the frame"
-  },
-  {
    "name": "walk-stripped S: loop closes",
    "ok": true,
    "value": 2.3
@@ -641,6 +611,11 @@
    "value": "1.4% of the frame"
   },
   {
+   "name": "state stripped: brought to the walk's size",
+   "ok": true,
+   "value": "x1.35"
+  },
+  {
    "name": "state stripped: made",
    "ok": true,
    "value": "yes"
@@ -653,12 +628,12 @@
   {
    "name": "atlas page 1 is under 900 KB",
    "ok": true,
-   "value": "576 KB"
+   "value": "545 KB"
   },
   {
    "name": "atlas page 2 is under 900 KB",
    "ok": true,
-   "value": "632 KB"
+   "value": "611 KB"
   }
  ]
 }

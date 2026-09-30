@@ -1,7 +1,7 @@
 {
  "kind": "dartgun",
- "frames": 146,
- "atlasKB": 473,
+ "frames": 186,
+ "atlasKB": 599,
  "pages": 1,
  "failed": 0,
  "checks": [
@@ -241,6 +241,106 @@
    "value": "0.0%"
   },
   {
+   "name": "hit S: it moves",
+   "ok": true,
+   "value": 19.09
+  },
+  {
+   "name": "hit S: nothing cut off",
+   "ok": true,
+   "value": "window grown 1.13x"
+  },
+  {
+   "name": "hit S: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "hit S: stays on the spot",
+   "ok": true,
+   "value": "1.8% of the frame"
+  },
+  {
+   "name": "hit SW: it moves",
+   "ok": true,
+   "value": 19.59
+  },
+  {
+   "name": "hit SW: nothing cut off",
+   "ok": true,
+   "value": "window grown 1.05x"
+  },
+  {
+   "name": "hit SW: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "hit SW: stays on the spot",
+   "ok": true,
+   "value": "0.2% of the frame"
+  },
+  {
+   "name": "hit W: it moves",
+   "ok": true,
+   "value": 16.97
+  },
+  {
+   "name": "hit W: nothing cut off",
+   "ok": true,
+   "value": "window grown 1.03x"
+  },
+  {
+   "name": "hit W: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "hit W: stays on the spot",
+   "ok": true,
+   "value": "0.9% of the frame"
+  },
+  {
+   "name": "hit NW: it moves",
+   "ok": true,
+   "value": 12.41
+  },
+  {
+   "name": "hit NW: nothing cut off",
+   "ok": true,
+   "value": "in the walk frame"
+  },
+  {
+   "name": "hit NW: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "hit NW: stays on the spot",
+   "ok": true,
+   "value": "1.0% of the frame"
+  },
+  {
+   "name": "hit N: it moves",
+   "ok": true,
+   "value": 11.97
+  },
+  {
+   "name": "hit N: nothing cut off",
+   "ok": true,
+   "value": "in the walk frame"
+  },
+  {
+   "name": "hit N: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "hit N: stays on the spot",
+   "ok": true,
+   "value": "0.2% of the frame"
+  },
+  {
    "name": "braced SW: it moves",
    "ok": true,
    "value": 9.65
@@ -273,7 +373,7 @@
   {
    "name": "atlas page 1 is under 900 KB",
    "ok": true,
-   "value": "473 KB"
+   "value": "599 KB"
   }
  ]
 }

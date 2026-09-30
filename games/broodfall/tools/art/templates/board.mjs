@@ -112,7 +112,7 @@ export function bakePods() {
     const all = unionBox([...shrink.frames, ...spread.frames]);
     const cx = (rest.x0 + rest.x1) / 2;
     const foot = rest.y1 - (rest.y1 - rest.y0) * 0.12;
-    const half = Math.max(cx - all.x0, all.x1 - cx, (foot - all.y0) * 0.62, (all.y1 - foot) * 1.6) * 1.04;
+    const half = Math.max(cx - all.x0, all.x1 - cx, (foot - all.y0) / 1.24, (all.y1 - foot) / 0.76) * 1.04;
     const side = Math.ceil(2 * half);
     const x0 = Math.round(cx - half);
     const y0 = Math.round(foot - side * 0.62);

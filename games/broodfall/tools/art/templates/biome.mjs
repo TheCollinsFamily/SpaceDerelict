@@ -223,6 +223,14 @@ export function bakeBiome(id) {
   const streetLuma = streetPieces.map((p) => luma(ground(p)));
   const floorPieces = [...streetPieces, ...there('plaza'), ...there('roof')];
   const floors = floorPieces.flatMap((p) => floorTiles(spriteName(p.part, p.v), ground(p)));
+  // What each floor looks like from far away (its mean colour, a roof under its darkest tint): the test
+  // "no floor reads as the creep" holds them against the creep's own (tests/iso.test.ts; Sep 30 2026).
+  const lowTint = (b.roofTint ?? [0xffffff])[0];
+  const floorColour = Object.fromEntries(floorPieces.map((p) => {
+    const m = meanColour(ground(p));
+    const k = p.part === 'roof' ? [(lowTint >> 16) & 255, (lowTint >> 8) & 255, lowTint & 255].map((v) => v / 255) : [1, 1, 1];
+    return [spriteName(p.part, p.v), m.map((v, i) => Math.round(v * k[i]))];
+  }));
   const wallPieces = KINDS.flatMap((kind) => there(`wall-${kind}`));
   const walls = wallPieces.flatMap((p) => wallTiles(spriteName(p.kind, p.v), tex(p.file, 1024, 384)));
   // Painted things keep their own colours: the key's tint is taken off their outlines only.
@@ -294,7 +302,7 @@ export function bakeBiome(id) {
   ];
   putEntry('biomes', b.id, {
     name: b.name, territories: b.territories, roofTint: b.roofTint, roofProps, streetProps,
-    variants, guests: b.guests ?? [], data: `board/${b.id}/biome.json`,
+    variants, guests: b.guests ?? [], data: `board/${b.id}/biome.json`, floorColour,
   });
 
   // A town built of the set, with the body's own skin over a corner of it, to look at.
@@ -406,6 +414,13 @@ function townOfVariants(by, set, file) {
   fs.mkdirSync(path.dirname(file), { recursive: true });
   writeJpg(file, out, 4);
   return file;
+}
+
+/** Mean colour of a picture, [r, g, b] 0..255. */
+export function meanColour(img) {
+  const sum = [0, 0, 0];
+  for (let i = 0; i < img.data.length; i += 4) for (let k = 0; k < 3; k++) sum[k] += img.data[i + k];
+  return sum.map((v) => v / (img.data.length / 4));
 }
 
 /** Mean brightness of a picture, 0..255. */

@@ -363,6 +363,12 @@ export function bakeTerrain() {
   }
   const core = bakeCore();
   if (core) entry.core = core;
+  // The creep's colour from far away: what no floor of any tile set may look like (tests/iso.test.ts).
+  if (creepTex) {
+    const sum = [0, 0, 0];
+    for (let i = 0; i < creepTex.data.length; i += 4) for (let k = 0; k < 3; k++) sum[k] += creepTex.data[i + k];
+    entry.creepColour = sum.map((v) => Math.round(v / (creepTex.data.length / 4)));
+  }
   putEntry('board', 'terrain', entry);
   console.log(`[terrain] baked: ${Math.round(total / 1024)} KB in ${Object.keys(entry.sheets).length} sheets`);
   townPicture(Object.fromEntries(Object.values(sheets).flat().map((s) => [s.id, s.img])),

@@ -1,9 +1,9 @@
 {
  "kind": "cannon",
- "frames": 185,
- "atlasKB": 1109,
+ "frames": 169,
+ "atlasKB": 1016,
  "pages": 2,
- "failed": 1,
+ "failed": 0,
  "checks": [
   {
    "name": "walk S: loop closes",
@@ -261,46 +261,6 @@
    "value": "0.2% of the frame"
   },
   {
-   "name": "hit SW: it moves",
-   "ok": true,
-   "value": 20.76
-  },
-  {
-   "name": "hit SW: nothing cut off",
-   "ok": true,
-   "value": "window grown 1.15x"
-  },
-  {
-   "name": "hit SW: no background tint on the outline",
-   "ok": true,
-   "value": "0.0%"
-  },
-  {
-   "name": "hit SW: stays on the spot",
-   "ok": true,
-   "value": "1.7% of the frame"
-  },
-  {
-   "name": "hit W: it moves",
-   "ok": true,
-   "value": 11.19
-  },
-  {
-   "name": "hit W: nothing cut off",
-   "ok": true,
-   "value": "window grown 1.10x"
-  },
-  {
-   "name": "hit W: no background tint on the outline",
-   "ok": true,
-   "value": "0.0%"
-  },
-  {
-   "name": "hit W: stays on the spot",
-   "ok": false,
-   "value": "12.4% of the frame"
-  },
-  {
    "name": "hit NW: it moves",
    "ok": true,
    "value": 8.96
@@ -373,12 +333,12 @@
   {
    "name": "atlas page 1 is under 900 KB",
    "ok": true,
-   "value": "510 KB"
+   "value": "431 KB"
   },
   {
    "name": "atlas page 2 is under 900 KB",
    "ok": true,
-   "value": "599 KB"
+   "value": "584 KB"
   }
  ]
 }

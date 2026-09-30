@@ -1,0 +1,59 @@
+{
+ "checks": [
+  {
+   "name": "plain: grows from next to nothing",
+   "ok": true,
+   "value": "13% of the pod at the start of its growing"
+  },
+  {
+   "name": "plain: ends its spreading the size it began",
+   "ok": true,
+   "value": "101%"
+  },
+  {
+   "name": "mire: grows from next to nothing",
+   "ok": false,
+   "value": "55% of the pod at the start of its growing"
+  },
+  {
+   "name": "mire: ends its spreading the size it began",
+   "ok": true,
+   "value": "107%"
+  },
+  {
+   "name": "burning: grows from next to nothing",
+   "ok": true,
+   "value": "23% of the pod at the start of its growing"
+  },
+  {
+   "name": "burning: ends its spreading the size it began",
+   "ok": true,
+   "value": "101%"
+  },
+  {
+   "name": "big: grows from next to nothing",
+   "ok": true,
+   "value": "14% of the pod at the start of its growing"
+  },
+  {
+   "name": "big: ends its spreading the size it began",
+   "ok": true,
+   "value": "100%"
+  },
+  {
+   "name": "thrown: grows from next to nothing",
+   "ok": true,
+   "value": "31% of the pod at the start of its growing"
+  },
+  {
+   "name": "thrown: ends its spreading the size it began",
+   "ok": true,
+   "value": "100%"
+  },
+  {
+   "name": "atlas is light",
+   "ok": true,
+   "value": "314 KB"
+  }
+ ]
+}

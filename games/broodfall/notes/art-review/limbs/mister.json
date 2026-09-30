@@ -1,7 +1,7 @@
 {
  "family": "mister",
- "frames": 40,
- "atlasKB": 421,
+ "frames": 38,
+ "atlasKB": 403,
  "failed": 0,
  "checks": [
   {
@@ -57,7 +57,7 @@
   {
    "name": "die: it ends as a husk",
    "ok": true,
-   "value": "58% of its first frame"
+   "value": "58% of its size, 42% of its colour"
   },
   {
    "name": "it stands in its cell",
@@ -67,7 +67,7 @@
   {
    "name": "atlas is under 900 KB",
    "ok": true,
-   "value": "421 KB"
+   "value": "403 KB"
   }
  ]
 }

@@ -2,7 +2,7 @@
  "family": "skipper",
  "frames": 70,
  "atlasKB": 346,
- "failed": 1,
+ "failed": 0,
  "checks": [
   {
    "name": "where it stands is marked",
@@ -61,8 +61,8 @@
   },
   {
    "name": "die: it ends as a husk",
-   "ok": false,
-   "value": "88% of its first frame"
+   "ok": true,
+   "value": "88% of its size, 66% of its colour"
   },
   {
    "name": "it stands in its cell",
