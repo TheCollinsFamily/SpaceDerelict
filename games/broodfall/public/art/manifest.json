@@ -5140,16 +5140,16 @@
    "anims": {
     "idle": {
      "start": 0,
-     "count": 16,
-     "fps": 4.17
+     "count": 46,
+     "fps": 12
     },
     "fire": {
-     "start": 16,
+     "start": 46,
      "count": 14,
      "fps": 3.73
     },
     "die": {
-     "start": 30,
+     "start": 60,
      "count": 10,
      "fps": 2.5
     }

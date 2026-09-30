@@ -916,11 +916,6 @@ export class IsoRenderer extends Renderer {
     }
   }
 
-  private frameOf(atlas: { frame(i: number, size: number, cols: number): Texture }, art: { frame: number; cols: number }, clip: Clip, at: number): Texture {
-    const i = clip.start + (((Math.floor(at) % clip.count) + clip.count) % clip.count);
-    return atlas.frame(i, art.frame, art.cols);
-  }
-
   /**
    * The landing site, in two parts (tools/art/templates/core.mjs). What lies on the ground
    * (the crater and its roots) is a painting from straight above, laid on the ground by the
