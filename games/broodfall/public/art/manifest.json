@@ -2996,6 +2996,7 @@
    }
   }
  },
+ "allies": {},
  "limbs": {
   "amp": {
    "atlas": "limbs/amp.webp",

@@ -115,7 +115,7 @@ try {
         b.step(1);
         for (const e of b.sim.enemies) {
           const at = window.__held?.[e.id];
-          if (at) { e.pos.x = at.x; e.pos.y = at.y; }
+          if (at) { e.pos.x = at.x; e.pos.y = at.y; if (window.__keepHp) e.hp = e.maxHp; e.leaving = false; }
           // Staged walking beside a braced one: the sim would brace it too (the landing site is in its reach).
           if (window.__walking?.includes(e.id)) e.deployed = false;
         }
@@ -161,21 +161,34 @@ try {
     await fresh(21);
     const st = await streets();
     // A limb on the board: with nothing to steal a dart battery goes home at once.
-    await page.evaluate(() => {
+    const limbCell = await page.evaluate(() => {
       const s = window.broodfall.sim;
       s.hand[0] = { id: 880020, family: 'spitter', free: true };
       // As far from the landing site as it will grow: near it, it would shoot the staged battery dead.
       const W = s.cfg.gridW;
       const far = (c) => Math.hypot((c % W) - (s.map.coreCell % W), Math.floor(c / W) - Math.floor(s.map.coreCell / W));
       const cells = [...s.map.cells.keys()].filter((c) => s.canBuildTower(c, 'spitter')).sort((a, b) => far(b) - far(a));
-      for (const c of cells) if (s.issue({ kind: 'build', cardIndex: 0, cell: c }).ok) return;
+      for (const c of cells) if (s.issue({ kind: 'build', cardIndex: 0, cell: c }).ok) return c;
+      return -1;
     });
+    // The street beside that limb: the guns stand there with it in reach (a dart battery with nothing in reach goes home).
+    const near = await page.evaluate((lc) => {
+      const s = window.broodfall.sim;
+      const W = s.cfg.gridW;
+      let best = -1; let bd = Infinity;
+      for (let c = 0; c < s.map.cells.length; c++) {
+        if (s.map.cells[c] !== 1) continue;
+        const d = Math.hypot((c % W) - (lc % W), Math.floor(c / W) - Math.floor(lc / W));
+        if (d >= 1.5 && d < bd) { bd = d; best = c; }
+      }
+      return best;
+    }, limbCell);
     const ids = await put([
-      { kind: 'cannon', cell: st[0], dx: -14, dy: -8 }, { kind: 'cannon', cell: st[0], dx: 14, dy: 8, set: 'deployed' },
-      { kind: 'dartgun', cell: st[0], dx: -20, dy: 14 }, { kind: 'dartgun', cell: st[0], dx: 8, dy: 26, set: 'deployed' },
+      { kind: 'cannon', cell: near, dx: -14, dy: -8 }, { kind: 'cannon', cell: near, dx: 14, dy: 8, set: 'deployed' },
+      { kind: 'dartgun', cell: near, dx: -20, dy: 14 }, { kind: 'dartgun', cell: near, dx: 8, dy: 26, set: 'deployed' },
     ]);
     await hold(ids);
-    await page.evaluate((w) => { window.__walking = w; }, [ids[0], ids[2]]);
+    await page.evaluate((w) => { window.__walking = w; window.__keepHp = true; }, [ids[0], ids[2]]);
     if (process.env.DEBUG_BEAT) console.log(await page.evaluate((want) => JSON.stringify(window.broodfall.sim.enemies.filter((e) => want.includes(e.id)).map((e) => [e.kind, Math.round(e.pos.x), Math.round(e.pos.y), e.hp])), ids));
     await ticks(6);
     for (const k of ['cannon', 'dartgun']) {
@@ -194,6 +207,7 @@ try {
     await ticks(1, `(s) => { for (const e of s.enemies) if (e.deployed) e.shotsFired = (e.shotsFired ?? 0) + 1; }`);
     await ticks(2);
     await shot(4, 'braced-firing-close');
+    await page.evaluate(() => { window.__keepHp = false; window.__walking = []; });
   }
 
   // 2. Fliers falling: the fall lands whole.

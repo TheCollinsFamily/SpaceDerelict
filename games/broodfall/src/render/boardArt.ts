@@ -18,7 +18,7 @@ import { CellType, PLATE } from '../sim/citymap';
 import type { Sim } from '../sim/sim';
 import type { CreepSource } from '../sim/types';
 import type { BoardArtSet } from './art';
-import { boardCell, depth, project, viewCell, viewSize, type IsoGeo, type Pt } from './iso';
+import { boardCell, depth, project, unproject, viewCell, viewSize, type IsoGeo, type Pt } from './iso';
 import { NODE_RADIUS, NODE_REACH } from '../../content/underground';
 
 /** Two colours multiplied, as a tint is; and a colour scaled toward black. */
@@ -369,6 +369,11 @@ export class Skyline {
   private wisps: Array<{ s: Sprite; vx: number; vy: number; base: number; phase: number }> = [];
   private bounds = { x0: 0, y0: 0, x1: 0, y1: 0 };
   private clock = 0;
+  /** How far every cell is from claimed ground, and what the smoke needs to find the cell under it. */
+  private far = new Uint8Array(0);
+  private geo: IsoGeo | null = null;
+  private W = 0;
+  private H = 0;
 
   constructor(private art: BoardArtSet) {
     this.under.sortableChildren = true;
@@ -385,6 +390,10 @@ export class Skyline {
     const far = new Uint8Array(n).fill(9);
     const queue: number[] = [];
     for (let c = 0; c < n; c++) if (sim.map.cells[c] !== CellType.Void) { far[c] = 0; queue.push(c); }
+    this.far = far;
+    this.geo = geo;
+    this.W = W;
+    this.H = H;
     for (let q = 0; q < queue.length; q++) {
       const c = queue[q];
       if (far[c] >= 8) continue;
@@ -443,8 +452,9 @@ export class Skyline {
       const px = (vx - vy) * geo.a - geo.a;
       const py = (vx + vy) * geo.b;
       const z = (vx + vy + 1) * 100;
-      // Further from the claimed ground, deeper in the smoke.
-      const fade = Math.max(0.3, 0.62 - far[cell] * 0.05);
+      // Darker than anything the body holds (style bible: "darkest first: unclaimed city under smoke"),
+      // and further from the claimed ground, deeper in the smoke.
+      const fade = Math.max(0.24, 0.44 - far[cell] * 0.035);
       for (let l = hV(vx, vy + 1); l < h; l++) {
         const i = (((vx % (2 * wallSpan)) + 2 * wallSpan) % (2 * wallSpan));
         put(this.art.sprite('walls', `wall-${kind}-south-${l}-${i}`, set), px, py + geo.b - (l + 1) * geo.level, z, scale(0x8a8aa0, fade));
@@ -476,7 +486,7 @@ export class Skyline {
         s.position.set(p.x, p.y - geo.level * (1 + hash(k * 5) * 2));
         s.scale.set((1.3 + hash(k * 9) * 1.4) * geo.a / 64);
         s.tint = 0xb8b4ae;
-        const base = 0.22 + hash(k * 11) * 0.2;
+        const base = 0.3 + hash(k * 11) * 0.25;
         s.alpha = base;
         this.smoke.addChild(s);
         this.wisps.push({ s, vx: (6 + hash(k * 3) * 8) * geo.a / 64, vy: (2 + hash(k * 7) * 3) * geo.b / 38, base, phase: hash(k * 13) * 6.28 });
@@ -495,7 +505,15 @@ export class Skyline {
       w.s.y += w.vy * dt;
       if (w.s.x > x1 + 150) w.s.x = x0 - 150;
       if (w.s.y > y1 + 100) w.s.y = y0 - 100;
-      w.s.alpha = w.base * (0.75 + 0.25 * Math.sin(this.clock * 0.4 + w.phase));
+      // Smoke hangs over the city the body has not reached: over claimed ground it thins away.
+      let over = 1;
+      if (this.geo) {
+        const p = unproject(this.geo, w.s.x, w.s.y + this.geo.level * 2);
+        const cx = Math.floor(p.x / this.geo.cell), cy = Math.floor(p.y / this.geo.cell);
+        const d = cx >= 0 && cy >= 0 && cx < this.W && cy < this.H ? this.far[cy * this.W + cx] : 9;
+        over = Math.max(0, Math.min(1, (d - 1) / 3));
+      }
+      w.s.alpha = w.base * over * (0.75 + 0.25 * Math.sin(this.clock * 0.4 + w.phase));
     }
   }
 

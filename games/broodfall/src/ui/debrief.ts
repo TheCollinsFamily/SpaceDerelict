@@ -33,7 +33,12 @@ export interface RunPictures {
 }
 
 const esc = (t: string) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
-const title = (kind: string) => kind.charAt(0).toUpperCase() + kind.slice(1);
+/** What the colony's kinds are called (as tools/art/units.mjs names them); the rest by their id. */
+const KIND_NAME: Record<string, string> = {
+  mortar: 'Mortar beetle', carapace: 'Carapace lord', cannon: 'Siege cannon', ghostsapper: 'Ghost sapper',
+  thief: 'Specimen thief', dartgun: 'Sedation battery', royal: 'The royal', matron: 'Veil matron',
+};
+const title = (kind: string) => KIND_NAME[kind] ?? kind.charAt(0).toUpperCase() + kind.slice(1);
 
 /** One frame of an atlas as a CSS background `size` px square. */
 function frameCss(atlas: string, frame: number, cols: number, i: number, size: number): string {

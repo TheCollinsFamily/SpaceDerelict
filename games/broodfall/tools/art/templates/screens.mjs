@@ -80,11 +80,13 @@ export const SCREENS = {
   },
   held: {
     size: [1536, 1024], refs: [path.join(CONCEPTS, 'r2-film-still.png')],
-    prompt: `${FILM} Dusk, a street of a small town of ${PEOPLE}, held by a glistening red living growth: its thick ` +
-      'tendrils wall the street from side to side like a barricade, and a few bony spined growths stand on the ' +
-      'roofs. In front of it, an insect army\'s attack has broken: an overturned olive army truck, dropped rifles ' +
-      'and helmets on the pavement, smoke; insect soldiers in 1950s helmets retreat into the distance, one looking ' +
-      `back over his shoulder. Seen from a little above the street. ${NOTHING}`,
+    // v1 (art-src/screens/v1/held.png) showed the soldiers walking INTO the growth: the attack, not its failure.
+    prompt: `${FILM} Dusk, a street of a small town of ${PEOPLE}, held by a glistening red living growth: in the ` +
+      'background its thick tendrils wall the street from side to side like a barricade. In the foreground, an insect ' +
+      'army’s attack has broken and its soldiers in 1950s olive helmets and uniforms RUN AWAY toward the camera in ' +
+      'panic, faces afraid, one dropping his rifle, one helping a limping comrade; an overturned olive army truck ' +
+      'smokes at the side; helmets and rifles lie on the pavement. A red tendril reaches after them along the ' +
+      `street. Seen from a little above the street. ${NOTHING}`,
   },
 };
 
