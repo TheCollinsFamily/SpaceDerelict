@@ -70,7 +70,10 @@ async function fresh({ newcomer = false, viewport = { width: 1600, height: 1000 
   const page = await ctx.newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(String(e)));
-  await ctx.route('**/rfab-api/**', (r) => r.fulfill({ status: 404, body: '{}' }));
+  const rfab = [];
+  await ctx.route('**/rfab-api/**', (r) => { rfab.push(r.request().url()); return r.fulfill({ status: 404, body: '{}' }); });
+  await ctx.route('https://api.rfab.ai/**', (r) => { rfab.push(r.request().url()); return r.fulfill({ status: 404, body: '{}' }); });
+  page.rfabCalls = rfab;
   await ctx.addInitScript((newcomer) => {
     if (sessionStorage.getItem('bf-fix-init')) return;
     sessionStorage.setItem('bf-fix-init', '1');
@@ -349,6 +352,8 @@ try {
     await page.waitForTimeout(500);
     await shot(page, 'ship-settings');
     check(errors.length === 0, 'the ship: nothing logged as an error', errors.slice(0, 2).join(' | '));
+    // YOKE scripted: she asks rfab.ai nothing, in any room (the AI Core included).
+    check(page.rfabCalls.length === 0, 'YOKE scripted: no call to rfab.ai from any room', page.rfabCalls.slice(0, 3).join(' | '));
     await ctx.close();
   }
 } finally {

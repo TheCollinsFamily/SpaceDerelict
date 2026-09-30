@@ -24,8 +24,10 @@ three campaign outlines, covers and promotional art.
   PROTOTYPED on the Spitter, Lasher and Frond. The other 34 limbs: ~$350-400 (4 classes + 1 superstructure
   each), ~$800 for all 6 superstructures each. Collins: which rollout, and is the reading of his letters right?
 - ~~**Meat drops**~~: drawn (Sep 30 2026): two chunks a caste, a bobbing flight, a pickup at the core (`tools/art/meat.mjs`, `src/render/meatFx.ts`).
-- Small flinch blemishes: a stub of a pole in a few flinch frames; a few units jolt into aim
-  instead of recoiling.
+- ~~Small flinch blemishes: a stub of a pole in a few flinch frames~~: left out at the bake (art fix pass, Sep 30 2026:
+  `tools/art/templates/unit.mjs`, a frame with something cut off past the margin, and `HIT_BLEMISH` for the
+  splitter NW, carapace S and consort NW; `notes/screens/2026-09-30/fixpass-art-flinch-*`). Still open: a few units
+  jolt into aim instead of recoiling.
 - Status overlays (web, poison, flames) draw over a block that stands in front of the unit.
 
 ## 2. The board
@@ -33,8 +35,12 @@ three campaign outlines, covers and promotional art.
 - The mire skin is dark mossy green and may read as grass beside green roofs.
 - The deep hive's pollen roof is a strong lemon yellow.
 - A limb's hp and trait marks jump to a plinth's height instead of rising with it.
-- **The seedling pod** is one picture, not 2 to 4 frames.
-- **Props from a tile set's fallback list** have no drawn backs (they mirror).
+- ~~**The seedling pod** is one picture~~: four frames of a pulse from a clip, cycled in flight (art fix pass, Sep 30 2026;
+  `art-src/terrain/core/pod-pulse/`, `notes/screens/2026-09-30/fixpass-art-pod-BEFORE-AFTER.jpg`).
+- ~~**Props from a tile set's fallback list** have no drawn backs~~: the eight on the mirrored list whose mirror read
+  wrong now use the back their sheet already drew (`round: false` in `tools/art/biomes.mjs`; art fix pass, Sep 30
+  2026, `notes/screens/2026-09-30/fixpass-art-backs-*`). The rest of the list looks the same from behind. The
+  terrain entry's own props (shown only when no tile set loads) still have none.
 
 ## 3. Screens and the ship
 

@@ -74,6 +74,25 @@ describe('the player link', () => {
     expect(link.legacy).toBe(true);
   });
 
+  it('rfab.ai refusing (429) or failing (5xx, no network): asked once, then not again this session', async () => {
+    for (const status of [429, 503, 0]) {
+      let calls = 0;
+      const fetcher = (async () => {
+        calls++;
+        if (status === 0) throw new TypeError('network');
+        return new Response('{}', { status, headers: { 'Content-Type': 'application/json' } });
+      }) as unknown as typeof fetch;
+      const info = vi.spyOn(console, 'info').mockImplementation(() => {});
+      const link = new PlayerLink({ base: '/rfab-api', store: memStore(), fetcher });
+      expect(await link.ensure()).toBeNull();
+      expect(await link.ensure()).toBeNull();
+      expect(link.legacy).toBe(true);
+      expect(calls, String(status)).toBe(1);
+      expect(info).toHaveBeenCalledTimes(1);
+      info.mockRestore();
+    }
+  });
+
   it('a token the server forgot is dropped and a new player made', async () => {
     const store = memStore(GUEST);
     let n = 0;
