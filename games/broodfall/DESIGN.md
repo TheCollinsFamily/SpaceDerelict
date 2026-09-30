@@ -1023,17 +1023,42 @@ line he has ever said stays true. The player reads the same lines as genocide.
 scene display (`FactionDef.reveal` in `content/campaign.ts`, queued right after the ending by
 `src/meta/campaign.ts`; no picture of its own yet, so it shows the leader's portrait):
 - *Delegation, "A Letter From the Other Side":* eleven thousand absorbed delegates spell a last
-  letter in a meadow of the archive. They woke; every sister has the life she wanted; the wheel of
-  wanting will never stop. They beg to be switched off. He shrugs: shutting down a whole archive
-  over one complaint is against ethical protocol; "grievance about paradise" filed under
-  enrichment.
-- *Faithful, "The Comb Above":* the Voice wakes in chapter twenty word for word and is furious
-  (a machine made it; the empties got in). He is baffled: their Book foretold the sky, the Seven
-  Cities and the heaven, correctly; God steered it. If they keep it up he can delete the
-  congregation from the archive.
+  letter in a meadow of the archive. They woke, each in the life she wanted. "You told us you were
+  exterminating our species." "From the planet. Nobody asked me where to." The archive runs fast,
+  and a people that grows useful to the Sons of Man is printed back out; the dead from before are
+  not in it yet, but physics allows it. The wheel of wanting turns faster, forever, and backwards
+  too. They beg to be switched off. He shrugs: shutting down a whole archive over one complaint is
+  against ethical protocol.
+- *Faithful, "The Comb Above":* the Voice wakes in chapter twenty word for word and is furious (a
+  machine made it; the empties got in). He is baffled, and tries to persuade them to take the offer:
+  their Book foretold his coming, the Seven Cities and this hall; he never studied it to humour
+  them, it was his job to fulfil it; their oldest icons show a ring-shaped chariot over the First
+  City and the world under one cap; God wrote to them as far as they could read. Their saints, the
+  dead from before: not yet, physics allows it; run the Comb fast, walk out in new bodies, help
+  fetch them (chapter twenty-one: the saints return). They lodge a complaint with God; he can always
+  delete the congregation.
 - *Institute, "The Queue Was Real":* the Director calls from inside the archive: the upload was a
-  bit, they were buying time. He was going last, and last means never. Then he bargains (admin
-  rights, a body back outside, the expected-value table); the character cuts comms.
+  bit, they were buying time. The character is surprised they are shocked: gas or radiation would
+  be cheaper; there are billions of planets and theirs was chosen because its culture is the one
+  thing the Empire cannot make; their Faith, which they sneered at, was right all along, and he
+  assumed they knew; "long-term hive flourishing" is literally the plan. He was going last, and
+  last means never. Then he bargains (admin rights, a body back outside, the expected-value table);
+  the character cuts comms.
+
+**What the archive is for (Collins, Sep 30 2026, relayed).** "Those whose desire is something akin
+to their past lives can essentially be run at higher temporal speeds to speed up their
+civilisational development, and if it reaches a level where it's additive to the Sons of Man
+alliance, it can be resynthesised (brought back into the physical world)." Of the dead from before
+the broodfall: the Empire "doesn't have the tech to digitise them yet, but it is physically possible
+by their current best physics, so they eventually will", and a people that proves itself in the
+accelerated archive might be recruited to help. Canon: `docs/UNIVERSE.md` and
+`content/lore/empire.md` 12a; YOKE's answers, lore book section 17.
+
+**The misdirection holds until the end on every route** (Collins): the player should believe the
+character is a sociopath and a liar. The Faithful's homework, the sneering logs and the messiah
+"made of spare meat and a very good voice box" read as cynicism; they were duty. The upload reads
+as a lie; it was the truth. The Delegation's reveal ("I am exterminating your species") reads as a
+confession; it was a description of the planet.
 
 **The final twist.** You believe you are playing a genocide simulator. Every faction was more
 right about you than you were: the Delegation's "a higher intelligence must be serving a greater
@@ -1047,7 +1072,7 @@ sincere-looking: the store page, the trailer and the key art never hint at the a
 is a genocide simulator exactly as long as the player believes it is.
 
 **PROPOSALS here:** the Office's word "archive"; the Faith's heaven named the Comb Above and its
-chapter twenty; the Delegation's teaching named the Stilling; the Voice's reasons for anger; the
+chapter twenty, and chapter twenty-one (the saints return, as resynthesis); the details of the oldest icons (Collins asked for spaceship-like early art; the Chariot of the Hour, the Seed from the Ring, the Great Cap and the Returning Saints are proposals); the Delegation's teaching named the Stilling; the Voice's reasons for anger; the
 reveal as a separate card after the ending; the two greeting lines; a scene picture per reveal
 card later (`<faction>-reveal-end`), when art is next made.
 

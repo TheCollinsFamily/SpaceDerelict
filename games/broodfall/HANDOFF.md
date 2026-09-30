@@ -559,6 +559,8 @@ node tools/shot-player-path.mjs  # the DEV server, the menu, a click on deploy, 
 node tools/shot-biomes.mjs    # every tile set played into its first siege
 node tools/shot-ship.mjs      # the ship's rooms, the planet, YOKE, the sketches
 node tools/shot-limbs.mjs spitter maw --name look   # a staged scene for LOOKING at limbs (--facing N: from behind; --turn 1: the camera turned)
+node tools/shot-anim.mjs [limbs core siege]   # VIDEOS of the idles (limbs close, core stages, a siege): notes/screens/2026-09-30/anim-*.mp4
+node tools/art/idle-loops.mjs                # every idle loop measured from the atlases: loop pop (seam/step), steppiness, how much moves
 node tools/shots-to-jpg.mjs                         # before committing: the beats' PNGs are ignored by git, their JPEG copies are committed
 node tools/art/lib/selftest.mjs                     # the sheet cutter and the keyer (free)
 node tools/shot-evolve.mjs    # EVOLVE by clicks
