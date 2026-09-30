@@ -25,3 +25,18 @@ A: the film, mission 1, the end, the ship, the boss
   PASS  the music comes back up when he is done
   PASS  no page errors ()
 B: the menu, the settings, the ship
+  PASS  nothing plays before a click
+  PASS  the mix is recorded
+  PASS  the menu's music: the ship's hum (theme-menu)
+  PASS  it is heard (meter peak -24.2 dBFS)
+  PASS  the music slider moves the music bus (0.20)
+  PASS  the effects slider moves the effects bus (an effect at 80%: -20.5 dBFS; at 0%: -140.0 dBFS, the same as nothing: -140.0)
+  PASS  the voices slider moves the voice bus (0.60)
+  PASS  master at 0: silence (meter -140.0 dBFS)
+  PASS  master back: heard again
+  PASS  the settings are kept (mute when away false, music 0.7)
+  PASS  CONTINUE → the ship's music crossfades in (theme-ship)
+  PASS  buttons answer the pointer: sfx:ui-hover
+  PASS  buttons click: sfx:ui-click, sfx:ui-confirm
+  PASS  no page errors ()
+C: a skirmish played through: build, assault, organ stage, the royal, the win
