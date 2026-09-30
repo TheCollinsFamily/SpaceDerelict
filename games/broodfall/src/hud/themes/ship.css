@@ -326,7 +326,7 @@
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6), 0 0 60px rgba(0, 0, 0, 0.6); font-family: var(--sc-font);
 }
 [data-hud="ship"] #under #under-card::before { content: ''; position: absolute; left: -1px; top: 18px; bottom: 18px; width: 3px; background: var(--sc-ink); z-index: 1; }
-[data-hud="ship"] #under .screen-kicker { font: 400 10px/1.2 var(--sc-font); letter-spacing: 3px; color: var(--sc-dim); opacity: 1; }
+[data-hud="ship"] #under .screen-kicker { font: 400 10px/1.2 var(--sc-font); letter-spacing: 3px; color: var(--sc-dim); opacity: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 [data-hud="ship"] #under .screen-kicker::before { content: '⚙  '; color: var(--sc-ink); }
 [data-hud="ship"] #under-title, [data-hud="ship"] #under.scan #under-title { font: 300 24px/1.2 var(--sc-font); letter-spacing: 8px; color: #fff; margin: 4px 0 6px; }
 [data-hud="ship"] #under-note, [data-hud="ship"] #under.scan #under-note {

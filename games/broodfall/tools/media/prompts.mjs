@@ -121,7 +121,7 @@ export const CLIPS = {
     clip: 'The robed figure on the stage lifts a hand stiffly; the preacher below throws his arms up; the crowd raises their hands and sways.' },
   // v1: spires with crossbars that read as crosses.
   'f-fai-domes': { look: 'finale', still: `${FINALE} A holy city of paper onion domes and bell towers like nest spires; every dome and every spire ends in one plain round gold ball with NOTHING above it (no rod, no crossbar, no finial, no aerial on any dome or spire), at dawn under a blood-red painted sky, with ${CREATURE} lying over its streets. No people. Quiet. ${CLEAN}`,
-    clip: 'Dawn light rises slowly over the domes; the radio masts\' small lamps blink; the living skin in the streets breathes. The camera pulls back slowly.' },
+    clip: 'Dawn light rises slowly over the domes; the living skin in the streets breathes. The camera pulls back slowly.' },
   'f-ins-charter': { look: 'finale', refs: ['institute'], alone: true, still: `${FINALE} ${WHO.institute}, signing a long scroll of a charter with a fountain pen at a glass desk that stands on a heap of rubble in a ruined city at sunset, looking very pleased with himself; the scroll's writing only faint grey lines, unreadable. ${CLEAN}`,
     clip: 'The director signs with a flourish, holds up the scroll to admire it, and grins. The camera holds.' },
   'f-ins-applause': { look: 'finale', still: `${FINALE} In the rubble of a glass city at sunset, a small crowd of insect people in 1950s suits and lab coats stand in a semicircle applauding politely, a few holding clipboards, one checking a wristwatch. ${CAST} ${CLEAN}`,

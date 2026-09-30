@@ -38,22 +38,23 @@ export const EDIT_END =
 export const KEYS = { green: { hex: '00FF00', name: 'green' }, blue: { hex: '0000FF', name: 'blue' } };
 
 /**
- * Per limb, per variant: `change` (what the edit says grows), `key` (its background), and the marks.
+ * Per limb, per variant: `change` (what the edit says grows), `key` (its background), the marks, and
+ * `size` (drawn that much bigger than its ground calls for: a superstructure towers over its block).
  * A superstructure's key is its pair (`swarm+venom`); tools/art/templates/limb-variant.mjs draws it.
  */
 export const VARIANTS = {
   spitter: {
-    bone: { key: 'green', foot: [0.49, 0.76, 0.8],
+    bone: { key: 'green', foot: [0.49, 0.76, 0.8], muzzle: [[0.36, 0.06]],
       change: 'it is armoured and heavier. Thick overlapping plates of ivory bone clad its whole stalk like a cuirass, a crest of short curved ivory bone spikes rings the base of its nozzle and runs down its back, and its mound is broader and more massive. The puckered fleshy nozzle stays at its top, pointing up and forward.' },
-    swarm: { key: 'green', foot: [0.5, 0.79, 0.76],
+    swarm: { key: 'green', foot: [0.5, 0.79, 0.76], muzzle: [[0.04, 0.19], [0.44, 0.03], [0.86, 0.19]],
       idle: 'The organism breathes slowly and only slightly: its flesh swells and relaxes a little, its plates shift a little against each other. The three nozzles pucker and loosen one after another.',
       fire: 'The three nozzles clench shut, the stalks tighten, and all three spit a glob of dark fluid forward and up with a snap, then relax back to exactly their starting pose.',
       change: 'it has multiplied. Its single stalk has split into THREE shorter stalks fanning out from the one mound, each topped by its own puckered fleshy nozzle pointing up and forward, and small round fleshy buds cluster around its base.' },
-    venom: { key: 'blue', foot: [0.48, 0.8, 0.8],
+    venom: { key: 'blue', foot: [0.48, 0.8, 0.8], muzzle: [[0.26, 0.07]],
       change: 'it is swollen with venom. Big bulging acid yellow-green glands, glistening and faintly glowing, swell out between its plates and ring the neck under its nozzle, and a thick drop of yellow-green venom hangs from the rim of the puckered nozzle.' },
-    reach: { key: 'green', foot: [0.5, 0.86, 0.83],
+    reach: { key: 'green', foot: [0.5, 0.86, 0.83], muzzle: [[0.52, 0.03]],
       change: 'it reaches farther. Its stalk is stretched half again as tall into a long upright neck of muscle with the puckered nozzle at its top, and glassy milky-white strands of mucus run from high on the neck down to the ground on both sides like taut guy-ropes, with two small pale eyes on the neck.' },
-    'swarm+venom': { key: 'blue', foot: [0.51, 0.84, 0.8], size: 1.25,
+    'swarm+venom': { key: 'blue', foot: [0.51, 0.84, 0.8], size: 1.25, muzzle: [[0.25, 0.14], [0.47, 0.02], [0.69, 0.14], [0.18, 0.27], [0.53, 0.26]],
       idle: 'The organism breathes slowly and only slightly: its swollen body and its glands swell and relax a little. The five nozzles pucker and loosen one after another.',
       fire: 'The five nozzles clench shut, the hive-like body tightens, and the nozzles spit globs of dark fluid forward and up one after another with a snap, then everything relaxes back to exactly its starting pose.',
       change: 'it has become a SUPERSTRUCTURE, a Spore Hive, half again as tall and much bigger than before: a swollen hive-like body raising FIVE puckered spitting nozzles on short necks in a ring, all pointing up and forward, the body studded all over with big bulging glistening acid yellow-green venom glands that glow faintly and drip.' },
@@ -73,17 +74,17 @@ export const VARIANTS = {
       change: 'it has become a SUPERSTRUCTURE, a Plague Bastion, half again as tall and much bigger than before: a massive armoured stump clad in thick overlapping ivory bone plates with a crown of bone spikes, its three whip tendrils thick and banded with bone, and big bulging glistening acid yellow-green venom glands swelling out between the bone plates, glowing faintly and dripping.' },
   },
   frond: {
-    bone: { key: 'green', foot: [0.51, 0.84, 0.82],
+    bone: { key: 'green', foot: [0.51, 0.84, 0.82], muzzle: [[0.27, 0.1], [0.43, 0.07], [0.68, 0.07], [0.8, 0.12]],
       change: 'it is armoured and heavier. Its mound is clad in thick overlapping plates of ivory bone with a crest of curved bone spikes around the foot of the frond, and the frond\'s main stems are sheathed in ivory bone at their base.' },
-    swarm: { key: 'green', foot: [0.5, 0.86, 0.68],
+    swarm: { key: 'green', foot: [0.5, 0.86, 0.68], muzzle: [[0.07, 0.34], [0.37, 0.05], [0.59, 0.05], [0.9, 0.34]],
       idle: 'The organism breathes slowly and only slightly: its flesh swells and relaxes a little. Faint sparks crawl along the three fronds.',
       fire: 'The three fronds snap rigid and their tips flare bright blue-white for a moment while the stalks shudder, then they relax back to exactly their starting pose.',
       change: 'it has multiplied. The single frond has split into THREE fern-like fronds of pale blue-white nerve cords fanning out from the mound, with twice as many branching tips, faint sparks at every tip, and small round fleshy buds cluster around its base.' },
-    venom: { key: 'blue', foot: [0.51, 0.85, 0.8],
+    venom: { key: 'blue', foot: [0.51, 0.85, 0.8], muzzle: [[0.12, 0.18], [0.33, 0.03], [0.58, 0.02], [0.82, 0.15]],
       change: 'it is swollen with venom. Big bulging acid yellow-green glands, glistening and faintly glowing, swell out of its mound between its plates, and small yellow-green venom beads hang along the nerve fronds.' },
-    reach: { key: 'green', foot: [0.5, 0.88, 0.56],
+    reach: { key: 'green', foot: [0.5, 0.88, 0.56], muzzle: [[0.33, 0.06], [0.45, 0.02], [0.57, 0.05]],
       change: 'it reaches farther. The fern-like frond of pale blue-white nerve cords is raised high on a tall stalk of muscle, half again as tall as before, and long nerve cords reach out sideways from the stalk to the ground on both sides like taut guy-ropes.' },
-    'swarm+reach': { key: 'green', foot: [0.52, 0.88, 0.6], size: 1.25,
+    'swarm+reach': { key: 'green', foot: [0.52, 0.88, 0.6], size: 1.25, muzzle: [[0.06, 0.22], [0.3, 0.06], [0.5, 0.02], [0.69, 0.06], [0.95, 0.21]],
       idle: 'The organism breathes slowly and only slightly: its flesh swells and relaxes a little. Faint sparks crawl along the great crown of fronds.',
       fire: 'The crown of fronds snaps rigid and all its tips flare bright blue-white for a moment while the tall stalk shudders, then it relaxes back to exactly its starting pose.',
       change: 'it has become a SUPERSTRUCTURE, a Storm Crown, half again as tall and much bigger than before: a tall stalk of muscle raising a great branching crown of MANY fern-like fronds of pale blue-white nerve cords, with many more sparking tips, and long nerve cords and glassy milky-white strands reaching out sideways from the stalk to the ground on both sides like guy-ropes.' },

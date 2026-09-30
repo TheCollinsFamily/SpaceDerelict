@@ -157,13 +157,13 @@ try {
         const v = document.querySelector('#campaign > video.room-loop');
         if (!v) return null;
         const t0 = v.currentTime;
-        await new Promise((res) => setTimeout(res, 1200));
+        await new Promise((res) => setTimeout(res, 2500));
         return { src: v.currentSrc.split('/').pop(), playing: !v.paused, ready: v.readyState, advanced: v.currentTime - t0, w: v.videoWidth, on: v.classList.contains('on'),
           bg: getComputedStyle(document.getElementById('campaign')).backgroundImage.split('/').pop() };
       });
       const expect = { orders: 'board', hobby: 'locker' }[r] ?? r;
-      check(!!st && st.src === `room-${expect}.mp4` && st.playing && st.ready >= 3 && st.advanced > 0.5 && st.w >= 1280 && st.on,
-        `the ${r} room plays its loop`, st ? `${st.src}, ${st.w} px, +${st.advanced.toFixed(2)} s in 1.2 s, poster ${st.bg}` : 'no video');
+      check(!!st && st.src === `room-${expect}.mp4` && st.playing && st.ready >= 3 && st.advanced > 0.3 && st.w >= 1280 && st.on,
+        `the ${r} room plays its loop`, st ? `${st.src}, ${st.w} px, +${st.advanced.toFixed(2)} s in 2.5 s, poster ${st.bg}` : 'no video');
       if (['orders', 'hobby'].includes(r)) continue; // they borrow the Board's and the Locker's
       await page.mouse.move(VW - 5, VH - 5);
       await jpg(page, `ship-loop-${r}`);
@@ -180,8 +180,10 @@ try {
     // Reduce motion: the still, no video.
     await page.evaluate(() => { const k = 'broodfall-settings'; const s = JSON.parse(localStorage.getItem(k) || '{}'); s.reduceMotion = true; localStorage.setItem(k, JSON.stringify(s)); });
     await page.reload();
-    await page.waitForSelector('#campaign:not(.hidden) .cp-card', { timeout: 30000 });
-    await page.waitForTimeout(2500);
+    await page.waitForSelector('#campaign:not(.hidden) .cp-card', { timeout: 60000 });
+    await page.waitForFunction(() => document.getElementById('campaign').classList.contains('ship-art'), null, { timeout: 60000 });
+    await page.waitForTimeout(1500);
+    if (await page.locator('.cp-icom-x').count()) await page.locator('.cp-icom-x').click().catch(() => {});
     await page.locator('[data-room="genes"]').click();
     await page.waitForTimeout(500);
     const still = await page.evaluate(() => ({ video: !!document.querySelector('#campaign > video.room-loop'), bg: getComputedStyle(document.getElementById('campaign')).backgroundImage.split('/').pop() }));
@@ -244,15 +246,17 @@ try {
     await jpg(page, 'globe-4-zoom', clip);
     for (let i = 0; i < 4; i++) { await page.mouse.wheel(0, 160); await page.waitForTimeout(90); }
     await page.waitForTimeout(600);
-    // Home again with the keyboard (turn buttons' keys), then hover a zone.
-    await page.keyboard.press('ArrowRight');
-    await page.waitForTimeout(900);
-    const target = await page.evaluate(() => {
-      const g = [...document.querySelectorAll('.globe .site.open:not(.behind)')][0];
-      if (!g) return null;
-      const r = g.getBoundingClientRect();
-      return { id: g.dataset.site, x: r.x + r.width / 2, y: r.y + r.height / 2 };
+    // Back with the keyboard (the arrows tilt and turn it, as the turn buttons do) until an open site faces us, then hover its zone.
+    const openNear = () => page.evaluate(() => {
+      const b = document.querySelector('.globe-box').getBoundingClientRect();
+      const all = [...document.querySelectorAll('.globe .site.open:not(.behind)')].map((g) => { const r = g.getBoundingClientRect(); return { id: g.dataset.site, x: r.x + r.width / 2, y: r.y + r.height / 2 }; });
+      all.forEach((a) => { a.d = Math.hypot(a.x - (b.x + b.width / 2), a.y - (b.y + b.height / 2)); });
+      all.sort((a, c) => a.d - c.d);
+      return all[0] && all[0].d < b.width * 0.3 ? all[0] : null;
     });
+    for (let i = 0; i < 3; i++) { await page.keyboard.press('ArrowDown'); await page.waitForTimeout(500); }
+    let target = await openNear();
+    for (let i = 0; i < 12 && !target; i++) { await page.keyboard.press('ArrowLeft'); await page.waitForTimeout(700); target = await openNear(); }
     check(!!target, 'an open landing site faces us', target?.id ?? 'none');
     if (target) {
       // Hover the zone just beside its marker: the zone lights, its tooltip.

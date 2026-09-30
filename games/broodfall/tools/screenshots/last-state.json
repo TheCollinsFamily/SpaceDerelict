@@ -1,17 +1,17 @@
 {
-  "time": 96.69999999999878,
+  "time": 91.0999999999991,
   "outcome": "playing",
   "towers": 6,
   "organs": 1,
-  "biomass": 123.96999999999944,
+  "biomass": 117.80999999999948,
   "waves": 2,
   "meat": {
     "war": 12,
     "science": 0,
     "royal": 0
   },
-  "threat": 20.938949999999977,
-  "creepRadius": 231.6999999999988,
+  "threat": 20.72334999999998,
+  "creepRadius": 226.0999999999991,
   "worldW": 1300,
   "worldH": 1040
 }

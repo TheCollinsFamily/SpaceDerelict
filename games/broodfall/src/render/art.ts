@@ -60,6 +60,8 @@ export interface LimbSide {
 export interface LimbArt extends LimbSide {
   atlas: string; frame: number; cols: number;
   on: 'roof' | 'street'; flat?: boolean; facing?: boolean;
+  /** An upgrade look drawn bigger than its ground calls for (LimbVariantArt.size). */
+  size?: number;
   /** The view from behind, of a limb that is not the same all the way round. */
   back?: LimbSide;
   /**
@@ -72,6 +74,8 @@ export interface LimbArt extends LimbSide {
 /** One upgrade look of a limb: drawn like the limb (its own atlas, frame, anchor, clips, view from behind). */
 export interface LimbVariantArt extends LimbSide {
   atlas: string; frame: number; cols: number;
+  /** Drawn this much bigger than its ground calls for (a superstructure towers over its block). */
+  size?: number;
   back?: LimbSide;
 }
 /**

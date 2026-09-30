@@ -39,6 +39,8 @@ import { YokeSceneOverlay, sceneMedia } from './yokeScene';
 import { directivesHtml, ordersDebriefHtml } from './directives';
 import { hobbyClick, hobbyDebriefHtml, hobbyHtml } from './hobby';
 import { openSettings } from './settings';
+import { attachScene } from './sceneVoice';
+import { loadMedia, mediaPictureUrl } from './newsreel';
 
 type Room = 'desk' | 'genes' | 'locker' | 'board' | 'comms' | 'ai' | 'quarters' | 'orders' | 'hobby';
 /** Rooms with no picture of their own borrow one (the standing orders are read at the Board; the notebook lives in the Locker). */
@@ -135,6 +137,8 @@ export class CampaignUi {
       cut: (kind) => this.avatar?.announceCut(kind),
     });
     this.ai = this.buildAi();
+    // The campaign media (src/ui/newsreel.ts): a scene card waiting may have a picture there (the reveals').
+    void loadMedia().then((m) => { if (m && this.state.pendingScenes.length && !this.debriefing && !this.el.classList.contains('hidden')) this.render(); });
     if (Globe3D.supported()) {
       try {
         this.globe3d = new Globe3D({
@@ -261,6 +265,7 @@ export class CampaignUi {
     this.avatar?.mount(false, '');
     document.body.classList.remove('in-ship');
     this.el.classList.add('hidden');
+    attachScene(null);
   }
 
   setState(s: CampaignState): void {
@@ -308,6 +313,7 @@ export class CampaignUi {
       ${this.icomHtml()}
       ${this.greeting ? '' : this.sceneHtml()}`;
     this.dress();
+    attachScene(this.el);
     // Her stage is the same element in every drawing of the screen: put back, not made again.
     const box = this.el.querySelector<HTMLElement>('.cp-icom-stage');
     if (this.room === 'ai') this.avatar?.mount(!!face, face);
@@ -423,8 +429,10 @@ export class CampaignUi {
   /** A scene's own picture: what is happening in it. Its leader's portrait, when it has none or it is not drawn yet. */
   private scenePictureHtml(f: FactionId, scene: Scene): string {
     const file = scene.picture ? this.art?.scenes?.[scene.picture] : undefined;
-    return file
-      ? `<img class="cp-scene-pic" data-picture="${esc(scene.picture!)}" src="${artUrl(file)}" alt="" title="Click to enlarge">`
+    // The reveal cards' pictures are the campaign media's (src/ui/newsreel.ts, public/media/).
+    const src = file ? artUrl(file) : mediaPictureUrl(scene.picture);
+    return src
+      ? `<img class="cp-scene-pic" data-picture="${esc(scene.picture!)}" src="${src}" alt="" title="Click to enlarge">`
       : this.leaderHtml(f);
   }
 
@@ -770,7 +778,7 @@ export class CampaignUi {
       : next.choice
         ? next.choice.options.map((o) => `<button class="cp-pick" data-choice="${next.beat}|${o.id}">${esc(o.label)}</button>`).join('')
         : '<button class="screen-btn" data-act="scene-ok">CONTINUE</button>';
-    return `<div class="cp-scene"><div class="cp-scene-card">
+    return `<div class="cp-scene"><div class="cp-scene-card" data-faction="${f.id}" data-scene="${esc(scene.title)}">
       ${this.scenePictureHtml(f.id, scene)}
       <div class="screen-kicker">${next.contact && heard > 1 ? `INCOMING — CALL ${heard - calls.length + 1} OF ${heard} · ` : ''}${esc(f.name.toUpperCase())}</div>
       <div class="cp-sub">${esc(scene.title.toUpperCase())}</div>

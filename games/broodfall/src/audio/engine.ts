@@ -252,6 +252,24 @@ export function duckFor(el: HTMLMediaElement, why = 'voice'): void {
   window.setTimeout(end, 60000);
 }
 
+const routed = new WeakSet<HTMLMediaElement>();
+/**
+ * A media element played through a bus (the campaign's newsreels and the faction leaders' lines,
+ * src/ui/newsreel.ts): its Settings slider, "Mute when away", the ducking and the recorder apply.
+ * False when there is no running sound (the caller then sets the element's own volume).
+ */
+export function routeMedia(el: HTMLMediaElement, bus: 'music' | 'voice'): boolean {
+  const c = ensure();
+  if (!c || c.state !== 'running') return false;
+  if (routed.has(el)) return true;
+  try {
+    c.createMediaElementSource(el).connect(bus === 'music' ? musicDuck : voiceBus);
+    routed.add(el);
+    note({ kind: bus === 'music' ? 'music' : 'voice', id: `media:${el.currentSrc || el.src}`.slice(0, 120), played: true });
+    return true;
+  } catch { return false; }
+}
+
 // ----------------------------------------------------------------------------- music
 
 /** `offset`: where in the loop (0..seconds) it started; `seconds`: the loop's length. */

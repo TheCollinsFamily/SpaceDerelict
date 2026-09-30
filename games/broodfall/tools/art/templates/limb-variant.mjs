@@ -88,7 +88,7 @@ export function bakeVariant(family, key) {
   const atlas = variantAtlas(family, key);
   const packed = packAtlas(frames, F, COLS, path.join(ART, atlas), 86);
   const entry = {
-    atlas, frame: F, cols: COLS, anchor: front.anchor, body: front.body, anims: front.anims, grafts: front.grafts,
+    atlas, frame: F, cols: COLS, ...(VARIANTS[family][key].size ? { size: VARIANTS[family][key].size } : {}), anchor: front.anchor, body: front.body, anims: front.anims, grafts: front.grafts,
     ...(front.muzzle ? { muzzle: front.muzzle } : {}),
     ...(back ? { back: { anchor: back.anchor, body: back.body, anims: shift(back.anims, front.frames.length), grafts: back.grafts, ...(back.muzzle ? { muzzle: back.muzzle } : {}) } } : {}),
   };

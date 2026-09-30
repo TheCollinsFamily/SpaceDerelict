@@ -29,6 +29,7 @@ import { BALANCE as B } from '../content/data';
 import { CellType, PLATE, PLATE_FEATURES } from './sim/citymap';
 import { LoadingScreen, applyName, dressLogos, loadScreenArt, showArtNotice, showFailure, showSlowDrawingNotice } from './ui/screens';
 import { debriefPictures, type Outcome } from './ui/debrief';
+import { newsAfterDeployment } from './ui/newsreel';
 import { padOutroPlaying, playPadOutro, preloadPadOutro } from './ui/padOutro';
 import { platePicture } from './render/platePreview';
 import type { Directive, OrganId, RootDir, SimConfig, SimEvent, TowerFamily } from './sim/types';
@@ -573,10 +574,12 @@ function campaignDebrief(): void {
   const ui = campaignUi;
   // Aboard in the same page, so that the click on the report's button lets her voice be heard
   // (a browser will not play sound on a page nobody has clicked); a reload lands on the ship.
+  const prev = campaignState;
   const back = () => {
     history.replaceState(null, '', `${location.pathname}?campaign=ship`);
     document.getElementById('board-goals')!.classList.add('hidden');
-    ui.show({ greet: true });
+    // The planet's news of it first (src/ui/newsreel.ts): a newsreel or one of their papers, skippable.
+    void newsAfterDeployment(prev, state, debrief).catch(() => {}).then(() => ui.show({ greet: true }));
   };
   void debriefPictures(runPictures(outcome, verdict,
     outcome === 'lost' ? `${where} · the asset was lost after ${sim.wavesCleared} wave${sim.wavesCleared === 1 ? '' : 's'}` : `${where} · ${sim.wavesCleared} wave${sim.wavesCleared === 1 ? '' : 's'} held`,
@@ -1018,7 +1021,7 @@ let musicScene: MusicScene = 'silent';
 function musicTick(): void {
   const shown = (el: HTMLElement | null) => !!el && !el.classList.contains('hidden');
   musicScene = sceneOf({
-    film: !!document.getElementById('intro'),
+    film: !!document.getElementById('intro') || !!document.getElementById('newsreel'),
     menu: shown(menuEl),
     ship: shown(shipEl) || (!!campaignUi && shown(document.getElementById('campaign'))),
     started, organ: under.open, outcome: sim.outcome, siege: sim.phase === 'siege', enemies: sim.enemies.length,

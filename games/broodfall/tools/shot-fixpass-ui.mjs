@@ -254,10 +254,30 @@ try {
           const bs = [...document.querySelectorAll('.cp-rooms .cp-room')];
           const tops = new Set(bs.map((b) => Math.round(b.getBoundingClientRect().top)));
           const clipped = bs.filter((b) => b.scrollWidth > b.clientWidth + 1).map((b) => b.textContent);
-          return { lines: tops.size, n: bs.length, clipped };
+          // Nothing may stand past the right edge of the screen it sits on.
+          const card = document.querySelector('#campaign .cp-card').getBoundingClientRect();
+          const out = bs.filter((b) => b.getBoundingClientRect().right > card.right - 1).map((b) => b.textContent);
+          return { lines: tops.size, n: bs.length, clipped: [...clipped, ...out] };
         });
         check(bar.lines === 1 && !bar.clipped.length, `${tag} at ${w} px: the room bar (${bar.n} buttons) is one line, nothing clipped`, JSON.stringify(bar));
         await shotEl(page, '.cp-rooms', `ship-${tag}-roombar-${w}`);
+      }
+      await page.setViewportSize({ width: 1600, height: 1000 });
+      // Every room at every width: each room's screen has its own width.
+      for (const w of [1280, 1600, 1920]) {
+        await page.setViewportSize({ width: w, height: w === 1280 ? 800 : w === 1600 ? 1000 : 1080 });
+        const bad = [];
+        for (const id of ids) {
+          await page.locator(`.cp-rooms [data-room="${id}"]`).click();
+          await page.waitForTimeout(150);
+          const r = await page.evaluate(() => {
+            const bs = [...document.querySelectorAll('.cp-rooms .cp-room')];
+            const card = document.querySelector('#campaign .cp-card').getBoundingClientRect();
+            return { lines: new Set(bs.map((b) => Math.round(b.getBoundingClientRect().top))).size, out: bs.filter((b) => b.getBoundingClientRect().right > card.right - 1 || b.scrollWidth > b.clientWidth + 1).length };
+          });
+          if (r.lines !== 1 || r.out) bad.push(`${id}: ${JSON.stringify(r)}`);
+        }
+        check(!bad.length, `${tag} at ${w} px: in every room the bar is one line inside its screen`, bad.join('; '));
       }
       await page.setViewportSize({ width: 1600, height: 1000 });
       for (const id of ids) {

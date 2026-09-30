@@ -34,7 +34,8 @@ export const MOTION = {
   gut: 'slow waves of peristalsis ripple along the coiled intestine',
   nerve: 'faint sparks of light run along the nerve cords and the bright node flickers',
   lattice: 'the thin mucus strands sway very slightly and shimmer',
-  womb: 'the eggs swell softly and the membrane breathes in and out',
+  // The first take swelled the eggs to twice their size and moved the clusters: only light moves now.
+  womb: 'a soft glow pulses slowly through the eggs and the membrane between them breathes very slightly; every egg stays the same size and in the same place',
   marrow: 'the amber glow in the honeycomb chambers pulses slowly',
   resonance: 'the concentric rings of the membrane ripple outward gently like a drum skin humming',
   heart: 'the heart muscle beats in a slow steady heartbeat and the vessels throb with it',

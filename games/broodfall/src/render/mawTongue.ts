@@ -49,6 +49,9 @@ const ROOT = 0.17;
 const TAPER = 0.42;
 const SAG = 0.05;
 /** A body taken rides the tongue drawn this much bigger (it reads against the mouth), and at the lips is LIPS of that. */
+/** The sticky club: held at this share of its picture's length, drawn this many times the tongue's end thickness. */
+const TIP_HOLD = 0.7;
+const CLUB = 1.7;
 const RIDE = 1.35;
 const LIPS = 0.55;
 
@@ -109,7 +112,9 @@ export class MawTongues {
     const strip = this.art.fxSprite('tongue', 'strip')!;
     const tipArt = this.art.fxSprite('tongue', 'tip')!;
     const tip = new Sprite(tipArt.tex);
-    tip.anchor.set(tipArt.rect.anchor?.[0] ?? 0.12, tipArt.rect.anchor?.[1] ?? 0.5);
+    // Held by the middle of its club (not its neck): the club is the end of the tongue, where a body sticks;
+    // its neck lies back over the last of the strip.
+    tip.anchor.set(TIP_HOLD, tipArt.rect.anchor?.[1] ?? 0.5);
     const lengths: MeshRope[] = [];
     for (let i = 0; i < MAX_LENGTHS; i++) {
       const points = Array.from({ length: PTS }, () => new Point(mouth.x, mouth.y));
@@ -273,8 +278,8 @@ export class MawTongues {
     l.tip.visible = len > 2;
     l.tip.position.set(end.x, end.y);
     l.tip.rotation = Math.atan2(end.y - before.y, end.x - before.x);
-    // Its neck (about 0.42 of the tip picture's height) as wide as the tongue there.
-    const k = (half(u) * 2) / (0.42 * Math.max(1, l.tip.texture.height));
+    // Its club about CLUB times as thick as the tongue's thin end.
+    const k = (half(u) * 2 * CLUB) / Math.max(1, l.tip.texture.height);
     l.tip.scale.set(k, k);
   }
 

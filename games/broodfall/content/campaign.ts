@@ -278,8 +278,8 @@ export interface FactionDef {
   /**
    * THE REVEAL (Collins, Sep 30 2026; DESIGN.md "The reveal"): the card after the ending, in the
    * same scene display. What the asset absorbs is digitised into a heaven cut to its desires,
-   * which is the only reason for a broodfall; each faction takes it differently. No picture of
-   * its own yet: the card shows the leader's portrait.
+   * which is the only reason for a broodfall; each faction takes it differently. Its picture (what the
+   * faction woke into) is the campaign media's (content/media.ts REVEAL_PICTURES, public/media/pictures/).
    */
   reveal?: Scene;
   perks: Partial<Record<PerkId, string>>;
@@ -370,7 +370,7 @@ export const FACTIONS: FactionDef[] = [
       'Delegate: (switches off the lights)',
       'You: (log) Deployment complete. The locals were very supportive. Recommend this planet as a training site.',
     ] },
-    reveal: { title: 'A Letter From the Other Side', lines: [
+    reveal: { title: 'A Letter From the Other Side', picture: 'delegation-reveal-end', lines: [
       'You: (log) Archive monitor flags an anomaly: eleven thousand absorbed fauna in the intake meadow, holding coloured cards. It is a letter. It is addressed to me.',
       'Delegate: Dear Visitor. We woke up. All of us. Through the gate each sister has the life she always wanted. You told us you were exterminating our species.',
       'You: From the planet. Nobody asked me where to. Absorption is digitisation; it is what a broodfall is FOR. We could sterilise a planet in an afternoon.',
@@ -436,7 +436,7 @@ export const FACTIONS: FactionDef[] = [
       'The Voice: (weeping) Everything worked out. Everything worked out exactly as it was written.',
       'You: (log) Messiah performing within spec. Will need re-stuffing by the weekend.',
     ] },
-    reveal: { title: 'The Comb Above', lines: [
+    reveal: { title: 'The Comb Above', picture: 'faithful-reveal-end', lines: [
       'The Voice: (on every frequency the archive gives him) Brothers and sisters, we have been DECEIVED. I woke in a hall of gold, chapter twenty word for word, and it is a MACHINE. The empties are up here too!',
       'You: Of course it is a machine. Absorption is digitisation; we could sterilise a planet in an afternoon. Brother, your Book foretold my coming and this hall. I did not study it to humour you. It was my job to fulfil it.',
       'You: Look at your oldest icons: the ring-shaped chariot over the First City, the world sealed under one cap. That was a ship. God wrote to you as far as you could read. Take the offer. It is the one your Book made.',
@@ -523,7 +523,7 @@ export const FACTIONS: FactionDef[] = [
         'You: (log) The fauna\'s smartest man pacified the fauna for me, then asked for a stipend. Recommend Command hire him. Recommend Command watch him.',
       ] },
     } },
-    reveal: { title: 'The Queue Was Real', lines: [
+    reveal: { title: 'The Queue Was Real', picture: 'institute-reveal-end', lines: [
       'The Director: (video call, from the archive\'s intake) Okay. Okay okay okay. Hi. Quick question. Where am I.',
       'You: The upload. The chamber opens into the asset, and the asset IS the upload. You did not ask.',
       'The Director: The upload was a BIT. Everybody knew it was a bit! We were playing to you. Buying time. I wrote forty pages on it!',

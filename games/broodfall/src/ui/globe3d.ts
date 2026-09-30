@@ -502,7 +502,7 @@ export class Globe3D {
     c.addEventListener('pointerleave', () => { if (!this.drag) { this.setHover(-1); this.tip.classList.remove('on'); } });
     c.addEventListener('wheel', (e) => {
       e.preventDefault();
-      this.dist = Math.max(2.35, Math.min(5.2, this.dist * Math.exp(e.deltaY * 0.0012)));
+      this.dist = Math.max(3.0, Math.min(5.2, this.dist * Math.exp(e.deltaY * 0.0012)));
       this.touch();
       this.start();
     }, { passive: false });
@@ -516,7 +516,7 @@ export class Globe3D {
       if (pts.size === 2 && pinch) {
         const [a, b] = [...pts.values()];
         const d = Math.hypot(a.x - b.x, a.y - b.y);
-        this.dist = Math.max(2.35, Math.min(5.2, this.dist * (pinch / d)));
+        this.dist = Math.max(3.0, Math.min(5.2, this.dist * (pinch / d)));
         pinch = d;
         this.drag = null;
       }
@@ -545,7 +545,7 @@ export class Globe3D {
       else if (e.key === 'ArrowRight') { this.turn(30); e.preventDefault(); }
       else if (e.key === 'ArrowUp') { this.touch(); this.target = { spin: this.spin, tilt: Math.min(70, this.tilt + 15) }; this.start(); e.preventDefault(); }
       else if (e.key === 'ArrowDown') { this.touch(); this.target = { spin: this.spin, tilt: Math.max(-70, this.tilt - 15) }; this.start(); e.preventDefault(); }
-      else if (e.key === '+' || e.key === '=') { this.dist = Math.max(2.35, this.dist / 1.15); this.start(); }
+      else if (e.key === '+' || e.key === '=') { this.dist = Math.max(3.0, this.dist / 1.15); this.start(); }
       else if (e.key === '-') { this.dist = Math.min(5.2, this.dist * 1.15); this.start(); }
     });
     window.addEventListener('resize', () => { if (this.canvas.isConnected) { this.resize(); this.start(); } });

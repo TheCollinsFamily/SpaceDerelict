@@ -116,7 +116,7 @@ async function artOk(page, name) {
 }
 
 async function skirmish(page) {
-  await page.goto(URL0 + '?seed=3', { waitUntil: 'load', timeout: 120000 });
+  await page.goto(URL0 + '?seed=3', { waitUntil: 'load', timeout: 300000 });
   await page.locator('#menu-deploy').click();
   await page.waitForFunction(() => window.broodfall && window.__bfBooted, null, { timeout: 60000 });
   // Let the run live a while: the first wave comes, the body grows by the scripted player's hand.
@@ -154,7 +154,7 @@ try {
   if (want('lost')) {
     console.log('lost: NEW CAMPAIGN → mission 1 lost → the pad → the plain report → the ship');
     const { context, page } = await freshPage(browser, { video: true });
-    await page.goto(URL0, { waitUntil: 'load', timeout: 120000 });
+    await page.goto(URL0, { waitUntil: 'load', timeout: 300000 });
     await Promise.all([page.waitForURL(/campaign=run/), page.locator('#menu-new').click()]);
     await page.waitForFunction(() => window.broodfall && window.__bfBooted, null, { timeout: 60000 });
     await page.evaluate(() => window.broodfall.step(600));

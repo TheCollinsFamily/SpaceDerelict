@@ -1340,7 +1340,8 @@ export class IsoRenderer extends Renderer {
       // A wall's body (its measured band of muscle) is about half of all of it: the band is drawn so that the
       // whole wall spans its lane and no more.
       else if (art.on === 'street') width = g.a * (wallNarrow ? WALL_ONE : WALL_TWO);
-      const scale = width / (side.body * art.frame);
+      // An upgrade look may be drawn bigger than its ground (a superstructure towers over its block).
+      const scale = (width / (side.body * art.frame)) * (art.size ?? 1);
 
       // A limb that has just fired plays its firing clip, fitted into the time before it fires again.
       const held = sim.isTapped(t) || (t.stunnedUntil !== undefined && t.stunnedUntil > sim.time);
