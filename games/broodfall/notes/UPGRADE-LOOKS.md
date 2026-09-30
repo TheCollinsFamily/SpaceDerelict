@@ -114,8 +114,9 @@ Per variant: a limb seen from one side ~$1.45 (a picture and two clips), a limb 
 | optional | a death clip per variant (today a variant withers with the game's own slump) | +$0.49 a variant |
 | skip? | the 10 engines' trees are mostly SWARM: they could take 2 looks, not 5 | saves ~$50 |
 
-Before a rollout: the game loads every variant's atlas at the start (15 today, 0.4 to 2 MB each). At 185 to 370
-variants that must become loading a variant the first time a limb earns it (`src/render/art.ts`).
+A variant's atlas is loaded the first time a limb earns that look (`src/render/art.ts` limbVariant): loading all
+of them at the start cost `tools/shot-iso.mjs` its frame rate on this PC's Intel GPU (16 fps). Until it arrives
+the limb keeps the look it has, then grows into the new one. So the rollout adds no load time.
 
 
 ## Tables: every option and pip, classed

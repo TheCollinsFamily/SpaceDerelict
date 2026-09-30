@@ -662,6 +662,17 @@ Each run opens with an AI-generated video of the organism crashing down like a m
 
 By hour six the player notices the combo fanfare still delights them and feels weird about it. The existential lever is aimed at the player's own mastery.
 
+**Between runs: the news (BUILT Sep 30 2026; HANDOFF.md "The campaign's media").** After every campaign
+deployment, on the way back to the ship, the planet's news of it plays, picked by the moment (a town taken,
+a counter-attack won or lost, a faction contacted, a beat, a loss): register 1 as the Office's own
+*Clearance Review* newsreel (Technicolor, the chipper announcer, "resources acquired"); register 3 as their
+own media, the *Commonwealth Newsreel* in black and white and their papers (the Growth burned out, "our
+girls take it back", the Delegation spelling a letter in a field), always from their side and always
+straight; and the break, a shot the Office did not mean to show, ungraded, with the music cut to raw field
+audio for eight seconds, or a whole reel replayed with the filter off, no narrator and no music. Never the
+same piece twice in a row. The faction leaders speak their scenes aloud, and each ending plays as a short
+film before its card; each reveal card shows what that faction woke into.
+
 ## Meta story: the deck of the ship
 
 Setting: the Technopuritan Empire (shared universe, see /docs/UNIVERSE.md). Broodfall is set inside the Empire; its fuller history, doctrine (ported from technopuritan.com with citation ids), the index, krypteia, family life, Earth as the zoo, the Sons of Man (the uplifts; the boss is an uplifted dog) and how the Empire looks back on the 21st century are in `content/lore/empire.md` (Sep 30 2026).

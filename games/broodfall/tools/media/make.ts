@@ -129,7 +129,7 @@ interface LeaderLine { key: string; faction: FactionId; who: string; text: strin
 export function leaderLines(): LeaderLine[] {
   const out: LeaderLine[] = [];
   for (const f of FACTIONS) {
-    const scenes: Scene[] = [f.contact, ...f.beats.map((b) => b.scene), f.ending, ...Object.values(f.endingByChoice?.scenes ?? {}), ...(f.reveal ? [f.reveal] : [])];
+    const scenes: Scene[] = [f.contact, ...f.beats.map((b) => b.scene), f.ending, ...Object.values(f.endingByChoice?.scenes ?? {}), ...(f.reveal ? [f.reveal] : []), ...(f.afterReveal ?? [])];
     for (const s of scenes) s.lines.forEach((l, i) => {
       const who = l.slice(0, l.indexOf(':'));
       if (!LEADER_VOICES[who]) return;
@@ -148,6 +148,16 @@ async function voices() {
   for (const [id, n] of Object.entries(NARRATION)) {
     if (!want(id)) continue;
     jobs.push({ id, run: () => veoSpeech({ out: path.join(D.voice, `${id}.mp4`), seconds: secsFor(n.line), prompt: ANNOUNCER[n.side](n.line) }) });
+  }
+  // A line rewritten since its take was baked: the old take goes to v1/, a new one is made.
+  const baked = fs.existsSync(path.join(OUT, 'media.json')) ? JSON.parse(fs.readFileSync(path.join(OUT, 'media.json'), 'utf8')).voices ?? {} : {};
+  for (const l of leaderLines()) {
+    if (!baked[l.key] || baked[l.key].text === l.text) continue;
+    fs.mkdirSync(path.join(D.voice, 'v1'), { recursive: true });
+    for (const f of fs.readdirSync(D.voice).filter((f) => /\.(mp3|mp4)$/.test(f) && /^(-[a-f])?\.(mp3|mp4)$/.test(f.slice(fileKey(l.key).length)) && f.startsWith(fileKey(l.key)))) {
+      fs.renameSync(path.join(D.voice, f), path.join(D.voice, 'v1', f));
+      console.log(`[media] ${l.key}: its words changed; ${f} → v1/`);
+    }
   }
   for (const l of leaderLines()) {
     if (!want(l.key) && !want(l.faction)) continue;

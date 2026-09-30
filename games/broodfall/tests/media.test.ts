@@ -144,7 +144,7 @@ describe('which piece, when', () => {
 });
 
 describe('the leaders\' voices', () => {
-  const lines = FACTIONS.flatMap((f) => [f.contact, ...f.beats.map((b) => b.scene), f.ending, ...Object.values(f.endingByChoice?.scenes ?? {}), ...(f.reveal ? [f.reveal] : [])]
+  const lines = FACTIONS.flatMap((f) => [f.contact, ...f.beats.map((b) => b.scene), f.ending, ...Object.values(f.endingByChoice?.scenes ?? {}), ...(f.reveal ? [f.reveal] : []), ...(f.afterReveal ?? [])]
     .flatMap((s) => s.lines.map((l, i) => ({ f: f.id, s, l, i, who: l.slice(0, l.indexOf(':')) }))));
 
   it('the Delegate, the Voice, the Director and the Awaited One each have a voice, none of them YOKE\'s or the boss\'s', () => {

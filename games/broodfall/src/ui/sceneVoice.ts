@@ -23,7 +23,7 @@ let root: HTMLElement | null = null;
 function sceneOf(faction: string, title: string): Scene | null {
   const f = FACTIONS.find((x) => x.id === faction);
   if (!f) return null;
-  const all = [f.contact, ...f.beats.map((b) => b.scene), f.ending, ...Object.values(f.endingByChoice?.scenes ?? {}), ...(f.reveal ? [f.reveal] : [])];
+  const all = [f.contact, ...f.beats.map((b) => b.scene), f.ending, ...Object.values(f.endingByChoice?.scenes ?? {}), ...(f.reveal ? [f.reveal] : []), ...(f.afterReveal ?? [])];
   return all.find((s) => s.title === title) ?? null;
 }
 

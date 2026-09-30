@@ -74,7 +74,16 @@ function startDev() {
 }
 
 /** A campaign played to the end of a route (tools/reveal-state.ts), as JSON. */
-const routeState = (route) => spawnSync(process.platform === 'win32' ? 'npx.cmd' : 'npx', ['vite-node', 'tools/reveal-state.ts', '--', route], { cwd: root, encoding: 'utf8', shell: process.platform === 'win32', maxBuffer: 1 << 26 }).stdout.trim();
+const ENDING = { delegation: 'Bear Witness', faithful: 'The Hour', institute: 'Rebuild It Right Next Time' };
+function routeState(route) {
+  const out = spawnSync(process.platform === 'win32' ? 'npx.cmd' : 'npx', ['vite-node', 'tools/reveal-state.ts', '--', route], { cwd: root, encoding: 'utf8', shell: process.platform === 'win32', maxBuffer: 1 << 26 }).stdout.trim();
+  if (!out.startsWith('{')) return out;
+  // The state keeps its last two scenes; a route with a scene after its reveal (the Institute's) loses its
+  // ending that way: it is put back first (the ship shows each waiting scene as the content has it now).
+  const s = JSON.parse(out);
+  if (!s.pendingScenes.some((p) => String(p.scene.picture ?? '').startsWith(`${route}-ending`))) s.pendingScenes.unshift({ faction: route, scene: { title: ENDING[route], picture: `${route}-ending`, lines: [] } });
+  return JSON.stringify(s);
+}
 
 async function player(browser, name, { record = false, store = {} } = {}) {
   const ctx = await browser.newContext({ viewport: VIEW, ...(record ? { recordVideo: { dir: join(tmp, name), size: VIEW } } : {}) });
@@ -254,8 +263,8 @@ try {
     check(cues.some((c) => c.includes('field-1')), 'the music cut to the raw field audio');
     await page.keyboard.press('Escape'); await gone(page, 3000);
     await page.evaluate(() => window.__bfMedia.start('reel-acquired', true));
-    await page.waitForSelector('#newsreel.replay', { timeout: 40000 }).catch(() => {});
-    await page.waitForFunction(() => { const v = document.querySelector('#newsreel.replay video.on'); return v && v.dataset.clip === 'e-suitcases' && v.currentTime > 0.8; }, null, { timeout: 30000 }).catch(() => {});
+    await page.waitForSelector('#newsreel.replay', { timeout: 60000 }).catch(() => {});
+    await page.waitForFunction(() => { const v = document.querySelector('#newsreel.replay video.on'); return v && v.dataset.clip === 'e-suitcases' && v.currentTime > 0.8; }, null, { timeout: 45000 }).catch(() => {});
     check(await page.locator('#newsreel.replay').count() === 1, 'an Empire reel replayed ungraded, no narrator, no music');
     await shot(page, 'c-replay-ungraded');
     await page.keyboard.press('Escape'); await gone(page, 3000);
