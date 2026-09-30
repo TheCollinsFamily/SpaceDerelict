@@ -1054,6 +1054,24 @@ by their current best physics, so they eventually will", and a people that prove
 accelerated archive might be recruited to help. Canon: `docs/UNIVERSE.md` and
 `content/lore/empire.md` 12a; YOKE's answers, lore book section 17.
 
+**Memory, the wicked and the line (Collins, Sep 30 2026, relayed).**
+- The events of the attack are erased from their memories: the archived wake without the
+  broodfall in them. **PROPOSAL:** they wake first in an *intake* with memory whole, and it is
+  removed at the gate into their world; the reveal calls come from intake. In the Delegation's
+  card it is the last blow: "past the gate you will not remember the broodfall, or this letter.
+  You will be very happy." / "That is the cruellest thing you have ever said to us."
+- People judged too morally corrupted are simply not simulated. The Faithful want the wicked
+  tortured in a hell-like place and there is none: their Book's Pit (chapter twenty-two,
+  **PROPOSAL** name) is the one part that is not accurate. In their card: "Then where is the
+  Pit? … Where are the wicked, burning, as it is WRITTEN?" / "Not kept … There is no Pit." / "No
+  PIT? Then what was the point of being GOOD?"
+- People near that line are kept in private simulations until they morally improve. The
+  Director will likely believe he runs the world. In the Institute's card the character lets it
+  slip: "You are near the line, so you get a private one. You will run the world in it. It will
+  be very flattering, and very private, and you will not remember this call." YOKE enjoys that
+  one.
+- None of this is visible before the end.
+
 **The misdirection holds until the end on every route** (Collins): the player should believe the
 character is a sociopath and a liar. The Faithful's homework, the sneering logs and the messiah
 "made of spare meat and a very good voice box" read as cynicism; they were duty. The upload reads
