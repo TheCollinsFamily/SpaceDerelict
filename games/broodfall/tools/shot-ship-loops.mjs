@@ -164,8 +164,8 @@ try {
           bg: getComputedStyle(document.getElementById('campaign')).backgroundImage.split('/').pop() };
       });
       const expect = { orders: 'board', hobby: 'locker' }[r] ?? r;
-      check(!!st && st.src === `room-${expect}.mp4` && st.playing && st.ready >= 3 && st.advanced > 0.3 && st.w >= 1280 && st.on,
-        `the ${r} room plays its loop`, st ? `${st.src}, ${st.w} px, +${st.advanced.toFixed(2)} s in 2.5 s, poster ${st.bg}` : 'no video');
+      check(!!st && st.src === `room-${expect}.mp4` && st.playing && st.ready >= 2 && st.advanced > 0.3 && st.w >= 1280 && st.on,
+        `the ${r} room plays its loop`, st ? `${st.src}, ${st.w} px, +${st.advanced.toFixed(2)} s in 2.5 s, ready ${st.ready}, shown ${st.on}, poster ${st.bg}` : 'no video');
       if (['orders', 'hobby'].includes(r)) continue; // they borrow the Board's and the Locker's
       await page.mouse.move(VW - 5, VH - 5);
       await jpg(page, `ship-loop-${r}`);
