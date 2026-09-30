@@ -269,28 +269,48 @@ function podPulseFrames() {
   const clip = path.join(POD_PULSE_DIR, 'pulse.mp4');
   if (!fs.existsSync(clip)) return null;
   const { frames, w, h } = readFrames(clip, 12);
-  // Frame 0 is the uploaded still itself; the last few settle back onto it.
-  const imgs = frames.slice(1).map((f) => ({ w, h, data: Buffer.from(f) }));
+  const imgs = frames.map((f) => ({ w, h, data: Buffer.from(f) }));
   const { ck } = studioKeyer({ w, h, data: Buffer.from(imgs[0].data) });
-  for (const img of imgs) { studioKey(ck, img); dropSpecks(img, 0.05); }
+  for (const img of imgs) {
+    studioKey(ck, img);
+    dropSpecks(img, 0.05);
+    // The faint pink mist keeps a tint of the green through it: no green over the red in anything left.
+    const d = img.data;
+    for (let i = 0; i < d.length; i += 4) if (d[i + 3] && d[i + 1] > d[i]) d[i + 1] = d[i];
+  }
   return imgs;
 }
 
+/** How much of a frame the body fills (the mist is faint: only what is nearly solid), and its middle. */
+function bodyOf(f) {
+  let n = 0, sx = 0, sy = 0;
+  for (let y = 0; y < f.h; y++) for (let x = 0; x < f.w; x++) if (f.data[(y * f.w + x) * 4 + 3] > 200) { n++; sx += x; sy += y; }
+  return { n, x: n ? sx / n : 0, y: n ? sy / n : 0 };
+}
+
 /**
- * The four frames of the pulse: the pod at rest, swelling, at its fullest, easing back, chosen by how
- * much of the picture the body fills (the mist trail is faint, so the alpha-weighted area is the body).
+ * The four frames of the pulse: the pod at rest, swelling, at its fullest, easing back. The model's
+ * throb is big (up to 1.7x the area): the beat taken is a MILD one, the fullest frame at most about
+ * 1.16x the rest frame's area, and every frame is moved so its body's middle is where the rest frame's is.
  */
 function pulseFour(imgs) {
-  const area = imgs.map((f) => { let a = 0; for (let i = 3; i < f.data.length; i += 4) if (f.data[i] > 200) a++; return a; });
-  // One beat: from the smallest frame to the next biggest and back down.
+  const bodies = imgs.map(bodyOf);
+  const area = bodies.map((b) => b.n);
   const lo = area.indexOf(Math.min(...area.slice(0, Math.ceil(area.length / 2))));
-  let hi = lo;
-  for (let i = lo; i < Math.min(area.length, lo + 24); i++) if (area[i] > area[hi]) hi = i;
-  let back = hi;
-  for (let i = hi; i < Math.min(area.length, hi + 24); i++) if (area[i] < area[back]) back = i;
-  const mid = (a, b) => Math.round((a + b) / 2);
-  const idx = [lo, mid(lo, hi), hi, mid(hi, back)];
-  return { frames: idx.map((i) => imgs[i]), idx, area: idx.map((i) => area[i]) };
+  const at = (from, test) => { for (let i = from; i < area.length; i++) if (test(area[i])) return i; return -1; };
+  let a = at(lo + 1, (v) => v >= area[lo] * 1.07);
+  let hi = a < 0 ? -1 : at(a + 1, (v) => v >= area[lo] * 1.14);
+  if (a < 0 || hi < 0 || area[hi] > area[lo] * 1.3) {
+    // No mild beat: the frames nearest those sizes anywhere after the rest frame.
+    const near = (k) => { let best = lo + 1; for (let i = lo + 1; i < area.length; i++) if (Math.abs(area[i] - area[lo] * k) < Math.abs(area[best] - area[lo] * k)) best = i; return best; };
+    a = near(1.07); hi = near(1.14);
+  }
+  let back = at(hi + 1, (v) => v <= area[lo] * 1.08);
+  if (back < 0) back = a;
+  const idx = [lo, a, hi, back];
+  const ref = bodies[lo];
+  const frames = idx.map((i) => crop(imgs[i], Math.round(bodies[i].x - ref.x), Math.round(bodies[i].y - ref.y), imgs[i].w, imgs[i].h));
+  return { frames, idx, area: idx.map((i) => area[i]) };
 }
 
 /**

@@ -55,7 +55,7 @@ const tmp = fs.mkdtempSync(join(tmpdir(), 'organ-alive-'));
 try {
   const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
   page.on('pageerror', (e) => errors.push(String(e)));
-  await page.goto(`http://localhost:${PORT}/?seed=7&autostart=1&speed=0&biome=suburb`, { waitUntil: 'load' });
+  await page.goto(`http://localhost:${PORT}/?seed=7&autostart=1&speed=0&biome=suburb`, { waitUntil: 'load', timeout: 180000 });
   await page.waitForSelector('#stage canvas', { timeout: 60000 });
   // A busy stage: every organ that fits, over and over, around the meteor; the core at its third stage.
   const grown = await page.evaluate(() => {

@@ -58,8 +58,8 @@ async function open(extra = '') {
   page.on('pageerror', (e) => errors.push(String(e)));
   // The dev server's socket is cut: another session saving a file must not reload this page mid-beat.
   await page.addInitScript(() => { window.WebSocket = class { constructor() {} addEventListener() {} removeEventListener() {} send() {} close() {} }; });
-  await page.goto(`${BASE}/?seed=${SEED}&autostart=1&speed=0${extra}`);
-  await page.waitForFunction(() => window.broodfall !== undefined, null, { timeout: 60000 });
+  await page.goto(`${BASE}/?seed=${SEED}&autostart=1&speed=0${extra}`, { waitUntil: "domcontentloaded", timeout: 180000 });
+  await page.waitForFunction(() => window.broodfall !== undefined, null, { timeout: 180000 });
   await page.waitForTimeout(1500);
   return { page, errors };
 }
