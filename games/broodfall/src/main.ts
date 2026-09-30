@@ -11,6 +11,7 @@ import { hideReachTip, reachText, showReachTip } from './ui/reachTip';
 import { IsoRenderer } from './render/isoRender';
 import { BoardArtSet, artUrl, loadManifest, pickBiome } from './render/art';
 import { Hud, PIP_DESC } from './ui/hud';
+import { DecreeBox } from './ui/decrees';
 import { UndergroundScreen } from './ui/underground';
 import { CampaignUi } from './ui/campaignUi';
 import { finish, newCampaign, plan, territory as territoryDef, type CampaignState, type DeploymentPlan } from './meta/campaign';
@@ -25,7 +26,7 @@ import { loadSettings } from './meta/storage';
 import { strainIcons, strainKey, strainLabel } from './ui/strain';
 import { GENES } from '../content/plates';
 import { BALANCE as B } from '../content/data';
-import { PLATE, PLATE_FEATURES } from './sim/citymap';
+import { CellType, PLATE, PLATE_FEATURES } from './sim/citymap';
 import { LoadingScreen, applyName, dressLogos, loadScreenArt, showArtNotice, showFailure, showSlowDrawingNotice } from './ui/screens';
 import { debriefPictures, type Outcome } from './ui/debrief';
 import { padOutroPlaying, playPadOutro, preloadPadOutro } from './ui/padOutro';
@@ -234,7 +235,12 @@ const hud = new Hud({
     updateHint();
   },
   onRoyalSurge() {
-    sim.issue({ kind: 'royal-surge' });
+    // The bar's royal button opens the ROYAL DECREES (content/royal.ts); the old surge is gone from play.
+    decreeBox.toggle();
+  },
+  onCrown(towerId) {
+    const r = sim.issue({ kind: 'decree', decree: 'crown', towerId });
+    hud.setHint(r.ok ? 'CROWNED: every other limb within 120px takes 30% less harm and hits 25% harder' : String(r.err).toUpperCase());
   },
   onSpeed(mult) {
     speed = mult;
@@ -261,6 +267,12 @@ function salvageText(family: TowerFamily): string {
     .map((c) => `${salv[c]}${c[0].toUpperCase()}`);
   return parts.join(' ') || 'no';
 }
+
+/** The ROYAL DECREES box (src/ui/decrees.ts), opened by the bar's royal button. */
+const decreeBox = new DecreeBox(() => sim, (cmd) => sim.issue(cmd), (text) => hud.setHint(text));
+
+/** A wall of the body facing the smoke under the pointer (between waves): hovering it offers the burrow. */
+let hoverBurrow = false;
 
 function updateHint(): void {
   if (armedPlinth) {
@@ -292,14 +304,16 @@ function updateHint(): void {
         + `${salvageText(donor.family)} meat back · new limb gets: ${PIP_DESC[donor.family]}`
         + (donor.pips.length ? ` (+${donor.pips.length} inherited)` : '')
         + (harvest ? ` · HARVESTS ${harvest} channelled bonus${harvest > 1 ? 'es' : ''}` : '')
-        + (deps > 0 ? ` · WARNING: ${deps} limb${deps > 1 ? 's' : ''} stand on its creep and will WITHER` : ''));
+        + (deps > 0 ? ` · WARNING: ${deps} limb${deps > 1 ? 's' : ''} stand on its creep and will WITHER` : '')
+        + (sim.phase === 'siege' ? ` · SURGERY UNDER FIRE: the new limb will graft ~${(B.graftSeconds + B.graftPerPip * (sim.pendingPips.length + donor.pips.length + 1)).toFixed(0)}s — no fire, double harm, the climbers smell it` : ''));
       return;
     }
     hoverDonorId = null;
     updateHint();
   } else if (selectedCard !== null && sim.pendingPips.length > 0) {
     hud.setHint(`${sim.pendingPips.length} trait${sim.pendingPips.length > 1 ? 's' : ''} banked — `
-      + 'place the new limb to inherit them (or eat another)');
+      + 'place the new limb to inherit them (or eat another)'
+      + (sim.phase === 'siege' ? ` · SURGERY UNDER FIRE: grafting mid-siege takes ${(B.graftSeconds + B.graftPerPip * sim.pendingPips.length).toFixed(1)}s — it holds fire and bleeds double (between waves the graft takes at once)` : ''));
   } else if (selectedCard !== null) {
     const fam = sim.hand[selectedCard]?.family;
     const span = fam ? towerSpec(fam).span : undefined;
@@ -379,6 +393,9 @@ function handleEvents(events: SimEvent[]): void {
     if (e.kind === 'wave-cleared') banner(`WAVE ${e.wave} CLEARED · +${e.bonus} WAR MEAT`);
     if (e.kind === 'royal-incoming') banner('THE ROYAL TAKES THE FIELD');
     if (e.kind === 'plate-drafted') banner(`DISTRICT CONSUMED: ${e.name.toUpperCase()}`);
+    if (e.kind === 'sealed-in' && !AUTO) banner('WALLED IN — BURROW THROUGH A WALL INTO THE SMOKE TO GROW');
+    if (e.kind === 'burrowed') banner('BURROWED THROUGH — A NEW WAY IN');
+    if (e.kind === 'surgery-under-fire') banner(`SURGERY UNDER FIRE — GRAFTING ${e.seconds.toFixed(0)}s`);
     if ((e.kind === 'won' || e.kind === 'lost') && !AUTO) {
       endSnapshot = snapshotBoard();
       // The hero sets the pad down (src/ui/padOutro.ts: this very view on its screen), then the report.
@@ -805,6 +822,14 @@ function handleCanvasClick(clientX: number, clientY: number): void {
       }
       return;
     }
+    // The smoke in front of a wall of yours (between waves): burrow through it.
+    const site = sim.burrowSiteAt(cell);
+    if (site && sim.map.cells[cell] === CellType.Void) {
+      const res = sim.issue({ kind: 'burrow', cell });
+      hud.setHint(res.ok ? 'BURROWED: the district beyond can be drafted now, and the hive has a new way in' : String(res.err).toUpperCase());
+      renderer.preview = null;
+      return;
+    }
     // Empty ground with nothing armed: close the panel.
     hud.inspectedId = null;
     renderer.selectedTowerId = null;
@@ -883,6 +908,7 @@ function openRunSettings(): void {
 }
 
 function cancelAll(): void {
+  decreeBox.close();
   armedPlinth = false;
   armedNode = null;
   armedSpread = null;
@@ -1199,6 +1225,20 @@ async function boot(): Promise<void> {
         hoveringNode = false;
         updateHint();
       }
+      // The smoke in front of one of the body's walls: offer the burrow (hover shows what it digs).
+      const hc = sim.cellAt(wh.x, wh.y);
+      const site = !hovered && sim.map.cells[hc] === CellType.Void ? sim.burrowSiteAt(hc) : null;
+      if (site) {
+        const can = sim.phase !== 'siege' && !site.blocked && sim.meat.war >= B.burrowCost;
+        renderer.preview = { cell: site.mouth[0], cells: site.carve, kind: 'burrow', valid: can };
+        hud.setHint(sim.phase === 'siege' ? 'BURROW: the body digs between waves'
+          : site.blocked ? 'BURROW: something of yours stands in the way'
+            : `BURROW THROUGH THIS WALL — ${B.burrowCost} war: the district beyond can be drafted again, and the hive gets a new way in${can ? ' · click' : ' (not enough war meat)'}`);
+        hoverBurrow = true;
+      } else if (hoverBurrow) {
+        hoverBurrow = false;
+        updateHint();
+      }
       if (hoverDonorId !== null) {
         hoverDonorId = null;
         renderer.donorHighlightId = null;
@@ -1254,6 +1294,7 @@ async function boot(): Promise<void> {
     handleEvents(sim.takeEvents());
     if (started) watchBoard(sim);
     hud.update(sim);
+    decreeBox.update();
     under.update();
     updateBoardPanel();
     updateNodeButton();

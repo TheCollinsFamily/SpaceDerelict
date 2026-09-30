@@ -10784,7 +10784,7 @@
        "x": 1051,
        "y": 1803,
        "w": 96,
-       "h": 69,
+       "h": 66,
        "anchor": [
         0.5,
         0.5
@@ -10794,7 +10794,7 @@
        "x": 1149,
        "y": 1803,
        "w": 96,
-       "h": 69,
+       "h": 66,
        "anchor": [
         0.5,
         0.5
@@ -10804,7 +10804,7 @@
        "x": 1247,
        "y": 1803,
        "w": 96,
-       "h": 69,
+       "h": 66,
        "anchor": [
         0.5,
         0.5
@@ -10814,7 +10814,7 @@
        "x": 1345,
        "y": 1803,
        "w": 96,
-       "h": 69,
+       "h": 66,
        "anchor": [
         0.5,
         0.5
@@ -16046,17 +16046,196 @@
    "fps": 12,
    "frame": 128,
    "tiles": {
+    "forge": {
+     "strip": "under/loop-forge.webp",
+     "count": 48,
+     "pingpong": true
+    },
+    "venom": {
+     "strip": "under/loop-venom.webp",
+     "count": 48,
+     "pingpong": true
+    },
+    "gut": {
+     "strip": "under/loop-gut.webp",
+     "count": 48,
+     "pingpong": true
+    },
     "nerve": {
      "strip": "under/loop-nerve.webp",
+     "count": 48,
+     "pingpong": true
+    },
+    "lattice": {
+     "strip": "under/loop-lattice.webp",
+     "count": 48,
+     "pingpong": true
+    },
+    "womb": {
+     "strip": "under/loop-womb.webp",
+     "count": 48,
+     "pingpong": true
+    },
+    "marrow": {
+     "strip": "under/loop-marrow.webp",
+     "count": 48,
+     "pingpong": true
+    },
+    "resonance": {
+     "strip": "under/loop-resonance.webp",
      "count": 48,
      "pingpong": true
     },
     "heart": {
      "strip": "under/loop-heart.webp",
      "count": 48
+    },
+    "brain": {
+     "strip": "under/loop-brain.webp",
+     "count": 48,
+     "pingpong": true
+    },
+    "gland": {
+     "strip": "under/loop-gland.webp",
+     "count": 48,
+     "pingpong": true
+    },
+    "atrophy": {
+     "strip": "under/loop-atrophy.webp",
+     "count": 48,
+     "pingpong": true
+    },
+    "root": {
+     "strip": "under/loop-root.webp",
+     "count": 48,
+     "pingpong": true
+    },
+    "bladder": {
+     "strip": "under/loop-bladder.webp",
+     "count": 48,
+     "pingpong": true
+    },
+    "pacemaker": {
+     "strip": "under/loop-pacemaker.webp",
+     "count": 48,
+     "pingpong": true
+    },
+    "budder": {
+     "strip": "under/loop-budder.webp",
+     "count": 48,
+     "pingpong": true
+    },
+    "cyst": {
+     "strip": "under/loop-cyst.webp",
+     "count": 48,
+     "pingpong": true
+    },
+    "swell": {
+     "strip": "under/loop-swell.webp",
+     "count": 48
+    },
+    "catapult": {
+     "strip": "under/loop-catapult.webp",
+     "count": 48,
+     "pingpong": true
+    },
+    "mire": {
+     "strip": "under/loop-mire.webp",
+     "count": 48,
+     "pingpong": true
+    },
+    "acid": {
+     "strip": "under/loop-acid.webp",
+     "count": 48,
+     "pingpong": true
+    },
+    "runner": {
+     "strip": "under/loop-runner.webp",
+     "count": 48,
+     "pingpong": true
+    },
+    "scaffold": {
+     "strip": "under/loop-scaffold.webp",
+     "count": 48,
+     "pingpong": true
+    },
+    "seeder": {
+     "strip": "under/loop-seeder.webp",
+     "count": 48,
+     "pingpong": true
+    },
+    "carrion": {
+     "strip": "under/loop-carrion.webp",
+     "count": 48,
+     "pingpong": true
+    },
+    "seam": {
+     "strip": "under/loop-seam.webp",
+     "count": 48,
+     "pingpong": true
+    },
+    "lab": {
+     "strip": "under/loop-lab.webp",
+     "count": 48,
+     "pingpong": true
+    },
+    "bed": {
+     "strip": "under/loop-bed.webp",
+     "count": 48,
+     "pingpong": true
+    },
+    "ossuary": {
+     "strip": "under/loop-ossuary.webp",
+     "count": 48,
+     "pingpong": true
+    },
+    "cache": {
+     "strip": "under/loop-cache.webp",
+     "count": 48,
+     "pingpong": true
+    },
+    "vent": {
+     "strip": "under/loop-vent.webp",
+     "count": 48,
+     "pingpong": true
+    },
+    "aquifer": {
+     "strip": "under/loop-aquifer.webp",
+     "count": 48,
+     "pingpong": true
+    },
+    "cable": {
+     "strip": "under/loop-cable.webp",
+     "count": 48,
+     "pingpong": true
+    },
+    "sewer": {
+     "strip": "under/loop-sewer.webp",
+     "count": 48,
+     "pingpong": true
     }
    },
-   "stages": {}
+   "stages": {
+    "1": {
+     "strip": "under/loop-core-stage-1.webp",
+     "count": 48,
+     "pingpong": true
+    },
+    "2": {
+     "strip": "under/loop-core-stage-2.webp",
+     "count": 48
+    },
+    "3": {
+     "strip": "under/loop-core-stage-3.webp",
+     "count": 48,
+     "pingpong": true
+    },
+    "4": {
+     "strip": "under/loop-core-stage-4.webp",
+     "count": 48,
+     "pingpong": true
+    }
+   }
   },
   "scan": {
    "tile": 160,

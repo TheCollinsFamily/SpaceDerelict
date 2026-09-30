@@ -1,0 +1,282 @@
+[
+ {
+  "key": "bone",
+  "failed": 1,
+  "checks": [
+   {
+    "name": "where it stands is marked",
+    "ok": false,
+    "value": "not marked: node tools/art/feet.mjs lasher"
+   },
+   {
+    "name": "idle: loop closes",
+    "ok": true,
+    "value": 0
+   },
+   {
+    "name": "idle: it moves",
+    "ok": true,
+    "value": 1.17
+   },
+   {
+    "name": "idle: it is calm",
+    "ok": true,
+    "value": 1.17
+   },
+   {
+    "name": "idle: inside the frame",
+    "ok": true,
+    "value": "164,4-538,576"
+   },
+   {
+    "name": "idle: no background tint on the outline",
+    "ok": true,
+    "value": "0.0%"
+   },
+   {
+    "name": "idle: ends the size it began",
+    "ok": true,
+    "value": "4% change"
+   },
+   {
+    "name": "fire: no background tint on the outline",
+    "ok": true,
+    "value": "0.0%"
+   },
+   {
+    "name": "fire: ends the size it began",
+    "ok": true,
+    "value": "2% change"
+   },
+   {
+    "name": "it stands in its cell",
+    "ok": true,
+    "value": "0.0% of it lies in front of its cell"
+   }
+  ]
+ },
+ {
+  "key": "swarm",
+  "failed": 1,
+  "checks": [
+   {
+    "name": "where it stands is marked",
+    "ok": false,
+    "value": "not marked: node tools/art/feet.mjs lasher"
+   },
+   {
+    "name": "idle: loop closes",
+    "ok": true,
+    "value": 0.73
+   },
+   {
+    "name": "idle: it moves",
+    "ok": true,
+    "value": 0.42
+   },
+   {
+    "name": "idle: it is calm",
+    "ok": true,
+    "value": 0.42
+   },
+   {
+    "name": "idle: inside the frame",
+    "ok": true,
+    "value": "162,62-528,550"
+   },
+   {
+    "name": "idle: no background tint on the outline",
+    "ok": true,
+    "value": "0.0%"
+   },
+   {
+    "name": "idle: ends the size it began",
+    "ok": true,
+    "value": "1% change"
+   },
+   {
+    "name": "fire: no background tint on the outline",
+    "ok": true,
+    "value": "0.0%"
+   },
+   {
+    "name": "fire: ends the size it began",
+    "ok": true,
+    "value": "1% change"
+   },
+   {
+    "name": "it stands in its cell",
+    "ok": true,
+    "value": "0.0% of it lies in front of its cell"
+   }
+  ]
+ },
+ {
+  "key": "venom",
+  "failed": 1,
+  "checks": [
+   {
+    "name": "where it stands is marked",
+    "ok": false,
+    "value": "not marked: node tools/art/feet.mjs lasher"
+   },
+   {
+    "name": "idle: loop closes",
+    "ok": true,
+    "value": 0
+   },
+   {
+    "name": "idle: it moves",
+    "ok": true,
+    "value": 0.61
+   },
+   {
+    "name": "idle: it is calm",
+    "ok": true,
+    "value": 0.61
+   },
+   {
+    "name": "idle: inside the frame",
+    "ok": true,
+    "value": "152,30-492,570"
+   },
+   {
+    "name": "idle: no background tint on the outline",
+    "ok": true,
+    "value": "0.0%"
+   },
+   {
+    "name": "idle: ends the size it began",
+    "ok": true,
+    "value": "2% change"
+   },
+   {
+    "name": "fire: no background tint on the outline",
+    "ok": true,
+    "value": "0.0%"
+   },
+   {
+    "name": "fire: ends the size it began",
+    "ok": true,
+    "value": "1% change"
+   },
+   {
+    "name": "it stands in its cell",
+    "ok": true,
+    "value": "0.1% of it lies in front of its cell"
+   }
+  ]
+ },
+ {
+  "key": "reach",
+  "failed": 1,
+  "checks": [
+   {
+    "name": "where it stands is marked",
+    "ok": false,
+    "value": "not marked: node tools/art/feet.mjs lasher"
+   },
+   {
+    "name": "idle: loop closes",
+    "ok": true,
+    "value": 0
+   },
+   {
+    "name": "idle: it moves",
+    "ok": true,
+    "value": 0.82
+   },
+   {
+    "name": "idle: it is calm",
+    "ok": true,
+    "value": 0.82
+   },
+   {
+    "name": "idle: inside the frame",
+    "ok": true,
+    "value": "128,34-540,604"
+   },
+   {
+    "name": "idle: no background tint on the outline",
+    "ok": true,
+    "value": "0.0%"
+   },
+   {
+    "name": "idle: ends the size it began",
+    "ok": true,
+    "value": "13% change"
+   },
+   {
+    "name": "fire: no background tint on the outline",
+    "ok": true,
+    "value": "0.0%"
+   },
+   {
+    "name": "fire: ends the size it began",
+    "ok": true,
+    "value": "1% change"
+   },
+   {
+    "name": "it stands in its cell",
+    "ok": true,
+    "value": "0.1% of it lies in front of its cell"
+   }
+  ]
+ },
+ {
+  "key": "bone+venom",
+  "failed": 1,
+  "checks": [
+   {
+    "name": "where it stands is marked",
+    "ok": false,
+    "value": "not marked: node tools/art/feet.mjs lasher"
+   },
+   {
+    "name": "idle: loop closes",
+    "ok": true,
+    "value": 0
+   },
+   {
+    "name": "idle: it moves",
+    "ok": true,
+    "value": 0.81
+   },
+   {
+    "name": "idle: it is calm",
+    "ok": true,
+    "value": 0.81
+   },
+   {
+    "name": "idle: inside the frame",
+    "ok": true,
+    "value": "152,28-498,632"
+   },
+   {
+    "name": "idle: no background tint on the outline",
+    "ok": true,
+    "value": "0.0%"
+   },
+   {
+    "name": "idle: ends the size it began",
+    "ok": true,
+    "value": "1% change"
+   },
+   {
+    "name": "fire: no background tint on the outline",
+    "ok": true,
+    "value": "0.0%"
+   },
+   {
+    "name": "fire: ends the size it began",
+    "ok": true,
+    "value": "0% change"
+   },
+   {
+    "name": "it stands in its cell",
+    "ok": true,
+    "value": "0.0% of it lies in front of its cell"
+   }
+  ]
+ }
+]

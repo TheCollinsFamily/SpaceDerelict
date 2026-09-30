@@ -82,7 +82,7 @@ async function fresh({ newcomer = false, viewport = { width: 1600, height: 1000 
 }
 const booted = (page) => page.waitForFunction(() => window.broodfall && window.__bfBooted && document.getElementById('boot').classList.contains('hidden'), null, { timeout: 90000 });
 const noBanner = async (page, where) => {
-  const t = await page.evaluate(() => { const el = document.getElementById('art-notice'); return el && !el.classList.contains('hidden') ? el.textContent : ''; });
+  const t = await page.evaluate(() => { const el = document.getElementById('art-notice'); return el && !el.classList.contains('hidden') ? `${el.textContent} [${el.title}]` : ''; });
   check(!t, `${where}: no "did not load" banner`, t);
 };
 const endRun = (page, how) => page.evaluate((how) => {

@@ -158,7 +158,7 @@ Organs are out of the enemies' reach. What organs used to do on the surface
 (hearts → biomass/creep, brains → interest, gland modes, root creep lobes) is gone.
 - **Gates live on the FRONTIER:** ports of claimed plates that face unclaimed city. Growing changes where the hive can come from — expansion is power AND exposure.
 - **Waves attack down TELEGRAPHED lanes** (1-3 frontier gates by tier; "ASSAULT FORMING: N+E" plus glowing gate beacons during growth). Reinforce the named approach, or CALL THE WAVE early for bonus meat. Waves spawn as squads, end with a CLEARED banner and a meat bonus.
-- The map at minute zero is a NEIGHBORHOOD, not a battlefield: lit doorways, and (planned) street life that flees the crash. The city is shown living so the horror lands.
+- The map at minute zero is a NEIGHBORHOOD, not a battlefield: lit doorways, and townsfolk on the streets who flee the crash (built Sep 30 2026, `src/sim/civilians.ts`: 30-40 worker-ant commuters stand on the claimed streets at minute zero, panic within seconds and run the streets for the frontier gates, faster with the creep at their heels; the creep takes any it overtakes, with a red puff; a newly claimed plate brings a smaller crowd, fewer as the waves go on. A look only: the crowd reads the sim and never touches it). The city is shown living so the horror lands.
 
 ### The genre guardrail (permanent test)
 `tests/placement.test.ts` runs a chokepoint-aware scripted player against a random-placement player on 8 seeds with identical cards and economy. Placement-aware play must win more seeds AND score higher, or the board has degenerated into decoration. This test exists because the first two boards (radial creep, uniform grid) both failed it.

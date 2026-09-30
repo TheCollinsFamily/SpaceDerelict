@@ -88,7 +88,7 @@ export interface PlacementPreview {
   cell: number;
   /** A big limb: every cell it would stand on (absent: `cell` alone). */
   cells?: number[];
-  kind: 'tower' | 'organ' | 'node' | 'plinth';
+  kind: 'tower' | 'organ' | 'node' | 'plinth' | 'burrow';
   family?: TowerFamily;
   valid: boolean;
   /** Directional limbs: the facing it will be placed with (right-click rotates). */
@@ -374,9 +374,9 @@ export class Renderer {
         if (anyStrain) {
           const fx = sim.creepEffectAt(cell);
           if (fx.slow < 1) {
-            // Mire: glossy bog-green skin with a wet sheen, unmistakable from bare ground.
-            g.rect(x, y - lift, cp, cp).fill({ color: 0x2f6a44, alpha: 0.5 });
-            g.rect(x + 4, y - lift + 5 + (cx % 3), cp * 0.45, 2).fill({ color: 0xa8e0b0, alpha: 0.35 + 0.15 * Math.sin(this.pulse + cx) });
+            // Mire: glossy brown-olive bog (rot, not grass) with a wet sheen, unmistakable from bare ground.
+            g.rect(x, y - lift, cp, cp).fill({ color: 0x4a3f26, alpha: 0.55 });
+            g.rect(x + 4, y - lift + 5 + (cx % 3), cp * 0.45, 2).fill({ color: 0xe0d6b0, alpha: 0.35 + 0.15 * Math.sin(this.pulse + cx) });
           }
           if (fx.dps > 0) g.rect(x + 3, y - lift + 3, cp - 6, cp - 6).fill({ color: 0xd8d040, alpha: 0.18 + 0.08 * Math.sin(this.pulse * 2 + cx + cy) });
         }
@@ -414,7 +414,7 @@ export class Renderer {
       const st = s.strain;
       // Size says how far it spreads; the marks say what else it is.
       const r = 4 + (st?.radius ?? 3) * 1.2 + Math.sin(this.pulse * 1.6 + s.id) * 1.0;
-      const col = st && st.dps > 0 ? 0xd0d040 : st && st.slow < 1 ? 0x4f8a5a : 0x8aa860;
+      const col = st && st.dps > 0 ? 0xd0d040 : st && st.slow < 1 ? 0x6b5a30 : 0x8aa860;
       g.circle(p.x, p.y, r + 3).fill({ color: 0x3a1a10, alpha: 0.5 });
       g.circle(p.x, p.y, r).fill(col);
       g.circle(p.x - 2, p.y - 2, r * 0.4).fill({ color: 0xd8f0b0, alpha: 0.8 });
@@ -423,7 +423,7 @@ export class Renderer {
         for (let k = 0; k < 10; k++) {
           const a0 = (k / 10) * Math.PI * 2 + this.pulse * 0.3;
           const rr = r + 4 + (k % 2 ? 1.5 : -0.5);
-          g.circle(p.x + Math.cos(a0) * rr, p.y + Math.sin(a0) * rr, 1.4).fill({ color: 0x9ae0a8, alpha: 0.9 });
+          g.circle(p.x + Math.cos(a0) * rr, p.y + Math.sin(a0) * rr, 1.4).fill({ color: 0xc8b878, alpha: 0.9 });
         }
       }
       if (st && st.dps > 0) {
@@ -978,6 +978,23 @@ export class Renderer {
     if (sim.isTapped(t)) {
       g.circle(x, y, 17).fill({ color: 0x3a2030, alpha: 0.55 });
       g.circle(x, y, 17).stroke({ width: 1.5, color: 0xc070a0, alpha: 0.8 });
+    }
+    // ROYAL DECREE: a crowned limb wears a small gold crown (its shelter reaches 120px: shown when selected).
+    if (t.crowns) {
+      const n = Math.min(3, t.crowns);
+      for (let k = 0; k < n; k++) {
+        const cx = x + (k - (n - 1) / 2) * 11;
+        const cy = y - 34;
+        g.poly([cx - 5, cy + 3, cx - 5, cy - 3, cx - 2.5, cy, cx, cy - 4, cx + 2.5, cy, cx + 5, cy - 3, cx + 5, cy + 3])
+          .fill({ color: 0xe8c040, alpha: 0.95 }).stroke({ width: 1, color: 0x3a2808 });
+      }
+      if (this.selectedTowerId === t.id) g.circle(t.pos.x, t.pos.y, 120).stroke({ width: 1.5, color: 0xe8c040, alpha: 0.35 });
+    }
+    // SURGERY UNDER FIRE: an open graft — a pulsing raw ring, and the time left as an arc.
+    if (t.graftUntil !== undefined && t.graftUntil > sim.time) {
+      const beat = 0.55 + 0.45 * Math.sin(sim.time * 9);
+      g.circle(x, y, 19).stroke({ width: 3, color: 0xe0303a, alpha: 0.5 + 0.4 * beat });
+      g.circle(x, y, 23).stroke({ width: 1.2, color: 0xff8080, alpha: 0.35 * beat });
     }
     // Stunned by a sedation dart: a pale halo.
     if (t.stunnedUntil !== undefined && t.stunnedUntil > sim.time) {

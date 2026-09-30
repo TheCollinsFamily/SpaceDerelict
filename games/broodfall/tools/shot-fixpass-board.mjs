@@ -14,7 +14,7 @@
  * Usage: node tools/shot-fixpass-board.mjs [scene ...] --tag before|after
  * Pictures: notes/screens/2026-09-30/fixpass-board-<scene>-<tag>[-n].jpg (PNGs in tools/screenshots/).
  */
-import { spawn, execSync, spawnSync } from 'node:child_process';
+import { execSync, spawnSync } from 'node:child_process';
 import { mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -48,14 +48,22 @@ function freePort() {
     }
   } catch {}
 }
-function startDev() {
+/**
+ * The DEV server (vite's own, as `npm start` serves), on this beat's port, with no hot reload (another session
+ * saving a file must not reload the page mid-beat). BROODFALL_PUBLIC=<folder> serves the art from a copy of
+ * public/ taken at one moment: the art session re-bakes pictures while this runs, and a picture half-written
+ * when the page asks for it is a "did not load" notice that says nothing about the board.
+ */
+async function startDev() {
   freePort();
-  const child = spawn(process.platform === 'win32' ? 'npx.cmd' : 'npx', ['vite', '--port', String(PORT), '--strictPort'], { cwd: root, stdio: 'pipe', shell: process.platform === 'win32', env: { ...process.env, BROODFALL_NO_HMR: '1' } });
-  return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error('vite did not start in 40s')), 40000);
-    child.stdout.on('data', (d) => { if (String(d).includes('localhost')) { clearTimeout(timer); resolve(child); } });
-    child.on('exit', (code) => reject(new Error(`vite exited early (${code})`)));
+  const { createServer } = await import('vite');
+  const dev = await createServer({
+    root, configFile: join(root, 'vite.config.ts'), logLevel: 'warn',
+    ...(process.env.BROODFALL_PUBLIC ? { publicDir: process.env.BROODFALL_PUBLIC } : {}),
+    server: { port: PORT, strictPort: true, hmr: false, watch: null },
   });
+  await dev.listen();
+  return { kill: () => { void dev.close(); } };
 }
 
 const server = await startDev();

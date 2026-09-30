@@ -941,7 +941,7 @@ export class IsoRenderer extends Renderer {
       const p = this.tileAt(vx, vy, h);
       const made: Sprite[] = [];
       // What the skin does to what walks on it, and how high it lies: the higher, the lighter.
-      const tint = mix(state & 64 ? 0xffd890 : state & 32 ? 0x9fd8a8 : state & 128 ? 0xd8c0c0 : 0xffffff, SKIN_LIGHT[Math.min(h, SKIN_LIGHT.length - 1)]);
+      const tint = mix(state & 64 ? 0xffd890 : state & 32 ? 0xc4b48c : state & 128 ? 0xd8c0c0 : 0xffffff, SKIN_LIGHT[Math.min(h, SKIN_LIGHT.length - 1)]);
       const z = (vx + vy + 1) * 100;
       // Where a node's strain works on it, the skin is DRAWN as that strain (boardArt, templates/board.mjs): bog, embers.
       const strain = state & 64 ? 'creep-burning' : state & 32 ? 'creep-mire' : '';

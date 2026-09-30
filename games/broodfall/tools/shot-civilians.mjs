@@ -55,7 +55,7 @@ const shoot = (page, name) => page.screenshot({ path: join(out, `${name}.jpg`), 
 async function open(extra = '') {
   const page = await browser.newPage({ viewport: { width: 1500, height: 1000 } });
   const errors = [];
-  page.on('pageerror', (e) => errors.push(String(e)));
+  page.on('pageerror', (e) => errors.push(String(e) + ' ' + String(e.stack).slice(0, 400)));
   // The dev server's socket is cut: another session saving a file must not reload this page mid-beat.
   await page.addInitScript(() => { window.WebSocket = class { constructor() {} addEventListener() {} removeEventListener() {} send() {} close() {} }; });
   await page.goto(`${BASE}/?seed=${SEED}&autostart=1&speed=0${extra}`, { waitUntil: "domcontentloaded", timeout: 180000 });
@@ -77,7 +77,7 @@ const frame = async (page, wx, wy, ticks) => {
   await page.evaluate(([x, y]) => {
     const r = window.broodfall.renderer;
     const p = window.broodfall.worldToScreen(x, y);
-    r.panBy(p.vw / 2 - p.x, p.vh / 2 - p.y);
+    r.panBy?.(p.vw / 2 - p.x, p.vh / 2 - p.y);
   }, [wx, wy]);
   await page.waitForTimeout(600);
   const box = await (await page.$('#stage canvas')).boundingBox();
@@ -137,7 +137,7 @@ try {
       await page.evaluate(([x, y]) => {
         const r = window.broodfall.renderer;
         const p = window.broodfall.worldToScreen(x, y);
-        r.panBy(p.vw / 2 - p.x, p.vh / 2 - p.y);
+        r.panBy?.(p.vw / 2 - p.x, p.vh / 2 - p.y);
       }, [m.x, m.y]);
     }
   }

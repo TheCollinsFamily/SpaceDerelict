@@ -279,32 +279,32 @@ try {
     const alive = await page.evaluate((id) => window.broodfall.sim.enemies.some((e) => e.id === id), tough);
     check(alive, 'the slapped soldier stays in the street');
 
-    // ---- From behind: a weakened soldier in a street cell UP the screen from the Maw (it turns to it, and is
-    // seen from behind: its mouth faces away), caught and gulped.
-    const behind = await page.evaluate((id) => {
-      const s = window.broodfall.sim;
-      const t = s.towers.find((x) => x.id === id);
-      const m = window.broodfall.worldToScreen(t.pos.x, t.pos.y);
-      let best = -1, bestUp = 0;
-      for (let c = 0; c < s.map.cells.length; c++) {
-        if (s.map.cells[c] !== 1) continue;
-        const p = s.cellCenter(c);
-        const d = Math.hypot(p.x - t.pos.x, p.y - t.pos.y);
-        if (d < s.cfg.cellPx * 1.1 || d > 48) continue;
-        const up = m.y - window.broodfall.worldToScreen(p.x, p.y).y;
-        if (up > bestUp) { bestUp = up; best = c; }
-      }
-      return best;
-    }, s.mawId);
+    // ---- From behind: the camera turned half a turn (E twice), so the street it eats from lies up the screen
+    // beyond the Maw: it is seen from behind (its mouth faces away), catching a weakened soldier and gulping.
+    await page.keyboard.press('e');
+    await page.waitForTimeout(900);
+    await page.keyboard.press('e');
+    await page.waitForTimeout(900);
+    const behind = s.reachable[0];
+    {
+      const tp2 = await s.posOf(s.mawId);
+      const ep2 = await page.evaluate((c) => window.broodfall.sim.cellCenter(c), behind);
+      await s.closeOn({ x: tp2.x + (ep2.x - tp2.x) * 0.5, y: tp2.y + (ep2.y - tp2.y) * 0.5 }, 10, 40);
+    }
     if (behind >= 0) {
-      await page.evaluate(() => { const s = window.broodfall.sim; s.enemies.length = 0; });
-      await s.ticks(30);
+      // Its fire held first (a cooldown wound up reads as a strike on its last target: let that one play out).
       await page.evaluate((id) => { const t = window.broodfall.sim.towers.find((x) => x.id === id); t.cooldown = 99; }, s.mawId);
+      await s.ticks(40);
+      await page.evaluate(() => { const s = window.broodfall.sim; s.enemies.length = 0; });
       const [prey] = await s.put([{ kind: 'soldier', cell: behind, hp: 12 }]);
       await s.ticks(2);
       await page.evaluate((id) => { const t = window.broodfall.sim.towers.find((x) => x.id === id); t.cooldown = 0.12; }, s.mawId);
       let on = false;
-      for (let i = 0; i < 60 && !on; i++) { await s.ticks(1); on = await page.evaluate(() => window.broodfall.tongues().length > 0); }
+      for (let i = 0; i < 60 && !on; i++) {
+        await s.ticks(1);
+        on = await page.evaluate((prey) => window.broodfall.tongues().length > 0 && !window.broodfall.sim.enemies.some((e) => e.id === prey), prey);
+      }
+      check(on, 'from behind: the Maw catches the soldier up the street');
       const back = [];
       for (const w of [{ n: 'maw-tongue-7-behind-out', at: 0.14, label: 'FROM BEHIND: OUT' }, { n: 'maw-tongue-8-behind-home', at: 0.5, label: 'FROM BEHIND: HOME' }, { n: 'maw-tongue-9-behind-gulp', at: 0.9, label: 'FROM BEHIND: GULP' }]) {
         for (let i = 0; i < 60; i++) { const t = await page.evaluate(() => window.broodfall.tongues()[0]?.t ?? 9); if (t >= w.at) break; await s.ticks(1); }

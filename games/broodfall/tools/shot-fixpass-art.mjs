@@ -139,7 +139,7 @@ try {
       await page.waitForTimeout(350);
       // Where the pod is: on its arc (the renderer's own place()), found by the page's own projection.
       const mid = await onPage(fl.from.x + (fl.to.x - fl.from.x) * t, fl.from.y + (fl.to.y - fl.from.y) * t);
-      await page.screenshot({ path: png(`pod-${k++}`), clip: { x: mid.x - 150, y: mid.y - 260, width: 300, height: 300 } });
+      await page.screenshot({ path: png(`pod-${k++}`), clip: { x: mid.x - 150, y: mid.y - 280, width: 300, height: 260 } });
     }
     check(await page.evaluate(() => window.broodfall.sim.seedFlights.length === 1), 'the pod is in the air in every picture');
   }
@@ -203,10 +203,10 @@ try {
       // Played: the idles' clock runs on real time at the game's speed; 1x for these pictures.
       await page.evaluate(() => { const b2 = document.querySelector('[data-speed="1"], #speed-1'); if (b2) b2.click(); });
       const core = await page.evaluate(() => ({ ...window.broodfall.sim.core }));
-      await closeOn(core, 6);
+      await closeOn(core, 3);
       for (let i = 0; i < 8; i++) {
         const p = await onPage(core.x, core.y);
-        await page.screenshot({ path: png(`core${stage}-${i}`), clip: { x: p.x - 170, y: p.y - 300, width: 340, height: 360 } });
+        await page.screenshot({ path: png(`core${stage}-${i}`), clip: { x: p.x - 200, y: p.y - 390, width: 400, height: 460 } });
         await page.waitForTimeout(167);
       }
     }

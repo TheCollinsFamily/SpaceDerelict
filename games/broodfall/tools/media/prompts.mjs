@@ -119,7 +119,8 @@ export const CLIPS = {
     clip: 'The robed figure rises stiffly out of the mound of red flesh, jerkily straightening, and opens its four arms a little too slowly, with a fixed smile. The camera holds.' },
   'f-fai-stage': { look: 'finale', from: 'faithful-ending',
     clip: 'The robed figure on the stage lifts a hand stiffly; the preacher below throws his arms up; the crowd raises their hands and sways.' },
-  'f-fai-domes': { look: 'finale', still: `${FINALE} A holy city of paper onion domes each topped with a gold ball and bell towers like nest spires, at dawn under a blood-red painted sky, with ${CREATURE} lying over its streets, and radio masts on every roof. No people. Quiet. ${CLEAN}`,
+  // v1: spires with crossbars that read as crosses.
+  'f-fai-domes': { look: 'finale', still: `${FINALE} A holy city of paper onion domes and bell towers like nest spires; every dome and every spire ends in one plain round gold ball with NOTHING above it (no rod, no crossbar, no finial, no aerial on any dome or spire), at dawn under a blood-red painted sky, with ${CREATURE} lying over its streets. No people. Quiet. ${CLEAN}`,
     clip: 'Dawn light rises slowly over the domes; the radio masts\' small lamps blink; the living skin in the streets breathes. The camera pulls back slowly.' },
   'f-ins-charter': { look: 'finale', refs: ['institute'], alone: true, still: `${FINALE} ${WHO.institute}, signing a long scroll of a charter with a fountain pen at a glass desk that stands on a heap of rubble in a ruined city at sunset, looking very pleased with himself; the scroll's writing only faint grey lines, unreadable. ${CLEAN}`,
     clip: 'The director signs with a flourish, holds up the scroll to admire it, and grins. The camera holds.' },
@@ -145,7 +146,8 @@ export const CLIPS = {
 
 /** The press photographs of the clippings (content/media.ts `photo`). */
 export const PHOTOS = {
-  'p-field': `${PRESS} Seen from a hill above: a huge meadow packed with thousands of insect people holding cards over their heads; the cards make broad blocks and stripes of grey tones and abstract swirls, NOT letters. A few organisers with megaphones in the foreground. ${CAST} ${CLEAN}`,
+  // v1 (art-src/media/photos/v1/): seen from a hill, the cards made shapes that read as big letters.
+  'p-field': `${PRESS} Taken at ground level at the edge of a huge crowd in a meadow: rows upon rows of insect people stand shoulder to shoulder, each holding a plain blank card up over the head, a sea of raised cards to the horizon, far too close to see any pattern they make; in front, two organisers with megaphones call out instructions. Every card is blank, nothing on it. ${CAST} ${CLEAN}`,
   'p-voice': { refs: ['faithful'], prompt: `${PRESS} ${WHO.faithful}, at a big ribbon microphone in a radio studio, one hand raised, eyes shut, sweating, mid-sermon; a studio clock and a round on-air lamp behind. ${CLEAN}` },
   'p-dish': { refs: ['institute'], prompt: `${PRESS} ${WHO.institute}, standing in front of a giant radio telescope dish at night, a headset round his neck and a handheld game console in his hand, looking smug at the camera. ${CLEAN}` },
   'p-tea': { refs: ['delegation'], prompt: `${PRESS} ${WHO.delegation}, with three other elderly insect delegates in cardigans and flower garlands, sitting at a small folding table in a meadow taking tea from a flowered teapot, smiling serenely; in the far background a dark stain of creature flesh on the hills. ${CAST} ${CLEAN}` },
@@ -156,8 +158,10 @@ export const PHOTOS = {
   'p-ossuary': `${PRESS} Bone-white chalk cliffs above a grey sea, carved with rows of burial niches and urns, black iron railings; a dark stain of creature flesh runs down the cliff from one opened niche. ${CLEAN}`,
   'p-delta': `${PRESS} Early morning mist on a delta channel: flat-bottomed boats loaded with families of insect people and their bundles are poled away from a village of reed houses on stilts. ${CAST} ${CLEAN}`,
   'p-ring': `${PRESS} Seen from a footbridge: a wide ring road of many lanes, empty but for round beetle-shaped buses and cars abandoned at angles, doors open; in the distance a dark stain of creature flesh on the road. ${CLEAN}`,
-  'p-jars': `${PRESS} A dim laboratory storeroom of steel shelves floor to ceiling, crowded with hundreds of glass specimen jars holding pale pink and red pieces of flesh in fluid, one shelf knocked over and broken, dark creature flesh creeping over the floor. Flash-lit. ${CLEAN}`,
-  'p-street': `${PRESS} An empty suburban street of wasp-paper houses after an evacuation: a beetle-shaped family car left in the road with its doors open, a child's tricycle on its side, curtains blowing out of an open window. No people. ${CLEAN}`,
+  // v1: a HUMAN press photographer walked into it.
+  'p-jars': `${PRESS} Nobody in the picture: no photographer, no person, no human. A dim laboratory storeroom of steel shelves floor to ceiling, crowded with hundreds of glass specimen jars holding pale pink and red pieces of flesh in fluid, one shelf knocked over and broken, dark creature flesh creeping over the floor. Flash-lit. ${CLEAN}`,
+  // v1: human brick houses.
+  'p-street': `${PRESS} An empty suburban street after an evacuation, its houses their own architecture: pale wasp-paper walls of honeycomb cells, round cell doorways, small paper onion domes each with a plain gold ball, wax picket fences: a beetle-shaped family car left in the road with its doors open, a child's tricycle on its side, curtains blowing out of an open window. No people. ${CLEAN}`,
   'p-levy': `${PRESS} Morning in a suburban street: insect militia volunteers in their own 1950s clothes with orange sashes and oversized dome helmets pose cheering beside a patch of burned black ground, one holding up a flame projector's nozzle, housewives bringing a tray of drinks. ${CAST} ${CLEAN}`,
   'p-host': `${PRESS} A regiment of soldier-ants of the insect army in tall helmets and greatcoats marching out of a barracks gate at dawn, rifles on shoulders, bell-ringers with hand-bells at the front; families watching from the kerb. ${CAST} ${CLEAN}`,
 };
