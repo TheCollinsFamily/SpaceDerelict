@@ -300,7 +300,7 @@ try {
       if (riding && !lastRiding) caught++;
       lastRiding = riding;
       // More walk in when the street runs dry.
-      if ((await page.evaluate(() => window.broodfall.sim.enemies.length)) < 3) await s.put([{ kind: 'soldier', cell: cells[0], hp: 12 }, { kind: 'militia', cell: cells[1 % cells.length], hp: 10 }]);
+      if ((await page.evaluate(() => window.broodfall.sim.enemies.filter((e) => e.staged).length)) < 4) await s.put([{ kind: 'soldier', cell: cells[0], hp: 12 }, { kind: 'militia', cell: cells[1 % cells.length], hp: 10 }]);
     }
     check(caught >= 3, 'the film shows bodies caught and carried to the mouth', `${caught} caught`);
     await s.artOk('film');
