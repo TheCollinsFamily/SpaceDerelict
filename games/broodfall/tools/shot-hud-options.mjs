@@ -69,7 +69,7 @@ const browser = await chromium.launch({ args: ['--use-angle=d3d11', '--enable-gp
 try {
   for (const t of themes) {
     console.log(`— ${t.id}`);
-    const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
+    const page = await browser.newPage({ viewport: { width: 1600, height: 1000 }, deviceScaleFactor: 2 });
     const errors = [];
     page.on('pageerror', (e) => errors.push(String(e)));
     // A theme picked in the menu is remembered: start every theme from a clean slate.
@@ -113,7 +113,7 @@ try {
     if (await pal.count()) { await pal.click(); await page.waitForTimeout(200); }
     const grid = page.locator('#under-grid .uc').nth(40);
     if (await grid.count()) { await grid.hover(); await page.waitForTimeout(200); }
-    await page.screenshot({ path: join(tmp, `${t.id}-c.png`) });
+    await page.screenshot({ path: join(tmp, `${t.id}-c.png`), scale: 'css' });
     jpg(join(tmp, `${t.id}-c.png`), `${t.id}-c.jpg`);
     await page.locator('#under-done').click();
     await page.waitForTimeout(500);
@@ -121,7 +121,7 @@ try {
     // (b) The wave banner: call the wave early.
     await page.locator('#call-early').click();
     await page.waitForTimeout(450);
-    await page.screenshot({ path: join(tmp, `${t.id}-b.png`) });
+    await page.screenshot({ path: join(tmp, `${t.id}-b.png`), scale: 'css' });
     jpg(join(tmp, `${t.id}-b.png`), `${t.id}-b.jpg`);
     check(!(await page.locator('#banner').evaluate((e) => e.classList.contains('hidden'))), 'the banner shows');
 
@@ -153,19 +153,16 @@ try {
     await page.locator('#hand .card').nth(2).click();
     await page.mouse.move(box.x + box.width * 0.62, box.y + box.height * 0.55);
     await page.waitForTimeout(400);
-    await page.screenshot({ path: join(tmp, `${t.id}-a.png`) });
+    await page.screenshot({ path: join(tmp, `${t.id}-a.png`), scale: 'css' });
     jpg(join(tmp, `${t.id}-a.png`), `${t.id}-a.jpg`);
 
     // (d) Close: the resource bar and one card, stacked.
-    const cdp = await page.context().newCDPSession(page);
-    await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1600, height: 1000, deviceScaleFactor: 2, mobile: false });
-    await page.waitForTimeout(600);
     const top = await page.locator('#topbar').boundingBox();
     await page.screenshot({ path: join(tmp, `${t.id}-d1.png`), clip: { x: 0, y: top.y, width: 1100, height: top.height } });
     const card = page.locator('#hand .card').nth(0);
     await card.screenshot({ path: join(tmp, `${t.id}-d2.png`) });
     const r = spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-i', join(tmp, `${t.id}-d1.png`), '-i', join(tmp, `${t.id}-d2.png`),
-      '-filter_complex', '[1:v]pad=2200:ih+40:20:20:color=0x111111[c];[0:v][c]vstack', '-q:v', '3', join(out, `${t.id}-d.jpg`)]);
+      '-filter_complex', '[0:v]scale=2200:-1:flags=lanczos[t];[1:v]pad=2200:ih+40:20:20:color=0x111111[c];[t][c]vstack', '-q:v', '3', join(out, `${t.id}-d.jpg`)]);
     check(r.status === 0, `close crop (${String(r.stderr || '').slice(0, 120)})`);
 
     check(errors.length === 0, errors.length ? `page errors: ${errors.join(' | ').slice(0, 300)}` : 'no page errors');
