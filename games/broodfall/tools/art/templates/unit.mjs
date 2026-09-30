@@ -477,7 +477,7 @@ export function bakeUnit(kind) {
     // It must stay on the spot: the first and the last frame of a loop share a centre.
     const first = unionBox([c.frames[0]]);
     const last = unionBox([c.frames[c.frames.length - 1]]);
-    if (c.anim !== 'death' && first && last) {
+    if (c.anim !== 'death' && !ONCE.has(c.anim) && first && last) {
       const drift = Math.abs((first.x0 + first.x1) / 2 - (last.x0 + last.x1) / 2) / side;
       check(`${tag}: stays on the spot`, drift < 0.06, `${(drift * 100).toFixed(1)}% of the frame`);
     }

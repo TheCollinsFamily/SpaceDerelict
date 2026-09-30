@@ -1,9 +1,9 @@
 {
  "kind": "carapace",
- "frames": 294,
- "atlasKB": 1156,
+ "frames": 304,
+ "atlasKB": 1189,
  "pages": 2,
- "failed": 1,
+ "failed": 2,
  "checks": [
   {
    "name": "walk S: loop closes",
@@ -241,14 +241,19 @@
    "value": "0.0%"
   },
   {
+   "name": "hit S: brought to the walk's size",
+   "ok": true,
+   "value": "x1.02"
+  },
+  {
    "name": "hit S: it moves",
    "ok": true,
-   "value": 16.32
+   "value": 15.92
   },
   {
    "name": "hit S: nothing cut off",
    "ok": true,
-   "value": "window grown 1.11x"
+   "value": "window grown 1.06x"
   },
   {
    "name": "hit S: no background tint on the outline",
@@ -261,14 +266,19 @@
    "value": "0.5% of the frame"
   },
   {
+   "name": "hit SW: brought to the walk's size",
+   "ok": true,
+   "value": "x1.02"
+  },
+  {
    "name": "hit SW: it moves",
    "ok": true,
-   "value": 15.34
+   "value": 14.98
   },
   {
    "name": "hit SW: nothing cut off",
    "ok": true,
-   "value": "window grown 1.06x"
+   "value": "window grown 1.04x"
   },
   {
    "name": "hit SW: no background tint on the outline",
@@ -281,14 +291,19 @@
    "value": "0.1% of the frame"
   },
   {
+   "name": "hit W: brought to the walk's size",
+   "ok": true,
+   "value": "x1.01"
+  },
+  {
    "name": "hit W: it moves",
    "ok": true,
-   "value": 17.39
+   "value": 17.81
   },
   {
    "name": "hit W: nothing cut off",
    "ok": true,
-   "value": "window grown 1.03x"
+   "value": "in the walk frame"
   },
   {
    "name": "hit W: no background tint on the outline",
@@ -297,18 +312,23 @@
   },
   {
    "name": "hit W: stays on the spot",
+   "ok": false,
+   "value": "12.8% of the frame"
+  },
+  {
+   "name": "hit NW: brought to the walk's size",
    "ok": true,
-   "value": "0.9% of the frame"
+   "value": "x0.94"
   },
   {
    "name": "hit NW: it moves",
    "ok": true,
-   "value": 20.47
+   "value": 19.95
   },
   {
    "name": "hit NW: nothing cut off",
    "ok": true,
-   "value": "window grown 1.02x"
+   "value": "in the walk frame"
   },
   {
    "name": "hit NW: no background tint on the outline",
@@ -318,12 +338,17 @@
   {
    "name": "hit NW: stays on the spot",
    "ok": false,
-   "value": "12.6% of the frame"
+   "value": "9.7% of the frame"
+  },
+  {
+   "name": "hit N: brought to the walk's size",
+   "ok": true,
+   "value": "x0.86"
   },
   {
    "name": "hit N: it moves",
    "ok": true,
-   "value": 14.96
+   "value": 10.26
   },
   {
    "name": "hit N: nothing cut off",
@@ -338,7 +363,7 @@
   {
    "name": "hit N: stays on the spot",
    "ok": true,
-   "value": "0.0% of the frame"
+   "value": "0.5% of the frame"
   },
   {
    "name": "walk-cracked S: loop closes",
@@ -459,6 +484,36 @@
    "name": "walk-cracked NW: stays on the spot",
    "ok": true,
    "value": "0.2% of the frame"
+  },
+  {
+   "name": "walk-cracked N: loop closes",
+   "ok": true,
+   "value": 2.79
+  },
+  {
+   "name": "walk-cracked N: it moves",
+   "ok": true,
+   "value": 2.99
+  },
+  {
+   "name": "walk-cracked N: loop is long enough",
+   "ok": true,
+   "value": 10
+  },
+  {
+   "name": "walk-cracked N: nothing cut off",
+   "ok": true,
+   "value": "in the walk frame"
+  },
+  {
+   "name": "walk-cracked N: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "walk-cracked N: stays on the spot",
+   "ok": true,
+   "value": "1.9% of the frame"
   },
   {
    "name": "walk-stripped S: loop closes",
@@ -628,7 +683,7 @@
   {
    "name": "atlas page 1 is under 900 KB",
    "ok": true,
-   "value": "545 KB"
+   "value": "578 KB"
   },
   {
    "name": "atlas page 2 is under 900 KB",

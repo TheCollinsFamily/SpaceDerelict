@@ -1,7 +1,7 @@
 {
  "kind": "broodling",
  "frames": 120,
- "atlasKB": 276,
+ "atlasKB": 273,
  "pages": 1,
  "failed": 0,
  "checks": [
@@ -158,7 +158,7 @@
   {
    "name": "attack S: nothing cut off",
    "ok": true,
-   "value": "window grown 1.13x"
+   "value": "in the walk frame"
   },
   {
    "name": "attack S: no background tint on the outline",
@@ -238,7 +238,7 @@
   {
    "name": "atlas page 1 is under 900 KB",
    "ok": true,
-   "value": "276 KB"
+   "value": "273 KB"
   }
  ]
 }
