@@ -40,6 +40,7 @@ Useful URLs:
 | Hobby missions: the Notebook (8 pages sparked by play, one pinned per deployment, its checklist on the board, unique genes spliced two at a time) | BUILT (Sep 30; ship room after the desk clears; `src/ui/hobby.ts`, DESIGN.md "Hobby missions", `shot-camp.mjs A`) |
 | Territory pictures over the globe briefing (16, one per landing site, in its tile set's look) | BUILT (Sep 30; `node tools/art/make.mjs ship territories`; `shot-camp.mjs A`) |
 | Settings (menu, ship ⚙, in a deployment Esc or ⚙ pauses it): sound levels, YOKE's voice, HUD style, text size, reduce motion/flashes, colour-blind-safe caste colours, turn keys, edge scroll, zoom speed, starting speed, replay the opening, reset; a slot for YOKE's account and model | BUILT (Sep 30; `src/ui/settings.ts`, `shot-camp.mjs B`); music and effects sliders wait for sound |
+| YOKE for players: the FREE TALK meter in the AI Core ($3 paid by the Broodfall house on rfab.ai), her cut-off in her own words + the LINK AN RFAB ACCOUNT card, the link code screen, the linked account (balance, top up, unlink) and HER MIND model picker; the same panel in Settings' YOKE slot | BUILT (Sep 30; `src/meta/yokePlayer.ts`, `src/ui/yokeAccount.ts`, `tools/shot-yoke-connect.mjs`); live only once the RFab backend + frontend deploys ship (HANDOFF) |
 | Break cinematics / propaganda video layer | MISSING (design doc) |
 | The painted isometric board (26 units, 36 limbs, 8 tile sets, the ship) | BUILT (Sep 29; `HANDOFF.md` "The art") |
 | Turning the view (Q, E, two buttons on the board) | BUILT (Sep 29) |

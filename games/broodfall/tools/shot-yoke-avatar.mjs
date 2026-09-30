@@ -88,7 +88,9 @@ try {
   const consoleLines = [];
   page.on('pageerror', (e) => errors.push(String(e)));
   // The browser logs the 402 this beat asks for itself; that is not the game's error.
-  page.on('console', (m) => { consoleLines.push(m.text()); if (m.type() === 'error' && !/status of 402/.test(m.text())) errors.push(m.text()); });
+  page.on('console', (m) => { consoleLines.push(m.text()); if (m.type() === 'error' && !/status of 402/.test(m.text())
+    // The player route answered 404 on purpose (mockRfab): the browser logs it, the game takes the old way.
+    && !(/status of 404/.test(m.text()) && /\/api\/broodfall\//.test(m.location()?.url ?? ''))) errors.push(m.text()); });
   const state = { sent: [], spoken: 0, pending: false, broke: false };
 
   // Her events: the page's fetch of /events is given a stream the test writes into.
