@@ -72,6 +72,8 @@ async function fresh(viewport = { width: 1600, height: 1000 }) {
     sessionStorage.setItem('bf-beat-init', '1');
     for (const k of ['broodfall-campaign', 'broodfall-campaign-pending', 'broodfall-meta']) localStorage.removeItem(k);
     localStorage.setItem('broodfall-yoke', JSON.stringify({ mode: 'scripted' }));
+    // A returning player: the menu (the first launch, the film and mission 1: tools/shot-onboarding.mjs).
+    localStorage.setItem('broodfall-intro-seen', '1');
   });
   return { ctx, page, errors };
 }
@@ -117,21 +119,22 @@ try {
     const { ctx, page, errors } = await fresh();
     await page.goto(URL0, { waitUntil: 'load' });
     await ready(page);
-    await page.waitForSelector('#menu.title-art .logo.has-emblem', { timeout: 20000 }).catch(() => {});
-    await page.waitForTimeout(900);
+    await page.waitForSelector('#menu.console-menu.has-video .logo.has-emblem', { timeout: 20000 }).catch(() => {});
+    await page.waitForTimeout(1600);
     const t = await page.evaluate(() => ({
-      art: document.getElementById('menu').classList.contains('title-art'),
+      // The title is the ship's console over the viewport's loop now (Sep 30 2026, src/ui/menu.ts).
+      art: document.getElementById('menu').classList.contains('has-video') && !document.querySelector('.menu-video').paused,
       emblem: document.querySelector('#menu .logo')?.classList.contains('has-emblem'),
       word: document.querySelector('#menu .logo-word')?.textContent,
       title: document.title,
     }));
-    check(t.art && t.emblem, 'the title screen shows its key art and the emblem');
+    check(t.art && t.emblem, 'the title screen is the ship's console over its looping video, with the emblem');
     check(t.word === 'BROODFALL' && /BROODFALL/.test(t.title), 'the name is set in type from one place', `${t.word} / ${t.title}`);
     await shot(page, '01-title');
     await page.setViewportSize({ width: 1280, height: 720 });
     await page.waitForTimeout(300);
     await shot(page, '02-title-1280x720');
-    check(await page.locator('#menu-deploy').isVisible() && await page.locator('#menu-campaign').isVisible(), 'at 1280x720 both ways in are on the screen');
+    check(await page.locator('#menu-deploy').isVisible() && await page.locator('#menu-new').isVisible() && await page.locator('#menu-intro').isVisible(), 'at 1280x720 every way in is on the screen');
     check(errors.length === 0, 'the title: nothing is logged as an error', errors.slice(0, 2).join(' | '));
     await ctx.close();
   }
@@ -233,9 +236,9 @@ try {
   if (on('campaign') || on('genes')) {
     for (const how of ['won', 'lost']) {
       const { ctx, page, errors } = await fresh();
-      await page.goto(`${URL0}?seed=3`, { waitUntil: 'load' });
+      // A campaign whose desk is open (the unfolding before it: tools/shot-onboarding.mjs).
+      await page.goto(`${URL0}?campaign=ship&open=1`, { waitUntil: 'load' });
       await ready(page);
-      await page.locator('#menu-campaign').click();
       await page.waitForSelector('#campaign:not(.hidden) .globe');
       if (how === 'won' && on('genes')) {
         await page.locator('[data-room="genes"]').click();

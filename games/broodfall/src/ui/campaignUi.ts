@@ -582,7 +582,8 @@ export class CampaignUi {
       })
       : null;
     if (this.icom) this.icom = { talk: this.freeTalk() };
-    return on[0] === 'avatar' && this.avatar ? this.avatar : rest;
+    // She answers through her body in every mode: in the avatar mode her own mind speaks, in the others the next rung's words.
+    return this.avatar ?? rest;
   }
 
   /** The switch goes round: her avatar (when there is one), Kimi, the scripted YOKE. */

@@ -114,9 +114,8 @@ const board = (page) => page.waitForFunction(() => window.__bfBooted && window.b
 
 /** Back aboard after a report; returns the greeting id she chose. */
 async function aboard(page, from) {
-  // The menu's CONTINUE opens the ship in the page; a report's button goes to ?campaign=ship.
-  if (from === '#menu-campaign') await page.locator(from).click();
-  else await Promise.all([page.waitForURL(/campaign=ship/), page.locator(from).click()]);
+  // Aboard in the same page (the click lets her voice play); the address becomes ?campaign=ship for a reload.
+  await page.locator(from).click();
   await page.waitForSelector('#campaign:not(.hidden) .cp-icom', { timeout: 20000 });
   return page.evaluate(() => document.getElementById('campaign').dataset.greeting);
 }
@@ -207,8 +206,18 @@ try {
     await shot(page, '07-ship-first-greeting');
     const stage = await page.evaluate(() => ({ live: !!document.querySelector('.cp-icom .cp-yoke-live'), state: document.querySelector('.cp-icom .cp-yoke-live')?.dataset.state }));
     check(stage.live, `her body is on the intercom's stage (${stage.state})`);
+    // The boss's message comes after her lines (content/boss.ts), before her last word on it.
+    await page.waitForSelector('#boss-call', { timeout: 60000 });
+    await page.waitForFunction(() => (document.querySelector('#boss-call .bc-caption')?.textContent ?? '').length > 10, null, { timeout: 15000 });
+    await page.waitForTimeout(600);
+    const boss = await page.evaluate(() => ({ plate: document.querySelector('#boss-call .bc-plate')?.textContent, video: !!document.querySelector('#boss-call video'), caption: document.querySelector('#boss-call .bc-caption')?.textContent }));
+    check(/STEADFAST BARNABAS/.test(boss.plate ?? ''), `a message from the boss: ${boss.plate} (${boss.video ? 'his clip' : 'no clip'}) "${(boss.caption ?? '').slice(0, 50)}"`);
+    await shot(page, '07b-boss-message');
+    await page.locator('#boss-call').click();
+    await page.waitForFunction(() => !document.getElementById('boss-call'), null, { timeout: 5000 });
     await greeted(page);
     const said = await icomText(page);
+    check(/message from the boss/.test(said) && /budget/.test(said), 'YOKE around him: "a message from the boss" before, the budget after');
     check(/Top ten/.test(said) && /promotion/.test(said) && /upgrade the bioweapon/.test(said), 'all four of Collins\'s lines were said, in order');
     check(state.spoken >= 4, `each line was spoken in her voice (${state.spoken} /speak calls, mocked)`);
     check(state.sent.length === 0, 'no mind was asked for the greeting (no /message)');
@@ -244,6 +253,21 @@ try {
     check(/CANDIDATE PARTNER PROFILE/.test(pad) && /UNDER REVIEW/.test(pad), 'the data pad holds the candidate\'s file');
     await shot(page, '11-quarters-data-pad');
     check(await page.evaluate(() => !!document.querySelector('.cp-desk-dark') || !!document.querySelector('[data-room="desk"][data-dark="1"]')), 'the desk is still dark after a loss');
+    // ---- lost once more: the cat girl (after the mate review, which it plays off) ----
+    await page.locator('[data-room="desk"]').click();
+    await Promise.all([page.waitForURL(/campaign=run/), page.locator('[data-act="deploy-assigned"]').click()]);
+    await board(page);
+    await page.waitForTimeout(600);
+    await endRun(page, 'lost');
+    await page.waitForSelector('#campaign:not(.hidden) [data-act="back"]', { timeout: 15000 });
+    const gc = await aboard(page, '[data-act="back"]');
+    check(gc === 'catgirl', `the next return: the cat girl (${gc})`);
+    await greeted(page);
+    check(/pound sand/.test(await icomText(page)) && /Oh well/.test(await icomText(page)), 'Collins\'s cat-girl lines, to the last one');
+    await page.locator('.cp-icom-go').click();
+    await page.waitForSelector('.cp-inbox');
+    check(/DECLINED ON YOUR BEHALF/.test(await page.locator('.cp-inbox').innerText()), 'her letter is in his inbox, declined for him');
+    await shot(page, '11b-quarters-inbox');
     // ---- a win clears the desk ----
     await page.locator('[data-room="desk"]').click();
     await Promise.all([page.waitForURL(/campaign=run/), page.locator('[data-act="deploy-assigned"]').click()]);
@@ -344,7 +368,7 @@ try {
     await page.waitForFunction(() => /duck to water/.test(document.querySelector('.cp-icom .cp-talk')?.textContent ?? ''), null, { timeout: 20000 });
     await shot(page, '19-ship-first-won-greeting');
     await greeted(page);
-    check(/killer whales/.test(await icomText(page)), 'Collins\'s won lines, to the last one');
+    check(/killer whales/.test(await icomText(page)) && /budget/.test(await icomText(page)), 'Collins\'s won lines to the last one, then the boss, then her word on him');
     check(await page.locator('.cp-desk-dark').count() === 1, 'mission 1 won: the desk is STILL dark');
     check(await page.evaluate(() => JSON.parse(localStorage.getItem('broodfall-campaign')).pendingScenes.length === 0), 'and nobody from the planet has called');
     // Relaunching now: the menu (mission 1 is over), not the film, not mission 1.

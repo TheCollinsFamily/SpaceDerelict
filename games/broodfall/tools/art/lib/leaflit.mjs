@@ -106,7 +106,13 @@ export function calibrateSimilarity(ck, img) {
   if (bg.length < 50) return null;
   bg.sort((a, b) => a - b);
   const bgMax = bg[Math.floor((bg.length - 1) * 0.999)];
-  const simPct = Math.round(Math.max(25, Math.min(45, (bgMax * 1.5 + 0.08) * 100)));
+  let simPct = Math.round(Math.max(25, Math.min(45, (bgMax * 1.5 + 0.08) * 100)));
+  // Black, grey and white clothes: every colourless pixel sits at the SAME chroma distance
+  // from the key, the length of the key's own UV (0.43 for a video model's 32,240,32 green).
+  // The 45 % cap is above that, so a black dress keyed out whole (her laugh take, Sep 30
+  // 2026). The studio's own calibrateSimilarity() carries the same cap since that day.
+  const neutral = ck._getChromaDist(128, 128, 128);
+  simPct = Math.max(20, Math.min(simPct, Math.floor(neutral * 100 - 7)));
   ck.similarity = simPct / 100;
   return simPct;
 }

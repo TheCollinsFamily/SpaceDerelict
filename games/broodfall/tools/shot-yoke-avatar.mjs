@@ -110,8 +110,8 @@ try {
     localStorage.removeItem('broodfall-campaign-pending');
     localStorage.setItem('broodfall-yoke', JSON.stringify({ mode: 'avatar', v: 2 }));
   });
-  await page.reload({ waitUntil: 'load' });
-  await page.locator('#menu-campaign').click();
+  // A campaign whose Directive Desk is already open (the unfolding before it: tools/shot-onboarding.mjs).
+  await page.goto(`http://localhost:${PORT}/?campaign=ship&open=1`, { waitUntil: 'load' });
   await page.waitForSelector('#campaign:not(.hidden) .globe');
   await page.locator('[data-room="ai"]').click();
   await page.waitForSelector('.cp-yoke-live');

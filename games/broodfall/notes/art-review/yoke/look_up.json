@@ -1,9 +1,9 @@
 {
  "state": "look_up",
  "kind": "hold",
- "frames": 446,
- "seconds": 18.58,
- "kb": 3846,
+ "frames": 474,
+ "seconds": 19.75,
+ "kb": 3765,
  "studio": {
   "keyColour": [
    16,
@@ -11,7 +11,7 @@
    32
   ],
   "similarityPct": 45,
-  "endFrame": 223,
+  "endFrame": 237,
   "loop": "pingpong",
   "chromaKeyFrom": "C:\\Users\\Merry\\dev\\reality-fabricator\\reality-fabricator-frontend\\src\\assets\\vtuber-creator\\model-exporter.js"
  },
@@ -20,12 +20,12 @@
   {
    "name": "the turn comes back (Ping-Pong closes the loop anyway)",
    "ok": true,
-   "value": 4.36
+   "value": 5.48
   },
   {
    "name": "she moves",
    "ok": true,
-   "value": 16.61
+   "value": 15.25
   },
   {
    "name": "no green on her outline",
@@ -35,7 +35,7 @@
   {
    "name": "she fills the stage as a person does",
    "ok": true,
-   "value": "24-24% of it"
+   "value": "24-25% of it"
   },
   {
    "name": "she stays under the top edge",

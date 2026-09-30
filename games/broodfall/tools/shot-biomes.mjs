@@ -102,7 +102,7 @@ try {
       localStorage.setItem('broodfall-yoke', JSON.stringify({ mode: 'scripted' }));
     });
     // Opening the ship starts a campaign and saves it.
-    await page.goto(`http://localhost:${PORT}/?campaign=ship`, { waitUntil: 'load' });
+    await page.goto(`http://localhost:${PORT}/?campaign=ship&open=1`, { waitUntil: 'load' });
     await page.waitForFunction(() => localStorage.getItem('broodfall-campaign') !== null, null, { timeout: 30000 });
     for (const [id, set] of Object.entries(manifest.biomes)) {
       const territory = set.territories[0];

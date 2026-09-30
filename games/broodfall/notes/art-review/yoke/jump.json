@@ -1,17 +1,17 @@
 {
  "state": "jump",
  "kind": "oneShot",
- "frames": 157,
- "seconds": 6.54,
- "kb": 2063,
+ "frames": 92,
+ "seconds": 3.83,
+ "kb": 1150,
  "studio": {
   "keyColour": [
    16,
    240,
    32
   ],
-  "similarityPct": 43,
-  "endFrame": 156,
+  "similarityPct": 44,
+  "endFrame": 91,
   "loop": "none",
   "chromaKeyFrom": "C:\\Users\\Merry\\dev\\reality-fabricator\\reality-fabricator-frontend\\src\\assets\\vtuber-creator\\model-exporter.js"
  },
@@ -20,12 +20,12 @@
   {
    "name": "it ends where it began",
    "ok": true,
-   "value": 6.32
+   "value": 6.41
   },
   {
    "name": "she moves",
    "ok": true,
-   "value": 36.15
+   "value": 31.68
   },
   {
    "name": "no green on her outline",
@@ -35,12 +35,12 @@
   {
    "name": "she fills the stage as a person does",
    "ok": true,
-   "value": "24-29% of it"
+   "value": "23-29% of it"
   },
   {
    "name": "she stays under the top edge",
    "ok": false,
-   "value": "29.3 px a frame on row 0"
+   "value": "23.3 px a frame on row 0"
   }
  ]
 }

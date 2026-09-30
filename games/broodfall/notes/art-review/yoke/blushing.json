@@ -3,14 +3,14 @@
  "kind": "loop",
  "frames": 192,
  "seconds": 8,
- "kb": 1466,
+ "kb": 1655,
  "studio": {
   "keyColour": [
    16,
    240,
    32
   ],
-  "similarityPct": 44,
+  "similarityPct": 38,
   "endFrame": 96,
   "loop": "pingpong",
   "chromaKeyFrom": "C:\\Users\\Merry\\dev\\reality-fabricator\\reality-fabricator-frontend\\src\\assets\\vtuber-creator\\model-exporter.js"
@@ -35,7 +35,7 @@
   {
    "name": "she fills the stage as a person does",
    "ok": true,
-   "value": "23-24% of it"
+   "value": "24-24% of it"
   },
   {
    "name": "she stays under the top edge",

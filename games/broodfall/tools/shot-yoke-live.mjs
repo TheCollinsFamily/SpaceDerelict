@@ -54,8 +54,8 @@ try {
   page.on('pageerror', (e) => errors.push(String(e)));
   await page.goto('http://localhost:' + PORT + '/?seed=3', { waitUntil: 'load' });
   await page.evaluate(() => { for (const k of ['broodfall-yoke', 'broodfall-campaign', 'broodfall-campaign-pending']) localStorage.removeItem(k); });
-  await page.reload({ waitUntil: 'load' });
-  await page.locator('#menu-campaign').click();
+  // A campaign whose desk is open (the unfolding before it: tools/shot-onboarding.mjs).
+  await page.goto('http://localhost:' + PORT + '/?campaign=ship&open=1', { waitUntil: 'load' });
   await page.waitForSelector('#campaign:not(.hidden) .globe');
   await openCore(page, 'first-deployment');
   const link = flat(await page.locator('.cp-yoke-link').first().innerText());

@@ -1,9 +1,11 @@
 /**
- * Campaign beat, real clicks through the loop: menu → CAMPAIGN → the ship's globe →
- * pick a landing site, a dare → DEPLOY (the run: profile organs, hidden intel, the
- * live Requisition Board) → a won deployment → the debrief → back on the ship →
- * the Delegation makes contact → ally → YOKE's discussion in the AI Core (the scripted
- * YOKE; tools/shot-yoke-live.mjs covers the Kimi one).
+ * Campaign beat, real clicks through the loop, in the way it unfolds since Sep 30 2026
+ * (src/meta/onboarding.ts): menu → NEW CAMPAIGN → mission 1 (won) → its plain report →
+ * the ship, the desk dark → the ship's own pick deployed (a campaign run: profile organs,
+ * hidden intel, the live Requisition Board) → won → the debrief → back on the ship: the desk
+ * clears and the three factions call → ally with the Delegation → YOKE's discussion in the AI
+ * Core (the scripted YOKE; tools/shot-yoke-live.mjs covers the Kimi one) → a second deployment
+ * picked on the globe with a dare → the ally's letter.
  * Writes tools/screenshots/beat-campaign-*.png.
  */
 import { spawn, execSync } from 'node:child_process';
@@ -40,19 +42,22 @@ try {
   const page = await browser.newPage({ viewport: { width: 1500, height: 1100 } });
   page.on('pageerror', (e) => errors.push(String(e)));
   await page.goto('http://localhost:' + PORT + '/?seed=3', { waitUntil: 'load' });
-  await page.evaluate(() => { localStorage.removeItem('broodfall-campaign'); localStorage.removeItem('broodfall-campaign-pending'); localStorage.setItem('broodfall-yoke', JSON.stringify({ mode: 'scripted' })); });
+  await page.evaluate(() => { localStorage.removeItem('broodfall-campaign'); localStorage.removeItem('broodfall-campaign-pending'); localStorage.setItem('broodfall-yoke', JSON.stringify({ mode: 'scripted' })); localStorage.setItem('broodfall-intro-seen', '1'); });
   await page.reload({ waitUntil: 'load' });
-  await page.locator('#menu-campaign').click();
-  await page.waitForSelector('#campaign:not(.hidden) .globe');
-  check(true, 'CAMPAIGN opens the ship with the globe');
+  // NEW CAMPAIGN: mission 1 first, a plain game (tools/shot-onboarding.mjs looks at it closely).
+  await Promise.all([page.waitForURL(/campaign=run/), page.locator('#menu-new').click()]);
+  await page.waitForFunction(() => window.broodfall && window.__bfBooted, null, { timeout: 60000 });
+  await page.waitForTimeout(500);
+  check(await page.evaluate(() => document.getElementById('board-goals').classList.contains('hidden')), 'NEW CAMPAIGN starts with mission 1: no Requisition Board on it');
+  await page.evaluate(() => { const s = window.broodfall.sim; s.outcome = 'won'; s.events.push({ kind: 'won' }); window.broodfall.step(1); });
+  await page.waitForSelector('#debrief:not(.hidden)', { timeout: 10000 });
+  await page.locator('#debrief-ship').click();
+  await page.waitForSelector('#campaign:not(.hidden) .cp-icom', { timeout: 10000 });
+  check(await page.locator('.cp-desk-dark').count() === 1, 'the ship: YOKE greets him, the Directive Desk is dark');
+  await page.locator('.cp-icom [data-act="icom-close"]').click();
   await shot(page, 'ship');
-  // Pick a landing site next to the crash site.
-  await page.locator('.globe .site.open').first().click();
-  const brief = await page.locator('.cp-brief').innerText();
-  check(/REQUISITION BOARD/.test(brief) && /DARES/.test(brief) && /Holding it unlocks/i.test(brief), 'the briefing shows the board, the dares and the unlocks');
-  await page.locator('.cp-pick[data-dare="zoo"]').click();
-  await shot(page, 'briefing');
-  await Promise.all([page.waitForURL(/campaign=run/), page.locator('[data-act="deploy"]').click()]);
+  // The ship's own pick: the desk is dark until a win.
+  await Promise.all([page.waitForURL(/campaign=run/), page.locator('[data-act="deploy-assigned"]').click()]);
   await page.waitForSelector('#stage canvas');
   await page.waitForTimeout(800);
   const run = await page.evaluate(() => {
@@ -64,7 +69,7 @@ try {
   const phase = await page.locator('#phase-name').innerText();
   check(/\?/.test(phase), `the HUD hides the entrance: "${phase}"`);
   const board = await page.locator('#board-goals').innerText();
-  check(/REQUISITION BOARD/.test(board) && /kinds of limb/i.test(board), 'the live board shows the goals and the picked dare');
+  check(/REQUISITION BOARD/.test(board), 'the live board shows the goals');
   await shot(page, 'run');
   // Win the deployment (a scripted shortcut — the run itself is covered by the other beats).
   await page.evaluate(() => {
@@ -79,10 +84,14 @@ try {
   const debrief = await page.locator('#campaign').innerText();
   check(/TAKEN/.test(debrief) && /Earned/.test(debrief), 'the debrief: the territory taken, the goals, the credits');
   await shot(page, 'debrief');
-  await Promise.all([page.waitForURL(/campaign=ship/), page.locator('[data-act="back"]').click()]);
+  await page.locator('[data-act="back"]').click();
+  await page.waitForSelector('#campaign:not(.hidden) .cp-icom', { timeout: 10000 });
+  check(await page.evaluate(() => document.getElementById('campaign').dataset.greeting === 'unlock'), 'the win clears the desk, and YOKE says so');
+  // He walks away from her: the planet's calls come in.
+  await page.locator('.cp-icom [data-act="icom-close"]').click();
   await page.waitForSelector('#campaign:not(.hidden) .cp-scene');
   const contact = await page.locator('.cp-scene').innerText();
-  check(/FRIENDSHIP DELEGATION/i.test(contact), 'back on the ship, the Delegation makes contact');
+  check(/FRIENDSHIP DELEGATION/i.test(contact) && /CALL 1 OF 3/.test(contact), 'back on the ship, all three call: the Delegation first');
   // He is in orbit: the letter is spelled out in a field, and the card shows the field.
   check(/SPELLED OUT IN A FIELD/i.test(contact) && !/hand-delivered/i.test(contact), 'their letter reaches orbit: it is spelled out in a field');
   await page.waitForSelector('.cp-scene-card img[data-picture="delegation-contact"]', { timeout: 5000 }).catch(() => {});
@@ -113,7 +122,14 @@ try {
   // A second deployment while allied: the Delegation writes, and the letter lands in the debrief and in Comms.
   await page.locator('[data-room="desk"]').click();
   await page.locator('.globe .site.open').first().click();
+  const brief = await page.locator('.cp-brief').innerText();
+  check(/REQUISITION BOARD/.test(brief) && /DARES/.test(brief) && /Holding it unlocks/i.test(brief), 'the desk is open: the briefing shows the board, the dares and the unlocks');
+  await page.locator('.cp-pick[data-dare="zoo"]').click();
+  await shot(page, 'briefing');
   await Promise.all([page.waitForURL(/campaign=run/), page.locator('[data-act="deploy"]').click()]);
+  await page.waitForSelector('#stage canvas');
+  await page.waitForTimeout(500);
+  check(/kinds of limb/i.test(await page.locator('#board-goals').innerText()), 'the live board carries the picked dare');
   await page.waitForSelector('#stage canvas');
   await page.waitForTimeout(500);
   await page.evaluate(() => { const s = window.broodfall.sim; s.outcome = 'won'; s.events.push({ kind: 'won' }); window.broodfall.step(1); });
@@ -121,8 +137,9 @@ try {
   const aside = await page.locator('.cp-aside').innerText();
   check(/Delegate \(letter, by field\)/.test(aside), `the debrief carries the ally's letter: "${aside.slice(0, 90)}"`);
   await shot(page, 'aside');
-  await Promise.all([page.waitForURL(/campaign=ship/), page.locator('[data-act="back"]').click()]);
-  await page.waitForSelector('#campaign:not(.hidden)');
+  await page.locator('[data-act="back"]').click();
+  await page.waitForSelector('#campaign:not(.hidden) .cp-icom');
+  await page.locator('.cp-icom [data-act="icom-close"]').click();
   while (await page.locator('.cp-scene [data-act="scene-ok"]').count()) await page.locator('.cp-scene [data-act="scene-ok"]').click();
   await page.locator('[data-room="comms"]').click();
   const comms = await page.locator('.cp-body').innerText();

@@ -77,10 +77,13 @@ try {
   await page.addInitScript(() => {
     localStorage.setItem('broodfall-yoke', JSON.stringify({ mode: 'scripted' }));
   });
+  // A returning player: the ship's console menu (the first launch is tools/shot-onboarding.mjs).
+  await page.addInitScript(() => localStorage.setItem('broodfall-intro-seen', '1'));
   await page.goto(`http://localhost:${PORT}/?seed=7`);
-  await page.waitForSelector('#menu-campaign');
+  await page.waitForSelector('#menu-deploy');
   await page.screenshot({ path: join(shots, 'ship-0-menu.png') });
-  await page.locator('#menu-campaign').click();
+  // A campaign whose Directive Desk is already open (the unfolding before it is its own beat).
+  await page.goto(`http://localhost:${PORT}/?campaign=ship&open=1`);
   await page.waitForSelector('#campaign:not(.hidden) .cp-card', { timeout: 10000 });
   await page.waitForFunction(() => document.getElementById('campaign').classList.contains('ship-art'), null, { timeout: 10000 }).catch(() => {});
   check(await page.evaluate(() => document.getElementById('campaign').classList.contains('ship-art')), 'the ship has its art');

@@ -324,6 +324,8 @@ function coachText(): string {
   const left = Math.max(0, Math.ceil(B.growthSeconds - sim.phaseElapsed));
   if (sim.waveNumber === 0 && sim.phase === 'growth') {
     if (!sim.towers.length) return `YOUR FIRST LIMB: pick a card below, then click a dark red block beside a street — the townsfolk march in from the glowing gate in ${left}s`;
+    const affordable = sim.hand.some((c) => c.free || sim.canAfford(towerSpec(c.family).cost));
+    if (!affordable) return `GOOD. That is all the meat you have: kills pay more. Wait for them (${left}s), or CALL THE WAVE now (top right) for a bonus`;
     if (sim.towers.length < 3) return `GOOD. Grow more limbs beside the street they will walk down (${left}s) — or CALL THE WAVE early for extra meat`;
     return `READY? They come in ${left}s — or CALL THE WAVE now (top right) for extra meat`;
   }
@@ -336,12 +338,15 @@ let coachAt = 0;
 function coachTick(now: number): void {
   if (!FIRST || AUTO || now - coachAt < 400) return;
   coachAt = now;
-  const idle = selectedCard === null && armedOrgan === null && armedThrower === null && armedNode === null && armedSpread === null && !armedPlinth && !hoveringNode;
+  const idle = selectedCard === null && armedOrgan === null && armedThrower === null && armedNode === null && armedSpread === null && !armedPlinth && !hoveringNode && hoverDonorId === null;
   const text = coachText();
   document.body.classList.toggle('coach-hand', idle && sim.phase === 'growth' && sim.waveNumber === 0 && !sim.towers.length);
-  document.body.classList.toggle('coach-call', idle && sim.phase === 'growth' && sim.waveNumber === 0 && sim.towers.length >= 3);
-  if (idle && text) hud.setHint(text);
+  const broke = !sim.hand.some((c) => c.free || sim.canAfford(towerSpec(c.family).cost));
+  document.body.classList.toggle('coach-call', idle && sim.phase === 'growth' && sim.waveNumber === 0 && sim.towers.length > 0 && (broke || sim.towers.length >= 3));
+  // Nothing armed: the coach's line, or once it has nothing to say, the game's own.
+  if (idle && text !== lastCoach) { lastCoach = text; updateHint(); }
 }
+let lastCoach = '';
 
 // ---------- banners ----------
 
@@ -464,7 +469,9 @@ const campaignHooks = {
 
 /** Aboard: every time he comes to the ship, YOKE greets him (src/ui/campaignUi.ts welcome). */
 function openShip(state?: CampaignState): void {
-  const s = state ?? loadCampaign();
+  // `?campaign=ship&open=1` (for the browser beats only): with no campaign on record, one whose desk is
+  // already open, as a save from before the unfolding is; the unfolding itself is tools/shot-onboarding.mjs.
+  const s = state ?? loadCampaign() ?? (params.get('open') === '1' ? newCampaign(Math.floor(Math.random() * 1e9)) : null);
   // No campaign, or one whose first mission is not over: the ship is not seen before mission 1.
   if (!s || isFirstMission(s)) { if (!s) startOnboarding(); else if (!loadPending()) savePending({ territory: FIRST_MISSION, dares: [], objectors: [] }); location.href = `${location.pathname}?campaign=run`; return; }
   saveCampaign(s);
