@@ -196,6 +196,15 @@ try {
   await say(page, 'Say one line on your new mind.');
   await shot(page, '08-model-chosen');
 
+  // The same account in Settings (its "YOKE — ACCOUNT & MIND" slot).
+  await page.locator('#campaign [data-act="settings"]').first().click();
+  await page.waitForSelector('.st-slot[data-slot="yoke-account"] .cp-acct-linked', { timeout: 20000 });
+  const inSettings = flat(await page.locator('.st-slot[data-slot="yoke-account"]').innerText());
+  check(/LINKED TO RFAB/.test(inSettings) && /Claude Haiku 4\.5/.test(inSettings), `Settings shows her account and mind: "${inSettings.slice(0, 120)}"`);
+  await page.locator('.st-slot[data-slot="yoke-account"]').scrollIntoViewIfNeeded();
+  await shot(page, '09-settings-account');
+  await page.keyboard.press('Escape');
+
   check(errors.length === 0, errors.length ? `PAGE ERRORS: ${errors.join(' | ').slice(0, 400)}` : 'no page errors');
   console.log(failed ? `YOKE CONNECT BEAT: ${failed} failed` : 'YOKE CONNECT BEAT: all verified.');
 } finally {

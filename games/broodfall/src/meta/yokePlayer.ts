@@ -15,7 +15,7 @@
 
 /** The server's view of this player (GET /api/broodfall/yoke/state). */
 export interface YokeModelRow { id: string; label: string; blurb?: string; isDefault?: boolean; exchangeTokens: number | null; exchangeUsd: number | null }
-export interface YokeAllowance { capTokens: number; spentTokens: number; remainingTokens: number; spent: boolean }
+export interface YokeAllowance { capTokens: number; spentTokens: number; remainingTokens: number; spent: boolean; /** 'network': the free talk every game on this address shares is spent. */ why?: string }
 export interface YokeAccountState {
   playerId: string;
   connected: boolean;

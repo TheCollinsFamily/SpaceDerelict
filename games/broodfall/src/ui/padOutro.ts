@@ -21,7 +21,8 @@
  *     the desk fades away over it.
  *
  * A click, Esc, Enter or Space skips it. "Reduce motion" in the settings (src/ui/settings.ts,
- * `reduceMotion`) skips it entirely, as does missing art or a browser that cannot play it.
+ * `reduceMotion`) skips it entirely, as does missing art or a browser that cannot play it. Under
+ * automation (navigator.webdriver) it plays only when localStorage['broodfall-pad-outro'] is 'on'.
  */
 import { artUrl } from '../render/art';
 import { loadSettings } from '../meta/storage';
@@ -134,7 +135,12 @@ export function padOutroPlaying(): boolean { return playing; }
 
 /** Whether the outro plays at all: not with "reduce motion" on. */
 function wanted(): boolean {
-  try { return !loadSettings().reduceMotion; } catch { return true; }
+  try {
+    // Browser beats (Playwright) that are about something else wait on the report as before; the pad's own
+    // beat (tools/shot-pad.mjs) turns it on with localStorage['broodfall-pad-outro'] = 'on'.
+    if (navigator.webdriver && localStorage.getItem('broodfall-pad-outro') !== 'on') return false;
+    return !loadSettings().reduceMotion;
+  } catch { return true; }
 }
 
 // ---------------------------------------------------------------- playing

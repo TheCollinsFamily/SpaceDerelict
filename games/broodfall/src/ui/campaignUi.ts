@@ -763,7 +763,7 @@ export class CampaignUi {
       case 'quit': this.hooks.quit(); return;
       case 'settings':
         // Her voice may be switched there: she hears of it when the screen closes.
-        openSettings({ where: 'ship', onClose: () => { this.yoke = loadYoke(); this.avatar?.setMuted(this.yoke.muted); this.render(); } });
+        openSettings({ where: 'ship', onClose: () => { this.yoke = loadYoke(); this.avatar?.setMuted(this.yoke.muted); this.render(); if (this.yoke.mode !== 'scripted' && playerTokenStore.load()) void this.account.refresh(); } });
         return;
       case 'new': this.hooks.newCampaign(); return;
       case 'spin-l': this.spin -= 30; this.render(); return;

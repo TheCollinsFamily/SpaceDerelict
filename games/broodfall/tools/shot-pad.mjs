@@ -93,6 +93,7 @@ async function freshPage(browser, { video = false, settings } = {}) {
     sessionStorage.setItem('pad-beat-set', '1');
     localStorage.clear();
     localStorage.setItem('broodfall-intro-seen', '1');
+    localStorage.setItem('broodfall-pad-outro', 'on'); // the pad plays under automation only when asked
     localStorage.setItem('broodfall-yoke', JSON.stringify({ mode: 'scripted' }));
     if (s) localStorage.setItem('broodfall-settings', JSON.stringify(s));
   }, settings ?? null);

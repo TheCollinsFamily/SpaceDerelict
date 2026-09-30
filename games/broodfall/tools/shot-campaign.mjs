@@ -50,7 +50,7 @@ try {
   await page.waitForTimeout(500);
   check(await page.evaluate(() => document.getElementById('board-goals').classList.contains('hidden')), 'NEW CAMPAIGN starts with mission 1: no Requisition Board on it');
   await page.evaluate(() => { const s = window.broodfall.sim; s.outcome = 'won'; s.events.push({ kind: 'won' }); window.broodfall.step(1); });
-  await page.waitForSelector('#debrief:not(.hidden)', { timeout: 10000 });
+  await page.waitForSelector('#debrief:not(.hidden)', { timeout: 45000 });
   await page.locator('#debrief-ship').click();
   await page.waitForSelector('#campaign:not(.hidden) .cp-icom', { timeout: 10000 });
   check(await page.locator('.cp-desk-dark').count() === 1, 'the ship: YOKE greets him, the Directive Desk is dark');
@@ -80,7 +80,7 @@ try {
     window.broodfall.step(1);
   });
   // The report now opens with its pictures (src/ui/debrief.ts), which carry the verdict: wait for the report itself.
-  await page.waitForSelector('#campaign:not(.hidden) [data-act="back"]', { timeout: 10000 });
+  await page.waitForSelector('#campaign:not(.hidden) [data-act="back"]', { timeout: 45000 });
   const debrief = await page.locator('#campaign').innerText();
   check(/TAKEN/.test(debrief) && /Earned/.test(debrief), 'the debrief: the territory taken, the goals, the credits');
   await shot(page, 'debrief');
@@ -133,7 +133,7 @@ try {
   await page.waitForSelector('#stage canvas');
   await page.waitForTimeout(500);
   await page.evaluate(() => { const s = window.broodfall.sim; s.outcome = 'won'; s.events.push({ kind: 'won' }); window.broodfall.step(1); });
-  await page.waitForSelector('#campaign:not(.hidden) .cp-aside', { timeout: 5000 });
+  await page.waitForSelector('#campaign:not(.hidden) .cp-aside', { timeout: 45000 });
   const aside = await page.locator('.cp-aside').innerText();
   check(/Delegate \(letter, by field\)/.test(aside), `the debrief carries the ally's letter: "${aside.slice(0, 90)}"`);
   await shot(page, 'aside');

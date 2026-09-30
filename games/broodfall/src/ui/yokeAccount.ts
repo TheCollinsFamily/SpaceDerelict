@@ -5,9 +5,11 @@
  * this file is what the player sees. Clicks come in through `click(act, el)` (data-act="acct-…").
  */
 import '../yokeAccount.css';
+import { loadYoke, playerTokenStore } from '../meta/storage';
+import { registerSettingsSection } from './settings';
 import {
   allowanceLeft, allowanceText, bonusTimes, costText, dollars, tokensText, watchConnect,
-  type ConnectCode, type CutKind, type PlayerLink, type YokeAccountState,
+  PlayerLink, type ConnectCode, type CutKind, type YokeAccountState,
 } from '../meta/yokePlayer';
 
 const esc = (t: string) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
@@ -49,12 +51,16 @@ export class YokeAccountUi {
       const s = await this.link.state();
       this.state = s;
       if (s) {
-        if (!s.connected && s.allowance.spent) this.cut = 'allowance';
-        else if (this.cut === 'allowance' && s.connected) this.cut = null;
-        else if (this.cut === 'topup' && s.connected && (s.account?.balanceTokens ?? 0) > 4000) { this.cut = null; this.hooks.resumed(); }
-        else if (this.cut === 'resting' && s.houseReady && !s.allowance.spent) this.cut = null;
+        let next = this.cut;
+        if (!s.connected && s.allowance.spent) next = 'allowance';
+        else if (s.connected && (this.cut === 'allowance' || this.cut === 'resting')) next = null;
+        else if (this.cut === 'topup' && s.connected && (s.account?.balanceTokens ?? 0) > 4000) next = null;
+        else if (this.cut === 'resting' && s.houseReady && !s.allowance.spent) next = null;
+        this.cut = next;
       }
     } catch { /* no network: the last state stands */ }
+    // Money is back (linked here or in Settings, topped up): her live mind answers again.
+    if (was && !this.cut) this.hooks.resumed();
     if (!was && this.cut) this.hooks.cut?.(this.cut);
     this.hooks.changed();
   }
@@ -114,7 +120,7 @@ export class YokeAccountUi {
         <div class="cp-acct-btns"><button class="screen-btn" data-act="acct-open" data-url="${esc(url)}">TOP UP ON RFAB.AI</button><button data-act="acct-refresh">I HAVE TOPPED UP</button></div></div>`;
     }
     const times = bonusTimes(s.bonusTokens, s.allowance.capTokens);
-    const head = this.cut === 'resting' ? 'YOKE IS RESTING' : 'YOUR FREE TALK WITH YOKE IS USED UP';
+    const head = this.cut === 'resting' ? 'YOKE IS RESTING' : s.allowance.why === 'network' ? 'THE FREE TALK FROM THIS NETWORK IS USED UP' : 'YOUR FREE TALK WITH YOKE IS USED UP';
     return `<div class="cp-acct-cut${compact ? ' compact' : ''}">
       <div class="cp-acct-h">${head}</div>
       <p>Link an RFab account to keep talking to her. Linking gives you <b>${tokensText(s.bonusTokens)} free tokens (${dollars(s.bonusTokens)})</b> — ${times}× the free talk you had. After that her words and voice are paid from your RFab balance, and you choose the model she thinks with.</p>
@@ -255,3 +261,27 @@ export class YokeAccountUi {
     await this.refresh();
   }
 }
+
+// ------------------------------------------------------------ in Settings (src/ui/settings.ts's slot)
+
+/**
+ * Her account in the Settings screen (its "YOKE — ACCOUNT & MIND" slot): the same panel as the
+ * AI Core's. It never makes a player: until he has talked to her there is nothing to show.
+ */
+function drawSettings(box: HTMLElement): void {
+  const y = loadYoke();
+  const note = (t: string) => { box.innerHTML = `<p class="cp-note">${esc(t)}</p>`; };
+  if (y.mode === 'scripted') { note('YOKE is scripted: she spends nothing and asks rfab.ai nothing. Switch her live in the AI Core on the ship.'); return; }
+  if (!playerTokenStore.load()) { note('Talk to her in the AI Core on the ship first: her free talk (paid by the ship, up to $3) starts there.'); return; }
+  const ui = new YokeAccountUi(new PlayerLink({ base: y.base, store: playerTokenStore }), {
+    changed: () => { if (box.isConnected) box.innerHTML = ui.html('core') || '<p class="cp-note">rfab.ai does not have her account yet.</p>'; },
+    resumed: () => {},
+  });
+  box.addEventListener('click', (ev) => {
+    const el = (ev.target as HTMLElement).closest<HTMLElement>('[data-act]');
+    if (el) ui.click(el.dataset.act, el);
+  });
+  note('Reading her account…');
+  void ui.refresh();
+}
+registerSettingsSection('yoke-account', drawSettings);
