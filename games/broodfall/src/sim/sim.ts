@@ -271,7 +271,7 @@ export class Sim {
     weightMult: {} as Partial<Record<TowerFamily, number>>,
     startWar: 0, startScience: 0, spineHpBonus: 0, mawEatBonus: 0, rangeMult: 1, startNodes: 0,
     // The hobby genes (content/plates.ts HOBBY_GENES); each is inert at its default.
-    burnSpreadFrac: B.burnSpreadFrac, royalJelly: 0, salvageMult: 1, broodHpMult: 1, creepNodeEvery: 0,
+    burnSpreadFrac: B.burnSpreadFrac as number, royalJelly: 0, salvageMult: 1, broodHpMult: 1, creepNodeEvery: 0,
     homingRefund: false, groundingMult: 1, weddingMusk: false, trapCage: false,
   };
   /** Kills made by the creep itself (Hitchhiker Spores buds a node every Nth). */

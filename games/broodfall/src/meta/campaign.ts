@@ -18,6 +18,9 @@ import { evaluate, instance, type GoalInstance, type GoalResult, type RunReport 
 import { queueDiscussion, type AiTrigger, type AiTurn } from './shipAi';
 import { FIRST_MISSION, FIRST_MISSION_STANDING, deskOpen, isFirstMission, momentAfter, type Onboard } from './onboarding';
 import type { GreetMoment } from '../../content/greetings';
+import { applyOrders, ordersSetup, type OrdersReport, type OrdersState } from './directives';
+import { applyHobby, giveGene, hobbyGoals, type HobbyResult, type HobbyState } from './hobby';
+import type { HobbyDef } from '../../content/hobby';
 
 export interface CampaignState {
   version: 1;
@@ -57,6 +60,10 @@ export interface CampaignState {
   lastGreeting?: string;
   /** Greetings said once in a campaign that are not said again (the mate review). */
   said?: string[];
+  /** Command's standing orders (src/meta/directives.ts); none until the desk clears. */
+  orders?: OrdersState;
+  /** His notebook of hobby missions and the genes they paid (src/meta/hobby.ts); none until the desk clears. */
+  hobby?: HobbyState;
 }
 
 /** `onboarding`: a campaign that unfolds (mission 1 first, the Directive Desk dark until a win); every new one the game starts is. */
@@ -129,6 +136,8 @@ export interface DeploymentPlan {
   board: GoalInstance[];
   dares: GoalInstance[];
   experiment?: { def: ExperimentDef; goal: GoalInstance };
+  /** The hobby page pinned to this deployment (src/meta/hobby.ts): its checklist. */
+  hobby?: { def: HobbyDef; goals: GoalInstance[] };
 }
 
 /** The three board goals for this deployment (seeded — the same briefing if you back out and return). */
@@ -154,10 +163,13 @@ export function plan(s: CampaignState, territoryId: string, opts: { dares?: stri
   if (perks.includes('volunteers2')) { bonus.war = 40; bonus.royal = 1; }
   if (perks.includes('kingdom')) bonus.royal = (bonus.royal ?? 0) + 1;
   const exp = !first && opts.experiment ? EXPERIMENTS.find((e) => e.id === opts.experiment) : undefined;
+  // Command's equipment and trial lineage for the open standing orders; his pinned hobby page and spliced genes.
+  const orders = first ? { config: {}, trial: [] } : ordersSetup(s);
+  const hobby = first ? undefined : hobbyGoals(s);
   const config: Partial<SimConfig> = {
     seed: hash(`${s.seed}|${s.deployments}|${territoryId}|run`),
     organStage: true,
-    organPool: [...s.lineages],
+    organPool: [...s.lineages, ...orders.trial.filter((l) => !s.lineages.includes(l))],
     startOrgans: profile.organs,
     evolutionCap: evolutionCaps(s),
     // Mission 1 shows where the assault comes from, as any tower-defence game does; the campaign hides it (the Translator's perk).
@@ -168,7 +180,10 @@ export function plan(s: CampaignState, territoryId: string, opts: { dares?: stri
     waveScale: perks.includes('pacified') ? 0.9 : 1,
     entrances: t.entrances,
     directive: defence ? { kind: 'hold', waves: 5 } : t.directive,
+    ...orders.config,
     ...(exp ? exp.setup : {}),
+    ...(hobby?.def.setup ?? {}),
+    ...(!first && s.hobby?.spliced.length ? { genes: [...s.hobby.spliced] } : {}),
   };
   const dares = (opts.dares ?? []).slice(0, 2).map((id) => DARES.find((d) => d.id === id)!).filter(Boolean).map((d) => instance(d, t.tier));
   // Mission 1 carries no forms, no dares and no experiment: it is only a game of tower defence.
@@ -176,6 +191,7 @@ export function plan(s: CampaignState, territoryId: string, opts: { dares?: stri
   return {
     territory: territoryId, defence, config, board: boardFor(s, territoryId), dares,
     experiment: exp ? { def: exp, goal: instance(exp.goal, t.tier) } : undefined,
+    hobby,
   };
 }
 
@@ -196,6 +212,12 @@ export interface Debrief {
   first?: boolean;
   /** This deployment cleared the Directive Desk (and the three factions called). */
   deskOpened?: boolean;
+  /** What this deployment did to Command's standing orders. */
+  orders?: OrdersReport;
+  /** The pinned hobby page's result. */
+  hobby?: HobbyResult;
+  /** Hobby pages that occurred to him this deployment. */
+  ideas?: string[];
 }
 
 /** A faction's ending, as the choices made along its route shaped it. */
@@ -224,6 +246,7 @@ export function finish(prev: CampaignState, p: DeploymentPlan, r: RunReport): { 
     if (e.unlocks.lineage && !s.lineages.includes(e.unlocks.lineage)) { s.lineages.push(e.unlocks.lineage); unlocked.push(`lineage:${e.unlocks.lineage}`); }
     if (e.unlocks.territory && !s.revealed.includes(e.unlocks.territory)) { s.revealed.push(e.unlocks.territory); unlocked.push(`territory:${e.unlocks.territory}`); }
     if (e.unlocks.profile && !s.profiles.includes(e.unlocks.profile)) { s.profiles.push(e.unlocks.profile); unlocked.push(`profile:${e.unlocks.profile}`); }
+    if (e.unlocks.gene && !(s.hobby?.genes ?? []).includes(e.unlocks.gene)) { Object.assign(s, giveGene(s, e.unlocks.gene)); unlocked.push(`gene:${e.unlocks.gene}`); }
   }
   // Feats that unlock profiles.
   if (s.daresDone.includes('everything-burns') && !s.profiles.includes('venom')) { s.profiles.push('venom'); unlocked.push('profile:venom'); }
@@ -319,6 +342,20 @@ export function finish(prev: CampaignState, p: DeploymentPlan, r: RunReport): { 
     }
   }
 
+  // Command's standing orders and his own notebook (src/meta/directives.ts, src/meta/hobby.ts).
+  let ordersReport: OrdersReport | undefined;
+  let hobbyResult: HobbyResult | undefined;
+  let ideas: string[] = [];
+  if (deskOpen(s)) {
+    const o = applyOrders(s, r, { territory: p.territory, directive: p.config.directive, captured, repelled, countable: deskOpen(prev) });
+    Object.assign(s, o.state);
+    ordersReport = o.report;
+    const h = applyHobby(s, r, { first: false, open: true, deskJustOpened: deskOpened });
+    Object.assign(s, h.state);
+    hobbyResult = h.result;
+    ideas = h.sparked;
+  }
+
   // The licence and the Board.
   if (!s.licence && s.standing >= LICENCE_STANDING) {
     s.licence = true;
@@ -329,7 +366,10 @@ export function finish(prev: CampaignState, p: DeploymentPlan, r: RunReport): { 
   }
   if (s.deployments === 1) s.ai.queue = queueDiscussion(s.ai.queue, 'first-deployment', s.ai.seen);
 
-  const debrief: Debrief = { board, dares, experiment: exp, standing, notes, captured, lost, repelled, unlocked, log: s.log[s.log.length - 1], aside, deskOpened };
+  const debrief: Debrief = {
+    board, dares, experiment: exp, standing, notes, captured, lost, repelled, unlocked, log: s.log[s.log.length - 1], aside, deskOpened,
+    orders: ordersReport, hobby: hobbyResult, ideas,
+  };
   s.greet = momentAfter(prev, s, debrief, false);
   return { state: s, debrief };
 }

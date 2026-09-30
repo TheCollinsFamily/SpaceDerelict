@@ -60,7 +60,21 @@ Written in the game's voice (procurement-speak, 1950s newsreel, B-movie barker):
 
 ## screenshots/
 
-SCREENSHOTS_TABLE
+Real frames of the game (dev server, GPU on, the scripted player at play, wave 7 to 10), 1920×1080.
+The board is normally drawn at 1360×1000 and letterboxed; for these its drawing surface was resized
+at run time to fill a 16:9 window (no game code changed). The scripted player's "demo mode" line is
+hidden. Candidates (about 40) are in `art-src/promo-shots/`.
+
+| File | Size | What it shows |
+|---|---|---|
+| `01-siege-megacity-limbs-firing.jpg` | 1920×1080 | A siege in the Megacity: bombard bulbs, maws, a galvanic frond arcing, insect soldiers in the channels. |
+| `02-royal-boss-among-the-maws.jpg` | 1920×1080 | The insect royal (a boss) wading into a field of maws on the creep. |
+| `03-siege-temple-city-lightning.jpg` | 1920×1080 | The Temple Cities: the body's limbs holding a street, frond lightning and shots. |
+| `04-creep-spreading-farmland.jpg` | 1920×1080 | The Granary Belt: the creep running over farmland toward the unclaimed fields. |
+| `05-the-body-late-run.jpg` | 1920×1080 | Wave 10 in the Deep Hive: the whole body grown across its districts. |
+| `06-district-draft.jpg` | 1920×1080 | The district draft: three plates to consume next. |
+| `07-ship-yoke-ai-core.jpg` | 1920×1080 | The ship: the AI Core, the hero from behind, YOKE's hologram. |
+| `08-ship-gene-bay.jpg` | 1920×1080 | The ship: the Gene Bay, a specimen in its tank, the lineages to requisition. |
 
 ## contact-sheet.jpg
 
