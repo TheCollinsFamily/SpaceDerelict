@@ -63,6 +63,9 @@ function startPreview() {
 function mockRfab(page, state) {
   const base = `**/rfab-api/api/avatars/${ids.avatarId}`;
   return Promise.all([
+    // No player route here (an RFab before its deploy): the game talks to her the old way, and nothing
+    // reaches rfab.ai. The player route has its own beat: tools/shot-yoke-connect.mjs.
+    page.route('**/rfab-api/api/broodfall/**', (r) => r.fulfill({ status: 404, contentType: 'application/json', body: '{}' })),
     page.route(`${base}/history`, (r) => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ turns: [] }) })),
     page.route(`${base}/message`, async (r) => {
       state.sent.push(JSON.parse(r.request().postData() ?? '{}').message ?? '');

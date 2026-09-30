@@ -36,6 +36,8 @@ interface Loaded { clip: PadClip; quads: Array<number[] | null>; src: string }
 
 /** How long the zoom from "the screen fills the window" to the clip's own frame takes. */
 const ZOOM_S = 0.7;
+/** What is taken off the pad's screen as it pulls back: the end-of-run dialog (src/ui/hud.ts showOverlay). */
+const CLEARED = ['overlay'];
 /** The page drawn this many pixels past the keyed screen on every side (the bezel hides it). */
 const BLEED = 2;
 
@@ -180,6 +182,8 @@ export async function playPadOutro(outcome: PadOutcome): Promise<void> {
   body.appendChild(glass);
   const sleepEl = glass.querySelector('.pad-sleep') as HTMLElement;
 
+  const cleared = CLEARED.map((id) => document.getElementById(id)).filter((el): el is HTMLElement => !!el && !el.classList.contains('hidden'));
+  const clearedWas = cleared.map((el) => el.style.opacity);
   let done = false;
   let finish!: () => void;
   const ended = new Promise<void>((r) => { finish = r; });
@@ -198,8 +202,10 @@ export async function playPadOutro(outcome: PadOutcome): Promise<void> {
     if (!q) return;
     const inView = growQuad(toView(q).map(([x, y]) => [x * kx + tx, y * ky + ty]) as Quad, BLEED);
     body.style.transform = cssMatrix3d(rectToQuad(vw, vh, inView));
-    // The device look comes up as the pad pulls back.
+    // The device look comes up as the pad pulls back, and the run's end message clears off the screen
+    // (the pad shows the board and the console, not a dialog; the report says the rest).
     glass.style.opacity = String(Math.min(1, mediaTime / ZOOM_S));
+    for (const el of cleared) el.style.opacity = String(Math.max(0, 1 - mediaTime / ZOOM_S));
   };
 
   const vfc = (video as HTMLVideoElement & { requestVideoFrameCallback?: (cb: (now: number, meta: { mediaTime: number }) => void) => number }).requestVideoFrameCallback?.bind(video);
@@ -220,6 +226,7 @@ export async function playPadOutro(outcome: PadOutcome): Promise<void> {
       over.style.background = '#000';
       Object.assign(body.style, { transform: saved.transform, transformOrigin: saved.origin, willChange: saved.will, width: saved.width, filter: saved.filter });
       glass.remove();
+      cleared.forEach((el, i) => { el.style.opacity = clearedWas[i]; });
       playing = false;
       finish();
       // The desk fades away over the report.

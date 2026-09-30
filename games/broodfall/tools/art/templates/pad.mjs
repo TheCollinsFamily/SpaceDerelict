@@ -66,7 +66,8 @@ export const END = {
     `light from the window and from thin white strips; matte black and pale grey ceramic; austere and plain. ${NONE}`,
 };
 
-const MOVE = 'The pad keeps exactly the same shape, size and proportions the whole time; it never bends, splits or morphs; the screen ' +
+const MOVE = 'The pad never leaves the picture: it stays in view the whole time, getting smaller as it goes down onto the desk, and ' +
+  'the clip ends exactly on the second picture. No figurines, no statues, no dolls. The pad keeps exactly the same shape, size and proportions the whole time; it never bends, splits or morphs; the screen ' +
   'stays one flat pure bright green, evenly lit, with nothing shown on it. His hands keep five fingers each. Natural hand-held ' +
   `first-person camera, no cuts. ${NONE}`;
 
@@ -82,7 +83,8 @@ export const CLIPS = [
       `then lies still, and his hand comes down flat on the desk beside it and stays there, heavy. ${MOVE}` },
 ];
 
-const clipFile = (c) => path.join(DIR, `${c.id}.mp4`);
+// PAD_TAKE=<name>: a trial take beside the kept one (art-src/pad/<id>-<name>.mp4), to compare video models.
+const clipFile = (c) => path.join(DIR, `${c.id}${process.env.PAD_TAKE ? `-${process.env.PAD_TAKE}` : ''}.mp4`);
 
 export async function makeStills() {
   fs.mkdirSync(DIR, { recursive: true });
@@ -100,6 +102,7 @@ export async function makePad({ bakeOnly = false, stillsOnly = false, only = [] 
       slug: `pad ${c.id}`, stillFile: START.file, endFile: END.file, prompt: c.prompt, seconds: c.seconds, out: clipFile(c),
       raw: true, resolution: '720p', aspect: '16:9',
     })));
+    if (process.env.PAD_TAKE) return []; // a trial take is looked at, not baked
   }
   const { bakePad } = await import('./pad-bake.mjs');
   return bakePad(CLIPS.filter((c) => fs.existsSync(clipFile(c)) && (!only.length || only.includes(c.id))).map((c) => ({ id: c.id, file: clipFile(c) })));

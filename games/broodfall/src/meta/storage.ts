@@ -58,12 +58,19 @@ const YOKE = 'broodfall-yoke';
 /** Settings saved since the avatar exists carry this mark; older ones never chose between her and Kimi. */
 const YOKE_SAVED = 2;
 /**
- * Where rfab.ai is. The dev server (`npm start`) has its /rfab-api proxy; a built game — what
- * a player runs — has no proxy and no key, and talks to https://api.rfab.ai with its own player
- * token (src/meta/yokePlayer.ts). VITE_RFAB_API_BASE overrides it for a test build.
+ * Where rfab.ai is. Served from this PC (`npm start`, `vite preview`, the beats) the page has
+ * the /rfab-api proxy; anywhere else — a web host, a desktop wrap's file:// page, what a player
+ * runs — there is no proxy and no key, and the game talks to https://api.rfab.ai itself with
+ * its own player token (src/meta/yokePlayer.ts). VITE_RFAB_API_BASE overrides both at build time.
  */
-export const RFAB_API_BASE: string = (import.meta.env?.VITE_RFAB_API_BASE as string | undefined)
-  || (import.meta.env?.DEV ? '/rfab-api' : 'https://api.rfab.ai');
+function rfabApiBase(): string {
+  const forced = import.meta.env?.VITE_RFAB_API_BASE as string | undefined;
+  if (forced) return forced;
+  let host = '';
+  try { host = location.hostname; } catch { /* no page (tests): the proxy */ return '/rfab-api'; }
+  return host === 'localhost' || host === '127.0.0.1' || host === '::1' || host === '[::1]' ? '/rfab-api' : 'https://api.rfab.ai';
+}
+export const RFAB_API_BASE: string = rfabApiBase();
 /** The avatar is who answers by default, when content/lore/yoke-avatar.json names one. */
 export const DEFAULT_YOKE: YokeSettings = { mode: YOKE_AVATAR ? 'avatar' : 'kimi', key: '', base: RFAB_API_BASE, muted: false };
 

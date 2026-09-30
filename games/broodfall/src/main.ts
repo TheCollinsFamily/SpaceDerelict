@@ -27,6 +27,7 @@ import { BALANCE as B } from '../content/data';
 import { PLATE, PLATE_FEATURES } from './sim/citymap';
 import { LoadingScreen, applyName, dressLogos, loadScreenArt, showArtNotice, showFailure, showSlowDrawingNotice } from './ui/screens';
 import { debriefPictures, type Outcome } from './ui/debrief';
+import { padOutroPlaying, playPadOutro, preloadPadOutro } from './ui/padOutro';
 import { platePicture } from './render/platePreview';
 import type { Directive, OrganId, RootDir, SimConfig, SimEvent, TowerFamily } from './sim/types';
 
@@ -368,12 +369,15 @@ function handleEvents(events: SimEvent[]): void {
   hud.pushEvents(events);
   for (const e of events) {
     if (e.kind === 'wave-start') banner(`WAVE ${e.wave} — ASSAULT FROM ${e.sides}`);
+    if (e.kind === 'wave-start' && !AUTO) preloadPadOutro(); // the end's clip, fetched while the run is on
     if (e.kind === 'wave-cleared') banner(`WAVE ${e.wave} CLEARED · +${e.bonus} WAR MEAT`);
     if (e.kind === 'royal-incoming') banner('THE ROYAL TAKES THE FIELD');
     if (e.kind === 'plate-drafted') banner(`DISTRICT CONSUMED: ${e.name.toUpperCase()}`);
     if ((e.kind === 'won' || e.kind === 'lost') && !AUTO) {
       endSnapshot = snapshotBoard();
-      window.setTimeout(FIRST ? firstDebrief : campaignPlan ? campaignDebrief : showDebrief, 1600);
+      // The hero sets the pad down (src/ui/padOutro.ts: this very view on its screen), then the report.
+      const report = FIRST ? firstDebrief : campaignPlan ? campaignDebrief : showDebrief;
+      window.setTimeout(() => { void playPadOutro(e.kind === 'won' ? 'won' : 'lost').then(report, report); }, 1600);
     }
   }
 }
@@ -1071,7 +1075,7 @@ async function boot(): Promise<void> {
   // The settings (src/ui/settings.ts): a ⚙ beside the view buttons; the run pauses while it is open.
   addRunButton(() => openRunSettings());
   installEdgeScroll((dx, dy) => { if (renderer instanceof IsoRenderer) renderer.panBy(dx, dy); },
-    () => started && !debriefShown && menuEl.classList.contains('hidden') && document.getElementById('campaign')!.classList.contains('hidden'));
+    () => started && !debriefShown && !padOutroPlaying() && menuEl.classList.contains('hidden') && document.getElementById('campaign')!.classList.contains('hidden'));
   markSpeed(speed);
   // RIGHT-CLICK: rotates a directional card being placed, or a built directional
   // limb under the cursor; otherwise it cancels. (Esc always cancels.)

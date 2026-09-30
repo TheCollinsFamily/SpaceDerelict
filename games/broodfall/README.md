@@ -36,7 +36,10 @@ Useful URLs:
 | Debrief screen, skirmish and campaign (the outcome's newsreel still, a photograph of the board at the end, the limbs grown, what the colony sent) | BUILT (Sep 30; `shot-screens.mjs debrief campaign`) |
 | Gene Bay organ cards with each organ's scan picture | BUILT (Sep 30; `shot-screens.mjs genes`) |
 | Ship gene bay (standing + splices, localStorage) | BUILT (prototype persistence; account-side later) |
-| Empire directives / hobby missions | MISSING (design doc) |
+| Empire Directives: Command's standing orders (three open, progress across deployments, standing, issued equipment and a trial lineage), every landing site's directive on file, the Office's notices | BUILT (Sep 30; ship room after the desk clears; `src/ui/directives.ts`, `node tools/shot-camp.mjs A`) |
+| Hobby missions: the Notebook (8 pages sparked by play, one pinned per deployment, its checklist on the board, unique genes spliced two at a time) | BUILT (Sep 30; ship room after the desk clears; `src/ui/hobby.ts`, DESIGN.md "Hobby missions", `shot-camp.mjs A`) |
+| Territory pictures over the globe briefing (16, one per landing site, in its tile set's look) | BUILT (Sep 30; `node tools/art/make.mjs ship territories`; `shot-camp.mjs A`) |
+| Settings (menu, ship ⚙, in a deployment Esc or ⚙ pauses it): sound levels, YOKE's voice, HUD style, text size, reduce motion/flashes, colour-blind-safe caste colours, turn keys, edge scroll, zoom speed, starting speed, replay the opening, reset; a slot for YOKE's account and model | BUILT (Sep 30; `src/ui/settings.ts`, `shot-camp.mjs B`); music and effects sliders wait for sound |
 | Break cinematics / propaganda video layer | MISSING (design doc) |
 | The painted isometric board (26 units, 36 limbs, 8 tile sets, the ship) | BUILT (Sep 29; `HANDOFF.md` "The art") |
 | Turning the view (Q, E, two buttons on the board) | BUILT (Sep 29) |

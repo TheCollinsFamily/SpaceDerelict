@@ -755,6 +755,59 @@ licence (so every purchase delays the licence — spend now or save).
 
 (The dig stays an in-run reward only — Collins didn't like it feeding the meta.)
 
+### Hobby missions: the notebook (BUILT Sep 30 2026)
+The design's "hobby missions (unofficial, self-assigned) pay UNIQUE GENES … the player's own
+'wouldn't it be cool' is literally the character's", made a mechanic. Content `content/hobby.ts`,
+rules `src/meta/hobby.ts`, the room `src/ui/hobby.ts` (the Notebook, built to the approved concept
+`notes/concepts/2026-09-29/r4-hobby-interface.png`: his pages in holo blue, grid paper, ring holes,
+doodles, checklists, a paperclip on the pinned page, tally marks for tries, in his handwriting).
+- **A page occurs to him from play.** Each page has a SPARK, a measure of a finished run ("5
+  bodies burning at once" → *Does fire JUMP?*; a limb stolen → *Finders keepers*); the log says
+  so in his voice. Two pages have no spark and are there when the Directive Desk clears. The
+  Notebook room opens with the desk (the onboarding's unlock timing).
+- **He pins one page to the next deployment** (any deployment, Command's assigned ones too). On the
+  board it is a checklist of measures over the run (`src/meta/goals.ts`), all in that one
+  deployment, shown in the goal panel in his hand. Some pages change the run with the experiments'
+  own switches (`setup`: the royal directive, the mating gas). No new sim rule runs a page.
+- **It pays a unique gene, and nothing else** (no standing, no field notes). Genes are
+  `HOBBY_GENES` in `content/plates.ts`, never offered by the skirmish gene bay. The organism
+  carries **two** at a time; the Notebook's jar page splices them. Every campaign deployment after
+  mission 1 carries the spliced genes (`plan()` → `SimConfig.genes`). The Puppet Queen experiment's
+  gene (Royal Graft) lands in the same jar.
+- **Command notices, and does nothing:** a finished page files "Form 0-U · Irregular Use of Navy
+  Property … No action is taken" in the log; Empire Directives counts the notices.
+- **The gene verbs are the only sim change**, each inert unless spliced (`geneMods` in
+  `src/sim/sim.ts`), so the guardrails and every seeded run are untouched without them. Measured
+  over ten seeds with `tools/measure/hobbygenes.measure.ts`.
+
+| Page | Spark | Checklist | Gene |
+|---|---|---|---|
+| Does fire JUMP? | 5 burning at once | 25 burning at once; fire finishes 60 | Tallow Blood: fire spreads without cooling |
+| The Recipe Book | the desk clears | eat 8 limbs; one limb with 12 bonuses | Grudge Marrow: eating a limb pays back 1.5× |
+| Sky fishing | 5 fliers downed | down 25 fliers; win | Kite String: netcasters ×2 as often, nets hold ×2 |
+| Royal taste test | a royal killed | (royal directive) maws swallow 25; the royal dies | Royal Jelly: every royal pays 2 royal points |
+| Finders keepers | a limb carried off | kill 2 couriers carrying your limbs | Homing Tissue: an escaped limb repays its cost |
+| Nursery rhymes | a broodling kill | brood makes 50 kills; win | Wet Nurse: broodlings ×1.5 hp |
+| Hands in pockets, twice | 3 creep kills or a pacifist wave | creep kills 40; a pacifist wave | Hitchhiker Spores: every 10th creep kill buds a node |
+| Love letters | a pairing | (mating gas) 40 pairings; win | Wedding Musk: lure clouds pause soldiers, no extra bodies |
+
+### Empire Directives: Command's standing orders (BUILT Sep 30 2026)
+"Command directives pay STANDING … push the player off comfort builds like Balatro boss blinds
+(capture royals alive, field-test an unstable organ lineage, clear under time)." A landing site's
+own directive (hold / royal / harvest) wins its deployment; a STANDING ORDER runs across
+deployments. Content `content/directives.ts` (13 orders, the Office's voice, each with its
+"expected contribution" line and its acknowledgement), rules `src/meta/directives.ts`, the room
+`src/ui/directives.ts`.
+- Three open at once, issued in the list's order from the day the desk clears (that deployment does
+  not count); each deployment adds to every open order; a full order pays standing (3-5), files its
+  acknowledgement in the log, and the next is issued. The report lists what moved.
+- Some orders change the runs while open: **Live Royal Retrieval** issues a trap cage to every
+  deployment; **Lineage Field Trial** puts an unowned sanctioned lineage into the organ pool and
+  keeps it for good on fulfilment; **Schedule Adherence** is "clear under time" as waves called
+  early.
+- The room also keeps every deployment's own directive on file (site, tier, terms, status), the
+  tally fulfilled by kind, the acknowledgements, and the irregularities noted (finished hobby pages).
+
 ### Starting profiles ("love the starting profiles")
 Culture profiles set the organs you start a run with (everything else is earned):
 Standard Strain (Gut + Bone Forge), Venom Strain (Venom Sac + Mucus Lattice), Spore

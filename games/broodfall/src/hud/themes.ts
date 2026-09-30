@@ -6,8 +6,7 @@
  * are the same in every style.
  *
  * `?hud=classic` (or the menu's SETTINGS, remembered in localStorage) keeps the old khaki
- * console (src/style.css alone) as a fallback. src/hud/themes/newsreel.css is the 1950s
- * empire-newsreel option drafted before the pick; it is kept but not loaded.
+ * console (src/style.css alone) as a fallback.
  * Pictures: notes/screens/2026-09-30/hud-options/.
  */
 import './themes/ship.css';

@@ -43,6 +43,13 @@ const LIMB_FILL = 0.64;
 /** Which way the seedling pod flies in its picture (tools/art/templates/core.mjs POD): toward the lower left. */
 const POD_HEADING = Math.atan2(0.45, -1);
 const LONG_SIZE = 1.35;
+/**
+ * How wide a wall's band of muscle is drawn, in half-tiles: across a lane two cells wide, and
+ * across a lane one cell wide. The whole wall (band and spines) is about 1.9 times its band.
+ * It was 2.88 and 1.6: a wall reached over the blocks on both sides of its street.
+ */
+const WALL_TWO = 1.3;
+const WALL_ONE = 0.9;
 const LONG_BACK = 0.25;
 /** What the landing site stands on, as a share of the width of the square it fell on. */
 const CORE_FILL = 0.92;
@@ -1122,13 +1129,20 @@ export class IsoRenderer extends Renderer {
 
       // Which of its pictures the camera sees: from the front or from behind, as drawn or mirrored.
       let { back, mirror } = limbView(g, v.facing);
+      let wallNarrow = false;
       if (art.flat) { back = false; mirror = false; }
       // A wall across a street lies across it: along the view's x as it is drawn, along its y mirrored.
       else if (art.on === 'street') {
         back = false;
-        // A wall two cells long lies the way its two cells lie; one of a single cell, across its street.
+        // A wall is drawn ACROSS its lane, always. Two cells side by side across a wide street: the way
+        // they lie. Two cells one behind the other (the street is one cell wide, so the sim laid its
+        // ground along the lane: Collins, Sep 30 2026, "walls way too large and placed sideways"):
+        // across the lane, as wide as the lane, in the middle of its two cells.
         const ground = sim.cellsOf(t);
-        const alongX = ground.length === 2 ? Math.abs(ground[1] - ground[0]) === 1 : !this.laneRunsAlongX(sim, t.cell);
+        const laneX = this.laneRunsAlongX(sim, t.cell);
+        const cellsX = ground.length === 2 && Math.abs(ground[1] - ground[0]) === 1;
+        wallNarrow = ground.length !== 2 || cellsX === laneX;
+        const alongX = wallNarrow ? !laneX : cellsX;
         mirror = !alongX !== (g.turn % 2 === 1);
       }
       const side = back && art.back ? art.back : art;
@@ -1145,7 +1159,9 @@ export class IsoRenderer extends Renderer {
       // How wide what it stands on is drawn: a swamp covers the ground it slows; a wall spans its lane; the rest fill their ground.
       let width = 2 * g.a * LIMB_FILL * LIMB_SCALE * size;
       if (art.flat) width = 2 * ((towerSpec(t.family).swamp?.radius ?? 30) + (stats.aoe - towerSpec(t.family).aoe)) * Math.SQRT2 * (g.a / g.cell);
-      else if (art.on === 'street') width = 2 * g.a * 0.8 * (sim.cellsOf(t).length === 2 ? 1.8 : 1);
+      // A wall's body (its measured band of muscle) is about half of all of it: the band is drawn so that the
+      // whole wall spans its lane and no more.
+      else if (art.on === 'street') width = g.a * (wallNarrow ? WALL_ONE : WALL_TWO);
       const scale = width / (side.body * art.frame);
 
       // A limb that has just fired plays its firing clip, fitted into the time before it fires again.

@@ -195,6 +195,28 @@ insectoid city.
   open when none is on record (shot-ship, shot-yoke-avatar, shot-biomes, shot-screens use it; the
   unfolding itself is `tools/shot-onboarding.mjs`).
 
+## Empire Directives, hobby missions, settings, territory pictures (Sep 30 2026)
+
+- **Empire Directives** (ship room, opens with the desk): Command's standing orders across
+  deployments. `content/directives.ts`, `src/meta/directives.ts` (`applyOrders` is called from
+  `finish()`; `ordersSetup` feeds `plan()`), `src/ui/directives.ts`. Save field `orders`.
+- **Hobby missions** (the Notebook room, opens with the desk): pages sparked by play, one pinned to
+  the next deployment, paying unique genes. `content/hobby.ts`, `src/meta/hobby.ts`,
+  `src/ui/hobby.ts` (+ `hobby.css`, to the approved concept). Save field `hobby`. The genes are
+  `HOBBY_GENES` in `content/plates.ts`; their verbs are `geneMods` in `src/sim/sim.ts`, each inert
+  unless spliced. Balance: `tools/measure/hobbygenes.measure.ts` (10 seeds, each gene alone).
+  DESIGN.md "Hobby missions" and "Empire Directives".
+- **Settings**: `src/ui/settings.ts` (screen, `applySettings`, edge scroll, the ⚙ in a run),
+  `src/meta/settings.ts` (model), kept by `loadSettings/saveSettings/gain` in `src/meta/storage.ts`.
+  Opened from the menu (`menu.ts`), the ship's room bar, and a run (Esc with nothing in hand, or ⚙;
+  the run's speed goes to 0 while it is open). Voice volume is wired into YOKE's lines and the boss's
+  message; music/effects wait for sound. The YOKE account/model section is a SLOT: the YOKE connect
+  session calls `registerSettingsSection('yoke-account', draw)`. HUD styles come from
+  `src/hud/themes.ts` (`HUD_THEMES`, `applyHud`).
+- **Territory pictures**: `node tools/art/make.mjs ship territories` (manifest `ship.ship.territories`),
+  shown over the briefing and the dark desk's assignment (`territoryPictureHtml` in campaignUi).
+- Beat: `node tools/shot-camp.mjs [A] [B]` (dev server 5251; `notes/screens/2026-09-30/camp-*`).
+
 ## The ship AI (YOKE)
 
 - **Game side** (`src/meta/shipAi.ts`):

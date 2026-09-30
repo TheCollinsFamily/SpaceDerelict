@@ -342,7 +342,10 @@ try {
     check(/CONTINUE/.test(items) && /NEW CAMPAIGN/.test(items) && /SKIRMISH/.test(items) && /REPLAY THE OPENING/.test(items) && /SETTINGS/.test(items), 'continue, new campaign, skirmish, replay the opening, settings');
     await shot(page, '15-menu-console');
     await page.locator('#menu-settings').click();
+    await page.waitForTimeout(400);
     await shot(page, '16-menu-settings');
+    // The settings screen (src/ui/settings.ts) is a dialog over the menu: Esc closes it.
+    if (await page.locator('#settings').count()) { await page.keyboard.press('Escape'); await page.waitForTimeout(300); }
     const g4 = await aboard(page, '#menu-campaign');
     check(!!g4, `CONTINUE: aboard, and she greets him again (${g4})`);
     await page.waitForTimeout(1200);
