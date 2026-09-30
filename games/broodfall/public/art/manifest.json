@@ -8221,15 +8221,15 @@
      "collar": 1.012,
      "idle": {
       "atlas": "board/core-stage-3.webp",
-      "frame": 1090,
-      "cols": 4,
-      "count": 16,
-      "fps": 7.11,
+      "frame": 1091,
+      "cols": 5,
+      "count": 22,
+      "fps": 5.33,
       "anchor": [
        0.4996,
-       0.8545
+       0.8548
       ],
-      "body": 0.438,
+      "body": 0.4373,
       "seam": 0.27
      },
      "grow": {
@@ -8253,9 +8253,9 @@
      "idle": {
       "atlas": "board/core-stage-4.webp",
       "frame": 1223,
-      "cols": 4,
-      "count": 16,
-      "fps": 10.11,
+      "cols": 5,
+      "count": 22,
+      "fps": 7.58,
       "anchor": [
        0.5,
        0.8627
