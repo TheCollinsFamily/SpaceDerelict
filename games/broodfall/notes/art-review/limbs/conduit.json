@@ -1,7 +1,7 @@
 {
  "family": "conduit",
- "frames": 32,
- "atlasKB": 344,
+ "frames": 70,
+ "atlasKB": 618,
  "failed": 0,
  "checks": [
   {
@@ -38,6 +38,26 @@
    "name": "idle: ends the size it began",
    "ok": true,
    "value": "1% change"
+  },
+  {
+   "name": "fire: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "fire: ends the size it began",
+   "ok": true,
+   "value": "3% change"
+  },
+  {
+   "name": "die: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "die: it ends as a husk",
+   "ok": true,
+   "value": "62% of its first frame"
   },
   {
    "name": "it stands in its cell",
@@ -80,9 +100,24 @@
    "value": "1% change"
   },
   {
+   "name": "from behind, fire: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "from behind, fire: frames swallowed by a flash or a cloud are few",
+   "ok": true,
+   "value": "16 left out"
+  },
+  {
+   "name": "from behind, fire: ends the size it began",
+   "ok": true,
+   "value": "1% change"
+  },
+  {
    "name": "from behind, it stands in its cell",
    "ok": true,
-   "value": "2.1% of it lies in front of its cell"
+   "value": "2.0% of it lies in front of its cell"
   },
   {
    "name": "from behind: it has a view",
@@ -92,7 +127,7 @@
   {
    "name": "atlas is under 900 KB",
    "ok": true,
-   "value": "344 KB"
+   "value": "618 KB"
   }
  ]
 }

@@ -1,7 +1,7 @@
 {
  "family": "spine",
- "frames": 30,
- "atlasKB": 199,
+ "frames": 40,
+ "atlasKB": 255,
  "failed": 0,
  "checks": [
   {
@@ -55,9 +55,19 @@
    "value": "2% change"
   },
   {
+   "name": "die: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "die: it ends as a husk",
+   "ok": true,
+   "value": "68% of its first frame"
+  },
+  {
    "name": "atlas is under 900 KB",
    "ok": true,
-   "value": "199 KB"
+   "value": "255 KB"
   }
  ]
 }

@@ -577,7 +577,8 @@ export class CampaignUi {
 
   // ------------------------------------------------------------ the debrief
 
-  showDebrief(d: Debrief, onBack: () => void): void {
+  /** `pictures`: what happened, in pictures (src/ui/debrief.ts); it leads the report and carries its verdict. */
+  showDebrief(d: Debrief, onBack: () => void, pictures?: HTMLElement): void {
     document.body.classList.add('in-ship');
     const row = (g: { def: { title: string; pays: number }; met: boolean; value: number; target: number }, cur: string, text: string) =>
       `<div class="cp-goal ${g.met ? 'met' : 'miss'}"><b>${g.met ? '✔' : '✘'} ${esc(g.def.title)}</b> ${esc(text)} — ${Math.round(g.value)}/${g.target} ${g.met ? `<i>+${g.def.pays} ${cur}</i>` : ''}</div>`;
@@ -592,6 +593,11 @@ export class CampaignUi {
       <p class="cp-story">${esc(d.log)}</p>
       ${d.aside ? `<p class="cp-story cp-aside">${speakLine(d.aside)}</p>` : ''}
       <button class="screen-btn" data-act="back">RETURN TO THE SHIP</button></div>`;
+    if (pictures) {
+      const titleEl = this.el.querySelector('.cp-title') as HTMLElement;
+      titleEl.after(pictures);
+      titleEl.style.display = 'none';
+    }
     this.room = 'board';
     this.debriefing = true;
     this.dress();

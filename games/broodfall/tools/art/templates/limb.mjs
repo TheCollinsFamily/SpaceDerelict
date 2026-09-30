@@ -14,7 +14,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { ffmpeg, makeClip, makeStill, pool } from '../rfab.mjs';
-import { AWAY, BACK, LIMB_SHEETS, MATERIAL, QUIET, THEMES, limb, placeOnLimbSheet } from '../limbs.mjs';
+import { AWAY, BACK, LIMB_SHEETS, MATERIAL, QUIET, THEMES, WITHER, limb, placeOnLimbSheet } from '../limbs.mjs';
 import { blank, crop, flipX, over, paste, readFrames, readImage, resize, writeJpg, writePng } from '../lib/img.mjs';
 import { figure, findFigures } from '../lib/sheet.mjs';
 import { dropSpecks, fringe, keyClip, keyOf, loopWindow, pick, unionBox } from '../lib/key.mjs';
@@ -23,7 +23,7 @@ import { FILL, drawCell, footingOf, markOf, spill } from '../lib/foot.mjs';
 import { ART, REVIEW, ROOT, SRC, putEntry } from '../lib/manifest.mjs';
 
 const FPS = 12;
-const KEEP = { idle: 16, fire: 14 };
+const KEEP = { idle: 16, fire: 14, die: 10 };
 /** The side of a frame, and how many frames across its atlas is: of a limb of one cell, and of a BIG limb, which is drawn two cells wide and would be seen soft at the same size. */
 const FRAME = { small: [256, 16], big: [384, 8] };
 const KEYS = { green: { hex: '00FF00', name: 'green' }, blue: { hex: '0000FF', name: 'blue' } };
@@ -105,6 +105,41 @@ function lift(img, by, ground) {
   return img;
 }
 
+/** `count` frames evenly from a list, the last among them (a death ends on its husk). */
+const pickToEnd = (frames, count) => (frames.length <= count ? frames.slice()
+  : Array.from({ length: count }, (_, i) => frames[Math.round((i * (frames.length - 1)) / (count - 1))]));
+
+/**
+ * WHERE A DONOR'S PART IS GRAFTED (Sep 30 2026, DESIGN.md: "a spitter built from a cannibalized
+ * burster has the burster's sacs hanging off it"): points on the outline of the limb at rest,
+ * as shares of its frame, in the order they are used: right and left a little above its
+ * footing, its crown, then right and left higher up. Each is a little inside the outline, so
+ * that a part drawn behind the limb grows out from under its edge.
+ */
+function graftsOf(img, anchor, F) {
+  const solid = (x, y) => img.data[(y * img.w + x) * 4 + 3] > 128;
+  let top = img.h;
+  for (let y = 0; y < img.h && top === img.h; y++) for (let x = 0; x < img.w; x++) if (solid(x, y)) { top = y; break; }
+  const foot = Math.round(anchor[1] * F);
+  const row = (share) => {
+    const y = Math.round(foot - (foot - top) * share);
+    let l = -1, r = -1;
+    for (let x = 0; x < img.w; x++) if (solid(x, y)) { if (l < 0) l = x; r = x; }
+    return { y, l, r };
+  };
+  const inset = F * 0.04;
+  const out = [];
+  const low = row(0.42);
+  const high = row(0.72);
+  const at = (x, y) => [Number((x / F).toFixed(3)), Number((y / F).toFixed(3))];
+  if (low.l >= 0) out.push(at(low.r - inset, low.y), at(low.l + inset, low.y));
+  let cx = 0, n = 0;
+  for (let x = 0; x < img.w; x++) if (solid(x, top + 3)) { cx += x; n++; }
+  if (n) out.push(at(cx / n, top + (foot - top) * 0.12));
+  if (high.l >= 0) out.push(at(high.r - inset, high.y), at(high.l + inset, high.y));
+  return out;
+}
+
 /** How many pixels of a frame are solid. */
 const area = (f) => { let n = 0; for (let i = 3; i < f.data.length; i += 4) if (f.data[i] > 128) n++; return n; };
 
@@ -117,7 +152,7 @@ function bakeView(l, dir, view, check, F) {
   const say = view === 'back' ? 'from behind, ' : '';
   const clips = [];
   let first = null;
-  for (const anim of ['idle', 'fire']) {
+  for (const anim of ['idle', 'fire', 'die']) {
     const file = path.join(dir, `${pre}${anim}.mp4`);
     if (!fs.existsSync(file)) continue;
     const keyed = keyClip(readFrames(file, FPS));
@@ -130,7 +165,7 @@ function bakeView(l, dir, view, check, F) {
       first = keyed.frames[0];
       loop = loopWindow(frames, { min: 16, max: 46 });
       frames = frames.slice(loop.start, loop.end);
-    } else {
+    } else if (anim === 'fire') {
       // A flash, a beam or a cloud cannot be cut off its background: the frames it swallowed
       // are left out. What a limb throws is drawn by the game; the clip is the body's own motion.
       const solid = frames.map(area);
@@ -168,7 +203,7 @@ function bakeView(l, dir, view, check, F) {
   const frames = [];
   const anims = {};
   for (const c of clips) {
-    c.kept = pick(c.frames, KEEP[c.anim]).map((f) => lift(resize(crop(f, x0, y0, side, side), F, F), l.flat ? 0 : LIFT, anchor[1]));
+    c.kept = (c.anim === 'die' ? pickToEnd(c.frames, KEEP.die) : pick(c.frames, KEEP[c.anim])).map((f) => lift(resize(crop(f, x0, y0, side, side), F, F), l.flat ? 0 : LIFT, anchor[1]));
     anims[c.anim] = { start: frames.length, count: c.kept.length, fps: Number((c.kept.length / c.seconds).toFixed(2)) };
     frames.push(...c.kept);
     if (c.loop) {
@@ -184,7 +219,11 @@ function bakeView(l, dir, view, check, F) {
     const z = unionBox([c.frames[c.frames.length - 1]]);
     if (c.dropped) check(`${say}${c.anim}: frames swallowed by a flash or a cloud are few`, c.dropped <= 30, `${c.dropped} left out`);
     // A limb that drips is as big as its drop is long: its outline is allowed to change (limbs.mjs: drips).
-    if (a && z && !l.drips) {
+    if (c.anim === 'die') {
+      // A death ends smaller than it began: a husk, not the limb standing.
+      const shrank = area(c.frames[c.frames.length - 1]) / Math.max(1, area(c.frames[0]));
+      check(`${say}die: it ends as a husk`, shrank < 0.85, `${(shrank * 100).toFixed(0)}% of its first frame`);
+    } else if (a && z && !l.drips) {
       const grew = Math.abs((z.x1 - z.x0) * (z.y1 - z.y0) / ((a.x1 - a.x0) * (a.y1 - a.y0)) - 1);
       check(`${say}${c.anim}: ends the size it began`, grew < 0.2, `${(grew * 100).toFixed(0)}% change`);
     }
@@ -195,7 +234,7 @@ function bakeView(l, dir, view, check, F) {
     const out = spill(idle.kept[0], anchor[0] * F, anchor[1] * F, (body * F) / 2 / FILL);
     check(`${say}it stands in its cell`, out < 0.12, `${(out * 100).toFixed(1)}% of it lies in front of its cell`);
   }
-  return { view, anchor, body, anims, frames, kept: clips.map((c) => c.kept) };
+  return { view, anchor, body, anims, frames, kept: clips.map((c) => c.kept), grafts: graftsOf(idle.kept[0], anchor, F) };
 }
 
 /** Steps 2 and 3, free: clips to an atlas, a manifest entry, the checks and the review pictures. */
@@ -210,6 +249,7 @@ export function bakeLimb(family) {
   const back = bakeView(l, dir, 'back', check, F);
   if (l.back) check('from behind: it has a view', !!back, back ? 'drawn' : `missing: node tools/art/make.mjs limb ${family}`);
   if (l.fire && !front.anims.fire) check('fire: exists', false, 'missing');
+  if (!front.anims.die) check('die: exists', false, `missing: node tools/art/make.mjs limb ${family}`);
 
   // One atlas: the front view's frames, then the frames of the view from behind.
   const frames = [...front.frames, ...(back ? back.frames : [])];
@@ -226,7 +266,8 @@ export function bakeLimb(family) {
     body: front.body,
     on: l.on, ...(l.flat ? { flat: true } : {}), ...(l.facing ? { facing: true } : {}), ...(l.big ? { big: true } : {}),
     anims: front.anims,
-    ...(back ? { back: { anchor: back.anchor, body: back.body, anims: shift(back.anims, front.frames.length) } } : {}),
+    grafts: front.grafts,
+    ...(back ? { back: { anchor: back.anchor, body: back.body, anims: shift(back.anims, front.frames.length), grafts: back.grafts } } : {}),
   };
   putEntry('limbs', family, entry);
 
@@ -319,9 +360,11 @@ export async function makeLimb(family, { bakeOnly = false, stillsOnly = false } 
     });
     const jobs = [{ anim: 'idle', prompt: l.idle + STEADY }];
     if (l.fire) jobs.push({ anim: 'fire', prompt: l.fire + (l.quiet ? QUIET : '') + STEADY });
-    const results = await pool(jobs, 2, (j) => makeClip({
+    // Its death: it does not loop, and the usual lock ("the same size the whole time") is not said.
+    jobs.push({ anim: 'die', prompt: `${WITHER} The solid pure ${key.name} #${key.hex} background stays flat and empty.`, loop: false, raw: true });
+    const results = await pool(jobs, 3, (j) => makeClip({
       slug: `${family} ${j.anim}`, out: path.join(dir, `${j.anim}.mp4`), stillFile: still,
-      prompt: j.prompt, key: key.hex, keyName: key.name,
+      prompt: j.prompt, key: key.hex, keyName: key.name, loop: j.loop ?? true, raw: j.raw ?? false,
     }));
     results.forEach((r, i) => { if (!r.ok) console.warn(`[limb] ${family} ${jobs[i].anim} failed: ${r.error.message.slice(0, 160)}`); });
     await makeBack(l, dir, key, false);

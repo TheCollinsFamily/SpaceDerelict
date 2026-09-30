@@ -76,11 +76,13 @@ export function floorPoint(px, py, bleed = 0) {
  * t along it left to right on screen, v from the top of the level down. `side`: 'south'
  * (the left face, which falls to the right) or 'east' (the right face, which rises to the right).
  */
-export function wallPoint(px, py, side) {
+export function wallPoint(px, py, side, pad = [0, 0, 0]) {
   const t = px / A;
   const top = side === 'south' ? B * t : B * (1 - t);
   const v = (py - top) / LEVEL_H;
-  return t >= 0 && t < 1 && v >= 0 && v < 1 ? { t, v } : null;
+  // pad: how far past its sides, its top and its bottom (pixels) the face goes on, so that neighbours overlap.
+  const [side0, up, down = Math.min(1, up)] = pad;
+  return t >= -side0 / A && t < 1 + side0 / A && v >= -up / LEVEL_H && v < 1 + down / LEVEL_H ? { t, v } : null;
 }
 
 /**

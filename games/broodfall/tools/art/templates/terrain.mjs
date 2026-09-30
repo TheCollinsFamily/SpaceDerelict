@@ -136,16 +136,39 @@ export function packSprites(sprites, file, width = 2048, q = 90) {
 
 const shade = (c, k) => [Math.min(255, c[0] * k), Math.min(255, c[1] * k), Math.min(255, c[2] * k), c[3]];
 
+/**
+ * THE SEAMS (Sep 30 2026). A tile drawn past its own edge (BLEED) was still cut off by its own
+ * picture at its four corners: a diamond touches the edge of its picture there, so the part of
+ * it drawn past the corner had nowhere to go. Where four tiles meet, all four were short at
+ * once, and the ground under them showed as a small "+" (and, along a roof's lip, a notch at
+ * every cell). Every tile is now baked on a picture a margin bigger than itself: PAD pixels
+ * across and down, on each side. The manifest says so on the sprite (`pad`), and the game
+ * places the tile by its own corner, not the picture's (src/render/art.ts, defaultAnchor).
+ */
+export const FLOOR_PAD = [5, 3];
+/** The skin is drawn further past its edge (SKIN_BLEED): its margin is bigger. */
+export const SKIN_PAD = [10, 6];
+/** A wall face is drawn two pixels past its sides and its top, and one below: neighbours overlap, never leave a hairline. */
+export const WALL_PAD = [2, 2];
+
+/** A tile drawn on a picture `pad` bigger than it on every side: `at` is still asked in the tile's own pixels. */
+export function padded(w, h, pad, at) {
+  const img = render(w + 2 * pad[0], h + 2 * pad[1], (px, py) => at(px - pad[0], py - pad[1]));
+  img.pad = pad;
+  return img;
+}
+const tile = (id, img) => ({ id, img, extra: { pad: img.pad } });
+
 /** Floor diamonds of one texture: 4 x 4 cells, mirrored so that neighbours always match. */
 export function floorTiles(id, tex, k = 1) {
   const out = [];
   for (let j = 0; j < 4; j++) for (let i = 0; i < 4; i++) {
-    out.push({ id: `${id}-${i}${j}`, img: render(TILE_W, TILE_H, (px, py) => {
+    out.push(tile(`${id}-${i}${j}`, padded(TILE_W, TILE_H, FLOOR_PAD, (px, py) => {
       const p = floorPoint(px, py, BLEED);
       if (!p) return null;
       const c = sample(tex, mirrorTile(i, p.x) * tex.w, mirrorTile(j, p.y) * tex.h);
       return shade([c[0], c[1], c[2], 255], k);
-    }) });
+    })));
   }
   return out;
 }
@@ -159,7 +182,7 @@ export function creepTiles(tex) {
   for (let open = 0; open < 16; open++) {
     const n = open === 0 ? 4 : 2;
     for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) {
-      out.push({ id: `creep-${open}-${i}${j}`, img: render(TILE_W, TILE_H, (px, py) => {
+      out.push(tile(`creep-${open}-${i}${j}`, padded(TILE_W, TILE_H, SKIN_PAD, (px, py) => {
         const p = floorPoint(px, py, SKIN_BLEED);
         if (!p) return null;
         let d = 1;
@@ -177,7 +200,7 @@ export function creepTiles(tex) {
         // The rim is thicker: darker, as if it cast a small shadow on itself.
         const rim = t < 1 ? 0.78 : 1;
         return [c[0] * rim, c[1] * rim, c[2] * rim, t * 255];
-      }) });
+      })));
     }
   }
   return out;
@@ -192,12 +215,12 @@ export function wallTiles(id, tex) {
   const out = [];
   for (const side of ['south', 'east']) {
     for (let level = 0; level < 3; level++) for (let i = 0; i < 2 * WALL_SPAN; i++) {
-      out.push({ id: `wall-${id}-${side}-${level}-${i}`, img: render(A, B + LEVEL_H, (px, py) => {
-        const p = wallPoint(px, py, side);
+      out.push(tile(`wall-${id}-${side}-${level}-${i}`, padded(A, B + LEVEL_H, WALL_PAD, (px, py) => {
+        const p = wallPoint(px, py, side, WALL_PAD);
         if (!p) return null;
-        const c = sample(tex, mirrorTile(i, p.t, WALL_SPAN) * tex.w, ((2 - level + p.v) / 3) * tex.h);
+        const c = sample(tex, mirrorTile(i, p.t, WALL_SPAN) * tex.w, Math.max(0, Math.min(1, (2 - level + p.v) / 3)) * tex.h);
         return shade([c[0], c[1], c[2], 255], side === 'south' ? 0.92 : 0.64);
-      }) });
+      })));
     }
   }
   return out;
@@ -210,14 +233,14 @@ export function wallTiles(id, tex) {
  * over the floor or the skin of a cell.
  */
 export function edgeTiles() {
-  const band = (id, along, colour, reach, strength, power) => ({ id, img: render(TILE_W, TILE_H, (px, py) => {
+  const band = (id, along, colour, reach, strength, power) => tile(id, padded(TILE_W, TILE_H, FLOOR_PAD, (px, py) => {
     const p = floorPoint(px, py, BLEED);
     if (!p) return null;
     const d = along(p);
     if (d >= reach) return null;
     const t = Math.pow(1 - Math.max(0, d) / reach, power);
     return [colour[0], colour[1], colour[2], 255 * strength * t];
-  }) });
+  }));
   return [
     band('edge-lip-south', (p) => 1 - p.y, [236, 150, 140], 0.11, 0.62, 1.4),
     band('edge-lip-east', (p) => 1 - p.x, [200, 110, 104], 0.11, 0.5, 1.4),
@@ -230,8 +253,8 @@ export function edgeTiles() {
 export function dripTiles(tex) {
   const out = [];
   for (const side of ['south', 'east']) for (let i = 0; i < 4; i++) {
-    out.push({ id: `drip-${side}-${i}`, img: render(A, B + LEVEL_H, (px, py) => {
-      const p = wallPoint(px, py, side);
+    out.push(tile(`drip-${side}-${i}`, padded(A, B + LEVEL_H, WALL_PAD, (px, py) => {
+      const p = wallPoint(px, py, side, [WALL_PAD[0], WALL_PAD[1], 0]);
       if (!p) return null;
       const reach = 0.25 + 0.75 * Math.pow(noise((i + p.t) * 6, 3.7, 24), 1.6);
       const t = Math.max(0, Math.min(1, (reach - p.v) / 0.12));
@@ -239,7 +262,7 @@ export function dripTiles(tex) {
       const c = sample(tex, mirrorTile(i, p.t) * tex.w, p.v * 0.5 * tex.h);
       const k = side === 'south' ? 0.85 : 0.6;
       return [c[0] * k, c[1] * k, c[2] * k, t * 235];
-    }) });
+    })));
   }
   return out;
 }
@@ -315,7 +338,7 @@ export function townPicture(by, roofIds, file, streetIds = []) {
   const height = (x, y) => (x === 3 || x === 4 || y === 3 || y === 4 ? 0 : 1 + ((Math.floor(x / 2) * 3 + Math.floor(y / 2) * 5) % 3));
   const kind = (x, y) => (x < 3 ? (y < 3 ? 'plain' : 'science') : (y < 3 ? 'meat' : 'highground'));
   const creeped = (x, y) => x >= 4 && y >= 2;
-  const put = (img, sx, sy) => { if (img) over8(out, img, Math.round(sx), Math.round(sy)); };
+  const put = (img, sx, sy) => { if (img) over8(out, img, Math.round(sx) - (img.pad?.[0] ?? 0), Math.round(sy) - (img.pad?.[1] ?? 0)); };
   for (let d = 0; d < 2 * N; d++) for (let x = 0; x < N; x++) {
     const y = d - x;
     if (y < 0 || y >= N) continue;

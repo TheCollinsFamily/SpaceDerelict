@@ -10,7 +10,9 @@
  * chitin with ONE accent from the organ that unlocks it.
  *
  * look: what is drawn. idle: what it does while waiting. fire: what its attack clip shows
- * (null = it has no attack of its own). on: 'roof' (on a block) or 'street'.
+ * (null = it has no attack of its own); an engine or a support limb's `fire` is its ACTING clip
+ * (Sep 30 2026), played when what it does happens (its target fires, its shield takes a hit).
+ * on: 'roof' (on a block) or 'street'.
  *
  * A firing clip shows the BODY's motion. What a limb throws that is light or vapour (a beam,
  * a cloud, a flash) cannot be cut off its background and is drawn by the game: those limbs
@@ -63,6 +65,17 @@ export const BACK =
   'plates of dark chitin, the same accent, the same size in the frame, standing on the same low ragged skirt of ' +
   'roots in the same place in the picture. The same view: isometric, from 45 degrees above. Soft even light ' +
   'from directly overhead, no cast shadows, no text.';
+/**
+ * THE DEATH OF A LIMB (Sep 30 2026): one clip each, from the limb's own picture, that does not
+ * loop. It withers where it stands into a husk; the game plays it when the limb dies or is
+ * cannibalized, and lets the husk sink and fade. Sent as it is (the usual lock says "the same
+ * size the whole time", and this one shrinks), with its own camera lock.
+ */
+export const WITHER =
+  'The organism dies where it stands. Its flesh dries out, darkens and shrivels; its raised parts droop, curl in on ' +
+  'themselves and sag down onto the base, its plates of chitin tilt and slump, until the whole of it has collapsed into ' +
+  'a small dry grey-brown husk lying low on its skirt of roots. It never recovers. Its roots stay at exactly the same ' +
+  'spot the whole time. Camera completely locked: no zoom, no pan, no cuts.';
 /** Said to the video model of a limb seen from behind. */
 export const AWAY = ' It faces away from the camera, toward the upper right, the whole time: whatever it throws flies away from the camera.';
 /**
@@ -177,11 +190,11 @@ export const LIMBS = [
   { family: 'ward', big: true, foot: [0.5, 0.74, 0.9], name: 'Ward Membrane', theme: 'lattice', on: 'roof', job: 'Shields every other limb near it.',
     look: 'a dome of glassy milky-white membrane stretched over thin ribs of chitin, like a soap bubble half sunk in flesh',
     idle: `${CALM} A shimmer of light crosses the dome.`,
-    fire: null },
+    quiet: true, fire: 'The dome of membrane flexes outward and a bright ripple runs over it from the top down, then it settles back to exactly its starting pose.' },
   { family: 'choir', foot: [0.5, 0.72, 0.82], name: 'Choir Node', theme: 'lattice', on: 'roof', job: 'The limbs around it fire faster.',
     look: 'a ring of seven slender glassy milky-white pipes of different heights, like organ pipes, round a fleshy hub',
     idle: 'The pipes vibrate one after another, as if each were sounding a note; the hub breathes slowly.',
-    fire: null },
+    quiet: true, fire: 'All seven pipes shudder hard together and the hub pumps once strongly, then they settle back to exactly the starting pose.' },
   // ---- Brood Womb ----
   { family: 'brood', big: true, foot: [0.49, 0.73, 0.74], backFoot: [0.48, 0.66, 0.81], name: 'Broodmother', theme: 'womb', on: 'roof', job: 'Keeps three broodlings fighting in the street below.',
     back: 'The puckered slit is on the far side and hidden; we see the back of the swollen sac, studded with eggs.',
@@ -202,38 +215,38 @@ export const LIMBS = [
   { family: 'conduit', foot: [0.45, 0.85, 0.66], backFoot: [0.51, 0.73, 0.86], name: 'Marrow Conduit', theme: 'vault', on: 'roof', facing: true, job: 'Copies the bonuses of the limbs around it into the one it points at.',
     back: 'The pipe points away toward the upper right: its open mouth is at the far end and hidden; we see its closed rear end nearest us, and the glowing marrow along its split top.',
     look: 'a thick pipe of bone split open along its top to show glowing amber marrow, with one wide open mouth at its front end, on a muscular base',
-    idle: 'Glowing amber marrow flows slowly along the pipe toward its mouth; the base breathes slowly.', fire: null },
+    idle: 'Glowing amber marrow flows slowly along the pipe toward its mouth; the base breathes slowly.', fire: 'A bright pulse of glowing amber marrow surges along the split pipe and gushes up to its open mouth, the mouth flaring wide, then the flow calms back to exactly the starting pose.' },
   { family: 'tap', foot: [0.49, 0.89, 0.79], backFoot: [0.51, 0.78, 0.77], name: 'Marrow Tap', theme: 'vault', on: 'roof', facing: true, job: 'Holds its target in stasis; sacrifice it again and again for copies of the target\'s bonuses.',
     back: 'The spigot and its bowl are on the far side, toward the upper right, half hidden behind the spike; we see the back of the spike.',
     look: 'a thick spike of bone driven down like a tap, with a spigot at its side from which amber marrow drips slowly into a small bone bowl',
-    idle: 'A drop of glowing amber marrow swells at the spigot, falls into the bowl, and another begins; the base breathes slowly.', fire: null },
+    idle: 'A drop of glowing amber marrow swells at the spigot, falls into the bowl, and another begins; the base breathes slowly.', fire: 'The bone spike shudders and drives a little deeper, and a thick gush of glowing amber marrow pours from the spigot into the bowl, then the flow slows back to a drip, back to exactly the starting pose.' },
   { family: 'mitosis', foot: [0.52, 0.77, 0.71], name: 'Mitosis Node', theme: 'vault', on: 'roof', facing: true, job: 'Buds a copy of the limb next to it after every wave.',
     look: 'two identical buds filled with glowing amber marrow, splitting apart from one stalk, joined by a stretching neck of tissue',
-    idle: 'The two buds pull slowly apart and ease back together, the neck of tissue between them stretching and relaxing.', fire: null },
+    idle: 'The two buds pull slowly apart and ease back together, the neck of tissue between them stretching and relaxing.', fire: 'The two buds swell and glow brighter and tug hard apart, the neck of tissue between them stretching thin, then they ease back together to exactly the starting pose.' },
   { family: 'reliquary', foot: [0.49, 0.73, 0.82], name: 'Reliquary', theme: 'vault', on: 'roof', facing: true, job: 'Banks its target\'s bonuses if the target dies.',
     look: 'a small casket of bone lattice on a muscular base, with amber marrow glowing through the lattice',
-    idle: 'The amber glow inside the casket brightens and dims slowly; the base breathes slowly.', fire: null },
+    idle: 'The amber glow inside the casket brightens and dims slowly; the base breathes slowly.', fire: 'The bone lattice of the casket flexes open a little and the amber glow inside it swells brighter, then the lattice closes and the glow settles back to exactly the starting pose.' },
   { family: 'press', foot: [0.51, 0.76, 0.79], backFoot: [0.51, 0.63, 0.79], name: 'Meat Press', theme: 'vault', on: 'roof', facing: true, job: 'Its target\'s war kills pay science instead.',
     back: 'We see the back of the press: its hinge is nearest us, and its open jaws face away toward the upper right.',
     look: 'two heavy plates of bone hinged like a press, one above the other, with glowing amber marrow oozing between them',
-    idle: 'The upper plate presses slowly down and lifts again; amber marrow oozes between the plates.', fire: null },
+    idle: 'The upper plate presses slowly down and lifts again; amber marrow oozes between the plates.', fire: 'The upper plate slams down hard onto the lower one, squeezing a gush of glowing amber marrow out between them, then lifts slowly back to exactly the starting pose.' },
   // ---- Resonance Chamber: combo engines ----
   { family: 'amp', foot: [0.5, 0.86, 0.83], backFoot: [0.5, 0.84, 0.84], name: 'Resonance Amplifier', theme: 'chamber', on: 'roof', facing: true, job: 'Multiplies every bonus on its target.',
     back: 'The bell of the horn opens away from the camera, toward the upper right: we see the outside of the horn narrowing toward us, and none of its membrane.',
     look: 'a horn of flesh shaped like the bell of a trumpet, with a taut violet membrane like a drum skin stretched across its throat',
-    idle: 'The violet membrane vibrates like a drum skin; the horn breathes slowly.', fire: null },
+    idle: 'The violet membrane vibrates like a drum skin; the horn breathes slowly.', quiet: true, fire: 'The violet membrane across the throat of the horn thumps hard in and out like a struck drum and the bell of the horn flares open a little, then settles back to exactly its starting pose.' },
   { family: 'mosaic', foot: [0.52, 0.85, 0.62], name: 'Mosaic Node', theme: 'chamber', on: 'roof', facing: true, job: 'Gives its target one of every kind of bonus nearby.',
     look: 'an upright disc made of many small tiles of differently coloured tissue set in a taut violet membrane, on a muscular stalk',
-    idle: 'The small tiles brighten one after another, in a slow ripple across the disc.', fire: null },
+    idle: 'The small tiles brighten one after another, in a slow ripple across the disc.', quiet: true, fire: 'All the small tiles brighten together in a fast ripple from the middle of the disc outward and the disc flexes, then they dim back to exactly the starting pose.' },
   { family: 'twin', foot: [0.49, 0.71, 0.72], name: 'Twinning Gland', theme: 'chamber', on: 'roof', facing: true, job: 'Doubles its target\'s projectiles.',
     look: 'two identical round glands side by side, joined by a taut violet membrane, on one muscular base',
-    idle: 'The two glands pulse in perfect time with each other; the violet membrane between them tightens and slackens.', fire: null },
+    idle: 'The two glands pulse in perfect time with each other; the violet membrane between them tightens and slackens.', fire: 'The two glands squeeze hard in perfect unison, twice, the violet membrane between them snapping taut, then relax back to exactly the starting pose.' },
   { family: 'capacitor', foot: [0.51, 0.81, 0.58], name: 'Capacitor Sac', theme: 'chamber', on: 'roof', facing: true, job: 'Banks its target\'s idle shots and spends them at four times the speed.',
     look: 'a taut upright sac of violet membrane banded with rings of dark chitin, crackling faintly with stored charge',
-    idle: 'Small sparks crawl over the violet sac; it swells slowly as if filling.', fire: null },
+    idle: 'Small sparks crawl over the violet sac; it swells slowly as if filling.', quiet: true, fire: 'The violet sac swells tight and its rings of dark chitin strain, then it squeezes sharply smaller as if discharging, and slowly refills back to exactly the starting pose.' },
   { family: 'boomerang', foot: [0.52, 0.78, 0.65], name: 'Boomerang Node', theme: 'chamber', on: 'roof', facing: true, job: 'Its target\'s shots fly back to it, piercing everything on the way.',
     look: 'a curved crescent of bone standing on a pedestal wrapped in taut violet membrane',
-    idle: 'The bone crescent turns slowly a little to the left and back; the violet membrane pulses.', fire: null },
+    idle: 'The bone crescent turns slowly a little to the left and back; the violet membrane pulses.', fire: 'The bone crescent swings quickly a quarter turn to one side and back to exactly its starting pose, the violet membrane of the pedestal rippling.' },
   // ---- The Seeding Gland's free limb (Collins, Sep 29 2026: 'a free low power tower … it shoots out') ----
   { family: 'sprout', foot: [0.5, 0.7, 0.67], name: 'Seedling', theme: 'core', on: 'roof', job: 'Free, from a Seeding Gland: a weak little shooter, shot up from below.',
     look: 'a small young sprout of the creature, half the size of the others: a short soft stalk of pale young muscle with one small puckered nozzle, two tiny leaf-like flaps of chitin, and a few thin new roots',
@@ -244,7 +257,7 @@ export const LIMBS = [
     back: 'The nozzle lies along the ground pointing away toward the upper right, its tip far from the camera; we see the back of the mound it grows from.',
     look: 'a long low nozzle like the end of a hose, lying forward along the ground on a muscular base, dribbling dark maroon slime from its tip',
     idle: `${CALM} Dark maroon slime dribbles from the tip of the nozzle.`,
-    fire: null },
+    fire: 'The base squeezes, the nozzle bucks and a thick gush of dark maroon slime spurts from its tip along the ground, then it settles back to exactly the starting pose, dribbling.' },
   { family: 'cage', big: true, foot: [0.49, 0.78, 0.78], name: 'Trap Cage', theme: 'other', on: 'roof', job: 'Catches a weakened royal and grafts her.',
     look: 'a cage of tall curved ribs of dark chitin standing open like the jaws of a trap, on a muscular base',
     idle: `${CALM} The ribs open and close a little.`,

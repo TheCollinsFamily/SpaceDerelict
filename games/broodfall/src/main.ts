@@ -12,13 +12,16 @@ import { BoardArtSet, artUrl, loadManifest, pickBiome } from './render/art';
 import { Hud, PIP_DESC } from './ui/hud';
 import { UndergroundScreen } from './ui/underground';
 import { CampaignUi } from './ui/campaignUi';
-import { finish, newCampaign, plan, type CampaignState, type DeploymentPlan } from './meta/campaign';
+import { finish, newCampaign, plan, territory as territoryDef, type CampaignState, type DeploymentPlan } from './meta/campaign';
 import { goalText, measure, type RunReport } from './meta/goals';
 import { clearCampaign, clearPending, loadCampaign, loadPending, saveCampaign, savePending } from './meta/storage';
 import { strainIcons, strainKey, strainLabel } from './ui/strain';
 import { GENES } from '../content/plates';
 import { BALANCE as B } from '../content/data';
-import { PLATE_FEATURES } from './sim/citymap';
+import { PLATE, PLATE_FEATURES } from './sim/citymap';
+import { LoadingScreen, applyName, dressLogos, loadScreenArt, showArtNotice, showFailure } from './ui/screens';
+import { debriefPictures, type Outcome } from './ui/debrief';
+import { platePicture } from './render/platePreview';
 import type { Directive, OrganId, RootDir, SimConfig, SimEvent, TowerFamily } from './sim/types';
 
 const params = new URLSearchParams(location.search);
@@ -86,6 +89,24 @@ let debriefShown = false;
 
 /** The top-down board until boot() has loaded the art; then the isometric one, if its art is there. */
 let renderer: Renderer = new Renderer();
+/** The board's pictures, once loaded (the district draft draws its plates with them). */
+let boardArt: BoardArtSet | null = null;
+/** The board is drawn and the loop runs: until then a deployment waits behind the loading screen. */
+let bootDone = false;
+const loading = new LoadingScreen();
+/** The board as it was when the run ended, for the report (a data URL). */
+let endSnapshot: string | null = null;
+
+/** A photograph of the board as it is now; null when the canvas cannot be read. */
+function snapshotBoard(): string | null {
+  try {
+    renderer.draw(sim, 0);
+    renderer.app.render();
+    return renderer.app.canvas.toDataURL('image/jpeg', 0.84);
+  } catch {
+    return null;
+  }
+}
 
 let selectedCard: number | null = null;
 let armedOrgan: OrganId | null = null;
@@ -248,6 +269,7 @@ function handleEvents(events: SimEvent[]): void {
     if (e.kind === 'royal-incoming') banner('THE ROYAL TAKES THE FIELD');
     if (e.kind === 'plate-drafted') banner(`DISTRICT CONSUMED: ${e.name.toUpperCase()}`);
     if ((e.kind === 'won' || e.kind === 'lost') && !AUTO) {
+      endSnapshot = snapshotBoard();
       window.setTimeout(campaignPlan ? campaignDebrief : showDebrief, 1600);
     }
   }
@@ -271,6 +293,12 @@ function slotCompass(slot: number): string {
   return (ns + ew) || 'CENTER';
 }
 
+/** Where an offered plate would go: every district of the board, the ones held, the core's, and this one. */
+function draftMap(slot: number): string {
+  const coreSlot = Math.floor(Math.floor(sim.map.coreCell / sim.cfg.gridW) / PLATE) * sim.map.slotsX + Math.floor((sim.map.coreCell % sim.cfg.gridW) / PLATE);
+  return sim.map.slots.map((s, i) => `<i class="${i === slot ? 'here' : i === coreSlot ? 'core' : s ? 'held' : ''}"></i>`).join('');
+}
+
 function renderDraft(): void {
   if (!sim.pendingDraft) return;
   draftOptionsEl.innerHTML = '';
@@ -282,8 +310,14 @@ function renderDraft(): void {
       const cls = ch === '.' ? 'c-road' : ch === 'P' ? 'c-plaza' : ch === 'A' ? 'c-b2' : ch === 'B' ? 'c-b3' : 'c-b1';
       return `<div class="df-cell ${cls}"></div>`;
     }).join('')).join('');
+    // The plate drawn as the board will draw it (its streets, heights, facades, roofs), when the board's art is up.
+    const pic = renderer instanceof IsoRenderer && boardArt
+      ? platePicture(renderer.app, boardArt, { gridW: sim.cfg.gridW, slotsX: sim.map.slotsX, slotsY: sim.map.slotsY, coreCell: sim.map.coreCell, seed: sim.cfg.seed }, offer, 460)
+      : null;
+    if (pic) card.classList.add('has-pic');
     card.innerHTML = `<div class="df-name"></div><div class="df-desc"></div>`
-      + `<div class="df-grid">${grid}</div><div class="df-where"></div>`;
+      + (pic ? `<img class="df-pic" alt="" src="${pic}">` : '')
+      + `<div class="df-grid">${grid}</div><div class="df-map" style="grid-template-columns:repeat(${sim.map.slotsX},9px)">${draftMap(offer.slot)}</div><div class="df-where"></div>`;
     (card.querySelector('.df-name') as HTMLElement).textContent = feat.name;
     (card.querySelector('.df-desc') as HTMLElement).textContent = feat.desc;
     (card.querySelector('.df-where') as HTMLElement).textContent = `GROW ${slotCompass(offer.slot)}`;
@@ -353,7 +387,22 @@ function campaignDebrief(): void {
   saveCampaign(state);
   clearPending();
   campaignUi = new CampaignUi(state, campaignHooks);
-  campaignUi.showDebrief(debrief, () => { location.href = `${location.pathname}?campaign=ship`; });
+  const outcome: Outcome = debrief.captured ? 'won' : debrief.repelled ? 'held' : 'lost';
+  const where = territory ? territoryDef(territory).name : '';
+  const verdict = outcome === 'won' ? `${where.toUpperCase()} TAKEN` : outcome === 'held' ? 'COUNTER-ATTACK REPELLED' : 'DEPLOYMENT FAILED';
+  const ui = campaignUi;
+  const back = () => { location.href = `${location.pathname}?campaign=ship`; };
+  void debriefPictures(runPictures(outcome, verdict,
+    outcome === 'lost' ? `${where} · the asset was lost after ${sim.wavesCleared} wave${sim.wavesCleared === 1 ? '' : 's'}` : `${where} · ${sim.wavesCleared} wave${sim.wavesCleared === 1 ? '' : 's'} held`,
+    [['waves held', String(sim.wavesCleared)], ['districts taken', String(sim.map.slots.filter(Boolean).length)], ['limbs grown', String(sim.stats.limbsGrown)], ['standing earned', `+${debrief.standing}`]]))
+    .then((pics) => ui.showDebrief(debrief, back, pics), () => ui.showDebrief(debrief, back));
+}
+
+/** The report's pictures of this run (src/ui/debrief.ts). */
+function runPictures(outcome: Outcome, verdict: string, caption: string, figures: Array<[string, string]>): Parameters<typeof debriefPictures>[0] {
+  const standing: Partial<Record<TowerFamily, number>> = {};
+  for (const t of sim.towers) standing[t.family] = (standing[t.family] ?? 0) + 1;
+  return { outcome, verdict, caption, snapshot: endSnapshot ?? snapshotBoard(), stats: sim.stats, standing, figures };
 }
 
 /** The Requisition Board and the picked dares/experiment, live during a campaign run. */
@@ -394,6 +443,8 @@ function setupMenu(): void {
     }
     menuEl.classList.add('hidden');
     started = true;
+    // Clicked before the board's art has arrived: the deployment waits behind the loading screen.
+    if (!bootDone) loading.show('THE DEPLOYMENT');
   });
   if (AUTOSTART) menuEl.classList.add('hidden');
   const saved = loadCampaign();
@@ -429,6 +480,16 @@ function showDebrief(): void {
     document.getElementById('debrief-body')!.appendChild(div);
   }
   debriefEl.classList.remove('hidden');
+  // What happened, in pictures, at the head of the report; the lines above stay as its small print.
+  const verdict = won ? 'DIRECTIVE FULFILLED' : 'ASSET TERMINATED';
+  void debriefPictures(runPictures(won ? 'won' : 'lost', verdict,
+    won ? 'The city is the body\'s. The Board notes your efficiency.' : 'The Board notes the loss of Navy property.',
+    [['directive', `${Math.floor(p.done)} / ${p.goal}`], ['waves repelled', String(sim.wavesCleared)],
+      ['districts held', String(sim.map.slots.filter(Boolean).length)], ['standing earned', `+${standingEarned()}`]]))
+    .then((pics) => {
+      document.getElementById('debrief-pictures')!.replaceChildren(pics);
+      debriefEl.querySelector('.screen-card')!.classList.add('pictured');
+    }, (e) => console.warn('[debrief] no pictures', e));
 }
 
 function setupScreens(): void {
@@ -713,26 +774,57 @@ function underLifecycle(): void {
 
 async function boot(): Promise<void> {
   const mount = document.getElementById('stage')!;
+  applyName();
   // The menu answers at once; the art loads behind it.
   setupMenu();
   setupScreens();
-  // The title screen shows the ship in orbit, when there is a picture of it.
+  // A deployment started from the address (a campaign run, a redeploy) waits behind the loading screen.
+  if (started && CAMPAIGN !== 'ship') loading.show('THE DEPLOYMENT');
+  // The title screen: the key art and the emblem around the name; without them the ship in orbit.
+  void loadScreenArt().then((art) => {
+    dressLogos(art);
+    if (!art.title) return;
+    menuEl.style.setProperty('--title', `url("${art.title}")`);
+    menuEl.classList.add('title-art');
+  });
   void loadManifest().then((m) => {
     const file = m?.ship?.ship?.exterior;
     if (!file) return;
     menuEl.style.setProperty('--exterior', `url("${new URL(artUrl(file), document.baseURI).href}")`);
     menuEl.classList.add('ship-art');
   });
+  /** A fault screen that can be passed (playing on without the pictures): boot goes on when it is. */
+  const passable = (detail: string) => new Promise<void>((resolve) => {
+    loading.hide();
+    showFailure({ kind: 'no-art', detail }, () => { if (started) loading.show('THE DEPLOYMENT'); resolve(); });
+  });
   if (VIEW !== 'top') {
     const manifest = await loadManifest();
-    // ?biome=megacity names a tile set; a campaign deployment is drawn with its territory's; a skirmish with one chosen by its seed.
-    const art = manifest
-      ? await BoardArtSet.load(manifest, pickBiome(manifest, { biome: params.get('biome'), territory, seed: SEED }))
-      : null;
-    if (art?.terrain) renderer = new IsoRenderer(art);
+    if (!manifest) {
+      await passable('public/art/manifest.json could not be read: the list of every picture the board is drawn with.');
+    } else {
+      // ?biome=megacity names a tile set; a campaign deployment is drawn with its territory's; a skirmish with one chosen by its seed.
+      const art = await BoardArtSet.load(manifest, pickBiome(manifest, { biome: params.get('biome'), territory, seed: SEED }),
+        (done, total) => loading.progress(done, total));
+      if (art.terrain) {
+        renderer = new IsoRenderer(art);
+        boardArt = art;
+        if (art.failed.length) showArtNotice(art.failed);
+      } else {
+        await passable(`The board's floors and walls did not load.\n${art.failed.join('\n')}`);
+      }
+    }
   }
   document.body.classList.toggle('view-iso', renderer instanceof IsoRenderer);
-  await renderer.init(mount, CFG.gridW * CFG.cellPx, CFG.gridH * CFG.cellPx);
+  try {
+    await renderer.init(mount, CFG.gridW * CFG.cellPx, CFG.gridH * CFG.cellPx);
+  } catch (e) {
+    loading.hide();
+    showFailure({ kind: webglMissing() ? 'no-webgl' : 'crash', detail: String((e as Error)?.stack ?? e) });
+    return;
+  }
+  bootDone = true;
+  loading.hide();
 
   renderer.app.canvas.addEventListener('click', (ev) => { if (!dragged) handleCanvasClick(ev.clientX, ev.clientY); });
   // The isometric board can be looked at closely: the wheel zooms on the pointer, the
@@ -922,6 +1014,8 @@ async function boot(): Promise<void> {
   // clicking pixels. step(n) advances synchronously (no rAF throttle).
   const api = {
     sim,
+    /** The board's renderer itself, for beats that look inside what it draws (tools/shot-board-art.mjs). */
+    renderer,
     /** Close the between-waves organ screen (scripted play). */
     surface(): void {
       if (under.open) under.hide();
@@ -1007,4 +1101,17 @@ async function boot(): Promise<void> {
   (window as unknown as { broodfall: typeof api }).broodfall = api;
 }
 
-void boot();
+/** No WebGL canvas can be had in this browser (the board cannot be drawn without one). */
+function webglMissing(): boolean {
+  try {
+    const c = document.createElement('canvas');
+    return !(c.getContext('webgl2') ?? c.getContext('webgl'));
+  } catch {
+    return true;
+  }
+}
+
+boot().catch((e: unknown) => {
+  loading.hide();
+  showFailure({ kind: 'crash', detail: String((e as Error)?.stack ?? e) });
+});

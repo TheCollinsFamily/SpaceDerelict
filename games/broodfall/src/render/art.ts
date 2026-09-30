@@ -25,14 +25,25 @@ export interface UnitArt {
   };
 }
 /** One view of a limb: the point of its frame that stands on the middle of its ground, how wide what it stands on is (a share of the frame), and its clips. */
-export interface LimbSide { anchor: [number, number]; body: number; anims: { idle: Clip; fire?: Clip } }
+export interface LimbSide {
+  anchor: [number, number]; body: number;
+  /** fire: its attack, or an engine's acting clip; die: it withers into a husk (played once, Sep 30 2026). */
+  anims: { idle: Clip; fire?: Clip; die?: Clip };
+  /** Where a donor's part is grafted on it, as shares of its frame, in the order they are used (tools/art/templates/limb.mjs). */
+  grafts?: Array<[number, number]>;
+}
 export interface LimbArt extends LimbSide {
   atlas: string; frame: number; cols: number;
   on: 'roof' | 'street'; flat?: boolean; facing?: boolean;
   /** The view from behind, of a limb that is not the same all the way round. */
   back?: LimbSide;
 }
-export interface Rect { x: number; y: number; w: number; h: number; anchor?: [number, number]; on?: string }
+/**
+ * pad: a tile baked on a picture bigger than itself by this many pixels on each side (across,
+ * down), so that what it draws past its own edge is not cut off at its corners (the seams, Sep 30
+ * 2026, tools/art/templates/terrain.mjs). Its texture is anchored at the tile's own corner.
+ */
+export interface Rect { x: number; y: number; w: number; h: number; anchor?: [number, number]; on?: string; pad?: [number, number] }
 export interface BoardArt {
   tile: [number, number]; level: number; wallSpan: number;
   sheets: Partial<Record<'floors' | 'creep' | 'walls' | 'props', { atlas: string; sprites: Record<string, Rect> }>>;
@@ -59,7 +70,11 @@ export interface Manifest {
   board: { terrain?: BoardArt };
   biomes?: Record<string, BiomeArt>;
   ship: { ship?: ShipArt };
+  /** What flies, bursts and hangs in the air, and the donor parts (tools/art/templates/fx.mjs). */
+  fx?: { fx?: { effects?: FxSheet; parts?: FxSheet } };
 }
+/** A sheet of named sprites; a glow is drawn added onto what is under it. */
+export interface FxSheet { atlas: string; sprites: Record<string, Rect & { glow?: boolean }> }
 
 const BASE = './art/';
 export const artUrl = (file: string): string => BASE + file;
@@ -90,7 +105,10 @@ export class Atlas {
 
   /** A named rectangle. */
   sprite(id: string, r: Rect): Texture {
-    return this.rect(id, r.x, r.y, r.w, r.h);
+    const t = this.rect(id, r.x, r.y, r.w, r.h);
+    // A padded tile is placed by its own corner: every sprite made of it starts anchored there.
+    if (r.pad && !t.defaultAnchor?.x) t.defaultAnchor = { x: r.pad[0] / r.w, y: r.pad[1] / r.h };
+    return t;
   }
 
   private rect(key: string, x: number, y: number, w: number, h: number): Texture {
@@ -118,15 +136,25 @@ export class BoardArtSet {
   terrain: BoardArt | null = null;
   /** What could not be loaded, for the console and the tests. */
   failed: string[] = [];
+  /** The effects and the donor parts (named sprites), when they loaded. */
+  fx = new Map<'effects' | 'parts', { atlas: Atlas; sprites: FxSheet['sprites'] }>();
 
-  static async load(m: Manifest, biome: string | null = null): Promise<BoardArtSet> {
+  /** `onProgress`: how many files have arrived of how many asked for so far (the loading screen's bar). */
+  static async load(m: Manifest, biome: string | null = null, onProgress?: (done: number, total: number) => void): Promise<BoardArtSet> {
     const set = new BoardArtSet();
+    let asked = 0;
+    let done = 0;
     const get = async (file: string): Promise<Atlas | null> => {
+      asked++;
+      onProgress?.(done, asked);
       try {
         return new Atlas(await Assets.load<Texture>(artUrl(file)));
       } catch {
         set.failed.push(file);
         return null;
+      } finally {
+        done++;
+        onProgress?.(done, asked);
       }
     };
     const jobs: Array<Promise<void>> = [];
@@ -135,6 +163,10 @@ export class BoardArtSet {
     }
     for (const [id, art] of Object.entries(m.limbs ?? {})) {
       jobs.push(get(art.atlas).then((atlas) => { if (atlas) set.limbs.set(id, { art, atlas }); }));
+    }
+    for (const name of ['effects', 'parts'] as const) {
+      const sheet = m.fx?.fx?.[name];
+      if (sheet) jobs.push(get(sheet.atlas).then((atlas) => { if (atlas) set.fx.set(name, { atlas, sprites: sheet.sprites }); }));
     }
     const t = m.board?.terrain;
     if (t) {
@@ -214,6 +246,13 @@ export class BoardArtSet {
   sprite(sheet: string, id: string, set?: string | null): Texture | null {
     const s = this.holder(sheet, id, set);
     return s ? s.atlas.sprite(id, s.sprites[id]) : null;
+  }
+
+  /** An effect or a donor part by its name, and its rectangle (anchor, glow). */
+  fxSprite(sheet: 'effects' | 'parts', id: string): { tex: Texture; rect: Rect & { glow?: boolean } } | null {
+    const s = this.fx.get(sheet);
+    const r = s?.sprites[id];
+    return s && r ? { tex: s.atlas.sprite(id, r), rect: r } : null;
   }
 
   rect(sheet: string, id: string, set?: string | null): Rect | null {

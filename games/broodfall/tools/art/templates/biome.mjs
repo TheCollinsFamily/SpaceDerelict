@@ -348,7 +348,7 @@ function townOfVariants(by, set, file) {
   // Props are taken in turn, so that every one of every sheet is seen somewhere.
   const turns = {};
   const next = (list, who) => list[(turns[who] = (turns[who] ?? -1) + 1) % list.length];
-  const put = (img, sx, sy) => { if (img) over8(out, img, Math.round(sx), Math.round(sy)); };
+  const put = (img, sx, sy) => { if (img) over8(out, img, Math.round(sx) - (img.pad?.[0] ?? 0), Math.round(sy) - (img.pad?.[1] ?? 0)); };
   for (let d = 0; d < 2 * N; d++) for (let x = 0; x < N; x++) {
     const y = d - x;
     if (y < 0 || y >= N) continue;

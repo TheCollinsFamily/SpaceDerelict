@@ -1,7 +1,7 @@
 {
  "family": "twin",
- "frames": 16,
- "atlasKB": 158,
+ "frames": 40,
+ "atlasKB": 332,
  "failed": 0,
  "checks": [
   {
@@ -40,14 +40,34 @@
    "value": "1% change"
   },
   {
+   "name": "fire: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "fire: ends the size it began",
+   "ok": true,
+   "value": "1% change"
+  },
+  {
+   "name": "die: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "die: it ends as a husk",
+   "ok": true,
+   "value": "77% of its first frame"
+  },
+  {
    "name": "it stands in its cell",
    "ok": true,
-   "value": "1.9% of it lies in front of its cell"
+   "value": "0.5% of it lies in front of its cell"
   },
   {
    "name": "atlas is under 900 KB",
    "ok": true,
-   "value": "158 KB"
+   "value": "332 KB"
   }
  ]
 }

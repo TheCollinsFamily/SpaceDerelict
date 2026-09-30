@@ -63,6 +63,16 @@ function attackOf(u) {
   return null;
 }
 
+/** A flinch when struck (Sep 30 2026): short, and back to the pose it started from. */
+const HIT = {
+  walk: 'The unit is struck hard by something in front of it: it flinches, jerking back and hunching its shoulders, rocks half a step on the spot, then straightens up and returns to exactly its starting pose, and stays still.',
+  scuttle: 'The creature is struck hard from in front: it recoils sharply, its body jolting back and its legs splaying, then it steadies and returns to exactly its starting pose, and stays still.',
+  crew: 'The big beetle is struck hard from in front: it rocks back on its legs with a jolt and its crew flinch and duck, then everything settles back to exactly its starting pose, and stays still.',
+  ride: 'The big beetle is struck hard from in front: it rocks back on its legs with a jolt and its rider flinches, then everything settles back to exactly its starting pose, and stays still.',
+  fly: 'The unit is struck hard in the air: it jolts backward and drops a little, its wings faltering for a moment, then it recovers and hovers in exactly its starting pose.',
+};
+const hitOf = (u) => u.hitMotion ?? HIT[u.gait ?? (u.body === 'human-like' ? 'walk' : u.body === 'machine' ? 'crew' : 'scuttle')];
+
 const frameSize = (u) => (u.r <= 9 ? 128 : u.r <= 13 ? 192 : 256);
 
 const turnaroundPrompt = (u, g) =>
@@ -140,13 +150,21 @@ async function makeViews(u, dir, key) {
 export const STATES = {
   flier: [{ id: 'grounded', prompt: 'The same winged trooper, brought down: sprawled on the ground tangled in a sticky white web net, its wings folded and stuck, struggling.' }],
   shadewing: [{ id: 'grounded', prompt: 'The same moth-like unit, brought down: sprawled on the ground tangled in a sticky white web net, its wings folded and stuck, struggling.' }],
-  cannon: [{ id: 'deployed', prompt: 'The same cannon beetle, set up to fire: its legs braced wide and planted, the barrel raised steeply, one crewman crouching with his hands over his ears.' }],
-  dartgun: [{ id: 'deployed', prompt: 'The same dart battery beetle, set up to fire: its legs braced wide and planted, its rack of tubes tilted steeply up, the crewman kneeling beside it.' }],
+  // Braced (Sep 30 2026): the first braced pictures read as the walking ones at game size. These change the
+  // SILHOUETTE: legs splayed flat like a star on spades, the belly down on a round base plate, the gun raised steeply.
+  cannon: [{ id: 'deployed', prompt: 'The same cannon beetle, dug in and set up to fire, so that its shape is completely different from when it walks: its six legs splayed out wide and flat like a star, each ending in a big steel spade dug into the ground; its belly lowered right down onto a wide round steel base plate; its long barrel raised steeply, pointing up at about sixty degrees; a low ring of sandbags around the base plate; the two crewmen crouched behind it with their hands over their ears.' }],
+  dartgun: [{ id: 'deployed', prompt: 'The same dart battery beetle, dug in and set up to fire, so that its shape is completely different from when it walks: its legs splayed out wide and flat like a star, each ending in a steel spade dug into the ground; its belly lowered right down onto a wide round base plate; its rack of glass dart tubes raised steeply and fanned open, pointing up at the sky; the crewman kneeling beside it at a small control box.' }],
   carapace: [{ id: 'stripped', prompt: 'The same beetle with its whole copper dome shell torn off and gone: no dome, no plates, no ribs. What is left is its soft pale pinkish-grey insect body, bare and wrinkled, with its thin dark legs and the small cannon strapped on its bare back, a few broken copper bolts where the shell was. It looks flat, small and vulnerable, nothing like a dome.' }],
   tunneler: [{ id: 'burrowed', prompt: 'Only a travelling mound of broken street where the unit tunnels just under the surface: a low hump of cracked pale paving slabs and loose earth heaving up, a little dust. The unit itself cannot be seen at all.' }],
   researcher: [{ id: 'carrying', prompt: 'The same researcher carrying off a stolen specimen: a small wet dark-maroon lump of living flesh with little roots, strapped in a glass-fronted container on its back, glowing faintly.' }],
   infiltrator: [{ id: 'carrying', prompt: 'The same infiltrator carrying off a stolen specimen: a small wet dark-maroon lump of living flesh with little roots, bundled in a net on its back.' }],
   thief: [{ id: 'carrying', prompt: 'The same thief running off with its sack bulging full of dark red meat, dripping a little, slung over its back.' }],
+};
+
+/** A braced unit's shot: played once from its braced picture each time the sim fires a shell (Sep 30 2026). */
+const BRACED = {
+  cannon: { state: 'deployed', motion: 'The dug-in cannon fires once: the whole gun jolts down hard into its base plate with the recoil, the barrel kicks back, a small puff of smoke leaves the muzzle and the crewmen flinch; then everything settles back to exactly its starting pose and stays still.' },
+  dartgun: { state: 'deployed', motion: 'The dug-in dart battery fires once: one glass tube in the raised rack kicks with a small puff, the whole machine jolts down into its base plate and the crewman flinches; then everything settles back to exactly its starting pose and stays still.' },
 };
 
 async function makeStates(u, dir, key) {
@@ -168,6 +186,14 @@ async function makeClips(u, dir, key, anims) {
     jobs.push({ v, anim: 'walk', still, prompt: g.motion + STEADY });
     const a = attackOf(u);
     if (a && anims.includes('attack')) jobs.push({ v, anim: 'attack', still, prompt: `${a} It does not walk and does not turn. The drawing style stays exactly the same in every frame.` });
+    if (anims.includes('hit')) jobs.push({ v, anim: 'hit', still, prompt: `${hitOf(u)} It does not walk, does not travel and does not turn. No sparks, no blood, no flash, no smoke. The drawing style stays exactly the same in every frame.` });
+  }
+  // Braced: the dug-in picture firing once (toward the lower left; mirrored by heading, as the states are).
+  const braced = BRACED[u.kind];
+  if (braced && anims.includes('braced')) {
+    const still = path.join(dir, `state-${braced.state}.png`);
+    if (!fs.existsSync(still)) throw new Error(`${u.kind}: make the braced picture first (--states): ${still}`);
+    jobs.push({ v: 'SW', anim: 'braced', still, prompt: `${braced.motion} It does not move from its spot and does not turn. The drawing style stays exactly the same in every frame.` });
   }
   if (anims.includes('death')) {
     jobs.push({ v: 'SW', anim: 'death', still: path.join(dir, 'view-SW.png'), loop: false,
@@ -314,7 +340,7 @@ export function bakeUnit(kind) {
   return { kind, entry, checks, sheet, film };
 }
 
-export async function makeUnit(kind, { anims = ['walk'], bakeOnly = false, viewsOnly = false } = {}) {
+export async function makeUnit(kind, { anims = ['walk'], bakeOnly = false, viewsOnly = false, clipsOnly = false } = {}) {
   const u = unit(kind);
   if (!u) throw new Error(`no unit called "${kind}" in tools/art/units.mjs`);
   const dir = path.join(SRC, 'units', kind);
@@ -326,6 +352,7 @@ export async function makeUnit(kind, { anims = ['walk'], bakeOnly = false, views
     await makeClips(u, dir, key, anims);
     if (anims.includes('states')) await makeStates(u, dir, key);
   }
+  if (clipsOnly) return { kind };
   return bakeUnit(kind);
 }
 
