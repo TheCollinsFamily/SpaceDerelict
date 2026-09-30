@@ -15,3 +15,4 @@ games/broodfall/tools/screenshots/*.png
 # Broodfall: the build folder of each session that runs browser beats beside another (BROODFALL_DIST)
 dist-*/
 games/broodfall/public/art/manifest.json.lock/
+games/broodfall/tools/screenshots/anim-frames/
