@@ -1,8 +1,8 @@
 {
  "family": "brood",
- "frames": 70,
- "atlasKB": 917,
- "failed": 1,
+ "frames": 68,
+ "atlasKB": 893,
+ "failed": 0,
  "checks": [
   {
    "name": "where it stands is marked",
@@ -57,7 +57,7 @@
   {
    "name": "die: it ends as a husk",
    "ok": true,
-   "value": "62% of its first frame"
+   "value": "62% of its size, 55% of its colour"
   },
   {
    "name": "it stands in its cell",
@@ -121,8 +121,8 @@
   },
   {
    "name": "atlas is under 900 KB",
-   "ok": false,
-   "value": "917 KB"
+   "ok": true,
+   "value": "893 KB"
   }
  ]
 }

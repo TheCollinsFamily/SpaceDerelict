@@ -1,7 +1,7 @@
 {
  "family": "maw",
- "frames": 70,
- "atlasKB": 660,
+ "frames": 68,
+ "atlasKB": 646,
  "failed": 0,
  "checks": [
   {
@@ -62,7 +62,7 @@
   {
    "name": "die: it ends as a husk",
    "ok": true,
-   "value": "31% of its first frame"
+   "value": "31% of its size, 70% of its colour"
   },
   {
    "name": "it stands in its cell",
@@ -127,7 +127,7 @@
   {
    "name": "atlas is under 900 KB",
    "ok": true,
-   "value": "660 KB"
+   "value": "646 KB"
   }
  ]
 }

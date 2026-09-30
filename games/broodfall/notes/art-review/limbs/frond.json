@@ -1,7 +1,7 @@
 {
  "family": "frond",
- "frames": 40,
- "atlasKB": 646,
+ "frames": 38,
+ "atlasKB": 625,
  "failed": 0,
  "checks": [
   {
@@ -62,7 +62,7 @@
   {
    "name": "die: it ends as a husk",
    "ok": true,
-   "value": "70% of its first frame"
+   "value": "70% of its size, 65% of its colour"
   },
   {
    "name": "it stands in its cell",
@@ -72,7 +72,7 @@
   {
    "name": "atlas is under 900 KB",
    "ok": true,
-   "value": "646 KB"
+   "value": "625 KB"
   }
  ]
 }

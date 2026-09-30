@@ -1,7 +1,7 @@
 {
  "family": "tangler",
- "frames": 40,
- "atlasKB": 495,
+ "frames": 38,
+ "atlasKB": 474,
  "failed": 0,
  "checks": [
   {
@@ -57,7 +57,7 @@
   {
    "name": "die: it ends as a husk",
    "ok": true,
-   "value": "40% of its first frame"
+   "value": "40% of its size, 76% of its colour"
   },
   {
    "name": "it stands in its cell",
@@ -67,7 +67,7 @@
   {
    "name": "atlas is under 900 KB",
    "ok": true,
-   "value": "495 KB"
+   "value": "474 KB"
   }
  ]
 }

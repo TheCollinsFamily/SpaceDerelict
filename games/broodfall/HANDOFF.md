@@ -296,6 +296,19 @@ own words. `notes/GRAPHICS-PLAN.md` holds the pipeline, the probes and the costs
   come from `make.mjs limb` (`WITHER` and `fire` in `tools/art/limbs.mjs`). Look:
   `node tools/shot-fx.mjs [shots lobbed light hive clouds acting wither taken grafts]` (dev server,
   port 5231; JPEGs in `notes/screens/2026-09-30/fx-*`, `limbs-*`). Test: `tests/fx-art.test.ts`.
+- **Units' moments (Sep 30):** `node tools/art/make.mjs unit <ids> [--hit] [--boss] [--braced]
+  [--skins] [--states] [--no-bake]` (`tools/art/templates/unit.mjs`): flinches (5 views, every
+  unit), the royal's and consort's arrival and special (`BOSS`, frames 320 and 256), the braced
+  cannon and dart battery firing from their braced pictures (`BRACED`), the carapace lord walking
+  cracked then stripped (`SKINS`). The hive's own walkers (broodling, puppet-royal/-consort/-matron)
+  are `ALLIES` in `tools/art/units.mjs`, drawn from a design still (no concept sheet), baked into the
+  manifest's `allies`. A unit with more frames than one light picture is packed on several atlas
+  PAGES (`pages`, a clip's `page`); a clip that goes outside the walk's frame (a flier's fall) is cut
+  with a grown window and carries its own `anchor` and `scale`. The game reads what happened to a unit
+  (hp down, shots up, pulse wound up) in `src/render/unitAnim.ts`, never writing to the sim. Look at
+  one animation big: `node tools/art/look-anim.mjs <kind> <anim> [views]`. In the game:
+  `node tools/shot-units-moments.mjs [1-6]` (dev server; `notes/screens/2026-09-30/units-*`).
+  Tests: `tests/units-art.test.ts`, `tests/unitAnim.test.ts`.
 - **No real religious symbol, and no lettering, in any picture.** The image model adds
   crosses by itself. Every picture is looked at zoomed in before it is kept. A small
   unwanted detail is painted out with `tools/art/paint-out.mjs` (it keeps the original

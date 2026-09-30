@@ -1,7 +1,7 @@
 {
  "family": "cage",
- "frames": 40,
- "atlasKB": 580,
+ "frames": 38,
+ "atlasKB": 556,
  "failed": 0,
  "checks": [
   {
@@ -57,7 +57,7 @@
   {
    "name": "die: it ends as a husk",
    "ok": true,
-   "value": "60% of its first frame"
+   "value": "60% of its size, 73% of its colour"
   },
   {
    "name": "it stands in its cell",
@@ -67,7 +67,7 @@
   {
    "name": "atlas is under 900 KB",
    "ok": true,
-   "value": "580 KB"
+   "value": "556 KB"
   }
  ]
 }

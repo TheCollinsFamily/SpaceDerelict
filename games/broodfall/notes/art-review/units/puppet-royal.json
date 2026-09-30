@@ -1,0 +1,244 @@
+{
+ "kind": "puppet-royal",
+ "frames": 128,
+ "atlasKB": 831,
+ "pages": 1,
+ "failed": 0,
+ "checks": [
+  {
+   "name": "walk S: loop closes",
+   "ok": true,
+   "value": 0.55
+  },
+  {
+   "name": "walk S: it moves",
+   "ok": true,
+   "value": 1.98
+  },
+  {
+   "name": "walk S: loop is long enough",
+   "ok": true,
+   "value": 25
+  },
+  {
+   "name": "walk S: inside the frame",
+   "ok": true,
+   "value": "148,100-464,544"
+  },
+  {
+   "name": "walk S: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "walk S: stays on the spot",
+   "ok": true,
+   "value": "0.6% of the frame"
+  },
+  {
+   "name": "walk SW: loop closes",
+   "ok": true,
+   "value": 0.53
+  },
+  {
+   "name": "walk SW: it moves",
+   "ok": true,
+   "value": 1.84
+  },
+  {
+   "name": "walk SW: loop is long enough",
+   "ok": true,
+   "value": 28
+  },
+  {
+   "name": "walk SW: inside the frame",
+   "ok": true,
+   "value": "180,106-452,552"
+  },
+  {
+   "name": "walk SW: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "walk SW: stays on the spot",
+   "ok": true,
+   "value": "0.6% of the frame"
+  },
+  {
+   "name": "walk W: loop closes",
+   "ok": true,
+   "value": 0.44
+  },
+  {
+   "name": "walk W: it moves",
+   "ok": true,
+   "value": 1.91
+  },
+  {
+   "name": "walk W: loop is long enough",
+   "ok": true,
+   "value": 13
+  },
+  {
+   "name": "walk W: inside the frame",
+   "ok": true,
+   "value": "132,116-470,551"
+  },
+  {
+   "name": "walk W: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "walk W: stays on the spot",
+   "ok": true,
+   "value": "0.2% of the frame"
+  },
+  {
+   "name": "walk NW: loop closes",
+   "ok": true,
+   "value": 0.43
+  },
+  {
+   "name": "walk NW: it moves",
+   "ok": true,
+   "value": 1.91
+  },
+  {
+   "name": "walk NW: loop is long enough",
+   "ok": true,
+   "value": 13
+  },
+  {
+   "name": "walk NW: inside the frame",
+   "ok": true,
+   "value": "182,116-480,550"
+  },
+  {
+   "name": "walk NW: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "walk NW: stays on the spot",
+   "ok": true,
+   "value": "0.6% of the frame"
+  },
+  {
+   "name": "walk N: loop closes",
+   "ok": true,
+   "value": 0.55
+  },
+  {
+   "name": "walk N: it moves",
+   "ok": true,
+   "value": 1.26
+  },
+  {
+   "name": "walk N: loop is long enough",
+   "ok": true,
+   "value": 16
+  },
+  {
+   "name": "walk N: inside the frame",
+   "ok": true,
+   "value": "186,98-450,538"
+  },
+  {
+   "name": "walk N: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "walk N: stays on the spot",
+   "ok": true,
+   "value": "0.0% of the frame"
+  },
+  {
+   "name": "attack S: nothing cut off",
+   "ok": true,
+   "value": "in the walk frame"
+  },
+  {
+   "name": "attack S: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "attack S: stays on the spot",
+   "ok": true,
+   "value": "0.0% of the frame"
+  },
+  {
+   "name": "attack SW: nothing cut off",
+   "ok": true,
+   "value": "window grown 1.03x"
+  },
+  {
+   "name": "attack SW: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "attack SW: stays on the spot",
+   "ok": true,
+   "value": "0.2% of the frame"
+  },
+  {
+   "name": "attack W: nothing cut off",
+   "ok": true,
+   "value": "window grown 1.01x"
+  },
+  {
+   "name": "attack W: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "attack W: stays on the spot",
+   "ok": true,
+   "value": "0.2% of the frame"
+  },
+  {
+   "name": "attack NW: nothing cut off",
+   "ok": true,
+   "value": "window grown 1.01x"
+  },
+  {
+   "name": "attack NW: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "attack NW: stays on the spot",
+   "ok": true,
+   "value": "0.0% of the frame"
+  },
+  {
+   "name": "attack N: nothing cut off",
+   "ok": true,
+   "value": "in the walk frame"
+  },
+  {
+   "name": "attack N: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "attack N: stays on the spot",
+   "ok": true,
+   "value": "0.2% of the frame"
+  },
+  {
+   "name": "views are one size",
+   "ok": true,
+   "value": "0.72 0.72 0.71 0.70 0.71"
+  },
+  {
+   "name": "atlas page 1 is under 900 KB",
+   "ok": true,
+   "value": "831 KB"
+  }
+ ]
+}

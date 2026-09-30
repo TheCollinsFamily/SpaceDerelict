@@ -343,7 +343,23 @@ export function bakeUnit(kind) {
       let loop = null;
       let moved = null;
       if (anim.startsWith('walk')) { loop = loopWindow(frames); frames = frames.slice(loop.start, loop.end); }
-      if (ONCE.has(anim)) { moved = motionWindow(frames); frames = frames.slice(moved.start, moved.end); }
+      if (ONCE.has(anim)) {
+        // The video starts and ends on the still, which the model draws a little smaller than the moving
+        // frames it zooms to at once: those few frames would make the unit shrink as a flinch begins.
+        const hs = frames.map((f) => { const b = unionBox([f]); return b ? b.y1 - b.y0 : 0; });
+        const med = [...hs].sort((a, b) => a - b)[hs.length >> 1];
+        const off = (h) => Math.abs(h - med) > med * 0.08;
+        // The first and last few frames always go (the model's zoom settles in them), then any more that are off.
+        let a = Math.min(3, frames.length >> 3);
+        let z = frames.length - a;
+        while (a < Math.min(7, z - 2) && off(hs[a])) a++;
+        while (z > Math.max(frames.length - 7, a + 2) && off(hs[z - 1])) z--;
+        frames = frames.slice(a, z);
+        moved = motionWindow(frames);
+        frames = frames.slice(moved.start, moved.end);
+      }
+      // A flinch or a gesture throws nothing: a casing or a dart the model let fly is not part of it.
+      if (anim === 'hit' || anim === 'enter' || anim === 'special') for (const f of frames) dropSpecks(f);
       clips.push({ anim, v, frames, box: unionBox(frames), loop, moved, key: keyed.key, w: keyed.w, h: keyed.h, seconds: frames.length / FPS });
     }
   }
