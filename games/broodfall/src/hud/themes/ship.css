@@ -1,1 +1,351 @@
-/* ship */
+/* ============================================================================================
+   THE IN-RUN HUD AS ONE OF THE SHIP'S CONSOLES (Collins, Sep 30 2026: "would go with a style
+   that looks like one of the consoles on the ship"). THE DEFAULT HUD.
+   The same family as the ship's main menu (src/onboard.css .menu-console) and its rooms
+   (src/ship.css, public/art/ship/room-*.webp): matte black bezels, dark screen glass with faint
+   scan lines, razor-thin white lines, a white bar on the left edge of a live panel, Bahnschrift
+   in wide-spaced capitals, and small indicator lights. Colour only where it carries meaning
+   (the three castes, health, danger). Scoped to :root[data-hud="ship"]; ?hud=classic is the old
+   khaki console (src/style.css alone).
+   ============================================================================================ */
+
+[data-hud="ship"] {
+  --sc-bezel: #0a0c0e;
+  --sc-bezel-hi: #15191c;
+  --sc-glass: rgba(7, 9, 11, 0.8);
+  --sc-glass-solid: #07090b;
+  --sc-line: rgba(235, 245, 248, 0.22);
+  --sc-line-hi: rgba(235, 245, 248, 0.55);
+  --sc-ink: #e9eef0;
+  --sc-dim: rgba(233, 238, 240, 0.6);
+  --sc-faint: rgba(233, 238, 240, 0.38);
+  --sc-holo: #9fe8f5;
+  --sc-war: #ff8a6a;
+  --sc-sci: #7fe3d6;
+  --sc-royal: #f2cf6a;
+  --sc-ok: #8ff0a0;
+  --sc-alert: #ff6a55;
+  --sc-font: Bahnschrift, "DIN Alternate", "Segoe UI", Arial, sans-serif;
+  /* The screen's own texture: faint scan lines and a reflection along its top. */
+  --sc-scan: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.022) 0 1px, transparent 1px 3px);
+  --sc-sheen: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0) 38%);
+  /* Panels in a run, over the board: the ship's console glass (thin line, dark glass). */
+  --acc-light: 0 0 6px currentColor;
+}
+
+[data-hud="ship"] body { font-family: var(--sc-font); color: var(--sc-ink); }
+
+/* An indicator light: a small lit dot. */
+[data-hud="ship"] .sc-led, [data-hud="ship"] .meat::before, [data-hud="ship"] #phase-name::before {
+  content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; flex: none;
+  background: currentColor; box-shadow: 0 0 6px currentColor, 0 0 1px currentColor;
+}
+@keyframes sc-blink { 0%, 55% { opacity: 1; } 60%, 100% { opacity: 0.25; } }
+
+/* ---------- the top bar: the console's upper bezel, a row of small screens ---------- */
+[data-hud="ship"] #topbar {
+  background: var(--sc-sheen), linear-gradient(var(--sc-bezel-hi), var(--sc-bezel));
+  border-bottom: 1px solid var(--sc-line); box-shadow: 0 1px 0 #000, 0 6px 18px rgba(0, 0, 0, 0.55);
+  gap: 10px; padding: 7px 14px; position: relative; z-index: 2;
+}
+[data-hud="ship"] #brand { padding-left: 12px; border-left: 3px solid var(--sc-ink); }
+[data-hud="ship"] #brand-title { font: 300 15px/1.1 var(--sc-font); letter-spacing: 5px; color: var(--sc-ink); }
+[data-hud="ship"] #brand-sub { font-size: 8.5px; letter-spacing: 2px; opacity: 1; color: var(--sc-faint); margin-top: 3px; }
+[data-hud="ship"] #brand-sub::before { content: '⚙  '; color: var(--sc-ink); }
+
+/* A small screen set in the bezel: label on top, the number big below. */
+[data-hud="ship"] .meat, [data-hud="ship"] .dial {
+  position: relative; display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto; align-items: center;
+  column-gap: 6px; min-width: 78px; padding: 4px 10px 3px; border-radius: 2px;
+  background: var(--sc-sheen), var(--sc-scan), #030405; border: 1px solid var(--sc-line);
+  box-shadow: inset 0 0 0 1px #000, 0 0 0 1px rgba(0, 0, 0, 0.8);
+}
+[data-hud="ship"] .meat::before { grid-row: 1; grid-column: 1; }
+[data-hud="ship"] .meat-label, [data-hud="ship"] .dial span {
+  grid-row: 1; grid-column: 2; font: 400 9px/1 var(--sc-font); letter-spacing: 2.5px; color: var(--sc-dim); text-transform: uppercase;
+}
+[data-hud="ship"] .dial span { grid-column: 1 / -1; }
+[data-hud="ship"] .meat-val, [data-hud="ship"] .dial b {
+  grid-row: 2; grid-column: 1 / -1; font: 300 24px/1.05 var(--sc-font); font-variant-numeric: tabular-nums; letter-spacing: 1px; color: var(--sc-ink);
+}
+[data-hud="ship"] .dial b { font-size: 19px; }
+[data-hud="ship"] #meat-war { color: var(--sc-war); }
+[data-hud="ship"] #meat-science { color: var(--sc-sci); }
+[data-hud="ship"] #meat-royal { color: var(--sc-royal); }
+[data-hud="ship"] #meat-war .meat-val { color: #ffd2c4; }
+[data-hud="ship"] #meat-science .meat-val { color: #d2fbf5; }
+[data-hud="ship"] #meat-royal .meat-val { color: #fff0c4; }
+/* A thin caste-coloured line under each purse, like the lit edge of a screen. */
+[data-hud="ship"] .meat::after { content: ''; position: absolute; left: 8px; right: 8px; bottom: -1px; height: 1px; background: currentColor; opacity: 0.8; box-shadow: 0 0 6px currentColor; }
+[data-hud="ship"] #dial-threat b { color: #ffc4b8; }
+[data-hud="ship"] #dial-interest b { color: #d2fbf5; }
+[data-hud="ship"] #dials { gap: 6px; }
+[data-hud="ship"] .dial { min-width: 70px; }
+
+[data-hud="ship"] #biomass-wrap { min-width: 180px; }
+[data-hud="ship"] #biomass-label { font: 400 9px/1 var(--sc-font); letter-spacing: 2.5px; color: var(--sc-dim); margin-bottom: 5px; }
+[data-hud="ship"] #biomass-label::before { content: '⚙  '; color: var(--sc-ink); }
+[data-hud="ship"] #biomass-bar { height: 16px; border-radius: 1px; background: var(--sc-scan), #030405; border: 1px solid var(--sc-line); }
+[data-hud="ship"] #biomass-fill { background: linear-gradient(90deg, rgba(233, 238, 240, 0.55), #e9eef0); box-shadow: 0 0 10px rgba(233, 238, 240, 0.5); }
+[data-hud="ship"] #biomass-text { font: 400 11px/1 var(--sc-font); letter-spacing: 2px; color: var(--sc-ink); mix-blend-mode: difference; }
+
+[data-hud="ship"] #phase-box { min-width: 150px; text-align: left; padding-left: 12px; border-left: 1px solid var(--sc-line); }
+[data-hud="ship"] #phase-name {
+  display: flex; align-items: center; gap: 8px; font: 300 17px/1.1 var(--sc-font); letter-spacing: 5px; color: var(--sc-ink);
+}
+[data-hud="ship"] #phase-name::before { color: var(--sc-ok); }
+[data-hud="ship"] #phase-name.siege { color: #ffd0c6; }
+[data-hud="ship"] #phase-name.siege::before { color: var(--sc-alert); animation: sc-blink 1s steps(1) infinite; }
+[data-hud="ship"] #wave-info { font: 400 9.5px/1.3 var(--sc-font); letter-spacing: 1.5px; color: var(--sc-dim); margin-top: 2px; text-transform: uppercase; }
+[data-hud="ship"] #call-early {
+  display: block; margin-top: 4px; font: 400 10px/1 var(--sc-font); letter-spacing: 2.5px; text-transform: uppercase;
+  background: rgba(159, 232, 245, 0.08); color: var(--sc-holo); border: 1px solid var(--sc-holo); border-radius: 1px; padding: 4px 10px;
+  box-shadow: 0 0 10px rgba(159, 232, 245, 0.25);
+}
+[data-hud="ship"] #call-early:hover { background: var(--sc-holo); color: #07090b; }
+[data-hud="ship"] #call-early.hidden { display: none; }
+
+[data-hud="ship"] #speed-box { gap: 0; border: 1px solid var(--sc-line); padding: 2px; background: #030405; }
+[data-hud="ship"] #speed-box button {
+  width: 36px; height: 28px; font: 400 12px/1 var(--sc-font); letter-spacing: 1px; background: none; color: var(--sc-dim);
+  border: 0; border-radius: 0; border-left: 1px solid rgba(235, 245, 248, 0.1);
+}
+[data-hud="ship"] #speed-box button:first-child { border-left: 0; }
+[data-hud="ship"] #speed-box button:hover { color: var(--sc-ink); background: rgba(255, 255, 255, 0.06); }
+[data-hud="ship"] #speed-box button.on { background: var(--sc-ink); color: #07090b; }
+
+/* ---------- over the board: glass readouts, never more than the classic HUD covered ---------- */
+[data-hud="ship"] #stage-wrap { background: #040506; }
+
+[data-hud="ship"] #core-hp-wrap { width: 200px; }
+[data-hud="ship"] #core-hp-label { font: 400 9px/1 var(--sc-font); letter-spacing: 2.5px; color: var(--sc-dim); margin-bottom: 4px; text-shadow: 0 1px 2px #000; }
+[data-hud="ship"] #core-hp-label::before { content: '⚙  '; color: var(--sc-ink); }
+[data-hud="ship"] #core-hp-bar { height: 8px; border-radius: 0; background: rgba(3, 4, 5, 0.85); border: 1px solid var(--sc-line-hi); }
+[data-hud="ship"] #core-hp-fill { box-shadow: 0 0 8px currentColor; }
+
+[data-hud="ship"] #view-controls { gap: 3px; }
+[data-hud="ship"] #view-controls button {
+  font: 400 10px/1 var(--sc-font); letter-spacing: 2px; padding: 6px 10px; border-radius: 0;
+  background: var(--sc-glass); color: var(--sc-ink); border: 1px solid var(--sc-line);
+}
+[data-hud="ship"] #view-controls button:hover { background: var(--sc-ink); color: #07090b; border-color: #fff; }
+[data-hud="ship"] #view-help { font: 400 9px/1 var(--sc-font); letter-spacing: 2px; color: var(--sc-faint); text-shadow: 0 1px 2px #000; }
+
+/* The line that says what to do: a strip of console glass. */
+[data-hud="ship"] #hint {
+  font: 400 11px/1.3 var(--sc-font); letter-spacing: 2px; color: var(--sc-ink); text-transform: uppercase;
+  background: var(--sc-glass); border: 1px solid var(--sc-line); border-left: 3px solid var(--sc-ink); border-radius: 0;
+  padding: 6px 14px; max-width: calc(100% - 560px); text-align: center; backdrop-filter: blur(2px);
+}
+
+/* The feed: log lines on the glass, newest on top, each with its caste's lit edge. */
+[data-hud="ship"] #feed { width: 250px; gap: 3px; }
+[data-hud="ship"] .feed-item {
+  font: 400 10px/1.25 var(--sc-font); letter-spacing: 1.5px; text-transform: uppercase; color: var(--sc-ink);
+  background: var(--sc-glass); border: 1px solid rgba(235, 245, 248, 0.14); border-left: 2px solid var(--sc-line-hi);
+  padding: 4px 8px; backdrop-filter: blur(2px); animation: sc-feedin 0.25s ease-out;
+}
+[data-hud="ship"] .feed-item.hot { border-left-color: var(--sc-alert); color: #ffd6cc; }
+[data-hud="ship"] .feed-item.sci { border-left-color: var(--sc-sci); }
+[data-hud="ship"] .feed-item.royal { border-left-color: var(--sc-royal); color: #fff0c4; background: rgba(40, 32, 8, 0.8); }
+@keyframes sc-feedin { from { opacity: 0; transform: translateX(12px); } }
+
+/* The wave banner: a line of the console's type across a band of glass. */
+[data-hud="ship"] #banner {
+  top: 30%; white-space: nowrap; font: 300 30px/1 var(--sc-font); letter-spacing: 10px; color: #fff;
+  text-shadow: 0 0 18px rgba(233, 238, 240, 0.35);
+  padding: 16px 44px 16px 48px; background: var(--sc-scan), rgba(5, 6, 7, 0.78);
+  border-top: 1px solid var(--sc-line-hi); border-bottom: 1px solid var(--sc-line-hi); backdrop-filter: blur(3px);
+}
+[data-hud="ship"] #banner::before {
+  content: ''; position: absolute; left: 0; top: 10px; bottom: 10px; width: 3px; background: var(--sc-ink);
+}
+[data-hud="ship"] #banner::after {
+  content: '⚙  ORBITAL TENDER "MERCIFUL YOKE" — FIELD OPERATIONS'; position: absolute; left: 48px; top: -18px;
+  font: 400 9px/1 var(--sc-font); letter-spacing: 3px; color: var(--sc-dim); text-shadow: 0 1px 2px #000;
+}
+
+/* The limb panel: a console screen, the menu's own glass with its white edge. */
+[data-hud="ship"] #inspect {
+  width: 280px; padding: 10px 12px 11px 14px; border-radius: 0;
+  background: var(--sc-sheen), var(--sc-scan), rgba(7, 9, 11, 0.86); border: 1px solid var(--sc-line-hi);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6), 0 0 30px rgba(0, 0, 0, 0.55); color: var(--sc-ink); backdrop-filter: blur(3px);
+}
+[data-hud="ship"] #inspect::before { content: ''; position: absolute; left: -1px; top: 12px; bottom: 12px; width: 3px; background: var(--sc-ink); }
+[data-hud="ship"] #inspect-name { font: 300 17px/1.1 var(--sc-font); letter-spacing: 5px; text-transform: uppercase; }
+[data-hud="ship"] #inspect-close { color: var(--sc-dim); font-size: 13px; }
+[data-hud="ship"] #inspect-close:hover { color: #fff; }
+[data-hud="ship"] #inspect-hp { height: 12px; margin: 8px 0 6px; background: #030405; border: 1px solid var(--sc-line); }
+[data-hud="ship"] #inspect-hp-fill { background: var(--sc-ok); box-shadow: 0 0 8px rgba(143, 240, 160, 0.6); opacity: 0.85; }
+[data-hud="ship"] #inspect-hp-text { font: 400 9px/1 var(--sc-font); letter-spacing: 2px; color: #fff; text-shadow: 0 0 3px #000, 0 0 2px #000; }
+[data-hud="ship"] #inspect-stats, [data-hud="ship"] #inspect-traits { font: 400 10px/1.35 var(--sc-font); letter-spacing: 1px; color: var(--sc-dim); opacity: 1; }
+[data-hud="ship"] #inspect-stats { color: var(--sc-ink); }
+[data-hud="ship"] #inspect-effect { color: var(--sc-holo); letter-spacing: 1px; }
+[data-hud="ship"] .inspect-label {
+  font: 400 9px/1 var(--sc-font); letter-spacing: 3px; color: var(--sc-dim); opacity: 1; margin-top: 9px; padding-bottom: 3px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+[data-hud="ship"] #inspect-path { color: var(--sc-holo); }
+[data-hud="ship"] .inspect-opts { gap: 3px; margin-top: 5px; }
+[data-hud="ship"] .inspect-opts button {
+  font: 400 9.5px/1 var(--sc-font); letter-spacing: 1.5px; padding: 5px 7px; border-radius: 0;
+  background: rgba(255, 255, 255, 0.03); border: 1px solid var(--sc-line); color: var(--sc-ink);
+}
+[data-hud="ship"] .inspect-opts button:hover { border-color: #fff; }
+[data-hud="ship"] .inspect-opts button.on { background: var(--sc-ink); color: #07090b; border-color: #fff; }
+[data-hud="ship"] .evo-stage { gap: 3px; margin-top: 5px; }
+[data-hud="ship"] .evo-opt {
+  font: 400 9.5px/1.3 var(--sc-font); color: var(--sc-dim); border-radius: 0; padding: 5px 6px;
+  background: rgba(255, 255, 255, 0.03); border: 1px solid var(--sc-line);
+}
+[data-hud="ship"] .evo-opt b { font-weight: 400; font-size: 10px; letter-spacing: 1.5px; color: var(--sc-ink); }
+[data-hud="ship"] .evo-opt i { color: var(--sc-sci); }
+[data-hud="ship"] .evo-opt:hover { background: var(--sc-ink); color: #2a3034; border-color: #fff; }
+[data-hud="ship"] .evo-opt:hover b { color: #07090b; }
+[data-hud="ship"] .evo-opt:hover i { color: #0a5a52; }
+[data-hud="ship"] .evo-opt.off:hover { background: rgba(255, 255, 255, 0.03); color: var(--sc-dim); border-color: var(--sc-line); }
+[data-hud="ship"] .evo-opt.off:hover b { color: var(--sc-ink); }
+[data-hud="ship"] .evo-opt.off:hover i { color: var(--sc-sci); }
+[data-hud="ship"] .evo-done, [data-hud="ship"] .evo-later { font: 400 9px/1.4 var(--sc-font); letter-spacing: 1px; color: var(--sc-faint); opacity: 1; }
+[data-hud="ship"] .evo-later.locked { color: #ffb0a0; }
+
+/* What a card or a limb can shoot. */
+[data-hud="ship"] .card-tag { font: 400 8px/1.2 var(--sc-font); letter-spacing: 2px; }
+[data-hud="ship"] .card-tag.air { color: #9fd8f5; }
+[data-hud="ship"] .card-tag.ground { color: #d8c49a; }
+[data-hud="ship"] .card-tag.support { color: #c8b0f0; }
+
+/* ---------- the bottom bar: the console's desk, a row of screens ---------- */
+[data-hud="ship"] #botbar {
+  background: var(--sc-sheen), linear-gradient(var(--sc-bezel-hi), var(--sc-bezel));
+  border-top: 1px solid var(--sc-line); box-shadow: 0 -1px 0 #000, 0 -6px 18px rgba(0, 0, 0, 0.55); gap: 10px; padding: 8px 14px;
+  position: relative; z-index: 2;
+}
+[data-hud="ship"] #organs, [data-hud="ship"] #feed-controls { gap: 6px; }
+[data-hud="ship"] .organ-btn {
+  border-radius: 0; padding: 7px 11px; min-width: 104px; gap: 4px; color: var(--sc-ink);
+  background: var(--sc-sheen), var(--sc-scan), #030405; border: 1px solid var(--sc-line);
+}
+[data-hud="ship"] .organ-btn b { font: 400 11px/1.15 var(--sc-font); letter-spacing: 3px; color: var(--sc-ink); }
+[data-hud="ship"] .organ-btn .cost { font: 400 9px/1.3 var(--sc-font); letter-spacing: 1px; color: var(--sc-faint); opacity: 1; }
+[data-hud="ship"] .organ-btn:hover { background: var(--sc-scan), #111518; border-color: var(--sc-line-hi); }
+[data-hud="ship"] .organ-btn.armed { background: var(--sc-ink); border-color: #fff; }
+[data-hud="ship"] .organ-btn.armed b { color: #07090b; }
+[data-hud="ship"] .organ-btn.armed .cost { color: #3a4246; }
+[data-hud="ship"] .organ-btn.passive:hover { background: var(--sc-sheen), var(--sc-scan), #030405; border-color: var(--sc-line); }
+[data-hud="ship"] .organ-btn.passive.armed:hover { background: var(--sc-ink); }
+[data-hud="ship"] .organ-btn.disabled { opacity: 0.35; }
+[data-hud="ship"] #creep-nodes, [data-hud="ship"] #plinths { background: var(--sc-sheen), var(--sc-scan), #030405; border-color: var(--sc-line); min-width: 150px; }
+[data-hud="ship"] #creep-nodes b, [data-hud="ship"] #plinths b { color: var(--sc-ink); }
+[data-hud="ship"] #node-count { color: var(--sc-ok); text-shadow: 0 0 6px rgba(143, 240, 160, 0.6); }
+[data-hud="ship"] #plinth-count { color: var(--sc-holo); }
+[data-hud="ship"] #creep-nodes.on, [data-hud="ship"] #plinths.on { background: var(--sc-ink); }
+[data-hud="ship"] #creep-nodes.on b, [data-hud="ship"] #plinths.on b { color: #07090b; }
+[data-hud="ship"] #creep-nodes.on #node-count { color: #1a6a2a; text-shadow: none; }
+[data-hud="ship"] .node-chip {
+  font: 400 9px/1 var(--sc-font); letter-spacing: 1px; border-radius: 0; padding: 3px 6px;
+  background: rgba(143, 240, 160, 0.08); border: 1px solid rgba(143, 240, 160, 0.5); color: #c8f8d0;
+}
+[data-hud="ship"] .node-chip.mire { border-color: rgba(159, 232, 245, 0.5); color: #c8f0f8; background: rgba(159, 232, 245, 0.08); }
+[data-hud="ship"] .node-chip.burn { border-color: rgba(255, 138, 106, 0.6); color: #ffd2c4; background: rgba(255, 138, 106, 0.08); }
+[data-hud="ship"] .node-chip.on { background: var(--sc-ink); color: #07090b; border-color: #fff; }
+[data-hud="ship"] #pending-traits.armed { background: var(--sc-ink); }
+
+/* The hand: four small screens. The limb stands in the screen's light; the price at the foot. */
+[data-hud="ship"] #hand { gap: 6px; }
+[data-hud="ship"] .card {
+  position: relative; width: 122px; border-radius: 0; padding: 6px 8px 6px 10px; color: var(--sc-ink); box-shadow: none;
+  background: var(--sc-sheen), var(--sc-scan), radial-gradient(ellipse at 50% 55%, #1a2024, #050607 70%);
+  border: 1px solid var(--sc-line); transition: transform 0.12s, border-color 0.12s;
+}
+[data-hud="ship"] .card:hover { transform: translateY(-3px); border-color: var(--sc-line-hi); }
+[data-hud="ship"] .card.selected {
+  outline: none; transform: translateY(-6px); border-color: #fff;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.25), 0 0 18px rgba(233, 238, 240, 0.25);
+}
+[data-hud="ship"] .card.selected::before { content: ''; position: absolute; left: -1px; top: 8px; bottom: 8px; width: 3px; background: #fff; }
+[data-hud="ship"] .card.unaffordable { opacity: 0.4; }
+[data-hud="ship"] .card .card-name { font: 400 11.5px/1.15 var(--sc-font); letter-spacing: 2.5px; text-transform: uppercase; }
+[data-hud="ship"] .card .card-discard { color: var(--sc-faint); font-size: 10px; }
+[data-hud="ship"] .card .card-discard:hover { color: var(--sc-alert); }
+[data-hud="ship"] .card .card-art { filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.8)); }
+[data-hud="ship"] .card .card-desc { font: 400 9px/1.3 var(--sc-font); letter-spacing: 0.3px; color: var(--sc-dim); opacity: 1; }
+[data-hud="ship"] .card .card-cost {
+  display: flex; gap: 8px; align-items: baseline; margin-top: 3px; padding-top: 3px; border-top: 1px solid rgba(255, 255, 255, 0.12);
+  font: 300 16px/1 var(--sc-font); font-variant-numeric: tabular-nums; letter-spacing: 1px; color: #fff;
+}
+[data-hud="ship"] .cc { display: inline-flex; align-items: center; gap: 3px; }
+[data-hud="ship"] .cc::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; box-shadow: 0 0 5px currentColor; align-self: center; }
+[data-hud="ship"] .cc u { text-decoration: none; font-size: 9px; letter-spacing: 1px; }
+[data-hud="ship"] .cc b { font-weight: 300; color: #fff; }
+[data-hud="ship"] .cc-war { color: var(--sc-war); }
+[data-hud="ship"] .cc-science { color: var(--sc-sci); }
+[data-hud="ship"] .cc-royal { color: var(--sc-royal); }
+
+/* ---------- overlays in a run: the district draft, the end card, the board's goals ---------- */
+[data-hud="ship"] #draft, [data-hud="ship"] #overlay { background: rgba(3, 4, 5, 0.8); }
+[data-hud="ship"] #draft-card-wrap, [data-hud="ship"] #overlay-card {
+  position: relative; background: var(--sc-sheen), var(--sc-scan), rgba(7, 9, 11, 0.92); border: 1px solid var(--sc-line-hi); border-radius: 0;
+  color: var(--sc-ink); box-shadow: 0 0 60px rgba(0, 0, 0, 0.6);
+}
+[data-hud="ship"] #draft-card-wrap::before, [data-hud="ship"] #overlay-card::before { content: ''; position: absolute; left: -1px; top: 18px; bottom: 18px; width: 3px; background: var(--sc-ink); }
+[data-hud="ship"] #draft-title, [data-hud="ship"] #overlay-title { font: 300 24px/1.2 var(--sc-font); letter-spacing: 7px; }
+[data-hud="ship"] #draft-sub, [data-hud="ship"] #overlay-body { color: var(--sc-dim); letter-spacing: 1px; }
+[data-hud="ship"] .draft-option { border-radius: 0; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--sc-line); color: var(--sc-ink); }
+[data-hud="ship"] .draft-option:hover { outline: none; border-color: #fff; }
+[data-hud="ship"] .draft-option .df-name { font: 400 12px/1.2 var(--sc-font); letter-spacing: 3px; }
+[data-hud="ship"] .draft-option .df-desc, [data-hud="ship"] .draft-option .df-where { color: var(--sc-dim); }
+[data-hud="ship"] #overlay-restart { font: 400 14px/1 var(--sc-font); letter-spacing: 5px; background: var(--sc-ink); color: #07090b; }
+[data-hud="ship"] #board-goals {
+  background: var(--sc-scan), rgba(7, 9, 11, 0.84); border: 1px solid var(--sc-line); border-left: 3px solid var(--sc-ink);
+  color: var(--sc-ink); font: 400 10px/1.35 var(--sc-font); letter-spacing: 0.5px; backdrop-filter: blur(2px);
+}
+[data-hud="ship"] .bg-title { letter-spacing: 3px; color: var(--sc-dim); font-weight: 400; }
+[data-hud="ship"] .bg { border-left-color: var(--sc-war); }
+[data-hud="ship"] .bg.dare { border-left-color: var(--sc-sci); }
+[data-hud="ship"] .bg.exp { border-left-color: #c8b0f0; }
+[data-hud="ship"] .bg.met { background: rgba(143, 240, 160, 0.14); }
+
+/* ---------- the organ stage: the ship's ground scan, in the same console ---------- */
+[data-hud="ship"] #under, [data-hud="ship"] #under.scan { background: radial-gradient(ellipse at 50% 0%, rgba(16, 22, 26, 0.96), rgba(2, 3, 4, 0.985)); }
+[data-hud="ship"] #under #under-card, [data-hud="ship"] #under.scan #under-card {
+  position: relative; border-radius: 0; color: var(--sc-ink);
+  background: var(--sc-sheen), var(--sc-scan), rgba(7, 9, 11, 0.94); border: 1px solid var(--sc-line-hi);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6), 0 0 60px rgba(0, 0, 0, 0.6); font-family: var(--sc-font);
+}
+[data-hud="ship"] #under #under-card::before { content: ''; position: absolute; left: -1px; top: 18px; bottom: 18px; width: 3px; background: var(--sc-ink); z-index: 1; }
+[data-hud="ship"] #under .screen-kicker { font: 400 10px/1.2 var(--sc-font); letter-spacing: 3px; color: var(--sc-dim); opacity: 1; }
+[data-hud="ship"] #under .screen-kicker::before { content: '⚙  '; color: var(--sc-ink); }
+[data-hud="ship"] #under-title, [data-hud="ship"] #under.scan #under-title { font: 300 24px/1.2 var(--sc-font); letter-spacing: 8px; color: #fff; margin: 4px 0 6px; }
+[data-hud="ship"] #under-note, [data-hud="ship"] #under.scan #under-note {
+  font: 400 10px/1.35 var(--sc-font); letter-spacing: 1px; color: #ffc4b8; padding-left: 8px; border-left: 2px solid var(--sc-alert);
+}
+[data-hud="ship"] #under .pal-title { font: 400 9px/1 var(--sc-font); letter-spacing: 3px; color: var(--sc-dim); opacity: 1; padding-bottom: 3px; border-bottom: 1px solid rgba(255, 255, 255, 0.12); }
+[data-hud="ship"] #under .under-organ, [data-hud="ship"] #under.scan .under-organ {
+  font-family: var(--sc-font); font-size: 9.5px; letter-spacing: 0.3px; border-radius: 0; color: var(--sc-dim);
+  background: rgba(255, 255, 255, 0.025); border: 1px solid rgba(235, 245, 248, 0.14);
+}
+[data-hud="ship"] #under .under-organ b { font-weight: 400; letter-spacing: 2px; color: var(--sc-ink); }
+[data-hud="ship"] #under .under-organ i { color: var(--sc-ink); font-weight: 400; letter-spacing: 1px; }
+[data-hud="ship"] #under.scan .under-organ:hover { border-color: var(--sc-line-hi); }
+[data-hud="ship"] #under.scan .under-organ.on { background: rgba(233, 238, 240, 0.1); border-color: #fff; box-shadow: inset 3px 0 0 #fff; color: var(--sc-ink); }
+[data-hud="ship"] #under.scan .under-organ.poor i { color: #ff9a86; }
+[data-hud="ship"] #under.scan .under-organ.built i { color: var(--sc-ok); }
+[data-hud="ship"] #under-summary, [data-hud="ship"] #under.scan #under-summary { font: 400 10px/1.4 var(--sc-font); color: var(--sc-dim); }
+[data-hud="ship"] #under.scan #under-summary b { color: var(--sc-ink); font-weight: 400; letter-spacing: 1px; }
+[data-hud="ship"] #under-status, [data-hud="ship"] #under.scan #under-status { font: 400 11px/1.3 var(--sc-font); letter-spacing: 2px; color: var(--sc-holo); }
+[data-hud="ship"] #under.scan #under-status.warn { color: #ff9a86; }
+[data-hud="ship"] #under-done, [data-hud="ship"] #under.scan #under-done {
+  font: 300 15px/1 var(--sc-font); letter-spacing: 5px; text-transform: uppercase; padding: 12px 18px; border-radius: 0;
+  background: rgba(255, 255, 255, 0.03); color: var(--sc-ink); border: 1px solid var(--sc-line-hi);
+}
+[data-hud="ship"] #under-done:hover, [data-hud="ship"] #under.scan #under-done:hover { background: var(--sc-ink); color: #07090b; border-color: #fff; }
+[data-hud="ship"] #under.scan #under-grid { border-color: var(--sc-line); }
+[data-hud="ship"] #under.scan .uc .tag.core { font-family: var(--sc-font); letter-spacing: 2px; }
+[data-hud="ship"] #under.scan .uc .pow, [data-hud="ship"] #under.scan .uc .recipe { font-family: var(--sc-font); }
+
+/* ---------- the glass itself: the scan lines and a soft edge, no film grain ---------- */
+[data-hud="ship"] #grain {
+  mix-blend-mode: normal; opacity: 1;
+  background-image: radial-gradient(ellipse at center, transparent 62%, rgba(0, 0, 0, 0.38) 100%);
+}

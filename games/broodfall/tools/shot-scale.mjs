@@ -60,7 +60,7 @@ try {
   const shot = async (name) => {
     const png = join(shots, `${name}.png`);
     await page.waitForTimeout(400);
-    await canvas.screenshot({ path: png });
+    await page.screenshot({ path: png });
     spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-i', png, '-q:v', '3', join(screens, `${name}.jpg`)]);
     console.log(`  shot  ${join(screens, `${name}.jpg`)}`);
   };
