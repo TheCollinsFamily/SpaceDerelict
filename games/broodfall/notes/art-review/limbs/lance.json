@@ -1,7 +1,7 @@
 {
  "family": "lance",
- "frames": 114,
- "atlasKB": 485,
+ "frames": 130,
+ "atlasKB": 554,
  "failed": 0,
  "checks": [
   {
@@ -72,17 +72,17 @@
   {
    "name": "from behind, idle: it moves",
    "ok": true,
-   "value": 0.23
+   "value": 0.24
   },
   {
    "name": "from behind, idle: it is calm",
    "ok": true,
-   "value": 0.23
+   "value": 0.24
   },
   {
    "name": "from behind, idle: inside the frame",
    "ok": true,
-   "value": "128,78-526,480"
+   "value": "128,78-538,480"
   },
   {
    "name": "from behind, idle: no background tint on the outline",

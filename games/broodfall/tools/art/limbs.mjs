@@ -160,11 +160,19 @@ export const LIMBS = [
     quiet: true,
     fire: 'The sac squeezes and its orange glow surges bright while the nozzle gapes and shudders, then the glow dims, back to exactly the starting pose.' },
   // ---- Gut ----
-  { family: 'maw', big: true, foot: [0.51, 0.79, 0.79], backFoot: [0.51, 0.75, 0.76], name: 'Maw', theme: 'gut', on: 'roof', job: 'Eats weakened enemies whole and pays richer meat.',
-    back: 'The mouth opens away from the camera, toward the upper right: we see the back of its head, a dome of flesh and plates, and only the far rim of its teeth above it.',
-    look: 'a wide round mouth lying open facing up and forward, ringed with rows of small teeth, its gullet dark wine red',
-    idle: `${CALM} The mouth opens and closes a little, as if tasting the air.`,
-    fire: 'The mouth lunges forward, snaps shut, gulps with a swallow that travels down its throat, then opens again to exactly its starting pose.' },
+  // THE TONGUE MAW (Sep 30 2026, Collins: "the frog like tongue design, that's brilliant"). The old one, a
+  // huge toothed funnel pointing up, could not be seen to eat anything below and beside it ("no idea how
+  // you are going to animate the big mouth thing attacking"). This one crouches like a toad at the roof's
+  // edge; its tongue is drawn by the game (src/render/mawTongue.ts), shot from its mouth (`muzzle`) to the
+  // victim in the street, which sticks to it and is reeled up into the mouth. Its clips are only its body:
+  // the mouth gaping, snapping shut, the gulp. NOT DRAWN YET: art-src/limbs/maw/ still holds the old
+  // funnel's pictures and clips (the pipeline skips what exists), so they must be moved aside before
+  // `node tools/art/make.mjs limb maw` draws this one; then mark its foot and its muzzle (the mouth).
+  { family: 'maw', big: true, foot: [0.51, 0.79, 0.79], backFoot: [0.51, 0.75, 0.76], name: 'Maw', theme: 'gut', on: 'roof', job: 'Snatches weakened enemies from the street with its tongue and eats them whole; pays richer meat.',
+    back: 'Its wide mouth faces away from the camera, toward the upper right: we see its broad humped back armoured with plates of dark chitin, the two knobs on top of its head, and only the far corners of its lips at the sides.',
+    look: 'a huge squat toad-like mound of muscle crouched low and wide, its head the whole front of its body: a very wide mouth across the front with thick fleshy lips pressed shut in a long curved line, small teeth showing at the corners, a big swollen throat sac of paler crimson hanging under the mouth, two blunt knobs on top of its head, its broad humped back armoured with plates of dark chitin',
+    idle: `${CALM} Its throat sac slowly swells and shrinks as it breathes, and its lips twitch.`,
+    fire: 'Its wide mouth gapes open fast and very wide, showing the dark wine-red gullet ringed with rows of small teeth, and holds open; then it snaps shut, the throat sac swells hugely with a gulp that travels back into its body, which swells a little, then everything settles back to exactly its starting pose. No tongue and nothing else ever leaves the mouth.' },
   { family: 'swamp', name: 'Digestive Swamp', theme: 'gut', on: 'street', flat: true, job: 'Lies IN the street: slows and dissolves everything that wades through it.',
     look: 'a shallow pool of dark wine-red digestive acid as wide as a street lane, with a low fleshy rim set with small teeth, lying flat on the ground',
     idle: 'The pool bubbles slowly; small ripples cross it; the fleshy rim twitches.',

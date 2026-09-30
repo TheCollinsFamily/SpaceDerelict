@@ -1,7 +1,7 @@
 {
  "family": "lobber",
- "frames": 126,
- "atlasKB": 792,
+ "frames": 130,
+ "atlasKB": 816,
  "failed": 0,
  "checks": [
   {
@@ -87,17 +87,17 @@
   {
    "name": "from behind, idle: loop closes",
    "ok": true,
-   "value": 1.24
+   "value": 0
   },
   {
    "name": "from behind, idle: it moves",
    "ok": true,
-   "value": 0.79
+   "value": 0.74
   },
   {
    "name": "from behind, idle: it is calm",
    "ok": true,
-   "value": 0.79
+   "value": 0.74
   },
   {
    "name": "from behind, idle: inside the frame",
@@ -112,7 +112,7 @@
   {
    "name": "from behind, idle: ends the size it began",
    "ok": true,
-   "value": "10% change"
+   "value": "11% change"
   },
   {
    "name": "from behind, fire: no background tint on the outline",
@@ -127,7 +127,7 @@
   {
    "name": "from behind, it stands in its cell",
    "ok": true,
-   "value": "3.4% of it lies in front of its cell"
+   "value": "2.7% of it lies in front of its cell"
   },
   {
    "name": "from behind: it has a view",

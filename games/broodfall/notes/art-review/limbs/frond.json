@@ -1,7 +1,7 @@
 {
  "family": "frond",
- "frames": 56,
- "atlasKB": 1196,
+ "frames": 70,
+ "atlasKB": 1458,
  "failed": 0,
  "checks": [
   {
@@ -32,7 +32,7 @@
   {
    "name": "idle: inside the frame",
    "ok": true,
-   "value": "160,88-488,544"
+   "value": "160,88-492,544"
   },
   {
    "name": "idle: no background tint on the outline",
@@ -42,7 +42,7 @@
   {
    "name": "idle: ends the size it began",
    "ok": true,
-   "value": "1% change"
+   "value": "2% change"
   },
   {
    "name": "fire: no background tint on the outline",
@@ -72,7 +72,7 @@
   {
    "name": "it stands in its cell",
    "ok": true,
-   "value": "0.1% of it lies in front of its cell"
+   "value": "0.0% of it lies in front of its cell"
   }
  ]
 }

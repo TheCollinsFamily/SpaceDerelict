@@ -402,7 +402,7 @@ try {
       const ids = [];
       const pips = { spitter: [{ family: 'burster' }, { family: 'quill' }], maw: [{ family: 'lasher' }, { family: 'blighter' }, { family: 'ocular' }], impaler: [{ family: 'brood' }], twin: [{ family: 'ember' }, { family: 'spine' }] };
       for (const f of Object.keys(pips)) {
-        const id = await build(f, st[ids.length]);
+        const id = await build(f, st[ids.length * 3] ?? st[0]);
         await page.evaluate(([id, p]) => { const t = window.broodfall.sim.towers.find((x) => x.id === id); if (t) t.pips = p; }, [id, pips[f]]);
         ids.push(id);
       }

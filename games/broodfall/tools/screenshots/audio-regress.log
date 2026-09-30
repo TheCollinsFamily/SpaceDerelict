@@ -1,0 +1,6 @@
+  PASS  creeped street redder than bare ground (Δ 24 vs -12)
+  PASS  no enemy inside a building (5 checked)
+  PASS  board has content (18.1% lit pixels)
+  PASS  tower rendered at its sim position (146 bright px)
+
+VISUAL CHECK: all regions verified.

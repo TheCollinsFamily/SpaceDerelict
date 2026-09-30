@@ -1,7 +1,7 @@
 {
  "family": "sprout",
- "frames": 44,
- "atlasKB": 194,
+ "frames": 70,
+ "atlasKB": 293,
  "failed": 0,
  "checks": [
   {
@@ -22,17 +22,17 @@
   {
    "name": "idle: it moves",
    "ok": true,
-   "value": 0.27
+   "value": 0.29
   },
   {
    "name": "idle: it is calm",
    "ok": true,
-   "value": 0.27
+   "value": 0.29
   },
   {
    "name": "idle: inside the frame",
    "ok": true,
-   "value": "182,172-480,468"
+   "value": "182,166-480,470"
   },
   {
    "name": "idle: no background tint on the outline",
@@ -42,7 +42,7 @@
   {
    "name": "idle: ends the size it began",
    "ok": true,
-   "value": "0% change"
+   "value": "10% change"
   },
   {
    "name": "fire: no background tint on the outline",
@@ -67,7 +67,7 @@
   {
    "name": "it stands in its cell",
    "ok": true,
-   "value": "4.0% of it lies in front of its cell"
+   "value": "3.5% of it lies in front of its cell"
   }
  ]
 }
