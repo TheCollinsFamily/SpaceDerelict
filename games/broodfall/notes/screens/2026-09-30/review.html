@@ -1,0 +1,154 @@
+<title>Broodfall Build Review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600&family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono&display=swap">
+<style>
+/* Layout: the ship's own console — one long scroll of labelled bays, each a strip of real screenshots from the game. Single dark look on purpose (it matches the game's HUD). */
+:root {
+  --deck: #07090c;
+  --panel: #0e1217;
+  --rule: #232a33;
+  --ink: #e4e9ee;
+  --dim: #8b95a1;
+  --lit: #9fe3ff;
+  --war: #ff8a3d;
+  --warn: #ffcf5a;
+  --display: "Chakra Petch", "Bahnschrift", "Segoe UI", sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", Consolas, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--deck); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.55; }
+.wrap { max-width: 1280px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 72px; display: grid; gap: 44px; }
+header { display: grid; gap: 12px; border-left: 3px solid var(--lit); padding-left: 16px; }
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--dim); }
+h1 { font-family: var(--display); font-weight: 600; font-size: clamp(28px, 4.4vw, 44px); letter-spacing: .12em; text-transform: uppercase; margin: 0; line-height: 1.1; }
+.lede { max-width: 70ch; color: var(--dim); margin: 0; }
+.status { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { font-family: var(--mono); font-size: 12px; border: 1px solid var(--rule); padding: 4px 10px; background: var(--panel); }
+.chip b { color: var(--lit); font-weight: 400; }
+section { display: grid; gap: 14px; }
+h2 { font-family: var(--display); font-weight: 600; font-size: 20px; letter-spacing: .16em; text-transform: uppercase; margin: 0; display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; border-bottom: 1px solid var(--rule); padding-bottom: 8px; }
+h2 small { font-family: var(--mono); font-size: 12px; letter-spacing: .04em; text-transform: none; color: var(--dim); font-weight: 400; }
+.grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 380px), 1fr)); align-items: start; }
+.grid.wide { grid-template-columns: repeat(auto-fill, minmax(min(100%, 600px), 1fr)); }
+figure { margin: 0; display: grid; gap: 6px; min-width: 0; }
+figure a { display: block; border: 1px solid var(--rule); line-height: 0; background: #000; }
+figure a:hover, figure a:focus-visible { border-color: var(--lit); outline: none; }
+figure img, figure video { width: 100%; height: auto; display: block; }
+video { border: 1px solid var(--rule); background: #000; }
+figcaption { display: grid; gap: 2px; min-width: 0; }
+figcaption b { font-weight: 600; font-size: 14px; }
+figcaption span { color: var(--dim); font-size: 13px; }
+.note { border-left: 3px solid var(--warn); background: var(--panel); padding: 10px 14px; color: var(--ink); font-size: 14px; max-width: 90ch; }
+.note b { color: var(--warn); }
+.path { font-family: var(--mono); font-size: 12.5px; color: var(--dim); background: var(--panel); border: 1px solid var(--rule); padding: 10px 12px; overflow-x: auto; white-space: nowrap; }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Orbital Tender "Merciful Yoke" · build review · Sep 30 2026</div>
+    <h1>Broodfall, working</h1>
+    <p class="lede">Every picture here is the real game in a browser, taken by a scripted run. Click a picture to open it full size. The videos are recorded from the game at normal speed.</p>
+    <div class="status">
+      <span class="chip">unit tests <b>371 / 371</b></span>
+      <span class="chip">browser checks <b>7 / 7</b></span>
+      <span class="chip">player path from the menu <b>passes</b></span>
+    </div>
+  </header>
+
+  <section>
+    <h2>In motion <small>recorded at 1×</small></h2>
+    <div class="grid wide">
+      <figure><video src="anim-03-siege.mp4" controls muted playsinline preload="metadata"></video><figcaption><b>A siege</b><span>Wave 5: limbs firing, soldiers fighting and dying, the creep spreading.</span></figcaption></figure>
+      <figure><video src="anim-02-core-stages.mp4" controls muted playsinline preload="metadata"></video><figcaption><b>The core, all four stages</b><span>Each idling a few seconds; the heart pulses.</span></figcaption></figure>
+      <figure><video src="anim-01-limbs-idle-close.mp4" controls muted playsinline preload="metadata"></video><figcaption><b>Limbs idling, close</b><span>Before today's smoothing pass: some loops snap back, some step. A fix is running.</span></figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>A new player's first hour <small>first launch to second launch</small></h2>
+    <div class="grid">
+      <figure><a href="onboard-01-intro-sky.jpg" target="_blank" rel="noopener"><img src="onboard-01-intro-sky.jpg" alt="Opening film" loading="lazy"></a><figcaption><b>1 · The opening film</b><span>A 1950s monster picture from the town's side; skippable.</span></figcaption></figure>
+      <figure><a href="onboard-05-mission1-first-limb.jpg" target="_blank" rel="noopener"><img src="onboard-05-mission1-first-limb.jpg" alt="Mission 1" loading="lazy"></a><figcaption><b>2 · Mission 1</b><span>A plain tower defence at the crash site, with a coach line.</span></figcaption></figure>
+      <figure><a href="onboard-07-ship-first-greeting.jpg" target="_blank" rel="noopener"><img src="onboard-07-ship-first-greeting.jpg" alt="YOKE greets" loading="lazy"></a><figcaption><b>3 · The ship: YOKE greets you</b><span>Your mission-1 lines, in her voice and clips.</span></figcaption></figure>
+      <figure><a href="onboard-07b-boss-message.jpg" target="_blank" rel="noopener"><img src="onboard-07b-boss-message.jpg" alt="The boss" loading="lazy"></a><figcaption><b>4 · The boss calls</b><span>Supervisor Steadfast Barnabas, an uplifted golden retriever.</span></figcaption></figure>
+      <figure><a href="onboard-08-ship-desk-dark.jpg" target="_blank" rel="noopener"><img src="onboard-08-ship-desk-dark.jpg" alt="Dark desk" loading="lazy"></a><figcaption><b>5 · The desk stays dark</b><span>"Awaiting clearance": Command picks the next deployment.</span></figcaption></figure>
+      <figure><a href="onboard-11-quarters-data-pad.jpg" target="_blank" rel="noopener"><img src="onboard-11-quarters-data-pad.jpg" alt="Quarters data pad" loading="lazy"></a><figcaption><b>6 · The mate review</b><span>The candidate's file on the data pad in his quarters.</span></figcaption></figure>
+      <figure><a href="onboard-12-first-contact-1-of-3.jpg" target="_blank" rel="noopener"><img src="onboard-12-first-contact-1-of-3.jpg" alt="First contact" loading="lazy"></a><figcaption><b>7 · The desk opens; all three call</b><span>After "Broh, that was sick...": call 1 of 3.</span></figcaption></figure>
+      <figure><a href="onboard-14b-print-body-scene.jpg" target="_blank" rel="noopener"><img src="onboard-14b-print-body-scene.jpg" alt="Print a body" loading="lazy"></a><figcaption><b>8 · "Print yourself a body"</b><span>The scene, then her line from the speakers.</span></figcaption></figure>
+      <figure><a href="onboard-15-menu-console.jpg" target="_blank" rel="noopener"><img src="onboard-15-menu-console.jpg" alt="Menu" loading="lazy"></a><figcaption><b>9 · Later launches</b><span>The ship's console menu over the looping planet view.</span></figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>The ship-console HUD <small>your pick</small></h2>
+    <div class="grid wide">
+      <figure><a href="hud-options/ship-a.jpg" target="_blank" rel="noopener"><img src="hud-options/ship-a.jpg" alt="HUD in a run" loading="lazy"></a><figcaption><b>In a run</b><span>Limb panel open, the hand below, the feed on the right.</span></figcaption></figure>
+      <figure><a href="hud-options/ship-c.jpg" target="_blank" rel="noopener"><img src="hud-options/ship-c.jpg" alt="Organ stage" loading="lazy"></a><figcaption><b>The organ stage</b><span>Before the one-meteor fix below.</span></figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>The core, sizes and walls</h2>
+    <div class="grid wide">
+      <figure><a href="core-evo-00-stages-1-grow-3-4.jpg" target="_blank" rel="noopener"><img src="core-evo-00-stages-1-grow-3-4.jpg" alt="Core stages" loading="lazy"></a><figcaption><b>The core evolves</b><span>Stage 1, growing mid-clip, stage 3, stage 4 (at 6, 18 and 40 limbs grown).</span></figcaption></figure>
+      <figure><a href="organ-core-after-suburb.jpg" target="_blank" rel="noopener"><img src="organ-core-after-suburb.jpg" alt="One meteor" loading="lazy"></a><figcaption><b>Organ stage: one meteor</b><span>The part above the street line and the part below are one body now.</span></figcaption></figure>
+      <figure><a href="scale-00-pick-close-grid.jpg" target="_blank" rel="noopener"><img src="scale-00-pick-close-grid.jpg" alt="Scale options" loading="lazy"></a><figcaption><b>Limbs smaller, core bigger</b><span>The four ratios tried; 0.84 : 1.22 was chosen.</span></figcaption></figure>
+      <figure><a href="walls-00-BEFORE-AFTER-orient-turn2-farmland-turn3.jpg" target="_blank" rel="noopener"><img src="walls-00-BEFORE-AFTER-orient-turn2-farmland-turn3.jpg" alt="Walls before and after" loading="lazy"></a><figcaption><b>The Spine Wall, before and after</b><span>It was 1.8× too wide and ran along narrow lanes; now across, at the lane's width.</span></figcaption></figure>
+      <figure><a href="organ-skylines-all-sets.jpg" target="_blank" rel="noopener"><img src="organ-skylines-all-sets.jpg" alt="Skylines" loading="lazy"></a><figcaption><b>The organ stage's city, per tile set</b><span>All ten checked in the game.</span></figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>Units</h2>
+    <div class="grid">
+      <figure><a href="units-12-bosses-arriving.jpg" target="_blank" rel="noopener"><img src="units-12-bosses-arriving.jpg" alt="Bosses" loading="lazy"></a><figcaption><b>The royal and the consort, arriving</b><span>Boss-size frames, an entrance and a special each.</span></figcaption></figure>
+      <figure><a href="units-09-squad-flinching.jpg" target="_blank" rel="noopener"><img src="units-09-squad-flinching.jpg" alt="Flinch" loading="lazy"></a><figcaption><b>A squad flinching</b><span>All 26 kinds in 5 views.</span></figcaption></figure>
+      <figure><a href="units-16-broodlings-and-puppet-queens-fighting.jpg" target="_blank" rel="noopener"><img src="units-16-broodlings-and-puppet-queens-fighting.jpg" alt="Broodlings" loading="lazy"></a><figcaption><b>Broodlings and puppet queens</b><span>No longer coloured dots.</span></figcaption></figure>
+      <figure><a href="units-10-carapace-whole-cracked-gone.jpg" target="_blank" rel="noopener"><img src="units-10-carapace-whole-cracked-gone.jpg" alt="Carapace" loading="lazy"></a><figcaption><b>Carapace lord: whole, cracked, stripped</b><span>The shield is a picture on the unit now.</span></figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>The board</h2>
+    <div class="grid">
+      <figure><a href="board-24-gates-all-ten-sets.jpg" target="_blank" rel="noopener"><img src="board-24-gates-all-ten-sets.jpg" alt="Gates" loading="lazy"></a><figcaption><b>A gate per tile set</b><span>Where waves come in; the next one glows.</span></figcaption></figure>
+      <figure><a href="board-17-pods-and-strains-mire-burning.jpg" target="_blank" rel="noopener"><img src="board-17-pods-and-strains-mire-burning.jpg" alt="Pods and strains" loading="lazy"></a><figcaption><b>Creep pods and strains</b><span>Mire and burning drawn as art.</span></figcaption></figure>
+      <figure><a href="board-13-unclaimed-city-under-smoke-far.jpg" target="_blank" rel="noopener"><img src="board-13-unclaimed-city-under-smoke-far.jpg" alt="Smoke" loading="lazy"></a><figcaption><b>The unclaimed city under smoke</b><span>Replaces the flat dark texture.</span></figcaption></figure>
+      <figure><a href="board-01-seams-BEFORE-AFTER-roof-corner.jpg" target="_blank" rel="noopener"><img src="board-01-seams-BEFORE-AFTER-roof-corner.jpg" alt="Seams" loading="lazy"></a><figcaption><b>Creep seams, before and after</b><span>Tiles were baked too tight at their corners.</span></figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>Screens and the campaign</h2>
+    <div class="grid">
+      <figure><a href="screens-01-title.jpg" target="_blank" rel="noopener"><img src="screens-01-title.jpg" alt="Title" loading="lazy"></a><figcaption><b>Title key art</b><span>The name set in type over the art.</span></figcaption></figure>
+      <figure><a href="screens-07-draft-close.jpg" target="_blank" rel="noopener"><img src="screens-07-draft-close.jpg" alt="Draft" loading="lazy"></a><figcaption><b>District draft previews</b><span>Each plate drawn from its real layout.</span></figcaption></figure>
+      <figure><a href="screens-10-debrief-won.jpg" target="_blank" rel="noopener"><img src="screens-10-debrief-won.jpg" alt="Debrief" loading="lazy"></a><figcaption><b>The end-of-run report</b><span>The board at the end, what grew, what died.</span></figcaption></figure>
+      <figure><a href="pad-won-4-set-down.jpg" target="_blank" rel="noopener"><img src="pad-won-4-set-down.jpg" alt="Data pad" loading="lazy"></a><figcaption><b>The data pad at a mission's end</b><span>Your last view, set down on his desk.</span></figcaption></figure>
+      <figure><a href="camp-directives.jpg" target="_blank" rel="noopener"><img src="camp-directives.jpg" alt="Directives" loading="lazy"></a><figcaption><b>Empire Directives</b><span>Standing orders, progress across deployments.</span></figcaption></figure>
+      <figure><a href="camp-notebook-pinned.jpg" target="_blank" rel="noopener"><img src="camp-notebook-pinned.jpg" alt="Notebook" loading="lazy"></a><figcaption><b>Hobby missions: the Notebook</b><span>A page pinned to the next drop; genes in the jars.</span></figcaption></figure>
+      <figure><a href="camp-briefing.jpg" target="_blank" rel="noopener"><img src="camp-briefing.jpg" alt="Briefing" loading="lazy"></a><figcaption><b>Territory art in the briefing</b><span>All 16 territories drawn.</span></figcaption></figure>
+      <figure><a href="camp-settings-menu.jpg" target="_blank" rel="noopener"><img src="camp-settings-menu.jpg" alt="Settings" loading="lazy"></a><figcaption><b>Settings</b><span>From the menu, the ship, or Esc in a run.</span></figcaption></figure>
+    </div>
+    <div class="grid wide">
+      <figure><video src="pad-won.mp4" controls muted playsinline preload="metadata"></video><figcaption><b>The data pad, won</b><span>The whole transition.</span></figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>YOKE</h2>
+    <div class="grid wide">
+      <figure><a href="yoke-leaflit-clips.jpg" target="_blank" rel="noopener"><img src="yoke-leaflit-clips.jpg" alt="YOKE clips" loading="lazy"></a><figcaption><b>Her 43 clips</b><span>Made the Leaflit studio way; the same set plays on rfab.ai.</span></figcaption></figure>
+      <figure><a href="connect-03-cutoff-prompt.jpg" target="_blank" rel="noopener"><img src="connect-03-cutoff-prompt.jpg" alt="Cutoff" loading="lazy"></a><figcaption><b>The $3 cut-off</b><span>Tested on a local RFab; needs the backend deploy to go live.</span></figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>Not shown yet</h2>
+    <p class="note"><b>Limbs firing.</b> Earlier effect screenshots were taken while unit art was being re-baked, so they show orange placeholder dots and a "picture did not load" banner. A session is fixing where shots leave each limb and taking clean close-ups of every kind firing; they go on this page when done. Also still running: smoother idle loops, the sound, and the heaven reveal.</p>
+    <p class="note"><b>One look to settle.</b> The end-of-run report card is still the old khaki paper, inside the new ship-console HUD.</p>
+    <div class="path">C:\Users\Merry\dev\space-derelict\games\broodfall\notes\screens\2026-09-30\</div>
+  </section>
+</div>
