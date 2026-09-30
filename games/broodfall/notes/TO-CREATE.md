@@ -49,8 +49,10 @@ three campaign outlines, covers and promotional art.
 
 ## 4. Films, news, sound
 
-- **Sound: the game is silent** except YOKE's and the boss's voices. Music, effects, a narrator.
-  The Settings sliders for music and effects wait for it. Collins: RFab generation or a library?
+- **Sound: BUILT Sep 30** (RFab generation; HANDOFF.md "The sound"; listening sheet
+  `notes/screens/2026-09-30/audio-README.md`). Still missing: a real sound-effect model on RFab
+  (the effects are cut from video soundtracks), the insects' intercepted radio between waves
+  (content/lore/insects.md proposal 4), faction leaders' voices, an ear on every file (Collins).
 - **Newsreels and news clippings** between runs, in the 1950s B-movie look. ~20 clips, ~$15.
 - **Faction leaders' voices** for their scenes.
 - **Faction endings**: one picture each; an ending film per faction (and the Institute's pacify one).

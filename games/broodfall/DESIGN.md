@@ -659,7 +659,9 @@ of the whole thing is `tools/shot-onboarding.mjs` (screenshots `notes/screens/20
    trailer of a 1950s monster picture told from the town's side (a living meteor falls on a
    little insect town and grows); its titles are set in type; it never mentions a ship, an
    empire or a campaign. A click, Esc, Enter or Space skips it; it plays once and is replayable
-   from the menu. It is silent: a browser will not play sound on a page nobody has clicked yet.
+   from the menu. It has a score and a newsreel narrator reading its titles (Sep 30 2026); a
+   browser will not play sound on a page nobody has clicked yet, so when sound cannot play the
+   film waits on its first frame behind a "▸ BEGIN" card, and that click starts it heard.
 2. **Mission 1** is the crash site (the film ends there): hold 5 waves, the assault's gate shown
    (as in any tower-defence game; the campaign hides it later), no Requisition Board, no dares,
    nothing on screen that speaks of the ship, the Board, the globe or a licence (`hud.plain`,

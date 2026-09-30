@@ -223,7 +223,7 @@ insectoid city.
   `src/meta/settings.ts` (model), kept by `loadSettings/saveSettings/gain` in `src/meta/storage.ts`.
   Opened from the menu (`menu.ts`), the ship's room bar, and a run (Esc with nothing in hand, or ⚙;
   the run's speed goes to 0 while it is open). Voice volume is wired into YOKE's lines and the boss's
-  message; music/effects wait for sound. The YOKE account/model section is a SLOT: the YOKE connect
+  message; music/effects drive the sound buses (src/audio/). The YOKE account/model section is a SLOT: the YOKE connect
   session calls `registerSettingsSection('yoke-account', draw)`. HUD styles come from
   `src/hud/themes.ts` (`HUD_THEMES`, `applyHud`).
 - **Territory pictures**: `node tools/art/make.mjs ship territories` (manifest `ship.ship.territories`),
@@ -233,6 +233,39 @@ insectoid city.
   5, Grudge Marrow 5, Kite String 5, Royal Jelly 6, Homing Tissue 6, Wet Nurse 6, Hitchhiker Spores 6,
   Wedding Musk 6 (328 pairings), Royal Graft 4 (the free cage takes a hand slot the bot does not use
   well). No walkover; the dips are the reshuffle of card draws the HANDOFF warns about, not the verbs.
+
+## The sound (Sep 30 2026)
+
+Collins: "Let's generate audio." Everything is generated through the RFab API on his account and
+baked into `public/audio/` (Opus .ogg, 11 MB, `manifest.json`). **Listen:**
+`notes/screens/2026-09-30/audio-README.md` (every file, what it is for, its length, the prompt),
+`audio-proof.mp4` (the game played with its sound), `audio-reel-{music,sfx,voice}.ogg`.
+- **Pipeline** (`tools/audio/`; SPENDS tokens, skips what exists; raw takes in `art-src/audio/`):
+  `node tools/audio/make.mjs [ids] [--bake] [--redo id]`, then `node tools/audio/sheet.mjs` (free:
+  reels + sheet). Cues and prompts: `tools/audio/cues.mjs`. Music: Eleven Music v2 (250 tokens/s;
+  Mureka ignored "no drums"). **RFab has no sound-effect route**: effects are cut out of the soundtrack
+  of MiniMax Hailuo 3.0 text-to-video takes (`atlascloud:h3-t2v`, 480p, ~2,930 tokens/s), each take
+  asking for the sound several times with silence between (every separate sound = a variant). The
+  newsreel narrator: Veo 3.1 Lite speaking the line (checked back by transcription). Levels: music
+  -16 LUFS, effects ~-14 with peaks < -1 dBTP; loops seamless, played between `loopStart`/`loopEnd`
+  (the file carries 0.5 s of itself either side: the codec rings at a file's ends).
+- **Game side** (`src/audio/`): `engine.ts` (WebAudio: master → music / effects / voice buses from
+  the Settings sliders, unlock on the first click/key, per-sound gap + polyphony + pitch spread, 24
+  voices max, music scenes crossfaded and resumed where left, stingers duck the loop, `duckFor()` under
+  YOKE's and the boss's `<audio>`, "Mute when away" setting, `window.__bfAudio` log/meter/recorder),
+  `cues.ts` (rules, limb family → firing class, insect → death, `sceneOf`), `gameSounds.ts` (reads the
+  sim each frame: a cooldown jump = a shot, a vanished shot/shell = a landing, new card ids = draws, the
+  core's stage; sim events; every console button by one delegated listener; intercom, faction call,
+  print-a-body by what is on screen). Hooks elsewhere are one line each: `main.ts` (handleEvents, the
+  frame loop, `musicTick`), `intro.ts` (BEGIN card, score, narrator), `padOutro.ts` (the pad meets the
+  desk at 2.3 s), `bossCall.ts` / `yokeAvatar.ts` (`duckFor`).
+- **Trap:** a bus with nothing flowing through it is not processed by Chrome, so a gain GLIDED to a new
+  level starts from the old one the moment a sound arrives (effects at 0% were heard at -46 dBFS). Bus
+  gains are SET, not glided.
+- **Checks:** `tests/audio.test.ts`, `tests/audio-board.test.ts`, `node tools/shot-audio.mjs [A B C]`
+  (dev server 5263, no autoplay flag: every sound unlocked by a real click; 58 checks).
+- The film's decision: on a page that cannot play sound yet it waits behind "▸ BEGIN" (click or any
+  key; Esc still skips); a page that may play (replayed from the menu) starts at once.
 
 ## The data pad at a mission's end (Sep 30 2026)
 
@@ -585,6 +618,7 @@ node tools/shot-preview.mjs   # a mortar's field of fire (click on it) + a condu
 node tools/shot-elevation.mjs # DEV server: the reach ring before placing grows with height (+10%/level, plinths too; Sim.previewStats = the sim's own statsOf) + right-click turns any held limb (notes/screens/2026-09-30/elev-*, rotate-*)
 node tools/shot-play-new.mjs  # DEV server from the menu: Scaffold + Seeding Gland grown by clicks, plinths raise a gun and level a roof, a BIG limb on it, a Seedling shot up and landed, the scripted player late (JPGs in notes/screens/2026-09-29/play-*)
 node tools/shot-campaign.mjs  # NEW CAMPAIGN → mission 1 → ship (desk dark) → assigned run → win → desk opens, three calls → ally → YOKE (scripted) → globe + dare → aside in debrief + Comms
+node tools/shot-audio.mjs       # DEV server: the sound played through (film, menu, ship, a run, organ stage, win/loss), buses by the meter; notes/screens/2026-09-30/audio-proof.mp4
 node tools/shot-onboarding.mjs  # DEV server, fresh browsers: the film, mission 1, the ship and YOKE's greetings (rfab.ai mocked), the boss, the dark desk, mate review, cat girl, the desk opening + three calls, YOKE summoned + print-a-body, the console menu; mission 1 won; replay the opening (notes/screens/2026-09-30/onboard-*)
 # PAID (a few RFab tokens): live YOKE. Against a local backend started with PORT=3011 node scripts/start.js
 # and a JWT from `npm run auth:token -- --email collinsmalcolm@gmail.com` (backend repo):
