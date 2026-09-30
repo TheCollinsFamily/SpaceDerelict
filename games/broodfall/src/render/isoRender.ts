@@ -45,11 +45,12 @@ const POD_HEADING = Math.atan2(0.45, -1);
 const LONG_SIZE = 1.35;
 /**
  * How wide a wall's band of muscle is drawn, in half-tiles: across a lane two cells wide, and
- * across a lane one cell wide. The whole wall (band and spines) is about 1.9 times its band.
+ * across a lane one cell wide. The whole wall (band and spines) is 1.86 times its band (measured on
+ * limbs/spine.webp): 2.4 and 1.5 half-tiles, as wide as its lane on the screen.
  * It was 2.88 and 1.6: a wall reached over the blocks on both sides of its street.
  */
 const WALL_TWO = 1.3;
-const WALL_ONE = 0.9;
+const WALL_ONE = 0.8;
 const LONG_BACK = 0.25;
 /** What the landing site stands on, as a share of the width of the square it fell on. */
 const CORE_FILL = 0.92;
@@ -1138,11 +1139,15 @@ export class IsoRenderer extends Renderer {
         // they lie. Two cells one behind the other (the street is one cell wide, so the sim laid its
         // ground along the lane: Collins, Sep 30 2026, "walls way too large and placed sideways"):
         // across the lane, as wide as the lane, in the middle of its two cells.
+        // Which it is, is read off the street itself (closed on both sides of its line), not off the flow.
         const ground = sim.cellsOf(t);
-        const laneX = this.laneRunsAlongX(sim, t.cell);
+        const W = sim.cfg.gridW;
+        const shut = (c: number) => c < 0 || c >= sim.map.cells.length || sim.map.cells[c] === CellType.Block || sim.map.cells[c] === CellType.Void;
         const cellsX = ground.length === 2 && Math.abs(ground[1] - ground[0]) === 1;
-        wallNarrow = ground.length !== 2 || cellsX === laneX;
-        const alongX = wallNarrow ? !laneX : cellsX;
+        const side = cellsX ? W : 1;
+        const oneWide = ground.length === 2 && ground.every((c) => shut(c - side) && shut(c + side));
+        wallNarrow = ground.length !== 2 || oneWide;
+        const alongX = ground.length !== 2 ? !this.laneRunsAlongX(sim, t.cell) : oneWide ? !cellsX : cellsX;
         mirror = !alongX !== (g.turn % 2 === 1);
       }
       const side = back && art.back ? art.back : art;
