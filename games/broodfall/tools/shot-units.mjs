@@ -115,6 +115,8 @@ try {
       const e = s.spawnEnemy(kind, s.gates[0]);
       const c = s.cellCenter(cell);
       e.pos.x = c.x + dx; e.pos.y = c.y + dy;
+      // Staged to be seen: a cloaked kind (the shadewing) is shown as a revealed one is.
+      e.revealedUntil = s.time + 999;
       if (set === 'grounded') e.groundedUntil = s.time + 999;
       if (set === 'deployed') e.deployed = true;
       if (set === 'stripped') e.hitShield = 0;
@@ -136,29 +138,36 @@ try {
     for (let i = 0; i < zoom; i++) await page.mouse.wheel(0, -240);
     await page.waitForTimeout(600);
     // Zooming keeps the point under the pointer; drag it (shift-drag pans) to the middle.
-    p = onPage(await where());
-    await page.keyboard.down('Shift');
-    await page.mouse.move(p.x, p.y);
-    await page.mouse.down();
-    await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2, { steps: 12 });
-    await page.mouse.up();
-    await page.keyboard.up('Shift');
-    await page.waitForTimeout(400);
+    // The view eases toward where it is sent: measure and drag again until the point sits in the middle.
+    for (let round = 0; round < 4; round++) {
+      p = onPage(await where());
+      const off = Math.hypot(p.x - (b.x + b.width / 2), p.y - (b.y + b.height / 2));
+      if (off < 12) break;
+      await page.keyboard.down('Shift');
+      await page.mouse.move(p.x, p.y);
+      await page.mouse.down();
+      await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2, { steps: 12 });
+      await page.mouse.up();
+      await page.keyboard.up('Shift');
+      await page.waitForTimeout(500);
+    }
+    const left = onPage(await where());
+    console.log(`  view  centred within ${Math.round(Math.hypot(left.x - (b.x + b.width / 2), left.y - (b.y + b.height / 2)))} px`);
   };
-  /** The middle of the units on the board, as a world point. */
-  const middleOfUnits = () => page.evaluate(() => {
-    const es = window.broodfall.sim.enemies;
+  /** The middle of these units (the ones staged, not a wave elsewhere on the board), as a world point. */
+  const middleOfUnits = (ids) => page.evaluate((want) => {
+    const es = window.broodfall.sim.enemies.filter((e) => want.includes(e.id));
     return { x: es.reduce((a, e) => a + e.pos.x, 0) / es.length, y: es.reduce((a, e) => a + e.pos.y, 0) / es.length };
-  });
+  }, ids);
   const noArt = () => page.evaluate(() => [...new Set(window.broodfall.sim.enemies.map((e) => e.kind))].filter((k) => !window.broodfall.artMissing || true));
 
   // 2. A column walking, seen from above, with its shadows.
   await fresh();
   let st = await streets();
   const column = ['soldier', 'militia', 'militia', 'responder', 'elite', 'researcher', 'thief', 'splitter', 'skitterling', 'phalanx'];
-  await put(column.map((kind, i) => ({ kind, cell: st[i % st.length], dx: (i % 3) * 5 - 5, dy: ((i >> 1) % 2) * 6 - 3 })));
+  const columnIds = await put(column.map((kind, i) => ({ kind, cell: st[i % st.length], dx: (i % 3) * 5 - 5, dy: ((i >> 1) % 2) * 6 - 3 })));
   await page.evaluate(() => window.broodfall.step(12));
-  await closeOn(await middleOfUnits(), 7);
+  await closeOn(await middleOfUnits(columnIds), 9);
   await shot('column-walking-from-above');
   const kinds = await page.evaluate(() => [...new Set(window.broodfall.sim.enemies.map((e) => e.kind))]);
   const missing = kinds.filter((k) => !manifest.units?.[k]);
@@ -203,9 +212,9 @@ try {
   // 4. Deaths, mid-fall: a squad struck down at once.
   await fresh(13);
   st = await streets();
-  await put(['soldier', 'militia', 'elite', 'researcher', 'responder'].map((kind, i) => ({ kind, cell: st[i], dx: 0, dy: 0 })));
+  const squadIds = await put(['soldier', 'militia', 'elite', 'researcher', 'responder'].map((kind, i) => ({ kind, cell: st[i], dx: 0, dy: 0 })));
   await page.evaluate(() => window.broodfall.step(4));
-  await closeOn(await middleOfUnits(), 7);
+  await closeOn(await middleOfUnits(squadIds), 10);
   await page.evaluate(() => {
     const s = window.broodfall.sim;
     for (const e of [...s.enemies]) s.damageEnemy(e, 99999, 1);
@@ -213,11 +222,11 @@ try {
   // The fall runs on the game's clock (a paused game stands still, the fallen too): 12 frames at
   // 3 a second, then 1.4 s still. Step it a tick (0.1 s) at a time, letting the page draw each.
   const ticks = async (n) => { for (let i = 0; i < n; i++) { await page.evaluate(() => window.broodfall.step(1)); await page.waitForTimeout(35); } };
-  await ticks(20);
+  await ticks(10);
   const falling = await page.evaluate(() => window.broodfall.dying().length);
   check(falling >= 5, 'the squad is drawn falling', `${falling} falling`);
   await shot('dying-mid-fall');
-  await ticks(22);
+  await ticks(32);
   const lying = await page.evaluate(() => window.broodfall.dying().filter((d) => d.alpha > 0.9).length);
   check(lying >= 5, 'the squad lies still where it fell', `${lying} lying`);
   await shot('dead-lying-still');
@@ -244,7 +253,7 @@ try {
     const id = { grounded: 'grounded', deployed: 'deployed', stripped: 'stripped', burrowed: 'burrowed', carrying: 'carrying', stole: 'carrying' }[x.set];
     check(!!art?.[id], `${x.kind} has its "${id}" picture`);
     const at = await page.evaluate((id) => { const e = window.broodfall.sim.enemies.find((u) => u.id === id); return e ? { x: e.pos.x, y: e.pos.y } : null; }, stagedIds[i]);
-    await closeOn(at ?? st[i * 2 % st.length], 9);
+    await closeOn(at ?? st[i * 2 % st.length], 12);
     await shot(x.what);
   }
   check(errors.length === 0, 'nothing is logged as an error', errors.slice(0, 3).join(' | '));

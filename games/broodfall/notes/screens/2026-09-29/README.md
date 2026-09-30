@@ -6,7 +6,10 @@ the game as it was at commit 9d2e909. The name says what to look for.
 
 | Files | What was asked | What to look for |
 |---|---|---|
-| `core-01` to `core-04` | "the core is just floating there" | 01 is the old floating core; 02 to 04 the crater laid on the ground with the heart standing in it, at minute zero, close up, and turned half way round |
+| **`core-pair-1` to `core-pair-4`** | "the core is just floating there" | **start here**: the old build (9d2e909) and now, same seed, same zoom, side by side, in four tile sets. Before: a flat dome of roots painted from above that spills over the raised walls behind it. Now: the heart stands upright in a rooted mound, inside its plaza, its roots on the floor |
+| `core-05` to `core-16` | the same | the core alone, close, nothing built in front of it: minute zero and creep grown in four tile sets, all four camera turns (05, 07 to 09), very close (10) |
+| `core-before-*` | the same | the BEFORE halves of the pairs, full size |
+| `core-01` to `core-04` | the same | the first shots, from far away (02, 04) and among limbs (03) |
 | `limbs-01` to `limbs-04` | "the way they sit is not working" | 01 the old limbs; 02 limbs standing in their cells; 03 and 04 the measured footing sheets (the red mark is where each limb meets the ground) |
 | `camera-01` to `camera-06` | Q/E turning without a "Doom effect" | the same board at four quarter turns; 05 and 06 the same limbs from the front and from behind |
 | `big-01`, `big-02` | limbs over several squares | a 2x2 Broodmother beside small limbs; a late game with big limbs |

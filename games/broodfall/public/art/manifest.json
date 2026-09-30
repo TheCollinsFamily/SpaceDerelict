@@ -9,59 +9,59 @@
     0.5,
     0.94
    ],
-   "body": 0.598,
+   "body": 0.652,
    "flies": false,
    "anims": {
     "walk": {
      "S": {
       "start": 0,
-      "count": 10,
-      "fps": 12
+      "count": 14,
+      "fps": 9.33
      },
      "SW": {
-      "start": 10,
+      "start": 14,
       "count": 10,
       "fps": 12
      },
      "W": {
-      "start": 20,
+      "start": 24,
       "count": 13,
       "fps": 12
      },
      "NW": {
-      "start": 33,
+      "start": 37,
       "count": 14,
       "fps": 7.64
      },
      "N": {
-      "start": 47,
+      "start": 51,
       "count": 14,
       "fps": 4.54
      }
     },
     "death": {
      "SW": {
-      "start": 61,
+      "start": 65,
       "count": 12,
       "fps": 3
      },
      "S": {
-      "start": 61,
+      "start": 65,
       "count": 12,
       "fps": 3
      },
      "W": {
-      "start": 61,
+      "start": 65,
       "count": 12,
       "fps": 3
      },
      "NW": {
-      "start": 61,
+      "start": 65,
       "count": 12,
       "fps": 3
      },
      "N": {
-      "start": 61,
+      "start": 65,
       "count": 12,
       "fps": 3
      }

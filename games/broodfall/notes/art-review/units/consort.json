@@ -1,7 +1,7 @@
 {
  "kind": "consort",
  "frames": 133,
- "atlasKB": 552,
+ "atlasKB": 512,
  "failed": 0,
  "checks": [
   {
@@ -172,7 +172,7 @@
   {
    "name": "attack SW: stays on the spot",
    "ok": true,
-   "value": "0.5% of the frame"
+   "value": "0.0% of the frame"
   },
   {
    "name": "attack W: no background tint on the outline",
@@ -217,7 +217,7 @@
   {
    "name": "atlas is under 900 KB",
    "ok": true,
-   "value": "552 KB"
+   "value": "512 KB"
   }
  ]
 }

@@ -1,7 +1,7 @@
 {
  "kind": "skitterling",
  "frames": 139,
- "atlasKB": 276,
+ "atlasKB": 269,
  "failed": 0,
  "checks": [
   {
@@ -202,7 +202,7 @@
   {
    "name": "attack N: stays on the spot",
    "ok": true,
-   "value": "0.0% of the frame"
+   "value": "0.2% of the frame"
   },
   {
    "name": "death SW: no background tint on the outline",
@@ -217,7 +217,7 @@
   {
    "name": "atlas is under 900 KB",
    "ok": true,
-   "value": "276 KB"
+   "value": "269 KB"
   }
  ]
 }
