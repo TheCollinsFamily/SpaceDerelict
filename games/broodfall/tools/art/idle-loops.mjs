@@ -21,7 +21,8 @@ const cache = {};
 function load(atlas) {
   if (cache[atlas]) return cache[atlas];
   const png = OUT + atlas.replace(/[\/]/g, '_') + '.png';
-  if (!fs.existsSync(png)) spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-i', G + atlas, png]);
+  // Decoded afresh every run: an atlas re-baked since the last run has another size.
+  spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-i', G + atlas, png]);
   return (cache[atlas] = PNG.sync.read(fs.readFileSync(png)));
 }
 function frame(img, size, cols, i) {
@@ -67,7 +68,7 @@ for (const [name, a] of Object.entries(m.limbs)) {
 }
 for (const s of m.board.coreEvo.stages) {
   const i = s.idle; const img = load(i.atlas);
-  rows.push({ name: 'core-' + s.id, side: 'front', fps: i.fps, count: i.count, big: true, frame: i.frame, ...measure(img, i.frame, i.cols, 0, i.count) });
+  rows.push({ name: 'core-' + s.id, side: 'front', fps: i.fps, count: i.count, big: true, frame: i.frame, pong: !!i.pingpong, ...measure(img, i.frame, i.cols, 0, i.count, !!i.pingpong) });
 }
 fs.writeFileSync(OUT + 'idle-motion.json', JSON.stringify(rows, null, 1));
 const f = (x, d = 1) => x.toFixed(d).padStart(6);

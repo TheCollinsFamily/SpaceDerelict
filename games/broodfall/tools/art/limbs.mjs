@@ -168,7 +168,7 @@ export const LIMBS = [
   // the mouth gaping, snapping shut, the gulp. Its raw pictures and clips are drawn into their own folder,
   // art-src/limbs/maw-tongue/ (`srcDir`): art-src/limbs/maw/ keeps the old funnel's, untouched. Its design is
   // drawn alone (not cut from the Gut's sheet, which holds the funnel): templates/limb.mjs makeOwnDesign.
-  { family: 'maw', srcDir: 'maw-tongue', tongue: true, big: true, foot: [0.51, 0.79, 0.79], backFoot: [0.51, 0.75, 0.76], name: 'Maw', theme: 'gut', on: 'roof', job: 'Snatches weakened enemies from the street with its tongue and eats them whole; pays richer meat.',
+  { family: 'maw', srcDir: 'maw-tongue', tongue: true, big: true, foot: [0.5, 0.77, 0.8], backFoot: [0.51, 0.75, 0.76], muzzle: [[0.37, 0.5]], backMuzzle: [[0.68, 0.42]], name: 'Maw', theme: 'gut', on: 'roof', job: 'Snatches weakened enemies from the street with its tongue and eats them whole; pays richer meat.',
     back: 'Its wide mouth faces away from the camera, toward the upper right: we see its broad humped back armoured with plates of dark chitin, the two knobs on top of its head, and only the far corners of its lips at the sides.',
     look: 'a huge squat toad-like mound of muscle crouched low and wide, its head the whole front of its body: a very wide mouth across the front with thick fleshy lips pressed shut in a long curved line, small teeth showing at the corners, a big swollen throat sac of paler crimson hanging under the mouth, two blunt knobs on top of its head, its broad humped back armoured with plates of dark chitin',
     idle: `${CALM} Its throat sac slowly swells and shrinks as it breathes, and its lips twitch.`,

@@ -1333,6 +1333,10 @@ async function boot(): Promise<void> {
       const w = renderer.toWorld(clientX, clientY);
       return sim.cellAt(w.x, w.y);
     },
+    /** The way the limb being placed faces now (right-click turns it), or null with nothing held. */
+    previewFacing(): RootDir | null {
+      return renderer.preview?.kind === 'tower' ? renderer.preview.facing ?? null : null;
+    },
     /** 'iso' (the baked art) or 'top' (the old shapes). */
     view(): 'iso' | 'top' {
       return renderer instanceof IsoRenderer ? 'iso' : 'top';

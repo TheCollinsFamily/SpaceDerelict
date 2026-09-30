@@ -1152,7 +1152,7 @@ export class Renderer {
           this.drawFieldOfFire(g, sim, ghost, ok, spec.engine ? undefined : st.range);
         } else if (st.range > 0 && st.range < 1000) {
           // What height adds shows as the gap between a faint ring (its reach on level 1) and the real one.
-          if (high) g.circle(c.x, c.y, st.groundRange).stroke({ width: 1, color: 0xffffff, alpha: 0.14 });
+          if (high) g.circle(c.x, c.y, st.groundRange).stroke({ width: 1.2, color: 0xffffff, alpha: 0.32 });
           g.circle(c.x, c.y, st.range).stroke({ width: high ? 2 : 1.5, color: high ? 0xffe08a : 0xffffff, alpha: high ? 0.5 : 0.25 });
         }
         this.drawEffectLinks(g, sim, ghost);

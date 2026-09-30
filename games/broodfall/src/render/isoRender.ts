@@ -26,6 +26,7 @@ import { BALANCE } from '../../content/data';
 import { CASTE_COLORS, ENEMY_SIZE, FAMILY_COLORS, Renderer } from './render';
 import { FxLayer, type FxView } from './fx';
 import { LimbFates } from './limbFx';
+import { MAW_FIRE_SECONDS, MawTongues, mawFireShare, type TongueView } from './mawTongue';
 import { CreepLife, GateArt, PlinthRise, PodArt, Skyline } from './boardArt';
 import { coreStageOf } from './coreStage';
 import { IdleClock, breath, idleFrames, phaseOf } from './idleClock';
@@ -197,6 +198,10 @@ export class IsoRenderer extends Renderer {
   private fx: FxLayer;
   /** What a limb does besides idling: acting, dying, being carried off, the parts it grafted (src/render/limbFx.ts). */
   private fates: LimbFates;
+  /** The Maw's tongue, and the bodies it reels in (src/render/mawTongue.ts). */
+  private tongues: MawTongues;
+  /** The Maws that struck this frame (a body eaten beside the one aimed at is reeled in by the same Maw). */
+  private mawStruck: Tower[] = [];
 
   /** The board alive (src/render/boardArt.ts): the skin's pulse and tendrils, the pods, the gates, the unclaimed city, plinths rising. */
   private life: CreepLife;
@@ -212,6 +217,7 @@ export class IsoRenderer extends Renderer {
     super();
     this.fx = new FxLayer(art);
     this.fates = new LimbFates(art);
+    this.tongues = new MawTongues(art, this.sorted);
     this.life = new CreepLife(art);
     this.podArt = new PodArt(art);
     this.gateArt = new GateArt(art);
@@ -479,6 +485,7 @@ export class IsoRenderer extends Renderer {
     this.syncNodes(sim);
     this.syncLimbs(sim, dt);
     this.syncUnits(sim, dt);
+    this.tongues.update(dt, this.tongueView(sim));
     this.drawShots(this.marksG, sim);
     if (this.fx.ready()) this.fx.draw(sim, this.fxView(sim), dt);
     this.fx.end();
@@ -502,6 +509,7 @@ export class IsoRenderer extends Renderer {
     this.mapRef = sim.map;
     this.mapSig = '';
     this.setGeo(sim);
+    this.tongues.reset();
     for (const c of [this.floors, this.creepFloor, this.flat, this.sorted, this.ghosts]) c.removeChildren().forEach((x) => x.destroy());
     this.blockSprites = [];
     this.props.clear();
@@ -1197,6 +1205,7 @@ export class IsoRenderer extends Renderer {
   private syncLimbs(sim: Sim, dt: number): void {
     const g = this.geo;
     this.fates.observe(sim);
+    this.mawStruck = [];
     for (const t of sim.towers) {
       const h = this.heightOf(sim, t.cell);
       const p0 = project(g, t.pos.x, t.pos.y, h);
@@ -1268,9 +1277,16 @@ export class IsoRenderer extends Renderer {
 
       // A limb that has just fired plays its firing clip, fitted into the time before it fires again.
       const held = sim.isTapped(t) || (t.stunnedUntil !== undefined && t.stunnedUntil > sim.time);
+      // A Maw's strike: its tongue shoots out to what it struck (src/render/mawTongue.ts).
+      if (t.family === 'maw' && t.cooldown > v.cooldown + 0.05) {
+        this.mawStruck.push(t);
+        this.tongues.strike(t.id, t.lastTargetId, this.tongueView(sim));
+      }
       if (t.cooldown > v.cooldown + 0.05 && art.anims.fire) {
         const native = art.anims.fire.count / art.anims.fire.fps;
         v.fireDur = Math.max(0.3, Math.min(native, 0.85 * t.cooldown));
+        // The Maw's mouth stays open while its tongue is out, and shuts on what it brings back.
+        if (t.family === 'maw') v.fireDur = Math.min(MAW_FIRE_SECONDS, 0.92 * t.cooldown);
         v.fireT = 0;
       } else if (v.fireT < 0 && art.anims.fire && this.fates.acts(sim, t, this.simClock)) {
         // An engine or a support limb acts when what it serves does (src/render/limbFx.ts).
@@ -1285,7 +1301,8 @@ export class IsoRenderer extends Renderer {
       const idle = side.anims.idle;
       if (v.fireT >= 0 && fire && !held) {
         v.fireT += dt;
-        const f = Math.min(fire.count - 1, Math.floor((v.fireT / v.fireDur) * fire.count));
+        const share = v.family === 'maw' ? mawFireShare(v.fireT, v.fireDur) : v.fireT / v.fireDur;
+        const f = Math.min(fire.count - 1, Math.floor(share * fire.count));
         tex = atlas.frame(fire.start + f, art.frame, art.cols);
         if (v.fireT >= v.fireDur) v.fireT = -1;
       } else {
@@ -1575,6 +1592,13 @@ export class IsoRenderer extends Renderer {
     }
     for (const [id, v] of this.units) {
       if (v.seen === this.frameNo) continue;
+      // Eaten: gone with hp left, a Maw's tongue on it. It rides the tongue to the mouth (never just vanishes).
+      if (v.ent.hp > 0 && this.eaten(sim, id, v)) {
+        v.ghost.destroy();
+        v.shade.destroy();
+        this.units.delete(id);
+        continue;
+      }
       v.ghost.destroy();
       this.units.delete(id);
       // Gone with no hp left: it died, and falls where it stood.
@@ -1595,6 +1619,57 @@ export class IsoRenderer extends Renderer {
       v.shade.destroy();
       this.allyViews.delete(id);
     }
+  }
+
+  /** Where the Maws' mouths and their targets are now, for their tongues (src/render/mawTongue.ts). */
+  private tongueView(sim: Sim): TongueView {
+    return {
+      mouth: (towerId) => {
+        const t = sim.towers.find((x) => x.id === towerId);
+        const v = this.limbs.get(towerId);
+        if (!t || !v || !v.sprite.visible) return null;
+        const side = v.back && v.art.back ? v.art.back : v.art;
+        const size = Math.abs(v.sprite.scale.y) * v.art.frame * side.body;
+        const m = this.mouthOf(sim, t.pos, { family: 'maw' });
+        return {
+          x: m ? m.x : v.sprite.x, y: m ? m.y : v.sprite.y - size * 0.45, size, back: v.back, z: v.sprite.zIndex,
+        };
+      },
+      body: (unitId) => {
+        const u = this.units.get(unitId);
+        if (!u || !u.sprite.visible) return null;
+        const r = ENEMY_SIZE[u.ent.kind];
+        return { x: u.sprite.x, y: u.sprite.y - r * UNIT_PX * 0.9, z: u.sprite.zIndex };
+      },
+    };
+  }
+
+  /**
+   * A unit gone with hp left: eaten by a Maw whose tongue is on it (or, eaten beside it by a Maw that just
+   * struck, one the tongue reaches for now). Its sprite is handed to the tongue, in its flinch, facing the
+   * mouth. False when no Maw took it: it left some other way.
+   */
+  private eaten(sim: Sim, id: number, v: UnitView): boolean {
+    const e = v.ent;
+    let maw = sim.towers.find((t) => t.family === 'maw' && t.lastTargetId === id && this.tongues.aimedAt(id));
+    if (!maw) {
+      maw = this.mawStruck.find((t) => Math.hypot(t.pos.x - e.pos.x, t.pos.y - e.pos.y) <= towerStats(t).range + 10);
+      if (!maw) return false;
+      // The unit is still in this.units: its body can be found for the new tongue.
+      this.tongues.strike(maw.id, id, this.tongueView(sim));
+    }
+    const { view, mirror } = viewOf(headingOf(this.geo, maw.pos.x - e.pos.x, maw.pos.y - e.pos.y));
+    const clip = v.art.anims.hit?.[view] ?? v.art.anims.hit?.SW ?? v.art.anims.walk[view] ?? v.art.anims.walk.SW ?? Object.values(v.art.anims.walk)[0];
+    if (clip) {
+      v.sprite.texture = this.unitFrame(v.unit, clip, Math.floor(clip.count * 0.45));
+      const a = clip.anchor ?? v.art.anchor;
+      v.sprite.anchor.set(a[0], a[1]);
+      const k = v.scale0 * (clip.scale ?? 1);
+      v.sprite.scale.set(mirror ? -k : k, k);
+    }
+    v.sprite.tint = 0xffffff;
+    v.sprite.visible = true;
+    return this.tongues.take(id, v.sprite, ENEMY_SIZE[e.kind] * UNIT_PX * 0.9);
   }
 
   /** The fallen: each plays its fall once, lies still, then fades. */
