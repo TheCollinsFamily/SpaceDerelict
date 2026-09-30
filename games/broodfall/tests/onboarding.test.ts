@@ -57,6 +57,24 @@ describe('mission 1: a plain game of tower defence at the crash site', () => {
     expect(p.config.directive).toEqual({ kind: 'hold', waves: 5 });
   });
 
+  it('its first hand is the plain limbs, drawn without changing the rng\'s order (Sep 30 2026 fix pass)', () => {
+    for (let seed = 1; seed <= 12; seed++) {
+      const s = newCampaign(seed, { onboarding: true });
+      const p = plan(s, FIRST_MISSION);
+      expect(p.config.firstHand).toEqual(['spitter', 'lasher']);
+      const cfg = { gridW: 50, gridH: 40, cellPx: 26, entrances: 1, genes: [], ...p.config } as SimConfig;
+      const a = new Sim(cfg);
+      expect(a.hand.every((c) => c.family === 'spitter' || c.family === 'lasher'), a.hand.map((c) => c.family).join()).toBe(true);
+      // The same rng draws as without the narrowing: the next number the run rolls is the same one.
+      const { firstHand: _drop, ...plain } = cfg;
+      const b = new Sim(plain as SimConfig);
+      expect(a.rng.next()).toBe(b.rng.next());
+    }
+    // Anywhere else: no narrowing.
+    const later = newCampaign(3);
+    expect(plan(later, targets(later)[0]).config.firstHand).toBeUndefined();
+  });
+
   it('lost: no ground changes hands, its data pays, the desk stays dark, nobody calls, YOKE has Collins\'s lost lines', () => {
     const s = newCampaign(2, { onboarding: true });
     const { state, debrief } = deploy(s, false);

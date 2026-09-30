@@ -25,6 +25,7 @@ import { SEEDLING_FLIGHT } from '../../content/underground';
 import { BALANCE } from '../../content/data';
 import { CASTE_COLORS, ENEMY_SIZE, FAMILY_COLORS, Renderer } from './render';
 import { FxLayer, type FxView } from './fx';
+import { MeatFx } from './meatFx';
 import { LimbFates } from './limbFx';
 import { MAW_FIRE_SECONDS, MawTongues, mawFireShare, type TongueView } from './mawTongue';
 import { CreepLife, GateArt, PlinthRise, PodArt, Skyline } from './boardArt';
@@ -210,6 +211,8 @@ export class IsoRenderer extends Renderer {
 
   /** What flies, bursts and hangs in the air (src/render/fx.ts). */
   private fx: FxLayer;
+  /** The meat drops, drawn (src/render/meatFx.ts). */
+  private meat: MeatFx;
   /** What a limb does besides idling: acting, dying, being carried off, the parts it grafted (src/render/limbFx.ts). */
   private fates: LimbFates;
   /** The Maw's tongue, and the bodies it reels in (src/render/mawTongue.ts). */
@@ -233,6 +236,7 @@ export class IsoRenderer extends Renderer {
   constructor(private art: BoardArtSet) {
     super();
     this.fx = new FxLayer(art);
+    this.meat = new MeatFx(art);
     this.fates = new LimbFates(art);
     this.tongues = new MawTongues(art, this.sorted);
     this.life = new CreepLife(art);
@@ -254,7 +258,7 @@ export class IsoRenderer extends Renderer {
     this.aimBox.addChild(this.aimG);
     this.marksBox.addChild(this.marksG);
     this.marksBox.scale.set(K);
-    this.world.addChild(this.floors, this.skyline.under, this.skyline.smoke, this.creepFloor, this.decalBox, this.flat, this.shadeBox, this.groundBox, this.fx.ground, this.sorted, this.ghosts, this.fx.air, this.fx.glow, this.aimBox, this.marksBox);
+    this.world.addChild(this.floors, this.skyline.under, this.skyline.smoke, this.creepFloor, this.decalBox, this.flat, this.shadeBox, this.groundBox, this.fx.ground, this.meat.ground, this.sorted, this.ghosts, this.fx.air, this.meat.air, this.fx.glow, this.meat.glow, this.aimBox, this.marksBox);
     // With the effects drawn as pictures, the base class leaves out its clouds, caltrops and pip dots.
     this.fxArt = this.fx.ready();
     this.pipDots = !this.art.fx.has('parts');
@@ -390,7 +394,8 @@ export class IsoRenderer extends Renderer {
 
   /** The effects on screen now, for the beats. */
   fxNow(): Record<string, number | boolean> {
-    return { ready: this.fx.ready(), parts: this.art.fx.has('parts'), ...this.fx.counts() };
+    const m = this.meat.counts();
+    return { ready: this.fx.ready(), parts: this.art.fx.has('parts'), ...this.fx.counts(), meat: this.meat.ready(), meatFlying: m.flying, meatPickups: m.pickups, meatPickedUp: m.pickedUp };
   }
 
   /** The families of the limbs playing their firing or acting clip now. */
@@ -536,6 +541,7 @@ export class IsoRenderer extends Renderer {
     this.tongues.update(this.smoothDt, this.tongueView(sim));
     this.drawShots(this.marksG, sim);
     if (this.fx.ready()) this.fx.draw(sim, this.fxView(sim), dt);
+    if (this.meat.ready()) this.meat.draw(sim, this.fxView(sim), dt);
     this.fx.end();
     this.drawAim(this.aimG, sim);
     this.syncPlaceGhost(sim);
@@ -570,6 +576,7 @@ export class IsoRenderer extends Renderer {
     this.dying = [];
     this.limbs.clear();
     this.fx.reset();
+    this.meat.reset();
     this.fates.reset();
     this.nodes.clear();
     this.life.reset(sim.map.cells.length);
@@ -2121,7 +2128,7 @@ export class IsoRenderer extends Renderer {
     }
     for (const [id, v] of this.shots) if (v.seen !== this.frameNo) this.shots.delete(id);
 
-    for (const d of sim.drops) {
+    for (const d of this.meat.ready() ? [] : sim.drops) {
       const s = at(d.pos.x, d.pos.y, 8);
       g.rect(s.x - 3, s.y - 3, 6, 6).fill(CASTE_COLORS[d.caste]);
     }

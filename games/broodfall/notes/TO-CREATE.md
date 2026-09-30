@@ -36,8 +36,8 @@ three campaign outlines, covers and promotional art.
 
 ## 3. Screens and the ship
 
-- **The Quarters room picture and the candidate partner's portrait**: not made (the attempt was
-  blocked by Claude Code's permission check); the Quarters reuse the Procreation Board's picture.
+- ~~**The Quarters room picture and the candidate partner's portrait**~~: made in the art fix pass (Sep 30 2026,
+  `node tools/art/intro.mjs quarters partner`; `notes/screens/2026-09-30/fixpass-art-quarters-after.jpg`).
 - **The data pad clip's window shows a green Earth-like planet**, not the infested one.
 - **The ship's rooms** are stills; the concept asked for slow loops (hum, blinking consoles). 6 clips, ~$3.
 - **The hero seen from behind** in each room: pictures exist in the concepts, not placed in the rooms.

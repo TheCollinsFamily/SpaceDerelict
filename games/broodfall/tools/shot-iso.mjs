@@ -131,6 +131,7 @@ try {
     }
     return out;
   });
+  const camAtAim = await page.evaluate(() => window.broodfall.camera());
   const box = await canvas.boundingBox();
   let reached = 0;
   let tried = 0;
@@ -146,7 +147,7 @@ try {
       return window.broodfall.cellAtClient(x, y);
     }, [cx, cy]);
     if ((await reachedOrCovered(page, a, got)) !== 'missed') reached++;
-    else console.log('    missed at turn 0: aimed ' + a.cells.join('/') + ', reached ' + got + ' ' + JSON.stringify(await page.evaluate(([c, d]) => { const s = window.broodfall.sim; const f = (x) => s.towers.find((t) => s.cellsOf(t).includes(x)); const t1 = f(d), t2 = f(c); const now = t2 ? window.broodfall.worldToScreen(t2.pos.x, t2.pos.y) : null; return { got: t1 ? t1.family : 'no limb', gotH: s.map.heights[d], aimed: t2 ? t2.family : '?', aimedH: s.map.heights[c], cam: window.broodfall.camera(), now, towers: s.towers.length, outcome: window.broodfall.summary().outcome }; }, [got, a.cells[0]])) + ' aimedAt ' + Math.round(a.x) + ',' + Math.round(a.y));
+    else console.log('    missed at turn 0: aimed ' + a.cells.join('/') + ', reached ' + got + ' ' + JSON.stringify(await page.evaluate(([aimed, gotCell]) => { const s = window.broodfall.sim; const f = (x) => s.towers.find((t) => s.cellsOf(t).includes(x)); const ta = f(aimed), tg = f(gotCell); return { aimed: ta ? ta.family : '?', aimedH: s.map.heights[aimed], got: tg ? tg.family : 'no limb', gotH: s.map.heights[gotCell], camNow: window.broodfall.camera(), nowAt: ta ? window.broodfall.worldToScreen(ta.pos.x, ta.pos.y) : null }; }, [a.cells[0], got])) + ' aimedAt ' + Math.round(a.x) + ',' + Math.round(a.y) + ' camAtAim ' + JSON.stringify(camAtAim));
   }
   check(tried > 0 && reached === tried, 'a click aimed at a limb reaches it (or the limb standing in front of it)', `${reached}/${tried}`);
 
