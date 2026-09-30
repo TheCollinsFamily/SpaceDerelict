@@ -171,6 +171,72 @@ try {
     await ctx.close();
   }
 
+  // ------------------------------------------------------------ the new upgrade looks: health and crest over a tall look; the Ocular's reach
+  if (on('looks')) {
+    const { ctx, page, errors } = await fresh();
+    await page.goto(`${URL0}?seed=11&autostart=1&speed=0&biome=suburb`, { waitUntil: 'domcontentloaded', timeout: 180000 });
+    await booted(page);
+    await page.evaluate(() => { window.broodfall.step(200); const s = window.broodfall.sim; s.meat.war = 9000; s.meat.science = 9000; s.enemies.length = 0; s.coreHp = 1e9; if (s.spawnQueue) s.spawnQueue.length = 0; });
+    // Six spitters, each in a look it earned (the scenes of tools/shot-upgrade-looks.mjs), wounded and evolved: the crest and the health ring show.
+    const SCENE = [[[], []], [['B'], []], [['A'], []], [[], ['ember', 'blighter']], [['B', 'B'], []], [['A', 'A', 'A'], ['ember']]];
+    const ids = await page.evaluate((scene) => {
+      const s = window.broodfall.sim; const W = s.cfg.gridW;
+      const at = (c) => [c % W, Math.floor(c / W)];
+      const d = (c) => Math.hypot(at(c)[0] - at(s.map.coreCell)[0], at(c)[1] - at(s.map.coreCell)[1]);
+      const cells = []; for (let c = 0; c < s.map.cells.length; c++) if (s.canBuildTower(c, 'spitter')) cells.push(c);
+      cells.sort((a, b) => d(a) - d(b));
+      const taken = [];
+      const apart = (c) => taken.every((t) => Math.max(Math.abs(at(t)[0] - at(c)[0]), Math.abs(at(t)[1] - at(c)[1])) >= 2);
+      return scene.map(([upgrades, pips], i) => {
+        const cell = cells.find((c) => apart(c)); if (cell === undefined) return -1;
+        s.hand[0] = { id: 880000 + i, family: 'spitter', free: true };
+        if (!s.issue({ kind: 'build', cardIndex: 0, cell, facing: 'S' }).ok) return -1;
+        taken.push(cell);
+        const t = s.towers[s.towers.length - 1];
+        t.upgrades = upgrades.slice(); t.pips = pips.map((f) => ({ family: f })); t.cooldown = 1e6; t.hp = t.maxHp * 0.55;
+        return t.id;
+      });
+    }, SCENE);
+    check(ids.every((x) => x >= 0), 'six spitters grown, each in its look', ids.join(','));
+    for (let i = 0; i < 120; i++) {
+      const l = await page.evaluate(() => window.broodfall.limbLooks());
+      if (l.length >= 6 && l.every((x) => x.drawn === x.earned && !x.growing)) break;
+      await page.evaluate(() => window.broodfall.step(1)); await page.waitForTimeout(100);
+    }
+    const canvas = page.locator('#stage canvas');
+    const bb = await canvas.boundingBox();
+    const p = await page.evaluate((id) => { const t = window.broodfall.sim.towers.find((x) => x.id === id); return t.pos; }, ids[4]);
+    const where = async () => { const q = await page.evaluate((p) => window.broodfall.worldToScreen(p.x, p.y), p); return { x: bb.x + (q.x / q.vw) * bb.width, y: bb.y + (q.y / q.vh) * bb.height }; };
+    await page.keyboard.press('Home'); await page.waitForTimeout(300);
+    let q = await where();
+    await page.mouse.move(q.x, q.y);
+    for (let i = 0; i < 5; i++) await page.mouse.wheel(0, -240);
+    await page.waitForTimeout(500);
+    q = await where();
+    await page.keyboard.down('Shift'); await page.mouse.move(q.x, q.y); await page.mouse.down();
+    await page.mouse.move(bb.x + bb.width / 2, bb.y + bb.height / 2, { steps: 12 }); await page.mouse.up(); await page.keyboard.up('Shift');
+    await page.mouse.move(bb.x + 5, bb.y + 5);
+    await page.waitForTimeout(600);
+    await shot(page, 'looks-crest', { clip: { x: bb.x + bb.width / 2 - 450, y: bb.y + bb.height / 2 - 330, width: 900, height: 560 } });
+    // The Ocular Stalk's panel: its reach.
+    const oc = await page.evaluate(() => {
+      const b = window.broodfall; const s = b.sim;
+      const cell = b.buildableCells(400).find((c) => s.canBuildTower(c, 'ocular'));
+      s.hand[0] = { id: 889999, family: 'ocular', free: true };
+      s.issue({ kind: 'build', cardIndex: 0, cell });
+      const t = s.towers[s.towers.length - 1]; const p = s.cellCenter(t.cell); return b.worldToScreen(p.x, p.y);
+    });
+    await page.keyboard.press('Home'); await page.waitForTimeout(300);
+    const oq = await page.evaluate(() => { const s = window.broodfall.sim; const t = s.towers[s.towers.length - 1]; return window.broodfall.worldToScreen(t.pos.x, t.pos.y); });
+    await page.mouse.click(bb.x + (oq.x / oq.vw) * bb.width, bb.y + (oq.y / oq.vh) * bb.height);
+    await page.waitForTimeout(500);
+    const stats = await page.locator('#inspect-stats').innerText().catch(() => '');
+    console.log(`  NOTE  the Ocular Stalk's panel: ${stats}`);
+    if (await page.locator('#inspect:not(.hidden)').count()) await shotEl(page, '#inspect', 'ocular-panel');
+    check(errors.length === 0, 'the looks: nothing logged as an error', errors.slice(0, 2).join(' | '));
+    await ctx.close();
+  }
+
   // ------------------------------------------------------------ the free card, the organ stage, the draft
   if (on('free') || on('organ')) {
     const { ctx, page, errors } = await fresh();

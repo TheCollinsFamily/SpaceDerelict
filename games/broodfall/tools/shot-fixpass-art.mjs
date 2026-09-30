@@ -292,7 +292,9 @@ async function compose() {
   // The props: where before and after differ, cropped big, before above after.
   for (const set of BACK_SETS) {
     const spots = [];
-    for (let q = 0; q < 4; q++) {
+    // Turn 0 is the unturned camera: every prop is seen from its front there, before and after alike (what
+    // differs there is the board alive); the backs show at the turns after it.
+    for (let q = 1; q < 4; q++) {
       const a = P(`backs-${set}-t${q}`, 'before'), z = P(`backs-${set}-t${q}`, 'after');
       if (!have(a) || !have(z)) continue;
       const A = read(a), Z = read(z);

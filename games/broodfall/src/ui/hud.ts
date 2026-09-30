@@ -381,7 +381,7 @@ export class Hud {
       + ((t.shieldMax ?? 0) > 0 ? ` · SHIELD ${Math.ceil(t.shield ?? 0)}/${Math.ceil(t.shieldMax ?? 0)}` : '');
     const layer = !st.hitsGround ? 'AIR ONLY' : st.hitsAir ? 'AIR + GROUND' : 'GROUND';
     document.getElementById('inspect-stats')!.textContent = st.rate > 0
-      ? `${layer}${st.trueSight ? ' · DETECTS' : ''} · dmg ${st.damage.toFixed(0)} · ${st.rate.toFixed(2)}/s · reach ${Math.round(st.range)}`
+      ? `${layer}${st.trueSight ? ' · DETECTS' : ''} · dmg ${st.damage.toFixed(0)} · ${st.rate.toFixed(2)}/s · reach ${st.range >= 1000 ? 'the whole board' : Math.round(st.range)}`
         + ((t.streak ?? 0) > 0 && st.streakRamp > 0 ? ` · streak ${t.streak}` : '')
       : `support limb · potency ×${st.potency.toFixed(2)} · tempo ×${st.tempo.toFixed(2)} · reach ×${st.reach.toFixed(2)}`;
     // What it is affecting, in words (the board draws the links).

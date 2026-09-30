@@ -13,7 +13,7 @@ import { Application, Container, Graphics, Matrix, Sprite, Texture } from 'pixi.
 import { CellType, PLATE } from '../sim/citymap';
 import { Sim, enemySpec, towerSpec, towerStats } from '../sim/sim';
 import type { CreepSource, Enemy, Tower } from '../sim/types';
-import { BoardArtSet, type Clip, type LimbArt, type LoadedUnit, type UnitArt } from './art';
+import { BoardArtSet, type Clip, type LimbArt, type LimbSide, type LoadedUnit, type UnitArt } from './art';
 import { BOSS_SCALE, choose, newFx, observe, playFor, skinOf, type UnitFx } from './unitAnim';
 import {
   FACING_STEP, boardCell, creepRunsOn, depth, facingOf, headingOf, isoGeo, limbView, openSides, pick, project, unproject,
@@ -1475,7 +1475,14 @@ export class IsoRenderer extends Renderer {
       }
       // The parts of the limbs it was built from, grafted on its body.
       if (!art.flat) this.fates.graft(this.sorted, t, art, side, p.x, risen, scale, mirror, width, v.sprite.zIndex, v.sprite.visible, v.sprite.tint as number);
-      if (!art.flat) this.drawTowerMarks(this.marksG, t, p.x / K, (risen - width * 0.55) / K, sim);
+      // Its health, crest and marks sit over the TOP of what is drawn, not a fixed height over its foot: a tall
+      // upgrade look (a reach neck, a superstructure) would stand up through them (fix pass, Sep 30 2026).
+      // The top is read off the picture's own marks: its highest muzzle or graft point, a little above it.
+      if (!art.flat) {
+        const top = risen - (side.anchor[1] - limbTopShare(side)) * art.frame * scale;
+        const foot = risen - width * 0.55;
+        this.drawTowerMarks(this.marksG, t, p.x / K, foot / K, sim, Math.min(foot, top + 18 * K) / K);
+      }
       else if (t.hp < t.maxHp) this.hpArc(this.marksG, p.x / K, p.y / K - 8, 20, t.hp / t.maxHp);
     }
     for (const [id, v] of this.limbs) {
@@ -2264,4 +2271,14 @@ export class IsoRenderer extends Renderer {
 
   /** Seedling pods in the air, by the id of their flight. */
   private pods = new Map<number, Sprite>();
+}
+
+/**
+ * How high a limb's picture reaches, as a share of its frame from the top: its highest marked point
+ * (muzzles, graft points; tools/art/muzzles.mjs, tools/art/templates/limb.mjs) less a margin for what
+ * rises over it (a crest of spines, the lip of a mouth). Without marks: the frame's middle.
+ */
+function limbTopShare(side: LimbSide): number {
+  const ys = [...(side.muzzle ?? []), ...(side.grafts ?? [])].map((q) => q[1]);
+  return ys.length ? Math.max(0, Math.min(...ys) - 0.07) : 0.5;
 }

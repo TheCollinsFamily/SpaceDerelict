@@ -934,7 +934,9 @@ export class Renderer {
    * What is drawn ON a limb whatever it looks like: what it can shoot, its inherited pips,
    * its evolution crest, its health, shield, charge, stasis, stun and selection.
    */
-  protected drawTowerMarks(g: Graphics, t: Tower, x: number, y: number, sim: Sim): void {
+  protected drawTowerMarks(g: Graphics, t: Tower, x: number, y: number, sim: Sim, top: number = y): void {
+    // `top`: where what rides over the limb (its health, crest, crown, a stun) is measured from; the isometric
+    // board passes the top of a tall look, so those clear it while the marks at its foot stay at its foot.
     // What it can shoot, at a glance: a sky-blue chevron = hits AIR; a hollow
     // ring under it too = AIR ONLY. No chevron = ground only.
     const st = towerStats(t);
@@ -957,13 +959,13 @@ export class Renderer {
       if (this.evolvedRing) g.circle(x, y, 13).stroke({ width: 1.5, color: path.length >= 3 ? 0xd4a72c : 0x4fa9a4, alpha: 0.9 });
       path.forEach((c, i) => {
         const mx = x + (i - (path.length - 1) / 2) * 10;
-        const my = y - 24;
+        const my = top - 24;
         const col = i === 2 ? 0xd4a72c : 0x4fa9a4;
         if (c === 'A') g.poly([mx - 4.5, my + 4, mx, my - 5, mx + 4.5, my + 4]).fill(col).stroke({ width: 1, color: 0x10100a });
         else g.poly([mx, my - 5, mx + 4.5, my, mx, my + 5, mx - 4.5, my]).fill(col).stroke({ width: 1, color: 0x10100a });
       });
     }
-    if (t.hp < t.maxHp) this.hpArc(g, x, y, 20, t.hp / t.maxHp);
+    if (t.hp < t.maxHp) this.hpArc(g, x, top, 20, t.hp / t.maxHp);
     // Shield bubble: brighter the fuller it is.
     if ((t.shieldMax ?? 0) > 0 && (t.shield ?? 0) > 0) {
       const f = (t.shield ?? 0) / (t.shieldMax ?? 1);
@@ -984,7 +986,7 @@ export class Renderer {
       const n = Math.min(3, t.crowns);
       for (let k = 0; k < n; k++) {
         const cx = x + (k - (n - 1) / 2) * 11;
-        const cy = y - 34;
+        const cy = top - 34;
         g.poly([cx - 5, cy + 3, cx - 5, cy - 3, cx - 2.5, cy, cx, cy - 4, cx + 2.5, cy, cx + 5, cy - 3, cx + 5, cy + 3])
           .fill({ color: 0xe8c040, alpha: 0.95 }).stroke({ width: 1, color: 0x3a2808 });
       }
@@ -998,8 +1000,8 @@ export class Renderer {
     }
     // Stunned by a sedation dart: a pale halo.
     if (t.stunnedUntil !== undefined && t.stunnedUntil > sim.time) {
-      g.circle(x, y - 18, 4).stroke({ width: 1.5, color: 0xdff5f2, alpha: 0.9 });
-      g.circle(x + 5, y - 20, 2).fill({ color: 0xdff5f2, alpha: 0.7 });
+      g.circle(x, top - 18, 4).stroke({ width: 1.5, color: 0xdff5f2, alpha: 0.9 });
+      g.circle(x + 5, top - 20, 2).fill({ color: 0xdff5f2, alpha: 0.7 });
     }
     if (this.donorHighlightId === t.id) {
       g.circle(x, y, 22).stroke({ width: 2, color: 0xffe9a8, alpha: 0.9 });
