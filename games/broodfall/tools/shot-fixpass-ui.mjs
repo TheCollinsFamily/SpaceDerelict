@@ -130,6 +130,44 @@ try {
     await ctx.close();
   }
 
+  // ------------------------------------------------------------ mission 1 played: each part of the HUD arrives when it matters
+  if (on('m1play')) {
+    const { ctx, page, errors } = await fresh({ newcomer: true });
+    await page.goto(URL0, { waitUntil: 'domcontentloaded', timeout: 180000 });
+    await page.waitForSelector('#intro', { timeout: 15000 }).catch(() => {});
+    await page.keyboard.press('Escape');
+    await booted(page);
+    await page.waitForTimeout(1200);
+    const shown = () => page.evaluate(() => ['#meat-science', '#meat-royal', '#dials', '#open-under', '#creep-nodes', '#plinths', '#royal-surge', '#pending-traits']
+      .filter((q) => { const el = document.querySelector(q); return el && getComputedStyle(el).display !== 'none'; }));
+    check((await shown()).length === 0, 'mission 1 opens with only war meat, the directive, the wave, the hand', (await shown()).join(','));
+    // The first limb by real clicks: a card, then a dark red block.
+    await page.locator('#hand .card').first().click();
+    const box = await page.locator('#stage canvas').boundingBox();
+    const q = await page.evaluate(() => {
+      const b = window.broodfall; const s = b.sim; const fam = s.hand[0].family;
+      const cell = b.buildableCells(300).filter((c) => s.canBuildTower(c, fam))[5];
+      const p = s.cellCenter(cell); return b.worldToScreen(p.x, p.y);
+    });
+    await page.mouse.click(box.x + (q.x / q.vw) * box.width, box.y + (q.y / q.vh) * box.height);
+    await page.waitForTimeout(400);
+    check(await page.evaluate(() => window.broodfall.sim.towers.length === 1), 'the first limb grown by a click');
+    // Wave 1, played out.
+    await page.evaluate(() => { const s = window.broodfall.sim; s.issue({ kind: 'call-early' }); });
+    await page.evaluate(() => { const b = window.broodfall; const s = b.sim; for (let k = 0; k < 12000 && s.wavesCleared < 1 && s.outcome === 'playing'; k++) b.step(1); });
+    await page.waitForTimeout(1500);
+    const after1 = await shown();
+    console.log(`  NOTE  after wave 1: ${after1.join(', ')}`);
+    check(after1.includes('#open-under') && after1.includes('#dials'), 'after the first wave: the ORGANS button and the dials arrive (the organ stage opens then)');
+    await shot(page, 'm1-after-wave1');
+    await page.evaluate(() => { const u = document.getElementById('under-done'); if (u && !document.getElementById('under').classList.contains('hidden')) u.click(); });
+    await page.waitForTimeout(1800);
+    await shot(page, 'm1-after-wave1-board');
+    await shotEl(page, '#botbar', 'm1-after-wave1-botbar');
+    check(errors.length === 0, 'mission 1 played: nothing logged as an error', errors.slice(0, 2).join(' | '));
+    await ctx.close();
+  }
+
   // ------------------------------------------------------------ the free card, the organ stage, the draft
   if (on('free') || on('organ')) {
     const { ctx, page, errors } = await fresh();
