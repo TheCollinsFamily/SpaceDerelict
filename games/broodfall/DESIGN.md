@@ -1106,6 +1106,12 @@ scene display (`FactionDef.reveal` in `content/campaign.ts`, queued right after 
   assumed they knew; "long-term hive flourishing" is literally the plan. He was going last, and
   last means never. Then he bargains (admin rights, a body back outside, the expected-value table);
   the character cuts comms.
+- *Institute, "He Called Back"* (Sep 30 2026, `FactionDef.afterReveal`): the Director calls back from
+  intake to argue they should have been left to evolve on their own. The character: his cards were
+  good; ask the hatchling sent out unfed, or the worker in a Clan War; left alone they would do worse
+  to each other for generations; a war can be simulated for whoever wants one, with nobody else put
+  in it. The Director throws krypteia back at him; the answer: everyone is uploaded on death, the real
+  world is the only place for impact, "death is when the easy part begins". Lore: `empire.md` 12b.
 
 **What the archive is for (Collins, Sep 30 2026, relayed).** "Those whose desire is something akin
 to their past lives can essentially be run at higher temporal speeds to speed up their

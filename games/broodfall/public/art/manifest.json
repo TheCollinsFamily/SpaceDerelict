@@ -9712,7 +9712,6 @@
        0.8548
       ],
       "body": 0.4373,
-      "pingpong": true,
       "seam": 0.27
      },
      "grow": {
@@ -9744,7 +9743,6 @@
        0.8627
       ],
       "body": 0.3902,
-      "pingpong": true,
       "seam": 0.4
      },
      "grow": {

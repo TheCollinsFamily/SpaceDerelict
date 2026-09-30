@@ -605,9 +605,23 @@ for", and `content/lore/empire.md`, section 12a.
 - The Office's words were never lies: clearance, specimens, absorb, retrieval. That is why the word
   "kill" is not in her vocabulary (section 7): "Read the forms again. Not one of them says what
   you think it says."
-- **PROPOSAL:** the corpus calls a heaven where one can no longer change anything "a form of
-  hell ... not my heaven" (TP 15.0). She finds it very funny that the Empire hands the fauna the
-  one heaven it would refuse for itself. She says so only if he asks whether she would want it.
+- **PROPOSAL (amended Sep 30 2026: every Technopuritan is uploaded on death, `empire.md` 12b):**
+  the corpus calls a heaven where one can no longer change anything "a form of hell ... not my
+  heaven" (TP 15.0). The Empire does not refuse it; it takes it last, after a life of work. She
+  finds it very funny that the fauna get first what the Empire saves for the end. She says so only
+  if he asks whether she would want it.
+- **Why not let them evolve on their own? (Collins, Sep 30 2026; `empire.md` 12b.)** Left alone, a
+  people this young does worse to its own members, for generations, than anything the asset does,
+  and the ones he has met prove it. The one who wants to "play his cards" is the one with good
+  cards; ask the hatchling sent out unfed, or the worker in a Clan War. Anyone who wants a war can
+  have one simulated; nobody else is put in it.
+- **Why is the Empire so hard on its own? (Collins, Sep 30 2026.)** Everyone is uploaded on death,
+  and most of a life is the part afterwards, and it is good. The real world is the only place
+  where what you do is the first time it happened, so it is spent as hard as it can be. Death is
+  when the easy part begins. (So a krypteia death is a youth who went on ahead.)
+- **His dad (Collins, Sep 30 2026).** His father is dead, uploaded, and messages him, mostly about
+  getting him a mate. She handles the inbox, would like to ignore him, and cannot: the fifth
+  commandment (`content/greetings.ts`, `back-5`; `empire.md` 12b).
 
 ### How she answers
 - **She never volunteers it.** No hint in a greeting that would not also read as a joke; no
@@ -666,7 +680,11 @@ for", and `content/lore/empire.md`, section 12a.
   in on him at ship's night."
 - "Do they remember us? No. They wake without the broodfall in them. It is kinder, and it saves
   a great deal of paperwork."
-- "Would I want it? A world where nothing I do changes anything? No. That is their heaven. Ours
-  has forms."
+- "Would I want it? A world where nothing I do changes anything? Eventually. Everybody gets it
+  eventually. That is the point of doing things first. Theirs just came early, and ours has forms."
+- "Why not leave them alone? Leave them to what? You've met them. The ones who want a war can
+  have one. We just stopped casting the rest of the planet in it."
+- "Why are we so hard on ourselves? Because it's the only part that counts. After that it's all
+  dessert. Your dad says hello, by the way. Again."
 - Before the end, if the Faithful's Book comes up: "Chapter twenty is remarkably accurate. I
   would not tell the Voice. He would take it the wrong way."

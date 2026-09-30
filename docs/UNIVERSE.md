@@ -324,6 +324,9 @@ The long form, with Collins's words in full, is Broodfall's `content/lore/empire
 - **PROPOSAL, consequences:** krypteia's dead are uploaded like anyone else; risking life for
   thrills stays a sin (death is cheap, real-world time is not); the easy heaven the corpus calls
   "not my heaven" (TP 15.0) is not refused, only taken last, after the work.
+- **The dead keep in touch** (Collins, Sep 30 2026): the uploaded dead message the living. A dead
+  parent can still nag about finding you a mate, and the fifth commandment (honour your father and
+  mother) is honoured after death as before: the Ten Commandments matter to the society.
 - **Open:** Earth is left in holy war (the zoo). Whether its dead are kept is Collins's call
   (`empire.md`, section 16).
 

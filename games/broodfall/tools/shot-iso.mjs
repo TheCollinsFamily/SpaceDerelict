@@ -71,8 +71,8 @@ try {
   const errors = [];
   page.on('pageerror', (e) => errors.push(String(e)));
   page.on('console', (m) => { if (m.type() === 'error' || m.text().includes('[art]')) errors.push(m.text()); });
-  await page.goto(`http://localhost:${PORT}/?auto=1&seed=42&speed=0`);
-  await page.waitForFunction(() => window.broodfall !== undefined, null, { timeout: 30000 });
+  await page.goto(`http://localhost:${PORT}/?auto=1&seed=42&speed=0`, { timeout: 120000 });
+  await page.waitForFunction(() => window.broodfall !== undefined, null, { timeout: 120000 });
   const canvas = page.locator('#stage canvas');
 
   check(await page.evaluate(() => window.broodfall.view()) === 'iso', 'the board is isometric');

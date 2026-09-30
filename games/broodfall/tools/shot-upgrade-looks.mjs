@@ -213,7 +213,7 @@ try {
     });
     const pos = await page.evaluate((ids) => ids.map((id) => { const t = window.broodfall.sim.towers.find((x) => x.id === id); return t ? { x: t.pos.x, y: t.pos.y } : null; }), ids);
     const mid = { x: pos.reduce((a, p) => a + p.x, 0) / pos.length, y: pos.reduce((a, p) => a + p.y, 0) / pos.length };
-    const tag = String(n).padStart(2, '0');
+    const tag = String(2 + Object.keys(SCENES).indexOf(family)).padStart(2, '0');
     // The board at the game's own zoom (Home), then close on all six.
     await home();
     await shot(`upgrade-looks-${tag}-${family}-normal-zoom`);

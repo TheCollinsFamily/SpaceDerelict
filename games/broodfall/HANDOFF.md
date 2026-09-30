@@ -717,6 +717,10 @@ RFAB_API_BASE=http://localhost:3011 RFAB_CONNECT_JWT=<tester jwt> node tools/sho
 
 - Naive hold-12 wins 4/10 seeds (the guard is ≥3/10). Guardrail flips are 4:0. Measured
   again on Sep 29 with three limbs BIG: the same. (With the Spore Bombard big: 3/10.)
+- Sep 30 gap pass (royal decrees, surgery under fire, burrowing, limb kills now counted): naive
+  hold-12 **5/10** (6/10 at the start of the pass), guardrail flips 4:0. Ablations and what each new
+  mechanic did per seed: `notes/GAPS-2026-09-30.md`; measure with `tools/measure/gaps.measure.ts`
+  (`GAPS_MODE=nograft,surge` for the ablations).
 - `threatPerTier` 21, tier 6 at 192.
 - Always measure over 10 seeds, never 3–4. ITERATION addenda 3–20 carry the tuning history.
 

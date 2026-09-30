@@ -40,6 +40,10 @@ const DIST = process.env.BROODFALL_DIST || 'dist';
 
 export default defineConfig({
   base: './',
+  // The dev server scans only the game's own page for its dependencies: left to itself it also crawls
+  // every dist-*/ build folder the sessions leave here (each a full bundle), and the first page load
+  // took over a minute (Sep 30 2026, interface fix pass).
+  optimizeDeps: { entries: ['index.html'] },
   build: { outDir: DIST },
   // BROODFALL_NO_HMR=1: a beat on the dev server is not reloaded when another session saves a file mid-beat.
   server: { port: PORT, strictPort: false, proxy: { '/rfab-api': rfab }, hmr: process.env.BROODFALL_NO_HMR ? false : undefined },  // players fall through to the next port; scripts use preview

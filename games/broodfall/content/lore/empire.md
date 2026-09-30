@@ -379,6 +379,25 @@ extremely desensitised to death, as it's when the easy part begins (in a very re
   that a classmate "did not come back from krypteia, she is doing very well" the way we mention a
   friend who moved abroad.
 
+### The dead keep in touch, and the fifth commandment never lapses (Collins, Sep 30 2026)
+Collins, a line for YOKE (`content/greetings.ts`, `back-5`): "Your dad sent you another message
+again ... he's been so nosy since he died about getting you a mate ... I want to blow him off, but
+I know, I know ... the fifth." Collins: it "implies a few things: parents talking to you even after
+they died, and how important the Ten Commandments are to the society".
+- **The uploaded dead write to the living.** Death ends a parent's impact on the world, not their
+  interest in their children. A dead father still asks after his son's licence and his mate, and
+  can be exactly as nosy as a live one, with more free time.
+- **The Ten Commandments are taken seriously.** The corpus treats them as God's own words, ranks
+  the second (no graven image) above murder and theft (TP 8.0), and the Empire's austerity is
+  built on it (section 2, idolatry). Everyone can say "the fifth" and be understood.
+- **PROPOSAL, the fifth in the Empire:** *honour your father and your mother* has no end date
+  when nobody's parents are ever gone. It sits beside the duty not to believe exactly what they
+  did (HOME 1.0): you honour your parents, answer their messages, and improve on them. A dead
+  father's advice about mates is answered politely and then weighed against the Board's.
+- **PROPOSAL, why his request for a mate matters to his father:** a licence starts a House's next
+  hundred (section 4). The dead are invested in their line's standing in the Index, and have
+  nothing to do all day but watch it.
+
 ### Where it goes in the game
 - **The Institute's reveal call** (`content/campaign.ts`, "The Queue Was Real"): the Director makes
   the let-us-evolve argument and the character answers it; the Director throws the krypteia back

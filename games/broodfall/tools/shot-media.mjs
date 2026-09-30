@@ -34,6 +34,7 @@ const URL0 = `http://localhost:${PORT}/`;
 const only = process.argv.slice(2).filter((a) => !a.startsWith('--'));
 const want = (k) => !only.length || only.includes(k);
 const VIEW = { width: 1280, height: 720 };
+const GO = { waitUntil: 'domcontentloaded', timeout: 180000 };
 let failed = 0;
 const check = (ok, what) => { console.log(`  ${ok ? 'PASS' : 'FAIL'}  ${what}`); if (!ok) failed++; };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -107,8 +108,8 @@ async function gone(page, ms = 60000) { await page.waitForSelector('#newsreel', 
 /** A campaign deployment played to a forced outcome, and its report's button clicked. */
 async function deploy(page, territory, won) {
   await page.evaluate((t) => localStorage.setItem('broodfall-campaign-pending', JSON.stringify({ territory: t, dares: [], objectors: [] })), territory);
-  await page.goto(`${URL0}?campaign=run`);
-  await page.waitForFunction(() => window.broodfall && window.__bfBooted, null, { timeout: 60000 });
+  await page.goto(`${URL0}?campaign=run`, GO);
+  await page.waitForFunction(() => window.broodfall && window.__bfBooted, null, { timeout: 180000 });
   await page.waitForTimeout(600);
   await page.evaluate((won) => { const s = window.broodfall.sim; s.stats.kills.militia = 60; s.outcome = won ? 'won' : 'lost'; s.events.push({ kind: won ? 'won' : 'lost' }); window.broodfall.step(1); }, won);
   await page.waitForSelector('#campaign:not(.hidden) [data-act="back"]', { timeout: 45000 });
@@ -135,8 +136,8 @@ try {
     console.log('A  a deployment won → the Office\'s newsreel → the ship → a leader voiced');
     const p = await player(browser, 'A', { record: true });
     const { page } = p;
-    await page.goto(`${URL0}?campaign=ship&open=1`);
-    await page.waitForSelector('#campaign:not(.hidden)', { timeout: 60000 });
+    await page.goto(`${URL0}?campaign=ship&open=1`, GO);
+    await page.waitForSelector('#campaign:not(.hidden)', { timeout: 180000 });
     await aboard(page);
     await deploy(page, 'harbor', true);
     await shot(page, 'a1-report');
@@ -182,8 +183,8 @@ try {
     console.log('B  deployments lost → their newsreel, skipped → their paper');
     const p = await player(browser, 'B');
     const { page } = p;
-    await page.goto(`${URL0}?campaign=ship&open=1`);
-    await page.waitForSelector('#campaign:not(.hidden)', { timeout: 60000 });
+    await page.goto(`${URL0}?campaign=ship&open=1`, GO);
+    await page.waitForSelector('#campaign:not(.hidden)', { timeout: 180000 });
     await aboard(page);
     await deploy(page, 'cul-de-sac', false);
     await page.locator('[data-act="back"]').click();
@@ -212,8 +213,8 @@ try {
     console.log('C  pieces played straight: papers, their victory, the break, the replay');
     const p = await player(browser, 'C');
     const { page } = p;
-    await page.goto(`${URL0}?campaign=ship&open=1`);
-    await page.waitForSelector('#campaign:not(.hidden)', { timeout: 60000 });
+    await page.goto(`${URL0}?campaign=ship&open=1`, GO);
+    await page.waitForSelector('#campaign:not(.hidden)', { timeout: 180000 });
     await aboard(page);
     for (const id of ['clip-delegation', 'clip-faithful', 'clip-institute', 'clip-ailabs']) {
       await page.evaluate((id) => window.__bfMedia.start(id), id);
@@ -258,8 +259,8 @@ try {
       const rec = route === 'faithful';
       const p = await player(browser, `D-${route}`, { record: rec, store: { 'broodfall-campaign': state } });
       const { page } = p;
-      await page.goto(`${URL0}?campaign=ship`);
-      await page.waitForSelector('#campaign:not(.hidden)', { timeout: 60000 });
+      await page.goto(`${URL0}?campaign=ship`, GO);
+      await page.waitForSelector('#campaign:not(.hidden)', { timeout: 180000 });
       if (rec) await record(p);
       await aboard(page);
       const filmUp = await page.waitForSelector('#newsreel.nr-finale', { timeout: 15000 }).then(() => true, () => false);

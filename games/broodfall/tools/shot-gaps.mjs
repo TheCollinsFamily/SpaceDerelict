@@ -51,7 +51,12 @@ const browser = await chromium.launch({ args: ['--use-angle=d3d11', '--enable-gp
 const errors = [];
 
 async function open(seed, tries = 8) {
-  const page = await openOnce(seed);
+  let page;
+  try { page = await openOnce(seed); } catch (e) {
+    if (tries <= 1) throw e;
+    console.log(`  (the page did not come up; again: ${String(e).slice(0, 80)})`);
+    return open(seed, tries - 1);
+  }
   // A peer re-baking a picture while this page loaded it: load again (the banner must not be in the shots).
   if (tries > 1 && (await page.evaluate(() => window.broodfall.artMissing())).length > 0) {
     await page.close();

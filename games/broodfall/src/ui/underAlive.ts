@@ -16,16 +16,19 @@ export class UnderAlive {
   private images = new Map<string, HTMLImageElement>();
   private cells: Array<{ x: number; y: number; w: number; h: number; img: HTMLImageElement; count: number; anchor: number; pingpong: boolean; shown: number }> = [];
   private raf = 0;
-  private size = '';
+  /** The grid changed size: measure again before the next drawing (no layout is read in the frame loop). */
+  private stale = true;
+  private reduced = matchMedia('(prefers-reduced-motion: reduce)');
 
   constructor(private grid: HTMLElement, private fps: number) {
     this.canvas.className = 'under-alive';
     grid.parentElement!.insertBefore(this.canvas, grid);
+    new ResizeObserver(() => { this.stale = true; }).observe(grid);
+    matchMedia(`(resolution: ${window.devicePixelRatio || 1}dppx)`).addEventListener?.('change', () => { this.stale = true; });
   }
 
   /** The grid was drawn again: read its living cells afresh. */
   scan(): void {
-    this.size = '';
     this.cells = [];
     this.measure();
     if (this.cells.length && !this.raf) this.raf = requestAnimationFrame(this.tick);
@@ -54,7 +57,7 @@ export class UnderAlive {
     const g = this.grid;
     const dpr = window.devicePixelRatio || 1;
     const W = g.clientWidth, H = g.clientHeight;
-    this.size = `${W}x${H}x${dpr}`;
+    this.stale = false;
     Object.assign(this.canvas.style, { left: `${g.offsetLeft + g.clientLeft}px`, top: `${g.offsetTop + g.clientTop}px`, width: `${W}px`, height: `${H}px` });
     this.canvas.width = Math.max(1, Math.round(W * dpr));
     this.canvas.height = Math.max(1, Math.round(H * dpr));
@@ -71,13 +74,12 @@ export class UnderAlive {
 
   private tick = (now: number): void => {
     this.raf = 0;
-    if (!this.cells.length || !this.grid.isConnected || this.grid.offsetParent === null) return;
-    const g = this.grid;
-    if (`${g.clientWidth}x${g.clientHeight}x${window.devicePixelRatio || 1}` !== this.size) this.measure();
-    // Settings > Reduce motion (or the system's): the tiles hold their first frame.
+    if (!this.cells.length) return;
+    if (this.stale) this.measure();
     // data-frozen (tools/shot-organ-alive.mjs, to measure the frame rate without the loops): nothing drawn.
     if (this.canvas.dataset.frozen) { this.raf = requestAnimationFrame(this.tick); return; }
-    const still = document.documentElement.classList.contains('reduce-motion') || matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // Settings > Reduce motion (or the system's): the tiles hold their first frame.
+    const still = document.documentElement.classList.contains('reduce-motion') || this.reduced.matches;
     for (const c of this.cells) {
       if (!c.img.complete || !c.img.naturalWidth) continue;
       const k = still ? 0 : Math.floor(((now - c.anchor) / 1000) * this.fps);
