@@ -231,7 +231,7 @@ function cut(name, frames, foot, collar1, fps, perPage = Infinity) {
     const png = path.join(ART, 'board', `core-${name}${p ? `-p${p}` : ''}.png`);
     writePng(png, sheet);
     toWebp(png, png.replace(/\.png$/, '.webp'), { q: 88 });
-    fs.rmSync(png);
+    fs.rmSync(png, { maxRetries: 20, retryDelay: 500 }); // a virus scan may still hold a 30 MB picture
     files.push(`board/${path.basename(png, '.png')}.webp`);
   }
   // A page left from an earlier bake with more pages goes.
@@ -396,7 +396,7 @@ export function bakeCoreScan() {
     const png = path.join(SCAN_OUT, `core-stage-${s.id}.png`);
     writePng(png, cut);
     toWebp(png, png.replace(/\.png$/, '.webp'), { q: 88 });
-    fs.rmSync(png);
+    fs.rmSync(png, { maxRetries: 20, retryDelay: 500 }); // a virus scan may still hold a 30 MB picture
     // `line`: the share of the picture's height above the ground line; `aspect`: its width over its height.
     stages.push({ id: s.id, file: `under/core-stage-${s.id}.webp`, line: Number((ground / h).toFixed(4)), aspect: Number((img.w / h).toFixed(4)) });
     console.log(`[core-evo] the scan's meteor, stage ${s.id}: ground line at row ${ground} of ${h}`);

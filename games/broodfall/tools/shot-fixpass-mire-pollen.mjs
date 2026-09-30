@@ -127,6 +127,8 @@ try {
       await shot(page, `mire-${set}-home`);
       await zoom(page, 5);
       await shot(page, `mire-${set}-close`);
+      await zoom(page, 4);
+      await shot(page, `mire-${set}-closest`);
       check(errors.length === 0, `${set}: no page errors`, errors.slice(0, 2).join(' | '));
       await page.close();
     }
