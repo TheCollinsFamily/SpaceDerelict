@@ -222,6 +222,10 @@ insectoid city.
 - **Territory pictures**: `node tools/art/make.mjs ship territories` (manifest `ship.ship.territories`),
   shown over the briefing and the dark desk's assignment (`territoryPictureHtml` in campaignUi).
 - Beat: `node tools/shot-camp.mjs [A] [B]` (dev server 5251; `notes/screens/2026-09-30/camp-*`).
+- Hobby genes measured Sep 30 (naive hold-12, 10 seeds, each gene alone; no gene 6/10): Tallow Blood
+  5, Grudge Marrow 5, Kite String 5, Royal Jelly 6, Homing Tissue 6, Wet Nurse 6, Hitchhiker Spores 6,
+  Wedding Musk 6 (328 pairings), Royal Graft 4 (the free cage takes a hand slot the bot does not use
+  well). No walkover; the dips are the reshuffle of card draws the HANDOFF warns about, not the verbs.
 
 ## The data pad at a mission's end (Sep 30 2026)
 
