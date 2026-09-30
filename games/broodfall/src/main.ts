@@ -370,7 +370,7 @@ function banner(text: string): void {
 
 function handleEvents(events: SimEvent[]): void {
   hud.pushEvents(events);
-  if (started && !AUTO) boardEvents(events);
+  if (started) boardEvents(events);
   for (const e of events) {
     if (e.kind === 'wave-start') banner(`WAVE ${e.wave} — ASSAULT FROM ${e.sides}`);
     if (e.kind === 'wave-start' && !AUTO) preloadPadOutro(); // the end's clip, fetched while the run is on
@@ -1224,7 +1224,7 @@ async function boot(): Promise<void> {
       }
     }
     handleEvents(sim.takeEvents());
-    if (started && !AUTO) watchBoard(sim);
+    if (started) watchBoard(sim);
     hud.update(sim);
     under.update();
     updateBoardPanel();

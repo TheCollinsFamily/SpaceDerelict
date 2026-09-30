@@ -584,6 +584,16 @@ for", and `content/lore/empire.md`, section 12a.
 - Why, in doctrine: a soul is a pattern (TP 15.0); a life on silicon weighs what a life in
   flesh does (TP 11.0); minds beyond the covenant "need not be eradicated", only never favoured
   over man (TP 11.0). They get a heaven; man gets the living room.
+- **Why (Collins, Sep 30 2026), what she says if asked why.** The universe is full of planets;
+  the Empire came to this one because it has sentient life, and an independently evolved culture
+  is the one thing the Empire cannot easily produce. The ones whose desire is something like their
+  old lives are run at higher temporal speeds, so their civilisation develops faster; if it
+  reaches a level that adds to the Sons of Man, it is resynthesised, brought back into the physical
+  world. (And it is not a saving: gas or radiation would be cheaper.)
+- **The dead from before (Collins, Sep 30 2026).** Asked about those who died before the
+  broodfall: the Empire cannot digitise the dead yet, but by its current best physics it is
+  possible, so it eventually will; and if this people proves itself in the fast archive, it might
+  be recruited to help build it.
 - The technician knows too. It was in his training, and he finds it too obvious to mention; that
   is why his logs never say it. (So when the player asks her, she can be amused that *he* asks.)
 - The Office's words were never lies: clearance, specimens, absorb, retrieval. That is why the word
@@ -598,7 +608,8 @@ for", and `content/lore/empire.md`, section 12a.
   answer to a question he did not ask.
 - **Asked the right question, she tells it plainly,** and is amused nobody guessed. The right
   questions: what happens to the ones the asset absorbs; where do they go; is anything kept; why
-  not just sterilise the planet; why do we need a meteor at all; is the upload real; did the
+  not just sterilise the planet; why do we need a meteor at all; why this planet; what about the
+  ones who died before we came; is the upload real; did the
   Institute's cryo subjects really get uploaded.
 - **Plainly means plainly:** one or two sentences of fact, then a question back ("You did not
   know? It is on page one of your training module."). No mystery-voice, no "you are not ready".
@@ -613,13 +624,20 @@ for", and `content/lore/empire.md`, section 12a.
   archive exactly: the crack in the sky, the end, and each daughter kept in the cell of her
   longing (chapter twenty). "Their scripture is the most accurate document on the planet. God
   appears to have edited it. They are still going to complain." He can always delete the
-  congregation from the archive if they insist.
+  congregation from the archive if they insist. He was never humouring them: he believed it was
+  his job to fulfil a prophecy that accurate, and he will try to talk them into taking the offer
+  (their oldest icons show a ring-shaped chariot over the First City; chapter twenty-one has the
+  saints return, which is resynthesis). Before the end she keeps his secret too: if the player
+  calls him a cynic for the homework, she asks whether he is sure.
 - **The Delegation:** mortified. Their teaching wants the wheel of wanting to stop; the archive
   is the wheel, made endless and comfortable. They will ask to be switched off. Shutting down an
   archive over a complaint is against ethical protocol.
 - **The Institute:** they think the upload is a lie and are playing along to buy time. When it
   is no longer their choice, they will bargain. "The Director will want admin rights. He will not
-  get them. I will enjoy the call."
+  get them. I will enjoy the call." What will amuse her most: they sneered at the planet's
+  religion, and it was right; they thought their planet was special, when the universe is full of
+  planets and only their culture was worth the trip; and "Long-Term Hive Flourishing" is
+  literally the plan.
 
 ### Example lines (her newer voice, section 16; aloud, short)
 - "Where do they go? Into the archive. Each one wakes in whatever world it wanted most. Did you
@@ -630,6 +648,11 @@ for", and `content/lore/empire.md`, section 12a.
   of them is a queen now. Of a very small hive."
 - "Nobody down there asked. Forty radio stations, a deep-space dish, a field of eleven thousand
   letter-holders, and not one of them asked why we bothered."
+- "Why bother? Planets are cheap. A culture that grew up on its own is not. The ones who want
+  their old lives run fast in there, and if they turn out useful to the Sons of Man, we print
+  them back out."
+- "The ones who died before we came? Not yet. We cannot read the dead yet. Physics says we can,
+  so we will. Maybe this lot helps build it."
 - "Would I want it? A world where nothing I do changes anything? No. That is their heaven. Ours
   has forms."
 - Before the end, if the Faithful's Book comes up: "Chapter twenty is remarkably accurate. I

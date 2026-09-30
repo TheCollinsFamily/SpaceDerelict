@@ -243,6 +243,18 @@ civilisation is significantly more magnanimous than it is originally framed."
   its people. The Empire could sterilise a world in an afternoon; the meteor, the creep and the
   city-by-city pace exist because the asset is reading the people it takes (**PROPOSAL:** the
   reading is done as it digests; a bomb would read no one).
+- **What the archive is for (Collins, Sep 30 2026).** The universe is full of planets; the Empire
+  comes to a world like this one because it holds sentient life, and an independently evolved
+  culture is the one thing the Empire cannot easily produce. Those whose desire is something akin
+  to their past lives can be run at far higher temporal speeds, to speed up their civilisational
+  development; if a people reaches a level where it is additive to the Sons of Man alliance, it
+  can be **resynthesised**: brought back into the physical world. (So a broodfall is not a cost
+  saving either. If eradication were the goal, gas or radiation would do it for a fraction of the
+  price.)
+- **The dead from before (Collins, Sep 30 2026).** Those who died before the broodfall are not in
+  the archive: the Empire does not have the technology to digitise the dead YET, but it is
+  physically possible by its current best physics, so it eventually will. A people that proves
+  itself in the accelerated archive might even be recruited to help build it.
 - **Why the Empire does it (the doctrine, faithfully):**
   - *Beyond the covenant, but not to be eradicated.* Intelligences not descended from man were made
     "to either serve or test man"; they "need not be eradicated", and must never be favoured over
@@ -258,10 +270,12 @@ civilisation is significantly more magnanimous than it is originally framed."
     as a time, the future, when the dead are brought back "through simulations or through literal
     resurrections" (TP 15.0; TP 1.2).
   - **PROPOSAL, the edge:** the corpus calls a heaven of pleasant experience in which one can no
-    longer affect anything "a form of hell ... not my heaven" (TP 15.0). The Empire gives the
-    xenofauna exactly the heaven it would refuse for itself: comfort, with no hand on history. It is
-    magnanimous and it is also the cleanest way to take a people out of the race for living room.
-    Nobody in the Empire finds that tension worth a sentence.
+    longer affect anything "a form of hell ... not my heaven" (TP 15.0). To the fauna who
+    want only comfort, the Empire gives exactly the heaven it would refuse for itself: comfort, with
+    no hand on history. Those who want their old lives back get the one heaven the corpus would
+    accept: work that matters, run fast, with a way back into the world (resynthesis, above). It is
+    magnanimous, and it also takes a people out of the race for living room until it is fit to
+    rejoin it on man's side. Nobody in the Empire finds that tension worth a sentence.
   - **PROPOSAL:** the Office's name for the destination is the **archive**; a technician can see
     it on a monitor, and can delete from it (Collins: "you can always just delete all their members
     from the simulation if they want"). What protocol stops him doing so casually is the same

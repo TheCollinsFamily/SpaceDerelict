@@ -252,6 +252,22 @@ to its desires. The meteor, the creep, the slow city-by-city clearance, the gene
 the machinery of reading a people off their planet. Sterilising a world would take an afternoon
 and needs no asset at all.
 
+**What the archive is for (Collins, Sep 30 2026).**
+- *Why this planet.* The universe is full of planets. The Empire came to this one because it has
+  sentient life, and an independently evolved culture is the one thing the Empire cannot easily
+  produce. Living room is plentiful; minds that grew up on their own are not.
+- *Run fast.* Those whose desire is something akin to their past lives can be run at higher
+  temporal speeds, to speed up their civilisational development.
+- *Resynthesis.* If a people reaches a level where it is additive to the Sons of Man alliance, it
+  can be resynthesised: brought back into the physical world. (**PROPOSAL:** as a new son of man
+  it would then fall inside the covenant, by labour if not by descent: "any intelligence that is
+  not a direct descent of humanity or our labor", TP 11.0, read in reverse.)
+- *The dead from before.* The Empire cannot yet digitise those who died before the broodfall, but
+  it is physically possible by its current best physics, so it eventually will; a people that
+  proves itself in the accelerated archive might even be recruited to help with that.
+- *Not a cost saving.* If eradication were the goal the Empire would gas or irradiate the planet,
+  for a fraction of the cost of an asset.
+
 **Why, in doctrine** (the corpus; the joins between the tenets are **PROPOSAL**):
 
 | Tenet | Source | What it asks of a broodfall |
@@ -261,7 +277,7 @@ and needs no asset at all.
 | "The moral weight of actions and lives in that universe and universe prime would be equal as both are 'just' simulations." | TP 11.0 | A life in the archive weighs the same as a life on the planet. |
 | The coming lattice "can port our likeness into either simulated heavens or hells and host us there for great lengths of time." Heaven is a time, the future, reached "through simulations or through literal resurrections". | TP 12.0; TP 15.0; TP 1.2 | The technology was foreseen; the Empire uses it on others first. |
 | The Covenant of the Sons of Man: to war on the different is to war on one's betters. | TP 11.0 | **PROPOSAL:** the Empire owes the xenofauna nothing by covenant. What it gives them it gives because the tenets above allow nothing less, not because they are owed. |
-| A heaven where one "can no longer affect anything ... sounds like a form of hell ... not my heaven." | TP 15.0 | **PROPOSAL:** the Empire gives them exactly the heaven it would refuse: comfort without a hand on history. Generous, and it takes them out of the race for living room for good. Nobody in the Empire notices the tension. |
+| A heaven where one "can no longer affect anything ... sounds like a form of hell ... not my heaven." | TP 15.0 | **PROPOSAL:** the Empire gives them exactly the heaven it would refuse: comfort without a hand on history, for those who want only comfort. Those who want their old lives get the heaven the corpus would accept: work that matters, run fast, with resynthesis as the door back. Generous, and it takes them out of the race for living room until they can join it on man's side. Nobody in the Empire notices the tension. |
 | God reveals to each people what it can hold. | TP 12.0; HOME 1.0 | **PROPOSAL (Collins's reading for the Faithful's route):** when a xenofauna scripture foretells the archive accurately, a Technopuritan assumes God steered it. |
 
 **How the procurement voice hides it in plain sight.** It hides nothing. Every word on the forms

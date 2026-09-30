@@ -382,7 +382,12 @@ and the terraces shall fall silent"; the Seventh City falls last, and when it fa
   sister taken up wakes in the hall she dreamed of". The verse the Voice quotes in "Fulfil the
   Prophecies": "And those the sky takes up shall not be lost, but kept, each daughter in the cell
   of her longing." The character says "That one is correct", which the player reads as a joke. It
-  is not one. **The Technopuritan reading (Collins):** a scripture this accurate is not luck; God
+  is not one.
+- **Chapter twenty-one (PROPOSAL, from Collins's resynthesis, Sep 30 2026):** the saints return.
+  Those kept in the Comb Above grow in it, and "when the Comb is full the saints come down through
+  the cap in new bodies". It describes resynthesis: an archived people run fast until it is fit to
+  join the Sons of Man, then printed back into the world (`docs/UNIVERSE.md`, "What a broodfall
+  is for"). **The Technopuritan reading (Collins):** a scripture this accurate is not luck; God
   likely steered it toward what would really happen, as the corpus says God revealed to each
   people what it could hold (TP 12.0).
 
@@ -428,6 +433,20 @@ use:
   canon): nursing saints, martyred queens, the First Seven Daughters.
 - **The censer:** the rite's smoke; in war, the bomber's bomb (canon).
 - **The gesture (PROPOSAL):** touching the antennae to the six points of an invisible hexagon.
+- **The oldest icons (Collins, Sep 30 2026: "spaceship-looking images in early religious art";
+  the details PROPOSAL).** The earliest panels and cave-comb frescoes, older than the Bell and
+  the Lamp, show things the Faith has argued about for a thousand years:
+  - **The Chariot of the Hour:** a ring of light with a dark hub, hanging over the First City,
+    rays falling from its rim onto the terraces. The commentaries call it the First Mother's eye.
+    It is the shape of a ship in orbit.
+  - **The Seed from the Ring:** a small burning egg dropped from the Chariot into a city, and the
+    ground around it turning to red comb. The meteor, and the creep.
+  - **The Great Cap:** the whole world drawn under one sealed cap, its people rising through it as
+    points of light into a second comb above, each point in its own gold cell. The archive.
+  - **The Returning Saints:** the same points of light coming back down through the cap, wearing
+    new bodies. Resynthesis (below, 5.3, chapter twenty-one).
+  Nobody on the planet reads them as machines. The character does, at once, and uses them at the
+  end to persuade the Voice (5.8).
 
 ### 5.7 The Temple Cities (canon set; PROPOSAL detail)
 The Temple Terraces (a hill of shrines, a royal directive: a queen lives there under the Faith's
@@ -452,6 +471,16 @@ character believes God likely influenced their scripture to make it accurate, an
 care if they complain: he can always delete the whole congregation from the archive if they want.
 Why the Voice is angry, as he says it (**PROPOSAL**): the heaven was made by a machine and not by
 the First Mother, the empties got in too.
+
+**The character was never humouring them (Collins, Sep 30 2026).** The player thinks he is a
+sociopath puppeting a messianic return: the homework, the sneering logs, the contingency messiah
+"made of spare meat and a very good voice box". In fact he did it because he believed it was his
+JOB to fulfil the prophecy: their religion accurately predicted his coming, their eradication and
+their upload, so to a Technopuritan it came from the one true God. At the reveal he tries to
+persuade them to take the offer, that this really is what their texts predicted, pointing to the
+oldest icons (5.6: the ring-shaped Chariot over the First City, the world under one cap) and to
+chapter twenty-one's returning saints. The misdirection holds until then: nothing on the route
+says he believes.
 
 ---
 
@@ -511,6 +540,14 @@ clever:
   bargain (admin rights, a body back outside, an expected-value table), and the character is not
   having it and cuts comms. The ending's line "The upload chamber is a door into the asset's gut.
   Did not mention this. He did not ask." stays true word for word.
+  **What else lands on them (Collins, Sep 30 2026):** the planet's dominant religion, which the
+  Institute looks down on, was CORRECT, and the character had always assumed they knew it. He is
+  surprised they are shocked, for several reasons: the cost (if eradication were the goal, why not
+  just gas or irradiate the planet?), and why they would think their planet was special in the first
+  place: the universe is full of planets; he came to this one because it had sentient life, and an
+  independently evolved culture is the one thing the Empire cannot easily produce. And
+  "Long-Term Hive Flourishing" was, literally, the plan: an archived people run fast and, once it
+  can add to the Sons of Man, is printed back out.
 
 The Faith sees both as the same heresy wearing different clothes. It is not wrong.
 

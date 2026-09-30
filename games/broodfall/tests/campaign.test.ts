@@ -360,11 +360,15 @@ describe('how the factions reach him, and the picture of every scene', () => {
       expect(f.reveal!.lines.length).toBeLessThanOrEqual(9);
       for (const l of f.reveal!.lines) expect(l).toMatch(/^[^:]{2,40}: \S/);
       expect(f.reveal!.lines.join(' ')).toMatch(/digitis|IS the upload/);
-      expect(f.reveal!.lines.join(' ')).toMatch(/afternoon/); // why not sterilise: the character is surprised nobody saw it
+      expect(f.reveal!.lines.join(' ')).toMatch(/afternoon|gas the planet/); // why not sterilise: the character is surprised nobody saw it
     }
     expect(by('delegation').reveal!.lines.join(' ')).toMatch(/ethical protocol/);
     expect(by('faithful').reveal!.lines.join(' ')).toMatch(/delete the congregation/);
     expect(by('institute').reveal!.lines.join(' ')).toMatch(/Cut comms/);
+    // The dead from before the broodfall: not yet, but physics allows it (Collins).
+    for (const id of ['delegation', 'faithful']) expect(by(id).reveal!.lines.join(' ')).toMatch(/cannot read the dead yet/);
+    // Resynthesis: an archived people that can add to the Sons of Man is printed back out.
+    for (const f of FACTIONS) expect(f.reveal!.lines.join(' ')).toMatch(/Sons of Man/);
     // The Institute's ending line stays literally true: the door into the gut IS the upload.
     expect(by('institute').ending.lines.join(' ')).toMatch(/door into the asset's gut/);
   });
