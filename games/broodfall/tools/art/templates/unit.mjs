@@ -72,7 +72,7 @@ const HIT = {
   scuttle: 'The creature is struck hard from in front: it recoils sharply, its body jolting back and its legs splaying, then it steadies and returns to exactly its starting pose, and stays still.',
   crew: 'The big beetle is struck hard from in front: it rocks back on its legs with a jolt and its crew flinch and duck, then everything settles back to exactly its starting pose, and stays still.',
   ride: 'The big beetle is struck hard from in front: it rocks back on its legs with a jolt and its rider flinches, then everything settles back to exactly its starting pose, and stays still.',
-  fly: 'The unit is struck hard in the air: it jolts backward and drops a little, its wings faltering for a moment, then it recovers and hovers in exactly its starting pose.',
+  fly: 'The unit is struck hard in the air: its body jerks and twists sharply, its wings faltering for a moment, then it recovers and hovers in exactly its starting pose. It stays in the middle of the picture the whole time and does not drop or fall.',
 };
 const hitOf = (u) => u.hitMotion ?? HIT[u.gait ?? (u.body === 'human-like' ? 'walk' : u.body === 'machine' ? 'crew' : 'scuttle')];
 
@@ -415,6 +415,43 @@ export function bakeUnit(kind) {
   const rows = [];
   for (const c of clips) {
     const b = base[c.v] ?? base.SW;
+    // The video model zooms in its own way on each clip: a flinch or a gesture came out up to a fifth
+    // bigger than the walk of the same view (the unit swelled as it was struck). It is brought to the
+    // walk's size, and its middle and feet put where the walk's are.
+    const twin = walks.find((w) => w.v === c.v);
+    if (twin && ['hit', 'enter', 'special'].includes(c.anim)) {
+      const med = (a) => [...a].sort((p, q) => p - q)[a.length >> 1];
+      const boxes = (fr) => fr.map((f) => unionBox([f])).filter(Boolean);
+      const wb = boxes(twin.frames);
+      const cb = boxes(c.frames);
+      if (wb.length && cb.length) {
+        const k = med(wb.map((q) => Math.max(q.x1 - q.x0, q.y1 - q.y0))) / med(cb.map((q) => Math.max(q.x1 - q.x0, q.y1 - q.y0)));
+        const cx = med(cb.map((q) => (q.x0 + q.x1) / 2));
+        const feet = med(cb.map((q) => q.y1));
+        c.frames = c.frames.map((f) => {
+          const r = Math.abs(k - 1) > 0.03 ? resize(f, Math.round(f.w * k), Math.round(f.h * k)) : f;
+          const kk = r === f ? 1 : k;
+          return crop(r, Math.round(cx * kk - b.cx), Math.round(feet * kk - b.feet), f.w, f.h);
+        });
+        c.box = unionBox(c.frames);
+        check(`${c.anim} ${c.v}: brought to the walk's size`, k > 0.6 && k < 1.5, `x${k.toFixed(2)}`);
+      }
+    }
+    // A flinch stays about where the unit walks: what reaches far outside that (the pole the model
+    // drew striking it, Sep 30 2026) is not the unit, and is cut away.
+    if (c.anim === 'hit') {
+      const wb = walks.find((w) => w.v === c.v)?.box;
+      if (wb) {
+        const m = side * 0.1;
+        for (const f of c.frames) {
+          for (let y = 0; y < f.h; y++) for (let x = 0; x < f.w; x++) {
+            if (x >= wb.x0 - m && x <= wb.x1 + m && y >= wb.y0 - m && y <= wb.y1 + m) continue;
+            f.data[(y * f.w + x) * 4 + 3] = 0;
+          }
+        }
+        c.box = unionBox(c.frames);
+      }
+    }
     const win = c.anim.startsWith('walk') && c.anim !== 'walk' ? windowOf(b, null) : windowOf(b, c.anim === 'walk' ? null : c.box);
     const kept = pick(c.frames, KEEP[c.anim] ?? KEEP.walk).map((f) => resize(crop(f, Math.round(win.x0), Math.round(win.y0), win.s, win.s), F, F));
     const rec = record(win, b, kept.length, Number((kept.length / c.seconds).toFixed(2)));

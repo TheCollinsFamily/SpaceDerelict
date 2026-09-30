@@ -794,6 +794,9 @@ export class IsoRenderer extends Renderer {
     for (const t of sim.towers) for (const c of sim.cellsOf(t)) held[c] = 1;
     const g = this.geo;
     const size = viewSize(g);
+    // Which strain works on each cell of skin: 1 mire, 2 burning (drawn over the skin, with a ragged edge where it stops).
+    const strainOf = new Uint8Array(n);
+    for (let c = 0; c < n; c++) if (on[c]) { const e = sim.creepEffectAt(c); strainOf[c] = e.dps > 0 ? 2 : e.slow < 1 ? 1 : 0; }
     for (let vy = 0; vy < size.h; vy++) for (let vx = 0; vx < size.w; vx++) {
       const b = boardCell(g, vx, vy);
       const cell = b.y * W + b.x;
@@ -807,9 +810,17 @@ export class IsoRenderer extends Renderer {
           const oc = o.y * W + o.x;
           return creepRunsOn({ height: h }, { height: this.heightOf(sim, oc), creeped: on[oc] === 1 });
         });
-        const fx = sim.creepEffectAt(cell);
-        state = 1 + open + (fx.slow < 1 ? 32 : 0) + (fx.dps > 0 ? 64 : 0) + (sim.isBody(cell) ? 128 : 0)
-          + (h === 0 && held[cell] ? 256 : 0) + (sim.map.plinths[cell] > 0 ? 512 : 0);
+        const mine = strainOf[cell];
+        // Where the strain stops on the same surface, its own ragged edge (bits 10 to 13).
+        const strainOpen = !mine ? 0 : openSides((dx, dy) => {
+          const x = vx + dx, y = vy + dy;
+          if (x < 0 || y < 0 || x >= size.w || y >= size.h) return true;
+          const o = boardCell(g, x, y);
+          const oc = o.y * W + o.x;
+          return this.heightOf(sim, oc) !== h || strainOf[oc] === mine;
+        });
+        state = 1 + open + (mine === 1 ? 32 : 0) + (mine === 2 ? 64 : 0) + (sim.isBody(cell) ? 128 : 0)
+          + (h === 0 && held[cell] ? 256 : 0) + (sim.map.plinths[cell] > 0 ? 512 : 0) + (strainOpen << 10);
       }
       if (state === this.creepState[cell]) continue;
       this.creepState[cell] = state;
@@ -829,14 +840,21 @@ export class IsoRenderer extends Renderer {
       const z = (vx + vy + 1) * 100;
       // Where a node's strain works on it, the skin is DRAWN as that strain (boardArt, templates/board.mjs): bog, embers.
       const strain = state & 64 ? 'creep-burning' : state & 32 ? 'creep-mire' : '';
-      const strainTex = strain ? this.art.sprite('creep', `${strain}-${open}-${vx % 2}${vy % 2}`) : null;
-      const skin = this.add(h ? this.sorted : this.creepFloor, strainTex ?? this.art.sprite('creep', `creep-${open}-${vx % m}${vy % m}`), p.x, p.y, z + 2);
+      const strainTex = strain ? this.art.sprite('creep', `${strain}-${(state >> 10) & 15}-${vx % 2}${vy % 2}`) : null;
+      const skin = this.add(h ? this.sorted : this.creepFloor, this.art.sprite('creep', `creep-${open}-${vx % m}${vy % m}`), p.x, p.y, z + 2);
       if (skin) {
         // Streets stay readable under the creep: a thin film there, thick hide on the roofs
-        // and under whatever of the body stands in the street. A strain on a street is seen: it is there to be walked through.
-        skin.alpha = h ? 1 : state & 256 ? 0.92 : strainTex ? 0.62 : 0.34;
+        // and under whatever of the body stands in the street.
+        skin.alpha = h ? 1 : state & 256 ? 0.92 : 0.34;
         skin.tint = strainTex ? SKIN_LIGHT[Math.min(h, SKIN_LIGHT.length - 1)] : tint;
         made.push(skin);
+      }
+      // The strain lies over the skin, ending raggedly where it stops. On a street it is seen: it is there to be walked through.
+      const over = strainTex ? this.add(h ? this.sorted : this.creepFloor, strainTex, p.x, p.y, z + 2) : null;
+      if (over) {
+        over.alpha = h ? 1 : 0.6;
+        over.tint = SKIN_LIGHT[Math.min(h, SKIN_LIGHT.length - 1)];
+        made.push(over);
       }
       if (h) {
         // Where the roof ends the skin rolls over its edge, lit, and runs down the wall. Not down a

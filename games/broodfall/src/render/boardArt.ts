@@ -233,7 +233,8 @@ export class PodArt {
     const c = sim.cellCenter(s.cell);
     v.sprite.zIndex = depth(geo, c.x, c.y) * 100 + 8;
     // Size says how far it spreads; it breathes.
-    const size = 0.55 + (s.strain?.radius ?? NODE_RADIUS) * 0.09;
+    // A pod is as big as a small limb: it is something to find and to guard.
+    const size = 1.0 + (s.strain?.radius ?? NODE_RADIUS) * 0.12;
     const breathe = 1 + 0.025 * Math.sin(v.t * 2.2 + s.id);
     const k = (geo.a * size) / (clips.body * pods.art.frame);
     v.sprite.scale.set(k * breathe, k / breathe);

@@ -6,6 +6,9 @@
  *   node tools/art/make.mjs unit soldier --attack         and attacking (5 more clips)
  *   node tools/art/make.mjs unit soldier --bake           bake again from the clips on disk (free)
  *   node tools/art/make.mjs unit soldier --views          stop after the five views (one picture)
+ *   node tools/art/make.mjs unit soldier --hit            flinches when struck (5 clips); --boss (royal, consort),
+ *                                                         --braced (cannon, dartgun), --skins (carapace), --no-bake
+ *   node tools/art/make.mjs unit broodling puppet-royal   the hive's own walkers (ALLIES in tools/art/units.mjs)
  *   node tools/art/make.mjs limb spitter lasher
  *   node tools/art/make.mjs terrain
  *   node tools/art/make.mjs fx [sheets|parts [families]]  effects in flight, bursts, clouds; the donor parts
