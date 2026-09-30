@@ -8,3 +8,20 @@ A: the film, mission 1, the end, the ship, the boss
   PASS  mission 1: the build music (siege-build)
   PASS  limbs grown (3)
   PASS  the wave: the assault music crossfaded in
+  PASS  the wave's fanfare (sting:sting-wave)
+  PASS  the town's siren at the first wave (sfx:wave-siren)
+  PASS  the assault forming at the gate (sfx:assault-march)
+  PASS  a limb growing (sfx:limb-grow)
+  PASS  limbs firing: sfx:fire-harpoon, sfx:fire-lob
+  PASS  insects dying: sfx:die-bug
+  PASS  the defeat sting (sting:sting-defeat)
+  PASS  the data pad dropped on the desk (sfx:pad-lost)
+  PASS  the run's music is gone at its end
+  PASS  the ship: its music (theme-ship)
+  PASS  YOKE's intercom opens (sfx:intercom-open)
+  PASS  CONTINUE confirms (sfx:ui-confirm)
+  PASS  the boss speaks: the music ducks under him (duck 0.30)
+  PASS  YOKE's voice ducked the music too (duck:yoke)
+  PASS  the music comes back up when he is done
+  PASS  no page errors ()
+B: the menu, the settings, the ship
