@@ -1,7 +1,7 @@
 {
  "family": "ward",
- "frames": 53,
- "atlasKB": 918,
+ "frames": 70,
+ "atlasKB": 1224,
  "failed": 0,
  "checks": [
   {
@@ -12,22 +12,22 @@
   {
    "name": "idle: loop closes",
    "ok": true,
-   "value": 0.4
+   "value": 0
   },
   {
    "name": "idle: it moves",
    "ok": true,
-   "value": 0.28
+   "value": 0.32
   },
   {
    "name": "idle: it is calm",
    "ok": true,
-   "value": 0.28
+   "value": 0.32
   },
   {
    "name": "idle: inside the frame",
    "ok": true,
-   "value": "96,126-538,492"
+   "value": "96,120-538,492"
   },
   {
    "name": "idle: no background tint on the outline",
@@ -37,7 +37,7 @@
   {
    "name": "idle: ends the size it began",
    "ok": true,
-   "value": "1% change"
+   "value": "0% change"
   },
   {
    "name": "fire: no background tint on the outline",

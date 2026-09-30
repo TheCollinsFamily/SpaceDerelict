@@ -4,3 +4,9 @@
   PASS  tower rendered at its sim position (146 bright px)
 
 VISUAL CHECK: all regions verified.
+  PASS  skipping mortar: panel FACING buttons turn it
+  PASS  limb panel: click tower opens it; targeting buttons drive the sim
+  PASS  limb panel: right-click closes it
+  PASS  clicking the meteor levels the core theme
+
+INPUT CHECK: all interactions verified.

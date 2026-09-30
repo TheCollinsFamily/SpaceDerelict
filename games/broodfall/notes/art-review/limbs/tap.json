@@ -1,7 +1,7 @@
 {
  "family": "tap",
- "frames": 124,
- "atlasKB": 943,
+ "frames": 130,
+ "atlasKB": 990,
  "failed": 0,
  "checks": [
   {
@@ -72,7 +72,7 @@
   {
    "name": "from behind, idle: loop closes",
    "ok": true,
-   "value": 0.4
+   "value": 0
   },
   {
    "name": "from behind, idle: it moves",
@@ -97,7 +97,7 @@
   {
    "name": "from behind, idle: ends the size it began",
    "ok": true,
-   "value": "0% change"
+   "value": "9% change"
   },
   {
    "name": "from behind, fire: no background tint on the outline",
@@ -112,7 +112,7 @@
   {
    "name": "from behind, it stands in its cell",
    "ok": true,
-   "value": "1.3% of it lies in front of its cell"
+   "value": "0.8% of it lies in front of its cell"
   },
   {
    "name": "from behind: it has a view",

@@ -367,6 +367,11 @@ describe('how the factions reach him, and the picture of every scene', () => {
     expect(by('institute').reveal!.lines.join(' ')).toMatch(/Cut comms/);
     // The dead from before the broodfall: not yet, but physics allows it (Collins).
     for (const id of ['delegation', 'faithful']) expect(by(id).reveal!.lines.join(' ')).toMatch(/cannot read the dead yet/);
+    // The wicked are not kept (no Pit), and the Director's world is private (Collins).
+    expect(by('faithful').reveal!.lines.join(' ')).toMatch(/not simulated/);
+    expect(by('institute').reveal!.lines.join(' ')).toMatch(/very private/);
+    // The broodfall is erased from their memories.
+    expect(by('delegation').reveal!.lines.join(' ')).toMatch(/not remember the broodfall/);
     // Resynthesis: an archived people that can add to the Sons of Man is printed back out.
     for (const f of FACTIONS) expect(f.reveal!.lines.join(' ')).toMatch(/Sons of Man/);
     // The Institute's ending line stays literally true: the door into the gut IS the upload.
