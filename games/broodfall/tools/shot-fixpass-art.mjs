@@ -119,22 +119,29 @@ try {
   const closeOn = async (at, zoom) => {
     await page.keyboard.press('Home');
     await page.waitForTimeout(300);
-    let p = await onPage(at.x, at.y);
-    await page.mouse.move(p.x, p.y);
+    // The point is brought to the middle first, then the view zooms in on the middle (a wheel over the HUD at
+    // the edge of the screen zooms nothing), then it is brought to the middle again.
+    const centre = async () => {
+      for (let round = 0; round < 4; round++) {
+        const p = await onPage(at.x, at.y);
+        const mid = { x: p.bb.x + p.bb.width / 2, y: p.bb.y + p.bb.height / 2 };
+        if (Math.hypot(p.x - mid.x, p.y - mid.y) < 12) return mid;
+        await page.keyboard.down('Shift');
+        await page.mouse.move(p.x, p.y);
+        await page.mouse.down();
+        await page.mouse.move(mid.x, mid.y, { steps: 12 });
+        await page.mouse.up();
+        await page.keyboard.up('Shift');
+        await page.waitForTimeout(400);
+      }
+      const p = await onPage(at.x, at.y);
+      return { x: p.bb.x + p.bb.width / 2, y: p.bb.y + p.bb.height / 2 };
+    };
+    const mid = await centre();
+    await page.mouse.move(mid.x, mid.y);
     for (let i = 0; i < zoom; i++) await page.mouse.wheel(0, -240);
     await page.waitForTimeout(500);
-    for (let round = 0; round < 4; round++) {
-      p = await onPage(at.x, at.y);
-      const mid = { x: p.bb.x + p.bb.width / 2, y: p.bb.y + p.bb.height / 2 };
-      if (Math.hypot(p.x - mid.x, p.y - mid.y) < 12) break;
-      await page.keyboard.down('Shift');
-      await page.mouse.move(p.x, p.y);
-      await page.mouse.down();
-      await page.mouse.move(mid.x, mid.y, { steps: 12 });
-      await page.mouse.up();
-      await page.keyboard.up('Shift');
-      await page.waitForTimeout(400);
-    }
+    await centre();
   };
 
   // ---- the seedling pod in flight
@@ -208,7 +215,7 @@ try {
         return e.id;
       }, [kind, st[n % st.length]]);
       const at = await page.evaluate((i) => ({ ...window.broodfall.sim.enemies.find((e) => e.id === i).pos }), id);
-      await closeOn(at, 11);
+      await closeOn(at, 8);
       const tick = () => page.evaluate(() => { const b2 = window.broodfall; b2.step(1); for (const e of b2.sim.enemies) { const h = window.__held?.[e.id]; if (h) { e.pos.x = h.x; e.pos.y = h.y; e.hp = Math.max(e.hp, 1); } } });
       for (let i = 0; i < 4; i++) { await tick(); await page.waitForTimeout(40); }
       // Walked toward its view, then held again where it stands.
@@ -224,7 +231,7 @@ try {
         await tick();
         await page.waitForTimeout(120);
         const p = await onPage(at.x, at.y);
-        await page.screenshot({ path: png(`flinch-${kind}-${view}-${i}`), clip: { x: p.x - 130, y: p.y - 200, width: 260, height: 260 } });
+        await page.screenshot({ path: png(`flinch-${kind}-${view}-${i}`), clip: { x: p.x - 180, y: p.y - 270, width: 360, height: 360 } });
       }
     }
   }

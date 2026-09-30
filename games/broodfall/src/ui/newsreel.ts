@@ -149,20 +149,32 @@ function film(opts: { id: string; look: Look; series?: string; issue?: string; c
       // A shot lasts its clip, or as long as its line needs (the clip then runs a little slower).
       const secs = raw ? 8 : Math.max(c.clip.seconds, narr ? 0.45 + narr.seconds + 0.35 : 0);
       v.playbackRate = Math.max(0.5, Math.min(1, c.clip.seconds / secs));
-      const up = () => { v.classList.add('on'); layers[top].classList.remove('on'); top = 1 - top; later(400, () => load(after, layers[1 - top])); };
-      void v.play().then(up, up);
-      el.classList.toggle('raw', raw || ungraded);
       el.dataset.shot = c.id;
       if (playing) playing.shot = c.id;
       title.classList.remove('on');
-      if (!raw && !ungraded && c.title) {
-        later(400, () => {
-          big.textContent = c.title!; small.textContent = c.small ?? ''; title.classList.add('on');
-          if (narr) { const a = sound(narr.file, 'voice'); audio.add(a); duckFor(a, 'newsreel'); playSafe(a); }
-        });
-        later(Math.max(1200, (secs - 0.4) * 1000), () => title.classList.remove('on'));
-      }
-      later(Math.max(1500, secs * 1000 - 200), next);
+      // The cut waits for its picture (the shot before holds its last frame meanwhile, never black), at most 2.5 s;
+      // its title, its line and its length are counted from the moment it is up.
+      let started = false;
+      const go = () => {
+        if (started) return;
+        started = true;
+        const up = () => {
+          v.classList.add('on'); layers[top].classList.remove('on'); top = 1 - top;
+          el.classList.toggle('raw', raw || ungraded);
+          later(400, () => load(after, layers[1 - top]));
+        };
+        void v.play().then(up, up);
+        if (!raw && !ungraded && c.title) {
+          later(450, () => {
+            big.textContent = c.title!; small.textContent = c.small ?? ''; title.classList.add('on');
+            if (narr) { const a = sound(narr.file, 'voice'); audio.add(a); duckFor(a, 'newsreel'); playSafe(a); }
+          });
+          later(Math.max(1200, (secs - 0.4) * 1000), () => title.classList.remove('on'));
+        }
+        later(Math.max(1500, secs * 1000 - 200), next);
+      };
+      if (v.readyState >= 3) go();
+      else { v.addEventListener('canplay', go, { once: true }); later(2500, go); }
     };
     /** The break: the music cut, the field for as long as the shot lasts. */
     const field = () => { const f = art?.field ? sound(art.field.file, 'music') : null; if (f) { audio.add(f); playSafe(f); } return f; };

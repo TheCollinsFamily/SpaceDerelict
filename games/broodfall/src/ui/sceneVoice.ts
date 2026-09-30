@@ -44,7 +44,7 @@ function light(): void {
 function film(c: HTMLElement): void {
   const f = now ? endingFilmOf(now.scene.picture) : null;
   const pic = c.querySelector<HTMLElement>('.cp-scene-pic, .cp-leader');
-  if (!f || !pic || pic.tagName === 'VIDEO') return;
+  if (!f || pic?.tagName === 'VIDEO' || c.querySelector('video.cp-scene-film')) return;
   const art = mediaNow()!;
   const v = document.createElement('video');
   v.className = 'cp-scene-pic cp-scene-film';
@@ -53,7 +53,8 @@ function film(c: HTMLElement): void {
   const go = () => { const clip = art.clips[f.shots[k % f.shots.length].clip]; v.src = mediaUrl(clip.video); void v.play().catch(() => {}); k++; };
   v.addEventListener('ended', go);
   go();
-  pic.replaceWith(v);
+  // Where its picture was; at the head of the card when the ship's pictures have not come (yet).
+  if (pic) pic.replaceWith(v); else c.prepend(v);
 }
 
 function stop(): void {

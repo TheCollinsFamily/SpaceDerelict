@@ -348,7 +348,8 @@ try {
       t.hp = t.maxHp * 0.6;
       t.upgrades = ['A', 'B'];
     }, id);
-    await ticks(2);
+    // Its evolved look grows in first (on the game's clock), so the rise is all that moves.
+    await ticks(50);
     await closeOn(await posOf(id), 10, 60);
     await shot(`fixpass-board-plinth-${TAG}-1`);
     await page.evaluate((id) => {
