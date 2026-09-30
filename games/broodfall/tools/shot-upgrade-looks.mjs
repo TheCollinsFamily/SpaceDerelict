@@ -205,7 +205,12 @@ try {
       });
     }, [family, scene]);
     check(ids.every((x) => x >= 0), `${family}: six are grown`, ids.join(','));
-    await ticks(3, 60);
+    // A look's pictures load the first time a limb earns it (src/render/art.ts limbVariant): each grows into it then.
+    for (let i = 0; i < 120; i++) {
+      const l = await looks();
+      if (l.length >= ids.length && l.every((x) => x.drawn === x.earned && !x.growing)) break;
+      await ticks(1, 100);
+    }
     const got = await looks();
     scene.forEach(([label, key], i) => {
       const l = got.find((x) => x.id === ids[i]);
