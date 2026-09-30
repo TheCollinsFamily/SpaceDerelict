@@ -636,6 +636,72 @@ Kingdom Fund / Pacification) and `endingByChoice` picks the ending.
 
 Collins's calls are quoted; everything else is a proposal filling his frame.
 
+### How it unfolds for a new player (Collins, Sep 30 2026 — BUILT Sep 30)
+
+"The philosophy I want to use in terms of how this unfolds for a user is that they think they
+downloaded some little nothing indie game that progressively unfolds into something bigger
+than what they expected so they drop in ... oh tower defence that's neat then ... oh this is an
+interesting additional narrative layer."
+
+The rules live in `src/meta/onboarding.ts` (pure, tested in `tests/onboarding.test.ts`); the walk
+of the whole thing is `tools/shot-onboarding.mjs` (screenshots `notes/screens/2026-09-30/onboard-*`).
+
+1. **The first launch ever** (nothing stored): the opening cinematic (`src/ui/intro.ts`, art by
+   `tools/art/intro.mjs`), then straight into **mission 1** — no menu, no ship. The film is the
+   trailer of a 1950s monster picture told from the town's side (a living meteor falls on a
+   little insect town and grows); its titles are set in type; it never mentions a ship, an
+   empire or a campaign. A click, Esc, Enter or Space skips it; it plays once and is replayable
+   from the menu. It is silent: a browser will not play sound on a page nobody has clicked yet.
+2. **Mission 1** is the crash site (the film ends there): hold 5 waves, the assault's gate shown
+   (as in any tower-defence game; the campaign hides it later), no Requisition Board, no dares,
+   nothing on screen that speaks of the ship, the Board, the globe or a licence (`hud.plain`,
+   `under.plain`). The hint line coaches the one next thing to do from what is on the board
+   (`coachText` in `src/main.ts`; the cards, then CALL THE WAVE, glow while they are the answer).
+   Its report is plain (the verdict, the pictures, a few numbers) with one way on: CONTINUE.
+   It takes no ground and queues no counter-attack; its data pays 4 standing, win or lose (so
+   that YOKE's "check it out" in the Gene Bay is true). A launch while mission 1 is unfinished
+   goes straight back into it: the ship, and the menu that shows it, are never seen before it.
+3. **After mission 1, won or lost: the ship.** That is the first reveal. YOKE greets him.
+4. **The Directive Desk is dark** until the first win that is not mission 1 (won mission 1: the
+   next win; lost it: the first win). Dark means the ship's own voice: "AWAITING CLEARANCE",
+   the planet not projected, and Command's assignment with its DEPLOY button (`shipPick`: a
+   counter-attack first, else the easiest landing site next to what is held). At that win the
+   desk clears, and **all three factions call at once** (the old contact-after-N-captures is
+   gone), one call after the other ("CALL 1 OF 3", HEAR THE NEXT CALLER), after YOKE has spoken.
+   A save from before the unfolding has its desk open, and hears all three at its first capture.
+5. **Every return to the ship, YOKE greets him** with a prewritten line (`content/greetings.ts`;
+   no LLM makes a greeting), through her Living Avatar body: her clips, her voice from rfab.ai
+   (`/speak`; read, not heard, when it cannot be had or in the scripted mode), in her
+   **intercom** over whatever room he is in. Lines advance with her voice; a click skips ahead.
+   It fits the moment (`momentAfter`): the first mission won or lost (Collins's own lines, then
+   **a message from the boss**, then her word on him), the desk opening (Collins's "Broh, that
+   was sick..."), a win, a loss, a loss while the desk is dark, a counter-attack held or ground
+   lost, the licence, the end, or just coming aboard from the menu. Never the same one twice in
+   a row. Once each, early, on ordinary returns: **the mate review** (Collins's lines; it points
+   at the data pad in his **quarters**, the candidate partner's file in the Board's voice,
+   `content/partner.ts`) and then **the cat girl** (Collins's lines; her letter sits in his inbox,
+   declined for him). After those, one ordinary return in three is **news from Earth**, read from
+   the lore book's section "Earth news (return greetings)" (`content/lore/ship-ai-lorebook.md`;
+   the pool grows there with no code). A greeting that points somewhere lights that room and
+   puts a button to it in her panel. After it he can talk to her live in the intercom (her mind
+   is told what she just said to him) or close it and walk away. The ◉ YOKE button calls her up
+   in any room.
+6. **The boss** is an uplifted dog, Supervisor Steadfast Barnabas, Xenofauna Clearance Office,
+   Sector 9 (`content/boss.ts`; Puritan virtue name; dogs rise high in the bureaucracy, rarely to
+   the top: gullible). His transmission plays on the first landing: his clip on the comms screen,
+   name and rank in type, his words as captions, his voice (Deepgram `aura-2-apollo-en`, made once
+   by `tools/art/boss.mjs`, shipped as a file: the game spends nothing to play it).
+7. **She can print herself a body** (`content/yokeScenes.ts`): when he asks ("print yourself a
+   body", "meet you in person") or her live mind agrees with `[[PRINT_BODY]]`, the ship prints
+   one, it looks at its hand in disgust, collapses dead and lies in the hold; then her voice
+   from the speakers (Collins's words). Once a campaign; asked again, she refuses. The clips
+   come from YOKE's manifest (`scenes.printBody`); until they exist, storyboard cards play.
+8. **Later launches open on the ship's console menu** (`src/ui/menu.ts`): black glass and thin
+   white lines like the ship's rooms, over a looping video of the view from the ship's viewport:
+   the infested planet's night side, red creep spreading between the city lights. CONTINUE,
+   NEW CAMPAIGN (mission 1 again, the desk dark again), SKIRMISH (with the gate wager), REPLAY THE
+   OPENING, SETTINGS (her voice on/off, who answers as her, forget everything).
+
 ### Two credits from two kinds of mission
 "Sanctioned missions generating one type of credit and hobbies generating another."
 

@@ -151,5 +151,30 @@
    "look_right": 728511
   },
   "liveModelId": "vm_4aaa49e60a21"
+ },
+ "scenes": {
+  "printBody": [
+   {
+    "id": "print",
+    "file": "scenes/print-body-print.webm",
+    "seconds": 5.04
+   },
+   {
+    "id": "wake",
+    "file": "scenes/print-body-wake.webm",
+    "seconds": 5.04
+   },
+   {
+    "id": "collapse",
+    "file": "scenes/print-body-collapse.webm",
+    "seconds": 5.04
+   },
+   {
+    "id": "hold",
+    "file": "scenes/print-body-hold.webm",
+    "seconds": 5.04,
+    "loop": true
+   }
+  ]
  }
 }

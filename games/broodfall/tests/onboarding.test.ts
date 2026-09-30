@@ -147,6 +147,10 @@ describe('YOKE\'s greetings', () => {
     const lore = '# Book\n## 15. Earth news (return greetings)\n- "The Crusade took Rome back."\n- "Mars voted to secede again."\n## 16. Other\n- "not news"\n';
     expect(earthNewsFrom(lore)).toEqual(['The Crusade took Rome back.', 'Mars voted to secede again.']);
     expect(earthNewsFrom('# nothing here')).toEqual([]);
+    // The lore book's own section (content/lore/ship-ai-lorebook.md), Collins's line first.
+    const book = earthNewsFrom(readFileSync('content/lore/ship-ai-lorebook.md', 'utf8'));
+    expect(book.length).toBeGreaterThanOrEqual(10);
+    expect(book[0]).toBe(EARTH_NEWS_FALLBACK[0]);
     expect(EARTH_NEWS_FALLBACK[0]).toMatch(/took back Rome/);
     let s = deploy(newCampaign(6, { onboarding: true }), false).state;
     s = board(s);

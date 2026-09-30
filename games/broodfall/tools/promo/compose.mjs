@@ -112,13 +112,13 @@ export const JOBS = {
     html: () => `<div style="width:1280px;height:720px;display:flex;align-items:center;justify-content:center">${logo({ word: 200, emblem: 340, fit: 1220 })}</div>`,
   },
   'covers/itch-cover-630x500': {
-    W: 630, H: 500, html: () => `<div class="stage">${cover('cover-square', 'center 70%')}${leftShade(0.55, 70)}${bottomShade(0.55, 80)}
-      <div class="abs" style="left:14px;top:40px">${logo({ word: 84, emblem: 150, fit: 600 })}</div>
-      <div class="abs tag" style="left:0;right:0;bottom:16px;text-align:center;font-size:19px">${TAGLINES.store}</div></div>`,
+    W: 630, H: 500, html: () => `<div class="stage">${cover('cover-square', 'center 30%')}${bottomShade(0.92, 55)}
+      <div class="abs" style="left:0;right:0;bottom:14px;display:flex;flex-direction:column;align-items:center">${logo({ word: 84, emblem: 150, fit: 560 })}
+      <div class="tag" style="font-size:19px;margin-top:6px">${TAGLINES.store}</div></div></div>`,
   },
   'covers/social-square-1080x1080': {
     W: 1080, H: 1080, html: () => `<div class="stage">${cover('cover-square')}${leftShade(0.55, 70)}${bottomShade(0.75, 75)}
-      <div class="abs" style="left:28px;top:70px">${logo({ word: 140, emblem: 250, fit: 1020 })}</div>
+      <div class="abs" style="left:24px;top:210px">${logo({ word: 140, emblem: 250, fit: 640 })}</div>
       <div class="abs tag" style="left:0;right:0;bottom:44px;text-align:center;font-size:40px">${TAGLINES.monster}</div>
       <div class="abs tag" style="left:0;right:0;bottom:10px;text-align:center;font-size:20px;font-weight:500;opacity:.8">A TOWER DEFENCE ROGUELITE WHERE THE TOWERS ARE YOUR LIMBS</div></div>`,
   },
@@ -138,21 +138,20 @@ export const JOBS = {
       </div></div>`,
   },
   'posters/procurement-notice-1200x1800': {
+    // The picture's own cream top and black foot hold the type; nothing is laid over the drawing.
     W: 1200, H: 1800, html: () => `<div class="stage">${cover('procurement')}
-      <div class="shade" style="background:linear-gradient(180deg,rgba(241,231,206,.9) 0%,rgba(241,231,206,.85) 22%,rgba(241,231,206,0) 30%)"></div>
-      <div class="abs" style="left:70px;right:70px;top:56px;color:#111">
+      <div class="abs" style="left:70px;right:70px;top:52px;color:#111">
         <div style="font-family:'Special Elite',monospace;font-size:24px;letter-spacing:.12em;display:flex;justify-content:space-between;border-bottom:4px solid #111;padding-bottom:8px">
           <span>IMPERIAL PROCUREMENT OFFICE</span><span>FORM XC-7 &middot; PUBLIC NOTICE</span></div>
-        <div style="font-family:Anton,Impact;font-size:124px;line-height:1;margin-top:18px;letter-spacing:.01em">NOTICE OF<br>PROCUREMENT</div>
-        <div style="font-family:Anton,Impact;font-size:52px;color:#b3140f;margin-top:8px;line-height:1.05">${TAGLINES.asset}</div>
-        <div style="font-family:'Special Elite',monospace;font-size:24px;line-height:1.45;margin-top:18px;max-width:780px">
-          Grows its own weapons. Requires no wages, no rest and no luxury. Deploys by falling. Feeds on the problem it was sent to solve. Reports to your console between waves.</div>
+        <div style="font-family:Anton,Impact;font-size:104px;line-height:1;margin-top:14px;white-space:nowrap">NOTICE OF PROCUREMENT</div>
+        <div style="font-family:Anton,Impact;font-size:50px;color:#b3140f;margin-top:8px;line-height:1.05">${TAGLINES.asset}</div>
       </div>
-      <div class="abs" style="left:0;right:0;bottom:0;height:270px;display:flex;align-items:center;justify-content:space-between;padding:0 70px;color:#f1e7ce">
-        <div style="display:flex;align-items:center;gap:26px">
-          <svg width="120" height="120" viewBox="-60 -60 120 120"><g fill="#f1e7ce">${gear()}</g><circle r="17" fill="#0b0f12"/></svg>
-          <div><div style="font-family:Anton,Impact;font-size:54px;line-height:1">${TAGLINES.waste}</div>
-          <div style="font-family:'Special Elite',monospace;font-size:21px;letter-spacing:.1em;margin-top:10px;opacity:.85">ASSET CLASS: XENOFAUNA CLEARANCE &middot; DESIGNATION: BROODFALL</div></div>
+      <div class="abs" style="left:0;right:0;bottom:0;height:282px;background:#0b0f12;padding:30px 70px 0;color:#f1e7ce">
+        <div style="font-family:'Special Elite',monospace;font-size:23px;line-height:1.45;opacity:.92">Grows its own weapons. Requires no wages, no rest and no luxury. Deploys by falling. Feeds on the problem it was sent to solve. Reports to your console between waves.</div>
+        <div style="display:flex;align-items:center;gap:26px;margin-top:22px">
+          <svg width="112" height="112" viewBox="-60 -60 120 120"><g fill="#f1e7ce">${gear()}</g><circle r="17" fill="#0b0f12"/></svg>
+          <div><div style="font-family:Anton,Impact;font-size:52px;line-height:1">${TAGLINES.waste}</div>
+          <div style="font-family:'Special Elite',monospace;font-size:20px;letter-spacing:.1em;margin-top:10px;opacity:.85">ASSET CLASS: XENOFAUNA CLEARANCE &middot; DESIGNATION: BROODFALL</div></div>
         </div>
       </div></div>`,
   },

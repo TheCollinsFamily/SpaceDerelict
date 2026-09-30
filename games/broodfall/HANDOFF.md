@@ -159,6 +159,38 @@ insectoid city.
   - `src/ui/campaignUi.ts`: all the screens.
   - A deployment reloads the page with `?campaign=run`; the ship is at `?campaign=ship`.
 
+## How a new player starts (Sep 30 2026) — DESIGN.md "How it unfolds for a new player"
+
+- **First launch** (nothing in localStorage, page opened with no address of its own): the
+  opening film (`src/ui/intro.ts`; eight clips in `public/art/intro/`, made by
+  `tools/art/intro.mjs`), then mission 1 at the crash site, with the board loading behind the
+  film. `?intro=1` plays the film over the menu. Launch rules: `launchKind` in
+  `src/meta/onboarding.ts`; the flags are `broodfall-intro-seen` and the campaign save.
+- **Mission 1** is a campaign deployment with `plan().first`: no goals, the gate shown, the HUD
+  and the organ stage `plain` (no ship words), the coach's hint line (`coachText`, `coachTick` in
+  `src/main.ts`), a plain report (`firstDebrief`). It pays `FIRST_MISSION_STANDING` (4).
+- **The ship** opens in the SAME page after a report (`history.replaceState` to `?campaign=ship`),
+  so that the click on CONTINUE lets YOKE's voice play (a browser blocks sound on a page nobody
+  clicked; a line whose sound is blocked is read for as long as it takes to read).
+- **The desk** is dark until `onboard.deskOpen` (`finish()` sets it at the first win that is not
+  mission 1; all three factions' contacts are queued then). `shipPick` is the assignment.
+- **YOKE's greetings**: `content/greetings.ts` (pool, the CUES table of clips per acted beat: a new
+  clip slots in by being first in its list), `greetingFor` / `momentNow` / `pickGreeting` in
+  `src/meta/onboarding.ts`, played by `CampaignUi.welcome()` through `YokeAvatarUi.play()` (a
+  script: voice per line via `/speak`, talking clip, the cue after it; `skip()` on a click). Her
+  body is now built in every mode: her mind answers only in the avatar mode; in the others she
+  speaks the next rung's words; in the scripted mode nothing goes out (no voice).
+- **The intercom** (`icomHtml`, the ◉ YOKE button) is her over any room; her live talk there is
+  the same free talk as the AI Core's; her mind is told what she greeted him with.
+- **The boss** (`content/boss.ts`, `src/ui/bossCall.ts`, art and voice `tools/art/boss.mjs`), the
+  **quarters** room and its data pad (`content/partner.ts`), the **print-a-body** scene
+  (`content/yokeScenes.ts`, `src/ui/yokeScene.ts`; clips looked for under `scenes.printBody` in
+  `public/art/ship/yoke/manifest.json`, storyboard cards until then).
+- **The menu** is `src/ui/menu.ts` (markup in `index.html`, look in `src/onboard.css`).
+- **Beats only:** `?campaign=ship&open=1` opens the ship with a campaign whose desk is already
+  open when none is on record (shot-ship, shot-yoke-avatar, shot-biomes, shot-screens use it; the
+  unfolding itself is `tools/shot-onboarding.mjs`).
+
 ## The ship AI (YOKE)
 
 - **Game side** (`src/meta/shipAi.ts`):
@@ -382,7 +414,8 @@ node tools/shot-board-art.mjs # the board alive (DEV server): seams, pods growin
 # board art (pods, strains, gates, smoke): node tools/art/make.mjs board [pods|strains|gates|smoke|<set>] [--stills|--bake]  (tools/art/templates/board.mjs; renderer side src/render/boardArt.ts)
 node tools/shot-preview.mjs   # a mortar's field of fire (click on it) + a conduit held and hovered (placement preview)
 node tools/shot-play-new.mjs  # DEV server from the menu: Scaffold + Seeding Gland grown by clicks, plinths raise a gun and level a roof, a BIG limb on it, a Seedling shot up and landed, the scripted player late (JPGs in notes/screens/2026-09-29/play-*)
-node tools/shot-campaign.mjs  # menu → ship → globe → briefing → run → debrief → faction → YOKE (scripted) → allied 2nd deployment → aside in debrief + Comms
+node tools/shot-campaign.mjs  # NEW CAMPAIGN → mission 1 → ship (desk dark) → assigned run → win → desk opens, three calls → ally → YOKE (scripted) → globe + dare → aside in debrief + Comms
+node tools/shot-onboarding.mjs  # DEV server, fresh browsers: the film, mission 1, the ship and YOKE's greetings (rfab.ai mocked), the boss, the dark desk, mate review, cat girl, the desk opening + three calls, YOKE summoned + print-a-body, the console menu; mission 1 won; replay the opening (notes/screens/2026-09-30/onboard-*)
 # PAID (a few RFab tokens): live YOKE. Against a local backend started with PORT=3011 node scripts/start.js
 # and a JWT from `npm run auth:token -- --email collinsmalcolm@gmail.com` (backend repo):
 RFAB_API_BASE=http://localhost:3011 RFAB_API_BEARER=<jwt> node tools/shot-yoke-live.mjs
@@ -425,7 +458,7 @@ RFAB_API_BASE=http://localhost:3011 RFAB_API_BEARER=<jwt> node tools/shot-yoke-l
      the same from all four sides. Walls and floors are right from every side.
 7. **Surgery vulnerability:** mid-siege cannibalize drama.
 8. **Campaign polish found in the audit, not yet asked for:**
-   - Faction contact comes after N captures, not through "some missions".
+   - (Done Sep 30: all three factions call when the Directive Desk opens.)
    - Asides cycle in a fixed order.
    - The globe is flat-projected, not a 3D sphere.
 
@@ -445,7 +478,13 @@ RFAB_API_BASE=http://localhost:3011 RFAB_API_BEARER=<jwt> node tools/shot-yoke-l
 6. **A skirmish draws a tile set by its seed.** If he would rather a skirmish always be one
    set, it is one line in `src/render/biome.ts`.
 7. **Where `art-src/` lives** (see "State right now").
-8. **The API key in the public repo.** `games/space-derelict/generate_ui_assets.py`,
+8. **YOKE's brain text vs her greetings.** Collins's greetings (Sep 30) are spunky, edgy, with
+    contractions; her brain text (`content/lore/yoke-brain.md`) said "no contractions, no slang".
+    The lore session was reworking it the same day; check the two sound like one person.
+9. **The quarters' picture and the partner's portrait** were not made (the art agent's run was
+    stopped by the permission classifier). The quarters show the Procreation Board's room picture;
+    the data pad has no photograph. `tools/art/intro.mjs` is where they would be added.
+10. **The API key in the public repo.** `games/space-derelict/generate_ui_assets.py`,
    `generate_event_assets.py` and `_gen_emblems_contracts.py` carry a hard-coded RFab key.
    It is in the history of a PUBLIC repo: treat it as leaked and rotate it. Removing it
    from the files does not remove it from the history.

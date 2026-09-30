@@ -22,7 +22,13 @@ Useful URLs:
 
 | Surface | Status |
 |---|---|
-| Home menu / title screen (key art, emblem, the name set in type from `src/ui/screens.ts` GAME_NAME) | BUILT (Sep 30; `node tools/shot-screens.mjs title`) |
+| Opening cinematic (first launch only; 8 generated shots, titles in type, skippable, replayable from the menu) | BUILT (Sep 30; `node tools/shot-onboarding.mjs`, `src/ui/intro.ts`) |
+| Mission 1 (first launch: straight into a plain tower-defence game at the crash site, the coach's hint line) | BUILT (Sep 30; `shot-onboarding.mjs A`) |
+| Main menu: the ship's console over the viewport's looping video (continue, new campaign, skirmish, replay the opening, settings) | BUILT (Sep 30; `src/ui/menu.ts`, `shot-onboarding.mjs A`, `shot-screens.mjs title`) |
+| Home menu / title screen (the emblem, the name set in type from `src/ui/screens.ts` GAME_NAME) | BUILT (Sep 30; `node tools/shot-screens.mjs title`) |
+| The dark Directive Desk (AWAITING CLEARANCE, the ship's own pick) until the first win after mission 1 | BUILT (Sep 30; `shot-onboarding.mjs A B`) |
+| YOKE's greeting on every return (prewritten, her clips + voice) and her intercom from any room | BUILT (Sep 30; `content/greetings.ts`, `shot-onboarding.mjs`) |
+| The boss's message (first landing), the quarters' data pad (partner file, inbox), the print-a-body scene | BUILT (Sep 30; `content/boss.ts`, `content/partner.ts`, `content/yokeScenes.ts`); the print-a-body clips and the quarters/partner pictures are MISSING (storyboard cards and the Procreation Board's room picture stand in) |
 | Loading screen (deploy clicked, or a run started from the address, before the art is in) | BUILT (Sep 30; `shot-screens.mjs loading`, throttled network) |
 | Fault screens: art list missing (play on without pictures), some pictures missing (a line over the board), no WebGL (drawn on a plain canvas, a line says so), nothing to draw with, the code failing while it loads | BUILT (Sep 30; `shot-screens.mjs faults`, each failure forced) |
 | Deployment (board, waves, drafts) | BUILT |
