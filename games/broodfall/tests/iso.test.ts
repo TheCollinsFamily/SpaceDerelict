@@ -455,6 +455,13 @@ describe.skipIf(!hasArt)('the baked art', () => {
     }
     for (const side of ['south', 'east']) for (let i = 0; i < 4; i++) has('creep', `drip-${side}-${i}`);
     has('props', 'prop-pod');
+    // THE SEAMS (Sep 30 2026): a tile baked on a picture exactly its own size is cut off at its corners, and
+    // where four meet the ground shows through as a "+". Every tile has a margin, as big as what it draws past its edge.
+    const padOf = (sheet: string, id: string) => (t.sheets[sheet].sprites[id] as { pad?: [number, number] }).pad ?? [0, 0];
+    for (const id of ['street-00', 'roof-33', 'smoke-12']) expect(padOf('floors', id), id).toEqual([5, 3]);
+    for (const id of ['creep-0-00', 'creep-15-11', 'edge-lip-south']) expect(padOf('creep', id)[0], id).toBeGreaterThanOrEqual(5);
+    for (const id of ['drip-south-0', 'drip-east-3']) expect(padOf('creep', id), id).toEqual([2, 2]);
+    expect(padOf('walls', 'wall-plain-south-0-0')).toEqual([2, 2]);
     for (const sheet of Object.values(t.sheets) as Array<{ atlas: string; sprites: Record<string, { x: number; y: number; w: number; h: number }> }>) {
       const { w, h } = webpSize(join(ART, sheet.atlas));
       for (const [id, r] of Object.entries(sheet.sprites)) {

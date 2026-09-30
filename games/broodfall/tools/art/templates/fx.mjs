@@ -78,12 +78,12 @@ export const SHEETS = [
     id: 'glows', key: null, cols: 1,
     lead: 'Game visual-effect sprites on a pure black background: six separate long horizontal effects stacked one above the other, well apart, each running from the left edge of its row to the right.',
     items: [
-      { id: 'bolt-1', w: 320, text: 'a jagged forked bolt of blue-white electric lightning, thin and bright, with a faint blue glow' },
-      { id: 'bolt-2', w: 320, text: 'another jagged bolt of blue-white lightning with a different path and one small side fork' },
-      { id: 'bolt-3', w: 320, text: 'a third jagged bolt of blue-white lightning, more crooked, with crackling branches' },
-      { id: 'beam', w: 320, text: 'a perfectly straight beam of focused pale blue-white light, a hot white core inside a soft cyan glow, even along its whole length' },
-      { id: 'flame-1', w: 256, text: 'a jet of roaring orange and yellow fire shooting to the right from a narrow point at the left, widening into a fan of flame and dark smoke' },
-      { id: 'flame-2', w: 256, text: 'another jet of roaring orange fire, the same shape, with different licks and curls of flame' },
+      { id: 'bolt-1', w: 640, text: 'a jagged forked bolt of blue-white electric lightning, thin and bright, with a faint blue glow' },
+      { id: 'bolt-2', w: 640, text: 'another jagged bolt of blue-white lightning with a different path and one small side fork' },
+      { id: 'bolt-3', w: 640, text: 'a third jagged bolt of blue-white lightning, more crooked, with crackling branches' },
+      { id: 'beam', w: 512, text: 'a perfectly straight beam of focused pale blue-white light, a hot white core inside a soft cyan glow, even along its whole length' },
+      { id: 'flame-1', w: 512, text: 'a jet of roaring orange and yellow fire shooting to the right from a narrow point at the left, widening into a fan of flame and dark smoke' },
+      { id: 'flame-2', w: 512, text: 'another jet of roaring orange fire, the same shape, with different licks and curls of flame' },
     ],
   },
   {

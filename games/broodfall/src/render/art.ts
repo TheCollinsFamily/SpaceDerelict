@@ -105,16 +105,14 @@ export class Atlas {
 
   /** A named rectangle. */
   sprite(id: string, r: Rect): Texture {
-    const t = this.rect(id, r.x, r.y, r.w, r.h);
     // A padded tile is placed by its own corner: every sprite made of it starts anchored there.
-    if (r.pad && !t.defaultAnchor?.x) t.defaultAnchor = { x: r.pad[0] / r.w, y: r.pad[1] / r.h };
-    return t;
+    return this.rect(id, r.x, r.y, r.w, r.h, r.pad ? { x: r.pad[0] / r.w, y: r.pad[1] / r.h } : undefined);
   }
 
-  private rect(key: string, x: number, y: number, w: number, h: number): Texture {
+  private rect(key: string, x: number, y: number, w: number, h: number, defaultAnchor?: { x: number; y: number }): Texture {
     let t = this.cut.get(key);
     if (!t) {
-      t = new Texture({ source: this.texture.source, frame: new Rectangle(x, y, w, h) });
+      t = new Texture({ source: this.texture.source, frame: new Rectangle(x, y, w, h), defaultAnchor });
       this.cut.set(key, t);
     }
     return t;
