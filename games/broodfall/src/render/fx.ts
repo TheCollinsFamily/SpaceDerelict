@@ -19,6 +19,8 @@ import type { BoardArtSet } from './art';
 import { ADDED, LANDS, LONG, SHOT } from './fxNames';
 
 export interface Pt { x: number; y: number }
+/** A point on the screen where a shot leaves, and the world point of what fired it. */
+export interface Mouth extends Pt { wx: number; wy: number }
 
 /** What the renderer tells the effects about its board each frame. */
 export interface FxView {
@@ -26,6 +28,15 @@ export interface FxView {
   at(wx: number, wy: number, up: number): Pt;
   /** How high a limb standing there shoots from, in board pixels. */
   muzzle(wx: number, wy: number): number;
+  /**
+   * Where a shot leaves the limb it came from, on the screen (its muzzle, marked on its art and placed
+   * as the limb is drawn now: tools/art/muzzles.mjs), and where that limb stands in the world. The limb
+   * is the one standing at `from`, or, given `family` and `dir`, the one of that family the shot flew
+   * out of. `k` picks one of several muzzles. Null: no such limb, or no mark (the old point is used).
+   */
+  mouth?(from: Pt, o?: { family?: string; dir?: Pt; k?: number }): Mouth | null;
+  /** Where a hive gun standing at `from` fires from (src/render/unitMuzzles.ts), or null. */
+  gun?(from: Pt): Mouth | null;
   /** How high the ground is there, in board pixels (a roof is higher than a street). */
   floor(wx: number, wy: number): number;
   /** Board pixels on the screen per world pixel, across the ground. */
@@ -70,7 +81,7 @@ export class FxLayer {
   private airPool = new Pool(this.air);
   private glowPool = new Pool(this.glow);
 
-  private shots = new Map<number, { pic: string; x: number; y: number; up: number; up0: number; ttl0: number; seen: number }>();
+  private shots = new Map<number, { pic: string; x: number; y: number; up: number; up0: number; ttl0: number; seen: number; off: Pt; born: number; from: Pt | null }>();
   private shells = new Map<number, { pic: string; to: { x: number; y: number }; land: [string, number, boolean]; seen: number }>();
   private lobs = new Map<number, { pic: string; to: { x: number; y: number }; land: [string, number, boolean]; seen: number }>();
   private arcsSeen = new WeakSet<object>();
@@ -163,17 +174,30 @@ export class FxLayer {
       let st = this.shots.get(p.id);
       if (!st) {
         const up0 = v.muzzle(p.pos.x, p.pos.y);
-        st = { pic, x: p.pos.x, y: p.pos.y, up: up0, up0, ttl0: Math.max(0.05, p.ttl), seen: 0 };
+        // It leaves from the limb's muzzle (its mouth, spines, nozzle): how far that is from the limb's
+        // ground on the screen is carried along the shot and let go as it comes down to the street.
+        const mo = v.mouth?.(p.pos, { family: p.fromFamily, dir: p.vel, k: p.id }) ?? null;
+        const g0 = mo ? v.at(mo.wx, mo.wy, 0) : null;
+        const off = mo && g0 ? { x: mo.x - g0.x, y: mo.y - g0.y } : { x: 0, y: -up0 };
+        st = { pic, x: p.pos.x, y: p.pos.y, up: up0, up0, ttl0: Math.max(0.05, p.ttl), seen: 0, off, born: this.clock, from: mo ? { x: mo.wx, y: mo.wy } : null };
         this.shots.set(p.id, st);
+        // A puff where it left: the shot is a step out by the time it is drawn, the puff says from where.
+        if (mo) this.burst('sedation-puff', mo, 22 * v.scale, 0.22, 0.4);
       }
       st.seen = this.frame;
       // It leaves the limb up on its roof and comes down to the street as it flies (as the dots did).
       const f = Math.min(1, 1 - p.ttl / st.ttl0);
-      st.up = st.up0 + (14 - st.up0) * Math.min(1, f * 2.2);
+      const k = Math.min(1, f * 2.2);
+      st.up = Math.max(0, -st.off.y * (1 - k) + 14 * k);
       st.x = p.pos.x; st.y = p.pos.y;
-      const here = v.at(p.pos.x, p.pos.y, st.up);
+      const off = st.off;
+      const place = (wx: number, wy: number, u: number): Pt => { const g = v.at(wx, wy, 0); return { x: g.x + off.x * (1 - u), y: g.y + off.y * (1 - u) - 14 * u }; };
+      // The sim moves a shot a whole step before it is first drawn: for that first step it is drawn at the
+      // muzzle itself, so that it is SEEN to leave the limb (the step after, it is where the sim says).
+      const at0 = st.from && this.clock - st.born < 0.05 ? st.from : p.pos;
+      const here = place(at0.x, at0.y, at0 === p.pos ? k : 0);
       const m = Math.hypot(p.vel.x, p.vel.y) || 1;
-      const ahead = v.at(p.pos.x + (p.vel.x / m) * 6, p.pos.y + (p.vel.y / m) * 6, st.up - 0.4);
+      const ahead = place(at0.x + (p.vel.x / m) * 6, at0.y + (p.vel.y / m) * 6, Math.min(1, (at0 === p.pos ? k : 0) + 0.012));
       this.flying(pic, here, ahead);
       if (pic === 'harpoon' || pic === 'quill') this.shadow(v.at(p.pos.x, p.pos.y, v.floor(p.pos.x, p.pos.y)), 10);
     }
@@ -187,7 +211,8 @@ export class FxLayer {
 
   /** A lobbed thing: where it is at `f` of its flight between two world points, and a little further on. */
   private lobbed(v: FxView, from: { x: number; y: number }, to: { x: number; y: number }, f: number, arc: number): { here: Pt; ahead: Pt; ground: Pt } {
-    const a = v.at(from.x, from.y, v.muzzle(from.x, from.y));
+    // From the muzzle of the limb (or the barrel of the hive gun) that threw it.
+    const a: Pt = v.mouth?.(from) ?? v.gun?.(from) ?? v.at(from.x, from.y, v.muzzle(from.x, from.y));
     const b = v.at(to.x, to.y, v.floor(to.x, to.y) + 6);
     const place = (u: number) => ({ x: a.x + (b.x - a.x) * u, y: a.y + (b.y - a.y) * u - Math.sin(u * Math.PI) * arc });
     const gx = from.x + (to.x - from.x) * f;
@@ -206,6 +231,8 @@ export class FxLayer {
           : s.stun ? ['sedation-puff', 0.6, true] : ['blast', Math.max(0.85, Math.min(1.3, s.aoe / 30)), true];
         st = { pic, to: { ...s.to }, land, seen: 0 };
         this.shells.set(s.id, st);
+        const mo = v.mouth?.(s.from) ?? v.gun?.(s.from);
+        if (mo) this.burst(s.side === 'hive' && !s.stun ? 'blast' : 'sedation-puff', mo, (s.side === 'hive' && !s.stun ? 34 : 24) * v.scale, 0.25, 0.4);
       }
       st.seen = this.frame;
       const f = 1 - s.ttl / s.flight;
@@ -219,7 +246,12 @@ export class FxLayer {
     for (const c of sim.clotFlights) flights.push({ id: c.id, from: c.from, to: c.to, f: 1 - c.ttl / 1.2, pic: 'clot', arc: 40 * v.scale, land: ['flesh-splat', 0.8, true] });
     for (const fl of flights) {
       let st = this.lobs.get(fl.id);
-      if (!st) { st = { pic: fl.pic, to: { ...fl.to }, land: fl.land, seen: 0 }; this.lobs.set(fl.id, st); }
+      if (!st) {
+        st = { pic: fl.pic, to: { ...fl.to }, land: fl.land, seen: 0 };
+        this.lobs.set(fl.id, st);
+        const mo = v.mouth?.(fl.from);
+        if (mo) this.burst('sedation-puff', mo, 24 * v.scale, 0.25, 0.4);
+      }
       st.seen = this.frame;
       const { here, ahead, ground } = this.lobbed(v, fl.from, fl.to, Math.max(0, Math.min(1, fl.f)), fl.arc);
       this.shadow(ground, 16);
@@ -248,9 +280,10 @@ export class FxLayer {
       const unitUp = (w: { x: number; y: number }) => v.floor(w.x, w.y) + 10 * v.scale;
       const seed = this.frame;
       if (limb) {
-        const from = at(a.from, v.muzzle(a.from.x, a.from.y));
+        // From the frond's tips, the prism's crystal, the eye, the nozzle (a relay lands on the other prism's crystal).
+        const from: Pt = v.mouth?.(a.from, { k: seed }) ?? at(a.from, v.muzzle(a.from.x, a.from.y));
         const onLimb = sim.towers.find((t) => t !== limb && near(t.pos, a.to));
-        const to = onLimb ? at(a.to, v.muzzle(a.to.x, a.to.y)) : at(a.to, unitUp(a.to));
+        const to: Pt = onLimb ? (v.mouth?.(a.to) ?? at(a.to, v.muzzle(a.to.x, a.to.y))) : at(a.to, unitUp(a.to));
         if (limb.family === 'ember') {
           this.streaks.push({ kind: 'flame', from, to, t: 0, dur: 0.42, seed });
         } else if (limb.family === 'prism') {
@@ -267,6 +300,8 @@ export class FxLayer {
       const mortar = sim.enemies.find((e) => e.kind === 'mortar' && near(e.pos, a.from));
       if (mortar) {
         this.bombs.push({ from: { ...a.from }, to: { ...a.to }, t: 0, dur: 0.55 });
+        const g = v.gun?.(a.from);
+        if (g) this.burst('blast', g, 22 * v.scale, 0.25, 0.4);
         continue;
       }
       // A strike jumping on from one body to the next.
@@ -330,7 +365,7 @@ export class FxLayer {
       }
       keep.push(b);
       const f = b.t / b.dur;
-      const a = v.at(b.from.x, b.from.y, v.floor(b.from.x, b.from.y) + 14 * v.scale);
+      const a: Pt = v.gun?.(b.from) ?? v.at(b.from.x, b.from.y, v.floor(b.from.x, b.from.y) + 14 * v.scale);
       const c = v.at(b.to.x, b.to.y, v.muzzle(b.to.x, b.to.y) * 0.7);
       const arc = 60 * v.scale;
       const place = (u: number) => ({ x: a.x + (c.x - a.x) * u, y: a.y + (c.y - a.y) * u - Math.sin(u * Math.PI) * arc });

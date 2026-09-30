@@ -141,6 +141,17 @@ function afterUnlock(): void {
 
 export const audioUnlocked = (): boolean => unlocked && ctx?.state === 'running';
 
+/** Resume the sound now (call it inside a click): resolves once it runs, or after `ms` if the browser still says no. */
+export function resumeAudio(ms = 800): Promise<boolean> {
+  const c = ensure();
+  if (!c) return Promise.resolve(false);
+  if (c.state === 'running') return Promise.resolve(true);
+  return Promise.race([
+    c.resume().then(() => c.state === 'running', () => false),
+    new Promise<boolean>((r) => window.setTimeout(() => r(c.state === 'running'), ms)),
+  ]);
+}
+
 // ----------------------------------------------------------------------------- volumes
 
 let lastVol = '';
@@ -153,7 +164,9 @@ function applyVolumes(force = false): void {
   if (key === lastVol && !force) return;
   lastVol = key;
   const t = ctx.currentTime;
-  const set = (n: GainNode, v: number) => { n.gain.cancelScheduledValues(t); n.gain.setTargetAtTime(v, t, 0.04); };
+  // Set at once, not glided: a bus with nothing flowing through it is not processed, and a glide
+  // begun then would start from the old level the moment a sound arrives (a loud first 100 ms).
+  const set = (n: GainNode, v: number) => { n.gain.cancelScheduledValues(t); n.gain.setValueAtTime(v, t); };
   set(master, away ? 0 : s.volume.master);
   set(musicBus, s.volume.music);
   set(sfxBus, s.volume.sfx);

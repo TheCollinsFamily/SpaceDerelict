@@ -1,0 +1,10 @@
+A: the film, mission 1, the end, the ship, the boss
+  PASS  the page may not play sound yet: the film waits behind ▸ BEGIN (context suspended)
+  PASS  the mix is recorded
+  PASS  the click unlocked the sound
+  PASS  the film's score is heard (meter peak -12.8 dBFS)
+  PASS  the film's score played (film:film)
+  PASS  the narrator read the titles: voice:nar-film-1, voice:nar-film-2, voice:nar-film-3, voice:nar-film-4, voice:nar-film-5, voice:nar-film-6
+  PASS  mission 1: the build music (siege-build)
+  PASS  limbs grown (3)
+  PASS  the wave: the assault music crossfaded in

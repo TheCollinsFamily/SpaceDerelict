@@ -54,6 +54,8 @@ export interface LimbSide {
   anims: { idle: Clip; fire?: Clip; die?: Clip };
   /** Where a donor's part is grafted on it, as shares of its frame, in the order they are used (tools/art/templates/limb.mjs). */
   grafts?: Array<[number, number]>;
+  /** Where its shots leave it, as shares of its frame, marked by eye (tools/art/muzzles.mjs); several for a limb that fires from several places. */
+  muzzle?: Array<[number, number]>;
 }
 export interface LimbArt extends LimbSide {
   atlas: string; frame: number; cols: number;
@@ -87,7 +89,11 @@ export interface BoardArt {
  * One clip of the core's stages (tools/art/templates/core-evo.mjs): every clip is cut in the same
  * mapping, so `body` is stage 1's collar as a share of THIS frame and `anchor` where stage 1 stands in it.
  */
-export interface CoreClip { atlas: string; frame: number; cols: number; count: number; fps: number; anchor: [number, number]; body: number }
+export interface CoreClip {
+  atlas: string; frame: number; cols: number; count: number; fps: number; anchor: [number, number]; body: number;
+  /** An idle whose ends do not meet: the game plays it forward and back (src/render/idleClock.ts). */
+  pingpong?: boolean;
+}
 /** The core's four stages: each stage's idle, and the clip of it growing out of the stage before. */
 export interface CoreEvoArt {
   cells: number;

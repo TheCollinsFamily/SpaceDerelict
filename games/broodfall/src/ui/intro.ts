@@ -17,7 +17,7 @@
  * starts at once (that was a click).
  */
 import { artUrl } from '../render/art';
-import { audioUnlocked, playFilm, say, stopFilm } from '../audio/engine';
+import { audioUnlocked, playFilm, resumeAudio, say, stopFilm } from '../audio/engine';
 import { GAME_NAME } from './screens';
 
 export interface IntroShot { id: string; video: string; poster?: string; seconds: number }
@@ -120,8 +120,8 @@ export function playIntro(art: IntroArt | null): IntroHandle {
     if (!waiting || over) return;
     waiting = false;
     el.classList.remove('begin');
-    // The click that got here resumed the sound (src/audio/engine.ts listens for it first).
-    window.setTimeout(() => { playFilm(); next(); }, 60);
+    // This click resumes the sound; the film starts with its score as soon as it runs.
+    void resumeAudio().then(() => { if (!over) { playFilm(); next(); } });
   };
   const onKey = (ev: KeyboardEvent) => {
     if (waiting && ev.key !== 'Escape') { ev.preventDefault(); ev.stopPropagation(); begin(); return; }

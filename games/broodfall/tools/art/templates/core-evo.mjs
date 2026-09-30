@@ -29,7 +29,7 @@ import path from 'node:path';
 import { makeClip, makeStill } from '../rfab.mjs';
 import { blank, borderColour, crop, over, paste, readFrames, readImage, resize, toWebp, writeJpg, writePng } from '../lib/img.mjs';
 import { dropSpecks, loopWindow, pick, unionBox } from '../lib/key.mjs';
-import { frameList, keyFrame as studioKey, studioKeyer } from '../lib/leaflit.mjs';
+import { keyFrame as studioKey, studioKeyer } from '../lib/leaflit.mjs';
 import { GROUNDS } from '../lib/atlas.mjs';
 import { ART, REVIEW, ROOT, SRC, putEntry } from '../lib/manifest.mjs';
 import { HEART_CELLS, HEART_FOOT } from './core.mjs';
@@ -257,17 +257,18 @@ export function bakeCoreEvo() {
     const all = s.id === 1 ? idle1 : keyed(idleOf(s.id));
     const loop = loopWindow(all, { min: 12, max: 46 });
     // A loop whose two ends do not meet cleanly (seam over 0.25: stage 4's was 0.40) is played
-    // forward and back (the studio's Ping-Pong, lib/leaflit.mjs frameList): it has no seam at all.
+    // forward and back: it has no seam at all. Since Sep 30 2026 the GAME plays it so (the idle's `pingpong`,
+    // src/render/idleClock.ts, eased at its ends), so its frames are stored once, not there and back.
     const pong = loop.seam > 0.25;
     // Every frame of the loop at 12 fps that one picture can hold (Sep 30 2026: 16 of up to 46 stepped at
     // 5 fps; anim-README.md). A picture is kept to what a GPU takes as one texture (8,192 a side) and
     // about 45 million pixels, the size of stage 4's; the game cross-fades between the frames kept.
     const F = Math.round(sideOf(all.slice(loop.start, loop.end), foot) * SHARP);
     const fit = Math.max(16, Math.min(Math.floor(8192 / F) ** 2, Math.floor(45e6 / (F * F))));
-    const run = pick(all.slice(loop.start, loop.end), pong ? 12 : Math.min(loop.end - loop.start, fit));
-    const frames = pong ? frameList(0, run.length - 1, true).map((i) => run[i]) : run;
-    const idle = cut(`stage-${s.id}`, frames, foot, collar1, 0);
-    idle.entry.fps = Number(((pong ? run.length : idle.entry.count) / ((loop.end - loop.start) / 12)).toFixed(2));
+    const run = pick(all.slice(loop.start, loop.end), Math.min(loop.end - loop.start, fit));
+    const idle = cut(`stage-${s.id}`, run, foot, collar1, 0);
+    idle.entry.fps = Number((idle.entry.count / ((loop.end - loop.start) / 12)).toFixed(2));
+    if (pong) idle.entry.pingpong = true;
     const stage = { id: s.id, name: s.name, grown: s.grown, collar: Number((s.collar / STAGES[0].collar).toFixed(3)), idle: { ...idle.entry, seam: Number(loop.seam.toFixed(2)) } };
     if (s.id > 1) {
       const frames = keyed(growOf(s.id));

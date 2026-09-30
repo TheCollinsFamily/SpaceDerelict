@@ -30,6 +30,7 @@ import { CreepLife, GateArt, PlinthRise, PodArt, Skyline } from './boardArt';
 import { coreStageOf } from './coreStage';
 import { breath, idleFrames, idleStep, phaseOf } from './idleClock';
 import { CALM } from '../meta/settings';
+import { UNIT_MUZZLES } from './unitMuzzles';
 
 /** The old marks were drawn for a 26 px cell; on this board they are drawn this much bigger. */
 const K = 1.9;
@@ -102,6 +103,8 @@ interface UnitView {
   unit: LoadedUnit; fx: UnitFx;
   /** Its size on the board without a clip's own bigger window: what its fall is drawn at. */
   scale0: number;
+  /** Which of its clips is drawn now, and from which view (for where its gun is: src/render/unitMuzzles.ts). */
+  gun?: { clip: 'braced' | 'deployed' | 'attack' | 'walk'; view: 'S' | 'SW' | 'W' | 'NW' | 'N' };
 }
 /** A unit that died: its fall plays once where it stood, it lies a moment, then fades. */
 interface Dying { sprite: Sprite; shade: Sprite; art: UnitArt; clip: Clip | null; t: number; unit: LoadedUnit; scale: number }
@@ -484,6 +487,8 @@ export class IsoRenderer extends Renderer {
     return {
       at: (wx, wy, up) => { const p = project(g, wx, wy); return { x: p.x, y: p.y - up }; },
       muzzle: (wx, wy) => this.muzzle(sim, wx, wy),
+      mouth: (from, o) => this.mouthOf(sim, from, o),
+      gun: (from) => this.gunOf(sim, from),
       floor: (wx, wy) => this.heightAt(sim, wx, wy) * g.level,
       scale: (g.a * Math.SQRT2) / g.cell,
     };
@@ -1486,6 +1491,9 @@ export class IsoRenderer extends Renderer {
         state, deployed: e.deployed ? states?.deployed : undefined, walk, skin, strike, phase: v.phase, attackT: v.attackT, period,
       });
       const tex = this.unitFrame(found, pick.clip, pick.at);
+      const braced = pick.clip === art.anims.braced?.[view] || pick.clip === art.anims.braced?.SW;
+      v.gun = braced ? { clip: 'braced', view: 'SW' } : pick.clip === states?.deployed ? { clip: 'deployed', view: 'SW' }
+        : pick.clip === strike ? { clip: 'attack', view } : { clip: 'walk', view };
       const scale = ((2 * r * UNIT_PX) / (art.body * art.frame)) * (BOSS_SCALE[e.kind] ?? 1) * (pick.clip.scale ?? 1);
       const anchor = pick.clip.anchor ?? art.anchor;
       v.scale0 = scale / (pick.clip.scale ?? 1);
@@ -1737,6 +1745,66 @@ export class IsoRenderer extends Renderer {
   /** How high above the ground (in board pixels) a limb on this cell shoots from. */
   private muzzle(sim: Sim, wx: number, wy: number): number {
     return this.heightAt(sim, wx, wy) * this.geo.level + this.geo.a * 0.55;
+  }
+
+  /**
+   * WHERE A LIMB'S SHOT LEAVES IT, on the screen (Sep 30 2026, Collins: "the shots aligning with coming
+   * from where the art would indicate"): its muzzle, marked by eye on its art (tools/art/muzzles.mjs),
+   * placed as its picture is drawn right now: the view the camera sees (from behind, mirrored), its size
+   * (LIMB_SCALE, a BIG limb's two cells), a long limb set back, a plinth rising. `from` is where the sim
+   * says the shot began: the limb standing there; or, with `family` and `dir`, the limb of that family
+   * the shot flew out of (a shot is first seen a step along its way). `k` picks one of several muzzles.
+   * Null when no limb is found or its art has no muzzle: the caller keeps its old point.
+   */
+  private mouthOf(sim: Sim, from: Pt, o: { family?: string; dir?: Pt; k?: number } = {}): { x: number; y: number; wx: number; wy: number } | null {
+    let best: Tower | null = null;
+    let score = Infinity;
+    for (const t of sim.towers) {
+      if (o.family && t.family !== o.family) continue;
+      const dx = from.x - t.pos.x, dy = from.y - t.pos.y;
+      let d = Math.hypot(dx, dy);
+      if (o.dir) {
+        // Behind the shot, along the line it flies: how far off that line the limb stands.
+        const m = Math.hypot(o.dir.x, o.dir.y) || 1;
+        const along = (dx * o.dir.x + dy * o.dir.y) / m;
+        if (along < -2 || along > 160) continue;
+        d = Math.abs(dx * o.dir.y - dy * o.dir.x) / m + along * 0.02;
+        if (d > 10) continue;
+      } else if (d > 3) continue;
+      if (d < score) { score = d; best = t; }
+    }
+    if (!best) return null;
+    const v = this.limbs.get(best.id);
+    if (!v || !v.sprite.visible) return null;
+    const side = v.back && v.art.back ? v.art.back : v.art;
+    const pts = side.muzzle;
+    if (!pts?.length) return null;
+    const m = pts[Math.abs(o.k ?? 0) % pts.length];
+    const s = v.sprite;
+    const F = v.art.frame;
+    return {
+      x: s.position.x + (m[0] - s.anchor.x) * F * s.scale.x,
+      y: s.position.y + (m[1] - s.anchor.y) * F * s.scale.y,
+      wx: best.pos.x, wy: best.pos.y,
+    };
+  }
+
+  /** Where a hive gun's shell leaves it (the cannon's barrel, the mortar's tube), on the screen: src/render/unitMuzzles.ts. */
+  private gunOf(sim: Sim, from: Pt): { x: number; y: number; wx: number; wy: number } | null {
+    const e = sim.enemies.find((u) => Math.hypot(u.pos.x - from.x, u.pos.y - from.y) < 3);
+    const v = e ? this.units.get(e.id) : undefined;
+    if (!e || !v?.gun || !v.sprite.visible) return null;
+    const marks = UNIT_MUZZLES[e.kind];
+    if (!marks) return null;
+    const m = marks[v.gun.clip]?.[v.gun.view] ?? marks.attack?.[v.gun.view] ?? marks.braced?.SW ?? marks.deployed?.SW;
+    if (!m) return null;
+    const s = v.sprite;
+    const F = v.art.frame;
+    return {
+      x: s.position.x + (m[0] - s.anchor.x) * F * s.scale.x,
+      y: s.position.y + (m[1] - s.anchor.y) * F * s.scale.y,
+      wx: e.pos.x, wy: e.pos.y,
+    };
   }
 
   protected drawShots(g: Graphics, sim: Sim): void {

@@ -135,12 +135,20 @@ async function finish(p, results) {
 /** Grow up to `n` limbs from the hand on ground that takes them (the API, as tools/shot-campaign.mjs plays). */
 const grow = (page, n) => page.evaluate((n) => {
   const b = window.broodfall;
+  // Meat enough, and the limbs that shoot first (the point here is to hear them).
+  b.sim.meat.war += 400;
+  const SHOOTS = ['spitter', 'impaler', 'quill', 'frond', 'prism', 'ember', 'lobber', 'burster', 'maw', 'net', 'lasher', 'mister', 'bombard', 'skipper', 'ocular', 'blighter', 'tangler', 'spine', 'sling'];
+  // Near the core, where the hive comes to (a limb out of reach never fires).
+  const d = (c) => { const p = b.sim.cellCenter(c); return Math.hypot(p.x - b.sim.core.x, p.y - b.sim.core.y); };
+  const cells = b.buildableCells(3000).sort((x, y) => d(x) - d(y));
   let grown = 0;
   for (let tries = 0; tries < 12 && grown < n; tries++) {
     let any = false;
-    for (let i = 0; i < b.sim.hand.length && grown < n; i++) {
+    const order = [...b.sim.hand.keys()].sort((x, y) => (SHOOTS.includes(b.sim.hand[y].family) ? 1 : 0) - (SHOOTS.includes(b.sim.hand[x].family) ? 1 : 0));
+    for (const i of order) {
+      if (grown >= n) break;
       const fam = b.sim.hand[i].family;
-      for (const cell of b.buildableCells(600)) {
+      for (const cell of cells) {
         const facing = b.sim.facingTowardGate(b.sim.cellCenter(cell));
         if (!b.sim.groundFor(cell, fam, facing)) continue;
         const r = b.play({ kind: 'build', cardIndex: i, cell, facing });
@@ -265,7 +273,17 @@ try {
     await setVol('music', 20); await sleep(700);
     check(Math.abs((await audio(page)).gains.music - 0.2) < 0.03, `the music slider moves the music bus (${(await audio(page)).gains.music.toFixed(2)})`);
     await setVol('sfx', 40); await sleep(700);
-    check(Math.abs((await audio(page)).gains.sfx - 0.4) < 0.03, `the effects slider moves the effects bus (${(await audio(page)).gains.sfx.toFixed(2)})`);
+    // (A bus with nothing flowing through it is not processed, so its gain is read off the meter:
+    // the music off, one effect at the slider's level, then at 0.)
+    await setVol('music', 0); await sleep(1500);
+    const fxAt = async (v) => { await setVol('sfx', v); await sleep(400); await page.evaluate(() => window.__bfAudio.sfx('core-evolve')); return meterMax(page, 1500); };
+    const fxOn = await fxAt(80);
+    await sleep(8500);
+    await setVol('sfx', 0); await sleep(400);
+    const floor = await meterMax(page, 1000);
+    const fxOff = await fxAt(0);
+    check(fxOn > -45 && fxOff < floor + 3 && fxOn - fxOff > 30, `the effects slider moves the effects bus (an effect at 80%: ${fxOn.toFixed(1)} dBFS; at 0%: ${fxOff.toFixed(1)} dBFS, the same as nothing: ${floor.toFixed(1)})`);
+    await setVol('music', 20); await setVol('sfx', 40); await sleep(700);
     await setVol('voice', 60); await sleep(700);
     check(Math.abs((await audio(page)).gains.voice - 0.6) < 0.03, `the voices slider moves the voice bus (${(await audio(page)).gains.voice.toFixed(2)})`);
     await setVol('master', 0); await sleep(900);

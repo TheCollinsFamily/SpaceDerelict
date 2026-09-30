@@ -131,7 +131,7 @@ function sheetOf(l, view) {
 const args = process.argv.slice(2);
 const view = args.includes('--back') ? 'back' : 'front';
 const ids = args.filter((a) => !a.startsWith('--'));
-const list = LIMBS.filter((l) => FIRING.includes(l.family) && (!ids.length || ids.includes(l.family)) && (view === 'front' || l.back));
+const list = args.includes('--units') ? [] : LIMBS.filter((l) => FIRING.includes(l.family) && (!ids.length || ids.includes(l.family)) && (view === 'front' || l.back));
 const out = path.join(REVIEW, 'muzzles');
 fs.mkdirSync(out, { recursive: true });
 for (const l of list) {
@@ -140,4 +140,53 @@ for (const l of list) {
   const file = path.join(out, `${l.family}${view === 'back' ? '-back' : ''}.jpg`);
   writeJpg(file, made.sheet, 3);
   console.log(`${l.family.padEnd(9)} ${view.padEnd(5)} ${made.marks.length ? JSON.stringify(made.marks) : 'NOT MARKED'}  ${file}`);
+}
+
+/**
+ * --units: the hive's guns (cannon, dart battery, mortar), from their baked atlas, one tile per clip
+ * they fire in, with a grid of tenths of the FRAME and the marks of src/render/unitMuzzles.ts.
+ * Written to notes/art-review/muzzles/unit-<kind>.jpg.
+ */
+if (args.includes('--units')) {
+  const { ART } = await import('./lib/manifest.mjs');
+  const { readImage } = await import('./lib/img.mjs');
+  const man = JSON.parse(fs.readFileSync(path.join(ART, 'manifest.json'), 'utf8'));
+  const src = fs.readFileSync(path.join(path.dirname(new URL(import.meta.url).pathname.replace(/^\/(\w:)/, '$1')), '..', '..', 'src', 'render', 'unitMuzzles.ts'), 'utf8');
+  const json = src.split('// --- marks ---')[1].split('// --- end of marks ---')[0];
+  const marks = JSON.parse(json.slice(json.indexOf('{'), json.lastIndexOf('}') + 1));
+  for (const kind of ['cannon', 'dartgun', 'mortar']) {
+    const u = man.units[kind];
+    const pages = [u.atlas, ...(u.pages ?? [])].map((a) => readImage(path.join(ART, a)));
+    const clips = [];
+    if (u.anims.braced?.SW) clips.push(['braced', 'SW', u.anims.braced.SW]);
+    if (u.anims.states?.deployed) clips.push(['deployed', 'SW', u.anims.states.deployed]);
+    for (const v of ['S', 'SW', 'W', 'NW', 'N']) if (u.anims.attack?.[v]) clips.push(['attack', v, u.anims.attack[v]]);
+    const sheet = blank(TILE * clips.length, TILE, [24, 24, 24, 255]);
+    clips.forEach(([anim, v, c], n) => {
+      const img = pages[c.page ?? 0];
+      const i = c.start;
+      const F = u.frame;
+      const frame = crop(img, (i % u.cols) * F, Math.floor(i / u.cols) * F, F, F);
+      const tile = blank(TILE, TILE, STREET);
+      over(tile, resize(frame, TILE, TILE), 0, 0);
+      for (let k = 0; k <= 10; k++) {
+        const at = (k / 10) * (TILE - 1);
+        const heavy = k === 5 ? 0.85 : k === 0 || k === 10 ? 0.7 : 0.32;
+        line(tile, at, 0, at, TILE - 1, [20, 40, 160], heavy);
+        line(tile, 0, at, TILE - 1, at, [20, 40, 160], heavy);
+        write(tile, k, at + 2, 8, [0, 0, 0]);
+        write(tile, k, 2, at + 2, [0, 0, 0]);
+      }
+      const m = marks[kind]?.[anim]?.[v];
+      if (m) cross(tile, m[0] * TILE, m[1] * TILE, [0, 255, 255], 10);
+      const a = c.anchor ?? u.anchor;
+      cross(tile, a[0] * TILE, a[1] * TILE, [255, 230, 0], 7);
+      for (let y = 0; y < 5; y++) line(tile, 0, y, TILE - 1, y, anim === 'attack' ? [220, 40, 40] : [40, 200, 60], 1);
+      paste(sheet, tile, n * TILE, 0);
+      console.log(`${kind.padEnd(8)} tile ${n + 1}: ${anim} ${v}  ${m ? JSON.stringify(m) : 'NOT MARKED'}`);
+    });
+    const file = path.join(out, `unit-${kind}.jpg`);
+    writeJpg(file, sheet, 3);
+    console.log(`written: ${file}`);
+  }
 }
