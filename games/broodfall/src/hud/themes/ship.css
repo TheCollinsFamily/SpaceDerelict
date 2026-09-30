@@ -30,7 +30,9 @@
   --sc-scan: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.022) 0 1px, transparent 1px 3px);
   --sc-sheen: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0) 38%);
   /* Panels in a run, over the board: the ship's console glass (thin line, dark glass). */
-  --acc-light: 0 0 6px currentColor;
+  /* The classic sheet's own tokens, where its code paints with them (the core's health bar). */
+  --ok: #8ff0a0;
+  --accent: #ff6a55;
 }
 
 [data-hud="ship"] body { font-family: var(--sc-font); color: var(--sc-ink); }
@@ -83,7 +85,7 @@
 [data-hud="ship"] .dial { min-width: 70px; }
 
 [data-hud="ship"] #biomass-wrap { min-width: 180px; }
-[data-hud="ship"] #biomass-label { font: 400 9px/1 var(--sc-font); letter-spacing: 2.5px; color: var(--sc-dim); margin-bottom: 5px; }
+[data-hud="ship"] #biomass-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font: 400 9px/1 var(--sc-font); letter-spacing: 2.5px; color: var(--sc-dim); margin-bottom: 5px; }
 [data-hud="ship"] #biomass-label::before { content: '⚙  '; color: var(--sc-ink); }
 [data-hud="ship"] #biomass-bar { height: 16px; border-radius: 1px; background: var(--sc-scan), #030405; border: 1px solid var(--sc-line); }
 [data-hud="ship"] #biomass-fill { background: linear-gradient(90deg, rgba(233, 238, 240, 0.55), #e9eef0); box-shadow: 0 0 10px rgba(233, 238, 240, 0.5); }
@@ -135,7 +137,7 @@
 [data-hud="ship"] #hint {
   font: 400 11px/1.3 var(--sc-font); letter-spacing: 2px; color: var(--sc-ink); text-transform: uppercase;
   background: var(--sc-glass); border: 1px solid var(--sc-line); border-left: 3px solid var(--sc-ink); border-radius: 0;
-  padding: 6px 14px; max-width: calc(100% - 560px); text-align: center; backdrop-filter: blur(2px);
+  padding: 6px 14px; max-width: calc(100% - 480px); text-align: center; backdrop-filter: blur(2px);
 }
 
 /* The feed: log lines on the glass, newest on top, each with its caste's lit edge. */
@@ -348,4 +350,39 @@
 [data-hud="ship"] #grain {
   mix-blend-mode: normal; opacity: 1;
   background-image: radial-gradient(ellipse at center, transparent 62%, rgba(0, 0, 0, 0.38) 100%);
+}
+
+/* ---------- smaller windows: the bars keep their numbers, lose their words first ---------- */
+@media (max-width: 1500px) {
+  [data-hud="ship"] #brand-sub { display: none; }
+  [data-hud="ship"] #brand-title { font-size: 13px; letter-spacing: 4px; }
+  [data-hud="ship"] .organ-btn { min-width: 92px; padding: 6px 8px; }
+  [data-hud="ship"] #creep-nodes, [data-hud="ship"] #plinths { min-width: 120px; }
+}
+@media (max-width: 1280px) {
+  [data-hud="ship"] #topbar { gap: 7px; padding: 6px 10px; }
+  [data-hud="ship"] #brand { display: none; }
+  [data-hud="ship"] .meat { min-width: 66px; padding: 4px 8px 3px; }
+  [data-hud="ship"] .meat-val { font-size: 21px; }
+  [data-hud="ship"] .dial { min-width: 58px; padding: 4px 7px 3px; }
+  [data-hud="ship"] .dial b { font-size: 17px; }
+  [data-hud="ship"] #biomass-wrap { min-width: 110px; }
+  [data-hud="ship"] #phase-box { min-width: 128px; }
+  [data-hud="ship"] #phase-name { font-size: 14px; letter-spacing: 3px; }
+  [data-hud="ship"] #speed-box button { width: 30px; }
+  [data-hud="ship"] #botbar { gap: 7px; padding: 7px 10px; }
+  [data-hud="ship"] .organ-btn .cost { display: none; }
+  [data-hud="ship"] #creep-nodes .cost, [data-hud="ship"] #plinths .cost { display: block; }
+  [data-hud="ship"] .organ-btn { min-width: 0; }
+  [data-hud="ship"] .card { width: 108px; }
+  [data-hud="ship"] #hint { max-width: calc(100% - 40px); bottom: 44px; }
+  [data-hud="ship"] #feed { width: 210px; }
+}
+@media (max-width: 1050px) {
+  [data-hud="ship"] .dial span, [data-hud="ship"] .meat-label { letter-spacing: 1.5px; }
+  [data-hud="ship"] .dial { min-width: 48px; padding: 3px 5px; }
+  [data-hud="ship"] .dial span { font-size: 7.5px; }
+  [data-hud="ship"] .card .card-desc { font-size: 8.5px; }
+  [data-hud="ship"] .card { width: 96px; }
+  [data-hud="ship"] #view-help { display: none; }
 }

@@ -13,7 +13,7 @@
  *   THE GAME       replay the opening film, forget everything (twice, to be sure)
  */
 import './settings.css';
-import { CASTE_TINTS, RESERVED_KEYS, type Channel, type Settings } from '../meta/settings';
+import { CALM, CASTE_TINTS, RESERVED_KEYS, type Channel, type Settings } from '../meta/settings';
 import { forgetEverything, loadSettings, loadYoke, saveSettings, saveYoke } from '../meta/storage';
 import { CASTE_COLORS } from '../render/render';
 import { HUD_THEMES, applyHud, currentHud } from '../hud/themes';
@@ -55,6 +55,7 @@ export function applySettings(s: Settings = loadSettings()): void {
   html.style.setProperty('--science', hex(t.science));
   html.style.setProperty('--royal', hex(t.royal));
   html.dataset.casteTints = s.casteTints;
+  CALM.flashes = s.reduceFlashes;
   // The board reads its caste colours from this object every frame.
   Object.assign(CASTE_COLORS as unknown as Record<string, number>, t);
 }

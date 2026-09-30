@@ -27,6 +27,7 @@ import { CASTE_COLORS, ENEMY_SIZE, FAMILY_COLORS, Renderer } from './render';
 import { FxLayer, type FxView } from './fx';
 import { LimbFates } from './limbFx';
 import { CreepLife, GateArt, PlinthRise, PodArt, Skyline } from './boardArt';
+import { CALM } from '../meta/settings';
 
 /** The old marks were drawn for a 26 px cell; on this board they are drawn this much bigger. */
 const K = 1.9;

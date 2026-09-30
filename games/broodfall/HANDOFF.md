@@ -19,6 +19,10 @@ process only verified its own assumptions. The repo's CLAUDE.md carries the stan
   - `notes/CAMPAIGN-BUILD-PLAN.md`: the campaign inventory and its status.
   - `notes/GRAPHICS-PLAN.md`: the graphics pipeline (Sep 29): what the RFab API can
     generate, video-first, the probe results. Its OPEN items are Collins's.
+  - `content/lore/insects.md`: the insect civilisation (Sep 30 2026): castes, the chaebol
+    clans, the Faith and rising atheism, sex among a barren majority, every enemy kind as an
+    institution, naming conventions for new content, and Collins's OPEN calls. Read it before
+    writing anything the insects say or anything about them.
   - `assets/unit-spec.md`: the drawing spec of all 26 enemy kinds (generated; edit
     `tools/art/units.mjs`).
   - `assets/style-bible.md`: the visual language (v5, Sep 29). Collins's 22 rules in his

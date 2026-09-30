@@ -272,6 +272,9 @@ const AERIAL =
 const TOWNSFOLK =
   'The people in it are tiny figures far below: every one of them is an insect person with four arms, antennae and an ' +
   'insect head, like the people of a 1950s science-fiction film. There are no human beings anywhere.';
+/** For a place where nobody is left: the sentence about the townsfolk asks for a crowd (the first Assembly Hall and Pilgrim Road were full of people). */
+const NOBODY =
+  'The place is DESERTED: there is not one person anywhere in the picture, not in the streets, not on the steps, not at the windows. No human beings.';
 const FINALE =
   'This is the last place of the war, and it looks it: an ominous, grand, silent scene under a lurid red and violet ' +
   'sky at dusk, the air hazy with smoke.';
@@ -314,11 +317,12 @@ const TERRITORIES = {
     none: 'The neon signs show abstract glyphs only: no letters of any alphabet, no numerals.',
   },
   ossuary: {
-    what: 'Tall cliffs of bone-white chalk above a dark grey sea, carved from the waves to the top into thousands of round burial niches holding urns, with candles burning in them by the hundred, and dark slender fungus trees on the ledges. High in the middle of the cliff stands a great royal tomb with tall doors of black iron and gold: its doors have been burst open from inside, and a dark red glow and a trail of dark maroon veined living skin come out of it and down the cliff.',
-    none: 'The one emblem on the tombs is a plain gold hexagon: there are no crosses, no stars and no carved lettering anywhere on the cliff.',
+    what: 'Tall cliffs of bone-white chalk above a dark grey sea, carved from the waves to the top into thousands of round burial niches holding urns, with candles burning in them by the hundred, and dark slender fungus trees on the ledges. High in the middle of the cliff, carved INTO the chalk, stands a great royal tomb: a round drum of white chalk under a low dome of pale wax that ends in a plain gold ball, ringed with round niches, with tall round-topped doors of black iron and gold (it is not a church: no gable, no pointed arches, no steeple, no spire). Its doors have been burst open from inside, and a dark red glow and a trail of dark maroon veined living skin come out of it and down the cliff.',
+    none: 'Nothing stands on top of the royal tomb but its plain gold ball. The one emblem on the tombs is a plain gold hexagon: there are no crosses, no stars and no carved lettering anywhere on the cliff.',
   },
   pilgrim: {
     what: 'A long pilgrim road winding over green mountains and valleys all the way to the horizon, lined on both sides with shrines and road-stalls under upswept eaves of layered paper, lacquer-red columns, jade-green tiles and strings of paper lanterns. The road is EMPTY: the stalls are shuttered, the lanterns are dark, a few carts stand abandoned, a hat lies in the road. Nobody walks it.',
+    empty: true,
     none: `${DOMES} There is no gate shaped like a torii, no yin-yang, and no real written characters: the banners show abstract glyphs only.`,
   },
   'queens-hollow': {
@@ -331,7 +335,8 @@ const TERRITORIES = {
     none: 'The jars have blank tags with nothing on them. The van is plain with no lettering. There is no sign at the campus.',
   },
   assembly: {
-    what: 'A grand congress hall standing alone on a vast empty plaza: a huge building of pale paper and wax with arcades of round arches and a great central dome of layered paper and glass. Through the glass of the dome, seen from above, row upon row of chairs is set out in perfect circles, and every chair is empty. Nobody is in the plaza. Far at the edges of the city, dark maroon veined living skin and dark red tendrils curl round the outlying blocks. The hall is very quiet.',
+    what: 'A grand congress hall standing alone on a vast empty plaza: a huge building of pale paper and wax with arcades of round arches and a great central dome of layered paper and glass. Through the glass of the dome, seen from above, row upon row of chairs is set out in perfect circles, and every chair is empty. Nobody is in the plaza. Far at the edges of the city, dark maroon veined living skin and dark red tendrils curl round the outlying blocks. The hall is very quiet. The plaza is plain pale paving with no pattern inlaid in it.',
+    empty: true,
     none: `${DOMES} The one emblem on the hall is a plain gold hexagon. The long cloth banners are plain pastel cloth with nothing on them.`,
     finale: true,
   },
@@ -368,7 +373,7 @@ const territoryPrompt = (id) => {
     `${set.species ?? SPECIES}. ${set.look}. The reference picture shows exactly this architecture close up: its ` +
     'buildings, colours, materials, roofs and the things that stand on them. Build the whole place out of them, but ' +
     'copy nothing of its layout, its isometric blocks or its black background: this is a real place seen from the air.';
-  return `${AERIAL} ${t.what} ${look}${t.finale ? ` ${FINALE}` : ''} ${TOWNSFOLK} ${t.none} ${CLEAN}`;
+  return `${AERIAL} ${t.what} ${look}${t.finale ? ` ${FINALE}` : ''} ${t.empty ? NOBODY : TOWNSFOLK} ${t.none} ${CLEAN}`;
 };
 
 const SKETCH_STYLE =

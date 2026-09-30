@@ -9,6 +9,7 @@
  * with the same face: the player is never told which of them is speaking.
  */
 import { artUrl } from '../render/art';
+import { gain } from '../meta/storage';
 import type { AiContext, AiTrigger, AiTurn, ShipAiProvider, ShipAiStatus } from '../meta/shipAi';
 import {
   AvatarError, AvatarLink, AvatarTalk, YokeLadder, avatarReason, clipFor, voiceClip,

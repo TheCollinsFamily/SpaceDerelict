@@ -207,6 +207,26 @@ are read together. Uplifts look anthro, like the cat girls (Collins).
   disdain. The Empire keeps the dolphins and orcas at arm's length on the fringe and does not ask
   what happens out there; the cat girls come and go.
 
+## The eusocial worlds (Collins, Sep 30 2026)
+
+Planets held by intelligent eusocial insect civilisations: the targets of the Empire's clearance
+campaigns, outside the covenant (doctrine 15), filed as tests and cleared as pest control. The one
+known in detail is Broodfall's; its long form is `games/broodfall/content/lore/insects.md`.
+
+- **Collins's canon for Broodfall's world:** a eusocial species in large clan groups, with an
+  economy like Korea's chaebols, run by royalty. Only royals breed, and a queen lays hundreds of
+  eggs. Most of the species is technically barren females, the worker caste. Males are rare
+  (Broodfall's techbro, the Institute's Director, is one, and his partners are workers). One
+  religion dominates the planet, and atheism has started becoming common.
+- **Level:** 21st-century technology on the edge of AI (they have just built their first AI
+  models), with the manners of 1950s America. The Empire watches them, as it watches Earth, as a
+  parody mirror of old humanity.
+- **The mirror nobody names:** one faith, breeding reserved to a few, and an order that believes
+  itself complete: the corpus's "chittering hordes" (doctrine 11). The Empire, whose own
+  citizens need a licence to breed, never makes the comparison.
+- **PROPOSAL:** other eusocial worlds need not share this one's culture. What they share is
+  biology (a laying royal line, a barren majority) and the Empire's filing of them.
+
 ## Known regions and factions
 
 - **Techopuritan Crusade Zones** — active expansion fronts (already on Space Derelict's sector map
@@ -219,7 +239,8 @@ are read together. Uplifts look anthro, like the cat girls (Collins).
   as the Basilisk's work, a culling of the indulgent, and does not police it (doctrine 3); it
   destroys only what strays into the Crusade Zones.
 - **The eusocial worlds** — planets held by intelligent eusocial insectoid civilizations, target
-  of the clearance campaigns in Broodfall. Outside the covenant (doctrine 15).
+  of the clearance campaigns in Broodfall. Outside the covenant (doctrine 15). See "The eusocial
+  worlds" above.
 - **Earth** — the homeworld; a low-tech zoo of holy wars, watched for entertainment and
   instruction.
 - **Other spacefaring humans** — religious and secular groups with slow growth. **PROPOSAL:**

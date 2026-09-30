@@ -12,6 +12,7 @@ import type { CampaignState } from '../meta/campaign';
 import { loadYoke, saveYoke, type YokeSettings } from '../meta/storage';
 import { YOKE_AVATAR, type YokeMode } from '../meta/yokeAvatar';
 import { loadIntroArt } from './intro';
+import { openSettings } from './settings';
 
 export interface MenuHooks {
   /** CONTINUE: to the ship (or back into mission 1, if it never finished). */
@@ -106,7 +107,10 @@ export class ConsoleMenu {
         this.hooks.newCampaign();
         return;
       case 'menu-intro': this.hooks.replayIntro(); return;
-      case 'menu-settings': this.el.classList.toggle('settings-open'); this.status(); return;
+      // The settings screen (src/ui/settings.ts): sound, the screen, the board, YOKE, reset.
+      case 'menu-settings':
+        openSettings({ where: 'menu', onClose: () => { this.yoke = loadYoke(); this.status(); } });
+        return;
       case 'menu-voice': this.setYoke({ ...this.yoke, muted: !this.yoke.muted }); return;
       case 'menu-yoke-mode': {
         const order: YokeMode[] = YOKE_AVATAR ? ['avatar', 'kimi', 'scripted'] : ['kimi', 'scripted'];

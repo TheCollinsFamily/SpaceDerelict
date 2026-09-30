@@ -4,6 +4,7 @@
  * by tools/art/boss.mjs; the game spends nothing to play it). A click skips it.
  */
 import { BOSS } from '../../content/boss';
+import { gain } from '../meta/storage';
 import type { IntroArt } from './intro';
 
 export function playBossCall(art: IntroArt | null): Promise<void> {

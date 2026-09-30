@@ -608,6 +608,14 @@ By hour six the player notices the combo fanfare still delights them and feels w
 
 Setting: the Technopuritan Empire (shared universe, see /docs/UNIVERSE.md). Broodfall is set inside the Empire; its fuller history, doctrine (ported from technopuritan.com with citation ids), the index, krypteia, family life, Earth as the zoo, the Sons of Man (the uplifts; the boss is an uplifted dog) and how the Empire looks back on the 21st century are in `content/lore/empire.md` (Sep 30 2026).
 
+The insects themselves (Collins, Sep 30 2026: a eusocial species of large clans with an economy
+like Korea's chaebols, run by royals who alone breed and lay hundreds of eggs; a barren female
+worker majority; the techbro Director is a male and his partners are workers; one dominant
+religion, atheism rising) are in `content/lore/insects.md`: biology and castes, the Great Houses,
+cities by tile set, government, the Faith and its Last Hour wing, unbelief (the Delegation and
+the Institute as its secular side), sex among a barren majority, every enemy kind as an
+institution, media, naming conventions, the invasion from their side, and the OPEN calls.
+
 - **Player character:** a low-level technopuritan soldier/scientist running xenofauna clearance from a ship in orbit — handling the bioweapon between and during deployments.
 - **Their goal: earn the right to a mate.** Not saving the empire, not revenge; a promotion criterion. Standing accrued from clean deployments feeds a procreation license application. The smallness of the stake is what makes the empire's indifference land.
 - **The empire's view of the job: pet extermination.** Low-status, proceduralized, beneath command's attention. Directives arrive as form letters; triumphs get form-letter acknowledgments.

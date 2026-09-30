@@ -8,6 +8,9 @@
  * storage.ts beside her key and mode), the HUD style (src/hud/themes.ts, `broodfall-hud`).
  */
 
+/** What the board reads every frame (src/render/isoRender.ts): set by the settings screen's applySettings. */
+export const CALM = { flashes: false };
+
 export type Channel = 'master' | 'music' | 'sfx' | 'voice';
 export type CasteTints = 'standard' | 'safe';
 

@@ -18,6 +18,9 @@ import { clearCampaign, clearPending, forgetEverything, introSeen, loadCampaign,
 import { FIRST_MISSION, isFirstMission, launchKind, type Launch } from './meta/onboarding';
 import { loadIntroArt, playIntro } from './ui/intro';
 import { ConsoleMenu } from './ui/menu';
+import { addRunButton, installEdgeScroll, markSpeed, openSettings, settingsOpen } from './ui/settings';
+import { turnOf } from './meta/settings';
+import { loadSettings } from './meta/storage';
 import { strainIcons, strainKey, strainLabel } from './ui/strain';
 import { GENES } from '../content/plates';
 import { BALANCE as B } from '../content/data';
@@ -104,14 +107,15 @@ if (CAMPAIGN === 'run') {
   if (campaignState && pending) {
     territory = pending.territory;
     campaignPlan = plan(campaignState, pending.territory, pending);
-    Object.assign(CFG, campaignPlan.config, { gridW: CFG.gridW, gridH: CFG.gridH, cellPx: CFG.cellPx, genes: meta.genes });
+    Object.assign(CFG, campaignPlan.config, { gridW: CFG.gridW, gridH: CFG.gridH, cellPx: CFG.cellPx, genes: [...meta.genes, ...(campaignPlan.config.genes ?? [])] });
   }
 }
 /** Mission 1 (src/meta/onboarding.ts): a plain tower-defence game; nothing on its screen speaks of the ship. */
 const FIRST = !!campaignPlan?.first;
 let sim = new Sim(CFG);
 const auto = AUTO ? new Autoplayer(SEED + 1) : null;
-let speed = Number.isFinite(START_SPEED) && START_SPEED >= 0 ? START_SPEED : 1;
+// The address's ?speed= wins; otherwise the speed the settings say a deployment starts at.
+let speed = params.has('speed') && Number.isFinite(START_SPEED) && START_SPEED >= 0 ? START_SPEED : loadSettings().speed;
 /** The run's clock is going. Behind the cinematic it waits until the film is over. */
 let started = AUTOSTART && !PLAY_INTRO;
 let debriefShown = false;
@@ -577,6 +581,8 @@ function updateBoardPanel(): void {
     ...campaignPlan.board.map((g) => line(g, 'std')),
     ...campaignPlan.dares.map((g) => line(g, 'dare')),
     ...(campaignPlan.experiment ? [line(campaignPlan.experiment.goal, 'exp')] : []),
+    // His pinned hobby page (src/meta/hobby.ts), in his own hand.
+    ...(campaignPlan.hobby ? campaignPlan.hobby.goals.map((g) => line(g, 'hobby')) : []),
   ].join('');
   if (boardEl.innerHTML !== html) boardEl.innerHTML = html;
 }
@@ -833,6 +839,18 @@ function currentPlaceFacing(cell: number): RootDir {
 }
 
 /** Cancel whatever is armed (cards, organs, throwers) and close the panel. */
+/** The settings over a deployment: the clock stops while they are open and runs on at its old speed. */
+function openRunSettings(): void {
+  const was = speed;
+  speed = 0;
+  markSpeed(0);
+  openSettings({
+    where: 'run',
+    onClose: () => { speed = was; markSpeed(speed); },
+    onIntro: (h) => { speed = 0; void h.done.then(() => { speed = was; markSpeed(speed); }); },
+  });
+}
+
 function cancelAll(): void {
   armedPlinth = false;
   armedNode = null;
@@ -1013,7 +1031,8 @@ async function boot(): Promise<void> {
   renderer.app.canvas.addEventListener('wheel', (ev) => {
     if (!(renderer instanceof IsoRenderer)) return;
     ev.preventDefault();
-    renderer.zoomAt(ev.clientX, ev.clientY, ev.deltaY < 0 ? 1.15 : 1 / 1.15);
+    const z = loadSettings().zoomStep; // the settings' zoom speed
+    renderer.zoomAt(ev.clientX, ev.clientY, ev.deltaY < 0 ? z : 1 / z);
   }, { passive: false });
   renderer.app.canvas.addEventListener('pointerdown', (ev) => {
     dragged = false;
@@ -1034,8 +1053,8 @@ async function boot(): Promise<void> {
     if (!(renderer instanceof IsoRenderer) || (ev.target as HTMLElement).tagName === 'INPUT') return;
     const step = 90;
     // Q and E turn the board a quarter turn: what stands behind a block is seen from the other side.
-    if (ev.key === 'q' || ev.key === 'Q') renderer.turnBy(-1);
-    else if (ev.key === 'e' || ev.key === 'E') renderer.turnBy(1);
+    const turn = turnOf(loadSettings(), ev.key); // Q and E unless the settings say other keys
+    if (turn) renderer.turnBy(turn);
     else if (ev.key === 'Home') renderer.resetView();
     else if (ev.key === 'ArrowLeft') renderer.panBy(step, 0);
     else if (ev.key === 'ArrowRight') renderer.panBy(-step, 0);
@@ -1049,6 +1068,11 @@ async function boot(): Promise<void> {
   viewButton('view-turn-left', (r) => r.turnBy(-1));
   viewButton('view-turn-right', (r) => r.turnBy(1));
   viewButton('view-home', (r) => r.resetView());
+  // The settings (src/ui/settings.ts): a ⚙ beside the view buttons; the run pauses while it is open.
+  addRunButton(() => openRunSettings());
+  installEdgeScroll((dx, dy) => { if (renderer instanceof IsoRenderer) renderer.panBy(dx, dy); },
+    () => started && !debriefShown && menuEl.classList.contains('hidden') && document.getElementById('campaign')!.classList.contains('hidden'));
+  markSpeed(speed);
   // RIGHT-CLICK: rotates a directional card being placed, or a built directional
   // limb under the cursor; otherwise it cancels. (Esc always cancels.)
   renderer.app.canvas.addEventListener('contextmenu', (ev) => {
@@ -1073,7 +1097,12 @@ async function boot(): Promise<void> {
     cancelAll();
   });
   window.addEventListener('keydown', (ev) => {
-    if (ev.key === 'Escape') cancelAll();
+    if (ev.key !== 'Escape' || settingsOpen()) return;
+    // Esc with nothing in hand, armed or open: the settings (the run paused). Otherwise it cancels, as always.
+    const idle = selectedCard === null && armedOrgan === null && armedThrower === null && !armedPlinth
+      && armedNode === null && armedSpread === null && hud.inspectedId === null;
+    if (idle && started && !debriefShown) openRunSettings();
+    else cancelAll();
   });
   renderer.app.canvas.addEventListener('pointermove', (ev) => {
     if (armedPlinth) {

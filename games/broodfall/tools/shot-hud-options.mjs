@@ -75,8 +75,8 @@ try {
     // A theme picked in the menu is remembered: start every theme from a clean slate.
     await page.addInitScript(() => { try { localStorage.removeItem('broodfall-hud'); } catch {} });
     await page.goto(`http://localhost:${PORT}/?seed=${SEED}&autostart=1&speed=0${t.hud ? `&hud=${t.hud}` : ''}`, { waitUntil: 'load' });
-    await page.waitForSelector('#stage canvas', { timeout: 60000 });
-    await page.waitForFunction(() => window.broodfall && window.broodfall.view() === 'iso', null, { timeout: 60000 });
+    await page.waitForSelector('#stage canvas', { state: 'attached', timeout: 90000 });
+    await page.waitForFunction(() => window.broodfall && window.broodfall.view() === 'iso', null, { timeout: 90000 });
     await page.waitForTimeout(2500);
     const applied = await page.evaluate(() => document.documentElement.dataset.hud || '');
     check(applied === t.hud, `theme applied (${applied})`);
