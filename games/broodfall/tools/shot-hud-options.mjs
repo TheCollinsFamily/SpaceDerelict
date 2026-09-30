@@ -8,8 +8,8 @@
  *   d  a close crop of the resource bar and one card
  * and one compare.jpg with every theme's (a) side by side.
  *
- * Runs the dev server on its own port (5247) with hot reload off, so another session's save
- * does not reload the page mid-scene; headless Chromium on the GPU (HANDOFF.md).
+ * Builds its own copy (dist-hud/) and serves it on its own port (5247); headless Chromium on the
+ * GPU (HANDOFF.md).
  *
  * Usage: node tools/shot-hud-options.mjs [theme ...]   (themes: current ship)
  * JPEGs: notes/screens/2026-09-30/hud-options/<theme>-<a|b|c|d>.jpg and compare.jpg
@@ -52,10 +52,14 @@ function freePort() {
     }
   } catch {}
 }
+/** Its own build (dist-hud/), served on its own port: another session's save can neither reload
+ *  the page mid-scene nor slow the first load (the dev server compiled for over 30 s under load). */
 function startDev() {
   freePort();
-  const child = spawn(process.platform === 'win32' ? 'npx.cmd' : 'npx', ['vite', '--port', String(PORT), '--strictPort'], {
-    cwd: root, stdio: 'pipe', shell: process.platform === 'win32', env: { ...process.env, BROODFALL_NO_HMR: '1' },
+  const b = spawnSync(process.platform === 'win32' ? 'npx.cmd' : 'npx', ['vite', 'build', '--outDir', 'dist-hud', '--emptyOutDir'], { cwd: root, stdio: 'pipe', shell: process.platform === 'win32', encoding: 'utf8' });
+  if (b.status !== 0) { console.error(b.stdout, b.stderr); process.exit(1); }
+  const child = spawn(process.platform === 'win32' ? 'npx.cmd' : 'npx', ['vite', 'preview', '--outDir', 'dist-hud', '--port', String(PORT), '--strictPort'], {
+    cwd: root, stdio: 'pipe', shell: process.platform === 'win32',
   });
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error('vite did not start in 40s')), 40000);
@@ -74,7 +78,7 @@ try {
     page.on('pageerror', (e) => errors.push(String(e)));
     // A theme picked in the menu is remembered: start every theme from a clean slate.
     await page.addInitScript(() => { try { localStorage.removeItem('broodfall-hud'); } catch {} });
-    await page.goto(`http://localhost:${PORT}/?seed=${SEED}&autostart=1&speed=0${t.hud ? `&hud=${t.hud}` : ''}`, { waitUntil: 'load' });
+    await page.goto(`http://localhost:${PORT}/?seed=${SEED}&autostart=1&speed=0${t.hud ? `&hud=${t.hud}` : ''}`, { waitUntil: 'load', timeout: 90000 });
     await page.waitForSelector('#stage canvas', { state: 'attached', timeout: 90000 });
     await page.waitForFunction(() => window.broodfall && window.broodfall.view() === 'iso', null, { timeout: 90000 });
     await page.waitForTimeout(2500);
