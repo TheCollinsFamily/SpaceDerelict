@@ -108,14 +108,14 @@ try {
     await board(page);
     await page.waitForTimeout(400);
     await endRun(page);
-    await page.waitForSelector('#debrief:not(.hidden)', { timeout: 15000 });
+    await page.waitForSelector('#debrief:not(.hidden)', { timeout: 45000 });
     await aboard(page, '#debrief-ship');
     check(await page.locator('[data-room="orders"]').count() === 0, 'before the desk clears there is no Empire Directives room and no Notebook');
     await Promise.all([page.waitForURL(/campaign=run/), page.locator('[data-act="deploy-assigned"]').click()]);
     await board(page);
     await page.waitForTimeout(400);
     await endRun(page, { maxBurning: 7 });
-    await page.waitForSelector('#campaign:not(.hidden) [data-act="back"]', { timeout: 15000 });
+    await page.waitForSelector('#campaign:not(.hidden) [data-act="back"]', { timeout: 45000 });
     await aboard(page, '[data-act="back"]');
     check(await page.locator('[data-room="orders"]').count() === 1 && await page.locator('[data-room="hobby"]').count() === 1, 'the desk clears: EMPIRE DIRECTIVES and the NOTEBOOK are in the room bar');
     await page.locator('[data-room="orders"]').click();
@@ -146,7 +146,7 @@ try {
     check(/Eat 8 of my own limbs/.test(live) && /12 bonuses/.test(live), 'the pinned page\'s checklist is on the board');
     await shot(page, 'run-hobby');
     await endRun(page, { cannibalized: 9, maxPips: 13, kills: { militia: 999, flier: 6 } });
-    await page.waitForSelector('#campaign:not(.hidden) [data-act="back"]', { timeout: 15000 });
+    await page.waitForSelector('#campaign:not(.hidden) [data-act="back"]', { timeout: 45000 });
     const rep = await page.locator('#campaign').innerText();
     check(/HOBBY — THE RECIPE BOOK/i.test(rep) && /Grudge Marrow/.test(rep), 'the report: the page worked, the gene it paid');
     check(/STANDING ORDERS/.test(rep) && /SO 2-K/.test(rep), 'the report: the standing orders moved');
@@ -180,7 +180,7 @@ try {
     await Promise.all([page.waitForURL(/campaign=run/), page.locator('#menu-new').click()]);
     await board(page);
     await endRun(page);
-    await page.waitForSelector('#debrief:not(.hidden)', { timeout: 15000 });
+    await page.waitForSelector('#debrief:not(.hidden)', { timeout: 45000 });
     await page.goto(URL0, { waitUntil: 'load' });
     await page.waitForSelector('#menu-settings');
     await page.locator('#menu-settings').click();

@@ -1,18 +1,10 @@
 {
  "version": 1,
  "clips": {
-  "won": {
-   "video": "won.webm",
-   "quads": "won.json",
-   "seconds": 5.04,
-   "fps": 24,
-   "w": 1280,
-   "h": 720
-  },
   "lost": {
    "video": "lost.webm",
    "quads": "lost.json",
-   "seconds": 5.04,
+   "seconds": 5,
    "fps": 24,
    "w": 1280,
    "h": 720
