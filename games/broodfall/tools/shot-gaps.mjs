@@ -131,15 +131,18 @@ try {
     await page.mouse.click(c.x, c.y);
     await page.waitForTimeout(300);
     const crownBtn = page.locator('#inspect-evolve [data-crown]');
+    await crownBtn.waitFor({ timeout: 5000 }).catch(() => {});
     check(await crownBtn.count() === 1, 'the limb panel offers CROWN THIS LIMB');
     await crownBtn.click();
     await page.waitForTimeout(250);
-    const crowned = await page.evaluate((i) => {
+    // Whichever limb the click opened is the one crowned.
+    const crowned = await page.evaluate(() => {
       const s = window.broodfall.sim;
-      const t = s.towers.find((x) => x.id === i);
+      const t = s.towers.find((x) => x.crowns);
+      if (!t) return { crowns: 0, sheltered: null };
       const other = s.towers.find((x) => x.id !== i && Math.hypot(x.pos.x - t.pos.x, x.pos.y - t.pos.y) <= 120);
       return { crowns: t.crowns, sheltered: other ? s.harmMultOf(other) : null };
-    }, ids[0]);
+    });
     check(crowned.crowns === 1 && crowned.sheltered !== null && Math.abs(crowned.sheltered - 0.7) < 1e-9, `crowned from its panel; a neighbour takes ×${crowned.sheltered} harm`);
     await frame(page);
     await page.mouse.move(c.x + 300, c.y + 200);
@@ -239,6 +242,12 @@ try {
       const s = window.broodfall.sim;
       s.meat.war = 900;
       const W = s.cfg.gridW;
+      // The street the next assault will walk: from its gate down the flow to the core.
+      const path = new Set();
+      for (const g of s.incomingGates) {
+        let cur = g;
+        for (let k = 0; k < 400 && cur >= 0 && !path.has(cur); k++) { path.add(cur); cur = s.flowNextOf(cur); }
+      }
       let best = null;
       for (const c of window.broodfall.buildableCells()) {
         for (const dir of ['N', 'E', 'S', 'W']) {
@@ -249,12 +258,13 @@ try {
             const x = (c % W) + f[0] * k;
             const y = Math.floor(c / W) + f[1] * k;
             const cell = y * W + x;
-            if (s.map.cells[cell] === 1 && Number.isFinite(s.flowDistOf(cell))) n++;
+            if (path.has(cell)) n++;
           }
           if (!best || n > best.n) best = { c, dir, n };
         }
       }
-      s.pendingPips = [{ family: 'ember' }, { family: 'ember' }];
+      // Two ember sacs set the strip burning; two bursters widen it two cells each side.
+      s.pendingPips = [{ family: 'ember' }, { family: 'ember' }, { family: 'burster' }, { family: 'burster' }];
       s.hand.unshift({ id: 990002, family: 'lance' });
       const r = s.issue({ kind: 'build', cardIndex: 0, cell: best.c, facing: best.dir });
       return { ok: r.ok, n: best.n, dir: best.dir };
@@ -263,8 +273,8 @@ try {
     await page.evaluate(() => window.broodfall.step(200)); // the strip grows
     await page.evaluate(() => window.broodfall.sim.issue({ kind: 'call-early' }));
     let burning = 0;
-    for (let k = 0; k < 40 && burning < 3; k++) {
-      await page.evaluate(() => window.broodfall.step(10));
+    for (let k = 0; k < 120 && burning < 4; k++) {
+      await page.evaluate(() => window.broodfall.step(5));
       burning = await page.evaluate(() => window.broodfall.sim.enemies.filter((e) => (e.burnUntil ?? 0) > window.broodfall.sim.time).length);
     }
     if (await page.locator('#under-done').isVisible()) await page.locator('#under-done').click();

@@ -30,6 +30,7 @@ import { LimbFates } from './limbFx';
 import { MAW_FIRE_SECONDS, MawTongues, mawFireShare, type TongueView } from './mawTongue';
 import { CreepLife, GateArt, PlinthRise, PodArt, Skyline } from './boardArt';
 import { coreStageOf } from './coreStage';
+import { RELEASE, releaseFrame, releaseTime } from './releases';
 import { IdleClock, breath, idleFrames, phaseOf } from './idleClock';
 import { CALM } from '../meta/settings';
 import { UNIT_MUZZLES } from './unitMuzzles';
@@ -146,6 +147,8 @@ interface ShotView { up0: number; ttl0: number; seen: number }
 /** A townsperson fleeing the crash (src/sim/civilians.ts): its picture (or its drawn figure), where it is shown (eased between sim ticks). */
 interface CivView { sprite: Sprite; shade: Sprite; fig: Graphics | null; shown: Pt; heading: Heading; phase: number; seen: number }
 
+const OPPOSITE: Record<Facing, Facing> = { N: 'S', S: 'N', E: 'W', W: 'E' };
+
 export class IsoRenderer extends Renderer {
   private geo!: IsoGeo;
   private floors = new Container();
@@ -236,6 +239,7 @@ export class IsoRenderer extends Renderer {
   constructor(private art: BoardArtSet) {
     super();
     this.fx = new FxLayer(art);
+    this.fx.statusIn(this.sorted);
     this.meat = new MeatFx(art);
     this.fates = new LimbFates(art);
     this.tongues = new MawTongues(art, this.sorted);
@@ -476,21 +480,29 @@ export class IsoRenderer extends Renderer {
       if (pool) return { x: g0.x, y: g0.y };
     }
     const under = sim.cellAt(hit.x, hit.y);
-    if (hit.top && sim.towers.some((t) => sim.cellsOf(t).includes(under))) return { x: hit.x, y: hit.y };
-    // A limb is taller than its cell: a click on its body is a click on the limb.
+    // A limb is taller than its cell: a click on its body is a click on the limb. What is clicked is what is
+    // DRAWN there, front-most: a limb's body is drawn over its own block and over everything behind it, and
+    // under any block standing in front of it (the z order of syncMap and syncLimbs). So the limb whose body
+    // is under the point and is drawn in front of the block the view ray met wins; a block in front of a limb
+    // hides it (Sep 30 2026 fix pass: the ray alone gave a roof or a limb behind the limb that was clicked).
     let best: Tower | null = null;
+    let bestZ = -Infinity;
     for (const t of sim.towers) {
       const v = this.limbs.get(t.id);
-      if (!v || v.art.flat) continue;
-      const p = this.onGround(sim, t.pos.x, t.pos.y);
+      if (!v || v.art.flat || !v.sprite.visible) continue;
+      // Where it is drawn now: its foot as placed (a long limb set back, a plinth rising).
+      const p = v.sprite.position;
       // Its body rises from the middle of what it stands on: as wide as that, and most of a frame high.
       const w = (2 * this.geo.a * LIMB_FILL * LIMB_SCALE * this.sizeOf(sim, t)) / Math.SQRT2;
-      const h = v.art.frame * v.sprite.scale.y * 0.7;
-      if (Math.abs(s.x - p.x) < w * 0.5 && s.y < p.y + w * 0.2 && s.y > p.y - h) {
-        if (!best || depth(this.geo, t.pos.x, t.pos.y) > depth(this.geo, best.pos.x, best.pos.y)) best = t;
+      const h = v.art.frame * Math.abs(v.sprite.scale.y) * 0.7;
+      if (Math.abs(s.x - p.x) < w * 0.5 && s.y < p.y + w * 0.2 && s.y > p.y - h && v.sprite.zIndex > bestZ) {
+        best = t;
+        bestZ = v.sprite.zIndex;
       }
     }
-    if (best) return { x: best.pos.x, y: best.pos.y };
+    const vc = viewCell(this.geo, under % sim.cfg.gridW, Math.floor(under / sim.cfg.gridW));
+    const hitZ = (vc.x + vc.y + 1) * 100;
+    if (best && bestZ > hitZ) return { x: best.pos.x, y: best.pos.y };
     return { x: hit.x, y: hit.y };
   }
 
@@ -553,7 +565,7 @@ export class IsoRenderer extends Renderer {
     return {
       at: (wx, wy, up) => { const p = project(g, wx, wy); return { x: p.x, y: p.y - up }; },
       muzzle: (wx, wy) => this.muzzle(sim, wx, wy),
-      ...(MUZZLES ? { mouth: (from: Pt, o?: { family?: string; dir?: Pt; k?: number }) => this.mouthOf(sim, from, o), gun: (from: Pt) => this.gunOf(sim, from) } : {}),
+      ...(MUZZLES ? { mouth: (from: Pt, o?: { family?: string; dir?: Pt; k?: number }) => this.mouthOf(sim, from, o), gun: (from: Pt) => this.gunOf(sim, from), release: (from: Pt) => this.letGoOf(sim, from) } : {}),
       floor: (wx, wy) => this.heightAt(sim, wx, wy) * g.level,
       scale: (g.a * Math.SQRT2) / g.cell,
     };
@@ -1245,18 +1257,31 @@ export class IsoRenderer extends Renderer {
   }
 
   /**
-   * The way a limb faces in the world. One that was turned by the player faces that way;
-   * one that fights faces what it last fought; the rest face south. It is a fact about the
-   * limb, not about the camera: when the camera turns, another side of the limb is seen.
+   * The way a limb faces in the world. It is a fact about the limb, not about the camera: when the camera
+   * turns, another side of it is seen.
+   * - One the sim aims down its facing (a directional limb: the skipping mortar, the engines) faces that way.
+   * - One that fights faces what it is shooting (Sep 30 2026 fix pass: the Impaler's harpoon pointed the way
+   *   it was built while it fired any way). A limb on one cell or a square turns to the nearest of the four
+   *   ways; a LONG limb (two cells, the Impaler) lies along its two cells, so it turns end for end: of its
+   *   facing and the opposite, the one nearer the target. This wins over a facing the player set with a
+   *   right-click: that is where it rests; a gun that shoots behind itself never reads right. Render only.
+   * - Otherwise: the way the player (or its long ground) set, else the way it last faced, else south.
    */
   private facingOfLimb(sim: Sim, t: Tower, was: Facing | undefined): Facing {
-    if (t.facing) return t.facing;
+    if (t.facing && towerSpec(t.family).directional) return t.facing;
     if (t.lastTargetId !== undefined) {
       // A body the Maw has just eaten is gone from the sim, but still on the board this frame: it turns to it.
       const e = sim.enemies.find((x) => x.id === t.lastTargetId) ?? this.units.get(t.lastTargetId)?.ent;
-      if (e) return facingOf(e.pos.x - t.pos.x, e.pos.y - t.pos.y);
+      if (e) {
+        const dx = e.pos.x - t.pos.x, dy = e.pos.y - t.pos.y;
+        if (t.facing && sim.cellsOf(t).length === 2) {
+          const [fx, fy] = FACING_STEP[t.facing];
+          return fx * dx + fy * dy >= 0 ? t.facing : OPPOSITE[t.facing];
+        }
+        return facingOf(dx, dy);
+      }
     }
-    return was ?? 'S';
+    return t.facing ?? was ?? 'S';
   }
 
   private syncLimbs(sim: Sim, dt: number): void {
@@ -1370,7 +1395,9 @@ export class IsoRenderer extends Renderer {
       if (v.fireT >= 0 && fire && !held) {
         v.fireT += v.family === 'maw' ? this.smoothDt : dt;
         const share = v.family === 'maw' ? mawFireShare(v.fireT, v.fireDur) : v.fireT / v.fireDur;
-        const f = Math.min(fire.count - 1, Math.floor(share * fire.count));
+        // A thrower winds up quickly and lets go on its release frame (src/render/releases.ts).
+        const rel = this.releaseOf(v);
+        const f = rel ? releaseFrame(v.fireT, v.fireDur, fire.count, rel.frame) : Math.min(fire.count - 1, Math.floor(share * fire.count));
         tex = atlas.frame(fire.start + f, art.frame, art.cols);
         if (v.fireT >= v.fireDur) v.fireT = -1;
       } else {
@@ -1401,7 +1428,9 @@ export class IsoRenderer extends Renderer {
         if (u >= 1) v.growT = -1;
       }
       // A limb on a roof rising on its plinth rises with it.
-      v.sprite.position.set(p.x, p.y + this.rise.drop(t.cell) * g.level);
+      // Its shadow, its grafted parts, its health bar and trait marks rise with it (they jumped to the new height).
+      const risen = p.y + this.rise.drop(t.cell) * g.level;
+      v.sprite.position.set(p.x, risen);
       // It is as far back as the nearest to the camera of the cells it stands on.
       let z = -Infinity;
       for (const c of sim.cellsOf(t)) {
@@ -1409,7 +1438,7 @@ export class IsoRenderer extends Renderer {
         z = Math.max(z, (vc.x + vc.y + 1) * 100);
       }
       v.sprite.zIndex = art.flat ? depth(g, t.pos.x, t.pos.y) : z + (h ? 10 : 45);
-      v.shade.position.set(p.x, p.y);
+      v.shade.position.set(p.x, risen);
       v.shade.width = width * 1.5;
       v.shade.height = width * 1.5 * (g.b / g.a);
       v.shade.zIndex = v.sprite.zIndex - 1;
@@ -1440,8 +1469,8 @@ export class IsoRenderer extends Renderer {
         v.flash.zIndex = v.sprite.zIndex + 0.1;
       }
       // The parts of the limbs it was built from, grafted on its body.
-      if (!art.flat) this.fates.graft(this.sorted, t, art, side, p.x, p.y, scale, mirror, width, v.sprite.zIndex, v.sprite.visible, v.sprite.tint as number);
-      if (!art.flat) this.drawTowerMarks(this.marksG, t, p.x / K, (p.y - width * 0.55) / K, sim);
+      if (!art.flat) this.fates.graft(this.sorted, t, art, side, p.x, risen, scale, mirror, width, v.sprite.zIndex, v.sprite.visible, v.sprite.tint as number);
+      if (!art.flat) this.drawTowerMarks(this.marksG, t, p.x / K, (risen - width * 0.55) / K, sim);
       else if (t.hp < t.maxHp) this.hpArc(this.marksG, p.x / K, p.y / K - 8, 20, t.hp / t.maxHp);
     }
     for (const [id, v] of this.limbs) {
@@ -1676,7 +1705,7 @@ export class IsoRenderer extends Renderer {
       v.shade.alpha = 0.85;
       // Struck: a pale red flash for the first moment of the flinch (every unit, with a flinch clip or not).
       v.sprite.tint = v.fx.hitT < 0.09 && !CALM.flashes ? 0xffb4a4 : sim.isCloaked(e) ? 0xd8b0ff : 0xffffff;
-      this.unitMarks(sim, e, p.x / K, (p.y - r * UNIT_PX * 0.9) / K, r);
+      this.unitMarks(sim, e, p.x / K, (p.y - r * UNIT_PX * 0.9) / K, r, v.sprite.zIndex);
       this.unitMoments(e, v.fx, p.x / K, (p.y - r * UNIT_PX * 0.9) / K, r, !!art.anims['walk-stripped']);
     }
     for (const [id, v] of this.units) {
@@ -1838,7 +1867,7 @@ export class IsoRenderer extends Renderer {
   }
 
   /** What is drawn ON a unit whatever it looks like: its health and what has been done to it. */
-  private unitMarks(sim: Sim, e: Enemy, x: number, y: number, r: number): void {
+  private unitMarks(sim: Sim, e: Enemy, x: number, y: number, r: number, z?: number): void {
     const g = this.marksG;
     const s = r + 3;
     if (sim.isCloaked(e)) {
@@ -1854,7 +1883,8 @@ export class IsoRenderer extends Renderer {
     const burning = e.burnUntil !== undefined && e.burnUntil > sim.time;
     const snared = e.slowUntil !== undefined && e.slowUntil > sim.time;
     const poisoned = e.poisonUntil !== undefined && e.poisonUntil > sim.time;
-    if (pics) this.fx.status({ x: x * K, y: y * K }, s * K, snared, poisoned, burning, e.id);
+    // At the unit's own depth (z): a block in front of it hides what is done to it, as it hides the unit.
+    if (pics) this.fx.status({ x: x * K, y: y * K }, s * K, snared, poisoned, burning, e.id, z);
     if (burning && !pics) {
       const fl = Math.abs(Math.sin(this.pulse * 7 + e.id));
       g.poly([x - 4, y - s, x, y - s - 6 - fl * 4, x + 4, y - s]).fill({ color: 0xff8a30, alpha: 0.85 });
@@ -2090,6 +2120,30 @@ export class IsoRenderer extends Renderer {
       y: s.position.y + (m[1] - s.anchor.y) * F * s.scale.y,
       wx: best.pos.x, wy: best.pos.y,
     };
+  }
+
+  /** The release mark of the side of a throwing limb the camera sees (src/render/releases.ts), or null. */
+  private releaseOf(v: LimbView): { frame: number; at: [number, number] } | null {
+    const r = RELEASE[v.family];
+    if (!r) return null;
+    return (v.back && r.back) || r.front;
+  }
+
+  /**
+   * A thrower standing at `from` (the lobber, the sling): where on the screen it lets go of what it throws,
+   * placed as its picture is drawn now, and how many seconds of its firing clip are left before it does.
+   */
+  private letGoOf(sim: Sim, from: Pt): { x: number; y: number; wait: number } | null {
+    const t = sim.towers.find((u) => Math.hypot(u.pos.x - from.x, u.pos.y - from.y) < 3);
+    const v = t ? this.limbs.get(t.id) : undefined;
+    const rel = v ? this.releaseOf(v) : null;
+    const fire = v ? (v.back && v.art.back ? v.art.back : v.art).anims.fire ?? v.art.anims.fire : undefined;
+    // Not playing its throw (held, stunned): it lets go from its muzzle, as before.
+    if (!v || !rel || !fire || !v.sprite.visible || v.fireT < 0) return null;
+    const s = v.sprite;
+    const F = v.art.frame;
+    const wait = Math.max(0, releaseTime(v.fireDur, fire.count, rel.frame) - v.fireT);
+    return { x: s.position.x + (rel.at[0] - s.anchor.x) * F * s.scale.x, y: s.position.y + (rel.at[1] - s.anchor.y) * F * s.scale.y, wait };
   }
 
   /** Where a hive gun's shell leaves it (the cannon's barrel, the mortar's tube), on the screen: src/render/unitMuzzles.ts. */

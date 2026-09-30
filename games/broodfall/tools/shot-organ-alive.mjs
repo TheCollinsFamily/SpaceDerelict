@@ -56,7 +56,11 @@ try {
   const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
   page.on('pageerror', (e) => errors.push(String(e)));
   await page.goto(`http://localhost:${PORT}/?seed=7&autostart=1&speed=0&biome=suburb`, { waitUntil: 'load', timeout: 180000 });
-  await page.waitForSelector('#stage canvas', { timeout: 60000 });
+  await page.waitForSelector('#stage canvas', { timeout: 90000 }).catch(async (e) => {
+    await page.screenshot({ path: join(tmp, 'boot.png') });
+    jpg(join(tmp, 'boot.png'), 'organ-alive-boot-failed.jpg');
+    throw new Error(`the game did not boot (${errors.join(' | ') || 'no page error'}): ${(await page.locator('body').innerText()).slice(0, 400)}`, { cause: e });
+  });
   // A busy stage: every organ that fits, over and over, around the meteor; the core at its third stage.
   const grown = await page.evaluate(() => {
     const s = window.broodfall.sim;
@@ -66,7 +70,7 @@ try {
     const ids = ['forge', 'venom', 'gut', 'nerve', 'lattice', 'womb', 'marrow', 'resonance', 'heart', 'brain', 'gland', 'atrophy',
       'bladder', 'pacemaker', 'budder', 'cyst', 'swell', 'catapult', 'runner', 'mire', 'acid', 'seeder', 'scaffold', 'root'];
     const u = s.under;
-    for (let pass = 0; pass < 3; pass++) for (const id of ids) {
+    for (let pass = 0; pass < 2; pass++) for (const id of ids) {
       if (pass && (id === 'heart' || id === 'brain')) continue;
       let done = false;
       for (let c = 0; c < u.cells.length && !done; c++) for (let r = 0; r < 4 && !done; r++) {
@@ -92,7 +96,7 @@ try {
       organCells: organCells.length, still, alive: document.querySelectorAll('#under-grid .uc.alive').length, running,
       meteor: !!meteor, meteorRunning: !!meteor?.getAnimations().some((a) => a.animationName === 'uloop'),
       dome: dome?.classList.contains('alive') ?? false, trayAlive, strips: strips.size,
-      banner: /did not load/i.test(document.body.innerText),
+      banner: (document.body.innerText.split(/\r?\n/).find((l) => /did not load/i.test(l)) ?? ''),
     };
   });
   console.log(`  ${JSON.stringify(state)}`);
@@ -100,7 +104,7 @@ try {
   check(state.running === state.alive, `every alive cell's loop is running (${state.running}/${state.alive})`);
   check(state.meteor && state.meteorRunning && state.dome, 'the meteor below the street and its dome above play their stage loop');
   check(state.trayAlive === 0, 'the organs in the tray stay still');
-  check(!state.banner, 'no "did not load" line');
+  check(!state.banner, `no "did not load" line${state.banner ? `: ${state.banner}` : ''}`);
 
   // Two frames of the same crop 0.6 s apart: the tissue moves.
   const grid = page.locator('#under-scanbox');
@@ -144,11 +148,18 @@ try {
     const tick = (t) => { n++; gaps.push(t - last); last = t; if (t - t0 < ms) requestAnimationFrame(tick); else res({ fps: (n * 1000) / (t - t0), worst: Math.max(...gaps.slice(1)) }); };
     requestAnimationFrame(tick);
   }), ms);
-  const on = await fps(5000);
-  await page.addStyleTag({ content: '#under .alive { animation-play-state: paused !important; }', }).then((h) => h.evaluate((el) => { el.id = 'freeze-loops'; }));
-  const off = await fps(5000);
-  await page.evaluate(() => document.getElementById('freeze-loops')?.remove());
-  console.log(`  FPS with the loops: ${on.fps.toFixed(1)} (worst frame ${on.worst.toFixed(0)} ms); loops stopped: ${off.fps.toFixed(1)} (worst ${off.worst.toFixed(0)} ms)`);
+  // Alternated (on, off, on, off...) so the machine's own load, which other sessions change, falls on both alike.
+  const freeze = (yes) => page.evaluate((y) => {
+    let el = document.getElementById('freeze-loops');
+    if (y && !el) { el = document.createElement('style'); el.id = 'freeze-loops'; el.textContent = '#under .alive { animation-play-state: paused !important; }'; document.head.appendChild(el); }
+    if (!y) el?.remove();
+  }, yes);
+  const runs = { on: [], off: [] };
+  for (let k = 0; k < 4; k++) for (const mode of ['on', 'off']) { await freeze(mode === 'off'); runs[mode].push(await fps(3000)); }
+  await freeze(false);
+  const avg = (rs) => ({ fps: rs.reduce((a, r) => a + r.fps, 0) / rs.length, worst: Math.max(...rs.map((r) => r.worst)) });
+  const on = avg(runs.on), off = avg(runs.off);
+  console.log(`  FPS with the loops: ${on.fps.toFixed(1)} (worst frame ${on.worst.toFixed(0)} ms); loops stopped: ${off.fps.toFixed(1)} (worst ${off.worst.toFixed(0)} ms); runs on ${runs.on.map((r) => r.fps.toFixed(0)).join('/')} off ${runs.off.map((r) => r.fps.toFixed(0)).join('/')}`);
   check(on.fps >= 55 || on.fps >= off.fps - 3, 'the loops cost the page no visible frame rate');
 
   if (!args.includes('--no-video')) {

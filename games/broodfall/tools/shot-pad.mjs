@@ -139,7 +139,7 @@ try {
     check(t < 4000, `the pad comes up ${Math.round(t)} ms after the end (1.6 s after the win banner)`);
     const s0 = await state(page);
     check(s0.pad && s0.warped, 'the page (board + HUD) is warped into the pad\'s screen');
-    await sequence(page, 'won', [[1700, '1-start'], [2300, '2-pull-back'], [3400, '3-lowering'], [4700, '4-set-down'], [6300, '5-on-the-desk']]);
+    await sequence(page, 'won', [[1700, '1-start'], [2300, '2-pull-back'], [3400, '3-lowering'], [3900, '3b-past-the-window'], [4700, '4-set-down'], [6300, '5-on-the-desk']]);
     await page.waitForFunction(() => !document.getElementById('debrief').classList.contains('hidden'), null, { timeout: 12000 });
     const s1 = await state(page);
     check(s1.debrief && !s1.warped, `the report follows, the page put back (body transform "${s1.transform}")`);

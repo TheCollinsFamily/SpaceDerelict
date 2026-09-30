@@ -1,12 +1,12 @@
 [
  {
   "key": "bone",
-  "failed": 1,
+  "failed": 0,
   "checks": [
    {
     "name": "where it stands is marked",
-    "ok": false,
-    "value": "not marked: node tools/art/feet.mjs lasher"
+    "ok": true,
+    "value": "0.52, 0.83, 0.84"
    },
    {
     "name": "idle: loop closes",
@@ -51,18 +51,18 @@
    {
     "name": "it stands in its cell",
     "ok": true,
-    "value": "0.0% of it lies in front of its cell"
+    "value": "0.1% of it lies in front of its cell"
    }
   ]
  },
  {
   "key": "swarm",
-  "failed": 1,
+  "failed": 0,
   "checks": [
    {
     "name": "where it stands is marked",
-    "ok": false,
-    "value": "not marked: node tools/art/feet.mjs lasher"
+    "ok": true,
+    "value": "0.52, 0.85, 0.75"
    },
    {
     "name": "idle: loop closes",
@@ -113,12 +113,12 @@
  },
  {
   "key": "venom",
-  "failed": 1,
+  "failed": 0,
   "checks": [
    {
     "name": "where it stands is marked",
-    "ok": false,
-    "value": "not marked: node tools/art/feet.mjs lasher"
+    "ok": true,
+    "value": "0.49, 0.85, 0.8"
    },
    {
     "name": "idle: loop closes",
@@ -163,18 +163,18 @@
    {
     "name": "it stands in its cell",
     "ok": true,
-    "value": "0.1% of it lies in front of its cell"
+    "value": "0.0% of it lies in front of its cell"
    }
   ]
  },
  {
   "key": "reach",
-  "failed": 1,
+  "failed": 0,
   "checks": [
    {
     "name": "where it stands is marked",
-    "ok": false,
-    "value": "not marked: node tools/art/feet.mjs lasher"
+    "ok": true,
+    "value": "0.5, 0.88, 0.58"
    },
    {
     "name": "idle: loop closes",
@@ -219,18 +219,18 @@
    {
     "name": "it stands in its cell",
     "ok": true,
-    "value": "0.1% of it lies in front of its cell"
+    "value": "0.0% of it lies in front of its cell"
    }
   ]
  },
  {
   "key": "bone+venom",
-  "failed": 1,
+  "failed": 0,
   "checks": [
    {
     "name": "where it stands is marked",
-    "ok": false,
-    "value": "not marked: node tools/art/feet.mjs lasher"
+    "ok": true,
+    "value": "0.52, 0.86, 0.8"
    },
    {
     "name": "idle: loop closes",

@@ -1,7 +1,7 @@
 {
  "kind": "phalanx",
  "frames": 181,
- "atlasKB": 828,
+ "atlasKB": 829,
  "pages": 1,
  "failed": 0,
  "checks": [
@@ -344,11 +344,6 @@
    "name": "views are one size",
    "ok": true,
    "value": "0.72 0.68 0.68 0.64 0.61"
-  },
-  {
-   "name": "atlas page 1 is under 900 KB",
-   "ok": true,
-   "value": "828 KB"
   }
  ]
 }

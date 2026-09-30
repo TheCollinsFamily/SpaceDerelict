@@ -558,7 +558,12 @@ body.in-ship #topbar, body.in-ship #botbar { visibility: hidden; }
 /* The city above, a thin wireframe along the street line; the meteor's dome in the middle of it. */
 #under.scan #under-surface { height: 56px; background: transparent; border-bottom: 1px solid #5f8a92; overflow: visible; margin-left: 16px; }
 #under.scan #under-surface .skyline { position: absolute; inset: 4px 0 0 0; width: 100%; height: calc(100% - 4px); fill: none; stroke: #4e7a82; stroke-width: 1; vector-effect: non-scaling-stroke; opacity: 0.8; }
-#under.scan #under-surface span { color: #6f9aa2; }
+/* The STREET LEVEL tag sits ON the street line, on its own dark plate (Sep 30 2026 fix pass: it was lettered over
+   the skyline's houses, and every tile set's skyline runs the whole width, so no bare spot is safe to letter on). */
+#under.scan #under-surface span {
+  z-index: 2; left: 10px; bottom: 0; transform: translateY(50%); padding: 2px 7px 2px 9px; line-height: 1;
+  color: #9ec4ca; opacity: 1; background: #0a1417; border: 1px solid #5f8a92; border-radius: 2px;
+}
 /* The city above as the board's own kind of place (a generated wireframe per tile set, drawn on black: 'screen' drops the black). */
 #under.scan #under-surface .skyline-img { position: absolute; inset: -18px 0 0 0; background: center bottom / 100% 100% no-repeat; mix-blend-mode: screen; opacity: 0.95; pointer-events: none; }
 #under.scan #under-surface.has-skyline .skyline { display: none; }

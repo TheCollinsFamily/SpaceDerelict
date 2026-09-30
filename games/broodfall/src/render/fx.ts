@@ -37,6 +37,11 @@ export interface FxView {
   mouth?(from: Pt, o?: { family?: string; dir?: Pt; k?: number }): Mouth | null;
   /** Where a hive gun standing at `from` fires from (src/render/unitMuzzles.ts), or null. */
   gun?(from: Pt): Mouth | null;
+  /**
+   * A thrower standing at `from` (lobber, sling): where on the screen its arm lets go, and how many seconds
+   * of its firing clip are left before it does (src/render/releases.ts). Null: not a thrower with a mark.
+   */
+  release?(from: Pt): { x: number; y: number; wait: number } | null;
   /** How high the ground is there, in board pixels (a roof is higher than a street). */
   floor(wx: number, wy: number): number;
   /** Board pixels on the screen per world pixel, across the ground. */
@@ -64,6 +69,7 @@ class Pool {
     s.rotation = 0;
     s.anchor.set(0.5, 0.5);
     s.scale.set(1);
+    s.blendMode = 'normal';
     return s;
   }
   end(): void { for (let i = this.used; i < this.list.length; i++) this.list[i].visible = false; }
@@ -80,10 +86,17 @@ export class FxLayer {
   private groundPool = new Pool(this.ground);
   private airPool = new Pool(this.air);
   private glowPool = new Pool(this.glow);
+  /**
+   * What is done to a unit (web, poison, flames), in the renderer's depth-sorted layer at the unit's own
+   * depth, so a block standing in front of the unit hides them as it hides the unit (Sep 30 2026 fix pass:
+   * they were drawn over everything). Set by the renderer (`statusIn`); without it they go in the air.
+   */
+  private statusPool: Pool | null = null;
 
   private shots = new Map<number, { pic: string; x: number; y: number; up: number; up0: number; ttl0: number; seen: number; off: Pt; born: number; from: Pt | null }>();
   private shells = new Map<number, { pic: string; to: { x: number; y: number }; land: [string, number, boolean]; seen: number }>();
-  private lobs = new Map<number, { pic: string; to: { x: number; y: number }; land: [string, number, boolean]; seen: number }>();
+  /** `fr`: the share of its flight at which the thrower lets go (0: from the start); `a`: where it let go. */
+  private lobs = new Map<number, { pic: string; to: { x: number; y: number }; land: [string, number, boolean]; seen: number; fr: number; a: Pt | null }>();
   private arcsSeen = new WeakSet<object>();
   private bursts: Burst[] = [];
   /** The frame a limb last puffed at its muzzle, by where it stands. */
@@ -128,16 +141,21 @@ export class FxLayer {
     this.bursts.push({ id, x: p.x, y: p.y, t: 0, dur, size, rot: (this.frame * 2.39996) % (Math.PI * 2), glow: ADDED.has(id), grow });
   }
 
+  /** The layer (sorted by zIndex) that what is done to a unit is drawn in, with the unit. */
+  statusIn(box: Container): void {
+    this.statusPool = new Pool(box);
+  }
+
   /** Before anything of this frame is drawn (the units draw what is done to them in between). */
   begin(dt: number): void {
     this.frame++;
     this.clock += dt;
-    this.groundPool.begin(); this.airPool.begin(); this.glowPool.begin();
+    this.groundPool.begin(); this.airPool.begin(); this.glowPool.begin(); this.statusPool?.begin();
   }
 
   /** After everything of this frame: what was not drawn again is hidden. */
   end(): void {
-    this.groundPool.end(); this.airPool.end(); this.glowPool.end();
+    this.groundPool.end(); this.airPool.end(); this.glowPool.end(); this.statusPool?.end();
   }
 
   draw(sim: Sim, v: FxView, dt: number): void {
@@ -214,9 +232,9 @@ export class FxLayer {
   }
 
   /** A lobbed thing: where it is at `f` of its flight between two world points, and a little further on. */
-  private lobbed(v: FxView, from: { x: number; y: number }, to: { x: number; y: number }, f: number, arc: number): { here: Pt; ahead: Pt; ground: Pt } {
-    // From the muzzle of the limb (or the barrel of the hive gun) that threw it.
-    const a: Pt = v.mouth?.(from) ?? v.gun?.(from) ?? v.at(from.x, from.y, v.muzzle(from.x, from.y));
+  private lobbed(v: FxView, from: { x: number; y: number }, to: { x: number; y: number }, f: number, arc: number, let0?: Pt): { here: Pt; ahead: Pt; ground: Pt } {
+    // From the muzzle of the limb (or the barrel of the hive gun) that threw it; a thrower's, where its arm let go.
+    const a: Pt = let0 ?? v.mouth?.(from) ?? v.gun?.(from) ?? v.at(from.x, from.y, v.muzzle(from.x, from.y));
     const b = v.at(to.x, to.y, v.floor(to.x, to.y) + 6);
     const place = (u: number) => ({ x: a.x + (b.x - a.x) * u, y: a.y + (b.y - a.y) * u - Math.sin(u * Math.PI) * arc });
     const gx = from.x + (to.x - from.x) * f;
@@ -245,19 +263,33 @@ export class FxLayer {
       this.shadow(ground, st.pic === 'dart' ? 8 : 14);
       this.flying(st.pic, here, ahead);
     }
-    const flights: Array<{ id: number; from: { x: number; y: number }; to: { x: number; y: number }; f: number; pic: string; arc: number; land: [string, number, boolean] }> = [];
-    for (const b of sim.bileFlights) flights.push({ id: b.id, from: b.from, to: b.to, f: 1 - b.ttl / 0.9, pic: 'bile', arc: 36 * v.scale, land: ['acid-splash', Math.max(0.5, Math.min(1.1, b.aoe / 35)), true] });
-    for (const c of sim.clotFlights) flights.push({ id: c.id, from: c.from, to: c.to, f: 1 - c.ttl / 1.2, pic: 'clot', arc: 40 * v.scale, land: ['flesh-splat', 0.8, true] });
+    const flights: Array<{ id: number; from: { x: number; y: number }; to: { x: number; y: number }; f: number; secs: number; pic: string; arc: number; land: [string, number, boolean] }> = [];
+    for (const b of sim.bileFlights) flights.push({ id: b.id, from: b.from, to: b.to, f: 1 - b.ttl / 0.9, secs: 0.9, pic: 'bile', arc: 36 * v.scale, land: ['acid-splash', Math.max(0.5, Math.min(1.1, b.aoe / 35)), true] });
+    for (const c of sim.clotFlights) flights.push({ id: c.id, from: c.from, to: c.to, f: 1 - c.ttl / 1.2, secs: 1.2, pic: 'clot', arc: 40 * v.scale, land: ['flesh-splat', 0.8, true] });
     for (const fl of flights) {
+      const f = Math.max(0, Math.min(1, fl.f));
       let st = this.lobs.get(fl.id);
       if (!st) {
-        st = { pic: fl.pic, to: { ...fl.to }, land: fl.land, seen: 0 };
+        // A thrower lets go on the release frame of its firing clip, not as the clip begins: until then the
+        // glob is in its cup (drawn by the limb), and it flies the rest of the sim's flight from there.
+        const rel = v.release?.(fl.from) ?? null;
+        st = { pic: fl.pic, to: { ...fl.to }, land: fl.land, seen: 0, fr: rel ? Math.min(0.6, f + rel.wait / fl.secs) : 0, a: null };
         this.lobs.set(fl.id, st);
-        const mo = v.mouth?.(fl.from);
-        if (mo) this.burst('sedation-puff', mo, 24 * v.scale, 0.25, 0.4);
+        if (!rel) {
+          const mo = v.mouth?.(fl.from);
+          if (mo) this.burst('sedation-puff', mo, 24 * v.scale, 0.25, 0.4);
+        }
       }
       st.seen = this.frame;
-      const { here, ahead, ground } = this.lobbed(v, fl.from, fl.to, Math.max(0, Math.min(1, fl.f)), fl.arc);
+      if (st.fr > 0 && !st.a) {
+        if (f < st.fr) continue;
+        // The moment it is let go: where the arm is now, a puff there.
+        const rel = v.release?.(fl.from);
+        st.a = rel ? { x: rel.x, y: rel.y } : (v.mouth?.(fl.from) ?? v.at(fl.from.x, fl.from.y, v.muzzle(fl.from.x, fl.from.y)));
+        this.burst('sedation-puff', st.a, 24 * v.scale, 0.25, 0.4);
+      }
+      const u = st.fr > 0 ? Math.min(1, (f - st.fr) / (1 - st.fr)) : f;
+      const { here, ahead, ground } = this.lobbed(v, fl.from, fl.to, u, fl.arc, st.a ?? undefined);
       this.shadow(ground, 16);
       this.flying(fl.pic, here, ahead);
     }
@@ -433,12 +465,21 @@ export class FxLayer {
   /**
    * What is done to a unit, on the unit: a web over one that is snared, a puff of poison over
    * one that is poisoned, flames licking up off one that burns. `r`: its size in board pixels.
+   * `z`: the unit's zIndex: they are drawn just over it, and under whatever stands in front of it.
    */
-  status(p: Pt, r: number, snared: boolean, poisoned: boolean, burning: boolean, seed: number): void {
+  status(p: Pt, r: number, snared: boolean, poisoned: boolean, burning: boolean, seed: number, z?: number): void {
+    const sorted = z !== undefined ? this.statusPool : null;
+    const take = (tex: Texture, glow = false): Sprite => {
+      if (!sorted) return (glow ? this.glowPool : this.airPool).take(tex);
+      const s = sorted.take(tex);
+      s.zIndex = z! + (glow ? 0.3 : 0.2);
+      if (glow) s.blendMode = 'add';
+      return s;
+    };
     if (snared) {
       const t = this.tex('web-mat');
       if (t) {
-        const s = this.airPool.take(t);
+        const s = take(t);
         s.position.set(p.x, p.y + r * 0.2);
         s.scale.set((r * 2.4) / t.width, (r * 1.7) / t.height);
         s.rotation = seed;
@@ -448,7 +489,7 @@ export class FxLayer {
     if (poisoned) {
       const t = this.tex('poison-cloud');
       if (t) {
-        const s = this.airPool.take(t);
+        const s = take(t);
         s.position.set(p.x + Math.sin(this.clock * 1.5 + seed) * r * 0.2, p.y - r * 0.9);
         s.scale.set((r * 1.3) / t.width);
         s.rotation = this.clock * 0.6 + seed;
@@ -459,7 +500,7 @@ export class FxLayer {
       const k = 1 + ((Math.floor(this.clock * 12) + seed) % 2);
       const t = this.tex(`flame-${k}`);
       if (t) {
-        const s = this.glowPool.take(t);
+        const s = take(t, true);
         s.anchor.set(0, 0.5);
         s.position.set(p.x, p.y + r * 0.3);
         s.rotation = -Math.PI / 2;

@@ -44,17 +44,17 @@ export const KEYS = { green: { hex: '00FF00', name: 'green' }, blue: { hex: '000
  */
 export const VARIANTS = {
   spitter: {
-    bone: { key: 'green', foot: [0.49, 0.76, 0.8], muzzle: [[0.36, 0.06]],
+    bone: { key: 'green', foot: [0.49, 0.76, 0.8], muzzle: [[0.36, 0.06]], backFoot: [0.51, 0.8, 0.75], backMuzzle: [[0.62, 0.03]],
       change: 'it is armoured and heavier. Thick overlapping plates of ivory bone clad its whole stalk like a cuirass, a crest of short curved ivory bone spikes rings the base of its nozzle and runs down its back, and its mound is broader and more massive. The puckered fleshy nozzle stays at its top, pointing up and forward.' },
-    swarm: { key: 'green', foot: [0.5, 0.79, 0.76], muzzle: [[0.04, 0.19], [0.44, 0.03], [0.86, 0.19]],
+    swarm: { key: 'green', foot: [0.5, 0.79, 0.76], muzzle: [[0.04, 0.19], [0.44, 0.03], [0.86, 0.19]], backFoot: [0.5, 0.79, 0.78], backMuzzle: [[0.18, 0.12], [0.48, 0.02], [0.82, 0.14]],
       idle: 'The organism breathes slowly and only slightly: its flesh swells and relaxes a little, its plates shift a little against each other. The three nozzles pucker and loosen one after another.',
       fire: 'The three nozzles clench shut, the stalks tighten, and all three spit a glob of dark fluid forward and up with a snap, then relax back to exactly their starting pose.',
       change: 'it has multiplied. Its single stalk has split into THREE shorter stalks fanning out from the one mound, each topped by its own puckered fleshy nozzle pointing up and forward, and small round fleshy buds cluster around its base.' },
-    venom: { key: 'blue', foot: [0.48, 0.8, 0.8], muzzle: [[0.26, 0.07]],
+    venom: { key: 'blue', foot: [0.48, 0.8, 0.8], muzzle: [[0.26, 0.07]], backFoot: [0.5, 0.81, 0.79], backMuzzle: [[0.65, 0.03]],
       change: 'it is swollen with venom. Big bulging acid yellow-green glands, glistening and faintly glowing, swell out between its plates and ring the neck under its nozzle, and a thick drop of yellow-green venom hangs from the rim of the puckered nozzle.' },
-    reach: { key: 'green', foot: [0.5, 0.86, 0.83], muzzle: [[0.52, 0.03]],
+    reach: { key: 'green', foot: [0.5, 0.86, 0.83], muzzle: [[0.52, 0.03]], backFoot: [0.49, 0.85, 0.83], backMuzzle: [[0.53, 0.01]],
       change: 'it reaches farther. Its stalk is stretched half again as tall into a long upright neck of muscle with the puckered nozzle at its top, and glassy milky-white strands of mucus run from high on the neck down to the ground on both sides like taut guy-ropes, with two small pale eyes on the neck.' },
-    'swarm+venom': { key: 'blue', foot: [0.51, 0.84, 0.8], size: 1.25, muzzle: [[0.25, 0.14], [0.47, 0.02], [0.69, 0.14], [0.18, 0.27], [0.53, 0.26]],
+    'swarm+venom': { key: 'blue', foot: [0.51, 0.84, 0.8], size: 1.25, muzzle: [[0.25, 0.14], [0.47, 0.02], [0.69, 0.14], [0.18, 0.27], [0.53, 0.26]], backFoot: [0.5, 0.85, 0.8], backMuzzle: [[0.26, 0.1], [0.44, 0.01], [0.62, 0.12], [0.73, 0.23]],
       idle: 'The organism breathes slowly and only slightly: its swollen body and its glands swell and relax a little. The five nozzles pucker and loosen one after another.',
       fire: 'The five nozzles clench shut, the hive-like body tightens, and the nozzles spit globs of dark fluid forward and up one after another with a snap, then everything relaxes back to exactly its starting pose.',
       change: 'it has become a SUPERSTRUCTURE, a Spore Hive, half again as tall and much bigger than before: a swollen hive-like body raising FIVE puckered spitting nozzles on short necks in a ring, all pointing up and forward, the body studded all over with big bulging glistening acid yellow-green venom glands that glow faintly and drip.' },

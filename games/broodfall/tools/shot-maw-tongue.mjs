@@ -232,7 +232,7 @@ try {
       { name: 'maw-tongue-2-stuck', at: 0.26, label: 'STUCK' },
       { name: 'maw-tongue-3-halfway', at: 0.52, label: 'HALFWAY HOME' },
       { name: 'maw-tongue-4-lips', at: 0.64, label: 'AT THE LIPS' },
-      { name: 'maw-tongue-4b-gulp', at: 0.9, label: 'GULP' },
+      { name: 'maw-tongue-4b-gulp', at: 0.8, label: 'GULP' },
       { name: 'maw-tongue-5-swallowed', at: 1.02, label: 'SWALLOWED' },
     ];
     const pngs = [];
@@ -295,6 +295,8 @@ try {
       // Its fire held first (a cooldown wound up reads as a strike on its last target: let that one play out).
       await page.evaluate((id) => { const t = window.broodfall.sim.towers.find((x) => x.id === id); t.cooldown = 99; }, s.mawId);
       await s.ticks(40);
+      // The wave's banner (it starts in those ticks) fades on the page's own clock.
+      await page.waitForTimeout(4500);
       await page.evaluate(() => { const s = window.broodfall.sim; s.enemies.length = 0; });
       const [prey] = await s.put([{ kind: 'soldier', cell: behind, hp: 12 }]);
       await s.ticks(2);
@@ -306,7 +308,7 @@ try {
       }
       check(on, 'from behind: the Maw catches the soldier up the street');
       const back = [];
-      for (const w of [{ n: 'maw-tongue-7-behind-out', at: 0.14, label: 'FROM BEHIND: OUT' }, { n: 'maw-tongue-8-behind-home', at: 0.5, label: 'FROM BEHIND: HOME' }, { n: 'maw-tongue-9-behind-gulp', at: 0.9, label: 'FROM BEHIND: GULP' }]) {
+      for (const w of [{ n: 'maw-tongue-7-behind-out', at: 0.14, label: 'FROM BEHIND: OUT' }, { n: 'maw-tongue-8-behind-home', at: 0.5, label: 'FROM BEHIND: HOME' }, { n: 'maw-tongue-9-behind-gulp', at: 0.8, label: 'FROM BEHIND: GULP' }]) {
         for (let i = 0; i < 60; i++) { const t = await page.evaluate(() => window.broodfall.tongues()[0]?.t ?? 9); if (t >= w.at) break; await s.ticks(1); }
         back.push({ png: await s.shot(w.n), label: w.label });
       }

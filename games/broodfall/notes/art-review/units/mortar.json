@@ -344,11 +344,6 @@
    "name": "views are one size",
    "ok": true,
    "value": "0.69 0.71 0.67 0.71 0.72"
-  },
-  {
-   "name": "atlas page 1 is under 900 KB",
-   "ok": true,
-   "value": "467 KB"
   }
  ]
 }

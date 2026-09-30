@@ -242,3 +242,5 @@ html.reduce-motion .globe-box.g3d .site.attack circle { animation: none; }
 #campaign.ship-art .cp-notebook .cp-lin { grid-template-columns: 56px 110px minmax(0, 1fr) fit-content(104px); }
 /* The planet's names are drawn past the edge of the globe's box, not cut at it. */
 .globe-box svg { overflow: visible; }
+/* The settings gear stays a readable size in the compact bar. */
+#campaign.ship-art .cp-rooms .cp-room.cp-tool[data-act="settings"] { font-size: 14px; line-height: 1; padding-left: 9px; padding-right: 9px; }
