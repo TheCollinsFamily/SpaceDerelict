@@ -21,6 +21,8 @@ export interface IntroArt {
   /** His quarters on the ship (a room's picture) and the partner candidate's portrait. */
   quarters?: string;
   partner?: string;
+  /** The boss's transmission (tools/art/boss.mjs): his clip, his still, his voice. */
+  boss?: { video?: string; poster?: string; voice?: string };
 }
 
 let intro: Promise<IntroArt | null> | null = null;
@@ -37,6 +39,7 @@ export function loadIntroArt(): Promise<IntroArt | null> {
         menu: j.menu?.video ? { ...j.menu, video: whole(j.menu.video)!, poster: whole(j.menu.poster) } : undefined,
         quarters: whole(j.quarters),
         partner: whole(j.partner),
+        boss: j.boss ? { video: whole(j.boss.video), poster: whole(j.boss.poster), voice: whole(j.boss.voice) } : undefined,
       };
     })
     .catch(() => null);

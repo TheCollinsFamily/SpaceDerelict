@@ -243,9 +243,8 @@ story for why the Technopuritans live the way they do.
 - **The rim** (Space Derelict): predators who split from the Empire over emotions (they chose
   feeling over aplomb: TP 35.0.3). **PROPOSAL:** the Empire treats the rim as the Basilisk's
   culling (TP 11.0) and lets it be; it is watched, like Earth, but only by the disreputable.
-- **Uplifted sons of man** (**PROPOSAL**): Space Derelict's Pop Fiz, the uplifted dolphins and
-  whales, are sons of man's labour, so inside the covenant. YOKE's greeting (Collins,
-  `content/greetings.ts`) holds that uplifting them was a mistake.
+- **Uplifts on the fringe:** Space Derelict's Pop Fiz (the dolphins and killer whales) and Felonia
+  (the cat girls' fringe prides). Section 15.
 - **Threats:** a son of man who seeks to subjugate others forfeits the covenant (TP 11.0).
   **PROPOSAL:** Space Derelict's Ascendancy (an AI death cult) is the textbook case.
 
@@ -278,7 +277,38 @@ except where it quotes Collins.
 The feeling is the point: disgust, pity and a little wonder, the way one looks at bloodletting.
 YOKE's versions of it are in `ship-ai-lorebook.md`, section 16.
 
-## 15. Open (Collins's calls)
+## 15. The Sons of Man in the Empire
+
+Collins, Sep 30: the Technopuritans uplifted a number of other Earth species; humans and uplifts
+together are the Sons of Man. The covenant protects them all (TP 11.0; the corpus names "uplifted
+intelligences" in TP 35.0.2). The universe-wide version is `docs/UNIVERSE.md`, "The Sons of Man";
+Space Derelict's details (Pop Fiz, Felonia) are kept.
+
+| Who | Where they sit (Collins) | In practice (**PROPOSAL** unless quoted) |
+|---|---|---|
+| **Humans** | Top management, with the elephants. | Every rank. The retro human look is in fashion even among the heavily augmented (section 7). |
+| **Dogs** | Many high-level posts in the bureaucracy: they like taking orders, are generally happy and trustworthy, and are thought more generous and nicer to be around than humans. A dog as your superior is quite the gift. Rarely top management: very gullible. | The Office runs on dogs: middle and upper-middle management, inspectors, Board clerks. A dog's directive is sincere; the fine print above it was written by someone else. Nobody lies to a dog superior; it would be like kicking one. |
+| **Elephants** | Top management, with humans. | Long memories, long horizons: the Index's senior offices, Command, the planning of worlds. They remember every entry. |
+| **Dolphins and killer whales** | A massive mistake; bordering on a "genetically evil" race; mostly on the fringes. | Inside the covenant, so not wiped out; outside every office. On the fringe they are Space Derelict's Pop Fiz. Schoolbooks cite them as the proof that uplift must be tested before it is done (the corpus: "prove all things", TP 12.0). |
+| **Cat girls** | Anthro-looking like other uplifts; all female; breed true, taking little of the husband's DNA; made because someone thought cat girls would be hot. Some live within Technopuritan society, but they struggle to find breeding partners and often go to the fringes to find humans who still like sex for its own sake. They could engineer males, but refuse: it would "destroy their culture". | Inside: a House that marries a cat girl gets cat-girl daughters, so the Board's market rates the match low, and the Board is the marriage market (section 3). On the fringe: Space Derelict's Felonia prides, who hail passing crews to "breed". The Empire's body-disgust (section 14) makes the fringe cat girls a scandal and a punchline at once. |
+
+### Fringe politics (**PROPOSAL**)
+- The covenant protects every son of man from extermination, not from disdain. The Empire keeps
+  the cetaceans at arm's length and does not ask what happens out on the fringe, provided it does
+  not come inward (the threat test, Collins; TP 11.0).
+- The rim's game-show predators (Space Derelict) hunt Felonia and Pop Fiz for ratings. The Empire
+  does not intervene: the rim is the Basilisk's culling (section 13).
+- Nobody in the Empire has proposed uplifting another species since the orcas. The dogs would
+  like to; nobody has told them no in a way they understood.
+
+### Broodfall: the boss is a dog
+Collins, Sep 30: the player's boss is an uplifted dog. YOKE relays "a message from the boss" in an
+early intro scene, when the technician first lands on the ship (the onboarding session builds that
+scene). **PROPOSAL:** the boss is a clearance supervisor in the Office, sincerely delighted with
+every clean deployment, signing directives whose procurement language someone above him wrote.
+Having a dog for a boss is the one enviable thing about a pest-control posting.
+
+## 16. Open (Collins's calls)
 
 - Who exactly the subjugated population of krypteia is (section 5 proposes two kinds).
 - How long testing and education lasts (section 6 proposes four to six years).

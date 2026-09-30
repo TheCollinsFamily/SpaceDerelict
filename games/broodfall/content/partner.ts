@@ -18,3 +18,10 @@ export const PARTNER = {
   statement: 'Statement of the candidate (twenty words at most): "I am told you are punctual. I am punctual. That seems a good place to start."',
   boardNote: 'The Board will decide on the match when the applicant\'s standing reaches {need} (now {standing}). The Board congratulates you on your continued eligibility to remain eligible.',
 };
+
+/** The letter in his inbox after the cat girl greeting (Collins, Sep 30 2026), declined for him. */
+export const CATGIRL_MAIL = {
+  from: 'From: Mirelle, Felid Concord (consular mission)',
+  subject: 'Re: a proposal (non-procreative) :3',
+  status: 'DECLINED ON YOUR BEHALF BY YOKE. Reason given: "pound sand."',
+};

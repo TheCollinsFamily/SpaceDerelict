@@ -198,7 +198,8 @@ rfab.ai, and she is who answers in the AI Core by default.
   (the 21st-century collapse, charter cities, the rise, Earth as the zoo), the doctrine
   ported from technopuritan.com with citation ids (`TP 11.0` etc.), the index, krypteia,
   spouses and wombs (100 children a couple, about 50 enter the index), bodies (~40%
-  organic), and how the Empire looks back on the 21st century. Shared canon:
+  organic), the Sons of Man (the uplifts; the boss is an uplifted dog), and how the Empire
+  looks back on the 21st century. Shared canon:
   `docs/UNIVERSE.md` (repo root). YOKE's side of it, and her pools of Earth-news,
   krypteia, "an AI?" and old-world-horror lines, are `ship-ai-lorebook.md` sections 15-16;
   her `[[PRINT_BODY]]` tag (section 15) asks the game for the print-a-body scene. Her brain

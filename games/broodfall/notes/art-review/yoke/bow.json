@@ -1,17 +1,17 @@
 {
- "state": "nod",
+ "state": "bow",
  "kind": "oneShot",
- "frames": 151,
- "seconds": 6.29,
- "kb": 1351,
+ "frames": 139,
+ "seconds": 5.79,
+ "kb": 1107,
  "studio": {
   "keyColour": [
    16,
    240,
    32
   ],
-  "similarityPct": 44,
-  "endFrame": 150,
+  "similarityPct": 45,
+  "endFrame": 138,
   "loop": "none",
   "chromaKeyFrom": "C:\\Users\\Merry\\dev\\reality-fabricator\\reality-fabricator-frontend\\src\\assets\\vtuber-creator\\model-exporter.js"
  },
@@ -20,12 +20,12 @@
   {
    "name": "it ends where it began",
    "ok": true,
-   "value": 3.74
+   "value": 5.31
   },
   {
    "name": "she moves",
    "ok": true,
-   "value": 13.1
+   "value": 19.55
   },
   {
    "name": "no green on her outline",
@@ -35,7 +35,7 @@
   {
    "name": "she fills the stage as a person does",
    "ok": true,
-   "value": "24-24% of it"
+   "value": "20-24% of it"
   },
   {
    "name": "she stays under the top edge",

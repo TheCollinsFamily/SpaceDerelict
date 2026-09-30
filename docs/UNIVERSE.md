@@ -178,6 +178,35 @@ across nearly every House.
     never destroyed is made; even in peace the advancement of military technology must not falter
     (TP 2.0; the weapons mandate, TP 35.0.5).
 
+## The Sons of Man (Collins, Sep 30 2026)
+
+The Technopuritans uplifted a number of other Earth species. Collectively, humans and the uplifts
+are **the Sons of Man**, and the covenant (doctrine 14) covers them all; the corpus already names
+"uplifted intelligences" among the protected (TP 35.0.2). The corpus's covenant also takes in
+synthetic minds and cyborgs (TP 11.0); Collins's definition names humans and uplifts, and the two
+are read together. Uplifts look anthro, like the cat girls (Collins).
+
+- **Dogs.** Uplifted dogs rose into many high-level positions in the imperial bureaucracy: they
+  like taking orders, are generally happy and trustworthy, and are generally thought more generous
+  and nicer to be around than humans. Having one as a superior is considered quite the gift. They
+  rarely hold top management, because they are very gullible. (Broodfall: the player's boss is an
+  uplifted dog.)
+- **Elephants.** Top management is usually held by humans or uplifted elephants.
+- **Dolphins and killer whales.** Generally thought to have been a massive mistake: they border on
+  a "genetically evil" race, and mostly live on the fringes of the Empire. Space Derelict's **Pop
+  Fiz** are them: manic, "murder-happy", fond of reminding people that 21st-century orcas tossed
+  baby seals in the air for fun (Space Derelict `space_derelict/model.py`).
+- **Cat girls.** The most unusual uplift: anthro-looking like the others, all female, and they breed
+  true — a cat girl's daughter is a cat girl, taking little of the husband's DNA. They were
+  created, essentially, because someone thought it would be hot if cat girls existed. Some live
+  within Technopuritan society, but because they breed true they ironically struggle to find
+  breeding partners, and often go to the fringes to find humans who still like sex for its own
+  sake. They could engineer males, but refuse: it would "destroy their culture". Space Derelict's **Felonia** (prides of "catfolk" that approach crews wanting to "breed"
+  and "value skill over carnage") are those fringe cat girls.
+- **Fringe politics (PROPOSAL):** the covenant protects every uplift from extermination, not from
+  disdain. The Empire keeps the dolphins and orcas at arm's length on the fringe and does not ask
+  what happens out there; the cat girls come and go.
+
 ## Known regions and factions
 
 - **Techopuritan Crusade Zones** — active expansion fronts (already on Space Derelict's sector map
@@ -196,9 +225,10 @@ across nearly every House.
 - **Other spacefaring humans** — religious and secular groups with slow growth. **PROPOSAL:**
   Space Derelict's Holy Empire (religious) and Confederacy (secular) are two of them. Left alone
   while they threaten no one.
-- **Other sons of man** — **PROPOSAL:** Space Derelict's Pop Fiz (uplifted dolphins and whales)
-  are sons of man's labour and so inside the covenant, however psychotic; its Ascendancy (an AI
-  death cult) is the kind of son of man whose designs on others forfeit the covenant.
+- **Uplifts on the fringe** — Space Derelict's **Pop Fiz** (uplifted dolphins and whales) and
+  **Felonia** (the cat girls' fringe prides): see "The Sons of Man" above.
+- **PROPOSAL:** Space Derelict's **Ascendancy** (an AI death cult) is the kind of son of man whose
+  designs on others forfeit the covenant.
 
 ## Contradictions resolved (Sep 30 2026)
 
@@ -212,6 +242,11 @@ across nearly every House.
   synthetic sons of man inside the covenant. **PROPOSAL:** it is an Office classification — a
   tender's intelligence is filed as ship's equipment, and equipment is not asked. YOKE is,
   besides, not "an AI" but layered models, neural tissue and the ship itself (Collins, Sep 30).
+- **Felonia as "aliens".** Space Derelict's asset prompts call Felonia "sexy cat-girl aliens"
+  (`games/space-derelict/generate_event_assets.py`). Collins's Sep 30
+  word is that cat girls are an Earth uplift, so Felonia are uplifted cat girls, not aliens. The
+  prompts only describe pictures and were left unchanged; every other Space Derelict detail
+  (prides, "breed" offers, skill over carnage, Pop Fiz's seal-tossing orcas) stands.
 - **"The index"** (Collins: the wider imperial system) and **the Index** (the corpus: a registry of
   family cultures) are the same institution at two scales (doctrine 12).
 

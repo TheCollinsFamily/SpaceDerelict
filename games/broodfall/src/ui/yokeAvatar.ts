@@ -390,7 +390,7 @@ export class YokeAvatarUi implements ShipAiProvider {
         const talking = voiceClip(beat.emotion ?? FACE[this.restFace] ?? 'calm', this.have);
         if (!this.skipped) {
           if (talking) this.show(talking);
-          if (sound && !this.muted && this.inRoom) await Promise.race([this.sing(sound), cut]);
+          if (sound && !this.muted && this.inRoom) await Promise.race([this.sing(sound, Math.min(7000, 900 + beat.text.length * 55)), cut]);
           // Read, not heard: she speaks for as long as the sentence would take to say.
           else await Promise.race([wait(Math.min(7000, 900 + beat.text.length * 55)), cut]);
         }
@@ -405,7 +405,8 @@ export class YokeAvatarUi implements ShipAiProvider {
     if (this.beats.length) void this.drain(); else this.rest();
   }
 
-  private sing(bytes: ArrayBuffer): Promise<void> {
+  /** `readMs`: how long the line takes to read, when the browser will not play the sound (no click on the page yet). */
+  private sing(bytes: ArrayBuffer, readMs = 0): Promise<void> {
     return new Promise<void>((done) => {
       this.hush();
       const url = URL.createObjectURL(new Blob([bytes], { type: 'audio/mpeg' }));
@@ -424,7 +425,7 @@ export class YokeAvatarUi implements ShipAiProvider {
       a.onerror = end;
       a.onpause = () => { if (!a.ended) end(); };
       // A sound that cannot be played (no device, or the browser forbids it) must not leave her stuck on a sentence.
-      void a.play().catch(end);
+      void a.play().catch(() => { if (readMs) setTimeout(end, readMs); else end(); });
       setTimeout(end, 30000);
     });
   }

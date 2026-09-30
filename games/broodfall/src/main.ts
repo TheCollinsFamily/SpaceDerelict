@@ -533,7 +533,13 @@ function campaignDebrief(): void {
   const where = territory ? territoryDef(territory).name : '';
   const verdict = outcome === 'won' ? `${where.toUpperCase()} TAKEN` : outcome === 'held' ? 'COUNTER-ATTACK REPELLED' : 'DEPLOYMENT FAILED';
   const ui = campaignUi;
-  const back = () => { location.href = `${location.pathname}?campaign=ship`; };
+  // Aboard in the same page, so that the click on the report's button lets her voice be heard
+  // (a browser will not play sound on a page nobody has clicked); a reload lands on the ship.
+  const back = () => {
+    history.replaceState(null, '', `${location.pathname}?campaign=ship`);
+    document.getElementById('board-goals')!.classList.add('hidden');
+    ui.show({ greet: true });
+  };
   void debriefPictures(runPictures(outcome, verdict,
     outcome === 'lost' ? `${where} · the asset was lost after ${sim.wavesCleared} wave${sim.wavesCleared === 1 ? '' : 's'}` : `${where} · ${sim.wavesCleared} wave${sim.wavesCleared === 1 ? '' : 's'} held`,
     [['waves held', String(sim.wavesCleared)], ['districts taken', String(sim.map.slots.filter(Boolean).length)], ['limbs grown', String(sim.stats.limbsGrown)], ['standing earned', `+${debrief.standing}`]]))
@@ -640,7 +646,13 @@ function setupScreens(): void {
   document.getElementById('debrief-ship')!.addEventListener('click', () => {
     debriefEl.classList.add('hidden');
     // Mission 1's report: CONTINUE is the way aboard, the first time the ship is seen.
-    if (FIRST) { location.href = `${location.pathname}?campaign=ship`; return; }
+    if (FIRST) {
+      history.replaceState(null, '', `${location.pathname}?campaign=ship`);
+      const s = loadCampaign();
+      if (s) { campaignUi = new CampaignUi(s, campaignHooks); campaignUi.show({ greet: true }); }
+      else location.href = `${location.pathname}?campaign=ship`;
+      return;
+    }
     showShip();
   });
   document.getElementById('ship-deploy')!.addEventListener('click', () => {

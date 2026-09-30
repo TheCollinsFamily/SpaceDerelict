@@ -169,14 +169,21 @@ try {
     await shot(page, '04-mission1-start');
     // A limb grown by real clicks: the first card, then a block it can stand on.
     await page.locator('#hand .card').first().click();
+    // A block the card can stand on, whose point on the screen a click really reaches (roofs stand up off the ground).
     const spot = await page.evaluate(() => {
       const b = window.broodfall;
       const fam = b.sim.hand[0].family;
-      const cell = b.buildableCells(400).find((c) => b.sim.canBuildTower(c, fam));
-      const p = b.sim.cellCenter(cell);
-      const s = b.worldToScreen(p.x, p.y);
       const r = b.renderer.app.canvas.getBoundingClientRect();
-      return { x: r.left + s.x * (r.width / s.vw), y: r.top + s.y * (r.height / (s.vh ?? r.height)) };
+      for (const cell of b.buildableCells(600)) {
+        if (!b.sim.groundFor(cell, fam, b.sim.facingTowardGate(b.sim.cellCenter(cell)))) continue;
+        const p = b.sim.cellCenter(cell);
+        const s = b.worldToScreen(p.x, p.y);
+        const x = r.left + s.x * (r.width / s.vw);
+        const y = r.top + s.y * (r.height / s.vh);
+        if (x < r.left + 40 || x > r.right - 40 || y < r.top + 40 || y > r.bottom - 40) continue;
+        if (b.cellAtClient(x, y) === cell) return { x, y, cell };
+      }
+      return null;
     });
     await page.mouse.move(spot.x, spot.y);
     await page.mouse.click(spot.x, spot.y);
@@ -366,8 +373,8 @@ try {
   if (want('C')) {
     console.log('C: REPLAY THE OPENING from the menu');
     const { ctx, page, errors } = await newPlayer(browser);
-    await page.goto(URL0, { waitUntil: 'load' });
-    await page.evaluate(() => { localStorage.setItem('broodfall-intro-seen', '1'); localStorage.setItem('broodfall-meta', JSON.stringify({ standing: 0, genes: [], runs: 1 })); });
+    await page.goto(`${URL0}?seed=1`, { waitUntil: 'load' });
+    await page.evaluate(() => { localStorage.removeItem('broodfall-campaign'); localStorage.removeItem('broodfall-campaign-pending'); localStorage.setItem('broodfall-intro-seen', '1'); localStorage.setItem('broodfall-meta', JSON.stringify({ standing: 0, genes: [], runs: 1 })); });
     await page.goto(URL0, { waitUntil: 'load' });
     await page.waitForSelector('#menu.console-menu:not(.hidden)');
     check(await page.locator('#menu-campaign').isHidden(), 'no campaign on record: no CONTINUE');

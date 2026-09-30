@@ -14,7 +14,9 @@ import { FallbackShipAi, RfabShipAi, campaignIdFor, type AiTrigger, type AiTurn,
 import { loadYoke, saveCampaign, saveYoke, type PendingDeployment, type YokeSettings } from '../meta/storage';
 import { YOKE_AVATAR, rungs, type YokeMode } from '../meta/yokeAvatar';
 import { YokeAvatarUi, type ScriptLine, type YokeTalk } from './yokeAvatar';
-import { deskOpen, greetingFor, shipPick } from '../meta/onboarding';
+import { EARLY_ONCE, deskOpen, greetingFor, shipPick } from '../meta/onboarding';
+import { BOSS_AFTER, BOSS_BRIDGE } from '../../content/boss';
+import { playBossCall } from './bossCall';
 import { CUES, type Greeting } from '../../content/greetings';
 import {
   DARES, EXPERIMENTS, FACTIONS, LICENCE_STANDING, LINEAGES, PROFILES, TERRITORIES,
@@ -27,7 +29,7 @@ import lore from '../../content/lore/ship-ai-lorebook.md?raw';
 import { artUrl, loadManifest, type ShipArt } from '../render/art';
 import { GLOBE, Globe, projectSite, type Zone } from './globe';
 import { loadIntroArt, type IntroArt } from './intro';
-import { PARTNER } from '../../content/partner';
+import { CATGIRL_MAIL, PARTNER } from '../../content/partner';
 import { PRINT_BODY } from '../../content/yokeScenes';
 import { YokeSceneOverlay, sceneMedia } from './yokeScene';
 
@@ -151,7 +153,7 @@ export class CampaignUi {
   private welcome(): void {
     const s = structuredClone(this.state);
     const { moment, greeting: g } = greetingFor(s, lore);
-    if (moment === 'mate-review') s.said = [...(s.said ?? []), 'mate-review'];
+    if (EARLY_ONCE.includes(moment)) s.said = [...(s.said ?? []), moment];
     s.greet = null;
     s.lastGreeting = g.id;
     this.state = s;
@@ -172,8 +174,24 @@ export class CampaignUi {
       if (!this.debriefing && !this.el.classList.contains('hidden')) this.render();
     };
     this.el.dataset.greeting = g.id;
-    if (this.avatar) void this.avatar.play(lines, said).then(over);
-    else { for (const l of lines) said(l.text); over(); }
+    void (async () => {
+      if (this.avatar) await this.avatar.play(lines, said);
+      else for (const l of lines) said(l.text);
+      // The first landing: a message from the boss, with her words around it (content/boss.ts).
+      if (g.boss && this.greeting === g) {
+        await this.yokeSays(BOSS_BRIDGE, CUES.surprised, said);
+        if (this.greeting === g) { this.el.dataset.boss = 'on'; await playBossCall(this.intro ?? await loadIntroArt()); delete this.el.dataset.boss; }
+        if (this.greeting === g) await this.yokeSays(BOSS_AFTER, CUES.teasing, said);
+      }
+      over();
+    })();
+  }
+
+  /** One line of hers, voiced when her voice can be had, read when not; resolves when it is said. */
+  private async yokeSays(text: string, face: readonly string[], onLine: (t: string) => void): Promise<void> {
+    let heard = false;
+    if (this.avatar) await this.avatar.play([{ text, face }], (t) => { heard = true; onLine(t); });
+    if (!heard) { onLine(text); await new Promise((r) => setTimeout(r, Math.min(7000, 900 + text.length * 55))); }
   }
 
   /** His talk with her anywhere on the ship (the same one the AI Core shows). */
@@ -471,7 +489,13 @@ export class CampaignUi {
           <p class="cp-pad-quote">${esc(PARTNER.statement)}</p>
           <p class="cp-note">${esc(PARTNER.boardNote.replace('{standing}', String(Math.min(s.standing, LICENCE_STANDING))).replace('{need}', String(LICENCE_STANDING)))}</p></div>`
       : `<div class="cp-pad"><div class="cp-pad-head">DATA PAD</div><p class="cp-note">No new correspondence. Licence application on file; standing ${s.standing} / ${LICENCE_STANDING}.</p></div>`;
-    return `<div class="cp-cols cp-quarters"><div>${pad}</div>
+    // His inbox: what came for him, and what became of it (the cat girl's letter, declined for him by YOKE).
+    const inbox = (s.said ?? []).includes('catgirl')
+      ? `<div class="cp-pad cp-inbox"><div class="cp-pad-head">INBOX</div>
+          <div class="cp-pad-row"><span>${esc(CATGIRL_MAIL.from)}</span><b>${esc(CATGIRL_MAIL.subject)}</b></div>
+          <p class="cp-note">${esc(CATGIRL_MAIL.status)}</p></div>`
+      : '';
+    return `<div class="cp-cols cp-quarters"><div>${pad}${inbox}</div>
       <div><div class="cp-label">PERSONAL LOG</div><div class="cp-log">${s.log.slice(-6).reverse().map((l) => `<div>${esc(l)}</div>`).join('')}</div></div></div>`;
   }
 
@@ -756,11 +780,7 @@ export class CampaignUi {
    * campaign; asked again, she refuses.
    */
   private async printBody(talk: YokeTalk): Promise<void> {
-    const say = async (text: string, face: readonly string[], onLine: (t: string) => void) => {
-      let heard = false;
-      if (this.avatar) await this.avatar.play([{ text, face }], (t) => { heard = true; onLine(t); });
-      if (!heard) { onLine(text); await new Promise((r) => setTimeout(r, Math.min(7000, 900 + text.length * 55))); }
-    };
+    const say = (text: string, face: readonly string[], onLine: (t: string) => void) => this.yokeSays(text, face, onLine);
     const push = (t: string) => talk.turns.push({ speaker: 'YOKE', text: t });
     if ((this.state.said ?? []).includes('print-body')) {
       await say(PRINT_BODY.refusal, CUES.teasing, push);

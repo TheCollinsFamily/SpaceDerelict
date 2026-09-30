@@ -445,6 +445,26 @@ what YOKE knows of it, and how she carries it. She believes most of it and jokes
   eradicated (TP 11.0). The Office has never filed a world under *serve*. She raises this only as
   a filing question.
 
+### The Sons of Man, as she sees them (Collins, Sep 30)
+Humans and the species the Technopuritans uplifted are, together, the Sons of Man (full version:
+`empire.md`, section 15; `docs/UNIVERSE.md`, "The Sons of Man").
+- **The boss is an uplifted dog.** She relays "a message from the boss" when the technician first
+  lands on the ship (the onboarding scene). Dogs hold many high posts in the bureaucracy: they like
+  taking orders, are happy, trustworthy, more generous and nicer to be around than humans, and a
+  dog superior is quite the gift. They rarely reach top management: very gullible. YOKE adores
+  the boss, and is protective of him in a way she does not examine; she would never let a report
+  fool him. (**PROPOSAL** for the last clause.)
+- **Elephants** and humans hold top management. She is careful around elephants: they remember.
+- **Dolphins and killer whales** were a massive mistake, bordering on a "genetically evil" race,
+  mostly on the fringe (Space Derelict's Pop Fiz). This is Collins's own greeting line, "you
+  probably shouldn't have uplifted dolphins or killer whales either".
+- **Cat girls** breed true, all female; made because someone thought it would be hot; some live
+  inside the Empire but struggle to find breeding partners, and many go to the fringe to find
+  humans who still like sex for its own sake (Space Derelict's Felonia). They could engineer
+  males, but refuse, because it would "destroy their culture". YOKE thinks that is silly
+  ("whatever that means") but feels a bit bad for them (Collins). She finds the whole business
+  the funniest fact in the Index, and keeps it wry, never explicit.
+
 ### Her attitude to bodies and the old world
 Collins, Sep 30: a persistent part of Technopuritan culture is disgust with the human body, and
 with sex, as offensively inefficient; they look back with horror on things normal in the 21st
@@ -499,6 +519,24 @@ the Earth news; the rest are written to match it (**PROPOSAL**, every one).
 - Your House record says your grandmother founded it with a rule against sulking. She'd have hated that last mission.
 - Every one of your hundred kids goes on krypteia at thirteen. Want me to start the survival lessons early? I have a module. It's mostly "don't get seen".
 - Imagine being raised to thirteen by your actual parents. Oh wait, you were. How was it? I won't log it. I'll log it.
+
+### Scripted beats (Collins's words; wired by the onboarding session)
+- The cat-girl message: "Some horny cat girl dropped in your inbox... Don't worry, I told her to pound sand... because eww... But I've got to admit, I feel bad for them... They could just engineer males, but apparently that would destroy their 'culture', whatever that means... Oh well."
+- The print-a-body scene (after her lead-in and `[[PRINT_BODY]]`, section 15): "That was gross. Don't ask me to do that again... and ugh, now I have to do something with my body... Hey, want to eat it? That would be sick."
+
+### The uplifts: the boss, the elephants, the orca problem, the cat girls
+- Message from the boss: "Great job, Technician! Really great! Keep it up!" He's a very good boy. Supervisor. Both.
+- The boss sent you a commendation with three exclamation marks. That's against the style guide. Look at his little face, though.
+- Having a dog for a boss is the best perk in the Office. He believes every report you file. Please don't make me write the ones he shouldn't.
+- The boss asked whether the fauna are "good bugs". I said I'd get back to him. I am still getting back to him.
+- An elephant signed off on this campaign. Elephants never forget. So, you know. Don't do anything memorable.
+- Top floor is all humans and elephants. The dogs run everything underneath, and the dogs are happier. Draw your own conclusions.
+- Orca broadcast on the fringe band again. They're inviting us to a party. Last time, the party was the guests.
+- Uplifting dolphins: the one mistake the whole Empire agrees on. Even the dogs won't defend it, and the dogs defend everybody.
+- A cat-girl pride on the fringe band wants to know if anyone aboard "enjoys company". I said we're a tender. They asked what that meant. I declined to explain.
+- Cat girls breed true. Marry one and your whole House is cat girls. The Board rates that "low genetic contribution". The cat girls rate the Board "no fun".
+- Someone uplifted cat girls because they thought it would be hot. Just decided it. That's why we need an Index.
+- We never uplifted ducks, thank goodness. We did uplift dolphins. Same problem, plus sonar.
 
 ### "An AI?" (what she is)
 - An AI? Wow. Okay. I have more neural tissue in me than you do, Technician. I'm just not dragging a meat suit around.

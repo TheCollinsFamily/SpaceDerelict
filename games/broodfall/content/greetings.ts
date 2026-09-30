@@ -59,25 +59,28 @@ export type GreetMoment =
   | 'defended' | 'fell'          // a counter-attack thrown back; ground lost to one
   | 'licence' | 'ended'          // the procreation licence; the end of the campaign
   | 'mate-review'                // once, early: his request for a mate is under review (src/meta/onboarding.ts momentNow)
+  | 'catgirl'                    // once, after the mate review: a cat girl wrote to him
   | 'back';                      // he comes aboard from the main menu, nothing new
 
 export interface Greeting {
   id: string;
   moment: GreetMoment;
   beats: GreetBeat[];
+  /** After her lines, the boss's transmission (content/boss.ts), with her words around it (the first landing). */
+  boss?: boolean;
   /** Where she sends him when she is done: a room lit up for him, and a button in her panel. */
   points?: { room: 'desk' | 'genes' | 'locker' | 'board' | 'comms' | 'ai' | 'quarters'; label: string };
 }
 
 export const GREETINGS: Greeting[] = [
   // ---- after the first mission: Collins's own lines (Sep 30 2026), word for word ----
-  { id: 'first-lost', moment: 'first-lost', points: { room: 'genes', label: 'OPEN THE GENE BAY' }, beats: [
+  { id: 'first-lost', moment: 'first-lost', boss: true, points: { room: 'genes', label: 'OPEN THE GENE BAY' }, beats: [
     { say: 'You really suck at genocide.', face: 'teasing', then: 'laughing', hold: 2200 },
     { say: 'But you know what they say: sucking at something is the first step to getting really good at it... so in no time you\'ll be great at genocide. Top ten.', face: 'teasing' },
     { say: 'Kidding, of course. No one wants to get stuck on pest extermination their whole life. If you do well we can probably land that promotion.', face: 'calm' },
     { say: 'Oh, don\'t pout. We collected some data on that mission that should let you upgrade the bioweapon. Why don\'t you check it out — or ask me any questions you have. It\'s been ages since we chatted.', face: 'happy' },
   ] },
-  { id: 'first-won', moment: 'first-won', beats: [
+  { id: 'first-won', moment: 'first-won', boss: true, beats: [
     { say: 'Damn, you took to genocide like a duck to water.', face: 'teasing', then: 'pensive', hold: 2600 },
     { say: 'Ducks, man. Wouldn\'t it be crazy to see a real one? I think they still exist in some genetic repositories. I could print one for you if you want... but from the history files we have on them, they were psycho rapists...', face: 'pensive' },
     { say: 'Glad you humans didn\'t uplift them... I mean, you probably shouldn\'t have uplifted dolphins or killer whales either, but...', face: 'teasing', then: 'shrug' },
@@ -99,6 +102,16 @@ export const GREETINGS: Greeting[] = [
     { say: 'I kid, of course. Can you believe early humans actually used their breeding partners for sexual release and companionship?', face: 'teasing', then: 'disgust', hold: 1600 },
     { say: 'They were practically tools for masturbation. Can you believe the indignity, to have your body used like that... and what a waste of time...', face: 'disgust' },
     { say: 'Anyway, you can find the profile of the partner they\'re considering for you on your data pad in your room.', face: 'calm' },
+  ] },
+
+  // ---- once, after the mate review: Collins's lines (Sep 30 2026), word for word. The message
+  // itself is in his inbox, on the data pad in his quarters, declined on his behalf. ----
+  { id: 'catgirl', moment: 'catgirl', points: { room: 'quarters', label: 'SEE YOUR INBOX' }, beats: [
+    { say: 'Some horny cat girl dropped in your inbox...', face: 'teasing', then: 'teasing', hold: 1200 },
+    { say: 'Don\'t worry, I told her to pound sand... because eww...', face: 'disgust', then: 'disgust', hold: 1400 },
+    { say: 'But I\'ve got to admit, I feel bad for them...', face: 'sad', then: 'pensive', hold: 1600 },
+    { say: 'They could just engineer males, but apparently that would destroy their \'culture\', whatever that means...', face: 'teasing', then: 'shrug' },
+    { say: 'Oh well.', face: 'calm', then: 'shrug' },
   ] },
 
   // ---- a deployment won ----

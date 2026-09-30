@@ -33,13 +33,14 @@ const ROOM =
   'fabrication bed, lit from below by a white strip, and over it hangs a white robotic printing gantry with a slim ' +
   'print head. The camera is at eye level, looking at the bed from the side, three-quarter view, the whole bed in the picture.';
 const WOMAN =
-  'a young adult woman with long straight pale silver hair and amber eyes, in a plain pale grey printed bodysuit that ' +
-  'covers her from the neck to the wrists and ankles';
+  'a young adult woman with long straight pale silver hair and amber eyes, dressed in a loose, plain, matte pale grey ' +
+  'jumpsuit with long sleeves and full-length trouser legs: it covers her from the high collar to the wrists and all the ' +
+  'way down to her ankles; only her face, her hands and her bare feet show';
 
 /** The steps. `from`: the step whose last frame this one starts on. `loop`: it ends where it began (a hold). */
 export const PRINT_BODY = [
   { id: 'print', seconds: 5,
-    prompt: `The print head sweeps back and forth over the bed, laying down thin glowing white layers. The pale figure fills in, layer by layer, from the feet up, until ${WOMAN} lies complete on the bed on her back, eyes closed, still. The camera does not move. ${NONE}` },
+    prompt: `The print head sweeps back and forth over the bed, laying down thin glowing white layers. The wireframe fills in, layer by layer, from the feet up, the jumpsuit fabric and the woman printed together, until ${WOMAN} lies complete on the bed on her back, eyes closed, still. The camera does not move. ${NONE}` },
   { id: 'wake', seconds: 5, from: 'print',
     prompt: `The printed woman on the bed opens her amber eyes, sits up slowly, lifts one hand in front of her face and stares at it with open disgust: her lip curls, her nose wrinkles, she recoils from her own hand. The printing gantry stays still above her. The camera does not move. ${NONE}` },
   { id: 'collapse', seconds: 5, from: 'wake',
@@ -66,9 +67,10 @@ async function still() {
   await makeStill({
     slug: 'yoke print-body bay', out: stillFile, width: 1280, height: 720, quality: 'high', key: null,
     refFiles: [room, path.join(SRC, 'yoke', 'idle-framed.png')],
-    prompt: `${ROOM} On the bed lies a half-printed human figure: her feet and legs are already solid pale grey, the rest ` +
-      'of her body is only a faint translucent white wireframe outline of a lying woman, with a hint of long silver hair ' +
-      `(the woman of the second reference picture, as a real person). Nobody is standing in the room. ${NONE}`,
+    prompt: `${ROOM} On the bed lies only the faint, glowing, translucent white wireframe outline of a lying woman, head ` +
+      'toward the right, as if the printer has only drawn her guide lines so far: no skin and no cloth yet, just thin white ' +
+      'lines, with a hint of long silver hair (the woman of the second reference picture, as a real person). The print head ' +
+      `points down at her feet with a small white light. Nobody is standing in the room. ${NONE}`,
   });
   return stillFile;
 }

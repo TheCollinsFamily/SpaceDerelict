@@ -89,8 +89,8 @@ export const STATES = [
   { id: 'intro', kind: 'oneShot', end: 'back', motion: 'Character pops into a confident, playful little wave hello with a sly grin, one open hand with five fingers beside her shoulder, then lowers the hand out of the picture.' },
   { id: 'outro', kind: 'oneShot', end: 'back', motion: 'Character gives a quick, cheeky two-finger salute goodbye from her brow with a crooked smile, then lowers the hand out of the picture.' },
   // --- expressions: a quiet half and a talking half ---
-  { id: 'happy', kind: 'loop', end: 4, motion: 'Character beaming with a big pleased smile, eyes bright with delight, bouncing slightly.' },
-  { id: 'happy_talk', kind: 'loop', end: 4, motion: 'Character talks animatedly with a big happy smile, eyes bright with delight, mouth opening and closing naturally between grins, bouncing slightly.' },
+  { id: 'happy', kind: 'loop', end: 4, motion: 'Character beaming with a big pleased smile, eyes bright with delight, a small happy sway of her shoulders. She stays the same size in the same place: the camera does not zoom or move.' },
+  { id: 'happy_talk', kind: 'loop', end: 4, motion: 'Character talks animatedly with a big happy smile, eyes bright with delight, mouth opening and closing naturally between grins, a small happy sway of her shoulders. She stays the same size in the same place: the camera does not zoom or move.' },
   { id: 'sad', kind: 'loop', end: 4, motion: 'Character looking sad and dejected, drooping shoulders, downcast eyes.' + SHUT },
   { id: 'sad_talk', kind: 'loop', end: 4, motion: 'Character talks quietly while looking sad and dejected, drooping shoulders, downcast eyes, mouth moving in a subdued way.' },
   { id: 'angry', kind: 'loop', end: 4, motion: 'Character visibly annoyed, furrowed brows, a cold narrow glare at the viewer, small frustrated huffs through her nose.' + SHUT },
@@ -114,12 +114,12 @@ export const STATES = [
   // --- looks: turn, hold, turn back; with a talking twin each ---
   { id: 'look_left', kind: 'hold', end: 'back', motion: 'Character turns her head to the left, facing toward the left edge of the frame. Holds that leftward-facing pose with gentle idle motion, breathing, occasional blink, then turns back to face forward and ends in the same pose she started in.' + SHUT },
   { id: 'look_right', kind: 'hold', end: 'back', motion: 'Character turns her head to the right, facing toward the right edge of the frame. Holds that rightward-facing pose with gentle idle motion, breathing, occasional blink, then turns back to face forward and ends in the same pose she started in.' + SHUT },
-  { id: 'look_up', kind: 'hold', end: 'back', motion: 'Character raises her chin to gaze upward, holds that pose dreamily with gentle idle motion, occasional slow blink, then lowers her chin back to face forward and ends in the same pose she started in.' + SHUT },
-  { id: 'look_down', kind: 'hold', end: 'back', motion: 'Character tilts her head downward as if reading below, holds that pose with gentle idle motion, then raises her head back to face forward and ends in the same pose she started in.' + SHUT },
+  { id: 'look_up', kind: 'hold', end: 'back', motion: 'Character keeps facing the viewer and does NOT turn to either side: she only tilts her chin up and lifts her eyes to gaze at the ceiling above her, holds that pose dreamily with gentle idle motion, occasional slow blink, then lowers her chin back to face forward and ends in the same pose she started in.' + SHUT },
+  { id: 'look_down', kind: 'hold', end: 'back', motion: 'Character keeps facing the viewer and does NOT turn to either side: she only lowers her chin and looks straight down at the floor in front of her, as if reading below, holds that pose with gentle idle motion, then raises her head back to face forward and ends in the same pose she started in.' + SHUT },
   { id: 'look_left_talk', kind: 'hold', end: 'back', motion: 'Character turns her head to the left, facing toward the left edge of the frame, and talks animatedly while staying turned left. Mouth opening and closing naturally, small head gestures, then turns back to face forward and ends in the same pose she started in.' },
   { id: 'look_right_talk', kind: 'hold', end: 'back', motion: 'Character turns her head to the right, facing toward the right edge of the frame, and talks animatedly while staying turned right. Mouth opening and closing naturally, small head gestures, then turns back to face forward and ends in the same pose she started in.' },
-  { id: 'look_up_talk', kind: 'hold', end: 'back', motion: 'Character raises her chin and talks animatedly while gazing upward, mouth moving naturally, then lowers her chin back to face forward and ends in the same pose she started in.' },
-  { id: 'look_down_talk', kind: 'hold', end: 'back', motion: 'Character tilts her head downward and talks animatedly while looking down, mouth moving naturally, then raises her head back to face forward and ends in the same pose she started in.' },
+  { id: 'look_up_talk', kind: 'hold', end: 'back', motion: 'Character keeps facing the viewer and does NOT turn to either side: she tilts her chin up and talks animatedly while gazing up at the ceiling, mouth moving naturally, then lowers her chin back to face forward and ends in the same pose she started in.' },
+  { id: 'look_down_talk', kind: 'hold', end: 'back', motion: 'Character keeps facing the viewer and does NOT turn to either side: she lowers her chin and talks animatedly while looking straight down at the floor in front of her, mouth moving naturally, then raises her head back to face forward and ends in the same pose she started in.' },
   // --- face tricks (the overlay's TRICK_STATES) ---
   { id: 'wink', kind: 'oneShot', end: 'back', motion: 'Character giving a playful wink with ONE eye closed while the other stays open, cheeky smile, small head tilt.' },
   { id: 'tongue_out', kind: 'oneShot', end: 'back', motion: 'Character playfully sticking her tongue out at the viewer, teasing mischievous expression, eyes bright.' },
@@ -130,7 +130,7 @@ export const STATES = [
   { id: 'nod', kind: 'oneShot', end: 'back', motion: 'Character nodding yes with a confident smile, her head going down and up clearly twice.' + SHUT },
   { id: 'shake_head', kind: 'oneShot', end: 'back', motion: 'Character shaking her head no with a firm, amused expression, once to each side.' + SHUT },
   { id: 'dance', kind: 'oneShot', end: 'back', motion: 'Character doing a fun little celebratory dance in place, rhythmic bouncing, shoulders and arms swinging happily, staying in the middle of the picture.' },
-  { id: 'jump', kind: 'oneShot', end: 'back', motion: 'Character does one small excited hop in place, bouncing up a little and landing, her head staying inside the picture.' },
+  { id: 'jump', kind: 'oneShot', end: 'back', motion: 'Character does one small excited hop in place, her shoulders and head bobbing up a little and back down, her head staying inside the picture. The camera does not zoom or move: she stays shown from the waist up, the same size, the whole time.' },
   { id: 'bow', kind: 'oneShot', end: 'back', motion: 'Character gives a polite, slightly theatrical bow, bending forward from the waist with her head lowered, then straightens up with a playful smirk.' },
 ];
 /**

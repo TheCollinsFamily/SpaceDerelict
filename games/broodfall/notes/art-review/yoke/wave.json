@@ -1,14 +1,31 @@
 {
  "state": "wave",
- "frames": 96,
- "seconds": 4,
- "kb": 777,
+ "kind": "oneShot",
+ "frames": 220,
+ "seconds": 9.17,
+ "kb": 1812,
+ "studio": {
+  "keyColour": [
+   16,
+   240,
+   32
+  ],
+  "similarityPct": 45,
+  "endFrame": 219,
+  "loop": "none",
+  "chromaKeyFrom": "C:\\Users\\Merry\\dev\\reality-fabricator\\reality-fabricator-frontend\\src\\assets\\vtuber-creator\\model-exporter.js"
+ },
  "failed": 0,
  "checks": [
   {
    "name": "it ends where it began",
    "ok": true,
-   "value": 6.19
+   "value": 4.29
+  },
+  {
+   "name": "she moves",
+   "ok": true,
+   "value": 13.37
   },
   {
    "name": "no green on her outline",
@@ -18,17 +35,12 @@
   {
    "name": "she fills the stage as a person does",
    "ok": true,
-   "value": "25% of it"
+   "value": "24-25% of it"
   },
   {
-   "name": "her hair is the colour of her still",
+   "name": "she stays under the top edge",
    "ok": true,
-   "value": "gains 1.051, 1.054, 1.059"
-  },
-  {
-   "name": "light to load (under 900 KB)",
-   "ok": true,
-   "value": "777 KB"
+   "value": "0.0 px a frame on row 0"
   }
  ]
 }

@@ -115,9 +115,13 @@ const ORDINARY: GreetMoment[] = ['won', 'lost', 'lost-locked', 'back', 'defended
  */
 export function momentNow(s: CampaignState): GreetMoment {
   const m = s.greet ?? 'back';
-  if (s.onboard && s.onboard.mission1 !== 'pending' && s.lastGreeting && !(s.said ?? []).includes('mate-review') && ORDINARY.includes(m)) return 'mate-review';
-  return m;
+  if (!s.onboard || s.onboard.mission1 === 'pending' || !s.lastGreeting || !ORDINARY.includes(m)) return m;
+  // The early beats, one an ordinary return, in their order: the mate review, then the cat girl (who plays off it).
+  return EARLY_ONCE.find((id) => !(s.said ?? []).includes(id)) ?? m;
 }
+
+/** Greetings said once each, early, on ordinary returns, in this order (Collins, Sep 30 2026). */
+export const EARLY_ONCE: GreetMoment[] = ['mate-review', 'catgirl'];
 
 /**
  * News from Earth may be told on an ordinary return once the early beats have all played (the
@@ -126,7 +130,7 @@ export function momentNow(s: CampaignState): GreetMoment {
  */
 export function earthNewsOpen(s: CampaignState): boolean {
   if (!s.onboard) return true;
-  return s.onboard.mission1 !== 'pending' && s.onboard.deskOpen && (s.said ?? []).includes('mate-review');
+  return s.onboard.mission1 !== 'pending' && s.onboard.deskOpen && EARLY_ONCE.every((id) => (s.said ?? []).includes(id));
 }
 
 /** One return in three, once it is open, she tells him the news from Earth instead. */

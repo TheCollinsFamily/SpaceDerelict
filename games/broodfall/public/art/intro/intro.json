@@ -53,5 +53,8 @@
     "video": "intro/menu.mp4",
     "poster": "intro/menu.webp",
     "seconds": 3.083
+  },
+  "boss": {
+    "poster": "intro/boss.webp"
   }
 }
