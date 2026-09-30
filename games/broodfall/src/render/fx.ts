@@ -44,8 +44,8 @@ const LANDS: Record<string, [string, number] | null> = {
 };
 /** How long each shot picture is drawn, in board pixels along its flight. */
 const LONG: Record<string, number> = {
-  spit: 22, sac: 26, mucus: 26, spore: 20, harpoon: 58, quill: 34, web: 34, droplets: 22,
-  bile: 30, clot: 30, 'spore-shell': 26, 'bone-shell': 22, 'cannon-shell': 18, dart: 26, 'mortar-bomb': 26, barb: 14,
+  spit: 34, sac: 40, mucus: 42, spore: 32, harpoon: 84, quill: 48, web: 52, droplets: 34,
+  bile: 48, clot: 46, 'spore-shell': 42, 'bone-shell': 36, 'cannon-shell': 30, dart: 40, 'mortar-bomb': 40, barb: 20,
 };
 
 interface Burst { id: string; x: number; y: number; t: number; dur: number; size: number; rot: number; glow: boolean; grow: number }
@@ -219,7 +219,7 @@ export class FxLayer {
         const bombard = s.side === 'body' && sim.towers.some((t) => t.family === 'bombard' && Math.hypot(t.pos.x - s.from.x, t.pos.y - s.from.y) < 2);
         const pic = s.side === 'body' ? (bombard ? 'spore-shell' : 'bone-shell') : s.stun ? 'dart' : 'cannon-shell';
         const land: [string, number, boolean] = s.side === 'body' ? ['spore-burst', Math.max(0.45, Math.min(1.1, s.aoe / 40)), true]
-          : s.stun ? ['sedation-puff', 0.45, true] : ['blast', Math.max(0.5, Math.min(1, s.aoe / 40)), true];
+          : s.stun ? ['sedation-puff', 0.6, true] : ['blast', Math.max(0.85, Math.min(1.3, s.aoe / 30)), true];
         st = { pic, to: { ...s.to }, land, seen: 0 };
         this.shells.set(s.id, st);
       }
@@ -341,7 +341,7 @@ export class FxLayer {
     for (const b of this.bombs) {
       b.t += dt;
       if (b.t >= b.dur) {
-        this.burst('blast', v.at(b.to.x, b.to.y, v.muzzle(b.to.x, b.to.y) * 0.7), 70, 0.5, 0.6);
+        this.burst('blast', v.at(b.to.x, b.to.y, v.muzzle(b.to.x, b.to.y) * 0.7), 100, 0.55, 0.6);
         continue;
       }
       keep.push(b);

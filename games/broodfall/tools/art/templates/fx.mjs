@@ -110,7 +110,7 @@ const sheetPrompt = (s) => {
 
 /** A part that one limb grafts onto another: what of the donor is seen. */
 export const PARTS = {
-  spitter: 'its puckered fleshy nozzle on a short stub of stalk',
+  spitter: 'a short stalk of muscle ending in a round wet spout',
   burster: 'a bunch of three taut dark-red sacs hanging from a short stem',
   lasher: 'one long whip-like tendril tipped with a dark chitin barb, loosely curled',
   maw: 'a small round mouth ringed with rows of small teeth, its gullet dark wine red',

@@ -172,7 +172,39 @@ export const SHEETS = [
   { slug: 'units-6-royal', title: 'The royal caste', kinds: ['royal', 'consort', 'matron'] },
 ];
 
-export const unit = (kind) => UNITS.find((u) => u.kind === kind);
+/**
+ * THE HIVE'S OWN WALKERS (Sep 30 2026): what fights on the player's side in the streets. Drawn
+ * like the units (five views, walking and attacking) and baked into the manifest's `allies`.
+ * - The broodling: the Broodmother's brood (sim.broodlings without `puppet`).
+ * - The puppet queens: a royal the Trap Cage caught and grafted (sim.broodlings with `puppet`),
+ *   one per royal kind. The kind is on `puppet.kind`.
+ * design: the ally has no concept sheet; its figure is drawn first from these references
+ * (paths under art-src/) and this prompt. key: its background (the colour it has least of).
+ */
+const graft = (who) => `${who}, but GRAFTED by the hive and fighting for it now: a big pulsing dark-red living graft sits on the back of the neck, wet dark maroon flesh and veins have grown out from it over the shoulders and down the clothes, thin red roots creep over the headgear, and the eyes glow red. Everything else is exactly as in the reference picture: the same figure, clothes, colours and kit.`;
+export const ALLIES = [
+  { kind: 'broodling', ally: true, name: 'Broodling', caste: 'hive', r: 4.5, body: 'beast', gait: 'scuttle', key: 'green',
+    look: 'a small newborn hive creature the size of a large dog: a glossy wet pink body, its back covered in dark scaly plates held in a lattice of pale veins like the shell of the brood sac, six short hooked pink legs, and at its front a big round mouth ringed with small pale teeth; no eyes, no clothes, no kit',
+    attackMotion: 'The creature lunges a short way forward and bites hard with its round toothed mouth, then pulls back to exactly its starting pose.',
+    design: { refs: ['limbs/brood/still.png', 'units/skitterling/view-SW.png'],
+      prompt: 'One small creature for a strategy game, seen by the camera of the SECOND reference picture (high above, looking steeply down) and at about twice the size of the creature in it: a newborn of the living brood sac of the FIRST reference picture, in exactly that picture\'s material and colours. It is a glossy wet pink body, its back covered in dark scaly plates held in a lattice of pale veins like the shell of the sac, six short hooked pink legs, and at its front a big round mouth ringed with small pale teeth. No eyes, no clothes, no kit. It faces the lower left, caught mid-stride.' } },
+  { kind: 'puppet-royal', ally: true, of: 'royal', name: 'Puppet queen', caste: 'hive', r: 20, body: 'human-like', key: 'green',
+    steep: "Its crown has plain upright ribs and a plain gold ball on top: no bands that cross each other anywhere on it.",
+    look: 'the grafted queen: an upright torso in a white and gold robe with a jewelled collar, a tall domed jewelled crown, a huge swollen abdomen carried behind her like the train of a gown, a small ornate gold pistol in her hands; a big dark-red living graft on the back of her neck with maroon veins spread over her robe and red roots over her crown, her eyes glowing red',
+    attackMotion: 'The queen stops, raises her small gold pistol and fires twice with small muzzle flashes, then lowers it and returns to exactly her starting pose.',
+    design: { refs: ['units/royal/view-SW.png'], prompt: graft('The same queen as the reference picture') } },
+  { kind: 'puppet-consort', ally: true, of: 'consort', name: 'Puppet consort', caste: 'hive', r: 13, body: 'human-like', key: 'magenta',
+    steep: "Its helmet has plain upright ribs only: no bands that cross each other anywhere on it, no cross shape anywhere.",
+    look: 'the grafted consort: an upright officer in a dark green dress uniform with gold epaulettes and a gold sash, goggles pushed up on his cap, a gold dress pistol; a big dark-red living graft on the back of his neck with maroon veins spread over his uniform, his eyes glowing red',
+    attackMotion: 'The unit stops, raises its gold pistol and fires three quick shots in the direction it is facing, with small bright muzzle flashes and recoil, then lowers the pistol and returns to exactly its starting pose.',
+    design: { refs: ['units/consort/view-SW.png'], prompt: graft('The same officer as the reference picture') } },
+  { kind: 'puppet-matron', ally: true, of: 'matron', name: 'Puppet matron', caste: 'hive', r: 13, body: 'human-like', key: 'green', steep: true,
+    look: 'the grafted veil matron: a tall still figure under a long grey veil edged in gold that reaches the ground, only her eyes showing, glowing red; dark-red living roots and maroon veins have grown through the veil from a pulsing graft at the back of her neck',
+    attackMotion: 'The veiled figure stops and strikes forward with one arm from under the veil, then returns to exactly its starting pose.',
+    design: { refs: ['units/matron/view-SW.png'], prompt: graft('The same veiled figure as the reference picture') } },
+];
+
+export const unit = (kind) => UNITS.find((u) => u.kind === kind) ?? ALLIES.find((u) => u.kind === kind);
 
 /** Where a unit (or one of its states) stands on its approved sheet: the sheet and the figure's number. */
 export function placeOnSheet(kind, state) {

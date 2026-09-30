@@ -219,3 +219,6 @@ export function dropSpecks(img, share = 0.03) {
   }
   return gone;
 }
+
+/** For tools that compare frames (tools/art/templates/unit.mjs motionWindow). */
+export { thumb, diff as diffThumb };

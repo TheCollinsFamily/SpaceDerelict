@@ -1,7 +1,7 @@
 {
  "family": "ember",
- "frames": 60,
- "atlasKB": 478,
+ "frames": 70,
+ "atlasKB": 536,
  "failed": 0,
  "checks": [
   {
@@ -50,9 +50,19 @@
    "value": "1% change"
   },
   {
+   "name": "die: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "die: it ends as a husk",
+   "ok": true,
+   "value": "53% of its first frame"
+  },
+  {
    "name": "it stands in its cell",
    "ok": true,
-   "value": "5.7% of it lies in front of its cell"
+   "value": "2.0% of it lies in front of its cell"
   },
   {
    "name": "from behind, where it stands is marked",
@@ -102,7 +112,7 @@
   {
    "name": "from behind, it stands in its cell",
    "ok": true,
-   "value": "3.1% of it lies in front of its cell"
+   "value": "0.6% of it lies in front of its cell"
   },
   {
    "name": "from behind: it has a view",
@@ -112,7 +122,7 @@
   {
    "name": "atlas is under 900 KB",
    "ok": true,
-   "value": "478 KB"
+   "value": "536 KB"
   }
  ]
 }

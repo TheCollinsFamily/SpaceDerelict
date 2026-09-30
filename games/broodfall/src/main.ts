@@ -102,7 +102,37 @@ function snapshotBoard(): string | null {
   try {
     renderer.draw(sim, 0);
     renderer.app.render();
-    return renderer.app.canvas.toDataURL('image/jpeg', 0.84);
+    // Copied at once, in the same task as the render (the WebGL canvas keeps no copy of its own).
+    const src = renderer.app.canvas;
+    const full = document.createElement('canvas');
+    full.width = src.width;
+    full.height = src.height;
+    const g = full.getContext('2d')!;
+    g.drawImage(src, 0, 0);
+    // Cut to the districts the body held (their corners on the screen), with room above for the tall blocks.
+    let x0 = full.width, y0 = full.height, x1 = 0, y1 = 0;
+    const side = PLATE * sim.cfg.cellPx;
+    sim.map.slots.forEach((held, slot) => {
+      if (!held) return;
+      const wx = (slot % sim.map.slotsX) * side;
+      const wy = Math.floor(slot / sim.map.slotsX) * side;
+      for (const [cx, cy] of [[wx, wy], [wx + side, wy], [wx, wy + side], [wx + side, wy + side]]) {
+        const p = renderer.worldToScreen(cx, cy);
+        const k = full.width / p.vw;
+        x0 = Math.min(x0, p.x * k); x1 = Math.max(x1, p.x * k);
+        y0 = Math.min(y0, p.y * k); y1 = Math.max(y1, p.y * k);
+      }
+    });
+    y0 -= (y1 - y0) * 0.12;
+    if (x1 <= x0 || y1 <= y0) return full.toDataURL('image/jpeg', 0.84);
+    const m = 20;
+    x0 = Math.max(0, Math.floor(x0 - m)); y0 = Math.max(0, Math.floor(y0 - m));
+    x1 = Math.min(full.width, Math.ceil(x1 + m)); y1 = Math.min(full.height, Math.ceil(y1 + m));
+    const cut = document.createElement('canvas');
+    cut.width = x1 - x0;
+    cut.height = y1 - y0;
+    cut.getContext('2d')!.drawImage(full, x0, y0, cut.width, cut.height, 0, 0, cut.width, cut.height);
+    return cut.toDataURL('image/jpeg', 0.86);
   } catch {
     return null;
   }
@@ -824,6 +854,7 @@ async function boot(): Promise<void> {
     return;
   }
   bootDone = true;
+  (window as unknown as { __bfBooted?: boolean }).__bfBooted = true;
   loading.hide();
 
   renderer.app.canvas.addEventListener('click', (ev) => { if (!dragged) handleCanvasClick(ev.clientX, ev.clientY); });
@@ -1085,6 +1116,22 @@ async function boot(): Promise<void> {
     /** The fallen units still drawn (empty on the old board). */
     dying() {
       return renderer instanceof IsoRenderer ? renderer.dyingNow() : [];
+    },
+    /** The effects on screen now (src/render/fx.ts), for the beats: shots, shells, bursts, streaks, bombs. */
+    fx() {
+      return renderer instanceof IsoRenderer ? renderer.fxNow() : { ready: false };
+    },
+    /** The families of the limbs playing their firing or acting clip now. */
+    limbsActing(): string[] {
+      return renderer instanceof IsoRenderer ? renderer.limbsActing() : [];
+    },
+    /** Limbs gone from the board that are playing their end (withering, carried off). */
+    limbFalls() {
+      return renderer instanceof IsoRenderer ? renderer.limbFalls() : [];
+    },
+    /** How many donor parts are drawn on limbs now. */
+    graftsDrawn(): number {
+      return renderer instanceof IsoRenderer ? renderer.graftsDrawn() : 0;
     },
     /** What of the baked art the board could not load (empty when all of it is there). */
     artMissing(): string[] {

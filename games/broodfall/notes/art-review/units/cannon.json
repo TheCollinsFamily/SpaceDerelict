@@ -1,8 +1,9 @@
 {
  "kind": "cannon",
- "frames": 135,
- "atlasKB": 869,
- "failed": 0,
+ "frames": 185,
+ "atlasKB": 1109,
+ "pages": 2,
+ "failed": 1,
  "checks": [
   {
    "name": "walk S: loop closes",
@@ -155,6 +156,11 @@
    "value": "0.0% of the frame"
   },
   {
+   "name": "attack S: nothing cut off",
+   "ok": true,
+   "value": "window grown 1.15x"
+  },
+  {
    "name": "attack S: no background tint on the outline",
    "ok": true,
    "value": "0.0%"
@@ -163,6 +169,11 @@
    "name": "attack S: stays on the spot",
    "ok": true,
    "value": "0.2% of the frame"
+  },
+  {
+   "name": "attack SW: nothing cut off",
+   "ok": true,
+   "value": "window grown 1.15x"
   },
   {
    "name": "attack SW: no background tint on the outline",
@@ -175,6 +186,11 @@
    "value": "0.0% of the frame"
   },
   {
+   "name": "attack W: nothing cut off",
+   "ok": true,
+   "value": "window grown 1.15x"
+  },
+  {
    "name": "attack W: no background tint on the outline",
    "ok": true,
    "value": "0.0%"
@@ -183,6 +199,11 @@
    "name": "attack W: stays on the spot",
    "ok": true,
    "value": "0.5% of the frame"
+  },
+  {
+   "name": "attack NW: nothing cut off",
+   "ok": true,
+   "value": "window grown 1.10x"
   },
   {
    "name": "attack NW: no background tint on the outline",
@@ -195,6 +216,11 @@
    "value": "0.3% of the frame"
   },
   {
+   "name": "attack N: nothing cut off",
+   "ok": true,
+   "value": "window grown 1.17x"
+  },
+  {
    "name": "attack N: no background tint on the outline",
    "ok": true,
    "value": "0.0%"
@@ -205,9 +231,134 @@
    "value": "0.1% of the frame"
   },
   {
+   "name": "death SW: nothing cut off",
+   "ok": true,
+   "value": "window grown 1.15x"
+  },
+  {
    "name": "death SW: no background tint on the outline",
    "ok": true,
    "value": "0.0%"
+  },
+  {
+   "name": "hit S: it moves",
+   "ok": true,
+   "value": 8.13
+  },
+  {
+   "name": "hit S: nothing cut off",
+   "ok": true,
+   "value": "window grown 1.13x"
+  },
+  {
+   "name": "hit S: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "hit S: stays on the spot",
+   "ok": true,
+   "value": "0.2% of the frame"
+  },
+  {
+   "name": "hit SW: it moves",
+   "ok": true,
+   "value": 20.76
+  },
+  {
+   "name": "hit SW: nothing cut off",
+   "ok": true,
+   "value": "window grown 1.15x"
+  },
+  {
+   "name": "hit SW: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "hit SW: stays on the spot",
+   "ok": true,
+   "value": "1.7% of the frame"
+  },
+  {
+   "name": "hit W: it moves",
+   "ok": true,
+   "value": 11.19
+  },
+  {
+   "name": "hit W: nothing cut off",
+   "ok": true,
+   "value": "window grown 1.10x"
+  },
+  {
+   "name": "hit W: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "hit W: stays on the spot",
+   "ok": false,
+   "value": "12.4% of the frame"
+  },
+  {
+   "name": "hit NW: it moves",
+   "ok": true,
+   "value": 8.96
+  },
+  {
+   "name": "hit NW: nothing cut off",
+   "ok": true,
+   "value": "in the walk frame"
+  },
+  {
+   "name": "hit NW: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "hit NW: stays on the spot",
+   "ok": true,
+   "value": "0.5% of the frame"
+  },
+  {
+   "name": "hit N: it moves",
+   "ok": true,
+   "value": 4.9
+  },
+  {
+   "name": "hit N: nothing cut off",
+   "ok": true,
+   "value": "in the walk frame"
+  },
+  {
+   "name": "hit N: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "hit N: stays on the spot",
+   "ok": true,
+   "value": "0.0% of the frame"
+  },
+  {
+   "name": "braced SW: it moves",
+   "ok": true,
+   "value": 20.68
+  },
+  {
+   "name": "braced SW: nothing cut off",
+   "ok": true,
+   "value": "in the walk frame"
+  },
+  {
+   "name": "braced SW: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "braced SW: stays on the spot",
+   "ok": true,
+   "value": "0.0% of the frame"
   },
   {
    "name": "state deployed: made",
@@ -220,9 +371,14 @@
    "value": "0.72 0.75 0.67 0.77 0.72"
   },
   {
-   "name": "atlas is under 900 KB",
+   "name": "atlas page 1 is under 900 KB",
    "ok": true,
-   "value": "869 KB"
+   "value": "510 KB"
+  },
+  {
+   "name": "atlas page 2 is under 900 KB",
+   "ok": true,
+   "value": "599 KB"
   }
  ]
 }

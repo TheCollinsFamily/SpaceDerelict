@@ -22,6 +22,8 @@ import {
 import { buildingsOf, pickVariant, planGuests, variantName } from './biome';
 import { SEEDLING_FLIGHT } from '../../content/underground';
 import { CASTE_COLORS, ENEMY_SIZE, FAMILY_COLORS, Renderer } from './render';
+import { FxLayer, type FxView } from './fx';
+import { LimbFates } from './limbFx';
 
 /** The old marks were drawn for a 26 px cell; on this board they are drawn this much bigger. */
 const K = 1.9;
@@ -82,6 +84,9 @@ interface LimbView {
   cooldown: number; fireT: number; fireDur: number; seen: number;
   /** The way it faces in the WORLD: when the camera turns, another side of it is seen. */
   facing: Facing;
+  /** The sim's limb, and whether it is seen from behind: kept for its end when the sim drops it. */
+  ent: Tower; back: boolean;
+  atlas: import('./art').Atlas;
 }
 interface ShotView { up0: number; ttl0: number; seen: number }
 
@@ -139,8 +144,15 @@ export class IsoRenderer extends Renderer {
   private fit = 1;
   private mid: Pt = { x: 0, y: 0 };
 
+  /** What flies, bursts and hangs in the air (src/render/fx.ts). */
+  private fx: FxLayer;
+  /** What a limb does besides idling: acting, dying, being carried off, the parts it grafted (src/render/limbFx.ts). */
+  private fates: LimbFates;
+
   constructor(private art: BoardArtSet) {
     super();
+    this.fx = new FxLayer(art);
+    this.fates = new LimbFates(art);
   }
 
   async init(mount: HTMLElement, _worldW: number, _worldH: number): Promise<void> {
@@ -156,7 +168,10 @@ export class IsoRenderer extends Renderer {
     this.aimBox.addChild(this.aimG);
     this.marksBox.addChild(this.marksG);
     this.marksBox.scale.set(K);
-    this.world.addChild(this.floors, this.creepFloor, this.decalBox, this.flat, this.shadeBox, this.groundBox, this.sorted, this.ghosts, this.aimBox, this.marksBox);
+    this.world.addChild(this.floors, this.creepFloor, this.decalBox, this.flat, this.shadeBox, this.groundBox, this.fx.ground, this.sorted, this.ghosts, this.fx.air, this.fx.glow, this.aimBox, this.marksBox);
+    // With the effects drawn as pictures, the base class leaves out its clouds, caltrops and pip dots.
+    this.fxArt = this.fx.ready();
+    this.pipDots = !this.art.fx.has('parts');
     this.ready = true;
   }
 
@@ -287,6 +302,26 @@ export class IsoRenderer extends Renderer {
     this.pan = { x: 0, y: 0 };
   }
 
+  /** The effects on screen now, for the beats. */
+  fxNow(): Record<string, number | boolean> {
+    return { ready: this.fx.ready(), parts: this.art.fx.has('parts'), ...this.fx.counts() };
+  }
+
+  /** The families of the limbs playing their firing or acting clip now. */
+  limbsActing(): string[] {
+    return [...this.limbs.values()].filter((v) => v.fireT >= 0).map((v) => v.family);
+  }
+
+  /** The limbs playing their end. */
+  limbFalls(): Array<{ kind: string; t: number; alpha: number; clip: boolean }> {
+    return this.fates.fallsNow();
+  }
+
+  /** How many donor parts are drawn on limbs now. */
+  graftsDrawn(): number {
+    return this.fates.graftCount();
+  }
+
   /** What of the baked art could not be loaded. */
   missing(): string[] {
     return this.art.failed.slice();
@@ -361,6 +396,7 @@ export class IsoRenderer extends Renderer {
     const dt = Math.max(0, Math.min(1, sim.time - this.lastSimTime));
     this.lastSimTime = sim.time;
     this.simClock += dt;
+    this.fx.begin(dt);
 
     this.updateCamera(sim, dtReal);
     this.syncMap(sim);
@@ -375,7 +411,20 @@ export class IsoRenderer extends Renderer {
     this.syncLimbs(sim, dt);
     this.syncUnits(sim, dt);
     this.drawShots(this.marksG, sim);
+    if (this.fx.ready()) this.fx.draw(sim, this.fxView(sim), dt);
+    this.fx.end();
     this.drawAim(this.aimG, sim);
+  }
+
+  /** Where things are on the screen, for the effects (board pixels, before the camera). */
+  private fxView(sim: Sim): FxView {
+    const g = this.geo;
+    return {
+      at: (wx, wy, up) => { const p = project(g, wx, wy); return { x: p.x, y: p.y - up }; },
+      muzzle: (wx, wy) => this.muzzle(sim, wx, wy),
+      floor: (wx, wy) => this.heightAt(sim, wx, wy) * g.level,
+      scale: (g.a * Math.SQRT2) / g.cell,
+    };
   }
 
   private reset(sim: Sim): void {
@@ -391,6 +440,8 @@ export class IsoRenderer extends Renderer {
     for (const d of this.dying) { d.sprite.destroy(); d.shade.destroy(); }
     this.dying = [];
     this.limbs.clear();
+    this.fx.reset();
+    this.fates.reset();
     this.nodes.clear();
     this.shots.clear();
     this.core = null;
@@ -904,12 +955,13 @@ export class IsoRenderer extends Renderer {
 
   private syncLimbs(sim: Sim, dt: number): void {
     const g = this.geo;
+    this.fates.observe(sim);
     for (const t of sim.towers) {
       const h = this.heightOf(sim, t.cell);
       const p0 = project(g, t.pos.x, t.pos.y, h);
       const found = this.art.limbs.get(t.family);
       let v = this.limbs.get(t.id);
-      if (v && v.family !== t.family) { v.sprite.destroy(); v.shade.destroy(); this.limbs.delete(t.id); v = undefined; }
+      if (v && v.family !== t.family) { v.sprite.destroy(); v.shade.destroy(); this.fates.drop(t.id); this.limbs.delete(t.id); v = undefined; }
       if (!found) {
         // No picture of this limb: its old shape, at the size of the rest.
         this.drawTowerBody(this.marksG, t, p0.x / K, (p0.y - 20) / K, sim);
@@ -923,10 +975,11 @@ export class IsoRenderer extends Renderer {
         shade.anchor.set(0.5, 0.5);
         shade.visible = !art.flat;
         (art.flat ? this.flat : this.sorted).addChild(shade, sprite);
-        v = { sprite, shade, art, family: t.family, cooldown: t.cooldown, fireT: -1, fireDur: 0, seen: 0, facing: this.facingOfLimb(sim, t, undefined) };
+        v = { sprite, shade, art, family: t.family, cooldown: t.cooldown, fireT: -1, fireDur: 0, seen: 0, facing: this.facingOfLimb(sim, t, undefined), ent: t, back: false, atlas };
         this.limbs.set(t.id, v);
       }
       v.seen = this.frameNo;
+      v.ent = t;
       v.facing = this.facingOfLimb(sim, t, v.facing);
 
       // Which of its pictures the camera sees: from the front or from behind, as drawn or mirrored.
@@ -941,6 +994,7 @@ export class IsoRenderer extends Renderer {
         mirror = !alongX !== (g.turn % 2 === 1);
       }
       const side = back && art.back ? art.back : art;
+      v.back = back && !!art.back;
 
       const stats = towerStats(t);
       const size = this.sizeOf(sim, t);
@@ -961,6 +1015,10 @@ export class IsoRenderer extends Renderer {
       if (t.cooldown > v.cooldown + 0.05 && art.anims.fire) {
         const native = art.anims.fire.count / art.anims.fire.fps;
         v.fireDur = Math.max(0.3, Math.min(native, 0.85 * t.cooldown));
+        v.fireT = 0;
+      } else if (v.fireT < 0 && art.anims.fire && this.fates.acts(sim, t, this.simClock)) {
+        // An engine or a support limb acts when what it serves does (src/render/limbFx.ts).
+        v.fireDur = Math.max(0.6, Math.min(1.4, art.anims.fire.count / art.anims.fire.fps));
         v.fireT = 0;
       }
       v.cooldown = t.cooldown;
@@ -997,10 +1055,20 @@ export class IsoRenderer extends Renderer {
       const flying = sim.seedFlights.some((f) => f.towerId === t.id);
       v.sprite.visible = !flying;
       v.shade.visible = !flying && !art.flat;
+      // The parts of the limbs it was built from, grafted on its body.
+      if (!art.flat) this.fates.graft(this.sorted, t, art, side, p.x, p.y, scale, mirror, width, v.sprite.zIndex, v.sprite.visible, v.sprite.tint as number);
       if (!art.flat) this.drawTowerMarks(this.marksG, t, p.x / K, (p.y - width * 0.55) / K, sim);
       else if (t.hp < t.maxHp) this.hpArc(this.marksG, p.x / K, p.y / K - 8, 20, t.hp / t.maxHp);
     }
-    for (const [id, v] of this.limbs) if (v.seen !== this.frameNo) { v.sprite.destroy(); v.shade.destroy(); this.limbs.delete(id); }
+    for (const [id, v] of this.limbs) {
+      if (v.seen === this.frameNo) continue;
+      this.limbs.delete(id);
+      // Gone from the board: carried off by the researcher that tore it out, or withered where it stood.
+      const thief = sim.enemies.find((e) => e.carrying && e.carrying.cell === v.ent.cell && e.carrying.family === v.ent.family);
+      const to = thief ? project(g, thief.pos.x, thief.pos.y, this.heightAt(sim, thief.pos.x, thief.pos.y)) : null;
+      this.fates.bury(v.ent, v.sprite, v.shade, v.art, v.atlas, v.back, to ? { x: to.x, y: to.y - 20 } : null);
+    }
+    this.fates.step(dt);
   }
 
   /** Does the street through this cell run along world x? Then a wall across it lies along world y. */
@@ -1238,7 +1306,13 @@ export class IsoRenderer extends Renderer {
       g.circle(x, y, s + 3).stroke({ width: 1.5, color: 0xd8a0ff, alpha: 0.9 });
     }
     if (e.burrowed) return;
-    if (e.burnUntil !== undefined && e.burnUntil > sim.time) {
+    // What is done to it, as pictures on it (src/render/fx.ts): a web, a puff of poison, flames.
+    const pics = this.fx.ready();
+    const burning = e.burnUntil !== undefined && e.burnUntil > sim.time;
+    const snared = e.slowUntil !== undefined && e.slowUntil > sim.time;
+    const poisoned = e.poisonUntil !== undefined && e.poisonUntil > sim.time;
+    if (pics) this.fx.status({ x: x * K, y: y * K }, s * K, snared, poisoned, burning, e.id);
+    if (burning && !pics) {
       const fl = Math.abs(Math.sin(this.pulse * 7 + e.id));
       g.poly([x - 4, y - s, x, y - s - 6 - fl * 4, x + 4, y - s]).fill({ color: 0xff8a30, alpha: 0.85 });
       g.poly([x - 2, y - s, x + 1, y - s - 3 - fl * 3, x + 3, y - s]).fill({ color: 0xffe070, alpha: 0.9 });
@@ -1254,11 +1328,12 @@ export class IsoRenderer extends Renderer {
       const prey = sim.towers.find((t) => t.id === e.extractId);
       if (prey && Math.hypot(prey.pos.x - e.pos.x, prey.pos.y - e.pos.y) < 40) {
         const p = this.onGround(sim, prey.pos.x, prey.pos.y);
-        g.moveTo(x, y).lineTo(p.x / K, (p.y - this.geo.a * 0.5) / K).stroke({ width: 1.5, color: 0x4fa9a4, alpha: 0.6 + 0.3 * Math.sin(this.pulse * 6) });
+        if (pics) this.fx.tether({ x: x * K, y: y * K }, { x: p.x, y: p.y - this.geo.a * 0.5 }, this.pulse);
+        else g.moveTo(x, y).lineTo(p.x / K, (p.y - this.geo.a * 0.5) / K).stroke({ width: 1.5, color: 0x4fa9a4, alpha: 0.6 + 0.3 * Math.sin(this.pulse * 6) });
       }
     }
-    if (e.slowUntil !== undefined && e.slowUntil > sim.time) g.circle(x, y, s + 1).stroke({ width: 1.5, color: 0x9cc45f, alpha: 0.8 });
-    if (e.poisonUntil !== undefined && e.poisonUntil > sim.time) {
+    if (snared && !pics) g.circle(x, y, s + 1).stroke({ width: 1.5, color: 0x9cc45f, alpha: 0.8 });
+    if (poisoned && !pics) {
       g.circle(x + 3, y - s - 3, 2).fill({ color: 0xb8cc55, alpha: 0.9 });
       g.circle(x - 3, y - s - 5, 1.5).fill({ color: 0xb8cc55, alpha: 0.7 });
     }
@@ -1291,7 +1366,9 @@ export class IsoRenderer extends Renderer {
       const p = project(geo, wx, wy);
       return { x: p.x / K, y: (p.y - upPx) / K };
     };
-    for (const p of sim.projectiles) {
+    // With the effects sheet, shots, arcs and shells are pictures (src/render/fx.ts); the dots are what is drawn without it.
+    const dots = !this.fx.ready();
+    for (const p of dots ? sim.projectiles : []) {
       let v = this.shots.get(p.id);
       if (!v) { v = { up0: this.muzzle(sim, p.pos.x, p.pos.y), ttl0: Math.max(0.05, p.ttl), seen: 0 }; this.shots.set(p.id, v); }
       v.seen = this.frameNo;
@@ -1314,7 +1391,7 @@ export class IsoRenderer extends Renderer {
       const s = at(d.pos.x, d.pos.y, 8);
       g.rect(s.x - 3, s.y - 3, 6, 6).fill(CASTE_COLORS[d.caste]);
     }
-    for (const a of sim.arcs) {
+    for (const a of dots ? sim.arcs : []) {
       const from = at(a.from.x, a.from.y, this.muzzle(sim, a.from.x, a.from.y));
       const to = at(a.to.x, a.to.y, this.muzzle(sim, a.to.x, a.to.y) * 0.6);
       const midX = (from.x + to.x) / 2 + Math.sin(this.pulse * 30) * 4;
@@ -1330,9 +1407,9 @@ export class IsoRenderer extends Renderer {
       g.ellipse(sh.x, sh.y, r, r * 0.5).fill({ color: 0x000000, alpha: 0.28 });
       g.circle(x, y, r).fill(col);
     };
-    for (const s of sim.shells) lobbed(s.from, s.to, 1 - s.ttl / s.flight, 22, s.stun ? 2.5 : 4.5, s.side === 'body' ? 0xd8b060 : s.stun ? 0xdff5f2 : 0x2a1a0e);
-    for (const b of sim.bileFlights) lobbed(b.from, b.to, 1 - b.ttl / 0.9, 18, 6, 0xc4b83a);
-    for (const c of sim.clotFlights) lobbed(c.from, c.to, 1 - c.ttl / 1.2, 20, 7, 0x9c3120);
+    for (const s of dots ? sim.shells : []) lobbed(s.from, s.to, 1 - s.ttl / s.flight, 22, s.stun ? 2.5 : 4.5, s.side === 'body' ? 0xd8b060 : s.stun ? 0xdff5f2 : 0x2a1a0e);
+    for (const b of dots ? sim.bileFlights : []) lobbed(b.from, b.to, 1 - b.ttl / 0.9, 18, 6, 0xc4b83a);
+    for (const c of dots ? sim.clotFlights : []) lobbed(c.from, c.to, 1 - c.ttl / 1.2, 20, 7, 0x9c3120);
     // A seedling shot up from the landing site: the pod itself (art: 'seed-pod'), turned along its arc,
     // with its shadow on the ground. Without the picture, a pink dot.
     const pod = this.art.sprite('creep', 'seed-pod');

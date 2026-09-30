@@ -110,6 +110,10 @@ export class Renderer {
   protected pulse = 0;
   /** A ring round every evolved limb. The isometric board leaves it out: the crest says it. */
   protected evolvedRing = true;
+  /** Clouds and caltrops are drawn as pictures elsewhere (src/render/fx.ts): leave them out here. */
+  protected fxArt = false;
+  /** The inherited pips as dots round a limb. Off where the donors' parts are drawn on its body instead. */
+  protected pipDots = true;
 
   preview: PlacementPreview | null = null;
   /** Tower id highlighted as the cannibalize donor candidate. */
@@ -403,12 +407,12 @@ export class Renderer {
     }
 
     // Toxic pheromone clouds.
-    for (const c of sim.clouds) {
+    for (const c of this.fxArt ? [] : sim.clouds) {
       g.circle(c.pos.x, c.pos.y, c.radius).fill({ color: 0x9a6ac8, alpha: 0.12 + 0.1 * Math.min(1, c.ttl) });
       g.circle(c.pos.x, c.pos.y, c.radius * 0.6).fill({ color: 0xb8e060, alpha: 0.08 });
     }
     // Caltrops: barb-mats in the street.
-    for (const k of sim.caltrops) {
+    for (const k of this.fxArt ? [] : sim.caltrops) {
       for (let i = 0; i < 3; i++) {
         const a = i * 2.1 + k.id;
         g.moveTo(k.pos.x - Math.cos(a) * 5, k.pos.y - Math.sin(a) * 5)
@@ -882,7 +886,7 @@ export class Renderer {
       if (st.trueSight) g.circle(x + 12, y + 10, 3).fill({ color: 0xd8a0ff, alpha: 0.95 }); // detection
     }
     // Inheritance pips: the silhouette is the build history.
-    t.pips.forEach((p, i) => {
+    if (this.pipDots) t.pips.forEach((p, i) => {
       const a = -Math.PI / 2 + i * 0.55;
       g.circle(x + Math.cos(a) * 16, y + Math.sin(a) * 16, 3).fill(FAMILY_COLORS[p.family]);
     });

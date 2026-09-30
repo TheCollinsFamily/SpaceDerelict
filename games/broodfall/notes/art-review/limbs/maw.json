@@ -1,7 +1,7 @@
 {
  "family": "maw",
- "frames": 60,
- "atlasKB": 585,
+ "frames": 70,
+ "atlasKB": 660,
  "failed": 0,
  "checks": [
   {
@@ -55,9 +55,19 @@
    "value": "0% change"
   },
   {
+   "name": "die: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "die: it ends as a husk",
+   "ok": true,
+   "value": "31% of its first frame"
+  },
+  {
    "name": "it stands in its cell",
    "ok": true,
-   "value": "1.0% of it lies in front of its cell"
+   "value": "0.1% of it lies in front of its cell"
   },
   {
    "name": "from behind, where it stands is marked",
@@ -107,7 +117,7 @@
   {
    "name": "from behind, it stands in its cell",
    "ok": true,
-   "value": "2.0% of it lies in front of its cell"
+   "value": "0.4% of it lies in front of its cell"
   },
   {
    "name": "from behind: it has a view",
@@ -117,7 +127,7 @@
   {
    "name": "atlas is under 900 KB",
    "ok": true,
-   "value": "585 KB"
+   "value": "660 KB"
   }
  ]
 }

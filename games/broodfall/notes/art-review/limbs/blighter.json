@@ -1,7 +1,7 @@
 {
  "family": "blighter",
- "frames": 30,
- "atlasKB": 262,
+ "frames": 40,
+ "atlasKB": 327,
  "failed": 0,
  "checks": [
   {
@@ -50,14 +50,24 @@
    "value": "0% change"
   },
   {
+   "name": "die: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "die: it ends as a husk",
+   "ok": true,
+   "value": "69% of its first frame"
+  },
+  {
    "name": "it stands in its cell",
    "ok": true,
-   "value": "0.8% of it lies in front of its cell"
+   "value": "0.0% of it lies in front of its cell"
   },
   {
    "name": "atlas is under 900 KB",
    "ok": true,
-   "value": "262 KB"
+   "value": "327 KB"
   }
  ]
 }

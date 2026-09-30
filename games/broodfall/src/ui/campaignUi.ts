@@ -75,10 +75,18 @@ export class CampaignUi {
   private globe = new Globe();
   /** The post-deployment report is up: the rooms must not be drawn over it. */
   private debriefing = false;
+  /** Each organ's scan picture, by organ id (absolute URLs); empty until the manifest is in. */
+  private organPics: Record<string, string> = {};
 
   constructor(private state: CampaignState, private hooks: { deploy(p: PendingDeployment): void; newCampaign(): void; quit(): void }) {
     this.ai = this.buildAi();
     void loadManifest().then(async (m) => {
+      // Each organ's own picture from the ground scan (tools/art/templates/under.mjs), for the organ cards.
+      const scan = (m as unknown as { under?: { scan?: { tiles?: Record<string, string> } } } | null)?.under?.scan?.tiles;
+      if (scan) {
+        this.organPics = Object.fromEntries(Object.entries(scan).map(([k, f]) => [k, new URL(artUrl(f), document.baseURI).href]));
+        if (this.room === 'genes' && !this.debriefing && !this.el.classList.contains('hidden')) this.render();
+      }
       const art = m?.ship?.ship ?? null;
       if (!art) return;
       if (art.planet) await this.globe.load(artUrl(art.planet));
@@ -330,7 +338,8 @@ export class CampaignUi {
       const have = s.lineages.includes(id);
       const def = ORGAN_BY_ID[id];
       const cur = l.catalogue === 'sanctioned' ? 'standing' : 'field notes';
-      return `<div class="cp-lin${have ? ' have' : ''}"><b>${esc(def.name)}</b><span>${esc(def.unlocks ? `unlocks ${def.unlocks.join(', ')}` : def.blurb)}</span>
+      const pic = this.organPics[id];
+      return `<div class="cp-lin${have ? ' have' : ''}${pic ? ' cp-organ' : ''}">${pic ? `<img class="cp-organ-pic" src="${pic}" alt="">` : ''}<b>${esc(def.name)}</b><span>${esc(def.unlocks ? `unlocks ${def.unlocks.join(', ')}` : def.blurb)}</span>
         ${have ? '<i>IN YOUR GENOME</i>' : `<button data-buy="${id}">${l.price} ${cur}</button>`}</div>`;
     };
     const ids = Object.keys(LINEAGES) as OrganId[];

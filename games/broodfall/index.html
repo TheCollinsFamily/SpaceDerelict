@@ -197,6 +197,25 @@
   <div id="fault" class="hidden"></div>
   <div id="art-notice" class="hidden"></div>
   <div id="grain"></div>
-  <script type="module" src="./src/main.ts"></script>
+  <!-- The last net: the game's own code failed before it could show its own fault screen
+       (a file missing, an error while its modules load). Plain script, no imports. -->
+  <script>
+    window.__bfFault = function (detail) {
+      if (window.__bfBooted) return;
+      var el = document.getElementById('fault');
+      if (!el || !el.classList.contains('hidden')) return;
+      var boot = document.getElementById('boot');
+      if (boot) boot.classList.add('hidden');
+      el.innerHTML = '<div class="fault-card"><div class="screen-kicker">FIELD OPERATIONS CONSOLE — FAULT REPORT XC-0</div>'
+        + '<div class="fault-title">THE CONSOLE FAILED WHILE STARTING</div>'
+        + '<p>Something broke before the deployment could begin. Your campaign is saved; nothing was lost.</p>'
+        + '<p class="fault-fix">Try again. If it keeps happening, the text below is what went wrong.</p>'
+        + '<pre class="fault-detail"></pre><div class="menu-btns"><button class="screen-btn" onclick="location.reload()">TRY AGAIN</button></div></div>';
+      el.querySelector('.fault-detail').textContent = String(detail || 'unknown error');
+      el.classList.remove('hidden');
+    };
+    window.addEventListener('error', function (e) { window.__bfFault((e.error && e.error.stack) || e.message); });
+  </script>
+  <script type="module" src="./src/main.ts" onerror="window.__bfFault('The game\'s code could not be loaded: ' + this.src)"></script>
 </body>
 </html>

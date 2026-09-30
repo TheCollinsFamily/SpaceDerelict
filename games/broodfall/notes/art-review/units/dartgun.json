@@ -1,7 +1,8 @@
 {
  "kind": "dartgun",
- "frames": 136,
- "atlasKB": 460,
+ "frames": 146,
+ "atlasKB": 473,
+ "pages": 1,
  "failed": 0,
  "checks": [
   {
@@ -155,6 +156,11 @@
    "value": "0.2% of the frame"
   },
   {
+   "name": "attack S: nothing cut off",
+   "ok": true,
+   "value": "window grown 1.13x"
+  },
+  {
    "name": "attack S: no background tint on the outline",
    "ok": true,
    "value": "0.0%"
@@ -163,6 +169,11 @@
    "name": "attack S: stays on the spot",
    "ok": true,
    "value": "0.1% of the frame"
+  },
+  {
+   "name": "attack SW: nothing cut off",
+   "ok": true,
+   "value": "window grown 1.08x"
   },
   {
    "name": "attack SW: no background tint on the outline",
@@ -175,6 +186,11 @@
    "value": "0.2% of the frame"
   },
   {
+   "name": "attack W: nothing cut off",
+   "ok": true,
+   "value": "window grown 1.03x"
+  },
+  {
    "name": "attack W: no background tint on the outline",
    "ok": true,
    "value": "0.0%"
@@ -183,6 +199,11 @@
    "name": "attack W: stays on the spot",
    "ok": true,
    "value": "0.2% of the frame"
+  },
+  {
+   "name": "attack NW: nothing cut off",
+   "ok": true,
+   "value": "window grown 1.08x"
   },
   {
    "name": "attack NW: no background tint on the outline",
@@ -195,6 +216,11 @@
    "value": "0.2% of the frame"
   },
   {
+   "name": "attack N: nothing cut off",
+   "ok": true,
+   "value": "window grown 1.18x"
+  },
+  {
    "name": "attack N: no background tint on the outline",
    "ok": true,
    "value": "0.0%"
@@ -205,9 +231,34 @@
    "value": "0.2% of the frame"
   },
   {
+   "name": "death SW: nothing cut off",
+   "ok": true,
+   "value": "in the walk frame"
+  },
+  {
    "name": "death SW: no background tint on the outline",
    "ok": true,
    "value": "0.0%"
+  },
+  {
+   "name": "braced SW: it moves",
+   "ok": true,
+   "value": 9.65
+  },
+  {
+   "name": "braced SW: nothing cut off",
+   "ok": true,
+   "value": "window grown 1.02x"
+  },
+  {
+   "name": "braced SW: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "braced SW: stays on the spot",
+   "ok": true,
+   "value": "0.8% of the frame"
   },
   {
    "name": "state deployed: made",
@@ -220,9 +271,9 @@
    "value": "0.73 0.72 0.74 0.65 0.62"
   },
   {
-   "name": "atlas is under 900 KB",
+   "name": "atlas page 1 is under 900 KB",
    "ok": true,
-   "value": "460 KB"
+   "value": "473 KB"
   }
  ]
 }

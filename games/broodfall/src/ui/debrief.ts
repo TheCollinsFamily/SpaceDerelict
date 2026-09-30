@@ -39,7 +39,7 @@ const title = (kind: string) => kind.charAt(0).toUpperCase() + kind.slice(1);
 function frameCss(atlas: string, frame: number, cols: number, i: number, size: number): string {
   const url = new URL(artUrl(atlas), document.baseURI).href;
   const k = size / frame;
-  return `background-image:url("${url}");background-size:${cols * frame * k}px auto;background-position:-${(i % cols) * size}px -${Math.floor(i / cols) * size}px`;
+  return `background-image:url('${url}');background-size:${cols * frame * k}px auto;background-position:-${(i % cols) * size}px -${Math.floor(i / cols) * size}px`;
 }
 
 function limbCss(a: LimbArt | undefined, size: number): string {
@@ -66,7 +66,7 @@ export async function debriefPictures(r: RunPictures): Promise<HTMLElement> {
     const kills = r.stats.killsByFamily[f] ?? 0;
     const stand = r.standing[f] ?? 0;
     return `<div class="dbf-tile${stand ? '' : ' gone'}" title="${esc(towerSpec(f).name)}: ${stand} standing at the end, ${kills} killed">
-      <div class="dbf-pic" style="${limbCss(m?.limbs?.[f], 72)}"></div>
+      <div class="dbf-pic" style="${limbCss(m?.limbs?.[f], 64)}"></div>
       <div class="dbf-name">${esc(towerSpec(f).name)}</div>
       <div class="dbf-num">${stand ? `${stand} standing` : 'none left'}${kills ? ` · <b>${kills}</b> kills` : ''}</div></div>`;
   }).join('');
@@ -74,7 +74,7 @@ export async function debriefPictures(r: RunPictures): Promise<HTMLElement> {
   // What came: every kind that died, the most first.
   const kinds = (Object.entries(r.stats.kills) as Array<[EnemyKind, number]>).filter(([, n]) => n > 0).sort((x, y) => y[1] - x[1]);
   const units = kinds.map(([k, n]) => `<div class="dbf-tile unit" title="${esc(title(k))}: ${n} killed">
-      <div class="dbf-pic" style="${unitCss(m?.units?.[k], 72)}"></div>
+      <div class="dbf-pic" style="${unitCss(m?.units?.[k], 64)}"></div>
       <div class="dbf-name">${esc(title(k))}</div>
       <div class="dbf-num"><b>${n}</b> dead</div></div>`).join('');
   const dead = kinds.reduce((s, [, n]) => s + n, 0);
@@ -86,9 +86,11 @@ export async function debriefPictures(r: RunPictures): Promise<HTMLElement> {
     </div>
     <div class="dbf-row">
       ${r.snapshot ? `<figure class="dbf-photo"><img src="${r.snapshot}" alt="The board when the run ended"><figcaption>THE FIELD AT THE END</figcaption></figure>` : ''}
-      <div class="dbf-figures">${r.figures.map(([k, v]) => `<div><b>${esc(v)}</b><span>${esc(k)}</span></div>`).join('')}</div>
-    </div>
-    ${limbs ? `<div class="dbf-label">WHAT THE BODY GREW</div><div class="dbf-tiles">${limbs}</div>` : '<div class="dbf-label">THE BODY GREW NO LIMBS</div>'}
-    ${units ? `<div class="dbf-label">WHAT THE COLONY SENT — ${dead} DEAD</div><div class="dbf-tiles">${units}</div>` : '<div class="dbf-label">NOTHING OF THE COLONY DIED</div>'}`;
+      <div class="dbf-side">
+        <div class="dbf-figures">${r.figures.map(([k, v]) => `<div><b>${esc(v)}</b><span>${esc(k)}</span></div>`).join('')}</div>
+        ${limbs ? `<div class="dbf-label">WHAT THE BODY GREW</div><div class="dbf-tiles">${limbs}</div>` : '<div class="dbf-label">THE BODY GREW NO LIMBS</div>'}
+        ${units ? `<div class="dbf-label">WHAT THE COLONY SENT — ${dead} DEAD</div><div class="dbf-tiles">${units}</div>` : '<div class="dbf-label">NOTHING OF THE COLONY DIED</div>'}
+      </div>
+    </div>`;
   return el;
 }

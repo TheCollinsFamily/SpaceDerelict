@@ -14,7 +14,7 @@ import { lock, makeClip, makeStill, pool } from '../rfab.mjs';
 import { placeOnSheet, unit } from '../units.mjs';
 import { blank, borderColour, crop, paste, readFrames, readImage, resize, writePng } from '../lib/img.mjs';
 import { figure, findFigures } from '../lib/sheet.mjs';
-import { dropSpecks, fringe, keyClip, keyFrame, keyOf, loopWindow, pick, unionBox } from '../lib/key.mjs';
+import { diffThumb, dropSpecks, fringe, keyClip, keyFrame, keyOf, loopWindow, pick, thumb, unionBox } from '../lib/key.mjs';
 import { packAtlas, reviewFrames, reviewSheet } from '../lib/atlas.mjs';
 import { ART, REVIEW, ROOT, SRC, putEntry } from '../lib/manifest.mjs';
 import { ffmpeg } from '../rfab.mjs';
@@ -23,7 +23,7 @@ export const VIEWS = ['S', 'SW', 'W', 'NW', 'N'];
 const FPS = 12;
 const COLS = 16;
 /** Frames kept per animation and view. */
-const KEEP = { walk: 14, attack: 12, death: 12 };
+const KEEP = { walk: 14, attack: 12, death: 12, hit: 8, braced: 10, enter: 16, special: 14 };
 
 const EMBLEM =
   'Its one emblem is a small plain gold hexagon, the shape of a honeycomb cell. There are no crosses, no stars ' +
@@ -31,7 +31,8 @@ const EMBLEM =
 const KEYS = { green: { hex: '00FF00', name: 'green' }, magenta: { hex: 'FF00FF', name: 'magenta' } };
 
 /** Green is the proven background; anything teal, green or royal is cut off magenta instead. */
-function keyFor(u) {
+export function keyFor(u) {
+  if (u.key) return KEYS[u.key];
   if (u.caste !== 'war') return KEYS.magenta;
   return /green|teal/.test(u.look) ? KEYS.magenta : KEYS.green;
 }
@@ -109,14 +110,22 @@ const STEADY = ' It never travels across the frame and never turns. It only walk
 async function makeViews(u, dir, key) {
   const done = VIEWS.every((v) => fs.existsSync(path.join(dir, `view-${v}.png`)));
   if (done) return;
-  const place = placeOnSheet(u.kind);
-  if (!place) throw new Error(`${u.kind}: not on any approved sheet`);
-  const sheetFile = path.join(ROOT, 'notes', 'concepts', '2026-09-29', `${place.sheet}.png`);
-  const sheet = readImage(sheetFile);
-  const found = findFigures(sheet, { expect: place.count });
-  if (found.boxes.length !== place.count) throw new Error(`${u.kind}: ${found.boxes.length} figures on ${place.sheet}, ${place.count} expected`);
   const ref = path.join(dir, 'ref.png');
-  writePng(ref, resize(figure(sheet, found.boxes[place.index], found), 1024, 1024));
+  if (u.design) {
+    // No concept sheet: its figure is drawn first, from its references. Look at ref.png before the views are paid for.
+    await makeStill({
+      slug: `${u.kind} design`, out: ref, refFiles: u.design.refs.map((r) => path.join(SRC, r)),
+      prompt: `${u.design.prompt} ${EMBLEM}. Even light from directly overhead, no cast shadows, no text.`, key: key.hex, keyName: key.name, quality: 'high',
+    });
+  } else {
+    const place = placeOnSheet(u.kind);
+    if (!place) throw new Error(`${u.kind}: not on any approved sheet`);
+    const sheetFile = path.join(ROOT, 'notes', 'concepts', '2026-09-29', `${place.sheet}.png`);
+    const sheet = readImage(sheetFile);
+    const found = findFigures(sheet, { expect: place.count });
+    if (found.boxes.length !== place.count) throw new Error(`${u.kind}: ${found.boxes.length} figures on ${place.sheet}, ${place.count} expected`);
+    writePng(ref, resize(figure(sheet, found.boxes[place.index], found), 1024, 1024));
+  }
 
   const g = gaitOf(u);
   const turn = await makeStill({
@@ -161,6 +170,33 @@ export const STATES = {
   thief: [{ id: 'carrying', prompt: 'The same thief running off with its sack bulging full of dark red meat, dripping a little, slung over its back.' }],
 };
 
+/**
+ * THE BOSSES (Sep 30 2026): the royal and the consort are baked from bigger frames and have an
+ * arrival (played once when they come on the board) and a special attack, in all five views.
+ * The royal's special is her command (the game shows her aura pulsing out with it); the consort's
+ * is his promotion salute, played each time the sim promotes a war body near him.
+ */
+export const BOSS = {
+  royal: { frame: 320,
+    enter: 'The queen makes her entrance: she draws herself up to her full height, spreads both arms wide and high in a grand commanding gesture, her robe and her long abdomen swaying, holds the pose proudly for a moment, then lowers her arms and returns to exactly her starting pose.',
+    special: 'The queen gives a command: she throws her head back and flings one arm high above her crown and the other forward, as if calling her whole army on, her body swelling with effort, then she lowers her arms and returns to exactly her starting pose.' },
+  consort: { frame: 256,
+    enter: 'The officer makes his entrance: he snaps to attention, sweeps his cap off in a grand bow, straightens and puts it back on, then returns to exactly his starting pose.',
+    special: 'The officer gives a promotion: he raises his free hand high in a crisp salute, then points forward sharply with it as if giving an order, then returns to exactly his starting pose.' },
+};
+
+/**
+ * SKINS: a unit that looks different in a state it WALKS in gets its own walking clips in that
+ * look (five views), not a frozen picture. One still per view, redrawn from that view.
+ * The carapace lord (Sep 30 2026): its ablative shell (hitShield 6) cracked from half down, then gone.
+ */
+export const SKINS = {
+  carapace: [
+    { id: 'cracked', prompt: 'The same beetle with its copper dome shell badly battered: split by deep cracks, dented, two of its plates torn off showing the pale soft body underneath, bolts sprung and plates hanging loose. The dome is still on but clearly breaking.' },
+    { id: 'stripped', prompt: STATES.carapace[0].prompt },
+  ],
+};
+
 /** A braced unit's shot: played once from its braced picture each time the sim fires a shell (Sep 30 2026). */
 const BRACED = {
   cannon: { state: 'deployed', motion: 'The dug-in cannon fires once: the whole gun jolts down hard into its base plate with the recoil, the barrel kicks back, a small puff of smoke leaves the muzzle and the crewmen flinch; then everything settles back to exactly its starting pose and stays still.' },
@@ -177,6 +213,17 @@ async function makeStates(u, dir, key) {
   results.forEach((r, i) => { if (!r.ok) console.warn(`[unit] ${u.kind} state ${list[i].id} failed: ${r.error.message.slice(0, 160)}`); });
 }
 
+/** The stills of a unit's skins: one per view, each redrawn from that view. */
+export async function makeSkins(u, dir, key) {
+  const list = (SKINS[u.kind] ?? []).flatMap((sk) => VIEWS.map((v) => ({ sk, v })));
+  const results = await pool(list, 5, ({ sk, v }) => makeStill({
+    slug: `${u.kind} ${sk.id} ${v}`, out: path.join(dir, `skin-${sk.id}-${v}.png`), refFiles: [path.join(dir, `view-${v}.png`)],
+    prompt: `${sk.prompt} The same unit as the reference picture, in exactly the same pose, heading and place in the frame, the same size, the same drawing style, seen by exactly the same camera from high above. ${EMBLEM}. Even light from directly overhead, no cast shadows, no text.`,
+    key: key.hex, keyName: key.name, quality: 'medium',
+  }));
+  results.forEach((r, i) => { if (!r.ok) console.warn(`[unit] ${u.kind} skin ${list[i].sk.id} ${list[i].v} failed: ${r.error.message.slice(0, 160)}`); });
+}
+
 /** Step 3: the clips. */
 async function makeClips(u, dir, key, anims) {
   const g = gaitOf(u);
@@ -186,7 +233,18 @@ async function makeClips(u, dir, key, anims) {
     jobs.push({ v, anim: 'walk', still, prompt: g.motion + STEADY });
     const a = attackOf(u);
     if (a && anims.includes('attack')) jobs.push({ v, anim: 'attack', still, prompt: `${a} It does not walk and does not turn. The drawing style stays exactly the same in every frame.` });
-    if (anims.includes('hit')) jobs.push({ v, anim: 'hit', still, prompt: `${hitOf(u)} It does not walk, does not travel and does not turn. No sparks, no blood, no flash, no smoke. The drawing style stays exactly the same in every frame.` });
+    if (anims.includes('hit')) jobs.push({ v, anim: 'hit', still, prompt: `${hitOf(u)} It does not walk, does not travel, does not turn, and does not fire or attack. No sparks, no blood, no flash, no smoke, no projectiles. The drawing style stays exactly the same in every frame.` });
+    const boss = BOSS[u.kind];
+    if (boss && anims.includes('boss')) {
+      for (const anim of ['enter', 'special']) jobs.push({ v, anim, still, prompt: `${boss[anim]} It does not walk, does not travel and does not turn. No sparks, no flash, no smoke, no glow. The drawing style stays exactly the same in every frame.` });
+    }
+    // A skin walks in its own look, from its own still of this view.
+    if (anims.includes('skins')) {
+      for (const sk of SKINS[u.kind] ?? []) {
+        const skin = path.join(dir, `skin-${sk.id}-${v}.png`);
+        if (fs.existsSync(skin)) jobs.push({ v, anim: `walk-${sk.id}`, still: skin, prompt: g.motion + STEADY });
+      }
+    }
   }
   // Braced: the dug-in picture firing once (toward the lower left; mirrored by heading, as the states are).
   const braced = BRACED[u.kind];
@@ -208,21 +266,83 @@ async function makeClips(u, dir, key, anims) {
   if (failed.length) console.warn(`[unit] ${u.kind}: ${failed.length} clip(s) failed:\n  ${failed.join('\n  ')}`);
 }
 
-/** Step 4: clips to an atlas, a manifest entry, the checks and the review pictures. Free. */
+/**
+ * Where the motion of a one-off clip is (a flinch, a shot, a gesture): the frames that differ from
+ * the first by more than a quarter of the most any frame does, with a frame either side. A clip
+ * made with its end frame = its start frame moves in the middle and stands still around it.
+ */
+function motionWindow(frames) {
+  const t = frames.map((f) => thumb(f));
+  const d = t.map((x) => diffThumb(x, t[0]));
+  const peak = Math.max(...d);
+  const thr = Math.max(0.8, peak * 0.25);
+  let first = d.findIndex((x) => x > thr);
+  let last = d.length - 1 - [...d].reverse().findIndex((x) => x > thr);
+  if (first < 0) { first = 0; last = frames.length - 1; }
+  return { start: Math.max(0, first - 1), end: Math.min(frames.length, last + 2), peak };
+}
+
+/** Animations, in the order they are packed (the walk first: it is on the first page). */
+const ANIMS = ['walk', 'attack', 'death', 'hit', 'braced', 'enter', 'special'];
+/** Those played once from their start, not looped: cut to where they move. */
+const ONCE = new Set(['hit', 'braced', 'enter', 'special']);
+/** An atlas page is kept under this; a unit with more frames is packed on several pages. */
+const PAGE_BYTES = 860 * 1024;
+
+/**
+ * The frames on atlas pages: as few pages as keep every page under PAGE_BYTES, whole clips on
+ * one page each, in order. Sets each clip's `start` (on its page) and `page` (when not the first).
+ * Returns the pages' files (relative to public/art) and sizes.
+ */
+function packPages(groups, F, kind, sub) {
+  const total = groups.reduce((a, g) => a + g.frames.length, 0);
+  let out = null;
+  for (let n = 1; n <= 8 && !out; n++) {
+    const per = Math.ceil(total / n);
+    const pages = [[]];
+    let count = 0;
+    for (const g of groups) {
+      if (pages[pages.length - 1].length && count + g.frames.length > per && pages.length < n) { pages.push([]); count = 0; }
+      pages[pages.length - 1].push(g);
+      count += g.frames.length;
+    }
+    const packed = pages.map((p, i) => {
+      const rel = `${sub}/${kind}${i ? `-${i + 1}` : ''}.webp`;
+      return { p, rel, ...packAtlas(p.flatMap((g) => g.frames), F, COLS, path.join(ART, rel)) };
+    });
+    if (packed.every((x) => x.bytes < PAGE_BYTES) || n === 8) out = packed;
+  }
+  out.forEach((pg, i) => {
+    let at = 0;
+    for (const g of pg.p) {
+      g.rec.start = at;
+      if (i) g.rec.page = i; else delete g.rec.page;
+      at += g.frames.length;
+    }
+  });
+  // Pages left from an earlier bake with more of them.
+  for (let i = out.length; i < 8; i++) fs.rmSync(path.join(ART, `${sub}/${kind}-${i + 1}.webp`), { force: true });
+  return out;
+}
+
+/** Step 4: clips to atlas pages, a manifest entry, the checks and the review pictures. Free. */
 export function bakeUnit(kind) {
   const u = unit(kind);
   const dir = path.join(SRC, 'units', kind);
-  const F = frameSize(u);
+  const F = BOSS[kind]?.frame ?? frameSize(u);
+  const skins = (SKINS[kind] ?? []).map((s) => `walk-${s.id}`);
   const clips = [];
-  for (const anim of ['walk', 'attack', 'death']) {
+  for (const anim of [...ANIMS, ...skins]) {
     for (const v of VIEWS) {
       const file = path.join(dir, `${anim}-${v}.mp4`);
       if (!fs.existsSync(file)) continue;
       const keyed = keyClip(readFrames(file, FPS));
       let frames = keyed.frames;
       let loop = null;
-      if (anim === 'walk') { loop = loopWindow(frames); frames = frames.slice(loop.start, loop.end); }
-      clips.push({ anim, v, frames, box: unionBox(frames), loop, key: keyed.key, w: keyed.w, h: keyed.h, seconds: frames.length / FPS });
+      let moved = null;
+      if (anim.startsWith('walk')) { loop = loopWindow(frames); frames = frames.slice(loop.start, loop.end); }
+      if (ONCE.has(anim)) { moved = motionWindow(frames); frames = frames.slice(moved.start, moved.end); }
+      clips.push({ anim, v, frames, box: unionBox(frames), loop, moved, key: keyed.key, w: keyed.w, h: keyed.h, seconds: frames.length / FPS });
     }
   }
   const walks = clips.filter((c) => c.anim === 'walk');
@@ -232,8 +352,7 @@ export function bakeUnit(kind) {
   // walk, so the unit does not jump when it stops walking to attack.
   const base = Object.fromEntries(walks.map((c) => [c.v, { cx: (c.box.x0 + c.box.x1) / 2, feet: c.box.y1 }]));
   const BELOW = 0.06;
-  // The frame is sized by the WALK, with room to raise a weapon. What an attack throws
-  // beyond that (shots, flashes, smoke) is cut off: the game draws those itself.
+  // The frame is sized by the WALK, with room to raise a weapon.
   let side = 0;
   for (const c of walks) {
     const b = base[c.v];
@@ -242,18 +361,47 @@ export function bakeUnit(kind) {
   }
   side = Math.ceil(side * 1.3);
 
+  /**
+   * The window a clip is cut with. The walk's window, grown (never moved) to hold all of what a
+   * clip that is not a walk does: a fall that drops below a flier's feet (the shadewing's was cut
+   * off, Sep 30 2026), a braced gun with its legs splayed. A grown window is drawn at the same
+   * scale as the walk: its clip carries the anchor (where the walk's feet are in it) and `scale`.
+   */
+  const windowOf = (b, box) => {
+    const w0 = { x0: b.cx - side / 2, y0: b.feet + BELOW * side - side };
+    if (!box) return { ...w0, s: side };
+    const m = side * 0.02;
+    let ex0 = Math.min(w0.x0, box.x0 - m);
+    let ex1 = Math.max(w0.x0 + side, box.x1 + m);
+    let ey0 = Math.min(w0.y0, box.y0 - m);
+    let ey1 = Math.max(w0.y0 + side, box.y1 + m);
+    const s = Math.ceil(Math.max(ex1 - ex0, ey1 - ey0));
+    if (s <= side + 1) return { ...w0, s: side };
+    ex0 -= (s - (ex1 - ex0)) / 2; ex1 = ex0 + s;
+    ey0 -= (s - (ey1 - ey0)) / 2; ey1 = ey0 + s;
+    return { x0: ex0, y0: ey0, s };
+  };
+  const record = (win, b, count, fps) => {
+    const rec = { start: 0, count, fps };
+    if (win.s > side + 1) {
+      rec.anchor = [Number(((b.cx - win.x0) / win.s).toFixed(4)), Number(((b.feet - win.y0) / win.s).toFixed(4))];
+      rec.scale = Number((win.s / side).toFixed(4));
+    }
+    return rec;
+  };
+
   const checks = [];
   const check = (name, ok, value) => checks.push({ name, ok, value });
-  const frames = [];
+  const groups = [];
   const anims = {};
   const rows = [];
   for (const c of clips) {
     const b = base[c.v] ?? base.SW;
-    const x0 = Math.round(b.cx - side / 2);
-    const y0 = Math.round(b.feet + BELOW * side - side);
-    const kept = pick(c.frames, KEEP[c.anim]).map((f) => resize(crop(f, x0, y0, side, side), F, F));
-    (anims[c.anim] ??= {})[c.v] = { start: frames.length, count: kept.length, fps: Number((kept.length / c.seconds).toFixed(2)) };
-    frames.push(...kept);
+    const win = c.anim.startsWith('walk') && c.anim !== 'walk' ? windowOf(b, null) : windowOf(b, c.anim === 'walk' ? null : c.box);
+    const kept = pick(c.frames, KEEP[c.anim] ?? KEEP.walk).map((f) => resize(crop(f, Math.round(win.x0), Math.round(win.y0), win.s, win.s), F, F));
+    const rec = record(win, b, kept.length, Number((kept.length / c.seconds).toFixed(2)));
+    (anims[c.anim] ??= {})[c.v] = rec;
+    groups.push({ rec, frames: kept });
     c.kept = kept;
 
     const tag = `${c.anim} ${c.v}`;
@@ -262,7 +410,13 @@ export function bakeUnit(kind) {
       check(`${tag}: it moves`, c.loop.motion > 0.6, Number(c.loop.motion.toFixed(2)));
       check(`${tag}: loop is long enough`, c.loop.end - c.loop.start >= 10, c.loop.end - c.loop.start);
     }
+    if (c.moved) check(`${tag}: it moves`, c.moved.peak > 1.5, Number(c.moved.peak.toFixed(2)));
     if (c.anim === 'walk') check(`${tag}: inside the frame`, c.box.x0 > 2 && c.box.y0 > 2 && c.box.x1 < c.w - 2 && c.box.y1 < c.h - 2, `${c.box.x0},${c.box.y0}-${c.box.x1},${c.box.y1}`);
+    // Nothing a clip does is cut off by its window (the clip's own picture may still cut it: the edge of the video).
+    if (c.anim !== 'walk' && c.box) {
+      const inside = c.box.x0 >= win.x0 && c.box.y0 >= win.y0 && c.box.x1 <= win.x0 + win.s && c.box.y1 <= win.y0 + win.s;
+      check(`${tag}: nothing cut off`, inside, win.s > side + 1 ? `window grown ${(win.s / side).toFixed(2)}x` : 'in the walk frame');
+    }
     const fr = fringe(c.frames[0], keyOf(c.key));
     check(`${tag}: no background tint on the outline`, fr < 0.05, `${(fr * 100).toFixed(1)}%`);
     // It must stay on the spot: the first and the last frame of a loop share a centre.
@@ -274,12 +428,13 @@ export function bakeUnit(kind) {
     }
   }
   for (const v of VIEWS) if (!anims.walk?.[v]) check(`walk ${v}: exists`, false, 'missing');
-  // A fall is drawn once (toward the lower left): every view falls with it, mirrored by heading.
-  if (anims.death) {
-    const one = anims.death.SW ?? Object.values(anims.death)[0];
-    for (const v of VIEWS) anims.death[v] ??= one;
+  // A fall (or a braced shot) is drawn once, toward the lower left: every view plays it, mirrored by heading.
+  for (const one of ['death', 'braced']) {
+    if (!anims[one]) continue;
+    const clip = anims[one].SW ?? Object.values(anims[one])[0];
+    for (const v of VIEWS) anims[one][v] ??= clip;
   }
-  // The states: one frame each, cut with the lower-left view's centre and feet.
+  // The states: one frame each, cut with the lower-left view's centre and feet (the window grown to hold them).
   const walkClip = walks.find((c) => c.v === 'SW') ?? walks[0];
   for (const st of STATES[kind] ?? []) {
     const file = path.join(dir, `state-${st.id}.png`);
@@ -289,33 +444,36 @@ export function bakeUnit(kind) {
     keyFrame(img, keyOf(borderColour(img)));
     dropSpecks(img);
     const b = base.SW ?? base[walkClip.v];
-    const f = resize(crop(img, Math.round(b.cx - side / 2), Math.round(b.feet + BELOW * side - side), side, side), F, F);
-    (anims.states ??= {})[st.id] = { start: frames.length, count: 1, fps: 1 };
-    frames.push(f);
-    check(`state ${st.id}: made`, true, 'yes');
+    const win = windowOf(b, unionBox([img]));
+    const f = resize(crop(img, Math.round(win.x0), Math.round(win.y0), win.s, win.s), F, F);
+    const rec = record(win, b, 1, 1);
+    (anims.states ??= {})[st.id] = rec;
+    groups.push({ rec, frames: [f] });
+    check(`state ${st.id}: made`, true, win.s > side + 1 ? `window grown ${(win.s / side).toFixed(2)}x` : 'yes');
   }
   // Views of one unit must be one size: compare how much of the frame each one fills.
   const fill = walks.map((c) => Math.max(c.box.x1 - c.box.x0, c.box.y1 - c.box.y0) / side);
   check('views are one size', Math.max(...fill) / Math.min(...fill) < 1.6, fill.map((f) => f.toFixed(2)).join(' '));
 
-  const atlas = path.join(ART, 'units', `${kind}.webp`);
-  const packed = packAtlas(frames, F, COLS, atlas);
-  check('atlas is under 900 KB', packed.bytes < 900 * 1024, `${Math.round(packed.bytes / 1024)} KB`);
+  const pages = packPages(groups, F, kind, 'units');
+  const bytes = pages.reduce((a, p) => a + p.bytes, 0);
+  for (const [i, p] of pages.entries()) check(`atlas page ${i + 1} is under 900 KB`, p.bytes < 900 * 1024, `${Math.round(p.bytes / 1024)} KB`);
 
   // How big to draw it: the game gives the unit a radius; the frame is that much wider than the body.
   const bodyW = walks.map((c) => (c.box.x1 - c.box.x0) / side).sort((a, b) => a - b)[walks.length >> 1];
   const entry = {
-    atlas: `units/${kind}.webp`, frame: F, cols: COLS,
+    atlas: pages[0].rel, ...(pages.length > 1 ? { pages: pages.slice(1).map((p) => p.rel) } : {}), frame: F, cols: COLS,
     anchor: [0.5, Number((1 - BELOW).toFixed(3))],
     /** The body's width as a share of the frame's: the game scales the frame so the body matches the unit's radius. */
     body: Number(bodyW.toFixed(3)),
     flies: u.gait === 'fly' || /drawn in the air/.test(u.look),
     anims,
   };
-  putEntry('units', kind, entry);
+  putEntry(u.ally ? 'allies' : 'units', kind, entry);
 
+  const shown = [...ANIMS, ...skins];
   for (const v of VIEWS) {
-    const a = ['walk', 'attack', 'death'].map((n) => clips.find((c) => c.anim === n && c.v === v)?.kept).filter(Boolean);
+    const a = shown.map((n) => clips.find((c) => c.anim === n && c.v === v)?.kept).filter(Boolean);
     if (a.length) rows.push({ label: v, anims: a });
   }
   fs.mkdirSync(path.join(REVIEW, 'units'), { recursive: true });
@@ -333,9 +491,10 @@ export function bakeUnit(kind) {
   ffmpeg(['-framerate', '12', '-i', path.join(tmp, 'f-%04d.png'), '-vf', 'crop=trunc(iw/2)*2:trunc(ih/2)*2:0:0', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '30', film], `${kind} review film`);
   fs.rmSync(tmp, { recursive: true, force: true });
 
+  const frameCount = groups.reduce((a, g) => a + g.frames.length, 0);
   const bad = checks.filter((c) => !c.ok);
-  fs.writeFileSync(path.join(REVIEW, 'units', `${kind}.json`), `${JSON.stringify({ kind, frames: frames.length, atlasKB: Math.round(packed.bytes / 1024), failed: bad.length, checks }, null, 1)}\n`);
-  console.log(`[unit] ${kind}: ${frames.length} frames, atlas ${Math.round(packed.bytes / 1024)} KB, ${checks.length - bad.length}/${checks.length} checks passed`);
+  fs.writeFileSync(path.join(REVIEW, 'units', `${kind}.json`), `${JSON.stringify({ kind, frames: frameCount, atlasKB: Math.round(bytes / 1024), pages: pages.length, failed: bad.length, checks }, null, 1)}\n`);
+  console.log(`[unit] ${kind}: ${frameCount} frames, ${pages.length} page(s), ${Math.round(bytes / 1024)} KB, ${checks.length - bad.length}/${checks.length} checks passed`);
   for (const c of bad) console.log(`       FAILED ${c.name}: ${c.value}`);
   return { kind, entry, checks, sheet, film };
 }
@@ -349,6 +508,7 @@ export async function makeUnit(kind, { anims = ['walk'], bakeOnly = false, views
     const key = keyFor(u);
     await makeViews(u, dir, key);
     if (viewsOnly) return { kind, views: path.join(dir, 'turnaround.png') };
+    if (anims.includes('skins')) await makeSkins(u, dir, key);
     await makeClips(u, dir, key, anims);
     if (anims.includes('states')) await makeStates(u, dir, key);
   }

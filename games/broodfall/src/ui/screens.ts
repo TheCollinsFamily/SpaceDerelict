@@ -175,4 +175,6 @@ export function showArtNotice(failed: string[]): void {
   el.classList.remove('hidden');
   el.querySelector('[data-act="retry"]')!.addEventListener('click', () => location.reload());
   el.querySelector('[data-act="close"]')!.addEventListener('click', () => el.classList.add('hidden'));
+  // It is said once; it does not stay over the game.
+  window.setTimeout(() => el.classList.add('hidden'), 14000);
 }
