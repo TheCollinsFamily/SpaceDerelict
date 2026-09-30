@@ -7,24 +7,36 @@ import { artUrl, loadManifest } from '../render/art';
 
 export interface SceneStage { id: string; card: string; ms: number }
 
-/** The files of a scene, from YOKE's own manifest (`scenes.<key>`) or the main one (`ship.yoke.scenes.<key>`): absolute URLs, in order. */
-export async function sceneMedia(key: string): Promise<string[]> {
-  const list = (v: unknown): string[] => {
-    if (typeof v === 'string') return [v];
-    if (Array.isArray(v)) return v.flatMap((x) => (typeof x === 'string' ? [x] : x && typeof x === 'object' && typeof (x as { file?: unknown }).file === 'string' ? [(x as { file: string }).file] : []));
+/** One piece of a scene: a clip or a still; `loop`: it keeps playing (the last, under her voice). */
+export interface SceneMedia { src: string; loop?: boolean; seconds?: number }
+
+/**
+ * The pieces of a scene, from YOKE's own manifest (`scenes.<key>`: file names, or {file, seconds, loop},
+ * relative to public/art/ship/yoke/) or the main one (`ship.yoke.scenes.<key>`, relative to public/art/).
+ */
+export async function sceneMedia(key: string): Promise<SceneMedia[]> {
+  const list = (v: unknown): Array<{ file: string; loop?: boolean; seconds?: number }> => {
+    if (typeof v === 'string') return [{ file: v }];
+    if (Array.isArray(v)) {
+      return v.flatMap((x) => (typeof x === 'string' ? [{ file: x }]
+        : x && typeof x === 'object' && typeof (x as { file?: unknown }).file === 'string'
+          ? [{ file: (x as { file: string }).file, loop: (x as { loop?: unknown }).loop === true, seconds: Number((x as { seconds?: unknown }).seconds) || undefined }]
+          : []));
+    }
     if (v && typeof v === 'object') return list((v as { clips?: unknown; files?: unknown }).clips ?? (v as { files?: unknown }).files);
     return [];
   };
+  const whole = (f: string) => new URL(artUrl(f), document.baseURI).href;
   try {
     const res = await fetch(artUrl('ship/yoke/manifest.json'), { cache: 'no-cache' });
     if (res.ok) {
       const own = list(((await res.json()) as { scenes?: Record<string, unknown> })?.scenes?.[key]);
-      if (own.length) return own.map((f) => new URL(artUrl(f.includes('/') ? f : `ship/yoke/${f}`), document.baseURI).href);
+      if (own.length) return own.map((m) => ({ ...m, src: whole(`ship/yoke/${m.file}`) }));
     }
   } catch { /* none */ }
   const m = await loadManifest();
   const main = list(((m?.ship as Record<string, unknown> | undefined)?.yoke as { scenes?: Record<string, unknown> } | undefined)?.scenes?.[key]);
-  return main.map((f) => new URL(artUrl(f), document.baseURI).href);
+  return main.map((x) => ({ ...x, src: whole(x.file) }));
 }
 
 export class YokeSceneOverlay {
@@ -33,7 +45,7 @@ export class YokeSceneOverlay {
   private sub: HTMLElement;
   private closed = false;
 
-  constructor(private media: string[], private stages: SceneStage[]) {
+  constructor(private media: SceneMedia[], private stages: SceneStage[]) {
     this.el.id = 'yoke-scene';
     this.el.innerHTML = '<div class="ys-stage"></div><div class="ys-sub"></div><div class="ys-mark">SHIP\'S HOLD · CAMERA 4</div>';
     this.stageEl = this.el.querySelector('.ys-stage')!;
@@ -46,27 +58,31 @@ export class YokeSceneOverlay {
   async run(): Promise<void> {
     const n = Math.max(this.media.length, this.stages.length);
     for (let i = 0; i < n && !this.closed; i++) {
-      const file = this.media[i];
+      const piece = this.media[i];
       const stage = this.stages[Math.min(i, this.stages.length - 1)];
       this.el.dataset.stage = stage?.id ?? String(i);
-      if (file && /\.(webm|mp4)(\?|$)/i.test(file)) await this.clip(file);
-      else if (file) await this.still(file, stage?.ms ?? 2500);
+      const last = i === n - 1;
+      if (piece && /\.(webm|mp4)(\?|$)/i.test(piece.src)) await this.clip(piece, last);
+      else if (piece) await this.still(piece.src, stage?.ms ?? 2500);
       else await this.card(stage);
       // More media than stages: the stages are only the cards' words.
       if (!this.media.length && i >= this.stages.length - 1) break;
     }
   }
 
-  private clip(src: string): Promise<void> {
+  /** A clip to its end; the last one keeps playing (looped, when it loops) and her voice comes over it after a moment. */
+  private clip(piece: SceneMedia, last: boolean): Promise<void> {
     return new Promise<void>((done) => {
       const v = document.createElement('video');
-      v.muted = true; v.playsInline = true; v.src = src; v.className = 'ys-media';
+      v.muted = true; v.playsInline = true; v.src = piece.src; v.className = 'ys-media';
+      v.loop = last && !!piece.loop;
       let over = false;
       const end = () => { if (!over) { over = true; done(); } };
-      v.onended = end; v.onerror = end;
+      if (!v.loop) v.onended = end;
+      v.onerror = end;
       this.stageEl.replaceChildren(v);
       void v.play().catch(end);
-      setTimeout(end, 15000);
+      setTimeout(end, last ? 1600 : Math.max(2000, ((piece.seconds ?? 6) + 2) * 1000));
     });
   }
 

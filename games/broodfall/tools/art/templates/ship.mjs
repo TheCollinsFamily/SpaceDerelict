@@ -8,10 +8,12 @@
  *   leaders    the three faction leaders, as 1950s film stills
  *   scenes     one film still for every faction scene (contact, each beat, each ending)
  *   exterior   the ship in orbit, for the title screen
+ *   territories one establishing shot of every territory, the header of its briefing
  *
  *   node tools/art/make.mjs ship                 everything
  *   node tools/art/make.mjs ship rooms planet    some of it
  *   node tools/art/make.mjs ship scenes          every scene picture that is not on disk yet
+ *   node tools/art/make.mjs ship territories     every territory picture that is not on disk yet (or name ids)
  *   node tools/art/make.mjs ship faithful-contact institute-ending     scene pictures by id
  *   node tools/art/make.mjs ship --bake          bake again from the pictures on disk (free)
  *
@@ -24,6 +26,7 @@ import { makeStill, pool } from '../rfab.mjs';
 import { blank, crop, paste, readImage, resize, toWebp, writeJpg, writePng } from '../lib/img.mjs';
 import { cutGrid } from '../lib/sheet.mjs';
 import { ART, REVIEW, ROOT, SRC, putEntry } from '../lib/manifest.mjs';
+import { BIOMES, SPECIES } from '../biomes.mjs';
 
 const DIR = path.join(SRC, 'ship');
 const CONCEPTS = path.join(ROOT, 'notes', 'concepts', '2026-09-29');
@@ -247,6 +250,127 @@ const scenePrompt = (id) => {
   return `${STILL} ${s.what.replace('WHO', who)}${creature} ${cast} ${s.none} ${CLEAN}`;
 };
 
+/**
+ * THE TERRITORY PICTURES: one establishing shot of every territory of the campaign globe, the
+ * header of its briefing. id = the territory's id in content/campaign.ts; each picture tells
+ * that territory's `story`.
+ *
+ * All sixteen are ONE set: the same framing (from high in the air, a whole district to the
+ * horizon, as an aircraft coming in to land sees it) and the same treatment as the scene stills
+ * (a 1950s colour film opening on a matte painting). Each is built in the look of ITS tile set
+ * (tools/art/biomes.mjs, `territories`): the set's review sheet (notes/art-review/biomes/<set>.jpg)
+ * goes with it as the reference picture, for its architecture, colours and materials only.
+ *   what   what the picture shows: the place, and the story line
+ *   none   where there must be no lettering and no symbol (see SCENES)
+ *   finale the last place of a faction's war: an endgame sky
+ */
+const AERIAL =
+  'A wide establishing shot from a 1950s colour science-fiction film, the kind that opens on a great matte painting: ' +
+  'seen from high in the air at a steep angle, looking down over a whole district of an alien world to the horizon, ' +
+  'as the crew of an aircraft coming in to land would see it. Lurid saturated Technicolor, a painted sky, fine ' +
+  'painterly detail, film grain, the slight softness of old lenses.';
+const TOWNSFOLK =
+  'The people in it are tiny figures far below: every one of them is an insect person with four arms, antennae and an ' +
+  'insect head, like the people of a 1950s science-fiction film. There are no human beings anywhere.';
+const FINALE =
+  'This is the last place of the war, and it looks it: an ominous, grand, silent scene under a lurid red and violet ' +
+  'sky at dusk, the air hazy with smoke.';
+const DOMES = 'Every dome, spire and tower ends in a plain gold ball: there is no cross on any dome, spire, tower or roof.';
+const TERRITORIES = {
+  'crash-site': {
+    what: 'A quiet pastel neighbourhood of family homes, lawns and curving streets. In the middle of the picture, fresh and still smoking, a round crater has been punched into the street, and in the bottom of it lies a split dark meteor with a faint dark-red glow inside. On one side of the crater stands a school with a playground, a slide and a row of big round classroom windows; on the other side a small laundromat with a striped awning and a row of round washing-machine doors seen through its shop window. Beetle-shaped cars are parked along the kerbs; a thin crowd of neighbours in dressing gowns and hats stands at the rim of the crater, staring into it; one thin plume of smoke rises into a calm blue sky.',
+    none: 'The school has no sign over its door and nothing on its roof. The laundromat\'s awning and window are plain, with no lettering.',
+  },
+  'cul-de-sac': {
+    what: 'A wealthy suburb at dusk: curving cul-de-sacs ending in round turning circles, big neat lawns, clipped hedges in exact lines, porch lights coming on. On every lawn stand little groups of the neighbourhood watch, in cardigans and hats with torches, folding chairs and a thermos, all peering in the same direction: at the far edge of the suburb, a first thin stain of dark maroon veined living skin is spreading over one lawn toward the hedges. Far on the horizon, a thin plume of smoke.',
+    none: 'The mailboxes and the watch\'s armbands are plain colours with nothing on them. There is no sign on any lawn or at the end of any street.',
+  },
+  granary: {
+    what: 'Golden rolling farm country cut into terraces of fields, with rows of great round grain silos of pale wax and paper standing in clusters all the way to the horizon, barns of red-stained paper boards, a windmill. A single small beetle-shaped car drives alone along a long pale dirt road between the fields, toward a thin plume of smoke rising far away on the horizon. Late afternoon light.',
+    none: 'The silos, barns and the car are plain, with no lettering and no emblem painted on them.',
+  },
+  harbor: {
+    what: 'An old port town: long docks, cranes, gantries, rows of soot-darkened warehouses, a lighthouse on a breakwater. Out through the harbour mouth, in a long line, a whole fleet of old steamers, trawlers and barges is sailing out to sea, trailing smoke, packed with tiny figures. Behind them, at the far end of the docks, a dark maroon veined living skin has crept over the quays and the first warehouses and is running down into the water.',
+    none: 'The ships\' hulls and funnels are plain paint with no names, no numbers and no emblems. The warehouses carry no lettering.',
+  },
+  commuter: {
+    what: 'A colossal knot of highways in the middle of a pastel suburb: ring roads, flyovers and looping ramps stacked in rings, every lane packed bumper to bumper with thousands of tiny beetle-shaped cars in pastel colours, all at a standstill in the evening rush hour, headlights on. Rows of pastel homes and pastel office blocks round it to the horizon.',
+    none: 'The road signs over the highways are plain green boards with abstract arrow shapes only: no words, no numerals. There is no lettering on the cars.',
+  },
+  temple: {
+    what: 'A steep hill terraced from its foot to its summit with shrines of pale paper and wax, arcades of round arches, gold mosaic, and onion domes of layered paper like hanging nests, a few gilded. Slender bell towers like nest spires rise from every terrace, their big bronze bells swinging, ringing. Long flights of steps climb between the terraces, crowded with tiny worshippers climbing up. Far off on the plain, a thin plume of smoke.',
+    none: `${DOMES} The one emblem on the shrines is a plain gold hexagon. There are no banners with lettering.`,
+  },
+  foundry: {
+    what: 'Flat plains covered to the horizon in foundries and factories of soot-darkened resin brick and riveted iron, a forest of chimneys pouring smoke, furnace light glowing orange in every open door. In the great yards between them stand rows upon rows of freshly made war machines: siege cannons shaped like bombardier beetles, armoured walkers, gun carriages. Long columns of insect soldiers march out of the gates on the roads, in step.',
+    none: 'The war machines and the factories carry no lettering, no numbers and no emblem other than hazard stripes.',
+  },
+  mirewater: {
+    what: 'A vast river delta of reed beds, flooded paddies and dark still channels, and villages of woven reed and pale wasp paper on stilts over the water, joined by long boardwalks; flat boats with lanterns. Everything is already half swamp: green scum, mist, rotting reeds. Through the reed beds, threads of dark maroon veined living skin run along the channels and climb the stilts, and seem quite at home.',
+    none: 'The boats, floats and barrels carry no lettering. There are no banners.',
+  },
+  university: {
+    what: 'A steep hill in a dark megacity at night, crowned by a great campus of towers of black glass and smoked resin over honeycomb frames, thin neon glyph signs in magenta and cyan, cables, steam. On every rooftop of the campus, telescopes, dish aerials and observatory domes are all turned the same way, straight up at the sky, at the viewer: hundreds of them. Tiny lit windows by the thousand, tiny figures at the windows looking up too.',
+    none: 'The neon signs show abstract glyphs only: no letters of any alphabet, no numerals.',
+  },
+  ossuary: {
+    what: 'Tall cliffs of bone-white chalk above a dark grey sea, carved from the waves to the top into thousands of round burial niches holding urns, with candles burning in them by the hundred, and dark slender fungus trees on the ledges. High in the middle of the cliff stands a great royal tomb with tall doors of black iron and gold: its doors have been burst open from inside, and a dark red glow and a trail of dark maroon veined living skin come out of it and down the cliff.',
+    none: 'The one emblem on the tombs is a plain gold hexagon: there are no crosses, no stars and no carved lettering anywhere on the cliff.',
+  },
+  pilgrim: {
+    what: 'A long pilgrim road winding over green mountains and valleys all the way to the horizon, lined on both sides with shrines and road-stalls under upswept eaves of layered paper, lacquer-red columns, jade-green tiles and strings of paper lanterns. The road is EMPTY: the stalls are shuttered, the lanterns are dark, a few carts stand abandoned, a hat lies in the road. Nobody walks it.',
+    none: `${DOMES} There is no gate shaped like a torii, no yin-yang, and no real written characters: the banners show abstract glyphs only.`,
+  },
+  'queens-hollow': {
+    what: 'In the middle of a great capital city, a colossal round shaft opens in the ground like a sinkhole, and the picture looks down into it: its walls are great combs of glowing amber wax and dark propolis, galleries and ribbed tunnels spiralling down and down into a deep golden glow, brood cells capped with pale wax, royal jelly glowing gold, huge hanging queen cells like gilded peanuts, electric lamps and cables fitted along the galleries. Tiny figures crowd the galleries. The city\'s pale towers stand round the rim.',
+    none: 'The lamps and cables carry no lettering. The one emblem is a plain gold hexagon.',
+    finale: true,
+  },
+  'hidden-campus': {
+    what: 'A secret research campus hidden in a steep wooded valley in the mountains, its low buildings of black glass and smoked resin half sunk into the rock. The picture looks down through its vast glass roofs at the inside: hall after hall of endless shelves, row after row, holding thousands upon thousands of glass specimen jars, each with a lump of dark red living tissue floating in fluid. So many jars. A small unmarked van drives up the valley road with one more crate.',
+    none: 'The jars have blank tags with nothing on them. The van is plain with no lettering. There is no sign at the campus.',
+  },
+  assembly: {
+    what: 'A grand congress hall standing alone on a vast empty plaza: a huge building of pale paper and wax with arcades of round arches and a great central dome of layered paper and glass. Through the glass of the dome, seen from above, row upon row of chairs is set out in perfect circles, and every chair is empty. Nobody is in the plaza. Far at the edges of the city, dark maroon veined living skin and dark red tendrils curl round the outlying blocks. The hall is very quiet.',
+    none: `${DOMES} The one emblem on the hall is a plain gold hexagon. The long cloth banners are plain pastel cloth with nothing on them.`,
+    finale: true,
+  },
+  'seventh-city': {
+    what: 'A gleaming city of pale domes on a high hill, the last city of a prophecy: terraces of shrines, arcades of round arches, gold mosaic and onion domes of layered paper, and between them dozens of tall slender lattice radio masts with blinking red lights sending painted rings of radio waves out into the sky. All round the foot of the hill, dark maroon veined living skin covers the plain like a rising sea.',
+    none: `${DOMES} The radio masts are plain tapering lattice towers with no cross-arm: none must look like a cross. The one emblem is a plain gold hexagon.`,
+    finale: true,
+  },
+  'glass-spires': {
+    what: 'A forest of immensely tall spires of black glass and smoked resin in honeycomb frames, rising out of a megacity into a storm: the laboratories of their artificial intelligence. Thin lines of cyan and gold light run up every spire, rows of cooling towers and data halls glow cyan at their feet, lightning strikes the tallest spire. Far below, the streets are empty.',
+    none: 'The neon and holograms show abstract glyphs only: no letters of any alphabet, no numerals.',
+    finale: true,
+  },
+};
+export const TERRITORY_IDS = Object.keys(TERRITORIES);
+/** The size a territory picture is baked at (drawn at 1536 x 1024): the header of a briefing. */
+const TERRITORY_SIZE = { w: 1024, h: 683 };
+/** The tile set a territory is drawn with. */
+const setOf = (id) => {
+  const set = BIOMES.find((b) => b.territories?.includes(id));
+  if (!set) throw new Error(`territory ${id}: no tile set draws it (tools/art/biomes.mjs, territories)`);
+  return set;
+};
+/** Its set's review sheet as a PNG, for the upload: the one picture of the whole look of the set. */
+function setRef(set) {
+  const png = path.join(DIR, 'territories', 'refs', `${set.id}.png`);
+  if (!fs.existsSync(png)) writePng(png, readImage(path.join(REVIEW, 'biomes', `${set.id}.jpg`)));
+  return png;
+}
+const territoryPrompt = (id) => {
+  const t = TERRITORIES[id];
+  const set = setOf(id);
+  const look =
+    `${set.species ?? SPECIES}. ${set.look}. The reference picture shows exactly this architecture close up: its ` +
+    'buildings, colours, materials, roofs and the things that stand on them. Build the whole place out of them, but ' +
+    'copy nothing of its layout, its isometric blocks or its black background: this is a real place seen from the air.';
+  return `${AERIAL} ${t.what} ${look}${t.finale ? ` ${FINALE}` : ''} ${TOWNSFOLK} ${t.none} ${CLEAN}`;
+};
+
 const SKETCH_STYLE =
   'Each is a quick, confident, funny pen sketch by a young, nerdy technician: white ink lines on a plain flat ' +
   'black background, a little shaky, with arrows, exclamation marks and question marks, and scribbles standing ' +
@@ -307,6 +431,14 @@ async function generate(only) {
     jobs.push(() => makeStill({
       slug: `scene ${id}`, out: path.join(DIR, 'scenes', `${id}.png`), prompt: scenePrompt(id), key: null,
       width: 1536, height: 1024, quality: 'high', ...(refFiles.length ? { refFiles } : {}),
+    }));
+  }
+  // Territory pictures: all of them ('territories'), or the ones named by id.
+  for (const id of TERRITORY_IDS) {
+    if (only?.length && !only.includes('territories') && !only.includes(id)) continue;
+    jobs.push(() => makeStill({
+      slug: `territory ${id}`, out: path.join(DIR, 'territories', `${id}.png`), prompt: territoryPrompt(id), key: null,
+      width: 1536, height: 1024, quality: 'high', refFiles: [setRef(setOf(id))],
     }));
   }
   // Four at a time: every picture is looked at before the next ones are paid for.
@@ -381,6 +513,23 @@ export function bakeShip() {
     list.forEach((img, i) => paste(sheet, img, (i % cols) * SCENE_SIZE.w, Math.floor(i / cols) * SCENE_SIZE.h));
     writeJpg(path.join(REVIEW, 'ship', `scenes-${faction}.jpg`), sheet, 3);
   }
+  // The territory pictures: the header of a briefing, 1024 wide.
+  const lands = [];
+  for (const id of TERRITORY_IDS) {
+    const file = path.join(DIR, 'territories', `${id}.png`);
+    if (!fs.existsSync(file)) continue;
+    const img = readImage(file, TERRITORY_SIZE);
+    total += save(img, path.join(out, 'territories', `${id}.webp`), 84);
+    (entry.territories ??= {})[id] = `ship/territories/${id}.webp`;
+    lands.push(resize(img, 512, 341));
+  }
+  // To look at: all of them on one sheet, in the order of the campaign.
+  if (lands.length) {
+    const cols = 4;
+    const sheet = blank(cols * 512, Math.ceil(lands.length / cols) * 341, [0, 0, 0, 255]);
+    lands.forEach((img, i) => paste(sheet, img, (i % cols) * 512, Math.floor(i / cols) * 341));
+    writeJpg(path.join(REVIEW, 'ship', 'territories.jpg'), sheet, 3);
+  }
   if (fs.existsSync(path.join(DIR, 'exterior.png'))) {
     total += save(readImage(path.join(DIR, 'exterior.png'), { w: 1536, h: 1024 }), path.join(out, 'exterior.webp'), 84);
     entry.exterior = 'ship/exterior.webp';
@@ -438,7 +587,7 @@ export function bakeShip() {
     entry.sketches = { atlas: 'ship/sketches.webp', frame: 256, cols, ids: sketches.map((s) => s.id) };
   }
   putEntry('ship', 'ship', entry);
-  console.log(`[ship] baked: ${Object.keys(entry.rooms).length} rooms, ${Object.keys(entry.leaders).length} leaders, ${Object.keys(entry.scenes).length} of ${SCENE_IDS.length} scene pictures, ${sketches.length} sketches, ${entry.yoke ? 6 : 0} faces of YOKE${entry.planet ? ', the planet' : ''}${entry.exterior ? ', the exterior' : ''}; ${Math.round(total / 1024)} KB`);
+  console.log(`[ship] baked: ${Object.keys(entry.rooms).length} rooms, ${Object.keys(entry.leaders).length} leaders, ${Object.keys(entry.scenes).length} of ${SCENE_IDS.length} scene pictures, ${Object.keys(entry.territories ?? {}).length} of ${TERRITORY_IDS.length} territories, ${sketches.length} sketches, ${entry.yoke ? 6 : 0} faces of YOKE${entry.planet ? ', the planet' : ''}${entry.exterior ? ', the exterior' : ''}; ${Math.round(total / 1024)} KB`);
   return entry;
 }
 

@@ -15575,6 +15575,10 @@
     "institute-ending": "ship/scenes/institute-ending.webp",
     "institute-ending-pacify": "ship/scenes/institute-ending-pacify.webp"
    },
+   "territories": {
+    "crash-site": "ship/territories/crash-site.webp",
+    "temple": "ship/territories/temple.webp"
+   },
    "exterior": "ship/exterior.webp",
    "planet": "ship/planet.webp",
    "yoke": {

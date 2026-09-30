@@ -60,20 +60,29 @@ export class ConsoleMenu {
     if (mode) mode.textContent = `YOKE ANSWERS WITH: ${name[this.yoke.mode]}`;
   }
 
-  /** The viewport's loop behind the console; its first frame (or the ship in orbit) until it plays. */
+  /**
+   * The viewport's loop behind the console; its first frame (or the ship in orbit) until it plays.
+   * It is loaded and played only while the menu is on the screen: a 720p video decoding behind a
+   * running board costs the board its frames.
+   */
   private dressVideo(): void {
     const v = this.el.querySelector<HTMLVideoElement>('.menu-video');
     if (!v) return;
-    void loadIntroArt().then((art) => {
-      const m = art?.menu;
-      if (!m) { this.el.classList.add('no-video'); return; }
-      if (m.poster) v.poster = m.poster;
-      v.src = m.video;
-      v.loop = true;
-      v.muted = true;
-      void v.play().catch(() => { /* the poster stays */ });
-      this.el.classList.add('has-video');
-    });
+    const shown = () => !this.el.classList.contains('hidden');
+    const start = () => {
+      if (!shown()) return;
+      void loadIntroArt().then((art) => {
+        const m = art?.menu;
+        if (!m) { this.el.classList.add('no-video'); return; }
+        if (!shown()) return;
+        if (!v.src) { if (m.poster) v.poster = m.poster; v.src = m.video; v.loop = true; v.muted = true; }
+        void v.play().catch(() => { /* the poster stays */ });
+        this.el.classList.add('has-video');
+      });
+    };
+    new MutationObserver(() => { if (shown()) start(); else v.pause(); }).observe(this.el, { attributes: true, attributeFilter: ['class'] });
+    // The page decides in this same task whether the menu is shown (a run started from the address hides it).
+    queueMicrotask(start);
   }
 
   private onClick(ev: MouseEvent): void {

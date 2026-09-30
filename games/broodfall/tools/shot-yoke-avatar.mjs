@@ -113,6 +113,9 @@ try {
   // A campaign whose Directive Desk is already open (the unfolding before it: tools/shot-onboarding.mjs).
   await page.goto(`http://localhost:${PORT}/?campaign=ship&open=1`, { waitUntil: 'load' });
   await page.waitForSelector('#campaign:not(.hidden) .globe');
+  // She greets him as he comes aboard (content/greetings.ts, spoken): let it play out; this beat is about his talk with her.
+  await page.waitForSelector('.cp-icom:not(.greeting)', { timeout: 60000 });
+  state.spoken = 0;
   await page.locator('[data-room="ai"]').click();
   await page.waitForSelector('.cp-yoke-live');
   // What her stage wears, every change of it.

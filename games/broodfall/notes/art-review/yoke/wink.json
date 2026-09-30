@@ -3,14 +3,14 @@
  "kind": "oneShot",
  "frames": 193,
  "seconds": 8.04,
- "kb": 1542,
+ "kb": 1741,
  "studio": {
   "keyColour": [
    16,
    240,
    32
   ],
-  "similarityPct": 45,
+  "similarityPct": 38,
   "endFrame": 192,
   "loop": "none",
   "chromaKeyFrom": "C:\\Users\\Merry\\dev\\reality-fabricator\\reality-fabricator-frontend\\src\\assets\\vtuber-creator\\model-exporter.js"

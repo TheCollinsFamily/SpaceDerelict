@@ -3,14 +3,14 @@
  "kind": "hold",
  "frames": 436,
  "seconds": 18.17,
- "kb": 3347,
+ "kb": 3796,
  "studio": {
   "keyColour": [
    16,
    240,
    32
   ],
-  "similarityPct": 45,
+  "similarityPct": 38,
   "endFrame": 218,
   "loop": "pingpong",
   "chromaKeyFrom": "C:\\Users\\Merry\\dev\\reality-fabricator\\reality-fabricator-frontend\\src\\assets\\vtuber-creator\\model-exporter.js"

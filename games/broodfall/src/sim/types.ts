@@ -688,4 +688,6 @@ export interface RunStats {
   royalsCaptured: number;
   nodesPlaced: number;
   nodesLost: number;
+  /** Stolen limbs taken back by killing the courier carrying them (Finders Keepers). */
+  limbsRecovered?: number;
 }

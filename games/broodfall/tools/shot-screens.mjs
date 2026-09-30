@@ -128,7 +128,7 @@ try {
       word: document.querySelector('#menu .logo-word')?.textContent,
       title: document.title,
     }));
-    check(t.art && t.emblem, 'the title screen is the ship's console over its looping video, with the emblem');
+    check(t.art && t.emblem, 'the title screen is the ship console over its looping video, with the emblem');
     check(t.word === 'BROODFALL' && /BROODFALL/.test(t.title), 'the name is set in type from one place', `${t.word} / ${t.title}`);
     await shot(page, '01-title');
     await page.setViewportSize({ width: 1280, height: 720 });

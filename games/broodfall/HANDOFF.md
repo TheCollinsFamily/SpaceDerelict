@@ -237,15 +237,28 @@ rfab.ai, and she is who answers in the AI Core by default.
   her `[[PRINT_BODY]]` tag (section 15) asks the game for the print-a-body scene. Her brain
   text changed with it and is NOT yet published to rfab.ai (`make.mjs yoke --publish`).
 - **On rfab.ai** (Collins's own account; ids in `content/lore/yoke-avatar.json`): one
-  agent (her mind, Claude Haiku 4.5, not running on its own), one body `vm_…` (her 15
+  agent (her mind, Claude Haiku 4.5, not running on its own), one body `vm_…` (her 43
   clips), one avatar binding them with the voice `aura-2-athena-en`. Private: visitors
   and the public cannot talk to her (their chat would be billed to him).
-- **Her body:** `node tools/art/make.mjs yoke [states] [--stills] [--bake]`
-  (`tools/art/templates/yoke.mjs`): a still per face from her approved design, a 4 s
-  clip, our keyer, then "the projection" (cooled colours, lifted blacks, scan lines, a
-  halo), VP8 WebM with alpha in `public/art/ship/yoke/`. States: idle, speaking,
-  thinking, happy, sad, surprised, angry, laughing, blushing; gestures nod, shake_head,
-  wink, wave; looks look_left, look_right. Look at `notes/art-review/yoke/`.
+- **Her body (Sep 30 2026): made the way Leaflit's AI VTuber Studio makes one.**
+  `node tools/art/make.mjs yoke [states] [--bake]` (`tools/art/templates/yoke.mjs`, studio
+  steps in `tools/art/lib/leaflit.mjs`): every clip is a take from ONE reference (her
+  approved idle still) on the studio's own video model (Gemini Omni Flash, 77,000 tokens a
+  take) with the studio's own prompt prefix, keyed by the studio's own ChromaKey (loaded
+  from the frontend repo, snapshot beside it), Ping-Pong for what loops, No Loop for a
+  move; then "the projection" (cooled colours, lifted blacks, scan lines, a halo), VP8
+  WebM with alpha in `public/art/ship/yoke/`. Every clip starts and ends on the same
+  frame, so a hand-over never jumps. 43 clips (+ calm, thoughtful aliases):
+  idle, speaking, intro*, outro*; happy, sad, angry, surprised, thinking each with a
+  `_talk` twin; laughing, blushing, hand_raised; her beats pensive, teasing, dont_pout,
+  pout, laugh*, shrug*, disgust*, hype*; look_left/right/up/down each with a `_talk`
+  twin; wink*, tongue_out*, kiss*, puff*, wave*, nod*, shake_head*, dance*, jump*, bow*
+  (* = played once). Takes are in `art-src/yoke/leaflit/` (rejected ones in `old/`).
+  Look at `notes/art-review/yoke/` and `notes/screens/2026-09-30/yoke-leaflit-clips.jpg`.
+- **Her films** (`node tools/art/make.mjs yokescene`, `tools/art/templates/yoke-scenes.mjs`):
+  `scenes.printBody` in `public/art/ship/yoke/manifest.json` = print, wake, collapse,
+  hold (5 s each, 720p, opaque VP9; each starts on the last frame of the one before;
+  `hold` loops, for her voice from the speakers). The trigger and the voice are the game's.
 - **To change her on rfab.ai:** edit `yoke-brain.md` (or re-bake a clip), then
   `node tools/art/make.mjs yoke --publish` (updates what exists, never makes a second;
   `--voice=<aura id>` changes her voice). Nothing is ever deleted there.
@@ -298,6 +311,10 @@ own words. `notes/GRAPHICS-PLAN.md` holds the pipeline, the probes and the costs
 - **What it costs:** a still about $0.42 (high quality), a 4 s clip about $0.25. A unit
   (one turnaround, five walking clips) about $1.70; a limb (design, redraw, two clips)
   about $1.35; a tile set (nine stills) about $3.80.
+- **Background removal the studio's way:** `tools/art/lib/leaflit.mjs` `keyClipFile(file,
+  { fps, width, height })` / `keyFrames(frames)` = a clip (or RGBA frames) in, transparent
+  frames out, keyed by Leaflit's studio ChromaKey with its auto key colour and calibrated
+  similarity. Shared: use it rather than writing a second one.
 - **The pipeline:** design still → (units) five views in ONE picture → clips whose last
   frame is their first → our own keyer → loop search → atlas (WebP) →
   `public/art/manifest.json`. Eight headings are five drawn views and three mirrored.

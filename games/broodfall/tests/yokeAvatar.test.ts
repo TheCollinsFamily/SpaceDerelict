@@ -127,8 +127,10 @@ describe('the clip she wears', () => {
   });
 
   it('while her voice sounds, wears the talking clip', () => {
-    expect(voiceClip('happy', HAVE)).toBe('speaking');
-    expect(voiceClip('happy', [...HAVE, 'happy_talk'])).toBe('happy_talk');
+    // Her body (Sep 30 2026) has talking twins of happy, sad, angry, surprised and thinking; blushing has none.
+    expect(voiceClip('happy', HAVE)).toBe('happy_talk');
+    expect(voiceClip('blushing', HAVE)).toBe('speaking');
+    expect(voiceClip('happy', ['idle', 'speaking', 'happy'])).toBe('speaking');
     expect(voiceClip('happy', ['idle', 'happy'])).toBe('happy');
   });
 });

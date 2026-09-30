@@ -553,10 +553,6 @@ export class Hud {
         div.className = 'card'
           + (this.selectedCard === i ? ' selected' : '')
           + (affordable ? '' : ' unaffordable');
-        const cost = (['war', 'science', 'royal'] as Caste[])
-          .filter((c) => (spec.cost[c] ?? 0) > 0)
-          .map((c) => `${spec.cost[c]}${c[0].toUpperCase()}`)
-          .join(' ');
         div.innerHTML = `<div class="card-top"><div class="card-name"></div><button class="card-discard" title="Discard (3 war meat)">✕</button></div><div class="card-tag"></div><div class="card-art"></div><div class="card-desc"></div><div class="card-cost"></div>`;
         (div.querySelector('.card-name') as HTMLElement).textContent = spec.name;
         const tag = layerTag(card.family);
@@ -573,7 +569,18 @@ export class Hud {
         const artEl = div.querySelector('.card-art') as HTMLElement;
         const art = cardArt(card.family, 64);
         if (art) artEl.setAttribute('style', art); else artEl.remove();
-        (div.querySelector('.card-cost') as HTMLElement).textContent = card.free ? 'FREE (the pair)' : cost;
+        // Each caste's price in its own span (the text is the same), so a HUD style can draw the caste (src/hud/themes).
+        const costEl = div.querySelector('.card-cost') as HTMLElement;
+        if (card.free) costEl.textContent = 'FREE (the pair)';
+        else {
+          (['war', 'science', 'royal'] as Caste[]).filter((c) => (spec.cost[c] ?? 0) > 0).forEach((c, k) => {
+            if (k) costEl.append(' ');
+            const part = document.createElement('span');
+            part.className = `cc cc-${c}`;
+            part.innerHTML = `<b>${spec.cost[c]}</b><u>${c[0].toUpperCase()}</u>`;
+            costEl.append(part);
+          });
+        }
         div.addEventListener('click', () => {
           this.selectedCard = this.selectedCard === i ? null : i;
           this.armedOrgan = null;

@@ -212,7 +212,47 @@ export interface Gene {
   rangeMult?: number;
   /** Creep nodes in stock at the start of the run. */
   startNodes?: number;
+  // ---- the hobby genes' own verbs (content/hobby.ts; DESIGN.md "Hobby missions") ----
+  /** Fire passes on this share of its heat when it spreads (default: balance burnSpreadFrac, 0.8). */
+  burnSpreadFrac?: number;
+  /** Royal points paid by every royal killed or eaten. */
+  royalJelly?: number;
+  /** Eating a limb pays back this multiple of its usual salvage. */
+  salvageMult?: number;
+  /** Broodlings are born this much tougher. */
+  broodHpMult?: number;
+  /** Every Nth kill made by the creep itself buds a free creep node into the tray. */
+  creepNodeEvery?: number;
+  /** A limb a courier carries off the map pays back its whole cost. */
+  homingRefund?: boolean;
+  /** Netted fliers stay grounded this many times as long. */
+  groundingMult?: number;
+  /** Lure clouds make the war caste stop and pair off for a moment, once each (no extra bodies next wave). */
+  weddingMusk?: boolean;
+  /** Start every deployment with a free Trap Cage card. */
+  trapCage?: boolean;
 }
+
+/**
+ * The HOBBY GENES: what the character's own unofficial projects (content/hobby.ts) pay. Command
+ * would never authorise them; they are spliced from the ship's notebook, two at a time, and only
+ * reach the campaign's deployments. The skirmish gene bay never offers them.
+ */
+export const HOBBY_GENES: Gene[] = [
+  { id: 'tallow-blood', name: 'Tallow Blood', desc: 'Fire spreads between bodies without cooling.', burnSpreadFrac: 1 },
+  { id: 'grudge-marrow', name: 'Grudge Marrow', desc: 'Eating a limb pays back half as much again.', salvageMult: 1.5 },
+  { id: 'kite-string', name: 'Kite String', desc: 'Netcasters come twice as often; netted fliers stay down twice as long.', weightMult: { net: 2 }, groundingMult: 2 },
+  { id: 'royal-jelly', name: 'Royal Jelly', desc: 'Every royal killed or eaten pays 2 royal points.', royalJelly: 2 },
+  { id: 'homing-tissue', name: 'Homing Tissue', desc: 'A limb a courier gets away with pays back its whole cost.', homingRefund: true },
+  { id: 'wet-nurse', name: 'Wet Nurse', desc: 'Broodlings are born half as tough again.', broodHpMult: 1.5 },
+  { id: 'hitchhiker-spores', name: 'Hitchhiker Spores', desc: 'Every 10th kill the creep makes buds a free creep node.', creepNodeEvery: 10 },
+  { id: 'wedding-musk', name: 'Wedding Musk', desc: 'Lure clouds make their soldiers stop and pair off for a moment. Nobody extra comes next wave.', weddingMusk: true },
+  // Paid by the Puppet Queen experiment (content/campaign.ts), not by a hobby.
+  { id: 'royal-graft', name: 'Royal Graft', desc: 'Every deployment starts with a free Trap Cage.', trapCage: true },
+];
+
+/** A gene by id, from either list. */
+export const geneById = (id: string): Gene | undefined => GENES.find((g) => g.id === id) ?? HOBBY_GENES.find((g) => g.id === id);
 
 export const GENES: Gene[] = [
   { id: 'acid-glands', name: 'Acid Glands', desc: 'Spitter genes express twice as often.', weightMult: { spitter: 2 } },
@@ -225,3 +265,4 @@ export const GENES: Gene[] = [
   { id: 'seeded-meteor', name: 'Seeded Meteor', desc: 'Deploy with 3 creep nodes in stock.', startNodes: 3 },
   { id: 'lure-musk', name: 'Lure Musk', desc: 'Lure genes express three times as often.', weightMult: { lure: 3 } },
 ];
+

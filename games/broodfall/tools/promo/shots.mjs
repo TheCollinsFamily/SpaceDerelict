@@ -65,15 +65,68 @@ const snap = async (page, name) => {
   console.log('  shot', f);
 };
 
-/** Play fast with the scripted player (fat wallet, so the body is big) to wave `upTo`. */
-const grow = (page, upTo) => page.evaluate((upTo) => {
+/** Play fast with the scripted player (its own wallet, a little topped up) to wave `upTo`. */
+const grow = (page, upTo, topUp = 0) => page.evaluate(([upTo, topUp]) => {
   const b = window.broodfall, s = b.sim;
   for (let i = 0; i < 400 && s.outcome === 'playing' && s.waveNumber < upTo; i++) {
-    s.meat.war = Math.max(s.meat.war, 600); s.meat.science = Math.max(s.meat.science, 200);
+    if (topUp) s.meat.war += topUp;
     b.step(300);
   }
   return { wave: s.waveNumber, towers: s.towers.length, outcome: s.outcome, phase: s.phase, enemies: s.enemies.length };
-}, upTo);
+}, [upTo, topUp]);
+
+/** The "demo mode" line is the scripted player's, not the game's: hidden for the photograph. */
+const dress = async (page) => {
+  await page.addStyleTag({ content: '#hint{visibility:hidden!important}' });
+  // The board is drawn at a fixed 1360x1000 and letterboxed; for a 16:9 store picture its drawing
+  // surface is resized (at run time, from here) to fill the space the page gives it. The renderer
+  // reads its own size every frame, so nothing in the game changes.
+  await page.evaluate(() => {
+    const wrap = document.getElementById('stage-wrap');
+    const r = window.broodfall.renderer;
+    if (!wrap || !r?.app) return;
+    r.app.renderer.resize(wrap.clientWidth, wrap.clientHeight);
+  });
+  await page.waitForTimeout(300);
+  await page.keyboard.press('Home');
+};
+
+/** The view zoomed `z` wheel steps in on where the enemies are thickest, that point dragged to the middle. */
+async function onTheFight(page, z = 5, kind = null) {
+  await page.keyboard.press('Home');
+  await page.waitForTimeout(400);
+  const target = () => page.evaluate((kind) => {
+    const s = window.broodfall.sim;
+    const es = s.enemies.filter((e) => !e.leaving && (!kind || e.kind === kind));
+    if (!es.length) return null;
+    let best = es[0], bestN = -1;
+    for (const e of es) { const n = es.filter((o) => Math.hypot(o.pos.x - e.pos.x, o.pos.y - e.pos.y) < 140).length; if (n > bestN) { bestN = n; best = e; } }
+    const near = es.filter((o) => Math.hypot(o.pos.x - best.pos.x, o.pos.y - best.pos.y) < 140);
+    const x = near.reduce((a, e) => a + e.pos.x, 0) / near.length, y = near.reduce((a, e) => a + e.pos.y, 0) / near.length;
+    return window.broodfall.worldToScreen(x, y);
+  }, kind);
+  const b = await page.locator('#stage canvas').boundingBox();
+  const onPage = (at) => ({ x: b.x + (at.x / at.vw) * b.width, y: b.y + (at.y / at.vh) * b.height });
+  let at = await target();
+  if (!at) return;
+  let p = onPage(at);
+  await page.mouse.move(p.x, p.y);
+  for (let i = 0; i < z; i++) { await page.mouse.wheel(0, -240); await page.waitForTimeout(60); }
+  await page.waitForTimeout(500);
+  for (let round = 0; round < 3; round++) {
+    at = await target(); if (!at) return;
+    p = onPage(at);
+    if (Math.hypot(p.x - (b.x + b.width / 2), p.y - (b.y + b.height / 2)) < 40) break;
+    await page.keyboard.down('Shift');
+    await page.mouse.move(p.x, p.y);
+    await page.mouse.down();
+    await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2, { steps: 8 });
+    await page.mouse.up();
+    await page.keyboard.up('Shift');
+    await page.waitForTimeout(300);
+  }
+  await page.mouse.move(b.x + 5, b.y + 5);
+}
 
 /** Wait (real time, the game running live) until the street is busy, then take a few frames. */
 async function liveFrames(page, name, n = 4, gap = 1400, minEnemies = 12) {
@@ -87,35 +140,45 @@ async function liveFrames(page, name, n = 4, gap = 1400, minEnemies = 12) {
 
 try {
   if (on('siege')) {
-    for (const [seed, biome, wave] of [[5, 'orthodox', 9], [12, 'megacity', 10], [21, 'orient', 8], [8, 'farmland', 9]]) {
+    const list = [[5, 'orthodox', 9], [12, 'megacity', 9], [21, 'orient', 7], [8, 'farmland', 8], [3, 'suburb', 8], [17, 'industrial', 8]];
+    for (const [seed, biome, wave] of list.filter(([, b]) => !process.env.PROMO_BIOME || process.env.PROMO_BIOME.includes(b))) {
       const { ctx, page } = await fresh();
-      await page.goto(`${BASE}?seed=${seed}&auto=1&autostart=1&speed=1&biome=${biome}`);
+      await page.goto(`${BASE}?seed=${seed}&auto=1&autostart=1&speed=1&directive=hold&biome=${biome}`);
       await ready(page);
+      await dress(page);
       await page.waitForTimeout(1500);
-      console.log(`siege ${biome}`, JSON.stringify(await grow(page, wave)));
-      await page.keyboard.press('Home');
-      await liveFrames(page, `siege-${biome}`);
+      console.log(`siege ${biome}`, JSON.stringify(await grow(page, wave, 25)));
+      for (let i = 0; i < 40; i++) { if (await page.evaluate(() => window.broodfall.sim.enemies.length) >= 14) break; await page.waitForTimeout(500); }
+      await page.waitForTimeout(2500);
+      for (let i = 0; i < 3; i++) { await onTheFight(page, 5); await snap(page, `siege-${biome}-${i + 1}`); await page.waitForTimeout(1500); }
+      await onTheFight(page, 3);
+      await snap(page, `siege-${biome}-wide`);
       await ctx.close();
     }
   }
   if (on('boss')) {
     const { ctx, page } = await fresh();
-    await page.goto(`${BASE}?seed=5&auto=1&autostart=1&speed=1&biome=orthodox`);
+    await page.goto(`${BASE}?seed=5&auto=1&autostart=1&speed=1&directive=hold&biome=orthodox`);
     await ready(page);
     await page.waitForTimeout(1500);
-    console.log('boss', JSON.stringify(await grow(page, 8)));
+    await dress(page);
+    console.log('boss', JSON.stringify(await grow(page, 7, 15)));
     await page.evaluate(() => {
       const s = window.broodfall.sim;
       for (const k of ['royal', 'consort']) { const e = s.spawnEnemy(k, s.gates[0]); e.revealedUntil = s.time + 999; }
     });
-    await page.keyboard.press('Home');
-    for (let i = 0; i < 6; i++) { await page.waitForTimeout(2500); await snap(page, `boss-${i + 1}`); }
+    for (let i = 0; i < 6; i++) {
+      await page.waitForTimeout(2200);
+      await onTheFight(page, i % 2 ? 4 : 6, 'royal');
+      await snap(page, `boss-${i + 1}`);
+    }
     await ctx.close();
   }
   if (on('draft')) {
     const { ctx, page } = await fresh();
-    await page.goto(`${BASE}?seed=9&autostart=1&speed=0&biome=suburb`);
+    await page.goto(`${BASE}?seed=9&autostart=1&speed=0&directive=hold&biome=suburb`);
     await ready(page);
+    await dress(page);
     await page.waitForTimeout(1500);
     const r = await page.evaluate(() => {
       const b = window.broodfall, s = b.sim;
@@ -157,10 +220,11 @@ try {
   }
   if (on('creep')) {
     const { ctx, page } = await fresh();
-    await page.goto(`${BASE}?seed=14&auto=1&autostart=1&speed=1&biome=deephive`);
+    await page.goto(`${BASE}?seed=14&auto=1&autostart=1&speed=1&directive=hold&biome=deephive`);
     await ready(page);
     await page.waitForTimeout(1500);
-    console.log('creep', JSON.stringify(await grow(page, 12)));
+    await dress(page);
+    console.log('creep', JSON.stringify(await grow(page, 10, 10)));
     await page.keyboard.press('Home');
     await liveFrames(page, 'late-deephive', 3, 1500, 6);
     await ctx.close();

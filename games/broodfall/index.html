@@ -223,6 +223,8 @@
     };
     window.addEventListener('error', function (e) { window.__bfFault((e.error && e.error.stack) || e.message); });
   </script>
+  <!-- The HUD style (src/hud/themes.ts): ?hud=<id> or the menu's SETTINGS; today's look by default. -->
+  <script type="module" src="./src/hud/themes.ts"></script>
   <script type="module" src="./src/main.ts" onerror="window.__bfFault('The game\'s code could not be loaded: ' + this.src)"></script>
 </body>
 </html>

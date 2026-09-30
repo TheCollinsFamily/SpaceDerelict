@@ -142,6 +142,8 @@ export class CampaignUi {
 
   /** `greet`: he has just come aboard; YOKE greets him with what fits (src/meta/onboarding.ts). */
   show(opts: { greet?: boolean } = {}): void {
+    // Back from a report (which borrows the Procreation Board's room): aboard at the Directive Desk.
+    if (this.debriefing) this.room = 'desk';
     this.debriefing = false;
     document.body.classList.add('in-ship');
     this.el.classList.remove('hidden');

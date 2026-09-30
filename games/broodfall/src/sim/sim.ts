@@ -11,7 +11,7 @@ import {
   CellType, CityMap, DraftOffer, allDistance, computeFlow, createBoard,
   draftOffers, frontierGates, isPassable, slotOfCell, stampPlate,
 } from './citymap';
-import { GENES, PLATE_FEATURES } from '../../content/plates';
+import { PLATE_FEATURES, geneById } from '../../content/plates';
 import {
   BALANCE as B, ENEMIES, TOWERS, WAVE_TABLE,
 } from '../../content/data';
@@ -270,7 +270,12 @@ export class Sim {
   private geneMods = {
     weightMult: {} as Partial<Record<TowerFamily, number>>,
     startWar: 0, startScience: 0, spineHpBonus: 0, mawEatBonus: 0, rangeMult: 1, startNodes: 0,
+    // The hobby genes (content/plates.ts HOBBY_GENES); each is inert at its default.
+    burnSpreadFrac: B.burnSpreadFrac, royalJelly: 0, salvageMult: 1, broodHpMult: 1, creepNodeEvery: 0,
+    homingRefund: false, groundingMult: 1, weddingMusk: false, trapCage: false,
   };
+  /** Kills made by the creep itself (Hitchhiker Spores buds a node every Nth). */
+  private creepKillCount = 0;
   private researcherTimer = 20;
   private royalSpawned = false;
 
@@ -372,7 +377,7 @@ export class Sim {
     this.core = this.cellCenter(this.map.coreCell);
     this.gates = frontierGates(this.map);
     for (const id of cfg.genes ?? []) {
-      const g = GENES.find((x) => x.id === id);
+      const g = geneById(id);
       if (!g) continue;
       for (const [fam, m] of Object.entries(g.weightMult ?? {})) {
         this.geneMods.weightMult[fam as TowerFamily] = (this.geneMods.weightMult[fam as TowerFamily] ?? 1) * (m as number);
@@ -383,6 +388,15 @@ export class Sim {
       this.geneMods.mawEatBonus += g.mawEatBonus ?? 0;
       this.geneMods.rangeMult *= g.rangeMult ?? 1;
       this.geneMods.startNodes += g.startNodes ?? 0;
+      if (g.burnSpreadFrac !== undefined) this.geneMods.burnSpreadFrac = Math.max(this.geneMods.burnSpreadFrac, g.burnSpreadFrac);
+      this.geneMods.royalJelly += g.royalJelly ?? 0;
+      this.geneMods.salvageMult *= g.salvageMult ?? 1;
+      this.geneMods.broodHpMult *= g.broodHpMult ?? 1;
+      if (g.creepNodeEvery) this.geneMods.creepNodeEvery = g.creepNodeEvery;
+      if (g.homingRefund) this.geneMods.homingRefund = true;
+      this.geneMods.groundingMult *= g.groundingMult ?? 1;
+      if (g.weddingMusk) this.geneMods.weddingMusk = true;
+      if (g.trapCage) this.geneMods.trapCage = true;
     }
     this.directive = cfg.directive ?? this.rng.pick<Directive>([
       { kind: 'hold', waves: B.holdWaves },
@@ -394,7 +408,7 @@ export class Sim {
     this.meat.science += this.geneMods.startScience;
     for (let i = 0; i < this.geneMods.startNodes; i++) this.nodeStock.push(this.plainStrain());
     for (const [c, n] of Object.entries(cfg.startBonus ?? {})) this.meat[c as Caste] += n as number;
-    if (cfg.trapCage) this.hand.push({ id: this.nextId++, family: 'cage', free: true });
+    if (cfg.trapCage || this.geneMods.trapCage) this.hand.push({ id: this.nextId++, family: 'cage', free: true });
     for (const id of cfg.startOrgans ?? []) this.growFree(id);
     this.creepDist = allDistance(this.map, this.map.coreCell);
     this.flow = this.computeFlowField();
@@ -1767,7 +1781,7 @@ export class Sim {
     const cost = towerSpec(family).cost;
     const out: Partial<Record<Caste, number>> = {};
     for (const c of ['war', 'science', 'royal'] as Caste[]) {
-      if (cost[c]) out[c] = Math.floor((cost[c] ?? 0) * B.salvageRate);
+      if (cost[c]) out[c] = Math.floor((cost[c] ?? 0) * B.salvageRate * this.geneMods.salvageMult);
     }
     return out;
   }
@@ -2408,7 +2422,7 @@ export class Sim {
     this.applyHitEffects(e, fx);
     if (fx.shred > 0 || fx.cloud > 0) e.revealedUntil = this.time + B.revealSeconds; // mist and musk cling
     if (fx.grounding > 0 && enemySpec(e.kind).flies) {
-      e.groundedUntil = Math.max(e.groundedUntil ?? 0, this.time + fx.grounding);
+      e.groundedUntil = Math.max(e.groundedUntil ?? 0, this.time + fx.grounding * this.geneMods.groundingMult);
       this.dropToStreet(e);
     }
     let dmg = damage;
@@ -2488,6 +2502,13 @@ export class Sim {
             this.stats.matingStuns += 1;
           }
           continue;
+        }
+        // Wedding Musk (a hobby gene): the same pause, once each, without the extra bodies; the gas still burns.
+        if (this.geneMods.weddingMusk && !e.mated && enemySpec(e.kind).caste === 'war') {
+          e.mated = true;
+          e.slowMult = 0.02;
+          e.slowUntil = this.time + B.mateStun * 0.5;
+          this.stats.matingStuns += 1;
         }
         e.hp -= c.dps * DT; // a gas, not a hit: armor and shells don't stop it
         if (e.hp <= 0) this.killEnemy(e.id, 1, false, undefined, 'cloud');
@@ -2576,7 +2597,7 @@ export class Sim {
       for (const o of this.enemies) {
         if (o === e || o.burrowed || (o.burnUntil !== undefined && o.burnUntil > this.time)) continue;
         if (dist(o.pos, e.pos) > B.burnSpreadRadius) continue;
-        this.ignite(o, e.burnDps * B.burnSpreadFrac, left);
+        this.ignite(o, e.burnDps * this.geneMods.burnSpreadFrac, left);
       }
     }
     if (e.hp <= 0) {
@@ -3176,7 +3197,14 @@ export class Sim {
     if (cx <= 1 || cy <= 1 || cx >= this.cfg.gridW - 2 || cy >= this.cfg.gridH - 2) {
       const i = this.enemies.indexOf(e);
       if (i >= 0) this.enemies.splice(i, 1);
-      if (e.carrying) this.stats.limbsCarriedOff += 1; // a courier got away with one of yours
+      if (e.carrying) {
+        this.stats.limbsCarriedOff += 1; // a courier got away with one of yours
+        // Homing Tissue (a hobby gene): what it cost comes home anyway.
+        if (this.geneMods.homingRefund) {
+          const cost = towerSpec(e.carrying.family).cost;
+          for (const k of ['war', 'science', 'royal'] as Caste[]) this.meat[k] += cost[k] ?? 0;
+        }
+      }
       return;
     }
     let best = -1;
@@ -3658,7 +3686,7 @@ export class Sim {
         if (mine < want && t.cooldown <= 0) {
           t.cooldown = B.broodRespawn / stats.tempo;
           const spawn = this.cellsOf(t).map((c) => this.passableNear(c)).find((p) => p !== null) ?? t.pos;
-          const hp = B.broodHp * (stats.maxHp / towerSpec('brood').maxHp); // spine pips = tougher brood
+          const hp = B.broodHp * (stats.maxHp / towerSpec('brood').maxHp) * this.geneMods.broodHpMult; // spine pips = tougher brood
           this.broodlings.push({
             id: this.nextId++, motherId: t.id, pos: { x: spawn.x, y: spawn.y },
             hp, maxHp: hp, cooldown: 0,
@@ -3881,6 +3909,14 @@ export class Sim {
       this.royalsKilled += 1;
       this.checkDirective();
     }
+    // Royal Jelly (a hobby gene): every royal, killed or eaten, pays royal points.
+    if (spec.caste === 'royal' && this.geneMods.royalJelly > 0) {
+      this.drops.push({ id: this.nextId++, pos: { ...e.pos }, caste: 'royal', amount: this.geneMods.royalJelly, ttl: B.dropFlySeconds });
+    }
+    // Hitchhiker Spores (a hobby gene): the creep's own kills bud nodes.
+    if (why === 'creep' && this.geneMods.creepNodeEvery > 0 && ++this.creepKillCount % this.geneMods.creepNodeEvery === 0) {
+      this.nodeStock.push(this.plainStrain());
+    }
     this.threatKills += spec.threatOnKill * B.killThreatScale;
     this.biomass += B.biomassPerKill;
     // A splitter killed by damage bursts into its children; eaten whole, it doesn't.
@@ -3895,6 +3931,7 @@ export class Sim {
     // A dead collector drops the limb: it re-roots where it stood, traits and
     // targeting intact — or, if that ground is taken now, its cost comes back.
     if (e.carrying) {
+      st.limbsRecovered = (st.limbsRecovered ?? 0) + 1;
       const c = e.carrying;
       const [sw, sh] = this.spanOf(c.family, c.facing);
       const ground: number[] = [];

@@ -3,14 +3,14 @@
  "kind": "oneShot",
  "frames": 139,
  "seconds": 5.79,
- "kb": 1107,
+ "kb": 1197,
  "studio": {
   "keyColour": [
    16,
    240,
    32
   ],
-  "similarityPct": 45,
+  "similarityPct": 38,
   "endFrame": 138,
   "loop": "none",
   "chromaKeyFrom": "C:\\Users\\Merry\\dev\\reality-fabricator\\reality-fabricator-frontend\\src\\assets\\vtuber-creator\\model-exporter.js"
@@ -35,7 +35,7 @@
   {
    "name": "she fills the stage as a person does",
    "ok": true,
-   "value": "20-24% of it"
+   "value": "21-24% of it"
   },
   {
    "name": "she stays under the top edge",

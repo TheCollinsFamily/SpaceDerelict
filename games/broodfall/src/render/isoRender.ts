@@ -45,6 +45,17 @@ const LONG_SIZE = 1.35;
 const LONG_BACK = 0.25;
 /** What the landing site stands on, as a share of the width of the square it fell on. */
 const CORE_FILL = 0.92;
+/**
+ * Collins, Sep 30 2026: "the towers are too big when contrasted with the center node (make them
+ * a bit smaller, it a bit bigger)". Every limb standing on a roof is drawn this share of what
+ * LIMB_FILL gives it (a big one the same share of its 2x2), scaled about its marked foot; the
+ * core this much bigger than its collar's HEART_CELLS, capped so it stays in its square.
+ * Chosen by looking at three pairs (notes/screens/2026-09-30/scale-*). `?limbScale=&coreScale=`
+ * override them, to compare.
+ */
+const SCALE_Q = new URLSearchParams(globalThis.location?.search ?? '');
+const LIMB_SCALE = Number(SCALE_Q.get('limbScale')) || 0.84;
+const CORE_SCALE = Number(SCALE_Q.get('coreScale')) || 1.22;
 /** How high fliers fly, in levels. */
 const FLY_UP = 2.4;
 /** How strongly a unit shows through what stands in front of it. */
@@ -395,7 +406,7 @@ export class IsoRenderer extends Renderer {
       if (!v || v.art.flat) continue;
       const p = this.onGround(sim, t.pos.x, t.pos.y);
       // Its body rises from the middle of what it stands on: as wide as that, and most of a frame high.
-      const w = (2 * this.geo.a * LIMB_FILL * this.sizeOf(sim, t)) / Math.SQRT2;
+      const w = (2 * this.geo.a * LIMB_FILL * LIMB_SCALE * this.sizeOf(sim, t)) / Math.SQRT2;
       const h = v.art.frame * v.sprite.scale.y * 0.7;
       if (Math.abs(s.x - p.x) < w * 0.5 && s.y < p.y + w * 0.2 && s.y > p.y - h) {
         if (!best || depth(this.geo, t.pos.x, t.pos.y) > depth(this.geo, best.pos.x, best.pos.y)) best = t;
@@ -921,9 +932,12 @@ export class IsoRenderer extends Renderer {
     }
     // The heart beats: the ground it grew swells a little with it.
     const beat = 0.5 + 0.5 * Math.sin(this.simClock * Math.PI * 2 * (c.art.fps / Math.max(1, c.art.count)));
+    // Drawn CORE_SCALE bigger, but its collar never wider than 80% of the square it fell on:
+    // it stays in its square and off the walls of the blocks round it.
+    const grow = Math.min(CORE_SCALE, (0.8 * sq.across) / (c.art.cells * CORE_FILL));
     if (this.coreGround && c.art.ground) {
       // In world pixels: the box it is in lays it on the ground as the camera sees the ground.
-      const across = c.art.ground.cells * sim.cfg.cellPx;
+      const across = c.art.ground.cells * grow * sim.cfg.cellPx;
       this.coreGround.position.set(sq.x, sq.y);
       this.coreGround.width = across;
       this.coreGround.height = across;
@@ -932,7 +946,7 @@ export class IsoRenderer extends Renderer {
     }
     const p = project(this.geo, sq.x, sq.y);
     // A round thing `cells` wide on the ground is `cells` times the root of two half-tiles wide on the screen.
-    const width = c.art.cells * Math.SQRT2 * this.geo.a * CORE_FILL;
+    const width = c.art.cells * Math.SQRT2 * this.geo.a * CORE_FILL * grow;
     this.core.position.set(p.x, p.y);
     this.core.scale.set(width / ((c.art.body ?? 0.86) * c.art.frame));
     this.core.zIndex = depth(this.geo, sq.x, sq.y) * 100 + 40;
@@ -1128,7 +1142,7 @@ export class IsoRenderer extends Renderer {
         ? project(g, t.pos.x - step[0] * g.cell * LONG_BACK, t.pos.y - step[1] * g.cell * LONG_BACK, h)
         : p0;
       // How wide what it stands on is drawn: a swamp covers the ground it slows; a wall spans its lane; the rest fill their ground.
-      let width = 2 * g.a * LIMB_FILL * size;
+      let width = 2 * g.a * LIMB_FILL * LIMB_SCALE * size;
       if (art.flat) width = 2 * ((towerSpec(t.family).swamp?.radius ?? 30) + (stats.aoe - towerSpec(t.family).aoe)) * Math.SQRT2 * (g.a / g.cell);
       else if (art.on === 'street') width = 2 * g.a * 0.8 * (sim.cellsOf(t).length === 2 ? 1.8 : 1);
       const scale = width / (side.body * art.frame);

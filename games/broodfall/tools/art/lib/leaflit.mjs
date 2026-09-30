@@ -19,6 +19,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { spawnSync } from 'node:child_process';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 export const STUDIO_DIR = process.env.LEAFLIT_STUDIO_DIR
@@ -213,4 +214,45 @@ export async function generateTake({ spriteUrl, prompt, out, label, videoModelId
 
 export async function tokenBalance() {
   return (await api('/api/tokens/balance')).tokenBalance;
+}
+
+// ---------------------------------------------------------------------------
+// The shared entry point: a clip (or frames) in, transparent frames out.
+// ---------------------------------------------------------------------------
+
+/**
+ * Background removal exactly as the studio's exporter does it, for any clip on a flat key
+ * colour: the key colour auto-detected on the first frame, the similarity calibrated on it
+ * (with the black-clothes cap), then every frame through the studio's ChromaKey.
+ *
+ *   const frames = keyFrames(listOfRgbaFrames)           // [{ w, h, data }] in, keyed in place
+ *   const frames = keyClipFile('x.mp4', { fps: 24, width: 1280, height: 720 })
+ *
+ * A frame is { w, h, data: Buffer|Uint8ClampedArray RGBA }. Returns the same frames, keyed,
+ * with `.studio = { key, similarity }` on the array so a caller can record what was used.
+ * Settings can be overridden: { similarity (0-100), smoothness (0-1), spill (0-1) }.
+ */
+export function keyFrames(frames, opts = {}) {
+  if (!frames.length) return frames;
+  const first = { w: frames[0].w, h: frames[0].h, data: Buffer.from(frames[0].data) };
+  const { ck, key, similarity } = studioKeyer(first);
+  if (opts.similarity != null) ck.similarity = opts.similarity / 100;
+  if (opts.smoothness != null) ck.smoothness = opts.smoothness;
+  if (opts.spill != null) ck.spillSuppression = opts.spill;
+  for (const f of frames) keyFrame(ck, f);
+  frames.studio = { key, similarity: opts.similarity ?? similarity };
+  return frames;
+}
+
+/** Decode a clip with ffmpeg (on PATH) and key every frame; see keyFrames(). */
+export function keyClipFile(file, { fps = 24, width, height, ...opts } = {}) {
+  const probe = spawnSync('ffprobe', ['-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=width,height', '-of', 'csv=p=0', file], { encoding: 'utf8' });
+  const [w0, h0] = probe.stdout.trim().split(',').map(Number);
+  const w = width ?? w0, h = height ?? h0;
+  const r = spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-i', file, '-vf', `fps=${fps},scale=${w}:${h}:flags=lanczos`, '-an', '-f', 'rawvideo', '-pix_fmt', 'rgba', '-'],
+    { maxBuffer: 4 * 1024 * 1024 * 1024 });
+  if (r.status !== 0) throw new Error(`${file}: ffmpeg could not read it: ${String(r.stderr).slice(-300)}`);
+  const size = w * h * 4;
+  const frames = Array.from({ length: Math.floor(r.stdout.length / size) }, (_, i) => ({ w, h, data: Buffer.from(r.stdout.subarray(i * size, (i + 1) * size)) }));
+  return keyFrames(frames, opts);
 }

@@ -76,8 +76,7 @@ decision before it can be made.
 - **Hobby missions** (DESIGN: unofficial missions that pay unique genes; the hobby interface
   concept was approved, `r4-hobby-interface.png`). Not built: design, screen, art.
 - **Empire directives** screen: README lists it MISSING.
-- **YOKE**: 15 clips exist. Gestures she has no clip for (bow, jump, dance, tongue_out, kiss,
-  puff) fall back; her lore PROPOSALS wait for Collins (lore book section 14); her voice
+- **YOKE**: 43 clips (Sep 30 2026, the Leaflit studio way; every gesture of RFab's vocabulary); her lore PROPOSALS wait for Collins (lore book section 14); her voice
   (Athena, Harmonia, Pandora): Collins.
 - **The ship's rooms** are stills; the concept asked for slow loops (hum, blinking consoles). 6 clips, ~$3.
 - **The hero seen from behind** in each room: pictures exist in the concepts, not placed in the rooms.
