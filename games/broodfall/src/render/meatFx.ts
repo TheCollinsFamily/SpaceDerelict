@@ -84,8 +84,8 @@ export class MeatFx {
       let f = this.flights.get(d.id);
       if (!f) {
         const look = `meat-${d.caste}-${(d.id % 2) + 1}`;
-        // A bigger chunk for more meat: 1 → 15 world px, 8 → 21, 32+ → 25.
-        const size = 15 + Math.min(10, Math.log2(Math.max(1, d.amount)) * 2);
+        // A bigger chunk for more meat: 1 → 24 world px, 8 → 31, 32+ → 36 (it has to read beside a unit).
+        const size = 24 + Math.min(12, Math.log2(Math.max(1, d.amount)) * 2.4);
         f = { caste: d.caste, look, born: this.clock, x: d.pos.x, y: d.pos.y, up: 0, size, seen: 0, spin: ((d.id * 2.39996) % 2) - 1 };
         this.flights.set(d.id, f);
       }
@@ -95,8 +95,8 @@ export class MeatFx {
       const ground = v.floor(d.pos.x, d.pos.y);
       // Pops up off the body (an arc), then glides at a bobbing height.
       const pop = Math.min(1, age / POP);
-      const cruise = 16 + Math.sin(age * 7 + f.spin * 3) * 2.5;
-      f.up = ground + (pop < 1 ? Math.sin(pop * Math.PI * 0.5) * cruise + Math.sin(pop * Math.PI) * 10 : cruise);
+      const cruise = 24 + Math.sin(age * 7 + f.spin * 3) * 3;
+      f.up = ground + (pop < 1 ? Math.sin(pop * Math.PI * 0.5) * cruise + Math.sin(pop * Math.PI) * 16 : cruise);
       const tex = this.tex(f.look);
       if (!tex) continue;
       const p = v.at(d.pos.x, d.pos.y, f.up);
@@ -145,12 +145,12 @@ export class MeatFx {
         s.alpha = 1 - e * 0.4;
       }
       // The ring and the sparks, where it went in.
-      const r = (6 + k * 26) * v.scale;
+      const r = (10 + k * 42) * v.scale;
       this.g.circle(pk.to.x, pk.to.y, r).stroke({ width: 2.5 * v.scale * (1 - k) + 0.5, color: col, alpha: 0.85 * (1 - k) });
       this.g.circle(pk.to.x, pk.to.y, (8 * (1 - k) + 2) * v.scale).fill({ color: col, alpha: 0.35 * (1 - k) });
       for (let i = 0; i < 6; i++) {
         const a = pk.seed * 1.7 + (i * Math.PI) / 3;
-        const d = (4 + k * 22) * v.scale;
+        const d = (6 + k * 34) * v.scale;
         this.g.circle(pk.to.x + Math.cos(a) * d, pk.to.y + Math.sin(a) * d * 0.6 - k * 8 * v.scale, 1.6 * v.scale * (1 - k) + 0.4).fill({ color: 0xffffff, alpha: 0.9 * (1 - k) });
       }
     }

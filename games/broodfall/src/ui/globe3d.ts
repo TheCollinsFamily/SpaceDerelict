@@ -187,7 +187,7 @@ export class Globe3D {
   private tPrev = performance.now();
   private lightsIn = new Map<string, number>();
   private nightData: ImageData | null = null;
-  private drag: { x: number; y: number; moved: number; id: number } | null = null;
+  private drag: { x: number; y: number; moved: number; id: number; t: number } | null = null;
 
   constructor(private hooks: GlobeHooks) {
     this.canvas = document.createElement('canvas');
@@ -391,7 +391,7 @@ export class Globe3D {
       if (Math.abs(this.vel.spin) + Math.abs(this.vel.tilt) > 0.5) {
         this.spin += this.vel.spin * dt;
         this.tilt = Math.max(-70, Math.min(70, this.tilt + this.vel.tilt * dt));
-        const f = Math.pow(0.08, dt);
+        const f = Math.pow(0.03, dt);
         this.vel.spin *= f; this.vel.tilt *= f;
       } else if (this.idleOn()) {
         this.spin -= 4 * dt; // one turn in 90 s
@@ -457,7 +457,7 @@ export class Globe3D {
   private bind(): void {
     const c = this.canvas;
     c.addEventListener('pointerdown', (e) => {
-      this.drag = { x: e.clientX, y: e.clientY, moved: 0, id: e.pointerId };
+      this.drag = { x: e.clientX, y: e.clientY, moved: 0, id: e.pointerId, t: performance.now() };
       this.target = null;
       this.vel = { spin: 0, tilt: 0 };
       this.touch();
@@ -473,8 +473,12 @@ export class Globe3D {
         const k = 0.42 * (this.dist / 4);
         this.spin -= dx * k;
         this.tilt = Math.max(-70, Math.min(70, this.tilt + dy * k));
-        const dt = 1 / 60;
-        this.vel = { spin: (-dx * k) / dt * 0.6, tilt: (dy * k) / dt * 0.6 };
+        // The flick it coasts on: measured on the real time between moves, held to half a turn a second.
+        const now = performance.now();
+        const dt = Math.max(1 / 120, (now - this.drag.t) / 1000);
+        this.drag.t = now;
+        const cap = (v: number) => Math.max(-180, Math.min(180, v));
+        this.vel = { spin: cap((-dx * k) / dt * 0.6), tilt: cap((dy * k) / dt * 0.6) };
         this.touch();
         this.tip.classList.remove('on');
         this.start();
@@ -487,6 +491,8 @@ export class Globe3D {
     const up = (e: PointerEvent) => {
       if (!this.drag || e.pointerId !== this.drag.id) return;
       const click = this.drag.moved < 6;
+      // Held still before letting go: no coast.
+      if (performance.now() - this.drag.t > 90) this.vel = { spin: 0, tilt: 0 };
       this.drag = null;
       c.classList.remove('grabbing');
       this.touch();

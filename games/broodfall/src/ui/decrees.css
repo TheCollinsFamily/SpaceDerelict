@@ -34,3 +34,37 @@
 .evo-royal { margin-top: 5px; }
 .evo-royal .evo-opt { border-color: var(--royal, #d4a72c); }
 .evo-royal .evo-opt i { color: #8a6400; }
+
+/* The ship-console HUD (the default, src/hud/themes/ship.css): the same glass as the limb panel, royal gold for the points. */
+[data-hud="ship"] #decrees {
+  border-radius: 0; border: 1px solid var(--sc-line-hi); color: var(--sc-ink); font-family: var(--sc-font);
+  background: var(--sc-sheen), var(--sc-scan), rgba(7, 9, 11, 0.9);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6), 0 0 30px rgba(0, 0, 0, 0.55); backdrop-filter: blur(3px);
+  padding: 10px 12px 11px 14px;
+}
+[data-hud="ship"] #decrees::before { content: ''; position: absolute; left: -1px; top: 12px; bottom: 12px; width: 3px; background: var(--sc-royal); }
+[data-hud="ship"] .decree-head b { font: 300 17px/1.1 var(--sc-font); letter-spacing: 5px; }
+[data-hud="ship"] .decree-head span { color: var(--sc-royal); letter-spacing: 2px; font-weight: 400; }
+[data-hud="ship"] .decree-head button { color: var(--sc-dim); }
+[data-hud="ship"] .decree-note { color: var(--sc-dim); letter-spacing: 0.5px; }
+[data-hud="ship"] .decree {
+  background: rgba(255, 255, 255, 0.03); border: 1px solid var(--sc-line); border-radius: 0; color: var(--sc-ink);
+}
+[data-hud="ship"] .decree b { font-weight: 400; letter-spacing: 1.5px; font-size: 10px; }
+[data-hud="ship"] .decree b i { color: var(--sc-royal); }
+[data-hud="ship"] .decree span { color: var(--sc-dim); font-size: 10px; }
+[data-hud="ship"] .decree em { color: var(--sc-faint); letter-spacing: 1px; }
+[data-hud="ship"] .decree:hover { background: var(--sc-ink); color: #2a3034; border-color: #fff; }
+[data-hud="ship"] .decree:hover span, [data-hud="ship"] .decree:hover em { color: #2a3034; }
+[data-hud="ship"] .decree:hover b i { color: #8a6400; }
+[data-hud="ship"] .decree.off:hover { background: rgba(255, 255, 255, 0.03); color: var(--sc-ink); border-color: var(--sc-line); }
+[data-hud="ship"] .decree.off:hover span { color: var(--sc-dim); }
+[data-hud="ship"] .decree.on-limb { border-style: dashed; }
+[data-hud="ship"] .decree-pick b { color: var(--sc-royal); font-weight: 400; letter-spacing: 2px; }
+[data-hud="ship"] .decree-pick button {
+  background: transparent; border: 1px solid var(--sc-royal); border-radius: 0; color: var(--sc-ink); letter-spacing: 1px;
+  font-family: var(--sc-font);
+}
+[data-hud="ship"] .decree-pick button:hover { background: var(--sc-royal); color: #1a1406; }
+[data-hud="ship"] .evo-royal .evo-opt { border-color: rgba(242, 207, 106, 0.6); }
+[data-hud="ship"] .evo-royal .evo-opt i { color: var(--sc-royal); }

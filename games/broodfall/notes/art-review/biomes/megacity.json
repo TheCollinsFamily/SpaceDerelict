@@ -25,7 +25,7 @@
   {
    "name": "every lopsided prop has its back",
    "ok": true,
-   "detail": "23 of 23 backs"
+   "detail": "25 of 25 backs"
   },
   {
    "name": "a name of a prop is used once among the later sheets",
@@ -40,7 +40,7 @@
   {
    "name": "packed",
    "ok": true,
-   "detail": "725 KB in all, the heaviest sheet 468 KB, packed at quality 90"
+   "detail": "728 KB in all, the heaviest sheet 468 KB, packed at quality 90"
   }
  ]
 }

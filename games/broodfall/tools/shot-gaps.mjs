@@ -50,7 +50,21 @@ await new Promise((res, rej) => {
 const browser = await chromium.launch({ args: ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist', '--enable-webgl'] });
 const errors = [];
 
-async function open(seed) {
+async function open(seed, tries = 4) {
+  const page = await openOnce(seed);
+  // A peer re-baking a picture while this page loaded it: load again (the banner must not be in the shots).
+  if (tries > 1 && (await page.evaluate(() => window.broodfall.artMissing())).length > 0) {
+    await page.close();
+    await new Promise((r) => setTimeout(r, 15000));
+    return open(seed, tries - 1);
+  }
+  const missing = await page.evaluate(() => window.broodfall.artMissing());
+  const banner = await page.evaluate(() => /did not load/i.test(document.body.innerText));
+  check(missing.length === 0 && !banner, `seed ${seed}: every picture loaded, no "did not load" banner`, missing.slice(0, 3).join(', '));
+  return page;
+}
+
+async function openOnce(seed) {
   const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
   page.on('pageerror', (e) => errors.push(String(e)));
   await page.addInitScript(() => { window.WebSocket = class { constructor() {} addEventListener() {} removeEventListener() {} send() {} close() {} }; });
@@ -64,10 +78,11 @@ async function open(seed) {
       await page.waitForTimeout(2000);
     }
   }
-  await page.waitForTimeout(800);
-  const missing = await page.evaluate(() => window.broodfall.artMissing());
-  const banner = await page.evaluate(() => /did not load/i.test(document.body.innerText));
-  check(missing.length === 0 && !banner, `seed ${seed}: every picture loaded, no "did not load" banner`, missing.slice(0, 3).join(', '));
+  // Wait for every picture (a peer re-baking a file can make one late).
+  for (let k = 0; k < 20; k++) {
+    await page.waitForTimeout(500);
+    if ((await page.evaluate(() => window.broodfall.artMissing())).length === 0) break;
+  }
   return page;
 }
 
@@ -92,7 +107,7 @@ async function growCluster(page, n) {
       const p = s.cellCenter(c);
       if (ids.length > 0 && Math.hypot(p.x - first.x, p.y - first.y) > 90) continue;
       s.hand.unshift({ id: 800000 + c, family: 'spitter' });
-      if (s.issue({ kind: 'build', cardIndex: 0, cell: c }).ok) ids.push(s.towers[s.towers.length - 1].id);
+      if (s.issue({ kind: 'build', cardIndex: 0, cell: c }).ok) { ids.push(s.towers[s.towers.length - 1].id); s.hand.pop(); }
       else s.hand.shift();
     }
     return ids;
@@ -140,7 +155,7 @@ try {
       const s = window.broodfall.sim;
       const t = s.towers.find((x) => x.crowns);
       if (!t) return { crowns: 0, sheltered: null };
-      const other = s.towers.find((x) => x.id !== i && Math.hypot(x.pos.x - t.pos.x, x.pos.y - t.pos.y) <= 120);
+      const other = s.towers.find((x) => x.id !== t.id && Math.hypot(x.pos.x - t.pos.x, x.pos.y - t.pos.y) <= 120);
       return { crowns: t.crowns, sheltered: other ? s.harmMultOf(other) : null };
     });
     check(crowned.crowns === 1 && crowned.sheltered !== null && Math.abs(crowned.sheltered - 0.7) < 1e-9, `crowned from its panel; a neighbour takes ×${crowned.sheltered} harm`);

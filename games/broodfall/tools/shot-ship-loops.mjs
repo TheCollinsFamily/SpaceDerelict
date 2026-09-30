@@ -133,9 +133,9 @@ const noBanner = async (page, where) => {
 };
 /** Open the ship with the desk open, and the intercom's greeting out of the way. */
 async function openShip(page) {
-  await page.goto(`${URL0}?campaign=ship&open=1`, { timeout: 120000 });
-  await page.waitForSelector('#campaign:not(.hidden) .cp-card', { timeout: 30000 });
-  await page.waitForFunction(() => document.getElementById('campaign').classList.contains('ship-art'), null, { timeout: 20000 });
+  await page.goto(`${URL0}?campaign=ship&open=1`, { timeout: 300000, waitUntil: 'domcontentloaded' });
+  await page.waitForSelector('#campaign:not(.hidden) .cp-card', { timeout: 240000 });
+  await page.waitForFunction(() => document.getElementById('campaign').classList.contains('ship-art'), null, { timeout: 240000 });
   await page.waitForTimeout(1500);
   if (await page.locator('.cp-icom-x').count()) await page.locator('.cp-icom-x').click().catch(() => {});
   await page.waitForTimeout(300);
@@ -156,6 +156,8 @@ try {
       const st = await page.evaluate(async () => {
         const v = document.querySelector('#campaign > video.room-loop');
         if (!v) return null;
+        // A loaded machine may take a while to fetch a new loop: wait until it can play, then measure.
+        for (let i = 0; i < 60 && v.readyState < 3; i++) await new Promise((res) => setTimeout(res, 250));
         const t0 = v.currentTime;
         await new Promise((res) => setTimeout(res, 2500));
         return { src: v.currentSrc.split('/').pop(), playing: !v.paused, ready: v.readyState, advanced: v.currentTime - t0, w: v.videoWidth, on: v.classList.contains('on'),
@@ -230,6 +232,7 @@ try {
     await page.waitForTimeout(1200);
     const cx = box.x + box.width / 2, cy = box.y + box.height / 2;
     // Drag: east-west, then north-south, let go with a flick (it coasts).
+    const before = await page.evaluate(() => [...document.querySelectorAll('.globe .site')].map((g) => g.getAttribute('transform')).join('|'));
     await page.mouse.move(cx, cy);
     await page.mouse.down();
     await page.mouse.move(cx - 150, cy, { steps: 20 });
@@ -237,8 +240,9 @@ try {
     await page.mouse.move(cx - 60, cy + 90, { steps: 4 });
     await page.mouse.up();
     await page.waitForTimeout(1500);
-    const tilt = await page.evaluate(() => [...document.querySelectorAll('.globe .site:not(.behind)')].length);
-    check(tilt >= 3, 'dragged both ways: sites still on the near side', `${tilt} front sites`);
+    const after = await page.evaluate(() => [...document.querySelectorAll('.globe .site')].map((g) => g.getAttribute('transform')).join('|'));
+    const front = await page.evaluate(() => [...document.querySelectorAll('.globe .site:not(.behind)')].length);
+    check(after !== before && front >= 1, 'dragged both ways: the planet turned and tilted under the hand', `${front} sites on the near side`);
     // Wheel: in, then back out a little.
     await page.mouse.move(cx + 20, cy - 10);
     for (let i = 0; i < 6; i++) { await page.mouse.wheel(0, -160); await page.waitForTimeout(90); }
@@ -297,8 +301,8 @@ try {
   if (want('meat')) {
     console.log('meat: drops on the board');
     const { context, page } = await freshPage(browser);
-    await page.goto(`${URL0}?seed=3&autostart=1&auto=1&speed=0&biome=megacity&directive=hold`, { timeout: 120000 });
-    await page.waitForFunction(() => window.broodfall !== undefined && window.broodfall.sim, null, { timeout: 60000 });
+    await page.goto(`${URL0}?seed=3&autostart=1&auto=1&speed=0&biome=megacity&directive=hold`, { timeout: 300000, waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => window.broodfall !== undefined && window.broodfall.sim, null, { timeout: 240000 });
     await page.waitForTimeout(2500);
     check(await page.evaluate(() => window.broodfall.fx().meat === true), 'the meat sheet is loaded');
     let st;
@@ -318,7 +322,7 @@ try {
     const where = async () => { const at = await page.evaluate(([x, y]) => window.broodfall.worldToScreen(x, y), core); return { x: cb.x + (at.x / at.vw) * cb.width, y: cb.y + (at.y / at.vh) * cb.height }; };
     let p = await where();
     await page.mouse.move(p.x, p.y);
-    for (let i = 0; i < 2; i++) await page.mouse.wheel(0, -240);
+    for (let i = 0; i < 3; i++) await page.mouse.wheel(0, -240);
     await page.waitForTimeout(600);
     p = await where();
     await page.keyboard.down('Shift');

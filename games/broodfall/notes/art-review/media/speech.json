@@ -1,0 +1,187 @@
+{
+ "n-e-briskly": {
+  "line": "The fauna are relocating. Briskly!",
+  "heard": "The fauna are relocating briskly.",
+  "share": 1
+ },
+ "n-e-acquired": {
+  "line": "Another district cleared, and resources acquired for the Empire!",
+  "heard": "Another district cleared and resources acquired for the empire.",
+  "share": 1
+ },
+ "n-c-marches": {
+  "line": "The Host marches, to take back what is ours!",
+  "heard": "A host marches to take back what is ours.",
+  "share": 0.86
+ },
+ "n-e-repelled": {
+  "line": "The fauna tried to take back their town. The asset said no!",
+  "heard": "The fauna tried to take back their town. The asset said no.",
+  "share": 1
+ },
+ "n-e-hollow": {
+  "line": "Queen's Hollow! Whoever holds it holds the planet. And the planet is ours!",
+  "heard": "Queen's Hollow. Whoever holds it holds the planet, and the planet is ours.",
+  "share": 1
+ },
+ "faithful/the-deployment-is-scripture/2": {
+  "line": "Whichever one you burn, brother. That is how prophecy works.",
+  "heard": "Whichever one you burn, brother, that is how prophecy works.",
+  "share": 1
+ },
+ "faithful/the-deployment-is-scripture/3": {
+  "line": "\"And those the sky takes up shall not be lost, but kept, each daughter in the cell of her longing.\"",
+  "heard": "And those the sky takes up shall not be lost, but kept each daughter in the cell of her longing.",
+  "share": 1
+ },
+ "faithful/theology-homework/3": {
+  "line": "It is the WORD.",
+  "heard": "It is the W O R D.",
+  "share": 0.5
+ },
+ "faithful/the-comb-above/5": {
+  "line": "No PIT? Then what was the point of being GOOD?",
+  "heard": "No PIT? Then what was the point of being GOOD?",
+  "share": 1
+ },
+ "n-c-retaken": {
+  "line": "Our girls of the Host have taken back the town! The Growth is burning!",
+  "heard": "Our girls of the host have taken back the town. The growth is burning.",
+  "share": 1
+ },
+ "faithful/the-comb-above/3": {
+  "line": "Then where is the Pit? Chapter twenty-two! Where are the wicked, burning, as it is WRITTEN?",
+  "heard": "And where is the pit? Chapter 22. Where are the wicked burning as it is w written n?",
+  "share": 0.77
+ },
+ "faithful/theology-homework/0": {
+  "line": "To walk with us you must know the Book. Chapter one: the Seven Cities.",
+  "heard": "To walk with us, you must know the book. Chapter one, the seven cities.",
+  "share": 1
+ },
+ "n-e-waste": {
+  "line": "And nothing goes to waste. Nothing at all!",
+  "heard": "And nothing goes to waste. Nothing at all.",
+  "share": 1
+ },
+ "n-e-sector9": {
+  "line": "Good news from Sector Nine! A brand-new world, and a brand-new asset hard at work!",
+  "heard": "Good news from Sector 9, a brand new world and a brand new asset hard at work.",
+  "share": 0.93
+ },
+ "n-c-burned": {
+  "line": "The Growth is burned out! The Home Levy held the line!",
+  "heard": "The growth is burned out. The home levy held the line.",
+  "share": 1
+ },
+ "n-e-pilgrim": {
+  "line": "The Pilgrim Road is quiet this year. Travel advisories are in effect!",
+  "heard": "The Pilgrim Road is quiet this year. Travel advisories are in effect.",
+  "share": 1
+ },
+ "n-e-foundry": {
+  "line": "At the Foundry Plains, war-beetle production has been permanently discontinued!",
+  "heard": "At the Foundry Plains, war beetle production has been permanently discontinued.",
+  "share": 1
+ },
+ "faithful/the-comb-above/7": {
+  "line": "… We wish to lodge a complaint with God.",
+  "heard": "We wish to lodge a complaint with God.",
+  "share": 1
+ },
+ "faithful/the-hour/0": {
+  "line": "Brothers and sisters — HE IS HERE.",
+  "heard": "Brothers and sisters, HE is here.",
+  "share": 1
+ },
+ "n-e-bells": {
+  "line": "Up on the Temple Terraces, the bells have finally stopped. Peace and quiet at last!",
+  "heard": "Up on the temple terraces, the bells have finally stopped. Peace and quiet at last.",
+  "share": 1
+ },
+ "faithful/the-deployment-is-scripture/5": {
+  "line": "They are ALL correct, brother.",
+  "heard": "They are a l l correct, brother.",
+  "share": 0.8
+ },
+ "faithful/theology-homework/1": {
+  "line": "We will read it to you on the air, brother, a chapter a night. Have a pencil ready.",
+  "heard": "We will read it to you on the air, brother, a chapter a night. Have a pencil ready.",
+  "share": 1
+ },
+ "faithful/the-awaited-one/0": {
+  "line": "The Seventh City stands. When it falls, He comes.",
+  "heard": "The seventh city stands. When it falls, he comes.",
+  "share": 1
+ },
+ "n-e-harbor": {
+  "line": "At Old Harbor, the local fleet has sailed for calmer waters. Very sensible!",
+  "heard": "At Old Harbor, the local fleet has sailed for calmer waters. Very sensible.",
+  "share": 1
+ },
+ "n-e-spirited": {
+  "line": "The local fauna put up a spirited little fight. Aren't they something!",
+  "heard": "The local fauna put up a spirited little fight. Aren't they something?",
+  "share": 1
+ },
+ "n-e-university": {
+  "line": "Their finest minds came to study the asset. The asset studied them right back!",
+  "heard": "Their finest minds came to study the asset. The asset studied them right back.",
+  "share": 1
+ },
+ "faithful/a-broadcast-on-every-frequency/0": {
+  "line": "…and they said the sign would come from the sky, and brothers and sisters, LOOK UP.",
+  "heard": "They said the sign would come from the sky and brothers and sisters look up.",
+  "share": 1
+ },
+ "n-e-complete": {
+  "line": "Clearance complete! On to the next!",
+  "heard": "Clearance complete. On to the next.",
+  "share": 1
+ },
+ "faithful/the-hour/2": {
+  "line": "Everything worked out. Everything worked out exactly as it was written.",
+  "heard": "Everything worked out. Everything worked out exactly as it was written.",
+  "share": 1
+ },
+ "n-c-every": {
+  "line": "Every street, every house, every last root of it!",
+  "heard": "Every street, every house, every last root of it.",
+  "share": 1
+ },
+ "n-c-home": {
+  "line": "And the families come home again. Chins up, sisters!",
+  "heard": "And the families come home again. Chins up, sisters.",
+  "share": 1
+ },
+ "faithful/the-deployment-is-scripture/0": {
+  "line": "\"And the river shall run with fire, and the terraces shall fall silent.\"",
+  "heard": "And the river shall run with fire, and the terraces shall fall silent.",
+  "share": 1
+ },
+ "n-c-part": {
+  "line": "And every sister does her part.",
+  "heard": "And every sister does her part.",
+  "share": 1
+ },
+ "faithful/the-comb-above/0": {
+  "line": "Brothers and sisters, we have been DECEIVED. I woke in a hall of gold, chapter twenty word for word, and it is a MACHINE. The empties are up here too!",
+  "heard": "Brothers and sisters, we have been DEC ed. I woke in a hall of gold, chapter 20 word for word, and it is a MA sheen. The empties are up here too.",
+  "share": 0.86
+ },
+ "faithful/a-broadcast-on-every-frequency/1": {
+  "line": "This is The Hour Is Near, on forty stations of the Last Hour Radio Network. And to the one who came down — I know you can hear me.",
+  "heard": "Is the hour is near on 40 stations of the last hour radio network. And to the one who came down, I know you can hear me.",
+  "share": 0.9
+ },
+ "faithful/a-broadcast-on-every-frequency/2": {
+  "line": "You are the sign. The world must end for the Awaited One to come. Let us help you end it.",
+  "heard": "You are the sign. The world must end for the awaited one to come. Let us help you end it.",
+  "share": 1
+ },
+ "faithful/the-awaited-one/2": {
+  "line": "Then we will have misread the date. We have misread it before. It only makes us stronger.",
+  "heard": "Then we will have misread the date. We have misread it before. It only makes us stronger.",
+  "share": 1
+ }
+}

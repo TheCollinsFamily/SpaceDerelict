@@ -651,19 +651,17 @@ body.in-ship #topbar, body.in-ship #botbar { visibility: hidden; }
 }
 
 /*
- * Alive (Sep 30 2026): an organ, a resolved deposit, a feature, the meteor, each plays its loop,
- * a horizontal strip of frames stepped through (tools/art/templates/under-loops.mjs; the phase is
- * set inline: --n frames, --ud one pass, --uw the delay, --udir alternate for a ping-pong).
- * Only background-position-x moves, so it cannot fight the other animations a cell carries.
+ * Alive (Sep 30 2026): an organ, a resolved deposit, a feature plays its loop on ONE canvas under
+ * the cells (src/ui/underAlive.ts; its cell's own background is cleared so the canvas shows). The
+ * meteor below the street and its dome above it step through their stage's strip in CSS (two
+ * elements; --n frames, --ud one pass, --uw the delay, --udir alternate for a ping-pong).
  */
+#under.scan #under-grid { position: relative; z-index: 1; background: transparent; }
+#under.scan .under-alive { position: absolute; z-index: 0; pointer-events: none; background: #030506; }
+.under-alive { display: none; }
+#under.scan .under-alive { display: block; }
+#under.scan .uc.alive { background: transparent; }
 @keyframes uloop { from { background-position-x: 0%; } to { background-position-x: 100%; } }
-#under.scan .uc.alive {
-  background-size: calc(var(--n) * 100%) auto; background-position: 0% 50%;
-  animation: uloop var(--ud) steps(var(--n), jump-none) var(--uw) infinite var(--udir);
-}
-#under.scan .uc.alive.zq {
-  animation: uloop var(--ud) steps(var(--n), jump-none) var(--uw) infinite var(--udir), zone-pulse 2.8s ease-in-out infinite;
-}
 #under.scan .uc .meteor-img.staged.alive {
   background-size: calc(var(--n) * 100%) auto; background-position: 0% 100%;
   animation: heart-beat 1.6s ease-in-out infinite, uloop var(--ud) steps(var(--n), jump-none) var(--uw) infinite var(--udir);
@@ -673,7 +671,7 @@ body.in-ship #topbar, body.in-ship #botbar { visibility: hidden; }
   animation: dome-beat 2.4s ease-in-out infinite, uloop var(--ud) steps(var(--n), jump-none) var(--uw) infinite var(--udir);
 }
 @media (prefers-reduced-motion: reduce) {
-  #under.scan .uc.alive, #under.scan .uc .meteor-img.staged.alive, #under.scan #under-dome.art.staged.alive { animation-play-state: paused; }
+  #under.scan .uc .meteor-img.staged.alive, #under.scan #under-dome.art.staged.alive { animation-play-state: paused; }
 }
 
 /* The Seeding Gland: the lane it must touch, and its launch tube firing up through the street. */

@@ -269,11 +269,14 @@ export function bakeCoreEvo() {
     // A loop whose two ends do not meet cleanly (seam over 0.25: stage 4's was 0.40) is played
     // forward and back: it has no seam at all. Since Sep 30 2026 the GAME plays it so (the idle's `pingpong`,
     // src/render/idleClock.ts, eased at its ends), so its frames are stored once, not there and back.
-    const pong = loop.seam > 0.25;
+    // Measured against the clip's own step (Sep 30 2026 fix pass): the core beats, so its steps run from
+    // 0.1 to 0.9 in a beat; stage 3's seam of 0.27 (0.84 of its mean step, invisible) had made it a
+    // ping-pong, a heartbeat played backwards every other time: the roughest idle on the board.
+    const pong = loop.seam > Math.max(0.25, 1.35 * loop.motion);
     // A ping-pong needs no seam: it takes the LONGEST smooth stretch of the clip (no jolt of the video
     // model's in it), not the window whose ends met best (stage 3 had 27 of 47 frames; Sep 30 2026 fix pass).
     if (pong) {
-      const stretch = smoothStretch(all, { max: 46 });
+      const stretch = smoothStretch(all, { max: 46, jump: 4 });
       if (stretch.end - stretch.start > loop.end - loop.start) loop = { ...loop, start: stretch.start, end: stretch.end };
     }
     // Every frame of the loop at 12 fps (Sep 30 2026: 16 of up to 46 stepped at 5 fps; anim-README.md). A

@@ -58,6 +58,13 @@ async function open(set) {
   await page.goto(`${BASE}/?seed=42&auto=1&speed=0&biome=${set}`, { waitUntil: "domcontentloaded", timeout: 180000 });
   await page.waitForFunction(() => window.broodfall !== undefined, null, { timeout: 180000 });
   await page.waitForTimeout(2500);
+  // Other sessions re-bake atlases while this runs: a picture caught mid-write is loaded again (a fresh page), up to 6 times.
+  for (let k = 0; k < 6 && (await page.evaluate(() => window.broodfall.artMissing?.() ?? [])).length; k++) {
+    await page.waitForTimeout(15000);
+    await page.reload({ waitUntil: 'domcontentloaded', timeout: 180000 });
+    await page.waitForFunction(() => window.broodfall !== undefined, null, { timeout: 180000 });
+    await page.waitForTimeout(2500);
+  }
   return { page, errors };
 }
 const loaded = async (page, where) => {

@@ -21,7 +21,7 @@ three campaign outlines, covers and promotional art.
 
 - **Evolution looks**: every limb has 3 evolution stages x 2 choices, shown only as a crest mark.
   A changed look per stage is 36 limbs x 3 stills + clips. ~$150. Collins: worth it, or keep the crest?
-- **Meat drops**: no picture of their own.
+- ~~**Meat drops**~~: drawn (Sep 30 2026): two chunks a caste, a bobbing flight, a pickup at the core (`tools/art/meat.mjs`, `src/render/meatFx.ts`).
 - Small flinch blemishes: a stub of a pole in a few flinch frames; a few units jolt into aim
   instead of recoiling.
 - Status overlays (web, poison, flames) draw over a block that stands in front of the unit.
@@ -39,8 +39,8 @@ three campaign outlines, covers and promotional art.
 - ~~**The Quarters room picture and the candidate partner's portrait**~~: made in the art fix pass (Sep 30 2026,
   `node tools/art/intro.mjs quarters partner`; `notes/screens/2026-09-30/fixpass-art-quarters-after.jpg`).
 - **The data pad clip's window shows a green Earth-like planet**, not the infested one.
-- **The ship's rooms** are stills; the concept asked for slow loops (hum, blinking consoles). 6 clips, ~$3.
-- **The hero seen from behind** in each room: pictures exist in the concepts, not placed in the rooms.
+- ~~**The ship's rooms** are stills~~: every room (and the Quarters) is an 8 s 1080p loop since Sep 30 2026 (`tools/art/ship-loops.mjs`); Empire Directives and the Notebook borrow the Board's and the Locker's.
+- ~~**The hero seen from behind**~~: the same man (shirt, stylus behind his ear, the pad clip's clothes) baked into every room's loop, Sep 30 2026.
 - The ship's room bar wraps to a second line at 1600 px.
 - A new player's first screen shows every system at once; the seed can deal a complex first card
   (`notes/PERSONA-ONBOARDING-2026-09-30.md`).
@@ -71,7 +71,7 @@ three campaign outlines, covers and promotional art.
 - Civilians fleeing the crash.
 - Surgery vulnerability: drama when cannibalizing mid-siege.
 - The interior sealing itself (a burrow-reopen mechanic).
-- Asides in a fixed order; the globe as a true 3D sphere.
+- Asides in a fixed order. (~~The globe as a true 3D sphere~~: `src/ui/globe3d.ts`, Sep 30 2026.)
 - Do ordinary soldiers shoot limbs on roofs: Collins (a balance change).
 - The first LONG limb (built and tested, used by none): Collins picks the limb.
 

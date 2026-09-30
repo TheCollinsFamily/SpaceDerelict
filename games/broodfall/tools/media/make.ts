@@ -118,6 +118,12 @@ function chunks(t: string, max = 22): string[] {
   return out;
 }
 const fileKey = (k: string) => k.replace(/\//g, '__');
+/** A line as a voice model should get it: words in capitals (stress on the page) lower-cased, or they are spelled out. */
+function speakable(t: string): { text: string; stressed: string[] } {
+  const stressed: string[] = [];
+  const text = t.replace(/—/g, ', ').replace(/\b[A-Z]{2,}\b/g, (w) => (w === 'AI' ? w : (stressed.push(w.toLowerCase()), w.toLowerCase())));
+  return { text, stressed };
+}
 
 interface LeaderLine { key: string; faction: FactionId; who: string; text: string }
 export function leaderLines(): LeaderLine[] {
@@ -146,9 +152,27 @@ async function voices() {
   for (const l of leaderLines()) {
     if (!want(l.key) && !want(l.faction)) continue;
     const v = LEADER_VOICES[l.who];
-    if (v.how === 'aura') jobs.push({ id: l.key, run: () => tts({ out: path.join(D.voice, `${fileKey(l.key)}.mp3`), text: l.text.replace(/—/g, ', '), voice: v.voice! }) });
-    else chunks(l.text).forEach((c, i, all) => jobs.push({ id: `${l.key}#${i}`, run: () => veoSpeech({
-      out: path.join(D.voice, `${fileKey(l.key)}${all.length > 1 ? `-${'abcdef'[i]}` : ''}.mp4`), seconds: secsFor(c, true), prompt: ANNOUNCER.voice(c.replace(/—/g, ', ')) }) }));
+    if (v.how === 'aura') jobs.push({ id: l.key, run: () => tts({ out: path.join(D.voice, `${fileKey(l.key)}.mp3`), text: speakable(l.text).text, voice: v.voice! }) });
+    else chunks(l.text).forEach((c, i, all) => jobs.push({ id: `${l.key}#${i}`, run: () => {
+      const s = speakable(c);
+      return veoSpeech({
+        out: path.join(D.voice, `${fileKey(l.key)}${all.length > 1 ? `-${'abcdef'[i]}` : ''}.mp4`), seconds: secsFor(c, true),
+        prompt: ANNOUNCER.voice(s.text) + (s.stressed.length ? ` He leans hard on ${s.stressed.map((w) => `"${w}"`).join(' and ')}.` : ''),
+      });
+    } }));
+  }
+  if (step === 'recaps') {
+    // Takes made from a line with a word in capitals (the models SPELL it: "W O R D"): moved to v1/, to be made again.
+    const v1 = path.join(D.voice, 'v1');
+    fs.mkdirSync(v1, { recursive: true });
+    for (const l of leaderLines()) {
+      if (!speakable(l.text).stressed.length) continue;
+      for (const f of fs.readdirSync(D.voice).filter((f) => f.startsWith(fileKey(l.key)) && /\.(mp3|mp4)$/.test(f) && /^(-[a-f])?\.(mp3|mp4)$/.test(f.slice(fileKey(l.key).length)))) {
+        fs.renameSync(path.join(D.voice, f), path.join(v1, f));
+        console.log(`[media] ${f} → v1/`);
+      }
+    }
+    return;
   }
   for (const [id, m] of Object.entries(MUSIC)) {
     if (!want(id)) continue;
@@ -320,7 +344,7 @@ else {
   const b0 = await balance();
   if (step === 'stills') await stills();
   else if (step === 'clips') await clips();
-  else if (step === 'voices') await voices();
+  else if (step === 'voices' || step === 'recaps') await voices();
   else if (step === 'sheets') sheets();
   else { console.error(`unknown step ${step}`); process.exit(1); }
   const b1 = await balance();

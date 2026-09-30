@@ -299,6 +299,32 @@ character setting down a data pad that has something similar to the last screen 
   the screen. Review: `notes/art-review/pad/<id>.jpg` (a game picture warped in) and `<id>-track.jpg`.
 - **Checks:** `tests/padOutro.test.ts`; `node tools/shot-pad.mjs [won lost skip calm]`.
 
+## The ship presented (Sep 30 2026): room loops, the planet, meat drops
+
+- **Room loops** (`node tools/art/ship-loops.mjs [ids] [--stills|--bake]`; SPENDS: a still ~$0.50, an 8 s 1080p
+  clip on seegen:sd2-fast ~$5): each room's approved still (`art-src/ship/room-<id>.png`, never touched) cut to 16:9
+  and EDITED so the man is the same man everywhere (black high-collared shirt, sleeves up, stylus behind his ear, the
+  pad clip's clothes; the first stills had a long coat in three rooms), Comms' window shows the infested planet; then
+  a clip whose end frame is its start frame; the bake cuts the model's snap frames and crossfades 0.75 s if the seam
+  shows. He is BAKED into the loop (one picture, one light), not a layer. The Quarters (drawn by
+  `tools/art/intro.mjs quarters`) is his empty cell seen from the doorway. Directives and Notebook borrow the Board's
+  and the Locker's. Output `public/art/ship/loops/` (+ `loops.json`), review `notes/art-review/ship-loops/`. In game:
+  `campaignUi.ts` `playLoop` puts ONE `<video>` behind the screen (z-index -1 inside `#campaign`), the poster is its
+  own first frame; paused while the ship is hidden; not with Reduce motion.
+- **The planet** (`src/ui/globe3d.ts`, three.js): day map `planet.webp`, night lights `public/art/ship/globe/night.webp`
+  (`tools/art/globe-night.mjs`, seam blended), creep veins drawn in the shader over HELD zones (their lights out), a
+  counter-attack pulses, zone borders where two sites are equally near. Turns by itself (not under Reduce motion, not
+  under automation unless `localStorage['broodfall-globe-spin']='on'`: a moving marker is never "stable" for
+  Playwright), drag both ways with inertia (tilt held to +-70), wheel/pinch zoom, hover = zone lit + tooltip (name,
+  state, lights still burning), click a zone or marker = pick + turn to face it, arrow keys and the turn buttons.
+  The SVG markers (`.globe .site`) are moved every frame; those behind the planet get `.behind` (hidden): a beat
+  clicks `.site.open:not(.behind)`. No WebGL: the flat painter in `globe.ts` as before.
+- **Meat drops** (`node tools/art/meat.mjs`, one still ~$0.45): `public/art/fx/meat.webp`, manifest `fx.meat`; drawn
+  by `src/render/meatFx.ts` (pop, bobbing glide, shadow, trail, pickup ring and sparks at the core);
+  `window.broodfall.fx()` reports `meat`, `meatFlying`, `meatPickups`, `meatPickedUp`.
+- **Beat:** `node tools/shot-ship-loops.mjs [rooms globe meat]` (own dev server 5289, GPU flags):
+  `notes/screens/2026-09-30/ship-loop-*`, `globe-*`, `meat-*`.
+
 ## The ship AI (YOKE)
 
 - **Game side** (`src/meta/shipAi.ts`):
@@ -697,7 +723,7 @@ RFAB_API_BASE=http://localhost:3011 RFAB_CONNECT_JWT=<tester jwt> node tools/sho
 8. **Campaign polish found in the audit, not yet asked for:**
    - (Done Sep 30: all three factions call when the Directive Desk opens.)
    - Asides cycle in a fixed order.
-   - The globe is flat-projected, not a 3D sphere.
+   - (Done Sep 30: the globe is a 3D planet, `src/ui/globe3d.ts`.)
 
 ## OPEN — Collins's calls on the art (none of them blocks play)
 

@@ -19,6 +19,7 @@ import { TOWERS } from '../../content/data';
 import { strainIcons, strainLabel } from './strain';
 import { artUrl, loadManifest } from '../render/art';
 import { coreStageOf } from '../render/coreStage';
+import { UnderAlive } from './underAlive';
 import type { OrganId, TowerFamily } from '../sim/types';
 
 const COLOR: Record<OrganId, string> = {
@@ -90,6 +91,8 @@ function loopStyle(l: ScanLoop, fps: number, anchor: number): string {
   return `background-image:url('${l.strip}');--n:${l.count};--ud:${Math.round(dur)}ms;--uw:${-Math.round(t)}ms;--udir:${l.pingpong ? 'alternate' : 'normal'};`;
 }
 /** A steady phase per organ or cell, so the organs do not all breathe together. */
+/** A tile cell's loop, for the canvas that draws it (src/ui/underAlive.ts): strip|frames|anchor|ping-pong. */
+const loopData = (l: ScanLoop, anchor: number) => ` data-loop="${l.strip}|${l.count}|${Math.round(anchor)}|${l.pingpong ? 1 : 0}"`;
 const phaseOf = (k: number) => -(((k * 2654435761) >>> 0) % 100000);
 
 /** The tile set the board is drawn with, as the game says (empty on the old board). */
@@ -131,6 +134,8 @@ export class UndergroundScreen {
   private lastKey = '';
   /** The scan's pictures (absolute URLs), once loaded; null keeps the old look. */
   private scan: ScanArt | null = null;
+  /** The canvas the living tiles are drawn on, once there are loops. */
+  private alive: UnderAlive | null = null;
   /** When each organ was first seen, and each deposit first resolved: what is still scanning in. */
   private bornAt = new Map<number, number>();
   private revealedAt = new Map<number, number>();
@@ -240,6 +245,7 @@ export class UndergroundScreen {
     this.open = false;
     this.selected = null;
     this.el.classList.add('hidden');
+    this.alive?.stop();
     this.onClose();
   }
 
@@ -372,6 +378,7 @@ export class UndergroundScreen {
       let cls = `uc depth-${Math.min(3, Math.floor(row / 2))} k-${c.kind}`;
       let style = '';
       let inner = '';
+      let loopAttr = '';
       if (c.kind === 'feature' && c.feature) {
         const f = FEATURES[c.feature];
         inner = `<span class="glyph">${f.glyph}</span><span class="tag">${f.name}</span>`;
@@ -408,7 +415,7 @@ export class UndergroundScreen {
           const age = performance.now() - this.revealedAt.get(i)!;
           if (age < SCAN_IN) { resolving = true; cls += ' scan-in'; style += `animation-delay:-${Math.round(age)}ms;`; }
         }
-        if (cellLoop && !resolving) { cls += ' alive'; style = loopStyle(cellLoop, scan.loops!.fps, phaseOf(i + 7919)); }
+        if (cellLoop && !resolving) { cls += ' alive'; style = ''; loopAttr = loopData(cellLoop, phaseOf(i + 7919)); }
         const staged = this.stageArt();
         if (c.kind === 'meteor' && i === u.cells.findIndex((x) => x.kind === 'meteor') && staged) {
           // The bottom of the stage's one picture: exactly the meteor's 3 by 2 cells below its ground line.
@@ -438,7 +445,7 @@ export class UndergroundScreen {
             // grown, else in its own phase; every cell of one organ in step.
             const loop = scan.loops?.tiles[organ.organ];
             const born = this.bornAt.get(organ.id)!;
-            if (loop) { cls += ' alive'; style = `--acc:${GLOW[organ.organ] ?? COLOR[organ.organ]};${loopStyle(loop, scan.loops!.fps, born ? born + SCAN_IN : phaseOf(organ.id))}`; }
+            if (loop) { cls += ' alive'; style = `--acc:${GLOW[organ.organ] ?? COLOR[organ.organ]};`; loopAttr = loopData(loop, born ? born + SCAN_IN : phaseOf(organ.id)); }
           }
           // Where two organs that share touch, the edge between them pulses.
           const shares = (n: number): boolean => {
@@ -476,7 +483,7 @@ export class UndergroundScreen {
           inner += `<span class="recipe">${strainIcons(sim.bladderStrain(organ))}</span><span class="rate">${r.per}/${r.every === 1 ? 'turn' : `${r.every} turns`}${r.atWaveStart ? ` +${r.atWaveStart}@wave` : ''}</span>`;
         }
       }
-      cells.push(`<div class="${cls}" style="${style}" data-cell="${i}">${inner}</div>`);
+      cells.push(`<div class="${cls}" style="${style}" data-cell="${i}"${loopAttr}>${inner}</div>`);
     }
     // A zone organ's zone is always faintly on the scan: a soft pulsing ring round it.
     if (this.scan) {
@@ -494,6 +501,8 @@ export class UndergroundScreen {
     this.settled = true;
     this.grid.style.gridTemplateColumns = `repeat(${u.w}, 1fr)`;
     this.grid.innerHTML = cells.join('');
+    // The living tiles are drawn on one canvas under the cells (src/ui/underAlive.ts).
+    if (this.scan?.loops) (this.alive ??= new UnderAlive(this.grid, this.scan.loops.fps)).scan();
     // Something is still scanning in: draw again when it has.
     if (this.scan && this.grid.querySelector('.scan-in')) {
       window.setTimeout(() => { this.lastKey = ''; if (this.open) this.render(); }, SCAN_IN + 600);

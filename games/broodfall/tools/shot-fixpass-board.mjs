@@ -90,8 +90,13 @@ try {
   };
   const ticks = async (n) => { for (let i = 0; i < n; i++) { await page.evaluate(() => window.broodfall.step(1)); await page.waitForTimeout(30); } };
   const fresh = async (seed = 11, biome = 'suburb') => {
-    await page.goto(`http://localhost:${PORT}/?seed=${seed}&autostart=1&speed=0&biome=${biome}`, { waitUntil: 'domcontentloaded', timeout: 180000 });
-    await page.waitForFunction(() => window.broodfall !== undefined && window.broodfall.sim, null, { timeout: 60000 });
+    // Loaded twice at most: a page caught while another session saves a file it imports is loaded again.
+    for (let n = 0; ; n++) {
+      await page.goto(`http://localhost:${PORT}/?seed=${seed}&autostart=1&speed=0&biome=${biome}`, { waitUntil: 'domcontentloaded', timeout: 180000 });
+      const up = await page.waitForFunction(() => window.broodfall !== undefined && window.broodfall.sim, null, { timeout: 60000 }).then(() => true, () => false);
+      if (up) break;
+      if (n) throw new Error('the game did not start twice: ' + errors.slice(-3).join(' | '));
+    }
     await page.evaluate(() => { window.broodfall.step(200); const s = window.broodfall.sim; s.meat.war = 9000; s.meat.science = 9000; s.meat.royal = 50; s.enemies.length = 0; s.projectiles.length = 0; s.shells.length = 0; s.arcs.length = 0; if (s.spawnQueue) s.spawnQueue.length = 0; });
     await page.waitForTimeout(300);
   };

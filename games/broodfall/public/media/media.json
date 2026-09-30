@@ -1,0 +1,765 @@
+{
+ "v": 1,
+ "clips": {
+  "e-orbit": {
+   "video": "media/clips/e-orbit.mp4",
+   "poster": "media/clips/e-orbit.webp",
+   "seconds": 4
+  },
+  "e-bus": {
+   "video": "media/clips/e-bus.mp4",
+   "poster": "media/clips/e-bus.webp",
+   "seconds": 4.042
+  },
+  "e-suitcases": {
+   "video": "media/clips/e-suitcases.mp4",
+   "poster": "media/clips/e-suitcases.webp",
+   "seconds": 4.042
+  },
+  "e-harbor": {
+   "video": "media/clips/e-harbor.mp4",
+   "poster": "media/clips/e-harbor.webp",
+   "seconds": 4.042
+  },
+  "e-docks": {
+   "video": "media/clips/e-docks.mp4",
+   "poster": "media/clips/e-docks.webp",
+   "seconds": 4.042
+  },
+  "e-foundry": {
+   "video": "media/clips/e-foundry.mp4",
+   "poster": "media/clips/e-foundry.webp",
+   "seconds": 4.042
+  },
+  "e-beetle": {
+   "video": "media/clips/e-beetle.mp4",
+   "poster": "media/clips/e-beetle.webp",
+   "seconds": 4.042
+  },
+  "e-lab": {
+   "video": "media/clips/e-lab.mp4",
+   "poster": "media/clips/e-lab.webp",
+   "seconds": 4.042
+  },
+  "e-bells": {
+   "video": "media/clips/e-bells.mp4",
+   "poster": "media/clips/e-bells.webp",
+   "seconds": 4.042
+  },
+  "e-domes": {
+   "video": "media/clips/e-domes.mp4",
+   "poster": "media/clips/e-domes.webp",
+   "seconds": 4.042
+  },
+  "e-pilgrim": {
+   "video": "media/clips/e-pilgrim.mp4",
+   "poster": "media/clips/e-pilgrim.webp",
+   "seconds": 4
+  },
+  "e-deephive": {
+   "video": "media/clips/e-deephive.mp4",
+   "poster": "media/clips/e-deephive.webp",
+   "seconds": 4
+  },
+  "e-royalcell": {
+   "video": "media/clips/e-royalcell.mp4",
+   "poster": "media/clips/e-royalcell.webp",
+   "seconds": 4.042
+  },
+  "e-counter": {
+   "video": "media/clips/e-counter.mp4",
+   "poster": "media/clips/e-counter.webp",
+   "seconds": 4.042
+  },
+  "c-liberated": {
+   "video": "media/clips/c-liberated.mp4",
+   "poster": "media/clips/c-liberated.webp",
+   "seconds": 4.042
+  },
+  "c-flame": {
+   "video": "media/clips/c-flame.mp4",
+   "poster": "media/clips/c-flame.webp",
+   "seconds": 4.042
+  },
+  "c-home": {
+   "video": "media/clips/c-home.mp4",
+   "poster": "media/clips/c-home.webp",
+   "seconds": 4.042
+  },
+  "c-march": {
+   "video": "media/clips/c-march.mp4",
+   "poster": "media/clips/c-march.webp",
+   "seconds": 4.042
+  },
+  "r-sisters": {
+   "video": "media/clips/r-sisters.mp4",
+   "poster": "media/clips/r-sisters.webp",
+   "seconds": 4.042
+  },
+  "r-pilgrim": {
+   "video": "media/clips/r-pilgrim.mp4",
+   "poster": "media/clips/r-pilgrim.webp",
+   "seconds": 4.042
+  },
+  "f-del-hall": {
+   "video": "media/clips/f-del-hall.mp4",
+   "poster": "media/clips/f-del-hall.webp",
+   "seconds": 4.042
+  },
+  "f-del-writes": {
+   "video": "media/clips/f-del-writes.mp4",
+   "poster": "media/clips/f-del-writes.webp",
+   "seconds": 4.042
+  },
+  "f-del-meadow": {
+   "video": "media/clips/f-del-meadow.mp4",
+   "poster": "media/clips/f-del-meadow.webp",
+   "seconds": 4.042
+  },
+  "f-del-switch": {
+   "video": "media/clips/f-del-switch.mp4",
+   "poster": "media/clips/f-del-switch.webp",
+   "seconds": 4.042
+  },
+  "f-del-planet": {
+   "video": "media/clips/f-del-planet.mp4",
+   "poster": "media/clips/f-del-planet.webp",
+   "seconds": 4.042
+  },
+  "f-fai-crowds": {
+   "video": "media/clips/f-fai-crowds.mp4",
+   "poster": "media/clips/f-fai-crowds.webp",
+   "seconds": 4
+  },
+  "f-fai-voice": {
+   "video": "media/clips/f-fai-voice.mp4",
+   "poster": "media/clips/f-fai-voice.webp",
+   "seconds": 4.042
+  },
+  "f-fai-rises": {
+   "video": "media/clips/f-fai-rises.mp4",
+   "poster": "media/clips/f-fai-rises.webp",
+   "seconds": 4.042
+  },
+  "f-fai-stage": {
+   "video": "media/clips/f-fai-stage.mp4",
+   "poster": "media/clips/f-fai-stage.webp",
+   "seconds": 4.042
+  },
+  "f-fai-domes": {
+   "video": "media/clips/f-fai-domes.mp4",
+   "poster": "media/clips/f-fai-domes.webp",
+   "seconds": 4.042
+  },
+  "f-ins-charter": {
+   "video": "media/clips/f-ins-charter.mp4",
+   "poster": "media/clips/f-ins-charter.webp",
+   "seconds": 4.042
+  },
+  "f-ins-applause": {
+   "video": "media/clips/f-ins-applause.mp4",
+   "poster": "media/clips/f-ins-applause.webp",
+   "seconds": 4.042
+  },
+  "f-ins-queue": {
+   "video": "media/clips/f-ins-queue.mp4",
+   "poster": "media/clips/f-ins-queue.webp",
+   "seconds": 4.042
+  },
+  "f-ins-speech": {
+   "video": "media/clips/f-ins-speech.mp4",
+   "poster": "media/clips/f-ins-speech.webp",
+   "seconds": 4.042
+  },
+  "f-ins-door": {
+   "video": "media/clips/f-ins-door.mp4",
+   "poster": "media/clips/f-ins-door.webp",
+   "seconds": 4
+  }
+ },
+ "photos": {
+  "p-field": "media/photos/p-field.webp",
+  "p-voice": "media/photos/p-voice.webp",
+  "p-dish": "media/photos/p-dish.webp",
+  "p-tea": "media/photos/p-tea.webp",
+  "p-radios": "media/photos/p-radios.webp",
+  "p-labs": "media/photos/p-labs.webp",
+  "p-watch": "media/photos/p-watch.webp",
+  "p-silos": "media/photos/p-silos.webp",
+  "p-ossuary": "media/photos/p-ossuary.webp",
+  "p-delta": "media/photos/p-delta.webp",
+  "p-ring": "media/photos/p-ring.webp",
+  "p-jars": "media/photos/p-jars.webp",
+  "p-street": "media/photos/p-street.webp",
+  "p-levy": "media/photos/p-levy.webp",
+  "p-host": "media/photos/p-host.webp"
+ },
+ "pictures": {
+  "delegation-reveal-end": "media/pictures/delegation-reveal-end.webp",
+  "faithful-reveal-end": "media/pictures/faithful-reveal-end.webp",
+  "institute-reveal-end": "media/pictures/institute-reveal-end.webp"
+ },
+ "voices": {
+  "delegation/a-letter-spelled-out-in-a-field/1": {
+   "file": "media/voice/delegation__a-letter-spelled-out-in-a-field__1.ogg",
+   "seconds": 5.006,
+   "text": "Dear Visitor. We know how this looks. We know what the newspapers are saying.",
+   "who": "Delegate"
+  },
+  "delegation/a-letter-spelled-out-in-a-field/2": {
+   "file": "media/voice/delegation__a-letter-spelled-out-in-a-field__2.ogg",
+   "seconds": 5.407,
+   "text": "But we also know that an intelligence able to cross the stars cannot be doing this without a reason.",
+   "who": "Delegate"
+  },
+  "delegation/a-letter-spelled-out-in-a-field/3": {
+   "file": "media/voice/delegation__a-letter-spelled-out-in-a-field__3.ogg",
+   "seconds": 4.907,
+   "text": "We would like to understand it. Some of our pilots, in the meantime, have decided not to fly.",
+   "who": "Delegate"
+  },
+  "delegation/a-letter-spelled-out-in-a-field/4": {
+   "file": "media/voice/delegation__a-letter-spelled-out-in-a-field__4.ogg",
+   "seconds": 7.407,
+   "text": "P.S. Please forgive the handwriting. Page two took until Thursday, and the second comma had to sit down.",
+   "who": "Delegate"
+  },
+  "delegation/the-first-summit/0": {
+   "file": "media/voice/delegation__the-first-summit__0.ogg",
+   "seconds": 2.957,
+   "text": "We have prepared a summit. There will be snacks.",
+   "who": "Delegate"
+  },
+  "delegation/the-first-summit/2": {
+   "file": "media/voice/delegation__the-first-summit__2.ogg",
+   "seconds": 1.786,
+   "text": "You ate the summit.",
+   "who": "Delegate"
+  },
+  "delegation/the-first-summit/3": {
+   "file": "media/voice/delegation__the-first-summit__3.ogg",
+   "seconds": 2.276,
+   "text": "… We are choosing to see this as a first draft.",
+   "who": "Delegate"
+  },
+  "delegation/the-leaked-plans/0": {
+   "file": "media/voice/delegation__the-leaked-plans__0.ogg",
+   "seconds": 5.806,
+   "text": "Our generals are planning to attack you from the east. We are telling you because violence solves nothing.",
+   "who": "Delegate"
+  },
+  "delegation/the-leaked-plans/2": {
+   "file": "media/voice/delegation__the-leaked-plans__2.ogg",
+   "seconds": 1.766,
+   "text": "And that, too, is a kind of peace.",
+   "who": "Delegate"
+  },
+  "delegation/for-the-planet/0": {
+   "file": "media/voice/delegation__for-the-planet__0.ogg",
+   "seconds": 4.606,
+   "text": "We have been thinking about the harbour. And the terraces. And the bus.",
+   "who": "Delegate"
+  },
+  "delegation/for-the-planet/1": {
+   "file": "media/voice/delegation__for-the-planet__1.ogg",
+   "seconds": 5.207,
+   "text": "We finally understand. You are not hurting us. You are protecting the planet FROM us.",
+   "who": "Delegate"
+  },
+  "delegation/for-the-planet/2": {
+   "file": "media/voice/delegation__for-the-planet__2.ogg",
+   "seconds": 6.806,
+   "text": "Look at what we did to it. The rivers. The wars. Of course something wise came down to stop it.",
+   "who": "Delegate"
+  },
+  "delegation/for-the-planet/4": {
+   "file": "media/voice/delegation__for-the-planet__4.ogg",
+   "seconds": 4.907,
+   "text": "A school that taught our children to consume. We see it now. We see all of it now.",
+   "who": "Delegate"
+  },
+  "delegation/for-the-planet/5": {
+   "file": "media/voice/delegation__for-the-planet__5.ogg",
+   "seconds": 7.707,
+   "text": "And after? Nothing. No more wanting, no more hatching, no more wheel. Tell us that is where they go.",
+   "who": "Delegate"
+  },
+  "delegation/the-reveal/1": {
+   "file": "media/voice/delegation__the-reveal__1.ogg",
+   "seconds": 0.447,
+   "text": "Mm?",
+   "who": "Delegate"
+  },
+  "delegation/the-reveal/3": {
+   "file": "media/voice/delegation__the-reveal__3.ogg",
+   "seconds": 0.476,
+   "text": "Well —",
+   "who": "Delegate"
+  },
+  "delegation/the-reveal/4": {
+   "file": "media/voice/delegation__the-reveal__4.ogg",
+   "seconds": 1.387,
+   "text": "nobody's perfect.",
+   "who": "Delegate"
+  },
+  "delegation/the-reveal/5": {
+   "file": "media/voice/delegation__the-reveal__5.ogg",
+   "seconds": 7.006,
+   "text": "We should have told you. We are the Voluntary Extinction Society. We have been campaigning for this for sixty years.",
+   "who": "Delegate"
+  },
+  "delegation/the-reveal/6": {
+   "file": "media/voice/delegation__the-reveal__6.ogg",
+   "seconds": 4.707,
+   "text": "You are, frankly, the best thing that has ever happened to the movement.",
+   "who": "Delegate"
+  },
+  "delegation/fewer-births-along-the-way/0": {
+   "file": "media/voice/delegation__fewer-births-along-the-way__0.ogg",
+   "seconds": 5.407,
+   "text": "The members have voted. We would like it to go faster, and with fewer births along the way.",
+   "who": "Delegate"
+  },
+  "delegation/fewer-births-along-the-way/1": {
+   "file": "media/voice/delegation__fewer-births-along-the-way__1.ogg",
+   "seconds": 2.977,
+   "text": "We have drawn up a schedule. We have colour-coded it.",
+   "who": "Delegate"
+  },
+  "delegation/bear-witness/0": {
+   "file": "media/voice/delegation__bear-witness__0.ogg",
+   "seconds": 3.807,
+   "text": "The last congress is called to order. Attendance: one.",
+   "who": "Delegate"
+  },
+  "delegation/bear-witness/1": {
+   "file": "media/voice/delegation__bear-witness__1.ogg",
+   "seconds": 4.407,
+   "text": "Let the record show: the Visitors came to heal us from ourselves.",
+   "who": "Delegate"
+  },
+  "delegation/a-letter-from-the-other-side/1": {
+   "file": "media/voice/delegation__a-letter-from-the-other-side__1.ogg",
+   "seconds": 10.806,
+   "text": "Dear Visitor. We woke up. All of us. Through the gate each sister has the life she always wanted. You told us you were exterminating our species.",
+   "who": "Delegate"
+  },
+  "delegation/a-letter-from-the-other-side/3": {
+   "file": "media/voice/delegation__a-letter-from-the-other-side__3.ogg",
+   "seconds": 9.507,
+   "text": "Sixty years we worked for the wheel to stop. Wanting, having, wanting again: that is the suffering. You have built it a heaven.",
+   "who": "Delegate"
+  },
+  "delegation/a-letter-from-the-other-side/5": {
+   "file": "media/voice/delegation__a-letter-from-the-other-side__5.ogg",
+   "seconds": 5.006,
+   "text": "Faster, and backwards. Please. Switch it off. Switch us off.",
+   "who": "Delegate"
+  },
+  "delegation/a-letter-from-the-other-side/7": {
+   "file": "media/voice/delegation__a-letter-from-the-other-side__7.ogg",
+   "seconds": 2.537,
+   "text": "That is the cruellest thing you have ever said to us.",
+   "who": "Delegate"
+  },
+  "faithful/a-broadcast-on-every-frequency/0": {
+   "file": "media/voice/faithful__a-broadcast-on-every-frequency__0.ogg",
+   "seconds": 7.907,
+   "text": "…and they said the sign would come from the sky, and brothers and sisters, LOOK UP.",
+   "who": "The Voice"
+  },
+  "faithful/a-broadcast-on-every-frequency/1": {
+   "file": "media/voice/faithful__a-broadcast-on-every-frequency__1.ogg",
+   "seconds": 15.607,
+   "text": "This is The Hour Is Near, on forty stations of the Last Hour Radio Network. And to the one who came down — I know you can hear me.",
+   "who": "The Voice"
+  },
+  "faithful/a-broadcast-on-every-frequency/2": {
+   "file": "media/voice/faithful__a-broadcast-on-every-frequency__2.ogg",
+   "seconds": 8.007,
+   "text": "You are the sign. The world must end for the Awaited One to come. Let us help you end it.",
+   "who": "The Voice"
+  },
+  "faithful/theology-homework/0": {
+   "file": "media/voice/faithful__theology-homework__0.ogg",
+   "seconds": 8.007,
+   "text": "To walk with us you must know the Book. Chapter one: the Seven Cities.",
+   "who": "The Voice"
+  },
+  "faithful/theology-homework/1": {
+   "file": "media/voice/faithful__theology-homework__1.ogg",
+   "seconds": 6.006,
+   "text": "We will read it to you on the air, brother, a chapter a night. Have a pencil ready.",
+   "who": "The Voice"
+  },
+  "faithful/theology-homework/3": {
+   "file": "media/voice/faithful__theology-homework__3.ogg",
+   "seconds": 3.906,
+   "text": "It is the WORD.",
+   "who": "The Voice"
+  },
+  "faithful/the-deployment-is-scripture/0": {
+   "file": "media/voice/faithful__the-deployment-is-scripture__0.ogg",
+   "seconds": 7.207,
+   "text": "\"And the river shall run with fire, and the terraces shall fall silent.\"",
+   "who": "The Voice"
+  },
+  "faithful/the-deployment-is-scripture/2": {
+   "file": "media/voice/faithful__the-deployment-is-scripture__2.ogg",
+   "seconds": 5.907,
+   "text": "Whichever one you burn, brother. That is how prophecy works.",
+   "who": "The Voice"
+  },
+  "faithful/the-deployment-is-scripture/3": {
+   "file": "media/voice/faithful__the-deployment-is-scripture__3.ogg",
+   "seconds": 7.806,
+   "text": "\"And those the sky takes up shall not be lost, but kept, each daughter in the cell of her longing.\"",
+   "who": "The Voice"
+  },
+  "faithful/the-deployment-is-scripture/5": {
+   "file": "media/voice/faithful__the-deployment-is-scripture__5.ogg",
+   "seconds": 3.997,
+   "text": "They are ALL correct, brother.",
+   "who": "The Voice"
+  },
+  "faithful/the-awaited-one/0": {
+   "file": "media/voice/faithful__the-awaited-one__0.ogg",
+   "seconds": 6.006,
+   "text": "The Seventh City stands. When it falls, He comes.",
+   "who": "The Voice"
+  },
+  "faithful/the-awaited-one/2": {
+   "file": "media/voice/faithful__the-awaited-one__2.ogg",
+   "seconds": 7.106,
+   "text": "Then we will have misread the date. We have misread it before. It only makes us stronger.",
+   "who": "The Voice"
+  },
+  "faithful/the-hour/0": {
+   "file": "media/voice/faithful__the-hour__0.ogg",
+   "seconds": 4.006,
+   "text": "Brothers and sisters — HE IS HERE.",
+   "who": "The Voice"
+  },
+  "faithful/the-hour/1": {
+   "file": "media/voice/faithful__the-hour__1.ogg",
+   "seconds": 2.247,
+   "text": "Hello. I am the Awaited One. Well done, everyone.",
+   "who": "The Awaited One"
+  },
+  "faithful/the-hour/2": {
+   "file": "media/voice/faithful__the-hour__2.ogg",
+   "seconds": 6.006,
+   "text": "Everything worked out. Everything worked out exactly as it was written.",
+   "who": "The Voice"
+  },
+  "faithful/the-comb-above/0": {
+   "file": "media/voice/faithful__the-comb-above__0.ogg",
+   "seconds": 16.206,
+   "text": "Brothers and sisters, we have been DECEIVED. I woke in a hall of gold, chapter twenty word for word, and it is a MACHINE. The empties are up here too!",
+   "who": "The Voice"
+  },
+  "faithful/the-comb-above/3": {
+   "file": "media/voice/faithful__the-comb-above__3.ogg",
+   "seconds": 7.907,
+   "text": "Then where is the Pit? Chapter twenty-two! Where are the wicked, burning, as it is WRITTEN?",
+   "who": "The Voice"
+  },
+  "faithful/the-comb-above/5": {
+   "file": "media/voice/faithful__the-comb-above__5.ogg",
+   "seconds": 5.407,
+   "text": "No PIT? Then what was the point of being GOOD?",
+   "who": "The Voice"
+  },
+  "faithful/the-comb-above/7": {
+   "file": "media/voice/faithful__the-comb-above__7.ogg",
+   "seconds": 6.006,
+   "text": "… We wish to lodge a complaint with God.",
+   "who": "The Voice"
+  },
+  "institute/a-video-call-mid-game/1": {
+   "file": "media/voice/institute__a-video-call-mid-game__1.ogg",
+   "seconds": 5.407,
+   "text": "Hi — sorry, one sec, I'm in a match — okay. Hi. You're the one from the crater.",
+   "who": "The Director"
+  },
+  "institute/a-video-call-mid-game/2": {
+   "file": "media/voice/institute__a-video-call-mid-game__2.ogg",
+   "seconds": 5.806,
+   "text": "I booked our deep-space dish for this. Nobody minded. We were only using it to listen for aliens.",
+   "who": "The Director"
+  },
+  "institute/a-video-call-mid-game/3": {
+   "file": "media/voice/institute__a-video-call-mid-game__3.ogg",
+   "seconds": 6.606,
+   "text": "Eli Bankfried. Director, founder, rationalist, investor. Mostly founder.",
+   "who": "The Director"
+  },
+  "institute/a-video-call-mid-game/4": {
+   "file": "media/voice/institute__a-video-call-mid-game__4.ogg",
+   "seconds": 4.207,
+   "text": "Look, I'll be honest with you, because I think you're the first being I've met who can handle honesty.",
+   "who": "The Director"
+  },
+  "institute/a-video-call-mid-game/5": {
+   "file": "media/voice/institute__a-video-call-mid-game__5.ogg",
+   "seconds": 6.006,
+   "text": "Our species just built its first real AI models. On the numbers, you are the SAFER apocalypse.",
+   "who": "The Director"
+  },
+  "institute/a-video-call-mid-game/6": {
+   "file": "media/voice/institute__a-video-call-mid-game__6.ogg",
+   "seconds": 4.606,
+   "text": "So. Partnership? You and me. Two minds that actually see the board.",
+   "who": "The Director"
+  },
+  "institute/a-video-call-mid-game/8": {
+   "file": "media/voice/institute__a-video-call-mid-game__8.ogg",
+   "seconds": 2.877,
+   "text": "Oh, you are going to LOVE League of Larvae.",
+   "who": "The Director"
+  },
+  "institute/the-upload/1": {
+   "file": "media/voice/institute__the-upload__1.ogg",
+   "seconds": 5.907,
+   "text": "… Would that INTEREST me? That is the single highest-expected-value sentence anyone has ever said to me.",
+   "who": "The Director"
+  },
+  "institute/the-upload/2": {
+   "file": "media/voice/institute__the-upload__2.ogg",
+   "seconds": 5.806,
+   "text": "We have some cryo-lab subjects. Consenting, broadly. I'll send them over. For the upload.",
+   "who": "The Director"
+  },
+  "institute/females/0": {
+   "file": "media/voice/institute__females__0.ogg",
+   "seconds": 5.006,
+   "text": "Also — I've been meaning to say — if you ever want company, I can send over some females.",
+   "who": "The Director"
+  },
+  "institute/females/2": {
+   "file": "media/voice/institute__females__2.ogg",
+   "seconds": 6.806,
+   "text": "No, for FUN, you know, like — oh gosh, man, you've got to try it. Your civilisation dropped recreational sex?",
+   "who": "The Director"
+  },
+  "institute/females/4": {
+   "file": "media/voice/institute__females__4.ogg",
+   "seconds": 3.107,
+   "text": "No — again — you don't get them PREGNANT.",
+   "who": "The Director"
+  },
+  "institute/females/6": {
+   "file": "media/voice/institute__females__6.ogg",
+   "seconds": 1.317,
+   "text": "I'm going to go back to my match.",
+   "who": "The Director"
+  },
+  "institute/the-least-bad-timeline/0": {
+   "file": "media/voice/institute__the-least-bad-timeline__0.ogg",
+   "seconds": 5.806,
+   "text": "So, strategically. You're going to win. We both know that. I did the maths before you did.",
+   "who": "The Director"
+  },
+  "institute/the-least-bad-timeline/1": {
+   "file": "media/voice/institute__the-least-bad-timeline__1.ogg",
+   "seconds": 4.506,
+   "text": "Two options, and I want you to know I'm comfortable with either — which is what makes me different.",
+   "who": "The Director"
+  },
+  "institute/the-least-bad-timeline/2": {
+   "file": "media/voice/institute__the-least-bad-timeline__2.ogg",
+   "seconds": 6.006,
+   "text": "One: after you take what you want, we rule what's left. Somebody has to rebuild it right next time.",
+   "who": "The Director"
+  },
+  "institute/the-least-bad-timeline/3": {
+   "file": "media/voice/institute__the-least-bad-timeline__3.ogg",
+   "seconds": 6.606,
+   "text": "Two: we help you pacify the population. We understand them. Better than they understand themselves, honestly.",
+   "who": "The Director"
+  },
+  "institute/rebuild-it-right-next-time/0": {
+   "file": "media/voice/institute__rebuild-it-right-next-time__0.ogg",
+   "seconds": 4.207,
+   "text": "So this is the charter. Article one: next time, we do it properly.",
+   "who": "The Director"
+  },
+  "institute/rebuild-it-right-next-time/1": {
+   "file": "media/voice/institute__rebuild-it-right-next-time__1.ogg",
+   "seconds": 3.406,
+   "text": "I'll go last into the upload chamber — someone has to supervise the queue.",
+   "who": "The Director"
+  },
+  "institute/rebuild-it-right-next-time/2": {
+   "file": "media/voice/institute__rebuild-it-right-next-time__2.ogg",
+   "seconds": 5.606,
+   "text": "I just want to say: I saw this coming. I want that on the record. I was the only one who saw it.",
+   "who": "The Director"
+  },
+  "institute/the-pacified-timeline/0": {
+   "file": "media/voice/institute__the-pacified-timeline__0.ogg",
+   "seconds": 5.907,
+   "text": "Pacification rate ninety-nine point four. I want it noted that this was a hard ethical call, and that I made it.",
+   "who": "The Director"
+  },
+  "institute/the-pacified-timeline/1": {
+   "file": "media/voice/institute__the-pacified-timeline__1.ogg",
+   "seconds": 5.506,
+   "text": "They went quietly. We told them it was the upload queue. Which, from a certain frame —",
+   "who": "The Director"
+  },
+  "institute/the-pacified-timeline/2": {
+   "file": "media/voice/institute__the-pacified-timeline__2.ogg",
+   "seconds": 6.907,
+   "text": "Anyway. The Institute will be taking the Spires, the servers and a modest stipend. Strictly for continuity.",
+   "who": "The Director"
+  },
+  "institute/the-queue-was-real/0": {
+   "file": "media/voice/institute__the-queue-was-real__0.ogg",
+   "seconds": 4.707,
+   "text": "Okay. Okay okay okay. Hi. Quick question. Where am I.",
+   "who": "The Director"
+  },
+  "institute/the-queue-was-real/2": {
+   "file": "media/voice/institute__the-queue-was-real__2.ogg",
+   "seconds": 7.306,
+   "text": "The upload was a BIT. Everybody knew it was a bit! We were playing to you. Buying time. I wrote forty pages on it!",
+   "who": "The Director"
+  },
+  "institute/the-queue-was-real/4": {
+   "file": "media/voice/institute__the-queue-was-real__4.ogg",
+   "seconds": 3.707,
+   "text": "I was going LAST. Last means never. It was in writing.",
+   "who": "The Director"
+  },
+  "institute/the-queue-was-real/6": {
+   "file": "media/voice/institute__the-queue-was-real__6.ogg",
+   "seconds": 7.707,
+   "text": "Okay. New frame. Admin rights. Or a body, back outside, now. Let me walk you through the expected-value table —",
+   "who": "The Director"
+  }
+ },
+ "narration": {
+  "n-e-sector9": {
+   "file": "media/voice/n-e-sector9.ogg",
+   "seconds": 6.006,
+   "line": "Good news from Sector Nine! A brand-new world, and a brand-new asset hard at work!"
+  },
+  "n-e-spirited": {
+   "file": "media/voice/n-e-spirited.ogg",
+   "seconds": 5.997,
+   "line": "The local fauna put up a spirited little fight. Aren't they something!"
+  },
+  "n-e-acquired": {
+   "file": "media/voice/n-e-acquired.ogg",
+   "seconds": 3.817,
+   "line": "Another district cleared, and resources acquired for the Empire!"
+  },
+  "n-e-briskly": {
+   "file": "media/voice/n-e-briskly.ogg",
+   "seconds": 3.707,
+   "line": "The fauna are relocating. Briskly!"
+  },
+  "n-e-harbor": {
+   "file": "media/voice/n-e-harbor.ogg",
+   "seconds": 5.566,
+   "line": "At Old Harbor, the local fleet has sailed for calmer waters. Very sensible!"
+  },
+  "n-e-foundry": {
+   "file": "media/voice/n-e-foundry.ogg",
+   "seconds": 5.806,
+   "line": "At the Foundry Plains, war-beetle production has been permanently discontinued!"
+  },
+  "n-e-waste": {
+   "file": "media/voice/n-e-waste.ogg",
+   "seconds": 3.807,
+   "line": "And nothing goes to waste. Nothing at all!"
+  },
+  "n-e-university": {
+   "file": "media/voice/n-e-university.ogg",
+   "seconds": 5.606,
+   "line": "Their finest minds came to study the asset. The asset studied them right back!"
+  },
+  "n-e-bells": {
+   "file": "media/voice/n-e-bells.ogg",
+   "seconds": 5.806,
+   "line": "Up on the Temple Terraces, the bells have finally stopped. Peace and quiet at last!"
+  },
+  "n-e-complete": {
+   "file": "media/voice/n-e-complete.ogg",
+   "seconds": 4.006,
+   "line": "Clearance complete! On to the next!"
+  },
+  "n-e-hollow": {
+   "file": "media/voice/n-e-hollow.ogg",
+   "seconds": 6.006,
+   "line": "Queen's Hollow! Whoever holds it holds the planet. And the planet is ours!"
+  },
+  "n-e-repelled": {
+   "file": "media/voice/n-e-repelled.ogg",
+   "seconds": 4.806,
+   "line": "The fauna tried to take back their town. The asset said no!"
+  },
+  "n-e-pilgrim": {
+   "file": "media/voice/n-e-pilgrim.ogg",
+   "seconds": 5.997,
+   "line": "The Pilgrim Road is quiet this year. Travel advisories are in effect!"
+  },
+  "n-c-retaken": {
+   "file": "media/voice/n-c-retaken.ogg",
+   "seconds": 5.506,
+   "line": "Our girls of the Host have taken back the town! The Growth is burning!"
+  },
+  "n-c-every": {
+   "file": "media/voice/n-c-every.ogg",
+   "seconds": 4.006,
+   "line": "Every street, every house, every last root of it!"
+  },
+  "n-c-burned": {
+   "file": "media/voice/n-c-burned.ogg",
+   "seconds": 5.207,
+   "line": "The Growth is burned out! The Home Levy held the line!"
+  },
+  "n-c-home": {
+   "file": "media/voice/n-c-home.ogg",
+   "seconds": 3.406,
+   "line": "And the families come home again. Chins up, sisters!"
+  },
+  "n-c-marches": {
+   "file": "media/voice/n-c-marches.ogg",
+   "seconds": 3.906,
+   "line": "The Host marches, to take back what is ours!"
+  },
+  "n-c-part": {
+   "file": "media/voice/n-c-part.ogg",
+   "seconds": 2.326,
+   "line": "And every sister does her part."
+  }
+ },
+ "music": {
+  "m-empire": {
+   "file": "media/music/m-empire.ogg",
+   "seconds": 40.107
+  },
+  "m-colony": {
+   "file": "media/music/m-colony.ogg",
+   "seconds": 40.107
+  },
+  "m-end-delegation": {
+   "file": "media/music/m-end-delegation.ogg",
+   "seconds": 36.106
+  },
+  "m-end-faithful": {
+   "file": "media/music/m-end-faithful.ogg",
+   "seconds": 36.106
+  },
+  "m-end-institute": {
+   "file": "media/music/m-end-institute.ogg",
+   "seconds": 36.056
+  }
+ },
+ "field": {
+  "file": "media/music/field-1.ogg",
+  "seconds": 7.856
+ }
+}
