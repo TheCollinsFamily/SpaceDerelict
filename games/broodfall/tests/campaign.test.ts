@@ -153,6 +153,9 @@ describe('the factions: contact, beats, perks, the finale', () => {
     s = finish(s, plan(s, 'assembly'), report(true)).state;
     expect(s.ended).toBe('delegation');
     expect(s.pendingScenes.some((p) => p.scene.title === 'Bear Witness')).toBe(true);
+    // The reveal comes right after the ending.
+    const titles = s.pendingScenes.map((p) => p.scene.title);
+    expect(titles.indexOf('A Letter From the Other Side')).toBe(titles.indexOf('Bear Witness') + 1);
     expect(targets(s)).toEqual([]);
   });
 
@@ -348,6 +351,22 @@ describe('how the factions reach him, and the picture of every scene', () => {
     expect(by('institute').contact.lines.join(' ')).toMatch(/deep-space dish/);
     // Everything the Voice says to him is said on the air.
     expect(by('faithful').asides.filter((a) => a.startsWith('The Voice')).every((a) => /^The Voice \((broadcast|to you, on the air)\): /.test(a))).toBe(true);
+  });
+
+  it('the reveal (DESIGN.md "The reveal"): every route ends on a card that says what absorption is, and each faction takes it its own way', () => {
+    const by = (id: string) => FACTIONS.find((f) => f.id === id)!;
+    for (const f of FACTIONS) {
+      expect(f.reveal, `${f.id} reveal`).toBeDefined();
+      expect(f.reveal!.lines.length).toBeLessThanOrEqual(9);
+      for (const l of f.reveal!.lines) expect(l).toMatch(/^[^:]{2,40}: \S/);
+      expect(f.reveal!.lines.join(' ')).toMatch(/digitis|IS the upload/);
+      expect(f.reveal!.lines.join(' ')).toMatch(/afternoon/); // why not sterilise: the character is surprised nobody saw it
+    }
+    expect(by('delegation').reveal!.lines.join(' ')).toMatch(/ethical protocol/);
+    expect(by('faithful').reveal!.lines.join(' ')).toMatch(/delete the congregation/);
+    expect(by('institute').reveal!.lines.join(' ')).toMatch(/Cut comms/);
+    // The Institute's ending line stays literally true: the door into the gut IS the upload.
+    expect(by('institute').ending.lines.join(' ')).toMatch(/door into the asset's gut/);
   });
 
   it('no scene grew by more than two lines, and every line still names its speaker', () => {

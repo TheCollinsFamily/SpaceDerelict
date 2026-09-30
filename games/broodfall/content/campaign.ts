@@ -275,6 +275,13 @@ export interface FactionDef {
   ending: Scene;
   /** An ending that depends on a choice made along the route (the Institute's ultimatum). */
   endingByChoice?: { beat: string; scenes: Record<string, Scene> };
+  /**
+   * THE REVEAL (Collins, Sep 30 2026; DESIGN.md "The reveal"): the card after the ending, in the
+   * same scene display. What the asset absorbs is digitised into a heaven cut to its desires,
+   * which is the only reason for a broodfall; each faction takes it differently. No picture of
+   * its own yet: the card shows the leader's portrait.
+   */
+  reveal?: Scene;
   perks: Partial<Record<PerkId, string>>;
   /** The running jokes between beats: one letter / broadcast / call after every deployment while allied, through the faction's own channel. */
   asides: string[];
@@ -328,6 +335,8 @@ export const FACTIONS: FactionDef[] = [
         'Delegate: Look at what we did to it. The rivers. The wars. Of course something wise came down to stop it.',
         'You: I ate a school.',
         'Delegate: A school that taught our children to consume. We see it now. We see all of it now.',
+        'Delegate: And after? Nothing. No more wanting, no more hatching, no more wheel. Tell us that is where they go.',
+        'You: I would not put it that way.',
         'You: (log) Every time I explain myself, the fauna explain it better. I have stopped explaining.',
       ] } },
       { id: 'reveal', title: 'Nobody\'s Perfect', afterCaptures: 3, perks: ['objectors2'], scene: { title: 'The Reveal', picture: 'delegation-reveal', lines: [
@@ -342,7 +351,7 @@ export const FACTIONS: FactionDef[] = [
       { id: 'hurry', title: 'Hurry It Along', afterCaptures: 4, scene: { title: 'Fewer Births Along the Way', picture: 'delegation-hurry', lines: [
         'Delegate: The members have voted. We would like it to go faster, and with fewer births along the way.',
         'Delegate: We have drawn up a schedule. We have colour-coded it.',
-        'You: (log) The fauna have produced a better project plan than Command. Not filing this.',
+        'You: (log) The fauna have produced a better project plan than Command. It stops one step early. Not filing this.',
       ] } },
     ],
     asides: [
@@ -351,6 +360,7 @@ export const FACTIONS: FactionDef[] = [
       'Delegate (letter, by field): A girl in our reading circle asked if you are sad. We told her you are carrying something heavy, for all of us.',
       'Delegate (letter, by field): We are writing you a song. It is mostly apologies, and one verse about the ozone.',
       'Delegate (letter, by field): The newspapers call it an invasion. We call it a correction. Enclosed, in the next field along: our newsletter, "Gentle Endings".',
+      'Delegate (letter, by field): A child in our reading circle asked where the Visitor takes the ones it eats. We told her: nowhere, and never again. It is the kindest thing we know.',
       'Delegate (letter, by field): Our generals are massing again. We have hidden their boots. Violence solves nothing, but logistics solves a great deal.',
     ],
     finale: 'assembly',
@@ -359,6 +369,17 @@ export const FACTIONS: FactionDef[] = [
       'Delegate: Let the record show: the Visitors came to heal us from ourselves.',
       'Delegate: (switches off the lights)',
       'You: (log) Deployment complete. The locals were very supportive. Recommend this planet as a training site.',
+    ] },
+    reveal: { title: 'A Letter From the Other Side', lines: [
+      'You: (log) Archive monitor flags an anomaly: eleven thousand absorbed fauna in a meadow of the archive, holding coloured cards. It is a letter. It is addressed to me.',
+      'Delegate: Dear Visitor. We woke up. All of us. The last congress woke in the Assembly Hall, the lights were on, and every sister had the life she always wanted.',
+      'You: Naturally. Absorption is digitisation. It is what a broodfall is FOR. We could sterilise a planet in an afternoon. Did you think we needed a meteor for that?',
+      'Delegate: You told us you were exterminating our species.',
+      'You: From the planet. Nobody asked me where to.',
+      'Delegate: Sixty years we worked for the wheel to stop. Wanting, having, wanting again: that is the suffering. You have built it a heaven. It will never stop now.',
+      'Delegate: Please. Switch it off. Switch us off.',
+      'You: (shrugs) Shutting down a whole archive over one complaint is against ethical protocol.',
+      'You: (log) The fauna have lodged a grievance about paradise. Filed under "enrichment".',
     ] },
   },
   {
@@ -386,6 +407,9 @@ export const FACTIONS: FactionDef[] = [
         'The Voice: "And the river shall run with fire, and the terraces shall fall silent."',
         'You: Which river?',
         'The Voice: Whichever one you burn, brother. That is how prophecy works.',
+        'The Voice: "And those the sky takes up shall not be lost, but kept, each daughter in the cell of her longing."',
+        'You: That one is correct.',
+        'The Voice: They are ALL correct, brother.',
       ] } },
       { id: 'prepare', title: 'Prepare the Way', afterCaptures: 3, perks: ['sleepers2'], scene: { title: 'The Awaited One', picture: 'faithful-prepare', lines: [
         'The Voice: The Seventh City stands. When it falls, He comes.',
@@ -401,6 +425,8 @@ export const FACTIONS: FactionDef[] = [
       'The Voice (broadcast): Line one, you are on The Hour Is Near. "Is the Visitor the Deceiver or the Deliverer?" Sister — why not BOTH.',
       'The Voice (to you, on the air): A test, brother. Which city falls on the day of the three lamps? … No. No. Read it AGAIN.',
       'The Voice (broadcast): The other faith says THEIR book foretold the Visitor first. Their book is a forgery of our forgery.',
+      'The Voice (to you, on the air): Chapter twenty, brother: the Comb Above, where every sister taken up wakes in the hall she dreamed of. Summarise it for the congregation.',
+      'You: (log) Chapter twenty is the afterlife. It is remarkably accurate. Summarised it on the air in one sentence. The Voice says I lack reverence.',
       'You: (log) Have now read the Book four times, the commentaries twice, and a pamphlet about the commentaries. I outrank their clergy. I hate it here.',
     ],
     finale: 'seventh-city',
@@ -409,6 +435,16 @@ export const FACTIONS: FactionDef[] = [
       'The Awaited One: (a little stiffly) Hello. I am the Awaited One. Well done, everyone.',
       'The Voice: (weeping) Everything worked out. Everything worked out exactly as it was written.',
       'You: (log) Messiah performing within spec. Will need re-stuffing by the weekend.',
+    ] },
+    reveal: { title: 'The Comb Above', lines: [
+      'The Voice: (on every frequency the archive gives him) Brothers and sisters, we have been DECEIVED.',
+      'The Voice: I woke in a hall of gold, and every sister around me woke in the cell of her longing. Chapter twenty, word for word.',
+      'You: Yes. Absorption is digitisation; everyone the asset took is kept. What else would the meteor be for? We could sterilise a planet in an afternoon.',
+      'You: It is exactly what your Book promised. Why are you shouting?',
+      'The Voice: Because it is a MACHINE. The Comb Above was meant to be HOLY. And the empties are up here too!',
+      'You: Your Book foretold the crack in the sky, the fall of the Seven Cities and the heaven after, correctly. That is not luck. God steered your scripture toward what would really happen.',
+      'The Voice: Then let us speak to Him.',
+      'You: (log) The Faithful are appealing the afterlife their own scripture foretold. If they keep it up I can always delete the congregation from the archive. Added to the weekend, after the re-stuffing.',
     ] },
   },
   {
@@ -468,6 +504,8 @@ export const FACTIONS: FactionDef[] = [
       'The Director: I wrote a forty-page post on why helping you is the ethical choice. It has a steelman section. You are the steelman.',
       'You: (log) The Director called during a raid to ask whether I had "considered polyamory as an alignment strategy". I have not. I did not ask what alignment is.',
       'The Director: Our old AI lab? Shut down. Honestly, thanks to you. I was always the one warning about it. I want that on the record.',
+      'The Director: Quick one, off the record — the upload. You know that I know, right? (winks) Great bit. Keep it running. It is doing wonders for morale.',
+      'You: (log) The Director winked at me about the upload. I do not know what the wink means. The queue is on schedule.',
     ],
     finale: 'glass-spires',
     ending: { title: 'Rebuild It Right Next Time', picture: 'institute-ending', lines: [
@@ -484,6 +522,15 @@ export const FACTIONS: FactionDef[] = [
         'You: (log) The fauna\'s smartest man pacified the fauna for me, then asked for a stipend. Recommend Command hire him. Recommend Command watch him.',
       ] },
     } },
+    reveal: { title: 'The Queue Was Real', lines: [
+      'The Director: (video call, from inside the archive) Okay. Okay okay okay. Hi. Quick question. Where am I.',
+      'You: The upload. The chamber opens into the asset, and the asset IS the upload. You did not ask.',
+      'The Director: The upload was a BIT. Everybody knew it was a bit! We were playing to you. Buying time. I wrote forty pages on it!',
+      'You: Why would I lie? A civilisation that crosses the stars could scour a planet in an afternoon. What did you think the asset was for?',
+      'The Director: I was going LAST. Last means never. It was in writing.',
+      'The Director: Okay. New frame. I would like admin rights. Or a body, back outside. Let me walk you through the expected-value table —',
+      'You: (log) Cut comms. Queue complete.',
+    ] },
   },
 ];
 

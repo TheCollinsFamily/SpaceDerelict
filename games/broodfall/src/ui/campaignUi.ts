@@ -53,7 +53,7 @@ type Pending = CampaignState['pendingScenes'][number];
 function sceneNow(f: FactionDef, next: Pending): Scene {
   if (next.contact) return f.contact;
   if (next.beat) return f.beats.find((b) => b.id === next.beat)?.scene ?? next.scene;
-  const known = [f.contact, ...f.beats.map((b) => b.scene), f.ending, ...Object.values(f.endingByChoice?.scenes ?? {})];
+  const known = [f.contact, ...f.beats.map((b) => b.scene), f.ending, ...Object.values(f.endingByChoice?.scenes ?? {}), ...(f.reveal ? [f.reveal] : [])];
   return known.find((x) => x.title === next.scene.title) ?? next.scene;
 }
 
@@ -747,7 +747,7 @@ export class CampaignUi {
     if (d.choice) { const [beat, opt] = d.choice.split('|'); this.setState(choose(s, beat, opt)); return; }
     if (d.replay) {
       const f = faction(d.replay as FactionId);
-      const scenes = [f.contact, ...f.beats.filter((b) => s.beatsSeen.includes(b.id)).map((b) => b.scene), ...(s.ended === f.id ? [f.ending] : [])];
+      const scenes = [f.contact, ...f.beats.filter((b) => s.beatsSeen.includes(b.id)).map((b) => b.scene), ...(s.ended === f.id ? [f.ending, ...(f.reveal ? [f.reveal] : [])] : [])];
       s = { ...s, pendingScenes: [...scenes.map((scene) => ({ faction: f.id, scene })), ...s.pendingScenes] };
       this.state = s;
       this.render(); return;

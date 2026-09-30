@@ -338,6 +338,8 @@ export function finish(prev: CampaignState, p: DeploymentPlan, r: RunReport): { 
     if (captured && t.finaleOf === f.id) {
       s.ended = f.id;
       s.pendingScenes.push({ faction: f.id, scene: endingOf(f, s) });
+      // The reveal (DESIGN.md "The reveal"): the card after the ending.
+      if (f.reveal) s.pendingScenes.push({ faction: f.id, scene: f.reveal });
       s.ai.queue = queueDiscussion(s.ai.queue, 'ending', s.ai.seen);
     }
   }
