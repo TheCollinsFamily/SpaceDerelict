@@ -66,7 +66,11 @@ async function open(extra = '') {
 const civ = (page) => page.evaluate(() => window.broodfall.renderer.civiliansNow());
 const clean = async (page) => {
   const text = await page.evaluate(() => document.body.innerText);
-  return !/did not load|went wrong|fault/i.test(text);
+  const missing = await page.evaluate(() => window.broodfall.missing?.() ?? []);
+  if (missing.length) console.log('  missing:', missing.join(', '));
+  const notice = await page.evaluate(() => document.getElementById('art-notice')?.title ?? '');
+  if (notice) console.log('  notice:', notice);
+  return !/did not load|went wrong/i.test(text);
 };
 /** Put the camera's middle on a world point, and zoom in about it. */
 const frame = async (page, wx, wy, ticks) => {
@@ -93,8 +97,8 @@ try {
   check(c0.count >= 25 && c0.count <= 40, 'a minute-zero crowd stands on the streets', `${c0.count}`);
   // Frame the crowd: between the core and the middle of the townsfolk.
   const mid = c0.list.reduce((m, c) => ({ x: m.x + c.x / c0.list.length, y: m.y + c.y / c0.list.length }), { x: 0, y: 0 });
-  await frame(page, (core.x + mid.x) / 2, (core.y + mid.y) / 2, TOP ? 0 : 3);
-  await play(page, 14);
+  await frame(page, mid.x * 0.8 + core.x * 0.2, mid.y * 0.8 + core.y * 0.2, TOP ? 0 : 9);
+  await play(page, 20);
   const c1 = await civ(page);
   check(c1.flee + c1.cower > 0 && c1.calm > 0, 'minute zero: some still calm, the first panicking', JSON.stringify({ calm: c1.calm, flee: c1.flee, cower: c1.cower }));
   check(await clean(page), 'no load failure or fault on the page');
@@ -105,21 +109,41 @@ try {
     const bf = window.broodfall;
     const s = bf.sim;
     const crowd = bf.renderer.civiliansNow().list.filter((c) => c.state !== 'leaving');
-    s.nodeStock.unshift({ radius: 4, reach: 8, slow: 1, dps: 0 });
-    // The street cell with the most townsfolk within three cells of it, where a node can go.
-    let best = -1, most = 0;
+    s.nodeStock.unshift({ radius: 3, reach: 8, slow: 1, dps: 0 });
+    // At the back of the crowd: a street cell a node can go on with about six townsfolk close by
+    // (the stragglers), the rest of the crowd farther off; of those, the one nearest the landing site.
+    let best = -1, most = 0, bestScore = Infinity;
+    const core = s.core;
     for (let c = 0; c < s.map.cells.length; c++) {
       if (!s.canPlaceNode(c, 8)) continue;
       const p = s.cellCenter(c);
-      const n = crowd.filter((q) => Math.hypot(q.x - p.x, q.y - p.y) < 3 * s.cfg.cellPx).length;
-      if (n > most) { most = n; best = c; }
+      const n = crowd.filter((q) => Math.hypot(q.x - p.x, q.y - p.y) < 2 * s.cfg.cellPx).length;
+      if (n < 1) continue;
+      const score = Math.abs(n - 6) * 1000 + Math.hypot(p.x - core.x, p.y - core.y);
+      if (score < bestScore) { bestScore = score; most = n; best = c; }
     }
     if (best < 0) { s.nodeStock.shift(); return null; }
     const r = bf.play({ kind: 'place-node', cell: best, stock: 0 });
     return r.ok ? { cell: best, near: most, at: s.cellCenter(best) } : null;
   });
   console.log('  node placed', JSON.stringify(placed));
-  await play(page, 26);
+  // Follow the crowd: the camera on the middle of those still running.
+  {
+    const now = await civ(page);
+    const run = now.list.filter((q) => q.state !== 'calm');
+    const at = run.length ? run : now.list;
+    if (at.length && !TOP) {
+      const m = at.reduce((acc, q) => ({ x: acc.x + q.x / at.length, y: acc.y + q.y / at.length }), { x: 0, y: 0 });
+      await page.evaluate(([x, y]) => {
+        const r = window.broodfall.renderer;
+        const p = window.broodfall.worldToScreen(x, y);
+        r.panBy(p.vw / 2 - p.x, p.vh / 2 - p.y);
+      }, [m.x, m.y]);
+    }
+  }
+  // Until the creep has taken the first of them (its puff), then a moment more.
+  for (let i = 0; i < 60; i++) { await play(page, 1); if ((await civ(page)).puffs > 0) break; }
+  await play(page, 3);
   const c2 = await civ(page);
   check(c2.flee + c2.leaving > c1.flee, 'a few seconds on: the crowd is running', JSON.stringify({ calm: c2.calm, flee: c2.flee, leaving: c2.leaving, escaped: c2.escaped, taken: c2.taken }));
   const meanD = (c) => c.list.reduce((s, q) => s + Math.hypot(q.x - core.x, q.y - core.y), 0) / Math.max(1, c.list.length);

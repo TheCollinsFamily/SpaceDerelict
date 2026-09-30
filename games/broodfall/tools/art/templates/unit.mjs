@@ -452,11 +452,27 @@ export function bakeUnit(kind) {
       const wb = walks.find((w) => w.v === c.v)?.box;
       if (wb) {
         const m = side * 0.2;
-        for (const f of c.frames) {
+        const cutAt = (f, mm) => {
+          let n = 0;
           for (let y = 0; y < f.h; y++) for (let x = 0; x < f.w; x++) {
-            if (x >= wb.x0 - m && x <= wb.x1 + m && y >= wb.y0 - m && y <= wb.y1 + m) continue;
-            f.data[(y * f.w + x) * 4 + 3] = 0;
+            if (x >= wb.x0 - mm && x <= wb.x1 + mm && y >= wb.y0 - mm && y <= wb.y1 + mm) continue;
+            const i = (y * f.w + x) * 4 + 3;
+            if (f.data[i] > 64) n++;
+            f.data[i] = 0;
           }
+          return n;
+        };
+        const cutOff = c.frames.map((f) => cutAt(f, m));
+        // What was cut there leaves its STUB inside the margin (Sep 30 2026 fix pass: "a stub of a pole in a
+        // few units' flinch frames"): a frame that had something cut off is left out of the flinch, which
+        // plays on without it. When that would leave too few, those frames are cut close round the walk.
+        const struck = cutOff.map((n) => n > 30);
+        const clean = c.frames.filter((_, i) => !struck[i]);
+        if (struck.some(Boolean)) {
+          if (clean.length >= Math.max(8, c.frames.length * 0.6)) c.frames = clean;
+          else c.frames.forEach((f, i) => { if (struck[i]) cutAt(f, side * 0.04); });
+          c.poleFrames = struck.filter(Boolean).length;
+          console.log(`[unit] ${kind} hit ${c.v}: ${c.poleFrames} of ${struck.length} frames reached out (a pole): ${clean.length >= Math.max(8, struck.length * 0.6) ? 'left out' : 'cut close'}`);
         }
         c.box = unionBox(c.frames);
       }

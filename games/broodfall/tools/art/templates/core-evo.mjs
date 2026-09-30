@@ -28,7 +28,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { makeClip, makeStill } from '../rfab.mjs';
 import { blank, borderColour, crop, over, paste, readFrames, readImage, resize, toWebp, writeJpg, writePng } from '../lib/img.mjs';
-import { dropSpecks, loopWindow, pick, unionBox } from '../lib/key.mjs';
+import { dropSpecks, loopWindow, pick, smoothStretch, unionBox } from '../lib/key.mjs';
 import { keyFrame as studioKey, studioKeyer } from '../lib/leaflit.mjs';
 import { GROUNDS } from '../lib/atlas.mjs';
 import { ART, REVIEW, ROOT, SRC, putEntry } from '../lib/manifest.mjs';
@@ -210,7 +210,7 @@ function sideOf(frames, foot) {
  * Cut frames around the foot, in the one mapping: `foot` is where stage 1 stands in the clip's
  * pixels, `collar1` how wide stage 1's collar is there. Returns the atlas entry of one clip.
  */
-function cut(name, frames, foot, collar1, fps) {
+function cut(name, frames, foot, collar1, fps, perPage = Infinity) {
   const box = unionBox(frames);
   const up = foot.y - box.y0;
   const down = Math.max(0, box.y1 - foot.y);
@@ -218,17 +218,27 @@ function cut(name, frames, foot, collar1, fps) {
   const x0 = Math.round(foot.x - side / 2);
   const y0 = Math.round(foot.y - up - (side - (up + down)) / 2);
   const F = Math.round(side * SHARP);
-  const COLS = Math.ceil(Math.sqrt(frames.length));
   const kept = frames.map((f) => resize(crop(f, x0, y0, side, side), F, F));
-  const sheet = blank(COLS * F, Math.ceil(kept.length / COLS) * F);
-  kept.forEach((f, i) => paste(sheet, f, (i % COLS) * F, Math.floor(i / COLS) * F));
-  const png = path.join(ART, 'board', `core-${name}.png`);
-  writePng(png, sheet);
-  toWebp(png, png.replace(/\.png$/, '.webp'), { q: 88 });
-  fs.rmSync(png);
+  // More frames than one picture a GPU takes (Sep 30 2026 fix pass, stage 3): split over atlas PAGES as a
+  // unit's are, the same grid on each; page p holds frames p*perPage and on (src/render/art.ts PagedAtlas).
+  const per = Math.min(kept.length, perPage);
+  const COLS = Math.ceil(Math.sqrt(per));
+  const files = [];
+  for (let p = 0; p * per < kept.length; p++) {
+    const part = kept.slice(p * per, (p + 1) * per);
+    const sheet = blank(COLS * F, Math.ceil(per / COLS) * F);
+    part.forEach((f, i) => paste(sheet, f, (i % COLS) * F, Math.floor(i / COLS) * F));
+    const png = path.join(ART, 'board', `core-${name}${p ? `-p${p}` : ''}.png`);
+    writePng(png, sheet);
+    toWebp(png, png.replace(/\.png$/, '.webp'), { q: 88 });
+    fs.rmSync(png);
+    files.push(`board/${path.basename(png, '.png')}.webp`);
+  }
+  // A page left from an earlier bake with more pages goes.
+  for (let p = files.length; fs.existsSync(path.join(ART, 'board', `core-${name}-p${p}.webp`)); p++) fs.rmSync(path.join(ART, 'board', `core-${name}-p${p}.webp`));
   return {
     entry: {
-      atlas: `board/core-${name}.webp`, frame: F, cols: COLS, count: kept.length, fps,
+      atlas: files[0], ...(files.length > 1 ? { pages: files.slice(1), perPage: per } : {}), frame: F, cols: COLS, count: kept.length, fps,
       anchor: [Number(((foot.x - x0) / side).toFixed(4)), Number(((foot.y - y0) / side).toFixed(4))],
       /** Stage 1's collar as a share of this frame: every clip is drawn in the same mapping. */
       body: Number((collar1 / side).toFixed(4)),
@@ -255,18 +265,25 @@ export function bakeCoreEvo() {
   const review = [];
   for (const s of STAGES) {
     const all = s.id === 1 ? idle1 : keyed(idleOf(s.id));
-    const loop = loopWindow(all, { min: 12, max: 46 });
+    let loop = loopWindow(all, { min: 12, max: 46 });
     // A loop whose two ends do not meet cleanly (seam over 0.25: stage 4's was 0.40) is played
     // forward and back: it has no seam at all. Since Sep 30 2026 the GAME plays it so (the idle's `pingpong`,
     // src/render/idleClock.ts, eased at its ends), so its frames are stored once, not there and back.
     const pong = loop.seam > 0.25;
-    // Every frame of the loop at 12 fps that one picture can hold (Sep 30 2026: 16 of up to 46 stepped at
-    // 5 fps; anim-README.md). A picture is kept to what a GPU takes as one texture (8,192 a side) and
-    // about 45 million pixels, the size of stage 4's; the game cross-fades between the frames kept.
+    // A ping-pong needs no seam: it takes the LONGEST smooth stretch of the clip (no jolt of the video
+    // model's in it), not the window whose ends met best (stage 3 had 27 of 47 frames; Sep 30 2026 fix pass).
+    if (pong) {
+      const stretch = smoothStretch(all, { max: 46 });
+      if (stretch.end - stretch.start > loop.end - loop.start) loop = { ...loop, start: stretch.start, end: stretch.end };
+    }
+    // Every frame of the loop at 12 fps (Sep 30 2026: 16 of up to 46 stepped at 5 fps; anim-README.md). A
+    // picture is kept to what a GPU takes as one texture (8,192 a side) and about 45 million pixels; what one
+    // picture cannot hold goes on more PAGES (fix pass: stage 3 and 4 had been cut to 27 and 19 frames to fit
+    // one). The game cross-fades between the frames.
     const F = Math.round(sideOf(all.slice(loop.start, loop.end), foot) * SHARP);
     const fit = Math.max(16, Math.min(Math.floor(8192 / F) ** 2, Math.floor(45e6 / (F * F))));
-    const run = pick(all.slice(loop.start, loop.end), Math.min(loop.end - loop.start, fit));
-    const idle = cut(`stage-${s.id}`, run, foot, collar1, 0);
+    const run = all.slice(loop.start, loop.end);
+    const idle = cut(`stage-${s.id}`, run, foot, collar1, 0, fit);
     idle.entry.fps = Number((idle.entry.count / ((loop.end - loop.start) / 12)).toFixed(2));
     if (pong) idle.entry.pingpong = true;
     const stage = { id: s.id, name: s.name, grown: s.grown, collar: Number((s.collar / STAGES[0].collar).toFixed(3)), idle: { ...idle.entry, seam: Number(loop.seam.toFixed(2)) } };
@@ -278,7 +295,7 @@ export function bakeCoreEvo() {
     }
     review.push({ label: `stage ${s.id} idle`, frames: pick(idle.kept, 4) });
     stages.push(stage);
-    console.log(`[core-evo] stage ${s.id} (${s.name}): idle ${idle.entry.count} frames at ${idle.entry.frame}px, seam ${loop.seam.toFixed(2)}${stage.grow ? `; grows in ${stage.grow.count} frames` : ''}`);
+    console.log(`[core-evo] stage ${s.id} (${s.name}): idle ${idle.entry.count} frames at ${idle.entry.frame}px${idle.entry.pages ? ` on ${idle.entry.pages.length + 1} pages` : ''}, seam ${loop.seam.toFixed(2)}${stage.grow ? `; grows in ${stage.grow.count} frames` : ''}`);
   }
   const entry = { cells: HEART_CELLS, stages };
   putEntry('board', 'coreEvo', entry);

@@ -1112,7 +1112,11 @@ export class Sim {
 
   /** Highest evolution stage a limb may reach (the campaign's globe unlocks; skirmish = 3). */
   evolutionCapOf(family: TowerFamily): number {
-    return this.cfg.evolutionCap?.[themeOf(family)] ?? 3;
+    // A limb no organ unlocks (the trap cage) is capped under its own name (content/campaign.ts
+    // territory unlocks `{ theme: 'cage' }`), not the meteor's.
+    const caps = this.cfg.evolutionCap;
+    if (caps && themeOf(family) === 'core' && caps[family] !== undefined) return caps[family]!;
+    return caps?.[themeOf(family)] ?? 3;
   }
 
   /** Grow a starting-profile organ for free at the first spot touching the body. */
@@ -1811,6 +1815,36 @@ export class Sim {
         if (!spec.directional && sw !== sh) {
           const axisNS = (d: RootDir | undefined) => d === 'N' || d === 'S' || d === undefined;
           if (axisNS(cmd.dir) !== axisNS(t.facing)) return { ok: false, err: 'a long limb turns end for end only' };
+        }
+        // A LONG limb that aims (a creep lance, a skipping mortar) lies along its aim: a quarter
+        // turn lays it the other way on the same roof, pivoting on its own ground, or is refused.
+        if (spec.directional && sw !== sh && this.spanOf(t.family, cmd.dir)[0] !== sw) {
+          const own = new Set(this.cellsOf(t));
+          const kind = this.map.cells[t.cell];
+          const high = this.map.heights[t.cell];
+          const ok = (c: number) => own.has(c) || (this.map.cells[c] === kind && this.map.heights[c] === high
+            && !this.isOccupied(c) && c !== this.map.coreCell && this.isCreeped(c));
+          let cells: number[] | null = null;
+          for (const pivot of this.cellsOf(t)) {
+            cells = this.footprintAt(pivot, t.family, cmd.dir, ok);
+            if (cells) break;
+          }
+          if (!cells) return { ok: false, err: 'no room to turn it that way here: a long limb lies along its aim' };
+          for (const c of own) this.occupied.delete(c);
+          for (const c of cells) this.occupied.set(c, { kind: 't', id: t.id });
+          const [nw, nh] = this.spanOf(t.family, cmd.dir);
+          const first = this.cellCenter(cells[0]);
+          t.cell = cells[0];
+          t.cells = cells;
+          t.pos = { x: first.x + ((nw - 1) * this.cfg.cellPx) / 2, y: first.y + ((nh - 1) * this.cfg.cellPx) / 2 };
+          for (const s of this.creepSources) {
+            if (s.kind !== 'line' || s.ownerId !== t.id) continue;
+            s.cell = t.cell;
+            this.sourceDist.set(s.id, allDistance(this.map, t.cell));
+          }
+          t.facing = cmd.dir;
+          this.refreshRouting();
+          return { ok: true };
         }
         t.facing = cmd.dir;
         return { ok: true };
@@ -2743,7 +2777,7 @@ export class Sim {
       if (ts.speedAura || ts.healer || ts.bomber) dmg *= 1 + fx.supportDmg;
     }
     const at = { ...e.pos };
-    this.damageEnemy(e, dmg, fx.yieldMult, fx.capBonus, fx.srcId);
+    this.damageEnemy(e, dmg, fx.yieldMult, fx.capBonus, fx.srcId, fx.quiet);
     const alive = this.enemies.includes(e);
     // Swamp pips: whatever is left this weak is DIGESTED outright.
     if (alive && fx.execute > 0 && e.hp <= fx.execute) {
@@ -3589,7 +3623,7 @@ export class Sim {
         if (bestD <= B.broodEngageDist + ENEMY_RADIUS) {
           if (b.cooldown <= 0) {
             b.cooldown = 1 / ((b.puppet?.rate ?? B.broodRate) * ms.tempo);
-            this.payloadHit(fxOf(mother, ms), prey, (b.puppet?.bite ?? B.broodDamage) * ms.potency,
+            this.payloadHit({ ...fxOf(mother, ms), quiet: true }, prey, (b.puppet?.bite ?? B.broodDamage) * ms.potency,
               prey.pos.x - b.pos.x, prey.pos.y - b.pos.y);
           }
         } else {
@@ -4000,6 +4034,23 @@ export class Sim {
         continue;
       }
 
+      // The CREEP LANCE's payload is its strip (the payload rule: nothing ever does nothing):
+      // every hit verb it has eaten or grown pulses onto the ground bodies standing on it —
+      // an ember pip sets the strip burning, a snare pip bogs it, a blight pip poisons it.
+      if (t.family === 'lance' && t.cooldown <= 0) {
+        const fx = fxOf(t, stats, 0);
+        const verbs = fx.slowMult < 1 || fx.poisonDps > 0 || fx.burnDps > 0 || fx.shred > 0 || fx.cloud > 0
+          || fx.execute > 0 || (fx.rootDur ?? 0) > 0;
+        const strip = verbs ? this.creepSources.find((c) => c.kind === 'line' && c.ownerId === t.id) : undefined;
+        if (strip) {
+          t.cooldown = 0.5 / stats.tempo;
+          for (const e of [...this.enemies]) {
+            if (e.burrowed || this.isAirborne(e)) continue;
+            if (this.lineCovers(strip, this.cellAt(e.pos.x, e.pos.y))) this.payloadHit(fx, e, 0);
+          }
+        }
+      }
+
       // The broodmother tends her brood (a brood pip on her = one more).
       if (t.family === 'brood') {
         const mine = this.broodlings.filter((b) => b.motherId === t.id).length;
@@ -4185,7 +4236,7 @@ export class Sim {
   }
 
 
-  private damageEnemy(e: Enemy, dmg: number, yieldMult: number, capBonus = 0, srcId?: number): void {
+  private damageEnemy(e: Enemy, dmg: number, yieldMult: number, capBonus = 0, srcId?: number, quiet = false): void {
     // Ablative carapace: the shell eats whole HITS — few big blows strip it
     // fastest (the phalanx's mirror). Poison seeps through, it is not a hit.
     if (e.hitShield !== undefined && e.hitShield > 0) {
@@ -4200,7 +4251,7 @@ export class Sim {
     const effCap = cap !== undefined ? cap + capBonus + shred : undefined;
     const dealt = effCap !== undefined && Number.isFinite(effCap) ? Math.min(dmg, effCap) : dmg;
     e.hp -= dealt;
-    if (srcId !== undefined) this.waveLimbDamage += dealt;
+    if (srcId !== undefined && !quiet) this.waveLimbDamage += dealt;
     if (e.hp <= 0) this.killEnemy(e.id, yieldMult, false, srcId);
   }
 

@@ -334,7 +334,7 @@ export function finish(prev: CampaignState, p: DeploymentPlan, r: RunReport): { 
     // Between beats the ally keeps in touch: a letter, a broadcast, a call.
     if (!s.ended && f.asides.length) {
       s.comms = s.comms ?? [];
-      aside = f.asides[s.comms.length % f.asides.length];
+      aside = f.asides[asideIndex(s.seed, f.id, s.comms.length, f.asides.length)];
       s.comms.push(aside);
     }
     if (captured && t.finaleOf === f.id) {
@@ -440,6 +440,29 @@ export function summaryFor(s: CampaignState): string {
     ...(s.comms?.length ? [`Latest from the ally: ${s.comms[s.comms.length - 1]}`] : []),
     ...(s.log.length ? [`Last log: ${s.log[s.log.length - 1]}`] : []),
   ].join(' ');
+}
+
+/**
+ * Which of an ally's asides is the n-th one heard: a seeded order per pass through the list, so
+ * every aside is heard once before any is heard twice, the order differs from campaign to campaign,
+ * and a new pass never opens with the one that closed the last. Deterministic (the save replays).
+ */
+export function asideIndex(seed: number, factionId: string, n: number, len: number): number {
+  if (len <= 1) return 0;
+  const order = (round: number): number[] => {
+    const rng = new Rng(hash(`${seed}|${factionId}|asides|${round}`));
+    const o = Array.from({ length: len }, (_, i) => i);
+    for (let i = len - 1; i > 0; i--) {
+      const j = rng.int(0, i);
+      [o[i], o[j]] = [o[j], o[i]];
+    }
+    if (round > 0) {
+      const last = order(round - 1)[len - 1];
+      if (o[0] === last) [o[0], o[1]] = [o[1], o[0]];
+    }
+    return o;
+  };
+  return order(Math.floor(n / len))[n % len];
 }
 
 export function hash(str: string): number {

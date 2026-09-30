@@ -7,6 +7,15 @@
 import { it } from 'vitest';
 import { Autoplayer } from '../../src/sim/autoplayer';
 import { DT, Sim } from '../../src/sim/sim';
+import { BALANCE } from '../../content/data';
+
+// Ablations (GAPS_MODE, comma-separated): nograft = surgery under fire takes at once;
+// surge = the scripted player spends royal points on the old biomass surge instead of decrees.
+const MODE = (process.env.GAPS_MODE ?? '').split(',');
+if (MODE.includes('nograft')) Object.assign(BALANCE as Record<string, unknown>, { graftSeconds: 0, graftPerPip: 0 });
+if (MODE.includes('surge')) {
+  (Autoplayer.prototype as unknown as { spendRoyal: (sim: Sim) => void }).spendRoyal = (sim: Sim) => { sim.issue({ kind: 'royal-surge' }); };
+}
 
 function run(seed: number) {
   const sim = new Sim({ gridW: 50, gridH: 40, cellPx: 26, seed, directive: { kind: 'hold', waves: 12 }, organStage: true });
@@ -37,5 +46,5 @@ it('gaps: naive hold-12 over ten seeds', () => {
       + ` events ${['royal-decree', 'limb-promoted', 'surgery-under-fire', 'graft-took', 'burrowed', 'sealed-in'].map((k) => `${k}=${kinds[k] ?? 0}`).join(' ')}`);
   }
   // eslint-disable-next-line no-console
-  console.log(`\n${rows.join('\n')}\nnaive hold-12 wins ${wins}/10`);
+  console.log(`\n${rows.join('\n')}\nnaive hold-12 wins ${wins}/10 (mode: ${MODE.join(',') || 'all built'})`);
 });

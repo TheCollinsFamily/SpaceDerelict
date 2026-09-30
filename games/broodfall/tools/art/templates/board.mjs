@@ -154,12 +154,13 @@ const FLAT =
 export const STRAINS = {
   // Sep 30 2026 fix pass: the first mire (art-src/terrain/creep-mire.png, kept) was mossy green and read as grass
   // beside the green roofs. Drawn again as rot: peat brown and muddy olive, wet, with bubbles (REDRAWN_STRAINS).
-  mire: 'The same living skin of flesh as the reference picture, with the same net of thicker, darker raised veins, but sunk in a rotting bog: drowned in thick slick muck of dark peat brown, muddy olive-brown and khaki, black rot in the hollows between the veins, all of it wet and glossy with bright white wet highlights, and dozens of round gas bubbles of different sizes rising out of the muck, some burst into little rings, a skin of oily scum. Dark peat brown and muddy brown-olive; not green, no moss, no grass, no plants. The maroon of the skin shows only faintly through it. ' + FLAT,
+  mire: 'The same living skin of flesh as the reference picture, with the same net of thicker, darker raised veins, but sunk in a rotting bog: drowned in thick slick muck of muddy olive-brown, peat brown and dull khaki, black rot in the hollows between the veins, all of it soaking wet and glossy like fresh tar, with big bright white wet highlights on every swell, and about twenty LARGE round glossy gas bubbles, each as big as a coin, domed and shining with a bright white highlight on top, spread over it, a few burst into pale rings, streaks of oily yellow-olive scum. Muddy brown-olive and peat brown; not grass green, no moss, no grass, no plants. The maroon of the skin shows only faintly through it. ' + FLAT,
   burning: 'The same living skin of flesh as the reference picture, with the same net of thicker, darker raised veins, but burning from inside: every crack and hollow between the veins glows molten orange and yellow like embers in a fire, the skin charred near black around them, flecks of pale ash. ' + FLAT,
 };
 
 /** Strains drawn again (Sep 30 2026 fix pass) go to their own folder; the first pictures are kept where they were. */
-export const REDRAWN_STRAINS = { dir: path.join(TERRAIN, 'strains-2026-09-30'), ids: ['mire'] };
+// (The first redraw, strains-2026-09-30/, came out right in colour but its bubbles were too small to see on the board.)
+export const REDRAWN_STRAINS = { dir: path.join(TERRAIN, 'strains-2026-09-30-b'), ids: ['mire'] };
 export const strainFile = (id) => path.join(REDRAWN_STRAINS.ids.includes(id) ? REDRAWN_STRAINS.dir : TERRAIN, `creep-${id}.png`);
 
 async function generateStrains() {

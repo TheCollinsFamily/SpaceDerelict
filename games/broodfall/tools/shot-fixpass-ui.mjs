@@ -153,10 +153,30 @@ try {
       await page.waitForTimeout(500);
       await shot(page, 'free-card');
       await shotEl(page, '#hand', 'free-card-hand');
+      // A limb picked up and held over the board: the reach readout by the pointer.
+      const k = await page.evaluate(() => window.broodfall.sim.hand.findIndex((c) => ['spitter', 'quill', 'skipper', 'lasher'].includes(c.family) && !c.free));
+      if (k >= 0) {
+        await page.locator('#hand .card').nth(k).click();
+        const box = await page.locator('#stage canvas').boundingBox();
+        const q = await page.evaluate((fam) => {
+          const b = window.broodfall; const s = b.sim;
+          const cell = b.buildableCells(300).filter((c) => s.canBuildTower(c, fam))[20];
+          const p = s.cellCenter(cell); return b.worldToScreen(p.x, p.y);
+        }, await page.evaluate((k) => window.broodfall.sim.hand[k].family, k));
+        const x = box.x + (q.x / q.vw) * box.width, y = box.y + (q.y / q.vh) * box.height;
+        await page.mouse.move(x - 30, y - 30);
+        await page.mouse.move(x, y, { steps: 4 });
+        await page.waitForTimeout(400);
+        await page.screenshot({ path: file('reach-tip'), type: 'jpeg', quality: 90, clip: { x: Math.max(0, x - 260), y: Math.max(0, y - 160), width: 620, height: 300 } });
+        await page.keyboard.press('Escape');
+      }
     }
     if (on('organ')) {
       const w = await playWave(page);
       await page.waitForTimeout(800);
+      // The loop opens the organ stage when it sees the wave end; stepped from a script it may not: the ORGANS button, as a player would.
+      if (await page.evaluate(() => document.getElementById('under').classList.contains('hidden'))) await page.locator('#open-under').click();
+      await page.waitForTimeout(600);
       const up = await page.evaluate(() => !document.getElementById('under').classList.contains('hidden'));
       check(up, 'the wave played out: the organ stage is up', JSON.stringify(w));
       await shot(page, 'organ-stage');
@@ -190,6 +210,20 @@ try {
       await page.waitForSelector('#debrief:not(.hidden) .debrief-card.pictured', { timeout: 30000 }).catch(() => {});
       await page.waitForTimeout(1200);
       await shot(page, `report-skirmish-${how}`);
+      if (how === 'won') {
+        // RETURN TO SHIP: the skirmish's splice screen.
+        await page.locator('#debrief-ship').click();
+        await page.waitForSelector('#ship:not(.hidden)', { timeout: 10000 }).catch(() => {});
+        await page.waitForTimeout(500);
+        // The "before" of this screen is taken after the fact: the fix pass's console rules for it lifted in the page.
+        if (label === 'before') await page.evaluate(() => {
+          for (const sheet of document.styleSheets) {
+            let rules; try { rules = sheet.cssRules; } catch { continue; }
+            for (let i = rules.length - 1; i >= 0; i--) if (/\[data-hud="ship"\] #ship /.test(rules[i].selectorText ?? '')) sheet.deleteRule(i);
+          }
+        });
+        await shot(page, 'skirmish-splice');
+      }
       check(errors.length === 0, `the skirmish report (${how}): nothing logged as an error`, errors.slice(0, 2).join(' | '));
       await ctx.close();
     }

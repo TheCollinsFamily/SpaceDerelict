@@ -30,6 +30,8 @@ import type { EnemyKind, OrganId } from '../sim/types';
 import lore from '../../content/lore/ship-ai-lorebook.md?raw';
 import { artUrl, loadManifest, type ShipArt } from '../render/art';
 import { GLOBE, Globe, projectSite, type Zone } from './globe';
+import { Globe3D } from './globe3d';
+import { loadSettings } from '../meta/storage';
 import { loadIntroArt, type IntroArt } from './intro';
 import { CATGIRL_MAIL, PARTNER } from '../../content/partner';
 import { PRINT_BODY } from '../../content/yokeScenes';
@@ -88,6 +90,15 @@ export class CampaignUi {
   /** The ship's pictures, once they have loaded; null when there are none (the screens are plain then). */
   private art: ShipPictures | null = null;
   private globe = new Globe();
+  /**
+   * The planet as a 3D sphere (src/ui/globe3d.ts, Sep 30 2026): it turns by itself, by drag in both ways,
+   * zooms, and a click on a zone picks it. Null without WebGL: the flat painter above is used then.
+   */
+  private globe3d: Globe3D | null = null;
+  /** The rooms' slow loops (tools/art/ship-loops.mjs): public/art/ship/loops/loops.json, paths made whole. */
+  private loops: Record<string, { video: string; poster: string }> = {};
+  /** The one video that plays the room's loop behind the screen; kept across drawings of the screen. */
+  private loopVideo: HTMLVideoElement | null = null;
   /** The post-deployment report is up: the rooms must not be drawn over it. */
   private debriefing = false;
   /** Each organ's scan picture, by organ id (absolute URLs); empty until the manifest is in. */
@@ -124,6 +135,27 @@ export class CampaignUi {
       cut: (kind) => this.avatar?.announceCut(kind),
     });
     this.ai = this.buildAi();
+    if (Globe3D.supported()) {
+      try {
+        this.globe3d = new Globe3D({
+          pick: (id) => { this.selected = id; this.dares = []; this.experiment = undefined; this.objectors = []; this.render(); },
+          names: (id) => esc(territory(id).name),
+        });
+        this.globe3d.pairs = TERRITORIES.flatMap((t) => t.neighbours.filter((n) => n > t.id).map((n) => [t.id, n] as [string, string]));
+      } catch { this.globe3d = null; }
+    }
+    void fetch(artUrl('ship/loops/loops.json'), { cache: 'no-cache' }).then((r) => (r.ok ? r.json() : null)).then((j) => {
+      const rooms = (j?.rooms ?? {}) as Record<string, { video: string; poster: string }>;
+      const whole = (f: string) => new URL(artUrl(f), document.baseURI).href;
+      this.loops = Object.fromEntries(Object.entries(rooms).filter(([, v]) => v?.video && v?.poster).map(([k, v]) => [k, { video: whole(v.video), poster: whole(v.poster) }]));
+      if (!this.el.classList.contains('hidden')) this.dress();
+    }).catch(() => { /* no loops: the stills */ });
+    // A loop plays only while the ship is on the screen (a video decoding behind a hidden screen costs the board its frames).
+    new MutationObserver(() => {
+      const v = this.loopVideo;
+      if (!v) return;
+      if (this.el.classList.contains('hidden')) { if (!v.paused) v.pause(); } else if (v.isConnected && v.paused && v.dataset.on === '1') void v.play().catch(() => {});
+    }).observe(this.el, { attributes: true, attributeFilter: ['class'] });
     void loadManifest().then(async (m) => {
       // Each organ's own picture from the ground scan (tools/art/templates/under.mjs), for the organ cards.
       const scan = (m as unknown as { under?: { scan?: { tiles?: Record<string, string> } } } | null)?.under?.scan?.tiles;
@@ -134,6 +166,7 @@ export class CampaignUi {
       const art = m?.ship?.ship ?? null;
       if (!art) return;
       if (art.planet) await this.globe.load(artUrl(art.planet));
+      if (art.planet && this.globe3d) await this.globe3d.load(artUrl(art.planet), artUrl('ship/globe/night.webp')).catch(() => { this.globe3d = null; });
       this.art = art;
       if (this.el.classList.contains('hidden')) return;
       if (this.debriefing) this.dress(); else this.render();
@@ -144,7 +177,7 @@ export class CampaignUi {
     });
     this.el.addEventListener('click', (ev) => this.onClick(ev));
     this.el.addEventListener('pointerdown', (ev) => {
-      if (!(ev.target as HTMLElement).closest('.globe-box') || (ev.target as HTMLElement).closest('.site')) return;
+      if (this.globe3d || !(ev.target as HTMLElement).closest('.globe-box') || (ev.target as HTMLElement).closest('.site')) return;
       const from = ev.clientX;
       const spin0 = this.spin;
       const move = (e: PointerEvent) => {
@@ -314,13 +347,43 @@ export class CampaignUi {
     this.el.dataset.in = this.room;
     // A picture named in a style variable is looked for beside the STYLESHEET that uses it, so the whole address is given.
     const at = (file: string | undefined) => (file ? `url("${new URL(artUrl(file), document.baseURI).href}")` : 'none');
-    this.el.style.setProperty('--room', this.room === 'quarters'
+    const loop = art ? this.loops[this.room === 'quarters' ? 'quarters' : ROOM_PICTURE[this.room] ?? this.room] : undefined;
+    this.el.style.setProperty('--room', loop ? `url("${loop.poster}")` : this.room === 'quarters'
       ? (this.intro?.quarters ? `url("${this.intro.quarters}")` : at(art?.rooms.board))
       : at(art?.rooms[(ROOM_PICTURE[this.room] ?? this.room) as Exclude<Room, 'quarters' | 'orders' | 'hobby'>]));
+    this.playLoop(loop?.video ?? null);
     this.el.style.setProperty('--sketches', at(art?.sketches?.atlas));
     this.el.style.setProperty('--yoke', at(art?.yoke?.atlas));
-    const canvas = this.el.querySelector<HTMLCanvasElement>('canvas.globe-map');
+    const box3d = this.globe3d ? this.el.querySelector<HTMLElement>('.globe-box.g3d') : null;
+    if (box3d) this.globe3d!.attach(box3d, this.zones(), this.selected);
+    const canvas = this.el.querySelector<HTMLCanvasElement>('canvas.globe-map:not(.globe-3d)');
     if (canvas) this.globe.paint(canvas, this.spin, this.zones(), this.selected);
+  }
+
+  /**
+   * The room's slow loop behind the screen (the poster, its own first frame, is the room's picture under it).
+   * Not with Settings > Reduce motion. The video element is put back after every drawing of the screen:
+   * put back in the same task, it keeps playing where it was.
+   */
+  private playLoop(src: string | null): void {
+    if (!src || loadSettings().reduceMotion) {
+      if (this.loopVideo) { this.loopVideo.pause(); this.loopVideo.dataset.on = '0'; this.loopVideo.remove(); }
+      return;
+    }
+    let v = this.loopVideo;
+    if (!v) {
+      v = document.createElement('video');
+      v.className = 'room-loop';
+      v.muted = true; v.loop = true; v.playsInline = true; v.preload = 'auto';
+      v.setAttribute('aria-hidden', 'true');
+      // It shows only once it has a frame (the poster behind it is the same picture).
+      v.addEventListener('playing', () => v!.classList.add('on'));
+      this.loopVideo = v;
+    }
+    if (v.dataset.src !== src) { v.classList.remove('on'); v.dataset.src = src; v.src = src; }
+    if (this.el.firstChild !== v) this.el.prepend(v);
+    v.dataset.on = '1';
+    if (v.paused && !this.el.classList.contains('hidden')) void v.play().catch(() => {});
   }
 
   /** Every landing site the player knows of, and what it is to him. */
@@ -387,16 +450,17 @@ export class CampaignUi {
     const cy = GLOBE.size / 2;
     const open = new Set(targets(s).map((t) => t.id));
     if (s.underAttack) open.add(s.underAttack);
-    const proj = (lat: number, lon: number) => projectSite(lat, lon, this.spin);
+    const g3 = this.globe3d && this.art?.planet ? this.globe3d : null;
+    const proj = (lat: number, lon: number) => (g3 ? g3.project(lat, lon) : projectSite(lat, lon, this.spin));
     const mapped = !!this.art?.planet;
     const lines: string[] = [];
     // Graticule.
-    for (let lat = -60; lat <= 60; lat += 30) {
+    for (let lat = -60; lat <= (g3 ? -90 : 60); lat += 30) {
       const pts: string[] = [];
       for (let lon = -180; lon <= 180; lon += 6) { const p = proj(lat, lon); if (p.front) pts.push(`${p.x.toFixed(1)},${p.y.toFixed(1)}`); else if (pts.length) { lines.push(`<polyline points="${pts.join(' ')}" class="grat"/>`); pts.length = 0; } }
       if (pts.length) lines.push(`<polyline points="${pts.join(' ')}" class="grat"/>`);
     }
-    for (let lon = -180; lon < 180; lon += 30) {
+    for (let lon = -180; lon < (g3 ? -180 : 180); lon += 30) {
       const pts: string[] = [];
       for (let lat = -90; lat <= 90; lat += 5) { const p = proj(lat, lon); if (p.front) pts.push(`${p.x.toFixed(1)},${p.y.toFixed(1)}`); else if (pts.length) { lines.push(`<polyline points="${pts.join(' ')}" class="grat"/>`); pts.length = 0; } }
       if (pts.length) lines.push(`<polyline points="${pts.join(' ')}" class="grat"/>`);
@@ -410,22 +474,23 @@ export class CampaignUi {
         if (!o || o.id < t.id) continue;
         const a = proj(t.lat, t.lon);
         const b = proj(o.lat, o.lon);
-        if (a.front && b.front) links.push(`<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" class="link"/>`);
+        if (!g3 && a.front && b.front) links.push(`<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" class="link"/>`);
       }
     }
     const marks = visible.map((t) => {
       const p = proj(t.lat, t.lon);
-      if (!p.front) return '';
+      // The 3D globe moves every marker each frame: those behind the planet are kept, hidden, to come round.
+      if (!p.front && !g3) return '';
       const held = s.held.includes(t.id);
       const cls = [
         'site', held ? 'held' : open.has(t.id) ? 'open' : 'locked',
-        s.underAttack === t.id ? 'attack' : '', t.finaleOf ? 'finale' : '', this.selected === t.id ? 'sel' : '',
+        s.underAttack === t.id ? 'attack' : '', t.finaleOf ? 'finale' : '', this.selected === t.id ? 'sel' : '', p.front ? '' : 'behind',
       ].join(' ');
       return `<g class="${cls}" data-site="${t.id}" transform="translate(${p.x.toFixed(1)},${p.y.toFixed(1)})">
         <circle r="${held ? 9 : 8}"/>${t.finaleOf ? '<text class="star" y="4">★</text>' : ''}
         <text class="name" y="-13">${esc(t.name)}</text></g>`;
     }).join('');
-    return `<div class="globe-box">${mapped ? '<canvas class="globe-map" width="420" height="420"></canvas>' : ''}<svg class="globe" viewBox="0 0 420 420" width="420" height="420">
+    return `<div class="globe-box${g3 ? ' g3d' : ''}">${mapped && !g3 ? '<canvas class="globe-map" width="420" height="420"></canvas>' : ''}<svg class="globe" viewBox="0 0 420 420" width="420" height="420">
       <defs><radialGradient id="planet" cx="38%" cy="32%"><stop offset="0" stop-color="#6d8a58"/><stop offset="0.7" stop-color="#3b4a2f"/><stop offset="1" stop-color="#1a2016"/></radialGradient></defs>
       ${mapped ? '' : `<circle cx="${cx}" cy="${cy}" r="${R}" fill="url(#planet)" class="disc"/>`}
       ${lines.join('')}${links.join('')}${marks}
@@ -595,8 +660,7 @@ export class CampaignUi {
       const mine = s.faction === f.id;
       const beats = f.beats.filter((b) => s.beatsSeen.includes(b.id));
       return `<div class="cp-lin cp-voice${mine ? ' have' : ''}">${contacted ? this.leaderHtml(f.id) : ''}<b>${esc(f.name)}</b>
-        <span>${!contacted ? 'Has not made contact yet.' : mine ? `Allied. Route: ${beats.map((b) => esc(b.title)).join(' → ') || '—'}` : s.faction ? 'You chose another.' : 'Made contact. Waiting for your answer.'}</span>
-        ${mine ? `<span class="cp-perks">${perksOf(s).map((p) => esc(f.perks[p] ?? p)).join('<br>')}</span>` : ''}
+        <span>${!contacted ? 'Has not made contact yet.' : mine ? `Allied. Route: ${beats.map((b) => esc(b.title)).join(' → ') || '—'}` : s.faction ? 'You chose another.' : 'Made contact. Waiting for your answer.'}${mine ? `<span class="cp-perks">${perksOf(s).map((p) => esc(f.perks[p] ?? p)).join('<br>')}</span>` : ''}</span>
         ${contacted && !s.faction ? `<button data-ally="${f.id}">ALLY WITH THEM</button>` : ''}
         ${mine ? `<button data-replay="${f.id}">REPLAY SCENES</button>` : ''}</div>`;
     });
@@ -674,7 +738,7 @@ export class CampaignUi {
         ${this.yokeLinkHtml()}${account}`;
     return `${talk}${own ? account : ''}<div class="cp-label">AI CORE — YOKE wants to talk${s.ai.queue.length ? '' : ' (nothing waiting)'}</div>
       ${s.ai.queue.map((q) => `<div class="cp-lin"><b>${q.replace('-', ' ').toUpperCase()}</b><span>YOKE has started a discussion.</span>
-        <button data-engage="${q}">ENGAGE</button><button data-act="ai-later">NOT NOW</button></div>`).join('')}
+        <span class="cp-btns"><button data-engage="${q}">ENGAGE</button><button data-act="ai-later">NOT NOW</button></span></div>`).join('')}
       <div class="cp-label">PAST DISCUSSIONS</div>
       ${s.ai.transcripts.map((t) => `<div class="cp-log"><b>${t.trigger}</b> — ${t.turns.map((x) => `${x.speaker}: ${esc(x.text)}`).join(' / ')}</div>`).join('') || '<p class="cp-note">None yet.</p>'}
       <div class="cp-label">YOKE'S LINK</div>
@@ -775,8 +839,8 @@ export class CampaignUi {
         openSettings({ where: 'ship', onClose: () => { this.yoke = loadYoke(); this.avatar?.setMuted(this.yoke.muted); this.render(); if (this.yoke.mode !== 'scripted' && playerTokenStore.load()) void this.account.refresh(); } });
         return;
       case 'new': this.hooks.newCampaign(); return;
-      case 'spin-l': this.spin -= 30; this.render(); return;
-      case 'spin-r': this.spin += 30; this.render(); return;
+      case 'spin-l': if (this.globe3d) { this.globe3d.turn(-30); return; } this.spin -= 30; this.render(); return;
+      case 'spin-r': if (this.globe3d) { this.globe3d.turn(30); return; } this.spin += 30; this.render(); return;
       case 'scene-ok': case 'scene-later': this.setState(dismissScene(s)); return;
       case 'ai-later': this.room = 'desk'; this.talk = null; this.render(); return;
       case 'ai-send': void this.aiSend(); return;

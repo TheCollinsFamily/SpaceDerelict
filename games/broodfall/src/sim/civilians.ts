@@ -9,7 +9,7 @@
  *   so it has no effect on play or balance (tests/civilians.test.ts runs a Sim with and without
  *   it and compares).
  *
- * At minute zero a crowd stands and strolls on the streets of the claimed plates (not on the
+ * At minute zero a crowd (30-40) stands and strolls on the streets of the claimed plates (not on the
  * crash square). Within a moment or two they panic and run for the nearest frontier gate or the
  * board's edge, street cell to street cell (four neighbours, never through a block), faster when
  * the creep is under or beside them. At a gate they leave (fade out into the smoke). One the
@@ -80,7 +80,7 @@ export const CIV_CAP = 60;
 export const TAKEN_AFTER = 1.5;
 const LEAVE_FADE = 0.6;
 const STROLL = 12;
-const RUN = [30, 42] as const;
+const RUN = [24, 36] as const;
 const NEAR_CREEP_RUN = 1.6;
 /** Street step cost, and what a creeped cell adds to a route (they would rather go round). */
 const STEP = 10;
@@ -120,9 +120,9 @@ export class Civilians {
     for (let c = 0; c < n; c++) this.claimed[c] = sim.map.cells[c] === CellType.Void ? 0 : 1;
     if (sim.tickCount <= MINUTE_ZERO_TICKS) {
       const streets = this.spawnable(sim, null);
-      // ~25-40, by how much street is claimed.
-      const want = Math.max(25, Math.min(40, Math.round(streets.length * 0.18)));
-      this.spawn(sim, streets, want, [0.2, 2.6]);
+      // ~30-40, by how much street is claimed. Some panic at once, the last only after several seconds.
+      const want = Math.max(30, Math.min(40, Math.round(streets.length * 0.2)));
+      this.spawn(sim, streets, want, [0.3, 7]);
     }
     this.refield(sim);
   }

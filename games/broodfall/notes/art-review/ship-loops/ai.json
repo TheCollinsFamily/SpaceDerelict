@@ -1,0 +1,13 @@
+{
+  "id": "ai",
+  "model": "seegen:sd2-fast",
+  "seconds": 7.25,
+  "size": "1920x1080",
+  "bytes": 1699379,
+  "medianStep": 0.13,
+  "maxStep": 0.57,
+  "seamBefore": 0.56,
+  "seamAfter": 0.27,
+  "fixed": "crossfade 0.75s",
+  "tiles": "still it started from | loop first frame | middle | last frame"
+}

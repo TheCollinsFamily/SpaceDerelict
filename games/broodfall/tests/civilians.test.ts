@@ -23,11 +23,11 @@ function run(sim: Sim, civ: Civilians | null, n: number, each?: () => void): voi
 const snapshot = (civ: Civilians) => JSON.stringify(civ.list.map((c) => [c.id, c.state, c.pos.x.toFixed(4), c.pos.y.toFixed(4)]));
 
 describe('civilians fleeing the crash', () => {
-  it('stands a minute-zero crowd of 25-40 on the claimed streets, off the crash square', () => {
+  it('stands a minute-zero crowd of 30-40 on the claimed streets, off the crash square', () => {
     for (const seed of [1, 7, 1234, 99]) {
       const sim = make(seed);
       const civ = new Civilians(sim);
-      expect(civ.list.length, `seed ${seed}`).toBeGreaterThanOrEqual(25);
+      expect(civ.list.length, `seed ${seed}`).toBeGreaterThanOrEqual(30);
       expect(civ.list.length, `seed ${seed}`).toBeLessThanOrEqual(40);
       for (const c of civ.list) {
         const t = sim.map.cells[sim.cellAt(c.pos.x, c.pos.y)];

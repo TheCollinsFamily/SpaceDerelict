@@ -106,7 +106,12 @@ try {
   await page.waitForSelector('canvas.globe-map');
   const lit = (sel) => page.evaluate((s) => {
     const c = document.querySelector(s);
-    const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
+    // The planet is WebGL now (src/ui/globe3d.ts): its pixels are copied onto a 2D canvas to be read.
+    const copy = document.createElement('canvas');
+    copy.width = c.width; copy.height = c.height;
+    const g2 = copy.getContext('2d');
+    g2.drawImage(c, 0, 0);
+    const d = g2.getImageData(0, 0, c.width, c.height).data;
     let red = 0, any = 0, sum = 0;
     for (let i = 0; i < d.length; i += 4) {
       if (d[i + 3] > 40) any++;
@@ -128,7 +133,7 @@ try {
   await page.waitForTimeout(200);
   const after = await lit('canvas.globe-map');
   check(after.sum !== before.sum, 'the planet turns under the hand');
-  await page.locator('.globe .site.open').first().click();
+  await page.locator('.globe .site.open:not(.behind)').first().click();
   await page.waitForTimeout(300);
   const sketches = await page.locator('.cp-brief .cp-sketch').count();
   const sketchPx = await page.evaluate(async () => {

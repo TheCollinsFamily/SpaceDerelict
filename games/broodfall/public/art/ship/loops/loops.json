@@ -1,0 +1,39 @@
+{
+  "rooms": {
+    "desk": {
+      "video": "ship/loops/room-desk.mp4",
+      "poster": "ship/loops/room-desk.webp",
+      "seconds": 8
+    },
+    "genes": {
+      "video": "ship/loops/room-genes.mp4",
+      "poster": "ship/loops/room-genes.webp",
+      "seconds": 8
+    },
+    "locker": {
+      "video": "ship/loops/room-locker.mp4",
+      "poster": "ship/loops/room-locker.webp",
+      "seconds": 7.25
+    },
+    "board": {
+      "video": "ship/loops/room-board.mp4",
+      "poster": "ship/loops/room-board.webp",
+      "seconds": 8
+    },
+    "comms": {
+      "video": "ship/loops/room-comms.mp4",
+      "poster": "ship/loops/room-comms.webp",
+      "seconds": 7.083
+    },
+    "ai": {
+      "video": "ship/loops/room-ai.mp4",
+      "poster": "ship/loops/room-ai.webp",
+      "seconds": 7.25
+    },
+    "quarters": {
+      "video": "ship/loops/room-quarters.mp4",
+      "poster": "ship/loops/room-quarters.webp",
+      "seconds": 7.125
+    }
+  }
+}

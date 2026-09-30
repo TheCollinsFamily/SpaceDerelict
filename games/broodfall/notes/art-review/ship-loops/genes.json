@@ -1,0 +1,13 @@
+{
+  "id": "genes",
+  "model": "seegen:sd2-fast",
+  "seconds": 8,
+  "size": "1920x1080",
+  "bytes": 2107824,
+  "medianStep": 0.06,
+  "maxStep": 0.58,
+  "seamBefore": 0.41,
+  "seamAfter": 0.42,
+  "fixed": "none",
+  "tiles": "still it started from | loop first frame | middle | last frame"
+}

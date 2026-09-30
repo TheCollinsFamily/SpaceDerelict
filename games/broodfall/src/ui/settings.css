@@ -20,7 +20,11 @@
 #settings .st-row.col { flex-direction: column; align-items: stretch; }
 #settings .st-row small { display: block; font-size: 11px; color: rgba(233, 238, 240, 0.55); }
 #settings .st-row b { min-width: 42px; text-align: right; font-weight: 400; font-variant-numeric: tabular-nums; }
-#settings input[type="range"] { flex: 1; max-width: 120px; accent-color: #e9eef0; }
+#settings input[type="range"] { flex: 0 0 96px; width: 96px; accent-color: #e9eef0; }
+/* The words of a row take the room they need; the slider and the button keep theirs (fix pass, Sep 30 2026). */
+#settings .st-row > span:first-child { flex: 1 1 auto; min-width: 0; }
+#settings .st-row > :not(span:first-child) { flex-shrink: 0; }
+#settings .st-choice button { white-space: nowrap; }
 #settings button { font-family: inherit; cursor: pointer; }
 #settings .st-toggle, #settings .st-key, #settings .st-btn, #settings .st-choice button {
   background: rgba(255, 255, 255, 0.035); border: 1px solid rgba(235, 245, 248, 0.34); color: #e9eef0; letter-spacing: 1.5px; padding: 4px 10px; font-size: 12px;

@@ -37,6 +37,20 @@ const SNAP = 0.22;
 /** How many points each length of tongue is laid along, and how many lengths at most. */
 const PTS = 8;
 const MAX_LENGTHS = 6;
+/**
+ * Fix pass (Sep 30 2026, "the tongue reads like a ribbed hose"): a wet tongue, thick at the lips and
+ * tapering to a thin neck under its sticky club (TAPER: the share of its width left at the tip), sagging a
+ * little between the mouth and the tip (SAG, more while it carries a body), and drawn from a smooth, glossy
+ * strip (tools/art/templates/fx.mjs TONGUE, art-src/fx/tongue-wet.png). Its width at the lips is a share
+ * of the Maw as drawn (ROOT). Before this the strip was always drawn at its texture's own height (MeshRope
+ * resets its width to that every frame), whatever size the Maw was: now the rope's corners are laid here.
+ */
+const ROOT = 0.17;
+const TAPER = 0.42;
+const SAG = 0.05;
+/** A body taken rides the tongue drawn this much bigger (it reads against the mouth), and at the lips is LIPS of that. */
+const RIDE = 1.35;
+const LIPS = 0.55;
 
 /** Where the board says a Maw's mouth is now, how big the Maw is drawn, whether it is seen from behind, its depth. */
 export interface MouthNow { x: number; y: number; size: number; back: boolean; z: number }
@@ -100,7 +114,9 @@ export class MawTongues {
     for (let i = 0; i < MAX_LENGTHS; i++) {
       const points = Array.from({ length: PTS }, () => new Point(mouth.x, mouth.y));
       const rope = new MeshRope({ texture: strip.tex, points, textureScale: 0 });
-      rope.autoUpdate = true;
+      // Its corners are laid by `lay` (tapering), not by the rope's own update (one width, the texture's height).
+      rope.autoUpdate = false;
+      rope.onRender = () => {};
       rope.visible = false;
       lengths.push(rope);
     }
@@ -155,11 +171,13 @@ export class MawTongues {
       if (l.t < OUT) u = smooth(l.t / OUT);
       else if (eats) u = l.t < OUT + STUCK ? 1 : 1 - smooth(clamp01((l.t - OUT - STUCK) / REEL));
       else u = l.t < OUT + SLAP ? 1 : 1 - smooth(clamp01((l.t - OUT - SLAP) / SNAP));
-      const width = Math.max(4, Math.min(11, mouth.size * 0.05));
+      const width = Math.max(6, Math.min(30, mouth.size * ROOT));
       const curve = this.curve(mouth, l.aim);
       // The body rides a little clear of the curve, wobbling as it swings up.
-      const wobble = eats && l.t > OUT + STUCK ? Math.sin((l.t + l.phase) * 26) * width * 0.35 * u : 0;
-      this.lay(l, curve, u, width, wobble);
+      const wobble = eats && l.t > OUT + STUCK ? Math.sin((l.t + l.phase) * 26) * width * 0.25 * u : 0;
+      // It hangs a little between the lips and the tip: more when it is slack (reeling in), most with a body on it.
+      const slack = l.t < OUT ? 0.35 : eats ? 1.4 : 1;
+      this.lay(l, curve, u, width, wobble, slack);
       // Draw order: over the Maw and the body from the front; just behind the Maw's body from behind.
       const z = mouth.back ? mouth.z - 2 : Math.max(mouth.z, l.aimZ) + 6;
       for (const r of l.lengths) r.zIndex = z;
@@ -169,12 +187,15 @@ export class MawTongues {
         const tip = this.at(curve, u);
         const inGulp = l.t >= OUT + STUCK + REEL;
         // It shrinks as it comes to the lips, and is gone in the gulp.
-        const k = inGulp ? Math.max(0, 0.3 * (1 - (l.t - OUT - STUCK - REEL) / (GULP * 0.5))) : 0.3 + 0.7 * smooth(clamp01(u / 0.35));
+        // Drawn bigger as it is lifted (RIDE), so that it reads against the Maw's mouth, down to LIPS of that at the lips.
+        const lift = 1 + (RIDE - 1) * smooth(clamp01((l.t - OUT - STUCK) / (REEL * 0.35)));
+        const atLips = RIDE * LIPS;
+        const k = inGulp ? Math.max(0, atLips * (1 - (l.t - OUT - STUCK - REEL) / (GULP * 0.5))) : lift * (LIPS + (1 - LIPS) * smooth(clamp01(u / 0.35)));
         r.sprite.visible = k > 0.01;
         r.sprite.scale.set(r.sx * k, r.sy * k);
         r.sprite.position.set(tip.x + wobble, tip.y + r.up * k);
         r.sprite.rotation = wobble * 0.02;
-        r.sprite.alpha = inGulp ? k / 0.3 : 1;
+        r.sprite.alpha = inGulp ? k / atLips : 1;
         // The body is held on the tip: drawn just under it (the tip sticks over its middle).
         r.sprite.zIndex = z;
         l.tip.zIndex = z + 1;
@@ -198,8 +219,8 @@ export class MawTongues {
     return { x: w * w * p0.x + 2 * w * s * p1.x + s * s * p2.x, y: w * w * p0.y + 2 * w * s * p1.y + s * s * p2.y };
   }
 
-  /** Lays the tongue along its arc from the lips to `u`, in lengths of the strip about as long as they are drawn. */
-  private lay(l: Lick, q: [Pt, Pt, Pt], u: number, width: number, wobble: number): void {
+  /** Lays the tongue along its arc from the lips to `u`, in lengths of the strip about as long as they are drawn: tapering, sagging. */
+  private lay(l: Lick, q: [Pt, Pt, Pt], u: number, width: number, wobble: number, slack: number): void {
     const strip = this.art.fxSprite('tongue', 'strip')!;
     const natural = (strip.rect.w / strip.rect.h) * width;
     // The arc's length up to u.
@@ -207,26 +228,53 @@ export class MawTongues {
     let prev = this.at(q, 0);
     for (let i = 1; i <= 24; i++) { const p = this.at(q, (u * i) / 24); len += Math.hypot(p.x - prev.x, p.y - prev.y); prev = p; }
     const n = Math.max(1, Math.min(MAX_LENGTHS, Math.round(len / natural)));
+    const sag = len * SAG * slack;
+    const u0 = Math.max(0.001, u);
+    // A point along it (s from 0 at the lips to u at the tip): on the arc, hanging, and wobbling toward the tip.
+    const along = (s: number): Pt => {
+      const p = this.at(q, s);
+      const f = s / u0;
+      return { x: p.x + wobble * f, y: p.y + sag * Math.sin(Math.PI * f) };
+    };
+    const half = (s: number) => (width / 2) * (1 - (1 - TAPER) * Math.min(1, s / u0));
     for (let i = 0; i < MAX_LENGTHS; i++) {
       const rope = l.lengths[i];
       rope.visible = i < n && len > 2;
       if (!rope.visible) continue;
       const geo = rope.geometry as RopeGeometry;
-      geo._width = width;
       const pts = geo.points as Point[];
+      const ss: number[] = [];
       for (let k = 0; k < PTS; k++) {
         const s = (u * (i + k / (PTS - 1))) / n;
-        const p = this.at(q, s);
-        // The wobble grows along it toward the tip.
-        pts[k].set(p.x + wobble * (s / Math.max(0.001, u)), p.y);
+        ss.push(s);
+        const p = along(s);
+        pts[k].set(p.x, p.y);
       }
+      // Its corners: either side of each point, across the line through its neighbours, as wide as it is there.
+      const buf = geo.getBuffer('aPosition');
+      const v = buf.data as Float32Array;
+      for (let k = 0; k < PTS; k++) {
+        const a = pts[Math.max(0, k - 1)];
+        const b = pts[Math.min(PTS - 1, k + 1)];
+        let px = b.y - a.y;
+        let py = -(b.x - a.x);
+        const d = Math.hypot(px, py);
+        if (d < 1e-6) { px = 0; py = 0; } else { px /= d; py /= d; }
+        const h = half(ss[k]);
+        v[k * 4] = pts[k].x + px * h;
+        v[k * 4 + 1] = pts[k].y + py * h;
+        v[k * 4 + 2] = pts[k].x - px * h;
+        v[k * 4 + 3] = pts[k].y - py * h;
+      }
+      buf.update();
     }
-    const end = this.at(q, u);
-    const before = this.at(q, Math.max(0, u - 0.04));
+    const end = along(u);
+    const before = along(Math.max(0, u - 0.04));
     l.tip.visible = len > 2;
-    l.tip.position.set(end.x + wobble, end.y);
+    l.tip.position.set(end.x, end.y);
     l.tip.rotation = Math.atan2(end.y - before.y, end.x - before.x);
-    const k = (width * 1.9) / Math.max(1, l.tip.texture.height);
+    // Its neck (about 0.42 of the tip picture's height) as wide as the tongue there.
+    const k = (half(u) * 2) / (0.42 * Math.max(1, l.tip.texture.height));
     l.tip.scale.set(k, k);
   }
 

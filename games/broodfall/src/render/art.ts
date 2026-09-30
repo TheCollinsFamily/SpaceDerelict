@@ -104,6 +104,8 @@ export interface CoreClip {
   atlas: string; frame: number; cols: number; count: number; fps: number; anchor: [number, number]; body: number;
   /** An idle whose ends do not meet: the game plays it forward and back (src/render/idleClock.ts). */
   pingpong?: boolean;
+  /** More atlas pages when its frames do not fit one picture (the same grid on each): frame i is on page floor(i / perPage). */
+  pages?: string[]; perPage?: number;
 }
 /** The core's four stages: each stage's idle, and the clip of it growing out of the stage before. */
 export interface CoreEvoArt {
@@ -175,6 +177,15 @@ export class Atlas {
       this.cut.set(key, t);
     }
     return t;
+  }
+}
+
+/** A clip over several atlas pages (a core stage's idle, Sep 30 2026): frame i is frame i % perPage of page floor(i / perPage). */
+export class PagedAtlas extends Atlas {
+  constructor(private readonly all: Atlas[], private readonly perPage: number) { super(all[0].texture); }
+  override frame(i: number, size: number, cols: number): Texture {
+    const p = Math.min(this.all.length - 1, Math.floor(i / this.perPage));
+    return this.all[p].frame(i - p * this.perPage, size, cols);
   }
 }
 
@@ -257,7 +268,11 @@ export class BoardArtSet {
     const evo = m.board?.coreEvo;
     if (evo?.stages?.length) {
       jobs.push((async () => {
-        const idle = await Promise.all(evo.stages.map((s) => get(s.idle.atlas)));
+        const idle = await Promise.all(evo.stages.map(async (s) => {
+          const pages = await Promise.all([s.idle.atlas, ...(s.idle.pages ?? [])].map(get));
+          if (!pages.every(Boolean)) return null;
+          return pages.length > 1 ? new PagedAtlas(pages as Atlas[], s.idle.perPage ?? s.idle.count) : pages[0];
+        }));
         const grow = await Promise.all(evo.stages.map((s) => (s.grow ? get(s.grow.atlas) : Promise.resolve(null))));
         if (idle.every(Boolean) && evo.stages.every((s, i) => !s.grow || grow[i])) set.coreEvo = { art: evo, idle: idle as Atlas[], grow };
       })());

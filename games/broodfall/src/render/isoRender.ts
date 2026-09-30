@@ -1986,7 +1986,8 @@ export class IsoRenderer extends Renderer {
       v.phase = (v.phase + moved / (running ? 18 : 26)) % 1;
       const p = this.onGround(sim, v.shown.x, v.shown.y);
       const z = depth(geo, v.shown.x, v.shown.y) * 100 + 48;
-      const r = 4;
+      // A little smaller than a responder (5): townsfolk, not soldiers.
+      const r = 4.5;
       const cower = c.state === 'cower';
       const bob = running && moved > 0.01 ? Math.abs(Math.sin(this.pulse * 5 + c.id)) * 3 : cower ? Math.sin(this.pulse * 9 + c.id) * 0.8 : 0;
       const sw = 2 * r * UNIT_PX * 1.2;
@@ -2029,8 +2030,15 @@ export class IsoRenderer extends Renderer {
     for (const pf of this.civPuffs) {
       const k = 1 - pf.t / 0.9;
       const p = this.onGround(sim, pf.x, pf.y);
-      this.marksG.circle(p.x / K, (p.y - 6) / K, 3 + k * 8).fill({ color: 0xc8566b, alpha: 0.6 * (1 - k) });
-      this.marksG.circle(p.x / K, (p.y - 6 - k * 10) / K, 1.5 + k * 4).fill({ color: 0x5a1a24, alpha: 0.5 * (1 - k) });
+      const x = p.x / K;
+      const y = (p.y - 4) / K;
+      // A burst of the creep's own wet red where it stood, and a few flecks thrown up.
+      this.marksG.ellipse(x, y + 2, 3 + k * 6, (3 + k * 6) * 0.5).fill({ color: 0x3a0c14, alpha: 0.55 * (1 - k) });
+      this.marksG.circle(x, y - k * 5, 2 + k * 4).fill({ color: 0x8e2334, alpha: 0.7 * (1 - k) });
+      for (let i = 0; i < 4; i++) {
+        const ang = i * 1.57 + 0.4;
+        this.marksG.circle(x + Math.cos(ang) * k * 9, y - k * 7 + Math.sin(ang) * k * 4, 1.2 * (1 - k) + 0.3).fill({ color: 0xc8566b, alpha: 0.8 * (1 - k) });
+      }
     }
   }
 
@@ -2181,9 +2189,15 @@ export class IsoRenderer extends Renderer {
       // The picture flies toward its lower left (POD_HEADING); it is turned to fly along the arc.
       s.rotation = Math.atan2(ahead.y - here.y, ahead.x - here.x) - POD_HEADING;
       s.position.set(here.x * K, here.y * K);
-      // It pulses as it flies: a living thing.
+      // It pulses as it flies: a living thing. Its four drawn frames (seed-pod, seed-pod-1 … -3: rest,
+      // swelling, full, easing; tools/art/templates/core.mjs podSprites) beat twice in the flight; without
+      // them the one picture is stretched in and out.
+      const beat = this.art.sprite('creep', `seed-pod-${Math.floor(t * 8) % 4}`);
       const k = (geo.a * 0.8) / pod.width;
-      s.scale.set(k * (1 + 0.08 * Math.sin(t * 20)), k);
+      if (this.art.sprite('creep', 'seed-pod-1')) {
+        s.texture = Math.floor(t * 8) % 4 === 0 || !beat ? pod : beat;
+        s.scale.set(k, k);
+      } else s.scale.set(k * (1 + 0.08 * Math.sin(t * 20)), k);
     }
     for (const [id, s] of this.pods) if (!live.has(id)) { s.destroy(); this.pods.delete(id); }
   }

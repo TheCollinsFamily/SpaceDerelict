@@ -1,0 +1,13 @@
+{
+  "id": "quarters",
+  "model": "seegen:sd2-fast",
+  "seconds": 7.125,
+  "size": "1920x1080",
+  "bytes": 4225266,
+  "medianStep": 0.08,
+  "maxStep": 1.05,
+  "seamBefore": 0.89,
+  "seamAfter": 0.21,
+  "fixed": "cut 3 snapping frames; crossfade 0.75s",
+  "tiles": "still it started from | loop first frame | middle | last frame"
+}

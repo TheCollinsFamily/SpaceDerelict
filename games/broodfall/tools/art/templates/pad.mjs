@@ -44,7 +44,7 @@ const MENU_PLANET = path.join(SRC, 'intro', 'menu.png');
 const PLANET = 'the planet is the infested insect world of the menu view: its dark night side, black oceans and dark land ' +
   'grown over with branching, fractal patches of dim gold hive-city lights, and across its middle a wide spreading stain of ' +
   'dark red creep veined with glowing red-orange cracks and a few bright orange burning spots, a thin blue rim of atmosphere ' +
-  'along its curve, black starry space above; an alien world whose land has none of the shapes of the continents of Earth, no Americas, no Europe, no Africa; no green forests, no white clouds, no daylight blue seas';
+  'along its curve, black starry space above; no green forests, no white clouds, no daylight blue seas';
 const OUT = path.join(ART, 'pad');
 const LOOK = path.join(REVIEW, 'pad');
 const CONCEPTS = path.join(ROOT, 'notes', 'concepts', '2026-09-29');
@@ -85,7 +85,9 @@ export const CLIPS = [
   { id: 'won', seconds: 5,
     prompt: 'First-person point of view. He lowers the data pad he has been holding up in front of his eyes: the pad moves down and ' +
       'away from the camera, and as it goes his long black console desk and the long window onto the planet come into view. ' +
-      `He sets the pad down calmly and gently flat on the desk and lets go of it, his hand resting beside it, and his gaze stays on it. ${MOVE}` },
+      `He sets the pad down calmly and gently flat on the desk and lets go of it, his hand resting beside it, and his gaze stays on it. ` +
+      'His eyes follow the pad all the way down: the camera tilts down with it, so the whole pad, all four of its corners, stays ' +
+      `near the middle of the picture every moment, never slipping below the bottom edge. ${MOVE}` },
   { id: 'lost', seconds: 5,
     prompt: 'First-person point of view. Tired and defeated, he drops his arms: the data pad he has been holding up in front of his eyes ' +
       'falls away from the camera, and as it goes his long black console desk and the long window onto the planet come into view. ' +

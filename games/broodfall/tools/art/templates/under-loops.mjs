@@ -20,7 +20,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { makeClip, pool } from '../rfab.mjs';
-import { blank, crop, paste, readFrames, resize, toWebp, writeJpg, writePng } from '../lib/img.mjs';
+import { blank, crop, paste, readFrames, readImage, resize, toWebp, writeJpg, writePng } from '../lib/img.mjs';
 import { ART, REVIEW, SRC, putEntry, readManifest } from '../lib/manifest.mjs';
 
 const STILLS = path.join(SRC, 'under');
@@ -140,6 +140,30 @@ function loopFrames(file) {
   return { frames: kept.map(img), step, seam, pingpong, drift };
 }
 
+/** Mean brightness (0-255) of an RGBA buffer. */
+function lum(d) {
+  let s = 0;
+  for (let i = 0; i < d.length; i += 16) s += d[i] * 0.3 + d[i + 1] * 0.59 + d[i + 2] * 0.11;
+  return s / (d.length / 16);
+}
+
+/**
+ * The video model lights the scan up after its first frames (the withered Atrophy Gland came out
+ * a bright peach). One gain for the whole clip brings its mean back to the still's, so a tile is
+ * as bright alive as it is still (and as its scan-in), while the pulse inside the clip is kept.
+ */
+function matchStill(frames, stillFile) {
+  if (!fs.existsSync(stillFile)) return 1;
+  const still = readImage(stillFile);
+  const target = lum(resize(still, frames[0].w, frames[0].h).data);
+  const mean = frames.reduce((a, f) => a + lum(f.data), 0) / frames.length;
+  const g = Math.min(1.5, Math.max(0.4, target / Math.max(1, mean)));
+  for (const f of frames) for (let i = 0; i < f.data.length; i += 4) {
+    f.data[i] = Math.min(255, f.data[i] * g); f.data[i + 1] = Math.min(255, f.data[i + 1] * g); f.data[i + 2] = Math.min(255, f.data[i + 2] * g);
+  }
+  return g;
+}
+
 function strip(frames, fw, fh) {
   const out = blank(fw * frames.length, fh, [0, 0, 0, 255]);
   frames.forEach((f, i) => paste(out, resize(f, fw, fh), i * fw, 0));
@@ -155,6 +179,7 @@ export function bakeUnderLoops() {
   for (const id of Object.keys(MOTION)) {
     if (!fs.existsSync(clipOf(id))) continue;
     const l = loopFrames(clipOf(id));
+    l.gain = matchStill(l.frames, path.join(STILLS, `${id}.png`));
     const png = path.join(OUT, `loop-${id}.png`);
     writePng(png, strip(l.frames, FRAME, FRAME));
     toWebp(png, path.join(OUT, `loop-${id}.webp`), { q: 80 });
@@ -168,6 +193,7 @@ export function bakeUnderLoops() {
     const id = `core-stage-${s.id}`;
     if (!fs.existsSync(clipOf(id))) continue;
     const l = loopFrames(clipOf(id));
+    l.gain = matchStill(l.frames, path.join(STILLS, `${id}.png`));
     // Cut exactly as bakeCoreScan cut the still: the whole width, down to `aspect` (width over height).
     const W = l.frames[0].w;
     const cutH = Math.min(l.frames[0].h, Math.round(W / s.aspect));
@@ -193,7 +219,7 @@ export function bakeUnderLoops() {
     writeJpg(path.join(REVIEW, 'under', 'loops.jpg'), sheet, 3);
   }
   for (const r of report) {
-    console.log(`[under-loops] ${r.id.padEnd(13)} ${String(r.frames).padStart(2)} frames  step ${r.step.toFixed(2)}  seam ${r.seam.toFixed(2)}  drift ${r.drift.toFixed(1)}  ${r.pingpong ? 'ping-pong' : 'loop'}`);
+    console.log(`[under-loops] ${r.id.padEnd(13)} ${String(r.frames).padStart(2)} frames  step ${r.step.toFixed(2)}  seam ${r.seam.toFixed(2)}  drift ${r.drift.toFixed(1)}  gain ${r.gain.toFixed(2)}  ${r.pingpong ? 'ping-pong' : 'loop'}`);
   }
   console.log(`[under-loops] ${Object.keys(tiles).length} tiles and ${Object.keys(stages).length} core stages baked to ${OUT}`);
   return { tiles, stages };

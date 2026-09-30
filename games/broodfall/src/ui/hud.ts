@@ -228,6 +228,36 @@ export class Hud {
 
   /** Mission 1 (src/meta/onboarding.ts): a plain tower-defence game; nothing on screen speaks of the ship, the Board or the globe. */
   plain = false;
+  /** Mission 1: the HUD parts already shown (once shown, a part stays). */
+  private revealed = new Set<string>();
+
+  /**
+   * MISSION 1 SHOWS ONE THING AT A TIME (Sep 30 2026 fix pass; notes/PERSONA-ONBOARDING-2026-09-30.md).
+   * A new player's first screen showed every system at once. In mission 1 each HUD part waits,
+   * hidden (src/onboard.css, body.first-mission), until the run makes it matter: science and royal
+   * meat when the first of it is eaten, the threat and interest dials and the ORGANS button after the
+   * first wave (the organ stage opens then), creep nodes and plinths when an organ grows them, royal
+   * surge with the first royal point, cannibalize once a few limbs stand after the second wave.
+   * A part comes in with a short glow, and stays. Nothing about the run changes, only what is drawn.
+   */
+  private revealForMission1(sim: Sim): void {
+    const organ = (id: string) => sim.organs.some((o) => o.organ === id);
+    const now: Array<[string, boolean]> = [
+      ['science', sim.meat.science > 0],
+      ['royal', sim.meat.royal > 0],
+      ['dials', sim.wavesCleared >= 1],
+      ['organs', sim.wavesCleared >= 1],
+      ['nodes', sim.creepNodes > 0 || organ('bladder') || organ('cyst')],
+      ['plinths', sim.plinths > 0 || organ('scaffold')],
+      ['surge', sim.meat.royal > 0],
+      ['cannibal', sim.pendingPips.length > 0 || (sim.wavesCleared >= 2 && sim.towers.length >= 3)],
+    ];
+    for (const [part, on] of now) {
+      if (!on || this.revealed.has(part)) continue;
+      this.revealed.add(part);
+      document.body.classList.add(`m1-${part}`);
+    }
+  }
 
   constructor(cb: HudCallbacks) {
     void loadManifest().then((m) => { limbArt = m?.limbs ?? null; this.lastHandKey = ''; });
@@ -600,6 +630,7 @@ export class Hud {
     }
 
     this.updateInspect(sim);
+    if (this.plain) this.revealForMission1(sim);
 
     // Button states.
     const surge = document.getElementById('royal-surge')!;

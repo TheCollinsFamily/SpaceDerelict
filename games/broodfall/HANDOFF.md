@@ -70,11 +70,14 @@ process only verified its own assumptions. The repo's CLAUDE.md carries the stan
   api.rfab.ai, gets a 404, and falls back to the scripted YOKE, which says "rfab.ai does
   not have YOKE yet". Nothing is broken meanwhile.
   **Sep 30: YOKE for players adds to that, in this order:** (1) the backend deploy (it now also
-  carries `/api/broodfall/yoke` and migration `20260930120000_broodfall_yoke_players`); (2) the
+  carries `/api/broodfall/yoke` and migrations `20260930120000_broodfall_yoke_players` +
+  `20260930200000_broodfall_yoke_campaign_minds`); (2) the
   house account made and funded on rfab.ai
   (`node C:/Users/Merry/agent-tools/rfab-grant.js broodfall-house@rfab.ai --usd 100 --create --name "Broodfall house"`,
   dry run then `--apply`) — without it every guest hears "YOKE is resting"; (3) the frontend
-  deploy (the rfab.ai `/connect` page). Until (1) the game talks to her the old way.
+  deploy (the rfab.ai `/connect` page). Until (1): on the dev server on this PC she is the
+  owner's own star (the AI Core says "DEV: talking to the owner's YOKE"); a build served anywhere
+  else gets no live mind (Kimi with the player's own key if he pasted one, else scripted).
 - **Deferred by Collins:** the ship AI's lore book content
   (`content/lore/ship-ai-lorebook.md`, the TO WRITE sections). He said "the lorebook we
   will do later". Don't write it unless he asks.
@@ -403,8 +406,28 @@ the option to change the model she runs on."
   guest, `bfc_…` once linked). Never a login, never an RFab API key. The token opens nothing on
   rfab.ai but his own YOKE. RESET forgets it (and a new player is made next time; rfab.ai caps
   new players at 3 per address a day and $6 of free talk per address).
-- **Her mind:** a private copy per player of her Living Avatar brain (the star agent on
-  Collins's account is never talked to or changed). His history carries over when he links.
+- **Her mind: one per CAMPAIGN** (Sep 30 2026, Collins: "different games and players will have
+  different memories for the ship's AI right? we are not dumping this all into one account").
+  Every YOKE call carries `X-Broodfall-Campaign: campaignIdFor(state.seed)` (`PlayerLink`'s
+  `campaignId`, set in `src/ui/campaignUi.ts`), and rfab.ai keeps a private copy of her Living
+  Avatar brain for each (player, campaign) — a NEW CAMPAIGN is a fresh YOKE who has not met him;
+  going back to a campaign is the same YOKE with its memories. rfab.ai keeps the last 5 campaigns
+  per player (older ones are let go). The star agent on Collins's account is never talked to or
+  changed. **The $3 free talk is per PLAYER, not per campaign** (a new campaign does not reset it).
+- **Tied to his RFab account** (Collins: "it's then tied the memory to an account when the user
+  logs into the rfab for the token thing"): when he links, every campaign's YOKE moves to his
+  account with her history; another PC linked to the same account finds the same YOKE for the
+  same campaign; unlinking leaves them with the account (this PC, a guest again, starts fresh).
+  The model he picks is the account's: every campaign's YOKE moves to it. Linking reopens her
+  stream with the new token (`PlayerLink.tokenChanged` → `YokeAvatarUi.reconnect`). The AI Core
+  says it in one line under the account panel (`memoryText`: "She remembers this campaign. Your
+  RFab account keeps her memory of your last 5 campaigns, on every PC you link.").
+- **The dev fallback is dev-only:** with no player route on rfab.ai (the backend deploy owed),
+  `AvatarLink` talks to the owner's star ONLY when `ownerFallback` is set, which
+  `src/meta/storage.ts` `ownerYokeAllowed(base)` gives only on localhost through the `/rfab-api`
+  proxy (this PC's key); the AI Core then shows **"DEV: talking to the owner's YOKE"** (one mind
+  for every campaign, on the owner's money). Anywhere else that rung is refused
+  (`OWNER_YOKE_DEV_ONLY`, sticky) and the ladder goes on to Kimi / scripted.
 - **Where rfab.ai is:** served from this PC (`npm start`, `vite preview`, the beats) the page uses
   the `/rfab-api` proxy; anywhere else (a web host, a desktop wrap) it talks to
   `https://api.rfab.ai` itself (`src/meta/storage.ts` RFAB_API_BASE; `VITE_RFAB_API_BASE`
@@ -423,7 +446,10 @@ the option to change the model she runs on."
   HER MIND with CHANGE (Kimi K2.6 default, Claude Haiku 4.5, Grok 4.3, GPT-5.4 Mini, DeepSeek V4
   Pro, Claude Sonnet 5, each with a rough price a reply), UNLINK. His account too low → she asks
   for a top-up (402 → TOP UP ON RFAB.AI, I HAVE TOPPED UP).
-- **Checks:** `tests/yokePlayer.test.ts` (no network); PAID but local-only beat
+- **Checks:** `tests/yokePlayer.test.ts` (no network; incl. the campaign header on every call, the
+  dev-only owner fallback, the stream reopened on linking); the backend's
+  `_e2e_broodfall_yoke_players.js` against a local backend (two campaigns, link carry-over, a second
+  install of the same account: 46/46 on Sep 30); PAID but local-only beat
   `tools/shot-yoke-connect.mjs` (a real local backend, the whole path by clicks; see its header
   for the three backend commands). JPEGs: `notes/screens/2026-09-30/connect-*.jpg`.
 

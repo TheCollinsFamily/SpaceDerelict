@@ -100,7 +100,9 @@ void main() {
   float sun = dot(n, normalize(uSun));
   float lit = smoothstep(-0.12, 0.35, sun);
   bool sea = day.b > day.r * 1.2 && day.b > day.g * 1.02;
-  vec3 ground = day * vec3(0.55, 0.62, 0.66) * (0.08 + 0.92 * lit);
+  // Cold and dim even by day: the menu loop's planet is a dying one seen from its night side.
+  float grey = dot(day, vec3(0.3, 0.5, 0.2));
+  vec3 ground = mix(vec3(grey), day, 0.55) * vec3(0.40, 0.46, 0.50) * (0.05 + 0.95 * lit);
   // The planet the ship sees is a dying one: cold, dark, the lights on its night side.
   vec3 col = ground;
   float night = 1.0 - smoothstep(-0.05, 0.25, sun);
@@ -113,11 +115,11 @@ void main() {
     float v = 1.0 - abs(fbm(p * 9.0) * 2.0 - 1.0);
     float v2 = 1.0 - abs(fbm(p * 23.0 + 3.1) * 2.0 - 1.0);
     float core = smoothstep(reach, 1.0, best);
-    float vein = smoothstep(0.86 - 0.12 * core, 0.97, v) + 0.6 * smoothstep(0.9, 0.98, v2);
-    float pulse = 0.75 + 0.25 * sin(uTime * 1.6 + fbm(p * 4.0) * 6.0);
-    vec3 creep = vec3(0.86, 0.12, 0.08) * vein * pulse + vec3(0.30, 0.03, 0.03) * (0.4 + core);
-    if (sea) creep *= 0.45;
-    col = mix(col, col * 0.35, held) + creep * (held + attack * 0.5);
+    float vein = smoothstep(0.93 - 0.06 * core, 0.985, v) + 0.7 * smoothstep(0.95, 0.99, v2) * (0.4 + core);
+    float pulse = 0.7 + 0.3 * sin(uTime * 1.6 + fbm(p * 4.0) * 6.0);
+    vec3 creep = vec3(0.95, 0.16, 0.09) * vein * pulse + vec3(0.16, 0.015, 0.02) * (0.5 + core);
+    if (sea) creep *= 0.5;
+    col = mix(col, col * 0.3, held) + creep * (held + attack * 0.5);
     // Burning points in its heart.
     float burn = smoothstep(0.985, 1.0, noise(p * 60.0)) * core;
     col += vec3(1.0, 0.45, 0.12) * burn * 1.6 * held;
@@ -133,7 +135,7 @@ void main() {
   float ek = st == 0.0 ? 0.35 : 0.8;
   if (zi == uSel || zi == uHover) { ec = vec3(1.0); ek = 1.0; }
   col = mix(col, ec, edge * ek);
-  if (zi >= 0 && zi == uHover) col += vec3(0.16, 0.2, 0.22);
+  if (zi >= 0 && zi == uHover) col += vec3(0.07, 0.09, 0.1);
   if (zi >= 0 && zi == uSel) col += vec3(0.1, 0.12, 0.14);
 
   // A faint graticule, the rim light of a projection.
@@ -200,7 +202,7 @@ export class Globe3D {
       vertexShader: VERT, fragmentShader: FRAG,
       uniforms: {
         uDay: { value: blank }, uNight: { value: blank }, uHasNight: { value: 0 },
-        uSun: { value: new THREE.Vector3(-0.75, 0.35, 0.55) }, uTime: { value: 0 },
+        uSun: { value: new THREE.Vector3(-0.9, 0.3, 0.3) }, uTime: { value: 0 },
         uCount: { value: 0 }, uSite: { value: Array.from({ length: MAX_ZONES }, () => new THREE.Vector3()) },
         uState: { value: new Array(MAX_ZONES).fill(0) }, uSel: { value: -1 }, uHover: { value: -1 },
       },
@@ -243,7 +245,7 @@ export class Globe3D {
         this.mat.uniforms.uHasNight.value = 1;
         const img = t.image as HTMLImageElement;
         const c = document.createElement('canvas');
-        c.width = 384; c.height = 256;
+        c.width = 768; c.height = 512;
         const g = c.getContext('2d', { willReadFrequently: true })!;
         g.drawImage(img, 0, 0, c.width, c.height);
         this.nightData = g.getImageData(0, 0, c.width, c.height);
@@ -304,7 +306,8 @@ export class Globe3D {
 
   /** Lights still burning in a zone (YOKE counts them): bright pixels of the night map inside it. */
   lightsOf(id: string): number | null {
-    return this.nightData ? this.lightsIn.get(id) ?? 0 : null;
+    // One lit pixel of the 768-wide map is some two dozen settlements.
+    return this.nightData ? (this.lightsIn.get(id) ?? 0) * 24 : null;
   }
 
   private countLights(): void {
@@ -317,7 +320,7 @@ export class Globe3D {
       const lat = 90 - ((y + 0.5) / d.height) * 180;
       for (let x = 0; x < d.width; x += 1) {
         const o = (y * d.width + x) * 4;
-        if (d.data[o] + d.data[o + 1] < 260) continue;
+        if (d.data[o] * 0.5 + d.data[o + 1] * 0.4 + d.data[o + 2] * 0.1 < 95) continue;
         const p = dirOf(lat, ((x + 0.5) / d.width) * 360 - 180);
         let best = reach, bi = -1;
         sites.forEach((s, i) => { const k = p.dot(s); if (k > best) { best = k; bi = i; } });

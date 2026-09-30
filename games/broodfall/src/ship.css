@@ -193,3 +193,46 @@ body:has(#menu.ship-art:not(.hidden)) #topbar, body:has(#menu.ship-art:not(.hidd
 #campaign.ship-art .cp-notebook .cp-sketch { filter: brightness(1.5); }
 /* A scene from the planet is laid over the whole ship screen. */
 #campaign .cp-scene { z-index: 5; }
+
+/* ---------- the rooms' slow loops (tools/art/ship-loops.mjs; campaignUi.ts playLoop) ----------
+   Behind everything in the screen, over its poster (the same first frame): it fades in once it plays. */
+#campaign .room-loop {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: left center;
+  z-index: -1; pointer-events: none; opacity: 0; transition: opacity 0.4s;
+}
+#campaign .room-loop.on { opacity: 1; }
+#campaign:not(.ship-art) .room-loop { display: none; }
+
+/* ---------- the globe as a planet (src/ui/globe3d.ts) ---------- */
+.globe-box.g3d { width: 440px; cursor: default; }
+.globe-box.g3d canvas.globe-3d { cursor: grab; touch-action: none; filter: drop-shadow(0 0 18px rgba(120, 220, 245, 0.28)); }
+.globe-box.g3d canvas.globe-3d.grabbing { cursor: grabbing; }
+.globe-box.g3d svg { pointer-events: none; }
+.globe-box.g3d svg .site { pointer-events: auto; }
+.globe-box.g3d .site.behind { display: none; }
+.globe-box.g3d .site.hover circle { stroke: #fff; stroke-width: 3; }
+.globe-box.g3d .site.attack circle { animation: siteattack 0.9s ease-in-out infinite; }
+@keyframes siteattack { 50% { stroke-width: 6; stroke: #ffd080; } }
+.globe-tip {
+  position: absolute; z-index: 3; pointer-events: none; opacity: 0; transition: opacity 0.12s;
+  display: flex; flex-direction: column; gap: 1px; padding: 5px 8px; min-width: 120px;
+  background: rgba(5, 9, 12, 0.88); border: 1px solid rgba(180, 240, 255, 0.35); color: #eafaff;
+  font: 11px Bahnschrift, "Segoe UI", sans-serif; letter-spacing: 0.5px; white-space: nowrap;
+}
+.globe-tip.on { opacity: 1; }
+.globe-tip b { font-weight: 600; letter-spacing: 1px; }
+.globe-tip .st.held { color: #ff8a80; } .globe-tip .st.open { color: #bff4ff; }
+.globe-tip .st.attack { color: #ffc070; } .globe-tip .st.locked { color: #9fb0b6; }
+.globe-tip i { color: #e8cf8a; font-style: normal; font-size: 10px; }
+html.reduce-motion .globe-box.g3d .site.attack circle { animation: none; }
+
+/* ---------- interface fix pass (Sep 30 2026): small misfits found clicking through every room ---------- */
+/* A row's buttons side by side in its last column (the AI Core's ENGAGE / NOT NOW). */
+.cp-btns { display: flex; gap: 4px; justify-content: flex-end; }
+.cp-lin button, .cp-lin .cp-btns button { white-space: nowrap; }
+/* Comms: the ally's perks under its route, not a stray row of their own. */
+#campaign .cp-voice .cp-perks { display: block; grid-column: auto; margin-top: 4px; font-size: 10.5px; }
+/* The Specimen Locker's notebook rows: the status column keeps to its width, the idea keeps its room. */
+#campaign.ship-art .cp-notebook .cp-lin { grid-template-columns: 56px 150px minmax(0, 1fr) fit-content(150px); }
+/* The planet's names are drawn past the edge of the globe's box, not cut at it. */
+.globe-box svg { overflow: visible; }

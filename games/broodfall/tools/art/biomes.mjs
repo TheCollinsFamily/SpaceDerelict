@@ -624,6 +624,9 @@ export const BIOMES = [
     guests: [],
     // Drawn again in the Sep 30 2026 fix pass (art-src/terrain/deephive-redrawn/; the first kept in deephive/).
     redrawn: ['roof.1.png'],
+    // Its drawing came out a saturated orange-gold, and the first roof (capped comb with pollen-gold dots) a loud lemon:
+    // both brought down at the bake to a dull, warm honey (biome.mjs graded; the raw pictures untouched).
+    grade: { 'roof.1.png': { saturation: 0.5, warm: 0.04, light: 1.02 }, 'roof.png': { saturation: 0.6, warm: 0.05, light: 0.98 } },
     roofs: [
       // Sep 30 2026: the first was a crust of dark red-brown propolis, which read as the creep at far zoom. The second
       // was pollen in loud lemon yellow; the fix pass made it warm, dull honey and amber, still light (not the creep).

@@ -24,6 +24,8 @@ export type HitsLayer = 'ground' | 'air' | 'both';
  */
 export interface HitFx {
   srcId: number;
+  /** Not the limb's own hit (a broodling's bite): it does not break a pacifist wave (DESIGN: brood, swamps and creep only). */
+  quiet?: boolean;
   /** Cage pips: hits root the target this long. */
   rootDur?: number;
   damage: number;

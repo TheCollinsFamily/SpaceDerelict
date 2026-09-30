@@ -1,0 +1,13 @@
+{
+  "id": "comms",
+  "model": "seegen:sd2-fast",
+  "seconds": 7.083,
+  "size": "1920x1080",
+  "bytes": 2178851,
+  "medianStep": 0.05,
+  "maxStep": 0.79,
+  "seamBefore": 1.22,
+  "seamAfter": 0.2,
+  "fixed": "cut 4 snapping frames; crossfade 0.75s",
+  "tiles": "still it started from | loop first frame | middle | last frame"
+}

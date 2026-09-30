@@ -26,6 +26,8 @@ function load(atlas) {
   return (cache[atlas] = PNG.sync.read(fs.readFileSync(png)));
 }
 function frame(img, size, cols, i) {
+  // A clip over several atlas pages (a core stage, Sep 30 2026): frame i is on page floor(i / per).
+  if (img.pages) { const p = Math.floor(i / img.per); return frame(img.pages[p], size, cols, i - p * img.per); }
   const x0 = (i % cols) * size, y0 = Math.floor(i / cols) * size;
   const f = new Float32Array(size * size * 4);
   for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
@@ -67,7 +69,7 @@ for (const [name, a] of Object.entries(m.limbs)) {
   if (a.back?.anims?.idle) { const b = a.back.anims.idle; rows.push({ name, side: 'back', fps: b.fps, count: b.count, big: !!a.big, frame: a.frame, pong: !!b.pingpong, breathe: !!b.breathe, ...measure(img, a.frame, a.cols, b.start, b.count, !!b.pingpong) }); }
 }
 for (const s of m.board.coreEvo.stages) {
-  const i = s.idle; const img = load(i.atlas);
+  const i = s.idle; const img = i.pages ? { pages: [i.atlas, ...i.pages].map(load), per: i.perPage } : load(i.atlas);
   rows.push({ name: 'core-' + s.id, side: 'front', fps: i.fps, count: i.count, big: true, frame: i.frame, pong: !!i.pingpong, ...measure(img, i.frame, i.cols, 0, i.count, !!i.pingpong) });
 }
 fs.writeFileSync(OUT + 'idle-motion.json', JSON.stringify(rows, null, 1));

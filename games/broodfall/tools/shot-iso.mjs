@@ -76,6 +76,20 @@ try {
   check(missing.length === 0, 'all the art loads', missing.join(', '));
 
   const step = (n) => page.evaluate((k) => window.broodfall.step(k), n);
+  /**
+   * The view eases to where it is going (Home, a turn, a zoom) over about a second: a click is aimed only
+   * once it has arrived. Aiming from where the camera WAS and clicking where it IS was the "click picking
+   * flake" of Sep 30 (a limb aimed at while the view was still easing back from a close-up, 10-11/12).
+   */
+  const settle = async () => {
+    let was = null;
+    for (let i = 0; i < 60; i++) {
+      const c = await page.evaluate(() => window.broodfall.camera());
+      if (was && Math.abs(c.x - was.x) < 0.25 && Math.abs(c.y - was.y) < 0.25 && Math.abs(c.scale - was.scale) < 0.0005) return;
+      was = c;
+      await page.waitForTimeout(100);
+    }
+  };
   const shot = async (name) => { await page.waitForTimeout(250); await canvas.screenshot({ path: join(shots, `iso-${name}.png`) }); };
 
   await step(5);
@@ -121,6 +135,7 @@ try {
   check(noLimb.length === 0, 'every limb on the field has its picture', noLimb.join(', ') || field.families.join(', '));
 
   // A click aimed at a limb on a roof reaches that limb's cell.
+  await settle();
   const aim = await page.evaluate(() => {
     const s = window.broodfall.sim;
     const out = [];
@@ -178,6 +193,7 @@ try {
   // The view eases back: it is measured when it has arrived.
   await page.waitForTimeout(2500);
   const aimAll = async () => {
+    await settle();
     const at = await page.evaluate(() => window.broodfall.sim.towers.slice(0, 12).map((t) => {
       const p = window.broodfall.worldToScreen(t.pos.x, t.pos.y);
       return { cell: t.cell, cells: window.broodfall.sim.cellsOf(t), x: p.x, y: p.y, vw: p.vw, vh: p.vh };

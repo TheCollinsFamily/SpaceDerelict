@@ -38,6 +38,10 @@ describe.skipIf(!manifest?.board?.coreEvo)('the core\'s stages, as baked', () =>
     expect(evo.stages.map((s: { grown: number }) => s.grown)).toEqual([...CORE_STAGE_GROWN]);
     evo.stages.forEach((s: { id: number; idle: { atlas: string; count: number; body: number }; grow?: { atlas: string; count: number } }, i: number) => {
       expect(existsSync(join(ART, s.idle.atlas)), s.idle.atlas).toBe(true);
+      // An idle over several atlas pages: every page is there, and they hold every frame.
+      const paged = s.idle as { pages?: string[]; perPage?: number; count: number };
+      for (const p of paged.pages ?? []) expect(existsSync(join(ART, p)), p).toBe(true);
+      if (paged.pages) expect(paged.perPage! * (paged.pages.length + 1)).toBeGreaterThanOrEqual(paged.count);
       expect(s.idle.count).toBeGreaterThanOrEqual(8);
       expect(s.idle.body).toBeGreaterThan(0);
       if (i === 0) return;

@@ -98,6 +98,21 @@ const dirOf = (b) => path.join(TERRAIN, b.id);
  * Where a picture of a set is. One drawn AGAIN (the set's `redrawn` list in tools/art/biomes.mjs; Sep 30 2026 fix
  * pass) is in its own folder, art-src/terrain/<set>-redrawn/, and is used in place of the first, which is kept.
  */
+/**
+ * A picture's colours brought down at the bake (the set's `grade` in tools/art/biomes.mjs): `saturation` is the share
+ * of its colour kept (1 = all), `warm` pushes it toward honey (red up, blue down), `light` scales it. The raw picture is untouched.
+ */
+function graded(img, g) {
+  if (!g) return img;
+  const { saturation = 1, warm = 0, light = 1 } = g;
+  const d = img.data;
+  for (let i = 0; i < d.length; i += 4) {
+    const y = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+    const px = [0, 1, 2].map((k) => (y + (d[i + k] - y) * saturation) * light);
+    d[i] = Math.min(255, px[0] * (1 + warm)); d[i + 1] = Math.min(255, px[1] * (1 + warm * 0.2)); d[i + 2] = Math.min(255, px[2] * (1 - warm));
+  }
+  return img;
+}
 export const fileOf = (b, file) => path.join(b.redrawn?.includes(file) ? path.join(TERRAIN, `${b.id}-redrawn`) : dirOf(b), file);
 /** The street props a set has pictures of. */
 const ownStreet = (b) => b.streetProps.filter((p) => p.look);
@@ -211,7 +226,7 @@ export function bakeBiome(id) {
   fs.mkdirSync(out, { recursive: true });
   borrowFirst(b);
   const have = (f) => fs.existsSync(fileOf(b, f));
-  const tex = (f, w, h) => readImage(fileOf(b, f), { w, h });
+  const tex = (f, w, h) => graded(readImage(fileOf(b, f), { w, h }), b.grade?.[f]);
   const all = pieces(b);
   // The game counts the pieces of a kind from the first: a later one is baked only when every one before it is there.
   const there = (part) => {

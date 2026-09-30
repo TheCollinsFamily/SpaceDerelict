@@ -130,8 +130,8 @@ body:has(#menu.console-menu:not(.hidden)) #topbar, body:has(#menu.console-menu:n
 .cp-dark-globe { position: relative; width: 340px; max-width: 100%; aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
 .cp-dark-ring { position: absolute; inset: 8%; border-radius: 50%; border: 1px dashed rgba(159, 232, 245, 0.22); box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.8); animation: cp-dark-hum 4s ease-in-out infinite; }
 @keyframes cp-dark-hum { 50% { border-color: rgba(159, 232, 245, 0.4); } }
-.cp-dark-word { position: relative; font-weight: 300; letter-spacing: 7px; font-size: 18px; color: rgba(233, 238, 240, 0.8); text-align: center; }
-.cp-dark-small { position: relative; font-size: 9px; letter-spacing: 2px; color: rgba(233, 238, 240, 0.45); text-align: center; }
+.cp-dark-word { position: relative; font-weight: 300; letter-spacing: 5px; font-size: 15px; color: rgba(233, 238, 240, 0.8); text-align: center; max-width: 80%; }
+.cp-dark-small { position: relative; font-size: 9px; letter-spacing: 2px; color: rgba(233, 238, 240, 0.45); text-align: center; max-width: 66%; }
 #campaign:not(.ship-art) .cp-dark-word { color: #ddd; }
 
 /* ---- his quarters: the data pad ---- */
@@ -147,6 +147,28 @@ body.coach-hand #hand .card { animation: coach-glow 1.4s ease-in-out infinite; }
 body.coach-call #call-early { animation: coach-glow 1.4s ease-in-out infinite; }
 @keyframes coach-glow { 50% { box-shadow: 0 0 0 3px #ffd36a, 0 0 22px rgba(255, 190, 70, 0.9); } }
 body.first-mission #hint { font-size: 14px; }
+/* On the ship console the glow is the ship's own light (the cyan the rooms beckon with), not gold. */
+[data-hud="ship"] body.coach-hand #hand .card, [data-hud="ship"] body.coach-call #call-early { animation-name: coach-glow-ship; }
+@keyframes coach-glow-ship { 50% { box-shadow: 0 0 0 2px #9fe8f5, 0 0 22px rgba(159, 232, 245, 0.85); border-color: #fff; } }
+
+/* ---- mission 1 shows one thing at a time (Sep 30 2026 fix pass; src/ui/hud.ts revealForMission1) ----
+   Each part waits hidden until the run makes it matter (body.m1-<part>), then comes in with a glow and stays. */
+body.first-mission:not(.m1-science) #meat-science,
+body.first-mission:not(.m1-royal) #meat-royal,
+body.first-mission:not(.m1-dials) #dials,
+body.first-mission:not(.m1-organs) #open-under,
+body.first-mission:not(.m1-nodes) #creep-nodes,
+body.first-mission:not(.m1-plinths) #plinths,
+body.first-mission:not(.m1-surge) #royal-surge,
+body.first-mission:not(.m1-cannibal) #pending-traits { display: none; }
+/* With the side screens hidden, the hand sits in the middle of the desk. */
+body.first-mission #botbar { justify-content: center; }
+body.first-mission:not(.m1-organs):not(.m1-nodes):not(.m1-plinths):not(.m1-surge) #organs { display: none; }
+body.first-mission:not(.m1-cannibal) #feed-controls { display: none; }
+body.first-mission.m1-science #meat-science, body.first-mission.m1-royal #meat-royal, body.first-mission.m1-dials #dials,
+body.first-mission.m1-organs #open-under, body.first-mission.m1-nodes #creep-nodes, body.first-mission.m1-plinths #plinths,
+body.first-mission.m1-surge #royal-surge, body.first-mission.m1-cannibal #pending-traits { animation: m1-reveal 1.6s ease-out 1; }
+@keyframes m1-reveal { 0% { opacity: 0; box-shadow: 0 0 0 2px #9fe8f5, 0 0 24px rgba(159, 232, 245, 0.9); } 30% { opacity: 1; } 100% { box-shadow: 0 0 0 0 transparent; } }
 
 /* ---- a scene she acts out over the whole ship (src/ui/yokeScene.ts): the print-body ---- */
 #yoke-scene { position: fixed; inset: 0; z-index: 58; background: #030405; display: flex; align-items: center; justify-content: center; transition: opacity 0.4s; }

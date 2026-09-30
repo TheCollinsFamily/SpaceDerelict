@@ -1,0 +1,13 @@
+{
+  "id": "board",
+  "model": "seegen:sd2-fast",
+  "seconds": 8,
+  "size": "1920x1080",
+  "bytes": 1597209,
+  "medianStep": 0.04,
+  "maxStep": 0.54,
+  "seamBefore": 0.5,
+  "seamAfter": 0.46,
+  "fixed": "none",
+  "tiles": "still it started from | loop first frame | middle | last frame"
+}

@@ -35,7 +35,7 @@ const page = (f) => { if (!cache.has(f)) cache.set(f, readImage(path.join(DIR, f
 function clipOf(name) {
   if (name.startsWith('core-')) {
     const s = m.board.coreEvo.stages[Number(name.slice(5)) - 1];
-    return { img: page(s.idle.atlas), F: s.idle.frame, cols: s.idle.cols, clip: { ...s.idle, start: 0 } };
+    return { img: s.idle.pages ? { pages: [s.idle.atlas, ...s.idle.pages].map(page), per: s.idle.perPage } : page(s.idle.atlas), F: s.idle.frame, cols: s.idle.cols, clip: { ...s.idle, start: 0 } };
   }
   const a = m.limbs[name];
   const side = back ? a.back : a;
@@ -44,8 +44,10 @@ function clipOf(name) {
 
 /** premultiplied mix of frames a and b (b over a at f), scaled about the foot (bottom middle) by breath, over the ground. */
 function compose(src, F, cols, a, b, f, [bx, by], S) {
-  const fa = crop(src, (a % cols) * F, Math.floor(a / cols) * F, F, F);
-  const fb = crop(src, (b % cols) * F, Math.floor(b / cols) * F, F, F);
+  // A clip over several atlas pages (a core stage, Sep 30 2026): frame i is on page floor(i / per).
+  const cell = (i) => { const p = src.pages ? Math.floor(i / src.per) : 0; const img = src.pages ? src.pages[p] : src; const k = src.pages ? i - p * src.per : i; return crop(img, (k % cols) * F, Math.floor(k / cols) * F, F, F); };
+  const fa = cell(a);
+  const fb = cell(b);
   const A = resize(fa, S, S), B = resize(fb, S, S);
   const out = blank(S, S, [...GROUNDS.creep, 255]);
   const g = GROUNDS.creep;

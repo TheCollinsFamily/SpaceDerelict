@@ -9,8 +9,11 @@
  *
  * Builds its OWN copy of the game (dist-maw/) and serves it on its own port (5293).
  *
- * Usage: node tools/shot-maw-tongue.mjs [--no-video]
+ * Usage: node tools/shot-maw-tongue.mjs [--no-video] [--tag before|after] [--dist <built dir>]
  * Pictures: notes/screens/2026-09-30/maw-tongue-*.jpg, maw-tongue-strip.jpg, maw-tongue.mp4.
+ * --tag T: the pictures are named fixpass-art-maw-T-*.jpg instead (the art fix pass's before/after), and the
+ * film is left out. --dist D: serve an already built copy of the game (a before build) instead of building one.
+ * Also shot: the gulp (the throat sac swollen) and the Maw seen FROM BEHIND catching a body up the street.
  */
 import { spawn, execSync, spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, rmSync } from 'node:fs';
@@ -25,8 +28,13 @@ const screens = join(root, 'notes', 'screens', '2026-09-30');
 mkdirSync(shots, { recursive: true });
 mkdirSync(screens, { recursive: true });
 const PORT = Number(process.env.BROODFALL_PORT || 5293);
-const DIST = 'dist-maw';
-const VIDEO = !process.argv.includes('--no-video');
+const argOf = (flag) => { const i = process.argv.indexOf(flag); return i > 0 ? process.argv[i + 1] : undefined; };
+const TAG = argOf('--tag');
+const PREBUILT = argOf('--dist');
+const DIST = PREBUILT ?? 'dist-maw';
+const VIDEO = !process.argv.includes('--no-video') && !TAG;
+/** A picture's file name: its own, or the fix pass's before/after name. */
+const named = (n) => (TAG ? `fixpass-art-maw-${TAG}-${n.replace(/^maw-tongue-/, '')}` : n);
 const failures = [];
 const check = (ok, name, detail = '') => {
   if (!ok) failures.push(name);
@@ -54,9 +62,11 @@ function startServer() {
   });
 }
 
-const b = spawnSync(process.platform === 'win32' ? 'npx.cmd' : 'npx', ['vite', 'build', '--outDir', DIST, '--emptyOutDir'], { cwd: root, stdio: 'pipe', shell: process.platform === 'win32', encoding: 'utf8' });
-if (b.status !== 0) { console.error(b.stdout, b.stderr); process.exit(1); }
-console.log(`  built ${join(root, DIST)}`);
+if (!PREBUILT) {
+  const b = spawnSync(process.platform === 'win32' ? 'npx.cmd' : 'npx', ['vite', 'build', '--outDir', DIST, '--emptyOutDir'], { cwd: root, stdio: 'pipe', shell: process.platform === 'win32', encoding: 'utf8' });
+  if (b.status !== 0) { console.error(b.stdout, b.stderr); process.exit(1); }
+  console.log(`  built ${join(root, DIST)}`);
+}
 const server = await startServer();
 const browser = await chromium.launch({ args: ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist', '--enable-webgl'] });
 
@@ -79,7 +89,8 @@ async function session(record = false) {
     });
     check(missing.length === 0 && !notice, `${name}: all its art loaded, no notice`, [...missing, notice].filter(Boolean).join(' | ').slice(0, 200));
   };
-  const shot = async (name) => {
+  const shot = async (bare) => {
+    const name = named(bare);
     const png = join(shots, `${name}.png`);
     await page.waitForTimeout(150);
     await artOk(name);
@@ -221,6 +232,7 @@ try {
       { name: 'maw-tongue-2-stuck', at: 0.26, label: 'STUCK' },
       { name: 'maw-tongue-3-halfway', at: 0.52, label: 'HALFWAY HOME' },
       { name: 'maw-tongue-4-lips', at: 0.64, label: 'AT THE LIPS' },
+      { name: 'maw-tongue-4b-gulp', at: 0.9, label: 'GULP' },
       { name: 'maw-tongue-5-swallowed', at: 1.02, label: 'SWALLOWED' },
     ];
     const pngs = [];
@@ -250,10 +262,10 @@ try {
     const args = ['-hide_banner', '-loglevel', 'error', '-y'];
     for (const p of pngs) args.push('-i', p.png);
     const f = pngs.map((p, i) => `[${i}:v]crop=iw*0.62:ih*0.66:iw*0.19:ih*0.15,scale=560:-2,drawtext=text='${p.label}':x=12:y=10:fontsize=26:fontcolor=white:box=1:boxcolor=black@0.6:fontfile='C\\:/Windows/Fonts/arialbd.ttf'[v${i}]`).join(';');
-    args.push('-filter_complex', `${f};${pngs.map((_, i) => `[v${i}]`).join('')}hstack=inputs=${pngs.length}`, '-q:v', '3', join(screens, 'maw-tongue-strip.jpg'));
+    args.push('-filter_complex', `${f};${pngs.map((_, i) => `[v${i}]`).join('')}hstack=inputs=${pngs.length}`, '-q:v', '3', join(screens, `${named('maw-tongue-strip')}.jpg`));
     const r = spawnSync('ffmpeg', args, { encoding: 'utf8' });
     check(r.status === 0, 'the frame strip is made', r.stderr?.slice(0, 200));
-    console.log(`  strip ${join(screens, 'maw-tongue-strip.jpg')}`);
+    console.log(`  strip ${join(screens, `${named('maw-tongue-strip')}.jpg`)}`);
 
     // ---- A tough soldier: the tongue slaps it and snaps back; it stays in the street.
     const [tough] = await s.put([{ kind: 'soldier', cell: s.reachable[0] }]);
@@ -266,6 +278,41 @@ try {
     await s.shot('maw-tongue-6-slap');
     const alive = await page.evaluate((id) => window.broodfall.sim.enemies.some((e) => e.id === id), tough);
     check(alive, 'the slapped soldier stays in the street');
+
+    // ---- From behind: a weakened soldier in a street cell UP the screen from the Maw (it turns to it, and is
+    // seen from behind: its mouth faces away), caught and gulped.
+    const behind = await page.evaluate((id) => {
+      const s = window.broodfall.sim;
+      const t = s.towers.find((x) => x.id === id);
+      const m = window.broodfall.worldToScreen(t.pos.x, t.pos.y);
+      let best = -1, bestUp = 0;
+      for (let c = 0; c < s.map.cells.length; c++) {
+        if (s.map.cells[c] !== 1) continue;
+        const p = s.cellCenter(c);
+        const d = Math.hypot(p.x - t.pos.x, p.y - t.pos.y);
+        if (d < s.cfg.cellPx * 1.1 || d > 48) continue;
+        const up = m.y - window.broodfall.worldToScreen(p.x, p.y).y;
+        if (up > bestUp) { bestUp = up; best = c; }
+      }
+      return best;
+    }, s.mawId);
+    if (behind >= 0) {
+      await page.evaluate(() => { const s = window.broodfall.sim; s.enemies.length = 0; });
+      await s.ticks(30);
+      await page.evaluate((id) => { const t = window.broodfall.sim.towers.find((x) => x.id === id); t.cooldown = 99; }, s.mawId);
+      const [prey] = await s.put([{ kind: 'soldier', cell: behind, hp: 12 }]);
+      await s.ticks(2);
+      await page.evaluate((id) => { const t = window.broodfall.sim.towers.find((x) => x.id === id); t.cooldown = 0.12; }, s.mawId);
+      let on = false;
+      for (let i = 0; i < 60 && !on; i++) { await s.ticks(1); on = await page.evaluate(() => window.broodfall.tongues().length > 0); }
+      const back = [];
+      for (const w of [{ n: 'maw-tongue-7-behind-out', at: 0.14, label: 'FROM BEHIND: OUT' }, { n: 'maw-tongue-8-behind-home', at: 0.5, label: 'FROM BEHIND: HOME' }, { n: 'maw-tongue-9-behind-gulp', at: 0.9, label: 'FROM BEHIND: GULP' }]) {
+        for (let i = 0; i < 60; i++) { const t = await page.evaluate(() => window.broodfall.tongues()[0]?.t ?? 9); if (t >= w.at) break; await s.ticks(1); }
+        back.push({ png: await s.shot(w.n), label: w.label });
+      }
+      const seenBack = await page.evaluate(() => window.broodfall.sim.enemies.length);
+      console.log(`  from behind: prey ${prey}, ${seenBack} left in the sim`);
+    } else console.log('  (no street up the screen in its reach: no view from behind)');
     check(s.errors.length === 0, 'no page errors', s.errors.slice(0, 3).join(' | '));
     await s.context.close();
   }

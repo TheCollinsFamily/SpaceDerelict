@@ -1,0 +1,13 @@
+{
+  "id": "locker",
+  "model": "seegen:sd2-fast",
+  "seconds": 7.25,
+  "size": "1920x1080",
+  "bytes": 1926725,
+  "medianStep": 0.05,
+  "maxStep": 0.64,
+  "seamBefore": 0.61,
+  "seamAfter": 0.19,
+  "fixed": "crossfade 0.75s",
+  "tiles": "still it started from | loop first frame | middle | last frame"
+}

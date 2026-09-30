@@ -274,9 +274,10 @@ function podPulseFrames() {
   for (const img of imgs) {
     studioKey(ck, img);
     dropSpecks(img, 0.05);
-    // The faint pink mist keeps a tint of the green through it: no green over the red in anything left.
+    // The faint pink mist keeps a tint of the green through it: no more green in anything left than its
+    // red or its blue (the pod and its mist are red and pink: green is only ever the key).
     const d = img.data;
-    for (let i = 0; i < d.length; i += 4) if (d[i + 3] && d[i + 1] > d[i]) d[i + 1] = d[i];
+    for (let i = 0; i < d.length; i += 4) if (d[i + 3]) d[i + 1] = Math.min(d[i + 1], d[i], d[i + 2]);
   }
   return imgs;
 }
@@ -290,22 +291,23 @@ function bodyOf(f) {
 
 /**
  * The four frames of the pulse: the pod at rest, swelling, at its fullest, easing back. The model's
- * throb is big (up to 1.7x the area): the beat taken is a MILD one, the fullest frame at most about
- * 1.16x the rest frame's area, and every frame is moved so its body's middle is where the rest frame's is.
+ * throb is big (up to 1.7x the area): the beat taken is a MILD one, the fullest frame about
+ * 1.2x (1.1x across) the rest frame's area, and every frame is moved so its body's middle is where the rest frame's is.
  */
 function pulseFour(imgs) {
   const bodies = imgs.map(bodyOf);
   const area = bodies.map((b) => b.n);
-  const lo = area.indexOf(Math.min(...area.slice(0, Math.ceil(area.length / 2))));
+  // The first frames are the model settling in from the still (smaller): the rest frame is after them.
+  const lo = 4 + area.slice(4, Math.ceil(area.length / 2)).indexOf(Math.min(...area.slice(4, Math.ceil(area.length / 2))));
   const at = (from, test) => { for (let i = from; i < area.length; i++) if (test(area[i])) return i; return -1; };
-  let a = at(lo + 1, (v) => v >= area[lo] * 1.07);
-  let hi = a < 0 ? -1 : at(a + 1, (v) => v >= area[lo] * 1.14);
+  let a = at(lo + 1, (v) => v >= area[lo] * 1.04);
+  let hi = a < 0 ? -1 : at(a + 1, (v) => v >= area[lo] * 1.2);
   if (a < 0 || hi < 0 || area[hi] > area[lo] * 1.3) {
     // No mild beat: the frames nearest those sizes anywhere after the rest frame.
     const near = (k) => { let best = lo + 1; for (let i = lo + 1; i < area.length; i++) if (Math.abs(area[i] - area[lo] * k) < Math.abs(area[best] - area[lo] * k)) best = i; return best; };
-    a = near(1.07); hi = near(1.14);
+    a = near(1.05); hi = near(1.2);
   }
-  let back = at(hi + 1, (v) => v <= area[lo] * 1.08);
+  let back = at(hi + 1, (v) => v <= area[lo] * 1.12);
   if (back < 0) back = a;
   const idx = [lo, a, hi, back];
   const ref = bodies[lo];
