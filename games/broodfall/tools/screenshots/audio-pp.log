@@ -1,0 +1,19 @@
+  PASS  the first launch plays the opening film
+  PASS  then straight into mission 1 (hold 5 waves), no menu ({"menu":true,"dir":{"kind":"hold","waves":5}})
+  PASS  the menu opens with its deploy button
+  PASS  run 1: a click on deploy starts the deployment
+  PASS  run 1: the board is drawn with a tile set (iso, wetland)
+  PASS  run 1: all the art loads
+  PASS  run 1: the first wave arrives (wave 1, 6 units)
+  FAIL  run 1: nothing is logged as an error ([art] could not load: limbs/brood.webp)
+  PASS  run 2: a click on deploy starts the deployment
+  PASS  run 2: the board is drawn with a tile set (iso, orthodox)
+  PASS  run 2: all the art loads
+  PASS  run 2: the first wave arrives (wave 0, 4 units)
+  PASS  run 2: nothing is logged as an error
+  PASS  run 3: a click on deploy starts the deployment
+  PASS  run 3: the board is drawn with a tile set (iso, orthodox)
+  PASS  run 3: all the art loads
+  PASS  run 3: the first wave arrives (wave 0, 4 units)
+  PASS  run 3: nothing is logged as an error
+PLAYER PATH: 1 check(s) FAILED: run 1: nothing is logged as an error
