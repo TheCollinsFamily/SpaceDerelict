@@ -285,7 +285,7 @@ and needs no asset at all.
 | "The moral weight of actions and lives in that universe and universe prime would be equal as both are 'just' simulations." | TP 11.0 | A life in the archive weighs the same as a life on the planet. |
 | The coming lattice "can port our likeness into either simulated heavens or hells and host us there for great lengths of time." Heaven is a time, the future, reached "through simulations or through literal resurrections". | TP 12.0; TP 15.0; TP 1.2 | The technology was foreseen; the Empire uses it on others first. |
 | The Covenant of the Sons of Man: to war on the different is to war on one's betters. | TP 11.0 | **PROPOSAL:** the Empire owes the xenofauna nothing by covenant. What it gives them it gives because the tenets above allow nothing less, not because they are owed. |
-| A heaven where one "can no longer affect anything ... sounds like a form of hell ... not my heaven." | TP 15.0 | **PROPOSAL:** the Empire gives them exactly the heaven it would refuse: comfort without a hand on history, for those who want only comfort. Those who want their old lives get the heaven the corpus would accept: work that matters, run fast, with resynthesis as the door back. Generous, and it takes them out of the race for living room until they can join it on man's side. Nobody in the Empire notices the tension. |
+| A heaven where one "can no longer affect anything ... sounds like a form of hell ... not my heaven." | TP 15.0 | **PROPOSAL (amended Sep 30 2026 for section 12b: every Technopuritan is uploaded on death, so the Empire does not refuse this heaven, it takes it last):** the Empire gives them early the heaven it saves for after a life's work: comfort without a hand on history, for those who want only comfort. Those who want their old lives get the heaven the corpus would accept: work that matters, run fast, with resynthesis as the door back. Generous, and it takes them out of the race for living room until they can join it on man's side. Nobody in the Empire notices the tension. |
 | God reveals to each people what it can hold. | TP 12.0; HOME 1.0 | **PROPOSAL (Collins's reading for the Faithful's route):** when a xenofauna scripture foretells the archive accurately, a Technopuritan assumes God steered it. |
 
 **How the procurement voice hides it in plain sight.** It hides nothing. Every word on the forms
@@ -311,6 +311,79 @@ through procedure. They now work as a double bluff: the propaganda voice is play
 is telling the truth, and it is misleading about the horror. The player hears pest control and
 reads genocide; the Empire says pest control and means a heaven. The in-world excerpts in this
 file are unchanged, and must stay literally true of an upload.
+
+## 12b. Why not let them evolve on their own? And why the Empire is so hard on itself (Collins, Sep 30 2026)
+
+Collins (typos mended): "To the question of why the Technopuritans don't see just letting the
+species evolve on its own as an ethically viable option: the species is still primitive enough
+that its members would, for generations, subject other members to things infinitely worse than
+anything the broodfall does, and the actions of those of the species you have interacted with
+show that this is a sound call. (Most likely to have this argument with the EA guy.) Yeah, he may
+want to live out his life and play the cards, but he is wealthy, well known and has social
+status. What about the abandoned infant, or the child in a war? If someone wants a war we can
+still simulate it for them; we just don't need to put other intelligence in that simulation."
+
+"To which a character may wonder, then, why are the Technopuritans so brutal in their own
+society? To which the answer is: on death we are all uploaded. So they live knowing most of their
+life (experience) will be good, so push themselves and others as hard as possible in the real
+world to be impactful, which is what is unique to the real world. It is also why they are
+extremely desensitised to death, as it's when the easy part begins (in a very real way)."
+
+### Leaving a people alone is not neutral
+- **The argument.** A people this young will, left to itself, do worse to its own members for
+  generations than anything a broodfall does. Leaving it alone is a choice to let that happen.
+- **The evidence is the people he has met** (Collins). **PROPOSAL, from the canon of the
+  planet (`insects.md`):** the hives send their unfed young out to die when threatened (the
+  skitterlings, 3.5); a worker's employer is her mother and her union is weak (4); princesses are
+  made by a recipe kept secret from the workers (the jelly question, 4); the Clan Wars were a
+  century ago and the sibling wars are covered like a pennant race (2.2, 4). And the Institute:
+  cryo-lab subjects "consenting, broadly", underlings offered as gifts, a forty-page post proving
+  its author should go first.
+- **The cards argument, answered.** The one who asks to be left to "live out his life and play
+  the cards" is the one holding good cards: wealthy, famous, with status. The Empire asks on behalf
+  of the ones who were not dealt any: the abandoned infant, the child in a war.
+- **Nothing is taken from anyone who wants the old life.** A war can still be run for whoever
+  wants a war. The archive simply does not put another intelligence in it to suffer the war.
+  (**PROPOSAL, the join to 12a:** this is the "world made to its desires" rule seen from the
+  other side: every mind gets the world it wants, and nobody is cast in someone else's without
+  being asked. Those who want their old lives are run fast among others who want the same.)
+- **PROPOSAL, doctrine:** inaction is a sin (TP 35.0.3), and a "safety net" that protects people
+  from their own mistakes is evil (TPG 12.1). The two do not conflict here: the Empire does not
+  shield anyone from their own choices. It stops them making those choices *on someone else*.
+
+### Why the Empire is brutal to its own: death is when the easy part begins
+- **Every Technopuritan is uploaded on death** (Collins). Most of a life, counted in experience,
+  is the part afterwards, and it will be good.
+- **So the real world is for impact** (Collins). It is the one place where what you do is the
+  first time it happened. Technopuritans push themselves and each other as hard as they can while
+  they are in it: krypteia, the testing, the 25-fold generations, a technician alone on a tender.
+- **Desensitised to death** (Collins): dying is not the end of anything that counts; it is when
+  the easy part begins, "in a very real way". A death costs the world a worker's remaining
+  impact. It does not cost the one who dies.
+- **PROPOSAL, what that squares in this file:**
+  - *Krypteia* (section 5): half of each cohort "does not come back", and every one of them is
+    uploaded. The rite is harsher than any on the planet below and kinder than it reads; the
+    Index records whether a youth survived the year because that is the only thing that
+    changed.
+  - *Risking life for thrills is still a sin* (TP 35.0.3), and now makes more sense, not less:
+    death is cheap, the real world is not. A thrill spends real-world time and makes nothing.
+  - *The heaven the corpus refuses* ("a form of hell ... not my heaven", TP 15.0; 12a above).
+    Technopuritans do not refuse the easy heaven; they refuse it **first**. It is what a life
+    retires into once its impact is spent. The fauna are handed early what a Technopuritan earns
+    last, which is exactly how it looks from inside the Empire: generous, and a little sad for
+    them.
+  - *Magnanimity and cruelty are the same fact.* The Empire can be merciless to itself and
+    generous to its conquered because it believes the same thing of both: nobody's story ends at
+    death, so the living are for work.
+- **PROPOSAL, the tone:** no Technopuritan says any of this with feeling. A technician mentions
+  that a classmate "did not come back from krypteia, she is doing very well" the way we mention a
+  friend who moved abroad.
+
+### Where it goes in the game
+- **The Institute's reveal call** (`content/campaign.ts`, "The Queue Was Real"): the Director makes
+  the let-us-evolve argument and the character answers it; the Director throws the krypteia back
+  at him, and gets the upload-on-death answer. Both built Sep 30 2026.
+- **YOKE** answers either question plainly if asked (`ship-ai-lorebook.md`, section 17).
 
 ## 13. Other spacefarers
 
@@ -392,3 +465,11 @@ Having a dog for a boss is the one enviable thing about a pest-control posting.
 - Whether any Earth power beyond the Crusade and the Caliphate should be named.
 - Whether the Empire has a calendar era (section 1 proposes one counted from the first womb-born
   child).
+- **Earth and section 12b.** If leaving a primitive people alone is unethical because of what its
+  members do to each other, why is Earth left in constant holy war and watched as a zoo
+  (section 9)? The covenant (Earth's people are sons of man, and the Empire does not war on sons
+  of man unless they threaten) and "no monoculture" answer why it is not *cleared*, but not why
+  the dying are not at least *kept*. Options: (a) the Empire uploads Earth's dead from orbit, so
+  the holy wars are, in effect, a war simulated with real players who all go on afterwards; (b)
+  the covenant forbids even that without consent; (c) it is a tension the Empire does not notice,
+  as with the heaven in 12a. Unresolved until Collins picks.

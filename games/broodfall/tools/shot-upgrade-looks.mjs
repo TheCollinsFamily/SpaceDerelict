@@ -180,11 +180,15 @@ try {
       const W = s.cfg.gridW;
       const at = (c) => [c % W, Math.floor(c / W)];
       const d = (c) => Math.hypot(at(c)[0] - at(s.map.coreCell)[0], at(c)[1] - at(s.map.coreCell)[1]);
+      // A BIG limb (four cells of one roof): the creep is let reach farther for the staging, so six whole roofs are held.
+      if (family === 'frond') s.creepRadius += 6 * s.cfg.cellPx;
       const cells = [];
       for (let c = 0; c < s.map.cells.length; c++) if (s.canBuildTower(c, family)) cells.push(c);
       cells.sort((a, b) => d(a) - d(b));
       const taken = [];
-      const apart = (c) => taken.every((t) => Math.max(Math.abs(at(t)[0] - at(c)[0]), Math.abs(at(t)[1] - at(c)[1])) >= 2);
+      // A cell between neighbours; a BIG limb (four cells) needs whole roofs, so it only keeps off the others' ground.
+      const gap = s.groundFor(cells[0] ?? 0, family, 'S')?.length > 1 ? 1 : 2;
+      const apart = (c) => taken.every((t) => Math.max(Math.abs(at(t)[0] - at(c)[0]), Math.abs(at(t)[1] - at(c)[1])) >= gap);
       return scene.map(([, , upgrades, pips], i) => {
         const cell = cells.find((c) => { const g = s.groundFor(c, family, 'S'); return g && g.every(apart); });
         if (cell === undefined) return -1;

@@ -67,11 +67,10 @@ three campaign outlines, covers and promotional art.
 
 ## 6. Design not built yet (DESIGN.md backlog)
 
-- Royal special-upgrade sinks beyond the stage-3 evolution cost.
-- Civilians fleeing the crash.
-- Surgery vulnerability: drama when cannibalizing mid-siege.
-- The interior sealing itself (a burrow-reopen mechanic).
-- Asides in a fixed order. (~~The globe as a true 3D sphere~~: `src/ui/globe3d.ts`, Sep 30 2026.)
+- BUILT Sep 30 (the gap pass, `notes/GAPS-2026-09-30.md`): royal decrees (the royal special-upgrade
+  sinks), civilians fleeing the crash, surgery under fire, burrowing out of a sealed-in body, asides
+  in a seeded order, lance strips carrying their verbs. (~~The globe as a true 3D sphere~~:
+  `src/ui/globe3d.ts`, Sep 30 2026.) What that audit left, with reasons: its items 18-26.
 - Do ordinary soldiers shoot limbs on roofs: Collins (a balance change).
 - The first LONG limb (built and tested, used by none): Collins picks the limb.
 

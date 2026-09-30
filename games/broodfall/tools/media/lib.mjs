@@ -99,7 +99,10 @@ export async function tts({ out, text, voice }) {
 
 /** What is said in a sound file (Deepgram, POST /api/audio/transcribe); cached beside it. */
 export async function transcribe(file) {
-  const cache = `${file}.words.json`;
+  // Cached in art-src (never beside a baked file in public/), keyed by the file's size and time: a take made again is heard again.
+  const st = fs.statSync(file);
+  const cache = path.join(RAW, 'words', `${path.basename(file)}-${st.size}-${Math.round(st.mtimeMs)}.json`);
+  fs.mkdirSync(path.dirname(cache), { recursive: true });
   if (fs.existsSync(cache)) return JSON.parse(fs.readFileSync(cache, 'utf8'));
   const r = await api('/api/audio/transcribe', { method: 'POST', body: JSON.stringify({ audioBase64: fs.readFileSync(file).toString('base64') }) });
   const o = { text: String(r.transcript ?? r.text ?? r.results?.channels?.[0]?.alternatives?.[0]?.transcript ?? '').trim() };

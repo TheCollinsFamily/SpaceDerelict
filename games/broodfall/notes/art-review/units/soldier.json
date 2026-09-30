@@ -1,7 +1,7 @@
 {
  "kind": "soldier",
  "frames": 174,
- "atlasKB": 351,
+ "atlasKB": 353,
  "pages": 1,
  "failed": 0,
  "checks": [
@@ -293,7 +293,7 @@
   {
    "name": "hit W: nothing cut off",
    "ok": true,
-   "value": "window grown 1.10x"
+   "value": "window grown 1.01x"
   },
   {
    "name": "hit W: no background tint on the outline",
@@ -344,11 +344,6 @@
    "name": "views are one size",
    "ok": true,
    "value": "0.72 0.72 0.65 0.68 0.68"
-  },
-  {
-   "name": "atlas page 1 is under 900 KB",
-   "ok": true,
-   "value": "351 KB"
   }
  ]
 }

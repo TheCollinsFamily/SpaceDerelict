@@ -11,7 +11,7 @@ You are a growing body. Towers are limbs, creep is skin, organs are the build, m
 ## Planetside loop (one deployment = one run)
 
 ### The board: drafted district PLATES (Collins, Sep 26 2026 — Tower Dominion / Nordhold school, built to his reference screenshot)
-- **Plate connection ALGEBRA (Collins, Sep 26 2026):** plates come in opening-count types (2 straight/corner, 3 tee, 4 cross); openings are two-wide and always CENTERED on their edge so any plate mates with any other, and rotation makes entrance/exit meaningless. Placement is legal only if every edge facing an active plate agrees — opening-to-opening or wall-to-wall; an opening may never be walled off in either direction; at least one real connection to the network; and a placement may never reduce the frontier to zero gates (a bridge that seals the last way in is refused). Openings facing empty city or the board edge become frontier gates. Growth can legitimately wall itself in against the interior — off-board gates then remain the hive's permanent highways.
+- **Plate connection ALGEBRA (Collins, Sep 26 2026):** plates come in opening-count types (2 straight/corner, 3 tee, 4 cross); openings are two-wide and always CENTERED on their edge so any plate mates with any other, and rotation makes entrance/exit meaningless. Placement is legal only if every edge facing an active plate agrees — opening-to-opening or wall-to-wall; an opening may never be walled off in either direction; at least one real connection to the network; and a placement may never reduce the frontier to zero gates (a bridge that seals the last way in is refused). Openings facing empty city or the board edge become frontier gates. Growth can legitimately wall itself in against the interior — off-board gates then remain the hive's permanent highways. **BURROWING (built Sep 30 2026):** the body can dig back out. Between waves, hovering the smoke in front of a closed wall of a claimed district lights the dig (the wall's two centred mouth cells and the blocks behind them, to the district's nearest street); a click pays 20 war, turns them to street and gives the district an opening on that edge — a new frontier gate, so the district beyond can be drafted, and the hive has a new way in (power AND exposure). Refused mid-siege, through a limb or organ, or into the board's own edge. When a draft finds no legal district with unclaimed city left, the run says so ("WALLED IN", event `sealed-in`). Measured: the scripted player walls itself in on 4 seeds of 10 (it never burrows, so its numbers are unmoved). `Sim.burrowSiteAt`, `legalDrafts` in `src/sim/citymap.ts`.
 - **The run never starts one plate deep:** beyond EVERY crash-plaza opening a two-opening connector district is pre-placed, so the first wave marches through a full district of your guns before touching home.
 - **Entrances are the difficulty wager (roguelite dial):** the crash plate keeps exactly 1 opening by default; choosing 2 or 3 at deploy (menu or ship, "insertion profile") pays +25%/+50% meat. Measured with the scripted player: 4/4 wins at 1 gate, 1/4 at 2-3.
 - **The run STARTS SMALL and grows by draft.** One 10x10 district (the crash site) surrounded by unclaimed city under smoke. Every 3rd cleared wave: choose one of three districts to consume — each a hand-authored plate (`content/plates.ts`) with its own winding channels, block heights, and a feature (Research Quarter, Provision District, Temple Heights, plain warren). The camera frames the claimed region and zooms out as the body spreads. The map is player-built over the run.
@@ -153,6 +153,12 @@ cache with two named bonuses.
 thrower that lays a straight STRIP of creep along its facing (8 cells × reach,
 growing 0.6 cells/s × tempo; splash widens it; right-click turns it). If it dies,
 what stood only on its strip withers. Evolutions: longer, broader, faster, tougher.
+**Its strip is its payload** (built Sep 30 2026, the payload rule): every hit verb the lance has
+eaten or grown pulses (twice a second × tempo) onto the ground bodies standing on its strip — an
+ember pip sets the strip BURNING (the Nursery Visit experiment's "burning Creep Lance strip through a
+spawn gate"), a snare pip bogs it, a blight pip poisons it, a mister pip shreds. A lance is LONG and
+aims: a quarter turn lays it the other way on the same roof, pivoting on its own ground, or is
+refused when the roof has no room (the same holds for the Skipping Mortar).
 
 Organs are out of the enemies' reach. What organs used to do on the surface
 (hearts → biomass/creep, brains → interest, gland modes, root creep lobes) is gone.
@@ -169,7 +175,7 @@ Collins (Sep 26 2026), the spend-side rule: **war is generic, science comes base
 2. **Science caste** — the MUTATION currency, bait-able. Researchers are attracted by novel biology: every mutated tower and exotic organ raises your "interesting" rating and pulls them to the perimeter, where you eat them. Farming science meat = building weird; science meat buys weirder (advanced towers, organs, mutation paths). The loop feeds itself.
    **Their default behavior is SMART (Collins, Sep 27 2026): "they are smart and will try to walk around your tower defences to the most vulnerable locations"** — to steal limbs, so they live on the periphery. Implemented as a coverage map (summed dps of every armed limb over each cell) feeding a route cost (+3 per dps on a street cell vs 10 for the street itself): researchers walk the gaps in your fire, target the reachable limb whose approach is LEAST covered (ties → the periphery), sedate it (4 hp/s each, so a party is dangerous), and carry it off. Kill the courier and the limb re-roots where it stood with its traits and targeting intact (or its cost comes back if the ground was retaken). There is no special tower-thief unit — this is the whole caste. It is the genre-new layer: war caste tests your killing power on the march; science caste tests your COVERAGE for holes.
 3. **Royal caste** — on the field (Collins, Sep 27 2026): royals are **super-strong warriors that otherwise act like the war caste, whose real weight is powering up others.** The royal and her consort march and chew like warriors; both project a presence aura (war bodies within 120px hit structures ×1.5 and take ×0.7 damage), and the consort PROMOTES the nearest war body one rank every 5s (militia → soldier → elite). Kill-order matters: the court makes the army around it worse.
-   As a currency — the SPECIAL-UPGRADE currency, earned escalation. Royals only move when you are a civilizational crisis. Baiting a royal means deliberately crossing threat thresholds that also unlock the hive's worst response waves. The jackpot and the hardest fight are the same event. Royal meat buys SPECIAL upgrades — rare, run-defining purchases no amount of war/science meat can substitute for. (Status Sep 26 2026: the slice's only royal sink is the biomass surge, which iteration notes already call dead weight — the special-upgrade sink layer is NOT built yet and is the intended design.)
+   As a currency — the SPECIAL-UPGRADE currency, earned escalation. Royals only move when you are a civilizational crisis. Baiting a royal means deliberately crossing threat thresholds that also unlock the hive's worst response waves. The jackpot and the hardest fight are the same event. Royal meat buys SPECIAL upgrades — rare, run-defining purchases no amount of war/science meat can substitute for: the ROYAL DECREES (built Sep 30 2026; section "Royal decrees" below). The biomass surge, the old placeholder, is gone from play.
 
 The build dictates what comes (attraction economy), not the map. Which caste you are hungry for IS your build path.
 
@@ -306,7 +312,28 @@ reliquary that resurrects its limb (Phoenix: with bonuses and evolutions, once p
 wave). Full list: `content/upgrades.ts`.
 
 **Royal points.** Royal meat is counted in points: a consort or matron pays 1, the
-royal 3. A point buys a third evolution stage or a Royal Surge.
+royal 3 (and the dig's royal tombs and ossuaries). A point buys a third evolution stage or a
+ROYAL DECREE.
+
+### Royal decrees: what royal points buy (BUILT Sep 30 2026)
+Rule 10: "royalty is for special upgrades". A decree never adds a stat to a row: it BENDS A RULE of
+the run, the court's own powers turned to your side. `content/royal.ts` (words and numbers),
+`Sim` `case 'decree'`, the box `src/ui/decrees.ts`. Bought where they act (no mode toggles): the
+bar's royal button opens the ROYAL DECREES box and each run-wide decree is bought by clicking its
+card; the crown is bought on the limb itself, in its panel under EVOLVE.
+
+| Decree | Price | What it bends | A second copy (the doubling rule) |
+|---|---|---|---|
+| Crown a Limb | 1R, on a limb | the royal presence aura, turned: every OTHER limb within 120px takes ×0.7 harm and hits +25% | crowns add: ×0.49 and +50% under two |
+| Consort's Favour | 2R (+1 each) | the consort's promotions, turned: at every cleared wave the limb that killed most in it is PROMOTED — one more bonus of its own family, for life (banked if eaten) | promotes the next best killer too |
+| Royal Retinue | 2R (+1 each) | the hand's size: one more card, drawn now and kept | one more again |
+| Royal Larder | 2R (+2 each) | use-it-or-lose-it: half of the war and science left when a wave starts is kept | half of the rest (½ → ¾ → ⅞) |
+| Royal Commission | 1R (+1 each) | the draw: choose any limb your organs unlock — a FREE card of it now (not seedlings, not the cage) | another (a point dearer) |
+| Queen's Heart | 1R | the core: +300 max hp, 300 healed now | +300 again |
+
+The scripted player spends spare points (after keeping one for a third stage): the heart when the
+core is under 60%, the favour once, then crowns on its best killers. Measured over ten seeds: it
+earns 5-6 points in every run that reaches the court and spends them all.
 
 ### Upgrade looks: a limb changes by the CLASS of what it carries (Collins, Sep 30 2026 — PROTOTYPED Sep 30)
 
@@ -463,10 +490,12 @@ on a spine wall = a barricade that heals between waves; sling pip on a frontier 
 = the outpost extends its own ground.
 
 Organs grew too (Collins, Sep 26 2026: "tossing creep" + "a creep node that spawns creep
-directionally"): the **Tendril Root** (15W 15S) grows a creep LOBE toward its compass
-heading — defaults toward the nearest gate, click it to re-aim N→E→S→W. Between the
-core's radius, the root's lobes, the sling's thrown patches and seeping pipped limbs,
-creep is now a multi-source territory game, not one circle.
+directionally"): the **Tendril Root** (15W 15S) grew a creep LOBE toward its compass
+heading. (Superseded Sep 28 by the organ stage: the Tendril Root is now the organ stage's 1-cell,
+8-war root that carries adjacency, and the surface lobe is not in play — its code in `sim.ts`
+`sourceCovers` is unreached. Noted by the Sep 30 gap audit, `notes/GAPS-2026-09-30.md`.) Between the
+core's radius, the creep nodes, the sling's thrown patches, the lance's strips and seeping pipped
+limbs, creep is a multi-source territory game, not one circle.
 
 Enemies (19 kinds; escalation adds VERBS, per the rule above). **Faction rule: war
 caste marches in waves; science caste visits with the attraction economy and never
@@ -600,6 +629,14 @@ would get a 'doom effect'" if towers had one picture.
 - **Interaction rule (Collins, Sep 26 2026): no mode toggle, ever.** His words after trying the "FEED A LIMB" button flow: "you have to hit cannibalize first — that's super unintuitive. What I expected: a special UI when I hovered over something that could be cannibalized, and it was removed and its part of the payment cost was made on click." So: with a card armed, hovering one of your towers shows the cannibalize affordance (highlight + salvage preview in the hint); clicking it eats the limb ON THE SPOT — salvage meat (60% of its cost) is credited immediately as part of paying for the build, and its full trait history banks into the next build. Eating two limbs before placing stacks both histories. The general principle: actions live on the object they act on, discovered by hover — never behind an armed mode the player must know to enter first.
 - Inheritance is DETERMINISTIC and VISIBLE on the body: a spitter built from a cannibalized burster has the burster's sacs hanging off it. The silhouette is the build history.
 - Between-wave time is for the big surgery (butchering your own); the tension source is that the upgrade path and the defense line are the same pool of bodies.
+- **SURGERY UNDER FIRE (built Sep 30 2026).** Surgery mid-siege is possible, and dramatic: a limb
+  built with eaten bonuses DURING a siege GRAFTS for 3 s + 0.5 s per bonus — it holds fire, takes
+  DOUBLE harm, and its open wound draws the climbers (sappers go for a grafting limb within 130px
+  first; mortars within their standoff). Then the graft takes (event `graft-took`). Between waves a
+  graft takes at once. Deterministic and chosen, never RNG destruction: the cannibalize hover says
+  so before the click ("SURGERY UNDER FIRE: the new limb will graft ~Ns — no fire, double harm, the
+  climbers smell it"), the limb wears a pulsing raw ring while it grafts, and its panel counts it
+  down. Numbers: `graftSeconds`, `graftPerPip`, `graftHarm`, `graftScent` in `content/data.ts`.
 
 ### Pacing and waves
 - They Are Billions breathing: growth phases (creep, harvest, build organs) alternating with composed siege phases.
@@ -659,7 +696,9 @@ ship AI's lore book; YOKE speaks through Kimi K2.6 on rfab.ai via `RfabShipAi`, 
 built from the pending plan (`?campaign=run`) and returns to the ship after the debrief.
 Build inventory and status: `notes/CAMPAIGN-BUILD-PLAN.md`. Between beats each ally keeps in
 touch: `FactionDef.asides` (letters, broadcasts, the Director's calls), one per allied
-deployment, shown in the debrief and in Comms. Choice options carry perks (the ultimatum:
+deployment, shown in the debrief and in Comms, in a seeded order (`asideIndex` in
+`src/meta/campaign.ts`: every aside heard once before any is heard twice, a different order each
+campaign, never the same one twice in a row). Choice options carry perks (the ultimatum:
 Kingdom Fund / Pacification) and `endingByChoice` picks the ending.
 
 Collins's calls are quoted; everything else is a proposal filling his frame.
@@ -757,7 +796,8 @@ licence (so every purchase delays the licence — spend now or save).
    - "Forest" (40+ limbs on the map at once).
    - "Only spitters." · "Never cannibalize." · "Everything burns" (100 bodies on fire
      at once) · "Pacifist wave" (clear a wave where your limbs deal no damage — brood,
-     swamps and creep only) · "Let them in" (win after the core drops below 10%).
+     swamps and creep only; a broodling's bite does not count as the limb's — fixed Sep 30 2026) ·
+     "Let them in" (win after the core drops below 10%).
 2. **Experiments** — pay Field Notes AND change the run, with a setup item you start
    with: "capture a royal and see what happens if you control its nervous system and
    send it back against its own forces (which starts you with a trap cage)", "replace

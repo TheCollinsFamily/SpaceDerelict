@@ -717,22 +717,24 @@ RFAB_API_BASE=http://localhost:3011 RFAB_CONNECT_JWT=<tester jwt> node tools/sho
 
 ## Backlog (in rough order)
 
-1. **Royal special-upgrade sinks** beyond the stage-3 evolution cost (the biomass surge is
-   a placeholder).
+1. (Done Sep 30: **royal decrees**, the royal special-upgrade sinks; DESIGN "Royal decrees".
+   The whole gap audit and what is left is `notes/GAPS-2026-09-30.md`.)
 2. **The lore book** — only when Collins brings it up.
 3. **Legibility:** block and street readability under heavy creep at far zoom.
-4. **The interior can seal itself:** growth can wall itself in against the interior
-   (idea: a burrow-reopen mechanic).
-5. **City life:** civilians fleeing the crash.
+4. (Done Sep 30: **burrowing** out of a body that walled itself in; DESIGN plate algebra.)
+5. (Done Sep 30: **civilians** fleeing the crash, `src/sim/civilians.ts`.)
 6. **The rest of the art**: see `notes/TO-CREATE.md` (Sep 30 2026).
    - **The first LONG limb** (longer than it is wide, turned to fit): the rule is built and
      tested and no limb uses it. Collins asked for turning to fit; which limb is his call.
    - **Props do not turn with the camera:** a roof prop or a parked car is one picture, seen
      the same from all four sides. Walls and floors are right from every side.
-7. **Surgery vulnerability:** mid-siege cannibalize drama.
+7. (Done Sep 30: **surgery under fire**; DESIGN "Cannibalize-to-modify".)
 8. **Campaign polish found in the audit, not yet asked for:**
    - (Done Sep 30: all three factions call when the Directive Desk opens.)
-   - Asides cycle in a fixed order.
+   - (Done Sep 30: asides in a seeded order, `asideIndex`.)
+   - Left, with reasons: `notes/GAPS-2026-09-30.md` items 18-26 (crash biome economy bias, territory
+     standing bonuses, territory tier and the waves, the courier's trail, Royal Diet's wording, the
+     Seeded Meteor in the campaign, two standing systems).
    - (Done Sep 30: the globe is a 3D planet, `src/ui/globe3d.ts`.)
 
 ## OPEN — Collins's calls on the art (none of them blocks play)

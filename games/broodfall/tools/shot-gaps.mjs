@@ -50,12 +50,12 @@ await new Promise((res, rej) => {
 const browser = await chromium.launch({ args: ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist', '--enable-webgl'] });
 const errors = [];
 
-async function open(seed, tries = 4) {
+async function open(seed, tries = 8) {
   const page = await openOnce(seed);
   // A peer re-baking a picture while this page loaded it: load again (the banner must not be in the shots).
   if (tries > 1 && (await page.evaluate(() => window.broodfall.artMissing())).length > 0) {
     await page.close();
-    await new Promise((r) => setTimeout(r, 15000));
+    await new Promise((r) => setTimeout(r, 30000));
     return open(seed, tries - 1);
   }
   const missing = await page.evaluate(() => window.broodfall.artMissing());
@@ -169,7 +169,7 @@ try {
   if (on('surgery')) {
     console.log('SURGERY UNDER FIRE');
     const page = await open(7);
-    const ids = await growCluster(page, 3);
+    const ids = await growCluster(page, 2);
     // Into a siege, the column in the streets.
     await page.evaluate(() => { const b = window.broodfall; b.sim.issue({ kind: 'call-early' }); });
     await page.evaluate(() => window.broodfall.step(120));
@@ -181,7 +181,8 @@ try {
     await frame(page);
     await page.locator('#hand .card').first().click();
     await page.waitForTimeout(200);
-    const pos = await page.evaluate((i) => window.broodfall.sim.towers.find((t) => t.id === i).pos, ids[1]);
+    // The limb the pointer lands on is the one eaten (whichever the click reaches on the roofs).
+    const pos = await page.evaluate((i) => window.broodfall.sim.towers.find((t) => t.id === i).pos, ids[0]);
     const c = await toClient(page, pos.x, pos.y);
     await page.mouse.move(c.x, c.y);
     await page.waitForTimeout(250);
@@ -202,8 +203,12 @@ try {
     await page.evaluate(() => window.broodfall.step(4));
     const np = await page.evaluate((i) => window.broodfall.sim.towers.find((t) => t.id === i).pos, grafting.id);
     const nc = await toClient(page, np.x, np.y);
-    await page.mouse.click(nc.x, nc.y); // its panel
-    await page.waitForTimeout(250);
+    // Its panel: click it (nudging the pointer until the click opens this limb and not a neighbour).
+    for (const [dx, dy] of [[0, 0], [0, -12], [0, -24], [6, -18], [-6, -18]]) {
+      await page.mouse.click(nc.x + dx, nc.y + dy);
+      await page.waitForTimeout(200);
+      if (/GRAFTING/i.test(await page.locator('#inspect-traits').innerText().catch(() => ''))) break;
+    }
     const traits = await page.locator('#inspect-traits').innerText();
     check(/GRAFTING/i.test(traits), 'its panel says GRAFTING', traits.slice(0, 100));
     await page.mouse.move(nc.x + 260, nc.y + 180);

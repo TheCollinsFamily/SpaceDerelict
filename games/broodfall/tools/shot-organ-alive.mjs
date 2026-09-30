@@ -56,7 +56,7 @@ try {
   const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
   page.on('pageerror', (e) => errors.push(String(e)));
   await page.goto(`http://localhost:${PORT}/?seed=7&autostart=1&speed=0&biome=suburb`, { waitUntil: 'domcontentloaded', timeout: 300000 });
-  await page.waitForSelector('#stage canvas', { timeout: 90000 }).catch(async (e) => {
+  await page.waitForSelector('#stage canvas', { timeout: 300000 }).catch(async (e) => {
     await page.screenshot({ path: join(tmp, 'boot.png') });
     jpg(join(tmp, 'boot.png'), 'organ-alive-boot-failed.jpg');
     throw new Error(`the game did not boot (${errors.join(' | ') || 'no page error'}): ${(await page.locator('body').innerText()).slice(0, 400)}`, { cause: e });

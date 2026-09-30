@@ -154,6 +154,10 @@ try {
         await closeOn(core, 2);
         await page.waitForTimeout(600);
         await canvas.screenshot({ path: png(`backs-${set}-t${q}`) });
+        // A second picture a moment later: what changes between the two is the board ALIVE (creep, core,
+        // markers), not the props: compose() leaves it out of the before/after comparison.
+        await page.waitForTimeout(700);
+        await canvas.screenshot({ path: png(`backs-${set}-t${q}b`) });
       }
     }
   }
@@ -256,13 +260,26 @@ async function compose() {
       const C = 24;
       const gw = Math.floor(A.width / C), gh = Math.floor(A.height / C);
       const score = new Float32Array(gw * gh);
-      for (let y = 0; y < gh * C; y++) for (let x = 0; x < gw * C; x++) {
-        const i = (y * A.width + x) * 4;
-        const d = Math.abs(A.data[i] - Z.data[i]) + Math.abs(A.data[i + 1] - Z.data[i + 1]) + Math.abs(A.data[i + 2] - Z.data[i + 2]);
-        if (d > 60) score[Math.floor(y / C) * gw + Math.floor(x / C)]++;
+      const cellDiff = (X, Y, into) => {
+        for (let y = 0; y < gh * C; y++) for (let x = 0; x < gw * C; x++) {
+          const i = (y * X.width + x) * 4;
+          const d = Math.abs(X.data[i] - Y.data[i]) + Math.abs(X.data[i + 1] - Y.data[i + 1]) + Math.abs(X.data[i + 2] - Y.data[i + 2]);
+          if (d > 60) into[Math.floor(y / C) * gw + Math.floor(x / C)]++;
+        }
+      };
+      cellDiff(A, Z, score);
+      // What moves on its own (the same build a moment apart), grown by a cell, is not a prop.
+      const alive = new Float32Array(gw * gh);
+      for (const [p1, p2] of [[a, P(`backs-${set}-t${q}b`, 'before')], [z, P(`backs-${set}-t${q}b`, 'after')]]) if (have(p2)) cellDiff(read(p1), read(p2), alive);
+      for (let k = 0; k < score.length; k++) {
+        const x = k % gw, y = Math.floor(k / gw);
+        for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+          const n = (y + dy) * gw + (x + dx);
+          if (x + dx >= 0 && x + dx < gw && y + dy >= 0 && y + dy < gh && alive[n] > 3) score[k] = 0;
+        }
       }
       // The strongest changed cells, at least 5 cells apart; the middle (the core, animated) is left out.
-      const order = [...score.keys()].filter((k) => score[k] > 25).sort((p, q2) => score[q2] - score[p]);
+      const order = [...score.keys()].filter((k) => score[k] > 15).sort((p, q2) => score[q2] - score[p]);
       const taken = [];
       for (const k of order) {
         const x = k % gw, y = Math.floor(k / gw);

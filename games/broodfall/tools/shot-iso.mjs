@@ -8,7 +8,7 @@
  * BROODFALL_PORT), so it never plays a build another session is changing under it.
  * Artifacts: tools/screenshots/iso-*.png
  */
-import { spawn, execSync, spawnSync } from 'node:child_process';
+import { spawn, execSync } from 'node:child_process';
 import { mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -58,8 +58,12 @@ const reachedOrCovered = (page, aim, got) => page.evaluate(([cells, c]) => {
   return fwd(front) > fwd(aimed) ? 'covered' : 'missed';
 }, [aim.cells, got]);
 
-const built = spawnSync(process.platform === 'win32' ? 'npx.cmd' : 'npx', ['vite', 'build', '--outDir', DIST, '--emptyOutDir'], { cwd: root, stdio: 'pipe', shell: process.platform === 'win32', encoding: 'utf8' });
-if (built.status !== 0) { console.error(built.stdout, built.stderr); process.exit(1); }
+// BROODFALL_PUBLIC=<folder>: the art from a copy of public/ taken at one moment (another session re-baking
+// pictures while this builds can leave one half-written in the build: a "missing art" that is not the board's).
+{
+  const { build } = await import('vite');
+  await build({ root, configFile: join(root, 'vite.config.ts'), logLevel: 'warn', build: { outDir: DIST, emptyOutDir: true }, ...(process.env.BROODFALL_PUBLIC ? { publicDir: process.env.BROODFALL_PUBLIC } : {}) });
+}
 const server = await startPreview();
 const browser = await chromium.launch({ args: ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist', '--enable-webgl'] });
 try {

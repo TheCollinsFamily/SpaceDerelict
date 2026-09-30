@@ -175,6 +175,31 @@
    "video": "media/clips/f-ins-door.mp4",
    "poster": "media/clips/f-ins-door.webp",
    "seconds": 4
+  },
+  "f-pac-lines": {
+   "video": "media/clips/f-pac-lines.mp4",
+   "poster": "media/clips/f-pac-lines.webp",
+   "seconds": 4.042
+  },
+  "f-pac-chart": {
+   "video": "media/clips/f-pac-chart.mp4",
+   "poster": "media/clips/f-pac-chart.webp",
+   "seconds": 4.042
+  },
+  "f-pac-servers": {
+   "video": "media/clips/f-pac-servers.mp4",
+   "poster": "media/clips/f-pac-servers.webp",
+   "seconds": 4.042
+  },
+  "f-pac-toast": {
+   "video": "media/clips/f-pac-toast.mp4",
+   "poster": "media/clips/f-pac-toast.webp",
+   "seconds": 4.042
+  },
+  "f-pac-empty": {
+   "video": "media/clips/f-pac-empty.mp4",
+   "poster": "media/clips/f-pac-empty.webp",
+   "seconds": 4.042
   }
  },
  "photos": {
@@ -262,7 +287,7 @@
   },
   "delegation/for-the-planet/1": {
    "file": "media/voice/delegation__for-the-planet__1.ogg",
-   "seconds": 5.207,
+   "seconds": 5.506,
    "text": "We finally understand. You are not hurting us. You are protecting the planet FROM us.",
    "who": "Delegate"
   },
@@ -364,7 +389,7 @@
   },
   "faithful/a-broadcast-on-every-frequency/0": {
    "file": "media/voice/faithful__a-broadcast-on-every-frequency__0.ogg",
-   "seconds": 7.907,
+   "seconds": 4.816,
    "text": "…and they said the sign would come from the sky, and brothers and sisters, LOOK UP.",
    "who": "The Voice"
   },
@@ -394,7 +419,7 @@
   },
   "faithful/theology-homework/3": {
    "file": "media/voice/faithful__theology-homework__3.ogg",
-   "seconds": 3.906,
+   "seconds": 4.006,
    "text": "It is the WORD.",
    "who": "The Voice"
   },
@@ -418,7 +443,7 @@
   },
   "faithful/the-deployment-is-scripture/5": {
    "file": "media/voice/faithful__the-deployment-is-scripture__5.ogg",
-   "seconds": 3.997,
+   "seconds": 4.006,
    "text": "They are ALL correct, brother.",
    "who": "The Voice"
   },
@@ -436,7 +461,7 @@
   },
   "faithful/the-hour/0": {
    "file": "media/voice/faithful__the-hour__0.ogg",
-   "seconds": 4.006,
+   "seconds": 3.807,
    "text": "Brothers and sisters — HE IS HERE.",
    "who": "The Voice"
   },
@@ -460,13 +485,13 @@
   },
   "faithful/the-comb-above/3": {
    "file": "media/voice/faithful__the-comb-above__3.ogg",
-   "seconds": 7.907,
+   "seconds": 7.606,
    "text": "Then where is the Pit? Chapter twenty-two! Where are the wicked, burning, as it is WRITTEN?",
    "who": "The Voice"
   },
   "faithful/the-comb-above/5": {
    "file": "media/voice/faithful__the-comb-above__5.ogg",
-   "seconds": 5.407,
+   "seconds": 6.006,
    "text": "No PIT? Then what was the point of being GOOD?",
    "who": "The Voice"
   },
@@ -502,7 +527,7 @@
   },
   "institute/a-video-call-mid-game/5": {
    "file": "media/voice/institute__a-video-call-mid-game__5.ogg",
-   "seconds": 6.006,
+   "seconds": 5.806,
    "text": "Our species just built its first real AI models. On the numbers, you are the SAFER apocalypse.",
    "who": "The Director"
   },
@@ -514,13 +539,13 @@
   },
   "institute/a-video-call-mid-game/8": {
    "file": "media/voice/institute__a-video-call-mid-game__8.ogg",
-   "seconds": 2.877,
+   "seconds": 1.716,
    "text": "Oh, you are going to LOVE League of Larvae.",
    "who": "The Director"
   },
   "institute/the-upload/1": {
    "file": "media/voice/institute__the-upload__1.ogg",
-   "seconds": 5.907,
+   "seconds": 5.306,
    "text": "… Would that INTEREST me? That is the single highest-expected-value sentence anyone has ever said to me.",
    "who": "The Director"
   },
@@ -538,13 +563,13 @@
   },
   "institute/females/2": {
    "file": "media/voice/institute__females__2.ogg",
-   "seconds": 6.806,
+   "seconds": 6.506,
    "text": "No, for FUN, you know, like — oh gosh, man, you've got to try it. Your civilisation dropped recreational sex?",
    "who": "The Director"
   },
   "institute/females/4": {
    "file": "media/voice/institute__females__4.ogg",
-   "seconds": 3.107,
+   "seconds": 2.136,
    "text": "No — again — you don't get them PREGNANT.",
    "who": "The Director"
   },
@@ -622,13 +647,13 @@
   },
   "institute/the-queue-was-real/2": {
    "file": "media/voice/institute__the-queue-was-real__2.ogg",
-   "seconds": 7.306,
+   "seconds": 7.407,
    "text": "The upload was a BIT. Everybody knew it was a bit! We were playing to you. Buying time. I wrote forty pages on it!",
    "who": "The Director"
   },
   "institute/the-queue-was-real/4": {
    "file": "media/voice/institute__the-queue-was-real__4.ogg",
-   "seconds": 3.707,
+   "seconds": 4.306,
    "text": "I was going LAST. Last means never. It was in writing.",
    "who": "The Director"
   },

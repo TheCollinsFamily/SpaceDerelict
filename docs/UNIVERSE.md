@@ -283,10 +283,11 @@ civilisation is significantly more magnanimous than it is originally framed."
     simulated heavens or hells and host us there for great lengths of time" (TP 12.0); heaven read
     as a time, the future, when the dead are brought back "through simulations or through literal
     resurrections" (TP 15.0; TP 1.2).
-  - **PROPOSAL, the edge:** the corpus calls a heaven of pleasant experience in which one can no
-    longer affect anything "a form of hell ... not my heaven" (TP 15.0). To the fauna who
-    want only comfort, the Empire gives exactly the heaven it would refuse for itself: comfort, with
-    no hand on history. Those who want their old lives back get the one heaven the corpus would
+  - **PROPOSAL, the edge (amended Sep 30 2026: Technopuritans are uploaded on death too, see
+    below, so this heaven is not refused, only taken last):** the corpus calls a heaven of
+    pleasant experience in which one can no longer affect anything "a form of hell ... not my
+    heaven" (TP 15.0). To the fauna who want only comfort, the Empire gives early the heaven it
+    saves for after a life's work: comfort, with no hand on history. Those who want their old lives back get the one heaven the corpus would
     accept: work that matters, run fast, with a way back into the world (resynthesis, above). It is
     magnanimous, and it also takes a people out of the race for living room until it is fit to
     rejoin it on man's side. Nobody in the Empire finds that tension worth a sentence.
@@ -304,6 +305,27 @@ civilisation is significantly more magnanimous than it is originally framed."
   heaven after, and it was accurate. **PROPOSAL, the Technopuritan reading:** God, outside time,
   reveals to each people what it can hold (doctrine 7), so God likely steered their Book toward
   what would really happen.
+
+## Why not leave them alone; why the Empire is hard on itself (Collins, Sep 30 2026)
+
+The long form, with Collins's words in full, is Broodfall's `content/lore/empire.md`, section 12b.
+
+- **Leaving a primitive people to evolve on its own is not ethically viable.** Its members would,
+  for generations, subject each other to things infinitely worse than anything a broodfall does,
+  and the ones the character meets prove it. The one who asks to "live out his life and play the
+  cards" is the one with good cards (wealth, fame, status); the Empire asks for the abandoned
+  infant and the child in a war. Whoever wants a war can still have one simulated; the archive
+  just does not put another intelligence in it.
+- **On death every Technopuritan is uploaded.** Most of a life's experience is the part
+  afterwards, and it will be good. So the real world, the one place where what you do is the first
+  time it happened, is for impact: they push themselves and each other as hard as possible in it.
+  That is why the Empire is brutal to its own (krypteia, the testing), and why it is extremely
+  desensitised to death: death is "when the easy part begins, in a very real way".
+- **PROPOSAL, consequences:** krypteia's dead are uploaded like anyone else; risking life for
+  thrills stays a sin (death is cheap, real-world time is not); the easy heaven the corpus calls
+  "not my heaven" (TP 15.0) is not refused, only taken last, after the work.
+- **Open:** Earth is left in holy war (the zoo). Whether its dead are kept is Collins's call
+  (`empire.md`, section 16).
 
 ## Contradictions resolved: the reveal (Sep 30 2026)
 
