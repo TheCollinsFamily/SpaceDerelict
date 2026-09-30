@@ -571,6 +571,16 @@ own words. `notes/GRAPHICS-PLAN.md` holds the pipeline, the probes and the costs
   come from `make.mjs limb` (`WITHER` and `fire` in `tools/art/limbs.mjs`). Look:
   `node tools/shot-fx.mjs [shots lobbed light hive clouds acting wither taken grafts]` (dev server,
   port 5231; JPEGs in `notes/screens/2026-09-30/fx-*`, `limbs-*`). Test: `tests/fx-art.test.ts`.
+- **The Maw's tongue, polished (Sep 30 fix pass):** the tongue is drawn from a smooth glossy strip
+  (`art-src/fx/tongue-wet.png`, `TONGUE.src` in `tools/art/templates/fx.mjs`; the ribbed first one kept in
+  `art-src/fx/tongue.png`), and `src/render/mawTongue.ts` lays the rope's corners itself: thick at the lips
+  (`ROOT`), tapering to `TAPER` at the club, sagging (`SAG`), the club held by its middle (`TIP_HOLD`, `CLUB`).
+  (Before, MeshRope reset the width to the strip's texture height every frame, so the width set was ignored.)
+  A body carried is drawn `RIDE` 1.35x as it rises (`LIPS` of that at the lips). The Maw's firing clip (an
+  opaque flesh throat pouch, not the see-through bubble) and its whole view from behind (the mouth faces away:
+  a rump, the gape only just showing over the hump; `backIdle`/`backFire` on the limb, honoured by
+  `templates/limb.mjs makeBack`) are in `art-src/limbs/maw-tongue-2/` (`srcDir`); `maw-tongue/` untouched.
+  `node tools/shot-maw-tongue.mjs --tag before|after [--dist <built dir>]` = the fix pass's before/after.
 - **Units' moments (Sep 30):** `node tools/art/make.mjs unit <ids> [--hit] [--boss] [--braced]
   [--skins] [--states] [--no-bake]` (`tools/art/templates/unit.mjs`): flinches (5 views, every
   unit), the royal's and consort's arrival and special (`BOSS`, frames 320 and 256), the braced

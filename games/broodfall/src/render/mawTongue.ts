@@ -291,7 +291,7 @@ export class MawTongues {
 }
 
 /**
- * THE MAW'S FIRING CLIP, in time with its tongue. Its clip (tools/art/limbs.mjs, art-src/limbs/maw-tongue/
+ * THE MAW'S FIRING CLIP, in time with its tongue. Its clip (tools/art/limbs.mjs, art-src/limbs/maw-tongue-2/
  * fire.mp4) gapes in its first eighth, holds wide open to a little before its middle (its 14 baked frames), snaps shut and gulps
  * (the throat sac swelling) and settles in the rest. Played so that the mouth is open while the tongue is
  * out and shuts as it comes home: how far through the clip to show, `t` seconds after the strike.
