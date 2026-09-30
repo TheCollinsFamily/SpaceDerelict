@@ -1,7 +1,7 @@
 {
  "family": "lure",
- "frames": 30,
- "atlasKB": 152,
+ "frames": 40,
+ "atlasKB": 197,
  "failed": 0,
  "checks": [
   {
@@ -55,6 +55,16 @@
    "value": "3% change"
   },
   {
+   "name": "die: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "die: it ends as a husk",
+   "ok": true,
+   "value": "70% of its first frame"
+  },
+  {
    "name": "it stands in its cell",
    "ok": true,
    "value": "0.7% of it lies in front of its cell"
@@ -62,7 +72,7 @@
   {
    "name": "atlas is under 900 KB",
    "ok": true,
-   "value": "152 KB"
+   "value": "197 KB"
   }
  ]
 }

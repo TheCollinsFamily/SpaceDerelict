@@ -15,8 +15,8 @@
  */
 import { Container, Sprite, Texture } from 'pixi.js';
 import type { Sim } from '../sim/sim';
-import type { TowerFamily } from '../sim/types';
 import type { BoardArtSet } from './art';
+import { ADDED, LANDS, LONG, SHOT } from './fxNames';
 
 export interface Pt { x: number; y: number }
 
@@ -31,22 +31,6 @@ export interface FxView {
   /** Board pixels on the screen per world pixel, across the ground. */
   scale: number;
 }
-
-/** Which picture a limb's shot is. */
-const SHOT: Partial<Record<TowerFamily, string>> = {
-  spitter: 'spit', sprout: 'spit', burster: 'sac', tangler: 'mucus', blighter: 'spore', impaler: 'harpoon',
-  quill: 'quill', net: 'web', mister: 'droplets',
-};
-/** What a shot leaves where it ends, and how big (a share of the burst's picture). */
-const LANDS: Record<string, [string, number] | null> = {
-  spit: ['flesh-splat', 0.32], sac: ['flesh-splat', 0.55], mucus: ['web-mat', 0.3], spore: ['acid-splash', 0.4],
-  harpoon: ['flesh-splat', 0.3], quill: null, web: ['web-mat', 0.42], droplets: ['mist-cloud', 0.34],
-};
-/** How long each shot picture is drawn, in board pixels along its flight. */
-const LONG: Record<string, number> = {
-  spit: 34, sac: 40, mucus: 42, spore: 32, harpoon: 84, quill: 48, web: 52, droplets: 34,
-  bile: 48, clot: 46, 'spore-shell': 42, 'bone-shell': 36, 'cannon-shell': 30, dart: 40, 'mortar-bomb': 40, barb: 20,
-};
 
 interface Burst { id: string; x: number; y: number; t: number; dur: number; size: number; rot: number; glow: boolean; grow: number }
 interface Streak { kind: 'bolt' | 'beam' | 'stare' | 'relay' | 'flame'; from: Pt; to: Pt; t: number; dur: number; seed: number }
@@ -128,7 +112,7 @@ export class FxLayer {
     if (this.bursts.length > 160) return;
     const r = this.art.fxSprite('effects', id);
     if (!r) return;
-    this.bursts.push({ id, x: p.x, y: p.y, t: 0, dur, size, rot: (this.frame * 2.39996) % (Math.PI * 2), glow: !!r.rect.glow, grow });
+    this.bursts.push({ id, x: p.x, y: p.y, t: 0, dur, size, rot: (this.frame * 2.39996) % (Math.PI * 2), glow: ADDED.has(id), grow });
   }
 
   /** Before anything of this frame is drawn (the units draw what is done to them in between). */

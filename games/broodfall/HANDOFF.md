@@ -286,6 +286,16 @@ own words. `notes/GRAPHICS-PLAN.md` holds the pipeline, the probes and the costs
   set, a skirmish with one chosen by its seed, `?biome=megacity` names one. To add a set:
   add an entry, run `node tools/art/make.mjs biome <id>`, look at
   `notes/art-review/biomes/<id>.jpg`, then `node tools/shot-biomes.mjs <id>`.
+- **Effects, limb acting and deaths, donor parts (Sep 30):** `node tools/art/make.mjs fx
+  [sheets|parts [families]]` (`tools/art/templates/fx.mjs`) makes four sheets (solid shots on a
+  key colour; light and vapour on black, their brightness their opacity) and one donor part per
+  family; the game draws them in `src/render/fx.ts` (shots turned along their flight, bursts,
+  lightning, beams, flame, clouds, what is done to a unit) and `src/render/limbFx.ts` (engines
+  act when what they serve fires, limbs wither on death or are carried off, donor parts grafted
+  at points measured on each limb at its bake). Every limb's `die` clip and the 13 acting clips
+  come from `make.mjs limb` (`WITHER` and `fire` in `tools/art/limbs.mjs`). Look:
+  `node tools/shot-fx.mjs [shots lobbed light hive clouds acting wither taken grafts]` (dev server,
+  port 5231; JPEGs in `notes/screens/2026-09-30/fx-*`, `limbs-*`). Test: `tests/fx-art.test.ts`.
 - **No real religious symbol, and no lettering, in any picture.** The image model adds
   crosses by itself. Every picture is looked at zoomed in before it is kept. A small
   unwanted detail is painted out with `tools/art/paint-out.mjs` (it keeps the original

@@ -51,18 +51,72 @@ describe.skipIf(!manifest)("the units' art", () => {
     }
   });
 
-  it('keeps every frame inside its atlas, and every atlas light', () => {
-    for (const [kind, u] of Object.entries(manifest.units as Record<string, { atlas: string; frame: number; cols: number; anims: Record<string, Record<string, { start: number; count: number }>> }>)) {
-      const f = join(ART, u.atlas);
-      expect(existsSync(f), kind).toBe(true);
-      expect(statSync(f).size, `${kind} atlas`).toBeLessThan(900 * 1024);
-      let last = 0;
-      for (const set of Object.values(u.anims)) for (const c of Object.values(set)) last = Math.max(last, c.start + c.count);
-      // Frames are packed in rows of `cols`; the atlas holds them all (its height is read from the header).
-      const b = readFileSync(f);
-      const kindTag = b.toString('ascii', 12, 16);
-      const h = kindTag === 'VP8X' ? 1 + b.readUIntLE(27, 3) : kindTag === 'VP8L' ? 1 + ((b.readUInt32LE(21) >> 14) & 0x3fff) : b.readUInt16LE(28) & 0x3fff;
-      expect(Math.ceil(last / u.cols) * u.frame, `${kind} rows`).toBeLessThanOrEqual(h);
+  it('keeps every frame inside its atlas page, and every page light', () => {
+    type C = { start: number; count: number; page?: number; anchor?: [number, number]; scale?: number };
+    const all = { ...manifest.units, ...(manifest.allies ?? {}) } as Record<string, { atlas: string; pages?: string[]; frame: number; cols: number; anims: Record<string, Record<string, C>> }>;
+    for (const [kind, u] of Object.entries(all)) {
+      // A unit with more frames than one light picture holds is packed on several pages (Sep 30 2026).
+      const files = [u.atlas, ...(u.pages ?? [])];
+      const last = files.map(() => 0);
+      for (const set of Object.values(u.anims)) {
+        for (const c of Object.values(set)) {
+          const page = c.page ?? 0;
+          expect(page, `${kind} page`).toBeLessThan(files.length);
+          last[page] = Math.max(last[page], c.start + c.count);
+          // A clip cut with a bigger window than the walk says where the walk's feet are in it.
+          if (c.anchor) for (const a of c.anchor) expect(a, `${kind} anchor`).toBeGreaterThan(0);
+          if (c.anchor) for (const a of c.anchor) expect(a, `${kind} anchor`).toBeLessThan(1);
+          if (c.scale !== undefined) expect(c.scale, `${kind} scale`).toBeGreaterThan(1);
+        }
+      }
+      files.forEach((file, i) => {
+        const f = join(ART, file);
+        expect(existsSync(f), `${kind} ${file}`).toBe(true);
+        expect(statSync(f).size, `${kind} ${file}`).toBeLessThan(900 * 1024);
+        // Frames are packed in rows of `cols`; the page holds them all (its height is read from the header).
+        const b = readFileSync(f);
+        const kindTag = b.toString('ascii', 12, 16);
+        const h = kindTag === 'VP8X' ? 1 + b.readUIntLE(27, 3) : kindTag === 'VP8L' ? 1 + ((b.readUInt32LE(21) >> 14) & 0x3fff) : b.readUInt16LE(28) & 0x3fff;
+        expect(Math.ceil(last[i] / u.cols) * u.frame, `${kind} rows of ${file}`).toBeLessThanOrEqual(h);
+      });
+    }
+  });
+
+  it('flinches when struck, in all five views, every unit', () => {
+    for (const e of ENEMIES) for (const v of VIEWS) expect(manifest.units[e.kind].anims.hit?.[v], `${e.kind} flinching ${v}`).toBeTruthy();
+  });
+
+  it('draws a braced gun firing from its braced picture', () => {
+    for (const kind of ['cannon', 'dartgun']) {
+      expect(manifest.units[kind].anims.states?.deployed, `${kind} braced picture`).toBeTruthy();
+      expect(manifest.units[kind].anims.braced?.SW, `${kind} braced shot`).toBeTruthy();
+    }
+  });
+
+  it("shows the carapace lord's shell breaking as it walks: cracked, then gone", () => {
+    for (const skin of ['walk-cracked', 'walk-stripped']) {
+      for (const v of VIEWS) expect(manifest.units.carapace.anims[skin]?.[v], `carapace ${skin} ${v}`).toBeTruthy();
+    }
+  });
+
+  it('makes bosses of the royal and the consort: bigger frames, an arrival and a special attack', () => {
+    for (const kind of ['royal', 'consort']) {
+      const u = manifest.units[kind];
+      expect(u.frame, `${kind} frame`).toBeGreaterThanOrEqual(256);
+      for (const anim of ['enter', 'special']) for (const v of VIEWS) expect(u.anims[anim]?.[v], `${kind} ${anim} ${v}`).toBeTruthy();
+    }
+    expect(manifest.units.royal.frame).toBeGreaterThan(256);
+  });
+
+  it("draws the hive's own walkers: the broodling and a puppet of every royal kind, walking and biting", () => {
+    const royals = ENEMIES.filter((e) => e.caste === 'royal').map((e) => `puppet-${e.kind}`);
+    for (const id of ['broodling', ...royals]) {
+      const u = manifest.allies?.[id];
+      expect(u, id).toBeTruthy();
+      for (const v of VIEWS) {
+        expect(u.anims.walk[v], `${id} walking ${v}`).toBeTruthy();
+        expect(u.anims.attack?.[v], `${id} attacking ${v}`).toBeTruthy();
+      }
     }
   });
 });

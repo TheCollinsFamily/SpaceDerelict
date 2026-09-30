@@ -11,6 +11,7 @@
  *   node tools/art/make.mjs fx [sheets|parts [families]]  effects in flight, bursts, clouds; the donor parts
  *   node tools/art/make.mjs biome megacity orient         tile sets (none named: every one)
  *   node tools/art/make.mjs ship
+ *   node tools/art/make.mjs board [pods|strains|gates|smoke|<set>] [--stills]   creep nodes, strains, gates, smoke (templates/board.mjs)
  *   node tools/art/make.mjs yoke idle happy --stills      the ship AI's body (tools/art/templates/yoke.mjs)
  *   node tools/art/make.mjs screens                       the title emblem + key art, the report pictures
  *
@@ -60,6 +61,11 @@ const TEMPLATES = {
       return settle(sets.length ? sets : ALL_BIOMES, 3, async (id) => { await generateBacks(id); return bakeBiome(id); });
     }
     return settle(sets.length ? sets : ALL_BIOMES, 3, (id) => makeBiome(id, { bakeOnly: flags.has('--bake'), only: parts }));
+  },
+  // The board's own art (tools/art/templates/board.mjs): pods, creep strains, gates, smoke. --stills: only the pictures.
+  board: async () => {
+    const { makeBoard } = await import('./templates/board.mjs');
+    return Promise.allSettled([makeBoard({ only: ids, bakeOnly: flags.has('--bake'), stillsOnly: flags.has('--stills') })]);
   },
   // The organ stage as the ship's ground scan (tools/art/templates/under.mjs): one tile per organ, soil, deposit.
   under: async () => {

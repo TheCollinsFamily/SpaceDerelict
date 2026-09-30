@@ -1,7 +1,7 @@
 {
  "family": "mitosis",
- "frames": 16,
- "atlasKB": 134,
+ "frames": 40,
+ "atlasKB": 274,
  "failed": 0,
  "checks": [
   {
@@ -40,14 +40,39 @@
    "value": "3% change"
   },
   {
+   "name": "fire: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "fire: frames swallowed by a flash or a cloud are few",
+   "ok": true,
+   "value": "13 left out"
+  },
+  {
+   "name": "fire: ends the size it began",
+   "ok": true,
+   "value": "5% change"
+  },
+  {
+   "name": "die: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "die: it ends as a husk",
+   "ok": true,
+   "value": "58% of its first frame"
+  },
+  {
    "name": "it stands in its cell",
    "ok": true,
-   "value": "1.5% of it lies in front of its cell"
+   "value": "0.4% of it lies in front of its cell"
   },
   {
    "name": "atlas is under 900 KB",
    "ok": true,
-   "value": "134 KB"
+   "value": "274 KB"
   }
  ]
 }

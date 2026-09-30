@@ -74,7 +74,8 @@ try {
     s.events.push({ kind: 'won' });
     window.broodfall.step(1);
   });
-  await page.waitForSelector('#campaign:not(.hidden) .cp-title', { timeout: 5000 });
+  // The report now opens with its pictures (src/ui/debrief.ts), which carry the verdict: wait for the report itself.
+  await page.waitForSelector('#campaign:not(.hidden) [data-act="back"]', { timeout: 10000 });
   const debrief = await page.locator('#campaign').innerText();
   check(/TAKEN/.test(debrief) && /Earned/.test(debrief), 'the debrief: the territory taken, the goals, the credits');
   await shot(page, 'debrief');

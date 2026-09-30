@@ -140,6 +140,17 @@ function graftsOf(img, anchor, F) {
   return out;
 }
 
+/** How much colour its solid pixels have, on average (the reach of the strongest channel over the weakest). */
+const colour = (f) => {
+  let sum = 0, n = 0;
+  for (let i = 0; i < f.data.length; i += 4) {
+    if (f.data[i + 3] < 128) continue;
+    sum += Math.max(f.data[i], f.data[i + 1], f.data[i + 2]) - Math.min(f.data[i], f.data[i + 1], f.data[i + 2]);
+    n++;
+  }
+  return n ? sum / n : 0;
+};
+
 /** How many pixels of a frame are solid. */
 const area = (f) => { let n = 0; for (let i = 3; i < f.data.length; i += 4) if (f.data[i] > 128) n++; return n; };
 
@@ -220,9 +231,11 @@ function bakeView(l, dir, view, check, F) {
     if (c.dropped) check(`${say}${c.anim}: frames swallowed by a flash or a cloud are few`, c.dropped <= 30, `${c.dropped} left out`);
     // A limb that drips is as big as its drop is long: its outline is allowed to change (limbs.mjs: drips).
     if (c.anim === 'die') {
-      // A death ends smaller than it began: a husk, not the limb standing.
+      // A death ends as a husk, not the limb standing: smaller, or drained of its colour (a flat
+      // limb spreads its dead roots as it dries, and is no smaller).
       const shrank = area(c.frames[c.frames.length - 1]) / Math.max(1, area(c.frames[0]));
-      check(`${say}die: it ends as a husk`, shrank < 0.85, `${(shrank * 100).toFixed(0)}% of its first frame`);
+      const drained = colour(c.frames[c.frames.length - 1]) / Math.max(1, colour(c.frames[0]));
+      check(`${say}die: it ends as a husk`, shrank < 0.85 || drained < 0.7, `${(shrank * 100).toFixed(0)}% of its size, ${(drained * 100).toFixed(0)}% of its colour`);
     } else if (a && z && !l.drips) {
       const grew = Math.abs((z.x1 - z.x0) * (z.y1 - z.y0) / ((a.x1 - a.x0) * (a.y1 - a.y0)) - 1);
       check(`${say}${c.anim}: ends the size it began`, grew < 0.2, `${(grew * 100).toFixed(0)}% change`);

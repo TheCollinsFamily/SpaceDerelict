@@ -20,6 +20,7 @@ import { figure, findFigures } from '../lib/sheet.mjs';
 import { borderColour } from '../lib/img.mjs';
 import { ART, REVIEW, ROOT, SRC, putEntry } from '../lib/manifest.mjs';
 import { bakeCore, generateCore, plinthTiles, podSprites } from './core.mjs';
+import { gateSprites, smokeSprites } from './board.mjs';
 
 const DIR = path.join(SRC, 'terrain');
 const CONCEPTS = path.join(ROOT, 'notes', 'concepts', '2026-09-29');
@@ -177,12 +178,12 @@ export function floorTiles(id, tex, k = 1) {
  * Creep tiles: the same skin with a ragged edge on every side where the ground next to it
  * is bare. `open` has a bit per side (1 north, 2 east, 4 south, 8 west).
  */
-export function creepTiles(tex) {
+export function creepTiles(tex, name = 'creep', whole = 4) {
   const out = [];
   for (let open = 0; open < 16; open++) {
-    const n = open === 0 ? 4 : 2;
+    const n = open === 0 ? whole : 2;
     for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) {
-      out.push(tile(`creep-${open}-${i}${j}`, padded(TILE_W, TILE_H, SKIN_PAD, (px, py) => {
+      out.push(tile(`${name}-${open}-${i}${j}`, padded(TILE_W, TILE_H, SKIN_PAD, (px, py) => {
         const p = floorPoint(px, py, SKIN_BLEED);
         if (!p) return null;
         let d = 1;
@@ -249,6 +250,45 @@ export function edgeTiles() {
   ];
 }
 
+/**
+ * THE EDGE THAT MOVES (Sep 30 2026): where the skin stops at a ragged edge, thin tendrils of it
+ * feel their way out over the bare ground and draw back. Frames of them, for each side of a
+ * cell: `tendril-<side>-<frame>`, side 1 north, 2 east, 4 south, 8 west (the bits of `open`).
+ * The game plays them slowly, each cell at its own time.
+ */
+export const TENDRIL_FRAMES = 8;
+export function edgeTendrils(tex) {
+  const out = [];
+  for (const side of [1, 2, 4, 8]) for (let f = 0; f < TENDRIL_FRAMES; f++) {
+    // How far out they reach in this frame: out and back once over the frames.
+    const phase = f / TENDRIL_FRAMES;
+    out.push(tile(`tendril-${side}-${f}`, padded(TILE_W, TILE_H, [15, 9], (px, py) => {
+      const p = floorPoint(px, py, 0.22);
+      if (!p) return null;
+      // Along the edge (a) and how far past it (d, cells: 0 at the edge, growing outward).
+      const a = side === 1 || side === 4 ? p.x : p.y;
+      const d = side === 1 ? -p.y : side === 2 ? p.x - 1 : side === 4 ? p.y - 1 : -p.x;
+      if (d < -0.12 || d > 0.2) return null;
+      // Four tendrils along an edge, each with its own length and its own time.
+      let best = 0;
+      for (let k = 0; k < 4; k++) {
+        const at = (k + 0.5 + (noise(k * 3.1, side, 16) - 0.5) * 0.5) / 4;
+        const own = (phase + noise(k * 1.7, side * 2.3, 16)) % 1;
+        const reach = 0.04 + 0.14 * (0.5 - 0.5 * Math.cos(own * Math.PI * 2)) * (0.6 + 0.4 * noise(k, side * 5, 16));
+        // A tendril thins toward its tip and wavers a little.
+        const wave = Math.sin((d * 40) + k * 2 + own * 6) * 0.012;
+        const width = 0.05 * Math.max(0, 1 - Math.max(0, d) / reach);
+        const t = Math.max(0, 1 - Math.abs(a - at - wave) / Math.max(0.004, width));
+        if (d <= reach && t > best) best = t;
+      }
+      if (best <= 0) return null;
+      const c = sample(tex, ((a * 3 + 7) % 1) * tex.w, ((d * 3 + 7.5) % 1) * tex.h);
+      return [c[0] * 0.8, c[1] * 0.8, c[2] * 0.8, Math.min(1, best * 1.6) * 235];
+    })));
+  }
+  return out;
+}
+
 /** Creep running down the top of a wall. */
 export function dripTiles(tex) {
   const out = [];
@@ -304,12 +344,14 @@ export function bakeTerrain() {
   if (have('smoke.png')) floors.push(...floorTiles('smoke', tex('smoke.png', 512, 512), 0.55));
   const creepTex = have('creep.png') ? tex('creep.png', 512, 512) : null;
   // The body's own pieces: its skin, what runs down walls, the edges of roofs, and the plinths it raises limbs on.
-  const creep = creepTex ? [...creepTiles(creepTex), ...dripTiles(creepTex), ...edgeTiles(), ...plinthTiles(), ...podSprites()] : [];
+  const creep = creepTex ? [...creepTiles(creepTex), ...dripTiles(creepTex), ...edgeTiles(), ...plinthTiles(), ...podSprites(), ...edgeTendrils(creepTex)] : [];
+  // The skin where a node's strain works on it (templates/board.mjs): drawn, not tinted. Two looks of a whole cell, as of an edge.
+  for (const strain of ['mire', 'burning']) if (have(`creep-${strain}.png`)) creep.push(...creepTiles(tex(`creep-${strain}.png`, 512, 512), `creep-${strain}`, 2));
   const walls = [];
   for (const id of Object.keys(WALLS)) if (have(`wall-${id}.png`)) walls.push(...wallTiles(id, tex(`wall-${id}.png`, 1024, 384)));
   const props = [...propSprites('roof'), ...propSprites('street')];
 
-  const sheets = { floors, creep, walls, props };
+  const sheets = { floors, creep, walls, props, gates: gateSprites(), smoke: smokeSprites() };
   const entry = { tile: [TILE_W, TILE_H], level: LEVEL_H, wallSpan: WALL_SPAN, sheets: {} };
   let total = 0;
   for (const [name, sprites] of Object.entries(sheets)) {

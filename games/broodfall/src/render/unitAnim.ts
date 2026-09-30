@@ -52,6 +52,9 @@ export function observe(fx: UnitFx, e: Enemy, dt: number, kind: string, attackin
     fx.hitT = 0;
     fx.hitCool = HIT_COOLDOWN;
     fx.hurt = 0;
+  } else if (fx.hitCool > 0) {
+    // A blow during the cooldown is not saved up for later: no flinch comes a second after nothing.
+    fx.hurt = 0;
   }
   // Dug in, and fired from where it is dug in.
   if (e.deployed && !fx.deployed) fx.digT = 0;

@@ -22,10 +22,13 @@ Useful URLs:
 
 | Surface | Status |
 |---|---|
-| Home menu | BUILT |
+| Home menu / title screen (key art, emblem, the name set in type from `src/ui/screens.ts` GAME_NAME) | BUILT (Sep 30; `node tools/shot-screens.mjs title`) |
+| Loading screen (deploy clicked, or a run started from the address, before the art is in) | BUILT (Sep 30; `shot-screens.mjs loading`, throttled network) |
+| Fault screens: art list missing (play on without pictures), some pictures missing (a line over the board), no WebGL (drawn on a plain canvas, a line says so), nothing to draw with, the code failing while it loads | BUILT (Sep 30; `shot-screens.mjs faults`, each failure forced) |
 | Deployment (board, waves, drafts) | BUILT |
-| District draft overlay | BUILT |
-| Debrief screen | BUILT |
+| District draft overlay (each plate drawn as the board will draw it, and a map of where it goes) | BUILT (Sep 30; `shot-screens.mjs draft`) |
+| Debrief screen, skirmish and campaign (the outcome's newsreel still, a photograph of the board at the end, the limbs grown, what the colony sent) | BUILT (Sep 30; `shot-screens.mjs debrief campaign`) |
+| Gene Bay organ cards with each organ's scan picture | BUILT (Sep 30; `shot-screens.mjs genes`) |
 | Ship gene bay (standing + splices, localStorage) | BUILT (prototype persistence; account-side later) |
 | Empire directives / hobby missions | MISSING (design doc) |
 | Break cinematics / propaganda video layer | MISSING (design doc) |

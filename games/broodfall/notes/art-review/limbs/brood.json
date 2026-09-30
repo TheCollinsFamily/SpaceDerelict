@@ -1,8 +1,8 @@
 {
  "family": "brood",
- "frames": 60,
- "atlasKB": 795,
- "failed": 0,
+ "frames": 70,
+ "atlasKB": 917,
+ "failed": 1,
  "checks": [
   {
    "name": "where it stands is marked",
@@ -50,9 +50,19 @@
    "value": "1% change"
   },
   {
+   "name": "die: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "die: it ends as a husk",
+   "ok": true,
+   "value": "62% of its first frame"
+  },
+  {
    "name": "it stands in its cell",
    "ok": true,
-   "value": "1.2% of it lies in front of its cell"
+   "value": "0.3% of it lies in front of its cell"
   },
   {
    "name": "from behind, where it stands is marked",
@@ -102,7 +112,7 @@
   {
    "name": "from behind, it stands in its cell",
    "ok": true,
-   "value": "3.9% of it lies in front of its cell"
+   "value": "1.0% of it lies in front of its cell"
   },
   {
    "name": "from behind: it has a view",
@@ -111,8 +121,8 @@
   },
   {
    "name": "atlas is under 900 KB",
-   "ok": true,
-   "value": "795 KB"
+   "ok": false,
+   "value": "917 KB"
   }
  ]
 }

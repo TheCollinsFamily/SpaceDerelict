@@ -280,9 +280,28 @@ try {
     await closeOn(await middle([...shooter, ...engines]), 6);
     const acting = async () => page.evaluate(() => window.broodfall.limbsActing());
     let seen = [];
-    for (let i = 0; i < 90 && seen.length < 2; i++) { await ticks(1); seen = await acting(); }
-    check(seen.length >= 1, 'engines play their acting clip when the limb they serve fires', seen.join(', '));
+    const engineActing = () => seen.some((f) => f !== 'spitter');
+    for (let i = 0; i < 120 && !engineActing(); i++) { await ticks(1); seen = await acting(); }
+    check(engineActing(), 'engines play their acting clip when the limb they serve fires', seen.join(', '));
     await shot('limbs-01-engines-acting');
+    // Close on each engine, at rest and then mid-act (the game runs a tick at a time until it acts).
+    const fams = ['amp', 'twin', 'capacitor', 'conduit', 'choir', 'ward'];
+    for (const [i, id] of engines.entries()) {
+      if (id < 0) continue;
+      const at = await page.evaluate((id) => { const t = window.broodfall.sim.towers.find((x) => x.id === id); return t ? { x: t.pos.x, y: t.pos.y } : null; }, id);
+      if (!at) continue;
+      await closeOn(at, 12);
+      let now = [];
+      for (let k = 0; k < 150 && !now.includes(fams[i]); k++) {
+        // A ward acts when a limb under it is struck: strike the spitter it covers.
+        if (fams[i] === 'ward' && k % 10 === 5) await page.evaluate((sid) => { const t = window.broodfall.sim.towers.find((x) => x.id === sid); if (t) { t.shield = 0; t.hp -= 2; } }, shooter[0]);
+        await ticks(1);
+        now = await acting();
+      }
+      await ticks(3);
+      if (now.includes(fams[i])) await shot(`limbs-01-${fams[i]}-acting`);
+      check(now.includes(fams[i]), `${fams[i]} acts`);
+    }
   }
 
   if (scene('wither')) {

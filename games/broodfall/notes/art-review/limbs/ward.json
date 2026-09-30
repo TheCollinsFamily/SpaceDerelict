@@ -2,7 +2,7 @@
  "family": "ward",
  "frames": 16,
  "atlasKB": 206,
- "failed": 0,
+ "failed": 2,
  "checks": [
   {
    "name": "where it stands is marked",
@@ -43,6 +43,16 @@
    "name": "it stands in its cell",
    "ok": true,
    "value": "0.0% of it lies in front of its cell"
+  },
+  {
+   "name": "fire: exists",
+   "ok": false,
+   "value": "missing"
+  },
+  {
+   "name": "die: exists",
+   "ok": false,
+   "value": "missing: node tools/art/make.mjs limb ward"
   },
   {
    "name": "atlas is under 900 KB",
