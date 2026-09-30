@@ -33,8 +33,10 @@
   background: linear-gradient(90deg, rgba(4, 6, 12, 0.72) 0%, rgba(4, 6, 12, 0.35) 42%, rgba(4, 6, 12, 0) 65%);
 }
 #menu .logo-title { --emblem-size: clamp(170px, 24vh, 260px); --word-size: clamp(64px, 11vh, 124px); position: relative; z-index: 1; margin-left: -12px; }
-#menu:not(.title-art) .logo-title { display: none; }
-#menu:not(.title-art) .menu-card-title::before { content: attr(data-name) ' — '; }
+#menu { flex-direction: column; gap: 10px; }
+#menu:not(.title-art) .logo-title { --word-size: 72px; margin: 0; }
+#menu.ship-art:not(.title-art) { justify-content: center; align-items: flex-start; }
+#menu.ship-art:not(.title-art) .logo-title { margin-left: 6%; }
 #menu.title-art .screen-card { margin-left: 0; position: relative; z-index: 1; max-width: 560px; padding: 22px 30px; }
 #menu.title-art .menu-card-title { font-size: 22px; letter-spacing: 6px; margin: 6px 0 8px; }
 #menu .screen-title.menu-card-title { font-size: 26px; }
@@ -91,7 +93,7 @@
 .debrief-card.pictured .screen-title { display: none; }
 .dbf { text-align: left; margin: 10px 0 12px; }
 .dbf-lead {
-  position: relative; height: 230px; background: #1a120a var(--lead, none) center 40% / cover no-repeat;
+  position: relative; height: clamp(150px, 22vh, 230px); background: #1a120a var(--lead, none) center 40% / cover no-repeat;
   border: 3px solid #1a1208; display: flex; flex-direction: column; justify-content: flex-end; padding: 14px 18px;
   box-shadow: inset 0 -90px 60px -30px rgba(0, 0, 0, 0.75);
   filter: saturate(1.08);
@@ -147,3 +149,11 @@
 #campaign.ship-art .cp-organ-pic { border-color: rgba(235, 245, 248, 0.3); }
 .cp-lin.cp-organ:not(.have) .cp-organ-pic { filter: saturate(0.55) brightness(0.8); }
 .debrief-card.pictured .screen-body { display: none; }
+
+/* The line about missing pictures is for the board: not over a report or the ship. */
+body.in-ship #art-notice, body:has(#debrief:not(.hidden)) #art-notice { display: none; }
+#art-notice { display: flex; gap: 10px; align-items: center; }
+#art-notice.hidden { display: none; }
+#art-notice .an-btns { display: flex; }
+/* The way out of a long report is always on the screen. */
+.debrief-card #debrief-ship { position: sticky; bottom: 0; box-shadow: 0 -8px 16px rgba(184, 168, 120, 0.9); }

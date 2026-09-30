@@ -24,6 +24,7 @@ import { ART, REVIEW, ROOT, SRC, putEntry } from '../lib/manifest.mjs';
 
 const FPS = 12;
 /** Frames kept of each clip; a BIG limb keeps two fewer of its death (its frames are twice the pixels, and a withering is slow). */
+/** Frames kept of each clip. A BIG limb keeps two fewer of its death: its frames are twice the pixels, and a withering is slow. */
 const KEEP = { idle: 16, fire: 14, die: 10 };
 /** The side of a frame, and how many frames across its atlas is: of a limb of one cell, and of a BIG limb, which is drawn two cells wide and would be seen soft at the same size. */
 const FRAME = { small: [256, 16], big: [384, 8] };

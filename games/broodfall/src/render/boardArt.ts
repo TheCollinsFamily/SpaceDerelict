@@ -69,6 +69,7 @@ export class CreepLife {
 
   /** All the skin is being drawn again (the map was rebuilt): it keeps its place in time. */
   clear(): void {
+    for (const skin of this.cells.values()) for (const t of skin.tendrils) t.sprite.destroy();
     this.cells.clear();
   }
 

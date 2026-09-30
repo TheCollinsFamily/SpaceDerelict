@@ -76,4 +76,5 @@ npm test             # 250 headless tests: the sim, the campaign, the camera, th
 npm run build
 npm run test:visual  # headless chromium: sim + HUD + per-region pixel checks; screenshots in tools/screenshots/
 npm run test:input   # headless chromium: real player gestures (build, cannibalize, organ, cancel)
+node tools/shot-screens.mjs  # the DEV server: title, loading (throttled), draft previews, debriefs, Gene Bay, every fault forced (notes/screens/2026-09-30/screens-*)
 ```

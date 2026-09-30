@@ -197,7 +197,23 @@ try {
       }
       if (!on('debrief')) { await ctx.close(); continue; }
       await page.waitForTimeout(500);
-      await endRun(page, how);
+      if (how === 'lost') {
+        // Lost for real: no more limbs, the waves called one after another until the core falls.
+        const real = await page.evaluate(() => {
+          const b = window.broodfall;
+          const s = b.sim;
+          for (let round = 0; round < 60 && s.outcome === 'playing'; round++) {
+            b.surface();
+            while (s.phase === 'draft') s.issue({ kind: 'choose-plate', index: 0 });
+            s.issue({ kind: 'call-early' });
+            const w0 = s.wavesCleared;
+            for (let k = 0; k < 8000 && s.wavesCleared === w0 && s.outcome === 'playing' && s.phase !== 'draft'; k++) b.step(1);
+          }
+          return s.outcome;
+        });
+        console.log(`  NOTE  the lost run ended by play: ${real}`);
+        if (real === 'playing') await endRun(page, how);
+      } else await endRun(page, how);
       await page.waitForSelector('#debrief:not(.hidden) .dbf', { timeout: 15000 }).catch(() => {});
       await page.waitForTimeout(1200);
       const d = await page.evaluate(() => ({
@@ -261,6 +277,8 @@ try {
       check(k === 'no-art', 'the art list missing: the fault screen says the pictures did not arrive', k);
       await shot(page, '14-fault-no-art');
       await page.locator('[data-act="continue"]').click();
+      await page.waitForTimeout(400);
+      await shot(page, '14b-fault-no-art-menu-plain');
       await page.locator('#menu-deploy').click();
       await page.waitForTimeout(1500);
       const v = await page.evaluate(() => window.broodfall?.view());

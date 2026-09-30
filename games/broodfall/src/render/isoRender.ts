@@ -26,6 +26,7 @@ import { BALANCE } from '../../content/data';
 import { CASTE_COLORS, ENEMY_SIZE, FAMILY_COLORS, Renderer } from './render';
 import { FxLayer, type FxView } from './fx';
 import { LimbFates } from './limbFx';
+import { CreepLife, GateArt, PlinthRise, PodArt, Skyline } from './boardArt';
 
 /** The old marks were drawn for a 26 px cell; on this board they are drawn this much bigger. */
 const K = 1.9;
@@ -163,10 +164,24 @@ export class IsoRenderer extends Renderer {
   /** What a limb does besides idling: acting, dying, being carried off, the parts it grafted (src/render/limbFx.ts). */
   private fates: LimbFates;
 
+  /** The board alive (src/render/boardArt.ts): the skin's pulse and tendrils, the pods, the gates, the unclaimed city, plinths rising. */
+  private life: CreepLife;
+  private podArt: PodArt;
+  private gateArt: GateArt;
+  private skyline: Skyline;
+  private rise = new PlinthRise();
+  /** What of a rising cell is drawn lower while it rises, and where it rests. */
+  private riseSprites = new Map<number, Array<{ s: Sprite; y: number }>>();
+  private creepRest = new WeakMap<Sprite, number>();
+
   constructor(private art: BoardArtSet) {
     super();
     this.fx = new FxLayer(art);
     this.fates = new LimbFates(art);
+    this.life = new CreepLife(art);
+    this.podArt = new PodArt(art);
+    this.gateArt = new GateArt(art);
+    this.skyline = new Skyline(art);
   }
 
   async init(mount: HTMLElement, _worldW: number, _worldH: number): Promise<void> {
@@ -182,7 +197,7 @@ export class IsoRenderer extends Renderer {
     this.aimBox.addChild(this.aimG);
     this.marksBox.addChild(this.marksG);
     this.marksBox.scale.set(K);
-    this.world.addChild(this.floors, this.creepFloor, this.decalBox, this.flat, this.shadeBox, this.groundBox, this.fx.ground, this.sorted, this.ghosts, this.fx.air, this.fx.glow, this.aimBox, this.marksBox);
+    this.world.addChild(this.floors, this.skyline.under, this.skyline.smoke, this.creepFloor, this.decalBox, this.flat, this.shadeBox, this.groundBox, this.fx.ground, this.sorted, this.ghosts, this.fx.air, this.fx.glow, this.aimBox, this.marksBox);
     // With the effects drawn as pictures, the base class leaves out its clouds, caltrops and pip dots.
     this.fxArt = this.fx.ready();
     this.pipDots = !this.art.fx.has('parts');
@@ -415,6 +430,10 @@ export class IsoRenderer extends Renderer {
     this.updateCamera(sim, dtReal);
     this.syncMap(sim);
     this.syncCreep(sim);
+    this.life.update(dtReal);
+    this.skyline.update(dtReal);
+    this.riseStep(dtReal);
+    this.nodeDt = dtReal;
     this.groundG.clear();
     this.aimG.clear();
     this.marksG.clear();
@@ -458,6 +477,12 @@ export class IsoRenderer extends Renderer {
     this.fx.reset();
     this.fates.reset();
     this.nodes.clear();
+    this.life.reset(sim.map.cells.length);
+    this.podArt.reset();
+    this.gateArt.reset();
+    this.rise.reset(sim.map.cells.length);
+    this.riseSprites.clear();
+    this.nodesSeen = false;
     this.shots.clear();
     this.core = null;
     this.coreShade = null;
@@ -534,6 +559,9 @@ export class IsoRenderer extends Renderer {
     const sig = `${this.turned}:${sim.plinthsPlaced}:${sim.map.slots.map((s) => (s ? '1' : '0')).join('')}`;
     if (sig === this.mapSig) return;
     this.mapSig = sig;
+    // A plinth just placed: that cell rises out of its block (src/render/boardArt.ts).
+    this.rise.note(sim.map.plinths);
+    this.riseSprites.clear();
     this.floors.removeChildren().forEach((x) => x.destroy());
     for (const s of this.blockSprites) s.destroy();
     this.blockSprites = [];
@@ -563,6 +591,7 @@ export class IsoRenderer extends Renderer {
       }
       const h = hV(vx, vy);
       const z = (vx + vy + 1) * 100;
+      const mark = this.blockSprites.length;
       const kind = sim.map.slots[slot]?.feature ?? 'plain';
       // Every BUILDING (the roofs of one height that touch, in one district) has one facade and one roof of its set's.
       const building = this.buildings[cell];
@@ -595,12 +624,38 @@ export class IsoRenderer extends Renderer {
       if (hV(vx, vy - 1) > h) { const e = this.add(this.sorted, this.art.sprite('creep', 'edge-shade-north'), p.x, p.y - h * g.level, z + 4); if (e) this.blockSprites.push(e); }
       if (hV(vx - 1, vy) > h) { const e = this.add(this.sorted, this.art.sprite('creep', 'edge-shade-west'), p.x, p.y - h * g.level, z + 4); if (e) this.blockSprites.push(e); }
       this.addProp(sim, b.x, b.y, h, kind, z, set);
+      if (this.rise.drop(cell) > 0) {
+        // What rises: its top level, its roof and what is on it (what lies below the top level stays).
+        const top = p.y + g.b - h * g.level + 0.5;
+        const mine = this.blockSprites.slice(mark).filter((x) => x.y <= top);
+        const prop = this.props.get(cell);
+        if (prop) mine.push(prop);
+        this.riseSprites.set(cell, mine.map((x) => ({ s: x, y: x.y })));
+      }
     }
     this.drawShade(sim);
+    // The unclaimed city under smoke (src/render/boardArt.ts), built again with the map.
+    this.skyline.build(g, sim, (c) => this.setOfSlot(sim, Math.floor(Math.floor(c / W) / PLATE) * sim.map.slotsX + Math.floor((c % W) / PLATE)), span);
     // Everything standing on the map is placed again over the new ground.
     this.creepState.fill(0);
     for (const list of this.creepSprites.values()) for (const s of list) s.destroy();
     this.creepSprites.clear();
+    this.life.clear();
+  }
+
+  /** Cells rising on a plinth: what the map built for them, the skin on them, drawn lower and coming up. */
+  private riseStep(dt: number): void {
+    this.rise.update(dt);
+    const level = this.geo.level;
+    for (const [cell, list] of this.riseSprites) {
+      const drop = this.rise.drop(cell) * level;
+      for (const r of list) if (!r.s.destroyed) r.s.y = r.y + drop;
+      for (const sk of this.creepSprites.get(cell) ?? []) {
+        const y = this.creepRest.get(sk);
+        if (y !== undefined && !sk.destroyed) sk.y = y + drop;
+      }
+      if (drop === 0) this.riseSprites.delete(cell);
+    }
   }
 
   /**
@@ -760,6 +815,7 @@ export class IsoRenderer extends Renderer {
       this.creepState[cell] = state;
       for (const s of this.creepSprites.get(cell) ?? []) s.destroy();
       this.creepSprites.delete(cell);
+      this.life.remove(cell);
       const prop = this.props.get(cell);
       if (prop) prop.visible = state === 0;
       if (!state) continue;
@@ -771,12 +827,15 @@ export class IsoRenderer extends Renderer {
       // What the skin does to what walks on it, and how high it lies: the higher, the lighter.
       const tint = mix(state & 64 ? 0xffd890 : state & 32 ? 0x9fd8a8 : state & 128 ? 0xd8c0c0 : 0xffffff, SKIN_LIGHT[Math.min(h, SKIN_LIGHT.length - 1)]);
       const z = (vx + vy + 1) * 100;
-      const skin = this.add(h ? this.sorted : this.creepFloor, this.art.sprite('creep', `creep-${open}-${vx % m}${vy % m}`), p.x, p.y, z + 2);
+      // Where a node's strain works on it, the skin is DRAWN as that strain (boardArt, templates/board.mjs): bog, embers.
+      const strain = state & 64 ? 'creep-burning' : state & 32 ? 'creep-mire' : '';
+      const strainTex = strain ? this.art.sprite('creep', `${strain}-${open}-${vx % 2}${vy % 2}`) : null;
+      const skin = this.add(h ? this.sorted : this.creepFloor, strainTex ?? this.art.sprite('creep', `creep-${open}-${vx % m}${vy % m}`), p.x, p.y, z + 2);
       if (skin) {
         // Streets stay readable under the creep: a thin film there, thick hide on the roofs
-        // and under whatever of the body stands in the street.
-        skin.alpha = h ? 1 : state & 256 ? 0.92 : 0.34;
-        skin.tint = tint;
+        // and under whatever of the body stands in the street. A strain on a street is seen: it is there to be walked through.
+        skin.alpha = h ? 1 : state & 256 ? 0.92 : strainTex ? 0.62 : 0.34;
+        skin.tint = strainTex ? SKIN_LIGHT[Math.min(h, SKIN_LIGHT.length - 1)] : tint;
         made.push(skin);
       }
       if (h) {
@@ -797,6 +856,13 @@ export class IsoRenderer extends Renderer {
         }
       }
       this.creepSprites.set(cell, made);
+      for (const x of made) this.creepRest.set(x, x.y);
+      const core = sim.cellCenter(sim.map.coreCell);
+      const here = sim.cellCenter(cell);
+      this.life.add(cell, made, {
+        dist: Math.hypot(here.x - core.x, here.y - core.y) / sim.cfg.cellPx, burning: (state & 64) !== 0,
+        open, layer: h ? this.sorted : this.creepFloor, at: p, z: z + 2,
+      });
     }
   }
 
@@ -864,6 +930,22 @@ export class IsoRenderer extends Renderer {
 
   // ------------------------------------------------------------ creep nodes
 
+  /** Real seconds since the last frame, for the pods' clips; and whether the board has drawn its nodes once. */
+  private nodeDt = 0;
+  private nodesSeen = false;
+
+  /** Gates where waves come in: each its tile set's gateway across the opening (boardArt.ts); the old ring without art. */
+  protected drawGates(g: Graphics, sim: Sim): void {
+    const W = sim.cfg.gridW;
+    const drawn = this.gateArt.draw(this.sorted, g, this.geo, sim, this.pulse, (gate) => this.setOfSlot(sim, Math.floor(Math.floor(gate / W) / PLATE) * sim.map.slotsX + Math.floor((gate % W) / PLATE)));
+    if (!drawn) super.drawGates(g, sim);
+  }
+
+  /** What the beats read of the board alive (tools/shot-board-art.mjs). */
+  boardLife(): { skin: { cells: number; tendrils: number; arriving: number }; pods: ReturnType<PodArt['state']>; gates: number; skyline: { blocks: number; wisps: number }; rising: number[] } {
+    return { skin: this.life.count(), pods: this.podArt.state(), gates: this.gateArt.count(), skyline: this.skyline.count(), rising: this.rise.cells() };
+  }
+
   private syncNodes(sim: Sim): void {
     const g = this.marksG;
     const seen = new Set<number>();
@@ -876,9 +958,17 @@ export class IsoRenderer extends Renderer {
       this.nodeMarks(g, sim, s, p.x / K, (p.y - 14) / K);
     }
     for (const [id, sp] of this.nodes) if (!seen.has(id)) { sp.destroy(); this.nodes.delete(id); }
+    this.podArt.prune(seen);
+    // After the first frame of a board, a node that appears is a node just placed: it grows.
+    this.nodesSeen = true;
   }
 
   private nodeSprite(sim: Sim, s: CreepSource, p: Pt): void {
+    // The pods as drawn (boardArt.ts): each look of a node, growing when placed and puffing when it spreads.
+    if (this.podArt.has()) {
+      this.podArt.sync(this.sorted, this.geo, sim, s, p, this.nodeDt, this.nodesSeen);
+      return;
+    }
     const tex = this.art.sprite('props', 'prop-pod');
     if (!tex) return;
     let sp = this.nodes.get(s.id);
@@ -1053,7 +1143,8 @@ export class IsoRenderer extends Renderer {
       // The point of the picture that stands on the middle of its ground is the middle of what it stands on.
       v.sprite.anchor.set(side.anchor[0], side.anchor[1]);
       v.sprite.scale.set(mirror ? -scale : scale, scale);
-      v.sprite.position.set(p.x, p.y);
+      // A limb on a roof rising on its plinth rises with it.
+      v.sprite.position.set(p.x, p.y + this.rise.drop(t.cell) * g.level);
       // It is as far back as the nearest to the camera of the cells it stands on.
       let z = -Infinity;
       for (const c of sim.cellsOf(t)) {

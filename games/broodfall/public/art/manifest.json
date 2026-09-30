@@ -2996,7 +2996,6 @@
    }
   }
  },
- "allies": {},
  "limbs": {
   "amp": {
    "atlas": "limbs/amp.webp",
@@ -3004,9 +3003,9 @@
    "cols": 16,
    "anchor": [
     0.5,
-    0.8199
+    0.8266
    ],
-   "body": 0.382,
+   "body": 0.364,
    "on": "roof",
    "facing": true,
    "anims": {
@@ -3014,19 +3013,34 @@
      "start": 0,
      "count": 16,
      "fps": 8
+    },
+    "fire": {
+     "start": 16,
+     "count": 14,
+     "fps": 3.5
+    },
+    "die": {
+     "start": 30,
+     "count": 10,
+     "fps": 2.5
     }
    },
    "back": {
     "anchor": [
      0.5,
-     0.7927
+     0.7963
     ],
-    "body": 0.361,
+    "body": 0.355,
     "anims": {
      "idle": {
-      "start": 16,
+      "start": 40,
       "count": 16,
       "fps": 4.17
+     },
+     "fire": {
+      "start": 56,
+      "count": 14,
+      "fps": 3.5
      }
     }
    }
@@ -3093,9 +3107,9 @@
    "cols": 16,
    "anchor": [
     0.5,
-    0.7719
+    0.7572
    ],
-   "body": 0.47,
+   "body": 0.444,
    "on": "roof",
    "facing": true,
    "anims": {
@@ -3103,6 +3117,16 @@
      "start": 0,
      "count": 16,
      "fps": 12
+    },
+    "fire": {
+     "start": 16,
+     "count": 14,
+     "fps": 3.5
+    },
+    "die": {
+     "start": 30,
+     "count": 10,
+     "fps": 2.5
     }
    }
   },
@@ -3212,9 +3236,9 @@
    "cols": 16,
    "anchor": [
     0.5,
-    0.7996
+    0.8038
    ],
-   "body": 0.442,
+   "body": 0.428,
    "on": "roof",
    "facing": true,
    "anims": {
@@ -3222,6 +3246,16 @@
      "start": 0,
      "count": 16,
      "fps": 11.29
+    },
+    "fire": {
+     "start": 16,
+     "count": 14,
+     "fps": 7.3
+    },
+    "die": {
+     "start": 30,
+     "count": 10,
+     "fps": 2.5
     }
    }
   },
@@ -3804,9 +3838,9 @@
    "cols": 16,
    "anchor": [
     0.5,
-    0.8231
+    0.8053
    ],
-   "body": 0.385,
+   "body": 0.369,
    "on": "roof",
    "facing": true,
    "anims": {
@@ -3814,6 +3848,16 @@
      "start": 0,
      "count": 16,
      "fps": 11.29
+    },
+    "fire": {
+     "start": 16,
+     "count": 14,
+     "fps": 3.5
+    },
+    "die": {
+     "start": 30,
+     "count": 10,
+     "fps": 2.5
     }
    }
   },
@@ -3898,9 +3942,9 @@
    "cols": 16,
    "anchor": [
     0.5,
-    0.782
+    0.6822
    ],
-   "body": 0.623,
+   "body": 0.499,
    "on": "roof",
    "facing": true,
    "anims": {
@@ -3908,19 +3952,34 @@
      "start": 0,
      "count": 16,
      "fps": 4.8
+    },
+    "fire": {
+     "start": 16,
+     "count": 14,
+     "fps": 3.5
+    },
+    "die": {
+     "start": 30,
+     "count": 10,
+     "fps": 2.5
     }
    },
    "back": {
     "anchor": [
      0.5,
-     0.6216
+     0.6419
     ],
-    "body": 0.65,
+    "body": 0.431,
     "anims": {
      "idle": {
-      "start": 16,
+      "start": 40,
       "count": 16,
       "fps": 4.47
+     },
+     "fire": {
+      "start": 56,
+      "count": 14,
+      "fps": 3.82
      }
     }
    }
@@ -4006,9 +4065,9 @@
    "cols": 16,
    "anchor": [
     0.5,
-    0.7121
+    0.6123
    ],
-   "body": 0.729,
+   "body": 0.463,
    "on": "roof",
    "facing": true,
    "anims": {
@@ -4016,6 +4075,16 @@
      "start": 0,
      "count": 16,
      "fps": 4.17
+    },
+    "fire": {
+     "start": 16,
+     "count": 14,
+     "fps": 3.5
+    },
+    "die": {
+     "start": 30,
+     "count": 10,
+     "fps": 2.5
     }
    }
   },
@@ -4253,6 +4322,11 @@
      "start": 16,
      "count": 14,
      "fps": 3.5
+    },
+    "die": {
+     "start": 30,
+     "count": 10,
+     "fps": 2.5
     }
    }
   },
@@ -4315,9 +4389,9 @@
    "cols": 16,
    "anchor": [
     0.5,
-    0.8618
+    0.8594
    ],
-   "body": 0.564,
+   "body": 0.557,
    "on": "roof",
    "facing": true,
    "anims": {
@@ -4325,6 +4399,16 @@
      "start": 0,
      "count": 16,
      "fps": 4.68
+    },
+    "fire": {
+     "start": 16,
+     "count": 14,
+     "fps": 3.5
+    },
+    "die": {
+     "start": 30,
+     "count": 10,
+     "fps": 2.5
     }
    },
    "back": {
@@ -4335,9 +4419,14 @@
     "body": 0.477,
     "anims": {
      "idle": {
-      "start": 16,
+      "start": 40,
       "count": 16,
       "fps": 4.8
+     },
+     "fire": {
+      "start": 56,
+      "count": 14,
+      "fps": 3.5
      }
     }
    }
@@ -11053,10 +11142,60 @@
      "atlas": "board/smoke.webp",
      "sprites": {
       "smoke-0": {
+       "x": 645,
+       "y": 1,
+       "w": 320,
+       "h": 274,
+       "anchor": [
+        0.5,
+        0.5
+       ]
+      },
+      "smoke-1": {
+       "x": 1611,
+       "y": 1,
+       "w": 320,
+       "h": 111,
+       "anchor": [
+        0.5,
+        0.5
+       ]
+      },
+      "smoke-2": {
+       "x": 967,
+       "y": 1,
+       "w": 320,
+       "h": 258,
+       "anchor": [
+        0.5,
+        0.5
+       ]
+      },
+      "smoke-3": {
        "x": 1,
        "y": 1,
        "w": 320,
-       "h": 216,
+       "h": 313,
+       "anchor": [
+        0.5,
+        0.5
+       ]
+      },
+      "smoke-4": {
+       "x": 323,
+       "y": 1,
+       "w": 320,
+       "h": 313,
+       "anchor": [
+        0.5,
+        0.5
+       ]
+      },
+      "smoke-5": {
+       "x": 1289,
+       "y": 1,
+       "w": 320,
+       "h": 182,
        "anchor": [
         0.5,
         0.5

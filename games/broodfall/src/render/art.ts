@@ -62,10 +62,15 @@ export interface LimbArt extends LimbSide {
  * down), so that what it draws past its own edge is not cut off at its corners (the seams, Sep 30
  * 2026, tools/art/templates/terrain.mjs). Its texture is anchored at the tile's own corner.
  */
-export interface Rect { x: number; y: number; w: number; h: number; anchor?: [number, number]; on?: string; pad?: [number, number] }
+export interface Rect { x: number; y: number; w: number; h: number; anchor?: [number, number]; on?: string; pad?: [number, number]; res?: number }
+/** The creep nodes (tools/art/templates/board.mjs): each look of a node, growing and spreading. */
+export interface PodsArt {
+  atlas: string; frame: number; cols: number;
+  looks: Record<string, { grow: Clip; spread: Clip; body: number; anchor: [number, number] }>;
+}
 export interface BoardArt {
   tile: [number, number]; level: number; wallSpan: number;
-  sheets: Partial<Record<'floors' | 'creep' | 'walls' | 'props', { atlas: string; sprites: Record<string, Rect> }>>;
+  sheets: Partial<Record<'floors' | 'creep' | 'walls' | 'props' | 'gates' | 'smoke', { atlas: string; sprites: Record<string, Rect> }>>;
   core?: {
     atlas: string; frame: number; cols: number; count: number; fps: number; anchor: [number, number];
     /** How many cells wide what it stands on is, and how wide that is as a share of the frame. */
@@ -88,7 +93,7 @@ export interface Manifest {
   /** What walks the streets on the hive's side: the broodling and the puppet queens (tools/art/units.mjs ALLIES). */
   allies?: Record<string, UnitArt>;
   limbs: Record<string, LimbArt>;
-  board: { terrain?: BoardArt };
+  board: { terrain?: BoardArt; pods?: PodsArt };
   biomes?: Record<string, BiomeArt>;
   ship: { ship?: ShipArt };
   /** What flies, bursts and hangs in the air, and the donor parts (tools/art/templates/fx.mjs). */
@@ -154,6 +159,8 @@ export class BoardArtSet {
   /** The crater and roots of the landing site, painted from straight above. */
   coreGround: Texture | null = null;
   core: { art: NonNullable<BoardArt['core']>; atlas: Atlas } | null = null;
+  /** The creep nodes, when they are drawn. */
+  pods: { art: PodsArt; atlas: Atlas } | null = null;
   terrain: BoardArt | null = null;
   /** What could not be loaded, for the console and the tests. */
   failed: string[] = [];
@@ -205,6 +212,8 @@ export class BoardArtSet {
         jobs.push(get(core.atlas).then((atlas) => { if (atlas) set.core = { art: core, atlas }; }));
       }
     }
+    const pods = m.board?.pods;
+    if (pods) jobs.push(get(pods.atlas).then((atlas) => { if (atlas) set.pods = { art: pods, atlas }; }));
     if (t?.core?.ground) {
       const file = t.core.ground.file;
       jobs.push((async () => {

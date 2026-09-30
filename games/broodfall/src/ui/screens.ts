@@ -169,11 +169,18 @@ export function showFailure(f: Failure, onContinue?: () => void): void {
 function notice(html: string, title = ''): void {
   const el = document.getElementById('art-notice');
   if (!el) return;
-  el.innerHTML = `${html} <button data-act="retry">RELOAD</button><button data-act="close" title="Close">✕</button>`;
-  el.title = title;
+  // One line per thing said; the buttons once, after the first.
+  if (el.classList.contains('hidden') || !el.querySelector('.an-lines')) {
+    el.innerHTML = '<div class="an-lines"></div><div class="an-btns"><button data-act="retry">RELOAD</button><button data-act="close" title="Close">✕</button></div>';
+    el.title = '';
+    el.querySelector('[data-act="retry"]')!.addEventListener('click', () => location.reload());
+    el.querySelector('[data-act="close"]')!.addEventListener('click', () => el.classList.add('hidden'));
+  }
+  const line = document.createElement('div');
+  line.innerHTML = html;
+  el.querySelector('.an-lines')!.appendChild(line);
+  if (title) el.title = el.title ? `${el.title}, ${title}` : title;
   el.classList.remove('hidden');
-  el.querySelector('[data-act="retry"]')!.addEventListener('click', () => location.reload());
-  el.querySelector('[data-act="close"]')!.addEventListener('click', () => el.classList.add('hidden'));
   // It is said once; it does not stay over the game.
   window.setTimeout(() => el.classList.add('hidden'), 14000);
 }

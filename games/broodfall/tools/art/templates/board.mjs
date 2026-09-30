@@ -176,7 +176,8 @@ export const GATES = {
   industrial: 'a factory gate: a riveted iron gantry arch over the road with yellow and black hazard stripes on its legs, a lattice gate slid open to one side, two floodlamps and a run of pipes along the top',
   farmland: 'a ranch gateway: two tall posts of red-stained paper boards with white trim holding a round arched beam over the road, split-rail fences running off to each side, a lantern hanging from the beam',
   necropolis: 'a cemetery gate of bone-white chalk: one round arch between two piers with niches holding urns and small candles, black iron gates standing wide open, a dark fungus cypress beside each pier',
-  deephive: 'a round tunnel mouth in a wall of ancient amber comb: a thick glossy rim of old wax, capped cells all round it, some of them glowing warm amber from inside, the tunnel beyond dark',
+  // Sep 30 2026: the first was a ring floating in the air, with no wall under it: a gate stands on the road.
+  deephive: 'a wide gateway cut through a thick squat wall of ancient amber comb that stands on the ground: its opening is round at the top and reaches right down to the ground, so a road runs through it; a thick glossy rim of old wax round the opening, capped cells all over the wall, some of them glowing warm amber from inside',
   terraces: 'a gateway in a dry-stone wall laid like honeycomb: a round stone arch, a wooden field gate standing open under it, grass and small flowers growing along the top of the wall',
   wetland: 'a water gate of a stilt village: a round arch of bundled reeds and pale wasp paper standing on stilts, reed mats hung on it, a lantern hanging from the arch, coils of rope',
 };
@@ -266,8 +267,31 @@ export function smokeSprites() {
     const a = Math.max(0, Math.min(255, (lum(i) - 14) * 1.5));
     alpha.data[i] = 200; alpha.data[i + 1] = 198; alpha.data[i + 2] = 192; alpha.data[i + 3] = a;
   }
-  const found = findFigures(alpha, { expect: 6, tolerance: 40 });
-  const boxes = found.boxes.length ? found.boxes : [{ x0: 0, y0: 0, x1: img.w, y1: img.h }];
+  // Lumps of smoke: what is thick enough, on a coarse grid, joined where it touches.
+  const G = 8;
+  const gw = Math.ceil(img.w / G), gh = Math.ceil(img.h / G);
+  const on = new Uint8Array(gw * gh);
+  for (let y = 0; y < img.h; y += 2) for (let x = 0; x < img.w; x += 2) if (alpha.data[(y * img.w + x) * 4 + 3] > 40) on[Math.floor(y / G) * gw + Math.floor(x / G)] = 1;
+  const seen = new Uint8Array(gw * gh);
+  const boxes = [];
+  for (let i = 0; i < on.length; i++) {
+    if (!on[i] || seen[i]) continue;
+    const stack = [i];
+    seen[i] = 1;
+    let x0 = gw, y0 = gh, x1 = 0, y1 = 0, n = 0;
+    while (stack.length) {
+      const c = stack.pop();
+      const cx = c % gw, cy = Math.floor(c / gw);
+      n++; x0 = Math.min(x0, cx); y0 = Math.min(y0, cy); x1 = Math.max(x1, cx); y1 = Math.max(y1, cy);
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = cx + dx, ny = cy + dy;
+        if (nx < 0 || ny < 0 || nx >= gw || ny >= gh) continue;
+        const o = ny * gw + nx;
+        if (on[o] && !seen[o]) { seen[o] = 1; stack.push(o); }
+      }
+    }
+    if (n > 40) boxes.push({ x0: x0 * G, y0: y0 * G, x1: (x1 + 1) * G, y1: (y1 + 1) * G });
+  }
   return boxes.map((bx, i) => {
     const pad = 20;
     const c = crop(alpha, bx.x0 - pad, bx.y0 - pad, bx.x1 - bx.x0 + 2 * pad, bx.y1 - bx.y0 + 2 * pad);
