@@ -23,6 +23,7 @@ import { FILL, drawCell, footingOf, markOf, spill } from '../lib/foot.mjs';
 import { ART, REVIEW, ROOT, SRC, putEntry } from '../lib/manifest.mjs';
 
 const FPS = 12;
+/** Frames kept of each clip; a BIG limb keeps two fewer of its death (its frames are twice the pixels, and a withering is slow). */
 const KEEP = { idle: 16, fire: 14, die: 10 };
 /** The side of a frame, and how many frames across its atlas is: of a limb of one cell, and of a BIG limb, which is drawn two cells wide and would be seen soft at the same size. */
 const FRAME = { small: [256, 16], big: [384, 8] };
@@ -214,7 +215,7 @@ function bakeView(l, dir, view, check, F) {
   const frames = [];
   const anims = {};
   for (const c of clips) {
-    c.kept = (c.anim === 'die' ? pickToEnd(c.frames, KEEP.die) : pick(c.frames, KEEP[c.anim])).map((f) => lift(resize(crop(f, x0, y0, side, side), F, F), l.flat ? 0 : LIFT, anchor[1]));
+    c.kept = (c.anim === 'die' ? pickToEnd(c.frames, l.big ? KEEP.die - 2 : KEEP.die) : pick(c.frames, KEEP[c.anim])).map((f) => lift(resize(crop(f, x0, y0, side, side), F, F), l.flat ? 0 : LIFT, anchor[1]));
     anims[c.anim] = { start: frames.length, count: c.kept.length, fps: Number((c.kept.length / c.seconds).toFixed(2)) };
     frames.push(...c.kept);
     if (c.loop) {
