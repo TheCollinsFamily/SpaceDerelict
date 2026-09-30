@@ -23,7 +23,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import { FIRING, LIMBS } from './limbs.mjs';
+import { FIRING, LIMBS, rawDirOf } from './limbs.mjs';
 import { blank, crop, over, paste, readFrames, resize, writeJpg } from './lib/img.mjs';
 import { dropSpecks, keyClip, unionBox } from './lib/key.mjs';
 import { REVIEW, SRC } from './lib/manifest.mjs';
@@ -78,8 +78,8 @@ function write(img, text, x, y, rgb, px = 2) {
 
 function sheetOf(l, view) {
   const pre = view === 'back' ? 'back-' : '';
-  const idleFile = path.join(SRC, 'limbs', l.family, `${pre}idle.mp4`);
-  const fireFile = path.join(SRC, 'limbs', l.family, `${pre}fire.mp4`);
+  const idleFile = path.join(SRC, 'limbs', rawDirOf(l), `${pre}idle.mp4`);
+  const fireFile = path.join(SRC, 'limbs', rawDirOf(l), `${pre}fire.mp4`);
   if (!fs.existsSync(idleFile)) return null;
   const idle = keyClip(readFrames(idleFile, 4)).frames[0];
   dropSpecks(idle);
@@ -131,7 +131,7 @@ function sheetOf(l, view) {
 const args = process.argv.slice(2);
 const view = args.includes('--back') ? 'back' : 'front';
 const ids = args.filter((a) => !a.startsWith('--'));
-const list = args.includes('--units') ? [] : LIMBS.filter((l) => FIRING.includes(l.family) && (!ids.length || ids.includes(l.family)) && (view === 'front' || l.back));
+const list = args.includes('--units') ? [] : LIMBS.filter((l) => (FIRING.includes(l.family) || l.tongue) && (!ids.length || ids.includes(l.family)) && (view === 'front' || l.back));
 const out = path.join(REVIEW, 'muzzles');
 fs.mkdirSync(out, { recursive: true });
 for (const l of list) {

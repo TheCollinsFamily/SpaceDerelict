@@ -14,7 +14,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { ffmpeg, makeClip, makeStill, pool } from '../rfab.mjs';
-import { AWAY, BACK, LIMB_SHEETS, MATERIAL, QUIET, THEMES, WITHER, limb, placeOnLimbSheet, FIRING } from '../limbs.mjs';
+import { AWAY, BACK, LIMB_SHEETS, MATERIAL, QUIET, THEMES, WITHER, limb, placeOnLimbSheet, FIRING, rawDirOf } from '../limbs.mjs';
 import { blank, crop, flipX, over, paste, readFrames, readImage, resize, writeJpg, writePng } from '../lib/img.mjs';
 import { figure, findFigures } from '../lib/sheet.mjs';
 import { diffThumb, dropSpecks, fringe, keyClip, keyOf, pick, thumb, unionBox } from '../lib/key.mjs';
@@ -77,14 +77,46 @@ export async function makeLimbSheet(themeId) {
   const strip = blank(limbs.length * 256, 256, [found.bg[0], found.bg[1], found.bg[2], 255]);
   limbs.forEach((l, i) => {
     const dir = path.join(SRC, 'limbs', l.family);
-    fs.mkdirSync(dir, { recursive: true });
     const one = figure(img, found.boxes[i], found, 0, side);
-    writePng(path.join(dir, 'still.png'), resize(one, 1024, 1024));
+    // A limb redrawn from scratch (`srcDir`) is drawn alone (makeOwnDesign): its old drawing on this sheet is not its start.
+    if (!l.srcDir) {
+      fs.mkdirSync(dir, { recursive: true });
+      writePng(path.join(dir, 'still.png'), resize(one, 1024, 1024));
+    }
     paste(strip, resize(one, 256, 256), i * 256, 0);
   });
   fs.mkdirSync(path.join(REVIEW, 'limbs'), { recursive: true });
   writeJpg(path.join(REVIEW, 'limbs', `sheet-${themeId}.jpg`), strip);
   return file;
+}
+
+/**
+ * THE DESIGN OF A LIMB REDRAWN FROM SCRATCH (`srcDir` in tools/art/limbs.mjs, Sep 30 2026: the tongue
+ * Maw). Its theme's sheet still holds the old drawing, and drawing the sheet again would change every
+ * other limb on it: this one is drawn ALONE, in the same words and style, and cut out as its start picture.
+ */
+async function makeOwnDesign(l, dir) {
+  const theme = THEMES[l.theme];
+  const key = KEYS[theme.key];
+  const prompt =
+    'Design of ONE rooted alien organism, a limb of a creature, for a strategy game, alone in the middle of the picture. ' +
+    'Isometric three-quarter top-down view, the camera 45 degrees above the ground. It has the base every limb has: a squat ' +
+    'mound of glistening salmon-pink wet muscle armoured with plates of dark chitin, with short root-like tendons gripping ' +
+    `the ground around it. It carries this accent and no other: ${theme.accent}. It faces the lower left of the picture. ` +
+    `${l.name.toUpperCase()}: ${l.look}. Realistic, detailed creature design, wet and unglamorous, in exactly the ` +
+    'materials and rendering of the reference pictures. Soft even light from directly overhead. No ground, no cast ' +
+    'shadows, no labels, no numbers, no text.';
+  const file = await makeStill({
+    slug: `${l.family} design, drawn alone`, out: path.join(dir, 'design.png'), refFiles: styleRefs(),
+    prompt, key: key.hex, keyName: key.name, width: 1024, height: 1024, quality: 'high',
+  });
+  const img = readImage(file);
+  const found = findFigures(img, {});
+  if (!found.boxes.length) throw new Error(`${l.family}: nothing found in ${file}; delete it to draw again.`);
+  const size = (b) => (b.x1 - b.x0) * (b.y1 - b.y0);
+  const box = found.boxes.reduce((a, b) => (size(b) > size(a) ? b : a));
+  const side = Math.ceil(Math.max(box.x1 - box.x0, box.y1 - box.y0) * 1.5);
+  writePng(path.join(dir, 'still.png'), resize(figure(img, box, found, 0, side), 1024, 1024));
 }
 
 /** How much brighter the top of a limb is than its foot. */
@@ -327,7 +359,8 @@ function bakeView(l, dir, view, check, F) {
     Number(((box0.x0 + mx * (box0.x1 - box0.x0) - x0) / side).toFixed(4)),
     Number(((box0.y0 + my * (box0.y1 - box0.y0) - y0) / side).toFixed(4)),
   ]);
-  if (FIRING.includes(l.family) && (view === 'front' || l.back)) {
+  // The maw's tongue (`tongue`) leaves its mouth: marked like a muzzle, though it throws nothing.
+  if ((FIRING.includes(l.family) || l.tongue) && (view === 'front' || l.back)) {
     check(`${say}where it fires from is marked`, !!muzzle?.length, muzzle?.length ? JSON.stringify(marks) : `not marked: node tools/art/muzzles.mjs ${view === 'back' ? '--back ' : ''}${l.family}`);
   }
 
@@ -373,7 +406,7 @@ function bakeView(l, dir, view, check, F) {
 /** Steps 2 and 3, free: clips to an atlas, a manifest entry, the checks and the review pictures. */
 export function bakeLimb(family) {
   const l = limb(family);
-  const dir = path.join(SRC, 'limbs', family);
+  const dir = path.join(SRC, 'limbs', rawDirOf(l));
   const checks = [];
   const check = (name, ok, value) => checks.push({ name, ok, value });
   const [F, COLS] = l.big ? FRAME.big : FRAME.small;
@@ -472,25 +505,38 @@ async function makeBack(l, dir, key, stillsOnly) {
   results.forEach((r, i) => { if (!r.ok) console.warn(`[limb] ${l.family} from behind, ${jobs[i].anim} failed: ${r.error.message.slice(0, 160)}`); });
 }
 
+/** The limb redrawn in the creep's own material (MATERIAL): the picture its clips are made from. */
+function styledOf(l, dir) {
+  const key = KEYS[THEMES[l.theme].key];
+  return makeStill({
+    slug: `${l.family} in the creep's material`, out: path.join(dir, 'styled.png'),
+    refFiles: [path.join(dir, 'still.png'), path.join(SRC, 'terrain', 'creep.png')],
+    prompt: `${MATERIAL} Its one accent stays as it is: ${THEMES[l.theme].accent}.`,
+    key: key.hex, keyName: key.name, quality: 'high',
+  });
+}
+
 export async function makeLimb(family, { bakeOnly = false, stillsOnly = false } = {}) {
   const l = limb(family);
   if (!l) throw new Error(`no limb called "${family}" in tools/art/limbs.mjs`);
-  const dir = path.join(SRC, 'limbs', family);
+  // Its own folder (`srcDir`): a limb redrawn from scratch keeps the old drawing's files where they are.
+  const dir = path.join(SRC, 'limbs', rawDirOf(l));
+  fs.mkdirSync(dir, { recursive: true });
   if (stillsOnly) {
+    // A limb drawn from scratch: its design and its redraw in the creep's material first, to be looked at.
+    if (l.srcDir) {
+      if (!fs.existsSync(path.join(dir, 'still.png'))) await makeOwnDesign(l, dir);
+      await styledOf(l, dir);
+    }
     await makeBack(l, dir, KEYS[THEMES[l.theme].key], true);
     return { family, checks: [] };
   }
   if (!bakeOnly) {
     const place = placeOnLimbSheet(family);
     const design = path.join(dir, 'still.png');
-    if (!fs.existsSync(design)) await makeLimbSheet(place.theme);
+    if (!fs.existsSync(design)) await (l.srcDir ? makeOwnDesign(l, dir) : makeLimbSheet(place.theme));
     const key = KEYS[THEMES[l.theme].key];
-    const still = await makeStill({
-      slug: `${family} in the creep's material`, out: path.join(dir, 'styled.png'),
-      refFiles: [design, path.join(SRC, 'terrain', 'creep.png')],
-      prompt: `${MATERIAL} Its one accent stays as it is: ${THEMES[l.theme].accent}.`,
-      key: key.hex, keyName: key.name, quality: 'high',
-    });
+    const still = await styledOf(l, dir);
     const jobs = [{ anim: 'idle', prompt: l.idle + STEADY }];
     if (l.fire) jobs.push({ anim: 'fire', prompt: l.fire + (l.quiet ? QUIET : '') + STEADY });
     // Its death: it does not loop, and the usual lock ("the same size the whole time") is not said.

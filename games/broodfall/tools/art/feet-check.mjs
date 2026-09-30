@@ -15,7 +15,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import { LIMBS } from './limbs.mjs';
+import { LIMBS, rawDirOf } from './limbs.mjs';
 import { blank, crop, over, paste, readFrames, resize, writeJpg } from './lib/img.mjs';
 import { keyClip, unionBox, dropSpecks } from './lib/key.mjs';
 import { REVIEW, SRC } from './lib/manifest.mjs';
@@ -40,7 +40,7 @@ function cross(img, x, y, rgb, size = 9) {
 }
 
 function measure(l, view) {
-  const clip = path.join(SRC, 'limbs', l.family, view === 'back' ? 'back-idle.mp4' : 'idle.mp4');
+  const clip = path.join(SRC, 'limbs', rawDirOf(l), view === 'back' ? 'back-idle.mp4' : 'idle.mp4');
   if (!fs.existsSync(clip)) return null;
   const keyed = keyClip(readFrames(clip, 4));
   const frame = keyed.frames[0];

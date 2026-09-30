@@ -481,6 +481,7 @@ export class IsoRenderer extends Renderer {
     if (this.fx.ready()) this.fx.draw(sim, this.fxView(sim), dt);
     this.fx.end();
     this.drawAim(this.aimG, sim);
+    this.syncPlaceGhost(sim);
   }
 
   /** Where things are on the screen, for the effects (board pixels, before the camera). */
@@ -1357,8 +1358,53 @@ export class IsoRenderer extends Renderer {
     return open(cell - 1) && open(cell + 1) && !(open(cell - W) && open(cell + W));
   }
 
-  protected drawReach(_g: Graphics, t: Tower, reach: number): void {
+  protected drawReach(_g: Graphics, t: Tower, reach: number, ground = reach): void {
+    if (reach > ground + 0.5) this.aimG.circle(t.pos.x, t.pos.y, ground).stroke({ width: 1, color: 0x9fd8ff, alpha: 0.2 });
     this.aimG.circle(t.pos.x, t.pos.y, reach).stroke({ width: 1.2, color: 0x9fd8ff, alpha: 0.45 });
+  }
+
+  /**
+   * The limb being placed, drawn faint where it would stand and the way it would face (right-click
+   * turns it a quarter): a lopsided limb shows which side it will turn to the street before it is placed.
+   */
+  private placeGhost: Sprite | null = null;
+  private syncPlaceGhost(sim: Sim): void {
+    const pv = this.preview;
+    const found = pv && pv.kind === 'tower' && pv.family ? this.art.limbs.get(pv.family) : undefined;
+    if (!pv || !found || found.art.flat || found.art.on === 'street') {
+      if (this.placeGhost) this.placeGhost.visible = false;
+      return;
+    }
+    if (!this.placeGhost) {
+      this.placeGhost = new Sprite();
+      this.world.addChild(this.placeGhost);
+    }
+    const { art, atlas } = found;
+    const g = this.geo;
+    const ground = pv.cells ?? [pv.cell];
+    let x = 0;
+    let y = 0;
+    for (const c of ground) { const p = sim.cellCenter(c); x += p.x / ground.length; y += p.y / ground.length; }
+    const facing = pv.facing ?? 'S';
+    const { back, mirror } = limbView(g, facing);
+    const side = back && art.back ? art.back : art;
+    const n = ground.length;
+    const size = n === 2 ? LONG_SIZE : n > 1 ? Math.sqrt(n) : 1;
+    const h = this.heightOf(sim, ground[0]);
+    const step = FACING_STEP[facing];
+    const p = n === 2
+      ? project(g, x - step[0] * g.cell * LONG_BACK, y - step[1] * g.cell * LONG_BACK, h)
+      : project(g, x, y, h);
+    const width = 2 * g.a * LIMB_FILL * LIMB_SCALE * size;
+    const scale = width / (side.body * art.frame);
+    const s = this.placeGhost;
+    s.texture = atlas.frame(side.anims.idle.start, art.frame, art.cols);
+    s.anchor.set(side.anchor[0], side.anchor[1]);
+    s.scale.set(mirror ? -scale : scale, scale);
+    s.position.set(p.x, p.y);
+    s.alpha = pv.valid ? 0.62 : 0.35;
+    s.tint = pv.valid ? 0xffffff : 0xff8070;
+    s.visible = true;
   }
 
   protected drawPreviewCell(_g: Graphics, sim: Sim, cell: number, ok: boolean): void {

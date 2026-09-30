@@ -165,10 +165,10 @@ export const LIMBS = [
   // you are going to animate the big mouth thing attacking"). This one crouches like a toad at the roof's
   // edge; its tongue is drawn by the game (src/render/mawTongue.ts), shot from its mouth (`muzzle`) to the
   // victim in the street, which sticks to it and is reeled up into the mouth. Its clips are only its body:
-  // the mouth gaping, snapping shut, the gulp. NOT DRAWN YET: art-src/limbs/maw/ still holds the old
-  // funnel's pictures and clips (the pipeline skips what exists), so they must be moved aside before
-  // `node tools/art/make.mjs limb maw` draws this one; then mark its foot and its muzzle (the mouth).
-  { family: 'maw', big: true, foot: [0.51, 0.79, 0.79], backFoot: [0.51, 0.75, 0.76], name: 'Maw', theme: 'gut', on: 'roof', job: 'Snatches weakened enemies from the street with its tongue and eats them whole; pays richer meat.',
+  // the mouth gaping, snapping shut, the gulp. Its raw pictures and clips are drawn into their own folder,
+  // art-src/limbs/maw-tongue/ (`srcDir`): art-src/limbs/maw/ keeps the old funnel's, untouched. Its design is
+  // drawn alone (not cut from the Gut's sheet, which holds the funnel): templates/limb.mjs makeOwnDesign.
+  { family: 'maw', srcDir: 'maw-tongue', tongue: true, big: true, foot: [0.51, 0.79, 0.79], backFoot: [0.51, 0.75, 0.76], name: 'Maw', theme: 'gut', on: 'roof', job: 'Snatches weakened enemies from the street with its tongue and eats them whole; pays richer meat.',
     back: 'Its wide mouth faces away from the camera, toward the upper right: we see its broad humped back armoured with plates of dark chitin, the two knobs on top of its head, and only the far corners of its lips at the sides.',
     look: 'a huge squat toad-like mound of muscle crouched low and wide, its head the whole front of its body: a very wide mouth across the front with thick fleshy lips pressed shut in a long curved line, small teeth showing at the corners, a big swollen throat sac of paler crimson hanging under the mouth, two blunt knobs on top of its head, its broad humped back armoured with plates of dark chitin',
     idle: `${CALM} Its throat sac slowly swells and shrinks as it breathes, and its lips twitch.`,
@@ -295,6 +295,11 @@ export const LIMB_SHEETS = Object.keys(THEMES).map((t) => ({
 }));
 
 export const limb = (family) => LIMBS.find((l) => l.family === family);
+/**
+ * The folder under art-src/limbs/ that holds a limb's raw pictures and clips: its family, or its own
+ * `srcDir` when it was redrawn from scratch and the old drawing's files are kept where they were.
+ */
+export const rawDirOf = (l) => l.srcDir ?? l.family;
 export const placeOnLimbSheet = (family) => {
   const s = LIMB_SHEETS.find((x) => x.families.includes(family));
   return s ? { sheet: s.slug, index: s.families.indexOf(family), count: s.families.length, theme: s.theme } : null;

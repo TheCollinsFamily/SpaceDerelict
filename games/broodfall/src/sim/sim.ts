@@ -804,8 +804,7 @@ export class Sim {
     const stack = this.ampStack(t);
     const all = Sim.amplifyStack([...own, ...shared], stack);
     const s = towerStats({ ...t, pips: all }, true);
-    const h = this.map.heights[t.cell] || 1;
-    s.range = s.range * this.geneMods.rangeMult * (1 + B.heightRangeBonus * (h - 1));
+    s.range = s.range * this.geneMods.rangeMult * this.heightRangeFactor(t.cell);
     s.maxHp += t.family === 'spine' ? this.geneMods.spineHpBonus : 0;
     s.eatThreshold += t.family === 'maw' ? this.geneMods.mawEatBonus : 0;
     // A whole chapel on one limb IS a build: every covering choir adds, and the
@@ -826,6 +825,58 @@ export class Sim {
     return s;
   }
 
+
+  /**
+   * What standing on this cell does to a limb's reach: +heightRangeBonus per block level above
+   * the first (DESIGN rule 8), a plinth's levels included (a plinth raises `map.heights`).
+   */
+  heightRangeFactor(cell: number): number {
+    const h = this.map.heights[cell] || 1;
+    return 1 + B.heightRangeBonus * (h - 1);
+  }
+
+  /**
+   * The stats a limb of this family WOULD have if it were built on these cells now, facing
+   * this way, carrying these pips (the banked cannibalize traits by default): the same
+   * statsOf the sim runs on the placed limb, so the placement preview cannot lie (height and
+   * plinth, genes, organ bonuses, amp stacks, engines and auras that would reach it).
+   * Pure: the ghost stands in the tower list only for the length of the computation, no rng
+   * is drawn, nothing else is touched.
+   */
+  previewStats(family: TowerFamily, cells: number[], facing?: RootDir, pips: ModPip[] = this.pendingPips): TowerStats & {
+    /** Block level of the ground it would stand on (plinths included). */
+    height: number;
+    /** The reach it would have standing on level 1: what the height adds is range - groundRange. */
+    groundRange: number;
+  } {
+    const ground = cells.length > 0 ? cells : [0];
+    const pos = { x: 0, y: 0 };
+    for (const c of ground) {
+      const p = this.cellCenter(c);
+      pos.x += p.x / ground.length;
+      pos.y += p.y / ground.length;
+    }
+    const spec = towerSpec(family);
+    const [sw, sh] = this.spanOf(family, facing);
+    const ghost: Tower = {
+      id: -1, family, pos, cell: ground[0], hp: spec.maxHp, maxHp: spec.maxHp, pips: [...pips], cooldown: 0, kills: 0,
+    };
+    if (ground.length > 1) ghost.cells = [...ground];
+    // The facing addTower would give it.
+    if (spec.directional) ghost.facing = facing ?? this.facingTowardGate(pos);
+    else if (sw !== sh) ghost.facing = facing ?? 'S';
+    else if (facing) ghost.facing = facing;
+    this.towers.push(ghost);
+    let s: TowerStats;
+    try {
+      s = this.statsOf(ghost);
+    } finally {
+      const at = this.towers.lastIndexOf(ghost);
+      if (at >= 0) this.towers.splice(at, 1);
+    }
+    const factor = this.heightRangeFactor(ghost.cell);
+    return { ...s, height: this.map.heights[ghost.cell] || 1, groundRange: s.range / factor };
+  }
 
   /** Directive progress as { done, goal } for the HUD bar and tests. */
   directiveProgress(): { done: number; goal: number } {
@@ -1720,8 +1771,17 @@ export class Sim {
         return { ok: true };
       }
       case 'set-facing': {
-        const t = this.towers.find((x) => x.id === cmd.towerId && towerSpec(x.family).directional);
-        if (!t) return { ok: false, err: 'not a directional limb' };
+        // Any limb turns (right-click). A directional one aims its field of fire; the rest turn
+        // the way they are drawn. A LONG limb that is not directional keeps its ground: it turns
+        // end for end only (a quarter turn would need other ground under it).
+        const t = this.towers.find((x) => x.id === cmd.towerId);
+        if (!t) return { ok: false, err: 'no such limb' };
+        const spec = towerSpec(t.family);
+        const [sw, sh] = this.spanOf(t.family, t.facing);
+        if (!spec.directional && sw !== sh) {
+          const axisNS = (d: RootDir | undefined) => d === 'N' || d === 'S' || d === undefined;
+          if (axisNS(cmd.dir) !== axisNS(t.facing)) return { ok: false, err: 'a long limb turns end for end only' };
+        }
         t.facing = cmd.dir;
         return { ok: true };
       }
@@ -1963,6 +2023,9 @@ export class Sim {
     if (spec.directional) tower.facing = facing ?? this.facingTowardGate(pos);
     // A limb that is longer than it is wide lies the way it was turned, whatever it aims at.
     else if (sw !== sh) tower.facing = facing ?? 'S';
+    // Any other limb turned by the player before it was placed keeps that way (it is what is
+    // drawn: a lopsided limb faces where it was turned; the sim reads nothing from it).
+    else if (facing) tower.facing = facing;
     this.towers.push(tower);
     if (family === 'lance') this.addCreepSource('line', cell, 0, tower.facing, tower.id);
     // A seedling is shot up from the landing site to where it was placed.

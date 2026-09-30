@@ -11,7 +11,7 @@ import path from 'node:path';
 import { readFrames } from './lib/img.mjs';
 import { dropSpecks, keyClip, loopWindow } from './lib/key.mjs';
 import { SRC } from './lib/manifest.mjs';
-import { limb } from './limbs.mjs';
+import { limb, rawDirOf } from './limbs.mjs';
 import { idleCut, fineFrames, fineDiff } from './templates/limb.mjs';
 
 const want = process.argv.slice(2);
@@ -19,7 +19,7 @@ const fams = fs.readdirSync(path.join(SRC, 'limbs')).filter((f) => limb(f) && (!
 const f = (x, d = 1) => x.toFixed(d).padStart(6);
 console.log('limb       view    old: n  step  seam  s/s  | new: n  step  seam  s/s  treat');
 for (const fam of fams) for (const view of ['front', 'back']) {
-  const file = path.join(SRC, 'limbs', fam, `${view === 'back' ? 'back-' : ''}idle.mp4`);
+  const file = path.join(SRC, 'limbs', rawDirOf(limb(fam)), `${view === 'back' ? 'back-' : ''}idle.mp4`);
   if (!fs.existsSync(file)) continue;
   const keyed = keyClip(readFrames(file, 12));
   if (!limb(fam).drips) for (const fr of keyed.frames) dropSpecks(fr);

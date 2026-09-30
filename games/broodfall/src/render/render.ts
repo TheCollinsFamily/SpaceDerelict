@@ -929,8 +929,11 @@ export class Renderer {
     }
     if (this.selectedTowerId === t.id) {
       g.circle(x, y, 24).stroke({ width: 2, color: 0x9fd8ff, alpha: 0.9 });
-      const reach = towerStats(t).range;
-      if (reach > 0 && reach < 1000 && !towerSpec(t.family).directional) this.drawReach(g, t, reach);
+      // The reach it HAS (height, genes, organs, amps), not its family's base.
+      const reach = sim.statsOf(t).range;
+      if (reach > 0 && reach < 1000 && !towerSpec(t.family).directional) {
+        this.drawReach(g, t, reach, reach / sim.heightRangeFactor(t.cell));
+      }
     }
   }
 
@@ -938,12 +941,13 @@ export class Renderer {
    * FIELD OF FIRE for limbs whose facing matters: the skipping mortar's firing
    * lane and the conduit's pointing lane, drawn as a corridor down its heading.
    */
-  protected drawFieldOfFire(g: Graphics, sim: Sim, t: Tower, valid = true): void {
+  protected drawFieldOfFire(g: Graphics, sim: Sim, t: Tower, valid = true, range?: number): void {
     const spec = towerSpec(t.family);
     if (!spec.directional) return;
     const f = Sim.facingVec(t.facing ?? 'N');
     const eng = spec.engine;
-    const len = eng ? eng.reach * towerStats(t).reach : sim.statsOf(t).range;
+    // An engine points as far as conduitTarget looks; a gun fires as far as statsOf says (height and all).
+    const len = eng ? eng.reach * towerStats(t).reach : range ?? sim.statsOf(t).range;
     const half = eng ? 30 : 28;
     const px = -f.y;
     const py = f.x;
@@ -1140,11 +1144,16 @@ export class Renderer {
           hp: 1, maxHp: 1, pips: this.preview.pips ?? [], cooldown: 0, kills: 0, facing: this.preview.facing,
         };
         const spec = towerSpec(ghost.family);
-        const st = towerStats(ghost);
+        // The SAME stats the sim will give it on this ground: height (plinths too), genes,
+        // organ bonuses, amps, banked pips. The ring is the reach it will have, never the base.
+        const st = sim.previewStats(ghost.family, ground, ghost.facing, ghost.pips);
+        const high = st.range > st.groundRange + 0.5;
         if (spec.directional) {
-          this.drawFieldOfFire(g, sim, ghost, ok);
+          this.drawFieldOfFire(g, sim, ghost, ok, spec.engine ? undefined : st.range);
         } else if (st.range > 0 && st.range < 1000) {
-          g.circle(c.x, c.y, st.range).stroke({ width: 1.5, color: 0xffffff, alpha: 0.25 });
+          // What height adds shows as the gap between a faint ring (its reach on level 1) and the real one.
+          if (high) g.circle(c.x, c.y, st.groundRange).stroke({ width: 1, color: 0xffffff, alpha: 0.14 });
+          g.circle(c.x, c.y, st.range).stroke({ width: high ? 2 : 1.5, color: high ? 0xffe08a : 0xffffff, alpha: high ? 0.5 : 0.25 });
         }
         this.drawEffectLinks(g, sim, ghost);
       }
@@ -1152,7 +1161,9 @@ export class Renderer {
   }
 
   /** How far the selected limb reaches: a ring on the ground round it. */
-  protected drawReach(g: Graphics, t: Tower, reach: number): void {
+  /** `ground`: its reach on level 1; when it stands higher, a faint ring shows what the height adds. */
+  protected drawReach(g: Graphics, t: Tower, reach: number, ground = reach): void {
+    if (reach > ground + 0.5) g.circle(t.pos.x, t.pos.y, ground).stroke({ width: 1, color: 0x9fd8ff, alpha: 0.14 });
     g.circle(t.pos.x, t.pos.y, reach).stroke({ width: 1, color: 0x9fd8ff, alpha: 0.3 });
   }
 

@@ -25,7 +25,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { makeStill, pool } from '../rfab.mjs';
-import { LIMBS, THEMES } from '../limbs.mjs';
+import { LIMBS, THEMES, rawDirOf } from '../limbs.mjs';
 import { bbox, blank, borderColour, crop, over, readImage, resize, writeJpg } from '../lib/img.mjs';
 import { cutGrid, figure, findFigures } from '../lib/sheet.mjs';
 import { dropSpecks, keyFrame, keyOf } from '../lib/key.mjs';
@@ -176,7 +176,7 @@ export async function generateParts(only = []) {
     const key = THEMES[l.theme].key === 'blue' ? { hex: '0000FF', name: 'blue' } : { hex: '00FF00', name: 'green' };
     return makeStill({
       slug: `donor part ${family}`, out: path.join(DIR, 'parts', `${family}.png`), prompt: partPrompt(family),
-      refFiles: [path.join(SRC, 'limbs', family, 'styled.png')], key: key.hex, keyName: key.name, quality: 'medium',
+      refFiles: [path.join(SRC, 'limbs', rawDirOf(l), 'styled.png')], key: key.hex, keyName: key.name, quality: 'medium',
     });
   });
   results.forEach((r, i) => { if (!r.ok) console.warn(`[fx] part ${families[i]} failed: ${r.error.message.slice(0, 200)}`); });
