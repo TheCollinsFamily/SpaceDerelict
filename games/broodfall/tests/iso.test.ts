@@ -548,6 +548,8 @@ describe.skipIf(!hasArt)('the baked art', () => {
       else if (o && typeof o === 'object') Object.values(o).forEach(walk);
     };
     walk(manifest);
-    expect(total / 1024 / 1024).toBeLessThan(24);
+    // 24 MB when units had only walks; Sep 29 2026 they gained attacks, falls and states
+    // (about 11 MB for all 26), and the budget went to 30 rather than the units' quality down.
+    expect(total / 1024 / 1024).toBeLessThan(30);
   });
 });

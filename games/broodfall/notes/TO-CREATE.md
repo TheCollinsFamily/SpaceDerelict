@@ -55,8 +55,8 @@ decision before it can be made.
 
 - **The HUD** is the old khaki procurement look over a painted board. Collins: restyle it, and in
   which look (the 1950s "empire operator software" of DESIGN, or the ship's austere black)?
-- **Hand cards**: text only. A picture of each limb on its card: the baked art exists, it only
-  needs wiring (no cost).
+- **Hand cards**: DONE Sep 29 2026, each card shows its limb (`cards-01` in the screens folder).
+  Organ cards and the draft's plate cards are still text.
 - **Title screen**: the ship in orbit exists; no logo, no menu art.
 - **Debrief** (end of a run): text on a card. Pictures of what happened.
 - **Loading and error screens**: none.

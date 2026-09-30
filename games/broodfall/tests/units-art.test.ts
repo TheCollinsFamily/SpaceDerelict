@@ -14,8 +14,8 @@ const file = join(ART, 'manifest.json');
 const manifest = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : null;
 const VIEWS = ['S', 'SW', 'W', 'NW', 'N'];
 
-/** Units with no attack of their own to draw: they explode, or fight only through others. */
-const NO_ATTACK = new Set(['bomber', 'tender', 'drummer', 'matron', 'consort', 'thief', 'tunneler', 'researcher', 'infiltrator', 'royal']);
+/** Units with no attack of their own to draw: the bomber blows itself up, the thief only steals. */
+const NO_ATTACK = new Set(['bomber', 'thief']);
 
 /** Every state picture the renderer asks for, by the sim's field (src/render/isoRender.ts syncUnits). */
 const STATES: Record<string, string[]> = {
@@ -40,7 +40,7 @@ describe.skipIf(!manifest)("the units' art", () => {
   it('attacks in all five views, every unit that attacks', () => {
     for (const e of ENEMIES) {
       const a = manifest.units[e.kind].anims.attack;
-      if (NO_ATTACK.has(e.kind) && !a) continue;
+      if (NO_ATTACK.has(e.kind)) continue;
       for (const v of VIEWS) expect(a?.[v], `${e.kind} attacking ${v}`).toBeTruthy();
     }
   });

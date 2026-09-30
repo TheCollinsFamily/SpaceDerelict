@@ -988,6 +988,10 @@ async function boot(): Promise<void> {
     biome(): string {
       return renderer instanceof IsoRenderer ? renderer.biome() : '';
     },
+    /** The fallen units still drawn (empty on the old board). */
+    dying() {
+      return renderer instanceof IsoRenderer ? renderer.dyingNow() : [];
+    },
     /** What of the baked art the board could not load (empty when all of it is there). */
     artMissing(): string[] {
       return renderer instanceof IsoRenderer ? renderer.missing() : [];

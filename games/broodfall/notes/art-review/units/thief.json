@@ -1,7 +1,7 @@
 {
  "kind": "thief",
- "frames": 66,
- "atlasKB": 136,
+ "frames": 79,
+ "atlasKB": 163,
  "failed": 0,
  "checks": [
   {
@@ -155,6 +155,16 @@
    "value": "1.2% of the frame"
   },
   {
+   "name": "death SW: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "state carrying: made",
+   "ok": true,
+   "value": "yes"
+  },
+  {
    "name": "views are one size",
    "ok": true,
    "value": "0.72 0.67 0.68 0.62 0.66"
@@ -162,7 +172,7 @@
   {
    "name": "atlas is under 900 KB",
    "ok": true,
-   "value": "136 KB"
+   "value": "163 KB"
   }
  ]
 }

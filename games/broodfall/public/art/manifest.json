@@ -2222,6 +2222,60 @@
       "count": 12,
       "fps": 12
      }
+    },
+    "attack": {
+     "S": {
+      "start": 60,
+      "count": 12,
+      "fps": 3
+     },
+     "SW": {
+      "start": 72,
+      "count": 12,
+      "fps": 3
+     },
+     "W": {
+      "start": 84,
+      "count": 12,
+      "fps": 3
+     },
+     "NW": {
+      "start": 96,
+      "count": 12,
+      "fps": 3
+     },
+     "N": {
+      "start": 108,
+      "count": 12,
+      "fps": 3
+     }
+    },
+    "death": {
+     "SW": {
+      "start": 120,
+      "count": 12,
+      "fps": 3
+     },
+     "S": {
+      "start": 120,
+      "count": 12,
+      "fps": 3
+     },
+     "W": {
+      "start": 120,
+      "count": 12,
+      "fps": 3
+     },
+     "NW": {
+      "start": 120,
+      "count": 12,
+      "fps": 3
+     },
+     "N": {
+      "start": 120,
+      "count": 12,
+      "fps": 3
+     }
     }
    }
   },
@@ -2262,6 +2316,40 @@
       "count": 14,
       "fps": 10.5
      }
+    },
+    "death": {
+     "SW": {
+      "start": 66,
+      "count": 12,
+      "fps": 3
+     },
+     "S": {
+      "start": 66,
+      "count": 12,
+      "fps": 3
+     },
+     "W": {
+      "start": 66,
+      "count": 12,
+      "fps": 3
+     },
+     "NW": {
+      "start": 66,
+      "count": 12,
+      "fps": 3
+     },
+     "N": {
+      "start": 66,
+      "count": 12,
+      "fps": 3
+     }
+    },
+    "states": {
+     "carrying": {
+      "start": 78,
+      "count": 1,
+      "fps": 1
+     }
     }
    }
   },
@@ -2301,6 +2389,67 @@
       "start": 56,
       "count": 14,
       "fps": 5.25
+     }
+    },
+    "attack": {
+     "S": {
+      "start": 70,
+      "count": 12,
+      "fps": 3
+     },
+     "SW": {
+      "start": 82,
+      "count": 12,
+      "fps": 3
+     },
+     "W": {
+      "start": 94,
+      "count": 12,
+      "fps": 3
+     },
+     "NW": {
+      "start": 106,
+      "count": 12,
+      "fps": 3
+     },
+     "N": {
+      "start": 118,
+      "count": 12,
+      "fps": 3
+     }
+    },
+    "death": {
+     "SW": {
+      "start": 130,
+      "count": 12,
+      "fps": 3
+     },
+     "S": {
+      "start": 130,
+      "count": 12,
+      "fps": 3
+     },
+     "W": {
+      "start": 130,
+      "count": 12,
+      "fps": 3
+     },
+     "NW": {
+      "start": 130,
+      "count": 12,
+      "fps": 3
+     },
+     "N": {
+      "start": 130,
+      "count": 12,
+      "fps": 3
+     }
+    },
+    "states": {
+     "burrowed": {
+      "start": 142,
+      "count": 1,
+      "fps": 1
      }
     }
    }

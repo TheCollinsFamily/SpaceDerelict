@@ -297,6 +297,11 @@ export class IsoRenderer extends Renderer {
     return this.art.biome?.id ?? '';
   }
 
+  /** The fallen still on screen: where each lies, how far into its fall, how opaque. */
+  dyingNow(): Array<{ x: number; y: number; t: number; alpha: number; visible: boolean; frame: boolean }> {
+    return this.dying.map((d) => ({ x: d.sprite.x, y: d.sprite.y, t: d.t, alpha: d.sprite.alpha, visible: d.sprite.visible, frame: !!d.clip }));
+  }
+
   /** Client (CSS) coordinates to the board's own pixels (before the camera). */
   private toBoard(clientX: number, clientY: number): Pt {
     const rect = this.app.canvas.getBoundingClientRect();

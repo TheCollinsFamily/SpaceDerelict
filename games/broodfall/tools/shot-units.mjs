@@ -210,11 +210,16 @@ try {
     const s = window.broodfall.sim;
     for (const e of [...s.enemies]) s.damageEnemy(e, 99999, 1);
   });
-  // The fall plays in real time (the game is paused; its drawing is not): 12 frames at 3 a second, then 1.4 s still.
-  await page.evaluate(() => window.broodfall.step(1));
-  await page.waitForTimeout(900);
+  // The fall runs on the game's clock (a paused game stands still, the fallen too): 12 frames at
+  // 3 a second, then 1.4 s still. Step it a tick (0.1 s) at a time, letting the page draw each.
+  const ticks = async (n) => { for (let i = 0; i < n; i++) { await page.evaluate(() => window.broodfall.step(1)); await page.waitForTimeout(35); } };
+  await ticks(20);
+  const falling = await page.evaluate(() => window.broodfall.dying().length);
+  check(falling >= 5, 'the squad is drawn falling', `${falling} falling`);
   await shot('dying-mid-fall');
-  await page.waitForTimeout(2900);
+  await ticks(22);
+  const lying = await page.evaluate(() => window.broodfall.dying().filter((d) => d.alpha > 0.9).length);
+  check(lying >= 5, 'the squad lies still where it fell', `${lying} lying`);
   await shot('dead-lying-still');
   const deaths = Object.entries(manifest.units ?? {}).filter(([, u]) => u.anims?.death).length;
   check(deaths === Object.keys(manifest.units ?? {}).length, 'every unit has a fall in the manifest', `${deaths}`);
