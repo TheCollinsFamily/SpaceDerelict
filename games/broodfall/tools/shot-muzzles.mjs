@@ -17,7 +17,8 @@
  * Pictures: tools/screenshots/fire-*.png; JPEG copies in notes/screens/2026-09-30/.
  */
 import { spawn, execSync, spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, rmSync } from 'node:fs';
+import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { chromium } from '@playwright/test';
@@ -113,7 +114,10 @@ async function sheet(browser) {
   <p>Left: before (every shot left a fixed height over the limb's ground). Right: after (from the mouth, spines, crystal, eye, nozzle, barrel marked on each limb's art).</p>
   <div class="grid">${rows.map((id) => `<div class="row"><div class="name">${id}</div>${cell(id, 'before')}${cell(id, 'after')}${existsSync(join(shots, `fire-${id}-after-2.png`)) ? cell(id, 'after-2') : '<div></div>'}</div>`).join('')}</div></body></html>`;
   const page = await browser.newPage({ viewport: { width: 1700, height: 1000 } });
-  await page.setContent(html);
+  // Opened as a file, so that it may show the pictures beside it (a page set from a string may not).
+  const file = join(tmpdir(), 'broodfall-fire-sheet.html');
+  writeFileSync(file, html);
+  await page.goto(pathToFileURL(file).href);
   await page.waitForTimeout(800);
   const png = join(shots, 'fire-00-muzzles-BEFORE-AFTER.png');
   await page.screenshot({ path: png, fullPage: true });
@@ -414,10 +418,11 @@ try {
       const ids = [];
       const pips = { spitter: [{ family: 'burster' }, { family: 'quill' }], maw: [{ family: 'lasher' }, { family: 'blighter' }, { family: 'ocular' }], impaler: [{ family: 'brood' }], twin: [{ family: 'ember' }, { family: 'spine' }] };
       for (const f of Object.keys(pips)) {
-        const id = await build(f, st[ids.length * 3] ?? st[0]);
+        const id = await build(f, st[Math.min(st.length - 1, ids.length * 2)]);
         await page.evaluate(([id, p]) => { const t = window.broodfall.sim.towers.find((x) => x.id === id); if (t) t.pips = p; }, [id, pips[f]]);
         ids.push(id);
       }
+      check(ids.every((x) => x >= 0), 'donor: the four limbs are built', ids.join(','));
       const ps = (await Promise.all(ids.filter((x) => x >= 0).map(posOf))).filter(Boolean);
       await closeOn({ x: ps.reduce((a, p) => a + p.x, 0) / ps.length, y: ps.reduce((a, p) => a + p.y, 0) / ps.length }, 8, 40);
       await ticks(2);
@@ -426,7 +431,8 @@ try {
       await shot('fire-donor-parts');
     }
 
-    const mine = errors.filter((e) => !/could not load: (units|board)\//.test(e));
+    // The preview server stopping between scenes (it is started again) is the beat's, not the game's.
+    const mine = errors.filter((e) => !/could not load: (units|board)\//.test(e) && !/ERR_CONNECTION_REFUSED/.test(e));
     check(mine.length === 0, 'nothing is logged as an error', mine.slice(0, 3).join(' | '));
   }
 } finally {

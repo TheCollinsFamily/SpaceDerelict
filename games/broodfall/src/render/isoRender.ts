@@ -391,6 +391,11 @@ export class IsoRenderer extends Renderer {
     return this.fates.graftCount();
   }
 
+  /** The Maws' tongues out now (src/render/mawTongue.ts): for the screenshots. */
+  tonguesNow(): ReturnType<MawTongues['now']> {
+    return this.tongues.now();
+  }
+
   /** What of the baked art could not be loaded. */
   missing(): string[] {
     return this.art.failed.slice();
@@ -1421,7 +1426,7 @@ export class IsoRenderer extends Renderer {
     s.anchor.set(side.anchor[0], side.anchor[1]);
     s.scale.set(mirror ? -scale : scale, scale);
     s.position.set(p.x, p.y);
-    s.alpha = pv.valid ? 0.62 : 0.35;
+    s.alpha = pv.valid ? 0.8 : 0.4;
     s.tint = pv.valid ? 0xffffff : 0xff8070;
     s.visible = true;
   }

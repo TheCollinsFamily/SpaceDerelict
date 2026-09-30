@@ -1376,6 +1376,10 @@ async function boot(): Promise<void> {
     coreStage() {
       return renderer instanceof IsoRenderer ? renderer.coreStageNow() : null;
     },
+    /** The Maws' tongues out now, and which carry a body (src/render/mawTongue.ts). */
+    tongues() {
+      return renderer instanceof IsoRenderer ? renderer.tonguesNow() : [];
+    },
     /** What of the baked art the board could not load (empty when all of it is there). */
     artMissing(): string[] {
       return renderer instanceof IsoRenderer ? renderer.missing() : [];
