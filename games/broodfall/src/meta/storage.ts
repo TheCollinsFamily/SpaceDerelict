@@ -57,8 +57,15 @@ export interface YokeSettings { mode: YokeMode; key: string; base: string; muted
 const YOKE = 'broodfall-yoke';
 /** Settings saved since the avatar exists carry this mark; older ones never chose between her and Kimi. */
 const YOKE_SAVED = 2;
+/**
+ * Where rfab.ai is. The dev server (`npm start`) has its /rfab-api proxy; a built game — what
+ * a player runs — has no proxy and no key, and talks to https://api.rfab.ai with its own player
+ * token (src/meta/yokePlayer.ts). VITE_RFAB_API_BASE overrides it for a test build.
+ */
+export const RFAB_API_BASE: string = (import.meta.env?.VITE_RFAB_API_BASE as string | undefined)
+  || (import.meta.env?.DEV ? '/rfab-api' : 'https://api.rfab.ai');
 /** The avatar is who answers by default, when content/lore/yoke-avatar.json names one. */
-export const DEFAULT_YOKE: YokeSettings = { mode: YOKE_AVATAR ? 'avatar' : 'kimi', key: '', base: '/rfab-api', muted: false };
+export const DEFAULT_YOKE: YokeSettings = { mode: YOKE_AVATAR ? 'avatar' : 'kimi', key: '', base: RFAB_API_BASE, muted: false };
 
 /** Settings as they were saved, made whole. `hasAvatar`: an avatar is named (a mode that needs one falls to Kimi without). */
 export function yokeFrom(raw: unknown, hasAvatar: boolean = !!YOKE_AVATAR): YokeSettings {
@@ -72,7 +79,8 @@ export function yokeFrom(raw: unknown, hasAvatar: boolean = !!YOKE_AVATAR): Yoke
   return {
     mode,
     key: typeof r.key === 'string' ? r.key : '',
-    base: typeof r.base === 'string' && r.base ? r.base : DEFAULT_YOKE.base,
+    // A saved '/rfab-api' is the dev server's proxy: a built game has none, and goes to rfab.ai itself.
+    base: typeof r.base === 'string' && r.base && !(r.base === '/rfab-api' && DEFAULT_YOKE.base !== '/rfab-api') ? r.base : DEFAULT_YOKE.base,
     muted: r.muted === true,
   };
 }
@@ -84,6 +92,20 @@ export function loadYoke(): YokeSettings {
 export function saveYoke(y: YokeSettings): void {
   try { localStorage.setItem(YOKE, JSON.stringify({ ...y, v: YOKE_SAVED })); } catch { /* private mode */ }
 }
+
+/**
+ * The player's token for YOKE on rfab.ai (src/meta/yokePlayer.ts): a guest token until he links
+ * an RFab account, then one bound to it. Kept apart from the settings; the menu's RESET forgets
+ * it with everything else (his free talk is counted on rfab.ai, not here).
+ */
+const YOKE_PLAYER = 'broodfall-yoke-player';
+export const playerTokenStore = {
+  load(): string | null {
+    try { const t = localStorage.getItem(YOKE_PLAYER); return t && /^bf[gc]_[A-Za-z0-9_-]{40,64}$/.test(t) ? t : null; } catch { return null; }
+  },
+  save(token: string): void { try { localStorage.setItem(YOKE_PLAYER, token); } catch { /* private mode: a new player next time */ } },
+  clear(): void { try { localStorage.removeItem(YOKE_PLAYER); } catch { /* ok */ } },
+};
 
 // ------------------------------------------------------------------ the first launch (src/meta/onboarding.ts)
 

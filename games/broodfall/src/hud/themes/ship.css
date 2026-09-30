@@ -44,6 +44,9 @@
 }
 @keyframes sc-blink { 0%, 55% { opacity: 1; } 60%, 100% { opacity: 0.25; } }
 
+/* In every style: the card's caste letter is a letter, not a link. */
+.card-cost .cc u { text-decoration: none; }
+
 /* ---------- the top bar: the console's upper bezel, a row of small screens ---------- */
 [data-hud="ship"] #topbar {
   background: var(--sc-sheen), linear-gradient(var(--sc-bezel-hi), var(--sc-bezel));
@@ -135,9 +138,9 @@
 
 /* The line that says what to do: a strip of console glass. */
 [data-hud="ship"] #hint {
-  font: 400 11px/1.3 var(--sc-font); letter-spacing: 2px; color: var(--sc-ink); text-transform: uppercase;
+  font: 400 11px/1.3 var(--sc-font); letter-spacing: 1.2px; color: var(--sc-ink); text-transform: uppercase;
   background: var(--sc-glass); border: 1px solid var(--sc-line); border-left: 3px solid var(--sc-ink); border-radius: 0;
-  padding: 6px 14px; max-width: calc(100% - 480px); text-align: center; backdrop-filter: blur(2px);
+  padding: 5px 14px; width: max-content; max-width: calc(100% - 380px); text-align: center; backdrop-filter: blur(2px);
 }
 
 /* The feed: log lines on the glass, newest on top, each with its caste's lit edge. */
@@ -236,7 +239,7 @@
 [data-hud="ship"] .organ-btn.armed .cost { color: #3a4246; }
 [data-hud="ship"] .organ-btn.passive:hover { background: var(--sc-sheen), var(--sc-scan), #030405; border-color: var(--sc-line); }
 [data-hud="ship"] .organ-btn.passive.armed:hover { background: var(--sc-ink); }
-[data-hud="ship"] .organ-btn.disabled { opacity: 0.35; }
+[data-hud="ship"] .organ-btn.disabled, [data-hud="ship"] #creep-nodes.disabled, [data-hud="ship"] #plinths.disabled { opacity: 0.55; }
 [data-hud="ship"] #creep-nodes, [data-hud="ship"] #plinths { background: var(--sc-sheen), var(--sc-scan), #030405; border-color: var(--sc-line); min-width: 150px; }
 [data-hud="ship"] #creep-nodes b, [data-hud="ship"] #plinths b { color: var(--sc-ink); }
 [data-hud="ship"] #node-count { color: var(--sc-ok); text-shadow: 0 0 6px rgba(143, 240, 160, 0.6); }
@@ -267,13 +270,14 @@
 }
 [data-hud="ship"] .card.selected::before { content: ''; position: absolute; left: -1px; top: 8px; bottom: 8px; width: 3px; background: #fff; }
 [data-hud="ship"] .card.unaffordable { opacity: 0.4; }
-[data-hud="ship"] .card .card-name { font: 400 11.5px/1.15 var(--sc-font); letter-spacing: 2.5px; text-transform: uppercase; }
+[data-hud="ship"] .card .card-name { font: 400 11.5px/1.15 var(--sc-font); letter-spacing: 1.5px; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+[data-hud="ship"] .card .card-top { gap: 4px; }
 [data-hud="ship"] .card .card-discard { color: var(--sc-faint); font-size: 10px; }
 [data-hud="ship"] .card .card-discard:hover { color: var(--sc-alert); }
 [data-hud="ship"] .card .card-art { filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.8)); }
 [data-hud="ship"] .card .card-desc { font: 400 9px/1.3 var(--sc-font); letter-spacing: 0.3px; color: var(--sc-dim); opacity: 1; }
 [data-hud="ship"] .card .card-cost {
-  display: flex; gap: 8px; align-items: baseline; margin-top: 3px; padding-top: 3px; border-top: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex; gap: 8px; align-items: baseline; margin-top: 2px; padding-top: 2px; border-top: 1px solid rgba(255, 255, 255, 0.12);
   font: 300 16px/1 var(--sc-font); font-variant-numeric: tabular-nums; letter-spacing: 1px; color: #fff;
 }
 [data-hud="ship"] .cc { display: inline-flex; align-items: center; gap: 3px; }

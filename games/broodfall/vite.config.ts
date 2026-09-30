@@ -6,6 +6,10 @@ import { defineConfig, type ProxyOptions } from 'vite';
  * var on Collins's PC) is added when the page sent no key of its own — the key never
  * reaches the page. RFAB_API_BASE points it at a local backend; RFAB_API_BEARER (a JWT)
  * authenticates there when the local DB has no copy of the key.
+ *
+ * A PLAYER never goes through this: the proxy exists only in `npm start` / `npm run preview`,
+ * a built game talks to https://api.rfab.ai with its own player token (src/meta/storage.ts
+ * DEFAULT_YOKE), and a request that carries a player token is passed on without the key.
  */
 const rfab: ProxyOptions = {
   target: process.env.RFAB_API_BASE || 'https://api.rfab.ai',
@@ -15,7 +19,9 @@ const rfab: ProxyOptions = {
     proxy.on('proxyReq', (req) => {
       req.removeHeader('origin');
       req.removeHeader('referer');
-      if (req.getHeader('x-api-key') || req.getHeader('authorization')) return;
+      // A player's own credential (Sep 30 2026): his token pays through the house allowance or his
+      // linked account, and this PC's key must not ride along with it.
+      if (req.getHeader('x-api-key') || req.getHeader('authorization') || req.getHeader('x-broodfall-player')) return;
       if (process.env.RFAB_API_BEARER) req.setHeader('authorization', `Bearer ${process.env.RFAB_API_BEARER}`);
       else if (process.env.RFAB_API_KEY) req.setHeader('x-api-key', process.env.RFAB_API_KEY);
     });

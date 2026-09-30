@@ -323,7 +323,7 @@ const TERRITORIES = {
   pilgrim: {
     what: 'A long pilgrim road winding over green mountains and valleys all the way to the horizon, lined on both sides with shrines and road-stalls under upswept eaves of layered paper, lacquer-red columns, jade-green tiles and strings of paper lanterns. The road is EMPTY: the stalls are shuttered, the lanterns are dark, a few carts stand abandoned, a hat lies in the road. Nobody walks it.',
     empty: true,
-    none: `${DOMES} There is no gate shaped like a torii, no yin-yang, and no real written characters: the banners show abstract glyphs only.`,
+    none: `${DOMES} There is no gate shaped like a torii, no yin-yang, and no written characters of any kind: every banner is plain lacquer-red cloth with a gold border and one plain gold hexagon in its middle, and nothing else on it (the first one drew brush strokes that read as real characters).`,
   },
   'queens-hollow': {
     what: 'In the middle of a great capital city, a colossal round shaft opens in the ground like a sinkhole, and the picture looks down into it: its walls are great combs of glowing amber wax and dark propolis, galleries and ribbed tunnels spiralling down and down into a deep golden glow, brood cells capped with pale wax, royal jelly glowing gold, huge hanging queen cells like gilded peanuts, electric lamps and cables fitted along the galleries. Tiny figures crowd the galleries. The city\'s pale towers stand round the rim.',

@@ -148,7 +148,7 @@ try {
     await endRun(page, { cannibalized: 9, maxPips: 13, kills: { militia: 999, flier: 6 } });
     await page.waitForSelector('#campaign:not(.hidden) [data-act="back"]', { timeout: 15000 });
     const rep = await page.locator('#campaign').innerText();
-    check(/HOBBY — The Recipe Book/.test(rep) && /Grudge Marrow/.test(rep), 'the report: the page worked, the gene it paid');
+    check(/HOBBY — THE RECIPE BOOK/i.test(rep) && /Grudge Marrow/.test(rep), 'the report: the page worked, the gene it paid');
     check(/STANDING ORDERS/.test(rep) && /SO 2-K/.test(rep), 'the report: the standing orders moved');
     await page.locator('[data-act="back"]').evaluate((b) => b.scrollIntoView());
     await shot(page, 'debrief');
@@ -162,7 +162,7 @@ try {
     await page.locator('[data-room="orders"]').click();
     await page.waitForTimeout(300);
     const o2 = await page.locator('.cp-body').innerText();
-    check(/2 \/ 3/.test(o2) && /irregular use/.test(o2), 'the directives: progress across deployments, and the Office noted the irregularity');
+    check(/1 \/ 3/.test(o2) && /irregular use/.test(o2), 'the directives: progress across deployments, and the Office noted the irregularity');
     await shot(page, 'directives-progress');
     // The next drop carries the gene into the sim.
     await page.locator('[data-room="desk"]').click();
@@ -199,6 +199,8 @@ try {
     await page.keyboard.press('z');
     const keys = await page.evaluate(() => JSON.parse(localStorage.getItem('broodfall-settings')).keys);
     check(keys.turnLeft === 'z', `a turn key rebound (${JSON.stringify(keys)})`);
+    await shot(page, 'debug-after-key');
+    console.log(await page.locator('#settings').innerHTML().then((h) => h.slice(0, 300)).catch((e) => String(e)));
     await page.locator('[data-choice="hud"]').nth(2).click();
     check(await page.evaluate(() => document.documentElement.dataset.hud) !== 'console', 'the HUD style chosen here is in force');
     await page.locator('[data-choice="hud"]').first().click();

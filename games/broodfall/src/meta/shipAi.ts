@@ -84,6 +84,11 @@ export interface RfabLink {
   key?: string;
   /** Opaque per-campaign id: YOKE's spend is billed on broodfall_shipai_<id>. */
   campaignId: string;
+  /**
+   * The player's link (src/meta/yokePlayer.ts): his player token goes with the call, so Kimi
+   * follows the same money rules as her mind (the house's $3, then his linked account).
+   */
+  player?: { headers(json?: boolean): Record<string, string>; ensure(): Promise<string | null>; legacy: boolean };
 }
 
 /** YOKE on Kimi K2.6 through rfab.ai. Throws ShipAiError when rfab.ai cannot answer. */
@@ -96,8 +101,10 @@ export class RfabShipAi implements ShipAiProvider {
     // The UI appends the player's line to the transcript before asking; send it once.
     const last = history[history.length - 1];
     const past = playerLine && last?.speaker === 'You' && last.text === playerLine ? history.slice(0, -1) : history;
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    if (this.link.key) headers['X-API-Key'] = this.link.key;
+    let headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    const player = this.link.player;
+    if (player && !player.legacy && await player.ensure()) headers = { ...headers, ...player.headers(true) };
+    else if (this.link.key) headers['X-API-Key'] = this.link.key;
     let res: Response;
     try {
       res = await this.fetcher(`${this.link.base.replace(/\/$/, '')}/api/broodfall/ship-ai`, {

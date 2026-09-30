@@ -11,9 +11,11 @@ import {
 } from '../meta/campaign';
 import { goalText } from '../meta/goals';
 import { FallbackShipAi, RfabShipAi, campaignIdFor, type AiTrigger, type AiTurn, type ShipAiProvider, type ShipAiStatus } from '../meta/shipAi';
-import { loadYoke, saveCampaign, saveYoke, type PendingDeployment, type YokeSettings } from '../meta/storage';
+import { loadYoke, playerTokenStore, saveCampaign, saveYoke, type PendingDeployment, type YokeSettings } from '../meta/storage';
 import { YOKE_AVATAR, rungs, type YokeMode } from '../meta/yokeAvatar';
+import { PlayerLink, cutOffLines } from '../meta/yokePlayer';
 import { YokeAvatarUi, type ScriptLine, type YokeTalk } from './yokeAvatar';
+import { YokeAccountUi } from './yokeAccount';
 import { EARLY_ONCE, deskOpen, greetingFor, shipPick } from '../meta/onboarding';
 import { BOSS_AFTER, BOSS_BRIDGE } from '../../content/boss';
 import { playBossCall } from './bossCall';
@@ -105,7 +107,19 @@ export class CampaignUi {
   /** His quarters' picture and the partner candidate's portrait (public/art/intro/, not the manifest). */
   private intro: IntroArt | null = null;
 
+  /**
+   * The player's own link to YOKE on rfab.ai (src/meta/yokePlayer.ts, Sep 30 2026): the house
+   * pays for her up to $3, then he links an RFab account (src/ui/yokeAccount.ts shows it all).
+   */
+  private player!: PlayerLink;
+  private account!: YokeAccountUi;
+
   constructor(private state: CampaignState, private hooks: { deploy(p: PendingDeployment): void; newCampaign(): void; quit(): void }) {
+    this.player = new PlayerLink({ base: this.yoke.base, store: playerTokenStore });
+    this.account = new YokeAccountUi(this.player, {
+      changed: () => { if (!this.waiting && !this.debriefing && !this.el.classList.contains('hidden') && (this.room === 'ai' || this.icom)) this.render(); },
+      resumed: () => this.avatar?.uncut(),
+    });
     this.ai = this.buildAi();
     void loadManifest().then(async (m) => {
       // Each organ's own picture from the ground scan (tools/art/templates/under.mjs), for the organ cards.
@@ -587,7 +601,7 @@ export class CampaignUi {
     const y = this.yoke;
     const on = rungs(y.mode, !!YOKE_AVATAR);
     const rest = new FallbackShipAi(on.includes('kimi')
-      ? new RfabShipAi({ base: y.base, key: y.key || undefined, campaignId: campaignIdFor(this.state.seed) })
+      ? new RfabShipAi({ base: y.base, key: y.key || undefined, campaignId: campaignIdFor(this.state.seed), player: this.player })
       : null);
     this.avatar?.dispose();
     // Her body is always hers (her clips are on disk); her mind on rfab.ai answers only in the avatar mode,
@@ -596,6 +610,10 @@ export class CampaignUi {
       ? new YokeAvatarUi(this.el, {
         ids: YOKE_AVATAR, base: y.base, key: y.key || undefined, muted: y.muted, rest,
         mind: on[0] === 'avatar', voice: y.mode !== 'scripted',
+        // The scripted YOKE spends nothing and asks rfab.ai nothing: no player is made for it.
+        player: y.mode === 'scripted' ? undefined : this.player,
+        onCut: (kind) => this.account.setCut(kind),
+        cutOff: (kind) => cutOffLines(kind, this.account.state?.bonusTokens ?? 400000, this.account.state?.allowance.capTokens ?? 150000),
         changed: () => { if ((this.room === 'ai' || this.icom) && !this.waiting && !this.debriefing && !this.el.classList.contains('hidden')) this.render(); },
       })
       : null;
@@ -632,9 +650,14 @@ export class CampaignUi {
     // A discussion the campaign queued takes the room. His own talk with her stands above the list of what is waiting.
     const own = !!this.talk?.free;
     const talk = !this.talk ? '' : `<div class="cp-label">AI CORE — YOKE</div><div class="cp-talk">${this.talk.turns.map((t) => `<div class="${t.speaker === 'YOKE' ? 'yoke' : 'you'}"><b>${t.speaker}:</b> ${esc(t.text)}</div>`).join('')}${this.waiting ? `${this.avatar?.pendingHtml() ?? ''}<div class="yoke thinking"><b>YOKE:</b> …</div>` : ''}</div>
-        <div class="cp-say"><input id="ai-input" placeholder="${own ? 'Say something to her' : 'Answer, or say nothing'}" autocomplete="off"${this.waiting ? ' disabled' : ''}/><button data-act="ai-send"${this.waiting ? ' disabled' : ''}>SAY</button>${own ? '' : '<button data-act="ai-end">END</button>'}${this.avatar?.muteHtml() ?? ''}</div>`;
+        ${own && this.account.cut
+          // Nobody pays for her live mind: the line he would type to her is the link prompt (src/ui/yokeAccount.ts).
+          ? this.account.html('say')
+          : `<div class="cp-say"><input id="ai-input" placeholder="${own ? 'Say something to her' : 'Answer, or say nothing'}" autocomplete="off"${this.waiting ? ' disabled' : ''}/><button data-act="ai-send"${this.waiting ? ' disabled' : ''}>SAY</button>${own ? '' : '<button data-act="ai-end">END</button>'}${this.avatar?.muteHtml() ?? ''}</div>`}`;
+    // Her account (the free talk left, the code, the linked account and her model), when rfab.ai has it.
+    const account = own && this.account.cut ? this.account.html('core').replace(/<div class="cp-acct-cut[\s\S]*$/, '') : this.account.html('core');
     if (this.talk && !own) return `${talk}
-        ${this.yokeLinkHtml()}`;
+        ${this.yokeLinkHtml()}${account}`;
     return `${talk}<div class="cp-label">AI CORE — YOKE wants to talk${s.ai.queue.length ? '' : ' (nothing waiting)'}</div>
       ${s.ai.queue.map((q) => `<div class="cp-lin"><b>${q.replace('-', ' ').toUpperCase()}</b><span>YOKE has started a discussion.</span>
         <button data-engage="${q}">ENGAGE</button><button data-act="ai-later">NOT NOW</button></div>`).join('')}

@@ -10,7 +10,8 @@
  */
 import { artUrl } from '../render/art';
 import { gain } from '../meta/storage';
-import type { AiContext, AiTrigger, AiTurn, ShipAiProvider, ShipAiStatus } from '../meta/shipAi';
+import { ScriptedShipAi, type AiContext, type AiTrigger, type AiTurn, type ShipAiProvider, type ShipAiStatus } from '../meta/shipAi';
+import type { CutKind, PlayerLink } from '../meta/yokePlayer';
 import {
   AvatarError, AvatarLink, AvatarTalk, YokeLadder, avatarReason, clipFor, voiceClip,
   type YokeAvatarIds, type YokeBody,
@@ -32,6 +33,12 @@ export interface YokeAvatarOptions {
   mind?: boolean;
   /** Her voice may be asked for (rfab.ai's /speak). False (the scripted YOKE): she is read, not heard, and nothing goes out. */
   voice?: boolean;
+  /** The player's link (src/meta/yokePlayer.ts): she is HIS private YOKE, paid by the house's $3, then by his linked account. */
+  player?: PlayerLink;
+  /** Nobody pays for her any more: the screen shows the link prompt (src/ui/yokeAccount.ts). */
+  onCut?(kind: CutKind): void;
+  /** What she says when the money stops (src/meta/yokePlayer.ts cutOffLines). */
+  cutOff?(kind: CutKind): string[];
 }
 
 /** One line of a prewritten script (a greeting): her face while she says it, and what she does after it. */
@@ -102,7 +109,7 @@ export class YokeAvatarUi implements ShipAiProvider {
 
   constructor(private host: HTMLElement, private o: YokeAvatarOptions) {
     this.muted = o.muted;
-    this.link = new AvatarLink({ base: o.base, avatarId: o.ids.avatarId, key: o.key });
+    this.link = new AvatarLink({ base: o.base, avatarId: o.ids.avatarId, key: o.key, player: o.player });
     this.talk = new AvatarTalk(this.link, {
       onSentence: (text, emotion) => { this.heard++; this.say(text, emotion); },
       onMotion: (state) => this.move(state),
@@ -113,7 +120,10 @@ export class YokeAvatarUi implements ShipAiProvider {
       this.turns?.push({ speaker: 'YOKE', text });
       this.say(text, emotion, true);
     };
-    this.ladder = new YokeLadder(o.mind === false ? null : this.talk, o.rest);
+    // While nobody pays for her, the scripted YOKE answers (it costs nothing): never Kimi, which would bill the same account.
+    this.ladder = new YokeLadder(o.mind === false ? null : this.talk, o.rest, undefined, new ScriptedShipAi());
+    this.ladder.cutOff = (kind) => o.cutOff?.(kind) ?? [];
+    this.ladder.onCut = (kind) => { this.voiceless = true; o.onCut?.(kind); };
     this.stage = document.createElement('div');
     this.stage.className = 'cp-yoke cp-yoke-live';
     this.stage.dataset.state = '';
@@ -131,6 +141,15 @@ export class YokeAvatarUi implements ShipAiProvider {
 
   /** Who is answering. The player is shown nothing of it: no note. */
   get status(): ShipAiStatus { return { live: this.ladder.live, note: '' }; }
+
+  /** Nobody pays for her live mind: she says so once, then the scripted YOKE answers. */
+  get cut(): CutKind | null { return this.ladder.cut; }
+
+  /** Money is back (he linked an account, or topped up): her live mind and voice again. */
+  uncut(): void {
+    this.ladder.uncut();
+    this.voiceless = false;
+  }
 
   /** His own talk with her: what was said before, and whatever he says now. One for the life of this screen. */
   freeTalk(): YokeTalk {

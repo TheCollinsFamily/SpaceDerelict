@@ -586,6 +586,10 @@ export class YokeLadder implements ShipAiProvider {
   leave(): void { this.avatar?.leave(); }
 
   async reply(ctx: AiContext, history: AiTurn[], playerLine?: string): Promise<string[]> {
+    if (this.cut) {
+      const said = this.cutNow(this.cut);
+      return said.length ? said : (this.free ?? this.rest).reply(ctx, history, playerLine);
+    }
     if (this.avatar && !this.off) {
       try {
         if (!this.avatar.open) await this.avatar.enter();
@@ -593,6 +597,9 @@ export class YokeLadder implements ShipAiProvider {
       } catch (err) {
         // He walked out while she was thinking: nobody is there to answer, on any rung.
         if (err instanceof AvatarError && err.code === 'LEFT') return [];
+        // Nobody pays: she says so, and the rest of the ladder (which would bill the same account) is not asked.
+        const kind = err instanceof AvatarError ? cutKindOf(err.status, err.code) : null;
+        if (kind) return this.cutNow(kind);
         this.note(err);
       }
     }

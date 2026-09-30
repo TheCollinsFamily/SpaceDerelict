@@ -28,7 +28,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { makeClip, makeStill } from '../rfab.mjs';
-import { blank, crop, over, paste, readFrames, resize, toWebp, writeJpg, writePng } from '../lib/img.mjs';
+import { blank, borderColour, crop, over, paste, readFrames, readImage, resize, toWebp, writeJpg, writePng } from '../lib/img.mjs';
 import { dropSpecks, loopWindow, pick, unionBox } from '../lib/key.mjs';
 import { keyFrame as studioKey, studioKeyer } from '../lib/leaflit.mjs';
 import { GROUNDS } from '../lib/atlas.mjs';
@@ -80,6 +80,8 @@ export const STAGES = [
 ];
 
 const stillOf = (n) => path.join(DIR, n === 1 ? 'heart.png' : `stage-${n}.png`);
+/** What the edit drew; stillOf() is it moved so that its collar stands where stage 1's does. */
+const rawOf = (n) => path.join(DIR, `stage-${n}-raw.png`);
 const idleOf = (n) => path.join(DIR, n === 1 ? 'heart-idle.mp4' : `stage-${n}-idle.mp4`);
 const growOf = (n) => path.join(DIR, `grow-${n - 1}-${n}.mp4`);
 
@@ -102,9 +104,10 @@ export async function makeCoreEvo({ only = [], stillsOnly = false, bakeOnly = fa
       if (!wanted(s.id)) continue;
       if (!fs.existsSync(stillOf(s.id - 1))) throw new Error(`stage ${s.id}: stage ${s.id - 1}'s still is not there yet`);
       await makeStill({
-        slug: `the core, stage ${s.id} (${s.name})`, out: stillOf(s.id), prompt: s.prompt + KEEP, quality: 'high',
+        slug: `the core, stage ${s.id} (${s.name})`, out: rawOf(s.id), prompt: s.prompt + KEEP, quality: 'high',
         width: 1024, height: 1024, refFiles: [stillOf(s.id - 1)],
       });
+      register(s.id);
     }
     if (stillsOnly) return null;
     const jobs = [];
@@ -117,6 +120,41 @@ export async function makeCoreEvo({ only = [], stillsOnly = false, bakeOnly = fa
     done.forEach((r) => { if (r.status === 'rejected') console.warn(`[core-evo] a clip failed: ${r.reason.message.slice(0, 200)}`); });
   }
   return bakeCoreEvo();
+}
+
+/**
+ * Where a still stands: the middle of the widest row of the lowest third of what is not green
+ * (its collar), found through the studio keyer. Only to line the stages up with each other;
+ * where stage 1 stands on the board is its marked HEART_FOOT.
+ */
+function standsAt(img) {
+  const k = { w: img.w, h: img.h, data: Buffer.from(img.data) };
+  const { ck } = studioKeyer({ w: img.w, h: img.h, data: Buffer.from(img.data) });
+  studioKey(ck, k);
+  dropSpecks(k);
+  const b = unionBox([k]);
+  let best = { y: b.y1 - 1, w: 0, x: (b.x0 + b.x1) / 2 };
+  for (let y = Math.round(b.y1 - (b.y1 - b.y0) / 3); y < b.y1; y++) {
+    let x0 = -1, x1 = -1;
+    for (let x = 0; x < k.w; x++) if (k.data[(y * k.w + x) * 4 + 3] > 128) { if (x0 < 0) x0 = x; x1 = x; }
+    if (x0 >= 0 && x1 - x0 > best.w) best = { y, w: x1 - x0, x: (x0 + x1) / 2 };
+  }
+  return best;
+}
+
+/** Stage n's edit, moved (on its own green) so that its collar stands where stage 1's does. */
+function register(n) {
+  if (fs.existsSync(stillOf(n))) return;
+  const ref = standsAt(readImage(stillOf(1)));
+  const img = readImage(rawOf(n));
+  const at = standsAt(img);
+  const dx = Math.round(ref.x - at.x);
+  const dy = Math.round(ref.y - at.y);
+  const green = borderColour(img);
+  const out = blank(img.w, img.h, [...green, 255]);
+  paste(out, img, dx, dy);
+  writePng(stillOf(n), out);
+  console.log(`[core-evo] stage ${n}: moved ${dx}, ${dy} px to stand where stage 1 stands; its collar ${(at.w / img.w).toFixed(3)} of the picture (stage 1: ${(ref.w / img.w).toFixed(3)})`);
 }
 
 /** A clip's frames, every one through Leaflit's studio keyer (key colour and similarity found on its first frame). */

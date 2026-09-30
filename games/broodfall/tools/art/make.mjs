@@ -17,6 +17,7 @@
  *   node tools/art/make.mjs board [pods|strains|gates|smoke|<set>] [--stills]   creep nodes, strains, gates, smoke (templates/board.mjs)
  *   node tools/art/make.mjs yoke idle happy --stills      the ship AI's body (tools/art/templates/yoke.mjs)
  *   node tools/art/make.mjs yokescene                     her films for the game (tools/art/templates/yoke-scenes.mjs)
+ *   node tools/art/make.mjs pad [won lost] [--stills]     the data pad set down at a mission's end (tools/art/templates/pad.mjs)
  *   node tools/art/make.mjs screens                       the title emblem + key art, the report pictures
  *
  * Raw pictures and clips: art-src/ (not committed). Baked: public/art/. To look at:
@@ -71,6 +72,11 @@ const TEMPLATES = {
     const { makeBoard } = await import('./templates/board.mjs');
     return Promise.allSettled([makeBoard({ only: ids, bakeOnly: flags.has('--bake'), stillsOnly: flags.has('--stills') })]);
   },
+  // The core's four stages, grown by start-and-end clips (tools/art/templates/core-evo.mjs): coreevo [2 3 4] [--stills|--bake].
+  coreevo: async () => {
+    const { makeCoreEvo } = await import('./templates/core-evo.mjs');
+    return Promise.allSettled([makeCoreEvo({ only: ids, bakeOnly: flags.has('--bake'), stillsOnly: flags.has('--stills') })]);
+  },
   // The organ stage as the ship's ground scan (tools/art/templates/under.mjs): one tile per organ, soil, deposit.
   under: async () => {
     const { makeUnder } = await import('./templates/under.mjs');
@@ -87,6 +93,11 @@ const TEMPLATES = {
   },
   // The ship AI's body for RFab's Living Avatars: --stills to look before paying for clips, --publish to save her on RFab.
   // Her films for the game: printBody (tools/art/templates/yoke-scenes.mjs).
+  // The data pad the hero sets down when a mission ends (tools/art/templates/pad.mjs): pad [won lost] [--stills|--bake].
+  pad: async () => {
+    const { makePad } = await import('./templates/pad.mjs');
+    return Promise.allSettled([makePad({ bakeOnly: flags.has('--bake'), stillsOnly: flags.has('--stills'), only: ids })]);
+  },
   yokescene: async () => {
     const { makeYokeScenes } = await import('./templates/yoke-scenes.mjs');
     return Promise.allSettled([makeYokeScenes({ bakeOnly: flags.has('--bake') })]);
