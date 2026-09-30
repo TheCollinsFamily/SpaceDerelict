@@ -130,13 +130,22 @@ try {
   if (want('A')) {
     console.log('A: first launch, mission 1 lost, the ship, the desk dark, the mate review, a win clears the desk, the factions, the menu');
     const { ctx, page, errors, state } = await newPlayer(browser);
+    // Every title the film sets, in order, recorded from the page's first moment: the film may start
+    // before the page's 'load' (its clips are still arriving), so the first title can be gone by then.
+    await page.addInitScript(() => {
+      window.__titles = [];
+      new MutationObserver(() => {
+        const t = document.querySelector('#intro .intro-title.on .intro-big')?.textContent;
+        if (t && window.__titles[window.__titles.length - 1] !== t) window.__titles.push(t);
+      }).observe(document, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ['class'] });
+    });
     await page.goto(URL0, { waitUntil: 'load', timeout: 180000 });
     await page.waitForSelector('#intro', { timeout: 10000 });
     check(true, 'the first launch opens on the cinematic, not a menu');
     await page.waitForFunction(() => document.querySelector('#intro .intro-title.on'), null, { timeout: 15000 });
     await page.waitForTimeout(700);
     await shot(page, '01-intro-sky');
-    const t1 = await page.locator('#intro .intro-big').innerText();
+    const t1 = await page.evaluate(() => window.__titles[0] ?? '');
     check(/QUIET NIGHT/.test(t1), `the first title is set in type over the film: "${t1}"`);
     await page.waitForFunction(() => document.getElementById('intro')?.dataset.shot === 'impact', null, { timeout: 30000 });
     await page.waitForTimeout(1600);
