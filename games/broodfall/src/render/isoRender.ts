@@ -202,6 +202,9 @@ export class IsoRenderer extends Renderer {
   private tongues: MawTongues;
   /** The Maws that struck this frame (a body eaten beside the one aimed at is reeled in by the same Maw). */
   private mawStruck: Tower[] = [];
+  /** The idle clock when the tongues last moved, and how far it moved this frame (smooth, frozen by a pause). */
+  private tongueClock = 0;
+  private smoothDt = 0;
 
   /** The board alive (src/render/boardArt.ts): the skin's pulse and tendrils, the pods, the gates, the unclaimed city, plinths rising. */
   private life: CreepLife;
@@ -472,6 +475,9 @@ export class IsoRenderer extends Renderer {
     this.simClock += dt;
     this.idles.step(dt, dtReal);
     this.idleClock = this.idles.t;
+    // The Maw's tongue and mouth run on this smooth clock: the sim ticks ten times a second, a lick lasts one.
+    this.smoothDt = this.idleClock - this.tongueClock;
+    this.tongueClock = this.idleClock;
     this.fx.begin(dt);
 
     this.updateCamera(sim, dtReal);
@@ -490,7 +496,7 @@ export class IsoRenderer extends Renderer {
     this.syncNodes(sim);
     this.syncLimbs(sim, dt);
     this.syncUnits(sim, dt);
-    this.tongues.update(dt, this.tongueView(sim));
+    this.tongues.update(this.smoothDt, this.tongueView(sim));
     this.drawShots(this.marksG, sim);
     if (this.fx.ready()) this.fx.draw(sim, this.fxView(sim), dt);
     this.fx.end();
@@ -1306,7 +1312,7 @@ export class IsoRenderer extends Renderer {
       let blend = 0;
       const idle = side.anims.idle;
       if (v.fireT >= 0 && fire && !held) {
-        v.fireT += dt;
+        v.fireT += v.family === 'maw' ? this.smoothDt : dt;
         const share = v.family === 'maw' ? mawFireShare(v.fireT, v.fireDur) : v.fireT / v.fireDur;
         const f = Math.min(fire.count - 1, Math.floor(share * fire.count));
         tex = atlas.frame(fire.start + f, art.frame, art.cols);
