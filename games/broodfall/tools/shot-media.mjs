@@ -255,8 +255,7 @@ try {
     await page.keyboard.press('Escape'); await gone(page, 3000);
     await page.evaluate(() => window.__bfMedia.start('reel-acquired', true));
     await page.waitForSelector('#newsreel.replay', { timeout: 40000 }).catch(() => {});
-    await waitShot(page, 'e-suitcases', 15000);
-    await sleep(1200);
+    await page.waitForFunction(() => { const v = document.querySelector('#newsreel.replay video.on'); return v && v.dataset.clip === 'e-suitcases' && v.currentTime > 0.8; }, null, { timeout: 30000 }).catch(() => {});
     check(await page.locator('#newsreel.replay').count() === 1, 'an Empire reel replayed ungraded, no narrator, no music');
     await shot(page, 'c-replay-ungraded');
     await page.keyboard.press('Escape'); await gone(page, 3000);

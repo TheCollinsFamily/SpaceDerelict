@@ -96,8 +96,11 @@ function encode(frames, out) {
 const jpg = async (page, name, clip) => {
   const png = join(scratch, `${name}.png`);
   mkdirSync(scratch, { recursive: true });
-  await page.screenshot({ path: png, ...(clip ? { clip } : {}) });
-  spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-i', png, '-q:v', '3', join(notes, `${name}.jpg`)]);
+  // The whole page, cut afterwards: a clipped screenshot shows up as a zoomed frame in a screencast running at the time.
+  await page.screenshot({ path: png });
+  const c = clip ? { x: Math.max(0, Math.round(clip.x)), y: Math.max(0, Math.round(clip.y)) } : null;
+  const crop = clip ? ['-vf', `crop=${Math.min(VW - c.x, Math.round(clip.width))}:${Math.min(VH - c.y, Math.round(clip.height))}:${c.x}:${c.y}`] : [];
+  spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-i', png, ...crop, '-q:v', '3', join(notes, `${name}.jpg`)]);
   console.log(`  shot  ${join(notes, `${name}.jpg`)}`);
 };
 /** A ring where the mouse is, so a video shows what the hand did. */

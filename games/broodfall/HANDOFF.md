@@ -635,6 +635,19 @@ own words. `notes/GRAPHICS-PLAN.md` holds the pipeline, the probes and the costs
   shows over the street (`#under-dome`), the bottom fills the 3x2 meteor cells, from the same file
   (`under.core` in the manifest). The skyline is the board's tile set in all ten
   (`node tools/shot-organ-core.mjs [--stages]`, `notes/screens/2026-09-30/organ-skylines-all-sets.jpg`).
+- **The organ stage is alive (Sep 30, "should the organ screen have them alive? ... yeah").** One 4 s
+  clip per scan tile (24 organs, 6 deposits, 4 features) and per core stage's scan picture, made from
+  the still itself (seegen:sd2-mini, end frame = start frame, 480p, 12,320 tokens each), raw in
+  `art-src/under-loops/` (the stills are untouched). `node tools/art/make.mjs underloops [ids] [--bake]
+  [--reroll]` (`tools/art/templates/under-loops.mjs`) bakes each to ONE strip of 48 frames at 12 fps
+  (`public/art/under/loop-<id>.webp`, `under.loops` in the manifest), brightness matched to the still
+  (the model lights the scan up), played forward and back when the clip did not come back to its start.
+  In game the tiles are drawn on ONE canvas under the cells (`src/ui/underAlive.ts`, 12 steps a second on
+  one clock, each organ in its own phase; no layout read in its frame loop): a CSS background animation
+  per cell repainted the grid every frame. The meteor and its dome step through the stage's strip in CSS
+  (same phase, same frame above and below the line). The tray's cards stay still; a new organ scans in,
+  then loops from its first frame. Re-rolled: womb (eggs swelled and moved), core stage 4 (the dome
+  slid). Beat: `node tools/shot-organ-alive.mjs` (`organ-alive-*.jpg`, `organ-alive.mp4`).
 - **No real religious symbol, and no lettering, in any picture.** The image model adds
   crosses by itself. Every picture is looked at zoomed in before it is kept. A small
   unwanted detail is painted out with `tools/art/paint-out.mjs` (it keeps the original

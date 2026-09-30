@@ -95,7 +95,28 @@ muzzle of every variant marked by eye (`node tools/art/feet.mjs --variants`, `no
 manifest `limbs.<family>.variants.<key>` (baking the limb again keeps its variants). A variant has no death
 clip of its own: it withers with the game's slump.
 
-COST_SECTION
+## What it cost, and what the rest would cost
+
+**The prototype (Sep 30 2026):** 20 pictures (15 variants, 5 of the Spitter's from behind) and 44 clips (40, and
+4 re-rolled: the Spitter's swarm look from behind grew a blob, its reach look from behind ran out of the top of
+the frame, its bone look's firing clip from behind changed size). At list prices (a high-quality picture
+21,000 to 27,000 tokens, a 4 s clip 24,640 on seegen sd2-mini) that is about **1.5 million tokens, ~$30**. The
+account's balance moved by other amounts in the same hour: several sessions spend from it at once (and top it up),
+so the number here is counted from the jobs, not read off the balance. No top-up was needed.
+
+Per variant: a limb seen from one side ~$1.45 (a picture and two clips), a limb with a view from behind ~$2.90.
+
+| Rollout | What | Cost |
+|---|---|---|
+| **A (recommended)** | the other 34 limbs: the 4 class looks + the ONE superstructure its own tree leads to (20 one-view limbs, 14 with a view from behind) | 20 x 5 x $1.45 + 14 x 5 x $2.90 = **~$350**, ~$400 with re-rolls |
+| A+ | the other 5 superstructures of the 3 prototype limbs | ~$30 |
+| **B** | every limb, all 4 classes + all 6 superstructures | ~$800 with re-rolls |
+| optional | a death clip per variant (today a variant withers with the game's own slump) | +$0.49 a variant |
+| skip? | the 10 engines' trees are mostly SWARM: they could take 2 looks, not 5 | saves ~$50 |
+
+Before a rollout: the game loads every variant's atlas at the start (15 today, 0.4 to 2 MB each). At 185 to 370
+variants that must become loading a variant the first time a limb earns it (`src/render/art.ts`).
+
 
 ## Tables: every option and pip, classed
 

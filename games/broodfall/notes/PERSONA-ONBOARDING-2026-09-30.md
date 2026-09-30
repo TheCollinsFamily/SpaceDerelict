@@ -82,3 +82,33 @@ short and winnable, more systems revealed only once the first is understood.
 - rfab.ai down or out of tokens: the greeting is read (text on screen, her clips still play);
   her voice fails soft per line. Checked with the voice mocked, and once for real
   (`/api/avatars/:id/speak`, "You really suck at genocide.": 200, audio/mpeg, 1.9 s).
+
+## Newcomer, again, after the interface fix pass (Sep 30 2026, later)
+
+The two open findings above (the HUD showing every system from the first second, and a first hand
+that could open with a Skipping Mortar or a Quill Fan) were fixed in this pass. Played on the DEV
+server with nothing stored, the film skipped, by `tools/shot-fixpass-ui.mjs m1 m1play` and
+`tools/shot-onboarding.mjs`. Pictures: `notes/screens/2026-09-30/fixpass-ui-{before,after}-m1-*.jpg`.
+
+- **0:00 The first board.** Top bar: WAR 30, the directive (HOLD FOR 5 WAVES), the assault forming,
+  the speed buttons. Nothing else up there: no science, no royal, no threat or interest dials. The desk
+  at the bottom holds only the hand, in the middle, glowing (the ship's cyan now, not gold): four cards,
+  all SPITTER or LASHER, "Ranged acid limb. Cheap, reliable." / "Melee flail. Shreds crowds up close."
+  I read the whole screen in a few seconds and the hint line tells me the one thing to do. Before this
+  pass the same screen had CREEP NODES, PLINTHS, ORGANS, ROYAL SURGE and CANNIBALIZE boxes and two
+  dials, and the hand was Skipping Mortar, Quill Fan, Spitter, Spine Wall. PASS.
+- **The first limb** by two clicks, as the coach says. The wave comes; kills pay war meat.
+- **After wave 1** the organ stage opens by itself, and when I come back up two things have arrived with a
+  short glow: the ORGANS button (so I can open that stage again) and the THREAT / INTEREST dials. The
+  rest waits: science shows with the first science eaten, creep nodes and plinths when an organ grows
+  them, royal decrees with the first royal point, cannibalize once a few limbs stand after the second
+  wave. Each arrives when there is something to do with it, and nothing ever disappears again. PASS.
+- **Deterministic:** the first hand is narrowed by mission 1's own config (`firstHand`), not by
+  touching the rng: each card is still one draw, so the run after the hand rolls the same numbers
+  (`tests/onboarding.test.ts`). Every later draw is the ordinary one.
+- **The report** is the ship's console now (dark glass, thin lines, the verdict in the console's light
+  type with a small green or red light), the newsreel still and the photo of the board kept. It no longer
+  looks like a different game from the HUD it sits on. PASS.
+- Finding (kept): mission 1's organ stage itself still shows every organ family at once. It is its own
+  screen, opened after the first wave with its own title and note; trimming its palette for mission 1 is
+  a content call, not done here.

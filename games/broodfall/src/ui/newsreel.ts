@@ -180,7 +180,7 @@ function film(opts: { id: string; look: Look; series?: string; issue?: string; c
     };
     const lastCard = () => {
       title.classList.remove('on');
-      for (const v of layers) v.classList.remove('on');
+      // The last frame stays under the card (the replay dissolves from it, never from black).
       el.classList.remove('raw');
       last.classList.add('on');
       el.dataset.shot = 'end';
@@ -197,6 +197,7 @@ function film(opts: { id: string; look: Look; series?: string; issue?: string; c
           k++;
           if (k >= cuts.length) { if (f) fadeOut(f, 600); later(700, end); return; }
           show(cuts[k], false, again, true);
+          load(cuts[k + 1], layers[top]);
         };
         later(900, again);
       });

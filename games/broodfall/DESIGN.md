@@ -353,7 +353,8 @@ reading if it is wrong.) Replaces the per-stage look (~$150) TO-CREATE asked him
 - **Render only**: the sim and balance are untouched; the crest and donor grafts stay; a limb GROWS into its
   new look with a flash. `?looks=off` shows every limb in its own look.
 - **Prototype:** Spitter, Lasher, Galvanic Frond, all four classes and one superstructure each, in the game.
-  Full design, tables, pictures and the rollout cost for all 37: `notes/UPGRADE-LOOKS.md`.
+  Full design, tables, pictures and the rollout cost for all 37: `notes/UPGRADE-LOOKS.md`; the rule drawn:
+  `notes/screens/2026-09-30/upgrade-looks-01-diagram.jpg`, seen in the game: `upgrade-looks-00-sheet.jpg`.
 
 ### What a second copy does (Collins, Sep 28 2026: "what does doubling an upgrade that gives bullet burning do? decide and implement for each")
 The rule: **every copy adds its amount again; a multiplier multiplies again; a

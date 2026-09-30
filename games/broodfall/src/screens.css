@@ -292,3 +292,5 @@ body.in-ship #art-notice, body:has(#debrief:not(.hidden)) #art-notice { display:
 [data-hud="ship"] #art-notice button { font: 400 9.5px/1 var(--cs-font); letter-spacing: 2px; background: var(--cs-ink); color: #07090b; padding: 4px 9px; }
 [data-hud="ship"] #ship .screen-card { max-width: 760px; }
 [data-hud="ship"] #ship .screen-title { font-size: 26px; letter-spacing: 7px; }
+/* Nor over the organ stage or the district draft: it sat on top of their titles (fix pass, Sep 30 2026). */
+body:has(#under:not(.hidden)) #art-notice, body:has(#draft:not(.hidden)) #art-notice { display: none; }

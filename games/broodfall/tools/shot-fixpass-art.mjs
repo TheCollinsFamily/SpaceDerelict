@@ -47,6 +47,22 @@ const { chromium } = await import('@playwright/test');
 const DIST = `dist-fixpass-${TAG}`;
 const b = spawnSync(process.platform === 'win32' ? 'npx.cmd' : 'npx', ['vite', 'build', '--outDir', DIST, '--emptyOutDir'], { cwd: root, stdio: 'pipe', shell: process.platform === 'win32', encoding: 'utf8' });
 if (b.status !== 0) { console.error(b.stdout, b.stderr); process.exit(1); }
+// --drop-backs: the art as it is now, less the backs the pass added (the props taken off the mirrored list
+// are mirrored again): a BEFORE of item 6 that differs from AFTER in nothing else (other sessions re-bake
+// the tile sets' colours the same day).
+if (args.includes('--drop-backs')) {
+  const { BIOMES, isRound } = await import('./art/biomes.mjs');
+  for (const b of BIOMES) {
+    const ids = [...(b.roofProps ?? []), ...(b.roofProps2 ?? []), ...(b.streetProps ?? []), ...(b.streetProps2 ?? [])].filter((p) => p.round === false && !isRound(p)).map((p) => `prop-${p.id}~b`);
+    if (!ids.length) continue;
+    const m = JSON.parse(fs.readFileSync(join(root, DIST, 'art', 'manifest.json'), 'utf8'));
+    const f = join(root, DIST, 'art', m.biomes[b.id].data);
+    const data = JSON.parse(fs.readFileSync(f, 'utf8'));
+    for (const id of ids) delete data.sheets.props.sprites[id];
+    fs.writeFileSync(f, JSON.stringify(data));
+    console.log(`  ${b.id}: without ${ids.join(', ')}`);
+  }
+}
 if (ARTDIR) {
   fs.rmSync(join(root, DIST, 'art'), { recursive: true, force: true });
   fs.cpSync(ARTDIR, join(root, DIST, 'art'), { recursive: true });
@@ -173,7 +189,10 @@ try {
       for (let c = 0; c < s.map.cells.length; c++) if (s.map.cells[c] === 1 && d(c) >= 3 && d(c) <= 9) out.push(c);
       return out.sort((a, b2) => d(a) - d(b2));
     });
-    for (const [n, kind] of POLE_UNITS.entries()) {
+    // The view it is seen in: it is walked a few steps that way first (the camera unturned: screen down is +x+y).
+    const WAY = { S: [1, 1], SW: [0, 1], W: [-1, 1], NW: [-1, 0], N: [-1, -1] };
+    for (const [n, entry] of POLE_UNITS.entries()) {
+      const [kind, view = 'SW'] = entry.split(':');
       const id = await page.evaluate(([k, cell]) => {
         const s = window.broodfall.sim;
         for (const e of [...s.enemies]) s.enemies.splice(s.enemies.indexOf(e), 1);
@@ -187,12 +206,20 @@ try {
       await closeOn(at, 11);
       const tick = () => page.evaluate(() => { const b2 = window.broodfall; b2.step(1); for (const e of b2.sim.enemies) { const h = window.__held?.[e.id]; if (h) { e.pos.x = h.x; e.pos.y = h.y; e.hp = Math.max(e.hp, 1); } } });
       for (let i = 0; i < 4; i++) { await tick(); await page.waitForTimeout(40); }
+      // Walked toward its view, then held again where it stands.
+      for (let i = 0; i < 6; i++) {
+        await page.evaluate(([i2, w]) => { const h = window.__held[i2]; h.x += w[0] * 1.5; h.y += w[1] * 1.5; }, [id, WAY[view]]);
+        await tick();
+        await page.waitForTimeout(60);
+      }
+      const back = WAY[view];
+      await page.evaluate(([i2, w]) => { const h = window.__held[i2]; h.x -= w[0] * 9; h.y -= w[1] * 9; }, [id, back]);
       await page.evaluate((i) => { const s = window.broodfall.sim; const e = s.enemies.find((u) => u.id === i); s.damageEnemy(e, e.maxHp * 0.2, 1); }, id);
       for (let i = 0; i < 8; i++) {
         await tick();
         await page.waitForTimeout(120);
         const p = await onPage(at.x, at.y);
-        await page.screenshot({ path: png(`flinch-${kind}-${i}`), clip: { x: p.x - 130, y: p.y - 200, width: 260, height: 260 } });
+        await page.screenshot({ path: png(`flinch-${kind}-${view}-${i}`), clip: { x: p.x - 130, y: p.y - 200, width: 260, height: 260 } });
       }
     }
   }
@@ -248,7 +275,7 @@ async function compose() {
     console.log(`  sheet ${join(screens, out)}  (top: before, bottom: after)`);
   };
   strip([0, 1, 2, 3].map((i) => `pod-${i}`), 'fixpass-art-pod-BEFORE-AFTER.jpg', 1.5);
-  for (const kind of POLE_UNITS) strip([0, 1, 2, 3, 4, 5, 6, 7].map((i) => `flinch-${kind}-${i}`), `fixpass-art-flinch-${kind}-BEFORE-AFTER.jpg`);
+  for (const e of POLE_UNITS) { const k = e.replace(":", "-"); strip([0, 1, 2, 3, 4, 5, 6, 7].map((i) => `flinch-${k}-${i}`), `fixpass-art-flinch-${k}-BEFORE-AFTER.jpg`); }
   for (const s of [3, 4]) strip([0, 1, 2, 3, 4, 5, 6, 7].map((i) => `core${s}-${i}`), `fixpass-art-core${s}-BEFORE-AFTER.jpg`);
   // The props: where before and after differ, cropped big, before above after.
   for (const set of BACK_SETS) {

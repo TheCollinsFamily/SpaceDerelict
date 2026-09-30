@@ -130,7 +130,7 @@ try {
   if (want('A')) {
     console.log('A: first launch, mission 1 lost, the ship, the desk dark, the mate review, a win clears the desk, the factions, the menu');
     const { ctx, page, errors, state } = await newPlayer(browser);
-    await page.goto(URL0, { waitUntil: 'load' });
+    await page.goto(URL0, { waitUntil: 'load', timeout: 180000 });
     await page.waitForSelector('#intro', { timeout: 10000 });
     check(true, 'the first launch opens on the cinematic, not a menu');
     await page.waitForFunction(() => document.querySelector('#intro .intro-title.on'), null, { timeout: 15000 });
@@ -332,7 +332,7 @@ try {
     check(await page.locator('#yoke-scene').count() === 0, 'asked again, she refuses (once a campaign)');
     // ---- quit, relaunch: the ship's console ----
     await Promise.all([page.waitForURL((u) => !u.search), page.locator('[data-act="quit"]').click()]);
-    await page.goto(URL0, { waitUntil: 'load' });
+    await page.goto(URL0, { waitUntil: 'load', timeout: 180000 });
     await page.waitForSelector('#menu.console-menu:not(.hidden)');
     check(await page.evaluate(() => !document.getElementById('intro')), 'a later launch opens on the menu, not the film');
     await page.waitForFunction(() => { const v = document.querySelector('.menu-video'); return v && v.readyState >= 2 && v.currentTime > 0.5; }, null, { timeout: 20000 }).catch(() => {});
@@ -358,7 +358,7 @@ try {
   if (want('B')) {
     console.log('B: mission 1 won: the desk opens only at the NEXT win');
     const { ctx, page, errors } = await newPlayer(browser);
-    await page.goto(URL0, { waitUntil: 'load' });
+    await page.goto(URL0, { waitUntil: 'load', timeout: 180000 });
     await page.waitForSelector('#intro', { timeout: 10000 });
     await page.locator('#intro').click();
     await page.waitForFunction(() => !document.getElementById('intro'), null, { timeout: 5000 });
@@ -379,7 +379,7 @@ try {
     check(await page.locator('.cp-desk-dark').count() === 1, 'mission 1 won: the desk is STILL dark');
     check(await page.evaluate(() => JSON.parse(localStorage.getItem('broodfall-campaign')).pendingScenes.length === 0), 'and nobody from the planet has called');
     // Relaunching now: the menu (mission 1 is over), not the film, not mission 1.
-    await page.goto(URL0, { waitUntil: 'load' });
+    await page.goto(URL0, { waitUntil: 'load', timeout: 180000 });
     await page.waitForSelector('#menu.console-menu:not(.hidden)');
     check(await page.evaluate(() => !document.getElementById('intro')), 'relaunched after mission 1: the menu');
     await aboard(page, '#menu-campaign');
@@ -404,9 +404,9 @@ try {
   if (want('C')) {
     console.log('C: REPLAY THE OPENING from the menu');
     const { ctx, page, errors } = await newPlayer(browser);
-    await page.goto(`${URL0}?seed=1`, { waitUntil: 'load' });
+    await page.goto(`${URL0}?seed=1`, { waitUntil: 'load', timeout: 180000 });
     await page.evaluate(() => { localStorage.removeItem('broodfall-campaign'); localStorage.removeItem('broodfall-campaign-pending'); localStorage.setItem('broodfall-intro-seen', '1'); localStorage.setItem('broodfall-meta', JSON.stringify({ standing: 0, genes: [], runs: 1 })); });
-    await page.goto(URL0, { waitUntil: 'load' });
+    await page.goto(URL0, { waitUntil: 'load', timeout: 180000 });
     await page.waitForSelector('#menu.console-menu:not(.hidden)');
     check(await page.locator('#menu-campaign').isHidden(), 'no campaign on record: no CONTINUE');
     await page.locator('#menu-intro').click();

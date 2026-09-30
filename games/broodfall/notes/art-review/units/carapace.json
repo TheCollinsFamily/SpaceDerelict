@@ -1,7 +1,7 @@
 {
  "kind": "carapace",
  "frames": 304,
- "atlasKB": 1191,
+ "atlasKB": 1190,
  "pages": 2,
  "failed": 0,
  "checks": [
@@ -253,7 +253,7 @@
   {
    "name": "hit S: nothing cut off",
    "ok": true,
-   "value": "window grown 1.13x"
+   "value": "window grown 1.12x"
   },
   {
    "name": "hit S: no background tint on the outline",

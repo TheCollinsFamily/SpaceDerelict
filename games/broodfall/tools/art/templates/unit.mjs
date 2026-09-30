@@ -24,6 +24,12 @@ const FPS = 12;
 const COLS = 16;
 /** Frames kept per animation and view. */
 const KEEP = { walk: 14, attack: 12, death: 12, hit: 8, braced: 10, enter: 16, special: 14 };
+/**
+ * Flinch views whose opening frames draw the blow itself inside the margin (Sep 30 2026 fix pass, looked at
+ * with tools/art/look-anim.mjs): the splitter's club stub from the NW, the carapace lord's flash from the S,
+ * the consort's puff of smoke from the NW. bakeUnit leaves those opening frames out.
+ */
+const HIT_BLEMISH = { splitter: ['NW'], carapace: ['S'], consort: ['NW'] };
 
 const EMBLEM =
   'Its one emblem is a small plain gold hexagon, the shape of a honeycomb cell. There are no crosses, no stars ' +
@@ -619,4 +625,3 @@ export async function makeUnit(kind, { anims = ['walk'], bakeOnly = false, views
 }
 
 export { lock };
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
