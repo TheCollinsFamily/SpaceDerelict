@@ -55,9 +55,10 @@ three campaign outlines, covers and promotional art.
   `notes/screens/2026-09-30/audio-README.md`). Still missing: a real sound-effect model on RFab
   (the effects are cut from video soundtracks), the insects' intercepted radio between waves
   (content/lore/insects.md proposal 4), faction leaders' voices, an ear on every file (Collins).
-- **Newsreels and news clippings** between runs, in the 1950s B-movie look. ~20 clips, ~$15.
-- **Faction leaders' voices** for their scenes.
-- **Faction endings**: one picture each; an ending film per faction (and the Institute's pacify one).
+- **Newsreels and news clippings, faction leaders' voices, ending films, reveal pictures: BUILT Sep 30**
+  (HANDOFF.md "The campaign's media"). Still missing: the insects' intercepted radio between waves;
+  voiced asides (the leaders' letters, broadcasts and calls between beats are read, not heard); news of
+  mission 1 ("METEOR FALLS ON SUBURB") on its CONTINUE; an ear on every voice line (Collins).
 
 ## 5. The campaign (see the Claude doc "Broodfall: The Three Campaigns" for the open calls)
 

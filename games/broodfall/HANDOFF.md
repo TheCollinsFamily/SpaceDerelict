@@ -328,6 +328,54 @@ character setting down a data pad that has something similar to the last screen 
 - **Beat:** `node tools/shot-ship-loops.mjs [rooms globe meat]` (own dev server 5289, GPU flags):
   `notes/screens/2026-09-30/ship-loop-*`, `globe-*`, `meat-*`.
 
+## The campaign's media: news between runs, the leaders' voices, the ending films (Sep 30 2026)
+
+- **What plays.** On RETURN TO THE SHIP after a campaign deployment (`main.ts` campaignDebrief `back`, one
+  line), the planet's news of it: `src/meta/media.ts` reads the deployment's moments (retaken, repelled,
+  ally:<faction>, beat:<id>, desk-open, capture:<territory>, counter, capture, lost; most telling first)
+  and picks the first piece of `content/media.ts` that fits (never the last one shown, a story piece once,
+  unseen first, the other side first); `src/ui/newsreel.ts` plays it over everything: the Office's
+  **Clearance Review** (lurid Technicolor, chipper male Veo announcer, `m-empire` march), their
+  **Commonwealth Newsreel** (black and white, earnest female Veo announcer, `m-colony`) for what goes their
+  way, or one of **their papers** (spins in; masthead, headline, deck, body, caption all TYPE; the
+  photograph generated). 12 reels + 16 clippings. The **break** (DESIGN.md "Tone stack"): a reel shot the
+  Office did not mean to show, ungraded, the music cut to 8 s of raw field audio (reel-temple, reel-pilgrim);
+  and every fourth Empire reel from the third on replayed whole with the filter off, no narrator, no music.
+  Skippable (click, Esc, Enter, Space); its sound goes through the game's buses (`routeMedia` in
+  `src/audio/engine.ts`: Settings music/voices, mute-when-away, ducking, the recorder); `main.ts` musicTick
+  treats `#newsreel` as a film (the ship's loop fades under it). Log per campaign: localStorage
+  `broodfall-media`. Under automation it plays only with `localStorage['broodfall-media-auto']='on'`.
+- **The leaders' voices** (`src/ui/sceneVoice.ts`; `campaignUi` calls `attachScene(this.el)` after each
+  render and on hide; the card carries `data-faction`/`data-scene`): each scene card's lines play in order,
+  the leader's in his voice, the character's read in reading time, the line being said lit (`said-now`),
+  music ducked. A line rewritten since its take is read, not played (the take stores its text). Voices
+  (`content/media.ts` LEADER_VOICES): **the Voice = Veo 3.1 Lite** as a 1950s radio evangelist through a
+  radio EQ (he IS a broadcast; Veo's speech is far more period than a TTS voice); **the Delegate = Aura
+  Helena**, **the Director = Aura Aries** (he is 21st-century and online: a period voice would be wrong),
+  **the Awaited One = Aura Zeus**. 73 lines. Trap: a word in CAPITALS is SPELLED by both models ("W O R D"):
+  `speakable()` in `tools/media/make.ts` lower-cases it and asks Veo to lean on it; `make.ts recaps` moves
+  such takes to `v1/` to be made again. Every Veo take is transcribed back (`notes/art-review/media/speech.json`).
+- **The ending films** (`ENDING_FILMS`): each ending card (the three and the Institute's pacify) first plays
+  a 5-shot film full screen with its own score (`m-end-*`) and a last line in type, then its card loops the
+  film where the picture was. The first shot of each is animated from the scene's existing picture
+  (`art-src/ship/scenes/`). **The reveal cards' pictures** (`REVEAL_PICTURES`; `picture` on each `reveal`
+  in `content/campaign.ts`, drawn from `public/media/pictures/` by `scenePictureHtml`'s fallback): the
+  Delegation's meadow letter, the Faithful's Comb Above, the Director's flattering private city.
+- **Make / bake** (SPENDS tokens; each step skips what is on disk; raw in `art-src/media/`, music and field in
+  `art-src/audio/`): `npx vite-node tools/media/make.ts -- stills|clips|voices|bake [ids]`; prompts in
+  `tools/media/prompts.mjs` (three looks: empire, colony, raw, plus the finale); review in
+  `notes/art-review/media/` (`stills/`, `photos/`, `reveals/`, `clip-<id>.jpg`, `speech.json`);
+  `node tools/media/grid.mjs <dir> <out>` labels a folder in 2x2 grids to look at. Baked: `public/media/`
+  (`media.json`, clips 1280x720, photos, pictures, voice, music; ~73 MB). Cost Sep 30: ~$52 (51 stills at
+  medium $0.12, 3 high, 40 clips at 720p $0.49, 44 Veo lines $0.3-0.6, Aura, 5 music, 1 field take).
+- **Checks:** `tests/media.test.ts` (coverage, what is picked when, no repeat in a row, every file on disk,
+  every leader line voiced with its current words, four films, three reveal pictures);
+  `node tools/shot-media.mjs [A B C D] [--build]` (its own build `dist-media` served on 5287; the dev server
+  answered too slowly with the sessions building beside it): A a win at Old Harbor → reel → the Delegate
+  heard, filmed with its sound (`notes/screens/2026-09-30/media-newsreel.mp4`); B losses → their reel
+  (Esc) → their paper; C the papers, their victory, the break, the replay; D each route's ending film →
+  its card → the reveal picture (`media-ending-film.mp4`, the Faithful's).
+
 ## The ship AI (YOKE)
 
 - **Game side** (`src/meta/shipAi.ts`):
