@@ -126,7 +126,7 @@ async function upload(file, slug) {
  * `endFile`: the END frame is that picture instead (a start-and-end clip: the model fills in the
  * middle, e.g. the core growing from one stage into the next).
  */
-export async function makeClip({ slug, stillFile, endFile, prompt, seconds = 4, key = '00FF00', keyName = 'green', out, loop = true, raw = false, resolution = '480p', aspect = '1:1', audio = false }) {
+export async function makeClip({ slug, stillFile, endFile, models = VIDEO_MODELS, prompt, seconds = 4, key = '00FF00', keyName = 'green', out, loop = true, raw = false, resolution = '480p', aspect = '1:1', audio = false }) {
   out = out ?? path.join(RAW_DIR, `${slug}-clip.mp4`);
   if (fs.existsSync(out)) { console.log(`[clip] ${slug}: cached`); return out; }
   fs.mkdirSync(path.dirname(out), { recursive: true });
@@ -134,7 +134,7 @@ export async function makeClip({ slug, stillFile, endFile, prompt, seconds = 4, 
   const endUrl = endFile ? await upload(endFile, `${slug}-end`) : loop ? imageUrl : null;
   spent.clips += 1;
   let lastErr;
-  for (const model of VIDEO_MODELS) {
+  for (const model of models) {
     try {
       console.log(`[clip] ${slug}: ${seconds}s on ${model}, ${endFile ? 'end frame = the next picture' : endUrl ? 'end frame = start frame' : 'end free'}`);
       const t0 = Date.now();

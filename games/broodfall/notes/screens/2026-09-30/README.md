@@ -66,3 +66,16 @@ Every picture here is a screenshot of the real game in a browser, taken by a scr
 | `connect-07`, `connect-08` | he can change the model she runs on | HER MIND > CHANGE: six models with a rough price a reply (Kimi K2.6 the default); 08 Claude Haiku 4.5 chosen and her next answer on it |
 | `connect-09` | the same in Settings | Settings' "YOKE — ACCOUNT & MIND" slot filled with his account and her mind |
 | `connect-rfab-confirm`, `connect-rfab-linked`, `connect-rfab-expired` | the page on rfab.ai where the code is approved | rfab.ai `/connect` (frontend `components/broodfall-connect/`, API mocked): the code, the bonus stated, APPROVE, the linked games with Disconnect; linked; an expired code |
+
+### The data pad set down at a mission's end (`node tools/shot-pad.mjs`, dev server; src/ui/padOutro.ts, tools/art/templates/pad.mjs)
+
+| File | What Collins asked | What it shows |
+|---|---|---|
+| `pad-won-0-the-last-view` | "a data pad that has something similar to the last screen looked at" | the skirmish board and console HUD the moment before the win (forced) |
+| `pad-won-1-start` | the cut must not show | 1.7 s after the win: the page itself, untouched, the win dialog still on it — the clip is zoomed so the pad's screen fills the window |
+| `pad-won-2-pull-back`, `pad-won-3-lowering` | "that was you just holding it" | first person: his hands pull the pad back from his eyes; the LIVE board + HUD warped onto its screen, his thumbs in front of it |
+| `pad-won-4-set-down`, `pad-won-5-on-the-desk` | "setting down a data pad" | set down calmly on his console desk under the window onto the planet, still showing the run |
+| `pad-won-6-report` | then the report | the pad's screen sleeps, the desk fades over the end-of-run report |
+| `pad-lost-0` … `pad-lost-4` | the loss variant | mission 1 lost: the pad let drop onto the desk, his hand left flat beside it |
+| `pad-lost-5-report`, `pad-lost-6-ship` | the onboarding still follows | mission 1's plain report, CONTINUE → the ship |
+| `pad-won.mp4`, `pad-lost.mp4` | a video of it | Playwright recordings of both, from the run to the report |

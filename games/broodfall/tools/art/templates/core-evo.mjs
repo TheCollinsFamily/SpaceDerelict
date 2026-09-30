@@ -95,12 +95,19 @@ const BEAT =
   'The crimson heart inside beats slowly and heavily; the flesh around it swells and relaxes with each beat; the ' +
   'roots tighten and ease; its eyes blink slowly. Nothing else moves: it stays at exactly the same spot and the same ' +
   'size. Camera completely locked: no zoom, no pan, no cuts. The solid pure green #00FF00 background stays flat and empty.';
+/**
+ * The first try said "GROWS": seegen:sd2-mini zoomed in on the heart until it filled the picture, drew an
+ * anatomical heart with its aorta, and never came to the end frame (Sep 30 2026, art-src/terrain/core/rejected/).
+ * The creature changes; the camera and its size in the picture do not.
+ */
 const GROW =
-  'The living heart GROWS, slowly and continuously, from the first picture into the last one: the flesh swells, ' +
-  'roots creep up and thicken, new chambers and sacs bud and fill out, eyes open, the meteor shell is pushed apart. ' +
-  'It pulses as it grows. It stays standing at exactly the same spot in the middle of the picture; it only grows. ' +
-  'Camera completely locked: no zoom, no pan, no cuts. The solid pure green #00FF00 background stays flat and ' +
-  'empty the whole time. No text, no symbols.';
+  'A static shot. The creature in the middle of the picture slowly transforms, in place, from how it looks in the ' +
+  'first frame into exactly how it looks in the last frame: its flesh swells and changes shape, roots creep over it, ' +
+  'new chambers and sacs bud, eyes open, and it pulses as it changes. Its base stays on exactly the same spot and it ' +
+  'stays the same size in the picture as in the two frames: the camera does not move closer, the view does not zoom ' +
+  'or crop. The solid pure green #00FF00 background stays flat and empty around it the whole time. No text, no symbols.';
+/** The video model of the growing clips (start and end frame): env CORE_EVO_GROW_MODEL, default seegen:sd2-fast. */
+const GROW_MODEL = process.env.CORE_EVO_GROW_MODEL || 'seegen:sd2-fast';
 
 export async function makeCoreEvo({ only = [], stillsOnly = false, bakeOnly = false } = {}) {
   const wanted = (n) => !only.length || only.includes(String(n));
@@ -121,7 +128,7 @@ export async function makeCoreEvo({ only = [], stillsOnly = false, bakeOnly = fa
     jobs.push(makeClip({ slug: 'the core at stage 1 beats', out: idleOf(1), stillFile: stillOf(1), prompt: BEAT, raw: true, resolution: RES }));
     for (const s of STAGES.slice(1)) {
       if (!wanted(s.id)) continue;
-      jobs.push(makeClip({ slug: `the core grows into stage ${s.id}`, out: growOf(s.id), stillFile: stillOf(s.id - 1), endFile: stillOf(s.id), prompt: GROW, raw: true, resolution: RES }));
+      jobs.push(makeClip({ slug: `the core grows into stage ${s.id}`, out: growOf(s.id), stillFile: stillOf(s.id - 1), endFile: stillOf(s.id), prompt: GROW, raw: true, resolution: RES, models: [GROW_MODEL] }));
       jobs.push(makeClip({ slug: `the core at stage ${s.id} beats`, out: idleOf(s.id), stillFile: stillOf(s.id), prompt: BEAT, raw: true, resolution: RES }));
     }
     const done = await Promise.allSettled(jobs);

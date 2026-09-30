@@ -223,6 +223,30 @@ insectoid city.
   shown over the briefing and the dark desk's assignment (`territoryPictureHtml` in campaignUi).
 - Beat: `node tools/shot-camp.mjs [A] [B]` (dev server 5251; `notes/screens/2026-09-30/camp-*`).
 
+## The data pad at a mission's end (Sep 30 2026)
+
+Collins: "when you are finished with a mission or lose it should have a video that shows your
+character setting down a data pad that has something similar to the last screen looked at".
+- **In the game** (`src/ui/padOutro.ts`, one hook in `src/main.ts` `handleEvents`): 1.6 s after
+  `won`/`lost`, a clip plays over everything (first person, his hands; `won` sets the pad down
+  calmly, `lost` lets it drop, on his console desk under the window onto the planet). The pad's
+  screen is keyed out of the clip; the LIVE page under it (Pixi board + console HUD) is warped into
+  the screen's corners every frame by a CSS `matrix3d` on `<body>` (corners baked per frame in
+  `public/art/pad/<id>.json`; `requestVideoFrameCallback` keeps them on the frame). The clip starts
+  zoomed so the screen fills the window (invisible cut), the end dialog `#overlay` fades off the pad,
+  a device look fades in; at the end the screen sleeps, `<body>` is put back, the report shows, the
+  desk fades. Click/Esc/Enter/Space skips; Settings "Reduce motion" skips it; under automation it
+  plays only with `localStorage['broodfall-pad-outro']='on'` (other beats unaffected).
+- **The art** (`node tools/art/make.mjs pad [won lost] [--stills|--bake]`,
+  `tools/art/templates/pad.mjs` + `pad-bake.mjs`): two stills (start: pad filling the frame, green
+  screen; end: on the desk), a START-AND-END clip each on **seegen:wan3.0-video** (run with
+  `PROBE_VIDEO_MODELS=seegen:wan3.0-video`; 5 s 720p, 65,700 tokens = $1.31). seegen:sd2-mini IGNORED
+  the end frame (and drew idol figurines); seegen:sd2 honoured it but let the pad leave the frame.
+  Bake: Leaflit's studio ChromaKey set to the screen's own colour, the screen = biggest keyed patch →
+  convex hull → edges fitted to the hull (bridges fingers) → corners, smoothed; key kept only inside
+  the screen. Review: `notes/art-review/pad/<id>.jpg` (a game picture warped in) and `<id>-track.jpg`.
+- **Checks:** `tests/padOutro.test.ts`; `node tools/shot-pad.mjs [won lost skip calm]`.
+
 ## The ship AI (YOKE)
 
 - **Game side** (`src/meta/shipAi.ts`):
