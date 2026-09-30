@@ -26,3 +26,7 @@ A: the film, mission 1, the end, the ship, the boss
   PASS  no page errors ()
 B: the menu, the settings, the ship
   PASS  nothing plays before a click
+  PASS  the mix is recorded
+  PASS  the menu's music: the ship's hum (theme-menu)
+  PASS  it is heard (meter peak -24.3 dBFS)
+  PASS  the music slider moves the music bus (0.20)
