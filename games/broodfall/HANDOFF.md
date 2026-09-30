@@ -260,9 +260,14 @@ own words. `notes/GRAPHICS-PLAN.md` holds the pipeline, the probes and the costs
   frame is their first → our own keyer → loop search → atlas (WebP) →
   `public/art/manifest.json`. Eight headings are five drawn views and three mirrored.
 - **Every asset checks itself** when it is baked (loop closes, stays on its spot, inside
-  its frame, no tint of the background left on its outline, light to load) and writes
+  its frame, no tint of the background left on its outline) and writes
   `notes/art-review/<kind>/<id>.jpg` and `.json`. Look at the picture: checks pass on
   things that are wrong.
+- **No size limits on the art, ever** (Collins, Sep 30 2026: "I can't imagine why such a trip
+  wire would be useful"). The total-size test and the 900 KB-per-picture checks were removed;
+  they had been cutting frames and packing quality to fit. Never trade picture quality or
+  frames for bytes, and never add a size cap back. (Units still split over atlas pages, which
+  costs no quality.)
 - **Where a limb stands is marked by eye, never computed** (Collins's rule 24). After
   making or remaking a limb: `node tools/art/feet.mjs <family>` (and `--back`), LOOK at
   `notes/art-review/feet/`, read the grid of tenths, write `foot: [x, y, width]` (and

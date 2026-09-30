@@ -8,7 +8,7 @@
  * The first of a kind keeps the name it always had (roof-IJ, wall-plain-south-0-3); a later
  * one has its number after a tilde (roof~1-IJ, wall-plain~1-south-0-3).
  */
-import { existsSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
@@ -144,12 +144,11 @@ describe.skipIf(!hasArt)('the tile sets', () => {
     }
   });
 
-  it('are light to load, and keep every sprite inside its sheet', () => {
+  it('keep every sprite inside its sheet', () => {
     for (const id of Object.keys(sets)) {
       for (const [name, sheet] of Object.entries(sheetsOf(id))) {
         const file = join(ART, sheet.atlas);
         expect(existsSync(file), sheet.atlas).toBe(true);
-        expect(statSync(file).size / 1024, `${id}: kilobytes of ${name}`).toBeLessThan(900);
         const { w, h } = webpSize(file);
         for (const [sprite, r] of Object.entries(sheet.sprites)) {
           expect(r.w, `${id}: ${sprite}`).toBeGreaterThan(0);

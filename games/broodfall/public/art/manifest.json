@@ -5248,8 +5248,8 @@
     },
     "die": {
      "start": 30,
-     "count": 8,
-     "fps": 2
+     "count": 10,
+     "fps": 2.5
     }
    },
    "grafts": [
@@ -5282,12 +5282,12 @@
     "body": 0.646,
     "anims": {
      "idle": {
-      "start": 38,
+      "start": 40,
       "count": 16,
       "fps": 4.47
      },
      "fire": {
-      "start": 54,
+      "start": 56,
       "count": 14,
       "fps": 3.5
      }
@@ -5390,8 +5390,8 @@
     },
     "die": {
      "start": 30,
-     "count": 8,
-     "fps": 2
+     "count": 10,
+     "fps": 2.5
     }
    },
    "grafts": [
@@ -5725,8 +5725,8 @@
     },
     "die": {
      "start": 30,
-     "count": 8,
-     "fps": 2
+     "count": 10,
+     "fps": 2.5
     }
    },
    "grafts": [
@@ -6150,8 +6150,8 @@
     },
     "die": {
      "start": 30,
-     "count": 8,
-     "fps": 2
+     "count": 10,
+     "fps": 2.5
     }
    },
    "grafts": [
@@ -6184,12 +6184,12 @@
     "body": 0.46,
     "anims": {
      "idle": {
-      "start": 38,
+      "start": 40,
       "count": 16,
       "fps": 11.29
      },
      "fire": {
-      "start": 54,
+      "start": 56,
       "count": 14,
       "fps": 3.5
      }
@@ -6242,8 +6242,8 @@
     },
     "die": {
      "start": 30,
-     "count": 8,
-     "fps": 2
+     "count": 10,
+     "fps": 2.5
     }
    },
    "grafts": [
@@ -7240,8 +7240,8 @@
     },
     "die": {
      "start": 30,
-     "count": 8,
-     "fps": 2
+     "count": 10,
+     "fps": 2.5
     }
    },
    "grafts": [
@@ -7434,8 +7434,8 @@
     },
     "die": {
      "start": 30,
-     "count": 8,
-     "fps": 2
+     "count": 10,
+     "fps": 2.5
     }
    },
    "grafts": [

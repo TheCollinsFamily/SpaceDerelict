@@ -137,7 +137,6 @@ export function bakePods() {
   if (!frames.length) return null;
   fs.mkdirSync(path.join(ART, 'board'), { recursive: true });
   const packed = packAtlas(frames, FRAME, COLS, path.join(ART, 'board', 'pods.webp'), 84);
-  check('atlas is light', packed.bytes < 900 * 1024, `${Math.round(packed.bytes / 1024)} KB`);
   const entry = { atlas: 'board/pods.webp', frame: FRAME, cols: COLS, looks };
   putEntry('board', 'pods', entry);
   fs.mkdirSync(OUT, { recursive: true });

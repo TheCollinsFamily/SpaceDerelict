@@ -216,7 +216,7 @@ function bakeView(l, dir, view, check, F) {
   const frames = [];
   const anims = {};
   for (const c of clips) {
-    c.kept = (c.anim === 'die' ? pickToEnd(c.frames, l.big ? KEEP.die - 2 : KEEP.die) : pick(c.frames, KEEP[c.anim])).map((f) => lift(resize(crop(f, x0, y0, side, side), F, F), l.flat ? 0 : LIFT, anchor[1]));
+    c.kept = (c.anim === 'die' ? pickToEnd(c.frames, KEEP.die) : pick(c.frames, KEEP[c.anim])).map((f) => lift(resize(crop(f, x0, y0, side, side), F, F), l.flat ? 0 : LIFT, anchor[1]));
     anims[c.anim] = { start: frames.length, count: c.kept.length, fps: Number((c.kept.length / c.seconds).toFixed(2)) };
     frames.push(...c.kept);
     if (c.loop) {
@@ -270,9 +270,7 @@ export function bakeLimb(family) {
   const frames = [...front.frames, ...(back ? back.frames : [])];
   const shift = (anims, by) => Object.fromEntries(Object.entries(anims).map(([k, c]) => [k, { ...c, start: c.start + by }]));
   const atlas = path.join(ART, 'limbs', `${family}.webp`);
-  // A big limb has more than twice the pixels: it is packed a little harder, to stay as light to load.
-  const packed = packAtlas(frames, F, COLS, atlas, l.big ? 76 : 86);
-  check('atlas is under 900 KB', packed.bytes < 900 * 1024, `${Math.round(packed.bytes / 1024)} KB`);
+  const packed = packAtlas(frames, F, COLS, atlas, 86);
   const entry = {
     atlas: `limbs/${family}.webp`, frame: F, cols: COLS,
     /** The point of the frame that stands on the middle of its cell: the middle of what the limb stands on. */

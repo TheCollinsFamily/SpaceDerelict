@@ -48,11 +48,6 @@
    "name": "die: it ends as a husk",
    "ok": true,
    "value": "89% of its size, 47% of its colour"
-  },
-  {
-   "name": "atlas is under 900 KB",
-   "ok": true,
-   "value": "170 KB"
   }
  ]
 }

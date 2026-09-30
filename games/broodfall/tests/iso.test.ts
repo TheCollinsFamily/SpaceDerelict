@@ -3,7 +3,7 @@
  * (public/art/manifest.json). These run forever: a change to the camera, or an asset baked
  * wrong, fails here before anyone sees it on the screen.
  */
-import { existsSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
@@ -426,7 +426,6 @@ describe.skipIf(!hasArt)('the baked art', () => {
       const files = [a.atlas, ...(a.pages ?? [])].map((f) => join(ART, f));
       const heights = files.map((file) => {
         expect(existsSync(file), file).toBe(true);
-        expect(statSync(file).size, `${file} size`).toBeLessThan(900 * 1024);
         const { w, h } = webpSize(file);
         expect(w, `${id} atlas width`).toBe(a.frame * a.cols);
         return h;
@@ -538,18 +537,15 @@ describe.skipIf(!hasArt)('the baked art', () => {
       for (const p of set.streetProps) has('props', `prop-${p}`);
       expect(set.roofTint, `${id}: roof tints`).toHaveLength(3);
       if (!set.data) continue;
-      let bytes = 0;
       for (const sheet of Object.values(own)) {
         const file = join(ART, sheet.atlas);
         expect(existsSync(file), sheet.atlas).toBe(true);
-        bytes += statSync(file).size;
         const { w, h } = webpSize(file);
         for (const [name, r] of Object.entries(sheet.sprites)) {
           expect(r.x + r.w, `${id}: ${name}`).toBeLessThanOrEqual(w);
           expect(r.y + r.h, `${id}: ${name}`).toBeLessThanOrEqual(h);
         }
       }
-      expect(bytes / 1024, `${id}: kilobytes`).toBeLessThan(900);
     }
   });
 
@@ -578,23 +574,5 @@ describe.skipIf(!hasArt)('the baked art', () => {
     for (const e of EXPERIMENTS) expect(s.sketches.ids, `sketch for experiment ${e.id}`).toContain(e.id);
     expect(s.yoke.faces).toEqual(['calm', 'curious', 'amused', 'concerned', 'thinking', 'sad']);
     for (const f of [s.planet, s.exterior, s.yoke.atlas, s.sketches.atlas]) expect(existsSync(join(ART, f)), f).toBe(true);
-  });
-
-  it('stays small enough to ship', () => {
-    let total = 0;
-    const walk = (o: unknown): void => {
-      if (typeof o === 'string' && o.endsWith('.webp') && existsSync(join(ART, o))) total += statSync(join(ART, o)).size;
-      else if (o && typeof o === 'object') Object.values(o).forEach(walk);
-    };
-    walk(manifest);
-    // 24 MB when units had only walks; Sep 29 2026 they gained attacks, falls and states
-    // (about 11 MB for all 26), and the budget went to 30 rather than the units' quality down.
-    // Sep 30 2026: every limb gained its withering and 13 limbs their acting clips (limbs 10.7 ->
-    // 15.0 MB), and the effects and donor parts came (0.4 MB): +5 MB, rather than fewer frames.
-    // Sep 30 2026, the units: a flinch for all 26 in 5 views, the royal and consort as bosses from
-    // 320 and 256 px frames with an arrival and a special, the carapace walking cracked and stripped,
-    // the braced guns' shots, and the hive's own walkers (broodling, three puppet queens): units
-    // 11 -> 18.3 MB, the whole 38.5 MB. The budget went to 42 rather than fewer or smaller frames.
-    expect(total / 1024 / 1024).toBeLessThan(42);
   });
 });

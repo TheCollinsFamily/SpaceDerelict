@@ -1,7 +1,7 @@
 {
  "family": "brood",
- "frames": 68,
- "atlasKB": 893,
+ "frames": 70,
+ "atlasKB": 1222,
  "failed": 0,
  "checks": [
   {
@@ -118,11 +118,6 @@
    "name": "from behind: it has a view",
    "ok": true,
    "value": "drawn"
-  },
-  {
-   "name": "atlas is under 900 KB",
-   "ok": true,
-   "value": "893 KB"
   }
  ]
 }

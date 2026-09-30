@@ -2,7 +2,7 @@
  * THE UNITS' ART, as the board draws them (Sep 29 2026): every unit walks, attacks and falls
  * in all five views, has a picture of every state the sim holds it in, and stays light.
  */
-import { existsSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
@@ -72,7 +72,6 @@ describe.skipIf(!manifest)("the units' art", () => {
       files.forEach((file, i) => {
         const f = join(ART, file);
         expect(existsSync(f), `${kind} ${file}`).toBe(true);
-        expect(statSync(f).size, `${kind} ${file}`).toBeLessThan(900 * 1024);
         // Frames are packed in rows of `cols`; the page holds them all (its height is read from the header).
         const b = readFileSync(f);
         const kindTag = b.toString('ascii', 12, 16);

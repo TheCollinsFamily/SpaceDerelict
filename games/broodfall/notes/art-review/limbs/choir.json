@@ -63,11 +63,6 @@
    "name": "it stands in its cell",
    "ok": true,
    "value": "0.3% of it lies in front of its cell"
-  },
-  {
-   "name": "atlas is under 900 KB",
-   "ok": true,
-   "value": "400 KB"
   }
  ]
 }

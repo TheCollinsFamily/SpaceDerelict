@@ -528,7 +528,6 @@ export function bakeUnit(kind) {
 
   const pages = packPages(groups, F, kind, 'units');
   const bytes = pages.reduce((a, p) => a + p.bytes, 0);
-  for (const [i, p] of pages.entries()) check(`atlas page ${i + 1} is under 900 KB`, p.bytes < 900 * 1024, `${Math.round(p.bytes / 1024)} KB`);
 
   // How big to draw it: the game gives the unit a radius; the frame is that much wider than the body.
   const bodyW = walks.map((c) => (c.box.x1 - c.box.x0) / side).sort((a, b) => a - b)[walks.length >> 1];

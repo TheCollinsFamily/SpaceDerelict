@@ -463,7 +463,6 @@ function bakeState(s) {
   { input: Buffer.concat(kept.map((f) => f.data)), maxBuffer: 64 * 1024 * 1024 });
   if (r.status !== 0) throw new Error(`${s.id}: ffmpeg could not write the WebM: ${String(r.stderr).slice(-300)}`);
   const bytes = fs.statSync(out).size;
-  check('light to load (under 900 KB)', bytes < 900 * 1024, `${Math.round(bytes / 1024)} KB`);
   const bad = checks.filter((c) => !c.ok);
   fs.writeFileSync(path.join(LOOK, `${s.id}.json`), `${JSON.stringify({ state: s.id, frames: kept.length, seconds: Number((kept.length / FPS).toFixed(2)), kb: Math.round(bytes / 1024), failed: bad.length, checks }, null, 1)}\n`);
   console.log(`[yoke] ${s.id}: ${kept.length} frames, ${Math.round(bytes / 1024)} KB, ${checks.length - bad.length}/${checks.length} checks passed`);

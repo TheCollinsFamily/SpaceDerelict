@@ -1,7 +1,7 @@
 {
  "family": "tangler",
- "frames": 38,
- "atlasKB": 474,
+ "frames": 40,
+ "atlasKB": 647,
  "failed": 0,
  "checks": [
   {
@@ -63,11 +63,6 @@
    "name": "it stands in its cell",
    "ok": true,
    "value": "0.8% of it lies in front of its cell"
-  },
-  {
-   "name": "atlas is under 900 KB",
-   "ok": true,
-   "value": "474 KB"
   }
  ]
 }

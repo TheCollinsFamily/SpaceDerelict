@@ -33,8 +33,6 @@ import { creepTiles, cutProps, dripTiles, edgeTiles, floorTiles, over8, packSpri
 const TERRAIN = path.join(SRC, 'terrain');
 /** The least mean brightness of a street or a square, of 255. */
 const PALE = 132;
-/** What a set may weigh, all of its sheets together (tests/iso.test.ts allows 900 KB). */
-const HEAVY = 880 * 1024;
 
 const FLAT =
   'Seen from exactly straight above, as a flat texture that fills the whole picture edge to edge with no border. ' +
@@ -253,22 +251,17 @@ export function bakeBiome(id) {
   const backsMeant = [...roofSheets, ...streetSheets].filter(needsBack).reduce((n, p) => n + p.items.filter((item) => !isRound(item)).length, 0);
   const sheets = { floors, walls, props: [...roofs, ...streets, ...backs] };
 
-  // Light to load: a set that comes out heavy is packed again a little harder, until it is not.
+  // Packed at one quality: no size limit trades picture quality for bytes (Collins, Sep 30 2026).
   const data = { tile: [TILE_W, TILE_H], level: LEVEL_H, wallSpan: WALL_SPAN, sheets: {} };
   let bytes = 0;
   let heaviest = 0;
-  let quality = 90;
-  for (; quality >= 70; quality -= 4) {
-    bytes = 0;
-    heaviest = 0;
-    for (const [name, sprites] of Object.entries(sheets)) {
-      if (!sprites.length) continue;
-      const packed = packSprites(sprites, path.join(out, `${name}.webp`), 2048, quality);
-      data.sheets[name] = { atlas: `board/${b.id}/${name}.webp`, sprites: packed.rects };
-      bytes += packed.bytes;
-      heaviest = Math.max(heaviest, packed.bytes);
-    }
-    if (bytes < HEAVY) break;
+  const quality = 90;
+  for (const [name, sprites] of Object.entries(sheets)) {
+    if (!sprites.length) continue;
+    const packed = packSprites(sprites, path.join(out, `${name}.webp`), 2048, quality);
+    data.sheets[name] = { atlas: `board/${b.id}/${name}.webp`, sprites: packed.rects };
+    bytes += packed.bytes;
+    heaviest = Math.max(heaviest, packed.bytes);
   }
   fs.writeFileSync(path.join(out, 'biome.json'), `${JSON.stringify(data)}\n`);
 
@@ -298,7 +291,7 @@ export function bakeBiome(id) {
     ['every lopsided prop has its back', backs.length >= backsMeant - streetSheets.flatMap((p) => p.items).filter((i) => i.shared && !isRound(i)).length, `${backs.length} of ${backsMeant} backs`],
     ['a name of a prop is used once among the later sheets', twice.length === 0, twice.length ? `used twice: ${twice.join(', ')}` : `${later.length} names`],
     ['every street is pale', streetLuma.length > 0 && streetLuma.every((l) => l >= PALE - 2), `brightness ${streetLuma.map((l) => l.toFixed(0)).join(', ')} of 255 (at least ${PALE})`],
-    ['light to load', bytes < 900 * 1024 && heaviest < 900 * 1024, `${Math.round(bytes / 1024)} KB in all, the heaviest sheet ${Math.round(heaviest / 1024)} KB, packed at quality ${quality}`],
+    ['packed', bytes > 0, `${Math.round(bytes / 1024)} KB in all, the heaviest sheet ${Math.round(heaviest / 1024)} KB, packed at quality ${quality}`],
   ];
   putEntry('biomes', b.id, {
     name: b.name, territories: b.territories, roofTint: b.roofTint, roofProps, streetProps,

@@ -118,11 +118,6 @@
    "name": "from behind: it has a view",
    "ok": true,
    "value": "drawn"
-  },
-  {
-   "name": "atlas is under 900 KB",
-   "ok": true,
-   "value": "536 KB"
   }
  ]
 }
