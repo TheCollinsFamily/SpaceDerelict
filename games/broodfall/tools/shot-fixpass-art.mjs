@@ -97,8 +97,13 @@ try {
   const canvas = page.locator('#stage canvas');
   const png = (name) => join(shots, `${name}-${TAG}.png`);
   const open = async (q) => {
-    await page.goto(`http://localhost:${PORT}/?autostart=1&speed=0&${q}`);
-    await page.waitForFunction(() => window.broodfall !== undefined && window.broodfall.sim, null, { timeout: 60000 });
+    // A machine busy with other sessions' bakes can take a first load past a minute: once more before failing.
+    for (let tries = 0; ; tries++) {
+      await page.goto(`http://localhost:${PORT}/?autostart=1&speed=0&${q}`);
+      const ok = await page.waitForFunction(() => window.broodfall !== undefined && window.broodfall.sim, null, { timeout: 90000 }).then(() => true, () => false);
+      if (ok) break;
+      if (tries) throw new Error(`${q}: the game did not start`);
+    }
     await page.waitForTimeout(1500);
     await page.evaluate(() => window.broodfall.step(200));
     await page.waitForTimeout(500);
