@@ -1,7 +1,7 @@
 {
  "kind": "royal",
  "frames": 326,
- "atlasKB": 2757,
+ "atlasKB": 2756,
  "pages": 5,
  "failed": 0,
  "checks": [
@@ -544,31 +544,6 @@
    "name": "views are one size",
    "ok": true,
    "value": "0.72 0.71 0.67 0.67 0.72"
-  },
-  {
-   "name": "atlas page 1 is under 900 KB",
-   "ok": true,
-   "value": "467 KB"
-  },
-  {
-   "name": "atlas page 2 is under 900 KB",
-   "ok": true,
-   "value": "462 KB"
-  },
-  {
-   "name": "atlas page 3 is under 900 KB",
-   "ok": true,
-   "value": "455 KB"
-  },
-  {
-   "name": "atlas page 4 is under 900 KB",
-   "ok": true,
-   "value": "613 KB"
-  },
-  {
-   "name": "atlas page 5 is under 900 KB",
-   "ok": true,
-   "value": "759 KB"
   }
  ]
 }

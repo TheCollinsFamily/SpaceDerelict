@@ -1269,6 +1269,11 @@ export class IsoRenderer extends Renderer {
    */
   private facingOfLimb(sim: Sim, t: Tower, was: Facing | undefined): Facing {
     if (t.facing && towerSpec(t.family).directional) return t.facing;
+    // A thrower (the player aims it by hand) turns to where its glob or clot is going while it is in the air.
+    if (t.family === 'lobber' || t.family === 'sling') {
+      const fl = (t.family === 'lobber' ? sim.bileFlights : sim.clotFlights).find((f) => Math.hypot(f.from.x - t.pos.x, f.from.y - t.pos.y) < 3);
+      if (fl) return facingOf(fl.to.x - t.pos.x, fl.to.y - t.pos.y);
+    }
     if (t.lastTargetId !== undefined) {
       // A body the Maw has just eaten is gone from the sim, but still on the board this frame: it turns to it.
       const e = sim.enemies.find((x) => x.id === t.lastTargetId) ?? this.units.get(t.lastTargetId)?.ent;

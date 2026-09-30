@@ -17,6 +17,7 @@ const ART = join(here, '..', 'public', 'art');
 const file = join(ART, 'manifest.json');
 const manifest = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : null;
 type Rect = { w: number; h: number };
+type P = { id: string; round?: boolean };
 
 describe.skipIf(!manifest?.board?.terrain?.sheets?.creep)('the seedling pod', () => {
   it('has four frames of one size (rest, swelling, full, easing)', () => {
@@ -28,8 +29,8 @@ describe.skipIf(!manifest?.board?.terrain?.sheets?.creep)('the seedling pod', ()
 });
 
 describe.skipIf(!manifest?.biomes)('props taken off the mirrored list', () => {
-  const taken = (BIOMES as Array<{ id: string; roofProps?: Array<{ id: string; round?: boolean }>; streetProps?: Array<{ id: string; round?: boolean }> }>)
-    .flatMap((b) => [...(b.roofProps ?? []), ...(b.streetProps ?? [])].filter((p) => p.round === false && !isRound(p)).map((p) => ({ set: b.id, id: p.id })));
+  const taken = (BIOMES as Array<{ id: string; roofProps?: P[]; roofProps2?: P[]; streetProps?: P[]; streetProps2?: P[] }>)
+    .flatMap((b) => [...(b.roofProps ?? []), ...(b.roofProps2 ?? []), ...(b.streetProps ?? []), ...(b.streetProps2 ?? [])].filter((p) => p.round === false && !isRound(p)).map((p) => ({ set: b.id, id: p.id })));
   it('are there (the pass named eight)', () => expect(taken.length).toBeGreaterThanOrEqual(8));
   it('each has its back baked (prop-<id>~b in its set)', () => {
     for (const { set, id } of taken) {
