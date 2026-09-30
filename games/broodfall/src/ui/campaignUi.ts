@@ -801,7 +801,9 @@ export class CampaignUi {
       this.room = d.room as Room;
       if (this.beckon?.room === this.room) this.beckon = null;
       // In her own room she is there already: the intercom gives way to it (the talk goes on in it).
-      if (this.room === 'ai') { this.icom = null; void this.account.refresh(); }
+      // Her account is read only once she has a player on rfab.ai (made lazily, the first time she speaks live);
+      // scripted, she asks rfab.ai nothing at all.
+      if (this.room === 'ai') { this.icom = null; if (this.yoke.mode !== 'scripted' && playerTokenStore.load()) void this.account.refresh(); }
       this.talk = this.ownTalk();
       this.render();
       return;
@@ -911,7 +913,7 @@ export class CampaignUi {
       this.waiting = false;
       if (this.talk === talk || !this.talk) this.render();
       // What is left of his free talk (or his balance), from rfab.ai's own meter.
-      if (this.yoke.mode !== 'scripted') void this.account.refresh();
+      if (this.yoke.mode !== 'scripted' && playerTokenStore.load()) void this.account.refresh();
     }
   }
 

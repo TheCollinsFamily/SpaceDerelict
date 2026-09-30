@@ -84,6 +84,17 @@ export class PlayerLink {
 
   constructor(private o: PlayerLinkOptions) { this.fetcher = o.fetcher ?? ((...a) => fetch(...a)); }
 
+  /**
+   * The route is not there (404), or rfab.ai refuses or fails (429, 5xx, no network): the link stops
+   * asking for the rest of the session and she is talked to the old way (legacy), with one note in the
+   * console and nothing on the page. A player's token that already exists is kept for the next session.
+   */
+  private backOff(status: number): void {
+    if (!(status === 404 || status === 429 || status === 0 || status >= 500) || this.legacy) return;
+    this.legacy = true;
+    console.info(`[yoke] rfab.ai answered ${status || 'nothing'} on the player route: not asked again this session; she is talked to the old way`);
+  }
+
   get base(): string { return this.o.base.replace(/\/$/, ''); }
   /** The campaign this link talks about (none: rfab.ai's 'default', e.g. the Settings screen). */
   get campaignId(): string | null { return this.o.campaignId ?? null; }
@@ -128,7 +139,7 @@ export class PlayerLink {
         }
         return null;
       } catch (err) {
-        if (err instanceof PlayerError && err.status === 404) this.legacy = true;
+        if (err instanceof PlayerError) this.backOff(err.status);
         return null;
       } finally {
         this.registering = null;
@@ -151,7 +162,7 @@ export class PlayerLink {
         this.last = await this.call<YokeAccountState>('/state');
         return this.last;
       }
-      if (err instanceof PlayerError && err.status === 404) this.legacy = true;
+      if (err instanceof PlayerError) this.backOff(err.status);
       throw err;
     }
   }
