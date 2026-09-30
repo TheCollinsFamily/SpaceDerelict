@@ -46,6 +46,11 @@ export default defineConfig({
   optimizeDeps: { entries: ['index.html'] },
   build: { outDir: DIST },
   // BROODFALL_NO_HMR=1: a beat on the dev server is not reloaded when another session saves a file mid-beat.
-  server: { port: PORT, strictPort: false, proxy: { '/rfab-api': rfab }, hmr: process.env.BROODFALL_NO_HMR ? false : undefined },  // players fall through to the next port; scripts use preview
+  server: {
+    port: PORT, strictPort: false, proxy: { '/rfab-api': rfab }, hmr: process.env.BROODFALL_NO_HMR ? false : undefined,
+    // Not watched: the raw art, the build folders, the notes' pictures and films (tens of thousands of files;
+    // crawling them kept the dev server from answering for a minute).
+    watch: { ignored: ['**/art-src/**', '**/dist/**', '**/dist-*/**', '**/notes/**', '**/promo/**', '**/references/**', '**/tools/screenshots/**'] },
+  },  // players fall through to the next port; scripts use preview
   preview: { port: PORT, strictPort: true, proxy: { '/rfab-api': rfab } },
 });

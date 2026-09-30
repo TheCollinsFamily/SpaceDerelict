@@ -232,6 +232,11 @@ function clipping(p: Clipping): MediaHandle {
     if (music) { audio.add(music); music.volume = Math.min(music.volume, 0.55); playSafe(music); later(6500, () => fadeOut(music, 1500)); }
     if (playing) playing.shot = p.photo;
     // It waits to be read; it never holds the game up for long.
+    // The whole page on the screen, whatever its height.
+    const sheet = el.querySelector<HTMLElement>('.np-sheet')!;
+    const fit = () => { const k = Math.min(1, (window.innerHeight * 0.9) / Math.max(1, sheet.scrollHeight), (window.innerWidth * 0.94) / Math.max(1, sheet.offsetWidth)); sheet.style.setProperty('--fit', k.toFixed(3)); };
+    fit();
+    el.querySelector('img')?.addEventListener('load', fit);
     later(30000, end);
   });
 }

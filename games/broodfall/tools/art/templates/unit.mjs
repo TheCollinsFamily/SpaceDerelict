@@ -474,6 +474,19 @@ export function bakeUnit(kind) {
           c.poleFrames = struck.filter(Boolean).length;
           console.log(`[unit] ${kind} hit ${c.v}: ${c.poleFrames} of ${struck.length} frames reached out (a pole): ${clean.length >= Math.max(8, struck.length * 0.6) ? 'left out' : 'cut close'}`);
         }
+        // Views where the blow itself is drawn at the start, inside the margin (a club's stub, a flash, a puff
+        // of smoke), marked by eye on the baked frames (fix pass): the opening frames that reach well outside
+        // what the rest of the flinch fills are left out.
+        if (HIT_BLEMISH[kind]?.includes(c.v)) {
+          const boxes = c.frames.map((f) => unionBox([f]) ?? { x0: 1e9, y0: 1e9, x1: -1e9, y1: -1e9 });
+          const med = (k) => [...boxes.map((q) => q[k])].sort((p, q) => p - q)[boxes.length >> 1];
+          const M = { x0: med('x0'), y0: med('y0'), x1: med('x1'), y1: med('y1') };
+          const out = (q) => Math.max(M.x0 - q.x0, M.y0 - q.y0, q.x1 - M.x1, q.y1 - M.y1) / side;
+          const early = Math.ceil(c.frames.length * 0.4);
+          const keep = c.frames.filter((_, i) => i >= early || out(boxes[i]) <= 0.08);
+          console.log(`[unit] ${kind} hit ${c.v}: ${c.frames.length - keep.length} opening frames with the blow drawn in them left out`);
+          if (keep.length >= 8) c.frames = keep;
+        }
         c.box = unionBox(c.frames);
       }
     }
@@ -606,3 +619,4 @@ export async function makeUnit(kind, { anims = ['walk'], bakeOnly = false, views
 }
 
 export { lock };
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
