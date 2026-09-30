@@ -212,6 +212,14 @@ export const GREETINGS: Greeting[] = [
   { id: 'back-4', moment: 'back', beats: [
     { say: 'Back to work? The bugs certainly didn\'t take the day off.', face: 'calm', then: 'shrug' },
   ] },
+  // Collins's line (Sep 30 2026), word for word, typos mended. It implies two things the lore now holds (content/lore/empire.md,
+  // 12b): the dead are uploaded and go on talking to their children, and the Ten Commandments matter to the society (the fifth:
+  // honour your father and mother, which in the Empire never lapses).
+  { id: 'back-5', moment: 'back', beats: [
+    { say: 'Your dad sent you another message again...', face: 'teasing', then: 'shrug' },
+    { say: 'He\'s been so nosy since he died about getting you a mate...', face: 'teasing', then: 'laughing', hold: 1400 },
+    { say: 'I want to blow him off, but I know, I know... the fifth.', face: 'pout', then: 'shrug' },
+  ] },
 ];
 
 // ---- news from Earth (Collins, Sep 30 2026): the Empire keeps Earth as a zoo it watches for
