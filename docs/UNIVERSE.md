@@ -79,6 +79,23 @@ doctrine 11 (the chittering hordes).
   passes ten billion people in seven generations. That is the engine behind the living-room
   doctrine.
 
+## Culture: disgust with the body (Collins, Sep 30 2026)
+
+- A persistent part of Technopuritan culture is **disgust with the human body**, and with things
+  like **sex, as offensively inefficient**. Reproduction happens in wombs; marriage is a working
+  partnership, and the Empire finds it strange that early humans used their breeding partners
+  "for sexual release and companionship".
+- They regularly **look back with horror on things normal in our time**: jobs, dating, and the
+  rest. The 21st century is taught the way we teach medieval medicine (Broodfall's
+  `empire.md`, section 15, has the syllabus).
+- Where it touches the corpus: the Empire's favourite prophet already called humans "poor
+  savages ... eating flesh and blood, dwelling in vile bodies which degrade us every day to a level
+  with the beasts" (Winwood Reade, quoted in TP 2.0); the corpus separates pleasure from
+  procreation (TP 32.0); comfort breeds stagnation, "the greatest of all sins" (TP 11.0);
+  busywork is a sin worse than indulgence (TP 35.0.3); enhancing the body is a mandate
+  (TP 12.0). The disgust itself, as a mass cultural reflex, is Collins's; the corpus does not
+  say the body is disgusting, and the Empire's doctrine does not require the reflex.
+
 ## Doctrine (the corpus, as the Empire practises it)
 
 The Empire does not have a church that rules theology; see 12. These are the tenets shared
