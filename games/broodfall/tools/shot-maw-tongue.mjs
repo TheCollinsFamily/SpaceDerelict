@@ -113,7 +113,8 @@ async function session(record) {
     const cell = cells.find((c) => s.groundFor(c, 'maw', 'S'));
     if (cell === undefined) return -1;
     s.hand[0] = { id: 870001, family: 'maw', free: true };
-    const r = s.issue({ kind: 'build', cardIndex: 0, cell, facing: 'S' });
+    // Unturned, as a player builds it: it faces what it fights.
+    const r = s.issue({ kind: 'build', cardIndex: 0, cell });
     return r.ok ? s.towers[s.towers.length - 1].id : -1;
   }, [st[2]]);
   check(mawId >= 0, 'a Maw is built');
