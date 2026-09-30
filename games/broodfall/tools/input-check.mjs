@@ -422,7 +422,11 @@ try {
 
   // 6. The meteor is an organ too: click it in the organ stage to level the core.
   await page.evaluate(() => { window.broodfall.sim.meat.war = 500; });
-  await page.locator('#open-under').click();
+  // On a slow machine the build timer may have run out during the steps above (it runs in real time):
+  // the wave is played out first; its end opens the organ stage by itself.
+  await page.evaluate(() => { const b = window.broodfall; for (let k = 0; k < 20000 && b.sim.phase === 'siege' && b.sim.outcome === 'playing'; k++) b.step(1); b.sim.meat.war = 500; });
+  await page.waitForTimeout(300);
+  if (!(await page.locator('#under:not(.hidden)').count())) await page.locator('#open-under').click();
   await page.waitForSelector('#under:not(.hidden)', { timeout: 3000 });
   const meteor = await page.evaluate(() => window.broodfall.sim.under.cells.findIndex((c) => c.kind === 'meteor'));
   await page.locator(`#under-grid [data-cell="${meteor}"]`).click();
