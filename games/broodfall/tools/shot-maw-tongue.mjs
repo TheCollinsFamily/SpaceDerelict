@@ -246,7 +246,7 @@ try {
     // The strip: the five moments side by side, the middle of each.
     const args = ['-hide_banner', '-loglevel', 'error', '-y'];
     for (const p of pngs) args.push('-i', p.png);
-    const f = pngs.map((p, i) => `[${i}:v]crop=iw*0.46:ih*0.52:iw*0.27:ih*0.22,scale=520:-2,drawtext=text='${p.label}':x=12:y=10:fontsize=26:fontcolor=white:box=1:boxcolor=black@0.6:fontfile='C\\:/Windows/Fonts/arialbd.ttf'[v${i}]`).join(';');
+    const f = pngs.map((p, i) => `[${i}:v]crop=iw*0.62:ih*0.66:iw*0.19:ih*0.15,scale=560:-2,drawtext=text='${p.label}':x=12:y=10:fontsize=26:fontcolor=white:box=1:boxcolor=black@0.6:fontfile='C\\:/Windows/Fonts/arialbd.ttf'[v${i}]`).join(';');
     args.push('-filter_complex', `${f};${pngs.map((_, i) => `[v${i}]`).join('')}hstack=inputs=${pngs.length}`, '-q:v', '3', join(screens, 'maw-tongue-strip.jpg'));
     const r = spawnSync('ffmpeg', args, { encoding: 'utf8' });
     check(r.status === 0, 'the frame strip is made', r.stderr?.slice(0, 200));

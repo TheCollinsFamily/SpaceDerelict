@@ -42,6 +42,11 @@ process only verified its own assumptions. The repo's CLAUDE.md carries the stan
   "Built on Sep 30" paragraph; every picture is indexed in `notes/screens/2026-09-30/README.md`.
   371 unit tests pass. What is still missing, and what is Collins's, is `notes/TO-CREATE.md`.
 - **No size limits on the art** (Collins): the art is about 60+ MB and that is fine.
+- **Idles (Sep 30 2026, notes/screens/2026-09-30/anim-README.md):** a limb idle keeps every frame of its loop at
+  12 fps; one with no clean loop is baked `"pingpong": true` (Collins's call) and a near-still one `"breathe": true`
+  (tools/art/templates/limb.mjs idleCut). The game plays them on their own clock (src/render/idleClock.ts: real time,
+  capped at 1.5x, frozen by a pause, a phase per limb, frame-to-frame cross-fade). Re-baking a limb keeps all of that.
+  Look at an idle as the game plays it: `node tools/art/idle-play.mjs <limb>`; measure all: `node tools/art/idle-loops.mjs`.
 
 (The Sep 29 state below is kept for its history.)
 

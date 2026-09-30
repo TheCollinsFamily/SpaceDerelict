@@ -155,7 +155,7 @@ export class MawTongues {
       if (l.t < OUT) u = smooth(l.t / OUT);
       else if (eats) u = l.t < OUT + STUCK ? 1 : 1 - smooth(clamp01((l.t - OUT - STUCK) / REEL));
       else u = l.t < OUT + SLAP ? 1 : 1 - smooth(clamp01((l.t - OUT - SLAP) / SNAP));
-      const width = Math.max(4, Math.min(16, mouth.size * 0.075));
+      const width = Math.max(4, Math.min(11, mouth.size * 0.05));
       const curve = this.curve(mouth, l.aim);
       // The body rides a little clear of the curve, wobbling as it swings up.
       const wobble = eats && l.t > OUT + STUCK ? Math.sin((l.t + l.phase) * 26) * width * 0.35 * u : 0;
@@ -187,7 +187,7 @@ export class MawTongues {
   /** The arc from the mouth to the target: it rises from the mouth and comes down on the target. */
   private curve(m: Pt, a: Pt): [Pt, Pt, Pt] {
     const d = Math.hypot(a.x - m.x, a.y - m.y);
-    const lift = 18 + d * 0.32;
+    const lift = 10 + d * 0.22;
     const c = { x: m.x + (a.x - m.x) * 0.45, y: Math.min(m.y, a.y) - lift };
     return [m, c, a];
   }

@@ -29,7 +29,7 @@ What was done, fault by fault:
    seam is at most 1.35 steps; an idle with no such window (it drifts one way all through: the maw's mouth
    widening for 4 s, the mosaic's glow crawling) is baked with `"pingpong": true` over the longest stretch
    the clip has, and the game plays it forward and back, eased at its ends (a cosine) so it breathes out
-   and in instead of bouncing. 34 of the 52 limb idles play ping-pong, 18 loop cleanly. A cross-fade of the
+   and in instead of bouncing. 33 of the 52 limb idles play ping-pong, 19 loop cleanly. A cross-fade of the
    seam at bake was tried first on the milder ones and dropped for Collins's call. Core stages 3 and 4
    were already ping-pong (baked there and back); the game now does it, so their frames are stored once.
 2. **Stop-motion: every frame of the loop is kept** (the clip's own frames at 12 fps: real in-betweens
