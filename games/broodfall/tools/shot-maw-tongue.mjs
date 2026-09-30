@@ -295,8 +295,8 @@ try {
       // Its fire held first (a cooldown wound up reads as a strike on its last target: let that one play out).
       await page.evaluate((id) => { const t = window.broodfall.sim.towers.find((x) => x.id === id); t.cooldown = 99; }, s.mawId);
       await s.ticks(40);
-      // The wave's banner (it starts in those ticks) fades on the page's own clock.
-      await page.waitForTimeout(4500);
+      // The wave's banner (the wave starts about now) is put away: the pictures are of the Maw.
+      await page.addStyleTag({ content: '#banner { display: none !important; }' });
       await page.evaluate(() => { const s = window.broodfall.sim; s.enemies.length = 0; });
       const [prey] = await s.put([{ kind: 'soldier', cell: behind, hp: 12 }]);
       await s.ticks(2);
