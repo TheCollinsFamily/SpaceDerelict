@@ -79,10 +79,10 @@ try {
     const banner = await page.evaluate(() => /did not load/i.test(document.body.innerText) ? 'a "did not load" banner' : '');
     return [...missing, notice, banner].filter(Boolean).join(' | ').slice(0, 200);
   };
-  const shot = async (name, el = canvas) => {
+  const shot = async (name, el = canvas, wait = 150) => {
     const png = join(shots, `${name}.png`);
-    await page.waitForTimeout(150);
     const bad = await clean();
+    await page.waitForTimeout(wait);
     check(!bad, `${name}: all its art loaded, no notice`, bad);
     await el.screenshot({ path: png });
     jpg(png, `${name}.jpg`);
@@ -357,10 +357,9 @@ try {
       s.plinths = 2;
       s.issue({ kind: 'place-plinth', cell: t.cell });
     }, id);
-    // The rise takes 1.8 s of the renderer's own clock: a picture a third of the way, and when it has risen.
+    // The rise takes 1.8 s of the renderer's own clock: a picture early in it, and when it has risen.
     await page.evaluate(() => window.broodfall.step(1));
-    await page.waitForTimeout(350);
-    await shot(`fixpass-board-plinth-${TAG}-2`);
+    await shot(`fixpass-board-plinth-${TAG}-2`, canvas, 0);
     await page.waitForTimeout(2200);
     await shot(`fixpass-board-plinth-${TAG}-3`);
   }
