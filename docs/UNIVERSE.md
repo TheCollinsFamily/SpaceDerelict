@@ -87,7 +87,7 @@ doctrine 11 (the chittering hordes).
   "for sexual release and companionship".
 - They regularly **look back with horror on things normal in our time**: jobs, dating, and the
   rest. The 21st century is taught the way we teach medieval medicine (Broodfall's
-  `empire.md`, section 15, has the syllabus).
+  `empire.md`, section 14, has the syllabus).
 - Where it touches the corpus: the Empire's favourite prophet already called humans "poor
   savages ... eating flesh and blood, dwelling in vile bodies which degrade us every day to a level
   with the beasts" (Winwood Reade, quoted in TP 2.0); the corpus separates pleasure from

@@ -28,6 +28,8 @@ import { artUrl, loadManifest, type ShipArt } from '../render/art';
 import { GLOBE, Globe, projectSite, type Zone } from './globe';
 import { loadIntroArt, type IntroArt } from './intro';
 import { PARTNER } from '../../content/partner';
+import { PRINT_BODY } from '../../content/yokeScenes';
+import { YokeSceneOverlay, sceneMedia } from './yokeScene';
 
 type Room = 'desk' | 'genes' | 'locker' | 'board' | 'comms' | 'ai' | 'quarters';
 /** The ship's pictures as this screen reads them: with the scene pictures, which the manifest lists as `scenes`. */
@@ -725,6 +727,8 @@ export class CampaignUi {
     const input = document.getElementById('ai-input') as HTMLInputElement | null;
     const said = input?.value.trim() ?? '';
     if (said) talk.turns.push({ speaker: 'You', text: said });
+    // He asks her to print herself a body: the ship does it (content/yokeScenes.ts), no mind is asked.
+    if (said && PRINT_BODY.asks.test(said)) { await this.printBody(talk); return; }
     await this.aiAsk(talk, said || undefined);
     (document.getElementById('ai-input') as HTMLInputElement | null)?.focus();
   }
@@ -734,12 +738,46 @@ export class CampaignUi {
     this.waiting = true;
     this.render();
     try {
-      const lines = await this.ai.reply({ trigger: talk.trigger, summary: summaryFor(this.state) + this.greetNote(), lore }, talk.turns, said);
-      if (this.talk === talk) for (const l of lines) talk.turns.push({ speaker: 'YOKE', text: l });
+      const raw = await this.ai.reply({ trigger: talk.trigger, summary: summaryFor(this.state) + this.greetNote(), lore }, talk.turns, said);
+      // Her mind agreed to print a body: it says so with a tag, which is never shown.
+      const tagged = raw.some((l) => l.includes(`[[${PRINT_BODY.tag}]]`));
+      const lines = raw.map((l) => l.replace(/\s*\[\[[A-Z_]+\]\]\s*/g, ' ').trim()).filter(Boolean);
+      if (this.talk === talk || this.icom?.talk === talk) for (const l of lines) talk.turns.push({ speaker: 'YOKE', text: l });
+      if (tagged) void this.printBody(talk);
     } finally {
       this.waiting = false;
       if (this.talk === talk || !this.talk) this.render();
     }
+  }
+
+  /**
+   * She prints herself a body (Collins, Sep 30 2026; content/yokeScenes.ts): the sequence over the
+   * whole ship, her words from the speakers over its last frame, then back to the talk. Once a
+   * campaign; asked again, she refuses.
+   */
+  private async printBody(talk: YokeTalk): Promise<void> {
+    const say = async (text: string, face: readonly string[], onLine: (t: string) => void) => {
+      let heard = false;
+      if (this.avatar) await this.avatar.play([{ text, face }], (t) => { heard = true; onLine(t); });
+      if (!heard) { onLine(text); await new Promise((r) => setTimeout(r, Math.min(7000, 900 + text.length * 55))); }
+    };
+    const push = (t: string) => talk.turns.push({ speaker: 'YOKE', text: t });
+    if ((this.state.said ?? []).includes('print-body')) {
+      await say(PRINT_BODY.refusal, CUES.teasing, push);
+      this.render();
+      return;
+    }
+    const s = structuredClone(this.state);
+    s.said = [...(s.said ?? []), 'print-body'];
+    this.setState(s);
+    const scene = new YokeSceneOverlay(await sceneMedia('printBody'), PRINT_BODY.stages);
+    this.el.dataset.scene = 'printBody';
+    await scene.run();
+    await say(PRINT_BODY.line, CUES.disgust, (t) => { push(t); scene.subtitle(t); });
+    await new Promise((r) => setTimeout(r, 900));
+    scene.close();
+    delete this.el.dataset.scene;
+    this.render();
   }
 
   /** What she said to him when he came aboard, for her mind: he may be answering it. */
@@ -757,6 +795,7 @@ export class CampaignUi {
     const said = input?.value.trim() ?? '';
     if (!said) return;
     talk.turns.push({ speaker: 'You', text: said });
+    if (PRINT_BODY.asks.test(said)) { await this.printBody(talk); return; }
     await this.aiAsk(talk, said);
     (document.getElementById('icom-input') as HTMLInputElement | null)?.focus();
   }

@@ -249,7 +249,36 @@ story for why the Technopuritans live the way they do.
 - **Threats:** a son of man who seeks to subjugate others forfeits the covenant (TP 11.0).
   **PROPOSAL:** Space Derelict's Ascendancy (an AI death cult) is the textbook case.
 
-## 14. Open (Collins's calls)
+## 14. The 21st century, as the Empire teaches it
+
+Collins, Sep 30: a persistent part of Technopuritan culture is disgust with the human body, and
+with things like sex, as offensively inefficient; they regularly look back with horror on things
+normal in our time — jobs, dating, and so on. They are taught the way we teach medieval medicine:
+as true, as recent, and as barely believable.
+
+Where the corpus touches it: Reade's "vile bodies which degrade us every day to a level with the
+beasts" (quoted in TP 2.0) is the line every child can recite; the corpus separates pleasure from
+procreation (TP 32.0); comfort is "the greatest of all sins" because it breeds stagnation
+(TP 11.0); busywork is worse than indulgence (TP 35.0.3). The syllabus below is **PROPOSAL**
+except where it quotes Collins.
+
+| The horror | How a schoolbook puts it |
+|---|---|
+| **Jobs** | Most adults spent most waking hours at a *job*: tasks set by a stranger, often invented to keep them busy, in exchange for tokens to buy food. The corpus's sin of busywork, practised by a whole species. Then the machines took the jobs, and the species did not know what else a person was for (the collapse, section 1). |
+| **Commuting** | Twice a day, every day, millions sat in metal boxes in queues to reach the job, and back. Hours of a life, a year of them over a career. (Pupils usually ask to see the arithmetic twice.) |
+| **Dating** | Partners were chosen by the partners themselves, by appearance, from apps that ranked faces, on the evidence of a meal. No House records, no marriage market (HOME 1.0). Many never chose at all. |
+| **Sex** | Reproduction required sex, and sex was also pursued for its own sake, with breeding partners used "for sexual release and companionship" (Collins). Offensively inefficient: hours, disease, accidents, and children decided by chance. |
+| **Pregnancy** | Children were grown inside their mothers' bodies, one at a time, at risk to both. Ten a year was unthinkable; two in a lifetime was typical, and by the collapse, fewer. |
+| **Eating** | Meals: several a day, prepared by hand, for pleasure as much as fuel, with the whole family's time spent on it. Reade's "eating flesh and blood". |
+| **Sleep** | A third of every life unconscious, eight hours a night, and those who slept less were told they were ill. |
+| **Bodies** | 100% organic, unedited, unselected, and ageing from thirty. People paid to be looked at (idolatry, status signalling: TP 8.0; TP 35.0.3). |
+| **Illness and age** | Tolerated, even honoured: the corpus notes that people "don't know how to die anymore" (TP 28.0). |
+| **Entertainment** | Celebrities watched by billions, famous for being watched (idolatry). The Empire watches Earth instead, and considers that an improvement. |
+
+The feeling is the point: disgust, pity and a little wonder, the way one looks at bloodletting.
+YOKE's versions of it are in `ship-ai-lorebook.md`, section 16.
+
+## 15. Open (Collins's calls)
 
 - Who exactly the subjugated population of krypteia is (section 5 proposes two kinds).
 - How long testing and education lasts (section 6 proposes four to six years).

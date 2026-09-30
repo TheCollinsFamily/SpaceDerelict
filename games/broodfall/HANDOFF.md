@@ -194,6 +194,15 @@ rfab.ai, and she is who answers in the AI Core by default.
   are written so either answer works). `content/lore/yoke-brain.md` is the short form her
   mind runs on: a brain text under 4,000 characters (the box on her rfab.ai page holds
   4,000; a test holds it) and her notes.
+- **The Empire, from inside** (Sep 30 2026): `content/lore/empire.md` — Collins's history
+  (the 21st-century collapse, charter cities, the rise, Earth as the zoo), the doctrine
+  ported from technopuritan.com with citation ids (`TP 11.0` etc.), the index, krypteia,
+  spouses and wombs (100 children a couple, about 50 enter the index), bodies (~40%
+  organic), and how the Empire looks back on the 21st century. Shared canon:
+  `docs/UNIVERSE.md` (repo root). YOKE's side of it, and her pools of Earth-news,
+  krypteia, "an AI?" and old-world-horror lines, are `ship-ai-lorebook.md` sections 15-16;
+  her `[[PRINT_BODY]]` tag (section 15) asks the game for the print-a-body scene. Her brain
+  text changed with it and is NOT yet published to rfab.ai (`make.mjs yoke --publish`).
 - **On rfab.ai** (Collins's own account; ids in `content/lore/yoke-avatar.json`): one
   agent (her mind, Claude Haiku 4.5, not running on its own), one body `vm_…` (her 15
   clips), one avatar binding them with the voice `aura-2-athena-en`. Private: visitors

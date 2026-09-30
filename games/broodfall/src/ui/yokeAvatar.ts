@@ -337,6 +337,9 @@ export class YokeAvatarUi implements ShipAiProvider {
   }
 
   private say(text: string, emotion: string | null, late = false): void {
+    // A tag her mind writes for the game ([[PRINT_BODY]]) is never shown or spoken.
+    text = text.replace(/\s*\[\[[A-Z_]+\]\]\s*/g, ' ').trim();
+    if (!text) return;
     this.beats.push({ kind: 'say', text, emotion, voice: this.voice(text), shown: late });
     if (late) this.line(text);
     void this.drain();

@@ -16,6 +16,7 @@
  *   node tools/art/make.mjs ship
  *   node tools/art/make.mjs board [pods|strains|gates|smoke|<set>] [--stills]   creep nodes, strains, gates, smoke (templates/board.mjs)
  *   node tools/art/make.mjs yoke idle happy --stills      the ship AI's body (tools/art/templates/yoke.mjs)
+ *   node tools/art/make.mjs yokescene                     her films for the game (tools/art/templates/yoke-scenes.mjs)
  *   node tools/art/make.mjs screens                       the title emblem + key art, the report pictures
  *
  * Raw pictures and clips: art-src/ (not committed). Baked: public/art/. To look at:
@@ -85,6 +86,11 @@ const TEMPLATES = {
     return Promise.allSettled([makeScreens({ bakeOnly: flags.has('--bake'), only: ids })]);
   },
   // The ship AI's body for RFab's Living Avatars: --stills to look before paying for clips, --publish to save her on RFab.
+  // Her films for the game: printBody (tools/art/templates/yoke-scenes.mjs).
+  yokescene: async () => {
+    const { makeYokeScenes } = await import('./templates/yoke-scenes.mjs');
+    return Promise.allSettled([makeYokeScenes({ bakeOnly: flags.has('--bake') })]);
+  },
   yoke: async () => {
     const { makeYoke } = await import('./templates/yoke.mjs');
     const opt = (name) => [...flags].find((f) => f.startsWith(`--${name}=`))?.slice(name.length + 3);

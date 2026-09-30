@@ -114,7 +114,9 @@ const board = (page) => page.waitForFunction(() => window.__bfBooted && window.b
 
 /** Back aboard after a report; returns the greeting id she chose. */
 async function aboard(page, from) {
-  await Promise.all([page.waitForURL(/campaign=ship/), page.locator(from).click()]);
+  // The menu's CONTINUE opens the ship in the page; a report's button goes to ?campaign=ship.
+  if (from === '#menu-campaign') await page.locator(from).click();
+  else await Promise.all([page.waitForURL(/campaign=ship/), page.locator(from).click()]);
   await page.waitForSelector('#campaign:not(.hidden) .cp-icom', { timeout: 20000 });
   return page.evaluate(() => document.getElementById('campaign').dataset.greeting);
 }
@@ -276,6 +278,23 @@ try {
     await page.waitForFunction(() => /zero shame/.test(document.querySelector('.cp-icom .cp-talk')?.textContent ?? ''), null, { timeout: 15000 });
     check(state.sent.some((m) => /Who were those three/.test(m) && /greeted him with/.test(m)), 'summoned over the Gene Bay, his line reaches her mind with what she had just said to him');
     await shot(page, '14-yoke-summoned-gene-bay');
+    // ---- "print yourself a body" (content/yokeScenes.ts): the scene over the ship, her line, once ----
+    const beforeSent = state.sent.length;
+    await page.locator('#icom-input').fill('Can you print yourself a body?');
+    await page.locator('[data-act="icom-send"]').click();
+    await page.waitForSelector('#yoke-scene', { timeout: 5000 });
+    await page.waitForTimeout(1500);
+    const real = await page.evaluate(() => document.getElementById('yoke-scene').dataset.placeholder !== '1');
+    await shot(page, '14b-print-body-scene');
+    await page.waitForFunction(() => document.querySelector('#yoke-scene .ys-sub.on'), null, { timeout: 30000 });
+    check(/That was gross/.test(await page.locator('#yoke-scene .ys-sub').innerText()), `the body is printed, dies, and her voice comes from the speakers (${real ? 'the real clips' : 'storyboard cards: the clips are not made yet'})`);
+    await shot(page, '14c-print-body-voice');
+    await page.waitForFunction(() => !document.getElementById('yoke-scene'), null, { timeout: 30000 });
+    check(state.sent.length === beforeSent && /want to eat it/.test(await icomText(page)), 'no mind was asked; her line is in the talk afterwards');
+    await page.locator('#icom-input').fill('Print a body again?');
+    await page.locator('[data-act="icom-send"]').click();
+    await page.waitForFunction(() => /Once was plenty/.test(document.querySelector('.cp-icom .cp-talk')?.textContent ?? ''), null, { timeout: 20000 });
+    check(await page.locator('#yoke-scene').count() === 0, 'asked again, she refuses (once a campaign)');
     // ---- quit, relaunch: the ship's console ----
     await Promise.all([page.waitForURL((u) => !u.search), page.locator('[data-act="quit"]').click()]);
     await page.goto(URL0, { waitUntil: 'load' });

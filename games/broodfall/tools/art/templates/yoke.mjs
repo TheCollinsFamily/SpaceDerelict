@@ -489,6 +489,8 @@ function writeManifest(baked = []) {
     seconds: Object.fromEntries(Object.keys(states).map((id) => [id, seconds[id] ?? 4])),
     // Where the same clips are on RFab, once she is published there.
     ...(old.rfab ? { rfab: old.rfab } : {}),
+    // Her films (tools/art/templates/yoke-scenes.mjs writes them): kept as they are.
+    ...(old.scenes ? { scenes: old.scenes } : {}),
   };
   fs.mkdirSync(OUT, { recursive: true });
   fs.writeFileSync(MANIFEST, `${JSON.stringify(m, null, 1)}\n`);
