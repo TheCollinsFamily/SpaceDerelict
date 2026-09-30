@@ -68,6 +68,8 @@ const CORE_FILL = 0.92;
 const SCALE_Q = new URLSearchParams(globalThis.location?.search ?? '');
 const LIMB_SCALE = Number(SCALE_Q.get('limbScale')) || 0.84;
 const CORE_SCALE = Number(SCALE_Q.get('coreScale')) || 1.22;
+/** ?muzzles=off: shots leave from the old fixed height over the limb's ground (for before-and-after pictures: tools/shot-muzzles.mjs). */
+const MUZZLES = SCALE_Q.get('muzzles') !== 'off';
 /** How high fliers fly, in levels. */
 const FLY_UP = 2.4;
 /** How strongly a unit shows through what stands in front of it. */
@@ -487,8 +489,7 @@ export class IsoRenderer extends Renderer {
     return {
       at: (wx, wy, up) => { const p = project(g, wx, wy); return { x: p.x, y: p.y - up }; },
       muzzle: (wx, wy) => this.muzzle(sim, wx, wy),
-      mouth: (from, o) => this.mouthOf(sim, from, o),
-      gun: (from) => this.gunOf(sim, from),
+      ...(MUZZLES ? { mouth: (from: Pt, o?: { family?: string; dir?: Pt; k?: number }) => this.mouthOf(sim, from, o), gun: (from: Pt) => this.gunOf(sim, from) } : {}),
       floor: (wx, wy) => this.heightAt(sim, wx, wy) * g.level,
       scale: (g.a * Math.SQRT2) / g.cell,
     };

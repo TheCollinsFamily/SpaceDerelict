@@ -164,15 +164,12 @@ const colour = (f) => {
  *     tools/art/idle-loops.mjs), and the window is the LONGEST whose seam is no bigger than a
  *     step and a bit (the calmest loop that does not pop); failing that, the cleanest;
  *   - every frame of the window is kept (the clip's own frames at 12 fps: real in-betweens);
- *   - a window whose seam is still a jump is closed by a cross-fade: its last frames dissolve into
- *     the frames that came just before its first ("fade"), or, for a family listed in PONG, it is
- *     played forward and back by the game (the clip's `pingpong`).
+ *   - an idle with no clean loop in it is played forward and back by the game (the clip's
+ *     `pingpong`, eased at its ends: src/render/idleClock.ts), over as long a stretch as it has.
+ *     Collins (Sep 30 2026), on the jumping idles: "you can fix that with a ping pong loop, front to
+ *     back, back to front, front to back". (A cross-fade of the seam was tried first, and dropped.)
  */
 const SEAM_OK = 1.35;
-/** A seam this many steps big is closed (below it the loop is left as the clip made it). */
-const SEAM_FIX = 1.6;
-/** Families whose jumping idle reads better played forward and back than dissolved (looked at, Sep 30 2026). */
-const PONG = new Set([]);
 
 /** Frames for comparing: cropped to what holds the subject, at most 160 px, premultiplied, as floats. */
 export function fineFrames(frames) {
@@ -217,40 +214,32 @@ export function fineDiff(a, b) {
 /**
  * Where to cut the idle, and how its seam is closed: { start, end, step, seam, treat } with the
  * loop frames [start, end) at 12 fps, `seam` the change from its last frame back to its first,
- * `treat` 'as is' | 'fade' | 'pong'. `family`: for PONG.
+ * `treat` 'as is' (a clean loop) | 'pong' (none: played forward and back).
  */
-export function idleCut(frames, fine = fineFrames(frames), { min = 16, max = 46, family = '', fadeFrames = 8 } = {}) {
+export function idleCut(frames, fine = fineFrames(frames), { min = 16, max = 46 } = {}) {
   const n = frames.length;
   const steps = []; for (let i = 0; i < n - 1; i++) steps.push(fineDiff(fine[i], fine[i + 1]));
   const sum = [0]; for (const s of steps) sum.push(sum[sum.length - 1] + s);
-  let best = null, clean = null;
+  let clean = null;
   for (let i = 0; i < n; i++) for (let j = i + min; j <= n && j - i <= max; j++) {
     const step = (sum[j - 1] - sum[i]) / (j - 1 - i);
     const seam = fineDiff(fine[j - 1], fine[i]);
     const c = { start: i, end: j, step, seam, r: seam / Math.max(0.01, step) };
     if (c.r <= SEAM_OK && (!clean || j - i > clean.end - clean.start || (j - i === clean.end - clean.start && c.r < clean.r))) clean = c;
-    // Failing a clean one: the lowest seam for its step, a longer loop among near-equals, and room before it for a cross-fade.
-    const score = c.r - 0.004 * (j - i) + (i >= fadeFrames ? 0 : 0.25);
-    if (!best || score < best.score) best = { ...c, score };
   }
-  let cut = clean ?? best;
+  let cut = clean;
   let treat = 'as is';
-  if (cut.r > SEAM_FIX) {
-    // A small jump with frames before it: dissolved. A clip that drifts one way all through (the maw's
-    // mouth widening for 4 s, a glow crawling) has no loop in it at all, and dissolving a big change
-    // ghosts: it is played forward and back instead, over as long a stretch as it has, eased at the
-    // ends by the game (src/render/idleClock.ts), so it breathes out and in.
-    treat = !PONG.has(family) && cut.r <= 3 && cut.start >= 4 ? 'fade' : 'pong';
-    if (treat === 'pong') {
-      const L = Math.min(max, n);
-      let pb = null;
-      for (let i = 0; i + L <= n; i++) {
-        let peak = 0; for (let k = i; k < i + L - 1; k++) peak = Math.max(peak, steps[k]);
-        const step = (sum[i + L - 1] - sum[i]) / (L - 1);
-        if (!pb || peak / step < pb.peak) pb = { start: i, end: i + L, step, seam: 0, r: 0, peak: peak / step };
-      }
-      cut = pb;
+  if (!cut) {
+    // No clean loop: a clip that drifts one way all through (the maw's mouth widening for 4 s, a glow
+    // crawling). Played forward and back over the longest stretch, the one with the fewest sudden steps.
+    treat = 'pong';
+    const L = Math.min(max, n);
+    for (let i = 0; i + L <= n; i++) {
+      let peak = 0; for (let k = i; k < i + L - 1; k++) peak = Math.max(peak, steps[k]);
+      const step = (sum[i + L - 1] - sum[i]) / (L - 1);
+      if (!cut || peak / step < cut.peak) cut = { start: i, end: i + L, step, seam: fineDiff(fine[i + L - 1], fine[i]), r: 0, peak: peak / step };
     }
+    cut.r = cut.seam / Math.max(0.01, cut.step);
   }
   let moved = 0;
   for (let i = cut.start; i < cut.end - 1; i++) moved += fineMoved(fine[i], fine[i + 1]);
@@ -258,30 +247,7 @@ export function idleCut(frames, fine = fineFrames(frames), { min = 16, max = 46,
   // How much of it ever changes over the loop (from its first frame to the one most unlike it).
   let reach = 0;
   for (let i = cut.start + 1; i < cut.end; i++) reach = Math.max(reach, fineMoved(fine[cut.start], fine[i]));
-  return { ...cut, treat, moved, reach, breathe: moved < STILL, fade: treat === 'fade' ? Math.min(fadeFrames, cut.start, cut.end - cut.start - 4) : 0 };
-}
-
-/**
- * The cross-fade that closes a seam: the last `k` frames of the loop dissolve into the `k` frames
- * that came just before its first, so its last frame flows into its first as the clip itself did.
- * Blended with the alpha premultiplied (no dark fringe where one frame is solid and the other not).
- */
-function fadeSeam(frames, start, end, k) {
-  const out = frames.slice(start, end);
-  for (let m = 0; m < k; m++) {
-    const t = (m + 1) / (k + 1);
-    const w = t * t * (3 - 2 * t);
-    const a = frames[end - k + m], b = frames[start - k + m];
-    const d = Buffer.alloc(a.data.length);
-    for (let i = 0; i < d.length; i += 4) {
-      const aa = a.data[i + 3] / 255, ba = b.data[i + 3] / 255;
-      const oa = aa * (1 - w) + ba * w;
-      d[i + 3] = Math.round(oa * 255);
-      if (oa > 0) for (let c = 0; c < 3; c++) d[i + c] = Math.round((a.data[i + c] * aa * (1 - w) + b.data[i + c] * ba * w) / oa);
-    }
-    out[out.length - k + m] = { w: a.w, h: a.h, data: d };
-  }
-  return out;
+  return { ...cut, treat, moved, reach, breathe: moved < STILL };
 }
 
 /** How many pixels of a frame are solid. */
@@ -310,16 +276,16 @@ function bakeView(l, dir, view, check, F) {
     if (anim === 'idle') {
       first = keyed.frames[0];
       // The fine cut (idleCut above); `loop` keeps the old cut's thumbnail measures for the checks.
-      const cut = idleCut(frames, undefined, { family: l.family });
+      const cut = idleCut(frames);
       const thumbs = [frames[cut.start], frames[cut.end - 1]].map((f) => thumb(f));
       let motion = 0;
       for (let i = cut.start; i < cut.end - 1; i++) motion += diffThumb(thumb(frames[i]), thumb(frames[i + 1]));
-      frames = cut.treat === 'fade' ? fadeSeam(frames, cut.start, cut.end, cut.fade) : frames.slice(cut.start, cut.end);
+      frames = frames.slice(cut.start, cut.end);
       pong = cut.treat === 'pong';
       breathe = cut.breathe;
       const closed = cut.treat === 'as is' ? diffThumb(thumbs[1], thumbs[0]) : 0;
       loop = { start: cut.start, end: cut.end, seam: closed, motion: motion / Math.max(1, cut.end - cut.start - 1), fine: cut };
-      console.log(`[limb] ${l.family} ${view} idle: ${cut.end - cut.start} frames (${((cut.end - cut.start) / FPS).toFixed(2)} s), step ${cut.step.toFixed(1)}, seam ${cut.seam.toFixed(1)} (${cut.r.toFixed(2)} steps): ${cut.treat}${cut.breathe ? ', breathes' : ''}${cut.fade ? ` over ${cut.fade}` : ''}`);
+      console.log(`[limb] ${l.family} ${view} idle: ${cut.end - cut.start} frames (${((cut.end - cut.start) / FPS).toFixed(2)} s), step ${cut.step.toFixed(1)}, seam ${cut.seam.toFixed(1)} (${cut.r.toFixed(2)} steps): ${cut.treat === 'pong' ? 'no clean loop, ping-pong' : 'loops'}${cut.breathe ? ', breathes' : ''}`);
     } else if (anim === 'fire') {
       // A flash, a beam or a cloud cannot be cut off its background: the frames it swallowed
       // are left out. What a limb throws is drawn by the game; the clip is the body's own motion.

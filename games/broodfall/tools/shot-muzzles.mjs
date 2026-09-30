@@ -160,7 +160,7 @@ try {
   const ticks = async (n) => { for (let i = 0; i < n; i++) { await page.evaluate(() => window.broodfall.step(1)); await page.waitForTimeout(30); } };
   const fresh = async (seed = 11) => {
     if (serverDown) { serverDown = false; server = await startServer(); watch(); }
-    await page.goto(`http://localhost:${PORT}/?seed=${seed}&autostart=1&speed=0&biome=suburb`);
+    await page.goto(`http://localhost:${PORT}/?seed=${seed}&autostart=1&speed=0&biome=suburb${TAG === 'before' ? '&muzzles=off' : ''}`);
     await page.waitForFunction(() => window.broodfall !== undefined && window.broodfall.sim, null, { timeout: 40000 });
     await page.evaluate(() => { window.broodfall.step(200); const s = window.broodfall.sim; s.meat.war = 9000; s.meat.science = 9000; s.meat.royal = 50; s.enemies.length = 0; s.projectiles.length = 0; s.shells.length = 0; s.arcs.length = 0; });
     await page.waitForTimeout(300);
@@ -213,7 +213,11 @@ try {
     const W = s.cfg.gridW;
     const d = (c) => { const p = s.cellCenter(c); return Math.hypot(p.x - t.pos.x, p.y - t.pos.y); };
     const own = s.cellsOf(t);
-    return st.filter((c) => d(c) > s.cfg.cellPx * 1.2 && !own.includes(c)).sort((a, b) => d(a) - d(b))[0] ?? st[0];
+    // Two to four cells down the street, inside its reach: the whole flight of the shot is seen.
+    const reach = (s.statsOf ? s.statsOf(t).range : 120) * 0.85;
+    const want = Math.min(reach, s.cfg.cellPx * 3);
+    const ok = st.filter((c) => d(c) >= Math.min(reach, s.cfg.cellPx * 2) && d(c) <= reach && !own.includes(c));
+    return (ok.length ? ok : st).sort((a, b) => Math.abs(d(a) - want) - Math.abs(d(b) - want))[0];
   }, [id, st]);
   const closeOn = async (p, zoom = 11, up = 0) => {
     await page.keyboard.press('Home');
@@ -284,7 +288,7 @@ try {
       const tp = await posOf(id);
       const target = await put([{ kind: sc.unit ?? (sc.air ? 'flier' : 'soldier'), cell: street }]);
       const ep = await posOf(target[0]);
-      await closeOn(between(tp, ep, 0.25), sc.id === 'mister' || sc.id === 'frond' ? 8 : 9, 50);
+      await closeOn(between(tp, ep, 0.45), sc.id === 'mister' || sc.id === 'frond' ? 7 : 8, 50);
       const ok = await fireAndCatch(sc.wait, 120, () => page.evaluate(([id, cell, order]) => {
         const s = window.broodfall.sim;
         const t = s.towers.find((x) => x.id === id);
@@ -312,7 +316,7 @@ try {
       const tp = await posOf(id);
       const target = await put([{ kind: 'soldier', cell: street }]);
       const ep = await posOf(target[0]);
-      await closeOn(between(tp, ep, 0.25), 10, 90);
+      await closeOn(between(tp, ep, 0.45), 8, 90);
       const ok = await fireAndCatch('shots');
       check(ok, 'plinth: the raised spitter fires');
       await shot(`fire-plinth-${TAG}`);
@@ -336,7 +340,7 @@ try {
       check(back, `behind-${fam}: seen from behind`);
       const tp = await posOf(id);
       const ep = await posOf(target[0]);
-      await closeOn(between(tp, ep, 0.25), 11, 60);
+      await closeOn(between(tp, ep, 0.45), 8, 60);
       const ok = await fireAndCatch(sc.wait, 120, () => page.evaluate(([id, cell, order]) => {
         const s = window.broodfall.sim;
         const t = s.towers.find((x) => x.id === id);

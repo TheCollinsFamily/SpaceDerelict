@@ -2,7 +2,7 @@ A: the film, mission 1, the end, the ship, the boss
   PASS  the page may not play sound yet: the film waits behind ▸ BEGIN (context suspended)
   PASS  the mix is recorded
   PASS  the click unlocked the sound
-  PASS  the film's score is heard (meter peak -12.8 dBFS)
+  PASS  the film's score is heard (meter peak -12.6 dBFS)
   PASS  the film's score played (film:film)
   PASS  the narrator read the titles: voice:nar-film-1, voice:nar-film-2, voice:nar-film-3, voice:nar-film-4, voice:nar-film-5, voice:nar-film-6
   PASS  mission 1: the build music (siege-build)
@@ -12,7 +12,7 @@ A: the film, mission 1, the end, the ship, the boss
   PASS  the town's siren at the first wave (sfx:wave-siren)
   PASS  the assault forming at the gate (sfx:assault-march)
   PASS  a limb growing (sfx:limb-grow)
-  PASS  limbs firing: sfx:fire-harpoon, sfx:fire-lob
+  PASS  limbs firing: sfx:fire-quills
   PASS  insects dying: sfx:die-bug
   PASS  the defeat sting (sting:sting-defeat)
   PASS  the data pad dropped on the desk (sfx:pad-lost)
@@ -25,8 +25,3 @@ A: the film, mission 1, the end, the ship, the boss
   PASS  the music comes back up when he is done
   PASS  no page errors ()
 B: the menu, the settings, the ship
-  PASS  nothing plays before a click
-  PASS  the mix is recorded
-  PASS  the menu's music: the ship's hum (theme-menu)
-  PASS  it is heard (meter peak -24.3 dBFS)
-  PASS  the music slider moves the music bus (0.20)

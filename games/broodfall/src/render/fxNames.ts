@@ -34,3 +34,13 @@ export const FX_SPRITES = [
  * its opacity, so that a red splat stays red on red creep.
  */
 export const ADDED = new Set(['blast', 'spore-burst', 'sedation-puff']);
+
+/**
+ * The limbs whose shot, beam, flame or shell is drawn leaving them (src/render/fx.ts): each has a
+ * muzzle marked by eye on its art (tools/art/limbs.mjs FIRING, `muzzle`; tools/art/muzzles.mjs).
+ * The lasher and the maw strike where they stand and throw nothing: they have none.
+ */
+export const FIRES_FROM = [
+  'spitter', 'sprout', 'quill', 'impaler', 'burster', 'tangler', 'blighter', 'mister', 'net',
+  'frond', 'prism', 'ocular', 'ember', 'skipper', 'bombard', 'lobber', 'sling',
+] as TowerFamily[];

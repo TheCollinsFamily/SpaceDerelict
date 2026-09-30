@@ -76,7 +76,7 @@ export function watchBoard(sim: Sim): void {
   hand = nowHand;
 
   const stage = coreStageOf(sim.stats.limbsGrown);
-  if (stage > coreStage && moved) { sfx('core-evolve'); sting('sting-core', { gain: 0.8 }); }
+  if (stage > coreStage) { sfx('core-evolve'); sting('sting-core', { gain: 0.8 }); }
   coreStage = stage;
 }
 
