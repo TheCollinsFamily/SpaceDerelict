@@ -1,7 +1,7 @@
 {
  "family": "maw",
- "frames": 70,
- "atlasKB": 908,
+ "frames": 130,
+ "atlasKB": 1717,
  "failed": 0,
  "checks": [
   {
@@ -12,22 +12,22 @@
   {
    "name": "idle: loop closes",
    "ok": true,
-   "value": 2.34
+   "value": 0
   },
   {
    "name": "idle: it moves",
    "ok": true,
-   "value": 0.24
+   "value": 0.28
   },
   {
    "name": "idle: it is calm",
    "ok": true,
-   "value": 0.24
+   "value": 0.28
   },
   {
    "name": "idle: inside the frame",
    "ok": true,
-   "value": "148,136-490,502"
+   "value": "148,104-492,506"
   },
   {
    "name": "idle: no background tint on the outline",
@@ -37,7 +37,7 @@
   {
    "name": "idle: ends the size it began",
    "ok": true,
-   "value": "4% change"
+   "value": "8% change"
   },
   {
    "name": "fire: no background tint on the outline",
@@ -77,22 +77,22 @@
   {
    "name": "from behind, idle: loop closes",
    "ok": true,
-   "value": 0.79
+   "value": 0
   },
   {
    "name": "from behind, idle: it moves",
    "ok": true,
-   "value": 0.23
+   "value": 0.22
   },
   {
    "name": "from behind, idle: it is calm",
    "ok": true,
-   "value": 0.23
+   "value": 0.22
   },
   {
    "name": "from behind, idle: inside the frame",
    "ok": true,
-   "value": "154,116-488,506"
+   "value": "154,116-488,508"
   },
   {
    "name": "from behind, idle: no background tint on the outline",
@@ -117,7 +117,7 @@
   {
    "name": "from behind, it stands in its cell",
    "ok": true,
-   "value": "0.4% of it lies in front of its cell"
+   "value": "0.3% of it lies in front of its cell"
   },
   {
    "name": "from behind: it has a view",

@@ -26,6 +26,7 @@ try {
       if (await btn.count()) await btn.click().catch(() => {}); else await page.mouse.click(800, 450);
       await page.waitForTimeout(1200);
     }
+    if (!(await page.locator('.cp-scene-card').count())) await page.screenshot({ path: OUT + '/reveal-' + route + '-stuck.png' });
     const titles = [];
     for (let i = 0; i < 2; i++) {
       const card = page.locator('.cp-scene-card');
@@ -44,3 +45,4 @@ try {
   spawn('taskkill', ['/PID', String(server.pid), '/T', '/F']);
 }
 console.log(errors.length ? 'PAGE ERRORS: ' + errors.join(' | ') : 'no page errors');
+process.exit(0);

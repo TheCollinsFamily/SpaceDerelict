@@ -170,6 +170,8 @@ export class IsoRenderer extends Renderer {
   private nodes = new Map<number, Sprite>();
   private shots = new Map<number, ShotView>();
   private core: Sprite | null = null;
+  /** The core idle's next frame, cross-faded over `core` (src/render/idleClock.ts). */
+  private coreOver: Sprite | null = null;
   /** A soft dark pool: what stands on the ground darkens it where it stands. */
   private shadeTex: Texture | null = null;
   private frameNo = 0;
@@ -512,6 +514,7 @@ export class IsoRenderer extends Renderer {
     this.nodesSeen = false;
     this.shots.clear();
     this.core = null;
+    this.coreOver = null;
     this.coreShade = null;
     this.coreShown = 0;
     this.coreInto = 0;
@@ -946,10 +949,12 @@ export class IsoRenderer extends Renderer {
       this.core = new Sprite(c.atlas.frame(0, c.art.frame, c.art.cols));
       // The point of the picture that stands on the middle of the square: the middle of its collar.
       this.core.anchor.set(c.art.anchor[0], c.art.anchor[1]);
-      this.sorted.addChild(this.coreShade, this.core);
+      this.coreOver = new Sprite(this.core.texture);
+      this.coreOver.alpha = 0;
+      this.sorted.addChild(this.coreShade, this.core, this.coreOver);
     }
     // The heart beats: the ground it grew swells a little with it.
-    const beat = 0.5 + 0.5 * Math.sin(this.simClock * Math.PI * 2 * (c.art.fps / Math.max(1, c.art.count)));
+    const beat = 0.5 + 0.5 * Math.sin(this.idleClock * Math.PI * 2 * (c.art.fps / Math.max(1, c.art.count)));
     // Drawn CORE_SCALE bigger, but its collar never wider than 80% of the square it fell on:
     // it stays in its square and off the walls of the blocks round it.
     // Its stage (src/render/coreStage.ts): what it is drawn from this frame, and how wide its collar is now.
@@ -978,8 +983,19 @@ export class IsoRenderer extends Renderer {
       this.core.anchor.set(evo.clip.anchor[0], evo.clip.anchor[1]);
       this.core.scale.set(width / (evo.clip.body * evo.clip.frame));
       if (evo.growing) this.coreSurge(sim, sq, evo.t);
+      if (this.coreOver) {
+        this.coreOver.visible = evo.next !== null;
+        if (evo.next !== null) {
+          this.coreOver.texture = evo.atlas.frame(evo.next, evo.clip.frame, evo.clip.cols);
+          this.coreOver.alpha = evo.blend;
+          this.coreOver.anchor.copyFrom(this.core.anchor);
+          this.coreOver.scale.copyFrom(this.core.scale);
+          this.coreOver.position.copyFrom(this.core.position);
+          this.coreOver.zIndex = this.core.zIndex;
+        }
+      }
     } else {
-      const at = Math.floor(this.simClock * c.art.fps) % c.art.count;
+      const at = Math.floor(this.idleClock * c.art.fps) % c.art.count;
       this.core.texture = c.atlas.frame(at, c.art.frame, c.art.cols);
     }
     if (this.coreShade) {
@@ -1017,13 +1033,15 @@ export class IsoRenderer extends Renderer {
       const t = Math.min(1, this.coreGrowT / len);
       if (t < 1) {
         const from = stages[this.coreInto - 2].collar;
-        return { atlas: evo.grow[this.coreInto - 1]!, clip, frame: Math.min(clip.count - 1, Math.floor(this.coreGrowT * clip.fps)), growing: true, t, collar: from + (s.collar - from) * t };
+        return { atlas: evo.grow[this.coreInto - 1]!, clip, frame: Math.min(clip.count - 1, Math.floor(this.coreGrowT * clip.fps)), next: null as number | null, blend: 0, growing: true, t, collar: from + (s.collar - from) * t };
       }
       this.coreShown = this.coreInto;
       this.coreInto = 0;
     }
     const s = stages[this.coreShown - 1];
-    return { atlas: evo.idle[this.coreShown - 1], clip: s.idle, frame: Math.floor(this.simClock * s.idle.fps) % s.idle.count, growing: false, t: 0, collar: s.collar };
+    // On the idles' clock, cross-faded frame to frame (src/render/idleClock.ts).
+    const at = idleFrames({ ...s.idle, start: 0 }, this.idleClock);
+    return { atlas: evo.idle[this.coreShown - 1], clip: s.idle, frame: at.a, next: at.f > 0.02 && at.b !== at.a ? at.b : null, blend: at.f, growing: false, t: 0, collar: s.collar };
   }
 
   /** While the core grows: rings of the body's colour run out over the ground from it. */

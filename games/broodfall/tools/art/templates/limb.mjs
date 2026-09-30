@@ -190,6 +190,19 @@ export function fineFrames(frames) {
     return out;
   });
 }
+/** The share of what is solid that changes noticeably (over 20 of 255) from one frame to the next. */
+export function fineMoved(a, b) {
+  let moved = 0, n = 0;
+  for (let i = 0; i < a.length; i += 4) {
+    if (a[i + 3] < 20 && b[i + 3] < 20) continue;
+    n++;
+    if ((Math.abs(a[i] - b[i]) + Math.abs(a[i + 1] - b[i + 1]) + Math.abs(a[i + 2] - b[i + 2]) + Math.abs(a[i + 3] - b[i + 3])) / 4 > 20) moved++;
+  }
+  return moved / Math.max(1, n);
+}
+/** An idle under this share moving per step reads as still at game zoom: the game breathes it (src/render/idleClock.ts). */
+const STILL = 0.03;
+
 /** Mean change over the pixels solid in either (as tools/art/idle-loops.mjs measures an atlas). */
 export function fineDiff(a, b) {
   let sum = 0, n = 0;
@@ -239,7 +252,13 @@ export function idleCut(frames, fine = fineFrames(frames), { min = 16, max = 46,
       cut = pb;
     }
   }
-  return { ...cut, treat, fade: treat === 'fade' ? Math.min(fadeFrames, cut.start, cut.end - cut.start - 4) : 0 };
+  let moved = 0;
+  for (let i = cut.start; i < cut.end - 1; i++) moved += fineMoved(fine[i], fine[i + 1]);
+  moved /= Math.max(1, cut.end - cut.start - 1);
+  // How much of it ever changes over the loop (from its first frame to the one most unlike it).
+  let reach = 0;
+  for (let i = cut.start + 1; i < cut.end; i++) reach = Math.max(reach, fineMoved(fine[cut.start], fine[i]));
+  return { ...cut, treat, moved, reach, breathe: reach < STILL, fade: treat === 'fade' ? Math.min(fadeFrames, cut.start, cut.end - cut.start - 4) : 0 };
 }
 
 /**
@@ -287,6 +306,7 @@ function bakeView(l, dir, view, check, F) {
     let loop = null;
     let dropped = 0;
     let pong = false;
+    let breathe = false;
     if (anim === 'idle') {
       first = keyed.frames[0];
       // The fine cut (idleCut above); `loop` keeps the old cut's thumbnail measures for the checks.
@@ -296,9 +316,10 @@ function bakeView(l, dir, view, check, F) {
       for (let i = cut.start; i < cut.end - 1; i++) motion += diffThumb(thumb(frames[i]), thumb(frames[i + 1]));
       frames = cut.treat === 'fade' ? fadeSeam(frames, cut.start, cut.end, cut.fade) : frames.slice(cut.start, cut.end);
       pong = cut.treat === 'pong';
+      breathe = cut.breathe;
       const closed = cut.treat === 'as is' ? diffThumb(thumbs[1], thumbs[0]) : 0;
       loop = { start: cut.start, end: cut.end, seam: closed, motion: motion / Math.max(1, cut.end - cut.start - 1), fine: cut };
-      console.log(`[limb] ${l.family} ${view} idle: ${cut.end - cut.start} frames (${((cut.end - cut.start) / FPS).toFixed(2)} s), step ${cut.step.toFixed(1)}, seam ${cut.seam.toFixed(1)} (${cut.r.toFixed(2)} steps): ${cut.treat}${cut.fade ? ` over ${cut.fade}` : ''}`);
+      console.log(`[limb] ${l.family} ${view} idle: ${cut.end - cut.start} frames (${((cut.end - cut.start) / FPS).toFixed(2)} s), step ${cut.step.toFixed(1)}, seam ${cut.seam.toFixed(1)} (${cut.r.toFixed(2)} steps): ${cut.treat}${cut.breathe ? ', breathes' : ''}${cut.fade ? ` over ${cut.fade}` : ''}`);
     } else if (anim === 'fire') {
       // A flash, a beam or a cloud cannot be cut off its background: the frames it swallowed
       // are left out. What a limb throws is drawn by the game; the clip is the body's own motion.
@@ -308,7 +329,7 @@ function bakeView(l, dir, view, check, F) {
       dropped = frames.length - kept.length;
       if (kept.length >= 12) frames = kept;
     }
-    clips.push({ anim, frames, dropped, pong, box: unionBox(frames), loop, key: keyed.key, w: keyed.w, h: keyed.h, seconds: keyed.frames.length / FPS * (frames.length / keyed.frames.length) });
+    clips.push({ anim, frames, dropped, pong, breathe, box: unionBox(frames), loop, key: keyed.key, w: keyed.w, h: keyed.h, seconds: keyed.frames.length / FPS * (frames.length / keyed.frames.length) });
   }
   const idle = clips.find((c) => c.anim === 'idle');
   if (!idle) return null;
@@ -338,7 +359,7 @@ function bakeView(l, dir, view, check, F) {
   const anims = {};
   for (const c of clips) {
     c.kept = (c.anim === 'die' ? pickToEnd(c.frames, KEEP.die) : pick(c.frames, KEEP[c.anim])).map((f) => lift(resize(crop(f, x0, y0, side, side), F, F), l.flat ? 0 : LIFT, anchor[1]));
-    anims[c.anim] = { start: frames.length, count: c.kept.length, fps: Number((c.kept.length / c.seconds).toFixed(2)), ...(c.pong ? { pingpong: true } : {}) };
+    anims[c.anim] = { start: frames.length, count: c.kept.length, fps: Number((c.kept.length / c.seconds).toFixed(2)), ...(c.pong ? { pingpong: true } : {}), ...(c.breathe ? { breathe: true } : {}) };
     frames.push(...c.kept);
     if (c.loop) {
       check(`${say}${c.anim}: loop closes`, c.loop.seam < 4, Number(c.loop.seam.toFixed(2)));

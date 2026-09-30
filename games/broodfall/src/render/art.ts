@@ -13,7 +13,11 @@ export { pickBiome, type BiomeArt } from './biome';
  * anchor, scale: a clip cut with a window bigger than the walk's (a fall below a flier, a braced
  * gun's splayed legs): where the walk's feet are in its frame, and how much bigger its frame is.
  */
-export interface Clip { start: number; count: number; fps: number; page?: number; anchor?: [number, number]; scale?: number }
+export interface Clip {
+  start: number; count: number; fps: number;
+  /** An idle played forward and back, and one that barely moves and breathes (src/render/idleClock.ts, tools/art/templates/limb.mjs). */
+  pingpong?: boolean; breathe?: boolean;
+  page?: number; anchor?: [number, number]; scale?: number }
 export type View = 'S' | 'SW' | 'W' | 'NW' | 'N';
 
 export interface UnitArt {

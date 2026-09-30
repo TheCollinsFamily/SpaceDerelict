@@ -32,5 +32,5 @@ for (const fam of fams) for (const view of ['front', 'back']) {
   let st0 = 0; for (let i = 0; i < idx.length - 1; i++) st0 += fineDiff(fine[idx[i]], fine[idx[i + 1]]); st0 /= idx.length - 1;
   const sm0 = fineDiff(fine[idx[idx.length - 1]], fine[idx[0]]);
   const cut = idleCut(keyed.frames, fine);
-  console.log(`${fam.padEnd(10)} ${view.padEnd(5)}   ${String(n0).padStart(3)} ${f(st0)} ${f(sm0)} ${f(sm0 / st0, 2)}  |   ${String(cut.end - cut.start).padStart(3)} ${f(cut.step)} ${f(cut.seam)} ${f(cut.seam / cut.step, 2)}  ${cut.treat}`);
+  console.log(`${fam.padEnd(10)} ${view.padEnd(5)}   ${String(n0).padStart(3)} ${f(st0)} ${f(sm0)} ${f(sm0 / st0, 2)}  |   ${String(cut.end - cut.start).padStart(3)} ${f(cut.step)} ${f(cut.seam)} ${f(cut.seam / cut.step, 2)}  ${cut.treat}  moved/step ${(cut.moved*100).toFixed(1)}%  reach ${(cut.reach*100).toFixed(1)}%`);
 }

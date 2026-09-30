@@ -73,7 +73,9 @@ const SCENES = [
   ...BEHIND.map((f) => `behind-${f}`),
   'cannon', 'dartgun', 'mortar',
 ];
-const scene = (id) => want.size === 0 || want.has(id);
+/** Scenes with no before: what is done to units, and donor parts on limbs, taken again clean. */
+const EXTRA = ['status', 'donor'];
+const scene = (id) => (want.size === 0 && !EXTRA.includes(id)) || want.has(id);
 
 function freePort() {
   try {
@@ -147,6 +149,10 @@ try {
   const shot = async (name) => {
     const png = join(shots, `${name}.png`);
     await page.waitForTimeout(200);
+    // Every picture drawn from its art: nothing missing, no notice over the board (placeholder dots are a failure).
+    const missing = await page.evaluate(() => window.broodfall.artMissing());
+    const notice = await page.evaluate(() => { const el = document.getElementById('art-notice'); return !!el && !el.classList.contains('hidden') ? el.textContent : ''; });
+    check(missing.length === 0 && !notice, `${name}: all its art loaded, no notice`, [...missing, notice].filter(Boolean).join(' | ').slice(0, 200));
     await canvas.screenshot({ path: png });
     jpg(png, `${name}.jpg`);
     console.log(`  shot  ${join(screens, `${name}.jpg`)}`);
@@ -232,8 +238,11 @@ try {
     }
   };
   /** Tick until the effect is out (a count in window.broodfall.fx() grows past what it was). */
-  const fireAndCatch = async (kind, n = 120, before = null) => {
-    const base = before ?? (await page.evaluate((k) => window.broodfall.fx()[k] ?? 0, kind));
+  const fireAndCatch = async (kind, n = 120, arm = null) => {
+    // What is already in the air is let go first, so that the picture is of a shot just out.
+    for (let i = 0; i < 40 && (await page.evaluate((k) => window.broodfall.fx()[k] ?? 0, kind)) > 0; i++) await ticks(1);
+    const base = await page.evaluate((k) => window.broodfall.fx()[k] ?? 0, kind);
+    if (arm) await arm();
     for (let i = 0; i < n; i++) {
       await ticks(1);
       const now = await page.evaluate((k) => window.broodfall.fx()[k] ?? 0, kind);
@@ -276,17 +285,13 @@ try {
       const target = await put([{ kind: sc.unit ?? (sc.air ? 'flier' : 'soldier'), cell: street }]);
       const ep = await posOf(target[0]);
       await closeOn(between(tp, ep, 0.25), sc.id === 'mister' || sc.id === 'frond' ? 8 : 9, 50);
-      const base = await page.evaluate((k) => window.broodfall.fx()[k] ?? 0, sc.wait);
-      if (sc.order) {
-        await page.evaluate(([id, cell, order]) => {
-          const s = window.broodfall.sim;
-          const t = s.towers.find((x) => x.id === id);
-          t.cooldown = 0;
-          if (order === 'marker') t.marker = cell;
-          else s.issue({ kind: order, towerId: id, cell });
-        }, [id, street, sc.order]);
-      }
-      const ok = await fireAndCatch(sc.wait, 120, base);
+      const ok = await fireAndCatch(sc.wait, 120, () => page.evaluate(([id, cell, order]) => {
+        const s = window.broodfall.sim;
+        const t = s.towers.find((x) => x.id === id);
+        t.cooldown = 0;
+        if (order === 'marker') t.marker = cell;
+        else if (order) s.issue({ kind: order, towerId: id, cell });
+      }, [id, street, sc.order ?? null]));
       check(ok, `${sc.id}: its shot is out`, JSON.stringify(await page.evaluate(() => window.broodfall.fx())));
       await shot(`fire-${sc.id}-${TAG}`);
     }
@@ -332,15 +337,13 @@ try {
       const tp = await posOf(id);
       const ep = await posOf(target[0]);
       await closeOn(between(tp, ep, 0.25), 11, 60);
-      const base = await page.evaluate((k) => window.broodfall.fx()[k] ?? 0, sc.wait);
-      await page.evaluate(([id, cell, order]) => {
+      const ok = await fireAndCatch(sc.wait, 120, () => page.evaluate(([id, cell, order]) => {
         const s = window.broodfall.sim;
         const t = s.towers.find((x) => x.id === id);
         t.cooldown = 0;
         if (order) s.issue({ kind: order, towerId: id, cell });
-      }, [id, street, sc.order ?? null]);
-      const ok = await fireAndCatch(sc.wait, 120, base);
-      check(ok, `behind-${fam}: its shot is out`, JSON.stringify(await page.evaluate(() => window.broodfall.fx())));
+      }, [id, street, sc.order ?? null]));
+      check(ok, `behind-${fam}: its shot is out`, JSON.stringify(await page.evaluate((id) => { const s = window.broodfall.sim; const t = s.towers.find((x) => x.id === id); return { fx: window.broodfall.fx(), cd: t?.cooldown, last: t?.lastTargetId, en: s.enemies.map((e) => [e.kind, Math.round(e.hp), Math.round(Math.hypot(e.pos.x - t.pos.x, e.pos.y - t.pos.y))]), phase: s.phase, outcome: s.outcome }; }, id)));
       await shot(`fire-behind-${fam}-${TAG}`);
     }
 
@@ -366,6 +369,47 @@ try {
       check(ok, `${kind}: its shell is out`);
       await shot(`fire-${kind}-${TAG}`);
     }
+    if (scene('status')) {
+      // Webbed, poisoned and burning units, and caltrops, side by side (as tools/shot-fx.mjs 'clouds', clean).
+      await fresh(15);
+      const st = await streets();
+      const col = await put(Array.from({ length: 6 }, (_, i) => ({ kind: i % 2 ? 'soldier' : 'militia', cell: st[i % 2], dx: (i % 3) * 7 - 7, dy: (i % 2) * 6 - 3 })));
+      await page.evaluate((ids) => {
+        const s = window.broodfall.sim;
+        s.enemies.filter((e) => ids.includes(e.id)).forEach((e, i) => {
+          if (i % 3 === 0) { e.slowUntil = s.time + 99; e.slowMult = 0.5; }
+          if (i % 3 === 1) { e.poisonUntil = s.time + 99; e.poisonDps = 0.01; }
+          if (i % 3 === 2) { e.burnUntil = s.time + 99; e.burnDps = 0.01; }
+        });
+        s.clouds.push({ id: 990001, pos: { ...s.enemies.find((e) => e.id === ids[1]).pos }, radius: 26, ttl: 99, dps: 0 });
+        s.caltrops.push({ id: 990002, pos: { ...s.enemies.find((e) => e.id === ids[3]).pos }, cell: 0, hp: 40, thorns: 0, ttl: 99 });
+      }, col);
+      const ps = await Promise.all(col.slice(0, 4).map(posOf));
+      await closeOn({ x: ps.reduce((a, p) => a + p.x, 0) / ps.length, y: ps.reduce((a, p) => a + p.y, 0) / ps.length }, 10, 20);
+      await ticks(4);
+      await shot('fire-status-web-poison-burn');
+      await closeOn(ps[0], 13, 15);
+      await shot('fire-status-close');
+    }
+
+    if (scene('donor')) {
+      await fresh(19);
+      const st = await streets();
+      const ids = [];
+      const pips = { spitter: [{ family: 'burster' }, { family: 'quill' }], maw: [{ family: 'lasher' }, { family: 'blighter' }, { family: 'ocular' }], impaler: [{ family: 'brood' }], twin: [{ family: 'ember' }, { family: 'spine' }] };
+      for (const f of Object.keys(pips)) {
+        const id = await build(f, st[ids.length]);
+        await page.evaluate(([id, p]) => { const t = window.broodfall.sim.towers.find((x) => x.id === id); if (t) t.pips = p; }, [id, pips[f]]);
+        ids.push(id);
+      }
+      const ps = (await Promise.all(ids.filter((x) => x >= 0).map(posOf))).filter(Boolean);
+      await closeOn({ x: ps.reduce((a, p) => a + p.x, 0) / ps.length, y: ps.reduce((a, p) => a + p.y, 0) / ps.length }, 8, 40);
+      await ticks(2);
+      const parts = await page.evaluate(() => window.broodfall.graftsDrawn());
+      check(parts >= 6, 'donor parts are drawn on the limbs that carry them', `${parts} parts`);
+      await shot('fire-donor-parts');
+    }
+
     const mine = errors.filter((e) => !/could not load: (units|board)\//.test(e));
     check(mine.length === 0, 'nothing is logged as an error', mine.slice(0, 3).join(' | '));
   }
