@@ -14,7 +14,8 @@ import { PRINT_BODY } from '../content/yokeScenes';
 import { BOSS } from '../content/boss';
 import { HOME } from '../content/campaign';
 import type { RunReport } from '../src/meta/goals';
-import type { RunStats } from '../src/sim/types';
+import type { RunStats, SimConfig } from '../src/sim/types';
+import { Sim } from '../src/sim/sim';
 
 const stats = (): RunStats => ({
   kills: {}, killsByFamily: {}, killsByCause: {}, healed: 0, limbsGrown: 0, evolutions: 0, limbsLost: 0,
