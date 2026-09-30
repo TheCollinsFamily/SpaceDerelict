@@ -28,6 +28,7 @@ import { FxLayer, type FxView } from './fx';
 import { LimbFates } from './limbFx';
 import { CreepLife, GateArt, PlinthRise, PodArt, Skyline } from './boardArt';
 import { coreStageOf } from './coreStage';
+import { breath, idleFrames, idleStep, phaseOf } from './idleClock';
 import { CALM } from '../meta/settings';
 
 /** The old marks were drawn for a 26 px cell; on this board they are drawn this much bigger. */
@@ -114,7 +115,9 @@ interface AllyView {
 const LIE_STILL = 1.4;
 const FADE = 0.6;
 interface LimbView {
-  sprite: Sprite; shade: Sprite; art: LimbArt; family: string;
+  sprite: Sprite; shade: Sprite;
+  /** The idle's next frame, laid over `sprite` by how far between the two the idle clock is (src/render/idleClock.ts). */
+  over: Sprite; art: LimbArt; family: string;
   cooldown: number; fireT: number; fireDur: number; seen: number;
   /** The way it faces in the WORLD: when the camera turns, another side of it is seen. */
   facing: Facing;
@@ -172,6 +175,8 @@ export class IsoRenderer extends Renderer {
   private frameNo = 0;
   private lastSimTime = 0;
   private simClock = 0;
+  /** The idles' clock (src/render/idleClock.ts): real time, frozen by a pause, at most 1.5x at speed. */
+  private idleClock = 0;
 
   /** The player's own zoom and pan, on top of the framing of the claimed districts. */
   private zoom = 1;
@@ -446,6 +451,7 @@ export class IsoRenderer extends Renderer {
     const dt = Math.max(0, Math.min(1, sim.time - this.lastSimTime));
     this.lastSimTime = sim.time;
     this.simClock += dt;
+    this.idleClock += idleStep(dt, dtReal);
     this.fx.begin(dt);
 
     this.updateCamera(sim, dtReal);
@@ -1174,7 +1180,7 @@ export class IsoRenderer extends Renderer {
       const p0 = project(g, t.pos.x, t.pos.y, h);
       const found = this.art.limbs.get(t.family);
       let v = this.limbs.get(t.id);
-      if (v && v.family !== t.family) { v.sprite.destroy(); v.shade.destroy(); this.fates.drop(t.id); this.limbs.delete(t.id); v = undefined; }
+      if (v && v.family !== t.family) { v.sprite.destroy(); v.over.destroy(); v.shade.destroy(); this.fates.drop(t.id); this.limbs.delete(t.id); v = undefined; }
       if (!found) {
         // No picture of this limb: its old shape, at the size of the rest.
         this.drawTowerBody(this.marksG, t, p0.x / K, (p0.y - 20) / K, sim);
@@ -1187,8 +1193,10 @@ export class IsoRenderer extends Renderer {
         const shade = new Sprite(this.shade());
         shade.anchor.set(0.5, 0.5);
         shade.visible = !art.flat;
-        (art.flat ? this.flat : this.sorted).addChild(shade, sprite);
-        v = { sprite, shade, art, family: t.family, cooldown: t.cooldown, fireT: -1, fireDur: 0, seen: 0, facing: this.facingOfLimb(sim, t, undefined), ent: t, back: false, atlas };
+        const over = new Sprite(sprite.texture);
+        over.alpha = 0;
+        (art.flat ? this.flat : this.sorted).addChild(shade, sprite, over);
+        v = { sprite, over, shade, art, family: t.family, cooldown: t.cooldown, fireT: -1, fireDur: 0, seen: 0, facing: this.facingOfLimb(sim, t, undefined), ent: t, back: false, atlas };
         this.limbs.set(t.id, v);
       }
       v.seen = this.frameNo;
@@ -1250,20 +1258,31 @@ export class IsoRenderer extends Renderer {
       v.cooldown = t.cooldown;
       const fire = side.anims.fire ?? art.anims.fire;
       let tex: Texture;
+      let next: Texture | null = null;
+      let blend = 0;
+      const idle = side.anims.idle;
       if (v.fireT >= 0 && fire && !held) {
         v.fireT += dt;
         const f = Math.min(fire.count - 1, Math.floor((v.fireT / v.fireDur) * fire.count));
         tex = atlas.frame(fire.start + f, art.frame, art.cols);
         if (v.fireT >= v.fireDur) v.fireT = -1;
       } else {
-        const at = held ? 0 : (this.simClock + t.id * 0.37) * side.anims.idle.fps * Math.max(0.6, Math.min(2.5, stats.rate > 0 ? stats.rate / Math.max(0.01, towerSpec(t.family).rate) : 1));
-        tex = this.frameOf(atlas, art, side.anims.idle, at);
+        // On the idles' clock (real time, capped at 1.5x), from its own phase, cross-faded frame to
+        // frame. A buff no longer speeds it (it multiplied with the game's speed); a held limb stands still.
+        const at = idleFrames(idle, this.idleClock, phaseOf(t.id));
+        tex = atlas.frame(held ? idle.start : at.a, art.frame, art.cols);
+        if (!held && at.f > 0.02 && at.b !== at.a) { next = atlas.frame(at.b, art.frame, art.cols); blend = at.f; }
       }
       v.sprite.texture = tex;
 
       // The point of the picture that stands on the middle of its ground is the middle of what it stands on.
       v.sprite.anchor.set(side.anchor[0], side.anchor[1]);
       v.sprite.scale.set(mirror ? -scale : scale, scale);
+      // An idle that barely moves breathes a little about its foot (src/render/idleClock.ts).
+      if (idle.breathe && v.fireT < 0 && !held) {
+        const [bx, by] = breath(this.idleClock, phaseOf(t.id));
+        v.sprite.scale.set(v.sprite.scale.x * bx, v.sprite.scale.y * by);
+      }
       // A limb on a roof rising on its plinth rises with it.
       v.sprite.position.set(p.x, p.y + this.rise.drop(t.cell) * g.level);
       // It is as far back as the nearest to the camera of the cells it stands on.
@@ -1281,6 +1300,17 @@ export class IsoRenderer extends Renderer {
       // A seedling in the air is not on its roof yet.
       const flying = sim.seedFlights.some((f) => f.towerId === t.id);
       v.sprite.visible = !flying;
+      // The idle's next frame over this one (a cross-fade), exactly where and as it is.
+      v.over.visible = !flying && next !== null;
+      if (next) {
+        v.over.texture = next;
+        v.over.alpha = blend;
+        v.over.anchor.copyFrom(v.sprite.anchor);
+        v.over.scale.copyFrom(v.sprite.scale);
+        v.over.position.copyFrom(v.sprite.position);
+        v.over.zIndex = v.sprite.zIndex;
+        v.over.tint = v.sprite.tint;
+      }
       v.shade.visible = !flying && !art.flat;
       // The parts of the limbs it was built from, grafted on its body.
       if (!art.flat) this.fates.graft(this.sorted, t, art, side, p.x, p.y, scale, mirror, width, v.sprite.zIndex, v.sprite.visible, v.sprite.tint as number);
@@ -1290,6 +1320,7 @@ export class IsoRenderer extends Renderer {
     for (const [id, v] of this.limbs) {
       if (v.seen === this.frameNo) continue;
       this.limbs.delete(id);
+      v.over.destroy();
       // Gone from the board: carried off by the researcher that tore it out, or withered where it stood.
       const thief = sim.enemies.find((e) => e.carrying && e.carrying.cell === v.ent.cell && e.carrying.family === v.ent.family);
       const to = thief ? project(g, thief.pos.x, thief.pos.y, this.heightAt(sim, thief.pos.x, thief.pos.y)) : null;

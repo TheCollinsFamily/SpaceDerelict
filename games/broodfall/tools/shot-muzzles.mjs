@@ -53,7 +53,7 @@ const LIMB_SCENES = [
   { id: 'impaler', wait: 'shots' },
   { id: 'frond', wait: 'streaks' },
   { id: 'prism', wait: 'streaks' },
-  { id: 'ocular', wait: 'streaks' },
+  { id: 'ocular', wait: 'streaks', unit: 'drummer' },
   { id: 'ember', wait: 'streaks' },
   { id: 'skipper', wait: 'shells' },
   { id: 'bombard', wait: 'shells', order: 'marker' },
@@ -129,7 +129,10 @@ if (SHEET) {
 const b = spawnSync(process.platform === 'win32' ? 'npx.cmd' : 'npx', ['vite', 'build', '--outDir', DIST, '--emptyOutDir'], { cwd: root, stdio: 'pipe', shell: process.platform === 'win32', encoding: 'utf8' });
 if (b.status !== 0) { console.error(b.stdout, b.stderr); process.exit(1); }
 console.log(`  built ${join(root, DIST)}`);
-const server = await startServer();
+let server = await startServer();
+let serverDown = false;
+const watch = () => server.on('exit', () => { serverDown = true; });
+watch();
 const browser = await chromium.launch({ args: ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist', '--enable-webgl'] });
 const videoDir = join(shots, 'fire-video');
 try {
@@ -150,6 +153,7 @@ try {
   };
   const ticks = async (n) => { for (let i = 0; i < n; i++) { await page.evaluate(() => window.broodfall.step(1)); await page.waitForTimeout(30); } };
   const fresh = async (seed = 11) => {
+    if (serverDown) { serverDown = false; server = await startServer(); watch(); }
     await page.goto(`http://localhost:${PORT}/?seed=${seed}&autostart=1&speed=0&biome=suburb`);
     await page.waitForFunction(() => window.broodfall !== undefined && window.broodfall.sim, null, { timeout: 40000 });
     await page.evaluate(() => { window.broodfall.step(200); const s = window.broodfall.sim; s.meat.war = 9000; s.meat.science = 9000; s.meat.royal = 50; s.enemies.length = 0; s.projectiles.length = 0; s.shells.length = 0; s.arcs.length = 0; });
@@ -269,7 +273,7 @@ try {
       if (id < 0) { check(false, `${sc.id}: built`); continue; }
       const street = await streetNear(id, st);
       const tp = await posOf(id);
-      const target = await put([{ kind: sc.air ? 'flier' : 'soldier', cell: street }]);
+      const target = await put([{ kind: sc.unit ?? (sc.air ? 'flier' : 'soldier'), cell: street }]);
       const ep = await posOf(target[0]);
       await closeOn(between(tp, ep, 0.25), sc.id === 'mister' || sc.id === 'frond' ? 8 : 9, 50);
       const base = await page.evaluate((k) => window.broodfall.fx()[k] ?? 0, sc.wait);
@@ -316,7 +320,7 @@ try {
       const st = await streets();
       const id = await build(fam, st[2]);
       const street = await streetNear(id, st);
-      const target = await put([{ kind: 'soldier', cell: street }]);
+      const target = await put(Array.from({ length: 5 }, (_, i) => ({ kind: sc.unit ?? 'soldier', cell: street, dx: i * 2 - 4 })));
       // Let it take aim, then turn the camera until it is seen from behind.
       await ticks(3);
       let back = false;
@@ -329,8 +333,14 @@ try {
       const ep = await posOf(target[0]);
       await closeOn(between(tp, ep, 0.25), 11, 60);
       const base = await page.evaluate((k) => window.broodfall.fx()[k] ?? 0, sc.wait);
+      await page.evaluate(([id, cell, order]) => {
+        const s = window.broodfall.sim;
+        const t = s.towers.find((x) => x.id === id);
+        t.cooldown = 0;
+        if (order) s.issue({ kind: order, towerId: id, cell });
+      }, [id, street, sc.order ?? null]);
       const ok = await fireAndCatch(sc.wait, 120, base);
-      check(ok, `behind-${fam}: its shot is out`);
+      check(ok, `behind-${fam}: its shot is out`, JSON.stringify(await page.evaluate(() => window.broodfall.fx())));
       await shot(`fire-behind-${fam}-${TAG}`);
     }
 

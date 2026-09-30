@@ -17,7 +17,7 @@ import { ffmpeg, makeClip, makeStill, pool } from '../rfab.mjs';
 import { AWAY, BACK, LIMB_SHEETS, MATERIAL, QUIET, THEMES, WITHER, limb, placeOnLimbSheet } from '../limbs.mjs';
 import { blank, crop, flipX, over, paste, readFrames, readImage, resize, writeJpg, writePng } from '../lib/img.mjs';
 import { figure, findFigures } from '../lib/sheet.mjs';
-import { dropSpecks, fringe, keyClip, keyOf, loopWindow, pick, unionBox } from '../lib/key.mjs';
+import { diffThumb, dropSpecks, fringe, keyClip, keyOf, pick, thumb, unionBox } from '../lib/key.mjs';
 import { GROUNDS, packAtlas, reviewFrames, reviewSheet } from '../lib/atlas.mjs';
 import { FILL, drawCell, footingOf, markOf, spill } from '../lib/foot.mjs';
 import { ART, REVIEW, ROOT, SRC, putEntry } from '../lib/manifest.mjs';
@@ -25,9 +25,11 @@ import { ART, REVIEW, ROOT, SRC, putEntry } from '../lib/manifest.mjs';
 const FPS = 12;
 /** Frames kept of each clip; a BIG limb keeps two fewer of its death (its frames are twice the pixels, and a withering is slow). */
 /** Frames kept of each clip. A BIG limb keeps two fewer of its death: its frames are twice the pixels, and a withering is slow. */
-const KEEP = { idle: 16, fire: 14, die: 10 };
+// An idle keeps every frame of its loop at 12 fps (Sep 30 2026: 16 of up to 46 stepped at 4 fps).
+const KEEP = { idle: 48, fire: 14, die: 10 };
 /** The side of a frame, and how many frames across its atlas is: of a limb of one cell, and of a BIG limb, which is drawn two cells wide and would be seen soft at the same size. */
-const FRAME = { small: [256, 16], big: [384, 8] };
+// (A BIG limb's atlas is 12 across since its idles keep every frame: 8 across ran over 6,000 px tall.)
+const FRAME = { small: [256, 16], big: [384, 12] };
 const KEYS = { green: { hex: '00FF00', name: 'green' }, blue: { hex: '0000FF', name: 'blue' } };
 const CONCEPTS = path.join(ROOT, 'notes', 'concepts', '2026-09-29');
 
@@ -218,9 +220,25 @@ export function idleCut(frames, fine = fineFrames(frames), { min = 16, max = 46,
     const score = c.r - 0.004 * (j - i) + (i >= fadeFrames ? 0 : 0.25);
     if (!best || score < best.score) best = { ...c, score };
   }
-  const cut = clean ?? best;
+  let cut = clean ?? best;
   let treat = 'as is';
-  if (cut.r > SEAM_FIX) treat = PONG.has(family) || cut.start < 2 ? 'pong' : 'fade';
+  if (cut.r > SEAM_FIX) {
+    // A small jump with frames before it: dissolved. A clip that drifts one way all through (the maw's
+    // mouth widening for 4 s, a glow crawling) has no loop in it at all, and dissolving a big change
+    // ghosts: it is played forward and back instead, over as long a stretch as it has, eased at the
+    // ends by the game (src/render/idleClock.ts), so it breathes out and in.
+    treat = !PONG.has(family) && cut.r <= 3 && cut.start >= 4 ? 'fade' : 'pong';
+    if (treat === 'pong') {
+      const L = Math.min(max, n);
+      let pb = null;
+      for (let i = 0; i + L <= n; i++) {
+        let peak = 0; for (let k = i; k < i + L - 1; k++) peak = Math.max(peak, steps[k]);
+        const step = (sum[i + L - 1] - sum[i]) / (L - 1);
+        if (!pb || peak / step < pb.peak) pb = { start: i, end: i + L, step, seam: 0, r: 0, peak: peak / step };
+      }
+      cut = pb;
+    }
+  }
   return { ...cut, treat, fade: treat === 'fade' ? Math.min(fadeFrames, cut.start, cut.end - cut.start - 4) : 0 };
 }
 
@@ -320,7 +338,7 @@ function bakeView(l, dir, view, check, F) {
   const anims = {};
   for (const c of clips) {
     c.kept = (c.anim === 'die' ? pickToEnd(c.frames, KEEP.die) : pick(c.frames, KEEP[c.anim])).map((f) => lift(resize(crop(f, x0, y0, side, side), F, F), l.flat ? 0 : LIFT, anchor[1]));
-    anims[c.anim] = { start: frames.length, count: c.kept.length, fps: Number((c.kept.length / c.seconds).toFixed(2)) };
+    anims[c.anim] = { start: frames.length, count: c.kept.length, fps: Number((c.kept.length / c.seconds).toFixed(2)), ...(c.pong ? { pingpong: true } : {}) };
     frames.push(...c.kept);
     if (c.loop) {
       check(`${say}${c.anim}: loop closes`, c.loop.seam < 4, Number(c.loop.seam.toFixed(2)));
