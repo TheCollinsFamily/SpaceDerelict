@@ -65,14 +65,14 @@ async function newPlayer(browser) {
   page.on('pageerror', (e) => errors.push(String(e)));
   page.on('console', (m) => { if (m.type() === 'error' && !/favicon|Failed to load resource|rfab-api/.test(m.text())) errors.push(m.text()); });
   await page.route('**/rfab-api/**', (r) => r.fulfill({ status: 404, body: '{}' }));
-  await page.goto(URL0, { waitUntil: 'load' });
+  await page.goto(URL0, { waitUntil: 'load', timeout: 120000 });
   await page.evaluate(() => {
     localStorage.clear();
     localStorage.setItem('broodfall-yoke', JSON.stringify({ mode: 'scripted', v: 2 }));
     localStorage.setItem('broodfall-intro-seen', '1');
     localStorage.setItem('broodfall-meta', JSON.stringify({ standing: 0, runs: 1, genes: [] }));
   });
-  await page.goto(URL0, { waitUntil: 'load' });
+  await page.goto(URL0, { waitUntil: 'load', timeout: 120000 });
   return { ctx, page, errors };
 }
 
@@ -181,7 +181,7 @@ try {
     await board(page);
     await endRun(page);
     await page.waitForSelector('#debrief:not(.hidden)', { timeout: 45000 });
-    await page.goto(URL0, { waitUntil: 'load' });
+    await page.goto(URL0, { waitUntil: 'load', timeout: 120000 });
     await page.waitForSelector('#menu-settings');
     await page.locator('#menu-settings').click();
     await page.waitForSelector('#settings:not(.hidden) .st-card');
