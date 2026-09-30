@@ -363,9 +363,13 @@ life, owns the Temple Cities, and sounds the bells.
   the apocalypse and about the heaven after. The player is not told until the end of the Faithful's
   route; before then every line of it reads as coincidence, or as the Voice's "that is how prophecy
   works".
-- **The one thing the Book got wrong (PROPOSAL):** it says the unfaithful stay sealed. The archive
-  takes everyone the asset absorbs, believers and empties alike. This is half of why the Faithful
-  are furious when they arrive (section 5.8).
+- **The Pit: the one part that is not accurate (Collins, Sep 30 2026; the name and chapter
+  PROPOSAL).** Chapter twenty-two promises the wicked a Pit where they burn for ever. There is
+  none. People judged too morally corrupted are simply not simulated: no torment, they are just
+  not kept. Those near the line are kept in private simulations until they improve. And the
+  archived wake without the broodfall in their memories. (**PROPOSAL:** the Book also says the
+  unfaithful stay sealed; the archive keeps decent empties along with believers, which adds to
+  the Faithful's fury, section 5.8.)
 
 ### 5.3 The Book (canon, `content/campaign.ts`; the reading of it PROPOSAL)
 **The Book**, formally *the Book of the Seven Cities*. What is known of it from the campaign:
@@ -470,7 +474,9 @@ accurate and predictive about the apocalypse and about the heaven after. The Tec
 character believes God likely influenced their scripture to make it accurate, and does not much
 care if they complain: he can always delete the whole congregation from the archive if they want.
 Why the Voice is angry, as he says it (**PROPOSAL**): the heaven was made by a machine and not by
-the First Mother, the empties got in too.
+the First Mother, the empties got in too. And, above all (Collins): there is no Pit. They want
+the wicked tortured in a hell-like place, and the wicked are simply not kept. "No PIT? Then what
+was the point of being GOOD?"
 
 **The character was never humouring them (Collins, Sep 30 2026).** The player thinks he is a
 sociopath puppeting a messianic return: the homework, the sneering logs, the contingency messiah
@@ -525,7 +531,9 @@ clever:
   **The reveal lands on them hardest (Collins):** they are mortified, because the archive means
   the cycle of suffering will never stop. A heaven cut to each one's desires is the wheel itself,
   made endless and comfortable. They beg to be switched off. The character shrugs: it goes against
-  ethical protocols to shut the whole thing down over their complaints.
+  ethical protocols to shut the whole thing down over their complaints. Worse (Collins: the
+  archived wake without the broodfall in their memories; **PROPOSAL** that this is the last
+  blow for them): past the gate they will not even remember that the wheel is turning.
 - **The Institute for Long-Term Hive Flourishing** (canon): the clever unbelievers. Rationalist,
   expected-value, afraid of their own AI; funded by spare princes and House money. **PROPOSAL:**
   the Institute's founding essay is an argument that the Faith is false and the Houses are
@@ -547,7 +555,10 @@ clever:
   place: the universe is full of planets; he came to this one because it had sentient life, and an
   independently evolved culture is the one thing the Empire cannot easily produce. And
   "Long-Term Hive Flourishing" was, literally, the plan: an archived people run fast and, once it
-  can add to the Sons of Man, is printed back out.
+  can add to the Sons of Man, is printed back out. The Director himself is near the moral line
+  (Collins): he is kept in a private simulation until he improves, where he will likely believe
+  he runs the world. The character lets it slip at the end: very flattering, very private, and
+  he will not remember the call.
 
 The Faith sees both as the same heresy wearing different clothes. It is not wrong.
 

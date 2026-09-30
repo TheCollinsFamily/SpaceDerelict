@@ -255,6 +255,20 @@ civilisation is significantly more magnanimous than it is originally framed."
   the archive: the Empire does not have the technology to digitise the dead YET, but it is
   physically possible by its current best physics, so it eventually will. A people that proves
   itself in the accelerated archive might even be recruited to help build it.
+- **Memory, the wicked, and the line (Collins, Sep 30 2026).**
+  - *The attack is erased.* The archived wake without the broodfall in their memories.
+    **PROPOSAL, so the reveal scenes can happen:** each mind wakes first in an *intake*, with its
+    memory whole; the broodfall is taken out when it passes through the gate into its own world.
+    The factions' last calls to the character are made from intake.
+  - *The too-corrupt are not kept.* People judged too morally corrupted are simply not simulated.
+    There is no hell: nobody is tortured; the wicked just are not kept.
+  - *The near-line are kept apart.* People near that line are kept in private simulations until
+    they morally improve (Collins's example: the Institute's Director will likely believe he runs
+    the world).
+  - **PROPOSAL, the doctrine under it:** keeping the corrupt among the rest would be "corrupted
+    mercy" (charity that causes more suffering later, TP 35.0.3); torturing them would serve no
+    objective function (doctrine 5). The judging is done by the Office's ethical protocol, the
+    same protocol that forbids shutting an archive down on request.
 - **Why the Empire does it (the doctrine, faithfully):**
   - *Beyond the covenant, but not to be eradicated.* Intelligences not descended from man were made
     "to either serve or test man"; they "need not be eradicated", and must never be favoured over

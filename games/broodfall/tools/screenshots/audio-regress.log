@@ -10,3 +10,9 @@ VISUAL CHECK: all regions verified.
   PASS  clicking the meteor levels the core theme
 
 INPUT CHECK: all interactions verified.
+> node tools/endgame-check.mjs
+
+  PASS  run ended in-browser: lost at t=8.1min (waves=7, biomass=909, coreHp=-10)
+  PASS  end overlay shown: "ASSET TERMINATED"
+
+ENDGAME CHECK: verified.

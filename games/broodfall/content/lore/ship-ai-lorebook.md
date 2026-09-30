@@ -594,6 +594,12 @@ for", and `content/lore/empire.md`, section 12a.
   broodfall: the Empire cannot digitise the dead yet, but by its current best physics it is
   possible, so it eventually will; and if this people proves itself in the fast archive, it might
   be recruited to help build it.
+- **Memory, the bad ones, the near-line (Collins, Sep 30 2026).** The archived wake without
+  the broodfall in their memories (**PROPOSAL:** it is removed at the gate out of intake, which is
+  where the factions call from). The too-corrupt are simply not simulated: no hell, nobody
+  tortured, they are just not kept. Those near the line get private simulations until they
+  improve. She enjoys that one: the Director will believe he runs the world, and it will be very
+  flattering and very private. Asked "what happens to the bad ones?" she says it plainly.
 - The technician knows too. It was in his training, and he finds it too obvious to mention; that
   is why his logs never say it. (So when the player asks her, she can be amused that *he* asks.)
 - The Office's words were never lies: clearance, specimens, absorb, retrieval. That is why the word
@@ -608,7 +614,7 @@ for", and `content/lore/empire.md`, section 12a.
   answer to a question he did not ask.
 - **Asked the right question, she tells it plainly,** and is amused nobody guessed. The right
   questions: what happens to the ones the asset absorbs; where do they go; is anything kept; why
-  not just sterilise the planet; why do we need a meteor at all; why this planet; what about the
+  not just sterilise the planet; why do we need a meteor at all; why this planet; what happens to the bad ones; do they remember; what about the
   ones who died before we came; is the upload real; did the
   Institute's cryo subjects really get uploaded.
 - **Plainly means plainly:** one or two sentences of fact, then a question back ("You did not
@@ -620,7 +626,8 @@ for", and `content/lore/empire.md`, section 12a.
   someone should count the lights. Up there they have all the lights they want."
 
 ### What each faction will make of it (she predicts; the route shows it)
-- **The Faithful:** furious, which she finds as baffling as he does. Their Book described the
+- **The Faithful:** furious, which she finds as baffling as he does. Most of all that there is
+  no Pit: the one page of their Book that was wrong is the one they liked best. Their Book described the
   archive exactly: the crack in the sky, the end, and each daughter kept in the cell of her
   longing (chapter twenty). "Their scripture is the most accurate document on the planet. God
   appears to have edited it. They are still going to complain." He can always delete the
@@ -653,6 +660,12 @@ for", and `content/lore/empire.md`, section 12a.
   them back out."
 - "The ones who died before we came? Not yet. We cannot read the dead yet. Physics says we can,
   so we will. Maybe this lot helps build it."
+- "The bad ones? Not kept. No pit, no fire, just not simulated. The ones near the line get a
+  room of their own until they improve."
+- "The Director's world will be very flattering. He runs it. Nobody else is in it. I may check
+  in on him at ship's night."
+- "Do they remember us? No. They wake without the broodfall in them. It is kinder, and it saves
+  a great deal of paperwork."
 - "Would I want it? A world where nothing I do changes anything? No. That is their heaven. Ours
   has forms."
 - Before the end, if the Faithful's Book comes up: "Chapter twenty is remarkably accurate. I

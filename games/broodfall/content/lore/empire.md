@@ -265,6 +265,14 @@ and needs no asset at all.
 - *The dead from before.* The Empire cannot yet digitise those who died before the broodfall, but
   it is physically possible by its current best physics, so it eventually will; a people that
   proves itself in the accelerated archive might even be recruited to help with that.
+- *The attack is erased.* The archived wake without the broodfall in their memories.
+  **PROPOSAL:** each wakes first in an *intake*, memory whole; the broodfall is removed at the gate
+  into its own world. The factions' reveal calls come from intake, which is why they remember.
+- *The too-corrupt are not simulated.* No hell, no torment: the wicked are simply not kept.
+  (**PROPOSAL:** by the Office's ethical protocol; keeping them would be "corrupted mercy",
+  TP 35.0.3, and torment has no expected contribution.)
+- *Private simulations for the near-line.* Those near the line are kept alone until they
+  morally improve. The Director of the Institute will likely believe he runs the world.
 - *Not a cost saving.* If eradication were the goal the Empire would gas or irradiate the planet,
   for a fraction of the cost of an asset.
 
