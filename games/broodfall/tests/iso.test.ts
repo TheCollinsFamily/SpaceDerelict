@@ -584,6 +584,8 @@ describe.skipIf(!hasArt)('the baked art', () => {
     walk(manifest);
     // 24 MB when units had only walks; Sep 29 2026 they gained attacks, falls and states
     // (about 11 MB for all 26), and the budget went to 30 rather than the units' quality down.
-    expect(total / 1024 / 1024).toBeLessThan(30);
+    // Sep 30 2026: every limb gained its withering and 13 limbs their acting clips (limbs 10.7 ->
+    // 15.0 MB), and the effects and donor parts came (0.4 MB): +5 MB, rather than fewer frames.
+    expect(total / 1024 / 1024).toBeLessThan(35);
   });
 });

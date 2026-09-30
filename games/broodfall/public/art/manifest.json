@@ -188,18 +188,17 @@
       "scale": 1.1468
      },
      "SW": {
-      "start": 0,
+      "start": 74,
       "count": 12,
       "fps": 3,
       "anchor": [
        0.5,
        0.8149
       ],
-      "scale": 1.1537,
-      "page": 1
+      "scale": 1.1537
      },
      "W": {
-      "start": 12,
+      "start": 0,
       "count": 12,
       "fps": 3,
       "anchor": [
@@ -210,7 +209,7 @@
       "page": 1
      },
      "NW": {
-      "start": 24,
+      "start": 12,
       "count": 12,
       "fps": 3,
       "anchor": [
@@ -221,7 +220,7 @@
       "page": 1
      },
      "N": {
-      "start": 36,
+      "start": 24,
       "count": 12,
       "fps": 3,
       "anchor": [
@@ -234,7 +233,7 @@
     },
     "death": {
      "SW": {
-      "start": 48,
+      "start": 36,
       "count": 12,
       "fps": 3,
       "anchor": [
@@ -245,7 +244,7 @@
       "page": 1
      },
      "S": {
-      "start": 48,
+      "start": 36,
       "count": 12,
       "fps": 3,
       "anchor": [
@@ -256,7 +255,7 @@
       "page": 1
      },
      "W": {
-      "start": 48,
+      "start": 36,
       "count": 12,
       "fps": 3,
       "anchor": [
@@ -267,7 +266,7 @@
       "page": 1
      },
      "NW": {
-      "start": 48,
+      "start": 36,
       "count": 12,
       "fps": 3,
       "anchor": [
@@ -278,7 +277,7 @@
       "page": 1
      },
      "N": {
-      "start": 48,
+      "start": 36,
       "count": 12,
       "fps": 3,
       "anchor": [
@@ -291,56 +290,68 @@
     },
     "hit": {
      "S": {
-      "start": 60,
+      "start": 48,
       "count": 8,
       "fps": 4.8,
       "anchor": [
        0.5,
-       0.8298
+       0.8865
       ],
-      "scale": 1.133,
+      "scale": 1.0604,
+      "page": 1
+     },
+     "SW": {
+      "start": 56,
+      "count": 8,
+      "fps": 2.46,
+      "page": 1
+     },
+     "W": {
+      "start": 64,
+      "count": 8,
+      "fps": 4.36,
       "page": 1
      },
      "NW": {
-      "start": 68,
+      "start": 72,
       "count": 8,
-      "fps": 4,
+      "fps": 3.69,
       "page": 1
      },
      "N": {
-      "start": 76,
+      "start": 80,
       "count": 8,
-      "fps": 3.69,
+      "fps": 4.17,
       "page": 1
      }
     },
     "braced": {
      "SW": {
-      "start": 84,
+      "start": 88,
       "count": 10,
       "fps": 9.23,
       "page": 1
      },
      "S": {
-      "start": 84,
+      "start": 88,
       "count": 10,
       "fps": 9.23,
       "page": 1
      },
      "W": {
-      "start": 84,
+      "start": 88,
       "count": 10,
       "fps": 9.23,
       "page": 1
      },
      "NW": {
-      "start": 84,
+      "start": 88,
       "count": 10,
       "fps": 9.23,
       "page": 1
      },
      "N": {
-      "start": 84,
+      "start": 88,
       "count": 10,
       "fps": 9.23,
       "page": 1
@@ -348,7 +359,7 @@
     },
     "states": {
      "deployed": {
-      "start": 94,
+      "start": 98,
       "count": 1,
       "fps": 1,
       "page": 1
