@@ -40,3 +40,8 @@ B: the menu, the settings, the ship
   PASS  buttons click: sfx:ui-click, sfx:ui-confirm
   PASS  no page errors ()
 C: a skirmish played through: build, assault, organ stage, the royal, the win
+  PASS  the mix is recorded
+  PASS  wave setup: the build music
+  PASS  limbs grown (5)
+  PASS  wave 1: the assault music
+  PASS  between waves: the organ stage's music (organ)
