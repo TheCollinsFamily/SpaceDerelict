@@ -32,6 +32,7 @@ import { coreStageOf } from './coreStage';
 import { IdleClock, breath, idleFrames, phaseOf } from './idleClock';
 import { CALM } from '../meta/settings';
 import { UNIT_MUZZLES } from './unitMuzzles';
+import { lookOf } from '../../content/upgradeLooks';
 
 /** The old marks were drawn for a 26 px cell; on this board they are drawn this much bigger. */
 const K = 1.9;
@@ -71,6 +72,13 @@ const LIMB_SCALE = Number(SCALE_Q.get('limbScale')) || 0.84;
 const CORE_SCALE = Number(SCALE_Q.get('coreScale')) || 1.22;
 /** ?muzzles=off: shots leave from the old fixed height over the limb's ground (for before-and-after pictures: tools/shot-muzzles.mjs). */
 const MUZZLES = SCALE_Q.get('muzzles') !== 'off';
+/**
+ * ?looks=off: every limb in its own look, whatever it carries (for before-and-after pictures).
+ * UPGRADE LOOKS (content/upgradeLooks.ts, DESIGN.md "Upgrade looks"): a limb is drawn in the look its
+ * evolutions and pips have earned, and GROWS into a new one with a flash (LOOK_GROW seconds).
+ */
+const LOOKS = SCALE_Q.get('looks') !== 'off';
+const LOOK_GROW = 0.75;
 /** How high fliers fly, in levels. */
 const FLY_UP = 2.4;
 /** How strongly a unit shows through what stands in front of it. */
@@ -130,8 +138,12 @@ interface LimbView {
   /** The sim's limb, and whether it is seen from behind: kept for its end when the sim drops it. */
   ent: Tower; back: boolean;
   atlas: import('./art').Atlas;
+  /** The upgrade look drawn (null: its own), how far into growing into it (s; -1: not growing), and the flash laid over it as it grows. */
+  look: string | null; growT: number; flash: Sprite;
 }
 interface ShotView { up0: number; ttl0: number; seen: number }
+/** A townsperson fleeing the crash (src/sim/civilians.ts): its picture (or its drawn figure), where it is shown (eased between sim ticks). */
+interface CivView { sprite: Sprite; shade: Sprite; fig: Graphics | null; shown: Pt; heading: Heading; phase: number; seen: number }
 
 export class IsoRenderer extends Renderer {
   private geo!: IsoGeo;
@@ -172,6 +184,8 @@ export class IsoRenderer extends Renderer {
   private dying: Dying[] = [];
   /** The broodlings and puppet queens drawn with their pictures, by the sim's id. */
   private allyViews = new Map<number, AllyView>();
+  /** The townsfolk fleeing the crash, by the crowd's id (src/sim/civilians.ts; stepped by the base class). */
+  private civViews = new Map<number, CivView>();
   private limbs = new Map<number, LimbView>();
   private nodes = new Map<number, Sprite>();
   private shots = new Map<number, ShotView>();
@@ -399,6 +413,28 @@ export class IsoRenderer extends Renderer {
     return this.tongues.now();
   }
 
+  /** Every limb's upgrade look: earned (content/upgradeLooks.ts), drawn, and whether it is growing into it now. */
+  limbLooks(): Array<{ id: number; family: string; earned: string | null; drawn: string | null; growing: boolean; back: boolean }> {
+    return [...this.limbs.entries()].map(([id, v]) => ({ id, family: v.family, earned: lookOf(v.ent).key, drawn: v.look, growing: v.growT >= 0, back: v.back }));
+  }
+
+  /**
+   * The art a limb is drawn with: the variant of the look it has earned (its superstructure, or when that
+   * is not drawn, the stronger of its two classes), else its own.
+   */
+  private limbArtOf(t: Tower): { art: LimbArt; atlas: import('./art').Atlas; look: string | null } | undefined {
+    const base = this.art.limbs.get(t.family);
+    if (!base) return undefined;
+    if (LOOKS) {
+      const l = lookOf(t);
+      for (const key of [l.key, l.top]) {
+        const f = key ? this.art.limbs.get(`${t.family}@${key}`) : undefined;
+        if (f) return { ...f, look: key };
+      }
+    }
+    return { ...base, look: null };
+  }
+
   /** What of the baked art could not be loaded. */
   missing(): string[] {
     return this.art.failed.slice();
@@ -496,6 +532,7 @@ export class IsoRenderer extends Renderer {
     this.syncNodes(sim);
     this.syncLimbs(sim, dt);
     this.syncUnits(sim, dt);
+    this.drawTownsfolk(sim, dtReal);
     this.tongues.update(this.smoothDt, this.tongueView(sim));
     this.drawShots(this.marksG, sim);
     if (this.fx.ready()) this.fx.draw(sim, this.fxView(sim), dt);
@@ -528,6 +565,7 @@ export class IsoRenderer extends Renderer {
     this.creepState = new Uint16Array(sim.map.cells.length);
     this.units.clear();
     this.allyViews.clear();
+    this.civViews.clear();
     for (const d of this.dying) { d.sprite.destroy(); d.shade.destroy(); }
     this.dying = [];
     this.limbs.clear();
@@ -1221,9 +1259,9 @@ export class IsoRenderer extends Renderer {
     for (const t of sim.towers) {
       const h = this.heightOf(sim, t.cell);
       const p0 = project(g, t.pos.x, t.pos.y, h);
-      const found = this.art.limbs.get(t.family);
+      const found = this.limbArtOf(t);
       let v = this.limbs.get(t.id);
-      if (v && v.family !== t.family) { v.sprite.destroy(); v.over.destroy(); v.shade.destroy(); this.fates.drop(t.id); this.limbs.delete(t.id); v = undefined; }
+      if (v && v.family !== t.family) { v.sprite.destroy(); v.over.destroy(); v.flash.destroy(); v.shade.destroy(); this.fates.drop(t.id); this.limbs.delete(t.id); v = undefined; }
       if (!found) {
         // No picture of this limb: its old shape, at the size of the rest.
         this.drawTowerBody(this.marksG, t, p0.x / K, (p0.y - 20) / K, sim);
@@ -1238,9 +1276,19 @@ export class IsoRenderer extends Renderer {
         shade.visible = !art.flat;
         const over = new Sprite(sprite.texture);
         over.alpha = 0;
-        (art.flat ? this.flat : this.sorted).addChild(shade, sprite, over);
-        v = { sprite, over, shade, art, family: t.family, cooldown: t.cooldown, fireT: -1, fireDur: 0, seen: 0, facing: this.facingOfLimb(sim, t, undefined), ent: t, back: false, atlas };
+        const flash = new Sprite(sprite.texture);
+        flash.blendMode = 'add';
+        flash.visible = false;
+        (art.flat ? this.flat : this.sorted).addChild(shade, sprite, over, flash);
+        v = { sprite, over, shade, art, family: t.family, cooldown: t.cooldown, fireT: -1, fireDur: 0, seen: 0, facing: this.facingOfLimb(sim, t, undefined), ent: t, back: false, atlas, look: found.look, growT: -1, flash };
         this.limbs.set(t.id, v);
+      } else if (v.look !== found.look) {
+        // It has earned another look: it GROWS into it (a swell and a flash), from the idle of the new picture.
+        v.art = art;
+        v.atlas = atlas;
+        v.look = found.look;
+        v.growT = 0;
+        v.fireT = -1;
       }
       v.seen = this.frameNo;
       v.ent = t;
@@ -1334,6 +1382,16 @@ export class IsoRenderer extends Renderer {
         const [bx, by] = breath(this.idleClock, phaseOf(t.id));
         v.sprite.scale.set(v.sprite.scale.x * bx, v.sprite.scale.y * by);
       }
+      // Growing into a new upgrade look: it shrinks a little, swells past its size and settles, lit up.
+      let glow = 0;
+      if (v.growT >= 0) {
+        v.growT += this.smoothDt;
+        const u = Math.min(1, v.growT / LOOK_GROW);
+        const k = u < 0.3 ? 0.86 + (0.3 * u) / 0.3 : 1.16 - 0.16 * ((u - 0.3) / 0.7) * (2 - (u - 0.3) / 0.7);
+        v.sprite.scale.set(v.sprite.scale.x * k, v.sprite.scale.y * k);
+        glow = 0.9 * (1 - u) * (1 - u);
+        if (u >= 1) v.growT = -1;
+      }
       // A limb on a roof rising on its plinth rises with it.
       v.sprite.position.set(p.x, p.y + this.rise.drop(t.cell) * g.level);
       // It is as far back as the nearest to the camera of the cells it stands on.
@@ -1363,6 +1421,16 @@ export class IsoRenderer extends Renderer {
         v.over.tint = v.sprite.tint;
       }
       v.shade.visible = !flying && !art.flat;
+      v.flash.visible = !flying && glow > 0.01;
+      if (v.flash.visible) {
+        v.flash.texture = tex;
+        v.flash.alpha = glow;
+        v.flash.tint = 0xffd9a0;
+        v.flash.anchor.copyFrom(v.sprite.anchor);
+        v.flash.scale.copyFrom(v.sprite.scale);
+        v.flash.position.copyFrom(v.sprite.position);
+        v.flash.zIndex = v.sprite.zIndex + 0.1;
+      }
       // The parts of the limbs it was built from, grafted on its body.
       if (!art.flat) this.fates.graft(this.sorted, t, art, side, p.x, p.y, scale, mirror, width, v.sprite.zIndex, v.sprite.visible, v.sprite.tint as number);
       if (!art.flat) this.drawTowerMarks(this.marksG, t, p.x / K, (p.y - width * 0.55) / K, sim);
@@ -1372,6 +1440,7 @@ export class IsoRenderer extends Renderer {
       if (v.seen === this.frameNo) continue;
       this.limbs.delete(id);
       v.over.destroy();
+      v.flash.destroy();
       // Gone from the board: carried off by the researcher that tore it out, or withered where it stood.
       const thief = sim.enemies.find((e) => e.carrying && e.carrying.cell === v.ent.cell && e.carrying.family === v.ent.family);
       const to = thief ? project(g, thief.pos.x, thief.pos.y, this.heightAt(sim, thief.pos.x, thief.pos.y)) : null;
@@ -1873,6 +1942,88 @@ export class IsoRenderer extends Renderer {
       g.circle(x, y, b.puppet ? 8 : 4.5).fill({ color: 0x0d0805, alpha: 0.8 });
       g.circle(x, y, b.puppet ? 7 : 3.5).fill(b.puppet ? 0xd4a72c : 0xc75a68);
       if (b.hp < b.maxHp) this.hpArc(g, x, y, b.puppet ? 10 : 6, b.hp / b.maxHp);
+    }
+  }
+
+  /**
+   * The townsfolk fleeing the crash (DESIGN.md: the map at minute zero is a neighbourhood). The crowd is
+   * stepped from the sim's clock by the base class and only reads the sim; here each is drawn walking the
+   * way it flees, with a panic bob, from the civilian's pictures (tools/art/units.mjs ALLIES) or, without
+   * them, as a small drawn figure. The creep taking one leaves a puff.
+   */
+  private drawTownsfolk(sim: Sim, dtReal: number): void {
+    this.syncCivilians(sim);
+    const geo = this.geo;
+    const found = this.art.allies.get('civilian');
+    const ease = Math.min(1, Math.max(0.05, dtReal * 14));
+    for (const c of this.civ?.list ?? []) {
+      let v = this.civViews.get(c.id);
+      if (!v) {
+        const sprite = new Sprite();
+        const shade = new Sprite(this.shade());
+        shade.anchor.set(0.5, 0.5);
+        const fig = found ? null : new Graphics();
+        this.sorted.addChild(shade, sprite);
+        if (fig) this.sorted.addChild(fig);
+        v = { sprite, shade, fig, shown: { ...c.pos }, heading: headingOf(geo, c.dir.x, c.dir.y), phase: (c.id * 0.618) % 1, seen: 0 };
+        this.civViews.set(c.id, v);
+      }
+      v.seen = this.frameNo;
+      const ox = v.shown.x;
+      const oy = v.shown.y;
+      v.shown.x += (c.pos.x - v.shown.x) * ease;
+      v.shown.y += (c.pos.y - v.shown.y) * ease;
+      const moved = Math.hypot(v.shown.x - ox, v.shown.y - oy);
+      if (moved > 0.01) v.heading = headingOf(geo, c.dir.x, c.dir.y);
+      const running = c.state === 'flee' || c.state === 'leaving';
+      v.phase = (v.phase + moved / (running ? 18 : 26)) % 1;
+      const p = this.onGround(sim, v.shown.x, v.shown.y);
+      const z = depth(geo, v.shown.x, v.shown.y) * 100 + 48;
+      const r = 4;
+      const cower = c.state === 'cower';
+      const bob = running && moved > 0.01 ? Math.abs(Math.sin(this.pulse * 5 + c.id)) * 3 : cower ? Math.sin(this.pulse * 9 + c.id) * 0.8 : 0;
+      const sw = 2 * r * UNIT_PX * 1.2;
+      v.shade.position.set(p.x, p.y);
+      v.shade.width = sw;
+      v.shade.height = sw * (geo.b / geo.a);
+      v.shade.zIndex = z - 1;
+      v.shade.alpha = 0.75 * c.alpha;
+      if (found && v.fig === null) {
+        const { art } = found;
+        const { view, mirror } = viewOf(v.heading);
+        const walk = art.anims.walk[view] ?? art.anims.walk.SW ?? Object.values(art.anims.walk)[0]!;
+        // Standing still (calm and not strolling, or frozen in fear): the first frame of its run.
+        const at = moved > 0.01 ? v.phase * walk.count : 0;
+        const scale = ((2 * r * UNIT_PX) / (art.body * art.frame)) * (walk.scale ?? 1);
+        const a = walk.anchor ?? art.anchor;
+        v.sprite.texture = this.unitFrame(found, walk, at);
+        v.sprite.anchor.set(a[0], a[1]);
+        v.sprite.position.set(p.x, p.y - bob);
+        // Cowering: crouched low.
+        v.sprite.scale.set(mirror ? -scale : scale, scale * (cower ? 0.82 : 1));
+        v.sprite.alpha = c.alpha;
+        v.sprite.zIndex = z;
+      } else if (v.fig) {
+        v.sprite.visible = false;
+        v.fig.clear();
+        this.drawCivilian(v.fig, c, 0, 0, K * 1.15);
+        v.fig.position.set(p.x, p.y);
+        v.fig.zIndex = z;
+      }
+    }
+    for (const [id, v] of this.civViews) {
+      if (v.seen === this.frameNo) continue;
+      v.sprite.destroy();
+      v.shade.destroy();
+      v.fig?.destroy();
+      this.civViews.delete(id);
+    }
+    // Taken by the creep: a puff of red where it stood.
+    for (const pf of this.civPuffs) {
+      const k = 1 - pf.t / 0.9;
+      const p = this.onGround(sim, pf.x, pf.y);
+      this.marksG.circle(p.x / K, (p.y - 6) / K, 3 + k * 8).fill({ color: 0xc8566b, alpha: 0.6 * (1 - k) });
+      this.marksG.circle(p.x / K, (p.y - 6 - k * 10) / K, 1.5 + k * 4).fill({ color: 0x5a1a24, alpha: 0.5 * (1 - k) });
     }
   }
 

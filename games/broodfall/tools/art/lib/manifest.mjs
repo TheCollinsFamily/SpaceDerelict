@@ -50,6 +50,8 @@ export function putEntry(section, id, entry) {
 
 function putEntryNow(section, id, entry) {
   const m = readManifest();
+  // A limb's upgrade looks are baked on their own (tools/art/templates/limb-variant.mjs): baking the limb again keeps them.
+  if (section === 'limbs' && m.limbs?.[id]?.variants && !entry.variants) entry = { ...entry, variants: m.limbs[id].variants };
   m[section] = { ...(m[section] ?? {}), [id]: entry };
   const sorted = { version: m.version };
   for (const k of ['units', 'allies', 'limbs', 'fx', 'board', 'biomes', 'under', 'ship']) {
@@ -58,4 +60,17 @@ function putEntryNow(section, id, entry) {
   fs.mkdirSync(ART, { recursive: true });
   fs.writeFileSync(FILE, `${JSON.stringify(sorted, null, 1)}\n`);
   return sorted;
+}
+
+/** One upgrade look of a limb (limbs.<family>.variants.<key>), or null to remove it. */
+export function putVariant(family, key, entry) {
+  return locked(() => {
+    const m = readManifest();
+    const base = m.limbs?.[family];
+    if (!base) throw new Error(`${family}: no limb entry to hang a variant on; bake the limb first`);
+    const variants = { ...(base.variants ?? {}) };
+    if (entry) variants[key] = entry; else delete variants[key];
+    const sorted = Object.fromEntries(Object.entries(variants).sort(([a], [b]) => a.localeCompare(b)));
+    return putEntryNow('limbs', family, { ...base, variants: sorted });
+  });
 }

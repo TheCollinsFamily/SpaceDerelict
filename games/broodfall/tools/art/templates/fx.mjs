@@ -110,11 +110,13 @@ export const SHEETS = [
  * and its sticky tip. Baked apart from the effects: public/art/fx/tongue.webp, manifest fx.fx.tongue.
  */
 export const TONGUE = {
-  id: 'tongue', key: { hex: '00FF00', name: 'green' }, cols: 1,
+  // Sep 30 fix pass ("reads like a ribbed hose"): drawn again, smooth and glossy, into its OWN raw file
+  // (art-src/fx/tongue-wet.png, `src`); the first, ribbed one stays in art-src/fx/tongue.png, untouched.
+  id: 'tongue', src: 'tongue-wet', key: { hex: '00FF00', name: 'green' }, cols: 1,
   lead: 'Game effect sprites: two separate parts of the long sticky tongue of a huge toad-like alien creature, one above the other, well apart and not touching, at the same scale.',
   items: [
-    { id: 'strip', w: 256, text: 'a long straight length of thick wet tongue lying perfectly level, as long as three quarters of the width of the picture and the same thickness all along, pale crimson-pink muscle in soft ring-like segments with a darker groove along its middle, glistening with slime, both of its ends cut off square' },
-    { id: 'tip', w: 96, text: 'the sticky tip of that same tongue lying level: a swollen round club of pale crimson-pink flesh coated in glistening clear slime, its narrow neck at the LEFT where it joins the rest of the tongue, its fat rounded end at the right' },
+    { id: 'strip', w: 256, text: 'a long straight length of a frog tongue, wet, lying perfectly level, as long as three quarters of the width of the picture and the same thickness all along: smooth soft glossy pink-crimson flesh like a real tongue, no rings, no ridges, no segments, no ribs, its upper surface finely bumpy with tiny taste papillae, a soft shallow groove down its middle, a long bright wet highlight along its top and a darker wine-red underside, dripping with clear glistening saliva, both of its ends cut off square' },
+    { id: 'tip', w: 96, text: 'the sticky tip of that same smooth tongue lying level: a soft swollen rounded pad of glossy pink-crimson flesh, a little flattened, coated in thick clear glistening sticky mucus with a bright wet highlight, its narrow neck at the LEFT where it joins the rest of the tongue, its fat rounded end at the right; no rings, no segments' },
   ],
 };
 
@@ -188,7 +190,7 @@ export async function generateSheets() {
 export async function generateTongue() {
   fs.mkdirSync(DIR, { recursive: true });
   await makeStill({
-    slug: 'fx sheet tongue', out: path.join(DIR, `${TONGUE.id}.png`), prompt: sheetPrompt(TONGUE),
+    slug: 'fx sheet tongue', out: path.join(DIR, `${TONGUE.src ?? TONGUE.id}.png`), prompt: sheetPrompt(TONGUE),
     key: TONGUE.key.hex, keyName: TONGUE.key.name, ...(fs.existsSync(CREEP) ? { refFiles: [CREEP] } : {}),
     width: 1536, height: 1024, quality: 'high',
   });
@@ -238,7 +240,7 @@ function lumaKey(img) {
 
 /** The sprites of one sheet: cut, keyed, trimmed and brought to their game size. */
 function cutSheet(s) {
-  const file = path.join(DIR, `${s.id}.png`);
+  const file = path.join(DIR, `${s.src ?? s.id}.png`);
   if (!fs.existsSync(file)) return [];
   const img = readImage(file);
   let found = findFigures(img, { expect: s.items.length, ...(s.key ? {} : { tolerance: 20 }) });

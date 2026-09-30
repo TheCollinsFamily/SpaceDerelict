@@ -1,4 +1,5 @@
 /** Shared sim types. This module (and everything under src/sim/) must never import rendering code. */
+import type { DecreeId } from '../../content/royal';
 
 export type Caste = 'war' | 'science' | 'royal';
 
@@ -255,6 +256,14 @@ export interface Tower {
   rebornWave?: number;
   /** Trap cage: royals captured so far. */
   captures?: number;
+  /** ROYAL DECREE: crowns worn (content/royal.ts): every other limb near it takes less harm and hits harder. */
+  crowns?: number;
+  /** Consort's Favour: promotions received (each one a pip of its own family, already in `pips`). */
+  promotions?: number;
+  /** SURGERY UNDER FIRE: grafted with eaten bonuses during a siege, it holds fire and bleeds until this sim time. */
+  graftUntil?: number;
+  /** Its kill count when the current wave started (Consort's Favour picks the wave's best killer). */
+  waveKillsAt?: number;
 }
 
 export type UpgradeChoice = 'A' | 'B';
@@ -590,7 +599,13 @@ export type SimEvent =
   | { kind: 'discarded'; family: TowerFamily }
   | { kind: 'wave-cleared'; wave: number; bonus: number }
   | { kind: 'draft-open' }
-  | { kind: 'plate-drafted'; name: string; feature: string };
+  | { kind: 'plate-drafted'; name: string; feature: string }
+  | { kind: 'royal-decree'; decree: DecreeId; name: string; family?: TowerFamily }
+  | { kind: 'limb-promoted'; family: TowerFamily }
+  | { kind: 'surgery-under-fire'; family: TowerFamily; seconds: number }
+  | { kind: 'graft-took'; family: TowerFamily }
+  | { kind: 'burrowed'; cell: number; gate: number }
+  | { kind: 'sealed-in' };
 
 export type Command =
   /** cell: the cell pointed at. A big limb takes the legal footprint that holds it (see Sim.footprintAt). */
@@ -608,7 +623,12 @@ export type Command =
   /** A free plinth from stock: raises the limb that stands on this cell (all of it), or this bare roof, by one level. */
   | { kind: 'place-plinth'; cell: number }
   | { kind: 'spread-node'; sourceId: number; cell: number }
+  /** Deprecated (the placeholder royal sink; kept for old scripts): +biomass for a royal point. */
   | { kind: 'royal-surge' }
+  /** A ROYAL DECREE (content/royal.ts). towerId: the limb it is bought on (crown); family: the commissioned card. */
+  | { kind: 'decree'; decree: DecreeId; towerId?: number; family?: TowerFamily }
+  /** Burrow through a claimed district's wall into the unclaimed city next to it (between waves). */
+  | { kind: 'burrow'; cell: number }
   | { kind: 'discard'; cardIndex: number }
   | { kind: 'choose-plate'; index: number }
   | { kind: 'call-early' };
@@ -657,6 +677,12 @@ export interface SimConfig {
   matingMusk?: boolean;
   /** Experiment: start with a free Trap Cage card. */
   trapCage?: boolean;
+  /**
+   * The families the FIRST hand is drawn from (mission 1: the plain limbs a new player can read at a
+   * glance). Only the weights change: each card is still one rng draw, so the rng's order is the same.
+   * Families not unlocked are ignored; with none of them unlocked the first hand is drawn as usual.
+   */
+  firstHand?: TowerFamily[];
 }
 
 /**
@@ -690,4 +716,10 @@ export interface RunStats {
   nodesLost: number;
   /** Stolen limbs taken back by killing the courier carrying them (Finders Keepers). */
   limbsRecovered?: number;
+  /** Royal decrees bought, by id. */
+  decrees?: Partial<Record<DecreeId, number>>;
+  /** Limbs grafted with eaten bonuses during a siege. */
+  surgeriesUnderFire?: number;
+  /** Walls burrowed through into the unclaimed city. */
+  burrows?: number;
 }

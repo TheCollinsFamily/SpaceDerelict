@@ -155,6 +155,92 @@ export const MENU = {
 const ALL = [...SHOTS, MENU];
 const raw = (id, what) => path.join(DIR, `${id}${what}`);
 
+/**
+ * Two STILLS with no clip (Sep 30 2026, HANDOFF OPEN 9): his quarters on the ship (the campaign's
+ * Quarters room, `--room`) and the partner candidate's file photograph (on his data pad there,
+ * content/partner.ts). Raw: art-src/intro/pictures/<id>.png; baked public/art/intro/<id>.webp and
+ * the "quarters" / "partner" keys of intro.json. `node tools/art/intro.mjs quarters partner`.
+ * To draw one again, move art-src/intro/pictures/<id>.png into art-src/intro/pictures/v1/.
+ */
+const SHIP_ALWAYS = 'The ship\'s own look: matte black panels and bare pale ceramic with flush seams and exact edges, ' +
+  'even cool white light, perfect order; nothing soft, no ornament, no pattern, no coloured accent light, no screens with ' +
+  'writing. No text anywhere: no letters, no words, no numbers, no logos, no badges, no symbols of any kind (no crosses, no ' +
+  'stars, no gears, no religious symbol).';
+export const PICTURES = [
+  {
+    id: 'quarters',
+    // quarters.png (v1) put the window in the right half, which the game's card covers (src/ship.css shows a room's
+    // picture from its LEFT edge): quarters-b.png keeps everything that matters in the left third, but left the
+    // data pad off its shelf; quarters-c.png is quarters-b.png with the pad put on the shelf (an edit, `edit`).
+    file: 'quarters-c',
+    edit: { from: 'quarters-b', prompt: 'Keep this photograph exactly as it is: the same black room, the same window and planet, ' +
+      'the same bunk, the same light and framing. Change ONE thing: on the small lit shelf, to the left of the black book, ' +
+      'a thin plain dark grey tablet computer (his data pad) stands upright on its edge, leaning against the back of the ' +
+      'shelf, its blank dark screen catching a faint grey reflection. No text, no letters, no symbols on it or anywhere.' },
+    width: 1536, height: 1024,
+    refs: () => [path.join(CONCEPTS, 'r4-hero-bunk.png'), raw('menu', '.png')],
+    still: 'COMPOSITION: everything that matters (the window with the planet, the shelf with the data pad, the end of the ' +
+      'bunk) is in the LEFT THIRD of the picture; the right two thirds are plain dark matte black wall panels in shadow ' +
+      'with nothing on them. ' +
+      'A lifelike photograph of a young technician\'s tiny sleeping cell aboard a far-future orbital ship of an ' +
+      'austere, ultra-efficient society, EMPTY: no person, no figure anywhere. The walls are ' +
+      'MATTE BLACK panels (the room is dark and black, not white), the floor dark. Low along the left a regulation ' +
+      'bunk: a bare flat slab of brushed steel folded out of the wall on two thin steel arms, one thin grey blanket ' +
+      'folded square at its foot, no pillow. Above the bunk a small recessed shelf of pale ceramic set in the black wall ' +
+      'holds a thin plain dark tablet (his data pad) standing on its edge, one black book, and a small machined metal gear ' +
+      'puzzle. Above the shelf, in the left part of the wall, a tall narrow rounded window (a porthole taller than it is wide): through it, far below, the night side of the alien ' +
+      'planet of the second reference picture, the same planet (invented continents with pale golden city lights, NOT ' +
+      'Earth, no green, no blue oceans in daylight), and across it a spreading dark red veined stain of infection with ' +
+      'glowing orange points of burning cities, a thin blue line of atmosphere along its curve, black space above. The ' +
+      'planet\'s dim red and gold glow falls into the black room; a thin line of white light runs along the ceiling ' +
+      `edge. ${SHIP_ALWAYS}`,
+  },
+  {
+    id: 'partner',
+    width: 1024, height: 1024,
+    refs: () => [path.join(CONCEPTS, 'r4-hero-portrait.png')],
+    still: 'An official identification photograph, lifelike, from a far-future austere, ultra-efficient human society: ' +
+      'a head-and-shoulders portrait of a young woman of about twenty-four, facing the camera straight on, centred, ' +
+      'the top of her head and her shoulders inside the square frame. Plain even pale grey backdrop, flat even studio ' +
+      'light, sharp focus, no retouching glamour. She is modestly and fully dressed in the same uniform as the man in ' +
+      'the reference: a plain black high-necked tunic with a narrow white collar, buttoned to the throat. Her dark ' +
+      'brown hair is pulled back neatly into a low bun; no jewellery, no makeup to speak of. An intelligent, calm, ' +
+      'slightly earnest face with the smallest hint of a polite smile, as if told to hold still. Tasteful and ' +
+      'respectable: an ID card photo, not a glamour shot. Not the man of the reference: only his uniform and the ' +
+      'photographic look are borrowed. No text anywhere: no letters, no numbers, no name, no badge, no insignia, no ' +
+      'logo, no symbol of any kind (no crosses, no gears, no religious symbol), no frame or border.',
+  },
+];
+const PIC_DIR = path.join(DIR, 'pictures');
+
+/** A picture baked: public/art/intro/<id>.webp (1280 wide for the room, 512 for the portrait), a review copy. */
+function bakePicture(p) {
+  const src = path.join(PIC_DIR, `${p.file ?? p.id}.png`);
+  if (!fs.existsSync(src)) return false;
+  const w = p.id === 'partner' ? 512 : 1280;
+  ffmpeg(['-i', src, '-vf', `scale=${w}:-2:flags=lanczos`, '-quality', '86', path.join(OUT, `${p.id}.webp`)], `${p.id} bake`);
+  fs.mkdirSync(REV, { recursive: true });
+  ffmpeg(['-i', src, '-vf', 'scale=960:-2', '-q:v', '3', path.join(REV, `${p.id}.jpg`)], `${p.id} review`);
+  return true;
+}
+
+async function pictures(items) {
+  // A picture made as an edit of another (`edit.from`, made first from the picture's own prompt).
+  for (const p of items.filter((q) => q.edit)) {
+    const from = path.join(PIC_DIR, `${p.edit.from}.png`);
+    if (!fs.existsSync(from)) await makeStill({ slug: `intro ${p.edit.from}`, out: from, prompt: p.still, key: null,
+      width: p.width, height: p.height, quality: 'high', refFiles: p.refs().filter((f) => fs.existsSync(f)) });
+  }
+  const res = await pool(items, 2, (p) => p.edit ? makeStill({
+    slug: `intro ${p.id}`, out: path.join(PIC_DIR, `${p.file}.png`), prompt: p.edit.prompt, key: null,
+    width: p.width, height: p.height, quality: 'high', refFiles: [path.join(PIC_DIR, `${p.edit.from}.png`)],
+  }) : makeStill({
+    slug: `intro ${p.id}`, out: path.join(PIC_DIR, `${p.file ?? p.id}.png`), prompt: p.still, key: null,
+    width: p.width, height: p.height, quality: 'high', refFiles: p.refs().filter((f) => fs.existsSync(f)),
+  }));
+  res.forEach((r, i) => { if (!r.ok) console.warn(`[intro] ${items[i].id} picture failed: ${r.error.message.slice(0, 200)}`); });
+}
+
 function menuRefs() {
   // The ship's look: a room with a window (baked) and the white operations concept.
   const room = path.join(DIR, 'refs', 'room-comms.png');
@@ -343,8 +429,15 @@ export function bakeIntro(only) {
   // intro.json lists what is baked (a shot that is not there is left out: the game plays what is listed).
   const entry = (id) => ({ video: `intro/${id}.mp4`, poster: `intro/${id}.webp`, seconds: duration(path.join(OUT, `${id}.mp4`)) });
   const has = (id) => fs.existsSync(path.join(OUT, `${id}.mp4`)) && fs.existsSync(path.join(OUT, `${id}.webp`));
-  const json = { shots: SHOTS.filter((s) => has(s.id)).map((s) => ({ id: s.id, ...entry(s.id) })) };
+  // Keys written by other tools (boss.mjs's "boss") are kept: only ours are rewritten.
+  const file = path.join(OUT, 'intro.json');
+  const old = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : {};
+  const json = { ...old, shots: SHOTS.filter((s) => has(s.id)).map((s) => ({ id: s.id, ...entry(s.id) })) };
   if (has('menu')) json.menu = entry('menu');
+  for (const p of PICTURES) {
+    if (want(p.id)) bakePicture(p);
+    if (fs.existsSync(path.join(OUT, `${p.id}.webp`))) json[p.id] = `intro/${p.id}.webp`;
+  }
   fs.writeFileSync(path.join(OUT, 'intro.json'), JSON.stringify(json, null, 2) + '\n');
   const total = fs.readdirSync(OUT).reduce((s, f) => s + fs.statSync(path.join(OUT, f)).size, 0);
   console.log(`[intro] intro.json: ${json.shots.length} shots${json.menu ? ' + menu' : ''}; public/art/intro ${(total / 1024 / 1024).toFixed(2)} MB`);
@@ -362,6 +455,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.ar
     ready();
     const before = await balance();
     await stills(items);
+    await pictures(PICTURES.filter((p) => !ids.length || ids.includes(p.id)));
     if (!flags.has('--stills')) await clips(items);
     const after = await balance();
     console.log(`[intro] asked for ${spent.stills} stills, ${spent.clips} clips; balance ${before} -> ${after} (${before - after} tokens)`);

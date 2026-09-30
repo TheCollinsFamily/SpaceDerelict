@@ -24,6 +24,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { LIMBS, rawDirOf } from './limbs.mjs';
+import { VARIANT_LIMBS } from './limb-variants.mjs';
 import { blank, crop, over, paste, readFrames, resize, writeJpg } from './lib/img.mjs';
 import { keyClip, unionBox } from './lib/key.mjs';
 import { REVIEW, SRC } from './lib/manifest.mjs';
@@ -85,7 +86,10 @@ function tileOf(l, view) {
 const args = process.argv.slice(2);
 const view = args.includes('--back') ? 'back' : 'front';
 const ids = args.filter((a) => !a.startsWith('--'));
-const list = LIMBS.filter((l) => !l.flat && (!ids.length || ids.includes(l.family)));
+// --variants: the upgrade looks (tools/art/limb-variants.mjs), named family@key (spitter@bone), on sheets of their own.
+const VAR = args.includes('--variants');
+const nameOf = (l) => (l.variant ? `${l.family}@${l.variant}` : l.family);
+const list = (VAR ? VARIANT_LIMBS : LIMBS).filter((l) => !l.flat && (!ids.length || ids.includes(l.family) || ids.includes(nameOf(l))));
 const out = path.join(REVIEW, 'feet');
 fs.mkdirSync(out, { recursive: true });
 let sheet = null;
@@ -93,18 +97,18 @@ let n = 0;
 const rows = [];
 const flush = () => {
   if (!sheet) return;
-  const file = path.join(out, `${view === 'back' ? 'back-' : ''}sheet-${Math.ceil(n / 9)}.jpg`);
+  const file = path.join(out, `${VAR ? 'variants-' : ''}${view === 'back' ? 'back-' : ''}sheet-${Math.ceil(n / 9)}.jpg`);
   writeJpg(file, sheet, 3);
   console.log(`written: ${file}`);
   sheet = null;
 };
 for (const l of list) {
   const made = tileOf(l, view);
-  if (!made) { console.log(`${l.family}: no ${view} idle clip`); continue; }
+  if (!made) { console.log(`${nameOf(l)}: no ${view} idle clip`); continue; }
   if (n % 9 === 0) { flush(); sheet = blank(TILE * 3, TILE * 3, [24, 24, 24, 255]); }
   paste(sheet, made.tile, (n % 3) * TILE, Math.floor((n % 9) / 3) * TILE);
   n++;
-  rows.push(`${String(n).padStart(2)}  sheet ${Math.ceil(n / 9)}, row ${Math.floor(((n - 1) % 9) / 3) + 1}, place ${((n - 1) % 3) + 1}  ${l.family.padEnd(10)} ${made.marked ? 'marked ' : made.fitted ? 'guessed' : 'GUESSED BLIND'}  [${made.mark.join(', ')}]`);
+  rows.push(`${String(n).padStart(2)}  sheet ${Math.ceil(n / 9)}, row ${Math.floor(((n - 1) % 9) / 3) + 1}, place ${((n - 1) % 3) + 1}  ${nameOf(l).padEnd(10)} ${made.marked ? 'marked ' : made.fitted ? 'guessed' : 'GUESSED BLIND'}  [${made.mark.join(', ')}]`);
 }
 flush();
 console.log(rows.join('\n'));

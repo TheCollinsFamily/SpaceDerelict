@@ -202,6 +202,13 @@ export const ALLIES = [
     look: 'the grafted veil matron: a tall still figure under a long grey veil edged in gold that reaches the ground, only her eyes showing, glowing red; dark-red living roots and maroon veins have grown through the veil from a pulsing graft at the back of her neck',
     attackMotion: 'The veiled figure stops and strikes forward with one arm from under the veil, then returns to exactly its starting pose.',
     design: { refs: ['units/matron/view-SW.png'], prompt: graft('The same veiled figure as the reference picture') } },
+  // The townsfolk (Sep 30 2026, DESIGN.md "a NEIGHBORHOOD, not a battlefield"): not a fighter, never an enemy. The
+  // renderer draws them fleeing the crash along the streets (src/sim/civilians.ts). A worker-ant commuter in plain clothes.
+  { kind: 'civilian', ally: true, name: 'Townsperson', caste: 'town', r: 4, body: 'human-like', gait: 'run', key: 'green',
+    emblem: 'It carries no emblem, no badge, no sash and no markings of any kind, and there is no lettering anywhere. There are no crosses, no stars and no crescents anywhere',
+    look: 'an ordinary worker-ant townswoman on her way home: a dark glossy insect head with big amber eyes and two short antennae, no helmet but a soft pale-blue cloth cap, a plain long pale-blue work coat with a cream scarf, carrying a bulging brown paper shopping bag in one hand; no weapon, no sash, nothing orange',
+    design: { refs: ['units/militia/view-SW.png'],
+      prompt: 'One small person for a strategy game, seen by exactly the camera of the reference picture (high above, looking steeply down) and at the same size and in exactly the same chunky, slightly cartoonish drawing style: the same kind of worker-ant townsperson as the reference, with the same dark glossy insect head and big amber eyes, but an ORDINARY CIVILIAN, not a soldier. She wears no helmet but a soft pale-blue cloth cap with two short antennae poking out, a plain long pale-blue work coat and a cream scarf, and carries a bulging brown paper shopping bag in one hand. No weapon, no sash, no belt of pouches, nothing orange. She faces the lower left, running mid-stride in a panic, her free arm raised.' } },
 ];
 
 export const unit = (kind) => UNITS.find((u) => u.kind === kind) ?? ALLIES.find((u) => u.kind === kind);

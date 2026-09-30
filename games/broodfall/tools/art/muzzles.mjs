@@ -24,6 +24,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { FIRING, LIMBS, rawDirOf } from './limbs.mjs';
+import { VARIANT_LIMBS } from './limb-variants.mjs';
 import { blank, crop, over, paste, readFrames, resize, writeJpg } from './lib/img.mjs';
 import { dropSpecks, keyClip, unionBox } from './lib/key.mjs';
 import { REVIEW, SRC } from './lib/manifest.mjs';
@@ -131,15 +132,17 @@ function sheetOf(l, view) {
 const args = process.argv.slice(2);
 const view = args.includes('--back') ? 'back' : 'front';
 const ids = args.filter((a) => !a.startsWith('--'));
-const list = args.includes('--units') ? [] : LIMBS.filter((l) => (FIRING.includes(l.family) || l.tongue) && (!ids.length || ids.includes(l.family)) && (view === 'front' || l.back));
+// --variants: the upgrade looks (tools/art/limb-variants.mjs), named family@key (spitter@bone).
+const nameOf = (l) => (l.variant ? `${l.family}@${l.variant}` : l.family);
+const list = args.includes('--units') ? [] : (args.includes('--variants') ? VARIANT_LIMBS : LIMBS).filter((l) => (FIRING.includes(l.family) || l.tongue) && (!ids.length || ids.includes(l.family) || ids.includes(nameOf(l))) && (view === 'front' || l.back));
 const out = path.join(REVIEW, 'muzzles');
 fs.mkdirSync(out, { recursive: true });
 for (const l of list) {
   const made = sheetOf(l, view);
-  if (!made) { console.log(`${l.family}: no ${view} idle clip`); continue; }
-  const file = path.join(out, `${l.family}${view === 'back' ? '-back' : ''}.jpg`);
+  if (!made) { console.log(`${nameOf(l)}: no ${view} idle clip`); continue; }
+  const file = path.join(out, `${nameOf(l).replace('@', '--').replace('+', '-')}${view === 'back' ? '-back' : ''}.jpg`);
   writeJpg(file, made.sheet, 3);
-  console.log(`${l.family.padEnd(9)} ${view.padEnd(5)} ${made.marks.length ? JSON.stringify(made.marks) : 'NOT MARKED'}  ${file}`);
+  console.log(`${nameOf(l).padEnd(9)} ${view.padEnd(5)} ${made.marks.length ? JSON.stringify(made.marks) : 'NOT MARKED'}  ${file}`);
 }
 
 /**

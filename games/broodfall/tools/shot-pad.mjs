@@ -102,6 +102,19 @@ async function freshPage(browser, { video = false, settings } = {}) {
   return { context, page };
 }
 
+/** Fails the beat when a picture is missing or a load notice/banner shows (fix pass, Sep 30 2026). */
+async function artOk(page, name) {
+  await page.waitForFunction(() => window.broodfall.artMissing().length === 0, null, { timeout: 30000 }).catch(() => {});
+  const missing = await page.evaluate(() => window.broodfall.artMissing());
+  const notice = await page.evaluate(() => {
+    const el = document.getElementById('art-notice');
+    const shown = !!el && !el.classList.contains('hidden') ? el.textContent : '';
+    const banner = /did not load/i.test(document.body.innerText) ? 'a "did not load" banner' : '';
+    return [shown, banner].filter(Boolean).join(' ');
+  });
+  check(missing.length === 0 && !notice, `${name}: all its art loaded, no notice ${[...missing, notice].filter(Boolean).join(' | ').slice(0, 200)}`);
+}
+
 async function skirmish(page) {
   await page.goto(URL0 + '?seed=3', { waitUntil: 'load' });
   await page.locator('#menu-deploy').click();
@@ -118,6 +131,7 @@ try {
     console.log('won: skirmish → won → the pad → the report');
     const { context, page } = await freshPage(browser, { video: true });
     await skirmish(page);
+    await artOk(page, 'won: the skirmish');
     await shot(page, 'won-0-the-last-view');
     await force(page, 'won');
     await page.waitForSelector('#pad-outro', { timeout: 8000 });
@@ -145,6 +159,7 @@ try {
     await page.waitForFunction(() => window.broodfall && window.__bfBooted, null, { timeout: 60000 });
     await page.evaluate(() => window.broodfall.step(600));
     await page.waitForTimeout(2500);
+    await artOk(page, 'lost: mission 1');
     await shot(page, 'lost-0-the-last-view');
     await force(page, 'lost');
     await page.waitForSelector('#pad-outro', { timeout: 8000 });

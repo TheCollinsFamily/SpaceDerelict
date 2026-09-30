@@ -6,14 +6,17 @@
  * player route with that token and never with an RFab key; an RFab without the route (its
  * deploy owed) is talked to the old way; when the server says nobody pays (the $3 is spent, the
  * linked account is short) she says so ONCE and no other paid rung is asked; linking stores
- * the connected token; the words for the screen state the bonus plainly.
+ * the connected token; the words for the screen state the bonus plainly. Her memory is per
+ * campaign: every call names it. The owner's own YOKE (the owed-deploy fallback) is for the dev
+ * server on this PC only.
  */
 import { describe, expect, it, vi } from 'vitest';
 import {
-  PlayerLink, allowanceText, bonusTimes, costText, cutKindOf, cutOffLines, watchConnect,
+  PlayerLink, allowanceText, bonusTimes, costText, cutKindOf, cutOffLines, memoryText, watchConnect,
   type TokenStore,
 } from '../src/meta/yokePlayer';
-import { AvatarError, AvatarLink, AvatarTalk, YokeLadder } from '../src/meta/yokeAvatar';
+import { AvatarError, AvatarLink, AvatarTalk, OWNER_YOKE_DEV_ONLY, YokeLadder } from '../src/meta/yokeAvatar';
+import { ownerYokeAllowed } from '../src/meta/storage';
 import { RfabShipAi, ScriptedShipAi, type AiContext, type ShipAiProvider } from '../src/meta/shipAi';
 
 const GUEST = `bfg_${'a'.repeat(43)}`;
@@ -133,13 +136,95 @@ describe('her calls with a player', () => {
     }
   });
 
-  it('on a legacy RFab they go to the avatar route as before', async () => {
+  it('on a legacy RFab, ON THE DEV SERVER ONLY, they go to the owner\'s avatar route as before', async () => {
     const { fetcher, calls } = fakeRfab({ 'POST /api/avatars/av-123456/message': () => ({ status: 200, body: { success: true } }) });
     const player = new PlayerLink({ base: '/rfab-api', store: memStore(), fetcher });
-    const link = new AvatarLink({ base: '/rfab-api', avatarId: 'av-123456', player, fetcher });
+    const link = new AvatarLink({ base: '/rfab-api', avatarId: 'av-123456', player, ownerFallback: true, fetcher });
     await link.send('hello');
     expect(player.legacy).toBe(true);
+    expect(link.owners).toBe(true);
     expect(calls.at(-1)!.url).toBe('/rfab-api/api/avatars/av-123456/message');
+  });
+
+  it('on a legacy RFab anywhere else the owner\'s YOKE is refused: nothing goes to the avatar route, the ladder goes on', async () => {
+    const { fetcher, calls } = fakeRfab({ 'POST /api/avatars/av-123456/message': () => ({ status: 200, body: { success: true } }) });
+    const player = new PlayerLink({ base: 'https://api.rfab.ai', store: memStore(), fetcher });
+    const link = new AvatarLink({ base: 'https://api.rfab.ai', avatarId: 'av-123456', player, fetcher });
+    const err = await link.send('hello').catch((e) => e);
+    expect(err).toBeInstanceOf(AvatarError);
+    expect(err.code).toBe(OWNER_YOKE_DEV_ONLY);
+    expect(err.sticky).toBe(true);
+    expect(link.owners).toBe(false);
+    expect(calls.some((c) => c.url.includes('/api/avatars/'))).toBe(false);
+    // Her stream is refused the same way, and the ladder answers from the next rung.
+    const rest = { reply: vi.fn(async () => ['kimi line']) } as ShipAiProvider;
+    const told: string[] = [];
+    const ladder = new YokeLadder(new AvatarTalk(link, {}, { firstWithinMs: 200 }), rest, (l) => told.push(l));
+    expect(await ladder.reply({ trigger: 'idle', summary: 's', lore: '' } as AiContext, [], 'hi')).toEqual(['kimi line']);
+    expect(calls.some((c) => c.url.includes('/api/avatars/'))).toBe(false);
+    expect(told.join(' ')).toMatch(/dev server only/);
+  });
+
+  it('the owner\'s YOKE is allowed only on localhost through the dev proxy', () => {
+    expect(ownerYokeAllowed('/rfab-api', 'localhost')).toBe(true);
+    expect(ownerYokeAllowed('/rfab-api/', '127.0.0.1')).toBe(true);
+    expect(ownerYokeAllowed('https://api.rfab.ai', 'localhost')).toBe(false);
+    expect(ownerYokeAllowed('/rfab-api', 'broodfall.itch.io')).toBe(false);
+    expect(ownerYokeAllowed('/rfab-api', '')).toBe(false);   // a file:// page (a desktop wrap)
+  });
+
+  it('every call names the campaign: two campaigns, two minds on rfab.ai', async () => {
+    const { fetcher, calls } = fakeRfab({
+      'POST /api/broodfall/yoke/message': () => ({ status: 200, body: { success: true } }),
+      'GET /api/broodfall/yoke/history': () => ({ status: 200, body: { turns: [] } }),
+      'GET /api/broodfall/yoke/state': () => ({ status: 200, body: STATE }),
+      'POST /api/broodfall/yoke/connect/poll': () => ({ status: 200, body: { status: 'pending' } }),
+    });
+    const store = memStore(GUEST);
+    const one = new PlayerLink({ base: '', store, campaignId: 'c1abc', fetcher });
+    const two = new PlayerLink({ base: '', store, campaignId: 'c2xyz', fetcher });
+    await new AvatarLink({ base: '', avatarId: 'av-123456', player: one, fetcher }).send('hello');
+    await new AvatarLink({ base: '', avatarId: 'av-123456', player: two, fetcher }).history();
+    await one.state();
+    expect(calls.map((c) => [c.url, c.headers['X-Broodfall-Campaign']])).toEqual([
+      ['/api/broodfall/yoke/message', 'c1abc'],
+      ['/api/broodfall/yoke/history', 'c2xyz'],
+      ['/api/broodfall/yoke/state', 'c1abc'],
+    ]);
+    // The same token (the same player) for both: the allowance is his, the memory the campaign's.
+    expect(new Set(calls.map((c) => c.headers['X-Broodfall-Player']))).toEqual(new Set([GUEST]));
+    // Kimi's campaign travels in its body (its own sink), as before.
+    const kimiCalls = fakeRfab({ 'POST /api/broodfall/ship-ai': () => ({ status: 200, body: { lines: ['ok'] } }) });
+    await new RfabShipAi({ base: '', campaignId: 'c1abc', player: one }, kimiCalls.fetcher).reply({ trigger: 'idle', summary: 's', lore: 'l' }, []);
+    expect(JSON.parse(kimiCalls.calls[0].body!).campaignId).toBe('c1abc');
+    expect(kimiCalls.calls[0].headers['X-Broodfall-Campaign']).toBe('c1abc');
+  });
+
+  it('linking tells the game its token changed, and her stream is opened again with the new one', async () => {
+    let opened: string[] = [];
+    const store = memStore(GUEST);
+    const fetcher = (async (url: string, init: RequestInit = {}) => {
+      const u = String(url);
+      const h = (init.headers ?? {}) as Record<string, string>;
+      if (u.endsWith('/events')) {
+        opened.push(h['X-Broodfall-Player']);
+        return new Response(new ReadableStream({ start() { /* stays open */ } }), { status: 200 });
+      }
+      if (u.endsWith('/connect/poll')) return new Response(JSON.stringify({ status: 'connected', token: LINKED }), { status: 200 });
+      if (u.endsWith('/history')) return new Response(JSON.stringify({ turns: [] }), { status: 200 });
+      return new Response('{}', { status: 404 });
+    }) as unknown as typeof fetch;
+    const player = new PlayerLink({ base: '', store, campaignId: 'c1abc', fetcher });
+    const talk = new AvatarTalk(new AvatarLink({ base: '', avatarId: 'av-123456', player, fetcher }));
+    player.tokenChanged = () => { void talk.reopen(); };
+    await talk.enter();
+    expect(opened).toEqual([GUEST]);
+    expect((await player.pollConnect('d'.repeat(43))).status).toBe('connected');
+    await new Promise((r) => setTimeout(r, 10));
+    expect(opened).toEqual([GUEST, LINKED]);
+    expect(talk.open).toBe(true);
+    talk.leave();
+    opened = [];
   });
 
   it('Kimi (the next rung) carries the player token too, not the key', async () => {
@@ -200,6 +285,13 @@ describe('the cut-off', () => {
 });
 
 describe('the words', () => {
+  it('say where her memory lives: this campaign, and the install or the account', () => {
+    const c = { id: 'c1', remembered: true, campaignsRemembered: 2, keep: 5, heldBy: 'install' as const };
+    expect(memoryText({ connected: false, campaign: c })).toBe('She remembers this campaign. This game keeps her memory of its last 5 campaigns; linking an RFab account keeps it on the account.');
+    expect(memoryText({ connected: true, campaign: { ...c, remembered: false, heldBy: 'account' } })).toBe('This campaign is new to her: she starts it fresh. Your RFab account keeps her memory of your last 5 campaigns, on every PC you link.');
+    expect(memoryText({ connected: false })).toBe('');
+  });
+
   it('state the bonus plainly: more than double the free talk', () => {
     expect(bonusTimes(400000, 150000)).toBeGreaterThan(2);
     expect(cutOffLines('allowance', 400000, 150000).join(' ')).toContain('$8.00');

@@ -14,11 +14,13 @@
     "test:endgame": "node tools/endgame-check.mjs"
   },
   "dependencies": {
-    "pixi.js": "^8.6.6"
+    "pixi.js": "^8.6.6",
+    "three": "^0.170.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.49.0",
     "@types/pngjs": "^6.0.5",
+    "@types/three": "^0.170.0",
     "pngjs": "^7.0.0",
     "typescript": "^5.7.2",
     "vite": "^6.0.7",

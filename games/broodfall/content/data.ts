@@ -516,6 +516,18 @@ export const BALANCE = {
   brainAdvancedWeightMult: 2.2,
   /** Cannibalize: butchering a limb refunds this fraction of its cost toward the build. */
   salvageRate: 0.6,
+  /**
+   * SURGERY UNDER FIRE (DESIGN "Cannibalize-to-modify": between-wave time is for the big surgery):
+   * a limb grafted with eaten bonuses DURING a siege grafts for graftSeconds + graftPerPip per
+   * bonus — it holds fire, takes graftHarm × harm, and its open wound draws the climbers and
+   * bombers within graftScent px. Between waves a graft takes at once.
+   */
+  graftSeconds: 3,
+  graftPerPip: 0.5,
+  graftHarm: 2,
+  graftScent: 130,
+  /** BURROW: war meat to dig a claimed district's wall open into the unclaimed city beside it. */
+  burrowCost: 20,
   /** Cannibalize pip effects (multiplicative per pip unless noted). */
   pipRate: 0.25,      // spitter pip: +25% fire rate
   pipAoe: 12,         // burster pip: +12px aoe radius (adds aoe to non-aoe towers)

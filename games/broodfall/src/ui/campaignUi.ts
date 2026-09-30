@@ -11,7 +11,7 @@ import {
 } from '../meta/campaign';
 import { goalText } from '../meta/goals';
 import { FallbackShipAi, RfabShipAi, campaignIdFor, type AiTrigger, type AiTurn, type ShipAiProvider, type ShipAiStatus } from '../meta/shipAi';
-import { loadYoke, playerTokenStore, saveCampaign, saveYoke, type PendingDeployment, type YokeSettings } from '../meta/storage';
+import { loadYoke, ownerYokeAllowed, playerTokenStore, saveCampaign, saveYoke, type PendingDeployment, type YokeSettings } from '../meta/storage';
 import { YOKE_AVATAR, rungs, type YokeMode } from '../meta/yokeAvatar';
 import { PlayerLink, cutOffLines } from '../meta/yokePlayer';
 import { YokeAvatarUi, type ScriptLine, type YokeTalk } from './yokeAvatar';
@@ -115,7 +115,9 @@ export class CampaignUi {
   private account!: YokeAccountUi;
 
   constructor(private state: CampaignState, private hooks: { deploy(p: PendingDeployment): void; newCampaign(): void; quit(): void }) {
-    this.player = new PlayerLink({ base: this.yoke.base, store: playerTokenStore });
+    // Her memory is per campaign: every call names this one, so a New Campaign is a fresh YOKE.
+    this.player = new PlayerLink({ base: this.yoke.base, store: playerTokenStore, campaignId: campaignIdFor(this.state.seed) });
+    this.player.tokenChanged = () => this.avatar?.reconnect();
     this.account = new YokeAccountUi(this.player, {
       changed: () => { if (!this.waiting && !this.debriefing && !this.el.classList.contains('hidden') && (this.room === 'ai' || this.icom)) this.render(); },
       resumed: () => this.avatar?.uncut(),
@@ -240,12 +242,15 @@ export class CampaignUi {
 
   private render(): void {
     const s = this.state;
-    const rooms: Array<[Room, string]> = [
-      ['desk', 'Directive Desk'], ['genes', 'Gene Bay'], ['locker', 'Specimen Locker'],
-      ['board', 'Procreation Board'], ['comms', 'Comms'], ['ai', `AI Core${s.ai.queue.length ? ` (${s.ai.queue.length})` : ''}`],
-      ['quarters', 'Quarters'],
+    // [room, the name on its button, its full name]. The bar is one line from 1280 px up (Sep 30 2026):
+    // the buttons carry the short name, the full one is their tooltip.
+    const rooms: Array<[Room, string, string]> = [
+      ['desk', 'Desk', 'Directive Desk'], ['genes', 'Gene Bay', 'Gene Bay'], ['locker', 'Locker', 'Specimen Locker'],
+      ['board', 'Licence', 'Procreation Board: the licence'], ['comms', 'Comms', 'Comms'],
+      ['ai', `AI Core${s.ai.queue.length ? `<i class="cp-count">${s.ai.queue.length}</i>` : ''}`, `AI Core${s.ai.queue.length ? `: ${s.ai.queue.length} waiting` : ''}`],
+      ['quarters', 'Quarters', 'Quarters'],
       // Empire Directives and his Notebook open with the Directive Desk (src/meta/onboarding.ts deskOpen).
-      ...(deskOpen(s) ? [['orders', 'Empire Directives'], ['hobby', 'Notebook']] as Array<[Room, string]> : []),
+      ...(deskOpen(s) ? [['orders', 'Directives', 'Empire Directives'], ['hobby', 'Notebook', 'Notebook']] as Array<[Room, string, string]> : []),
     ];
     const fac = s.faction ? faction(s.faction).name : 'no allies';
     const face = this.room !== 'ai' ? '' : this.talk ? (this.waiting ? 'thinking' : YOKE_FACE[this.talk.trigger] ?? 'calm') : s.ai.queue.length ? 'curious' : 'calm';
@@ -261,10 +266,10 @@ export class CampaignUi {
             <span class="cp-cur">${esc(fac.toUpperCase())}</span>
           </div>
         </div>
-        <div class="cp-rooms">${rooms.map(([id, name]) => `<button class="cp-room${this.room === id ? ' on' : ''}${this.beckon?.room === id && this.room !== id ? ' beckon' : ''}" data-room="${id}"${id === 'desk' && !deskOpen(s) ? ' data-dark="1"' : ''}>${name}</button>`).join('')}
-          ${this.room === 'ai' ? '' : `<button class="cp-room cp-call${this.icom ? ' on' : ''}" data-act="yoke-call" title="Call YOKE here">◉ YOKE</button>`}
-          <button class="cp-room" data-act="settings" title="Settings">⚙ Settings</button>
-          <button class="cp-room quit" data-act="quit">Main menu</button></div>
+        <div class="cp-rooms">${rooms.map(([id, name, full]) => `<button class="cp-room${this.room === id ? ' on' : ''}${this.beckon?.room === id && this.room !== id ? ' beckon' : ''}" data-room="${id}" title="${full}"${id === 'desk' && !deskOpen(s) ? ' data-dark="1"' : ''}>${name}</button>`).join('')}
+          <span class="cp-tools">${this.room === 'ai' ? '' : `<button class="cp-room cp-call${this.icom ? ' on' : ''}" data-act="yoke-call" title="Call YOKE here">◉ YOKE</button>`}
+          <button class="cp-room cp-tool" data-act="settings" title="Settings" aria-label="Settings">⚙</button>
+          <button class="cp-room cp-tool quit" data-act="quit" title="Back to the main menu">Menu</button></span></div>
         <div class="cp-body">${this.roomHtml()}</div>
       </div>
       ${this.icomHtml()}
@@ -613,6 +618,7 @@ export class CampaignUi {
     this.avatar = YOKE_AVATAR
       ? new YokeAvatarUi(this.el, {
         ids: YOKE_AVATAR, base: y.base, key: y.key || undefined, muted: y.muted, rest,
+        ownerFallback: ownerYokeAllowed(y.base),
         mind: on[0] === 'avatar', voice: y.mode !== 'scripted',
         // The scripted YOKE spends nothing and asks rfab.ai nothing: no player is made for it.
         player: y.mode === 'scripted' ? undefined : this.player,
@@ -645,8 +651,11 @@ export class CampaignUi {
     const name: Record<YokeMode, string> = { avatar: 'her Living Avatar on rfab.ai', kimi: 'Kimi K2.6 via rfab.ai', scripted: 'scripted' };
     const next = this.nextMode();
     // Her avatar gives no note: when she cannot answer, the next rung does, and the player is not told (the console is).
+    // The one exception is the dev server's fallback to the owner's own YOKE: that must never pass for a player's.
+    const dev = y.mode === 'avatar' && this.player.legacy && !!this.avatar?.owners;
     return `<div class="cp-yoke-link"><span class="cp-yoke-dot ${st.live ? 'live' : ''}"></span>
       <span>YOKE: <b>${name[y.mode]}</b>${st.note ? ` — ${esc(st.note)}` : ''}</span>
+      ${dev ? '<span class="cp-yoke-dev" title="rfab.ai has no player route yet (the backend deploy is owed). On this PC\'s dev server she is the avatar owner\'s own YOKE, on this PC\'s key: one mind for every campaign. A build served anywhere else never does this.">DEV: talking to the owner\'s YOKE</span>' : ''}
       <button data-act="yoke-mode">${next === 'avatar' ? 'USE THE AVATAR' : next === 'kimi' ? 'USE KIMI' : 'USE SCRIPTED'}</button></div>`;
   }
 

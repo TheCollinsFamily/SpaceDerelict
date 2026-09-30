@@ -20,7 +20,7 @@ import { figure, findFigures } from '../lib/sheet.mjs';
 import { borderColour } from '../lib/img.mjs';
 import { ART, REVIEW, ROOT, SRC, putEntry } from '../lib/manifest.mjs';
 import { bakeCore, generateCore, plinthTiles, podSprites } from './core.mjs';
-import { gateSprites, smokeSprites } from './board.mjs';
+import { gateSprites, smokeSprites, strainFile } from './board.mjs';
 
 const DIR = path.join(SRC, 'terrain');
 const CONCEPTS = path.join(ROOT, 'notes', 'concepts', '2026-09-29');
@@ -346,7 +346,8 @@ export function bakeTerrain() {
   // The body's own pieces: its skin, what runs down walls, the edges of roofs, and the plinths it raises limbs on.
   const creep = creepTex ? [...creepTiles(creepTex), ...dripTiles(creepTex), ...edgeTiles(), ...plinthTiles(), ...podSprites(), ...edgeTendrils(creepTex)] : [];
   // The skin where a node's strain works on it (templates/board.mjs): drawn, not tinted. Two looks of a whole cell, as of an edge.
-  for (const strain of ['mire', 'burning']) if (have(`creep-${strain}.png`)) creep.push(...creepTiles(tex(`creep-${strain}.png`, 512, 512), `creep-${strain}`, 2));
+  // (A strain drawn again lives in its own folder: board.mjs strainFile.)
+  for (const strain of ['mire', 'burning']) if (fs.existsSync(strainFile(strain))) creep.push(...creepTiles(readImage(strainFile(strain), { w: 512, h: 512 }), `creep-${strain}`, 2));
   const walls = [];
   for (const id of Object.keys(WALLS)) if (have(`wall-${id}.png`)) walls.push(...wallTiles(id, tex(`wall-${id}.png`, 1024, 384)));
   const props = [...propSprites('roof'), ...propSprites('street')];

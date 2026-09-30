@@ -68,8 +68,29 @@ interface ScanArt {
    * what is above its ground line stands over the street, what is below fills the meteor's cells.
    * line: the share of its height above the line; aspect: its width over its height.
    */
-  stages: Array<{ file: string; line: number; aspect: number }>;
+  stages: Array<{ id?: number; file: string; line: number; aspect: number }>;
+  /**
+   * THE STAGE ALIVE (Collins, Sep 30 2026: "should the organ screen have them alive? ... yeah"): one
+   * looping clip per organ tile, deposit, feature and core stage (tools/art/templates/under-loops.mjs),
+   * baked to a horizontal strip of frames and played as a CSS sprite animation (no <video> per cell).
+   */
+  loops: { fps: number; tiles: Record<string, ScanLoop>; stages: Record<string, ScanLoop> } | null;
 }
+interface ScanLoop { strip: string; count: number; pingpong?: boolean }
+
+/**
+ * The inline style that plays a loop strip: its frames in steps, in phase with `anchor` (a
+ * performance.now() time at which it shows its first frame), so a cell drawn again carries on
+ * where it was, and the dome and the meteor's cells (both anchored at 0) show the same frame.
+ */
+function loopStyle(l: ScanLoop, fps: number, anchor: number): string {
+  const dur = (l.count / fps) * 1000;
+  const period = l.pingpong ? 2 * dur : dur;
+  const t = (((performance.now() - anchor) % period) + period) % period;
+  return `background-image:url('${l.strip}');--n:${l.count};--ud:${Math.round(dur)}ms;--uw:${-Math.round(t)}ms;--udir:${l.pingpong ? 'alternate' : 'normal'};`;
+}
+/** A steady phase per organ or cell, so the organs do not all breathe together. */
+const phaseOf = (k: number) => -(((k * 2654435761) >>> 0) % 100000);
 
 /** The tile set the board is drawn with, as the game says (empty on the old board). */
 function boardBiome(): string {
@@ -127,7 +148,7 @@ export class UndergroundScreen {
     box.innerHTML = '<div id="under-ruler"></div><div class="scanline"></div>';
     box.appendChild(this.grid);
     void loadManifest().then((m) => {
-      const under = (m as unknown as { under?: { scan?: ScanArt; core?: { stages?: ScanArt['stages'] } } } | null)?.under;
+      const under = (m as unknown as { under?: { scan?: ScanArt; core?: { stages?: ScanArt['stages'] }; loops?: NonNullable<ScanArt['loops']> } } | null)?.under;
       const art = under?.scan;
       if (!art || !Object.keys(art.tiles).length) return;
       const abs = (f: string) => new URL(artUrl(f), document.baseURI).href;
@@ -138,6 +159,11 @@ export class UndergroundScreen {
         skylines: Object.fromEntries(Object.entries(art.skylines ?? {}).map(([k, f]) => [k, abs(f)])),
         dome: art.dome ? abs(art.dome) : null,
         stages: (under?.core?.stages ?? []).map((s) => ({ ...s, file: abs(s.file) })),
+        loops: under?.loops ? {
+          fps: under.loops.fps,
+          tiles: Object.fromEntries(Object.entries(under.loops.tiles ?? {}).map(([k, l]) => [k, { ...l, strip: abs(l.strip) }])),
+          stages: Object.fromEntries(Object.entries(under.loops.stages ?? {}).map(([k, l]) => [k, { ...l, strip: abs(l.strip) }])),
+        } : null,
       };
       this.el.classList.add('scan');
       // The city above: the board's own kind of place when there is a picture of it, else a plain wireframe.
@@ -204,6 +230,9 @@ export class UndergroundScreen {
     void this.el.offsetWidth;
     this.el.classList.add('booting');
     window.setTimeout(() => this.el.classList.remove('booting'), 1100);
+    // The dome's loop restarted when the stage was hidden: set it in phase again.
+    const dome = document.getElementById('under-dome');
+    if (dome) delete dome.dataset.file;
     this.render();
   }
 
@@ -276,6 +305,16 @@ export class UndergroundScreen {
     dome.classList.add('art', 'staged');
     dome.style.backgroundImage = `url('${art.file}')`;
     dome.style.aspectRatio = String(art.aspect / art.line);
+    // Alive: the same strip the meteor's cells play, in the same phase (both anchored at 0).
+    const loop = this.stageLoop(art);
+    dome.classList.toggle('alive', !!loop);
+    for (const k of ['--n', '--ud', '--uw', '--udir']) dome.style.removeProperty(k);
+    if (loop) dome.style.cssText += loopStyle(loop, this.scan!.loops!.fps, 0);
+  }
+
+  /** The loop strip of a core stage's picture, when there is one. */
+  private stageLoop(art: ScanArt['stages'][number]): ScanLoop | null {
+    return art.id != null ? this.scan?.loops?.stages[String(art.id)] ?? null : null;
   }
 
   /** The skyline of the board's tile set along the street line. */
@@ -360,15 +399,23 @@ export class UndergroundScreen {
         };
         const t = c.kind === 'meteor' ? undefined : tileOf();
         if (t) style = `background-image:url('${t}');`;
+        // What is buried (once resolved) and the features are alive too, each in its own phase.
+        const lk = c.kind === 'feature' ? c.feature : c.kind === 'deposit' && c.deposit && sim.isUncovered(i) ? c.deposit : null;
+        const cellLoop = lk && !organ ? scan.loops?.tiles[lk] : undefined;
+        let resolving = false;
         if (c.kind === 'deposit' && c.deposit && !organ && sim.isUncovered(i)) {
           if (!this.revealedAt.has(i)) this.revealedAt.set(i, this.settled ? performance.now() : 0);
           const age = performance.now() - this.revealedAt.get(i)!;
-          if (age < SCAN_IN) { cls += ' scan-in'; style += `animation-delay:-${Math.round(age)}ms;`; }
+          if (age < SCAN_IN) { resolving = true; cls += ' scan-in'; style += `animation-delay:-${Math.round(age)}ms;`; }
         }
+        if (cellLoop && !resolving) { cls += ' alive'; style = loopStyle(cellLoop, scan.loops!.fps, phaseOf(i + 7919)); }
         const staged = this.stageArt();
         if (c.kind === 'meteor' && i === u.cells.findIndex((x) => x.kind === 'meteor') && staged) {
           // The bottom of the stage's one picture: exactly the meteor's 3 by 2 cells below its ground line.
-          inner += `<div class="meteor-img staged" style="background-image:url('${staged.file}')"></div>`;
+          const loop = this.stageLoop(staged);
+          inner += loop
+            ? `<div class="meteor-img staged alive" style="${loopStyle(loop, scan.loops!.fps, 0)}"></div>`
+            : `<div class="meteor-img staged" style="background-image:url('${staged.file}')"></div>`;
         } else if (c.kind === 'meteor' && i === u.cells.findIndex((x) => x.kind === 'meteor') && scan.meteor) {
           inner += `<div class="meteor-img" style="background-image:url('${scan.meteor}')"></div>`;
         }
@@ -386,6 +433,13 @@ export class UndergroundScreen {
           // It grows in cell by cell from the top: each row a little after the one above.
           const lag = (row - Math.min(...organ.cells.map((x) => Math.floor(x / u.w)))) * 90;
           if (age < SCAN_IN + lag) { cls += ' scan-in'; style += `animation-delay:${Math.round(lag - age)}ms;`; }
+          else {
+            // Alive once scanned in: from its first frame (the still it scanned in as) when it has just
+            // grown, else in its own phase; every cell of one organ in step.
+            const loop = scan.loops?.tiles[organ.organ];
+            const born = this.bornAt.get(organ.id)!;
+            if (loop) { cls += ' alive'; style = `--acc:${GLOW[organ.organ] ?? COLOR[organ.organ]};${loopStyle(loop, scan.loops!.fps, born ? born + SCAN_IN : phaseOf(organ.id))}`; }
+          }
           // Where two organs that share touch, the edge between them pulses.
           const shares = (n: number): boolean => {
             if (n < 0 || n >= u.cells.length) return false;

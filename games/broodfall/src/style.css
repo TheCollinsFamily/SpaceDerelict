@@ -502,6 +502,9 @@ body.view-iso #view-controls { display: flex; }
 @keyframes yoke-think { 50% { opacity: 0.25; } }
 .cp-yoke-link { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 0.9em; }
 .cp-yoke-link span:nth-child(2) { flex: 1; }
+/* The dev server's fallback to the owner's own YOKE (src/meta/storage.ts ownerYokeAllowed): never mistaken for a player's. */
+.cp-yoke-dev { flex: none !important; padding: 1px 6px; border: 1px solid #e0a040; color: #e0a040; font-size: 0.8em; letter-spacing: 0.05em; white-space: nowrap; }
+.cp-acct-memory { margin-top: 6px; }
 .cp-yoke-link button { font: inherit; font-size: 0.85em; padding: 3px 8px; background: none; border: 1px solid var(--ink); color: var(--ink); cursor: pointer; }
 .cp-yoke-dot { width: 8px; height: 8px; border-radius: 50%; background: #8a7f6a; flex: none; }
 .cp-yoke-dot.live { background: #5fbf6a; box-shadow: 0 0 6px #5fbf6a; }
@@ -640,6 +643,32 @@ body.in-ship #topbar, body.in-ship #botbar { visibility: hidden; }
   48% { opacity: 0.35; }
   60% { opacity: 1; filter: brightness(1.6); }
   100% { filter: none; opacity: 1; clip-path: inset(0 0 0 0); }
+}
+
+/*
+ * Alive (Sep 30 2026): an organ, a resolved deposit, a feature, the meteor, each plays its loop,
+ * a horizontal strip of frames stepped through (tools/art/templates/under-loops.mjs; the phase is
+ * set inline: --n frames, --ud one pass, --uw the delay, --udir alternate for a ping-pong).
+ * Only background-position-x moves, so it cannot fight the other animations a cell carries.
+ */
+@keyframes uloop { from { background-position-x: 0%; } to { background-position-x: 100%; } }
+#under.scan .uc.alive {
+  background-size: calc(var(--n) * 100%) auto; background-position: 0% 50%;
+  animation: uloop var(--ud) steps(var(--n), jump-none) var(--uw) infinite var(--udir);
+}
+#under.scan .uc.alive.zq {
+  animation: uloop var(--ud) steps(var(--n), jump-none) var(--uw) infinite var(--udir), zone-pulse 2.8s ease-in-out infinite;
+}
+#under.scan .uc .meteor-img.staged.alive {
+  background-size: calc(var(--n) * 100%) auto; background-position: 0% 100%;
+  animation: heart-beat 1.6s ease-in-out infinite, uloop var(--ud) steps(var(--n), jump-none) var(--uw) infinite var(--udir);
+}
+#under.scan #under-dome.art.staged.alive {
+  background-size: calc(var(--n) * 100%) auto; background-position: 0% 0%;
+  animation: dome-beat 2.4s ease-in-out infinite, uloop var(--ud) steps(var(--n), jump-none) var(--uw) infinite var(--udir);
+}
+@media (prefers-reduced-motion: reduce) {
+  #under.scan .uc.alive, #under.scan .uc .meteor-img.staged.alive, #under.scan #under-dome.art.staged.alive { animation-play-state: paused; }
 }
 
 /* The Seeding Gland: the lane it must touch, and its launch tube firing up through the street. */

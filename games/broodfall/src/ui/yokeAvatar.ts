@@ -36,6 +36,8 @@ export interface YokeAvatarOptions {
   voice?: boolean;
   /** The player's link (src/meta/yokePlayer.ts): she is HIS private YOKE, paid by the house's $3, then by his linked account. */
   player?: PlayerLink;
+  /** The dev server on this PC: with no player route on rfab.ai yet, she may be the owner's star (src/meta/storage.ts ownerYokeAllowed). */
+  ownerFallback?: boolean;
   /** Nobody pays for her any more: the screen shows the link prompt (src/ui/yokeAccount.ts). */
   onCut?(kind: CutKind): void;
   /** What she says when the money stops (src/meta/yokePlayer.ts cutOffLines). */
@@ -110,7 +112,7 @@ export class YokeAvatarUi implements ShipAiProvider {
 
   constructor(private host: HTMLElement, private o: YokeAvatarOptions) {
     this.muted = o.muted;
-    this.link = new AvatarLink({ base: o.base, avatarId: o.ids.avatarId, key: o.key, player: o.player });
+    this.link = new AvatarLink({ base: o.base, avatarId: o.ids.avatarId, key: o.key, player: o.player, ownerFallback: o.ownerFallback });
     this.talk = new AvatarTalk(this.link, {
       onSentence: (text, emotion) => { this.heard++; this.say(text, emotion); },
       onMotion: (state) => this.move(state),
@@ -163,6 +165,14 @@ export class YokeAvatarUi implements ShipAiProvider {
     this.ladder.uncut();
     this.voiceless = false;
   }
+
+  /** The player's token changed (he linked an account): her stream is opened again with the new one. */
+  reconnect(): void {
+    void this.talk.reopen();
+  }
+
+  /** She is the avatar owner's star on this PC's key (the dev server, before the player route is on rfab.ai). */
+  get owners(): boolean { return this.link.owners; }
 
   /** His own talk with her: what was said before, and whatever he says now. One for the life of this screen. */
   freeTalk(): YokeTalk {

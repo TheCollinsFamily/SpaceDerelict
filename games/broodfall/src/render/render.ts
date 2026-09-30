@@ -7,6 +7,7 @@ import { Application, Container, Graphics } from 'pixi.js';
 import { CellType } from '../sim/citymap';
 import { Sim, towerSpec, towerStats } from '../sim/sim';
 import type { Enemy, RootDir, Tower, TowerFamily } from '../sim/types';
+import { Civilians, type Civilian } from '../sim/civilians';
 
 export const CASTE_COLORS = { war: 0xd1603c, science: 0x4fa9a4, royal: 0xd4a72c } as const;
 
@@ -210,7 +211,66 @@ export class Renderer {
     this.drawGround(sim);
     this.drawCreep(sim);
     this.drawEntities(sim);
+    this.syncCivilians(sim);
+    this.drawCivilians(this.entG);
     this.drawFx(sim);
+  }
+
+  // ------------------------------------------------------------ the townsfolk
+
+  /** The townsfolk fleeing the crash (src/sim/civilians.ts): stepped here from the sim's clock, reading the sim only. */
+  protected civ: Civilians | null = null;
+  private civSim: Sim | null = null;
+  /** Where a townsperson was taken by the creep: a puff, seconds left. */
+  protected civPuffs: Array<{ x: number; y: number; t: number }> = [];
+  /** Coat colours by a townsperson's look. */
+  protected static CIV_COATS = [0x9fc3d9, 0xd9c79f, 0xb9a3c9];
+
+  /** Step the crowd up to the sim's tick (a new run makes a new crowd). */
+  protected syncCivilians(sim: Sim): void {
+    if (this.civSim !== sim || !this.civ || sim.tickCount < this.civ.tick) {
+      this.civ = new Civilians(sim);
+      this.civSim = sim;
+      this.civPuffs = [];
+    }
+    const stepped = this.civ.sync(sim);
+    for (const p of this.civPuffs) p.t -= stepped * 0.1;
+    this.civPuffs = this.civPuffs.filter((p) => p.t > 0);
+    for (const e of this.civ.takeEvents()) if (e.kind === 'taken') this.civPuffs.push({ x: e.pos.x, y: e.pos.y, t: 0.9 });
+  }
+
+  /** What the crowd is doing (beats: tools/shot-civilians.mjs). */
+  civiliansNow(): { count: number; calm: number; flee: number; cower: number; leaving: number; escaped: number; taken: number; puffs: number; list: Array<{ x: number; y: number; state: string }> } {
+    const l = this.civ?.list ?? [];
+    const n = (s: string) => l.filter((c) => c.state === s).length;
+    return {
+      count: l.length, calm: n('calm'), flee: n('flee'), cower: n('cower'), leaving: n('leaving'),
+      escaped: this.civ?.escaped ?? 0, taken: this.civ?.taken ?? 0, puffs: this.civPuffs.length,
+      list: l.map((c) => ({ x: c.pos.x, y: c.pos.y, state: c.state })),
+    };
+  }
+
+  /** The top-down board's townsfolk: a small figure each, bobbing as it runs. */
+  protected drawCivilians(g: Graphics): void {
+    for (const c of this.civ?.list ?? []) this.drawCivilian(g, c, c.pos.x, c.pos.y, 1);
+    for (const p of this.civPuffs) {
+      const k = 1 - p.t / 0.9;
+      g.circle(p.x, p.y - 3, 3 + k * 7).fill({ color: 0xc8566b, alpha: 0.55 * (1 - k) });
+    }
+  }
+
+  /** One townsperson at (x, y) on the ground, s times the top-down size. */
+  protected drawCivilian(g: Graphics, c: Civilian, x: number, y: number, s: number): void {
+    const run = c.state === 'flee' || (c.state === 'calm' && c.moved > 0);
+    const bob = run ? Math.abs(Math.sin((this.pulse * (c.state === 'flee' ? 4 : 2)) + c.id)) * 1.6 * s : 0;
+    const low = c.state === 'cower' ? 1.8 * s : 0;
+    const a = c.alpha;
+    g.ellipse(x, y, 3 * s, 1.5 * s).fill({ color: 0x000000, alpha: 0.3 * a });
+    const by = y - 4 * s - bob + low;
+    g.roundRect(x - 2.2 * s, by - 1 * s, 4.4 * s, 5.5 * s - low, 1.5 * s).fill({ color: Renderer.CIV_COATS[c.look % 3], alpha: a });
+    g.circle(x, by - 2.2 * s + low * 0.4, 1.9 * s).fill({ color: 0x241a12, alpha: a });
+    // The bag, swinging on the side it runs from.
+    g.rect(x + (c.dir.x > 0 ? -3.6 : 2.2) * s, by + 1.2 * s, 1.6 * s, 2 * s).fill({ color: 0x8a6a3e, alpha: a });
   }
 
   protected drawGround(sim: Sim): void {

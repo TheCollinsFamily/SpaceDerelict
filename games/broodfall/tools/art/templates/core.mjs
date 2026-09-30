@@ -27,6 +27,7 @@ import { GROUNDS } from '../lib/atlas.mjs';
 import { drawCell } from '../lib/foot.mjs';
 import { ART, REVIEW, SRC } from '../lib/manifest.mjs';
 import { wallTiles } from './terrain.mjs';
+import { keyFrame as studioKey, studioKeyer } from '../lib/leaflit.mjs';
 
 const TERRAIN = path.join(SRC, 'terrain');
 const DIR = path.join(TERRAIN, 'core');
@@ -246,10 +247,77 @@ export async function generatePod() {
 }
 
 /**
+ * The pod's pulse (Sep 30 2026 fix pass: "the seedling pod is one picture, not 2 to 4 frames"): a clip
+ * of the pod throbbing on its green, start frame = end frame = the still, in its OWN folder
+ * (art-src/terrain/core/pod-pulse/; the still is never touched). podSprites() cuts four frames of it.
+ */
+const POD_PULSE_DIR = path.join(DIR, 'pod-pulse');
+const POD_PULSE = 'The seed pod throbs like a beating heart, in place: its fleshy oval body swells a little and ' +
+  'contracts again, twice, the plates of chitin on its back rise and settle with it, the pale root tips at its back ' +
+  'end wriggle, and the pink mist behind it flickers. It does not fly away, does not turn, does not grow bigger ' +
+  'overall. The camera does not move.';
+export async function generatePodPulse() {
+  fs.mkdirSync(POD_PULSE_DIR, { recursive: true });
+  return makeClip({
+    slug: 'the seedling pod pulses', out: path.join(POD_PULSE_DIR, 'pulse.mp4'), stillFile: path.join(DIR, 'seed-pod.png'),
+    prompt: POD_PULSE, seconds: 4, resolution: '720p',
+  });
+}
+
+/** The pulse's frames, keyed the studio's way, as full clip frames (null when there is no clip). */
+function podPulseFrames() {
+  const clip = path.join(POD_PULSE_DIR, 'pulse.mp4');
+  if (!fs.existsSync(clip)) return null;
+  const { frames, w, h } = readFrames(clip, 12);
+  // Frame 0 is the uploaded still itself; the last few settle back onto it.
+  const imgs = frames.slice(1).map((f) => ({ w, h, data: Buffer.from(f) }));
+  const { ck } = studioKeyer({ w, h, data: Buffer.from(imgs[0].data) });
+  for (const img of imgs) { studioKey(ck, img); dropSpecks(img, 0.05); }
+  return imgs;
+}
+
+/**
+ * The four frames of the pulse: the pod at rest, swelling, at its fullest, easing back, chosen by how
+ * much of the picture the body fills (the mist trail is faint, so the alpha-weighted area is the body).
+ */
+function pulseFour(imgs) {
+  const area = imgs.map((f) => { let a = 0; for (let i = 3; i < f.data.length; i += 4) if (f.data[i] > 200) a++; return a; });
+  // One beat: from the smallest frame to the next biggest and back down.
+  const lo = area.indexOf(Math.min(...area.slice(0, Math.ceil(area.length / 2))));
+  let hi = lo;
+  for (let i = lo; i < Math.min(area.length, lo + 24); i++) if (area[i] > area[hi]) hi = i;
+  let back = hi;
+  for (let i = hi; i < Math.min(area.length, hi + 24); i++) if (area[i] < area[back]) back = i;
+  const mid = (a, b) => Math.round((a + b) / 2);
+  const idx = [lo, mid(lo, hi), hi, mid(hi, back)];
+  return { frames: idx.map((i) => imgs[i]), idx, area: idx.map((i) => area[i]) };
+}
+
+/**
  * The pod a Seedling is shot up in (Collins, Sep 29 2026: "with the idea like it shoots out"):
  * cut off its background, flying toward the upper right. The game turns it along its arc.
+ * With the pulse on disk: `seed-pod` and `seed-pod-1` … `-3` are its four frames, all cut in one box
+ * (so the pod swells in place), which the game cycles as it flies (src/render/isoRender.ts).
  */
 export function podSprites() {
+  const pulse = podPulseFrames();
+  if (pulse && pulse.length >= 8) {
+    const { frames, idx, area } = pulseFour(pulse);
+    const b = unionBox(frames);
+    const w = 96;
+    const out = frames.map((f, i) => {
+      const cut = crop(f, b.x0, b.y0, b.x1 - b.x0, b.y1 - b.y0);
+      return { id: i ? `seed-pod-${i}` : 'seed-pod', img: resize(cut, w, Math.round((cut.h / cut.w) * w)), extra: { anchor: [0.5, 0.5] } };
+    });
+    // To look at: the four frames big, side by side, over the creep's colour.
+    const T = 256;
+    const sheet = blank(4 * T, T, [...GROUNDS.creep, 255]);
+    out.forEach((s, i) => over(sheet, resize(s.img, T, Math.round((s.img.h / s.img.w) * T)), i * T, 0));
+    fs.mkdirSync(path.join(REVIEW, 'terrain'), { recursive: true });
+    writeJpg(path.join(REVIEW, 'terrain', 'seed-pod-pulse.jpg'), sheet, 3);
+    console.log(`[terrain] seed pod: 4 pulse frames (clip frames ${idx.join(', ')}, body ${area.join(' / ')} px)`);
+    return out;
+  }
   const file = path.join(DIR, 'seed-pod.png');
   if (!fs.existsSync(file)) return [];
   const img = readImage(file);

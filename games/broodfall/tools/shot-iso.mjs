@@ -3,10 +3,12 @@
  * the art loads, the board is isometric, every unit and limb on the field has its picture,
  * a click on a roof reaches the cell it was aimed at, and the frame rate holds.
  *
- * Usage: npm run build && node tools/shot-iso.mjs
+ * Usage: node tools/shot-iso.mjs
+ * Builds its OWN copy of the game (dist-iso/, or BROODFALL_DIST) and serves it on its own port (5199, or
+ * BROODFALL_PORT), so it never plays a build another session is changing under it.
  * Artifacts: tools/screenshots/iso-*.png
  */
-import { spawn, execSync } from 'node:child_process';
+import { spawn, execSync, spawnSync } from 'node:child_process';
 import { mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -17,6 +19,7 @@ const root = join(here, '..');
 const shots = join(here, 'screenshots');
 mkdirSync(shots, { recursive: true });
 const PORT = Number(process.env.BROODFALL_PORT || 5199);
+const DIST = process.env.BROODFALL_DIST || 'dist-iso';
 const failures = [];
 const pass = (name) => console.log(`  PASS  ${name}`);
 const fail = (name, detail) => { failures.push(name); console.log(`  FAIL  ${name} — ${detail}`); };
@@ -33,7 +36,7 @@ function freePort() {
 }
 function startPreview() {
   freePort();
-  const child = spawn(process.platform === 'win32' ? 'npx.cmd' : 'npx', ['vite', 'preview'], { cwd: root, stdio: 'pipe', shell: process.platform === 'win32' });
+  const child = spawn(process.platform === 'win32' ? 'npx.cmd' : 'npx', ['vite', 'preview', '--outDir', DIST, '--port', String(PORT), '--strictPort'], { cwd: root, stdio: 'pipe', shell: process.platform === 'win32' });
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error('vite preview did not start in 30s')), 30000);
     child.stdout.on('data', (d) => { if (String(d).includes('localhost')) { clearTimeout(timer); resolve(child); } });
@@ -55,6 +58,8 @@ const reachedOrCovered = (page, aim, got) => page.evaluate(([cells, c]) => {
   return fwd(front) > fwd(aimed) ? 'covered' : 'missed';
 }, [aim.cells, got]);
 
+const built = spawnSync(process.platform === 'win32' ? 'npx.cmd' : 'npx', ['vite', 'build', '--outDir', DIST, '--emptyOutDir'], { cwd: root, stdio: 'pipe', shell: process.platform === 'win32', encoding: 'utf8' });
+if (built.status !== 0) { console.error(built.stdout, built.stderr); process.exit(1); }
 const server = await startPreview();
 const browser = await chromium.launch({ args: ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist', '--enable-webgl'] });
 try {
@@ -141,6 +146,7 @@ try {
       return window.broodfall.cellAtClient(x, y);
     }, [cx, cy]);
     if ((await reachedOrCovered(page, a, got)) !== 'missed') reached++;
+    else console.log('    missed at turn 0: aimed ' + a.cells.join('/') + ', reached ' + got + ' ' + JSON.stringify(await page.evaluate(([c, d]) => { const s = window.broodfall.sim; const f = (x) => s.towers.find((t) => s.cellsOf(t).includes(x)); const t1 = f(d), t2 = f(c); const now = t2 ? window.broodfall.worldToScreen(t2.pos.x, t2.pos.y) : null; return { got: t1 ? t1.family : 'no limb', gotH: s.map.heights[d], aimed: t2 ? t2.family : '?', aimedH: s.map.heights[c], cam: window.broodfall.camera(), now, towers: s.towers.length, outcome: window.broodfall.summary().outcome }; }, [got, a.cells[0]])) + ' aimedAt ' + Math.round(a.x) + ',' + Math.round(a.y));
   }
   check(tried > 0 && reached === tried, 'a click aimed at a limb reaches it (or the limb standing in front of it)', `${reached}/${tried}`);
 

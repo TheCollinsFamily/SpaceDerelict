@@ -8,7 +8,7 @@ import '../yokeAccount.css';
 import { loadYoke, playerTokenStore } from '../meta/storage';
 import { registerSettingsSection } from './settings';
 import {
-  allowanceLeft, allowanceText, bonusTimes, costText, dollars, tokensText, watchConnect,
+  allowanceLeft, allowanceText, bonusTimes, costText, dollars, memoryText, tokensText, watchConnect,
   PlayerLink, type ConnectCode, type CutKind, type YokeAccountState,
 } from '../meta/yokePlayer';
 
@@ -95,6 +95,9 @@ export class YokeAccountUi {
     if (s.connected) parts.push(this.accountHtml(s, opts.prompt !== false));
     else if (this.cut) { if (opts.prompt !== false) parts.push(this.promptHtml(false)); }
     else parts.push(this.meterHtml(s));
+    // Her memory of this campaign (only where a campaign is open: the Settings screen has none).
+    const memory = this.link.campaignId ? memoryText(s) : '';
+    if (memory && parts.length) parts.push(`<div class="cp-acct-fine cp-acct-memory">${esc(memory)}</div>`);
     if (!parts.length) return '';
     return `<div class="cp-acct" data-acct="${s.connected ? 'linked' : this.cut ? 'cut' : 'guest'}">${parts.join('')}</div>`;
   }

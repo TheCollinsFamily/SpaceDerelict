@@ -571,7 +571,14 @@ export class Hud {
         if (art) artEl.setAttribute('style', art); else artEl.remove();
         // Each caste's price in its own span (the text is the same), so a HUD style can draw the caste (src/hud/themes).
         const costEl = div.querySelector('.card-cost') as HTMLElement;
-        if (card.free) costEl.textContent = 'FREE (the pair)';
+        // A free card is priced like any other: the word where the number goes, why it is free where the caste goes.
+        if (card.free) {
+          const part = document.createElement('span');
+          part.className = 'cc cc-free';
+          part.innerHTML = `<b>FREE</b>${spec.pair ? '<u>PAIR</u>' : ''}`;
+          if (spec.pair) part.title = 'The second of a pair: one pick, two placements';
+          costEl.append(part);
+        }
         else {
           (['war', 'science', 'royal'] as Caste[]).filter((c) => (spec.cost[c] ?? 0) > 0).forEach((c, k) => {
             if (k) costEl.append(' ');

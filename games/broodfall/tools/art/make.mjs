@@ -10,6 +10,7 @@
  *                                                         --braced (cannon, dartgun), --skins (carapace), --no-bake
  *   node tools/art/make.mjs unit broodling puppet-royal   the hive's own walkers (ALLIES in tools/art/units.mjs)
  *   node tools/art/make.mjs limb spitter lasher
+ *   node tools/art/make.mjs variant spitter [--stills|--bake] [--only=bone,swarm]   upgrade looks (tools/art/limb-variants.mjs)
  *   node tools/art/make.mjs terrain
  *   node tools/art/make.mjs fx [sheets|parts [families]]  effects in flight, bursts, clouds; the donor parts
  *   node tools/art/make.mjs biome megacity orient         tile sets (none named: every one)
@@ -47,6 +48,12 @@ const TEMPLATES = {
     const { makeLimb } = await import('./templates/limb.mjs');
     return settle(ids, 4, (id) => makeLimb(id, { bakeOnly: flags.has('--bake'), stillsOnly: flags.has('--stills') }));
   },
+  // Upgrade looks (tools/art/limb-variants.mjs, templates/limb-variant.mjs): variant <families> [--only=bone,swarm] [--stills|--bake].
+  variant: async () => {
+    const { makeLimbVariants } = await import('./templates/limb-variant.mjs');
+    const only = [...flags].find((f) => f.startsWith('--only='))?.slice(7).split(',') ?? [];
+    return settle(ids, 3, (id) => makeLimbVariants(id, { bakeOnly: flags.has('--bake'), stillsOnly: flags.has('--stills'), only }));
+  },
   // What flies, bursts and hangs in the air, and the donor parts (tools/art/templates/fx.mjs): fx [sheets|parts [families]].
   fx: async () => {
     const { makeFx } = await import('./templates/fx.mjs');
@@ -83,6 +90,11 @@ const TEMPLATES = {
   under: async () => {
     const { makeUnder } = await import('./templates/under.mjs');
     return Promise.allSettled([makeUnder({ bakeOnly: flags.has('--bake'), only: ids })]);
+  },
+  // The organ stage alive (tools/art/templates/under-loops.mjs): one looping clip per organ tile, core stage, deposit.
+  underloops: async () => {
+    const { makeUnderLoops } = await import('./templates/under-loops.mjs');
+    return Promise.allSettled([makeUnderLoops({ bakeOnly: flags.has('--bake'), only: ids, reroll: flags.has('--reroll') })]);
   },
   ship: async () => {
     const { makeShip } = await import('./templates/ship.mjs');

@@ -308,6 +308,26 @@ wave). Full list: `content/upgrades.ts`.
 **Royal points.** Royal meat is counted in points: a consort or matron pays 1, the
 royal 3. A point buys a third evolution stage or a Royal Surge.
 
+### Upgrade looks: a limb changes by the CLASS of what it carries (Collins, Sep 30 2026 — PROTOTYPED Sep 30)
+
+His words: "are the towers changing with upgrades? (maybe have like a class of change so like x with any of
+yps or h leads to y change and x with 2 4 5 leads to another then you get super structures for when you have
+them combined with yps and 245". Read as: his letters and numbers are GROUPS of upgrades; any member of a
+group gives that group's change; two groups combined give a bigger SUPERSTRUCTURE. (Collins: correct the
+reading if it is wrong.) Replaces the per-stage look (~$150) TO-CREATE asked him about.
+
+- **Four classes**; every evolution option and every pip is exactly one (`content/upgradeLooks.ts`, tested):
+  **BONE** heavy/armoured (broader, bone plates, spikes) · **SWARM** fast/many (its working part multiplied) ·
+  **VENOM** poison/fire/acid/digest (swollen yellow-green glands) · **REACH** slow/snare/air/range (taller,
+  guy-ropes to the ground).
+- **Points:** an evolution stage 2 (the royal stage 3), a donor pip 1. **Class look** at 2 in a class;
+  **superstructure** when two classes are at 3 each: Bone Hydra, Plague Bastion, Siege Spire, Spore Hive,
+  Storm Crown, Weeping Snare (one per pair). A tie shows what was chosen last.
+- **Render only**: the sim and balance are untouched; the crest and donor grafts stay; a limb GROWS into its
+  new look with a flash. `?looks=off` shows every limb in its own look.
+- **Prototype:** Spitter, Lasher, Galvanic Frond, all four classes and one superstructure each, in the game.
+  Full design, tables, pictures and the rollout cost for all 37: `notes/UPGRADE-LOOKS.md`.
+
 ### What a second copy does (Collins, Sep 28 2026: "what does doubling an upgrade that gives bullet burning do? decide and implement for each")
 The rule: **every copy adds its amount again; a multiplier multiplies again; a
 status verb (slow, poison, burn, shred) also lasts 0.5s longer per copy; anything

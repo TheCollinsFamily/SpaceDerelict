@@ -29,7 +29,7 @@ const EMBLEM =
   'Its one emblem is a small plain gold hexagon, the shape of a honeycomb cell. There are no crosses, no stars ' +
   'and no crescents anywhere';
 /** The hive's own creatures carry nothing of the empire's (the broodling came out with a gold hexagon on its back). */
-const emblemOf = (u) => (u.noEmblem ? 'It carries no emblem, no badge, no metal and no markings of any kind: it is all living flesh' : EMBLEM);
+const emblemOf = (u) => u.emblem ?? (u.noEmblem ? 'It carries no emblem, no badge, no metal and no markings of any kind: it is all living flesh' : EMBLEM);
 const KEYS = { green: { hex: '00FF00', name: 'green' }, magenta: { hex: 'FF00FF', name: 'magenta' } };
 
 /** Green is the proven background; anything teal, green or royal is cut off magenta instead. */
@@ -48,6 +48,9 @@ const GAIT = {
     motion: 'The big beetle walks on the spot as if on a treadmill, its six legs stepping slowly and heavily, and its small crew march on the spot beside it, keeping their places.' },
   ride: { noun: 'unit', heading: 'walking', caught: 'mid-stride',
     motion: 'The big beetle walks on the spot as if on a treadmill, its six legs stepping slowly and heavily, and its small rider keeps its seat, swaying with each step.' },
+  // The townsfolk fleeing the crash (src/sim/civilians.ts): they run in a panic, they never march.
+  run: { noun: 'person', heading: 'running', caught: 'mid-stride, running in a panic',
+    motion: 'The person runs on the spot in a panic as if on a treadmill: legs pumping fast, the free arm flailing, the bag swinging, the body bobbing and leaning forward.' },
   fly: { noun: 'unit', heading: 'flying', caught: 'mid-wingbeat',
     motion: 'The unit hovers on the spot in the air: its wings beat fast, its body bobs gently up and down, its legs dangle.' },
 };

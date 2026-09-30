@@ -9,8 +9,12 @@
 import { Rng } from './rng';
 import {
   CellType, CityMap, DraftOffer, allDistance, computeFlow, createBoard,
-  draftOffers, frontierGates, isPassable, slotOfCell, stampPlate,
+  PLATE, draftOffers, frontierGates, isPassable, legalDrafts, slotOfCell, stampPlate,
 } from './citymap';
+
+type Edge = 'n' | 's' | 'e' | 'w';
+/** A wall of yours facing unclaimed city (Sim.burrowSiteAt). */
+export interface BurrowSite { slot: number; edge: Edge; mouth: number[]; carve: number[]; blocked: boolean }
 import { PLATE_FEATURES, geneById } from '../../content/plates';
 import {
   BALANCE as B, ENEMIES, TOWERS, WAVE_TABLE,
@@ -27,6 +31,7 @@ import {
   type OrganDef,
 } from '../../content/underground';
 import { createUnderground, neighbours4, type Underground } from './underground';
+import { DECREE_BY_ID, ROYAL, type DecreeId } from '../../content/royal';
 
 export const DT = 0.1;
 
@@ -274,6 +279,12 @@ export class Sim {
     burnSpreadFrac: B.burnSpreadFrac as number, royalJelly: 0, salvageMult: 1, broodHpMult: 1, creepNodeEvery: 0,
     homingRefund: false, groundingMult: 1, weddingMusk: false, trapCage: false,
   };
+  /** ROYAL DECREES bought this run (content/royal.ts), by id. */
+  decrees: Partial<Record<DecreeId, number>> = {};
+  /** Limbs still grafting (surgery under fire) at the last tower update: the hive smells them. */
+  private wounds = 0;
+  /** Walls burrowed through (the board redraws its city when this changes). */
+  burrows = 0;
   /** Kills made by the creep itself (Hitchhiker Spores buds a node every Nth). */
   private creepKillCount = 0;
   private researcherTimer = 20;
@@ -413,7 +424,7 @@ export class Sim {
     this.creepDist = allDistance(this.map, this.map.coreCell);
     this.flow = this.computeFlowField();
     this.pickIncomingGates();
-    while (this.hand.length < B.handSize) this.hand.push(this.drawCard());
+    while (this.hand.length < B.handSize) this.hand.push(this.drawCard(cfg.firstHand));
   }
 
   // ---------- derived ----------
@@ -756,8 +767,11 @@ export class Sim {
   statsOf(t: Tower) {
     const shared: ModPip[] = [];
     let choirBonus = 0;
+    let crowns = 0;
     for (const c of this.towers) {
       if (c.id === t.id) continue;
+      // A crowned limb near it: the court's presence, turned to your side.
+      if (c.crowns && dist(c.pos, t.pos) <= ROYAL.crownRadius) crowns += c.crowns;
       // Combo engines pointed at this limb feed it their pool (amplifiers are
       // counted separately and applied last, so they multiply everything fed).
       if (towerSpec(c.family).engine) {
@@ -818,6 +832,10 @@ export class Sim {
       s.damage *= ob.potency;
       s.tempo *= ob.tempo;
       s.rate *= ob.tempo;
+    }
+    if (crowns > 0) {
+      s.potency *= 1 + ROYAL.crownDamage * crowns;
+      s.damage *= 1 + ROYAL.crownDamage * crowns;
     }
     for (const g of this.enginesPointedAt(t, 'twin')) s.volley *= towerStats(g).twinPower;
     // A GENTLE tap lets its target keep working at half speed.
@@ -1530,8 +1548,12 @@ export class Sim {
 
   // ---------- cards ----------
 
-  private drawCard(): CardInstance {
+  /** One card, by the draw weights; `only` narrows the draw to those families (still one rng draw). */
+  private drawCard(only?: readonly TowerFamily[]): CardInstance {
     const w = this.drawWeights();
+    if (only?.length && TOWERS.some((t) => only.includes(t.family) && w[t.family] > 0)) {
+      for (const t of TOWERS) if (!only.includes(t.family)) w[t.family] = 0;
+    }
     // An atrophy gland must never leave nothing to draw: if everything is starved, ignore it.
     const total = TOWERS.reduce((a, t) => a + w[t.family], 0);
     const spec = this.rng.weighted(TOWERS, (t) => (total > 0 ? w[t.family]
@@ -1581,7 +1603,15 @@ export class Sim {
           this.stats.cannibalized += 1;
         }
         if (!card.free) this.pay(spec.cost);
-        this.addTower(card.family, ground[0], pips, place.facing ?? cmd.facing);
+        const grown = this.addTower(card.family, ground[0], pips, place.facing ?? cmd.facing);
+        // SURGERY UNDER FIRE: grafting what was eaten takes time, and mid-siege that time is
+        // spent in the open — the new limb holds fire, bleeds double, and draws the climbers.
+        if (pips.length > 0 && this.phase === 'siege') {
+          const seconds = B.graftSeconds + B.graftPerPip * pips.length;
+          grown.graftUntil = this.time + seconds;
+          this.stats.surgeriesUnderFire = (this.stats.surgeriesUnderFire ?? 0) + 1;
+          this.events.push({ kind: 'surgery-under-fire', family: card.family, seconds });
+        }
         this.hand.splice(cmd.cardIndex, 1);
         // A free card (a pair's second half) is not replaced; a paired card hands
         // you its free twin to place next.
@@ -1785,6 +1815,53 @@ export class Sim {
         t.facing = cmd.dir;
         return { ok: true };
       }
+      case 'decree': {
+        const def = DECREE_BY_ID[cmd.decree];
+        if (!def) return { ok: false, err: 'no such decree' };
+        const price = this.decreeCost(cmd.decree);
+        if (this.meat.royal < price) return { ok: false, err: `it takes ${price} royal point${price === 1 ? '' : 's'}` };
+        let family: TowerFamily | undefined;
+        switch (cmd.decree) {
+          case 'crown': {
+            const t = this.towers.find((x) => x.id === cmd.towerId);
+            if (!t) return { ok: false, err: 'a crown is set on a limb: open its panel' };
+            t.crowns = (t.crowns ?? 0) + 1;
+            family = t.family;
+            break;
+          }
+          case 'commission': {
+            const f = cmd.family;
+            if (!f || !TOWERS.some((x) => x.family === f) || !this.commissionable(f)) return { ok: false, err: 'your organs do not unlock that limb' };
+            this.hand.push({ id: this.nextId++, family: f, free: true });
+            family = f;
+            break;
+          }
+          case 'retinue':
+            this.hand.push(this.drawCard());
+            break;
+          case 'heart':
+            this.coreMaxHp += ROYAL.heartHp;
+            this.coreHp = Math.min(this.coreMaxHp, this.coreHp + ROYAL.heartHp);
+            break;
+          default:
+            break; // favour and larder act at the wave's turn
+        }
+        this.meat.royal -= price;
+        this.decrees[cmd.decree] = (this.decrees[cmd.decree] ?? 0) + 1;
+        this.stats.decrees = { ...this.decrees };
+        this.events.push({ kind: 'royal-decree', decree: cmd.decree, name: def.name, family });
+        return { ok: true };
+      }
+      case 'burrow': {
+        if (this.phase === 'siege') return { ok: false, err: 'the body digs between waves' };
+        const site = this.burrowSiteAt(cmd.cell);
+        if (!site) return { ok: false, err: 'no wall of yours faces the city here' };
+        if (site.blocked) return { ok: false, err: 'something of yours stands in the way' };
+        if (this.meat.war < B.burrowCost) return { ok: false, err: 'cannot afford' };
+        this.meat.war -= B.burrowCost;
+        this.digBurrow(site);
+        return { ok: true };
+      }
       case 'royal-surge': {
         if (this.meat.royal < B.royalSurgeCost) return { ok: false, err: 'cannot afford' };
         this.meat.royal -= B.royalSurgeCost;
@@ -1829,6 +1906,170 @@ export class Sim {
         return { ok: true };
       }
     }
+  }
+
+  // ---------- royal decrees (content/royal.ts) ----------
+
+  /** What the next purchase of a decree costs, in royal points. */
+  decreeCost(id: DecreeId): number {
+    const def = DECREE_BY_ID[id];
+    return def.cost + def.costStep * (this.decrees[id] ?? 0);
+  }
+
+  /** Limbs a Royal Commission may name: drawable ones your organs unlock (not seedlings or cages). */
+  commissionable(family: TowerFamily): boolean {
+    return towerSpec(family).weight > 0 && this.isUnlocked(family);
+  }
+
+  /** Crowns worn by OTHER limbs within reach of this one (the court's presence, turned). */
+  crownsOver(t: Tower): number {
+    let n = 0;
+    for (const c of this.towers) {
+      if (!c.crowns || c.id === t.id) continue;
+      if (dist(c.pos, t.pos) <= ROYAL.crownRadius) n += c.crowns;
+    }
+    return n;
+  }
+
+  /** What one point of harm does to this limb: crowns shelter it, an open graft bleeds double. */
+  harmMultOf(t: Tower): number {
+    let m = 1;
+    const crowns = this.crownsOver(t);
+    if (crowns > 0) m *= Math.pow(ROYAL.crownHarm, crowns);
+    if (t.graftUntil !== undefined && t.graftUntil > this.time) m *= B.graftHarm;
+    return m;
+  }
+
+  /** A limb still grafting (surgery under fire) near this point: the climbers smell it first. */
+  private woundNear(p: Vec, within: number): { kind: 't'; id: number } | null {
+    if (this.wounds <= 0) return null;
+    let best: Tower | null = null;
+    let bd = within;
+    for (const t of this.towers) {
+      if (t.graftUntil === undefined || t.graftUntil <= this.time) continue;
+      const d = dist(t.pos, p);
+      if (d <= bd) { bd = d; best = t; }
+    }
+    return best ? { kind: 't', id: best.id } : null;
+  }
+
+  /** Consort's Favour, at a cleared wave: the wave's best killers are promoted (one pip of their own family each). */
+  private promoteFavoured(): void {
+    const n = this.decrees.favour ?? 0;
+    if (n <= 0) return;
+    const ranked = this.towers
+      .map((t) => ({ t, k: t.kills - (t.waveKillsAt ?? 0) }))
+      .filter((x) => x.k > 0)
+      .sort((a, b) => b.k - a.k || a.t.id - b.t.id)
+      .slice(0, n);
+    for (const { t } of ranked) {
+      const before = this.statsOf(t).maxHp;
+      t.pips = [...t.pips, { family: t.family }];
+      t.promotions = (t.promotions ?? 0) + 1;
+      const after = this.statsOf(t).maxHp;
+      t.maxHp = after;
+      t.hp = Math.min(after, t.hp + Math.max(0, after - before));
+      this.events.push({ kind: 'limb-promoted', family: t.family });
+    }
+  }
+
+  // ---------- burrowing (the interior can seal itself: DESIGN "Plate connection ALGEBRA") ----------
+
+  /**
+   * A wall of yours that faces unclaimed city, near this cell: the two mouth cells of a claimed
+   * district's closed edge, and the blocks to dig to reach its streets. `cell` may be the unclaimed
+   * city in front of the wall (the smoke) or the wall itself. Null when no such wall is near.
+   */
+  burrowSiteAt(cell: number): BurrowSite | null {
+    const W = this.cfg.gridW;
+    if (cell < 0 || cell >= this.map.cells.length) return null;
+    const P = PLATE;
+    const cx = cell % W;
+    const cy = Math.floor(cell / W);
+    const here = slotOfCell(this.map, cell);
+    const sx = here % this.map.slotsX;
+    const sy = Math.floor(here / this.map.slotsX);
+    const OPP = { n: 's', s: 'n', e: 'w', w: 'e' } as const;
+    let best: { slot: number; edge: Edge; mouth: number[]; d: number } | null = null;
+    const consider = (claimed: number, edge: Edge) => {
+      const inst = this.map.slots[claimed];
+      if (!inst || inst.pattern.ports[edge]) return;
+      const nx = (claimed % this.map.slotsX) + (edge === 'e' ? 1 : edge === 'w' ? -1 : 0);
+      const ny = Math.floor(claimed / this.map.slotsX) + (edge === 's' ? 1 : edge === 'n' ? -1 : 0);
+      // Only unclaimed city inside the board: the board's own edge is not a city to dig into.
+      if (nx < 0 || ny < 0 || nx >= this.map.slotsX || ny >= this.map.slotsY) return;
+      if (this.map.slots[ny * this.map.slotsX + nx] !== null) return;
+      const ox = (claimed % this.map.slotsX) * P;
+      const oy = Math.floor(claimed / this.map.slotsX) * P;
+      const mouth = edge === 'n' ? [oy * W + ox + 4, oy * W + ox + 5]
+        : edge === 's' ? [(oy + P - 1) * W + ox + 4, (oy + P - 1) * W + ox + 5]
+          : edge === 'w' ? [(oy + 4) * W + ox, (oy + 5) * W + ox]
+            : [(oy + 4) * W + ox + P - 1, (oy + 5) * W + ox + P - 1];
+      const mx = ((mouth[0] % W) + (mouth[1] % W)) / 2;
+      const my = (Math.floor(mouth[0] / W) + Math.floor(mouth[1] / W)) / 2;
+      const d = Math.max(Math.abs(mx - cx), Math.abs(my - cy));
+      if (d > 3.5) return;
+      if (!best || d < best.d) best = { slot: claimed, edge, mouth, d };
+    };
+    if (this.map.slots[here] === null) {
+      // In the smoke: the claimed neighbours whose walls face this district.
+      for (const e of ['n', 's', 'e', 'w'] as const) {
+        const nx = sx + (e === 'e' ? 1 : e === 'w' ? -1 : 0);
+        const ny = sy + (e === 's' ? 1 : e === 'n' ? -1 : 0);
+        if (nx < 0 || ny < 0 || nx >= this.map.slotsX || ny >= this.map.slotsY) continue;
+        consider(ny * this.map.slotsX + nx, OPP[e]);
+      }
+    } else {
+      for (const e of ['n', 's', 'e', 'w'] as const) consider(here, e);
+    }
+    if (!best) return null;
+    const site = best as { slot: number; edge: Edge; mouth: number[]; d: number };
+    // Dig inward, both mouth columns side by side, until either reaches a street of the district.
+    const step = site.edge === 'n' ? W : site.edge === 's' ? -W : site.edge === 'w' ? 1 : -1;
+    const carve: number[] = [];
+    let reached = false;
+    for (let depth = 0; depth < P; depth++) {
+      const row = site.mouth.map((m) => m + step * depth);
+      if (row.some((c) => isPassable(this.map.cells[c]))) { reached = true; break; }
+      carve.push(...row);
+    }
+    if (!reached) return null;
+    const blocked = carve.some((c) => this.isOccupied(c) || c === this.map.coreCell);
+    return { slot: site.slot, edge: site.edge, mouth: site.mouth, carve, blocked };
+  }
+
+  /** Dig a burrow: the wall becomes a street and the district gains an opening (a new frontier gate). */
+  private digBurrow(site: BurrowSite): void {
+    const W = this.cfg.gridW;
+    const inst = this.map.slots[site.slot]!;
+    const ox = (site.slot % this.map.slotsX) * PLATE;
+    const oy = Math.floor(site.slot / this.map.slotsX) * PLATE;
+    const rows = inst.pattern.rows.map((r) => r.split(''));
+    for (const c of site.carve) {
+      this.map.cells[c] = CellType.Road;
+      this.map.heights[c] = 0;
+      this.map.plinths[c] = 0;
+      rows[Math.floor(c / W) - oy][(c % W) - ox] = '.';
+    }
+    // The plate's own record changes (a copy: patterns are shared by every plate drawn from the pool).
+    inst.pattern = {
+      ...inst.pattern,
+      id: `${inst.pattern.id}-burrow-${site.edge}`,
+      rows: rows.map((r) => r.join('')),
+      ports: { ...inst.pattern.ports, [site.edge]: true },
+    };
+    this.gates = frontierGates(this.map);
+    this.creepDist = allDistance(this.map, this.map.coreCell);
+    this.refreshRouting();
+    this.burrows += 1;
+    this.stats.burrows = this.burrows;
+    const gate = this.gates.find((g) => site.mouth.includes(g)) ?? site.mouth[0];
+    this.events.push({ kind: 'burrowed', cell: site.mouth[0], gate });
+  }
+
+  /** True when the body can no longer draft any district (it has walled itself in against the city). */
+  sealedIn(): boolean {
+    return this.map.slots.some((x) => x === null) && legalDrafts(this.map).length === 0;
   }
 
   /** A sling's throw reach (reach pips stretch it, like every other range). */
@@ -2157,12 +2398,16 @@ export class Sim {
     // points are kept.
     this.growCreepNodes('waveStart');
     if (this.cfg.organStage && this.waveNumber > 1) {
-      const war = Math.floor(this.meat.war);
-      const science = Math.floor(this.meat.science);
+      // A ROYAL LARDER keeps half of what would be lost (each copy half of the rest).
+      const keep = 1 - Math.pow(1 - ROYAL.larderKeep, this.decrees.larder ?? 0);
+      const war = Math.floor(this.meat.war * (1 - keep));
+      const science = Math.floor(this.meat.science * (1 - keep));
       if (war > 0 || science > 0) this.events.push({ kind: 'meat-cleared', war, science });
-      this.meat.war = 0;
-      this.meat.science = 0;
+      this.meat.war = keep > 0 ? this.meat.war - war : 0;
+      this.meat.science = keep > 0 ? this.meat.science - science : 0;
     }
+    // Consort's Favour reads each limb's kills in this wave.
+    for (const t of this.towers) t.waveKillsAt = t.kills;
     const comp = WAVE_TABLE[this.tier];
     const scale = 1 + this.wavesCleared * B.waveCountScale;
     this.spawnQueue = [];
@@ -2253,6 +2498,8 @@ export class Sim {
           this.stats.healed += Math.min(t.maxHp, raw) - t.hp;
           t.hp = Math.min(t.maxHp, raw);
         }
+        // Consort's Favour: the wave's best killers are promoted.
+        this.promoteFavoured();
         // Mitosis: nodes bud their copies.
         this.budMitosis();
         this.checkDirective();
@@ -2266,6 +2513,8 @@ export class Sim {
             this.events.push({ kind: 'draft-open' });
             return;
           }
+          // Walled in: no district can be drafted. Say so (a burrow opens the way again).
+          if (this.map.slots.some((x) => x === null)) this.events.push({ kind: 'sealed-in' });
         }
         this.phase = 'growth';
         this.pickIncomingGates();
@@ -2674,6 +2923,7 @@ export class Sim {
   /** All harm to a limb goes through here: its shield soaks first, then hp. */
   hurtTower(t: Tower, amount: number): void {
     t.lastHitAt = this.time;
+    amount *= this.harmMultOf(t);
     const sh = t.shield ?? 0;
     if (sh > 0) {
       const soak = Math.min(sh, amount);
@@ -3163,7 +3413,7 @@ export class Sim {
       // they crawl, and that crawl is the defender's window to shoot them off
       // the wall. (Without it, covering the lane just fed the sappers.)
       if (spec.sapper) {
-        const prey = this.nearestStructure(e.pos, 3 * this.cfg.cellPx);
+        const prey = this.woundNear(e.pos, B.graftScent) ?? this.nearestStructure(e.pos, 3 * this.cfg.cellPx);
         if (prey) {
           const pp = this.structurePos(prey);
           if (pp) {
@@ -3205,7 +3455,7 @@ export class Sim {
       // Standoff bombardier: besieges the nearest structure from OUTSIDE melee.
       // Short-armed limbs cannot answer it; long guns and broodlings can.
       if (spec.standoff) {
-        const prey = this.nearestStructure(e.pos, B.mortarStandoff);
+        const prey = this.woundNear(e.pos, B.mortarStandoff) ?? this.nearestStructure(e.pos, B.mortarStandoff);
         if (prey) {
           e.attackCooldown -= DT;
           if (e.attackCooldown <= 0 && spec.rate > 0) {
@@ -3674,6 +3924,7 @@ export class Sim {
 
   private updateTowers(): void {
     const relayClaimed = new Set<number>();
+    this.wounds = 0;
     for (const t of this.towers) {
       // Cooldown ticks for every limb — sling and lobber recharges live here too.
       t.cooldown -= DT;
@@ -3702,6 +3953,13 @@ export class Sim {
 
       // Sedation darts: a stunned limb holds fire.
       if (t.stunnedUntil !== undefined && t.stunnedUntil > this.time) continue;
+
+      // SURGERY UNDER FIRE: a limb still grafting what it ate holds fire until the graft takes.
+      if (t.graftUntil !== undefined) {
+        if (t.graftUntil > this.time) { this.wounds += 1; continue; }
+        t.graftUntil = undefined;
+        this.events.push({ kind: 'graft-took', family: t.family });
+      }
 
       // Bombard: shells its MARKER when the hive is there; no marker, no fire.
       if (t.family === 'bombard') {
@@ -3966,7 +4224,10 @@ export class Sim {
     st.killsByCause[why] = (st.killsByCause[why] ?? 0) + 1;
     this.waveKillsByCause[why] = (this.waveKillsByCause[why] ?? 0) + 1;
     const killer = srcId !== undefined ? this.towers.find((t) => t.id === srcId) : undefined;
-    if (killer) st.killsByFamily[killer.family] = (st.killsByFamily[killer.family] ?? 0) + 1;
+    if (killer) {
+      st.killsByFamily[killer.family] = (st.killsByFamily[killer.family] ?? 0) + 1;
+      killer.kills += 1;
+    }
     if (why === 'burn' && this.gates.some((g) => dist(this.cellCenter(g), e.pos) <= 4 * this.cfg.cellPx)) st.gateBurnKills += 1;
     if (e.kind === 'royal') {
       this.royalsKilled += 1;

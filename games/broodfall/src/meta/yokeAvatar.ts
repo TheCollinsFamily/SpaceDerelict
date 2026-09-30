@@ -237,6 +237,7 @@ export function avatarReason(err: unknown): string {
     if (err.status === 0) return 'rfab.ai is unreachable';
     if (err.status === 401 || err.status === 403) return `rfab.ai refused the key (${err.status})`;
     if (err.status === 402) return 'the RFab account is out of tokens (402)';
+    if (err.code === OWNER_YOKE_DEV_ONLY) return 'rfab.ai has no player route yet (its deploy is owed); the owner\'s YOKE is for the dev server only';
     if (err.status === 404) return 'rfab.ai has no such avatar (404)';
     if (err.status === 408) return 'she did not answer in time';
     return `rfab.ai answered ${err.status}${err.message ? `: ${err.message}` : ''}`;
@@ -256,8 +257,18 @@ export interface AvatarLinkOptions {
    * Without it (or on an RFab that has no such route yet) she is the avatar's own star.
    */
   player?: PlayerLink;
+  /**
+   * With a player on an RFab that has no player route yet (its deploy owed), she may be the
+   * avatar owner's star, talked to with this PC's key through the dev server's proxy — ONLY on
+   * the dev server on this PC (src/meta/storage.ts ownerYokeAllowed). Anywhere else that rung is
+   * refused and the ladder goes on to the next. Never true in a build served elsewhere.
+   */
+  ownerFallback?: boolean;
   fetcher?: typeof fetch;
 }
+
+/** The rung that would be the owner's star, refused off the dev server: sticky, the ladder goes on. */
+export const OWNER_YOKE_DEV_ONLY = 'OWNER_YOKE_DEV_ONLY';
 
 export interface Listening {
   /** Settles when the stream first opens: null, or why it did not. */
@@ -271,6 +282,9 @@ export class AvatarLink {
 
   /** His own YOKE (the player route), not the avatar's star. */
   private get mine(): boolean { return !!this.o.player && !this.o.player.legacy; }
+
+  /** She is the avatar owner's star, on the dev server's key (the owed-deploy fallback). */
+  get owners(): boolean { return !!this.o.player && this.o.player.legacy && !!this.o.ownerFallback; }
 
   private url(tail: string): string {
     const base = this.o.base.replace(/\/$/, '');
@@ -288,6 +302,10 @@ export class AvatarLink {
   /** A player is registered before his first call (and the link learns whether rfab.ai has the route at all). */
   private async ready(): Promise<void> {
     if (this.o.player && !this.o.player.legacy) await this.o.player.ensure();
+    // The owner's star is a dev-server fallback only: a player's build never talks to it.
+    if (this.o.player && this.o.player.legacy && !this.o.ownerFallback) {
+      throw new AvatarError(404, OWNER_YOKE_DEV_ONLY, 'rfab.ai has no player route yet, and the owner\'s YOKE is for the dev server only');
+    }
   }
 
   private async ask(tail: string, init: RequestInit): Promise<Response> {
@@ -334,7 +352,7 @@ export class AvatarLink {
     const lost = (err: AvatarError) => { settle(err); if (!stopped) onLost(err); };
     const run = async () => {
       let drops = 0;
-      await this.ready();
+      try { await this.ready(); } catch (err) { return lost(err instanceof AvatarError ? err : new AvatarError(0, 'NETWORK', 'rfab.ai is unreachable')); }
       while (!stopped) {
         let res: Response;
         try {
@@ -456,6 +474,19 @@ export class AvatarTalk {
     this.listening?.stop();
     this.listening = null;
     this.settle(null, new AvatarError(0, 'LEFT', 'he left the room'));
+  }
+
+  /**
+   * Open her stream again, with the credential the link holds NOW (he linked an account: the
+   * guest token is gone, and her mind may now be the account's). An answer in progress is kept.
+   */
+  async reopen(): Promise<void> {
+    if (!this.listening) return;
+    this.listening.stop();
+    const l = this.link.listen((e) => this.on(e), (err) => this.lost(err));
+    this.listening = l;
+    const err = await l.ready;
+    if (err && this.listening === l) this.lost(err);
   }
 
   /** Say a line to her (or, with no line, have her open a topic). Resolves with all she said. */

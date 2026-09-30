@@ -287,6 +287,9 @@
 [data-hud="ship"] .cc-war { color: var(--sc-war); }
 [data-hud="ship"] .cc-science { color: var(--sc-sci); }
 [data-hud="ship"] .cc-royal { color: var(--sc-royal); }
+/* A free card (the second of a pair, a gift): priced like the rest, lit green. */
+[data-hud="ship"] .cc-free { color: var(--sc-ok); }
+[data-hud="ship"] .cc-free b { letter-spacing: 2px; }
 
 /* ---------- overlays in a run: the district draft, the end card, the board's goals ---------- */
 [data-hud="ship"] #draft, [data-hud="ship"] #overlay { background: rgba(3, 4, 5, 0.8); }

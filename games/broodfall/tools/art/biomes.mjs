@@ -119,7 +119,7 @@ export const BIOMES = [
     // Nothing green: this set is keyed on green.
     roofProps2: [
       { id: 'belfry', width: 0.6, on: ['highground', 'plain'], look: 'a low open belfry: four ribbed arches of pale wasp paper holding three bronze bells of different sizes, under a small gilded cap ending in a plain gold ball' },
-      { id: 'cistern', width: 0.5, on: ['plain', 'meat'], look: 'a rain cistern: a squat round jar of amber glazed clay ringed with a band of coloured mosaic, with a brass tap' },
+      { id: 'cistern', round: false, width: 0.5, on: ['plain', 'meat'], look: 'a rain cistern: a squat round jar of amber glazed clay ringed with a band of coloured mosaic, with a brass tap' },
       { id: 'skylight', width: 0.6, on: ALL, look: 'a low round skylight: a shallow dome of honeycomb glass in a gilded frame, lit amber from below' },
       { id: 'loudspeakers', width: 0.35, on: ['highground', 'plain'], look: 'a short brass mast carrying four grey loudspeaker horns' },
       { id: 'washing', width: 0.7, on: ['plain'], look: 'a washing line between two posts, hung with white sheets and red and saffron cloths' },
@@ -138,7 +138,7 @@ export const BIOMES = [
     ],
     streetProps2: [
       { id: 'kiosk', width: 0.55, look: 'a small round newspaper kiosk of pale wasp paper with a little gilded onion roof ending in a plain gold ball, and a lit window' },
-      { id: 'fountain', width: 0.45, look: 'a drinking fountain: a basin of pale stone with a band of mosaic and a brass spout' },
+      { id: 'fountain', round: false, width: 0.45, look: 'a drinking fountain: a basin of pale stone with a band of mosaic and a brass spout' },
       { id: 'bench', width: 0.5, look: 'a bench of pale wax with a ribbed back and brass feet' },
       { id: 'van', width: 0.85, look: 'a small delivery van shaped like a beetle, cream with a gold stripe' },
       { id: 'scooter', width: 0.4, look: 'a parked motor scooter shaped like a wasp, brass and cream' },
@@ -233,10 +233,10 @@ export const BIOMES = [
       { id: 'neon', width: 0.8, on: ['plain', 'meat'], look: 'a big neon sign of abstract glyphs on a steel frame, glowing magenta' },
       { id: 'array', width: 0.6, on: ['science', 'highground'], look: 'a cluster of antennas and small dishes on a steel mast with red lamps' },
       { id: 'hvac', width: 0.6, on: ALL, look: 'a large grey ventilation unit with two fans, leaking a little steam' },
-      { id: 'tank', width: 0.55, on: ['plain', 'meat'], look: 'a dark round water tank on legs with a glowing cyan level gauge' },
+      { id: 'tank', round: false, width: 0.55, on: ['plain', 'meat'], look: 'a dark round water tank on legs with a glowing cyan level gauge' },
       { id: 'holo', width: 0.6, on: ['highground', 'science'], look: 'a projector dish throwing up a glowing cyan hologram of an abstract glyph' },
       { id: 'billboard', width: 0.9, on: ['meat', 'plain'], look: 'a glowing billboard screen on stilts showing a stylised smiling insect face' },
-      { id: 'pod', width: 0.5, on: ['plain'], look: 'a rooftop sleeping capsule with a round lit window and a ladder' },
+      { id: 'pod', round: false, width: 0.5, on: ['plain'], look: 'a rooftop sleeping capsule with a round lit window and a ladder' },
       { id: 'beacon', width: 0.3, on: ['highground', 'science'], look: 'a thin mast with a bright red warning beacon on top' },
     ],
     streetProps: [
@@ -307,7 +307,7 @@ export const BIOMES = [
       { id: 'urn', width: 0.5, on: ['highground', 'plain'], look: 'a bronze incense urn on three legs with a thread of smoke' },
       { id: 'potted', width: 0.55, on: ['plain', 'science'], look: 'a twisted miniature tree that is really a fungus, in a glazed white pot' },
       { id: 'banner', width: 0.3, on: ['meat', 'plain'], look: 'a tall pole flying a long red banner of abstract glyphs' },
-      { id: 'barrel', width: 0.5, on: ['meat', 'plain'], look: 'a big wooden water barrel with a bamboo-like pipe' },
+      { id: 'barrel', round: false, width: 0.5, on: ['meat', 'plain'], look: 'a big wooden water barrel with a bamboo-like pipe' },
       { id: 'dish', width: 0.5, on: ['science', 'plain'], look: 'a satellite dish painted red and gold on a short mast' },
     ],
     streetProps: [
@@ -334,7 +334,7 @@ export const BIOMES = [
     },
     // Nothing blue: this set is keyed on blue.
     roofProps2: [
-      { id: 'drum', width: 0.55, on: ['highground', 'meat'], look: 'a great drum with a red body and a pale skin on a lacquer stand, with two beaters' },
+      { id: 'drum', round: false, width: 0.55, on: ['highground', 'meat'], look: 'a great drum with a red body and a pale skin on a lacquer stand, with two beaters' },
       { id: 'rocks', width: 0.6, on: ['plain', 'science'], look: 'a little rock garden in a shallow tray: three standing stones, green moss and raked pale sand' },
       { id: 'kites', width: 0.5, on: ['plain'], look: 'a rack of paper kites shaped like moths and dragonflies, red, yellow and white' },
       { id: 'armillary', width: 0.45, on: ['science', 'highground'], look: 'a brass sphere of rings for measuring the sky, on a carved stone pillar' },
@@ -372,7 +372,7 @@ export const BIOMES = [
     roofProps: [
       { id: 'stack', width: 0.5, on: ['highground', 'meat'], look: 'a tall smokestack of riveted iron with a red band, trailing thin smoke' },
       { id: 'crane', width: 0.9, on: ['meat', 'highground'], look: 'a small yellow jib crane with a hook' },
-      { id: 'tank', width: 0.6, on: ['science', 'meat'], look: 'a rusty round storage tank with a ladder and a gauge' },
+      { id: 'tank', round: false, width: 0.6, on: ['science', 'meat'], look: 'a rusty round storage tank with a ladder and a gauge' },
       { id: 'vent', width: 0.45, on: ALL, look: 'a fat ventilation cowl that turns in the wind' },
       { id: 'skylight', width: 0.7, on: ALL, look: 'a long ridge skylight of wired glass in an iron frame, lit from below' },
       { id: 'pipes', width: 0.8, on: ['science', 'highground'], look: 'a rack of fat pipes with valve wheels' },
@@ -622,9 +622,12 @@ export const BIOMES = [
       { id: 'column', width: 0.35, look: 'a short wax column holding a bowl of glowing royal jelly' },
     ],
     guests: [],
+    // Drawn again in the Sep 30 2026 fix pass (art-src/terrain/deephive-redrawn/; the first kept in deephive/).
+    redrawn: ['roof.1.png'],
     roofs: [
-      // Sep 30 2026: the first was a crust of dark red-brown propolis, which read as the creep at far zoom.
-      'The top of an old comb packed with pollen: every cell filled to the brim with pollen in pale sulphur yellow, sage, dusty olive and a little cream, matte and powdery, the wax walls between them pale. Nothing red, nothing brown and nothing dark.',
+      // Sep 30 2026: the first was a crust of dark red-brown propolis, which read as the creep at far zoom. The second
+      // was pollen in loud lemon yellow; the fix pass made it warm, dull honey and amber, still light (not the creep).
+      'The top of an old comb packed with bee-bread: every cell filled to the brim with pressed pollen in warm muted honey amber, dull ochre, tawny gold, pale straw and a little cream, matte and powdery, the wax walls between them pale cream. Soft, warm and light, like old honey in daylight. Not lemon yellow, not bright or saturated, nothing red, nothing dark brown and nothing dark.',
       'The top of a comb covered with silk: a smooth pale cream sheet of spun silk stretched over the cells, their hexagons showing faintly through it, with a few thicker white threads. Pale and even.',
     ],
     walls2: {
@@ -834,7 +837,7 @@ export const BIOMES = [
       { id: 'crates', width: 0.5, look: 'a stack of white foam crates of fish on ice' },
       { id: 'marshcar', width: 0.85, look: 'a parked marsh car shaped like a water beetle, faded teal, with fat tyres and a small propeller at the back' },
       { id: 'gauge', width: 0.22, look: 'a flood gauge: a tall post painted in bands of white and red, with plain tick marks' },
-      { id: 'buoy', width: 0.4, look: 'an orange buoy with a small lamp, lying on a coil of rope' },
+      { id: 'buoy', round: false, width: 0.4, look: 'an orange buoy with a small lamp, lying on a coil of rope' },
     ],
   },
 ];
@@ -875,7 +878,10 @@ export const pictureName = (name, v) => (v ? `${name}.${v}.png` : `${name}.png`)
  * PROPS THAT LOOK THE SAME FROM EVERY SIDE (Sep 29 2026). When the camera turns, a prop is
  * seen from another side; a lopsided one (a car, a bench, a sign) has a picture of its back
  * (`prop-<id>~b`, from the sheet `props-<where>.back.png`), a round one is simply mirrored.
- * `round: true` on an item says the same of any prop not in this list.
+ * `round: true` on an item says the same of any prop not in this list; `round: false` takes one OFF this
+ * list for one set (Sep 30 2026 fix pass: its back sheet already drew a real back, and mirroring its front
+ * read wrong: the Temple Cities' cistern and wall fountain, the Megacity's gauged tank and sleeping capsule,
+ * the Lantern Cities' barrel and drum, the Works' laddered tank, the Delta's buoy).
  */
 export const ROUND = new Set([
   'dome-paper', 'dome-gold', 'spire', 'tank', 'cistern', 'skylight', 'cowl', 'lamp', 'lamps', 'lantern', 'lanterns',

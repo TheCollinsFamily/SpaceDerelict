@@ -29,7 +29,7 @@ const FPS = 12;
 const KEEP = { idle: 48, fire: 14, die: 10 };
 /** The side of a frame, and how many frames across its atlas is: of a limb of one cell, and of a BIG limb, which is drawn two cells wide and would be seen soft at the same size. */
 // (A BIG limb's atlas is 12 across since its idles keep every frame: 8 across ran over 6,000 px tall.)
-const FRAME = { small: [256, 16], big: [384, 12] };
+export const FRAME = { small: [256, 16], big: [384, 12] };
 const KEYS = { green: { hex: '00FF00', name: 'green' }, blue: { hex: '0000FF', name: 'blue' } };
 const CONCEPTS = path.join(ROOT, 'notes', 'concepts', '2026-09-29');
 
@@ -45,7 +45,7 @@ const sheetPrompt = (theme, limbs) =>
   'reference pictures. Soft even light from directly overhead. No ground, no cast shadows, no labels, no ' +
   'numbers, no text.';
 
-const STEADY =
+export const STEADY =
   ' It stays rooted at exactly the same spot and the same size. Nothing about its shape changes: nothing ' +
   'grows, splits or morphs.';
 
@@ -289,7 +289,7 @@ const area = (f) => { let n = 0; for (let i = 3; i < f.data.length; i += 4) if (
  * One view of a limb (from the front, or from behind): its clips keyed, cut to a loop and
  * brought to frames that all put the middle of what it stands on at the same point.
  */
-function bakeView(l, dir, view, check, F) {
+export function bakeView(l, dir, view, check, F) {
   const pre = view === 'back' ? 'back-' : '';
   const say = view === 'back' ? 'from behind, ' : '';
   const clips = [];
@@ -496,8 +496,9 @@ async function makeBack(l, dir, key, stillsOnly) {
     key: key.hex, keyName: key.name, quality: 'high',
   });
   if (stillsOnly) return;
-  const jobs = [{ anim: 'idle', prompt: l.idle + AWAY + STEADY }];
-  if (l.fire) jobs.push({ anim: 'fire', prompt: l.fire + AWAY + (l.quiet ? QUIET : '') + STEADY });
+  const jobs = [{ anim: 'idle', prompt: (l.backIdle ?? l.idle) + AWAY + STEADY }];
+  // `backFire`: what its firing looks like from behind, when that is not its front's clip turned away.
+  if (l.fire) jobs.push({ anim: 'fire', prompt: (l.backFire ?? l.fire) + AWAY + (l.quiet ? QUIET : '') + STEADY });
   const results = await pool(jobs, 2, (j) => makeClip({
     slug: `${l.family} from behind, ${j.anim}`, out: path.join(dir, `back-${j.anim}.mp4`), stillFile: still,
     prompt: j.prompt, key: key.hex, keyName: key.name,

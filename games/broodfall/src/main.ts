@@ -1380,6 +1380,10 @@ async function boot(): Promise<void> {
     tongues() {
       return renderer instanceof IsoRenderer ? renderer.tonguesNow() : [];
     },
+    /** Every limb's upgrade look, earned and drawn (content/upgradeLooks.ts): for the screenshots. */
+    limbLooks() {
+      return renderer instanceof IsoRenderer ? renderer.limbLooks() : [];
+    },
     /** What of the baked art the board could not load (empty when all of it is there). */
     artMissing(): string[] {
       return renderer instanceof IsoRenderer ? renderer.missing() : [];

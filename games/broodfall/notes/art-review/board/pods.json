@@ -49,11 +49,6 @@
    "name": "thrown: ends its spreading the size it began",
    "ok": true,
    "value": "100%"
-  },
-  {
-   "name": "atlas is light",
-   "ok": true,
-   "value": "314 KB"
   }
  ]
 }

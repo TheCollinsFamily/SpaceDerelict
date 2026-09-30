@@ -1,7 +1,7 @@
 {
  "family": "maw",
  "frames": 130,
- "atlasKB": 1767,
+ "atlasKB": 1865,
  "failed": 0,
  "checks": [
   {
@@ -87,17 +87,17 @@
   {
    "name": "from behind, idle: it moves",
    "ok": true,
-   "value": 0.24
+   "value": 0.26
   },
   {
    "name": "from behind, idle: it is calm",
    "ok": true,
-   "value": 0.24
+   "value": 0.26
   },
   {
    "name": "from behind, idle: inside the frame",
    "ok": true,
-   "value": "72,128-578,508"
+   "value": "104,134-542,502"
   },
   {
    "name": "from behind, idle: no background tint on the outline",
@@ -107,7 +107,7 @@
   {
    "name": "from behind, idle: ends the size it began",
    "ok": true,
-   "value": "3% change"
+   "value": "1% change"
   },
   {
    "name": "from behind, fire: no background tint on the outline",
@@ -115,14 +115,9 @@
    "value": "0.0%"
   },
   {
-   "name": "from behind, fire: frames swallowed by a flash or a cloud are few",
-   "ok": true,
-   "value": "6 left out"
-  },
-  {
    "name": "from behind, fire: ends the size it began",
    "ok": true,
-   "value": "2% change"
+   "value": "1% change"
   },
   {
    "name": "from behind, it stands in its cell",

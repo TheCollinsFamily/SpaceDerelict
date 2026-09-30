@@ -34,7 +34,7 @@ export class Autoplayer {
     // Science buys evolutions for the limbs doing the killing; royal points go to
     // a third stage first, and only spare points to a surge.
     if (this.tryEvolve(sim)) return;
-    if (sim.meat.royal >= B.royalSurgeCost + (this.stage3Ready(sim) ? 1 : 0)) sim.issue({ kind: 'royal-surge' });
+    if (sim.meat.royal >= 1 + (this.stage3Ready(sim) ? 1 : 0)) this.spendRoyal(sim);
 
     // The organ stage (between waves): unlock themes, then spend what the wave would clear.
     if (sim.cfg.organStage && organTurn(sim)) return;
@@ -241,6 +241,22 @@ export class Autoplayer {
     const dots = s.poisonDps * s.poisonDur + s.burnDps * s.burnDur;
     const control = (1 - s.slowMult) * 10 + s.shred + s.execute * 0.3 + s.grounding * 3;
     return s.rate * (hit + dots + control) * (1 + s.reach) * (s.hitsAir ? 1.2 : 1) * (s.hitsGround ? 1 : 0.6);
+  }
+
+  /**
+   * Spare royal points buy ROYAL DECREES (content/royal.ts), a plain player's way: the core's
+   * heart when it is hurt, the consort's favour once, then crowns on the best killers.
+   */
+  private spendRoyal(sim: Sim): void {
+    const spare = sim.meat.royal - (this.stage3Ready(sim) ? 1 : 0);
+    const can = (id: 'heart' | 'favour' | 'crown') => sim.decreeCost(id) <= spare;
+    if (sim.coreHp < sim.coreMaxHp * 0.6 && can('heart')) { sim.issue({ kind: 'decree', decree: 'heart' }); return; }
+    if (!sim.decrees.favour && can('favour')) { sim.issue({ kind: 'decree', decree: 'favour' }); return; }
+    const best = sim.towers
+      .filter((t) => !t.crowns && towerSpec(t.family).rate > 0)
+      .sort((a, b) => b.kills - a.kills || a.id - b.id)[0];
+    if (best && can('crown')) { sim.issue({ kind: 'decree', decree: 'crown', towerId: best.id }); return; }
+    if (can('heart')) sim.issue({ kind: 'decree', decree: 'heart' });
   }
 
   private stage3Ready(sim: Sim): boolean {

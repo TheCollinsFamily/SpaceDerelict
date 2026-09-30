@@ -152,13 +152,19 @@ const FLAT =
   'Seen from exactly straight above, as a flat texture that fills the whole picture edge to edge with no border. ' +
   `Even flat light, no cast shadows, no objects standing on it, no perspective. ${NO_SYMBOLS}`;
 export const STRAINS = {
-  mire: 'The same living skin of flesh as the reference picture, with the same net of thicker, darker raised veins, but drowned in a bog: slick with glossy dark bog-green and olive mucus, wet and shining, green-black ooze pooled in the hollows between the veins, a few small bubbles. Mostly dark green and olive; the maroon of the skin shows only faintly through it. ' + FLAT,
+  // Sep 30 2026 fix pass: the first mire (art-src/terrain/creep-mire.png, kept) was mossy green and read as grass
+  // beside the green roofs. Drawn again as rot: peat brown and muddy olive, wet, with bubbles (REDRAWN_STRAINS).
+  mire: 'The same living skin of flesh as the reference picture, with the same net of thicker, darker raised veins, but sunk in a rotting bog: drowned in thick slick muck of dark peat brown, muddy olive-brown and khaki, black rot in the hollows between the veins, all of it wet and glossy with bright white wet highlights, and dozens of round gas bubbles of different sizes rising out of the muck, some burst into little rings, a skin of oily scum. Dark peat brown and muddy brown-olive; not green, no moss, no grass, no plants. The maroon of the skin shows only faintly through it. ' + FLAT,
   burning: 'The same living skin of flesh as the reference picture, with the same net of thicker, darker raised veins, but burning from inside: every crack and hollow between the veins glows molten orange and yellow like embers in a fire, the skin charred near black around them, flecks of pale ash. ' + FLAT,
 };
 
+/** Strains drawn again (Sep 30 2026 fix pass) go to their own folder; the first pictures are kept where they were. */
+export const REDRAWN_STRAINS = { dir: path.join(TERRAIN, 'strains-2026-09-30'), ids: ['mire'] };
+export const strainFile = (id) => path.join(REDRAWN_STRAINS.ids.includes(id) ? REDRAWN_STRAINS.dir : TERRAIN, `creep-${id}.png`);
+
 async function generateStrains() {
   const jobs = Object.entries(STRAINS).map(([id, prompt]) => () => makeStill({
-    slug: `creep ${id}`, out: path.join(TERRAIN, `creep-${id}.png`), prompt, key: null, width: 1024, height: 1024, quality: 'high', refFiles: [CREEP],
+    slug: `creep ${id}`, out: strainFile(id), prompt, key: null, width: 1024, height: 1024, quality: 'high', refFiles: [CREEP],
   }));
   const results = await pool(jobs, 2, (j) => j());
   results.filter((r) => !r.ok).forEach((r) => console.warn(`[board] a strain failed: ${r.error.message.slice(0, 200)}`));

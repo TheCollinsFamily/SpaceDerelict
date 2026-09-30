@@ -33,6 +33,20 @@
 #campaign.ship-art .cp-cur.std b { color: #fff; }
 #campaign.ship-art .cp-cur.notes b { color: var(--holo); }
 #campaign.ship-art .cp-room { letter-spacing: 2px; }
+/* The room bar: one line from 1280 px up (Sep 30 2026). The rooms on the left, short names (the full
+   name is the tooltip); YOKE, settings and the way out grouped on the right after a thin line. */
+#campaign .cp-rooms { flex-wrap: nowrap; align-items: stretch; gap: 3px; }
+#campaign .cp-room { white-space: nowrap; flex: 0 0 auto; }
+#campaign .cp-tools { display: flex; gap: 3px; margin-left: auto; padding-left: 10px; border-left: 1px solid var(--line, rgba(0, 0, 0, 0.3)); }
+#campaign .cp-tools .cp-room.cp-call { margin-left: 0; }
+#campaign .cp-tools .cp-room.quit { margin-left: 0; }
+#campaign .cp-tool[data-act="settings"] { font-size: 14px; line-height: 1; padding-left: 9px; padding-right: 9px; }
+#campaign .cp-count { font-style: normal; display: inline-block; min-width: 15px; margin-left: 6px; padding: 0 3px; font-size: 9.5px; line-height: 14px; text-align: center; letter-spacing: 0; background: var(--holo, #9fe8f5); color: #07090b; }
+@media (max-width: 1500px) {
+  #campaign.ship-art .cp-room { letter-spacing: 1.5px; padding: 6px 8px; font-size: 10.5px; }
+}
+/* Below 1280 px the bar may take a second line rather than cut a name. */
+@media (max-width: 1279px) { #campaign .cp-rooms { flex-wrap: wrap; } }
 #campaign.ship-art .cp-room.on, #campaign.ship-art .cp-pick.on { background: var(--ink-s); color: #07090b; }
 #campaign.ship-art .cp-room:hover, #campaign.ship-art .cp-pick:hover { border-color: #fff; }
 #campaign.ship-art .cp-goal { border-left: 3px solid #fff; }

@@ -132,6 +132,25 @@ function thumb(img, s = 48) {
 const diff = (a, b) => { let d = 0; for (let i = 0; i < a.length; i++) d += Math.abs(a[i] - b[i]); return d / a.length; };
 
 /**
+ * For an idle played forward and back (no seam to find): the LONGEST run of frames, at most `max`, with
+ * no step between two frames over `jump` times the clip's median step (a jolt the video model made).
+ * Frame 0 (the uploaded still itself) is never used. Returns { start, end, steps } with frames [start, end).
+ */
+export function smoothStretch(frames, { max = 46, jump = 2.2 } = {}) {
+  const t = frames.map((f) => thumb(f));
+  const steps = t.slice(1).map((x, i) => diff(t[i], x));
+  const med = [...steps.slice(1)].sort((a, b) => a - b)[steps.length >> 1] || 1;
+  let best = { start: 1, end: Math.min(frames.length, 1 + max) };
+  let bestLen = 0;
+  for (let i = 1; i < frames.length; i++) {
+    let j = i + 1;
+    while (j < frames.length && j - i < max && steps[j - 1] <= med * jump) j++;
+    if (j - i > bestLen) { bestLen = j - i; best = { start: i, end: j }; }
+  }
+  return { ...best, steps, median: med };
+}
+
+/**
  * Where to cut a loop: the two frames that look most alike, at least `min` frames apart.
  * The loop is frames [start, end): frame `end` looks like frame `start`.
  */

@@ -11,11 +11,19 @@
  * Broodfall house pays for her, up to $3 of real billed tokens; the server alone decides when
  * that is spent. Linking is a device code: the game shows a short code, the player approves it
  * on rfab.ai/connect, and the game collects a new token bound to that account.
+ *
+ * Her memory is per CAMPAIGN (Sep 30 2026, Collins: "different games and players will have
+ * different memories for the ship's AI right?"): every call names the campaign
+ * (X-Broodfall-Campaign, src/meta/shipAi.ts campaignIdFor), and rfab.ai keeps one private mind
+ * per campaign — a New Campaign is a fresh YOKE. Once linked, the minds belong to the RFab
+ * account: another PC linked to the same account finds the same YOKE for the same campaign.
  */
 
 /** The server's view of this player (GET /api/broodfall/yoke/state). */
 export interface YokeModelRow { id: string; label: string; blurb?: string; isDefault?: boolean; exchangeTokens: number | null; exchangeUsd: number | null }
 export interface YokeAllowance { capTokens: number; spentTokens: number; remainingTokens: number; spent: boolean; /** 'network': the free talk every game on this address shares is spent. */ why?: string }
+/** Her memory of this campaign: whether she has one yet, how many campaigns are kept, and who holds them (this install, or the linked account). */
+export interface YokeCampaignMemory { id: string; remembered: boolean; campaignsRemembered: number; keep: number; heldBy: 'install' | 'account' }
 export interface YokeAccountState {
   playerId: string;
   connected: boolean;
@@ -27,6 +35,8 @@ export interface YokeAccountState {
   connectUrl: string;
   model: { id: string; label: string };
   models: YokeModelRow[];
+  /** Absent on an RFab from before minds were per campaign. */
+  campaign?: YokeCampaignMemory;
 }
 
 export interface ConnectCode { deviceCode: string; userCode: string; verifyUrl: string; verifyUrlComplete: string; expiresIn: number; interval: number; bonusTokens?: number }
@@ -54,6 +64,8 @@ export interface PlayerLinkOptions {
   /** API root: '/rfab-api' in the dev server (its proxy), https://api.rfab.ai in a player's build. */
   base: string;
   store: TokenStore;
+  /** The campaign every call is about (src/meta/shipAi.ts campaignIdFor): her mind for it. None: rfab.ai's 'default'. */
+  campaignId?: string;
   fetcher?: typeof fetch;
 }
 
@@ -67,10 +79,14 @@ export class PlayerLink {
   private registering: Promise<string | null> | null = null;
   legacy = false;
   last: YokeAccountState | null = null;
+  /** A new token was stored (he linked an account, or a forgotten player was made again): her stream is opened again with it. */
+  tokenChanged: (() => void) | null = null;
 
   constructor(private o: PlayerLinkOptions) { this.fetcher = o.fetcher ?? ((...a) => fetch(...a)); }
 
   get base(): string { return this.o.base.replace(/\/$/, ''); }
+  /** The campaign this link talks about (none: rfab.ai's 'default', e.g. the Settings screen). */
+  get campaignId(): string | null { return this.o.campaignId ?? null; }
   get token(): string | null { return this.o.store.load(); }
   get connected(): boolean { return !!this.last?.connected; }
 
@@ -81,6 +97,7 @@ export class PlayerLink {
     if (json) h['Content-Type'] = 'application/json';
     const t = this.token;
     if (t) h['X-Broodfall-Player'] = t;
+    if (this.o.campaignId) h['X-Broodfall-Campaign'] = this.o.campaignId;
     return h;
   }
 
@@ -130,6 +147,7 @@ export class PlayerLink {
       if (err instanceof PlayerError && err.status === 401) {
         this.o.store.clear();
         if (!(await this.ensure())) return null;
+        this.tokenChanged?.();
         this.last = await this.call<YokeAccountState>('/state');
         return this.last;
       }
@@ -148,6 +166,7 @@ export class PlayerLink {
     const r = await this.call<{ status: string; token?: string; bonus?: { tokens: number; note: string | null } }>('/connect/poll', { method: 'POST', body: JSON.stringify({ deviceCode }) }, false);
     if (r.status === 'connected' && typeof r.token === 'string') {
       this.o.store.save(r.token);
+      this.tokenChanged?.();
       return { status: 'connected', bonus: r.bonus };
     }
     return r.status === 'expired' ? { status: 'expired' } : { status: 'pending' };
@@ -203,6 +222,20 @@ export function dollars(tokens: number): string {
 
 export function tokensText(n: number): string {
   return Math.max(0, Math.round(n)).toLocaleString('en-US');
+}
+
+/**
+ * Her memory, in a line: "She remembers this campaign. Your RFab account keeps her memory of your
+ * last 5 campaigns, on every PC you link." Empty on an RFab that does not say.
+ */
+export function memoryText(s: Pick<YokeAccountState, 'connected' | 'campaign'>): string {
+  const c = s.campaign;
+  if (!c) return '';
+  const now = c.remembered ? 'She remembers this campaign.' : 'This campaign is new to her: she starts it fresh.';
+  const kept = s.connected || c.heldBy === 'account'
+    ? `Your RFab account keeps her memory of your last ${c.keep} campaigns, on every PC you link.`
+    : `This game keeps her memory of its last ${c.keep} campaigns; linking an RFab account keeps it on the account.`;
+  return `${now} ${kept}`;
 }
 
 /** "$2.41 of $3.00 left" — the meter's words. */

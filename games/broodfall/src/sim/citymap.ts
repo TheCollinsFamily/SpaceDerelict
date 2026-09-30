@@ -236,8 +236,33 @@ export function frontierGates(map: CityMap): number[] {
  * choice is usually about WHERE to grow, not only what shape.
  */
 export function draftOffers(map: CityMap, rng: Rng, count: number): DraftOffer[] {
-  const pool = platePool();
   const features: PlateFeature[] = ['plain', 'science', 'meat', 'highground'];
+  const legal = legalDrafts(map);
+  for (let i = legal.length - 1; i > 0; i--) {
+    const j = rng.int(0, i);
+    [legal[i], legal[j]] = [legal[j], legal[i]];
+  }
+  const options: DraftOffer[] = [];
+  // First pass: distinct slots. Second pass: fill remaining from anywhere.
+  for (const cand of legal) {
+    if (options.length >= count) break;
+    if (options.some((o) => o.slot === cand.slot)) continue;
+    options.push({ ...cand, feature: features[rng.int(0, features.length - 1)] });
+  }
+  for (const cand of legal) {
+    if (options.length >= count) break;
+    if (options.some((o) => o.slot === cand.slot && o.pattern.id === cand.pattern.id)) continue;
+    options.push({ ...cand, feature: features[rng.int(0, features.length - 1)] });
+  }
+  return options;
+}
+
+/**
+ * Every legal (pattern, slot) pair under the connection algebra, in a fixed order (no rng):
+ * what a draft may offer. Empty with unclaimed city left = the body has walled itself in.
+ */
+export function legalDrafts(map: CityMap): Array<{ pattern: PlatePattern; slot: number }> {
+  const pool = platePool();
   const currentGates = frontierGates(map).length;
   const legal: Array<{ pattern: PlatePattern; slot: number }> = [];
   for (let slot = 0; slot < map.slots.length; slot++) {
@@ -261,23 +286,7 @@ export function draftOffers(map: CityMap, rng: Rng, count: number): DraftOffer[]
       legal.push({ pattern, slot });
     }
   }
-  for (let i = legal.length - 1; i > 0; i--) {
-    const j = rng.int(0, i);
-    [legal[i], legal[j]] = [legal[j], legal[i]];
-  }
-  const options: DraftOffer[] = [];
-  // First pass: distinct slots. Second pass: fill remaining from anywhere.
-  for (const cand of legal) {
-    if (options.length >= count) break;
-    if (options.some((o) => o.slot === cand.slot)) continue;
-    options.push({ ...cand, feature: features[rng.int(0, features.length - 1)] });
-  }
-  for (const cand of legal) {
-    if (options.length >= count) break;
-    if (options.some((o) => o.slot === cand.slot && o.pattern.id === cand.pattern.id)) continue;
-    options.push({ ...cand, feature: features[rng.int(0, features.length - 1)] });
-  }
-  return options;
+  return legal;
 }
 
 export { PLATE_FEATURES };

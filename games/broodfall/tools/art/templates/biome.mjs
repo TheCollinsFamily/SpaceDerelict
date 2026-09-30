@@ -94,6 +94,11 @@ const propSheet = (b, where, list) =>
   `shadows. ${NO_SYMBOLS} No labels, no numbers. In reading order: ${list.map((p, i) => `(${i + 1}) ${p.look}`).join('; ')}.`;
 
 const dirOf = (b) => path.join(TERRAIN, b.id);
+/**
+ * Where a picture of a set is. One drawn AGAIN (the set's `redrawn` list in tools/art/biomes.mjs; Sep 30 2026 fix
+ * pass) is in its own folder, art-src/terrain/<set>-redrawn/, and is used in place of the first, which is kept.
+ */
+export const fileOf = (b, file) => path.join(b.redrawn?.includes(file) ? path.join(TERRAIN, `${b.id}-redrawn`) : dirOf(b), file);
 /** The street props a set has pictures of. */
 const ownStreet = (b) => b.streetProps.filter((p) => p.look);
 
@@ -187,7 +192,7 @@ async function generate(b, only) {
   const dir = dirOf(b);
   const [key, keyName] = b.key;
   const jobs = pieces(b).filter(want).map((p) => () => {
-    const base = { slug: `${b.id} ${p.part.replace('-', ' ')}${p.v ? ` ${p.v + 1}` : ''}`, out: path.join(dir, p.file), prompt: wordsFor(b, p), quality: 'high' };
+    const base = { slug: `${b.id} ${p.part.replace('-', ' ')}${p.v ? ` ${p.v + 1}` : ''}`, out: fileOf(b, p.file), prompt: wordsFor(b, p), quality: 'high' };
     if (p.group === 'floors') return makeStill({ ...base, key: null, width: 1024, height: 1024 });
     if (p.group === 'walls') return makeStill({ ...base, key: null, width: 1536, height: 1024, refFiles: [path.join(TERRAIN, 'wall-plain.png')] });
     return makeStill({ ...base, key, keyName, width: 1536, height: 1024, refFiles: [path.join(TERRAIN, `props-${p.where}.png`)] });
@@ -205,8 +210,8 @@ export function bakeBiome(id) {
   const out = path.join(ART, 'board', b.id);
   fs.mkdirSync(out, { recursive: true });
   borrowFirst(b);
-  const have = (f) => fs.existsSync(path.join(dir, f));
-  const tex = (f, w, h) => readImage(path.join(dir, f), { w, h });
+  const have = (f) => fs.existsSync(fileOf(b, f));
+  const tex = (f, w, h) => readImage(fileOf(b, f), { w, h });
   const all = pieces(b);
   // The game counts the pieces of a kind from the first: a later one is baked only when every one before it is there.
   const there = (part) => {

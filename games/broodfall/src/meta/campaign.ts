@@ -8,7 +8,7 @@
  * faction beats, the colony's pushback) → the ship.
  */
 import { Rng } from '../sim/rng';
-import type { EnemyKind, OrganId, SimConfig } from '../sim/types';
+import type { EnemyKind, OrganId, SimConfig, TowerFamily } from '../sim/types';
 import {
   DARES, EXPERIMENTS, FACTIONS, HOME, LICENCE_STANDING, LINEAGES, LOGS_LOST, LOGS_WON, PROFILES,
   REQUISITIONS, TERRITORIES, BOARD_LETTERS,
@@ -184,6 +184,8 @@ export function plan(s: CampaignState, territoryId: string, opts: { dares?: stri
     ...(exp ? exp.setup : {}),
     ...(hobby?.def.setup ?? {}),
     ...(!first && s.hobby?.spliced.length ? { genes: [...s.hobby.spliced] } : {}),
+    // Mission 1's first hand is the plain limbs a new player reads at a glance: shoot, or flail (Sep 30 2026).
+    ...(first ? { firstHand: ['spitter', 'lasher'] as TowerFamily[] } : {}),
   };
   const dares = (opts.dares ?? []).slice(0, 2).map((id) => DARES.find((d) => d.id === id)!).filter(Boolean).map((d) => instance(d, t.tier));
   // Mission 1 carries no forms, no dares and no experiment: it is only a game of tower defence.

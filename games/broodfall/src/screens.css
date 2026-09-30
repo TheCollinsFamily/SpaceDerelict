@@ -157,3 +157,136 @@ body.in-ship #art-notice, body:has(#debrief:not(.hidden)) #art-notice { display:
 #art-notice .an-btns { display: flex; }
 /* The way out of a long report is always on the screen. */
 .debrief-card #debrief-ship { position: sticky; bottom: 0; box-shadow: 0 -8px 16px rgba(184, 168, 120, 0.9); }
+
+/* ============================================================================================
+   THE SHIP-CONSOLE FAMILY FOR THE SCREENS AROUND THE BOARD (Sep 30 2026 fix pass). Collins chose
+   the ship's console for the in-run HUD (src/hud/themes/ship.css); the report at the end of a run,
+   the skirmish's splice screen, the loading and fault screens and the art notice were still the
+   old khaki paper. Here they are dark glass, thin white lines and Bahnschrift in wide-spaced
+   capitals, the same as the HUD and the ship's rooms. The lead still of the outcome, the photo of
+   the board and the limb and enemy tiles stay; only their frame and type change.
+   Scoped to the ship HUD ([data-hud="ship"], the default) and to the ship's own screen
+   (#campaign.ship-art); ?hud=classic keeps the khaki report.
+   Kept on purpose as paper: the faction callers' cards (.cp-scene-card), in-world letters from
+   the planet's parody factions set in their own serif, not the ship's interface.
+   ============================================================================================ */
+:root {
+  --cs-font: Bahnschrift, "DIN Alternate", "Segoe UI", Arial, sans-serif;
+  --cs-line: rgba(235, 245, 248, 0.22);
+  --cs-line-hi: rgba(235, 245, 248, 0.55);
+  --cs-ink: #e9eef0;
+  --cs-dim: rgba(233, 238, 240, 0.6);
+  --cs-faint: rgba(233, 238, 240, 0.38);
+  --cs-scan: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.022) 0 1px, transparent 1px 3px);
+  --cs-sheen: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0) 38%);
+}
+
+/* ---- the skirmish's report card and the splice screen after it: a console screen ---- */
+[data-hud="ship"] #debrief, [data-hud="ship"] #ship { background: radial-gradient(ellipse at 50% 30%, rgba(14, 18, 21, 0.9), rgba(2, 3, 4, 0.96)); }
+[data-hud="ship"] #debrief .screen-card, [data-hud="ship"] #ship .screen-card {
+  position: relative; background: var(--cs-sheen), var(--cs-scan), rgba(7, 9, 11, 0.94); border: 1px solid var(--cs-line-hi); border-radius: 0;
+  color: var(--cs-ink); font-family: var(--cs-font); box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6), 0 0 60px rgba(0, 0, 0, 0.6);
+}
+[data-hud="ship"] #debrief .screen-card::before, [data-hud="ship"] #ship .screen-card::before {
+  content: ''; position: absolute; left: -1px; top: 18px; bottom: 18px; width: 3px; background: var(--cs-ink); z-index: 1;
+}
+[data-hud="ship"] #debrief .screen-kicker, [data-hud="ship"] #ship .screen-kicker { font: 400 10px/1.2 var(--cs-font); letter-spacing: 3px; color: var(--cs-dim); opacity: 1; text-align: left; }
+[data-hud="ship"] #debrief .screen-kicker::before, [data-hud="ship"] #ship .screen-kicker::before { content: '\2699  '; color: var(--cs-ink); }
+[data-hud="ship"] #debrief .screen-title, [data-hud="ship"] #ship .screen-title { font: 300 30px/1.2 var(--cs-font); letter-spacing: 9px; color: #fff; }
+[data-hud="ship"] #debrief .screen-body, [data-hud="ship"] #ship .screen-body { font: 400 12px/1.5 var(--cs-font); letter-spacing: 0.5px; color: var(--cs-dim); }
+[data-hud="ship"] #debrief .screen-btn, [data-hud="ship"] #ship .screen-btn {
+  font: 400 14px/1 var(--cs-font); letter-spacing: 5px; text-transform: uppercase; padding: 13px 30px; border: none; border-radius: 0;
+  background: var(--cs-ink); color: #07090b;
+}
+[data-hud="ship"] #debrief .screen-btn:hover, [data-hud="ship"] #ship .screen-btn:hover { background: #fff; }
+[data-hud="ship"] .debrief-card #debrief-ship { box-shadow: 0 -10px 18px rgba(7, 9, 11, 0.95); }
+/* The splice screen's gene cards and its gate picker. */
+[data-hud="ship"] #ship .gene-card { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--cs-line); border-radius: 0; color: var(--cs-ink); text-align: left; }
+[data-hud="ship"] #ship .gene-card:hover { outline: none; border-color: #fff; }
+[data-hud="ship"] #ship .gene-card.picked { outline: none; background: var(--cs-ink); color: #07090b; border-color: #fff; }
+[data-hud="ship"] #ship .gene-card .g-name { font: 400 11px/1.3 var(--cs-font); letter-spacing: 2px; text-transform: uppercase; }
+[data-hud="ship"] #ship .gene-card .g-desc { font: 400 10px/1.35 var(--cs-font); opacity: 0.75; }
+[data-hud="ship"] #ship .ent-label { font: 400 9px/1 var(--cs-font); letter-spacing: 3px; color: var(--cs-dim); }
+[data-hud="ship"] #ship .ent-opt { font: 400 10px/1 var(--cs-font); letter-spacing: 1.5px; background: none; color: var(--cs-ink); border: 1px solid var(--cs-line); border-radius: 0; padding: 6px 9px; }
+[data-hud="ship"] #ship .ent-opt.on { background: var(--cs-ink); color: #07090b; border-color: #fff; }
+
+/* ---- the report's pictures, in either report (the skirmish's card, the ship's screen) ---- */
+:is([data-hud="ship"] #debrief, #campaign.ship-art) .dbf { font-family: var(--cs-font); color: var(--cs-ink); }
+:is([data-hud="ship"] #debrief, #campaign.ship-art) .dbf-lead {
+  border: 1px solid var(--cs-line-hi); box-shadow: inset 0 -110px 70px -40px rgba(3, 4, 5, 0.9); padding: 14px 20px 16px 22px;
+}
+:is([data-hud="ship"] #debrief, #campaign.ship-art) .dbf-lead::before {
+  content: ''; position: absolute; left: -1px; top: 14px; bottom: 14px; width: 3px; background: var(--cs-ink);
+}
+:is([data-hud="ship"] #debrief, #campaign.ship-art) .dbf-lead:not(.has-pic) { background: rgba(255, 255, 255, 0.03); }
+:is([data-hud="ship"] #debrief, #campaign.ship-art) .dbf-verdict {
+  font: 300 44px/1.05 var(--cs-font); letter-spacing: 10px; color: #fff;
+  text-shadow: 0 0 2px #000, 0 2px 14px rgba(0, 0, 0, 0.9), 0 0 24px rgba(233, 238, 240, 0.25);
+}
+/* The outcome is a small lit light before the verdict, not a coloured word. */
+:is([data-hud="ship"] #debrief, #campaign.ship-art) .dbf-verdict::before {
+  content: ''; display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin: 0 16px 8px 0; vertical-align: middle;
+  background: #8ff0a0; box-shadow: 0 0 10px #8ff0a0;
+}
+:is([data-hud="ship"] #debrief, #campaign.ship-art) .dbf-lost .dbf-verdict::before { background: #ff6a55; box-shadow: 0 0 10px #ff6a55; }
+:is([data-hud="ship"] #debrief, #campaign.ship-art) .dbf-won .dbf-verdict, :is([data-hud="ship"] #debrief, #campaign.ship-art) .dbf-held .dbf-verdict { color: #fff; }
+:is([data-hud="ship"] #debrief, #campaign.ship-art) .dbf-lost .dbf-verdict { color: #ffe3dc; }
+:is([data-hud="ship"] #debrief, #campaign.ship-art) .dbf-caption { font: 400 11px/1.3 var(--cs-font); letter-spacing: 3px; color: var(--cs-ink); text-shadow: 0 1px 3px #000, 0 0 8px #000; margin: 6px 0 0 26px; }
+/* The photo of the board: a capture on the console's glass, a thin line round it, its corners marked. */
+:is([data-hud="ship"] #debrief, #campaign.ship-art) .dbf-photo {
+  position: relative; transform: none; margin: 4px 0 0; padding: 6px; background: rgba(3, 4, 5, 0.9);
+  border: 1px solid var(--cs-line); box-shadow: none;
+}
+:is([data-hud="ship"] #debrief, #campaign.ship-art) .dbf-photo::before {
+  content: ''; position: absolute; inset: -1px; pointer-events: none;
+  background:
+    linear-gradient(#fff, #fff) left top / 14px 1px no-repeat, linear-gradient(#fff, #fff) left top / 1px 14px no-repeat,
+    linear-gradient(#fff, #fff) right top / 14px 1px no-repeat, linear-gradient(#fff, #fff) right top / 1px 14px no-repeat,
+    linear-gradient(#fff, #fff) left bottom / 14px 1px no-repeat, linear-gradient(#fff, #fff) left bottom / 1px 14px no-repeat,
+    linear-gradient(#fff, #fff) right bottom / 14px 1px no-repeat, linear-gradient(#fff, #fff) right bottom / 1px 14px no-repeat;
+}
+:is([data-hud="ship"] #debrief, #campaign.ship-art) .dbf-photo img { filter: none; background: #040506; }
+:is([data-hud="ship"] #debrief, #campaign.ship-art) .dbf-photo figcaption { font: 400 9px/1 var(--cs-font); letter-spacing: 3px; color: var(--cs-dim); text-align: left; padding: 7px 2px 1px; }
+:is([data-hud="ship"] #debrief, #campaign.ship-art) .dbf-photo figcaption::before { content: '\2699  '; color: var(--cs-ink); }
+/* The numbers: small readouts, a thin lit edge on the left. */
+:is([data-hud="ship"] #debrief, #campaign.ship-art) .dbf-figures div { border-left: 1px solid var(--cs-line-hi); padding: 2px 10px; opacity: 1; }
+:is([data-hud="ship"] #debrief, #campaign.ship-art) .dbf-figures b { font: 300 26px/1.1 var(--cs-font); letter-spacing: 1px; color: #fff; font-variant-numeric: tabular-nums; }
+:is([data-hud="ship"] #debrief, #campaign.ship-art) .dbf-figures span { font: 400 9px/1.3 var(--cs-font); letter-spacing: 2.5px; color: var(--cs-dim); opacity: 1; }
+:is([data-hud="ship"] #debrief, #campaign.ship-art) .dbf-label {
+  font: 400 9px/1 var(--cs-font); letter-spacing: 3px; color: var(--cs-dim); opacity: 1; margin: 14px 0 6px; padding-bottom: 4px; border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+:is([data-hud="ship"] #debrief, #campaign.ship-art) .dbf-tile {
+  background: var(--cs-scan), rgba(255, 255, 255, 0.03); border: 1px solid var(--cs-line); color: var(--cs-ink); padding: 4px 3px 5px;
+}
+:is([data-hud="ship"] #debrief, #campaign.ship-art) .dbf-tile .dbf-pic { filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.8)); }
+:is([data-hud="ship"] #debrief, #campaign.ship-art) .dbf-tile.unit .dbf-pic { background-color: rgba(255, 255, 255, 0.05); }
+:is([data-hud="ship"] #debrief, #campaign.ship-art) .dbf-name { font: 400 10px/1.25 var(--cs-font); letter-spacing: 1.5px; text-transform: uppercase; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+:is([data-hud="ship"] #debrief, #campaign.ship-art) .dbf-num { font: 400 9.5px/1.3 var(--cs-font); letter-spacing: 0.5px; color: var(--cs-dim); opacity: 1; }
+:is([data-hud="ship"] #debrief, #campaign.ship-art) .dbf-num b { color: #fff; font-weight: 400; }
+
+/* ---- the loading screen and the fault screens: the console, not the red poster ---- */
+[data-hud="ship"] #boot { background: radial-gradient(ellipse at 50% 35%, #12171a 0%, #06080a 60%, #020303 100%); }
+[data-hud="ship"] .boot-card { color: var(--cs-ink); font-family: var(--cs-font); }
+[data-hud="ship"] .boot-kicker { font-size: 10px; letter-spacing: 4px; color: var(--cs-dim); opacity: 1; }
+[data-hud="ship"] .boot-kicker::before { content: '\2699  '; color: var(--cs-ink); }
+[data-hud="ship"] .boot-bar { height: 8px; border: 1px solid var(--cs-line-hi); padding: 1px; background: #030405; }
+[data-hud="ship"] .boot-fill { background: linear-gradient(90deg, rgba(233, 238, 240, 0.55), #e9eef0); box-shadow: 0 0 10px rgba(233, 238, 240, 0.5); }
+[data-hud="ship"] .boot-count { font-size: 9px; letter-spacing: 3px; color: var(--cs-faint); opacity: 1; }
+[data-hud="ship"] .boot-line { font-size: 11px; letter-spacing: 1.5px; color: var(--cs-dim); opacity: 1; }
+[data-hud="ship"] #fault { background: radial-gradient(ellipse at 50% 35%, #1a0e0c 0%, #070506 60%, #020202 100%); }
+[data-hud="ship"] .fault-card {
+  position: relative; background: var(--cs-sheen), var(--cs-scan), rgba(7, 9, 11, 0.95); border: 1px solid var(--cs-line-hi);
+  color: var(--cs-ink); font-family: var(--cs-font); box-shadow: 0 0 60px rgba(0, 0, 0, 0.6);
+}
+[data-hud="ship"] .fault-card::before { content: ''; position: absolute; left: -1px; top: 18px; bottom: 18px; width: 3px; background: #ff6a55; }
+[data-hud="ship"] .fault-card .screen-kicker { color: var(--cs-dim); opacity: 1; letter-spacing: 3px; }
+[data-hud="ship"] .fault-title { font: 300 26px/1.2 var(--cs-font); letter-spacing: 6px; color: #ffd0c6; }
+[data-hud="ship"] .fault-card p { font-size: 12.5px; color: var(--cs-ink); }
+[data-hud="ship"] .fault-detail { background: #030405; color: var(--cs-dim); border: 1px solid var(--cs-line); font-family: Consolas, "Courier New", monospace; }
+[data-hud="ship"] .fault-card .screen-btn { font: 400 13px/1 var(--cs-font); letter-spacing: 4px; background: var(--cs-ink); color: #07090b; border: none; padding: 12px 26px; }
+/* The line about pictures that did not load: an alert on the glass. */
+[data-hud="ship"] #art-notice {
+  background: var(--cs-scan), rgba(7, 9, 11, 0.9); color: #ffd0c6; border: 1px solid rgba(255, 106, 85, 0.6); border-left: 3px solid #ff6a55;
+  font: 400 10.5px/1.3 var(--cs-font); letter-spacing: 1.5px; box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+}
+[data-hud="ship"] #art-notice button { font: 400 9.5px/1 var(--cs-font); letter-spacing: 2px; background: var(--cs-ink); color: #07090b; padding: 4px 9px; }

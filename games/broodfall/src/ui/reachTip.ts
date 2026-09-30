@@ -21,9 +21,11 @@ function tip(): HTMLDivElement {
   el = document.createElement('div');
   el.id = 'reach-tip';
   Object.assign(el.style, {
-    position: 'fixed', zIndex: '40', pointerEvents: 'none', padding: '3px 8px', borderRadius: '4px',
-    font: '600 12px/1.3 system-ui, sans-serif', color: '#f3e3b0', background: 'rgba(12, 9, 6, 0.82)',
-    border: '1px solid rgba(255, 224, 138, 0.45)', whiteSpace: 'nowrap', display: 'none',
+    // The ship console's readout (src/hud/themes/ship.css): dark glass, a thin line, a white edge, its type.
+    position: 'fixed', zIndex: '40', pointerEvents: 'none', padding: '4px 9px 4px 8px', borderRadius: '0',
+    font: '400 11px/1.3 Bahnschrift, "DIN Alternate", "Segoe UI", Arial, sans-serif', letterSpacing: '1px',
+    color: '#e9eef0', background: 'rgba(7, 9, 11, 0.86)',
+    border: '1px solid rgba(235, 245, 248, 0.4)', borderLeft: '3px solid #e9eef0', whiteSpace: 'nowrap', display: 'none',
   } satisfies Partial<CSSStyleDeclaration>);
   document.body.appendChild(el);
   return el;

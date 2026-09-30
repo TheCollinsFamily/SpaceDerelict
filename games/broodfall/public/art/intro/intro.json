@@ -58,5 +58,7 @@
     "video": "intro/boss.mp4",
     "poster": "intro/boss.webp",
     "voice": "intro/boss.mp3"
-  }
+  },
+  "quarters": "intro/quarters.webp",
+  "partner": "intro/partner.webp"
 }

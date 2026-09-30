@@ -62,6 +62,17 @@ export interface LimbArt extends LimbSide {
   on: 'roof' | 'street'; flat?: boolean; facing?: boolean;
   /** The view from behind, of a limb that is not the same all the way round. */
   back?: LimbSide;
+  /**
+   * Its UPGRADE LOOKS (content/upgradeLooks.ts, tools/art/templates/limb-variant.mjs): a class look
+   * (bone, swarm, venom, reach) or a superstructure (`swarm+venom`), each its own atlas and views.
+   * Loaded as limbs of their own, named `<family>@<key>` (BoardArtSet.limbs).
+   */
+  variants?: Record<string, LimbVariantArt>;
+}
+/** One upgrade look of a limb: drawn like the limb (its own atlas, frame, anchor, clips, view from behind). */
+export interface LimbVariantArt extends LimbSide {
+  atlas: string; frame: number; cols: number;
+  back?: LimbSide;
 }
 /**
  * pad: a tile baked on a picture bigger than itself by this many pixels on each side (across,
@@ -118,7 +129,8 @@ export interface Manifest {
   ship: { ship?: ShipArt };
   /** What flies, bursts and hangs in the air, and the donor parts (tools/art/templates/fx.mjs). */
   /** `tongue`: the Maw's tongue, a length of it and its sticky tip (src/render/mawTongue.ts). */
-  fx?: { fx?: { effects?: FxSheet; parts?: FxSheet; tongue?: FxSheet } };
+  fx?: { fx?: { effects?: FxSheet; parts?: FxSheet; tongue?: FxSheet }; meat?: FxSheet };
+  /* `meat`: the meat drops, two looks a caste (tools/art/meat.mjs, src/render/meatFx.ts). */
 }
 /** A sheet of named sprites; a glow is drawn added onto what is under it. */
 export interface FxSheet { atlas: string; sprites: Record<string, Rect & { glow?: boolean }> }
@@ -188,7 +200,7 @@ export class BoardArtSet {
   /** What could not be loaded, for the console and the tests. */
   failed: string[] = [];
   /** The effects and the donor parts (named sprites), when they loaded. */
-  fx = new Map<'effects' | 'parts' | 'tongue', { atlas: Atlas; sprites: FxSheet['sprites'] }>();
+  fx = new Map<'effects' | 'parts' | 'tongue' | 'meat', { atlas: Atlas; sprites: FxSheet['sprites'] }>();
 
   /** `onProgress`: how many files have arrived of how many asked for so far (the loading screen's bar). */
   static async load(m: Manifest, biome: string | null = null, onProgress?: (done: number, total: number) => void): Promise<BoardArtSet> {
@@ -219,11 +231,18 @@ export class BoardArtSet {
     }
     for (const [id, art] of Object.entries(m.limbs ?? {})) {
       jobs.push(get(art.atlas).then((atlas) => { if (atlas) set.limbs.set(id, { art, atlas }); }));
+      // Its upgrade looks, each drawn like a limb of its own: `<family>@<key>` (src/render/isoRender.ts picks one).
+      for (const [key, v] of Object.entries(art.variants ?? {})) {
+        const vart: LimbArt = { ...v, on: art.on, ...(art.flat ? { flat: true } : {}), ...(art.facing ? { facing: true } : {}) };
+        jobs.push(get(v.atlas).then((atlas) => { if (atlas) set.limbs.set(`${id}@${key}`, { art: vart, atlas }); }));
+      }
     }
     for (const name of ['effects', 'parts', 'tongue'] as const) {
       const sheet = m.fx?.fx?.[name];
       if (sheet) jobs.push(get(sheet.atlas).then((atlas) => { if (atlas) set.fx.set(name, { atlas, sprites: sheet.sprites }); }));
     }
+    const meat = m.fx?.meat;
+    if (meat) jobs.push(get(meat.atlas).then((atlas) => { if (atlas) set.fx.set('meat', { atlas, sprites: meat.sprites }); }));
     const t = m.board?.terrain;
     if (t) {
       for (const [name, sheet] of Object.entries(t.sheets)) {
@@ -315,7 +334,7 @@ export class BoardArtSet {
   }
 
   /** An effect or a donor part by its name, and its rectangle (anchor, glow). */
-  fxSprite(sheet: 'effects' | 'parts' | 'tongue', id: string): { tex: Texture; rect: Rect & { glow?: boolean } } | null {
+  fxSprite(sheet: 'effects' | 'parts' | 'tongue' | 'meat', id: string): { tex: Texture; rect: Rect & { glow?: boolean } } | null {
     const s = this.fx.get(sheet);
     const r = s?.sprites[id];
     return s && r ? { tex: s.atlas.sprite(id, r), rect: r } : null;

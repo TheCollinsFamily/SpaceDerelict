@@ -692,9 +692,11 @@ RFAB_API_BASE=http://localhost:3011 RFAB_CONNECT_JWT=<tester jwt> node tools/sho
 8. **YOKE's brain text vs her greetings.** Collins's greetings (Sep 30) are spunky, edgy, with
     contractions; her brain text (`content/lore/yoke-brain.md`) said "no contractions, no slang".
     The lore session was reworking it the same day; check the two sound like one person.
-9. **The quarters' picture and the partner's portrait** were not made (the art agent's run was
-    stopped by the permission classifier). The quarters show the Procreation Board's room picture;
-    the data pad has no photograph. `tools/art/intro.mjs` is where they would be added.
+9. **(Done Sep 30 2026, art fix pass.) The quarters' picture and the partner's portrait** are made:
+    `node tools/art/intro.mjs quarters partner` (`PICTURES` there; raw `art-src/intro/pictures/`, baked
+    `public/art/intro/quarters.webp`, `partner.webp`, the `quarters`/`partner` keys of `intro.json`). The room picture keeps
+    what matters in its LEFT third (`src/ship.css` shows a room from its left edge; the card covers the rest). Beat:
+    `node tools/shot-quarters.mjs`. Collins's call: whether Maren Oste looks like the woman he had in mind.
 10. **The API key in the public repo.** `games/space-derelict/generate_ui_assets.py`,
    `generate_event_assets.py` and `_gen_emblems_contracts.py` carry a hard-coded RFab key.
    It is in the history of a PUBLIC repo: treat it as leaked and rotate it. Removing it
