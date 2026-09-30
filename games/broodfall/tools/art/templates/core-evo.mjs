@@ -29,7 +29,7 @@ import path from 'node:path';
 import { makeClip, makeStill } from '../rfab.mjs';
 import { blank, borderColour, crop, over, paste, readFrames, readImage, resize, toWebp, writeJpg, writePng } from '../lib/img.mjs';
 import { dropSpecks, loopWindow, pick, unionBox } from '../lib/key.mjs';
-import { keyFrame as studioKey, studioKeyer } from '../lib/leaflit.mjs';
+import { frameList, keyFrame as studioKey, studioKeyer } from '../lib/leaflit.mjs';
 import { GROUNDS } from '../lib/atlas.mjs';
 import { ART, REVIEW, ROOT, SRC, putEntry } from '../lib/manifest.mjs';
 import { HEART_CELLS, HEART_FOOT } from './core.mjs';
@@ -248,8 +248,13 @@ export function bakeCoreEvo() {
   for (const s of STAGES) {
     const all = s.id === 1 ? idle1 : keyed(idleOf(s.id));
     const loop = loopWindow(all, { min: 12, max: 46 });
-    const idle = cut(`stage-${s.id}`, pick(all.slice(loop.start, loop.end), 16), foot, collar1, 0);
-    idle.entry.fps = Number((idle.entry.count / ((loop.end - loop.start) / 12)).toFixed(2));
+    // A loop whose two ends do not meet cleanly (seam over 0.25: stage 4's was 0.40) is played
+    // forward and back (the studio's Ping-Pong, lib/leaflit.mjs frameList): it has no seam at all.
+    const pong = loop.seam > 0.25;
+    const run = pick(all.slice(loop.start, loop.end), pong ? 12 : 16);
+    const frames = pong ? frameList(0, run.length - 1, true).map((i) => run[i]) : run;
+    const idle = cut(`stage-${s.id}`, frames, foot, collar1, 0);
+    idle.entry.fps = Number(((pong ? run.length : idle.entry.count) / ((loop.end - loop.start) / 12)).toFixed(2));
     const stage = { id: s.id, name: s.name, grown: s.grown, collar: Number((s.collar / STAGES[0].collar).toFixed(3)), idle: { ...idle.entry, seam: Number(loop.seam.toFixed(2)) } };
     if (s.id > 1) {
       const frames = keyed(growOf(s.id));

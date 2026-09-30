@@ -79,6 +79,16 @@ export interface BoardArt {
     ground?: { file: string; cells: number };
   };
 }
+/**
+ * One clip of the core's stages (tools/art/templates/core-evo.mjs): every clip is cut in the same
+ * mapping, so `body` is stage 1's collar as a share of THIS frame and `anchor` where stage 1 stands in it.
+ */
+export interface CoreClip { atlas: string; frame: number; cols: number; count: number; fps: number; anchor: [number, number]; body: number }
+/** The core's four stages: each stage's idle, and the clip of it growing out of the stage before. */
+export interface CoreEvoArt {
+  cells: number;
+  stages: Array<{ id: number; name: string; grown: number; collar: number; idle: CoreClip & { seam?: number }; grow?: CoreClip }>;
+}
 /** What one tile set holds of its own; everything else is the terrain entry's. */
 export interface BiomeData { sheets: Partial<Record<'floors' | 'walls' | 'props', { atlas: string; sprites: Record<string, Rect> }>> }
 export interface ShipArt {
@@ -93,7 +103,7 @@ export interface Manifest {
   /** What walks the streets on the hive's side: the broodling and the puppet queens (tools/art/units.mjs ALLIES). */
   allies?: Record<string, UnitArt>;
   limbs: Record<string, LimbArt>;
-  board: { terrain?: BoardArt; pods?: PodsArt };
+  board: { terrain?: BoardArt; pods?: PodsArt; coreEvo?: CoreEvoArt };
   biomes?: Record<string, BiomeArt>;
   ship: { ship?: ShipArt };
   /** What flies, bursts and hangs in the air, and the donor parts (tools/art/templates/fx.mjs). */
@@ -159,6 +169,8 @@ export class BoardArtSet {
   /** The crater and roots of the landing site, painted from straight above. */
   coreGround: Texture | null = null;
   core: { art: NonNullable<BoardArt['core']>; atlas: Atlas } | null = null;
+  /** The core's stages, when every one of their clips loaded (else the one core above is drawn). */
+  coreEvo: { art: CoreEvoArt; idle: Atlas[]; grow: Array<Atlas | null> } | null = null;
   /** The creep nodes, when they are drawn. */
   pods: { art: PodsArt; atlas: Atlas } | null = null;
   terrain: BoardArt | null = null;
@@ -211,6 +223,14 @@ export class BoardArtSet {
         const core = t.core;
         jobs.push(get(core.atlas).then((atlas) => { if (atlas) set.core = { art: core, atlas }; }));
       }
+    }
+    const evo = m.board?.coreEvo;
+    if (evo?.stages?.length) {
+      jobs.push((async () => {
+        const idle = await Promise.all(evo.stages.map((s) => get(s.idle.atlas)));
+        const grow = await Promise.all(evo.stages.map((s) => (s.grow ? get(s.grow.atlas) : Promise.resolve(null))));
+        if (idle.every(Boolean) && evo.stages.every((s, i) => !s.grow || grow[i])) set.coreEvo = { art: evo, idle: idle as Atlas[], grow };
+      })());
     }
     const pods = m.board?.pods;
     if (pods) jobs.push(get(pods.atlas).then((atlas) => { if (atlas) set.pods = { art: pods, atlas }; }));

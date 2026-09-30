@@ -27,6 +27,7 @@ import { CASTE_COLORS, ENEMY_SIZE, FAMILY_COLORS, Renderer } from './render';
 import { FxLayer, type FxView } from './fx';
 import { LimbFates } from './limbFx';
 import { CreepLife, GateArt, PlinthRise, PodArt, Skyline } from './boardArt';
+import { coreStageOf } from './coreStage';
 import { CALM } from '../meta/settings';
 
 /** The old marks were drawn for a 26 px cell; on this board they are drawn this much bigger. */
@@ -459,7 +460,7 @@ export class IsoRenderer extends Renderer {
     this.marksG.clear();
     this.drawGates(this.groundG, sim);
     this.drawGroundFx(this.groundG, sim);
-    this.syncCore(sim);
+    this.syncCore(sim, dtReal);
     this.syncNodes(sim);
     this.syncLimbs(sim, dt);
     this.syncUnits(sim, dt);
@@ -506,6 +507,8 @@ export class IsoRenderer extends Renderer {
     this.shots.clear();
     this.core = null;
     this.coreShade = null;
+    this.coreShown = 0;
+    this.coreInto = 0;
     this.decalBox.removeChildren().forEach((x) => x.destroy());
     this.coreGround = null;
     this.square = this.squareOf(sim);
@@ -916,7 +919,7 @@ export class IsoRenderer extends Renderer {
    * turns with the camera. What stands up (the meteor and the heart in it) is a sprite like a
    * limb's, standing where its footing is marked. Both in the middle of the square it fell on.
    */
-  private syncCore(sim: Sim): void {
+  private syncCore(sim: Sim, dtReal = 0): void {
     const c = this.art.core;
     if (!c) {
       // No picture of the landing site: the old heart, laid on the ground.
@@ -943,14 +946,19 @@ export class IsoRenderer extends Renderer {
     const beat = 0.5 + 0.5 * Math.sin(this.simClock * Math.PI * 2 * (c.art.fps / Math.max(1, c.art.count)));
     // Drawn CORE_SCALE bigger, but its collar never wider than 80% of the square it fell on:
     // it stays in its square and off the walls of the blocks round it.
-    const grow = Math.min(CORE_SCALE, (0.8 * sq.across) / (c.art.cells * CORE_FILL));
+    // Its stage (src/render/coreStage.ts): what it is drawn from this frame, and how wide its collar is now.
+    const evo = this.stepCoreStage(sim, dtReal);
+    const widest = Math.max(1, ...(this.art.coreEvo?.art.stages.map((s) => s.collar) ?? [1]));
+    const grow = Math.min(CORE_SCALE, (0.8 * sq.across) / (c.art.cells * CORE_FILL * widest));
     if (this.coreGround && c.art.ground) {
       // In world pixels: the box it is in lays it on the ground as the camera sees the ground.
-      const across = c.art.ground.cells * grow * sim.cfg.cellPx;
+      const across = c.art.ground.cells * grow * (evo?.collar ?? 1) * sim.cfg.cellPx;
       this.coreGround.position.set(sq.x, sq.y);
       this.coreGround.width = across;
       this.coreGround.height = across;
-      const k = Math.round(232 + 23 * beat);
+      // While it grows into its next stage the ground it grew flushes with each beat of it.
+      const surge = evo?.growing ? 0.5 + 0.5 * Math.sin(evo.t * Math.PI * 6) : 0;
+      const k = Math.round(232 + 23 * beat - 60 * surge);
       this.coreGround.tint = (255 << 16) | (k << 8) | k;
     }
     const p = project(this.geo, sq.x, sq.y);
@@ -959,14 +967,73 @@ export class IsoRenderer extends Renderer {
     this.core.position.set(p.x, p.y);
     this.core.scale.set(width / ((c.art.body ?? 0.86) * c.art.frame));
     this.core.zIndex = depth(this.geo, sq.x, sq.y) * 100 + 40;
-    const at = Math.floor(this.simClock * c.art.fps) % c.art.count;
-    this.core.texture = c.atlas.frame(at, c.art.frame, c.art.cols);
+    if (evo) {
+      this.core.texture = evo.atlas.frame(evo.frame, evo.clip.frame, evo.clip.cols);
+      this.core.anchor.set(evo.clip.anchor[0], evo.clip.anchor[1]);
+      this.core.scale.set(width / (evo.clip.body * evo.clip.frame));
+      if (evo.growing) this.coreSurge(sim, sq, evo.t);
+    } else {
+      const at = Math.floor(this.simClock * c.art.fps) % c.art.count;
+      this.core.texture = c.atlas.frame(at, c.art.frame, c.art.cols);
+    }
     if (this.coreShade) {
       this.coreShade.position.set(p.x, p.y);
       this.coreShade.width = width * 1.3;
       this.coreShade.height = width * 1.3 * (this.geo.b / this.geo.a);
       this.coreShade.zIndex = this.core.zIndex - 1;
     }
+  }
+
+  /** The stage the core is drawn at (0 until the first frame), the one it is growing into, and how far that clip is. */
+  private coreShown = 0;
+  private coreInto = 0;
+  private coreGrowT = 0;
+
+  /**
+   * THE CORE EVOLVES (src/render/coreStage.ts). When the body has grown enough limbs for the next
+   * stage, the clip of it growing into that stage plays in place (on real time, so it is seen even
+   * with the game paused), with the creep round it pulsing; then it beats at the new stage. A board
+   * that opens already past a stage (never a new run: every run starts at 1) starts at its stage.
+   */
+  private stepCoreStage(sim: Sim, dtReal: number) {
+    const evo = this.art.coreEvo;
+    if (!evo) return null;
+    const stages = evo.art.stages;
+    const want = Math.min(stages.length, coreStageOf(sim.stats.limbsGrown));
+    if (this.coreShown === 0) this.coreShown = want;
+    if (!this.coreInto && want > this.coreShown && stages[this.coreShown].grow) { this.coreInto = this.coreShown + 1; this.coreGrowT = 0; }
+    if (!this.coreInto && want > this.coreShown) this.coreShown = want;
+    if (this.coreInto) {
+      const s = stages[this.coreInto - 1];
+      const clip = s.grow!;
+      this.coreGrowT += dtReal;
+      const len = clip.count / clip.fps;
+      const t = Math.min(1, this.coreGrowT / len);
+      if (t < 1) {
+        const from = stages[this.coreInto - 2].collar;
+        return { atlas: evo.grow[this.coreInto - 1]!, clip, frame: Math.min(clip.count - 1, Math.floor(this.coreGrowT * clip.fps)), growing: true, t, collar: from + (s.collar - from) * t };
+      }
+      this.coreShown = this.coreInto;
+      this.coreInto = 0;
+    }
+    const s = stages[this.coreShown - 1];
+    return { atlas: evo.idle[this.coreShown - 1], clip: s.idle, frame: Math.floor(this.simClock * s.idle.fps) % s.idle.count, growing: false, t: 0, collar: s.collar };
+  }
+
+  /** While the core grows: rings of the body's colour run out over the ground from it. */
+  private coreSurge(sim: Sim, sq: { x: number; y: number }, t: number): void {
+    const cell = sim.cfg.cellPx;
+    for (let i = 0; i < 3; i++) {
+      const f = (t * 3 + i / 3) % 1;
+      this.groundG.circle(sq.x, sq.y, cell * (1.2 + f * 5)).stroke({ width: cell * 0.35 * (1 - f), color: 0xc0303a, alpha: 0.55 * (1 - f) * (1 - t * 0.5) });
+    }
+  }
+
+  /** For the beats: the core's stage as drawn, the one it is growing into, how far. */
+  coreStageNow(): { stage: number; into: number; t: number; want: number; art: boolean } {
+    const sim = this.simRef;
+    const n = this.art.coreEvo?.art.stages.length ?? 0;
+    return { stage: this.coreShown, into: this.coreInto, t: this.coreInto ? this.coreGrowT : 0, want: sim ? Math.min(n || 4, coreStageOf(sim.stats.limbsGrown)) : 0, art: n > 0 };
   }
 
   // ------------------------------------------------------------ creep nodes

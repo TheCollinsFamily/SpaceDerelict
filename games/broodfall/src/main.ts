@@ -1318,6 +1318,10 @@ async function boot(): Promise<void> {
     graftsDrawn(): number {
       return renderer instanceof IsoRenderer ? renderer.graftsDrawn() : 0;
     },
+    /** The core's stage as drawn (src/render/coreStage.ts): stage, the one it grows into, how far (s). */
+    coreStage() {
+      return renderer instanceof IsoRenderer ? renderer.coreStageNow() : null;
+    },
     /** What of the baked art the board could not load (empty when all of it is there). */
     artMissing(): string[] {
       return renderer instanceof IsoRenderer ? renderer.missing() : [];

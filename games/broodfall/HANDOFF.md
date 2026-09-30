@@ -477,6 +477,31 @@ own words. `notes/GRAPHICS-PLAN.md` holds the pipeline, the probes and the costs
   one animation big: `node tools/art/look-anim.mjs <kind> <anim> [views]`. In the game:
   `node tools/shot-units-moments.mjs [1-6]` (dev server; `notes/screens/2026-09-30/units-*`).
   Tests: `tests/units-art.test.ts`, `tests/unitAnim.test.ts`.
+- **Limbs against the core (Sep 30, Collins: "the towers are too big when contrasted with the center
+  node").** Every roof limb is drawn `LIMB_SCALE` 0.84 of before (big ones the same share of their 2x2),
+  scaled about its marked foot; the core `CORE_SCALE` 1.22, capped so its widest stage's collar is at
+  most 0.8 of its 4x4 square (`src/render/isoRender.ts`). Chosen from four pairs side by side
+  (`node tools/shot-scale.mjs [limb:core ...]`, the page takes `?limbScale=&coreScale=`).
+- **Walls (Sep 30, "walls way too large and placed sideways").** A Spine Wall is drawn ACROSS its lane
+  at every camera turn and as wide as the lane (`WALL_TWO`, `WALL_ONE`). On a street one cell wide the
+  sim lays its two cells ALONG the lane (`placementFor` falls back to that); the renderer turns the wall
+  across the lane there, in the middle of its two cells. The sim is untouched (no balance change).
+  Beat: `node tools/shot-walls.mjs` (and `--dist` for a before build). Gates, plinths, district faces
+  and props were checked and are right.
+- **The core evolves (Sep 30).** Four stages by limbs GROWN this run (`src/render/coreStage.ts`:
+  0, 6, 18, 40; a look only, the sim is not touched). `node tools/art/make.mjs coreevo [--stills|--bake]`
+  (`tools/art/templates/core-evo.mjs`): stage N+1's still is an EDIT of stage N's (on one canvas where
+  stage 1 is the heart made smaller, so later stages have room upward; each registered to stand where
+  stage 1 stands), a start-and-end clip between each pair (**seegen:sd2-fast**: sd2-mini ignored the end
+  frame and zoomed in, see `art-src/terrain/core/rejected/`), a looping idle per stage, every frame keyed
+  by Leaflit's studio keyer (`tools/art/lib/leaflit.mjs`). All clips are cut in ONE mapping (the meteor
+  does not move between stages), baked to `board.coreEvo`. In game the growing clip plays in place with
+  rings of creep running out from it. Beat: `node tools/shot-core-evo.mjs`; test `tests/core-evo.test.ts`.
+- **The organ stage's meteor (Sep 30, "rendered twice, one above ground, one under").** ONE picture per
+  stage of the whole half-buried meteor (`make.mjs coreevo scan [1-4]`), cut at its ground line: the top
+  shows over the street (`#under-dome`), the bottom fills the 3x2 meteor cells, from the same file
+  (`under.core` in the manifest). The skyline is the board's tile set in all ten
+  (`node tools/shot-organ-core.mjs [--stages]`, `notes/screens/2026-09-30/organ-skylines-all-sets.jpg`).
 - **No real religious symbol, and no lettering, in any picture.** The image model adds
   crosses by itself. Every picture is looked at zoomed in before it is kept. A small
   unwanted detail is painted out with `tools/art/paint-out.mjs` (it keeps the original

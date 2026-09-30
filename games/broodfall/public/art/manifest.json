@@ -8161,6 +8161,123 @@
   }
  },
  "board": {
+  "coreEvo": {
+   "cells": 2.4,
+   "stages": [
+    {
+     "id": 1,
+     "name": "the landing",
+     "grown": 0,
+     "collar": 1,
+     "idle": {
+      "atlas": "board/core-stage-1.webp",
+      "frame": 562,
+      "cols": 4,
+      "count": 16,
+      "fps": 5.19,
+      "anchor": [
+       0.4992,
+       0.7364
+      ],
+      "body": 0.8492,
+      "seam": 0.19
+     }
+    },
+    {
+     "id": 2,
+     "name": "rooted",
+     "grown": 6,
+     "collar": 1,
+     "idle": {
+      "atlas": "board/core-stage-2.webp",
+      "frame": 700,
+      "cols": 4,
+      "count": 16,
+      "fps": 5.49,
+      "anchor": [
+       0.4994,
+       0.7785
+      ],
+      "body": 0.6818,
+      "seam": 0.2
+     },
+     "grow": {
+      "atlas": "board/core-grow-2.webp",
+      "frame": 694,
+      "cols": 7,
+      "count": 48,
+      "fps": 12,
+      "anchor": [
+       0.5,
+       0.7803
+      ],
+      "body": 0.6878
+     }
+    },
+    {
+     "id": 3,
+     "name": "chambered",
+     "grown": 18,
+     "collar": 1.012,
+     "idle": {
+      "atlas": "board/core-stage-3.webp",
+      "frame": 1090,
+      "cols": 4,
+      "count": 16,
+      "fps": 7.11,
+      "anchor": [
+       0.4996,
+       0.8545
+      ],
+      "body": 0.438,
+      "seam": 0.27
+     },
+     "grow": {
+      "atlas": "board/core-grow-3.webp",
+      "frame": 1096,
+      "cols": 7,
+      "count": 48,
+      "fps": 12,
+      "anchor": [
+       0.5,
+       0.8538
+      ],
+      "body": 0.4356
+     }
+    },
+    {
+     "id": 4,
+     "name": "the citadel",
+     "grown": 40,
+     "collar": 1.032,
+     "idle": {
+      "atlas": "board/core-stage-4.webp",
+      "frame": 1223,
+      "cols": 4,
+      "count": 16,
+      "fps": 10.11,
+      "anchor": [
+       0.5,
+       0.8627
+      ],
+      "body": 0.3902,
+      "seam": 0.4
+     },
+     "grow": {
+      "atlas": "board/core-grow-4.webp",
+      "frame": 1221,
+      "cols": 7,
+      "count": 48,
+      "fps": 12,
+      "anchor": [
+       0.4996,
+       0.8638
+      ],
+      "body": 0.391
+     }
+    }
+   ]
+  },
   "pods": {
    "atlas": "board/pods.webp",
    "frame": 192,
