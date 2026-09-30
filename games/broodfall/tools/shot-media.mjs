@@ -1,6 +1,6 @@
 /**
  * THE CAMPAIGN'S MEDIA, PLAYED (Sep 30 2026; src/ui/newsreel.ts, src/ui/sceneVoice.ts, content/media.ts).
- * The DEV server, real pages, real clicks; outcomes forced the way tools/shot-campaign.mjs forces them.
+ * Its own build (dist-media), real pages, real clicks; outcomes forced the way tools/shot-campaign.mjs forces them.
  *
  *   A  a deployment to Old Harbor won → the report → RETURN TO THE SHIP → the Office's newsreel of
  *      it (reel-harbor: title card, shots with titles in type, the announcer, the score) → the ship →
@@ -15,7 +15,7 @@
  *      notes/screens/2026-09-30/media-ending-film.mp4
  * Screenshots: notes/screens/2026-09-30/media-*.jpg. Nothing is spent (YOKE is the scripted one).
  *
- *   node tools/shot-media.mjs [A] [B] [C] [D]      (its own dev server on BROODFALL_PORT, default 5287)
+ *   node tools/shot-media.mjs [A] [B] [C] [D] [--build]   (its own build, dist-media, served on BROODFALL_PORT, default 5287)
  */
 import { spawn, spawnSync, execSync } from 'node:child_process';
 import { mkdirSync, writeFileSync, existsSync, rmSync } from 'node:fs';
@@ -50,10 +50,21 @@ function freePort() {
     }
   } catch {}
 }
+/**
+ * The game as built into its own folder (BROODFALL_DIST, default dist-media) and served by `vite
+ * preview`: the dev server answers too slowly with several sessions building beside it. `--build`
+ * builds that folder first (it never touches dist/, which is Collins's).
+ */
+const DIST = process.env.BROODFALL_DIST || 'dist-media';
 function startDev() {
   freePort();
-  const child = spawn(process.platform === 'win32' ? 'npx.cmd' : 'npx', ['vite', '--port', String(PORT), '--strictPort'], {
-    cwd: root, stdio: 'pipe', shell: process.platform === 'win32', env: { ...process.env, BROODFALL_NO_HMR: '1', BROODFALL_PORT: String(PORT) },
+  const env = { ...process.env, BROODFALL_PORT: String(PORT), BROODFALL_DIST: DIST };
+  if (process.argv.includes('--build') || !existsSync(join(root, DIST, 'index.html'))) {
+    const b = spawnSync(process.platform === 'win32' ? 'npx.cmd' : 'npx', ['vite', 'build'], { cwd: root, env, shell: process.platform === 'win32', encoding: 'utf8' });
+    if (b.status) throw new Error(`the build failed: ${(b.stderr || b.stdout).slice(-600)}`);
+  }
+  const child = spawn(process.platform === 'win32' ? 'npx.cmd' : 'npx', ['vite', 'preview', '--port', String(PORT), '--strictPort'], {
+    cwd: root, stdio: 'pipe', shell: process.platform === 'win32', env,
   });
   return new Promise((resolve, reject) => {
     const t = setTimeout(() => reject(new Error('the dev server did not start in 40s')), 40000);
@@ -156,6 +167,7 @@ try {
     await sleep(1500);
     await shot(page, 'a4-reel-docks');
     check(await waitShot(page, 'end'), 'its last card');
+    await sleep(900);
     await shot(page, 'a5-reel-end');
     check(await gone(page), 'it ends by itself');
     const cues = await mediaCues(page);
@@ -168,11 +180,11 @@ try {
     await aboard(page);
     await page.waitForSelector('.cp-scene-card', { timeout: 20000 });
     await page.waitForSelector('.cp-scene-card p.said-now', { timeout: 8000 }).catch(() => {});
-    await sleep(1800);
+    await page.waitForFunction(() => window.__bfAudio.log.some((e) => e.id.includes('/voice/delegation__')), null, { timeout: 15000 }).catch(() => {});
+    await sleep(1200);
     await shot(page, 'a6-contact-voiced');
     const lit = await page.locator('.cp-scene-card p.said-now').innerText().catch(() => '');
-    check(!!lit, `a line of the scene is lit as it is said: "${lit.slice(0, 60)}…"`);
-    await page.waitForFunction(() => window.__bfAudio.log.some((e) => e.id.includes('/voice/delegation__')), null, { timeout: 15000 }).catch(() => {});
+    check(/^Delegate:/.test(lit), `the line being said is lit: "${lit.slice(0, 60)}…"`);
     check((await mediaCues(page)).some((c) => c.includes('voice/delegation__')), 'the Delegate\'s letter is heard in her voice');
     await sleep(4000);
     allErrors.push(...p.errors);

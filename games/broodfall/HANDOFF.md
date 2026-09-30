@@ -294,6 +294,9 @@ character setting down a data pad that has something similar to the last screen 
   screen; end: on the desk), a START-AND-END clip each on **seegen:wan3.0-video** (run with
   `PROBE_VIDEO_MODELS=seegen:wan3.0-video`; 5 s 720p, 65,700 tokens = $1.31). seegen:sd2-mini IGNORED
   the end frame (and drew idol figurines); seegen:sd2 honoured it but let the pad leave the frame.
+  **The kept take is `art-src/pad/infested/`** (fix pass, Sep 30): the window shows the menu loop's infested
+  planet, not the first take's green Earth (left in `art-src/pad/`). wan3.0 drew Earth's continents at night
+  twice when told "not Earth, no Americas" (naming them primes it): describe the planet positively only.
   Bake: Leaflit's studio ChromaKey set to the screen's own colour, the screen = biggest keyed patch →
   convex hull → edges fitted to the hull (bridges fingers) → corners, smoothed; key kept only inside
   the screen. Review: `notes/art-review/pad/<id>.jpg` (a game picture warped in) and `<id>-track.jpg`.

@@ -16,6 +16,8 @@ export class UnderAlive {
   private images = new Map<string, HTMLImageElement>();
   private cells: Array<{ x: number; y: number; w: number; h: number; img: HTMLImageElement; count: number; anchor: number; pingpong: boolean; shown: number }> = [];
   private raf = 0;
+  /** The clock's last step: every cell moves on the same 12-a-second step (each with its own phase), so the canvas changes 12 times a second, not every frame. */
+  private step = NaN;
   /** The grid changed size: measure again before the next drawing (no layout is read in the frame loop). */
   private stale = true;
   private reduced = matchMedia('(prefers-reduced-motion: reduce)');
@@ -30,6 +32,7 @@ export class UnderAlive {
   /** The grid was drawn again: read its living cells afresh. */
   scan(): void {
     this.cells = [];
+    this.step = NaN;
     this.measure();
     if (this.cells.length && !this.raf) this.raf = requestAnimationFrame(this.tick);
   }
@@ -80,9 +83,12 @@ export class UnderAlive {
     if (this.canvas.dataset.frozen) { this.raf = requestAnimationFrame(this.tick); return; }
     // Settings > Reduce motion (or the system's): the tiles hold their first frame.
     const still = document.documentElement.classList.contains('reduce-motion') || this.reduced.matches;
+    const step = Math.floor((now / 1000) * this.fps);
+    if (step === this.step && !this.cells.some((c) => c.shown < 0)) { this.raf = requestAnimationFrame(this.tick); return; }
+    this.step = step;
     for (const c of this.cells) {
       if (!c.img.complete || !c.img.naturalWidth) continue;
-      const k = still ? 0 : Math.floor(((now - c.anchor) / 1000) * this.fps);
+      const k = still ? 0 : step - Math.floor((c.anchor / 1000) * this.fps);
       let f: number;
       if (c.pingpong) {
         const p = 2 * (c.count - 1);
