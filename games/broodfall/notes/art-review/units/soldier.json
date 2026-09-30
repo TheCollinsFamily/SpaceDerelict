@@ -1,7 +1,7 @@
 {
  "kind": "soldier",
- "frames": 122,
- "atlasKB": 238,
+ "frames": 134,
+ "atlasKB": 268,
  "failed": 0,
  "checks": [
   {
@@ -205,6 +205,11 @@
    "value": "0.0% of the frame"
   },
   {
+   "name": "death SW: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
    "name": "views are one size",
    "ok": true,
    "value": "0.72 0.72 0.65 0.68 0.68"
@@ -212,7 +217,7 @@
   {
    "name": "atlas is under 900 KB",
    "ok": true,
-   "value": "238 KB"
+   "value": "268 KB"
   }
  ]
 }

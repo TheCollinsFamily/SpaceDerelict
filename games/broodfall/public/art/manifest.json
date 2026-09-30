@@ -1463,6 +1463,60 @@
       "count": 14,
       "fps": 5.79
      }
+    },
+    "attack": {
+     "S": {
+      "start": 70,
+      "count": 12,
+      "fps": 3
+     },
+     "SW": {
+      "start": 82,
+      "count": 12,
+      "fps": 3
+     },
+     "W": {
+      "start": 94,
+      "count": 12,
+      "fps": 3
+     },
+     "NW": {
+      "start": 106,
+      "count": 12,
+      "fps": 3
+     },
+     "N": {
+      "start": 118,
+      "count": 12,
+      "fps": 3
+     }
+    },
+    "death": {
+     "SW": {
+      "start": 130,
+      "count": 12,
+      "fps": 3
+     },
+     "S": {
+      "start": 130,
+      "count": 12,
+      "fps": 3
+     },
+     "W": {
+      "start": 130,
+      "count": 12,
+      "fps": 3
+     },
+     "NW": {
+      "start": 130,
+      "count": 12,
+      "fps": 3
+     },
+     "N": {
+      "start": 130,
+      "count": 12,
+      "fps": 3
+     }
     }
    }
   },
@@ -1502,6 +1556,60 @@
       "start": 50,
       "count": 14,
       "fps": 7
+     }
+    },
+    "attack": {
+     "S": {
+      "start": 64,
+      "count": 12,
+      "fps": 3
+     },
+     "SW": {
+      "start": 76,
+      "count": 12,
+      "fps": 3
+     },
+     "W": {
+      "start": 88,
+      "count": 12,
+      "fps": 3
+     },
+     "NW": {
+      "start": 100,
+      "count": 12,
+      "fps": 3
+     },
+     "N": {
+      "start": 112,
+      "count": 12,
+      "fps": 3
+     }
+    },
+    "death": {
+     "SW": {
+      "start": 124,
+      "count": 12,
+      "fps": 3
+     },
+     "S": {
+      "start": 124,
+      "count": 12,
+      "fps": 3
+     },
+     "W": {
+      "start": 124,
+      "count": 12,
+      "fps": 3
+     },
+     "NW": {
+      "start": 124,
+      "count": 12,
+      "fps": 3
+     },
+     "N": {
+      "start": 124,
+      "count": 12,
+      "fps": 3
      }
     }
    }
@@ -1543,6 +1651,60 @@
       "count": 14,
       "fps": 6.72
      }
+    },
+    "attack": {
+     "S": {
+      "start": 61,
+      "count": 12,
+      "fps": 3
+     },
+     "SW": {
+      "start": 73,
+      "count": 12,
+      "fps": 3
+     },
+     "W": {
+      "start": 85,
+      "count": 12,
+      "fps": 3
+     },
+     "NW": {
+      "start": 97,
+      "count": 12,
+      "fps": 3
+     },
+     "N": {
+      "start": 109,
+      "count": 12,
+      "fps": 3
+     }
+    },
+    "death": {
+     "SW": {
+      "start": 121,
+      "count": 12,
+      "fps": 3
+     },
+     "S": {
+      "start": 121,
+      "count": 12,
+      "fps": 3
+     },
+     "W": {
+      "start": 121,
+      "count": 12,
+      "fps": 3
+     },
+     "NW": {
+      "start": 121,
+      "count": 12,
+      "fps": 3
+     },
+     "N": {
+      "start": 121,
+      "count": 12,
+      "fps": 3
+     }
     }
    }
   },
@@ -1583,6 +1745,67 @@
       "count": 12,
       "fps": 12
      }
+    },
+    "attack": {
+     "S": {
+      "start": 68,
+      "count": 12,
+      "fps": 3
+     },
+     "SW": {
+      "start": 80,
+      "count": 12,
+      "fps": 3
+     },
+     "W": {
+      "start": 92,
+      "count": 12,
+      "fps": 3
+     },
+     "NW": {
+      "start": 104,
+      "count": 12,
+      "fps": 3
+     },
+     "N": {
+      "start": 116,
+      "count": 12,
+      "fps": 3
+     }
+    },
+    "death": {
+     "SW": {
+      "start": 128,
+      "count": 12,
+      "fps": 3
+     },
+     "S": {
+      "start": 128,
+      "count": 12,
+      "fps": 3
+     },
+     "W": {
+      "start": 128,
+      "count": 12,
+      "fps": 3
+     },
+     "NW": {
+      "start": 128,
+      "count": 12,
+      "fps": 3
+     },
+     "N": {
+      "start": 128,
+      "count": 12,
+      "fps": 3
+     }
+    },
+    "states": {
+     "grounded": {
+      "start": 140,
+      "count": 1,
+      "fps": 1
+     }
     }
    }
   },
@@ -1622,6 +1845,60 @@
       "start": 53,
       "count": 14,
       "fps": 4.42
+     }
+    },
+    "attack": {
+     "S": {
+      "start": 67,
+      "count": 12,
+      "fps": 3
+     },
+     "SW": {
+      "start": 79,
+      "count": 12,
+      "fps": 3
+     },
+     "W": {
+      "start": 91,
+      "count": 12,
+      "fps": 3
+     },
+     "NW": {
+      "start": 103,
+      "count": 12,
+      "fps": 3
+     },
+     "N": {
+      "start": 115,
+      "count": 12,
+      "fps": 3
+     }
+    },
+    "death": {
+     "SW": {
+      "start": 127,
+      "count": 12,
+      "fps": 3
+     },
+     "S": {
+      "start": 127,
+      "count": 12,
+      "fps": 3
+     },
+     "W": {
+      "start": 127,
+      "count": 12,
+      "fps": 3
+     },
+     "NW": {
+      "start": 127,
+      "count": 12,
+      "fps": 3
+     },
+     "N": {
+      "start": 127,
+      "count": 12,
+      "fps": 3
      }
     }
    }
@@ -1690,6 +1967,33 @@
       "count": 12,
       "fps": 3
      }
+    },
+    "death": {
+     "SW": {
+      "start": 122,
+      "count": 12,
+      "fps": 3
+     },
+     "S": {
+      "start": 122,
+      "count": 12,
+      "fps": 3
+     },
+     "W": {
+      "start": 122,
+      "count": 12,
+      "fps": 3
+     },
+     "NW": {
+      "start": 122,
+      "count": 12,
+      "fps": 3
+     },
+     "N": {
+      "start": 122,
+      "count": 12,
+      "fps": 3
+     }
     }
    }
   },
@@ -1730,6 +2034,60 @@
       "count": 14,
       "fps": 6.22
      }
+    },
+    "attack": {
+     "S": {
+      "start": 70,
+      "count": 12,
+      "fps": 3
+     },
+     "SW": {
+      "start": 82,
+      "count": 12,
+      "fps": 3
+     },
+     "W": {
+      "start": 94,
+      "count": 12,
+      "fps": 3
+     },
+     "NW": {
+      "start": 106,
+      "count": 12,
+      "fps": 3
+     },
+     "N": {
+      "start": 118,
+      "count": 12,
+      "fps": 3
+     }
+    },
+    "death": {
+     "SW": {
+      "start": 130,
+      "count": 12,
+      "fps": 3
+     },
+     "S": {
+      "start": 130,
+      "count": 12,
+      "fps": 3
+     },
+     "W": {
+      "start": 130,
+      "count": 12,
+      "fps": 3
+     },
+     "NW": {
+      "start": 130,
+      "count": 12,
+      "fps": 3
+     },
+     "N": {
+      "start": 130,
+      "count": 12,
+      "fps": 3
+     }
     }
    }
   },
@@ -1769,6 +2127,60 @@
       "start": 53,
       "count": 14,
       "fps": 4.94
+     }
+    },
+    "attack": {
+     "S": {
+      "start": 67,
+      "count": 12,
+      "fps": 3
+     },
+     "SW": {
+      "start": 79,
+      "count": 12,
+      "fps": 3
+     },
+     "W": {
+      "start": 91,
+      "count": 12,
+      "fps": 3
+     },
+     "NW": {
+      "start": 103,
+      "count": 12,
+      "fps": 3
+     },
+     "N": {
+      "start": 115,
+      "count": 12,
+      "fps": 3
+     }
+    },
+    "death": {
+     "SW": {
+      "start": 127,
+      "count": 12,
+      "fps": 3
+     },
+     "S": {
+      "start": 127,
+      "count": 12,
+      "fps": 3
+     },
+     "W": {
+      "start": 127,
+      "count": 12,
+      "fps": 3
+     },
+     "NW": {
+      "start": 127,
+      "count": 12,
+      "fps": 3
+     },
+     "N": {
+      "start": 127,
+      "count": 12,
+      "fps": 3
      }
     }
    }

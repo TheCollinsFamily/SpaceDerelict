@@ -220,6 +220,8 @@ body.view-iso #view-controls { display: flex; }
   padding: 7px 9px; cursor: pointer; box-shadow: 2px 2px 0 rgba(38, 32, 15, 0.35);
 }
 .card:hover { transform: translateY(-3px); }
+/* The limb's own picture on its card (src/ui/hud.ts cardArt). */
+.card .card-art { width: 64px; height: 64px; margin: 0 auto 2px; background-repeat: no-repeat; }
 .card.selected { outline: 3px solid var(--accent); transform: translateY(-5px); }
 .card.unaffordable { opacity: 0.45; }
 .card .card-top { display: flex; justify-content: space-between; align-items: flex-start; }

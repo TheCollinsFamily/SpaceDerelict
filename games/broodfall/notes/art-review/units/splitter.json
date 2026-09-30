@@ -1,7 +1,7 @@
 {
  "kind": "splitter",
- "frames": 70,
- "atlasKB": 183,
+ "frames": 142,
+ "atlasKB": 367,
  "failed": 0,
  "checks": [
   {
@@ -155,6 +155,61 @@
    "value": "0.7% of the frame"
   },
   {
+   "name": "attack S: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "attack S: stays on the spot",
+   "ok": true,
+   "value": "0.1% of the frame"
+  },
+  {
+   "name": "attack SW: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "attack SW: stays on the spot",
+   "ok": true,
+   "value": "0.1% of the frame"
+  },
+  {
+   "name": "attack W: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "attack W: stays on the spot",
+   "ok": true,
+   "value": "0.2% of the frame"
+  },
+  {
+   "name": "attack NW: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "attack NW: stays on the spot",
+   "ok": true,
+   "value": "0.2% of the frame"
+  },
+  {
+   "name": "attack N: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "attack N: stays on the spot",
+   "ok": true,
+   "value": "0.1% of the frame"
+  },
+  {
+   "name": "death SW: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
    "name": "views are one size",
    "ok": true,
    "value": "0.65 0.69 0.67 0.77 0.66"
@@ -162,7 +217,7 @@
   {
    "name": "atlas is under 900 KB",
    "ok": true,
-   "value": "183 KB"
+   "value": "367 KB"
   }
  ]
 }

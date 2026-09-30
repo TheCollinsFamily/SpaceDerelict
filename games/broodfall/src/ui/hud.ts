@@ -6,6 +6,20 @@
 import { Sim, towerSpec } from '../sim/sim';
 import { UPGRADES, UPGRADE_COST } from '../../content/upgrades';
 import { BALANCE as B } from '../../content/data';
+import { artUrl, loadManifest, type LimbArt } from '../render/art';
+
+/** The limbs' baked pictures, once the manifest has loaded: a card shows its limb (null: text only). */
+let limbArt: Record<string, LimbArt> | null = null;
+
+/** The first idle frame of a limb, as a CSS background `size` px square, cut from its atlas. */
+function cardArt(family: string, size: number): string {
+  const a = limbArt?.[family];
+  if (!a) return '';
+  const i = a.anims.idle.start;
+  const k = size / a.frame;
+  const url = new URL(artUrl(a.atlas), document.baseURI).href;
+  return `background-image:url("${url}");background-size:${a.cols * a.frame * k}px auto;background-position:-${(i % a.cols) * size}px -${Math.floor(i / a.cols) * size}px`;
+}
 import type { Caste, CasteFocus, OrganId, RootDir, SimEvent, TargetMode, Tower, TowerFamily, UpgradeChoice } from '../sim/types';
 
 const CARD_DESC: Record<TowerFamily, string> = {
@@ -213,6 +227,7 @@ export class Hud {
   private lastDirective: 'hold' | 'royal' | 'harvest' = 'hold';
 
   constructor(cb: HudCallbacks) {
+    void loadManifest().then((m) => { limbArt = m?.limbs ?? null; this.lastHandKey = ''; });
     this.cb = cb;
     for (const btn of document.querySelectorAll<HTMLElement>('.organ-btn[data-organ]')) {
       btn.addEventListener('click', () => {
@@ -539,7 +554,7 @@ export class Hud {
           .filter((c) => (spec.cost[c] ?? 0) > 0)
           .map((c) => `${spec.cost[c]}${c[0].toUpperCase()}`)
           .join(' ');
-        div.innerHTML = `<div class="card-top"><div class="card-name"></div><button class="card-discard" title="Discard (3 war meat)">✕</button></div><div class="card-tag"></div><div class="card-desc"></div><div class="card-cost"></div>`;
+        div.innerHTML = `<div class="card-top"><div class="card-name"></div><button class="card-discard" title="Discard (3 war meat)">✕</button></div><div class="card-tag"></div><div class="card-art"></div><div class="card-desc"></div><div class="card-cost"></div>`;
         (div.querySelector('.card-name') as HTMLElement).textContent = spec.name;
         const tag = layerTag(card.family);
         const tagEl = div.querySelector('.card-tag') as HTMLElement;
@@ -551,6 +566,10 @@ export class Hud {
           this.lastHandKey = '';
         });
         (div.querySelector('.card-desc') as HTMLElement).textContent = CARD_DESC[card.family];
+        // The limb itself, from its baked art: the card is recognised by its picture, as on the board.
+        const artEl = div.querySelector('.card-art') as HTMLElement;
+        const art = cardArt(card.family, 64);
+        if (art) artEl.setAttribute('style', art); else artEl.remove();
         (div.querySelector('.card-cost') as HTMLElement).textContent = card.free ? 'FREE (the pair)' : cost;
         div.addEventListener('click', () => {
           this.selectedCard = this.selectedCard === i ? null : i;
