@@ -118,8 +118,8 @@ async function session(record) {
   }, [st[2]]);
   check(mawId >= 0, 'a Maw is built');
   for (let i = 0; i < 80 && (await page.evaluate(() => window.broodfall.sim.seedFlights.length)) > 0; i++) await ticks(1);
-  // The street cells in its reach, two to three cells off (the tongue is seen crossing to them).
-  const reachable = await page.evaluate((id) => {
+  // The street cells in its reach (the tongue is seen crossing to them).
+  const reach = () => page.evaluate((id) => {
     const s = window.broodfall.sim;
     const t = s.towers.find((x) => x.id === id);
     const out = [];
@@ -129,8 +129,20 @@ async function session(record) {
       const d = Math.hypot(p.x - t.pos.x, p.y - t.pos.y);
       if (d >= s.cfg.cellPx * 1.1 && d <= 48) out.push({ c, d });
     }
-    return out.sort((a, b) => Math.abs(a.d - 40) - Math.abs(b.d - 40)).map((x) => x.c);
+    // In FRONT of it on the screen first (the tongue is seen reaching down into the street), then the farthest.
+    const m = window.broodfall.worldToScreen(t.pos.x, t.pos.y);
+    const front = (c) => { const p = s.cellCenter(c); return window.broodfall.worldToScreen(p.x, p.y).y > m.y + 4 ? 1 : 0; };
+    const cells = out.sort((a, b) => front(b.c) - front(a.c) || b.d - a.d).map((x) => x.c);
+    return { cells, front: cells.length ? front(cells[0]) : 0 };
   }, mawId);
+  // The camera is turned (E) until a street in reach lies in front of the Maw: its mouth is seen.
+  let found = await reach();
+  for (let turn = 0; turn < 3 && !found.front; turn++) {
+    await page.keyboard.press('e');
+    await page.waitForTimeout(900);
+    found = await reach();
+  }
+  const reachable = found.cells;
   check(reachable.length > 0, 'a street in its reach', String(reachable.length));
   if (!reachable.length) throw new Error('no street in reach of the Maw');
   const put = (list) => page.evaluate((items) => {
@@ -204,7 +216,7 @@ try {
       { name: 'maw-tongue-1-out', at: 0.12, label: 'TONGUE OUT' },
       { name: 'maw-tongue-2-stuck', at: 0.26, label: 'STUCK' },
       { name: 'maw-tongue-3-halfway', at: 0.52, label: 'HALFWAY HOME' },
-      { name: 'maw-tongue-4-lips', at: 0.72, label: 'AT THE LIPS' },
+      { name: 'maw-tongue-4-lips', at: 0.64, label: 'AT THE LIPS' },
       { name: 'maw-tongue-5-swallowed', at: 0.95, label: 'SWALLOWED' },
     ];
     const pngs = [];

@@ -1201,7 +1201,8 @@ export class IsoRenderer extends Renderer {
   private facingOfLimb(sim: Sim, t: Tower, was: Facing | undefined): Facing {
     if (t.facing) return t.facing;
     if (t.lastTargetId !== undefined) {
-      const e = sim.enemies.find((x) => x.id === t.lastTargetId);
+      // A body the Maw has just eaten is gone from the sim, but still on the board this frame: it turns to it.
+      const e = sim.enemies.find((x) => x.id === t.lastTargetId) ?? this.units.get(t.lastTargetId)?.ent;
       if (e) return facingOf(e.pos.x - t.pos.x, e.pos.y - t.pos.y);
     }
     return was ?? 'S';

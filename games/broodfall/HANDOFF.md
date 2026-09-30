@@ -582,6 +582,7 @@ node tools/shot-creep.mjs     # creep: bladder recipe, tray, thrown node, spread
 node tools/shot-board-art.mjs # the board alive (DEV server): seams, pods growing/spreading, strains, gates, unclaimed city, plinth rising, fps alive vs still
 # board art (pods, strains, gates, smoke): node tools/art/make.mjs board [pods|strains|gates|smoke|<set>] [--stills|--bake]  (tools/art/templates/board.mjs; renderer side src/render/boardArt.ts)
 node tools/shot-preview.mjs   # a mortar's field of fire (click on it) + a conduit held and hovered (placement preview)
+node tools/shot-elevation.mjs # DEV server: the reach ring before placing grows with height (+10%/level, plinths too; Sim.previewStats = the sim's own statsOf) + right-click turns any held limb (notes/screens/2026-09-30/elev-*, rotate-*)
 node tools/shot-play-new.mjs  # DEV server from the menu: Scaffold + Seeding Gland grown by clicks, plinths raise a gun and level a roof, a BIG limb on it, a Seedling shot up and landed, the scripted player late (JPGs in notes/screens/2026-09-29/play-*)
 node tools/shot-campaign.mjs  # NEW CAMPAIGN → mission 1 → ship (desk dark) → assigned run → win → desk opens, three calls → ally → YOKE (scripted) → globe + dare → aside in debrief + Comms
 node tools/shot-onboarding.mjs  # DEV server, fresh browsers: the film, mission 1, the ship and YOKE's greetings (rfab.ai mocked), the boss, the dark desk, mate review, cat girl, the desk opening + three calls, YOKE summoned + print-a-body, the console menu; mission 1 won; replay the opening (notes/screens/2026-09-30/onboard-*)

@@ -239,13 +239,13 @@ export class MawTongues {
 
 /**
  * THE MAW'S FIRING CLIP, in time with its tongue. Its clip (tools/art/limbs.mjs, art-src/limbs/maw-tongue/
- * fire.mp4) gapes in its first eighth, holds wide open to a little past its middle, snaps shut and gulps
+ * fire.mp4) gapes in its first eighth, holds wide open to a little before its middle (its 14 baked frames), snaps shut and gulps
  * (the throat sac swelling) and settles in the rest. Played so that the mouth is open while the tongue is
  * out and shuts as it comes home: how far through the clip to show, `t` seconds after the strike.
  */
 export const MAW_FIRE_SECONDS = 1.15;
 const OPEN = 0.12;
-const SHUT = 0.56;
+const SHUT = 0.45;
 export function mawFireShare(t: number, dur = MAW_FIRE_SECONDS): number {
   const k = Math.min(1, dur / MAW_FIRE_SECONDS);
   const out = OUT * k, home = (OUT + STUCK + REEL) * k;

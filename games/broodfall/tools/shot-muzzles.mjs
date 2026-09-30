@@ -143,6 +143,7 @@ const browser = await chromium.launch({ args: ['--use-angle=d3d11', '--enable-gp
 const videoDir = join(shots, 'fire-video');
 try {
   if (VIDEO) rmSync(videoDir, { recursive: true, force: true });
+  const filmStart = Date.now();
   const context = await browser.newContext({ viewport: { width: 1280, height: 800 }, ...(VIDEO ? { recordVideo: { dir: videoDir, size: { width: 1280, height: 800 } } } : {}) });
   const page = await context.newPage();
   const errors = [];
@@ -278,12 +279,14 @@ try {
     // Played at its own pace: ten seconds of siege (the sim runs at speed 1).
     await page.evaluate(() => { for (let i = 0; i < 100; i++) window.broodfall.step(1); });
     const t0 = Date.now();
+    // Where the siege begins in the film (the page loads for a while first: that part is cut off).
+    const cutAt = ((t0 - filmStart) / 1000).toFixed(2);
     while (Date.now() - t0 < 11000) { await page.evaluate(() => window.broodfall.step(1)); await page.waitForTimeout(95); }
     const vid = page.video();
     await context.close();
     const webm = await vid.path();
     const mp4 = join(screens, 'fire-siege.mp4');
-    const r = spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-ss', '1.5', '-i', webm, '-t', '10.5', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '24', '-movflags', '+faststart', mp4]);
+    const r = spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-ss', cutAt, '-i', webm, '-t', '10.5', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '24', '-movflags', '+faststart', mp4]);
     check(r.status === 0 && existsSync(mp4), 'the siege is recorded', mp4);
   } else {
     for (const sc of LIMB_SCENES) {
