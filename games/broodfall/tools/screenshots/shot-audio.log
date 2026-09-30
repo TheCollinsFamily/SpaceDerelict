@@ -25,3 +25,4 @@ A: the film, mission 1, the end, the ship, the boss
   PASS  the music comes back up when he is done
   PASS  no page errors ()
 B: the menu, the settings, the ship
+  PASS  nothing plays before a click
