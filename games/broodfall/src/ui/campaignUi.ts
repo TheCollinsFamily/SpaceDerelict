@@ -32,10 +32,15 @@ import { loadIntroArt, type IntroArt } from './intro';
 import { CATGIRL_MAIL, PARTNER } from '../../content/partner';
 import { PRINT_BODY } from '../../content/yokeScenes';
 import { YokeSceneOverlay, sceneMedia } from './yokeScene';
+import { directivesHtml, ordersDebriefHtml } from './directives';
+import { hobbyClick, hobbyDebriefHtml, hobbyHtml } from './hobby';
+import { openSettings } from './settings';
 
-type Room = 'desk' | 'genes' | 'locker' | 'board' | 'comms' | 'ai' | 'quarters';
+type Room = 'desk' | 'genes' | 'locker' | 'board' | 'comms' | 'ai' | 'quarters' | 'orders' | 'hobby';
+/** Rooms with no picture of their own borrow one (the standing orders are read at the Board; the notebook lives in the Locker). */
+const ROOM_PICTURE: Partial<Record<Room, 'board' | 'locker'>> = { orders: 'board', hobby: 'locker' };
 /** The ship's pictures as this screen reads them: with the scene pictures, which the manifest lists as `scenes`. */
-type ShipPictures = ShipArt & { scenes?: Record<string, string> };
+type ShipPictures = ShipArt & { scenes?: Record<string, string>; territories?: Record<string, string> };
 type Pending = CampaignState['pendingScenes'][number];
 
 /**
@@ -224,6 +229,8 @@ export class CampaignUi {
       ['desk', 'Directive Desk'], ['genes', 'Gene Bay'], ['locker', 'Specimen Locker'],
       ['board', 'Procreation Board'], ['comms', 'Comms'], ['ai', `AI Core${s.ai.queue.length ? ` (${s.ai.queue.length})` : ''}`],
       ['quarters', 'Quarters'],
+      // Empire Directives and his Notebook open with the Directive Desk (src/meta/onboarding.ts deskOpen).
+      ...(deskOpen(s) ? [['orders', 'Empire Directives'], ['hobby', 'Notebook']] as Array<[Room, string]> : []),
     ];
     const fac = s.faction ? faction(s.faction).name : 'no allies';
     const face = this.room !== 'ai' ? '' : this.talk ? (this.waiting ? 'thinking' : YOKE_FACE[this.talk.trigger] ?? 'calm') : s.ai.queue.length ? 'curious' : 'calm';
@@ -241,6 +248,7 @@ export class CampaignUi {
         </div>
         <div class="cp-rooms">${rooms.map(([id, name]) => `<button class="cp-room${this.room === id ? ' on' : ''}${this.beckon?.room === id && this.room !== id ? ' beckon' : ''}" data-room="${id}"${id === 'desk' && !deskOpen(s) ? ' data-dark="1"' : ''}>${name}</button>`).join('')}
           ${this.room === 'ai' ? '' : `<button class="cp-room cp-call${this.icom ? ' on' : ''}" data-act="yoke-call" title="Call YOKE here">◉ YOKE</button>`}
+          <button class="cp-room" data-act="settings" title="Settings">⚙ Settings</button>
           <button class="cp-room quit" data-act="quit">Main menu</button></div>
         <div class="cp-body">${this.roomHtml()}</div>
       </div>
@@ -285,7 +293,7 @@ export class CampaignUi {
     const at = (file: string | undefined) => (file ? `url("${new URL(artUrl(file), document.baseURI).href}")` : 'none');
     this.el.style.setProperty('--room', this.room === 'quarters'
       ? (this.intro?.quarters ? `url("${this.intro.quarters}")` : at(art?.rooms.board))
-      : at(art?.rooms[this.room as Exclude<Room, 'quarters'>]));
+      : at(art?.rooms[(ROOM_PICTURE[this.room] ?? this.room) as Exclude<Room, 'quarters' | 'orders' | 'hobby'>]));
     this.el.style.setProperty('--sketches', at(art?.sketches?.atlas));
     this.el.style.setProperty('--yoke', at(art?.yoke?.atlas));
     const canvas = this.el.querySelector<HTMLCanvasElement>('canvas.globe-map');
@@ -343,6 +351,8 @@ export class CampaignUi {
       case 'comms': return this.commsHtml();
       case 'ai': return this.aiHtml();
       case 'quarters': return this.quartersHtml();
+      case 'orders': return directivesHtml(this.state);
+      case 'hobby': return hobbyHtml(this.state);
     }
   }
 
@@ -438,13 +448,19 @@ export class CampaignUi {
         <p>Command assigns this asset's deployments until it records one sanctioned success. Take a territory, and the desk and the planet's projection are cleared for your own targeting.</p>
         ${t && p ? `<div class="cp-label">NEXT DEPLOYMENT — ASSIGNED BY COMMAND</div>
         <div class="cp-sub">${esc(t.name.toUpperCase())}${p.defence ? ' · DEFENCE' : ''}</div>
-        <p class="cp-story">${esc(t.story)}</p>
+        ${this.territoryPictureHtml(t.id)}<p class="cp-story">${esc(t.story)}</p>
         <div class="cp-facts">Threat tier ${t.tier} · ${t.entrances} entrance${t.entrances > 1 ? 's' : ''} · ${p.defence ? '<b>DEFENCE</b> — hold 5 waves' : dirText}</div>
         ${p.board.length ? `<div class="cp-label">REQUISITION BOARD — pays standing</div>
         ${p.board.map((g) => `<div class="cp-goal std"><b>${esc(g.def.title)}</b> ${esc(goalText(g))} <i>+${g.def.pays}</i></div>`).join('')}` : ''}
         <div class="cp-facts">Starting profile: <b>${esc(PROFILES.find((x) => x.id === s.profile)?.name ?? '')}</b> (change in the Gene Bay)</div>
         <button class="screen-btn" data-act="deploy-assigned" data-site="${t.id}">DEPLOY</button>` : ''}
       </div></div>`;
+  }
+
+  /** The landing site's own picture (tools/art/templates/ship.mjs `territories`), over its story; nothing when not drawn. */
+  private territoryPictureHtml(id: string): string {
+    const file = this.art?.territories?.[id];
+    return file ? `<img class="cp-territory-pic" data-territory="${esc(id)}" src="${artUrl(file)}" alt="">` : '';
   }
 
   private briefHtml(t: TerritoryDef): string {
@@ -459,7 +475,7 @@ export class CampaignUi {
     const objAllowed = perks.includes('objectors2') ? 2 : perks.includes('objectors1') ? 1 : 0;
     const warKinds = ENEMIES.filter((e) => e.caste === 'war').map((e) => e.kind);
     const exps = experimentsAvailable(s);
-    return `<div class="cp-sub">${esc(t.name.toUpperCase())}${held ? ' · YOURS' : ''}</div>
+    return `${this.territoryPictureHtml(t.id)}<div class="cp-sub">${esc(t.name.toUpperCase())}${held ? ' · YOURS' : ''}</div>
       <p class="cp-story">${esc(t.story)}</p>
       <div class="cp-facts">Threat tier ${t.tier} · ${t.entrances} entrance${t.entrances > 1 ? 's' : ''} · ${p.defence ? '<b>DEFENCE</b> — hold 5 waves' : dirText}</div>
       ${unlocks ? `<div class="cp-facts">Holding it unlocks: <b>${esc(unlocks)}</b></div>` : ''}
@@ -665,12 +681,13 @@ export class CampaignUi {
   // ------------------------------------------------------------ input
 
   private onClick(ev: MouseEvent): void {
-    const el = (ev.target as HTMLElement).closest<HTMLElement>('[data-act],[data-room],[data-site],[data-dare],[data-exp],[data-obj],[data-buy],[data-profile],[data-ally],[data-choice],[data-engage],[data-replay],[data-picture]');
+    const el = (ev.target as HTMLElement).closest<HTMLElement>('[data-act],[data-room],[data-site],[data-dare],[data-exp],[data-obj],[data-buy],[data-profile],[data-ally],[data-choice],[data-engage],[data-replay],[data-picture],[data-hpin],[data-hsplice]');
     if (!el) return;
     const d = el.dataset;
     let s = this.state;
     // A scene's picture, clicked: as wide as the card, and back. Nothing else changes, so nothing is drawn again.
     if (d.picture) { el.classList.toggle('big'); return; }
+    if (d.hpin || d.hsplice) { const n = hobbyClick(el, s); if (n) this.setState(n); return; }
     if (d.room) {
       this.room = d.room as Room;
       if (this.beckon?.room === this.room) this.beckon = null;
@@ -710,6 +727,10 @@ export class CampaignUi {
     if (d.engage) { void this.aiEngage(d.engage as AiTrigger); return; }
     switch (d.act) {
       case 'quit': this.hooks.quit(); return;
+      case 'settings':
+        // Her voice may be switched there: she hears of it when the screen closes.
+        openSettings({ where: 'ship', onClose: () => { this.yoke = loadYoke(); this.avatar?.setMuted(this.yoke.muted); this.render(); } });
+        return;
       case 'new': this.hooks.newCampaign(); return;
       case 'spin-l': this.spin -= 30; this.render(); return;
       case 'spin-r': this.spin += 30; this.render(); return;
@@ -848,6 +869,7 @@ export class CampaignUi {
       <div class="cp-label">REQUISITION BOARD</div>${d.board.map((g) => row(g, 'standing', goalText(g))).join('')}
       ${d.dares.length ? `<div class="cp-label">DARES</div>${d.dares.map((g) => row(g, 'field notes', goalText(g))).join('')}` : ''}
       ${d.experiment ? `<div class="cp-label">EXPERIMENT</div>${row(d.experiment, 'field notes', goalText(d.experiment))}` : ''}
+      ${hobbyDebriefHtml(d)}${ordersDebriefHtml(d.orders)}
       <div class="cp-facts">Earned: <b>+${d.standing} standing</b> · <b>+${d.notes} field notes</b>${d.unlocked.length ? ` · unlocked: ${d.unlocked.map((u) => esc(u.split(':')[1])).join(', ')}` : ''}</div>
       <p class="cp-story">${esc(d.log)}</p>
       ${d.aside ? `<p class="cp-story cp-aside">${speakLine(d.aside)}</p>` : ''}

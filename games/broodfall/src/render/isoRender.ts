@@ -1379,7 +1379,7 @@ export class IsoRenderer extends Renderer {
       v.shade.visible = !air && !hidden && !e.burrowed;
       v.shade.alpha = 0.85;
       // Struck: a pale red flash for the first moment of the flinch (every unit, with a flinch clip or not).
-      v.sprite.tint = v.fx.hitT < 0.09 ? 0xffb4a4 : sim.isCloaked(e) ? 0xd8b0ff : 0xffffff;
+      v.sprite.tint = v.fx.hitT < 0.09 && !CALM.flashes ? 0xffb4a4 : sim.isCloaked(e) ? 0xd8b0ff : 0xffffff;
       this.unitMarks(sim, e, p.x / K, (p.y - r * UNIT_PX * 0.9) / K, r);
       this.unitMoments(e, v.fx, p.x / K, (p.y - r * UNIT_PX * 0.9) / K, r, !!art.anims['walk-stripped']);
     }

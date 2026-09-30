@@ -47,6 +47,7 @@ export function playBossCall(art: IntroArt | null): Promise<void> {
     const reading = lines.reduce((a, l) => a + 900 + l.length * 50, 0);
     if (!b?.voice) { run(reading); return; }
     audio = new Audio(b.voice);
+    audio.volume = gain('voice');
     let started = false;
     audio.onloadedmetadata = () => {
       if (started) return;

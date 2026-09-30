@@ -2,6 +2,7 @@
 import type { EnemyKind } from '../sim/types';
 import type { CampaignState } from './campaign';
 import { YOKE_AVATAR, type YokeMode } from './yokeAvatar';
+import { gainOf, settingsFrom, type Channel, type Settings } from './settings';
 
 const KEY = 'broodfall-campaign';
 const PENDING = 'broodfall-campaign-pending';
@@ -108,3 +109,23 @@ export function forgetEverything(): void {
     for (const k of Object.keys(localStorage)) if (k.startsWith('broodfall-')) localStorage.removeItem(k);
   } catch { /* ok */ }
 }
+
+// ------------------------------------------------------------------ the player's settings (src/meta/settings.ts)
+
+const SETTINGS = 'broodfall-settings';
+let cachedSettings: Settings | null = null;
+
+/** The settings in force (read once, then kept; the settings screen writes through saveSettings). */
+export function loadSettings(): Settings {
+  if (cachedSettings) return cachedSettings;
+  try { cachedSettings = settingsFrom(JSON.parse(localStorage.getItem(SETTINGS) ?? 'null')); } catch { cachedSettings = settingsFrom(null); }
+  return cachedSettings;
+}
+
+export function saveSettings(s: Settings): void {
+  cachedSettings = settingsFrom(s);
+  try { localStorage.setItem(SETTINGS, JSON.stringify(cachedSettings)); } catch { /* private mode: kept for this page */ }
+}
+
+/** What a sound on this channel plays at now (YOKE's voice, the boss's message; music and effects when there are any). */
+export const gain = (ch: Exclude<Channel, 'master'>): number => gainOf(loadSettings(), ch);

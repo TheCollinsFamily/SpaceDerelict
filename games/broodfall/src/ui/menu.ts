@@ -76,11 +76,19 @@ export class ConsoleMenu {
         if (!m) { this.el.classList.add('no-video'); return; }
         if (!shown()) return;
         if (!v.src) { if (m.poster) v.poster = m.poster; v.src = m.video; v.loop = true; v.muted = true; }
-        void v.play().catch(() => { /* the poster stays */ });
-        this.el.classList.add('has-video');
+        if (v.paused) void v.play().catch(() => { /* the poster stays */ });
+        // (classList.add writes the attribute even when the class is there: that would wake the observer below.)
+        if (!this.el.classList.contains('has-video')) this.el.classList.add('has-video');
       });
     };
-    new MutationObserver(() => { if (shown()) start(); else v.pause(); }).observe(this.el, { attributes: true, attributeFilter: ['class'] });
+    // Only a change between shown and hidden matters to it.
+    let was = shown();
+    new MutationObserver(() => {
+      const now = shown();
+      if (now === was) return;
+      was = now;
+      if (now) start(); else v.pause();
+    }).observe(this.el, { attributes: true, attributeFilter: ['class'] });
     // The page decides in this same task whether the menu is shown (a run started from the address hides it).
     queueMicrotask(start);
   }

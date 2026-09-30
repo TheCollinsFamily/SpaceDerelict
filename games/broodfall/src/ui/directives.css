@@ -30,3 +30,6 @@
 .dr-done div { color: rgba(233, 238, 240, 0.72); }
 .dr-foot { margin-top: 12px; font-size: 11px; color: rgba(233, 238, 240, 0.5); letter-spacing: 1px; border-top: 1px solid rgba(255, 255, 255, 0.12); padding-top: 6px; }
 @media (max-width: 900px) { .dr-cols { grid-template-columns: 1fr; } }
+/* The landing site's own picture over its briefing (src/ui/campaignUi.ts territoryPictureHtml). */
+#campaign .cp-territory-pic { display: block; width: 100%; aspect-ratio: 3 / 2; object-fit: cover; border: 1px solid rgba(235, 245, 248, 0.34); margin: 0 0 8px; }
+#campaign .cp-desk-dark .cp-territory-pic { aspect-ratio: 16 / 7; }

@@ -1,0 +1,49 @@
+/* The settings screen (src/ui/settings.ts), in the ship's look: black glass, thin white lines. */
+#settings {
+  position: fixed; inset: 0; z-index: 9000; display: flex; align-items: center; justify-content: center;
+  background: rgba(2, 3, 4, 0.72); backdrop-filter: blur(3px);
+  font-family: Bahnschrift, "DIN Alternate", "Segoe UI", Arial, sans-serif; color: #e9eef0;
+}
+#settings.hidden { display: none; }
+#settings .st-card {
+  width: min(1180px, 94vw); max-height: 92vh; overflow: auto; zoom: var(--ui-scale, 1);
+  background: rgba(7, 9, 11, 0.94); border: 1px solid rgba(235, 245, 248, 0.34); padding: 18px 22px 14px;
+}
+#settings .st-head { display: flex; justify-content: space-between; align-items: flex-start; }
+#settings .st-kicker { font-size: 11px; letter-spacing: 3px; color: rgba(233, 238, 240, 0.62); }
+#settings .st-title { font-size: 26px; font-weight: 300; letter-spacing: 6px; }
+#settings .st-close { background: none; border: 1px solid rgba(235, 245, 248, 0.34); color: #e9eef0; font-size: 16px; width: 34px; height: 34px; cursor: pointer; }
+#settings .st-cols { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; margin-top: 12px; }
+#settings section { min-width: 0; }
+#settings h3 { font-size: 12px; font-weight: 400; letter-spacing: 3px; color: rgba(233, 238, 240, 0.62); border-bottom: 1px solid rgba(255, 255, 255, 0.14); padding-bottom: 4px; margin: 8px 0 6px; }
+#settings .st-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 7px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.06); font-size: 14px; }
+#settings .st-row.col { flex-direction: column; align-items: stretch; }
+#settings .st-row small { display: block; font-size: 11px; color: rgba(233, 238, 240, 0.55); }
+#settings .st-row b { min-width: 42px; text-align: right; font-weight: 400; font-variant-numeric: tabular-nums; }
+#settings input[type="range"] { flex: 1; max-width: 120px; accent-color: #e9eef0; }
+#settings button { font-family: inherit; cursor: pointer; }
+#settings .st-toggle, #settings .st-key, #settings .st-btn, #settings .st-choice button {
+  background: rgba(255, 255, 255, 0.035); border: 1px solid rgba(235, 245, 248, 0.34); color: #e9eef0; letter-spacing: 1.5px; padding: 4px 10px; font-size: 12px;
+}
+#settings .st-toggle.on, #settings .st-choice button.on { background: #e9eef0; color: #07090b; }
+#settings .st-choice { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+#settings .st-keys { display: flex; gap: 6px; }
+#settings .st-key { min-width: 44px; }
+#settings .st-key.listen { border-color: #9fe8f5; color: #9fe8f5; }
+#settings .st-btn.danger { border-color: #ff8a70; color: #ff8a70; }
+#settings .st-swatches { display: flex; gap: 6px; margin-top: 6px; }
+#settings .st-swatch { flex: 1; text-align: center; font-size: 11px; letter-spacing: 1.5px; color: #07090b; padding: 3px 0; }
+#settings .st-slot { font-size: 12px; min-height: 60px; }
+#settings .st-slot.empty { border: 1px dashed rgba(235, 245, 248, 0.34); padding: 8px; color: rgba(233, 238, 240, 0.6); }
+#settings .st-foot { margin-top: 10px; font-size: 11px; color: rgba(233, 238, 240, 0.5); letter-spacing: 1px; }
+@media (max-width: 1000px) { #settings .st-cols { grid-template-columns: 1fr 1fr; } }
+#view-settings { font-size: 15px; }
+
+/* Text size: the panels a player reads, scaled (the board itself is not). */
+#topbar, #feed, #hint, #inspect, #board-goals, #hand, #view-controls, #banner, #draft-card-wrap, #under-card,
+.screen-card, #campaign .cp-card, #menu .menu-console, #campaign .cp-icom, #campaign .cp-scene-card { zoom: var(--ui-scale, 1); }
+
+/* Reduce motion: nothing slides, pulses or glows on a loop. */
+:root.reduce-motion *, :root.reduce-motion *::before, :root.reduce-motion *::after {
+  animation-duration: 0.001s !important; animation-iteration-count: 1 !important; transition-duration: 0.001s !important; scroll-behavior: auto !important;
+}

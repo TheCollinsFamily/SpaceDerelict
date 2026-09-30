@@ -104,8 +104,12 @@ try {
   });
   await mockRfab(page, state);
 
-  await page.goto(`http://localhost:${PORT}/?seed=3`, { waitUntil: 'load' });
-  await page.evaluate(() => {
+  // A fresh campaign with her in avatar mode, set before the page's own code runs (once per tab).
+  // It used to be set from a first visit to the board, but the board keeps the page busy after
+  // it loads, and the navigation away from it then waited for ever (Sep 30 2026).
+  await page.addInitScript(() => {
+    if (sessionStorage.getItem('shot-yoke-init')) return;
+    sessionStorage.setItem('shot-yoke-init', '1');
     localStorage.removeItem('broodfall-campaign');
     localStorage.removeItem('broodfall-campaign-pending');
     localStorage.setItem('broodfall-yoke', JSON.stringify({ mode: 'avatar', v: 2 }));

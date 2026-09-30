@@ -411,6 +411,7 @@ export class YokeAvatarUi implements ShipAiProvider {
       this.hush();
       const url = URL.createObjectURL(new Blob([bytes], { type: 'audio/mpeg' }));
       const a = new Audio(url);
+      a.volume = gain('voice'); // the settings' master × voices
       this.sound = a;
       this.soundUrl = url;
       let over = false;

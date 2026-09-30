@@ -403,6 +403,10 @@ own words. `notes/GRAPHICS-PLAN.md` holds the pipeline, the probes and the costs
   reshuffles ten deterministic runs: measure, do not reason.
 - **Never rebuild (`npm run build`) while browser beats are running:** they play the built
   game, and it changes under them.
+- **A video playing behind a hidden element costs the board its frames** (Sep 30: the menu's 720p
+  loop decoding under a running board made `test:input`'s panel-close check fail; the menu now plays
+  it only while shown). And `classList.add` of a class already there still WRITES the attribute:
+  a MutationObserver on `class` that adds a class wakes itself forever (the page never goes idle).
 - **Two processes writing `public/art/manifest.json` at once can lose an entry.** After
   running bakes side by side, bake once more (`--bake`, free) and run `npm test`: it
   counts every unit, limb and tile set.
