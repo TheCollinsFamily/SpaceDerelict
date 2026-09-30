@@ -444,6 +444,18 @@ own words. `notes/GRAPHICS-PLAN.md` holds the pipeline, the probes and the costs
   `backFoot`) on the limb in `tools/art/limbs.mjs`: the middle of the WIDEST row of its
   skirt, and that row's width without the thin tips of its roots. Then `--bake`, and look
   at `notes/art-review/limbs/<family>-standing.jpg`. A limb with no mark fails its bake.
+- **Where a limb's shot leaves it is marked by eye too** (Sep 30 2026, Collins: "the shots aligning
+  with coming from where the art would indicate"). `muzzle: [[x, y], ...]` (and `backMuzzle`) on every
+  limb in `FIRING` (`tools/art/limbs.mjs`), in the same box as its foot: `node tools/art/muzzles.mjs
+  [family] [--back]` draws its idle frame and firing clip with a numbered grid of tenths
+  (`notes/art-review/muzzles/`), read it, write the point, `--bake`. Marked at REST (the shot is let go
+  as the firing clip starts; the lobber's and sling's arm swing forward during the clip, the shot leaves
+  the rest pose). The renderer places it from the limb's sprite as drawn (view from behind, mirror,
+  LIMB_SCALE, BIG, plinth): `mouthOf` in `src/render/isoRender.ts`; `src/render/fx.ts` starts every shot,
+  beam, flame, shell and bile there with a puff, and draws a new shot AT the muzzle for its first sim
+  step. The hive's guns: `src/render/unitMuzzles.ts` (`node tools/art/muzzles.mjs --units`). A new firing
+  limb: add it to `FIRING` and `FIRES_FROM` (`tests/muzzles.test.ts` holds them). Look:
+  `node tools/shot-muzzles.mjs [scene] --tag before|after` (`?muzzles=off` is the old way), `--sheet`, `--video`.
 - **A lopsided limb has a view from behind** (`back:` on the limb says what is seen of it).
   `node tools/art/make.mjs limb <family> --stills` draws only that picture: look at it
   before paying for its clips.
