@@ -1,4 +1,4 @@
-# BROODFALL — handoff for a new instance (updated Sep 29 2026)
+# BROODFALL — handoff for a new instance (updated Sep 30 2026)
 
 Read this first, then DESIGN.md, then PLAYTEST_PROTOCOL.md (repo root). The protocol is
 not optional: this project once shipped three broken boards in one day because the
@@ -36,7 +36,14 @@ process only verified its own assumptions. The repo's CLAUDE.md carries the stan
   own CLAUDE.md with hard rules. Most important: **never deploy without Collins's explicit
   approval**, billing fails closed, and never log user content.
 
-## State right now (Sep 29 2026, end of session)
+## State right now (Sep 30 2026, end of session)
+
+- **Sep 30 2026:** a day of parallel sessions built the whole list in `notes/TO-CREATE.md`'s
+  "Built on Sep 30" paragraph; every picture is indexed in `notes/screens/2026-09-30/README.md`.
+  371 unit tests pass. What is still missing, and what is Collins's, is `notes/TO-CREATE.md`.
+- **No size limits on the art** (Collins): the art is about 60+ MB and that is fine.
+
+(The Sep 29 state below is kept for its history.)
 
 - Everything is committed and pushed (game and backend; the backend was not touched on
   Sep 29). Both trees clean.
@@ -445,10 +452,8 @@ own words. `notes/GRAPHICS-PLAN.md` holds the pipeline, the probes and the costs
 - **What is there:** 26 units (walking, five views each; the soldier also attacks), 36
   limbs (idle, and firing where they fire; 15 of them from behind too), the core, the creep, 8 tile sets, the ship
   (six rooms, planet, exterior, three faction leaders, YOKE's six faces, 14 sketches).
-- **What is NOT there** (code-drawn stand-ins are used): attack clips for 25 of the 26
-  units (`node tools/art/make.mjs unit <ids> --attack`, about $1.25 each); death clips;
-  state sprites (netted flier, deployed cannon, stripped carapace, burrowed tunneler,
-  carrying researcher); contact shadows under units; the HUD is still the old khaki.
+- **What is NOT there**: see `notes/TO-CREATE.md` (Sep 30 2026). Every unit now walks,
+  attacks, flinches, dies and has its states; the HUD is the ship-console look.
 - **Tile sets:** `tools/art/biomes.mjs` is the data (one entry per set: what it borrows,
   nine prompts, which territories). A campaign deployment is drawn with its territory's
   set, a skirmish with one chosen by its seed, `?biome=megacity` names one. To add a set:
@@ -603,8 +608,7 @@ RFAB_API_BASE=http://localhost:3011 RFAB_CONNECT_JWT=<tester jwt> node tools/sho
 4. **The interior can seal itself:** growth can wall itself in against the interior
    (idea: a burrow-reopen mechanic).
 5. **City life:** civilians fleeing the crash.
-6. **The rest of the art** (see "The art" above for what is missing): attack clips for 25
-   units, death clips, state sprites, shadows under units, the HUD's look.
+6. **The rest of the art**: see `notes/TO-CREATE.md` (Sep 30 2026).
    - **The first LONG limb** (longer than it is wide, turned to fit): the rule is built and
      tested and no limb uses it. Collins asked for turning to fit; which limb is his call.
    - **Props do not turn with the camera:** a roof prop or a parked car is one picture, seen
