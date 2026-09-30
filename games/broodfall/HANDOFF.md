@@ -546,6 +546,14 @@ own words. `notes/GRAPHICS-PLAN.md` holds the pipeline, the probes and the costs
   step. The hive's guns: `src/render/unitMuzzles.ts` (`node tools/art/muzzles.mjs --units`). A new firing
   limb: add it to `FIRING` and `FIRES_FROM` (`tests/muzzles.test.ts` holds them). Look:
   `node tools/shot-muzzles.mjs [scene] --tag before|after` (`?muzzles=off` is the old way), `--sheet`, `--video`.
+- **Board fix pass (Sep 30, render/input only; `node tools/shot-fixpass-board.mjs [scene] --tag before|after`).**
+  The lobber and sling let go on their clip's RELEASE frame, from the point marked there (`src/render/releases.ts`,
+  read by eye on every baked frame; the wind-up plays in 0.24 s, the glob flies the rest of the sim's flight).
+  A limb that shoots faces its target (a LONG one flips end for end), over a right-click facing; directional
+  limbs keep theirs (`facingOfLimb`). A click takes what is DRAWN in front (`toWorld`: the limb body in front
+  of the block the view ray met). Web, poison and flames sit at the unit's depth (`FxLayer.statusIn`). A beat
+  that clicks waits for the view to settle first (it eases for about a second after Home, a turn or a zoom).
+  Beats that play while the art session bakes: `BROODFALL_PUBLIC=<a copy of public/>` (shot-iso, fixpass-board).
 - **A lopsided limb has a view from behind** (`back:` on the limb says what is seen of it).
   `node tools/art/make.mjs limb <family> --stills` draws only that picture: look at it
   before paying for its clips.
