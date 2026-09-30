@@ -15577,7 +15577,21 @@
    },
    "territories": {
     "crash-site": "ship/territories/crash-site.webp",
-    "temple": "ship/territories/temple.webp"
+    "cul-de-sac": "ship/territories/cul-de-sac.webp",
+    "granary": "ship/territories/granary.webp",
+    "harbor": "ship/territories/harbor.webp",
+    "commuter": "ship/territories/commuter.webp",
+    "temple": "ship/territories/temple.webp",
+    "foundry": "ship/territories/foundry.webp",
+    "mirewater": "ship/territories/mirewater.webp",
+    "university": "ship/territories/university.webp",
+    "ossuary": "ship/territories/ossuary.webp",
+    "pilgrim": "ship/territories/pilgrim.webp",
+    "queens-hollow": "ship/territories/queens-hollow.webp",
+    "hidden-campus": "ship/territories/hidden-campus.webp",
+    "assembly": "ship/territories/assembly.webp",
+    "seventh-city": "ship/territories/seventh-city.webp",
+    "glass-spires": "ship/territories/glass-spires.webp"
    },
    "exterior": "ship/exterior.webp",
    "planet": "ship/planet.webp",

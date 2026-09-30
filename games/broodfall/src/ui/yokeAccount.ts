@@ -4,6 +4,7 @@
  * balance, a top-up link and the model her mind runs on. What happens is src/meta/yokePlayer.ts;
  * this file is what the player sees. Clicks come in through `click(act, el)` (data-act="acct-…").
  */
+import '../yokeAccount.css';
 import {
   allowanceLeft, allowanceText, bonusTimes, costText, dollars, tokensText, watchConnect,
   type ConnectCode, type CutKind, type PlayerLink, type YokeAccountState,
@@ -56,6 +57,7 @@ export class YokeAccountUi {
 
   /** The server refused her for money (src/meta/yokeAvatar.ts YokeLadder.onCut). */
   setCut(kind: CutKind): void {
+    if (this.link.legacy) return;
     this.cut = kind;
     this.hooks.changed();
     void this.refresh();
@@ -72,17 +74,18 @@ export class YokeAccountUi {
    * `where`: 'core' is the AI Core's panel (the meter, the prompt, the code, the account);
    * 'say' replaces the line he types to her, when she is cut off.
    */
-  html(where: 'core' | 'say' = 'core'): string {
+  html(where: 'core' | 'say' = 'core', opts: { prompt?: boolean } = {}): string {
     const s = this.state;
     if (!s || this.link.legacy) return '';
-    if (where === 'say') return this.cut ? this.promptHtml(true) : '';
-    if (this.code) return this.codeHtml();
+    if (where === 'say') return this.cut ? (this.code ? this.codeHtml() : this.promptHtml(true)) : '';
+    if (this.code) return opts.prompt === false ? '' : this.codeHtml();
     const parts: string[] = [];
     if (this.note) parts.push(`<div class="cp-acct-note">${esc(this.note)}</div>`);
     if (this.error) parts.push(`<div class="cp-acct-note bad">${esc(this.error)}</div>`);
-    if (s.connected) parts.push(this.accountHtml(s));
-    else if (this.cut) parts.push(this.promptHtml(false));
+    if (s.connected) parts.push(this.accountHtml(s, opts.prompt !== false));
+    else if (this.cut) { if (opts.prompt !== false) parts.push(this.promptHtml(false)); }
     else parts.push(this.meterHtml(s));
+    if (!parts.length) return '';
     return `<div class="cp-acct" data-acct="${s.connected ? 'linked' : this.cut ? 'cut' : 'guest'}">${parts.join('')}</div>`;
   }
 
@@ -134,7 +137,7 @@ export class YokeAccountUi {
   }
 
   /** Linked: the balance, the top-up link, her model. */
-  private accountHtml(s: YokeAccountState): string {
+  private accountHtml(s: YokeAccountState, prompt = true): string {
     const a = s.account;
     const models = this.picking
       ? `<div class="cp-acct-models" role="listbox" aria-label="The model her mind runs on">${s.models.map((m) => `
@@ -150,7 +153,7 @@ export class YokeAccountUi {
         <button data-act="acct-models" class="cp-acct-small">${this.picking ? 'CLOSE' : 'CHANGE'}</button>
         <button data-act="acct-unlink" class="cp-acct-small quiet" title="Stop paying for YOKE from this RFab account">UNLINK</button></div>
       ${models}
-      ${this.cut === 'topup' ? this.promptHtml(true) : ''}
+      ${prompt && this.cut === 'topup' ? this.promptHtml(true) : ''}
     </div>`;
   }
 

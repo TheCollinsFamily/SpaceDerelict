@@ -199,11 +199,11 @@ try {
     await page.keyboard.press('z');
     const keys = await page.evaluate(() => JSON.parse(localStorage.getItem('broodfall-settings')).keys);
     check(keys.turnLeft === 'z', `a turn key rebound (${JSON.stringify(keys)})`);
-    await shot(page, 'debug-after-key');
-    console.log(await page.locator('#settings').innerHTML().then((h) => h.slice(0, 300)).catch((e) => String(e)));
-    await page.locator('[data-choice="hud"]').nth(2).click();
-    check(await page.evaluate(() => document.documentElement.dataset.hud) !== 'console', 'the HUD style chosen here is in force');
-    await page.locator('[data-choice="hud"]').first().click();
+    const hud0 = await page.evaluate(() => document.documentElement.dataset.hud);
+    const other = await page.locator('[data-choice="hud"]:not(.on)').first().getAttribute('data-value');
+    await page.locator('[data-choice="hud"]:not(.on)').first().click();
+    check(await page.evaluate(() => document.documentElement.dataset.hud) === other, `the HUD style chosen here is in force (${hud0} → ${other})`);
+    await page.locator(`[data-choice="hud"][data-value="${hud0}"]`).click();
     await page.locator('[data-act="reset"]').click();
     check(/AGAIN TO CONFIRM/.test(await page.locator('[data-act="reset"]').innerText()), 'reset asks again before it forgets anything');
     await shot(page, 'settings-large-safe');
@@ -229,6 +229,7 @@ try {
     await page.waitForTimeout(800);
     const t1 = await page.evaluate(() => window.broodfall.sim.time);
     check(t0 === t1, `the deployment is paused while the settings are open (${t0} → ${t1})`);
+    check(await page.locator('#speed-box button.on').getAttribute('data-speed') === '0', 'the pause is lit on the speed buttons');
     await shot(page, 'settings-run');
     await page.keyboard.press('Escape');
     const turn0 = await page.evaluate(() => window.broodfall.turn());
@@ -236,8 +237,8 @@ try {
     const turn1 = await page.evaluate(() => window.broodfall.turn());
     check(turn0 !== turn1, `the rebound key turns the board (${turn0} → ${turn1})`);
     await page.waitForTimeout(500);
-    const t2 = await page.evaluate(() => window.broodfall.sim.time);
-    check(t2 > t1, 'closed: the deployment goes on');
+    const on = await page.locator('#speed-box button.on').getAttribute('data-speed');
+    check(on === '1', `closed: the deployment goes on at its old speed (lit: ${on})`);
     check(await page.locator('#view-settings').count() === 1, 'the ⚙ by the view buttons');
     await shot(page, 'run-large-safe');
     check(!errors.length, `no page errors (${errors.slice(0, 3).join(' | ')})`);

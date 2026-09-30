@@ -153,12 +153,28 @@ try {
     });
     await page.mouse.click(box.x + (pos.x / pos.vw) * box.width, box.y + (pos.y / pos.vh) * box.height);
     await page.waitForTimeout(700);
+    if (await page.locator('#inspect').evaluate((e) => e.classList.contains('hidden'))) {
+      await page.mouse.click(box.x + (pos.x / pos.vw) * box.width, box.y + (pos.y / pos.vh) * box.height - 6);
+      await page.waitForTimeout(700);
+    }
     check(await page.locator('#inspect').evaluate((e) => !e.classList.contains('hidden')), 'a limb is inspected');
     await page.locator('#hand .card').nth(2).click();
     await page.mouse.move(box.x + box.width * 0.62, box.y + box.height * 0.55);
     await page.waitForTimeout(400);
     await page.screenshot({ path: join(tmp, `${t.id}-a.png`), scale: 'css' });
     jpg(join(tmp, `${t.id}-a.png`), `${t.id}-a.jpg`);
+
+    // The same moment in smaller windows (a laptop, a small window): nothing may fall off the bars.
+    for (const [w, h] of [[1280, 720], [1024, 640]]) {
+      await page.setViewportSize({ width: w, height: h });
+      await page.waitForTimeout(900);
+      const over = await page.evaluate(() => ['#topbar', '#botbar'].map((q) => { const e = document.querySelector(q); return e.scrollWidth - e.clientWidth; }));
+      check(over.every((o) => o <= 1), `${w}x${h}: the bars fit (overflow ${over.join(', ')} px)`);
+      await page.screenshot({ path: join(tmp, `${t.id}-a-${w}.png`), scale: 'css' });
+      jpg(join(tmp, `${t.id}-a-${w}.png`), `${t.id}-a-${w}.jpg`);
+    }
+    await page.setViewportSize({ width: 1600, height: 1000 });
+    await page.waitForTimeout(900);
 
     // (d) Close: the resource bar and one card, stacked.
     const top = await page.locator('#topbar').boundingBox();

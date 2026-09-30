@@ -455,7 +455,8 @@ const save = (img, file, q = 86) => {
   const png = file.replace(/\.webp$/, '.png');
   writePng(png, img);
   toWebp(png, file, { q });
-  fs.rmSync(png);
+  // A watcher or a virus scan can still hold the fresh PNG for a moment (EBUSY): try again for a few seconds.
+  fs.rmSync(png, { maxRetries: 20, retryDelay: 200 });
   return fs.statSync(file).size;
 };
 

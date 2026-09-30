@@ -63,11 +63,11 @@ try {
       await page.waitForSelector('#intro', { timeout: 15000 }).catch(() => {});
       check(await page.locator('#intro').count() === 1, 'the first launch plays the opening film');
       await page.keyboard.press('Escape');
-      await page.waitForFunction(() => window.broodfall !== undefined && window.__bfBooted, null, { timeout: 60000 });
+      await page.waitForFunction(() => window.broodfall !== undefined && window.__bfBooted && document.getElementById('boot').classList.contains('hidden'), null, { timeout: 90000 });
       await page.waitForTimeout(1000);
       await page.screenshot({ path: join(shots, 'player-path-first-launch.png') });
-      check(await page.evaluate(() => document.getElementById('menu').classList.contains('hidden') && window.broodfall.sim.cfg.directive?.waves === 5),
-        'then straight into mission 1 (hold 5 waves), no menu');
+      const m1 = await page.evaluate(() => ({ menu: document.getElementById('menu').classList.contains('hidden'), dir: window.broodfall.sim.cfg.directive }));
+      check(m1.menu && m1.dir?.waves === 5, 'then straight into mission 1 (hold 5 waves), no menu', JSON.stringify(m1));
     }
     // From here on a returning player: the ship's console menu (their campaign aside, for a skirmish).
     await page.evaluate(() => {

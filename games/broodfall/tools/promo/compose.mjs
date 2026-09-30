@@ -24,14 +24,12 @@ const pic = (id) => url(path.join(SRC, `${id}.png`));
 const EMBLEM = url(path.join(ROOT, 'public', 'art', 'screens', 'emblem.webp'));
 
 // ---- the taglines (the game's voice: procurement-speak, 1950s newsreel, B-movie barker) ----
-export const TAGLINES = {
-  store: 'EVERY LIMB A TOWER. EVERY STREET A MEAL.',
-  monster: 'THIS TIME, YOU ARE THE INFESTATION.',
-  bmovie: 'IT CAME FROM ORBIT. ON PURPOSE.',
-  asset: "THE EMPIRE'S NEWEST PEST-CONTROL ASSET.",
-  waste: 'WASTE NOTHING. NOT EVEN THE ENEMY.',
-  yoke: "YOUR SHIP'S AI HAS NOTES.",
-};
+// Collins, Sep 30 2026: the genre line matters more than any other text; where there is a tagline, it is "Genocide Simulator".
+export const GENRE = 'TOWER DEFENCE + ROGUELITE + DEEP NARRATIVE LORE';
+const TAG = 'GENOCIDE SIMULATOR';
+export const TAGLINES = { store: TAG, monster: TAG, bmovie: TAG, asset: TAG, waste: TAG, yoke: TAG };
+/** The genre line: the loudest words after the name. */
+const genre = (size, style = '') => `<div class="genre" style="font-size:${size}px;${style}">${GENRE}</div>`;
 
 const FONTS = '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@500;700&family=Special+Elite&family=Bungee&display=block">';
 
@@ -61,6 +59,7 @@ const BASE_CSS = `
   .logo .emb + .word{margin-left:calc(var(--e) * -0.24);margin-top:calc(var(--e) * 0.12)}
   .logo.stack{flex-direction:column}
   .logo.stack .emb + .word{margin-left:0;margin-top:calc(var(--e) * -0.22)}
+  .genre{font-family:Oswald,"Arial Narrow",sans-serif;font-weight:700;letter-spacing:.06em;color:#ffd24a;white-space:nowrap;text-shadow:0 2px 0 #1a0604,0 0 16px rgba(0,0,0,.95)}
   .tag{font-family:Oswald,"Arial Narrow",sans-serif;font-weight:700;letter-spacing:.08em;color:#f4e8c8;text-shadow:0 2px 0 #1a0604,0 0 14px rgba(0,0,0,.9)}
 `;
 
@@ -83,7 +82,7 @@ export const JOBS = {
   'key-art/broodfall-keyart-meteor-titled-1920x1080': {
     W: 1920, H: 1080, html: () => `<div class="stage">${cover('fall-wide', '70% center')}${leftShade(0.72, 60)}
       <div class="abs" style="left:90px;top:330px">${logo({ word: 180, emblem: 320, fit: 1150 })}
-      <div class="tag" style="font-size:40px;margin:30px 0 0 40px">${TAGLINES.monster}</div></div></div>`,
+      ${genre(44, 'margin:30px 0 0 40px')}<div class="tag" style="font-size:30px;margin:14px 0 0 40px;opacity:.9">${TAGLINES.monster}</div></div></div>`,
   },
 
   // ---------- store covers ----------
@@ -98,13 +97,13 @@ export const JOBS = {
   'covers/steam-main-capsule-1232x706': {
     W: 1232, H: 706, html: () => `<div class="stage">${cover('fall-wide', '75% center')}${leftShade(0.72, 60)}
       <div class="abs" style="left:40px;top:215px">${logo({ word: 124, emblem: 230, fit: 760 })}
-      <div class="tag" style="font-size:30px;margin:26px 0 0 30px">${TAGLINES.store}</div></div></div>`,
+      ${genre(32, 'margin:26px 0 0 30px')}<div class="tag" style="font-size:24px;margin:10px 0 0 30px;opacity:.9">${TAGLINES.store}</div></div></div>`,
   },
   'covers/steam-vertical-capsule-600x900': {
     W: 600, H: 900, html: () => `<div class="stage">${cover('cover-tall', 'center top')}
       <div class="shade" style="background:linear-gradient(180deg,rgba(4,6,12,0) 46%,rgba(4,6,12,.6) 54%,rgba(4,6,12,.75) 70%,rgba(4,6,12,0) 80%)"></div>
       <div class="abs" style="left:0;right:0;top:468px;display:flex;flex-direction:column;align-items:center">${logo({ word: 92, emblem: 150, fit: 560 })}
-      <div class="tag" style="font-size:19px;margin-top:14px">${TAGLINES.monster}</div></div></div>`,
+      ${genre(22, 'margin-top:14px')}<div class="tag" style="font-size:18px;margin-top:6px;opacity:.9">${TAGLINES.monster}</div></div></div>`,
   },
   'covers/steam-library-hero-3840x1240': { W: 3840, H: 1240, html: () => `<div class="stage">${cover('cover-hero', 'center 40%')}</div>` },
   'covers/steam-library-logo-1280x720': {
@@ -114,27 +113,29 @@ export const JOBS = {
   'covers/itch-cover-630x500': {
     W: 630, H: 500, html: () => `<div class="stage">${cover('cover-square', 'center 30%')}${bottomShade(0.92, 55)}
       <div class="abs" style="left:0;right:0;bottom:14px;display:flex;flex-direction:column;align-items:center">${logo({ word: 84, emblem: 150, fit: 560 })}
-      <div class="tag" style="font-size:19px;margin-top:6px">${TAGLINES.store}</div></div></div>`,
+      ${genre(22, 'margin-top:6px')}<div class="tag" style="font-size:16px;margin-top:4px;opacity:.9">${TAGLINES.store}</div></div></div>`,
   },
   'covers/social-square-1080x1080': {
     W: 1080, H: 1080, html: () => `<div class="stage">${cover('cover-square')}${leftShade(0.55, 70)}${bottomShade(0.75, 75)}
       <div class="abs" style="left:24px;top:210px">${logo({ word: 140, emblem: 250, fit: 640 })}</div>
-      <div class="abs tag" style="left:0;right:0;bottom:44px;text-align:center;font-size:40px">${TAGLINES.monster}</div>
-      <div class="abs tag" style="left:0;right:0;bottom:10px;text-align:center;font-size:20px;font-weight:500;opacity:.8">A TOWER DEFENCE ROGUELITE WHERE THE TOWERS ARE YOUR LIMBS</div></div>`,
+      <div class="abs" style="left:0;right:0;bottom:56px;display:flex;justify-content:center">${genre(38)}</div>
+      <div class="abs tag" style="left:0;right:0;bottom:16px;text-align:center;font-size:26px;opacity:.9">${TAGLINES.monster}</div></div>`,
   },
 
   // ---------- posters ----------
+  // The B-movie poster is the town's own picture: the insects know nothing of the Empire (Collins, Sep 30 2026).
   'posters/bmovie-poster-1200x1800': {
     W: 1200, H: 1800, html: () => `<div class="stage">${cover('bmovie')}
       <div class="abs" style="left:0;right:0;top:40px;display:flex;flex-direction:column;align-items:center">
-        <div style="font-family:Oswald;font-weight:700;font-size:34px;letter-spacing:.3em;color:#f0dfb0;text-shadow:0 3px 0 #1a0604">THE EMPIRE PRESENTS</div>
+        <div style="font-family:Oswald;font-weight:700;font-size:34px;letter-spacing:.3em;color:#f0dfb0;text-shadow:0 3px 0 #1a0604">IT CAME FROM THE SKY!</div>
         ${logo({ word: 250, emblem: 0, fit: 1120 })}
         <div style="font-family:Bungee,Impact;font-size:52px;color:#ffd24a;transform:rotate(-4deg);margin-top:4px;text-shadow:4px 4px 0 #1a0604,0 0 20px rgba(0,0,0,.7)">${TAGLINES.bmovie}</div>
       </div>
       <div class="abs" style="left:60px;right:60px;bottom:26px;text-align:center;font-family:Oswald;color:#e9dcc0;text-shadow:0 2px 0 #000">
         <div style="font-weight:700;font-size:34px;letter-spacing:.06em;color:#ffd24a">SEE A WHOLE TOWN SWALLOWED! &nbsp;SEE GUNS GROW FROM ROOFTOPS!</div>
-        <div style="font-weight:700;font-size:30px;letter-spacing:.06em;margin-top:4px">SEE THE EMPIRE FILE THE PAPERWORK!</div>
-        <div style="font-weight:500;font-size:19px;letter-spacing:.14em;margin-top:12px;opacity:.85">IN SPORE-O-VISION &nbsp;&middot;&nbsp; A XENOFAUNA CLEARANCE PICTURE &nbsp;&middot;&nbsp; NOT SUITABLE FOR INSECTS</div>
+        <div style="font-weight:700;font-size:30px;letter-spacing:.06em;margin-top:4px">NO HIVE IS SAFE!</div>
+        <div style="display:flex;justify-content:center;margin-top:12px">${genre(40)}</div>
+        <div style="font-weight:500;font-size:19px;letter-spacing:.14em;margin-top:12px;opacity:.85">IN SPORE-O-VISION &nbsp;&middot;&nbsp; NOT SUITABLE FOR LARVAE</div>
       </div></div>`,
   },
   'posters/procurement-notice-1200x1800': {
@@ -150,7 +151,7 @@ export const JOBS = {
         <div style="font-family:'Special Elite',monospace;font-size:23px;line-height:1.45;opacity:.92">Grows its own weapons. Requires no wages, no rest and no luxury. Deploys by falling. Feeds on the problem it was sent to solve. Reports to your console between waves.</div>
         <div style="display:flex;align-items:center;gap:26px;margin-top:22px">
           <svg width="112" height="112" viewBox="-60 -60 120 120"><g fill="#f1e7ce">${gear()}</g><circle r="17" fill="#0b0f12"/></svg>
-          <div><div style="font-family:Anton,Impact;font-size:52px;line-height:1">${TAGLINES.waste}</div>
+          <div><div style="font-family:Anton,Impact;font-size:40px;line-height:1.05;letter-spacing:.02em">${GENRE}</div>
           <div style="font-family:'Special Elite',monospace;font-size:20px;letter-spacing:.1em;margin-top:10px;opacity:.85">ASSET CLASS: XENOFAUNA CLEARANCE &middot; DESIGNATION: BROODFALL</div></div>
         </div>
       </div></div>`,
@@ -164,14 +165,15 @@ export const JOBS = {
       </div>
       <div class="abs" style="left:0;right:0;bottom:44px;display:flex;flex-direction:column;align-items:center">
         <div style="font-family:Anton,Impact;font-size:74px;color:#eef4ff;letter-spacing:.02em;text-shadow:0 0 22px rgba(90,160,255,.6)">${TAGLINES.yoke}</div>
-        <div style="font-family:Oswald;font-weight:500;font-size:25px;letter-spacing:.08em;color:#b8cbe6;margin:6px 0 20px">She runs the ship. She reads your reports. She is not impressed.</div>
+        <div style="font-family:Oswald;font-weight:500;font-size:25px;letter-spacing:.08em;color:#b8cbe6;margin:6px 0 8px">She runs the ship. She reads your reports. She is not impressed.</div>
+        ${genre(34, 'margin:0 0 20px')}
         ${logo({ word: 80, emblem: 130, id: 'y' })}
       </div></div>`,
   },
   'posters/social-banner-1500x500': {
     W: 1500, H: 500, html: () => `<div class="stage">${cover('cover-hero', '85% 38%')}${leftShade(0.78, 62)}
       <div class="abs" style="left:40px;top:92px">${logo({ word: 120, emblem: 220, fit: 760 })}
-      <div class="tag" style="font-size:28px;margin:18px 0 0 36px">${TAGLINES.store}</div></div></div>`,
+      ${genre(30, 'margin:18px 0 0 36px')}<div class="tag" style="font-size:22px;margin:8px 0 0 36px;opacity:.9">${TAGLINES.store}</div></div></div>`,
   },
 };
 

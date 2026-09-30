@@ -9,11 +9,10 @@
  *
  *   1. the stills first: stage N+1 is an image-to-image EDIT of stage N's still (same camera,
  *      same spot, same green), each LOOKED at before the next is drawn from it. Stage 1 is the
- *      heart the board already has (art-src/terrain/core/heart.png).
+ *      heart the board already has (art-src/terrain/core/heart.png), made smaller on its canvas.
  *   2. a START-AND-END clip for each step (first frame stage N, last frame stage N+1: the
- *      model fills in the growing), seegen:sd2-mini at 720p, 4 s.
- *   3. an idle for each stage: a clip whose last frame is its first (stage 1's is the one the
- *      board already had, heart-idle.mp4).
+ *      model fills in the growing), seegen:sd2-mini, 4 s.
+ *   3. an idle for each stage: a clip whose last frame is its first.
  *   4. every frame keyed by Leaflit's studio keyer (tools/art/lib/leaflit.mjs, the studio's own
  *      ChromaKey class), then cut, packed and written to the manifest as board.coreEvo.
  *
@@ -51,9 +50,9 @@ const KEEP =
  * `collar`: how wide its collar is, as a share of the width of its still, MARKED BY EYE (rule 24).
  */
 export const STAGES = [
-  { id: 1, grown: 0, name: 'the landing', collar: 0.565 },
+  { id: 1, grown: 0, name: 'the landing', collar: 0.41 },
   {
-    id: 2, grown: 6, name: 'rooted', collar: 0.6,
+    id: 2, grown: 6, name: 'rooted', collar: 0.41,
     prompt: 'Edit this picture: the living heart in the split meteor has begun to grow. The crack in the meteor is ' +
       'wider and the crimson heart inside is bigger and swells out of it. Many more thick roots of the same tissue ' +
       'climb up over the dark meteor shell and grip it. Two small round fleshy sacs bud from the collar at its ' +
@@ -61,7 +60,7 @@ export const STAGES = [
       'The mound at its base is only very slightly wider than in the reference: no more than a tenth wider. ',
   },
   {
-    id: 3, grown: 18, name: 'chambered', collar: 0.645,
+    id: 3, grown: 18, name: 'chambered', collar: 0.415,
     prompt: 'Edit this picture: the living heart has grown further. The dark meteor shell is splitting into several ' +
       'curved plates, pushed apart by swelling crimson flesh between them. The heart is larger and there are now ' +
       'two more heart-like chambers of wet muscle beside it. Five short tube-shaped vents of dark chitin rise from ' +
@@ -69,20 +68,27 @@ export const STAGES = [
       'reference. The mound at its base is only slightly wider than in the reference: no more than a tenth wider. ',
   },
   {
-    id: 4, grown: 40, name: 'the citadel', collar: 0.7,
+    id: 4, grown: 40, name: 'the citadel', collar: 0.423,
     prompt: 'Edit this picture: the living heart has become a towering organ, a citadel of flesh. The plates of the ' +
       'meteor shell are carried up on the flesh like armour. The great crimson heart and its chambers glow from ' +
       'inside. Tall curved tusks and horn-like vents of dark chitin rise around the top like the spines of a sea ' +
       'urchin, some breathing a faint pink mist. Many wet amber eyes, large and small, look out of the flesh. Thick ' +
-      'roots and ribs of bone brace it from all sides. It is clearly taller than in the reference. The mound at its ' +
+      'roots and ribs of bone brace it from all sides. Its top is a little higher than in the reference, and the whole still fits inside the picture with green space above it. The mound at its ' +
       'base is only slightly wider than in the reference: no more than a tenth wider. ',
   },
 ];
 
-const stillOf = (n) => path.join(DIR, n === 1 ? 'heart.png' : `stage-${n}.png`);
+/**
+ * Every stage lives on one canvas: stage 1 is the board's heart (heart.png) made smaller (ROOM)
+ * and set low in the picture, so that the stages above it have room to grow upward inside the
+ * picture (the first try of stage 3, on the heart's own canvas, grew out of the top of it).
+ */
+const ROOM = 0.72;
+const FOOT_Y = 0.86;
+const stillOf = (n) => path.join(DIR, `stage-${n}.png`);
 /** What the edit drew; stillOf() is it moved so that its collar stands where stage 1's does. */
 const rawOf = (n) => path.join(DIR, `stage-${n}-raw.png`);
-const idleOf = (n) => path.join(DIR, n === 1 ? 'heart-idle.mp4' : `stage-${n}-idle.mp4`);
+const idleOf = (n) => path.join(DIR, `stage-${n}-idle.mp4`);
 const growOf = (n) => path.join(DIR, `grow-${n - 1}-${n}.mp4`);
 
 const BEAT =
@@ -99,6 +105,7 @@ const GROW =
 export async function makeCoreEvo({ only = [], stillsOnly = false, bakeOnly = false } = {}) {
   const wanted = (n) => !only.length || only.includes(String(n));
   if (!bakeOnly) {
+    stageOne();
     // The stills, one after the other: each is drawn from the one before it.
     for (const s of STAGES.slice(1)) {
       if (!wanted(s.id)) continue;
@@ -111,10 +118,11 @@ export async function makeCoreEvo({ only = [], stillsOnly = false, bakeOnly = fa
     }
     if (stillsOnly) return null;
     const jobs = [];
+    jobs.push(makeClip({ slug: 'the core at stage 1 beats', out: idleOf(1), stillFile: stillOf(1), prompt: BEAT, raw: true, resolution: RES }));
     for (const s of STAGES.slice(1)) {
       if (!wanted(s.id)) continue;
-      jobs.push(makeClip({ slug: `the core grows into stage ${s.id}`, out: growOf(s.id), stillFile: stillOf(s.id - 1), endFile: stillOf(s.id), prompt: GROW, raw: true, resolution: '720p' }));
-      jobs.push(makeClip({ slug: `the core at stage ${s.id} beats`, out: idleOf(s.id), stillFile: stillOf(s.id), prompt: BEAT, raw: true, resolution: '720p' }));
+      jobs.push(makeClip({ slug: `the core grows into stage ${s.id}`, out: growOf(s.id), stillFile: stillOf(s.id - 1), endFile: stillOf(s.id), prompt: GROW, raw: true, resolution: RES }));
+      jobs.push(makeClip({ slug: `the core at stage ${s.id} beats`, out: idleOf(s.id), stillFile: stillOf(s.id), prompt: BEAT, raw: true, resolution: RES }));
     }
     const done = await Promise.allSettled(jobs);
     done.forEach((r) => { if (r.status === 'rejected') console.warn(`[core-evo] a clip failed: ${r.reason.message.slice(0, 200)}`); });
@@ -127,7 +135,7 @@ export async function makeCoreEvo({ only = [], stillsOnly = false, bakeOnly = fa
  * (its collar), found through the studio keyer. Only to line the stages up with each other;
  * where stage 1 stands on the board is its marked HEART_FOOT.
  */
-function standsAt(img) {
+export function standsAt(img) {
   const k = { w: img.w, h: img.h, data: Buffer.from(img.data) };
   const { ck } = studioKeyer({ w: img.w, h: img.h, data: Buffer.from(img.data) });
   studioKey(ck, k);
@@ -140,6 +148,20 @@ function standsAt(img) {
     if (x0 >= 0 && x1 - x0 > best.w) best = { y, w: x1 - x0, x: (x0 + x1) / 2 };
   }
   return best;
+}
+
+/** The clips' resolution: the heart is smaller on its canvas than it was, so more pixels. */
+const RES = process.env.CORE_EVO_RES || '1080p';
+
+/** Stage 1: the board's heart, made ROOM smaller, standing at FOOT_Y in the middle of a canvas of its own green. */
+function stageOne() {
+  if (fs.existsSync(stillOf(1))) return;
+  const img = readImage(path.join(DIR, 'heart.png'));
+  const at = standsAt(img);
+  const small = resize(img, Math.round(img.w * ROOM), Math.round(img.h * ROOM));
+  const out = blank(img.w, img.h, [...borderColour(img), 255]);
+  paste(out, small, Math.round(img.w / 2 - at.x * ROOM), Math.round(img.h * FOOT_Y - at.y * ROOM));
+  writePng(stillOf(1), out);
 }
 
 /** Stage n's edit, moved (on its own green) so that its collar stands where stage 1's does. */

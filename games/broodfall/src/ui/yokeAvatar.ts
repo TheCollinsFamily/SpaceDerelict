@@ -143,7 +143,7 @@ export class YokeAvatarUi implements ShipAiProvider {
   get status(): ShipAiStatus { return { live: this.ladder.live, note: '' }; }
 
   /** Nobody pays for her live mind: she says so once, then the scripted YOKE answers. */
-  get cut(): CutKind | null { return this.ladder.cut; }
+  get moneyCut(): CutKind | null { return this.ladder.cut; }
 
   /** Money is back (he linked an account, or topped up): her live mind and voice again. */
   uncut(): void {

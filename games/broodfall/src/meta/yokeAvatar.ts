@@ -598,8 +598,9 @@ export class YokeLadder implements ShipAiProvider {
         // He walked out while she was thinking: nobody is there to answer, on any rung.
         if (err instanceof AvatarError && err.code === 'LEFT') return [];
         // Nobody pays: she says so, and the rest of the ladder (which would bill the same account) is not asked.
+        // (Only where there are words for it: without a player link — the avatar's own star — a 402 falls to the next rung, as before.)
         const kind = err instanceof AvatarError ? cutKindOf(err.status, err.code) : null;
-        if (kind) return this.cutNow(kind);
+        if (kind && this.cutOff(kind).length) return this.cutNow(kind);
         this.note(err);
       }
     }

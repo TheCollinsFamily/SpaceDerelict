@@ -412,6 +412,8 @@ try {
         pass('limb panel: click tower opens it; targeting buttons drive the sim');
       } else fail('limb panel', `open=${open} set=${JSON.stringify(set)}`);
       await page.mouse.click(box0.x + 5, box0.y + 5, { button: 'right' });
+      // The panel is hidden by the next frame's HUD update, not by the click itself: give it that frame.
+      await page.waitForFunction(() => document.getElementById('inspect').classList.contains('hidden'), null, { timeout: 1500 }).catch(() => {});
       const closed = !(await page.locator('#inspect').isVisible());
       if (closed) pass('limb panel: right-click closes it');
       else fail('limb panel close', 'still visible after right-click');

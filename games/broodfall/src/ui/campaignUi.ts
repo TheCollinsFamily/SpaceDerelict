@@ -294,7 +294,10 @@ export class CampaignUi {
         <div class="cp-talk" data-act="${this.greeting ? 'icom-skip' : ''}" title="${this.greeting ? 'Click to skip ahead' : ''}">${lines}${pend}</div>
         ${this.greeting ? '<div class="cp-icom-hint">click her words to skip ahead</div>' : ''}
         ${go}
-        <div class="cp-say"><input id="icom-input" placeholder="Say something to her, or just walk away" autocomplete="off"${this.waiting ? ' disabled' : ''}/><button data-act="icom-send"${this.waiting ? ' disabled' : ''}>SAY</button>${this.avatar?.muteHtml() ?? ''}</div>
+        ${this.account.cut
+          // Nobody pays for her live mind: linking an account is done in her room (the button takes him there).
+          ? this.account.html('say')
+          : `<div class="cp-say"><input id="icom-input" placeholder="Say something to her, or just walk away" autocomplete="off"${this.waiting ? ' disabled' : ''}/><button data-act="icom-send"${this.waiting ? ' disabled' : ''}>SAY</button>${this.avatar?.muteHtml() ?? ''}</div>`}
       </div></div>`;
   }
 
@@ -613,7 +616,8 @@ export class CampaignUi {
         // The scripted YOKE spends nothing and asks rfab.ai nothing: no player is made for it.
         player: y.mode === 'scripted' ? undefined : this.player,
         onCut: (kind) => this.account.setCut(kind),
-        cutOff: (kind) => cutOffLines(kind, this.account.state?.bonusTokens ?? 400000, this.account.state?.allowance.capTokens ?? 150000),
+        // No words on an RFab without the player route (the old way: a 402 there falls to the next rung, as it always did).
+        cutOff: (kind) => (this.player.legacy ? [] : cutOffLines(kind, this.account.state?.bonusTokens ?? 400000, this.account.state?.allowance.capTokens ?? 150000)),
         changed: () => { if ((this.room === 'ai' || this.icom) && !this.waiting && !this.debriefing && !this.el.classList.contains('hidden')) this.render(); },
       })
       : null;
@@ -655,18 +659,18 @@ export class CampaignUi {
           ? this.account.html('say')
           : `<div class="cp-say"><input id="ai-input" placeholder="${own ? 'Say something to her' : 'Answer, or say nothing'}" autocomplete="off"${this.waiting ? ' disabled' : ''}/><button data-act="ai-send"${this.waiting ? ' disabled' : ''}>SAY</button>${own ? '' : '<button data-act="ai-end">END</button>'}${this.avatar?.muteHtml() ?? ''}</div>`}`;
     // Her account (the free talk left, the code, the linked account and her model), when rfab.ai has it.
-    const account = own && this.account.cut ? this.account.html('core').replace(/<div class="cp-acct-cut[\s\S]*$/, '') : this.account.html('core');
+    const account = this.account.html('core', { prompt: !(own && this.account.cut) });
     if (this.talk && !own) return `${talk}
         ${this.yokeLinkHtml()}${account}`;
-    return `${talk}<div class="cp-label">AI CORE — YOKE wants to talk${s.ai.queue.length ? '' : ' (nothing waiting)'}</div>
+    return `${talk}${own ? account : ''}<div class="cp-label">AI CORE — YOKE wants to talk${s.ai.queue.length ? '' : ' (nothing waiting)'}</div>
       ${s.ai.queue.map((q) => `<div class="cp-lin"><b>${q.replace('-', ' ').toUpperCase()}</b><span>YOKE has started a discussion.</span>
         <button data-engage="${q}">ENGAGE</button><button data-act="ai-later">NOT NOW</button></div>`).join('')}
       <div class="cp-label">PAST DISCUSSIONS</div>
       ${s.ai.transcripts.map((t) => `<div class="cp-log"><b>${t.trigger}</b> — ${t.turns.map((x) => `${x.speaker}: ${esc(x.text)}`).join(' / ')}</div>`).join('') || '<p class="cp-note">None yet.</p>'}
       <div class="cp-label">YOKE'S LINK</div>
-      ${this.yokeLinkHtml()}
-      <p class="cp-note">Live YOKE bills your rfab.ai account a few tokens a reply. Started from the launcher, it uses this PC's RFAB_API_KEY; otherwise paste your own key (rfab.ai → Settings → API keys).</p>
-      <div class="cp-say"><input id="yoke-key" type="password" placeholder="${this.yoke.key ? 'Key saved — paste to replace' : 'RFab API key (optional)'}" autocomplete="off"/><button data-act="yoke-key">SAVE KEY</button>${this.yoke.key ? '<button data-act="yoke-forget">FORGET KEY</button>' : ''}</div>`;
+      ${this.yokeLinkHtml()}${own ? '' : account}
+      ${this.account.available ? '' : `<p class="cp-note">Live YOKE bills your rfab.ai account a few tokens a reply. Started from the launcher, it uses this PC's RFAB_API_KEY; otherwise paste your own key (rfab.ai → Settings → API keys).</p>
+      <div class="cp-say"><input id="yoke-key" type="password" placeholder="${this.yoke.key ? 'Key saved — paste to replace' : 'RFab API key (optional)'}" autocomplete="off"/><button data-act="yoke-key">SAVE KEY</button>${this.yoke.key ? '<button data-act="yoke-forget">FORGET KEY</button>' : ''}</div>`}`;
   }
 
   private setYoke(y: YokeSettings): void {
@@ -715,7 +719,7 @@ export class CampaignUi {
       this.room = d.room as Room;
       if (this.beckon?.room === this.room) this.beckon = null;
       // In her own room she is there already: the intercom gives way to it (the talk goes on in it).
-      if (this.room === 'ai') this.icom = null;
+      if (this.room === 'ai') { this.icom = null; void this.account.refresh(); }
       this.talk = this.ownTalk();
       this.render();
       return;
@@ -748,6 +752,12 @@ export class CampaignUi {
       this.render(); return;
     }
     if (d.engage) { void this.aiEngage(d.engage as AiTrigger); return; }
+    // Her account (src/ui/yokeAccount.ts). Linking from the intercom takes him to her room, where the code is shown.
+    if (d.act?.startsWith('acct-')) {
+      if (d.act === 'acct-link' && this.room !== 'ai') { this.room = 'ai'; this.icom = null; this.talk = this.ownTalk(); }
+      this.account.click(d.act, el);
+      return;
+    }
     switch (d.act) {
       case 'quit': this.hooks.quit(); return;
       case 'settings':
@@ -818,6 +828,8 @@ export class CampaignUi {
     } finally {
       this.waiting = false;
       if (this.talk === talk || !this.talk) this.render();
+      // What is left of his free talk (or his balance), from rfab.ai's own meter.
+      if (this.yoke.mode !== 'scripted') void this.account.refresh();
     }
   }
 

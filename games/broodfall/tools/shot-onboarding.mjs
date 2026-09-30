@@ -167,23 +167,27 @@ try {
     check(!m1.intel && m1.dir.kind === 'hold' && m1.dir.waves === 5, 'mission 1: hold 5 waves, the gate of the assault shown');
     await shot(page, '04-mission1-start');
     // A limb grown by real clicks: the first card, then a block it can stand on.
-    await page.locator('#hand .card').first().click();
-    // A block the card can stand on, whose point on the screen a click really reaches (roofs stand up off the ground).
+    // A card the meat pays for and a block it can stand on, whose point on the screen a click really
+    // reaches (roofs stand up off the ground). The hand is the seed's: any card may come first.
     const spot = await page.evaluate(() => {
       const b = window.broodfall;
-      const fam = b.sim.hand[0].family;
       const r = b.renderer.app.canvas.getBoundingClientRect();
-      for (const cell of b.buildableCells(600)) {
-        if (!b.sim.groundFor(cell, fam, b.sim.facingTowardGate(b.sim.cellCenter(cell)))) continue;
-        const p = b.sim.cellCenter(cell);
-        const s = b.worldToScreen(p.x, p.y);
-        const x = r.left + s.x * (r.width / s.vw);
-        const y = r.top + s.y * (r.height / s.vh);
-        if (x < r.left + 40 || x > r.right - 40 || y < r.top + 40 || y > r.bottom - 40) continue;
-        if (b.cellAtClient(x, y) === cell) return { x, y, cell };
+      for (let i = 0; i < b.sim.hand.length; i++) {
+        const fam = b.sim.hand[i].family;
+        for (const cell of b.buildableCells(800)) {
+          if (!b.sim.groundFor(cell, fam, b.sim.facingTowardGate(b.sim.cellCenter(cell)))) continue;
+          const p = b.sim.cellCenter(cell);
+          const s = b.worldToScreen(p.x, p.y);
+          const x = r.left + s.x * (r.width / s.vw);
+          const y = r.top + s.y * (r.height / s.vh);
+          if (x < r.left + 40 || x > r.right - 40 || y < r.top + 40 || y > r.bottom - 40) continue;
+          if (b.cellAtClient(x, y) === cell) return { x, y, cell, card: i };
+        }
       }
       return null;
     });
+    check(!!spot, 'a card in the hand has a block to stand on');
+    await page.locator('#hand .card').nth(spot.card).click();
     await page.mouse.move(spot.x, spot.y);
     await page.mouse.click(spot.x, spot.y);
     await page.waitForTimeout(700);
