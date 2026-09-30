@@ -120,7 +120,8 @@ try {
       if (set === 'grounded') e.groundedUntil = s.time + 999;
       if (set === 'deployed') e.deployed = true;
       if (set === 'stripped') e.hitShield = 0;
-      if (set === 'burrowed') e.burrowed = true;
+      // Staged near the landing site: it would surface at once, so it is told to stay under.
+      if (set === 'burrowed') { e.burrowed = true; e.surfaceFlowDist = -1; }
       if (set === 'carrying') e.carrying = { family: 'spitter', pips: [], cell };
       if (set === 'stole') e.stole = 25;
       return e.id;
@@ -222,11 +223,11 @@ try {
   // The fall runs on the game's clock (a paused game stands still, the fallen too): 12 frames at
   // 3 a second, then 1.4 s still. Step it a tick (0.1 s) at a time, letting the page draw each.
   const ticks = async (n) => { for (let i = 0; i < n; i++) { await page.evaluate(() => window.broodfall.step(1)); await page.waitForTimeout(35); } };
-  await ticks(10);
+  await ticks(18);
   const falling = await page.evaluate(() => window.broodfall.dying().length);
   check(falling >= 5, 'the squad is drawn falling', `${falling} falling`);
   await shot('dying-mid-fall');
-  await ticks(32);
+  await ticks(24);
   const lying = await page.evaluate(() => window.broodfall.dying().filter((d) => d.alpha > 0.9).length);
   check(lying >= 5, 'the squad lies still where it fell', `${lying} lying`);
   await shot('dead-lying-still');

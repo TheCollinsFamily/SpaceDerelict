@@ -1248,7 +1248,8 @@ export class IsoRenderer extends Renderer {
     if (e.kind === 'carapace' && e.hitShield !== undefined && e.hitShield > 0) {
       g.circle(x, y, s + 3).stroke({ width: 2, color: 0xe8dca0, alpha: 0.3 + 0.08 * e.hitShield });
     }
-    if (e.carrying) g.circle(x, y - s - 4, 3).fill(FAMILY_COLORS[e.carrying.family]);
+    // A carried limb: a pip over the head, unless the unit has a picture of itself carrying one.
+    if (e.carrying && !this.art.units.get(e.kind)?.art.anims.states?.carrying) g.circle(x, y - s - 4, 3).fill(FAMILY_COLORS[e.carrying.family]);
     if (e.extractId !== undefined && !e.carrying) {
       const prey = sim.towers.find((t) => t.id === e.extractId);
       if (prey && Math.hypot(prey.pos.x - e.pos.x, prey.pos.y - e.pos.y) < 40) {
