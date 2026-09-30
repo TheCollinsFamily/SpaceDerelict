@@ -703,7 +703,7 @@ of the whole thing is `tools/shot-onboarding.mjs` (screenshots `notes/screens/20
    body", "meet you in person") or her live mind agrees with `[[PRINT_BODY]]`, the ship prints
    one, it looks at its hand in disgust, collapses dead and lies in the hold; then her voice
    from the speakers (Collins's words). Once a campaign; asked again, she refuses. The clips
-   come from YOKE's manifest (`scenes.printBody`); until they exist, storyboard cards play.
+   come from YOKE's manifest (`scenes.printBody`, four clips made by the YOKE clip session); without them, storyboard cards play.
 8. **Later launches open on the ship's console menu** (`src/ui/menu.ts`): black glass and thin
    white lines like the ship's rooms, over a looping video of the view from the ship's viewport:
    the infested planet's night side, red creep spreading between the city lights. CONTINUE,

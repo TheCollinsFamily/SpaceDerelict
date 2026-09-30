@@ -28,7 +28,7 @@ Useful URLs:
 | Home menu / title screen (the emblem, the name set in type from `src/ui/screens.ts` GAME_NAME) | BUILT (Sep 30; `node tools/shot-screens.mjs title`) |
 | The dark Directive Desk (AWAITING CLEARANCE, the ship's own pick) until the first win after mission 1 | BUILT (Sep 30; `shot-onboarding.mjs A B`) |
 | YOKE's greeting on every return (prewritten, her clips + voice) and her intercom from any room | BUILT (Sep 30; `content/greetings.ts`, `shot-onboarding.mjs`) |
-| The boss's message (first landing), the quarters' data pad (partner file, inbox), the print-a-body scene | BUILT (Sep 30; `content/boss.ts`, `content/partner.ts`, `content/yokeScenes.ts`); the print-a-body clips and the quarters/partner pictures are MISSING (storyboard cards and the Procreation Board's room picture stand in) |
+| The boss's message (first landing), the quarters' data pad (partner file, inbox), the print-a-body scene | BUILT (Sep 30; `content/boss.ts`, `content/partner.ts`, `content/yokeScenes.ts`); the print-a-body film is the YOKE clip session's 4 clips; the quarters/partner pictures are MISSING (the Procreation Board's room picture stands in, the pad has no photograph) |
 | Loading screen (deploy clicked, or a run started from the address, before the art is in) | BUILT (Sep 30; `shot-screens.mjs loading`, throttled network) |
 | Fault screens: art list missing (play on without pictures), some pictures missing (a line over the board), no WebGL (drawn on a plain canvas, a line says so), nothing to draw with, the code failing while it loads | BUILT (Sep 30; `shot-screens.mjs faults`, each failure forced) |
 | Deployment (board, waves, drafts) | BUILT |
