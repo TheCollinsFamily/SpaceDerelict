@@ -181,6 +181,20 @@ const FEED_LINES: Partial<Record<SimEvent['kind'], (e: SimEvent) => { text: stri
   'structure-lost': (e) => e.kind === 'structure-lost'
     ? { text: `limb lost: ${e.what}`, cls: 'hot' }
     : { text: '', cls: '' },
+  'royal-decree': (e) => e.kind === 'royal-decree'
+    ? { text: `royal decree: ${e.name}${e.family ? ` (${e.family})` : ''}`, cls: 'royal' }
+    : { text: '', cls: '' },
+  'limb-promoted': (e) => e.kind === 'limb-promoted'
+    ? { text: `consort's favour: the ${e.family} is promoted (+1 ${e.family} bonus)`, cls: 'royal' }
+    : { text: '', cls: '' },
+  'surgery-under-fire': (e) => e.kind === 'surgery-under-fire'
+    ? { text: `SURGERY UNDER FIRE: the ${e.family} grafts for ${e.seconds.toFixed(1)}s — it holds fire and bleeds`, cls: 'hot' }
+    : { text: '', cls: '' },
+  'graft-took': (e) => e.kind === 'graft-took'
+    ? { text: `graft took: the ${e.family} is in the fight`, cls: 'sci' }
+    : { text: '', cls: '' },
+  burrowed: () => ({ text: 'burrowed through: a new way into the city (and out of it)', cls: 'hot' }),
+  'sealed-in': () => ({ text: 'the body has walled itself in: burrow through a wall into the smoke to grow again', cls: 'hot' }),
 };
 
 export interface HudCallbacks {
@@ -193,6 +207,8 @@ export interface HudCallbacks {
   onSetPriority(towerId: number, mode?: TargetMode, caste?: CasteFocus): void;
   onSetFacing(towerId: number, dir: RootDir): void;
   onEvolve(towerId: number, choice: UpgradeChoice): void;
+  /** A royal decree bought on a limb (its panel): the crown. */
+  onCrown(towerId: number): void;
 }
 
 export class Hud {
@@ -298,6 +314,8 @@ export class Hud {
     document.getElementById('overlay-restart')!.addEventListener('click', () => cb.onRestart());
     // Evolution choices: delegated, because the buttons re-render as meat changes.
     document.getElementById('inspect-evolve')!.addEventListener('click', (ev) => {
+      const crown = (ev.target as HTMLElement).closest<HTMLElement>('[data-crown]');
+      if (crown && !crown.classList.contains('off') && this.inspectedId !== null) { cb.onCrown(this.inspectedId); this.lastEvolveKey = ''; return; }
       const btn = (ev.target as HTMLElement).closest<HTMLElement>('[data-choice]');
       if (!btn || btn.classList.contains('off') || this.inspectedId === null) return;
       cb.onEvolve(this.inspectedId, btn.dataset.choice as UpgradeChoice);
@@ -375,9 +393,15 @@ export class Hud {
     }
     const counts = new Map<string, number>();
     for (const p of t.pips) counts.set(p.family, (counts.get(p.family) ?? 0) + 1);
-    document.getElementById('inspect-traits')!.textContent = t.pips.length
+    const grafting = t.graftUntil !== undefined && t.graftUntil > sim.time
+      ? ` · GRAFTING ${(t.graftUntil - sim.time).toFixed(1)}s: holds fire, bleeds double` : '';
+    const crowned = t.crowns ? ` · CROWNED${t.crowns > 1 ? ` ×${t.crowns}` : ''}` : '';
+    const sheltered = sim.crownsOver(t);
+    document.getElementById('inspect-traits')!.textContent = (t.pips.length
       ? `traits: ${[...counts].map(([f, n]) => (n > 1 ? `${f}×${n}` : f)).join(', ')}`
-      : 'no inherited traits';
+      : 'no inherited traits')
+      + (t.promotions ? ` · promoted ×${t.promotions}` : '') + crowned
+      + (sheltered ? ` · under ${sheltered} crown${sheltered > 1 ? 's' : ''}` : '') + grafting;
     this.renderEvolve(sim, t);
     const armed = st.rate > 0;
     document.getElementById('inspect-modes')!.classList.toggle('muted', !armed);
@@ -402,7 +426,8 @@ export class Hud {
     const cost = stage < 3 ? UPGRADE_COST[stage] : null;
     const cap = sim.evolutionCapOf(t.family);
     const affordable = cost ? sim.canAfford(cost) && stage < cap : false;
-    const key = `${t.id}|${path.join('')}|${affordable ? 1 : 0}|${cap}`;
+    const crownCost = sim.decreeCost('crown');
+    const key = `${t.id}|${path.join('')}|${affordable ? 1 : 0}|${cap}|${t.crowns ?? 0}|${sim.meat.royal >= crownCost ? 1 : 0}`;
     if (key === this.lastEvolveKey) return;
     this.lastEvolveKey = key;
     document.getElementById('inspect-path')!.textContent = path.length ? `· ${path.join('')}` : '';
@@ -427,6 +452,12 @@ export class Hud {
       }
     }
     if (stage >= 3) rows.push('<div class="evo-later">fully evolved</div>');
+    // ROYAL DECREE on this limb: the crown (content/royal.ts). Every other limb near it is sheltered and hits harder.
+    if (!this.plain) {
+      const owned = t.crowns ?? 0;
+      rows.push(`<div class="evo-stage evo-royal"><button class="evo-opt${sim.meat.royal >= crownCost ? '' : ' off'}" data-crown="1"
+        title="Royal decree"><b>♛ ${owned ? `crown again (×${owned + 1})` : 'crown this limb'}</b><span>every OTHER limb within 120px takes 30% less harm and hits 25% harder${owned ? ' — crowns add' : ''}</span><i>${crownCost}R</i></button></div>`);
+    }
     box.innerHTML = rows.join('');
   }
 
@@ -633,8 +664,9 @@ export class Hud {
     if (this.plain) this.revealForMission1(sim);
 
     // Button states.
+    // The royal button opens the ROYAL DECREES (src/ui/decrees.ts): lit when a point would buy one.
     const surge = document.getElementById('royal-surge')!;
-    surge.classList.toggle('disabled', sim.meat.royal < B.royalSurgeCost);
+    surge.classList.toggle('disabled', sim.meat.royal < 1);
     // Banked-traits indicator: lights up while a butchered limb's history waits
     // to be folded into the next build.
     const traits = document.getElementById('pending-traits');
