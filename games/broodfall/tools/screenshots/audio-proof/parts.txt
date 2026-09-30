@@ -1,3 +1,0 @@
-file 'C:/Users/Merry/dev/space-derelict/games/broodfall/tools/screenshots/audio-proof/A.mp4'
-file 'C:/Users/Merry/dev/space-derelict/games/broodfall/tools/screenshots/audio-proof/B.mp4'
-file 'C:/Users/Merry/dev/space-derelict/games/broodfall/tools/screenshots/audio-proof/C.mp4'

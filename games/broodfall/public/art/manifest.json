@@ -5988,36 +5988,37 @@
     "anims": {
      "idle": {
       "start": 70,
-      "count": 30,
+      "count": 46,
       "fps": 12,
+      "pingpong": true,
       "breathe": true
      },
      "fire": {
-      "start": 100,
+      "start": 116,
       "count": 14,
       "fps": 4.2
      }
     },
     "grafts": [
      [
-      0.589,
-      0.469
+      0.573,
+      0.461
      ],
      [
-      0.399,
-      0.469
+      0.423,
+      0.461
      ],
      [
-      0.77,
-      0.283
+      0.762,
+      0.272
      ],
      [
-      0.687,
-      0.348
+      0.683,
+      0.34
      ],
      [
-      0.501,
-      0.348
+      0.52,
+      0.34
      ]
     ]
    }
@@ -6244,8 +6245,7 @@
      "start": 0,
      "count": 46,
      "fps": 12,
-     "pingpong": true,
-     "breathe": true
+     "pingpong": true
     },
     "fire": {
      "start": 46,
