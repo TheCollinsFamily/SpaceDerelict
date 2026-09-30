@@ -6,10 +6,11 @@
  *
  * PAID, a few cents of real provider calls on a LOCAL backend's accounts (never prod money):
  *   (backend repo) node scripts/seed-broodfall-yoke-local.js --tester broodfall-tester2@rfab.local
- *   (backend repo) PORT=3011 BROODFALL_GUEST_CAP_TOKENS=3500 BROODFALL_PLAYERS_PER_IP_PER_DAY=100 node scripts/start.js
+ *   (backend repo) PORT=3011 BROODFALL_PLAYERS_PER_IP_PER_DAY=100 node scripts/start.js
  *   (backend repo) npm run auth:token -- --email broodfall-tester2@rfab.local --ttl 2h      → the JWT below
  *   RFAB_API_BASE=http://localhost:3011 RFAB_CONNECT_JWT=<jwt> node tools/shot-yoke-connect.mjs
- * A small cap on the local backend brings the cut-off after two or three exchanges; the real cap is $3.
+ * The real $3 cap: after one exchange the beat moves the LOCAL ledger on to the last cents
+ * (backend scripts/local-broodfall-fastforward.js), so the cut-off comes a turn or two later.
  *
  * The dev server's proxy carries the game's calls to the local backend; this PC's RFAB_API_KEY is
  * taken out of its environment, so nothing but the player's own token is ever sent.
@@ -30,6 +31,7 @@ mkdirSync(notes, { recursive: true });
 const PORT = Number(process.env.BROODFALL_PORT || 5247);
 const API = (process.env.RFAB_API_BASE || '').replace(/\/$/, '');
 const JWT = process.env.RFAB_CONNECT_JWT || '';
+const BACKEND = process.env.RFAB_BACKEND_DIR || 'C:/Users/Merry/dev/reality-fabricator/reality-fabricator-backend';
 if (!/^http:\/\/(localhost|127\.0\.0\.1)/.test(API) || !JWT) {
   console.error('Run against a LOCAL backend: RFAB_API_BASE=http://localhost:3011 RFAB_CONNECT_JWT=<jwt of the tester> (see the header).');
   process.exit(2);
@@ -96,7 +98,7 @@ try {
   page.setDefaultNavigationTimeout(180000);
   const errors = [];
   page.on('pageerror', (e) => errors.push(String(e)));
-  page.on('console', (m) => { if (m.type() === 'error' && !/favicon|Failed to load resource/.test(m.text())) errors.push(m.text()); });
+  page.on('console', (m) => { if (/\[YOKE\]/.test(m.text())) console.log('      page: ' + m.text()); if (m.type() === 'error' && !/favicon|Failed to load resource/.test(m.text())) errors.push(m.text()); });
   await page.addInitScript(() => {
     window.__opened = [];
     window.open = (u) => { window.__opened.push(String(u)); return null; };
@@ -129,6 +131,12 @@ try {
   check(meter1 !== meter0 || /\$/.test(meter1), `the meter moved after the exchange: "${meter1}"`);
   await shot(page, '02-allowance-meter');
 
+  // Most of $3 is a hundred exchanges: the local backend's ledger is moved on to the last cents instead
+  // (scripts/local-broodfall-fastforward.js, LOCAL database only), and the real cap does the rest.
+  const ff = spawnSync(process.execPath, [join(BACKEND, 'scripts', 'local-broodfall-fastforward.js'), '--token', token, '--leave', '1200'], { cwd: BACKEND, encoding: 'utf8' });
+  console.log(`      fast-forward: ${(ff.stdout || ff.stderr).trim().split(/\r?\n/).pop()}`);
+  await page.locator('[data-room="ai"]').first().click();
+  await page.waitForTimeout(2500);
   // Talk until the free talk is spent.
   let turns = 1;
   while (!(await page.locator('.cp-acct-cut').count()) && turns < 8) {

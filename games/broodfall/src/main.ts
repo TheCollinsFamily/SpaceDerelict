@@ -1100,6 +1100,9 @@ async function boot(): Promise<void> {
     }
     cancelAll();
   });
+  // Right-click on the limb panel itself closes it too (it sits over the board's corner: a right-click
+  // there must not fall to the browser's menu and leave the panel open).
+  document.getElementById('inspect')?.addEventListener('contextmenu', (ev) => { ev.preventDefault(); cancelAll(); });
   window.addEventListener('keydown', (ev) => {
     if (ev.key !== 'Escape' || settingsOpen()) return;
     // Esc with nothing in hand, armed or open: the settings (the run paused). Otherwise it cancels, as always.

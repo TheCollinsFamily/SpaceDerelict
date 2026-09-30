@@ -15473,6 +15473,16 @@
   }
  },
  "under": {
+  "core": {
+   "stages": [
+    {
+     "id": 1,
+     "file": "under/core-stage-1.webp",
+     "line": 0.4429,
+     "aspect": 1.0449
+    }
+   ]
+  },
   "scan": {
    "tile": 160,
    "tiles": {

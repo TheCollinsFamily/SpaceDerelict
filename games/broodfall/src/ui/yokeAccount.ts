@@ -19,6 +19,8 @@ export interface YokeAccountHooks {
   resumed(): void;
   /** Open a page on rfab.ai (the connect page, the top-up page) in the player's browser. */
   open?(url: string): void;
+  /** The meter found the free talk spent before she was refused: she says so herself (src/ui/yokeAvatar.ts announceCut). */
+  cut?(kind: CutKind): void;
 }
 
 export class YokeAccountUi {
@@ -42,6 +44,7 @@ export class YokeAccountUi {
 
   /** Read the account again (after every reply of hers, and when the AI Core opens). */
   async refresh(): Promise<void> {
+    const was = this.cut;
     try {
       const s = await this.link.state();
       this.state = s;
@@ -52,6 +55,7 @@ export class YokeAccountUi {
         else if (this.cut === 'resting' && s.houseReady && !s.allowance.spent) this.cut = null;
       }
     } catch { /* no network: the last state stands */ }
+    if (!was && this.cut) this.hooks.cut?.(this.cut);
     this.hooks.changed();
   }
 

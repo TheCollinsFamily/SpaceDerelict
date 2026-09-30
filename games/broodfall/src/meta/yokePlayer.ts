@@ -170,6 +170,7 @@ export class PlayerLink {
  */
 export function watchConnect(link: PlayerLink, code: ConnectCode, on: { connected(bonus?: { tokens: number; note: string | null }): void; expired(): void }, wait: (ms: number) => Promise<void> = sleep): { stop(): void } {
   let stopped = false;
+  let told = false;
   const until = Date.now() + code.expiresIn * 1000;
   void (async () => {
     while (!stopped) {
@@ -180,7 +181,8 @@ export function watchConnect(link: PlayerLink, code: ConnectCode, on: { connecte
         if (stopped) return;
         if (r.status === 'connected') { on.connected(r.bonus); return; }
         if (r.status === 'expired') { on.expired(); return; }
-      } catch {
+      } catch (err) {
+        if (!told) { told = true; console.warn(`[YOKE] the link code could not be checked, trying again: ${String((err as Error)?.message ?? err)}`); }
         if (Date.now() > until) { on.expired(); return; }
       }
     }

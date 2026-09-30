@@ -74,7 +74,9 @@ const TEMPLATES = {
   },
   // The core's four stages, grown by start-and-end clips (tools/art/templates/core-evo.mjs): coreevo [2 3 4] [--stills|--bake].
   coreevo: async () => {
-    const { makeCoreEvo } = await import('./templates/core-evo.mjs');
+    const { makeCoreEvo, makeCoreScan } = await import('./templates/core-evo.mjs');
+    // coreevo scan [1 2 3 4] [--bake]: the meteor on the organ stage, one picture per stage.
+    if (ids[0] === 'scan') return Promise.allSettled([makeCoreScan({ only: ids.slice(1), bakeOnly: flags.has('--bake') })]);
     return Promise.allSettled([makeCoreEvo({ only: ids, bakeOnly: flags.has('--bake'), stillsOnly: flags.has('--stills') })]);
   },
   // The organ stage as the ship's ground scan (tools/art/templates/under.mjs): one tile per organ, soil, deposit.

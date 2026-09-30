@@ -31,7 +31,7 @@ import { blank, borderColour, crop, over, paste, readFrames, readImage, resize, 
 import { dropSpecks, loopWindow, pick, unionBox } from '../lib/key.mjs';
 import { keyFrame as studioKey, studioKeyer } from '../lib/leaflit.mjs';
 import { GROUNDS } from '../lib/atlas.mjs';
-import { ART, REVIEW, SRC, putEntry } from '../lib/manifest.mjs';
+import { ART, REVIEW, ROOT, SRC, putEntry } from '../lib/manifest.mjs';
 import { HEART_CELLS, HEART_FOOT } from './core.mjs';
 
 const DIR = path.join(SRC, 'terrain', 'core');
@@ -269,4 +269,95 @@ function reviewSheet(rows) {
   fs.mkdirSync(path.join(REVIEW, 'terrain'), { recursive: true });
   writeJpg(path.join(REVIEW, 'terrain', 'core-evo.jpg'), out, 3);
   console.log(`[core-evo] review: ${path.join(REVIEW, 'terrain', 'core-evo.jpg')}`);
+}
+
+// ---------------------------------------------------------------- the organ stage (the ship's ground scan)
+
+/**
+ * THE METEOR ON THE ORGAN STAGE, one picture per stage (Collins, Sep 30 2026: it looked "rendered
+ * twice, one above ground, one under"). It was two pictures: a dome cut from the concept above the
+ * street line, and under it a picture of the buried half that drew its own arched top. Now each
+ * stage is ONE picture of the whole half-buried meteor, cut by the game at its ground line: what is
+ * above the line stands over the street, what is below fills the meteor's 3 by 2 cells. The two
+ * halves are one object, so their edges meet at the line.
+ *
+ * The picture is 3 cells wide; its ground line lies SCAN_LINE of the way down, so that below it
+ * are exactly the 2 rows of cells (a cell is 1.25 times as wide as it is tall).
+ */
+const SCAN_DIR = path.join(SRC, 'under');
+const SCAN_OUT = path.join(ART, 'under');
+const SCAN_REFS = [path.join(ROOT, 'notes', 'concepts', '2026-09-29-organ-stage', '1-scanner-board.png'), path.join(SCAN_DIR, 'meteor.png')];
+const scanOf = (n) => path.join(SCAN_DIR, `core-stage-${n}.png`);
+const SCAN =
+  'A square picture of a ground-penetrating scan display on a far-future spaceship, exactly in the rendering of the ' +
+  'FIRST reference picture: a pure black background, everything drawn in fine glowing false-colour lines, cyan-grey ' +
+  'for rock and earth, red for living flesh. A thin straight pale cyan horizontal GROUND LINE crosses the whole width ' +
+  'of the picture at exactly 47 percent of the way down. ONE meteor lies half buried in that ground: a round cracked ' +
+  'boulder of rock lines as wide as the whole picture, its middle ON the ground line. Above the line is its top, a ' +
+  'cracked dome standing up out of the ground into the empty black above; below the line is its buried lower half, ' +
+  'the SAME round outline going on below the line, so that the dome above and the half below are clearly one boulder ' +
+  'cut by the line. The heart and roots inside it are drawn as in the SECOND reference picture. Faint horizontal ' +
+  'strata of soil lines around the buried half. ';
+const SCAN_TAIL = 'Nothing touches the edges of the picture except the ground line. No text, no letters, no numbers, no symbols, no crosses.';
+const SCAN_STAGE = {
+  1: 'Inside the meteor, below the line, a glowing red heart of muscle, and fine red veins spreading from it into the rock and the ground.',
+  2: 'It has begun to grow, as the THIRD reference picture shows it: the crack in the dome is wider and red flesh swells up out of it above the ' +
+    'line; the heart below is bigger, with two small round sacs beside it and many more red roots spreading out into the ground.',
+  3: 'It has grown further, as the THIRD reference picture shows it: above the line a tall mass of red flesh with several chambers and short ' +
+    'vent tubes rises out of the split dome, whose plates are pushed apart; below the line the heart has two more chambers beside it and thick ' +
+    'red roots reach far out through the ground to both sides.',
+  4: 'It has become a towering citadel of flesh, as the THIRD reference picture shows it: above the line it rises high toward the top of the ' +
+    'picture, crowned with curved horn-like spines and vents, many small eyes glowing; below the line a great glowing heart with many chambers, ' +
+    'and a dense web of thick red roots filling the ground from edge to edge.',
+};
+
+export async function makeCoreScan({ only = [], bakeOnly = false } = {}) {
+  if (!bakeOnly) {
+    for (const s of STAGES) {
+      if (only.length && !only.includes(String(s.id))) continue;
+      const refs = s.id === 1 ? SCAN_REFS : [SCAN_REFS[0], scanOf(s.id - 1), stillOf(s.id)];
+      await makeStill({
+        slug: `the meteor on the scan, stage ${s.id}`, out: scanOf(s.id), prompt: SCAN + SCAN_STAGE[s.id] + ' ' + SCAN_TAIL,
+        key: null, quality: 'high', width: 1024, height: 1024, refFiles: refs,
+      });
+    }
+  }
+  return bakeCoreScan();
+}
+
+/**
+ * Each stage's scan picture: found where its ground line is (the brightest long row near the
+ * middle), cut so that the line is at the share `line` of the picture's height and the part below
+ * it is 2/1.25 of a cell for each of its 3 cells: the game lays the part below over the meteor's
+ * cells and the part above over the street line, from one file.
+ */
+export function bakeCoreScan() {
+  const stages = [];
+  fs.mkdirSync(SCAN_OUT, { recursive: true });
+  for (const s of STAGES) {
+    if (!fs.existsSync(scanOf(s.id))) continue;
+    const img = readImage(scanOf(s.id));
+    let ground = -1, most = 0;
+    for (let y = Math.round(img.h * 0.3); y < Math.round(img.h * 0.7); y++) {
+      let lit = 0;
+      for (let x = 0; x < img.w; x++) {
+        const i = (y * img.w + x) * 4;
+        if (img.data[i] + img.data[i + 1] + img.data[i + 2] > 180) lit++;
+      }
+      if (lit > most) { most = lit; ground = y; }
+    }
+    // Below the line: 3 cells wide, 2 cells deep (a cell is 1.25 as wide as tall): 1.6 of the 3.
+    const below = Math.round((img.w * 1.6) / 3);
+    const h = Math.min(img.h, ground + below);
+    const cut = crop(img, 0, 0, img.w, h);
+    const png = path.join(SCAN_OUT, `core-stage-${s.id}.png`);
+    writePng(png, cut);
+    toWebp(png, png.replace(/\.png$/, '.webp'), { q: 88 });
+    fs.rmSync(png);
+    // `line`: the share of the picture's height above the ground line; `aspect`: its width over its height.
+    stages.push({ id: s.id, file: `under/core-stage-${s.id}.webp`, line: Number((ground / h).toFixed(4)), aspect: Number((img.w / h).toFixed(4)) });
+    console.log(`[core-evo] the scan's meteor, stage ${s.id}: ground line at row ${ground} of ${h}`);
+  }
+  if (stages.length) putEntry('under', 'core', { stages });
+  return stages;
 }

@@ -119,6 +119,7 @@ export class CampaignUi {
     this.account = new YokeAccountUi(this.player, {
       changed: () => { if (!this.waiting && !this.debriefing && !this.el.classList.contains('hidden') && (this.room === 'ai' || this.icom)) this.render(); },
       resumed: () => this.avatar?.uncut(),
+      cut: (kind) => this.avatar?.announceCut(kind),
     });
     this.ai = this.buildAi();
     void loadManifest().then(async (m) => {

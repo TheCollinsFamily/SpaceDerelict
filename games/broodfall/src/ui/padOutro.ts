@@ -39,7 +39,7 @@ const ZOOM_S = 0.7;
 /** What is taken off the pad's screen as it pulls back: the end-of-run dialog (src/ui/hud.ts showOverlay). */
 const CLEARED = ['overlay'];
 /** The page drawn this many pixels past the keyed screen on every side (the bezel hides it). */
-const BLEED = 2;
+const BLEED = 4;
 
 // ---------------------------------------------------------------- the maths (pure, tested)
 
@@ -175,9 +175,9 @@ export async function playPadOutro(outcome: PadOutcome): Promise<void> {
   glass.id = 'pad-glass';
   glass.style.cssText = 'position:fixed;inset:0;z-index:2147483000;pointer-events:none;opacity:0;';
   glass.innerHTML =
-    '<div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,.16) 0 1px,transparent 1px 3px),repeating-linear-gradient(90deg,rgba(0,0,0,.10) 0 1px,transparent 1px 3px);"></div>' +
-    '<div style="position:absolute;inset:0;background:linear-gradient(118deg,rgba(255,255,255,0) 30%,rgba(255,255,255,.10) 42%,rgba(255,255,255,.03) 55%,rgba(255,255,255,0) 64%),radial-gradient(ellipse at 50% 45%,rgba(0,0,0,0) 55%,rgba(0,0,0,.35) 100%);"></div>' +
-    '<div class="pad-dim" style="position:absolute;inset:0;background:rgba(6,10,14,.12);"></div>' +
+    '<div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,.10) 0 1px,transparent 1px 3px),repeating-linear-gradient(90deg,rgba(0,0,0,.06) 0 1px,transparent 1px 3px);"></div>' +
+    '<div style="position:absolute;inset:0;background:linear-gradient(118deg,rgba(255,255,255,0) 30%,rgba(255,255,255,.10) 42%,rgba(255,255,255,.03) 55%,rgba(255,255,255,0) 64%),radial-gradient(ellipse at 50% 45%,rgba(0,0,0,0) 55%,rgba(0,0,0,.22) 100%);"></div>' +
+    '<div class="pad-dim" style="position:absolute;inset:0;background:rgba(6,10,14,.05);"></div>' +
     '<div class="pad-sleep" style="position:absolute;inset:0;background:#000;opacity:0;"></div>';
   body.appendChild(glass);
   const sleepEl = glass.querySelector('.pad-sleep') as HTMLElement;

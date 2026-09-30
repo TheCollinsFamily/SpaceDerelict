@@ -145,6 +145,18 @@ export class YokeAvatarUi implements ShipAiProvider {
   /** Nobody pays for her live mind: she says so once, then the scripted YOKE answers. */
   get moneyCut(): CutKind | null { return this.ladder.cut; }
 
+  /**
+   * The meter says nobody pays any more, before she was refused anything: she says so herself,
+   * once, into his talk with her (read, not heard: her voice would cost the same money).
+   */
+  announceCut(kind: CutKind): void {
+    const lines = this.ladder.cutNow(kind);
+    for (const l of lines) {
+      this.free?.turns.push({ speaker: 'YOKE', text: l });
+      this.say(l, 'calm', true);
+    }
+  }
+
   /** Money is back (he linked an account, or topped up): her live mind and voice again. */
   uncut(): void {
     this.ladder.uncut();
@@ -404,7 +416,10 @@ export class YokeAvatarUi implements ShipAiProvider {
         // Her words appear as she begins to say them.
         if (!beat.shown) {
           if (beat.onShow) beat.onShow(beat.text); else this.said.push(beat.text);
-          this.line(beat.text);
+          // Her answer is taken as over 3 s after its last sentence came, while her voice may still be
+          // on an earlier one: by the time a sentence is said, the campaign may have put it in the talk
+          // and drawn it already. Drawn twice it read as a repeat (seen Sep 30 2026).
+          if (beat.onShow || !this.inTalk(beat.text)) this.line(beat.text);
         }
         const face = clipFor(beat.emotion ?? FACE[this.restFace] ?? 'calm', this.have);
         const talking = voiceClip(beat.emotion ?? FACE[this.restFace] ?? 'calm', this.have);
@@ -456,6 +471,13 @@ export class YokeAvatarUi implements ShipAiProvider {
     this.sound = null;
     if (a) { try { a.pause(); } catch { /* already over */ } }
     if (this.soundUrl) { URL.revokeObjectURL(this.soundUrl); this.soundUrl = ''; }
+  }
+
+  /** She said this since his last line, and the talk on the screen already holds it. */
+  private inTalk(text: string): boolean {
+    const turns = this.turns ?? [];
+    for (let i = turns.length - 1; i >= 0 && turns[i].speaker === 'YOKE'; i--) if (turns[i].text === text) return true;
+    return false;
   }
 
   /** One line of hers into the talk that is on the screen, without drawing the screen again. */

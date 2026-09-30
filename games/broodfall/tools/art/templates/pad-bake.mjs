@@ -123,18 +123,42 @@ function fitEdge(pts, inward) {
 
 /** The four corners [TL, TR, BR, BL] of the screen in one frame, or null. */
 function screenQuad(patch) {
-  const { rowMin, rowMax, colMin, colMax } = patch;
+  const { rowMin, rowMax } = patch;
   const outline = [];
   for (let y = 0; y < H; y++) if (rowMin[y] >= 0) outline.push([rowMin[y], y], [rowMax[y], y]);
   const hv = hull(outline);
   const ext = (f) => hv.reduce((m, p) => (f(p) > f(m) ? p : m), hv[0]);
-  let TL = ext((p) => -p[0] - p[1]), BR = ext((p) => p[0] + p[1]);
-  let TR = ext((p) => p[0] - p[1]), BL = ext((p) => -p[0] + p[1]);
-  // Each edge fitted to the outline between its corners (a tenth trimmed at each end: the rounded corners).
-  const span = (a, b) => { const lo = Math.min(a, b), hi = Math.max(a, b), t = (hi - lo) * 0.12; return [Math.ceil(lo + t), Math.floor(hi - t)]; };
-  const pts = (arr, [lo, hi]) => { const out = []; for (let u = Math.max(0, lo); u <= Math.min(arr.length - 1, hi); u++) if (arr[u] >= 0) out.push([u, arr[u]]); return out; };
-  const top = pts(colMin, span(TL[0], TR[0])), bottom = pts(colMax, span(BL[0], BR[0]));
-  const left = pts(rowMin, span(TL[1], BL[1])), right = pts(rowMax, span(TR[1], BR[1]));
+  const TL = ext((p) => -p[0] - p[1]), BR = ext((p) => p[0] + p[1]);
+  const TR = ext((p) => p[0] - p[1]), BL = ext((p) => -p[0] + p[1]);
+  // Each edge fitted to the HULL between its corners (the hull bridges a finger over the edge, where the
+  // outline itself dips inward), sampled every 2 px, a tenth trimmed at each end (the rounded corners).
+  const at = (p) => hv.indexOf(p);
+  const walk = (a, b, others) => {
+    for (const dir of [1, -1]) {
+      const path = [];
+      let ok = true;
+      for (let i = at(a); ; i = (i + dir + hv.length) % hv.length) {
+        path.push(hv[i]);
+        if (hv[i] === b) break;
+        if (others.includes(hv[i])) { ok = false; break; }
+      }
+      if (ok) return path;
+    }
+    return [a, b];
+  };
+  const sample = (path, horizontal) => {
+    const out = [];
+    for (let k = 0; k + 1 < path.length; k++) {
+      const [x0, y0] = path[k], [x1, y1] = path[k + 1];
+      const n = Math.max(1, Math.ceil(Math.hypot(x1 - x0, y1 - y0) / 2));
+      for (let t = 0; t < n; t++) { const x = x0 + (x1 - x0) * t / n, y = y0 + (y1 - y0) * t / n; out.push(horizontal ? [x, y] : [y, x]); }
+    }
+    out.sort((p, q) => p[0] - q[0]);
+    const lo = out[0]?.[0] ?? 0, hi = out.at(-1)?.[0] ?? 0, trim = (hi - lo) * 0.12;
+    return out.filter(([u]) => u >= lo + trim && u <= hi - trim);
+  };
+  const top = sample(walk(TL, TR, [BR, BL]), true), bottom = sample(walk(BL, BR, [TL, TR]), true);
+  const left = sample(walk(TL, BL, [TR, BR]), false), right = sample(walk(TR, BR, [TL, BL]), false);
   if ([top, bottom, left, right].some((p) => p.length < 8)) return [TL, TR, BR, BL];
   const T = fitEdge(top, +1), B = fitEdge(bottom, -1), L = fitEdge(left, +1), R = fitEdge(right, -1);
   // y = a x + b (top/bottom) meets x = c y + d (left/right).
@@ -248,13 +272,13 @@ function bakeOne({ id, file }, pic) {
     keyed.push(k.data);
   }
   quads.push(...smooth(raw));
-  // The key only inside the screen (grown a few pixels for its soft edge); everything else as it was.
+  // The key only inside the screen (grown 9 px: its soft edge, and the last green where the fit sits a hair inside); everything else as it was.
   const out = frames.map((f, i) => {
     const o = Buffer.from(f);
     for (let p = 3; p < o.length; p += 4) o[p] = 255;
     const q = quads[i];
     if (!q) return o;
-    const g = grow(q, 5);
+    const g = grow(q, 9);
     const xs = g.map((p) => p[0]), ys = g.map((p) => p[1]);
     for (let y = Math.max(0, Math.floor(Math.min(...ys))); y <= Math.min(H - 1, Math.ceil(Math.max(...ys))); y++) {
       for (let x = Math.max(0, Math.floor(Math.min(...xs))); x <= Math.min(W - 1, Math.ceil(Math.max(...xs))); x++) {
