@@ -87,10 +87,11 @@ export const HOBBIES: HobbyDef[] = [
     pitch: 'Does a royal taste different? The maws eat everything else. Get the maws REALLY hungry first, then serve the royal.',
     spark: [{ measure: 'kills:royal', target: 1 }],
     sparkLog: 'Personal log. We got a royal today. I did not taste it. I want to taste it. (The asset. The asset wants to.)',
-    setup: { directive: { kind: 'royal', count: 1 } },
+    // No setup: a page never turns a landing site's directive into an easier one (the breaker's
+    // line: pin it to a hold-12 site to make it a royal fight). Take it where a royal takes the field.
     steps: [
       step('eaten', 'Let the maws swallow {n} of them', 'cause:eaten', 25),
-      step('royal', 'Then bring down the royal', 'kills:royal', 1),
+      step('royal', 'Then bring down the royal (take it where one takes the field)', 'kills:royal', 1),
     ],
     gene: 'royal-jelly',
     after: 'It IS the jelly. Spliced the taste for it: every royal, killed or swallowed, pays two royal points.',

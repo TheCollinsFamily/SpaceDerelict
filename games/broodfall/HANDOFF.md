@@ -57,6 +57,12 @@ process only verified its own assumptions. The repo's CLAUDE.md carries the stan
   `POST /api/broodfall/ship-ai` (backend only, no migration). Until then, live YOKE hits
   api.rfab.ai, gets a 404, and falls back to the scripted YOKE, which says "rfab.ai does
   not have YOKE yet". Nothing is broken meanwhile.
+  **Sep 30: YOKE for players adds to that, in this order:** (1) the backend deploy (it now also
+  carries `/api/broodfall/yoke` and migration `20260930120000_broodfall_yoke_players`); (2) the
+  house account made and funded on rfab.ai
+  (`node C:/Users/Merry/agent-tools/rfab-grant.js broodfall-house@rfab.ai --usd 100 --create --name "Broodfall house"`,
+  dry run then `--apply`) — without it every guest hears "YOKE is resting"; (3) the frontend
+  deploy (the rfab.ai `/connect` page). Until (1) the game talks to her the old way.
 - **Deferred by Collins:** the ship AI's lore book content
   (`content/lore/ship-ai-lorebook.md`, the TO WRITE sections). He said "the lorebook we
   will do later". Don't write it unless he asks.
@@ -303,6 +309,50 @@ rfab.ai, and she is who answers in the AI Core by default.
   ~3 a character for her voice. Billed to the account the key belongs to.
 - **Checks:** `tests/yokeAvatar.test.ts`; `node tools/shot-yoke-avatar.mjs` (the room,
   with rfab.ai mocked: nothing is spent). The campaign beat still sets her to scripted.
+- The two bullets above describe the OLD way (Collins's key, his star). Since Sep 30 a player
+  talks to his own YOKE (next section); the old way is what the game falls back to on an
+  RFab that has no player route yet (its backend deploy is owed).
+
+### YOKE for players: $3 free, then an RFab account (Sep 30 2026)
+
+Collins: "cut off AI interactions once a user has spent more than $3 worth of tokens, prompt
+them to connect it to an RFab account, which will give them free tokens to more than double
+their interactions, and from that point on token use drains from RFab, but they will also have
+the option to change the model she runs on."
+
+- **Who pays:** until he links an account, the Broodfall HOUSE account on rfab.ai
+  (`broodfall-house@rfab.ai`), up to **$3 = 150,000 billed tokens** of her mind, her voice and
+  the Kimi rung together, counted by rfab.ai from its own ledger (the game decides nothing).
+  After he links, HIS account pays. Linking gives him **400,000 free tokens ($8, 2.7× the free
+  talk)** once per RFab account. Backend: `/api/broodfall/yoke`, note
+  `reality-fabricator-backend/docs/notes/BROODFALL_YOKE_PLAYERS_2026-09-30.md`.
+- **What the game holds:** one PLAYER TOKEN in localStorage `broodfall-yoke-player` (`bfg_…` as a
+  guest, `bfc_…` once linked). Never a login, never an RFab API key. The token opens nothing on
+  rfab.ai but his own YOKE. RESET forgets it (and a new player is made next time; rfab.ai caps
+  new players at 3 per address a day and $6 of free talk per address).
+- **Her mind:** a private copy per player of her Living Avatar brain (the star agent on
+  Collins's account is never talked to or changed). His history carries over when he links.
+- **Where rfab.ai is:** served from this PC (`npm start`, `vite preview`, the beats) the page uses
+  the `/rfab-api` proxy; anywhere else (a web host, a desktop wrap) it talks to
+  `https://api.rfab.ai` itself (`src/meta/storage.ts` RFAB_API_BASE; `VITE_RFAB_API_BASE`
+  overrides). The proxy never adds this PC's key to a request that carries a player token.
+- **Code:** `src/meta/yokePlayer.ts` (the link: register, state, code + polling, model, unlink,
+  the words), `src/meta/yokeAvatar.ts` (her calls go to the player route with the token; the
+  ladder's money cut-off), `src/ui/yokeAccount.ts` + `src/yokeAccount.css` (the AI Core panel and
+  Settings' "YOKE — ACCOUNT & MIND" slot), wired in `src/ui/campaignUi.ts`.
+- **What he sees:** a small FREE TALK meter under his talk with her in the AI Core
+  ("$2.41 of $3.00 left"). When it is spent — or rfab.ai refuses a line for money — she says
+  so ONCE in her own words (the bonus stated plainly), her live chat stops (the input is
+  replaced by the LINK AN RFAB ACCOUNT card; the intercom's too), and from then on only the
+  scripted YOKE answers (greetings, scenes and scripted lines still play; they cost nothing; no
+  paid rung is asked). LINK shows a code `XXXX-XXXX` and OPEN RFAB.AI opens
+  `rfab.ai/connect?code=…`; the game polls until he approves there. Linked: his balance, TOP UP,
+  HER MIND with CHANGE (Kimi K2.6 default, Claude Haiku 4.5, Grok 4.3, GPT-5.4 Mini, DeepSeek V4
+  Pro, Claude Sonnet 5, each with a rough price a reply), UNLINK. His account too low → she asks
+  for a top-up (402 → TOP UP ON RFAB.AI, I HAVE TOPPED UP).
+- **Checks:** `tests/yokePlayer.test.ts` (no network); PAID but local-only beat
+  `tools/shot-yoke-connect.mjs` (a real local backend, the whole path by clicks; see its header
+  for the three backend commands). JPEGs: `notes/screens/2026-09-30/connect-*.jpg`.
 
 ## Architecture
 
@@ -466,6 +516,9 @@ node tools/shot-onboarding.mjs  # DEV server, fresh browsers: the film, mission 
 # PAID (a few RFab tokens): live YOKE. Against a local backend started with PORT=3011 node scripts/start.js
 # and a JWT from `npm run auth:token -- --email collinsmalcolm@gmail.com` (backend repo):
 RFAB_API_BASE=http://localhost:3011 RFAB_API_BEARER=<jwt> node tools/shot-yoke-live.mjs
+# PAID, LOCAL backend only: a player's free talk, the cut-off, the link code, his account, the model picker
+# (header of the file: seed-broodfall-yoke-local.js, the backend on 3011, a tester's JWT)
+RFAB_API_BASE=http://localhost:3011 RFAB_CONNECT_JWT=<tester jwt> node tools/shot-yoke-connect.mjs
 ```
 
 - **The placement guardrail** (`tests/placement.test.ts`): smart placement must flip more

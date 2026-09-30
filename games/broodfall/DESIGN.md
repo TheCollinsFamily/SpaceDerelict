@@ -768,7 +768,7 @@ doodles, checklists, a paperclip on the pinned page, tally marks for tries, in h
 - **He pins one page to the next deployment** (any deployment, Command's assigned ones too). On the
   board it is a checklist of measures over the run (`src/meta/goals.ts`), all in that one
   deployment, shown in the goal panel in his hand. Some pages change the run with the experiments'
-  own switches (`setup`: the royal directive, the mating gas). No new sim rule runs a page.
+  own switches (`setup`: the mating gas). A page never changes a site's directive (a pinned page must not turn a hold-12 site into an easier royal fight). No new sim rule runs a page.
 - **It pays a unique gene, and nothing else** (no standing, no field notes). Genes are
   `HOBBY_GENES` in `content/plates.ts`, never offered by the skirmish gene bay. The organism
   carries **two** at a time; the Notebook's jar page splices them. Every campaign deployment after
@@ -785,7 +785,7 @@ doodles, checklists, a paperclip on the pinned page, tally marks for tries, in h
 | Does fire JUMP? | 5 burning at once | 25 burning at once; fire finishes 60 | Tallow Blood: fire spreads without cooling |
 | The Recipe Book | the desk clears | eat 8 limbs; one limb with 12 bonuses | Grudge Marrow: eating a limb pays back 1.5× |
 | Sky fishing | 5 fliers downed | down 25 fliers; win | Kite String: netcasters ×2 as often, nets hold ×2 |
-| Royal taste test | a royal killed | (royal directive) maws swallow 25; the royal dies | Royal Jelly: every royal pays 2 royal points |
+| Royal taste test | a royal killed | maws swallow 25; a royal dies (take it to a royal site) | Royal Jelly: every royal pays 2 royal points |
 | Finders keepers | a limb carried off | kill 2 couriers carrying your limbs | Homing Tissue: an escaped limb repays its cost |
 | Nursery rhymes | a broodling kill | brood makes 50 kills; win | Wet Nurse: broodlings ×1.5 hp |
 | Hands in pockets, twice | 3 creep kills or a pacifist wave | creep kills 40; a pacifist wave | Hitchhiker Spores: every 10th creep kill buds a node |

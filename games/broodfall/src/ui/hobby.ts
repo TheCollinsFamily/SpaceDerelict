@@ -52,7 +52,7 @@ export function hobbyHtml(s: CampaignState): string {
       <div class="hb-title">${esc(d.title)} ${done ? '<span class="hb-bang">!!</span>' : '<span class="hb-q">?</span>'}</div>
       ${doodle(d.doodle)}
       <p class="hb-pitch">${esc(d.pitch)}</p>
-      ${d.setup ? `<p class="hb-setup">★ ${d.setup.matingMusk ? 'the lure glands carry the MATING gas this time' : d.setup.directive?.kind === 'royal' ? 'go where a royal will come out (the run becomes: destroy the royal)' : 'changes the run'}</p>` : ''}
+      ${d.setup ? `<p class="hb-setup">★ ${d.setup.matingMusk ? 'the lure glands carry the MATING gas this time' : 'changes the run'}</p>` : ''}
       <ul class="hb-steps">${steps}</ul>
       <div class="hb-gene">→ if it works: <b>${esc(gene?.name ?? d.gene)}</b> <span>${esc(gene?.desc ?? '')}</span></div>
       ${tries ? `<div class="hb-tally" title="tried ${tries} time${tries > 1 ? 's' : ''}">${'<i></i>'.repeat(Math.min(tries, 12))}</div>` : ''}

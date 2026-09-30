@@ -57,3 +57,10 @@
 .cp-acct-model em { font-size: 10px; font-style: normal; opacity: 0.9; color: var(--holo, #9fe8f5); }
 .cp-acct-model.on { border-color: var(--holo, #9fe8f5); background: rgba(159, 232, 245, 0.14); }
 .cp-acct-model:hover { border-color: var(--holo, #9fe8f5); }
+
+/* In Settings' narrow column: the lines wrap instead of cutting the name and the model short. */
+.st-slot .cp-acct-row { flex-wrap: wrap; row-gap: 4px; }
+.st-slot .cp-acct-v { white-space: normal; flex: 1 1 100%; order: 1; }
+.st-slot .cp-acct-k { flex: 1; }
+.st-slot .cp-acct-models { grid-template-columns: 1fr; }
+.st-slot .cp-acct-meter { flex-wrap: wrap; }
