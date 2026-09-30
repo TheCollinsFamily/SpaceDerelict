@@ -561,6 +561,11 @@ own words. `notes/GRAPHICS-PLAN.md` holds the pipeline, the probes and the costs
   set, a skirmish with one chosen by its seed, `?biome=megacity` names one. To add a set:
   add an entry, run `node tools/art/make.mjs biome <id>`, look at
   `notes/art-review/biomes/<id>.jpg`, then `node tools/shot-biomes.mjs <id>`.
+- **Drawing a tile-set picture or a strain AGAIN without touching the first** (Sep 30 2026 fix pass): list the file in the
+  set's `redrawn` (`tools/art/biomes.mjs`); `make.mjs biome <set> <part.v>` then draws it into `art-src/terrain/<set>-redrawn/`
+  and the bake uses it (`fileOf` in `templates/biome.mjs`). A picture only too loud is toned at the bake by the set's `grade`
+  (`{ saturation, warm, light }` per file; the Deep Hive's two yellow roofs). A strain drawn again: `REDRAWN_STRAINS` in
+  `templates/board.mjs` (the mire, now brown-olive rot with bubbles, in `art-src/terrain/strains-2026-09-30-b/`).
 - **Effects, limb acting and deaths, donor parts (Sep 30):** `node tools/art/make.mjs fx
   [sheets|parts [families]]` (`tools/art/templates/fx.mjs`) makes four sheets (solid shots on a
   key colour; light and vapour on black, their brightness their opacity) and one donor part per

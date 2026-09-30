@@ -36,12 +36,12 @@
  },
  "faithful/theology-homework/3": {
   "line": "It is the WORD.",
-  "heard": "It is the W O R D.",
-  "share": 0.5
+  "heard": "It is the word.",
+  "share": 1
  },
  "faithful/the-comb-above/5": {
   "line": "No PIT? Then what was the point of being GOOD?",
-  "heard": "No PIT? Then what was the point of being GOOD?",
+  "heard": "No pit? Then what was the point of being good?",
   "share": 1
  },
  "n-c-retaken": {
@@ -51,8 +51,8 @@
  },
  "faithful/the-comb-above/3": {
   "line": "Then where is the Pit? Chapter twenty-two! Where are the wicked, burning, as it is WRITTEN?",
-  "heard": "And where is the pit? Chapter 22. Where are the wicked burning as it is w written n?",
-  "share": 0.77
+  "heard": "Then where is the pit? Chapter 22. Where are the wicked burning as it is written?",
+  "share": 0.85
  },
  "faithful/theology-homework/0": {
   "line": "To walk with us you must know the Book. Chapter one: the Seven Cities.",
@@ -91,7 +91,7 @@
  },
  "faithful/the-hour/0": {
   "line": "Brothers and sisters — HE IS HERE.",
-  "heard": "Brothers and sisters, HE is here.",
+  "heard": "Brothers and sisters, he is here.",
   "share": 1
  },
  "n-e-bells": {
@@ -101,8 +101,8 @@
  },
  "faithful/the-deployment-is-scripture/5": {
   "line": "They are ALL correct, brother.",
-  "heard": "They are a l l correct, brother.",
-  "share": 0.8
+  "heard": "They are all correct, brother.",
+  "share": 1
  },
  "faithful/theology-homework/1": {
   "line": "We will read it to you on the air, brother, a chapter a night. Have a pencil ready.",
@@ -131,7 +131,7 @@
  },
  "faithful/a-broadcast-on-every-frequency/0": {
   "line": "…and they said the sign would come from the sky, and brothers and sisters, LOOK UP.",
-  "heard": "They said the sign would come from the sky and brothers and sisters look up.",
+  "heard": "And they said the sign would come from the sky. And brothers and sisters, look up.",
   "share": 1
  },
  "n-e-complete": {
@@ -166,8 +166,8 @@
  },
  "faithful/the-comb-above/0": {
   "line": "Brothers and sisters, we have been DECEIVED. I woke in a hall of gold, chapter twenty word for word, and it is a MACHINE. The empties are up here too!",
-  "heard": "Brothers and sisters, we have been DEC ed. I woke in a hall of gold, chapter 20 word for word, and it is a MA sheen. The empties are up here too.",
-  "share": 0.86
+  "heard": "Brothers and sisters, we have been deceived. I woke in a hall of gold. Chapter 20 word for word, and it is a machine. The empties are up here too.",
+  "share": 0.95
  },
  "faithful/a-broadcast-on-every-frequency/1": {
   "line": "This is The Hour Is Near, on forty stations of the Last Hour Radio Network. And to the one who came down — I know you can hear me.",

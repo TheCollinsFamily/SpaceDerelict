@@ -342,6 +342,8 @@ export function finish(prev: CampaignState, p: DeploymentPlan, r: RunReport): { 
       s.pendingScenes.push({ faction: f.id, scene: endingOf(f, s) });
       // The reveal (DESIGN.md "The reveal"): the card after the ending.
       if (f.reveal) s.pendingScenes.push({ faction: f.id, scene: f.reveal });
+      // and any card after it (the Director calls back: empire.md 12b)
+      for (const scene of f.afterReveal ?? []) s.pendingScenes.push({ faction: f.id, scene });
       s.ai.queue = queueDiscussion(s.ai.queue, 'ending', s.ai.seen);
     }
   }

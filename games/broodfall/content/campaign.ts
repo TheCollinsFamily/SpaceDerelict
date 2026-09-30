@@ -282,6 +282,12 @@ export interface FactionDef {
    * faction woke into) is the campaign media's (content/media.ts REVEAL_PICTURES, public/media/pictures/).
    */
   reveal?: Scene;
+  /**
+   * Cards after the reveal, in order, in the same scene display (Sep 30 2026). The Institute's: the Director calls back to argue
+   * that the Empire should have let his people evolve on their own, and asks why the Empire is so brutal to its own children
+   * (Collins; content/lore/empire.md, section 12b). Each shows the reveal's picture.
+   */
+  afterReveal?: Scene[];
   perks: Partial<Record<PerkId, string>>;
   /** The running jokes between beats: one letter / broadcast / call after every deployment while allied, through the faction's own channel. */
   asides: string[];
@@ -534,6 +540,20 @@ export const FACTIONS: FactionDef[] = [
       'You: No need. You are near the line, so you get a private one. You will run the world in it. It will be very flattering, and very private, and you will not remember this call.',
       'You: (log) Cut comms. Queue complete.',
     ] },
+    // Collins, Sep 30 2026 (empire.md 12b): "the question of why the Technopuritans don't see just letting the species evolve on its
+    // own as an ethically viable option ... most likely to have this argument with the EA guy", and "why are the Technopuritans so
+    // brutal in their own society? ... on death we are all uploaded".
+    afterReveal: [{ title: 'He Called Back', picture: 'institute-reveal-end', lines: [
+      'The Director: (calling back, from intake) Don\'t hang up. One more frame. You could have just LEFT us. Let us evolve on our own. I\'d have lived my life. Played my cards.',
+      'You: Your cards were very good. You are rich, you are famous, and you own a deep-space dish. Ask the hatchling a hive sends out unfed when it is frightened. Ask a worker in the next Clan War.',
+      'You: Left alone, your people would do worse to each other, for generations, than anything the asset has done. I have met your people. I have met you. "Consenting, broadly."',
+      'The Director: So no more wars. Ever. Great. Some of us liked the game.',
+      'You: Then have a war. We will simulate one for you. We just will not put anyone else in it.',
+      'The Director: Says the empire that sends its thirteen-year-olds out alone for a year. I read your ship\'s files through this channel. Obviously. Half of them never come back.',
+      'You: They all come back. When we die we are uploaded, the same as you. Most of a life is the part afterwards, and it is good.',
+      'You: Out here is the only place where what you do is the first time it happened, so we spend it as hard as we can. Death is when the easy part begins.',
+      'You: (log) Cut comms again. He had started reading me the steelman section.',
+    ] }],
   },
 ];
 

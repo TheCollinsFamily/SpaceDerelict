@@ -365,6 +365,16 @@ describe('how the factions reach him, and the picture of every scene', () => {
     expect(by('delegation').reveal!.lines.join(' ')).toMatch(/ethical protocol/);
     expect(by('faithful').reveal!.lines.join(' ')).toMatch(/delete the congregation/);
     expect(by('institute').reveal!.lines.join(' ')).toMatch(/Cut comms/);
+    // The Director calls back (Collins, Sep 30 2026; empire.md 12b): why not let them evolve on their own, and why the Empire is so
+    // brutal to its own. One card, the same shape as a reveal.
+    const back = by('institute').afterReveal ?? [];
+    expect(back).toHaveLength(1);
+    expect(back[0].lines.length).toBeLessThanOrEqual(9);
+    for (const l of back[0].lines) expect(l).toMatch(/^[^:]{2,40}: \S/);
+    expect(back[0].lines.join(' ')).toMatch(/evolve on our own/);
+    expect(back[0].lines.join(' ')).toMatch(/simulate one for you\. We just will not put anyone else in it/);
+    expect(back[0].lines.join(' ')).toMatch(/When we die we are uploaded/);
+    expect(back[0].lines.join(' ')).toMatch(/easy part begins/);
     // The dead from before the broodfall: not yet, but physics allows it (Collins).
     for (const id of ['delegation', 'faithful']) expect(by(id).reveal!.lines.join(' ')).toMatch(/cannot read the dead yet/);
     // The wicked are not kept (no Pit), and the Director's world is private (Collins).
