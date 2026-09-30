@@ -5,25 +5,28 @@
  * happy, nod ...). RFab's overlay plays them on a 1280x720 stage; the game plays the same
  * files in the AI Core, with no network.
  *
- *   her approved look -> one still per expression, all redrawn from ONE base still so that
- *   she is the same girl in the same place -> a 4 s clip of each, ending where it began ->
- *   keyed by our own keyer -> a WebM with transparency -> public/art/ship/yoke/
+ *   her approved idle still (the ONE reference) -> a take of every state from it, made the way
+ *   Leaflit's AI VTuber Studio makes them (its video model, its prompts, its ChromaKey, its
+ *   Ping-Pong: tools/art/lib/leaflit.mjs) -> "the projection" -> a WebM with transparency ->
+ *   public/art/ship/yoke/ (the game) and the same files on RFab (--publish)
  *
  *   node tools/art/make.mjs yoke                    every state (SPENDS tokens; skips what is on disk)
  *   node tools/art/make.mjs yoke idle happy         some states
- *   node tools/art/make.mjs yoke --stills           stop after the stills: LOOK at them before paying for clips
- *   node tools/art/make.mjs yoke --bake             key and encode again from the clips on disk (free)
+ *   node tools/art/make.mjs yoke --stills           stop after the reference still
+ *   node tools/art/make.mjs yoke --bake             key and encode again from the takes on disk (free)
  *   node tools/art/make.mjs yoke --publish          upload the clips to RFab and save her there (content/lore/yoke-avatar.json)
  *
- * To draw a still or a clip again, MOVE it into art-src/yoke/v1/ first (never delete).
- * About 21,000 tokens a still and 25,000 a clip.
+ * Takes are in art-src/yoke/leaflit/. To make one again, MOVE it into art-src/yoke/leaflit/old/
+ * first (never delete). A take is 77,000 tokens (the studio's model is billed a flat 10 s).
+ * The first body (Sep 29 2026: a still per face, our own keyer) is in art-src/yoke/*.mp4.
  */
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { API_BASE, makeClip, makeStill, pool } from '../rfab.mjs';
+import { API_BASE, makeStill, pool } from '../rfab.mjs';
 import { blank, borderColour, crop, paste, readImage, resize, writeJpg, writePng } from '../lib/img.mjs';
-import { dropSpecks, fringe, keyFrame, keyOf, loopWindow } from '../lib/key.mjs';
+import { fringe, keyOf } from '../lib/key.mjs';
+import { STUDIO_VIDEO_MODEL, craftPrompt, frameList, generateTake, keyFrame, loadChromaKey, studioKeyer, uploadSprite } from '../lib/leaflit.mjs';
 import { ART, REVIEW, ROOT, SRC } from '../lib/manifest.mjs';
 
 const DIR = path.join(SRC, 'yoke');
@@ -62,53 +65,73 @@ const DRAWN =
 const SHEET = ['calm', 'curious', 'amused', 'concerned', 'thinking', 'sad'];
 
 /**
- * Every state, in the order of how much she needs it.
- *   face     what the still shows (none: the state is played from another state's still)
- *   from     the state whose still its clip starts and ends on
- *   ref      which approved face is shown to the model beside the base still
- *   move     what happens in the clip
- *   oneShot  it is played once and she returns to idle (RFab: a gesture, [MOTION:name])
- *   mouth    'talks', 'laughs' or 'apart'; none: it stays shut (the first idle clip came back talking)
+ * Her body, made the way LEAFLIT'S AI VTUBER STUDIO makes one (tools/art/lib/leaflit.mjs):
+ * every clip is a take from the ONE reference (her approved idle still, the studio's
+ * "Sprite Prep"), on the studio's own video model, with the studio's own prompt prefix;
+ * keyed by the studio's own ChromaKey; looped by its Ping-Pong. So every clip starts,
+ * and ends, on the same frame, and the hand-over from one to the next never jumps.
+ *
+ *   kind  'loop'    Ping-Pong over [0, end] (the studio's default for a held state)
+ *         'hold'    a look: turn, hold, turn back (craftHoldPrefix), Ping-Pong over the turn
+ *         'oneShot' played once, No Loop, then back to idle (RFab: a gesture, [MOTION:name])
+ *   end   where the take is cut (the studio's End Frame): 'back' = the first frame after the
+ *         move where she is back on her reference pose; a number = that many seconds
+ *
+ * The ids are the studio's standard set (app.js MODEL_STATES + EXTRA_PRESETS), RFab's
+ * avatar vocabulary (avatarEmbodimentService.js CANONICAL), and her own beats (Collins,
+ * Sep 30 2026: laugh, pensive, shrug, teasing, dont_pout, pout, disgust, hype).
  */
+const SHUT = ' Her mouth stays closed.';
 export const STATES = [
-  { id: 'idle', ref: 'calm',
-    face: 'Her expression is calm and attentive, with the faintest polite smile, her mouth closed. Her arms hang at her sides and her hands are out of the picture.',
-    move: 'A living portrait, almost still. She looks at the viewer, calm and attentive. She breathes slowly and blinks twice. Her hair sways very slightly.' },
-  { id: 'speaking', from: 'idle', mouth: 'talks',
-    move: 'She is talking to the viewer in a calm, even way: her mouth opens and closes steadily as she speaks, all the way through. Small natural movements of her head. She blinks once.' },
-  { id: 'thinking', ref: 'thinking',
-    face: 'She is thinking: her eyes look up and to one side, her lips are closed, and one hand is raised with its curled fingers resting against her chin. The hand has five fingers.',
-    move: 'A living portrait, almost still. Her hand rests against her chin. Her eyes drift slowly to one side and back, and she tilts her head a little. She blinks.' },
-  { id: 'happy', ref: 'amused',
-    face: 'She is quietly pleased: a small warm smile with her mouth closed and her eyes softened. Her arms hang at her sides and her hands are out of the picture.',
-    move: 'A living portrait, almost still. She keeps her small smile and keeps her eyes open, looking at the viewer. She tilts her head very slightly and blinks once, quickly.' },
-  { id: 'sad', ref: 'sad',
-    face: 'She is sad: her eyes are lowered and half closed, her brows are raised in the middle, her mouth is small and closed, her head is bowed a little. Her hands are out of the picture.',
-    move: 'A living portrait, almost still. Her eyes are lowered. Her shoulders sink a little as she breathes out through her nose. She blinks slowly.' },
-  { id: 'surprised', ref: 'curious', mouth: 'apart',
-    face: 'She is surprised: her eyes are wide open, her brows are raised, and her mouth is a little open. Her head is straight. Her hands are out of the picture.',
-    move: 'She is surprised: her eyes are wide, she draws her head back very slightly and blinks twice, her lips a little apart.' },
-  { id: 'angry', ref: 'concerned',
-    face: 'She is stern and displeased, not shouting: her brows are drawn down, her eyes are level and cold, her lips are pressed thin and closed, her chin is lowered slightly. Her hands are out of the picture.',
-    move: 'She is stern and displeased: she holds the viewer with a cold level stare, breathes in slowly through her nose and narrows her eyes a little. She does not shout.' },
-  { id: 'laughing', ref: 'amused', mouth: 'laughs',
-    face: 'She is laughing quietly: her eyes are closed in happy curves and her mouth is open in a small laugh. Her arms hang at her sides and her hands are out of the picture.',
-    move: 'She laughs quietly: her shoulders shake a little, her eyes are closed in happy curves, her mouth is open in a small laugh.' },
-  { id: 'blushing', ref: 'amused',
-    face: 'She is flustered: a faint pink blush lies across her cheeks, her eyes glance to one side, and her lips are pressed into a small embarrassed smile. Her hands are out of the picture.',
-    move: 'A living portrait, almost still. Her head faces the viewer the whole time. Only her eyes glance to one side and come back. She blinks quickly. The faint blush stays on her cheeks.' },
-  { id: 'nod', from: 'idle', oneShot: true,
-    move: 'She nods once, clearly: her head goes down and comes up again. Then she is still and looks at the viewer as before.' },
-  { id: 'shake_head', from: 'idle', oneShot: true,
-    move: 'She shakes her head slowly, once to each side, as one who says no. Then she is still and looks at the viewer as before.' },
-  { id: 'wink', from: 'idle', oneShot: true,
-    move: 'She winks: she shuts ONE eye only, while her other eye stays wide open, and opens it again. A small dry smile. Then her face is calm again and she looks at the viewer as before.' },
-  { id: 'wave', from: 'idle', oneShot: true,
-    move: 'She raises one hand beside her shoulder and gives a small restrained wave, the hand open with five fingers. Then she lowers the hand out of the picture again and stands as before.' },
-  { id: 'look_left', from: 'idle',
-    move: 'She turns her eyes and then her head a little toward the LEFT edge of the picture, looks there for a moment, and turns back to face the viewer as before.' },
-  { id: 'look_right', from: 'idle',
-    move: 'She turns her eyes and then her head a little toward the RIGHT edge of the picture, the side on which she wears her gear hair clip, so that the clip turns away from the viewer. She looks there for a moment, and turns back to face the viewer as before.' },
+  // --- the core four ---
+  { id: 'idle', kind: 'loop', end: 4, motion: 'Gentle breathing idle animation, subtle body sway, occasional slow blink.' + SHUT },
+  { id: 'speaking', kind: 'loop', end: 4, motion: 'Character talking animatedly, mouth opening and closing naturally, small head gestures, occasional blink.' },
+  { id: 'intro', kind: 'oneShot', end: 'back', motion: 'Character pops into a confident, playful little wave hello with a sly grin, one open hand with five fingers beside her shoulder, then lowers the hand out of the picture.' },
+  { id: 'outro', kind: 'oneShot', end: 'back', motion: 'Character gives a quick, cheeky two-finger salute goodbye from her brow with a crooked smile, then lowers the hand out of the picture.' },
+  // --- expressions: a quiet half and a talking half ---
+  { id: 'happy', kind: 'loop', end: 4, motion: 'Character beaming with a big pleased smile, eyes bright with delight, bouncing slightly.' },
+  { id: 'happy_talk', kind: 'loop', end: 4, motion: 'Character talks animatedly with a big happy smile, eyes bright with delight, mouth opening and closing naturally between grins, bouncing slightly.' },
+  { id: 'sad', kind: 'loop', end: 4, motion: 'Character looking sad and dejected, drooping shoulders, downcast eyes.' + SHUT },
+  { id: 'sad_talk', kind: 'loop', end: 4, motion: 'Character talks quietly while looking sad and dejected, drooping shoulders, downcast eyes, mouth moving in a subdued way.' },
+  { id: 'angry', kind: 'loop', end: 4, motion: 'Character visibly annoyed, furrowed brows, a cold narrow glare at the viewer, small frustrated huffs through her nose.' + SHUT },
+  { id: 'angry_talk', kind: 'loop', end: 4, motion: 'Character talks heatedly while visibly annoyed, furrowed brows, sharp emphatic head gestures, mouth moving in a ranting way.' },
+  { id: 'surprised', kind: 'loop', end: 4, motion: 'Character shocked and surprised, wide eyes, eyebrows raised high, lips parted in a small gasp, drawing her head back a little.' },
+  { id: 'surprised_talk', kind: 'loop', end: 4, motion: 'Character talks excitedly while shocked and surprised, wide eyes, eyebrows raised high, quick animated mouth movements.' },
+  { id: 'thinking', kind: 'loop', end: 4, motion: 'Character deep in thought, one hand on her chin, eyes narrowed and drifting upward, slow considering nods, occasionally tapping her chin.' + SHUT },
+  { id: 'thinking_talk', kind: 'loop', end: 4, motion: 'Character talks while thinking hard, one hand on her chin, eyes drifting upward between words, slow considering gestures, mouth moving naturally.' },
+  { id: 'laughing', kind: 'loop', end: 4, motion: 'Character laughing joyfully, eyes closing in happy curves, mouth open in a laugh, shoulders shaking.' },
+  { id: 'blushing', kind: 'loop', end: 4, motion: 'Character blushing and flustered, a faint pink blush on her cheeks, glancing away bashfully, small embarrassed smile.' + SHUT },
+  { id: 'hand_raised', kind: 'hold', end: 'back', motion: 'Character raises one open hand beside her shoulder, palm toward the viewer, five fingers, as if asking for a moment, HOLDS it there with gentle breathing, then lowers it out of the picture.' + SHUT },
+  // --- her own beats (Collins, Sep 30 2026: spunky, playful, edgy) ---
+  { id: 'pensive', kind: 'loop', end: 5, motion: 'Character lost in thought, her gaze drifting slowly off to one side and down, brows faintly knitted, turning something odd over in her mind, a small puzzled frown, one slow blink.' + SHUT },
+  { id: 'teasing', kind: 'loop', end: 4, motion: 'Character wears a sly teasing smirk, one eyebrow raised, eyes half-lidded and amused, head tilted slightly, a knowing mischievous look at the viewer.' + SHUT },
+  { id: 'dont_pout', kind: 'loop', end: 4, motion: 'Character tilts her head with a mock-sympathetic face, brows raised in exaggerated pity, her lower lip pushed out in a playful little pout of her own as if saying "aww, do not pout", then a small teasing smile.' },
+  { id: 'laugh', kind: 'oneShot', end: 'back', motion: 'Character bursts out laughing, throwing her head back, genuinely amused, eyes closed, shoulders shaking, then catches her breath with a grin and looks back at the viewer.' },
+  { id: 'shrug', kind: 'oneShot', end: 'back', motion: 'Character tosses ONE open hand up beside her shoulder, palm up, in a playful one-handed shrug, head tilted, eyebrows raised as if saying "but...", then drops the hand out of the picture.' },
+  { id: 'pout', kind: 'loop', end: 4, motion: 'Character sulking with a small pout, lower lip pushed out, cheeks slightly puffed, eyes glancing up at the viewer from under her fringe, as if asking "you are not going to forget about me?".' + SHUT },
+  { id: 'disgust', kind: 'oneShot', end: 'back', motion: 'Character pulls a comic face of disgust: she wrinkles her nose, sticks her tongue out and recoils with a gagging "ew" grimace, leaning back, then shakes it off and composes herself.' },
+  { id: 'hype', kind: 'oneShot', end: 'back', motion: 'Character lights up with excitement, eyes wide and sparkling, a huge open grin, pumping one fist up beside her shoulder, as if saying "that was sick!", then settles back.' },
+  // --- looks: turn, hold, turn back; with a talking twin each ---
+  { id: 'look_left', kind: 'hold', end: 'back', motion: 'Character turns her head to the left, facing toward the left edge of the frame. Holds that leftward-facing pose with gentle idle motion, breathing, occasional blink, then turns back to face forward and ends in the same pose she started in.' + SHUT },
+  { id: 'look_right', kind: 'hold', end: 'back', motion: 'Character turns her head to the right, facing toward the right edge of the frame. Holds that rightward-facing pose with gentle idle motion, breathing, occasional blink, then turns back to face forward and ends in the same pose she started in.' + SHUT },
+  { id: 'look_up', kind: 'hold', end: 'back', motion: 'Character raises her chin to gaze upward, holds that pose dreamily with gentle idle motion, occasional slow blink, then lowers her chin back to face forward and ends in the same pose she started in.' + SHUT },
+  { id: 'look_down', kind: 'hold', end: 'back', motion: 'Character tilts her head downward as if reading below, holds that pose with gentle idle motion, then raises her head back to face forward and ends in the same pose she started in.' + SHUT },
+  { id: 'look_left_talk', kind: 'hold', end: 'back', motion: 'Character turns her head to the left, facing toward the left edge of the frame, and talks animatedly while staying turned left. Mouth opening and closing naturally, small head gestures, then turns back to face forward and ends in the same pose she started in.' },
+  { id: 'look_right_talk', kind: 'hold', end: 'back', motion: 'Character turns her head to the right, facing toward the right edge of the frame, and talks animatedly while staying turned right. Mouth opening and closing naturally, small head gestures, then turns back to face forward and ends in the same pose she started in.' },
+  { id: 'look_up_talk', kind: 'hold', end: 'back', motion: 'Character raises her chin and talks animatedly while gazing upward, mouth moving naturally, then lowers her chin back to face forward and ends in the same pose she started in.' },
+  { id: 'look_down_talk', kind: 'hold', end: 'back', motion: 'Character tilts her head downward and talks animatedly while looking down, mouth moving naturally, then raises her head back to face forward and ends in the same pose she started in.' },
+  // --- face tricks (the overlay's TRICK_STATES) ---
+  { id: 'wink', kind: 'oneShot', end: 'back', motion: 'Character giving a playful wink with ONE eye closed while the other stays open, cheeky smile, small head tilt.' },
+  { id: 'tongue_out', kind: 'oneShot', end: 'back', motion: 'Character playfully sticking her tongue out at the viewer, teasing mischievous expression, eyes bright.' },
+  { id: 'kiss', kind: 'oneShot', end: 'back', motion: 'Character blowing a kiss at the viewer with puckered lips and a light touch of her fingertips to her lips, one eye winking. Nothing floats away.' },
+  { id: 'puff', kind: 'oneShot', end: 'back', motion: 'Character puffing her cheeks out comically, pouting, holding her breath with rosy cheeks, then letting the breath out.' },
+  // --- gestures ---
+  { id: 'wave', kind: 'oneShot', end: 'back', motion: 'Character waving hello with a small quick wave of one open hand with five fingers beside her shoulder and a warm smile, then lowers the hand out of the picture.' },
+  { id: 'nod', kind: 'oneShot', end: 'back', motion: 'Character nodding yes with a confident smile, her head going down and up clearly twice.' + SHUT },
+  { id: 'shake_head', kind: 'oneShot', end: 'back', motion: 'Character shaking her head no with a firm, amused expression, once to each side.' + SHUT },
+  { id: 'dance', kind: 'oneShot', end: 'back', motion: 'Character doing a fun little celebratory dance in place, rhythmic bouncing, shoulders and arms swinging happily, staying in the middle of the picture.' },
+  { id: 'jump', kind: 'oneShot', end: 'back', motion: 'Character does one small excited hop in place, bouncing up a little and landing, her head staying inside the picture.' },
+  { id: 'bow', kind: 'oneShot', end: 'back', motion: 'Character gives a polite, slightly theatrical bow, bending forward from the waist with her head lowered, then straightens up with a playful smirk.' },
 ];
 /**
  * Faces that are another state's clip under a second name. RFab offers a mind only the
@@ -116,10 +139,10 @@ export const STATES = [
  * would have to be happy, sad or angry in every sentence, and could never simply be calm.
  */
 export const ALIASES = { calm: 'idle', thoughtful: 'thinking' };
-const state = (id) => STATES.find((s) => s.id === id);
-const stillOf = (s) => path.join(DIR, `${s.from ?? s.id}-still.png`);
-const framedOf = (s) => path.join(DIR, `${s.from ?? s.id}-framed.png`);
-const clipOf = (s) => path.join(DIR, `${s.id}.mp4`);
+/** The one reference every take starts from: her approved idle still, framed on the stage. */
+const REFERENCE = path.join(DIR, 'idle-framed.png');
+const TAKES = path.join(DIR, 'leaflit');
+const clipOf = (s) => path.join(TAKES, `${s.id}.mp4`);
 
 /** One of her approved faces, cut from the sheet, as a reference picture. */
 function faceRef(name) {
@@ -178,65 +201,73 @@ function frame(file, out) {
   return { top: top / img.h, centre: cx / img.w, scale: Number(k.toFixed(3)) };
 }
 
-async function stills(list) {
-  const base = state('idle');
-  // The base still first: every other still is redrawn from it.
-  if (!fs.existsSync(stillOf(base))) {
+/** The studio's Sprite Prep: her ONE reference, drawn once from her approved design (it exists: she is approved). */
+async function reference() {
+  const still = path.join(DIR, 'idle-still.png');
+  if (!fs.existsSync(still)) {
     await makeStill({
-      slug: 'yoke idle', out: stillOf(base), width: W, height: H, quality: 'high',
+      slug: 'yoke idle', out: still, width: W, height: H, quality: 'high',
       refFiles: [path.join(CONCEPTS, 'r4-yoke-colour.png'), faceRef('calm')],
-      prompt: `An anime illustration of ${HER}. ${FRAMING} ${base.face} ${DRAWN}`,
+      prompt: `An anime illustration of ${HER}. ${FRAMING} Her expression is calm and attentive, with the faintest ` +
+        `polite smile, her mouth closed. Her arms hang at her sides and her hands are out of the picture. ${DRAWN}`,
       key: KEY.hex, keyName: KEY.name,
     });
   }
-  if (!fs.existsSync(framedOf(base))) console.log('[yoke] idle framed:', JSON.stringify(frame(stillOf(base), framedOf(base))));
-  const own = list.filter((s) => s.face && s.id !== 'idle');
-  const results = await pool(own, 3, async (s) => {
-    if (!fs.existsSync(stillOf(s))) {
-      await makeStill({
-        slug: `yoke ${s.id}`, out: stillOf(s), width: W, height: H, quality: 'high',
-        refFiles: [framedOf(base), faceRef(s.ref), path.join(CONCEPTS, 'r4-yoke-colour.png')],
-        prompt:
-          'Redraw the FIRST picture exactly: the same woman, the same hair, the same hair clip, the same dress, the ' +
-          'same size and the same place in the picture, the same drawing style and the same flat green background. ' +
-          `Change only her expression and what is said here. ${s.face} The other pictures show the same woman, ` +
-          `${HER}. ${FRAMING} ${DRAWN}`,
-        key: KEY.hex, keyName: KEY.name,
-      });
-    }
-    if (!fs.existsSync(framedOf(s))) console.log(`[yoke] ${s.id} framed:`, JSON.stringify(frame(stillOf(s), framedOf(s))));
+  if (!fs.existsSync(REFERENCE)) console.log('[yoke] reference framed:', JSON.stringify(frame(still, REFERENCE)));
+  return REFERENCE;
+}
+
+/** The studio's Generate Video: one take per state, all from the one reference. */
+async function takes(list) {
+  const todo = list.filter((s) => !fs.existsSync(clipOf(s)));
+  if (!todo.length) return;
+  const spriteUrl = await uploadSprite(await reference());
+  const results = await pool(todo, 4, async (s) => {
+    console.log(`[yoke] take of ${s.id} on ${STUDIO_VIDEO_MODEL}`);
+    await generateTake({ spriteUrl, prompt: craftPrompt(s.motion, s.kind), out: clipOf(s), label: `yoke ${s.id}` });
+    console.log(`[yoke] take of ${s.id}: saved`);
   });
-  results.forEach((r, i) => { if (!r.ok) console.warn(`[yoke] still of ${own[i].id} failed: ${r.error.message.slice(0, 200)}`); });
+  results.forEach((r, i) => { if (!r.ok) console.warn(`[yoke] take of ${todo[i].id} failed: ${r.error.message.slice(0, 200)}`); });
 }
 
-const MOUTH = {
-  talks: '',
-  laughs: '',
-  apart: 'Her lips are a little apart and stay as they are, still, from the first frame to the last.',
-  // No word of speech in it: told that she "does not speak", the video model hears "speak".
-  shut: 'Her mouth is closed, and stays closed and still from the first frame to the last.',
-};
-
-async function clips(list) {
-  const ready = list.filter((s) => fs.existsSync(framedOf(s)));
-  const results = await pool(ready, 3, (s) => makeClip({
-    slug: `yoke ${s.id}`, out: clipOf(s), stillFile: framedOf(s), seconds: 4, resolution: '720p', aspect: '16:9',
-    prompt: `An anime woman shown from the waist up on a flat green background. ${MOUTH[s.mouth ?? 'shut']} ${s.move} ` +
-      'Her hair, her hair clip and her dress stay exactly as they are. Nothing appears, nothing glows.',
-    key: KEY.hex, keyName: KEY.name,
-  }));
-  results.forEach((r, i) => { if (!r.ok) console.warn(`[yoke] clip of ${ready[i].id} failed: ${r.error.message.slice(0, 200)}`); });
-}
-
-/** Every frame of a clip at the stage's size, as one buffer (frame 0, the still itself, is dropped). */
+/** Every frame of a take at the stage's size, frame 0 (the reference itself) included: the studio keeps it. */
 function decode(file) {
   const r = spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-i', file,
-    '-vf', `trim=start_frame=1,setpts=PTS-STARTPTS,fps=${FPS},scale=${W}:${H}:flags=lanczos`, '-f', 'rawvideo', '-pix_fmt', 'rgba', '-'],
-  { maxBuffer: 1024 * 1024 * 1024 });
+    '-vf', `fps=${FPS},scale=${W}:${H}:flags=lanczos`, '-an', '-f', 'rawvideo', '-pix_fmt', 'rgba', '-'],
+  { maxBuffer: 2 * 1024 * 1024 * 1024 });
   if (r.status !== 0) throw new Error(`${file}: ffmpeg could not read it: ${String(r.stderr).slice(-300)}`);
   const size = W * H * 4;
   const n = Math.floor(r.stdout.length / size);
   return Array.from({ length: n }, (_, i) => ({ w: W, h: H, data: r.stdout.subarray(i * size, (i + 1) * size) }));
+}
+
+/** How far a frame is from another (mean RGB difference on a sparse grid, 0..255). */
+function distance(a, b) {
+  let d = 0, n = 0;
+  for (let i = 0; i < a.data.length; i += 4 * 53) {
+    d += Math.abs(a.data[i] - b.data[i]) + Math.abs(a.data[i + 1] - b.data[i + 1]) + Math.abs(a.data[i + 2] - b.data[i + 2]);
+    n += 3;
+  }
+  return d / n;
+}
+
+/**
+ * The studio's End Frame, chosen as a person chooses it in the Loop Builder: for a move,
+ * the first frame after the move in which she is back on her reference pose (frame 0).
+ * The move is where she went furthest from it; "back" is within a small step of the
+ * nearest she comes to frame 0 again after that.
+ */
+function endFrame(frames, s) {
+  const last = frames.length - 1;
+  if (typeof s.end === 'number') return Math.min(last, Math.round(s.end * FPS));
+  const d = frames.map((f) => distance(f, frames[0]));
+  let peak = Math.round(0.5 * FPS);
+  for (let i = peak; i <= last; i++) if (d[i] > d[peak]) peak = i;
+  let best = Infinity;
+  for (let i = peak; i <= last; i++) best = Math.min(best, d[i]);
+  const near = best + Math.max(0.6, (d[peak] - best) * 0.12);
+  for (let i = Math.max(peak, Math.round(1.5 * FPS)); i <= last; i++) if (d[i] <= near) return i;
+  return last;
 }
 
 /**
@@ -306,50 +337,6 @@ function blur(values, w, h, r) {
   return src;
 }
 
-/** How much a pixel is her hair (or her collar): bright, and no redder than it is blue. Her skin is redder; her dress is dark. */
-function hairness(r, g, b) {
-  const bright = Math.max(0, Math.min(1, (Math.max(r, g, b) - 120) / 50));
-  const cool = Math.max(0, Math.min(1, (b - r + 22) / 28));
-  return bright * cool;
-}
-
-/** The mean colour of her hair in a keyed picture. */
-function hairColour(img) {
-  const sum = [0, 0, 0];
-  let n = 0;
-  for (let y = 0; y < img.h * 0.8; y += 2) for (let x = 0; x < img.w; x += 2) {
-    const i = (y * img.w + x) * 4;
-    if (img.data[i + 3] < 250) continue;
-    const k = hairness(img.data[i], img.data[i + 1], img.data[i + 2]);
-    if (k < 0.9) continue;
-    sum[0] += img.data[i]; sum[1] += img.data[i + 1]; sum[2] += img.data[i + 2];
-    n++;
-  }
-  return n > 500 ? sum.map((v) => v / n) : null;
-}
-
-/**
- * The video model paints her hair grey in one clip and blue-silver in the next. Seen one
- * after the other, that is two girls. The hair of every clip is brought to the colour it
- * has in the still the clip was made from; her skin and her dress are left as they are.
- */
-function matchHair(frames, still) {
-  const want = hairColour(still);
-  const have = hairColour(frames[0]);
-  if (!want || !have) return null;
-  const gain = want.map((v, k) => Math.max(0.8, Math.min(1.3, v / have[k])));
-  for (const f of frames) {
-    const d = f.data;
-    for (let i = 0; i < d.length; i += 4) {
-      if (!d[i + 3]) continue;
-      const k = hairness(d[i], d[i + 1], d[i + 2]);
-      if (!k) continue;
-      for (let c = 0; c < 3; c++) d[i + c] = Math.min(255, d[i + c] * (1 + (gain[c] - 1) * k));
-    }
-  }
-  return gain.map((g) => Number(g.toFixed(3)));
-}
-
 /** The light she is made of: the pale blue of the approved design (r4-yoke-colour.png). */
 const HALO = [112, 186, 255];
 
@@ -408,41 +395,55 @@ function hairClose(img, rgb, box) {
   return crop(out, box.x, box.y, box.w, box.h);
 }
 
-/** Clip to WebM: keyed, cut to its loop, its checks made, its review pictures written. */
+/**
+ * The studio's Model Exporter, on one take: the key colour auto-detected and the similarity
+ * calibrated on frame 0, every frame keyed by the studio's ChromaKey, the range cut at the
+ * End Frame, Ping-Pong for what loops and No Loop for a move. Then what the studio does not
+ * do and the game needs: the checks, the projection, the review pictures, VP8 with alpha.
+ */
 function bakeState(s) {
   const file = clipOf(s);
   if (!fs.existsSync(file)) return null;
-  const frames = decode(file);
-  const key = keyOf(borderColour(frames[Math.min(2, frames.length - 1)]));
-  for (const f of frames) { keyFrame(f, key, { spill: 'all' }); dropSpecks(f, 0.02); }
+  const all = decode(file);
+  const end = endFrame(all, s);
+  const raw = all.slice(0, end + 1);
+  const first = { w: W, h: H, data: Buffer.from(raw[0].data) };
+  const { ck, key: keyRgb, similarity } = studioKeyer(first);
+  const frames = raw.map((f) => {
+    const img = { w: W, h: H, data: Buffer.from(f.data) };
+    keyFrame(ck, img);
+    return img;
+  });
+  const order = frameList(0, frames.length - 1, s.kind !== 'oneShot');
+  const kept = order.map((i) => frames[i]);
+
   const checks = [];
   const check = (name, ok, value) => checks.push({ name, ok, value });
-  let kept = frames;
-  if (!s.oneShot) {
-    // A loop is at least two and a half seconds of her: shorter, and her breathing is a twitch.
-    const loop = loopWindow(frames, { min: Math.round(FPS * 2.5), max: frames.length });
-    kept = frames.slice(loop.start, loop.end);
-    check('the loop closes', loop.seam < 3, Number(loop.seam.toFixed(2)));
-    check('she moves', loop.motion > 0.02, Number(loop.motion.toFixed(3)));
-  } else {
-    const a = frames[0], z = frames[frames.length - 1];
-    let d = 0;
-    for (let i = 0; i < a.data.length; i += 4 * 97) d += Math.abs(a.data[i] - z.data[i]) + Math.abs(a.data[i + 3] - z.data[i + 3]);
-    check('it ends where it began', d / (a.data.length / (4 * 97)) < 14, Number((d / (a.data.length / (4 * 97))).toFixed(2)));
-  }
-  const fr = Math.max(...[0, Math.floor(kept.length / 2), kept.length - 1].map((i) => fringe(kept[i], key)));
+  const back = distance(raw[raw.length - 1], raw[0]);
+  check(s.kind === 'oneShot' ? 'it ends where it began' : 'the turn comes back (Ping-Pong closes the loop anyway)',
+    s.kind === 'loop' || back < 8, Number(back.toFixed(2)));
+  let moved = 0;
+  for (const f of raw) moved = Math.max(moved, distance(f, raw[0]));
+  check('she moves', moved > 1.5, Number(moved.toFixed(2)));
+  const key = keyOf(keyRgb);
+  const fr = Math.max(...[0, Math.floor(frames.length / 2), frames.length - 1].map((i) => fringe(frames[i], key)));
   check('no green on her outline', fr < 0.05, `${(fr * 100).toFixed(1)}%`);
-  let solid = 0;
-  for (let i = 3; i < kept[0].data.length; i += 4) if (kept[0].data[i] > 128) solid++;
-  check('she fills the stage as a person does', solid / (W * H) > 0.12 && solid / (W * H) < 0.55, `${((solid / (W * H)) * 100).toFixed(0)}% of it`);
+  let worst = 1, most = 0;
+  for (const f of [frames[0], frames[Math.floor(frames.length / 2)], frames[frames.length - 1]]) {
+    let solid = 0;
+    for (let i = 3; i < f.data.length; i += 4) if (f.data[i] > 128) solid++;
+    worst = Math.min(worst, solid / (W * H));
+    most = Math.max(most, solid / (W * H));
+  }
+  check('she fills the stage as a person does', worst > 0.12 && most < 0.6, `${(worst * 100).toFixed(0)}-${(most * 100).toFixed(0)}% of it`);
+  let topRow = 0;
+  for (const f of frames) for (let x = 0; x < W; x += 2) if (f.data[x * 4 + 3] > 128) topRow++;
+  check('she stays under the top edge', topRow / frames.length < 12, `${(topRow / frames.length).toFixed(1)} px a frame on row 0`);
 
-  const gain = matchHair(kept, maskOf(readImage(framedOf(s))));
-  check('her hair is the colour of her still', !!gain, gain ? `gains ${gain.join(', ')}` : 'no hair found');
-  // The checks above are made on her as she was drawn. From here on she is a projection.
-  for (const f of kept) project(f);
-  // The review pictures are made BEFORE the colour under the transparency is changed: they show what is seen.
+  // From here on she is a projection. Frames shared by the Ping-Pong are done once.
+  for (const f of frames) project(f);
   fs.mkdirSync(LOOK, { recursive: true });
-  const picks = Array.from({ length: 6 }, (_, i) => kept[Math.min(kept.length - 1, Math.floor((i * kept.length) / 6))]);
+  const picks = Array.from({ length: 6 }, (_, i) => frames[Math.min(frames.length - 1, Math.floor((i * frames.length) / 5.001))]);
   const tw = 426, th = 240;
   const sheet = blank(6 * tw, 2 * th, [0, 0, 0, 255]);
   picks.forEach((f, i) => { paste(sheet, shown(f, [8, 10, 14], tw, th), i * tw, 0); paste(sheet, shown(f, [236, 236, 232], tw, th), i * tw, th); });
@@ -453,21 +454,21 @@ function bakeState(s) {
   paste(close, hairClose(picks[2], [236, 236, 232], box), box.w, 0);
   writeJpg(path.join(LOOK, `${s.id}-hair.jpg`), close, 2);
 
-  for (const f of kept) bleed(f);
+  for (const f of frames) bleed(f);
   fs.mkdirSync(OUT, { recursive: true });
   const out = path.join(OUT, `${s.id}.webm`);
-  // A gesture plays once and is seen for a second: it is packed a little harder, to stay light to load.
-  // VP8 with an alpha plane: what RFab's own studio exports, and what its overlay and every Chromium play.
+  // VP8 with an alpha plane: what the studio's MediaRecorder export writes, and what its overlay and every Chromium play.
   const r = spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-f', 'rawvideo', '-pix_fmt', 'rgba', '-s', `${W}x${H}`, '-r', String(FPS), '-i', '-',
-    '-c:v', 'libvpx', '-pix_fmt', 'yuva420p', '-auto-alt-ref', '0', '-b:v', s.oneShot ? '780k' : '1100k', '-crf', s.oneShot ? '20' : '14', '-qmin', '4', '-qmax', '40', '-g', String(FPS * 2), '-an', out],
+    '-c:v', 'libvpx', '-pix_fmt', 'yuva420p', '-auto-alt-ref', '0', '-b:v', '1000k', '-crf', '16', '-qmin', '4', '-qmax', '40', '-g', String(FPS * 2), '-an', out],
   { input: Buffer.concat(kept.map((f) => f.data)), maxBuffer: 64 * 1024 * 1024 });
   if (r.status !== 0) throw new Error(`${s.id}: ffmpeg could not write the WebM: ${String(r.stderr).slice(-300)}`);
   const bytes = fs.statSync(out).size;
   const bad = checks.filter((c) => !c.ok);
-  fs.writeFileSync(path.join(LOOK, `${s.id}.json`), `${JSON.stringify({ state: s.id, frames: kept.length, seconds: Number((kept.length / FPS).toFixed(2)), kb: Math.round(bytes / 1024), failed: bad.length, checks }, null, 1)}\n`);
-  console.log(`[yoke] ${s.id}: ${kept.length} frames, ${Math.round(bytes / 1024)} KB, ${checks.length - bad.length}/${checks.length} checks passed`);
+  const studio = { keyColour: keyRgb, similarityPct: similarity, endFrame: end, loop: s.kind === 'oneShot' ? 'none' : 'pingpong', chromaKeyFrom: loadChromaKey().from };
+  fs.writeFileSync(path.join(LOOK, `${s.id}.json`), `${JSON.stringify({ state: s.id, kind: s.kind, frames: kept.length, seconds: Number((kept.length / FPS).toFixed(2)), kb: Math.round(bytes / 1024), studio, failed: bad.length, checks }, null, 1)}\n`);
+  console.log(`[yoke] ${s.id}: ${kept.length} frames (end ${end}, key ${keyRgb.join(',')} at ${similarity}%), ${Math.round(bytes / 1024)} KB, ${checks.length - bad.length}/${checks.length} checks passed`);
   for (const c of bad) console.log(`       FAILED ${c.name}: ${c.value}`);
-  return { id: s.id, file: `${s.id}.webm`, seconds: Number((kept.length / FPS).toFixed(2)), oneShot: !!s.oneShot };
+  return { id: s.id, file: `${s.id}.webm`, seconds: Number((kept.length / FPS).toFixed(2)), oneShot: s.kind === 'oneShot' };
 }
 
 const MANIFEST = path.join(OUT, 'manifest.json');
@@ -484,7 +485,7 @@ function writeManifest(baked = []) {
   const m = {
     name: YOKE_NAME, width: W, height: H, fps: FPS,
     states,
-    oneShot: STATES.filter((s) => s.oneShot && states[s.id]).map((s) => s.id),
+    oneShot: STATES.filter((s) => s.kind === 'oneShot' && states[s.id]).map((s) => s.id),
     seconds: Object.fromEntries(Object.keys(states).map((id) => [id, seconds[id] ?? 4])),
     // Where the same clips are on RFab, once she is published there.
     ...(old.rfab ? { rfab: old.rfab } : {}),
@@ -565,7 +566,8 @@ export async function publishYoke({ voiceId, model } = {}) {
   const saved = await call('POST', '/api/vtuber-models', {
     ...(ids.liveModelId ? { id: ids.liveModelId } : {}),
     // track 'both' is the studio's default; her clips are hers alone, so no camera or microphone is ever asked of anyone by the game.
-    model: { name: YOKE_NAME, states, oneShot: m.oneShot, swapMode: 'fade', fadeMs: 180 },
+    // styleKey: the studio's art style for this model (app.js STYLE_PRESETS), the one her takes were prompted with.
+    model: { name: YOKE_NAME, states, oneShot: m.oneShot, swapMode: 'fade', fadeMs: 180, styleKey: 'anime' },
   });
   ids.liveModelId = saved.id;
   console.log(`[yoke] body saved: ${saved.id} (${Object.keys(states).length} states)`);
@@ -608,10 +610,9 @@ export async function makeYoke({ bakeOnly = false, stillsOnly = false, publish =
   if (publish) return publishYoke({ voiceId, model });
   const list = STATES.filter((s) => !only?.length || only.includes(s.id));
   if (!bakeOnly) {
-    await stills(list);
+    await reference();
     if (stillsOnly) return null;
-    await clips(list);
+    await takes(list);
   }
   return bakeYoke(only);
 }
-

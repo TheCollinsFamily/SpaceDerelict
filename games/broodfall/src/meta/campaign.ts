@@ -16,6 +16,8 @@ import {
 } from '../../content/campaign';
 import { evaluate, instance, type GoalInstance, type GoalResult, type RunReport } from './goals';
 import { queueDiscussion, type AiTrigger, type AiTurn } from './shipAi';
+import { FIRST_MISSION, FIRST_MISSION_STANDING, deskOpen, isFirstMission, momentAfter, type Onboard } from './onboarding';
+import type { GreetMoment } from '../../content/greetings';
 
 export interface CampaignState {
   version: 1;
@@ -47,9 +49,16 @@ export interface CampaignState {
   pendingScenes: Array<{ faction: FactionId; beat?: string; scene: Scene; contact?: boolean; choice?: BeatDef['choice'] }>;
   ai: { queue: AiTrigger[]; seen: AiTrigger[]; transcripts: Array<{ trigger: AiTrigger; turns: AiTurn[] }> };
   log: string[];
+  /** How far the campaign has unfolded (src/meta/onboarding.ts); none on saves from before it existed. */
+  onboard?: Onboard;
+  /** What YOKE greets him with when he next comes aboard (set by a deployment, used once). */
+  greet?: GreetMoment | null;
+  /** The greeting she said last (she never says the same one twice in a row). */
+  lastGreeting?: string;
 }
 
-export function newCampaign(seed: number): CampaignState {
+/** `onboarding`: a campaign that unfolds (mission 1 first, the Directive Desk dark until a win); every new one the game starts is. */
+export function newCampaign(seed: number, opts: { onboarding?: boolean } = {}): CampaignState {
   const start = (Object.entries(LINEAGES) as Array<[OrganId, { catalogue: string }]>)
     .filter(([, l]) => l.catalogue === 'start').map(([id]) => id);
   return {
@@ -58,6 +67,7 @@ export function newCampaign(seed: number): CampaignState {
     contacted: [], beatsSeen: [], choices: {}, experimentsDone: [], daresDone: [], ended: null, licence: false,
     pendingScenes: [], ai: { queue: [], seen: [], transcripts: [] },
     log: ['Personal log. Assigned to xenofauna clearance, sector 9. Asset BF-7 is cultured and viable. Here we go!'],
+    ...(opts.onboarding ? { onboard: { mission1: 'pending' as const, deskOpen: false } } : {}),
   };
 }
 
@@ -111,6 +121,8 @@ export function experimentsAvailable(s: CampaignState): ExperimentDef[] {
 export interface DeploymentPlan {
   territory: string;
   defence: boolean;
+  /** Mission 1 (src/meta/onboarding.ts): a plain tower-defence game, no board goals, no campaign on its screen. */
+  first?: boolean;
   config: Partial<SimConfig>;
   board: GoalInstance[];
   dares: GoalInstance[];
@@ -130,7 +142,8 @@ export function boardFor(s: CampaignState, territoryId: string): GoalInstance[] 
 /** Everything the run needs: territory, board, dares, experiment, faction perks, profile, unlocks. */
 export function plan(s: CampaignState, territoryId: string, opts: { dares?: string[]; experiment?: string; objectors?: EnemyKind[] } = {}): DeploymentPlan {
   const t = territory(territoryId);
-  const defence = s.held.includes(territoryId) && s.underAttack === territoryId;
+  const first = isFirstMission(s) && territoryId === FIRST_MISSION;
+  const defence = !first && s.held.includes(territoryId) && s.underAttack === territoryId;
   const perks = perksOf(s);
   const profile = PROFILES.find((p) => p.id === s.profile) ?? PROFILES[0];
   const objectorsAllowed = perks.includes('objectors2') ? 2 : perks.includes('objectors1') ? 1 : 0;
@@ -138,14 +151,15 @@ export function plan(s: CampaignState, territoryId: string, opts: { dares?: stri
   if (perks.includes('volunteers1')) bonus.science = 30;
   if (perks.includes('volunteers2')) { bonus.war = 40; bonus.royal = 1; }
   if (perks.includes('kingdom')) bonus.royal = (bonus.royal ?? 0) + 1;
-  const exp = opts.experiment ? EXPERIMENTS.find((e) => e.id === opts.experiment) : undefined;
+  const exp = !first && opts.experiment ? EXPERIMENTS.find((e) => e.id === opts.experiment) : undefined;
   const config: Partial<SimConfig> = {
     seed: hash(`${s.seed}|${s.deployments}|${territoryId}|run`),
     organStage: true,
     organPool: [...s.lineages],
     startOrgans: profile.organs,
     evolutionCap: evolutionCaps(s),
-    waveIntel: perks.includes('translator') ? 'full' : 'hidden',
+    // Mission 1 shows where the assault comes from, as any tower-defence game does; the campaign hides it (the Translator's perk).
+    waveIntel: first || perks.includes('translator') ? 'full' : 'hidden',
     sleepers: perks.includes('sleepers2') ? 0.15 : perks.includes('sleepers1') ? 0.08 : 0,
     startBonus: bonus,
     bannedEnemies: (opts.objectors ?? []).slice(0, objectorsAllowed),
@@ -155,6 +169,8 @@ export function plan(s: CampaignState, territoryId: string, opts: { dares?: stri
     ...(exp ? exp.setup : {}),
   };
   const dares = (opts.dares ?? []).slice(0, 2).map((id) => DARES.find((d) => d.id === id)!).filter(Boolean).map((d) => instance(d, t.tier));
+  // Mission 1 carries no forms, no dares and no experiment: it is only a game of tower defence.
+  if (first) return { territory: territoryId, defence: false, first: true, config, board: [], dares: [] };
   return {
     territory: territoryId, defence, config, board: boardFor(s, territoryId), dares,
     experiment: exp ? { def: exp, goal: instance(exp.goal, t.tier) } : undefined,
@@ -174,6 +190,10 @@ export interface Debrief {
   log: string;
   /** The ally's letter / broadcast / call after this deployment. */
   aside?: string;
+  /** It was mission 1. */
+  first?: boolean;
+  /** This deployment cleared the Directive Desk (and the three factions called). */
+  deskOpened?: boolean;
 }
 
 /** A faction's ending, as the choices made along its route shaped it. */
@@ -208,6 +228,22 @@ export function finish(prev: CampaignState, p: DeploymentPlan, r: RunReport): { 
   s.standing += standing;
   s.notes += notes;
 
+  // Mission 1 (src/meta/onboarding.ts): the landing at the crash site. It takes no ground (the
+  // crash site is the beachhead either way), queues no counter-attack and no faction; its data
+  // pays a little standing, win or lose, and the ship is seen for the first time after it.
+  if (p.first && s.onboard) {
+    s.onboard.mission1 = r.won ? 'won' : 'lost';
+    s.standing += FIRST_MISSION_STANDING;
+    s.log.push(r.won ? 'First drop: the asset took the crash site and held it. The telemetry is extraordinary.' : 'First drop: the asset was lost at the crash site. The telemetry is still extraordinary.');
+    if (s.deployments === 1) s.ai.queue = queueDiscussion(s.ai.queue, 'first-deployment', s.ai.seen);
+    const debrief: Debrief = {
+      board: [], dares: [], standing: FIRST_MISSION_STANDING, notes: 0, captured: null, lost: null, repelled: null,
+      unlocked, log: s.log[s.log.length - 1], first: true,
+    };
+    s.greet = momentAfter(prev, s, debrief, true);
+    return { state: s, debrief };
+  }
+
   // The territory.
   let captured: string | null = null;
   let lost: string | null = null;
@@ -230,6 +266,13 @@ export function finish(prev: CampaignState, p: DeploymentPlan, r: RunReport): { 
       captured = p.territory;
     }
   }
+  // The first win that is not mission 1 clears the Directive Desk: from now on he picks his targets.
+  let deskOpened = false;
+  if (s.onboard && !s.onboard.deskOpen && r.won) {
+    s.onboard.deskOpen = true;
+    deskOpened = true;
+    s.log.push('Command has cleared the Directive Desk. Targets are now at the discretion of the technician.');
+  }
   s.log.push(`${(r.won ? LOGS_WON : LOGS_LOST)[rng.int(0, (r.won ? LOGS_WON : LOGS_LOST).length - 1)]} (${t.name})`);
 
   // The colony pushes back after you take new ground: a telegraphed counter-attack
@@ -244,9 +287,11 @@ export function finish(prev: CampaignState, p: DeploymentPlan, r: RunReport): { 
   }
 
   // The factions: contacts, beats, the finale.
+  // All three call at once, when the desk opens (Collins, Sep 30 2026: "that's also when you first
+  // hear from each of the three factions"); a save from before the unfolding, at its first capture.
   if (!s.faction) {
     for (const f of FACTIONS) {
-      if (s.captures >= f.contactAfterCaptures && !s.contacted.includes(f.id)) {
+      if (deskOpen(s) && s.captures >= 1 && !s.contacted.includes(f.id)) {
         s.contacted.push(f.id);
         s.pendingScenes.push({ faction: f.id, scene: f.contact, contact: true });
       }
@@ -282,10 +327,9 @@ export function finish(prev: CampaignState, p: DeploymentPlan, r: RunReport): { 
   }
   if (s.deployments === 1) s.ai.queue = queueDiscussion(s.ai.queue, 'first-deployment', s.ai.seen);
 
-  return {
-    state: s,
-    debrief: { board, dares, experiment: exp, standing, notes, captured, lost, repelled, unlocked, log: s.log[s.log.length - 1], aside },
-  };
+  const debrief: Debrief = { board, dares, experiment: exp, standing, notes, captured, lost, repelled, unlocked, log: s.log[s.log.length - 1], aside, deskOpened };
+  s.greet = momentAfter(prev, s, debrief, false);
+  return { state: s, debrief };
 }
 
 /** Ally with a faction (exclusive): its first beat plays at once. */

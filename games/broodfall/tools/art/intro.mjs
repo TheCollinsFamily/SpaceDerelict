@@ -139,8 +139,8 @@ export const MENU = {
   still: 'A lifelike photograph from inside a far-future orbital ship of an austere, ultra-efficient society: ' +
     'standing at a huge viewport. The edges of the picture are the ship\'s bare interior: matte black panels and ' +
     'bare pale ceramic with flush seams and exact edges, lit by even white light, a thin line of white light along ' +
-    'the frame; nothing else, no ornament, no screens, no people. The window fills most of the picture: through ' +
-    'it, far below, the night side of a planet with the pale golden lights of its cities, and across one ' +
+    'the frame; nothing else, no ornament, no screens. The room is EMPTY: no person, no figure, no silhouette anywhere. The window fills most of the picture: through ' +
+    'it, far below, the night side of an alien planet whose continents are invented (NOT Earth: no Europe, no real coastline; shaped like the continents of the second reference map), with the pale golden lights of its cities, and across one ' +
     'continent a spreading dark red stain of infection, veined like living tissue, with a few glowing orange ' +
     'points of burning cities inside it. A thin blue line of atmosphere along the curve of the planet, black space ' +
     'with faint stars above. No text, no letters, no numbers, no logos, no symbols.',
@@ -159,7 +159,11 @@ function menuRefs() {
     fs.mkdirSync(path.dirname(room), { recursive: true });
     ffmpeg(['-i', path.join(ART, 'ship', 'room-comms.webp'), room], 'menu ref');
   }
-  return [room, path.join(CONCEPTS, 'r3-ship-operations-white.png')];
+  // v1 (art-src/intro/v1/menu-a.png) took the white operations concept's man into the picture and drew
+  // Europe: the game's own planet map is the second reference now, and the room is said to be empty.
+  const map = path.join(DIR, 'refs', 'planet.png');
+  if (!fs.existsSync(map)) ffmpeg(['-i', path.join(ART, 'ship', 'planet.webp'), map], 'menu map');
+  return [room, map];
 }
 
 async function stills(items) {

@@ -268,8 +268,7 @@ export interface BeatDef {
 export interface FactionDef {
   id: FactionId;
   name: string;
-  /** Who reaches out and when (captures, counting from the start of the campaign). */
-  contactAfterCaptures: number;
+  /** (All three reach out at once, when the Directive Desk opens: src/meta/campaign.ts finish(), Sep 30 2026.) */
   contact: Scene;
   beats: BeatDef[];
   finale: string;
@@ -297,7 +296,7 @@ export interface FactionDef {
  */
 export const FACTIONS: FactionDef[] = [
   {
-    id: 'delegation', name: 'The Friendship Delegation', contactAfterCaptures: 1,
+    id: 'delegation', name: 'The Friendship Delegation',
     perks: {
       objectors1: 'Conscientious Objectors: pick 1 enemy kind that will not come this deployment.',
       objectors2: 'More Objectors: pick 2 enemy kinds that will not come.',
@@ -363,7 +362,7 @@ export const FACTIONS: FactionDef[] = [
     ] },
   },
   {
-    id: 'faithful', name: 'The Faithful of the Last Hour', contactAfterCaptures: 2,
+    id: 'faithful', name: 'The Faithful of the Last Hour',
     perks: {
       sleepers1: 'Sleepers: martyrs hide among the enemy waves and detonate among their own.',
       sleepers2: 'More Sleepers: more martyrs in every wave.',
@@ -413,7 +412,7 @@ export const FACTIONS: FactionDef[] = [
     ] },
   },
   {
-    id: 'institute', name: 'The Institute for Long-Term Hive Flourishing', contactAfterCaptures: 3,
+    id: 'institute', name: 'The Institute for Long-Term Hive Flourishing',
     perks: {
       volunteers1: 'Volunteers: missions start with 30 science.',
       volunteers2: 'More Volunteers: missions also start with 40 war and a royal point.',

@@ -83,3 +83,28 @@ export function loadYoke(): YokeSettings {
 export function saveYoke(y: YokeSettings): void {
   try { localStorage.setItem(YOKE, JSON.stringify({ ...y, v: YOKE_SAVED })); } catch { /* private mode */ }
 }
+
+// ------------------------------------------------------------------ the first launch (src/meta/onboarding.ts)
+
+const INTRO = 'broodfall-intro-seen';
+
+/** The opening cinematic has played once (to its end, or skipped). */
+export function introSeen(): boolean {
+  try { return localStorage.getItem(INTRO) === '1'; } catch { return true; }
+}
+
+export function markIntroSeen(): void {
+  try { localStorage.setItem(INTRO, '1'); } catch { /* private mode: it plays again next time */ }
+}
+
+/** This browser played before the campaign existed (skirmish records): it is not a first launch. */
+export function veteran(): boolean {
+  try { return !!localStorage.getItem('broodfall-meta'); } catch { return false; }
+}
+
+/** Everything the game keeps, gone: the next start is a first launch again (the menu's RESET). */
+export function forgetEverything(): void {
+  try {
+    for (const k of Object.keys(localStorage)) if (k.startsWith('broodfall-')) localStorage.removeItem(k);
+  } catch { /* ok */ }
+}

@@ -13,7 +13,9 @@ import { goalText } from '../meta/goals';
 import { FallbackShipAi, RfabShipAi, campaignIdFor, type AiTrigger, type AiTurn, type ShipAiProvider, type ShipAiStatus } from '../meta/shipAi';
 import { loadYoke, saveCampaign, saveYoke, type PendingDeployment, type YokeSettings } from '../meta/storage';
 import { YOKE_AVATAR, rungs, type YokeMode } from '../meta/yokeAvatar';
-import { YokeAvatarUi, type YokeTalk } from './yokeAvatar';
+import { YokeAvatarUi, type ScriptLine, type YokeTalk } from './yokeAvatar';
+import { deskOpen, pickGreeting, shipPick } from '../meta/onboarding';
+import { CUES, type Greeting } from '../../content/greetings';
 import {
   DARES, EXPERIMENTS, FACTIONS, LICENCE_STANDING, LINEAGES, PROFILES, TERRITORIES,
   type FactionDef, type FactionId, type Scene, type TerritoryDef,
@@ -77,6 +79,18 @@ export class CampaignUi {
   private debriefing = false;
   /** Each organ's scan picture, by organ id (absolute URLs); empty until the manifest is in. */
   private organPics: Record<string, string> = {};
+  /**
+   * YOKE's intercom: her, over whatever room he is in (Collins, Sep 30 2026: "a way to pull her
+   * up on the ship if you left to do something else"). Her greeting plays in it when he comes
+   * aboard; after it he can talk to her there, or close it.
+   */
+  private icom: { talk: YokeTalk } | null = null;
+  /** Her greeting is playing: the scenes from the planet wait until she has finished. */
+  private greeting: Greeting | null = null;
+  /** Where her last greeting sent him (a room lit up for him until he goes there). */
+  private beckon: Greeting['points'] | null = null;
+  /** The last thing she said to him unprompted, for her mind to know when he answers it. */
+  private greetSaid: string[] = [];
 
   constructor(private state: CampaignState, private hooks: { deploy(p: PendingDeployment): void; newCampaign(): void; quit(): void }) {
     this.ai = this.buildAi();
@@ -110,15 +124,49 @@ export class CampaignUi {
     });
     this.el.addEventListener('keydown', (ev) => {
       if ((ev.target as HTMLElement).id === 'ai-input' && ev.key === 'Enter') void this.aiSend();
+      if ((ev.target as HTMLElement).id === 'icom-input' && ev.key === 'Enter') void this.icomSend();
     });
   }
 
-  show(): void {
+  /** `greet`: he has just come aboard; YOKE greets him with what fits (src/meta/onboarding.ts). */
+  show(opts: { greet?: boolean } = {}): void {
     this.debriefing = false;
     document.body.classList.add('in-ship');
     this.el.classList.remove('hidden');
     this.render();
+    if (opts.greet) this.welcome();
   }
+
+  /** Her greeting for this return: prewritten, chosen by what just happened, never the same twice in a row. */
+  private welcome(): void {
+    const s = structuredClone(this.state);
+    const g = pickGreeting(s.greet ?? 'back', s.seed, s.deployments, s.lastGreeting);
+    s.greet = null;
+    s.lastGreeting = g.id;
+    this.state = s;
+    saveCampaign(s);
+    this.greeting = g;
+    this.greetSaid = [];
+    this.icom = { talk: this.freeTalk() };
+    this.render();
+    const lines: ScriptLine[] = g.beats.map((b) => ({ text: b.say, face: b.face ? CUES[b.face] : undefined, then: b.then ? CUES[b.then] : undefined, hold: b.hold }));
+    const said = (text: string) => { this.greetSaid.push(text); this.icom?.talk.turns.push({ speaker: 'YOKE', text }); };
+    const over = () => {
+      if (this.greeting !== g) return;
+      this.greeting = null;
+      if (g.points) this.beckon = g.points;
+      if (!this.debriefing && !this.el.classList.contains('hidden')) this.render();
+    };
+    this.el.dataset.greeting = g.id;
+    if (this.avatar) void this.avatar.play(lines, said).then(over);
+    else { for (const l of lines) said(l.text); over(); }
+  }
+
+  /** His talk with her anywhere on the ship (the same one the AI Core shows). */
+  private freeTalk(): YokeTalk {
+    return this.avatar?.freeTalk() ?? (this.localTalk ??= { trigger: 'idle', turns: [], free: true });
+  }
+  private localTalk: YokeTalk | null = null;
 
   hide(): void {
     this.avatar?.mount(false, '');
@@ -156,14 +204,41 @@ export class CampaignUi {
             <span class="cp-cur">${esc(fac.toUpperCase())}</span>
           </div>
         </div>
-        <div class="cp-rooms">${rooms.map(([id, name]) => `<button class="cp-room${this.room === id ? ' on' : ''}" data-room="${id}">${name}</button>`).join('')}
+        <div class="cp-rooms">${rooms.map(([id, name]) => `<button class="cp-room${this.room === id ? ' on' : ''}${this.beckon?.room === id && this.room !== id ? ' beckon' : ''}" data-room="${id}"${id === 'desk' && !deskOpen(s) ? ' data-dark="1"' : ''}>${name}</button>`).join('')}
+          ${this.room === 'ai' ? '' : `<button class="cp-room cp-call${this.icom ? ' on' : ''}" data-act="yoke-call" title="Call YOKE here">◉ YOKE</button>`}
           <button class="cp-room quit" data-act="quit">Main menu</button></div>
         <div class="cp-body">${this.roomHtml()}</div>
       </div>
-      ${this.sceneHtml()}`;
+      ${this.icomHtml()}
+      ${this.greeting ? '' : this.sceneHtml()}`;
     this.dress();
     // Her stage is the same element in every drawing of the screen: put back, not made again.
-    this.avatar?.mount(!!face, face);
+    const box = this.el.querySelector<HTMLElement>('.cp-icom-stage');
+    if (this.room === 'ai') this.avatar?.mount(!!face, face);
+    else if (box) this.avatar?.mount(true, 'calm', box);
+    else this.avatar?.mount(false, '');
+    const talk = this.el.querySelector('.cp-icom .cp-talk');
+    if (talk) talk.scrollTop = talk.scrollHeight;
+  }
+
+  /** YOKE over the room he is in: her stage, what she has said, and a line to answer her. */
+  private icomHtml(): string {
+    if (!this.icom || this.room === 'ai') return '';
+    const t = this.icom.talk;
+    const lines = t.turns.slice(-12).map((x) => `<div class="${x.speaker === 'YOKE' ? 'yoke' : 'you'}"><b>${x.speaker}:</b> ${esc(x.text)}</div>`).join('');
+    const pend = this.waiting ? `${this.avatar?.pendingHtml() ?? ''}<div class="yoke thinking"><b>YOKE:</b> …</div>` : '';
+    const go = !this.greeting && this.beckon && this.beckon.room !== this.room
+      ? `<button class="screen-btn cp-icom-go" data-room="${this.beckon.room}">${esc(this.beckon.label)}</button>` : '';
+    return `<div class="cp-icom${this.greeting ? ' greeting' : ''}" role="dialog" aria-label="YOKE">
+      <div class="cp-icom-stage"></div>
+      <div class="cp-icom-panel">
+        <div class="cp-icom-head"><span class="screen-kicker">YOKE — SHIP'S INTELLIGENCE</span>
+          <button class="cp-icom-x" data-act="icom-close" title="Close (she stays aboard)">✕</button></div>
+        <div class="cp-talk" data-act="${this.greeting ? 'icom-skip' : ''}" title="${this.greeting ? 'Click to skip ahead' : ''}">${lines}${pend}</div>
+        ${this.greeting ? '<div class="cp-icom-hint">click her words to skip ahead</div>' : ''}
+        ${go}
+        <div class="cp-say"><input id="icom-input" placeholder="Say something to her, or just walk away" autocomplete="off"${this.waiting ? ' disabled' : ''}/><button data-act="icom-send"${this.waiting ? ' disabled' : ''}>SAY</button>${this.avatar?.muteHtml() ?? ''}</div>
+      </div></div>`;
   }
 
   /** The room's picture behind the screen, and the globe painted into its canvas. */
@@ -293,6 +368,7 @@ export class CampaignUi {
         <p>The planet is quiet. Replay the ending from Comms, or start again with a different ally.</p>
         <button class="screen-btn" data-act="new">NEW CAMPAIGN</button></div>`;
     }
+    if (!deskOpen(s)) return this.darkDeskHtml();
     const t = this.selected ? territory(this.selected) : null;
     return `<div class="cp-desk">
       <div class="cp-globe">${this.globeSvg()}
@@ -301,6 +377,36 @@ export class CampaignUi {
       </div>
       <div class="cp-brief">${t ? this.briefHtml(t) : `<div class="cp-sub">PICK A LANDING SITE</div><p>Land next to ground you hold. Each territory you take unlocks evolution stages for some of your limbs${s.underAttack ? `. <b>${esc(territory(s.underAttack).name)} is under attack</b> — defend it next, or lose it.` : '.'}</p>`}</div>
     </div>`;
+  }
+
+  /**
+   * The desk before Command clears it: the planet is not projected, and the next deployment is
+   * the ship's own pick (Collins, Sep 30 2026: the room "does not open until after your first
+   * win (or if you win the first mission, second win)"). Dark, not greyed out: it is a desk
+   * that has not been given clearance, in the ship's own voice.
+   */
+  private darkDeskHtml(): string {
+    const s = this.state;
+    const pick = shipPick(s, targets(s));
+    const t = pick ? territory(pick) : null;
+    const p = t ? plan(s, t.id) : null;
+    const dir = p?.config.directive;
+    const dirText = !dir ? 'hold' : dir.kind === 'hold' ? `Hold for ${dir.waves} waves` : dir.kind === 'royal' ? 'Destroy the royal' : `Bank ${dir.science} science`;
+    return `<div class="cp-desk cp-desk-dark">
+      <div class="cp-globe"><div class="cp-dark-globe"><div class="cp-dark-ring"></div>
+        <div class="cp-dark-word">AWAITING CLEARANCE</div>
+        <div class="cp-dark-small">DIRECTIVE DESK · PROJECTION OFFLINE · FORM 2-C PENDING</div></div></div>
+      <div class="cp-brief"><div class="cp-sub">DIRECTIVE DESK — AWAITING CLEARANCE</div>
+        <p>Command assigns this asset's deployments until it records one sanctioned success. Take a territory, and the desk and the planet's projection are cleared for your own targeting.</p>
+        ${t && p ? `<div class="cp-label">NEXT DEPLOYMENT — ASSIGNED BY COMMAND</div>
+        <div class="cp-sub">${esc(t.name.toUpperCase())}${p.defence ? ' · DEFENCE' : ''}</div>
+        <p class="cp-story">${esc(t.story)}</p>
+        <div class="cp-facts">Threat tier ${t.tier} · ${t.entrances} entrance${t.entrances > 1 ? 's' : ''} · ${p.defence ? '<b>DEFENCE</b> — hold 5 waves' : dirText}</div>
+        ${p.board.length ? `<div class="cp-label">REQUISITION BOARD — pays standing</div>
+        ${p.board.map((g) => `<div class="cp-goal std"><b>${esc(g.def.title)}</b> ${esc(goalText(g))} <i>+${g.def.pays}</i></div>`).join('')}` : ''}
+        <div class="cp-facts">Starting profile: <b>${esc(PROFILES.find((x) => x.id === s.profile)?.name ?? '')}</b> (change in the Gene Bay)</div>
+        <button class="screen-btn" data-act="deploy-assigned" data-site="${t.id}">DEPLOY</button>` : ''}
+      </div></div>`;
   }
 
   private briefHtml(t: TerritoryDef): string {
@@ -404,13 +510,17 @@ export class CampaignUi {
       ? new RfabShipAi({ base: y.base, key: y.key || undefined, campaignId: campaignIdFor(this.state.seed) })
       : null);
     this.avatar?.dispose();
-    this.avatar = on[0] === 'avatar' && YOKE_AVATAR
+    // Her body is always hers (her clips are on disk); her mind on rfab.ai answers only in the avatar mode,
+    // and her voice is asked for in every mode but the scripted one (which spends nothing and needs no network).
+    this.avatar = YOKE_AVATAR
       ? new YokeAvatarUi(this.el, {
         ids: YOKE_AVATAR, base: y.base, key: y.key || undefined, muted: y.muted, rest,
-        changed: () => { if (this.room === 'ai' && !this.waiting && !this.debriefing && !this.el.classList.contains('hidden')) this.render(); },
+        mind: on[0] === 'avatar', voice: y.mode !== 'scripted',
+        changed: () => { if ((this.room === 'ai' || this.icom) && !this.waiting && !this.debriefing && !this.el.classList.contains('hidden')) this.render(); },
       })
       : null;
-    return this.avatar ?? rest;
+    if (this.icom) this.icom = { talk: this.freeTalk() };
+    return on[0] === 'avatar' && this.avatar ? this.avatar : rest;
   }
 
   /** The switch goes round: her avatar (when there is one), Kimi, the scripted YOKE. */
@@ -469,14 +579,18 @@ export class CampaignUi {
     if (!next) return '';
     const f = faction(next.faction);
     const scene = sceneNow(f, next);
+    // The three call together when the desk opens: each call has the next caller's button, so all three are heard before choosing.
+    const calls = this.state.pendingScenes.filter((p) => p.contact);
+    const more = next.contact && calls.length > 1;
+    const heard = FACTIONS.filter((x) => this.state.contacted.includes(x.id)).length;
     const buttons = next.contact
-      ? `<button class="screen-btn" data-ally="${f.id}">ALLY WITH ${esc(f.name.toUpperCase())}</button><button class="cp-room" data-act="scene-later">NOT NOW</button>`
+      ? `<button class="screen-btn" data-ally="${f.id}">ALLY WITH ${esc(f.name.toUpperCase())}</button><button class="cp-room" data-act="scene-later">${more ? 'HEAR THE NEXT CALLER ▸' : 'NOT NOW — DECIDE IN COMMS'}</button>`
       : next.choice
         ? next.choice.options.map((o) => `<button class="cp-pick" data-choice="${next.beat}|${o.id}">${esc(o.label)}</button>`).join('')
         : '<button class="screen-btn" data-act="scene-ok">CONTINUE</button>';
     return `<div class="cp-scene"><div class="cp-scene-card">
       ${this.scenePictureHtml(f.id, scene)}
-      <div class="screen-kicker">${esc(f.name.toUpperCase())}</div>
+      <div class="screen-kicker">${next.contact && heard > 1 ? `INCOMING — CALL ${heard - calls.length + 1} OF ${heard} · ` : ''}${esc(f.name.toUpperCase())}</div>
       <div class="cp-sub">${esc(scene.title.toUpperCase())}</div>
       ${scene.lines.map((l) => { const i = l.indexOf(':'); return `<p><b>${esc(l.slice(0, i))}:</b>${esc(l.slice(i + 1))}</p>`; }).join('')}
       ${next.choice ? `<div class="cp-label">${esc(next.choice.prompt)}</div>` : ''}
@@ -486,13 +600,25 @@ export class CampaignUi {
   // ------------------------------------------------------------ input
 
   private onClick(ev: MouseEvent): void {
-    const el = (ev.target as HTMLElement).closest<HTMLElement>('[data-room],[data-act],[data-site],[data-dare],[data-exp],[data-obj],[data-buy],[data-profile],[data-ally],[data-choice],[data-engage],[data-replay],[data-picture]');
+    const el = (ev.target as HTMLElement).closest<HTMLElement>('[data-act],[data-room],[data-site],[data-dare],[data-exp],[data-obj],[data-buy],[data-profile],[data-ally],[data-choice],[data-engage],[data-replay],[data-picture]');
     if (!el) return;
     const d = el.dataset;
     let s = this.state;
     // A scene's picture, clicked: as wide as the card, and back. Nothing else changes, so nothing is drawn again.
     if (d.picture) { el.classList.toggle('big'); return; }
-    if (d.room) { this.room = d.room as Room; this.talk = this.ownTalk(); this.render(); return; }
+    if (d.room) {
+      this.room = d.room as Room;
+      if (this.beckon?.room === this.room) this.beckon = null;
+      // In her own room she is there already: the intercom gives way to it (the talk goes on in it).
+      if (this.room === 'ai') this.icom = null;
+      this.talk = this.ownTalk();
+      this.render();
+      return;
+    }
+    if (d.act === 'deploy-assigned' && d.site) {
+      this.hooks.deploy({ territory: d.site, dares: [], objectors: [] });
+      return;
+    }
     if (d.site) { this.selected = d.site; this.dares = []; this.experiment = undefined; this.objectors = []; this.render(); return; }
     if (d.dare) {
       this.dares = this.dares.includes(d.dare) ? this.dares.filter((x) => x !== d.dare) : [...this.dares, d.dare].slice(-2);
@@ -525,6 +651,13 @@ export class CampaignUi {
       case 'scene-ok': case 'scene-later': this.setState(dismissScene(s)); return;
       case 'ai-later': this.room = 'desk'; this.talk = null; this.render(); return;
       case 'ai-send': void this.aiSend(); return;
+      case 'yoke-call':
+        if (this.icom) { this.icom = null; this.greeting = null; } else this.icom = { talk: this.freeTalk() };
+        this.render();
+        return;
+      case 'icom-close': this.icom = null; this.greeting = null; this.render(); return;
+      case 'icom-skip': this.avatar?.skip(); return;
+      case 'icom-send': void this.icomSend(); return;
       case 'ai-end': this.aiEnd(); return;
       case 'yoke-mode': this.setYoke({ ...this.yoke, mode: this.nextMode() }); return;
       // Her voice, on and off: the one setting that must not make her anew (she would lose her place in a sentence).
@@ -565,12 +698,31 @@ export class CampaignUi {
     this.waiting = true;
     this.render();
     try {
-      const lines = await this.ai.reply({ trigger: talk.trigger, summary: summaryFor(this.state), lore }, talk.turns, said);
+      const lines = await this.ai.reply({ trigger: talk.trigger, summary: summaryFor(this.state) + this.greetNote(), lore }, talk.turns, said);
       if (this.talk === talk) for (const l of lines) talk.turns.push({ speaker: 'YOKE', text: l });
     } finally {
       this.waiting = false;
       if (this.talk === talk || !this.talk) this.render();
     }
+  }
+
+  /** What she said to him when he came aboard, for her mind: he may be answering it. */
+  private greetNote(): string {
+    return this.greetSaid.length ? ` When he came aboard just now, YOKE greeted him with: "${this.greetSaid.join(' ')}"` : '';
+  }
+
+  /** His line to her in the intercom: her live answer (her mind on rfab.ai, or the next rung down). */
+  private async icomSend(): Promise<void> {
+    const talk = this.icom?.talk;
+    if (!talk || this.waiting) return;
+    // He speaks over her greeting: she stops and listens.
+    if (this.greeting) { this.avatar?.skip(); this.greeting = null; }
+    const input = document.getElementById('icom-input') as HTMLInputElement | null;
+    const said = input?.value.trim() ?? '';
+    if (!said) return;
+    talk.turns.push({ speaker: 'You', text: said });
+    await this.aiAsk(talk, said);
+    (document.getElementById('icom-input') as HTMLInputElement | null)?.focus();
   }
 
   private aiEnd(): void {

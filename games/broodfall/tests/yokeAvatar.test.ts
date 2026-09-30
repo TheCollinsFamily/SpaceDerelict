@@ -114,7 +114,9 @@ describe('the clip she wears', () => {
     expect(clipFor('stern', HAVE)).toBe('angry');
     expect(clipFor('concerned', HAVE)).toBe('sad');
     expect(clipFor('curious', HAVE)).toBe('surprised');
-    expect(clipFor('teasing', HAVE)).toBe('wink');
+    // Her body has its own teasing smirk (Sep 30 2026); a body without one winks.
+    expect(clipFor('teasing', HAVE)).toBe('teasing');
+    expect(clipFor('teasing', ['idle', 'wink'])).toBe('wink');
     expect(clipFor('shy', HAVE)).toBe('blushing');
     expect(clipFor('no such face', HAVE)).toBe('idle');
     expect(clipFor(null, HAVE)).toBe('idle');

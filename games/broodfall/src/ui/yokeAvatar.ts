@@ -27,6 +27,21 @@ export interface YokeAvatarOptions {
   rest: ShipAiProvider;
   /** Something the screen shows has changed (her history has come). */
   changed(): void;
+  /** Her own mind on rfab.ai answers him (the avatar mode). False: she is only a body and a voice, and `rest` answers. */
+  mind?: boolean;
+  /** Her voice may be asked for (rfab.ai's /speak). False (the scripted YOKE): she is read, not heard, and nothing goes out. */
+  voice?: boolean;
+}
+
+/** One line of a prewritten script (a greeting): her face while she says it, and what she does after it. */
+export interface ScriptLine {
+  text: string;
+  /** Clips that can show her face while and after she says it, best first. */
+  face?: readonly string[];
+  /** Clips that can act the cue after the line, best first. */
+  then?: readonly string[];
+  /** How long an expression cue is held, ms (a one-shot gesture plays to its end). */
+  hold?: number;
 }
 
 /** Her face for each kind of talk, until she has said something with a face of its own. */
@@ -36,8 +51,12 @@ const FACE: Record<string, string> = {
 };
 
 type Beat =
-  | { kind: 'say'; text: string; emotion: string | null; voice: Promise<ArrayBuffer | null>; shown: boolean }
-  | { kind: 'move'; state: string };
+  | { kind: 'say'; text: string; emotion: string | null; voice: Promise<ArrayBuffer | null>; shown: boolean; onShow?: (text: string) => void }
+  | { kind: 'move'; state: string }
+  /** An expression held for a while (a cue that is not a one-shot gesture). */
+  | { kind: 'hold'; state: string; ms: number }
+  /** The end of a script: its promise is kept here. */
+  | { kind: 'mark'; done: () => void };
 
 const esc = (t: string) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
 const wait = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
@@ -76,6 +95,11 @@ export class YokeAvatarUi implements ShipAiProvider {
   private heard = 0;
   private glance: ReturnType<typeof setTimeout> | null = null;
   private gone = false;
+  /** Cuts short what she is doing now (a click skips ahead in a script). */
+  private cut: (() => void) | null = null;
+  private skipped = false;
+  /** The element her stage stands in: the host (the AI Core) or the intercom's stage box. */
+  private place: HTMLElement | null = null;
 
   constructor(private host: HTMLElement, private o: YokeAvatarOptions) {
     this.muted = o.muted;
@@ -90,7 +114,7 @@ export class YokeAvatarUi implements ShipAiProvider {
       this.turns?.push({ speaker: 'YOKE', text });
       this.say(text, emotion, true);
     };
-    this.ladder = new YokeLadder(this.talk, o.rest);
+    this.ladder = new YokeLadder(o.mind === false ? null : this.talk, o.rest);
     this.stage = document.createElement('div');
     this.stage.className = 'cp-yoke cp-yoke-live';
     this.stage.dataset.state = '';
@@ -207,11 +231,13 @@ export class YokeAvatarUi implements ShipAiProvider {
    * element throughout, put back into the new screen: a clip that started again at every
    * sentence would be a twitch.
    */
-  mount(show: boolean, face: string): void {
+  mount(show: boolean, face: string, into?: HTMLElement | null): void {
     if (this.gone) return;
     if (!show) { this.leaveRoom(); return; }
     this.restFace = face || 'calm';
-    this.host.insertBefore(this.stage, this.host.firstChild);
+    this.place = into ?? this.host;
+    this.stage.classList.toggle('in-icom', !!into);
+    this.place.insertBefore(this.stage, this.place.firstChild);
     for (const v of this.layers) if (v.classList.contains('on') && v.paused && v.dataset.src) void v.play().catch(() => {});
     if (!this.inRoom) {
       this.inRoom = true;
@@ -240,6 +266,9 @@ export class YokeAvatarUi implements ShipAiProvider {
     this.entered = false;
     if (this.glance) clearTimeout(this.glance);
     this.hush();
+    this.cut?.();
+    // A script that was still playing is over: whoever waits for it is let go.
+    for (const b of this.beats) if (b.kind === 'mark') b.done();
     this.beats = [];
     this.playing = false;
     this.ladder.leave();
@@ -275,6 +304,39 @@ export class YokeAvatarUi implements ShipAiProvider {
     return this.said.map((t) => `<div class="yoke"><b>YOKE:</b> ${esc(t)}</div>`).join('');
   }
 
+  /**
+   * A prewritten script (a greeting): each line in her voice (when it may be had) and her
+   * talking clip, its face held after it, its cue acted before the next. No mind is asked
+   * anything. `onLine`: a line has begun (the screen keeps it). Resolves when the script has
+   * played to its end, or she was sent away.
+   */
+  play(lines: ScriptLine[], onLine: (text: string) => void): Promise<void> {
+    const pick = (names?: readonly string[]) => names?.find((n) => this.have.includes(n)) ?? names?.[names.length - 1] ?? null;
+    return new Promise<void>((done) => {
+      if (this.gone || !this.inRoom) { done(); return; }
+      for (const l of lines) {
+        this.beats.push({ kind: 'say', text: l.text, emotion: pick(l.face), voice: this.voice(l.text), shown: false, onShow: onLine });
+        const then = pick(l.then);
+        if (then) {
+          const gesture = this.body?.oneShot.includes(then);
+          this.beats.push(gesture ? { kind: 'move', state: then } : { kind: 'hold', state: then, ms: l.hold ?? 1800 });
+        }
+      }
+      this.beats.push({ kind: 'mark', done });
+      void this.drain();
+    });
+  }
+
+  /** Skip ahead: what she is saying or doing now is cut short, and the next beat begins. */
+  skip(): void {
+    this.cut?.();
+  }
+
+  /** A script or an answer is still playing. */
+  get busy(): boolean {
+    return this.playing || this.beats.length > 0;
+  }
+
   private say(text: string, emotion: string | null, late = false): void {
     this.beats.push({ kind: 'say', text, emotion, voice: this.voice(text), shown: late });
     if (late) this.line(text);
@@ -288,7 +350,7 @@ export class YokeAvatarUi implements ShipAiProvider {
   }
 
   private voice(text: string): Promise<ArrayBuffer | null> {
-    if (this.muted || this.voiceless || !this.inRoom) return Promise.resolve(null);
+    if (this.muted || this.voiceless || !this.inRoom || this.o.voice === false) return Promise.resolve(null);
     return this.link.speak(text).catch((err: unknown) => {
       // Out of tokens, or no key: there will be no voice this session, and asking again for every sentence is waste.
       if (err instanceof AvatarError && (err.status === 402 || err.sticky)) this.voiceless = true;
@@ -303,25 +365,39 @@ export class YokeAvatarUi implements ShipAiProvider {
     const beat = this.beats.shift();
     if (!beat) { this.rest(); return; }
     this.playing = true;
+    this.skipped = false;
+    const cut = new Promise<null>((r) => { this.cut = () => { this.skipped = true; r(null); }; });
     try {
-      if (beat.kind === 'move') {
+      if (beat.kind === 'mark') {
+        beat.done();
+      } else if (beat.kind === 'move') {
         const state = clipFor(beat.state, this.have, '');
-        if (state) await new Promise<void>((done) => this.show(state, this.body?.oneShot.includes(state) ?? true, done));
+        if (state) await Promise.race([new Promise<void>((done) => this.show(state, this.body?.oneShot.includes(state) ?? true, done)), cut]);
         this.shownState = '';
+      } else if (beat.kind === 'hold') {
+        const state = clipFor(beat.state, this.have, '');
+        if (state) { this.show(state); await Promise.race([wait(beat.ms), cut]); this.held = { face: state, at: Date.now() }; }
       } else {
-        const sound = await Promise.race([beat.voice, wait(9000).then(() => null)]);
+        const sound = await Promise.race([beat.voice, wait(9000).then(() => null), cut]);
         // Her words appear as she begins to say them.
-        if (!beat.shown) { this.said.push(beat.text); this.line(beat.text); }
+        if (!beat.shown) {
+          if (beat.onShow) beat.onShow(beat.text); else this.said.push(beat.text);
+          this.line(beat.text);
+        }
         const face = clipFor(beat.emotion ?? FACE[this.restFace] ?? 'calm', this.have);
         const talking = voiceClip(beat.emotion ?? FACE[this.restFace] ?? 'calm', this.have);
-        if (talking) this.show(talking);
-        if (sound && !this.muted && this.inRoom) await this.sing(sound);
-        // Read, not heard: she speaks for as long as the sentence would take to say.
-        else await wait(Math.min(6000, 900 + beat.text.length * 55));
+        if (!this.skipped) {
+          if (talking) this.show(talking);
+          if (sound && !this.muted && this.inRoom) await Promise.race([this.sing(sound), cut]);
+          // Read, not heard: she speaks for as long as the sentence would take to say.
+          else await Promise.race([wait(Math.min(7000, 900 + beat.text.length * 55)), cut]);
+        }
         if (face) this.held = { face, at: Date.now() };
       }
     } finally {
       this.playing = false;
+      this.cut = null;
+      this.hush();
     }
     if (this.gone || !this.inRoom) return;
     if (this.beats.length) void this.drain(); else this.rest();
