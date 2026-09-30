@@ -19,7 +19,10 @@ function run(seed: number, genes: string[]) {
 
 it('hobby genes over ten seeds', () => {
   const rows: string[] = [];
-  for (const g of [null, ...HOBBY_GENES.map((x) => x.id)]) {
+  // HOBBY_GENES_ONLY=none,tallow-blood … measures a subset (one process each keeps memory down).
+  const only = process.env.HOBBY_GENES_ONLY?.split(',');
+  const all = [null, ...HOBBY_GENES.map((x) => x.id)].filter((g) => !only || only.includes(g ?? 'none'));
+  for (const g of all) {
     let wins = 0;
     let cleared = 0;
     let core = 0;

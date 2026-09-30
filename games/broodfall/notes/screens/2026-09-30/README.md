@@ -45,3 +45,17 @@ Every picture here is a screenshot of the real game in a browser, taken by a scr
 | `onboard-14` to `onboard-14c` | a way to pull her up anywhere on the ship; the print-a-body scene | YOKE called up over the Gene Bay and answering (14); "print yourself a body": the scene over the ship, from the YOKE clip session's four clips (the body printed, the hand, the collapse, the hold) (14b), her line from the ship's speakers (14c) |
 | `onboard-15` to `onboard-17` | later launches open on a menu styled as the ship's own, over a looping video | the console over the viewport's loop of the infested planet (15), its settings (16), CONTINUE lands aboard and she greets him again (17) |
 | `onboard-20` | the intro can be replayed | REPLAY THE OPENING from the menu |
+
+## The campaign's four new pieces (`node tools/shot-camp.mjs`, dev server, scripted YOKE, nothing spent)
+
+| Beat | What it answers | What to look at |
+|---|---|---|
+| `camp-directives` | Empire Directives: Command's standing orders, in the Office's voice | three open orders (form, order, progress, remuneration, expected contribution), every landing site's own directive on file, the tally, the footer |
+| `camp-notebook`, `camp-notebook-pinned` | the hobby interface, built to the approved concept (r4-hobby-interface.png) | his pages in holo blue: grid paper, ring holes, doodles, checklists; the desk page and the one the fire sparked; the paperclip on the pinned page |
+| `camp-briefing` | a picture for each territory over the globe briefing | the landing site's painted establishing shot above its story |
+| `camp-run-hobby` | the pinned page runs on the board | its checklist in the goal panel, in his hand |
+| `camp-debrief` | what the page and the orders paid | HOBBY — THE RECIPE BOOK met, Grudge Marrow; a new page occurred to him; STANDING ORDERS moved (SO 7-Q fulfilled, SO 22-R issued) |
+| `camp-notebook-done` | the gene is kept and spliced | the page stamped FORM 0-U, the jar page with Grudge Marrow ticked (1/2), the new "Sky fishing" page |
+| `camp-directives-progress` | orders run across deployments; the Office notices | SO 2-K 1/3, the new order with its issued trap cage, the acknowledgement, "1 irregular use of Navy property" |
+| `camp-settings-menu`, `camp-settings-ship`, `camp-settings-run` | a real settings screen from the menu, the ship, and a paused deployment | sound, YOKE's voice, HUD style, text size, motion, flashes, caste colours, turn keys, edge scroll, zoom, starting speed, YOKE's account slot, replay, reset |
+| `camp-settings-large-safe`, `camp-run-large-safe` | text size and colour-blind-safe caste colours reach the game | the larger panels; the swatches and the WAR/SCI/ROYAL counters in the safe set; reset asking twice |
