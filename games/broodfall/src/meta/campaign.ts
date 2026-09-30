@@ -55,6 +55,8 @@ export interface CampaignState {
   greet?: GreetMoment | null;
   /** The greeting she said last (she never says the same one twice in a row). */
   lastGreeting?: string;
+  /** Greetings said once in a campaign that are not said again (the mate review). */
+  said?: string[];
 }
 
 /** `onboarding`: a campaign that unfolds (mission 1 first, the Directive Desk dark until a win); every new one the game starts is. */

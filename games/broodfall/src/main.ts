@@ -14,7 +14,10 @@ import { UndergroundScreen } from './ui/underground';
 import { CampaignUi } from './ui/campaignUi';
 import { finish, newCampaign, plan, territory as territoryDef, type CampaignState, type DeploymentPlan } from './meta/campaign';
 import { goalText, measure, type RunReport } from './meta/goals';
-import { clearCampaign, clearPending, loadCampaign, loadPending, saveCampaign, savePending } from './meta/storage';
+import { clearCampaign, clearPending, forgetEverything, introSeen, loadCampaign, loadPending, markIntroSeen, saveCampaign, savePending, veteran } from './meta/storage';
+import { FIRST_MISSION, isFirstMission, launchKind, type Launch } from './meta/onboarding';
+import { loadIntroArt, playIntro } from './ui/intro';
+import { ConsoleMenu } from './ui/menu';
 import { strainIcons, strainKey, strainLabel } from './ui/strain';
 import { GENES } from '../content/plates';
 import { BALANCE as B } from '../content/data';
@@ -27,8 +30,31 @@ import type { Directive, OrganId, RootDir, SimConfig, SimEvent, TowerFamily } fr
 const params = new URLSearchParams(location.search);
 const SEED = Number(params.get('seed') ?? Math.floor(Math.random() * 1e9));
 const AUTO = params.get('auto') === '1';
+
+/** A new campaign that unfolds (src/meta/onboarding.ts), with mission 1 waiting to be played. */
+function startOnboarding(): void {
+  clearCampaign();
+  saveCampaign(newCampaign(Math.floor(Math.random() * 1e9), { onboarding: true }));
+  savePending({ territory: FIRST_MISSION, dares: [], objectors: [] });
+}
+
+/**
+ * How the page opens when it is started with no address of its own (the launcher, `npm start`):
+ * the first launch plays the cinematic and goes straight into mission 1; a first mission left
+ * unfinished is gone back into; after that, the ship's console menu (src/meta/onboarding.ts).
+ */
+const BARE = !location.search || location.search === '?';
+let launch: Launch | null = null;
+if (BARE) {
+  const saved = loadCampaign();
+  launch = launchKind({ hasCampaign: !!saved, mission1Pending: !!saved && isFirstMission(saved), introSeen: introSeen(), veteran: veteran() });
+  if (launch === 'first') startOnboarding();
+  else if (launch === 'mission1' && !loadPending()) savePending({ territory: FIRST_MISSION, dares: [], objectors: [] });
+}
 /** 'ship' = open the ship; 'run' = play the pending campaign deployment. */
-const CAMPAIGN = params.get('campaign');
+const CAMPAIGN = params.get('campaign') ?? (launch === 'first' || launch === 'mission1' ? 'run' : null);
+/** The opening cinematic plays in front of this page: on the first launch (until it has been seen once), or asked for (?intro=1). */
+const PLAY_INTRO = params.get('intro') === '1' || ((launch === 'first' || launch === 'mission1') && !introSeen());
 const AUTOSTART = AUTO || params.get('autostart') === '1' || CAMPAIGN === 'run';
 const START_SPEED = Number(params.get('speed') ?? 1);
 /** 'top' = the old top-down board drawn as shapes; anything else = the isometric board, when its art is there. */
@@ -81,10 +107,13 @@ if (CAMPAIGN === 'run') {
     Object.assign(CFG, campaignPlan.config, { gridW: CFG.gridW, gridH: CFG.gridH, cellPx: CFG.cellPx, genes: meta.genes });
   }
 }
+/** Mission 1 (src/meta/onboarding.ts): a plain tower-defence game; nothing on its screen speaks of the ship. */
+const FIRST = !!campaignPlan?.first;
 let sim = new Sim(CFG);
 const auto = AUTO ? new Autoplayer(SEED + 1) : null;
 let speed = Number.isFinite(START_SPEED) && START_SPEED >= 0 ? START_SPEED : 1;
-let started = AUTOSTART;
+/** The run's clock is going. Behind the cinematic it waits until the film is over. */
+let started = AUTOSTART && !PLAY_INTRO;
 let debriefShown = false;
 
 /** The top-down board until boot() has loaded the art; then the isometric one, if its art is there. */
@@ -272,6 +301,8 @@ function updateHint(): void {
       : fam === 'spine' || fam === 'swamp'
         ? 'plug a street — the swarm must go through it'
         : 'place on a creeped block by a street (higher = longer reach) — or click one of your limbs to feed it in');
+  } else if (FIRST && !AUTO && coachText()) {
+    hud.setHint(coachText());
   } else {
     hud.setHint(AUTO
       ? 'demo mode: the asset is piloting itself'
@@ -279,6 +310,37 @@ function updateHint(): void {
         ? 'WAVE SETUP: place limbs — unspent war and science are lost when the wave starts'
         : 'select a limb card below, then click a creeped block by a street — the assault forms at the glowing gate');
   }
+}
+
+// ---------- mission 1: teaching by doing ----------
+
+/**
+ * Mission 1 is the player's first minutes with the game: the hint line says the ONE next thing
+ * to do, from what is on the board (Sep 30 2026, the brand-new-player pass; notes/PERSONA-
+ * ONBOARDING-2026-09-30.md). The card hand, then the CALL button, glow while they are the answer.
+ */
+function coachText(): string {
+  if (sim.outcome !== 'playing') return '';
+  const left = Math.max(0, Math.ceil(B.growthSeconds - sim.phaseElapsed));
+  if (sim.waveNumber === 0 && sim.phase === 'growth') {
+    if (!sim.towers.length) return `YOUR FIRST LIMB: pick a card below, then click a dark red block beside a street — the townsfolk march in from the glowing gate in ${left}s`;
+    if (sim.towers.length < 3) return `GOOD. Grow more limbs beside the street they will walk down (${left}s) — or CALL THE WAVE early for extra meat`;
+    return `READY? They come in ${left}s — or CALL THE WAVE now (top right) for extra meat`;
+  }
+  if (sim.waveNumber === 1 && sim.phase === 'siege') return 'Your limbs fight on their own. Every kill pays WAR meat (top left): spend it on more cards';
+  if (sim.waveNumber === 1 && sim.phase === 'growth' && sim.towers.length < 5) return `Wave cleared. Place more limbs with the meat you earned — the next wave is bigger (${left}s)`;
+  if (sim.waveNumber === 2 && sim.phase === 'siege') return 'Click one of your limbs to see it: its health, and EVOLVE when you have science';
+  return '';
+}
+let coachAt = 0;
+function coachTick(now: number): void {
+  if (!FIRST || AUTO || now - coachAt < 400) return;
+  coachAt = now;
+  const idle = selectedCard === null && armedOrgan === null && armedThrower === null && armedNode === null && armedSpread === null && !armedPlinth && !hoveringNode;
+  const text = coachText();
+  document.body.classList.toggle('coach-hand', idle && sim.phase === 'growth' && sim.waveNumber === 0 && !sim.towers.length);
+  document.body.classList.toggle('coach-call', idle && sim.phase === 'growth' && sim.waveNumber === 0 && sim.towers.length >= 3);
+  if (idle && text) hud.setHint(text);
 }
 
 // ---------- banners ----------
@@ -302,7 +364,7 @@ function handleEvents(events: SimEvent[]): void {
     if (e.kind === 'plate-drafted') banner(`DISTRICT CONSUMED: ${e.name.toUpperCase()}`);
     if ((e.kind === 'won' || e.kind === 'lost') && !AUTO) {
       endSnapshot = snapshotBoard();
-      window.setTimeout(campaignPlan ? campaignDebrief : showDebrief, 1600);
+      window.setTimeout(FIRST ? firstDebrief : campaignPlan ? campaignDebrief : showDebrief, 1600);
     }
   }
 }
@@ -390,21 +452,69 @@ const campaignHooks = {
     savePending(p);
     location.href = `${location.pathname}?campaign=run`;
   },
+  /** A new campaign unfolds like the first: mission 1, then the ship with its desk dark. */
   newCampaign() {
-    clearCampaign();
-    openShip(newCampaign(Math.floor(Math.random() * 1e9)));
+    startOnboarding();
+    location.href = `${location.pathname}?campaign=run`;
   },
   quit() {
     location.href = location.pathname;
   },
 };
 
+/** Aboard: every time he comes to the ship, YOKE greets him (src/ui/campaignUi.ts welcome). */
 function openShip(state?: CampaignState): void {
-  const s = state ?? loadCampaign() ?? newCampaign(Math.floor(Math.random() * 1e9));
+  const s = state ?? loadCampaign();
+  // No campaign, or one whose first mission is not over: the ship is not seen before mission 1.
+  if (!s || isFirstMission(s)) { if (!s) startOnboarding(); else if (!loadPending()) savePending({ territory: FIRST_MISSION, dares: [], objectors: [] }); location.href = `${location.pathname}?campaign=run`; return; }
   saveCampaign(s);
   menuEl.classList.add('hidden');
   campaignUi = new CampaignUi(s, campaignHooks);
-  campaignUi.show();
+  campaignUi.show({ greet: true });
+}
+
+/**
+ * The end of mission 1: a plain report of the game just played (its pictures, a few numbers,
+ * no forms, no standing), and one way on. The campaign takes the result at once (a reload
+ * does not lose it); CONTINUE is the first time the ship is seen.
+ */
+let firstDebriefShown = false;
+function firstDebrief(): void {
+  if (!campaignPlan || !campaignState || firstDebriefShown) return;
+  firstDebriefShown = true;
+  const won = sim.outcome === 'won';
+  const report: RunReport = {
+    won, wavesCleared: sim.wavesCleared, coreEndFrac: Math.max(0, sim.coreHp / sim.coreMaxHp),
+    scienceBanked: sim.scienceBanked, stats: sim.stats,
+  };
+  const { state } = finish(campaignState, campaignPlan, report);
+  saveCampaign(state);
+  clearPending();
+  const kills = Object.values(sim.stats.kills).reduce((a, n) => a + (n ?? 0), 0);
+  const verdict = won ? 'THE TOWN IS YOURS' : 'THE TOWN FOUGHT BACK';
+  document.getElementById('debrief-title')!.textContent = verdict;
+  const body = document.getElementById('debrief-body')!;
+  body.innerHTML = '';
+  for (const line of [
+    won ? `You held for ${sim.wavesCleared} waves. The crater is a garden now.` : `The thing that fell was burned out after ${sim.wavesCleared} wave${sim.wavesCleared === 1 ? '' : 's'}.`,
+    `Districts taken: ${sim.map.slots.filter(Boolean).length}. Limbs grown: ${sim.stats.limbsGrown}. Townsfolk eaten: ${kills}.`,
+  ]) {
+    const div = document.createElement('div');
+    div.textContent = line;
+    body.appendChild(div);
+  }
+  const btn = document.getElementById('debrief-ship')!;
+  btn.textContent = 'CONTINUE ▸';
+  debriefEl.dataset.first = won ? 'won' : 'lost';
+  debriefEl.classList.remove('hidden');
+  void debriefPictures(runPictures(won ? 'won' : 'lost', verdict,
+    won ? 'The little town is quiet now.' : 'They cheered. They should not have.',
+    [['waves held', String(sim.wavesCleared)], ['districts taken', String(sim.map.slots.filter(Boolean).length)],
+      ['limbs grown', String(sim.stats.limbsGrown)], ['townsfolk eaten', String(kills)]]))
+    .then((pics) => {
+      document.getElementById('debrief-pictures')!.replaceChildren(pics);
+      debriefEl.querySelector('.screen-card')!.classList.add('pictured');
+    }, (e) => console.warn('[debrief] no pictures', e));
 }
 
 let campaignDebriefShown = false;
@@ -440,7 +550,7 @@ function runPictures(outcome: Outcome, verdict: string, caption: string, figures
 /** The Requisition Board and the picked dares/experiment, live during a campaign run. */
 const boardEl = document.getElementById('board-goals')!;
 function updateBoardPanel(): void {
-  if (!campaignPlan) return;
+  if (!campaignPlan || FIRST) return;
   boardEl.classList.remove('hidden');
   const r: RunReport = { won: false, wavesCleared: sim.wavesCleared, coreEndFrac: sim.coreHp / sim.coreMaxHp, scienceBanked: sim.scienceBanked, stats: sim.stats };
   const line = (g: DeploymentPlan['board'][number], cls: string) => {
@@ -459,10 +569,18 @@ function updateBoardPanel(): void {
 }
 
 function setupMenu(): void {
+  const saved = loadCampaign();
+  new ConsoleMenu(saved, {
+    continueCampaign: () => openShip(),
+    newCampaign: () => campaignHooks.newCampaign(),
+    skirmish: () => document.getElementById('menu-deploy')!.click(),
+    replayIntro: () => { void loadIntroArt().then((art) => playIntro(art)); },
+    reset: () => { forgetEverything(); location.href = location.pathname; },
+  });
   const genesNote = document.getElementById('menu-genes')!;
   genesNote.textContent = meta.genes.length
-    ? `Spliced genes: ${meta.genes.map((id) => GENES.find((g) => g.id === id)?.name ?? id).join(', ')} · Standing: ${meta.standing}`
-    : 'Baseline organism. No splices on record.';
+    ? `Skirmish: spliced genes ${meta.genes.map((id) => GENES.find((g) => g.id === id)?.name ?? id).join(', ')}`
+    : '';
   wireEntrancePicker('menu-entrances');
   document.getElementById('menu-deploy')!.addEventListener('click', () => {
     // The wager applies from the NEXT board build; reload if it differs.
@@ -480,13 +598,6 @@ function setupMenu(): void {
     else showArtNotice(artFailed);
   });
   if (AUTOSTART) menuEl.classList.add('hidden');
-  const saved = loadCampaign();
-  const campaignBtn = document.getElementById('menu-campaign')!;
-  campaignBtn.textContent = saved ? 'CONTINUE CAMPAIGN' : 'CAMPAIGN';
-  document.getElementById('menu-campaign-note')!.textContent = saved
-    ? `${saved.held.length} territories held · standing ${saved.standing} · field notes ${saved.notes}`
-    : 'Land on a hostile world, take it territory by territory, and choose who to trust.';
-  campaignBtn.addEventListener('click', () => openShip());
   if (CAMPAIGN === 'ship') openShip();
 }
 
@@ -528,6 +639,8 @@ function showDebrief(): void {
 function setupScreens(): void {
   document.getElementById('debrief-ship')!.addEventListener('click', () => {
     debriefEl.classList.add('hidden');
+    // Mission 1's report: CONTINUE is the way aboard, the first time the ship is seen.
+    if (FIRST) { location.href = `${location.pathname}?campaign=ship`; return; }
     showShip();
   });
   document.getElementById('ship-deploy')!.addEventListener('click', () => {
@@ -811,20 +924,29 @@ async function boot(): Promise<void> {
   // The menu answers at once; the art loads behind it.
   setupMenu();
   setupScreens();
+  // Mission 1: nothing on its screens speaks of the ship, the Board or the globe.
+  hud.plain = FIRST;
+  under.plain = FIRST;
+  document.body.classList.toggle('first-mission', FIRST);
   // A deployment started from the address (a campaign run, a redeploy) waits behind the loading screen.
   if (started && CAMPAIGN !== 'ship') loading.show('THE DEPLOYMENT');
-  // The title screen: the key art and the emblem around the name; without them the ship in orbit.
-  void loadScreenArt().then((art) => {
-    dressLogos(art);
-    if (!art.title) return;
-    menuEl.style.setProperty('--title', `url("${art.title}")`);
-    menuEl.classList.add('title-art');
-  });
+  // The opening cinematic, in front of everything; the board loads behind it.
+  if (PLAY_INTRO) {
+    void loadIntroArt().then((art) => playIntro(art).done).then(() => {
+      markIntroSeen();
+      if (!AUTOSTART) return;
+      started = true;
+      if (!bootDone) loading.show('THE DEPLOYMENT');
+      else showArtNotice(artFailed);
+    });
+  }
+  // The emblem around the name; the menu's own background is the viewport's loop (src/ui/menu.ts).
+  void loadScreenArt().then((art) => dressLogos(art));
   void loadManifest().then((m) => {
     const file = m?.ship?.ship?.exterior;
     if (!file) return;
+    // Until the loop plays (or when it is missing): the ship in orbit.
     menuEl.style.setProperty('--exterior', `url("${new URL(artUrl(file), document.baseURI).href}")`);
-    menuEl.classList.add('ship-art');
   });
   /** A fault screen that can be passed (playing on without the pictures): boot goes on when it is. */
   const passable = (detail: string) => new Promise<void>((resolve) => {
@@ -1005,7 +1127,8 @@ async function boot(): Promise<void> {
   const callEarlyBtn = document.getElementById('call-early')! as HTMLButtonElement;
   callEarlyBtn.addEventListener('click', () => sim.issue({ kind: 'call-early' }));
 
-  if (AUTO) updateHint();
+  // The hint line says what to do from the first second (it was empty until the first action).
+  updateHint();
 
   let last = performance.now();
   let acc = 0;
@@ -1013,6 +1136,7 @@ async function boot(): Promise<void> {
     const dtReal = Math.min(0.1, (now - last) / 1000);
     last = now;
     underLifecycle();
+    if (started) coachTick(now);
     if (started && !under.open) {
       acc += dtReal * speed;
       let steps = 0;

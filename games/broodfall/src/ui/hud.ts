@@ -226,6 +226,9 @@ export class Hud {
   private lastEvolveKey = '';
   private lastDirective: 'hold' | 'royal' | 'harvest' = 'hold';
 
+  /** Mission 1 (src/meta/onboarding.ts): a plain tower-defence game; nothing on screen speaks of the ship, the Board or the globe. */
+  plain = false;
+
   constructor(cb: HudCallbacks) {
     void loadManifest().then((m) => { limbArt = m?.limbs ?? null; this.lastHandKey = ''; });
     this.cb = cb;
@@ -284,8 +287,8 @@ export class Hud {
           : 'DEPLOYMENT ORDER FULFILLED';
         this.showOverlay(
           title,
-          'Deployment complete. Asset recalled for redeployment. '
-          + 'Your service metrics have been forwarded to the Procreation Licensing Board.',
+          'Deployment complete. Asset recalled for redeployment.'
+          + (this.plain ? '' : ' Your service metrics have been forwarded to the Procreation Licensing Board.'),
         );
         continue;
       }
@@ -383,7 +386,7 @@ export class Hud {
         const got = path[i] === 'A' ? a : b;
         rows.push(`<div class="evo-done">${i + 1}${path[i]} · <b>${got.name}</b> — ${got.text}</div>`);
       } else if (i === stage && i >= cap) {
-        rows.push(`<div class="evo-later locked">${i + 1}: ${a.name} / ${b.name} — LOCKED: take the territory on the globe that unlocks it</div>`);
+        rows.push(`<div class="evo-later locked">${i + 1}: ${a.name} / ${b.name} — LOCKED${this.plain ? '' : ': take the territory on the globe that unlocks it'}</div>`);
       } else if (i === stage) {
         const price = priceText(UPGRADE_COST[i]);
         const opt = (o: typeof a, c: 'A' | 'B') => `<button class="evo-opt${affordable ? '' : ' off'}" data-choice="${c}"

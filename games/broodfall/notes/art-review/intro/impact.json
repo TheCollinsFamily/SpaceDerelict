@@ -1,0 +1,16 @@
+{
+  "id": "impact",
+  "model": "seegen:sd2-mini",
+  "seconds": 4.042,
+  "bytes": 1914459,
+  "motion": {
+    "frames": 97,
+    "medianStep": 2.93,
+    "maxStep": 5.72,
+    "maxAtFrame": 82,
+    "startToEnd": 27.31,
+    "cut": false,
+    "frozen": false
+  },
+  "drop": false
+}

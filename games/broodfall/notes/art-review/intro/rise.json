@@ -1,0 +1,16 @@
+{
+  "id": "rise",
+  "model": "seegen:sd2-mini",
+  "seconds": 4.042,
+  "bytes": 1249060,
+  "motion": {
+    "frames": 97,
+    "medianStep": 1.33,
+    "maxStep": 2.2,
+    "maxAtFrame": 74,
+    "startToEnd": 15.65,
+    "cut": false,
+    "frozen": false
+  },
+  "drop": false
+}

@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="./src/style.css" />
   <link rel="stylesheet" href="./src/ship.css" />
   <link rel="stylesheet" href="./src/screens.css" />
+  <link rel="stylesheet" href="./src/onboard.css" />
 </head>
 <body>
   <!-- The logo word's painted edge (src/screens.css .logo-word). -->
@@ -119,27 +120,33 @@
           </div>
         </div>
       </div>
-      <div id="menu" class="screen">
-        <!-- The title: the emblem is a picture, the name is TYPE (src/ui/screens.ts GAME_NAME). -->
-        <div class="logo logo-title" id="menu-logo"><div class="logo-emblem" aria-hidden="true"></div><h1 class="logo-word" data-game-name>BROODFALL</h1></div>
-        <div class="screen-card">
-          <div class="screen-kicker">TECHNOPURITAN NAVY — XENOFAUNA CLEARANCE DIVISION</div>
-          <div class="screen-title menu-card-title">FIELD ASSET BF-7</div>
-          <div class="screen-body">Field asset BF-7 is cultured and viable. The eusocial infestation below
-            resists standard clearance. Deploy the asset, grow it through the city, and complete the
-            directive. Your service metrics accrue toward your procreation license application.</div>
-          <div id="menu-genes" class="screen-note"></div>
-          <div class="ent-picker" id="menu-entrances">
-            <span class="ent-label">INSERTION PROFILE:</span>
-            <button class="ent-opt" data-ent="1">1 GATE · standard</button>
-            <button class="ent-opt" data-ent="2">2 GATES · +25% meat</button>
-            <button class="ent-opt" data-ent="3">3 GATES · +50% meat</button>
-          </div>
-          <div class="menu-btns">
-            <button id="menu-campaign" class="screen-btn">CAMPAIGN</button>
-            <button id="menu-deploy" class="screen-btn alt">QUICK DEPLOYMENT</button>
-          </div>
-          <div id="menu-campaign-note" class="screen-note"></div>
+      <!-- The main menu: one of the ship's own consoles, over the view from its viewport (src/ui/menu.ts). -->
+      <div id="menu" class="screen console-menu">
+        <video class="menu-video" muted loop playsinline preload="auto" aria-hidden="true"></video>
+        <div class="menu-glass" aria-hidden="true"></div>
+        <div class="menu-console">
+          <div class="screen-kicker">ORBITAL TENDER "MERCIFUL YOKE" — MAIN CONSOLE</div>
+          <!-- The title: the emblem is a picture, the name is TYPE (src/ui/screens.ts GAME_NAME). -->
+          <div class="logo logo-title" id="menu-logo"><div class="logo-emblem" aria-hidden="true"></div><h1 class="logo-word" data-game-name>BROODFALL</h1></div>
+          <div id="menu-campaign-note" class="menu-status"></div>
+          <nav class="menu-list">
+            <button id="menu-campaign" class="menu-item hidden">CONTINUE</button>
+            <button id="menu-new" class="menu-item">NEW CAMPAIGN</button>
+            <div class="menu-row"><button id="menu-deploy" class="menu-item">SKIRMISH</button>
+              <div class="ent-picker" id="menu-entrances">
+                <button class="ent-opt" data-ent="1" title="standard">1 GATE</button>
+                <button class="ent-opt" data-ent="2" title="+25% meat">2 GATES</button>
+                <button class="ent-opt" data-ent="3" title="+50% meat">3 GATES</button>
+              </div></div>
+            <button id="menu-intro" class="menu-item">REPLAY THE OPENING</button>
+            <button id="menu-settings" class="menu-item">SETTINGS</button>
+            <div class="menu-settings">
+              <button id="menu-voice" class="menu-item small"></button>
+              <button id="menu-yoke-mode" class="menu-item small"></button>
+              <button id="menu-reset" class="menu-item small danger"></button>
+            </div>
+          </nav>
+          <div id="menu-genes" class="menu-status small"></div>
         </div>
       </div>
       <div id="campaign" class="hidden"></div>

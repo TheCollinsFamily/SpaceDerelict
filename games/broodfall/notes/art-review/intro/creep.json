@@ -1,0 +1,16 @@
+{
+  "id": "creep",
+  "model": "seegen:sd2-mini",
+  "seconds": 4.042,
+  "bytes": 1527239,
+  "motion": {
+    "frames": 97,
+    "medianStep": 0.68,
+    "maxStep": 1.55,
+    "maxAtFrame": 1,
+    "startToEnd": 13.31,
+    "cut": false,
+    "frozen": false
+  },
+  "drop": false
+}

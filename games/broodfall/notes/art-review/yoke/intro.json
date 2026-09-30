@@ -1,0 +1,46 @@
+{
+ "state": "intro",
+ "kind": "oneShot",
+ "frames": 148,
+ "seconds": 6.17,
+ "kb": 1347,
+ "studio": {
+  "keyColour": [
+   16,
+   240,
+   32
+  ],
+  "similarityPct": 45,
+  "endFrame": 147,
+  "loop": "none",
+  "chromaKeyFrom": "C:\\Users\\Merry\\dev\\reality-fabricator\\reality-fabricator-frontend\\src\\assets\\vtuber-creator\\model-exporter.js"
+ },
+ "failed": 0,
+ "checks": [
+  {
+   "name": "it ends where it began",
+   "ok": true,
+   "value": 3.49
+  },
+  {
+   "name": "she moves",
+   "ok": true,
+   "value": 13.17
+  },
+  {
+   "name": "no green on her outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "she fills the stage as a person does",
+   "ok": true,
+   "value": "24-26% of it"
+  },
+  {
+   "name": "she stays under the top edge",
+   "ok": true,
+   "value": "0.0 px a frame on row 0"
+  }
+ ]
+}

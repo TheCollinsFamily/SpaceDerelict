@@ -15,7 +15,7 @@
  *   5. Later launches: the ship's own console menu.
  */
 import { HOME, TERRITORIES } from '../../content/campaign';
-import { GREETINGS, type GreetMoment, type Greeting } from '../../content/greetings';
+import { EARTH_NEWS_FALLBACK, GREETINGS, earthNewsFrom, type GreetMoment, type Greeting } from '../../content/greetings';
 import type { CampaignState, Debrief } from './campaign';
 
 /** Where a campaign is in its unfolding (older saves have none: everything is open for them). */
@@ -102,4 +102,53 @@ export function launchKind(o: { hasCampaign: boolean; mission1Pending: boolean; 
   if (o.hasCampaign) return o.mission1Pending ? 'mission1' : 'menu';
   if (o.introSeen || o.veteran) return 'menu';
   return 'first';
+}
+
+/** Greetings for a return where nothing weighty happened: the mate review may take their place, once. */
+const ORDINARY: GreetMoment[] = ['won', 'lost', 'lost-locked', 'back', 'defended', 'fell'];
+
+/**
+ * What she greets him with as he comes aboard now: what the last deployment left (s.greet), or
+ * 'back'. Once, early (the first ordinary return after the first mission's greeting), the mate
+ * review takes its place (Collins, Sep 30 2026: an early queued greeting; it points at the data
+ * pad in his quarters, where the candidate's profile is).
+ */
+export function momentNow(s: CampaignState): GreetMoment {
+  const m = s.greet ?? 'back';
+  if (s.onboard && s.onboard.mission1 !== 'pending' && s.lastGreeting && !(s.said ?? []).includes('mate-review') && ORDINARY.includes(m)) return 'mate-review';
+  return m;
+}
+
+/**
+ * News from Earth may be told on an ordinary return once the early beats have all played (the
+ * first mission's greeting, the mate review, the desk opening); on a save from before the
+ * unfolding, on any ordinary return.
+ */
+export function earthNewsOpen(s: CampaignState): boolean {
+  if (!s.onboard) return true;
+  return s.onboard.mission1 !== 'pending' && s.onboard.deskOpen && (s.said ?? []).includes('mate-review');
+}
+
+/** One return in three, once it is open, she tells him the news from Earth instead. */
+export const EARTH_NEWS_EVERY = 3;
+
+/**
+ * The greeting for coming aboard now: the moment's (momentNow), or on an ordinary return, now
+ * and then a line of news from Earth out of the lore book (`lore`: its text). Never the line she
+ * said last time.
+ */
+export function greetingFor(s: CampaignState, lore = ''): { moment: GreetMoment; greeting: Greeting } {
+  const moment = momentNow(s);
+  if (ORDINARY.includes(moment) && earthNewsOpen(s)) {
+    let h = (s.seed ^ Math.imul(s.deployments + 7, 2246822519)) >>> 0;
+    h = Math.imul(h ^ (h >>> 13), 3266489917) >>> 0;
+    if (h % EARTH_NEWS_EVERY === 0) {
+      const pool = earthNewsFrom(lore);
+      const news = pool.length ? pool : EARTH_NEWS_FALLBACK;
+      let i = (h >>> 8) % news.length;
+      if (`earth-${i}` === s.lastGreeting && news.length > 1) i = (i + 1) % news.length;
+      return { moment, greeting: { id: `earth-${i}`, moment, beats: [{ say: news[i], face: 'teasing', then: 'wink' }] } };
+    }
+  }
+  return { moment, greeting: pickGreeting(moment, s.seed, s.deployments, s.lastGreeting) };
 }

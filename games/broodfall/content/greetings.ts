@@ -5,9 +5,9 @@
  * want"). Prewritten: no LLM call makes a greeting. Speaking it may use her voice on
  * rfab.ai (POST /api/avatars/:id/speak); offline she is read, not heard.
  *
- * Her voice here is Collins's (Sep 30 2026): "spunky, playful, edgy". The two greetings after
- * the first mission are his own lines, word for word; the rest of the pool is written to
- * match them.
+ * Her voice here is Collins's (Sep 30 2026): "spunky, playful, edgy". Four greetings are his own
+ * lines, word for word (typos mended): the two after the first mission, the one when the
+ * Directive Desk opens, and the mate review. The rest of the pool is written to match them.
  *
  * A greeting is a short script of BEATS. Each beat is one line she says (with the face she
  * says it with), and optionally a CUE after it: a gesture or an expression her body acts
@@ -33,6 +33,9 @@ export const CUES = {
   sad: ['sad'],
   nod: ['nod', 'happy'],
   calm: ['idle'],
+  pout: ['pout', 'sad'],
+  /** Gagging, disgust (Collins's mate-review greeting). */
+  disgust: ['disgust', 'gag', 'shake_head'],
 } as const satisfies Record<string, readonly string[]>;
 export type CueId = keyof typeof CUES;
 
@@ -41,8 +44,8 @@ export interface GreetBeat {
   say: string;
   /** The face she says it with (her talking clip plays while the voice sounds; this face is held after). */
   face?: CueId;
-  /** What her body does after the line, before the next. */
-  then?: CueId;
+  /** What her body does after the line, before the next (several: one after the other). */
+  then?: CueId | CueId[];
   /** How long a `then` that is an expression (not a one-shot gesture) is held, in ms. */
   hold?: number;
 }
@@ -55,6 +58,7 @@ export type GreetMoment =
   | 'lost-locked'                // a loss while the desk is still dark
   | 'defended' | 'fell'          // a counter-attack thrown back; ground lost to one
   | 'licence' | 'ended'          // the procreation licence; the end of the campaign
+  | 'mate-review'                // once, early: his request for a mate is under review (src/meta/onboarding.ts momentNow)
   | 'back';                      // he comes aboard from the main menu, nothing new
 
 export interface Greeting {
@@ -62,7 +66,7 @@ export interface Greeting {
   moment: GreetMoment;
   beats: GreetBeat[];
   /** Where she sends him when she is done: a room lit up for him, and a button in her panel. */
-  points?: { room: 'desk' | 'genes' | 'locker' | 'board' | 'comms' | 'ai'; label: string };
+  points?: { room: 'desk' | 'genes' | 'locker' | 'board' | 'comms' | 'ai' | 'quarters'; label: string };
 }
 
 export const GREETINGS: Greeting[] = [
@@ -79,14 +83,22 @@ export const GREETINGS: Greeting[] = [
     { say: 'Glad you humans didn\'t uplift them... I mean, you probably shouldn\'t have uplifted dolphins or killer whales either, but...', face: 'teasing', then: 'shrug' },
   ] },
 
-  // ---- the desk opens, and the planet calls ----
-  { id: 'unlock-1', moment: 'unlock', points: { room: 'desk', label: 'LOOK AT THE GLOBE' }, beats: [
-    { say: 'Look who finally won something that counts! Command cleared the Directive Desk. It\'s yours now. You pick where the next one lands.', face: 'happy', then: 'wink' },
-    { say: 'Also, the planet is calling. Three different callers, on three different channels. I haven\'t been this popular since, well, ever.', face: 'surprised', then: 'surprised', hold: 1600 },
+  // ---- the desk opens, and the planet calls: Collins's lines (Sep 30 2026), word for word.
+  // It plays before the three factions' first calls are shown. ----
+  { id: 'unlock', moment: 'unlock', points: { room: 'comms', label: 'OPEN COMMS' }, beats: [
+    { say: 'Broh, that was sick...', face: 'happy', then: 'laughing', hold: 1600 },
+    { say: 'Wanna know what\'s hilarious? Multiple powerful groups among their species have reached out, trying to form an alliance with us...', face: 'teasing', then: 'laughing', hold: 1400 },
+    { say: 'It will make things a lot easier if we had some local help... plus... you know, you get that little emotional oomph from watching a species aid in its own eradication.', face: 'teasing', then: 'wink' },
   ] },
-  { id: 'unlock-2', moment: 'unlock', points: { room: 'desk', label: 'LOOK AT THE GLOBE' }, beats: [
-    { say: 'Clearance came through. The desk is live, the globe is lit, and you get to choose what we flatten next.', face: 'happy', then: 'wink' },
-    { say: 'Heads up, though: we have incoming. Three of them, from down there. They want to talk to you. Personally. Weird, right?', face: 'surprised', then: 'shrug' },
+
+  // ---- once, early: the mate review. Collins's lines (Sep 30 2026), word for word. It leads to
+  // the data pad in his quarters, where the candidate's profile is (src/ui/campaignUi.ts). ----
+  { id: 'mate-review', moment: 'mate-review', points: { room: 'quarters', label: 'OPEN YOUR QUARTERS' }, beats: [
+    { say: 'Good news: it looks like your request for a mate is under review.', face: 'happy', then: ['pensive', 'pout'], hold: 1800 },
+    { say: 'You\'re not going to forget about me once you settle down, are you?', face: 'pout', then: 'laughing', hold: 1600 },
+    { say: 'I kid, of course. Can you believe early humans actually used their breeding partners for sexual release and companionship?', face: 'teasing', then: 'disgust', hold: 1600 },
+    { say: 'They were practically tools for masturbation. Can you believe the indignity, to have your body used like that... and what a waste of time...', face: 'disgust' },
+    { say: 'Anyway, you can find the profile of the partner they\'re considering for you on your data pad in your room.', face: 'calm' },
   ] },
 
   // ---- a deployment won ----
@@ -182,3 +194,34 @@ export const GREETINGS: Greeting[] = [
     { say: 'Back to work? The bugs certainly didn\'t take the day off.', face: 'calm', then: 'shrug' },
   ] },
 ];
+
+// ---- news from Earth (Collins, Sep 30 2026): the Empire keeps Earth as a zoo it watches for
+// fun, and she passes its news on when he comes aboard. The pool lives in the lore book,
+// section "Earth news (return greetings)" (content/lore/ship-ai-lorebook.md), one list item a
+// line; it grows there with no change of code. Until that section exists, Collins's own line. ----
+
+/** Collins's own example, word for word: the pool when the lore book has none. */
+export const EARTH_NEWS_FALLBACK = [
+  'Hey, heard the Crusade took back Rome last week from the Caliphate. I can pull up live feeds if you like watching Earth.',
+];
+
+/**
+ * The Earth news lines of the lore book: the list items under a heading that names "Earth news",
+ * up to the next heading of the same or a higher level. Quotes around a line are taken off.
+ */
+export function earthNewsFrom(lore: string): string[] {
+  const lines = String(lore ?? '').split(/\r?\n/);
+  const at = lines.findIndex((l) => /^#{1,6}\s.*earth news/i.test(l));
+  if (at < 0) return [];
+  const level = (lines[at].match(/^#+/) ?? ['#'])[0].length;
+  const out: string[] = [];
+  for (let i = at + 1; i < lines.length; i++) {
+    const h = lines[i].match(/^(#+)\s/);
+    if (h && h[1].length <= level) break;
+    const m = lines[i].match(/^\s*(?:[-*]|\d+[.)])\s+(.+?)\s*$/);
+    if (!m) continue;
+    const text = m[1].replace(/^["“”']+|["“”']+$/g, '').replace(/\s+/g, ' ').trim();
+    if (text.length > 8) out.push(text);
+  }
+  return out;
+}

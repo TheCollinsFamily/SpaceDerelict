@@ -1,0 +1,57 @@
+{
+  "shots": [
+    {
+      "id": "sky",
+      "video": "intro/sky.mp4",
+      "poster": "intro/sky.webp",
+      "seconds": 4.042
+    },
+    {
+      "id": "lookup",
+      "video": "intro/lookup.mp4",
+      "poster": "intro/lookup.webp",
+      "seconds": 4.042
+    },
+    {
+      "id": "fall",
+      "video": "intro/fall.mp4",
+      "poster": "intro/fall.webp",
+      "seconds": 4.042
+    },
+    {
+      "id": "impact",
+      "video": "intro/impact.mp4",
+      "poster": "intro/impact.webp",
+      "seconds": 4.042
+    },
+    {
+      "id": "crater",
+      "video": "intro/crater.mp4",
+      "poster": "intro/crater.webp",
+      "seconds": 4.042
+    },
+    {
+      "id": "creep",
+      "video": "intro/creep.mp4",
+      "poster": "intro/creep.webp",
+      "seconds": 4.042
+    },
+    {
+      "id": "militia",
+      "video": "intro/militia.mp4",
+      "poster": "intro/militia.webp",
+      "seconds": 4
+    },
+    {
+      "id": "rise",
+      "video": "intro/rise.mp4",
+      "poster": "intro/rise.webp",
+      "seconds": 4.042
+    }
+  ],
+  "menu": {
+    "video": "intro/menu.mp4",
+    "poster": "intro/menu.webp",
+    "seconds": 4
+  }
+}

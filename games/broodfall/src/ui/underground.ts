@@ -109,6 +109,9 @@ export class UndergroundScreen {
   /** Organs and deposits that were there when the stage opened do not scan in again. */
   private settled = false;
 
+  /** Mission 1: no word of the ship (a locked organ is only locked). */
+  plain = false;
+
   constructor(private getSim: () => Sim, private onClose: () => void) {
     // The scan wraps the board: a depth ruler down its left and a scan line sweeping down it.
     const box = document.createElement('div');
@@ -281,7 +284,7 @@ export class UndergroundScreen {
         <b><span class="og" style="color:${COLOR[id]}">${GLYPH[id]}</span> ${d.name}</b>
         ${this.shapeSvg(id)}${this.scan?.tiles[id] ? `<img class="pal-tile" alt="" src="${this.scan.tiles[id]}" style="--acc:${GLOW[id] ?? COLOR[id]}">` : ""}
         <span>${what}</span>
-        <i>${locked ? 'LOCKED — get it in the Gene Bay on the ship' : built ? `GROWN · LV ${lvl} — click it to level` : this.priceText(d.cost)}${d.signature ? ` · shares ${VERB[d.signature] ?? d.signature}` : ''}</i>
+        <i>${locked ? (this.plain ? 'LOCKED' : 'LOCKED — get it in the Gene Bay on the ship') : built ? `GROWN · LV ${lvl} — click it to level` : this.priceText(d.cost)}${d.signature ? ` · shares ${VERB[d.signature] ?? d.signature}` : ''}</i>
       </button>`;
     }).join('')}</div>`;
     this.palette.innerHTML = section('THEMES — unlock limbs, power them by level', ORGAN_DEFS.filter((d) => d.kind === 'theme').map((d) => d.id))

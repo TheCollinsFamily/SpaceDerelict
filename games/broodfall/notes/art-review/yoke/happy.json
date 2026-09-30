@@ -1,19 +1,31 @@
 {
  "state": "happy",
- "frames": 84,
- "seconds": 3.5,
- "kb": 656,
- "failed": 0,
+ "kind": "loop",
+ "frames": 192,
+ "seconds": 8,
+ "kb": 2617,
+ "studio": {
+  "keyColour": [
+   16,
+   240,
+   32
+  ],
+  "similarityPct": 43,
+  "endFrame": 96,
+  "loop": "pingpong",
+  "chromaKeyFrom": "C:\\Users\\Merry\\dev\\reality-fabricator\\reality-fabricator-frontend\\src\\assets\\vtuber-creator\\model-exporter.js"
+ },
+ "failed": 1,
  "checks": [
   {
-   "name": "the loop closes",
+   "name": "the turn comes back (Ping-Pong closes the loop anyway)",
    "ok": true,
-   "value": 1.34
+   "value": 13.97
   },
   {
    "name": "she moves",
    "ok": true,
-   "value": 0.173
+   "value": 28.99
   },
   {
    "name": "no green on her outline",
@@ -23,17 +35,12 @@
   {
    "name": "she fills the stage as a person does",
    "ok": true,
-   "value": "25% of it"
+   "value": "24-25% of it"
   },
   {
-   "name": "her hair is the colour of her still",
-   "ok": true,
-   "value": "gains 1.09, 1.094, 1.081"
-  },
-  {
-   "name": "light to load (under 900 KB)",
-   "ok": true,
-   "value": "656 KB"
+   "name": "she stays under the top edge",
+   "ok": false,
+   "value": "18.9 px a frame on row 0"
   }
  ]
 }

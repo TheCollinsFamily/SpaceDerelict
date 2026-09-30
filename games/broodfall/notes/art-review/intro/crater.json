@@ -1,0 +1,16 @@
+{
+  "id": "crater",
+  "model": "seegen:sd2-mini",
+  "seconds": 4.042,
+  "bytes": 1432101,
+  "motion": {
+    "frames": 97,
+    "medianStep": 0.48,
+    "maxStep": 1.7,
+    "maxAtFrame": 1,
+    "startToEnd": 12.6,
+    "cut": false,
+    "frozen": false
+  },
+  "drop": false
+}

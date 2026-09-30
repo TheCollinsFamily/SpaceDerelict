@@ -1,0 +1,16 @@
+{
+  "id": "militia",
+  "model": "seegen:sd2-mini",
+  "seconds": 4,
+  "bytes": 1905834,
+  "motion": {
+    "frames": 96,
+    "medianStep": 3.22,
+    "maxStep": 8.16,
+    "maxAtFrame": 25,
+    "startToEnd": 26.74,
+    "cut": false,
+    "frozen": false
+  },
+  "drop": true
+}

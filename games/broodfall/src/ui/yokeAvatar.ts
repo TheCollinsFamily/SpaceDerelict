@@ -38,10 +38,8 @@ export interface ScriptLine {
   text: string;
   /** Clips that can show her face while and after she says it, best first. */
   face?: readonly string[];
-  /** Clips that can act the cue after the line, best first. */
-  then?: readonly string[];
-  /** How long an expression cue is held, ms (a one-shot gesture plays to its end). */
-  hold?: number;
+  /** Cues acted after the line, one after the other: the clips that can act each (best first), and how long an expression is held (ms; a one-shot gesture plays to its end). */
+  after?: Array<{ clips: readonly string[]; hold?: number }>;
 }
 
 /** Her face for each kind of talk, until she has said something with a face of its own. */
@@ -316,10 +314,11 @@ export class YokeAvatarUi implements ShipAiProvider {
       if (this.gone || !this.inRoom) { done(); return; }
       for (const l of lines) {
         this.beats.push({ kind: 'say', text: l.text, emotion: pick(l.face), voice: this.voice(l.text), shown: false, onShow: onLine });
-        const then = pick(l.then);
-        if (then) {
+        for (const cue of l.after ?? []) {
+          const then = pick(cue.clips);
+          if (!then) continue;
           const gesture = this.body?.oneShot.includes(then);
-          this.beats.push(gesture ? { kind: 'move', state: then } : { kind: 'hold', state: then, ms: l.hold ?? 1800 });
+          this.beats.push(gesture ? { kind: 'move', state: then } : { kind: 'hold', state: then, ms: cue.hold ?? 1800 });
         }
       }
       this.beats.push({ kind: 'mark', done });

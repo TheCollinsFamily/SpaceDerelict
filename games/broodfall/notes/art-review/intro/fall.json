@@ -1,0 +1,16 @@
+{
+  "id": "fall",
+  "model": "seegen:sd2-mini",
+  "seconds": 4.042,
+  "bytes": 1623809,
+  "motion": {
+    "frames": 97,
+    "medianStep": 1.87,
+    "maxStep": 14.08,
+    "maxAtFrame": 96,
+    "startToEnd": 50.12,
+    "cut": true,
+    "frozen": false
+  },
+  "drop": false
+}

@@ -14,7 +14,7 @@ import { FallbackShipAi, RfabShipAi, campaignIdFor, type AiTrigger, type AiTurn,
 import { loadYoke, saveCampaign, saveYoke, type PendingDeployment, type YokeSettings } from '../meta/storage';
 import { YOKE_AVATAR, rungs, type YokeMode } from '../meta/yokeAvatar';
 import { YokeAvatarUi, type ScriptLine, type YokeTalk } from './yokeAvatar';
-import { deskOpen, pickGreeting, shipPick } from '../meta/onboarding';
+import { deskOpen, greetingFor, shipPick } from '../meta/onboarding';
 import { CUES, type Greeting } from '../../content/greetings';
 import {
   DARES, EXPERIMENTS, FACTIONS, LICENCE_STANDING, LINEAGES, PROFILES, TERRITORIES,
@@ -26,8 +26,10 @@ import type { EnemyKind, OrganId } from '../sim/types';
 import lore from '../../content/lore/ship-ai-lorebook.md?raw';
 import { artUrl, loadManifest, type ShipArt } from '../render/art';
 import { GLOBE, Globe, projectSite, type Zone } from './globe';
+import { loadIntroArt, type IntroArt } from './intro';
+import { PARTNER } from '../../content/partner';
 
-type Room = 'desk' | 'genes' | 'locker' | 'board' | 'comms' | 'ai';
+type Room = 'desk' | 'genes' | 'locker' | 'board' | 'comms' | 'ai' | 'quarters';
 /** The ship's pictures as this screen reads them: with the scene pictures, which the manifest lists as `scenes`. */
 type ShipPictures = ShipArt & { scenes?: Record<string, string> };
 type Pending = CampaignState['pendingScenes'][number];
@@ -91,6 +93,8 @@ export class CampaignUi {
   private beckon: Greeting['points'] | null = null;
   /** The last thing she said to him unprompted, for her mind to know when he answers it. */
   private greetSaid: string[] = [];
+  /** His quarters' picture and the partner candidate's portrait (public/art/intro/, not the manifest). */
+  private intro: IntroArt | null = null;
 
   constructor(private state: CampaignState, private hooks: { deploy(p: PendingDeployment): void; newCampaign(): void; quit(): void }) {
     this.ai = this.buildAi();
@@ -107,6 +111,10 @@ export class CampaignUi {
       this.art = art;
       if (this.el.classList.contains('hidden')) return;
       if (this.debriefing) this.dress(); else this.render();
+    });
+    void loadIntroArt().then((a) => {
+      this.intro = a;
+      if (this.room === 'quarters' && !this.debriefing && !this.el.classList.contains('hidden')) this.render();
     });
     this.el.addEventListener('click', (ev) => this.onClick(ev));
     this.el.addEventListener('pointerdown', (ev) => {
@@ -140,7 +148,8 @@ export class CampaignUi {
   /** Her greeting for this return: prewritten, chosen by what just happened, never the same twice in a row. */
   private welcome(): void {
     const s = structuredClone(this.state);
-    const g = pickGreeting(s.greet ?? 'back', s.seed, s.deployments, s.lastGreeting);
+    const { moment, greeting: g } = greetingFor(s, lore);
+    if (moment === 'mate-review') s.said = [...(s.said ?? []), 'mate-review'];
     s.greet = null;
     s.lastGreeting = g.id;
     this.state = s;
@@ -149,7 +158,10 @@ export class CampaignUi {
     this.greetSaid = [];
     this.icom = { talk: this.freeTalk() };
     this.render();
-    const lines: ScriptLine[] = g.beats.map((b) => ({ text: b.say, face: b.face ? CUES[b.face] : undefined, then: b.then ? CUES[b.then] : undefined, hold: b.hold }));
+    const lines: ScriptLine[] = g.beats.map((b) => ({
+      text: b.say, face: b.face ? CUES[b.face] : undefined,
+      after: (Array.isArray(b.then) ? b.then : b.then ? [b.then] : []).map((c) => ({ clips: CUES[c], hold: b.hold })),
+    }));
     const said = (text: string) => { this.greetSaid.push(text); this.icom?.talk.turns.push({ speaker: 'YOKE', text }); };
     const over = () => {
       if (this.greeting !== g) return;
@@ -189,6 +201,7 @@ export class CampaignUi {
     const rooms: Array<[Room, string]> = [
       ['desk', 'Directive Desk'], ['genes', 'Gene Bay'], ['locker', 'Specimen Locker'],
       ['board', 'Procreation Board'], ['comms', 'Comms'], ['ai', `AI Core${s.ai.queue.length ? ` (${s.ai.queue.length})` : ''}`],
+      ['quarters', 'Quarters'],
     ];
     const fac = s.faction ? faction(s.faction).name : 'no allies';
     const face = this.room !== 'ai' ? '' : this.talk ? (this.waiting ? 'thinking' : YOKE_FACE[this.talk.trigger] ?? 'calm') : s.ai.queue.length ? 'curious' : 'calm';
@@ -248,7 +261,9 @@ export class CampaignUi {
     this.el.dataset.in = this.room;
     // A picture named in a style variable is looked for beside the STYLESHEET that uses it, so the whole address is given.
     const at = (file: string | undefined) => (file ? `url("${new URL(artUrl(file), document.baseURI).href}")` : 'none');
-    this.el.style.setProperty('--room', at(art?.rooms[this.room]));
+    this.el.style.setProperty('--room', this.room === 'quarters'
+      ? (this.intro?.quarters ? `url("${this.intro.quarters}")` : at(art?.rooms.board))
+      : at(art?.rooms[this.room as Exclude<Room, 'quarters'>]));
     this.el.style.setProperty('--sketches', at(art?.sketches?.atlas));
     this.el.style.setProperty('--yoke', at(art?.yoke?.atlas));
     const canvas = this.el.querySelector<HTMLCanvasElement>('canvas.globe-map');
@@ -305,6 +320,7 @@ export class CampaignUi {
       case 'board': return this.boardHtml();
       case 'comms': return this.commsHtml();
       case 'ai': return this.aiHtml();
+      case 'quarters': return this.quartersHtml();
     }
   }
 
@@ -435,6 +451,26 @@ export class CampaignUi {
       <div class="cp-picks">${warKinds.map((k) => `<button class="cp-pick${this.objectors.includes(k) ? ' on' : ''}" data-obj="${k}">${k}</button>`).join('')}</div>` : ''}
       <div class="cp-facts">Starting profile: <b>${esc(PROFILES.find((x) => x.id === s.profile)?.name ?? '')}</b> (change in the Gene Bay) · wave intel: <b>${p.config.waveIntel === 'full' ? 'the Translator' : 'hidden'}</b>${perks.includes('sleepers1') ? ' · Sleepers in their waves' : ''}${perks.includes('volunteers1') ? ' · Volunteers' : ''}</div>
       <button class="screen-btn" data-act="deploy" ${open ? '' : 'disabled'}>${open ? (p.defence ? 'DEFEND' : 'DEPLOY') : held ? 'ALREADY YOURS' : 'NOT REACHABLE YET'}</button>`;
+  }
+
+  /**
+   * His quarters: the bunk, his desk things, and his data pad. Once his request for a mate is
+   * under review (YOKE tells him so: the mate-review greeting), the pad holds the candidate
+   * partner's file, in the Board's own voice (content/partner.ts).
+   */
+  private quartersHtml(): string {
+    const s = this.state;
+    const review = (s.said ?? []).includes('mate-review') || s.licence;
+    const pad = review
+      ? `<div class="cp-pad"><div class="cp-pad-head">DATA PAD · PROCREATION LICENSING BOARD</div>
+          <div class="cp-label">${esc(PARTNER.form)} — STATUS: ${s.licence ? 'APPROVED' : 'UNDER REVIEW'}</div>
+          ${this.intro?.partner ? `<img class="cp-pad-pic" src="${this.intro.partner}" alt="The candidate's file photograph">` : ''}
+          ${PARTNER.fields.map(([k, v]) => `<div class="cp-pad-row"><span>${esc(k)}</span><b>${esc(v)}</b></div>`).join('')}
+          <p class="cp-pad-quote">${esc(PARTNER.statement)}</p>
+          <p class="cp-note">${esc(PARTNER.boardNote.replace('{standing}', String(Math.min(s.standing, LICENCE_STANDING))).replace('{need}', String(LICENCE_STANDING)))}</p></div>`
+      : `<div class="cp-pad"><div class="cp-pad-head">DATA PAD</div><p class="cp-note">No new correspondence. Licence application on file; standing ${s.standing} / ${LICENCE_STANDING}.</p></div>`;
+    return `<div class="cp-cols cp-quarters"><div>${pad}</div>
+      <div><div class="cp-label">PERSONAL LOG</div><div class="cp-log">${s.log.slice(-6).reverse().map((l) => `<div>${esc(l)}</div>`).join('')}</div></div></div>`;
   }
 
   private genesHtml(): string {

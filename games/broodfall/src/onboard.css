@@ -1,0 +1,149 @@
+/* ---------- how the game unfolds (Sep 30 2026; src/meta/onboarding.ts) ----------
+   The opening cinematic (src/ui/intro.ts), the ship-console main menu (src/ui/menu.ts), and on
+   the ship: YOKE's intercom, the dark Directive Desk, the room she points at, his quarters. */
+
+/* ---- the opening cinematic: a 1950s monster film's trailer, titles set in type ---- */
+#intro { position: fixed; inset: 0; z-index: 60; background: #000; cursor: pointer; transition: opacity 0.45s; }
+#intro.leaving { opacity: 0; pointer-events: none; }
+.intro-film { position: absolute; inset: 0; overflow: hidden; }
+.intro-film::before, .intro-film::after {
+  /* the letterbox of a wide film */
+  content: ''; position: absolute; left: 0; right: 0; height: 7vh; background: #000; z-index: 3;
+}
+.intro-film::before { top: 0; }
+.intro-film::after { bottom: 0; }
+.intro-v { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.35s linear; background: #000; }
+.intro-v.on { opacity: 1; }
+.intro-title {
+  position: absolute; left: 0; right: 0; top: 13vh; z-index: 4; text-align: center; pointer-events: none;
+  opacity: 0; transform: translateY(8px) scale(0.98); transition: opacity 0.5s, transform 0.9s ease-out;
+}
+.intro-title.on { opacity: 1; transform: none; }
+.intro-big {
+  font-family: Impact, Haettenschweiler, "Arial Narrow Bold", "Arial Black", sans-serif;
+  font-size: clamp(34px, 6.2vw, 92px); letter-spacing: 0.05em; line-height: 1; color: #ffe9a8;
+  text-shadow: 0 0 2px #2a0b00, 3px 4px 0 #3a0e04, 0 0 30px rgba(255, 120, 40, 0.55);
+  transform: skewY(-3deg);
+}
+.intro-small {
+  margin-top: 1.1vh; font-family: Georgia, "Times New Roman", serif; font-style: italic;
+  font-size: clamp(16px, 2vw, 30px); color: #f7e6c4; text-shadow: 0 2px 6px #000;
+}
+.intro-last { position: absolute; inset: 0; z-index: 4; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3vh; opacity: 0; transition: opacity 0.8s; background: radial-gradient(ellipse at 50% 55%, #3a0c05 0%, #0a0302 60%, #000 100%); }
+.intro-last.on { opacity: 1; }
+.intro-word { font-size: clamp(64px, 12vw, 190px) !important; }
+.intro-tag { font-family: Georgia, "Times New Roman", serif; font-style: italic; font-size: clamp(16px, 2.2vw, 30px); color: #f2dcc0; letter-spacing: 0.04em; }
+.intro-grain {
+  position: absolute; inset: -50%; z-index: 5; pointer-events: none; opacity: 0.16; mix-blend-mode: overlay;
+  background-image: repeating-radial-gradient(circle at 17% 32%, #fff 0 1px, transparent 1px 3px), repeating-radial-gradient(circle at 71% 64%, #000 0 1px, transparent 1px 4px);
+  animation: intro-grain 0.5s steps(3) infinite;
+}
+@keyframes intro-grain { 33% { transform: translate(-3%, 2%); } 66% { transform: translate(2%, -3%); } }
+.intro-film { box-shadow: inset 0 0 18vh rgba(0, 0, 0, 0.8); }
+.intro-skip {
+  position: absolute; right: 22px; bottom: calc(7vh + 14px); z-index: 6; font: 12px/1 Bahnschrift, "Segoe UI", sans-serif; letter-spacing: 3px;
+  background: rgba(0, 0, 0, 0.45); color: rgba(255, 255, 255, 0.8); border: 1px solid rgba(255, 255, 255, 0.35); padding: 8px 12px; cursor: pointer;
+}
+.intro-skip span { opacity: 0.6; margin-left: 6px; }
+.intro-skip:hover { color: #fff; border-color: #fff; }
+
+/* ---- the main menu: one of the ship's consoles over the view from its viewport ---- */
+#menu.console-menu {
+  position: fixed; inset: 0; z-index: 30; display: block; overflow: hidden;
+  background: #050607 var(--exterior) center / cover no-repeat;
+  font-family: Bahnschrift, "DIN Alternate", "Segoe UI", Arial, sans-serif; color: #e9eef0;
+}
+#menu.console-menu.hidden { display: none; }
+body:has(#menu.console-menu:not(.hidden)) #topbar, body:has(#menu.console-menu:not(.hidden)) #botbar { visibility: hidden; }
+.menu-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 1.2s; }
+#menu.has-video .menu-video { opacity: 1; }
+.menu-glass {
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(4, 5, 6, 0.9) 0%, rgba(4, 5, 6, 0.72) 30%, rgba(4, 5, 6, 0.1) 58%, rgba(4, 5, 6, 0) 100%),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 3px);
+}
+.menu-console {
+  position: absolute; left: clamp(16px, 5vw, 80px); top: 50%; transform: translateY(-50%); width: min(520px, calc(100% - 32px));
+  padding: 22px 26px 18px; background: rgba(7, 9, 11, 0.62); border: 1px solid rgba(235, 245, 248, 0.3);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6), 0 0 60px rgba(0, 0, 0, 0.55); backdrop-filter: blur(3px);
+}
+.menu-console::before { content: ''; position: absolute; left: -1px; top: 18px; bottom: 18px; width: 3px; background: #e9eef0; }
+.menu-console .screen-kicker { letter-spacing: 3px; color: rgba(233, 238, 240, 0.62); }
+.menu-console .screen-kicker::before { content: '⚙  '; color: #e9eef0; }
+#menu.console-menu .logo-title { --emblem-size: clamp(110px, 16vh, 170px); --word-size: clamp(52px, 8vh, 92px); margin: 8px 0 4px -10px; }
+.menu-status { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 11px; letter-spacing: 2px; color: rgba(233, 238, 240, 0.62); margin: 2px 0 14px; min-height: 14px; }
+.menu-status b { color: #fff; font-weight: 600; }
+.menu-status.small { margin: 10px 0 0; font-size: 10px; }
+.menu-list { display: flex; flex-direction: column; gap: 6px; }
+.menu-item {
+  display: block; width: 100%; text-align: left; font: 300 18px/1 inherit; font-family: inherit; letter-spacing: 5px; text-transform: uppercase;
+  padding: 11px 14px; color: #e9eef0; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(235, 245, 248, 0.22); cursor: pointer;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+.menu-item:hover, .menu-item:focus-visible { background: #e9eef0; color: #07090b; border-color: #fff; outline: none; }
+.menu-item.hidden { display: none; }
+#menu-campaign { border-color: rgba(235, 245, 248, 0.6); font-weight: 400; }
+.menu-item.small { font-size: 12px; letter-spacing: 3px; padding: 8px 12px; }
+.menu-item.danger:hover { background: #ff8a70; border-color: #ff8a70; }
+.menu-row { display: flex; gap: 6px; align-items: stretch; }
+.menu-row .menu-item { flex: 1; }
+#menu.console-menu .ent-picker { margin: 0; flex-wrap: nowrap; gap: 4px; }
+#menu.console-menu .ent-opt { background: none; color: #e9eef0; border: 1px solid rgba(235, 245, 248, 0.3); font: 11px Bahnschrift, "Segoe UI", sans-serif; letter-spacing: 1px; padding: 0 8px; cursor: pointer; }
+#menu.console-menu .ent-opt.on { background: #e9eef0; color: #07090b; }
+.menu-settings { display: none; flex-direction: column; gap: 4px; padding-left: 18px; border-left: 1px solid rgba(235, 245, 248, 0.2); }
+#menu.settings-open .menu-settings { display: flex; }
+@media (max-height: 640px) { #menu.console-menu .logo-title { --emblem-size: 90px; --word-size: 46px; } .menu-item { padding: 8px 12px; } }
+
+/* ---- on the ship: YOKE's intercom, over whatever room he is in ---- */
+.cp-room.cp-call { margin-left: 10px; border-color: var(--holo, #9fe8f5) !important; color: var(--holo, #9fe8f5) !important; }
+.cp-room.cp-call.on { background: var(--holo, #9fe8f5) !important; color: #07090b !important; }
+.cp-room.beckon { position: relative; border-color: #fff !important; animation: cp-beckon 1.2s ease-in-out infinite; }
+.cp-room.beckon::after { content: '●'; position: absolute; top: -6px; right: -4px; font-size: 10px; color: var(--holo, #9fe8f5); }
+@keyframes cp-beckon { 50% { box-shadow: 0 0 0 2px rgba(159, 232, 245, 0.8), 0 0 18px rgba(159, 232, 245, 0.6); } }
+.cp-room[data-dark="1"]:not(.on) { opacity: 0.55; }
+.cp-icom {
+  position: absolute; left: 18px; bottom: 18px; z-index: 4; width: min(470px, calc(100% - 36px)); max-height: calc(100% - 36px);
+  display: flex; flex-direction: column; background: rgba(7, 9, 11, 0.86); border: 1px solid rgba(159, 232, 245, 0.55);
+  box-shadow: 0 0 30px rgba(120, 220, 245, 0.18), 0 0 0 1px rgba(0, 0, 0, 0.7); color: #e9eef0;
+  font-family: Bahnschrift, "DIN Alternate", "Segoe UI", Arial, sans-serif;
+}
+.cp-icom-stage { position: relative; height: min(300px, 34vh); overflow: hidden; border-bottom: 1px solid rgba(159, 232, 245, 0.3); background: radial-gradient(ellipse at 50% 100%, rgba(120, 220, 245, 0.16), transparent 70%); }
+.cp-yoke.cp-yoke-live.in-icom { position: absolute; left: 50%; bottom: 0; width: auto; height: 100%; aspect-ratio: 1; z-index: 0; animation: none; transform: translateX(-50%); }
+.cp-icom-panel { padding: 8px 12px 12px; display: flex; flex-direction: column; gap: 6px; min-height: 0; }
+.cp-icom-head { display: flex; align-items: center; justify-content: space-between; }
+.cp-icom-head .screen-kicker { color: var(--holo, #9fe8f5); letter-spacing: 3px; }
+.cp-icom-x { background: none; border: 1px solid rgba(235, 245, 248, 0.3); color: #e9eef0; cursor: pointer; font-size: 12px; padding: 3px 8px; }
+.cp-icom .cp-talk { max-height: 150px; min-height: 58px; overflow: auto; background: rgba(0, 0, 0, 0.35); border: 1px solid rgba(235, 245, 248, 0.22); color: #dff6fb; font-family: inherit; font-size: 13px; padding: 8px 10px; }
+.cp-icom.greeting .cp-talk { cursor: pointer; }
+.cp-icom .cp-talk .yoke b { color: var(--holo, #9fe8f5); }
+.cp-icom .cp-talk .you { color: #fff; }
+.cp-icom-hint { font-size: 10px; letter-spacing: 2px; color: rgba(233, 238, 240, 0.5); text-transform: uppercase; }
+.cp-icom-go { align-self: flex-start; animation: cp-beckon 1.2s ease-in-out infinite; }
+.cp-icom .cp-say input { background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(235, 245, 248, 0.3); color: #e9eef0; }
+.cp-icom .cp-say button { background: #e9eef0; color: #07090b; border: none; letter-spacing: 2px; font-family: inherit; }
+.cp-icom .cp-mute { background: none !important; color: #e9eef0 !important; border: 1px solid rgba(235, 245, 248, 0.3) !important; }
+#campaign .cp-scene { z-index: 6; }
+
+/* ---- the Directive Desk before Command clears it: dark, not greyed out ---- */
+.cp-desk-dark .cp-globe { display: flex; align-items: center; justify-content: center; min-height: 360px; }
+.cp-dark-globe { position: relative; width: 340px; max-width: 100%; aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
+.cp-dark-ring { position: absolute; inset: 8%; border-radius: 50%; border: 1px dashed rgba(159, 232, 245, 0.22); box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.8); animation: cp-dark-hum 4s ease-in-out infinite; }
+@keyframes cp-dark-hum { 50% { border-color: rgba(159, 232, 245, 0.4); } }
+.cp-dark-word { position: relative; font-weight: 300; letter-spacing: 7px; font-size: 18px; color: rgba(233, 238, 240, 0.8); text-align: center; }
+.cp-dark-small { position: relative; font-size: 9px; letter-spacing: 2px; color: rgba(233, 238, 240, 0.45); text-align: center; }
+#campaign:not(.ship-art) .cp-dark-word { color: #ddd; }
+
+/* ---- his quarters: the data pad ---- */
+.cp-pad { background: rgba(10, 13, 16, 0.85); border: 1px solid rgba(235, 245, 248, 0.35); border-radius: 10px; padding: 12px 14px; box-shadow: inset 0 0 0 4px rgba(0, 0, 0, 0.5); }
+.cp-pad-head { font-size: 10px; letter-spacing: 3px; color: rgba(233, 238, 240, 0.55); margin-bottom: 6px; }
+.cp-pad-pic { float: right; width: 128px; height: 128px; object-fit: cover; margin: 0 0 8px 12px; border: 1px solid rgba(235, 245, 248, 0.4); filter: grayscale(0.25); }
+.cp-pad-row { display: grid; grid-template-columns: 150px 1fr; gap: 8px; font-size: 12px; padding: 3px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+.cp-pad-row span { color: rgba(233, 238, 240, 0.6); }
+.cp-pad-quote { clear: both; font-style: italic; font-size: 12px; margin: 10px 0 6px; }
+
+/* ---- mission 1: the thing to do next glows (src/main.ts coachTick) ---- */
+body.coach-hand #hand .card { animation: coach-glow 1.4s ease-in-out infinite; }
+body.coach-call #call-early { animation: coach-glow 1.4s ease-in-out infinite; }
+@keyframes coach-glow { 50% { box-shadow: 0 0 0 3px #ffd36a, 0 0 22px rgba(255, 190, 70, 0.9); } }
+body.first-mission #hint { font-size: 14px; }

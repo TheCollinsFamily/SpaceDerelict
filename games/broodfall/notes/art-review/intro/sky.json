@@ -1,0 +1,16 @@
+{
+  "id": "sky",
+  "model": "seegen:sd2-mini",
+  "seconds": 4.042,
+  "bytes": 989474,
+  "motion": {
+    "frames": 97,
+    "medianStep": 0.77,
+    "maxStep": 1.03,
+    "maxAtFrame": 50,
+    "startToEnd": 19.29,
+    "cut": false,
+    "frozen": false
+  },
+  "drop": false
+}
