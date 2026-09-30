@@ -187,3 +187,18 @@ body.first-mission #hint { font-size: 14px; }
 .bc-skip { position: absolute; right: 10px; bottom: 6px; font-size: 9px; letter-spacing: 2px; color: rgba(233, 238, 240, 0.4); text-transform: uppercase; }
 /* Once the viewport's loop is there, the ship in orbit behind it would show through its fade. */
 #menu.console-menu.has-video { background-image: none; }
+
+/* ---- the opening film's BEGIN card (src/ui/intro.ts): shown only while sound cannot play yet ---- */
+.intro-begin { display: none; }
+#intro.begin .intro-begin {
+  position: absolute; inset: 0; z-index: 7; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2vh;
+  background: radial-gradient(ellipse at 50% 50%, rgba(0, 0, 0, 0.15) 0%, rgba(0, 0, 0, 0.7) 80%);
+}
+#intro.begin .intro-begin button {
+  font-family: "Rockwell Extra Bold", "Rockwell", Georgia, serif; font-size: clamp(28px, 4.4vw, 64px); letter-spacing: 0.08em;
+  color: #ffe9b8; background: transparent; border: 2px solid rgba(255, 233, 184, 0.75); padding: 0.35em 1.1em; cursor: pointer;
+  text-shadow: 0 0 2px #2a0b00, 3px 4px 0 #3a0e04, 0 0 30px rgba(255, 120, 40, 0.55);
+}
+#intro.begin .intro-begin button:hover { border-color: #fff; color: #fff; }
+#intro.begin .intro-begin small { font: 12px/1 Bahnschrift, "Segoe UI", sans-serif; letter-spacing: 3px; color: rgba(255, 255, 255, 0.7); text-transform: uppercase; }
+#intro.begin .intro-skip { display: none; }

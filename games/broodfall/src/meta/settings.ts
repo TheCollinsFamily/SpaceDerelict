@@ -34,6 +34,8 @@ export interface Settings {
   reduceFlashes: boolean;
   /** The three caste currencies' colours: the game's own, or a set told apart by every kind of colour vision. */
   casteTints: CasteTints;
+  /** Silence while the window is not in front (another window or tab has it). */
+  muteUnfocused: boolean;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -47,6 +49,7 @@ export const DEFAULT_SETTINGS: Settings = {
   reduceMotion: false,
   reduceFlashes: false,
   casteTints: 'standard',
+  muteUnfocused: true,
 };
 
 /**
@@ -88,6 +91,7 @@ export function settingsFrom(raw: unknown): Settings {
     reduceMotion: r.reduceMotion === true,
     reduceFlashes: r.reduceFlashes === true,
     casteTints: r.casteTints === 'safe' ? 'safe' : 'standard',
+    muteUnfocused: r.muteUnfocused !== false,
   };
 }
 

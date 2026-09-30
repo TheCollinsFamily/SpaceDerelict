@@ -10,6 +10,7 @@
  */
 import { artUrl } from '../render/art';
 import { gain } from '../meta/storage';
+import { duckFor } from '../audio/engine';
 import { ScriptedShipAi, type AiContext, type AiTrigger, type AiTurn, type ShipAiProvider, type ShipAiStatus } from '../meta/shipAi';
 import type { CutKind, PlayerLink } from '../meta/yokePlayer';
 import {
@@ -447,6 +448,7 @@ export class YokeAvatarUi implements ShipAiProvider {
       const url = URL.createObjectURL(new Blob([bytes], { type: 'audio/mpeg' }));
       const a = new Audio(url);
       a.volume = gain('voice'); // the settings' master × voices
+      duckFor(a, 'yoke'); // the music and the effects duck while she speaks
       this.sound = a;
       this.soundUrl = url;
       let over = false;

@@ -25,6 +25,13 @@ How to read this file:
   newsreel voice. The insects' own words are played completely straight (DESIGN.md, "Tone stack",
   register 3: the insect layer is "only ever glimpsed through cracks, completely straight"). The
   satire is in the mirror, never in a wink.
+- **The reveal (Collins, Sep 30 2026).** Everyone the asset absorbs is digitised into an artificial
+  heaven shaped to her desires; that is the only reason for a broodfall. It is not said on any route
+  until the end. Where it touches this people: the Faith's afterlife (5.2, 5.3, 5.8), the
+  Delegation's teaching (6.3), the Institute's upload (6.3), what they know (9.1), the end (12).
+  Everything written about them should stay true under it: the insects' own words (a clipping's
+  "dead militiaman") say what they believe, and the narrating voice never confirms that the
+  absorbed are gone for good.
 
 ---
 
@@ -347,6 +354,18 @@ life, owns the Temple Cities, and sounds the bells.
   story.
 - **The body is good; waste is sin.** Clutch, labour and the dead are all returned to the comb.
   (The mirror: the Technopuritans find the body disgusting; the Faith finds it holy.)
+- **The Comb Above (the afterlife; Collins, Sep 30 2026: it is "exactly what their religion
+  claims happens after death"; the name and imagery PROPOSAL).** At the Hour, those the sky takes
+  up "shall not be lost, but kept, each daughter in the cell of her longing": every soul wakes in
+  a hall made to what she most wanted, a worker in a queen's hall, a queen in her first clutch.
+  **It is true.** The asset's absorption is digitisation into exactly such a heaven (`docs/UNIVERSE.md`,
+  "What a broodfall is for"; `content/lore/empire.md`, section 12a). The Book was accurate about
+  the apocalypse and about the heaven after. The player is not told until the end of the Faithful's
+  route; before then every line of it reads as coincidence, or as the Voice's "that is how prophecy
+  works".
+- **The one thing the Book got wrong (PROPOSAL):** it says the unfaithful stay sealed. The archive
+  takes everyone the asset absorbs, believers and empties alike. This is half of why the Faithful
+  are furious when they arrive (section 5.8).
 
 ### 5.3 The Book (canon, `content/campaign.ts`; the reading of it PROPOSAL)
 **The Book**, formally *the Book of the Seven Cities*. What is known of it from the campaign:
@@ -359,6 +378,13 @@ and the terraces shall fall silent"; the Seventh City falls last, and when it fa
 - The Book is read aloud a chapter a night, is argued over by commentaries on commentaries (the
   character reads "a pamphlet about the commentaries"), and is never wrong, because it is read
   again until it is right.
+- **Chapter twenty (canon since Sep 30 2026, `content/campaign.ts`):** the Comb Above, "where every
+  sister taken up wakes in the hall she dreamed of". The verse the Voice quotes in "Fulfil the
+  Prophecies": "And those the sky takes up shall not be lost, but kept, each daughter in the cell
+  of her longing." The character says "That one is correct", which the player reads as a joke. It
+  is not one. **The Technopuritan reading (Collins):** a scripture this accurate is not luck; God
+  likely steered it toward what would really happen, as the corpus says God revealed to each
+  people what it could hold (TP 12.0).
 
 ### 5.4 The two confessions
 The Faith is one religion in two confessions who share the Book and damn each other's reading
@@ -418,6 +444,15 @@ generations. The Visitor is the answer to their prayers, and their militants and
 Sleepers and Garrison perks) are drawn from the Bell's regiments and the censer-bearers. Their
 route ends with an artificial messiah; "to their knowledge everything worked out".
 
+**Then they arrive (the reveal; Collins, Sep 30 2026).** The Voice wakes in the Comb Above with
+his congregation, exactly as chapter twenty said, and is **angry**, which confuses the character:
+it is precisely what their religion claims happens after death, so most of their texts were
+accurate and predictive about the apocalypse and about the heaven after. The Technopuritan
+character believes God likely influenced their scripture to make it accurate, and does not much
+care if they complain: he can always delete the whole congregation from the archive if they want.
+Why the Voice is angry, as he says it (**PROPOSAL**): the heaven was made by a machine and not by
+the First Mother, the empties got in too.
+
 ---
 
 ## 6. Unbelief: the rise of atheism (Collins: "atheism has started becoming common")
@@ -448,10 +483,34 @@ clever:
   and a few dowagers who took a vow not to lay. To them the Visitor is the planet's immune
   response to a species that should not have hatched. (Collins: "they never stop believing you are
   good"; the believers who have left the Faith turn out to believe harder than anyone.)
+  **Reconciled with Collins, Sep 30 2026 ("the peacenik group ... they are a Buddhist-like
+  group"): they are both.** Their unbelief is in the First Mother, not in everything: they hold a
+  non-theistic, Buddhist-like teaching (**PROPOSAL:** they call it **the Stilling**) that life is a
+  wheel of wanting, hatching, having and wanting again, that the wanting is the suffering, and that
+  the only mercy is for the wheel to stop. Antinatalism is that teaching applied to a species in
+  which queens lay hundreds: stop the laying and the wheel stops. "Sentimental atheists" and
+  "antinatalists" both still describe them; the Stilling is what they are atheists and
+  antinatalists *for*. Their newsletter *Gentle Endings* and their answer to a child ("where the
+  Visitor takes the ones it eats: nowhere, and never again", `content/campaign.ts`) are the
+  Stilling's hope.
+  **The reveal lands on them hardest (Collins):** they are mortified, because the archive means
+  the cycle of suffering will never stop. A heaven cut to each one's desires is the wheel itself,
+  made endless and comfortable. They beg to be switched off. The character shrugs: it goes against
+  ethical protocols to shut the whole thing down over their complaints.
 - **The Institute for Long-Term Hive Flourishing** (canon): the clever unbelievers. Rationalist,
   expected-value, afraid of their own AI; funded by spare princes and House money. **PROPOSAL:**
   the Institute's founding essay is an argument that the Faith is false and the Houses are
   inefficient, written by a prince of a House, paid for by the House.
+  **The upload (Collins, Sep 30 2026).** The character offers to upload their people into a
+  virtual world where they live forever; the Institute sends cryo-lab subjects "for upload", and
+  he "fed them to the asset" (canon). The Institute, and the player with them, take the upload
+  for a lie: the Institute plays along to buy time (the Director's wink, "Great bit. Keep it
+  running", `content/campaign.ts`). It was never a lie: feeding a mind to the asset IS the upload.
+  At the end the Director wakes inside the archive, shocked that the character really was
+  digitising everything; the moment it is no longer their choice, the Institute starts to
+  bargain (admin rights, a body back outside, an expected-value table), and the character is not
+  having it and cuts comms. The ending's line "The upload chamber is a door into the asset's gut.
+  Did not mention this. He did not ask." stays true word for word.
 
 The Faith sees both as the same heresy wearing different clothes. It is not wrong.
 
@@ -585,6 +644,11 @@ and, at a royal event, a queen.
 - **The Host** has found the ship on radar and has nothing that reaches it.
 - **Nobody** on the planet has heard the word "Technopuritan". If they did, they would recognise
   it at once as a religion.
+- **Nobody** on the planet guesses where the absorbed go (Collins, Sep 30 2026), though each
+  faction is closer than it knows: the Faithful's Book describes the archive, the Delegation's
+  whole teaching is about what comes after, and the Institute was told outright and decided it was
+  a lie. None of them asks why a civilisation that crosses the stars would need a meteor to empty
+  a planet. The character finds this baffling (`docs/UNIVERSE.md`, "What a broodfall is for").
 
 ### 9.2 How the Empire sees them (canon)
 Xenofauna, outside the covenant of the Sons of Man, filed as a *test*; their clearance is pest
@@ -693,6 +757,7 @@ middle. Details **PROPOSAL** except the quoted territory stories.
 | **The middle** | The Foundry Plains make more armies. University Hill's finest minds gather "all very interested in you". A royal comes out of the Ossuary Coast. The Pilgrim Road is empty "this year". Couriers carry stolen limbs to a campus nobody admits exists. The counter-attacks (the pushback) are the Host trying to take its cities back. |
 | **Late** | The Institute shuts down the planet's AI labs "for safety". The Delegation publishes a colour-coded schedule for its own species' end. The Voice names the Seventh City. There are fewer lights on the night side each week; YOKE counts them. |
 | **The end** | One of three: the last delegate switches off the lights in the Assembly Hall; the Awaited One comes out of the Seventh City "a little stiffly" and the Voice weeps that everything worked out; or the Director presides over the rubble and goes last into an upload chamber that is a door into the asset's gut. Queen's Hollow is the planet's heart in every ending: "whoever holds it holds the planet". |
+| **After the end** | Everyone the asset took wakes in the archive, each in a world cut to her desires (the reveal, Collins). The Delegation spell out one last letter in a meadow of the archive, begging to be switched off; the Voice broadcasts from the Comb Above that they were deceived; the Director calls from inside to bargain, and is cut off. |
 
 ---
 

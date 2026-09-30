@@ -26,6 +26,10 @@
  */
 import { artUrl } from '../render/art';
 import { loadSettings } from '../meta/storage';
+import { sfx } from '../audio/engine';
+
+/** When the pad meets the desk in each clip (seconds; read off the baked corners: the frame its motion falls away). */
+const PAD_CONTACT: Record<PadOutcome, number> = { won: 2.3, lost: 2.25 };
 
 export type PadOutcome = 'won' | 'lost';
 type Pt = [number, number];
@@ -260,6 +264,7 @@ export async function playPadOutro(outcome: PadOutcome): Promise<void> {
   layout(0);
   try {
     await video.play();
+    sfx(outcome === 'won' ? 'pad-won' : 'pad-lost', { delay: PAD_CONTACT[outcome] });
   } catch (e) {
     console.warn('[pad] could not play', e);
     end();

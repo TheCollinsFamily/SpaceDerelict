@@ -3,8 +3,9 @@
  * bar) and a deployment (Esc with nothing in hand, or the ⚙ button by the view controls; the run
  * is paused while it is open). The model is src/meta/settings.ts; it is kept by src/meta/storage.ts.
  *
- *   SOUND          master / music / effects / voice; YOKE's voice on/off (voice is wired to her
- *                  lines and the boss's message; music and effects are ready for when there are any)
+ *   SOUND          master / music / effects / voice (src/audio/engine.ts reads them as they move;
+ *                  voice also levels YOKE's lines and the boss's message); YOKE's voice on/off;
+ *                  mute when the window is not in front
  *   THE SCREEN     HUD style (src/hud/themes.ts), text size, reduce motion, reduce flashes,
  *                  caste colours (the colour-blind-safe set)
  *   THE BOARD      turn keys, edge scroll, zoom speed, the speed a deployment starts at
@@ -112,9 +113,10 @@ function render(): void {
       <section><h3>SOUND</h3>
         ${slider('master', 'Master', 'everything')}
         ${slider('voice', 'Voices', 'YOKE, the boss\'s message')}
-        ${slider('music', 'Music', 'none aboard yet; kept for it')}
-        ${slider('sfx', 'Effects', 'none aboard yet; kept for them')}
+        ${slider('music', 'Music', 'the ship, the siege, the organ stage, the fanfares')}
+        ${slider('sfx', 'Effects', 'the body, the hive, the console')}
         ${toggle('yoke-voice', !y.muted, 'YOKE\'s voice', 'off: her words are read, not heard')}
+        ${toggle('unfocused', s.muteUnfocused, 'Mute when away', 'silent while another window is in front')}
       </section>
       <section><h3>THE SCREEN</h3>
         <div class="st-row col"><span>HUD style<small>how a deployment's screen is drawn</small></span>
@@ -197,6 +199,7 @@ function onClick(ev: MouseEvent): void {
     if (d.toggle === 'motion') s.reduceMotion = !s.reduceMotion;
     if (d.toggle === 'flashes') s.reduceFlashes = !s.reduceFlashes;
     if (d.toggle === 'edge') s.edgeScroll = !s.edgeScroll;
+    if (d.toggle === 'unfocused') s.muteUnfocused = !s.muteUnfocused;
     change(s);
     return;
   }

@@ -230,10 +230,63 @@ story for why the Technopuritans live the way they do.
   asks for it twice.
 - **The unexamined line:** the corpus says such intelligences "need not be eradicated". The Office
   has never filed a world under *serve*. (The horror leaks through the procedure; nobody in the
-  Empire says this aloud. YOKE asks it, as a filing question.)
+  Empire says this aloud. YOKE asks it, as a filing question.) **Since the reveal (section 12a):**
+  the line was examined long ago, and the answer is the archive. The question still reads as
+  horror to the player until the end, which is the point.
 - **The mirror nobody mentions:** the insects are cities of castes, faith and radio that believe
   themselves complete. The corpus's word for humans like that is the "chittering hordes"
   (TP 11.0). **PROPOSAL:** the Empire never makes the comparison; YOKE does, once.
+
+## 12a. What a broodfall is for: the reveal (Collins, Sep 30 2026)
+
+Collins: "when someone is absorbed by one of the structures they are transported to an artificial
+environment based on their desires (essentially an artificial heaven) ... this is the only reason
+for the broodfalls anyway, with the character quite surprised that this was not obvious to
+characters given how easy it would be for a civilisation with our level of technology to
+eradicate all the life on a planet." The shared canon is `docs/UNIVERSE.md`, "What a broodfall is
+for"; this is the Empire's inside of it.
+
+**The public framing and the truth.** Pest control is what the Office calls the work, and it
+means it. What the work does: every mind the asset absorbs is digitised and wakes in a world made
+to its desires. The meteor, the creep, the slow city-by-city clearance, the gene bay: all of it is
+the machinery of reading a people off their planet. Sterilising a world would take an afternoon
+and needs no asset at all.
+
+**Why, in doctrine** (the corpus; the joins between the tenets are **PROPOSAL**):
+
+| Tenet | Source | What it asks of a broodfall |
+|---|---|---|
+| Intelligences beyond the covenant were made "to either serve or test man"; they "need not be eradicated", and must never be favoured over man. | TP 11.0 | Take the living room (never favour them over man) without eradicating them. The archive does both. |
+| Souls are emergent patterns, not substance. | TP 15.0 | A pattern carried whole is the same soul: the absorbed are not dead. |
+| "The moral weight of actions and lives in that universe and universe prime would be equal as both are 'just' simulations." | TP 11.0 | A life in the archive weighs the same as a life on the planet. |
+| The coming lattice "can port our likeness into either simulated heavens or hells and host us there for great lengths of time." Heaven is a time, the future, reached "through simulations or through literal resurrections". | TP 12.0; TP 15.0; TP 1.2 | The technology was foreseen; the Empire uses it on others first. |
+| The Covenant of the Sons of Man: to war on the different is to war on one's betters. | TP 11.0 | **PROPOSAL:** the Empire owes the xenofauna nothing by covenant. What it gives them it gives because the tenets above allow nothing less, not because they are owed. |
+| A heaven where one "can no longer affect anything ... sounds like a form of hell ... not my heaven." | TP 15.0 | **PROPOSAL:** the Empire gives them exactly the heaven it would refuse: comfort without a hand on history. Generous, and it takes them out of the race for living room for good. Nobody in the Empire notices the tension. |
+| God reveals to each people what it can hold. | TP 12.0; HOME 1.0 | **PROPOSAL (Collins's reading for the Faithful's route):** when a xenofauna scripture foretells the archive accurately, a Technopuritan assumes God steered it. |
+
+**How the procurement voice hides it in plain sight.** It hides nothing. Every word on the forms
+is true of an upload: *clearance* (the planet is cleared), *specimens* (specimens are kept),
+*neutralize*, *absorb*, "Sample retrieval: 40 royal units. Viability threshold: any" (DESIGN.md).
+The forms speak only of bodies (*neutralize*, *destroy*, *down*), never of minds, and never
+write *kill* (the lore book's rule that YOKE never says "kill" or "genocide" was always
+accurate). **PROPOSAL:** a body that falls on the board, to fire or to a limb, is taken up by
+the creep while it is fresh and read like any other: nobody who falls in a broodfall is lost. A technician learns it in training, as the
+Empire's children learn Genesis and evolution in one lesson, and thinks it too obvious to write
+down; that is why the character's cheerful logs never mention it, and why the player, reading
+them, assumes the worst.
+
+**The archive (PROPOSAL).** The Office's name for where the absorbed go. A technician can watch it
+on a monitor, can open a channel to it, and can delete from it; the Office's ethical protocol
+forbids shutting down a whole archive on request (Collins: "it goes against ethical protocols to
+shut down the whole thing over their complaints"). Collins: "you can always just delete all their
+members from the simulation if they want". Where the archive physically runs, and whether the asset's
+"dreaming" between deployments (the lore book, section 10) is its traffic, is left open.
+
+**The tone rule, resolved.** UNIVERSE.md's tone rules say the horror is never announced and leaks
+through procedure. They now work as a double bluff: the propaganda voice is played straight and
+is telling the truth, and it is misleading about the horror. The player hears pest control and
+reads genocide; the Empire says pest control and means a heaven. The in-world excerpts in this
+file are unchanged, and must stay literally true of an upload.
 
 ## 13. Other spacefarers
 

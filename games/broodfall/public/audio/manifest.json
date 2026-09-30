@@ -1,0 +1,25 @@
+{
+ "v": 1,
+ "music": {},
+ "sfx": {
+  "fire-spit": {
+   "files": [
+    "audio/fire-spit-1.ogg",
+    "audio/fire-spit-2.ogg",
+    "audio/fire-spit-3.ogg",
+    "audio/fire-spit-4.ogg",
+    "audio/fire-spit-5.ogg",
+    "audio/fire-spit-6.ogg"
+   ],
+   "seconds": [
+    0.377,
+    0.936,
+    0.567,
+    0.546,
+    0.476,
+    0.607
+   ]
+  }
+ },
+ "voice": {}
+}

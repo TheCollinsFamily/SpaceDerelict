@@ -30,6 +30,9 @@ import { debriefPictures, type Outcome } from './ui/debrief';
 import { padOutroPlaying, playPadOutro, preloadPadOutro } from './ui/padOutro';
 import { platePicture } from './render/platePreview';
 import type { Directive, OrganId, RootDir, SimConfig, SimEvent, TowerFamily } from './sim/types';
+import { initAudio, setScene } from './audio/engine';
+import { boardEvents, installConsoleSounds, watchBoard } from './audio/gameSounds';
+import { sceneOf, type MusicScene } from './audio/cues';
 
 const params = new URLSearchParams(location.search);
 const SEED = Number(params.get('seed') ?? Math.floor(Math.random() * 1e9));
@@ -367,6 +370,7 @@ function banner(text: string): void {
 
 function handleEvents(events: SimEvent[]): void {
   hud.pushEvents(events);
+  if (started && !AUTO) boardEvents(events);
   for (const e of events) {
     if (e.kind === 'wave-start') banner(`WAVE ${e.wave} — ASSAULT FROM ${e.sides}`);
     if (e.kind === 'wave-start' && !AUTO) preloadPadOutro(); // the end's clip, fetched while the run is on
@@ -959,8 +963,25 @@ function underLifecycle(): void {
 
 // ---------- boot ----------
 
+/** The music follows the screen in front (src/audio/cues.ts sceneOf): film, menu, ship, the run's build / assault, the organ stage, the end. */
+let musicScene: MusicScene = 'silent';
+function musicTick(): void {
+  const shown = (el: HTMLElement | null) => !!el && !el.classList.contains('hidden');
+  musicScene = sceneOf({
+    film: !!document.getElementById('intro'),
+    menu: shown(menuEl),
+    ship: shown(shipEl) || (!!campaignUi && shown(document.getElementById('campaign'))),
+    started, organ: under.open, outcome: sim.outcome, siege: sim.phase === 'siege', enemies: sim.enemies.length,
+  }, musicScene);
+  setScene(musicScene);
+}
+
 async function boot(): Promise<void> {
   const mount = document.getElementById('stage')!;
+  // Sound (src/audio/): the buses, the first-click unlock, every console button, the music's scenes.
+  initAudio();
+  installConsoleSounds();
+  window.setInterval(musicTick, 200);
   applyName();
   // The menu answers at once; the art loads behind it.
   setupMenu();
@@ -1203,6 +1224,7 @@ async function boot(): Promise<void> {
       }
     }
     handleEvents(sim.takeEvents());
+    if (started && !AUTO) watchBoard(sim);
     hud.update(sim);
     under.update();
     updateBoardPanel();

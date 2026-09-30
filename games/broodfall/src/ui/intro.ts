@@ -7,10 +7,17 @@
  * little tower-defence game the player thinks he has downloaded.
  *
  * It plays once, on the first launch, and can be replayed from the menu. A click, Esc, Enter or
- * Space skips it. It is silent: a browser will not play sound on a page nobody has clicked yet,
- * and the first launch is exactly that page.
+ * Space skips it.
+ *
+ * Its score and the newsreel narrator's titles (src/audio/engine.ts; tools/audio/cues.mjs `film`,
+ * `nar-film-*`): a browser will not play sound on a page nobody has clicked yet, and the first
+ * launch is exactly that page. So when sound cannot play yet the film waits on its first frame
+ * behind a card, "▸ BEGIN" (Sep 30 2026): the click (or any key but Esc) that starts it is the one
+ * that lets it be heard. Esc on the card skips the film as before. Replayed from the menu it
+ * starts at once (that was a click).
  */
 import { artUrl } from '../render/art';
+import { audioUnlocked, playFilm, say, stopFilm } from '../audio/engine';
 import { GAME_NAME } from './screens';
 
 export interface IntroShot { id: string; video: string; poster?: string; seconds: number }
@@ -58,6 +65,9 @@ export const INTRO_TITLES: Record<string, { text: string; small?: string; at?: n
   militia: { text: 'THEY FOUGHT IT', small: 'street by street', at: 0.4 },
   rise: { text: 'IT KEPT GROWING', at: 0.3 },
 };
+/** The narrator's line over each title (tools/audio/cues.mjs VOICE). */
+const NARRATION: Record<string, string> = { sky: 'nar-film-1', lookup: 'nar-film-2', crater: 'nar-film-3', creep: 'nar-film-4', militia: 'nar-film-5', rise: 'nar-film-6' };
+
 /** The last card, over black: the name, and who the player is. */
 export const INTRO_LAST = 'YOU ARE THE THING THAT FELL.';
 
@@ -79,7 +89,8 @@ export function playIntro(art: IntroArt | null): IntroHandle {
       <div class="intro-last"><div class="logo-word intro-word">${GAME_NAME.toUpperCase()}</div><div class="intro-tag">${INTRO_LAST}</div></div>
       <div class="intro-grain"></div>
     </div>
-    <button class="intro-skip" type="button">SKIP ▸ <span>Esc</span></button>`;
+    <button class="intro-skip" type="button">SKIP ▸ <span>Esc</span></button>
+    <div class="intro-begin"><button type="button">▸ BEGIN</button><small>sound on · click or press any key · Esc skips</small></div>`;
   document.body.appendChild(el);
   const layers = [...el.querySelectorAll<HTMLVideoElement>('video')];
   const title = el.querySelector<HTMLElement>('.intro-title')!;
@@ -98,15 +109,29 @@ export function playIntro(art: IntroArt | null): IntroHandle {
     for (const t of timers) window.clearTimeout(t);
     window.removeEventListener('keydown', onKey, true);
     el.classList.add('leaving');
+    stopFilm(0.8);
     window.setTimeout(() => { for (const v of layers) { v.pause(); v.removeAttribute('src'); v.load(); } el.remove(); }, 450);
     (window as unknown as { __bfIntro?: string }).__bfIntro = how;
     finish(how);
   };
+  /** Waiting behind the BEGIN card (sound could not play yet): the first click or key starts the film, heard. */
+  let waiting = !audioUnlocked();
+  const begin = () => {
+    if (!waiting || over) return;
+    waiting = false;
+    el.classList.remove('begin');
+    // The click that got here resumed the sound (src/audio/engine.ts listens for it first).
+    window.setTimeout(() => { playFilm(); next(); }, 60);
+  };
   const onKey = (ev: KeyboardEvent) => {
+    if (waiting && ev.key !== 'Escape') { ev.preventDefault(); ev.stopPropagation(); begin(); return; }
     if (ev.key === 'Escape' || ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); ev.stopPropagation(); end('skipped'); }
   };
   window.addEventListener('keydown', onKey, true);
-  el.addEventListener('click', () => end('skipped'));
+  el.addEventListener('click', (ev) => {
+    if (waiting && !(ev.target as HTMLElement).closest('.intro-skip')) { begin(); return; }
+    end('skipped');
+  });
 
   /** The next shot into the layer that is not showing, so that the cut is a short dissolve and never a black frame. */
   const load = (n: number, v: HTMLVideoElement) => {
@@ -135,7 +160,7 @@ export function playIntro(art: IntroArt | null): IntroHandle {
     const t = INTRO_TITLES[s.id];
     title.classList.remove('on');
     if (t) {
-      later((t.at ?? 0.5) * 1000, () => { big.textContent = t.text; small.textContent = t.small ?? ''; title.classList.add('on'); });
+      later((t.at ?? 0.5) * 1000, () => { big.textContent = t.text; small.textContent = t.small ?? ''; title.classList.add('on'); if (NARRATION[s.id]) say(NARRATION[s.id]); });
       later(Math.max(1200, (s.seconds - 0.45) * 1000), () => title.classList.remove('on'));
     }
     // The next cut comes on the clock, not on `ended`: a clip that stalls must not hold the film.
@@ -149,6 +174,18 @@ export function playIntro(art: IntroArt | null): IntroHandle {
     later(3600, () => end('ended'));
   };
   load(0, layers[1]);
-  next();
+  if (waiting) {
+    // A page that may play sound anyway (the browser allows it) does not wait on the card: the context says so within a moment.
+    for (const ms of [100, 300, 600]) later(ms, () => { if (waiting && audioUnlocked()) begin(); });
+    // The first shot's first frame behind the card (shown once it is clear the page cannot play sound).
+    later(650, () => { if (waiting) el.classList.add('begin'); });
+    if (shots[0].poster) { layers[1].poster = shots[0].poster; }
+    // (The layer that holds shot 1 is shown; `top` stays 0, so next() plays that very layer.)
+    layers[1].classList.add('on');
+    layers[0].classList.remove('on');
+  } else {
+    playFilm();
+    next();
+  }
   return { skip: () => end('skipped'), done };
 }

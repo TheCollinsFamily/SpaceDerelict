@@ -5,6 +5,7 @@
  */
 import { BOSS } from '../../content/boss';
 import { gain } from '../meta/storage';
+import { duckFor } from '../audio/engine';
 import type { IntroArt } from './intro';
 
 export function playBossCall(art: IntroArt | null): Promise<void> {
@@ -49,6 +50,7 @@ export function playBossCall(art: IntroArt | null): Promise<void> {
     if (!b?.voice) { run(reading); return; }
     audio = new Audio(b.voice);
     audio.volume = gain('voice');
+    duckFor(audio, 'boss');
     let started = false;
     audio.onloadedmetadata = () => {
       if (started) return;

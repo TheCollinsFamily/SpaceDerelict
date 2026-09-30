@@ -14,18 +14,19 @@
  * them on their real timestamps and writes 30 fps H.264.
  *
  *   node tools/shot-anim.mjs [limbs core siege]   (its own dev server on BROODFALL_PORT, default 5317)
- * Videos: notes/screens/2026-09-30/anim-*.mp4. Frames scratch: tools/screenshots/anim-frames/.
+ * Videos: notes/screens/2026-09-30/anim-*.mp4. Frames scratch: <os tmp>/broodfall-anim-frames/.
  */
 import { spawn, spawnSync, execSync } from 'node:child_process';
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
+import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { chromium } from '@playwright/test';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, '..');
 const notes = join(root, 'notes', 'screens', '2026-09-30');
-const scratch = join(here, 'screenshots', 'anim-frames');
+const scratch = join(tmpdir(), 'broodfall-anim-frames'); // thousands of JPEGs: outside the repo
 mkdirSync(notes, { recursive: true });
 const PORT = Number(process.env.BROODFALL_PORT || 5317);
 const URL0 = `http://localhost:${PORT}/`;
@@ -254,7 +255,9 @@ try {
       await caption(page, `(growing into stage ${into})`);
       await page.evaluate((g) => { window.broodfall.sim.stats.limbsGrown = g; }, grown);
       await page.waitForFunction((k) => { const c = window.broodfall.coreStage(); return c.stage === k && c.into === 0; }, into, { timeout: 15000 });
-      await page.waitForTimeout(300);
+      // The taller stages need the view pulled back and lowered to stand whole in it (cut out of the reel).
+      const [zoom, y] = { 2: [7, 0.64], 3: [6, 0.74], 4: [5, 0.76] }[into];
+      await closeOn(page, core, zoom, y);
       await idleFor(into, 5);
     }
     await rec.stop();
@@ -281,13 +284,13 @@ try {
     console.log('  state: ' + JSON.stringify(st));
     // The clock runs at 1x from here: what a player sees.
     await page.evaluate(() => { window.broodfall.surface?.(); const b = document.querySelector('#speed-box button[data-speed="1"]'); if (b) b.click(); });
-    // A player's zoom (two notches in from Home), on where the wave meets the limbs.
+    // A player's zoom (three notches in from Home), on where the wave meets the limbs.
     const fight = await page.evaluate(() => {
       const s = window.broodfall.sim;
       const pts = [...s.enemies.map((e) => e.pos), ...s.towers.map((t) => t.pos)];
       return [pts.reduce((a, p) => a + p.x, 0) / pts.length, pts.reduce((a, p) => a + p.y, 0) / pts.length];
     });
-    await closeOn(page, fight, 2, 0.5);
+    await closeOn(page, fight, 3, 0.5);
     await page.waitForTimeout(700);
     const speedOk = await page.evaluate(async () => { const t0 = window.broodfall.sim.time; await new Promise((r) => setTimeout(r, 1000)); return window.broodfall.sim.time - t0; });
     console.log(`  sim seconds per real second: ${speedOk.toFixed(2)}`);

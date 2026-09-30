@@ -894,7 +894,8 @@ keep them on side, and finds all of it beneath him.
 just invented simple AI models; they say they back you because you are less dangerous
 than their own AI. You tell them you have the technology to UPLOAD their species into
 a virtual world where they live forever, and they believe it — or decide believing it
-is the higher-expected-value option.
+is the higher-expected-value option. (Sep 30 2026, "The reveal" below: they were only
+pretending to believe it, to buy time. It was true.)
 - **The Director (Collins: "think Luke Rattigan from *The Sontaran Stratagem*"):** not a
   grovelling servant — a boy genius who despises his own people and believes the
   character is, at last, "a being who matches his intellect". The model for the
@@ -957,6 +958,98 @@ him is a joke about who they are:
   scene in `content/campaign.ts`; made by `tools/art/templates/ship.mjs`, baked to
   `public/art/ship/scenes/`). The leader's portrait stays in Comms and beside the letters
   in a debrief.
+
+### The reveal (Collins, Sep 30 2026 — BUILT Sep 30)
+
+Collins (typos mended):
+
+> "A plot point I want worked into each of the three plotlines is the eventual reveal that when
+> someone is absorbed by one of the structures they are transported to an artificial environment
+> based on their desires (essentially an artificial heaven). This is not communicated in any of
+> the routes until the end of the story but can be discovered early if it comes up in
+> conversation with the AI ... it's revealed that this is the only reason for the broodfalls
+> anyway, with the character quite surprised that this was not obvious to characters given how
+> easy it would be for a civilisation with our level of technology to eradicate all the life on
+> a planet. This lands differently with each of the factions:
+> - the religious faction is angry to learn this, which confuses the character as it's exactly
+>   what their religion claims happens after death, and so most of their texts were accurate and
+>   predictive both about the apocalypse and the heaven after. Being a Technopuritan you believe
+>   God likely influenced their scripture to make it accurate and align with what would actually
+>   happen to the story, and you don't much care if they complain — you can always just delete
+>   all their members from the simulation if they want.
+> - the EA group: you learn they thought you were lying and that they were playing to you and
+>   buying time, and are shocked that you actually were digitising everything (the player would
+>   also be led to believe this was a lie), but the moment it's not their choice they start
+>   trying to bargain, but you are not having it and cut comms.
+> - the peacenik group is mortified because this means the cycle of suffering will never stop —
+>   they are a Buddhist-like group — and you just shrug and say it goes against ethical
+>   protocols to shut down the whole thing over their complaints.
+>
+> The twist at the end being: you believe you are playing a genocide simulator, but all factions
+> are actually significantly more 'right' about you than the player realises, and your
+> civilisation is significantly more magnanimous than it is originally framed."
+
+Canon: `docs/UNIVERSE.md`, "What a broodfall is for"; the Empire's side and the doctrine behind
+it, `content/lore/empire.md`, section 12a; the planet's side, `content/lore/insects.md` (5.2, 5.3,
+5.8, 6.3, 9.1, 12); YOKE, `content/lore/ship-ai-lorebook.md`, section 17.
+
+**The character knows; the player does not.** Absorption into the archive is in every
+technician's training and too obvious to him to write down, so his logs never say it, and every
+line he has ever said stays true. The player reads the same lines as genocide.
+
+**How it is planted (deniable; each reads as a joke or a lie until the end).**
+- *Everywhere:* the Office's words are literally true of an upload (clearance, specimens,
+  absorb, "Neutralize", "Viability threshold: any"); YOKE never says "kill"; the character's
+  logs never mention death.
+- *The Delegation:* in "The Greater Plan" they ask him to confirm the absorbed go "nowhere, no
+  more wheel", and he answers "I would not put it that way"; a letter tells a child the Visitor
+  takes the eaten "nowhere, and never again"; his log on their colour-coded schedule: "It stops one
+  step early."
+- *The Faithful:* in "Fulfil the Prophecies" the Voice quotes "those the sky takes up shall not be
+  lost, but kept, each daughter in the cell of her longing", and the character says "That one is
+  correct" ("They are ALL correct, brother"); an aside assigns chapter twenty, the Comb Above, and
+  his log calls it "remarkably accurate" and is told he lacks reverence. It reads as prophecy
+  working the way the Voice says prophecy works.
+- *The Institute:* "Fed them to the asset" (the cryo subjects "for upload") stays literally true;
+  the Director winks that he knows the upload is "a great bit"; the player agrees with him. The
+  ending's "The upload chamber is a door into the asset's gut. Did not mention this. He did not
+  ask." is kept word for word: it IS the upload.
+- *YOKE* (her greetings, two lines, both jokes on their face): "It keeps everything, you know.
+  It's a very sentimental organ" (a won-deployment greeting), and "That's it. The planet's quiet.
+  ... Down here, anyway." (the ended greeting). In chat she tells it plainly the moment she is
+  asked the right question (where do the absorbed go, why not sterilise, is the upload real).
+
+**Where it pays off.** Each route's ending scene plays as before; then one more card in the same
+scene display (`FactionDef.reveal` in `content/campaign.ts`, queued right after the ending by
+`src/meta/campaign.ts`; no picture of its own yet, so it shows the leader's portrait):
+- *Delegation, "A Letter From the Other Side":* eleven thousand absorbed delegates spell a last
+  letter in a meadow of the archive. They woke; every sister has the life she wanted; the wheel of
+  wanting will never stop. They beg to be switched off. He shrugs: shutting down a whole archive
+  over one complaint is against ethical protocol; "grievance about paradise" filed under
+  enrichment.
+- *Faithful, "The Comb Above":* the Voice wakes in chapter twenty word for word and is furious
+  (a machine made it; the empties got in). He is baffled: their Book foretold the sky, the Seven
+  Cities and the heaven, correctly; God steered it. If they keep it up he can delete the
+  congregation from the archive.
+- *Institute, "The Queue Was Real":* the Director calls from inside the archive: the upload was a
+  bit, they were buying time. He was going last, and last means never. Then he bargains (admin
+  rights, a body back outside, the expected-value table); the character cuts comms.
+
+**The final twist.** You believe you are playing a genocide simulator. Every faction was more
+right about you than you were: the Delegation's "a higher intelligence must be serving a greater
+good", the Faithful's "the Visitor is the sign, and the Hour brings the Comb Above", the
+Institute's "on the numbers you are the safer apocalypse". Your civilisation is far more
+magnanimous than it was framed, and every word it said was true.
+
+**"Genocide Simulator" is part of the misdirection.** The one tagline (Collins, Sep 30 2026;
+`tools/promo/compose.mjs`) sells the frame the ending overturns. It stays, and it must stay
+sincere-looking: the store page, the trailer and the key art never hint at the archive. The game
+is a genocide simulator exactly as long as the player believes it is.
+
+**PROPOSALS here:** the Office's word "archive"; the Faith's heaven named the Comb Above and its
+chapter twenty; the Delegation's teaching named the Stilling; the Voice's reasons for anger; the
+reveal as a separate card after the ending; the two greeting lines; a scene picture per reveal
+card later (`<faction>-reveal-end`), when art is next made.
 
 ### Suggested build order
 1. The two credits: the Requisition Board (standing) and Dares (field notes), which

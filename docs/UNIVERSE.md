@@ -33,7 +33,8 @@ The Empire's ethical horizon stops at the line of **the sons of man**: every int
 descends from humanity or from humanity's labour (the engineered, the augmented, the cyborg, the
 synthetic, the uplifted). Beyond that line there is no covenant. Xenofauna clearance — including
 sapient xenofauna — is filed under pest control: low-status, proceduralized, boring to command, and
-utterly unexamined.
+utterly unexamined. (What a clearance actually does to the people it clears is the twist of
+Broodfall: see "What a broodfall is for", below.)
 
 ## History (Collins, Sep 30 2026)
 
@@ -227,6 +228,68 @@ known in detail is Broodfall's; its long form is `games/broodfall/content/lore/i
 - **PROPOSAL:** other eusocial worlds need not share this one's culture. What they share is
   biology (a laying royal line, a barren majority) and the Empire's filing of them.
 
+## What a broodfall is for (Collins, Sep 30 2026)
+
+Collins: "when someone is absorbed by one of the structures they are transported to an artificial
+environment based on their desires (essentially an artificial heaven) ... this is the only reason
+for the broodfalls anyway, with the character quite surprised that this was not obvious to
+characters given how easy it would be for a civilisation with our level of technology to
+eradicate all the life on a planet." And: "you believe you are playing a genocide simulator, but
+all factions are actually significantly more 'right' about you than the player realises, and your
+civilisation is significantly more magnanimous than it is originally framed."
+
+- **What absorption is.** Whatever the asset absorbs is digitised: each mind wakes in an
+  artificial world shaped to its own desires. A broodfall clears a planet of its bodies, not of
+  its people. The Empire could sterilise a world in an afternoon; the meteor, the creep and the
+  city-by-city pace exist because the asset is reading the people it takes (**PROPOSAL:** the
+  reading is done as it digests; a bomb would read no one).
+- **Why the Empire does it (the doctrine, faithfully):**
+  - *Beyond the covenant, but not to be eradicated.* Intelligences not descended from man were made
+    "to either serve or test man"; they "need not be eradicated", and must never be favoured over
+    the covenant of man (TP 11.0; doctrine 15). The living room goes to man, and the minds that held
+    it are not destroyed. Both halves of the tenet are kept at once.
+  - *A soul is a pattern.* Souls are emergent patterns, not substance (TP 15.0); a pattern carried
+    whole onto another substrate is the same soul.
+  - *A simulated life weighs the same.* "The moral weight of actions and lives in that universe and
+    universe prime would be equal as both are 'just' simulations — it is just that one is running on
+    silicon" (TP 11.0). So an uploaded fauna has lost nothing the doctrine counts.
+  - *The corpus saw the technology coming:* a lattice "that can port our likeness into either
+    simulated heavens or hells and host us there for great lengths of time" (TP 12.0); heaven read
+    as a time, the future, when the dead are brought back "through simulations or through literal
+    resurrections" (TP 15.0; TP 1.2).
+  - **PROPOSAL, the edge:** the corpus calls a heaven of pleasant experience in which one can no
+    longer affect anything "a form of hell ... not my heaven" (TP 15.0). The Empire gives the
+    xenofauna exactly the heaven it would refuse for itself: comfort, with no hand on history. It is
+    magnanimous and it is also the cleanest way to take a people out of the race for living room.
+    Nobody in the Empire finds that tension worth a sentence.
+  - **PROPOSAL:** the Office's name for the destination is the **archive**; a technician can see
+    it on a monitor, and can delete from it (Collins: "you can always just delete all their members
+    from the simulation if they want"). What protocol stops him doing so casually is the same
+    ethical protocol that stops a whole archive being shut down on request (Collins).
+- **How it is hidden in plain sight.** Nobody hides it. Every imperial document is literally
+  true: "clearance" (the planet is cleared), "specimens" (a specimen is kept), "absorb",
+  "retrieval", "viability threshold: any". A technician knows it from training and finds it too
+  obvious to mention, so his cheerful logs never do. The pest-control framing is what the Office
+  calls the work, and the Office means it: to the Empire, moving a people off a planet into a
+  heaven really is pest control.
+- **What the planet believed.** The Faith's scripture foretold the sky cracking, the end and a
+  heaven after, and it was accurate. **PROPOSAL, the Technopuritan reading:** God, outside time,
+  reveals to each people what it can hold (doctrine 7), so God likely steered their Book toward
+  what would really happen.
+
+## Contradictions resolved: the reveal (Sep 30 2026)
+
+- **"The horror is never announced; it leaks through procedure"** (tone rules, below) stands, and
+  now works as a double bluff. The Empire's voice is played straight and it is telling the truth;
+  the horror the player reads into its procedure is real in what it says (a people's world is
+  taken; the Empire would treat them as pests) and misleading in what it implies (that they die).
+  The tone rules are unchanged; they gained a second layer.
+- **"The Office has never filed a world under *serve*"** (Broodfall's `empire.md`, section 12)
+  stays true. The unexamined line the lore book pointed at was examined long ago: *need not be
+  eradicated* is exactly what the archive honours.
+- **"Its theology cashes out ... not in a supernatural afterlife"** (above) stands: the archive is
+  a technological afterlife, not a supernatural one, and the corpus expects such things (TP 12.0).
+
 ## Known regions and factions
 
 - **Techopuritan Crusade Zones** — active expansion fronts (already on Space Derelict's sector map
@@ -276,7 +339,9 @@ known in detail is Broodfall's; its long form is `games/broodfall/content/lore/i
 - The Empire's own media voice is chipper, propagandistic, 1950s-newsreel confident. In-world
   documents are written in that voice. The cheer is doctrinal: sadness is a sin (doctrine 9).
 - The horror is never announced; it leaks through procedure (memo language, metrics, forms) and
-  through cracks in the propaganda filter.
+  through cracks in the propaganda filter. Since the reveal (above, "What a broodfall is for") the
+  procedure is also literally true: every word the Empire writes about a clearance must stay true
+  of an upload, and nothing says outright that the absorbed live.
 - The Empire is played straight. Nothing in universe docs winks at the camera. Its doctrine is
   rendered faithfully to the corpus, never as a caricature of it.
 - Characters inside the fiction may be irreverent about it (Broodfall's YOKE is); the documents

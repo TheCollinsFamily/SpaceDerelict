@@ -134,6 +134,11 @@ export const GREETINGS: Greeting[] = [
     { say: 'You\'re getting scary good at this.', face: 'calm', then: 'pensive', hold: 2200 },
     { say: 'That\'s a compliment. Mostly. Seventy percent compliment.', face: 'teasing', then: 'wink' },
   ] },
+  // A sly one (the reveal, DESIGN.md "The reveal"): true, and it reads as a joke about the gut.
+  { id: 'won-6', moment: 'won', beats: [
+    { say: 'Another city in the asset. It keeps everything, you know. Everything. It\'s a very sentimental organ.', face: 'teasing', then: 'wink' },
+    { say: 'Don\'t look at me like that. Read your training module.', face: 'happy' },
+  ] },
 
   // ---- a deployment lost ----
   { id: 'lost-1', moment: 'lost', beats: [
@@ -190,6 +195,7 @@ export const GREETINGS: Greeting[] = [
   ] },
   { id: 'ended-1', moment: 'ended', points: { room: 'comms', label: 'OPEN COMMS' }, beats: [
     { say: 'That\'s it. The planet\'s quiet.', face: 'calm', then: 'pensive', hold: 2600 },
+    { say: 'Down here, anyway.', face: 'teasing', then: 'wink' },
     { say: 'I\'ll be here, obviously. Where else would I go?', face: 'sad' },
   ] },
 
