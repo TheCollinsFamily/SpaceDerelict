@@ -1,7 +1,7 @@
 {
  "family": "mitosis",
- "frames": 40,
- "atlasKB": 274,
+ "frames": 70,
+ "atlasKB": 471,
  "failed": 0,
  "checks": [
   {
@@ -12,17 +12,17 @@
   {
    "name": "idle: loop closes",
    "ok": true,
-   "value": 0.41
+   "value": 0.54
   },
   {
    "name": "idle: it moves",
    "ok": true,
-   "value": 0.65
+   "value": 0.63
   },
   {
    "name": "idle: it is calm",
    "ok": true,
-   "value": 0.65
+   "value": 0.63
   },
   {
    "name": "idle: inside the frame",
@@ -37,7 +37,7 @@
   {
    "name": "idle: ends the size it began",
    "ok": true,
-   "value": "3% change"
+   "value": "0% change"
   },
   {
    "name": "fire: no background tint on the outline",

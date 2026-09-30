@@ -1,7 +1,7 @@
 {
  "family": "burster",
- "frames": 40,
- "atlasKB": 250,
+ "frames": 70,
+ "atlasKB": 444,
  "failed": 0,
  "checks": [
   {
@@ -10,9 +10,14 @@
    "value": "0.52, 0.78, 0.8"
   },
   {
+   "name": "where it fires from is marked",
+   "ok": true,
+   "value": "[[0.52,0.29],[0.3,0.18],[0.54,0.14]]"
+  },
+  {
    "name": "idle: loop closes",
    "ok": true,
-   "value": 0.57
+   "value": 0
   },
   {
    "name": "idle: it moves",

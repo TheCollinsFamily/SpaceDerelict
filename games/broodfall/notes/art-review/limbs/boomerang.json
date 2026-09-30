@@ -1,7 +1,7 @@
 {
  "family": "boomerang",
  "frames": 40,
- "atlasKB": 377,
+ "atlasKB": 400,
  "failed": 0,
  "checks": [
   {
@@ -12,7 +12,7 @@
   {
    "name": "idle: loop closes",
    "ok": true,
-   "value": 1.41
+   "value": 0
   },
   {
    "name": "idle: it moves",
@@ -27,7 +27,7 @@
   {
    "name": "idle: inside the frame",
    "ok": true,
-   "value": "130,88-504,516"
+   "value": "130,86-506,520"
   },
   {
    "name": "idle: no background tint on the outline",
@@ -37,7 +37,7 @@
   {
    "name": "idle: ends the size it began",
    "ok": true,
-   "value": "0% change"
+   "value": "1% change"
   },
   {
    "name": "fire: no background tint on the outline",
@@ -62,7 +62,7 @@
   {
    "name": "it stands in its cell",
    "ok": true,
-   "value": "2.8% of it lies in front of its cell"
+   "value": "2.9% of it lies in front of its cell"
   }
  ]
 }

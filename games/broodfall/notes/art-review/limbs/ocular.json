@@ -1,7 +1,7 @@
 {
  "family": "ocular",
- "frames": 70,
- "atlasKB": 506,
+ "frames": 130,
+ "atlasKB": 964,
  "failed": 0,
  "checks": [
   {
@@ -10,24 +10,29 @@
    "value": "0.53, 0.83, 0.73"
   },
   {
+   "name": "where it fires from is marked",
+   "ok": true,
+   "value": "[[0.42,0.08]]"
+  },
+  {
    "name": "idle: loop closes",
    "ok": true,
-   "value": 2.01
+   "value": 0
   },
   {
    "name": "idle: it moves",
    "ok": true,
-   "value": 0.45
+   "value": 0.46
   },
   {
    "name": "idle: it is calm",
    "ok": true,
-   "value": 0.45
+   "value": 0.46
   },
   {
    "name": "idle: inside the frame",
    "ok": true,
-   "value": "174,100-480,558"
+   "value": "168,100-480,558"
   },
   {
    "name": "idle: no background tint on the outline",
@@ -37,7 +42,7 @@
   {
    "name": "idle: ends the size it began",
    "ok": true,
-   "value": "2% change"
+   "value": "3% change"
   },
   {
    "name": "fire: no background tint on the outline",
@@ -62,7 +67,7 @@
   {
    "name": "it stands in its cell",
    "ok": true,
-   "value": "0.9% of it lies in front of its cell"
+   "value": "0.6% of it lies in front of its cell"
   },
   {
    "name": "from behind, where it stands is marked",
@@ -70,24 +75,29 @@
    "value": "0.53, 0.75, 0.76"
   },
   {
+   "name": "from behind, where it fires from is marked",
+   "ok": true,
+   "value": "[[0.51,0.09]]"
+  },
+  {
    "name": "from behind, idle: loop closes",
    "ok": true,
-   "value": 2.13
+   "value": 0
   },
   {
    "name": "from behind, idle: it moves",
    "ok": true,
-   "value": 0.4
+   "value": 0.44
   },
   {
    "name": "from behind, idle: it is calm",
    "ok": true,
-   "value": 0.4
+   "value": 0.44
   },
   {
    "name": "from behind, idle: inside the frame",
    "ok": true,
-   "value": "160,112-468,582"
+   "value": "160,96-468,582"
   },
   {
    "name": "from behind, idle: no background tint on the outline",
@@ -97,7 +107,7 @@
   {
    "name": "from behind, idle: ends the size it began",
    "ok": true,
-   "value": "6% change"
+   "value": "1% change"
   },
   {
    "name": "from behind, fire: no background tint on the outline",
@@ -112,7 +122,7 @@
   {
    "name": "from behind, it stands in its cell",
    "ok": true,
-   "value": "4.9% of it lies in front of its cell"
+   "value": "2.9% of it lies in front of its cell"
   },
   {
    "name": "from behind: it has a view",

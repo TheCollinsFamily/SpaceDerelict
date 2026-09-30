@@ -1,7 +1,7 @@
 {
  "family": "lobber",
- "frames": 70,
- "atlasKB": 427,
+ "frames": 126,
+ "atlasKB": 792,
  "failed": 0,
  "checks": [
   {
@@ -10,24 +10,29 @@
    "value": "0.5, 0.77, 0.75"
   },
   {
+   "name": "where it fires from is marked",
+   "ok": true,
+   "value": "[[0.38,0.13]]"
+  },
+  {
    "name": "idle: loop closes",
    "ok": true,
-   "value": 2.26
+   "value": 0
   },
   {
    "name": "idle: it moves",
    "ok": true,
-   "value": 0.28
+   "value": 0.3
   },
   {
    "name": "idle: it is calm",
    "ok": true,
-   "value": 0.28
+   "value": 0.3
   },
   {
    "name": "idle: inside the frame",
    "ok": true,
-   "value": "160,104-470,576"
+   "value": "154,96-470,580"
   },
   {
    "name": "idle: no background tint on the outline",
@@ -37,7 +42,7 @@
   {
    "name": "idle: ends the size it began",
    "ok": true,
-   "value": "4% change"
+   "value": "1% change"
   },
   {
    "name": "fire: no background tint on the outline",
@@ -67,7 +72,7 @@
   {
    "name": "it stands in its cell",
    "ok": true,
-   "value": "4.4% of it lies in front of its cell"
+   "value": "1.9% of it lies in front of its cell"
   },
   {
    "name": "from behind, where it stands is marked",
@@ -75,19 +80,24 @@
    "value": "0.51, 0.76, 0.75"
   },
   {
+   "name": "from behind, where it fires from is marked",
+   "ok": true,
+   "value": "[[0.64,0.05]]"
+  },
+  {
    "name": "from behind, idle: loop closes",
    "ok": true,
-   "value": 1.16
+   "value": 1.24
   },
   {
    "name": "from behind, idle: it moves",
    "ok": true,
-   "value": 0.73
+   "value": 0.79
   },
   {
    "name": "from behind, idle: it is calm",
    "ok": true,
-   "value": 0.73
+   "value": 0.79
   },
   {
    "name": "from behind, idle: inside the frame",
@@ -102,7 +112,7 @@
   {
    "name": "from behind, idle: ends the size it began",
    "ok": true,
-   "value": "7% change"
+   "value": "10% change"
   },
   {
    "name": "from behind, fire: no background tint on the outline",

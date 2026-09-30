@@ -1,13 +1,18 @@
 {
  "family": "net",
- "frames": 40,
- "atlasKB": 356,
+ "frames": 70,
+ "atlasKB": 624,
  "failed": 0,
  "checks": [
   {
    "name": "where it stands is marked",
    "ok": true,
    "value": "0.55, 0.73, 0.79"
+  },
+  {
+   "name": "where it fires from is marked",
+   "ok": true,
+   "value": "[[0.5,0.25]]"
   },
   {
    "name": "idle: loop closes",
@@ -37,7 +42,7 @@
   {
    "name": "idle: ends the size it began",
    "ok": true,
-   "value": "1% change"
+   "value": "0% change"
   },
   {
    "name": "fire: no background tint on the outline",

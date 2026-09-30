@@ -1,7 +1,7 @@
 {
  "family": "lure",
- "frames": 40,
- "atlasKB": 197,
+ "frames": 68,
+ "atlasKB": 333,
  "failed": 0,
  "checks": [
   {
@@ -12,7 +12,7 @@
   {
    "name": "idle: loop closes",
    "ok": true,
-   "value": 0.6
+   "value": 0
   },
   {
    "name": "idle: it moves",

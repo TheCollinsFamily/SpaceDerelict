@@ -1,7 +1,7 @@
 {
  "family": "bombard",
- "frames": 40,
- "atlasKB": 247,
+ "frames": 70,
+ "atlasKB": 437,
  "failed": 0,
  "checks": [
   {
@@ -10,19 +10,24 @@
    "value": "0.49, 0.65, 0.81"
   },
   {
+   "name": "where it fires from is marked",
+   "ok": true,
+   "value": "[[0.49,0.02]]"
+  },
+  {
    "name": "idle: loop closes",
    "ok": true,
-   "value": 0.52
+   "value": 0.5
   },
   {
    "name": "idle: it moves",
    "ok": true,
-   "value": 0.52
+   "value": 0.53
   },
   {
    "name": "idle: it is calm",
    "ok": true,
-   "value": 0.52
+   "value": 0.53
   },
   {
    "name": "idle: inside the frame",

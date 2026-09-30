@@ -1,7 +1,7 @@
 {
  "family": "choir",
- "frames": 40,
- "atlasKB": 400,
+ "frames": 56,
+ "atlasKB": 576,
  "failed": 0,
  "checks": [
   {
@@ -12,7 +12,7 @@
   {
    "name": "idle: loop closes",
    "ok": true,
-   "value": 0.63
+   "value": 0.52
   },
   {
    "name": "idle: it moves",

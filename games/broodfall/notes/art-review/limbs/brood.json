@@ -1,7 +1,7 @@
 {
  "family": "brood",
- "frames": 70,
- "atlasKB": 1222,
+ "frames": 127,
+ "atlasKB": 2186,
  "failed": 0,
  "checks": [
   {
@@ -12,17 +12,17 @@
   {
    "name": "idle: loop closes",
    "ok": true,
-   "value": 0.47
+   "value": 0.62
   },
   {
    "name": "idle: it moves",
    "ok": true,
-   "value": 0.55
+   "value": 0.53
   },
   {
    "name": "idle: it is calm",
    "ok": true,
-   "value": 0.55
+   "value": 0.53
   },
   {
    "name": "idle: inside the frame",
@@ -37,7 +37,7 @@
   {
    "name": "idle: ends the size it began",
    "ok": true,
-   "value": "0% change"
+   "value": "1% change"
   },
   {
    "name": "fire: no background tint on the outline",
@@ -62,7 +62,7 @@
   {
    "name": "it stands in its cell",
    "ok": true,
-   "value": "0.3% of it lies in front of its cell"
+   "value": "0.2% of it lies in front of its cell"
   },
   {
    "name": "from behind, where it stands is marked",
@@ -72,7 +72,7 @@
   {
    "name": "from behind, idle: loop closes",
    "ok": true,
-   "value": 0.36
+   "value": 0.33
   },
   {
    "name": "from behind, idle: it moves",

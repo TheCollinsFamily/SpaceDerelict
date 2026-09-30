@@ -34,8 +34,9 @@ function pcm(file) {
   return new Float32Array(r.stdout.buffer, r.stdout.byteOffset, r.stdout.byteLength / 4);
 }
 /** The jump at a loop's seam against the track's own sample-to-sample movement (1 = no worse than anywhere else). */
-function seam(file) {
-  const x = pcm(file);
+function seam(file, from = 0, to = 0) {
+  const all = pcm(file);
+  const x = to > from ? all.subarray(Math.round(from * 48000), Math.round(to * 48000)) : all;
   let sum = 0;
   for (let i = 1; i < x.length; i++) sum += Math.abs(x[i] - x[i - 1]);
   const mean = sum / (x.length - 1);
@@ -69,11 +70,12 @@ for (const m of MUSIC) {
   if (!e) continue;
   const f = path.join(PUB, e.file);
   const L = loud(f);
-  const sm = e.loop ? seam(f) : null;
+  const sm = e.loop ? seam(f, e.loopStart, e.loopEnd) : null;
   rows.music.push({ id: m.id, file: f, for: m.for, seconds: e.seconds, loop: e.loop, ...L, seam: sm, model: meta(m.id).model ?? 'elevenlabs:music_v2', prompt: m.spec.freeform, style: [...(m.spec.genres ?? []), ...(m.spec.moods ?? [])].join(', ') });
   if (e.loop) {
     const d = secs(f);
-    mList.push(piece(f, { t: 20 }), gap(0.6), piece(f, { ss: d - 6 }), piece(f, { t: 6 }), gap(1.5));
+    const a = e.loopStart ?? 0; const b = e.loopEnd ?? d;
+    mList.push(piece(f, { ss: a, t: 20 }), gap(0.6), piece(f, { ss: b - 6, t: 6 }), piece(f, { ss: a, t: 6 }), gap(1.5));
   } else mList.push(piece(f), gap(1.5));
 }
 reel(mList, path.join(NOTES, 'audio-reel-music.ogg'));
@@ -107,7 +109,7 @@ fs.rmSync(TMP, { recursive: true, force: true });
 console.log(`music ${rows.music.length}, effects ${rows.sfx.length} (${rows.sfx.reduce((a, r) => a + r.files.length, 0)} files), voice ${rows.voice.length}; data in ${path.join(RAW, 'sheet.json')}`);
 
 // ------------------------------------------------------------------ the listening sheet
-const full = (f) => f.replace(/\//g, '\');
+const full = (f) => path.resolve(f).split('/').join('\\');
 const fmt = (v, d = 1) => (v === null || v === undefined || Number.isNaN(v) ? '' : Number(v).toFixed(d));
 const esc = (s) => String(s ?? '').replace(/\|/g, '/').replace(/\n/g, ' ');
 const md = [];

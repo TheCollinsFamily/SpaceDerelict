@@ -1,7 +1,7 @@
 {
  "family": "press",
- "frames": 70,
- "atlasKB": 503,
+ "frames": 129,
+ "atlasKB": 898,
  "failed": 0,
  "checks": [
   {
@@ -12,17 +12,17 @@
   {
    "name": "idle: loop closes",
    "ok": true,
-   "value": 0.26
+   "value": 0.55
   },
   {
    "name": "idle: it moves",
    "ok": true,
-   "value": 0.84
+   "value": 0.76
   },
   {
    "name": "idle: it is calm",
    "ok": true,
-   "value": 0.84
+   "value": 0.76
   },
   {
    "name": "idle: inside the frame",
@@ -37,7 +37,7 @@
   {
    "name": "idle: ends the size it began",
    "ok": true,
-   "value": "2% change"
+   "value": "1% change"
   },
   {
    "name": "fire: no background tint on the outline",
@@ -72,17 +72,17 @@
   {
    "name": "from behind, idle: loop closes",
    "ok": true,
-   "value": 0.7
+   "value": 0.99
   },
   {
    "name": "from behind, idle: it moves",
    "ok": true,
-   "value": 0.96
+   "value": 0.95
   },
   {
    "name": "from behind, idle: it is calm",
    "ok": true,
-   "value": 0.96
+   "value": 0.95
   },
   {
    "name": "from behind, idle: inside the frame",
@@ -117,7 +117,7 @@
   {
    "name": "from behind, it stands in its cell",
    "ok": true,
-   "value": "1.6% of it lies in front of its cell"
+   "value": "1.7% of it lies in front of its cell"
   },
   {
    "name": "from behind: it has a view",

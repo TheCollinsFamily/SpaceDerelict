@@ -69,12 +69,13 @@ const pctl = (arr, p) => { const a = [...arr].sort((u, v) => u - v); return a[Ma
  * The separate sounds in a take: windows louder than the threshold, joined across short gaps,
  * each with a little lead-in and its decay. Returns [{ start, end, peak, rms }] in seconds / dBFS.
  */
-function events(x, { gap = 0.12, minLen = 0.05, maxLen = 3.2 } = {}) {
+function events(x, { gap = 0.12, minLen = 0.05, maxLen = 3.2, whole = false } = {}) {
   const e = envelope(x);
   const floor = pctl(e, 0.2);
   const peak = Math.max(...e);
-  const thr = Math.max(floor + 10, peak - 38);
-  const tail = Math.max(floor + 4, peak - 50);
+  // A whole sound (a siren, a roar) may fill its take: its edges are found against its peak alone.
+  const thr = whole ? peak - 36 : Math.max(floor + 10, peak - 38);
+  const tail = whole ? peak - 48 : Math.max(floor + 4, peak - 50);
   const out = [];
   let i = 0;
   while (i < e.length) {
@@ -97,8 +98,16 @@ function events(x, { gap = 0.12, minLen = 0.05, maxLen = 3.2 } = {}) {
 }
 
 /** Cut [start, end] of `src` to a mono Opus file, levelled so its sounding part sits at `target` dBFS RMS, peaks at -1 dBFS. */
-function cutSfx(src, start, end, rms, target, dest) {
-  const gain = Math.max(-12, Math.min(30, target - rms));
+/** The loudest sample (dBFS) of x between two times. */
+function samplePeak(x, start, end) {
+  let p = 0;
+  for (let i = Math.floor(start * SR); i < Math.min(x.length, Math.ceil(end * SR)); i++) p = Math.max(p, Math.abs(x[i]));
+  return db(p);
+}
+
+/** `peak`: its loudest sample now; the gain never lifts it past -3 dBFS (the codec's overshoot stays under -1 dBTP). */
+function cutSfx(src, start, end, rms, target, dest, peak = -99) {
+  const gain = Math.max(-12, Math.min(30, target - rms, -3 - peak));
   const dur = end - start;
   const fo = Math.min(0.08, dur * 0.3);
   ff(['-ss', start.toFixed(3), '-t', dur.toFixed(3), '-i', src, '-vn', '-ac', '1', '-ar', String(SR),
@@ -187,10 +196,20 @@ async function bake() {
     const src = path.join(RAW, takes[0]);
     const dest = path.join(OUT, `${m.id}.ogg`);
     const x = samples(src);
+    let loopAt = null;
     if (m.loop) {
       const { start, end } = steady(x);
       const body = bakeLoop(src, start, end, dest);
-      levelled(body, dest, { I: -16 });
+      // The codec rings a little at a file's two ends: the loop is played between two points inside
+      // the file (loopStart / loopEnd), with half a second of itself on either side of them.
+      const n = samples(body).length;
+      const P = SR / 2;
+      const padded = body.replace(/\.wav$/, '-pad.wav');
+      ff(['-i', body, '-filter_complex',
+        `[0:a]asplit=3[a][b][c];[a]atrim=start_sample=${n - P}:end_sample=${n},asetpts=PTS-STARTPTS[pre];[c]atrim=start_sample=0:end_sample=${P},asetpts=PTS-STARTPTS[post];[pre][b][post]concat=n=3:v=0:a=1[out]`,
+        '-map', '[out]', '-c:a', 'pcm_f32le', padded], padded);
+      levelled(padded, dest, { I: -16 });
+      loopAt = { loopStart: P / SR, loopEnd: (P + n) / SR };
     } else {
       // a stinger or the film: its leading silence off, a short fade at its end
       const ev = events(x, { gap: 1.5, maxLen: 999 });
@@ -199,7 +218,7 @@ async function bake() {
       levelled(src, dest, { I: -16, ss: s0, extra: `afade=t=out:st=${Math.max(0, d - 0.6).toFixed(2)}:d=0.6` });
     }
     const seconds = +duration(dest).toFixed(3);
-    manifest.music[m.id] = { file: `audio/${m.id}.ogg`, seconds, loop: !!m.loop };
+    manifest.music[m.id] = { file: `audio/${m.id}.ogg`, seconds, loop: !!m.loop, ...(loopAt ?? {}) };
     notes[m.id] = { lufs: lufs(dest) };
     console.log(`[bake] music ${m.id}: ${seconds}s ${m.loop ? 'loop' : ''} ${notes[m.id].lufs} LUFS`);
   }
@@ -231,7 +250,7 @@ async function bake() {
     if (!fs.existsSync(src)) { console.warn(`[bake] ${s.id}: no take`); continue; }
     const x = samples(src);
     // A take's first 0.1 s is often the model's click of a start: left out.
-    const ev = events(x, s.cut === 'one' ? { gap: 0.8, maxLen: 999 } : {});
+    const ev = events(x, s.cut === 'one' ? { gap: 0.8, maxLen: 999, whole: true } : {});
     let list = ev.list.filter((e) => e.end > 0.12);
     for (const f of fs.readdirSync(OUT)) if (f.startsWith(`${s.id}.`) || f.startsWith(`${s.id}-`) && /^\S+-\d+\.ogg$/.test(f) && f.replace(/-\d+\.ogg$/, '') === s.id) fs.rmSync(path.join(OUT, f));
     const files = [];
@@ -244,7 +263,7 @@ async function bake() {
       let acc = 0; let n = 0;
       for (const e of list) { acc += 10 ** (e.rms / 10) * (e.end - e.start); n += e.end - e.start; }
       const dest = path.join(OUT, `${s.id}.ogg`);
-      cutSfx(src, start, end, db(Math.sqrt(acc / Math.max(1e-6, n))), TARGET, dest);
+      cutSfx(src, start, end, db(Math.sqrt(acc / Math.max(1e-6, n))), TARGET, dest, samplePeak(x, start, end));
       files.push(`audio/${s.id}.ogg`); secs.push(+duration(dest).toFixed(3));
     } else {
       // the loudest sounds of the take (a quiet echo of one is not a variant), in the order heard
@@ -252,7 +271,7 @@ async function bake() {
       list = list.filter((e) => e.peak >= loud - 14).sort((a, b) => b.peak - a.peak).slice(0, s.max ?? 5).sort((a, b) => a.start - b.start);
       list.forEach((e, i) => {
         const dest = path.join(OUT, `${s.id}-${i + 1}.ogg`);
-        cutSfx(src, e.start, e.end, e.rms, TARGET, dest);
+        cutSfx(src, e.start, e.end, e.rms, TARGET, dest, samplePeak(x, e.start, e.end));
         files.push(`audio/${s.id}-${i + 1}.ogg`); secs.push(+duration(dest).toFixed(3));
       });
     }

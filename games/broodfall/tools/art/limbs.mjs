@@ -87,12 +87,29 @@ export const AWAY = ' It faces away from the camera, toward the upper right, the
  * behind. To mark one: node tools/art/feet.mjs <family>, look at the sheet, read the grid.
  * The middle of a skirt is the middle of its WIDEST row. A limb without a mark fails its bake.
  *
+ * muzzle: WHERE ITS SHOT LEAVES IT, marked by eye the same way (Sep 30 2026, Collins: "the shots
+ * aligning with coming from where the art would indicate"): [[x, y], ...] in the same box as the
+ * foot: the spitter's mouth, the quill fan's spines, the prism's crystal, the frond's tips, the
+ * mortar's barrel. Several points for a limb that fires from several places (the game hands them
+ * out one shot at a time). Marked on the limb AT REST: the shot is let go as the firing clip
+ * begins. backMuzzle: the same, of its view from behind. To mark one: node tools/art/muzzles.mjs
+ * <family> [--back], read the grid of tenths; then --bake. A limb that fires without a mark fails
+ * its bake (tests/muzzles.test.ts).
+ *
  * big: a BIG limb stands on four cells (content/data.ts, span) and is drawn two cells wide: its
  * frames are baked half again as large. tests/iso.test.ts holds the two lists to each other.
  */
+/**
+ * The limbs whose shot, beam, flame or shell the game draws leaving them: each carries a `muzzle`
+ * (and a `backMuzzle` when it has a view from behind). src/render/fxNames.ts FIRES_FROM is the same
+ * list; tests/muzzles.test.ts holds the two to each other.
+ */
+export const FIRING = ['spitter', 'sprout', 'quill', 'impaler', 'burster', 'tangler', 'blighter', 'mister', 'net',
+  'frond', 'prism', 'ocular', 'ember', 'skipper', 'bombard', 'lobber', 'sling'];
+
 export const LIMBS = [
   // ---- Meteor Core ----
-  { family: 'spitter', foot: [0.51, 0.77, 0.85], backFoot: [0.49, 0.75, 0.87], name: 'Spitter', theme: 'core', on: 'roof', job: 'Cheap, reliable, one target at a time.',
+  { family: 'spitter', foot: [0.51, 0.77, 0.85], backFoot: [0.49, 0.75, 0.87], muzzle: [[0.36, 0.07]], backMuzzle: [[0.63, 0.04]], name: 'Spitter', theme: 'core', on: 'roof', job: 'Cheap, reliable, one target at a time.',
     back: 'Its nozzle points away, up and toward the upper right: we see the back of the stalk and the underside of the nozzle\'s rim, not its opening.',
     look: 'a squat stalk of muscle topped by one puckered fleshy nozzle that points up and forward',
     idle: `${CALM} The nozzle puckers and loosens.`,
@@ -106,37 +123,37 @@ export const LIMBS = [
     idle: `${CALM} The spines flex very slightly.`,
     fire: 'The row of spines bristles outward sharply, all at once, then settles back to exactly its starting pose.' },
   // ---- Bone Forge ----
-  { family: 'impaler', long: true, foot: [0.66, 0.78, 0.52], backFoot: [0.42, 0.74, 0.67], name: 'Impaler', theme: 'forge', on: 'roof', job: 'A long harpoon that skewers a whole file and ignores shields.',
+  { family: 'impaler', long: true, foot: [0.66, 0.78, 0.52], backFoot: [0.42, 0.74, 0.67], muzzle: [[0.28, 0.3]], backMuzzle: [[0.78, 0.15]], name: 'Impaler', theme: 'forge', on: 'roof', job: 'A long harpoon that skewers a whole file and ignores shields.',
     back: 'The harpoon points away toward the upper right, its tip far from the camera and its butt end nearest us; we see the back of the mound that cradles it.',
     look: 'a squat mound of muscle cradling one long ivory bone harpoon, drawn back under tension like the bolt of a ballista, pointing forward and slightly up',
     idle: `${CALM} The harpoon trembles under tension.`,
     fire: 'The muscle snaps and the long bone harpoon shoots forward out of the frame; a new harpoon slides up out of the mound into the same place, back to exactly the starting pose.' },
-  { family: 'quill', foot: [0.41, 0.76, 0.64], backFoot: [0.55, 0.77, 0.74], name: 'Quill Fan', theme: 'forge', on: 'roof', job: 'The shotgun: five pellets across a cone, brutal up close.',
+  { family: 'quill', foot: [0.41, 0.76, 0.64], backFoot: [0.55, 0.77, 0.74], muzzle: [[0.29, 0.2], [0.53, 0.17], [0.74, 0.24], [0.82, 0.41]], backMuzzle: [[0.21, 0.23], [0.43, 0.16], [0.61, 0.2], [0.77, 0.32]], name: 'Quill Fan', theme: 'forge', on: 'roof', job: 'The shotgun: five pellets across a cone, brutal up close.',
     back: 'The fan of quills leans away from the camera toward the upper right; we see the back of the fan and the back of the mound.',
     look: 'a fan of a dozen long ivory quills spread like the tail of a peacock, rising from a muscular base',
     idle: `${CALM} The fan of quills opens and closes a little.`,
     fire: 'The fan snaps forward and a volley of quills shoots out of it; new quills slide up into the gaps, back to exactly the starting pose.' },
-  { family: 'skipper', long: true, foot: [0.48, 0.63, 0.73], backFoot: [0.49, 0.64, 0.8], name: 'Skipping Mortar', theme: 'forge', on: 'roof', facing: true, job: 'Fires one way only, very far; the shell skips on down the line.',
+  { family: 'skipper', long: true, foot: [0.48, 0.63, 0.73], backFoot: [0.49, 0.64, 0.8], muzzle: [[0.13, 0.27]], backMuzzle: [[0.82, 0.08]], name: 'Skipping Mortar', theme: 'forge', on: 'roof', facing: true, job: 'Fires one way only, very far; the shell skips on down the line.',
     back: 'The mortar tube points away toward the upper right: we see its closed rear end nearest us, and its mouth is hidden at the far end.',
     look: 'a short fat mortar tube of ivory bone lying at a low angle on a muscular cradle, its mouth pointing forward',
     idle: `${CALM} The mouth of the tube flexes.`,
     fire: 'The cradle tightens and the bone tube coughs out one round shell with a puff of dust and a jolt of recoil, then settles back to exactly its starting pose.' },
-  { family: 'bombard', foot: [0.49, 0.65, 0.81], name: 'Spore Bombard', theme: 'forge', on: 'roof', job: 'Artillery the player aims at a marked spot.',
+  { family: 'bombard', foot: [0.49, 0.65, 0.81], muzzle: [[0.49, 0.02]], name: 'Spore Bombard', theme: 'forge', on: 'roof', job: 'Artillery the player aims at a marked spot.',
     look: 'a tall chimney of overlapping ivory bone plates on a swollen muscular base, pointing at the sky',
     idle: `${CALM} A thin wisp of spores drifts from the top of the chimney.`,
     fire: 'The base swells, then the chimney thumps a shell straight up and out of the frame with a burst of golden spores and a heavy recoil, then settles back to exactly its starting pose.' },
   // ---- Venom Sac ----
-  { family: 'blighter', foot: [0.5, 0.75, 0.87], name: 'Blight Vent', theme: 'venom', on: 'roof', job: 'Poison clouds that keep eating; poison ignores armour.',
+  { family: 'blighter', foot: [0.5, 0.75, 0.87], muzzle: [[0.47, 0.1]], name: 'Blight Vent', theme: 'venom', on: 'roof', job: 'Poison clouds that keep eating; poison ignores armour.',
     look: 'a chimney of flesh ringed with swollen acid yellow-green glands, a thin sickly haze drifting from its mouth',
     idle: `${CALM} The glands pulse one after another.`,
     quiet: true,
     fire: 'The glands squeeze hard one after another from the bottom up and the mouth of the chimney gapes wide and shudders, then the glands refill, back to exactly the starting pose.' },
-  { family: 'mister', big: true, foot: [0.53, 0.74, 0.82], name: 'Caustic Mister', theme: 'venom', on: 'roof', job: 'A mist that strips armour for every other limb.',
+  { family: 'mister', big: true, foot: [0.53, 0.74, 0.82], muzzle: [[0.34, 0.04], [0.6, 0.03], [0.2, 0.12], [0.77, 0.1]], name: 'Caustic Mister', theme: 'venom', on: 'roof', job: 'A mist that strips armour for every other limb.',
     look: 'a cluster of six thin nozzles on stalks around one acid yellow-green gland sac, like a garden sprinkler',
     idle: `${CALM} The thin nozzles sway.`,
     quiet: true,
     fire: 'All six nozzles stiffen, point outward and shudder together as the gland sac squeezes flat, then the sac refills and the nozzles droop back to exactly the starting pose.' },
-  { family: 'ember', foot: [0.5, 0.73, 0.68], backFoot: [0.51, 0.74, 0.77], name: 'Ember Sac', theme: 'venom', on: 'roof', job: 'A flamethrower: everything in its cone catches fire.',
+  { family: 'ember', foot: [0.5, 0.73, 0.68], backFoot: [0.51, 0.74, 0.77], muzzle: [[0.4, 0.05]], backMuzzle: [[0.57, 0.05]], name: 'Ember Sac', theme: 'venom', on: 'roof', job: 'A flamethrower: everything in its cone catches fire.',
     back: 'Its scorched nozzle points away toward the upper right and is mostly hidden behind the sac; we see the back of the glowing sac.',
     look: 'a bloated sac that glows orange from within, ringed with acid yellow-green glands, with one short scorched black nozzle',
     idle: `${CALM} The orange glow inside the sac brightens and dims.`,
@@ -152,38 +169,38 @@ export const LIMBS = [
     look: 'a shallow pool of dark wine-red digestive acid as wide as a street lane, with a low fleshy rim set with small teeth, lying flat on the ground',
     idle: 'The pool bubbles slowly; small ripples cross it; the fleshy rim twitches.',
     fire: null },
-  { family: 'burster', foot: [0.52, 0.78, 0.8], name: 'Burster', theme: 'gut', on: 'roof', job: 'Lobs sacs that burst in an area.',
+  { family: 'burster', foot: [0.52, 0.78, 0.8], muzzle: [[0.52, 0.29], [0.3, 0.18], [0.54, 0.14]], name: 'Burster', theme: 'gut', on: 'roof', job: 'Lobs sacs that burst in an area.',
     look: 'a cluster of taut round dark-red sacs on a thick stalk, like a bunch of grapes, each sac with a ring of tiny teeth at its stem',
     idle: `${CALM} The sacs swell and shrink one after another.`,
     fire: 'One sac tears free and is flung forward and up out of the frame; a new sac swells in its place, back to exactly the starting pose.' },
-  { family: 'lobber', foot: [0.5, 0.77, 0.75], backFoot: [0.51, 0.76, 0.75], name: 'Bile Lobber', theme: 'gut', on: 'roof', job: 'A volley the player aims by hand.',
+  { family: 'lobber', foot: [0.5, 0.77, 0.75], backFoot: [0.51, 0.76, 0.75], muzzle: [[0.38, 0.13]], backMuzzle: [[0.64, 0.05]], name: 'Bile Lobber', theme: 'gut', on: 'roof', job: 'A volley the player aims by hand.',
     back: 'The arm leans away toward the upper right with the cupped sling at its end; we see the back of the arm and the back of the sling.',
     look: 'a muscular arm rising from a toothed dark-red base and ending in a cupped sling that holds one glob of yellow bile',
     idle: `${CALM} The arm sways; the glob of bile wobbles in the sling.`,
     fire: 'The arm whips forward and flings the glob of bile out of the frame, then swings back and a new glob wells up in the sling, back to exactly the starting pose.' },
   // ---- Nerve Cluster ----
-  { family: 'frond', big: true, foot: [0.52, 0.86, 0.76], name: 'Galvanic Frond', theme: 'nerve', on: 'roof', job: 'One strike arcs on to three more bodies.',
+  { family: 'frond', big: true, foot: [0.52, 0.86, 0.76], muzzle: [[0.2, 0.08], [0.41, 0.04], [0.6, 0.06], [0.8, 0.15]], name: 'Galvanic Frond', theme: 'nerve', on: 'roof', job: 'One strike arcs on to three more bodies.',
     look: 'a fern-like frond of pale blue-white nerve cords, with faint sparks at its tips',
     idle: `${CALM} Faint sparks crawl along the frond.`,
     quiet: true,
     fire: 'The frond snaps rigid and its tips flare bright blue-white for a moment while the whole stalk shudders, then it relaxes back to exactly its starting pose.' },
-  { family: 'prism', foot: [0.5, 0.84, 0.77], name: 'Arc Prism', theme: 'nerve', on: 'roof', job: 'A beam that ramps on a held target; idle prisms relay to the one that is firing.',
+  { family: 'prism', foot: [0.5, 0.84, 0.77], muzzle: [[0.5, 0.19]], name: 'Arc Prism', theme: 'nerve', on: 'roof', job: 'A beam that ramps on a held target; idle prisms relay to the one that is firing.',
     look: 'a faceted lens of clear cartilage held in a claw of pale blue-white nerve cords, glowing softly',
     idle: `${CALM} Light moves slowly inside the lens.`,
     quiet: true,
     fire: 'The claw of nerve cords clenches on the lens and the lens blazes bright blue-white from within for a moment, then dims, the claw loosening back to exactly its starting pose.' },
-  { family: 'ocular', foot: [0.53, 0.83, 0.73], backFoot: [0.53, 0.75, 0.76], name: 'Ocular Stalk', theme: 'nerve', on: 'roof', job: 'A board-wide eye that executes support castes and sees the cloaked.',
+  { family: 'ocular', foot: [0.53, 0.83, 0.73], backFoot: [0.53, 0.75, 0.76], muzzle: [[0.42, 0.08]], backMuzzle: [[0.51, 0.09]], name: 'Ocular Stalk', theme: 'nerve', on: 'roof', job: 'A board-wide eye that executes support castes and sees the cloaked.',
     back: 'The eye looks away toward the upper right: we see the back of the eyeball, wrapped in nerve cords, and none of its iris.',
     look: 'one large wet eye with a pale blue iris on top of a tall slender stalk wrapped in pale blue-white nerve cords',
     idle: `${CALM} The eye looks slowly left and right, and blinks once.`,
     quiet: true,
     fire: 'The eye snaps wide open, its pupil narrows to a point and the stalk goes rigid, staring hard for a moment, then the eye relaxes back to exactly its starting pose.' },
-  { family: 'net', foot: [0.55, 0.73, 0.79], name: 'Netcaster', theme: 'nerve', on: 'roof', job: 'Hits only fliers: drags them to the ground.',
+  { family: 'net', foot: [0.55, 0.73, 0.79], muzzle: [[0.5, 0.25]], name: 'Netcaster', theme: 'nerve', on: 'roof', job: 'Hits only fliers: drags them to the ground.',
     look: 'a splayed hand of five thin tendons wrapped in pale blue-white nerve cords, a folded white web held between the fingers, pointing at the sky',
     idle: `${CALM} The fingers open and close a little.`,
     fire: 'The hand throws the white web upward out of the frame with a flick, then a new web unfolds between the fingers, back to exactly the starting pose.' },
   // ---- Mucus Lattice ----
-  { family: 'tangler', big: true, foot: [0.5, 0.64, 0.84], name: 'Snare Bed', theme: 'lattice', on: 'roof', job: 'Its hits slow what they touch.',
+  { family: 'tangler', big: true, foot: [0.5, 0.64, 0.84], muzzle: [[0.5, 0.35]], name: 'Snare Bed', theme: 'lattice', on: 'roof', job: 'Its hits slow what they touch.',
     look: 'a low fleshy hub from which glassy milky-white strands of mucus stretch out like the spokes of a web',
     idle: `${CALM} The mucus strands quiver.`,
     fire: 'The hub squeezes and spits a rope of white mucus forward out of the frame, then settles back to exactly its starting pose.' },
@@ -201,7 +218,7 @@ export const LIMBS = [
     look: 'a swollen sac studded with clusters of glossy pink eggs, with a puckered slit at the front',
     idle: `${CALM} Something moves inside the sac; the eggs glisten.`,
     fire: 'The slit opens and one small pink broodling squeezes out and drops forward out of the frame, then the slit closes, back to exactly the starting pose.' },
-  { family: 'sling', foot: [0.47, 0.76, 0.7], backFoot: [0.5, 0.79, 0.77], name: 'Spore Sling', theme: 'womb', on: 'roof', job: 'The player throws creep with it to far ground.',
+  { family: 'sling', foot: [0.47, 0.76, 0.7], backFoot: [0.5, 0.79, 0.77], muzzle: [[0.34, 0.34]], backMuzzle: [[0.65, 0.33]], name: 'Spore Sling', theme: 'womb', on: 'roof', job: 'The player throws creep with it to far ground.',
     back: 'The arm is cocked back TOWARD the camera, its basket with the clot low and nearest us; it will throw away from us, toward the upper right.',
     look: 'a tendon catapult: one long arm cocked back under tension, with a dark red clot in the basket at its end, on a base studded with pink eggs',
     idle: `${CALM} The cocked arm trembles.`,
@@ -248,7 +265,7 @@ export const LIMBS = [
     look: 'a curved crescent of bone standing on a pedestal wrapped in taut violet membrane',
     idle: 'The bone crescent turns slowly a little to the left and back; the violet membrane pulses.', fire: 'The bone crescent swings quickly a quarter turn to one side and back to exactly its starting pose, the violet membrane of the pedestal rippling.' },
   // ---- The Seeding Gland's free limb (Collins, Sep 29 2026: 'a free low power tower … it shoots out') ----
-  { family: 'sprout', foot: [0.5, 0.7, 0.67], name: 'Seedling', theme: 'core', on: 'roof', job: 'Free, from a Seeding Gland: a weak little shooter, shot up from below.',
+  { family: 'sprout', foot: [0.5, 0.7, 0.67], muzzle: [[0.31, 0.09]], name: 'Seedling', theme: 'core', on: 'roof', job: 'Free, from a Seeding Gland: a weak little shooter, shot up from below.',
     look: 'a small young sprout of the creature, half the size of the others: a short soft stalk of pale young muscle with one small puckered nozzle, two tiny leaf-like flaps of chitin, and a few thin new roots',
     idle: 'The little stalk sways gently from side to side like a young plant in a breeze; the nozzle opens and closes; the two small flaps twitch.',
     fire: 'The little stalk tightens and spits one small glob forward with a snap, then relaxes back to exactly its starting pose.' },

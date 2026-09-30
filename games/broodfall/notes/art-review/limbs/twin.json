@@ -1,7 +1,7 @@
 {
  "family": "twin",
- "frames": 40,
- "atlasKB": 332,
+ "frames": 70,
+ "atlasKB": 576,
  "failed": 0,
  "checks": [
   {
@@ -12,17 +12,17 @@
   {
    "name": "idle: loop closes",
    "ok": true,
-   "value": 0.36
+   "value": 0.81
   },
   {
    "name": "idle: it moves",
    "ok": true,
-   "value": 1.25
+   "value": 1.31
   },
   {
    "name": "idle: it is calm",
    "ok": true,
-   "value": 1.25
+   "value": 1.31
   },
   {
    "name": "idle: inside the frame",
@@ -62,7 +62,7 @@
   {
    "name": "it stands in its cell",
    "ok": true,
-   "value": "0.5% of it lies in front of its cell"
+   "value": "0.4% of it lies in front of its cell"
   }
  ]
 }

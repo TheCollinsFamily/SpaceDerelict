@@ -1,7 +1,7 @@
 {
  "family": "quill",
- "frames": 70,
- "atlasKB": 540,
+ "frames": 130,
+ "atlasKB": 1045,
  "failed": 0,
  "checks": [
   {
@@ -10,24 +10,29 @@
    "value": "0.41, 0.76, 0.64"
   },
   {
+   "name": "where it fires from is marked",
+   "ok": true,
+   "value": "[[0.29,0.2],[0.53,0.17],[0.74,0.24],[0.82,0.41]]"
+  },
+  {
    "name": "idle: loop closes",
    "ok": true,
-   "value": 1.05
+   "value": 0
   },
   {
    "name": "idle: it moves",
    "ok": true,
-   "value": 0.5
+   "value": 0.52
   },
   {
    "name": "idle: it is calm",
    "ok": true,
-   "value": 0.5
+   "value": 0.52
   },
   {
    "name": "idle: inside the frame",
    "ok": true,
-   "value": "128,138-516,492"
+   "value": "128,126-521,492"
   },
   {
    "name": "idle: no background tint on the outline",
@@ -37,7 +42,7 @@
   {
    "name": "idle: ends the size it began",
    "ok": true,
-   "value": "1% change"
+   "value": "4% change"
   },
   {
    "name": "fire: no background tint on the outline",
@@ -75,19 +80,24 @@
    "value": "0.55, 0.77, 0.74"
   },
   {
+   "name": "from behind, where it fires from is marked",
+   "ok": true,
+   "value": "[[0.21,0.23],[0.43,0.16],[0.61,0.2],[0.77,0.32]]"
+  },
+  {
    "name": "from behind, idle: loop closes",
    "ok": true,
-   "value": 0.69
+   "value": 1.23
   },
   {
    "name": "from behind, idle: it moves",
    "ok": true,
-   "value": 1.46
+   "value": 1.45
   },
   {
    "name": "from behind, idle: it is calm",
    "ok": true,
-   "value": 1.46
+   "value": 1.45
   },
   {
    "name": "from behind, idle: inside the frame",
@@ -102,7 +112,7 @@
   {
    "name": "from behind, idle: ends the size it began",
    "ok": true,
-   "value": "1% change"
+   "value": "2% change"
   },
   {
    "name": "from behind, fire: no background tint on the outline",

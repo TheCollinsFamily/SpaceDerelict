@@ -1,7 +1,7 @@
 {
  "family": "reliquary",
- "frames": 40,
- "atlasKB": 254,
+ "frames": 70,
+ "atlasKB": 427,
  "failed": 0,
  "checks": [
   {
@@ -12,7 +12,7 @@
   {
    "name": "idle: loop closes",
    "ok": true,
-   "value": 0.49
+   "value": 0
   },
   {
    "name": "idle: it moves",
@@ -62,7 +62,7 @@
   {
    "name": "it stands in its cell",
    "ok": true,
-   "value": "0.0% of it lies in front of its cell"
+   "value": "0.1% of it lies in front of its cell"
   }
  ]
 }

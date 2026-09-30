@@ -27,7 +27,8 @@ import { DUCK, MAX_VOICES, SCENE_FADE, SCENE_TRACK, STING_DUCK, ruleOf, type Mus
 
 interface Manifest {
   v: number;
-  music: Record<string, { file: string; seconds: number; loop?: boolean }>;
+  /** A loop plays between loopStart and loopEnd (seconds): the file carries half a second of itself on either side, so the codec's edges are never heard. */
+  music: Record<string, { file: string; seconds: number; loop?: boolean; loopStart?: number; loopEnd?: number }>;
   sfx: Record<string, { files: string[]; seconds?: number[] }>;
   voice: Record<string, { file: string; seconds: number; line?: string }>;
 }
@@ -240,6 +241,7 @@ export function duckFor(el: HTMLMediaElement, why = 'voice'): void {
 
 // ----------------------------------------------------------------------------- music
 
+/** `offset`: where in the loop (0..seconds) it started; `seconds`: the loop's length. */
 interface Playing { id: string; file: string; src: AudioBufferSourceNode; gain: GainNode; startedAt: number; offset: number; seconds: number }
 let loopNow: Playing | null = null;
 const fading = new Set<Playing>();
@@ -295,14 +297,18 @@ function startScene(next: MusicScene, fromUnlock = false): void {
     const src = ctx.createBufferSource();
     src.buffer = b;
     src.loop = e.loop !== false;
+    const a = e.loopStart ?? 0;
+    const z = e.loopEnd && e.loopEnd > a ? Math.min(e.loopEnd, b.duration) : b.duration;
+    src.loopStart = a;
+    src.loopEnd = z;
     const gain = ctx.createGain();
     const t = ctx.currentTime;
     gain.gain.setValueAtTime(0, t);
     gain.gain.linearRampToValueAtTime(1, t + (fromUnlock ? 1.5 : secs));
     src.connect(gain).connect(musicDuck);
-    const offset = (resumeAt.get(id) ?? 0) % b.duration;
-    src.start(t, offset);
-    loopNow = { id, file: e.file, src, gain, startedAt: t, offset, seconds: b.duration };
+    const offset = (resumeAt.get(id) ?? 0) % (z - a);
+    src.start(t, a + offset);
+    loopNow = { id, file: e.file, src, gain, startedAt: t, offset, seconds: z - a };
     note({ kind: 'music', id, played: true });
   });
 }

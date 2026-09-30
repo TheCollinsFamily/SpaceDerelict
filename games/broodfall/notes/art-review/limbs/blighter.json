@@ -10,6 +10,11 @@
    "value": "0.5, 0.75, 0.87"
   },
   {
+   "name": "where it fires from is marked",
+   "ok": true,
+   "value": "[[0.47,0.1]]"
+  },
+  {
    "name": "idle: loop closes",
    "ok": true,
    "value": 0

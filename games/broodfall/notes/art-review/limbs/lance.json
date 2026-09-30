@@ -1,7 +1,7 @@
 {
  "family": "lance",
- "frames": 70,
- "atlasKB": 306,
+ "frames": 114,
+ "atlasKB": 485,
  "failed": 0,
  "checks": [
   {
@@ -12,7 +12,7 @@
   {
    "name": "idle: loop closes",
    "ok": true,
-   "value": 0.58
+   "value": 0
   },
   {
    "name": "idle: it moves",
@@ -27,7 +27,7 @@
   {
    "name": "idle: inside the frame",
    "ok": true,
-   "value": "96,128-546,594"
+   "value": "96,128-546,590"
   },
   {
    "name": "idle: no background tint on the outline",
@@ -57,7 +57,7 @@
   {
    "name": "it stands in its cell",
    "ok": true,
-   "value": "7.2% of it lies in front of its cell"
+   "value": "6.9% of it lies in front of its cell"
   },
   {
    "name": "from behind, where it stands is marked",
@@ -67,22 +67,22 @@
   {
    "name": "from behind, idle: loop closes",
    "ok": true,
-   "value": 0.55
+   "value": 0
   },
   {
    "name": "from behind, idle: it moves",
    "ok": true,
-   "value": 0.19
+   "value": 0.23
   },
   {
    "name": "from behind, idle: it is calm",
    "ok": true,
-   "value": 0.19
+   "value": 0.23
   },
   {
    "name": "from behind, idle: inside the frame",
    "ok": true,
-   "value": "128,96-522,480"
+   "value": "128,78-526,480"
   },
   {
    "name": "from behind, idle: no background tint on the outline",

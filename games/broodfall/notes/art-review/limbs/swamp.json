@@ -1,7 +1,7 @@
 {
  "family": "swamp",
- "frames": 26,
- "atlasKB": 170,
+ "frames": 34,
+ "atlasKB": 214,
  "failed": 0,
  "checks": [
   {
@@ -12,7 +12,7 @@
   {
    "name": "idle: loop closes",
    "ok": true,
-   "value": 0.38
+   "value": 0.26
   },
   {
    "name": "idle: it moves",
@@ -37,7 +37,7 @@
   {
    "name": "idle: ends the size it began",
    "ok": true,
-   "value": "1% change"
+   "value": "0% change"
   },
   {
    "name": "die: no background tint on the outline",

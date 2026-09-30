@@ -1,7 +1,7 @@
 {
  "family": "impaler",
- "frames": 70,
- "atlasKB": 277,
+ "frames": 129,
+ "atlasKB": 505,
  "failed": 0,
  "checks": [
   {
@@ -10,9 +10,14 @@
    "value": "0.66, 0.78, 0.52"
   },
   {
+   "name": "where it fires from is marked",
+   "ok": true,
+   "value": "[[0.28,0.3]]"
+  },
+  {
    "name": "idle: loop closes",
    "ok": true,
-   "value": 0.22
+   "value": 0.32
   },
   {
    "name": "idle: it moves",
@@ -37,7 +42,7 @@
   {
    "name": "idle: ends the size it began",
    "ok": true,
-   "value": "0% change"
+   "value": "1% change"
   },
   {
    "name": "fire: no background tint on the outline",
@@ -70,19 +75,24 @@
    "value": "0.42, 0.74, 0.67"
   },
   {
+   "name": "from behind, where it fires from is marked",
+   "ok": true,
+   "value": "[[0.78,0.15]]"
+  },
+  {
    "name": "from behind, idle: loop closes",
    "ok": true,
-   "value": 0.36
+   "value": 0.4
   },
   {
    "name": "from behind, idle: it moves",
    "ok": true,
-   "value": 0.31
+   "value": 0.3
   },
   {
    "name": "from behind, idle: it is calm",
    "ok": true,
-   "value": 0.31
+   "value": 0.3
   },
   {
    "name": "from behind, idle: inside the frame",
@@ -97,7 +107,7 @@
   {
    "name": "from behind, idle: ends the size it began",
    "ok": true,
-   "value": "1% change"
+   "value": "0% change"
   },
   {
    "name": "from behind, fire: no background tint on the outline",

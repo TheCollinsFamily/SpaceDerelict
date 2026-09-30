@@ -1,7 +1,7 @@
 {
  "family": "lasher",
- "frames": 40,
- "atlasKB": 242,
+ "frames": 70,
+ "atlasKB": 423,
  "failed": 0,
  "checks": [
   {
@@ -12,7 +12,7 @@
   {
    "name": "idle: loop closes",
    "ok": true,
-   "value": 0.44
+   "value": 0.37
   },
   {
    "name": "idle: it moves",
@@ -67,7 +67,7 @@
   {
    "name": "it stands in its cell",
    "ok": true,
-   "value": "0.1% of it lies in front of its cell"
+   "value": "0.2% of it lies in front of its cell"
   }
  ]
 }

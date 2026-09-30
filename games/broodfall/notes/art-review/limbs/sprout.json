@@ -1,7 +1,7 @@
 {
  "family": "sprout",
- "frames": 40,
- "atlasKB": 168,
+ "frames": 44,
+ "atlasKB": 194,
  "failed": 0,
  "checks": [
   {
@@ -10,9 +10,14 @@
    "value": "0.5, 0.7, 0.67"
   },
   {
+   "name": "where it fires from is marked",
+   "ok": true,
+   "value": "[[0.31,0.09]]"
+  },
+  {
    "name": "idle: loop closes",
    "ok": true,
-   "value": 0.41
+   "value": 0
   },
   {
    "name": "idle: it moves",
@@ -37,7 +42,7 @@
   {
    "name": "idle: ends the size it began",
    "ok": true,
-   "value": "1% change"
+   "value": "0% change"
   },
   {
    "name": "fire: no background tint on the outline",

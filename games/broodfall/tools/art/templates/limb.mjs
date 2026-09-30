@@ -14,7 +14,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { ffmpeg, makeClip, makeStill, pool } from '../rfab.mjs';
-import { AWAY, BACK, LIMB_SHEETS, MATERIAL, QUIET, THEMES, WITHER, limb, placeOnLimbSheet } from '../limbs.mjs';
+import { AWAY, BACK, LIMB_SHEETS, MATERIAL, QUIET, THEMES, WITHER, limb, placeOnLimbSheet, FIRING } from '../limbs.mjs';
 import { blank, crop, flipX, over, paste, readFrames, readImage, resize, writeJpg, writePng } from '../lib/img.mjs';
 import { figure, findFigures } from '../lib/sheet.mjs';
 import { diffThumb, dropSpecks, fringe, keyClip, keyOf, pick, thumb, unionBox } from '../lib/key.mjs';
@@ -354,6 +354,16 @@ function bakeView(l, dir, view, check, F) {
   const y0 = Math.round(foot.y - room.up - (side - (room.up + room.down)) / 2);
   const anchor = [0.5, Number(((foot.y - y0) / side).toFixed(4))];
   const body = Number(((2 * foot.a) / side).toFixed(3));
+  // WHERE ITS SHOT LEAVES IT: marked by eye in the same box as the foot (tools/art/muzzles.mjs), brought to the frame.
+  const box0 = unionBox([first]);
+  const marks = view === 'back' ? l.backMuzzle : l.muzzle;
+  const muzzle = marks?.map(([mx, my]) => [
+    Number(((box0.x0 + mx * (box0.x1 - box0.x0) - x0) / side).toFixed(4)),
+    Number(((box0.y0 + my * (box0.y1 - box0.y0) - y0) / side).toFixed(4)),
+  ]);
+  if (FIRING.includes(l.family) && (view === 'front' || l.back)) {
+    check(`${say}where it fires from is marked`, !!muzzle?.length, muzzle?.length ? JSON.stringify(marks) : `not marked: node tools/art/muzzles.mjs ${view === 'back' ? '--back ' : ''}${l.family}`);
+  }
 
   const frames = [];
   const anims = {};
@@ -391,7 +401,7 @@ function bakeView(l, dir, view, check, F) {
     const out = spill(idle.kept[0], anchor[0] * F, anchor[1] * F, (body * F) / 2 / FILL);
     check(`${say}it stands in its cell`, out < 0.12, `${(out * 100).toFixed(1)}% of it lies in front of its cell`);
   }
-  return { view, anchor, body, anims, frames, kept: clips.map((c) => c.kept), grafts: graftsOf(idle.kept[0], anchor, F) };
+  return { view, anchor, body, anims, frames, kept: clips.map((c) => c.kept), grafts: graftsOf(idle.kept[0], anchor, F), ...(muzzle?.length ? { muzzle } : {}) };
 }
 
 /** Steps 2 and 3, free: clips to an atlas, a manifest entry, the checks and the review pictures. */
@@ -422,7 +432,9 @@ export function bakeLimb(family) {
     on: l.on, ...(l.flat ? { flat: true } : {}), ...(l.facing ? { facing: true } : {}), ...(l.big ? { big: true } : {}),
     anims: front.anims,
     grafts: front.grafts,
-    ...(back ? { back: { anchor: back.anchor, body: back.body, anims: shift(back.anims, front.frames.length), grafts: back.grafts } } : {}),
+    /** Where its shots leave it, as shares of the frame (tools/art/muzzles.mjs). */
+    ...(front.muzzle ? { muzzle: front.muzzle } : {}),
+    ...(back ? { back: { anchor: back.anchor, body: back.body, anims: shift(back.anims, front.frames.length), grafts: back.grafts, ...(back.muzzle ? { muzzle: back.muzzle } : {}) } } : {}),
   };
   putEntry('limbs', family, entry);
 

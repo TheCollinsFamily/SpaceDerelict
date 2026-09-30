@@ -23,7 +23,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import { LIMBS } from './limbs.mjs';
+import { FIRING, LIMBS } from './limbs.mjs';
 import { blank, crop, over, paste, readFrames, resize, writeJpg } from './lib/img.mjs';
 import { dropSpecks, keyClip, unionBox } from './lib/key.mjs';
 import { REVIEW, SRC } from './lib/manifest.mjs';
@@ -75,10 +75,6 @@ function write(img, text, x, y, rgb, px = 2) {
     cx += 4 * px;
   }
 }
-
-/** The limbs that fire something the game draws leaving them (src/render/fxNames.ts FIRES_FROM). */
-const FIRING = ['spitter', 'sprout', 'quill', 'impaler', 'burster', 'tangler', 'blighter', 'mister', 'net',
-  'frond', 'prism', 'ocular', 'ember', 'skipper', 'bombard', 'lobber', 'sling'];
 
 function sheetOf(l, view) {
   const pre = view === 'back' ? 'back-' : '';

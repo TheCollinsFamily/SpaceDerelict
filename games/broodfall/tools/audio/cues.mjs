@@ -80,7 +80,7 @@ export const SFX = [
   { id: 'limb-wither', for: 'a limb withers (its creep died)', seconds: 8, cut: 'each', max: 4,
     prompt: FOLEY + 'Living tissue withers and dies: a dry crackle, a deflating hiss and a soft wet collapse.' + REPEAT(3) },
   { id: 'limb-lost', for: 'a limb or organ is destroyed or carried off', seconds: 8, cut: 'each', max: 4,
-    prompt: FOLEY + 'A fleshy structure is torn apart: a violent wet rip and a crunch of bone.' + REPEAT(4) },
+    prompt: FOLEY + 'A thick wet leather sack is ripped open and a bundle of dry branches snaps inside it: a violent wet tearing and a crunch.' + REPEAT(4) },
   { id: 'cannibalize', for: 'a limb is cannibalized into the next build', seconds: 6, cut: 'one',
     prompt: FOLEY + 'A creature devours one of its own limbs: slurping, gulping, crunching bone and one satisfied wet swallow.' },
   { id: 'core-evolve', for: 'the core evolves (stage 2, 3, 4)', seconds: 8, cut: 'one',

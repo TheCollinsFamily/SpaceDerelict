@@ -1,7 +1,7 @@
 {
  "family": "sling",
- "frames": 70,
- "atlasKB": 443,
+ "frames": 114,
+ "atlasKB": 719,
  "failed": 0,
  "checks": [
   {
@@ -10,9 +10,14 @@
    "value": "0.47, 0.76, 0.7"
   },
   {
+   "name": "where it fires from is marked",
+   "ok": true,
+   "value": "[[0.34,0.34]]"
+  },
+  {
    "name": "idle: loop closes",
    "ok": true,
-   "value": 0.4
+   "value": 0.35
   },
   {
    "name": "idle: it moves",
@@ -70,9 +75,14 @@
    "value": "0.5, 0.79, 0.77"
   },
   {
+   "name": "from behind, where it fires from is marked",
+   "ok": true,
+   "value": "[[0.65,0.33]]"
+  },
+  {
    "name": "from behind, idle: loop closes",
    "ok": true,
-   "value": 0.43
+   "value": 0
   },
   {
    "name": "from behind, idle: it moves",
@@ -112,7 +122,7 @@
   {
    "name": "from behind, it stands in its cell",
    "ok": true,
-   "value": "1.6% of it lies in front of its cell"
+   "value": "1.7% of it lies in front of its cell"
   },
   {
    "name": "from behind: it has a view",
