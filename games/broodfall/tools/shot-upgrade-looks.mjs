@@ -217,15 +217,20 @@ try {
     // The board at the game's own zoom (Home), then close on all six.
     await home();
     await shot(`upgrade-looks-${tag}-${family}-normal-zoom`);
-    await closeOn(mid, 5, 20);
-    await shot(`upgrade-looks-${tag}-${family}-close`);
-    // Each close, for the sheet.
+    await closeOn(mid, family === 'frond' ? 5 : 6, 20);
+    const closePng = await shot(`upgrade-looks-${tag}-${family}-close`);
+    // Each cut out of that same picture round where it stands (for the sheet): what the player sees, not a staged close-up.
+    const bb = await canvas.boundingBox();
     const crops = [];
     for (let i = 0; i < ids.length; i++) {
-      await closeOn(pos[i], family === 'frond' ? 10 : 11, family === 'frond' ? 70 : 45);
-      const png = await shot(`looks-${family}-${i}`, false);
+      const at = await page.evaluate((p) => window.broodfall.worldToScreen(p.x, p.y), pos[i]);
+      const side = Math.round(bb.width * (family === 'frond' ? 0.26 : 0.2));
+      const cx = Math.round((at.x / at.vw) * bb.width);
+      const cy = Math.round((at.y / at.vh) * bb.height - side * 0.36);
+      const x0 = Math.max(0, Math.min(Math.round(bb.width) - side, cx - Math.round(side / 2)));
+      const y0 = Math.max(0, Math.min(Math.round(bb.height) - side, cy - Math.round(side / 2)));
       const cut = join(shots, `looks-${family}-${i}-crop.png`);
-      spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-i', png, '-vf', 'crop=ih*0.8:ih*0.8:(iw-ih*0.8)/2:ih*0.08', cut]);
+      spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-i', closePng, '-vf', `crop=${side}:${side}:${x0}:${y0}`, cut]);
       crops.push({ file: cut, label: scene[i][0] });
     }
     writeFileSync(join(shots, `looks-${family}-crops.json`), JSON.stringify(crops));
