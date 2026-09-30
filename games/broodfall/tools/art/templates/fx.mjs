@@ -5,6 +5,7 @@
  *   node tools/art/make.mjs fx                 the effect sheets and every donor part (skips what exists)
  *   node tools/art/make.mjs fx sheets          only the effect sheets
  *   node tools/art/make.mjs fx parts [family]  only the donor parts (of those families)
+ *   node tools/art/make.mjs fx tongue          only the Maw's tongue (TONGUE below)
  *   node tools/art/make.mjs fx --bake          bake again from what is on disk (free)
  *
  * Two kinds of picture:
@@ -102,6 +103,21 @@ export const SHEETS = [
   },
 ];
 
+/**
+ * THE MAW'S TONGUE (Sep 30 2026, Collins: "the frog like tongue design thats brilliant"; "you need the
+ * unit to stick to it and go to the mouth"): drawn by the game from the Maw's mouth to its victim
+ * (src/render/mawTongue.ts). A length of it, laid along the curve it flies and stretched as it reaches,
+ * and its sticky tip. Baked apart from the effects: public/art/fx/tongue.webp, manifest fx.fx.tongue.
+ */
+export const TONGUE = {
+  id: 'tongue', key: { hex: '00FF00', name: 'green' }, cols: 1,
+  lead: 'Game effect sprites: two separate parts of the long sticky tongue of a huge toad-like alien creature, one above the other, well apart and not touching, at the same scale.',
+  items: [
+    { id: 'strip', w: 256, text: 'a long straight length of thick wet tongue lying perfectly level, as long as three quarters of the width of the picture and the same thickness all along, pale crimson-pink muscle in soft ring-like segments with a darker groove along its middle, glistening with slime, both of its ends cut off square' },
+    { id: 'tip', w: 96, text: 'the sticky tip of that same tongue lying level: a swollen round club of pale crimson-pink flesh coated in glistening clear slime, its narrow neck at the LEFT where it joins the rest of the tongue, its fat rounded end at the right' },
+  ],
+};
+
 const sheetPrompt = (s) => {
   const list = s.items.map((it, i) => `(${i + 1}) ${it.text}`).join('; ');
   if (s.key) return `${s.lead} ${SIDE} In reading order: ${list}. ${SOLID_TAIL}`;
@@ -167,6 +183,30 @@ export async function generateSheets() {
     width: 1536, height: 1024, quality: 'high',
   }));
   results.forEach((r, i) => { if (!r.ok) console.warn(`[fx] sheet ${SHEETS[i].id} failed: ${r.error.message.slice(0, 200)}`); });
+}
+
+export async function generateTongue() {
+  fs.mkdirSync(DIR, { recursive: true });
+  await makeStill({
+    slug: 'fx sheet tongue', out: path.join(DIR, `${TONGUE.id}.png`), prompt: sheetPrompt(TONGUE),
+    key: TONGUE.key.hex, keyName: TONGUE.key.name, ...(fs.existsSync(CREEP) ? { refFiles: [CREEP] } : {}),
+    width: 1536, height: 1024, quality: 'high',
+  });
+}
+
+/** The tongue's two sprites; its length cut square at both ends (it is stretched along its curve, end to end). */
+function cutTongue() {
+  const [strip, tip] = cutSheet(TONGUE);
+  if (!strip || !tip) return [];
+  const m = Math.round(strip.img.w * 0.07);
+  const b = bbox(strip.img, 60);
+  // The middle of its length, and only the rows that are solid there: no rounded ends, no loose slime.
+  const mid = crop(strip.img, m, 0, strip.img.w - 2 * m, strip.img.h);
+  const box = bbox(mid, 60) ?? b;
+  strip.img = crop(mid, 0, box.y0, mid.w, box.y1 - box.y0);
+  // The tip is held by its neck (its left end): that is where the length of tongue joins it.
+  tip.extra = { anchor: [0.12, 0.5] };
+  return [strip, tip];
 }
 
 export async function generateParts(only = []) {
@@ -269,7 +309,14 @@ export function bakeFx() {
     console.log(`[fx] parts: ${parts.length} of ${Object.keys(PARTS).length}, ${Math.round(packed.bytes / 1024)} KB`);
     review(parts, path.join(LOOK, 'parts.jpg'));
   }
-  if (entry.effects || entry.parts) putEntry('fx', 'fx', entry);
+  const tongue = cutTongue();
+  if (tongue.length) {
+    const packed = packSprites(tongue, path.join(OUT, 'tongue.webp'), 512, 88);
+    entry.tongue = { atlas: 'fx/tongue.webp', sprites: packed.rects };
+    console.log(`[fx] tongue: ${tongue.length} sprites, ${Math.round(packed.bytes / 1024)} KB`);
+    review(tongue, path.join(LOOK, 'tongue.jpg'));
+  }
+  if (entry.effects || entry.parts || entry.tongue) putEntry('fx', 'fx', entry);
   return entry;
 }
 
@@ -297,6 +344,7 @@ export async function makeFx({ bakeOnly = false, only = [] } = {}) {
   const what = only[0];
   if (!bakeOnly) {
     if (!what || what === 'sheets') await generateSheets();
+    if (!what || what === 'tongue') await generateTongue();
     if (!what || what === 'parts') await generateParts(only.slice(1));
   }
   return bakeFx();

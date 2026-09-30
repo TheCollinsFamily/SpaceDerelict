@@ -100,19 +100,19 @@ function startServer() {
 /** The contact sheet: every scene, before and after side by side, the middle of each picture. */
 async function sheet(browser) {
   const rows = SCENES.filter((id) => existsSync(join(shots, `fire-${id}-before.png`)) && existsSync(join(shots, `fire-${id}-after.png`)));
-  const cell = (id, tag) => `<div class="c"><img src="${pathToFileURL(join(shots, `fire-${id}-${tag}.png`)).href}"><b>${tag.toUpperCase()}</b></div>`;
+  const cell = (id, tag) => `<div class="c"><img src="${pathToFileURL(join(shots, `fire-${id}-${tag}.png`)).href}"><b>${tag === 'after-2' ? 'AFTER, A TICK LATER' : tag.toUpperCase()}</b></div>`;
   const html = `<!doctype html><html><head><style>
     body { margin: 0; background: #151311; font: 600 22px system-ui, sans-serif; color: #eee; }
     h1 { font-size: 30px; margin: 18px 24px 4px; } p { margin: 0 24px 14px; color: #bbb; font-weight: 400; font-size: 18px; }
-    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px 20px; padding: 0 24px 24px; }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px 20px; padding: 0 24px 24px; }
     .row { display: contents; } .name { grid-column: 1 / -1; margin-top: 10px; font-size: 24px; color: #f2c069; }
-    .c { position: relative; height: 380px; overflow: hidden; border-radius: 6px; }
-    .c img { position: absolute; width: 1600px; left: -400px; top: -330px; }
+    .c { position: relative; height: 330px; overflow: hidden; border-radius: 6px; }
+    .c img { position: absolute; width: 1200px; left: -330px; top: -220px; }
     .c b { position: absolute; left: 10px; top: 8px; background: #000a; padding: 2px 10px; border-radius: 4px; }
   </style></head><body><h1>Broodfall: where the shots leave from (Sep 30 2026)</h1>
   <p>Left: before (every shot left a fixed height over the limb's ground). Right: after (from the mouth, spines, crystal, eye, nozzle, barrel marked on each limb's art).</p>
-  <div class="grid">${rows.map((id) => `<div class="row"><div class="name">${id}</div>${cell(id, 'before')}${cell(id, 'after')}</div>`).join('')}</div></body></html>`;
-  const page = await browser.newPage({ viewport: { width: 1640, height: 1000 } });
+  <div class="grid">${rows.map((id) => `<div class="row"><div class="name">${id}</div>${cell(id, 'before')}${cell(id, 'after')}${existsSync(join(shots, `fire-${id}-after-2.png`)) ? cell(id, 'after-2') : '<div></div>'}</div>`).join('')}</div></body></html>`;
+  const page = await browser.newPage({ viewport: { width: 1700, height: 1000 } });
   await page.setContent(html);
   await page.waitForTimeout(800);
   const png = join(shots, 'fire-00-muzzles-BEFORE-AFTER.png');
@@ -186,7 +186,11 @@ try {
     s.hand[0] = { id: 870000 + Math.floor(Math.random() * 9999), family, free: true };
     const r = s.issue({ kind: 'build', cardIndex: 0, cell, facing: 'S' });
     return r.ok ? s.towers[s.towers.length - 1].id : -1;
-  }, [family, near]);
+  }, [family, near]).then(async (id) => {
+    // A seedling is shot up from the landing site first: it is drawn once it has landed on its roof.
+    for (let i = 0; i < 60 && (await page.evaluate(() => window.broodfall.sim.seedFlights.length)) > 0; i++) await ticks(1);
+    return id;
+  });
   /** Units in a street; tough, seen, and (for a gun) dug in. */
   const put = (list) => page.evaluate((items) => {
     const s = window.broodfall.sim;
@@ -298,6 +302,8 @@ try {
       }, [id, street, sc.order ?? null]));
       check(ok, `${sc.id}: its shot is out`, JSON.stringify(await page.evaluate(() => window.broodfall.fx())));
       await shot(`fire-${sc.id}-${TAG}`);
+      // A tick later: the shot on its way, on the line from where it left.
+      if (TAG === 'after') { await ticks(1); await shot(`fire-${sc.id}-${TAG}-2`); }
     }
 
     if (scene('plinth')) {
@@ -320,6 +326,8 @@ try {
       const ok = await fireAndCatch('shots');
       check(ok, 'plinth: the raised spitter fires');
       await shot(`fire-plinth-${TAG}`);
+      // A tick later: the shot on its way, on the line from where it left.
+      if (TAG === 'after') { await ticks(1); await shot(`fire-plinth-${TAG}-2`); }
     }
 
     for (const fam of BEHIND) {
@@ -349,6 +357,8 @@ try {
       }, [id, street, sc.order ?? null]));
       check(ok, `behind-${fam}: its shot is out`, JSON.stringify(await page.evaluate((id) => { const s = window.broodfall.sim; const t = s.towers.find((x) => x.id === id); return { fx: window.broodfall.fx(), cd: t?.cooldown, last: t?.lastTargetId, en: s.enemies.map((e) => [e.kind, Math.round(e.hp), Math.round(Math.hypot(e.pos.x - t.pos.x, e.pos.y - t.pos.y))]), phase: s.phase, outcome: s.outcome }; }, id)));
       await shot(`fire-behind-${fam}-${TAG}`);
+      // A tick later: the shot on its way, on the line from where it left.
+      if (TAG === 'after') { await ticks(1); await shot(`fire-behind-${fam}-${TAG}-2`); }
     }
 
     for (const kind of ['cannon', 'dartgun', 'mortar']) {
@@ -372,6 +382,8 @@ try {
       const ok = await fireAndCatch(wait, 150);
       check(ok, `${kind}: its shell is out`);
       await shot(`fire-${kind}-${TAG}`);
+      // A tick later: the shot on its way, on the line from where it left.
+      if (TAG === 'after') { await ticks(1); await shot(`fire-${kind}-${TAG}-2`); }
     }
     if (scene('status')) {
       // Webbed, poisoned and burning units, and caltrops, side by side (as tools/shot-fx.mjs 'clouds', clean).

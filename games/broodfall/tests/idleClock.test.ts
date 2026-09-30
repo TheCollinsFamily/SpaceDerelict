@@ -1,14 +1,30 @@
 import { describe, expect, it } from 'vitest';
-import { IDLE_MAX_RATE, breath, idleFrames, idleLength, idleStep, phaseOf } from '../src/render/idleClock';
+import { IDLE_MAX_RATE, IdleClock, breath, idleFrames, idleLength, phaseOf } from '../src/render/idleClock';
 
 // The idles' clock (Sep 30 2026, notes/screens/2026-09-30/anim-README.md): real time, capped at speed,
 // frozen by a pause; a phase per limb; cross-faded frames; ping-pong eased at its ends.
 describe('idle clock', () => {
-  it('freezes on pause, follows real time at 1x, and is capped at speed', () => {
-    expect(idleStep(0, 1 / 60)).toBe(0);
-    expect(idleStep(1 / 60, 1 / 60)).toBeCloseTo(1 / 60);
-    expect(idleStep(8 / 60, 1 / 60)).toBeCloseTo(IDLE_MAX_RATE / 60);
-    expect(idleStep(0.5 / 60, 1 / 60)).toBeCloseTo(0.5 / 60);
+  // The sim ticks 0.1 s at a time; the idles must still move every frame, at the game's speed, capped.
+  const run = (clock: IdleClock, speed: number, secs: number) => {
+    let acc = 0; const adds: number[] = [];
+    for (let f = 0; f < secs * 60; f++) {
+      acc += speed / 60; let sim = 0;
+      while (acc >= 0.1) { acc -= 0.1; sim += 0.1; }
+      adds.push(clock.step(sim, 1 / 60));
+    }
+    return adds;
+  };
+  it('runs smoothly between the sim ticks (a tenth of a second each), at the game speed, capped, and stops on pause', () => {
+    const c = new IdleClock();
+    run(c, 1, 3);
+    const at1 = run(c, 1, 2);
+    // Every frame moves it, by about a 60th of a second.
+    for (const a of at1) { expect(a).toBeGreaterThan(0.012); expect(a).toBeLessThan(0.022); }
+    run(c, 8, 2);
+    const at8 = run(c, 8, 2);
+    expect(at8.reduce((x, y) => x + y, 0)).toBeCloseTo(2 * IDLE_MAX_RATE, 1);
+    const paused = run(c, 0, 1);
+    expect(paused.slice(20).every((a) => a === 0)).toBe(true);
   });
 
   it('gives every limb its own phase, the same each time', () => {

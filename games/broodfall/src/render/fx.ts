@@ -86,6 +86,8 @@ export class FxLayer {
   private lobs = new Map<number, { pic: string; to: { x: number; y: number }; land: [string, number, boolean]; seen: number }>();
   private arcsSeen = new WeakSet<object>();
   private bursts: Burst[] = [];
+  /** The frame a limb last puffed at its muzzle, by where it stands. */
+  private puffed = new Map<string, number>();
   private streaks: Streak[] = [];
   private bombs: Bomb[] = [];
   private frame = 0;
@@ -182,7 +184,9 @@ export class FxLayer {
         st = { pic, x: p.pos.x, y: p.pos.y, up: up0, up0, ttl0: Math.max(0.05, p.ttl), seen: 0, off, born: this.clock, from: mo ? { x: mo.wx, y: mo.wy } : null };
         this.shots.set(p.id, st);
         // A puff where it left: the shot is a step out by the time it is drawn, the puff says from where.
-        if (mo) this.burst('sedation-puff', mo, 22 * v.scale, 0.22, 0.4);
+        // One puff per limb per volley (a fan of quills is one puff, not five laid over each other).
+        const key = `${Math.round(mo?.wx ?? 0)},${Math.round(mo?.wy ?? 0)}`;
+        if (mo && this.puffed.get(key) !== this.frame) { this.puffed.set(key, this.frame); this.burst('sedation-puff', mo, 15 * v.scale, 0.2, 0.4); }
       }
       st.seen = this.frame;
       // It leaves the limb up on its roof and comes down to the street as it flies (as the dots did).

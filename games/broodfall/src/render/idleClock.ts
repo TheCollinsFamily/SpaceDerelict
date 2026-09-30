@@ -21,11 +21,35 @@ export const IDLE_MAX_RATE = 1.5;
 /** A ping-pong is played this much slower than its frames' own rate: its easing runs its middle faster (by pi/2 at the peak). */
 export const PONG_SLOW = 1.3;
 
-/** Seconds of idle time a frame adds: none while paused, real time at 1x and slower, at most IDLE_MAX_RATE times real time above. */
-export function idleStep(dtSim: number, dtReal: number): number {
-  if (dtSim <= 0 || dtReal <= 0) return 0;
-  return Math.min(dtSim, dtReal * IDLE_MAX_RATE, 0.25);
+/**
+ * The idles' clock. The sim ticks in steps of a tenth of a second (src/sim/sim.ts DT), so its time
+ * jumps 0.1 s in one frame and stands still in the next five: an idle on it could only change ten
+ * times a second. This one runs on real time, at the game's speed as measured over the last half
+ * second (capped at IDLE_MAX_RATE), and stops dead when the sim stops (a pause, the draft).
+ */
+export class IdleClock {
+  /** Seconds of idle time. */
+  t = 0;
+  private sim = 0;
+  private real = 0;
+  private sinceTick = 0;
+  private gap = 0.1;
+  step(dtSim: number, dtReal: number): number {
+    if (dtReal <= 0) return 0;
+    dtReal = Math.min(dtReal, 0.25);
+    if (dtSim > 0) { this.gap = Math.max(this.sinceTick + dtReal, 1 / 240); this.sinceTick = 0; } else this.sinceTick += dtReal;
+    const k = Math.exp(-dtReal / 0.5);
+    this.sim = this.sim * k + dtSim;
+    this.real = this.real * k + dtReal;
+    // Stopped: no tick for longer than the ticks have been coming (and than a tick at half speed).
+    if (this.sinceTick > Math.max(0.25, this.gap * 1.6)) return 0;
+    const rate = Math.min(IDLE_MAX_RATE, this.sim / Math.max(1e-6, this.real));
+    const add = dtReal * rate;
+    this.t += add;
+    return add;
+  }
 }
+
 
 /** A phase in [0, 1) that is the same for the same id every time (a limb's start in its loop). */
 export function phaseOf(id: number): number {

@@ -1,0 +1,65 @@
+A: first launch, mission 1 lost, the ship, the desk dark, the mate review, a win clears the desk, the factions, the menu
+  PASS  the first launch opens on the cinematic, not a menu
+  PASS  the first title is set in type over the film: "IT WAS A QUIET NIGHT"
+  PASS  nothing in the film speaks of the ship, the empire or a campaign
+  PASS  Esc skips it, and it is marked as seen
+  PASS  straight into mission 1: no menu, no ship
+  PASS  no Requisition Board over mission 1
+  PASS  no campaign word on the mission 1 screen
+  PASS  the coach says the one thing to do: "YOUR FIRST LIMB: pick a card below, then click a dark red block beside a street "
+  PASS  mission 1: hold 5 waves, the gate of the assault shown
+  PASS  a card in the hand has a block to stand on
+  PASS  a click on a card and a click on the block grow a limb (1)
+  PASS  the coach moves on: "GOOD. Grow more limbs beside the street they will walk down (24s) — or CALL THE "
+  PASS  a plain report, and CONTINUE (no forms, no ship)
+  PASS  the ship, and YOKE greets him: first-lost
+  PASS  her body is on the intercom's stage (happy)
+  PASS  a message from the boss: STEADFAST BARNABASSUPERVISOR · XENOFAUNA CLEARANCE OFFICE, SECTOR 9 (his clip) "Technician! Supervisor Barnabas here, Clearance Of"
+  PASS  YOKE around him: "a message from the boss" before, the budget after
+  PASS  all four of Collins's lines were said, in order
+  PASS  each line was spoken in her voice (6 /speak calls, mocked)
+  PASS  no mind was asked for the greeting (no /message)
+  PASS  the Directive Desk is dark: AWAITING CLEARANCE, no globe
+  PASS  "check it out" leads somewhere: the Gene Bay lit, and a button to it
+  PASS  the mission's data paid: standing 4
+  PASS  Command assigns the next deployment: cul-de-sac
+  PASS  a second deployment is a campaign deployment (its board is up)
+  PASS  the next return: the mate review (mate-review)
+  PASS  Collins's mate-review lines, to the last one
+  PASS  his quarters are lit
+  PASS  the data pad holds the candidate's file
+  PASS  the desk is still dark after a loss
+  PASS  the next return: the cat girl (catgirl)
+  PASS  Collins's cat-girl lines, to the last one
+  PASS  her letter is in his inbox, declined for him
+  PASS  the win clears the desk, and she says so: unlock
+  PASS  the planet's calls wait until she has finished
+  PASS  Collins's unlock lines
+  PASS  all three call, one after the other: INCOMING — CALL 1 OF 3 · THE FRIENDSHIP  | INCOMING — CALL 2 OF 3 · THE FAITHFUL OF | INCOMING — CALL 3 OF 3 · THE INSTITUTE F
+  PASS  the callers are the factions
+  PASS  the Directive Desk is open: the globe, landing sites to choose
+  PASS  summoned over the Gene Bay, his line reaches her mind with what she had just said to him
+  PASS  the body is printed, dies, and her voice comes from the speakers (the real clips)
+  PASS  no mind was asked; her line is in the talk afterwards
+  PASS  asked again, she refuses (once a campaign)
+  PASS  a later launch opens on the menu, not the film
+  PASS  the menu's background is the viewport's loop, playing (1.0s)
+  PASS  continue, new campaign, skirmish, replay the opening, settings
+  PASS  CONTINUE: aboard, and she greets him again (back-3)
+  PASS  no page errors
+B: mission 1 won: the desk opens only at the NEXT win
+  PASS  a click skips the film
+  PASS  mission 1 won: its plain report
+  PASS  YOKE: first-won
+  PASS  Collins's won lines to the last one, then the boss, then her word on him
+  PASS  mission 1 won: the desk is STILL dark
+  PASS  and nobody from the planet has called
+  PASS  relaunched after mission 1: the menu
+  PASS  the second win clears the desk: unlock
+  PASS  and the three call
+  PASS  no page errors
+C: REPLAY THE OPENING from the menu
+  PASS  no campaign on record: no CONTINUE
+  PASS  the film plays over the menu, and the menu is there after it
+  PASS  no page errors
+ONBOARDING BEAT: all verified.

@@ -28,7 +28,7 @@ import { FxLayer, type FxView } from './fx';
 import { LimbFates } from './limbFx';
 import { CreepLife, GateArt, PlinthRise, PodArt, Skyline } from './boardArt';
 import { coreStageOf } from './coreStage';
-import { breath, idleFrames, idleStep, phaseOf } from './idleClock';
+import { IdleClock, breath, idleFrames, phaseOf } from './idleClock';
 import { CALM } from '../meta/settings';
 import { UNIT_MUZZLES } from './unitMuzzles';
 
@@ -183,6 +183,7 @@ export class IsoRenderer extends Renderer {
   private lastSimTime = 0;
   private simClock = 0;
   /** The idles' clock (src/render/idleClock.ts): real time, frozen by a pause, at most 1.5x at speed. */
+  private idles = new IdleClock();
   private idleClock = 0;
 
   /** The player's own zoom and pan, on top of the framing of the claimed districts. */
@@ -458,7 +459,8 @@ export class IsoRenderer extends Renderer {
     const dt = Math.max(0, Math.min(1, sim.time - this.lastSimTime));
     this.lastSimTime = sim.time;
     this.simClock += dt;
-    this.idleClock += idleStep(dt, dtReal);
+    this.idles.step(dt, dtReal);
+    this.idleClock = this.idles.t;
     this.fx.begin(dt);
 
     this.updateCamera(sim, dtReal);

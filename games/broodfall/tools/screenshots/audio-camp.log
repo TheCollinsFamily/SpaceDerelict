@@ -1,0 +1,21 @@
+  PASS  NEW CAMPAIGN starts with mission 1: no Requisition Board on it
+  PASS  the ship: YOKE greets him, the Directive Desk is dark
+  PASS  the run starts with the Standard Strain's organs (gut,forge)
+  PASS  the next wave is hidden (no Translator yet)
+  PASS  the HUD hides the entrance: "ASSAULT FORMING: ?"
+  PASS  the live board shows the goals
+  PASS  the debrief: the territory taken, the goals, the credits
+  PASS  the win clears the desk, and YOKE says so
+  PASS  back on the ship, all three call: the Delegation first
+  PASS  their letter reaches orbit: it is spelled out in a field
+  PASS  the contact card shows the picture of the field
+  PASS  allying plays their first beat
+  PASS  YOKE opens the discussion: "YOKE: I have been reviewing the asset's telemetry. It adapts faster than the man"
+  PASS  saved: held crash-site,cul-de-sac, faction delegation, transcripts 1
+  PASS  the Gene Bay lists both catalogues
+  PASS  the desk is open: the briefing shows the board, the dares and the unlocks
+  PASS  the live board carries the picked dare
+  PASS  the debrief carries the ally's letter: "Delegate (letter, by field): The Harbour Committee has voted to thank you for the harbour."
+  PASS  Comms keeps the letters
+  PASS  no page errors
+CAMPAIGN BEAT: all verified.

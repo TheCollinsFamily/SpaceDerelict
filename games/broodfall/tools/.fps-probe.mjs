@@ -17,6 +17,6 @@ for (const [g, k] of [[6, 2], [18, 3], [40, 4]]) {
   await page.evaluate((x) => { window.broodfall.sim.stats.limbsGrown = x; }, g);
   await page.waitForFunction((k) => { const c = window.broodfall.coreStage(); return c.stage === k && c.into === 0; }, k, { timeout: 20000 });
   await page.waitForTimeout(500);
-  console.log(`stage${k} fps`, await fps());
+  console.log(`stage${k} fps`, await fps(), await fps(), await fps());
 }
 await browser.close(); dev.kill(); process.exit(0);

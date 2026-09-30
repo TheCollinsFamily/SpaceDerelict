@@ -6,7 +6,8 @@
  */
 import { Autoplayer } from './sim/autoplayer';
 import { DT, Sim, organSpec, towerSpec } from './sim/sim';
-import { Renderer } from './render/render';
+import { Renderer, type PlacementPreview } from './render/render';
+import { hideReachTip, reachText, showReachTip } from './ui/reachTip';
 import { IsoRenderer } from './render/isoRender';
 import { BoardArtSet, artUrl, loadManifest, pickBiome } from './render/art';
 import { Hud, PIP_DESC } from './ui/hud';
@@ -302,13 +303,14 @@ function updateHint(): void {
   } else if (selectedCard !== null) {
     const fam = sim.hand[selectedCard]?.family;
     const span = fam ? towerSpec(fam).span : undefined;
+    const turn = ' · RIGHT-CLICK turns it a quarter · Esc cancels';
     hud.setHint(selectedIsDirectional()
-      ? `place it — it faces ${placeFacing ?? 'the nearest gate'} · RIGHT-CLICK to rotate · Esc to cancel`
+      ? `place it — it faces ${placeFacing ?? (fam && towerSpec(fam).directional ? 'the nearest gate' : 'the way it fits')}${turn}`
       : span
-        ? `a BIG limb: it needs ${span[0]} by ${span[1]} cells of one flat creeped roof · Q and E turn the view`
+        ? `a BIG limb: it needs ${span[0]} by ${span[1]} cells of one flat creeped roof${placeFacing ? ` · faces ${placeFacing}` : ''}${turn} · Q and E turn the view`
       : fam === 'spine' || fam === 'swamp'
-        ? 'plug a street — the swarm must go through it'
-        : 'place on a creeped block by a street (higher = longer reach) — or click one of your limbs to feed it in');
+        ? `plug a street — the swarm must go through it${turn}`
+        : `place on a creeped block by a street — higher roofs reach further (+10% a level)${placeFacing ? ` · faces ${placeFacing}` : ''}${turn} — or click one of your limbs to feed it in`);
   } else if (FIRST && !AUTO && coachText()) {
     hud.setHint(coachText());
   } else {
@@ -821,9 +823,10 @@ function handleCanvasClick(clientX: number, clientY: number): void {
     }
     const res = sim.issue({
       kind: 'build', cardIndex: selectedCard, cell,
-      facing: selectedIsDirectional() ? currentPlaceFacing(cell) : undefined,
+      facing: buildFacing(cell),
     });
     if (res.ok) {
+      hideReachTip();
       selectedCard = null;
       hud.selectedCard = null;
       hoverDonorId = null;
@@ -844,6 +847,26 @@ function currentPlaceFacing(cell: number): RootDir {
   const fam = selectedCard !== null ? sim.hand[selectedCard]?.family : undefined;
   if (fam && !towerSpec(fam).directional) return sim.placementFor(cell, fam)?.facing ?? 'S';
   return sim.facingTowardGate(sim.cellCenter(cell));
+}
+
+/**
+ * The facing a build at this cell is ordered with: a directional or long limb always takes one;
+ * any other limb only once the player has turned it (unturned, it faces what it fights).
+ */
+function buildFacing(cell: number): RootDir | undefined {
+  return selectedIsDirectional() ? currentPlaceFacing(cell) : placeFacing ?? undefined;
+}
+
+/** The placement preview of the held card at this cell: its ground (re-checked for the way it is turned) and the way it faces. */
+function placePreview(cell: number): void {
+  const fam = selectedCard !== null ? sim.hand[selectedCard]?.family : undefined;
+  if (fam === undefined) return;
+  const ground = groundAt(cell, fam, buildFacing(cell));
+  renderer.preview = {
+    cell, cells: ground.cells, kind: 'tower', family: fam, valid: ground.valid,
+    facing: currentPlaceFacing(cell),
+    pips: sim.pendingPips,
+  };
 }
 
 /** Cancel whatever is armed (cards, organs, throwers) and close the panel. */
@@ -871,6 +894,7 @@ function cancelAll(): void {
   renderer.slingArm = null;
   renderer.donorHighlightId = null;
   renderer.preview = null;
+  hideReachTip();
   hud.selectedCard = null;
   hud.armedOrgan = null;
   hud.inspectedId = null;
@@ -1098,22 +1122,29 @@ async function boot(): Promise<void> {
   installEdgeScroll((dx, dy) => { if (renderer instanceof IsoRenderer) renderer.panBy(dx, dy); },
     () => started && !debriefShown && !padOutroPlaying() && menuEl.classList.contains('hidden') && document.getElementById('campaign')!.classList.contains('hidden'));
   markSpeed(speed);
-  // RIGHT-CLICK: rotates a directional card being placed, or a built directional
-  // limb under the cursor; otherwise it cancels. (Esc always cancels.)
+  // RIGHT-CLICK: turns the limb being placed a quarter (ANY limb: a directional one turns its
+  // field of fire, a long one its ground, the rest the way they face), or a built limb under the
+  // cursor; otherwise it cancels. (Esc always cancels.)
   renderer.app.canvas.addEventListener('contextmenu', (ev) => {
     ev.preventDefault();
     const w = renderer.toWorld(ev.clientX, ev.clientY);
-    if (selectedCard !== null && selectedIsDirectional() && hoverDonorId === null) {
-      placeFacing = nextFacing(currentPlaceFacing(sim.cellAt(w.x, w.y)));
-      if (renderer.preview) renderer.preview.facing = placeFacing;
+    if (selectedCard !== null && armedOrgan === null && hoverDonorId === null) {
+      const cell = sim.cellAt(w.x, w.y);
+      placeFacing = nextFacing(currentPlaceFacing(cell));
+      // The ground a long limb takes turns with it: placed again, and checked again.
+      placePreview(cell);
       updateHint();
       return;
     }
     if (selectedCard === null && armedOrgan === null && armedThrower === null) {
       const near = towerNearWorld(w.x, w.y);
       const t = near ? sim.towers.find((x) => x.id === near.id) : undefined;
-      if (t && towerSpec(t.family).directional) {
-        sim.issue({ kind: 'set-facing', towerId: t.id, dir: nextFacing(t.facing ?? 'N') });
+      if (t) {
+        // A long limb that is not directional keeps its ground: it turns end for end.
+        const [sw, sh] = sim.spanOf(t.family, t.facing);
+        const long = !towerSpec(t.family).directional && sw !== sh;
+        const from = t.facing ?? (towerSpec(t.family).directional ? 'N' : 'S');
+        sim.issue({ kind: 'set-facing', towerId: t.id, dir: long ? nextFacing(nextFacing(from)) : nextFacing(from) });
         hud.inspectedId = t.id;
         renderer.selectedTowerId = t.id;
         return;
@@ -1133,6 +1164,7 @@ async function boot(): Promise<void> {
     else cancelAll();
   });
   renderer.app.canvas.addEventListener('pointermove', (ev) => {
+    hideReachTip();
     if (armedPlinth) {
       const wp = renderer.toWorld(ev.clientX, ev.clientY);
       const cp = sim.cellAt(wp.x, wp.y);
@@ -1190,14 +1222,10 @@ async function boot(): Promise<void> {
         return;
       }
     }
-    const fam = sim.hand[selectedCard!]?.family;
-    const facing = selectedIsDirectional() ? currentPlaceFacing(cell) : undefined;
-    const ground = groundAt(cell, fam, facing);
-    renderer.preview = {
-      cell, cells: ground.cells, kind: 'tower', family: fam, valid: ground.valid,
-      facing,
-      pips: sim.pendingPips,
-    };
+    placePreview(cell);
+    const pv = renderer.preview as PlacementPreview | null;
+    showReachTip(ev.clientX, ev.clientY, pv?.family
+      ? reachText(sim.previewStats(pv.family, pv.cells ?? [pv.cell], pv.facing, sim.pendingPips)) : '');
   });
 
   const callEarlyBtn = document.getElementById('call-early')! as HTMLButtonElement;
