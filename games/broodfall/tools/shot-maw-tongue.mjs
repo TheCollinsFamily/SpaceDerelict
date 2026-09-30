@@ -65,6 +65,7 @@ async function session(record) {
   if (record) rmSync(videoDir, { recursive: true, force: true });
   const context = await browser.newContext({ viewport: { width: 1280, height: 800 }, ...(record ? { recordVideo: { dir: videoDir, size: { width: 1280, height: 800 } } } : {}) });
   const page = await context.newPage();
+  const opened = Date.now();
   const errors = [];
   page.on('pageerror', (e) => errors.push(String(e)));
   const canvas = page.locator('#stage canvas');
@@ -155,6 +156,7 @@ async function session(record) {
       e.revealedUntil = s.time + 999;
       if (hp !== undefined) { e.hp = hp; } else { e.hp *= 40; e.maxHp *= 40; }
       if (!speed) e.speed = 0;
+      e.staged = true;
       return e.id;
     });
   }, list);
@@ -185,7 +187,7 @@ async function session(record) {
     const t = s.towers.find((x) => x.id === id) ?? s.enemies.find((x) => x.id === id);
     return t ? { x: t.pos.x, y: t.pos.y } : null;
   }, id);
-  return { page, context, errors, shot, ticks, put, closeOn, posOf, mawId, reachable, artOk };
+  return { page, context, opened, errors, shot, ticks, put, closeOn, posOf, mawId, reachable, artOk };
 }
 
 try {
@@ -274,15 +276,23 @@ try {
     const tp = await s.posOf(s.mawId);
     const cells = s.reachable.slice(0, 4);
     const ep = await page.evaluate((c) => window.broodfall.sim.cellCenter(c), cells[0]);
-    await s.closeOn({ x: tp.x + (ep.x - tp.x) * 0.5, y: tp.y + (ep.y - tp.y) * 0.5 }, 9, 60);
+    await s.closeOn({ x: tp.x + (ep.x - tp.x) * 0.5, y: tp.y + (ep.y - tp.y) * 0.5 }, 11, 60);
+    // The wave's own column is held where it came in (far off the picture): the film is of the Maw and its prey.
+    // Nobody fires at the core while it is filmed (a lost run would end the film on its report).
+    const clearFar = () => page.evaluate(() => {
+      for (const e of window.broodfall.sim.enemies) { if (!e.staged) e.speed = 0; e.attackCooldown = 99; }
+    });
     // Weakened soldiers and militia, some tough ones among them; the weak ones are eaten one after another.
     const list = Array.from({ length: 10 }, (_, i) => ({ kind: i % 3 === 2 ? 'militia' : 'soldier', cell: cells[i % cells.length], hp: i % 4 === 3 ? undefined : 10 + (i % 3) * 4, dx: (i % 3) * 5 - 5, dy: (i % 2) * 6 - 3 }));
     await s.put(list);
+    await clearFar();
     await s.ticks(3);
     const t0 = Date.now();
+    const into = (t0 - s.opened) / 1000;
     let caught = 0;
     let lastRiding = false;
-    while (Date.now() - t0 < 11500) {
+    while (Date.now() - t0 < 11000) {
+      await clearFar();
       await page.evaluate(() => window.broodfall.step(1));
       await page.waitForTimeout(24);
       const now = await page.evaluate(() => window.broodfall.tongues());
@@ -295,11 +305,13 @@ try {
     check(caught >= 3, 'the film shows bodies caught and carried to the mouth', `${caught} caught`);
     await s.artOk('film');
     check(s.errors.length === 0, 'no page errors in the film', s.errors.slice(0, 3).join(' | '));
+    check(await page.evaluate(() => window.broodfall.sim.outcome === 'playing'), 'the run is still on when the film ends');
     const vid = page.video();
     await s.context.close();
     const webm = await vid.path();
     const mp4 = join(screens, 'maw-tongue.mp4');
-    const r = spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-sseof', '-10.5', '-i', webm, '-t', '10', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '23', '-movflags', '+faststart', mp4]);
+    // From the moment the prey stands in the street, ten seconds.
+    const r = spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-ss', String(into + 0.3), '-i', webm, '-t', '10', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '23', '-movflags', '+faststart', mp4]);
     check(r.status === 0 && existsSync(mp4), 'the film is recorded', mp4);
   }
 } finally {
