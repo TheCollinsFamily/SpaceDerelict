@@ -343,6 +343,12 @@ export function bakeUnit(kind) {
       let loop = null;
       let moved = null;
       if (anim.startsWith('walk')) { loop = loopWindow(frames); frames = frames.slice(loop.start, loop.end); }
+      if (ONCE.has(anim) && anim !== 'braced') {
+        // A frame where the unit touches the edge of the video is cut off by it (a flier jolted out of
+        // the picture): it is left out, and the flinch plays on without it.
+        const whole = frames.filter((f) => { const q = unionBox([f]); return !q || (q.x0 > 2 && q.y0 > 2 && q.x1 < f.w - 3 && q.y1 < f.h - 3); });
+        if (whole.length >= frames.length * 0.6) frames = whole;
+      }
       if (ONCE.has(anim)) {
         // The video starts and ends on the still, which the model draws a little smaller than the moving
         // frames it zooms to at once: those few frames would make the unit shrink as a flinch begins.
@@ -442,7 +448,7 @@ export function bakeUnit(kind) {
     if (c.anim === 'hit') {
       const wb = walks.find((w) => w.v === c.v)?.box;
       if (wb) {
-        const m = side * 0.1;
+        const m = side * 0.2;
         for (const f of c.frames) {
           for (let y = 0; y < f.h; y++) for (let x = 0; x < f.w; x++) {
             if (x >= wb.x0 - m && x <= wb.x1 + m && y >= wb.y0 - m && y <= wb.y1 + m) continue;

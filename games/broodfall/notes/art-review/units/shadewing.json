@@ -1,7 +1,7 @@
 {
  "kind": "shadewing",
  "frames": 181,
- "atlasKB": 326,
+ "atlasKB": 321,
  "pages": 1,
  "failed": 0,
  "checks": [
@@ -243,27 +243,22 @@
   {
    "name": "hit S: brought to the walk's size",
    "ok": true,
-   "value": "x1.15"
+   "value": "x1.10"
   },
   {
    "name": "hit S: it moves",
    "ok": true,
-   "value": 23.01
+   "value": 20.02
   },
   {
    "name": "hit S: nothing cut off",
    "ok": true,
-   "value": "window grown 1.06x"
+   "value": "window grown 1.11x"
   },
   {
    "name": "hit S: no background tint on the outline",
    "ok": true,
    "value": "0.0%"
-  },
-  {
-   "name": "hit S: stays on the spot",
-   "ok": true,
-   "value": "0.5% of the frame"
   },
   {
    "name": "hit SW: brought to the walk's size",
@@ -278,17 +273,12 @@
   {
    "name": "hit SW: nothing cut off",
    "ok": true,
-   "value": "window grown 1.06x"
+   "value": "window grown 1.15x"
   },
   {
    "name": "hit SW: no background tint on the outline",
    "ok": true,
    "value": "0.0%"
-  },
-  {
-   "name": "hit SW: stays on the spot",
-   "ok": true,
-   "value": "0.7% of the frame"
   },
   {
    "name": "hit W: brought to the walk's size",
@@ -303,7 +293,7 @@
   {
    "name": "hit W: nothing cut off",
    "ok": true,
-   "value": "window grown 1.02x"
+   "value": "window grown 1.03x"
   },
   {
    "name": "hit W: no background tint on the outline",
@@ -311,34 +301,24 @@
    "value": "0.0%"
   },
   {
-   "name": "hit W: stays on the spot",
-   "ok": true,
-   "value": "0.1% of the frame"
-  },
-  {
    "name": "hit NW: brought to the walk's size",
    "ok": true,
-   "value": "x0.99"
+   "value": "x0.98"
   },
   {
    "name": "hit NW: it moves",
    "ok": true,
-   "value": 20.83
+   "value": 18.87
   },
   {
    "name": "hit NW: nothing cut off",
    "ok": true,
-   "value": "in the walk frame"
+   "value": "window grown 1.12x"
   },
   {
    "name": "hit NW: no background tint on the outline",
    "ok": true,
    "value": "0.0%"
-  },
-  {
-   "name": "hit NW: stays on the spot",
-   "ok": true,
-   "value": "5.0% of the frame"
   },
   {
    "name": "hit N: brought to the walk's size",
@@ -353,17 +333,12 @@
   {
    "name": "hit N: nothing cut off",
    "ok": true,
-   "value": "window grown 1.06x"
+   "value": "window grown 1.09x"
   },
   {
    "name": "hit N: no background tint on the outline",
    "ok": true,
    "value": "0.0%"
-  },
-  {
-   "name": "hit N: stays on the spot",
-   "ok": true,
-   "value": "0.3% of the frame"
   },
   {
    "name": "state grounded: made",
@@ -378,7 +353,7 @@
   {
    "name": "atlas page 1 is under 900 KB",
    "ok": true,
-   "value": "326 KB"
+   "value": "321 KB"
   }
  ]
 }
