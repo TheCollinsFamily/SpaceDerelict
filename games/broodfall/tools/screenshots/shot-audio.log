@@ -45,3 +45,20 @@ C: a skirmish played through: build, assault, organ stage, the royal, the win
   PASS  limbs grown (5)
   PASS  wave 1: the assault music
   PASS  between waves: the organ stage's music (organ)
+  PASS  wave 2: the assault music
+  PASS  the run is won (won)
+  PASS  the victory fanfare (sting:sting-victory)
+  PASS  the data pad set down calmly (sfx:pad-won)
+  PASS  the royal roars as it takes the field (sfx:boss-roar)
+  PASS  the core evolves (sfx:core-evolve)
+  PASS  and its sting (sting:sting-core)
+  PASS  an organ grown in the organ stage: sfx:organ-place
+  PASS  a wave cleared (sting:sting-cleared)
+  PASS  cards drawn: sfx:card-draw
+  PASS  shots landing: sfx:hit-blast, sfx:hit-splat
+  PASS  limb classes heard: sfx:fire-lash, sfx:fire-lob, sfx:fire-spit
+  PASS  the busiest second started 10 effects (73 played, 26 held back by the limits)
+  PASS  no page errors ()
+the proof: C:\Users\Merry\dev\space-derelict\games\broodfall\notes\screens\2026-09-30\audio-proof.mp4
+
+all passed

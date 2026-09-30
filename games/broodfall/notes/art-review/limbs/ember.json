@@ -1,7 +1,7 @@
 {
  "family": "ember",
- "frames": 114,
- "atlasKB": 888,
+ "frames": 130,
+ "atlasKB": 1011,
  "failed": 0,
  "checks": [
   {
@@ -87,12 +87,12 @@
   {
    "name": "from behind, idle: it moves",
    "ok": true,
-   "value": 0.16
+   "value": 0.17
   },
   {
    "name": "from behind, idle: it is calm",
    "ok": true,
-   "value": 0.16
+   "value": 0.17
   },
   {
    "name": "from behind, idle: inside the frame",

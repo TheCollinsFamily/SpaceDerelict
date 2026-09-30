@@ -1,7 +1,7 @@
 {
  "family": "amp",
- "frames": 101,
- "atlasKB": 651,
+ "frames": 130,
+ "atlasKB": 847,
  "failed": 0,
  "checks": [
   {
@@ -17,17 +17,17 @@
   {
    "name": "idle: it moves",
    "ok": true,
-   "value": 0.19
+   "value": 0.3
   },
   {
    "name": "idle: it is calm",
    "ok": true,
-   "value": 0.19
+   "value": 0.3
   },
   {
    "name": "idle: inside the frame",
    "ok": true,
-   "value": "186,70-458,568"
+   "value": "186,60-458,568"
   },
   {
    "name": "idle: no background tint on the outline",
@@ -37,7 +37,7 @@
   {
    "name": "idle: ends the size it began",
    "ok": true,
-   "value": "0% change"
+   "value": "3% change"
   },
   {
    "name": "fire: no background tint on the outline",
@@ -62,7 +62,7 @@
   {
    "name": "it stands in its cell",
    "ok": true,
-   "value": "0.3% of it lies in front of its cell"
+   "value": "0.0% of it lies in front of its cell"
   },
   {
    "name": "from behind, where it stands is marked",
