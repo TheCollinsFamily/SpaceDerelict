@@ -6,7 +6,7 @@
  * core) at several limb/core scale pairs, each at the home zoom and close on the core, so the
  * pairs can be set side by side. The renderer reads `?limbScale=&coreScale=` (isoRender.ts).
  *
- * Usage (DEV server, nothing is built): node tools/shot-scale.mjs [limb:core ...] [--tag after]
+ * Usage (its own build in dist-scale, so no other session's save reloads it): node tools/shot-scale.mjs [limb:core ...] [--tag after]
  *   default pairs: 1:1 (before) 0.9:1.12 0.84:1.22 0.78:1.32
  * Screenshots: notes/screens/2026-09-30/scale-<tag>-<limb>-<core>-{home,close}.jpg
  */
@@ -29,7 +29,7 @@ const turnAt = args.indexOf('--turn');
 const turn = turnAt >= 0 ? Number(args[turnAt + 1]) : 0;
 const pairs = args.filter((a) => /^[\d.]+:[\d.]+$/.test(a)).map((a) => a.split(':').map(Number));
 if (!pairs.length) pairs.push([1, 1], [0.9, 1.12], [0.84, 1.22], [0.78, 1.32]);
-const FAMILIES = (process.env.SCALE_FAMILIES || 'frond,spitter,maw,lasher,impaler').split(',');
+const FAMILIES = (process.env.SCALE_FAMILIES || 'frond,maw,spitter,lasher,impaler').split(',');
 
 function freePort() {
   try {
@@ -41,9 +41,15 @@ function freePort() {
     }
   } catch {}
 }
+// Its own build (dist-scale): the dev server reloads the page whenever another session saves a file.
+const DIST = 'dist-scale';
+if (!args.includes('--no-build')) {
+  const b = spawnSync(process.platform === 'win32' ? 'npx.cmd' : 'npx', ['vite', 'build', '--outDir', DIST, '--emptyOutDir'], { cwd: root, stdio: 'pipe', shell: process.platform === 'win32', encoding: 'utf8' });
+  if (b.status !== 0) { console.error(b.stdout, b.stderr); process.exit(1); }
+}
 function startDev() {
   freePort();
-  const child = spawn(process.platform === 'win32' ? 'npx.cmd' : 'npx', ['vite', '--port', String(PORT), '--strictPort'], { cwd: root, stdio: 'pipe', shell: process.platform === 'win32' });
+  const child = spawn(process.platform === 'win32' ? 'npx.cmd' : 'npx', ['vite', 'preview', '--outDir', DIST, '--port', String(PORT), '--strictPort'], { cwd: root, stdio: 'pipe', shell: process.platform === 'win32' });
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error('vite did not start in 40s')), 40000);
     child.stdout.on('data', (d) => { if (String(d).includes('localhost')) { clearTimeout(timer); resolve(child); } });

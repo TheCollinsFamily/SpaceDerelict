@@ -11,7 +11,7 @@
  * Runs the dev server on its own port (5247) with hot reload off, so another session's save
  * does not reload the page mid-scene; headless Chromium on the GPU (HANDOFF.md).
  *
- * Usage: node tools/shot-hud-options.mjs [theme ...]   (themes: current newsreel ship brood hybrid)
+ * Usage: node tools/shot-hud-options.mjs [theme ...]   (themes: current ship)
  * JPEGs: notes/screens/2026-09-30/hud-options/<theme>-<a|b|c|d>.jpg and compare.jpg
  */
 import { spawn, execSync, spawnSync } from 'node:child_process';
@@ -30,11 +30,8 @@ const PORT = Number(process.env.BROODFALL_PORT || 5247);
 const SEED = 7;
 /** `current` is today's look (no ?hud), the others the options. */
 const ALL = [
-  { id: 'current', hud: '', label: 'CURRENT — procurement khaki' },
-  { id: 'newsreel', hud: 'newsreel', label: '1 — Empire operator software (1950s)' },
-  { id: 'ship', hud: 'ship', label: '2 — The ship\'s austere black' },
-  { id: 'brood', hud: 'brood', label: '3 — The bioweapon\'s own view' },
-  { id: 'hybrid', hud: 'hybrid', label: '4 — Hybrid: ship frame, empire broadcasts' },
+  { id: 'current', hud: 'classic', label: 'BEFORE — the classic khaki console (?hud=classic)' },
+  { id: 'ship', hud: 'ship', label: 'NOW — the ship console (the default)' },
 ];
 const want = new Set(process.argv.slice(2).filter((a) => !a.startsWith('--')));
 const themes = ALL.filter((t) => want.size === 0 || want.has(t.id));
@@ -82,7 +79,7 @@ try {
     await page.waitForFunction(() => window.broodfall && window.broodfall.view() === 'iso', null, { timeout: 60000 });
     await page.waitForTimeout(2500);
     const applied = await page.evaluate(() => document.documentElement.dataset.hud || '');
-    check(applied === (t.hud || 'console'), `theme applied (${applied})`);
+    check(applied === t.hud, `theme applied (${applied})`);
 
     // The same board for every theme: meat, then five limbs on the first cells that take them.
     const built = await page.evaluate(() => {
@@ -160,12 +157,15 @@ try {
     jpg(join(tmp, `${t.id}-a.png`), `${t.id}-a.jpg`);
 
     // (d) Close: the resource bar and one card, stacked.
+    const cdp = await page.context().newCDPSession(page);
+    await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1600, height: 1000, deviceScaleFactor: 2, mobile: false });
+    await page.waitForTimeout(600);
     const top = await page.locator('#topbar').boundingBox();
     await page.screenshot({ path: join(tmp, `${t.id}-d1.png`), clip: { x: 0, y: top.y, width: 1100, height: top.height } });
     const card = page.locator('#hand .card').nth(0);
     await card.screenshot({ path: join(tmp, `${t.id}-d2.png`) });
     const r = spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-i', join(tmp, `${t.id}-d1.png`), '-i', join(tmp, `${t.id}-d2.png`),
-      '-filter_complex', '[1:v]scale=iw*2:ih*2:flags=lanczos,pad=1100:ih:20:0:color=0x111111[c];[0:v][c]vstack', '-q:v', '3', join(out, `${t.id}-d.jpg`)]);
+      '-filter_complex', '[1:v]pad=2200:ih+40:20:20:color=0x111111[c];[0:v][c]vstack', '-q:v', '3', join(out, `${t.id}-d.jpg`)]);
     check(r.status === 0, `close crop (${String(r.stderr || '').slice(0, 120)})`);
 
     check(errors.length === 0, errors.length ? `page errors: ${errors.join(' | ').slice(0, 300)}` : 'no page errors');
