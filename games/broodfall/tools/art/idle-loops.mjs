@@ -44,10 +44,11 @@ function diff(a, b) { // mean abs diff over the union of opaque pixels, and the 
   }
   return { mad: sum / Math.max(1, n), moved: moved / Math.max(1, n) };
 }
-function measure(img, size, cols, start, count) {
+function measure(img, size, cols, start, count, pingpong = false) {
   const fr = []; for (let i = 0; i < count; i++) fr.push(frame(img, size, cols, start + i));
   const steps = []; for (let i = 0; i < count - 1; i++) steps.push(diff(fr[i], fr[i + 1]));
-  const seam = diff(fr[count - 1], fr[0]);
+  // A ping-pong (the game plays it forward and back, src/render/idleClock.ts) has no seam: its turn is one step back.
+  const seam = pingpong ? diff(fr[count - 1], fr[count - 2]) : diff(fr[count - 1], fr[0]);
   let amp = 0, ampMoved = 0; for (let i = 1; i < count; i++) { const d = diff(fr[0], fr[i]); if (d.mad > amp) { amp = d.mad; ampMoved = d.moved; } }
   const mean = steps.reduce((a, s) => a + s.mad, 0) / steps.length;
   const maxStep = Math.max(...steps.map((s) => s.mad));
@@ -60,9 +61,9 @@ const rows = [];
 for (const [name, a] of Object.entries(m.limbs)) {
   const img = load(a.atlas);
   const idle = a.anims.idle;
-  const r = measure(img, a.frame, a.cols, idle.start, idle.count);
-  rows.push({ name, side: 'front', fps: idle.fps, count: idle.count, big: !!a.big, frame: a.frame, ...r });
-  if (a.back?.anims?.idle) { const b = a.back.anims.idle; rows.push({ name, side: 'back', fps: b.fps, count: b.count, big: !!a.big, frame: a.frame, ...measure(img, a.frame, a.cols, b.start, b.count) }); }
+  const r = measure(img, a.frame, a.cols, idle.start, idle.count, !!idle.pingpong);
+  rows.push({ name, side: 'front', fps: idle.fps, count: idle.count, big: !!a.big, frame: a.frame, pong: !!idle.pingpong, breathe: !!idle.breathe, ...r });
+  if (a.back?.anims?.idle) { const b = a.back.anims.idle; rows.push({ name, side: 'back', fps: b.fps, count: b.count, big: !!a.big, frame: a.frame, pong: !!b.pingpong, breathe: !!b.breathe, ...measure(img, a.frame, a.cols, b.start, b.count, !!b.pingpong) }); }
 }
 for (const s of m.board.coreEvo.stages) {
   const i = s.idle; const img = load(i.atlas);
@@ -70,5 +71,5 @@ for (const s of m.board.coreEvo.stages) {
 }
 fs.writeFileSync(OUT + 'idle-motion.json', JSON.stringify(rows, null, 1));
 const f = (x, d = 1) => x.toFixed(d).padStart(6);
-console.log('name              side   fps  n   loop_s  step  maxStep  seam  seam/step  amp  moved%  holds');
-for (const r of rows) console.log(`${r.name.padEnd(17)} ${r.side.padEnd(5)} ${f(r.fps, 2)} ${String(r.count).padStart(2)} ${f(r.count / r.fps, 2)} ${f(r.mean)} ${f(r.maxStep)} ${f(r.seam)} ${f(r.seamRatio, 2)} ${f(r.amp)} ${f(r.movedMean * 100)} ${String(r.holds).padStart(3)}`);
+console.log('name              side   fps  n   loop_s  step  maxStep  seam  seam/step  amp  moved%  holds  play');
+for (const r of rows) console.log(`${r.name.padEnd(17)} ${r.side.padEnd(5)} ${f(r.fps, 2)} ${String(r.count).padStart(2)} ${f(r.count / r.fps, 2)} ${f(r.mean)} ${f(r.maxStep)} ${f(r.seam)} ${f(r.seamRatio, 2)} ${f(r.amp)} ${f(r.movedMean * 100)} ${String(r.holds).padStart(3)}  ${r.pong ? "pong" : "loop"}${r.breathe ? "+breathe" : ""}`);

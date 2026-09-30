@@ -200,8 +200,8 @@ export function fineMoved(a, b) {
   }
   return moved / Math.max(1, n);
 }
-/** An idle under this share moving per step reads as still at game zoom: the game breathes it (src/render/idleClock.ts). */
-const STILL = 0.03;
+/** An idle under this share moving per step (at 12 fps) reads as still at game zoom: the game breathes it (src/render/idleClock.ts). */
+const STILL = 0.02;
 
 /** Mean change over the pixels solid in either (as tools/art/idle-loops.mjs measures an atlas). */
 export function fineDiff(a, b) {
@@ -258,7 +258,7 @@ export function idleCut(frames, fine = fineFrames(frames), { min = 16, max = 46,
   // How much of it ever changes over the loop (from its first frame to the one most unlike it).
   let reach = 0;
   for (let i = cut.start + 1; i < cut.end; i++) reach = Math.max(reach, fineMoved(fine[cut.start], fine[i]));
-  return { ...cut, treat, moved, reach, breathe: reach < STILL, fade: treat === 'fade' ? Math.min(fadeFrames, cut.start, cut.end - cut.start - 4) : 0 };
+  return { ...cut, treat, moved, reach, breathe: moved < STILL, fade: treat === 'fade' ? Math.min(fadeFrames, cut.start, cut.end - cut.start - 4) : 0 };
 }
 
 /**

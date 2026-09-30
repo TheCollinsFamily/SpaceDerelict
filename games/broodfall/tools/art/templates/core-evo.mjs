@@ -198,6 +198,14 @@ function keyed(file) {
 /** Pixels of frame for each pixel of clip: as sharp as the old core (640 px frames for its idle's box). */
 let SHARP = null;
 
+/** The side of the square frame that holds every one of the frames about the foot (in clip pixels). */
+function sideOf(frames, foot) {
+  const box = unionBox(frames);
+  const up = foot.y - box.y0;
+  const down = Math.max(0, box.y1 - foot.y);
+  return Math.ceil(Math.max(2 * Math.max(foot.x - box.x0, box.x1 - foot.x), up + down) * 1.04);
+}
+
 /**
  * Cut frames around the foot, in the one mapping: `foot` is where stage 1 stands in the clip's
  * pixels, `collar1` how wide stage 1's collar is there. Returns the atlas entry of one clip.
@@ -206,7 +214,7 @@ function cut(name, frames, foot, collar1, fps) {
   const box = unionBox(frames);
   const up = foot.y - box.y0;
   const down = Math.max(0, box.y1 - foot.y);
-  const side = Math.ceil(Math.max(2 * Math.max(foot.x - box.x0, box.x1 - foot.x), up + down) * 1.04);
+  const side = sideOf(frames, foot);
   const x0 = Math.round(foot.x - side / 2);
   const y0 = Math.round(foot.y - up - (side - (up + down)) / 2);
   const F = Math.round(side * SHARP);
@@ -251,7 +259,12 @@ export function bakeCoreEvo() {
     // A loop whose two ends do not meet cleanly (seam over 0.25: stage 4's was 0.40) is played
     // forward and back (the studio's Ping-Pong, lib/leaflit.mjs frameList): it has no seam at all.
     const pong = loop.seam > 0.25;
-    const run = pick(all.slice(loop.start, loop.end), pong ? 12 : 16);
+    // Every frame of the loop at 12 fps that one picture can hold (Sep 30 2026: 16 of up to 46 stepped at
+    // 5 fps; anim-README.md). A picture is kept to what a GPU takes as one texture (8,192 a side) and
+    // about 45 million pixels, the size of stage 4's; the game cross-fades between the frames kept.
+    const F = Math.round(sideOf(all.slice(loop.start, loop.end), foot) * SHARP);
+    const fit = Math.max(16, Math.min(Math.floor(8192 / F) ** 2, Math.floor(45e6 / (F * F))));
+    const run = pick(all.slice(loop.start, loop.end), pong ? 12 : Math.min(loop.end - loop.start, fit));
     const frames = pong ? frameList(0, run.length - 1, true).map((i) => run[i]) : run;
     const idle = cut(`stage-${s.id}`, frames, foot, collar1, 0);
     idle.entry.fps = Number(((pong ? run.length : idle.entry.count) / ((loop.end - loop.start) / 12)).toFixed(2));

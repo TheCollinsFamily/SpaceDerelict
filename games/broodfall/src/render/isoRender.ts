@@ -1297,7 +1297,7 @@ export class IsoRenderer extends Renderer {
       v.sprite.anchor.set(side.anchor[0], side.anchor[1]);
       v.sprite.scale.set(mirror ? -scale : scale, scale);
       // An idle that barely moves breathes a little about its foot (src/render/idleClock.ts).
-      if (idle.breathe && v.fireT < 0 && !held) {
+      if (idle.breathe && !art.flat && v.fireT < 0 && !held) {
         const [bx, by] = breath(this.idleClock, phaseOf(t.id));
         v.sprite.scale.set(v.sprite.scale.x * bx, v.sprite.scale.y * by);
       }

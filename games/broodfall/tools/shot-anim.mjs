@@ -13,7 +13,7 @@
  * not Playwright's recordVideo (1 Mbit VP8, too soft to judge a 256 px sprite by); ffmpeg lays
  * them on their real timestamps and writes 30 fps H.264.
  *
- *   node tools/shot-anim.mjs [limbs core siege]   (its own dev server on BROODFALL_PORT, default 5317)
+ *   node tools/shot-anim.mjs [limbs core siege] [--after]   (--after: anim-11/12/13-*-AFTER.mp4; its own dev server on BROODFALL_PORT, default 5317)
  * Videos: notes/screens/2026-09-30/anim-*.mp4. Frames scratch: <os tmp>/broodfall-anim-frames/.
  */
 import { spawn, spawnSync, execSync } from 'node:child_process';
@@ -31,7 +31,10 @@ mkdirSync(notes, { recursive: true });
 const PORT = Number(process.env.BROODFALL_PORT || 5317);
 const URL0 = `http://localhost:${PORT}/`;
 const VW = 1600, VH = 900;
-const only = process.argv.slice(2);
+const only = process.argv.slice(2).filter((a) => !a.startsWith('--'));
+// --after: the reels again after the idles were fixed (anim-11/12/13-*-AFTER.mp4, Sep 30 2026), beside the first ones.
+const AFTER = process.argv.includes('--after');
+const reel = (n, name) => AFTER ? `anim-${10 + n}-${name}-AFTER.mp4` : `anim-0${n}-${name}.mp4`;
 const want = (k) => !only.length || only.includes(k);
 
 /** The limbs of reel 1: fast and slow idles, small and BIG, a spread of looks. */
@@ -226,7 +229,7 @@ try {
     await rec.stop();
     const phase = await page.evaluate(() => ({ phase: window.broodfall.sim.phase, units: window.broodfall.sim.enemies.length }));
     console.log(`  after: phase ${phase.phase}, units on the board ${phase.units}`);
-    encode(rec.frames, join(notes, 'anim-01-limbs-idle-close.mp4'));
+    encode(rec.frames, join(notes, reel(1, 'limbs-idle-close')));
     await context.close();
   }
 
@@ -261,7 +264,7 @@ try {
       await idleFor(into, 5);
     }
     await rec.stop();
-    encode(rec.frames, join(notes, 'anim-02-core-stages.mp4'), keep);
+    encode(rec.frames, join(notes, reel(2, 'core-stages')), keep);
     await context.close();
   }
 
@@ -299,7 +302,7 @@ try {
     rec.start();
     await page.waitForTimeout(20500);
     await rec.stop();
-    encode(rec.frames, join(notes, 'anim-03-siege.mp4'));
+    encode(rec.frames, join(notes, reel(3, 'siege')));
     await context.close();
   }
 } finally {

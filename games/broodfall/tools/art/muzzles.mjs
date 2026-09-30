@@ -53,6 +53,29 @@ function cross(img, x, y, rgb, size = 9) {
   }
 }
 
+/** Digits, 3 by 5, to write the tenths on the grid. */
+const GLYPH = {
+  0: '111101101101111', 1: '010110010010111', 2: '111001111100111', 3: '111001111001111', 4: '101101111001001',
+  5: '111100111001111', 6: '111100111101111', 7: '111001010010010', 8: '111101111101111', 9: '111101111001111', '-': '000000111000000',
+};
+function write(img, text, x, y, rgb, px = 2) {
+  let cx = Math.round(x);
+  for (const ch of String(text)) {
+    const g = GLYPH[ch];
+    if (!g) { cx += 2 * px; continue; }
+    for (let r = 0; r < 5; r++) for (let c = 0; c < 3; c++) {
+      if (g[r * 3 + c] !== '1') continue;
+      for (let dy = 0; dy < px; dy++) for (let dx = 0; dx < px; dx++) {
+        const X = cx + c * px + dx, Y = Math.round(y) + r * px + dy;
+        if (X < 0 || Y < 0 || X >= img.w || Y >= img.h) continue;
+        const p = (Y * img.w + X) * 4;
+        img.data[p] = rgb[0]; img.data[p + 1] = rgb[1]; img.data[p + 2] = rgb[2]; img.data[p + 3] = 255;
+      }
+    }
+    cx += 4 * px;
+  }
+}
+
 /** The limbs that fire something the game draws leaving them (src/render/fxNames.ts FIRES_FROM). */
 const FIRING = ['spitter', 'sprout', 'quill', 'impaler', 'burster', 'tangler', 'blighter', 'mister', 'net',
   'frond', 'prism', 'ocular', 'ember', 'skipper', 'bombard', 'lobber', 'sling'];
@@ -91,6 +114,10 @@ function sheetOf(l, view) {
       line(tile, vx, 0, vx, TILE - 1, [20, 40, 160], heavy);
       const [, hy] = at(0, box.y0 + (h * i) / 10);
       line(tile, 0, hy, TILE - 1, hy, [20, 40, 160], heavy);
+      // The tenth, written at the top (x) and at the left (y): 0 to 10 across the box, negative or past 10 outside it.
+      const col = inside ? [0, 0, 0] : [90, 90, 90];
+      write(tile, i, vx + 2, 8, col);
+      write(tile, i, 2, hy + 2, col);
     }
     const [gx, gy] = at(f.x, f.y);
     cross(tile, gx, gy, [255, 230, 0], 7);
