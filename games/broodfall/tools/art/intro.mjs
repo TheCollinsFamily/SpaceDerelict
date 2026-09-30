@@ -77,7 +77,10 @@ export const SHOTS = [
       'faces and clothes; one of them points up. Seen from the street at their height, looking slightly up at them.' +
       ` ${NOTHING}`,
     clip: 'The camera holds, drifting very slightly. The insect people react: they step back, one points up, one ' +
-      'raises a hand to shield the eyes, antennae twitch. The red light on their faces swells brighter and brighter.',
+      'raises a hand to shield the eyes, antennae twitch. The red light on their faces swells brighter and brighter. ' +
+      // v1 (art-src/intro/v1/lookup-clip-a.mp4): a human man walked into the right of the frame half-way through.
+      'Only the insect people already in the picture: nobody new walks in, and every face stays an insect face ' +
+      'with big round eyes; no human appears at any moment.',
   },
   {
     id: 'fall',
@@ -224,9 +227,15 @@ function bakeShot(id) {
   const clip = raw(id, '-clip.mp4');
   const out = path.join(OUT, `${id}.mp4`);
   const drop = flashes(clip);
-  const head = drop ? 'trim=start_frame=1,setpts=PTS-STARTPTS,' : '';
+  // A last frame that jumps (much more than the frames before it moved) is cut off too.
+  const f = greyFrames(clip);
+  const steps = f.slice(1).map((x, i) => diff(f[i], x));
+  const med = [...steps].sort((a, b) => a - b)[steps.length >> 1];
+  const dropLast = steps[steps.length - 1] > Math.max(4, 4 * med);
+  const keep = f.length - (drop ? 1 : 0) - (dropLast ? 1 : 0);
+  const head = `${drop ? 'trim=start_frame=1,setpts=PTS-STARTPTS,' : ''}${dropLast ? `trim=end_frame=${keep},` : ''}`;
   ffmpeg(['-i', clip, '-vf', `${head}scale=1280:720:flags=lanczos,fps=24,format=yuv420p`, ...ENC, out], `${id} bake`);
-  return { drop };
+  return { drop, dropLast };
 }
 
 /**
@@ -240,21 +249,36 @@ function bakeMenu() {
   const tmp = raw('menu', '-plain.mp4');
   ffmpeg(['-i', clip, '-vf', 'trim=start_frame=1,setpts=PTS-STARTPTS,scale=1280:720:flags=lanczos,fps=24,format=yuv420p',
     '-an', '-c:v', 'libx264', '-crf', '14', '-pix_fmt', 'yuv420p', tmp], 'menu plain');
-  const f = greyFrames(tmp);
-  const steps = f.slice(1).map((x, i) => diff(f[i], x)).sort((a, b) => a - b);
-  const step = steps[steps.length >> 1];
+  let f = greyFrames(tmp);
+  const raw_ = f.slice(1).map((x, i) => diff(f[i], x));
+  const step = [...raw_].sort((a, b) => a - b)[raw_.length >> 1];
+  // The model SNAPS to the end frame in its last few frames (Sep 30: 0.5-0.8 steps against 0.1). Those
+  // frames are cut, and the crossfade below closes the loop instead.
+  let snap = f.length;
+  for (let i = Math.max(1, f.length - 12); i < f.length; i++) if (raw_[i - 1] > 3 * step) { snap = i; break; }
+  if (snap < f.length) {
+    const cut = raw('menu', '-cut.mp4');
+    ffmpeg(['-i', tmp, '-vf', `trim=end_frame=${snap},setpts=PTS-STARTPTS`, '-an', '-c:v', 'libx264', '-crf', '14',
+      '-pix_fmt', 'yuv420p', cut], 'menu cut snap');
+    fs.renameSync(cut, tmp);
+    f = greyFrames(tmp);
+  }
   const seam = diff(f[f.length - 1], f[0]);
-  let fixed = 'none';
-  if (seam > Math.max(1.5, 2.5 * step)) {
+  let fixed = snap < raw_.length + 1 ? `cut ${raw_.length + 1 - snap} snapping frames; ` : '';
+  if (seam > Math.max(0.5, 3 * step)) {
     const L = duration(tmp);
     const D = 0.75;
-    // A = [D, L], B = [0, D]; B fades in over A's last D seconds, so the loop ends on frame D, where A begins.
+    // tail T = [L-D, L] crossfades into head H = [0, D] (this is the start of the loop), then the middle
+    // M = [D, L-D]. M's last frame leads into T's first, H's last (weight 1 on the last blended frame) into M's first: every joint is a
+    // neighbour of the clip, and the loop is L-D long.
     ffmpeg(['-i', tmp, '-filter_complex',
-      `[0:v]split[a][b];[a]trim=start=${D},setpts=PTS-STARTPTS[A];[b]trim=end=${D},setpts=PTS-STARTPTS[B];` +
-      `[A][B]xfade=transition=fade:duration=${D}:offset=${(L - 2 * D).toFixed(3)},format=yuv420p[v]`,
+      `[0:v]split=3[t][h][m];[t]trim=start=${(L - D).toFixed(3)},setpts=PTS-STARTPTS[T];` +
+      `[h]trim=end=${D},setpts=PTS-STARTPTS[H];[m]trim=start=${D}:end=${(L - D).toFixed(3)},setpts=PTS-STARTPTS[M];` +
+      `[T][H]blend=all_expr='A*(1-min(T/${(D - 1 / 24).toFixed(4)},1))+B*min(T/${(D - 1 / 24).toFixed(4)},1)'[X];[X][M]concat=n=2:v=1,format=yuv420p[v]`,
     '-map', '[v]', ...ENC, out], 'menu crossfade');
-    fixed = `crossfade ${D}s`;
+    fixed += `crossfade ${D}s`;
   } else {
+    fixed += 'none';
     ffmpeg(['-i', tmp, ...ENC, out], 'menu encode');
   }
   const g = greyFrames(out);

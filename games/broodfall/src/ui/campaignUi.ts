@@ -245,7 +245,7 @@ export class CampaignUi {
     return `<div class="cp-icom${this.greeting ? ' greeting' : ''}" role="dialog" aria-label="YOKE">
       <div class="cp-icom-stage"></div>
       <div class="cp-icom-panel">
-        <div class="cp-icom-head"><span class="screen-kicker">YOKE — SHIP'S INTELLIGENCE</span>
+        <div class="cp-icom-head"><span class="screen-kicker">YOKE · SHIPBOARD INTERCOM</span>
           <button class="cp-icom-x" data-act="icom-close" title="Close (she stays aboard)">✕</button></div>
         <div class="cp-talk" data-act="${this.greeting ? 'icom-skip' : ''}" title="${this.greeting ? 'Click to skip ahead' : ''}">${lines}${pend}</div>
         ${this.greeting ? '<div class="cp-icom-hint">click her words to skip ahead</div>' : ''}

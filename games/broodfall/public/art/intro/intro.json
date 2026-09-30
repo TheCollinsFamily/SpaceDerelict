@@ -16,7 +16,7 @@
       "id": "fall",
       "video": "intro/fall.mp4",
       "poster": "intro/fall.webp",
-      "seconds": 4.042
+      "seconds": 4
     },
     {
       "id": "impact",
@@ -52,6 +52,6 @@
   "menu": {
     "video": "intro/menu.mp4",
     "poster": "intro/menu.webp",
-    "seconds": 4
+    "seconds": 3.083
   }
 }

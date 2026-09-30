@@ -1,0 +1,46 @@
+{
+ "state": "teasing",
+ "kind": "loop",
+ "frames": 192,
+ "seconds": 8,
+ "kb": 1677,
+ "studio": {
+  "keyColour": [
+   16,
+   240,
+   32
+  ],
+  "similarityPct": 45,
+  "endFrame": 96,
+  "loop": "pingpong",
+  "chromaKeyFrom": "C:\\Users\\Merry\\dev\\reality-fabricator\\reality-fabricator-frontend\\src\\assets\\vtuber-creator\\model-exporter.js"
+ },
+ "failed": 0,
+ "checks": [
+  {
+   "name": "the turn comes back (Ping-Pong closes the loop anyway)",
+   "ok": true,
+   "value": 10.16
+  },
+  {
+   "name": "she moves",
+   "ok": true,
+   "value": 14.39
+  },
+  {
+   "name": "no green on her outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "she fills the stage as a person does",
+   "ok": true,
+   "value": "24-24% of it"
+  },
+  {
+   "name": "she stays under the top edge",
+   "ok": true,
+   "value": "0.0 px a frame on row 0"
+  }
+ ]
+}

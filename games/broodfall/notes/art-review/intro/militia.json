@@ -12,5 +12,6 @@
     "cut": false,
     "frozen": false
   },
-  "drop": true
+  "drop": true,
+  "dropLast": false
 }

@@ -2,15 +2,16 @@
   "id": "lookup",
   "model": "seegen:sd2-mini",
   "seconds": 4.042,
-  "bytes": 1385146,
+  "bytes": 1300523,
   "motion": {
     "frames": 97,
-    "medianStep": 0.99,
-    "maxStep": 2.52,
-    "maxAtFrame": 13,
-    "startToEnd": 53.11,
+    "medianStep": 1.01,
+    "maxStep": 2.08,
+    "maxAtFrame": 96,
+    "startToEnd": 53.1,
     "cut": false,
     "frozen": false
   },
-  "drop": false
+  "drop": false,
+  "dropLast": false
 }

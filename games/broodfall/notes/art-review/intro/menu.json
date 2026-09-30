@@ -1,21 +1,21 @@
 {
   "id": "menu",
   "model": "seegen:sd2-fast",
-  "seconds": 4,
-  "bytes": 376160,
+  "seconds": 3.083,
+  "bytes": 288618,
   "motion": {
-    "frames": 96,
+    "frames": 74,
     "medianStep": 0.07,
-    "maxStep": 0.79,
-    "maxAtFrame": 93,
-    "startToEnd": 0.8,
+    "maxStep": 0.41,
+    "maxAtFrame": 1,
+    "startToEnd": 0.29,
     "cut": false,
     "frozen": true
   },
   "loop": {
     "step": 0.12,
-    "seamBefore": 1.07,
-    "seamAfter": 0.8,
-    "fixed": "none"
+    "seamBefore": 0.76,
+    "seamAfter": 0.29,
+    "fixed": "cut 4 snapping frames; crossfade 0.75s"
   }
 }
