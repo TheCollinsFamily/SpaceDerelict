@@ -9,6 +9,7 @@ import {
 } from '../src/meta/campaign';
 import type { RunReport } from '../src/meta/goals';
 import { FACTIONS, MIDPOINT_CAPTURES, type FactionId } from '../content/campaign';
+import { scenesOf } from '../content/media';
 import type { RunStats } from '../src/sim/types';
 
 const report = (won: boolean): RunReport => ({
@@ -118,7 +119,7 @@ describe('going over', () => {
     expect(perksOf(s)).toEqual(expect.arrayContaining(['objectors1', 'translator']));
     expect(s.beatsSeen).toEqual([...seenBefore, 'understand', 'stop-war']);
     const titles = s.pendingScenes.map((p) => p.scene.title);
-    expect(titles[0]).toBe('Chapter Thirty'); // the Voice's goodbye comes first
+    expect(titles[0]).toBe('Chapter Thirty: The Meek'); // the Voice's goodbye comes first
     expect(titles.slice(1)).toEqual(['The First Summit', 'The Leaked Plans']);
     expect(s.pendingScenes.some((p) => p.offer)).toBe(false);
     // Not hostile: no counter-attack comes of it, and his ground is his.
@@ -160,6 +161,9 @@ describe('going over', () => {
         expect(f.midpoint.farewell[g.id]?.lines.length, `${f.id} left for ${g.id}`).toBeGreaterThan(1);
       }
       expect(f.perks[f.midpoint.loyalPerk]).toBeTruthy();
+      // A leader's line is voiced by its faction + scene title (content/media.ts voiceKey): no two of a faction's scenes share one.
+      const titles = scenesOf(f).map((x) => x.title);
+      expect(new Set(titles).size, `${f.id}: ${titles.join(' | ')}`).toBe(titles.length);
       expect(f.midpoint.loyal.lines.length).toBeGreaterThan(1);
       expect(f.midpoint.coda.lines.length).toBeGreaterThan(1);
       // Every line names its speaker (the scene card splits on the first colon).

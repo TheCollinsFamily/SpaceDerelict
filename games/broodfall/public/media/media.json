@@ -800,6 +800,300 @@
    "seconds": 7.207,
    "text": "Quick one, off the record — the upload. You know that I know, right? Great bit. Keep it running. It is doing wonders for morale.",
    "who": "The Director"
+  },
+  "delegation/a-letter-about-the-preacher/1": {
+   "file": "media/voice/delegation__a-letter-about-the-preacher__1.ogg",
+   "seconds": 6.806,
+   "text": "Dear Visitor. We hear the radio preacher has you reading his book. We are so sorry. Nobody should have to read that book.",
+   "who": "Delegate"
+  },
+  "delegation/a-letter-about-the-preacher/2": {
+   "file": "media/voice/delegation__a-letter-about-the-preacher__2.ogg",
+   "seconds": 6.707,
+   "text": "We do not need you to believe anything. We only need you to keep doing what you are doing, and to let us thank you for it.",
+   "who": "Delegate"
+  },
+  "delegation/a-letter-about-the-preacher/3": {
+   "file": "media/voice/delegation__a-letter-about-the-preacher__3.ogg",
+   "seconds": 4.707,
+   "text": "Our pilots have stopped flying. His have not. Just something to think about.",
+   "who": "Delegate"
+  },
+  "delegation/a-letter-about-the-preacher/4": {
+   "file": "media/voice/delegation__a-letter-about-the-preacher__4.ogg",
+   "seconds": 2.207,
+   "text": "P.S. There will be snacks.",
+   "who": "Delegate"
+  },
+  "delegation/a-letter-about-the-man-with-the-dish/1": {
+   "file": "media/voice/delegation__a-letter-about-the-man-with-the-dish__1.ogg",
+   "seconds": 8.607,
+   "text": "Dear Visitor. We have seen who you are talking to. The man with the dish. He sent you FROZEN people, and called it consent.",
+   "who": "Delegate"
+  },
+  "delegation/a-letter-about-the-man-with-the-dish/2": {
+   "file": "media/voice/delegation__a-letter-about-the-man-with-the-dish__2.ogg",
+   "seconds": 6.606,
+   "text": "We would never send you anyone. We would only get out of your way. We are very, very good at getting out of the way.",
+   "who": "Delegate"
+  },
+  "delegation/a-letter-about-the-man-with-the-dish/3": {
+   "file": "media/voice/delegation__a-letter-about-the-man-with-the-dish__3.ogg",
+   "seconds": 6.806,
+   "text": "Everything he promises you, we simply do. Our pilots have stopped flying. Our generals cannot find their boots.",
+   "who": "Delegate"
+  },
+  "delegation/thank-you-anyway/0": {
+   "file": "media/voice/delegation__thank-you-anyway__0.ogg",
+   "seconds": 6.606,
+   "text": "Dear Visitor. We heard the radio. We understand. Some journeys need a different travelling companion.",
+   "who": "Delegate"
+  },
+  "delegation/thank-you-anyway/1": {
+   "file": "media/voice/delegation__thank-you-anyway__1.ogg",
+   "seconds": 8.007,
+   "text": "We will keep the field. If you ever look down, we will still be here with the cards. Page one says: \"Thank you anyway.\"",
+   "who": "Delegate"
+  },
+  "delegation/we-hope-he-is-kind-to-you/0": {
+   "file": "media/voice/delegation__we-hope-he-is-kind-to-you__0.ogg",
+   "seconds": 9.007,
+   "text": "Dear Visitor. We hear the man with the dish calls you now. We hope he is kind to you. We hope you are kind to him. One of you should be.",
+   "who": "Delegate"
+  },
+  "delegation/we-hope-he-is-kind-to-you/1": {
+   "file": "media/voice/delegation__we-hope-he-is-kind-to-you__1.ogg",
+   "seconds": 7.907,
+   "text": "We will keep the field. If you ever look down, we will still be here with the cards. Page one says: \"Thank you anyway.\"",
+   "who": "Delegate"
+  },
+  "delegation/the-cards-took-a-while-to-dry/0": {
+   "file": "media/voice/delegation__the-cards-took-a-while-to-dry__0.ogg",
+   "seconds": 4.707,
+   "text": "We heard about the others. The preacher and the man with the dish. And you stayed with us.",
+   "who": "Delegate"
+  },
+  "delegation/the-cards-took-a-while-to-dry/1": {
+   "file": "media/voice/delegation__the-cards-took-a-while-to-dry__1.ogg",
+   "seconds": 4.106,
+   "text": "Eleven thousand of us cried in a field. The cards took a while to dry.",
+   "who": "Delegate"
+  },
+  "delegation/the-cards-took-a-while-to-dry/2": {
+   "file": "media/voice/delegation__the-cards-took-a-while-to-dry__2.ogg",
+   "seconds": 8.507,
+   "text": "Our pickets have closed the depots. One more of their regiments will not be coming. It is the least we can do. It is, in fact, the least.",
+   "who": "Delegate"
+  },
+  "delegation/a-last-letter-from-the-field/0": {
+   "file": "media/voice/delegation__a-last-letter-from-the-field__0.ogg",
+   "seconds": 6.106,
+   "text": "Dear Visitor. We watched it end from the field. You did not end it with us, and that is all right.",
+   "who": "Delegate"
+  },
+  "delegation/a-last-letter-from-the-field/1": {
+   "file": "media/voice/delegation__a-last-letter-from-the-field__1.ogg",
+   "seconds": 5.306,
+   "text": "We always knew you were good. We only hoped you would be good with us. Gentle endings.",
+   "who": "Delegate"
+  },
+  "faithful/letters-in-a-field/0": {
+   "file": "media/voice/faithful__letters-in-a-field__0.ogg",
+   "seconds": 8.007,
+   "text": "Brothers and sisters, a word to our Visitor, who is keeping bad company.",
+   "who": "The Voice"
+  },
+  "faithful/letters-in-a-field/1": {
+   "file": "media/voice/faithful__letters-in-a-field__1.ogg",
+   "seconds": 7.806,
+   "text": "The peace people write to you in a FIELD. Letters, in a field! Brother, we have forty stations.",
+   "who": "The Voice"
+  },
+  "faithful/letters-in-a-field/2": {
+   "file": "media/voice/faithful__letters-in-a-field__2.ogg",
+   "seconds": 7.806,
+   "text": "They think you came to heal the world. We know what you came for. It is written, chapter one to chapter twenty.",
+   "who": "The Voice"
+  },
+  "faithful/letters-in-a-field/3": {
+   "file": "media/voice/faithful__letters-in-a-field__3.ogg",
+   "seconds": 7.806,
+   "text": "Walk with us and every city you take is scripture. Our martyrs march in their armies. Our militants hold your ground.",
+   "who": "The Voice"
+  },
+  "faithful/a-man-who-plays-games/0": {
+   "file": "media/voice/faithful__a-man-who-plays-games__0.ogg",
+   "seconds": 8.007,
+   "text": "To the Visitor, who takes calls from a man who plays games while the cities burn.",
+   "who": "The Voice"
+  },
+  "faithful/a-man-who-plays-games/1": {
+   "file": "media/voice/faithful__a-man-who-plays-games__1.ogg",
+   "seconds": 7.907,
+   "text": "He says he does the maths. Brother, our Book did the maths two thousand years ago, and it came out the same.",
+   "who": "The Voice"
+  },
+  "faithful/a-man-who-plays-games/2": {
+   "file": "media/voice/faithful__a-man-who-plays-games__2.ogg",
+   "seconds": 8.007,
+   "text": "He will sell you, and sell us, and sell the Awaited One's seat in the front row. Come home to the Hour.",
+   "who": "The Voice"
+  },
+  "faithful/chapter-thirty-the-meek/0": {
+   "file": "media/voice/faithful__chapter-thirty-the-meek__0.ogg",
+   "seconds": 7.606,
+   "text": "Brothers and sisters, do not weep. Chapter thirty: \"And the Beast shall walk a while with the meek.\"",
+   "who": "The Voice"
+  },
+  "faithful/chapter-thirty-the-meek/1": {
+   "file": "media/voice/faithful__chapter-thirty-the-meek__1.ogg",
+   "seconds": 6.917,
+   "text": "It is WRITTEN. We misread the date again. It only makes us stronger. Keep your radios on.",
+   "who": "The Voice"
+  },
+  "faithful/chapter-thirty-the-merchant/0": {
+   "file": "media/voice/faithful__chapter-thirty-the-merchant__0.ogg",
+   "seconds": 7.106,
+   "text": "Brothers and sisters, do not weep. Chapter thirty: \"And the Beast shall sup with the merchant.\"",
+   "who": "The Voice"
+  },
+  "faithful/chapter-thirty-the-merchant/1": {
+   "file": "media/voice/faithful__chapter-thirty-the-merchant__1.ogg",
+   "seconds": 7.806,
+   "text": "It is WRITTEN. We misread the date again. It only makes us stronger. Keep your donations coming.",
+   "who": "The Voice"
+  },
+  "faithful/the-visitor-said-no/0": {
+   "file": "media/voice/faithful__the-visitor-said-no__0.ogg",
+   "seconds": 8.007,
+   "text": "Brothers and sisters, the Visitor was TEMPTED. The peace people. The man with the dish. And the Visitor said NO.",
+   "who": "The Voice"
+  },
+  "faithful/the-visitor-said-no/1": {
+   "file": "media/voice/faithful__the-visitor-said-no__1.ogg",
+   "seconds": 7.907,
+   "text": "Open your purses. Every drop the Visitor makes from this day starts with the tithe of the faithful.",
+   "who": "The Voice"
+  },
+  "faithful/chapter-thirty-one/0": {
+   "file": "media/voice/faithful__chapter-thirty-one__0.ogg",
+   "seconds": 7.606,
+   "text": "It ended, brothers and sisters. Not with us. But it ENDED, and that is the main thing.",
+   "who": "The Voice"
+  },
+  "faithful/chapter-thirty-one/1": {
+   "file": "media/voice/faithful__chapter-thirty-one__1.ogg",
+   "seconds": 7.407,
+   "text": "We will be writing chapter thirty-one. You are in it, brother. You are beasts two and three.",
+   "who": "The Voice"
+  },
+  "institute/a-cold-call-the-field-people/0": {
+   "file": "media/voice/institute__a-cold-call-the-field-people__0.ogg",
+   "seconds": 6.407,
+   "text": "Hey — sorry, cold call, I got your channel from, uh, the channel. Look. The field-letter people.",
+   "who": "The Director"
+  },
+  "institute/a-cold-call-the-field-people/1": {
+   "file": "media/voice/institute__a-cold-call-the-field-people__1.ogg",
+   "seconds": 5.306,
+   "text": "They are lovely. They are also a rounding error. Nobody in that field has ever opened a spreadsheet.",
+   "who": "The Director"
+  },
+  "institute/a-cold-call-the-field-people/2": {
+   "file": "media/voice/institute__a-cold-call-the-field-people__2.ogg",
+   "seconds": 5.606,
+   "text": "I can give you science up front, labs that seed you anywhere, and a partner who can actually keep up with you.",
+   "who": "The Director"
+  },
+  "institute/a-cold-call-the-field-people/3": {
+   "file": "media/voice/institute__a-cold-call-the-field-people__3.ogg",
+   "seconds": 6.606,
+   "text": "No pressure. Well, some pressure. I modelled it. You switch in sixty-two per cent of timelines.",
+   "who": "The Director"
+  },
+  "institute/a-cold-call-the-field-people/5": {
+   "file": "media/voice/institute__a-cold-call-the-field-people__5.ogg",
+   "seconds": 1.817,
+   "text": "I don't like to talk about the other thirty-eight.",
+   "who": "The Director"
+  },
+  "institute/a-cold-call-zero-chapters/0": {
+   "file": "media/voice/institute__a-cold-call-zero-chapters__0.ogg",
+   "seconds": 4.907,
+   "text": "Okay, real talk. You are doing theology homework. For a RADIO HOST.",
+   "who": "The Director"
+  },
+  "institute/a-cold-call-zero-chapters/1": {
+   "file": "media/voice/institute__a-cold-call-zero-chapters__1.ogg",
+   "seconds": 5.907,
+   "text": "I listened to chapter nine on the drive in. You are beasts two and three. Is that the relationship you want?",
+   "who": "The Director"
+  },
+  "institute/a-cold-call-zero-chapters/2": {
+   "file": "media/voice/institute__a-cold-call-zero-chapters__2.ogg",
+   "seconds": 5.306,
+   "text": "Come work with adults. Science on day one, labs anywhere, zero chapters.",
+   "who": "The Director"
+  },
+  "institute/no-hard-feelings/0": {
+   "file": "media/voice/institute__no-hard-feelings__0.ogg",
+   "seconds": 6.806,
+   "text": "Okay. Okay. No hard feelings. I had you staying at ninety-one per cent, so honestly it's a model problem.",
+   "who": "The Director"
+  },
+  "institute/no-hard-feelings/1": {
+   "file": "media/voice/institute__no-hard-feelings__1.ogg",
+   "seconds": 4.907,
+   "text": "I'm sending a small invoice for the cryo-lab subjects. Not a big one. A symbolic one.",
+   "who": "The Director"
+  },
+  "institute/no-hard-feelings/2": {
+   "file": "media/voice/institute__no-hard-feelings__2.ogg",
+   "seconds": 3.207,
+   "text": "The field people, though. Wow. Hope you like snacks.",
+   "who": "The Director"
+  },
+  "institute/you-picked-the-radio-guy/0": {
+   "file": "media/voice/institute__you-picked-the-radio-guy__0.ogg",
+   "seconds": 2.466,
+   "text": "The radio guy. You picked the RADIO GUY.",
+   "who": "The Director"
+  },
+  "institute/you-picked-the-radio-guy/1": {
+   "file": "media/voice/institute__you-picked-the-radio-guy__1.ogg",
+   "seconds": 5.707,
+   "text": "… I'm fine. For the record, my post said this was a live possibility. Section four.",
+   "who": "The Director"
+  },
+  "institute/you-picked-the-radio-guy/2": {
+   "file": "media/voice/institute__you-picked-the-radio-guy__2.ogg",
+   "seconds": 1.377,
+   "text": "I'm going to go play a match.",
+   "who": "The Director"
+  },
+  "institute/on-retainer/0": {
+   "file": "media/voice/institute__on-retainer__0.ogg",
+   "seconds": 6.106,
+   "text": "I heard the radio guy pitched you. And the field. And you stayed. Respect. Genuinely.",
+   "who": "The Director"
+  },
+  "institute/on-retainer/1": {
+   "file": "media/voice/institute__on-retainer__1.ogg",
+   "seconds": 7.106,
+   "text": "I'm putting you on retainer. Science up front, every drop. It's not a bribe, it's a loyalty-adjusted expected-value transfer.",
+   "who": "The Director"
+  },
+  "institute/a-voicemail/0": {
+   "file": "media/voice/institute__a-voicemail__0.ogg",
+   "seconds": 4.606,
+   "text": "Hey. Saw the ending. Solid execution. Not how I'd have done it.",
+   "who": "The Director"
+  },
+  "institute/a-voicemail/1": {
+   "file": "media/voice/institute__a-voicemail__1.ogg",
+   "seconds": 2.386,
+   "text": "Anyway. The invoice is still open.",
+   "who": "The Director"
   }
  },
  "narration": {

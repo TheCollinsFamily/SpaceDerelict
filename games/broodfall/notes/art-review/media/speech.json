@@ -213,5 +213,80 @@
   "line": "The other faith says THEIR book foretold the Visitor first. Their book is a forgery of our forgery.",
   "heard": "The other faith says their book foretold the visitor first. Their book is a forgery of our forgery.",
   "share": 1
+ },
+ "faithful/chapter-thirty-one/1": {
+  "line": "We will be writing chapter thirty-one. You are in it, brother. You are beasts two and three.",
+  "heard": "We will be writing chapter 31. You are in it, brother. You are beasts two and three.",
+  "share": 0.86
+ },
+ "faithful/chapter-thirty-the-merchant/0": {
+  "line": "Brothers and sisters, do not weep. Chapter thirty: \"And the Beast shall sup with the merchant.\"",
+  "heard": "Brothers and sisters, do not weep. Chapter 30. And the beast shall sup with the merchant.",
+  "share": 0.93
+ },
+ "faithful/chapter-thirty-the-meek/1": {
+  "line": "It is WRITTEN. We misread the date again. It only makes us stronger. Keep your radios on.",
+  "heard": "It is written. We misread the date again. It only makes us stronger. Keep your radios on.",
+  "share": 1
+ },
+ "faithful/letters-in-a-field/1": {
+  "line": "The peace people write to you in a FIELD. Letters, in a field! Brother, we have forty stations.",
+  "heard": "Peace people write to you in a field. Letters in a field. Brother, we have 40 stations.",
+  "share": 0.83
+ },
+ "faithful/chapter-thirty-the-merchant/1": {
+  "line": "It is WRITTEN. We misread the date again. It only makes us stronger. Keep your donations coming.",
+  "heard": "It is written. We misread the date again. It only makes us stronger. Keep your donations coming.",
+  "share": 1
+ },
+ "faithful/letters-in-a-field/3": {
+  "line": "Walk with us and every city you take is scripture. Our martyrs march in their armies. Our militants hold your ground.",
+  "heard": "Walk with us and every city you take is scripture. Our martyrs march in their armies. Our militants hold your ground.",
+  "share": 1
+ },
+ "faithful/letters-in-a-field/0": {
+  "line": "Brothers and sisters, a word to our Visitor, who is keeping bad company.",
+  "heard": "Brothers and sisters, a word to our visitor who is keeping bad company.",
+  "share": 1
+ },
+ "faithful/the-visitor-said-no/1": {
+  "line": "Open your purses. Every drop the Visitor makes from this day starts with the tithe of the faithful.",
+  "heard": "Open your purses. Every drop the visitor makes from this day starts with the tithe of the faithful.",
+  "share": 1
+ },
+ "faithful/the-visitor-said-no/0": {
+  "line": "Brothers and sisters, the Visitor was TEMPTED. The peace people. The man with the dish. And the Visitor said NO.",
+  "heard": "Brothers and sisters, the visitor was tempted. The peace people. The man with the dish. And the visitor said no.",
+  "share": 1
+ },
+ "faithful/chapter-thirty-one/0": {
+  "line": "It ended, brothers and sisters. Not with us. But it ENDED, and that is the main thing.",
+  "heard": "It ended brothers and sisters, not with us, but it ended and that is the main thing.",
+  "share": 1
+ },
+ "faithful/chapter-thirty-the-meek/0": {
+  "line": "Brothers and sisters, do not weep. Chapter thirty: \"And the Beast shall walk a while with the meek.\"",
+  "heard": "Brothers and sisters, do not weep. Chapter 30. And the beast shall walk a while with the meek.",
+  "share": 0.94
+ },
+ "faithful/letters-in-a-field/2": {
+  "line": "They think you came to heal the world. We know what you came for. It is written, chapter one to chapter twenty.",
+  "heard": "They think you came to heal the world. We know what you came for. It is written, chapter one to chapter 20.",
+  "share": 0.94
+ },
+ "faithful/a-man-who-plays-games/1": {
+  "line": "He says he does the maths. Brother, our Book did the maths two thousand years ago, and it came out the same.",
+  "heard": "He says he does the maths. Brother, our book did the maths two thousand years ago, and it came out the same.",
+  "share": 1
+ },
+ "faithful/a-man-who-plays-games/2": {
+  "line": "He will sell you, and sell us, and sell the Awaited One's seat in the front row. Come home to the Hour.",
+  "heard": "Will sell you and sell us and sell the awaited one's seat in the front row. Come home to the hour.",
+  "share": 1
+ },
+ "faithful/a-man-who-plays-games/0": {
+  "line": "To the Visitor, who takes calls from a man who plays games while the cities burn.",
+  "heard": "To the visitor who takes calls from a man who plays games while the cities burn.",
+  "share": 1
  }
 }

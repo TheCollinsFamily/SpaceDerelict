@@ -14,7 +14,8 @@ export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 export const API_BASE = process.env.RFAB_API_BASE || 'https://api.rfab.ai';
 const KEY = process.env.RFAB_API_KEY;
 /** Raw takes: git-ignored (art-src/). */
-export const RAW = path.join(ROOT, 'art-src', 'media');
+// BROODFALL_MEDIA_RAW: put raw takes somewhere else (Oct 1 2026: art-src was wiped and is being recovered; new takes went to art-src-new/media).
+export const RAW = process.env.BROODFALL_MEDIA_RAW || path.join(ROOT, 'art-src', 'media');
 /** Baked: what the game loads. */
 export const OUT = path.join(ROOT, 'public', 'media');
 export const REVIEW = path.join(ROOT, 'notes', 'art-review', 'media');

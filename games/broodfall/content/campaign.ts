@@ -348,14 +348,14 @@ export const FACTIONS: FactionDef[] = [
     },
     midpoint: {
       offers: {
-        faithful: { title: 'A New Letter in the Field', lines: [
+        faithful: { title: 'A Letter About the Preacher', lines: [
           'You: (log) Survey cameras: the field again. Eleven thousand cards. A new letter, and it is for me.',
           'Delegate: Dear Visitor. We hear the radio preacher has you reading his book. We are so sorry. Nobody should have to read that book.',
           'Delegate: We do not need you to believe anything. We only need you to keep doing what you are doing, and to let us thank you for it.',
           'Delegate: Our pilots have stopped flying. His have not. Just something to think about.',
           'Delegate: P.S. There will be snacks.',
         ] },
-        institute: { title: 'A New Letter in the Field', lines: [
+        institute: { title: 'A Letter About the Man With the Dish', lines: [
           'You: (log) Survey cameras: the field again. Eleven thousand cards. A new letter, and it is for me.',
           'Delegate: Dear Visitor. We have seen who you are talking to. The man with the dish. He sent you FROZEN people, and called it consent.',
           'Delegate: We would never send you anyone. We would only get out of your way. We are very, very good at getting out of the way.',
@@ -368,7 +368,7 @@ export const FACTIONS: FactionDef[] = [
           'Delegate (letter, by field): We will keep the field. If you ever look down, we will still be here with the cards. Page one says: "Thank you anyway."',
           'You: (log) The Delegation forgave me in eleven thousand cards. Page two is a recipe.',
         ] },
-        institute: { title: 'Thank You Anyway', lines: [
+        institute: { title: 'We Hope He Is Kind to You', lines: [
           'Delegate (letter, by field): Dear Visitor. We hear the man with the dish calls you now. We hope he is kind to you. We hope you are kind to him. One of you should be.',
           'Delegate (letter, by field): We will keep the field. If you ever look down, we will still be here with the cards. Page one says: "Thank you anyway."',
           'You: (log) The Delegation forgave me in eleven thousand cards. Page two is a recipe.',
@@ -468,14 +468,14 @@ export const FACTIONS: FactionDef[] = [
     },
     midpoint: {
       offers: {
-        delegation: { title: 'A Word to the Visitor, On the Air', lines: [
+        delegation: { title: 'Letters, in a Field!', lines: [
           'The Voice: (on the air) Brothers and sisters, a word to our Visitor, who is keeping bad company.',
           'The Voice: The peace people write to you in a FIELD. Letters, in a field! Brother, we have forty stations.',
           'The Voice: They think you came to heal the world. We know what you came for. It is written, chapter one to chapter twenty.',
           'The Voice: Walk with us and every city you take is scripture. Our martyrs march in their armies. Our militants hold your ground.',
           'You: (log) The preacher is poaching me on live radio. The donation line is open.',
         ] },
-        institute: { title: 'A Word to the Visitor, On the Air', lines: [
+        institute: { title: 'A Man Who Plays Games', lines: [
           'The Voice: (on the air) To the Visitor, who takes calls from a man who plays games while the cities burn.',
           'The Voice: He says he does the maths. Brother, our Book did the maths two thousand years ago, and it came out the same.',
           'The Voice: He will sell you, and sell us, and sell the Awaited One\'s seat in the front row. Come home to the Hour.',
@@ -483,12 +483,12 @@ export const FACTIONS: FactionDef[] = [
         ] },
       },
       farewell: {
-        delegation: { title: 'Chapter Thirty', lines: [
+        delegation: { title: 'Chapter Thirty: The Meek', lines: [
           'The Voice: (on the air) Brothers and sisters, do not weep. Chapter thirty: "And the Beast shall walk a while with the meek."',
           'The Voice: It is WRITTEN. We misread the date again. It only makes us stronger. Keep your radios on.',
           'You: (log) There is no chapter thirty. There is now.',
         ] },
-        institute: { title: 'Chapter Thirty', lines: [
+        institute: { title: 'Chapter Thirty: The Merchant', lines: [
           'The Voice: (on the air) Brothers and sisters, do not weep. Chapter thirty: "And the Beast shall sup with the merchant."',
           'The Voice: It is WRITTEN. We misread the date again. It only makes us stronger. Keep your donations coming.',
           'You: (log) There is no chapter thirty. There is now.',
@@ -576,7 +576,7 @@ export const FACTIONS: FactionDef[] = [
     },
     midpoint: {
       offers: {
-        delegation: { title: 'A Cold Call', lines: [
+        delegation: { title: 'A Cold Call: The Field People', lines: [
           'The Director: Hey — sorry, cold call, I got your channel from, uh, the channel. Look. The field-letter people.',
           'The Director: They are lovely. They are also a rounding error. Nobody in that field has ever opened a spreadsheet.',
           'The Director: I can give you science up front, labs that seed you anywhere, and a partner who can actually keep up with you.',
@@ -584,7 +584,7 @@ export const FACTIONS: FactionDef[] = [
           'You: What happens in the other thirty-eight?',
           'The Director: I don\'t like to talk about the other thirty-eight.',
         ] },
-        faithful: { title: 'A Cold Call', lines: [
+        faithful: { title: 'A Cold Call: Zero Chapters', lines: [
           'The Director: Okay, real talk. You are doing theology homework. For a RADIO HOST.',
           'The Director: I listened to chapter nine on the drive in. You are beasts two and three. Is that the relationship you want?',
           'The Director: Come work with adults. Science on day one, labs anywhere, zero chapters.',
@@ -597,7 +597,7 @@ export const FACTIONS: FactionDef[] = [
           'The Director: I\'m sending a small invoice for the cryo-lab subjects. Not a big one. A symbolic one.',
           'The Director: The field people, though. Wow. Hope you like snacks.',
         ] },
-        faithful: { title: 'No Hard Feelings', lines: [
+        faithful: { title: 'You Picked the Radio Guy', lines: [
           'The Director: The radio guy. You picked the RADIO GUY.',
           'The Director: … I\'m fine. For the record, my post said this was a live possibility. Section four.',
           'The Director: I\'m going to go play a match.',
