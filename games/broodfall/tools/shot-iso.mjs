@@ -84,16 +84,39 @@ try {
    * The view eases to where it is going (Home, a turn, a zoom) over about a second: a click is aimed only
    * once it has arrived. Aiming from where the camera WAS and clicking where it IS was the "click picking
    * flake" of Sep 30 (a limb aimed at while the view was still easing back from a close-up, 10-11/12).
+   * With the field full a frame can take longer than 100 ms under a headless GPU: two reads 100 ms apart
+   * then straddle NO frame and look "still" while the view is mid-ease (the camera at 0.750 when aimed,
+   * 0.660 at the click). So: reads at least 300 ms AND at least 3 drawn frames apart, unchanged three
+   * times running, and the camera within half a pixel of where the game is taking it.
    */
-  const settle = async () => {
+  const settle = async (timeout = 15000) => {
+    const t0 = Date.now();
     let was = null;
-    for (let i = 0; i < 60; i++) {
-      const c = await page.evaluate(() => window.broodfall.camera());
-      if (was && Math.abs(c.x - was.x) < 0.25 && Math.abs(c.y - was.y) < 0.25 && Math.abs(c.scale - was.scale) < 0.0005) return;
+    let still = 0;
+    while (Date.now() - t0 < timeout) {
+      const c = await page.evaluate(() => new Promise((resolve) => {
+        const start = performance.now();
+        let frames = 0;
+        const tick = () => { frames++; if (frames >= 3 && performance.now() - start >= 300) resolve(window.broodfall.camera()); else requestAnimationFrame(tick); };
+        requestAnimationFrame(tick);
+      }));
+      const same = was && Math.abs(c.x - was.x) < 0.25 && Math.abs(c.y - was.y) < 0.25 && Math.abs(c.scale - was.scale) < 0.0005;
+      still = same ? still + 1 : 0;
       was = c;
-      await page.waitForTimeout(100);
+      if (still >= 3) return true;
     }
+    console.log('    the view did not settle in ' + timeout + ' ms: ' + JSON.stringify(was));
+    return false;
   };
+  /** Where the game is taking the camera (src/render/isoRender.ts updateCamera) and how far it still is. */
+  const camGap = () => page.evaluate(() => {
+    const r = window.broodfall.renderer;
+    const scale = r.fit * r.zoom;
+    const tx = r.app.renderer.width / 2 - (r.mid.x + r.pan.x) * scale;
+    const ty = r.app.renderer.height / 2 - (r.mid.y + r.pan.y) * scale;
+    const c = window.broodfall.camera();
+    return Math.max(Math.abs(c.x - tx), Math.abs(c.y - ty), Math.abs(c.scale - scale) * 1000);
+  });
   const shot = async (name) => { await page.waitForTimeout(250); await canvas.screenshot({ path: join(shots, `iso-${name}.png`) }); };
 
   await step(5);
@@ -139,7 +162,10 @@ try {
   check(noLimb.length === 0, 'every limb on the field has its picture', noLimb.join(', ') || field.families.join(', '));
 
   // A click aimed at a limb on a roof reaches that limb's cell.
-  await settle();
+  await page.keyboard.press('Home');
+  const settled = await settle();
+  const gap = await camGap();
+  check(settled && gap < 0.5, 'Home eases the view home and it comes to rest (no endless drift)', `${gap.toFixed(3)} px from its goal`);
   const aim = await page.evaluate(() => {
     const s = window.broodfall.sim;
     const out = [];
@@ -157,14 +183,15 @@ try {
   for (const a of aim) {
     if (a.x < 10 || a.y < 10 || a.x > a.vw - 10 || a.y > a.vh - 10) continue;
     tried++;
-    const cx = box.x + (a.x / a.vw) * box.width;
-    const cy = box.y + (a.y / a.vh) * box.height;
-    const got = await page.evaluate(([x, y]) => {
+    // Aimed from the camera AT THE CLICK (the same task as the click: no frame can move the view between).
+    const got = await page.evaluate(([id, bx, by, bw, bh]) => {
+      const t = window.broodfall.sim.towers.find((k) => k.id === id);
+      const p = window.broodfall.worldToScreen(t.pos.x, t.pos.y);
+      const x = bx + (p.x / p.vw) * bw, y = by + (p.y / p.vh) * bh;
       const el = document.querySelector('#stage canvas');
-      const ev = new MouseEvent('pointermove', { clientX: x, clientY: y, bubbles: true });
-      el.dispatchEvent(ev);
+      el.dispatchEvent(new MouseEvent('pointermove', { clientX: x, clientY: y, bubbles: true }));
       return window.broodfall.cellAtClient(x, y);
-    }, [cx, cy]);
+    }, [a.id, box.x, box.y, box.width, box.height]);
     if ((await reachedOrCovered(page, a, got)) !== 'missed') reached++;
     else console.log('    missed at turn 0: aimed ' + a.cells.join('/') + ', reached ' + got + ' ' + JSON.stringify(await page.evaluate(([aimed, gotCell]) => { const s = window.broodfall.sim; const f = (x) => s.towers.find((t) => s.cellsOf(t).includes(x)); const ta = f(aimed), tg = f(gotCell); return { aimed: ta ? ta.family : '?', aimedH: s.map.heights[aimed], got: tg ? tg.family : 'no limb', gotH: s.map.heights[gotCell], camNow: window.broodfall.camera(), nowAt: ta ? window.broodfall.worldToScreen(ta.pos.x, ta.pos.y) : null }; }, [a.cells[0], got])) + ' aimedAt ' + Math.round(a.x) + ',' + Math.round(a.y) + ' camAtAim ' + JSON.stringify(camAtAim));
   }
@@ -200,14 +227,18 @@ try {
     await settle();
     const at = await page.evaluate(() => window.broodfall.sim.towers.slice(0, 12).map((t) => {
       const p = window.broodfall.worldToScreen(t.pos.x, t.pos.y);
-      return { cell: t.cell, cells: window.broodfall.sim.cellsOf(t), x: p.x, y: p.y, vw: p.vw, vh: p.vh };
+      return { id: t.id, cell: t.cell, cells: window.broodfall.sim.cellsOf(t), x: p.x, y: p.y, vw: p.vw, vh: p.vh };
     }));
     const b = await canvas.boundingBox();
     let hit = 0, tried = 0;
     for (const a of at) {
       if (a.x < 10 || a.y < 10 || a.x > a.vw - 10 || a.y > a.vh - 10) continue;
       tried++;
-      const got = await page.evaluate(([x, y]) => window.broodfall.cellAtClient(x, y), [b.x + (a.x / a.vw) * b.width, b.y + (a.y / a.vh) * b.height]);
+      const got = await page.evaluate(([id, bx, by, bw, bh]) => {
+        const t = window.broodfall.sim.towers.find((k) => k.id === id);
+        const p = window.broodfall.worldToScreen(t.pos.x, t.pos.y);
+        return window.broodfall.cellAtClient(bx + (p.x / p.vw) * bw, by + (p.y / p.vh) * bh);
+      }, [a.id, b.x, b.y, b.width, b.height]);
       if ((await reachedOrCovered(page, a, got)) !== 'missed') hit++;
       else console.log('    missed at a turn: aimed ' + a.cells.join('/') + ', reached ' + got + ' ' + (await page.evaluate(([c, d]) => { const s = window.broodfall.sim; const f = (x) => s.towers.find((t) => s.cellsOf(t).includes(x)); const t1 = f(d), t2 = f(c); return (t1 ? t1.family + ' ' + JSON.stringify(t1.cells ?? [t1.cell]) : '?') + ' vs ' + (t2 ? t2.family : 'no limb') + ' height ' + s.map.heights[c]; }, [got, a.cells[0]])));
     }

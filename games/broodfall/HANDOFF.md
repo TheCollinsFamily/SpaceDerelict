@@ -270,6 +270,11 @@ baked into `public/audio/` (Opus .ogg, 11 MB, `manifest.json`). **Listen:**
 - **Trap:** a bus with nothing flowing through it is not processed by Chrome, so a gain GLIDED to a new
   level starts from the old one the moment a sound arrives (effects at 0% were heard at -46 dBFS). Bus
   gains are SET, not glided.
+- **The menu's hum answers the first click** (fix pass, Sep 30): the scene's loop is fetched and decoded while the
+  page still may not play, it starts BEFORE the ~150 effects are fetched (they had queued it for 3+ s), and while a
+  loop's buffer is still decoding (a 2-minute Opus loop takes ~2.5 s) it is STREAMED from its file through the music
+  bus (`streamLoop`), the decoded loop taking over at the same place with a 0.25 s crossfade
+  (`__bfAudio.state().streamed`). Beat B checks the hum within 2.5 s of the click (measured ~0.4 s).
 - **Checks:** `tests/audio.test.ts`, `tests/audio-board.test.ts`, `node tools/shot-audio.mjs [A B C]`
   (dev server 5263, no autoplay flag: every sound unlocked by a real click; 58 checks).
 - The film's decision: on a page that cannot play sound yet it waits behind "▸ BEGIN" (click or any

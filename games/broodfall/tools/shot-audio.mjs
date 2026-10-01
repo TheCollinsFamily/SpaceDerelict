@@ -258,14 +258,29 @@ try {
     await sleep(800);
     check(!(await audio(page)).unlocked, 'nothing plays before a click');
     await page.mouse.move(640, 700);
+    const clickedAt = await page.evaluate(() => performance.now());
     await page.mouse.down(); await page.mouse.up();
     await sleep(300);
     check(await startRecording(p), 'the mix is recorded');
-    await sleep(3500);
+    // What a player hears: the hum starts within a couple of seconds of the click. Waited on the loop
+    // actually PLAYING (window.__bfAudio.state().loop), not a fixed delay; the time it took is reported.
+    const humAt = await page.waitForFunction(() => window.__bfAudio.state().loop === 'theme-menu' && performance.now(), null, { timeout: 10000, polling: 50 })
+      .then((h) => h.jsonValue(), () => null);
     const m = await audio(page);
+    const took = humAt == null ? null : Math.round(humAt - clickedAt);
+    if (m.loop !== 'theme-menu' || took > 2500) console.log('    the menu music after the click: ' + JSON.stringify(await page.evaluate((t0) => ({
+      state: window.__bfAudio.state(), log: window.__bfAudio.log.filter((e) => e.kind === 'music' || e.kind === 'scene').map((e) => ({ ...e, t: e.t - t0 })),
+      audioFetches: performance.getEntriesByType('resource').filter((r) => r.name.includes('/audio/')).length,
+      menuFile: performance.getEntriesByType('resource').filter((r) => r.name.includes('theme-menu')).map((r) => ({ start: Math.round(r.startTime - t0), end: Math.round(r.responseEnd - t0) })),
+    }), clickedAt)));
     check(m.scene === 'menu' && m.loop === 'theme-menu', `the menu's music: the ship's hum (${m.loop})`);
+    check(took != null && took <= 2500, `the hum starts within a couple of seconds of the click (${took} ms)`);
+    await sleep(Math.max(0, 1000 - (took ?? 0)));
     const menuLevel = await meterMax(page, 1500);
     check(menuLevel > -60, `it is heard (meter peak ${menuLevel.toFixed(1)} dBFS)`);
+    // Streamed from the file while its buffer decoded: the seamless loop takes over once it has.
+    const handed = await page.waitForFunction(() => window.__bfAudio.state().loop === 'theme-menu' && !window.__bfAudio.state().streamed, null, { timeout: 15000 }).then(() => true, () => false);
+    check(handed, 'the decoded loop takes over from the streamed file (seamless loop points)');
     for (const id of ['#menu-campaign', '#menu-settings', '#menu-intro']) { await page.hover(id).catch(() => {}); await sleep(250); }
     await page.locator('#menu-settings').click();
     await page.waitForSelector('#settings:not(.hidden)');

@@ -113,7 +113,9 @@ export function initAudio(): void {
   const unlock = () => {
     const c = ensure();
     if (!c) return;
-    if (c.state !== 'running') void c.resume().then(() => { unlocked = true; afterUnlock(); }, () => {});
+    // Once only: the context's own statechange may have got there first (a second start would drop the
+    // first load of the scene's loop and fetch it again).
+    if (c.state !== 'running') void c.resume().then(() => { if (!unlocked) { unlocked = true; afterUnlock(); } }, () => {});
     else if (!unlocked) { unlocked = true; afterUnlock(); }
   };
   for (const ev of ['pointerdown', 'keydown', 'touchend'] as const) window.addEventListener(ev, unlock, { capture: true, passive: true });
@@ -131,12 +133,21 @@ export function initAudio(): void {
 }
 
 function afterUnlock(): void {
-  // The effects are small: all fetched now, so the first shot of a run is heard.
-  void loadManifest().then((m) => {
+  // The scene's loop FIRST, then the effects. The effects are small but many (~150 files): fetched all at
+  // once they queued the menu's hum behind them (six requests at a time to one server), and a player who
+  // clicked the menu heard nothing for seconds (Sep 30 fix pass: tools/shot-audio.mjs B, "(null)").
+  void startScene(scene, true).then(() => loadManifest()).then((m) => {
     if (!m) return;
+    // The effects are all fetched now, so the first shot of a run is heard.
     for (const s of Object.values(m.sfx)) for (const f of s.files) void buffer(f);
   });
-  startScene(scene, true);
+}
+
+/** Fetch and decode a scene's loop before the page may play (a suspended context decodes too): the click then only starts it. */
+function prefetchScene(next: MusicScene): void {
+  const id = SCENE_TRACK[next];
+  if (!id || !ctx) return;
+  void loadManifest().then((m) => { const e = m?.music[id]; if (e) void buffer(e.file, true); });
 }
 
 export const audioUnlocked = (): boolean => unlocked && ctx?.state === 'running';
@@ -273,7 +284,11 @@ export function routeMedia(el: HTMLMediaElement, bus: 'music' | 'voice'): boolea
 // ----------------------------------------------------------------------------- music
 
 /** `offset`: where in the loop (0..seconds) it started; `seconds`: the loop's length. */
-interface Playing { id: string; file: string; src: AudioBufferSourceNode; gain: GainNode; startedAt: number; offset: number; seconds: number }
+interface Playing {
+  id: string; file: string; src?: AudioBufferSourceNode; gain: GainNode; startedAt: number; offset: number; seconds: number;
+  /** A loop STREAMED from its file while its buffer decodes (startScene): where it is is the element's own clock. */
+  el?: HTMLAudioElement; loopStart?: number;
+}
 let loopNow: Playing | null = null;
 const fading = new Set<Playing>();
 const resumeAt = new Map<string, number>();
@@ -288,7 +303,10 @@ function playingFiles(): Set<string> {
 }
 
 /** Where a loop is now (seconds into it). */
-const positionOf = (p: Playing) => (ctx ? (p.offset + (ctx.currentTime - p.startedAt)) % Math.max(0.001, p.seconds) : 0);
+const positionOf = (p: Playing) => {
+  if (p.el) return Math.max(0, p.el.currentTime - (p.loopStart ?? 0)) % Math.max(0.001, p.seconds);
+  return ctx ? (p.offset + (ctx.currentTime - p.startedAt)) % Math.max(0.001, p.seconds) : 0;
+};
 
 function fadeOut(p: Playing, secs: number): void {
   if (!ctx) return;
@@ -298,8 +316,38 @@ function fadeOut(p: Playing, secs: number): void {
   p.gain.gain.setValueAtTime(p.gain.gain.value, t);
   p.gain.gain.linearRampToValueAtTime(0, t + secs);
   fading.add(p);
+  const gone = () => { fading.delete(p); try { p.gain.disconnect(); } catch { /* gone */ } };
+  if (p.el) {
+    const el = p.el;
+    window.setTimeout(() => { el.pause(); el.removeAttribute('src'); el.load(); gone(); }, (secs + 0.05) * 1000);
+    return;
+  }
+  if (!p.src) { gone(); return; }
   try { p.src.stop(t + secs + 0.05); } catch { /* stopped */ }
-  p.src.onended = () => { fading.delete(p); try { p.gain.disconnect(); } catch { /* gone */ } };
+  p.src.onended = gone;
+}
+
+/**
+ * Stream a loop from its file through the music bus (an <audio> element): what plays while the loop's
+ * buffer decodes. A two-minute loop takes seconds to decode (2.5 s measured on this laptop just after the
+ * page opened), and the menu's hum must answer the first click. Null when the element cannot be routed.
+ */
+function streamLoop(id: string, file: string, loopStart: number, seconds: number, offset: number, fade: number): Playing | null {
+  if (!ctx) return null;
+  try {
+    const el = new Audio();
+    el.preload = 'auto';
+    el.loop = true;
+    el.src = url(file);
+    el.currentTime = loopStart + offset;
+    const gain = ctx.createGain();
+    ctx.createMediaElementSource(el).connect(gain).connect(musicDuck);
+    const t = ctx.currentTime;
+    gain.gain.setValueAtTime(0, t);
+    gain.gain.linearRampToValueAtTime(1, t + fade);
+    void el.play().catch(() => {});
+    return { id, file, el, gain, startedAt: t, offset, seconds, loopStart };
+  } catch { return null; }
 }
 
 /** The scene the game is in; its loop is crossfaded in (a scene with none fades the music out). */
@@ -307,39 +355,60 @@ export function setScene(next: MusicScene): void {
   if (next === scene) return;
   scene = next;
   note({ kind: 'scene', id: next, played: audioUnlocked() });
-  startScene(next);
+  if (!audioUnlocked()) prefetchScene(next);
+  void startScene(next);
 }
 export const currentScene = (): MusicScene => scene;
 
-function startScene(next: MusicScene, fromUnlock = false): void {
+/** Resolves once the scene's loop is playing (or cannot). */
+function startScene(next: MusicScene, fromUnlock = false): Promise<void> {
   const c = ctx;
   const token = ++sceneToken;
   const id = SCENE_TRACK[next];
   const secs = SCENE_FADE[next];
-  if (!c || c.state !== 'running') return;
-  if (loopNow && loopNow.id === id) return;
+  if (!c || c.state !== 'running') return Promise.resolve();
+  if (loopNow && loopNow.id === id) return Promise.resolve();
   if (loopNow) { fadeOut(loopNow, secs); loopNow = null; }
-  if (!id) return;
-  void loadManifest().then(async (m) => {
+  if (!id) return Promise.resolve();
+  return loadManifest().then(async (m) => {
     const e = m?.music[id];
     if (!e) { note({ kind: 'music', id, played: false, why: m ? 'no-file' : 'no-manifest' }); return; }
-    const b = await buffer(e.file, true);
-    if (!b || token !== sceneToken || !ctx) return;
+    const pending = buffer(e.file, true);
+    const fade = fromUnlock ? 1.5 : secs;
+    const a = e.loopStart ?? 0;
+    let resume = resumeAt.get(id) ?? 0;
+    // Decoded already (prefetched while the page could not play, or heard before): the seamless loop at once.
+    // Not yet: the file streamed meanwhile, and the loop takes over from it where it has got to.
+    let b = await Promise.race([pending, new Promise<undefined>((r) => window.setTimeout(() => r(undefined), 100))]);
+    if (token !== sceneToken || !ctx) return;
+    let bridge: Playing | null = null;
+    if (b === undefined) {
+      const guess = e.loopEnd && e.loopEnd > a ? e.loopEnd - a : e.seconds - a;
+      bridge = streamLoop(id, e.file, a, guess, resume % Math.max(0.001, guess), fade);
+      if (bridge) { loopNow = bridge; note({ kind: 'music', id, played: true, why: 'streamed while it decodes' }); }
+      b = await pending;
+      if (token !== sceneToken || !ctx) return;
+      if (!b) return; // it cannot be decoded: the streamed file goes on looping
+      if (bridge) resume = positionOf(bridge);
+    }
+    if (!b) return;
     const src = ctx.createBufferSource();
     src.buffer = b;
     src.loop = e.loop !== false;
-    const a = e.loopStart ?? 0;
     const z = e.loopEnd && e.loopEnd > a ? Math.min(e.loopEnd, b.duration) : b.duration;
     src.loopStart = a;
     src.loopEnd = z;
     const gain = ctx.createGain();
     const t = ctx.currentTime;
     gain.gain.setValueAtTime(0, t);
-    gain.gain.linearRampToValueAtTime(1, t + (fromUnlock ? 1.5 : secs));
+    // Handed over from the streamed file: a short crossfade at the same place in the music.
+    gain.gain.linearRampToValueAtTime(1, t + (bridge ? 0.25 : fade));
+    if (bridge && loopNow === bridge) fadeOut(bridge, 0.25);
     src.connect(gain).connect(musicDuck);
-    const offset = (resumeAt.get(id) ?? 0) % (z - a);
+    const offset = resume % (z - a);
     src.start(t, a + offset);
     loopNow = { id, file: e.file, src, gain, startedAt: t, offset, seconds: z - a };
+    if (bridge) return;
     note({ kind: 'music', id, played: true });
   });
 }
@@ -436,7 +505,7 @@ function expose(): void {
   (window as unknown as { __bfAudio: unknown }).__bfAudio = {
     log,
     state: () => ({
-      context: ctx?.state ?? 'none', unlocked: audioUnlocked(), scene, loop: loopNow?.id ?? null, film: !!film,
+      context: ctx?.state ?? 'none', unlocked: audioUnlocked(), scene, loop: loopNow?.id ?? null, streamed: !!loopNow?.el, film: !!film,
       voices, ducks, away, manifest: !!manifest,
       gains: ctx ? { master: master.gain.value, music: musicBus.gain.value, sfx: sfxBus.gain.value, voice: voiceBus.gain.value, musicDuck: musicDuck.gain.value, sfxDuck: sfxDuck.gain.value } : null,
     }),
