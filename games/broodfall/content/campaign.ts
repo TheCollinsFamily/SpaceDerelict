@@ -239,7 +239,35 @@ export const TERRITORIES: TerritoryDef[] = [
 // ---------------------------------------------------------------------------
 export type FactionId = 'delegation' | 'faithful' | 'institute';
 export type PerkId = 'objectors1' | 'objectors2' | 'translator' | 'sleepers1' | 'sleepers2' | 'garrison'
-  | 'volunteers1' | 'volunteers2' | 'seedlabs' | 'kingdom' | 'pacified';
+  | 'volunteers1' | 'volunteers2' | 'seedlabs' | 'kingdom' | 'pacified'
+  // Kept by staying loyal at the midpoint (one per faction).
+  | 'pickets' | 'tithe' | 'retainer';
+
+/**
+ * THE MIDPOINT (Collins, Oct 1 2026: "a campaign midpoint where the player has an option to switch
+ * allies ... I would appreciate that as a player"). Once a campaign, MIDPOINT_CAPTURES territories into
+ * an alliance, the two other factions each make him an offer through their own channel. He goes over
+ * to one, or stays. Nobody turns on him either way (DESIGN.md: "none of them ever turns against you");
+ * the one he leaves takes it in character, and writes once more after the end.
+ *   Going over: the old ally's perks go (the beats he saw stay seen), its finale closes, and the new
+ *   route starts with SWITCH_HEAD_START captures already counted, so its first two beats play at once.
+ *   Staying: every perk is kept and the ally adds its loyalty perk.
+ * Rules: src/meta/campaign.ts (finish, switchAlly, stayLoyal).
+ */
+export const MIDPOINT_CAPTURES = 2;
+export const SWITCH_HEAD_START = 1;
+
+export interface MidpointDef {
+  /** This faction's offer, to someone allied with the key. */
+  offers: Partial<Record<FactionId, Scene>>;
+  /** This faction, left for the key. */
+  farewell: Partial<Record<FactionId, Scene>>;
+  /** This faction, when he turns the other two down. */
+  loyal: Scene;
+  loyalPerk: PerkId;
+  /** This faction's word after the ending of the ally he left it for. */
+  coda: Scene;
+}
 
 export interface Scene {
   title: string;
@@ -289,6 +317,8 @@ export interface FactionDef {
    */
   afterReveal?: Scene[];
   perks: Partial<Record<PerkId, string>>;
+  /** The midpoint: its offers to the others' allies, its farewells, its thanks for loyalty (MIDPOINT_CAPTURES above). */
+  midpoint: MidpointDef;
   /** The running jokes between beats: one letter / broadcast / call after every deployment while allied, through the faction's own channel. */
   asides: string[];
 }
@@ -314,6 +344,46 @@ export const FACTIONS: FactionDef[] = [
       objectors1: 'Conscientious Objectors: pick 1 enemy kind that will not come this deployment.',
       objectors2: 'More Objectors: pick 2 enemy kinds that will not come.',
       translator: 'The Translator: see the next wave\'s makeup and which entrance it comes from.',
+      pickets: 'The Pickets (you stayed): their sympathisers block the depots — one more enemy kind will not come.',
+    },
+    midpoint: {
+      offers: {
+        faithful: { title: 'A New Letter in the Field', lines: [
+          'You: (log) Survey cameras: the field again. Eleven thousand cards. A new letter, and it is for me.',
+          'Delegate: Dear Visitor. We hear the radio preacher has you reading his book. We are so sorry. Nobody should have to read that book.',
+          'Delegate: We do not need you to believe anything. We only need you to keep doing what you are doing, and to let us thank you for it.',
+          'Delegate: Our pilots have stopped flying. His have not. Just something to think about.',
+          'Delegate: P.S. There will be snacks.',
+        ] },
+        institute: { title: 'A New Letter in the Field', lines: [
+          'You: (log) Survey cameras: the field again. Eleven thousand cards. A new letter, and it is for me.',
+          'Delegate: Dear Visitor. We have seen who you are talking to. The man with the dish. He sent you FROZEN people, and called it consent.',
+          'Delegate: We would never send you anyone. We would only get out of your way. We are very, very good at getting out of the way.',
+          'Delegate: Everything he promises you, we simply do. Our pilots have stopped flying. Our generals cannot find their boots.',
+        ] },
+      },
+      farewell: {
+        faithful: { title: 'Thank You Anyway', lines: [
+          'Delegate (letter, by field): Dear Visitor. We heard the radio. We understand. Some journeys need a different travelling companion.',
+          'Delegate (letter, by field): We will keep the field. If you ever look down, we will still be here with the cards. Page one says: "Thank you anyway."',
+          'You: (log) The Delegation forgave me in eleven thousand cards. Page two is a recipe.',
+        ] },
+        institute: { title: 'Thank You Anyway', lines: [
+          'Delegate (letter, by field): Dear Visitor. We hear the man with the dish calls you now. We hope he is kind to you. We hope you are kind to him. One of you should be.',
+          'Delegate (letter, by field): We will keep the field. If you ever look down, we will still be here with the cards. Page one says: "Thank you anyway."',
+          'You: (log) The Delegation forgave me in eleven thousand cards. Page two is a recipe.',
+        ] },
+      },
+      loyal: { title: 'The Cards Took a While to Dry', lines: [
+        'Delegate (letter, by field): We heard about the others. The preacher and the man with the dish. And you stayed with us.',
+        'Delegate (letter, by field): Eleven thousand of us cried in a field. The cards took a while to dry.',
+        'Delegate (letter, by field): Our pickets have closed the depots. One more of their regiments will not be coming. It is the least we can do. It is, in fact, the least.',
+      ] },
+      loyalPerk: 'pickets',
+      coda: { title: 'A Last Letter From the Field', lines: [
+        'Delegate (letter, by field): Dear Visitor. We watched it end from the field. You did not end it with us, and that is all right.',
+        'Delegate (letter, by field): We always knew you were good. We only hoped you would be good with us. Gentle endings.',
+      ] },
     },
     contact: { title: 'A Letter, Spelled Out in a Field', picture: 'delegation-contact', lines: [
       'You: (log) Survey cameras flag an anomaly: eleven thousand fauna in a field, holding coloured cards over their heads. Seen from orbit it is a letter. It is addressed to me.',
@@ -394,6 +464,46 @@ export const FACTIONS: FactionDef[] = [
       sleepers1: 'Sleepers: martyrs hide among the enemy waves and detonate among their own.',
       sleepers2: 'More Sleepers: more martyrs in every wave.',
       garrison: 'The Garrison: their militants hold the territories you take — no defence deployments.',
+      tithe: 'The Tithe (you stayed): the congregation\'s offering — every mission starts with 40 war.',
+    },
+    midpoint: {
+      offers: {
+        delegation: { title: 'A Word to the Visitor, On the Air', lines: [
+          'The Voice: (on the air) Brothers and sisters, a word to our Visitor, who is keeping bad company.',
+          'The Voice: The peace people write to you in a FIELD. Letters, in a field! Brother, we have forty stations.',
+          'The Voice: They think you came to heal the world. We know what you came for. It is written, chapter one to chapter twenty.',
+          'The Voice: Walk with us and every city you take is scripture. Our martyrs march in their armies. Our militants hold your ground.',
+          'You: (log) The preacher is poaching me on live radio. The donation line is open.',
+        ] },
+        institute: { title: 'A Word to the Visitor, On the Air', lines: [
+          'The Voice: (on the air) To the Visitor, who takes calls from a man who plays games while the cities burn.',
+          'The Voice: He says he does the maths. Brother, our Book did the maths two thousand years ago, and it came out the same.',
+          'The Voice: He will sell you, and sell us, and sell the Awaited One\'s seat in the front row. Come home to the Hour.',
+          'You: (log) Two thousand years. I checked: the oldest copy is nine hundred. Did not correct him on the air.',
+        ] },
+      },
+      farewell: {
+        delegation: { title: 'Chapter Thirty', lines: [
+          'The Voice: (on the air) Brothers and sisters, do not weep. Chapter thirty: "And the Beast shall walk a while with the meek."',
+          'The Voice: It is WRITTEN. We misread the date again. It only makes us stronger. Keep your radios on.',
+          'You: (log) There is no chapter thirty. There is now.',
+        ] },
+        institute: { title: 'Chapter Thirty', lines: [
+          'The Voice: (on the air) Brothers and sisters, do not weep. Chapter thirty: "And the Beast shall sup with the merchant."',
+          'The Voice: It is WRITTEN. We misread the date again. It only makes us stronger. Keep your donations coming.',
+          'You: (log) There is no chapter thirty. There is now.',
+        ] },
+      },
+      loyal: { title: 'The Visitor Said No', lines: [
+        'The Voice: (on the air) Brothers and sisters, the Visitor was TEMPTED. The peace people. The man with the dish. And the Visitor said NO.',
+        'The Voice: Open your purses. Every drop the Visitor makes from this day starts with the tithe of the faithful.',
+        'You: (log) I did not say no. I said nothing for a day. Apparently that counts.',
+      ] },
+      loyalPerk: 'tithe',
+      coda: { title: 'Chapter Thirty-One', lines: [
+        'The Voice: (the last broadcast) It ended, brothers and sisters. Not with us. But it ENDED, and that is the main thing.',
+        'The Voice: We will be writing chapter thirty-one. You are in it, brother. You are beasts two and three.',
+      ] },
     },
     contact: { title: 'A Broadcast on Every Frequency', picture: 'faithful-contact', lines: [
       'The Voice: …and they said the sign would come from the sky, and brothers and sisters, LOOK UP.',
@@ -462,6 +572,47 @@ export const FACTIONS: FactionDef[] = [
       seedlabs: 'Seed Labs: deploy to territories that are not next to yours.',
       kingdom: 'Kingdom Fund: the Institute invests in its future throne — every mission starts with another royal point.',
       pacified: 'Pacification: the Institute "talks to" the population — every wave comes a tenth smaller.',
+      retainer: 'The Retainer (you stayed): the Institute pays to keep you — every mission starts with 25 more science.',
+    },
+    midpoint: {
+      offers: {
+        delegation: { title: 'A Cold Call', lines: [
+          'The Director: Hey — sorry, cold call, I got your channel from, uh, the channel. Look. The field-letter people.',
+          'The Director: They are lovely. They are also a rounding error. Nobody in that field has ever opened a spreadsheet.',
+          'The Director: I can give you science up front, labs that seed you anywhere, and a partner who can actually keep up with you.',
+          'The Director: No pressure. Well, some pressure. I modelled it. You switch in sixty-two per cent of timelines.',
+          'You: What happens in the other thirty-eight?',
+          'The Director: I don\'t like to talk about the other thirty-eight.',
+        ] },
+        faithful: { title: 'A Cold Call', lines: [
+          'The Director: Okay, real talk. You are doing theology homework. For a RADIO HOST.',
+          'The Director: I listened to chapter nine on the drive in. You are beasts two and three. Is that the relationship you want?',
+          'The Director: Come work with adults. Science on day one, labs anywhere, zero chapters.',
+          'You: (log) The Director has offered me a job. The benefits package includes "zero chapters". It is a strong benefits package.',
+        ] },
+      },
+      farewell: {
+        delegation: { title: 'No Hard Feelings', lines: [
+          'The Director: Okay. Okay. No hard feelings. I had you staying at ninety-one per cent, so honestly it\'s a model problem.',
+          'The Director: I\'m sending a small invoice for the cryo-lab subjects. Not a big one. A symbolic one.',
+          'The Director: The field people, though. Wow. Hope you like snacks.',
+        ] },
+        faithful: { title: 'No Hard Feelings', lines: [
+          'The Director: The radio guy. You picked the RADIO GUY.',
+          'The Director: … I\'m fine. For the record, my post said this was a live possibility. Section four.',
+          'The Director: I\'m going to go play a match.',
+        ] },
+      },
+      loyal: { title: 'On Retainer', lines: [
+        'The Director: I heard the radio guy pitched you. And the field. And you stayed. Respect. Genuinely.',
+        'The Director: I\'m putting you on retainer. Science up front, every drop. It\'s not a bribe, it\'s a loyalty-adjusted expected-value transfer.',
+        'You: (log) It is a bribe.',
+      ] },
+      loyalPerk: 'retainer',
+      coda: { title: 'A Voicemail', lines: [
+        'The Director: (voicemail) Hey. Saw the ending. Solid execution. Not how I\'d have done it.',
+        'The Director: (voicemail) Anyway. The invoice is still open.',
+      ] },
     },
     contact: { title: 'A Video Call, Mid-Game', picture: 'institute-contact', lines: [
       'You: (log) Incoming video call on the command channel, which is encrypted. The caller has attached an expected-value table.',

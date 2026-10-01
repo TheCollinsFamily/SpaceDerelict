@@ -1009,6 +1009,13 @@ pretending to believe it, to buy time. It was true.)
   next time"; the Director is last into the upload chamber, delivering a speech about
   his own foresight.
 
+#### The midpoint: switching allies (Collins, Oct 1 2026 — BUILT Oct 1)
+"It might make sense to have a campaign midpoint where the player has an option to switch allies ... I would appreciate
+that as a player." Two territories into an alliance, the other two factions each make an offer through their own channel.
+Going over ends the old ally's perks and route (it takes it in character and never turns on you) and starts the new
+route one territory in; staying keeps everything and adds the ally's thank-you perk. Every word and the reasons for
+the numbers: `notes/CAMPAIGN-BEATS.md`.
+
 #### How each faction reaches him (added Sep 29 2026)
 Collins, of the first contact card ("A Letter, Hand-Delivered"): "obviously would not be
 hand delivered; how they contact you will be unique to each faction but needs to make

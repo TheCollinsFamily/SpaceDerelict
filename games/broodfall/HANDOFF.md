@@ -143,6 +143,17 @@ insectoid city.
 
 ## The campaign (built Sep 28; audited against Collins's words the same day)
 
+- **Every beat of all three routes, written for Collins, and the midpoint: `notes/CAMPAIGN-BEATS.md`** (Oct 1 2026).
+- **The midpoint (BUILT Oct 1 2026; Collins: "an option to switch allies ... I would appreciate that as a player"):**
+  once a campaign, the return after the 2nd territory taken since allying (`MIDPOINT_CAPTURES`), the other two factions
+  make offers (pending scenes with `offer: true`). Go over (`switchAlly`): the old ally's perks and finale go, it says
+  goodbye in character (never hostile: DESIGN.md "none of them ever turns against you"), the new route starts one
+  territory in (`SWITCH_HEAD_START`), and the old ally writes once more after the ending (`midpoint.coda`, before the
+  reveal). Stay (`stayLoyal`): every perk kept + a thank-you perk (Pickets / Tithe / Retainer). State: `midpoint` on the
+  save (optional; an old save past its midpoint is offered it at its next return). Tests `tests/midpoint.test.ts`; beat
+  `node tools/shot-midpoint.mjs` (after `npm run build`), screens `notes/screens/2026-10-01/midpoint-*.jpg`. Its cards
+  have no pictures and no voices yet (`voiceKey` keys them by the speaking faction + scene title if someone voices them).
+
 - **Credits:**
   - **Standing** comes from the Requisition Board: 3 sanctioned goals per deployment,
     such as kill X of a unit, heal X, grow X limbs. It buys sanctioned lineages and the

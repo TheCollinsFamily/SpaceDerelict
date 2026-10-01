@@ -11,7 +11,7 @@ import { Rng } from '../sim/rng';
 import type { EnemyKind, OrganId, SimConfig, TowerFamily } from '../sim/types';
 import {
   DARES, EXPERIMENTS, FACTIONS, HOME, LICENCE_STANDING, LINEAGES, LOGS_LOST, LOGS_WON, PROFILES,
-  REQUISITIONS, TERRITORIES, BOARD_LETTERS,
+  REQUISITIONS, TERRITORIES, BOARD_LETTERS, MIDPOINT_CAPTURES, SWITCH_HEAD_START,
   type BeatDef, type ExperimentDef, type FactionDef, type FactionId, type PerkId, type Scene, type TerritoryDef,
 } from '../../content/campaign';
 import { evaluate, instance, type GoalInstance, type GoalResult, type RunReport } from './goals';
@@ -48,8 +48,13 @@ export interface CampaignState {
   licence: boolean;
   /** Everything the ally has sent between beats, oldest first (optional: older saves have none). */
   comms?: string[];
-  /** Scenes waiting to be shown on the ship (contacts, beats, endings). */
-  pendingScenes: Array<{ faction: FactionId; beat?: string; scene: Scene; contact?: boolean; choice?: BeatDef['choice'] }>;
+  /**
+   * The midpoint (content/campaign.ts MIDPOINT_CAPTURES): offered once, then stayed or switched.
+   * Optional: older saves have none, and are offered it at their next return if they are past it.
+   */
+  midpoint?: { status: 'offered' | 'stayed' | 'switched'; at: number; from?: FactionId; to?: FactionId };
+  /** Scenes waiting to be shown on the ship (contacts, beats, endings; `offer`: a rival's offer at the midpoint). */
+  pendingScenes: Array<{ faction: FactionId; beat?: string; scene: Scene; contact?: boolean; offer?: boolean; choice?: BeatDef['choice'] }>;
   ai: { queue: AiTrigger[]; seen: AiTrigger[]; transcripts: Array<{ trigger: AiTrigger; turns: AiTurn[] }> };
   log: string[];
   /** How far the campaign has unfolded (src/meta/onboarding.ts); none on saves from before it existed. */
@@ -93,7 +98,14 @@ export function perksOf(s: CampaignState): PerkId[] {
   const beats = faction(s.faction).beats.filter((b) => s.beatsSeen.includes(b.id));
   // A choice made at a beat adds the chosen option's perks (the Institute's ultimatum).
   const chosen = beats.flatMap((b) => b.choice?.options.find((o) => o.id === s.choices[b.id])?.perks ?? []);
-  return [...beats.flatMap((b) => b.perks ?? []), ...chosen];
+  // Staying loyal at the midpoint adds the ally's loyalty perk.
+  const loyal = s.midpoint?.status === 'stayed' ? [faction(s.faction).midpoint.loyalPerk] : [];
+  return [...beats.flatMap((b) => b.perks ?? []), ...chosen, ...loyal];
+}
+
+/** How many enemy kinds he may turn away before a deployment (the Delegation's Objectors, and its Pickets). */
+export function objectorsAllowed(perks: PerkId[]): number {
+  return (perks.includes('objectors2') ? 2 : perks.includes('objectors1') ? 1 : 0) + (perks.includes('pickets') ? 1 : 0);
 }
 
 /** Highest evolution stage per theme: 1 everywhere, raised by the territories you hold. */
@@ -157,11 +169,13 @@ export function plan(s: CampaignState, territoryId: string, opts: { dares?: stri
   const defence = !first && s.held.includes(territoryId) && s.underAttack === territoryId;
   const perks = perksOf(s);
   const profile = PROFILES.find((p) => p.id === s.profile) ?? PROFILES[0];
-  const objectorsAllowed = perks.includes('objectors2') ? 2 : perks.includes('objectors1') ? 1 : 0;
+  const objectors = objectorsAllowed(perks);
   const bonus: Partial<Record<'war' | 'science' | 'royal', number>> = {};
   if (perks.includes('volunteers1')) bonus.science = 30;
   if (perks.includes('volunteers2')) { bonus.war = 40; bonus.royal = 1; }
   if (perks.includes('kingdom')) bonus.royal = (bonus.royal ?? 0) + 1;
+  if (perks.includes('tithe')) bonus.war = (bonus.war ?? 0) + 40;
+  if (perks.includes('retainer')) bonus.science = (bonus.science ?? 0) + 25;
   const exp = !first && opts.experiment ? EXPERIMENTS.find((e) => e.id === opts.experiment) : undefined;
   // Command's equipment and trial lineage for the open standing orders; his pinned hobby page and spliced genes.
   const orders = first ? { config: {}, trial: [] } : ordersSetup(s);
@@ -176,7 +190,7 @@ export function plan(s: CampaignState, territoryId: string, opts: { dares?: stri
     waveIntel: first || perks.includes('translator') ? 'full' : 'hidden',
     sleepers: perks.includes('sleepers2') ? 0.15 : perks.includes('sleepers1') ? 0.08 : 0,
     startBonus: bonus,
-    bannedEnemies: (opts.objectors ?? []).slice(0, objectorsAllowed),
+    bannedEnemies: (opts.objectors ?? []).slice(0, objectors),
     waveScale: perks.includes('pacified') ? 0.9 : 1,
     entrances: t.entrances,
     directive: defence ? { kind: 'hold', waves: 5 } : t.directive,
@@ -341,10 +355,25 @@ export function finish(prev: CampaignState, p: DeploymentPlan, r: RunReport): { 
       s.ended = f.id;
       s.pendingScenes.push({ faction: f.id, scene: endingOf(f, s) });
       // The reveal (DESIGN.md "The reveal"): the card after the ending.
+      // The ally he left at the midpoint writes once more.
+      if (s.midpoint?.status === 'switched' && s.midpoint.from) {
+        s.pendingScenes.push({ faction: s.midpoint.from, scene: faction(s.midpoint.from).midpoint.coda });
+      }
       if (f.reveal) s.pendingScenes.push({ faction: f.id, scene: f.reveal });
       // and any card after it (the Director calls back: empire.md 12b)
       for (const scene of f.afterReveal ?? []) s.pendingScenes.push({ faction: f.id, scene });
       s.ai.queue = queueDiscussion(s.ai.queue, 'ending', s.ai.seen);
+    }
+    // The midpoint: the two other factions make their offers (once a campaign).
+    if (!s.ended && !s.midpoint && s.captures - s.factionSince >= MIDPOINT_CAPTURES) {
+      s.midpoint = { status: 'offered', at: s.captures };
+      for (const rival of FACTIONS.filter((x) => x.id !== f.id)) {
+        const scene = rival.midpoint.offers[f.id];
+        if (!scene) continue;
+        if (!s.contacted.includes(rival.id)) s.contacted.push(rival.id);
+        s.pendingScenes.push({ faction: rival.id, scene, offer: true });
+      }
+      s.log.push(`The other two factions have made offers. ${f.name} does not know yet.`);
     }
   }
 
@@ -396,6 +425,41 @@ export function ally(prev: CampaignState, id: FactionId): CampaignState {
   return s;
 }
 
+/**
+ * Go over to a rival at the midpoint. The old ally's perks go with it and its finale closes (the beats
+ * he saw stay seen); it says goodbye in character. The new route starts SWITCH_HEAD_START captures in,
+ * so the beats that are due play at once.
+ */
+export function switchAlly(prev: CampaignState, to: FactionId): CampaignState {
+  const s: CampaignState = structuredClone(prev);
+  const from = s.faction;
+  if (!from || from === to || s.ended || s.midpoint?.status !== 'offered') return s;
+  s.pendingScenes = s.pendingScenes.filter((p) => !p.offer);
+  s.midpoint = { status: 'switched', at: s.midpoint.at, from, to };
+  s.faction = to;
+  s.factionSince = s.captures - SWITCH_HEAD_START;
+  const bye = faction(from).midpoint.farewell[to];
+  if (bye) s.pendingScenes.push({ faction: from, scene: bye });
+  for (const b of faction(to).beats) {
+    if (s.beatsSeen.includes(b.id) || s.captures - s.factionSince < b.afterCaptures) continue;
+    s.beatsSeen.push(b.id);
+    s.pendingScenes.push({ faction: to, beat: b.id, scene: b.scene, choice: b.choice });
+  }
+  s.log.push(`Went over to ${faction(to).name}. ${faction(from).name} took it well. They always do.`);
+  return s;
+}
+
+/** Turn both offers down at the midpoint: the ally hears of it, and adds its loyalty perk. */
+export function stayLoyal(prev: CampaignState): CampaignState {
+  const s: CampaignState = structuredClone(prev);
+  if (!s.faction || s.midpoint?.status !== 'offered') return s;
+  s.pendingScenes = s.pendingScenes.filter((p) => !p.offer);
+  s.midpoint = { ...s.midpoint, status: 'stayed' };
+  s.pendingScenes.push({ faction: s.faction, scene: faction(s.faction).midpoint.loyal });
+  s.log.push(`Turned down both offers. Stayed with ${faction(s.faction).name}.`);
+  return s;
+}
+
 /** Dismiss a contact without allying (it can be taken up later from Comms while you have no faction). */
 export function dismissScene(prev: CampaignState): CampaignState {
   const s: CampaignState = structuredClone(prev);
@@ -437,6 +501,9 @@ export function summaryFor(s: CampaignState): string {
     // What a live YOKE (Kimi) needs to talk about the story so far; the scripted one ignores it.
     ...(s.faction ? [`Route so far: ${faction(s.faction).beats.filter((b) => s.beatsSeen.includes(b.id)).map((b) => b.title).join(' → ') || 'just allied'}.`] : []),
     ...(Object.keys(s.choices).length ? [`Choices made: ${Object.entries(s.choices).map(([b, o]) => `${b}=${o}`).join(', ')}.`] : []),
+    ...(s.midpoint?.status === 'switched' && s.midpoint.from ? [`At the midpoint he left ${faction(s.midpoint.from).name} for ${faction(s.midpoint.to!).name}.`] : []),
+    ...(s.midpoint?.status === 'stayed' ? ['At the midpoint the other two factions made him offers; he stayed with his ally.'] : []),
+    ...(s.midpoint?.status === 'offered' ? ['The other two factions have just made him offers; he has not answered yet.'] : []),
     ...(s.underAttack ? [`Under attack: ${territory(s.underAttack).name}.`] : []),
     ...(s.ended ? [`The campaign has ended on the ${faction(s.ended).name} route.`] : []),
     ...(s.comms?.length ? [`Latest from the ally: ${s.comms[s.comms.length - 1]}`] : []),

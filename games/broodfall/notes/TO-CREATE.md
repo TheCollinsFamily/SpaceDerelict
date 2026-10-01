@@ -70,7 +70,8 @@ three campaign outlines, covers and promotional art.
 
 - Each beat as its own mission on the board, or a scene after a capture as now: Collins.
 - The Faithful and the Institute have 3 beats against the Delegation's 5: add two each?: Collins.
-- Switching allies mid-campaign: Collins.
+- ~~Switching allies mid-campaign~~: BUILT Oct 1 2026 (Collins: yes, at a midpoint). Two territories into an alliance the
+  other two make offers; go over or stay (`notes/CAMPAIGN-BEATS.md` "THE MIDPOINT"). Its cards have no pictures and no voices yet.
 - The insect lore's OPEN questions (`content/lore/insects.md` section 14) and the lore book's
   PROPOSALS (`content/lore/ship-ai-lorebook.md` section 14): Collins.
 

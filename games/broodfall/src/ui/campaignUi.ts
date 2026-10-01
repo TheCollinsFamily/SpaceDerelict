@@ -6,8 +6,8 @@
  * discussions). Faction scenes play as modals when you come back to the ship.
  */
 import {
-  ally, buyLineage, choose, dismissScene, evolutionCaps, experimentsAvailable, faction, perksOf, plan,
-  selectProfile, summaryFor, targets, territory, type CampaignState, type Debrief,
+  ally, buyLineage, choose, dismissScene, evolutionCaps, experimentsAvailable, faction, objectorsAllowed, perksOf, plan,
+  selectProfile, stayLoyal, summaryFor, switchAlly, targets, territory, type CampaignState, type Debrief,
 } from '../meta/campaign';
 import { goalText } from '../meta/goals';
 import { FallbackShipAi, RfabShipAi, campaignIdFor, type AiTrigger, type AiTurn, type ShipAiProvider, type ShipAiStatus } from '../meta/shipAi';
@@ -599,7 +599,7 @@ export class CampaignUi {
     const dirText = !dir ? 'hold' : dir.kind === 'hold' ? `Hold for ${dir.waves} waves` : dir.kind === 'royal' ? 'Destroy the royal' : `Bank ${dir.science} science`;
     const unlocks = t.unlocks.map((u) => `${THEME_NAME[u.theme] ?? u.theme} evolution stage ${u.stage}`).join(', ');
     const perks = perksOf(s);
-    const objAllowed = perks.includes('objectors2') ? 2 : perks.includes('objectors1') ? 1 : 0;
+    const objAllowed = objectorsAllowed(perks);
     const warKinds = ENEMIES.filter((e) => e.caste === 'war').map((e) => e.kind);
     const exps = experimentsAvailable(s);
     return `${this.territoryPictureHtml(t.id)}<div class="cp-sub">${esc(t.name.toUpperCase())}${held ? ' · YOURS' : ''}</div>
@@ -701,15 +701,28 @@ export class CampaignUi {
     const cards = FACTIONS.map((f) => {
       const contacted = s.contacted.includes(f.id);
       const mine = s.faction === f.id;
+      const former = s.midpoint?.status === 'switched' && s.midpoint.from === f.id;
+      const offering = s.midpoint?.status === 'offered' && !!s.faction && !mine;
       const beats = f.beats.filter((b) => s.beatsSeen.includes(b.id));
+      const status = !contacted ? 'Has not made contact yet.'
+        : mine ? `Allied${s.midpoint?.status === 'switched' ? ' since the midpoint' : ''}. Route: ${beats.map((b) => esc(b.title)).join(' → ') || '—'}`
+          : former ? `Your ally until the midpoint, when you went over to ${esc(faction(s.faction!).name)}. They took it well. Route then: ${beats.map((b) => esc(b.title)).join(' → ')}`
+            : offering ? `Has offered to take you on. ${esc(faction(s.faction!).name)} does not know yet.`
+              : s.midpoint?.status === 'stayed' && s.faction ? 'Made you an offer at the midpoint. You turned it down.'
+                : s.faction ? 'You chose another.' : 'Made contact. Waiting for your answer.';
       return `<div class="cp-lin cp-voice${mine ? ' have' : ''}">${contacted ? this.leaderHtml(f.id) : ''}<b>${esc(f.name)}</b>
-        <span>${!contacted ? 'Has not made contact yet.' : mine ? `Allied. Route: ${beats.map((b) => esc(b.title)).join(' → ') || '—'}` : s.faction ? 'You chose another.' : 'Made contact. Waiting for your answer.'}${mine ? `<span class="cp-perks">${perksOf(s).map((p) => esc(f.perks[p] ?? p)).join('<br>')}</span>` : ''}</span>
+        <span>${status}${mine ? `<span class="cp-perks">${perksOf(s).map((p) => esc(f.perks[p] ?? p)).join('<br>')}</span>` : ''}</span>
         ${contacted && !s.faction ? `<button data-ally="${f.id}">ALLY WITH THEM</button>` : ''}
-        ${mine ? `<button data-replay="${f.id}">REPLAY SCENES</button>` : ''}</div>`;
+        ${offering ? `<button data-switch="${f.id}">GO OVER TO THEM</button>` : ''}
+        ${mine && s.midpoint?.status === 'offered' ? '<button data-act="stay">STAY WITH THEM</button>' : ''}
+        ${mine || former ? `<button data-replay="${f.id}">REPLAY SCENES</button>` : ''}</div>`;
     });
     const inbox = (s.comms ?? []).slice(-8).reverse();
-    return `<div class="cp-label">COMMS — three voices from the planet. You may ally with ONE; it decides your route and your ending.</div>${cards.join('')}
-      ${inbox.length ? `<div class="cp-label">FROM YOUR ALLY</div><div class="cp-log cp-comms">${inbox.map((l) => `<div${sayAttr(l)}>${speakLine(l)}</div>`).join('')}</div>` : ''}`;
+    const head = s.midpoint?.status === 'offered'
+      ? 'COMMS — THE MIDPOINT. The other two want you. Go over to one (you lose your ally’s perks; its route ends here) or stay (your ally adds a perk of thanks).'
+      : 'COMMS — three voices from the planet. You may ally with ONE; it decides your route and your ending. Halfway along, the other two will make you an offer.';
+    return `<div class="cp-label">${head}</div>${cards.join('')}
+      ${inbox.length ? `<div class="cp-label">${s.midpoint?.status === 'switched' ? 'LETTERS, BROADCASTS AND CALLS' : 'FROM YOUR ALLY'}</div><div class="cp-log cp-comms">${inbox.map((l) => `<div${sayAttr(l)}>${speakLine(l)}</div>`).join('')}</div>` : ''}`;
   }
 
   /** Who answers as YOKE: the ladder of her mode (her avatar, Kimi, the scripted YOKE), each rung falling to the next. */
@@ -808,24 +821,32 @@ export class CampaignUi {
     const calls = this.state.pendingScenes.filter((p) => p.contact);
     const more = next.contact && calls.length > 1;
     const heard = FACTIONS.filter((x) => this.state.contacted.includes(x.id)).length;
+    // The midpoint: each rival's offer has the button to go over; the last one heard has the button to stay.
+    const offers = this.state.pendingScenes.filter((p) => p.offer);
+    const ally0 = this.state.faction ? faction(this.state.faction) : null;
     const buttons = next.contact
       ? `<button class="screen-btn" data-ally="${f.id}">ALLY WITH ${esc(f.name.toUpperCase())}</button><button class="cp-room" data-act="scene-later">${more ? 'HEAR THE NEXT CALLER ▸' : 'NOT NOW — DECIDE IN COMMS'}</button>`
+      : next.offer
+        ? `<button class="screen-btn" data-switch="${f.id}">GO OVER TO ${esc(f.name.toUpperCase())}</button>${offers.length > 1
+          ? '<button class="cp-room" data-act="scene-later">HEAR THE OTHER OFFER ▸</button>'
+          : `<button class="screen-btn" data-act="stay">STAY WITH ${esc((ally0?.name ?? '').toUpperCase())}</button>`}`
       : next.choice
         ? next.choice.options.map((o) => `<button class="cp-pick" data-choice="${next.beat}|${o.id}">${esc(o.label)}</button>`).join('')
         : '<button class="screen-btn" data-act="scene-ok">CONTINUE</button>';
     return `<div class="cp-scene"><div class="cp-scene-card" data-faction="${f.id}" data-scene="${esc(scene.title)}">
       ${this.scenePictureHtml(f.id, scene)}
-      <div class="screen-kicker">${next.contact && heard > 1 ? `INCOMING — CALL ${heard - calls.length + 1} OF ${heard} · ` : ''}${esc(f.name.toUpperCase())}</div>
+      <div class="screen-kicker">${next.offer ? `THE MIDPOINT — OFFER ${3 - offers.length} OF 2 · ` : next.contact && heard > 1 ? `INCOMING — CALL ${heard - calls.length + 1} OF ${heard} · ` : ''}${esc(f.name.toUpperCase())}</div>
       <div class="cp-sub">${esc(scene.title.toUpperCase())}</div>
       ${scene.lines.map((l) => { const i = l.indexOf(':'); return `<p><b>${esc(l.slice(0, i))}:</b>${esc(l.slice(i + 1))}</p>`; }).join('')}
       ${next.choice ? `<div class="cp-label">${esc(next.choice.prompt)}</div>` : ''}
+      ${next.offer && ally0 ? `<div class="cp-label cp-offer-terms">GO OVER: ${esc(ally0.name)}'s perks end and its route stops here; ${esc(f.name)}'s route starts a territory in. STAY: ${esc(ally0.name)} adds ${esc((ally0.perks[ally0.midpoint.loyalPerk] ?? '').split(':')[0].replace(/\s*\(.*\)$/, ''))}.</div>` : ''}
       <div class="cp-scene-btns">${buttons}</div></div></div>`;
   }
 
   // ------------------------------------------------------------ input
 
   private onClick(ev: MouseEvent): void {
-    const el = (ev.target as HTMLElement).closest<HTMLElement>('[data-act],[data-room],[data-site],[data-dare],[data-exp],[data-obj],[data-buy],[data-profile],[data-ally],[data-choice],[data-engage],[data-replay],[data-picture],[data-hpin],[data-hsplice]');
+    const el = (ev.target as HTMLElement).closest<HTMLElement>('[data-act],[data-room],[data-site],[data-dare],[data-exp],[data-obj],[data-buy],[data-profile],[data-ally],[data-switch],[data-choice],[data-engage],[data-replay],[data-picture],[data-hpin],[data-hsplice]');
     if (!el) return;
     const d = el.dataset;
     let s = this.state;
@@ -855,13 +876,14 @@ export class CampaignUi {
     if (d.exp) { this.experiment = this.experiment === d.exp ? undefined : d.exp; this.render(); return; }
     if (d.obj) {
       const k = d.obj as EnemyKind;
-      const n = perksOf(s).includes('objectors2') ? 2 : 1;
+      const n = Math.max(1, objectorsAllowed(perksOf(s)));
       this.objectors = this.objectors.includes(k) ? this.objectors.filter((x) => x !== k) : [...this.objectors, k].slice(-n);
       this.render(); return;
     }
     if (d.buy) { const r = buyLineage(s, d.buy as OrganId); if (r.ok) this.setState(r.state); return; }
     if (d.profile) { this.setState(selectProfile(s, d.profile)); return; }
     if (d.ally) { this.setState(ally(s, d.ally as FactionId)); return; }
+    if (d.switch) { this.setState(switchAlly(s, d.switch as FactionId)); return; }
     if (d.choice) { const [beat, opt] = d.choice.split('|'); this.setState(choose(s, beat, opt)); return; }
     if (d.replay) {
       const f = faction(d.replay as FactionId);
@@ -887,6 +909,7 @@ export class CampaignUi {
       case 'spin-l': if (this.globe3d) { this.globe3d.turn(-30); return; } this.spin -= 30; this.render(); return;
       case 'spin-r': if (this.globe3d) { this.globe3d.turn(30); return; } this.spin += 30; this.render(); return;
       case 'scene-ok': case 'scene-later': this.setState(dismissScene(s)); return;
+      case 'stay': this.setState(stayLoyal(s)); return;
       case 'ai-later': this.room = 'desk'; this.talk = null; this.render(); return;
       case 'ai-send': void this.aiSend(); return;
       case 'yoke-call':
