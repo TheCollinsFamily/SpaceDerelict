@@ -1,9 +1,23 @@
 [
  {
-  "id": "rk-a1",
+  "id": "rk-a2",
   "heard": 1,
-  "said": "My fellow sisters. Your Your president, the roach king. Sit down. Sit down. You are already sitting. Good.",
-  "line": "My fellow sisters. Your President. The Roach King. Sit down, sit down. You are already sitting. Good.",
+  "said": "Something fell on the suburbs, and it is eating our towns. Chat says it is just a fungus. Chat is wrong.",
+  "line": "Something fell on the suburbs, and it is eating our towns. Chat says it is just a fungus. Chat is WRONG.",
   "secs": 8
+ },
+ {
+  "id": "rk-del2",
+  "heard": 1,
+  "said": "These friendship people want peace. You know what peace is? Losing. Slower.",
+  "line": "These Friendship people want peace. You know what peace is? Losing. Slower.",
+  "secs": 6.02
+ },
+ {
+  "id": "rk-s3",
+  "heard": 1,
+  "said": "Come and get some.",
+  "line": "Come and get some!",
+  "secs": 4.01
  }
 ]

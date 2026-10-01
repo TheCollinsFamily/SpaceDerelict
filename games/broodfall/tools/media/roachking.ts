@@ -82,7 +82,9 @@ const VOICE =
   'loud, fast and full of swagger; it is always the same big male voice.';
 const TAIL =
   'One continuous shot, no cuts, the same look throughout. He keeps his cockroach head, exactly four arms and the same coat, ' +
-  'belt and flag cape in every frame; nothing morphs or duplicates. No text appears on screen. No music, no subtitles.';
+  'belt and flag cape in every frame; nothing morphs or duplicates; he never grows extra arms. His cape is the flag of his country ' +
+  'with a white roach head in the blue band: there is no star anywhere, and no other flag appears on the screens behind him. ' +
+  'No text appears on screen. No music, no subtitles.';
 
 function clipPrompt(s: RoachShot): string {
   const words = s.line.replace(/\b[A-Z]{2,}\b/g, (w) => w.toLowerCase());

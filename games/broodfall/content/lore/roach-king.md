@@ -74,7 +74,7 @@ At most one address after a deployment, the first that is due, most urgent first
 4. **On your ally** (allied, and two of its beats seen; once per faction, so a player who switches at the
    midpoint hears him on both):
    - **The Delegation:** he HATES them. Somebody cut a love letter to the Crater Thing into his wheat, a mile high (the Delegation's crop letter; the second comma is a barn).
-     "Peace is losing, slower." "The wheat has a family."
+     "Peace is losing, slower." "Put the mower down. The wheat has a family."
    - **The Faithful:** he goes on The Hour Is Near, big fan of the show, did the reading, and is pretty sure
      he is the Awaited One. (The Voice nods. The operator is building a different Awaited One, out of spare meat.)
    - **The Institute:** the Director is his new adviser. Bad at League of Larvae. Sent an expected-value

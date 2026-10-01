@@ -69,7 +69,7 @@ export interface RoachAddress {
 export const ROACH_KING = {
   name: 'PRESIDENT DUKE CRAWLEY',
   known: 'THE ROACH KING',
-  channel: 'INTERCEPTED · COMMONWEALTH BROADCAST NETWORK · LIVE FROM THE HIVE HOUSE',
+  channel: 'COMMONWEALTH BROADCAST NETWORK · LIVE FROM THE HIVE HOUSE',
 };
 
 /**
@@ -99,7 +99,7 @@ export const ROACH_ADDRESSES: RoachAddress[] = [
   { id: 'rk-delegation', when: 'ally', faction: 'delegation', title: 'THE PRESIDENT ON THE "FRIENDSHIP" PEOPLE', small: 'live from the Hive House', end: 'THE PRESIDENT REMINDS YOU: THE WHEAT HAS DONE NOTHING TO YOU', shots: [
     { id: 'rk-del1', from: 'paper', action: 'He holds a newspaper up to the camera and shakes it, outraged.', line: 'Somebody cut a love letter to the Crater Thing into my wheat. A mile high. The second comma is a BARN.' },
     { id: 'rk-del2', from: 'close', action: 'He rubs his face with two hands, then glares into the camera.', line: 'These Friendship people want peace. You know what peace is? Losing. Slower.' },
-    { id: 'rk-del3', from: 'close', action: 'He points sternly at the camera like a disappointed coach.', line: 'Delegation. Put the cards down. The wheat has a family.' },
+    { id: 'rk-del3', from: 'close', action: 'He points sternly at the camera like a disappointed coach.', line: 'Delegation. Put the mower down. The wheat has a family.' },
   ] },
   { id: 'rk-faithful', when: 'ally', faction: 'faithful', title: 'THE PRESIDENT GOES ON THE HOUR IS NEAR', small: 'simulcast on the Last Hour Radio Network', end: 'THE PRESIDENT IS NOT TAKING QUESTIONS', shots: [
     { id: 'rk-fai1', from: 'studio', action: 'In the radio studio he leans into the big microphone, headphones on, beaming; the preacher beside him nods slowly.', line: 'Big fan of the show. Huge. The Voice says somebody is coming to save us all.' },

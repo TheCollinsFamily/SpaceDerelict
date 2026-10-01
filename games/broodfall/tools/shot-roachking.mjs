@@ -160,9 +160,12 @@ try {
     await record(p);
     await page.locator('[data-act="back"]').click();
     // The planet's news first: skipped.
-    await page.waitForSelector('#newsreel', { timeout: 15000 }).catch(() => {});
-    if (await page.locator('#newsreel:not(.rk-broadcast)').count()) { await sleep(1200); await page.keyboard.press('Escape'); }
-    await page.waitForSelector('#newsreel.rk-broadcast', { timeout: 20000 }).catch(() => {});
+    // (A cold build loads the news late: keep skipping whatever news is up until his broadcast is.)
+    for (let t0 = Date.now(); Date.now() - t0 < 45000;) {
+      if (await page.locator('#newsreel.rk-broadcast').count()) break;
+      if (await page.locator('#newsreel:not(.rk-broadcast):not(.leaving)').count()) { await sleep(1200); await page.keyboard.press('Escape'); }
+      await sleep(300);
+    }
     check(await page.locator('#newsreel.rk-broadcast').count() === 1, 'after the news, his address plays by itself');
     await sleep(900);
     await shot(page, 'a1-card');

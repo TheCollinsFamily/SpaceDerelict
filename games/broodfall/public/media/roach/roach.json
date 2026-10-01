@@ -1,5 +1,126 @@
 {
- "clips": {},
+ "clips": {
+  "rk-a1": {
+   "video": "media/roach/rk-a1.mp4",
+   "poster": "media/roach/rk-a1.webp",
+   "seconds": 8.009
+  },
+  "rk-a2": {
+   "video": "media/roach/rk-a2.mp4",
+   "poster": "media/roach/rk-a2.webp",
+   "seconds": 8.009
+  },
+  "rk-a3": {
+   "video": "media/roach/rk-a3.mp4",
+   "poster": "media/roach/rk-a3.webp",
+   "seconds": 8.1
+  },
+  "rk-a4": {
+   "video": "media/roach/rk-a4.mp4",
+   "poster": "media/roach/rk-a4.webp",
+   "seconds": 4.02
+  },
+  "rk-d1": {
+   "video": "media/roach/rk-d1.mp4",
+   "poster": "media/roach/rk-d1.webp",
+   "seconds": 8.009
+  },
+  "rk-d2": {
+   "video": "media/roach/rk-d2.mp4",
+   "poster": "media/roach/rk-d2.webp",
+   "seconds": 8.009
+  },
+  "rk-d3": {
+   "video": "media/roach/rk-d3.mp4",
+   "poster": "media/roach/rk-d3.webp",
+   "seconds": 8.1
+  },
+  "rk-c1": {
+   "video": "media/roach/rk-c1.mp4",
+   "poster": "media/roach/rk-c1.webp",
+   "seconds": 8.009
+  },
+  "rk-c2": {
+   "video": "media/roach/rk-c2.mp4",
+   "poster": "media/roach/rk-c2.webp",
+   "seconds": 8.009
+  },
+  "rk-c3": {
+   "video": "media/roach/rk-c3.mp4",
+   "poster": "media/roach/rk-c3.webp",
+   "seconds": 4.02
+  },
+  "rk-del1": {
+   "video": "media/roach/rk-del1.mp4",
+   "poster": "media/roach/rk-del1.webp",
+   "seconds": 8.009
+  },
+  "rk-del2": {
+   "video": "media/roach/rk-del2.mp4",
+   "poster": "media/roach/rk-del2.webp",
+   "seconds": 6.025
+  },
+  "rk-del3": {
+   "video": "media/roach/rk-del3.mp4",
+   "poster": "media/roach/rk-del3.webp",
+   "seconds": 6.025
+  },
+  "rk-fai1": {
+   "video": "media/roach/rk-fai1.mp4",
+   "poster": "media/roach/rk-fai1.webp",
+   "seconds": 8.009
+  },
+  "rk-fai2": {
+   "video": "media/roach/rk-fai2.mp4",
+   "poster": "media/roach/rk-fai2.webp",
+   "seconds": 8.1
+  },
+  "rk-fai3": {
+   "video": "media/roach/rk-fai3.mp4",
+   "poster": "media/roach/rk-fai3.webp",
+   "seconds": 6.1
+  },
+  "rk-ins1": {
+   "video": "media/roach/rk-ins1.mp4",
+   "poster": "media/roach/rk-ins1.webp",
+   "seconds": 8.009
+  },
+  "rk-ins2": {
+   "video": "media/roach/rk-ins2.mp4",
+   "poster": "media/roach/rk-ins2.webp",
+   "seconds": 8.009
+  },
+  "rk-ins3": {
+   "video": "media/roach/rk-ins3.mp4",
+   "poster": "media/roach/rk-ins3.webp",
+   "seconds": 8.009
+  },
+  "rk-s1": {
+   "video": "media/roach/rk-s1.mp4",
+   "poster": "media/roach/rk-s1.webp",
+   "seconds": 8.009
+  },
+  "rk-s2": {
+   "video": "media/roach/rk-s2.mp4",
+   "poster": "media/roach/rk-s2.webp",
+   "seconds": 8.009
+  },
+  "rk-s3": {
+   "video": "media/roach/rk-s3.mp4",
+   "poster": "media/roach/rk-s3.webp",
+   "seconds": 4.1
+  },
+  "rk-o1": {
+   "video": "media/roach/rk-o1.mp4",
+   "poster": "media/roach/rk-o1.webp",
+   "seconds": 6.025
+  },
+  "rk-o2": {
+   "video": "media/roach/rk-o2.mp4",
+   "poster": "media/roach/rk-o2.webp",
+   "seconds": 6.1
+  }
+ },
  "flag": "media/roach/flag.webp",
  "flagWave": "media/roach/flag-wave.webp"
 }
