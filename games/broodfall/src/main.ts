@@ -23,6 +23,7 @@ import { loadLandingArt, playLanding, type LandingBoard } from './ui/landing';
 import { landingDecision, landingSeen, markLandingSeen, type LandingArt, type LandingFilm } from './meta/landing';
 import { ConsoleMenu } from './ui/menu';
 import { addRunButton, installEdgeScroll, markSpeed, openSettings, settingsOpen } from './ui/settings';
+import { addCodexRunButton, codexOpen, openCodex } from './ui/codex';
 import { turnOf } from './meta/settings';
 import { loadSettings } from './meta/storage';
 import { strainIcons, strainKey, strainLabel } from './ui/strain';
@@ -949,6 +950,15 @@ function openRunSettings(): void {
   });
 }
 
+/** The Limb Codex over a deployment (src/ui/codex.ts), at a limb when one is named: the clock stops while it is open. */
+function openRunCodex(focus?: TowerFamily): void {
+  if (codexOpen()) return;
+  const was = speed;
+  speed = 0;
+  markSpeed(0);
+  openCodex({ where: 'run', focus, onClose: () => { speed = was; markSpeed(speed); } });
+}
+
 function cancelAll(): void {
   decreeBox.close();
   armedPlinth = false;
@@ -1229,6 +1239,7 @@ async function boot(): Promise<void> {
     // Q and E turn the board a quarter turn: what stands behind a block is seen from the other side.
     const turn = turnOf(loadSettings(), ev.key); // Q and E unless the settings say other keys
     if (turn) renderer.turnBy(turn);
+    else if ((ev.key === 'c' || ev.key === 'C') && !ev.ctrlKey && !ev.metaKey && started && !debriefShown && !settingsOpen()) openRunCodex();
     else if (ev.key === 'Home') renderer.resetView();
     else if (ev.key === 'ArrowLeft') renderer.panBy(step, 0);
     else if (ev.key === 'ArrowRight') renderer.panBy(-step, 0);
@@ -1244,6 +1255,12 @@ async function boot(): Promise<void> {
   viewButton('view-home', (r) => r.resetView());
   // The settings (src/ui/settings.ts): a ⚙ beside the view buttons; the run pauses while it is open.
   addRunButton(() => openRunSettings());
+  // The Limb Codex: the ▤ beside it, the C key, and CODEX on a built limb's panel (at that limb).
+  addCodexRunButton(() => openRunCodex());
+  document.getElementById('inspect-codex')?.addEventListener('click', () => {
+    const t = hud.inspectedId === null ? undefined : sim.towers.find((x) => x.id === hud.inspectedId);
+    openRunCodex(t?.family);
+  });
   installEdgeScroll((dx, dy) => { if (renderer instanceof IsoRenderer) renderer.panBy(dx, dy); },
     () => started && !debriefShown && !padOutroPlaying() && menuEl.classList.contains('hidden') && document.getElementById('campaign')!.classList.contains('hidden'));
   markSpeed(speed);
@@ -1423,6 +1440,8 @@ async function boot(): Promise<void> {
     sim,
     /** The board's renderer itself, for beats that look inside what it draws (tools/shot-board-art.mjs). */
     renderer,
+    /** The HUD, for beats that open a limb's panel without clicking its pixels (tools/shot-codex.mjs). */
+    hud,
     /** Close the between-waves organ screen (scripted play). */
     surface(): void {
       if (under.open) under.hide();

@@ -13,6 +13,7 @@ import { loadYoke, saveYoke, type YokeSettings } from '../meta/storage';
 import { YOKE_AVATAR, type YokeMode } from '../meta/yokeAvatar';
 import { loadIntroArt } from './intro';
 import { openSettings } from './settings';
+import { openCodex } from './codex';
 
 export interface MenuHooks {
   /** CONTINUE: to the ship (or back into mission 1, if it never finished). */
@@ -107,6 +108,8 @@ export class ConsoleMenu {
         this.hooks.newCampaign();
         return;
       case 'menu-intro': this.hooks.replayIntro(); return;
+      // The Limb Codex (src/ui/codex.ts): every limb, its pictures, numbers, bonuses and evolutions.
+      case 'menu-codex': openCodex({ where: 'menu' }); return;
       // The settings screen (src/ui/settings.ts): sound, the screen, the board, YOKE, reset.
       case 'menu-settings':
         openSettings({ where: 'menu', onClose: () => { this.yoke = loadYoke(); this.status(); } });

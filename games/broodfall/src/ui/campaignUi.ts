@@ -41,6 +41,7 @@ import { YokeSceneOverlay, sceneMedia } from './yokeScene';
 import { directivesHtml, ordersDebriefHtml } from './directives';
 import { hobbyClick, hobbyDebriefHtml, hobbyHtml } from './hobby';
 import { openSettings } from './settings';
+import { openCodex } from './codex';
 import { attachScene } from './sceneVoice';
 import { attachLines, stopLine } from './lineVoice';
 import { LEADER_VOICES, lineKey, speakerOf, spokenText } from '../../content/media';
@@ -345,6 +346,7 @@ export class CampaignUi {
         </div>
         <div class="cp-rooms">${rooms.map(([id, name, full]) => `<button class="cp-room${this.room === id ? ' on' : ''}${this.beckon?.room === id && this.room !== id ? ' beckon' : ''}" data-room="${id}" title="${full}"${id === 'desk' && !deskOpen(s) ? ' data-dark="1"' : ''}>${name}</button>`).join('')}
           <span class="cp-tools">${this.room === 'ai' ? '' : `<button class="cp-room cp-call${this.icom ? ' on' : ''}" data-act="yoke-call" title="Call YOKE here">◉ YOKE</button>`}
+          <button class="cp-room cp-tool" data-act="codex" title="Limb Codex: every limb, what it does and how it evolves" aria-label="Limb Codex">▤</button>
           <button class="cp-room cp-tool" data-act="settings" title="Settings" aria-label="Settings">⚙</button>
           <button class="cp-room cp-tool quit" data-act="quit" title="Back to the main menu">Menu</button></span></div>
         <div class="cp-body">${this.roomHtml()}</div>
@@ -919,6 +921,7 @@ export class CampaignUi {
         // Her voice may be switched there: she hears of it when the screen closes.
         openSettings({ where: 'ship', onClose: () => { this.yoke = loadYoke(); this.avatar?.setMuted(this.yoke.muted); this.render(); if (this.yoke.mode !== 'scripted' && playerTokenStore.load()) void this.account.refresh(); } });
         return;
+      case 'codex': openCodex({ where: 'ship' }); return;
       case 'new': this.hooks.newCampaign(); return;
       case 'spin-l': if (this.globe3d) { this.globe3d.turn(-30); return; } this.spin -= 30; this.render(); return;
       case 'spin-r': if (this.globe3d) { this.globe3d.turn(30); return; } this.spin += 30; this.render(); return;

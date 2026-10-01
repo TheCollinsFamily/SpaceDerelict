@@ -90,7 +90,7 @@ export const TOWERS: readonly TowerSpec[] = [
     // The barracks seat: keeps a brood of skirmishers fighting in the streets.
     // A BIG limb (Collins, Sep 29 2026: towers over several squares "are a core part of
     // the strategy in tower defence"): she takes four cells of one flat roof. For that she
-    // keeps six broodlings where she kept three, and is more than twice as hard to kill.
+    // keeps five broodlings (broodCount) where she kept three, and is more than twice as hard to kill.
     // Before she was big: broodCount 3, maxHp 140.
     family: 'brood', name: 'Broodmother', weight: 8,
     cost: { war: 30 }, range: 0, rate: 0, damage: 0, aoe: 0,

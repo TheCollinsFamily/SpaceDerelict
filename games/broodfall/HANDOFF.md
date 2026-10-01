@@ -318,6 +318,30 @@ character setting down a data pad that has something similar to the last screen 
   the screen. Review: `notes/art-review/pad/<id>.jpg` (a game picture warped in) and `<id>-track.jpg`.
 - **Checks:** `tests/padOutro.test.ts`; `node tools/shot-pad.mjs [won lost skip calm]`.
 
+## The Limb Codex and the limb decision sheet (Oct 1 2026)
+
+Collins: "a guide to the limbs and how they work with their visuals, bonuses, etc. — will use that to make decisions
+about what needs to be changed before upgrade looks". 37 families (35 in the draw; the Trap Cage and the Seedling are given).
+
+- **In game** (`src/ui/codex.ts`, `codex.css`): main menu LIMB CODEX, the ▤ button in the ship's room bar and by the
+  board's view controls, the C key, and CODEX on a built limb's panel (opens at that limb; the run pauses). Every limb alive
+  (front, behind, firing, withering, each drawn upgrade look), its numbers, traits, what it teaches when eaten and that
+  bonus's look class, the organ that unlocks it, which engines fit it, and its evolution tree with each option's class.
+- **Nothing is typed twice:** `src/ui/codexData.ts` reads content/data.ts, content/limbText.ts (the card and donor words,
+  moved out of src/ui/hud.ts so non-DOM code can read them), content/upgrades.ts, content/upgradeLooks.ts and
+  content/underground.ts. `evoLooks` = the looks a limb's eight evolution paths reach with no eaten bonus. tests/codex.test.ts.
+- **The decision sheet** (for Collins, not in game): `node tools/codex/sheet.mjs` writes
+  `notes/limb-codex/limb-codex-sheet.html` (self-contained, thumbnails cut from the atlases by tools/codex/thumbs.mjs),
+  published at https://claude.ai/artifact/G1XVCeZcLdEPx1QfQ2ny7g (republish that file to keep the link). Counted flags are
+  computed; Claude's read of pictures and roles is `tools/codex/audit.mjs` (AUDIT per limb, DECISIONS at the top).
+  The scripted runs per limb: `tools/measure/limbs.measure.ts` -> `notes/limb-codex/balance.json` (kills by poison, burn,
+  cloud and eaten-whole are credited to NO limb in sim stats, so Maw/Blight/Ember/Lure read low there).
+- **Beat:** `node tools/shot-codex.mjs` (dev server on 5241, spawned as node + vite.js) -> notes/screens/2026-10-01/codex-*.jpg.
+- **Trap that cost time:** the picture timer must not use `data-f`: a click handler that looks for `[data-f]` (the filter
+  chips) found the sprite itself. Frame state lives in `data-fr`.
+- **Biggest finding for the upgrade looks:** most limbs' evolution paths reach only 1-3 looks (the stage-3 pick decides),
+  and the three prototypes drew looks no path reaches without eaten bonuses. Collins's call: draw the reachable looks first?
+
 ## The landing films before every deployment (Oct 1 2026)
 
 Collins: "for loading into the different biomes, do we have broodfall landing animations to make it seem cohesive that
