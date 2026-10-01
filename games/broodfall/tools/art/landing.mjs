@@ -273,8 +273,11 @@ function bakeFilm(id) {
   '-map', '[v]', ...ENC, out], `${id} film`);
   const seconds = duration(out);
   const strikeAt = +(oLen - D + fLen).toFixed(3);
-  ffmpeg(['-i', out, '-frames:v', '1', '-vf', 'scale=1280:-2', '-quality', '86', path.join(OUT, `${id}-start.webp`)], `${id} start`);
-  lastFrame(out, path.join(OUT, `${id}-end.webp`), ['-quality', '90']);
+  const WEBP = ['-c:v', 'libwebp', '-lossless', '0', '-q:v', '88'];
+  ffmpeg(['-i', out, '-frames:v', '1', ...WEBP, path.join(OUT, `${id}-start.webp`)], `${id} start`);
+  const endPng = raw(`tmp-${id}-end.png`);
+  lastFrame(out, endPng);
+  ffmpeg(['-i', endPng, ...WEBP, path.join(OUT, `${id}-end.webp`)], `${id} end`);
   // Review: six frames, and how near the last frame is to the board it must become.
   fs.mkdirSync(REV, { recursive: true });
   const tmp = path.join(DIR, 'tmp');
@@ -286,7 +289,7 @@ function bakeFilm(id) {
     return p;
   });
   ffmpeg([...tiles.flatMap((t) => ['-i', t]), '-filter_complex', '[0][1][2]hstack=3[a];[3][4][5]hstack=3[b];[a][b]vstack=2[v]', '-map', '[v]', '-q:v', '4', path.join(REV, `${id}.jpg`)], `${id} review`);
-  const endVsBoard = picDiff(path.join(OUT, `${id}-end.webp`), band(id));
+  const endVsBoard = picDiff(endPng, band(id));
   const core = JSON.parse(fs.readFileSync(raw(`board-${id}.json`), 'utf8')).core;
   const report = { id, seconds, fallAt: 0.8, strikeAt, endVsBoard, core, models: MODEL, cut: CUT };
   fs.writeFileSync(path.join(REV, `${id}.json`), JSON.stringify(report, null, 2) + '\n');

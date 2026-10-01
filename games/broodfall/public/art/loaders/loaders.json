@@ -1,0 +1,44 @@
+{
+  "loops": {
+    "emblem": {
+      "video": "loaders/emblem.webm",
+      "mini": "loaders/emblem-mini.webp",
+      "slow": "loaders/emblem-slow.webp",
+      "alpha": true,
+      "mode": "pingpong",
+      "seconds": 9.92
+    },
+    "scan": {
+      "video": "loaders/scan.webm",
+      "mini": "loaders/scan-mini.webp",
+      "slow": "loaders/scan-slow.webp",
+      "alpha": false,
+      "mode": "seamless",
+      "seconds": 6
+    },
+    "creep": {
+      "video": "loaders/creep.webm",
+      "mini": "loaders/creep-mini.webp",
+      "slow": "loaders/creep-slow.webp",
+      "alpha": false,
+      "mode": "pingpong",
+      "seconds": 11.92
+    },
+    "dance": {
+      "video": "loaders/dance.webm",
+      "mini": "loaders/dance-mini.webp",
+      "slow": "loaders/dance-slow.webp",
+      "alpha": true,
+      "mode": "seamless",
+      "seconds": 6
+    },
+    "yoke": {
+      "video": "ship/yoke/thinking.webm",
+      "mini": "loaders/yoke-mini.webp",
+      "slow": "loaders/yoke-slow.webp",
+      "alpha": true,
+      "mode": "her own",
+      "seconds": 8
+    }
+  }
+}
