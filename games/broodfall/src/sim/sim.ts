@@ -22,7 +22,7 @@ import {
   BALANCE as B, ENEMIES, TOWERS, WAVE_TABLE,
 } from '../../content/data';
 import type {
-  Broodling, Caltrop, CardInstance, Caste, Cloud, Command, Corpse, CreepSource, Directive, Enemy,
+  Broodling, Broodmother, BroodSnap, Caltrop, CardInstance, Caste, Cloud, Command, Corpse, CreepSource, Directive, Enemy, UnitOrder,
   EnemyKind, EnemySpec, HitFx, ModPip, Organ, OrganId, Outcome, Phase, Projectile,
   NodeStrain, RootDir, RunStats, Shell, SimConfig, SimEvent, Tower, TowerFamily, TowerSpec, UpgradeChoice, UpgradeOption, Vec,
 } from './types';
@@ -152,8 +152,11 @@ export function towerStats(t: Tower, pipsResolved = false) {
     offCreep: pips('sling') > 0,
     // Brood pip: heal 50% max hp per pip at every cleared wave (past full, the
     // limb GROWS); on a mother, +1 broodling.
-    waveHeal: B.pipWaveHeal * pips('brood'),
-    extraBroodlings: B.pipBroodling * pips('brood'),
+    // (A Brood Pit's pip is a brood pip: the same verb.)
+    waveHeal: B.pipWaveHeal * (pips('brood') + pips('hatch')),
+    extraBroodlings: B.pipBroodling * (pips('brood') + pips('hatch')),
+    // Broodmother Den: the Broodmothers it keeps (Twin Mothers: two).
+    extraMothers: 0,
     // Swamp pip: the payload DIGESTS anything left at or below this hp.
     execute: (spec.swamp?.execute ?? 0) + B.pipExecute * pips('swamp'),
     // Lure pip: +2 interest and hits leave toxic pheromone clouds.
@@ -368,8 +371,12 @@ export class Sim {
   clouds: Cloud[] = [];
   /** Every limb ever grown this run, by id: a kill by its poison, fire or cloud after it is gone is still put down to its family (stats only). */
   private creditFamilyOf = new Map<number, TowerFamily>();
-  /** The mothers' spawn, fighting on your side in the streets. */
+  /** Your walking fighters: Brood Pit and Broodmother warriors, and the Trap Cage's puppets. */
   broodlings: Broodling[] = [];
+  /** Broodmothers (units born of a Broodmother Den): Collins, Oct 1 2026. */
+  mothers: Broodmother[] = [];
+  /** Street routes for ordered units: target cell -> the next cell toward it from every cell. */
+  private unitFlows = new Map<number, Int32Array>();
   /** Recent lightning arcs / sniper beams, for the renderer (fade fast). */
   arcs: Array<{ from: Vec; to: Vec; ttl: number }> = [];
   /** Lobbed shells in flight: hive cannons at your limbs, your bombards at the hive. */
@@ -1622,6 +1629,7 @@ export class Sim {
 
   private refreshRouting(): void {
     this.routeCache.clear();
+    this.unitFlows.clear();
     this.dangerMap = null;
     this.flow = this.computeFlowField();
     this.creepDist = allDistance(this.map, this.map.coreCell);
@@ -1745,6 +1753,69 @@ export class Sim {
         if (this.map.cells[cmd.cell] === CellType.Void) return { ok: false, err: 'unclaimed city' };
         if (dist(t.pos, this.cellCenter(cmd.cell)) > this.statsOf(t).range) return { ok: false, err: 'out of range' };
         t.marker = cmd.cell;
+        return { ok: true };
+      }
+      case 'unit-order': {
+        const units = cmd.ids.map((id) => this.unitById(id)).filter((u): u is Broodling | Broodmother => u !== undefined);
+        if (units.length === 0) return { ok: false, err: 'no such unit' };
+        let order: UnitOrder = cmd.order;
+        if (order.kind === 'move' || order.kind === 'attack') {
+          const to = this.standableAt(order.to);
+          if (!to) return { ok: false, err: 'they can only walk the streets' };
+          order = { kind: order.kind, to };
+        }
+        units.forEach((u, i) => {
+          // A group spreads round the point it was sent to, so it does not stand in one heap.
+          let o: UnitOrder = order;
+          if ((order.kind === 'move' || order.kind === 'attack') && units.length > 1) {
+            const a = i * 2.399;
+            const r = 6 + 3 * Math.sqrt(i);
+            const p = this.standableAt({ x: order.to.x + Math.cos(a) * r, y: order.to.y + Math.sin(a) * r }) ?? order.to;
+            o = { kind: order.kind, to: p };
+          }
+          const list = 'mode' in u ? u.orders : (u.orders ??= []);
+          if (o.kind === 'guard') {
+            list.length = 0;
+            if ('mode' in u) u.guard = { ...u.pos }; else u.guard = undefined;
+            return;
+          }
+          if (o.kind === 'hold') {
+            list.length = 0;
+            list.push(o);
+            if ('mode' in u) u.guard = { ...u.pos }; else u.guard = { ...u.pos };
+            return;
+          }
+          if (!cmd.queue) list.length = 0;
+          list.push(o);
+        });
+        return { ok: true };
+      }
+      case 'mother-mode': {
+        const m = this.mothers.find((x) => x.id === cmd.motherId);
+        if (!m) return { ok: false, err: 'no such Broodmother' };
+        if (m.mode !== cmd.mode) {
+          m.mode = cmd.mode;
+          m.guard = { ...m.pos };
+          if (cmd.mode === 'brood') m.orders = m.orders.filter((o) => o.kind === 'move' || o.kind === 'return');
+          this.events.push({ kind: 'mother-mode', motherId: m.id, mode: cmd.mode });
+        }
+        return { ok: true };
+      }
+      case 'mother-net': {
+        const m = this.mothers.find((x) => x.id === cmd.motherId);
+        if (!m) return { ok: false, err: 'no such Broodmother' };
+        if (m.mode !== 'fight') return { ok: false, err: 'she nets only in fight mode' };
+        if ((m.stunnedUntil ?? 0) > this.time) return { ok: false, err: 'she is sedated' };
+        if (m.netCd > 0) return { ok: false, err: `her net is ready in ${Math.ceil(m.netCd)}s` };
+        if (dist(m.pos, cmd.at) > B.netRange) return { ok: false, err: 'out of her reach' };
+        this.castNet(m, cmd.at);
+        return { ok: true };
+      }
+      case 'set-rally': {
+        const t = this.towers.find((x) => x.id === cmd.towerId && (x.family === 'hatch' || x.family === 'brood'));
+        if (!t) return { ok: false, err: 'no such Brood Pit or Den' };
+        if (!this.standableAt(this.cellCenter(cmd.cell))) return { ok: false, err: 'they can only walk the streets' };
+        t.rally = cmd.cell;
         return { ok: true };
       }
       case 'set-priority': {
@@ -2253,8 +2324,10 @@ export class Sim {
     if (emit) this.bankRelics(t);
     for (const c of this.cellsOf(t)) this.occupied.delete(c);
     this.towers.splice(i, 1);
-    // The brood (and a cage's puppets) do not outlive the limb that holds them.
-    this.broodlings = this.broodlings.filter((b) => b.motherId !== id);
+    // A cage's puppets do not outlive the cage. A Brood Pit's and a Den's warriors, and the Den's
+    // Broodmothers, DO outlive their limb (Oct 1 2026: they are units in the field, under orders);
+    // they fight on with what they were born with (their snap) and are not replaced.
+    this.broodlings = this.broodlings.filter((b) => b.motherId !== id || !b.puppet);
     // Its thrown patches die with it (a sling's outposts are its own flesh).
     this.removeCreepSourcesOf(id);
     this.refreshRouting();
@@ -2691,6 +2764,7 @@ export class Sim {
 
     this.updateCoreAttack();
     this.updateEnemies();
+    this.updateMothers();
     this.updateBroodlings();
     this.updateTowers();
     this.updateProjectiles();
@@ -3080,6 +3154,10 @@ export class Sim {
     }
     // What would it shell from here?
     const pickTarget = (): { pos: Vec } | null => {
+      // A PARKED Broodmother is the siege's answer to a brood stack: she is singled out
+      // before any limb (the dartgun sedates her; the war cannon shells her and her brood).
+      const parked = this.parkedMotherNear(e.pos, c.range);
+      if (parked) return { pos: { ...parked.pos } };
       if (science) {
         const weak = this.vulnerableTower();
         if (weak && dist(e.pos, weak.pos) <= c.range) return weak;
@@ -3163,6 +3241,22 @@ export class Sim {
         continue;
       }
       const reach = Math.max(s.aoe, 16);
+      // Hive shells land on your walking units too: a dart sedates a Broodmother, a shell hurts her and her brood.
+      for (const m of [...this.mothers]) {
+        if (dist(s.to, m.pos) > reach + 8) continue;
+        if (s.stun) m.stunnedUntil = Math.max(m.stunnedUntil ?? 0, this.time + s.stun);
+        if (s.damage > 0) this.hurtMother(m, s.damage);
+      }
+      if (s.damage > 0) {
+        for (const b of [...this.broodlings]) {
+          if (dist(s.to, b.pos) > reach) continue;
+          b.hp -= s.damage;
+          if (b.hp <= 0) {
+            this.broodlings = this.broodlings.filter((x) => x !== b);
+            this.events.push({ kind: 'broodling-lost', motherId: b.motherId });
+          }
+        }
+      }
       for (const t of [...this.towers]) {
         if (dist(s.to, t.pos) > reach) continue;
         if (s.stun && (t.shield ?? 0) <= 0) t.stunnedUntil = this.time + s.stun; // shields stop darts
@@ -3564,6 +3658,24 @@ export class Sim {
         }
       }
 
+      // A Broodmother in the way is fought, not walked past: she is big, and she is a prize.
+      if (spec.rate > 0 && !spec.bomber && this.mothers.length > 0) {
+        let mm: Broodmother | null = null;
+        let md = B.motherEngageDist + ENEMY_RADIUS;
+        for (const m of this.mothers) {
+          const d = dist(e.pos, m.pos);
+          if (d < md) { md = d; mm = m; }
+        }
+        if (mm) {
+          e.attackCooldown -= DT;
+          if (e.attackCooldown <= 0) {
+            e.attackCooldown = 1 / spec.rate;
+            this.hurtMother(mm, spec.damage * this.empowerOf(e));
+          }
+          continue;
+        }
+      }
+
       // A broodling underfoot gets fought, not walked past — blocking is its job.
       if (spec.rate > 0 && !spec.bomber && this.broodlings.length > 0) {
         let bl: Broodling | null = null;
@@ -3589,6 +3701,17 @@ export class Sim {
       // Standoff bombardier: besieges the nearest structure from OUTSIDE melee.
       // Short-armed limbs cannot answer it; long guns and broodlings can.
       if (spec.standoff) {
+        // A parked Broodmother in range draws the mortar's fire first.
+        const parked = this.parkedMotherNear(e.pos, B.mortarStandoff);
+        if (parked) {
+          e.attackCooldown -= DT;
+          if (e.attackCooldown <= 0 && spec.rate > 0) {
+            e.attackCooldown = 1 / spec.rate;
+            this.arcs.push({ from: { ...e.pos }, to: { ...parked.pos }, ttl: 0.12 });
+            this.hurtMother(parked, spec.damage * this.empowerOf(e) * B.parkedMotherAggro);
+          }
+          continue;
+        }
         const prey = this.woundNear(e.pos, B.mortarStandoff) ?? this.nearestStructure(e.pos, B.mortarStandoff);
         if (prey) {
           e.attackCooldown -= DT;
@@ -3698,42 +3821,349 @@ export class Sim {
 
   // ---------- combat ----------
 
+  // ---------- your walking units: warriors, Broodmothers, puppets (Collins, Oct 1 2026) ----------
+
   /**
-   * Broodlings are the mother's PAYLOAD: they bite with her potency and tempo,
-   * roam as far as her reach, grow tougher with her spine pips, and every verb
-   * she has eaten rides their bites (a blighter pip = poisoned bites, a frond
-   * pip = bites that arc, a swamp pip = bites that digest the weak...).
+   * What a unit fights with: its limb's live stats while the limb stands (a pip or an evolution on
+   * the pit or den reaches its warriors at once), else what it was born with.
+   */
+  private unitPower(limbId: number, snap?: BroodSnap): (BroodSnap & { tower?: Tower; tapped: boolean }) | null {
+    const t = this.towers.find((x) => x.id === limbId);
+    if (t) {
+      const ms = this.statsOf(t);
+      return { potency: ms.potency, tempo: ms.tempo, reach: ms.reach, fx: fxOf(t, ms), tower: t, tapped: this.isTapped(t) };
+    }
+    return snap ? { ...snap, tapped: false } : null;
+  }
+
+  /** What a limb gives the units it makes, frozen (they fight on with it if the limb dies). */
+  private snapOf(t: Tower): BroodSnap {
+    const ms = this.statsOf(t);
+    return { potency: ms.potency, tempo: ms.tempo, reach: ms.reach, fx: fxOf(t, ms) };
+  }
+
+  /** Where your walking units gather at the body: a street beside the core. */
+  bodyPoint(): Vec {
+    return this.nearestStreet(this.map.coreCell) ?? { ...this.core };
+  }
+
+  /** The centre of the street cell nearest this cell (searching outward a few cells), or null. */
+  nearestStreet(cell: number): Vec | null {
+    if (cell < 0 || cell >= this.map.cells.length) return null;
+    if (isPassable(this.map.cells[cell])) return this.cellCenter(cell);
+    const W = this.cfg.gridW;
+    const cx = cell % W;
+    const cy = (cell - cx) / W;
+    for (let r = 1; r <= 6; r++) {
+      let best = -1;
+      let bd = Infinity;
+      for (let dy = -r; dy <= r; dy++) {
+        for (let dx = -r; dx <= r; dx++) {
+          if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+          const x = cx + dx;
+          const y = cy + dy;
+          if (x < 0 || y < 0 || x >= W || y >= this.cfg.gridH) continue;
+          const c = y * W + x;
+          if (!isPassable(this.map.cells[c])) continue;
+          const d = dx * dx + dy * dy;
+          if (d < bd) { bd = d; best = c; }
+        }
+      }
+      if (best >= 0) return this.cellCenter(best);
+    }
+    return null;
+  }
+
+  /** A point a unit can stand on: this one if it is street, else the nearest street to it. */
+  standableAt(p: Vec): Vec | null {
+    const c = this.cellAt(p.x, p.y);
+    if (c >= 0 && isPassable(this.map.cells[c])) return { x: p.x, y: p.y };
+    return this.nearestStreet(c);
+  }
+
+  /** The rally point of a Brood Pit or Den: its set cell, else the street beside the limb. */
+  rallyOf(t: Tower): Vec {
+    if (t.rally !== undefined) {
+      const p = this.standableAt(this.cellCenter(t.rally));
+      if (p) return p;
+    }
+    return this.cellsOf(t).map((c) => this.passableNear(c)).find((p) => p !== null) ?? this.nearestStreet(t.cell) ?? { ...t.pos };
+  }
+
+  /** Street routes toward a cell, from every cell (breadth-first over the streets; cached until the map changes). */
+  private unitFlowTo(target: number): Int32Array {
+    let next = this.unitFlows.get(target);
+    if (next) return next;
+    const n = this.map.cells.length;
+    next = new Int32Array(n).fill(-1);
+    const W = this.cfg.gridW;
+    const seen = new Uint8Array(n);
+    const queue = new Int32Array(n);
+    let head = 0;
+    let tail = 0;
+    queue[tail++] = target;
+    seen[target] = 1;
+    next[target] = target;
+    while (head < tail) {
+      const c = queue[head++];
+      const x = c % W;
+      const y = (c - x) / W;
+      const around = [x > 0 ? c - 1 : -1, x < W - 1 ? c + 1 : -1, y > 0 ? c - W : -1, c + W < n ? c + W : -1];
+      for (const nb of around) {
+        if (nb < 0 || seen[nb] || !isPassable(this.map.cells[nb])) continue;
+        seen[nb] = 1;
+        next[nb] = c; // from nb, step to c
+        queue[tail++] = nb;
+      }
+    }
+    if (this.unitFlows.size > 96) this.unitFlows.clear();
+    this.unitFlows.set(target, next);
+    return next;
+  }
+
+  /** Walk a unit toward a point along the streets. Returns true once it is there. */
+  private walkTo(u: { pos: Vec }, to: Vec, speed: number): boolean {
+    if (dist(u.pos, to) <= 6) return true;
+    const here = this.cellAt(u.pos.x, u.pos.y);
+    const goal = this.cellAt(to.x, to.y);
+    if (here === goal || here < 0 || goal < 0) {
+      this.stepConstrained(u, to, speed);
+      return false;
+    }
+    const step = this.unitFlowTo(goal)[here];
+    // No street route (or standing off the streets): walk straight and slide along walls.
+    this.stepConstrained(u, step >= 0 && step !== here ? this.cellCenter(step) : to, speed);
+    return false;
+  }
+
+  /** The hive body nearest a point, within a radius, that your units fight (not burrowed, not flying). */
+  private preyNear(at: Vec, radius: number, from: Vec, skipScience: boolean): Enemy | null {
+    let prey: Enemy | null = null;
+    let bestD = Infinity;
+    for (const e of this.enemies) {
+      if (e.burrowed || this.isAirborne(e)) continue;
+      if (skipScience && enemySpec(e.kind).caste === 'science') continue;
+      if (dist(at, e.pos) > radius) continue;
+      const d = dist(from, e.pos);
+      if (d < bestD) { bestD = d; prey = e; }
+    }
+    return prey;
+  }
+
+  /**
+   * Warriors and puppets. A warrior's post is its own guard point if it has one (an order left it
+   * there), else its Broodmother's side, else its limb's rally point. It fights the hive near its post
+   * and drifts back to it. Orders (move, attack, hold, return) come first.
    */
   private updateBroodlings(): void {
     for (const b of [...this.broodlings]) {
-      const mother = this.towers.find((t) => t.id === b.motherId);
-      if (!mother) continue; // dies with the mother in removeTower
-      if (this.isTapped(mother)) continue; // a tapped mother's brood stands idle
-      const ms = this.statsOf(mother);
+      const pw = this.unitPower(b.motherId, b.snap);
+      if (!pw) continue; // a puppet whose cage is gone (removed with it)
+      if (pw.tapped) continue; // a tapped limb's brood stands idle
       b.cooldown -= DT;
-      let prey: Enemy | null = null;
-      let bestD = Infinity;
-      for (const e of this.enemies) {
-        if (e.burrowed || enemySpec(e.kind).caste === 'science' || this.isAirborne(e)) continue;
-        if (!b.puppet && dist(mother.pos, e.pos) > B.broodLeash * ms.reach) continue; // stays near home
-        const d = dist(b.pos, e.pos);
-        if (d < bestD) { bestD = d; prey = e; }
+      const speed = (b.puppet?.speed ?? B.broodSpeed) * (b.puppet ? pw.tempo : 1);
+      const bite = (prey: Enemy): void => {
+        if (b.cooldown > 0) return;
+        b.cooldown = 1 / ((b.puppet?.rate ?? B.broodRate) * pw.tempo);
+        this.payloadHit({ ...pw.fx, quiet: true }, prey, (b.puppet?.bite ?? B.broodDamage) * pw.potency,
+          prey.pos.x - b.pos.x, prey.pos.y - b.pos.y);
+      };
+      const inReach = B.broodEngageDist + ENEMY_RADIUS;
+      const fight = (prey: Enemy): void => {
+        if (dist(b.pos, prey.pos) <= inReach) bite(prey);
+        else this.stepConstrained(b, prey.pos, speed);
+      };
+      const order = b.orders?.[0];
+      if (order && (order.kind === 'move' || order.kind === 'return')) {
+        const to = order.kind === 'move' ? order.to : this.bodyPoint();
+        if (this.walkTo(b, to, speed)) { b.guard = { ...to }; b.orders!.shift(); }
+        continue;
       }
-      if (prey) {
-        if (bestD <= B.broodEngageDist + ENEMY_RADIUS) {
-          if (b.cooldown <= 0) {
-            b.cooldown = 1 / ((b.puppet?.rate ?? B.broodRate) * ms.tempo);
-            this.payloadHit({ ...fxOf(mother, ms), quiet: true }, prey, (b.puppet?.bite ?? B.broodDamage) * ms.potency,
-              prey.pos.x - b.pos.x, prey.pos.y - b.pos.y);
-          }
-        } else {
-          this.stepConstrained(b, prey.pos, (b.puppet?.speed ?? B.broodSpeed) * (b.puppet ? ms.tempo : 1));
-        }
-      } else if (dist(b.pos, mother.pos) > 40) {
-        // Nothing to fight: drift back to mother's skirts.
-        this.stepConstrained(b, mother.pos, B.broodSpeed * 0.7);
+      if (order && order.kind === 'attack') {
+        const prey = this.preyNear(b.pos, 46, b.pos, !b.puppet);
+        if (prey) { fight(prey); continue; }
+        if (this.walkTo(b, order.to, speed)) { b.guard = { ...order.to }; b.orders!.shift(); }
+        continue;
       }
+      if (order && order.kind === 'hold') {
+        const prey = this.preyNear(b.pos, inReach, b.pos, !b.puppet);
+        if (prey) bite(prey);
+        continue;
+      }
+      // Guarding (no order).
+      const mum = b.motherUnit !== undefined ? this.mothers.find((m) => m.id === b.motherUnit) : undefined;
+      const tower = pw.tower;
+      const post = b.guard ?? (mum ? mum.pos : b.puppet ? null : tower ? this.rallyOf(tower) : null);
+      const leash = (mum && !b.guard ? B.broodLeash * 0.8 : B.broodLeash) * pw.reach;
+      const prey = this.preyNear(post ?? b.pos, post ? leash : Infinity, b.pos, !b.puppet);
+      if (prey) fight(prey);
+      else if (post && dist(b.pos, post) > (mum && !b.guard ? 30 : 16)) this.walkTo(b, post, speed * 0.8);
     }
+  }
+
+  /** A Den bears a Broodmother beside it; she walks to the Den's rally point if it has one. */
+  private bearMother(den: Tower): void {
+    const spawn = this.cellsOf(den).map((c) => this.passableNear(c)).find((p) => p !== null) ?? this.nearestStreet(den.cell) ?? { ...den.pos };
+    const ms = this.statsOf(den);
+    const hp = B.motherHp * (ms.maxHp / towerSpec('brood').maxHp) * this.geneMods.broodHpMult;
+    const m: Broodmother = {
+      id: this.nextId++, denId: den.id, pos: { ...spawn }, hp, maxHp: hp, mode: 'brood', guard: { ...spawn },
+      orders: [], cooldown: 0, spawnCd: 0, netCd: B.netCooldown * 0.5, snap: this.snapOf(den),
+    };
+    if (den.rally !== undefined) m.orders.push({ kind: 'move', to: this.rallyOf(den) });
+    this.mothers.push(m);
+    this.stats.mothersBorn = (this.stats.mothersBorn ?? 0) + 1;
+    this.events.push({ kind: 'mother-born', denId: den.id, motherId: m.id });
+  }
+
+  /** How many warriors a Broodmother keeps while parked. */
+  motherBroodCap(m: Broodmother): number {
+    const den = this.towers.find((t) => t.id === m.denId);
+    const base = towerSpec('brood').broodCount ?? 0;
+    if (!den) return base;
+    const ms = this.statsOf(den);
+    return (base + ms.extraBroodlings) * ms.volley;
+  }
+
+  /** She dies: her warriors stand where they are (their own posts now), and the Den is slow to bear another. */
+  private loseMother(m: Broodmother): void {
+    this.mothers = this.mothers.filter((x) => x !== m);
+    for (const b of this.broodlings) {
+      if (b.motherUnit === m.id) { b.motherUnit = undefined; b.guard = b.guard ?? { ...b.pos }; }
+    }
+    const den = this.towers.find((t) => t.id === m.denId);
+    if (den) den.cooldown = Math.max(den.cooldown, B.motherRespawn / this.statsOf(den).tempo);
+    this.stats.mothersLost = (this.stats.mothersLost ?? 0) + 1;
+    this.events.push({ kind: 'mother-lost', denId: m.denId, motherId: m.id });
+  }
+
+  /** A Broodmother parked in brood mode (not walking under orders) within this distance: the siege's mark. */
+  private parkedMotherNear(at: Vec, range: number): Broodmother | null {
+    let best: Broodmother | null = null;
+    let bd = range;
+    for (const m of this.mothers) {
+      if (m.mode !== 'brood' || m.orders.some((o) => o.kind === 'move' || o.kind === 'return')) continue;
+      const d = dist(at, m.pos);
+      if (d <= bd) { bd = d; best = m; }
+    }
+    return best;
+  }
+
+  /** Hurt a Broodmother (hive blows, shells). */
+  hurtMother(m: Broodmother, amount: number): void {
+    m.hp -= amount;
+    if (m.hp <= 0) this.loseMother(m);
+  }
+
+  /** Throw a Broodmother's net: every hive body under it is slowed. */
+  private castNet(m: Broodmother, at: Vec): number {
+    let hits = 0;
+    for (const e of this.enemies) {
+      if (e.burrowed || dist(at, e.pos) > B.netRadius) continue;
+      const active = e.slowUntil !== undefined && e.slowUntil > this.time;
+      e.slowMult = active && e.slowMult !== undefined ? Math.min(e.slowMult, B.netSlow) : B.netSlow;
+      e.slowUntil = Math.max(active ? e.slowUntil ?? 0 : 0, this.time + B.netDur);
+      hits++;
+    }
+    m.netCd = B.netCooldown;
+    this.stats.netsCast = (this.stats.netsCast ?? 0) + 1;
+    this.stats.netHits = (this.stats.netHits ?? 0) + hits;
+    this.events.push({ kind: 'net-cast', motherId: m.id, at: { ...at }, radius: B.netRadius, hits });
+    return hits;
+  }
+
+  /** Where a net would catch the most: the hive body in reach with the most others around it. */
+  private bestNetSpot(m: Broodmother): Vec | null {
+    let best: Vec | null = null;
+    let most = 1; // never waste a net on one body
+    for (const e of this.enemies) {
+      if (e.burrowed || dist(m.pos, e.pos) > B.netRange) continue;
+      let n = 0;
+      for (const o of this.enemies) if (!o.burrowed && dist(o.pos, e.pos) <= B.netRadius) n++;
+      if (n > most) { most = n; best = { ...e.pos }; }
+    }
+    return best;
+  }
+
+  /**
+   * Broodmothers. BROOD mode: she stays where she is and broods warriors around her up to her cap
+   * (she bites only what reaches her). FIGHT mode: she hunts the hive near her post, bites, and throws
+   * her net on her own when a crowd is in reach. Orders (move, attack, return) come first; a sedated
+   * mother does nothing until the dart wears off.
+   */
+  private updateMothers(): void {
+    for (const m of [...this.mothers]) {
+      const pw = this.unitPower(m.denId, m.snap)!;
+      m.cooldown -= DT;
+      m.netCd -= DT;
+      m.spawnCd -= DT;
+      if ((m.stunnedUntil ?? 0) > this.time || pw.tapped) continue;
+      const speed = B.motherSpeed * (m.mode === 'fight' ? 1 : 0.85);
+      const reach = B.motherEngageDist + ENEMY_RADIUS;
+      const bite = (prey: Enemy): void => {
+        if (m.cooldown > 0) return;
+        m.cooldown = 1 / (B.motherRate * pw.tempo);
+        this.payloadHit({ ...pw.fx, quiet: true }, prey, B.motherBite * pw.potency, prey.pos.x - m.pos.x, prey.pos.y - m.pos.y);
+      };
+      const order = m.orders[0];
+      if (order && (order.kind === 'move' || order.kind === 'return')) {
+        const to = order.kind === 'move' ? order.to : this.bodyPoint();
+        if (this.walkTo(m, to, speed)) { m.guard = { ...to }; m.orders.shift(); }
+        continue;
+      }
+      if (order && order.kind === 'attack') {
+        const prey = this.preyNear(m.pos, 50, m.pos, false);
+        if (prey) {
+          if (dist(m.pos, prey.pos) <= reach) bite(prey); else this.stepConstrained(m, prey.pos, speed);
+        } else if (this.walkTo(m, order.to, speed)) { m.guard = { ...order.to }; m.orders.shift(); }
+        if (m.mode === 'fight' && m.netCd <= 0) { const spot = this.bestNetSpot(m); if (spot) this.castNet(m, spot); }
+        continue;
+      }
+      if (order && order.kind === 'hold') {
+        const prey = this.preyNear(m.pos, reach, m.pos, false);
+        if (prey) bite(prey);
+        if (m.mode === 'fight' && m.netCd <= 0) { const spot = this.bestNetSpot(m); if (spot) this.castNet(m, spot); }
+        if (m.mode === 'brood') this.brood(m, pw);
+        continue;
+      }
+      if (m.mode === 'brood') {
+        m.guard = { ...m.pos };
+        const prey = this.preyNear(m.pos, reach, m.pos, false);
+        if (prey) bite(prey);
+        this.brood(m, pw);
+        continue;
+      }
+      // Fight mode, no orders: hunt near her post, net the crowds.
+      const prey = this.preyNear(m.guard, B.motherLeash * pw.reach, m.pos, false);
+      if (prey) {
+        if (dist(m.pos, prey.pos) <= reach) bite(prey); else this.walkTo(m, prey.pos, speed);
+      } else if (dist(m.pos, m.guard) > 12) this.walkTo(m, m.guard, speed * 0.8);
+      if (m.netCd <= 0) { const spot = this.bestNetSpot(m); if (spot) this.castNet(m, spot); }
+    }
+  }
+
+  /** A parked Broodmother broods one more warrior when her clock comes round and she is under her cap. */
+  private brood(m: Broodmother, pw: BroodSnap): void {
+    if (m.spawnCd > 0) return;
+    const mine = this.broodlings.filter((b) => b.motherUnit === m.id).length;
+    if (mine >= this.motherBroodCap(m)) return;
+    m.spawnCd = B.motherBrood / pw.tempo;
+    const den = this.towers.find((t) => t.id === m.denId);
+    const hpMult = den ? this.statsOf(den).maxHp / towerSpec('brood').maxHp : 1;
+    const hp = B.broodHp * hpMult * this.geneMods.broodHpMult;
+    const at = this.standableAt(m.pos) ?? { ...m.pos };
+    const a = (this.nextId * 2.399) % (Math.PI * 2); // a deterministic spot around her skirts
+    this.broodlings.push({
+      id: this.nextId++, motherId: m.denId, motherUnit: m.id,
+      pos: { x: at.x + Math.cos(a) * 8, y: at.y + Math.sin(a) * 8 }, hp, maxHp: hp, cooldown: 0, snap: { potency: pw.potency, tempo: pw.tempo, reach: pw.reach, fx: pw.fx },
+    });
+    this.stats.warriorsBorn = (this.stats.warriorsBorn ?? 0) + 1;
+    this.events.push({ kind: 'warrior-born', motherId: m.denId, at: 'mother' });
+  }
+
+  /** Your unit with this id, warrior or Broodmother. */
+  unitById(id: number): Broodling | Broodmother | undefined {
+    return this.mothers.find((m) => m.id === id) ?? this.broodlings.find((b) => b.id === id);
   }
 
   /** Aimed bile globs land and detonate with the lobber's full payload. */
@@ -4151,18 +4581,30 @@ export class Sim {
         }
       }
 
-      // The broodmother tends her brood (a brood pip on her = one more).
+      // The BROODMOTHER DEN bears its Broodmothers (one; Twin Mothers: two) and bears a new one, slowly,
+      // when she dies. SHE broods the warriors (updateMothers).
       if (t.family === 'brood') {
-        const mine = this.broodlings.filter((b) => b.motherId === t.id).length;
-        const want = ((towerSpec('brood').broodCount ?? 0) + stats.extraBroodlings) * stats.volley;
+        const mine = this.mothers.filter((m) => m.denId === t.id).length;
+        if (mine < 1 + stats.extraMothers && t.cooldown <= 0) {
+          this.bearMother(t);
+          t.cooldown = B.motherRespawn / stats.tempo;
+        }
+        continue;
+      }
+      // The BROOD PIT: a warrior born at the BODY on a cadence, sent to the pit's rally point
+      // (a brood pip = one more kept; twinning = twice as many).
+      if (t.family === 'hatch') {
+        const mine = this.broodlings.filter((b) => b.motherId === t.id && b.motherUnit === undefined).length;
+        const want = ((towerSpec('hatch').broodCount ?? 0) + stats.extraBroodlings) * stats.volley;
         if (mine < want && t.cooldown <= 0) {
-          t.cooldown = B.broodRespawn / stats.tempo;
-          const spawn = this.cellsOf(t).map((c) => this.passableNear(c)).find((p) => p !== null) ?? t.pos;
-          const hp = B.broodHp * (stats.maxHp / towerSpec('brood').maxHp) * this.geneMods.broodHpMult; // spine pips = tougher brood
+          t.cooldown = B.pitCadence / stats.tempo;
+          const home = this.bodyPoint();
+          const hp = B.broodHp * (stats.maxHp / towerSpec('hatch').maxHp) * this.geneMods.broodHpMult; // spine pips = tougher warriors
           this.broodlings.push({
-            id: this.nextId++, motherId: t.id, pos: { x: spawn.x, y: spawn.y },
-            hp, maxHp: hp, cooldown: 0,
+            id: this.nextId++, motherId: t.id, pos: { x: home.x, y: home.y }, hp, maxHp: hp, cooldown: 0, snap: this.snapOf(t),
           });
+          this.stats.warriorsBorn = (this.stats.warriorsBorn ?? 0) + 1;
+          this.events.push({ kind: 'warrior-born', motherId: t.id, at: 'body' });
         }
         continue;
       }

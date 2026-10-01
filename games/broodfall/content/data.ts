@@ -92,10 +92,24 @@ export const TOWERS: readonly TowerSpec[] = [
     // the strategy in tower defence"): she takes four cells of one flat roof. For that she
     // keeps five broodlings (broodCount) where she kept three, and is more than twice as hard to kill.
     // Before she was big: broodCount 3, maxHp 140.
-    family: 'brood', name: 'Broodmother', weight: 8,
+    // Oct 1 2026 (Collins): "Brood and Broodmother Den different ... the other spawning a Broodmother,
+    // which can either be clicked and set in brood mode, where it stays stationary and spawns more
+    // warriors, or be in fighting mode, where it can cast a net slowing enemies". The den is where she is
+    // born and reborn; SHE is the unit (src/sim/sim.ts updateMothers). broodCount: the warriors she keeps
+    // while parked in brood mode. The family id stays 'brood' (old pips, decks and saves name it).
+    family: 'brood', name: 'Broodmother Den', weight: 8,
     cost: { war: 30 }, range: 0, rate: 0, damage: 0, aoe: 0,
     broodCount: 5, span: [2, 2],
     maxHp: 320, interest: 2, eatThreshold: 0, advanced: true,
+  },
+  {
+    // BROOD PIT (Collins, Oct 1 2026: "one spawning fighters from your base"): a steady stream of
+    // defenders from home. Its warriors are born at the body and walk to the pit's rally point (the pit
+    // itself until the player sets one), where they guard; they take orders like a Broodmother's.
+    family: 'hatch', name: 'Brood Pit', weight: 8,
+    cost: { war: 20 }, range: 0, rate: 0, damage: 0, aoe: 0,
+    broodCount: 3,
+    maxHp: 110, interest: 1, eatThreshold: 0, advanced: false,
   },
   {
     // The ANTI-WALL (Collins, Sep 27 2026): a swamp IN the street the column
@@ -612,7 +626,7 @@ export const BALANCE = {
   sleeperDamage: 70,
   /** Mating musk: a paired-off body stands still this long; each pair adds a body next wave. */
   mateStun: 4,
-  /** Broodmother. */
+  /** Broodmother Den and Brood Pit: their warriors (and the Trap Cage's puppets walk the same way). */
   broodHp: 34,
   broodDamage: 7,
   broodRate: 1.0,           // attacks/s
@@ -620,6 +634,24 @@ export const BALANCE = {
   broodLeash: 110,          // px from the mother the brood will roam
   broodRespawn: 6,          // s to regrow a lost broodling
   broodEngageDist: 15,      // px: a hive walker stops to fight a broodling this close
+  /** Brood Pit: a warrior born at the body every this many s (x tempo) while it has fewer than its broodCount. */
+  pitCadence: 6,
+  /** The Broodmother (a unit, born of a den). */
+  motherHp: 240,
+  motherSpeed: 32,
+  motherBite: 12,
+  motherRate: 0.8,          // bites/s in fight mode
+  motherRespawn: 25,        // s for a den to bear a new one after she dies
+  motherBrood: 7,           // s per warrior she broods while parked (x tempo)
+  motherLeash: 120,         // px from her post she will chase the hive in fight mode
+  motherEngageDist: 26,     // px: a hive walker stops to fight her this close (she is big)
+  netCooldown: 10,          // s between nets
+  netRange: 130,            // px she can throw it
+  netRadius: 46,            // px it covers
+  netSlow: 0.4,             // the netted move at this fraction of speed
+  netDur: 4,                // s
+  /** Siege fire (mortars, cannons) singles out a PARKED Broodmother within reach: this much more likely than a limb. */
+  parkedMotherAggro: 1.5,
   /** Digestive swamp: everything in it digests; the weak dissolve outright. */
   swampBiomassPerKill: 3,   // digested kills feed the mass on top of normal meat
   pipExecute: 10,           // swamp pip: payload digests anything left at or below +10 hp per pip

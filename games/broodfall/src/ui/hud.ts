@@ -480,8 +480,14 @@ export class Hud {
         return t.marker === undefined ? 'NO MARKER — click it, then click the map' : 'shelling its marker (gold crosshair)';
       case 'skipper':
         return `firing ${t.facing ?? 'N'} only — right-click to rotate`;
-      case 'brood':
-        return `${sim.broodlings.filter((b) => b.motherId === t.id).length} broodlings in the streets`;
+      case 'brood': {
+        const ms = sim.mothers.filter((m) => m.denId === t.id);
+        const ws = sim.broodlings.filter((b) => b.motherId === t.id).length;
+        if (ms.length === 0) return `bearing a Broodmother · ${ws} warriors in the field · right-click a street: rally point`;
+        return `${ms.map((m) => `Broodmother ${m.mode === 'fight' ? 'FIGHTING' : 'BROODING'} ${Math.ceil(m.hp)}/${Math.ceil(m.maxHp)}`).join(' · ')} · ${ws} warriors · click her to command · right-click a street: rally point`;
+      }
+      case 'hatch':
+        return `${sim.broodlings.filter((b) => b.motherId === t.id).length} warriors in the field · right-click a street: rally point · R: select them`;
       default: {
         // Which combo engines are working on THIS limb?
         const on = sim.towers.filter((c) => towerSpec(c.family).engine && sim.conduitTarget(c) === t);

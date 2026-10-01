@@ -24,6 +24,10 @@ if (MODE.includes('surge')) {
 function run(seed: number) {
   const sim = new Sim({ gridW: 50, gridH: 40, cellPx: 26, seed, directive: { kind: 'hold', waves: 12 }, organStage: true });
   const bot = new Autoplayer(seed + 1);
+  // denheavy = Broodmother Dens dealt three times as often (the bot never commands them);
+  // stack = the same deal, and the bot runs the Broodmother stack (Autoplayer.stack, Oct 1 2026).
+  if (MODE.includes('denheavy') || MODE.includes('stack')) (sim as unknown as { geneMods: { weightMult: Record<string, number> } }).geneMods.weightMult.brood = 3;
+  if (MODE.includes('stack')) bot.stack = true;
   let ticks = 0;
   const kinds: Record<string, number> = {};
   while (sim.outcome === 'playing' && ticks < 24000) {
@@ -48,6 +52,7 @@ it('gaps: naive hold-12 over ten seeds', () => {
     const s = sim.stats as unknown as Record<string, unknown>;
     rows.push(`seed ${String(seed).padStart(2)} ${sim.outcome.padEnd(5)} cleared ${String(sim.wavesCleared).padStart(2)} core ${Math.round(Math.max(0, sim.coreHp) / sim.coreMaxHp * 100)}%`
       + ` royal earned ${kinds.royalEarned ?? 0} left ${sim.meat.royal} decrees ${JSON.stringify(s.decrees ?? {})} surgeries ${s.surgeriesUnderFire ?? 0} burrows ${s.burrows ?? 0}`
+      + ` brood ${JSON.stringify({ dens: sim.towers.filter((t) => t.family === 'brood').length, pits: sim.towers.filter((t) => t.family === 'hatch').length, born: s.warriorsBorn ?? 0, mothers: s.mothersBorn ?? 0, lost: s.mothersLost ?? 0, nets: s.netsCast ?? 0, netted: s.netHits ?? 0, kills: (s.killsByFamily as Record<string, number>)?.brood ?? 0 })}`
       + ` events ${['royal-decree', 'limb-promoted', 'surgery-under-fire', 'graft-took', 'burrowed', 'sealed-in'].map((k) => `${k}=${kinds[k] ?? 0}`).join(' ')}`);
   }
   // eslint-disable-next-line no-console

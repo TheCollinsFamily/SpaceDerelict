@@ -711,3 +711,25 @@ body.in-ship #topbar, body.in-ship #botbar { visibility: hidden; }
 #under.scan .uc.hover { box-shadow: inset 0 0 0 1px rgba(200, 240, 245, 0.6); }
 #under.scan .uc.zone { box-shadow: inset 0 0 0 2px rgba(255, 150, 190, 0.8); }
 #under.scan .uc.linked { box-shadow: inset 0 0 0 2px #d8ff90 !important; }
+
+/* Commanding your walking units (src/ui/command.ts): the panel at the bottom left, and the drag box. */
+#unit-cmd {
+  position: absolute; left: 10px; bottom: 150px; width: 250px; z-index: 4;
+  background: var(--panel); border: 3px double var(--panel-edge); padding: 6px 8px;
+  font-size: 11px; box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.45); color: var(--ink);
+}
+#unit-cmd.hidden { display: none; }
+#unit-cmd-what { font-family: Impact, "Arial Black", sans-serif; letter-spacing: 1px; font-size: 12px; margin-bottom: 4px; }
+#unit-cmd .unit-cmd-row { display: flex; gap: 4px; margin-top: 3px; }
+#unit-cmd button {
+  flex: 1; font: inherit; font-size: 10px; padding: 4px 3px; cursor: pointer; color: var(--ink);
+  background: var(--field-bg, #d8cba0); border: 2px solid var(--panel-edge);
+}
+#unit-cmd button.on { background: #f0c060; }
+#unit-cmd button:disabled { opacity: 0.5; cursor: default; }
+#unit-cmd kbd { font-size: 9px; opacity: 0.7; }
+#unit-cmd-help { margin-top: 4px; font-size: 9px; opacity: 0.75; }
+#unit-box {
+  position: fixed; z-index: 50; pointer-events: none;
+  border: 1.5px solid #f0c060; background: rgba(240, 192, 96, 0.12);
+}

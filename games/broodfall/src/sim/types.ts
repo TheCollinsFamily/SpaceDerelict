@@ -11,7 +11,7 @@ export type TowerFamily =
   | 'bombard' | 'ward' | 'quill' | 'skipper' | 'net' | 'ember' | 'conduit'
   | 'amp' | 'mosaic' | 'twin' | 'tap'
   | 'mitosis' | 'capacitor' | 'boomerang' | 'press' | 'reliquary' | 'lance' | 'cage'
-  | 'sprout';
+  | 'sprout' | 'hatch';
 
 /** What a limb can shoot at. Fliers are only reachable by 'air'/'both' limbs. */
 export type HitsLayer = 'ground' | 'air' | 'both';
@@ -142,7 +142,10 @@ export interface TowerSpec {
   /** Choir: +this fraction fire rate to other towers within auraRadius. */
   rateAura?: number;
   auraRadius?: number;
-  /** Broodmother: keeps this many broodlings alive in the streets around it. */
+  /**
+   * BROODMOTHER DEN ('brood'): her brood cap (the warriors a parked Broodmother keeps).
+   * BROOD PIT ('hatch'): the warriors it keeps alive, born at the body and sent to its rally point.
+   */
   broodCount?: number;
   /** What it can shoot (default 'both'). */
   hits?: HitsLayer;
@@ -245,6 +248,8 @@ export interface Tower {
   streak?: number;
   /** Bombard: the cell it is ordered to shell (null/undefined = no orders, holds fire). */
   marker?: number;
+  /** Brood Pit / Broodmother Den: the rally point (a cell) its new warriors or Broodmother walk to. */
+  rally?: number;
   /** Shield pool (ward projection + membrane pips); absorbs harm before hp. */
   shield?: number;
   shieldMax?: number;
@@ -281,7 +286,7 @@ export type UpgradeChoice = 'A' | 'B';
 export type UpgradeStat =
   | 'aoe' | 'maxHp' | 'eatThreshold' | 'interest' | 'slowMult' | 'slowDur' | 'poisonDps' | 'poisonDur'
   | 'burnDps' | 'burnDur' | 'shred' | 'shredDur' | 'chains' | 'execute' | 'skips' | 'extraTargets'
-  | 'grounding' | 'streakRamp' | 'extraBroodlings' | 'yieldMult' | 'knock'
+  | 'grounding' | 'streakRamp' | 'extraBroodlings' | 'extraMothers' | 'yieldMult' | 'knock'
   // Engine knobs (read by the engine code paths; defaults in towerStats).
   | 'gather' | 'engineCap' | 'ampFactor' | 'ampExtraLayers' | 'mosaicCopies' | 'twinPower'
   | 'tapCopies' | 'tapWar' | 'budCount' | 'budRing' | 'budPips' | 'capSpeed' | 'capCharge'
@@ -510,10 +515,68 @@ export interface Shell {
   dir?: Vec;
 }
 
+/**
+ * ORDERS for your own walking units (Collins, Oct 1 2026: Broodmothers and brood output are
+ * "selectable" and "orderable"). move: walk there, ignoring the hive on the way; attack: walk
+ * there, fighting what comes within reach on the way; hold: stand and fight only what is in bite
+ * reach; return: walk back to the body and guard it; guard: clear the orders (back to the limb's
+ * rally point, or a Broodmother's warrior back to her skirts).
+ */
+export type UnitOrder =
+  | { kind: 'move'; to: Vec }
+  | { kind: 'attack'; to: Vec }
+  | { kind: 'hold' }
+  | { kind: 'return' }
+  | { kind: 'guard' };
+
+/** What a unit fights with once the limb that made it is gone (frozen when it was born). */
+export interface BroodSnap {
+  potency: number;
+  tempo: number;
+  reach: number;
+  fx: HitFx;
+}
+
+/**
+ * A BROODMOTHER (Collins, Oct 1 2026): born of a Broodmother Den, a big mobile unit of yours.
+ * brood: she stays where she is and broods warriors around her; fight: she walks, bites and
+ * casts a NET that slows the hive (on its own on a cooldown, or aimed by the player).
+ */
+export interface Broodmother {
+  id: number;
+  denId: number;
+  pos: Vec;
+  hp: number;
+  maxHp: number;
+  mode: 'brood' | 'fight';
+  /** Her post: she fights the hive near it and drifts back to it. */
+  guard: Vec;
+  /** Orders still to carry out (shift-queued); the first is current. */
+  orders: UnitOrder[];
+  /** Bite cooldown. */
+  cooldown: number;
+  /** Seconds to the next warrior she broods. */
+  spawnCd: number;
+  /** Seconds to her next net. */
+  netCd: number;
+  /** Sedated by a science dart: no brooding, no net, no walking until then (sim time). */
+  stunnedUntil?: number;
+  snap: BroodSnap;
+}
+
 /** A broodling: the mother's spawn, fighting in the streets on your side. */
 export interface Broodling {
   id: number;
+  /** The limb it belongs to: the Brood Pit or Broodmother Den that made it (or the Trap Cage, for a puppet). */
   motherId: number;
+  /** A Broodmother's warrior: the mother UNIT it guards (absent: a pit's warrior, or a puppet). */
+  motherUnit?: number;
+  /** Its post: it fights the hive near here and drifts back to it (absent: its limb's rally point). */
+  guard?: Vec;
+  /** Its orders (shift-queued); the first is current. */
+  orders?: UnitOrder[];
+  /** Fights with this once its limb is gone (warriors outlive the limb that made them). */
+  snap?: BroodSnap;
   /** A grafted royal fighting its own (Puppet Queen): no leash, its own bite and speed. */
   /** kind: which royal it was (the board draws her grafted: tools/art/units.mjs ALLIES). */
   puppet?: { bite: number; rate: number; speed: number; kind?: EnemyKind };
@@ -609,6 +672,11 @@ export type SimEvent =
   | { kind: 'clot-landed'; cell: number }
   | { kind: 'bile-landed'; cell: number; hits: number }
   | { kind: 'broodling-lost'; motherId: number }
+  | { kind: 'warrior-born'; motherId: number; at: 'body' | 'mother' }
+  | { kind: 'mother-born'; denId: number; motherId: number }
+  | { kind: 'mother-lost'; denId: number; motherId: number }
+  | { kind: 'mother-mode'; motherId: number; mode: 'brood' | 'fight' }
+  | { kind: 'net-cast'; motherId: number; at: Vec; radius: number; hits: number }
   | { kind: 'kill'; enemy: EnemyKind; caste: Caste }
   | { kind: 'banked'; caste: Caste; amount: number }
   | { kind: 'digested'; corpse: number; pos: Vec; meat: Record<Caste, number>; bodies: number }
@@ -665,7 +733,15 @@ export type Command =
   | { kind: 'burrow'; cell: number }
   | { kind: 'discard'; cardIndex: number }
   | { kind: 'choose-plate'; index: number }
-  | { kind: 'call-early' };
+  | { kind: 'call-early' }
+  /** Orders for your walking units (warriors and Broodmothers, by id). queue: after the orders they have (shift). */
+  | { kind: 'unit-order'; ids: number[]; order: UnitOrder; queue?: boolean }
+  /** A Broodmother's mode: brood (parked, brooding warriors) or fight (walks, bites, nets). */
+  | { kind: 'mother-mode'; motherId: number; mode: 'brood' | 'fight' }
+  /** Aim a Broodmother's net here, now (it must be off cooldown and in reach). */
+  | { kind: 'mother-net'; motherId: number; at: Vec }
+  /** A Brood Pit's or Den's rally point: where its new warriors (or its new Broodmother) go. */
+  | { kind: 'set-rally'; towerId: number; cell: number };
 
 /** The deployment order: the win condition, issued by command. */
 export type Directive =
@@ -759,6 +835,12 @@ export interface RunStats {
   limbsCarriedOff: number;
   gateBurnKills: number;
   royalsCaptured: number;
+  /** Brood Pit and Broodmother warriors born, Broodmothers born and lost, nets thrown and the bodies they caught. */
+  warriorsBorn?: number;
+  mothersBorn?: number;
+  mothersLost?: number;
+  netsCast?: number;
+  netHits?: number;
   nodesPlaced: number;
   nodesLost: number;
   /** Stolen limbs taken back by killing the courier carrying them (Finders Keepers). */

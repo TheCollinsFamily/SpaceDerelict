@@ -47,6 +47,7 @@ export const SUPERS: Record<SuperKey, { name: string; look: string }> = {
 export const PIP_CLASS: Record<TowerFamily, LookClass> = {
   // BONE: harder, tougher, holds, hoards and eats
   lasher: 'bone', spine: 'bone', impaler: 'bone', ward: 'bone', brood: 'bone', maw: 'bone',
+  hatch: 'bone',
   reliquary: 'bone', press: 'bone', tap: 'bone',
   // SWARM: faster and more
   spitter: 'swarm', burster: 'swarm', quill: 'swarm', twin: 'swarm', frond: 'swarm', prism: 'swarm',

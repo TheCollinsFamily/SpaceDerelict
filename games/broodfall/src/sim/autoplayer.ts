@@ -16,9 +16,61 @@ export class Autoplayer {
   private actTimer = 0;
   private buildsSinceCannibalize = 0;
   private builds = 0;
+  /**
+   * THE BROODMOTHER STACK (Collins, Oct 1 2026: "keep enemies away from some region of the map, build up
+   * a Broodmother there and accumulate soldiers"): off by default (the naive player never commands its
+   * units). On: she is walked to the quietest street near the body and parked brooding; once her stack is
+   * full, a siege that reaches the body is met by the whole stack, which then goes back to her side.
+   */
+  stack = false;
+  private parked = new Set<number>();
+  private released = false;
 
   constructor(seed: number) {
     this.rng = new Rng(seed);
+  }
+
+  /** The quietest street near the body: as far from the hive's marching lanes as it can be, within reach of the core. */
+  private quietStreet(sim: Sim): { x: number; y: number } | null {
+    const lanes = [...this.lanePathCells(sim).keys()].map((c) => sim.cellCenter(c));
+    const core = sim.core;
+    let best: { x: number; y: number } | null = null;
+    let bestScore = -Infinity;
+    for (let c = 0; c < sim.map.cells.length; c++) {
+      if (sim.map.cells[c] !== CellType.Road && sim.map.cells[c] !== CellType.Plaza) continue;
+      const p = sim.cellCenter(c);
+      const fromCore = Math.hypot(p.x - core.x, p.y - core.y);
+      if (fromCore > 8 * sim.cfg.cellPx) continue;
+      let near = Infinity;
+      for (const l of lanes) near = Math.min(near, Math.hypot(p.x - l.x, p.y - l.y));
+      const score = Math.min(near, 6 * sim.cfg.cellPx) - fromCore * 0.25;
+      if (score > bestScore) { bestScore = score; best = p; }
+    }
+    return best;
+  }
+
+  /** The stack: park, brood, release into a siege at the body, call back. */
+  private manageStack(sim: Sim): void {
+    for (const m of sim.mothers) {
+      if (this.parked.has(m.id)) continue;
+      const spot = this.quietStreet(sim);
+      if (spot) sim.issue({ kind: 'unit-order', ids: [m.id], order: { kind: 'move', to: spot } });
+      sim.issue({ kind: 'mother-mode', motherId: m.id, mode: 'brood' });
+      this.parked.add(m.id);
+    }
+    const stackIds = sim.broodlings.filter((b) => b.motherUnit !== undefined).map((b) => b.id);
+    const core = sim.core;
+    const threat = sim.enemies
+      .filter((e) => !e.burrowed && !sim.isAirborne(e) && Math.hypot(e.pos.x - core.x, e.pos.y - core.y) < 7 * sim.cfg.cellPx)
+      .sort((a, b) => Math.hypot(a.pos.x - core.x, a.pos.y - core.y) - Math.hypot(b.pos.x - core.x, b.pos.y - core.y))[0];
+    const full = sim.mothers.some((m) => sim.broodlings.filter((b) => b.motherUnit === m.id).length >= sim.motherBroodCap(m));
+    if (threat && (full || this.released) && stackIds.length > 0) {
+      sim.issue({ kind: 'unit-order', ids: stackIds, order: { kind: 'attack', to: { ...threat.pos } } });
+      this.released = true;
+    } else if (!threat && this.released) {
+      sim.issue({ kind: 'unit-order', ids: stackIds, order: { kind: 'guard' } });
+      this.released = false;
+    }
   }
 
   act(sim: Sim, dt: number): void {
@@ -31,6 +83,7 @@ export class Autoplayer {
     this.actTimer -= dt;
     if (this.actTimer > 0) return;
     this.actTimer = 1.5;
+    if (this.stack) this.manageStack(sim);
 
     // Science buys evolutions for the limbs doing the killing; royal points go to
     // a third stage first, and only spare points to a surge.

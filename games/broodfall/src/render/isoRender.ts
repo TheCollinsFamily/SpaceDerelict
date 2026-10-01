@@ -13,7 +13,7 @@ import { Application, Container, Graphics, Matrix, Sprite, Texture } from 'pixi.
 import { CellType, PLATE } from '../sim/citymap';
 import { Sim, enemySpec, towerSpec, towerStats } from '../sim/sim';
 import { footprintOf } from '../sim/footprint';
-import type { Caste, CreepSource, Enemy, EnemyKind, RootDir, Tower, TowerFamily } from '../sim/types';
+import type { Broodling, Broodmother, Caste, CreepSource, Enemy, EnemyKind, RootDir, Tower, TowerFamily, UnitOrder } from '../sim/types';
 import { BoardArtSet, type Clip, type LimbArt, type LimbSide, type LoadedUnit, type UnitArt } from './art';
 import { BOSS_SCALE, choose, newFx, observe, playFor, skinOf, type UnitFx } from './unitAnim';
 import {
@@ -41,6 +41,8 @@ import { coatAlpha, wallCoat } from './streetCreep';
 
 /** The old marks were drawn for a 26 px cell; on this board they are drawn this much bigger. */
 const K = 1.9;
+/** A Broodmother's radius on the board (px at a 26 px cell): a big body, about a royal's size. */
+const MOTHER_R = 12;
 /** Art pixels of body width for each world pixel of a unit's radius. */
 const UNIT_PX = 3.6;
 /**
@@ -223,6 +225,12 @@ export class IsoRenderer extends Renderer {
   private dying: Dying[] = [];
   /** The broodlings and puppet queens drawn with their pictures, by the sim's id. */
   private allyViews = new Map<number, AllyView>();
+  /** Your selected walking units (src/ui/command.ts sets it): ringed on the ground, their orders drawn. */
+  selectedUnits = new Set<number>();
+  /** The Brood Pits and Dens whose rally points are shown (a panel open, or their warriors selected). */
+  rallyFor = new Set<number>();
+  /** Nets thrown lately (from 'net-cast' events): drawn as a closing ring of strands. */
+  nets: Array<{ at: { x: number; y: number }; r: number; t: number }> = [];
   /** The townsfolk fleeing the crash, by the crowd's id (src/sim/civilians.ts; stepped by the base class). */
   private civViews = new Map<number, CivView>();
   private limbs = new Map<number, LimbView>();
@@ -588,6 +596,7 @@ export class IsoRenderer extends Renderer {
     this.syncNodes(sim);
     this.syncLimbs(sim, dt);
     this.syncUnits(sim, dt);
+    this.drawCommand(sim, dtReal);
     this.drawTownsfolk(sim, dtReal);
     this.tongues.update(this.smoothDt, this.tongueView(sim));
     this.drawShots(this.marksG, sim);
@@ -2258,8 +2267,14 @@ export class IsoRenderer extends Renderer {
   private drawBroodlings(sim: Sim, dt: number): void {
     const g = this.marksG;
     const geo = this.geo;
-    for (const b of sim.broodlings) {
-      const id = b.puppet ? `puppet-${b.puppet.kind ?? 'royal'}` : 'broodling';
+    // A Broodmother is drawn with her own pictures when they are made, else as a great broodling.
+    const walkers = [
+      ...sim.broodlings.map((b) => ({ b, mother: undefined as Broodmother | undefined })),
+      ...sim.mothers.map((m) => ({ b: { id: m.id, pos: m.pos, hp: m.hp, maxHp: m.maxHp, cooldown: m.cooldown, motherId: m.denId } as Broodling, mother: m })),
+    ];
+    for (const { b, mother } of walkers) {
+      const id = mother ? (this.art.allies.has('broodmother') ? 'broodmother' : 'broodling')
+        : b.puppet ? `puppet-${b.puppet.kind ?? 'royal'}` : 'broodling';
       const found = this.art.allies.get(id);
       if (found) {
         const { art } = found;
@@ -2277,7 +2292,7 @@ export class IsoRenderer extends Renderer {
         const dy = b.pos.y - v.last.y;
         const moved = Math.hypot(dx, dy);
         v.last = { ...b.pos };
-        const speed = b.puppet?.speed ?? BALANCE.broodSpeed;
+        const speed = mother ? BALANCE.motherSpeed : b.puppet?.speed ?? BALANCE.broodSpeed;
         const { view, mirror } = viewOf(v.heading);
         const walk = art.anims.walk[view] ?? art.anims.walk.SW ?? Object.values(art.anims.walk)[0]!;
         if (moved > 0.02) {
@@ -2295,7 +2310,7 @@ export class IsoRenderer extends Renderer {
         const biteFor = bite ? playFor(bite, 0.7) : 0;
         const clip = bite && v.biteT < biteFor ? bite : walk;
         const at = clip === bite ? (v.biteT / biteFor) * clip.count : v.phase * clip.count;
-        const r = b.puppet ? ENEMY_SIZE[b.puppet.kind ?? 'royal'] : 4.5;
+        const r = mother ? MOTHER_R : b.puppet ? ENEMY_SIZE[b.puppet.kind ?? 'royal'] : 4.5;
         const scale = ((2 * r * UNIT_PX) / (art.body * art.frame)) * (clip.scale ?? 1);
         const p = this.onGround(sim, b.pos.x, b.pos.y);
         const a = clip.anchor ?? art.anchor;
@@ -2303,7 +2318,10 @@ export class IsoRenderer extends Renderer {
         v.sprite.anchor.set(a[0], a[1]);
         v.sprite.position.set(p.x, p.y);
         v.sprite.scale.set(mirror ? -scale : scale, scale);
-        v.sprite.tint = v.hitT < 0.09 ? 0xffb4a4 : 0xffffff;
+        // A Broodmother drawn from the broodling's pictures is darker and heavier (until her own are made);
+        // a sedated one is greyed.
+        const sedated = mother && (mother.stunnedUntil ?? 0) > sim.time;
+        v.sprite.tint = v.hitT < 0.09 ? 0xffb4a4 : sedated ? 0x9a9aa8 : mother && id === 'broodling' ? 0xd08a90 : 0xffffff;
         v.sprite.zIndex = depth(geo, b.pos.x, b.pos.y) * 100 + 50;
         const sw = 2 * r * UNIT_PX * 1.25;
         v.shade.position.set(p.x, p.y);
@@ -2318,9 +2336,112 @@ export class IsoRenderer extends Renderer {
       const x = p.x / K;
       const y = p.y / K - 3;
       g.ellipse(x, y + 3, 5, 2.5).fill({ color: 0x000000, alpha: 0.3 });
-      g.circle(x, y, b.puppet ? 8 : 4.5).fill({ color: 0x0d0805, alpha: 0.8 });
-      g.circle(x, y, b.puppet ? 7 : 3.5).fill(b.puppet ? 0xd4a72c : 0xc75a68);
-      if (b.hp < b.maxHp) this.hpArc(g, x, y, b.puppet ? 10 : 6, b.hp / b.maxHp);
+      const rr = mother ? MOTHER_R : b.puppet ? 8 : 4.5;
+      g.circle(x, y, rr).fill({ color: 0x0d0805, alpha: 0.8 });
+      g.circle(x, y, rr - 1).fill(b.puppet ? 0xd4a72c : mother ? 0x9e3a4c : 0xc75a68);
+      if (b.hp < b.maxHp) this.hpArc(g, x, y, rr + 2, b.hp / b.maxHp);
+    }
+  }
+
+  /** A world point as client (CSS) coordinates: for the command UI's box select. */
+  clientOf(sim: Sim, wx: number, wy: number): { x: number; y: number } {
+    const p = this.onGround(sim, wx, wy);
+    const rect = this.app.canvas.getBoundingClientRect();
+    return {
+      x: rect.left + ((p.x * this.camScale + this.camX) / this.app.renderer.width) * rect.width,
+      y: rect.top + ((p.y * this.camScale + this.camY) / this.app.renderer.height) * rect.height,
+    };
+  }
+
+  /**
+   * The command layer on the ground (Collins, Oct 1 2026: Broodmothers and their warriors are selectable
+   * and orderable): a ring under every selected unit (a Broodmother's shows her mode: her egg count in
+   * brood mode, her net's reach in fight mode), each selected unit's orders as a path of waypoints with a
+   * flag (move), a claw (attack) or a bar (hold), the rally points of open Pits and Dens, and nets thrown.
+   */
+  private drawCommand(sim: Sim, dtReal: number): void {
+    const g = this.groundG;
+    const SEL = 0xf0c060;
+    const ATT = 0xe0603a;
+    const MOV = 0x9fd27a;
+    const pulse = 0.55 + 0.25 * Math.sin(this.pulse * 2);
+    const flag = (p: { x: number; y: number }, color: number): void => {
+      g.circle(p.x, p.y, 5).stroke({ width: 2, color, alpha: 0.9 });
+      g.circle(p.x, p.y, 1.8).fill({ color, alpha: 0.9 });
+    };
+    const claw = (p: { x: number; y: number }): void => {
+      g.moveTo(p.x - 5, p.y - 5).lineTo(p.x + 5, p.y + 5).moveTo(p.x + 5, p.y - 5).lineTo(p.x - 5, p.y + 5)
+        .stroke({ width: 2.2, color: ATT, alpha: 0.95 });
+    };
+    const drawOrders = (from: { x: number; y: number }, orders: UnitOrder[] | undefined): void => {
+      let at = from;
+      for (const o of orders ?? []) {
+        if (o.kind === 'hold') { g.rect(at.x - 5, at.y - 1.5, 10, 3).fill({ color: SEL, alpha: 0.85 }); continue; }
+        const to = o.kind === 'move' || o.kind === 'attack' ? o.to : o.kind === 'return' ? sim.bodyPoint() : null;
+        if (!to) continue;
+        const color = o.kind === 'attack' ? ATT : MOV;
+        g.moveTo(at.x, at.y).lineTo(to.x, to.y).stroke({ width: 1.2, color, alpha: 0.55 });
+        if (o.kind === 'attack') claw(to); else flag(to, color);
+        at = to;
+      }
+    };
+    for (const b of sim.broodlings) {
+      if (!this.selectedUnits.has(b.id)) continue;
+      g.circle(b.pos.x, b.pos.y, 8).stroke({ width: 1.6, color: SEL, alpha: pulse + 0.2 });
+      drawOrders(b.pos, b.orders);
+    }
+    for (const m of sim.mothers) {
+      if (!this.selectedUnits.has(m.id)) continue;
+      const modeColor = m.mode === 'fight' ? ATT : SEL;
+      g.circle(m.pos.x, m.pos.y, MOTHER_R + 7).stroke({ width: 2.4, color: modeColor, alpha: pulse + 0.25 });
+      if (m.mode === 'brood') {
+        // Brood mode: her eggs round her, one per warrior she keeps, filled as they hatch.
+        const cap = sim.motherBroodCap(m);
+        const have = sim.broodlings.filter((x) => x.motherUnit === m.id).length;
+        for (let i = 0; i < cap; i++) {
+          const a = (i / Math.max(1, cap)) * Math.PI * 2 - Math.PI / 2;
+          const ex = m.pos.x + Math.cos(a) * (MOTHER_R + 12);
+          const ey = m.pos.y + Math.sin(a) * (MOTHER_R + 12);
+          if (i < have) g.circle(ex, ey, 2.4).fill({ color: SEL, alpha: 0.9 });
+          else g.circle(ex, ey, 2.4).stroke({ width: 1, color: SEL, alpha: 0.6 });
+        }
+      } else {
+        // Fight mode: her net's reach (dashed while it is cooling down).
+        const ready = m.netCd <= 0;
+        const steps = 36;
+        const R = BALANCE.netRange;
+        for (let i = 0; i < steps; i++) {
+          if (!ready && i % 2) continue;
+          const a0 = (i / steps) * Math.PI * 2;
+          const a1 = ((i + 1) / steps) * Math.PI * 2;
+          g.moveTo(m.pos.x + Math.cos(a0) * R, m.pos.y + Math.sin(a0) * R)
+            .lineTo(m.pos.x + Math.cos(a1) * R, m.pos.y + Math.sin(a1) * R)
+            .stroke({ width: 1, color: ATT, alpha: ready ? 0.45 : 0.22 });
+        }
+      }
+      drawOrders(m.pos, m.orders);
+    }
+    // Rally points: a flag on the street, a line from the limb.
+    for (const t of sim.towers) {
+      if (!this.rallyFor.has(t.id) || (t.family !== 'hatch' && t.family !== 'brood')) continue;
+      const p = sim.rallyOf(t);
+      g.moveTo(t.pos.x, t.pos.y).lineTo(p.x, p.y).stroke({ width: 1.4, color: SEL, alpha: 0.5 });
+      g.circle(p.x, p.y, 7).stroke({ width: 2, color: SEL, alpha: 0.95 });
+      g.moveTo(p.x, p.y).lineTo(p.x + 6, p.y - 9).stroke({ width: 1.6, color: SEL, alpha: 0.95 });
+    }
+    // Nets: a ring of strands closing on the crowd.
+    for (const n of this.nets) n.t += dtReal;
+    this.nets = this.nets.filter((n) => n.t < 0.9);
+    for (const n of this.nets) {
+      const k = n.t / 0.9;
+      const r = n.r * (1.25 - 0.25 * k);
+      const alpha = 0.9 * (1 - k);
+      g.circle(n.at.x, n.at.y, r).stroke({ width: 2, color: 0xe8e0c8, alpha });
+      for (let i = 0; i < 8; i++) {
+        const a = (i / 8) * Math.PI;
+        g.moveTo(n.at.x - Math.cos(a) * r, n.at.y - Math.sin(a) * r).lineTo(n.at.x + Math.cos(a) * r, n.at.y + Math.sin(a) * r)
+          .stroke({ width: 0.8, color: 0xe8e0c8, alpha: alpha * 0.6 });
+      }
     }
   }
 

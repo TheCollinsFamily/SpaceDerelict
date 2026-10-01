@@ -111,13 +111,23 @@ export const UPGRADES: Record<TowerFamily, UpgradeTree> = {
     [o('Barrage', 'three clots per throw', { pips: ['twin', 'twin'] }),
       o('Bone Clots', 'clots land 3x harder with a blast', { potency: 3, pips: ['burster', 'burster'] })],
   ],
+  // The Broodmother Den (Oct 1 2026): its evolutions shape HER and her brood.
   brood: [
-    [o('Big Brood', '+2 broodlings', { add: { extraBroodlings: 2 } }),
-      o('Quick Brood', 'hatches 60% faster', { tempo: 1.6 })],
-    [o('Armoured Brood', 'broodlings 80% tougher', { mult: { maxHp: 1.8 } }),
-      o('Venom Brood', 'broodling bites poison', { pips: ['blighter', 'blighter'] })],
-    [o('Swarm Queen', '+4 broodlings', { add: { extraBroodlings: 4 } }),
-      o('War Brood', 'broodlings bite twice as hard and roam 50% farther', { potency: 2, reach: 1.5 })],
+    [o('Big Brood', 'she keeps +2 warriors when parked', { add: { extraBroodlings: 2 } }),
+      o('Quick Brood', 'she broods 60% faster and is reborn sooner', { tempo: 1.6 })],
+    [o('Armoured Brood', 'she and her warriors are 80% tougher', { mult: { maxHp: 1.8 } }),
+      o('Venom Brood', 'her bites and her warriors\' poison', { pips: ['blighter', 'blighter'] })],
+    [o('Twin Mothers', 'the den bears a second Broodmother', { add: { extraMothers: 1 } }),
+      o('War Brood', 'she and her warriors bite twice as hard and roam 50% farther', { potency: 2, reach: 1.5 })],
+  ],
+  // The Brood Pit (Oct 1 2026): a stream of warriors from the body.
+  hatch: [
+    [o('Deep Pit', '+2 warriors', { add: { extraBroodlings: 2 } }),
+      o('Quick Pit', 'births 60% faster', { tempo: 1.6 })],
+    [o('Armoured Warriors', 'warriors 80% tougher', { mult: { maxHp: 1.8 } }),
+      o('Venom Warriors', 'warrior bites poison', { pips: ['blighter', 'blighter'] })],
+    [o('Legion', '+4 warriors', { add: { extraBroodlings: 4 } }),
+      o('Shock Troops', 'warriors bite twice as hard and roam 50% farther', { potency: 2, reach: 1.5 })],
   ],
   swamp: [
     [o('Deep Bog', 'burns 60% harder', { potency: 1.6 }),

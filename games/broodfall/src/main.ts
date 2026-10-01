@@ -40,6 +40,7 @@ import { roachAfterDeployment } from './ui/roachKing';
 import { padOutroPlaying, playPadOutro, preloadPadOutro } from './ui/padOutro';
 import { shipLoop, withLoader } from './ui/loader';
 import { platePicture } from './render/platePreview';
+import { installCommand, type Command as UnitCommand } from './ui/command';
 import type { Directive, OrganId, RootDir, SimConfig, SimEvent, TowerFamily } from './sim/types';
 import { initAudio, setScene } from './audio/engine';
 import { boardEvents, installConsoleSounds, watchBoard } from './audio/gameSounds';
@@ -156,6 +157,8 @@ let debriefShown = false;
 
 /** The top-down board until boot() has loaded the art; then the isometric one, if its art is there. */
 let renderer: Renderer = new Renderer();
+/** Selecting and ordering your walking units (src/ui/command.ts); made once the board is up. */
+let command: UnitCommand | null = null;
 /** The board's pictures, once loaded (the district draft draws its plates with them). */
 let boardArt: BoardArtSet | null = null;
 /** The board is drawn and the loop runs: until then a deployment waits behind the loading screen. */
@@ -438,6 +441,7 @@ function handleEvents(events: SimEvent[]): void {
     if (e.kind === 'plate-drafted') banner(`DISTRICT CONSUMED: ${e.name.toUpperCase()}`);
     if (e.kind === 'sealed-in' && !AUTO) banner('WALLED IN — BURROW THROUGH A WALL INTO THE SMOKE TO GROW');
     if (e.kind === 'burrowed') banner('BURROWED THROUGH — A NEW WAY IN');
+    if (e.kind === 'net-cast' && renderer instanceof IsoRenderer) renderer.nets.push({ at: e.at, r: e.radius, t: 0 });
     if (e.kind === 'surgery-under-fire') banner(`SURGERY UNDER FIRE — GRAFTING ${e.seconds.toFixed(0)}s`);
     if ((e.kind === 'won' || e.kind === 'lost') && !AUTO) {
       endSnapshot = snapshotBoard();
@@ -1263,7 +1267,22 @@ async function boot(): Promise<void> {
   // The organ stage's stills, fetched while the first wave is being set up (src/main.ts openUnder).
   window.setTimeout(() => void underArt(), 1500);
 
-  renderer.app.canvas.addEventListener('click', (ev) => { if (!dragged) handleCanvasClick(ev.clientX, ev.clientY); });
+  // Your walking units (Brood Pits, Broodmothers): selected and ordered by src/ui/command.ts. It is
+  // installed first, so its right-click and keys come before the board's own.
+  command = installCommand(renderer.app.canvas, {
+    renderer: () => (renderer instanceof IsoRenderer ? renderer : null),
+    sim: () => sim,
+    idle: () => selectedCard === null && armedOrgan === null && armedThrower === null && !armedPlinth
+      && armedNode === null && armedSpread === null && started && !debriefShown,
+    inspected: () => hud.inspectedId,
+    hint: (t) => hud.setHint(t),
+  });
+  renderer.app.canvas.addEventListener('click', (ev) => {
+    if (dragged) return;
+    const pt = (ev as PointerEvent).pointerType || 'mouse';
+    if (command?.consumeClick(ev.clientX, ev.clientY, pt, ev.shiftKey)) return;
+    handleCanvasClick(ev.clientX, ev.clientY);
+  });
   // The isometric board can be looked at closely: the wheel zooms on the pointer, the
   // middle button (or Shift + drag) slides the view, Home frames the claimed districts again.
   let dragFrom: { x: number; y: number } | null = null;
@@ -1475,6 +1494,7 @@ async function boot(): Promise<void> {
     decreeBox.update();
     under.update();
     updateBoardPanel();
+    command?.update();
     updateNodeButton();
     // Draft overlay lifecycle (manual play only; the autoplayer picks itself).
     if (!AUTO) {
