@@ -31,14 +31,14 @@ One cell goes from 26 of 37 to 15 (under half).
 | Impaler | line of 2 | kept | A harpoon gun lies along its two cells. Unchanged footprint; its picture was the problem. | A long harpoon rail lying the length of both cells, drawn at the size of its ground. |
 | Choir Node | 1 cell | **T of 4** | An aura over its neighbours is an area effect: three organ pipes on a bar, a bellows stem; the aura comes from the junction. | Three organ pipes on a bar and a bellows stem. |
 | Spore Sling | 1 cell | **line of 2** | A catapult arm lies along two cells and throws the way it lies. | A sling arm the length of its two cells. |
-| Broodmother | 2x2 square | kept | A big nest. Unchanged. |  |
+| Broodmother | 2x2 square | kept | The Broodmother Den (Oct 1: it bears a Broodmother UNIT that broods or fights): a big, protected nest stays a big square; its unit spawns on the street beside any of its cells. |  |
 | Digestive Swamp | 1 cell | kept | A pit in the street; one cell keeps it a plug. |  |
 | Galvanic Frond | 2x2 square | kept | A big tesla frond. Unchanged. |  |
 | Bile Lobber | 1 cell | kept | Kept small and cheap, with a NEW verb: a quick aimed glob that leaves an acid puddle in the street (a short ground zone). The Bombard becomes the one big siege gun. | A bile sac on a sling arm (nothing like the Spitter's mouth on a stalk). |
 | Caustic Mister | 2x2 square | **T of 4** | Its mist is a big area effect: three spray nozzles on a bar, mist from the junction. The same four cells as today, reshaped. | Three nozzles on a bar; no yellow gland on top. |
 | Ocular Stalk | 1 cell | **line of 2** | A board-wide eye on a long neck lying along the roof, the eye at the front: it reads as a sight line. | A periscope neck lying along two cells, the eye at its tip. |
 | Arc Prism | 1 cell | kept | A relay piece: many of them, linked. One cell. |  |
-| Spore Bombard | 1 cell | **2x2 square** | Heavy siege artillery is the classic big-square tower: one huge shell on its marker, slow. RISK: On Sep 29 2026 a big Bombard cost the scripted player a win in ten whatever it was paid. Its measure below decides it. | A squat mortar mound with a wide bone barrel, readable as artillery from every side. |
+| Spore Bombard | 1 cell | **2x2 square** | Heavy siege artillery is the classic big-square tower: one huge shell on its marker, slow. RISK: On Sep 29 2026 a big Bombard cost the scripted player a win in ten whatever it was paid. Measured Oct 1: made 2x2 alone it holds (5 of 10, guardrail 5:0). | A squat mortar mound with a wide bone barrel, readable as artillery from every side. |
 | Ward Membrane | 2x2 square | kept | A big membrane. Unchanged. |  |
 | Quill Fan | 1 cell | **elbow of 3** | A fan of quills at an elbow covers both streets of a corner; the most damage of any limb, so it pays in ground. | A fan of quills on a bent body, the fan at the elbow. |
 | Skipping Mortar | line of 2 | kept | A mortar lying along its aim. Unchanged footprint. | A long barrel along both cells: its facing reads. |
@@ -58,7 +58,7 @@ One cell goes from 26 of 37 to 15 (under half).
 | Trap Cage | 2x2 square | kept | Given, not drawn from the deck. Unchanged. |  |
 | Seedling | 1 cell | kept | Given, not drawn. A small Spitter. |  |
 
-A reshaped limb is paid for its ground the way the BIG limbs were on Sep 29 (same price; hp x1.6 / x2.0 / x2.4 on 2 / 3 / 4 cells, hits x1.25 / x1.38 / x1.5, reach x1.1 / x1.12 / x1.15, blast x1.1 / x1.18 / x1.25; a limb already big is paid the difference).
+A reshaped limb is paid for its ground the way the BIG limbs were on Sep 29 (same price; hp x1.6 / x2.0 / x2.4 on 2 / 3 / 4 cells, hits x1.25 / x1.38 / x1.5, reach x1.1 / x1.12 / x1.15, blast x1.1 / x1.18 / x1.25; a limb already big is paid the difference). **Recommended (measured):** the three-cell elbows (Lasher, Quill, Conduit) and the Burster's and Choir's T are paid as if they took TWO cells: paid in full, the whole plan made the scripted player win 10 of 10; paid this way, 6 of 10 (today 5).
 
 ## How each shape fits the city
 
@@ -81,7 +81,14 @@ The 2x2 is the hardest to fit (kept for the strongest limbs); T and L fit about 
 
 `MEASURE=plan npx vitest run --config tools/measure/vitest.config.ts tools/measure/footprints.measure.ts` (and planLines, planT, planL, planSquare): the scripted player over ten seeds (at least 3 must be won) and the placement guardrail over eight.
 
-- not measured yet
+- TODAY (no limb reshaped): HOLDS · naive 5/10 · guardrail 5:0 (86981 to 45000) · big limbs built by the scripted player over ten runs: 259 · as the game is
+- the new lines only: HOLDS · naive 5/10 · guardrail 5:0 (87697 to 45000) · big limbs built by the scripted player over ten runs: 302 · ember, ocular, sling, amp, press, lance
+- the Bombard 2x2 only: HOLDS · naive 5/10 · guardrail 5:0 (86481 to 45000) · big limbs built by the scripted player over ten runs: 264 · bombard
+- the three T limbs only (full pay): HOLDS · naive 7/10 · guardrail 6:0 (93056 to 47000) · big limbs built by the scripted player over ten runs: 375 · mister, choir, burster
+- the four L limbs only (full pay): HOLDS · naive 8/10 · guardrail 7:0 (100403 to 51000) · big limbs built by the scripted player over ten runs: 509 · lasher, quill, conduit, tangler
+- the four L limbs, the elbows paid as two cells: HOLDS · naive 7/10 · guardrail 6:0 (93908 to 47000) · big limbs built by the scripted player over ten runs: 434 · lasher, quill, conduit, tangler
+- THE WHOLE PLAN, full pay (too easy): HOLDS · naive 10/10 · guardrail 8:0 (104333 to 52000) · big limbs built by the scripted player over ten runs: 760 · ember, ocular, sling, amp, press, lance, bombard, mister, choir, burster, lasher, quill, conduit, tangler
+- THE WHOLE PLAN, RECOMMENDED pay (elbows and the Burster/Choir T paid as two cells): HOLDS · naive 6/10 · guardrail 5:0 (90501 to 48000) · big limbs built by the scripted player over ten runs: 568 · ember, ocular, sling, amp, press, lance, bombard, mister, choir, burster, lasher, quill, conduit, tangler
 
 ## Visual variants (Collins: "a reach lasher will likely need sub-variants")
 
@@ -115,7 +122,7 @@ Shown by an overlay instead (the game draws the ring, lane, strip or blast): Bur
 - **Look-alikes: Lure Gland and Ocular Stalk**: Lure: a pitcher bloom leaking its haze, one cell. Ocular: a periscope neck lying along two cells, the eye at the tip.
 - **Look-alikes: Meat Press, Reliquary, Marrow Conduit**: Press: a long press bed (1x2). Conduit: a bent pipe (L). Reliquary: a sealed casket (1x1). No orange slits on any.
 - **Two-cell limbs drawn tiny (Impaler, Mortar, Lance)**: Redrawn to fill their footprints (the Lance on three cells); new art is sized to its ground by the footprint, as the placeholder already is.
-- **Directional limbs with no back view**: Every limb that faces a way or lies on a turned footprint gets a view from behind in the same pass: the 20 redraws (below) plus Mosaic, Twinning, Mitosis, Capacitor and Boomerang.
+- **Directional limbs with no back view**: Every limb that faces a way or lies on a turned footprint gets a view from behind in the same pass: the 21 redrawn limbs plus Mosaic, Twinning, Mitosis, Capacitor and Boomerang.
 - **Lobber vs Bombard: one aimed-artillery verb too many**: Split by footprint and effect shape: Lobber a cheap one-cell glob that leaves an acid puddle; Bombard a 2x2 siege gun, one huge slow shell on its marker.
 - **Looks no evolution path reaches (the prototypes)**: Draw only the reachable looks, at the new footprint, with the spatial variants in the same pass. The Lasher's 1-cell prototypes are retired (it becomes an L); the Spitter's and Frond's unreachable looks stay as eaten-bonus looks.
 - **Odd bonus classes (Press, Tap, Reliquary, Choir)**: Choir teaches SWARM (+8% fire rate, its own job); Press teaches VENOM (renders kills down); Tap teaches SWARM (copies); Reliquary keeps BONE (it holds).
