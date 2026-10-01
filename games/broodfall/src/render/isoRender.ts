@@ -1689,6 +1689,8 @@ export class IsoRenderer extends Renderer {
 
   /** Does the street through this cell run along world x? Then a wall across it lies along world y. */
   private laneRunsAlongX(sim: Sim, cell: number): boolean {
+    // The sim's own read of the street (Sim.laneAlongX), so a wall is drawn across the street it was built across.
+    if (sim.map.cells[cell] === CellType.Road) return sim.laneAlongX(cell);
     const next = sim.flowNextOf(cell);
     if (next >= 0) return Math.abs((next % sim.cfg.gridW) - (cell % sim.cfg.gridW)) > 0;
     const W = sim.cfg.gridW;

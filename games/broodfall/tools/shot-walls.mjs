@@ -7,7 +7,7 @@
  * across it). Each photographed close, at all four quarter turns of the camera, in three tile sets.
  * A wall must be drawn ACROSS its lane at every turn, and no longer than the lane is wide.
  *
- * Usage: node tools/shot-walls.mjs [--tag after] [--dist dist-walls-before --no-build]
+ * Usage: node tools/shot-walls.mjs [--tag across] [--day 2026-10-01] [--dist dist-walls-before --no-build]
  * Screenshots: notes/screens/2026-09-30/walls-<tag>-<set>-<narrow|wide>-turn<N>.jpg
  */
 import { spawn, execSync, spawnSync } from 'node:child_process';
@@ -19,7 +19,9 @@ import { chromium } from '@playwright/test';
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, '..');
 const shots = join(here, 'screenshots');
-const screens = join(root, 'notes', 'screens', '2026-09-30');
+// Oct 1 2026: walls stand ACROSS their street in the sim (Sim.wallAcross); the shots go to that day.
+const screens = join(root, 'notes', 'screens', valueOfEarly('--day', '2026-10-01'));
+function valueOfEarly(flag, d) { const a = process.argv.slice(2); const i = a.indexOf(flag); return i >= 0 ? a[i + 1] : d; }
 mkdirSync(shots, { recursive: true });
 const PORT = Number(process.env.BROODFALL_PORT || 5289);
 const args = process.argv.slice(2);
@@ -105,13 +107,9 @@ try {
       for (const c of cells) {
         const g = s.groundFor(c, 'spine', 'S');
         if (!g || g.some((x) => used.has(x) || used.has(x + 1) || used.has(x - 1) || used.has(x + W) || used.has(x - W))) continue;
-        const alongX = g.length === 2 && Math.abs(g[1] - g[0]) === 1;
-        // Is the street one cell wide here: are both cells beside the wall's line closed?
-        // Block (0) or Void (3): nothing walks there.
-        const closed = (x) => x < 0 || x >= s.map.cells.length || s.map.cells[x] === 0 || s.map.cells[x] === 3;
-        const side = alongX ? W : 1;
-        const narrow = g.every((x) => closed(x - side) && closed(x + side));
-        const kind = narrow ? 'narrow' : 'wide';
+        // A wall across a street one cell wide is one cell (Sim.wallAcross); across a wider one, two. Only street walls.
+        if (s.map.cells[c] !== 1) continue;
+        const kind = g.length === 1 ? 'narrow' : 'wide';
         if (out[kind]) continue;
         s.hand[0] = { id: 910000 + used.size, family: 'spine', free: true };
         const r = s.issue({ kind: 'build', cardIndex: 0, cell: c, facing: 'S' });
@@ -132,6 +130,8 @@ try {
         if (!w) continue;
         await closeOn(w.x, w.y, 6);
         await shot(`walls-${tag}-${set}-${kind}-turn${q}`);
+        const cellsNow = await page.evaluate((k) => { const s = window.broodfall.sim; return s.towers.filter((t) => t.family === 'spine' && s.map.cells[t.cell] === 1).map((t) => ({ cells: s.cellsOf(t), alongX: s.laneAlongX(t.cell) })); }, kind);
+        for (const t of cellsNow) if (t.cells.length === 2 && (Math.abs(t.cells[1] - t.cells[0]) === 1) === t.alongX) failures.push(`${set}: a wall lies along its street ${JSON.stringify(t)}`);
       }
       await page.evaluate(() => window.broodfall.turnBy(1));
       await page.waitForTimeout(300);

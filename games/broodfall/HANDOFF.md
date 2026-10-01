@@ -1078,7 +1078,17 @@ own words. `notes/GRAPHICS-PLAN.md` holds the pipeline, the probes and the costs
   scaled about its marked foot; the core `CORE_SCALE` 1.22, capped so its widest stage's collar is at
   most 0.8 of its 4x4 square (`src/render/isoRender.ts`). Chosen from four pairs side by side
   (`node tools/shot-scale.mjs [limb:core ...]`, the page takes `?limbScale=&coreScale=`).
-- **Walls (Sep 30, "walls way too large and placed sideways").** A Spine Wall is drawn ACROSS its lane
+- **Walls stand ACROSS their street in the SIM (Oct 1 2026; Collins: "jesus man, how are we still placing walls
+  lengthwise rather than across pathways").** `Sim.wallAcross`: a Spine Wall pointed at a street cell takes the
+  street's width there, across the way the street runs (`Sim.laneAlongX`: the longer straight run of street through
+  the cell; at a crossing, the way the swarm moves), two cells at most. On a street one cell wide it is ONE cell
+  with a one-cell wall's body (832 / 1.6 = 520 hp: never a free double wall). Turning it before placing (R,
+  right-click) cannot lay it along the street; buds, copies, a rebirth and a collector's dropped wall take the same
+  ground; the renderer reads the same `laneAlongX`. On a roof a wall is a 1x2 as before. Tests
+  `tests/wallsAcross.test.ts`; shots `node tools/shot-walls.mjs --tag across` (`notes/screens/2026-10-01/walls-across-*`).
+  Measured: naive hold-12 5/10, guardrail 4:0 (it was 5:0). Runs are not saved mid-mission, so no save holds an
+  old lengthwise wall.
+- **(Superseded Oct 1: the sim now lays walls across.) Walls (Sep 30, "walls way too large and placed sideways").** A Spine Wall is drawn ACROSS its lane
   at every camera turn and as wide as the lane (`WALL_TWO`, `WALL_ONE`). On a street one cell wide the
   sim lays its two cells ALONG the lane (`placementFor` falls back to that); the renderer turns the wall
   across the lane there, in the middle of its two cells. The sim is untouched (no balance change).

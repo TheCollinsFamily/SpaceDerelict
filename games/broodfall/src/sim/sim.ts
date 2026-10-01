@@ -863,6 +863,8 @@ export class Sim {
     const s = towerStats({ ...t, pips: all }, true);
     s.range = s.range * this.geneMods.rangeMult * this.heightRangeFactor(t.cell);
     s.maxHp += t.family === 'spine' ? this.geneMods.spineHpBonus : 0;
+    // A wall across a street one cell wide takes one cell: it has a one-cell wall's body (its spec is paid for two).
+    if (t.family === 'spine' && this.cellsOf(t).length === 1 && towerSpec('spine').span) s.maxHp -= Math.round(towerSpec('spine').maxHp * (1 - 1 / 1.6));
     s.eatThreshold += t.family === 'maw' ? this.geneMods.mawEatBonus : 0;
     // A whole chapel on one limb IS a build: every covering choir adds, and the
     // same tempo also quickens a producer's cycle.
@@ -1003,6 +1005,8 @@ export class Sim {
    */
   placementFor(cell: number, family?: TowerFamily, facing?: RootDir): { cells: number[]; facing?: RootDir } | null {
     if (cell < 0 || cell >= this.map.cells.length) return null;
+    // A Spine Wall in a street stands ACROSS it, whatever it was turned to (wallAcross).
+    if (family === 'spine' && this.map.cells[cell] === CellType.Road) return this.wallAcross(cell, (c) => this.canBuildOn(c, 'spine'));
     const spec = family ? towerSpec(family) : undefined;
     if (!family || !spec || !isMultiCell(spec)) return this.canBuildOn(cell, family) ? { cells: [cell], facing } : null;
     let ways: Array<RootDir | undefined> = [facing];
@@ -1021,6 +1025,64 @@ export class Sim {
       if (cells) return { cells, facing: way };
     }
     return null;
+  }
+
+  /**
+   * Does the street at this cell run east-west (along x)? The longer of its two straight runs of street through
+   * the cell is the way it runs; where they are as long (a crossing, a square), the way the swarm moves through it.
+   */
+  laneAlongX(cell: number): boolean {
+    const w = this.cfg.gridW;
+    const road = (c: number) => c >= 0 && c < this.map.cells.length && this.map.cells[c] === CellType.Road;
+    const run = (dx: number, dy: number) => {
+      let n = 0;
+      let x = cell % w;
+      let y = Math.floor(cell / w);
+      for (;;) {
+        x += dx; y += dy;
+        if (x < 0 || y < 0 || x >= w || y >= this.cfg.gridH || !road(y * w + x)) return n;
+        n++;
+      }
+    };
+    const alongX = 1 + run(-1, 0) + run(1, 0);
+    const alongY = 1 + run(0, -1) + run(0, 1);
+    if (alongX !== alongY) return alongX > alongY;
+    const next = this.flow.next[cell];
+    if (next >= 0) return Math.abs((next % w) - (cell % w)) > 0;
+    return alongX >= alongY;
+  }
+
+  /**
+   * A SPINE WALL in a street stands ACROSS it (Collins, Oct 1 2026: "how are we still placing walls lengthwise
+   * rather than across pathways"): the cells of the street's width at this cell, at most two (its `span`), never
+   * along the lane. On a street one cell wide it is ONE cell, and has a one-cell wall's hp (statsOf), so a wall is
+   * never doubled for free. Where one of two cells across cannot be built on, it is one cell.
+   */
+  wallAcross(cell: number, ok: (c: number) => boolean): { cells: number[]; facing: RootDir } | null {
+    if (!ok(cell)) return null;
+    const w = this.cfg.gridW;
+    const alongX = this.laneAlongX(cell);
+    // Across a street that runs along x is up and down the board.
+    const step = alongX ? w : 1;
+    const road = (c: number) => c >= 0 && c < this.map.cells.length && this.map.cells[c] === CellType.Road
+      && (step === 1 ? Math.floor(c / w) === Math.floor(cell / w) : true);
+    // The street's width here: its run across, through the cell.
+    const across: number[] = [cell];
+    for (let c = cell - step; road(c); c -= step) across.unshift(c);
+    for (let c = cell + step; road(c); c += step) across.push(c);
+    const at = across.indexOf(cell);
+    const max = towerSpec('spine').span ? Math.max(...towerSpec('spine').span!) : 1;
+    let cells = [cell];
+    if (max >= 2 && across.length >= 2) {
+      // The neighbour across that keeps the wall nearer the street's middle (either, on a street two wide).
+      const before = across[at - 1];
+      const after = across[at + 1];
+      const mid = (across.length - 1) / 2;
+      const pick = [after, before].filter((c) => c !== undefined && ok(c))
+        .sort((a, b) => Math.abs(across.indexOf(a) - mid) - Math.abs(across.indexOf(b) - mid))[0];
+      if (pick !== undefined) cells = [cell, pick].sort((a, b) => a - b);
+    }
+    return { cells, facing: alongX ? 'S' : 'E' };
   }
 
   /** May a limb stand on this one cell? */
@@ -2342,7 +2404,7 @@ export class Sim {
     if (raiser && this.cellsOf(t).every((c) => !this.isOccupied(c))) {
       raiser.rebornWave = this.waveNumber;
       const full = towerStats(raiser).rebirth >= 2;
-      const again = this.addTower(t.family, t.cell, full ? [...t.pips] : [], t.facing);
+      const again = this.addTower(t.family, t.cell, full ? [...t.pips] : [], t.facing, this.cellsOf(t));
       if (full && t.upgrades) {
         again.upgrades = [...t.upgrades];
         again.maxHp = this.statsOf(again).maxHp;
@@ -2433,6 +2495,7 @@ export class Sim {
 
   /** The cells a bud or a copy of this family would stand on at this cell, or null. */
   private freeGroundFor(cell: number, family: TowerFamily): number[] | null {
+    if (family === 'spine' && this.map.cells[cell] === CellType.Road) return this.wallAcross(cell, (c) => this.canPlaceFreeOn(c, 'spine'))?.cells ?? null;
     if (!isMultiCell(towerSpec(family))) return this.canPlaceFreeOn(cell, family) ? [cell] : null;
     return this.footprintAt(cell, family, undefined, (c) => this.canPlaceFreeOn(c, family));
   }
@@ -4863,7 +4926,9 @@ export class Sim {
     if (e.carrying) {
       st.limbsRecovered = (st.limbsRecovered ?? 0) + 1;
       const c = e.carrying;
-      const ground = this.cellsFromFirst(c.cell, c.family, towerSpec(c.family).shape ? (c.facing ?? 'S') : c.facing) ?? [c.cell];
+      const ground = c.family === 'spine' && this.map.cells[c.cell] === CellType.Road
+        ? this.wallAcross(c.cell, (g) => !this.occupied.has(g))?.cells ?? [c.cell]
+        : this.cellsFromFirst(c.cell, c.family, towerSpec(c.family).shape ? (c.facing ?? 'S') : c.facing) ?? [c.cell];
       if (ground.every((g) => !this.occupied.has(g) && g !== this.map.coreCell)) {
         if (ground.length > 1) {
           // A big limb re-roots as it is built: on all of its cells, in the middle of them.
