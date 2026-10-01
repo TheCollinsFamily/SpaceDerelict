@@ -839,6 +839,33 @@ the option to change the model she runs on."
   `tools/shot-yoke-connect.mjs` (a real local backend, the whole path by clicks; see its header
   for the three backend commands). JPEGs: `notes/screens/2026-09-30/connect-*.jpg`.
 
+## Footprints: every shape, and the plan for which limb takes which (Oct 1 2026)
+
+Collins: "the total lack of diversity in footprint ... is kind of a KEY part of tower defence strategy ... one
+square (hugely over-represented), two squares (line), four squares (large square), T-shaped (usually for very
+powerful area-effect things), L-shaped (like an elbow shape)". DESIGN.md "Shaped footprints".
+
+- **Built (engine):** `src/sim/footprint.ts` (SHAPES: `line3`, `T`, `L3`, `L4`, `S4`; rectangles stay `span`), a
+  `shape` on TowerSpec, `Sim.cellsFromFirst` / `Sim.hubPos`, placement, turning, eating, recovery by a collector,
+  the scripted player; the ghost and the outline of a shaped limb's ground (`src/render/render.ts`,
+  `isoRender.ts limbSizeFor`); R / Shift + R / Shift + wheel / the TURN LIMB button (`index.html #place-turn`).
+  `?tryShape=<limb>:<shape>` tries any limb on any footprint. **No limb is shaped yet:** the game plays exactly as
+  before (gaps measure, 10 seeds: the same ten lines before and after, 5/10).
+- **Kill credit (a measurement fix):** a kill by poison, fire, a cloud or a swallow is now put down to the limb
+  that caused it in `stats.killsByFamily` only (`killEnemy creditId`); `Tower.kills` (Consort's Favour, the
+  scripted player) still counts direct hits, so no play changed. Maw 0 → 154 kills, Blight Vent 21 → 88.
+- **The plan (for Collins, not applied):** `notes/FOOTPRINT-PLAN.md` and the limb decision sheet
+  (https://claude.ai/artifact/G1XVCeZcLdEPx1QfQ2ny7g, "Footprint plan" + a Footprint column + "Resolved by" on every
+  old flag). Data `tools/codex/plan.mjs`; counts `tools/codex/planDump.ts`; shape fit
+  `tools/measure/shapefit.measure.ts` (`notes/limb-codex/shapefit.json`); balance
+  `MEASURE=plan,planLines,planT,planL,planSquare ... tools/measure/footprints.measure.ts` (results in
+  `notes/limb-codex/footprint-measure.txt`). Rebuild: `node tools/codex/sheet.mjs`.
+- **Screens:** `node tools/shot-footprint.mjs` (every shape placed and as the ghost, two camera turns;
+  `notes/screens/2026-10-01/footprint-*.png`, `footprint-sheet.jpg`).
+- **Applying a shape to a limb** (when Collins decides): `shape: 'L3'` (or `span`) on it in `content/data.ts`, paid
+  for its ground as the BIG limbs were (the K table in footprints.measure.ts), its art redrawn for the footprint
+  in the same pass as its upgrade looks (the plan's cost), then the measures.
+
 ## Architecture
 
 - **`src/sim/`:** a deterministic fixed-timestep sim (10 Hz, seeded, ZERO render imports).

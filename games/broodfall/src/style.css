@@ -96,6 +96,8 @@ body.view-iso #view-controls { display: flex; }
   font: inherit; font-size: 11px; letter-spacing: 1px; padding: 4px 9px; cursor: pointer;
 }
 #view-controls button:hover { background: rgba(184, 168, 120, 0.9); color: #14100c; }
+#view-controls #place-turn { color: #ffe08a; border-color: rgba(255, 224, 138, 0.7); }
+#view-controls #place-turn.hidden { display: none; }
 #view-help { font-size: 10px; letter-spacing: 0.5px; color: rgba(232, 220, 184, 0.62); margin-left: 6px; text-transform: uppercase; pointer-events: none; }
 
 #feed {

@@ -12,7 +12,8 @@
 import { Application, Container, Graphics, Matrix, Sprite, Texture } from 'pixi.js';
 import { CellType, PLATE } from '../sim/citymap';
 import { Sim, enemySpec, towerSpec, towerStats } from '../sim/sim';
-import type { CreepSource, Enemy, Tower } from '../sim/types';
+import { footprintOf } from '../sim/footprint';
+import type { CreepSource, Enemy, RootDir, Tower, TowerFamily } from '../sim/types';
 import { BoardArtSet, type Clip, type LimbArt, type LimbSide, type LoadedUnit, type UnitArt } from './art';
 import { BOSS_SCALE, choose, newFx, observe, playFor, skinOf, type UnitFx } from './unitAnim';
 import {
@@ -667,9 +668,20 @@ export class IsoRenderer extends Renderer {
    * ground, so that the mound fills its back cell and what lies forward lies over its front one.
    */
   private sizeOf(sim: Sim, t: Tower): number {
-    const n = sim.cellsOf(t).length;
-    if (n === 2) return LONG_SIZE;
-    return n > 1 ? Math.sqrt(n) : 1;
+    return limbSizeFor(t.family, sim.cellsOf(t).length, t.facing);
+  }
+
+  /**
+   * Where a limb's PICTURE stands: the middle of all the cells it stands on. (Its reach and effects come
+   * from its hub, t.pos; for a T or an L that is a corner of its ground, not the middle of its picture.)
+   */
+  private artPos(sim: Sim, t: Tower): { x: number; y: number } {
+    if (!towerSpec(t.family).shape) return t.pos;
+    const cells = sim.cellsOf(t);
+    let x = 0;
+    let y = 0;
+    for (const c of cells) { const p = sim.cellCenter(c); x += p.x / cells.length; y += p.y / cells.length; }
+    return { x, y };
   }
 
   private add(layer: Container, tex: Texture | null, x: number, y: number, z = 0): Sprite | null {
@@ -1434,7 +1446,8 @@ export class IsoRenderer extends Renderer {
     this.mawStruck = [];
     for (const t of sim.towers) {
       const h = this.heightOf(sim, t.cell);
-      const p0 = project(g, t.pos.x, t.pos.y, h);
+      const at = this.artPos(sim, t);
+      const p0 = project(g, at.x, at.y, h);
       const found = this.limbArtOf(t);
       let v = this.limbs.get(t.id);
       if (v && v.family !== t.family) { v.sprite.destroy(); v.over.destroy(); v.flash.destroy(); v.shade.destroy(); this.fates.drop(t.id); this.limbs.delete(t.id); v = undefined; }
@@ -1679,7 +1692,7 @@ export class IsoRenderer extends Renderer {
     const { back, mirror } = limbView(g, facing);
     const side = back && art.back ? art.back : art;
     const n = ground.length;
-    const size = n === 2 ? LONG_SIZE : n > 1 ? Math.sqrt(n) : 1;
+    const size = limbSizeFor(pv.family!, n, facing);
     const h = this.heightOf(sim, ground[0]);
     const step = FACING_STEP[facing];
     const p = n === 2
@@ -1695,6 +1708,16 @@ export class IsoRenderer extends Renderer {
     s.alpha = pv.valid ? 0.8 : 0.4;
     s.tint = pv.valid ? 0xffffff : 0xff8070;
     s.visible = true;
+  }
+
+  /** A cell of a shaped limb's ground, outlined (its picture is a placeholder until its own art is drawn). */
+  protected drawFootprintCell(_g: Graphics, sim: Sim, cell: number): void {
+    const p = this.tileOf(sim, cell, this.heightOf(sim, cell));
+    const g = this.geo;
+    this.marksG.poly([
+      (p.x + g.a) / K, p.y / K, (p.x + 2 * g.a) / K, (p.y + g.b) / K,
+      (p.x + g.a) / K, (p.y + 2 * g.b) / K, p.x / K, (p.y + g.b) / K,
+    ]).fill({ color: 0xffe08a, alpha: 0.12 }).stroke({ width: 1.2, color: 0xffe08a, alpha: 0.75 });
   }
 
   protected drawPreviewCell(_g: Graphics, sim: Sim, cell: number, ok: boolean): void {
@@ -2429,4 +2452,21 @@ export class IsoRenderer extends Renderer {
 function limbTopShare(side: LimbSide): number {
   const ys = [...(side.muzzle ?? []), ...(side.grafts ?? [])].map((q) => q[1]);
   return ys.length ? Math.max(0, Math.min(...ys) - 0.07) : 0.5;
+}
+
+/**
+ * How many cells across a limb's picture is drawn, from its footprint: one cell 1; a LONG limb of two
+ * LONG_SIZE; a square its side; a line of three a little longer than a long one; a T, an L or a zigzag
+ * (Oct 1 2026, src/sim/footprint.ts) the short side of its bounding box, so a placeholder fills the bulk
+ * of its ground until its own art is drawn (its ground is outlined on the board, src/render/render.ts).
+ */
+export function limbSizeFor(family: TowerFamily, cells: number, facing?: RootDir): number {
+  const spec = towerSpec(family);
+  if (spec.shape) {
+    const fp = footprintOf(spec, facing ?? 'S');
+    if (spec.shape === 'line3') return LONG_SIZE * 1.2;
+    return Math.min(fp.w, fp.h);
+  }
+  if (cells === 2) return LONG_SIZE;
+  return cells > 1 ? Math.sqrt(cells) : 1;
 }

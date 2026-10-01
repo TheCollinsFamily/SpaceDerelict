@@ -585,6 +585,27 @@ tower you want at a high height and then adjacency bonuses and everything." So e
   (four cells) or `long: true` (two) on the same limb in `tools/art/limbs.mjs`. Then
   `node tools/art/make.mjs limb <family> --bake` and the measure above.
 
+### Shaped footprints: lines, squares, T and L (Collins, Oct 1 2026 — the ENGINE is BUILT; which limb takes which shape is PROPOSED)
+
+His words: "the total lack of diversity in footprint ... is kind of a KEY part of tower defence strategy. In
+tower defence the tower categories are one square (hugely over-represented), two squares (line), four squares
+(large square, usually for very powerful towers), T-shaped (usually for very powerful area-effect things),
+L-shaped (like an elbow shape)."
+
+- **The rule (built, `src/sim/footprint.ts`).** A limb stands on a polyomino: a `span` rectangle as before, or a
+  `shape` from SHAPES (`line3`, `T`, `L3` an elbow of three, `L4`, `S4` a zigzag). Every shape is written facing
+  south and turned a quarter at a time with the limb's facing: it can lie four ways. Every cell must be one flat
+  creeped roof, free; pointing at a cell takes a placement of the shape that HOLDS it.
+- **Its hub.** Reach, aim and effects come from the shape's HUB: a rectangle's middle (as before), a T's junction
+  (the stem points the way it faces), an L's elbow. Its picture stands on the middle of all its cells.
+- **Turning.** While placing: right-click, R (Shift + R back), Shift + wheel, or the TURN LIMB button (shown when
+  the limb in hand turns). A placed shaped limb turned a quarter takes new ground that holds part of its old, or
+  is refused ("needs new ground to turn").
+- **Until its own art exists** a shaped limb is drawn with its current picture sized to its ground (the short side
+  of its box), and its ground is outlined on the board.
+- **Which limb takes which shape** is `notes/FOOTPRINT-PLAN.md` (and the limb decision sheet's Footprint column):
+  proposed, not applied. `?tryShape=lasher:L3,quill:L3` plays any of it first.
+
 ### Plinths: height is won (Collins, Sep 29 2026 — BUILT Sep 29)
 
 "Platforms that raise the height of one thing by one amount: let's have an organ that

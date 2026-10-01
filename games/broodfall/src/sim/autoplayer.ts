@@ -4,6 +4,7 @@
  */
 import { Rng } from './rng';
 import { Sim, towerSpec } from './sim';
+import { isMultiCell } from './footprint';
 import { UPGRADE_COST } from '../../content/upgrades';
 import { organTurn, placeNode, placePlinth } from './organPolicy';
 import { CellType } from './citymap';
@@ -136,7 +137,7 @@ export class Autoplayer {
       const wantsInterior = !wantsBlocker && spec.rate > 0 && interiorGuns < 2
         && sim.threat >= B.tier6Threat - 60; // tunnelers imminent: cover the inside
       // A big limb is looked for where all of it fits.
-      const cell = this.findTowerCell(sim, wantsBlocker, wantsInterior, spec.span ? fam : undefined);
+      const cell = this.findTowerCell(sim, wantsBlocker, wantsInterior, isMultiCell(spec) ? fam : undefined);
       if (cell === null) return false;
       let cannibalizeTowerId: number | undefined;
       this.buildsSinceCannibalize += 1;
@@ -209,7 +210,7 @@ export class Autoplayer {
       // A pit that found no lane road this act waits its turn rather than block the hand.
       if (fam === 'swamp') continue;
       // So does a big limb that fits nowhere yet: the cards behind it are played, and it is shed when meat allows.
-      if (towerSpec(fam).span && !this.fitsSomewhere(sim, fam)) {
+      if (isMultiCell(towerSpec(fam)) && !this.fitsSomewhere(sim, fam)) {
         if (sim.meat.war >= B.discardCost + 40) { sim.issue({ kind: 'discard', cardIndex: i }); return; }
         continue;
       }

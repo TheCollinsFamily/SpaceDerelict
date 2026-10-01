@@ -1189,6 +1189,13 @@ export class Renderer {
         .stroke({ width: 1, color: 0xd0604a, alpha: 0.25 });
     }
 
+    // A SHAPED limb (a T, an L: src/sim/footprint.ts) has its ground outlined, so its shape reads on the
+    // board while its picture is still a placeholder.
+    for (const t of sim.towers) {
+      if (!towerSpec(t.family).shape) continue;
+      for (const c of sim.cellsOf(t)) this.drawFootprintCell(g, sim, c);
+    }
+
     // The open panel's limb: its field of fire and what it is affecting.
     const sel = this.selectedTowerId !== null ? sim.towers.find((t) => t.id === this.selectedTowerId) : undefined;
     if (sel) {
@@ -1201,13 +1208,18 @@ export class Renderer {
     if (this.preview) {
       const ok = this.preview.valid;
       const ground = this.preview.cells ?? [this.preview.cell];
-      // It will stand in the middle of the ground it takes.
+      // It will stand in the middle of the ground it takes (a T or an L: on its hub, src/sim/footprint.ts).
       const c = { x: 0, y: 0 };
       for (const cell of ground) {
         const p = sim.cellCenter(cell);
         c.x += p.x / ground.length;
         c.y += p.y / ground.length;
         this.drawPreviewCell(g, sim, cell, ok);
+      }
+      if (this.preview.kind === 'tower' && this.preview.family && towerSpec(this.preview.family).shape) {
+        const hub = sim.hubPos(this.preview.family, this.preview.facing ?? 'S', ground);
+        c.x = hub.x;
+        c.y = hub.y;
       }
       if (this.preview.kind === 'node') {
         g.circle(c.x, c.y, (this.preview.radius ?? 3) * sim.cfg.cellPx).stroke({ width: 2, color: ok ? 0x9ad068 : 0xb03a2a, alpha: 0.6 });
@@ -1247,6 +1259,13 @@ export class Renderer {
   }
 
   /** The cell a placement would take, lit green or red. */
+  /** A cell of a shaped limb's ground, outlined. */
+  protected drawFootprintCell(g: Graphics, sim: Sim, cell: number): void {
+    const p = sim.cellCenter(cell);
+    const h = sim.cfg.cellPx / 2;
+    g.rect(p.x - h + 1, p.y - h + 1, 2 * h - 2, 2 * h - 2).stroke({ width: 1.2, color: 0xffe08a, alpha: 0.7 });
+  }
+
   protected drawPreviewCell(g: Graphics, sim: Sim, cell: number, ok: boolean): void {
     const c = sim.cellCenter(cell);
     g.rect(c.x - sim.cfg.cellPx / 2, c.y - sim.cfg.cellPx / 2, sim.cfg.cellPx, sim.cfg.cellPx)

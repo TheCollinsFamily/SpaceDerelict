@@ -1,0 +1,113 @@
+{
+ "measured": "2026-10-01",
+ "crashSites": {
+  "boards": 4,
+  "roofCells": 158,
+  "roofs": 22,
+  "shapes": {
+   "1x1": {
+    "placements": 158,
+    "cover": 1,
+    "medianPerRoof": 1,
+    "roofsWithNone": 0
+   },
+   "1x2": {
+    "placements": 186,
+    "cover": 0.865,
+    "medianPerRoof": 0,
+    "roofsWithNone": 0.955
+   },
+   "line3": {
+    "placements": 128,
+    "cover": 0.821,
+    "medianPerRoof": 0,
+    "roofsWithNone": 0.955
+   },
+   "2x2": {
+    "placements": 42,
+    "cover": 0.623,
+    "medianPerRoof": 0,
+    "roofsWithNone": 0.955
+   },
+   "T": {
+    "placements": 144,
+    "cover": 0.841,
+    "medianPerRoof": 0,
+    "roofsWithNone": 0.955
+   },
+   "L3": {
+    "placements": 234,
+    "cover": 0.856,
+    "medianPerRoof": 0,
+    "roofsWithNone": 0.955
+   },
+   "L4": {
+    "placements": 147,
+    "cover": 0.843,
+    "medianPerRoof": 0,
+    "roofsWithNone": 0.955
+   },
+   "S4": {
+    "placements": 69,
+    "cover": 0.718,
+    "medianPerRoof": 0,
+    "roofsWithNone": 0.955
+   }
+  }
+ },
+ "midRun": {
+  "boards": 10,
+  "roofCells": 226,
+  "roofs": 29,
+  "shapes": {
+   "1x1": {
+    "placements": 226,
+    "cover": 1,
+    "medianPerRoof": 1,
+    "roofsWithNone": 0
+   },
+   "1x2": {
+    "placements": 277,
+    "cover": 0.883,
+    "medianPerRoof": 0,
+    "roofsWithNone": 0.921
+   },
+   "line3": {
+    "placements": 194,
+    "cover": 0.847,
+    "medianPerRoof": 0,
+    "roofsWithNone": 0.943
+   },
+   "2x2": {
+    "placements": 68,
+    "cover": 0.656,
+    "medianPerRoof": 0,
+    "roofsWithNone": 0.943
+   },
+   "T": {
+    "placements": 229,
+    "cover": 0.845,
+    "medianPerRoof": 0,
+    "roofsWithNone": 0.943
+   },
+   "L3": {
+    "placements": 358,
+    "cover": 0.866,
+    "medianPerRoof": 0,
+    "roofsWithNone": 0.943
+   },
+   "L4": {
+    "placements": 239,
+    "cover": 0.856,
+    "medianPerRoof": 0,
+    "roofsWithNone": 0.943
+   },
+   "S4": {
+    "placements": 111,
+    "cover": 0.74,
+    "medianPerRoof": 0,
+    "roofsWithNone": 0.943
+   }
+  }
+ }
+}

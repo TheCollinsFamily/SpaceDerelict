@@ -12,12 +12,15 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { cutThumbs } from './thumbs.mjs';
 import { AUDIT, DECISIONS } from './audit.mjs';
+import { footprintCell, loadPlan, planMarkdown, planSectionHtml, resolvedBy } from './planSection.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const entries = JSON.parse(execFileSync(process.execPath, [join(root, 'node_modules', 'vite-node', 'vite-node.mjs'), 'tools/codex/dump.ts'], { cwd: root, encoding: 'utf8', maxBuffer: 1 << 26 }));
 const manifest = JSON.parse(readFileSync(join(root, 'public', 'art', 'manifest.json'), 'utf8'));
 const bal = JSON.parse(readFileSync(join(root, 'notes', 'limb-codex', 'balance.json'), 'utf8'));
 const thumbs = await cutThumbs(manifest.limbs);
+// The footprint plan (Oct 1 2026; tools/codex/plan.mjs): proposed, not applied.
+const PLANNED = loadPlan(root, entries, manifest);
 
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const CLASS = { bone: 'Bone', swarm: 'Swarm', venom: 'Venom', reach: 'Reach' };
@@ -58,7 +61,7 @@ function flagsOf(e) {
     if (!built) f.push(['balance', 'Never built by the scripted player: unmeasured.', 'lo']);
   } else if (built >= 8 && kpb >= 11) f.push(['balance', `High: ${kpb.toFixed(1)} kills per limb built in the scripted runs (the median is about 3).`, 'hi']);
   else if (built >= 10 && kpb < 1 && e.dps > 0 && !UNCREDITED[e.family]) f.push(['balance', `Low: ${kpb.toFixed(1)} kills per limb built over ${built} built.`, 'hi']);
-  if (UNCREDITED[e.family] && e.role !== 'engine') f.push(['balance', `Its ${UNCREDITED[e.family]} kills are not credited to it in the run stats, so its kill count reads low.`, 'lo']);
+  if (UNCREDITED[e.family] && e.role !== 'engine') f.push(['balance', `Its ${UNCREDITED[e.family]} kills were not credited to it in the run stats before Oct 1, so its kill count read low.`, 'lo']);
   if (topDpm.has(e.family)) f.push(['balance', `Most damage per meat of any shooter: ${perMeat(e).toFixed(2)} a second per meat.`, 'hi']);
   if (lowDpm.has(e.family)) f.push(['balance', `Least damage per meat of any shooter: ${perMeat(e).toFixed(2)} a second per meat${e.dot ? ' (before its damage over time)' : ''}.`, 'lo']);
   for (const [kind, text] of AUDIT[e.family] ?? []) f.push([kind, text, 'hi', true]);
@@ -86,8 +89,9 @@ const rowHtml = ({ e, flags, t }) => {
     <td class="num stats"><span>hp <b>${e.maxHp}</b></span><span>dps <b>${e.dps || (e.fires ? 'aimed' : '–')}</b></span>${e.dot ? `<span>dot <b>${e.dot}</b></span>` : ''}<span>rng <b>${e.range >= 9999 ? 'board' : e.range || '–'}</b></span></td>
     <td class="teach"><span class="lk ${e.pipClass}">${CLASS[e.pipClass]}</span><div class="donor">${esc(e.donor)}</div></td>
     <td class="looks"><div class="evo">${e.evoLooks.map((k) => lookChip(k, drawn.includes(k) ? 'have' : '')).join('')}</div>${drawn.length ? `<div class="drawn">${drawn.map((k) => `<figure class="${e.evoLooks.includes(k) ? '' : 'off'}"><img src="${t.looks[k]}" alt="${esc(lookName(k))}" width="52" height="52" loading="lazy"><figcaption>${esc(lookName(k))}</figcaption></figure>`).join('')}</div>` : ''}</td>
+    ${footprintCell(e.family, PLANNED)}
     <td class="num runs">${e.role === 'engine' || !e.drawn ? (built ? `built <b>${built}</b>` : '<span class="mute">not built</span>') : `<span>built <b>${built}</b></span><span>kills <b>${kills}</b></span><span>per <b>${built ? (kills / built).toFixed(1) : '–'}</b></span>`}</td>
-    <td class="flags">${flags.length ? `<ul>${flags.map(([k, text, lvl, mine]) => `<li class="${k} ${lvl}"><em>${KINDS[k]}${mine ? ' · seen' : ''}</em>${esc(text)}</li>`).join('')}</ul>` : '<span class="mute">nothing flagged</span>'}</td>
+    <td class="flags">${flags.length ? `<ul>${flags.map(([k, text, lvl, mine]) => { const fix = resolvedBy(e.family, text); return `<li class="${k} ${lvl}"><em>${KINDS[k]}${mine ? ' · seen' : ''}</em>${esc(text)}${fix ? `<span class="res ${/^Open/.test(fix) ? 'open' : ''}"><b>Resolved by</b> ${esc(fix)}</span>` : ''}</li>`; }).join('')}</ul>` : '<span class="mute">nothing flagged</span>'}</td>
   </tr>`;
 };
 
@@ -137,7 +141,7 @@ h2 { font: 500 12px var(--display); letter-spacing: 3.5px; color: var(--dim); te
 .bar button:focus-visible { outline: 1px solid var(--cyan); outline-offset: 2px; }
 .bar .gap { width: 14px; }
 .table { overflow-x: auto; border: 1px solid var(--line); }
-table { border-collapse: collapse; width: 100%; min-width: 1320px; }
+table { border-collapse: collapse; width: 100%; min-width: 1560px; }
 thead th { position: sticky; top: 0; background: #0b0e10; font: 500 10.5px var(--display); letter-spacing: 2.5px; text-transform: uppercase; color: var(--dim); text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line-hi); white-space: nowrap; }
 td { vertical-align: top; padding: 10px; border-bottom: 1px solid var(--line); }
 tr:target td { background: rgba(240, 198, 106, 0.07); }
@@ -184,6 +188,51 @@ tr:target td:first-child { box-shadow: inset 3px 0 0 var(--amber); }
 tr[hidden] { display: none; }
 footer { margin-top: 18px; color: var(--dim); font-size: 12.5px; max-width: 110ch; display: grid; gap: 6px; }
 footer code { font-size: 12px; color: #c8d1d5; word-break: break-all; }
+.fpc { width: 230px; font-size: 12px; color: #c8d1d5; }
+.fprow { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.fp rect { fill: rgba(233, 238, 240, 0.18); stroke: rgba(233, 238, 240, 0.55); stroke-width: 1; }
+.fp.next rect { fill: rgba(240, 198, 106, 0.55); stroke: var(--amber); }
+.fpc .arr { color: var(--amber); }
+.fpn { font: 500 11px var(--display); letter-spacing: 1.2px; text-transform: uppercase; color: var(--dim); }
+.fpn b { color: var(--amber); font-weight: 600; }
+.fpw { margin-top: 4px; }
+.fps { margin-top: 4px; }
+.fps em, .res b { font: 600 9.5px var(--display); font-style: normal; letter-spacing: 1.6px; text-transform: uppercase; color: var(--dim); margin-right: 4px; }
+.fps.risk { color: #ffb08a; }
+.res { display: block; margin-top: 3px; color: #a8e6b4; }
+.res.open { color: var(--dim); }
+.plan { border: 1px solid rgba(240, 198, 106, 0.4); background: linear-gradient(180deg, rgba(240, 198, 106, 0.05), transparent 240px); padding: 4px 16px 16px; margin-top: 22px; }
+.plan h2 { color: var(--amber); }
+.plan .lede2 { color: #c8d1d5; max-width: 110ch; margin: 0 0 12px; }
+.plan code { color: var(--cyan); font-size: 12.5px; }
+.pgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 380px), 1fr)); gap: 10px; }
+.pgrid article { border: 1px solid var(--line); background: var(--panel); padding: 12px 14px; min-width: 0; }
+.pgrid h3, .plan .sub3 { font: 500 16px/1.2 var(--display); letter-spacing: 0.5px; margin: 0 0 8px; }
+.plan .sub3 { margin: 18px 0 6px; }
+.note { color: var(--dim); font-size: 12.5px; margin: 6px 0; }
+.dist { display: grid; gap: 4px; }
+.dk { display: grid; grid-template-columns: 90px 1fr 1fr; gap: 8px; align-items: center; }
+.dk.hd span { font: 500 10px var(--display); letter-spacing: 2px; text-transform: uppercase; color: var(--dim); }
+.dn { font: 500 13px var(--display); }
+.db { position: relative; height: 18px; background: rgba(233, 238, 240, 0.05); }
+.db i { position: absolute; inset: 0 auto 0 0; display: block; }
+.db .bnow { background: rgba(233, 238, 240, 0.28); }
+.db .bnext { background: rgba(240, 198, 106, 0.7); }
+.db b { position: absolute; left: 6px; top: 0; font: 500 13px/18px var(--display); font-variant-numeric: tabular-nums; }
+.pgrid table, .vtab, .fixes { border-collapse: collapse; width: 100%; min-width: 0; font-size: 12.5px; }
+.pgrid td, .pgrid th, .vtab td, .vtab th, .fixes td, .fixes th { padding: 5px 6px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; position: static; background: none; }
+.pgrid th, .vtab th { font: 500 10px var(--display); letter-spacing: 1.6px; text-transform: uppercase; color: var(--dim); }
+.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.cost .tot td { color: var(--amber); font-weight: 600; }
+.meas { list-style: none; padding: 0; margin: 6px 0 0; display: grid; gap: 4px; font-size: 12px; }
+.meas li { padding-left: 8px; border-left: 2px solid var(--line-hi); }
+.meas li.ok { border-color: #8fd18f; } .meas li.bad { border-color: #ff8a6a; }
+.vtab a, .ovl a { color: var(--cyan); text-decoration: none; }
+.fixes th { width: 300px; font: 500 13px var(--display); color: var(--fg); }
+.ovl { margin-top: 8px; color: var(--dim); font-size: 12.5px; }
+.ovl summary { cursor: pointer; }
+.qs { color: #c8d1d5; font-size: 13.5px; }
+.mute { color: #6e7a80; }
 @media (max-width: 760px) { header { grid-template-columns: 1fr; } h1 { font-size: 30px; letter-spacing: 4px; } .tally { flex-wrap: wrap; } }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
 </style>
@@ -195,7 +244,9 @@ footer code { font-size: 12px; color: #c8d1d5; word-break: break-all; }
   <div class="tally"><div><b>${entries.length}</b><span>families</span></div><div><b>${prototyped.length}</b><span>looks drawn</span></div><div><b>${singleLook}</b><span>reach 1 look</span></div><div><b>${evoTotal}</b><span>looks to draw*</span></div></div>
 </header>
 
-<h2>Decide first</h2>
+${planSectionHtml(entries, PLANNED, names)}
+
+<h2>Decide first (the first read of the limbs; each is answered in "Flags → fixes" above)</h2>
 <section class="decide">${DECISIONS.map(([h, p, fams]) => `<article><h3>${esc(h)}</h3><p>${esc(p)}</p><nav>${fams.map((f) => `<a href="#${f}">${esc(names[f] ?? f)}</a>`).join('')}</nav></article>`).join('')}</section>
 
 <h2>The limbs</h2>
@@ -209,7 +260,7 @@ footer code { font-size: 12px; color: #c8d1d5; word-break: break-all; }
   ${Object.entries(KINDS).map(([k, v]) => `<button type="button" id="f-${k}" data-flag="${k}" aria-pressed="false">${v}<i>${flagCount[k]}</i></button>`).join('')}
 </div>
 <div class="table"><table>
-  <thead><tr><th>Front · behind</th><th>Limb</th><th>Price</th><th>Numbers</th><th>Teaches when eaten</th><th>Looks its evolutions reach</th><th>Scripted runs</th><th>Flags</th></tr></thead>
+  <thead><tr><th>Front · behind</th><th>Limb</th><th>Price</th><th>Numbers</th><th>Teaches when eaten</th><th>Looks its evolutions reach</th><th>Footprint: now → proposed</th><th>Scripted runs</th><th>Flags</th></tr></thead>
   <tbody>${rows.map(rowHtml).join('')}</tbody>
 </table></div>
 <footer>
@@ -242,4 +293,5 @@ footer code { font-size: 12px; color: #c8d1d5; word-break: break-all; }
 mkdirSync(join(root, 'notes', 'limb-codex'), { recursive: true });
 const out = join(root, 'notes', 'limb-codex', 'limb-codex-sheet.html');
 writeFileSync(out, html);
+writeFileSync(join(root, 'notes', 'FOOTPRINT-PLAN.md'), planMarkdown(entries, PLANNED, names));
 console.log(`${out}  ${(html.length / 1024).toFixed(0)} KB, ${entries.length} limbs, flags: ${JSON.stringify(flagCount)}`);

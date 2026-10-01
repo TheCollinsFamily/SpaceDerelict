@@ -22,6 +22,7 @@ import { organTurn, placeNode, placePlinth } from '../../src/sim/organPolicy';
 import { Rng } from '../../src/sim/rng';
 import { DT, Sim, towerSpec } from '../../src/sim/sim';
 import type { SimConfig, TowerFamily, TowerSpec } from '../../src/sim/types';
+import { SHAPES, footprintOf, type ShapeId } from '../../src/sim/footprint';
 
 const CFG: Omit<SimConfig, 'seed'> = { gridW: 50, gridH: 40, cellPx: 26 };
 const MAX_TICKS = 24000;
@@ -38,6 +39,42 @@ function paid(spec: TowerSpec, span: [number, number]): Partial<TowerSpec> {
     range: spec.range > 0 && spec.range < 1000 ? Math.round(spec.range * k.reach) : spec.range,
   };
 }
+
+/**
+ * The same pay for ANY footprint (Oct 1 2026, notes/FOOTPRINT-PLAN.md): by the cells it takes, three cells
+ * between two and four; a limb already paid for its ground is paid the difference (k(new) / k(old)).
+ */
+const K: Record<number, { hp: number; hit: number; reach: number; wide: number }> = {
+  1: { hp: 1, hit: 1, reach: 1, wide: 1 },
+  2: { hp: 1.6, hit: 1.25, reach: 1.1, wide: 1.1 },
+  3: { hp: 2.0, hit: 1.38, reach: 1.12, wide: 1.18 },
+  4: { hp: 2.4, hit: 1.5, reach: 1.15, wide: 1.25 },
+};
+function paidFor(spec: TowerSpec, to: ShapeId | [number, number]): Partial<TowerSpec> {
+  const from = footprintOf(spec).cells.length;
+  const n = Array.isArray(to) ? to[0] * to[1] : SHAPES[to].cells.length;
+  const a = K[from];
+  const b = K[n];
+  const r = (v: number, k: number) => Math.round(v * k);
+  return {
+    ...(Array.isArray(to) ? { span: to, shape: undefined } : { shape: to, span: undefined }),
+    maxHp: r(spec.maxHp, b.hp / a.hp),
+    damage: spec.damage > 0 ? r(spec.damage, b.hit / a.hit) : spec.damage,
+    aoe: spec.aoe > 0 ? r(spec.aoe, b.wide / a.wide) : spec.aoe,
+    range: spec.range > 0 && spec.range < 1000 ? r(spec.range, b.reach / a.reach) : spec.range,
+  };
+}
+/** The footprint plan of Oct 1 2026 (notes/FOOTPRINT-PLAN.md): only the limbs whose footprint changes. */
+const PLAN: Partial<Record<TowerFamily, ShapeId | [number, number]>> = {
+  ember: [1, 2], ocular: [1, 2], sling: [1, 2], amp: [1, 2], press: [1, 2],
+  lance: 'line3',
+  bombard: [2, 2],
+  mister: 'T', choir: 'T', burster: 'T',
+  lasher: 'L3', quill: 'L3', conduit: 'L3',
+  tangler: 'L4',
+};
+const planOf = (fams: TowerFamily[]): Candidate =>
+  Object.fromEntries(fams.map((f) => [f, paidFor(towerSpec(f), PLAN[f]!)])) as Candidate;
 
 const LONG: [number, number] = [1, 2];
 const BIG: [number, number] = [2, 2];
@@ -56,6 +93,12 @@ const CANDIDATES: Record<string, Candidate> = {
   c7: { ...C2, tangler: BIG },
   c8: { ...C2, frond: BIG },
   c9: { skipper: LONG, lance: LONG, impaler: LONG, mister: BIG, tangler: BIG, frond: BIG },
+  // The Oct 1 2026 plan, whole and in parts (lines / T / L / the new 2x2).
+  plan: planOf(Object.keys(PLAN) as TowerFamily[]),
+  planLines: planOf(['ember', 'ocular', 'sling', 'amp', 'press', 'lance']),
+  planT: planOf(['mister', 'choir', 'burster']),
+  planL: planOf(['lasher', 'quill', 'conduit', 'tangler']),
+  planSquare: planOf(['bombard']),
 };
 
 class RandomPlacer {
@@ -97,7 +140,11 @@ function play(seed: number, smart: boolean) {
   while (sim.outcome === 'playing' && ticks < MAX_TICKS) {
     player.act(sim, DT);
     sim.tick();
-    for (const e of sim.takeEvents()) if (e.kind === 'built' && towerSpec((e as { family: TowerFamily }).family).span) big++;
+    for (const e of sim.takeEvents()) {
+      if (e.kind !== 'built') continue;
+      const s = towerSpec((e as { family: TowerFamily }).family);
+      if (s.span || s.shape) big++;
+    }
     ticks++;
   }
   return { won: sim.outcome === 'won', score: sim.wavesCleared * 1000 + Math.max(0, sim.coreHp), big };

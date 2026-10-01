@@ -170,6 +170,12 @@ export interface TowerSpec {
    * a core part of the strategy in tower defence".)
    */
   span?: [number, number];
+  /**
+   * A SHAPED limb (Collins, Oct 1 2026: "T-shaped (usually for very powerful area-effect things),
+   * L-shaped (like an elbow shape)"): its cells as a polyomino from src/sim/footprint.ts SHAPES, turned
+   * with its facing. Overrides `span`. Absent: `span`, or one cell.
+   */
+  shape?: import('./footprint').ShapeId;
   /** Marrow conduit: copies every bonus within `gather` px into the limb it points at (within `reach`). */
   conduit?: { gather: number; reach: number };
   /**
@@ -321,6 +327,8 @@ export interface Cloud {
   radius: number;
   ttl: number;
   dps: number;
+  /** The limb that made it (a kill by it is put down to that limb in the run stats). */
+  srcId?: number;
 }
 
 /** A grown organ: a shaped footprint on the organ-stage board. */
@@ -450,6 +458,9 @@ export interface Enemy {
   /** Status: taking poisonDps until poisonUntil. Poison ignores armor caps. */
   poisonDps?: number;
   poisonUntil?: number;
+  /** The limbs whose poison / fire it carries (run stats credit a kill by them; no play reads them). */
+  poisonSrc?: number;
+  burnSrc?: number;
   /** Tunneler: underground and untargetable until it surfaces. */
   burrowed?: boolean;
   /** Tunneler surfaces once its flow-distance to the core drops below this. */

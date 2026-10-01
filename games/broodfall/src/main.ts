@@ -6,6 +6,7 @@
  */
 import { Autoplayer } from './sim/autoplayer';
 import { DT, Sim, organSpec, towerSpec } from './sim/sim';
+import { SHAPES, footprintName, footprintOf, isMultiCell, turnsItsGround, type ShapeId } from './sim/footprint';
 import { Renderer, type PlacementPreview } from './render/render';
 import { hideReachTip, reachText, showReachTip } from './ui/reachTip';
 import { IsoRenderer } from './render/isoRender';
@@ -83,6 +84,21 @@ const DIRECTIVES: Record<string, Directive> = {
   harvest: { kind: 'harvest', science: 80 },
 };
 const directive = DIRECTIVES[params.get('directive') ?? ''];
+
+// ?tryShape=lasher:L3,impaler:line3 — try a limb on another footprint (src/sim/footprint.ts SHAPES, or 2x2 /
+// 1x2 / 1x1 for a rectangle): for Collins to feel the footprint plan (notes/FOOTPRINT-PLAN.md) before it is
+// applied, and for tools/shot-footprint.mjs. Nothing is saved; a page without it plays the game as it is.
+for (const pair of (params.get('tryShape') ?? '').split(',').filter(Boolean)) {
+  const [fam, shape] = pair.split(':');
+  const spec = (() => { try { return towerSpec(fam as TowerFamily); } catch { return undefined; } })();
+  if (!spec || !shape) continue;
+  const rect = shape.match(/^(\d)x(\d)$/);
+  if (rect) {
+    delete spec.shape;
+    if (rect[1] === '1' && rect[2] === '1') delete spec.span;
+    else spec.span = [Number(rect[1]), Number(rect[2])];
+  } else if (shape in SHAPES) spec.shape = shape as ShapeId;
+}
 
 // ---------- persistent meta (ship progression) ----------
 
@@ -215,9 +231,21 @@ const nextFacing = (d: RootDir): RootDir => FACING_ORDER[(FACING_ORDER.indexOf(d
 function selectedIsDirectional(): boolean {
   const fam = selectedCard !== null ? sim.hand[selectedCard]?.family : undefined;
   if (fam === undefined) return false;
-  const span = towerSpec(fam).span;
-  // A limb that is longer than it is wide is turned to fit, as one that aims one way is turned to aim.
-  return !!towerSpec(fam).directional || (span !== undefined && span[0] !== span[1]);
+  // A limb that is longer than it is wide (or shaped: a T, an L) is turned to fit, as one that aims one way is turned to aim.
+  return !!towerSpec(fam).directional || turnsItsGround(towerSpec(fam));
+}
+
+/** The last board cell the pointer was over (the R key turns the limb in hand there). */
+let lastPointerCell: number | null = null;
+
+/** Turn the limb being placed a quarter (right-click, R, Shift + wheel, the TURN button): its ground is placed again and checked again. */
+function turnInHand(cell: number | null, back = false): void {
+  if (selectedCard === null) return;
+  const at = cell ?? lastPointerCell ?? sim.map.coreCell;
+  const now = currentPlaceFacing(at);
+  placeFacing = back ? nextFacing(nextFacing(nextFacing(now))) : nextFacing(now);
+  placePreview(at);
+  updateHint();
 }
 
 /** The ground a build at this cell would take, and where it could not be built, the ground it would want. */
@@ -225,12 +253,11 @@ function groundAt(cell: number, fam: TowerFamily | undefined, facing: RootDir | 
   const legal = sim.groundFor(cell, fam, facing);
   if (legal) return { cells: legal, valid: true };
   if (!fam) return { cells: [cell], valid: false };
-  const [sw, sh] = sim.spanOf(fam, facing);
+  const fp = footprintOf(towerSpec(fam), facing ?? (turnsItsGround(towerSpec(fam)) ? 'S' : undefined));
   const w = sim.cfg.gridW;
-  const x0 = Math.min(cell % w, w - sw);
-  const y0 = Math.min(Math.floor(cell / w), sim.cfg.gridH - sh);
-  const cells: number[] = [];
-  for (let y = y0; y < y0 + sh; y++) for (let x = x0; x < x0 + sw; x++) cells.push(y * w + x);
+  const x0 = Math.min(cell % w, w - fp.w);
+  const y0 = Math.min(Math.floor(cell / w), sim.cfg.gridH - fp.h);
+  const cells = fp.cells.map(([x, y]) => (y0 + y) * w + x0 + x);
   return { cells, valid: false };
 }
 
@@ -289,6 +316,8 @@ const decreeBox = new DecreeBox(() => sim, (cmd) => sim.issue(cmd), (text) => hu
 let hoverBurrow = false;
 
 function updateHint(): void {
+  // The TURN button shows while a limb that turns its ground or its aim is in hand.
+  document.getElementById('place-turn')?.classList.toggle('hidden', !(selectedCard !== null && armedOrgan === null && selectedIsDirectional()));
   if (armedPlinth) {
     hud.setHint('PLINTH: click one of your limbs to raise it a level (a big limb rises whole), or a bare roof your creep holds to raise the roof — free · higher reaches further · Esc cancels');
   } else if (armedNode !== null && sim.nodeStock[armedNode]) {
@@ -330,12 +359,12 @@ function updateHint(): void {
       + (sim.phase === 'siege' ? ` · SURGERY UNDER FIRE: grafting mid-siege takes ${(B.graftSeconds + B.graftPerPip * sim.pendingPips.length).toFixed(1)}s — it holds fire and bleeds double (between waves the graft takes at once)` : ''));
   } else if (selectedCard !== null) {
     const fam = sim.hand[selectedCard]?.family;
-    const span = fam ? towerSpec(fam).span : undefined;
-    const turn = ' · RIGHT-CLICK turns it a quarter · Esc cancels';
+    const span = fam && isMultiCell(towerSpec(fam)) ? towerSpec(fam) : undefined;
+    const turn = ' · RIGHT-CLICK or R turns it a quarter · Esc cancels';
     hud.setHint(selectedIsDirectional()
       ? `place it — it faces ${placeFacing ?? (fam && towerSpec(fam).directional ? 'the nearest gate' : 'the way it fits')}${turn}`
       : span
-        ? `a BIG limb: it needs ${span[0]} by ${span[1]} cells of one flat creeped roof${placeFacing ? ` · faces ${placeFacing}` : ''}${turn} · Q and E turn the view`
+        ? `a BIG limb: it needs ${footprintName(span)} of one flat creeped roof${placeFacing ? ` · faces ${placeFacing}` : ''}${turn} · Q and E turn the view`
       : fam === 'spine' || fam === 'swamp'
         ? `plug a street — the swarm must go through it${turn}`
         : `place on a creeped block by a street — higher roofs reach further (+10% a level)${placeFacing ? ` · faces ${placeFacing}` : ''}${turn} — or click one of your limbs to feed it in`);
@@ -1243,6 +1272,8 @@ async function boot(): Promise<void> {
   renderer.app.canvas.addEventListener('wheel', (ev) => {
     if (!(renderer instanceof IsoRenderer)) return;
     ev.preventDefault();
+    // Shift + wheel turns the limb in hand (the wheel alone zooms).
+    if (ev.shiftKey && selectedCard !== null) { turnInHand(null, ev.deltaY > 0); return; }
     const z = loadSettings().zoomStep; // the settings' zoom speed
     renderer.zoomAt(ev.clientX, ev.clientY, ev.deltaY < 0 ? z : 1 / z);
   }, { passive: false });
@@ -1268,6 +1299,8 @@ async function boot(): Promise<void> {
     const turn = turnOf(loadSettings(), ev.key); // Q and E unless the settings say other keys
     if (turn) renderer.turnBy(turn);
     else if ((ev.key === 'c' || ev.key === 'C') && !ev.ctrlKey && !ev.metaKey && started && !debriefShown && !settingsOpen()) openRunCodex();
+    // R turns the limb in hand a quarter (Shift + R the other way): its footprint and its field of fire.
+    else if ((ev.key === 'r' || ev.key === 'R') && !ev.ctrlKey && !ev.metaKey && selectedCard !== null) turnInHand(null, ev.shiftKey);
     else if (ev.key === 'Home') renderer.resetView();
     else if (ev.key === 'ArrowLeft') renderer.panBy(step, 0);
     else if (ev.key === 'ArrowRight') renderer.panBy(-step, 0);
@@ -1281,6 +1314,8 @@ async function boot(): Promise<void> {
   viewButton('view-turn-left', (r) => r.turnBy(-1));
   viewButton('view-turn-right', (r) => r.turnBy(1));
   viewButton('view-home', (r) => r.resetView());
+  // The TURN button (for a touch screen, or a player who has not found R): turns the limb in hand.
+  document.getElementById('place-turn')?.addEventListener('click', () => turnInHand(null));
   // The settings (src/ui/settings.ts): a ⚙ beside the view buttons; the run pauses while it is open.
   addRunButton(() => openRunSettings());
   // The Limb Codex: the ▤ beside it, the C key, and CODEX on a built limb's panel (at that limb).
@@ -1299,11 +1334,8 @@ async function boot(): Promise<void> {
     ev.preventDefault();
     const w = renderer.toWorld(ev.clientX, ev.clientY);
     if (selectedCard !== null && armedOrgan === null && hoverDonorId === null) {
-      const cell = sim.cellAt(w.x, w.y);
-      placeFacing = nextFacing(currentPlaceFacing(cell));
-      // The ground a long limb takes turns with it: placed again, and checked again.
-      placePreview(cell);
-      updateHint();
+      // The ground a long or shaped limb takes turns with it: placed again, and checked again.
+      turnInHand(sim.cellAt(w.x, w.y));
       return;
     }
     if (selectedCard === null && armedOrgan === null && armedThrower === null) {
@@ -1312,7 +1344,7 @@ async function boot(): Promise<void> {
       if (t) {
         // A long limb that is not directional keeps its ground: it turns end for end.
         const [sw, sh] = sim.spanOf(t.family, t.facing);
-        const long = !towerSpec(t.family).directional && sw !== sh;
+        const long = !towerSpec(t.family).directional && !towerSpec(t.family).shape && sw !== sh;
         const from = t.facing ?? (towerSpec(t.family).directional ? 'N' : 'S');
         sim.issue({ kind: 'set-facing', towerId: t.id, dir: long ? nextFacing(nextFacing(from)) : nextFacing(from) });
         hud.inspectedId = t.id;
@@ -1407,6 +1439,7 @@ async function boot(): Promise<void> {
         return;
       }
     }
+    lastPointerCell = cell;
     placePreview(cell);
     const pv = renderer.preview as PlacementPreview | null;
     showReachTip(ev.clientX, ev.clientY, pv?.family

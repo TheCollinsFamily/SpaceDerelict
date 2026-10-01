@@ -7,6 +7,7 @@
  * the street network, digesting adjacent buildings into buildable rubble.
  */
 import { Rng } from './rng';
+import { footprintOf, footprintName, isMultiCell, turnsItsGround } from './footprint';
 import {
   CellType, CityMap, DraftOffer, allDistance, computeFlow, createBoard,
   PLATE, draftOffers, frontierGates, isPassable, legalDrafts, slotOfCell, stampPlate,
@@ -362,6 +363,8 @@ export class Sim {
   caltrops: Caltrop[] = [];
   /** Toxic pheromone clouds (lure pulses, lure-pipped impacts). */
   clouds: Cloud[] = [];
+  /** Every limb ever grown this run, by id: a kill by its poison, fire or cloud after it is gone is still put down to its family (stats only). */
+  private creditFamilyOf = new Map<number, TowerFamily>();
   /** The mothers' spawn, fighting on your side in the streets. */
   broodlings: Broodling[] = [];
   /** Recent lightning arcs / sniper beams, for the renderer (fade fast). */
@@ -898,21 +901,16 @@ export class Sim {
     groundRange: number;
   } {
     const ground = cells.length > 0 ? cells : [0];
-    const pos = { x: 0, y: 0 };
-    for (const c of ground) {
-      const p = this.cellCenter(c);
-      pos.x += p.x / ground.length;
-      pos.y += p.y / ground.length;
-    }
     const spec = towerSpec(family);
     const [sw, sh] = this.spanOf(family, facing);
+    const pos = this.hubPos(family, spec.directional || turnsItsGround(spec) ? (facing ?? 'S') : facing, ground);
     const ghost: Tower = {
       id: -1, family, pos, cell: ground[0], hp: spec.maxHp, maxHp: spec.maxHp, pips: [...pips], cooldown: 0, kills: 0,
     };
     if (ground.length > 1) ghost.cells = [...ground];
     // The facing addTower would give it.
     if (spec.directional) ghost.facing = facing ?? this.facingTowardGate(pos);
-    else if (sw !== sh) ghost.facing = facing ?? 'S';
+    else if (sw !== sh || spec.shape) ghost.facing = facing ?? 'S';
     else if (facing) ghost.facing = facing;
     this.towers.push(ghost);
     let s: TowerStats;
@@ -995,10 +993,10 @@ export class Sim {
    */
   placementFor(cell: number, family?: TowerFamily, facing?: RootDir): { cells: number[]; facing?: RootDir } | null {
     if (cell < 0 || cell >= this.map.cells.length) return null;
-    const span = family ? towerSpec(family).span : undefined;
-    if (!family || !span) return this.canBuildOn(cell, family) ? { cells: [cell], facing } : null;
+    const spec = family ? towerSpec(family) : undefined;
+    if (!family || !spec || !isMultiCell(spec)) return this.canBuildOn(cell, family) ? { cells: [cell], facing } : null;
     let ways: Array<RootDir | undefined> = [facing];
-    if (!facing && span[0] !== span[1]) {
+    if (!facing && turnsItsGround(spec)) {
       let first: RootDir = towerSpec(family).directional ? this.facingTowardGate(this.cellCenter(cell)) : 'S';
       // A wall in a street lies ACROSS the street if it can: across is what stops a column.
       if (isPassable(this.map.cells[cell])) {
@@ -1030,11 +1028,45 @@ export class Sim {
     return t === CellType.Block;
   }
 
-  /** How many cells a limb of this family covers, across and down the board, facing this way. */
+  /** How many cells a limb of this family covers, across and down the board, facing this way (its footprint's bounding box). */
   spanOf(family: TowerFamily, facing?: RootDir): [number, number] {
-    const span = towerSpec(family).span;
-    if (!span) return [1, 1];
-    return facing === 'E' || facing === 'W' ? [span[1], span[0]] : [span[0], span[1]];
+    const fp = footprintOf(towerSpec(family), facing);
+    return [fp.w, fp.h];
+  }
+
+  /**
+   * The cells a limb of this family stands on, facing this way, when the FIRST of them (row-major, the
+   * one it is filed under as `cell`) is this cell; null if any of them would be off the board.
+   */
+  cellsFromFirst(first: number, family: TowerFamily, facing?: RootDir): number[] | null {
+    const fp = footprintOf(towerSpec(family), facing);
+    const w = this.cfg.gridW;
+    const x0 = (first % w) - fp.cells[0][0];
+    const y0 = Math.floor(first / w) - fp.cells[0][1];
+    if (x0 < 0 || y0 < 0 || x0 + fp.w > w || y0 + fp.h > this.cfg.gridH) return null;
+    return fp.cells.map(([x, y]) => (y0 + y) * w + x0 + x);
+  }
+
+  /**
+   * Where a limb on these cells stands for its reach, aim and effects: the middle of its HUB cells (a
+   * rectangle's hub is all of it; a T's the junction of its bar; an L's its elbow; src/sim/footprint.ts).
+   */
+  hubPos(family: TowerFamily, facing: RootDir | undefined, cells: number[]): Vec {
+    const fp = footprintOf(towerSpec(family), facing);
+    const w = this.cfg.gridW;
+    let mx = Infinity;
+    let my = Infinity;
+    for (const c of cells) { mx = Math.min(mx, c % w); my = Math.min(my, Math.floor(c / w)); }
+    const hub = fp.cells.length === cells.length && fp.hub.length < fp.cells.length
+      ? fp.hub.map(([x, y]) => (my + y) * w + mx + x)
+      : cells;
+    const pos = { x: 0, y: 0 };
+    for (const c of hub) {
+      const p = this.cellCenter(c);
+      pos.x += p.x / hub.length;
+      pos.y += p.y / hub.length;
+    }
+    return pos;
   }
 
   /**
@@ -1044,16 +1076,19 @@ export class Sim {
    * and one height; of several that would do, the first from the north-west.
    */
   footprintAt(cell: number, family: TowerFamily, facing: RootDir | undefined, ok: (cell: number) => boolean): number[] | null {
-    const [sw, sh] = this.spanOf(family, facing);
-    if (sw === 1 && sh === 1) return ok(cell) ? [cell] : null;
+    const fp = footprintOf(towerSpec(family), facing);
+    const sw = fp.w;
+    const sh = fp.h;
+    if (fp.cells.length === 1) return ok(cell) ? [cell] : null;
     const w = this.cfg.gridW;
     const px = cell % w;
     const py = Math.floor(cell / w);
+    // Every placement of the shape (its bounding box from the north-west) that HOLDS the cell pointed at.
     for (let y0 = py - sh + 1; y0 <= py; y0++) {
       for (let x0 = px - sw + 1; x0 <= px; x0++) {
         if (x0 < 0 || y0 < 0 || x0 + sw > w || y0 + sh > this.cfg.gridH) continue;
-        const cells: number[] = [];
-        for (let y = y0; y < y0 + sh; y++) for (let x = x0; x < x0 + sw; x++) cells.push(y * w + x);
+        if (!fp.cells.some(([x, y]) => x0 + x === px && y0 + y === py)) continue;
+        const cells = fp.cells.map(([x, y]) => (y0 + y) * w + x0 + x);
         const kind = this.map.cells[cells[0]];
         const high = this.map.heights[cells[0]];
         if (cells.every((c) => ok(c) && this.map.cells[c] === kind && this.map.heights[c] === high)) return cells;
@@ -1636,7 +1671,7 @@ export class Sim {
         if (!card) return { ok: false, err: 'no such card' };
         const spec = towerSpec(card.family);
         const place = this.placementFor(cmd.cell, card.family, cmd.facing);
-        if (!place) return { ok: false, err: spec.span ? `it needs ${spec.span[0]} by ${spec.span[1]} cells of one flat roof your creep holds` : 'cell not buildable' };
+        if (!place) return { ok: false, err: isMultiCell(spec) ? `it needs ${footprintName(spec)} of one flat roof your creep holds` : 'cell not buildable' };
         const ground = place.cells;
         if (cmd.cannibalizeTowerId !== undefined) {
           // Legacy atomic path (autoplayer/tests): butcher-then-build in one command.
@@ -1657,7 +1692,7 @@ export class Sim {
           this.stats.cannibalized += 1;
         }
         if (!card.free) this.pay(spec.cost);
-        const grown = this.addTower(card.family, ground[0], pips, place.facing ?? cmd.facing);
+        const grown = this.addTower(card.family, ground[0], pips, place.facing ?? cmd.facing, ground);
         // SURGERY UNDER FIRE: grafting what was eaten takes time, and mid-siege that time is
         // spent in the open — the new limb holds fire, bleeds double, and draws the climbers.
         if (pips.length > 0 && this.phase === 'siege') {
@@ -1862,13 +1897,19 @@ export class Sim {
         if (!t) return { ok: false, err: 'no such limb' };
         const spec = towerSpec(t.family);
         const [sw, sh] = this.spanOf(t.family, t.facing);
-        if (!spec.directional && sw !== sh) {
+        if (!spec.directional && !spec.shape && sw !== sh) {
           const axisNS = (d: RootDir | undefined) => d === 'N' || d === 'S' || d === undefined;
           if (axisNS(cmd.dir) !== axisNS(t.facing)) return { ok: false, err: 'a long limb turns end for end only' };
         }
         // A LONG limb that aims (a creep lance, a skipping mortar) lies along its aim: a quarter
         // turn lays it the other way on the same roof, pivoting on its own ground, or is refused.
-        if (spec.directional && sw !== sh && this.spanOf(t.family, cmd.dir)[0] !== sw) {
+        // A SHAPED limb (a T, an L) takes new ground on every turn the same way (src/sim/footprint.ts).
+        const sameGround = (() => {
+          const a = footprintOf(spec, t.facing);
+          const b = footprintOf(spec, cmd.dir);
+          return a.w === b.w && a.h === b.h && a.cells.every(([x, y], i) => b.cells[i][0] === x && b.cells[i][1] === y);
+        })();
+        if ((spec.shape && !sameGround) || (spec.directional && sw !== sh && this.spanOf(t.family, cmd.dir)[0] !== sw)) {
           const own = new Set(this.cellsOf(t));
           const kind = this.map.cells[t.cell];
           const high = this.map.heights[t.cell];
@@ -1879,14 +1920,12 @@ export class Sim {
             cells = this.footprintAt(pivot, t.family, cmd.dir, ok);
             if (cells) break;
           }
-          if (!cells) return { ok: false, err: 'no room to turn it that way here: a long limb lies along its aim' };
+          if (!cells) return { ok: false, err: spec.shape ? `no room to turn it that way here: ${footprintName(spec)} needs new ground to turn` : 'no room to turn it that way here: a long limb lies along its aim' };
           for (const c of own) this.occupied.delete(c);
           for (const c of cells) this.occupied.set(c, { kind: 't', id: t.id });
-          const [nw, nh] = this.spanOf(t.family, cmd.dir);
-          const first = this.cellCenter(cells[0]);
           t.cell = cells[0];
           t.cells = cells;
-          t.pos = { x: first.x + ((nw - 1) * this.cfg.cellPx) / 2, y: first.y + ((nh - 1) * this.cfg.cellPx) / 2 };
+          t.pos = this.hubPos(t.family, cmd.dir, cells);
           for (const s of this.creepSources) {
             if (s.kind !== 'line' || s.ownerId !== t.id) continue;
             s.cell = t.cell;
@@ -2318,7 +2357,7 @@ export class Sim {
 
   /** The cells a bud or a copy of this family would stand on at this cell, or null. */
   private freeGroundFor(cell: number, family: TowerFamily): number[] | null {
-    if (!towerSpec(family).span) return this.canPlaceFreeOn(cell, family) ? [cell] : null;
+    if (!isMultiCell(towerSpec(family))) return this.canPlaceFreeOn(cell, family) ? [cell] : null;
     return this.footprintAt(cell, family, undefined, (c) => this.canPlaceFreeOn(c, family));
   }
 
@@ -2331,23 +2370,24 @@ export class Sim {
   }
 
   /** Put a limb on the board (shared by builds, buds and recoveries). */
-  private addTower(family: TowerFamily, cell: number, pips: ModPip[], facing?: RootDir): Tower {
+  private addTower(family: TowerFamily, cell: number, pips: ModPip[], facing?: RootDir, ground?: number[]): Tower {
     const spec = towerSpec(family);
-    // A big limb: `cell` is the first of its cells, and it stands in the middle of them all.
+    // A big or shaped limb: `cell` is the first of its cells (row-major), and it stands on its hub
+    // (a rectangle: the middle of them all; src/sim/footprint.ts).
     const [sw, sh] = this.spanOf(family, facing);
-    const cells: number[] = [];
-    for (let y = 0; y < sh; y++) for (let x = 0; x < sw; x++) cells.push(cell + y * this.cfg.gridW + x);
-    const first = this.cellCenter(cell);
-    const pos = { x: first.x + ((sw - 1) * this.cfg.cellPx) / 2, y: first.y + ((sh - 1) * this.cfg.cellPx) / 2 };
+    const lies = spec.shape ? (facing ?? 'S') : facing;
+    const cells = ground && ground.length > 0 ? [...ground] : (this.cellsFromFirst(cell, family, lies) ?? [cell]);
+    const pos = this.hubPos(family, lies, cells);
     const tower: Tower = {
       id: this.nextId++, family, pos, cell, hp: spec.maxHp, maxHp: spec.maxHp, pips, cooldown: 0, kills: 0,
     };
     if (cells.length > 1) tower.cells = cells;
+    this.creditFamilyOf.set(tower.id, family);
     tower.maxHp = this.statsOf(tower).maxHp;
     tower.hp = tower.maxHp;
     if (spec.directional) tower.facing = facing ?? this.facingTowardGate(pos);
-    // A limb that is longer than it is wide lies the way it was turned, whatever it aims at.
-    else if (sw !== sh) tower.facing = facing ?? 'S';
+    // A limb that is longer than it is wide (or shaped) lies the way it was turned, whatever it aims at.
+    else if (sw !== sh || spec.shape) tower.facing = facing ?? 'S';
     // Any other limb turned by the player before it was placed keeps that way (it is what is
     // drawn: a lopsided limb faces where it was turned; the sim reads nothing from it).
     else if (facing) tower.facing = facing;
@@ -2819,7 +2859,7 @@ export class Sim {
    */
   payloadHit(fx: HitFx, e: Enemy, damage = fx.damage, dirX = 0, dirY = 0): void {
     if (!this.enemies.includes(e)) return;
-    this.applyHitEffects(e, fx);
+    this.applyHitEffects(e, fx, fx.srcId);
     if (fx.shred > 0 || fx.cloud > 0) e.revealedUntil = this.time + B.revealSeconds; // mist and musk cling
     if (fx.grounding > 0 && enemySpec(e.kind).flies) {
       e.groundedUntil = Math.max(e.groundedUntil ?? 0, this.time + fx.grounding * this.geneMods.groundingMult);
@@ -2839,7 +2879,7 @@ export class Sim {
       this.killEnemy(e.id, fx.yieldMult, false, fx.srcId);
     }
     const died = !this.enemies.includes(e);
-    if (fx.cloud > 0) this.spawnCloud(at, B.cloudRadius, fx.cloud);
+    if (fx.cloud > 0) this.spawnCloud(at, B.cloudRadius, fx.cloud, fx.srcId);
     if (died && fx.caltrop > 0) this.dropCaltrop(at, fx.caltrop);
     if (!died && fx.chains > 0) this.chainArcs(e, fx.chains, dmg, fx.yieldMult, fx.capBonus);
     if (!died && fx.knock > 0 && (dirX !== 0 || dirY !== 0)) this.knockBack(e, dirX, dirY, fx.knock);
@@ -2873,8 +2913,8 @@ export class Sim {
     }
   }
 
-  spawnCloud(at: Vec, radius: number, dps: number): void {
-    this.clouds.push({ id: this.nextId++, pos: { ...at }, radius, ttl: B.cloudTtl, dps });
+  spawnCloud(at: Vec, radius: number, dps: number, srcId?: number): void {
+    this.clouds.push({ id: this.nextId++, pos: { ...at }, radius, ttl: B.cloudTtl, dps, ...(srcId !== undefined ? { srcId } : {}) });
   }
 
   /** Caltrops only take root on walkable ground (a street or plaza). */
@@ -2911,7 +2951,7 @@ export class Sim {
           this.stats.matingStuns += 1;
         }
         e.hp -= c.dps * DT; // a gas, not a hit: armor and shells don't stop it
-        if (e.hp <= 0) this.killEnemy(e.id, 1, false, undefined, 'cloud');
+        if (e.hp <= 0) this.killEnemy(e.id, 1, false, undefined, 'cloud', c.srcId);
       }
     }
     this.clouds = this.clouds.filter((c) => c.ttl > 0);
@@ -2947,9 +2987,10 @@ export class Sim {
       slowMult: number; slowDur: number; poisonDps: number; poisonDur: number;
       shred?: number; shredDur?: number; rootDur?: number; burnDps?: number; burnDur?: number;
     },
+    srcId?: number,
   ): void {
     // Burn: the hottest fire wins and the clock refreshes (poison, by contrast, adds).
-    if (fx.burnDps && fx.burnDps > 0 && fx.burnDur && fx.burnDur > 0) this.ignite(e, fx.burnDps, fx.burnDur);
+    if (fx.burnDps && fx.burnDps > 0 && fx.burnDur && fx.burnDur > 0) this.ignite(e, fx.burnDps, fx.burnDur, srcId);
     let slowMult = fx.slowMult;
     let slowDur = fx.slowDur;
     if (fx.rootDur && fx.rootDur > 0) {
@@ -2966,6 +3007,7 @@ export class Sim {
       const active = e.poisonUntil !== undefined && e.poisonUntil > this.time;
       e.poisonDps = (active ? e.poisonDps ?? 0 : 0) + fx.poisonDps;
       e.poisonUntil = this.time + fx.poisonDur;
+      if (srcId !== undefined) e.poisonSrc = srcId; // who is credited if the poison kills it (stats only)
     }
     if (fx.shred && fx.shred > 0 && fx.shredDur && fx.shredDur > 0) {
       const active = e.shredUntil !== undefined && e.shredUntil > this.time;
@@ -2975,8 +3017,9 @@ export class Sim {
   }
 
   /** Set a body burning (hottest fire wins; the clock refreshes). Fire lights up the cloaked. */
-  ignite(e: Enemy, dps: number, dur: number): void {
+  ignite(e: Enemy, dps: number, dur: number, srcId?: number): void {
     const active = e.burnUntil !== undefined && e.burnUntil > this.time;
+    if (srcId !== undefined) e.burnSrc = srcId; // who is credited if the fire kills it (stats only)
     e.burnDps = active ? Math.max(e.burnDps ?? 0, dps) : dps;
     e.burnUntil = Math.max(active ? e.burnUntil ?? 0 : 0, this.time + dur);
     e.burnSpreadAt ??= this.time + B.burnSpreadInterval;
@@ -2997,11 +3040,11 @@ export class Sim {
       for (const o of this.enemies) {
         if (o === e || o.burrowed || (o.burnUntil !== undefined && o.burnUntil > this.time)) continue;
         if (dist(o.pos, e.pos) > B.burnSpreadRadius) continue;
-        this.ignite(o, e.burnDps * this.geneMods.burnSpreadFrac, left);
+        this.ignite(o, e.burnDps * this.geneMods.burnSpreadFrac, left, e.burnSrc);
       }
     }
     if (e.hp <= 0) {
-      this.killEnemy(e.id, 1, false, undefined, 'burn');
+      this.killEnemy(e.id, 1, false, undefined, 'burn', e.burnSrc);
       return true;
     }
     return false;
@@ -3318,7 +3361,7 @@ export class Sim {
       // Blight keeps eating whoever carries it (and slips under armor plates).
       if (e.poisonUntil !== undefined && e.poisonUntil > this.time && e.poisonDps) {
         e.hp -= e.poisonDps * DT;
-        if (e.hp <= 0) { this.killEnemy(e.id, 1, false, undefined, 'poison'); continue; }
+        if (e.hp <= 0) { this.killEnemy(e.id, 1, false, undefined, 'poison', e.poisonSrc); continue; }
       }
       // A martyr's fuse runs out: it detonates among its own.
       if (e.sleeperAt !== undefined && this.time >= e.sleeperAt) {
@@ -3919,7 +3962,7 @@ export class Sim {
 
     if (t.family === 'lasher' || t.family === 'maw') {
       if (t.family === 'maw' && target.hp <= s.eatThreshold) {
-        this.eatEnemy(target);
+        this.eatEnemy(target, t.id);
         return;
       }
       const at = { ...target.pos };
@@ -4159,7 +4202,7 @@ export class Sim {
         t.cooldown = ph.interval / stats.tempo;
         const radius = ph.radius + (stats.aoe - towerSpec('lure').aoe);
         for (let k = 0; k < stats.volley; k++) {
-          this.spawnCloud({ x: near.pos.x + k * 10, y: near.pos.y }, radius, ph.dps * stats.potency + stats.cloud);
+          this.spawnCloud({ x: near.pos.x + k * 10, y: near.pos.y }, radius, ph.dps * stats.potency + stats.cloud, t.id);
         }
         // Its eaten verbs ride the pulse onto everything the cloud blooms over.
         this.blast(near.pos, radius, { ...fxOf(t, stats, 0), cloud: 0 }, 0, 'ground');
@@ -4309,14 +4352,20 @@ export class Sim {
     if (e.hp <= 0) this.killEnemy(e.id, yieldMult, false, srcId);
   }
 
-  private eatEnemy(e: Enemy): void {
+  private eatEnemy(e: Enemy, byId?: number): void {
     this.biomass += B.biomassPerEat;
     if (enemySpec(e.kind).caste === 'royal') this.stats.royalsEaten += 1;
     this.events.push({ kind: 'eaten', enemy: e.kind });
-    this.killEnemy(e.id, 0, true);
+    this.killEnemy(e.id, 0, true, undefined, undefined, byId);
   }
 
-  private killEnemy(id: number, yieldMult: number, eaten: boolean, srcId?: number, cause?: string): void {
+  /**
+   * `creditId` (Oct 1 2026): the limb a kill by poison, fire, a cloud or a swallow is put down to, IN THE
+   * RUN STATS ONLY (killsByFamily). The limb's own `kills` (what Consort's Favour and the scripted player
+   * read) still counts its direct hits alone, so crediting changes no play: it only stops a Maw or a Blight
+   * Vent showing 0 kills in the measures (notes/limb-codex/).
+   */
+  private killEnemy(id: number, yieldMult: number, eaten: boolean, srcId?: number, cause?: string, creditId?: number): void {
     const i = this.enemies.findIndex((e) => e.id === id);
     if (i < 0) return;
     const e = this.enemies[i];
@@ -4332,6 +4381,13 @@ export class Sim {
     if (killer) {
       st.killsByFamily[killer.family] = (st.killsByFamily[killer.family] ?? 0) + 1;
       killer.kills += 1;
+    } else if (creditId !== undefined) {
+      const credited = this.towers.find((t) => t.id === creditId);
+      if (credited) st.killsByFamily[credited.family] = (st.killsByFamily[credited.family] ?? 0) + 1;
+      else if (this.creditFamilyOf.has(creditId)) {
+        const fam = this.creditFamilyOf.get(creditId)!;
+        st.killsByFamily[fam] = (st.killsByFamily[fam] ?? 0) + 1;
+      }
     }
     if (why === 'burn' && this.gates.some((g) => dist(this.cellCenter(g), e.pos) <= 4 * this.cfg.cellPx)) st.gateBurnKills += 1;
     if (e.kind === 'royal') {
@@ -4362,13 +4418,11 @@ export class Sim {
     if (e.carrying) {
       st.limbsRecovered = (st.limbsRecovered ?? 0) + 1;
       const c = e.carrying;
-      const [sw, sh] = this.spanOf(c.family, c.facing);
-      const ground: number[] = [];
-      for (let y = 0; y < sh; y++) for (let x = 0; x < sw; x++) ground.push(c.cell + y * this.cfg.gridW + x);
+      const ground = this.cellsFromFirst(c.cell, c.family, towerSpec(c.family).shape ? (c.facing ?? 'S') : c.facing) ?? [c.cell];
       if (ground.every((g) => !this.occupied.has(g) && g !== this.map.coreCell)) {
         if (ground.length > 1) {
           // A big limb re-roots as it is built: on all of its cells, in the middle of them.
-          const tower = this.addTower(c.family, c.cell, c.pips, c.facing);
+          const tower = this.addTower(c.family, c.cell, c.pips, c.facing, ground);
           tower.priority = c.priority;
           tower.casteFocus = c.casteFocus;
         } else {
