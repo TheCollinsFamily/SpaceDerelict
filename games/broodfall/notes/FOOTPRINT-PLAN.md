@@ -8,13 +8,13 @@ The engine for every shape is built and on main (`src/sim/footprint.ts`; HANDOFF
 
 | Footprint | Now | Proposed |
 |---|---|---|
-| One cell | 26 | 15 |
+| One cell | 27 | 16 |
 | Line | 4 | 9 |
 | Square | 7 | 6 |
 | T | 0 | 3 |
 | L (elbow) | 0 | 4 |
 
-One cell goes from 26 of 37 to 15 (under half).
+One cell goes from 27 of 38 to 16 (under half).
 
 ## Every limb
 
@@ -31,7 +31,8 @@ One cell goes from 26 of 37 to 15 (under half).
 | Impaler | line of 2 | kept | A harpoon gun lies along its two cells. Unchanged footprint; its picture was the problem. | A long harpoon rail lying the length of both cells, drawn at the size of its ground. |
 | Choir Node | 1 cell | **T of 4** | An aura over its neighbours is an area effect: three organ pipes on a bar, a bellows stem; the aura comes from the junction. | Three organ pipes on a bar and a bellows stem. |
 | Spore Sling | 1 cell | **line of 2** | A catapult arm lies along two cells and throws the way it lies. | A sling arm the length of its two cells. |
-| Broodmother | 2x2 square | kept | The Broodmother Den (Oct 1: it bears a Broodmother UNIT that broods or fights): a big, protected nest stays a big square; its unit spawns on the street beside any of its cells. |  |
+| Broodmother Den | 2x2 square | kept | The Broodmother Den (Oct 1: it bears a Broodmother UNIT that broods or fights): a big, protected nest stays a big square; its unit spawns on the street beside any of its cells. |  |
+| Brood Pit | 1 cell | kept | The Brood Pit (new Oct 1): a cheap spawner of three warriors. One cell keeps it cheap to place anywhere by a street. |  |
 | Digestive Swamp | 1 cell | kept | A pit in the street; one cell keeps it a plug. |  |
 | Galvanic Frond | 2x2 square | kept | A big tesla frond. Unchanged. |  |
 | Bile Lobber | 1 cell | kept | Kept small and cheap, with a NEW verb: a quick aimed glob that leaves an acid puddle in the street (a short ground zone). The Bombard becomes the one big siege gun. | A bile sac on a sling arm (nothing like the Spitter's mouth on a stalk). |
@@ -112,8 +113,8 @@ Shown by an overlay instead (the game draws the ring, lane, strip or blast): Bur
 
 - Bases redrawn with a view from behind: 21, $61
 - Views from behind for engines that point: 5, $7
-- Upgrade looks, only the reachable ones, at the new footprints: 98 drawings, $255 (of which spatial variants needing their own drawing: 13, $38)
-- **Total ~$323, ~$390 with re-rolls** (UPGRADE-LOOKS.md rollout A was ~$350-400 on the old footprints).
+- Upgrade looks, only the reachable ones, at the new footprints: 99 drawings, $257 (of which spatial variants needing their own drawing: 13, $38)
+- **Total ~$325, ~$390 with re-rolls** (UPGRADE-LOOKS.md rollout A was ~$350-400 on the old footprints).
 
 ## Flags → fixes (the old sheet's problems, pre-addressed)
 

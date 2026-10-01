@@ -68,7 +68,7 @@ function flagsOf(e) {
   return f;
 }
 
-const KINDS = { art: 'Art', looks: 'Looks', role: 'Role', balance: 'Balance', words: 'Words' };
+const KINDS = { art: 'Art', looks: 'Looks', role: 'Role', balance: 'Balance', words: 'Words', design: 'Design' };
 const rows = entries.map((e) => ({ e, flags: flagsOf(e), t: thumbs[e.family] ?? { looks: {} } }));
 const flagCount = Object.fromEntries(Object.keys(KINDS).map((k) => [k, rows.filter((r) => r.flags.some((f) => f[0] === k)).length]));
 const prototyped = rows.filter((r) => Object.keys(r.t.looks).length).map((r) => r.e.name);
@@ -181,7 +181,7 @@ tr:target td:first-child { box-shadow: inset 3px 0 0 var(--amber); }
 .flags ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 5px; }
 .flags li { font-size: 12.5px; line-height: 1.38; padding-left: 9px; border-left: 2px solid var(--line-hi); color: #c8d1d5; }
 .flags li.hi { color: var(--fg); }
-.flags li.art { border-color: #e39a7b; } .flags li.looks { border-color: var(--cyan); } .flags li.balance { border-color: var(--amber); } .flags li.role { border-color: var(--reach); } .flags li.words { border-color: #9aa4a8; }
+.flags li.art { border-color: #e39a7b; } .flags li.looks { border-color: var(--cyan); } .flags li.balance { border-color: var(--amber); } .flags li.role { border-color: var(--reach); } .flags li.words { border-color: #9aa4a8; } .flags li.design { border-color: #a8e6b4; }
 .flags li.lo { opacity: 0.78; }
 .flags em { display: block; font: 600 9.5px var(--display); font-style: normal; letter-spacing: 2px; text-transform: uppercase; color: var(--dim); }
 .mute { color: #6e7a80; font-size: 12px; }

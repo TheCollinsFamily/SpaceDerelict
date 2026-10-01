@@ -74,7 +74,7 @@ export const AUDIT = {
     ['design', 'Oct 1 2026 (Collins): the Broodmother became the Broodmother DEN. It bears a Broodmother UNIT you command (brood mode: parked, broods 5 warriors; fight mode: walks, bites, nets). Its own picture is still the old sac; she has her own (units/broodmother).'],
   ],
   hatch: [
-    ['design', 'Oct 1 2026 (Collins): the Brood Pit, new. Warriors born at the body walk to its rally point. Drawn as a toothed burrow so it never reads as the Den's sac; next to the Maw's mouth at far zoom it may read alike: look.'],
+    ['design', 'Oct 1 2026 (Collins): the Brood Pit, new. Warriors born at the body walk to its rally point. Drawn as a toothed burrow so it never reads as the Den’s sac; next to the Maw’s mouth at far zoom it may read alike: look.'],
   ],
   maw: [
     ['balance', 'Built 45 times in the scripted runs and credited with 0 kills: bodies it eats whole are not credited to any limb (111 eaten in the runs). A counting gap, not proof it is weak.'],
