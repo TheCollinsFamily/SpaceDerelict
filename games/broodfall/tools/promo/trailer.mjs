@@ -249,7 +249,7 @@ async function artOk(page, id) {
  * Film `frames` frames at 60 fps. `each(i)` (optional, Node side) runs before each frame is advanced:
  * it steers the camera and stages things in the page.
  */
-async function film(page, ctx, id, frames, each = null, { quality = 92, preroll = 40, frozen = false, thaw = true } = {}) {
+async function film(page, ctx, id, frames, each = null, { quality = 92, preroll = 40, frozen = false, thaw = true, dpr = 1 } = {}) {
   const dir = path.join(CAP, id);
   fs.rmSync(dir, { recursive: true, force: true });
   fs.mkdirSync(dir, { recursive: true });
@@ -261,7 +261,8 @@ async function film(page, ctx, id, frames, each = null, { quality = 92, preroll 
   for (let i = 0; i < frames; i++) {
     if (each) await each(i);
     await page.evaluate(() => window.__advance(1000 / 60));
-    const { data } = await cdp.send('Page.captureScreenshot', { format: 'jpeg', quality, optimizeForSpeed: true });
+    // At twice the pixels the clip's scale says so (the plain call returns the page at its CSS size).
+    const { data } = await cdp.send('Page.captureScreenshot', { format: 'jpeg', quality, optimizeForSpeed: true, ...(dpr > 1 ? { clip: { x: 0, y: 0, width: 1920, height: 1080, scale: dpr } } : {}) });
     fs.writeFileSync(path.join(dir, `f${String(i).padStart(5, '0')}.jpg`), Buffer.from(data, 'base64'));
     if (i % 60 === 59) process.stdout.write(`  ${id}: ${i + 1}/${frames} (${((Date.now() - t0) / (i + 1)).toFixed(0)} ms/frame)\r`);
   }
@@ -583,7 +584,7 @@ const SHOTS = {
     await page.waitForTimeout(2500);
     const box = await page.locator('.globe-box').boundingBox();
     fs.writeFileSync(path.join(CAP, 's-globe.json'), JSON.stringify({ box, vw: 1920, vh: 1080, dpr: 2 }));
-    await film(page, ctx, 's-globe', 360, null, { preroll: 20, quality: 90 });
+    await film(page, ctx, 's-globe', 360, null, { preroll: 20, quality: 90, dpr: 2 });
     await ctx.close();
   },
 };
@@ -744,7 +745,7 @@ if (cmd === 'record') {
       for (let i = 0; i < 6; i++) await page.evaluate(() => window.__advance(1000 / 60));
       const t0 = await page.evaluate(() => performance.now());
       const box = await page.locator('.cp-icom').boundingBox();
-      await film(page, ctx, 'r-yoke', 210, null, { preroll: 0, frozen: true, thaw: false });
+      await film(page, ctx, 'r-yoke', 210, null, { preroll: 0, frozen: true, thaw: false, dpr: 2 });
       const voiceAt = (await page.evaluate(() => window.__plays)).filter((p) => !p.video && /^b|blob/.test(p.src)).map((p) => p.t)[0];
       // On to the boss: his call opens after her lines; his voice file starts the call.
       await until(() => window.__plays.some((p) => /boss\.mp3/.test(p.src)), 60 * 60, 'the boss calls');
@@ -752,7 +753,7 @@ if (cmd === 'record') {
       const from = 26.6;
       for (let i = 0; i < 60 * 40 && (await page.evaluate(([tb, from]) => performance.now() < tb + from * 1000, [tb, from])); i++) await page.evaluate(() => window.__advance(1000 / 60));
       const tb0 = await page.evaluate(() => performance.now());
-      await film(page, ctx, 'r-bosscall', 225, null, { preroll: 0, frozen: true });
+      await film(page, ctx, 'r-bosscall', 225, null, { preroll: 0, frozen: true, dpr: 2 });
       const log = { voiceLead: voiceAt != null ? +((t0 - voiceAt) / 1000).toFixed(3) : null, box, dpr: 2, bossVoiceFrom: +((tb0 - tb) / 1000).toFixed(3) };
       fs.writeFileSync(path.join(CAP, 'r-yoke.json'), JSON.stringify(log, null, 1));
       console.log('  ', JSON.stringify(log));
@@ -885,7 +886,7 @@ if (cmd === 'titles') {
 
 /** Where in the Maw and creep takes the action is (seconds into those captures; looked at, frame by frame). */
 const MAW_CROP = [0, 60, 1600, 900];
-const MAW_SS = Number(process.env.MAW_SS ?? 2.1), MAW_SS2 = Number(process.env.MAW_SS2 ?? 0.1), MAW_BITE = Number(process.env.MAW_BITE ?? 0.35), CREEP_SS = Number(process.env.CREEP_SS ?? 1.0);
+const MAW_SS = Number(process.env.MAW_SS ?? 2.1), MAW_SS2 = Number(process.env.MAW_SS2 ?? 0.1), MAW_BITE = Number(process.env.MAW_BITE ?? 0.35), CREEP_SS = Number(process.env.CREEP_SS ?? 2.0);
 
 // ------------------------------------------------------------------ CUT: the edit and the mix
 /**
@@ -984,7 +985,7 @@ function shots30() {
     { id: 'm-siege', src: CAPF('g-siege'), ss: 5.2, dur: 0.6, vx: 0.5, what: 'montage', from: 'real game, captured' },
     { id: 'm-boss', src: CAPF('g-boss'), ss: 4.6, dur: 0.6, vx: 0.5, what: 'montage', from: 'real game, captured' },
     { id: 'm-late', src: CAPF('g-late'), ss: 3.0, dur: 0.6, vx: 0.4, what: 'montage', from: 'real game, captured' },
-    { id: 'end', src: SRC.keyart, image: true, dur: 4.6, zoom: [1, 1.05], end: true, fadeOut: 0.6, vx: 0.62, what: 'The name, the genre line, GENOCIDE SIMULATOR', from: 'key art, titles set in type' },
+    { id: 'end', src: SRC.keyart, image: true, dur: 4.3, zoom: [1, 1.05], end: true, fadeOut: 0.6, vx: 0.62, what: 'The name, the genre line, GENOCIDE SIMULATOR', from: 'key art, titles set in type' },
   ];
 }
 
@@ -1039,7 +1040,7 @@ function sound30(at) {
     { f: AU('theme-ship'), t: at('menu') + 0.3, ss: 4, dur: at('m-maw') - at('menu') - 0.3, fi: 0.6, fo: 0.3, bus: 'm', db: -3 },
     { f: AU('siege-assault'), t: at('m-maw'), ss: 61.2, dur: at('end') - at('m-maw') + 0.15, fo: 0.15, bus: 'm', db: 0 },
     { f: AU('sting-core'), t: at('end'), bus: 'm', db: 0, fo: 1.0 },
-    { f: AU('theme-menu'), t: at('end') + 0.3, ss: 0, dur: 4.3, fi: 1.0, fo: 1.0, bus: 'm', db: -8 },
+    { f: AU('theme-menu'), t: at('end') + 0.3, ss: 0, dur: 4.0, fi: 1.0, fo: 1.0, bus: 'm', db: -8 },
     { f: path.join(RAW, 'voice', 'yoke-suck.mp3'), t: at('r-yoke') - (yl.voiceLead ?? 0.1), bus: 'v', db: 1 },
     { f: VO('institute__a-video-call-mid-game__5'), t: at('institute') + 0.15, ss: 3.45, dur: 2.5, bus: 'v' },
     { f: AU('fire-bite-2'), t: at('g-maw') + Math.min(MAW_BITE, 2.0), bus: 's', db: -3 },
@@ -1099,7 +1100,8 @@ function renderShot(s, fmt) {
   if (s.fadeIn) tail = `fade=t=in:st=0:d=${s.fadeIn},${tail}`;
   if (s.fadeOut) tail = `fade=t=out:st=${(s.dur - s.fadeOut).toFixed(3)}:d=${s.fadeOut},${tail}`;
   f.push(`[${cur}]${tail}[out]`);
-  ff([...args, '-filter_complex', f.join(';'), '-map', '[out]', '-frames:v', String(N), '-r', String(FPS), '-c:v', 'libx264', '-preset', 'medium', '-crf', '14', '-pix_fmt', 'yuv420p', '-an', out], `shot ${s.id} ${fmt}`);
+  ff([...args, '-filter_complex', f.join(';'), '-map', '[out]', '-frames:v', String(N), '-r', String(FPS), '-c:v', 'libx264', '-preset', 'medium', '-crf', '14', '-pix_fmt', 'yuv420p', '-an', `${out}.tmp.mp4`], `shot ${s.id} ${fmt}`);
+  fs.renameSync(`${out}.tmp.mp4`, out);
   return out;
 }
 

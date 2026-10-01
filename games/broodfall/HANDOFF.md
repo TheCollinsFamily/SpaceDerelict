@@ -313,8 +313,8 @@ Collins: "for loading into the different biomes, do we have broodfall landing an
 would play at the start of any scenario? if not we should."
 - **What plays** (`src/ui/landing.ts`, rules `src/meta/landing.ts`, hook `landThenStart` in `src/main.ts`): before every
   deployment (a campaign mission from the address, a skirmish from the menu or `?autostart=1`), the tile set's film
-  (~8 s, lifelike, the Empire's side): the ship in orbit lets the asset go (one shot shared by all ten), it tears down
-  through that set's sky onto that set's city, a hard cut under a white flash (drawn by the game: Reduce flashes takes
+  (~8.8 s, lifelike, the Empire's side): the ship fires the asset out of its bay and the camera chases it down (one shot
+  shared by all ten), it roars over that set's street as its insects look up and duck, a hard cut under a white flash (drawn by the game: Reduce flashes takes
   it out) to the strike seen from the BOARD's camera, and the fire and dust clear on the board itself, creep running out.
   The film's last frame IS the board at minute zero (a picture of the real game): at its end the picture is moved onto
   the live canvas (the band of the canvas it shows, its crater laid on the live meteor) and fades: the board comes alive
@@ -333,12 +333,25 @@ would play at the start of any scenario? if not we should."
   (`notes/screens/2026-09-30/landing-<set>.mp4`), B the campaign (no landing after the opening; mission 1 reopened lands),
   C the menu's deploy + Esc, D the setting and Reduce motion. Test: `tests/landing.test.ts`.
 - **The art** (`tools/art/landing.mjs`; raw `art-src/landing/`, baked `public/art/landing/<set>.mp4|-start.webp|-end.webp`
-  + `landing.json`, review `notes/art-review/landing/<set>.jpg|.json`): `boards` pictures the game's canvas at minute zero
-  (seed 42, dev server 5317, free) → `stills` (orbit a/b, per set fall a (aerial, the set's sky and city, territory
-  pictures as references) and fall b (an EDIT of a: the meteor over the roofs), hit (an EDIT of the board picture: the
-  fireball where the meteor stands)) → `clips` (start-and-end on **seegen:wan3.0-video**, 5 s 720p: orbit a→b, fall a→b,
-  hit→board) → `bake` (orbit 0.6–2.4 s, 0.3 s dissolve, fall 0–2.9 s at 1.2x, the strike whole at 1.2x) → `sheet`
-  (`notes/screens/2026-09-30/landing-00-sheet.jpg`). A new tile set: add it to `SETS` there, run the five steps.
+  + `landing.json`, review `notes/art-review/landing/<set>.jpg|.json`). Three shots, cut by `bake` (release 0.2–2.2 s,
+  0.3 s dissolve, fall 0.4–3.6 s at 1.1x, hard cut under the game's flash, the strike whole at 1.2x; ~8.8 s):
+  1. **The release** (one for all ten): `design` draws `release.png` (the Merciful Yoke as the key art and
+     `public/art/ship/exterior.webp` draw it, its bay open, the meteor half out; the planet is the game's day map,
+     `public/art/ship/planet.webp`, clean), `motion` animates it with NO end frame: the meteor is fired out and the camera
+     chases it down into the atmosphere.
+  2. **The fall** (per set): `design` draws `street-<set>.png` (low angle in that set's street, its insects in 1950s
+     clothes looking up, the meteor burning through that set's sky), `motion` animates it: it roars overhead, they duck.
+     Both on **atlascloud:seedance-2.5-i2v** (5 s 720p, 115,988 tokens = $2.32), picked by `probe` against Kling 3.0
+     Turbo (barely moved the meteor) and Veo 3.1 Fast ($1.38 for 6 s; blew the bay up, exploded the meteor in mid-air):
+     `notes/art-review/landing/probe-*.jpg`. Collins on v1 (a still with the meteor scaled across it between a start
+     and an end frame, kept in `art-src/landing/v1/` and as `fall-<set>-*`): "you don't need these to merge into
+     anything — you can just use AI videos".
+  3. **The strike** (per set, KEPT EXACTLY: Collins, "chef's kiss — better than I thought was possible"): `boards`
+     pictures the game's canvas at minute zero (seed 42, dev server 5317, free); `stills` draws `hit-<set>.png` (an EDIT
+     of it: the fireball where the meteor stands); `clips` makes hit → board on **seegen:wan3.0-video** (start AND end
+     frame, 5 s 720p); the bake fades the board picture in over the last 0.6 s so the film ends exactly on it.
+  `sheet` writes `notes/screens/2026-09-30/landing-00-sheet.jpg`. A new tile set: add it to `SETS`, run boards, stills
+  (its hit), clips, design, motion, bake.
 
 ## The stills that came alive (Oct 1 2026; notes/VIDEO-AUDIT.md has every still and its verdict)
 

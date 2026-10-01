@@ -18,9 +18,9 @@
       "video": "landing/suburb.mp4",
       "start": "landing/suburb-start.webp",
       "end": "landing/suburb-end.webp",
-      "seconds": 8.042,
-      "fallAt": 0.717,
-      "strikeAt": 3.917,
+      "seconds": 8.75,
+      "fallAt": 1.409,
+      "strikeAt": 4.609,
       "core": {
         "x": 474,
         "y": 717

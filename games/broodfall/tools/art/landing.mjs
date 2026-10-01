@@ -14,6 +14,12 @@
  *   node tools/art/landing.mjs bake [sets]     cut each film together (free)
  *   node tools/art/landing.mjs [sets]          whatever is missing, in that order (not the boards)
  *   node tools/art/landing.mjs sheet           notes/screens/2026-09-30/landing-00-sheet.jpg (free)
+ *   node tools/art/landing.mjs design [release] [sets]   v2 design stills: release.png, street-<set>.png (~$0.47 each)
+ *   node tools/art/landing.mjs motion [release] [sets]   v2 clips from them, NO end frame (Seedance 2.5, $2.32 each)
+ *   PROBE_MODELS=a,b node tools/art/landing.mjs probe [release] [sets]   the same on several models, side by side
+ *
+ * Since Oct 1 2026 (v2) the film is: the release (release-clip) → the fall over the set's street (street-<set>-clip) → the
+ * strike (land-<set>-clip, v1's, kept). The orbit/fall clips below are v1's, kept on disk and no longer cut in.
  *
  * Raw (git-ignored, never overwritten: to draw one again MOVE it into art-src/landing/v1/):
  *   art-src/landing/board-<set>.png      the game's canvas at minute zero (1360x1000)
@@ -230,7 +236,10 @@ async function design(sets, withRelease) {
 }
 
 /** The model the v2 shots are made on (chosen by `probe`: see notes/art-review/landing/probe/). */
-export const MOTION_MODEL = process.env.LANDING_MODEL || 'imagerouter:kling-3.0-turbo-i2v';
+// Probed Oct 1 2026 on the release and the Suburbs' fall (art-src/landing/probe/; rows Kling, Seedance, Veo in notes/art-review/landing/probe-*.jpg): Seedance 2.5
+// chased the meteor down through the clouds and roared it overhead; Kling 3.0 Turbo barely moved it; Veo 3.1 Fast blew
+// the bay up in a fireball and cut. Seedance 2.5 I2V, 5 s 720p: about 128,000 tokens ($2.56) a clip.
+export const MOTION_MODEL = process.env.LANDING_MODEL || 'atlascloud:seedance-2.5-i2v';
 const MOTION = { seconds: 5, resolution: '720p', aspect: '16:9' };
 
 async function motion(sets, withRelease, model = MOTION_MODEL, dir = DIR) {
@@ -292,7 +301,7 @@ async function clips(sets, withOrbit) {
  * atmosphere. The fall: the streak until the meteor is over the roofs (played 1.2x). The strike: all of it (1.2x),
  * ending on the board. Orbit → fall is a 0.3 s dissolve; fall → strike a hard cut under the game's white flash.
  */
-export const CUT = { orbit: { from: 0.6, to: 2.4 }, fall: { from: 0, to: 2.9, speed: 1.2 }, land: { speed: 1.2 }, dissolve: 0.3 };
+export const CUT = { orbit: { from: 0.2, to: 2.2 }, fall: { from: 0.4, to: 3.6, speed: 1.1 }, land: { speed: 1.2 }, dissolve: 0.3 };
 const FPS = 24;
 const ENC = ['-an', '-c:v', 'libx264', '-preset', 'slow', '-crf', '21', '-pix_fmt', 'yuv420p', '-movflags', '+faststart'];
 
@@ -314,7 +323,8 @@ function picDiff(a, b) {
 }
 
 function bakeFilm(id) {
-  const orbit = raw('orbit-clip.mp4'), fall = raw(`fall-${id}-clip.mp4`), land = raw(`land-${id}-clip.mp4`);
+  // v2: the release and the street's fall (real motion, no end frame); the strike is v1's, kept exactly.
+  const orbit = raw('release-clip.mp4'), fall = raw(`street-${id}-clip.mp4`), land = raw(`land-${id}-clip.mp4`);
   if (![orbit, fall, land].every((f) => fs.existsSync(f))) { console.warn(`[landing] ${id}: clips missing, not baked`); return null; }
   fs.mkdirSync(OUT, { recursive: true });
   const out = path.join(OUT, `${id}.mp4`);
@@ -355,7 +365,7 @@ function bakeFilm(id) {
   ffmpeg([...tiles.flatMap((t) => ['-i', t]), '-filter_complex', '[0][1][2]hstack=3[a];[3][4][5]hstack=3[b];[a][b]vstack=2[v]', '-map', '[v]', '-q:v', '4', path.join(REV, `${id}.jpg`)], `${id} review`);
   const endVsBoard = picDiff(endPng, band(id));
   const core = JSON.parse(fs.readFileSync(raw(`board-${id}.json`), 'utf8')).core;
-  const report = { id, seconds, fallAt: +Math.max(0.3, strikeAt - 3.2).toFixed(3), strikeAt, endVsBoard, core, models: MODEL, cut: CUT };
+  const report = { id, seconds, fallAt: +Math.max(0.3, strikeAt - 3.2).toFixed(3), strikeAt, endVsBoard, core, models: { release: 'atlascloud:seedance-2.5-i2v', fall: MOTION_MODEL, strike: MODEL }, cut: CUT };
   fs.writeFileSync(path.join(REV, `${id}.json`), JSON.stringify(report, null, 2) + '\n');
   console.log(`[landing] baked ${id}: ${seconds}s, strike at ${strikeAt}s, last frame vs board ${endVsBoard}`);
   return report;
