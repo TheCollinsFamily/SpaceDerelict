@@ -34,6 +34,16 @@
       "video": "ship/loops/room-quarters.mp4",
       "poster": "ship/loops/room-quarters.webp",
       "seconds": 7.125
+    },
+    "orders": {
+      "video": "ship/loops/room-orders.mp4",
+      "poster": "ship/loops/room-orders.webp",
+      "seconds": 7.125
+    },
+    "hobby": {
+      "video": "ship/loops/room-hobby.mp4",
+      "poster": "ship/loops/room-hobby.webp",
+      "seconds": 7.083
     }
   }
 }

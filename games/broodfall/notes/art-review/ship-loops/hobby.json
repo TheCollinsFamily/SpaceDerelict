@@ -1,0 +1,13 @@
+{
+  "id": "hobby",
+  "model": "seegen:sd2-fast",
+  "seconds": 7.083,
+  "size": "1920x1080",
+  "bytes": 1814398,
+  "medianStep": 0.05,
+  "maxStep": 0.75,
+  "seamBefore": 0.99,
+  "seamAfter": 0.16,
+  "fixed": "cut 4 snapping frames; crossfade 0.75s",
+  "tiles": "still it started from | loop first frame | middle | last frame"
+}
