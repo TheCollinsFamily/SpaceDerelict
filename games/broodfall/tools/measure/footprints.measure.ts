@@ -50,9 +50,9 @@ const K: Record<number, { hp: number; hit: number; reach: number; wide: number }
   3: { hp: 2.0, hit: 1.38, reach: 1.12, wide: 1.18 },
   4: { hp: 2.4, hit: 1.5, reach: 1.15, wide: 1.25 },
 };
-function paidFor(spec: TowerSpec, to: ShapeId | [number, number]): Partial<TowerSpec> {
+function paidFor(spec: TowerSpec, to: ShapeId | [number, number], payAs?: number): Partial<TowerSpec> {
   const from = footprintOf(spec).cells.length;
-  const n = Array.isArray(to) ? to[0] * to[1] : SHAPES[to].cells.length;
+  const n = payAs ?? (Array.isArray(to) ? to[0] * to[1] : SHAPES[to].cells.length);
   const a = K[from];
   const b = K[n];
   const r = (v: number, k: number) => Math.round(v * k);
@@ -73,8 +73,11 @@ const PLAN: Partial<Record<TowerFamily, ShapeId | [number, number]>> = {
   lasher: 'L3', quill: 'L3', conduit: 'L3',
   tangler: 'L4',
 };
-const planOf = (fams: TowerFamily[]): Candidate =>
-  Object.fromEntries(fams.map((f) => [f, paidFor(towerSpec(f), PLAN[f]!)])) as Candidate;
+const planOf = (fams: TowerFamily[], payAs?: Partial<Record<TowerFamily, number>>): Candidate =>
+  Object.fromEntries(fams.map((f) => [f, paidFor(towerSpec(f), PLAN[f]!, payAs?.[f])])) as Candidate;
+/** The L limbs paid LESS (Oct 1: paid in full the four of them took the scripted player from 5 to 8 wins in ten). */
+const L_LIGHT: Partial<Record<TowerFamily, number>> = { lasher: 2, quill: 2, conduit: 2, tangler: 4 };
+const T_LIGHT: Partial<Record<TowerFamily, number>> = { burster: 2, choir: 2, mister: 4 };
 
 const LONG: [number, number] = [1, 2];
 const BIG: [number, number] = [2, 2];
@@ -99,6 +102,8 @@ const CANDIDATES: Record<string, Candidate> = {
   planT: planOf(['mister', 'choir', 'burster']),
   planL: planOf(['lasher', 'quill', 'conduit', 'tangler']),
   planSquare: planOf(['bombard']),
+  planLlight: planOf(['lasher', 'quill', 'conduit', 'tangler'], L_LIGHT),
+  planLight: planOf(Object.keys(PLAN) as TowerFamily[], { ...L_LIGHT, ...T_LIGHT }),
 };
 
 class RandomPlacer {

@@ -227,6 +227,7 @@ footer code { font-size: 12px; color: #c8d1d5; word-break: break-all; }
 .meas { list-style: none; padding: 0; margin: 6px 0 0; display: grid; gap: 4px; font-size: 12px; }
 .meas li { padding-left: 8px; border-left: 2px solid var(--line-hi); }
 .meas li.ok { border-color: #8fd18f; } .meas li.bad { border-color: #ff8a6a; }
+.meas li.rec { color: var(--amber); font-weight: 600; }
 .vtab a, .ovl a { color: var(--cyan); text-decoration: none; }
 .fixes th { width: 300px; font: 500 13px var(--display); color: var(--fg); }
 .ovl { margin-top: 8px; color: var(--dim); font-size: 12.5px; }

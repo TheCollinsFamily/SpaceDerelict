@@ -1,0 +1,8 @@
+TODAY (no limb reshaped): HOLDS · naive 5/10 · guardrail 5:0 (86981 to 45000) · big limbs built by the scripted player over ten runs: 259 · as the game is
+the new lines only: HOLDS · naive 5/10 · guardrail 5:0 (87697 to 45000) · big limbs built by the scripted player over ten runs: 302 · ember, ocular, sling, amp, press, lance
+the Bombard 2x2 only: HOLDS · naive 5/10 · guardrail 5:0 (86481 to 45000) · big limbs built by the scripted player over ten runs: 264 · bombard
+the three T limbs only (full pay): HOLDS · naive 7/10 · guardrail 6:0 (93056 to 47000) · big limbs built by the scripted player over ten runs: 375 · mister, choir, burster
+the four L limbs only (full pay): HOLDS · naive 8/10 · guardrail 7:0 (100403 to 51000) · big limbs built by the scripted player over ten runs: 509 · lasher, quill, conduit, tangler
+the four L limbs, the elbows paid as two cells: HOLDS · naive 7/10 · guardrail 6:0 (93908 to 47000) · big limbs built by the scripted player over ten runs: 434 · lasher, quill, conduit, tangler
+THE WHOLE PLAN, full pay (too easy): HOLDS · naive 10/10 · guardrail 8:0 (104333 to 52000) · big limbs built by the scripted player over ten runs: 760 · ember, ocular, sling, amp, press, lance, bombard, mister, choir, burster, lasher, quill, conduit, tangler
+THE WHOLE PLAN, RECOMMENDED pay (elbows and the Burster/Choir T paid as two cells): HOLDS · naive 6/10 · guardrail 5:0 (90501 to 48000) · big limbs built by the scripted player over ten runs: 568 · ember, ocular, sling, amp, press, lance, bombard, mister, choir, burster, lasher, quill, conduit, tangler

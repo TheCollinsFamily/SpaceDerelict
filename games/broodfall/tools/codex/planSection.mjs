@@ -121,7 +121,7 @@ export function planSectionHtml(entries, P, names) {
   }).join('');
   const overlayList = entries.filter((e) => (PLAN[e.family]?.overlays ?? []).length).map((e) => `<li><a href="#${e.family}">${esc(names[e.family])}</a>: ${esc(PLAN[e.family].overlays.join('; '))}</li>`).join('');
   const sums = sumCost(entries, P);
-  const measuredHtml = P.measured.length ? `<ul class="meas">${P.measured.map((l) => `<li class="${/^HOLDS/.test(l) ? 'ok' : 'bad'}">${esc(l)}</li>`).join('')}</ul>` : '<p class="mute">Not measured yet.</p>';
+  const measuredHtml = P.measured.length ? `<ul class="meas">${P.measured.map((l) => `<li class="${/HOLDS/.test(l) ? 'ok' : 'bad'} ${/RECOMMENDED/.test(l) ? 'rec' : ''}">${esc(l)}</li>`).join('')}</ul><p class="note"><b>Recommended pay:</b> a line or square as the BIG limbs were; the three-cell elbows (Lasher, Quill, Conduit) and the Burster's and Choir's T paid as if they took two cells (they reach two streets from one hub, which is worth more than their cells). The whole plan then wins 6 of 10 (today 5), guardrail 5:0.</p>` : '<p class="mute">Not measured yet.</p>';
   return `
 <section class="plan" id="footprint-plan">
 <h2>Footprint plan (proposed, not applied)</h2>
@@ -205,7 +205,7 @@ export function planMarkdown(entries, P, names) {
     L.push(`| ${names[e.family]} | ${SHAPE_NAME[n]} | ${n === p.to ? 'kept' : `**${SHAPE_NAME[p.to]}**`} | ${p.why ?? ''}${p.risk ? ` RISK: ${p.risk}` : ''} | ${p.silhouette ?? ''} |`);
   }
   L.push('');
-  L.push('A reshaped limb is paid for its ground the way the BIG limbs were on Sep 29 (same price; hp x1.6 / x2.0 / x2.4 on 2 / 3 / 4 cells, hits x1.25 / x1.38 / x1.5, reach x1.1 / x1.12 / x1.15, blast x1.1 / x1.18 / x1.25; a limb already big is paid the difference).');
+  L.push('A reshaped limb is paid for its ground the way the BIG limbs were on Sep 29 (same price; hp x1.6 / x2.0 / x2.4 on 2 / 3 / 4 cells, hits x1.25 / x1.38 / x1.5, reach x1.1 / x1.12 / x1.15, blast x1.1 / x1.18 / x1.25; a limb already big is paid the difference). **Recommended (measured):** the three-cell elbows (Lasher, Quill, Conduit) and the Burster\'s and Choir\'s T are paid as if they took TWO cells: paid in full, the whole plan made the scripted player win 10 of 10; paid this way, 6 of 10 (today 5).');
   L.push('');
   L.push('## How each shape fits the city');
   L.push('');

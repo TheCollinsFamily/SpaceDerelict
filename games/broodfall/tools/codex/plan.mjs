@@ -94,7 +94,8 @@ export const PLAN = {
     variants: [[1, 'A', 'Long Arm', 'throws 50% farther: a longer arm']],
     overlays: ['Big Clots: the patch is drawn at its size'],
   },
-  brood: { to: '2x2', why: 'A big nest. Unchanged.', resolves: { 'The card said': 'Done Oct 1: the card reads the spec (5).' } },
+  brood: { to: '2x2', why: 'The Broodmother Den (Oct 1: it bears a Broodmother UNIT that broods or fights): a big, protected nest stays a big square; its unit spawns on the street beside any of its cells.', resolves: { 'The card said': 'Done Oct 1: the card reads the spec (5).' } },
+  hatch: { to: '1x1', why: 'The Brood Pit (new Oct 1): a cheap spawner of three warriors. One cell keeps it cheap to place anywhere by a street.' },
   swamp: {
     to: '1x1', why: 'A pit in the street; one cell keeps it a plug.',
     overlays: ['Wide Bog: the swamp is drawn at its size'],
@@ -137,7 +138,7 @@ export const PLAN = {
       'A bone cone': 'Redrawn as a squat siege mortar with a view from behind.',
       'Overlaps the Bile Lobber': 'Split (see the Lobber): the Bombard is the big slow siege gun.',
     },
-    risk: 'On Sep 29 2026 a big Bombard cost the scripted player a win in ten whatever it was paid. Its measure below decides it.',
+    risk: 'On Sep 29 2026 a big Bombard cost the scripted player a win in ten whatever it was paid. Measured Oct 1: made 2x2 alone it holds (5 of 10, guardrail 5:0).',
   },
   ward: { to: '2x2', why: 'A big membrane. Unchanged.', overlays: ['Wide Membrane: the cover is drawn at its size'] },
   quill: {
