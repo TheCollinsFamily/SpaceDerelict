@@ -1164,7 +1164,7 @@ function build(name, shots, sound, fmt, outFile) {
   const enc = (crf, cap, file) => ff(['-i', video, '-i', wav, '-map', '0:v', '-map', '1:a', '-c:v', 'libx264', '-preset', 'slow', '-crf', String(crf), ...(cap ? ['-maxrate', cap, '-bufsize', '9M'] : []), '-profile:v', 'high', '-level', '4.2',
     '-pix_fmt', 'yuv420p', '-r', String(FPS), '-s', `${W}x${H}`, '-g', '120', '-movflags', '+faststart', '-c:a', 'aac', '-b:a', '320k', '-ar', '48000', '-t', total.toFixed(3), file], 'final');
   enc(16, null, master);
-  enc(21, '4.4M', outFile);
+  enc(21, '4.0M', outFile);
   const m = measure(outFile);
   const size = fs.statSync(outFile).size;
   console.log(`  ${outFile}: ${total.toFixed(2)} s, ${(size / 1048576).toFixed(1)} MB, ${m.lufs} LUFS, true peak ${m.truePeak} dBTP`);
@@ -1185,15 +1185,17 @@ if (cmd === 'cut') {
 
 // ------------------------------------------------------------------ SHEET: a frame from every shot
 if (cmd === 'sheet') {
-  const cuts = JSON.parse(fs.readFileSync(path.join(RAW, 'cuts.json'), 'utf8'));
-  const full = cuts.full;
+  // Where each shot of the full cut starts (the edit's own durations, frame-exact as build() lays them).
+  let t0 = 0;
+  const full = { file: path.join(OUT, 'broodfall-trailer-90s.mp4'), shots: shotsFull().map((x) => { const p = { ...x, start: t0 }; t0 += Math.round(x.dur * FPS) / FPS; return p; }) };
+  if (process.argv.includes('--list')) for (const x of full.shots) console.log(`| ${x.start.toFixed(2)} | ${x.dur.toFixed(2)} | ${x.id} | ${x.what} | ${x.from} |`);
   const dir = path.join(RAW, 'sheet');
   fs.mkdirSync(dir, { recursive: true });
   const tiles = [];
   full.shots.forEach((s, i) => {
     const t = s.start + s.dur * (s.end ? 0.8 : 0.5);
     const png = path.join(dir, `${String(i).padStart(2, '0')}.png`);
-    const label = `${String(i + 1).padStart(2, '0')}  ${Math.floor(s.start / 60)}:${(s.start % 60).toFixed(1).padStart(4, '0')}  ${s.id}`;
+    const label = `${String(i + 1).padStart(2, '0')}   ${s.start.toFixed(1)} s   ${s.id}`;
     ff(['-ss', t.toFixed(3), '-i', full.file, '-frames:v', '1', '-vf', `scale=480:270,drawbox=y=ih-30:w=iw:h=30:color=black@0.7:t=fill,drawtext=fontfile='C\\:/Windows/Fonts/bahnschrift.ttf':text='${label}':x=10:y=h-24:fontsize=17:fontcolor=white`, png], `sheet ${i}`);
     tiles.push(png);
   });
