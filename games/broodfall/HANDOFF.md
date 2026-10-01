@@ -716,6 +716,24 @@ the option to change the model she runs on."
 
 ## The art (Sep 29 2026)
 
+### Streets under the creep, at any zoom (Oct 1 2026)
+
+Collins: "there should be some clear visual distinction between lanes and roofs covered in creep even
+at far zoom." Why they merged: a street is a trench one cell wide, and from this camera the block in
+FRONT of it hides most of its floor (a level rises 30 px, the floor is 38 px deep), so far away a street
+is seen almost only as the WALL of the block behind it, and that wall wore the same red drips as the
+roofs. The fix (`src/render/laneWash.ts`, placed by `IsoRenderer.syncCreep`): every creeped street's
+floor and every wall that looks down onto one is washed in a pale wet film, the walls dark under the
+roof's lip and light at the foot; the roofs keep the dark hide. It fades in with distance
+(`washAlpha`: none when a cell is 130 px wide or more, full at 52 px), so up close the painted floors
+and walls are untouched. Units in the street are drawn over it; a block in front hides it. A floor under
+a strain (bog, embers) is washed lightly so the strain still shows; a cell under a limb is not washed.
+Check: `node tools/shot-legibility.mjs [--play 6000] [--nowash] [set ...]` (its own vite server, nothing
+spent): every tile set, all four turns, far/fit/near shots, and per pixel (by the view ray) the walls over
+creeped streets against creeped roofs at far zoom; the gap must be 60 of 255 or more. Before: wetland
+8-23, suburb 42-73; after about 105-125 everywhere. Shots: `notes/screens/2026-10-01/legibility/`.
+
+
 Read `assets/style-bible.md` before drawing anything: it holds Collins's 22 rules in his
 own words. `notes/GRAPHICS-PLAN.md` holds the pipeline, the probes and the costs.
 
@@ -982,7 +1000,7 @@ RFAB_API_BASE=http://localhost:3011 RFAB_CONNECT_JWT=<tester jwt> node tools/sho
 1. (Done Sep 30: **royal decrees**, the royal special-upgrade sinks; DESIGN "Royal decrees".
    The whole gap audit and what is left is `notes/GAPS-2026-09-30.md`.)
 2. **The lore book** — only when Collins brings it up.
-3. **Legibility:** block and street readability under heavy creep at far zoom.
+3. (Done Oct 1 2026: **streets told from roofs under the creep at any zoom**, the street wash; "The art", "Streets under the creep".)
 4. (Done Sep 30: **burrowing** out of a body that walled itself in; DESIGN plate algebra.)
 5. (Done Sep 30: **civilians** fleeing the crash, `src/sim/civilians.ts`.)
 6. **The rest of the art**: see `notes/TO-CREATE.md` (Sep 30 2026).

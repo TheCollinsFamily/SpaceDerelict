@@ -1,0 +1,562 @@
+[
+  {
+    "set": "deephive",
+    "turn": 0,
+    "wall": 145,
+    "floor": 109,
+    "roof": 35,
+    "gap": 109,
+    "floorGap": 74,
+    "n": [
+      153,
+      104,
+      3067
+    ]
+  },
+  {
+    "set": "deephive",
+    "turn": 1,
+    "wall": 145,
+    "floor": 101,
+    "roof": 35,
+    "gap": 110,
+    "floorGap": 65,
+    "n": [
+      157,
+      141,
+      3110
+    ]
+  },
+  {
+    "set": "deephive",
+    "turn": 2,
+    "wall": 143,
+    "floor": 103,
+    "roof": 36,
+    "gap": 107,
+    "floorGap": 67,
+    "n": [
+      114,
+      118,
+      2821
+    ]
+  },
+  {
+    "set": "deephive",
+    "turn": 3,
+    "wall": 150,
+    "floor": 127,
+    "roof": 36,
+    "gap": 114,
+    "floorGap": 91,
+    "n": [
+      109,
+      85,
+      2803
+    ]
+  },
+  {
+    "set": "farmland",
+    "turn": 0,
+    "wall": 145,
+    "floor": 107,
+    "roof": 35,
+    "gap": 110,
+    "floorGap": 72,
+    "n": [
+      153,
+      104,
+      3067
+    ]
+  },
+  {
+    "set": "farmland",
+    "turn": 1,
+    "wall": 148,
+    "floor": 105,
+    "roof": 35,
+    "gap": 113,
+    "floorGap": 70,
+    "n": [
+      157,
+      141,
+      3110
+    ]
+  },
+  {
+    "set": "farmland",
+    "turn": 2,
+    "wall": 144,
+    "floor": 112,
+    "roof": 36,
+    "gap": 108,
+    "floorGap": 77,
+    "n": [
+      114,
+      118,
+      2821
+    ]
+  },
+  {
+    "set": "farmland",
+    "turn": 3,
+    "wall": 152,
+    "floor": 124,
+    "roof": 36,
+    "gap": 116,
+    "floorGap": 89,
+    "n": [
+      109,
+      85,
+      2803
+    ]
+  },
+  {
+    "set": "industrial",
+    "turn": 0,
+    "wall": 142,
+    "floor": 109,
+    "roof": 35,
+    "gap": 107,
+    "floorGap": 74,
+    "n": [
+      153,
+      104,
+      3067
+    ]
+  },
+  {
+    "set": "industrial",
+    "turn": 1,
+    "wall": 141,
+    "floor": 105,
+    "roof": 35,
+    "gap": 106,
+    "floorGap": 69,
+    "n": [
+      157,
+      141,
+      3110
+    ]
+  },
+  {
+    "set": "industrial",
+    "turn": 2,
+    "wall": 140,
+    "floor": 100,
+    "roof": 36,
+    "gap": 104,
+    "floorGap": 64,
+    "n": [
+      114,
+      118,
+      2821
+    ]
+  },
+  {
+    "set": "industrial",
+    "turn": 3,
+    "wall": 147,
+    "floor": 128,
+    "roof": 36,
+    "gap": 111,
+    "floorGap": 92,
+    "n": [
+      109,
+      85,
+      2803
+    ]
+  },
+  {
+    "set": "megacity",
+    "turn": 0,
+    "wall": 140,
+    "floor": 105,
+    "roof": 35,
+    "gap": 105,
+    "floorGap": 70,
+    "n": [
+      153,
+      104,
+      3067
+    ]
+  },
+  {
+    "set": "megacity",
+    "turn": 1,
+    "wall": 142,
+    "floor": 92,
+    "roof": 35,
+    "gap": 107,
+    "floorGap": 56,
+    "n": [
+      157,
+      141,
+      3110
+    ]
+  },
+  {
+    "set": "megacity",
+    "turn": 2,
+    "wall": 137,
+    "floor": 91,
+    "roof": 35,
+    "gap": 101,
+    "floorGap": 56,
+    "n": [
+      114,
+      118,
+      2821
+    ]
+  },
+  {
+    "set": "megacity",
+    "turn": 3,
+    "wall": 144,
+    "floor": 119,
+    "roof": 36,
+    "gap": 108,
+    "floorGap": 83,
+    "n": [
+      109,
+      85,
+      2803
+    ]
+  },
+  {
+    "set": "necropolis",
+    "turn": 0,
+    "wall": 144,
+    "floor": 110,
+    "roof": 35,
+    "gap": 109,
+    "floorGap": 75,
+    "n": [
+      153,
+      104,
+      3067
+    ]
+  },
+  {
+    "set": "necropolis",
+    "turn": 1,
+    "wall": 144,
+    "floor": 100,
+    "roof": 35,
+    "gap": 109,
+    "floorGap": 65,
+    "n": [
+      157,
+      141,
+      3110
+    ]
+  },
+  {
+    "set": "necropolis",
+    "turn": 2,
+    "wall": 142,
+    "floor": 105,
+    "roof": 36,
+    "gap": 107,
+    "floorGap": 69,
+    "n": [
+      114,
+      118,
+      2821
+    ]
+  },
+  {
+    "set": "necropolis",
+    "turn": 3,
+    "wall": 151,
+    "floor": 130,
+    "roof": 36,
+    "gap": 115,
+    "floorGap": 94,
+    "n": [
+      109,
+      85,
+      2803
+    ]
+  },
+  {
+    "set": "orient",
+    "turn": 0,
+    "wall": 143,
+    "floor": 111,
+    "roof": 35,
+    "gap": 108,
+    "floorGap": 75,
+    "n": [
+      153,
+      104,
+      3067
+    ]
+  },
+  {
+    "set": "orient",
+    "turn": 1,
+    "wall": 144,
+    "floor": 99,
+    "roof": 35,
+    "gap": 108,
+    "floorGap": 64,
+    "n": [
+      157,
+      141,
+      3110
+    ]
+  },
+  {
+    "set": "orient",
+    "turn": 2,
+    "wall": 143,
+    "floor": 99,
+    "roof": 35,
+    "gap": 107,
+    "floorGap": 64,
+    "n": [
+      114,
+      118,
+      2821
+    ]
+  },
+  {
+    "set": "orient",
+    "turn": 3,
+    "wall": 148,
+    "floor": 128,
+    "roof": 35,
+    "gap": 113,
+    "floorGap": 93,
+    "n": [
+      109,
+      85,
+      2803
+    ]
+  },
+  {
+    "set": "orthodox",
+    "turn": 0,
+    "wall": 145,
+    "floor": 111,
+    "roof": 35,
+    "gap": 110,
+    "floorGap": 76,
+    "n": [
+      153,
+      104,
+      3067
+    ]
+  },
+  {
+    "set": "orthodox",
+    "turn": 1,
+    "wall": 145,
+    "floor": 107,
+    "roof": 36,
+    "gap": 110,
+    "floorGap": 71,
+    "n": [
+      157,
+      141,
+      3110
+    ]
+  },
+  {
+    "set": "orthodox",
+    "turn": 2,
+    "wall": 144,
+    "floor": 117,
+    "roof": 35,
+    "gap": 108,
+    "floorGap": 81,
+    "n": [
+      114,
+      118,
+      2821
+    ]
+  },
+  {
+    "set": "orthodox",
+    "turn": 3,
+    "wall": 152,
+    "floor": 131,
+    "roof": 36,
+    "gap": 117,
+    "floorGap": 95,
+    "n": [
+      109,
+      85,
+      2803
+    ]
+  },
+  {
+    "set": "suburb",
+    "turn": 0,
+    "wall": 150,
+    "floor": 112,
+    "roof": 35,
+    "gap": 115,
+    "floorGap": 77,
+    "n": [
+      153,
+      104,
+      3067
+    ]
+  },
+  {
+    "set": "suburb",
+    "turn": 1,
+    "wall": 155,
+    "floor": 120,
+    "roof": 35,
+    "gap": 119,
+    "floorGap": 85,
+    "n": [
+      157,
+      141,
+      3110
+    ]
+  },
+  {
+    "set": "suburb",
+    "turn": 2,
+    "wall": 153,
+    "floor": 126,
+    "roof": 36,
+    "gap": 117,
+    "floorGap": 90,
+    "n": [
+      114,
+      118,
+      2821
+    ]
+  },
+  {
+    "set": "suburb",
+    "turn": 3,
+    "wall": 161,
+    "floor": 135,
+    "roof": 36,
+    "gap": 125,
+    "floorGap": 99,
+    "n": [
+      109,
+      85,
+      2803
+    ]
+  },
+  {
+    "set": "terraces",
+    "turn": 0,
+    "wall": 145,
+    "floor": 112,
+    "roof": 35,
+    "gap": 110,
+    "floorGap": 77,
+    "n": [
+      153,
+      104,
+      3067
+    ]
+  },
+  {
+    "set": "terraces",
+    "turn": 1,
+    "wall": 149,
+    "floor": 100,
+    "roof": 35,
+    "gap": 114,
+    "floorGap": 65,
+    "n": [
+      157,
+      141,
+      3110
+    ]
+  },
+  {
+    "set": "terraces",
+    "turn": 2,
+    "wall": 145,
+    "floor": 107,
+    "roof": 36,
+    "gap": 110,
+    "floorGap": 71,
+    "n": [
+      114,
+      118,
+      2821
+    ]
+  },
+  {
+    "set": "terraces",
+    "turn": 3,
+    "wall": 154,
+    "floor": 134,
+    "roof": 36,
+    "gap": 119,
+    "floorGap": 99,
+    "n": [
+      109,
+      85,
+      2803
+    ]
+  },
+  {
+    "set": "wetland",
+    "turn": 0,
+    "wall": 141,
+    "floor": 111,
+    "roof": 35,
+    "gap": 106,
+    "floorGap": 76,
+    "n": [
+      153,
+      104,
+      3067
+    ]
+  },
+  {
+    "set": "wetland",
+    "turn": 1,
+    "wall": 144,
+    "floor": 106,
+    "roof": 35,
+    "gap": 108,
+    "floorGap": 71,
+    "n": [
+      157,
+      141,
+      3110
+    ]
+  },
+  {
+    "set": "wetland",
+    "turn": 2,
+    "wall": 139,
+    "floor": 112,
+    "roof": 36,
+    "gap": 104,
+    "floorGap": 76,
+    "n": [
+      114,
+      118,
+      2821
+    ]
+  },
+  {
+    "set": "wetland",
+    "turn": 3,
+    "wall": 148,
+    "floor": 131,
+    "roof": 36,
+    "gap": 112,
+    "floorGap": 95,
+    "n": [
+      109,
+      85,
+      2803
+    ]
+  }
+]

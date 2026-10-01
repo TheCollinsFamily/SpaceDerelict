@@ -36,6 +36,7 @@ import { IdleClock, breath, idleFrames, phaseOf } from './idleClock';
 import { CALM } from '../meta/settings';
 import { UNIT_MUZZLES } from './unitMuzzles';
 import { lookOf } from '../../content/upgradeLooks';
+import { floorWash, wallWash, washAlpha } from './laneWash';
 
 /** The old marks were drawn for a 26 px cell; on this board they are drawn this much bigger. */
 const K = 1.9;
@@ -187,6 +188,11 @@ export class IsoRenderer extends Renderer {
   private props = new Map<number, Sprite>();
   private creepState = new Uint16Array(0);
   private creepSprites = new Map<number, Sprite[]>();
+  /** The pale wash on creeped streets and the walls over them (src/render/laneWash.ts), by cell; and how strongly it shows now. */
+  private washes = new Map<number, Graphics[]>();
+  private washA = 0;
+  /** Each wash's own share of that strength: a street's floor shows its strain (bog, embers) through it. */
+  private washK = new WeakMap<Graphics, number>();
   private units = new Map<number, UnitView>();
   private dying: Dying[] = [];
   /** The broodlings and puppet queens drawn with their pictures, by the sim's id. */
@@ -538,6 +544,7 @@ export class IsoRenderer extends Renderer {
 
     this.updateCamera(sim, dtReal);
     this.syncMap(sim);
+    this.updateWash();
     this.syncCreep(sim);
     this.life.update(dtReal);
     this.skyline.update(dtReal);
@@ -583,6 +590,7 @@ export class IsoRenderer extends Renderer {
     this.blockSprites = [];
     this.props.clear();
     this.creepSprites.clear();
+    this.washes.clear();
     this.creepState = new Uint16Array(sim.map.cells.length);
     this.units.clear();
     this.allyViews.clear();
@@ -760,6 +768,8 @@ export class IsoRenderer extends Renderer {
     this.creepState.fill(0);
     for (const list of this.creepSprites.values()) for (const s of list) s.destroy();
     this.creepSprites.clear();
+    for (const list of this.washes.values()) for (const w of list) w.destroy();
+    this.washes.clear();
     this.life.clear();
   }
 
@@ -897,6 +907,14 @@ export class IsoRenderer extends Renderer {
     this.props.set(cell, s);
   }
 
+  /** How strongly the street wash shows: by how wide a cell is on the screen now (laneWash.ts washAlpha). */
+  private updateWash(): void {
+    const a = washAlpha(2 * this.geo.a * this.camScale);
+    if (Math.abs(a - this.washA) < 0.01 && (a > 0) === (this.washA > 0)) return;
+    this.washA = a;
+    for (const list of this.washes.values()) for (const w of list) { w.alpha = a * (this.washK.get(w) ?? 1); w.visible = a > 0; }
+  }
+
   /**
    * The skin. Only the cells that changed since the last frame are drawn again.
    *
@@ -917,6 +935,13 @@ export class IsoRenderer extends Renderer {
     // Which strain works on each cell of skin: 1 mire, 2 burning (drawn over the skin, with a ragged edge where it stops).
     const strainOf = new Uint8Array(n);
     for (let c = 0; c < n; c++) if (on[c]) { const e = sim.creepEffectAt(c); strainOf[c] = e.dps > 0 ? 2 : e.slow < 1 ? 1 : 0; }
+    // A wall over a creeped street is washed with it (laneWash.ts): the street in front of it, in the view.
+    const washedBelow = (x: number, y: number): boolean => {
+      if (x < 0 || y < 0 || x >= size.w || y >= size.h) return false;
+      const o = boardCell(g, x, y);
+      const oc = o.y * W + o.x;
+      return on[oc] === 1 && this.heightOf(sim, oc) === 0;
+    };
     for (let vy = 0; vy < size.h; vy++) for (let vx = 0; vx < size.w; vx++) {
       const b = boardCell(g, vx, vy);
       const cell = b.y * W + b.x;
@@ -940,12 +965,15 @@ export class IsoRenderer extends Renderer {
           return this.heightOf(sim, oc) !== h || strainOf[oc] === mine;
         });
         state = 1 + open + (mine === 1 ? 32 : 0) + (mine === 2 ? 64 : 0) + (sim.isBody(cell) ? 128 : 0)
-          + (h === 0 && held[cell] ? 256 : 0) + (sim.map.plinths[cell] > 0 ? 512 : 0) + (strainOpen << 10);
+          + (h === 0 && held[cell] ? 256 : 0) + (sim.map.plinths[cell] > 0 ? 512 : 0) + (strainOpen << 10)
+          + (h && washedBelow(vx, vy + 1) ? 16384 : 0) + (h && washedBelow(vx + 1, vy) ? 32768 : 0);
       }
       if (state === this.creepState[cell]) continue;
       this.creepState[cell] = state;
       for (const s of this.creepSprites.get(cell) ?? []) s.destroy();
       this.creepSprites.delete(cell);
+      for (const w of this.washes.get(cell) ?? []) w.destroy();
+      this.washes.delete(cell);
       this.life.remove(cell);
       const prop = this.props.get(cell);
       if (prop) prop.visible = state === 0;
@@ -993,6 +1021,19 @@ export class IsoRenderer extends Renderer {
           if (lip) made.push(lip);
         }
       }
+      // The street and the walls over it, washed pale: told from the roofs at any distance.
+      const wash: Graphics[] = [];
+      const putWash = (layer: Container, w: Graphics, z2: number, k: number) => {
+        w.position.set(p.x, p.y); w.zIndex = z2; this.washK.set(w, k);
+        w.alpha = this.washA * k; w.visible = this.washA > 0; layer.addChild(w); wash.push(w);
+      };
+      // The floor lighter than the walls' wash: it is mostly seen already; under a strain, lighter still, so the bog or the embers show.
+      if (!h && !(state & 256)) putWash(this.creepFloor, floorWash(g.a, g.b), z + 2, state & 96 ? 0.35 : 0.7);
+      if (h && !(state & 512)) {
+        if (state & 16384) putWash(this.sorted, wallWash(g.a, g.b, h * g.level, 'south'), z + 3, 1);
+        if (state & 32768) putWash(this.sorted, wallWash(g.a, g.b, h * g.level, 'east'), z + 3, 1);
+      }
+      if (wash.length) this.washes.set(cell, wash);
       this.creepSprites.set(cell, made);
       for (const x of made) this.creepRest.set(x, x.y);
       const core = sim.cellCenter(sim.map.coreCell);
