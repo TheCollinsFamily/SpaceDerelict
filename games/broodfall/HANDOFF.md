@@ -950,9 +950,7 @@ RFAB_API_BASE=http://localhost:3011 RFAB_CONNECT_JWT=<tester jwt> node tools/sho
 
 ## OPEN — Collins's calls on the art (none of them blocks play)
 
-1. **Do ordinary soldiers shoot limbs on roofs?** His rule 16 gives them short-range guns
-   so that attacks on towers beside the street make sense. The sim today only lets some
-   kinds attack limbs. Turning it on changes the balance: it is a gameplay decision.
+1. **(DECIDED Oct 1 2026) Ordinary soldiers do NOT shoot limbs on roofs.** Collins: "only science attacks limbs". War bodies keep walking past roof limbs; the science caste is the one that goes after them. Still to confirm with him: the war SPECIALISTS that hit limbs on blocks today (sappers, mortar beetles, siege cannons, bombers).
 2. **How much Orthodox** in the Temple Cities: as accents (`board-hive-a.png`) or generous
    (`board-hive-b.png`). The board is built with accents.
 3. **The HUD** is still the old khaki procurement look over a board that is now painted.

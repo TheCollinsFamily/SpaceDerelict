@@ -518,10 +518,7 @@ a nerd, and it explains why she looks like nothing else aboard.
 
 ## OPEN — Collins's calls
 
-1. **Should ordinary soldiers shoot limbs beside the street as they pass?** Today they do not
-   (see "What attacking means in the game today"). Rule 16 reads as if they do. It is a change
-   to the game: every lane-side limb would take fire, so it has to be measured against the
-   placement guardrail before it is kept.
+1. **DECIDED Oct 1 2026: no.** Collins: "only science attacks limbs". Ordinary soldiers walk past limbs beside the street; rule 16's short guns are for what stands in the street. (To confirm with him: sappers, mortar beetles, siege cannons and bombers hit limbs on blocks today.)
 2. **How much Orthodox on the buildings:** accents (`board-hive-a.png`) or generous
    (`board-hive-b.png`).
 3. **The royal caste** is drawn in Orthodox dress. Rule 12 said "at least the warrior caste".

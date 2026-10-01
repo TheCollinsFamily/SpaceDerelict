@@ -80,7 +80,7 @@ three campaign outlines, covers and promotional art.
   sinks), civilians fleeing the crash, surgery under fire, burrowing out of a sealed-in body, asides
   in a seeded order, lance strips carrying their verbs. (~~The globe as a true 3D sphere~~:
   `src/ui/globe3d.ts`, Sep 30 2026.) What that audit left, with reasons: its items 18-26.
-- Do ordinary soldiers shoot limbs on roofs: Collins (a balance change).
+- ~~Do ordinary soldiers shoot limbs on roofs~~: no (Collins, Oct 1 2026: "only science attacks limbs").
 - The first LONG limb (built and tested, used by none): Collins picks the limb.
 
 ## 7. Owed deploys and housekeeping (Collins)
