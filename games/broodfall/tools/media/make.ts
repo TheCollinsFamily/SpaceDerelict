@@ -19,7 +19,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { makeClip, makeStill, pool as artPool } from '../art/rfab.mjs';
 import { songTakes, soundTake, RAW as AUDIO_RAW } from '../audio/rfab-audio.mjs';
-import { OUT, RAW, REVIEW, balance, duration, ff, ffStderr, pool, ready, speechSpan, transcribe, tts, veoSpeech } from './lib.mjs';
+import { OUT, RAW, REVIEW, assertSpeakable, balance, duration, ff, ffStderr, pool, ready, speechSpan, transcribe, tts, veoSpeech } from './lib.mjs';
 import { ANNOUNCER, CLIPS, CLIP_TAIL, FIELD, LEADER_REF, MUSIC, PHOTOS, REVEALS, SCENE_REF, FILM_REF } from './prompts.mjs';
 import { ENDING_FILMS, LEADER_VOICES, MEDIA, NARRATION, lineKey, looseLeaderLines, scenesOf, speakerOf, spokenText, voiceKey } from '../../content/media';
 import { FACTIONS, type FactionId, type Scene } from '../../content/campaign';
@@ -155,7 +155,7 @@ async function voices() {
   const jobs: J[] = [];
   for (const [id, n] of Object.entries(NARRATION)) {
     if (!want(id)) continue;
-    jobs.push({ id, run: () => veoSpeech({ out: path.join(D.voice, `${id}.mp4`), seconds: secsFor(n.line), prompt: ANNOUNCER[n.side](n.line) }) });
+    jobs.push({ id, run: () => veoSpeech({ out: path.join(D.voice, `${id}.mp4`), seconds: secsFor(n.line), prompt: ANNOUNCER[n.side](assertSpeakable(speakable(n.line).text)) }) });
   }
   // A line rewritten since its take was baked: the old take goes to v1/, a new one is made.
   const baked = fs.existsSync(path.join(OUT, 'media.json')) ? JSON.parse(fs.readFileSync(path.join(OUT, 'media.json'), 'utf8')).voices ?? {} : {};
@@ -175,7 +175,7 @@ async function voices() {
       const s = speakable(c);
       return veoSpeech({
         out: path.join(D.voice, `${fileKey(l.key)}${all.length > 1 ? `-${'abcdef'[i]}` : ''}.mp4`), seconds: secsFor(c, true),
-        prompt: ANNOUNCER.voice(s.text) + (s.stressed.length ? ` He leans hard on ${s.stressed.map((w) => `"${w}"`).join(' and ')}.` : ''),
+        prompt: ANNOUNCER.voice(assertSpeakable(s.text)) + (s.stressed.length ? ` He leans hard on ${s.stressed.map((w) => `"${w}"`).join(' and ')}.` : ''),
       });
     } }));
   }

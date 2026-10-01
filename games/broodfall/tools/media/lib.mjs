@@ -65,6 +65,17 @@ const firstUrl = (r, ...keys) => {
 
 export const spent = { speech: 0, tts: 0 };
 
+/**
+ * The words a video model is asked to SAY never hold an all-caps word of two or more letters: it reads one as an
+ * acronym and spells it out (Oct 1 2026, the first-boot film: "nothing E V E R happens", "out of the S K Y"). Lower-case
+ * it and put the stress in the prompt ("He leans hard on ..."). "AI" is said as letters on purpose. Returns the words.
+ */
+export function assertSpeakable(words) {
+  const caps = (String(words).match(/\b[A-Z]{2,}\b/g) ?? []).filter((w) => w !== 'AI');
+  if (caps.length) throw new Error(`spoken words with all-caps ${caps.join(', ')} (a video model spells them out): "${words}"`);
+  return words;
+}
+
 /** A spoken line by a text-to-video model with sound (the picture is thrown away). Returns the raw .mp4. */
 export async function veoSpeech({ out, prompt, seconds = 8, model = 'imagerouter:veo-3.1-lite-t2v' }) {
   if (fs.existsSync(out)) return out;

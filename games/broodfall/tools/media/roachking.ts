@@ -17,7 +17,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { makeClip, makeStill, pool } from '../art/rfab.mjs';
-import { ROOT, api, balance, duration, ff, ffStderr } from './lib.mjs';
+import { ROOT, api, assertSpeakable, balance, duration, ff, ffStderr } from './lib.mjs';
 import { ROACH_ADDRESSES, ROACH_STILLS, type RoachShot } from '../../content/roachKing';
 
 const RAW = path.join(ROOT, 'art-src-new', 'roach');
@@ -90,7 +90,7 @@ function clipPrompt(s: RoachShot): string {
   const words = s.line.replace(/\b[A-Z]{2,}\b/g, (w) => w.toLowerCase());
   if (!s.line) return `${s.action} No one speaks; only the hum of computers, the room's quiet and a low, distant, pulsing rumble. One continuous shot, no cuts. No text appears on screen. No music.`;
   const stress = [...s.line.matchAll(/\b[A-Z]{2,}\b/g)].map((m) => `"${m[0].toLowerCase()}"`);
-  return `${s.action} ${s.offscreen ? 'From off screen, he' : 'He'} says, to the camera: "${words}"${stress.length ? ` He leans hard on ${stress.join(' and ')}.` : ''} ${VOICE} ${TAIL}`;
+  return `${s.action} ${s.offscreen ? 'From off screen, he' : 'He'} says, to the camera: "${assertSpeakable(words)}"${stress.length ? ` He leans hard on ${stress.join(' and ')}.` : ''} ${VOICE} ${TAIL}`;
 }
 const wordCount = (t: string) => t.split(/\s+/).filter(Boolean).length;
 export const secsFor = (line: string) => (!line ? 6 : wordCount(line) <= 6 ? 4 : wordCount(line) <= 12 ? 6 : 8);

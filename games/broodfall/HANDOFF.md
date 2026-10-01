@@ -284,6 +284,12 @@ that replace the intro vid for the very first mission (not revealing the ship an
 - **Beats:** `node tools/shot-bmovie.mjs [A B C D E]` (port 5251; all pass Oct 1 2026), screenshots
   `notes/screens/2026-10-01/bmovie-*`. `tools/shot-onboarding.mjs` A now jumps through the new film; its later step
   "print yourself a body" (`#yoke-scene`) times out on main too (checked on 7ff1b56c, before this work).
+- **Spoken words are never in capitals** (Oct 1 2026): a video model (Veo) reads an all-caps word as an acronym and spells
+  it (the film's first cut: "nothing E V E R happens", "out of the S K Y"). Write the line in normal case and put the stress
+  in the prompt. Guards: `speakable` in `tools/art/bmovie.mjs`, `assertSpeakable` in `tools/media/lib.mjs` (used by
+  `tools/media/make.ts` and `tools/media/roachking.ts`), test `tests/speakable.test.ts`. Audit:
+  `npx vite-node tools/media/caps-audit.ts -- --hear` lists every spoken line with a word in capitals and transcribes
+  its baked take; on Oct 1 2026 all 33 (the Voice, the Director, the Delegate, the Roach King) came back as words.
 - **Collins's to judge:** the film itself; the town's name "Luckwell Gardens" (from the lore's Luckwell company
   suburbs); the reveal's two lines.
 
