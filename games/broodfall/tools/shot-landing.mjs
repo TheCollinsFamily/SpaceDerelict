@@ -128,6 +128,7 @@ try {
       const mp4 = join(OUT, `landing-${set}.mp4`);
       const r = spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-i', webm, '-vf', 'fps=30,format=yuv420p', '-c:v', 'libx264', '-crf', '22', '-preset', 'medium', '-movflags', '+faststart', mp4]);
       check(r.status === 0 && fs.existsSync(mp4), `${set}: recorded`, mp4);
+      fs.rmSync(webm, { force: true });
     }
   }
 
