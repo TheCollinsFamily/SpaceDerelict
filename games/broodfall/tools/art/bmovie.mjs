@@ -52,6 +52,8 @@ const NOTHING =
   'No text anywhere: no letters, no words, no numbers, no signs with writing, no logos, no posters. No crosses, no ' +
   'stars of any religion, no crescents, no churches, no steeples, no religious symbol of any kind. No humans and no ' +
   'human faces: every person is an insect. No spaceship, no aircraft, no gear symbol.';
+// The Commonwealth flag (the Lone Head; public/media/roach/flag.webp), on the porches (Oct 1 2026).
+const FLAG = 'A cloth flag hangs from a short wooden pole fixed to the porch post: exactly the flag of the fourth reference picture, the Commonwealth flag, a deep blue vertical band at the hoist bearing a white insect-head silhouette with two long curving antennae, a white stripe on top and a red stripe below. There is NO star on it anywhere: the white emblem is the insect head. Across the street, the porch of the house next door flies the same flag.';
 // The film is cut to 4:3 from a 16:9 clip: everything that matters stays in the middle.
 // v1 of star, siren and stir drew crowds of insect monsters on all fours (they read as the threat); beam drew strangers behind.
 const EMPTY = 'Nobody is in the picture: no people, no figures, no creatures, no silhouettes on the roofs.';
@@ -71,9 +73,12 @@ export const SHOTS = [
   { id: 'porch', use: 4.5,
     still: `${FILM} Night, the porch of a pastel paper house in ${SUBURB}: two ${PEOPLE.replace('most of them are women', 'both women')} ` +
       'sit on a porch swing with glasses of lemonade, laughing; behind them a round window glows blue from a television; ' +
-      `a wax picket fence and a porch lamp in front. Seen from the front lawn at their height. ${MIDDLE} ${NOTHING}`,
+      `a wax picket fence and a porch lamp in front. Seen from the front lawn at their height. ${FLAG} ${MIDDLE} ${NOTHING}`,
+    refs: ['refs/flag.png', 'refs/flag-wave.png'],
+    // The 4:3 cut keeps the right of the picture: the porch's flag hangs at its right edge.
+    cropX: 1,
     clip: 'The porch swing rocks gently; the two insect women chat, one laughs and sips her lemonade, antennae bobbing; ' +
-      'moths circle the porch lamp; the television glow flickers in the window. The camera holds.' },
+      'moths circle the porch lamp; the television glow flickers in the window; the flag stirs gently in the night breeze and keeps its white insect-head emblem. The camera holds.' },
   { id: 'laundry', use: 4.5,
     still: `${FILM} Night on a pastel suburban street corner in ${SUBURB}: the lit glass front of a small laundromat (rows ` +
       'of round washing machines inside, no writing anywhere), and beside it the dark front of a small school of pale ' +
@@ -196,7 +201,7 @@ const refs = () => [path.join(CONCEPTS, 'r2-film-still.png'), path.join(CONCEPTS
 
 async function stills(ids) {
   const res = await pool(SHOTS.filter((s) => want(ids, s.id)), 4, (s) => makeStill({ slug: `bmovie ${s.id}`, out: raw(`${s.id}.png`),
-    prompt: s.still, key: null, width: W, height: H, quality: 'high', refFiles: refs() }));
+    prompt: s.still, key: null, width: W, height: H, quality: 'high', refFiles: [...refs(), ...(s.refs ?? []).map(raw)] }));
   res.forEach((r) => { if (!r.ok) console.warn(`[bmovie] still failed: ${r.error.message.slice(0, 300)}`); });
 }
 
@@ -308,7 +313,7 @@ function bake() {
     if (!fs.existsSync(clip)) throw new Error(`${s.id}: no clip`);
     const from = s.from ?? 0.15;
     const speed = s.speed ?? Math.min(1, (dur(clip) - from) / s.use);
-    ffmpeg(['-ss', String(from), '-i', clip, '-vf', `setpts=PTS/${speed.toFixed(4)},scale=-2:${FH},crop=${FW}:${FH},fps=${FPS}`, '-t', String(s.use),
+    ffmpeg(['-ss', String(from), '-i', clip, '-vf', `setpts=PTS/${speed.toFixed(4)},scale=-2:${FH},crop=${FW}:${FH}:(iw-${FW})*${s.cropX ?? 0.5}:0,fps=${FPS}`, '-t', String(s.use),
       '-an', '-c:v', 'libx264', '-crf', '14', '-pix_fmt', 'yuv420p', out], `cut ${s.id}`);
     parts.push(out);
   }
