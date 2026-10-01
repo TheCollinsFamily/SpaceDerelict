@@ -15,12 +15,17 @@
  * Shared blocks are the ship template's own words (tools/art/templates/ship.mjs), so that a
  * newsreel's insect people are the same people as the scene cards'.
  */
+import fs from 'node:fs';
 import path from 'node:path';
 import { ROOT } from './lib.mjs';
 
 const SRC = path.join(ROOT, 'art-src');
 export const CONCEPTS = path.join(ROOT, 'notes', 'concepts', '2026-09-29');
-export const LEADER_REF = (f) => path.join(SRC, 'ship', `leader-${f}.png`);
+// The raw leader still (art-src/); when it is not on disk (art-src/ was wiped Oct 1 2026), the baked portrait stands in.
+export const LEADER_REF = (f) => {
+  const raw = path.join(SRC, 'ship', `leader-${f}.png`);
+  return fs.existsSync(raw) ? raw : path.join(ROOT, 'public', 'art', 'ship', `leader-${f}.webp`);
+};
 export const SCENE_REF = (id) => path.join(SRC, 'ship', 'scenes', `${id}.png`);
 export const FILM_REF = path.join(CONCEPTS, 'r2-film-still.png');
 export const CASTES_REF = path.join(CONCEPTS, 'r2-castes-human.png');
@@ -146,10 +151,11 @@ export const CLIPS = {
 
 /** The press photographs of the clippings (content/media.ts `photo`). */
 export const PHOTOS = {
-  // v1 (art-src/media/photos/v1/): seen from a hill, the cards made shapes that read as big letters.
-  'p-field': `${PRESS} Taken at ground level at the edge of a huge crowd in a meadow: rows upon rows of insect people stand shoulder to shoulder, each holding a plain blank card up over the head, a sea of raised cards to the horizon, far too close to see any pattern they make; in front, two organisers with megaphones call out instructions. Every card is blank, nothing on it. ${CAST} ${CLEAN}`,
+  // Oct 1 2026 (Collins): the Delegation write in the CROPS. The card-field photo it replaces: art-src/media/photos/p-field.png (if recovered).
+  'p-field': `${PRESS} Taken from a small crop-dusting aeroplane low over a vast golden wheat field: insect farmers in overalls and straw hats, with scythes and an old tractor-drawn mower, are cutting enormous curving furrows into the standing wheat, the beginning of a giant pattern far too big to make out from here; in front, two organisers with megaphones and a large paper plan call out directions. No letters, numbers or readable marks anywhere. ${CAST} ${CLEAN}`,
   'p-voice': { refs: ['faithful'], prompt: `${PRESS} ${WHO.faithful}, at a big ribbon microphone in a radio studio, one hand raised, eyes shut, sweating, mid-sermon; a studio clock and a round on-air lamp behind. ${CLEAN}` },
-  'p-dish': { refs: ['institute'], prompt: `${PRESS} ${WHO.institute}, standing in front of a giant radio telescope dish at night, a headset round his neck and a handheld game console in his hand, looking smug at the camera. ${CLEAN}` },
+  // Oct 1 2026 (Collins): the Institute reach the ship with a laser, not a dish.
+  'p-laser': { refs: ['institute'], prompt: `${PRESS} ${WHO.institute}, standing at night in front of an open observatory dome from which a perfectly straight thin bright laser beam shoots up into the starry sky, a headset round his neck and a handheld game console in his hand, looking smug at the camera. There is no satellite dish anywhere. ${CLEAN}` },
   'p-tea': { refs: ['delegation'], prompt: `${PRESS} ${WHO.delegation}, with three other elderly insect delegates in cardigans and flower garlands, sitting at a small folding table in a meadow taking tea from a flowered teapot, smiling serenely; in the far background a dark stain of creature flesh on the hills. ${CAST} ${CLEAN}` },
   'p-radios': `${PRESS} A crowd of insect townsfolk in 1950s coats and hats sitting on a grassy hillside at dusk, each holding a portable radio to the ear, listening intently, some with eyes closed; paper lanterns on poles. ${CAST} ${CLEAN}`,
   'p-labs': `${PRESS} Outside the glass doors of a modern laboratory building, the door handles chained together with a heavy padlocked chain; a group of insect engineers in lab coats and ties stand on the steps with cardboard boxes of their things, looking bewildered. ${CAST} ${CLEAN}`,

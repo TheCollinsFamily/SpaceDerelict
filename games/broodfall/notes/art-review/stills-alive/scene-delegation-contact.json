@@ -1,14 +1,14 @@
 {
   "id": "scene:delegation-contact",
   "model": "seegen:sd2-fast",
-  "seconds": 4.292,
+  "seconds": 4.333,
   "size": "1112x834",
-  "bytes": 1890082,
-  "medianStep": 0.21,
-  "maxStep": 0.9,
-  "seamBefore": 0.81,
-  "seamAfter": 0.39,
-  "maxDrift": 1.25,
-  "fixed": "cut 3 snapping frames; crossfade 0.6s",
+  "bytes": 2136334,
+  "medianStep": 0.36,
+  "maxStep": 3.83,
+  "seamBefore": 2.62,
+  "seamAfter": 0.43,
+  "maxDrift": 12.86,
+  "fixed": "cut 2 snapping frames; crossfade 0.6s",
   "tiles": "the still it started from | then 8 frames across the loop"
 }

@@ -1,14 +1,14 @@
 {
   "id": "scene:institute-contact",
   "model": "seegen:sd2-fast",
-  "seconds": 3.958,
+  "seconds": 4.292,
   "size": "1112x834",
-  "bytes": 950149,
+  "bytes": 936850,
   "medianStep": 0.25,
-  "maxStep": 0.76,
-  "seamBefore": 1.61,
-  "seamAfter": 0.38,
-  "maxDrift": 3.97,
-  "fixed": "cut 11 snapping frames; crossfade 0.6s",
+  "maxStep": 0.63,
+  "seamBefore": 0.8,
+  "seamAfter": 0.61,
+  "maxDrift": 2.05,
+  "fixed": "cut 3 snapping frames; crossfade 0.6s",
   "tiles": "the still it started from | then 8 frames across the loop"
 }

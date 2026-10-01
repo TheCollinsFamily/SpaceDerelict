@@ -205,7 +205,6 @@
  "photos": {
   "p-field": "media/photos/p-field.webp",
   "p-voice": "media/photos/p-voice.webp",
-  "p-dish": "media/photos/p-dish.webp",
   "p-tea": "media/photos/p-tea.webp",
   "p-radios": "media/photos/p-radios.webp",
   "p-labs": "media/photos/p-labs.webp",
@@ -217,7 +216,8 @@
   "p-jars": "media/photos/p-jars.webp",
   "p-street": "media/photos/p-street.webp",
   "p-levy": "media/photos/p-levy.webp",
-  "p-host": "media/photos/p-host.webp"
+  "p-host": "media/photos/p-host.webp",
+  "p-laser": "media/photos/p-laser.webp"
  },
  "pictures": {
   "delegation-reveal-end": "media/pictures/delegation-reveal-end.webp",

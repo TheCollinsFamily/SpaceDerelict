@@ -49,6 +49,13 @@
       "h": 834,
       "seconds": 4.417
     },
+    "scene:delegation-contact": {
+      "video": "alive/scene-delegation-contact.mp4",
+      "poster": "alive/scene-delegation-contact.webp",
+      "w": 1112,
+      "h": 834,
+      "seconds": 4.333
+    },
     "scene:delegation-gaia": {
       "video": "alive/scene-delegation-gaia.mp4",
       "poster": "alive/scene-delegation-gaia.webp",
@@ -108,6 +115,13 @@
     "scene:faithful-signs": {
       "video": "alive/scene-faithful-signs.mp4",
       "poster": "alive/scene-faithful-signs.webp",
+      "w": 1112,
+      "h": 834,
+      "seconds": 4.292
+    },
+    "scene:institute-contact": {
+      "video": "alive/scene-institute-contact.mp4",
+      "poster": "alive/scene-institute-contact.webp",
       "w": 1112,
       "h": 834,
       "seconds": 4.292

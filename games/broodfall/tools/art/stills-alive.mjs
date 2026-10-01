@@ -29,7 +29,10 @@ import { spawnSync } from 'node:child_process';
 import { balance, ffmpeg, makeClip, pool, ready, spent } from './rfab.mjs';
 import { ART, REVIEW, SRC } from './lib/manifest.mjs';
 
-const DIR = path.join(SRC, 'stills-alive');
+// BROODFALL_ART_NEW (Oct 1 2026: art-src/ was wiped and is being recovered): raw clips go to art-src-new/ instead,
+// and a still redrawn there (tools/art/redraw-contacts.mjs) is the source over the one in art-src/.
+const NEW = process.env.BROODFALL_ART_NEW;
+const DIR = path.join(NEW || SRC, 'stills-alive');
 const OUT = path.join(ART, 'alive');
 const REV = path.join(REVIEW, 'stills-alive');
 const MODELS = (process.env.ALIVE_MODELS || 'seegen:sd2-fast,seegen:sd2-mini').split(',');
@@ -48,14 +51,18 @@ const FILM = (what) => `A still from a 1950s Technicolor film comes gently alive
 const VIEW = (what) => `This painted aerial view of a city comes gently alive; the city stays exactly as it is drawn. ${what} ${KEEP}`;
 const REEL = (what) => `A frame from a 1950s monster film comes gently alive, held like an extremely slow-motion shot. ${what} ${KEEP}`;
 
-const scenes = (id) => path.join(SRC, 'ship', 'scenes', `${id}.png`);
+const scenes = (id) => {
+  const redrawn = NEW && path.join(NEW, 'ship', 'scenes', `${id}.png`);
+  return redrawn && fs.existsSync(redrawn) ? redrawn : path.join(SRC, 'ship', 'scenes', `${id}.png`);
+};
 const terr = (id) => path.join(SRC, 'ship', 'territories', `${id}.png`);
 
 /** aspect: the clip's; y: where down the still the cut is taken (0 top, 0.5 middle, 1 bottom). */
 export const SURFACES = [
   // ---- the faction scenes (campaignUi sceneHtml; a lobby card on the parchment) ----
   { group: 'scene', id: 'delegation-contact', from: scenes, aspect: '4:3',
-    prompt: FILM('Seen from high above: a soft breeze ripples the grass and the crops, slow cloud shadows drift across the fields, the tiny figures along the road walk a few steps and the little buses inch along. The flowers laid out in the field stay exactly as they are.') },
+    // Oct 1 2026: redrawn as the crop letter (Collins: the Delegation write in the crops).
+    prompt: FILM('Seen from high above: a soft breeze sends slow waves rippling across the golden wheat, slow cloud shadows drift across the fields, the tiny farmers and the little mower at the edge of the letter move a few steps, the tiny figures along the road walk and the little buses inch along. The shapes cut into the wheat, the heart and the two figures stay exactly as they are.') },
   { group: 'scene', id: 'delegation-understand', from: scenes, aspect: '4:3',
     prompt: FILM('The red glassy growth that has burst through the window pulses very slowly, glistening; the little paper flags on the table stir; the guests breathe and shift their weight a little, the one at the right holds out his plate.') },
   { group: 'scene', id: 'delegation-stop-war', from: scenes, aspect: '4:3',
@@ -75,7 +82,8 @@ export const SURFACES = [
   { group: 'scene', id: 'faithful-prepare', from: scenes, aspect: '4:3',
     prompt: FILM('The pink evening clouds drift slowly; a breeze stirs the coats, dresses and hats of the waiting crowd; the preacher breathes and keeps pointing at the chart; the marks on the chart stay exactly as they are; the child at the telescope shifts a little.') },
   { group: 'scene', id: 'institute-contact', from: scenes, aspect: '4:3',
-    prompt: FILM('The little television screen flickers; the dish outside the window turns very slowly against the night; the scientists shift their weight, the chart wobbles a little in their hands; the young one in the beanbag breathes, his thumbs moving on the controller.') },
+    // Oct 1 2026: redrawn with the observatory laser (Collins: the Institute aim a laser at the ship).
+    prompt: FILM('The little television screen flickers; the green laser beam from the dome outside the window pulses on and off in a steady counting rhythm while staying perfectly straight and still; the green lamps on the console blink; the scientists shift their weight, the chart wobbles a little in their hands; the young one in the beanbag breathes, his thumbs moving on the controller.') },
   { group: 'scene', id: 'institute-machines', from: scenes, aspect: '4:3',
     prompt: FILM('Cold frosty mist drifts slowly inside the glass pods; the hanging lamps hum and flicker very faintly; the stormy clouds outside drift; the young one with the clipboard breathes and taps his pencil. The two men at the truck stay where they are, holding the pod on its trolley, only breathing.') },
   { group: 'scene', id: 'institute-pipeline', from: scenes, aspect: '4:3',
