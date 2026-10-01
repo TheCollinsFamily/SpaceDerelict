@@ -11,7 +11,7 @@
  */
 import { Container, Sprite, type Application, type Texture } from 'pixi.js';
 import type { BoardArtSet } from './art';
-import { buildingsOf, pickVariant, planGuests, variantName } from './biome';
+import { LOT_GUTTER, buildingsOf, lotShade, pickVariant, planGuests, variantName } from './biome';
 import { wallIndex } from './iso';
 import { CellType, PLATE, type PlatePattern } from '../sim/citymap';
 
@@ -125,7 +125,10 @@ export function platePicture(
     for (let l = hL(x, y + 1); l < h; l++) put(sorted, face('south', l), px, py + b - (l + 1) * level, z);
     for (let l = hL(x + 1, y); l < h; l++) put(sorted, face('east', l), px + a, py + b - (l + 1) * level, z);
     const roof = put(sorted, art.sprite('floors', `${roofName}-${ij}`, set) ?? art.sprite('floors', `roof-${ij}`, set), px, py - h * level, z + 1);
-    if (roof) roof.tint = (biome?.roofTint ?? ROOF_TINT)[Math.min(h, 3) - 1] ?? 0xffffff;
+    if (roof) roof.tint = lotShade((biome?.roofTint ?? ROOF_TINT)[Math.min(h, 3) - 1] ?? 0xffffff, bld);
+    const otherLot = (dx: number, dy: number) => hL(x + dx, y + dy) === h && local[(y + dy) * PLATE + x + dx] !== local[i];
+    if (otherLot(0, -1)) { const e = put(sorted, art.sprite('creep', 'edge-shade-north'), px, py - h * level, z + 4); if (e) e.alpha = LOT_GUTTER; }
+    if (otherLot(-1, 0)) { const e = put(sorted, art.sprite('creep', 'edge-shade-west'), px, py - h * level, z + 4); if (e) e.alpha = LOT_GUTTER; }
     if (hL(x, y - 1) > h) put(sorted, art.sprite('creep', 'edge-shade-north'), px, py - h * level, z + 4);
     if (hL(x - 1, y) > h) put(sorted, art.sprite('creep', 'edge-shade-west'), px, py - h * level, z + 4);
     // What stands on the roof: as IsoRenderer.addProp.

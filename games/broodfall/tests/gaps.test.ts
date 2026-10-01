@@ -263,14 +263,18 @@ describe('burrowing: the body digs back out of a wall it sealed itself behind', 
     expect(s.issue({ kind: 'burrow', cell: 0 }).ok).toBe(false); // nothing of yours near the board's corner
   });
 
-  it('a body the scripted player walled in (seed 3) can draft again after one burrow', () => {
-    const s = new Sim({ ...CFG, seed: 3, directive: { kind: 'hold', waves: 12 }, organStage: true });
-    const bot = new Autoplayer(4);
+  it('a body the scripted player walled in can draft again after one burrow', () => {
+    // The first seed whose scripted run walls itself in (seed 3 did until the districts of Oct 1 2026).
+    let s!: Sim;
     let sealed = false;
-    for (let t = 0; t < 24000 && s.outcome === 'playing' && !sealed; t++) {
-      bot.act(s, DT);
-      s.tick();
-      sealed = s.takeEvents().some((e) => e.kind === 'sealed-in');
+    for (let seed = 1; seed <= 20 && !sealed; seed++) {
+      s = new Sim({ ...CFG, seed, directive: { kind: 'hold', waves: 12 }, organStage: true });
+      const bot = new Autoplayer(seed + 1);
+      for (let t = 0; t < 24000 && s.outcome === 'playing' && !sealed; t++) {
+        bot.act(s, DT);
+        s.tick();
+        sealed = s.takeEvents().some((e) => e.kind === 'sealed-in');
+      }
     }
     expect(sealed).toBe(true);
     expect(s.sealedIn()).toBe(true);
@@ -282,7 +286,7 @@ describe('burrowing: the body digs back out of a wall it sealed itself behind', 
     expect(s.issue({ kind: 'burrow', cell }).ok).toBe(true);
     expect(s.sealedIn()).toBe(false);
     expect(legalDrafts(s.map).length).toBeGreaterThan(0);
-  }, 120_000);
+  }, 600_000);
 });
 
 describe('smaller gaps closed the same day', () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PLATES, START_PLATE, platePool, validatePlate } from '../content/plates';
+import { PLATES, START_PLATE, START_PLATES, platePool, validatePlate } from '../content/plates';
 import { Rng } from '../src/sim/rng';
 import { canPlace, createBoard, computeFlow, draftOffers, frontierGates, stampPlate } from '../src/sim/citymap';
 import { DT, Sim } from '../src/sim/sim';
@@ -9,6 +9,15 @@ import { ENEMIES } from '../content/data';
 describe('plate patterns', () => {
   it('start plate and every rotation of every plate validate', () => {
     expect(validatePlate(START_PLATE)).toBeNull();
+    // Every crash site keeps the first one's contract: the same square, the same mouths, four blocks of 2 and four of 3.
+    const count = (p: typeof START_PLATE, ch: string) => p.rows.join('').split(ch).length - 1;
+    for (const p of START_PLATES) {
+      expect(validatePlate(p)).toBeNull();
+      for (let y = 4; y <= 7; y++) expect(p.rows[y].slice(3, 7)).toBe('PPPP');
+      expect(count(p, 'P')).toBe(16);
+      expect([count(p, 'A'), count(p, 'B')]).toEqual([4, 4]);
+      expect(p.ports).toEqual({ n: true, s: true, e: true, w: true });
+    }
     for (const p of platePool()) {
       expect(validatePlate(p)).toBeNull();
     }

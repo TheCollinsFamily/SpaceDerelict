@@ -84,9 +84,9 @@ const facade = (b, words, v = 0) =>
 
 const propSheet = (b, where, list) =>
   `A sheet of ${list.length} separate objects that stand ` +
-  `${b.place?.[where] ?? `${where === 'roof' ? 'on the roofs' : 'in the streets'} of an insect city`}, for a strategy game. ` +
+  `${where === 'landmark' ? 'as the landmarks of an insect city, big structures each as large as a whole building, the famous sights of their districts' : b.place?.[where] ?? `${where === 'roof' ? 'on the roofs' : 'in the streets'} of an insect city`}, for a strategy game. ` +
   'Isometric three-quarter top-down view, the camera 45 degrees above the ' +
-  'ground, every object seen from the same direction. They stand in two rows, evenly spaced, well apart and not ' +
+  `ground, every object seen from the same direction. They stand in ${where === 'landmark' ? 'one row' : 'two rows'}, evenly spaced, well apart and not ` +
   `touching. Realistic and detailed. ${SPECIES_THINGS}. ${b.look}. They are drawn from the same view and in the ` +
   'same rendering as the objects in the reference picture, which belong to another district of the same city' +
   // The reference sheet is on green: a set keyed on green has the same background as it.
@@ -133,7 +133,7 @@ function pieces(b) {
       out.push({ part: `wall-${kind}`, kind, v, group: 'walls', file: pictureName(`wall-${kind}`, v), words: land ? w.words : w, land });
     });
   }
-  for (const [where, sheets] of [['roof', [b.roofProps, b.roofProps2]], ['street', [ownStreet(b), b.streetProps2]]]) {
+  for (const [where, sheets] of [['roof', [b.roofProps, b.roofProps2]], ['street', [ownStreet(b), b.streetProps2]], ['landmark', [b.landmarks]]]) {
     sheets.forEach((items, v) => {
       if (items?.length) out.push({ part: `props-${where}`, where, v, group: 'props', file: pictureName(`props-${where}`, v), items });
     });
@@ -210,7 +210,9 @@ async function generate(b, only) {
     const base = { slug: `${b.id} ${p.part.replace('-', ' ')}${p.v ? ` ${p.v + 1}` : ''}`, out: fileOf(b, p.file), prompt: wordsFor(b, p), quality: 'high' };
     if (p.group === 'floors') return makeStill({ ...base, key: null, width: 1024, height: 1024 });
     if (p.group === 'walls') return makeStill({ ...base, key: null, width: 1536, height: 1024, refFiles: [path.join(TERRAIN, 'wall-plain.png')] });
-    return makeStill({ ...base, key, keyName, width: 1536, height: 1024, refFiles: [path.join(TERRAIN, `props-${p.where}.png`)] });
+    // A landmark sheet is drawn after the set's own roof props, so that it is the same place in the same rendering.
+    const ref = p.where === 'landmark' ? fileOf(b, 'props-roof.png') : path.join(TERRAIN, `props-${p.where}.png`);
+    return makeStill({ ...base, key, keyName, width: 1536, height: 1024, refFiles: [ref] });
   });
   const results = await pool(jobs, AT_ONCE, (j) => inTurn(j));
   const failed = results.filter((r) => !r.ok);
@@ -255,6 +257,8 @@ export function bakeBiome(id) {
   const keying = { spill: b.spill ?? 'edge' };
   const sheetsOf = (where) => there(`props-${where}`).map((p) => ({ ...p, cut: cutProps(path.join(dir, p.file), p.items, where, keying) }));
   const roofSheets = sheetsOf('roof');
+  const landmarkSheets = sheetsOf('landmark');
+  const landmarks = landmarkSheets.flatMap((p) => p.cut);
   const streetSheets = sheetsOf('street');
   // What is the body's own (the spore pod) is on the first set's sheet, and is the terrain entry's to draw.
   const shared = new Set(all.flatMap((p) => p.items ?? []).filter((item) => item.shared).map((item) => `prop-${item.id}`));
@@ -269,7 +273,7 @@ export function bakeBiome(id) {
     return cut.filter((s, i) => !isRound(p.items[i]) && !shared.has(s.id)).map((s) => ({ ...s, id: `${s.id}~b` }));
   });
   const backsMeant = [...roofSheets, ...streetSheets].filter(needsBack).reduce((n, p) => n + p.items.filter((item) => !isRound(item)).length, 0);
-  const sheets = { floors, walls, props: [...roofs, ...streets, ...backs] };
+  const sheets = { floors, walls, props: [...roofs, ...streets, ...backs], landmarks };
 
   // Packed at one quality: no size limit trades picture quality for bytes (Collins, Sep 30 2026).
   const data = { tile: [TILE_W, TILE_H], level: LEVEL_H, wallSpan: WALL_SPAN, sheets: {} };
@@ -310,11 +314,13 @@ export function bakeBiome(id) {
     ['every sheet of street props is there and cut out', streetSheets.length === all.filter((p) => p.part === 'props-street').length && cutOut(streetSheets), `${streetSheets.length} sheets, ${count(streetSheets)} props`],
     ['every lopsided prop has its back', backs.length >= backsMeant - streetSheets.flatMap((p) => p.items).filter((i) => i.shared && !isRound(i)).length, `${backs.length} of ${backsMeant} backs`],
     ['a name of a prop is used once among the later sheets', twice.length === 0, twice.length ? `used twice: ${twice.join(', ')}` : `${later.length} names`],
+    ['every landmark is there and cut out', !(b.landmarks?.length) || (landmarkSheets.length === 1 && cutOut(landmarkSheets)), `${landmarks.length} of ${b.landmarks?.length ?? 0}`],
     ['every street is pale', streetLuma.length > 0 && streetLuma.every((l) => l >= PALE - 2), `brightness ${streetLuma.map((l) => l.toFixed(0)).join(', ')} of 255 (at least ${PALE})`],
     ['packed', bytes > 0, `${Math.round(bytes / 1024)} KB in all, the heaviest sheet ${Math.round(heaviest / 1024)} KB, packed at quality ${quality}`],
   ];
   putEntry('biomes', b.id, {
     name: b.name, territories: b.territories, roofTint: b.roofTint, roofProps, streetProps,
+    landmarks: landmarks.map((l) => l.id.replace(/^prop-/, '')),
     variants, guests: b.guests ?? [], data: `board/${b.id}/biome.json`, floorColour,
   });
 

@@ -36,6 +36,22 @@ process only verified its own assumptions. The repo's CLAUDE.md carries the stan
   own CLAUDE.md with hard rules. Most important: **never deploy without Collins's explicit
   approval**, billing fails closed, and never log user content.
 
+## Cities less samey (Oct 1 2026; Collins: "I guess I thought the cities felt a little samey")
+
+- **Why they were samey:** every run began on the SAME crash district; only five district shapes existed;
+  a district's blocks of one height were ONE building with one roof (a tabletop of a few huge roofs);
+  the sets differed only by colour and small roof props.
+- **Lots** (`src/render/biome.ts` lotOf/lotShade): a district is cut into lots of 2-4 cells, brick-coursed, each its
+  own building (facade, roof variant, a small tint shift, a faint gutter). Render only; the plate preview matches.
+- **Four crash sites** (`content/plates.ts` START_PLATES, same square, mouths and perch count; chosen from the seed's
+  own stream, `SimConfig.crash` pins one) and **five more districts** (market, fork, ladder, oldtown, twosquares;
+  `DRAFT_ONLY`: by draft only, so the pre-placed connectors are unchanged).
+- **Landmarks:** three per set (`tools/art/biomes.mjs` LANDMARKS; `node tools/art/landmarks.mjs [set] [--bake]`),
+  one on a 2x2 of every district's largest lot (`isoRender.ts` planLandmarks), hidden by creep like a prop. Raw sheets in
+  `art-src-new/terrain/<set>/props-landmark.png` (NOT art-src, emptied Oct 1) + copies `notes/art-review/landmarks/`.
+- Balance (`tools/measure/gaps.measure.ts`, new `GAPS_SEEDS`, `GAPS_MODE=onecrash,fiveplates`): see the commit.
+  Look: `node tools/shot-cities.mjs <label>` → `notes/screens/2026-10-01/cities-*`; `window.broodfall.growCity(n)`.
+
 ## State right now (Sep 30 2026, end of session)
 
 - **Sep 30 2026:** a day of parallel sessions built the whole list in `notes/TO-CREATE.md`'s

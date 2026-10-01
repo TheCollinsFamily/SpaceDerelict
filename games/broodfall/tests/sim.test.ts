@@ -717,7 +717,7 @@ describe('new enemy verbs, castes, and the risk law', () => {
   });
 
   it('a thief that escapes keeps the meat (no recovery event ever fires)', () => {
-    const s = freshSim(905);
+    const s = new Sim({ ...CFG, seed: 905, crash: 0 }); // the first crash site: this courier's way off the field is known
     s.meat.war = 100;
     s.coreHp = 999999; // keep the field alive while the courier runs
     const sim = s as unknown as SpawnSim;

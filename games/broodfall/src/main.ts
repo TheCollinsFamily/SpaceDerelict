@@ -29,7 +29,8 @@ import { loadSettings } from './meta/storage';
 import { strainIcons, strainKey, strainLabel } from './ui/strain';
 import { GENES } from '../content/plates';
 import { BALANCE as B } from '../content/data';
-import { CellType, PLATE, PLATE_FEATURES } from './sim/citymap';
+import { CellType, PLATE, PLATE_FEATURES, draftOffers } from './sim/citymap';
+import { Rng } from './sim/rng';
 import { LoadingScreen, applyName, dressLogos, loadScreenArt, showArtNotice, showFailure, showSlowDrawingNotice } from './ui/screens';
 import { debriefPictures, type Outcome } from './ui/debrief';
 import { newsAfterDeployment } from './ui/newsreel';
@@ -1483,6 +1484,18 @@ async function boot(): Promise<void> {
     },
     camera() {
       return renderer.camera();
+    },
+    /** Draft `n` districts at once, taking offer `pick` each time (tools/shot-cities.mjs: a grown city to look at). */
+    growCity(n: number, pick = 0): number {
+      for (let i = 0; i < n; i++) {
+        const offers = draftOffers(sim.map, new Rng(SEED * 31 + i), 3);
+        if (!offers.length) break;
+        sim.phase = 'draft';
+        sim.pendingDraft = offers;
+        sim.issue({ kind: 'choose-plate', index: (pick + i) % offers.length });
+      }
+      renderer.draw(sim, 0.016);
+      return sim.map.slots.filter(Boolean).length;
     },
     /** World coords -> canvas-pixel coords (for scripted clicking/sampling). */
     worldToScreen(x: number, y: number) {

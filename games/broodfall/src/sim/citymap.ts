@@ -7,7 +7,7 @@
  */
 import { Rng } from './rng';
 import {
-  PLATE_FEATURES, PlateFeature, PlatePattern, START_PLATE, platePool,
+  DRAFT_ONLY, PLATE_FEATURES, PlateFeature, PlatePattern, START_PLATES, platePool,
 } from '../../content/plates';
 
 export const PLATE = 10;
@@ -111,7 +111,7 @@ function sealPorts(pattern: PlatePattern, keep: Array<'n' | 's' | 'e' | 'w'>): P
  *   hive marches through a full district of your guns before it reaches home.
  */
 export function createBoard(
-  slotsX: number, slotsY: number, startSlot: number, rng: Rng, entrances = 1,
+  slotsX: number, slotsY: number, startSlot: number, rng: Rng, entrances = 1, crash = 0,
 ): CityMap {
   const w = slotsX * PLATE;
   const h = slotsY * PLATE;
@@ -134,13 +134,14 @@ export function createBoard(
     if (open.length >= Math.max(1, Math.min(3, entrances))) break;
     if (neighborSlotPub(map, startSlot, e) !== null) open.push(e);
   }
-  stampPlate(map, sealPorts(START_PLATE, open), startSlot, 'plain', rng);
+  // Which crash site (content/plates.ts START_PLATES): every run used to start on the same one.
+  stampPlate(map, sealPorts(START_PLATES[Math.abs(crash | 0) % START_PLATES.length], open), startSlot, 'plain', rng);
   const sx = (startSlot % slotsX) * PLATE;
   const sy = Math.floor(startSlot / slotsX) * PLATE;
   map.coreCell = (sy + 5) * w + (sx + 5); // center of the crash plaza
 
   // Pre-place one connector district beyond each opening.
-  const pool = platePool().filter((p) => {
+  const pool = platePool().filter((p) => !DRAFT_ONLY.has(p.id.replace(/-\d$/, ''))).filter((p) => {
     const n = (p.ports.n ? 1 : 0) + (p.ports.s ? 1 : 0) + (p.ports.e ? 1 : 0) + (p.ports.w ? 1 : 0);
     return n === 2;
   });

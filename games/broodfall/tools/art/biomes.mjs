@@ -845,6 +845,70 @@ export const BIOMES = [
   },
 ];
 
+/**
+ * LANDMARKS (Oct 1 2026, Collins: "I guess I thought the cities felt a little samey"). Every set had the
+ * same sorts of small things on its roofs, so one place told itself from another only by its colours.
+ * Each set now has three big structures that are ITS sight: the game stands one on the largest lot of
+ * every district (src/render/isoRender.ts placeLandmarks), so a board is known by its skyline at a glance.
+ * They are drawn as one sheet per set (props-landmark.png, cut like the props) and are all round or
+ * symmetrical, so that turning the camera mirrors them and no back is needed. No religious symbol: no
+ * temple, shrine or pagoda is asked for, and the Temple Cities' end in plain gold balls as the rest of that set.
+ * width: how many cells wide it is drawn (a lot is two to four cells wide).
+ */
+export const LANDMARKS = {
+  orthodox: [
+    { id: 'lm-greatdome', width: 1.9, look: 'a great round hall under one huge onion dome of gilded wax with a ring of small round windows at its drum, on a square base of arcades, ending in a plain gold ball' },
+    { id: 'lm-clocktower', width: 1.3, look: 'a tall square clock tower of cream wasp paper with bands of gold mosaic, a round clock face of plain glyphs near the top, a small gilded dome on top ending in a plain gold ball' },
+    { id: 'lm-arch', width: 1.9, look: 'a monumental triumphal gateway: one great round arch of honey-coloured wax with gilded ribs and mosaic bands, freestanding, as wide as a whole building' },
+  ],
+  suburb: [
+    { id: 'lm-watertower', width: 1.5, look: 'a big municipal water tower: a round bulbous tank of pale paper on a ring of tall thin legs with cross bracing, a little ladder, painted pastel mint' },
+    { id: 'lm-mallsign', width: 1.2, look: 'a tall roadside shopping-centre pylon sign: a slim pastel tower carrying stacked glowing panels of abstract glyphs and a big round lit disc at the top' },
+    { id: 'lm-gasometer', width: 1.9, look: 'a round gas holder: a wide drum of pale ribbed paper inside a cage of white painted columns and rings' },
+  ],
+  megacity: [
+    { id: 'lm-spire', width: 1.4, look: 'a needle-thin skyscraper spire of dark glass and black resin, very tall, its edges traced by thin cyan and magenta neon lines, a red aircraft lamp at its tip' },
+    { id: 'lm-holotower', width: 1.6, look: 'a tall round tower of stacked glowing rings of glass, each ring a hologram screen of abstract magenta and cyan glyphs, a beacon at the top' },
+    { id: 'lm-antennas', width: 1.8, look: 'a dense cluster of tall broadcast antennas and dishes on a black resin platform, cables slung between them, small blinking red and blue lamps' },
+  ],
+  industrial: [
+    { id: 'lm-smokestacks', width: 1.6, look: 'two tall brick-red industrial chimneys side by side on a square base, rings of iron bands, white steam curling from their tops' },
+    { id: 'lm-coolingtower', width: 1.9, look: 'a wide waisted cooling tower of pale grey ribbed concrete-like resin, a plume of white steam rising from its open top' },
+    { id: 'lm-gantry', width: 1.9, look: 'a big yellow gantry crane on four legs with a long beam across the top and a hook hanging down, rust streaks on it' },
+  ],
+  farmland: [
+    { id: 'lm-silos', width: 1.8, look: 'a cluster of four tall round grain silos of pale corrugated paper with domed caps, joined by a slanted conveyor' },
+    { id: 'lm-windpump', width: 1.2, look: 'a tall farm wind pump: a lattice tower of thin poles with a round wheel of many narrow blades at the top and a tail vane' },
+    { id: 'lm-greatbarn', width: 1.9, look: 'a huge round-roofed barn of honey-brown wax panels with a big arched door, a hay loft and a weathervane shaped like a beetle' },
+  ],
+  necropolis: [
+    { id: 'lm-lighthouse', width: 1.3, look: 'a tall striped lighthouse of pale bone-white and slate-grey bands, a lantern room of glass at the top glowing amber, a gallery rail' },
+    { id: 'lm-obelisk', width: 1.1, look: 'a tall plain obelisk of grey-white stone made of fused bones, standing on a stepped square base, no inscription' },
+    { id: 'lm-charnelhall', width: 1.9, look: 'a wide low hall whose walls are stacked pale skulls and long bones in neat patterns under a shallow slate roof, small round windows lit amber' },
+  ],
+  orient: [
+    { id: 'lm-lanterntower', width: 1.4, look: 'a tall tower of five stacked round paper lanterns, each smaller than the one below, red and gold, glowing warm from inside, with tassels' },
+    { id: 'lm-moongate', width: 1.8, look: 'a freestanding round moon gate: a perfect circle opening in a wide wall of red lacquered paper with a curling tiled top, lanterns on each side' },
+    { id: 'lm-kitetower', width: 1.2, look: 'a tall slim tower of resin poles like bamboo, flying many long paper kites and streamers in red, gold and white' },
+  ],
+  deephive: [
+    { id: 'lm-hivespire', width: 1.6, look: 'a tall twisted spire of layered amber wax and wasp paper like a giant hanging nest standing upright, honeycomb cells glowing gold inside' },
+    { id: 'lm-pollensilo', width: 1.6, look: 'a round bulging silo of translucent wax full of glowing yellow pollen, capped with a paper cone' },
+    { id: 'lm-broodtower', width: 1.8, look: 'a squat broad tower of stacked hexagonal wax cells, some capped and some open, warm light inside, wax dripping at its edges' },
+  ],
+  terraces: [
+    { id: 'lm-waterwheel', width: 1.8, look: 'a great wooden waterwheel on a stone sluice with a short aqueduct trough feeding it, water spilling white' },
+    { id: 'lm-greattree', width: 1.9, look: 'a huge ancient spreading tree with a thick gnarled trunk and a broad dense green crown, ropes and little paper lanterns in its branches' },
+    { id: 'lm-watchtower', width: 1.2, look: 'a tall round watchtower of dry stone with a conical roof of thatch and a small balcony near the top' },
+  ],
+  wetland: [
+    { id: 'lm-stilthall', width: 1.9, look: 'a big round meeting hall of reed and wax standing high on many thin stilts, a domed reed roof, ladders down to a little jetty' },
+    { id: 'lm-lockgate', width: 1.9, look: 'a canal lock: two tall timber gate towers with winding wheels on top joined by a footbridge, water dark green below' },
+    { id: 'lm-tidemast', width: 1.1, look: 'a tall tide-gauge mast of tarred poles with a wind sock, a lamp and a big painted measuring board of plain stripes' },
+  ],
+};
+for (const b of BIOMES) b.landmarks = (LANDMARKS[b.id] ?? []).map((l) => ({ ...l, round: true, on: [] }));
+
 export const biome = (id) => BIOMES.find((b) => b.id === id);
 
 export const KINDS = ['plain', 'science', 'meat', 'highground'];

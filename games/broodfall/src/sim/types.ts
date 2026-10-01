@@ -646,6 +646,8 @@ export interface SimConfig {
   gridH: number;
   cellPx: number;
   seed: number;
+  /** Which crash site the run starts on (content/plates.ts START_PLATES, by index); otherwise by the seed. */
+  crash?: number;
   /** Force a directive (tests, URL param); otherwise seeded-random. */
   directive?: Directive;
   /** Gene ids spliced on the ship — persistent meta-progression. */

@@ -20,7 +20,7 @@ import {
   viewCell, viewOf, viewSize, wallIndex,
   type Facing, type Heading, type IsoGeo, type Pt, type Turn,
 } from './iso';
-import { buildingsOf, pickVariant, planGuests, variantName } from './biome';
+import { LOT_GUTTER, buildingsOf, lotShade, pickVariant, planGuests, variantName } from './biome';
 import { SEEDLING_FLIGHT } from '../../content/underground';
 import { BALANCE } from '../../content/data';
 import { CASTE_COLORS, ENEMY_SIZE, FAMILY_COLORS, Renderer } from './render';
@@ -186,6 +186,8 @@ export class IsoRenderer extends Renderer {
   private mapSig = '';
   private blockSprites: Sprite[] = [];
   private props = new Map<number, Sprite>();
+  /** The landmark of each district (placeLandmarks), by every cell of the lot it stands on. */
+  private landmarkAt = new Map<number, { sprite: Sprite | null; cells: number[]; z: number }>();
   private creepState = new Uint16Array(0);
   private creepSprites = new Map<number, Sprite[]>();
   /** The pale wash on creeped streets and the walls over them (src/render/laneWash.ts), by cell; and how strongly it shows now. */
@@ -589,6 +591,7 @@ export class IsoRenderer extends Renderer {
     for (const c of [this.floors, this.creepFloor, this.flat, this.sorted, this.ghosts]) c.removeChildren().forEach((x) => x.destroy());
     this.blockSprites = [];
     this.props.clear();
+    this.landmarkAt.clear();
     this.creepSprites.clear();
     this.washes.clear();
     this.creepState = new Uint16Array(sim.map.cells.length);
@@ -701,6 +704,7 @@ export class IsoRenderer extends Renderer {
     const span = this.art.terrain!.wallSpan;
     const hV = (vx: number, vy: number) => this.heightV(sim, vx, vy);
     this.buildings = buildingsOf(sim.map.cells, sim.map.heights, sim.map.w, sim.map.h, CellType.Block, PLATE);
+    this.planLandmarks(sim);
     for (let vy = 0; vy < size.h; vy++) for (let vx = 0; vx < size.w; vx++) {
       const b = boardCell(g, vx, vy);
       const cell = b.y * W + b.x;
@@ -745,13 +749,23 @@ export class IsoRenderer extends Renderer {
       if (roof) {
         // Higher roofs catch more light: height reads at a glance.
         const tints = this.art.biomeArt(set)?.roofTint ?? ROOF_TINT;
-        roof.tint = tints[Math.min(h, tints.length) - 1] ?? 0xffffff;
+        roof.tint = lotShade(tints[Math.min(h, tints.length) - 1] ?? 0xffffff, building);
         this.blockSprites.push(roof);
       }
+      // The gutter between two lots of one height: a faint line of the same shade (src/render/biome.ts lotOf).
+      const other = (dvx: number, dvy: number) => {
+        if (hV(vx + dvx, vy + dvy) !== h) return false;
+        const n = boardCell(g, vx + dvx, vy + dvy);
+        return n.x >= 0 && n.y >= 0 && n.x < W && n.y < sim.map.h && this.buildings[n.y * W + n.x] !== building;
+      };
+      if (other(0, -1)) { const e = this.add(this.sorted, this.art.sprite('creep', 'edge-shade-north'), p.x, p.y - h * g.level, z + 4); if (e) { e.alpha = LOT_GUTTER; this.blockSprites.push(e); } }
+      if (other(-1, 0)) { const e = this.add(this.sorted, this.art.sprite('creep', 'edge-shade-west'), p.x, p.y - h * g.level, z + 4); if (e) { e.alpha = LOT_GUTTER; this.blockSprites.push(e); } }
       // A roof at the foot of a taller block lies in its shade (over the skin too: the skin is drawn at z + 2).
       if (hV(vx, vy - 1) > h) { const e = this.add(this.sorted, this.art.sprite('creep', 'edge-shade-north'), p.x, p.y - h * g.level, z + 4); if (e) this.blockSprites.push(e); }
       if (hV(vx - 1, vy) > h) { const e = this.add(this.sorted, this.art.sprite('creep', 'edge-shade-west'), p.x, p.y - h * g.level, z + 4); if (e) this.blockSprites.push(e); }
-      this.addProp(sim, b.x, b.y, h, kind, z, set);
+      const lm = this.landmarkAt.get(cell);
+      if (lm) lm.z = Math.max(lm.z, z);
+      else this.addProp(sim, b.x, b.y, h, kind, z, set);
       if (this.rise.drop(cell) > 0) {
         // What rises: its top level, its roof and what is on it (what lies below the top level stays).
         const top = p.y + g.b - h * g.level + 0.5;
@@ -761,6 +775,7 @@ export class IsoRenderer extends Renderer {
         this.riseSprites.set(cell, mine.map((x) => ({ s: x, y: x.y })));
       }
     }
+    this.placeLandmarks(sim);
     this.drawShade(sim);
     // The unclaimed city under smoke (src/render/boardArt.ts), built again with the map.
     this.skyline.build(g, sim, (c) => this.setOfSlot(sim, Math.floor(Math.floor(c / W) / PLATE) * sim.map.slotsX + Math.floor((c % W) / PLATE)), span);
@@ -835,6 +850,82 @@ export class IsoRenderer extends Renderer {
       if (this.heightV(sim, vx, vy + 1)) g.rect(vx, vy + 1 - 0.125, 1, 0.125).fill({ color: 0x1a1208, alpha: 0.3 });
       if (this.heightV(sim, vx + 1, vy)) g.rect(vx + 1 - 0.125, vy, 0.125, 1).fill({ color: 0x1a1208, alpha: 0.3 });
     }
+  }
+
+  /**
+   * LANDMARKS (Oct 1 2026, "the cities felt a little samey"): every district of a set with landmarks
+   * (tools/art/landmarks.mjs) has one of them, standing on two by two cells of its largest lot (the lot's
+   * square nearest its middle). Which one: by the district, the same every time it is drawn. Those cells
+   * have no other props. The body's skin over any of them hides it, as it hides a prop.
+   */
+  private planLandmarks(sim: Sim): void {
+    this.landmarkAt.clear();
+    const W = sim.cfg.gridW;
+    const lots = new Map<number, number[]>();
+    this.buildings.forEach((b, cell) => { if (b >= 0) { const l = lots.get(b); if (l) l.push(cell); else lots.set(b, [cell]); } });
+    const best = new Map<number, { cells: number[]; area: number; rank: number }>();
+    for (const [b, cells] of lots) {
+      if (cells.length < 4 || cells.some((c) => sim.map.plinths[c] > 0)) continue;
+      // The square of two by two cells of the lot nearest its middle: where the landmark stands.
+      const mine = new Set(cells);
+      const mx = cells.reduce((n, c) => n + (c % W), 0) / cells.length;
+      const my = cells.reduce((n, c) => n + Math.floor(c / W), 0) / cells.length;
+      let foot: number[] | null = null;
+      let far = Infinity;
+      for (const c of cells) {
+        const sq = [c, c + 1, c + W, c + W + 1];
+        if ((c % W) + 1 >= W || !sq.every((x) => mine.has(x))) continue;
+        const d = Math.hypot((c % W) + 1 - mx - 0.5, Math.floor(c / W) + 1 - my - 0.5);
+        if (d < far) { far = d; foot = sq; }
+      }
+      if (!foot) continue;
+      const slot = Math.floor(Math.floor(foot[0] / W) / PLATE) * sim.map.slotsX + Math.floor((foot[0] % W) / PLATE);
+      const rank = (Math.imul(b + 1, 2654435761) >>> 0) % 1000;
+      const now = best.get(slot);
+      if (!now || cells.length > now.area || (cells.length === now.area && rank > now.rank)) best.set(slot, { cells: foot, area: cells.length, rank });
+    }
+    for (const [slot, lot] of best) {
+      const list = this.art.biomeArt(this.setOfSlot(sim, slot))?.landmarks ?? [];
+      if (!list.length) continue;
+      const entry = { sprite: null as Sprite | null, cells: lot.cells, z: 0 };
+      for (const c of lot.cells) this.landmarkAt.set(c, entry);
+    }
+  }
+
+  private placeLandmarks(sim: Sim): void {
+    const W = sim.cfg.gridW;
+    const done = new Set<object>();
+    for (const entry of this.landmarkAt.values()) {
+      if (done.has(entry)) continue;
+      done.add(entry);
+      const c0 = entry.cells[0];
+      const slot = Math.floor(Math.floor(c0 / W) / PLATE) * sim.map.slotsX + Math.floor((c0 % W) / PLATE);
+      const set = this.setOfSlot(sim, slot);
+      const list = this.art.biomeArt(set)?.landmarks ?? [];
+      const id = list[pickVariant(list.length, slot * 13 + 5)];
+      const s = id ? this.landmarkSprite(id, set) : null;
+      if (!s) continue;
+      const xs = entry.cells.map((c) => c % W);
+      const ys = entry.cells.map((c) => Math.floor(c / W));
+      const h = sim.map.heights[c0];
+      const p = project(this.geo, ((Math.min(...xs) + Math.max(...xs) + 1) / 2) * this.geo.cell, ((Math.min(...ys) + Math.max(...ys) + 1) / 2) * this.geo.cell, h);
+      s.position.set(p.x, p.y);
+      s.zIndex = entry.z + 6;
+      this.sorted.addChild(s);
+      entry.sprite = s;
+    }
+  }
+
+  /** A landmark as the turned camera sees it: they are all round or symmetrical, so its front, once mirrored. */
+  private landmarkSprite(id: string, set: string | null): Sprite | null {
+    const tex = this.art.sprite('landmarks', `prop-${id}`, set);
+    const rect = this.art.rect('landmarks', `prop-${id}`, set);
+    if (!tex || !rect) return null;
+    const s = new Sprite(tex);
+    s.anchor.set(rect.anchor?.[0] ?? 0.5, rect.anchor?.[1] ?? 0.94);
+    const view = limbView(this.geo, 'S');
+    if (view.back ? !view.mirror : view.mirror) s.scale.x = -1;
+    return s;
   }
 
   /** What stands on the roofs of the living city. A roof the body has taken is bare. */
@@ -977,6 +1068,8 @@ export class IsoRenderer extends Renderer {
       this.life.remove(cell);
       const prop = this.props.get(cell);
       if (prop) prop.visible = state === 0;
+      const lm = this.landmarkAt.get(cell);
+      if (lm?.sprite) lm.sprite.visible = lm.cells.every((c) => this.creepState[c] === 0);
       if (!state) continue;
       const h = this.heightOf(sim, cell);
       const open = (state - 1) & 15;

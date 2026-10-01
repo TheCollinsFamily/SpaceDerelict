@@ -117,7 +117,7 @@ export interface CoreEvoArt {
   stages: Array<{ id: number; name: string; grown: number; collar: number; idle: CoreClip & { seam?: number }; grow?: CoreClip }>;
 }
 /** What one tile set holds of its own; everything else is the terrain entry's. */
-export interface BiomeData { sheets: Partial<Record<'floors' | 'walls' | 'props', { atlas: string; sprites: Record<string, Rect> }>> }
+export interface BiomeData { sheets: Partial<Record<'floors' | 'walls' | 'props' | 'landmarks', { atlas: string; sprites: Record<string, Rect> }>> }
 export interface ShipArt {
   rooms: Record<string, string>; leaders: Record<string, string>;
   exterior?: string; planet?: string;

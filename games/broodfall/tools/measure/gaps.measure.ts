@@ -8,10 +8,14 @@ import { it } from 'vitest';
 import { Autoplayer } from '../../src/sim/autoplayer';
 import { DT, Sim } from '../../src/sim/sim';
 import { BALANCE } from '../../content/data';
+import { PLATES, START_PLATES } from '../../content/plates';
 
 // Ablations (GAPS_MODE, comma-separated): nograft = surgery under fire takes at once;
 // surge = the scripted player spends royal points on the old biomass surge instead of decrees.
 const MODE = (process.env.GAPS_MODE ?? '').split(',');
+// onecrash = every run on the first crash site; fiveplates = only the five districts before Oct 1 2026.
+if (MODE.includes('onecrash')) START_PLATES.splice(1);
+if (MODE.includes('fiveplates')) PLATES.splice(5);
 if (MODE.includes('nograft')) Object.assign(BALANCE as Record<string, unknown>, { graftSeconds: 0, graftPerPip: 0 });
 if (MODE.includes('surge')) {
   (Autoplayer.prototype as unknown as { spendRoyal: (sim: Sim) => void }).spendRoyal = (sim: Sim) => { sim.issue({ kind: 'royal-surge' }); };
@@ -37,7 +41,8 @@ function run(seed: number) {
 it('gaps: naive hold-12 over ten seeds', () => {
   const rows: string[] = [];
   let wins = 0;
-  for (let seed = 1; seed <= 10; seed++) {
+  const seeds = Number(process.env.GAPS_SEEDS || 10); // GAPS_SEEDS: a wider sample than the usual ten
+  for (let seed = 1; seed <= seeds; seed++) {
     const { sim, kinds } = run(seed);
     if (sim.outcome === 'won') wins++;
     const s = sim.stats as unknown as Record<string, unknown>;
@@ -46,5 +51,5 @@ it('gaps: naive hold-12 over ten seeds', () => {
       + ` events ${['royal-decree', 'limb-promoted', 'surgery-under-fire', 'graft-took', 'burrowed', 'sealed-in'].map((k) => `${k}=${kinds[k] ?? 0}`).join(' ')}`);
   }
   // eslint-disable-next-line no-console
-  console.log(`\n${rows.join('\n')}\nnaive hold-12 wins ${wins}/10 (mode: ${MODE.join(',') || 'all built'})`);
+  console.log(`\n${rows.join('\n')}\nnaive hold-12 wins ${wins}/${seeds} (mode: ${MODE.join(',') || 'all built'})`);
 });

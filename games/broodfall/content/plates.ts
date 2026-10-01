@@ -40,6 +40,67 @@ export const START_PLATE: PlatePattern = {
   ],
 };
 
+/**
+ * The crash site drawn other ways (Oct 1 2026, Collins: "the cities felt a little samey"): every run
+ * started on the same district. Each keeps START_PLATE's contract: the same 4x4 square in the same
+ * place (the core at its centre, the organ ground around it), its four mouths at the same cells,
+ * and four blocks of two and four of three storeys; only the ways in and the buildings move.
+ */
+export const START_PLATES: PlatePattern[] = [
+  START_PLATE,
+  {
+    // Dog-leg: the north way jinks through the blocks, the east way comes in under the square.
+    id: 'crash-dogleg',
+    ports: { n: true, s: true, e: true, w: true },
+    rows: [
+      '####..####',
+      '#B###.#A##',
+      '##A#..###B',
+      '####.##A##',
+      '...PPPP#..',
+      '.A#PPPP...',
+      '###PPPP#B#',
+      '#B#PPPP###',
+      '####..####',
+      '####..####',
+    ],
+  },
+  {
+    // Boulevard: two-wide avenues straight to the square, the tall blocks standing along them.
+    id: 'crash-boulevard',
+    ports: { n: true, s: true, e: true, w: true },
+    rows: [
+      '####..####',
+      '#AB#..#BA#',
+      '####..####',
+      '#A##..##B#',
+      '...PPPP...',
+      '...PPPP...',
+      '#B#PPPP#A#',
+      '###PPPP###',
+      '####..####',
+      '####..####',
+    ],
+  },
+  {
+    // Crooked lanes: the old town, the north way stepping west, the south way east, alcoves off the square.
+    id: 'crash-crooked',
+    ports: { n: true, s: true, e: true, w: true },
+    rows: [
+      '####..####',
+      '#A#..##B##',
+      '###.######',
+      '#B#..#A###',
+      '...PPPP...',
+      '.#BPPPP##.',
+      '##.PPPP.##',
+      '#A#PPPP#B#',
+      '#####..###',
+      '####..##A#',
+    ],
+  },
+];
+
 export const PLATES: PlatePattern[] = [
   {
     // North-south serpentine: the classic switchback gauntlet.
@@ -126,7 +187,100 @@ export const PLATES: PlatePattern[] = [
       '##########',
     ],
   },
+  // ---- Oct 1 2026: five more districts (the cities felt samey with five shapes for every place) ----
+  {
+    // Market: the way north-south crosses a little market square halfway.
+    id: 'market',
+    ports: { n: true, s: true, e: false, w: false },
+    rows: [
+      '####..####',
+      '#A##..###B',
+      '####.#####',
+      '##B#.##A##',
+      '####PP####',
+      '#A##PP#B##',
+      '#####.####',
+      '##B##.#A##',
+      '####..####',
+      '####..####',
+    ],
+  },
+  {
+    // Fork: a north-south street with a lane off to the east.
+    id: 'fork',
+    ports: { n: true, s: true, e: true, w: false },
+    rows: [
+      '####..####',
+      '#B##.##A##',
+      '####.#####',
+      '#A##.##B##',
+      '####......',
+      '#B##.####.',
+      '####.##A##',
+      '#A##.#####',
+      '####..####',
+      '####..####',
+    ],
+  },
+  {
+    // Ladder: two parallel streets east-west, joined at both ends: the hive splits and meets again.
+    id: 'ladder',
+    ports: { n: false, s: false, e: true, w: true },
+    rows: [
+      '##########',
+      '#B##A##B##',
+      '#........#',
+      '#.##A##.##',
+      '..........',
+      '..##B##...',
+      '##########',
+      '#A##B##A##',
+      '##########',
+      '##########',
+    ],
+  },
+  {
+    // Old town: west to south through a knot of lanes, with a short way through the middle.
+    id: 'oldtown',
+    ports: { n: false, s: true, e: false, w: true },
+    rows: [
+      '##########',
+      '#A##B###A#',
+      '###.....##',
+      '#B#.###.##',
+      '....#B#.##',
+      '.##.##..##',
+      '##A.##.#B#',
+      '###....###',
+      '#B##..#A##',
+      '####..####',
+    ],
+  },
+  {
+    // Two squares: a crossroads with a little square in two of its corners.
+    id: 'twosquares',
+    ports: { n: true, s: true, e: true, w: true },
+    rows: [
+      '####..####',
+      '#A##.###B#',
+      '##PP.#####',
+      '##PP.##A##',
+      '..........',
+      '.B##.##PP.',
+      '####.##PP#',
+      '#A##.###B#',
+      '####..####',
+      '####..####',
+    ],
+  },
 ];
+
+/**
+ * Districts that only come by draft, never as the district pre-placed beyond a crash-site mouth: the
+ * board a run starts on (and so the first waves, the balance and the tests' seeded boards) keeps the
+ * connectors it always had, and the crash site's own variety (START_PLATES) is what changes it.
+ */
+export const DRAFT_ONLY = new Set(['market', 'fork', 'ladder', 'oldtown', 'twosquares']);
 
 /** Rotate a pattern 90° clockwise (rows and ports both turn; ports stay at 4-5). */
 export function rotatePlate(p: PlatePattern): PlatePattern {

@@ -383,7 +383,9 @@ export class Sim {
     const slotsY = Math.floor(cfg.gridH / 10);
     const startSlot = Math.floor((slotsY - 1) / 2) * slotsX + Math.floor(slotsX / 2);
     this.entrances = Math.max(1, Math.min(3, cfg.entrances ?? 1));
-    this.map = createBoard(slotsX, slotsY, startSlot, this.rng, this.entrances);
+    // The crash site's layout is drawn from its own stream, so that the rest of the run's dice fall as before.
+    const crash = cfg.crash ?? new Rng((cfg.seed ^ 0x5eed) >>> 0).int(0, 999);
+    this.map = createBoard(slotsX, slotsY, startSlot, this.rng, this.entrances, crash);
     this.under = createUnderground(cfg.seed, TOWERS.filter((t) => !t.engine).map((t) => t.family));
     this.core = this.cellCenter(this.map.coreCell);
     this.gates = frontierGates(this.map);

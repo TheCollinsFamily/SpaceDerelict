@@ -18,6 +18,7 @@ games/broodfall/tools/screenshots/*.png
 dist-*/
 games/broodfall/public/art/manifest.json.lock/
 games/broodfall/tools/screenshots/anim-frames/
+games/broodfall/tools/screenshots/cities/
 
 # Broodfall: the sound beat's working files (tools/shot-audio.mjs; its finished proof goes to notes/screens/)
 games/broodfall/tools/screenshots/audio-proof/

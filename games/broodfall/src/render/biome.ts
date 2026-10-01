@@ -18,6 +18,8 @@ export interface BiomeArt {
    * roof~1-02, wall-plain~1-south-0-3 (tools/art/biomes.mjs).
    */
   variants?: { walls?: Record<string, number>; roof?: number; street?: number; plaza?: number };
+  /** Its three landmarks (tools/art/landmarks.mjs): one stands on the largest lot of every district. Absent: none. */
+  landmarks?: string[];
   /** Other sets whose districts may be mixed into a board whose own set is this one. */
   guests?: string[];
 }
@@ -41,12 +43,16 @@ export function pickVariant(n: number, id: number): number {
 export function buildingsOf(
   cells: ArrayLike<number>, heights: ArrayLike<number>, w: number, h: number, block: number, plate: number,
 ): Int32Array {
+  // A building is also one LOT of its district (lotOf): a district's blocks were one roof from street to
+  // street, which made every city a tabletop of a few huge roofs (Oct 1 2026, "the cities felt samey").
+  const slotOf = (x: number, y: number) => Math.floor(y / plate) * 1000 + Math.floor(x / plate);
+  const lot = (x: number, y: number) => slotOf(x, y) * 100 + lotOf(x % plate, y % plate);
   const out = new Int32Array(w * h).fill(-1);
   const stack: number[] = [];
   for (let start = 0; start < w * h; start++) {
     if (cells[start] !== block || out[start] >= 0) continue;
     const high = heights[start];
-    const slot = Math.floor(Math.floor(start / w) / plate) * 1000 + Math.floor((start % w) / plate);
+    const mine = lot(start % w, Math.floor(start / w));
     out[start] = start;
     stack.push(start);
     while (stack.length) {
@@ -57,7 +63,7 @@ export function buildingsOf(
         if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
         const n = ny * w + nx;
         if (cells[n] !== block || out[n] >= 0 || heights[n] !== high) continue;
-        if (Math.floor(ny / plate) * 1000 + Math.floor(nx / plate) !== slot) continue;
+        if (lot(nx, ny) !== mine) continue;
         out[n] = start;
         stack.push(n);
       }
@@ -65,6 +71,36 @@ export function buildingsOf(
   }
   return out;
 }
+
+/**
+ * The lots of a district: which lot a cell of a 10x10 district is in. The district is cut into three
+ * bands of rows (0-2, 3-5, 6-9) and each band into lots of two to four cells, the cuts of each band
+ * offset from the band above like courses of brick, so that no two districts' blocks line up into one
+ * long roof. It depends only on the place in the district, so a district's preview has the same
+ * buildings as the district on the board.
+ */
+const LOT_BANDS = [0, 3, 6];
+const LOT_CUTS = [[0, 3, 6, 8], [0, 2, 5, 7], [0, 4, 6, 9]];
+export function lotOf(lx: number, ly: number): number {
+  const band = ly >= LOT_BANDS[2] ? 2 : ly >= LOT_BANDS[1] ? 1 : 0;
+  const cuts = LOT_CUTS[band];
+  let col = 0;
+  while (col + 1 < cuts.length && lx >= cuts[col + 1]) col++;
+  return band * 10 + col;
+}
+
+/**
+ * A roof's tint as one lot of its block: a little lighter or darker than its neighbours (up to 7%
+ * each way, by the building's number), so that lots of the same roof read as separate buildings.
+ */
+export function lotShade(tint: number, building: number): number {
+  const k = 0.93 + (((Math.imul(building + 13, 2246822519) >>> 0) >>> 9) % 1000) / 1000 * 0.14;
+  const ch = (s: number) => Math.min(255, Math.round(((tint >> s) & 255) * k));
+  return (ch(16) << 16) | (ch(8) << 8) | ch(0);
+}
+
+/** How strongly the gutter between two lots of one height is drawn (the edge shade of a taller block is 1). */
+export const LOT_GUTTER = 0.4;
 
 /**
  * Which tile set a board is drawn with: the one asked for by name, or the one of the
