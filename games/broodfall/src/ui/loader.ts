@@ -12,7 +12,7 @@
  *   dance   YOKE dancing, now and then in place of the scan on the ship's waits, with a line of hers in type
  *
  * A loop is never the thing still loading: its FIRST PAINT is a small animated WebP (`<kind>-mini.webp`, a few dozen
- * KB, preloaded by index.html), and the full loop (`.webm`) takes over once it plays. Settings > Reduce motion (or
+ * KB, the boot screen's embedded in index.html), and the full loop (`.webm`) takes over once it plays. Settings > Reduce motion (or
  * the system's): a slow version (`-slow.webp`, the video at a third of the speed), never a still frame.
  *
  * The API, for every screen that waits (and the landing film's session, src/ui/landing.ts):

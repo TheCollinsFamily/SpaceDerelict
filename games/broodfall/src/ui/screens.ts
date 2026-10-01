@@ -74,7 +74,25 @@ export class LoadingScreen {
     this.bar = this.el.querySelector('.boot-fill')!;
     this.count = this.el.querySelector('.boot-count')!;
     this.line = this.el.querySelector('.boot-line')!;
-    // The full loops in place of the markup's first paint (index.html, preloaded): the emblem's, the creep's behind it.
+    // Already up (index.html put it up before this code arrived, for a page that starts a deployment): it is ours now.
+    if (this.el.dataset.early && !this.el.classList.contains('hidden')) {
+      delete this.el.dataset.early;
+      this.open = true;
+      this.visible = true;
+      this.shownAt = performance.now();
+      this.rotate();
+      this.fullLoops();
+    }
+  }
+
+  /**
+   * The full loops over the markup's first paints (index.html: the scan's and the emblem's embedded), fetched only
+   * when the screen is really up: on the menu they would take the line from the board's own art.
+   */
+  private upgraded = false;
+  private fullLoops(): void {
+    if (this.upgraded) return;
+    this.upgraded = true;
     // They keep moving as they are (never replaced: a new picture would be a blank until it loaded).
     const back = this.el.querySelector<HTMLElement>('.boot-backdrop');
     if (back) upgradeLoop(back, 'creep'); else this.el.prepend(loopEl('creep', { cover: true, cls: 'boot-backdrop' }));
@@ -86,14 +104,6 @@ export class LoadingScreen {
       if (emblem.classList.contains('bf-loop')) upgradeLoop(emblem, 'emblem');
       else emblem.replaceWith(loopEl('emblem', { cls: 'logo-emblem' }));
       logo.classList.add('has-emblem');
-    }
-    // Already up (index.html put it up before this code arrived, for a page that starts a deployment): it is ours now.
-    if (this.el.dataset.early && !this.el.classList.contains('hidden')) {
-      delete this.el.dataset.early;
-      this.open = true;
-      this.visible = true;
-      this.shownAt = performance.now();
-      this.rotate();
     }
   }
 
@@ -112,6 +122,7 @@ export class LoadingScreen {
     this.rotate();
     const up = () => {
       if (!this.open) return;
+      this.fullLoops();
       this.visible = true;
       this.shownAt = performance.now();
       this.el.dataset.loading = 'emblem';

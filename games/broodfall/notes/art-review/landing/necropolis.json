@@ -1,23 +1,27 @@
 {
   "id": "necropolis",
-  "seconds": 8.042,
-  "fallAt": 0.717,
-  "strikeAt": 3.917,
-  "endVsBoard": 0.85,
+  "seconds": 8.958,
+  "fallAt": 1.591,
+  "strikeAt": 4.791,
+  "endVsBoard": 0.84,
   "core": {
     "x": 474,
     "y": 717
   },
-  "models": "seegen:wan3.0-video",
+  "models": {
+    "release": "atlascloud:seedance-2.5-i2v",
+    "fall": "atlascloud:seedance-2.5-i2v",
+    "strike": "seegen:wan3.0-video"
+  },
   "cut": {
     "orbit": {
-      "from": 0.6,
-      "to": 2.4
+      "from": 0.2,
+      "to": 2.2
     },
     "fall": {
-      "from": 0,
-      "to": 2.9,
-      "speed": 1.2
+      "from": 0.4,
+      "to": 3.8,
+      "speed": 1.1
     },
     "land": {
       "speed": 1.2

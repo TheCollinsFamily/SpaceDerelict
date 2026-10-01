@@ -18,9 +18,9 @@
       "video": "landing/suburb.mp4",
       "start": "landing/suburb-start.webp",
       "end": "landing/suburb-end.webp",
-      "seconds": 8.75,
-      "fallAt": 1.409,
-      "strikeAt": 4.609,
+      "seconds": 8.958,
+      "fallAt": 1.591,
+      "strikeAt": 4.791,
       "core": {
         "x": 474,
         "y": 717
@@ -30,9 +30,9 @@
       "video": "landing/megacity.mp4",
       "start": "landing/megacity-start.webp",
       "end": "landing/megacity-end.webp",
-      "seconds": 8.042,
-      "fallAt": 0.717,
-      "strikeAt": 3.917,
+      "seconds": 8.958,
+      "fallAt": 1.591,
+      "strikeAt": 4.791,
       "core": {
         "x": 474,
         "y": 717
@@ -42,9 +42,9 @@
       "video": "landing/orient.mp4",
       "start": "landing/orient-start.webp",
       "end": "landing/orient-end.webp",
-      "seconds": 8.042,
-      "fallAt": 0.717,
-      "strikeAt": 3.917,
+      "seconds": 8.958,
+      "fallAt": 1.591,
+      "strikeAt": 4.791,
       "core": {
         "x": 474,
         "y": 717
@@ -54,9 +54,9 @@
       "video": "landing/orthodox.mp4",
       "start": "landing/orthodox-start.webp",
       "end": "landing/orthodox-end.webp",
-      "seconds": 8.042,
-      "fallAt": 0.717,
-      "strikeAt": 3.917,
+      "seconds": 8.958,
+      "fallAt": 1.591,
+      "strikeAt": 4.791,
       "core": {
         "x": 474,
         "y": 717
@@ -66,9 +66,9 @@
       "video": "landing/industrial.mp4",
       "start": "landing/industrial-start.webp",
       "end": "landing/industrial-end.webp",
-      "seconds": 8.042,
-      "fallAt": 0.717,
-      "strikeAt": 3.917,
+      "seconds": 8.958,
+      "fallAt": 1.591,
+      "strikeAt": 4.791,
       "core": {
         "x": 474,
         "y": 717
@@ -78,9 +78,9 @@
       "video": "landing/farmland.mp4",
       "start": "landing/farmland-start.webp",
       "end": "landing/farmland-end.webp",
-      "seconds": 8.042,
-      "fallAt": 0.717,
-      "strikeAt": 3.917,
+      "seconds": 8.958,
+      "fallAt": 1.591,
+      "strikeAt": 4.791,
       "core": {
         "x": 474,
         "y": 717
@@ -90,9 +90,9 @@
       "video": "landing/necropolis.mp4",
       "start": "landing/necropolis-start.webp",
       "end": "landing/necropolis-end.webp",
-      "seconds": 8.042,
-      "fallAt": 0.717,
-      "strikeAt": 3.917,
+      "seconds": 8.958,
+      "fallAt": 1.591,
+      "strikeAt": 4.791,
       "core": {
         "x": 474,
         "y": 717
@@ -102,9 +102,9 @@
       "video": "landing/deephive.mp4",
       "start": "landing/deephive-start.webp",
       "end": "landing/deephive-end.webp",
-      "seconds": 8.042,
-      "fallAt": 0.717,
-      "strikeAt": 3.917,
+      "seconds": 8.958,
+      "fallAt": 1.591,
+      "strikeAt": 4.791,
       "core": {
         "x": 474,
         "y": 717
@@ -114,9 +114,9 @@
       "video": "landing/terraces.mp4",
       "start": "landing/terraces-start.webp",
       "end": "landing/terraces-end.webp",
-      "seconds": 8.042,
-      "fallAt": 0.717,
-      "strikeAt": 3.917,
+      "seconds": 8.958,
+      "fallAt": 1.591,
+      "strikeAt": 4.791,
       "core": {
         "x": 474,
         "y": 717
@@ -126,9 +126,9 @@
       "video": "landing/wetland.mp4",
       "start": "landing/wetland-start.webp",
       "end": "landing/wetland-end.webp",
-      "seconds": 8.042,
-      "fallAt": 0.717,
-      "strikeAt": 3.917,
+      "seconds": 8.958,
+      "fallAt": 1.591,
+      "strikeAt": 4.791,
       "core": {
         "x": 474,
         "y": 717

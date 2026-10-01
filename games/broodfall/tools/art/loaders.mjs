@@ -17,7 +17,7 @@
  *   yoke     YOKE thinking: her own `thinking` clip (public/art/ship/yoke/thinking.webm), only made small here.
  *
  * Each loop is baked twice: a full one (`<id>.webm`, VP8, with alpha where it overlays) and a FIRST-PAINT one
- * (`<id>-mini.webp`, an animated WebP of a few dozen KB, preloaded by index.html, so the loader is never the thing
+ * (`<id>-mini.webp`, an animated WebP of a few dozen KB, the boot screen's embedded in index.html, so the loader is never the thing
  * still loading), plus `<id>-slow.webp` at a third of the speed for Settings > Reduce motion. A clip's END frame is
  * its START frame (seegen honours it); the frames where the model snaps to it are cut, and when the seam still
  * shows the loop is PING-PONGED (Collins's call for idles with no clean loop). No lettering, no religious symbol.

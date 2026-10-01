@@ -334,7 +334,7 @@ would play at the start of any scenario? if not we should."
   C the menu's deploy + Esc, D the setting and Reduce motion. Test: `tests/landing.test.ts`.
 - **The art** (`tools/art/landing.mjs`; raw `art-src/landing/`, baked `public/art/landing/<set>.mp4|-start.webp|-end.webp`
   + `landing.json`, review `notes/art-review/landing/<set>.jpg|.json`). Three shots, cut by `bake` (release 0.2–2.2 s,
-  0.3 s dissolve, fall 0.4–3.6 s at 1.1x, hard cut under the game's flash, the strike whole at 1.2x; ~8.8 s):
+  0.3 s dissolve, fall 0.4–3.8 s at 1.1x, hard cut under the game's flash, the strike whole at 1.2x; ~8.8 s):
   1. **The release** (one for all ten): `design` draws `release.png` (the Merciful Yoke as the key art and
      `public/art/ship/exterior.webp` draw it, its bay open, the meteor half out; the planet is the game's day map,
      `public/art/ship/planet.webp`, clean), `motion` animates it with NO end frame: the meteor is fired out and the camera
@@ -458,7 +458,7 @@ screen, and a wait under 400 ms shows nothing (no flash).
   flesh), `scan` (the asset's outline on the ship console's scan grid, a scan line sweeping), `dance` (YOKE dancing: a new
   take from her Leaflit sprite, start = end, keyed + her projection look), `yoke` (her own `thinking` clip, only made
   small). Each: `public/art/loaders/<id>.webm` (VP8, alpha where keyed) + `<id>-mini.webp` (the FIRST PAINT, ~100 KB,
-  preloaded by index.html) + `<id>-slow.webp` (Reduce motion: a third of the speed, never a still). Seamless when the
+  the boot screen's scan and emblem ones EMBEDDED in index.html as data URIs) + `<id>-slow.webp` (Reduce motion: a third of the speed, never a still). Seamless when the
   model landed on the end frame, else ping-ponged. Raw: art-src/loaders/ (first creep take, a black worm, in v1/).
   Review sheets: notes/art-review/loaders/.
 - **The API** (`src/ui/loader.ts`, for every screen that waits — the landing film too):
@@ -480,7 +480,10 @@ screen, and a wait under 400 ms shows nothing (no flash).
   clip still arriving (padOutro.ts), the report's pictures (main.ts), the news from the planet loading and every film
   shot buffering (newsreel.ts, intro.ts), the ship before its art and the planet are in (campaignUi.ts `artWait`),
   YOKE's stage before her first clip (yokeAvatar.ts stand-in), the organ stage opened before its pictures are in
-  (main.ts openUnder: its stills are fetched 1.5 s after the board is up; underground.ts untouched).
+  (main.ts openUnder: its stills are fetched 1.5 s after the board is up; underground.ts untouched). A click on SKIRMISH / NEW CAMPAIGN made on a slow line BEFORE the
+  game's code has arrived is kept by index.html's inline script (the loading screen up at once) and replayed by
+  `setupMenu`; the boot screen's full loops are fetched only when it is really up (never on the menu, where they
+  would take the line from the board's art).
 - **Beat:** `node tools/shot-loading.mjs [first pad reel yoke organ calm fast]` (own dev server 5271; art/ and media/
   held back as a slow link) FAILS when a wait is on the screen over 400 ms without a moving loop; out:
   `notes/screens/2026-09-30/loading-*`.

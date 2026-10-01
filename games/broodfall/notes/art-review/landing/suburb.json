@@ -1,9 +1,9 @@
 {
   "id": "suburb",
-  "seconds": 8.75,
-  "fallAt": 1.409,
-  "strikeAt": 4.609,
-  "endVsBoard": 0.96,
+  "seconds": 8.958,
+  "fallAt": 1.591,
+  "strikeAt": 4.791,
+  "endVsBoard": 0.93,
   "core": {
     "x": 474,
     "y": 717
@@ -20,7 +20,7 @@
     },
     "fall": {
       "from": 0.4,
-      "to": 3.6,
+      "to": 3.8,
       "speed": 1.1
     },
     "land": {

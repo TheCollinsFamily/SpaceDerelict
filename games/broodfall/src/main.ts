@@ -683,6 +683,10 @@ function setupMenu(): void {
   });
   if (AUTOSTART) menuEl.classList.add('hidden');
   if (CAMPAIGN === 'ship') openShip();
+  // A click on SKIRMISH / NEW CAMPAIGN made before this code had arrived (index.html kept it): played now.
+  const w = window as unknown as { __bfMenuReady?: boolean; __bfEarlyClick?: string };
+  w.__bfMenuReady = true;
+  if (w.__bfEarlyClick) document.getElementById(w.__bfEarlyClick)?.click();
 }
 
 function standingEarned(): number {

@@ -301,7 +301,7 @@ async function clips(sets, withOrbit) {
  * atmosphere. The fall: the streak until the meteor is over the roofs (played 1.2x). The strike: all of it (1.2x),
  * ending on the board. Orbit → fall is a 0.3 s dissolve; fall → strike a hard cut under the game's white flash.
  */
-export const CUT = { orbit: { from: 0.2, to: 2.2 }, fall: { from: 0.4, to: 3.6, speed: 1.1 }, land: { speed: 1.2 }, dissolve: 0.3 };
+export const CUT = { orbit: { from: 0.2, to: 2.2 }, fall: { from: 0.4, to: 3.8, speed: 1.1 }, land: { speed: 1.2 }, dissolve: 0.3 };
 const FPS = 24;
 const ENC = ['-an', '-c:v', 'libx264', '-preset', 'slow', '-crf', '21', '-pix_fmt', 'yuv420p', '-movflags', '+faststart'];
 
