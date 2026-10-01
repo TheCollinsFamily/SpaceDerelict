@@ -340,6 +340,26 @@ would play at the start of any scenario? if not we should."
   hit→board) → `bake` (orbit 0.6–2.4 s, 0.3 s dissolve, fall 0–2.9 s at 1.2x, the strike whole at 1.2x) → `sheet`
   (`notes/screens/2026-09-30/landing-00-sheet.jpg`). A new tile set: add it to `SETS` there, run the five steps.
 
+## The stills that came alive (Oct 1 2026; notes/VIDEO-AUDIT.md has every still and its verdict)
+
+- **Loops from stills** (`node tools/art/stills-alive.mjs [group|group:id] [--bake|--list]`, SPENDS ~$1 a clip on
+  **seegen:sd2-fast**, 5 s; sd2-mini restyled first frames and redrew faces: raw in `art-src/stills-alive/<group>/`,
+  rejected takes in `v1*/`): the faction scenes (14), the reveals (3), the territories (16, 480p), the report's lead
+  (won/lost/held), the partner's portrait. Baked to `public/art/alive/<group>-<id>.mp4|.webp` + `alive.json`;
+  review `notes/art-review/stills-alive/` (the still + 8 frames: LOOK at every one; re-roll by moving the clip to `v1/`).
+- **In game** (`src/ui/alive.ts`): a still marked `data-alive="<group>:<id>"` is swapped by `wake(root)` for ONE pooled
+  `<video>` per surface (kept across the ship's redraws), paused off screen/hidden, released when gone; the still under
+  Reduce motion and under automation unless `localStorage['broodfall-alive']='on'`. campaignUi calls `wake` after every
+  render; `debriefPictures` wakes its own lead.
+- **Directives and Notebook** have their own rooms now (`ship-loops.mjs orders hobby`); `dress()` takes a room's own
+  loop before the one it borrowed.
+- **Gene Bay organ cards** step through the organ stage's strips (`under.loops`, CSS) — they follow whatever the organ
+  session bakes. **Hand cards** step through each limb's idle frames (hud.ts `animateCards`, one 12 fps timer).
+- **Organ stage skyline** (`src/ui/skylineLife.ts`, `node tools/art/skyline-life.mjs` free): beacon, smoke, searchlight in CSS.
+- **Boss transmission**: `tools/art/boss.mjs --bake` crossfades its loop seam.
+- **Beat:** `node tools/shot-alive.mjs [scenes territory rooms partner genes debrief hand skyline boss reduce]`
+  (dev server 5293) -> `notes/screens/2026-10-01/video-*`.
+
 ## The ship presented (Sep 30 2026): room loops, the planet, meat drops
 
 - **Room loops** (`node tools/art/ship-loops.mjs [ids] [--stills|--bake]`; SPENDS: a still ~$0.50, an 8 s 1080p

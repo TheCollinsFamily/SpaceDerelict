@@ -1,0 +1,14 @@
+{
+  "id": "debrief:held",
+  "model": "seegen:sd2-fast",
+  "seconds": 4.25,
+  "size": "1280x720",
+  "bytes": 1285534,
+  "medianStep": 0.15,
+  "maxStep": 0.56,
+  "seamBefore": 1.2,
+  "seamAfter": 0.35,
+  "maxDrift": 1.07,
+  "fixed": "cut 4 snapping frames; crossfade 0.6s",
+  "tiles": "the still it started from | then 8 frames across the loop"
+}

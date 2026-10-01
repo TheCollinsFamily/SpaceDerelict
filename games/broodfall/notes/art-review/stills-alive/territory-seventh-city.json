@@ -1,0 +1,14 @@
+{
+  "id": "territory:seventh-city",
+  "model": "seegen:sd2-fast",
+  "seconds": 4.417,
+  "size": "864x496",
+  "bytes": 1011797,
+  "medianStep": 0.24,
+  "maxStep": 0.48,
+  "seamBefore": 1.22,
+  "seamAfter": 0.47,
+  "maxDrift": 2.33,
+  "fixed": "crossfade 0.6s",
+  "tiles": "the still it started from | then 8 frames across the loop"
+}

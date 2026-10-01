@@ -181,9 +181,9 @@ function film(opts: { id: string; look: Look; series?: string; issue?: string; c
       };
       if (v.readyState >= 3) go();
       else {
-        // No shot up yet: the screen is black already, so the loop comes at once; over a held frame, after 400 ms.
+        // No shot up yet: in the middle, at once (or once a series' opening card has faded); over a held frame, in the corner.
         const held = !!el.querySelector('video.nr-v.on');
-        const w = showLoader('scan', { host: el, corner: held, delay: held ? undefined : 0 });
+        const w = showLoader('scan', { host: el, corner: held, delay: held ? undefined : opts.series ? 200 : 0 });
         wait = w;
         v.addEventListener('playing', () => w.hide(), { once: true });
         later(9000, () => w.hide());

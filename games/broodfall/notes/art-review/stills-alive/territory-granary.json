@@ -1,0 +1,14 @@
+{
+  "id": "territory:granary",
+  "model": "seegen:sd2-fast",
+  "seconds": 4.417,
+  "size": "864x496",
+  "bytes": 1054052,
+  "medianStep": 0.18,
+  "maxStep": 0.67,
+  "seamBefore": 2.22,
+  "seamAfter": 0.52,
+  "maxDrift": 0.9,
+  "fixed": "crossfade 0.6s",
+  "tiles": "the still it started from | then 8 frames across the loop"
+}

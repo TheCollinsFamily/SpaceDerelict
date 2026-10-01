@@ -1,0 +1,14 @@
+{
+  "id": "debrief:lost",
+  "model": "seegen:sd2-fast",
+  "seconds": 4.875,
+  "size": "1280x720",
+  "bytes": 1584658,
+  "medianStep": 0.41,
+  "maxStep": 0.93,
+  "seamBefore": 1.1,
+  "seamAfter": 1.19,
+  "maxDrift": 3.16,
+  "fixed": "cut 3 snapping frames; none",
+  "tiles": "the still it started from | then 8 frames across the loop"
+}

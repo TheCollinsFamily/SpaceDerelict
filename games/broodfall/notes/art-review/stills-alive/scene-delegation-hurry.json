@@ -1,0 +1,14 @@
+{
+  "id": "scene:delegation-hurry",
+  "model": "seegen:sd2-fast",
+  "seconds": 4.417,
+  "size": "1112x834",
+  "bytes": 1464585,
+  "medianStep": 0.18,
+  "maxStep": 1.12,
+  "seamBefore": 1.06,
+  "seamAfter": 0.41,
+  "maxDrift": 2.58,
+  "fixed": "crossfade 0.6s",
+  "tiles": "the still it started from | then 8 frames across the loop"
+}

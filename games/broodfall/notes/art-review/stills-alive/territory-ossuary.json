@@ -1,0 +1,14 @@
+{
+  "id": "territory:ossuary",
+  "model": "seegen:sd2-fast",
+  "seconds": 4.417,
+  "size": "864x496",
+  "bytes": 1375901,
+  "medianStep": 0.27,
+  "maxStep": 0.93,
+  "seamBefore": 1.89,
+  "seamAfter": 0.71,
+  "maxDrift": 1.9,
+  "fixed": "crossfade 0.6s",
+  "tiles": "the still it started from | then 8 frames across the loop"
+}

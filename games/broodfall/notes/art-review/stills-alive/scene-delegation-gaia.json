@@ -1,0 +1,14 @@
+{
+  "id": "scene:delegation-gaia",
+  "model": "seegen:sd2-fast",
+  "seconds": 4.292,
+  "size": "1112x834",
+  "bytes": 1377583,
+  "medianStep": 0.15,
+  "maxStep": 0.76,
+  "seamBefore": 0.84,
+  "seamAfter": 0.36,
+  "maxDrift": 1.06,
+  "fixed": "cut 3 snapping frames; crossfade 0.6s",
+  "tiles": "the still it started from | then 8 frames across the loop"
+}

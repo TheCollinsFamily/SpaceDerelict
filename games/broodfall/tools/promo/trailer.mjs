@@ -81,37 +81,85 @@ const CLOCK = () => {
   const realNow = performance.now.bind(performance);
   const realRaf = window.requestAnimationFrame.bind(window);
   const realCaf = window.cancelAnimationFrame.bind(window);
+  const realST = window.setTimeout.bind(window), realCT = window.clearTimeout.bind(window);
+  const realSI = window.setInterval.bind(window), realCI = window.clearInterval.bind(window);
   const realDate = Date.now;
-  const st = { frozen: false, t: 0, q: new Map(), id: 1e7, date0: 0, t0: 0 };
+  const realPlay = HTMLMediaElement.prototype.play, realPause = HTMLMediaElement.prototype.pause;
+  const st = { frozen: false, t: 0, q: new Map(), id: 1e7, date0: 0, t0: 0, timers: new Map(), tid: 5e8, media: new Set() };
   window.__clk = st;
+  window.__realTimeout = realST;
   performance.now = () => (st.frozen ? st.t : realNow());
   Date.now = () => (st.frozen ? st.date0 + (st.t - st.t0) : realDate());
   window.requestAnimationFrame = (cb) => { if (!st.frozen) return realRaf(cb); const i = ++st.id; st.q.set(i, cb); return i; };
   window.cancelAnimationFrame = (i) => { st.q.delete(i); realCaf(i); };
+  // Timers run on the clock too once it is frozen (captions, holds, a greeting's pacing).
+  window.setTimeout = (fn, ms = 0, ...a) => { if (!st.frozen) return realST(fn, ms, ...a); const id = ++st.tid; st.timers.set(id, { due: st.t + (+ms || 0), fn, a }); return id; };
+  window.clearTimeout = (id) => { if (!st.timers.delete(id)) realCT(id); };
+  window.setInterval = (fn, ms = 0, ...a) => { if (!st.frozen) return realSI(fn, ms, ...a); const id = ++st.tid; st.timers.set(id, { due: st.t + Math.max(1, +ms || 0), fn, a, every: Math.max(1, +ms || 0) }); return id; };
+  window.clearInterval = (id) => { if (!st.timers.delete(id)) realCI(id); };
+  // Sound and pictures: while frozen nothing plays by itself. A video is set to where the clock says;
+  // a sound is "playing" but never heard and never ends (the edit lays the real sound where it began).
+  window.__plays = [];
+  HTMLMediaElement.prototype.play = function () {
+    st.media.add(this);
+    window.__plays.push({ src: String(this.currentSrc || this.src).slice(-60), t: performance.now(), video: this instanceof HTMLVideoElement });
+    if (!st.frozen) return realPlay.call(this);
+    this.__fk = { ...(this.__fk ?? {}), run: true, base: this.currentTime, at: st.t, src: this.currentSrc || this.src, ended: false };
+    if (!(this instanceof HTMLVideoElement)) { try { this.dispatchEvent(new Event('play')); this.dispatchEvent(new Event('playing')); } catch {} }
+    return Promise.resolve();
+  };
+  HTMLMediaElement.prototype.pause = function () {
+    if (this.__fk) this.__fk.run = false;
+    return realPause.call(this);
+  };
   /** Freeze: what the last real frame asks for next waits for __advance. */
   window.__freeze = () => new Promise((res) => {
     st.frozen = true;
     st.t = realNow(); st.t0 = st.t; st.date0 = realDate();
-    realRaf(() => setTimeout(() => { st.t = Math.max(st.t, realNow()); res(); }, 30));
+    for (const m of [...st.media, ...document.querySelectorAll('video, audio')]) {
+      const was = !m.paused;
+      if (was) realPause.call(m);
+      m.__fk = { run: was || (m instanceof HTMLVideoElement && m.autoplay), base: m.currentTime, at: st.t, src: m.currentSrc || m.src, ended: false };
+    }
+    realRaf(() => realST(() => { st.t = Math.max(st.t, realNow()); res(); }, 30));
   });
-  window.__thaw = () => { st.frozen = false; const cbs = [...st.q.values()]; st.q.clear(); for (const cb of cbs) realRaf(cb); };
-  /** Videos follow the clock too: paused, and set to where the clock says. */
-  const vids = () => [...document.querySelectorAll('video')];
+  window.__thaw = () => { st.frozen = false; const cbs = [...st.q.values()]; st.q.clear(); for (const cb of cbs) realRaf(cb); for (const [, tm] of st.timers) realST(tm.fn, 0, ...tm.a); st.timers.clear(); };
   window.__advance = async (ms) => {
-    st.t += ms;
+    const to = st.t + ms;
+    // Timers due in this step, in order (an interval comes back for its next turn).
+    for (let guard = 0; guard < 500; guard++) {
+      let next = null;
+      for (const [id, tm] of st.timers) if (tm.due <= to && (!next || tm.due < next[1].due)) next = [id, tm];
+      if (!next) break;
+      const [id, tm] = next;
+      st.t = Math.max(st.t, tm.due);
+      if (tm.every) tm.due += tm.every; else st.timers.delete(id);
+      try { typeof tm.fn === 'function' ? tm.fn(...tm.a) : null; } catch (e) { console.error(e); }
+    }
+    st.t = to;
     const cbs = [...st.q.values()];
     st.q.clear();
     for (const cb of cbs) { try { cb(st.t); } catch (e) { console.error(e); } }
     const seeks = [];
-    for (const v of vids()) {
-      if (!v.__fk) { v.__fk = { base: v.currentTime, at: st.t - ms }; }
-      if (!v.paused) v.pause();
-      if (!(v.duration > 0)) continue;
+    for (const v of document.querySelectorAll('video')) {
+      const src = v.currentSrc || v.src;
+      if (!v.__fk) v.__fk = { run: v.autoplay || !v.paused, base: v.currentTime, at: st.t - ms, src, ended: false };
+      if (v.__fk.src !== src) Object.assign(v.__fk, { base: 0, at: st.t - ms, src, ended: false, run: v.__fk.run || v.autoplay });
+      if (!v.paused) realPause.call(v);
+      if (!v.__fk.run || !(v.duration > 0)) continue;
       let want = v.__fk.base + (st.t - v.__fk.at) / 1000;
-      want = v.loop ? want % v.duration : Math.min(want, v.duration - 0.01);
+      if (v.loop) want %= v.duration;
+      else if (want >= v.duration - 0.02) {
+        want = v.duration - 0.02;
+        if (!v.__fk.ended) { v.__fk.ended = true; v.__fk.run = false; realST(() => v.dispatchEvent(new Event('ended')), 0); }
+      }
       if (Math.abs(v.currentTime - want) < 1e-3) continue;
-      seeks.push(new Promise((r) => { const done = () => r(); v.addEventListener('seeked', done, { once: true }); setTimeout(done, 250); }));
+      seeks.push(new Promise((r) => { const done = () => r(); v.addEventListener('seeked', done, { once: true }); realST(done, 300); }));
       v.currentTime = want;
+    }
+    for (const m of st.media) {
+      if (m instanceof HTMLVideoElement || !m.__fk?.run || !(m.duration > 0)) continue;
+      if (m.__fk.base + (st.t - m.__fk.at) / 1000 >= m.duration) { m.__fk.run = false; realST(() => m.dispatchEvent(new Event('ended')), 0); }
     }
     if (seeks.length) await Promise.all(seeks);
   };
@@ -122,12 +170,13 @@ const HELPERS = () => {
   const B = () => window.broodfall, R = () => window.broodfall.renderer;
   window.__T = {
     /** Aim the camera (it eases there by itself) at a world point, at a zoom; snap = no easing. */
-    camTo(x, y, zoom, snap = false) {
+    camTo(x, y, zoom, snap = false, up = 0) {
       const r = R(), s = B().worldToScreen(x, y);
       const px = (s.x - r.camX) / r.camScale, py = (s.y - r.camY) / r.camScale;
       r.zoom = zoom;
       // The projected point sits at the screen's middle at that zoom.
-      r.pan = { x: px - r.mid.x, y: py - r.mid.y };
+      // up: the view raised by that many screen pixels (the target sits lower on the screen).
+      r.pan = { x: px - r.mid.x, y: py - r.mid.y - up / (r.fit * zoom) };
       if (snap) r.camInit = false;
     },
     home(zoom = 1, snap = false) { const r = R(); r.zoom = zoom; r.pan = { x: 0, y: 0 }; if (snap) r.camInit = false; },
@@ -199,12 +248,12 @@ async function artOk(page, id) {
  * Film `frames` frames at 60 fps. `each(i)` (optional, Node side) runs before each frame is advanced:
  * it steers the camera and stages things in the page.
  */
-async function film(page, ctx, id, frames, each = null, { quality = 92, preroll = 40 } = {}) {
+async function film(page, ctx, id, frames, each = null, { quality = 92, preroll = 40, frozen = false, thaw = true } = {}) {
   const dir = path.join(CAP, id);
   fs.rmSync(dir, { recursive: true, force: true });
   fs.mkdirSync(dir, { recursive: true });
   const cdp = await ctx.newCDPSession(page);
-  await page.evaluate(() => window.__freeze());
+  if (!frozen) await page.evaluate(() => window.__freeze());
   // A moment of the game before the first frame: the camera is there, the clock is running.
   for (let i = 0; i < preroll; i++) { if (each) await each(0); await page.evaluate(() => window.__advance(1000 / 60)); }
   const t0 = Date.now();
@@ -216,7 +265,7 @@ async function film(page, ctx, id, frames, each = null, { quality = 92, preroll 
     if (i % 60 === 59) process.stdout.write(`  ${id}: ${i + 1}/${frames} (${((Date.now() - t0) / (i + 1)).toFixed(0)} ms/frame)\r`);
   }
   console.log('');
-  await page.evaluate(() => window.__thaw());
+  if (thaw) await page.evaluate(() => window.__thaw());
   const mp4 = path.join(CAP, `${id}.mp4`);
   ff(['-framerate', String(FPS), '-i', path.join(dir, 'f%05d.jpg'), '-vf', 'format=yuv420p', '-c:v', 'libx264', '-preset', 'slow', '-crf', '12', mp4], `${id} encode`);
   ff(['-i', mp4, '-vf', `select='not(mod(n\\,${Math.max(1, Math.floor(frames / 4))}))',scale=480:-2,tile=4x1`, '-frames:v', '1', path.join(CAP, `${id}-look.jpg`)], `${id} look`);
@@ -339,6 +388,14 @@ const SHOTS = {
     const ep = await page.evaluate((c) => window.broodfall.sim.cellCenter(c), cells[0]);
     const mid = { x: found.pos.x + (ep.x - found.pos.x) * 0.5, y: found.pos.y + (ep.y - found.pos.y) * 0.5 };
     await artOk(page, 'g-maw');
+    await page.evaluate(([m]) => window.__T.camTo(m.x, m.y, 4.4, true), [mid]);
+    await page.waitForTimeout(600);
+    console.log('  framing:', JSON.stringify(await page.evaluate(([m, e, w]) => {
+      const b = window.broodfall, r = b.renderer;
+      const sc = (p) => { const s = b.worldToScreen(p.x, p.y); return [Math.round(s.x), Math.round(s.y)]; };
+      return { maw: sc(m), victim: sc(e), mid: sc(w), size: [r.app.renderer.width, r.app.renderer.height], zoom: r.zoom, turned: r.turned };
+    }, [found.pos, ep, mid])));
+    await page.screenshot({ path: path.join(CAP, 'g-maw-debug.jpg') });
     const n = 420;
     let caught = 0, was = false;
     await film(page, ctx, 'g-maw', n, async (i) => {
@@ -346,7 +403,7 @@ const SHOTS = {
       const riding = await page.evaluate(() => window.broodfall.tongues().some((l) => l.riding));
       if (riding && !was) caught++;
       was = riding;
-      await page.evaluate(([m, z, snap]) => window.__T.camTo(m.x, m.y - 10, z, snap), [mid, 4.4 + 0.4 * (i / n), i === 0]);
+      await page.evaluate(([m, z, snap]) => window.__T.camTo(m.x, m.y, z, snap, 170), [ep, 4.0 + 0.4 * (i / n), i === 0]);
     }, { preroll: 30 });
     console.log(`  bodies caught on the tongue while filming: ${caught}`);
     await ctx.close();
@@ -364,7 +421,7 @@ const SHOTS = {
     const n = 360;
     await film(page, ctx, 'g-core', n, async (i) => {
       if (i === 40) await page.evaluate(() => { window.broodfall.sim.stats.limbsGrown = Math.max(40, window.broodfall.sim.stats.limbsGrown); });
-      await page.evaluate(([c, z, snap]) => window.__T.camTo(c.x, c.y - 6, z, snap), [core, 3.6 - 0.5 * (i / n), i === 0]);
+      await page.evaluate(([c, z, snap]) => window.__T.camTo(c.x, c.y, z, snap, 230), [core, 3.3 - 0.5 * (i / n), i === 0]);
     });
     console.log('  core:', JSON.stringify(await page.evaluate(() => window.broodfall.coreStage())));
     await ctx.close();
@@ -622,11 +679,16 @@ async function screencast(page, ctx, id) {
 if (cmd === 'record') {
   const ids = JSON.parse(fs.readFileSync(path.join(ROOT, 'content', 'lore', 'yoke-avatar.json'), 'utf8'));
   const her = fs.readFileSync(path.join(RAW, 'voice', 'yoke-suck.mp3'));
-  const silent = spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-f', 'lavfi', '-i', 'anullsrc=r=24000:cl=mono', '-t', '0.25', '-c:a', 'libmp3lame', '-b:a', '32k', '-f', 'mp3', '-'], { maxBuffer: 1 << 20 }).stdout;
-  await withGame(async (browser) => {
-    const ctx = await browser.newContext({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 2 });
+  const mp3 = (args) => spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', ...args, '-c:a', 'libmp3lame', '-b:a', '64k', '-f', 'mp3', '-'], { maxBuffer: 1 << 24 }).stdout;
+  const silent = mp3(['-f', 'lavfi', '-i', 'anullsrc=r=24000:cl=mono', '-t', '0.25']);
+  // Her line, then a minute of nothing: the greeting holds on her first line while it is filmed frame by frame.
+  const herHeld = mp3(['-i', path.join(RAW, 'voice', 'yoke-suck.mp3'), '-af', 'apad=pad_dur=60', '-t', '62']);
+  /** A new player: mission 1 lost (forced), the report, CONTINUE: aboard the ship. Returns the page there. */
+  async function toTheShip(browser, { dpr, clock, first }) {
+    const ctx = await browser.newContext({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: dpr });
     const page = await ctx.newPage();
     page.on('pageerror', (e) => console.log('  page error:', String(e).slice(0, 200)));
+    if (clock) await page.addInitScript(CLOCK);
     await page.addInitScript(() => {
       const real = window.fetch.bind(window);
       const enc = new TextEncoder();
@@ -639,7 +701,8 @@ if (cmd === 'record') {
         return real(input, init);
       };
       localStorage.setItem('broodfall-yoke', JSON.stringify({ mode: 'avatar', v: 2 }));
-      // Every sound started, and when (wall clock), for the edit.
+      // Every sound started, and when (wall clock), for the edit (on the frozen clock, CLOCK logs them).
+      if (window.__clk) return;
       window.__plays = [];
       const play = HTMLMediaElement.prototype.play;
       HTMLMediaElement.prototype.play = function () { window.__plays.push({ src: String(this.currentSrc || this.src).slice(-60), at: Date.now() / 1000, video: this instanceof HTMLVideoElement }); return play.call(this); };
@@ -648,7 +711,7 @@ if (cmd === 'record') {
     const base = `**/rfab-api/api/avatars/${ids.avatarId}`;
     await page.route(`${base}/history`, (r) => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ turns: [] }) }));
     await page.route(`${base}/message`, (r) => r.fulfill({ status: 200, contentType: 'application/json', body: '{"success":true}' }));
-    await page.route(`${base}/speak`, (r) => r.fulfill({ status: 200, contentType: 'audio/mpeg', body: spoken++ === 0 ? her : silent }));
+    await page.route(`${base}/speak`, (r) => r.fulfill({ status: 200, contentType: 'audio/mpeg', body: spoken++ === 0 ? first : silent }));
     await page.route('**/rfab-api/api/broodfall/**', (r) => r.fulfill({ status: 404, body: '{}' }));
     await page.goto(BASE, { waitUntil: 'load', timeout: 180000 });
     // The first launch ever: the film (skipped, it is in the trailer already), then mission 1.
@@ -661,29 +724,64 @@ if (cmd === 'record') {
     await page.evaluate(() => { const s = window.broodfall.sim; s.outcome = 'lost'; s.events.push({ kind: 'lost' }); window.broodfall.step(1); });
     await page.waitForSelector('#debrief:not(.hidden)', { timeout: 15000 });
     await page.waitForTimeout(1500);
-    const rec = await screencast(page, ctx, 'r-yoke');
-    const marks = [];
-    await page.locator('#debrief-ship').click();
-    const tEnd = Date.now() + 75000;
-    let lastCap = '';
-    while (Date.now() < tEnd) {
-      const st = await page.evaluate(() => ({ talk: document.querySelector('.cp-icom .cp-talk')?.textContent ?? '', boss: !!document.getElementById('boss-call'), cap: document.querySelector('#boss-call .bc-caption')?.textContent ?? '' }));
-      const now = Date.now() / 1000;
-      if (/suck at genocide/.test(st.talk) && !marks.some((m) => m.k === 'suck')) marks.push({ k: 'suck', at: now });
-      if (st.boss && !marks.some((m) => m.k === 'boss')) marks.push({ k: 'boss', at: now });
-      if (st.cap && st.cap !== lastCap) { marks.push({ k: 'cap', text: st.cap, at: now }); lastCap = st.cap; }
-      if (marks.some((m) => m.k === 'boss') && !st.boss) { marks.push({ k: 'boss-end', at: now }); break; }
-      await page.waitForTimeout(100);
+    return { ctx, page };
+  }
+  await withGame(async (browser) => {
+    // YOKE's first line, close, then the boss's call: filmed frame by frame at twice the pixels, on the
+    // page's clock (her clips, the call's clip and its captions all follow it; sounds start on it and
+    // end on it, unheard: the edit lays the real files where they began).
+    if (on('yoke')) {
+      const { ctx, page } = await toTheShip(browser, { dpr: 2, clock: true, first: her });
+      await page.evaluate(() => window.__freeze());
+      await page.locator('#debrief-ship').click();
+      const until = async (fn, max, what) => {
+        for (let i = 0; i < max; i++) { if (await page.evaluate(fn)) return true; await page.evaluate(() => window.__advance(1000 / 60)); }
+        throw new Error(`never: ${what}`);
+      };
+      await until(() => /suck at genocide/.test(document.querySelector('.cp-icom .cp-talk')?.textContent ?? ''), 1200, 'her first line');
+      // A few frames in: her talking clip has begun.
+      for (let i = 0; i < 6; i++) await page.evaluate(() => window.__advance(1000 / 60));
+      const t0 = await page.evaluate(() => performance.now());
+      const box = await page.locator('.cp-icom').boundingBox();
+      await film(page, ctx, 'r-yoke', 210, null, { preroll: 0, frozen: true, thaw: false });
+      const voiceAt = (await page.evaluate(() => window.__plays)).filter((p) => !p.video && /^b|blob/.test(p.src)).map((p) => p.t)[0];
+      // On to the boss: his call opens after her lines; his voice file starts the call.
+      await until(() => window.__plays.some((p) => /boss\.mp3/.test(p.src)), 60 * 60, 'the boss calls');
+      const tb = await page.evaluate(() => window.__plays.find((p) => /boss\.mp3/.test(p.src)).t);
+      const from = 26.6;
+      for (let i = 0; i < 60 * 40 && (await page.evaluate(([tb, from]) => performance.now() < tb + from * 1000, [tb, from])); i++) await page.evaluate(() => window.__advance(1000 / 60));
+      const tb0 = await page.evaluate(() => performance.now());
+      await film(page, ctx, 'r-bosscall', 225, null, { preroll: 0, frozen: true });
+      const log = { voiceLead: voiceAt != null ? +((t0 - voiceAt) / 1000).toFixed(3) : null, box, dpr: 2, bossVoiceFrom: +((tb0 - tb) / 1000).toFixed(3) };
+      fs.writeFileSync(path.join(CAP, 'r-yoke.json'), JSON.stringify(log, null, 1));
+      console.log('  ', JSON.stringify(log));
+      await ctx.close();
     }
-    await page.waitForTimeout(1500);
-    const plays = await page.evaluate(() => window.__plays);
-    const { mp4, t0 } = await rec.stop();
-    // Wall clock -> seconds into the recording (the screencast's own timestamps are wall-clock seconds too).
-    const rel = (at) => +(at - t0).toFixed(3);
-    const log = { mp4, marks: marks.map((m) => ({ ...m, t: rel(m.at) })), plays: plays.map((p) => ({ ...p, t: rel(p.at) })) };
-    fs.writeFileSync(path.join(RAW, 'rec', 'r-yoke.json'), JSON.stringify(log, null, 1));
-    console.log(JSON.stringify(log, null, 1).slice(0, 3000));
-    await ctx.close();
+    // The boss's call, in real time (its captions run on the clock of his voice): the page's screencast.
+    if (on('boss')) {
+      const { ctx, page } = await toTheShip(browser, { dpr: 1, clock: false, first: her });
+      const rec = await screencast(page, ctx, 'r-boss');
+      const marks = [];
+      await page.locator('#debrief-ship').click();
+      const tEnd = Date.now() + 75000;
+      let lastCap = '';
+      while (Date.now() < tEnd) {
+        const st = await page.evaluate(() => ({ talk: document.querySelector('.cp-icom .cp-talk')?.textContent ?? '', boss: !!document.getElementById('boss-call'), cap: document.querySelector('#boss-call .bc-caption')?.textContent ?? '' }));
+        const now = Date.now() / 1000;
+        if (/suck at genocide/.test(st.talk) && !marks.some((m) => m.k === 'suck')) marks.push({ k: 'suck', at: now });
+        if (st.boss && !marks.some((m) => m.k === 'boss')) marks.push({ k: 'boss', at: now });
+        if (st.cap && st.cap !== lastCap) { marks.push({ k: 'cap', text: st.cap, at: now }); lastCap = st.cap; }
+        if (marks.some((m) => m.k === 'boss') && !st.boss) { marks.push({ k: 'boss-end', at: now }); break; }
+        await page.waitForTimeout(100);
+      }
+      await page.waitForTimeout(1500);
+      const plays = await page.evaluate(() => window.__plays);
+      const { mp4, t0 } = await rec.stop();
+      const rel = (at) => +(at - t0).toFixed(3);
+      const log = { mp4, marks: marks.map((m) => ({ ...m, t: rel(m.at) })), plays: plays.map((p) => ({ ...p, t: rel(p.at) })) };
+      fs.writeFileSync(path.join(RAW, 'rec', 'r-boss.json'), JSON.stringify(log, null, 1));
+      await ctx.close();
+    }
   });
 }
 

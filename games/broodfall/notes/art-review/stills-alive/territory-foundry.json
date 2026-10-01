@@ -1,0 +1,14 @@
+{
+  "id": "territory:foundry",
+  "model": "seegen:sd2-mini",
+  "seconds": 4.417,
+  "size": "864x496",
+  "bytes": 1069142,
+  "medianStep": 0.34,
+  "maxStep": 0.84,
+  "seamBefore": 8.22,
+  "seamAfter": 0.7,
+  "maxDrift": 5.63,
+  "fixed": "crossfade 0.6s",
+  "tiles": "the still it started from | then 8 frames across the loop"
+}

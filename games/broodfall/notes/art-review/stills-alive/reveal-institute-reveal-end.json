@@ -1,0 +1,14 @@
+{
+  "id": "reveal:institute-reveal-end",
+  "model": "seegen:sd2-fast",
+  "seconds": 5,
+  "size": "1112x834",
+  "bytes": 1926345,
+  "medianStep": 0.48,
+  "maxStep": 0.94,
+  "seamBefore": 0.86,
+  "seamAfter": 0.95,
+  "maxDrift": 5.35,
+  "fixed": "none",
+  "tiles": "the still it started from | then 8 frames across the loop"
+}

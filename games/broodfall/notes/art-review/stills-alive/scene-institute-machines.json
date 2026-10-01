@@ -1,0 +1,14 @@
+{
+  "id": "scene:institute-machines",
+  "model": "seegen:sd2-fast",
+  "seconds": 4.417,
+  "size": "1112x834",
+  "bytes": 1240104,
+  "medianStep": 0.2,
+  "maxStep": 0.67,
+  "seamBefore": 0.64,
+  "seamAfter": 0.38,
+  "maxDrift": 1.42,
+  "fixed": "crossfade 0.6s",
+  "tiles": "the still it started from | then 8 frames across the loop"
+}

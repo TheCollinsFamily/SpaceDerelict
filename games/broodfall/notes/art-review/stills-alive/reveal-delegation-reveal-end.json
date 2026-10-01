@@ -1,0 +1,14 @@
+{
+  "id": "reveal:delegation-reveal-end",
+  "model": "seegen:sd2-fast",
+  "seconds": 4.417,
+  "size": "1112x834",
+  "bytes": 1946522,
+  "medianStep": 0.23,
+  "maxStep": 0.53,
+  "seamBefore": 1.35,
+  "seamAfter": 0.43,
+  "maxDrift": 3.42,
+  "fixed": "crossfade 0.6s",
+  "tiles": "the still it started from | then 8 frames across the loop"
+}

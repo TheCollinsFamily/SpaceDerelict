@@ -1,0 +1,14 @@
+{
+  "id": "territory:commuter",
+  "model": "seegen:sd2-fast",
+  "seconds": 4.417,
+  "size": "864x496",
+  "bytes": 1473585,
+  "medianStep": 0.38,
+  "maxStep": 0.72,
+  "seamBefore": 1.59,
+  "seamAfter": 0.63,
+  "maxDrift": 2.5,
+  "fixed": "crossfade 0.6s",
+  "tiles": "the still it started from | then 8 frames across the loop"
+}

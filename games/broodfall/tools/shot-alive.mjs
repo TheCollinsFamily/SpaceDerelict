@@ -148,7 +148,7 @@ async function playing(page, sel) {
       poster: v.poster.split('/').pop(), count: document.querySelectorAll('video.alive').length };
   }, sel);
 }
-const box = async (page, sel) => pad(await page.locator(sel).first().boundingBox().catch(() => null));
+const box = async (page, sel, p = 24) => pad(await page.locator(sel).first().boundingBox().catch(() => null), p);
 
 async function loadFactions() {
   const { code } = await transform(readFileSync(join(root, 'content', 'campaign.ts'), 'utf8'), { loader: 'ts', format: 'esm' });
@@ -310,7 +310,7 @@ try {
     }
   }
 
-  if (want('debrief') || want('hand') || want('skyline')) {
+  if (want('debrief') || want('hand')) {
     for (const alive of [false, true]) {
       const tag = alive ? 'after' : 'before';
       for (const how of want('debrief') ? ['won', 'lost'] : ['won']) {
@@ -331,27 +331,6 @@ try {
           check(alive ? st.cards > 0 && st.moved : !st.moved, alive ? 'the hand\'s limbs step through their idles' : 'before: the hand\'s limbs are stills', JSON.stringify(st));
           await jpg(page, `video-hand-${tag}`, b);
           if (alive) await film(page, 'video-hand', b, 5000);
-        }
-        if (how === 'won' && want('skyline')) {
-          console.log(`skyline (${tag})`);
-          await page.locator('#open-under').click();
-          await page.waitForSelector('#under:not(.hidden) #under-surface.has-skyline', { timeout: 20000 }).catch(() => {});
-          await page.waitForTimeout(1500);
-          const sb = await page.locator('#under-surface').boundingBox();
-          const b = sb && { x: Math.max(0, sb.x - 10), y: Math.max(0, sb.y - 120), width: Math.min(VW - sb.x, sb.width + 20), height: sb.height + 160 };
-          const st = await page.evaluate(() => ({ life: !!document.querySelector('#under-surface .skyline-life'), set: document.querySelector('#under-surface .skyline-life')?.dataset.set,
-            beam: getComputedStyle(document.querySelector('#under-surface .sl-beam') ?? document.body).animationName }));
-          check(st.life && st.beam === 'sl-sweep', 'the organ stage\'s skyline has its light, smoke and searchlight', JSON.stringify(st));
-          if (!alive) {
-            // Before: the skyline as it was (its life hidden).
-            await page.addStyleTag({ content: '.skyline-life { display: none !important; }' });
-            await jpg(page, 'video-skyline-before', b);
-          } else {
-            await jpg(page, 'video-skyline-after', b);
-            await film(page, 'video-skyline', b, 9000);
-          }
-          await page.keyboard.press('Escape').catch(() => {});
-          await page.waitForTimeout(400);
         }
         if (want('debrief')) {
           console.log(`debrief ${how} (${tag})`);
@@ -389,6 +368,34 @@ try {
       const b = await box(page, 'body > .dbf .dbf-lead', 4);
       await jpg(page, 'video-debrief-held-after', b);
       await film(page, 'video-debrief-held', b, 5000);
+      await context.close();
+    }
+  }
+
+  if (want('skyline')) {
+    for (const alive of [false, true]) {
+      const tag = alive ? 'after' : 'before';
+      const { context, page } = await freshPage(browser, alive);
+      await page.goto(`${URL0}?seed=7&autostart=1&speed=0&biome=industrial`, { waitUntil: 'domcontentloaded', timeout: 300000 });
+      await page.waitForFunction(() => window.broodfall?.view?.() === 'iso' && document.getElementById('boot').classList.contains('hidden'), null, { timeout: 240000 });
+      await page.waitForTimeout(1500);
+      console.log(`skyline (${tag})`);
+      await page.locator('#open-under').click();
+      await page.waitForSelector('#under:not(.hidden) #under-surface.has-skyline', { timeout: 20000 }).catch(() => {});
+      await page.waitForTimeout(1500);
+      const sb = await page.locator('#under-surface').boundingBox();
+      const b = sb && { x: Math.max(0, sb.x - 10), y: Math.max(0, sb.y - 120), width: Math.min(VW - sb.x, sb.width + 20), height: sb.height + 160 };
+      const st = await page.evaluate(() => ({ life: !!document.querySelector('#under-surface .skyline-life'), set: document.querySelector('#under-surface .skyline-life')?.dataset.set,
+        beam: getComputedStyle(document.querySelector('#under-surface .sl-beam') ?? document.body).animationName }));
+      check(st.life && st.beam === 'sl-sweep', 'the organ stage\'s skyline has its light, smoke and searchlight', JSON.stringify(st));
+      if (!alive) {
+        // Before: the skyline as it was (its life hidden).
+        await page.addStyleTag({ content: '.skyline-life { display: none !important; }' });
+        await jpg(page, 'video-skyline-before', b);
+      } else {
+        await jpg(page, 'video-skyline-after', b);
+        await film(page, 'video-skyline', b, 9000);
+      }
       await context.close();
     }
   }

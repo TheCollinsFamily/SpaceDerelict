@@ -320,9 +320,13 @@ try {
     await bootGone(page);
     await page.waitForTimeout(500);
     await page.evaluate(() => document.getElementById('open-under')?.click());
-    await page.waitForTimeout(400);
+    await page.waitForSelector('#under .bf-loader.on', { timeout: 3000 }).catch(() => {});
+    await page.waitForTimeout(300);
     await shot(page, 'organ-1-opening');
-    await page.waitForTimeout(2500);
+    if (await page.locator('#under .bf-loader.on').count()) await moves(page, '#under .bf-loader.on .bf-loop', 'the organ stage opening');
+    else check(false, 'organ: a loop covered the stage while its pictures came in');
+    await page.waitForFunction(() => !document.querySelector('#under .bf-loader'), null, { timeout: 60000 }).catch(() => {});
+    await page.waitForTimeout(1200);
     await shot(page, 'organ-2-open');
     await verdict(page, 'the organ stage');
     await saveVideo(page, context, 'organ');

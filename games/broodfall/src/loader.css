@@ -21,7 +21,7 @@
 }
 .bf-loader.on { opacity: 1; }
 .bf-loader.leaving { opacity: 0; pointer-events: none; }
-.bf-loader.in-panel { position: absolute; z-index: 5; }
+.bf-loader.in-panel { position: absolute; z-index: 20; }
 .bf-loader-card {
   width: min(560px, calc(100% - 32px)); text-align: center; display: flex; flex-direction: column; align-items: center;
   color: var(--cs-ink, #e9eef0); font-family: var(--cs-font, Bahnschrift, "Segoe UI", Arial, sans-serif);

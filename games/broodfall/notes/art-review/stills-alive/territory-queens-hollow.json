@@ -1,0 +1,14 @@
+{
+  "id": "territory:queens-hollow",
+  "model": "seegen:sd2-fast",
+  "seconds": 4.417,
+  "size": "864x496",
+  "bytes": 1210232,
+  "medianStep": 0.24,
+  "maxStep": 1.13,
+  "seamBefore": 2.35,
+  "seamAfter": 0.68,
+  "maxDrift": 4.78,
+  "fixed": "crossfade 0.6s",
+  "tiles": "the still it started from | then 8 frames across the loop"
+}

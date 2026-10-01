@@ -1,0 +1,14 @@
+{
+  "id": "territory:hidden-campus",
+  "model": "seegen:sd2-fast",
+  "seconds": 4.292,
+  "size": "864x496",
+  "bytes": 966539,
+  "medianStep": 0.19,
+  "maxStep": 0.84,
+  "seamBefore": 0.78,
+  "seamAfter": 0.54,
+  "maxDrift": 1.13,
+  "fixed": "cut 3 snapping frames; crossfade 0.6s",
+  "tiles": "the still it started from | then 8 frames across the loop"
+}

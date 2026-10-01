@@ -1,0 +1,14 @@
+{
+  "id": "territory:pilgrim",
+  "model": "seegen:sd2-fast",
+  "seconds": 4.417,
+  "size": "864x496",
+  "bytes": 1073580,
+  "medianStep": 0.21,
+  "maxStep": 0.86,
+  "seamBefore": 1.52,
+  "seamAfter": 0.51,
+  "maxDrift": 1.16,
+  "fixed": "crossfade 0.6s",
+  "tiles": "the still it started from | then 8 frames across the loop"
+}

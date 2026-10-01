@@ -1,0 +1,14 @@
+{
+  "id": "scene:institute-pipeline",
+  "model": "seegen:sd2-fast",
+  "seconds": 4.292,
+  "size": "1112x834",
+  "bytes": 940864,
+  "medianStep": 0.12,
+  "maxStep": 0.89,
+  "seamBefore": 0.71,
+  "seamAfter": 0.32,
+  "maxDrift": 1.14,
+  "fixed": "cut 3 snapping frames; crossfade 0.6s",
+  "tiles": "the still it started from | then 8 frames across the loop"
+}

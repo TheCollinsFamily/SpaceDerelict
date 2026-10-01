@@ -1,11 +1,25 @@
 {
   "items": {
+    "debrief:held": {
+      "video": "alive/debrief-held.mp4",
+      "poster": "alive/debrief-held.webp",
+      "w": 1280,
+      "h": 720,
+      "seconds": 4.25
+    },
+    "debrief:lost": {
+      "video": "alive/debrief-lost.mp4",
+      "poster": "alive/debrief-lost.webp",
+      "w": 1280,
+      "h": 720,
+      "seconds": 4.875
+    },
     "debrief:won": {
       "video": "alive/debrief-won.mp4",
       "poster": "alive/debrief-won.webp",
       "w": 1280,
       "h": 720,
-      "seconds": 4.417
+      "seconds": 4.292
     },
     "partner:partner": {
       "video": "alive/partner-partner.mp4",
@@ -14,11 +28,172 @@
       "h": 960,
       "seconds": 5
     },
+    "reveal:delegation-reveal-end": {
+      "video": "alive/reveal-delegation-reveal-end.mp4",
+      "poster": "alive/reveal-delegation-reveal-end.webp",
+      "w": 1112,
+      "h": 834,
+      "seconds": 4.417
+    },
+    "reveal:faithful-reveal-end": {
+      "video": "alive/reveal-faithful-reveal-end.mp4",
+      "poster": "alive/reveal-faithful-reveal-end.webp",
+      "w": 1112,
+      "h": 834,
+      "seconds": 5
+    },
+    "reveal:institute-reveal-end": {
+      "video": "alive/reveal-institute-reveal-end.mp4",
+      "poster": "alive/reveal-institute-reveal-end.webp",
+      "w": 1112,
+      "h": 834,
+      "seconds": 5
+    },
+    "scene:delegation-contact": {
+      "video": "alive/scene-delegation-contact.mp4",
+      "poster": "alive/scene-delegation-contact.webp",
+      "w": 1112,
+      "h": 834,
+      "seconds": 4.292
+    },
+    "scene:delegation-gaia": {
+      "video": "alive/scene-delegation-gaia.mp4",
+      "poster": "alive/scene-delegation-gaia.webp",
+      "w": 1112,
+      "h": 834,
+      "seconds": 4.292
+    },
+    "scene:delegation-hurry": {
+      "video": "alive/scene-delegation-hurry.mp4",
+      "poster": "alive/scene-delegation-hurry.webp",
+      "w": 1112,
+      "h": 834,
+      "seconds": 4.417
+    },
+    "scene:delegation-reveal": {
+      "video": "alive/scene-delegation-reveal.mp4",
+      "poster": "alive/scene-delegation-reveal.webp",
+      "w": 1112,
+      "h": 834,
+      "seconds": 5
+    },
+    "scene:delegation-stop-war": {
+      "video": "alive/scene-delegation-stop-war.mp4",
+      "poster": "alive/scene-delegation-stop-war.webp",
+      "w": 1112,
+      "h": 834,
+      "seconds": 4.417
+    },
+    "scene:delegation-understand": {
+      "video": "alive/scene-delegation-understand.mp4",
+      "poster": "alive/scene-delegation-understand.webp",
+      "w": 1112,
+      "h": 834,
+      "seconds": 4.292
+    },
     "scene:faithful-contact": {
       "video": "alive/scene-faithful-contact.mp4",
       "poster": "alive/scene-faithful-contact.webp",
       "w": 1112,
       "h": 834,
+      "seconds": 4.417
+    },
+    "scene:faithful-prepare": {
+      "video": "alive/scene-faithful-prepare.mp4",
+      "poster": "alive/scene-faithful-prepare.webp",
+      "w": 1112,
+      "h": 834,
+      "seconds": 4.417
+    },
+    "scene:faithful-prophecy": {
+      "video": "alive/scene-faithful-prophecy.mp4",
+      "poster": "alive/scene-faithful-prophecy.webp",
+      "w": 1112,
+      "h": 834,
+      "seconds": 4.292
+    },
+    "scene:faithful-signs": {
+      "video": "alive/scene-faithful-signs.mp4",
+      "poster": "alive/scene-faithful-signs.webp",
+      "w": 1112,
+      "h": 834,
+      "seconds": 4.292
+    },
+    "scene:institute-contact": {
+      "video": "alive/scene-institute-contact.mp4",
+      "poster": "alive/scene-institute-contact.webp",
+      "w": 1112,
+      "h": 834,
+      "seconds": 3.958
+    },
+    "scene:institute-machines": {
+      "video": "alive/scene-institute-machines.mp4",
+      "poster": "alive/scene-institute-machines.webp",
+      "w": 1112,
+      "h": 834,
+      "seconds": 4.417
+    },
+    "scene:institute-pipeline": {
+      "video": "alive/scene-institute-pipeline.mp4",
+      "poster": "alive/scene-institute-pipeline.webp",
+      "w": 1112,
+      "h": 834,
+      "seconds": 4.292
+    },
+    "scene:institute-ultimatum": {
+      "video": "alive/scene-institute-ultimatum.mp4",
+      "poster": "alive/scene-institute-ultimatum.webp",
+      "w": 1112,
+      "h": 834,
+      "seconds": 4.292
+    },
+    "territory:assembly": {
+      "video": "alive/territory-assembly.mp4",
+      "poster": "alive/territory-assembly.webp",
+      "w": 864,
+      "h": 496,
+      "seconds": 4.417
+    },
+    "territory:commuter": {
+      "video": "alive/territory-commuter.mp4",
+      "poster": "alive/territory-commuter.webp",
+      "w": 864,
+      "h": 496,
+      "seconds": 4.417
+    },
+    "territory:crash-site": {
+      "video": "alive/territory-crash-site.mp4",
+      "poster": "alive/territory-crash-site.webp",
+      "w": 864,
+      "h": 496,
+      "seconds": 4.417
+    },
+    "territory:cul-de-sac": {
+      "video": "alive/territory-cul-de-sac.mp4",
+      "poster": "alive/territory-cul-de-sac.webp",
+      "w": 864,
+      "h": 496,
+      "seconds": 4.417
+    },
+    "territory:foundry": {
+      "video": "alive/territory-foundry.mp4",
+      "poster": "alive/territory-foundry.webp",
+      "w": 864,
+      "h": 496,
+      "seconds": 4.417
+    },
+    "territory:glass-spires": {
+      "video": "alive/territory-glass-spires.mp4",
+      "poster": "alive/territory-glass-spires.webp",
+      "w": 864,
+      "h": 496,
+      "seconds": 4.417
+    },
+    "territory:granary": {
+      "video": "alive/territory-granary.mp4",
+      "poster": "alive/territory-granary.webp",
+      "w": 864,
+      "h": 496,
       "seconds": 4.417
     },
     "territory:harbor": {
@@ -27,6 +202,62 @@
       "w": 1280,
       "h": 720,
       "seconds": 4.292
+    },
+    "territory:hidden-campus": {
+      "video": "alive/territory-hidden-campus.mp4",
+      "poster": "alive/territory-hidden-campus.webp",
+      "w": 864,
+      "h": 496,
+      "seconds": 4.292
+    },
+    "territory:mirewater": {
+      "video": "alive/territory-mirewater.mp4",
+      "poster": "alive/territory-mirewater.webp",
+      "w": 864,
+      "h": 496,
+      "seconds": 4.417
+    },
+    "territory:ossuary": {
+      "video": "alive/territory-ossuary.mp4",
+      "poster": "alive/territory-ossuary.webp",
+      "w": 864,
+      "h": 496,
+      "seconds": 4.417
+    },
+    "territory:pilgrim": {
+      "video": "alive/territory-pilgrim.mp4",
+      "poster": "alive/territory-pilgrim.webp",
+      "w": 864,
+      "h": 496,
+      "seconds": 4.417
+    },
+    "territory:queens-hollow": {
+      "video": "alive/territory-queens-hollow.mp4",
+      "poster": "alive/territory-queens-hollow.webp",
+      "w": 864,
+      "h": 496,
+      "seconds": 4.417
+    },
+    "territory:seventh-city": {
+      "video": "alive/territory-seventh-city.mp4",
+      "poster": "alive/territory-seventh-city.webp",
+      "w": 864,
+      "h": 496,
+      "seconds": 4.417
+    },
+    "territory:temple": {
+      "video": "alive/territory-temple.mp4",
+      "poster": "alive/territory-temple.webp",
+      "w": 864,
+      "h": 496,
+      "seconds": 4.417
+    },
+    "territory:university": {
+      "video": "alive/territory-university.mp4",
+      "poster": "alive/territory-university.webp",
+      "w": 864,
+      "h": 496,
+      "seconds": 4.875
     }
   }
 }

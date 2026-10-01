@@ -1,0 +1,14 @@
+{
+  "id": "territory:mirewater",
+  "model": "seegen:sd2-fast",
+  "seconds": 4.417,
+  "size": "864x496",
+  "bytes": 1162912,
+  "medianStep": 0.21,
+  "maxStep": 0.87,
+  "seamBefore": 1.86,
+  "seamAfter": 0.61,
+  "maxDrift": 0.98,
+  "fixed": "crossfade 0.6s",
+  "tiles": "the still it started from | then 8 frames across the loop"
+}

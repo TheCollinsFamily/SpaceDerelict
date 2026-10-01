@@ -35,19 +35,21 @@ slow version, never a still frame. The beat `node tools/shot-loading.mjs` fails 
 | 10 | **Ship → deployment** (DEPLOY): a new page | as 1 | as 1; the LANDING FILM session's film takes the run start once its file is in — it covers the gap before with `showLoader('creep')` (HANDOFF) | `loading-pad-5-next-deployment-loading.jpg`, `loading-pad-6-next-board.jpg` |
 | 11 | **A newsreel's first shot** buffering (was black for up to 2.5 s) | `newsreel.ts` film() show() | a scan loop in the middle | `loading-reel-1-buffering.jpg`, `loading-newsreel.mp4` |
 | 12 | **A shot stalling** mid-film (newsreel, ending film, the opening cinematic) | `newsreel.ts`, `intro.ts` | `watchBuffering`: a small scan loop in the corner over the frame that holds | `loading-reel-3-ending-film-buffering.jpg` |
-| 13 | **The organ stage opening** | `src/ui/underground.ts` show() | no wait: its art is in the board's manifest, loaded behind the boot screen; it opens with its own scan sweep (another session's) | `loading-organ-1-opening.jpg`, `loading-organ-2-open.jpg` |
+| 13 | **The organ stage opening** before its pictures are in (seen on the slow link: the meteor core's cell black, the organ cards' pictures empty, the shapes missing, for ~2 s) | `src/main.ts` openUnder / underArt (underground.ts untouched: another session's) | its stills (~1 MB of the stage's 14 MB) are fetched 1.5 s after the board is up; opened before they are in, a **creep** loop covers its grid, "PREPARING THE ORGAN STAGE", until they are | `loading-organ-1-opening.jpg`, `loading-organ-2-open.jpg`, `loading-organ.mp4` |
 | 14 | **Settings apply** | `src/ui/settings.ts` | no wait: applied in place (no reload); RESET reloads → 1 | — |
 | 15 | **Fault → TRY AGAIN** | `screens.ts` showFailure | a reload → 1 | — |
 | 16 | **The main menu** before its viewport loop plays | `src/ui/menu.ts` | not a wait: the ship's exterior picture is its background until the loop plays | — |
 
 ## The loops (tools/art/loaders.mjs, RFab image-to-video, start frame = end frame)
 
-| loop | made from | loop | file sizes |
+| loop | made from | loop | full / first paint |
 |---|---|---|---|
-| emblem | the emblem itself (art-src/screens/emblem.png), keyed with Leaflit's ChromaKey, despilled | ping-pong (the model did not land on the end frame) | see `public/art/loaders/` |
-| creep | a new still of the creep from above | seamless or ping-pong (the bake decides) | |
-| scan | a new still: the asset's outline on a scan grid | seamless | |
-| dance | YOKE's Leaflit sprite (art-src/yoke/idle-framed.png), a new take, keyed + her projection look | seamless or ping-pong | |
-| yoke | her own `thinking` clip (public/art/ship/yoke/thinking.webm), only made small | her own | |
+| emblem | the emblem itself (art-src/screens/emblem.png), 5 s 720p, keyed with Leaflit's ChromaKey, despilled | ping-pong (the model did not land on the end frame) | 1.48 MB webm (alpha) / 129 KB mini + a 29 KB micro EMBEDDED in index.html |
+| creep | a new still of the creep from above, 6 s 720p (the first take grew a black worm: art-src/loaders/v1/) | ping-pong | 479 KB / 61 KB |
+| scan | a new still: the asset's outline on the console's scan grid, 6 s 720p | seamless | 382 KB / 38 KB |
+| dance | YOKE's Leaflit sprite (art-src/yoke/idle-framed.png), a new 6 s take, keyed + her projection look | seamless | 824 KB (alpha) / 60 KB |
+| yoke | her own `thinking` clip (public/art/ship/yoke/thinking.webm), only made small | her own | her clip / 107 KB |
 
-No lettering in any loop (the lines are set in type); no religious symbol. Review sheets: `notes/art-review/loaders/`.
+Every loop's `-slow.webp` (Reduce motion) is the same frames at a third of the speed. A keyed loop's first paint is
+laid on the dark it is shown on (WebP alpha is lossless and five times the bytes). No lettering in any loop (the lines
+are set in type); no religious symbol. Review sheets: `notes/art-review/loaders/`.

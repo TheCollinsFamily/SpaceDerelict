@@ -591,6 +591,33 @@ function campaignDebrief(): void {
     .then((pics) => ui.showDebrief(debrief, back, pics), () => ui.showDebrief(debrief, back));
 }
 
+/**
+ * The organ stage's own pictures (the scan's tiles, the meteor, the dome, the skylines, the core, each organ's shape):
+ * ~14 MB in all with their loops, so they are not held behind the boot screen; these stills are fetched once the board
+ * is up, and if the stage is opened before they are in, a creep loop covers its grid until they are (never black cells).
+ */
+let underArtReady: Promise<unknown> | null = null;
+function underArt(): Promise<unknown> {
+  underArtReady ??= loadManifest().then((m) => {
+    type Under = { scan?: { tiles?: Record<string, string>; meteor?: string; dome?: string; skylines?: Record<string, string> }; core?: { stages?: Array<{ file: string }> }; shapes?: { organs?: Record<string, { still?: string }> } };
+    const u = (m as unknown as { under?: Under } | null)?.under;
+    if (!u) return;
+    const files = [...Object.values(u.scan?.tiles ?? {}), u.scan?.meteor, u.scan?.dome, ...Object.values(u.scan?.skylines ?? {}),
+      u.core?.stages?.[0]?.file, ...Object.values(u.shapes?.organs ?? {}).map((o) => o.still)].filter((f): f is string => !!f);
+    return Promise.all(files.map((f) => new Promise<void>((done) => {
+      const img = new Image();
+      img.onload = img.onerror = () => done();
+      img.src = new URL(artUrl(f), document.baseURI).href;
+    })));
+  });
+  return underArtReady;
+}
+function openUnder(): void {
+  under.show();
+  const grid = document.getElementById('under-right');
+  void withLoader(underArt(), 'creep', { host: grid ?? undefined, label: 'THE ORGAN STAGE', lines: ['Mapping the ground under the town.', 'Waking the organs.', 'Counting the cellars.'] });
+}
+
 /** The report is up, its pictures still coming: a loop in their place meanwhile (shown only if it takes over 400 ms). */
 function reportWait<T>(p: Promise<T>): Promise<T> {
   return withLoader(p, 'scan', { host: document.getElementById('debrief-pictures')!, panelHeight: 220 });
@@ -1010,13 +1037,13 @@ function updateNodeButton(): void {
     `<button class="node-chip${g.mire ? ' mire' : ''}${g.burn ? ' burn' : ''}${k === armedKey ? ' on' : ''}" data-strain="${k}" title="${g.label}">${g.n}× ${g.icons}</button>`).join('');
 }
 const openUnderBtn = document.getElementById('open-under')!;
-openUnderBtn.addEventListener('click', () => { if (sim.phase !== 'siege') { cancelAll(); under.show(); } });
+openUnderBtn.addEventListener('click', () => { if (sim.phase !== 'siege') { cancelAll(); openUnder(); } });
 /** Last phase seen by the loop — a wave (and any draft) ending into wave setup opens the organ stage. */
 let lastPhase = sim.phase;
 function underLifecycle(): void {
   if (AUTO || !started || sim.outcome !== 'playing') return;
   // The run starts at wave setup; the organ stage comes after every wave.
-  if (sim.phase === 'growth' && lastPhase !== 'growth') under.show();
+  if (sim.phase === 'growth' && lastPhase !== 'growth') openUnder();
   lastPhase = sim.phase;
   openUnderBtn.classList.toggle('disabled', sim.phase === 'siege');
 }
@@ -1161,6 +1188,8 @@ async function boot(): Promise<void> {
   if (started) showArtNotice(artFailed);
   (window as unknown as { __bfBooted?: boolean }).__bfBooted = true;
   loading.hide();
+  // The organ stage's stills, fetched while the first wave is being set up (src/main.ts openUnder).
+  window.setTimeout(() => void underArt(), 1500);
 
   renderer.app.canvas.addEventListener('click', (ev) => { if (!dragged) handleCanvasClick(ev.clientX, ev.clientY); });
   // The isometric board can be looked at closely: the wheel zooms on the pointer, the

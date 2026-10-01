@@ -1,0 +1,14 @@
+{
+  "id": "territory:temple",
+  "model": "seegen:sd2-fast",
+  "seconds": 4.417,
+  "size": "864x496",
+  "bytes": 1365814,
+  "medianStep": 0.23,
+  "maxStep": 0.55,
+  "seamBefore": 2.2,
+  "seamAfter": 0.62,
+  "maxDrift": 1.42,
+  "fixed": "crossfade 0.6s",
+  "tiles": "the still it started from | then 8 frames across the loop"
+}

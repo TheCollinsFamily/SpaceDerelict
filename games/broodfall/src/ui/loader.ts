@@ -229,7 +229,8 @@ export function showLoader(kind: LoaderKind, opts: LoaderOpts = {}): LoaderHandl
       if (kind !== 'dance') timer = window.setInterval(() => { line.textContent = nextLine(lines); }, 2200);
     }
     el.append(card);
-    if (opts.host && opts.panelHeight) { opts.host.style.minHeight = `${opts.panelHeight}px`; opts.host.style.position ||= 'relative'; }
+    if (opts.host && getComputedStyle(opts.host).position === 'static') opts.host.style.position = 'relative';
+    if (opts.host && opts.panelHeight) opts.host.style.minHeight = `${opts.panelHeight}px`;
     (opts.host ?? document.body).append(el);
     shownAt = performance.now();
     paint();

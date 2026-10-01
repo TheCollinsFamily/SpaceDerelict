@@ -1,0 +1,14 @@
+{
+  "id": "reveal:faithful-reveal-end",
+  "model": "seegen:sd2-fast",
+  "seconds": 5,
+  "size": "1112x834",
+  "bytes": 1152190,
+  "medianStep": 0.5,
+  "maxStep": 1.63,
+  "seamBefore": 0.7,
+  "seamAfter": 0.77,
+  "maxDrift": 5.4,
+  "fixed": "none",
+  "tiles": "the still it started from | then 8 frames across the loop"
+}

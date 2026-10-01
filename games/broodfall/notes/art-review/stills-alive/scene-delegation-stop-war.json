@@ -1,0 +1,14 @@
+{
+  "id": "scene:delegation-stop-war",
+  "model": "seegen:sd2-fast",
+  "seconds": 4.417,
+  "size": "1112x834",
+  "bytes": 1239439,
+  "medianStep": 0.28,
+  "maxStep": 0.79,
+  "seamBefore": 1.31,
+  "seamAfter": 0.34,
+  "maxDrift": 3.62,
+  "fixed": "crossfade 0.6s",
+  "tiles": "the still it started from | then 8 frames across the loop"
+}

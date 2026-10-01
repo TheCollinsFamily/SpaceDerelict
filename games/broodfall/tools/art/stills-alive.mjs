@@ -69,7 +69,7 @@ export const SURFACES = [
   { group: 'scene', id: 'faithful-contact', from: scenes, aspect: '4:3',
     prompt: FILM('The red on-air lamp pulses slowly; the needles of the meters on the console quiver; the vacuum tubes glow and flicker; the rings around the radio mast in the night sky pulse outward; the preacher behind the glass gestures a little; the operator turns a dial a little.') },
   { group: 'scene', id: 'faithful-signs', from: scenes, aspect: '4:3',
-    prompt: FILM('The red lamp on the desk pulses slowly; the desk lamp glows; dust motes drift in its light; the preacher breathes, his raised finger trembling a little, the pages of the big book lifting very slightly. The plain gold hexagon on the wall stays exactly as it is.') },
+    prompt: FILM('The red lamp on the desk pulses slowly; the desk lamp glows; dust motes drift in its light; the preacher breathes, his raised finger trembling a little. The big open book stays still; no page turns. The plain gold hexagon on the wall stays exactly as it is.') },
   { group: 'scene', id: 'faithful-prophecy', from: scenes, aspect: '4:3',
     prompt: FILM('The flames along the river dance and flicker, embers and smoke drift up; the red growth over the cliff pulses slowly; the preacher on the roof of the van sways, his robe stirring in the wind; the kneeling crowd sways a little. The plain gold hexagon on its pole stays exactly as it is.') },
   { group: 'scene', id: 'faithful-prepare', from: scenes, aspect: '4:3',
@@ -77,7 +77,7 @@ export const SURFACES = [
   { group: 'scene', id: 'institute-contact', from: scenes, aspect: '4:3',
     prompt: FILM('The little television screen flickers; the dish outside the window turns very slowly against the night; the scientists shift their weight, the chart wobbles a little in their hands; the young one in the beanbag breathes, his thumbs moving on the controller.') },
   { group: 'scene', id: 'institute-machines', from: scenes, aspect: '4:3',
-    prompt: FILM('Cold frosty mist drifts slowly inside the glass pods; the hanging lamps hum and flicker very faintly; the stormy clouds outside drift; the young one with the clipboard breathes and taps his pencil; the men at the truck shift a little.') },
+    prompt: FILM('Cold frosty mist drifts slowly inside the glass pods; the hanging lamps hum and flicker very faintly; the stormy clouds outside drift; the young one with the clipboard breathes and taps his pencil. The two men at the truck stay where they are, holding the pod on its trolley, only breathing.') },
   { group: 'scene', id: 'institute-pipeline', from: scenes, aspect: '4:3',
     prompt: FILM('The colours on the little television screen flicker; the red light on the camera blinks; the three ladies shift their handbags and breathe; the one in the beanbag rubs his brow a little; the scientist reads his clipboard.') },
   { group: 'scene', id: 'institute-ultimatum', from: scenes, aspect: '4:3',
@@ -103,7 +103,7 @@ export const SURFACES = [
     ['ossuary', 'The sea surges and breaks white at the foot of the cliffs; the red stream down the cliff flows slowly; the clouds drift; tiny figures move.'],
     ['pilgrim', 'The red banners flutter; the waterfall flows; the clouds drift slowly; tiny figures walk the great road.'],
     ['queens-hollow', 'The golden lanterns glow and flicker; thin smoke drifts from the towers; the tiny crowds move along the tiers.'],
-    ['hidden-campus', 'The glowing tanks pulse softly; the clouds drift over the mountains; the little bus creeps along the road; the trees sway.'],
+    ['hidden-campus', 'Almost nothing moves: only the glowing tanks inside the glass halls pulse very softly and the far clouds drift a little. The picture is held exactly as it is, the same distance and angle the whole time; the camera does not move closer.'],
     ['assembly', 'The smoke on the horizon drifts; the red clouds roll slowly; the red growth at the edges of the city pulses slowly.'],
     ['seventh-city', 'The red lights on the masts blink; the rings in the sky pulse outward softly; the red growth over the ground pulses slowly; the clouds drift.'],
     ['glass-spires', 'Lightning flickers in the red storm clouds; the neon lights of the spires pulse; steam drifts from the vents.'],
@@ -187,7 +187,8 @@ function bake(s) {
   const name = `${s.group}-${s.id}`;
   const out = path.join(OUT, `${name}.mp4`);
   let fixed = snap < steps.length + 1 ? `cut ${steps.length + 1 - snap} snapping frames; ` : '';
-  if (seam > Math.max(0.5, 3 * step)) {
+  // Crossfaded whenever the seam is more than half again a typical step (a seam at 2x a step still showed as a tick).
+  if (seam > Math.max(0.4, 1.5 * step)) {
     const L = duration(tmp);
     const D = 0.6;
     const k = (D - 1 / FPS).toFixed(4);

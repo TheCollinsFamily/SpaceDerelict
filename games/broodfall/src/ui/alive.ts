@@ -123,8 +123,9 @@ export function aliveState(): Array<{ key: string; playing: boolean; time: numbe
   return [...pool].map(([key, v]) => ({ key, playing: !v.paused && v.readyState >= 2, time: v.currentTime, connected: v.isConnected }));
 }
 
-// A hidden tab plays nothing.
+// A hidden tab plays nothing. (`window.broodfallAlive()`: what is in the pool, for the beats.)
 if (typeof document !== 'undefined') {
+  (window as unknown as { broodfallAlive?: typeof aliveState }).broodfallAlive = aliveState;
   document.addEventListener('visibilitychange', () => {
     for (const v of pool.values()) {
       if (document.hidden) v.pause();

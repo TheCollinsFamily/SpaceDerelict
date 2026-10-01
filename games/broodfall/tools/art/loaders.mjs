@@ -207,7 +207,7 @@ function bakeYoke() {
   if (!fs.existsSync(YOKE_CLIP)) return null;
   // Her own clip is already keyed and loops (Ping-Pong, the studio's); only the small copies are made here.
   const frames = rgbaFrames(YOKE_CLIP, 640, 360, { dropFirst: false, alpha: true });
-  encode('yoke', frames, { alpha: true, mini: 200, size: 640 });
+  encode('yoke', frames, { alpha: true, mini: 320, size: 640 });
   fs.rmSync(path.join(OUT, 'yoke.webm'), { force: true }); // the full one is her own file
   return { video: 'ship/yoke/thinking.webm', mini: 'loaders/yoke-mini.webp', slow: 'loaders/yoke-slow.webp', alpha: true, mode: 'her own', seconds: +(frames.length / FPS).toFixed(2) };
 }
