@@ -121,7 +121,11 @@ if (CAMPAIGN === 'run') {
   if (campaignState && pending) {
     territory = pending.territory;
     campaignPlan = plan(campaignState, pending.territory, pending);
-    Object.assign(CFG, campaignPlan.config, { gridW: CFG.gridW, gridH: CFG.gridH, cellPx: CFG.cellPx, genes: [...meta.genes, ...(campaignPlan.config.genes ?? [])] });
+    // The board's size is the game's own, except a defence's (its remembered board, or a large city).
+    Object.assign(CFG, campaignPlan.config, {
+      gridW: campaignPlan.config.gridW ?? CFG.gridW, gridH: campaignPlan.config.gridH ?? CFG.gridH, cellPx: CFG.cellPx,
+      genes: [...meta.genes, ...(campaignPlan.config.genes ?? [])],
+    });
   }
 }
 /** Mission 1 (src/meta/onboarding.ts): a plain tower-defence game; nothing on its screen speaks of the ship. */
@@ -355,7 +359,7 @@ function updateHint(): void {
  */
 function coachText(): string {
   if (sim.outcome !== 'playing') return '';
-  const left = Math.max(0, Math.ceil(B.growthSeconds - sim.phaseElapsed));
+  const left = Math.max(0, Math.ceil(sim.growthLength - sim.phaseElapsed));
   if (sim.waveNumber === 0 && sim.phase === 'growth') {
     if (!sim.towers.length) return `YOUR FIRST LIMB: pick a card below, then click a dark red block beside a street — the townsfolk march in from the glowing gate in ${left}s`;
     const affordable = sim.hand.some((c) => c.free || sim.canAfford(towerSpec(c.family).cost));
@@ -582,6 +586,8 @@ function campaignDebrief(): void {
   const report: RunReport = {
     won: sim.outcome === 'won', wavesCleared: sim.wavesCleared, coreEndFrac: Math.max(0, sim.coreHp / sim.coreMaxHp),
     scienceBanked: sim.scienceBanked, stats: sim.stats,
+    // The board he won on: a defence of this territory opens on it (src/meta/defence.ts).
+    ...(sim.outcome === 'won' ? { board: sim.snapshot() } : {}),
   };
   const { state, debrief } = finish(campaignState, campaignPlan, report);
   saveCampaign(state);

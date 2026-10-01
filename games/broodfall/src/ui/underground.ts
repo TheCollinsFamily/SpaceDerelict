@@ -324,7 +324,7 @@ export class UndergroundScreen {
   private stageArt(): ScanArt['stages'][number] | null {
     const stages = this.scan?.stages ?? [];
     if (!stages.length) return null;
-    return stages[Math.min(stages.length, coreStageOf(this.getSim().stats.limbsGrown)) - 1];
+    return stages[Math.min(stages.length, coreStageOf(this.getSim().stats.limbsGrown, this.getSim().cfg.coreStage)) - 1];
   }
 
   /**
@@ -375,7 +375,7 @@ export class UndergroundScreen {
     const sim = this.getSim();
     const u = sim.under;
     const key = [
-      this.selected, this.rot, Math.floor(sim.meat.war), Math.floor(sim.meat.science), sim.coreLevel, coreStageOf(sim.stats.limbsGrown),
+      this.selected, this.rot, Math.floor(sim.meat.war), Math.floor(sim.meat.science), sim.coreLevel, coreStageOf(sim.stats.limbsGrown, sim.cfg.coreStage),
       sim.organs.map((o) => `${o.cell}${o.organ}${o.rot}${o.level}`).join(','),
     ].join('|');
     if (key === this.lastKey) return;

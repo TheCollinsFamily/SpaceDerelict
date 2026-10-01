@@ -3,6 +3,7 @@ import type { EnemyKind } from '../sim/types';
 import type { CampaignState } from './campaign';
 import { YOKE_AVATAR, type YokeMode } from './yokeAvatar';
 import { gainOf, settingsFrom, type Channel, type Settings } from './settings';
+import { migrateDefence } from './defence';
 
 const KEY = 'broodfall-campaign';
 const PENDING = 'broodfall-campaign-pending';
@@ -19,7 +20,10 @@ export function loadCampaign(): CampaignState | null {
     const raw = localStorage.getItem(KEY);
     if (!raw) return null;
     const s = JSON.parse(raw) as CampaignState;
-    return s && s.version === 1 ? s : null;
+    if (!s || s.version !== 1) return null;
+    // A counter-attack launched with no warning (a save from before Oct 1 2026) is staged again instead.
+    migrateDefence(s);
+    return s;
   } catch { return null; }
 }
 

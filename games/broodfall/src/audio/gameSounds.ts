@@ -30,7 +30,7 @@ let lastSim: Sim | null = null;
 
 /** Every frame of a deployment: what the board did since the last one. */
 export function watchBoard(sim: Sim): void {
-  if (sim !== lastSim) { lastSim = sim; cooldowns.clear(); shots = new Set(sim.projectiles.map((p) => p.id)); shells = new Map(sim.shells.map((s) => [s.id, s.side === 'body'])); lobs = new Set(); hand = sim.hand.map((c) => c.id); coreStage = coreStageOf(sim.stats.limbsGrown); lastTime = sim.time; return; }
+  if (sim !== lastSim) { lastSim = sim; cooldowns.clear(); shots = new Set(sim.projectiles.map((p) => p.id)); shells = new Map(sim.shells.map((s) => [s.id, s.side === 'body'])); lobs = new Set(); hand = sim.hand.map((c) => c.id); coreStage = coreStageOf(sim.stats.limbsGrown, sim.cfg.coreStage); lastTime = sim.time; return; }
   // Only time that passed makes sound (a paused or reloaded board is quiet).
   const moved = sim.time > lastTime;
   lastTime = sim.time;
@@ -75,7 +75,7 @@ export function watchBoard(sim: Sim): void {
   for (let i = 0; i < Math.min(drawn, 3); i++) sfx('card-draw', { delay: i * 0.07 });
   hand = nowHand;
 
-  const stage = coreStageOf(sim.stats.limbsGrown);
+  const stage = coreStageOf(sim.stats.limbsGrown, sim.cfg.coreStage);
   if (stage > coreStage) { sfx('core-evolve'); sting('sting-core', { gain: 0.8 }); }
   coreStage = stage;
 }

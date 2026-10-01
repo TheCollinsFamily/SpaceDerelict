@@ -110,6 +110,8 @@ describe('going over', () => {
     let s = take(clear(wins(alliedWith('faithful'), MIDPOINT_CAPTURES - 1)));
     expect(perksOf(s)).toEqual(expect.arrayContaining(['sleepers1', 'garrison']));
     const seenBefore = [...s.beatsSeen];
+    // (A counter-attack the colony was already making is its own business: src/meta/defence.ts.)
+    const attackBefore = { underAttack: s.underAttack, staging: s.staging ?? null };
     s = switchAlly(s, 'delegation');
     expect(s.faction).toBe('delegation');
     expect(s.midpoint).toMatchObject({ status: 'switched', from: 'faithful', to: 'delegation' });
@@ -123,7 +125,7 @@ describe('going over', () => {
     expect(titles.slice(1)).toEqual(['The First Summit', 'The Leaked Plans']);
     expect(s.pendingScenes.some((p) => p.offer)).toBe(false);
     // Not hostile: no counter-attack comes of it, and his ground is his.
-    expect(s.underAttack).toBe(null);
+    expect({ underAttack: s.underAttack, staging: s.staging ?? null }).toEqual(attackBefore);
     expect(summaryFor(s)).toMatch(/left The Faithful of the Last Hour for The Friendship Delegation/);
   });
 

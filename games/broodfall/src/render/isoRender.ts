@@ -1238,7 +1238,7 @@ export class IsoRenderer extends Renderer {
     const evo = this.art.coreEvo;
     if (!evo) return null;
     const stages = evo.art.stages;
-    const want = Math.min(stages.length, coreStageOf(sim.stats.limbsGrown));
+    const want = Math.min(stages.length, coreStageOf(sim.stats.limbsGrown, sim.cfg.coreStage));
     if (this.coreShown === 0) this.coreShown = want;
     if (!this.coreInto && want > this.coreShown && stages[this.coreShown].grow) { this.coreInto = this.coreShown + 1; this.coreGrowT = 0; }
     if (!this.coreInto && want > this.coreShown) this.coreShown = want;
@@ -1274,7 +1274,7 @@ export class IsoRenderer extends Renderer {
   coreStageNow(): { stage: number; into: number; t: number; want: number; art: boolean } {
     const sim = this.simRef;
     const n = this.art.coreEvo?.art.stages.length ?? 0;
-    return { stage: this.coreShown, into: this.coreInto, t: this.coreInto ? this.coreGrowT : 0, want: sim ? Math.min(n || 4, coreStageOf(sim.stats.limbsGrown)) : 0, art: n > 0 };
+    return { stage: this.coreShown, into: this.coreInto, t: this.coreInto ? this.coreGrowT : 0, want: sim ? Math.min(n || 4, coreStageOf(sim.stats.limbsGrown, sim.cfg.coreStage)) : 0, art: n > 0 };
   }
 
   // ------------------------------------------------------------ creep nodes

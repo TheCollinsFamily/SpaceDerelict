@@ -11,9 +11,12 @@
 export const CORE_STAGE_GROWN = [0, 6, 18, 40] as const;
 export const CORE_STAGE_NAMES = ['the landing', 'rooted', 'chambered', 'the citadel'] as const;
 
-/** The stage (1-4) of a core whose body has grown this many limbs. */
-export function coreStageOf(grown: number): number {
-  let stage = 1;
-  CORE_STAGE_GROWN.forEach((g, i) => { if (grown >= g) stage = i + 1; });
+/**
+ * The stage (1-4) of a core whose body has grown this many limbs. `floor`: a run that opens with its
+ * core already grown (a defence deployment opens at stage 3, `SimConfig.coreStage`; src/meta/defence.ts).
+ */
+export function coreStageOf(grown: number, floor = 1): number {
+  let stage = Math.max(1, Math.min(CORE_STAGE_GROWN.length, floor));
+  CORE_STAGE_GROWN.forEach((g, i) => { if (grown >= g) stage = Math.max(stage, i + 1); });
   return stage;
 }

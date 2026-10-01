@@ -2,6 +2,7 @@
  * Goals over a run: the Requisition Board, the dares, the experiments' goals.
  * A goal is a MEASURE (content/campaign.ts) compared with a target.
  */
+import type { BoardSnapshot } from '../sim/boardSnapshot';
 import type { GoalDef } from '../../content/campaign';
 import type { RunStats, TowerFamily } from '../sim/types';
 
@@ -12,6 +13,8 @@ export interface RunReport {
   coreEndFrac: number;
   scienceBanked: number;
   stats: RunStats;
+  /** The board as the run left it (kept when it was won: a defence there opens on it; src/sim/boardSnapshot.ts). */
+  board?: BoardSnapshot;
 }
 
 export interface GoalInstance {

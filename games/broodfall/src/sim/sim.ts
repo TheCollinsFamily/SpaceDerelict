@@ -11,6 +11,7 @@ import {
   CellType, CityMap, DraftOffer, allDistance, computeFlow, createBoard,
   PLATE, draftOffers, frontierGates, isPassable, legalDrafts, slotOfCell, stampPlate,
 } from './citymap';
+import { pregrow, restoreMap, snapshotBoard, validSnapshot, type BoardSnapshot } from './boardSnapshot';
 
 type Edge = 'n' | 's' | 'e' | 'w';
 /** A wall of yours facing unclaimed city (Sim.burrowSiteAt). */
@@ -297,6 +298,8 @@ export class Sim {
   organs: Organ[] = [];
   /** The meteor's own level (upgradeable like any theme organ). */
   coreLevel = 1;
+  /** The seed the underground was dug from (a remembered board keeps its own; src/sim/boardSnapshot.ts). */
+  readonly underSeed: number;
   /** What happened this run (the campaign's goals read it). */
   stats: RunStats = {
     kills: {}, killsByFamily: {}, killsByCause: {}, healed: 0, limbsGrown: 0, evolutions: 0,
@@ -383,10 +386,18 @@ export class Sim {
     const slotsY = Math.floor(cfg.gridH / 10);
     const startSlot = Math.floor((slotsY - 1) / 2) * slotsX + Math.floor(slotsX / 2);
     this.entrances = Math.max(1, Math.min(3, cfg.entrances ?? 1));
-    // The crash site's layout is drawn from its own stream, so that the rest of the run's dice fall as before.
-    const crash = cfg.crash ?? new Rng((cfg.seed ^ 0x5eed) >>> 0).int(0, 999);
-    this.map = createBoard(slotsX, slotsY, startSlot, this.rng, this.entrances, crash);
-    this.under = createUnderground(cfg.seed, TOWERS.filter((t) => !t.engine).map((t) => t.family));
+    // A defence (src/meta/defence.ts): the board remembered from the win there, or a large city grown
+    // before the run by the drafts' own algebra (src/sim/boardSnapshot.ts).
+    const snap = cfg.board && validSnapshot(cfg.board) && cfg.board.w === cfg.gridW && cfg.board.h === cfg.gridH ? cfg.board : null;
+    if (snap) this.map = restoreMap(snap);
+    else {
+      // The crash site's layout is drawn from its own stream, so that the rest of the run's dice fall as before.
+      const crash = cfg.crash ?? new Rng((cfg.seed ^ 0x5eed) >>> 0).int(0, 999);
+      this.map = createBoard(slotsX, slotsY, startSlot, this.rng, this.entrances, crash);
+      if (cfg.pregrown) pregrow(this.map, this.rng, cfg.pregrown);
+    }
+    this.underSeed = snap ? snap.underSeed : cfg.seed;
+    this.under = createUnderground(this.underSeed, TOWERS.filter((t) => !t.engine).map((t) => t.family));
     this.core = this.cellCenter(this.map.coreCell);
     this.gates = frontierGates(this.map);
     for (const id of cfg.genes ?? []) {
@@ -422,7 +433,10 @@ export class Sim {
     for (let i = 0; i < this.geneMods.startNodes; i++) this.nodeStock.push(this.plainStrain());
     for (const [c, n] of Object.entries(cfg.startBonus ?? {})) this.meat[c as Caste] += n as number;
     if (cfg.trapCage || this.geneMods.trapCage) this.hand.push({ id: this.nextId++, family: 'cage', free: true });
-    for (const id of cfg.startOrgans ?? []) this.growFree(id);
+    // A remembered board brings its organs back where they grew (they include the profile's); else the profile's own.
+    if (snap) for (const o of snap.organs) this.regrowOrgan(o);
+    else for (const id of cfg.startOrgans ?? []) this.growFree(id);
+    this.coreLevel = Math.max(1, cfg.coreLevel ?? 1, snap?.coreLevel ?? 1);
     this.creepDist = allDistance(this.map, this.map.coreCell);
     this.flow = this.computeFlowField();
     this.pickIncomingGates();
@@ -554,10 +568,22 @@ export class Sim {
 
   get tier(): number {
     const t = Math.floor(this.threat / B.threatPerTier);
+    // A defence's one siege comes at least this hard (src/meta/defence.ts).
+    const floor = Math.min(WAVE_TABLE.length - 1, this.cfg.oneWave?.minTier ?? 0);
     // The last row is the hive's desperation — gated behind real escalation,
     // not something a standard hold order walks into by wave 11.
-    if (t >= WAVE_TABLE.length - 1 && this.threat < B.tier6Threat) return WAVE_TABLE.length - 2;
-    return Math.min(WAVE_TABLE.length - 1, t);
+    if (t >= WAVE_TABLE.length - 1 && this.threat < B.tier6Threat) return Math.max(floor, WAVE_TABLE.length - 2);
+    return Math.max(floor, Math.min(WAVE_TABLE.length - 1, t));
+  }
+
+  /** How long this growth phase lasts: a defence gives the body longer to re-arm before its one siege (src/meta/defence.ts). */
+  get growthLength(): number {
+    return this.waveNumber === 0 && this.cfg.oneWave?.armSeconds ? this.cfg.oneWave.armSeconds : B.growthSeconds;
+  }
+
+  /** How many waves deep the next wave's size is counted (a defence's one siege counts as a late wave). */
+  private get waveDepth(): number {
+    return this.wavesCleared + (this.cfg.oneWave ? Math.max(0, this.cfg.oneWave.asWave - 1) : 0);
   }
 
   /**
@@ -1119,6 +1145,26 @@ export class Sim {
     const caps = this.cfg.evolutionCap;
     if (caps && themeOf(family) === 'core' && caps[family] !== undefined) return caps[family]!;
     return caps?.[themeOf(family)] ?? 3;
+  }
+
+  /** The board and the body under it as they stand (kept by the campaign when a deployment is won). */
+  snapshot(): BoardSnapshot {
+    return snapshotBoard(this.map, this.underSeed, this.organs, this.coreLevel);
+  }
+
+  /** A remembered organ (src/sim/boardSnapshot.ts), back where it grew, at its level; skipped if the ground no longer takes it. */
+  private regrowOrgan(o: { organ: OrganId; cell: number; rot: number; level: number }): void {
+    if (!ORGAN_BY_ID[o.organ]) return;
+    const cells = this.organFootprint(o.organ, o.cell, o.rot);
+    if (!cells) return;
+    for (const c of cells) {
+      const k = this.under.cells[c]?.kind;
+      if ((k !== 'soil' && k !== 'deposit') || this.organAt(c)) return;
+    }
+    this.organs.push({ id: this.nextId++, organ: o.organ, cell: o.cell, rot: o.rot, level: Math.max(1, o.level), cells });
+    this.organCache = null;
+    this.coreStrainCache = null;
+    if (o.organ === 'cyst') for (let k = 0; k < CYST_NODES; k++) this.nodeStock.push(this.plainStrain());
   }
 
   /** Grow a starting-profile organ for free at the first spot touching the body. */
@@ -1925,7 +1971,7 @@ export class Sim {
       }
       case 'call-early': {
         if (this.phase !== 'growth') return { ok: false, err: 'no wave to call' };
-        const bonus = Math.floor((B.growthSeconds - this.phaseElapsed) * B.callEarlyRate);
+        const bonus = Math.floor(Math.max(0, B.growthSeconds - this.phaseElapsed) * B.callEarlyRate);
         this.stats.earlyCalls += 1;
         this.startSiege();
         if (bonus > 0) this.meat.war += bonus; // after the wave starts, so it is not cleared
@@ -2342,7 +2388,8 @@ export class Sim {
 
   /** The hive masses its response on specific approaches; the player sees it coming. */
   private pickIncomingGates(): void {
-    const lanes = this.tier >= 4 ? 3 : this.tier >= 2 ? 2 : 1;
+    // A defence's one siege comes down more streets at once (src/meta/defence.ts).
+    const lanes = this.cfg.oneWave?.lanes ?? (this.tier >= 4 ? 3 : this.tier >= 2 ? 2 : 1);
     const picked: number[] = [];
     const sides = new Set<string>();
     let guard = 0;
@@ -2411,7 +2458,7 @@ export class Sim {
   /** What the next wave will bring (the same law startSiege uses), for the Translator / skirmish HUD. */
   previewNextWave(): Partial<Record<EnemyKind, number>> {
     const comp = WAVE_TABLE[this.tier];
-    const scale = 1 + this.wavesCleared * B.waveCountScale;
+    const scale = 1 + this.waveDepth * B.waveCountScale;
     const out: Partial<Record<EnemyKind, number>> = {};
     for (const [kind, n] of Object.entries(comp)) {
       if ((this.cfg.bannedEnemies ?? []).includes(kind as EnemyKind)) continue;
@@ -2445,7 +2492,7 @@ export class Sim {
     // Consort's Favour reads each limb's kills in this wave.
     for (const t of this.towers) t.waveKillsAt = t.kills;
     const comp = WAVE_TABLE[this.tier];
-    const scale = 1 + this.wavesCleared * B.waveCountScale;
+    const scale = 1 + this.waveDepth * B.waveCountScale;
     this.spawnQueue = [];
     const counts: Partial<Record<EnemyKind, number>> = {};
     let waveRisk = 0;
@@ -2493,7 +2540,7 @@ export class Sim {
 
     // Phase machine.
     if (this.phase === 'growth') {
-      if (this.phaseElapsed >= B.growthSeconds) this.startSiege();
+      if (this.phaseElapsed >= this.growthLength) this.startSiege();
     } else {
       if (this.spawnQueue.length > 0) {
         this.spawnTimer -= DT;
@@ -2508,7 +2555,10 @@ export class Sim {
       }
       // The wave is the war (and royal) caste; science visitors come and go on their own clock.
       const hostiles = this.enemies.some((e) => enemySpec(e.kind).caste !== 'science');
-      if ((this.spawnQueue.length === 0 && !hostiles) || this.phaseElapsed > B.siegeMaxSeconds) {
+      // A defence's one siege is over when it is beaten, not when a normal turn's clock runs out
+      // (a big city's long streets would otherwise let it end with the column still marching).
+      const siegeMax = this.cfg.oneWave ? B.siegeMaxSeconds * 5 : B.siegeMaxSeconds;
+      if ((this.spawnQueue.length === 0 && !hostiles) || this.phaseElapsed > siegeMax) {
         this.phaseElapsed = 0;
         this.wavesCleared += 1;
         if (this.waveLimbDamage === 0) this.stats.pacifistWaves += 1;

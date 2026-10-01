@@ -78,26 +78,28 @@ describe('the campaign: credits, the globe, pushback', () => {
     expect(evolutionCaps(state).cage).toBe(2);
   });
 
-  it('pushback: after two captures the colony counter-attacks; defend it or deploy elsewhere and lose it', () => {
+  it('pushback: after two captures the colony masses (a deployment ahead), then attacks; defend it or deploy elsewhere and lose it', () => {
     let s = newCampaign(4);
     s = winAt(s, 'cul-de-sac');
     s = winAt(s, 'granary');
-    expect(s.underAttack).not.toBeNull();
-    const attacked = s.underAttack!;
+    // Staged, not launched: nothing to defend yet (src/meta/defence.ts; tests/defence.test.ts has the rest).
+    expect(s.underAttack).toBeNull();
+    expect(s.staging).not.toBeNull();
+    const attacked = s.staging!.target;
+    const away = (x: CampaignState) => targets(x).find((t) => t.id !== x.staging?.from && t.id !== x.underAttack && !t.finaleOf)!.id;
+    s = winAt(s, away(s));
+    expect(s.underAttack).toBe(attacked);
     // Deploy elsewhere: the attacked territory falls.
-    const other = targets(s).find((t) => t.id !== attacked)!;
-    const { state, debrief } = finish(s, plan(s, other.id), report(true));
+    const { state, debrief } = finish(s, plan(s, away(s)), report(true));
     expect(debrief.lost).toBe(attacked);
     expect(state.held).not.toContain(attacked);
     // Or defend it: a defence deployment keeps it.
-    let d = winAt(newCampaign(4), 'cul-de-sac');
-    d = winAt(d, 'granary');
-    const def = plan(d, d.underAttack!);
+    const def = plan(s, s.underAttack!);
     expect(def.defence).toBe(true);
-    expect(def.config.directive).toEqual({ kind: 'hold', waves: 5 });
-    const after = finish(d, def, report(true));
-    expect(after.debrief.repelled).toBe(d.underAttack);
-    expect(after.state.held).toContain(d.underAttack);
+    expect(def.config.directive).toEqual({ kind: 'hold', waves: 1 });
+    const after = finish(s, def, report(true));
+    expect(after.debrief.repelled).toBe(attacked);
+    expect(after.state.held).toContain(attacked);
   });
 
   it('experiments: they change the run and unlock things (Love Gas → the Atrophy Gland)', () => {

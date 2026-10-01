@@ -105,7 +105,7 @@ export function placeNode(sim: Sim, random?: Rng): boolean {
 /** One organ-stage decision; true if it acted. */
 export function organTurn(sim: Sim, random?: Rng): boolean {
   if (sim.phase !== 'growth') return false;
-  const late = sim.phaseElapsed >= B.growthSeconds - 4;
+  const late = sim.phaseElapsed >= sim.growthLength - 4;
   const have = (id: OrganId) => sim.organs.some((o) => o.organ === id);
   if (!late) {
     // The organs that make free things (plinths, seedlings), one each, after the fourth theme (measured:

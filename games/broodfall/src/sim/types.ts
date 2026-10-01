@@ -1,3 +1,4 @@
+import type { BoardSnapshot } from './boardSnapshot';
 /** Shared sim types. This module (and everything under src/sim/) must never import rendering code. */
 import type { DecreeId } from '../../content/royal';
 
@@ -687,6 +688,17 @@ export interface SimConfig {
    * Families not unlocked are ignored; with none of them unlocked the first hand is drawn as usual.
    */
   firstHand?: TowerFamily[];
+  // ---- a defence deployment (src/meta/defence.ts; DESIGN.md "Defence deployments") ----
+  /** The city and the organs remembered from the win there (src/sim/boardSnapshot.ts). */
+  board?: BoardSnapshot;
+  /** Districts grown before the run starts (a defence with no remembered board: a large city, already built). */
+  pregrown?: number;
+  /** The core is drawn at least at this stage (src/render/coreStage.ts; a defence: 3). */
+  coreStage?: number;
+  /** The meteor's starting level (a defence: the body has been here a while). */
+  coreLevel?: number;
+  /** ONE siege only: as big as this wave of a full deployment, at least this tier, after this long to re-arm (a defence). */
+  oneWave?: { asWave: number; minTier: number; armSeconds?: number; lanes?: number };
 }
 
 /**

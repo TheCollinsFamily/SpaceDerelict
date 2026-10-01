@@ -21,6 +21,11 @@ import type { GreetMoment } from '../../content/greetings';
 import { applyOrders, ordersSetup, type OrdersReport, type OrdersState } from './directives';
 import { applyHobby, giveGene, hobbyGoals, type HobbyResult, type HobbyState } from './hobby';
 import type { HobbyDef } from '../../content/hobby';
+import {
+  clearAttack, defenceConfig, defenceMeat, forgetBoard, rememberBoard, resolveStaging, stageCounterAttack,
+  type CounterAttack,
+} from './defence';
+import type { BoardSnapshot } from '../sim/boardSnapshot';
 
 export interface CampaignState {
   version: 1;
@@ -34,8 +39,14 @@ export interface CampaignState {
   revealed: string[];
   captures: number;
   deployments: number;
-  /** The colony's telegraphed counter-attack on a territory you hold. */
+  /** The colony's launched counter-attack on a territory you hold: defend it now, or lose it (src/meta/defence.ts). */
   underAttack: string | null;
+  /** The colony massing for a counter-attack, drawn one deployment ahead (src/meta/defence.ts; none on older saves). */
+  staging?: CounterAttack | null;
+  /** Where the launched counter-attack came from (the globe's arrow). */
+  attackFrom?: string | null;
+  /** The boards remembered from wins, by territory: a defence is fought on its own (src/sim/boardSnapshot.ts). */
+  boards?: Record<string, BoardSnapshot>;
   faction: FactionId | null;
   /** Captures when you allied (beats count from here). */
   factionSince: number;
@@ -77,7 +88,7 @@ export function newCampaign(seed: number, opts: { onboarding?: boolean } = {}): 
     .filter(([, l]) => l.catalogue === 'start').map(([id]) => id);
   return {
     version: 1, seed, standing: 0, notes: 0, lineages: start, profiles: ['standard'], profile: 'standard',
-    held: [HOME], revealed: [], captures: 0, deployments: 0, underAttack: null, faction: null, factionSince: 0,
+    held: [HOME], revealed: [], captures: 0, deployments: 0, underAttack: null, staging: null, attackFrom: null, faction: null, factionSince: 0,
     contacted: [], beatsSeen: [], choices: {}, experimentsDone: [], daresDone: [], ended: null, licence: false,
     pendingScenes: [], ai: { queue: [], seen: [], transcripts: [] },
     log: ['Personal log. Assigned to xenofauna clearance, sector 9. Asset BF-7 is cultured and viable. Here we go!'],
@@ -193,13 +204,15 @@ export function plan(s: CampaignState, territoryId: string, opts: { dares?: stri
     bannedEnemies: (opts.objectors ?? []).slice(0, objectors),
     waveScale: perks.includes('pacified') ? 0.9 : 1,
     entrances: t.entrances,
-    directive: defence ? { kind: 'hold', waves: 5 } : t.directive,
+    directive: t.directive,
     ...orders.config,
     ...(exp ? exp.setup : {}),
     ...(hobby?.def.setup ?? {}),
     ...(!first && s.hobby?.spliced.length ? { genes: [...s.hobby.spliced] } : {}),
     // Mission 1's first hand is the plain limbs a new player reads at a glance: shoot, or flail (Sep 30 2026).
     ...(first ? { firstHand: ['spitter', 'lasher'] as TowerFamily[] } : {}),
+    // A defence (src/meta/defence.ts): one all-out siege, a grown core, a full larder, the board won there.
+    ...(defence ? { ...defenceConfig(s, territoryId), startBonus: defenceMeat(bonus) } : {}),
   };
   const dares = (opts.dares ?? []).slice(0, 2).map((id) => DARES.find((d) => d.id === id)!).filter(Boolean).map((d) => instance(d, t.tier));
   // Mission 1 carries no forms, no dares and no experiment: it is only a game of tower defence.
@@ -220,6 +233,12 @@ export interface Debrief {
   captured: string | null;
   lost: string | null;
   repelled: string | null;
+  /** The colony began massing for a counter-attack this deployment (drawn on the globe). */
+  staged?: CounterAttack | null;
+  /** He took the staging ground first: the counter-attack was called off. */
+  preempted?: CounterAttack | null;
+  /** The staged counter-attack was launched: defend it next, or lose it. */
+  launched?: CounterAttack | null;
   unlocked: string[];
   log: string;
   /** The ally's letter / broadcast / call after this deployment. */
@@ -293,13 +312,13 @@ export function finish(prev: CampaignState, p: DeploymentPlan, r: RunReport): { 
   if (p.defence) {
     if (r.won) repelled = p.territory;
     else { s.held = s.held.filter((h) => h !== p.territory); lost = p.territory; }
-    s.underAttack = null;
+    clearAttack(s);
   } else {
     // Deploying elsewhere while a territory was under attack: it falls.
     if (s.underAttack && s.underAttack !== p.territory) {
       s.held = s.held.filter((h) => h !== s.underAttack);
       lost = s.underAttack;
-      s.underAttack = null;
+      clearAttack(s);
     }
     if (r.won) {
       s.held.push(p.territory);
@@ -307,6 +326,11 @@ export function finish(prev: CampaignState, p: DeploymentPlan, r: RunReport): { 
       captured = p.territory;
     }
   }
+  // The board he won on is remembered (a defence there is fought on it); ground lost is forgotten.
+  if (r.won) rememberBoard(s, p.territory, r.board);
+  if (lost) forgetBoard(s, lost);
+  // A counter-attack staged last time: struck first, or launched now (src/meta/defence.ts).
+  const { preempted, launched } = resolveStaging(s, captured);
   // The first win that is not mission 1 clears the Directive Desk: from now on he picks his targets.
   let deskOpened = false;
   if (s.onboard && !s.onboard.deskOpen && r.won) {
@@ -316,14 +340,18 @@ export function finish(prev: CampaignState, p: DeploymentPlan, r: RunReport): { 
   }
   s.log.push(`${(r.won ? LOGS_WON : LOGS_LOST)[rng.int(0, (r.won ? LOGS_WON : LOGS_LOST).length - 1)]} (${t.name})`);
 
-  // The colony pushes back after you take new ground: a telegraphed counter-attack
-  // on one of your territories (defend it next, or lose it).
-  if (captured && !s.underAttack && s.captures >= 2 && !s.ended) {
-    const exposed = s.held.filter((h) => h !== HOME && h !== captured && !territory(h).finaleOf);
-    if (exposed.length) {
-      const target = exposed[rng.int(0, exposed.length - 1)];
-      if (perksOf(s).includes('garrison')) s.log.push(`The Faithful's militants held ${territory(target).name} against a counter-attack.`);
-      else s.underAttack = target;
+  // The colony pushes back after you take new ground: it MASSES first, on ground next to one of your
+  // territories, drawn on the globe a whole deployment ahead (src/meta/defence.ts; Collins, Oct 1 2026).
+  let staged: CounterAttack | null = null;
+  if (captured && !s.underAttack && !s.staging && !preempted && s.captures >= 2 && !s.ended) {
+    const next = stageCounterAttack(s, captured, rng);
+    if (next) {
+      if (perksOf(s).includes('garrison')) s.log.push(`The Faithful's militants held ${territory(next.target).name} against a counter-attack.`);
+      else {
+        s.staging = next;
+        staged = next;
+        s.log.push(`The colony is massing at ${territory(next.from).name} to retake ${territory(next.target).name}. Strike ${territory(next.from).name} first to call it off.`);
+      }
     }
   }
 
@@ -402,7 +430,8 @@ export function finish(prev: CampaignState, p: DeploymentPlan, r: RunReport): { 
   if (s.deployments === 1) s.ai.queue = queueDiscussion(s.ai.queue, 'first-deployment', s.ai.seen);
 
   const debrief: Debrief = {
-    board, dares, experiment: exp, standing, notes, captured, lost, repelled, unlocked, log: s.log[s.log.length - 1], aside, deskOpened,
+    board, dares, experiment: exp, standing, notes, captured, lost, repelled, staged, preempted: preempted ?? null, launched: launched ?? null,
+    unlocked, log: s.log[s.log.length - 1], aside, deskOpened,
     orders: ordersReport, hobby: hobbyResult, ideas,
   };
   s.greet = momentAfter(prev, s, debrief, false);
