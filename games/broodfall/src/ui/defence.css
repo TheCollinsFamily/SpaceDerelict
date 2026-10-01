@@ -30,4 +30,8 @@ html.reduce-motion .globe .push .push-line, html.reduce-motion .globe .push .pus
 .cp-push-line.good { color: #9fe0a8; }
 .cp-push-line.warn { color: #ffc060; }
 .cp-push-line.bad { color: #ff8a70; }
-.lg.massing::before { content: "\2794"; color: #ffb040; }
+/* The legend swatch: a small amber arrow drawn in CSS (no glyph, so no font can lack it). */
+.lg.massing::before {
+  content: ""; display: inline-block; width: 11px; height: 7px; margin-right: 4px; vertical-align: middle;
+  background: #ffb040; clip-path: polygon(0 35%, 60% 35%, 60% 0, 100% 50%, 60% 100%, 60% 65%, 0 65%);
+}
