@@ -165,23 +165,38 @@ export const SHOTS = [
 ];
 
 /** The narrator (the trailer voice, the same as the opening's newsreel man) and the townsfolk. */
-const NARRATOR = (line) => 'A black-and-white 1950s movie-trailer recording booth: close-up of a vintage ribbon microphone. An offscreen ' +
-  `male trailer announcer with a booming, dramatic, stentorian mid-Atlantic accent says exactly: "${line}" Only his voice, no music.`;
+/**
+ * A spoken line is never written with an all-caps word: a video model reads one as an acronym and spells it out
+ * (Oct 1 2026: "nothing E V E R happens", "out of the S K Y"). Emphasis goes in `stress`, said in the prompt.
+ */
+export function speakable(line) {
+  const caps = line.match(/\b[A-Z]{2,}\b/g);
+  if (caps) throw new Error(`spoken line has all-caps word(s) ${caps.join(', ')} (a video model spells them out): "${line}"`);
+  return line;
+}
+const NARRATOR = (line, stress) => 'A black-and-white 1950s movie-trailer recording booth: close-up of a vintage ribbon microphone. An offscreen ' +
+  `male trailer announcer with a booming, dramatic, stentorian mid-Atlantic accent says exactly: "${speakable(line)}"${stress ? ` He leans hard on the word "${stress}", saying it as one word.` : ''} Only his voice, no music.`;
 export const LINES = [
   { id: 'n1', line: 'Luckwell Gardens. A quiet little town, on a quiet summer night.', seconds: 6 },
-  { id: 'n2', line: 'Where the porch lights glow, the neighbours wave, and nothing, EVER happens.', seconds: 6 },
-  { id: 'n3', line: 'Until something came down, out of the SKY!', seconds: 4 },
-  { id: 'n4', line: 'The Civil Watch went out to take a look.', seconds: 4 },
-  { id: 'n5', line: 'They never came back!', seconds: 4 },
-  { id: 'n6', line: 'Now it is in the streets! It is in the gardens!', seconds: 4 },
-  { id: 'n7', line: 'And it is ALIVE!', seconds: 4 },
+  { id: 'n2', line: 'Where the porch lights glow, the neighbours wave, and nothing, ever happens.', stress: 'ever', seconds: 6 },
+  { id: 'n3', line: 'Until something came down, out of the sky!', stress: 'sky', seconds: 4 },
+  // n4-n7 ("The Civil Watch went out...", "They never came back!", "Now it is in the streets!", "And it is alive!") were
+  // cut on Oct 1 2026. Collins: "it just sort of undermines the magnitude of what's happening ... no shit there is a giant
+  // thing taking over the town." The narrator stops at the sky; from the impact on, the pictures and the sound carry it.
 ];
 const SCENE = (what) => `A 1950s monster film sound effect, recorded for a movie: ${what} Only this sound, no music, no speech.`;
+/** A sound with a few spoken words in it (normal case only: see `speakable`). */
+const SCENE_TALK = (before, words, after) => `A 1950s monster film sound recording, for a movie: ${before}, saying exactly: "${speakable(words)}" ${after} No music.`;
 export const SOUNDS = [
   { id: 'plate', seconds: 4, prompt: SCENE('a kitchen at night: plates rattle in a rack, a china plate falls and smashes on a tiled floor, and a woman gasps.') },
   { id: 'scream', seconds: 4, prompt: SCENE('a crowd in a street at night gasps, and one woman lets out a long piercing 1950s B-movie scream.') },
   { id: 'crowd', seconds: 6, prompt: SCENE('a panicked crowd running down a street at night, many women screaming and shouting, footsteps, a distant civil-defence siren starting to wail.') },
   { id: 'siren', seconds: 6, prompt: SCENE('an old mechanical civil-defence air-raid siren wailing up and down at night, close, with a low ominous rumble under it.') },
+  // Since the narration stops at the sky (Oct 1 2026), these carry the second half: the Watch's walk, its radio, the thing.
+  { id: 'steps', seconds: 6, prompt: SCENE('footsteps of three people walking slowly over broken pavement and gravel at night, flashlight switches clicking, a fire crackling nearby, a dog barking far away.') },
+  { id: 'radio', seconds: 6, prompt: SCENE_TALK('an old walkie-talkie at night: a squelch and crackle of static, then a frightened woman whispers into it', 'Civil Watch to base. We are at the crater now. There is something in it. It is moving.', 'then a burst of static.') },
+  { id: 'throb', seconds: 6, prompt: SCENE('a deep, slow, wet organic heartbeat throbbing from inside the earth, hissing steam, bubbling, a low wet groan.') },
+  { id: 'stir', seconds: 6, prompt: SCENE('a monstrous giant heartbeat swelling louder and faster, wet flesh stretching and tearing, a deep earth-shaking rumbling groan rising to a roar.') },
   { id: 'cutoff', seconds: 4, prompt: SCENE('a woman screams in terror and the scream is cut off suddenly, then a metal flashlight clatters and rolls on pavement.') },
 ];
 /** The score, timed to the cut (seconds from the start of the film). */
@@ -216,7 +231,7 @@ async function clips(ids) {
 async function audio(ids) {
   fs.mkdirSync(AUD, { recursive: true });
   const jobs = [
-    ...LINES.filter((l) => want(ids, l.id)).map((l) => () => soundTake({ id: `bmovie-${l.id}`, prompt: NARRATOR(l.line), model: process.env.VOICE_MODEL || 'imagerouter:veo-3.1-lite-t2v', seconds: l.seconds })),
+    ...LINES.filter((l) => want(ids, l.id)).map((l) => () => soundTake({ id: `bmovie-${l.id}`, prompt: NARRATOR(l.line, l.stress), model: process.env.VOICE_MODEL || 'imagerouter:veo-3.1-lite-t2v', seconds: l.seconds })),
     ...SOUNDS.filter((s) => want(ids, s.id)).map((s) => () => soundTake({ id: `bmovie-${s.id}`, prompt: s.prompt, model: process.env.SFX_MODEL || 'atlascloud:h3-t2v', seconds: s.seconds })),
   ];
   if (want(ids, 'score')) jobs.push(() => songTakes({ id: 'bmovie-score', spec: SCORE.spec, model: process.env.MUSIC_MODEL || 'elevenlabs:music_v2' }));
@@ -281,8 +296,8 @@ export const CARD_SECONDS = 5;
 function cues(at) {
   return [
     { f: 'n1', t: at.town + 0.6, db: 0 }, { f: 'n2', t: at.porch + 1.0, db: 0 }, { f: 'n3', t: at.lookup + 1.2, db: 0 },
-    { f: 'n4', t: at.watch + 0.3, db: 0 }, { f: 'n5', t: at.beam + 2.0, db: 0 }, { f: 'n6', t: at.flee + 0.4, db: 0 },
-    { f: 'n7', t: at.stir + 1.2, db: 0 },
+    { f: 'steps', t: at.watch - 0.2, db: 2 }, { f: 'radio', t: at.watch + 2.4, db: 8 }, { f: 'throb', t: at.crater + 0.6, db: 6 },
+    { f: 'stir', t: at.stir - 0.4, db: 0 },
     { f: 'plate', t: at.kitchen + 1.6, db: -4 }, { f: 'scream', t: at.lookup + 0.2, db: -3 }, { f: 'cutoff', t: at.beam + 0.6, db: -4 },
     { f: 'crowd', t: at.flee - 0.2, db: -6 }, { f: 'siren', t: at.siren - 0.6, db: -8 },
   ];
@@ -350,7 +365,7 @@ const lead = 'silenceremove=start_periods=1:start_threshold=-42dB:start_silence=
   if (fs.existsSync(ROAR)) add(ROAR, at.fall + 0.2, -2);
   if (fs.existsSync(IMPACT)) add(IMPACT, at.impact + 0.1, 0);
   const n = chains.length;
-  const narr = cues(at).filter((c) => c.f.startsWith('n') && takeAudio(c.f));
+  const narr = cues(at).filter((c) => (c.f.startsWith('n') || c.f === 'radio') && takeAudio(c.f)); // the score dips under every spoken word
   // The score dips 7 dB under each narrator line (a volume envelope over the narrator's windows).
   const dips = narr.map((c) => `between(t,${(c.t - 0.2).toFixed(2)},${(c.t + Math.max(2, dur(takeAudio(c.f)) - 0.6)).toFixed(2)})`).join('+') || '0';
   const scoreChain = score
@@ -376,9 +391,7 @@ const lead = 'silenceremove=start_periods=1:start_threshold=-42dB:start_silence=
 export const TITLES = (at, end) => [
   { text: 'NOTHING EVER HAPPENED', small: 'in Luckwell Gardens', from: at.laundry + 0.6, to: at.star + 0.4 },
   { text: 'UNTIL TONIGHT!', from: at.fall + 0.3, to: at.duck + 1.2 },
-  { text: 'WHAT FELL', small: 'between the school and the laundromat?', from: at.watch + 0.8, to: at.crater + 2.6 },
-  { text: 'NO STREET WAS SAFE!', from: at.flee + 1.0, to: at.siren + 2.8 },
-  { text: 'IT WAS ALIVE!', from: at.stir + 2.4, to: end - 0.1 },
+  // After the impact no card tells the audience what it can see (Collins, Oct 1 2026); only the closing title is left.
 ];
 
 /** The contact sheet: three frames of every shot, in film order, one row a shot. */

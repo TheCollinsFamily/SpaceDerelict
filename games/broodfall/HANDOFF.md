@@ -257,9 +257,9 @@ Collins: "create an intro video that plays the first time a user boots up the so
 style scene ... from the perspective of people in whatever the starting biome of something coming from the sky and have
 that replace the intro vid for the very first mission (not revealing the ship and everything until that mission's over)".
 - **The film:** "THE THING FROM THE SKY", 68.5 s, 4:3 (960x720), faded Technicolor with grain, flicker, gate weave,
-  scratches; ONE file with its whole mix (theremin/brass score, the trailer narrator's seven lines, plate, scream, crowd,
+  scratches; ONE file with its whole mix (theremin/brass score, the trailer narrator's three lines (he stops at the sky; after the impact only sound: Collins, Oct 1 2026), plate, scream, crowd, the Watch's steps and radio, the heartbeat,
   siren, the game's own land-roar/land-impact; -14 LUFS): `public/art/intro/bmovie.mp4` + `bmovie.json` (shot times,
-  `cardAt`, the five titles the game sets in type). Night 0 at the Crash Site in the Suburbs set ("Luckwell Gardens",
+  `cardAt`, the two opening titles the game sets in type; none after the impact). Night 0 at the Crash Site in the Suburbs set ("Luckwell Gardens",
   the meteor falls between the school and the laundromat, content/lore/insects.md): porch, laundromat, kitchen, the
   street looking up, the fall, the strike, the Civil Watch walking into the smoke, the tendril, the flight, the siren,
   the heart waking. No ship, no Empire, no YOKE. Its card: BROODFALL / "YOU ARE THE THING THAT FELL."
