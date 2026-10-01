@@ -393,6 +393,18 @@ would play at the start of any scenario? if not we should."
   state, lights still burning), click a zone or marker = pick + turn to face it, arrow keys and the turn buttons.
   The SVG markers (`.globe .site`) are moved every frame; those behind the planet get `.behind` (hidden): a beat
   clicks `.site.open:not(.behind)`. No WebGL: the flat painter in `globe.ts` as before.
+- **Infested regions on the planet (Oct 1 2026; Collins: "have regions look infested when they are infested on the
+  map").** Held ground is no longer a red fill: the shader (`globe3d.ts` FRAG, "THE INFESTATION") spreads the brood's
+  flesh out of each held site with a ragged noise front, over the zone's own LAND (the sea takes a dark veined slick,
+  thicker near coasts), tissue cells + veins by day, veins and spore points glowing by night where the cities' lights
+  went out, a slow beat pumping outward from the site, the front glowing hotter on a fresh hold; it runs on across a
+  border into a neighbour that is also held and fades in fingers short of any other. How far it has spread is the
+  hold's age (`heldGrowth` in `globe.ts`: the save's `held` order; newest capture 0.34, the one before 0.68, older and
+  the crash site 1). A fresh capture grows out of its site ONCE, the first time the planet is on screen (6 s;
+  remembered in `localStorage['broodfall-globe-seen']`); Reduce motion: no beat, shown grown. The flat painter draws
+  the same flesh (`creepCover`, `fbm3`). Beat: `node tools/shot-globe-infest.mjs [none|some|many|grow|flat]` (own dev
+  server on 5241) -> `notes/screens/2026-10-01/globe-infest-*.png` (`-BEFORE-` = the old fill); tests
+  `tests/globe-infest.test.ts`. No art was generated for it (0 tokens).
 - **Meat drops** (`node tools/art/meat.mjs`, one still ~$0.45): `public/art/fx/meat.webp`, manifest `fx.meat`; drawn
   by `src/render/meatFx.ts` (pop, bobbing glide, shadow, trail, pickup ring and sparks at the core);
   `window.broodfall.fx()` reports `meat`, `meatFlying`, `meatPickups`, `meatPickedUp`.

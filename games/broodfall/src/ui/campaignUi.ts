@@ -29,7 +29,7 @@ import { ENEMIES } from '../../content/data';
 import type { EnemyKind, OrganId } from '../sim/types';
 import lore from '../../content/lore/ship-ai-lorebook.md?raw';
 import { artUrl, loadManifest, type ShipArt } from '../render/art';
-import { GLOBE, Globe, projectSite, type Zone } from './globe';
+import { GLOBE, Globe, heldGrowth, projectSite, type Zone } from './globe';
 import { Globe3D } from './globe3d';
 import { loadSettings } from '../meta/storage';
 import { loadIntroArt, type IntroArt } from './intro';
@@ -422,6 +422,7 @@ export class CampaignUi {
     return TERRITORIES.filter((t) => !t.hidden || s.revealed.includes(t.id)).map((t) => ({
       id: t.id, lat: t.lat, lon: t.lon,
       state: s.underAttack === t.id ? 'attack' : s.held.includes(t.id) ? 'held' : open.has(t.id) ? 'open' : 'locked',
+      growth: heldGrowth(s.held, t.id),
     }));
   }
 

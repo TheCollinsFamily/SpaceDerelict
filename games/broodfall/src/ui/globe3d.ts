@@ -21,12 +21,18 @@
  * falls back to the flat painter in globe.ts.
  */
 import * as THREE from 'three';
-import type { Zone } from './globe';
+import { infestGrowth, type Zone } from './globe';
 
 const RAD = Math.PI / 180;
 /** How far from its site a zone reaches (src/ui/globe.ts REACH). */
 const REACH = 30;
 const MAX_ZONES = 20;
+/** What the planet last showed of the flesh's spread, per zone. */
+const SEEN = 'broodfall-globe-seen';
+/** How long a fresh capture takes to spread to where it is (ms). */
+const GROW_MS = 6000;
+/** A beat before it starts, so the eye is on the planet. */
+const GROW_DELAY = 500;
 const STATE_CODE: Record<Zone['state'], number> = { locked: 0, open: 1, held: 2, attack: 3 };
 export const STATE_WORD: Record<Zone['state'], string> = { locked: 'not yet', open: 'can land', held: 'yours', attack: 'under attack' };
 /** The globe box is 420 units wide in the SVG's own coordinates. */
@@ -60,6 +66,7 @@ uniform float uTime;
 uniform int uCount;
 uniform vec3 uSite[${MAX_ZONES}];
 uniform float uState[${MAX_ZONES}];
+uniform float uGrow[${MAX_ZONES}];
 uniform int uSel;
 uniform int uHover;
 varying vec3 vObj;
@@ -74,6 +81,24 @@ float noise(vec3 x) {
              mix(mix(hash(i + vec3(0,0,1)), hash(i + vec3(1,0,1)), f.x), mix(hash(i + vec3(0,1,1)), hash(i + vec3(1,1,1)), f.x), f.y), f.z);
 }
 float fbm(vec3 p) { float s = 0.0, a = 0.5; for (int i = 0; i < 5; i++) { s += a * noise(p); p *= 2.03; a *= 0.5; } return s; }
+vec3 hash3(vec3 p) {
+  p = vec3(dot(p, vec3(127.1, 311.7, 74.7)), dot(p, vec3(269.5, 183.3, 246.1)), dot(p, vec3(113.5, 271.9, 124.6)));
+  return fract(sin(p) * 43758.5453);
+}
+/** Cells of tissue: the nearest and second nearest cell centre. */
+vec2 cells(vec3 x) {
+  vec3 i = floor(x); vec3 f = fract(x);
+  float f1 = 8.0, f2 = 8.0;
+  for (int k = -1; k <= 1; k++) for (int j = -1; j <= 1; j++) for (int h = -1; h <= 1; h++) {
+    vec3 g = vec3(float(h), float(j), float(k));
+    vec3 r = g + hash3(i + g) - f;
+    float d = dot(r, r);
+    if (d < f1) { f2 = f1; f1 = d; } else if (d < f2) { f2 = d; }
+  }
+  return vec2(sqrt(f1), sqrt(f2));
+}
+bool seaAt(vec3 c) { return c.b > c.r * 1.2 && c.b > c.g * 1.02; }
+float landAt(vec2 uv) { return seaAt(texture2D(uDay, uv).rgb) ? 0.0 : 1.0; }
 
 void main() {
   vec3 p = normalize(vObj);
@@ -83,56 +108,102 @@ void main() {
   vec3 day = texture2D(uDay, uv).rgb;
   vec3 lights = texture2D(uNight, uv).rgb * uHasNight;
 
-  // Which zone: the nearest site within reach; how near the next one is (for the borders).
-  float best = -2.0, second = -2.0; int zi = -1;
+  // Which zone: the nearest site within reach; the next nearest (for the borders, and whether the
+  // creep runs on over them).
+  float best = -2.0, second = -2.0; int zi = -1; int z2 = -1;
   for (int i = 0; i < ${MAX_ZONES}; i++) {
     if (i >= uCount) break;
     float d = dot(p, uSite[i]);
-    if (d > best) { second = best; best = d; zi = i; } else if (d > second) { second = d; }
+    if (d > best) { second = best; z2 = zi; best = d; zi = i; } else if (d > second) { second = d; z2 = i; }
   }
   float reach = cos(${REACH.toFixed(1)} * PI / 180.0);
   if (best < reach) zi = -1;
-  float st = -1.0;
-  for (int i = 0; i < ${MAX_ZONES}; i++) { if (i == zi) st = uState[i]; }
+  float st = -1.0, st2 = -1.0, grow = 0.0;
+  for (int i = 0; i < ${MAX_ZONES}; i++) {
+    if (i == zi) { st = uState[i]; grow = uGrow[i]; }
+    if (i == z2) st2 = uState[i];
+  }
 
   // Light: the sun on the day side, a soft terminator.
   vec3 n = normalize(vWorldN);
   float sun = dot(n, normalize(uSun));
   float lit = smoothstep(-0.12, 0.35, sun);
-  bool sea = day.b > day.r * 1.2 && day.b > day.g * 1.02;
+  bool sea = seaAt(day);
   // Cold and dim even by day: the menu loop's planet is a dying one seen from its night side.
   float grey = dot(day, vec3(0.3, 0.5, 0.2));
   vec3 ground = mix(vec3(grey), day, 0.55) * vec3(0.40, 0.46, 0.50) * (0.05 + 0.95 * lit);
-  // The planet the ship sees is a dying one: cold, dark, the lights on its night side.
   vec3 col = ground;
   float night = 1.0 - smoothstep(-0.05, 0.25, sun);
   float held = st == 2.0 ? 1.0 : 0.0;
   float attack = st == 3.0 ? 1.0 : 0.0;
-  col += lights * (0.35 + 1.15 * night) * (1.0 - held * 0.92);
 
-  // The creep: red veins over held ground (ridged noise), thickening toward the site, pulsing slowly.
-  if (held + attack > 0.0) {
-    float v = 1.0 - abs(fbm(p * 9.0) * 2.0 - 1.0);
-    float v2 = 1.0 - abs(fbm(p * 23.0 + 3.1) * 2.0 - 1.0);
-    float core = smoothstep(reach, 1.0, best);
-    float vein = smoothstep(0.93 - 0.06 * core, 0.985, v) + 0.7 * smoothstep(0.95, 0.99, v2) * (0.4 + core);
-    float pulse = 0.7 + 0.3 * sin(uTime * 1.6 + fbm(p * 4.0) * 6.0);
-    vec3 creep = vec3(0.95, 0.16, 0.09) * vein * pulse + vec3(0.16, 0.015, 0.02) * (0.5 + core);
-    if (sea) creep *= 0.5;
-    col = mix(col, col * 0.3, held) + creep * (held + attack * 0.5);
-    // Burning points in its heart.
-    float burn = smoothstep(0.985, 1.0, noise(p * 60.0)) * core;
-    col += vec3(1.0, 0.45, 0.12) * burn * 1.6 * held;
+  // THE INFESTATION (Oct 1 2026; Collins: "have regions look infested when they are infested on the
+  // map"). Not a fill: the brood's flesh spreading out of its landing site over the zone's own land,
+  // a ragged front that eats toward the borders as the hold ages (uGrow: a fresh capture is a
+  // blot around the site, an old one covers the zone), the sea taking only a film along the coasts,
+  // tissue cells and veins by day, the veins glowing by night where the cities' lights went out.
+  float cov = 0.0, front = 0.0;
+  vec3 flesh = vec3(0.0), emit = vec3(0.0);
+  if ((held + attack) > 0.0 && grow > 0.0) {
+    float rd = (1.0 - best) / (1.0 - reach);
+    float warp = fbm(p * 6.0 + 11.0) - 0.5;
+    float warp2 = fbm(p * 21.0 + 2.0) - 0.5;
+    float r = rd + warp * 0.6 + warp2 * 0.22;
+    float lim = grow * 1.45;
+    float radial = 1.0 - smoothstep(lim - 0.14, lim, r);
+    // Short of a border it fades in fingers, unless the ground across it is the brood's too.
+    float nextHeld = (st2 == 2.0 || st2 == 3.0) ? 1.0 : 0.0;
+    float eNext = mix(best - second, 1.0, nextHeld);
+    float e = min(eNext, best - reach);
+    float border = smoothstep(-0.006, 0.022, e + warp2 * 0.045);
+    // Land carries it; open sea takes a film only near the coast.
+    float dx = 0.004, dy = 0.007;
+    float landB = (landAt(uv) * 2.0 + landAt(uv + vec2(dx, 0.0)) + landAt(uv - vec2(dx, 0.0)) + landAt(uv + vec2(0.0, dy)) + landAt(uv - vec2(0.0, dy))
+      + landAt(uv + vec2(dx * 3.0, dy * 2.0)) + landAt(uv - vec2(dx * 3.0, dy * 2.0))) / 8.0;
+    float carry = sea ? 0.42 + 0.5 * smoothstep(0.05, 0.7, landB) : 1.0;
+    cov = radial * border * carry;
+    front = smoothstep(lim - 0.2, lim - 0.07, r) * (1.0 - smoothstep(lim - 0.07, lim, r)) * border * (sea ? 0.4 : 1.0);
+
+    vec2 c = cells(p * 38.0);
+    float wall = 1.0 - smoothstep(0.0, 0.11, c.y - c.x);
+    float mott = fbm(p * 15.0 + 5.0);
+    float v = 1.0 - abs(fbm(p * 8.0) * 2.0 - 1.0);
+    float vf = 1.0 - abs(fbm(p * 26.0 + 3.1) * 2.0 - 1.0);
+    float core = 1.0 - clamp(rd, 0.0, 1.0);
+    float vein = smoothstep(0.91 - 0.05 * core, 0.985, v) + 0.6 * smoothstep(0.94, 0.99, vf) * (0.35 + core);
+    vein = clamp(vein, 0.0, 1.0);
+    flesh = mix(vec3(0.17, 0.02, 0.035), vec3(0.48, 0.08, 0.085), mott);
+    flesh = mix(flesh, vec3(0.62, 0.26, 0.24), wall * 0.5);
+    flesh = mix(flesh, vec3(0.85, 0.17, 0.12), vein * 0.62);
+    // On the sea: a dark slick of spawn, veined like the land but thinner.
+    if (sea) flesh = mix(vec3(0.12, 0.02, 0.04), vec3(0.5, 0.08, 0.1), vein * 0.7 + wall * 0.08);
+    // The pump: a slow beat travelling out from the site.
+    float beat = 0.62 + 0.38 * sin(uTime * 1.3 - rd * 9.0 + mott * 3.0);
+    float spore = smoothstep(0.982, 1.0, noise(p * 70.0)) * core;
+    emit = vec3(1.0, 0.2, 0.11) * vein * beat
+         + vec3(1.0, 0.42, 0.16) * spore * 1.4
+         + vec3(0.9, 0.1, 0.12) * wall * 0.12 * beat;
   }
-  if (attack > 0.0) col += vec3(1.0, 0.55, 0.12) * (0.18 + 0.16 * sin(uTime * 5.0));
+  float covL = sea ? cov * 0.85 : cov * 0.96;
+  // Cities under the flesh have gone dark; those past the front still burn.
+  col += lights * (0.35 + 1.15 * night) * (1.0 - cov * 0.97);
+  col = mix(col, flesh * (0.1 + 0.95 * lit), covL);
+  col += emit * cov * (0.16 + 1.05 * night);
+  // The feeding front: hotter where the hold is fresh.
+  col += vec3(1.0, 0.3, 0.14) * front * (0.35 + 0.9 * (1.0 - grow)) * (0.5 + 0.8 * night);
+  if (attack > 0.0) {
+    // The counter-attack: the flesh burning, fire at the front and in spots.
+    float fire = smoothstep(0.6, 0.95, noise(p * 30.0 + vec3(0.0, uTime * 0.6, 0.0)));
+    col += vec3(1.0, 0.55, 0.12) * (0.12 + 0.12 * sin(uTime * 5.0)) + vec3(1.0, 0.6, 0.15) * (front * 1.2 + fire * cov * 0.8);
+  }
   if (st == 1.0) col += vec3(0.35, 0.8, 0.95) * 0.1;
 
   // The projection's lines: zone borders (where two sites are equally near, or reach ends).
   float w = fwidth(best) * 1.4 + 0.0015;
   float edge = 0.0;
   if (zi >= 0) edge = max(1.0 - smoothstep(0.0, w * 1.6, best - second), 1.0 - smoothstep(0.0, w, best - reach));
-  vec3 ec = st == 2.0 ? vec3(1.0, 0.45, 0.4) : st == 3.0 ? vec3(1.0, 0.72, 0.35) : st == 1.0 ? vec3(0.8, 0.97, 1.0) : vec3(0.45, 0.63, 0.7);
-  float ek = st == 0.0 ? 0.35 : 0.8;
+  vec3 ec = st == 2.0 ? vec3(1.0, 0.5, 0.45) : st == 3.0 ? vec3(1.0, 0.72, 0.35) : st == 1.0 ? vec3(0.8, 0.97, 1.0) : vec3(0.45, 0.63, 0.7);
+  float ek = st == 0.0 ? 0.35 : st == 2.0 ? 0.5 : 0.8;
   if (zi == uSel || zi == uHover) { ec = vec3(1.0); ek = 1.0; }
   col = mix(col, ec, edge * ek);
   if (zi >= 0 && zi == uHover) col += vec3(0.07, 0.09, 0.1);
@@ -141,7 +212,7 @@ void main() {
   // A faint graticule, the rim light of a projection.
   float g1 = abs(fract(lat / (PI / 6.0) + 0.5) - 0.5), g2 = abs(fract(lon / (PI / 6.0) + 0.5) - 0.5);
   float grat = (1.0 - smoothstep(0.0, fwidth(lat / (PI / 6.0)) * 1.2, g1)) + (1.0 - smoothstep(0.0, fwidth(lon / (PI / 6.0)) * 1.2, g2));
-  col += vec3(0.5, 0.85, 1.0) * 0.05 * clamp(grat, 0.0, 1.0);
+  col += vec3(0.5, 0.85, 1.0) * 0.05 * clamp(grat, 0.0, 1.0) * (1.0 - cov * 0.7);
   float fres = pow(1.0 - max(dot(n, normalize(vView)), 0.0), 3.0);
   col += vec3(0.35, 0.7, 0.95) * fres * 0.55;
   gl_FragColor = vec4(col, 1.0);
@@ -188,6 +259,8 @@ export class Globe3D {
   private lightsIn = new Map<string, number>();
   private nightData: ImageData | null = null;
   private drag: { x: number; y: number; moved: number; id: number; t: number } | null = null;
+  /** How far the flesh has spread over each zone: shown now, and where it is growing to. */
+  private grow = new Map<string, { from: number; to: number; t0: number }>();
 
   constructor(private hooks: GlobeHooks) {
     this.canvas = document.createElement('canvas');
@@ -204,7 +277,7 @@ export class Globe3D {
         uDay: { value: blank }, uNight: { value: blank }, uHasNight: { value: 0 },
         uSun: { value: new THREE.Vector3(-0.9, 0.3, 0.3) }, uTime: { value: 0 },
         uCount: { value: 0 }, uSite: { value: Array.from({ length: MAX_ZONES }, () => new THREE.Vector3()) },
-        uState: { value: new Array(MAX_ZONES).fill(0) }, uSel: { value: -1 }, uHover: { value: -1 },
+        uState: { value: new Array(MAX_ZONES).fill(0) }, uGrow: { value: new Array(MAX_ZONES).fill(0) }, uSel: { value: -1 }, uHover: { value: -1 },
       },
     });
     this.mat.extensions = { ...(this.mat.extensions ?? {}), derivatives: true } as THREE.ShaderMaterial['extensions'];
@@ -265,6 +338,7 @@ export class Globe3D {
     const u = this.mat.uniforms;
     u.uCount.value = this.zones.length;
     this.zones.forEach((z, i) => { (u.uSite.value as THREE.Vector3[])[i].copy(dirOf(z.lat, z.lon)); (u.uState.value as number[])[i] = STATE_CODE[z.state]; });
+    this.setGrowth();
     u.uSel.value = this.zones.findIndex((z) => z.id === selected);
     this.buildLinks();
     this.countLights();
@@ -272,6 +346,47 @@ export class Globe3D {
     this.resize();
     this.frame();
     this.start();
+  }
+
+  /**
+   * The flesh's spread per zone (src/ui/globe.ts infestGrowth). What it last showed is kept in
+   * localStorage['broodfall-globe-seen'], so a capture is seen growing out of its landing site ONCE,
+   * the first time the desk shows it (and an older hold creeping on to its borders), not on every visit.
+   */
+  private setGrowth(): void {
+    let seen: Record<string, number> = {};
+    try { seen = JSON.parse(localStorage.getItem(SEEN) ?? '{}') ?? {}; } catch { /* none */ }
+    const now = performance.now();
+    const keep = new Map<string, { from: number; to: number; t0: number }>();
+    for (const z of this.zones) {
+      const to = z.growth ?? infestGrowth(z.state);
+      if (to <= 0) continue;
+      const was = this.grow.get(z.id);
+      if (was && was.to === to) { keep.set(z.id, was); continue; }
+      const shown = was ? this.shownOf(was, now) : seen[z.id] ?? (to < 1 ? 0.04 : to);
+      // It starts growing when the planet is first on screen (stepGrowth), not when it is attached.
+      keep.set(z.id, { from: Math.min(shown, to), to, t0: shown < to ? -1 : now });
+      seen[z.id] = to;
+    }
+    for (const id of Object.keys(seen)) if (!keep.has(id)) delete seen[id];
+    this.grow = keep;
+    try { localStorage.setItem(SEEN, JSON.stringify(seen)); } catch { /* private mode */ }
+  }
+
+  private shownOf(g: { from: number; to: number; t0: number }, now: number): number {
+    if (g.t0 < 0) return g.from;
+    const k = Math.min(1, Math.max(0, (now - g.t0 - GROW_DELAY) / GROW_MS));
+    const e = 1 - Math.pow(1 - k, 3);
+    return g.from + (g.to - g.from) * e;
+  }
+
+  private stepGrowth(now: number, still: boolean): void {
+    const arr = this.mat.uniforms.uGrow.value as number[];
+    this.zones.forEach((z, i) => {
+      const g = this.grow.get(z.id);
+      if (g && g.t0 < 0 && this.canvas.offsetParent) g.t0 = now;
+      arr[i] = !g ? 0 : still ? g.to : this.shownOf(g, now);
+    });
   }
 
   /** Turn by some degrees (the ◀ ▶ buttons and the arrow keys). */
@@ -400,7 +515,10 @@ export class Globe3D {
     this.planet.rotation.set(this.tilt * RAD, -this.spin * RAD, 0);
     this.camera.position.set(0, 0, this.dist);
     this.camera.lookAt(0, 0, 0);
-    this.mat.uniforms.uTime.value = (now - this.t0) / 1000;
+    // Reduce motion: the flesh holds still (no beat, no flicker), and a capture is shown grown.
+    const still = document.documentElement.classList.contains('reduce-motion');
+    if (!still) this.mat.uniforms.uTime.value = (now - this.t0) / 1000;
+    this.stepGrowth(now, still);
     this.mat.uniforms.uHover.value = this.hover;
     this.renderer.render(this.scene, this.camera);
     this.placeMarkers();
