@@ -134,10 +134,11 @@ try {
     check(await band.count() === 1, 'the card carries her band');
     const bt = (await band.textContent()) ?? '';
     check(/CROP GLYPHS/.test(bt) && /RENDERED BY YOKE · CONFIDENCE \d+%/.test(bt), `it names the source and her confidence ("${bt.trim()}")`);
-    check(await page.locator('.cp-scene-card p .tl-words').count() >= 4, 'the Delegate\'s lines are hers to render');
+    // The crop letter (Oct 1 2026): three of the Delegate's lines, between YOKE's (hers, read) and his log.
+    check(await page.locator('.cp-scene-card p .tl-words').count() >= 3, 'the Delegate\'s lines are hers to render');
     check(await page.locator('.cp-scene-card p').filter({ hasText: 'You: (log)' }).locator('.tl-words').count() === 0, 'his own log lines are not translated');
-    const note = (await page.locator('.cp-scene-card .tl-note').first().textContent()) ?? '';
-    check(/furrow discipline/.test(note), `her note under "the handwriting" ("${note.trim()}")`);
+    const notes = (await page.locator('.cp-scene-card .tl-note').allTextContents()).join(' | ');
+    check(/furrow discipline/.test(notes) && /the other voice on the band/.test(notes), `her notes under "the handwriting" and "wife" ("${notes.trim().slice(0, 160)}")`);
     // The first line (his log) is read; the second is the Delegate's: catch it mid-rendering.
     const decoding = await page.waitForSelector('.cp-scene-card .tl-words.tl-decoding', { timeout: 20000 }).then(() => true).catch(() => false);
     check(decoding, 'the line being said is drawn in glyphs first');
