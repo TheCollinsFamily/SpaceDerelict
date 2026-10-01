@@ -801,7 +801,7 @@ export const CAPTIONS = {
   faithful: { who: 'THE VOICE · THE HOUR IS NEAR, ON FORTY STATIONS', line: '…and they said the sign would come from the sky, and brothers and sisters, LOOK UP.' },
   'delegation-1': { who: 'THE FRIENDSHIP DELEGATION, SPELLED OUT IN A FIELD', line: 'We have prepared a summit. There will be snacks.' },
   'delegation-2': { who: 'THE FRIENDSHIP DELEGATION', line: 'You ate the summit.' },
-  institute: { who: 'ELI BANKFRIED · THE INSTITUTE FOR LONG-TERM HIVE FLOURISHING', line: 'Our species just built its first real AI models. On the numbers, you are the SAFER apocalypse.' },
+  institute: { who: 'ELI BANKFRIED · THE INSTITUTE FOR LONG-TERM HIVE FLOURISHING', line: 'On the numbers, you are the SAFER apocalypse.' },
   empire: { who: 'THE CLEARANCE REVIEW', line: 'And nothing goes to waste. Nothing at all!' },
   colony: { who: 'THE COMMONWEALTH NEWSREEL', line: 'The Host marches, to take back what is ours!' },
 };
@@ -912,8 +912,8 @@ const VO = (f) => A(`public/media/voice/${f}.ogg`);
 const MU = (f) => A(`public/media/music/${f}.ogg`);
 
 /** Where the YOKE and boss captures sit in their 3840x2160 frames, and the globe. */
-const YOKE_CROP = [0, 880, 2280, 1280];
-const BOSS_CROP = [900, 450, 2040, 1148];
+const YOKE_CROP = [0, 1150, 1778, 1000];
+const BOSS_CROP = [238, 135, 1440, 810];
 function globeCrop() {
   try {
     const g = JSON.parse(fs.readFileSync(path.join(CAP, 's-globe.json'), 'utf8'));
@@ -946,8 +946,10 @@ function shotsFull() {
     { id: 'g-core', src: CAPF('g-core'), ss: 0.4, dur: 3.2, vx: 0.5, what: 'GAMEPLAY: the core evolves into the citadel', from: 'real game, captured' },
     { id: 'g-boss', src: CAPF('g-boss'), ss: 1.0, dur: 3.8, vx: 0.5, fadeOut: 0.2, what: 'GAMEPLAY: a royal and her consort wade into the limbs', from: 'real game, captured' },
     { id: 'menu', src: SRC.menu, ss: 0, dur: 3.8, rate: 0.8, fadeIn: 0.3, titles: [T('g-3', 0.3, 3.7)], vx: 0.5, what: 'The ship: the infested planet through the viewport', from: 'the game\'s menu loop, public/art/intro/menu.mp4' },
-    { id: 'r-yoke', src: CAPF('r-yoke'), ss: 0.0, dur: 3.3, crop: YOKE_CROP, zoom: [1, 1.05], vx: 0.12, what: 'THE SHIP: YOKE, the ship\'s AI: "You really suck at genocide."', from: 'real game (her first greeting), captured' },
-    { id: 'r-boss', src: CAPF('r-bosscall'), ss: 0.0, dur: 3.7, crop: BOSS_CROP, zoom: [1, 1.04], vx: 0.5, what: 'THE SHIP: the boss, an uplifted dog: "I love reports. Good boy. Good work."', from: 'real game (his first call), captured' },
+    { id: 'r-yoke', src: CAPF('r-yoke'), ss: 0.0, dur: 3.3, crop: YOKE_CROP, zoom: [1, 1.05], vx: 0.1, what: 'THE SHIP: YOKE, the ship\'s AI: "You really suck at genocide."', from: 'real game (her first greeting), captured' },
+    // His call is the page's own real-time screencast (art-src/trailer/rec/r-boss.mp4, `record boss`): his voice
+    // file began 6.632 s into it, so 33.23 s in is 26.6 s into his voice ("I love reports. Good boy. Good work.").
+    { id: 'r-boss', src: path.join(RAW, 'rec', 'r-boss.mp4'), ss: 33.23, dur: 3.7, crop: BOSS_CROP, zoom: [1, 1.04], vx: 0.5, what: 'THE SHIP: the boss, an uplifted dog: "I love reports. Good boy. Good work."', from: 'real game (his first call), recorded in real time' },
     { id: 's-globe', src: CAPF('s-globe'), ss: 0.5, dur: 3.5, crop: globeCrop(), zoom: [1, 1.06], vx: 0.3, what: 'THE SHIP: the planet in 3D at the Directive Desk, held ground under the creep', from: 'real game, captured' },
     { id: 'faithful', src: SRC.faithful, ss: 0, dur: 4.9, rate: 0.84, titles: [T('c-faithful', 0.1, 4.8)], vx: 0.5, what: 'The Faithful: The Voice on the air: "...brothers and sisters, LOOK UP."', from: 'new: RFab image-to-video from the scene picture art-src/ship/scenes/faithful-contact.png' },
     { id: 'delegation', src: SRC.delegation, ss: 0, dur: 5.2, rate: 0.8, titles: [T('c-delegation-1', 0.1, 3.1), T('c-delegation-2', 3.25, 5.1)], vx: 0.45, what: 'The Friendship Delegation spell their letter in a field: "There will be snacks." "You ate the summit."', from: 'new: RFab image-to-video from art-src/ship/scenes/delegation-contact.png' },
@@ -978,7 +980,7 @@ function shots30() {
     { id: 'g-draft', src: CAPF('g-draft'), ss: 0.5, dur: 1.6, crop: [360, 150, 1200, 675], titles: [T('g-2', 0.1, 3.15)], vx: 0.5, what: 'GAMEPLAY: the district draft', from: 'real game, captured' },
     { id: 'g-core', src: CAPF('g-core'), ss: 1.2, dur: 1.6, titles: [T('g-2', 0, 1.5)], vx: 0.5, what: 'GAMEPLAY: the core evolves', from: 'real game, captured' },
     { id: 'menu', src: SRC.menu, ss: 0, dur: 1.8, rate: 0.8, titles: [T('g-3', 0.1, 1.75)], vx: 0.5, what: 'The ship over the infested planet', from: 'the menu loop' },
-    { id: 'r-yoke', src: CAPF('r-yoke'), ss: 0, dur: 2.6, crop: YOKE_CROP, zoom: [1, 1.04], vx: 0.12, what: 'YOKE: "You really suck at genocide."', from: 'real game, captured' },
+    { id: 'r-yoke', src: CAPF('r-yoke'), ss: 0, dur: 2.6, crop: YOKE_CROP, zoom: [1, 1.04], vx: 0.1, what: 'YOKE: "You really suck at genocide."', from: 'real game, captured' },
     { id: 's-globe', src: CAPF('s-globe'), ss: 0.5, dur: 1.8, crop: globeCrop(), vx: 0.3, what: 'The planet in 3D', from: 'real game, captured' },
     { id: 'institute', src: SRC.institute, ss: 0.9, dur: 3.1, titles: [T('c-institute', 0.1, 3.0)], vx: 0.5, what: 'The Institute: "you are the SAFER apocalypse."', from: 'new: RFab image-to-video' },
     { id: 'm-maw', src: CAPF('g-maw'), ss: MAW_SS2, crop: MAW_CROP, dur: 0.6, vx: 0.5, what: 'montage', from: 'real game, captured' },
@@ -1156,8 +1158,13 @@ function build(name, shots, sound, fmt, outFile) {
   ff(['-f', 'concat', '-safe', '0', '-i', list, '-c', 'copy', video], 'concat');
   const wav = mix(sound((id) => { if (!(id in at)) throw new Error(`no shot ${id}`); return at[id]; }), total, path.join(RAW, `${name}-${fmt}.wav`));
   const W = fmt === 'h' ? 1920 : 1080, H = fmt === 'h' ? 1080 : 1920;
-  ff(['-i', video, '-i', wav, '-map', '0:v', '-map', '1:a', '-c:v', 'libx264', '-preset', 'slow', '-crf', fmt === 'h' ? '16' : '17', '-profile:v', 'high', '-level', '4.2',
-    '-pix_fmt', 'yuv420p', '-r', String(FPS), '-s', `${W}x${H}`, '-g', '120', '-movflags', '+faststart', '-c:a', 'aac', '-b:a', '320k', '-ar', '48000', '-t', total.toFixed(3), outFile], 'final');
+  // The master (high quality, art-src/trailer/, git-ignored) and the file to publish (promo/trailer/, kept
+  // under about 50 MB for the repo and for upload: H.264 High, capped bitrate, 60 fps).
+  const master = path.join(RAW, path.basename(outFile).replace(/\.mp4$/, '-master.mp4'));
+  const enc = (crf, cap, file) => ff(['-i', video, '-i', wav, '-map', '0:v', '-map', '1:a', '-c:v', 'libx264', '-preset', 'slow', '-crf', String(crf), ...(cap ? ['-maxrate', cap, '-bufsize', '9M'] : []), '-profile:v', 'high', '-level', '4.2',
+    '-pix_fmt', 'yuv420p', '-r', String(FPS), '-s', `${W}x${H}`, '-g', '120', '-movflags', '+faststart', '-c:a', 'aac', '-b:a', '320k', '-ar', '48000', '-t', total.toFixed(3), file], 'final');
+  enc(16, null, master);
+  enc(21, '4.4M', outFile);
   const m = measure(outFile);
   const size = fs.statSync(outFile).size;
   console.log(`  ${outFile}: ${total.toFixed(2)} s, ${(size / 1048576).toFixed(1)} MB, ${m.lufs} LUFS, true peak ${m.truePeak} dBTP`);

@@ -187,11 +187,18 @@ try {
     await force(page, 'won');
     await page.waitForSelector('#pad-outro', { timeout: 8000 });
     await page.waitForTimeout(1000);
+    // Timed in the page (Oct 1 2026): timed from here it measured Playwright's polling of a busy page (1.2-2.5 s),
+    // while the page itself shows the report ~0.3 s after the key.
+    await page.evaluate(() => {
+      window.__escT0 = performance.now();
+      new MutationObserver((_, ob) => { if (!document.getElementById('debrief').classList.contains('hidden')) { window.__escT1 = performance.now(); ob.disconnect(); } })
+        .observe(document.getElementById('debrief'), { attributes: true, attributeFilter: ['class'] });
+    });
     await page.keyboard.press('Escape');
-    const t0 = Date.now();
     await page.waitForFunction(() => !document.getElementById('debrief').classList.contains('hidden'), null, { timeout: 5000 });
     const s = await state(page);
-    check(Date.now() - t0 < 1500 && !s.warped, `Esc skips it: the report in ${Date.now() - t0} ms, the page put back`);
+    const took = Math.round(await page.evaluate(() => (window.__escT1 ?? performance.now()) - window.__escT0));
+    check(took < 1500 && !s.warped, `Esc skips it: the report in ${took} ms, the page put back`);
     check(await page.evaluate(() => !document.querySelector('#settings:not(.hidden)')), 'Esc did not also open the settings');
     await context.close();
   }
