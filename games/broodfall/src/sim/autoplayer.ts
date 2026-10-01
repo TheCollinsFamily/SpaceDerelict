@@ -3,7 +3,7 @@
  * headless full-run tests and the browser demo mode (?auto=1). Deterministic.
  */
 import { Rng } from './rng';
-import { Sim, towerSpec } from './sim';
+import { Sim, enemySpec, towerSpec } from './sim';
 import { isMultiCell } from './footprint';
 import { UPGRADE_COST } from '../../content/upgrades';
 import { organTurn, placeNode, placePlinth } from './organPolicy';
@@ -60,10 +60,14 @@ export class Autoplayer {
     }
     const stackIds = sim.broodlings.filter((b) => b.motherUnit !== undefined).map((b) => b.id);
     const core = sim.core;
-    const threat = sim.enemies
-      .filter((e) => !e.burrowed && !sim.isAirborne(e) && Math.hypot(e.pos.x - core.x, e.pos.y - core.y) < 7 * sim.cfg.cellPx)
-      .sort((a, b) => Math.hypot(a.pos.x - core.x, a.pos.y - core.y) - Math.hypot(b.pos.x - core.x, b.pos.y - core.y))[0];
+    // A full stack meets the siege at its head (the hive body nearest the core that it fights: ground, not science);
+    // a stack still brooding only answers a siege that has come within 12 cells of the body.
     const full = sim.mothers.some((m) => sim.broodlings.filter((b) => b.motherUnit === m.id).length >= sim.motherBroodCap(m));
+    const reach = full || this.released ? Infinity : 12 * sim.cfg.cellPx;
+    const threat = sim.enemies
+      .filter((e) => !e.burrowed && !sim.isAirborne(e) && enemySpec(e.kind).caste !== 'science'
+        && Math.hypot(e.pos.x - core.x, e.pos.y - core.y) < reach)
+      .sort((a, b) => Math.hypot(a.pos.x - core.x, a.pos.y - core.y) - Math.hypot(b.pos.x - core.x, b.pos.y - core.y))[0];
     if (threat && (full || this.released) && stackIds.length > 0) {
       sim.issue({ kind: 'unit-order', ids: stackIds, order: { kind: 'attack', to: { ...threat.pos } } });
       this.released = true;

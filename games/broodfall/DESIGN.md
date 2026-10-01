@@ -58,7 +58,7 @@ meteor) to level it: its cost × its current level. Each has a SIGNATURE verb.
 | Gut | S (4) | 35 war | Maw, Digestive Swamp, Burster, Bile Lobber | richer meat (maw) |
 | Nerve Cluster | + (5) | 45 war | Galvanic Frond, Arc Prism, Ocular Stalk, Netcaster | arcs (frond) |
 | Mucus Lattice | square (4) | 30 war | Snare Bed, Ward Membrane, Choir Node | slow (tangler) |
-| Brood Womb | U (5) | 40 war | Broodmother, Spore Sling, Lure Gland | regrowth (brood) |
+| Brood Womb | U (5) | 40 war | Broodmother Den, Brood Pit, Spore Sling, Lure Gland | regrowth (brood) |
 | Marrow Vault | I (4) | 30 science | Conduit, Tap, Mitosis, Reliquary, Meat Press | hp + caltrops (spine) |
 | Resonance Chamber | P (5) | 40 science | Amplifier, Mosaic, Twinning Gland, Capacitor, Boomerang | focus ramp (prism) |
 
@@ -224,7 +224,8 @@ Towers (10 families; each family's pip is what it teaches a build that eats it):
 | Impaler | long-range harpoon, pierces a file of 4, ignores shields | +5 armor-cap pierce per pip |
 | Choir Node | +15% fire rate aura to limbs in 95px (max 2 voices) | +8% range per pip |
 | Spore Sling | player-aimed creep logistics: click it, click ground in 300px — a clot lands with a thud (its payload) and seeds a patch that BELONGS to the sling. **If the sling dies, its patches die and every limb standing only on them withers** (Collins, Sep 27 2026) | the limb needs NO creep to stand on and seeps creep; its death withers what stood on its seep |
-| Broodmother | keeps 3 broodlings fighting in the streets (the barracks seat: enemies stop to fight them). Broodlings are her payload: every bonus she has eaten rides their bites (potency, tempo, reach, poison, arcs, digest...) | heals 50% max hp at every cleared wave (on a Broodmother: +1 broodling) |
+| Broodmother Den | bears a BROODMOTHER you command (Oct 1 2026; see "YOUR WALKING UNITS"): parked in brood mode she broods 5 warriors round her; in fight mode she walks, bites and nets. Her warriors are her payload: every bonus the den has eaten rides their bites | heals 50% max hp at every cleared wave (on a Den or a Brood Pit: +1 warrior) |
+| Brood Pit | keeps 3 warriors, born at the body and sent to its rally point; they take orders | the same as the Den's |
 | Digestive Swamp | the ANTI-WALL (Collins, Sep 27 2026): a swamp IN the street the column wades through — everything in it is slowed 50% and dissolved by acid (not fire), and anything at or under 30 hp is DIGESTED outright, in mass, no hold limit. No chew-back: they walk through, not into | its hits digest anything left under +10 hp per pip |
 | Galvanic Frond | one strike arcs to 3 more bodies, damage falling per hop (arcs are small separate hits — shield walls soak them badly) | hits arc to +1 enemy per pip |
 | Bile Lobber | player-aimed VOLLEY: click it, click ground in 250px — the glob detonates for 55 in a 55px blast (12s recharge) | hits knock back 5px per pip |
@@ -264,6 +265,46 @@ its heat for its remaining time (the chain cools as it runs). Burning bodies can
 hide: fire reveals the cloaked. Source: the **Ember Sac** (a flamethrower that sprays
 a cone — every targetable body in it ignites, 8/s for 3s); its pip makes any limb's
 hits ignite (+3/s per pip).
+
+## YOUR WALKING UNITS: THE BROOD PIT, THE BROODMOTHER DEN, ORDERS (Collins, Oct 1 2026 — BUILT Oct 1)
+
+Collins: "I would make Brood and Broodmother Den different, with one spawning fighters from your base and
+the other spawning a Broodmother, which can either be clicked and set in brood mode, where it stays
+stationary and spawns more warriors, or be in fighting mode, where it can cast a net slowing enemies ...
+this would allow a strat where you keep enemies away from some region of the map, build up a Broodmother
+there and accumulate soldiers ... Broodmothers and brood output should be selectable" — and orderable.
+
+- **Brood Pit** (`hatch`, 1 cell, 20 war, 110 hp, Brood Womb): keeps **3 warriors**. Each is born at the
+  **body** (the street beside the core) every 6 s (÷ tempo) while it has fewer, and walks the streets to the
+  pit's **rally point** (the street beside the pit, or one the player sets), where it guards: it fights the
+  hive within 110 px (× reach) of its post and drifts back to it. The steady stream of defenders from home.
+- **Broodmother Den** (`brood`, the old Broodmother, 2×2, 30 war, 320 hp): bears ONE **Broodmother** beside
+  it (two with Twin Mothers), and a new one 25 s (÷ tempo) after she dies. SHE is the unit: 240 hp (scaled
+  with the den's hp and spine pips), walks at 32, bites for 12 (× potency, with every verb the den carries).
+  - **Brood mode** (her default): she stays where she is and broods a warrior every 7 s (÷ tempo) up to
+    **5** (+ brood pips, + Big Brood; × twinning). Her warriors guard her side (88 px) and accumulate.
+    She bites only what reaches her.
+  - **Fight mode**: she walks, hunts the hive within 120 px of her post, bites, and throws her **net** on
+    her own when two or more bodies are under it (every 10 s, 130 px reach, 46 px wide: everything under it
+    moves at 40% for 4 s). The player can aim it (N, then click). She does not brood while fighting.
+- **Warriors and Broodmothers outlive the limb that made them** (they are units in the field, under
+  orders); they fight on with what they were born with. A Trap Cage's puppets still die with the cage.
+  Warriors bite with their limb's potency and tempo and carry its verbs (the old broodling rule).
+- **Orders** (src/ui/command.ts; every one a sim command, so they work paused and are deterministic):
+  click a unit (Shift adds), drag a box; right-click a street = MOVE (Shift queues a waypoint); A = attack-
+  move; H hold (fight only in bite reach); B back to the body; G guard (clear orders: back to the post);
+  T a Broodmother's mode; N her net; Ctrl+1..5 / 1..5 control groups; Esc clears. With a Pit's or Den's
+  panel open, right-click a street sets its rally point and R selects its brood. A panel at the bottom left
+  does all of it with buttons (touch: tap a unit, tap a street). Orders and rally points are drawn on the
+  ground: a ring under each selected unit (a Broodmother's shows her egg count in brood mode, her net's
+  reach in fight mode), a line of waypoints with a flag (move), a claw (attack) or a bar (hold).
+- **How the hive answers a parked Broodmother** (the stack must be strong but answerable): ground bodies
+  stop to fight her when they reach her (she is big: 26 px); a **mortar** in range shells her before any
+  limb (×1.5); a **war cannon** in range braces and shells her and the warriors round her; the **dartgun**
+  sedates her (no brooding, no net, no walking until it wears off). A Broodmother on the MOVE is not singled
+  out. Warriors still ignore the science caste (the old broodling rule), so a stack never answers harvesters.
+- **Measured** (tools/measure/gaps.measure.ts, 10 seeds, hold-12): see HANDOFF.md "Brood Pit, Broodmother Den
+  and orders" for the numbers (naive, den-heavy deal, and the scripted Broodmother stack).
 
 ## THE CORE: COMBO RUNAWAYS, PAID IN SCIENCE (Collins, Sep 27 2026)
 
@@ -594,7 +635,7 @@ tower you want at a high height and then adjacency bonuses and everything." So e
 
 | Limb | Ground | Paid for it with (hp ×2.4 on four cells, ×1.6 on two; hits ×1.5 / ×1.25; reach ×1.15 / ×1.1) |
 |---|---|---|
-| Broodmother, Ward Membrane, Trap Cage | 2 by 2 | their own numbers (brood 5, ward shields within 120, cage reaches 70) |
+| Broodmother Den, Ward Membrane, Trap Cage | 2 by 2 | their own numbers (her brood 5, ward shields within 120, cage reaches 70) |
 | Maw, Caustic Mister, Snare Bed, Galvanic Frond | 2 by 2 | the sums above |
 | Skipping Mortar, Impaler, Creep Lance, Spine Wall | 1 by 2 | the sums above |
 

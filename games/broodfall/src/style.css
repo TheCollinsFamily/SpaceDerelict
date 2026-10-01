@@ -721,11 +721,11 @@ body.in-ship #topbar, body.in-ship #botbar { visibility: hidden; }
 #unit-cmd.hidden { display: none; }
 #unit-cmd-what { font-family: Impact, "Arial Black", sans-serif; letter-spacing: 1px; font-size: 12px; margin-bottom: 4px; }
 #unit-cmd .unit-cmd-row { display: flex; gap: 4px; margin-top: 3px; }
-#unit-cmd button {
-  flex: 1; font: inherit; font-size: 10px; padding: 4px 3px; cursor: pointer; color: var(--ink);
-  background: var(--field-bg, #d8cba0); border: 2px solid var(--panel-edge);
+#unit-cmd .unit-cmd-row button {
+  flex: 1; font: inherit; font-size: 10px; letter-spacing: 1px; padding: 4px 3px; cursor: pointer;
+  color: var(--ink); background: #c7b788; border: 2px solid var(--panel-edge); border-radius: 3px;
 }
-#unit-cmd button.on { background: #f0c060; }
+#unit-cmd .unit-cmd-row button.on { background: var(--ink); color: var(--panel); }
 #unit-cmd button:disabled { opacity: 0.5; cursor: default; }
 #unit-cmd kbd { font-size: 9px; opacity: 0.7; }
 #unit-cmd-help { margin-top: 4px; font-size: 9px; opacity: 0.75; }

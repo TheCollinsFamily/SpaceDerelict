@@ -12,7 +12,7 @@ export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 export const API_BASE = process.env.RFAB_API_BASE || 'https://api.rfab.ai';
 const API_KEY = process.env.RFAB_API_KEY;
 /** Raw stills and clips: not committed (art-src/ is in .gitignore). */
-export const RAW_DIR = path.join(ROOT, 'art-src', 'probes');
+export const RAW_DIR = path.join(process.env.BROODFALL_ART_SRC ? path.resolve(process.env.BROODFALL_ART_SRC) : path.join(ROOT, 'art-src'), 'probes');
 export const OUT_DIR = path.join(ROOT, 'notes', 'probes', process.env.PROBE_DATE || '2026-09-29');
 const STILL_MODEL = process.env.PROBE_STILL_MODEL || 'openai:gpt-image-2';
 // Only seegen: models take an END frame (start == end is what closes the loop). The last one

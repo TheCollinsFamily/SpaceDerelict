@@ -140,6 +140,8 @@ export const PARTS = {
   choir: 'three slender glassy milky-white pipes of different heights',
   sling: 'a small cocked tendon arm with a little basket at its end',
   brood: 'a cluster of glossy pink eggs',
+  // The Brood Pit (Oct 1 2026): its own part is not drawn yet; the manifest borrows the Den's eggs (part-hatch).
+  hatch: 'a short arc of a burrow's rim: curved chitin teeth on a lip of pink flesh, two glossy pink eggs on it',
   swamp: 'a small fleshy lip set with little teeth, dripping dark wine-red acid',
   frond: 'a small fern-like frond of pale blue-white nerve cords',
   lobber: 'a small cupped sling of muscle holding a glob of yellow bile',

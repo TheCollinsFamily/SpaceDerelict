@@ -888,6 +888,37 @@ powerful area-effect things), L-shaped (like an elbow shape)". DESIGN.md "Shaped
   for its ground as the BIG limbs were (the K table in footprints.measure.ts), its art redrawn for the footprint
   in the same pass as its upgrade looks (the plan's cost), then the measures.
 
+## Brood Pit, Broodmother Den and orders (Oct 1 2026) — DESIGN.md "YOUR WALKING UNITS"
+
+Collins: Brood and Broodmother Den different, one spawning fighters from your base, the other a Broodmother
+with a brood mode and a fighting mode (a net); "Broodmothers and brood output should be selectable" and orderable.
+- **Sim** (`src/sim/sim.ts`, "your walking units"): `sim.mothers` (Broodmother units), `updateMothers`,
+  `updateBroodlings` (orders first: move, attack, hold, return; else guard a post), street routes for orders
+  (`unitFlowTo`, a cached BFS per target cell), `bodyPoint`, `rallyOf`, `nearestStreet`, `castNet`,
+  `parkedMotherNear` (siege fire singles out a PARKED mother). Commands: `unit-order` (ids, order, queue),
+  `mother-mode`, `mother-net`, `set-rally`. Types: `Broodmother`, `UnitOrder`, `BroodSnap` in `src/sim/types.ts`.
+  The Den keeps its family id `brood`; the Pit is the new family `hatch` (content/data.ts, upgrades, limbText,
+  upgradeLooks, the Brood Womb theme unlocks it). Warriors and mothers OUTLIVE their limb (BroodSnap).
+- **UI** (`src/ui/command.ts`, wired in `src/main.ts`): click / Shift-click / drag a box; right-click a street =
+  move (Shift queues); A attack-move, H hold, B body, G guard, T mode, N net, Ctrl+1..5 / 1..5 groups, Esc; the
+  panel `#unit-cmd` (bottom left) does the same with buttons; with a Pit's or Den's panel open, right-click a
+  street = its rally point, R = select its brood. The board draws rings, egg counts, the net's reach, orders,
+  rally flags and nets (`IsoRenderer.drawCommand`). The top-down view has none of it (iso only).
+- **Art** (raw in `art-src-new`, via the new `BROODFALL_ART_SRC` setting in `tools/art/lib/manifest.mjs` and
+  `tools/art/rfab.mjs`): the Broodmother unit (`tools/art/units.mjs` ALLIES `broodmother`, walk + attack, 46/46
+  checks) and the Brood Pit limb (`tools/art/limbs.mjs` `hatch`, drawn alone, idle/fire/die, 13/13 checks). The
+  Pit's donor part borrows the Den's eggs (`part-hatch` in the manifest; its own prompt is in fx.mjs PARTS: a
+  parts bake from art-src-new would drop it until it is drawn). The Den's own picture is still the old sac.
+- **Tests** `tests/brood.test.ts` (13); the old Broodmother test now uses a Pit. **Beat** `node tools/shot-brood.mjs`
+  (real clicks, keys and a drag; films `notes/screens/2026-10-01/brood-orders.mp4`).
+- **Measure** `GAPS_MODE=denheavy|stack` in `tools/measure/gaps.measure.ts` (dens dealt ×3; `stack` also turns
+  on `Autoplayer.stack`: park her on the quietest street near the body, brood, release a full stack at the siege).
+  Oct 1 2026, 10 seeds, hold-12: before 5/10; after, naive **5/10** (the same ten outcomes), den-heavy 5/10,
+  stack **5/10**. The five losses fall at waves 7-8, before any den is grown, so no brood policy moves them.
+  What the stack changes in the five wins: its brood kills 38-89 a run (den-heavy, parked by the den: 6-32);
+  Broodmothers lost 0-1 a run (parked by the den: 3-16); up to 229 warriors born (they die fighting). Strong,
+  and answerable: mortars, war cannons and darts single out a parked mother; warriors ignore the science caste.
+
 ## Architecture
 
 - **`src/sim/`:** a deterministic fixed-timestep sim (10 Hz, seeded, ZERO render imports).

@@ -71,7 +71,10 @@ export const AUDIT = {
     ['looks', 'It is a tempo aura (+15% rate) but teaches REACH when eaten (+8% reach). Its look in an eater says REACH, its own job says SWARM.'],
   ],
   brood: [
-    ['words', 'The card said "Keeps 3 broodlings"; the content comment says six; the spec says 5. The card now reads the spec (5) and the comment says five.'],
+    ['design', 'Oct 1 2026 (Collins): the Broodmother became the Broodmother DEN. It bears a Broodmother UNIT you command (brood mode: parked, broods 5 warriors; fight mode: walks, bites, nets). Its own picture is still the old sac; she has her own (units/broodmother).'],
+  ],
+  hatch: [
+    ['design', 'Oct 1 2026 (Collins): the Brood Pit, new. Warriors born at the body walk to its rally point. Drawn as a toothed burrow so it never reads as the Den's sac; next to the Maw's mouth at far zoom it may read alike: look.'],
   ],
   maw: [
     ['balance', 'Built 45 times in the scripted runs and credited with 0 kills: bodies it eats whole are not credited to any limb (111 eaten in the runs). A counting gap, not proof it is weak.'],

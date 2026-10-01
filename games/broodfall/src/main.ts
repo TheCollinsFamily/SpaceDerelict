@@ -1523,6 +1523,8 @@ async function boot(): Promise<void> {
     renderer,
     /** The HUD, for beats that open a limb's panel without clicking its pixels (tools/shot-codex.mjs). */
     hud,
+    /** Your units' selection (src/ui/command.ts), for beats that check what a click or a box selected. */
+    selectedUnits(): number[] { return [...(command?.selected ?? [])]; },
     /** Close the between-waves organ screen (scripted play). */
     surface(): void {
       if (under.open) under.hide();

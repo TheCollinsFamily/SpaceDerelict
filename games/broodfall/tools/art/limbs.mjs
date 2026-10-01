@@ -232,6 +232,12 @@ export const LIMBS = [
     look: 'a swollen sac studded with clusters of glossy pink eggs, with a puckered slit at the front',
     idle: `${CALM} Something moves inside the sac; the eggs glisten.`,
     fire: 'The slit opens and one small pink broodling squeezes out and drops forward out of the frame, then the slit closes, back to exactly the starting pose.' },
+  // The BROOD PIT (Oct 1 2026, Collins: "one spawning fighters from your base"): drawn alone (srcDir), a low wide
+  // burrow, so it never reads as the Den's swollen sac. Its warriors are born at the body; the pit calls them.
+  { family: 'hatch', srcDir: 'hatch', foot: [0.5, 0.72, 0.8], name: 'Brood Pit', theme: 'womb', on: 'roof', job: 'Calls warriors up from the body and sends them to its rally point.',
+    look: 'a low wide round burrow sunk into the mound: a big round puckered opening ringed with short curved chitin teeth, leading straight down into darkness, with small clusters of glossy pink eggs packed round its rim and a few thick pale veins running from the rim down into the hole',
+    idle: `${CALM} The rim of the burrow slowly contracts and relaxes; deep in the dark of the hole something shifts.`,
+    fire: 'The rim of the burrow contracts hard all at once and a deep ripple runs down into the hole, as if it were calling something up from far below, then everything settles back to exactly the starting pose.' },
   { family: 'sling', foot: [0.47, 0.76, 0.7], backFoot: [0.5, 0.79, 0.77], muzzle: [[0.34, 0.34]], backMuzzle: [[0.65, 0.33]], name: 'Spore Sling', theme: 'womb', on: 'roof', job: 'The player throws creep with it to far ground.',
     back: 'The arm is cocked back TOWARD the camera, its basket with the clot low and nearest us; it will throw away from us, toward the upper right.',
     look: 'a tendon catapult: one long arm cocked back under tension, with a dark red clot in the basket at its end, on a base studded with pink eggs',

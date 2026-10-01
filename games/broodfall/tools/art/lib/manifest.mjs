@@ -10,7 +10,9 @@ export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 /** Baked assets the game loads (committed). */
 export const ART = path.join(ROOT, 'public', 'art');
 /** Raw stills and clips (not committed). */
-export const SRC = path.join(ROOT, 'art-src');
+// Oct 1 2026: art-src was lost and is being restored; new raw art goes where BROODFALL_ART_SRC points
+// (the git-ignored art-src-new beside it), never into art-src.
+export const SRC = process.env.BROODFALL_ART_SRC ? path.resolve(process.env.BROODFALL_ART_SRC) : path.join(ROOT, 'art-src');
 /** Pictures for a person to look at: one per asset (committed). */
 export const REVIEW = path.join(ROOT, 'notes', 'art-review');
 const FILE = path.join(ART, 'manifest.json');

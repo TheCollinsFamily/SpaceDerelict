@@ -476,10 +476,11 @@ describe('the six genre-seat towers', () => {
     throw new Error('no creeped road');
   }
 
-  it('broodmother: spawns broodlings that fight, and enemies stop to fight THEM', () => {
+  it('brood pit: keeps warriors that fight, and enemies stop to fight THEM', () => {
     const s = freshSim(800);
-    const mother = place(s, 'brood');
-    for (let i = 0; i < 80 && s.broodlings.length === 0; i++) s.tick();
+    const mother = place(s, 'hatch');
+    // Born at the body, they walk to the pit's rally point (the board kept quiet meanwhile).
+    for (let i = 0; i < 300; i++) { s.tick(); s.enemies.length = 0; }
     expect(s.broodlings.length).toBeGreaterThan(0);
     // A hive soldier near a broodling engages it instead of marching on.
     const sim = s as unknown as SpawnSim;
@@ -493,9 +494,10 @@ describe('the six genre-seat towers', () => {
     const moved = Math.hypot(soldier.pos.x - posBefore.x, soldier.pos.y - posBefore.y);
     expect(b.hp).toBeLessThan(bHp0);       // the soldier fought it
     expect(moved).toBeLessThan(30);        // and stood to do so
-    // The brood dies with the mother.
+    // Warriors outlive the limb that made them (Oct 1 2026: they are units in the field, under orders).
+    const n = s.broodlings.length;
     (s as unknown as { removeTower(id: number, e: boolean): void }).removeTower(mother.id, false);
-    expect(s.broodlings.length).toBe(0);
+    expect(s.broodlings.length).toBe(n);
   });
 
   it('digestive swamp: the ANTI-WALL — walked through, bogs and burns everyone, digests the weak IN MASS', () => {

@@ -114,7 +114,7 @@ function traitsOf(s: TowerSpec): string[] {
   if (s.markerFire) t.push('fires at your marker');
   if (s.rateAura) t.push(`+${Math.round(s.rateAura * 100)}% rate aura`);
   if (s.wardShield) t.push(`shield ${s.wardShield} aura`);
-  if (s.broodCount) t.push(`${s.broodCount} broodlings`);
+  if (s.broodCount) t.push(s.family === 'brood' ? `a Broodmother you command · ${s.broodCount} warriors when she broods` : `${s.broodCount} warriors from the body`);
   if (s.eatThreshold > 0) t.push(`eats ≤${s.eatThreshold} hp whole`);
   if (s.interest > 0) t.push(`interest +${s.interest}`);
   if (s.pair) t.push('comes as a pair');

@@ -4748,6 +4748,93 @@
     }
    }
   },
+  "broodmother": {
+   "atlas": "units/broodmother.webp",
+   "frame": 192,
+   "cols": 16,
+   "anchor": [
+    0.5,
+    0.94
+   ],
+   "body": 0.529,
+   "flies": false,
+   "anims": {
+    "walk": {
+     "S": {
+      "start": 0,
+      "count": 14,
+      "fps": 9.88
+     },
+     "SW": {
+      "start": 14,
+      "count": 14,
+      "fps": 6
+     },
+     "W": {
+      "start": 28,
+      "count": 14,
+      "fps": 5.42
+     },
+     "NW": {
+      "start": 42,
+      "count": 14,
+      "fps": 4.42
+     },
+     "N": {
+      "start": 56,
+      "count": 14,
+      "fps": 4.94
+     }
+    },
+    "attack": {
+     "S": {
+      "start": 70,
+      "count": 12,
+      "fps": 3,
+      "anchor": [
+       0.5015,
+       0.9049
+      ],
+      "scale": 1.0866
+     },
+     "SW": {
+      "start": 82,
+      "count": 12,
+      "fps": 3,
+      "anchor": [
+       0.525,
+       0.9175
+      ],
+      "scale": 1.0539
+     },
+     "W": {
+      "start": 94,
+      "count": 12,
+      "fps": 3,
+      "anchor": [
+       0.525,
+       0.9175
+      ],
+      "scale": 1.0539
+     },
+     "NW": {
+      "start": 106,
+      "count": 12,
+      "fps": 3
+     },
+     "N": {
+      "start": 118,
+      "count": 12,
+      "fps": 3,
+      "anchor": [
+       0.5015,
+       0.9049
+      ],
+      "scale": 1.0866
+     }
+    }
+   }
+  },
   "civilian": {
    "atlas": "units/civilian.webp",
    "frame": 128,
@@ -6183,6 +6270,57 @@
      ]
     }
    }
+  },
+  "hatch": {
+   "atlas": "limbs/hatch.webp",
+   "frame": 256,
+   "cols": 16,
+   "anchor": [
+    0.5,
+    0.6192
+   ],
+   "body": 0.551,
+   "on": "roof",
+   "anims": {
+    "idle": {
+     "start": 0,
+     "count": 46,
+     "fps": 12,
+     "pingpong": true
+    },
+    "fire": {
+     "start": 46,
+     "count": 14,
+     "fps": 7.3
+    },
+    "die": {
+     "start": 60,
+     "count": 10,
+     "fps": 2.5
+    }
+   },
+   "grafts": [
+    [
+     0.745,
+     0.434
+    ],
+    [
+     0.27,
+     0.434
+    ],
+    [
+     0.506,
+     0.226
+    ],
+    [
+     0.671,
+     0.297
+    ],
+    [
+     0.313,
+     0.297
+    ]
+   ]
   },
   "impaler": {
    "atlas": "limbs/impaler.webp",
@@ -9546,6 +9684,16 @@
       "anchor": [
        0.06,
        0.604
+      ]
+     },
+     "part-hatch": {
+      "x": 1,
+      "y": 131,
+      "w": 88,
+      "h": 88,
+      "anchor": [
+       0.06,
+       0.679
       ]
      }
     }

@@ -2360,7 +2360,24 @@ export class IsoRenderer extends Renderer {
    * flag (move), a claw (attack) or a bar (hold), the rally points of open Pits and Dens, and nets thrown.
    */
   private drawCommand(sim: Sim, dtReal: number): void {
-    const g = this.groundG;
+    // Drawn on the marks layer, OVER the board (a ring on the ground was hidden by the blocks and the
+    // limbs in front of it): every point is projected where it stands, and a circle on the ground becomes
+    // the ellipse the camera sees.
+    const raw = this.marksG;
+    const P = (x: number, y: number): { x: number; y: number } => { const p = this.onGround(sim, x, y); return { x: p.x / K, y: p.y / K }; };
+    const g = {
+      circle: (x: number, y: number, r: number) => {
+        const c = P(x, y);
+        const e = P(x + r, y);
+        const n = P(x, y + r);
+        const rx = Math.max(Math.hypot(e.x - c.x, e.y - c.y), Math.hypot(n.x - c.x, n.y - c.y));
+        return raw.ellipse(c.x, c.y, rx, rx * (this.geo.b / this.geo.a));
+      },
+      moveTo: (x: number, y: number) => { const c = P(x, y); raw.moveTo(c.x, c.y); return g; },
+      lineTo: (x: number, y: number) => { const c = P(x, y); raw.lineTo(c.x, c.y); return g; },
+      stroke: (o: { width: number; color: number; alpha?: number }) => { raw.stroke({ ...o, width: o.width / K * 1.6 }); return g; },
+      rect: (x: number, y: number, w: number, h: number) => { const c = P(x + w / 2, y + h / 2); return raw.rect(c.x - w / 2 / K * 1.6, c.y - h / 2 / K * 1.6, w / K * 1.6, h / K * 1.6); },
+    };
     const SEL = 0xf0c060;
     const ATT = 0xe0603a;
     const MOV = 0x9fd27a;
