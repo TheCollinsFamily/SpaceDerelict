@@ -20,6 +20,7 @@ import { strainIcons, strainLabel } from './strain';
 import { artUrl, loadManifest } from '../render/art';
 import { coreStageOf } from '../render/coreStage';
 import { UnderAlive } from './underAlive';
+import { skylineLife } from './skylineLife';
 import type { OrganId, TowerFamily } from '../sim/types';
 
 const COLOR: Record<OrganId, string> = {
@@ -365,6 +366,8 @@ export class UndergroundScreen {
     img.dataset.url = url ?? '';
     img.style.backgroundImage = url ? `url('${url}')` : '';
     surface.classList.toggle('has-skyline', !!url);
+    // Its light blinks, a wisp of smoke, a searchlight (src/ui/skylineLife.ts; the skyline only, Oct 1 2026).
+    if (url) skylineLife(surface, set); else surface.querySelector('.skyline-life')?.remove();
   }
 
   private render(): void {

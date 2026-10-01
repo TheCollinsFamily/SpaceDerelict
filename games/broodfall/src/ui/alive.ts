@@ -9,8 +9,8 @@
  *     click): put back in the same task, it plays on where it was and nothing reloads;
  *   - it plays only while it is on the screen (an IntersectionObserver: a hidden screen, a scrolled-off card and
  *     a detached element are paused), and is let go (src dropped) once its surface is gone;
- *   - the still stays when there is no loop, under Settings > Reduce motion, and when
- *     localStorage['broodfall-alive'] is 'off'.
+ *   - the still stays when there is no loop, under Settings > Reduce motion, when localStorage['broodfall-alive'] is
+ *     'off', and under automation unless it is 'on'.
  */
 import { artUrl } from '../render/art';
 import { loadSettings } from '../meta/storage';
@@ -38,10 +38,21 @@ export function loadAlive(): Promise<Record<string, AliveLoop>> {
 /** The loop of a surface, once alive.json is in. */
 export const aliveLoop = (key: string): AliveLoop | undefined => loops[key];
 
-/** Moving pictures are wanted: not under Reduce motion, not switched off. */
+/**
+ * Moving pictures are wanted: not under Reduce motion, not switched off. Under automation (navigator.webdriver) only
+ * with localStorage['broodfall-alive'] = 'on', as the newsreel and the data pad (the older beats read these surfaces
+ * as pictures; tools/shot-alive.mjs turns them on).
+ */
 export function aliveAllowed(): boolean {
-  try { if (localStorage.getItem('broodfall-alive') === 'off') return false; } catch { /* no storage */ }
-  return !loadSettings().reduceMotion;
+  return aliveSwitchedOn() && !loadSettings().reduceMotion;
+}
+
+/** The same, Reduce motion aside (for a surface that checks it on every frame). */
+export function aliveSwitchedOn(): boolean {
+  let flag: string | null = null;
+  try { flag = localStorage.getItem('broodfall-alive'); } catch { /* no storage */ }
+  if (flag === 'off') return false;
+  return !(typeof navigator !== 'undefined' && navigator.webdriver && flag !== 'on');
 }
 
 const pool = new Map<string, HTMLVideoElement>();

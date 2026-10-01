@@ -166,7 +166,8 @@ try {
         return { src: v.currentSrc.split('/').pop(), playing: !v.paused, ready: v.readyState, advanced: v.currentTime - t0, w: v.videoWidth, on: v.classList.contains('on'),
           bg: getComputedStyle(document.getElementById('campaign')).backgroundImage.split('/').pop() };
       });
-      const expect = { orders: 'board', hobby: 'locker' }[r] ?? r;
+      // The Directives and the Notebook have their own loops since Oct 1 2026 (they borrowed the Board's and the Locker's).
+      const expect = r;
       check(!!st && st.src === `room-${expect}.mp4` && st.playing && st.ready >= 2 && st.advanced > 0.3 && st.w >= 1280 && st.on,
         `the ${r} room plays its loop`, st ? `${st.src}, ${st.w} px, +${st.advanced.toFixed(2)} s in 2.5 s, ready ${st.ready}, shown ${st.on}, poster ${st.bg}` : 'no video');
       if (['orders', 'hobby'].includes(r)) continue; // they borrow the Board's and the Locker's

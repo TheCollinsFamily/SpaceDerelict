@@ -462,6 +462,51 @@ const SHOTS = {
     await film(page, ctx, 'g-organ', 210, null, { preroll: 10 });
     await ctx.close();
   },
+  /** The creep spreads: free creep nodes put down one after another past its edge, as a player does. */
+  'g-creep': async (browser) => {
+    const { ctx, page } = await freshGame(browser);
+    await page.goto(`${BASE}?seed=8&auto=1&autostart=1&speed=1&directive=hold&biome=farmland`);
+    await ready(page); await dress(page);
+    console.log('  ', JSON.stringify(await grow(page, 3, 5)));
+    await artOk(page, 'g-creep');
+    // Where the nodes go: claimed ground just past the creep, the next always farther from the core.
+    const plan = await page.evaluate(() => {
+      const s = window.broodfall.sim, W = s.cfg.gridW;
+      const core = s.map.coreCell;
+      const d = (c) => Math.hypot((c % W) - (core % W), Math.floor(c / W) - Math.floor(core / W));
+      const cand = [];
+      for (let c = 0; c < s.map.cells.length; c++) if (!s.isCreeped(c) && s.canPlaceNode(c, 3)) cand.push(c);
+      cand.sort((a, b) => d(a) - d(b));
+      return { first: cand.slice(0, 40), core: s.cellCenter(core) };
+    });
+    if (!plan.first.length) throw new Error('nowhere to put a node');
+    const n = 420;
+    let aim = null;
+    await film(page, ctx, 'g-creep', n, async (i) => {
+      if (i % 50 === 10) {
+        const at = await page.evaluate(() => {
+          const s = window.broodfall.sim, W = s.cfg.gridW, core = s.map.coreCell;
+          const d = (c) => Math.hypot((c % W) - (core % W), Math.floor(c / W) - Math.floor(core / W));
+          const cand = [];
+          for (let c = 0; c < s.map.cells.length; c++) if (!s.isCreeped(c) && s.canPlaceNode(c, 3)) cand.push(c);
+          if (!cand.length) return null;
+          // The one farthest out along the side the first went (a front that marches one way).
+          window.__dir ??= cand.sort((a, b) => d(a) - d(b))[0];
+          const ref = window.__dir;
+          cand.sort((a, b) => Math.hypot((a % W) - (ref % W), Math.floor(a / W) - Math.floor(ref / W)) - Math.hypot((b % W) - (ref % W), Math.floor(b / W) - Math.floor(ref / W)) || d(b) - d(a));
+          const cell = cand[0];
+          s.nodeStock.unshift(s.plainStrain());
+          const r = s.issue({ kind: 'place-node', cell, stock: 0 });
+          window.__dir = cell;
+          return r.ok ? s.cellCenter(cell) : null;
+        });
+        if (at) aim = aim ? { x: aim.x * 0.5 + at.x * 0.5, y: aim.y * 0.5 + at.y * 0.5 } : { x: (at.x + plan.core.x) / 2, y: (at.y + plan.core.y) / 2 };
+      }
+      const a = aim ?? plan.core;
+      await page.evaluate(([a, z, snap]) => window.__T.camTo(a.x, a.y, z, snap), [a, 2.2, i === 0]);
+    }, { preroll: 20 });
+    await ctx.close();
+  },
   /** The ship's Directive Desk: the planet in 3D, ground held carrying the creep. */
   's-globe': async (browser) => {
     const { ctx, page } = await freshGame(browser, { dpr: 2 });
@@ -640,4 +685,101 @@ if (cmd === 'record') {
     console.log(JSON.stringify(log, null, 1).slice(0, 3000));
     await ctx.close();
   });
+}
+
+// ------------------------------------------------------------------ TITLES: set in the game's type
+/**
+ * Every word on screen is type, never the image model's: the film's titles as src/onboard.css sets
+ * them (.intro-big Impact cream, .intro-small Georgia italic), the genre line and tagline as
+ * tools/promo/compose.mjs sets them (Oswald 700, the logo exactly as src/screens.css .logo-word), the
+ * voices' captions in the HUD's Bahnschrift. Transparent PNGs, one set per frame size.
+ */
+const GENRE = 'TOWER DEFENCE + ROGUELITE + DEEP NARRATIVE LORE';
+const TAGLINE = 'GENOCIDE SIMULATOR';
+export const CAPTIONS = {
+  royal: { who: 'THE CLEARANCE REVIEW', line: 'And here she comes. The royal herself takes the field.' },
+  faithful: { who: 'THE VOICE · THE HOUR IS NEAR, ON FORTY STATIONS', line: '…and they said the sign would come from the sky, and brothers and sisters, LOOK UP.' },
+  'delegation-1': { who: 'THE FRIENDSHIP DELEGATION, SPELLED OUT IN A FIELD', line: 'We have prepared a summit. There will be snacks.' },
+  'delegation-2': { who: 'THE FRIENDSHIP DELEGATION', line: 'You ate the summit.' },
+  institute: { who: 'ELI BANKFRIED · THE INSTITUTE FOR LONG-TERM HIVE FLOURISHING', line: 'Our species just built its first real AI models. On the numbers, you are the SAFER apocalypse.' },
+  empire: { who: 'THE CLEARANCE REVIEW', line: 'And nothing goes to waste. Nothing at all!' },
+  colony: { who: 'THE COMMONWEALTH NEWSREEL', line: 'The Host marches, to take back what is ours!' },
+};
+const FILM_TITLES = {
+  quiet: { big: 'IT WAS A QUIET NIGHT', small: 'in a quiet little town' },
+  hungry: { big: 'IT WAS HUNGRY' },
+};
+
+function titlePages(W, H) {
+  const v = H > W;
+  const EMBLEM = `data:image/webp;base64,${fs.readFileSync(path.join(ROOT, 'public', 'art', 'screens', 'emblem.webp')).toString('base64')}`;
+  const fonts = '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&display=block">';
+  const css = `*{margin:0;padding:0;box-sizing:border-box}html,body{width:${W}px;height:${H}px;background:transparent;overflow:hidden}
+    .c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center}
+    .big{font-family:Impact,Haettenschweiler,"Arial Narrow Bold","Arial Black",sans-serif;letter-spacing:.05em;line-height:1;color:#ffe9a8;text-align:center;
+      text-shadow:0 0 2px #2a0b00,3px 4px 0 #3a0e04,0 0 30px rgba(255,120,40,.55);transform:skewY(-3deg)}
+    .small{margin-top:1.1vh;font-family:Georgia,"Times New Roman",serif;font-style:italic;color:#f7e6c4;text-shadow:0 2px 6px #000}
+    .genre{font-family:Oswald,"Arial Narrow",sans-serif;font-weight:700;letter-spacing:.06em;color:#ffd24a;white-space:nowrap;text-shadow:0 2px 0 #1a0604,0 0 16px rgba(0,0,0,.95),0 0 40px rgba(0,0,0,.8)}
+    .tag{font-family:Oswald,"Arial Narrow",sans-serif;font-weight:700;letter-spacing:.14em;color:#f4e8c8;text-shadow:0 2px 0 #1a0604,0 0 14px rgba(0,0,0,.9)}
+    .plus{color:#ff6a2a}
+    .cap{position:absolute;left:0;right:0;display:flex;flex-direction:column;align-items:center;padding:0 ${v ? 50 : 180}px}
+    .box{display:flex;flex-direction:column;align-items:center;gap:${v ? 10 : 8}px;padding:${v ? '18px 28px' : '14px 30px'};background:rgba(6,5,8,.62);border-radius:6px;box-shadow:0 0 30px rgba(0,0,0,.5)}
+    .who{font-family:Bahnschrift,"Segoe UI",sans-serif;font-weight:600;font-size:${v ? 24 : 20}px;letter-spacing:.22em;color:#ffd24a;text-shadow:0 2px 4px #000,0 0 12px #000;text-align:center}
+    .line{font-family:Bahnschrift,"Segoe UI",sans-serif;font-size:${v ? 44 : 40}px;line-height:1.25;color:#fff;text-align:center;text-shadow:0 2px 3px #000,0 0 14px rgba(0,0,0,.95),0 0 30px rgba(0,0,0,.7)}
+    .logo{display:flex;align-items:center}
+    .logo .emb{flex:0 0 auto;width:var(--e);height:var(--e);background:url(${EMBLEM}) center/contain no-repeat;filter:drop-shadow(0 6px 18px rgba(0,0,0,.65))}
+    .logo .word{font-family:Impact,Haettenschweiler,"Arial Narrow Bold",sans-serif;font-size:var(--w);line-height:.92;letter-spacing:.04em;white-space:nowrap;
+      background:linear-gradient(180deg,#ffb347 0%,#ff6a2a 30%,#d22a18 62%,#8e1410 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;transform:skewY(-4deg);padding:.06em .04em .1em}
+    .logo .emb + .word{margin-left:calc(var(--e) * -0.24);margin-top:calc(var(--e) * 0.12)}
+    .logo.stack{flex-direction:column}.logo.stack .emb + .word{margin-left:0;margin-top:calc(var(--e) * -0.22)}`;
+  const logo = (word, emblem, stack) => {
+    const rough = (3.5 * word / 104).toFixed(2);
+    return `<svg width="0" height="0" style="position:absolute"><filter id="rough"><feTurbulence type="fractalNoise" baseFrequency="${(0.045 * 104 / word).toFixed(4)}" numOctaves="2" seed="7"/><feDisplacementMap in="SourceGraphic" scale="${rough}"/></filter></svg>
+      <div class="logo ${stack ? 'stack' : ''}" style="--e:${emblem}px;--w:${word}px"><div class="emb"></div>
+      <div class="word" style="filter:url(#rough) drop-shadow(${word * 0.03}px ${word * 0.04}px 0 #1a0604) drop-shadow(0 0 ${word * 0.2}px rgba(255,90,30,.35))">BROODFALL</div></div>`;
+  };
+  const page = (body) => `<!doctype html><html><head><meta charset="utf-8">${fonts}<style>${css}</style></head><body>${body}</body></html>`;
+  const pages = {};
+  const bigPx = v ? 76 : 92, smallPx = v ? 34 : 30;
+  for (const [id, t] of Object.entries(FILM_TITLES)) {
+    pages[`t-${id}`] = page(`<div class="c" style="top:${v ? 20 : 13}%"><div class="big" style="font-size:${bigPx}px">${t.big}</div>${t.small ? `<div class="small" style="font-size:${smallPx}px">${t.small}</div>` : ''}</div>`);
+  }
+  // The insects' own poster line: the monster picture's title, as big as the film sets anything.
+  pages['t-sky'] = page(`<div class="c" style="justify-content:center"><div class="big" style="font-size:${v ? 104 : 150}px;${v ? 'max-width:900px' : ''}">IT CAME FROM<br>THE SKY!</div></div>`);
+  // The genre line, built up a word at a time as the game unfolds.
+  const gsz = v ? 72 : 96;
+  const g = (html) => page(`<div class="c" style="justify-content:center;text-align:center"><div class="genre" style="font-size:${gsz}px;line-height:1.1">${html}</div></div>`);
+  pages['g-1'] = g('TOWER DEFENCE');
+  pages['g-2'] = g('<span class="plus">+</span> ROGUELITE');
+  pages['g-3'] = v ? g('<span class="plus">+</span> DEEP NARRATIVE<br>LORE') : g('<span class="plus">+</span> DEEP NARRATIVE LORE');
+  for (const [id, c] of Object.entries(CAPTIONS)) {
+    pages[`c-${id}`] = page(`<div class="cap" style="bottom:${v ? 15 : 17}%"><div class="box"><div class="who">${c.who}</div><div class="line">${c.line}</div></div></div>`);
+  }
+  // The end: the name, the genre line (the loudest words after it), the one tagline.
+  const shade = v ? 'background:linear-gradient(0deg,rgba(4,3,6,.92) 0%,rgba(4,3,6,.55) 45%,rgba(4,3,6,.25) 100%)' : 'background:radial-gradient(ellipse at 50% 55%,rgba(4,3,6,.35) 0%,rgba(4,3,6,.8) 70%,rgba(4,3,6,.92) 100%)';
+  pages['end-shade'] = page(`<div style="position:absolute;inset:0;${shade}"></div>`);
+  pages['end-logo'] = page(`<div class="c" style="justify-content:center;${v ? 'padding-bottom:180px' : 'padding-bottom:130px'}">${logo(v ? 150 : 170, v ? 300 : 280, v)}</div>`);
+  pages['end-genre'] = page(`<div class="c" style="justify-content:center;${v ? 'padding-top:640px' : 'padding-top:330px'}"><div class="genre" style="font-size:${v ? 50 : 58}px;text-align:center;${v ? 'white-space:normal;line-height:1.25;max-width:1000px' : ''}">${v ? 'TOWER DEFENCE <span class="plus">+</span> ROGUELITE<br><span class="plus">+</span> DEEP NARRATIVE LORE' : GENRE.replace(/\+/g, '<span class="plus">+</span>')}</div></div>`);
+  pages['end-tag'] = page(`<div class="c" style="justify-content:center;${v ? 'padding-top:1010px' : 'padding-top:520px'}"><div class="tag" style="font-size:${v ? 52 : 52}px">${TAGLINE}</div></div>`);
+  return pages;
+}
+
+if (cmd === 'titles') {
+  const { chromium } = await import('@playwright/test');
+  const browser = await chromium.launch();
+  try {
+    for (const [W, H, tag] of [[1920, 1080, 'h'], [1080, 1920, 'v']]) {
+      const dir = path.join(RAW, 'titles', tag);
+      fs.mkdirSync(dir, { recursive: true });
+      const page = await browser.newPage({ viewport: { width: W, height: H } });
+      for (const [id, html] of Object.entries(titlePages(W, H))) {
+        await page.setContent(html, { waitUntil: 'networkidle' });
+        await page.evaluate(() => document.fonts.ready);
+        await page.waitForTimeout(150);
+        await page.screenshot({ path: path.join(dir, `${id}.png`), omitBackground: true });
+      }
+      await page.close();
+      console.log(`  titles ${dir}`);
+    }
+  } finally { await browser.close(); }
 }

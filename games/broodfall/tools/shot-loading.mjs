@@ -103,7 +103,16 @@ const WATCH = () => {
     const bad = [];
     const seen = [];
     const boot = document.getElementById('boot');
-    if (vis(boot)) { seen.push('boot'); if (!boot.dataset.loading || !moving(boot)) bad.push('the loading screen without a moving loop'); }
+    if (vis(boot) && !boot.classList.contains('leaving')) {
+      seen.push('boot');
+      if (!boot.dataset.loading || !moving(boot)) {
+        bad.push('the loading screen without a moving loop');
+        window.__bfWhy = [...boot.querySelectorAll('.bf-loop')].map((l) => {
+          const v = l.querySelector('video'); const i = l.querySelector('img');
+          return `${l.dataset.loop}: video ${v ? `${v.paused ? 'paused' : 'on'} rs${v.readyState}` : 'none'}, img ${i ? `${i.complete ? 'complete' : 'loading'} w${i.naturalWidth} vis${vis(i)}` : 'none'}`;
+        }).join(' | ') + ` loading=${boot.dataset.loading}`;
+      }
+    }
     for (const el of document.querySelectorAll('[data-loading]')) {
       if (el === boot || !vis(el)) continue;
       seen.push(`${el.className.split(' ')[0] || el.id}:${el.dataset.loading}`);
@@ -145,6 +154,8 @@ async function verdict(page, name) {
   }
   const over = Object.entries(worst).filter(([, n]) => n * 100 > 400);
   const kinds = [...new Set(log.flatMap((s) => s.seen))];
+  const why = await page.evaluate(() => window.__bfWhy).catch(() => '');
+  if (why) console.log(`  (last time the loading screen did not move: ${why})`);
   check(!over.length, `${name}: every wait on the screen had a moving loop (waits seen: ${kinds.join(', ') || 'none'})${over.length ? ` — ${over.map(([b, n]) => `${b} for ${n * 100} ms (ending at ${at[b]} ms into its page)`).join('; ')}` : ''}`);
   return kinds;
 }

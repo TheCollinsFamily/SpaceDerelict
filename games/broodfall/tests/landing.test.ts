@@ -28,7 +28,7 @@ describe('the landing film: when it plays', () => {
   it('beats skip it unless they ask; the address can turn it off', () => {
     expect(landingDecision({ ...base, automated: true })).toBe('automation');
     expect(landingDecision({ ...base, automated: true, forced: true })).toBe('play');
-    expect(landingDecision({ ...base, mode: 'never', forced: true })).toBe('play');
+    expect(landingDecision({ ...base, mode: 'never', forced: true, automated: true })).toBe('setting-never');
     expect(landingDecision({ ...base, off: true, forced: true })).toBe('asked-off');
   });
 });

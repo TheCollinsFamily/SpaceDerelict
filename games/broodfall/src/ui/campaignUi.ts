@@ -42,7 +42,7 @@ import { openSettings } from './settings';
 import { attachScene } from './sceneVoice';
 import { loadMedia, mediaPictureUrl } from './newsreel';
 import { shipLoop, showLoader, type LoaderHandle } from './loader';
-import { loadAlive, wake } from './alive';
+import { aliveAllowed, loadAlive, wake } from './alive';
 
 type Room = 'desk' | 'genes' | 'locker' | 'board' | 'comms' | 'ai' | 'quarters' | 'orders' | 'hobby';
 /** Rooms with no picture of their own borrow one (the standing orders are read at the Board; the notebook lives in the Locker). */
@@ -644,7 +644,7 @@ export class CampaignUi {
       const def = ORGAN_BY_ID[id];
       const cur = l.catalogue === 'sanctioned' ? 'standing' : 'field notes';
       const pic = this.organPics[id];
-      const loop = this.organLoops[id];
+      const loop = aliveAllowed() ? this.organLoops[id] : undefined;
       const picHtml = loop
         ? `<span class="cp-organ-pic cp-organ-loop" style="background-image:url('${loop.strip}');--n:${loop.count};--d:${loop.seconds}s${loop.pingpong ? ';--dir:alternate' : ''}"></span>`
         : pic ? `<img class="cp-organ-pic" src="${pic}" alt="">` : '';

@@ -8,6 +8,7 @@ import { UPGRADES, UPGRADE_COST } from '../../content/upgrades';
 import { BALANCE as B } from '../../content/data';
 import { artUrl, loadManifest, type LimbArt } from '../render/art';
 import { idleFrames, phaseOf } from '../render/idleClock';
+import { aliveSwitchedOn } from './alive';
 
 /** The limbs' baked pictures, once the manifest has loaded: a card shows its limb (null: text only). */
 let limbArt: Record<string, LimbArt> | null = null;
@@ -26,11 +27,11 @@ function cardArt(family: string, size: number): string {
  * The hand's limbs are alive (Oct 1 2026, notes/VIDEO-AUDIT.md): each card's picture steps through its limb's own
  * idle, the frames the board plays (no video, no new art), on ONE timer at the idle's 12 frames a second, each card
  * in its own phase. A frame is written only when it changes; nothing is read from the layout. Still under Settings >
- * Reduce motion (html.reduce-motion) and in a hidden tab.
+ * Reduce motion (html.reduce-motion), in a hidden tab, and under automation unless asked for (src/ui/alive.ts).
  */
 let cardTimer = 0;
 function animateCards(hand: HTMLElement, size: number): void {
-  if (cardTimer) return;
+  if (cardTimer || !aliveSwitchedOn()) return;
   const t0 = performance.now();
   cardTimer = window.setInterval(() => {
     if (document.hidden || document.documentElement.classList.contains('reduce-motion')) return;

@@ -15,6 +15,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { API_BASE, ffmpeg, makeClip, makeStill, ready } from './rfab.mjs';
 import { ART, REVIEW, ROOT, SRC } from './lib/manifest.mjs';
 
@@ -66,8 +67,19 @@ function bake() {
   const entry = {};
   if (fs.existsSync(clip)) {
     // Frame 0 is the uploaded still itself: dropped. Played as a loop on his screen while he speaks.
+    // Oct 1 2026 (notes/VIDEO-AUDIT.md): the clip does not come back to its start (the loop popped every 4 s, seam 10.9
+    // against a median step of 0.8), so its last 0.6 s is crossfaded into its first, as the stills' loops are.
+    const plain = path.join(DIR, 'boss-plain.mp4');
     ffmpeg(['-i', clip, '-vf', 'select=gte(n\\,1),setpts=N/24/TB,scale=1280:720:force_original_aspect_ratio=increase,crop=1280:720,fps=24',
-      '-an', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '24', '-movflags', '+faststart', path.join(OUT, 'boss.mp4')], 'boss clip');
+      '-an', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '14', plain], 'boss clip');
+    const L = Number(spawnSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', plain], { encoding: 'utf8' }).stdout.trim());
+    const D = 0.6, k = (D - 1 / 24).toFixed(4);
+    ffmpeg(['-i', plain, '-filter_complex',
+      `[0:v]split=3[t][h][m];[t]trim=start=${(L - D).toFixed(3)},setpts=PTS-STARTPTS[T];` +
+      `[h]trim=end=${D},setpts=PTS-STARTPTS[H];[m]trim=start=${D}:end=${(L - D).toFixed(3)},setpts=PTS-STARTPTS[M];` +
+      `[T][H]blend=all_expr='A*(1-min(T/${k},1))+B*min(T/${k},1)'[X];[X][M]concat=n=2:v=1,format=yuv420p[v]`,
+    '-map', '[v]', '-an', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '24', '-movflags', '+faststart', path.join(OUT, 'boss.mp4')], 'boss loop');
+    fs.rmSync(plain, { force: true });
     entry.video = 'intro/boss.mp4';
     ffmpeg(['-ss', '1.5', '-i', clip, '-frames:v', '1', '-vf', 'scale=960:-2', path.join(REV, 'boss-frame.jpg')], 'boss frame');
   }

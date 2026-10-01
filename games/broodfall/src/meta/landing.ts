@@ -36,7 +36,8 @@ export type LandingWhy = 'play' | 'no-film' | 'setting-never' | 'seen-set' | 'af
 
 /**
  * Whether the landing film plays before this deployment, and why not when it does not.
- * `forced`: the address said ?landing=1 (or a beat set localStorage['broodfall-landing']='on'); `off`: ?landing=0.
+ * `forced`: the address said ?landing=1 (or a beat set localStorage['broodfall-landing']='on'): it plays under automation
+ * too (the player's setting still holds); `off`: ?landing=0.
  */
 export function landingDecision(o: {
   mode: LandingFilms; set: string | null; seen: readonly string[]; hasFilm: boolean;
@@ -46,7 +47,6 @@ export function landingDecision(o: {
   if (!o.set || !o.hasFilm) return 'no-film';
   if (o.afterOpening) return 'after-opening';
   if (o.automated && !o.forced) return 'automation';
-  if (o.forced) return 'play';
   if (o.mode === 'never') return 'setting-never';
   if (o.mode === 'first' && o.seen.includes(o.set)) return 'seen-set';
   return 'play';
