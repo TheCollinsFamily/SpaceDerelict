@@ -212,17 +212,23 @@ function bakeYoke() {
   return { video: 'ship/yoke/thinking.webm', mini: 'loaders/yoke-mini.webp', slow: 'loaders/yoke-slow.webp', alpha: true, mode: 'her own', seconds: +(frames.length / FPS).toFixed(2) };
 }
 
-/** index.html carries emblem-micro.webp as a data URI on the boot screen's emblem (`data-micro="emblem"`). */
+/**
+ * index.html carries the boot screen's first paints as data URIs, so they move from the page's first paint, before any
+ * file has arrived: the scan's mini (`data-micro="scan"`, the headline loop) and the emblem's micro (`data-micro="emblem"`).
+ */
 function embedMicro() {
-  const file = path.join(OUT, 'emblem-micro.webp');
   const html = path.join(ART, '..', '..', 'index.html');
-  if (!fs.existsSync(file)) return;
-  const uri = `data:image/webp;base64,${fs.readFileSync(file).toString('base64')}`;
-  const before = fs.readFileSync(html, 'utf8');
-  const after = before.replace(/(<img class="bf-loop-mini" data-micro="emblem" alt="" src=")[^"]*(")/, (m, a, b) => `${a}${uri}${b}`);
-  if (after === before && !before.includes(uri)) { console.warn('[loaders] index.html has no data-micro="emblem" image to fill'); return; }
-  fs.writeFileSync(html, after);
-  console.log(`[loaders] index.html: the emblem's micro loop embedded (${(uri.length / 1024).toFixed(0)} KB of text)`);
+  for (const [id, name] of [['scan', 'scan-mini.webp'], ['emblem', 'emblem-micro.webp']]) {
+    const file = path.join(OUT, name);
+    if (!fs.existsSync(file)) continue;
+    const uri = `data:image/webp;base64,${fs.readFileSync(file).toString('base64')}`;
+    const before = fs.readFileSync(html, 'utf8');
+    const re = new RegExp(`(<img class="bf-loop-mini" data-micro="${id}" alt="" src=")[^"]*(")`);
+    const after = before.replace(re, (m, a, b) => `${a}${uri}${b}`);
+    if (after === before && !before.includes(uri)) { console.warn(`[loaders] index.html has no data-micro="${id}" image to fill`); continue; }
+    fs.writeFileSync(html, after);
+    console.log(`[loaders] index.html: ${name} embedded (${(uri.length / 1024).toFixed(0)} KB of text)`);
+  }
 }
 
 async function main() {
@@ -244,7 +250,7 @@ async function main() {
   for (const l of items) { const r = bake(l); if (r) json.loops[l.id] = r; }
   if (!ids.length || ids.includes('yoke')) { const r = bakeYoke(); if (r) json.loops.yoke = r; }
   fs.writeFileSync(jsonFile, `${JSON.stringify(json, null, 2)}\n`);
-  if (!ids.length || ids.includes('emblem')) embedMicro();
+  if (!ids.length || ids.includes('emblem') || ids.includes('scan') || process.argv.includes('--embed')) embedMicro();
   for (const f of fs.readdirSync(OUT)) console.log(`  ${f}  ${(fs.statSync(path.join(OUT, f)).size / 1024).toFixed(0)} KB`);
 }
 

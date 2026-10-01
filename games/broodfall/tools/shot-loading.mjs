@@ -214,7 +214,7 @@ try {
     await page.waitForTimeout(250);
     await shot(page, 'first-1-at-once');
     await page.waitForTimeout(1500);
-    await shot(page, 'first-2-emblem-burning');
+    await shot(page, 'first-2-scan-headline');
     await moves(page, '#boot .logo-emblem', 'first load');
     await page.waitForFunction(() => /FILES/.test(document.querySelector('.boot-count')?.textContent ?? ''), null, { timeout: 60000 }).catch(() => {});
     await shot(page, 'first-3-progress');
@@ -313,8 +313,8 @@ try {
   }
 
   if (want('organ')) {
-    console.log('organ: the organ stage opening, on a slow link');
-    const { context, page } = await freshPage(browser);
+    console.log('organ: the organ stage opening, on a slow link (its pictures held back 2.5 s more)');
+    const { context, page } = await freshPage(browser, { slow: { hold: { '/under/': 2500 } } });
     await page.goto(URL0 + '?autostart=1&seed=3', { waitUntil: 'load', timeout: 300000 });
     await booted(page);
     await bootGone(page);

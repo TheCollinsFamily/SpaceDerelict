@@ -68,3 +68,13 @@
 /* The ship before its art (src/ui/campaignUi.ts artWait): dark, not the bare console, until the loader comes in. */
 #campaign.awaiting-art { background: #040506; }
 #campaign.awaiting-art > * { visibility: hidden; }
+
+/* The boot screen's HEADLINE (Collins, Oct 1 2026: "the one with the alien thing being scanned"): the scan loop, big,
+   between the logo (smaller now) and the bar. */
+#boot .boot-scan { width: min(520px, 82vw); aspect-ratio: 16 / 9; margin: 2px auto 14px; }
+#boot .logo-boot { --emblem-size: 120px; --word-size: 48px; margin-bottom: 4px; }
+
+/* In a panel (the organ stage's grid, the report's pictures): the panel may be much taller than the window, so the
+   loop sits near its top, not in its middle off the screen. */
+.bf-loader.in-panel:not(.corner) { align-items: flex-start; padding-top: 28px; }
+.bf-loader.in-panel:not(.corner) .bf-loader-loop { width: min(380px, 70%); }

@@ -12,7 +12,7 @@
       "poster": "alive/debrief-lost.webp",
       "w": 1280,
       "h": 720,
-      "seconds": 4.875
+      "seconds": 4.292
     },
     "debrief:won": {
       "video": "alive/debrief-won.mp4",
@@ -26,7 +26,7 @@
       "poster": "alive/partner-partner.webp",
       "w": 960,
       "h": 960,
-      "seconds": 5
+      "seconds": 4.417
     },
     "reveal:delegation-reveal-end": {
       "video": "alive/reveal-delegation-reveal-end.mp4",
@@ -47,7 +47,7 @@
       "poster": "alive/reveal-institute-reveal-end.webp",
       "w": 1112,
       "h": 834,
-      "seconds": 5
+      "seconds": 4.417
     },
     "scene:delegation-contact": {
       "video": "alive/scene-delegation-contact.mp4",
@@ -75,7 +75,7 @@
       "poster": "alive/scene-delegation-reveal.webp",
       "w": 1112,
       "h": 834,
-      "seconds": 5
+      "seconds": 4.417
     },
     "scene:delegation-stop-war": {
       "video": "alive/scene-delegation-stop-war.mp4",
@@ -257,7 +257,7 @@
       "poster": "alive/territory-university.webp",
       "w": 864,
       "h": 496,
-      "seconds": 4.875
+      "seconds": 4.292
     }
   }
 }

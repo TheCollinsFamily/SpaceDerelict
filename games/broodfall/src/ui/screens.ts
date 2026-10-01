@@ -52,7 +52,8 @@ export function logoHtml(extra = ''): string {
 
 /**
  * The loading screen while the board's art arrives (Oct 1 2026: never a still screen). The emblem is its LOOP
- * (the meteor burning in its ring, src/ui/loader.ts), the creep crawls dimly behind it, the bar is the real file
+ * (the meteor burning in its ring, src/ui/loader.ts), the HEADLINE is the scan loop (the asset on the console's scan
+ * grid: Collins's favourite, Oct 1 2026), the creep crawls dimly behind it all, the bar is the real file
  * count, the lines are the Navy's procurement voice. `cover`: the page under it is empty (a fresh page that is
  * starting a deployment), so its dark goes up at once; otherwise (over the menu) nothing shows for the first
  * 400 ms, and a load that is done by then never flashes a screen. The card and its loop come in after 400 ms.
@@ -77,6 +78,8 @@ export class LoadingScreen {
     // They keep moving as they are (never replaced: a new picture would be a blank until it loaded).
     const back = this.el.querySelector<HTMLElement>('.boot-backdrop');
     if (back) upgradeLoop(back, 'creep'); else this.el.prepend(loopEl('creep', { cover: true, cls: 'boot-backdrop' }));
+    const scan = this.el.querySelector<HTMLElement>('.boot-scan');
+    if (scan) upgradeLoop(scan, 'scan');
     const logo = this.el.querySelector<HTMLElement>('.logo-boot');
     const emblem = logo?.querySelector<HTMLElement>('.logo-emblem');
     if (logo && emblem) {

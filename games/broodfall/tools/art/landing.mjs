@@ -159,15 +159,22 @@ function band(id) {
 const W = 1280, H = 720;
 const territoryRefs = (s) => s.refs.map((t) => path.join(TERR, `${t}.png`)).filter((f) => fs.existsSync(f));
 
-const ORBIT_A = `${LIFELIKE} High orbit above the day side of an alien planet with invented continents (green and ochre land, white ` +
-  'cloud, blue sea, a thin blue line of atmosphere along its curve, black space above). In the upper middle of the picture ' +
-  'an austere white cylindrical spacecraft with one ring around it and two dark flat panels, a plain black gear mark on ' +
-  `its hull, seen from a little below. Just under its open round lower hatch, ${METEOR}, has just been let go and hangs a ` +
-  `short way below the ship, dark and cold, falling toward the planet. Hard white sunlight, deep black shadows. ${NOTHING}`;
-const ORBIT_B = 'Keep this photograph exactly as it is: the same spacecraft, the same planet, the same light and framing. ' +
-  'Change ONE thing: the dark red living meteor is no longer under the ship: it is now FAR below it, a small glowing ' +
-  'orange-white ember with a long bright trail of fire, entering the planet\'s atmosphere over the clouds in the lower ' +
-  `middle of the picture. ${NOTHING}`;
+// v1 (art-src/landing/v1/orbit-*) drew a generic satellite over Earth. The ship is the Orbital Tender "Merciful Yoke" as
+// the game draws it (the key art's ring ship, public/art/ship/exterior.webp) and the planet the game's own (its day map,
+// public/art/ship/planet.webp, the globe's): both passed as references (art-src/landing/refs/).
+const ORBIT_A = `${LIFELIKE} High orbit above an alien planet: its surface is EXACTLY the land and sea of the second ` +
+  'reference picture (its map) seen on a globe: the big rounded continent with a dry tan heart in the middle of the ' +
+  'picture, ragged green and ochre coasts, chains of islands, deep blue seas, white cloud; the curve of the planet with a ' +
+  'thin blue line of atmosphere, black space with faint stars above. The land is clean: no red, no stain, no fire on it. ' +
+  'In the upper middle of the picture, small against the planet, the spacecraft of the first reference picture exactly: ' +
+  'an upright pale grey-white cylinder with a thin mast on top, a separate round tube ring around its middle held by four ' +
+  'straight spokes, two flat dark solar panels on arms, a small black gear mark on the hull. Just under its lower end, ' +
+  `${METEOR}, has just been let go and hangs a short way below the ship, dark and cold, falling toward the planet. Hard ` +
+  `white sunlight from the side, deep black shadows. ${NOTHING}`;
+const ORBIT_B = 'Keep this photograph exactly as it is: the same spacecraft, the same planet with the same continents, the same ' +
+  'light and framing. Change ONE thing: the dark red living meteor is no longer under the ship: it is now FAR below it, a ' +
+  'small glowing orange-white ember with a long bright trail of fire, entering the atmosphere over the big continent in ' +
+  `the lower middle of the picture. The land stays clean, with no red on it. ${NOTHING}`;
 
 const fallA = (s) => `${LIFELIKE} A wide aerial view from high above ${s.city}, seen at a steep angle from about a kilometre up, ` +
   `the city filling the lower two thirds of the picture, under ${s.sky}. High in the sky in the upper part of the picture, a ` +
@@ -183,10 +190,61 @@ const HIT = 'Keep this picture exactly as it is: the same city blocks, the same 
   'dust and debris rolling out along the streets around it and over the nearest roofs, burning fragments flying. The fireball ' +
   `and dust hide the meteor and the red ground around it completely. ${NOTHING}`;
 
+// ------------------------------------------------------------------ v2: real motion for the release and the fall (Oct 1 2026)
+// Collins on v1: the strike on the map is "chef's kiss — better than I thought was possible" (kept exactly); the release and
+// the fall (a still with the meteor scaled across it between a start and an end frame) were not: "you don't need these to
+// merge into anything — you can just use AI videos". So shots 1 and 2 are image-to-video from a DESIGN still with NO end
+// frame, with real camera motion: art-src/landing/release.png → release-clip.mp4, street-<set>.png → street-<set>-clip.mp4.
+
+const PEOPLE = 'insect people like those of a 1950s science-fiction film: human posture, an insect head with large round ' +
+  'eyes, small mandibles and antennae, dark umber chitin instead of skin, dressed in 1950s clothes (hats, suits, cardigans, ' +
+  'print dresses)';
+const RELEASE = `${LIFELIKE} In orbit, a dramatic low angle from just below and behind the spacecraft of the first reference ` +
+  'picture, exactly that ship: an upright pale grey-white cylinder with a thin mast on top, a separate round tube ring around ' +
+  'its middle on four straight spokes, two flat dark solar panels, a small black gear mark on the hull. It fills the upper ' +
+  'half of the frame. Its round bay at the bottom end is open, and out of it the living meteor of the second reference ' +
+  `picture (${METEOR}) is being launched, half out of the bay, venting white gas. Far below, the planet of the third ` +
+  'reference picture (its map: the big rounded continent with a dry tan heart, ragged green and ochre coasts, island ' +
+  'chains, deep blue seas, white cloud) on its day side, its curve and thin blue line of atmosphere, black space with ' +
+  `faint stars. The land is clean: no red, no fire. Hard white sunlight, deep black shadows. ${NOTHING}`;
+const RELEASE_CLIP = 'The living meteor is fired out of the open bay of the spacecraft with a burst of white gas and drops away ' +
+  'fast toward the planet; the camera swings down and chases it, the ship sliding up and out of frame, the meteor ' +
+  'shrinking toward the planet below and starting to glow orange as it hits the top of the atmosphere. Real physics, ' +
+  'smooth fast camera move, lifelike. One continuous shot, no cuts, no text.';
+const street = (s) => `${LIFELIKE} Low angle from a street of ${s.city}, under ${s.sky}. In the foreground a small group of ` +
+  `${PEOPLE} stand in the street and look up at the sky in fear and wonder, one pointing up; their buildings frame the ` +
+  'sky. High in the sky above them, the living meteor of the first reference picture, wrapped in fire, tears down through ' +
+  `the clouds at a steep diagonal with a long churning trail of black smoke, heading for the city. ${NOTHING}`;
+const STREET_CLIP = 'The burning meteor roars down out of the sky straight over the street, growing huge fast and tearing past ' +
+  'overhead toward the city beyond, motion blur, its smoke trail churning, burning fragments falling; the camera shakes and ' +
+  'whips up and round to follow it. The insect people duck and shield their faces, their clothes and antennae blown by ' +
+  'the blast of its passing. Lifelike, real physics. One continuous shot, no cuts, no text.';
+const METEOR_REF = () => raw('fall-suburb-b.png');
+
+async function design(sets, withRelease) {
+  if (withRelease) await makeStill({ slug: 'landing release', out: raw('release.png'), prompt: RELEASE, key: null, width: W, height: H, quality: 'high',
+    refFiles: [raw('refs/keyart-ship.png'), METEOR_REF(), raw('refs/planet-map.png')] });
+  const res = await pool(sets, 4, (s) => makeStill({ slug: `landing street-${s.id}`, out: raw(`street-${s.id}.png`), prompt: street(s), key: null,
+    width: W, height: H, quality: 'high', refFiles: [METEOR_REF(), ...territoryRefs(s).slice(0, 1), raw(`fall-${s.id}-a.png`)] }));
+  res.forEach((r, i) => { if (!r.ok) console.warn(`[landing] street-${sets[i].id} failed: ${r.error.message.slice(0, 200)}`); });
+}
+
+/** The model the v2 shots are made on (chosen by `probe`: see notes/art-review/landing/probe/). */
+export const MOTION_MODEL = process.env.LANDING_MODEL || 'imagerouter:kling-3.0-turbo-i2v';
+const MOTION = { seconds: 5, resolution: '720p', aspect: '16:9' };
+
+async function motion(sets, withRelease, model = MOTION_MODEL, dir = DIR) {
+  const jobs = [];
+  if (withRelease && fs.existsSync(raw('release.png'))) jobs.push({ slug: `landing-release-${model}`, stillFile: raw('release.png'), prompt: RELEASE_CLIP, out: path.join(dir, 'release-clip.mp4') });
+  for (const s of sets) if (fs.existsSync(raw(`street-${s.id}.png`))) jobs.push({ slug: `landing-street-${s.id}-${model}`, stillFile: raw(`street-${s.id}.png`), prompt: STREET_CLIP, out: path.join(dir, `street-${s.id}-clip.mp4`) });
+  const res = await pool(jobs, 4, (j) => makeClip({ ...j, models: [model], loop: false, raw: true, seconds: model.includes('veo') ? 6 : MOTION.seconds, resolution: MOTION.resolution, aspect: MOTION.aspect }));
+  res.forEach((r, i) => { if (!r.ok) console.warn(`[landing] ${jobs[i].slug} failed: ${r.error.message.slice(0, 300)}`); });
+}
+
 async function stills(sets, withOrbit) {
   if (withOrbit && !fs.existsSync(raw('orbit-a.png'))) {
     await makeStill({ slug: 'landing orbit-a', out: raw('orbit-a.png'), prompt: ORBIT_A, key: null, width: W, height: H, quality: 'high',
-      refFiles: [path.join(CONCEPTS, 'r4-ship-exterior-ring-drop.png'), path.join(SRC, 'ship', 'exterior.png')].filter((f) => fs.existsSync(f)) });
+      refFiles: [raw('refs/keyart-ship.png'), raw('refs/planet-map.png'), path.join(SRC, 'ship', 'exterior.png')].filter((f) => fs.existsSync(f)) });
   }
   if (withOrbit && fs.existsSync(raw('orbit-a.png'))) {
     await makeStill({ slug: 'landing orbit-b', out: raw('orbit-b.png'), prompt: ORBIT_B, key: null, width: W, height: H, quality: 'high', refFiles: [raw('orbit-a.png')] });
@@ -344,7 +402,7 @@ function sheet() {
 }
 
 const args = process.argv.slice(2);
-const steps = new Set(['boards', 'stills', 'clips', 'bake', 'sheet']);
+const steps = new Set(['boards', 'stills', 'clips', 'bake', 'sheet', 'design', 'motion', 'probe']);
 const step = steps.has(args[0]) ? args[0] : null;
 const only = args.filter((a) => !steps.has(a) && !a.startsWith('--'));
 const ids = SETS.map((s) => s.id).filter((id) => !only.length || only.includes(id));
@@ -352,6 +410,26 @@ const ids = SETS.map((s) => s.id).filter((id) => !only.length || only.includes(i
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
   fs.mkdirSync(DIR, { recursive: true });
   if (step === 'boards') { await boards(ids); process.exit(0); }
+  if (step === 'design' || step === 'motion' || step === 'probe') {
+    ready();
+    const before = await balance();
+    const sets = ids.map((id) => SET[id]);
+    const withRelease = !only.length || only.includes('release');
+    if (step === 'design') await design(sets, withRelease);
+    if (step === 'motion') await motion(sets, withRelease);
+    // probe: the same shots on several models, side by side (PROBE_MODELS=a,b,c), into art-src/landing/probe/<model>/.
+    if (step === 'probe') {
+      for (const m of (process.env.PROBE_MODELS || '').split(',').filter(Boolean)) {
+        const dir = path.join(DIR, 'probe', m.replace(/[^a-z0-9.-]+/gi, '_'));
+        fs.mkdirSync(dir, { recursive: true });
+        const b0 = await balance();
+        await motion(sets, withRelease, m, dir);
+        console.log(`[landing] probe ${m}: ${b0 - (await balance())} tokens (the balance moves with other sessions too)`);
+      }
+    }
+    console.log(`[landing] ${step}: balance ${before} -> ${await balance()}`);
+    process.exit(0);
+  }
   const sets = ids.map((id) => SET[id]);
   const withOrbit = !only.length || only.includes('orbit');
   if (!step || step === 'stills' || step === 'clips') {

@@ -21,6 +21,7 @@
  * Raw frames and clips: art-src/trailer/ (git-ignored).
  */
 import { spawn, spawnSync, execSync } from 'node:child_process';
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -403,7 +404,7 @@ const SHOTS = {
       const riding = await page.evaluate(() => window.broodfall.tongues().some((l) => l.riding));
       if (riding && !was) caught++;
       was = riding;
-      await page.evaluate(([m, z, snap]) => window.__T.camTo(m.x, m.y, z, snap, 170), [ep, 4.0 + 0.4 * (i / n), i === 0]);
+      await page.evaluate(([m, z, snap]) => window.__T.camTo(m.x, m.y, z, snap, 170), [ep, 5.6 + 0.4 * (i / n), i === 0]);
     }, { preroll: 30 });
     console.log(`  bodies caught on the tongue while filming: ${caught}`);
     await ctx.close();
@@ -880,4 +881,316 @@ if (cmd === 'titles') {
       console.log(`  titles ${dir}`);
     }
   } finally { await browser.close(); }
+}
+
+/** Where in the Maw and creep takes the action is (seconds into those captures; looked at, frame by frame). */
+const MAW_CROP = [0, 60, 1600, 900];
+const MAW_SS = Number(process.env.MAW_SS ?? 2.1), MAW_SS2 = Number(process.env.MAW_SS2 ?? 0.1), MAW_BITE = Number(process.env.MAW_BITE ?? 0.35), CREEP_SS = Number(process.env.CREEP_SS ?? 1.0);
+
+// ------------------------------------------------------------------ CUT: the edit and the mix
+/**
+ * The edit is data: SHOTS_FULL / SHOTS_30 below (what, from where, how long, which titles), and the
+ * sound laid against it (SOUND_*: music, voices, effects, each at a time on the timeline). Each shot is
+ * rendered on its own (art-src/trailer/seg/), the shots are joined, the sound is mixed (music ducked
+ * under the voices), measured and brought to -14 LUFS with true peaks under -1 dBTP (two-pass loudnorm),
+ * and the result is encoded H.264 High + AAC 320k, 60 fps.
+ */
+const A = (f) => path.join(ROOT, f);
+const CAPF = (id) => path.join(CAP, `${id}.mp4`);
+const SRC = {
+  sky: A('public/art/intro/sky.mp4'), lookup: A('public/art/intro/lookup.mp4'), fall: A('public/art/intro/fall.mp4'),
+  impact: A('public/art/intro/impact.mp4'), crater: A('public/art/intro/crater.mp4'), creep: A('public/art/intro/creep.mp4'),
+  menu: A('public/art/intro/menu.mp4'),
+  faithful: path.join(RAW, 'gen', 'faithful-contact-clip.mp4'), delegation: path.join(RAW, 'gen', 'delegation-contact-clip.mp4'),
+  institute: path.join(RAW, 'gen', 'institute-contact-clip.mp4'),
+  eOrbit: A('public/media/clips/e-orbit.mp4'), cMarch: A('public/media/clips/c-march.mp4'),
+  keyart: A('promo/key-art/broodfall-keyart-meteor-2048x1152.jpg'),
+};
+const AU = (f) => A(`public/audio/${f}.ogg`);
+const VO = (f) => A(`public/media/voice/${f}.ogg`);
+const MU = (f) => A(`public/media/music/${f}.ogg`);
+
+/** Where the YOKE and boss captures sit in their 3840x2160 frames, and the globe. */
+const YOKE_CROP = [0, 880, 2280, 1280];
+const BOSS_CROP = [900, 450, 2040, 1148];
+function globeCrop() {
+  try {
+    const g = JSON.parse(fs.readFileSync(path.join(CAP, 's-globe.json'), 'utf8'));
+    const k = g.dpr, b = g.box;
+    const h = Math.round((b.height + 80) * k), w = Math.round(h * 16 / 9);
+    const cx = (b.x + b.width / 2 + 260) * k;
+    const x = Math.max(0, Math.min(1920 * k - w, Math.round(cx - w / 2)));
+    const y = Math.max(0, Math.min(1080 * k - h, Math.round((b.y - 40) * k)));
+    return [x, y, w, h];
+  } catch { return null; }
+}
+
+// A shot: src, ss (s into the source), dur (s on screen), rate (<1 = slowed), crop [x,y,w,h] of the
+// source, zoom [z0,z1] (a slow push), titles [[png, from, to]], fadeIn/fadeOut (from/to black, s),
+// vx (where the vertical cut's 4:5 window sits across the frame, 0..1), what/from (the shot list).
+const T = (id, a, b) => [id, a, b];
+function shotsFull() {
+  return [
+    { id: 'sky', src: SRC.sky, ss: 0, dur: 4.0, zoom: [1, 1.04], titles: [T('t-quiet', 0.4, 3.8)], fadeIn: 0.6, what: 'A quiet night in a quiet little insect town', from: 'the opening film, public/art/intro/sky.mp4' },
+    { id: 'lookup', src: SRC.lookup, ss: 0, dur: 3.6, titles: [T('t-sky', 0.5, 3.5)], what: 'The townsfolk look up: IT CAME FROM THE SKY!', from: 'the opening film, public/art/intro/lookup.mp4' },
+    { id: 'fall', src: SRC.fall, ss: 0.6, dur: 2.6, what: 'The living meteor falls on the town', from: 'the opening film, public/art/intro/fall.mp4' },
+    { id: 'impact', src: SRC.impact, ss: 0, dur: 2.6, what: 'Impact', from: 'the opening film, public/art/intro/impact.mp4' },
+    { id: 'creep', src: SRC.creep, ss: 0.3, dur: 2.4, titles: [T('t-hungry', 0.2, 2.3)], fadeOut: 0.15, what: 'The creep swallows a street and a car', from: 'the opening film, public/art/intro/creep.mp4' },
+    { id: 'g-open', src: CAPF('g-open'), ss: 1.0, dur: 4.4, titles: [T('g-1', 0.4, 4.2)], vx: 0.55, what: 'GAMEPLAY: wave 2 on a suburb board, the whole board: a small tower defence', from: 'real game, captured' },
+    { id: 'g-siege', src: CAPF('g-siege'), ss: 1.5, dur: 3.6, vx: 0.45, what: 'GAMEPLAY: a siege in the Megacity, limbs firing into the column', from: 'real game, captured' },
+    { id: 'g-maw', src: CAPF('g-maw'), ss: MAW_SS, crop: MAW_CROP, dur: 3.6, vx: 0.5, what: 'GAMEPLAY: the Maw\'s frog tongue catches a soldier and swallows it', from: 'real game, captured' },
+    { id: 'g-creep', src: CAPF('g-creep'), ss: CREEP_SS, dur: 3.0, vx: 0.5, what: 'GAMEPLAY: creep nodes put down past the edge; the creep spreads', from: 'real game, captured' },
+    { id: 'g-draft', src: CAPF('g-draft'), ss: 0.5, dur: 2.4, crop: [360, 150, 1200, 675], zoom: [1, 1.05], titles: [T('g-2', 0.2, 4.4)], vx: 0.5, what: 'GAMEPLAY: the district draft, three plates to consume next', from: 'real game, captured' },
+    { id: 'g-organ', src: CAPF('g-organ'), ss: 0.5, dur: 2.2, zoom: [1.02, 1.08], titles: [T('g-2', 0, 2.0)], vx: 0.4, what: 'GAMEPLAY: the organ stage between waves', from: 'real game, captured' },
+    { id: 'g-core', src: CAPF('g-core'), ss: 0.4, dur: 3.2, vx: 0.5, what: 'GAMEPLAY: the core evolves into the citadel', from: 'real game, captured' },
+    { id: 'g-boss', src: CAPF('g-boss'), ss: 1.0, dur: 3.8, vx: 0.5, fadeOut: 0.2, what: 'GAMEPLAY: a royal and her consort wade into the limbs', from: 'real game, captured' },
+    { id: 'menu', src: SRC.menu, ss: 0, dur: 3.8, rate: 0.8, fadeIn: 0.3, titles: [T('g-3', 0.3, 3.7)], vx: 0.5, what: 'The ship: the infested planet through the viewport', from: 'the game\'s menu loop, public/art/intro/menu.mp4' },
+    { id: 'r-yoke', src: CAPF('r-yoke'), ss: 0.0, dur: 3.3, crop: YOKE_CROP, zoom: [1, 1.05], vx: 0.12, what: 'THE SHIP: YOKE, the ship\'s AI: "You really suck at genocide."', from: 'real game (her first greeting), captured' },
+    { id: 'r-boss', src: CAPF('r-bosscall'), ss: 0.0, dur: 3.7, crop: BOSS_CROP, zoom: [1, 1.04], vx: 0.5, what: 'THE SHIP: the boss, an uplifted dog: "I love reports. Good boy. Good work."', from: 'real game (his first call), captured' },
+    { id: 's-globe', src: CAPF('s-globe'), ss: 0.5, dur: 3.5, crop: globeCrop(), zoom: [1, 1.06], vx: 0.3, what: 'THE SHIP: the planet in 3D at the Directive Desk, held ground under the creep', from: 'real game, captured' },
+    { id: 'faithful', src: SRC.faithful, ss: 0, dur: 4.9, rate: 0.84, titles: [T('c-faithful', 0.1, 4.8)], vx: 0.5, what: 'The Faithful: The Voice on the air: "...brothers and sisters, LOOK UP."', from: 'new: RFab image-to-video from the scene picture art-src/ship/scenes/faithful-contact.png' },
+    { id: 'delegation', src: SRC.delegation, ss: 0, dur: 5.2, rate: 0.8, titles: [T('c-delegation-1', 0.1, 3.1), T('c-delegation-2', 3.25, 5.1)], vx: 0.45, what: 'The Friendship Delegation spell their letter in a field: "There will be snacks." "You ate the summit."', from: 'new: RFab image-to-video from art-src/ship/scenes/delegation-contact.png' },
+    { id: 'institute', src: SRC.institute, ss: 0.9, dur: 3.1, titles: [T('c-institute', 0.1, 3.0)], vx: 0.5, what: 'The Institute: the Director on a video call, mid-game: "On the numbers, you are the SAFER apocalypse."', from: 'new: RFab image-to-video from art-src/ship/scenes/institute-contact.png' },
+    { id: 'e-orbit', src: SRC.eOrbit, ss: 0, dur: 3.9, titles: [T('c-empire', 0.1, 3.8)], vx: 0.6, what: 'Newsreel, the Clearance Review: "And nothing goes to waste. Nothing at all!"', from: 'the game\'s newsreel clip public/media/clips/e-orbit.mp4' },
+    { id: 'c-march', src: SRC.cMarch, ss: 0, dur: 3.9, titles: [T('c-colony', 0.1, 3.8)], vx: 0.5, what: 'Newsreel, the Commonwealth (theirs): "The Host marches, to take back what is ours!"', from: 'the game\'s newsreel clip public/media/clips/c-march.mp4' },
+    ...montage(0.8),
+    { id: 'end', src: SRC.keyart, image: true, dur: 6.5, zoom: [1, 1.07], end: true, fadeOut: 0.8, vx: 0.62, what: 'The name, the genre line, GENOCIDE SIMULATOR', from: 'key art promo/key-art/broodfall-keyart-meteor-2048x1152.jpg, titles set in type' },
+  ];
+}
+function montage(each) {
+  return [
+    { id: 'm-late', src: CAPF('g-late'), ss: 3.0, dur: each, vx: 0.4, what: 'GAMEPLAY montage: the whole body late in a run', from: 'real game, captured' },
+    { id: 'm-temple', src: CAPF('g-temple'), ss: 2.0, dur: each, vx: 0.5, what: 'GAMEPLAY montage: the Temple Cities under siege', from: 'real game, captured' },
+    { id: 'm-maw', src: CAPF('g-maw'), ss: MAW_SS2, crop: MAW_CROP, dur: each, vx: 0.5, what: 'GAMEPLAY montage: the Maw again', from: 'real game, captured' },
+    { id: 'm-looks', src: CAPF('g-looks'), ss: 2.0, dur: each, vx: 0.5, what: 'GAMEPLAY montage: limbs in their upgrade looks', from: 'real game, captured' },
+    { id: 'm-siege', src: CAPF('g-siege'), ss: 5.2, dur: each, vx: 0.5, what: 'GAMEPLAY montage: the Megacity siege', from: 'real game, captured' },
+    { id: 'm-boss', src: CAPF('g-boss'), ss: 4.6, dur: each, vx: 0.5, what: 'GAMEPLAY montage: the royal', from: 'real game, captured' },
+  ];
+}
+function shots30() {
+  return [
+    { id: 'lookup', src: SRC.lookup, ss: 0.2, dur: 2.4, fadeIn: 0.3, titles: [T('t-sky', 0.2, 2.35)], what: 'IT CAME FROM THE SKY!', from: 'the opening film' },
+    { id: 'impact', src: SRC.impact, ss: 0.2, dur: 1.6, what: 'Impact', from: 'the opening film' },
+    { id: 'g-open', src: CAPF('g-open'), ss: 1.0, dur: 2.4, titles: [T('g-1', 0.2, 2.35)], vx: 0.55, what: 'GAMEPLAY: a small tower defence', from: 'real game, captured' },
+    { id: 'g-siege', src: CAPF('g-siege'), ss: 2.0, dur: 2.0, vx: 0.45, what: 'GAMEPLAY: siege', from: 'real game, captured' },
+    { id: 'g-maw', src: CAPF('g-maw'), ss: MAW_SS, crop: MAW_CROP, dur: 2.4, vx: 0.5, what: 'GAMEPLAY: the Maw\'s tongue', from: 'real game, captured' },
+    { id: 'g-draft', src: CAPF('g-draft'), ss: 0.5, dur: 1.6, crop: [360, 150, 1200, 675], titles: [T('g-2', 0.1, 3.15)], vx: 0.5, what: 'GAMEPLAY: the district draft', from: 'real game, captured' },
+    { id: 'g-core', src: CAPF('g-core'), ss: 1.2, dur: 1.6, titles: [T('g-2', 0, 1.5)], vx: 0.5, what: 'GAMEPLAY: the core evolves', from: 'real game, captured' },
+    { id: 'menu', src: SRC.menu, ss: 0, dur: 1.8, rate: 0.8, titles: [T('g-3', 0.1, 1.75)], vx: 0.5, what: 'The ship over the infested planet', from: 'the menu loop' },
+    { id: 'r-yoke', src: CAPF('r-yoke'), ss: 0, dur: 2.6, crop: YOKE_CROP, zoom: [1, 1.04], vx: 0.12, what: 'YOKE: "You really suck at genocide."', from: 'real game, captured' },
+    { id: 's-globe', src: CAPF('s-globe'), ss: 0.5, dur: 1.8, crop: globeCrop(), vx: 0.3, what: 'The planet in 3D', from: 'real game, captured' },
+    { id: 'institute', src: SRC.institute, ss: 0.9, dur: 3.1, titles: [T('c-institute', 0.1, 3.0)], vx: 0.5, what: 'The Institute: "you are the SAFER apocalypse."', from: 'new: RFab image-to-video' },
+    { id: 'm-maw', src: CAPF('g-maw'), ss: MAW_SS2, crop: MAW_CROP, dur: 0.6, vx: 0.5, what: 'montage', from: 'real game, captured' },
+    { id: 'm-siege', src: CAPF('g-siege'), ss: 5.2, dur: 0.6, vx: 0.5, what: 'montage', from: 'real game, captured' },
+    { id: 'm-boss', src: CAPF('g-boss'), ss: 4.6, dur: 0.6, vx: 0.5, what: 'montage', from: 'real game, captured' },
+    { id: 'm-late', src: CAPF('g-late'), ss: 3.0, dur: 0.6, vx: 0.4, what: 'montage', from: 'real game, captured' },
+    { id: 'end', src: SRC.keyart, image: true, dur: 4.6, zoom: [1, 1.05], end: true, fadeOut: 0.6, vx: 0.62, what: 'The name, the genre line, GENOCIDE SIMULATOR', from: 'key art, titles set in type' },
+  ];
+}
+
+/** The sound against the shots: [file, shot id, offset into the shot, {ss, dur, db, fi, fo, bus}]. */
+function soundFull(at) {
+  const yl = (() => { try { return JSON.parse(fs.readFileSync(path.join(CAP, 'r-yoke.json'), 'utf8')); } catch { return {}; } })();
+  return [
+    // music
+    { f: AU('film'), t: at('sky'), ss: 0, dur: at('g-open') - at('sky') + 0.1, fo: 0.25, bus: 'm', db: -1 },
+    { f: AU('siege-assault'), t: at('g-open'), ss: 0, dur: at('menu') - at('g-open'), fi: 0.05, fo: 0.35, bus: 'm', db: -1 },
+    { f: AU('sting-wave'), t: at('g-open'), bus: 'm', db: -4 },
+    { f: AU('sting-desk'), t: at('menu'), bus: 'm', db: -2 },
+    { f: AU('theme-ship'), t: at('menu') + 0.5, ss: 4, dur: at('e-orbit') - at('menu') - 0.2, fi: 1.0, fo: 0.4, bus: 'm', db: -3 },
+    { f: MU('m-empire'), t: at('e-orbit'), ss: 0, dur: 3.9, fi: 0.1, fo: 0.2, bus: 'm', db: -4 },
+    { f: MU('m-colony'), t: at('c-march'), ss: 0, dur: 3.9, fi: 0.1, fo: 0.3, bus: 'm', db: -4 },
+    { f: AU('siege-assault'), t: at('m-late'), ss: 61.2, dur: at('end') - at('m-late') + 0.15, fi: 0.02, fo: 0.15, bus: 'm', db: 0 },
+    { f: AU('sting-core'), t: at('end'), bus: 'm', db: 0, fo: 1.0 },
+    { f: AU('theme-menu'), t: at('end') + 0.4, ss: 0, dur: 6.0, fi: 1.5, fo: 1.2, bus: 'm', db: -8 },
+    // voices
+    { f: AU('nar-film-1'), t: at('sky') + 0.5, bus: 'v' },
+    { f: AU('nar-film-2'), t: at('lookup') + 0.3, bus: 'v' },
+    { f: AU('nar-film-4'), t: at('creep') + 0.15, bus: 'v', dur: 2.2, fo: 0.2 },
+    { f: AU('nar-royal'), t: at('g-boss') + 0.1, bus: 'v' },
+    { f: path.join(RAW, 'voice', 'yoke-suck.mp3'), t: at('r-yoke') - (yl.voiceLead ?? 0.1), bus: 'v', db: 1 },
+    { f: A('public/art/intro/boss.mp3'), t: at('r-boss'), ss: yl.bossVoiceFrom ?? 26.6, dur: 3.6, fo: 0.3, bus: 'v', db: 1 },
+    { f: VO('faithful__a-broadcast-on-every-frequency__0'), t: at('faithful') + 0.1, bus: 'v' },
+    { f: VO('delegation__the-first-summit__0'), t: at('delegation') + 0.1, bus: 'v' },
+    { f: VO('delegation__the-first-summit__2'), t: at('delegation') + 3.25, bus: 'v' },
+    { f: VO('institute__a-video-call-mid-game__5'), t: at('institute') + 0.15, ss: 3.45, dur: 2.5, bus: 'v' },
+    { f: VO('n-e-waste'), t: at('e-orbit') + 0.05, bus: 'v' },
+    { f: VO('n-c-marches'), t: at('c-march') + 0.0, bus: 'v' },
+    // the game's own effects, where the pictures make them
+    { f: AU('limb-grow-2'), t: at('g-open') + 1.4, bus: 's', db: -6 },
+    { f: AU('fire-spit-2'), t: at('g-siege') + 0.4, bus: 's', db: -6 },
+    { f: AU('hit-blast-1'), t: at('g-siege') + 1.3, bus: 's', db: -6 },
+    { f: AU('fire-lightning-2'), t: at('g-siege') + 2.4, bus: 's', db: -7 },
+    { f: AU('fire-bite-2'), t: at('g-maw') + MAW_BITE, bus: 's', db: -3 },
+    { f: AU('creep-spread-1'), t: at('g-creep') + 0.3, bus: 's', db: -4 },
+    { f: AU('creep-spread-3'), t: at('g-creep') + 1.6, bus: 's', db: -4 },
+    { f: AU('core-evolve'), t: at('g-core') + 0.1, bus: 's', db: -3 },
+    { f: AU('boss-roar'), t: at('g-boss') + 0.4, bus: 's', db: -5 },
+    { f: AU('intercom-open-1'), t: at('r-yoke'), bus: 's', db: -6 },
+  ];
+}
+function sound30(at) {
+  const yl = (() => { try { return JSON.parse(fs.readFileSync(path.join(CAP, 'r-yoke.json'), 'utf8')); } catch { return {}; } })();
+  return [
+    { f: AU('film'), t: at('lookup'), ss: 8.6, dur: at('g-open') - at('lookup') + 0.1, fi: 0.2, fo: 0.2, bus: 'm', db: -1 },
+    { f: AU('siege-assault'), t: at('g-open'), ss: 0, dur: at('menu') - at('g-open'), fo: 0.3, bus: 'm', db: -1 },
+    { f: AU('sting-wave'), t: at('g-open'), bus: 'm', db: -4 },
+    { f: AU('sting-desk'), t: at('menu'), bus: 'm', db: -2 },
+    { f: AU('theme-ship'), t: at('menu') + 0.3, ss: 4, dur: at('m-maw') - at('menu') - 0.3, fi: 0.6, fo: 0.3, bus: 'm', db: -3 },
+    { f: AU('siege-assault'), t: at('m-maw'), ss: 61.2, dur: at('end') - at('m-maw') + 0.15, fo: 0.15, bus: 'm', db: 0 },
+    { f: AU('sting-core'), t: at('end'), bus: 'm', db: 0, fo: 1.0 },
+    { f: AU('theme-menu'), t: at('end') + 0.3, ss: 0, dur: 4.3, fi: 1.0, fo: 1.0, bus: 'm', db: -8 },
+    { f: path.join(RAW, 'voice', 'yoke-suck.mp3'), t: at('r-yoke') - (yl.voiceLead ?? 0.1), bus: 'v', db: 1 },
+    { f: VO('institute__a-video-call-mid-game__5'), t: at('institute') + 0.15, ss: 3.45, dur: 2.5, bus: 'v' },
+    { f: AU('fire-bite-2'), t: at('g-maw') + Math.min(MAW_BITE, 2.0), bus: 's', db: -3 },
+    { f: AU('core-evolve'), t: at('g-core'), bus: 's', db: -3 },
+    { f: AU('intercom-open-1'), t: at('r-yoke'), bus: 's', db: -6 },
+  ];
+}
+
+const sh = (s) => crypto.createHash('sha1').update(s).digest('hex').slice(0, 10);
+/** One shot, rendered: 60 fps, exact frame count, its titles over it. `fmt` 'h' (1920x1080) or 'v' (1080x1920). */
+function renderShot(s, fmt) {
+  const dir = path.join(RAW, 'seg');
+  fs.mkdirSync(dir, { recursive: true });
+  const N = Math.round(s.dur * FPS);
+  const rate = s.rate ?? 1;
+  const tdir = path.join(RAW, 'titles', fmt);
+  const titles = [...(s.titles ?? [])];
+  if (s.end) titles.push(['end-shade', 0, 99], ['end-logo', 0.25, 99], ['end-genre', 1.1, 99], ['end-tag', 2.0, 99]);
+  const key = sh(JSON.stringify({ s, fmt, v: 3, mt: fs.existsSync(s.src) ? fs.statSync(s.src).mtimeMs : 0 }));
+  const out = path.join(dir, `${s.id}-${fmt}-${key}.mp4`);
+  if (fs.existsSync(out)) return out;
+  const args = [];
+  if (s.image) args.push('-loop', '1', '-framerate', String(FPS), '-t', String(s.dur + 0.5), '-i', s.src);
+  else args.push('-ss', String(s.ss ?? 0), '-t', String(s.dur * rate + 0.5), '-i', s.src);
+  for (const [png] of titles) args.push('-loop', '1', '-framerate', String(FPS), '-t', String(s.dur + 0.5), '-i', path.join(tdir, `${png}.png`));
+  const f = [];
+  let v = `[0:v]setpts=(PTS-STARTPTS)/${rate},fps=${FPS}`;
+  if (s.crop) v += `,crop=${s.crop[2]}:${s.crop[3]}:${s.crop[0]}:${s.crop[1]}`;
+  if (s.image && fmt === 'v') {
+    // The end card stands up on its own crop of the key art.
+    v += `,scale=-2:1920:flags=lanczos,crop=1080:1920:(iw-1080)*${s.vx ?? 0.5}:0`;
+    const [z0, z1] = s.zoom ?? [1, 1];
+    v += `,scale=w='trunc(1080*(${z0}+(${z1 - z0})*t/${s.dur})/2)*2':h=-2:eval=frame:flags=bicubic,crop=1080:1920`;
+    f.push(`${v}[base]`);
+  } else {
+    v += ',scale=1920:1080:flags=lanczos';
+    const [z0, z1] = s.zoom ?? [1, 1];
+    if (z0 !== 1 || z1 !== 1) v += `,scale=w='trunc(1920*(${z0}+(${z1 - z0})*t/${s.dur})/2)*2':h=-2:eval=frame:flags=bicubic,crop=1920:1080`;
+    if (fmt === 'h') f.push(`${v}[base]`);
+    else {
+      // Vertical: the shot's 4:5 window over a blurred, darkened fill of itself.
+      const vx = s.vx ?? 0.5;
+      f.push(`${v},split[a][b]`);
+      f.push(`[a]scale=-2:1920,crop=1080:1920:(iw-1080)*${vx}:0,boxblur=28:2,eq=brightness=-0.22:saturation=0.8[bg]`);
+      f.push(`[b]crop=864:1080:(iw-864)*${vx}:0,scale=1080:1350:flags=lanczos[fg]`);
+      f.push(`[bg][fg]overlay=0:285[base]`);
+    }
+  }
+  let cur = 'base';
+  titles.forEach(([png, a, b], i) => {
+    const fo = b < s.dur ? `,fade=out:st=${Math.max(a, b - 0.25)}:d=0.25:alpha=1` : '';
+    f.push(`[${i + 1}:v]format=rgba,fade=in:st=${a}:d=${s.end ? 0.6 : 0.25}:alpha=1${fo}[t${i}]`);
+    f.push(`[${cur}][t${i}]overlay=0:0:shortest=0[o${i}]`);
+    cur = `o${i}`;
+  });
+  let tail = 'format=yuv420p';
+  if (s.fadeIn) tail = `fade=t=in:st=0:d=${s.fadeIn},${tail}`;
+  if (s.fadeOut) tail = `fade=t=out:st=${(s.dur - s.fadeOut).toFixed(3)}:d=${s.fadeOut},${tail}`;
+  f.push(`[${cur}]${tail}[out]`);
+  ff([...args, '-filter_complex', f.join(';'), '-map', '[out]', '-frames:v', String(N), '-r', String(FPS), '-c:v', 'libx264', '-preset', 'medium', '-crf', '14', '-pix_fmt', 'yuv420p', '-an', out], `shot ${s.id} ${fmt}`);
+  return out;
+}
+
+function mix(events, total, out) {
+  const args = [];
+  const f = [];
+  const by = { m: [], v: [], s: [] };
+  events.forEach((e, i) => {
+    if (e.ss) args.push('-ss', String(e.ss));
+    if (e.dur) args.push('-t', String(e.dur));
+    args.push('-i', e.f);
+    let c = `[${i}:a]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,volume=${e.db ?? 0}dB`;
+    if (e.fi) c += `,afade=t=in:st=0:d=${e.fi}`;
+    if (e.fo) { const d = e.dur ?? dur(e.f) - (e.ss ?? 0); c += `,afade=t=out:st=${Math.max(0, d - e.fo).toFixed(3)}:d=${e.fo}`; }
+    const ms = Math.max(0, Math.round(e.t * 1000));
+    c += `,adelay=${ms}|${ms}[a${i}]`;
+    f.push(c);
+    by[e.bus ?? 'm'].push(`[a${i}]`);
+  });
+  const bus = (k, name) => by[k].length > 1 ? f.push(`${by[k].join('')}amix=inputs=${by[k].length}:normalize=0:dropout_transition=0[${name}]`) : f.push(`${by[k][0] ?? 'anullsrc'}anull[${name}]`);
+  bus('m', 'mus'); bus('v', 'vox'); bus('s', 'sfx');
+  f.push('[vox]asplit[vx1][vx2]');
+  // The music steps back while anyone speaks.
+  f.push('[mus][vx2]sidechaincompress=threshold=0.02:ratio=8:attack=15:release=350:makeup=1[duck]');
+  f.push(`[duck][vx1][sfx]amix=inputs=3:normalize=0:dropout_transition=0,apad,atrim=0:${total.toFixed(3)}[mix]`);
+  const raw = out.replace(/\.wav$/, '-raw.wav');
+  ff([...args, '-filter_complex', f.join(';'), '-map', '[mix]', '-c:a', 'pcm_f32le', raw], 'mix');
+  // Loudness: measured, then brought to -14 LUFS integrated, true peak -1.5 dBTP.
+  const m = spawnSync('ffmpeg', ['-hide_banner', '-i', raw, '-af', 'loudnorm=I=-14:TP=-1.5:LRA=11:print_format=json', '-f', 'null', '-'], { encoding: 'utf8' }).stderr;
+  const j = JSON.parse(m.slice(m.lastIndexOf('{'), m.lastIndexOf('}') + 1));
+  ff(['-i', raw, '-af', `loudnorm=I=-14:TP=-1.5:LRA=11:measured_I=${j.input_i}:measured_TP=${j.input_tp}:measured_LRA=${j.input_lra}:measured_thresh=${j.input_thresh}:offset=${j.target_offset}:linear=true,aresample=48000`, '-c:a', 'pcm_s16le', out], 'loudnorm');
+  return out;
+}
+
+function measure(file) {
+  const r = spawnSync('ffmpeg', ['-hide_banner', '-nostats', '-i', file, '-af', 'ebur128=peak=true', '-f', 'null', '-'], { encoding: 'utf8' }).stderr;
+  const I = Number((r.match(/I:\s+(-?[\d.]+) LUFS/g) ?? []).pop()?.match(/-?[\d.]+/)[0]);
+  const tp = Number((r.match(/Peak:\s+(-?[\d.]+) dBFS/g) ?? []).pop()?.match(/-?[\d.]+/)[0]);
+  return { lufs: I, truePeak: tp };
+}
+
+function build(name, shots, sound, fmt, outFile) {
+  console.log(`cut ${name} (${fmt})`);
+  let t = 0;
+  const at = {};
+  const placed = shots.map((s) => { const p = { ...s, start: t }; if (!(s.id in at)) at[s.id] = t; t += Math.round(s.dur * FPS) / FPS; return p; });
+  const total = t;
+  const files = placed.map((s) => renderShot(s, fmt));
+  const list = path.join(RAW, `${name}-${fmt}-list.txt`);
+  fs.writeFileSync(list, files.map((x) => `file '${x.split(path.sep).join('/')}'`).join('\n'));
+  const video = path.join(RAW, `${name}-${fmt}-video.mp4`);
+  ff(['-f', 'concat', '-safe', '0', '-i', list, '-c', 'copy', video], 'concat');
+  const wav = mix(sound((id) => { if (!(id in at)) throw new Error(`no shot ${id}`); return at[id]; }), total, path.join(RAW, `${name}-${fmt}.wav`));
+  const W = fmt === 'h' ? 1920 : 1080, H = fmt === 'h' ? 1080 : 1920;
+  ff(['-i', video, '-i', wav, '-map', '0:v', '-map', '1:a', '-c:v', 'libx264', '-preset', 'slow', '-crf', fmt === 'h' ? '16' : '17', '-profile:v', 'high', '-level', '4.2',
+    '-pix_fmt', 'yuv420p', '-r', String(FPS), '-s', `${W}x${H}`, '-g', '120', '-movflags', '+faststart', '-c:a', 'aac', '-b:a', '320k', '-ar', '48000', '-t', total.toFixed(3), outFile], 'final');
+  const m = measure(outFile);
+  const size = fs.statSync(outFile).size;
+  console.log(`  ${outFile}: ${total.toFixed(2)} s, ${(size / 1048576).toFixed(1)} MB, ${m.lufs} LUFS, true peak ${m.truePeak} dBTP`);
+  return { name, file: outFile, total, size, ...m, shots: placed };
+}
+
+if (cmd === 'cut') {
+  const results = [];
+  const want2 = (k) => !want.size || want.has(k);
+  if (want2('full')) results.push(build('full', shotsFull(), soundFull, 'h', path.join(OUT, 'broodfall-trailer-90s.mp4')));
+  if (want2('30')) results.push(build('30', shots30(), sound30, 'h', path.join(OUT, 'broodfall-trailer-30s.mp4')));
+  if (want2('vertical')) results.push(build('vertical', shots30(), sound30, 'v', path.join(OUT, 'broodfall-trailer-vertical.mp4')));
+  const log = path.join(RAW, 'cuts.json');
+  const prev = fs.existsSync(log) ? JSON.parse(fs.readFileSync(log, 'utf8')) : {};
+  for (const r of results) prev[r.name] = r;
+  fs.writeFileSync(log, JSON.stringify(prev, null, 1));
+}
+
+// ------------------------------------------------------------------ SHEET: a frame from every shot
+if (cmd === 'sheet') {
+  const cuts = JSON.parse(fs.readFileSync(path.join(RAW, 'cuts.json'), 'utf8'));
+  const full = cuts.full;
+  const dir = path.join(RAW, 'sheet');
+  fs.mkdirSync(dir, { recursive: true });
+  const tiles = [];
+  full.shots.forEach((s, i) => {
+    const t = s.start + s.dur * (s.end ? 0.8 : 0.5);
+    const png = path.join(dir, `${String(i).padStart(2, '0')}.png`);
+    const label = `${String(i + 1).padStart(2, '0')}  ${Math.floor(s.start / 60)}:${(s.start % 60).toFixed(1).padStart(4, '0')}  ${s.id}`;
+    ff(['-ss', t.toFixed(3), '-i', full.file, '-frames:v', '1', '-vf', `scale=480:270,drawbox=y=ih-30:w=iw:h=30:color=black@0.7:t=fill,drawtext=fontfile='C\\:/Windows/Fonts/bahnschrift.ttf':text='${label}':x=10:y=h-24:fontsize=17:fontcolor=white`, png], `sheet ${i}`);
+    tiles.push(png);
+  });
+  const cols = 5, rows = Math.ceil(tiles.length / cols);
+  const inputs = tiles.flatMap((p) => ['-i', p]);
+  const layout = tiles.map((_, i) => `${(i % cols) * 480}_${Math.floor(i / cols) * 270}`).join('|');
+  ff([...inputs, '-filter_complex', `xstack=inputs=${tiles.length}:layout=${layout}:fill=black`, '-q:v', '3', path.join(OUT, 'contact-sheet.jpg')], 'sheet');
+  console.log(`  ${path.join(OUT, 'contact-sheet.jpg')} (${tiles.length} shots, ${cols}x${rows})`);
 }

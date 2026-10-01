@@ -457,11 +457,17 @@ screen, and a wait under 400 ms shows nothing (no flash).
 - **The LANDING FILM** (src/ui/landing.ts, another session): the run-start wait is the film once it is ready; until its
   file has arrived, cover the gap with `const h = showLoader('creep', { label: 'THE LANDING' })` and `h.hide()` when the
   film's first frame is up (or `watchBuffering(filmVideo, filmEl)` for stalls inside it).
-- **Wired:** the boot screen (#boot: the emblem loop + the creep behind it, the real file count; in the MARKUP and shown
+- **The SCAN loop is the headline** (Collins, Oct 1 2026, on seeing them: "the loading animations look INCREDIBLE — that
+  one with the alien thing being scanned"): it is the boot screen's main picture (first load, every deployment) and the
+  default for the long waits; its look (thin pale-cyan outline on a dark scan grid, a sweeping line) is the REFERENCE for
+  any further loader.
+- **Wired:** the boot screen (#boot: the scan loop big, the emblem loop in the logo, the creep dim behind it all, the
+  real file count; in the MARKUP, the scan's and the emblem's first paints embedded as data URIs, and shown
   by an inline script for a `?campaign=run` / `?autostart=1` page, so it moves before the game's code arrives), the pad
   clip still arriving (padOutro.ts), the report's pictures (main.ts), the news from the planet loading and every film
   shot buffering (newsreel.ts, intro.ts), the ship before its art and the planet are in (campaignUi.ts `artWait`),
-  YOKE's stage before her first clip (yokeAvatar.ts stand-in).
+  YOKE's stage before her first clip (yokeAvatar.ts stand-in), the organ stage opened before its pictures are in
+  (main.ts openUnder: its stills are fetched 1.5 s after the board is up; underground.ts untouched).
 - **Beat:** `node tools/shot-loading.mjs [first pad reel yoke organ calm fast]` (own dev server 5271; art/ and media/
   held back as a slow link) FAILS when a wait is on the screen over 400 ms without a moving loop; out:
   `notes/screens/2026-09-30/loading-*`.

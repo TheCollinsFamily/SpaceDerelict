@@ -594,7 +594,8 @@ function campaignDebrief(): void {
 /**
  * The organ stage's own pictures (the scan's tiles, the meteor, the dome, the skylines, the core, each organ's shape):
  * ~14 MB in all with their loops, so they are not held behind the boot screen; these stills are fetched once the board
- * is up, and if the stage is opened before they are in, a creep loop covers its grid until they are (never black cells).
+ * is up, and if the stage is opened before they are in, the scan loop (the ground scan's own look) covers its grid until
+ * they are (never black cells).
  */
 let underArtReady: Promise<unknown> | null = null;
 function underArt(): Promise<unknown> {
@@ -615,7 +616,7 @@ function underArt(): Promise<unknown> {
 function openUnder(): void {
   under.show();
   const grid = document.getElementById('under-right');
-  void withLoader(underArt(), 'creep', { host: grid ?? undefined, label: 'THE ORGAN STAGE', lines: ['Mapping the ground under the town.', 'Waking the organs.', 'Counting the cellars.'] });
+  void withLoader(underArt(), 'scan', { host: grid ?? undefined, label: 'THE ORGAN STAGE', lines: ['Mapping the ground under the town.', 'Waking the organs.', 'Counting the cellars.'] });
 }
 
 /** The report is up, its pictures still coming: a loop in their place meanwhile (shown only if it takes over 400 ms). */

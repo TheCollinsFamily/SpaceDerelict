@@ -1,14 +1,14 @@
 {
   "id": "territory:university",
   "model": "seegen:sd2-fast",
-  "seconds": 4.875,
+  "seconds": 4.292,
   "size": "864x496",
-  "bytes": 1194407,
+  "bytes": 1085859,
   "medianStep": 0.21,
-  "maxStep": 0.5,
+  "maxStep": 0.79,
   "seamBefore": 0.82,
-  "seamAfter": 0.83,
-  "maxDrift": 1.52,
-  "fixed": "cut 3 snapping frames; none",
+  "seamAfter": 0.62,
+  "maxDrift": 1.16,
+  "fixed": "cut 3 snapping frames; crossfade 0.6s",
   "tiles": "the still it started from | then 8 frames across the loop"
 }
