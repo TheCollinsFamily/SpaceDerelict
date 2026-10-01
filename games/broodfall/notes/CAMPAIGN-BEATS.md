@@ -223,6 +223,68 @@ build`; screenshots `notes/screens/2026-10-01/midpoint-*.jpg`).
 
 ---
 
+## THE ROACH KING: the other side's leader, from the third deployment (BUILT Oct 1 2026)
+
+Collins: "the core enemy leader is a patriotic upstanding and over the top character ... called the
+Roach King (you can have the country's flag be the Texas flag with an insect head instead of a star) ...
+I would not have him come in until a couple missions in though and would come from cut scenes."
+
+**Who he is.** President Duke Crawley, "the Roach King": a cockroach-morph royal spare who wrestled
+(that was his ring name), then broadcast from his room, then ran for President as a bit and won by the
+widest margin since the Unification. The first male President. He loves the Commonwealth, the Host and
+the flag, loudly and sincerely; he is not cruel, he is an idiot with a big heart, a gold machine gun and
+forty thousand antennae of "chat" he reads out loud. He runs the war from the gaming den of the Hive
+House. Full lore and his voice: `content/lore/roach-king.md`.
+
+**The flag.** The Commonwealth's flag, "the Lone Head": the Texas layout, a white roach head where the
+star would be (`public/media/roach/flag.webp`).
+
+**How you meet him: never.** He does not know you exist. Every scene of him is one of his addresses to
+the nation, caught off the Commonwealth's television band by the ship's survey array and rendered by
+YOKE (the INTERCEPTED card, her confidence band, the TV-band hiss under each line, her notes). It plays
+on the way back to the ship, after the deployment's news. At most one a deployment.
+
+**His addresses, in the order a campaign meets them** (each once; `content/roachKing.ts`):
+
+1. **An Address to the Nation** (after your 3rd deployment; always his first). Mission 1 is the crash,
+   mission 2 opens the desk and the three factions call; by the third the Host's regulars are in the
+   waves, which is when a head of state goes on the air. He introduces himself ("Sit down, sit down.
+   You are already sitting."), says chat thinks the Growth is a fungus ("Chat is WRONG"), sends in "the
+   big girls, with the guns", and ends it by firing the gold gun into the ceiling.
+2. **The President Calls Up the Home Levy** (3 territories held). On the Hive House steps, under the
+   flag: every sister with four arms and a pulse to her branch-hive. "I did not have training. I had
+   heart. And a folding chair." To the Crater Thing: "you are MID."
+3. **Operation Take It Back** (the colony's first telegraphed counter-attack). He named it himself; it
+   took four hours. "Bells in front, guns behind, me on the stream." The counter-attack you then defend
+   is his.
+4. **On your ally** (once you've seen two of its beats; once per faction, so if you switch at the
+   midpoint he gets round to your new friends too):
+   - *The Delegation:* he hates them. "Somebody cut a love letter to the Crater Thing into my wheat. A
+     mile high. The second comma is a BARN." "Peace is losing. Slower." "The wheat has a family."
+   - *The Faithful:* he goes on The Hour Is Near. Big fan. He did the reading: chapter one is a list of
+     cities, and he is pretty sure he is the Awaited One. (You are, meanwhile, building a different one
+     out of spare meat.)
+   - *The Institute:* the Director is his new adviser. "Plays League of Larvae. Bad at League of Larvae."
+     The expected-value table, read upside down, still said they win. The Director keeps asking about
+     an upload: "Buddy, I upload every night. Six hours."
+5. **The Last Stand** (your ally's finale opens; or 8 territories held if you have no ally). From the
+   back of a gilded war beetle at the front: "I am not hiding in a bunker. The bunker is full of my
+   merchandise." "Come and get some!" The finale board is his last stand.
+6. **The Hive House Stream** (after the finale: the campaign is over). Night, the den, a red glow under
+   the door. "Hold on, chat. Something is at the door. Be right back." Then the empty chair, his cape
+   over it, the chat still scrolling. Nobody comes back.
+
+Built: `content/roachKing.ts` (the addresses), `src/meta/roachKing.ts` (when), `src/ui/roachKing.ts` (the
+player), `tools/media/roachking.ts` (stills, spoken clips, bake). Tests `tests/roachKing.test.ts`; browser
+beat `node tools/shot-roachking.mjs`. Contact sheet `notes/screens/2026-10-01/roach-king-sheet.jpg`.
+
+**Open on him, for Collins:** his name (Duke Crawley) and the "first male President, a royal spare"
+reading; whether he should also appear ON the finale board (a boss unit) or stay cutscenes only, as now;
+and the reveal (PROPOSAL, not built): in the archive he gets a stream with a billion viewers who all
+agree with him, and is the only absorbed citizen who has not complained.
+
+---
+
 ## OPEN for Collins
 
 1. **Two more beats each for the Faithful and the Institute** (they have 3 against the

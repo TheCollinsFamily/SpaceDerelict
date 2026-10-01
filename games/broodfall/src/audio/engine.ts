@@ -286,7 +286,7 @@ export function routeMedia(el: HTMLMediaElement, bus: 'music' | 'voice'): boolea
 }
 
 /** The source signal under a translated line (content/translation.ts): what YOKE is rendering from. */
-export type SignalKind = 'delegation' | 'faithful' | 'institute' | 'voicebox';
+export type SignalKind = 'delegation' | 'faithful' | 'institute' | 'voicebox' | 'roach';
 /** How long the signal is heard alone before the rendered voice starts (ms). */
 export const SIGNAL_LEAD_MS = 280;
 
@@ -369,6 +369,16 @@ export function translateIn(el: HTMLMediaElement, kind: SignalKind): boolean {
       o.type = 'sine'; o.frequency.value = i < 2 ? 2900 : i < 5 ? 3100 : 3300;
       g.gain.setValueAtTime(0.32, at); g.gain.exponentialRampToValueAtTime(0.001, at + slot * 0.6);
       o.connect(g).connect(out); o.start(at); o.stop(at + slot * 0.7);
+    }
+  } else if (kind === 'roach') {
+    // Their television band, caught: the line-scan whine and a mains hum under a burst of snow (the Roach King's broadcasts).
+    const h = noise(end - t + 0.05); const hf = c.createBiquadFilter(); const hg = c.createGain();
+    hf.type = 'highpass'; hf.frequency.value = 2500; hg.gain.value = 0.3;
+    h.connect(hf).connect(hg).connect(out); h.start(t); h.stop(end);
+    for (const [f, g0, type] of [[15734, 0.05, 'sine'], [60, 0.25, 'square']] as const) {
+      const o = c.createOscillator(); const g = c.createGain();
+      o.type = type; o.frequency.value = f; g.gain.value = g0;
+      o.connect(g).connect(out); o.start(t); o.stop(end);
     }
   } else {
     // The voice box warming: a low buzz.

@@ -318,6 +318,11 @@ does it without a word. The game never comments on it; the pictures do.
 - **In practice:** the Great Houses. They own the newspapers, fund the parties, employ the
   voters, and marry each other. The President is a worker, always of a Great House, and swears
   on the Book (section 5).
+- **The President today (Collins, Oct 1 2026: the Roach King; details PROPOSAL):** President Duke
+  Crawley, "the Roach King", a royal spare turned wrestler turned broadcaster, the first male President,
+  elected by the widest margin since the Unification. He leads the Commonwealth and the Host through the
+  invasion, and the player knows him only from his broadcasts. Everything about him, and the flag (the
+  Lone Head: the Texas layout with a roach head for the star): `content/lore/roach-king.md`.
 - **The Great Queen** of House Amberline is head of nothing and mother of the nation, and nobody
   holds an office she has not blessed.
 - **Politics** runs on three quarrels that were old before the Visitor came:

@@ -76,7 +76,7 @@ export const ROACH_KING = {
  * The pictures his clips start from. `refs`: the earlier pictures it must match (the first is drawn from words;
  * every other one from it, so he is the same man in all of them). Prompts: tools/media/roachking.ts.
  */
-export const ROACH_STILLS = ['den', 'close', 'gun', 'rally', 'paper', 'studio', 'call', 'field', 'door', 'empty'] as const;
+export const ROACH_STILLS = ['den', 'close', 'gun', 'rally', 'paper', 'studio', 'call', 'field', 'fieldclose', 'door', 'empty'] as const;
 export type RoachStill = (typeof ROACH_STILLS)[number];
 
 export const ROACH_ADDRESSES: RoachAddress[] = [
@@ -97,7 +97,7 @@ export const ROACH_ADDRESSES: RoachAddress[] = [
     { id: 'rk-c3', from: 'gun', action: 'He jumps onto the desk with the gold machine gun and fires into the ceiling; cans and takeout boxes scatter.', line: 'We are taking it BACK!' },
   ] },
   { id: 'rk-delegation', when: 'ally', faction: 'delegation', title: 'THE PRESIDENT ON THE "FRIENDSHIP" PEOPLE', small: 'live from the Hive House', end: 'THE PRESIDENT REMINDS YOU: THE WHEAT HAS DONE NOTHING TO YOU', shots: [
-    { id: 'rk-del1', from: 'paper', action: 'He holds a newspaper up to the camera and shakes it, outraged.', line: 'Somebody wrote a love letter to the Crater Thing. In my wheat. With eleven thousand cards.' },
+    { id: 'rk-del1', from: 'paper', action: 'He holds a newspaper up to the camera and shakes it, outraged.', line: 'Somebody cut a love letter to the Crater Thing into my wheat. A mile high. The second comma is a BARN.' },
     { id: 'rk-del2', from: 'close', action: 'He rubs his face with two hands, then glares into the camera.', line: 'These Friendship people want peace. You know what peace is? Losing. Slower.' },
     { id: 'rk-del3', from: 'close', action: 'He points sternly at the camera like a disappointed coach.', line: 'Delegation. Put the cards down. The wheat has a family.' },
   ] },
@@ -113,7 +113,7 @@ export const ROACH_ADDRESSES: RoachAddress[] = [
   ] },
   { id: 'rk-stand', when: 'stand', title: 'THE LAST STAND', small: 'the President, live from the front', end: 'THE PRESIDENT IS AT THE GATES · SO IS THE THING', shots: [
     { id: 'rk-s1', from: 'field', action: 'On the back of the armoured war beetle he raises the gold machine gun, the flag cape blowing, troops roaring behind him.', line: 'This is it, sisters. The Thing is at the gates. So am I. I am also at the gates.' },
-    { id: 'rk-s2', from: 'field', action: 'He leans down toward the camera from the beetle, gruff and serious, smoke drifting past.', line: 'I am not hiding in a bunker. The bunker is full of my merchandise.' },
+    { id: 'rk-s2', from: 'fieldclose', action: 'He leans toward the camera from the beetle, gruff and serious, smoke drifting past.', line: 'I am not hiding in a bunker. The bunker is full of my merchandise.' },
     { id: 'rk-s3', from: 'field', action: 'He stands tall on the beetle, fires a long burst into the red sky, the troops surge forward past him.', line: 'Come and get some!' },
   ] },
   { id: 'rk-offline', when: 'offline', title: 'THE HIVE HOUSE STREAM', small: 'still live · viewers falling', end: 'THE BROADCAST HAS ENDED', shots: [

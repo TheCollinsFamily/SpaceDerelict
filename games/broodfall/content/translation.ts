@@ -17,7 +17,7 @@
 import type { FactionId } from './campaign';
 
 /** The channel a speaker reaches him on: each faction's own, and the Awaited One's voice box. */
-export type Channel = FactionId | 'voicebox';
+export type Channel = FactionId | 'voicebox' | 'roach';
 
 export interface ChannelDef {
   /** What she is rendering from, as her console prints it. */
@@ -33,6 +33,8 @@ export const CHANNELS: Record<Channel, ChannelDef> = {
   faithful: { source: 'STRIDULATION OVER AM · 41,880 STATIONS IN SYNC', glyphs: '⌇⌁∿≀⋮⁞⌇∿', confidence: [81, 92] },
   institute: { source: 'LASER, PULSE-CODED · REPEATING · RENDERED AS VIDEO', glyphs: '·•∙⋅◦∘•·', confidence: [95, 99] },
   voicebox: { source: 'VOICE BOX · YOUR OWN MANUFACTURE', glyphs: '░▒▓', confidence: [100, 100] },
+  // The Roach King (content/roachKing.ts): never speaking to him; his addresses to the nation, caught off their television band.
+  roach: { source: 'COMMONWEALTH TELEVISION, BROADCAST BAND · INTERCEPTED', glyphs: '▤▥▦▧▨▩◫◧◨', confidence: [86, 95] },
 };
 
 /** Who speaks on which channel (the speaker's name as content/campaign.ts writes it, its channel left out). */
@@ -41,6 +43,7 @@ export const SPEAKER_CHANNEL: Record<string, Channel> = {
   'The Voice': 'faithful',
   'The Director': 'institute',
   'The Awaited One': 'voicebox',
+  'The Roach King': 'roach',
 };
 
 /**
@@ -60,6 +63,12 @@ export const TRANSLATOR_NOTES: Array<{ match: string; note: string }> = [
   { match: 'you are going to LOVE League of Larvae', note: 'The real title is a pheromone. I chose a pun. I stand by it.' },
   { match: 'one sec, I\'m in a match', note: 'Rendered at his own speed, then slowed forty per cent so you can follow it. The beam carries his match audio too. I left it in.' },
   { match: 'Hello. I am the Awaited One.', note: 'No rendering needed. You wrote this one.' },
+  // The Roach King's addresses (content/roachKing.ts).
+  { match: 'Chat says it is just a fungus', note: '"Chat": his word for the forty thousand antennae that follow his broadcast. They have opinions. Most are wrong.' },
+  { match: 'you are MID', note: 'untranslatable: a grading term for a larva fed one meal short of a soldier. Rendered "mid". He meant it as an insult. It landed.' },
+  { match: 'My fellow sisters. Your President.', note: 'The voice is matched to his mandibles. The lip sync is mine. You are welcome.' },
+  { match: 'I upload every night. Six hours.', note: 'Rendered literally. He does not know what the upload is. He is about to.' },
+  { match: 'The wheat has a family.', note: 'It does not. I checked.' },
 ];
 
 /** FNV-1a, 32 bits: a line's confidence is the same every time it is shown. */

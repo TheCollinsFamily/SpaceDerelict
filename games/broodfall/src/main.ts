@@ -34,6 +34,7 @@ import { Rng } from './sim/rng';
 import { LoadingScreen, applyName, dressLogos, loadScreenArt, showArtNotice, showFailure, showSlowDrawingNotice } from './ui/screens';
 import { debriefPictures, type Outcome } from './ui/debrief';
 import { newsAfterDeployment } from './ui/newsreel';
+import { roachAfterDeployment } from './ui/roachKing';
 import { padOutroPlaying, playPadOutro, preloadPadOutro } from './ui/padOutro';
 import { shipLoop, withLoader } from './ui/loader';
 import { platePicture } from './render/platePreview';
@@ -583,8 +584,11 @@ function campaignDebrief(): void {
   const back = () => {
     history.replaceState(null, '', `${location.pathname}?campaign=ship`);
     document.getElementById('board-goals')!.classList.add('hidden');
-    // The planet's news of it first (src/ui/newsreel.ts): a newsreel or one of their papers, skippable.
-    void newsAfterDeployment(prev, state, debrief).catch(() => {}).then(() => ui.show({ greet: true }));
+    // The planet's news of it first (src/ui/newsreel.ts): a newsreel or one of their papers, skippable;
+    // then, from the third deployment, the Roach King's address when one is due (src/ui/roachKing.ts).
+    void newsAfterDeployment(prev, state, debrief).catch(() => {})
+      .then(() => roachAfterDeployment(state)).catch(() => {})
+      .then(() => ui.show({ greet: true }));
   };
   // The report waits for its pictures: a loop meanwhile (src/ui/loader.ts), never a still board.
   void withLoader(debriefPictures(runPictures(outcome, verdict,

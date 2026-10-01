@@ -530,6 +530,40 @@ would play at the start of any scenario? if not we should."
   (Esc) → their paper; C the papers, their victory, the break, the replay; D each route's ending film →
   its card → the reveal picture (`media-ending-film.mp4`, the Faithful's).
 
+## The Roach King: the enemy's leader, on their television (Oct 1 2026)
+
+Collins: the core enemy leader, "patriotic upstanding and over the top" (a wrestler-showman head of state
+crossed with a streamer), "called the Roach King"; the flag "the Texas flag with an insect head instead of
+a star"; "not ... until a couple missions in"; "from cut scenes". Lore, voice bible and his arc:
+`content/lore/roach-king.md`; the arc as a player meets it: `notes/CAMPAIGN-BEATS.md` "THE ROACH KING".
+
+- **Never met.** President Duke Crawley does not know the operator exists. Each scene is one of his addresses
+  to the nation, caught off their TV band and rendered by YOKE (channel `roach` in `content/translation.ts`:
+  the INTERCEPTED card's band, `translateIn(el, 'roach')` = a line-scan whine and mains hum under each line's
+  first beat, her notes on his words). It plays after a deployment's news (main.ts `back()`:
+  `newsAfterDeployment` → `roachAfterDeployment` → the ship). At most one a deployment.
+- **When** (`src/meta/roachKing.ts`, pure, tested): nothing before the 3rd deployment; `rk-address` first,
+  always; then most urgent first: `rk-offline` (campaign ended) > `rk-stand` (ally's finale open, or 8 held
+  with no ally) > `rk-counter` (first telegraphed counter-attack) > `rk-<faction>` (allied + two of its beats
+  seen; once per faction, so the midpoint switch gets the new ally's too) > `rk-draft` (3 held). Seen ids
+  in localStorage `broodfall-roach` (per campaign seed, like `broodfall-media`).
+- **The player** (`src/ui/roachKing.ts`, `roachKing.css`): `#newsreel.rk-broadcast` (the id the rest of the
+  game reads as "a film is up"), two video layers, each shot a clip WITH ITS OWN SOUND routed through the
+  voice bus; the LIVE bug, the flag in the corner, his name as a lower third on the first shot, his line set
+  in type (`lineHtml`, resolving from the band's glyphs), the cards over the flag on its pole. Click / Esc /
+  Enter / Space skips; Reduce motion stops the scan roll and the blink. Under automation only with
+  `broodfall-media-auto` = on. Beats: `window.__bfRoach.start(id)`, `.due(state, seen)`.
+- **Made** (`tools/media/roachking.ts`; `flag | stills | clips | check | bake | sheet`): the flag (gpt-image-2,
+  flat + on a pole); 12 stills drawn from one den still (every other still is an edit of it, so he is the same
+  man); 24 shots on `imagerouter:veo-3.1-lite-i2v` WITH SOUND: he speaks on camera, the same voice asked for
+  in every clip ("a pro-wrestling announcer with a thick Texas drawl"); `check` transcribes each clip against
+  its line (`notes/art-review/roach/speech.json`). Baked to `public/media/roach/` + `roach.json` (its OWN
+  manifest: this bake never touches `public/media/media.json`). Raw: `art-src-new/roach/` (NOT `art-src/`,
+  which was emptied on Oct 1 and is being recovered). Cost: about $0.62 a clip, $0.45 a still.
+- **Look at:** `notes/screens/2026-10-01/roach-king-sheet.jpg` (every shot, three frames),
+  `roach-king-address.mp4` (his first address in the game, with its sound), `notes/art-review/roach/`.
+- **Collins's:** the name; whether he also appears ON the finale board; the reveal line (PROPOSAL).
+
 ## Every wait shows a loop (Oct 1 2026) — notes/LOADING-AUDIT.md
 
 Collins: "we had a loading screen here without a looping animation (pad-lost.mp4) — that should never happen; the reason
