@@ -1,0 +1,14 @@
+{
+  "id": "debrief:won",
+  "model": "seegen:sd2-mini",
+  "seconds": 4.417,
+  "size": "1280x720",
+  "bytes": 1336945,
+  "medianStep": 0.29,
+  "maxStep": 0.84,
+  "seamBefore": 3.24,
+  "seamAfter": 0.36,
+  "maxDrift": 2.93,
+  "fixed": "crossfade 0.6s",
+  "tiles": "the still it started from | then 8 frames across the loop"
+}

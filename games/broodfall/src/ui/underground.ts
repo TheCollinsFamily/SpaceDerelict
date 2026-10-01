@@ -526,13 +526,15 @@ export class UndergroundScreen {
       }
       cells.push(`<div class="${cls}" style="${style}" data-cell="${i}"${organ ? ` data-oid="${organ.id}"` : ''}${loopAttr}>${inner}</div>`);
     }
-    // A zone organ's zone is always faintly on the scan: a soft pulsing ring round it.
+    // A zone organ's zone is always faintly on the scan: a soft pulsing ring round it. Not over another organ
+    // (Oct 1 2026): a ring round each of its cells cut the organ back into squares; hovering the zone organ still
+    // lights every cell of its zone, organs too.
     if (this.scan) {
       const w = u.w;
       for (const o of sim.organs) {
         if (ORGAN_BY_ID[o.organ].kind !== 'zone') continue;
         for (let i = 0; i < u.cells.length; i++) {
-          if (o.cells.includes(i)) continue;
+          if (o.cells.includes(i) || sim.organAt(i)) continue;
           if (o.cells.some((c) => Math.max(Math.abs((c % w) - (i % w)), Math.abs(Math.floor(c / w) - Math.floor(i / w))) <= 1)) {
             cells[i] = cells[i].replace('class="uc ', `class="uc zq `).replace('style="', `style="--zc:${GLOW[o.organ]};`);
           }

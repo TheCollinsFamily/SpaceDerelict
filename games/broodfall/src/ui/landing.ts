@@ -178,7 +178,7 @@ export function playLanding(film: LandingFilm, land: LandingArt, o: LandingOpts)
     raf = requestAnimationFrame(tick);
   };
   // Before its first frame: the loaders' cover (nothing shows for a wait under 400 ms).
-  cover = showLoader('creep', { label: 'THE LANDING' });
+  cover = showLoader('creep', { label: 'THE LANDING', host: el });
   v.addEventListener('playing', () => {
     cover?.hide();
     if (state.phase === 'loading') { state.phase = 'playing'; report(state); el.classList.add('rolling'); raf = requestAnimationFrame(tick); }

@@ -1,0 +1,35 @@
+/* The stills that come alive (src/ui/alive.ts, Oct 1 2026; notes/VIDEO-AUDIT.md). A loop takes its still's place and
+   box; these are only what a <video> needs that an <img> did not. */
+
+/* A faction scene's lobby card: the loop is cut 4:3 (the still is 3:2), so its box follows it rather than cropping it. */
+video.cp-scene-pic.alive { aspect-ratio: 4 / 3; background: #1a1208; }
+
+/* A landing site over the briefing: the same box and crop as its still (16:7 from 60% down). */
+video.cp-territory-pic.alive { background: #07090b; }
+
+/* The candidate's file photograph on the data pad. */
+video.cp-pad-pic.alive { background: #d9d6cf; }
+
+/* The report's lead: the loop over its still (the background), the shade and the type over the loop. */
+.dbf-lead-loop {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 40%;
+  z-index: 0; pointer-events: none;
+}
+.dbf-lead.has-pic::after {
+  content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.72) 0, rgba(0, 0, 0, 0.3) 70px, rgba(0, 0, 0, 0) 110px);
+}
+:is([data-hud="ship"] #debrief, #campaign.ship-art) .dbf-lead.has-pic::after {
+  background: linear-gradient(to top, rgba(3, 4, 5, 0.9) 0, rgba(3, 4, 5, 0.4) 80px, rgba(3, 4, 5, 0) 130px);
+}
+.dbf-lead.has-pic > .dbf-verdict, .dbf-lead.has-pic > .dbf-caption { position: relative; z-index: 2; }
+.dbf-lead.has-pic::before { z-index: 2; }
+
+/* The Gene Bay's organ cards: each organ's scan loop (the organ stage's strip, under.loops in the manifest) stepped
+   in CSS; the still when the strip is not there or under Reduce motion (settings.css stops every animation). */
+.cp-organ-pic.cp-organ-loop {
+  display: inline-block; flex: 0 0 auto; background-repeat: no-repeat; background-size: calc(var(--n) * 100%) 100%;
+  animation: cp-organ-strip var(--d) steps(var(--n), jump-none) infinite var(--dir, normal);
+}
+@keyframes cp-organ-strip { from { background-position: 0% 0; } to { background-position: 100% 0; } }
+@media (prefers-reduced-motion: reduce) { .cp-organ-pic.cp-organ-loop { animation: none; } }

@@ -64,3 +64,7 @@
    it is laid on the dark it is shown on, so its square edge fades out (the emblem), or it is added as light (YOKE). */
 .bf-loop-emblem > img.bf-loop-mini { -webkit-mask-image: radial-gradient(circle at 50% 50%, #000 52%, transparent 71%); mask-image: radial-gradient(circle at 50% 50%, #000 52%, transparent 71%); }
 .bf-loop-yoke > img.bf-loop-mini, .bf-loop-dance > img.bf-loop-mini { mix-blend-mode: screen; }
+
+/* The ship before its art (src/ui/campaignUi.ts artWait): dark, not the bare console, until the loader comes in. */
+#campaign.awaiting-art { background: #040506; }
+#campaign.awaiting-art > * { visibility: hidden; }

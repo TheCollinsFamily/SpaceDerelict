@@ -69,7 +69,7 @@ export const SFX = [
   { id: 'die-boss', for: 'a royal (royal, consort, matron) dies', seconds: 8, cut: 'one',
     prompt: FOLEY + 'A gigantic insect queen dies: a long, low, shuddering screech of pain, then a massive crashing collapse of chitin and a final rattle.' },
   // --- the landing film (src/ui/landing.ts): the asset falls on the city before a deployment ---
-  { id: 'land-roar', for: 'landing film: the meteor tears down through the sky (about 3 s before the strike)', seconds: 6, cut: 'one',
+  { id: 'land-roar', for: 'landing film: the meteor tears down through the sky (about 3 s before the strike)', seconds: 6, cut: 'one', maxSeconds: 3.4, fadeOut: 0.35,
     prompt: FOLEY + 'A huge burning meteor tears down through the sky toward the listener: a deep rumbling roar of fire and rushing wind that swells louder and louder for three seconds, then stops dead.' },
   { id: 'land-impact', for: 'landing film: the meteor strikes the city', seconds: 8, cut: 'one',
     prompt: FOLEY + 'A meteor strikes the ground in a town: one enormous deep booming explosion and a shock wave, then rubble, glass and debris raining down and a long low rumble dying away.' },

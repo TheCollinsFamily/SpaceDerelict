@@ -43,7 +43,7 @@ const LOCK = 'Camera completely locked: no zoom, no pan, no cuts. Nothing appear
   'ends exactly on the first picture again. No text appears anywhere.';
 
 export const LOADERS = [
-  { id: 'emblem', from: path.join(SRC, 'screens', 'emblem.png'), aspect: '1:1', res: '720p', seconds: 5, key: true, size: 512, mini: 168, miniBg: '0x0b0807',
+  { id: 'emblem', from: path.join(SRC, 'screens', 'emblem.png'), aspect: '1:1', res: '720p', seconds: 5, key: true, size: 512, mini: 168, miniBg: '0x0b0807', micro: 96,
     clip: 'A painted emblem comes alive on a flat pure green background. The living meteor stays in place and keeps its ' +
       'heading: its tail of fire streams and flickers, the hot orange glow inside its split pulses brighter and dimmer like ' +
       'a slow heartbeat, its few loose red tendrils sway. The ring of twisted red tendrils around it slowly writhes and ' +
@@ -141,7 +141,7 @@ function trimSnap(frames) {
 }
 
 /** Encode RGBA frames: webm (VP8, alpha kept when `alpha`), and an animated WebP at `mini` px wide (and a slow one). */
-function encode(id, frames, { alpha, mini, size, q = 45, miniBg = '0x000000' }) {
+function encode(id, frames, { alpha, mini, size, q = 45, miniBg = '0x000000', micro = 0 }) {
   fs.mkdirSync(OUT, { recursive: true });
   const { w, h } = frames[0];
   const buf = Buffer.concat(frames.map((f) => f.data));
@@ -154,6 +154,14 @@ function encode(id, frames, { alpha, mini, size, q = 45, miniBg = '0x000000' }) 
   run(['-vf', `scale=${sw}:${sh}:flags=lanczos`, '-c:v', 'libvpx', '-pix_fmt', alpha ? 'yuva420p' : 'yuv420p', ...(alpha ? ['-auto-alt-ref', '0'] : []),
     '-b:v', alpha ? '600k' : '500k', '-crf', '16', '-deadline', 'good', '-an', path.join(OUT, `${id}.webm`)], 'webm');
   const mh = Math.round((h * mini) / w / 2) * 2;
+  // The emblem's MICRO first paint (~30 KB, 4 fps): embedded in index.html as a data URI (embedMicro), so the boot
+  // screen moves from the very first paint of the page, before any file has arrived.
+  if (micro) {
+    const uh = Math.round((h * micro) / w / 2) * 2;
+    const flatU = alpha ? ['-filter_complex', `color=c=${miniBg}:s=${w}x${h}:r=${FPS}[bg];[bg][0:v]overlay=shortest=1,fps=4,scale=${micro}:${uh}:flags=lanczos,format=yuv420p`]
+      : ['-vf', `fps=4,scale=${micro}:${uh}:flags=lanczos,format=yuv420p`];
+    run([...flatU, '-c:v', 'libwebp_anim', '-lossless', '0', '-q:v', '30', '-compression_level', '6', '-loop', '0', path.join(OUT, `${id}-micro.webp`)], 'micro');
+  }
   // The first paint: small, 12 fps, lossy; it plays until the full loop has a frame (or for good, if that never comes).
   // The first paint: 6 fps, lossy, small (~100-150 KB), so that the loader is never the thing still loading. WebP keeps
   // its alpha LOSSLESS (five times the bytes), so a keyed loop's first paint is laid on the dark it is shown on
@@ -190,7 +198,7 @@ function bake(l) {
     frames = [...frames, ...frames.slice(1, -1).reverse()];
     mode = 'pingpong';
   }
-  encode(l.id, frames, { alpha: !!l.key, mini: l.mini, size: l.size, miniBg: l.miniBg });
+  encode(l.id, frames, { alpha: !!l.key, mini: l.mini, size: l.size, miniBg: l.miniBg, micro: l.micro });
   console.log(`[loaders] ${l.id}: ${frames.length} frames, ${mode} (seam ${seam.toFixed(2)}, step ${step.toFixed(2)})`);
   return { video: `loaders/${l.id}.webm`, mini: `loaders/${l.id}-mini.webp`, slow: `loaders/${l.id}-slow.webp`, alpha: !!l.key, mode, seconds: +(frames.length / FPS).toFixed(2) };
 }
@@ -202,6 +210,19 @@ function bakeYoke() {
   encode('yoke', frames, { alpha: true, mini: 200, size: 640 });
   fs.rmSync(path.join(OUT, 'yoke.webm'), { force: true }); // the full one is her own file
   return { video: 'ship/yoke/thinking.webm', mini: 'loaders/yoke-mini.webp', slow: 'loaders/yoke-slow.webp', alpha: true, mode: 'her own', seconds: +(frames.length / FPS).toFixed(2) };
+}
+
+/** index.html carries emblem-micro.webp as a data URI on the boot screen's emblem (`data-micro="emblem"`). */
+function embedMicro() {
+  const file = path.join(OUT, 'emblem-micro.webp');
+  const html = path.join(ART, '..', '..', 'index.html');
+  if (!fs.existsSync(file)) return;
+  const uri = `data:image/webp;base64,${fs.readFileSync(file).toString('base64')}`;
+  const before = fs.readFileSync(html, 'utf8');
+  const after = before.replace(/(<img class="bf-loop-mini" data-micro="emblem" alt="" src=")[^"]*(")/, (m, a, b) => `${a}${uri}${b}`);
+  if (after === before && !before.includes(uri)) { console.warn('[loaders] index.html has no data-micro="emblem" image to fill'); return; }
+  fs.writeFileSync(html, after);
+  console.log(`[loaders] index.html: the emblem's micro loop embedded (${(uri.length / 1024).toFixed(0)} KB of text)`);
 }
 
 async function main() {
@@ -223,6 +244,7 @@ async function main() {
   for (const l of items) { const r = bake(l); if (r) json.loops[l.id] = r; }
   if (!ids.length || ids.includes('yoke')) { const r = bakeYoke(); if (r) json.loops.yoke = r; }
   fs.writeFileSync(jsonFile, `${JSON.stringify(json, null, 2)}\n`);
+  if (!ids.length || ids.includes('emblem')) embedMicro();
   for (const f of fs.readdirSync(OUT)) console.log(`  ${f}  ${(fs.statSync(path.join(OUT, f)).size / 1024).toFixed(0)} KB`);
 }
 

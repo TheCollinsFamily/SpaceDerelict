@@ -1,9 +1,9 @@
 {
   "id": "suburb",
   "seconds": 8.042,
-  "fallAt": 0.8,
+  "fallAt": 0.717,
   "strikeAt": 3.917,
-  "endVsBoard": 2.28,
+  "endVsBoard": 0.94,
   "core": {
     "x": 474,
     "y": 717

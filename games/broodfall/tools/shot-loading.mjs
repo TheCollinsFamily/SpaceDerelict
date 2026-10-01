@@ -111,7 +111,7 @@ const WATCH = () => {
     }
     const loaderUp = [...document.querySelectorAll('.bf-loader')].some(vis);
     const camp = document.getElementById('campaign');
-    if (vis(camp) && !camp.classList.contains('ship-art') && !loaderUp) bad.push('the ship drawn bare, no loader over it');
+    if (vis(camp) && !camp.classList.contains('ship-art') && !camp.classList.contains('awaiting-art') && !loaderUp) bad.push('the ship drawn bare, no loader over it');
     for (const st of document.querySelectorAll('.cp-yoke-live')) {
       if (!vis(st)) continue;
       const on = st.querySelector('video.on');
@@ -129,17 +129,23 @@ const WATCH = () => {
 };
 
 /** Fails when a bad state lasted over 400 ms (the threshold under which a wait shows nothing). */
+/** The watcher's samples of a page about to be left (a navigation starts a new page, and a new watch). */
+let earlier = [];
+async function harvest(page) { earlier.push(...(await page.evaluate(() => window.__bfWatch ?? []).catch(() => [])), { t: -1, bad: [], seen: [] }); }
+
 async function verdict(page, name) {
-  const log = await page.evaluate(() => window.__bfWatch ?? []);
+  const log = [...earlier, ...(await page.evaluate(() => window.__bfWatch ?? []))];
+  earlier = [];
   const runs = {};
   const worst = {};
+  const at = {};
   for (const s of log) {
-    for (const b of s.bad) { runs[b] = (runs[b] ?? 0) + 1; worst[b] = Math.max(worst[b] ?? 0, runs[b]); }
+    for (const b of s.bad) { runs[b] = (runs[b] ?? 0) + 1; if (runs[b] > (worst[b] ?? 0)) { worst[b] = runs[b]; at[b] = s.t; } }
     for (const k of Object.keys(runs)) if (!s.bad.includes(k)) runs[k] = 0;
   }
   const over = Object.entries(worst).filter(([, n]) => n * 100 > 400);
   const kinds = [...new Set(log.flatMap((s) => s.seen))];
-  check(!over.length, `${name}: every wait on the screen had a moving loop (waits seen: ${kinds.join(', ') || 'none'})${over.length ? ` — ${over.map(([b, n]) => `${b} for ${n * 100} ms`).join('; ')}` : ''}`);
+  check(!over.length, `${name}: every wait on the screen had a moving loop (waits seen: ${kinds.join(', ') || 'none'})${over.length ? ` — ${over.map(([b, n]) => `${b} for ${n * 100} ms (ending at ${at[b]} ms into its page)`).join('; ')}` : ''}`);
   return kinds;
 }
 
@@ -147,9 +153,14 @@ async function verdict(page, name) {
 async function moves(page, selector, name) {
   const el = page.locator(selector).first();
   if (!(await el.count())) { check(false, `${name}: ${selector} is on the screen`); return; }
-  const a = await el.screenshot();
+  // The page's own pixels in the loop's box (an element screenshot waits for it to stop moving, which a loop never does).
+  const box = await el.boundingBox({ timeout: 1500 }).catch(() => null);
+  // Gone already: the wait ended before it could be measured (the watcher still judged it while it was up).
+  if (!box) { console.log(`  note  ${name}: the wait ended before its loop could be measured`); return; }
+  const clip = { x: Math.max(0, box.x), y: Math.max(0, box.y), width: Math.max(4, Math.min(box.width, 1280 - box.x)), height: Math.max(4, Math.min(box.height, 720 - box.y)) };
+  const a = await page.screenshot({ clip });
   await page.waitForTimeout(300);
-  const b = await el.screenshot();
+  const b = await page.screenshot({ clip });
   check(!a.equals(b), `${name}: the loop (${selector}) moves (two pictures 300 ms apart differ)`);
 }
 
@@ -209,6 +220,7 @@ try {
     const { context, page } = await freshPage(browser, { pin: 'dance' });
     await page.goto(URL0, { waitUntil: 'load', timeout: 300000 });
     await page.waitForTimeout(1200);
+    await harvest(page);
     await Promise.all([page.waitForURL(/campaign=run/), page.locator('#menu-new').click()]);
     await page.waitForTimeout(1200);
     await shot(page, 'pad-1-mission-loading');
@@ -232,6 +244,7 @@ try {
     await page.waitForTimeout(4000);
     const deploy = page.locator('[data-act="deploy-assigned"], [data-act="deploy"]:not([disabled])').first();
     if (await deploy.count()) {
+      await harvest(page);
       await Promise.all([page.waitForURL(/campaign=run/, { timeout: 30000 }), deploy.click()]);
       await page.waitForTimeout(700);
       await shot(page, 'pad-5-next-deployment-loading');

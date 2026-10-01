@@ -618,6 +618,22 @@
    "seconds": [
     8.007
    ]
+  },
+  "land-roar": {
+   "files": [
+    "audio/land-roar.ogg"
+   ],
+   "seconds": [
+    3.406
+   ]
+  },
+  "land-impact": {
+   "files": [
+    "audio/land-impact.ogg"
+   ],
+   "seconds": [
+    8.007
+   ]
   }
  },
  "voice": {

@@ -19,6 +19,8 @@ import { goalText, measure, type RunReport } from './meta/goals';
 import { clearCampaign, clearPending, forgetEverything, introSeen, loadCampaign, loadPending, markIntroSeen, saveCampaign, savePending, veteran } from './meta/storage';
 import { FIRST_MISSION, isFirstMission, launchKind, type Launch } from './meta/onboarding';
 import { loadIntroArt, playIntro } from './ui/intro';
+import { loadLandingArt, playLanding, type LandingBoard } from './ui/landing';
+import { landingDecision, landingSeen, markLandingSeen, type LandingArt, type LandingFilm } from './meta/landing';
 import { ConsoleMenu } from './ui/menu';
 import { addRunButton, installEdgeScroll, markSpeed, openSettings, settingsOpen } from './ui/settings';
 import { turnOf } from './meta/settings';
@@ -648,10 +650,8 @@ function setupMenu(): void {
       return;
     }
     menuEl.classList.add('hidden');
-    started = true;
-    // Clicked before the board's art has arrived: the deployment waits behind the loading screen.
-    if (!bootDone) loading.show('THE DEPLOYMENT');
-    else showArtNotice(artFailed);
+    // The landing film first (src/ui/landing.ts); then the run, behind the loading screen if the art is still coming.
+    void landThenStart();
   });
   if (AUTOSTART) menuEl.classList.add('hidden');
   if (CAMPAIGN === 'ship') openShip();
@@ -1028,12 +1028,64 @@ let musicScene: MusicScene = 'silent';
 function musicTick(): void {
   const shown = (el: HTMLElement | null) => !!el && !el.classList.contains('hidden');
   musicScene = sceneOf({
-    film: !!document.getElementById('intro') || !!document.getElementById('newsreel'),
+    film: !!document.getElementById('intro') || !!document.getElementById('newsreel') || !!document.getElementById('landing'),
     menu: shown(menuEl),
     ship: shown(shipEl) || (!!campaignUi && shown(document.getElementById('campaign'))),
     started, organ: under.open, outcome: sim.outcome, siege: sim.phase === 'siege', enemies: sim.enemies.length,
   }, musicScene);
   setScene(musicScene);
+}
+
+// ---------- the landing film (src/ui/landing.ts, src/meta/landing.ts) ----------
+
+/** Which landing film plays before this run, if any (and why not, in window.__bfLandingWhy for the beats). */
+async function landingFilmFor(afterOpening: boolean): Promise<{ film: LandingFilm; art: LandingArt } | null> {
+  const q = params.get('landing');
+  let forced = q === '1';
+  try { forced ||= localStorage.getItem('broodfall-landing') === 'on'; } catch { /* private mode */ }
+  const automated = typeof navigator !== 'undefined' && !!navigator.webdriver;
+  const note = (why: string) => { (window as unknown as { __bfLandingWhy?: string }).__bfLandingWhy = why; };
+  // The cheap answers first: a beat (automation) is not held up by a fetch.
+  if (q === '0') { note('asked-off'); return null; }
+  if (afterOpening) { note('after-opening'); return null; }
+  if (automated && !forced) { note('automation'); return null; }
+  const [manifest, art] = await Promise.all([loadManifest(), loadLandingArt()]);
+  const set = manifest ? pickBiome(manifest, { biome: params.get('biome'), territory, seed: SEED }) : null;
+  const s = loadSettings();
+  const why = landingDecision({ mode: s.landingFilms, set, seen: landingSeen(), hasFilm: !!(set && art?.films[set]),
+    afterOpening, automated, forced, off: false });
+  note(why);
+  return why === 'play' && art && set ? { film: art.films[set], art } : null;
+}
+
+/** The board as the landing film hands over to it: the canvas on the screen, the live meteor on it; null until drawn. */
+function landingBoard(): LandingBoard | null {
+  if (!bootDone || !renderer.app?.canvas) return null;
+  const c = renderer.app.canvas.getBoundingClientRect();
+  if (c.width < 2) return null;
+  const p = renderer instanceof IsoRenderer ? renderer.worldToScreen(sim.core.x, sim.core.y) : null;
+  return { canvas: { left: c.left, top: c.top, width: c.width, height: c.height }, core: p ? { x: p.x, y: p.y } : null };
+}
+
+let landing = false;
+/**
+ * A deployment begins: the tile set's landing film (it covers the board's loading), and the run's clock starts once
+ * the film is over AND the board is drawn. With no film: at once, behind the loading screen as before.
+ */
+async function landThenStart(afterOpening = false): Promise<void> {
+  if (landing) return;
+  landing = true;
+  started = false;
+  const pick = await landingFilmFor(afterOpening).catch(() => null);
+  if (pick) {
+    const s = loadSettings();
+    await playLanding(pick.film, pick.art, { board: landingBoard, reduceMotion: s.reduceMotion, reduceFlashes: s.reduceFlashes }).done;
+    markLandingSeen(pick.film.set);
+  }
+  landing = false;
+  started = true;
+  if (!bootDone) loading.show('THE DEPLOYMENT');
+  else showArtNotice(artFailed);
 }
 
 async function boot(): Promise<void> {
@@ -1051,15 +1103,18 @@ async function boot(): Promise<void> {
   under.plain = FIRST;
   document.body.classList.toggle('first-mission', FIRST);
   // A deployment started from the address (a campaign run, a redeploy) waits behind the loading screen.
-  if (started && CAMPAIGN !== 'ship') loading.show('THE DEPLOYMENT', { cover: true });
+  if (started && CAMPAIGN !== 'ship') {
+    loading.show('THE DEPLOYMENT', { cover: true });
+    // The tile set's landing film over it (src/ui/landing.ts); the run's clock waits for the film and the board.
+    void landThenStart();
+  }
   // The opening cinematic, in front of everything; the board loads behind it.
   if (PLAY_INTRO) {
     void loadIntroArt().then((art) => playIntro(art).done).then(() => {
       markIntroSeen();
       if (!AUTOSTART) return;
-      started = true;
-      if (!bootDone) loading.show('THE DEPLOYMENT');
-      else showArtNotice(artFailed);
+      // Mission 1 after the opening film: the film ended at the crash site, it is this run's landing.
+      void landThenStart(true);
     });
   }
   // The emblem around the name; the menu's own background is the viewport's loop (src/ui/menu.ts).

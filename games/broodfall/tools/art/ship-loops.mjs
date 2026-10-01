@@ -93,10 +93,34 @@ export const ROOMS = [
       'very slowly far below, its red veins and orange points of burning cities pulsing faintly; the thin line of white ' +
       'light along the ceiling hums very faintly. Nothing else moves; no person. Camera completely locked: no zoom, no pan, ' +
       'no cuts. The clip ends exactly on the first picture again. No text appears anywhere.' },
+  // Oct 1 2026 (notes/VIDEO-AUDIT.md): the Empire Directives and the Notebook borrowed the Board's and the Locker's
+  // loops; each is its own room now. The still is a NEW room drawn from the borrowed one (its style, light, darkness).
+  { id: 'orders', from: 'room-board', crop: 40,
+    still: 'Draw a different room of the same starship as the first reference picture, in exactly its style: the same ' +
+      'black panelled walls, thin cold white light strips, darkness and photoreal look of a serious hard science-fiction ' +
+      'film, 16:9. This is the Office of Empire Directives: a narrow formal room. In the far wall a slim steel slot ' +
+      'from which a single blank pale sheet hangs half out; beside it a plain steel tray with a neat stack of blank ' +
+      'sheets; a small square indicator light on the slot; a tall narrow black lectern in the middle of the floor. ' +
+      `${HERO} stands at the lectern, seen from behind, reading a blank sheet held in both hands, so that we never see ` +
+      `his face. ${NONE}`,
+    clip: 'A narrow formal office aboard a starship. The small indicator light on the wall slot blinks slowly; the blank ' +
+      'sheet hanging from the slot stirs very slightly in the air from a vent; the thin light strips hum and flicker very ' +
+      `faintly. The man stands at the lectern reading, breathing, tilting the sheet a little. ${LOCK}` },
+  { id: 'hobby', from: 'room-locker', crop: 40, refs: ['hobby'],
+    still: 'Draw a different corner of the same starship as the first reference picture, in exactly its style: the same ' +
+      'black panelled walls, thin cold white light strips, darkness and photoreal look of a serious hard science-fiction ' +
+      'film, 16:9. His own small corner at night: a narrow fold-down desk against the wall, a small desk lamp giving the ' +
+      'only warm light, a thin pad on the desk glowing a soft holographic blue with a few loose pale blue pages of simple ' +
+      'doodles projected just above it, like the third reference picture (drawings of beetles, a cage, tally marks; no ' +
+      `writing), a shelf of small specimen jars above. ${HERO} sits on a plain stool at the desk, seen from behind, ` +
+      `leaning over the pad, drawing with his stylus, so that we never see his face. ${NONE}`,
+    clip: 'His small corner of a starship at night. The pale blue projected pages over the desk shimmer and drift very ' +
+      'slightly; the small desk lamp glows warmly; the jars on the shelf glint; the light strips hum faintly. The man ' +
+      `bends over the pad, drawing with small careful movements of his stylus hand, breathing. ${LOCK}` },
 ];
 
 const SOURCE = (r) => (r.from === 'quarters' ? path.join(SRC, 'intro', 'pictures', 'quarters.png') : path.join(SRC, 'ship', `${r.from}.png`));
-const REFS = { menu: path.join(SRC, 'intro', 'menu.png') };
+const REFS = { menu: path.join(SRC, 'intro', 'menu.png'), hobby: path.join(CONCEPTS, 'r4-hobby-interface.png') };
 const raw = (id, what) => path.join(DIR, `${id}${what}`);
 
 /** The approved still cut to 16:9 (1536x864 from `crop` px down): what the edit (or, for an empty room, the clip) starts from. */

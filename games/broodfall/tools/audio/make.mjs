@@ -106,10 +106,10 @@ function samplePeak(x, start, end) {
 }
 
 /** `peak`: its loudest sample now; the gain never lifts it past -3 dBFS (the codec's overshoot stays under -1 dBTP). */
-function cutSfx(src, start, end, rms, target, dest, peak = -99) {
+function cutSfx(src, start, end, rms, target, dest, peak = -99, fade = 0) {
   const gain = Math.max(-12, Math.min(30, target - rms, -3 - peak));
   const dur = end - start;
-  const fo = Math.min(0.08, dur * 0.3);
+  const fo = fade > 0 ? Math.min(fade, dur * 0.5) : Math.min(0.08, dur * 0.3);
   ff(['-ss', start.toFixed(3), '-t', dur.toFixed(3), '-i', src, '-vn', '-ac', '1', '-ar', String(SR),
     '-af', `highpass=f=35,volume=${gain.toFixed(2)}dB,alimiter=limit=0.79:level=false,afade=t=in:d=0.004,afade=t=out:st=${(dur - fo).toFixed(3)}:d=${fo.toFixed(3)}`,
     '-c:a', 'libopus', '-b:a', '64k', dest], dest);
@@ -259,11 +259,12 @@ async function bake() {
     if (s.cut === 'one') {
       if (!list.length) { console.warn(`[bake] ${s.id}: silent`); continue; }
       const start = list[0].start;
-      const end = Math.min(duration(src), list[list.length - 1].end + 0.25);
+      // `maxSeconds`: only the first of the take (faded out over `fadeOut`), e.g. the landing film's roar ends at the strike.
+      const end = Math.min(duration(src), list[list.length - 1].end + 0.25, s.maxSeconds ? start + s.maxSeconds : Infinity);
       let acc = 0; let n = 0;
       for (const e of list) { acc += 10 ** (e.rms / 10) * (e.end - e.start); n += e.end - e.start; }
       const dest = path.join(OUT, `${s.id}.ogg`);
-      cutSfx(src, start, end, db(Math.sqrt(acc / Math.max(1e-6, n))), TARGET, dest, samplePeak(x, start, end));
+      cutSfx(src, start, end, db(Math.sqrt(acc / Math.max(1e-6, n))), TARGET, dest, samplePeak(x, start, end), s.fadeOut ?? 0);
       files.push(`audio/${s.id}.ogg`); secs.push(+duration(dest).toFixed(3));
     } else {
       // the loudest sounds of the take (a quiet echo of one is not a variant), in the order heard

@@ -264,11 +264,17 @@ function bakeFilm(id) {
   const o = CUT.orbit, f = CUT.fall, l = CUT.land, D = CUT.dissolve;
   const oLen = o.to - o.from;
   const fLen = (f.to - f.from) / f.speed;
-  ffmpeg(['-i', orbit, '-i', fall, '-i', land, '-filter_complex',
+  const lLen = (duration(land) - 1 / 30) / l.speed;
+  // The model comes NEAR its end frame but not always onto it (the Deep Hive's creep came out as tendrils): the board's
+  // own picture is faded in over the strike's last `settle` seconds, so every film ends exactly on the board.
+  const settle = 0.6;
+  ffmpeg(['-i', orbit, '-i', fall, '-i', land, '-loop', '1', '-i', band(id), '-filter_complex',
     `[0:v]trim=start=${o.from}:end=${o.to},setpts=PTS-STARTPTS,${S}[o];` +
     `[1:v]trim=start=${f.from}:end=${f.to},setpts=(PTS-STARTPTS)/${f.speed},${S}[f];` +
     // The strike's first frame is the uploaded still (it can flash): the game's own flash covers the cut.
-    `[2:v]trim=start_frame=1,setpts=(PTS-STARTPTS)/${l.speed},${S}[l];` +
+    `[2:v]trim=start_frame=1,setpts=(PTS-STARTPTS)/${l.speed},${S}[l0];` +
+    `[3:v]trim=end=${lLen.toFixed(3)},setpts=PTS-STARTPTS,${S},format=yuva420p,fade=t=in:st=${(lLen - settle).toFixed(3)}:d=${settle}:alpha=1[b];` +
+    `[l0][b]overlay=shortest=1,format=yuv420p[l];` +
     `[o][f]xfade=transition=fade:duration=${D}:offset=${(oLen - D).toFixed(3)}[of];[of][l]concat=n=2:v=1[v]`,
   '-map', '[v]', ...ENC, out], `${id} film`);
   const seconds = duration(out);
@@ -291,7 +297,7 @@ function bakeFilm(id) {
   ffmpeg([...tiles.flatMap((t) => ['-i', t]), '-filter_complex', '[0][1][2]hstack=3[a];[3][4][5]hstack=3[b];[a][b]vstack=2[v]', '-map', '[v]', '-q:v', '4', path.join(REV, `${id}.jpg`)], `${id} review`);
   const endVsBoard = picDiff(endPng, band(id));
   const core = JSON.parse(fs.readFileSync(raw(`board-${id}.json`), 'utf8')).core;
-  const report = { id, seconds, fallAt: 0.8, strikeAt, endVsBoard, core, models: MODEL, cut: CUT };
+  const report = { id, seconds, fallAt: +Math.max(0.3, strikeAt - 3.2).toFixed(3), strikeAt, endVsBoard, core, models: MODEL, cut: CUT };
   fs.writeFileSync(path.join(REV, `${id}.json`), JSON.stringify(report, null, 2) + '\n');
   console.log(`[landing] baked ${id}: ${seconds}s, strike at ${strikeAt}s, last frame vs board ${endVsBoard}`);
   return report;

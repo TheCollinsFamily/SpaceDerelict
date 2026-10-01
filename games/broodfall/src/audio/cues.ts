@@ -32,6 +32,8 @@ export const SFX_RULES: Record<string, SfxRule> = {
   // the insects dying
   'die-bug': R(0.42, 0.06, 4, 2), 'die-soldier': R(0.5, 0.1, 3, 1.5), 'die-flier': R(0.5, 0.15, 2),
   'die-boss': R(0.95, 2, 1, 0), 'boss-roar': R(1, 3, 1, 0),
+  // the landing film (src/ui/landing.ts)
+  'land-roar': R(0.85, 2, 1, 0), 'land-impact': R(1, 2, 1, 0),
   // the body
   'creep-spread': R(0.5, 0.2, 2), 'creep-pulse': R(0.5, 0.4, 1, 0.5), 'limb-grow': R(0.7, 0.12, 2),
   'limb-wither': R(0.6, 0.25, 2), 'limb-lost': R(0.65, 0.2, 2), 'cannibalize': R(0.8, 0.5, 1, 0.5),

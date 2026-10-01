@@ -623,14 +623,14 @@ body.in-ship #topbar, body.in-ship #botbar { visibility: hidden; }
 #under.scan .uc .tag.core { display: block; z-index: 5; color: #ffb0a0; text-shadow: 0 0 4px #000; font-family: "Courier New", monospace; }
 
 /* An organ: its tile, lit in its own false colour, outlined where the shape ends. */
-#under.scan .uc.has-organ { border: 1px solid transparent; box-shadow: none; }
+#under.scan .uc.has-organ { border: 0; box-shadow: none; }
 /*
  * The outline and glow lie along the shape's own edges only, on a layer of their own over the cell (Oct 1 2026): a
  * glow round every cell drew the squares back over the one body; a 2px border meeting the cell's 1px clear one cut a
- * notch into the outline at every row; and the zones' pulse (box-shadow on the cell) would wipe a shadow outline.
+ * gap into the outline at every row (the cell clips what is outside its padding); and the zones' pulse (box-shadow on the cell) would wipe a shadow outline.
  */
 #under.scan .uc.has-organ::after {
-  content: ""; position: absolute; inset: -1px; z-index: 1; pointer-events: none; border: 0 solid var(--acc);
+  content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; border: 0 solid var(--acc);
   box-shadow: var(--gt, 0 0 transparent), var(--gb, 0 0 transparent), var(--gl, 0 0 transparent), var(--gr, 0 0 transparent);
 }
 #under.scan .uc.has-organ.bt::after { border-top-width: 2px; --gt: inset 0 9px 9px -8px var(--acc); }
@@ -674,6 +674,8 @@ body.in-ship #topbar, body.in-ship #botbar { visibility: hidden; }
  * elements; --n frames, --ud one pass, --uw the delay, --udir alternate for a ping-pong).
  */
 #under.scan #under-grid { position: relative; z-index: 1; background: transparent; }
+/* Every cell fills its row and column (a cell kept to its own 1.25 shape was shorter than a row grown by its neighbours: a gap, unpainted, across a whole organ). */
+#under.scan .uc { align-self: stretch; justify-self: stretch; }
 #under.scan .under-alive { position: absolute; z-index: 0; pointer-events: none; background: #030506; }
 .under-alive { display: none; }
 #under.scan .under-alive { display: block; }

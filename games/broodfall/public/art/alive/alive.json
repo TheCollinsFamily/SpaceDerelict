@@ -1,0 +1,32 @@
+{
+  "items": {
+    "debrief:won": {
+      "video": "alive/debrief-won.mp4",
+      "poster": "alive/debrief-won.webp",
+      "w": 1280,
+      "h": 720,
+      "seconds": 4.417
+    },
+    "partner:partner": {
+      "video": "alive/partner-partner.mp4",
+      "poster": "alive/partner-partner.webp",
+      "w": 960,
+      "h": 960,
+      "seconds": 5
+    },
+    "scene:faithful-contact": {
+      "video": "alive/scene-faithful-contact.mp4",
+      "poster": "alive/scene-faithful-contact.webp",
+      "w": 1112,
+      "h": 834,
+      "seconds": 4.417
+    },
+    "territory:harbor": {
+      "video": "alive/territory-harbor.mp4",
+      "poster": "alive/territory-harbor.webp",
+      "w": 1280,
+      "h": 720,
+      "seconds": 4.292
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "id": "partner:partner",
+  "model": "seegen:sd2-fast",
+  "seconds": 5,
+  "size": "960x960",
+  "bytes": 482638,
+  "medianStep": 0.22,
+  "maxStep": 0.6,
+  "seamBefore": 0.68,
+  "seamAfter": 0.66,
+  "maxDrift": 6.02,
+  "fixed": "none",
+  "tiles": "the still it started from | then 8 frames across the loop"
+}

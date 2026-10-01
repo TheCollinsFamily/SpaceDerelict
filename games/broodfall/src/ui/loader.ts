@@ -107,6 +107,25 @@ export function loopEl(kind: LoaderKind, opts: { cover?: boolean; cls?: string; 
   return el;
 }
 
+/**
+ * A loop already in the page's markup (index.html's boot screen: its first paint is there before any code ran, the
+ * emblem's even embedded): kept moving as it is, its small loop swapped in once loaded, the full loop put over it.
+ */
+export function upgradeLoop(el: HTMLElement, kind: LoaderKind): void {
+  if (el.querySelector('video')) return;
+  const f = FILES[kind];
+  const img = el.querySelector<HTMLImageElement>('img.bf-loop-mini');
+  const want = artUrl(reduced() ? f.slow : f.mini);
+  if (img && img.getAttribute('src') !== want) {
+    const next = new Image();
+    next.onload = () => { img.src = want; };
+    next.src = want;
+  }
+  const full = loopEl(kind);
+  const v = full.querySelector('video');
+  if (v) el.append(v);
+}
+
 // The full loop takes over from its first paint once it plays (wherever it is: loopEl's, or loopHtml's in a screen
 // drawn from a string); with Reduce motion it plays at a third of the speed.
 if (typeof document !== 'undefined') {

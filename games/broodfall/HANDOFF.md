@@ -307,6 +307,39 @@ character setting down a data pad that has something similar to the last screen 
   the screen. Review: `notes/art-review/pad/<id>.jpg` (a game picture warped in) and `<id>-track.jpg`.
 - **Checks:** `tests/padOutro.test.ts`; `node tools/shot-pad.mjs [won lost skip calm]`.
 
+## The landing films before every deployment (Oct 1 2026)
+
+Collins: "for loading into the different biomes, do we have broodfall landing animations to make it seem cohesive that
+would play at the start of any scenario? if not we should."
+- **What plays** (`src/ui/landing.ts`, rules `src/meta/landing.ts`, hook `landThenStart` in `src/main.ts`): before every
+  deployment (a campaign mission from the address, a skirmish from the menu or `?autostart=1`), the tile set's film
+  (~8 s, lifelike, the Empire's side): the ship in orbit lets the asset go (one shot shared by all ten), it tears down
+  through that set's sky onto that set's city, a hard cut under a white flash (drawn by the game: Reduce flashes takes
+  it out) to the strike seen from the BOARD's camera, and the fire and dust clear on the board itself, creep running out.
+  The film's last frame IS the board at minute zero (a picture of the real game): at its end the picture is moved onto
+  the live canvas (the band of the canvas it shows, its crater laid on the live meteor) and fades: the board comes alive
+  under it. The run's clock (`started`) starts only when the film is over (or skipped) AND the board is drawn; a film that
+  ends first holds its last frame with a corner loop (`src/ui/loader.ts`); before its first frame, the loaders' cover.
+  Click / Esc / Enter / Space skips. Sound: `land-roar` (3.4 s, timed to end at the strike) and `land-impact`
+  (`tools/audio/cues.mjs`, `maxSeconds`/`fadeOut` added to the `one` cut). The music scene is 'film' while `#landing` is up.
+- **Mission 1** straight after the opening film gets NO landing: the opening ends at the crash site and is its landing
+  (`after-opening`). Mission 1 entered any other way (the page reopened with it pending) lands on the Suburbs (crash site).
+- **Settings** › THE GAME › "Play landing films": ALWAYS (default) / FIRST TIME PER TILE SET (`broodfall-landing-seen`) /
+  NEVER. Reduce motion: the gentle version (the last frame fades in, holds 1.6 s, fades into the board; no film, no sound).
+- **Beats:** under automation it plays only with `localStorage['broodfall-landing']='on'` (or `?landing=1`; `?landing=0`
+  turns it off), so every other beat is unaffected. `window.__bfLandingWhy` says why one did or did not play;
+  `window.__bfLanding` its phase (loading, playing, holding, handoff, done), roar/strike, how it ended.
+  `node tools/shot-landing.mjs [A B C D]` (dev server 5319): A four sets played through and RECORDED
+  (`notes/screens/2026-09-30/landing-<set>.mp4`), B the campaign (no landing after the opening; mission 1 reopened lands),
+  C the menu's deploy + Esc, D the setting and Reduce motion. Test: `tests/landing.test.ts`.
+- **The art** (`tools/art/landing.mjs`; raw `art-src/landing/`, baked `public/art/landing/<set>.mp4|-start.webp|-end.webp`
+  + `landing.json`, review `notes/art-review/landing/<set>.jpg|.json`): `boards` pictures the game's canvas at minute zero
+  (seed 42, dev server 5317, free) → `stills` (orbit a/b, per set fall a (aerial, the set's sky and city, territory
+  pictures as references) and fall b (an EDIT of a: the meteor over the roofs), hit (an EDIT of the board picture: the
+  fireball where the meteor stands)) → `clips` (start-and-end on **seegen:wan3.0-video**, 5 s 720p: orbit a→b, fall a→b,
+  hit→board) → `bake` (orbit 0.6–2.4 s, 0.3 s dissolve, fall 0–2.9 s at 1.2x, the strike whole at 1.2x) → `sheet`
+  (`notes/screens/2026-09-30/landing-00-sheet.jpg`). A new tile set: add it to `SETS` there, run the five steps.
+
 ## The ship presented (Sep 30 2026): room loops, the planet, meat drops
 
 - **Room loops** (`node tools/art/ship-loops.mjs [ids] [--stills|--bake]`; SPENDS: a still ~$0.50, an 8 s 1080p
@@ -733,6 +766,24 @@ own words. `notes/GRAPHICS-PLAN.md` holds the pipeline, the probes and the costs
   (same phase, same frame above and below the line). The tray's cards stay still; a new organ scans in,
   then loops from its first frame. Re-rolled: womb (eggs swelled and moved), core stage 4 (the dome
   slid). Beat: `node tools/shot-organ-alive.mjs` (`organ-alive-*.jpg`, `organ-alive.mp4`).
+- **Organs alive by SHAPE, not by square (Oct 1, "it animated it by square, not by organ ... animate the organs in
+  their full shape, then cut them out").** Every organ of more than one cell (19: all but gland, atrophy, root,
+  pacemaker, cyst) has ONE picture of the whole organ filling the box of its shape's cells (gpt-image-2 from its tile,
+  `art-src/under-shapes/`; asked to paint INTO a white outline of the shape it drew another shape, so it fills the box
+  and only the shape's cells are shown) and ONE 4 s loop of it (seegen:sd2-mini, start = end, ping-pong when it did
+  not come back; `art-src/under-loops-shape/`), baked to a frame atlas (`public/art/under/shape-<id>.webp`, its first
+  frame `shape-<id>-still.webp`, `under.shapes` in the manifest with the shape it was cut for).
+  `node tools/art/make.mjs undershapes [ids] [--stills] [--bake] [--reroll] [--restill]`
+  (`tools/art/templates/under-shapes.mjs`; look at `notes/art-review/under/shape-stills.jpg` and `shape-loops.jpg`).
+  In game (`src/ui/underAlive.ts`) each cell of such an organ carries `data-cut` (its piece of the frame, the organ's
+  quarter turns) and draws that piece turned with the organ; all its cells share one anchor, so one frame. It scans in
+  as its pieces of the still (`shapeCut` in `src/ui/underground.ts`). A manifest shape that no longer matches
+  `content/underground.ts` falls back to the tile loops (`tests/under-shapes.test.ts` keeps them in step). The organ
+  outline and glow are a `::after` on the shape's own edges (a glow round every cell drew the squares back; a 2px
+  border meeting a 1px one cut a dark notch at every row); the zones' faint ring is no longer drawn over organs (hover
+  still lights the whole zone). Beat: `node tools/shot-organ-alive.mjs [--tag BEFORE|AFTER]` checks every cell of an
+  organ shows the same frame and the cells meet edge to edge; `--tag` writes `organ-shape-<tag>.mp4` (close, 2x).
+  Re-rolled: bladder (the clip turned the sac into a framed screen).
 - **No real religious symbol, and no lettering, in any picture.** The image model adds
   crosses by itself. Every picture is looked at zoomed in before it is kept. A small
   unwanted detail is painted out with `tools/art/paint-out.mjs` (it keeps the original

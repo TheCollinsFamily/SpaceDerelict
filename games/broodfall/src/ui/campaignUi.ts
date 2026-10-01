@@ -42,6 +42,7 @@ import { openSettings } from './settings';
 import { attachScene } from './sceneVoice';
 import { loadMedia, mediaPictureUrl } from './newsreel';
 import { shipLoop, showLoader, type LoaderHandle } from './loader';
+import { loadAlive, wake } from './alive';
 
 type Room = 'desk' | 'genes' | 'locker' | 'board' | 'comms' | 'ai' | 'quarters' | 'orders' | 'hobby';
 /** Rooms with no picture of their own borrow one (the standing orders are read at the Board; the notebook lives in the Locker). */
@@ -107,6 +108,11 @@ export class CampaignUi {
   /** Each organ's scan picture, by organ id (absolute URLs); empty until the manifest is in. */
   private organPics: Record<string, string> = {};
   /**
+   * Each organ's scan LOOP (the organ stage's strip, manifest under.loops; Oct 1 2026, notes/VIDEO-AUDIT.md): the
+   * Gene Bay's cards step through it in CSS. Empty (the stills) until the manifest is in or when it has none.
+   */
+  private organLoops: Record<string, { strip: string; count: number; seconds: number; pingpong: boolean }> = {};
+  /**
    * YOKE's intercom: her, over whatever room he is in (Collins, Sep 30 2026: "a way to pull her
    * up on the ship if you left to do something else"). Her greeting plays in it when he comes
    * aboard; after it he can talk to her there, or close it.
@@ -152,6 +158,8 @@ export class CampaignUi {
         this.globe3d.pairs = TERRITORIES.flatMap((t) => t.neighbours.filter((n) => n > t.id).map((n) => [t.id, n] as [string, string]));
       } catch { this.globe3d = null; }
     }
+    // The stills that come alive (src/ui/alive.ts): the scene cards, the landing sites, the report's lead, her photograph.
+    void loadAlive().then(() => { if (!this.el.classList.contains('hidden')) wake(this.el); });
     void fetch(artUrl('ship/loops/loops.json'), { cache: 'no-cache' }).then((r) => (r.ok ? r.json() : null)).then((j) => {
       const rooms = (j?.rooms ?? {}) as Record<string, { video: string; poster: string }>;
       const whole = (f: string) => new URL(artUrl(f), document.baseURI).href;
@@ -169,10 +177,14 @@ export class CampaignUi {
       const scan = (m as unknown as { under?: { scan?: { tiles?: Record<string, string> } } } | null)?.under?.scan?.tiles;
       if (scan) {
         this.organPics = Object.fromEntries(Object.entries(scan).map(([k, f]) => [k, new URL(artUrl(f), document.baseURI).href]));
+        const loops = (m as unknown as { under?: { loops?: { fps?: number; tiles?: Record<string, { strip?: string; count?: number; pingpong?: boolean }> } } } | null)?.under?.loops;
+        const fps = Number(loops?.fps) || 12;
+        this.organLoops = Object.fromEntries(Object.entries(loops?.tiles ?? {}).filter(([, t]) => t?.strip && (t.count ?? 0) > 1)
+          .map(([k, t]) => [k, { strip: new URL(artUrl(t.strip!), document.baseURI).href, count: t.count!, seconds: t.count! / fps, pingpong: !!t.pingpong }]));
         if (this.room === 'genes' && !this.debriefing && !this.el.classList.contains('hidden')) this.render();
       }
       const art = m?.ship?.ship ?? null;
-      const settled = () => { this.artSettled = true; this.artWait?.hide(); this.artWait = null; };
+      const settled = () => { this.artSettled = true; this.artWait?.hide(); this.artWait = null; this.el.classList.remove('awaiting-art'); };
       if (!art) { settled(); return; }
       if (art.planet) await this.globe.load(artUrl(art.planet)).catch(() => {});
       if (art.planet && this.globe3d) await this.globe3d.load(artUrl(art.planet), artUrl('ship/globe/night.webp')).catch(() => { this.globe3d = null; });
@@ -213,7 +225,8 @@ export class CampaignUi {
     document.body.classList.add('in-ship');
     this.el.classList.remove('hidden');
     // Aboard before the ship's pictures (and the planet) are in: a loop, not the bare console (nothing under 400 ms).
-    if (!this.artSettled && !this.artWait) this.artWait = showLoader(shipLoop(), { label: 'THE SHIP' });
+    // Until then the bare console is not shown at all (#campaign.awaiting-art: src/loader.css).
+    if (!this.artSettled && !this.artWait) { this.artWait = showLoader(shipLoop(), { label: 'THE SHIP' }); this.el.classList.add('awaiting-art'); }
     this.render();
     if (opts.greet) this.welcome();
   }
@@ -322,6 +335,7 @@ export class CampaignUi {
       ${this.greeting ? '' : this.sceneHtml()}`;
     this.dress();
     attachScene(this.el);
+    wake(this.el);
     // Her stage is the same element in every drawing of the screen: put back, not made again.
     const box = this.el.querySelector<HTMLElement>('.cp-icom-stage');
     if (this.room === 'ai') this.avatar?.mount(!!face, face);
@@ -361,7 +375,8 @@ export class CampaignUi {
     this.el.dataset.in = this.room;
     // A picture named in a style variable is looked for beside the STYLESHEET that uses it, so the whole address is given.
     const at = (file: string | undefined) => (file ? `url("${new URL(artUrl(file), document.baseURI).href}")` : 'none');
-    const loop = art ? this.loops[this.room === 'quarters' ? 'quarters' : ROOM_PICTURE[this.room] ?? this.room] : undefined;
+    // A room's own loop first (the Directives and the Notebook have theirs since Oct 1 2026), else the one it borrows.
+    const loop = art ? this.loops[this.room] ?? this.loops[ROOM_PICTURE[this.room] ?? this.room] : undefined;
     this.el.style.setProperty('--room', loop ? `url("${loop.poster}")` : this.room === 'quarters'
       ? (this.intro?.quarters ? `url("${this.intro.quarters}")` : at(art?.rooms.board))
       : at(art?.rooms[(ROOM_PICTURE[this.room] ?? this.room) as Exclude<Room, 'quarters' | 'orders' | 'hobby'>]));
@@ -440,7 +455,7 @@ export class CampaignUi {
     // The reveal cards' pictures are the campaign media's (src/ui/newsreel.ts, public/media/).
     const src = file ? artUrl(file) : mediaPictureUrl(scene.picture);
     return src
-      ? `<img class="cp-scene-pic" data-picture="${esc(scene.picture!)}" src="${src}" alt="" title="Click to enlarge">`
+      ? `<img class="cp-scene-pic" data-picture="${esc(scene.picture!)}" data-alive="${file ? 'scene' : 'reveal'}:${esc(scene.picture!)}" src="${src}" alt="" title="Click to enlarge">`
       : this.leaderHtml(f);
   }
 
@@ -564,7 +579,7 @@ export class CampaignUi {
   /** The landing site's own picture (tools/art/templates/ship.mjs `territories`), over its story; nothing when not drawn. */
   private territoryPictureHtml(id: string): string {
     const file = this.art?.territories?.[id];
-    return file ? `<img class="cp-territory-pic" data-territory="${esc(id)}" src="${artUrl(file)}" alt="">` : '';
+    return file ? `<img class="cp-territory-pic" data-territory="${esc(id)}" data-alive="territory:${esc(id)}" src="${artUrl(file)}" alt="">` : '';
   }
 
   private briefHtml(t: TerritoryDef): string {
@@ -606,7 +621,7 @@ export class CampaignUi {
     const pad = review
       ? `<div class="cp-pad"><div class="cp-pad-head">DATA PAD · PROCREATION LICENSING BOARD</div>
           <div class="cp-label">${esc(PARTNER.form)} — STATUS: ${s.licence ? 'APPROVED' : 'UNDER REVIEW'}</div>
-          ${this.intro?.partner ? `<img class="cp-pad-pic" src="${this.intro.partner}" alt="The candidate's file photograph">` : ''}
+          ${this.intro?.partner ? `<img class="cp-pad-pic" data-alive="partner:partner" src="${this.intro.partner}" alt="The candidate's file photograph">` : ''}
           ${PARTNER.fields.map(([k, v]) => `<div class="cp-pad-row"><span>${esc(k)}</span><b>${esc(v)}</b></div>`).join('')}
           <p class="cp-pad-quote">${esc(PARTNER.statement)}</p>
           <p class="cp-note">${esc(PARTNER.boardNote.replace('{standing}', String(Math.min(s.standing, LICENCE_STANDING))).replace('{need}', String(LICENCE_STANDING)))}</p></div>`
@@ -629,7 +644,11 @@ export class CampaignUi {
       const def = ORGAN_BY_ID[id];
       const cur = l.catalogue === 'sanctioned' ? 'standing' : 'field notes';
       const pic = this.organPics[id];
-      return `<div class="cp-lin${have ? ' have' : ''}${pic ? ' cp-organ' : ''}">${pic ? `<img class="cp-organ-pic" src="${pic}" alt="">` : ''}<b>${esc(def.name)}</b><span>${esc(def.unlocks ? `unlocks ${def.unlocks.join(', ')}` : def.blurb)}</span>
+      const loop = this.organLoops[id];
+      const picHtml = loop
+        ? `<span class="cp-organ-pic cp-organ-loop" style="background-image:url('${loop.strip}');--n:${loop.count};--d:${loop.seconds}s${loop.pingpong ? ';--dir:alternate' : ''}"></span>`
+        : pic ? `<img class="cp-organ-pic" src="${pic}" alt="">` : '';
+      return `<div class="cp-lin${have ? ' have' : ''}${pic || loop ? ' cp-organ' : ''}">${picHtml}<b>${esc(def.name)}</b><span>${esc(def.unlocks ? `unlocks ${def.unlocks.join(', ')}` : def.blurb)}</span>
         ${have ? '<i>IN YOUR GENOME</i>' : `<button data-buy="${id}">${l.price} ${cur}</button>`}</div>`;
     };
     const ids = Object.keys(LINEAGES) as OrganId[];
@@ -1009,6 +1028,7 @@ export class CampaignUi {
     this.room = 'board';
     this.debriefing = true;
     this.dress();
+    wake(this.el);
     const btn = this.el.querySelector('[data-act="back"]') as HTMLElement;
     btn.addEventListener('click', (ev) => { ev.stopPropagation(); onBack(); }, { once: true });
   }

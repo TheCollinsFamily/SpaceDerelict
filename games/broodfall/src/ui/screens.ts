@@ -9,7 +9,7 @@
  * fallback text in index.html, seen only before the script runs).
  */
 import { artUrl, loadManifest } from '../render/art';
-import { LOADER_DELAY_MS, LOADING_LINES, loopEl } from './loader';
+import { LOADER_DELAY_MS, LOADING_LINES, loopEl, upgradeLoop } from './loader';
 
 export const GAME_NAME = 'Broodfall';
 
@@ -74,13 +74,14 @@ export class LoadingScreen {
     this.count = this.el.querySelector('.boot-count')!;
     this.line = this.el.querySelector('.boot-line')!;
     // The full loops in place of the markup's first paint (index.html, preloaded): the emblem's, the creep's behind it.
-    const back = this.el.querySelector('.boot-backdrop');
-    const loopBack = loopEl('creep', { cover: true, cls: 'boot-backdrop' });
-    if (back) back.replaceWith(loopBack); else this.el.prepend(loopBack);
+    // They keep moving as they are (never replaced: a new picture would be a blank until it loaded).
+    const back = this.el.querySelector<HTMLElement>('.boot-backdrop');
+    if (back) upgradeLoop(back, 'creep'); else this.el.prepend(loopEl('creep', { cover: true, cls: 'boot-backdrop' }));
     const logo = this.el.querySelector<HTMLElement>('.logo-boot');
     const emblem = logo?.querySelector<HTMLElement>('.logo-emblem');
-    if (logo && emblem && !emblem.querySelector('video')) {
-      emblem.replaceWith(loopEl('emblem', { cls: 'logo-emblem' }));
+    if (logo && emblem) {
+      if (emblem.classList.contains('bf-loop')) upgradeLoop(emblem, 'emblem');
+      else emblem.replaceWith(loopEl('emblem', { cls: 'logo-emblem' }));
       logo.classList.add('has-emblem');
     }
     // Already up (index.html put it up before this code arrived, for a page that starts a deployment): it is ours now.

@@ -12,6 +12,7 @@
  */
 import { artUrl, loadManifest, type LimbArt, type UnitArt } from '../render/art';
 import { loadScreenArt } from './screens';
+import { loadAlive, wake } from './alive';
 import { towerSpec } from '../sim/sim';
 import type { EnemyKind, RunStats, TowerFamily } from '../sim/types';
 
@@ -59,7 +60,7 @@ function unitCss(a: UnitArt | undefined, size: number): string {
 
 /** The report's pictures, as one element to put at the head of either debrief. */
 export async function debriefPictures(r: RunPictures): Promise<HTMLElement> {
-  const [m, screens] = await Promise.all([loadManifest(), loadScreenArt()]);
+  const [m, screens] = await Promise.all([loadManifest(), loadScreenArt(), loadAlive()]);
   const el = document.createElement('div');
   el.className = `dbf dbf-${r.outcome}`;
   const lead = screens[r.outcome] ?? (r.outcome === 'held' ? screens.won : undefined);
@@ -86,6 +87,7 @@ export async function debriefPictures(r: RunPictures): Promise<HTMLElement> {
 
   el.innerHTML = `
     <div class="dbf-lead${lead ? ' has-pic' : ''}"${lead ? ` style="--lead:url('${lead}')"` : ''}>
+      ${lead ? `<img class="dbf-lead-loop" data-alive="debrief:${screens[r.outcome] ? r.outcome : 'won'}" src="${lead}" alt="">` : ''}
       <div class="dbf-verdict">${esc(r.verdict)}</div>
       <div class="dbf-caption">${esc(r.caption)}</div>
     </div>
@@ -97,5 +99,7 @@ export async function debriefPictures(r: RunPictures): Promise<HTMLElement> {
         ${units ? `<div class="dbf-label">WHAT THE COLONY SENT — ${dead} DEAD</div><div class="dbf-tiles">${units}</div>` : '<div class="dbf-label">NOTHING OF THE COLONY DIED</div>'}
       </div>
     </div>`;
+  // The lead comes alive (src/ui/alive.ts; Oct 1 2026): the same picture as a slow loop over its still.
+  wake(el);
   return el;
 }

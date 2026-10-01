@@ -181,7 +181,9 @@ function film(opts: { id: string; look: Look; series?: string; issue?: string; c
       };
       if (v.readyState >= 3) go();
       else {
-        const w = showLoader('scan', { host: el, corner: !!el.querySelector('video.nr-v.on') });
+        // No shot up yet: the screen is black already, so the loop comes at once; over a held frame, after 400 ms.
+        const held = !!el.querySelector('video.nr-v.on');
+        const w = showLoader('scan', { host: el, corner: held, delay: held ? undefined : 0 });
         wait = w;
         v.addEventListener('playing', () => w.hide(), { once: true });
         later(9000, () => w.hide());

@@ -1,0 +1,14 @@
+{
+  "id": "scene:faithful-contact",
+  "model": "seegen:sd2-fast",
+  "seconds": 4.417,
+  "size": "1112x834",
+  "bytes": 1056712,
+  "medianStep": 0.43,
+  "maxStep": 0.8,
+  "seamBefore": 1.56,
+  "seamAfter": 0.44,
+  "maxDrift": 4.81,
+  "fixed": "crossfade 0.6s",
+  "tiles": "the still it started from | then 8 frames across the loop"
+}

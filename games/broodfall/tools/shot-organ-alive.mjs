@@ -145,6 +145,20 @@ try {
     lastFrames = r.frames;
     await page.waitForTimeout(170);
   }
+  // The cells tile the grid with no gap between rows or columns (a cell shorter than its row left a dark line,
+  // unpainted, across a whole organ, and broke its outline at every row).
+  const gaps = await page.evaluate(() => {
+    const g = document.getElementById('under-grid');
+    const w = window.broodfall.sim.under.w;
+    const r = [...g.querySelectorAll('[data-cell]')].map((e) => e.getBoundingClientRect());
+    let worst = 0;
+    r.forEach((a, i) => {
+      if ((i + 1) % w) worst = Math.max(worst, Math.abs(r[i + 1].left - a.right));
+      if (i + w < r.length) worst = Math.max(worst, Math.abs(r[i + w].top - a.bottom));
+    });
+    return worst;
+  });
+  check(gaps < 0.05, `the cells meet edge to edge, rows and columns (worst gap ${gaps.toFixed(2)} px)`);
   console.log(`  whole shapes: ${sameFrame.organs} organs of several cells (${sameFrame.turned} turned), ${sameFrame.samples} samples, frame changes seen ${sameFrame.moved}`);
   check(sameFrame.organs > 15 && sameFrame.uncut.length === 0, `every organ of several cells plays its WHOLE-shape loop cut into its cells${sameFrame.uncut.length ? ` (by tile: ${[...new Set(sameFrame.uncut)].join(', ')})` : ''}`);
   check(sameFrame.split.length === 0 && sameFrame.moved > 0, `all the cells of one organ always show the same frame (${sameFrame.split.length ? `split: ${[...new Set(sameFrame.split)].join(', ')}` : 'never split'}), and the frames move`);

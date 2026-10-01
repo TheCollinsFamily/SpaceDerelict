@@ -7,6 +7,7 @@ import { Sim, towerSpec } from '../sim/sim';
 import { UPGRADES, UPGRADE_COST } from '../../content/upgrades';
 import { BALANCE as B } from '../../content/data';
 import { artUrl, loadManifest, type LimbArt } from '../render/art';
+import { idleFrames, phaseOf } from '../render/idleClock';
 
 /** The limbs' baked pictures, once the manifest has loaded: a card shows its limb (null: text only). */
 let limbArt: Record<string, LimbArt> | null = null;
@@ -19,6 +20,30 @@ function cardArt(family: string, size: number): string {
   const k = size / a.frame;
   const url = new URL(artUrl(a.atlas), document.baseURI).href;
   return `background-image:url("${url}");background-size:${a.cols * a.frame * k}px auto;background-position:-${(i % a.cols) * size}px -${Math.floor(i / a.cols) * size}px`;
+}
+
+/**
+ * The hand's limbs are alive (Oct 1 2026, notes/VIDEO-AUDIT.md): each card's picture steps through its limb's own
+ * idle, the frames the board plays (no video, no new art), on ONE timer at the idle's 12 frames a second, each card
+ * in its own phase. A frame is written only when it changes; nothing is read from the layout. Still under Settings >
+ * Reduce motion (html.reduce-motion) and in a hidden tab.
+ */
+let cardTimer = 0;
+function animateCards(hand: HTMLElement, size: number): void {
+  if (cardTimer) return;
+  const t0 = performance.now();
+  cardTimer = window.setInterval(() => {
+    if (document.hidden || document.documentElement.classList.contains('reduce-motion')) return;
+    const t = (performance.now() - t0) / 1000;
+    for (const el of hand.querySelectorAll<HTMLElement>('.card-art[data-limb]')) {
+      const a = limbArt?.[el.dataset.limb!];
+      if (!a || a.anims.idle.count < 2) continue;
+      const f = idleFrames(a.anims.idle, t, phaseOf(Number(el.dataset.k) + 1)).a;
+      if (el.dataset.f === String(f)) continue;
+      el.dataset.f = String(f);
+      el.style.backgroundPosition = `-${(f % a.cols) * size}px -${Math.floor(f / a.cols) * size}px`;
+    }
+  }, 1000 / 12);
 }
 import type { Caste, CasteFocus, OrganId, RootDir, SimEvent, TargetMode, Tower, TowerFamily, UpgradeChoice } from '../sim/types';
 
@@ -629,7 +654,7 @@ export class Hud {
         // The limb itself, from its baked art: the card is recognised by its picture, as on the board.
         const artEl = div.querySelector('.card-art') as HTMLElement;
         const art = cardArt(card.family, 64);
-        if (art) artEl.setAttribute('style', art); else artEl.remove();
+        if (art) { artEl.setAttribute('style', art); artEl.dataset.limb = card.family; artEl.dataset.k = String(card.id ?? i); animateCards(this.el.hand, 64); } else artEl.remove();
         // Each caste's price in its own span (the text is the same), so a HUD style can draw the caste (src/hud/themes).
         const costEl = div.querySelector('.card-cost') as HTMLElement;
         // A free card is priced like any other: the word where the number goes, why it is free where the caste goes.

@@ -653,6 +653,7 @@ Biomass stays as the growth economy (body size, royal surge), not the goal. Lose
 
 ### Run openings
 Each run opens with an AI-generated video of the organism crashing down like a meteor into the starting environment (a neighborhood, farmland, a temple district, a harbor...) matched to the start you rolled. The crash biome biases the starting economy (which caste districts are nearby). Generate one video per biome variant, not per run.
+**Built Oct 1 2026 (the landing films):** one ~8 s film per tile set, played before every campaign deployment and every skirmish, from the Empire's side (the ship lets the asset go, it falls through the set's sky, strikes the set's city, and the dust clears on the board itself, whose last frame the game lays on the live board). Mission 1 right after the opening film has none: the opening film is its landing. Settings: always (default) / first time per tile set / never; Reduce motion a gentle version. HANDOFF "The landing films".
 
 ## Tone stack (three registers, sourced differently — never choose one)
 
