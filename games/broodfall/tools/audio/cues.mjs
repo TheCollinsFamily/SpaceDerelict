@@ -68,6 +68,11 @@ export const SFX = [
     prompt: FOLEY + 'A large flying insect is hit in the air: its buzzing wings sputter and stall, then a crunchy thud as it hits the ground.' + REPEAT(3) },
   { id: 'die-boss', for: 'a royal (royal, consort, matron) dies', seconds: 8, cut: 'one',
     prompt: FOLEY + 'A gigantic insect queen dies: a long, low, shuddering screech of pain, then a massive crashing collapse of chitin and a final rattle.' },
+  // --- the landing film (src/ui/landing.ts): the asset falls on the city before a deployment ---
+  { id: 'land-roar', for: 'landing film: the meteor tears down through the sky (about 3 s before the strike)', seconds: 6, cut: 'one',
+    prompt: FOLEY + 'A huge burning meteor tears down through the sky toward the listener: a deep rumbling roar of fire and rushing wind that swells louder and louder for three seconds, then stops dead.' },
+  { id: 'land-impact', for: 'landing film: the meteor strikes the city', seconds: 8, cut: 'one',
+    prompt: FOLEY + 'A meteor strikes the ground in a town: one enormous deep booming explosion and a shock wave, then rubble, glass and debris raining down and a long low rumble dying away.' },
   { id: 'boss-roar', for: 'THE ROYAL TAKES THE FIELD', seconds: 6, cut: 'one',
     prompt: FOLEY + 'A gigantic insect queen arrives: a huge, deep, rattling roar with chittering mandibles, and a heavy thundering footstep.' },
   // --- the body ---
