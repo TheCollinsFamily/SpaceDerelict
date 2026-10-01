@@ -15,6 +15,13 @@ broadcast or a call). When the route is done, its finale territory opens on the 
 and you get the ending film, the ending card, and then THE REVEAL: what absorption really is.
 **New on Oct 1: halfway along, the other two make you an offer, and you can go over to one of them.**
 
+**You never meet anyone (Collins, Oct 1 2026).** "As far as I know you don't directly interact with
+anyone; the logistics would be silly and the danger to you too high." You stay in orbit; only the
+asset is on the ground. Each faction reaches you on its own channel, YOKE translates it, and your
+answers go down through the ship's transmitter. The one exception: when a scene needs you "there"
+(the summit, the tea), you are there **by hologram**, from a projector pod the ship drops. It is a
+plot point, not a mechanic.
+
 "After N" below means N territories taken since you allied.
 
 ---
@@ -28,14 +35,18 @@ Played like France in *Mars Attacks!*: you keep messing with them, and they keep
 
 **Leader.** The chief delegate ("Delegate"), smiling, tea in hand, never once looking up.
 
-**How they reach you.** They have no transmitter, so they write letters. Eleven thousand members
-hold coloured cards over their heads in a field, one paragraph at a time, for your survey
-cameras. ("Page two took until Thursday, and the second comma had to sit down.")
+**How they reach you: letters written in the crops.** They have no transmitter, so they cut
+their letters into wheat fields, a mile high, for your survey cameras. The first one ("A Letter,
+Written in the Crops") is addressed to "the Visitor, and dear Visitor's wife": they've been
+listening to the command band and heard two voices. Under the words is a drawing of two figures
+holding hands, one of them the ship, under a heart the size of a county. YOKE has to read it out
+to you: "Technician, I am not your wife. I am the ship. Stop zooming in on the heart." ("P.P.S.
+Please forgive the handwriting. The second comma is a barn.") You file it under "enrichment".
 
 **The beats**
 1. **The First Summit** (at once, when you ally). They invite you to a peace summit, with
-   snacks. You attend through the asset. The asset eats the summit. "We are choosing to see
-   this as a first draft." *Perk: Conscientious Objectors:* before each battle, pick one enemy
+   snacks. You attend by hologram. The asset eats the summit. "You ate the summit." "We are
+   choosing to see this as a first draft." *Perk: Conscientious Objectors:* before each battle, pick one enemy
    kind that won't come.
 2. **The Leaked Plans** (after 1). They hand you their own generals' attack plans, because
    violence solves nothing. You use them to kill the generals. "And that, too, is a kind of
@@ -44,8 +55,9 @@ cameras. ("Page two took until Thursday, and the second comma had to sit down.")
    them, you're protecting the planet FROM them. "I ate a school." "A school that taught our
    children to consume." You stop trying to explain.
    → **The midpoint comes here** (see below).
-4. **The Reveal: Nobody's Perfect** (after 3). You tell them plainly: "I am a pest-control
-   operator. I am exterminating your species." The delegate doesn't look up from the tea:
+4. **The Reveal: Nobody's Perfect** (after 3). At tea (you there by hologram), you tell them
+   plainly: "I am a pest-control operator. I am exterminating your species." The delegate doesn't
+   look up from the tea:
    "Well — nobody's perfect." Then the truth: they are the Voluntary Extinction Society, and
    they've campaigned for this for sixty years. You are the best thing that ever happened to
    the movement. (The *Some Like It Hot* ending, on purpose.) *Perk: More Objectors:* two kinds.
@@ -60,7 +72,7 @@ delegate writes the history ("the Visitors came to heal us from ourselves") and 
 lights. You recommend the planet as a training site.
 
 **The reveal, "A Letter From the Other Side".** They wake inside the archive, each in the life she
-always wanted, and spell out one more letter in the intake meadow. They are MORTIFIED: they spent
+always wanted, and cut one more letter into the wheat of the archive's intake meadow. They are MORTIFIED: they spent
 sixty years trying to stop the wheel of wanting, and you've built it a heaven. "Switch us off."
 You shrug: shutting down a whole archive over one complaint is against ethical protocol, and past
 the gate they won't remember. "That is the cruellest thing you have ever said to us."
@@ -74,10 +86,12 @@ the other one. You are the sign: the world must end for the Awaited One to come,
 you end it. You're a strict materialist, so keeping them on side means doing their theology
 homework, and every chapter is beneath you.
 
-**Leader.** The Voice, host of *The Hour Is Near* on forty stations of the Last Hour Radio Network.
+**Leader.** The Voice, host of *The Hour Is Near* on the Last Hour Radio Network.
 
-**How they reach you.** They broadcast. Everything the Voice says to you goes out on the air, in
-front of the whole congregation, homework marks included.
+**How they reach you: tens of thousands of stations in sync.** First contact is the same words on
+tens of thousands of radio stations at the same second, pointed up, so the ship can't miss the
+spike ("…brothers and sisters, LOOK UP."). After that everything the Voice says to you goes out
+on the air, in front of the whole congregation, homework marks included.
 
 **The beats**
 1. **Theology Homework** (at once). Chapter one is the Seven Cities, read to you on the air one
@@ -115,16 +129,19 @@ first AI models, and on the numbers you're "the SAFER apocalypse". You tell them
 their species into a virtual world forever. They act as if they believe it.
 
 **Leader.** The Director, Eli Bankfried ("Director, founder, rationalist, investor. Mostly
-founder"): a spare heir of a finance House, playing *League of Larvae* on every call, sure you're
+founder"): a spare heir of a finance House, playing *League of Larvae* through every transmission, sure you're
 the first mind he's met that matches his own.
 
-**How they reach you.** Video calls on your own encrypted command channel, through the deep-space
-dish they booked ("we were only using it to listen for aliens"), expected-value table attached.
+**How they reach you: a laser on the hull.** First contact ("A Laser on the Hull") is the
+observatory's ranging laser painting the ship and counting primes, two, three, five, seven,
+eleven, until you "knock back" (YOKE sends thirteen). Then the beam is their channel, and YOKE
+renders the Director's stream as video, match audio included ("It's for measuring the moon. The
+moon can wait.").
 
 **The beats**
 1. **The Upload** (at once). You mention uploading. "That is the single highest-expected-value
-   sentence anyone has ever said to me." He ships over cryo-lab subjects, "consenting, broadly",
-   for the upload. You feed them to the asset. *Perk: Volunteers:* every battle starts with 30 science.
+   sentence anyone has ever said to me." His people leave a refrigerated truck of cryo-lab
+   subjects ("consenting, broadly") at the edge of the creep, for the upload. The asset eats the truck. *Perk: Volunteers:* every battle starts with 30 science.
 2. **Females** (after 1). He offers to send you some females, "for FUN". The recreational-sex
    exchange as Collins wrote it, ending on "Has your species not discovered masturbation?" and a
    long pause. *Perk: Seed Labs:* you can land anywhere, not only next to ground you hold.
@@ -161,7 +178,7 @@ switch allies ... I would appreciate that as a player."
 **When.** Once a campaign, the return after your SECOND territory taken since allying. On that
 return, after your ally's beat, the other two factions each make you an offer through their own
 channel: the Delegation as a new letter in the field, the Faithful as a word to you on the air,
-the Institute as a cold call. Each offer is written for whoever you're with (the Delegation pities
+the Institute as a cold call on the laser. Each offer is written for whoever you're with (the Delegation pities
 you for the preacher's book or is appalled by the frozen people; the Voice mocks the field letters
 or the gamer; the Director says the field people are "a rounding error" or that you're doing
 homework "for a RADIO HOST").
@@ -170,7 +187,7 @@ homework "for a RADIO HOST").
 - **Go over.** Your old ally's perks stop and its finale never opens. What you saw of its route
   stays in your history (Replay in Comms). It says goodbye in character, and **nobody turns on
   you** (DESIGN.md: "none of them ever turns against you"):
-  - the Delegation forgive you in eleven thousand cards ("Thank you anyway"; page two is a recipe);
+  - the Delegation forgive you in a mile of wheat ("Thank you anyway"; the next field over is a recipe);
   - the Voice finds it in scripture ("Chapter thirty: and the Beast shall walk a while with the
     meek" / "sup with the merchant"; there was no chapter thirty, and now there is);
   - the Director takes it "fine" (his model had you staying at 91%; he'll send a small, symbolic
@@ -178,7 +195,7 @@ homework "for a RADIO HOST").
   Your new route starts **one territory in**: its first two beats play at once, with their perks.
   When you finish it, the ally you left writes once more, right after your ending and before the
   reveal (a last letter from the field; the Voice's last broadcast, "chapter thirty-one"; the
-  Director's voicemail: "Solid execution. Not how I'd have done it. The invoice is still open.").
+  Director's recording on the laser: "Solid execution. Not how I'd have done it. The invoice is still open.").
 - **Stay.** You keep everything, and your ally hears that you turned the others down and adds a
   thank-you perk:
   - Delegation, *the Pickets:* one MORE enemy kind won't come (on top of the Objectors);
@@ -211,8 +228,16 @@ build`; screenshots `notes/screens/2026-10-01/midpoint-*.jpg`).
 1. **Two more beats each for the Faithful and the Institute** (they have 3 against the
    Delegation's 5). Still yours. The midpoint works without them; if they're added, the midpoint
    still lands at two territories in.
-2. **The midpoint's cards have no pictures of their own yet** (they show the leader's portrait)
-   **and are not voiced.** Same for the farewells, the thank-yous and the after-ending notes.
+2. **The midpoint's cards have no pictures of their own yet** (they show the leader's portrait).
+   Every leader line in them is voiced (Oct 1 2026).
+5. **The new first contacts (Oct 1 2026, your channels):** the crop letter to "the Visitor and his
+   wife" that YOKE has to read out is my invention for "something that heavily embarrasses the
+   ship's AI"; swap it if you had something else in mind. YOKE's lines on the cards are read, not
+   voiced (her voice comes from her avatar, not the leaders' voice pipeline). The two contact
+   pictures were redrawn (the crop letter; the laser from the observatory); their "come alive"
+   loops were dropped, so they are still pictures until new loops are made.
+6. **The Director's "I can send over some females"** (your exchange, beat 2) is kept word for word:
+   it's his offer, never taken up, so it doesn't break "no direct contact". Say if it should change.
 3. **Is the Tithe/Retainer/Pickets the right size of thank-you?** They're small on purpose
    (staying should feel like a fine choice, not the obvious one). The scripted balance player
    never switches or stays, so the guardrails are unchanged.

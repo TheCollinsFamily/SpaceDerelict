@@ -171,7 +171,7 @@ try {
     check(missing.length === 0, `every scene of ${f.name} has its picture in the manifest and on disk`,
       missing.length ? `missing: ${missing.map((m) => m.scene.picture ?? `"${m.scene.title}" names none`).join(', ')}` : `${all.length} scenes`);
   }
-  check(FACTIONS.map((f) => f.contact.title).join(' | ') === 'A Letter, Spelled Out in a Field | A Broadcast on Every Frequency | A Video Call, Mid-Game',
+  check(FACTIONS.map((f) => f.contact.title).join(' | ') === 'A Letter, Written in the Crops | A Broadcast on Every Frequency | A Laser on the Hull',
     'each faction reaches the ship in its own way', FACTIONS.map((f) => f.contact.title).join(' | '));
 
   // The card in the page: the picture is fetched and measured, as the rooms' are. Every scene

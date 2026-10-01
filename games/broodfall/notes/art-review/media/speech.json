@@ -175,9 +175,9 @@
   "share": 0.9
  },
  "faithful/a-broadcast-on-every-frequency/2": {
-  "line": "You are the sign. The world must end for the Awaited One to come. Let us help you end it.",
-  "heard": "You are the sign. The world must end for the awaited one to come. Let us help you end it.",
-  "share": 1
+  "line": "This is The Hour Is Near, on every station of the Last Hour Radio Network and every station that would take our money. And to the one up there — I know you can hear me.",
+  "heard": "Is the hour is near on every station of the last hour radio network and every station that would take our money. And to the one up there, I know you can hear me.",
+  "share": 0.96
  },
  "faithful/the-awaited-one/2": {
   "line": "Then we will have misread the date. We have misread it before. It only makes us stronger.",
@@ -230,9 +230,9 @@
   "share": 1
  },
  "faithful/letters-in-a-field/1": {
-  "line": "The peace people write to you in a FIELD. Letters, in a field! Brother, we have forty stations.",
-  "heard": "Peace people write to you in a field. Letters in a field. Brother, we have 40 stations.",
-  "share": 0.83
+  "line": "The peace people write to you in a FIELD. Letters, in WHEAT! Brother, we have every station on the dial.",
+  "heard": "The peace people write to you in a field, letters in wheat. Brother, we have every station on the dial.",
+  "share": 1
  },
  "faithful/chapter-thirty-the-merchant/1": {
   "line": "It is WRITTEN. We misread the date again. It only makes us stronger. Keep your donations coming.",
@@ -255,8 +255,8 @@
   "share": 1
  },
  "faithful/the-visitor-said-no/0": {
-  "line": "Brothers and sisters, the Visitor was TEMPTED. The peace people. The man with the dish. And the Visitor said NO.",
-  "heard": "Brothers and sisters, the visitor was tempted. The peace people. The man with the dish. And the visitor said no.",
+  "line": "Brothers and sisters, the Visitor was TEMPTED. The peace people. The man with the laser. And the Visitor said NO.",
+  "heard": "Brothers and sisters, the visitor was tempted. The peace people, the man with the laser, and the visitor said no.",
   "share": 1
  },
  "faithful/chapter-thirty-one/0": {

@@ -461,7 +461,7 @@ Seventh City.
 
 ### 5.8 The Faithful of the Last Hour (canon, DESIGN.md; placing them PROPOSAL)
 The Faith's apocalyptic wing, not a separate religion: a radio ministry, the Voice's *The Hour Is
-Near* on the forty stations of the Last Hour Radio Network, which the respectable wardens deplore
+Near* on the Last Hour Radio Network, which the respectable wardens deplore
 and every warden's congregation listens to. They have waited for the crack in the sky for
 generations. The Visitor is the answer to their prayers, and their militants and martyrs (the
 Sleepers and Garrison perks) are drawn from the Bell's regiments and the censer-bearers. Their
@@ -732,7 +732,7 @@ never makes the comparison with itself; YOKE does, once.
 
 ## 10. Media and entertainment (canon where marked; the rest PROPOSAL)
 
-- **Radio** is the great medium: the Last Hour Radio Network's forty stations (canon), the House
+- **Radio** is the great medium: tens of thousands of stations (Collins, Oct 1 2026: the Faithful reach the ship by putting one message out on all of them at once), the House
   hymn at dawn, the serials of pairs in love, the pennant race of the sibling wars.
 - **Newspapers** (canon: "we know what the newspapers are saying"): owned by Houses, read by
   everyone. The style bible allows **news clippings** as a film surface: their front pages are the
@@ -802,8 +802,8 @@ middle. Details **PROPOSAL** except the quoted territory stories.
 |---|---|
 | **Night 0** | "It was a quiet night, in a quiet little town, until something came down out of the sky" (canon, the opening titles). A meteor falls between a school and a laundromat. The Civil Watch goes to look. |
 | **Day 1** | The morning papers print "METEOR FALLS ON SUBURB". The Watch does not come back. The Home Levy is raised street by street ("they fought it"). The bells on the Temple Terraces start ringing and do not stop. |
-| **Week 1** | The Host arrives. The Granary Belt's ministry sends a researcher "to look at the crater". Every academy on the planet applies for a sample; the Houses start bidding. The Voice goes on air on all forty stations: "LOOK UP." |
-| **Weeks 2-4** | Eleven thousand members of the Friendship Delegation spell out a letter in a field. The Institute books the deep-space dish, which "we were only using to listen for aliens". Cul-de-Sac Heights, Old Harbor (its fleet sails out when the creep reaches the docks) and the Granary Belt fall or hold. Some pilots stop flying. |
+| **Week 1** | The Host arrives. The Granary Belt's ministry sends a researcher "to look at the crater". Every academy on the planet applies for a sample; the Houses start bidding. The Voice buys, begs or borrows tens of thousands of stations and puts one message out on all of them at the same second, so the ship will notice: "LOOK UP." |
+| **Weeks 2-4** | The Friendship Delegation cut a letter into the wheat of the Granary Belt, a mile high, to the Visitor "and the Visitor's wife" (they heard two voices on the command band). The Institute points the observatory's ranging laser at the ship and counts primes until it answers (Collins, Oct 1 2026). Cul-de-Sac Heights, Old Harbor (its fleet sails out when the creep reaches the docks) and the Granary Belt fall or hold. Some pilots stop flying. |
 | **The middle** | The Foundry Plains make more armies. University Hill's finest minds gather "all very interested in you". A royal comes out of the Ossuary Coast. The Pilgrim Road is empty "this year". Couriers carry stolen limbs to a campus nobody admits exists. The counter-attacks (the pushback) are the Host trying to take its cities back. |
 | **Late** | The Institute shuts down the planet's AI labs "for safety". The Delegation publishes a colour-coded schedule for its own species' end. The Voice names the Seventh City. There are fewer lights on the night side each week; YOKE counts them. |
 | **The end** | One of three: the last delegate switches off the lights in the Assembly Hall; the Awaited One comes out of the Seventh City "a little stiffly" and the Voice weeps that everything worked out; or the Director presides over the rubble and goes last into an upload chamber that is a door into the asset's gut. Queen's Hollow is the planet's heart in every ending: "whoever holds it holds the planet". |

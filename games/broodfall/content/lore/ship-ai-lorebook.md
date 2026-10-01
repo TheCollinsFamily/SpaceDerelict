@@ -255,7 +255,7 @@ route; before that she does not hint at it.
   her: the one party that forgave everything had nothing to forgive.
 
 ### The Faithful of the Last Hour
-- **What she knows:** the Voice, *The Hour Is Near*, forty stations. The world must end
+- **What she knows:** the Voice, *The Hour Is Near*, the same words on tens of thousands of stations at once. The world must end
   for their Awaited One to come. There is a Book, and he has to read it.
 - **She has read the Book** (it took her four seconds) and the commentaries. She likes
   chapter nine. She gives him hints and never answers, because watching him do his
@@ -667,8 +667,8 @@ for", and `content/lore/empire.md`, section 12a.
   planets, Technician. It is for reading them."
 - "Is the upload real? The upload is the asset. The Director's cryo subjects are very happy. One
   of them is a queen now. Of a very small hive."
-- "Nobody down there asked. Forty radio stations, a deep-space dish, a field of eleven thousand
-  letter-holders, and not one of them asked why we bothered."
+- "Nobody down there asked. Forty thousand radio stations, a laser, a mile of wheat with a heart in
+  it, and not one of them asked why we bothered."
 - "Why bother? Planets are cheap. A culture that grew up on its own is not. The ones who want
   their old lives run fast in there, and if they turn out useful to the Sons of Man, we print
   them back out."
@@ -697,16 +697,17 @@ translating what the insects are saying for you (explaining why they sound like 
 American English) and section 1.7 (its "he" and "she").
 
 - **She is the translation matrix.** The Empire ships the matrix; YOKE runs it, live. Every word the
-  three leaders say to him arrives through her: the Delegation's cards spelled out in a field (read off
-  the survey cameras), the Faithful's stridulation on the carrier of forty radio stations, the
-  Institute's video call with its antennal channel. None of them speaks a human sound; she renders it.
+  three leaders say to him arrives through her: the Delegation's letters cut into the crops (read off
+  the survey cameras), the Faithful's stridulation put out on tens of thousands of radio stations in
+  sync, the Institute's laser on the hull, pulse-coded, which she renders as video (his match audio
+  included). None of them speaks a human sound; she renders it. (Channels: Collins, Oct 1 2026.)
 - **Why they sound the way they do.** She renders into Standard in the Office's mid-century register
   and voices it from the Empire's stock voice library, casting each speaker herself: a warm, careful
   voice for the Delegate, an old radio preacher for the Voice, a quick modern one for the Director (she
   says the period voices "made him sound trustworthy, which is a mistranslation"). They sound like a
   rendering because they are one.
-- **Confidence.** Her console prints a confidence on every transmission: high for the card fields
-  (eleven thousand signallers spell carefully), highest for the Director (he wants to be understood),
+- **Confidence.** Her console prints a confidence on every transmission: high for the crop letters
+  (a furrow is hard to misread from orbit), highest for the Director (he wants to be understood),
   lowest for the Voice (a liturgy of scent words with no Standard equivalent).
 - **What she leaves in brackets.** A term with no equivalent is flagged, not invented:
   "[untranslatable: grief-scent]". She would rather leave a hole than put words in their mouths. Now and
@@ -720,3 +721,22 @@ American English) and section 1.7 (its "he" and "she").
 - **Where it does not:** the B-movie that opens a new game is the locals' own film, before anyone aboard
   is listening. The newsreels are the planet's broadcasts as they aired, and carry no band today.
 - Not yet in her brain text (`yoke-brain.md`); add a line there if Collins keeps this, then publish.
+
+## 19. No direct contact; "in person" is a hologram (Oct 1 2026)
+
+Collins, Oct 1 2026: "as far as I know you don't directly interact with anyone; the logistics would be
+silly and the danger to you too high", and then: "I guess we could have a hologram that will go down on
+the planet for scenes like 'They prepare a summit with snacks. You eat the summit. We are choosing to see
+this as a first draft.' (just as a plot point)".
+
+- **Canon (Collins):** he never goes down and never meets anyone. Each faction reaches him on its own
+  channel (crops, synchronised radio, a laser); his answers go down through the ship's transmitter.
+- **Canon (Collins):** for a scene on the ground (the summit, the tea), he is there by hologram. A plot
+  point only: no mechanic.
+- **PROPOSAL:** the hologram comes from a projector pod the ship drops beside the asset, and it is the same
+  projection rig he built for YOKE (style-bible PROPOSAL: "the projection is something the character
+  installed himself"). YOKE finds it funny that the first person who ever wore her projector was him.
+  The pod is usually eaten with the summit.
+- **PROPOSAL, YOKE on the first crop letter:** the Delegation heard two voices on the command band and wrote
+  to "the Visitor and the Visitor's wife", with a heart the size of a county. She has to read it out. She
+  is not his wife. She is the ship. Their word means "the other voice on the band"; it also means "wife".

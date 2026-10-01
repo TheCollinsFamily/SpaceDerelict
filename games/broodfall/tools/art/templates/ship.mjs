@@ -133,9 +133,10 @@ const WHO = {
 };
 const SCENES = {
   // ---- The Friendship Delegation: letters, spelled out in a field for the orbital cameras.
+  // Collins, Oct 1 2026: the Delegation first write to him "in crops"; the letter embarrasses YOKE (it is to him and "his wife").
   'delegation-contact': {
-    what: 'Seen from very high above, looking almost straight down, as photographed by a camera in orbit: a patchwork of farmland, hedgerows, a winding country road and the roofs of a small town at one edge. One huge green meadow in the middle of the picture is packed with thousands of tiny insect people standing shoulder to shoulder, each holding a coloured card over its head (red, yellow, blue, white and pink), so that the crowd forms five neat lines of big ABSTRACT GLYPHS across the grass, like a letter written on a page: loops, hooks, dots, spirals and honeycomb cells of an invented script. The last glyph of the bottom line is unfinished: a thin stream of tiny figures is still walking into place, and one small group has sat down on the grass to rest. Long afternoon shadows. A row of buses shaped like beetles is parked along the road beside the meadow.',
-    none: 'The glyphs are invented shapes: they are not letters of any real alphabet and not numerals, and no glyph is a cross, a plus sign, a star or a crescent. There is no lettering on the roofs, the road or the buses.',
+    what: 'Seen from very high above, looking almost straight down, as photographed by a camera in orbit: a patchwork of golden wheat fields, hedgerows, a winding country road and the roofs of a small farming town at one edge. One enormous wheat field in the middle of the picture has been mown into a giant message, like a crop circle: five neat lines of big ABSTRACT GLYPHS cut into the standing wheat as pale stubble, loops, hooks, dots, spirals and honeycomb cells of an invented script. Under the glyphs, also cut into the wheat, a huge simple drawing of two figures holding hands: one is a little round-headed figure, the other is the long sleek shape of a spaceship, and above their joined hands a gigantic heart shape. The last glyph is unfinished: a tiny combine harvester and a few tiny insect farmers are still cutting it. Long afternoon shadows. A row of buses shaped like beetles is parked along the road.',
+    none: 'The glyphs are invented shapes: they are not letters of any real alphabet and not numerals, and no glyph is a cross, a plus sign, a star or a crescent. The heart is a plain heart shape. There is no lettering on the roofs, the road or the buses.',
   },
   'delegation-understand': {
     leader: true, creature: true,
@@ -198,10 +199,11 @@ const SCENES = {
     none: 'There is no halo and no cross on or behind the figure, on its robe, on the curtains or above the stage: the plain gold hexagon is the only emblem. There is no banner with words.',
   },
   // ---- The Institute for Long-Term Hive Flourishing: a video call through their own dish.
+  // Collins, Oct 1 2026: the Institute reach him with "a laser and repeating sequence aimed at your ship" (no dish, no camera).
   'institute-contact': {
     leader: true,
-    what: 'A messy research office at night, with a blackboard and takeaway boxes. WHO is slouched in a blue beanbag chair with a telephone operator\'s headset on his head, in the middle of a video game: he holds a game controller in two hands and stares sideways at a glowing television set full of coloured shapes, while with a third hand he waves a lazy hello toward a big 1950s television camera on a tripod that is pointed at him, and a fourth hand holds a can of soda. A thick cable runs from the camera out through the window to a huge white dish aerial on the lawn outside, aimed up at the night sky. Behind him two junior researchers in lab coats hold up a thick stapled report and a chart of coloured bars, trying to get into the picture.',
-    none: 'The blackboard shows chalk curves and one simple graph only: no writing, no equations, no numerals. The chart is coloured bars with no labels. The cover of the report is blank. The takeaway boxes are plain white card with no print. The can is plain metal. The television set shows coloured shapes only: no score and no words.',
+    what: 'A messy observatory control room at night, with a blackboard and takeaway boxes. Through a big window behind him a tall telescope dome stands open, and from it a perfectly straight, thin, bright green laser beam shoots up into the starry night sky. WHO is slouched in a blue beanbag chair with a telephone operator\'s headset on his head, in the middle of a video game: he holds a game controller in two hands and stares sideways at a glowing television set full of coloured shapes, while with a third hand he waves a lazy hello up toward the sky through the window, and a fourth hand holds a can of soda. Beside him a bulky 1950s console with a big brass telegraph key and a row of glowing green lamps, some lit and some dark, blinks out a code. Behind him two junior researchers in lab coats hold up a thick stapled report and a chart of coloured bars, trying to get into the picture.',
+    none: 'The blackboard shows chalk curves and one simple graph only: no writing, no equations, no numerals. The chart is coloured bars with no labels. The cover of the report is blank. The takeaway boxes are plain white card with no print. The can is plain metal. The television set shows coloured shapes only: no score and no words. There is no satellite dish and no camera anywhere.',
   },
   'institute-machines': {
     leader: true,
@@ -239,7 +241,7 @@ const sceneRefs = (id) => [
   ...(SCENES[id].leader ? [path.join(DIR, `leader-${factionOf(id)}.png`)] : []),
   ...(SCENES[id].creature ? [path.join(CONCEPTS, 'r2-film-still.png')] : []),
 ];
-const scenePrompt = (id) => {
+export const scenePrompt = (id) => {
   const s = SCENES[id];
   // With two reference pictures the model has to be told which is which, or the leader takes on the other's look.
   const who = s.creature ? WHO[factionOf(id)].replace('the reference picture', 'the FIRST reference picture') : WHO[factionOf(id)];

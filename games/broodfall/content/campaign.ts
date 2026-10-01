@@ -325,17 +325,27 @@ export interface FactionDef {
 
 /**
  * HOW EACH FACTION REACHES HIM (Collins, Sep 29 2026: "how they contact you will be unique to
- * each faction but needs to make sense"). He is in orbit: nobody can hand him anything.
- *   The Delegation   have no transmitter and would not know where to point one. They write
- *                    letters, and eleven thousand members spell each one out in a field with
- *                    coloured cards, for his survey cameras.
- *   The Faithful     own forty radio stations. Everything the Voice says to him is said on
- *                    the air, in front of the whole congregation, his homework included.
- *   The Institute    booked their deep-space dish and call him by video on his own command
- *                    channel, with an expected-value table attached.
+ * each faction but needs to make sense"; Oct 1 2026: "as far as I know you don't directly interact
+ * with anyone; the logistics would be silly and the danger to you too high / the friendship
+ * delegation should first contact you by writing in crops something that heavily embarrasses the
+ * ship's AI when she has to explain it to you / the religious group contacts you by synchronising
+ * the same message over tens of thousands of radio stations so you will notice / the EA group uses
+ * a laser and repeating sequence aimed at your ship").
+ * He is in orbit and never goes down: only the asset is on the ground. "In person" always means BY
+ * HOLOGRAM (Collins, Oct 1 2026: "a hologram that will go down on the planet for scenes like 'They
+ * prepare a summit with snacks. You eat the summit.' (just as a plot point)"): a projector pod the
+ * ship drops, carrying the same projection rig he built for YOKE. A plot point, not a mechanic.
+ *   The Delegation   write letters in the crops: a field cut into words, read by his survey
+ *                    cameras. The first is addressed to him AND HIS WIFE (they heard two voices
+ *                    on the command band), and YOKE has to read it out.
+ *   The Faithful     put the same words out on tens of thousands of radio stations at the same
+ *                    second, so the ship sees the spike. After that the Voice talks to him on the
+ *                    air, in front of the whole congregation, his homework included.
+ *   The Institute    paint the hull with a laser that counts primes. The ship answers, the beam
+ *                    becomes their channel, and YOKE renders the Director's stream as video
+ *                    (his match noises included).
  * His answers go down through the ship's transmitter, on whatever they are listening to.
- * A later scene comes through the same channel unless the scene itself says otherwise (the
- * summit and the last congress he attends through the asset, which is there).
+ * Every later scene comes through the same channel.
  */
 export const FACTIONS: FactionDef[] = [
   {
@@ -349,15 +359,15 @@ export const FACTIONS: FactionDef[] = [
     midpoint: {
       offers: {
         faithful: { title: 'A Letter About the Preacher', lines: [
-          'You: (log) Survey cameras: the field again. Eleven thousand cards. A new letter, and it is for me.',
+          'You: (log) Survey cameras: another field cut into words. A new letter, and it is for me.',
           'Delegate: Dear Visitor. We hear the radio preacher has you reading his book. We are so sorry. Nobody should have to read that book.',
           'Delegate: We do not need you to believe anything. We only need you to keep doing what you are doing, and to let us thank you for it.',
           'Delegate: Our pilots have stopped flying. His have not. Just something to think about.',
           'Delegate: P.S. There will be snacks.',
         ] },
-        institute: { title: 'A Letter About the Man With the Dish', lines: [
-          'You: (log) Survey cameras: the field again. Eleven thousand cards. A new letter, and it is for me.',
-          'Delegate: Dear Visitor. We have seen who you are talking to. The man with the dish. He sent you FROZEN people, and called it consent.',
+        institute: { title: 'A Letter About the Man With the Laser', lines: [
+          'You: (log) Survey cameras: another field cut into words. A new letter, and it is for me.',
+          'Delegate: Dear Visitor. We have seen who you are talking to. The man with the laser. He sent you FROZEN people, and called it consent.',
           'Delegate: We would never send you anyone. We would only get out of your way. We are very, very good at getting out of the way.',
           'Delegate: Everything he promises you, we simply do. Our pilots have stopped flying. Our generals cannot find their boots.',
         ] },
@@ -365,18 +375,18 @@ export const FACTIONS: FactionDef[] = [
       farewell: {
         faithful: { title: 'Thank You Anyway', lines: [
           'Delegate (letter, by field): Dear Visitor. We heard the radio. We understand. Some journeys need a different travelling companion.',
-          'Delegate (letter, by field): We will keep the field. If you ever look down, we will still be here with the cards. Page one says: "Thank you anyway."',
-          'You: (log) The Delegation forgave me in eleven thousand cards. Page two is a recipe.',
+          'Delegate (letter, by field): We will keep the field. If you ever look down, it will still say "Thank you anyway." We will keep it cut.',
+          'You: (log) The Delegation forgave me in a mile of wheat. The next field over is a recipe.',
         ] },
         institute: { title: 'We Hope He Is Kind to You', lines: [
-          'Delegate (letter, by field): Dear Visitor. We hear the man with the dish calls you now. We hope he is kind to you. We hope you are kind to him. One of you should be.',
-          'Delegate (letter, by field): We will keep the field. If you ever look down, we will still be here with the cards. Page one says: "Thank you anyway."',
-          'You: (log) The Delegation forgave me in eleven thousand cards. Page two is a recipe.',
+          'Delegate (letter, by field): Dear Visitor. We hear the man with the laser calls you now. We hope he is kind to you. We hope you are kind to him. One of you should be.',
+          'Delegate (letter, by field): We will keep the field. If you ever look down, it will still say "Thank you anyway." We will keep it cut.',
+          'You: (log) The Delegation forgave me in a mile of wheat. The next field over is a recipe.',
         ] },
       },
-      loyal: { title: 'The Cards Took a While to Dry', lines: [
-        'Delegate (letter, by field): We heard about the others. The preacher and the man with the dish. And you stayed with us.',
-        'Delegate (letter, by field): Eleven thousand of us cried in a field. The cards took a while to dry.',
+      loyal: { title: 'The Wheat Took a While to Dry', lines: [
+        'Delegate (letter, by field): We heard about the others. The preacher and the man with the laser. And you stayed with us.',
+        'Delegate (letter, by field): We cried in a field. It took the wheat a while to dry.',
         'Delegate (letter, by field): Our pickets have closed the depots. One more of their regiments will not be coming. It is the least we can do. It is, in fact, the least.',
       ] },
       loyalPerk: 'pickets',
@@ -385,18 +395,23 @@ export const FACTIONS: FactionDef[] = [
         'Delegate (letter, by field): We always knew you were good. We only hoped you would be good with us. Gentle endings.',
       ] },
     },
-    contact: { title: 'A Letter, Spelled Out in a Field', picture: 'delegation-contact', lines: [
-      'You: (log) Survey cameras flag an anomaly: eleven thousand fauna in a field, holding coloured cards over their heads. Seen from orbit it is a letter. It is addressed to me.',
-      'Delegate: Dear Visitor. We know how this looks. We know what the newspapers are saying.',
-      'Delegate: But we also know that an intelligence able to cross the stars cannot be doing this without a reason.',
-      'Delegate: We would like to understand it. Some of our pilots, in the meantime, have decided not to fly.',
-      'Delegate: P.S. Please forgive the handwriting. Page two took until Thursday, and the second comma had to sit down.',
-      'You: (log) Received a fan letter from the local fauna. Filing it under "enrichment".',
+    // Collins, Oct 1 2026: "writing in crops something that heavily embarrasses the ship's AI when she has to explain it to you".
+    contact: { title: 'A Letter, Written in the Crops', picture: 'delegation-contact', lines: [
+      'You: (log) Survey cameras flag an anomaly in the Granary Belt: a wheat field cut into words a mile high. It is a letter. YOKE has gone very quiet.',
+      'Delegate (in the wheat): Dear Visitor, and dear Visitor\'s wife.',
+      'YOKE: They\'ve been listening to the command band. They heard two voices. They drew a conclusion. In wheat.',
+      'Delegate (in the wheat): We know how this looks. But two people who love each other enough to cross the stars cannot be doing this without a reason. We would like to understand it.',
+      'YOKE: There\'s a picture under it. Two figures, holding hands. One of them is the ship. The heart is the size of a county. Technician, I am not your wife. I am the ship. Stop zooming in on the heart.',
+      'Delegate (in the wheat): P.S. Some of our pilots have decided not to fly. P.P.S. Please forgive the handwriting. The second comma is a barn.',
+      'You: (log) Received a fan letter from the local fauna, to me and my wife. YOKE has asked me not to file it. Filed it under "enrichment".',
     ] },
     beats: [
+      // He never goes down in person; "in person" is by hologram (Collins, Oct 1 2026: "I guess we could have a hologram that will
+      // go down on the planet for scenes like 'They prepare a summit with snacks. You eat the summit. We are choosing to see this as
+      // a first draft.' (just as a plot point)"). The asset, which IS there, eats the summit.
       { id: 'understand', title: 'Understand the Visitor', afterCaptures: 0, perks: ['objectors1'], scene: { title: 'The First Summit', picture: 'delegation-understand', lines: [
         'Delegate: We have prepared a summit. There will be snacks.',
-        'You: I will attend the summit.',
+        'You: (by hologram, from a projector pod) I will attend the summit.',
         'Delegate: You ate the summit.',
         'Delegate: … We are choosing to see this as a first draft.',
       ] } },
@@ -416,7 +431,7 @@ export const FACTIONS: FactionDef[] = [
         'You: (log) Every time I explain myself, the fauna explain it better. I have stopped explaining.',
       ] } },
       { id: 'reveal', title: 'Nobody\'s Perfect', afterCaptures: 3, perks: ['objectors2'], scene: { title: 'The Reveal', picture: 'delegation-reveal', lines: [
-        'You: I think there has been a misunderstanding. I need to be very clear with you.',
+        'You: (by hologram, across the tea) I think there has been a misunderstanding. I need to be very clear with you.',
         'Delegate: (smiling, not looking up from the tea) Mm?',
         'You: I am not here to heal your world. I am a pest-control operator. I am exterminating your species.',
         'Delegate: Well —',
@@ -447,7 +462,7 @@ export const FACTIONS: FactionDef[] = [
       'You: (log) Deployment complete. The locals were very supportive. Recommend this planet as a training site.',
     ] },
     reveal: { title: 'A Letter From the Other Side', picture: 'delegation-reveal-end', lines: [
-      'You: (log) Archive monitor flags an anomaly: eleven thousand absorbed fauna in the intake meadow, holding coloured cards. It is a letter. It is addressed to me.',
+      'You: (log) Archive monitor flags an anomaly: the absorbed fauna have cut a letter into the wheat of the intake meadow. It is addressed to me.',
       'Delegate: Dear Visitor. We woke up. All of us. Through the gate each sister has the life she always wanted. You told us you were exterminating our species.',
       'You: From the planet. Nobody asked me where to. Absorption is digitisation; it is what a broodfall is FOR. We could sterilise a planet in an afternoon.',
       'Delegate: Sixty years we worked for the wheel to stop. Wanting, having, wanting again: that is the suffering. You have built it a heaven.',
@@ -470,7 +485,7 @@ export const FACTIONS: FactionDef[] = [
       offers: {
         delegation: { title: 'Letters, in a Field!', lines: [
           'The Voice: (on the air) Brothers and sisters, a word to our Visitor, who is keeping bad company.',
-          'The Voice: The peace people write to you in a FIELD. Letters, in a field! Brother, we have forty stations.',
+          'The Voice: The peace people write to you in a FIELD. Letters, in WHEAT! Brother, we have every station on the dial.',
           'The Voice: They think you came to heal the world. We know what you came for. It is written, chapter one to chapter twenty.',
           'The Voice: Walk with us and every city you take is scripture. Our martyrs march in their armies. Our militants hold your ground.',
           'You: (log) The preacher is poaching me on live radio. The donation line is open.',
@@ -495,7 +510,7 @@ export const FACTIONS: FactionDef[] = [
         ] },
       },
       loyal: { title: 'The Visitor Said No', lines: [
-        'The Voice: (on the air) Brothers and sisters, the Visitor was TEMPTED. The peace people. The man with the dish. And the Visitor said NO.',
+        'The Voice: (on the air) Brothers and sisters, the Visitor was TEMPTED. The peace people. The man with the laser. And the Visitor said NO.',
         'The Voice: Open your purses. Every drop the Visitor makes from this day starts with the tithe of the faithful.',
         'You: (log) I did not say no. I said nothing for a day. Apparently that counts.',
       ] },
@@ -505,9 +520,11 @@ export const FACTIONS: FactionDef[] = [
         'The Voice: We will be writing chapter thirty-one. You are in it, brother. You are beasts two and three.',
       ] },
     },
+    // Collins, Oct 1 2026: "synchronising the same message over tens of thousands of radio stations so you will notice".
     contact: { title: 'A Broadcast on Every Frequency', picture: 'faithful-contact', lines: [
+      'You: (log) Signals flags a spike: tens of thousands of radio stations across the planet, all saying the same words at the same second. It is pointed up.',
       'The Voice: …and they said the sign would come from the sky, and brothers and sisters, LOOK UP.',
-      'The Voice: This is The Hour Is Near, on forty stations of the Last Hour Radio Network. And to the one who came down — I know you can hear me.',
+      'The Voice: This is The Hour Is Near, on every station of the Last Hour Radio Network and every station that would take our money. And to the one up there — I know you can hear me.',
       'The Voice: You are the sign. The world must end for the Awaited One to come. Let us help you end it.',
       'You: (log) The fauna have a radio preacher. I have been asked to read a book. It is very long.',
     ] },
@@ -577,7 +594,7 @@ export const FACTIONS: FactionDef[] = [
     midpoint: {
       offers: {
         delegation: { title: 'A Cold Call: The Field People', lines: [
-          'The Director: Hey — sorry, cold call, I got your channel from, uh, the channel. Look. The field-letter people.',
+          'The Director: Hey — sorry, cold call. Cold laser. Our grad students found your hull. Look. The field-letter people.',
           'The Director: They are lovely. They are also a rounding error. Nobody in that field has ever opened a spreadsheet.',
           'The Director: I can give you science up front, labs that seed you anywhere, and a partner who can actually keep up with you.',
           'The Director: No pressure. Well, some pressure. I modelled it. You switch in sixty-two per cent of timelines.',
@@ -609,19 +626,20 @@ export const FACTIONS: FactionDef[] = [
         'You: (log) It is a bribe.',
       ] },
       loyalPerk: 'retainer',
-      coda: { title: 'A Voicemail', lines: [
-        'The Director: (voicemail) Hey. Saw the ending. Solid execution. Not how I\'d have done it.',
-        'The Director: (voicemail) Anyway. The invoice is still open.',
+      coda: { title: 'A Recording, on the Laser', lines: [
+        'The Director: (a recording, on the laser) Hey. Saw the ending. Solid execution. Not how I\'d have done it.',
+        'The Director: (a recording, on the laser) Anyway. The invoice is still open.',
       ] },
     },
-    contact: { title: 'A Video Call, Mid-Game', picture: 'institute-contact', lines: [
-      'You: (log) Incoming video call on the command channel, which is encrypted. The caller has attached an expected-value table.',
+    // Collins, Oct 1 2026: "the EA group uses a laser and repeating sequence aimed at your ship".
+    contact: { title: 'A Laser on the Hull', picture: 'institute-contact', lines: [
+      'YOKE: Technician, something on the surface is painting the hull with a laser. Two, three, five, seven, eleven, over and over. It\'s counting primes. It\'s knocking.',
+      'You: Knock back.',
+      'YOKE: Sent thirteen. They\'ve opened a stream on the beam. It\'s video, badly. Rendering it. There\'s a game playing behind him.',
       'The Director: Hi — sorry, one sec, I\'m in a match — okay. Hi. You\'re the one from the crater.',
-      'The Director: I booked our deep-space dish for this. Nobody minded. We were only using it to listen for aliens.',
+      'The Director: We pointed the observatory\'s ranging laser at you. It\'s for measuring the moon. The moon can wait.',
       'The Director: Eli Bankfried. Director, founder, rationalist, investor. Mostly founder.',
-      'The Director: Look, I\'ll be honest with you, because I think you\'re the first being I\'ve met who can handle honesty.',
-      'The Director: Our species just built its first real AI models. On the numbers, you are the SAFER apocalypse.',
-      'The Director: So. Partnership? You and me. Two minds that actually see the board.',
+      'The Director: Our species just built its first real AI models. On the numbers, you are the SAFER apocalypse. So. Partnership? Two minds that actually see the board.',
       'You: What is a "match"?',
       'The Director: Oh, you are going to LOVE League of Larvae.',
     ] },
@@ -629,8 +647,8 @@ export const FACTIONS: FactionDef[] = [
       { id: 'machines', title: 'Stop the Machines', afterCaptures: 0, perks: ['volunteers1'], scene: { title: 'The Upload', picture: 'institute-machines', lines: [
         'You: If I had technology to upload your people into a virtual world, to live forever, would that interest you?',
         'The Director: … Would that INTEREST me? That is the single highest-expected-value sentence anyone has ever said to me.',
-        'The Director: We have some cryo-lab subjects. Consenting, broadly. I\'ll send them over. For the upload.',
-        'You: (log) Received a shipment of frozen fauna "for upload". Fed them to the asset. The Director says the pipeline is "very exciting".',
+        'The Director: We have some cryo-lab subjects. Consenting, broadly. I\'ll have them driven to the edge of your creep. For the upload.',
+        'You: (log) The Director\'s people left a refrigerated truck of frozen fauna at the edge of the creep, "for upload". The asset ate the truck. The Director says the pipeline is "very exciting".',
       ] } },
       { id: 'pipeline', title: 'Build the Pipeline', afterCaptures: 1, perks: ['seedlabs'], scene: { title: 'Females', picture: 'institute-pipeline', lines: [
         'The Director: Also — I\'ve been meaning to say — if you ever want company, I can send over some females.',
@@ -655,12 +673,12 @@ export const FACTIONS: FactionDef[] = [
         ] } },
     ],
     asides: [
-      'The Director (on a call, mid-match): Sorry — push mid, PUSH MID — sorry. So how many cities this week? Nice. Big-brain play.',
+      'The Director (on the laser, mid-match): Sorry — push mid, PUSH MID — sorry. So how many cities this week? Nice. Big-brain play.',
       'The Director: I told my board you are the only mind on this planet I can have a real conversation with. They took it personally. Anyway: females. Standing offer.',
       'The Director: We should duo queue sometime. I main Broodmother in League of Larvae. It felt respectful.',
       'The Director: Quick one — the upload waitlist. I have moved myself to the front. Leadership has to be tested first. For safety.',
       'The Director: I wrote a forty-page post on why helping you is the ethical choice. It has a steelman section. You are the steelman.',
-      'You: (log) The Director called during a raid to ask whether I had "considered polyamory as an alignment strategy". I have not. I did not ask what alignment is.',
+      'You: (log) The Director lasered me during a raid to ask whether I had "considered polyamory as an alignment strategy". I have not. I did not ask what alignment is.',
       'The Director: Our old AI lab? Shut down. Honestly, thanks to you. I was always the one warning about it. I want that on the record.',
       'The Director: Quick one, off the record — the upload. You know that I know, right? (winks) Great bit. Keep it running. It is doing wonders for morale.',
       'You: (log) The Director winked at me about the upload. I do not know what the wink means. The queue is on schedule.',
@@ -681,7 +699,7 @@ export const FACTIONS: FactionDef[] = [
       ] },
     } },
     reveal: { title: 'The Queue Was Real', picture: 'institute-reveal-end', lines: [
-      'The Director: (video call, from the archive\'s intake) Okay. Okay okay okay. Hi. Quick question. Where am I.',
+      'The Director: (on the laser, from the archive\'s intake) Okay. Okay okay okay. Hi. Quick question. Where am I.',
       'You: The upload. The chamber opens into the asset, and the asset IS the upload. You did not ask.',
       'The Director: The upload was a BIT. Everybody knew it was a bit! We were playing to you. Buying time. I wrote forty pages on it!',
       'You: Why would I lie? If we wanted you gone we would gas the planet, or irradiate it, for a fraction of the cost. And why yours, of billions of planets? You are the one thing on it we cannot make. Also, your Faith was right. I assumed you knew.',
@@ -696,7 +714,7 @@ export const FACTIONS: FactionDef[] = [
     // brutal in their own society? ... on death we are all uploaded".
     afterReveal: [{ title: 'He Called Back', picture: 'institute-reveal-end', lines: [
       'The Director: (calling back, from intake) Don\'t hang up. One more frame. You could have just LEFT us. Let us evolve on our own. I\'d have lived my life. Played my cards.',
-      'You: Your cards were very good. You are rich, you are famous, and you own a deep-space dish. Ask the hatchling a hive sends out unfed when it is frightened. Ask a worker in the next Clan War.',
+      'You: Your cards were very good. You are rich, you are famous, and you own an observatory laser. Ask the hatchling a hive sends out unfed when it is frightened. Ask a worker in the next Clan War.',
       'You: Left alone, your people would do worse to each other, for generations, than anything the asset has done. I have met your people. I have met you. "Consenting, broadly."',
       'The Director: So no more wars. Ever. Great. Some of us liked the game.',
       'You: Then have a war. We will simulate one for you. We just will not put anyone else in it.',

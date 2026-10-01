@@ -92,10 +92,10 @@ try {
   await page.waitForSelector('#campaign:not(.hidden) .cp-scene');
   const contact = await page.locator('.cp-scene').innerText();
   check(/FRIENDSHIP DELEGATION/i.test(contact) && /CALL 1 OF 3/.test(contact), 'back on the ship, all three call: the Delegation first');
-  // He is in orbit: the letter is spelled out in a field, and the card shows the field.
-  check(/SPELLED OUT IN A FIELD/i.test(contact) && !/hand-delivered/i.test(contact), 'their letter reaches orbit: it is spelled out in a field');
+  // He is in orbit: the letter is written in the crops, and the card shows it.
+  check(/WRITTEN IN THE CROPS/i.test(contact) && !/hand-delivered/i.test(contact), 'their letter reaches orbit: it is written in the crops');
   await page.waitForSelector('.cp-scene-card img[data-picture="delegation-contact"]', { timeout: 5000 }).catch(() => {});
-  check(await page.locator('.cp-scene-card img[data-picture="delegation-contact"]').count() === 1, 'the contact card shows the picture of the field');
+  check(await page.locator('.cp-scene-card img[data-picture="delegation-contact"]').count() === 1, 'the contact card shows the picture of the crop letter');
   await shot(page, 'contact');
   await page.locator('.cp-scene [data-ally="delegation"]').click();
   await page.waitForTimeout(150);

@@ -225,30 +225,6 @@
   "institute-reveal-end": "media/pictures/institute-reveal-end.webp"
  },
  "voices": {
-  "delegation/a-letter-spelled-out-in-a-field/1": {
-   "file": "media/voice/delegation__a-letter-spelled-out-in-a-field__1.ogg",
-   "seconds": 5.006,
-   "text": "Dear Visitor. We know how this looks. We know what the newspapers are saying.",
-   "who": "Delegate"
-  },
-  "delegation/a-letter-spelled-out-in-a-field/2": {
-   "file": "media/voice/delegation__a-letter-spelled-out-in-a-field__2.ogg",
-   "seconds": 5.407,
-   "text": "But we also know that an intelligence able to cross the stars cannot be doing this without a reason.",
-   "who": "Delegate"
-  },
-  "delegation/a-letter-spelled-out-in-a-field/3": {
-   "file": "media/voice/delegation__a-letter-spelled-out-in-a-field__3.ogg",
-   "seconds": 4.907,
-   "text": "We would like to understand it. Some of our pilots, in the meantime, have decided not to fly.",
-   "who": "Delegate"
-  },
-  "delegation/a-letter-spelled-out-in-a-field/4": {
-   "file": "media/voice/delegation__a-letter-spelled-out-in-a-field__4.ogg",
-   "seconds": 7.407,
-   "text": "P.S. Please forgive the handwriting. Page two took until Thursday, and the second comma had to sit down.",
-   "who": "Delegate"
-  },
   "delegation/the-first-summit/0": {
    "file": "media/voice/delegation__the-first-summit__0.ogg",
    "seconds": 2.957,
@@ -387,22 +363,16 @@
    "text": "That is the cruellest thing you have ever said to us.",
    "who": "Delegate"
   },
-  "faithful/a-broadcast-on-every-frequency/0": {
-   "file": "media/voice/faithful__a-broadcast-on-every-frequency__0.ogg",
+  "faithful/a-broadcast-on-every-frequency/1": {
+   "file": "media/voice/faithful__a-broadcast-on-every-frequency__1.ogg",
    "seconds": 4.816,
    "text": "…and they said the sign would come from the sky, and brothers and sisters, LOOK UP.",
    "who": "The Voice"
   },
-  "faithful/a-broadcast-on-every-frequency/1": {
-   "file": "media/voice/faithful__a-broadcast-on-every-frequency__1.ogg",
-   "seconds": 15.607,
-   "text": "This is The Hour Is Near, on forty stations of the Last Hour Radio Network. And to the one who came down — I know you can hear me.",
-   "who": "The Voice"
-  },
   "faithful/a-broadcast-on-every-frequency/2": {
    "file": "media/voice/faithful__a-broadcast-on-every-frequency__2.ogg",
-   "seconds": 8.007,
-   "text": "You are the sign. The world must end for the Awaited One to come. Let us help you end it.",
+   "seconds": 16.107,
+   "text": "This is The Hour Is Near, on every station of the Last Hour Radio Network and every station that would take our money. And to the one up there — I know you can hear me.",
    "who": "The Voice"
   },
   "faithful/theology-homework/0": {
@@ -501,48 +471,6 @@
    "text": "… We wish to lodge a complaint with God.",
    "who": "The Voice"
   },
-  "institute/a-video-call-mid-game/1": {
-   "file": "media/voice/institute__a-video-call-mid-game__1.ogg",
-   "seconds": 5.407,
-   "text": "Hi — sorry, one sec, I'm in a match — okay. Hi. You're the one from the crater.",
-   "who": "The Director"
-  },
-  "institute/a-video-call-mid-game/2": {
-   "file": "media/voice/institute__a-video-call-mid-game__2.ogg",
-   "seconds": 5.806,
-   "text": "I booked our deep-space dish for this. Nobody minded. We were only using it to listen for aliens.",
-   "who": "The Director"
-  },
-  "institute/a-video-call-mid-game/3": {
-   "file": "media/voice/institute__a-video-call-mid-game__3.ogg",
-   "seconds": 6.606,
-   "text": "Eli Bankfried. Director, founder, rationalist, investor. Mostly founder.",
-   "who": "The Director"
-  },
-  "institute/a-video-call-mid-game/4": {
-   "file": "media/voice/institute__a-video-call-mid-game__4.ogg",
-   "seconds": 4.207,
-   "text": "Look, I'll be honest with you, because I think you're the first being I've met who can handle honesty.",
-   "who": "The Director"
-  },
-  "institute/a-video-call-mid-game/5": {
-   "file": "media/voice/institute__a-video-call-mid-game__5.ogg",
-   "seconds": 5.806,
-   "text": "Our species just built its first real AI models. On the numbers, you are the SAFER apocalypse.",
-   "who": "The Director"
-  },
-  "institute/a-video-call-mid-game/6": {
-   "file": "media/voice/institute__a-video-call-mid-game__6.ogg",
-   "seconds": 4.606,
-   "text": "So. Partnership? You and me. Two minds that actually see the board.",
-   "who": "The Director"
-  },
-  "institute/a-video-call-mid-game/8": {
-   "file": "media/voice/institute__a-video-call-mid-game__8.ogg",
-   "seconds": 1.716,
-   "text": "Oh, you are going to LOVE League of Larvae.",
-   "who": "The Director"
-  },
   "institute/the-upload/1": {
    "file": "media/voice/institute__the-upload__1.ogg",
    "seconds": 5.306,
@@ -551,8 +479,8 @@
   },
   "institute/the-upload/2": {
    "file": "media/voice/institute__the-upload__2.ogg",
-   "seconds": 5.806,
-   "text": "We have some cryo-lab subjects. Consenting, broadly. I'll send them over. For the upload.",
+   "seconds": 6.407,
+   "text": "We have some cryo-lab subjects. Consenting, broadly. I'll have them driven to the edge of your creep. For the upload.",
    "who": "The Director"
   },
   "institute/females/0": {
@@ -825,24 +753,6 @@
    "text": "P.S. There will be snacks.",
    "who": "Delegate"
   },
-  "delegation/a-letter-about-the-man-with-the-dish/1": {
-   "file": "media/voice/delegation__a-letter-about-the-man-with-the-dish__1.ogg",
-   "seconds": 8.607,
-   "text": "Dear Visitor. We have seen who you are talking to. The man with the dish. He sent you FROZEN people, and called it consent.",
-   "who": "Delegate"
-  },
-  "delegation/a-letter-about-the-man-with-the-dish/2": {
-   "file": "media/voice/delegation__a-letter-about-the-man-with-the-dish__2.ogg",
-   "seconds": 6.606,
-   "text": "We would never send you anyone. We would only get out of your way. We are very, very good at getting out of the way.",
-   "who": "Delegate"
-  },
-  "delegation/a-letter-about-the-man-with-the-dish/3": {
-   "file": "media/voice/delegation__a-letter-about-the-man-with-the-dish__3.ogg",
-   "seconds": 6.806,
-   "text": "Everything he promises you, we simply do. Our pilots have stopped flying. Our generals cannot find their boots.",
-   "who": "Delegate"
-  },
   "delegation/thank-you-anyway/0": {
    "file": "media/voice/delegation__thank-you-anyway__0.ogg",
    "seconds": 6.606,
@@ -851,38 +761,20 @@
   },
   "delegation/thank-you-anyway/1": {
    "file": "media/voice/delegation__thank-you-anyway__1.ogg",
-   "seconds": 8.007,
-   "text": "We will keep the field. If you ever look down, we will still be here with the cards. Page one says: \"Thank you anyway.\"",
+   "seconds": 6.006,
+   "text": "We will keep the field. If you ever look down, it will still say \"Thank you anyway.\" We will keep it cut.",
    "who": "Delegate"
   },
   "delegation/we-hope-he-is-kind-to-you/0": {
    "file": "media/voice/delegation__we-hope-he-is-kind-to-you__0.ogg",
-   "seconds": 9.007,
-   "text": "Dear Visitor. We hear the man with the dish calls you now. We hope he is kind to you. We hope you are kind to him. One of you should be.",
+   "seconds": 10.097,
+   "text": "Dear Visitor. We hear the man with the laser calls you now. We hope he is kind to you. We hope you are kind to him. One of you should be.",
    "who": "Delegate"
   },
   "delegation/we-hope-he-is-kind-to-you/1": {
    "file": "media/voice/delegation__we-hope-he-is-kind-to-you__1.ogg",
-   "seconds": 7.907,
-   "text": "We will keep the field. If you ever look down, we will still be here with the cards. Page one says: \"Thank you anyway.\"",
-   "who": "Delegate"
-  },
-  "delegation/the-cards-took-a-while-to-dry/0": {
-   "file": "media/voice/delegation__the-cards-took-a-while-to-dry__0.ogg",
-   "seconds": 4.707,
-   "text": "We heard about the others. The preacher and the man with the dish. And you stayed with us.",
-   "who": "Delegate"
-  },
-  "delegation/the-cards-took-a-while-to-dry/1": {
-   "file": "media/voice/delegation__the-cards-took-a-while-to-dry__1.ogg",
-   "seconds": 4.106,
-   "text": "Eleven thousand of us cried in a field. The cards took a while to dry.",
-   "who": "Delegate"
-  },
-  "delegation/the-cards-took-a-while-to-dry/2": {
-   "file": "media/voice/delegation__the-cards-took-a-while-to-dry__2.ogg",
-   "seconds": 8.507,
-   "text": "Our pickets have closed the depots. One more of their regiments will not be coming. It is the least we can do. It is, in fact, the least.",
+   "seconds": 6.407,
+   "text": "We will keep the field. If you ever look down, it will still say \"Thank you anyway.\" We will keep it cut.",
    "who": "Delegate"
   },
   "delegation/a-last-letter-from-the-field/0": {
@@ -906,7 +798,7 @@
   "faithful/letters-in-a-field/1": {
    "file": "media/voice/faithful__letters-in-a-field__1.ogg",
    "seconds": 7.806,
-   "text": "The peace people write to you in a FIELD. Letters, in a field! Brother, we have forty stations.",
+   "text": "The peace people write to you in a FIELD. Letters, in WHEAT! Brother, we have every station on the dial.",
    "who": "The Voice"
   },
   "faithful/letters-in-a-field/2": {
@@ -966,7 +858,7 @@
   "faithful/the-visitor-said-no/0": {
    "file": "media/voice/faithful__the-visitor-said-no__0.ogg",
    "seconds": 8.007,
-   "text": "Brothers and sisters, the Visitor was TEMPTED. The peace people. The man with the dish. And the Visitor said NO.",
+   "text": "Brothers and sisters, the Visitor was TEMPTED. The peace people. The man with the laser. And the Visitor said NO.",
    "who": "The Voice"
   },
   "faithful/the-visitor-said-no/1": {
@@ -989,8 +881,8 @@
   },
   "institute/a-cold-call-the-field-people/0": {
    "file": "media/voice/institute__a-cold-call-the-field-people__0.ogg",
-   "seconds": 6.407,
-   "text": "Hey — sorry, cold call, I got your channel from, uh, the channel. Look. The field-letter people.",
+   "seconds": 6.707,
+   "text": "Hey — sorry, cold call. Cold laser. Our grad students found your hull. Look. The field-letter people.",
    "who": "The Director"
   },
   "institute/a-cold-call-the-field-people/1": {
@@ -1083,16 +975,106 @@
    "text": "I'm putting you on retainer. Science up front, every drop. It's not a bribe, it's a loyalty-adjusted expected-value transfer.",
    "who": "The Director"
   },
-  "institute/a-voicemail/0": {
-   "file": "media/voice/institute__a-voicemail__0.ogg",
+  "delegation/a-letter-about-the-man-with-the-laser/2": {
+   "file": "media/voice/delegation__a-letter-about-the-man-with-the-laser__2.ogg",
+   "seconds": 6.606,
+   "text": "We would never send you anyone. We would only get out of your way. We are very, very good at getting out of the way.",
+   "who": "Delegate"
+  },
+  "delegation/a-letter-about-the-man-with-the-laser/3": {
+   "file": "media/voice/delegation__a-letter-about-the-man-with-the-laser__3.ogg",
+   "seconds": 6.806,
+   "text": "Everything he promises you, we simply do. Our pilots have stopped flying. Our generals cannot find their boots.",
+   "who": "Delegate"
+  },
+  "delegation/the-wheat-took-a-while-to-dry/2": {
+   "file": "media/voice/delegation__the-wheat-took-a-while-to-dry__2.ogg",
+   "seconds": 8.507,
+   "text": "Our pickets have closed the depots. One more of their regiments will not be coming. It is the least we can do. It is, in fact, the least.",
+   "who": "Delegate"
+  },
+  "faithful/a-broadcast-on-every-frequency/3": {
+   "file": "media/voice/faithful__a-broadcast-on-every-frequency__3.ogg",
+   "seconds": 8.007,
+   "text": "You are the sign. The world must end for the Awaited One to come. Let us help you end it.",
+   "who": "The Voice"
+  },
+  "institute/a-recording-on-the-laser/0": {
+   "file": "media/voice/institute__a-recording-on-the-laser__0.ogg",
    "seconds": 4.606,
    "text": "Hey. Saw the ending. Solid execution. Not how I'd have done it.",
    "who": "The Director"
   },
-  "institute/a-voicemail/1": {
-   "file": "media/voice/institute__a-voicemail__1.ogg",
+  "institute/a-recording-on-the-laser/1": {
+   "file": "media/voice/institute__a-recording-on-the-laser__1.ogg",
    "seconds": 2.386,
    "text": "Anyway. The invoice is still open.",
+   "who": "The Director"
+  },
+  "institute/a-laser-on-the-hull/3": {
+   "file": "media/voice/institute__a-laser-on-the-hull__3.ogg",
+   "seconds": 5.407,
+   "text": "Hi — sorry, one sec, I'm in a match — okay. Hi. You're the one from the crater.",
+   "who": "The Director"
+  },
+  "institute/a-laser-on-the-hull/5": {
+   "file": "media/voice/institute__a-laser-on-the-hull__5.ogg",
+   "seconds": 6.606,
+   "text": "Eli Bankfried. Director, founder, rationalist, investor. Mostly founder.",
+   "who": "The Director"
+  },
+  "institute/a-laser-on-the-hull/8": {
+   "file": "media/voice/institute__a-laser-on-the-hull__8.ogg",
+   "seconds": 1.716,
+   "text": "Oh, you are going to LOVE League of Larvae.",
+   "who": "The Director"
+  },
+  "delegation/a-letter-about-the-man-with-the-laser/1": {
+   "file": "media/voice/delegation__a-letter-about-the-man-with-the-laser__1.ogg",
+   "seconds": 8.607,
+   "text": "Dear Visitor. We have seen who you are talking to. The man with the laser. He sent you FROZEN people, and called it consent.",
+   "who": "Delegate"
+  },
+  "delegation/the-wheat-took-a-while-to-dry/0": {
+   "file": "media/voice/delegation__the-wheat-took-a-while-to-dry__0.ogg",
+   "seconds": 5.106,
+   "text": "We heard about the others. The preacher and the man with the laser. And you stayed with us.",
+   "who": "Delegate"
+  },
+  "delegation/the-wheat-took-a-while-to-dry/1": {
+   "file": "media/voice/delegation__the-wheat-took-a-while-to-dry__1.ogg",
+   "seconds": 3.707,
+   "text": "We cried in a field. It took the wheat a while to dry.",
+   "who": "Delegate"
+  },
+  "delegation/a-letter-written-in-the-crops/1": {
+   "file": "media/voice/delegation__a-letter-written-in-the-crops__1.ogg",
+   "seconds": 2.817,
+   "text": "Dear Visitor, and dear Visitor's wife.",
+   "who": "Delegate"
+  },
+  "delegation/a-letter-written-in-the-crops/3": {
+   "file": "media/voice/delegation__a-letter-written-in-the-crops__3.ogg",
+   "seconds": 7.806,
+   "text": "We know how this looks. But two people who love each other enough to cross the stars cannot be doing this without a reason. We would like to understand it.",
+   "who": "Delegate"
+  },
+  "delegation/a-letter-written-in-the-crops/5": {
+   "file": "media/voice/delegation__a-letter-written-in-the-crops__5.ogg",
+   "seconds": 8.107,
+   "text": "P.S. Some of our pilots have decided not to fly. P.P.S. Please forgive the handwriting. The second comma is a barn.",
+   "who": "Delegate"
+  },
+  "institute/a-laser-on-the-hull/4": {
+   "file": "media/voice/institute__a-laser-on-the-hull__4.ogg",
+   "seconds": 5.006,
+   "text": "We pointed the observatory's ranging laser at you. It's for measuring the moon. The moon can wait.",
+   "who": "The Director"
+  },
+  "institute/a-laser-on-the-hull/6": {
+   "file": "media/voice/institute__a-laser-on-the-hull__6.ogg",
+   "seconds": 9.007,
+   "text": "Our species just built its first real AI models. On the numbers, you are the SAFER apocalypse. So. Partnership? Two minds that actually see the board.",
    "who": "The Director"
   }
  },

@@ -14,6 +14,7 @@ import { DT, Sim } from '../src/sim/sim';
 import { Autoplayer } from '../src/sim/autoplayer';
 import type { RunStats } from '../src/sim/types';
 import { existsSync, readFileSync } from 'node:fs';
+import { scenesOf } from '../content/media';
 
 const blankStats = (): RunStats => ({
   kills: {}, killsByFamily: {}, killsByCause: {}, healed: 0, limbsGrown: 0, evolutions: 0, limbsLost: 0,
@@ -338,9 +339,25 @@ describe('how the factions reach him, and the picture of every scene', () => {
 
   it('he is in orbit: each faction reaches him in its own way, and nobody hands him anything', () => {
     const by = (id: string) => FACTIONS.find((f) => f.id === id)!;
-    expect(by('delegation').contact.title).toBe('A Letter, Spelled Out in a Field');
+    expect(by('delegation').contact.title).toBe('A Letter, Written in the Crops');
     expect(by('faithful').contact.title).toBe('A Broadcast on Every Frequency');
-    expect(by('institute').contact.title).toBe('A Video Call, Mid-Game');
+    expect(by('institute').contact.title).toBe('A Laser on the Hull');
+    // Collins, Oct 1 2026: crops (that embarrass YOKE), tens of thousands of stations in sync, a laser counting primes;
+    // and "you don't directly interact with anyone": he never goes down; "in person" is by hologram (Collins, the same day).
+    expect(by('delegation').contact.lines.join(' ')).toMatch(/wheat/);
+    expect(by('delegation').contact.lines.some((l) => l.startsWith('YOKE: '))).toBe(true);
+    expect(by('faithful').contact.lines.join(' ')).toMatch(/tens of thousands of radio stations/);
+    expect(by('institute').contact.lines.join(' ')).toMatch(/primes/);
+    for (const f of FACTIONS) {
+      for (const sc of scenesOf(f)) {
+        expect(sc.lines.join(' '), sc.title).not.toMatch(/coloured cards|forty stations|deep-space dish|video call/i);
+        // Where he is present at a scene on the ground, he is there by hologram.
+        for (const l of sc.lines.filter((x) => /^You: .*\b(attend|across the tea)\b/.test(x))) expect(l, sc.title).toMatch(/hologram/);
+      }
+    }
+    const summit = by('delegation').beats.find((b) => b.id === 'understand')!.scene.lines.join(' ');
+    expect(summit).toMatch(/\(by hologram[^)]*\) I will attend the summit/);
+    expect(summit).toMatch(/You ate the summit/);
     for (const f of FACTIONS) {
       const all = [f.contact.title, ...f.contact.lines, ...f.asides].join(' ');
       expect(all).not.toMatch(/hand-delivered|by hand|\bpostman\b|\bcourier\b/i);
@@ -348,7 +365,7 @@ describe('how the factions reach him, and the picture of every scene', () => {
     // The letters stay letters; each says how it came.
     expect(by('delegation').asides.every((a) => a.startsWith('Delegate (letter, by field): '))).toBe(true);
     expect(by('delegation').contact.lines.join(' ')).toMatch(/Dear Visitor/);
-    expect(by('institute').contact.lines.join(' ')).toMatch(/deep-space dish/);
+    expect(by('institute').contact.lines.join(' ')).toMatch(/laser/);
     // Everything the Voice says to him is said on the air.
     expect(by('faithful').asides.filter((a) => a.startsWith('The Voice')).every((a) => /^The Voice \((broadcast|to you, on the air)\): /.test(a))).toBe(true);
   });

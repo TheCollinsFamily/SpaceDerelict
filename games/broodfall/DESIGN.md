@@ -904,7 +904,7 @@ each having only a little story to it, with the ability for the enemy to push ba
 
 ### The factions (Emperor's recruitable sub-houses) — revised Sep 28 2026
 
-**How each reaches him (Sep 29 2026).** Collins: contact "would not be hand delivered; how they contact you will be unique to each faction but needs to make sense." He is in orbit, so each faction reaches him its own way: the **Friendship Delegation** SPELLS its letters OUT IN A FIELD, thousands of members holding coloured cards for the orbital cameras (their letters stay letters); the **Faithful** BROADCAST on every frequency of their radio network; the **Institute** makes a VIDEO CALL over the deep-space dish it booked for the purpose, mid-game. Every scene has its own picture (the `picture` of each scene in content/campaign.ts; the files in public/art/ship/scenes/), shown on its card; a scene with none shows the leader's portrait.
+**How each reaches him (Sep 29 2026).** Collins: contact "would not be hand delivered; how they contact you will be unique to each faction but needs to make sense." He is in orbit, so each faction reaches him its own way (REVISED Oct 1 2026, "How each faction reaches him" below): the **Friendship Delegation** write their letters IN THE CROPS; the **Faithful** put one message out on TENS OF THOUSANDS of radio stations at the same second; the **Institute** aim a LASER at the ship that repeats a sequence (primes) until it answers. Every scene has its own picture (the `picture` of each scene in content/campaign.ts; the files in public/art/ship/scenes/), shown on its card; a scene with none shows the leader's portrait.
 "Recruitable factions through some missions … give you a couple of extra units, and
 you choose one or the other, and it colours the campaign." "Each faction would have
 its own central campaign to beating the game." Three factions of the colony itself,
@@ -1016,26 +1016,43 @@ Going over ends the old ally's perks and route (it takes it in character and nev
 route one territory in; staying keeps everything and adds the ally's thank-you perk. Every word and the reasons for
 the numbers: `notes/CAMPAIGN-BEATS.md`.
 
-#### How each faction reaches him (added Sep 29 2026)
-Collins, of the first contact card ("A Letter, Hand-Delivered"): "obviously would not be
-hand delivered; how they contact you will be unique to each faction but needs to make
-sense." He is in orbit, so nobody can hand him anything, and each faction's way of reaching
-him is a joke about who they are:
-- **The Delegation write letters, and spell them out in a field.** They have no transmitter
-  and would not know where to point one, but they have members: eleven thousand of them
-  hold coloured cards over their heads, a paragraph at a time, for his survey cameras
-  ("page two took until Thursday"). Every later letter comes the same way, the newsletter
-  "in the next field along". It is the slowest channel there is, used by the faction that
-  wants everything to go faster.
-- **The Faithful broadcast.** The Voice owns forty radio stations, so everything he says to
-  the character is said on the air: the Book is read to him a chapter a night, and his
-  theology homework is marked in front of the whole congregation.
-- **The Institute call by video,** through the deep-space dish they built to listen for
-  aliens, on the ship's own encrypted command channel, with an expected-value table
-  attached. The Director is in a match while he does it.
-- His answers go down through the ship's transmitter, to whatever they are listening on.
-  Two scenes he attends through the asset, which is there: the first summit (it eats it)
-  and the last congress.
+#### How each faction reaches him (added Sep 29 2026; REVISED Oct 1 2026)
+Collins, Sep 29 2026, of the first contact card ("A Letter, Hand-Delivered"): "obviously would
+not be hand delivered; how they contact you will be unique to each faction but needs to make
+sense." Collins, Oct 1 2026: "as far as I know you don't directly interact with anyone; the
+logistics would be silly and the danger to you too high / the friendship delegation should
+first contact you by writing in crops something that heavily embarrasses the ship's AI when
+she has to explain it to you / the religious group contacts you by synchronising the same
+message over tens of thousands of radio stations so you will notice / the EA group uses a
+laser and repeating sequence aimed at your ship".
+
+**THE RULE: no direct contact.** He never goes down to the planet and never meets anyone; only
+the asset is on the ground. Every scene comes through the faction's channel, and his answers go
+down through the ship's transmitter, to whatever they are listening on.
+**THE ONE EXCEPTION: "in person" always means by HOLOGRAM.** Collins, Oct 1 2026: "I guess we could
+have a hologram that will go down on the planet for scenes like 'They prepare a summit with
+snacks. You eat the summit. We are choosing to see this as a first draft.' (just as a plot
+point)". A plot point, not a mechanic: the first summit (he attends by hologram; the asset eats
+the summit) and the tea where he tells the Delegation the truth ("nobody's perfect"). PROPOSAL
+(lore book section 19): the hologram comes from a projector pod the ship drops, the same rig he
+built for YOKE's projection.
+
+- **The Delegation write in the crops.** No transmitter, and they would not know where to point
+  one, but they have farms: a wheat field cut into words a mile high, read by his survey cameras.
+  The first letter is to "the Visitor and the Visitor's wife" (they heard two voices on the
+  command band), under a heart the size of a county, and YOKE has to read it out to him ("I am
+  not your wife. I am the ship. Stop zooming in on the heart."). Every later letter is cut into
+  a field too, the newsletter "in the next field along". It is the slowest channel there is,
+  used by the faction that wants everything to go faster.
+- **The Faithful synchronise.** The same words on tens of thousands of radio stations at the same
+  second, so the ship sees the spike. After that the Voice talks to him on the air: the Book is
+  read to him a chapter a night, and his theology homework is marked in front of the whole
+  congregation.
+- **The Institute knock with a laser.** The observatory's ranging laser paints the hull, counting
+  primes, until the ship answers; then the beam is their channel, and YOKE renders the
+  Director's stream as video (his match audio included).
+- **YOKE translates all of it** (content/translation.ts): the source band on every card names the
+  channel (CROP GLYPHS, 41,880 STATIONS IN SYNC, LASER, PULSE-CODED).
 - **Every scene has its own picture** (a still in the look of the films, `picture` on the
   scene in `content/campaign.ts`; made by `tools/art/templates/ship.mjs`, baked to
   `public/art/ship/scenes/`). The leader's portrait stays in Comms and beside the letters

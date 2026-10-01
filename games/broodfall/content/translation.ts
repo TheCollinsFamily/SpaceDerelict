@@ -3,8 +3,8 @@
  * is translating what the insects are saying for you (explaining why they sound like AI)").
  *
  * Every word the leaders say to him reaches him through YOKE: she renders their signal (the
- * Delegation's card fields, the Faithful's stridulation over the radio carrier, the Institute's video
- * with its antennal channel) live into Standard, in the Empire's mid-century register, and voices it
+ * Delegation's letters cut into the crops, the Faithful's stridulation on tens of thousands of radio
+ * stations in sync, the Institute's pulse-coded laser on the hull: Collins's channels, Oct 1 2026) live into Standard, in the Empire's mid-century register, and voices it
  * from the Empire's stock voice library. That is why they sound the way they do. The lore is in
  * `content/lore/ship-ai-lorebook.md` section 18 (PROPOSAL) and `content/lore/insects.md` section 11.
  *
@@ -29,9 +29,9 @@ export interface ChannelDef {
 }
 
 export const CHANNELS: Record<Channel, ChannelDef> = {
-  delegation: { source: 'CARD-FIELD SEMAPHORE · 11,204 SIGNALLERS', glyphs: '▖▗▘▙▚▛▜▝▞▟▀▄▌▐', confidence: [93, 98] },
-  faithful: { source: 'STRIDULATION OVER AM CARRIER · 40 STATIONS', glyphs: '⌇⌁∿≀⋮⁞⌇∿', confidence: [81, 92] },
-  institute: { source: 'VIDEO + ANTENNAL CHANNEL · DEEP-SPACE DISH', glyphs: '⟟⟊⟒⊹⌬⏃⏚⍜⎍⍀', confidence: [95, 99] },
+  delegation: { source: 'CROP GLYPHS · 3.2 KM² · READ FROM ORBIT', glyphs: '║═╬╦╩╠╣╔╗╚╝⋮⁘⁙', confidence: [93, 98] },
+  faithful: { source: 'STRIDULATION OVER AM · 41,880 STATIONS IN SYNC', glyphs: '⌇⌁∿≀⋮⁞⌇∿', confidence: [81, 92] },
+  institute: { source: 'LASER, PULSE-CODED · REPEATING · RENDERED AS VIDEO', glyphs: '·•∙⋅◦∘•·', confidence: [95, 99] },
   voicebox: { source: 'VOICE BOX · YOUR OWN MANUFACTURE', glyphs: '░▒▓', confidence: [100, 100] },
 };
 
@@ -49,15 +49,16 @@ export const SPEAKER_CHANNEL: Record<string, Channel> = {
  * rewritten so the words are gone simply loses its note. Notes are read, never voiced.
  */
 export const TRANSLATOR_NOTES: Array<{ match: string; note: string }> = [
-  { match: 'Please forgive the handwriting', note: 'Rendered "handwriting". Their word is "card discipline". Row forty dropped a card.' },
+  { match: 'Please forgive the handwriting', note: 'Rendered "handwriting". Their word is "furrow discipline". The second comma really is a barn.' },
+  { match: 'and dear Visitor\'s wife', note: 'Rendered "wife". Their word means "the other voice on the band". It also means "wife". I checked. Twice.' },
   { match: 'our newsletter, "Gentle Endings"', note: 'Their title is the word for the hush after a swarm leaves the comb. "Gentle Endings" is my closest. It is not close.' },
   { match: 'asked if you are sad', note: 'untranslatable: grief-scent, a mourning pheromone with no Standard equivalent. Rendered "sad".' },
   { match: 'We are the Voluntary Extinction Society', note: 'The name is rendered literally. I checked. I wished it were not.' },
   { match: 'It is the WORD.', note: 'The capitals are his. He stridulates in capitals.' },
   { match: 'Let us help you end it.', note: 'untranslatable: a formal pronoun kept for royals not yet hatched. Rendered "the Awaited One". Confidence low. Reverence high.' },
-  { match: 'Consenting, broadly. I\'ll send them over',note: '"Broadly" is a faithful rendering. I checked it twice.' },
+  { match: 'Consenting, broadly. I\'ll have them driven', note: '"Broadly" is a faithful rendering. I checked it twice.' },
   { match: 'you are going to LOVE League of Larvae', note: 'The real title is a pheromone. I chose a pun. I stand by it.' },
-  { match: 'one sec, I\'m in a match', note: 'Rendered at his own speed, then slowed forty per cent so you can follow it.' },
+  { match: 'one sec, I\'m in a match', note: 'Rendered at his own speed, then slowed forty per cent so you can follow it. The beam carries his match audio too. I left it in.' },
   { match: 'Hello. I am the Awaited One.', note: 'No rendering needed. You wrote this one.' },
 ];
 

@@ -160,6 +160,14 @@ insectoid city.
 ## The campaign (built Sep 28; audited against Collins's words the same day)
 
 - **Every beat of all three routes, written for Collins, and the midpoint: `notes/CAMPAIGN-BEATS.md`** (Oct 1 2026).
+- **No direct contact; new channels (Collins, Oct 1 2026; DESIGN.md "How each faction reaches him"):** he never goes
+  down or meets anyone; "in person" is by hologram (the summit, the tea). The Delegation write in the crops (first
+  letter to "the Visitor and his wife", read out by a mortified YOKE), the Faithful sync one message over tens of
+  thousands of stations, the Institute knock on the hull with a laser counting primes. Translator bands, notes and
+  source sounds follow (content/translation.ts, src/audio/engine.ts translateIn). Contact pictures redrawn with
+  `node tools/art/redraw-contacts.mjs <ids>` (raw to art-src-new/, never the ship template's bake while art-src/ is
+  being recovered); their alive loops were dropped (owed). Changed leader lines re-voiced; identical words under a
+  renamed scene reuse the baked take.
 - **The midpoint (BUILT Oct 1 2026; Collins: "an option to switch allies ... I would appreciate that as a player"):**
   once a campaign, the return after the 2nd territory taken since allying (`MIDPOINT_CAPTURES`), the other two factions
   make offers (pending scenes with `offer: true`). Go over (`switchAlly`): the old ally's perks and finale go, it says

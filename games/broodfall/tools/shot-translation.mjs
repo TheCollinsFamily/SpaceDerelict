@@ -4,7 +4,7 @@
  * is spent (YOKE is the scripted one).
  *
  *   A  the Delegation's first call on the ship: the band (source, RENDERED BY YOKE, confidence), the
- *      line being said resolving from card-field glyphs, her note under "the handwriting", the source
+ *      line being said resolving from crop-glyph glyphs, her note under "the handwriting", the source
  *      signal heard before the Delegate's voice.
  *   B  allied with the Delegation, the Comms room: the band over the inbox, the untranslatable
  *      grief-scent note, Form 22-T (the layer explained), a ▶ starting with the signal.
@@ -133,11 +133,11 @@ try {
     const band = page.locator('.cp-scene-card .tl-band');
     check(await band.count() === 1, 'the card carries her band');
     const bt = (await band.textContent()) ?? '';
-    check(/CARD-FIELD SEMAPHORE/.test(bt) && /RENDERED BY YOKE · CONFIDENCE \d+%/.test(bt), `it names the source and her confidence ("${bt.trim()}")`);
+    check(/CROP GLYPHS/.test(bt) && /RENDERED BY YOKE · CONFIDENCE \d+%/.test(bt), `it names the source and her confidence ("${bt.trim()}")`);
     check(await page.locator('.cp-scene-card p .tl-words').count() >= 4, 'the Delegate\'s lines are hers to render');
     check(await page.locator('.cp-scene-card p').filter({ hasText: 'You: (log)' }).locator('.tl-words').count() === 0, 'his own log lines are not translated');
     const note = (await page.locator('.cp-scene-card .tl-note').first().textContent()) ?? '';
-    check(/card discipline/.test(note), `her note under "the handwriting" ("${note.trim()}")`);
+    check(/furrow discipline/.test(note), `her note under "the handwriting" ("${note.trim()}")`);
     // The first line (his log) is read; the second is the Delegate's: catch it mid-rendering.
     const decoding = await page.waitForSelector('.cp-scene-card .tl-words.tl-decoding', { timeout: 20000 }).then(() => true).catch(() => false);
     check(decoding, 'the line being said is drawn in glyphs first');
@@ -145,7 +145,7 @@ try {
     await page.waitForFunction(() => window.__bfAudio.log.some((e) => e.played && e.id === 'signal:delegation'), null, { timeout: 20000 }).catch(() => {});
     const heard = await cues(page);
     // The voice is logged when it is routed (before its signal); it starts SIGNAL_LEAD_MS after the signal.
-    check(heard.includes('signal:delegation'), 'the card-field signal is heard');
+    check(heard.includes('signal:delegation'), 'the crop-scan signal is heard');
     check(heard.some((id) => /\/voice\//.test(id)), `and the Delegate's voice with it (${heard.filter((id) => /media:/.test(id)).slice(0, 2).join(', ')})`);
     await sleep(1200);
     check(await page.locator('.cp-scene-card .tl-decoding').count() === 0, 'the words settle into English');
@@ -174,7 +174,7 @@ try {
     await shot(page, 'b1-comms');
     await page.locator('.cp-comms [data-say] .say-btn').first().click();
     await sleep(1600);
-    check((await cues(page)).includes('signal:delegation'), '▶ starts with the card-field signal');
+    check((await cues(page)).includes('signal:delegation'), '▶ starts with the crop-scan signal');
     await shot(page, 'b2-comms-said');
     allErrors.push(...errors);
     await ctx.close();

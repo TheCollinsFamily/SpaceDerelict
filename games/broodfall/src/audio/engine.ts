@@ -291,8 +291,9 @@ export type SignalKind = 'delegation' | 'faithful' | 'institute' | 'voicebox';
 export const SIGNAL_LEAD_MS = 280;
 
 /**
- * YOKE'S RENDERING, HEARD (Oct 1 2026): a voiced leader line starts as its source signal — a field of
- * cards turning, stridulation over a radio carrier, antennal data chirps, the voice box's buzz — drawn
+ * YOKE'S RENDERING, HEARD (Oct 1 2026): a voiced leader line starts as its source signal — the scan of a
+ * crop letter (wind in the wheat under a sweep), stridulation over tens of thousands of radio carriers in
+ * sync, a laser's pulse code counting primes, the voice box's buzz (Collins's channels, Oct 1 2026) — drawn
  * here from noise and oscillators (no files), and the voice comes in band-limited and opens to full in
  * a third of a second, as her rendering locks on. All on the voice bus, so the voice slider rules it.
  * Call after `routeMedia(el, 'voice')` and start the element `SIGNAL_LEAD_MS` later. False when there
@@ -338,27 +339,36 @@ export function translateIn(el: HTMLMediaElement, kind: SignalKind): boolean {
       s.connect(f).connect(g).connect(out); s.start(at); s.stop(at + 0.03);
     }
   };
-  if (kind === 'delegation') clicks(2600, 46, 1.4);
-  else if (kind === 'faithful') {
-    // A carrier's hiss, and a stridulating pulse train on it (~28 pulses a second).
+  if (kind === 'delegation') {
+    // A crop letter read from orbit: wind in the wheat under the scan's sweep, and the scan's soft ticks.
+    const w = noise(end - t + 0.05); const wf = c.createBiquadFilter(); const wg = c.createGain();
+    wf.type = 'lowpass'; wf.Q.value = 2.5;
+    wf.frequency.setValueAtTime(380, t); wf.frequency.exponentialRampToValueAtTime(2600, t + lead);
+    wg.gain.value = 0.55;
+    w.connect(wf).connect(wg).connect(out); w.start(t); w.stop(end);
+    clicks(3400, 9, 3);
+  } else if (kind === 'faithful') {
+    // A carrier's hiss, and the same stridulating pulse train (~28 a second) on many stations at once, a hair apart.
     const h = noise(end - t + 0.05); const hf = c.createBiquadFilter(); const hg = c.createGain();
     hf.type = 'bandpass'; hf.frequency.value = 1800; hf.Q.value = 0.6; hg.gain.value = 0.35;
     h.connect(hf).connect(hg).connect(out); h.start(t); h.stop(end);
-    const o = c.createOscillator(); const am = c.createGain(); const lfo = c.createOscillator(); const depth = c.createGain();
-    o.type = 'sawtooth'; o.frequency.value = 4700; am.gain.value = 0;
-    lfo.type = 'square'; lfo.frequency.value = 28; depth.gain.value = 0.22;
-    lfo.connect(depth).connect(am.gain);
-    o.connect(am).connect(out); o.start(t); lfo.start(t); o.stop(end); lfo.stop(end);
+    const lfo = c.createOscillator(); const depth = c.createGain();
+    lfo.type = 'square'; lfo.frequency.value = 28; depth.gain.value = 0.09;
+    for (const hz of [4700, 4713, 4688, 4726]) {
+      const o = c.createOscillator(); const am = c.createGain();
+      o.type = 'sawtooth'; o.frequency.value = hz; am.gain.value = 0;
+      lfo.connect(depth).connect(am.gain);
+      o.connect(am).connect(out); o.start(t); o.stop(end);
+    }
+    lfo.start(t); lfo.stop(end);
   } else if (kind === 'institute') {
-    // Antennal data: short gliding square chirps.
-    for (let i = 0; i < 6; i++) {
-      const at = t + i * (lead / 6);
+    // The laser's pulse code: clean pips counting primes (2, 3, 5 …), then the stream.
+    const slot = (lead + 0.12) / 14;
+    for (const [i, at] of [0, 1, 3, 4, 5, 7, 8, 9, 10, 11].map((k, i) => [i, t + k * slot] as const)) {
       const o = c.createOscillator(); const g = c.createGain();
-      o.type = 'square';
-      o.frequency.setValueAtTime(1100 + (i % 3) * 400, at);
-      o.frequency.exponentialRampToValueAtTime(2400 + (i % 2) * 600, at + 0.035);
-      g.gain.setValueAtTime(0.18, at); g.gain.exponentialRampToValueAtTime(0.001, at + 0.04);
-      o.connect(g).connect(out); o.start(at); o.stop(at + 0.045);
+      o.type = 'sine'; o.frequency.value = i < 2 ? 2900 : i < 5 ? 3100 : 3300;
+      g.gain.setValueAtTime(0.32, at); g.gain.exponentialRampToValueAtTime(0.001, at + slot * 0.6);
+      o.connect(g).connect(out); o.start(at); o.stop(at + slot * 0.7);
     }
   } else {
     // The voice box warming: a low buzz.
