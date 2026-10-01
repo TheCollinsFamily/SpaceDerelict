@@ -58,6 +58,7 @@ export function applySettings(s: Settings = loadSettings()): void {
   html.style.setProperty('--royal', hex(t.royal));
   html.dataset.casteTints = s.casteTints;
   CALM.flashes = s.reduceFlashes;
+  CALM.motion = s.reduceMotion;
   // The board reads its caste colours from this object every frame.
   Object.assign(CASTE_COLORS as unknown as Record<string, number>, t);
 }

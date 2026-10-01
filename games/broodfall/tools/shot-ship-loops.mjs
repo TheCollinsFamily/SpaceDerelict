@@ -9,10 +9,8 @@
  *           with its picture; held ground carries the creep, a counter-attack pulses:
  *           globe-1-idle.jpg, globe-2-turned.jpg, globe-3-hover.jpg, globe-4-zoom.jpg, globe-5-picked.jpg,
  *           globe-rotating.mp4 (it turning by itself), globe-interact.mp4 (spun, tilted, zoomed, a territory picked)
- *   meat    meat drops on the board (src/render/meatFx.ts): the three castes' chunks flying to the core, the pickup:
- *           meat-1-board.jpg, meat-2-close.jpg, meat-3-pickup.jpg, meat-drops.mp4
  *
- *   node tools/shot-ship-loops.mjs [rooms globe meat]      (dev server on BROODFALL_PORT, default 5289)
+ *   node tools/shot-ship-loops.mjs [rooms globe]      (dev server on BROODFALL_PORT, default 5289)
  * Frames come from Chrome's screencast (as tools/shot-anim.mjs); a small ring shows where the mouse is.
  */
 import { spawn, spawnSync, execSync } from 'node:child_process';
@@ -299,71 +297,6 @@ try {
     });
     check(red > 500, 'held ground carries the creep\'s red', `${red} red pixels`);
     await noBanner(page, 'globe');
-    await context.close();
-  }
-
-  if (want('meat')) {
-    console.log('meat: drops on the board');
-    const { context, page } = await freshPage(browser);
-    await page.goto(`${URL0}?seed=3&autostart=1&auto=1&speed=0&biome=megacity&directive=hold`, { timeout: 300000, waitUntil: 'domcontentloaded' });
-    await page.waitForFunction(() => window.broodfall !== undefined && window.broodfall.sim, null, { timeout: 240000 });
-    await page.waitForTimeout(2500);
-    check(await page.evaluate(() => window.broodfall.fx().meat === true), 'the meat sheet is loaded');
-    let st;
-    for (let i = 0; i < 400; i++) {
-      st = await page.evaluate(() => { const bf = window.broodfall; bf.step(40); const s = bf.sim; return { phase: s.phase, wave: s.waveNumber, towers: s.towers.length, units: s.enemies.length, outcome: s.outcome }; });
-      if (st.outcome !== 'playing') break;
-      if (st.phase === 'siege' && st.wave >= 3 && st.towers >= 6 && st.units >= 8) break;
-    }
-    console.log('  state: ' + JSON.stringify(st));
-    await page.evaluate(() => { window.broodfall.surface?.(); const b = document.querySelector('#speed-box button[data-speed="1"]'); if (b) b.click(); });
-    // Close on the core: the drops fly to it.
-    const canvas = page.locator('#stage canvas');
-    const cb = await canvas.boundingBox();
-    const core = await page.evaluate(() => { const s = window.broodfall.sim; return [s.core.x, s.core.y]; });
-    await page.keyboard.press('Home');
-    await page.waitForTimeout(300);
-    const where = async () => { const at = await page.evaluate(([x, y]) => window.broodfall.worldToScreen(x, y), core); return { x: cb.x + (at.x / at.vw) * cb.width, y: cb.y + (at.y / at.vh) * cb.height }; };
-    let p = await where();
-    await page.mouse.move(p.x, p.y);
-    for (let i = 0; i < 3; i++) await page.mouse.wheel(0, -240);
-    await page.waitForTimeout(600);
-    p = await where();
-    await page.keyboard.down('Shift');
-    await page.mouse.move(p.x, p.y);
-    await page.mouse.down();
-    await page.mouse.move(cb.x + cb.width / 2, cb.y + cb.height * 0.5, { steps: 12 });
-    await page.mouse.up();
-    await page.keyboard.up('Shift');
-    await page.mouse.move(cb.x + cb.width - 4, cb.y + 4);
-    const rec = await recorder(page, 'meat');
-    rec.start();
-    let shots = 0, pickShot = false, maxFly = 0;
-    const t0 = Date.now();
-    while (Date.now() - t0 < 14000) {
-      const f = await page.evaluate(() => window.broodfall.fx());
-      maxFly = Math.max(maxFly, f.meatFlying);
-      if (f.meatFlying >= 2 && shots === 0) { await jpg(page, 'meat-1-board'); shots++; }
-      else if (f.meatFlying >= 2 && shots === 1) {
-        const at = await page.evaluate(([x, y]) => window.broodfall.worldToScreen(x, y), core);
-        const c = { x: cb.x + (at.x / at.vw) * cb.width, y: cb.y + (at.y / at.vh) * cb.height };
-        await jpg(page, 'meat-2-close', { x: Math.max(0, c.x - 330), y: Math.max(0, c.y - 230), width: 660, height: 400 });
-        shots++;
-      }
-      if (f.meatPickups > 0 && !pickShot && shots >= 2) {
-        const at = await page.evaluate(([x, y]) => window.broodfall.worldToScreen(x, y), core);
-        const c = { x: cb.x + (at.x / at.vw) * cb.width, y: cb.y + (at.y / at.vh) * cb.height };
-        await jpg(page, 'meat-3-pickup', { x: Math.max(0, c.x - 260), y: Math.max(0, c.y - 200), width: 520, height: 320 });
-        pickShot = true;
-      }
-      await page.waitForTimeout(120);
-    }
-    await rec.stop();
-    encode(rec.frames, join(notes, 'meat-drops.mp4'));
-    const end = await page.evaluate(() => window.broodfall.fx());
-    check(maxFly >= 2, 'meat drops fly as pictures', `up to ${maxFly} at once`);
-    check(end.meatPickedUp > 0, 'the core takes them with a pickup', `${end.meatPickedUp} picked up`);
-    await noBanner(page, 'board');
     await context.close();
   }
 } finally {

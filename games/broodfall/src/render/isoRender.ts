@@ -13,7 +13,7 @@ import { Application, Container, Graphics, Matrix, Sprite, Texture } from 'pixi.
 import { CellType, PLATE } from '../sim/citymap';
 import { Sim, enemySpec, towerSpec, towerStats } from '../sim/sim';
 import { footprintOf } from '../sim/footprint';
-import type { CreepSource, Enemy, RootDir, Tower, TowerFamily } from '../sim/types';
+import type { Caste, CreepSource, Enemy, EnemyKind, RootDir, Tower, TowerFamily } from '../sim/types';
 import { BoardArtSet, type Clip, type LimbArt, type LimbSide, type LoadedUnit, type UnitArt } from './art';
 import { BOSS_SCALE, choose, newFx, observe, playFor, skinOf, type UnitFx } from './unitAnim';
 import {
@@ -26,7 +26,7 @@ import { SEEDLING_FLIGHT } from '../../content/underground';
 import { BALANCE } from '../../content/data';
 import { CASTE_COLORS, ENEMY_SIZE, FAMILY_COLORS, Renderer } from './render';
 import { FxLayer, type FxView } from './fx';
-import { MeatFx } from './meatFx';
+import { CorpseFx, mainCaste, type BodyView } from './corpseFx';
 import { LimbFates } from './limbFx';
 import { MAW_FIRE_SECONDS, MawTongues, mawFireShare, type TongueView } from './mawTongue';
 import { mawMouthFrame } from './mawMouth';
@@ -101,6 +101,13 @@ const STREET_PROPS = ['lamp', 'signal', 'sign', 'car'];
 const SKIN_LIGHT = [0xffffff, 0xb4b4b4, 0xdcdcdc, 0xffffff];
 
 /** Two colours multiplied, as a tint is. */
+/** Two colours blended, t of the way from a to b. */
+function lerpColor(a: number, b: number, t: number): number {
+  const ch = (n: number, k: number) => (n >> k) & 255;
+  const m = (k: number) => Math.round(ch(a, k) + (ch(b, k) - ch(a, k)) * t) << k;
+  return m(16) | m(8) | m(0);
+}
+
 function mix(a: number, b: number): number {
   const ch = (n: number, k: number) => (n >> k) & 255;
   const m = (k: number) => Math.round((ch(a, k) * ch(b, k)) / 255) << k;
@@ -122,8 +129,24 @@ interface UnitView {
   /** Which of its clips is drawn now, and from which view (for where its gun is: src/render/unitMuzzles.ts). */
   gun?: { clip: 'braced' | 'deployed' | 'attack' | 'walk'; view: 'S' | 'SW' | 'W' | 'NW' | 'N' };
 }
-/** A unit that died: its fall plays once where it stood, it lies a moment, then fades. */
-interface Dying { sprite: Sprite; shade: Sprite; art: UnitArt; clip: Clip | null; t: number; unit: LoadedUnit; scale: number }
+/**
+ * A unit that died: its fall plays once where it stood, then it is the sim's CORPSE (src/sim/types.ts Corpse):
+ * it lies there until the creep digests it (it sinks, darkens and dissolves: src/render/corpseFx.ts draws the
+ * veins, the bubbles and the pulse to the core), or until it is folded into its cell's heap. A body the sim has
+ * no corpse for (none should remain) only fades.
+ */
+interface Dying {
+  sprite: Sprite; shade: Sprite; art: UnitArt; clip: Clip | null; t: number; unit: LoadedUnit; scale: number;
+  unitId: number; kind: EnemyKind; corpseId?: number; lost?: boolean;
+  /** Where it lies (world px), how high it fell from (a flier's fall ends on the ground in its clip), and its facing. */
+  x: number; y: number; up: number; air: boolean; mirror: boolean;
+  /** The ground under it (a body does not move; worked out once). */
+  gh?: number;
+  /** How far the dissolve has got (0..1, eased toward the sim's), seconds since its corpse left the sim. */
+  prog: number; out?: number;
+  /** A heap's other bodies, drawn around it. */
+  extras: Sprite[];
+}
 /** A broodling or a puppet queen: walks and bites like a unit, for the hive. */
 interface AllyView {
   sprite: Sprite; shade: Sprite; unit: LoadedUnit; heading: Heading; last: Pt; phase: number;
@@ -226,8 +249,12 @@ export class IsoRenderer extends Renderer {
 
   /** What flies, bursts and hangs in the air (src/render/fx.ts). */
   private fx: FxLayer;
-  /** The meat drops, drawn (src/render/meatFx.ts). */
-  private meat: MeatFx;
+  /** What goes with the dead as the creep digests them (src/render/corpseFx.ts). */
+  private corpseFx = new CorpseFx();
+  /** The caste of each body's meat, remembered past the frame its corpse leaves the sim (for its pulse). */
+  private bodyCaste = new Map<number, Caste | null>();
+  /** Milliseconds a frame spends on the dead (smoothed). */
+  private bodyMs = 0;
   /** What a limb does besides idling: acting, dying, being carried off, the parts it grafted (src/render/limbFx.ts). */
   private fates: LimbFates;
   /** The Maw's tongue, and the bodies it reels in (src/render/mawTongue.ts). */
@@ -252,7 +279,6 @@ export class IsoRenderer extends Renderer {
     super();
     this.fx = new FxLayer(art);
     this.fx.statusIn(this.sorted);
-    this.meat = new MeatFx(art);
     this.fates = new LimbFates(art);
     this.tongues = new MawTongues(art, this.sorted);
     this.life = new CreepLife(art);
@@ -274,7 +300,7 @@ export class IsoRenderer extends Renderer {
     this.aimBox.addChild(this.aimG);
     this.marksBox.addChild(this.marksG);
     this.marksBox.scale.set(K);
-    this.world.addChild(this.floors, this.skyline.under, this.skyline.smoke, this.creepFloor, this.decalBox, this.flat, this.shadeBox, this.groundBox, this.fx.ground, this.meat.ground, this.sorted, this.ghosts, this.fx.air, this.meat.air, this.fx.glow, this.meat.glow, this.aimBox, this.marksBox);
+    this.world.addChild(this.floors, this.skyline.under, this.skyline.smoke, this.creepFloor, this.decalBox, this.flat, this.shadeBox, this.groundBox, this.fx.ground, this.corpseFx.ground, this.sorted, this.ghosts, this.fx.air, this.fx.glow, this.corpseFx.glow, this.aimBox, this.marksBox);
     // With the effects drawn as pictures, the base class leaves out its clouds, caltrops and pip dots.
     this.fxArt = this.fx.ready();
     this.pipDots = !this.art.fx.has('parts');
@@ -410,8 +436,8 @@ export class IsoRenderer extends Renderer {
 
   /** The effects on screen now, for the beats. */
   fxNow(): Record<string, number | boolean> {
-    const m = this.meat.counts();
-    return { ready: this.fx.ready(), parts: this.art.fx.has('parts'), ...this.fx.counts(), meat: this.meat.ready(), meatFlying: m.flying, meatPickups: m.pickups, meatPickedUp: m.pickedUp };
+    const b = this.corpseFx.counts();
+    return { ready: this.fx.ready(), parts: this.art.fx.has('parts'), ...this.fx.counts(), bodies: this.dying.length, digested: b.digested, pulses: b.pulses, bodyMs: this.bodyMs };
   }
 
   /** The families of the limbs playing their firing or acting clip now. */
@@ -467,8 +493,8 @@ export class IsoRenderer extends Renderer {
   }
 
   /** The fallen still on screen: where each lies, how far into its fall, how opaque. */
-  dyingNow(): Array<{ x: number; y: number; t: number; alpha: number; visible: boolean; frame: boolean }> {
-    return this.dying.map((d) => ({ x: d.sprite.x, y: d.sprite.y, t: d.t, alpha: d.sprite.alpha, visible: d.sprite.visible, frame: !!d.clip }));
+  dyingNow(): Array<{ x: number; y: number; t: number; alpha: number; visible: boolean; frame: boolean; corpse: number | null; prog: number; heap: number }> {
+    return this.dying.map((d) => ({ x: d.sprite.x, y: d.sprite.y, t: d.t, alpha: d.sprite.alpha, visible: d.sprite.visible, frame: !!d.clip, corpse: d.corpseId ?? null, prog: d.prog, heap: d.extras.length }));
   }
 
   /** Client (CSS) coordinates to the board's own pixels (before the camera). */
@@ -566,7 +592,6 @@ export class IsoRenderer extends Renderer {
     this.tongues.update(this.smoothDt, this.tongueView(sim));
     this.drawShots(this.marksG, sim);
     if (this.fx.ready()) this.fx.draw(sim, this.fxView(sim), dt);
-    if (this.meat.ready()) this.meat.draw(sim, this.fxView(sim), dt);
     this.fx.end();
     this.drawAim(this.aimG, sim);
     this.syncPlaceGhost(sim);
@@ -603,7 +628,8 @@ export class IsoRenderer extends Renderer {
     this.dying = [];
     this.limbs.clear();
     this.fx.reset();
-    this.meat.reset();
+    this.corpseFx.reset();
+    this.bodyCaste.clear();
     this.fates.reset();
     this.nodes.clear();
     this.life.reset(sim.map.cells.length);
@@ -1895,11 +1921,16 @@ export class IsoRenderer extends Renderer {
       }
       v.ghost.destroy();
       this.units.delete(id);
-      // Gone with no hp left: it died, and falls where it stood.
-      if (v.ent.hp <= 0 && this.dying.length < 60) {
-        const { view } = viewOf(v.heading);
+      // Gone with no hp left: it died, and falls where it stood (then lies there as the sim's corpse).
+      if (v.ent.hp <= 0) {
+        const { view, mirror } = viewOf(v.heading);
         const clip = v.art.anims.death?.[view] ?? v.art.anims.death?.SW ?? null;
-        this.dying.push({ sprite: v.sprite, shade: v.shade, art: v.art, clip, t: 0, unit: v.unit, scale: v.scale0 });
+        const air = sim.isAirborne(v.ent);
+        this.dying.push({
+          sprite: v.sprite, shade: v.shade, art: v.art, clip, t: 0, unit: v.unit, scale: v.scale0,
+          unitId: id, kind: v.ent.kind, x: v.ent.pos.x, y: v.ent.pos.y, air,
+          up: air ? FLY_UP : this.heightAt(sim, v.ent.pos.x, v.ent.pos.y), mirror, prog: 0, extras: [],
+        });
       } else {
         v.sprite.destroy();
         v.shade.destroy();
@@ -1973,9 +2004,36 @@ export class IsoRenderer extends Renderer {
     return this.tongues.take(id, v.sprite, ENEMY_SIZE[e.kind] * UNIT_PX * 0.9);
   }
 
-  /** The fallen: each plays its fall once, lies still, then fades. */
+  /**
+   * The fallen: each plays its fall once, then lies as the sim's corpse until the creep digests it (it sinks,
+   * darkens and fades while src/render/corpseFx.ts draws the veins and bubbles), or until it is folded into its
+   * cell's heap. A corpse the renderer never saw fall (a heap, a body past the frame) is laid down as its last
+   * fall frame. Everything is placed again every frame, so the dead stay put when the camera turns.
+   */
   private syncDying(sim: Sim, dt: number): void {
+    const t0 = performance.now();
+    const g = this.geo;
+    const byId = new Map(sim.corpses.map((c) => [c.id, c]));
+    const claimed = new Set<number>();
+    for (const d of this.dying) {
+      if (d.corpseId === undefined && !d.lost) {
+        const c = sim.corpses.find((x) => x.unitId === d.unitId);
+        if (c) d.corpseId = c.id; else d.lost = true;
+      }
+      if (d.corpseId !== undefined) claimed.add(d.corpseId);
+    }
+    for (const c of sim.corpses) {
+      if (claimed.has(c.id) || this.units.has(c.unitId)) continue;
+      const d = this.layBody(sim, c.kind, c.unitId, c.pos.x, c.pos.y, (c.id & 1) === 1);
+      if (!d) continue;
+      d.corpseId = c.id;
+      this.dying.push(d);
+    }
+    const core = project(g, sim.core.x, sim.core.y, this.heightAt(sim, sim.core.x, sim.core.y));
+    const views: BodyView[] = [];
     const keep: Dying[] = [];
+    const fall = BALANCE.corpseFallSeconds;
+    const melt = BALANCE.corpseDigestSeconds;
     for (const d of this.dying) {
       d.t += dt;
       const falling = d.clip ? d.clip.count / d.clip.fps : 0;
@@ -1985,19 +2043,119 @@ export class IsoRenderer extends Renderer {
         // A fall cut with a bigger window than the walk (a flier falling to the ground) keeps the walk's size and feet.
         const a = d.clip.anchor ?? d.art.anchor;
         d.sprite.anchor.set(a[0], a[1]);
-        const sx = Math.sign(d.sprite.scale.x) || 1;
-        d.sprite.scale.set(sx * d.scale * (d.clip.scale ?? 1), d.scale * (d.clip.scale ?? 1));
       }
-      const gone = d.t - falling - LIE_STILL;
-      // Without a fall to play, it simply fades where it stood.
-      const a = gone <= 0 ? 1 : Math.max(0, 1 - gone / FADE);
-      d.sprite.alpha = a;
-      d.shade.alpha = 0.85 * a;
-      d.sprite.zIndex = Math.min(d.sprite.zIndex, d.shade.zIndex + 1);
-      if (a <= 0) { d.sprite.destroy(); d.shade.destroy(); continue; }
+      const c = d.corpseId !== undefined ? byId.get(d.corpseId) : undefined;
+      let alpha = 1;
+      if (d.lost) {
+        // No corpse for it (should not happen any more): it fades where it stood.
+        const gone = d.t - falling - LIE_STILL;
+        alpha = gone <= 0 ? 1 : Math.max(0, 1 - gone / FADE);
+      } else if (c) {
+        // Eased toward the sim's own progress (it moves in 10 Hz steps).
+        const want = c.digest === undefined ? 0 : Math.max(0, Math.min(1, (c.digest - fall) / melt));
+        d.prog += (want - d.prog) * Math.min(1, dt * 10);
+      } else {
+        // Its corpse is gone: digested (it was nearly dissolved) or folded into a heap (it fades out).
+        if (d.out === undefined) {
+          d.out = 0;
+          if (d.prog > 0.4) {
+            const p = project(g, d.x, d.y, this.heightAt(sim, d.x, d.y));
+            this.corpseFx.arrive(p.x, p.y, this.bodyCaste.get(d.corpseId!) ?? null, core);
+          }
+        }
+        d.out += dt;
+        d.prog = Math.min(1, d.prog + dt * 3);
+        alpha = Math.max(0, 1 - d.out / 0.35);
+      }
+      if (c) this.bodyCaste.set(c.id, mainCaste(c.meat));
+      const p = d.prog;
+      // It sinks into the creep, spreads a little, darkens to the creep's red and fades over the last of it.
+      const k = d.scale * (d.clip?.scale ?? 1);
+      const sx = d.mirror ? -1 : 1;
+      d.sprite.scale.set(sx * k * (1 + 0.15 * p), k * (1 - 0.6 * p));
+      d.sprite.tint = lerpColor(0xffffff, 0x7a2024, Math.min(1, p * 1.6));
+      alpha *= p < 0.6 ? 1 : Math.max(0, 1 - (p - 0.6) / 0.4);
+      const gh = (d.gh ??= this.heightAt(sim, d.x, d.y));
+      const up = d.t < falling || d.air ? d.up : gh;
+      const at = project(g, d.x, d.y, up);
+      d.sprite.position.set(at.x, at.y);
+      d.sprite.alpha = alpha;
+      d.sprite.zIndex = depth(g, d.x, d.y) * 100 + 40;
+      const ground = project(g, d.x, d.y, gh);
+      d.shade.position.set(ground.x, ground.y);
+      d.shade.alpha = 0.85 * alpha * (1 - p);
+      d.shade.zIndex = d.sprite.zIndex - 1;
+      d.shade.visible = true;
+      // A heap: its other bodies around it, darker.
+      const more = c?.heap ? Math.min(3, c.heap - 1) : 0;
+      while (d.extras.length < more) {
+        const kinds = c?.kinds ?? [d.kind];
+        const kind = kinds[(d.extras.length + 1) % kinds.length];
+        const s = this.bodySprite(kind, (d.extras.length & 1) === 0);
+        if (!s) break;
+        this.sorted.addChild(s.sprite);
+        d.extras.push(s.sprite);
+      }
+      d.extras.forEach((s, i) => {
+        const ox = [-5, 6, 1][i] ?? 0;
+        const oy = [3, 2, -4][i] ?? 0;
+        const q = project(g, d.x + ox, d.y + oy, gh);
+        s.position.set(q.x, q.y);
+        s.alpha = alpha;
+        s.tint = lerpColor(0xb4a6a6, 0x7a2024, Math.min(1, p * 1.6));
+        s.zIndex = d.sprite.zIndex - 2 + (oy > 0 ? 3 : 0);
+        const kk = Math.abs(s.scale.y) || 1;
+        s.scale.y = Math.sign(s.scale.y) * kk;
+      });
+      if (alpha <= 0) {
+        d.sprite.destroy(); d.shade.destroy();
+        for (const s of d.extras) s.destroy();
+        if (d.corpseId !== undefined) this.bodyCaste.delete(d.corpseId);
+        continue;
+      }
+      if (c) {
+        const size = 2 * ENEMY_SIZE[d.kind] * UNIT_PX * (1 + (c.heap ? 0.4 : 0));
+        views.push({ id: c.id, x: ground.x, y: ground.y, size, prog: p, digesting: c.digest !== undefined, caste: this.bodyCaste.get(c.id) ?? null });
+      }
       keep.push(d);
     }
     this.dying = keep;
+    this.corpseFx.draw(views, core, this.fxView(sim).scale, dt);
+    // What the dead cost a frame (ms, smoothed; the beats read it).
+    this.bodyMs += (performance.now() - t0 - this.bodyMs) * 0.1;
+  }
+
+  /** A dead body's picture: the last frame of its kind's fall, sized as the kind is on the board. */
+  private bodySprite(kind: EnemyKind, mirror: boolean): { sprite: Sprite; clip: Clip | null; unit: LoadedUnit; scale: number } | null {
+    const found = this.art.units.get(kind);
+    if (!found) return null;
+    const { art } = found;
+    const clip = art.anims.death?.SW ?? null;
+    const sprite = new Sprite();
+    if (clip) sprite.texture = this.unitFrame(found, clip, clip.count - 1);
+    const a = clip?.anchor ?? art.anchor;
+    sprite.anchor.set(a[0], a[1]);
+    const scale = ((2 * ENEMY_SIZE[kind] * UNIT_PX) / (art.body * art.frame)) * (BOSS_SCALE[kind] ?? 1);
+    const k = scale * (clip?.scale ?? 1);
+    sprite.scale.set(mirror ? -k : k, k);
+    return { sprite, clip, unit: found, scale };
+  }
+
+  /** Lay down a body the renderer did not see fall: already lying, its fall done. */
+  private layBody(sim: Sim, kind: EnemyKind, unitId: number, x: number, y: number, mirror: boolean): Dying | null {
+    const b = this.bodySprite(kind, mirror);
+    if (!b) return null;
+    const shade = new Sprite(this.shade());
+    shade.anchor.set(0.5, 0.5);
+    const sw = 2 * ENEMY_SIZE[kind] * UNIT_PX * 1.25;
+    shade.width = sw;
+    shade.height = sw * (this.geo.b / this.geo.a);
+    this.sorted.addChild(shade, b.sprite);
+    const t = b.clip ? b.clip.count / b.clip.fps + 1 : 1;
+    return {
+      sprite: b.sprite, shade, art: b.unit.art, clip: b.clip, t, unit: b.unit, scale: b.scale,
+      unitId, kind, x, y, up: this.heightAt(sim, x, y), air: false, mirror, prog: 0, extras: [],
+    };
   }
 
   /** Frame `at` of a unit's clip, from whichever atlas page the clip is on. */
@@ -2374,10 +2532,6 @@ export class IsoRenderer extends Renderer {
     }
     for (const [id, v] of this.shots) if (v.seen !== this.frameNo) this.shots.delete(id);
 
-    for (const d of this.meat.ready() ? [] : sim.drops) {
-      const s = at(d.pos.x, d.pos.y, 8);
-      g.rect(s.x - 3, s.y - 3, 6, 6).fill(CASTE_COLORS[d.caste]);
-    }
     for (const a of dots ? sim.arcs : []) {
       const from = at(a.from.x, a.from.y, this.muzzle(sim, a.from.x, a.from.y));
       const to = at(a.to.x, a.to.y, this.muzzle(sim, a.to.x, a.to.y) * 0.6);

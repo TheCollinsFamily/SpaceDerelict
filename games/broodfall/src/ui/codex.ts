@@ -158,7 +158,8 @@ function render(): void {
   root.innerHTML = `<div class="cx-card">
     <div class="cx-head">
       <div><div class="cx-kicker">SPECIMEN LOCKER — FIELD GUIDE TO THE HIVE'S LIMBS</div>
-        <div class="cx-title">LIMB CODEX</div></div>
+        <div class="cx-title">LIMB CODEX</div>
+        <p class="cx-small">A kill pays nothing yet: meat is gathered when the creep digests the body. Bodies that fall past your creep wait for it.</p></div>
       <div class="cx-headr"><span class="cx-total">${entries.length} FAMILIES · ${count((e) => e.drawn)} IN THE DRAW</span>
         <button class="cx-close" data-act="close" title="Close (Esc)">✕</button></div>
     </div>

@@ -9,7 +9,7 @@
  */
 
 /** What the board reads every frame (src/render/isoRender.ts): set by the settings screen's applySettings. */
-export const CALM = { flashes: false };
+export const CALM = { flashes: false, motion: false };
 
 export type Channel = 'master' | 'music' | 'sfx' | 'voice';
 export type CasteTints = 'standard' | 'safe';

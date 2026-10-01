@@ -179,6 +179,28 @@ Collins (Sep 26 2026), the spend-side rule: **war is generic, science comes base
 
 The build dictates what comes (attraction economy), not the map. Which caste you are hungry for IS your build path.
 
+### The creep digests the dead (Oct 1 2026): meat is gathered only when the creep reaches a body
+Collins: "have a death image of the unit, then it dissolving, then gone ... and have corpses pile up where there is no creep,
+then dissolve when the creep reaches them." And on the economy: **"not being able to collect meat that did not die on creep,
+or picking up meat later by shooting creep at it, adds a layer of strategy, but also ties into the lore: the point of the creep
+and meat being digitisation."** The creep is how the asset absorbs, that is digitises, the dead into the archive.
+- A kill leaves a BODY (`src/sim/types.ts` Corpse) carrying its meat (caste, Meat Press, Royal Press and Royal Jelly are all
+  decided at the kill). On the creep it lies through its fall (0.7 s), dissolves (1.6 s), and only then is its meat banked: the
+  HUD ticks and the feed says "resource acquired". Eaten whole by a Maw: banked at once.
+- OFF the creep it lies and waits, glinting its meat's caste (royal, then science, then war). It never rots: its meat waits
+  until the deployment ends. When the creep reaches it (spreading, a node, a lance, a sling patch, an organ's reach) it is
+  digested the same way and counts as reclaimed (Requisition "Form 4-R · Remains Reclamation").
+- **The science caste is where this bites, on purpose.** Collins: "where this will matter most is science-class meat, as they
+  typically attack the outermost structure, which will likely be at the end of your creep line, but I like that strategy." So
+  science bodies falling just past the creep's edge is the intended tension: never auto-credit them, never make the creep
+  chase them.
+- Past 4 bodies in one cell, or 160 loose on the board, the oldest fold into the cell's HEAP: their meat is summed, never lost.
+- A thief's stolen meat is still handed back the moment it dies: it was the colony's own banked meat, not a body's.
+- Measured (naive scripted player, hold-12, 10 seeds, `tools/measure/corpses.measure.ts`): 5/10 wins before and after; science
+  banked 3,562 before, 3,560 after. About 15% of bodies fell past the creep (26% of the science ones); the scripted player's
+  growing creep reached every one of them 0.3-16 s later, so none was left unclaimed and nothing needed retuning. A player
+  who builds at the edge and does not push creep out after his kills will leave meat lying.
+
 ### The pressure curve (why waves stay scary)
 **Escalation is MORE enemies and HIGHER TYPES — never stat inflation. Collins (Sep 26 2026): "enemies should never harden per wave... hardening is boring." A rejected +HP-per-wave mechanic is explicitly out.** Each tier introduces a new VERB:
 - tier 3 **fliers**: wing straight over blocks and walls to the core — spine walls and channel-side placement don't answer them; airspace lines from gate to core must be covered.

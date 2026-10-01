@@ -252,6 +252,12 @@ to its desires. The meteor, the creep, the slow city-by-city clearance, the gene
 the machinery of reading a people off their planet. Sterilising a world would take an afternoon
 and needs no asset at all.
 
+**PROPOSAL (Oct 1 2026, from Collins's "the point of the creep and meat being digitisation"): the creep
+is the reader.** A body is only read when the creep reaches it: the creep digests it, and digesting is
+digitising. That is why the operator's ledger counts meat only when the creep has taken a body, and why
+the dead who fall past the creep's edge lie in the street, unread, until the creep comes for them. The
+Office's forms call it "resource acquired"; the archive calls it intake.
+
 **What the archive is for (Collins, Sep 30 2026).**
 - *Why this planet.* The universe is full of planets. The Empire came to this one because it has
   sentient life, and an independently evolved culture is the one thing the Empire cannot easily

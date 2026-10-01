@@ -136,8 +136,7 @@ export interface Manifest {
   ship: { ship?: ShipArt };
   /** What flies, bursts and hangs in the air, and the donor parts (tools/art/templates/fx.mjs). */
   /** `tongue`: the Maw's tongue, a length of it and its sticky tip (src/render/mawTongue.ts). */
-  fx?: { fx?: { effects?: FxSheet; parts?: FxSheet; tongue?: FxSheet }; meat?: FxSheet };
-  /* `meat`: the meat drops, two looks a caste (tools/art/meat.mjs, src/render/meatFx.ts). */
+  fx?: { fx?: { effects?: FxSheet; parts?: FxSheet; tongue?: FxSheet } };
 }
 /** A sheet of named sprites; a glow is drawn added onto what is under it. */
 export interface FxSheet { atlas: string; sprites: Record<string, Rect & { glow?: boolean }> }
@@ -235,7 +234,7 @@ export class BoardArtSet {
     return undefined;
   }
   /** The effects and the donor parts (named sprites), when they loaded. */
-  fx = new Map<'effects' | 'parts' | 'tongue' | 'meat', { atlas: Atlas; sprites: FxSheet['sprites'] }>();
+  fx = new Map<'effects' | 'parts' | 'tongue', { atlas: Atlas; sprites: FxSheet['sprites'] }>();
 
   /** `onProgress`: how many files have arrived of how many asked for so far (the loading screen's bar). */
   static async load(m: Manifest, biome: string | null = null, onProgress?: (done: number, total: number) => void): Promise<BoardArtSet> {
@@ -275,8 +274,6 @@ export class BoardArtSet {
       const sheet = m.fx?.fx?.[name];
       if (sheet) jobs.push(get(sheet.atlas).then((atlas) => { if (atlas) set.fx.set(name, { atlas, sprites: sheet.sprites }); }));
     }
-    const meat = m.fx?.meat;
-    if (meat) jobs.push(get(meat.atlas).then((atlas) => { if (atlas) set.fx.set('meat', { atlas, sprites: meat.sprites }); }));
     const t = m.board?.terrain;
     if (t) {
       for (const [name, sheet] of Object.entries(t.sheets)) {
@@ -416,7 +413,7 @@ export class BoardArtSet {
   }
 
   /** An effect or a donor part by its name, and its rectangle (anchor, glow). */
-  fxSprite(sheet: 'effects' | 'parts' | 'tongue' | 'meat', id: string): { tex: Texture; rect: Rect & { glow?: boolean } } | null {
+  fxSprite(sheet: 'effects' | 'parts' | 'tongue', id: string): { tex: Texture; rect: Rect & { glow?: boolean } } | null {
     const s = this.fx.get(sheet);
     const r = s?.sprites[id];
     return s && r ? { tex: s.atlas.sprite(id, r), rect: r } : null;

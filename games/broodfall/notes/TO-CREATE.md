@@ -23,7 +23,7 @@ three campaign outlines, covers and promotional art.
   it carries (BONE, SWARM, VENOM, REACH) and becomes a superstructure with two (`notes/UPGRADE-LOOKS.md`).
   PROTOTYPED on the Spitter, Lasher and Frond. The other 34 limbs: ~$350-400 (4 classes + 1 superstructure
   each), ~$800 for all 6 superstructures each. Collins: which rollout, and is the reading of his letters right?
-- ~~**Meat drops**~~: drawn (Sep 30 2026): two chunks a caste, a bobbing flight, a pickup at the core (`tools/art/meat.mjs`, `src/render/meatFx.ts`).
+- ~~**Meat drops**~~: drawn Sep 30 2026, then REMOVED Oct 1 2026 (Collins: "the meat thing is silly"): the creep digests the dead instead, the units' own death pictures dissolving into it (HANDOFF.md "The creep digests the dead"; no new art was needed).
 - ~~Small flinch blemishes: a stub of a pole in a few flinch frames~~: left out at the bake (art fix pass, Sep 30 2026:
   `tools/art/templates/unit.mjs`, a frame with something cut off past the margin, and `HIT_BLEMISH` for the
   splitter NW, carapace S and consort NW; `notes/screens/2026-09-30/fixpass-art-flinch-*`). Still open: a few units

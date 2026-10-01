@@ -649,7 +649,16 @@ export const BALANCE = {
   pipShredDur: 2,
   // NO CAPS on cannibalize stacking (Collins, Sep 27 2026): "the point of these
   // games is things that feel busted." Do not reintroduce one.
-  dropFlySeconds: 1.1,
+  /**
+   * BODIES (Oct 1 2026; src/sim/types.ts Corpse). A body on the creep lies through its fall, then dissolves,
+   * then its meat is banked. Off the creep it waits, and is digested the same way when the creep reaches it.
+   */
+  corpseFallSeconds: 0.7,
+  corpseDigestSeconds: 1.6,
+  /** Bodies lying in one cell before older ones merge into that cell's heap (meat summed, never lost). */
+  corpseCellCap: 4,
+  /** Separate bodies on the board before the oldest merge into heaps (performance; meat summed, never lost). */
+  corpseBoardCap: 160,
   /** The body itself fights: focused dps on the nearest intruder inside the body. */
   coreDps: 24,
   coreReachScale: 0.6,

@@ -22,7 +22,7 @@ import {
   BALANCE as B, ENEMIES, TOWERS, WAVE_TABLE,
 } from '../../content/data';
 import type {
-  Broodling, Caltrop, CardInstance, Caste, Cloud, Command, CreepSource, Directive, Drop, Enemy,
+  Broodling, Caltrop, CardInstance, Caste, Cloud, Command, Corpse, CreepSource, Directive, Enemy,
   EnemyKind, EnemySpec, HitFx, ModPip, Organ, OrganId, Outcome, Phase, Projectile,
   NodeStrain, RootDir, RunStats, Shell, SimConfig, SimEvent, Tower, TowerFamily, TowerSpec, UpgradeChoice, UpgradeOption, Vec,
 } from './types';
@@ -344,7 +344,10 @@ export class Sim {
   under: Underground;
   enemies: Enemy[] = [];
   projectiles: Projectile[] = [];
-  drops: Drop[] = [];
+  /** The dead on the ground: their meat is banked only when the creep digests them (types.ts Corpse). */
+  corpses: Corpse[] = [];
+  /** Meat the creep has banked from bodies this run, by caste (the measures read it). */
+  digested: Record<Caste, number> = { war: 0, science: 0, royal: 0 };
   hand: CardInstance[] = [];
   /** Traits banked by butchering limbs; the NEXT build inherits and clears them. */
   pendingPips: ModPip[] = [];
@@ -2691,7 +2694,7 @@ export class Sim {
     this.updateBroodlings();
     this.updateTowers();
     this.updateProjectiles();
-    this.updateDrops();
+    this.updateCorpses();
     this.updateClots();
     this.updateBiles();
     this.updateShells();
@@ -4394,10 +4397,10 @@ export class Sim {
       this.royalsKilled += 1;
       this.checkDirective();
     }
+    // What this body carries for the creep to digest (banked only then: types.ts Corpse).
+    const body: Record<Caste, number> = { war: 0, science: 0, royal: 0 };
     // Royal Jelly (a hobby gene): every royal, killed or eaten, pays royal points.
-    if (spec.caste === 'royal' && this.geneMods.royalJelly > 0) {
-      this.drops.push({ id: this.nextId++, pos: { ...e.pos }, caste: 'royal', amount: this.geneMods.royalJelly, ttl: B.dropFlySeconds });
-    }
+    if (spec.caste === 'royal' && this.geneMods.royalJelly > 0) body.royal += this.geneMods.royalJelly;
     // Hitchhiker Spores (a hobby gene): the creep's own kills bud nodes.
     if (why === 'creep' && this.geneMods.creepNodeEvery > 0 && ++this.creepKillCount % this.geneMods.creepNodeEvery === 0) {
       this.nodeStock.push(this.plainStrain());
@@ -4455,40 +4458,86 @@ export class Sim {
       const pressed = spec.caste === 'war' && press !== null;
       // DOUBLING: every press layer past the first adds +50% to the pressed pay.
       const pressMult = pressed ? 1 + B.pressExtraLayer * (press.layers - 1) + press.bonus : 1;
-      this.drops.push({
-        id: this.nextId++, pos: { ...e.pos }, caste: pressed ? 'science' : spec.caste,
-        amount: Math.round(spec.meat * yieldMult * district * this.entranceMeatMult * pressMult), ttl: B.dropFlySeconds,
-      });
+      body[pressed ? 'science' : spec.caste] += Math.round(spec.meat * yieldMult * district * this.entranceMeatMult * pressMult);
       // Royal Press: every Nth pressed kill also pays a royal point.
       if (pressed && killer && press.royalEvery > 0) {
         killer.pressed = (killer.pressed ?? 0) + 1;
-        if (killer.pressed % press.royalEvery === 0) {
-          this.drops.push({ id: this.nextId++, pos: { ...e.pos }, caste: 'royal', amount: 1, ttl: B.dropFlySeconds });
-        }
+        if (killer.pressed % press.royalEvery === 0) body.royal += 1;
       }
+    }
+    // Eaten whole (a Maw): the asset digests it itself, so its meat is banked now. Otherwise the body falls
+    // where it died and waits for the creep.
+    if (eaten) this.bankMeat(body);
+    else this.layCorpse(e, body);
+  }
+
+  /** Bank meat the creep (or a Maw) has digested: the wallet, the science tally and the HUD's tick. */
+  private bankMeat(meat: Record<Caste, number>): void {
+    for (const c of ['war', 'science', 'royal'] as Caste[]) {
+      const n = meat[c];
+      if (n <= 0) continue;
+      this.meat[c] += n;
+      this.digested[c] += n;
+      if (c === 'science') {
+        this.scienceBanked += n;
+        this.checkDirective();
+      }
+      this.events.push({ kind: 'banked', caste: c, amount: n });
     }
   }
 
-  private updateDrops(): void {
-    const banked: number[] = [];
-    for (const d of this.drops) {
-      d.ttl -= DT;
-      const dd = dist(d.pos, this.core);
-      if (dd > 4) {
-        const sp = dd / Math.max(0.05, d.ttl);
-        d.pos.x += ((this.core.x - d.pos.x) / dd) * sp * DT;
-        d.pos.y += ((this.core.y - d.pos.y) / dd) * sp * DT;
-      }
-      if (d.ttl <= 0) {
-        this.meat[d.caste] += d.amount;
-        if (d.caste === 'science') {
-          this.scienceBanked += d.amount;
-          this.checkDirective();
-        }
-        this.events.push({ kind: 'banked', caste: d.caste, amount: d.amount });
-        banked.push(d.id);
-      }
+  /** A body falls where it died; past a cell's or the board's cap the oldest merge into heaps (meat summed). */
+  private layCorpse(e: Enemy, meat: Record<Caste, number>): void {
+    const cell = this.cellAt(e.pos.x, e.pos.y);
+    this.corpses.push({ id: this.nextId++, unitId: e.id, kind: e.kind, pos: { ...e.pos }, cell, meat, born: this.time });
+    // Only bodies still lying count toward the caps: one already dissolving is nearly gone.
+    const lying = (c: Corpse) => c.digest === undefined && !c.heap;
+    const here = this.corpses.filter((c) => c.cell === cell && lying(c));
+    if (here.length > B.corpseCellCap) this.mergeIntoHeap(here[0]);
+    let loose = this.corpses.filter(lying);
+    while (loose.length > B.corpseBoardCap) {
+      this.mergeIntoHeap(loose[0]);
+      loose = this.corpses.filter(lying);
     }
-    this.drops = this.drops.filter((d) => !banked.includes(d.id));
+  }
+
+  /** Fold one body into its cell's heap (made from it if the cell has none yet). Nothing it carried is lost. */
+  private mergeIntoHeap(c: Corpse): void {
+    const heap = this.corpses.find((h) => h.heap && h.cell === c.cell && h.digest === undefined);
+    if (!heap) {
+      c.heap = 1;
+      c.kinds = [c.kind];
+      return;
+    }
+    for (const k of ['war', 'science', 'royal'] as Caste[]) heap.meat[k] += c.meat[k];
+    heap.heap = (heap.heap ?? 1) + 1;
+    if ((heap.kinds ??= [heap.kind]).length < 4) heap.kinds.push(c.kind);
+    this.corpses.splice(this.corpses.indexOf(c), 1);
+  }
+
+  /** The creep digests what lies on it: a body's fall, then its dissolve, then its meat is banked. */
+  private updateCorpses(): void {
+    if (this.corpses.length === 0) return;
+    const done = B.corpseFallSeconds + B.corpseDigestSeconds;
+    const keep: Corpse[] = [];
+    for (const c of this.corpses) {
+      if (c.digest === undefined) {
+        if (!this.isCreeped(c.cell)) { c.waited = true; keep.push(c); continue; }
+        c.digest = 0;
+      }
+      c.digest += DT;
+      if (c.digest < done) { keep.push(c); continue; }
+      this.bankMeat(c.meat);
+      if (c.waited) this.stats.bodiesReclaimed = (this.stats.bodiesReclaimed ?? 0) + (c.heap ?? 1);
+      this.events.push({ kind: 'digested', corpse: c.id, pos: { ...c.pos }, meat: { ...c.meat }, bodies: c.heap ?? 1 });
+    }
+    this.corpses = keep;
+  }
+
+  /** Meat lying unclaimed on the board right now, by caste (bodies off the creep; the measures and the HUD read it). */
+  unclaimedMeat(): Record<Caste, number> {
+    const out: Record<Caste, number> = { war: 0, science: 0, royal: 0 };
+    for (const c of this.corpses) if (c.digest === undefined) for (const k of ['war', 'science', 'royal'] as Caste[]) out[k] += c.meat[k];
+    return out;
   }
 }

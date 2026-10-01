@@ -1630,17 +1630,18 @@ describe('MITOSIS, CAPACITOR, BOOMERANG, MEAT PRESS, RELIQUARY', () => {
     s.towers.push(gun, press, plain);
     const p = s as unknown as Priv;
     const war = ENEMIES.find((x) => x.caste === 'war' && !x.splitInto)!.kind;
-    s.drops.length = 0;
+    s.corpses.length = 0;
     const a = p.spawnEnemy(war, s.gates[0]);
     p.killEnemy(a.id, 1, false, gun.id);
     const b = p.spawnEnemy(war, s.gates[0]);
     p.killEnemy(b.id, 1, false, plain.id);
-    expect(s.drops.map((d) => d.caste)).toEqual(['science', 'war']);
+    const paid = (c: { meat: Record<string, number> }) => (c.meat.science > 0 ? 'science' : c.meat.war > 0 ? 'war' : 'none');
+    expect(s.corpses.map(paid)).toEqual(['science', 'war']);
     // A press pip does it by itself.
     const c = p.spawnEnemy(war, s.gates[0]);
     plain.pips = [{ family: 'press' }];
     p.killEnemy(c.id, 1, false, plain.id);
-    expect(s.drops[2].caste).toBe('science');
+    expect(paid(s.corpses[2])).toBe('science');
   });
 
   it('a reliquary comes as a PAIR (second one free) and banks its target\'s bonuses when it dies', () => {

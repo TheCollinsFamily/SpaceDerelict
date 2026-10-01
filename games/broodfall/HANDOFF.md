@@ -506,11 +506,33 @@ would play at the start of any scenario? if not we should."
   the same flesh (`creepCover`, `fbm3`). Beat: `node tools/shot-globe-infest.mjs [none|some|many|grow|flat]` (own dev
   server on 5241) -> `notes/screens/2026-10-01/globe-infest-*.png` (`-BEFORE-` = the old fill); tests
   `tests/globe-infest.test.ts`. No art was generated for it (0 tokens).
-- **Meat drops** (`node tools/art/meat.mjs`, one still ~$0.45): `public/art/fx/meat.webp`, manifest `fx.meat`; drawn
-  by `src/render/meatFx.ts` (pop, bobbing glide, shadow, trail, pickup ring and sparks at the core);
-  `window.broodfall.fx()` reports `meat`, `meatFlying`, `meatPickups`, `meatPickedUp`.
-- **Beat:** `node tools/shot-ship-loops.mjs [rooms globe meat]` (own dev server 5289, GPU flags):
-  `notes/screens/2026-09-30/ship-loop-*`, `globe-*`, `meat-*`.
+- ~~**Meat drops**~~: REMOVED Oct 1 2026 (Collins: "the meat moving to the tower center looks weird ... the meat thing
+  is silly"). The creep digests the dead instead: see "The creep digests the dead (Oct 1 2026)" below. `meatFx.ts`,
+  `tools/art/meat.mjs`, `public/art/fx/meat.webp` and the manifest's `fx.meat` are gone.
+- **Beat:** `node tools/shot-ship-loops.mjs [rooms globe]` (own dev server 5289, GPU flags):
+  `notes/screens/2026-09-30/ship-loop-*`, `globe-*`.
+
+## The creep digests the dead (Oct 1 2026)
+
+Collins: "have a death image of the unit, then it dissolving, then gone ... and have corpses pile up where there is no
+creep, then dissolve when the creep reaches them." Meat is banked ONLY when the creep digests a body (the rule, not a
+toggle; DESIGN.md "The creep digests the dead" has his reasons and the numbers).
+- **Sim:** `src/sim/sim.ts` `killEnemy` lays a `Corpse` (`src/sim/types.ts`) with the meat decided at the kill;
+  `updateCorpses` starts digesting one whose cell `isCreeped`, banks it after `corpseFallSeconds + corpseDigestSeconds`
+  (0.7 + 1.6, `content/data.ts`) through `bankMeat` (wallet, `digested`, `scienceBanked`, `banked` events), then emits
+  `digested`. Off the creep it waits (never rots). Caps: `corpseCellCap` 4 a cell and `corpseBoardCap` 160 loose, past
+  which the oldest fold into the cell's heap (`heap`, `kinds`; meat summed). A Maw's swallow banks at once. A thief's
+  stolen meat is still handed back at its death. `unclaimedMeat()`; `stats.bodiesReclaimed` (Requisition "Form 4-R").
+- **Render:** the death picture is each unit's own `death` clip (all 26 kinds have one, so NO new art: $0). `isoRender.ts`
+  `syncDying` keeps the fallen as their corpse: re-placed every frame (they stay put when the camera turns), sunk,
+  darkened to the creep's red and faded as the sim digests them; heaps draw up to 3 more bodies; a corpse the renderer
+  never saw fall is laid as its last fall frame. `src/render/corpseFx.ts`: veins and bubbles while it dissolves, a pulse
+  to the core when it is gone, and an unclaimed-meat glint (caste colour; royal, then science, then war) on a body off
+  the creep. Reduce motion (`CALM.motion`): no bubbles, no pulses, a steady glint. The feed: a kill says "specimen
+  neutralized", a digested body "resource acquired".
+- **Checks:** `tests/corpses.test.ts`; `node tools/shot-corpses.mjs` (own dev server 5343) ->
+  `notes/screens/2026-10-01/corpses-*.jpg|mp4`; `tools/measure/corpses.measure.ts` (meat by caste, banked vs unclaimed,
+  bodies that fell past the creep and how long they waited).
 
 ## The campaign's media: news between runs, the leaders' voices, the ending films (Sep 30 2026)
 

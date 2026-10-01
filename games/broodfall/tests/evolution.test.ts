@@ -116,10 +116,12 @@ describe('evolutions: three stages, choose A or B', () => {
     const press = mk(s, 2, 'press', 300, 300, [], ['A', 'A', 'B']); press.facing = 'E';
     s.towers.push(gun, press);
     const p = s as unknown as Priv;
-    s.drops.length = 0;
+    s.corpses.length = 0;
     for (let i = 0; i < 12; i++) p.killEnemy(p.spawnEnemy('soldier', s.gates[0]).id, 1, false, gun.id);
-    expect(s.drops.filter((d) => d.caste === 'royal').length).toBe(1);
-    expect(s.drops.filter((d) => d.caste === 'science').length).toBe(12);
+    // The bodies lie at the gate (heaped past a cell's cap): twelve of them, all paying science, one royal point among them.
+    expect(s.corpses.reduce((n, c) => n + (c.heap ?? 1), 0)).toBe(12);
+    expect(s.corpses.reduce((n, c) => n + c.meat.royal, 0)).toBe(1);
+    expect(s.corpses.every((c) => c.meat.war === 0 && c.meat.science > 0)).toBe(true);
   });
 
   it('Phoenix reliquary: its limb is reborn with bonuses and evolutions, once per wave', () => {
@@ -175,9 +177,9 @@ describe('THE DOUBLING RULE: a second copy of any bonus always changes something
       const t = mk(s, 1, 'spitter', 400, 300, Array.from({ length: n }, () => ({ family: 'press' as const })));
       s.towers.push(t);
       const p = s as unknown as Priv;
-      s.drops.length = 0;
+      s.corpses.length = 0;
       p.killEnemy(p.spawnEnemy('phalanx', s.gates[0]).id, 1, false, t.id);
-      return s.drops[0].amount;
+      return s.corpses[0].meat.science + s.corpses[0].meat.war;
     },
     reliquary: (n) => {
       const s = fresh(2104);

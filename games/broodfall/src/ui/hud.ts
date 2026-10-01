@@ -52,9 +52,17 @@ import { CARD_DESC, layerTag } from '../../content/limbText';
 export { PIP_DESC, layerTag } from '../../content/limbText';
 
 const FEED_LINES: Partial<Record<SimEvent['kind'], (e: SimEvent) => { text: string; cls: string }>> = {
+  // A kill is not meat yet: the body is "resource acquired" when the creep digests it (src/sim/types.ts Corpse).
   kill: (e) => e.kind === 'kill'
-    ? { text: `resource acquired — ${e.caste} caste`, cls: e.caste === 'science' ? 'sci' : e.caste === 'royal' ? 'royal' : '' }
+    ? { text: `specimen neutralized — ${e.caste} caste`, cls: e.caste === 'science' ? 'sci' : e.caste === 'royal' ? 'royal' : '' }
     : { text: '', cls: '' },
+  digested: (e) => {
+    if (e.kind !== 'digested') return { text: '', cls: '' };
+    const caste = e.meat.royal > 0 ? 'royal' : e.meat.science > 0 ? 'science' : 'war';
+    const what = (['war', 'science', 'royal'] as const).filter((k) => e.meat[k] > 0).map((k) => `${e.meat[k]} ${k}`).join(' + ');
+    if (!what) return { text: '', cls: '' };
+    return { text: e.bodies > 1 ? `resource acquired — ${e.bodies} specimens digested (${what})` : `resource acquired — ${what}`, cls: caste === 'science' ? 'sci' : caste === 'royal' ? 'royal' : '' };
+  },
   eaten: () => ({ text: 'specimen consumed whole', cls: 'hot' }),
   built: (e) => e.kind === 'built'
     ? { text: e.pips > 0 ? `limb cultivated (+${e.pips} traits)` : 'limb cultivated', cls: '' }

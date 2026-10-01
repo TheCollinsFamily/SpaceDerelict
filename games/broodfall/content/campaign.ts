@@ -43,6 +43,8 @@ export const REQUISITIONS: GoalDef[] = [
   { id: 'preserve-core', title: 'Form 9-B · Asset Preservation', text: 'Finish with the core above {n}%.', measure: 'coreEnd', target: 70, tierScale: 0, needsWin: true, pays: 2 },
   { id: 'preserve-limbs', title: 'Form 9-C · Limb Retention', text: 'Lose no more than {n} limbs.', measure: 'stat:limbsLost', cmp: '<=', target: 3, tierScale: 0, needsWin: true, pays: 2 },
   { id: 'samples', title: 'Form 4-D · Sample Quota', text: 'Bank {n} science.', measure: 'stat:scienceBanked', target: 60, pays: 2 },
+  // Collins (Oct 1 2026): meat that fell past the creep can be picked up later "by shooting creep at it".
+  { id: 'reclaim', title: 'Form 4-R · Remains Reclamation', text: 'Digest {n} bodies that fell past your creep.', measure: 'stat:bodiesReclaimed', target: 10, pays: 1 },
   { id: 'deposits', title: 'Form 4-G · Subsurface Survey', text: 'Claim {n} buried deposits.', measure: 'stat:depositsClaimed', target: 2, tierScale: 0, pays: 1 },
   { id: 'schedule', title: 'Form 1-H · Schedule Compliance', text: 'Call {n} waves early.', measure: 'stat:earlyCalls', target: 3, tierScale: 0, pays: 1 },
   { id: 'spread', title: 'Form 5-K · Territorial Coverage', text: 'Place {n} creep nodes.', measure: 'stat:nodesPlaced', target: 4, pays: 1 },

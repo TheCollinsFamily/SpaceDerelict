@@ -1113,8 +1113,10 @@ export class Renderer {
         g.circle(p.pos.x, p.pos.y, p.fromFamily === 'burster' ? 5 : 3).fill(col);
       }
     }
-    for (const d of sim.drops) {
-      g.rect(d.pos.x - 3, d.pos.y - 3, 6, 6).fill(CASTE_COLORS[d.caste]);
+    // The dead on the ground (the creep digests them: src/sim/types.ts Corpse): dark husks, shrinking as they dissolve.
+    for (const c of sim.corpses) {
+      const k = c.digest === undefined ? 1 : Math.max(0.15, 1 - c.digest / 2.3);
+      g.ellipse(c.pos.x, c.pos.y, 5 * k * (c.heap ? 1.5 : 1), 3 * k).fill({ color: 0x3a1a16, alpha: 0.85 });
     }
 
     // Broodlings: your mites in the streets.

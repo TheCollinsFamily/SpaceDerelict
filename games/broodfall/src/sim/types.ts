@@ -549,13 +549,32 @@ export interface Projectile {
   returnDmg?: number;
 }
 
-export interface Drop {
+/**
+ * A BODY ON THE GROUND (Collins, Oct 1 2026): "have a death image of the unit, then it dissolving, then gone ...
+ * have corpses pile up where there is no creep, then dissolve when the creep reaches them." Its meat is banked
+ * ONLY when the creep digests it: "not being able to collect meat that did not die on creep, or picking up meat
+ * later by shooting creep at it, adds a layer of strategy, but also ties into the lore: the point of the creep
+ * and meat being digitisation." A corpse never rots: its meat waits for the creep until the deployment ends.
+ */
+export interface Corpse {
   id: number;
+  /** The unit it was (its view in the renderer becomes this corpse's). */
+  unitId: number;
+  kind: EnemyKind;
   pos: Vec;
-  caste: Caste;
-  amount: number;
-  /** Seconds until banked. */
-  ttl: number;
+  cell: number;
+  /** What the creep banks when it has digested this body. */
+  meat: Record<Caste, number>;
+  /** Sim time it fell. */
+  born: number;
+  /** Seconds the creep has been at it (its fall, then the dissolve); absent while it lies off the creep. */
+  digest?: number;
+  /** A heap: this many bodies merged into one (past the per-cell or board cap); their meat is summed, never lost. */
+  heap?: number;
+  /** The kinds drawn on a heap (the first few merged into it). */
+  kinds?: EnemyKind[];
+  /** It lay off the creep before the creep reached it (a reclaimed body). */
+  waited?: boolean;
 }
 
 export interface CardInstance {
@@ -592,6 +611,7 @@ export type SimEvent =
   | { kind: 'broodling-lost'; motherId: number }
   | { kind: 'kill'; enemy: EnemyKind; caste: Caste }
   | { kind: 'banked'; caste: Caste; amount: number }
+  | { kind: 'digested'; corpse: number; pos: Vec; meat: Record<Caste, number>; bodies: number }
   | { kind: 'wave-start'; tier: number; wave: number; counts: Partial<Record<EnemyKind, number>>; sides: string; risk: number }
   | { kind: 'meat-stolen'; amount: number }
   | { kind: 'meat-recovered'; amount: number }
@@ -749,4 +769,6 @@ export interface RunStats {
   surgeriesUnderFire?: number;
   /** Walls burrowed through into the unclaimed city. */
   burrows?: number;
+  /** Bodies that fell past the creep and were digested when it reached them later (reclaimed meat). */
+  bodiesReclaimed?: number;
 }
