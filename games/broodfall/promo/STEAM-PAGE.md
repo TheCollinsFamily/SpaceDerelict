@@ -115,3 +115,16 @@ afterwards.
   cinematics, the music and the voices were made with generative tools (the RFab image, video, music and voice APIs).
   **Live-generated: yes.** YOKE talks to the player through an AI model at play time, with
   guardrails.
+
+## Status (Oct 1 2026)
+
+- Steamworks partner account made on the Steam login `merrymilkman`, as an individual: legal name
+  Malcolm Collins, "A Sole Proprietorship", Eagleville PA, payment email collinsmalcolm@gmail.com.
+- Steam Direct fee paid **twice** (two $100 charges, Oct 1 2026, MasterCard ending 69): the second
+  should be a spare app credit for the next game, or a refund via https://help.steampowered.com.
+- Bank (Chase checking) and tax interview done. Identity check (KYC): ID + selfie uploaded to
+  Valve's Dropbox request on Oct 1 2026; Valve quotes 10 to 15 business days (to about Oct 15–22).
+- **Until that clears, Steamworks keeps the account in onboarding**: https://partner.steamgames.com/apps/
+  redirects to the public landing page and no app can be created. Check
+  https://partner.steamgames.com/newpartner/ ; when "Complete Account Creation" unlocks, create the
+  app, fill this file's fields in, upload the images, and submit the store page for review.
