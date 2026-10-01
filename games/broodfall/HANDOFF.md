@@ -523,6 +523,22 @@ screen, and a wait under 400 ms shows nothing (no flash).
   held back as a slow link) FAILS when a wait is on the screen over 400 ms without a moving loop; out:
   `notes/screens/2026-09-30/loading-*`.
 
+## YOKE translates the insects (Oct 1 2026)
+
+Collins: "something in the game's lore or visuals that implies an AI is translating what the insects are saying
+for you (explaining why they sound like AI)". Lore: `content/lore/ship-ai-lorebook.md` section 18 (PROPOSAL),
+`insects.md` section 11. Data: `content/translation.ts` (channels, confidence, her notes, matched by words).
+- **Seen** (`src/ui/translation.ts`, `.css`): a band in her console style on every leader card, the Comms inbox
+  and the report's aside ("SOURCE: CARD-FIELD SEMAPHORE · 11,204 SIGNALLERS · RENDERED BY YOKE · CONFIDENCE 93%");
+  the line being said resolves from its channel's glyphs in 0.45 s (none with Reduce motion); her translator's
+  notes under ten lines ("[untranslatable: grief-scent …]"); Form 22-T in Comms explains the layer.
+- **Heard** (`src/audio/engine.ts` `translateIn`, no files): each voiced leader line starts with 280 ms of its
+  source signal (cards turning, stridulation on a radio carrier, antennal chirps, the voice box's buzz) and the
+  voice opens out of a low-pass as she locks on. On the voice bus, so the voice slider rules it.
+- His own lines are not translated; the B-movie opening (the locals' film) and the newsreels carry no band.
+- Beat: `node tools/shot-translation.mjs [A] [B] [C] [--build]` (vite by its own script: the shared
+  `node_modules` lost its `.bin` on Oct 1). Unit: `tests/translation.test.ts` (every note lands on one leader line).
+
 ## The ship AI (YOKE)
 
 - **Game side** (`src/meta/shipAi.ts`):

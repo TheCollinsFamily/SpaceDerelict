@@ -264,6 +264,8 @@ export function duckFor(el: HTMLMediaElement, why = 'voice'): void {
 }
 
 const routed = new WeakSet<HTMLMediaElement>();
+/** Each routed element's source node (translateIn puts its lock-on filter after it). */
+const sources = new WeakMap<HTMLMediaElement, MediaElementAudioSourceNode>();
 /**
  * A media element played through a bus (the campaign's newsreels and the faction leaders' lines,
  * src/ui/newsreel.ts): its Settings slider, "Mute when away", the ducking and the recorder apply.
@@ -274,11 +276,99 @@ export function routeMedia(el: HTMLMediaElement, bus: 'music' | 'voice'): boolea
   if (!c || c.state !== 'running') return false;
   if (routed.has(el)) return true;
   try {
-    c.createMediaElementSource(el).connect(bus === 'music' ? musicDuck : voiceBus);
+    const src = c.createMediaElementSource(el);
+    src.connect(bus === 'music' ? musicDuck : voiceBus);
+    sources.set(el, src);
     routed.add(el);
     note({ kind: bus === 'music' ? 'music' : 'voice', id: `media:${el.currentSrc || el.src}`.slice(0, 120), played: true });
     return true;
   } catch { return false; }
+}
+
+/** The source signal under a translated line (content/translation.ts): what YOKE is rendering from. */
+export type SignalKind = 'delegation' | 'faithful' | 'institute' | 'voicebox';
+/** How long the signal is heard alone before the rendered voice starts (ms). */
+export const SIGNAL_LEAD_MS = 280;
+
+/**
+ * YOKE'S RENDERING, HEARD (Oct 1 2026): a voiced leader line starts as its source signal — a field of
+ * cards turning, stridulation over a radio carrier, antennal data chirps, the voice box's buzz — drawn
+ * here from noise and oscillators (no files), and the voice comes in band-limited and opens to full in
+ * a third of a second, as her rendering locks on. All on the voice bus, so the voice slider rules it.
+ * Call after `routeMedia(el, 'voice')` and start the element `SIGNAL_LEAD_MS` later. False when there
+ * is no running sound (then nothing is heard and nothing need wait).
+ */
+export function translateIn(el: HTMLMediaElement, kind: SignalKind): boolean {
+  const c = ctx;
+  const src = sources.get(el);
+  if (!c || c.state !== 'running' || !src) return false;
+  const t = c.currentTime;
+  const lead = SIGNAL_LEAD_MS / 1000;
+  // The lock-on: the voice band-limited, then opened (the filter stays, wide open, as the element plays).
+  const lp = c.createBiquadFilter();
+  lp.type = 'lowpass'; lp.Q.value = 4;
+  lp.frequency.setValueAtTime(900, t);
+  lp.frequency.setValueAtTime(900, t + lead);
+  lp.frequency.exponentialRampToValueAtTime(18000, t + lead + 0.35);
+  lp.Q.setValueAtTime(4, t + lead);
+  lp.Q.linearRampToValueAtTime(0.7, t + lead + 0.35);
+  try { src.disconnect(); } catch { /* not connected */ }
+  src.connect(lp).connect(voiceBus);
+  // The signal itself, faint, fading as the voice locks on.
+  const out = c.createGain();
+  out.gain.setValueAtTime(0, t);
+  out.gain.linearRampToValueAtTime(0.16, t + 0.03);
+  out.gain.setValueAtTime(0.16, t + lead);
+  out.gain.linearRampToValueAtTime(0, t + lead + 0.25);
+  out.connect(voiceBus);
+  const end = t + lead + 0.3;
+  const noise = (secs: number) => {
+    const b = c.createBuffer(1, Math.ceil(c.sampleRate * secs), c.sampleRate);
+    const d = b.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    const n = c.createBufferSource(); n.buffer = b; return n;
+  };
+  const clicks = (centre: number, n: number, q: number) => {
+    // Many short bursts of filtered noise at random times: cards turning, a field of them.
+    for (let i = 0; i < n; i++) {
+      const at = t + Math.random() * (lead + 0.15);
+      const s = noise(0.03); const f = c.createBiquadFilter(); const g = c.createGain();
+      f.type = 'bandpass'; f.frequency.value = centre * (0.7 + Math.random() * 0.6); f.Q.value = q;
+      g.gain.setValueAtTime(0.9, at); g.gain.exponentialRampToValueAtTime(0.001, at + 0.025);
+      s.connect(f).connect(g).connect(out); s.start(at); s.stop(at + 0.03);
+    }
+  };
+  if (kind === 'delegation') clicks(2600, 46, 1.4);
+  else if (kind === 'faithful') {
+    // A carrier's hiss, and a stridulating pulse train on it (~28 pulses a second).
+    const h = noise(end - t + 0.05); const hf = c.createBiquadFilter(); const hg = c.createGain();
+    hf.type = 'bandpass'; hf.frequency.value = 1800; hf.Q.value = 0.6; hg.gain.value = 0.35;
+    h.connect(hf).connect(hg).connect(out); h.start(t); h.stop(end);
+    const o = c.createOscillator(); const am = c.createGain(); const lfo = c.createOscillator(); const depth = c.createGain();
+    o.type = 'sawtooth'; o.frequency.value = 4700; am.gain.value = 0;
+    lfo.type = 'square'; lfo.frequency.value = 28; depth.gain.value = 0.22;
+    lfo.connect(depth).connect(am.gain);
+    o.connect(am).connect(out); o.start(t); lfo.start(t); o.stop(end); lfo.stop(end);
+  } else if (kind === 'institute') {
+    // Antennal data: short gliding square chirps.
+    for (let i = 0; i < 6; i++) {
+      const at = t + i * (lead / 6);
+      const o = c.createOscillator(); const g = c.createGain();
+      o.type = 'square';
+      o.frequency.setValueAtTime(1100 + (i % 3) * 400, at);
+      o.frequency.exponentialRampToValueAtTime(2400 + (i % 2) * 600, at + 0.035);
+      g.gain.setValueAtTime(0.18, at); g.gain.exponentialRampToValueAtTime(0.001, at + 0.04);
+      o.connect(g).connect(out); o.start(at); o.stop(at + 0.045);
+    }
+  } else {
+    // The voice box warming: a low buzz.
+    const o = c.createOscillator(); const g = c.createGain();
+    o.type = 'sawtooth'; o.frequency.value = 92; g.gain.value = 0.3;
+    o.connect(g).connect(out); o.start(t); o.stop(end);
+  }
+  window.setTimeout(() => { try { out.disconnect(); } catch { /* gone */ } }, (end - t + 0.2) * 1000);
+  note({ kind: 'voice', id: `signal:${kind}`, played: true });
+  return true;
 }
 
 // ----------------------------------------------------------------------------- music

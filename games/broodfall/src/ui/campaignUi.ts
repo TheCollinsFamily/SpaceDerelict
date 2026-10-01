@@ -5,6 +5,8 @@
  * Board (standing, letters, logs), Comms (the factions), and the AI Core (YOKE's
  * discussions). Faction scenes play as modals when you come back to the ship.
  */
+import { bandHtml as tlBand, lineHtml as tlLine } from './translation';
+import { channelOfLine } from '../../content/translation';
 import {
   ally, buyLineage, choose, dismissScene, evolutionCaps, experimentsAvailable, faction, objectorsAllowed, perksOf, plan,
   selectProfile, stayLoyal, summaryFor, switchAlly, targets, territory, type CampaignState, type Debrief,
@@ -70,7 +72,8 @@ const THEME_NAME: Record<string, string> = {
   lattice: 'Mucus Lattice', womb: 'Brood Womb', marrow: 'Marrow Vault', resonance: 'Resonance Chamber',
   catapult: 'Spore Sling', runner: 'Creep Lance', cage: 'Trap Cage',
 };
-const speakLine = (l: string) => { const i = l.indexOf(':'); return i > 0 ? `<b>${esc(l.slice(0, i))}:</b>${esc(l.slice(i + 1))}` : esc(l); };
+/** A line as said: the speaker in bold; a leader's words as YOKE rendered them, with her note (src/ui/translation.ts). */
+const speakLine = (l: string) => tlLine(l);
 /** A leader's loose line (an aside) can be heard: its voice's key on the element (src/ui/lineVoice.ts), or nothing. */
 const sayAttr = (l: string, autoplay = false) =>
   LEADER_VOICES[speakerOf(l)] && spokenText(l) ? ` data-say="${esc(lineKey(l))}"${autoplay ? ' data-autoplay' : ''}` : '';
@@ -79,6 +82,15 @@ const YOKE_FACE: Record<string, string> = {
   'first-deployment': 'curious', 'faction-allied': 'amused', midpoint: 'concerned', licence: 'calm', ending: 'sad', idle: 'calm',
 };
 const esc = (t: string) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
+/** The band over a translated aside: its own channel (src/ui/translation.ts); none for his own lines. */
+const tlAsideBand = (l: string) => { const ch = channelOfLine(l); return ch ? tlBand(ch, [l]) : ''; };
+/** The inbox's bands: one per channel its lines came in on (after a switch at the midpoint, two factions write). */
+const inboxBands = (lines: string[]) => [...new Set(lines.map(channelOfLine).filter((c) => c))].map((ch) => tlBand(ch!, lines.filter((l) => channelOfLine(l) === ch))).join('');
+/** Comms' entry on the translation layer (content/lore/ship-ai-lorebook.md section 18), in the ship's own form voice. */
+const TRANSLATION_NOTE = `<div class="tl-codex"><div class="cp-label">TRANSLATION LAYER — FORM 22-T</div>
+  <p>Fauna signal (card fields, stridulation on their radio carrier, the antennal channel of their video) is rendered live into Standard by the ship's intelligence. Register: mid-century, per the Office's style guide. Voices: the Empire's stock library, cast by her. They sound like a rendering because they are one.</p>
+  <p>Confidence is printed per transmission. Terms with no Standard equivalent are flagged in brackets.</p>
+  <p class="tl-sig-off"><b>YOKE:</b> I am not putting words in their mouths. I am putting their words in words.</p></div>`;
 
 export class CampaignUi {
   private el = document.getElementById('campaign')!;
@@ -722,7 +734,8 @@ export class CampaignUi {
       ? 'COMMS — THE MIDPOINT. The other two want you. Go over to one (you lose your ally’s perks; its route ends here) or stay (your ally adds a perk of thanks).'
       : 'COMMS — three voices from the planet. You may ally with ONE; it decides your route and your ending. Halfway along, the other two will make you an offer.';
     return `<div class="cp-label">${head}</div>${cards.join('')}
-      ${inbox.length ? `<div class="cp-label">${s.midpoint?.status === 'switched' ? 'LETTERS, BROADCASTS AND CALLS' : 'FROM YOUR ALLY'}</div><div class="cp-log cp-comms">${inbox.map((l) => `<div${sayAttr(l)}>${speakLine(l)}</div>`).join('')}</div>` : ''}`;
+      ${inbox.length ? `<div class="cp-label">${s.midpoint?.status === 'switched' ? 'LETTERS, BROADCASTS AND CALLS' : 'FROM YOUR ALLY'}</div>${inboxBands(inbox)}<div class="cp-log cp-comms">${inbox.map((l) => `<div${sayAttr(l)}>${speakLine(l)}</div>`).join('')}</div>` : ''}
+      ${s.contacted.length ? TRANSLATION_NOTE : ''}`;
   }
 
   /** Who answers as YOKE: the ladder of her mode (her avatar, Kimi, the scripted YOKE), each rung falling to the next. */
@@ -837,7 +850,8 @@ export class CampaignUi {
       ${this.scenePictureHtml(f.id, scene)}
       <div class="screen-kicker">${next.offer ? `THE MIDPOINT — OFFER ${3 - offers.length} OF 2 · ` : next.contact && heard > 1 ? `INCOMING — CALL ${heard - calls.length + 1} OF ${heard} · ` : ''}${esc(f.name.toUpperCase())}</div>
       <div class="cp-sub">${esc(scene.title.toUpperCase())}</div>
-      ${scene.lines.map((l) => { const i = l.indexOf(':'); return `<p><b>${esc(l.slice(0, i))}:</b>${esc(l.slice(i + 1))}</p>`; }).join('')}
+      ${tlBand(f.id, scene.lines)}
+      ${scene.lines.map((l) => `<p>${tlLine(l)}</p>`).join('')}
       ${next.choice ? `<div class="cp-label">${esc(next.choice.prompt)}</div>` : ''}
       ${next.offer && ally0 ? `<div class="cp-label cp-offer-terms">GO OVER: ${esc(ally0.name)}'s perks end and its route stops here; ${esc(f.name)}'s route starts a territory in. STAY: ${esc(ally0.name)} adds ${esc((ally0.perks[ally0.midpoint.loyalPerk] ?? '').split(':')[0].replace(/\s*\(.*\)$/, ''))}.</div>` : ''}
       <div class="cp-scene-btns">${buttons}</div></div></div>`;
@@ -1049,7 +1063,7 @@ export class CampaignUi {
       ${hobbyDebriefHtml(d)}${ordersDebriefHtml(d.orders)}
       <div class="cp-facts">Earned: <b>+${d.standing} standing</b> · <b>+${d.notes} field notes</b>${d.unlocked.length ? ` · unlocked: ${d.unlocked.map((u) => esc(u.split(':')[1])).join(', ')}` : ''}</div>
       <p class="cp-story">${esc(d.log)}</p>
-      ${d.aside ? `<p class="cp-story cp-aside"${sayAttr(d.aside, true)}>${speakLine(d.aside)}</p>` : ''}
+      ${d.aside ? `${tlAsideBand(d.aside)}<p class="cp-story cp-aside"${sayAttr(d.aside, true)}>${speakLine(d.aside)}</p>` : ''}
       <button class="screen-btn" data-act="back">RETURN TO THE SHIP</button></div>`;
     if (pictures) {
       const titleEl = this.el.querySelector('.cp-title') as HTMLElement;

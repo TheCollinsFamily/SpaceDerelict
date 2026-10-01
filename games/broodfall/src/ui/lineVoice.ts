@@ -9,11 +9,13 @@
  * on the line (or Esc, or leaving the screen) stops it. Voices off in Settings (or a voiceless build,
  * or the media held back under automation): the button is not shown and nothing plays.
  */
-import { duckFor, routeMedia } from '../audio/engine';
+import type { Channel } from '../../content/translation';
+import { duckFor, routeMedia, SIGNAL_LEAD_MS, translateIn } from '../audio/engine';
 import { gain } from '../meta/storage';
 import { loadMedia, mediaAllowed, mediaNow, mediaUrl } from './newsreel';
+import { decode } from './translation';
 
-interface Now { key: string; audio: HTMLAudioElement }
+interface Now { key: string; audio: HTMLAudioElement; timer: number }
 let now: Now | null = null;
 let root: HTMLElement | null = null;
 /** Autoplayed once: the key and the element it was on (a redraw of the same report does not start it again). */
@@ -33,6 +35,7 @@ function light(): void {
 export function stopLine(): void {
   if (!now) return;
   const a = now.audio;
+  clearTimeout(now.timer);
   now = null;
   a.pause();
   light();
@@ -45,13 +48,18 @@ export function playLine(key: string): boolean {
   if (!v || gain('voice') <= 0) return false;
   const a = new Audio(mediaUrl(v.file));
   if (!routeMedia(a, 'voice')) a.volume = Math.min(1, gain('voice'));
-  const n: Now = { key, audio: a };
+  const n: Now = { key, audio: a, timer: 0 };
   now = n;
   duckFor(a, 'leader');
   const end = () => { if (now === n) { now = null; light(); } };
   a.onended = end;
   a.onerror = end;
-  void a.play().catch(end);
+  // YOKE's rendering (src/ui/translation.ts): the words resolve from their signal, which is heard first.
+  const el = lineEl(key);
+  const ch = el?.querySelector<HTMLElement>('.tl-words')?.dataset.tl as Channel | undefined;
+  decode(el);
+  if (ch && translateIn(a, ch)) n.timer = window.setTimeout(() => { if (now === n) void a.play().catch(end); }, SIGNAL_LEAD_MS);
+  else void a.play().catch(end);
   light();
   return true;
 }

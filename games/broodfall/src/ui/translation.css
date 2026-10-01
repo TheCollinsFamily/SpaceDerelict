@@ -1,0 +1,25 @@
+/* YOKE's translation, seen (src/ui/translation.ts). The band is HER console stamped on whatever it
+   sits on (the paper caller cards included): black, exact, monospaced, her amber. */
+.tl-band {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; margin: 6px 0 10px; padding: 4px 10px;
+  background: #0d0f12; color: #c9ccd2; border-left: 3px solid #e0a64b;
+  font: 600 10.5px/1.4 ui-monospace, "Cascadia Mono", Consolas, monospace; letter-spacing: 0.08em;
+}
+.tl-band .tl-by { color: #e0a64b; }
+/* The source signal, live: three bars that never settle. */
+.tl-sig { width: 18px; height: 10px; flex: none;
+  background: linear-gradient(#e0a64b, #e0a64b) 0 100% / 4px 40% no-repeat, linear-gradient(#e0a64b, #e0a64b) 7px 100% / 4px 90% no-repeat, linear-gradient(#e0a64b, #e0a64b) 14px 100% / 4px 60% no-repeat;
+  animation: tl-sig 0.9s steps(3) infinite; }
+@keyframes tl-sig { 33% { background-size: 4px 80%, 4px 30%, 4px 100%; } 66% { background-size: 4px 55%, 4px 70%, 4px 25%; } }
+.reduce-motion .tl-sig { animation: none; }
+@media (prefers-reduced-motion: reduce) { .tl-sig { animation: none; } }
+/* A line mid-rendering: her glyphs, in her colour. */
+.tl-words.tl-decoding { color: #b8862f; font-family: ui-monospace, Consolas, monospace; letter-spacing: 0.02em; }
+#campaign.ship-art .cp-scene-card .tl-words.tl-decoding { color: #8a5d16; }
+/* Her note under a line: small, plain, set apart. */
+.tl-note { display: block; margin: 2px 0 0 1.2em; font: italic 12px/1.4 ui-monospace, Consolas, monospace; opacity: 0.72; }
+#campaign.ship-art .cp-scene-card .tl-note { color: #4a4130; opacity: 0.9; }
+/* Comms' entry on the layer. */
+.tl-codex { margin-top: 14px; padding: 8px 12px; border: 1px solid rgba(224, 166, 75, 0.35); background: rgba(13, 15, 18, 0.55); }
+.tl-codex p { margin: 4px 0; font-size: 12.5px; line-height: 1.45; }
+.tl-codex .tl-sig-off { color: #e0a64b; }

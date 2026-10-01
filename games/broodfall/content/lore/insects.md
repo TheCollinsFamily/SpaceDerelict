@@ -757,7 +757,9 @@ never makes the comparison with itself; YOKE does, once.
 ## 11. Language and naming conventions (for future content)
 
 Everything the player reads of them has passed through the Empire's translation, which renders
-them into mid-century American English. So names and words follow these rules (all
+them into mid-century American English. **PROPOSAL (Oct 1 2026):** YOKE runs that translation live and
+voices it from the Empire's stock library, which is why they sound the way they do (`ship-ai-lorebook.md`
+section 18). So names and words follow these rules (all
 **PROPOSAL**, fitted to the names already in the game):
 
 | Thing | Rule | Examples |

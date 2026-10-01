@@ -12,13 +12,17 @@
  */
 import type { FactionId, Scene } from '../../content/campaign';
 import { findScene, lineKey, spokenText, voiceKey } from '../../content/media';
-import { duckFor, routeMedia } from '../audio/engine';
+import { channelOfLine } from '../../content/translation';
+import { duckFor, routeMedia, SIGNAL_LEAD_MS, translateIn } from '../audio/engine';
 import { gain } from '../meta/storage';
 import { endingFilmOf, loadMedia, mediaAllowed, mediaNow, mediaUrl, playEndingFilm } from './newsreel';
+import { decode } from './translation';
 
 interface Now { key: string; faction: FactionId; scene: Scene; line: number; audio: HTMLAudioElement | null; timer: number; done: boolean; filmed: boolean }
 let now: Now | null = null;
 let root: HTMLElement | null = null;
+/** The last line that resolved from its glyphs (a redraw of the card does not resolve it again). */
+let decoded = '';
 
 /** The scene on the card: a faction's own (wherever it sits in its content), else any scene of content/campaign.ts. */
 const sceneOf = (faction: string, title: string): Scene | null => findScene(faction, title);
@@ -38,7 +42,12 @@ function light(): void {
   const ps = [...c.querySelectorAll<HTMLElement>(':scope > p')];
   c.classList.toggle('cp-speaking', !now.done);
   ps.forEach((p, i) => p.classList.toggle('said-now', !now!.done && i === now!.line));
-  if (!now.done) ps[now.line]?.scrollIntoView({ block: 'nearest' });
+  if (!now.done) {
+    ps[now.line]?.scrollIntoView({ block: 'nearest' });
+    // YOKE's rendering: the line being said resolves from its signal's glyphs (src/ui/translation.ts).
+    const k = `${now.key}|${now.line}`;
+    if (decoded !== k) { decoded = k; decode(ps[now.line]); }
+  }
   film(c);
 }
 
@@ -82,7 +91,11 @@ function say(n: Now): void {
     duckFor(a, 'leader');
     a.onended = () => { if (now === n) { n.audio = null; next(350); } };
     a.onerror = () => next(Math.min(6000, 900 + l.length * 40));
-    void a.play().catch(() => next(Math.min(6000, 900 + l.length * 40)));
+    // A leader's line starts as the signal YOKE renders it from (src/audio/engine.ts translateIn).
+    const ch = channelOfLine(l);
+    const wait = ch && translateIn(a, ch) ? SIGNAL_LEAD_MS : 0;
+    const go = () => { if (now === n && n.audio === a) void a.play().catch(() => next(Math.min(6000, 900 + l.length * 40))); };
+    if (wait) n.timer = window.setTimeout(go, wait); else go();
   } else next(Math.min(6000, 900 + l.length * 40));
 }
 

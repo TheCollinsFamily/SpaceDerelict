@@ -688,3 +688,35 @@ for", and `content/lore/empire.md`, section 12a.
   dessert. Your dad says hello, by the way. Again."
 - Before the end, if the Faithful's Book comes up: "Chapter twenty is remarkably accurate. I
   would not tell the Voice. He would take it the wrong way."
+
+## 18. The translation layer: she renders the insects for him (Oct 1 2026)
+
+Collins, Oct 1 2026: "we should have something in the game's lore or visuals that implies an AI is
+translating what the insects are saying for you (explaining why they sound like AI)." What follows is
+**PROPOSAL** throughout, fitted to `insects.md` section 11 (the Empire's translation into mid-century
+American English) and section 1.7 (its "he" and "she").
+
+- **She is the translation matrix.** The Empire ships the matrix; YOKE runs it, live. Every word the
+  three leaders say to him arrives through her: the Delegation's cards spelled out in a field (read off
+  the survey cameras), the Faithful's stridulation on the carrier of forty radio stations, the
+  Institute's video call with its antennal channel. None of them speaks a human sound; she renders it.
+- **Why they sound the way they do.** She renders into Standard in the Office's mid-century register
+  and voices it from the Empire's stock voice library, casting each speaker herself: a warm, careful
+  voice for the Delegate, an old radio preacher for the Voice, a quick modern one for the Director (she
+  says the period voices "made him sound trustworthy, which is a mistranslation"). They sound like a
+  rendering because they are one.
+- **Confidence.** Her console prints a confidence on every transmission: high for the card fields
+  (eleven thousand signallers spell carefully), highest for the Director (he wants to be understood),
+  lowest for the Voice (a liturgy of scent words with no Standard equivalent).
+- **What she leaves in brackets.** A term with no equivalent is flagged, not invented:
+  "[untranslatable: grief-scent]". She would rather leave a hole than put words in their mouths. Now and
+  then she adds a translator's note, in her logging voice ("The capitals are his. He stridulates in
+  capitals.").
+- **The Awaited One** is the one voice she does not translate: it speaks through a voice box he made.
+- **Her line on it:** "I am not putting words in their mouths. I am putting their words in words."
+- **Where it shows:** the band on every leader card (source, RENDERED BY YOKE, confidence), each line
+  resolving from its signal's glyphs as it is said, the source signal heard under the first instant of
+  each voiced line, her notes, and Form 22-T in Comms (`content/translation.ts`, `src/ui/translation.ts`).
+- **Where it does not:** the B-movie that opens a new game is the locals' own film, before anyone aboard
+  is listening. The newsreels are the planet's broadcasts as they aired, and carry no band today.
+- Not yet in her brain text (`yoke-brain.md`); add a line there if Collins keeps this, then publish.
