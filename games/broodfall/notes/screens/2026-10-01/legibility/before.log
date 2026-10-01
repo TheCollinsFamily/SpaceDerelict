@@ -1,41 +1,121 @@
-  FAIL  deephive turn 0: street walls 48, floors 87, roofs 35: gap 13 (floors 52; n 153/104/3067)
-  FAIL  deephive turn 1: street walls 66, floors 84, roofs 35: gap 31 (floors 48; n 157/141/3110)
-  FAIL  deephive turn 2: street walls 57, floors 90, roofs 35: gap 22 (floors 54; n 114/118/2821)
-  FAIL  deephive turn 3: street walls 54, floors 99, roofs 36: gap 19 (floors 63; n 109/85/2803)
-  FAIL  farmland turn 0: street walls 58, floors 84, roofs 35: gap 23 (floors 49; n 153/104/3067)
-  FAIL  farmland turn 1: street walls 73, floors 87, roofs 36: gap 37 (floors 51; n 157/141/3110)
-  FAIL  farmland turn 2: street walls 55, floors 86, roofs 36: gap 19 (floors 51; n 114/118/2821)
-  FAIL  farmland turn 3: street walls 64, floors 92, roofs 35: gap 29 (floors 57; n 109/85/2803)
-  FAIL  industrial turn 0: street walls 43, floors 87, roofs 35: gap 8 (floors 52; n 153/104/3067)
-  FAIL  industrial turn 1: street walls 52, floors 82, roofs 36: gap 16 (floors 47; n 157/141/3110)
-  FAIL  industrial turn 2: street walls 46, floors 80, roofs 35: gap 10 (floors 45; n 114/118/2821)
-  FAIL  industrial turn 3: street walls 51, floors 99, roofs 35: gap 16 (floors 64; n 109/85/2803)
-  FAIL  megacity turn 0: street walls 32, floors 79, roofs 35: gap 3 (floors 44; n 153/104/3067)
-  FAIL  megacity turn 1: street walls 41, floors 71, roofs 35: gap 6 (floors 36; n 157/141/3110)
-  FAIL  megacity turn 2: street walls 33, floors 71, roofs 36: gap 2 (floors 36; n 114/118/2821)
-  FAIL  megacity turn 3: street walls 41, floors 86, roofs 36: gap 5 (floors 50; n 109/85/2803)
-  FAIL  necropolis turn 0: street walls 48, floors 90, roofs 35: gap 13 (floors 55; n 153/104/3067)
-  FAIL  necropolis turn 1: street walls 62, floors 87, roofs 36: gap 27 (floors 51; n 157/141/3110)
-  FAIL  necropolis turn 2: street walls 53, floors 86, roofs 35: gap 18 (floors 51; n 114/118/2821)
-  FAIL  necropolis turn 3: street walls 59, floors 103, roofs 35: gap 23 (floors 68; n 109/85/2803)
-  FAIL  orient turn 0: street walls 49, floors 90, roofs 35: gap 14 (floors 55; n 153/104/3067)
-  FAIL  orient turn 1: street walls 60, floors 83, roofs 35: gap 24 (floors 48; n 157/141/3110)
-  FAIL  orient turn 2: street walls 50, floors 86, roofs 35: gap 15 (floors 51; n 114/118/2821)
-  FAIL  orient turn 3: street walls 56, floors 106, roofs 35: gap 20 (floors 71; n 109/85/2803)
-  FAIL  orthodox turn 0: street walls 54, floors 91, roofs 35: gap 19 (floors 56; n 153/104/3067)
-  FAIL  orthodox turn 1: street walls 70, floors 92, roofs 36: gap 34 (floors 57; n 157/141/3110)
-  FAIL  orthodox turn 2: street walls 60, floors 98, roofs 35: gap 25 (floors 63; n 114/118/2821)
-  FAIL  orthodox turn 3: street walls 72, floors 108, roofs 35: gap 37 (floors 72; n 109/85/2803)
-  FAIL  suburb turn 0: street walls 78, floors 99, roofs 35: gap 42 (floors 64; n 153/104/3067)
-  PASS  suburb turn 1: street walls 96, floors 106, roofs 35: gap 61 (floors 71; n 157/141/3110)
-  FAIL  suburb turn 2: street walls 93, floors 110, roofs 35: gap 58 (floors 74; n 114/118/2821)
-  PASS  suburb turn 3: street walls 107, floors 118, roofs 35: gap 72 (floors 83; n 109/85/2803)
-  FAIL  terraces turn 0: street walls 59, floors 98, roofs 35: gap 24 (floors 63; n 153/104/3067)
-  FAIL  terraces turn 1: street walls 80, floors 91, roofs 35: gap 45 (floors 55; n 157/141/3110)
-  FAIL  terraces turn 2: street walls 68, floors 94, roofs 35: gap 33 (floors 59; n 114/118/2821)
-  FAIL  terraces turn 3: street walls 70, floors 116, roofs 36: gap 34 (floors 80; n 109/85/2803)
-  FAIL  wetland turn 0: street walls 43, floors 93, roofs 35: gap 8 (floors 58; n 153/104/3067)
-  FAIL  wetland turn 1: street walls 57, floors 89, roofs 35: gap 22 (floors 54; n 157/141/3110)
-  FAIL  wetland turn 2: street walls 50, floors 95, roofs 35: gap 14 (floors 60; n 114/118/2821)
-  FAIL  wetland turn 3: street walls 55, floors 113, roofs 35: gap 19 (floors 78; n 109/85/2803)
-38 FAILED
+  FAIL  deephive turn 0 far: bare/street 8, street/roof 34, bare/roof 42, wall/roof 21, wall/bare 22  [bare 143,119,85 street 129,104,81 wall 90,67,45 roof 59,29,31]
+  FAIL  deephive turn 0 fit: bare/street 8, street/roof 34, bare/roof 41, wall/roof 18, wall/bare 24  [bare 145,121,88 street 128,105,82 wall 90,63,44 roof 62,30,32]
+  FAIL  deephive turn 0 near: bare/street 7, street/roof 36, bare/roof 42  [bare 138,121,87 street 134,110,86 wall 80,58,40 roof 62,30,32]
+  FAIL  deephive turn 1 far: bare/street 2, street/roof 33, bare/roof 35, wall/roof 20, wall/bare 20  [bare 133,109,84 street 132,105,82 wall 80,64,42 roof 64,31,33]
+  FAIL  deephive turn 1 fit: bare/street 6, street/roof 34, bare/roof 40, wall/roof 20, wall/bare 22  [bare 138,115,84 street 129,104,80 wall 80,63,41 roof 59,29,31]
+  FAIL  deephive turn 1 near: bare/street 6, street/roof 34, bare/roof 39  [bare 137,125,95 street 136,113,85 wall 67,44,33 roof 75,37,38]
+  FAIL  deephive turn 2 far: bare/street 7, street/roof 34, bare/roof 40, wall/roof 26, wall/bare 15  [bare 138,113,77 street 125,103,78 wall 103,75,46 roof 61,29,32]
+  FAIL  deephive turn 2 fit: bare/street 8, street/roof 32, bare/roof 39, wall/roof 25, wall/bare 16  [bare 135,114,80 street 126,101,79 wall 97,74,47 roof 60,30,32]
+  FAIL  deephive turn 2 near: bare/street 7, street/roof 34, bare/roof 39  [bare 133,115,83 street 131,103,77 wall 44,25,20 roof 60,30,31]
+  FAIL  deephive turn 3 far: bare/street 10, street/roof 33, bare/roof 43, wall/roof 15, wall/bare 32  [bare 142,124,92 street 125,101,79 wall 69,49,32 roof 58,28,30]
+  FAIL  deephive turn 3 fit: bare/street 9, street/roof 32, bare/roof 41, wall/roof 11, wall/bare 32  [bare 140,121,89 street 126,102,79 wall 68,45,31 roof 63,31,33]
+  FAIL  deephive turn 3 near: bare/street 9, street/roof 34, bare/roof 41  [bare 130,119,90 street 129,103,81 wall 69,44,29 roof 56,28,30]
+  FAIL  farmland turn 0 far: bare/street 8, street/roof 29, bare/roof 37, wall/roof 21, wall/bare 22  [bare 129,106,77 street 121,92,75 wall 70,58,34 roof 57,28,30]
+  FAIL  farmland turn 0 fit: bare/street 6, street/roof 28, bare/roof 33, wall/roof 18, wall/bare 21  [bare 126,106,83 street 121,94,77 wall 73,58,36 roof 62,31,32]
+  FAIL  farmland turn 0 near: bare/street 6, street/roof 30, bare/roof 33  [bare 121,104,82 street 124,97,80 wall 59,46,30 roof 60,30,31]
+  FAIL  farmland turn 1 far: bare/street 7, street/roof 28, bare/roof 34, wall/roof 12, wall/bare 25  [bare 130,106,82 street 122,93,77 wall 69,50,38 roof 62,31,33]
+  FAIL  farmland turn 1 fit: bare/street 8, street/roof 29, bare/roof 37, wall/roof 15, wall/bare 26  [bare 133,111,84 street 120,94,76 wall 68,52,36 roof 60,29,31]
+  FAIL  farmland turn 1 near: bare/street 6, street/roof 28, bare/roof 33  [bare 121,108,87 street 121,97,76 wall 57,41,31 roof 68,34,34]
+  FAIL  farmland turn 2 far: bare/street 8, street/roof 27, bare/roof 35, wall/roof 18, wall/bare 20  [bare 133,108,82 street 117,92,75 wall 79,62,44 roof 63,31,32]
+  FAIL  farmland turn 2 fit: bare/street 10, street/roof 28, bare/roof 38, wall/roof 18, wall/bare 23  [bare 133,110,82 street 116,90,73 wall 75,58,40 roof 58,28,30]
+  FAIL  farmland turn 2 near: bare/street 7, street/roof 26, bare/roof 32  [bare 118,102,80 street 106,86,66 wall 43,34,24 roof 59,30,30]
+  FAIL  farmland turn 3 far: bare/street 8, street/roof 28, bare/roof 35, wall/roof 16, wall/bare 25  [bare 126,108,88 street 115,89,73 wall 64,50,32 roof 58,28,30]
+  FAIL  farmland turn 3 fit: bare/street 7, street/roof 28, bare/roof 35, wall/roof 16, wall/bare 25  [bare 126,108,86 street 119,92,75 wall 63,50,32 roof 62,30,32]
+  FAIL  farmland turn 3 near: bare/street 8, street/roof 29, bare/roof 35  [bare 119,106,86 street 120,92,77 wall 65,60,38 roof 57,28,30]
+  FAIL  industrial turn 0 far: bare/street 5, street/roof 31, bare/roof 35, wall/roof 10, wall/bare 31  [bare 131,113,104 street 123,103,100 wall 55,41,35 roof 59,29,31]
+  FAIL  industrial turn 0 fit: bare/street 5, street/roof 31, bare/roof 36, wall/roof 11, wall/bare 32  [bare 128,115,109 street 122,103,100 wall 53,41,36 roof 61,30,32]
+  FAIL  industrial turn 0 near: bare/street 5, street/roof 33, bare/roof 35  [bare 119,112,108 street 127,108,106 wall 41,34,30 roof 61,30,33]
+  FAIL  industrial turn 1 far: bare/street 6, street/roof 31, bare/roof 35, wall/roof 9, wall/bare 34  [bare 123,114,107 street 124,104,99 wall 50,34,30 roof 64,31,34]
+  FAIL  industrial turn 1 fit: bare/street 7, street/roof 31, bare/roof 37, wall/roof 9, wall/bare 36  [bare 130,117,110 street 120,101,97 wall 48,34,29 roof 58,28,31]
+  FAIL  industrial turn 1 near: bare/street 5, street/roof 30, bare/roof 35  [bare 125,119,116 street 127,110,107 wall 55,35,31 roof 71,37,39]
+  FAIL  industrial turn 2 far: bare/street 7, street/roof 29, bare/roof 35, wall/roof 10, wall/bare 30  [bare 122,113,104 street 119,99,95 wall 57,42,36 roof 61,30,32]
+  FAIL  industrial turn 2 fit: bare/street 7, street/roof 30, bare/roof 36, wall/roof 11, wall/bare 31  [bare 123,113,103 street 118,99,96 wall 54,41,35 roof 60,29,32]
+  FAIL  industrial turn 2 near: bare/street 7, street/roof 30, bare/roof 35  [bare 120,113,108 street 120,100,97 wall 39,24,22 roof 59,30,31]
+  FAIL  industrial turn 3 far: bare/street 8, street/roof 30, bare/roof 38, wall/roof 10, wall/bare 34  [bare 128,118,115 street 117,99,96 wall 51,38,31 roof 58,28,30]
+  FAIL  industrial turn 3 fit: bare/street 8, street/roof 29, bare/roof 37, wall/roof 8, wall/bare 36  [bare 126,119,113 street 119,100,95 wall 51,34,30 roof 63,31,33]
+  FAIL  industrial turn 3 near: bare/street 7, street/roof 31, bare/roof 37  [bare 120,115,113 street 121,102,99 wall 55,41,33 roof 56,28,30]
+  FAIL  megacity turn 0 far: bare/street 5, street/roof 26, bare/roof 30, wall/roof 8, wall/bare 28  [bare 114,99,92 street 109,89,87 wall 51,35,33 roof 58,28,31]
+  FAIL  megacity turn 0 fit: bare/street 6, street/roof 26, bare/roof 31, wall/roof 9, wall/bare 30  [bare 113,102,96 street 109,90,87 wall 48,33,31 roof 61,30,32]
+  FAIL  megacity turn 0 near: bare/street 6, street/roof 27, bare/roof 30  [bare 105,99,94 street 112,93,90 wall 40,28,28 roof 61,30,32]
+  FAIL  megacity turn 1 far: bare/street 5, street/roof 25, bare/roof 26, wall/roof 10, wall/bare 26  [bare 101,89,80 street 110,90,86 wall 43,30,30 roof 62,31,33]
+  FAIL  megacity turn 1 fit: bare/street 6, street/roof 25, bare/roof 29, wall/roof 8, wall/bare 29  [bare 103,94,86 street 106,86,84 wall 42,28,28 roof 58,29,31]
+  FAIL  megacity turn 1 near: bare/street 8, street/roof 22, bare/roof 29  [bare 111,104,102 street 107,88,86 wall 48,28,29 roof 70,37,39]
+  FAIL  megacity turn 2 far: bare/street 5, street/roof 24, bare/roof 28, wall/roof 10, wall/bare 24  [bare 101,93,88 street 103,86,83 wall 49,38,37 roof 60,30,32]
+  FAIL  megacity turn 2 fit: bare/street 6, street/roof 25, bare/roof 29, wall/roof 10, wall/bare 26  [bare 104,94,87 street 106,85,82 wall 46,36,35 roof 57,28,31]
+  FAIL  megacity turn 2 near: bare/street 7, street/roof 24, bare/roof 30  [bare 103,99,96 street 98,83,81 wall 35,20,20 roof 56,29,32]
+  FAIL  megacity turn 3 far: bare/street 9, street/roof 24, bare/roof 32, wall/roof 8, wall/bare 32  [bare 114,103,98 street 107,84,83 wall 44,30,29 roof 57,28,30]
+  FAIL  megacity turn 3 fit: bare/street 7, street/roof 24, bare/roof 30, wall/roof 9, wall/bare 31  [bare 108,99,95 street 109,87,83 wall 41,27,28 roof 60,30,32]
+  FAIL  megacity turn 3 near: bare/street 7, street/roof 26, bare/roof 31  [bare 103,98,95 street 110,89,86 wall 45,29,34 roof 57,28,30]
+  FAIL  necropolis turn 0 far: bare/street 4, street/roof 33, bare/roof 36, wall/roof 14, wall/bare 23  [bare 132,114,108 street 127,108,107 wall 80,59,53 roof 59,29,31]
+  FAIL  necropolis turn 0 fit: bare/street 5, street/roof 33, bare/roof 38, wall/roof 15, wall/bare 26  [bare 132,120,113 street 127,109,107 wall 77,58,47 roof 62,30,33]
+  FAIL  necropolis turn 0 near: bare/street 5, street/roof 35, bare/roof 38  [bare 129,120,116 street 131,113,112 wall 68,49,39 roof 59,30,32]
+  FAIL  necropolis turn 1 far: bare/street 4, street/roof 32, bare/roof 34, wall/roof 14, wall/bare 24  [bare 125,112,105 street 128,108,105 wall 72,55,44 roof 63,31,34]
+  FAIL  necropolis turn 1 fit: bare/street 6, street/roof 33, bare/roof 36, wall/roof 14, wall/bare 26  [bare 129,114,102 street 126,108,106 wall 67,52,41 roof 59,29,31]
+  FAIL  necropolis turn 1 near: bare/street 5, street/roof 33, bare/roof 36  [bare 128,123,122 street 132,116,114 wall 58,40,35 roof 67,36,38]
+  FAIL  necropolis turn 2 far: bare/street 5, street/roof 32, bare/roof 36, wall/roof 18, wall/bare 19  [bare 129,115,104 street 123,106,102 wall 91,68,56 roof 61,30,32]
+  FAIL  necropolis turn 2 fit: bare/street 6, street/roof 31, bare/roof 36, wall/roof 15, wall/bare 22  [bare 128,114,104 street 121,103,101 wall 81,61,51 roof 58,29,31]
+  FAIL  necropolis turn 2 near: bare/street 5, street/roof 31, bare/roof 35  [bare 120,112,109 street 118,102,101 wall 42,28,29 roof 57,30,32]
+  FAIL  necropolis turn 3 far: bare/street 9, street/roof 32, bare/roof 40, wall/roof 13, wall/bare 31  [bare 131,124,121 street 123,104,100 wall 60,49,44 roof 58,28,30]
+  FAIL  necropolis turn 3 fit: bare/street 7, street/roof 32, bare/roof 38, wall/roof 15, wall/bare 29  [bare 130,121,117 street 125,106,101 wall 62,52,43 roof 62,30,33]
+  FAIL  necropolis turn 3 near: bare/street 7, street/roof 34, bare/roof 38  [bare 122,118,117 street 125,107,103 wall 54,40,37 roof 55,28,30]
+  FAIL  orient turn 0 far: bare/street 7, street/roof 35, bare/roof 36, wall/roof 18, wall/bare 24  [bare 133,112,97 street 131,113,110 wall 81,55,34 roof 59,29,31]
+  FAIL  orient turn 0 fit: bare/street 3, street/roof 34, bare/roof 36, wall/roof 17, wall/bare 27  [bare 134,115,108 street 130,112,109 wall 81,55,34 roof 61,30,32]
+  FAIL  orient turn 0 near: bare/street 3, street/roof 37, bare/roof 36  [bare 129,115,110 street 136,119,117 wall 69,47,28 roof 59,30,32]
+  FAIL  orient turn 1 far: bare/street 5, street/roof 33, bare/roof 35, wall/roof 12, wall/bare 29  [bare 128,113,102 street 131,110,106 wall 69,44,29 roof 63,31,33]
+  FAIL  orient turn 1 fit: bare/street 6, street/roof 35, bare/roof 38, wall/roof 15, wall/bare 30  [bare 131,117,103 street 126,110,105 wall 68,47,28 roof 58,28,30]
+  FAIL  orient turn 1 near: bare/street 6, street/roof 35, bare/roof 36  [bare 128,121,119 street 137,119,110 wall 73,46,31 roof 65,34,36]
+  FAIL  orient turn 2 far: bare/street 5, street/roof 34, bare/roof 38, wall/roof 20, wall/bare 27  [bare 134,120,108 street 125,109,101 wall 82,58,33 roof 59,29,31]
+  FAIL  orient turn 2 fit: bare/street 7, street/roof 32, bare/roof 37, wall/roof 19, wall/bare 25  [bare 134,116,101 street 126,107,103 wall 85,58,34 roof 61,30,32]
+  FAIL  orient turn 2 near: bare/street 5, street/roof 33, bare/roof 35  [bare 132,109,98 street 119,105,96 wall 50,34,23 roof 54,28,30]
+  FAIL  orient turn 3 far: bare/street 5, street/roof 33, bare/roof 38, wall/roof 10, wall/bare 33  [bare 134,118,112 street 124,106,102 wall 60,40,30 roof 58,28,30]
+  FAIL  orient turn 3 fit: bare/street 4, street/roof 33, bare/roof 37, wall/roof 11, wall/bare 33  [bare 133,118,111 street 127,108,103 wall 60,41,28 roof 62,30,32]
+  FAIL  orient turn 3 near: bare/street 5, street/roof 35, bare/roof 38  [bare 125,117,114 street 129,110,107 wall 53,36,28 roof 55,28,30]
+  FAIL  orthodox turn 0 far: bare/street 5, street/roof 36, bare/roof 40, wall/roof 16, wall/bare 26  [bare 143,121,97 street 138,113,97 wall 77,58,42 roof 60,29,31]
+  FAIL  orthodox turn 0 fit: bare/street 5, street/roof 36, bare/roof 40, wall/roof 16, wall/bare 27  [bare 145,124,103 street 136,113,96 wall 81,58,41 roof 61,30,32]
+  FAIL  orthodox turn 0 near: bare/street 5, street/roof 38, bare/roof 40  [bare 138,124,104 street 145,120,103 wall 62,45,34 roof 63,31,33]
+  FAIL  orthodox turn 1 far: bare/street 5, street/roof 36, bare/roof 39, wall/roof 14, wall/bare 30  [bare 145,119,93 street 135,113,93 wall 66,51,38 roof 61,30,32]
+  FAIL  orthodox turn 1 fit: bare/street 7, street/roof 35, bare/roof 41, wall/roof 14, wall/bare 32  [bare 148,122,95 street 135,111,94 wall 63,49,35 roof 61,30,32]
+  FAIL  orthodox turn 1 near: bare/street 4, street/roof 36, bare/roof 39  [bare 141,127,106 street 141,120,100 wall 61,40,33 roof 71,35,37]
+  FAIL  orthodox turn 2 far: bare/street 10, street/roof 36, bare/roof 45, wall/roof 20, wall/bare 29  [bare 158,129,99 street 134,111,92 wall 80,62,42 roof 60,29,32]
+  FAIL  orthodox turn 2 fit: bare/street 9, street/roof 34, bare/roof 42, wall/roof 19, wall/bare 27  [bare 156,126,102 street 131,108,90 wall 83,63,44 roof 60,29,31]
+  FAIL  orthodox turn 2 near: bare/street 6, street/roof 35, bare/roof 41  [bare 144,123,98 street 126,108,86 wall 53,34,21 roof 59,30,31]
+  FAIL  orthodox turn 3 far: bare/street 7, street/roof 35, bare/roof 41, wall/roof 13, wall/bare 31  [bare 146,126,109 street 131,108,90 wall 71,50,36 roof 58,28,30]
+  FAIL  orthodox turn 3 fit: bare/street 7, street/roof 33, bare/roof 40, wall/roof 16, wall/bare 31  [bare 147,125,106 street 134,108,91 wall 68,52,34 roof 63,31,33]
+  FAIL  orthodox turn 3 near: bare/street 9, street/roof 36, bare/roof 40  [bare 131,123,107 street 139,112,95 wall 82,53,27 roof 59,29,31]
+  FAIL  suburb turn 0 far: bare/street 10, street/roof 39, bare/roof 49, wall/roof 35, wall/bare 16  [bare 164,147,129 street 143,122,113 wall 127,107,84 roof 59,29,31]
+  FAIL  suburb turn 0 fit: bare/street 10, street/roof 39, bare/roof 49, wall/roof 33, wall/bare 16  [bare 164,145,127 street 142,121,112 wall 125,103,87 roof 58,28,30]
+  FAIL  suburb turn 0 near: bare/street 8, street/roof 40, bare/roof 48  [bare 157,147,132 street 149,128,118 wall 107,82,70 roof 63,31,33]
+  FAIL  suburb turn 1 far: bare/street 9, street/roof 39, bare/roof 47, wall/roof 28, wall/bare 21  [bare 156,141,121 street 141,121,111 wall 100,90,72 roof 59,29,31]
+  FAIL  suburb turn 1 fit: bare/street 9, street/roof 38, bare/roof 45, wall/roof 27, wall/bare 21  [bare 165,139,118 street 143,122,112 wall 103,89,70 roof 63,31,33]
+  FAIL  suburb turn 1 near: bare/street 5, street/roof 39, bare/roof 44  [bare 153,143,131 street 149,131,120 wall 96,69,60 roof 70,35,36]
+  FAIL  suburb turn 2 far: bare/street 9, street/roof 38, bare/roof 46, wall/roof 37, wall/bare 15  [bare 166,143,125 street 141,121,110 wall 125,112,86 roof 64,31,33]
+  FAIL  suburb turn 2 fit: bare/street 12, street/roof 37, bare/roof 48, wall/roof 36, wall/bare 14  [bare 168,144,125 street 137,117,108 wall 129,110,88 roof 59,29,31]
+  FAIL  suburb turn 2 near: bare/street 7, street/roof 40, bare/roof 47  [bare 156,143,127 street 142,125,108 wall 64,47,39 roof 61,30,32]
+  FAIL  suburb turn 3 far: bare/street 10, street/roof 38, bare/roof 47, wall/roof 31, wall/bare 21  [bare 159,143,130 street 138,118,107 wall 104,93,71 roof 58,28,30]
+  FAIL  suburb turn 3 fit: bare/street 10, street/roof 37, bare/roof 47, wall/roof 30, wall/bare 20  [bare 157,143,127 street 140,118,108 wall 106,94,72 roof 61,30,32]
+  FAIL  suburb turn 3 near: bare/street 8, street/roof 38, bare/roof 41  [bare 137,129,124 street 145,121,112 wall 136,111,97 roof 61,30,33]
+  FAIL  terraces turn 0 far: bare/street 5, street/roof 39, bare/roof 43, wall/roof 29, wall/bare 24  [bare 150,131,115 street 142,122,114 wall 89,79,49 roof 58,28,30]
+  FAIL  terraces turn 0 fit: bare/street 6, street/roof 38, bare/roof 43, wall/roof 27, wall/bare 25  [bare 154,133,117 street 143,122,115 wall 89,78,50 roof 62,31,33]
+  FAIL  terraces turn 0 near: bare/street 8, street/roof 41, bare/roof 45  [bare 152,138,119 street 150,129,123 wall 79,74,46 roof 61,31,32]
+  FAIL  terraces turn 1 far: bare/street 4, street/roof 38, bare/roof 36, wall/roof 23, wall/bare 24  [bare 133,114,100 street 142,122,112 wall 74,64,37 roof 62,30,32]
+  FAIL  terraces turn 1 fit: bare/street 4, street/roof 38, bare/roof 37, wall/roof 21, wall/bare 25  [bare 136,117,103 street 141,120,112 wall 73,62,38 roof 61,30,32]
+  FAIL  terraces turn 1 near: bare/street 4, street/roof 37, bare/roof 39  [bare 142,131,125 street 143,125,115 wall 81,63,45 roof 67,36,35]
+  FAIL  terraces turn 2 far: bare/street 6, street/roof 37, bare/roof 42, wall/roof 27, wall/bare 23  [bare 148,129,113 street 139,118,110 wall 92,77,48 roof 60,30,32]
+  FAIL  terraces turn 2 fit: bare/street 7, street/roof 35, bare/roof 39, wall/roof 28, wall/bare 21  [bare 145,123,108 street 135,114,109 wall 93,79,49 roof 61,30,32]
+  FAIL  terraces turn 2 near: bare/street 9, street/roof 35, bare/roof 43  [bare 143,131,123 street 125,109,101 wall 70,57,36 roof 55,27,29]
+  FAIL  terraces turn 3 far: bare/street 6, street/roof 36, bare/roof 41, wall/roof 21, wall/bare 26  [bare 142,130,123 street 136,115,108 wall 83,70,53 roof 61,30,32]
+  FAIL  terraces turn 3 fit: bare/street 6, street/roof 37, bare/roof 42, wall/roof 22, wall/bare 26  [bare 146,131,120 street 138,116,108 wall 84,71,51 roof 59,29,31]
+  FAIL  terraces turn 3 near: bare/street 7, street/roof 38, bare/roof 40  [bare 130,125,121 street 140,119,113 wall 108,105,60 roof 57,29,30]
+  FAIL  wetland turn 0 far: bare/street 3, street/roof 39, bare/roof 40, wall/roof 14, wall/bare 29  [bare 147,123,108 street 143,121,111 wall 72,55,45 roof 59,29,31]
+  FAIL  wetland turn 0 fit: bare/street 3, street/roof 38, bare/roof 40, wall/roof 12, wall/bare 31  [bare 148,126,114 street 142,120,111 wall 72,52,43 roof 61,30,32]
+  FAIL  wetland turn 0 near: bare/street 4, street/roof 40, bare/roof 43  [bare 148,133,122 street 148,126,116 wall 65,45,38 roof 60,30,32]
+  FAIL  wetland turn 1 far: bare/street 5, street/roof 37, bare/roof 40, wall/roof 13, wall/bare 32  [bare 145,126,108 street 145,121,111 wall 66,50,40 roof 64,31,33]
+  FAIL  wetland turn 1 fit: bare/street 4, street/roof 38, bare/roof 41, wall/roof 13, wall/bare 33  [bare 148,126,111 street 141,119,110 wall 62,48,36 roof 59,29,31]
+  FAIL  wetland turn 1 near: bare/street 3, street/roof 38, bare/roof 39  [bare 145,131,123 street 148,129,118 wall 55,32,31 roof 70,37,38]
+  FAIL  wetland turn 2 far: bare/street 5, street/roof 36, bare/roof 41, wall/roof 17, wall/bare 27  [bare 145,128,114 street 139,116,105 wall 82,63,50 roof 61,30,32]
+  FAIL  wetland turn 2 fit: bare/street 5, street/roof 36, bare/roof 40, wall/roof 18, wall/bare 26  [bare 149,125,111 street 136,114,105 wall 84,64,48 roof 59,29,31]
+  FAIL  wetland turn 2 near: bare/street 5, street/roof 35, bare/roof 40  [bare 142,125,117 street 134,114,104 wall 42,28,25 roof 59,30,32]
+  FAIL  wetland turn 3 far: bare/street 7, street/roof 36, bare/roof 42, wall/roof 11, wall/bare 35  [bare 147,129,118 street 134,112,103 wall 62,45,35 roof 57,28,30]
+  FAIL  wetland turn 3 fit: bare/street 6, street/roof 35, bare/roof 41, wall/roof 14, wall/bare 34  [bare 149,130,116 street 138,114,104 wall 63,50,38 roof 63,31,33]
+  FAIL  wetland turn 3 near: bare/street 7, street/roof 38, bare/roof 40  [bare 130,123,118 street 140,117,108 wall 78,63,51 roof 55,28,29]
+120 FAILED

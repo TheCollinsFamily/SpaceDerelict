@@ -5,6 +5,7 @@
  */
 import { Assets, Rectangle, Texture } from 'pixi.js';
 import type { BiomeArt } from './biome';
+import { lightRange, recolour } from './streetCreep';
 
 export { pickBiome, type BiomeArt } from './biome';
 
@@ -368,6 +369,50 @@ export class BoardArtSet {
   sprite(sheet: string, id: string, set?: string | null): Texture | null {
     const s = this.holder(sheet, id, set);
     return s ? s.atlas.sprite(id, s.sprites[id]) : null;
+  }
+
+  /** The creep skin as it lies on a STREET: the same piece, recoloured pus-yellow (src/render/streetCreep.ts). */
+  streetSkin(id: string): Texture | null {
+    const s = this.holder('creep', id);
+    const r = s ? this.streetAtlas(s) : null;
+    return s && r ? r.atlas.sprite(id, s.sprites[id]) : null;
+  }
+
+  /** A square of the street creep, to coat a wall looking down onto a creeped street. */
+  streetCoat(): Texture | null {
+    const s = this.holder('creep', 'creep-0-00');
+    return s ? this.streetAtlas(s)?.coat ?? null : null;
+  }
+
+  private street = new Map<Atlas, { atlas: Atlas; coat: Texture } | null>();
+  private streetAtlas(s: { atlas: Atlas; sprites: Record<string, Rect> }): { atlas: Atlas; coat: Texture } | null {
+    if (this.street.has(s.atlas)) return this.street.get(s.atlas) ?? null;
+    let made: { atlas: Atlas; coat: Texture } | null = null;
+    try {
+      const src = s.atlas.texture.source;
+      const w = src.pixelWidth, h = src.pixelHeight;
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      const ctx = c.getContext('2d', { willReadFrequently: true });
+      if (ctx) {
+        ctx.drawImage(src.resource as CanvasImageSource, 0, 0, w, h);
+        const r0 = s.sprites['creep-0-00'];
+        const range = r0 ? lightRange(ctx.getImageData(r0.x, r0.y, r0.w, r0.h).data) : ([0, 1] as [number, number]);
+        const img = ctx.getImageData(0, 0, w, h);
+        recolour(img.data, range);
+        ctx.putImageData(img, 0, 0);
+        // The coat: the middle of the whole skin tile, where it is solid.
+        const cc = document.createElement('canvas');
+        const cw = r0 ? Math.round(r0.w * 0.46) : 64, ch = r0 ? Math.round(r0.h * 0.46) : 32;
+        cc.width = cw; cc.height = ch;
+        if (r0) cc.getContext('2d')?.drawImage(c, r0.x + (r0.w - cw) / 2, r0.y + (r0.h - ch) / 2, cw, ch, 0, 0, cw, ch);
+        made = { atlas: new Atlas(Texture.from(c)), coat: Texture.from(cc) };
+      }
+    } catch {
+      made = null; // no canvas (a test, a locked-down browser): streets keep the roofs' skin
+    }
+    this.street.set(s.atlas, made);
+    return made;
   }
 
   /** An effect or a donor part by its name, and its rectangle (anchor, glow). */

@@ -36,7 +36,7 @@ import { IdleClock, breath, idleFrames, phaseOf } from './idleClock';
 import { CALM } from '../meta/settings';
 import { UNIT_MUZZLES } from './unitMuzzles';
 import { lookOf } from '../../content/upgradeLooks';
-import { floorWash, wallWash, washAlpha } from './laneWash';
+import { coatAlpha, wallCoat } from './streetCreep';
 
 /** The old marks were drawn for a 26 px cell; on this board they are drawn this much bigger. */
 const K = 1.9;
@@ -190,11 +190,11 @@ export class IsoRenderer extends Renderer {
   private landmarkAt = new Map<number, { sprite: Sprite | null; cells: number[]; z: number }>();
   private creepState = new Uint16Array(0);
   private creepSprites = new Map<number, Sprite[]>();
-  /** The pale wash on creeped streets and the walls over them (src/render/laneWash.ts), by cell; and how strongly it shows now. */
+  /** The street creep's coat on walls looking down onto a creeped street (src/render/streetCreep.ts), by cell; and how strongly it shows now. */
   private washes = new Map<number, Graphics[]>();
+  /** Street creep in its own colour (streetCreep.ts). Off only for tools/shot-legibility.mjs's "before" shots: the old thin red film. */
+  streetCreep = true;
   private washA = 0;
-  /** Each wash's own share of that strength: a street's floor shows its strain (bog, embers) through it. */
-  private washK = new WeakMap<Graphics, number>();
   private units = new Map<number, UnitView>();
   private dying: Dying[] = [];
   /** The broodlings and puppet queens drawn with their pictures, by the sim's id. */
@@ -998,12 +998,12 @@ export class IsoRenderer extends Renderer {
     this.props.set(cell, s);
   }
 
-  /** How strongly the street wash shows: by how wide a cell is on the screen now (laneWash.ts washAlpha). */
+  /** How strongly the walls' street coat shows: by how wide a cell is on the screen now (streetCreep.ts coatAlpha). */
   private updateWash(): void {
-    const a = washAlpha(2 * this.geo.a * this.camScale);
+    const a = coatAlpha(2 * this.geo.a * this.camScale);
     if (Math.abs(a - this.washA) < 0.01 && (a > 0) === (this.washA > 0)) return;
     this.washA = a;
-    for (const list of this.washes.values()) for (const w of list) { w.alpha = a * (this.washK.get(w) ?? 1); w.visible = a > 0; }
+    for (const list of this.washes.values()) for (const w of list) { w.alpha = a; w.visible = a > 0; }
   }
 
   /**
@@ -1026,7 +1026,7 @@ export class IsoRenderer extends Renderer {
     // Which strain works on each cell of skin: 1 mire, 2 burning (drawn over the skin, with a ragged edge where it stops).
     const strainOf = new Uint8Array(n);
     for (let c = 0; c < n; c++) if (on[c]) { const e = sim.creepEffectAt(c); strainOf[c] = e.dps > 0 ? 2 : e.slow < 1 ? 1 : 0; }
-    // A wall over a creeped street is washed with it (laneWash.ts): the street in front of it, in the view.
+    // A wall over a creeped street wears its creep (streetCreep.ts): the street in front of it, in the view.
     const washedBelow = (x: number, y: number): boolean => {
       if (x < 0 || y < 0 || x >= size.w || y >= size.h) return false;
       const o = boardCell(g, x, y);
@@ -1082,18 +1082,21 @@ export class IsoRenderer extends Renderer {
       // Where a node's strain works on it, the skin is DRAWN as that strain (boardArt, templates/board.mjs): bog, embers.
       const strain = state & 64 ? 'creep-burning' : state & 32 ? 'creep-mire' : '';
       const strainTex = strain ? this.art.sprite('creep', `${strain}-${(state >> 10) & 15}-${vx % 2}${vy % 2}`) : null;
-      const skin = this.add(h ? this.sorted : this.creepFloor, this.art.sprite('creep', `creep-${open}-${vx % m}${vy % m}`), p.x, p.y, z + 2);
+      // On a street the skin is the STREET creep (streetCreep.ts): the same flesh, pus-yellow, so a street
+      // under the creep reads as creep and never as a roof. Under a limb standing in the street it is the hide.
+      const skinId = `creep-${open}-${vx % m}${vy % m}`;
+      const onStreet = !h && !(state & 256) && this.streetCreep;
+      const skinTex = (onStreet ? this.art.streetSkin(skinId) : null) ?? this.art.sprite('creep', skinId);
+      const skin = this.add(h ? this.sorted : this.creepFloor, skinTex, p.x, p.y, z + 2);
       if (skin) {
-        // Streets stay readable under the creep: a thin film there, thick hide on the roofs
-        // and under whatever of the body stands in the street.
-        skin.alpha = h ? 1 : state & 256 ? 0.92 : 0.34;
-        skin.tint = strainTex ? SKIN_LIGHT[Math.min(h, SKIN_LIGHT.length - 1)] : tint;
+        skin.alpha = h ? 1 : this.streetCreep || state & 256 ? 0.94 : 0.34;
+        skin.tint = onStreet ? (state & 128 ? 0xf0e4e0 : 0xffffff) : strainTex ? SKIN_LIGHT[Math.min(h, SKIN_LIGHT.length - 1)] : tint;
         made.push(skin);
       }
       // The strain lies over the skin, ending raggedly where it stops. On a street it is seen: it is there to be walked through.
       const over = strainTex ? this.add(h ? this.sorted : this.creepFloor, strainTex, p.x, p.y, z + 2) : null;
       if (over) {
-        over.alpha = h ? 1 : 0.6;
+        over.alpha = h ? 1 : this.streetCreep ? 0.68 : 0.6; // on a street the yellow shows through: a strained street is still a street
         over.tint = SKIN_LIGHT[Math.min(h, SKIN_LIGHT.length - 1)];
         made.push(over);
       }
@@ -1114,17 +1117,16 @@ export class IsoRenderer extends Renderer {
           if (lip) made.push(lip);
         }
       }
-      // The street and the walls over it, washed pale: told from the roofs at any distance.
+      // A wall looking down onto a creeped street wears the street's creep, seen from afar (streetCreep.ts).
       const wash: Graphics[] = [];
-      const putWash = (layer: Container, w: Graphics, z2: number, k: number) => {
-        w.position.set(p.x, p.y); w.zIndex = z2; this.washK.set(w, k);
-        w.alpha = this.washA * k; w.visible = this.washA > 0; layer.addChild(w); wash.push(w);
-      };
-      // The floor lighter than the walls' wash: it is mostly seen already; under a strain, lighter still, so the bog or the embers show.
-      if (!h && !(state & 256)) putWash(this.creepFloor, floorWash(g.a, g.b), z + 2, state & 96 ? 0.35 : 0.7);
-      if (h && !(state & 512)) {
-        if (state & 16384) putWash(this.sorted, wallWash(g.a, g.b, h * g.level, 'south'), z + 3, 1);
-        if (state & 32768) putWash(this.sorted, wallWash(g.a, g.b, h * g.level, 'east'), z + 3, 1);
+      const coat = h && !(state & 512) && this.streetCreep ? this.art.streetCoat() : null;
+      if (coat) {
+        for (const [bit, side] of [[16384, 'south'], [32768, 'east']] as const) {
+          if (!(state & bit)) continue;
+          const w = wallCoat(coat, g.a, g.b, h * g.level, side);
+          w.position.set(p.x, p.y); w.zIndex = z + 3; w.alpha = this.washA; w.visible = this.washA > 0;
+          this.sorted.addChild(w); wash.push(w);
+        }
       }
       if (wash.length) this.washes.set(cell, wash);
       this.creepSprites.set(cell, made);

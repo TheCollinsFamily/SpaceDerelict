@@ -1,41 +1,121 @@
-  PASS  deephive turn 0: street walls 145, floors 109, roofs 35: gap 109 (floors 74; n 153/104/3067)
-  PASS  deephive turn 1: street walls 145, floors 101, roofs 35: gap 110 (floors 65; n 157/141/3110)
-  PASS  deephive turn 2: street walls 143, floors 103, roofs 36: gap 107 (floors 67; n 114/118/2821)
-  PASS  deephive turn 3: street walls 150, floors 127, roofs 36: gap 114 (floors 91; n 109/85/2803)
-  PASS  farmland turn 0: street walls 145, floors 107, roofs 35: gap 110 (floors 72; n 153/104/3067)
-  PASS  farmland turn 1: street walls 148, floors 105, roofs 35: gap 113 (floors 70; n 157/141/3110)
-  PASS  farmland turn 2: street walls 144, floors 112, roofs 36: gap 108 (floors 77; n 114/118/2821)
-  PASS  farmland turn 3: street walls 152, floors 124, roofs 36: gap 116 (floors 89; n 109/85/2803)
-  PASS  industrial turn 0: street walls 142, floors 109, roofs 35: gap 107 (floors 74; n 153/104/3067)
-  PASS  industrial turn 1: street walls 141, floors 105, roofs 35: gap 106 (floors 69; n 157/141/3110)
-  PASS  industrial turn 2: street walls 140, floors 100, roofs 36: gap 104 (floors 64; n 114/118/2821)
-  PASS  industrial turn 3: street walls 147, floors 128, roofs 36: gap 111 (floors 92; n 109/85/2803)
-  PASS  megacity turn 0: street walls 140, floors 105, roofs 35: gap 105 (floors 70; n 153/104/3067)
-  PASS  megacity turn 1: street walls 142, floors 92, roofs 35: gap 107 (floors 56; n 157/141/3110)
-  PASS  megacity turn 2: street walls 137, floors 91, roofs 35: gap 101 (floors 56; n 114/118/2821)
-  PASS  megacity turn 3: street walls 144, floors 119, roofs 36: gap 108 (floors 83; n 109/85/2803)
-  PASS  necropolis turn 0: street walls 144, floors 110, roofs 35: gap 109 (floors 75; n 153/104/3067)
-  PASS  necropolis turn 1: street walls 144, floors 100, roofs 35: gap 109 (floors 65; n 157/141/3110)
-  PASS  necropolis turn 2: street walls 142, floors 105, roofs 36: gap 107 (floors 69; n 114/118/2821)
-  PASS  necropolis turn 3: street walls 151, floors 130, roofs 36: gap 115 (floors 94; n 109/85/2803)
-  PASS  orient turn 0: street walls 143, floors 111, roofs 35: gap 108 (floors 75; n 153/104/3067)
-  PASS  orient turn 1: street walls 144, floors 99, roofs 35: gap 108 (floors 64; n 157/141/3110)
-  PASS  orient turn 2: street walls 143, floors 99, roofs 35: gap 107 (floors 64; n 114/118/2821)
-  PASS  orient turn 3: street walls 148, floors 128, roofs 35: gap 113 (floors 93; n 109/85/2803)
-  PASS  orthodox turn 0: street walls 145, floors 111, roofs 35: gap 110 (floors 76; n 153/104/3067)
-  PASS  orthodox turn 1: street walls 145, floors 107, roofs 36: gap 110 (floors 71; n 157/141/3110)
-  PASS  orthodox turn 2: street walls 144, floors 117, roofs 35: gap 108 (floors 81; n 114/118/2821)
-  PASS  orthodox turn 3: street walls 152, floors 131, roofs 36: gap 117 (floors 95; n 109/85/2803)
-  PASS  suburb turn 0: street walls 150, floors 112, roofs 35: gap 115 (floors 77; n 153/104/3067)
-  PASS  suburb turn 1: street walls 155, floors 120, roofs 35: gap 119 (floors 85; n 157/141/3110)
-  PASS  suburb turn 2: street walls 153, floors 126, roofs 36: gap 117 (floors 90; n 114/118/2821)
-  PASS  suburb turn 3: street walls 161, floors 135, roofs 36: gap 125 (floors 99; n 109/85/2803)
-  PASS  terraces turn 0: street walls 145, floors 112, roofs 35: gap 110 (floors 77; n 153/104/3067)
-  PASS  terraces turn 1: street walls 149, floors 100, roofs 35: gap 114 (floors 65; n 157/141/3110)
-  PASS  terraces turn 2: street walls 145, floors 107, roofs 36: gap 110 (floors 71; n 114/118/2821)
-  PASS  terraces turn 3: street walls 154, floors 134, roofs 36: gap 119 (floors 99; n 109/85/2803)
-  PASS  wetland turn 0: street walls 141, floors 111, roofs 35: gap 106 (floors 76; n 153/104/3067)
-  PASS  wetland turn 1: street walls 144, floors 106, roofs 35: gap 108 (floors 71; n 157/141/3110)
-  PASS  wetland turn 2: street walls 139, floors 112, roofs 36: gap 104 (floors 76; n 114/118/2821)
-  PASS  wetland turn 3: street walls 148, floors 131, roofs 36: gap 112 (floors 95; n 109/85/2803)
+  PASS  deephive turn 0 far: bare/street 40, street/roof 76, bare/roof 42, wall/roof 76, wall/bare 41  [bare 146,118,84 street 165,156,39 wall 163,153,31 roof 58,28,30]
+  PASS  deephive turn 0 fit: bare/street 45, street/roof 80, bare/roof 41, wall/roof 62, wall/bare 30  [bare 145,121,88 street 173,165,38 wall 142,130,36 roof 63,31,33]
+  PASS  deephive turn 0 near: bare/street 46, street/roof 82, bare/roof 42  [bare 138,121,87 street 175,169,39 wall 79,58,40 roof 62,30,32]
+  PASS  deephive turn 1 far: bare/street 49, street/roof 81, bare/roof 37, wall/roof 80, wall/bare 48  [bare 132,112,82 street 176,167,36 wall 170,162,31 roof 64,31,33]
+  PASS  deephive turn 1 fit: bare/street 44, street/roof 77, bare/roof 40, wall/roof 63, wall/bare 32  [bare 138,116,86 street 165,157,37 wall 141,130,36 roof 59,29,31]
+  PASS  deephive turn 1 near: bare/street 50, street/roof 81, bare/roof 39  [bare 137,125,95 street 178,171,38 wall 66,44,33 roof 73,36,37]
+  PASS  deephive turn 2 far: bare/street 40, street/roof 75, bare/roof 39, wall/roof 79, wall/bare 44  [bare 138,113,78 street 162,154,36 wall 166,159,30 roof 62,30,32]
+  PASS  deephive turn 2 fit: bare/street 39, street/roof 73, bare/roof 39, wall/roof 65, wall/bare 31  [bare 134,112,78 street 158,149,36 wall 146,134,37 roof 58,29,31]
+  PASS  deephive turn 2 near: bare/street 42, street/roof 75, bare/roof 39  [bare 133,115,83 street 162,154,35 wall 44,25,19 roof 61,30,31]
+  PASS  deephive turn 3 far: bare/street 40, street/roof 73, bare/roof 43, wall/roof 78, wall/bare 45  [bare 141,124,93 street 156,149,35 wall 167,157,31 roof 58,28,30]
+  PASS  deephive turn 3 fit: bare/street 42, street/roof 75, bare/roof 41, wall/roof 62, wall/bare 32  [bare 140,121,90 street 165,155,38 wall 138,127,31 roof 61,30,32]
+  PASS  deephive turn 3 near: bare/street 43, street/roof 75, bare/roof 41  [bare 130,119,90 street 162,154,37 wall 69,44,29 roof 58,29,31]
+  PASS  farmland turn 0 far: bare/street 48, street/roof 78, bare/roof 35, wall/roof 76, wall/bare 47  [bare 129,106,80 street 170,160,40 wall 161,153,30 roof 59,29,31]
+  PASS  farmland turn 0 fit: bare/street 50, street/roof 77, bare/roof 34, wall/roof 61, wall/bare 36  [bare 127,106,83 street 166,158,36 wall 137,127,32 roof 60,30,31]
+  PASS  farmland turn 0 near: bare/street 56, street/roof 83, bare/roof 33  [bare 121,104,82 street 179,172,39 wall 60,47,31 roof 61,30,31]
+  PASS  farmland turn 1 far: bare/street 52, street/roof 80, bare/roof 34, wall/roof 79, wall/bare 51  [bare 124,106,81 street 174,165,36 wall 168,161,31 roof 63,31,33]
+  PASS  farmland turn 1 fit: bare/street 45, street/roof 74, bare/roof 36, wall/roof 62, wall/bare 35  [bare 131,109,85 street 160,151,36 wall 136,127,33 roof 58,28,30]
+  PASS  farmland turn 1 near: bare/street 55, street/roof 78, bare/roof 31  [bare 121,107,87 street 174,167,37 wall 59,41,32 roof 70,36,35]
+  PASS  farmland turn 2 far: bare/street 43, street/roof 73, bare/roof 36, wall/roof 78, wall/bare 48  [bare 131,108,81 street 157,148,34 wall 165,156,29 roof 60,29,31]
+  PASS  farmland turn 2 fit: bare/street 43, street/roof 74, bare/roof 38, wall/roof 64, wall/bare 33  [bare 135,111,82 street 160,152,36 wall 142,131,35 roof 59,29,31]
+  PASS  farmland turn 2 near: bare/street 44, street/roof 68, bare/roof 32  [bare 118,102,80 street 150,141,33 wall 43,34,24 roof 59,30,30]
+  PASS  farmland turn 3 far: bare/street 47, street/roof 74, bare/roof 35, wall/roof 78, wall/bare 52  [bare 125,108,88 street 157,149,35 wall 164,156,31 roof 57,28,30]
+  PASS  farmland turn 3 fit: bare/street 48, street/roof 75, bare/roof 34, wall/roof 62, wall/bare 37  [bare 125,108,86 street 165,156,38 wall 137,128,32 roof 62,31,32]
+  PASS  farmland turn 3 near: bare/street 48, street/roof 74, bare/roof 34  [bare 119,106,86 street 159,151,36 wall 65,60,38 roof 56,28,29]
+  PASS  industrial turn 0 far: bare/street 55, street/roof 78, bare/roof 36, wall/roof 76, wall/bare 54  [bare 129,113,101 street 168,160,40 wall 159,153,30 roof 59,29,31]
+  PASS  industrial turn 0 fit: bare/street 59, street/roof 78, bare/roof 35, wall/roof 60, wall/bare 44  [bare 127,114,107 street 170,161,38 wall 133,123,32 roof 62,30,32]
+  PASS  industrial turn 0 near: bare/street 65, street/roof 83, bare/roof 35  [bare 119,112,108 street 177,171,40 wall 41,34,30 roof 61,30,32]
+  PASS  industrial turn 1 far: bare/street 62, street/roof 81, bare/roof 35, wall/roof 79, wall/bare 61  [bare 125,113,106 street 176,167,37 wall 167,160,30 roof 64,31,33]
+  PASS  industrial turn 1 fit: bare/street 54, street/roof 76, bare/roof 37, wall/roof 60, wall/bare 42  [bare 129,117,107 street 162,155,37 wall 130,121,29 roof 59,29,31]
+  PASS  industrial turn 1 near: bare/street 65, street/roof 82, bare/roof 35  [bare 125,119,116 street 175,171,39 wall 54,35,31 roof 71,36,39]
+  PASS  industrial turn 2 far: bare/street 54, street/roof 73, bare/roof 35, wall/roof 77, wall/bare 58  [bare 121,113,104 street 159,151,37 wall 161,155,29 roof 61,30,32]
+  PASS  industrial turn 2 fit: bare/street 53, street/roof 74, bare/roof 36, wall/roof 61, wall/bare 43  [bare 123,113,104 street 159,151,37 wall 133,124,32 roof 59,29,31]
+  PASS  industrial turn 2 near: bare/street 55, street/roof 73, bare/roof 35  [bare 120,113,108 street 154,151,39 wall 39,24,22 roof 60,30,31]
+  PASS  industrial turn 3 far: bare/street 55, street/roof 73, bare/roof 38, wall/roof 76, wall/bare 59  [bare 127,119,115 street 156,149,36 wall 163,153,31 roof 58,28,30]
+  PASS  industrial turn 3 fit: bare/street 56, street/roof 75, bare/roof 38, wall/roof 60, wall/bare 45  [bare 126,119,113 street 165,156,39 wall 132,122,30 roof 62,30,32]
+  PASS  industrial turn 3 near: bare/street 59, street/roof 75, bare/roof 36  [bare 120,115,113 street 162,154,38 wall 56,41,33 roof 58,29,31]
+  PASS  megacity turn 0 far: bare/street 58, street/roof 78, bare/roof 31, wall/roof 75, wall/bare 57  [bare 114,99,91 street 166,158,39 wall 160,150,31 roof 58,28,31]
+  PASS  megacity turn 0 fit: bare/street 61, street/roof 79, bare/roof 31, wall/roof 58, wall/bare 44  [bare 113,102,96 street 170,162,37 wall 130,119,30 roof 61,30,32]
+  PASS  megacity turn 0 near: bare/street 65, street/roof 82, bare/roof 30  [bare 105,99,94 street 174,168,39 wall 41,28,29 roof 61,30,32]
+  PASS  megacity turn 1 far: bare/street 64, street/roof 81, bare/roof 26, wall/roof 78, wall/bare 61  [bare 101,89,80 street 171,166,36 wall 165,158,31 roof 62,31,33]
+  PASS  megacity turn 1 fit: bare/street 58, street/roof 75, bare/roof 28, wall/roof 59, wall/bare 44  [bare 104,94,87 street 159,152,36 wall 126,119,29 roof 58,29,31]
+  PASS  megacity turn 1 near: bare/street 65, street/roof 78, bare/roof 29  [bare 111,104,102 street 170,164,36 wall 48,28,29 roof 69,37,39]
+  PASS  megacity turn 2 far: bare/street 58, street/roof 74, bare/roof 27, wall/roof 77, wall/bare 62  [bare 103,93,88 street 158,150,34 wall 160,155,29 roof 60,30,32]
+  PASS  megacity turn 2 fit: bare/street 56, street/roof 74, bare/roof 29, wall/roof 60, wall/bare 44  [bare 104,94,87 street 157,149,36 wall 129,121,32 roof 57,28,31]
+  PASS  megacity turn 2 near: bare/street 55, street/roof 71, bare/roof 30  [bare 103,99,96 street 149,142,34 wall 36,20,21 roof 56,29,32]
+  PASS  megacity turn 3 far: bare/street 56, street/roof 73, bare/roof 32, wall/roof 76, wall/bare 59  [bare 112,103,98 street 155,148,35 wall 162,151,29 roof 57,28,30]
+  PASS  megacity turn 3 fit: bare/street 60, street/roof 76, bare/roof 30, wall/roof 58, wall/bare 45  [bare 108,99,95 street 164,156,38 wall 128,118,29 roof 62,30,33]
+  PASS  megacity turn 3 near: bare/street 59, street/roof 74, bare/roof 31  [bare 103,98,95 street 158,150,36 wall 45,29,34 roof 56,28,30]
+  PASS  necropolis turn 0 far: bare/street 59, street/roof 78, bare/roof 36, wall/roof 76, wall/bare 58  [bare 132,114,110 street 170,162,42 wall 162,153,33 roof 59,29,31]
+  PASS  necropolis turn 0 fit: bare/street 57, street/roof 78, bare/roof 38, wall/roof 61, wall/bare 44  [bare 132,120,113 street 167,160,39 wall 138,129,38 roof 61,30,32]
+  PASS  necropolis turn 0 near: bare/street 65, street/roof 84, bare/roof 37  [bare 129,120,116 street 180,174,42 wall 68,49,39 roof 60,31,33]
+  PASS  necropolis turn 1 far: bare/street 62, street/roof 81, bare/roof 34, wall/roof 80, wall/bare 62  [bare 123,112,105 street 174,167,38 wall 170,163,32 roof 63,31,33]
+  PASS  necropolis turn 1 fit: bare/street 54, street/roof 77, bare/roof 37, wall/roof 62, wall/bare 42  [bare 128,114,103 street 162,156,39 wall 137,127,35 roof 58,28,31]
+  PASS  necropolis turn 1 near: bare/street 67, street/roof 83, bare/roof 36  [bare 128,123,121 street 183,177,42 wall 59,41,36 roof 69,37,39]
+  PASS  necropolis turn 2 far: bare/street 49, street/roof 71, bare/roof 38, wall/roof 77, wall/bare 55  [bare 130,118,106 street 156,148,40 wall 166,156,32 roof 59,29,31]
+  PASS  necropolis turn 2 fit: bare/street 54, street/roof 76, bare/roof 36, wall/roof 63, wall/bare 43  [bare 128,116,105 street 164,157,40 wall 142,132,39 roof 60,30,32]
+  PASS  necropolis turn 2 near: bare/street 56, street/roof 75, bare/roof 35  [bare 120,112,109 street 160,154,43 wall 42,28,29 roof 57,29,32]
+  PASS  necropolis turn 3 far: bare/street 55, street/roof 73, bare/roof 40, wall/roof 78, wall/bare 60  [bare 132,123,120 street 159,150,38 wall 164,156,32 roof 58,28,30]
+  PASS  necropolis turn 3 fit: bare/street 58, street/roof 76, bare/roof 38, wall/roof 60, wall/bare 46  [bare 130,121,118 street 167,158,41 wall 133,126,35 roof 63,31,33]
+  PASS  necropolis turn 3 near: bare/street 58, street/roof 75, bare/roof 38  [bare 122,118,117 street 160,152,38 wall 54,40,37 roof 55,28,30]
+  PASS  orient turn 0 far: bare/street 53, street/roof 78, bare/roof 36, wall/roof 77, wall/bare 53  [bare 133,112,97 street 169,161,40 wall 163,154,31 roof 58,29,31]
+  PASS  orient turn 0 fit: bare/street 58, street/roof 79, bare/roof 36, wall/roof 61, wall/bare 44  [bare 133,116,108 street 170,162,39 wall 140,126,32 roof 61,30,32]
+  PASS  orient turn 0 near: bare/street 65, street/roof 85, bare/roof 36  [bare 129,115,110 street 181,175,42 wall 69,47,28 roof 59,30,32]
+  PASS  orient turn 1 far: bare/street 59, street/roof 80, bare/roof 33, wall/roof 80, wall/bare 60  [bare 131,110,101 street 172,165,38 wall 170,162,31 roof 62,31,33]
+  PASS  orient turn 1 fit: bare/street 53, street/roof 76, bare/roof 37, wall/roof 62, wall/bare 42  [bare 131,116,103 street 164,156,38 wall 138,125,30 roof 58,29,31]
+  PASS  orient turn 1 near: bare/street 66, street/roof 83, bare/roof 36  [bare 128,121,119 street 182,174,40 wall 73,46,31 roof 64,34,36]
+  PASS  orient turn 2 far: bare/street 52, street/roof 72, bare/roof 37, wall/roof 78, wall/bare 58  [bare 134,116,108 street 155,147,36 wall 163,156,29 roof 58,28,30]
+  PASS  orient turn 2 fit: bare/street 53, street/roof 76, bare/roof 35, wall/roof 63, wall/bare 43  [bare 134,114,101 street 167,158,39 wall 142,130,32 roof 63,31,33]
+  PASS  orient turn 2 near: bare/street 48, street/roof 70, bare/roof 36  [bare 132,109,98 street 152,141,35 wall 50,34,22 roof 52,27,29]
+  PASS  orient turn 3 far: bare/street 58, street/roof 78, bare/roof 37, wall/roof 76, wall/bare 58  [bare 134,119,113 street 170,161,39 wall 163,154,30 roof 61,30,32]
+  PASS  orient turn 3 fit: bare/street 52, street/roof 73, bare/roof 37, wall/roof 60, wall/bare 44  [bare 133,118,110 street 159,150,39 wall 135,122,29 roof 60,29,31]
+  PASS  orient turn 3 near: bare/street 60, street/roof 78, bare/roof 38  [bare 125,117,115 street 166,159,39 wall 54,36,28 roof 56,28,30]
+  PASS  orthodox turn 0 far: bare/street 47, street/roof 78, bare/roof 40, wall/roof 76, wall/bare 46  [bare 143,121,96 street 171,161,40 wall 161,153,32 roof 59,29,31]
+  PASS  orthodox turn 0 fit: bare/street 50, street/roof 79, bare/roof 40, wall/roof 62, wall/bare 36  [bare 145,124,102 street 172,163,38 wall 140,129,35 roof 62,30,32]
+  PASS  orthodox turn 0 near: bare/street 54, street/roof 83, bare/roof 40  [bare 138,124,104 street 178,171,40 wall 62,45,34 roof 62,30,32]
+  PASS  orthodox turn 1 far: bare/street 50, street/roof 81, bare/roof 39, wall/roof 80, wall/bare 49  [bare 145,119,92 street 175,167,37 wall 169,162,32 roof 64,31,33]
+  PASS  orthodox turn 1 fit: bare/street 43, street/roof 75, bare/roof 41, wall/roof 61, wall/bare 33  [bare 148,122,95 street 160,153,37 wall 136,125,32 roof 59,29,31]
+  PASS  orthodox turn 1 near: bare/street 53, street/roof 80, bare/roof 39  [bare 140,127,106 street 175,168,38 wall 61,40,33 roof 73,36,38]
+  PASS  orthodox turn 2 far: bare/street 42, street/roof 73, bare/roof 43, wall/roof 78, wall/bare 47  [bare 159,126,99 street 159,150,36 wall 164,156,29 roof 61,30,32]
+  PASS  orthodox turn 2 fit: bare/street 43, street/roof 75, bare/roof 43, wall/roof 64, wall/bare 34  [bare 156,127,100 street 162,153,37 wall 142,131,35 roof 59,29,31]
+  PASS  orthodox turn 2 near: bare/street 40, street/roof 69, bare/roof 40  [bare 144,123,98 street 160,144,37 wall 53,34,22 roof 60,30,31]
+  PASS  orthodox turn 3 far: bare/street 47, street/roof 74, bare/roof 42, wall/roof 78, wall/bare 51  [bare 146,127,109 street 158,150,36 wall 164,155,31 roof 57,28,30]
+  PASS  orthodox turn 3 fit: bare/street 49, street/roof 77, bare/roof 40, wall/roof 62, wall/bare 38  [bare 148,125,106 street 167,158,39 wall 140,126,31 roof 62,30,33]
+  PASS  orthodox turn 3 near: bare/street 49, street/roof 75, bare/roof 40  [bare 131,123,107 street 161,152,37 wall 81,53,26 roof 56,28,30]
+  PASS  suburb turn 0 far: bare/street 49, street/roof 78, bare/roof 49, wall/roof 76, wall/bare 49  [bare 167,147,129 street 170,161,42 wall 164,154,34 roof 59,29,31]
+  PASS  suburb turn 0 fit: bare/street 50, street/roof 80, bare/roof 48, wall/roof 65, wall/bare 37  [bare 164,146,127 street 175,165,41 wall 154,142,51 roof 63,30,33]
+  PASS  suburb turn 0 near: bare/street 55, street/roof 82, bare/roof 48  [bare 157,147,132 street 177,170,42 wall 107,82,70 roof 62,30,33]
+  PASS  suburb turn 1 far: bare/street 51, street/roof 81, bare/roof 46, wall/roof 80, wall/bare 51  [bare 158,141,120 street 176,168,39 wall 172,164,34 roof 64,31,33]
+  PASS  suburb turn 1 fit: bare/street 48, street/roof 78, bare/roof 46, wall/roof 65, wall/bare 38  [bare 165,139,119 street 167,160,40 wall 149,139,45 roof 59,29,31]
+  PASS  suburb turn 1 near: bare/street 58, street/roof 81, bare/roof 43  [bare 153,143,131 street 180,173,41 wall 98,71,63 roof 73,37,38]
+  PASS  suburb turn 2 far: bare/street 46, street/roof 74, bare/roof 47, wall/roof 79, wall/bare 52  [bare 166,142,124 street 164,154,41 wall 168,161,34 roof 62,30,32]
+  PASS  suburb turn 2 fit: bare/street 45, street/roof 74, bare/roof 48, wall/roof 67, wall/bare 38  [bare 168,144,124 street 161,153,40 wall 154,145,51 roof 59,29,31]
+  PASS  suburb turn 2 near: bare/street 49, street/roof 76, bare/roof 46  [bare 156,143,127 street 166,161,47 wall 64,47,39 roof 61,31,33]
+  PASS  suburb turn 3 far: bare/street 50, street/roof 74, bare/roof 47, wall/roof 79, wall/bare 54  [bare 159,143,130 street 160,152,38 wall 170,160,35 roof 58,28,30]
+  PASS  suburb turn 3 fit: bare/street 49, street/roof 77, bare/roof 47, wall/roof 65, wall/bare 39  [bare 158,143,126 street 169,159,41 wall 149,139,46 roof 62,30,33]
+  PASS  suburb turn 3 near: bare/street 56, street/roof 76, bare/roof 42  [bare 137,129,124 street 164,156,39 wall 136,110,93 roof 58,29,31]
+  PASS  terraces turn 0 far: bare/street 51, street/roof 79, bare/roof 43, wall/roof 77, wall/bare 50  [bare 150,130,112 street 172,164,42 wall 164,155,32 roof 59,29,31]
+  PASS  terraces turn 0 fit: bare/street 51, street/roof 78, bare/roof 43, wall/roof 63, wall/bare 39  [bare 154,133,116 street 171,162,40 wall 142,134,41 roof 61,30,32]
+  PASS  terraces turn 0 near: bare/street 54, street/roof 83, bare/roof 45  [bare 152,138,119 street 179,173,42 wall 79,74,46 roof 60,30,31]
+  PASS  terraces turn 1 far: bare/street 58, street/roof 81, bare/roof 34, wall/roof 80, wall/bare 58  [bare 135,112,100 street 175,168,39 wall 170,162,31 roof 63,31,33]
+  PASS  terraces turn 1 fit: bare/street 50, street/roof 75, bare/roof 38, wall/roof 64, wall/bare 41  [bare 136,117,101 street 162,155,40 wall 139,130,32 roof 58,29,31]
+  PASS  terraces turn 1 near: bare/street 60, street/roof 78, bare/roof 39  [bare 142,131,125 street 175,169,41 wall 82,64,45 roof 70,37,36]
+  PASS  terraces turn 2 far: bare/street 45, street/roof 74, bare/roof 42, wall/roof 77, wall/bare 49  [bare 148,127,105 street 160,152,37 wall 165,156,30 roof 61,30,32]
+  PASS  terraces turn 2 fit: bare/street 48, street/roof 74, bare/roof 40, wall/roof 65, wall/bare 41  [bare 145,123,107 street 162,153,39 wall 145,135,37 roof 59,29,31]
+  PASS  terraces turn 2 near: bare/street 51, street/roof 70, bare/roof 42  [bare 143,131,123 street 152,145,36 wall 70,60,37 roof 58,29,30]
+  PASS  terraces turn 3 far: bare/street 52, street/roof 74, bare/roof 42, wall/roof 79, wall/bare 57  [bare 142,130,122 street 159,151,38 wall 166,158,33 roof 57,28,30]
+  PASS  terraces turn 3 fit: bare/street 52, street/roof 76, bare/roof 42, wall/roof 63, wall/bare 42  [bare 146,132,120 street 167,158,41 wall 141,133,39 roof 62,30,32]
+  PASS  terraces turn 3 near: bare/street 57, street/roof 76, bare/roof 41  [bare 130,125,121 street 162,155,39 wall 108,105,60 roof 57,28,30]
+  PASS  wetland turn 0 far: bare/street 52, street/roof 78, bare/roof 40, wall/roof 77, wall/bare 52  [bare 147,123,108 street 171,162,41 wall 161,154,31 roof 59,29,31]
+  PASS  wetland turn 0 fit: bare/street 56, street/roof 79, bare/roof 40, wall/roof 60, wall/bare 41  [bare 149,126,115 street 172,164,39 wall 136,126,36 roof 62,30,32]
+  PASS  wetland turn 0 near: bare/street 59, street/roof 83, bare/roof 43  [bare 148,133,122 street 179,172,41 wall 65,45,38 roof 60,30,32]
+  PASS  wetland turn 1 far: bare/street 54, street/roof 81, bare/roof 40, wall/roof 79, wall/bare 52  [bare 145,126,108 street 176,168,38 wall 167,160,32 roof 64,31,33]
+  PASS  wetland turn 1 fit: bare/street 50, street/roof 77, bare/roof 41, wall/roof 61, wall/bare 39  [bare 147,126,110 street 165,157,38 wall 134,124,32 roof 59,29,31]
+  PASS  wetland turn 1 near: bare/street 63, street/roof 82, bare/roof 38  [bare 145,130,123 street 182,175,40 wall 55,32,31 roof 70,37,38]
+  PASS  wetland turn 2 far: bare/street 50, street/roof 74, bare/roof 41, wall/roof 77, wall/bare 53  [bare 145,128,114 street 161,152,37 wall 166,156,31 roof 61,30,32]
+  PASS  wetland turn 2 fit: bare/street 50, street/roof 75, bare/roof 40, wall/roof 62, wall/bare 40  [bare 149,125,111 street 160,153,37 wall 140,130,37 roof 59,29,31]
+  PASS  wetland turn 2 near: bare/street 53, street/roof 75, bare/roof 40  [bare 142,125,117 street 161,153,38 wall 42,28,24 roof 59,29,32]
+  PASS  wetland turn 3 far: bare/street 51, street/roof 74, bare/roof 42, wall/roof 78, wall/bare 55  [bare 145,128,117 street 158,151,38 wall 166,156,32 roof 58,28,30]
+  PASS  wetland turn 3 fit: bare/street 51, street/roof 77, bare/roof 42, wall/roof 62, wall/bare 41  [bare 149,130,116 street 167,159,41 wall 136,127,33 roof 62,30,33]
+  PASS  wetland turn 3 near: bare/street 56, street/roof 76, bare/roof 40  [bare 130,123,117 street 163,155,39 wall 78,63,51 roof 57,28,30]
 all passed
