@@ -40,6 +40,8 @@ import { directivesHtml, ordersDebriefHtml } from './directives';
 import { hobbyClick, hobbyDebriefHtml, hobbyHtml } from './hobby';
 import { openSettings } from './settings';
 import { attachScene } from './sceneVoice';
+import { attachLines, stopLine } from './lineVoice';
+import { LEADER_VOICES, lineKey, speakerOf, spokenText } from '../../content/media';
 import { loadMedia, mediaPictureUrl } from './newsreel';
 import { shipLoop, showLoader, type LoaderHandle } from './loader';
 import { aliveAllowed, loadAlive, wake } from './alive';
@@ -69,6 +71,9 @@ const THEME_NAME: Record<string, string> = {
   catapult: 'Spore Sling', runner: 'Creep Lance', cage: 'Trap Cage',
 };
 const speakLine = (l: string) => { const i = l.indexOf(':'); return i > 0 ? `<b>${esc(l.slice(0, i))}:</b>${esc(l.slice(i + 1))}` : esc(l); };
+/** A leader's loose line (an aside) can be heard: its voice's key on the element (src/ui/lineVoice.ts), or nothing. */
+const sayAttr = (l: string, autoplay = false) =>
+  LEADER_VOICES[speakerOf(l)] && spokenText(l) ? ` data-say="${esc(lineKey(l))}"${autoplay ? ' data-autoplay' : ''}` : '';
 /** Which of her faces YOKE wears for each kind of talk. */
 const YOKE_FACE: Record<string, string> = {
   'first-deployment': 'curious', 'faction-allied': 'amused', midpoint: 'concerned', licence: 'calm', ending: 'sad', idle: 'calm',
@@ -287,6 +292,7 @@ export class CampaignUi {
     document.body.classList.remove('in-ship');
     this.el.classList.add('hidden');
     attachScene(null);
+    attachLines(null);
   }
 
   setState(s: CampaignState): void {
@@ -335,6 +341,7 @@ export class CampaignUi {
       ${this.greeting ? '' : this.sceneHtml()}`;
     this.dress();
     attachScene(this.el);
+    attachLines(this.el);
     wake(this.el);
     // Her stage is the same element in every drawing of the screen: put back, not made again.
     const box = this.el.querySelector<HTMLElement>('.cp-icom-stage');
@@ -702,7 +709,7 @@ export class CampaignUi {
     });
     const inbox = (s.comms ?? []).slice(-8).reverse();
     return `<div class="cp-label">COMMS — three voices from the planet. You may ally with ONE; it decides your route and your ending.</div>${cards.join('')}
-      ${inbox.length ? `<div class="cp-label">FROM YOUR ALLY</div><div class="cp-log cp-comms">${inbox.map((l) => `<div>${speakLine(l)}</div>`).join('')}</div>` : ''}`;
+      ${inbox.length ? `<div class="cp-label">FROM YOUR ALLY</div><div class="cp-log cp-comms">${inbox.map((l) => `<div${sayAttr(l)}>${speakLine(l)}</div>`).join('')}</div>` : ''}`;
   }
 
   /** Who answers as YOKE: the ladder of her mode (her avatar, Kimi, the scripted YOKE), each rung falling to the next. */
@@ -1019,7 +1026,7 @@ export class CampaignUi {
       ${hobbyDebriefHtml(d)}${ordersDebriefHtml(d.orders)}
       <div class="cp-facts">Earned: <b>+${d.standing} standing</b> · <b>+${d.notes} field notes</b>${d.unlocked.length ? ` · unlocked: ${d.unlocked.map((u) => esc(u.split(':')[1])).join(', ')}` : ''}</div>
       <p class="cp-story">${esc(d.log)}</p>
-      ${d.aside ? `<p class="cp-story cp-aside">${speakLine(d.aside)}</p>` : ''}
+      ${d.aside ? `<p class="cp-story cp-aside"${sayAttr(d.aside, true)}>${speakLine(d.aside)}</p>` : ''}
       <button class="screen-btn" data-act="back">RETURN TO THE SHIP</button></div>`;
     if (pictures) {
       const titleEl = this.el.querySelector('.cp-title') as HTMLElement;
@@ -1030,7 +1037,8 @@ export class CampaignUi {
     this.debriefing = true;
     this.dress();
     wake(this.el);
+    attachLines(this.el);
     const btn = this.el.querySelector('[data-act="back"]') as HTMLElement;
-    btn.addEventListener('click', (ev) => { ev.stopPropagation(); onBack(); }, { once: true });
+    btn.addEventListener('click', (ev) => { ev.stopPropagation(); stopLine(); onBack(); }, { once: true });
   }
 }

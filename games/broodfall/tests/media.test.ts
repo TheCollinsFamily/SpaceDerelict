@@ -5,7 +5,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import { existsSync, readFileSync } from 'node:fs';
-import { ENDING_FILMS, LEADER_VOICES, MEDIA, NARRATION, REVEAL_PICTURES, spokenText, voiceKey, type MediaPiece } from '../content/media';
+import { ENDING_FILMS, LEADER_VOICES, MEDIA, NARRATION, REVEAL_PICTURES, lineKey, looseLeaderLines, scenesOf, speakerOf, spokenText, voiceKey, type MediaPiece } from '../content/media';
 import { FACTIONS, TERRITORIES } from '../content/campaign';
 import { emptyLog, logShown, momentsOf, pickMedia, type MediaLog } from '../src/meta/media';
 import { finish, newCampaign, plan, type CampaignState, type Debrief } from '../src/meta/campaign';
@@ -144,8 +144,8 @@ describe('which piece, when', () => {
 });
 
 describe('the leaders\' voices', () => {
-  const lines = FACTIONS.flatMap((f) => [f.contact, ...f.beats.map((b) => b.scene), f.ending, ...Object.values(f.endingByChoice?.scenes ?? {}), ...(f.reveal ? [f.reveal] : []), ...(f.afterReveal ?? [])]
-    .flatMap((s) => s.lines.map((l, i) => ({ f: f.id, s, l, i, who: l.slice(0, l.indexOf(':')) }))));
+  const lines = FACTIONS.flatMap((f) => scenesOf(f)
+    .flatMap((s) => s.lines.map((l, i) => ({ f: f.id, s, l, i, who: speakerOf(l) }))));
 
   it('the Delegate, the Voice, the Director and the Awaited One each have a voice, none of them YOKE\'s or the boss\'s', () => {
     for (const who of ['Delegate', 'The Voice', 'The Director', 'The Awaited One']) expect(LEADER_VOICES[who], who).toBeTruthy();
@@ -165,6 +165,27 @@ describe('the leaders\' voices', () => {
       n++;
     }
     expect(n).toBeGreaterThan(60);
+  });
+
+  it('every aside and every leader line outside a scene card is voiced, by its words (Oct 1 2026)', () => {
+    const loose = looseLeaderLines();
+    for (const f of FACTIONS) for (const a of f.asides) if (LEADER_VOICES[speakerOf(a)]) expect(loose, a).toContain(a);
+    for (const l of loose) {
+      const v = media.voices[lineKey(l)];
+      expect(v, l).toBeTruthy();
+      expect(v.text).toBe(spokenText(l));
+      expect(v.who).toBe(speakerOf(l));
+    }
+    expect(loose.length).toBeGreaterThanOrEqual(20);
+  });
+
+  it('a loose line is keyed by its speaker and words: the channel is not the speaker, new words are a new key', () => {
+    expect(speakerOf('The Voice (to you, on the air): Homework, brother.')).toBe('The Voice');
+    expect(speakerOf('You: (log) Nothing.')).toBe('You');
+    const a = 'Delegate (letter, by field): We are writing you a song.';
+    expect(lineKey(a)).toMatch(/^say\/delegate-[0-9a-f]{8}$/);
+    expect(lineKey(a)).toBe(lineKey('Delegate (letter, by field): We are writing you a song.'));
+    expect(lineKey(a)).not.toBe(lineKey('Delegate (letter, by field): We are writing you a hymn.'));
   });
 
   it('stage directions are not spoken', () => {

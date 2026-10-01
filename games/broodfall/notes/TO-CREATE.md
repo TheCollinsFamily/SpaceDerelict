@@ -63,7 +63,7 @@ three campaign outlines, covers and promotional art.
   (content/lore/insects.md proposal 4), faction leaders' voices, an ear on every file (Collins).
 - **Newsreels and news clippings, faction leaders' voices, ending films, reveal pictures: BUILT Sep 30**
   (HANDOFF.md "The campaign's media"). Still missing: the insects' intercepted radio between waves;
-  voiced asides (the leaders' letters, broadcasts and calls between beats are read, not heard); news of
+  ~~voiced asides~~ (made Oct 1 2026: the leaders' letters, broadcasts and calls between deployments are heard, `notes/screens/2026-10-01/asides-voices-README.md`); news of
   mission 1 ("METEOR FALLS ON SUBURB") on its CONTINUE; an ear on every voice line (Collins).
 
 ## 5. The campaign (see the Claude doc "Broodfall: The Three Campaigns" for the open calls)

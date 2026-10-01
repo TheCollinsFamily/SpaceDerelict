@@ -21,7 +21,7 @@ import { makeClip, makeStill, pool as artPool } from '../art/rfab.mjs';
 import { songTakes, soundTake, RAW as AUDIO_RAW } from '../audio/rfab-audio.mjs';
 import { OUT, RAW, REVIEW, balance, duration, ff, ffStderr, pool, ready, speechSpan, transcribe, tts, veoSpeech } from './lib.mjs';
 import { ANNOUNCER, CLIPS, CLIP_TAIL, FIELD, LEADER_REF, MUSIC, PHOTOS, REVEALS, SCENE_REF, FILM_REF } from './prompts.mjs';
-import { ENDING_FILMS, LEADER_VOICES, MEDIA, NARRATION, spokenText, voiceKey } from '../../content/media';
+import { ENDING_FILMS, LEADER_VOICES, MEDIA, NARRATION, lineKey, looseLeaderLines, scenesOf, speakerOf, spokenText, voiceKey } from '../../content/media';
 import { FACTIONS, type FactionId, type Scene } from '../../content/campaign';
 
 const argv = process.argv.slice(2).filter((a) => a !== '--');
@@ -125,18 +125,26 @@ function speakable(t: string): { text: string; stressed: string[] } {
   return { text, stressed };
 }
 
-interface LeaderLine { key: string; faction: FactionId; who: string; text: string }
+interface LeaderLine { key: string; faction: string; who: string; text: string }
+/**
+ * Every line a leader speaks: each scene's (keyed by faction, scene and place) and every loose one
+ * (the asides and anything added later; keyed by its words, content/media.ts lineKey). `faction` is
+ * the faction whose content holds it ('campaign' when none does), so `voices delegation` still works.
+ */
 export function leaderLines(): LeaderLine[] {
   const out: LeaderLine[] = [];
   for (const f of FACTIONS) {
-    const scenes: Scene[] = [f.contact, ...f.beats.map((b) => b.scene), f.ending, ...Object.values(f.endingByChoice?.scenes ?? {}), ...(f.reveal ? [f.reveal] : []), ...(f.afterReveal ?? [])];
-    for (const s of scenes) s.lines.forEach((l, i) => {
-      const who = l.slice(0, l.indexOf(':'));
+    for (const s of scenesOf(f)) s.lines.forEach((l, i) => {
+      const who = speakerOf(l);
       if (!LEADER_VOICES[who]) return;
       const text = spokenText(l);
       if (!text) return;
       out.push({ key: voiceKey(f.id, s.title, i), faction: f.id, who, text });
     });
+  }
+  for (const l of looseLeaderLines()) {
+    const f = FACTIONS.find((x) => JSON.stringify(x).includes(JSON.stringify(l)));
+    out.push({ key: lineKey(l), faction: f?.id ?? 'campaign', who: speakerOf(l), text: spokenText(l) });
   }
   return out;
 }
@@ -160,7 +168,7 @@ async function voices() {
     }
   }
   for (const l of leaderLines()) {
-    if (!want(l.key) && !want(l.faction)) continue;
+    if (!want(l.key) && !want(l.faction) && !(want('lines') && l.key.startsWith('say/'))) continue;
     const v = LEADER_VOICES[l.who];
     if (v.how === 'aura') jobs.push({ id: l.key, run: () => tts({ out: path.join(D.voice, `${fileKey(l.key)}.mp3`), text: speakable(l.text).text, voice: v.voice! }) });
     else chunks(l.text).forEach((c, i, all) => jobs.push({ id: `${l.key}#${i}`, run: () => {
@@ -300,7 +308,7 @@ async function bake() {
   }
   // The leaders.
   for (const l of leaderLines()) {
-    if (!want(l.key) && !want(l.faction)) continue;
+    if (!want(l.key) && !want(l.faction) && !(want('lines') && l.key.startsWith('say/'))) continue;
     const base = path.join(D.voice, fileKey(l.key));
     const v = LEADER_VOICES[l.who];
     const srcs = v.how === 'aura' ? [`${base}.mp3`] : fs.existsSync(`${base}.mp4`) ? [`${base}.mp4`] : ['a', 'b', 'c', 'd'].map((s) => `${base}-${s}.mp4`).filter((f) => fs.existsSync(f));
@@ -310,6 +318,9 @@ async function bake() {
     json.voices[l.key] = { file: `media/voice/${fileKey(l.key)}.ogg`, seconds, text: l.text, who: l.who };
     if (v.how === 'veo') checks.push(transcribe(dest).then((h: { text: string }) => { review[l.key] = { line: l.text, heard: h.text, share: +heardShare(l.text, h.text).toFixed(2) }; }).catch(() => {}));
   }
+  // A loose line rewritten or removed: its old key goes (its new words are a new key).
+  const live = new Set(leaderLines().map((l) => l.key));
+  for (const k of Object.keys(json.voices)) if (k.startsWith('say/') && !live.has(k)) delete json.voices[k];
   // The music: its leading silence off, a fade at the end.
   for (const id of Object.keys(MUSIC)) {
     if (!want(id)) continue;

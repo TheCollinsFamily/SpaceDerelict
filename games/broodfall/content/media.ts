@@ -20,7 +20,9 @@
  * American papers, their words kept apart from the Empire's (they say "killed", "the Growth",
  * "our girls"; the Empire says "resources acquired", "the fauna", "the asset").
  */
-import type { FactionId } from './campaign';
+import * as CAMPAIGN from './campaign';
+import type { FactionId, Scene } from './campaign';
+import { FACTIONS } from './campaign';
 
 /**
  * When a piece plays. The moments of a deployment, most telling first (src/meta/media.ts):
@@ -346,6 +348,74 @@ export const voiceKey = (faction: FactionId, sceneTitle: string, line: number): 
 export function spokenText(line: string): string {
   const i = line.indexOf(':');
   return line.slice(i + 1).replace(/\([^)]*\)/g, ' ').replace(/\s+/g, ' ').replace(/^[\s—-]+/, '').trim();
+}
+
+/** Who says a line, its channel left out: "The Voice (broadcast): …" → "The Voice"; '' when no one is named. */
+export function speakerOf(line: string): string {
+  const i = line.indexOf(':');
+  return i > 0 ? line.slice(0, i).replace(/\s*\([^)]*\)\s*$/, '').trim() : '';
+}
+
+/** FNV-1a, 32 bits, as 8 hex digits: the same in the game and in the tools. */
+function textHash(t: string): string {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 0x01000193); }
+  return (h >>> 0).toString(16).padStart(8, '0');
+}
+
+/**
+ * The key of a LOOSE line's voice in media.json `voices` (Oct 1 2026): a leader's line that is not in a
+ * scene card, or sits in a scene the faction keys do not reach: the asides (the letters by field, the
+ * broadcasts, the calls between deployments) and anything written later. Keyed by the words, so a line
+ * rewritten is a new key and `make.ts voices` makes it without being told.
+ */
+export const lineKey = (line: string): string => {
+  const who = speakerOf(line);
+  return `say/${who.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}-${textHash(`${who}|${spokenText(line)}`)}`;
+};
+
+const isScene = (x: unknown): x is Scene =>
+  !!x && typeof x === 'object' && typeof (x as Scene).title === 'string' && Array.isArray((x as Scene).lines) && (x as Scene).lines.every((l) => typeof l === 'string');
+
+function walk(x: unknown, seen: Set<unknown>, visit: (v: unknown) => void): void {
+  if (!x || typeof x !== 'object' || seen.has(x)) return;
+  seen.add(x);
+  visit(x);
+  for (const v of Array.isArray(x) ? x : Object.values(x)) walk(v, seen, visit);
+}
+
+/** Every scene of a faction, wherever it sits (contact, beats, endings, reveal, after it, and any kind added later). */
+export function scenesOf(f: CAMPAIGN.FactionDef): Scene[] {
+  const out: Scene[] = [];
+  walk(f, new Set(), (v) => { if (isScene(v)) out.push(v); });
+  return out;
+}
+
+/** A scene by its title, in a faction's own scenes first, then anywhere in content/campaign.ts. */
+export function findScene(faction: string, title: string): Scene | null {
+  const f = FACTIONS.find((x) => x.id === faction);
+  const own = f ? scenesOf(f).find((s) => s.title === title) : undefined;
+  if (own) return own;
+  let hit: Scene | null = null;
+  walk(CAMPAIGN, new Set(), (v) => { if (!hit && isScene(v) && v.title === title) hit = v; });
+  return hit;
+}
+
+/**
+ * Every line a leader speaks that a scene key does not cover: the asides, and any leader line anywhere
+ * else in content/campaign.ts (a scene outside the factions, a letter list added later). Spoken words only.
+ */
+export function looseLeaderLines(): string[] {
+  const inScenes = new Set<string>();
+  for (const f of FACTIONS) for (const s of scenesOf(f)) for (const l of s.lines) inScenes.add(l);
+  const out = new Set<string>();
+  walk(CAMPAIGN, new Set(), (v) => {
+    for (const l of Array.isArray(v) ? v : Object.values(v as object)) {
+      if (typeof l !== 'string' || inScenes.has(l) || !LEADER_VOICES[speakerOf(l)] || !spokenText(l)) continue;
+      out.add(l);
+    }
+  });
+  return [...out];
 }
 
 // ---------------------------------------------------------------------------

@@ -93,3 +93,10 @@
 .cp-scene-card.cp-speaking > p { opacity: 0.5; transition: opacity 0.25s; }
 .cp-scene-card.cp-speaking > p.said-now { opacity: 1; text-shadow: 0 0 12px rgba(255, 220, 150, 0.35); }
 .cp-scene-film { object-fit: cover; background: #000; }
+
+/* A leader's loose line (an aside) that can be heard (src/ui/lineVoice.ts): a small play button, the line lit while said. */
+[data-say] .say-btn { display: inline-grid; place-items: center; width: 22px; height: 22px; margin: 0 8px 0 0; padding: 0; vertical-align: -4px;
+  border: 1px solid rgba(255, 220, 150, 0.55); border-radius: 50%; background: rgba(0, 0, 0, 0.35); color: #ffdc96; font: 10px/1 "Segoe UI Symbol", sans-serif; cursor: pointer; }
+[data-say] .say-btn:hover { background: rgba(255, 220, 150, 0.18); }
+[data-say].said-now { text-shadow: 0 0 12px rgba(255, 220, 150, 0.35); color: #fff3d6; }
+[data-say].said-now .say-btn { background: rgba(255, 220, 150, 0.3); }

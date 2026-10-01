@@ -438,6 +438,18 @@ would play at the start of any scenario? if not we should."
   **the Awaited One = Aura Zeus**. 73 lines. Trap: a word in CAPITALS is SPELLED by both models ("W O R D"):
   `speakable()` in `tools/media/make.ts` lower-cases it and asks Veo to lean on it; `make.ts recaps` moves
   such takes to `v1/` to be made again. Every Veo take is transcribed back (`notes/art-review/media/speech.json`).
+- **The asides, heard (Oct 1 2026).** The letters / broadcasts / calls an ally sends between deployments
+  (`asides` in `content/campaign.ts`; 20 leader lines, his own log lines are not voiced) are voiced in the same
+  leader voices. A line outside a scene card is keyed by its WORDS (`content/media.ts` `lineKey`: `say/<who>-<hash>`),
+  so a rewritten or new line is simply a missing key: `npx vite-node tools/media/lines.ts` lists what is unvoiced
+  (free), `make.ts -- voices lines` then `make.ts -- bake lines` make it (bake drops dead `say/` keys).
+  `looseLeaderLines()` walks ALL of `content/campaign.ts`, and `scenesOf(f)` every scene of a faction wherever it
+  sits, so a new list or scene (the ally-switch midpoint) is picked up without touching the tools; `sceneVoice.ts`
+  finds any scene the same way and falls back to the words' key. In game (`src/ui/lineVoice.ts`): the report
+  plays the ally's aside by itself once, lit; the Comms inbox has ▶/■ on each leader line; a click on the line,
+  Esc (taken before Settings sees it), leaving the room or RETURN TO THE SHIP stops it; voices at 0 = no button.
+  Beat: `node tools/shot-asides.mjs [A B] [--build]` (dist-asides, port 5293). Listening sheet + reel:
+  `notes/screens/2026-10-01/asides-voices-README.md` (`lines.ts -- --sheet`). Cost: ~205,000 tokens (~$4.10).
 - **The ending films** (`ENDING_FILMS`): each ending card (the three and the Institute's pacify) first plays
   a 5-shot film full screen with its own score (`m-end-*`) and a last line in type, then its card loops the
   film where the picture was. The first shot of each is animated from the scene's existing picture

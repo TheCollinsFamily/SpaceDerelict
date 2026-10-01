@@ -10,8 +10,8 @@
  * each time, so this keeps what is playing and lights the right line again on the new card.
  * A line whose words were rewritten since its voice was made is read, not played.
  */
-import { FACTIONS, type FactionId, type Scene } from '../../content/campaign';
-import { spokenText, voiceKey } from '../../content/media';
+import type { FactionId, Scene } from '../../content/campaign';
+import { findScene, lineKey, spokenText, voiceKey } from '../../content/media';
 import { duckFor, routeMedia } from '../audio/engine';
 import { gain } from '../meta/storage';
 import { endingFilmOf, loadMedia, mediaAllowed, mediaNow, mediaUrl, playEndingFilm } from './newsreel';
@@ -20,12 +20,14 @@ interface Now { key: string; faction: FactionId; scene: Scene; line: number; aud
 let now: Now | null = null;
 let root: HTMLElement | null = null;
 
-function sceneOf(faction: string, title: string): Scene | null {
-  const f = FACTIONS.find((x) => x.id === faction);
-  if (!f) return null;
-  const all = [f.contact, ...f.beats.map((b) => b.scene), f.ending, ...Object.values(f.endingByChoice?.scenes ?? {}), ...(f.reveal ? [f.reveal] : []), ...(f.afterReveal ?? [])];
-  return all.find((s) => s.title === title) ?? null;
-}
+/** The scene on the card: a faction's own (wherever it sits in its content), else any scene of content/campaign.ts. */
+const sceneOf = (faction: string, title: string): Scene | null => findScene(faction, title);
+
+/** A line's voice: by its place in a faction's scene, else by its words (a scene outside the factions' keys). */
+const voiceOf = (n: { faction: FactionId; scene: Scene }, i: number) => {
+  const v = mediaNow()?.voices;
+  return v?.[voiceKey(n.faction, n.scene.title, i)] ?? v?.[lineKey(n.scene.lines[i])];
+};
 
 const card = () => root?.querySelector<HTMLElement>('.cp-scene-card[data-faction]') ?? null;
 
@@ -71,7 +73,7 @@ function say(n: Now): void {
   light();
   const l = lines[n.line];
   const next = (ms: number) => { n.timer = window.setTimeout(() => { if (now === n) { n.line++; say(n); } }, ms); };
-  const v = mediaNow()?.voices[voiceKey(n.faction, n.scene.title, n.line)];
+  const v = voiceOf(n, n.line);
   const text = spokenText(l);
   if (v && v.text === text && gain('voice') > 0) {
     const a = new Audio(mediaUrl(v.file));
@@ -103,7 +105,7 @@ export function attachScene(el: HTMLElement | null): void {
     if (f && !n.filmed) { n.filmed = true; await playEndingFilm(f).done; }
     if (now !== n) return;
     // Nothing to hear in the whole scene (or the voices are off): the card stays as it is.
-    const any = scene.lines.some((l, i) => art.voices[voiceKey(n.faction, scene.title, i)]);
+    const any = scene.lines.some((_, i) => voiceOf(n, i));
     if (!any || gain('voice') <= 0) { n.done = true; light(); return; }
     say(n);
   });
