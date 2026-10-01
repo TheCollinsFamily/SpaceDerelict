@@ -17383,6 +17383,465 @@
     "wetland": "under/sky-wetland.webp"
    },
    "dome": "under/dome.webp"
+  },
+  "shapes": {
+   "fps": 12,
+   "cell": [
+    112,
+    100
+   ],
+   "organs": {
+    "forge": {
+     "atlas": "under/shape-forge.webp",
+     "still": "under/shape-forge-still.webp",
+     "count": 48,
+     "cols": 36,
+     "fw": 224,
+     "fh": 300,
+     "shape": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       1
+      ],
+      [
+       0,
+       2
+      ],
+      [
+       1,
+       2
+      ]
+     ],
+     "pingpong": true
+    },
+    "venom": {
+     "atlas": "under/shape-venom.webp",
+     "still": "under/shape-venom-still.webp",
+     "count": 48,
+     "cols": 24,
+     "fw": 336,
+     "fh": 200,
+     "shape": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       1,
+       1
+      ]
+     ],
+     "pingpong": true
+    },
+    "gut": {
+     "atlas": "under/shape-gut.webp",
+     "still": "under/shape-gut-still.webp",
+     "count": 48,
+     "cols": 24,
+     "fw": 336,
+     "fh": 200,
+     "shape": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       0,
+       1
+      ],
+      [
+       1,
+       1
+      ]
+     ],
+     "pingpong": true
+    },
+    "nerve": {
+     "atlas": "under/shape-nerve.webp",
+     "still": "under/shape-nerve-still.webp",
+     "count": 48,
+     "cols": 24,
+     "fw": 336,
+     "fh": 300,
+     "shape": [
+      [
+       1,
+       0
+      ],
+      [
+       0,
+       1
+      ],
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       1,
+       2
+      ]
+     ],
+     "pingpong": true
+    },
+    "lattice": {
+     "atlas": "under/shape-lattice.webp",
+     "still": "under/shape-lattice-still.webp",
+     "count": 48,
+     "cols": 36,
+     "fw": 224,
+     "fh": 200,
+     "shape": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       0,
+       1
+      ],
+      [
+       1,
+       1
+      ]
+     ],
+     "pingpong": true
+    },
+    "womb": {
+     "atlas": "under/shape-womb.webp",
+     "still": "under/shape-womb-still.webp",
+     "count": 48,
+     "cols": 24,
+     "fw": 336,
+     "fh": 200,
+     "shape": [
+      [
+       0,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       0,
+       1
+      ],
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       1
+      ]
+     ],
+     "pingpong": true
+    },
+    "marrow": {
+     "atlas": "under/shape-marrow.webp",
+     "still": "under/shape-marrow-still.webp",
+     "count": 48,
+     "cols": 18,
+     "fw": 448,
+     "fh": 100,
+     "shape": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "pingpong": true
+    },
+    "resonance": {
+     "atlas": "under/shape-resonance.webp",
+     "still": "under/shape-resonance-still.webp",
+     "count": 48,
+     "cols": 36,
+     "fw": 224,
+     "fh": 300,
+     "shape": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       0,
+       1
+      ],
+      [
+       1,
+       1
+      ],
+      [
+       0,
+       2
+      ]
+     ],
+     "pingpong": true
+    },
+    "heart": {
+     "atlas": "under/shape-heart.webp",
+     "still": "under/shape-heart-still.webp",
+     "count": 48,
+     "cols": 36,
+     "fw": 224,
+     "fh": 100,
+     "shape": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ]
+     ]
+    },
+    "brain": {
+     "atlas": "under/shape-brain.webp",
+     "still": "under/shape-brain-still.webp",
+     "count": 48,
+     "cols": 36,
+     "fw": 224,
+     "fh": 100,
+     "shape": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ]
+     ],
+     "pingpong": true
+    },
+    "bladder": {
+     "atlas": "under/shape-bladder.webp",
+     "still": "under/shape-bladder-still.webp",
+     "count": 48,
+     "cols": 48,
+     "fw": 112,
+     "fh": 200,
+     "shape": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       1
+      ]
+     ],
+     "pingpong": true
+    },
+    "budder": {
+     "atlas": "under/shape-budder.webp",
+     "still": "under/shape-budder-still.webp",
+     "count": 48,
+     "cols": 36,
+     "fw": 224,
+     "fh": 200,
+     "shape": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       0,
+       1
+      ]
+     ],
+     "pingpong": true
+    },
+    "swell": {
+     "atlas": "under/shape-swell.webp",
+     "still": "under/shape-swell-still.webp",
+     "count": 48,
+     "cols": 36,
+     "fw": 224,
+     "fh": 100,
+     "shape": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ]
+     ]
+    },
+    "catapult": {
+     "atlas": "under/shape-catapult.webp",
+     "still": "under/shape-catapult-still.webp",
+     "count": 48,
+     "cols": 24,
+     "fw": 336,
+     "fh": 100,
+     "shape": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ]
+     ],
+     "pingpong": true
+    },
+    "runner": {
+     "atlas": "under/shape-runner.webp",
+     "still": "under/shape-runner-still.webp",
+     "count": 48,
+     "cols": 48,
+     "fw": 112,
+     "fh": 300,
+     "shape": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       1
+      ],
+      [
+       0,
+       2
+      ]
+     ],
+     "pingpong": true
+    },
+    "mire": {
+     "atlas": "under/shape-mire.webp",
+     "still": "under/shape-mire-still.webp",
+     "count": 48,
+     "cols": 48,
+     "fw": 112,
+     "fh": 200,
+     "shape": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       1
+      ]
+     ],
+     "pingpong": true
+    },
+    "acid": {
+     "atlas": "under/shape-acid.webp",
+     "still": "under/shape-acid-still.webp",
+     "count": 48,
+     "cols": 36,
+     "fw": 224,
+     "fh": 100,
+     "shape": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ]
+     ]
+    },
+    "seeder": {
+     "atlas": "under/shape-seeder.webp",
+     "still": "under/shape-seeder-still.webp",
+     "count": 48,
+     "cols": 48,
+     "fw": 112,
+     "fh": 200,
+     "shape": [
+      [
+       0,
+       0
+      ],
+      [
+       0,
+       1
+      ]
+     ],
+     "pingpong": true
+    },
+    "scaffold": {
+     "atlas": "under/shape-scaffold.webp",
+     "still": "under/shape-scaffold-still.webp",
+     "count": 48,
+     "cols": 36,
+     "fw": 224,
+     "fh": 200,
+     "shape": [
+      [
+       0,
+       0
+      ],
+      [
+       1,
+       0
+      ],
+      [
+       0,
+       1
+      ]
+     ],
+     "pingpong": true
+    }
+   }
   }
  },
  "ship": {

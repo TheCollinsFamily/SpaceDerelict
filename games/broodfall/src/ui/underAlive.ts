@@ -79,20 +79,25 @@ export class UnderAlive {
   private measure(): void {
     const g = this.grid;
     const dpr = window.devicePixelRatio || 1;
+    // Fractional positions (Oct 1 2026): a cell is 1.25 wide to 1 high, so the rows fall between whole pixels, and
+    // offsetTop/offsetHeight (rounded each on its own) left a dark line unpainted between rows across a whole organ.
+    const gr = g.getBoundingClientRect();
+    const pr = (this.canvas.offsetParent ?? g.parentElement!).getBoundingClientRect();
+    const ox = gr.left + g.clientLeft, oy = gr.top + g.clientTop;
     const W = g.clientWidth, H = g.clientHeight;
     this.stale = false;
-    Object.assign(this.canvas.style, { left: `${g.offsetLeft + g.clientLeft}px`, top: `${g.offsetTop + g.clientTop}px`, width: `${W}px`, height: `${H}px` });
+    Object.assign(this.canvas.style, { left: `${ox - pr.left}px`, top: `${oy - pr.top}px`, width: `${W}px`, height: `${H}px` });
     this.canvas.width = Math.max(1, Math.round(W * dpr));
     this.canvas.height = Math.max(1, Math.round(H * dpr));
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.cells = [...g.querySelectorAll<HTMLElement>('[data-loop]')].map((el) => {
       const [url, n, anchor, pong] = el.dataset.loop!.split('|');
       const k = el.dataset.cut?.split('|').map(Number);
-      // Both edges rounded from the grid's own positions, so neighbouring cells meet without a gap or overlap.
-      const x0 = Math.round(el.offsetLeft * dpr), y0 = Math.round(el.offsetTop * dpr);
+      // Both edges rounded from the same fractional grid lines, so neighbouring cells meet without a gap or overlap.
+      const r = el.getBoundingClientRect();
+      const x0 = Math.round((r.left - ox) * dpr), y0 = Math.round((r.top - oy) * dpr);
       return {
-        x: x0, y: y0,
-        w: Math.round((el.offsetLeft + el.offsetWidth) * dpr) - x0, h: Math.round((el.offsetTop + el.offsetHeight) * dpr) - y0,
+        x: x0, y: y0, w: Math.round((r.right - ox) * dpr) - x0, h: Math.round((r.bottom - oy) * dpr) - y0,
         img: this.image(url), count: Number(n), anchor: Number(anchor), pingpong: pong === '1', shown: -1,
         cut: k && k.length === 8 ? { cols: k[0], fw: k[1], fh: k[2], sx: k[3], sy: k[4], sw: k[5], sh: k[6], rot: ((k[7] % 4) + 4) % 4 } : null,
         cell: Number(el.dataset.cell ?? -1), organ: Number(el.dataset.oid ?? -1),

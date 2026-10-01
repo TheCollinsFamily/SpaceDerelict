@@ -139,17 +139,20 @@ export function loopPlaying(el: Element): boolean {
 /** Which of the ship's loops this wait gets: the scan, and YOKE's dance about one wait in three (never twice running). */
 export function shipLoop(): LoaderKind {
   let last = '';
+  // The beats (tools/shot-loading.mjs) pin it: localStorage['broodfall-loader'] = 'dance' | 'scan'.
+  try { const pin = localStorage.getItem('broodfall-loader'); if (pin === 'dance' || pin === 'scan') return pin; } catch { /* private window */ }
   try { last = sessionStorage.getItem('bf-loader-last') ?? ''; } catch { /* private window */ }
   const kind: LoaderKind = last !== 'dance' && Math.random() < 0.34 ? 'dance' : 'scan';
   try { sessionStorage.setItem('bf-loader-last', kind); } catch { /* fine */ }
   return kind;
 }
 
-let lastLine = -1;
+const lastLine = new WeakMap<readonly string[], number>();
+/** A line from the list, never the one it gave last time. */
 function nextLine(lines: readonly string[]): string {
   let i = Math.floor(Math.random() * lines.length);
-  if (lines.length > 1 && i === lastLine) i = (i + 1) % lines.length;
-  lastLine = i;
+  if (lines.length > 1 && i === lastLine.get(lines)) i = (i + 1) % lines.length;
+  lastLine.set(lines, i);
   return lines[i];
 }
 
@@ -284,4 +287,4 @@ export function visibleWaits(): Array<{ what: string; playing: boolean }> {
   }
   return out;
 }
-(window as unknown as { __bfWaits?: typeof visibleWaits }).__bfWaits = visibleWaits;
+if (typeof window !== 'undefined') (window as unknown as { __bfWaits?: typeof visibleWaits }).__bfWaits = visibleWaits;

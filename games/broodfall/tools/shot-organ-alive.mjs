@@ -179,7 +179,8 @@ try {
     return null;
   });
   if (fresh !== null) {
-    await page.waitForTimeout(120);
+    // The stage draws the new organ on its next update (later on a loaded machine): look as soon as it is there.
+    await page.waitForFunction((c) => document.querySelector(`#under-grid [data-cell="${c}"]`)?.classList.contains('has-organ'), fresh, { timeout: 5000, polling: 16 }).catch(() => {});
     const look = (c) => page.evaluate((c) => {
       const el = document.querySelector(`#under-grid [data-cell="${c}"]`);
       return { cls: el?.className ?? '', cut: !!el?.querySelector('.shape-cut'), oid: el?.dataset.oid };

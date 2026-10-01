@@ -25,12 +25,13 @@
  * FROM INSIDE THE MOUTH (Oct 1 2026, Collins: "the tongue of the maw appears to start out of nowhere (e.g.
  * it does not look like it is coming from inside its mouth but appearing in front of it)"). From the front
  * the tongue grows from the back of the Maw's THROAT (src/render/mawMouth.ts, marked on each frame of its
- * firing clip), runs along the floor of its mouth and leaves it over its lower teeth. The length inside the
- * mouth (INSIDE of the way) is drawn just over the Maw's picture but cut to its GAPE (the opening along the
- * tips of its teeth) and darker, so that its lips, teeth and jaw are in front of it; the rest is drawn over
- * everything as before. The tip leaves the throat first and the tongue follows it out; reeled in, the body
- * on it is drawn inside the mouth once it is past the teeth (cut to the gape: behind the lower teeth), and
- * the mouth shuts on it. The mouth is wide open (frame 2 of its clip) a GAPE share into the throw.
+ * firing clip), narrower there and sunk in a soft dark of the gullet, and leaves the mouth in one smooth arc
+ * over its teeth (the first INSIDE of the way is inside the mouth: the tip goes slower there). The tip leaves
+ * the throat first and the tongue follows it out; reeled in, the body on it is drawn cut to the mouth's GAPE
+ * (the opening along the tips of its teeth) once it is past the teeth, so that the lower teeth and lips are
+ * in front of it, and the mouth shuts on it; a shut mouth shows no tongue. The mouth is wide open (frame 2
+ * of its clip) a GAPE share into the throw. (Two lengths of tongue, one cut to the gape under the lips and
+ * one over them, were tried first: their seam at the teeth read as a hose joint.)
  */
 import { Container, Graphics, MeshRope, Point, RopeGeometry, Sprite, Texture } from 'pixi.js';
 import type { BoardArtSet } from './art';
@@ -46,7 +47,7 @@ const SLAP = 0.08;
 const SNAP = 0.22;
 /** How many points each length of tongue is laid along, and how many lengths at most. */
 const PTS = 8;
-const MAX_LENGTHS = 6;
+const MAX_LENGTHS = 7;
 /**
  * Fix pass (Sep 30 2026, "the tongue reads like a ribbed hose"): a wet tongue, thick at the lips and
  * tapering to a thin neck under its sticky club (TAPER: the share of its width left at the tip), sagging a
@@ -66,13 +67,7 @@ const RIDE = 1.35;
 const LIPS = 0.55;
 /** How much of the way from the throat to the target is inside the mouth (the tip goes slower there). */
 const INSIDE = 0.24;
-/**
- * The lengths of tongue inside the mouth, from the throat out, and how dark each is drawn: it comes up out of
- * the dark of the gullet and is lit at the teeth (the last as the tongue outside, so that the two meet unseen).
- * Inside, it is narrower at the throat (THROAT of its width at the teeth): it is seen going down into it.
- */
-const INNER = 3;
-const INNER_TINT = [0xb08c90, 0xd2b6b8, 0xf2e8e8];
+/** Inside the mouth it is narrower at the throat (THROAT of its width at the teeth): it is seen going down into it. */
 const THROAT = 0.6;
 /** The dark of the gullet laid over the root of the tongue (a soft round shadow THROAT_SHADE times its width across). */
 const THROAT_SHADE = 2.4;
@@ -126,14 +121,21 @@ interface Lick {
   rider: Rider | null;
   /** Its tongue, in lengths of the strip, and its sticky tip; `phase` keeps two Maws' wobbles apart. */
   lengths: MeshRope[]; tip: Sprite; phase: number;
-  /** The tongue inside the mouth: its lengths, drawn in `inner`, which is cut to the mouth's opening (`gape`). */
-  inner: Container; innerLengths: MeshRope[]; gape: Graphics; shade: Sprite;
-  /** The body it carries has been taken in behind the teeth (it is drawn in `inner` from then on). */
+  /**
+   * What is drawn inside the mouth, cut to its opening (`gape`): the dark of the gullet over the tongue's root
+   * (`shade`), and the body it carries once that is taken in behind the teeth (`swallowed`).
+   */
+  inner: Container; gape: Graphics; shade: Sprite;
   swallowed: boolean;
+  /** The tip is still (or again) inside the mouth. */
+  inMouth: boolean;
 }
 
-/** The way from the throat to the target: inside the mouth (throat to teeth, the first `inside` of it), then the arc out. */
-interface Way { root: Pt; exit: Pt; arc: [Pt, Pt, Pt]; inside: number; mouth?: [Pt, Pt, Pt] }
+/**
+ * The way from the throat to the target, one smooth arc (`arc`, from `root`). The first `inside` of the way
+ * (the tip goes slower there) is inside the mouth: up to the arc's `exit` (a share of the arc) at the teeth.
+ */
+interface Way { root: Pt; arc: [Pt, Pt, Pt]; inside: number; exit: number }
 
 const smooth = (u: number) => u * u * (3 - 2 * u);
 const clamp01 = (u: number) => Math.max(0, Math.min(1, u));
@@ -176,19 +178,17 @@ export class MawTongues {
       return r;
     };
     const lengths = Array.from({ length: MAX_LENGTHS }, rope);
-    const innerLengths = Array.from({ length: INNER }, rope);
-    innerLengths.forEach((r, i) => { r.tint = INNER_TINT[i]; });
     const inner = new Container();
     const shade = new Sprite(throatShade());
     shade.anchor.set(0.5);
     shade.visible = false;
-    inner.addChild(...innerLengths, shade);
+    inner.addChild(shade);
     const gape = new Graphics();
     this.layer.addChild(...lengths, inner, gape, tip);
     this.licks.push({
       towerId, targetId, t: 0,
       aim: body ? { x: body.x, y: body.y } : { x: mouth.x - 40, y: mouth.y + 60 }, aimZ: body?.z ?? mouth.z,
-      mouth, rider: null, lengths, tip, phase: (towerId * 0.37) % 1, inner, innerLengths, gape, shade, swallowed: false,
+      mouth, rider: null, lengths, tip, phase: (towerId * 0.37) % 1, inner, gape, shade, swallowed: false, inMouth: false,
     });
   }
 
@@ -214,7 +214,7 @@ export class MawTongues {
   now(): Array<{ t: number; riding: boolean; tip: Pt; mouth: Pt | null; throat: Pt | null; inMouth: boolean; open: boolean }> {
     return this.licks.map((l) => ({
       t: l.t, riding: !!l.rider, tip: { x: l.tip.x, y: l.tip.y }, mouth: l.mouth ? { x: l.mouth.x, y: l.mouth.y } : null,
-      throat: l.mouth?.throat ?? null, inMouth: l.tip.parent === l.inner, open: (l.mouth?.gape?.length ?? 0) >= 3,
+      throat: l.mouth?.throat ?? null, inMouth: l.inMouth, open: (l.mouth?.gape?.length ?? 0) >= 3,
     }));
   }
 
@@ -249,14 +249,17 @@ export class MawTongues {
       const z = mouth.back ? mouth.z - 2 : Math.max(mouth.z, l.aimZ) + 6;
       for (const r of l.lengths) r.zIndex = z;
       l.tip.zIndex = z + 1;
-      // Inside the mouth: just over the Maw's picture (the inside of its mouth), cut to its gape; shut, unseen.
+      // Inside the mouth: cut to its gape (the dark of the gullet over the tongue's root, a body taken in
+      // behind its teeth), drawn over the tongue and under its tip. A mouth that is shut shows no tongue.
       const cut = way.inside > 0 && mouth.gape !== undefined;
       const open = cut && mouth.gape!.length >= 3;
-      l.inner.zIndex = cut ? mouth.z + 0.3 : z;
+      l.inner.zIndex = z;
       l.gape.clear();
       if (open) l.gape.poly(mouth.gape!.flatMap((p) => [p.x, p.y])).fill(0xffffff);
       l.inner.mask = open ? l.gape : null;
       l.inner.visible = !cut || open;
+      if (cut && !open) { for (const r of l.lengths) r.visible = false; l.tip.visible = false; }
+      l.inMouth = cut && u < way.inside;
       // The root goes down into the dark of the gullet.
       l.shade.visible = open;
       if (open) {
@@ -264,19 +267,14 @@ export class MawTongues {
         const k = (width * THROAT_SHADE) / 64;
         l.shade.scale.set(k * 1.15, k);
       }
-      // The tip is in the mouth while it is still behind the teeth (and with a body it has taken in).
-      const tipIn = cut && (u < way.inside || l.swallowed);
-      if (tipIn !== (l.tip.parent === l.inner)) (tipIn ? l.inner : this.layer).addChild(l.tip);
-      l.tip.tint = tipIn ? INNER_TINT[Math.min(INNER - 1, Math.floor((u / Math.max(0.001, way.inside)) * INNER))] : 0xffffff;
       if (l.rider) {
         const r = l.rider;
         const tip = this.pathAt(way, u);
         // Reeled in past the teeth, it is in the mouth: drawn behind the lower teeth and lips from then on.
         if (cut && !l.swallowed && l.t > OUT + STUCK && u < way.inside * PAST_TEETH) {
           l.swallowed = true;
-          l.inner.addChildAt(r.sprite, INNER + 1);
+          l.inner.addChild(r.sprite);
           r.sprite.tint = 0xc8a8a8;
-          l.inner.addChild(l.tip);
         }
         const inGulp = l.t >= OUT + STUCK + REEL;
         // It shrinks as it comes to the lips, and is gone in the gulp.
@@ -301,35 +299,30 @@ export class MawTongues {
   }
 
   /**
-   * The way from the throat to the target. From the front, while its mouth is known: from the back of the
-   * throat along the floor of the mouth to where that line crosses the tips of its teeth (`exit`), then the
-   * arc out to the target. Otherwise (from behind, not firing) the arc from its lips, as before.
+   * The way from the throat to the target. From the front, while its mouth is known: one arc from the back of
+   * its throat, rising a little out of its mouth and coming down on the target; where it crosses the tips of
+   * its teeth is found on the gape. Otherwise (from behind, not firing) the arc from its lips, as before.
    */
   private way(m: MouthNow, a: Pt): Way {
-    let root: Pt = { x: m.x, y: m.y };
-    let exit = root;
-    let inside = 0;
     if (!m.back && m.throat && m.gape !== undefined) {
-      root = m.throat;
-      // Where the line from the throat to the target leaves the gape (shut: its lips).
-      exit = (m.gape.length >= 3 ? leaves(root, a, m.gape) : null) ?? { x: m.x, y: m.y };
-      inside = INSIDE;
+      const root = m.throat;
+      const d = Math.hypot(a.x - root.x, a.y - root.y);
+      // Lower than from the lips: it leaves the mouth outward, not back up across its opening.
+      const arc: [Pt, Pt, Pt] = [root, { x: root.x + (a.x - root.x) * 0.45, y: Math.min(root.y, a.y) - (4 + d * 0.14) }, a];
+      // How far along the arc it is still inside the gape (shut: a little of it).
+      let exit = 0.15;
+      if (m.gape.length >= 3) {
+        for (let i = 1; i <= 60; i++) {
+          if (!within(this.at(arc, i / 60), m.gape)) { exit = Math.max(0.02, (i - 0.5) / 60); break; }
+        }
+      }
+      return { root, arc, inside: INSIDE, exit };
     }
-    const d = Math.hypot(a.x - exit.x, a.y - exit.y);
-    if (inside > 0) {
-      // Out of the teeth it arcs up and comes down on the target (a little lower than from the lips: it leaves
-      // the mouth outward, not back up across its opening). Inside, it curves up from the throat into the
-      // way it leaves the teeth, so that there is no kink at the lips.
-      const c = { x: exit.x + (a.x - exit.x) * 0.45, y: Math.min(exit.y, a.y) - (6 + d * 0.18) };
-      const dc = Math.hypot(c.x - exit.x, c.y - exit.y) || 1;
-      const di = Math.hypot(exit.x - root.x, exit.y - root.y);
-      const bend = { x: exit.x - ((c.x - exit.x) / dc) * di * 0.5, y: exit.y - ((c.y - exit.y) / dc) * di * 0.5 };
-      return { root, exit, arc: [exit, c, a], inside, mouth: [root, bend, exit] };
-    }
+    const root = { x: m.x, y: m.y };
+    const d = Math.hypot(a.x - root.x, a.y - root.y);
     // It rises from the mouth and comes down on the target.
     const lift = 10 + d * 0.22;
-    const c = { x: exit.x + (a.x - exit.x) * 0.45, y: Math.min(exit.y, a.y) - lift };
-    return { root, exit, arc: [exit, c, a], inside };
+    return { root, arc: [root, { x: root.x + (a.x - root.x) * 0.45, y: Math.min(root.y, a.y) - lift }, a], inside: 0, exit: 0 };
   }
 
   private at(q: [Pt, Pt, Pt], s: number): Pt {
@@ -340,8 +333,9 @@ export class MawTongues {
 
   /** A point on the way (s: 0 at the throat, `inside` at the teeth, 1 on the target). */
   private pathAt(w: Way, s: number): Pt {
-    if (w.inside > 0 && w.mouth && s <= w.inside) return this.at(w.mouth, s / w.inside);
-    return this.at(w.arc, (s - w.inside) / (1 - w.inside));
+    if (w.inside <= 0) return this.at(w.arc, s);
+    const q = s <= w.inside ? (s / w.inside) * w.exit : w.exit + ((s - w.inside) / (1 - w.inside)) * (1 - w.exit);
+    return this.at(w.arc, q);
   }
 
   /** Lays the tongue along its way from the throat to `u`, in lengths of the strip about as long as they are drawn: tapering, sagging. */
@@ -355,7 +349,7 @@ export class MawTongues {
       return len;
     };
     const u0 = Math.max(0.001, u);
-    // Out of the mouth it hangs between the teeth and the tip (inside, it lies on the floor of the mouth).
+    // Out of the mouth it hangs between the teeth and the tip.
     const outLen = u > w.inside ? length(w.inside, u) : 0;
     const sag = outLen * SAG * slack;
     const along = (s: number): Pt => {
@@ -368,11 +362,9 @@ export class MawTongues {
       if (s < w.inside) return (width / 2) * (THROAT + (1 - THROAT) * (s / w.inside));
       return (width / 2) * (1 - (1 - TAPER) * Math.min(1, (s - w.inside) / Math.max(0.001, u0 - w.inside)));
     };
-    // Inside the mouth (in `inner`, cut to the gape) from the throat to the teeth, a little past them so that the two meet.
-    const inEnd = w.inside > 0 ? Math.min(u, w.inside * 1.04) : 0;
-    this.layRopes(l.innerLengths, 0, inEnd, INNER, along, half);
-    const n = Math.max(1, Math.min(MAX_LENGTHS, Math.round(outLen / natural)));
-    this.layRopes(l.lengths, w.inside, Math.max(u, w.inside), n, along, half);
+    // One tongue from the throat to the tip, in lengths of the strip about as long as they are drawn.
+    const n = Math.max(1, Math.min(MAX_LENGTHS, Math.round(length(0, u) / natural)));
+    this.layRopes(l.lengths, 0, u, n, along, half);
     const total = length(0, u);
     const end = along(u);
     const before = along(Math.max(0, u - 0.04));
@@ -380,7 +372,9 @@ export class MawTongues {
     l.tip.position.set(end.x, end.y);
     l.tip.rotation = Math.atan2(end.y - before.y, end.x - before.x);
     // Its club about CLUB times as thick as the tongue's thin end.
-    const k = (half(u) * 2 * CLUB) / Math.max(1, l.tip.texture.height);
+    // Its neck lies back over the tongue, never back past the root (just out of the throat, the club is small:
+    // it would stick out behind the throat, outside the mouth).
+    const k = Math.min((half(u) * 2 * CLUB) / Math.max(1, l.tip.texture.height), (total * 0.85) / Math.max(1, l.tip.texture.width * TIP_HOLD));
     l.tip.scale.set(k, k);
   }
 
@@ -423,7 +417,6 @@ export class MawTongues {
 
   private destroy(l: Lick, withRider: boolean): void {
     for (const r of l.lengths) r.destroy();
-    for (const r of l.innerLengths) r.destroy();
     l.tip.destroy();
     if (withRider && l.rider) l.rider.sprite.destroy();
     l.inner.mask = null;
@@ -433,20 +426,14 @@ export class MawTongues {
   }
 }
 
-/** Where the line from `from` (inside the polygon) toward `to` first crosses the polygon's edge, or null. */
-function leaves(from: Pt, to: Pt, poly: Pt[]): Pt | null {
-  let best = Infinity;
-  const dx = to.x - from.x, dy = to.y - from.y;
-  for (let i = 0; i < poly.length; i++) {
-    const a = poly[i], b = poly[(i + 1) % poly.length];
-    const ex = b.x - a.x, ey = b.y - a.y;
-    const den = dx * ey - dy * ex;
-    if (Math.abs(den) < 1e-9) continue;
-    const t = ((a.x - from.x) * ey - (a.y - from.y) * ex) / den;
-    const s = ((a.x - from.x) * dy - (a.y - from.y) * dx) / den;
-    if (t > 0 && t <= 1 && s >= 0 && s <= 1 && t < best) best = t;
+/** Is the point inside the polygon (even-odd)? */
+function within(p: Pt, poly: Pt[]): boolean {
+  let hit = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const a = poly[i], b = poly[j];
+    if ((a.y > p.y) !== (b.y > p.y) && p.x < ((b.x - a.x) * (p.y - a.y)) / (b.y - a.y) + a.x) hit = !hit;
   }
-  return best === Infinity ? null : { x: from.x + dx * best, y: from.y + dy * best };
+  return hit;
 }
 
 /**

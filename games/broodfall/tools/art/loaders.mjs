@@ -43,13 +43,13 @@ const LOCK = 'Camera completely locked: no zoom, no pan, no cuts. Nothing appear
   'ends exactly on the first picture again. No text appears anywhere.';
 
 export const LOADERS = [
-  { id: 'emblem', from: path.join(SRC, 'screens', 'emblem.png'), aspect: '1:1', res: '720p', seconds: 5, key: true, size: 512, mini: 200,
+  { id: 'emblem', from: path.join(SRC, 'screens', 'emblem.png'), aspect: '1:1', res: '720p', seconds: 5, key: true, size: 512, mini: 168, miniBg: '0x0b0807',
     clip: 'A painted emblem comes alive on a flat pure green background. The living meteor stays in place and keeps its ' +
       'heading: its tail of fire streams and flickers, the hot orange glow inside its split pulses brighter and dimmer like ' +
       'a slow heartbeat, its few loose red tendrils sway. The ring of twisted red tendrils around it slowly writhes and ' +
       'ripples like living vines, without moving away from its place. The flat pure green background stays flat and ' +
       `empty. ${LOCK}` },
-  { id: 'scan', aspect: '16:9', res: '720p', seconds: 6, size: 640, mini: 320,
+  { id: 'scan', aspect: '16:9', res: '720p', seconds: 6, size: 640, mini: 256,
     still: 'A display screen aboard a hard science-fiction starship, filling the whole picture, seen straight on. Near-black ' +
       'blue-grey glass. A fine square scan grid of very thin pale cyan lines covers it, faint, with slightly brighter thin ' +
       'concentric range rings around the centre. In the centre, drawn ONLY as a thin glowing pale cyan outline with a few ' +
@@ -59,19 +59,21 @@ export const LOADERS = [
     clip: 'A starship scan display. A soft bright horizontal scan line sweeps slowly down across the screen; the thin cyan ' +
       'outline of the organism pulses gently brighter and dimmer, like breathing, its tendrils swaying a little; the range ' +
       'rings shimmer faintly. The grid and the organism stay exactly in place. ' + LOCK },
-  { id: 'creep', aspect: '16:9', res: '720p', seconds: 6, size: 640, mini: 320,
+  { id: 'creep', aspect: '16:9', res: '720p', seconds: 6, size: 640, mini: 224,
     still: 'Seen from straight above, filling the whole picture: a living alien creep spreading over dark ground, wet dark ' +
       'red and maroon flesh, thick and thin branching veins of deeper crimson running across it, a few glistening pale ' +
       'nodules, the edges of the creep thinning into dark soil at the corners. Very dark overall, moody, a soft dim light ' +
       'from above, realistic and unglamorous like a creature-film texture. ' + NONE,
-    clip: 'Seen from straight above: living alien flesh. Its veins pulse slowly with a heartbeat, swelling and relaxing; a ' +
-      'dark glistening wave slowly crawls along the branching veins; the surface breathes gently. Everything stays in place. ' +
-      LOCK },
+    // The first take (art-src/loaders/v1/) grew a black worm sliding along one vein: no worm, no wave, only the pulse.
+    clip: 'Seen from straight above: living alien flesh. All its branching veins pulse together with a slow heartbeat, ' +
+      'swelling a little and glistening brighter, then relaxing; the pale nodules throb faintly; the thin tendrils at the ' +
+      'edges of the creep twitch and inch outward a little and draw back. Nothing new appears on it: no worm, no snake, no ' +
+      'creature, no liquid. Everything stays in place. ' + LOCK },
   // Collins (Oct 1 2026): "one of the fun loading frames could be a dancing version of your AI." Her 9 s `dance`
   // take is a one-shot (it starts and ends standing still); this is a new take from her one reference (the
   // Leaflit sprite, art-src/yoke/idle-framed.png, read only) with the END frame = the START frame, keyed the way
   // her other clips are. Shown now and then on the ship's waits, with a line of hers set in type under it.
-  { id: 'dance', from: path.join(SRC, 'yoke', 'idle-framed.png'), aspect: '16:9', res: '720p', seconds: 6, key: true, projection: true, size: 640, mini: 288,
+  { id: 'dance', from: path.join(SRC, 'yoke', 'idle-framed.png'), aspect: '16:9', res: '720p', seconds: 6, key: true, projection: true, size: 640, mini: 224,
     clip: 'Locked-off position, static camera, 2d anime game animation style. The same girl does a playful little dance in ' +
       'place to a beat only she can hear: she bobs on the beat, sways her hips and shoulders side to side, swings her ' +
       'arms and loosely snaps her fingers, tilts her head with a small pleased smile, her long hair swinging. She stays ' +
@@ -117,6 +119,16 @@ function rgbaFrames(file, w, h, { dropFirst = true, alpha = false } = {}) {
   return Array.from({ length: Math.floor(r.stdout.length / size) }, (_, i) => ({ w, h, data: Buffer.from(r.stdout.subarray(i * size, (i + 1) * size)) }));
 }
 
+/**
+ * The key colour's last trace on an outline: no pixel greener than the larger of its red and blue (the classic
+ * despill; the emblem's reds and oranges and YOKE's pale blues are untouched by it). With bleed() after it (the
+ * transparent pixels take their neighbours' colour), a scaled copy has no green fringe.
+ */
+function despill(img) {
+  const d = img.data;
+  for (let i = 0; i < d.length; i += 4) { const m = Math.max(d[i], d[i + 2]); if (d[i + 1] > m) d[i + 1] = m; }
+}
+
 /** Cut the frames where the model SNAPS to its end frame; report how clean the seam is. */
 function trimSnap(frames) {
   const steps = frames.slice(1).map((f, i) => diff(frames[i].data, f.data));
@@ -129,7 +141,7 @@ function trimSnap(frames) {
 }
 
 /** Encode RGBA frames: webm (VP8, alpha kept when `alpha`), and an animated WebP at `mini` px wide (and a slow one). */
-function encode(id, frames, { alpha, mini, size }) {
+function encode(id, frames, { alpha, mini, size, q = 45, miniBg = '0x000000' }) {
   fs.mkdirSync(OUT, { recursive: true });
   const { w, h } = frames[0];
   const buf = Buffer.concat(frames.map((f) => f.data));
@@ -140,16 +152,23 @@ function encode(id, frames, { alpha, mini, size }) {
   };
   const sw = size - (size % 2), sh = Math.round((h * sw) / w / 2) * 2;
   run(['-vf', `scale=${sw}:${sh}:flags=lanczos`, '-c:v', 'libvpx', '-pix_fmt', alpha ? 'yuva420p' : 'yuv420p', ...(alpha ? ['-auto-alt-ref', '0'] : []),
-    '-b:v', alpha ? '900k' : '700k', '-crf', '12', '-deadline', 'good', '-an', path.join(OUT, `${id}.webm`)], 'webm');
+    '-b:v', alpha ? '600k' : '500k', '-crf', '16', '-deadline', 'good', '-an', path.join(OUT, `${id}.webm`)], 'webm');
   const mh = Math.round((h * mini) / w / 2) * 2;
   // The first paint: small, 12 fps, lossy; it plays until the full loop has a frame (or for good, if that never comes).
-  run(['-vf', `fps=12,scale=${mini}:${mh}:flags=lanczos`, '-c:v', 'libwebp_anim', '-lossless', '0', '-q:v', '55', '-compression_level', '6', '-loop', '0', path.join(OUT, `${id}-mini.webp`)], 'mini');
-  run(['-vf', `fps=12,scale=${mini}:${mh}:flags=lanczos,setpts=3*PTS`, '-r', '4', '-c:v', 'libwebp_anim', '-lossless', '0', '-q:v', '55', '-compression_level', '6', '-loop', '0', path.join(OUT, `${id}-slow.webp`)], 'slow');
+  // The first paint: 6 fps, lossy, small (~100-150 KB), so that the loader is never the thing still loading. WebP keeps
+  // its alpha LOSSLESS (five times the bytes), so a keyed loop's first paint is laid on the dark it is shown on
+  // (`miniBg`): the page fades its square edge out (the emblem) or adds it as light (YOKE: black adds nothing).
+  const webp = ['-c:v', 'libwebp_anim', '-lossless', '0', '-q:v', String(q), '-compression_level', '4', '-loop', '0'];
+  const flat = alpha ? ['-filter_complex', `color=c=${miniBg}:s=${w}x${h}:r=${FPS}[bg];[bg][0:v]overlay=shortest=1,`] : ['-vf', ''];
+  const vf = (tail) => [flat[0], flat[1] + tail];
+  run([...vf(`fps=6,scale=${mini}:${mh}:flags=lanczos,format=yuv420p`), ...webp, path.join(OUT, `${id}-mini.webp`)], 'mini');
+  run([...vf(`fps=6,scale=${mini}:${mh}:flags=lanczos,format=yuv420p,setpts=3*PTS`), '-r', '2', ...webp, path.join(OUT, `${id}-slow.webp`)], 'slow');
   // A contact sheet for the eye: 12 frames across the loop, on a mid grey (so alpha shows).
   fs.mkdirSync(REV, { recursive: true });
   const n = frames.length, pick = Array.from({ length: 12 }, (_, i) => Math.floor((i * n) / 12));
   const sel = pick.map((i) => `eq(n\\,${i})`).join('+');
-  run(['-vf', `select='${sel}',scale=320:-2,pad=iw+8:ih+8:4:4:color=0x404448,tile=4x3,format=rgb24`, '-frames:v', '1', '-update', '1', path.join(REV, `${id}-frames.jpg`)], 'sheet');
+  run(['-filter_complex', `color=c=0x404448:s=${w}x${h}:r=${FPS}[bg];[bg][0:v]overlay=shortest=1,select='${sel}',scale=320:-2,pad=iw+8:ih+8:4:4:color=0x404448,tile=4x3,format=rgb24`,
+    '-frames:v', '1', '-update', '1', path.join(REV, `${id}-frames.jpg`)], 'sheet');
 }
 
 function bake(l) {
@@ -160,15 +179,18 @@ function bake(l) {
   let { frames, seam, step } = trimSnap(rgbaFrames(clip, w, h));
   let mode = 'seamless';
   // Keyed (and projected) once per frame, BEFORE a ping-pong repeats the frames.
-  if (l.key) keyFrames(frames);
-  // YOKE is a projection in every clip of hers (tools/art/templates/yoke.mjs project): cooled, scan-lined, haloed.
-  if (l.projection) for (const f of frames) { project(f); bleed(f); }
+  if (l.key) {
+    keyFrames(frames);
+    // YOKE is a projection in every clip of hers (tools/art/templates/yoke.mjs project): cooled, scan-lined, haloed.
+    if (l.projection) for (const f of frames) project(f);
+    for (const f of frames) { despill(f); bleed(f); }
+  }
   // The end frame is the start frame, so the seam should be about one frame's step; when it is not, ping-pong.
   if (seam > Math.max(2.5, 2.5 * step)) {
     frames = [...frames, ...frames.slice(1, -1).reverse()];
     mode = 'pingpong';
   }
-  encode(l.id, frames, { alpha: !!l.key, mini: l.mini, size: l.size });
+  encode(l.id, frames, { alpha: !!l.key, mini: l.mini, size: l.size, miniBg: l.miniBg });
   console.log(`[loaders] ${l.id}: ${frames.length} frames, ${mode} (seam ${seam.toFixed(2)}, step ${step.toFixed(2)})`);
   return { video: `loaders/${l.id}.webm`, mini: `loaders/${l.id}-mini.webp`, slow: `loaders/${l.id}-slow.webp`, alpha: !!l.key, mode, seconds: +(frames.length / FPS).toFixed(2) };
 }
@@ -177,7 +199,7 @@ function bakeYoke() {
   if (!fs.existsSync(YOKE_CLIP)) return null;
   // Her own clip is already keyed and loops (Ping-Pong, the studio's); only the small copies are made here.
   const frames = rgbaFrames(YOKE_CLIP, 640, 360, { dropFirst: false, alpha: true });
-  encode('yoke', frames, { alpha: true, mini: 240, size: 640 });
+  encode('yoke', frames, { alpha: true, mini: 200, size: 640 });
   fs.rmSync(path.join(OUT, 'yoke.webm'), { force: true }); // the full one is her own file
   return { video: 'ship/yoke/thinking.webm', mini: 'loaders/yoke-mini.webp', slow: 'loaders/yoke-slow.webp', alpha: true, mode: 'her own', seconds: +(frames.length / FPS).toFixed(2) };
 }

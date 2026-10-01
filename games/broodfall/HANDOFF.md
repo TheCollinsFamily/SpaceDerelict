@@ -381,6 +381,38 @@ character setting down a data pad that has something similar to the last screen 
   (Esc) → their paper; C the papers, their victory, the break, the replay; D each route's ending film →
   its card → the reveal picture (`media-ending-film.mp4`, the Faithful's).
 
+## Every wait shows a loop (Oct 1 2026) — notes/LOADING-AUDIT.md
+
+Collins: "we had a loading screen here without a looping animation (pad-lost.mp4) — that should never happen; the reason
+we have the RFab API is to create those nice looping animations to engage users during load." So no wait is ever a still
+screen, and a wait under 400 ms shows nothing (no flash).
+
+- **The loops** (`node tools/art/loaders.mjs [--stills|--bake] [ids]`; SPENDS ~$0.75 a clip): `emblem` (the meteor
+  burning in its ring, from art-src/screens/emblem.png, keyed with Leaflit's ChromaKey), `creep` (veins pulsing on living
+  flesh), `scan` (the asset's outline on the ship console's scan grid, a scan line sweeping), `dance` (YOKE dancing: a new
+  take from her Leaflit sprite, start = end, keyed + her projection look), `yoke` (her own `thinking` clip, only made
+  small). Each: `public/art/loaders/<id>.webm` (VP8, alpha where keyed) + `<id>-mini.webp` (the FIRST PAINT, ~100 KB,
+  preloaded by index.html) + `<id>-slow.webp` (Reduce motion: a third of the speed, never a still). Seamless when the
+  model landed on the end frame, else ping-ponged. Raw: art-src/loaders/ (first creep take, a black worm, in v1/).
+  Review sheets: notes/art-review/loaders/.
+- **The API** (`src/ui/loader.ts`, for every screen that waits — the landing film too):
+  `const h = showLoader(kind, { label, host?, corner?, lines? })` → `h.progress(done, total)`, `h.hide()`;
+  `hideLoader()` (all); `await withLoader(promise, kind, opts)`; `loopEl(kind)` / `loopHtml(kind)` for a loop in your own
+  panel; `watchBuffering(video, host)` (a corner loop while a playing film stalls); `shipLoop()` = `scan`, or YOKE's
+  `dance` about one ship wait in three (never twice running), with one of her lines set in type under her
+  (`DANCE_LINES`). Every visible wait carries `data-loading` with a `.bf-loop` in it.
+- **The LANDING FILM** (src/ui/landing.ts, another session): the run-start wait is the film once it is ready; until its
+  file has arrived, cover the gap with `const h = showLoader('creep', { label: 'THE LANDING' })` and `h.hide()` when the
+  film's first frame is up (or `watchBuffering(filmVideo, filmEl)` for stalls inside it).
+- **Wired:** the boot screen (#boot: the emblem loop + the creep behind it, the real file count; in the MARKUP and shown
+  by an inline script for a `?campaign=run` / `?autostart=1` page, so it moves before the game's code arrives), the pad
+  clip still arriving (padOutro.ts), the report's pictures (main.ts), the news from the planet loading and every film
+  shot buffering (newsreel.ts, intro.ts), the ship before its art and the planet are in (campaignUi.ts `artWait`),
+  YOKE's stage before her first clip (yokeAvatar.ts stand-in).
+- **Beat:** `node tools/shot-loading.mjs [first pad reel yoke organ calm fast]` (own dev server 5271; art/ and media/
+  held back as a slow link) FAILS when a wait is on the screen over 400 ms without a moving loop; out:
+  `notes/screens/2026-09-30/loading-*`.
+
 ## The ship AI (YOKE)
 
 - **Game side** (`src/meta/shipAi.ts`):

@@ -1,0 +1,30 @@
+{
+  "canvas": {
+    "w": 1360,
+    "h": 1000
+  },
+  "band": {
+    "x": 0,
+    "y": 118,
+    "w": 1360,
+    "h": 765,
+    "left": 0,
+    "top": 118,
+    "width": 1360,
+    "height": 765
+  },
+  "films": {
+    "suburb": {
+      "video": "landing/suburb.mp4",
+      "start": "landing/suburb-start.webp",
+      "end": "landing/suburb-end.webp",
+      "seconds": 8.042,
+      "fallAt": 0.8,
+      "strikeAt": 3.917,
+      "core": {
+        "x": 474,
+        "y": 717
+      }
+    }
+  }
+}

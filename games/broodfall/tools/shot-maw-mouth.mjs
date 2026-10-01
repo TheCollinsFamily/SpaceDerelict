@@ -325,11 +325,12 @@ try {
     const s = await session(true);
     const { page } = s;
     const st = await s.reach();
-    const cells = st.cells.slice(0, 3);
+    // Prey only in front of it (its mouth is seen; it turns to face what it eats).
+    const cells = st.cells.slice(0, 1);
     const tp = await s.posOf(s.mawId);
     const ep = await page.evaluate((c) => window.broodfall.sim.cellCenter(c), cells[0]);
     await page.addStyleTag({ content: '#banner { display: none !important; }' });
-    await s.closeOn({ x: tp.x + (ep.x - tp.x) * 0.35, y: tp.y + (ep.y - tp.y) * 0.35 }, 12, 50);
+    await s.closeOn({ x: tp.x + (ep.x - tp.x) * 0.35, y: tp.y + (ep.y - tp.y) * 0.35 }, 14, 50);
     const hold = () => page.evaluate(() => {
       const s = window.broodfall.sim;
       for (const e of s.enemies) { if (!e.staged) { e.speed = 0; e.slowMult = 0; e.slowUntil = s.time + 9999; } e.attackCooldown = 99; }
@@ -356,7 +357,7 @@ try {
     await s.context.close();
     const webm = await vid.path();
     const mp4 = join(screens, 'maw-mouth.mp4');
-    const r = spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-sseof', '-8.3', '-i', webm, '-t', '8', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '22', '-movflags', '+faststart', mp4]);
+    const r = spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-sseof', '-8.3', '-i', webm, '-t', '8', '-vf', 'crop=640:480:320:80,scale=1280:960', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '22', '-movflags', '+faststart', mp4]);
     check(r.status === 0 && existsSync(mp4), 'the film is recorded', mp4);
   }
 } finally {

@@ -11,7 +11,8 @@
  *   THE BOARD      turn keys, edge scroll, zoom speed, the speed a deployment starts at
  *   YOKE           her account and model: a SLOT, filled by the YOKE connect session
  *                  (`registerSettingsSection('yoke-account', …)`), not built here
- *   THE GAME       replay the opening film, forget everything (twice, to be sure)
+ *   THE GAME       replay the opening film, play landing films (always / first time per tile set /
+ *                  never: src/ui/landing.ts), forget everything (twice, to be sure)
  */
 import './settings.css';
 import { CALM, CASTE_TINTS, RESERVED_KEYS, type Channel, type Settings } from '../meta/settings';
@@ -141,6 +142,8 @@ function render(): void {
       <section><h3>YOKE — ACCOUNT &amp; MIND</h3>${yokeSlot}
         <h3>THE GAME</h3>
         <div class="st-row"><span>The opening film</span><button class="st-btn" data-act="intro">REPLAY THE OPENING</button></div>
+        <div class="st-row col"><span>Play landing films<small>the asset falling on the city, before a deployment</small></span>
+          ${choice('landing', [['always', 'ALWAYS'], ['first', 'FIRST TIME PER TILE SET'], ['never', 'NEVER']], s.landingFilms)}</div>
         <div class="st-row"><span>Reset progress<small>the campaign, the skirmish genes, every setting: the next start is a first launch</small></span>
           <button class="st-btn danger" data-act="reset">${confirmReset ? 'AGAIN TO CONFIRM — EVERYTHING IS LOST' : 'FORGET EVERYTHING'}</button></div>
       </section>
@@ -208,6 +211,7 @@ function onClick(ev: MouseEvent): void {
     if (d.choice === 'hud') { applyHud(v, true); render(); return; }
     if (d.choice === 'text') s.textScale = Number(v);
     if (d.choice === 'tints') s.casteTints = v === 'safe' ? 'safe' : 'standard';
+    if (d.choice === 'landing') s.landingFilms = v === 'first' || v === 'never' ? v : 'always';
     if (d.choice === 'speed') s.speed = (Number(v) === 3 ? 3 : Number(v) === 8 ? 8 : 1);
     change(s);
   }

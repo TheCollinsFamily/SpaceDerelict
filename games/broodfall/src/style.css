@@ -623,18 +623,26 @@ body.in-ship #topbar, body.in-ship #botbar { visibility: hidden; }
 #under.scan .uc .tag.core { display: block; z-index: 5; color: #ffb0a0; text-shadow: 0 0 4px #000; font-family: "Courier New", monospace; }
 
 /* An organ: its tile, lit in its own false colour, outlined where the shape ends. */
-#under.scan .uc.has-organ { border: 1px solid transparent; box-shadow: var(--gt, 0 0 transparent), var(--gb, 0 0 transparent), var(--gl, 0 0 transparent), var(--gr, 0 0 transparent); }
-/* The glow lies along the shape's own edges only (Oct 1 2026): a glow round every cell drew the squares back over the one body. */
-#under.scan .uc.has-organ.bt { --gt: inset 0 9px 9px -8px var(--acc); } #under.scan .uc.has-organ.bb { --gb: inset 0 -9px 9px -8px var(--acc); }
-#under.scan .uc.has-organ.bl { --gl: inset 9px 0 9px -8px var(--acc); } #under.scan .uc.has-organ.br { --gr: inset -9px 0 9px -8px var(--acc); }
+#under.scan .uc.has-organ { border: 1px solid transparent; box-shadow: none; }
+/*
+ * The outline and glow lie along the shape's own edges only, on a layer of their own over the cell (Oct 1 2026): a
+ * glow round every cell drew the squares back over the one body; a 2px border meeting the cell's 1px clear one cut a
+ * notch into the outline at every row; and the zones' pulse (box-shadow on the cell) would wipe a shadow outline.
+ */
+#under.scan .uc.has-organ::after {
+  content: ""; position: absolute; inset: -1px; z-index: 1; pointer-events: none; border: 0 solid var(--acc);
+  box-shadow: var(--gt, 0 0 transparent), var(--gb, 0 0 transparent), var(--gl, 0 0 transparent), var(--gr, 0 0 transparent);
+}
+#under.scan .uc.has-organ.bt::after { border-top-width: 2px; --gt: inset 0 9px 9px -8px var(--acc); }
+#under.scan .uc.has-organ.bb::after { border-bottom-width: 2px; --gb: inset 0 -9px 9px -8px var(--acc); }
+#under.scan .uc.has-organ.bl::after { border-left-width: 2px; --gl: inset 9px 0 9px -8px var(--acc); }
+#under.scan .uc.has-organ.br::after { border-right-width: 2px; --gr: inset -9px 0 9px -8px var(--acc); }
 /* An organ of several cells, scanning in: its cell's piece of the one picture of the whole organ, turned with it (src/ui/underground.ts shapeCut). */
 #under.scan .uc .shape-cut {
   position: absolute; left: 50%; top: 50%; width: 100%; height: 100%; z-index: 0; pointer-events: none;
   background-repeat: no-repeat; transform: translate(-50%, -50%) rotate(var(--rot, 0deg));
 }
 #under.scan .uc .shape-cut.odd { width: 80%; height: 125%; }
-#under.scan .uc.has-organ.bt { border-top: 2px solid var(--acc); } #under.scan .uc.has-organ.bb { border-bottom: 2px solid var(--acc); }
-#under.scan .uc.has-organ.bl { border-left: 2px solid var(--acc); } #under.scan .uc.has-organ.br { border-right: 2px solid var(--acc); }
 #under.scan .uc .organ { display: none; }
 #under.scan .uc .pow { color: var(--acc); text-shadow: 0 0 4px #000, 0 0 2px #000; font-family: "Courier New", monospace; z-index: 2; }
 #under.scan .uc .recipe, #under.scan .uc .rate { color: #e8ffd0; text-shadow: 0 0 3px #000; z-index: 2; }

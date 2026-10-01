@@ -1,0 +1,21 @@
+/* The landing film (src/ui/landing.ts): over everything, black around the picture, the picture moved onto the board at its end. */
+#landing { position: fixed; inset: 0; z-index: 59; background: #000; cursor: pointer; overflow: hidden; transition: background-color 0.7s ease-in-out; }
+#landing.handing { background-color: transparent; pointer-events: none; }
+#landing .ld-pic { position: absolute; overflow: hidden; transition: opacity 0.6s linear; }
+#landing.leaving .ld-pic { opacity: 0; }
+#landing .ld-v, #landing .ld-end { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; display: block; }
+#landing .ld-end { opacity: 0; }
+#landing.held .ld-end { opacity: 1; }
+#landing.gentle .ld-end { animation: ld-fade-in 0.6s ease-out forwards; }
+@keyframes ld-fade-in { from { opacity: 0; } to { opacity: 1; } }
+#landing .ld-flash { position: absolute; inset: 0; background: #fff8e8; opacity: 0; pointer-events: none; }
+#landing .ld-flash.on { animation: ld-flash 0.5s ease-out; }
+@keyframes ld-flash { 0% { opacity: 0.95; } 100% { opacity: 0; } }
+#landing .ld-skip {
+  position: absolute; right: 22px; bottom: 22px; z-index: 6; font: 12px/1 Bahnschrift, "Segoe UI", sans-serif; letter-spacing: 3px;
+  background: rgba(0, 0, 0, 0.45); color: rgba(255, 255, 255, 0.8); border: 1px solid rgba(255, 255, 255, 0.35); padding: 8px 12px; cursor: pointer;
+}
+#landing .ld-skip span { opacity: 0.6; margin-left: 6px; }
+#landing .ld-skip:hover { color: #fff; border-color: #fff; }
+#landing.held .ld-skip, #landing.handing .ld-skip { display: none; }
+#landing .bf-loader.corner { bottom: 64px; }

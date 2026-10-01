@@ -227,6 +227,113 @@ async function clips(sets, withOrbit) {
   res.forEach((r, i) => { if (!r.ok) console.warn(`[landing] ${jobs[i].slug} failed: ${r.error.message.slice(0, 200)}`); });
 }
 
+// ------------------------------------------------------------------ bake
+
+/**
+ * The cut (seconds of each raw clip, and how fast it plays). The orbit: the asset let go until it is a streak in the
+ * atmosphere. The fall: the streak until the meteor is over the roofs (played 1.2x). The strike: all of it (1.2x),
+ * ending on the board. Orbit → fall is a 0.3 s dissolve; fall → strike a hard cut under the game's white flash.
+ */
+export const CUT = { orbit: { from: 0.6, to: 2.4 }, fall: { from: 0, to: 2.9, speed: 1.2 }, land: { speed: 1.2 }, dissolve: 0.3 };
+const FPS = 24;
+const ENC = ['-an', '-c:v', 'libx264', '-preset', 'slow', '-crf', '21', '-pix_fmt', 'yuv420p', '-movflags', '+faststart'];
+
+function duration(file) {
+  const r = spawnSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', file], { encoding: 'utf8' });
+  return Math.round(Number(r.stdout.trim()) * 1000) / 1000;
+}
+const frameAt = (file, t, out, w = 640) => ffmpeg(['-ss', Math.max(0, t).toFixed(3), '-i', file, '-frames:v', '1', '-vf', `scale=${w}:-2`, '-q:v', '3', out], `frame ${out}`);
+/** The last frame of a film (seeking to its end is not exact: decode the last half second, keep the last). */
+const lastFrame = (file, out, args = []) => ffmpeg(['-sseof', '-0.5', '-i', file, '-update', '1', ...args, out], `last ${out}`);
+
+/** Mean absolute difference of two pictures, grey 64x36 (how far the film's end is from the board). */
+function picDiff(a, b) {
+  const grey = (f) => spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-i', f, '-vf', 'scale=64:36,format=gray', '-frames:v', '1', '-f', 'rawvideo', '-'], { maxBuffer: 1 << 24 }).stdout;
+  const x = grey(a), y = grey(b);
+  let d = 0;
+  for (let i = 0; i < Math.min(x.length, y.length); i++) d += Math.abs(x[i] - y[i]);
+  return +(d / Math.max(1, Math.min(x.length, y.length))).toFixed(2);
+}
+
+function bakeFilm(id) {
+  const orbit = raw('orbit-clip.mp4'), fall = raw(`fall-${id}-clip.mp4`), land = raw(`land-${id}-clip.mp4`);
+  if (![orbit, fall, land].every((f) => fs.existsSync(f))) { console.warn(`[landing] ${id}: clips missing, not baked`); return null; }
+  fs.mkdirSync(OUT, { recursive: true });
+  const out = path.join(OUT, `${id}.mp4`);
+  const S = `scale=1280:720:flags=lanczos,fps=${FPS},format=yuv420p`;
+  const o = CUT.orbit, f = CUT.fall, l = CUT.land, D = CUT.dissolve;
+  const oLen = o.to - o.from;
+  const fLen = (f.to - f.from) / f.speed;
+  ffmpeg(['-i', orbit, '-i', fall, '-i', land, '-filter_complex',
+    `[0:v]trim=start=${o.from}:end=${o.to},setpts=PTS-STARTPTS,${S}[o];` +
+    `[1:v]trim=start=${f.from}:end=${f.to},setpts=(PTS-STARTPTS)/${f.speed},${S}[f];` +
+    // The strike's first frame is the uploaded still (it can flash): the game's own flash covers the cut.
+    `[2:v]trim=start_frame=1,setpts=(PTS-STARTPTS)/${l.speed},${S}[l];` +
+    `[o][f]xfade=transition=fade:duration=${D}:offset=${(oLen - D).toFixed(3)}[of];[of][l]concat=n=2:v=1[v]`,
+  '-map', '[v]', ...ENC, out], `${id} film`);
+  const seconds = duration(out);
+  const strikeAt = +(oLen - D + fLen).toFixed(3);
+  ffmpeg(['-i', out, '-frames:v', '1', '-vf', 'scale=1280:-2', '-quality', '86', path.join(OUT, `${id}-start.webp`)], `${id} start`);
+  lastFrame(out, path.join(OUT, `${id}-end.webp`), ['-quality', '90']);
+  // Review: six frames, and how near the last frame is to the board it must become.
+  fs.mkdirSync(REV, { recursive: true });
+  const tmp = path.join(DIR, 'tmp');
+  fs.mkdirSync(tmp, { recursive: true });
+  const at = [0.3, oLen - 0.1, oLen + fLen * 0.5, strikeAt - 0.05, strikeAt + 0.6, null];
+  const tiles = at.map((t, i) => {
+    const p = path.join(tmp, `${id}-${i}.jpg`);
+    if (t === null) lastFrame(out, p, ['-vf', 'scale=640:-2', '-q:v', '3']); else frameAt(out, t, p);
+    return p;
+  });
+  ffmpeg([...tiles.flatMap((t) => ['-i', t]), '-filter_complex', '[0][1][2]hstack=3[a];[3][4][5]hstack=3[b];[a][b]vstack=2[v]', '-map', '[v]', '-q:v', '4', path.join(REV, `${id}.jpg`)], `${id} review`);
+  const endVsBoard = picDiff(path.join(OUT, `${id}-end.webp`), band(id));
+  const core = JSON.parse(fs.readFileSync(raw(`board-${id}.json`), 'utf8')).core;
+  const report = { id, seconds, fallAt: 0.8, strikeAt, endVsBoard, core, models: MODEL, cut: CUT };
+  fs.writeFileSync(path.join(REV, `${id}.json`), JSON.stringify(report, null, 2) + '\n');
+  console.log(`[landing] baked ${id}: ${seconds}s, strike at ${strikeAt}s, last frame vs board ${endVsBoard}`);
+  return report;
+}
+
+function bake(sets) {
+  for (const s of sets) bakeFilm(s.id);
+  // landing.json lists every film on disk (a set without one starts with no film).
+  const films = {};
+  for (const s of SETS) {
+    const rev = path.join(REV, `${s.id}.json`);
+    if (!fs.existsSync(path.join(OUT, `${s.id}.mp4`)) || !fs.existsSync(rev)) continue;
+    const r = JSON.parse(fs.readFileSync(rev, 'utf8'));
+    films[s.id] = { video: `landing/${s.id}.mp4`, start: `landing/${s.id}-start.webp`, end: `landing/${s.id}-end.webp`,
+      seconds: r.seconds, fallAt: r.fallAt, strikeAt: r.strikeAt, core: r.core };
+  }
+  fs.writeFileSync(path.join(OUT, 'landing.json'), JSON.stringify({ canvas: CANVAS, band: { ...BAND, left: BAND.x, top: BAND.y, width: BAND.w, height: BAND.h }, films }, null, 2) + '\n');
+  console.log(`[landing] landing.json: ${Object.keys(films).length} films`);
+}
+
+/** All ten films side by side: one row each, five frames (release, fall, over the roofs, strike, the board). */
+function sheet() {
+  const dir = path.join(ROOT, 'notes', 'screens', '2026-09-30');
+  const tmp = path.join(DIR, 'tmp');
+  fs.mkdirSync(tmp, { recursive: true });
+  const rows = [];
+  for (const s of SETS) {
+    const film = path.join(OUT, `${s.id}.mp4`);
+    if (!fs.existsSync(film)) continue;
+    const r = JSON.parse(fs.readFileSync(path.join(REV, `${s.id}.json`), 'utf8'));
+    const ts = [0.5, r.strikeAt - 1.6, r.strikeAt - 0.1, r.strikeAt + 0.5, null];
+    const tiles = ts.map((t, i) => {
+      const p = path.join(tmp, `sheet-${s.id}-${i}.jpg`);
+      if (t === null) lastFrame(film, p, ['-vf', 'scale=384:-2', '-q:v', '3']); else frameAt(film, t, p, 384);
+      return p;
+    });
+    const row = path.join(tmp, `sheet-${s.id}.jpg`);
+    ffmpeg([...tiles.flatMap((t) => ['-i', t]), '-filter_complex', 'hstack=5', '-q:v', '3', row], `${s.id} row`);
+    rows.push(row);
+  }
+  const out = path.join(dir, 'landing-00-sheet.jpg');
+  ffmpeg([...rows.flatMap((t) => ['-i', t]), '-filter_complex', `vstack=${rows.length}`, '-q:v', '4', out], 'sheet');
+  console.log(`[landing] ${out}: ${rows.length} films`);
+}
+
 const args = process.argv.slice(2);
 const steps = new Set(['boards', 'stills', 'clips', 'bake', 'sheet']);
 const step = steps.has(args[0]) ? args[0] : null;
@@ -246,4 +353,6 @@ if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.ar
     const after = await balance();
     console.log(`[landing] asked for ${spent.stills} stills, ${spent.clips} clips; balance ${before} -> ${after} (${before - after} tokens)`);
   }
+  if (!step || step === 'bake') bake(sets);
+  if (!step || step === 'sheet') sheet();
 }

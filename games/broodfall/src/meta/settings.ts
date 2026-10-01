@@ -36,7 +36,11 @@ export interface Settings {
   casteTints: CasteTints;
   /** Silence while the window is not in front (another window or tab has it). */
   muteUnfocused: boolean;
+  /** The landing film before a deployment (src/ui/landing.ts): every time, the first time on each tile set, or never. */
+  landingFilms: LandingFilms;
 }
+
+export type LandingFilms = 'always' | 'first' | 'never';
 
 export const DEFAULT_SETTINGS: Settings = {
   v: 1,
@@ -50,6 +54,7 @@ export const DEFAULT_SETTINGS: Settings = {
   reduceFlashes: false,
   casteTints: 'standard',
   muteUnfocused: true,
+  landingFilms: 'always',
 };
 
 /**
@@ -92,6 +97,7 @@ export function settingsFrom(raw: unknown): Settings {
     reduceFlashes: r.reduceFlashes === true,
     casteTints: r.casteTints === 'safe' ? 'safe' : 'standard',
     muteUnfocused: r.muteUnfocused !== false,
+    landingFilms: r.landingFilms === 'first' || r.landingFilms === 'never' ? r.landingFilms : 'always',
   };
 }
 
