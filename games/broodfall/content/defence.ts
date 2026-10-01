@@ -20,6 +20,10 @@ export const DEFENCE = {
   minTier: 5,
   /** Streets it comes down at once (a normal siege: 1-3 by tier; never more than the board has gates). */
   lanes: 4,
+  /** The creep already out (px past its start; a normal run reaches about this by wave 7). */
+  creepPx: 420,
+  /** The Requisition Board's forms a single siege can meet (content/campaign.ts REQUISITIONS ids). */
+  board: ['preserve-core', 'preserve-limbs', 'density', 'evolve'],
   /** Seconds to re-arm before it comes (a normal turn is BALANCE.growthSeconds; he can call it early). */
   armSeconds: 45,
   /** With no remembered board: a large city, grown before the run (src/sim/boardSnapshot.ts pregrow). */

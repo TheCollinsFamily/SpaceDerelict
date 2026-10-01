@@ -80,6 +80,48 @@ export function projectSite(lat: number, lon: number, spin: number): { x: number
   };
 }
 
+/**
+ * THE COLONY'S PUSH (src/meta/defence.ts; Collins, Oct 1 2026: "a pushing arrow indicator from where it's
+ * being staged"): the way along the planet's surface from where it masses to the ground it means to take
+ * back, projected by `proj` (the flat painter's or the 3D planet's). Only the part facing us is drawn;
+ * it stops short of both markers; the head sits at its end, pointing along it. Empty when all of it is behind.
+ */
+export function pushArc(
+  proj: (lat: number, lon: number) => { x: number; y: number; front: boolean },
+  from: { lat: number; lon: number }, to: { lat: number; lon: number }, steps = 32,
+): { line: string; head: string } {
+  const v = (lat: number, lon: number) => [Math.cos(lat * RAD) * Math.sin(lon * RAD), Math.sin(lat * RAD), Math.cos(lat * RAD) * Math.cos(lon * RAD)];
+  const a = v(from.lat, from.lon);
+  const b = v(to.lat, to.lon);
+  const dot = Math.max(-1, Math.min(1, a[0] * b[0] + a[1] * b[1] + a[2] * b[2]));
+  const om = Math.acos(dot);
+  const pts: Array<{ x: number; y: number }> = [];
+  let lastFront = false;
+  for (let i = 0; i <= steps; i++) {
+    const t = 0.16 + (i / steps) * (0.84 - 0.16);
+    const k1 = om < 1e-6 ? 1 - t : Math.sin((1 - t) * om) / Math.sin(om);
+    const k2 = om < 1e-6 ? t : Math.sin(t * om) / Math.sin(om);
+    const p = [a[0] * k1 + b[0] * k2, a[1] * k1 + b[1] * k2, a[2] * k1 + b[2] * k2];
+    const lat = Math.asin(Math.max(-1, Math.min(1, p[1] / Math.hypot(p[0], p[1], p[2])))) / RAD;
+    const lon = Math.atan2(p[0], p[2]) / RAD;
+    const q = proj(lat, lon);
+    lastFront = q.front;
+    if (q.front) pts.push({ x: q.x, y: q.y });
+  }
+  if (pts.length < 2) return { line: '', head: '' };
+  const line = `M${pts.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' L')}`;
+  if (!lastFront) return { line, head: '' };
+  const e = pts[pts.length - 1];
+  const s = pts[Math.max(0, pts.length - 3)];
+  const len = Math.hypot(e.x - s.x, e.y - s.y) || 1;
+  const ux = (e.x - s.x) / len, uy = (e.y - s.y) / len;
+  const L = 13, W = 8;
+  const tip = { x: e.x + ux * L * 0.6, y: e.y + uy * L * 0.6 };
+  const back = { x: tip.x - ux * L, y: tip.y - uy * L };
+  const head = `M${tip.x.toFixed(1)},${tip.y.toFixed(1)} L${(back.x - uy * W).toFixed(1)},${(back.y + ux * W).toFixed(1)} L${(back.x + uy * W).toFixed(1)},${(back.y - ux * W).toFixed(1)} Z`;
+  return { line, head };
+}
+
 /** The place on the planet that a point of the globe's picture shows, or null off the disc. */
 export function unprojectSite(x: number, y: number, spin: number): { lat: number; lon: number } | null {
   const c = GLOBE.size / 2;

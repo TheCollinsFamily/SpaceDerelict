@@ -6,6 +6,7 @@
  * finished hobby pages). It opens with the Directive Desk (src/meta/onboarding.ts deskOpen).
  */
 import './directives.css';
+import { directiveStatus } from './defenceUi';
 import { ORDERS, ORDERS_FOOT, ORDERS_HEAD } from '../../content/directives';
 import { TERRITORIES } from '../../content/campaign';
 import { ORGAN_BY_ID } from '../../content/underground';
@@ -47,7 +48,7 @@ export function directivesHtml(s: CampaignState): string {
   const rows = onFile.map((t) => {
     const d = t.directive;
     const what = !d ? '' : d.kind === 'hold' ? `Hold ${d.waves} waves` : d.kind === 'royal' ? 'Destroy the royal' : `Bank ${d.science} science`;
-    const st = s.underAttack === t.id ? 'UNDER ATTACK — DEFEND (hold 5 waves)' : s.held.includes(t.id) ? 'FULFILLED · HELD' : 'OPEN';
+    const st = directiveStatus(s, t.id) ?? (s.underAttack === t.id ? 'UNDER ATTACK — DEFEND' : s.held.includes(t.id) ? 'FULFILLED · HELD' : 'OPEN');
     return `<tr class="${s.held.includes(t.id) ? 'held' : ''}${s.underAttack === t.id ? ' attack' : ''}"><td>${esc(t.name)}</td><td>${t.tier}</td><td>${d ? KIND[d.kind] : ''}</td><td>${esc(what)}</td><td>${st}</td></tr>`;
   }).join('');
   const rec = o.record;

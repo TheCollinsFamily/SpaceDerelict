@@ -21,7 +21,7 @@
  * falls back to the flat painter in globe.ts.
  */
 import * as THREE from 'three';
-import { infestGrowth, type Zone } from './globe';
+import { infestGrowth, pushArc, type Zone } from './globe';
 
 const RAD = Math.PI / 180;
 /** How far from its site a zone reaches (src/ui/globe.ts REACH). */
@@ -534,6 +534,15 @@ export class Globe3D {
       g.setAttribute('transform', `translate(${p.x.toFixed(1)},${p.y.toFixed(1)})`);
       const hide = !p.front;
       if (g.classList.contains('behind') !== hide) g.classList.toggle('behind', hide);
+    }
+    // The colony's push (src/meta/defence.ts): its arrow follows the planet too.
+    for (const g of Array.from(this.box.querySelectorAll<SVGGElement>('.globe .push'))) {
+      const [fa, fo] = (g.dataset.from ?? '').split(',').map(Number);
+      const [ta, to] = (g.dataset.to ?? '').split(',').map(Number);
+      if (![fa, fo, ta, to].every(Number.isFinite)) continue;
+      const arc = pushArc((lat, lon) => this.project(lat, lon), { lat: fa, lon: fo }, { lat: ta, lon: to });
+      for (const el of Array.from(g.querySelectorAll<SVGPathElement>('.push-line, .push-glow'))) el.setAttribute('d', arc.line);
+      g.querySelector('.push-head')?.setAttribute('d', arc.head);
     }
   }
 

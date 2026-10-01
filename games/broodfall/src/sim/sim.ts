@@ -437,6 +437,8 @@ export class Sim {
     if (snap) for (const o of snap.organs) this.regrowOrgan(o);
     else for (const id of cfg.startOrgans ?? []) this.growFree(id);
     this.coreLevel = Math.max(1, cfg.coreLevel ?? 1, snap?.coreLevel ?? 1);
+    // A defence: the body has been here a while, its creep already out over the streets.
+    this.creepSurgePx = cfg.oneWave?.creepPx ?? 0;
     this.creepDist = allDistance(this.map, this.map.coreCell);
     this.flow = this.computeFlowField();
     this.pickIncomingGates();

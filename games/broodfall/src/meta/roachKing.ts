@@ -37,7 +37,7 @@ export function isDue(a: RoachAddress, s: CampaignState): boolean {
   switch (a.when) {
     case 'address': return true;
     case 'draft': return heldOut(s) >= DRAFT_HELD;
-    case 'counter': return !!s.underAttack;
+    case 'counter': return !!s.underAttack || !!s.staging; // the colony massing (src/meta/defence.ts) is its telegraph
     case 'ally': return !!a.faction && s.faction === a.faction && beatsOf(s, a.faction) >= 2;
     case 'stand': {
       if (s.ended) return false;

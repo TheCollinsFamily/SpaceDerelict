@@ -641,6 +641,28 @@ screen, and a wait under 400 ms shows nothing (no flash).
   held back as a slow link) FAILS when a wait is on the screen over 400 ms without a moving loop; out:
   `notes/screens/2026-09-30/loading-*`.
 
+## Defence deployments (Oct 1 2026) — DESIGN.md "Defence deployments"
+
+Collins: "always visually warn the player one 'turn' ahead with like a pushing arrow ... you can choose
+to just attack that territory to cancel having to play one".
+- **Rules** `src/meta/defence.ts` (staged → struck first or launched → defend or lose; old saves staged
+  again on load, `src/meta/storage.ts`); hooks in `src/meta/campaign.ts` `finish` and `plan`; numbers
+  `content/defence.ts`. Save fields: `staging`, `attackFrom`, `boards` (all optional).
+- **The board remembered** `src/sim/boardSnapshot.ts`: `Sim.snapshot()` on a win (main.ts puts it in the
+  `RunReport`); `SimConfig.board` opens a run on it; `SimConfig.pregrown` grows the large fallback city.
+  The underground is dug again from `underSeed`, so organ anchors stay valid. Changing the city generator
+  (citymap.ts) does not break old snapshots: a snapshot stores cells, not seeds.
+- **The one siege** `SimConfig.oneWave` (`asWave`, `minTier`, `armSeconds`, `lanes`, `creepPx`): the
+  tier floor, `waveDepth`, `growthLength` (the HUD's countdown and the organ policy read it), the siege
+  cap x5. `SimConfig.coreStage` floors the drawn core (`coreStageOf(grown, floor)`), `coreLevel` the meteor.
+- **Screens** `src/ui/defenceUi.ts` + `defence.css`: the push on the globe (`pushArc` in `globe.ts`; the
+  3D planet re-draws it each frame from `data-from`/`data-to` in `placeMarkers`), MASSING / THREATENED /
+  UNDER ATTACK banners, the desk line, the report's lines, the Directives status. The `counter` newsreel
+  and the Roach King's `counter` address fire on the staging (the telegraph).
+- **Verify:** `tests/defence.test.ts`; `node tools/shot-defence.mjs` (22 checks; screenshots
+  `notes/screens/2026-10-01/defence-*.png`); balance `npx vitest run --config tools/measure/vitest.config.ts
+  tools/measure/defence.measure.ts` (`DEF_MEAT`, `DEF_WAVE`, `DEF_TIER`, `DEF_LANES` to sweep).
+
 ## YOKE translates the insects (Oct 1 2026)
 
 Collins: "something in the game's lore or visuals that implies an AI is translating what the insects are saying

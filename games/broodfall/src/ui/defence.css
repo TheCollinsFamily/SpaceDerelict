@@ -1,0 +1,33 @@
+/* ---------- defence deployments (src/ui/defenceUi.ts): the colony's push on the globe, the banners ---------- */
+.globe .push { pointer-events: none; }
+.globe .push path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.globe .push .push-glow { stroke: rgba(255, 150, 40, 0.28); stroke-width: 11; }
+.globe .push .push-line { stroke: #ffb040; stroke-width: 4; stroke-dasharray: 9 7; animation: pushflow 0.8s linear infinite; }
+.globe .push .push-head { fill: #ffb040; stroke: #3a1500; stroke-width: 1.2; transform-box: fill-box; transform-origin: center; animation: pushnudge 0.8s ease-in-out infinite; }
+.globe .push.launched .push-glow { stroke: rgba(255, 60, 30, 0.35); stroke-width: 13; }
+.globe .push.launched .push-line { stroke: #ff5a2a; stroke-width: 5; animation-duration: 0.45s; }
+.globe .push.launched .push-head { fill: #ff5a2a; animation-duration: 0.45s; }
+@keyframes pushflow { to { stroke-dashoffset: -16; } }
+@keyframes pushnudge { 50% { transform: scale(1.25); } }
+html.reduce-motion .globe .push .push-line, html.reduce-motion .globe .push .push-head { animation: none; }
+
+.globe .site.massing circle { stroke: #ffb040; stroke-width: 3.5; stroke-dasharray: 3 2; }
+.globe .site.massing.launched circle { stroke: #ff5a2a; }
+.globe .site.threat circle { stroke: #ffb040; stroke-width: 3; }
+.globe .site .push-tag {
+  font: 700 8.5px Bahnschrift, "Segoe UI", sans-serif; letter-spacing: 1.2px; text-anchor: middle; fill: #ffc060;
+  paint-order: stroke; stroke: #160800; stroke-width: 3px; pointer-events: none;
+}
+.globe-box.g3d .site.behind .push-tag { display: none; }
+
+.cp-push { margin: 6px 0 8px; padding: 7px 10px; border-left: 4px solid #ffb040; background: rgba(255, 160, 50, 0.12); line-height: 1.35; }
+.cp-push b { letter-spacing: 0.4px; }
+.cp-push span { display: block; font-size: 0.9em; opacity: 0.85; margin-top: 2px; }
+.cp-push.staging { border-left-color: #ffb040; }
+.cp-push.threat { border-left-color: #ffcf80; background: rgba(255, 200, 120, 0.09); }
+.cp-push.launched { border-left-color: #ff5a2a; background: rgba(255, 70, 40, 0.13); }
+.cp-push-line { margin: 4px 0; }
+.cp-push-line.good { color: #9fe0a8; }
+.cp-push-line.warn { color: #ffc060; }
+.cp-push-line.bad { color: #ff8a70; }
+.lg.massing::before { content: "\2794"; color: #ffb040; }

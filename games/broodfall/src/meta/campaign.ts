@@ -26,6 +26,7 @@ import {
   type CounterAttack,
 } from './defence';
 import type { BoardSnapshot } from '../sim/boardSnapshot';
+import { DEFENCE } from '../../content/defence';
 
 export interface CampaignState {
   version: 1;
@@ -164,10 +165,11 @@ export interface DeploymentPlan {
 }
 
 /** The three board goals for this deployment (seeded — the same briefing if you back out and return). */
-export function boardFor(s: CampaignState, territoryId: string): GoalInstance[] {
+export function boardFor(s: CampaignState, territoryId: string, only?: readonly string[]): GoalInstance[] {
   const t = territory(territoryId);
   const rng = new Rng(hash(`${s.seed}|${s.deployments}|${territoryId}`));
-  const pool = [...REQUISITIONS];
+  // A defence offers only the forms one siege can meet (content/defence.ts).
+  const pool = REQUISITIONS.filter((r) => !only || only.includes(r.id));
   const out: GoalInstance[] = [];
   while (out.length < 3 && pool.length) out.push(instance(pool.splice(rng.int(0, pool.length - 1), 1)[0], t.tier));
   return out;
@@ -218,7 +220,7 @@ export function plan(s: CampaignState, territoryId: string, opts: { dares?: stri
   // Mission 1 carries no forms, no dares and no experiment: it is only a game of tower defence.
   if (first) return { territory: territoryId, defence: false, first: true, config, board: [], dares: [] };
   return {
-    territory: territoryId, defence, config, board: boardFor(s, territoryId), dares,
+    territory: territoryId, defence, config, board: boardFor(s, territoryId, defence ? DEFENCE.board : undefined), dares,
     experiment: exp ? { def: exp, goal: instance(exp.goal, t.tier) } : undefined,
     hobby,
   };

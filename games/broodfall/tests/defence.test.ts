@@ -111,7 +111,9 @@ describe('the defence deployment', () => {
     expect(p.defence).toBe(true);
     expect(p.config.directive).toEqual({ kind: 'hold', waves: 1 });
     expect(p.config.coreStage).toBe(3);
-    expect(p.config.oneWave).toEqual({ asWave: DEFENCE.asWave, minTier: DEFENCE.minTier, armSeconds: DEFENCE.armSeconds, lanes: DEFENCE.lanes });
+    expect(p.config.oneWave).toEqual({ asWave: DEFENCE.asWave, minTier: DEFENCE.minTier, armSeconds: DEFENCE.armSeconds, lanes: DEFENCE.lanes, creepPx: DEFENCE.creepPx });
+    // Only the forms one siege can meet.
+    expect(p.board.every((g) => (DEFENCE.board as readonly string[]).includes(g.def.id))).toBe(true);
     expect(p.config.startBonus?.war).toBeGreaterThanOrEqual(DEFENCE.meat.war);
     // No board remembered for it (the reports above carried none): a large city, grown before the run.
     expect(p.config.board).toBeUndefined();

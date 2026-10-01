@@ -22,7 +22,8 @@ export function momentsOf(prev: CampaignState, next: CampaignState, d: Debrief):
   for (const b of next.beatsSeen) m.push(`beat:${b}`);
   if (d.deskOpened) m.push('desk-open');
   if (d.captured) m.push(`capture:${d.captured}`);
-  if (next.underAttack && next.underAttack !== prev.underAttack) m.push('counter');
+  // The telegraph is the colony MASSING, a whole deployment ahead (src/meta/defence.ts).
+  if (next.staging && next.staging.target !== prev.staging?.target) m.push('counter');
   if (d.captured) m.push('capture');
   if (!d.captured && !d.repelled) m.push('lost');
   return m;

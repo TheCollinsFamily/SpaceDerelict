@@ -32,6 +32,7 @@ import type { EnemyKind, OrganId } from '../sim/types';
 import lore from '../../content/lore/ship-ai-lorebook.md?raw';
 import { artUrl, loadManifest, type ShipArt } from '../render/art';
 import { GLOBE, Globe, heldGrowth, projectSite, type Zone } from './globe';
+import { briefBanner, debriefLines, defenceFacts, deskLine, pushSvg, siteClasses, siteTag } from './defenceUi';
 import { Globe3D } from './globe3d';
 import { loadSettings } from '../meta/storage';
 import { loadIntroArt, type IntroArt } from './intro';
@@ -538,15 +539,15 @@ export class CampaignUi {
       const cls = [
         'site', held ? 'held' : open.has(t.id) ? 'open' : 'locked',
         s.underAttack === t.id ? 'attack' : '', t.finaleOf ? 'finale' : '', this.selected === t.id ? 'sel' : '', p.front ? '' : 'behind',
-      ].join(' ');
+      ].join(' ') + siteClasses(s, t.id);
       return `<g class="${cls}" data-site="${t.id}" transform="translate(${p.x.toFixed(1)},${p.y.toFixed(1)})">
-        <circle r="${held ? 9 : 8}"/>${t.finaleOf ? '<text class="star" y="4">★</text>' : ''}
+        <circle r="${held ? 9 : 8}"/>${t.finaleOf ? '<text class="star" y="4">★</text>' : ''}${siteTag(s, t.id)}
         <text class="name" y="-13">${esc(t.name)}</text></g>`;
     }).join('');
     return `<div class="globe-box${g3 ? ' g3d' : ''}">${mapped && !g3 ? '<canvas class="globe-map" width="420" height="420"></canvas>' : ''}<svg class="globe" viewBox="0 0 420 420" width="420" height="420">
       <defs><radialGradient id="planet" cx="38%" cy="32%"><stop offset="0" stop-color="#6d8a58"/><stop offset="0.7" stop-color="#3b4a2f"/><stop offset="1" stop-color="#1a2016"/></radialGradient></defs>
       ${mapped ? '' : `<circle cx="${cx}" cy="${cy}" r="${R}" fill="url(#planet)" class="disc"/>`}
-      ${lines.join('')}${links.join('')}${marks}
+      ${lines.join('')}${links.join('')}${pushSvg(s, proj)}${marks}
     </svg></div>`;
   }
 
@@ -562,9 +563,9 @@ export class CampaignUi {
     return `<div class="cp-desk">
       <div class="cp-globe">${this.globeSvg()}
         <div class="cp-spin"><button data-act="spin-l">◀ turn</button><button data-act="spin-r">turn ▶</button></div>
-        <div class="cp-legend"><span class="lg held">yours</span><span class="lg open">can land</span><span class="lg attack">under attack</span><span class="lg locked">not yet</span></div>
+        <div class="cp-legend"><span class="lg held">yours</span><span class="lg open">can land</span><span class="lg massing">massing</span><span class="lg attack">under attack</span><span class="lg locked">not yet</span></div>
       </div>
-      <div class="cp-brief">${t ? this.briefHtml(t) : `<div class="cp-sub">PICK A LANDING SITE</div><p>Land next to ground you hold. Each territory you take unlocks evolution stages for some of your limbs${s.underAttack ? `. <b>${esc(territory(s.underAttack).name)} is under attack</b> — defend it next, or lose it.` : '.'}</p>`}</div>
+      <div class="cp-brief">${t ? this.briefHtml(t) : `<div class="cp-sub">PICK A LANDING SITE</div><p>Land next to ground you hold. Each territory you take unlocks evolution stages for some of your limbs.${deskLine(s)}</p>`}</div>
     </div>`;
   }
 
@@ -580,7 +581,7 @@ export class CampaignUi {
     const t = pick ? territory(pick) : null;
     const p = t ? plan(s, t.id) : null;
     const dir = p?.config.directive;
-    const dirText = !dir ? 'hold' : dir.kind === 'hold' ? `Hold for ${dir.waves} waves` : dir.kind === 'royal' ? 'Destroy the royal' : `Bank ${dir.science} science`;
+    const dirText = !dir ? 'hold' : dir.kind === 'hold' ? (dir.waves === 1 ? 'Hold the siege' : `Hold for ${dir.waves} waves`) : dir.kind === 'royal' ? 'Destroy the royal' : `Bank ${dir.science} science`;
     return `<div class="cp-desk cp-desk-dark">
       <div class="cp-globe"><div class="cp-dark-globe"><div class="cp-dark-ring"></div>
         <div class="cp-dark-word">AWAITING CLEARANCE</div>
@@ -590,7 +591,7 @@ export class CampaignUi {
         ${t && p ? `<div class="cp-label">NEXT DEPLOYMENT — ASSIGNED BY COMMAND</div>
         <div class="cp-sub">${esc(t.name.toUpperCase())}${p.defence ? ' · DEFENCE' : ''}</div>
         ${this.territoryPictureHtml(t.id)}<p class="cp-story">${esc(t.story)}</p>
-        <div class="cp-facts">Threat tier ${t.tier} · ${t.entrances} entrance${t.entrances > 1 ? 's' : ''} · ${p.defence ? '<b>DEFENCE</b> — hold 5 waves' : dirText}</div>
+        <div class="cp-facts">Threat tier ${t.tier} · ${t.entrances} entrance${t.entrances > 1 ? 's' : ''} · ${p.defence ? defenceFacts(s, t.id) : dirText}</div>
         ${p.board.length ? `<div class="cp-label">REQUISITION BOARD — pays standing</div>
         ${p.board.map((g) => `<div class="cp-goal std"><b>${esc(g.def.title)}</b> ${esc(goalText(g))} <i>+${g.def.pays}</i></div>`).join('')}` : ''}
         <div class="cp-facts">Starting profile: <b>${esc(PROFILES.find((x) => x.id === s.profile)?.name ?? '')}</b> (change in the Gene Bay)</div>
@@ -610,15 +611,16 @@ export class CampaignUi {
     const held = s.held.includes(t.id);
     const p = plan(s, t.id, { dares: this.dares, experiment: this.experiment, objectors: this.objectors });
     const dir = p.config.directive;
-    const dirText = !dir ? 'hold' : dir.kind === 'hold' ? `Hold for ${dir.waves} waves` : dir.kind === 'royal' ? 'Destroy the royal' : `Bank ${dir.science} science`;
+    const dirText = !dir ? 'hold' : dir.kind === 'hold' ? (dir.waves === 1 ? 'Hold the siege' : `Hold for ${dir.waves} waves`) : dir.kind === 'royal' ? 'Destroy the royal' : `Bank ${dir.science} science`;
     const unlocks = t.unlocks.map((u) => `${THEME_NAME[u.theme] ?? u.theme} evolution stage ${u.stage}`).join(', ');
     const perks = perksOf(s);
     const objAllowed = objectorsAllowed(perks);
     const warKinds = ENEMIES.filter((e) => e.caste === 'war').map((e) => e.kind);
     const exps = experimentsAvailable(s);
     return `${this.territoryPictureHtml(t.id)}<div class="cp-sub">${esc(t.name.toUpperCase())}${held ? ' · YOURS' : ''}</div>
+      ${briefBanner(s, t.id)}
       <p class="cp-story">${esc(t.story)}</p>
-      <div class="cp-facts">Threat tier ${t.tier} · ${t.entrances} entrance${t.entrances > 1 ? 's' : ''} · ${p.defence ? '<b>DEFENCE</b> — hold 5 waves' : dirText}</div>
+      <div class="cp-facts">Threat tier ${t.tier} · ${t.entrances} entrance${t.entrances > 1 ? 's' : ''} · ${p.defence ? defenceFacts(s, t.id) : dirText}</div>
       ${unlocks ? `<div class="cp-facts">Holding it unlocks: <b>${esc(unlocks)}</b></div>` : ''}
       <div class="cp-label">REQUISITION BOARD — pays standing</div>
       ${p.board.map((g) => `<div class="cp-goal std"><b>${esc(g.def.title)}</b> ${esc(goalText(g))} <i>+${g.def.pays}</i></div>`).join('')}
@@ -1059,7 +1061,7 @@ export class CampaignUi {
     this.el.classList.remove('hidden');
     this.el.innerHTML = `<div class="cp-card"><div class="screen-kicker">POST-DEPLOYMENT REPORT — FORM XC-11</div>
       <div class="cp-title">${d.captured ? `${esc(territory(d.captured).name.toUpperCase())} TAKEN` : d.repelled ? 'COUNTER-ATTACK REPELLED' : 'DEPLOYMENT FAILED'}</div>
-      ${d.lost ? `<p class="cp-bad">${esc(territory(d.lost).name)} fell to a counter-attack.</p>` : ''}
+      ${d.lost ? `<p class="cp-bad">${esc(territory(d.lost).name)} fell to a counter-attack.</p>` : ''}${debriefLines(d)}
       <div class="cp-label">REQUISITION BOARD</div>${d.board.map((g) => row(g, 'standing', goalText(g))).join('')}
       ${d.dares.length ? `<div class="cp-label">DARES</div>${d.dares.map((g) => row(g, 'field notes', goalText(g))).join('')}` : ''}
       ${d.experiment ? `<div class="cp-label">EXPERIMENT</div>${row(d.experiment, 'field notes', goalText(d.experiment))}` : ''}

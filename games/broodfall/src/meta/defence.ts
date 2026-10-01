@@ -116,7 +116,7 @@ export function defenceConfig(s: DefenceState, territoryId: string): Partial<Sim
     directive: { kind: 'hold', waves: 1 },
     coreStage: DEFENCE.coreStage,
     coreLevel: DEFENCE.coreLevel,
-    oneWave: { asWave: DEFENCE.asWave, minTier: DEFENCE.minTier, armSeconds: DEFENCE.armSeconds, lanes: DEFENCE.lanes },
+    oneWave: { asWave: DEFENCE.asWave, minTier: DEFENCE.minTier, armSeconds: DEFENCE.armSeconds, lanes: DEFENCE.lanes, creepPx: DEFENCE.creepPx },
     ...(snap
       ? { board: snap, gridW: snap.w, gridH: snap.h }
       : { gridW: DEFENCE.large.gridW, gridH: DEFENCE.large.gridH, pregrown: DEFENCE.large.districts }),

@@ -914,8 +914,48 @@ each having only a little story to it, with the ability for the enemy to push ba
 - **Evolution gating**: stage 1 of every limb's evolution is always open; stages 2 and
   3 of each theme unlock by taking specific territories ("hold the Ossuary Coast:
   Bone Forge limbs can evolve to stage 3").
-- **Pushback**: after each deployment the colony counterattacks one territory you hold
-  (telegraphed on the globe). Defend it (a defence deployment) or lose it and its bonus.
+- **Pushback**: after a capture the colony counterattacks one territory you hold. It is always
+  seen a whole deployment ahead and can always be avoided: see "Defence deployments" below.
+
+### Defence deployments (Collins, Oct 1 2026)
+"think through the defense missions ... they usually suck to do so we should always visually warn the
+player one 'turn' ahead with like a pushing arrow indicator from where it's being staged and you can
+choose to just attack that territory to cancel having to play one ... we can have them play on large
+randomly generated maps ... with a type three core already at the center and a bunch of currency already
+and only last one turn (to make them different from other missions) ... maybe you could make this easier
+by remembering the organ configuration and map when that mission was beaten". Built (src/meta/defence.ts,
+src/sim/boardSnapshot.ts, src/ui/defenceUi.ts; numbers in content/defence.ts):
+1. **Staged.** After a capture (from the second on) the colony MASSES on a territory next to one you
+   hold: one you don't hold and could land on, never a finale. Ground with no such neighbour (walled in
+   by your own territories) is safe. The globe draws a pushing arrow from the staging ground to the
+   threatened ground (amber chevrons flowing toward it; the staging marker says MASSING); the landing-site
+   picker tags the staging ground **STAGING GROUND — strike first to cancel the attack on X**, and the
+   threatened ground THREATENED. Nothing can be defended yet.
+2. **The next deployment decides it.** Land on the staging ground and WIN: it is yours and the
+   counter-attack is called off (no new one is staged that deployment: a breather). Anything else, a
+   different target or a loss on the staging ground, and it is LAUNCHED: the arrow turns red, the ground is
+   UNDER ATTACK. (Decided Oct 1 2026: ignoring the warning never costs ground at once; it costs a
+   deployment of choice.)
+3. **Due.** The deployment after: DEFEND it, or deploy anywhere else and it falls (its board is forgotten).
+   So no defence is ever fought without a whole deployment's warning, and every one could have been struck first.
+4. **The defence itself**, unlike any other mission: ONE all-out siege (tier 5 of the response ladder,
+   as big as wave 11 of a full deployment, about 70 bodies, down 4 streets at once); 45 s to re-arm first
+   (call it early as ever); the core already at stage 3 (chambered) and the meteor at level 2; a full larder
+   (200 war, 70 science, 2 royal on top of the perks); the creep already out over the streets (as by about
+   wave 7); the Requisition Board offers only forms one siege can meet. The siege is over when it is
+   beaten, not when a normal turn's clock runs out.
+5. **The board.** A won deployment keeps its board in the save: the city as the body left it (every
+   district drafted, every burrow) and the organs under it (where, which way, what level); about 2,000
+   characters. A defence there opens on THAT city with those organs, but no limbs: the body re-arms its
+   own ground in a hurry, which is what the full larder is for (limbs carried over would make the siege a
+   formality and their pips and evolutions a save-format burden). With no board remembered (saves from
+   before Oct 1 2026), it is a LARGE city (70x50, seven by five districts), grown before the run by the
+   drafts' own connection algebra so the pieces always line up (the fullest of a few growths: one can wall
+   itself in), core in the middle.
+6. **Old saves.** A counter-attack launched with no warning (the old rule) is staged again on load.
+Measured (tools/measure/defence.measure.ts, naive scripted player, 10 seeds, Oct 1 2026): remembered
+board 9/10 held, mean core 80% on a hold; large city 9/10, mean core 64%. Winnable, not free: it costs
+core, and the scripted player loses one in ten.
 
 ### The factions (Emperor's recruitable sub-houses) — revised Sep 28 2026
 

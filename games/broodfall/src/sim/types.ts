@@ -698,7 +698,7 @@ export interface SimConfig {
   /** The meteor's starting level (a defence: the body has been here a while). */
   coreLevel?: number;
   /** ONE siege only: as big as this wave of a full deployment, at least this tier, after this long to re-arm (a defence). */
-  oneWave?: { asWave: number; minTier: number; armSeconds?: number; lanes?: number };
+  oneWave?: { asWave: number; minTier: number; armSeconds?: number; lanes?: number; creepPx?: number };
 }
 
 /**

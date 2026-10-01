@@ -511,7 +511,7 @@ export class Hud {
     this.lastDirective = sim.directive.kind;
     const label = document.getElementById('biomass-label')!;
     label.textContent = sim.directive.kind === 'hold'
-      ? `DIRECTIVE: HOLD FOR ${sim.directive.waves} WAVES`
+      ? (sim.directive.waves === 1 ? 'DIRECTIVE: HOLD THE SIEGE' : `DIRECTIVE: HOLD FOR ${sim.directive.waves} WAVES`)
       : sim.directive.kind === 'royal'
         ? 'DIRECTIVE: DESTROY THE ROYAL'
         : `DIRECTIVE: BANK ${sim.directive.science} SCIENCE SAMPLES`;
