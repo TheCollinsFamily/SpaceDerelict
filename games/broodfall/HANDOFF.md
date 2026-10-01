@@ -222,8 +222,8 @@ insectoid city.
 ## How a new player starts (Sep 30 2026) — DESIGN.md "How it unfolds for a new player"
 
 - **First launch** (nothing in localStorage, page opened with no address of its own): the
-  opening film (`src/ui/intro.ts`; eight clips in `public/art/intro/`, made by
-  `tools/art/intro.mjs`), then mission 1 at the crash site, with the board loading behind the
+  first-boot B-movie since Oct 1 2026 ("The first-boot film and the reveal" below; the eight-clip
+  opening film of `src/ui/intro.ts`/`tools/art/intro.mjs` is its fallback), then mission 1 at the crash site, with the board loading behind the
   film. `?intro=1` plays the film over the menu. Launch rules: `launchKind` in
   `src/meta/onboarding.ts`; the flags are `broodfall-intro-seen` and the campaign save.
 - **Mission 1** is a campaign deployment with `plan().first`: no goals, the gate shown, the HUD
@@ -250,6 +250,42 @@ insectoid city.
 - **Beats only:** `?campaign=ship&open=1` opens the ship with a campaign whose desk is already
   open when none is on record (shot-ship, shot-yoke-avatar, shot-biomes, shot-screens use it; the
   unfolding itself is `tools/shot-onboarding.mjs`).
+
+## The first-boot film and the reveal (Oct 1 2026) — notes/BMOVIE-SHOTLIST.md
+
+Collins: "create an intro video that plays the first time a user boots up the software ... some sort of 1950 B movie
+style scene ... from the perspective of people in whatever the starting biome of something coming from the sky and have
+that replace the intro vid for the very first mission (not revealing the ship and everything until that mission's over)".
+- **The film:** "THE THING FROM THE SKY", 68.5 s, 4:3 (960x720), faded Technicolor with grain, flicker, gate weave,
+  scratches; ONE file with its whole mix (theremin/brass score, the trailer narrator's seven lines, plate, scream, crowd,
+  siren, the game's own land-roar/land-impact; -14 LUFS): `public/art/intro/bmovie.mp4` + `bmovie.json` (shot times,
+  `cardAt`, the five titles the game sets in type). Night 0 at the Crash Site in the Suburbs set ("Luckwell Gardens",
+  the meteor falls between the school and the laundromat, content/lore/insects.md): porch, laundromat, kitchen, the
+  street looking up, the fall, the strike, the Civil Watch walking into the smoke, the tendril, the flight, the siren,
+  the heart waking. No ship, no Empire, no YOKE. Its card: BROODFALL / "YOU ARE THE THING THAT FELL."
+- **Colour, not black and white:** probed on one still (`notes/art-review/bmovie/probe-colour-vs-bw.jpg`): in B&W the
+  red glow from the sky (the threat), the pastel suburb that matches the board and the amber eyes all go; the style
+  bible's films are "1950s colour horror".
+- **Player:** `src/ui/bmovie.ts` `playBmovie` (called by `playIntro` when `bmovie.json` is there; the eight-shot film is
+  its fallback): the BEGIN card when sound is locked, heard through the MUSIC channel (`routeMedia`), titles on the
+  film's clock (`titleAt`), the buffering loop with cinema lines, click/Esc/Enter/Space skip. Replay: the menu's and
+  Settings' REPLAY THE OPENING, `?intro=1`. Reduce motion: titles and grain still, the film itself plays.
+- **Nothing ship-side before mission 1 is over:** mission 1 reopened (not straight after the film) lands from the FALL
+  (`playLanding` `fromFall`, `fallStart` in `src/meta/landing.ts`: the release shot and its poster are skipped); its
+  loading screen says PREPARING THE TOWN with the town's radio lines (`LoadingScreen.plain`, `TOWN_LINES`).
+- **The reveal after mission 1** (`playReveal`, rule `revealDue` in `src/meta/onboarding.ts`, flag
+  `broodfall-reveal-seen`): CONTINUE on mission 1's report (or the ship reopened before it) plays the landing films'
+  release shot, cut before its dissolve (`public/art/intro/reveal.mp4`, 2.7 s at 0.6x), under `sting-desk`,
+  "MEANWHILE, HIGH ABOVE LUCKWELL GARDENS", then "…AND YOU ARE THE ONE WHO SENT IT.", then the ship and YOKE. Once;
+  never to a save from before the unfolding or past its first return; Reduce motion: its still and the card.
+- **Make it again:** `node tools/art/bmovie.mjs --stills|--clips|--audio [ids]` (SPENDS), `--probe`, `--bake`, `--reveal`
+  (free). Raw files: `art-src-new/bmovie/` (or `$BMOVIE_RAW`): 15 stills (`v1/` keeps the four re-rolled ones), 15
+  Seedance 2.5 clips, `audio/` takes. Contact sheet `notes/art-review/bmovie/bmovie-sheet.jpg`.
+- **Beats:** `node tools/shot-bmovie.mjs [A B C D E]` (port 5251; all pass Oct 1 2026), screenshots
+  `notes/screens/2026-10-01/bmovie-*`. `tools/shot-onboarding.mjs` A now jumps through the new film; its later step
+  "print yourself a body" (`#yoke-scene`) times out on main too (checked on 7ff1b56c, before this work).
+- **Collins's to judge:** the film itself; the town's name "Luckwell Gardens" (from the lore's Luckwell company
+  suburbs); the reveal's two lines.
 
 ## Empire Directives, hobby missions, settings, territory pictures (Sep 30 2026)
 

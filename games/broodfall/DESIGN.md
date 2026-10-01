@@ -734,6 +734,14 @@ of the whole thing is `tools/shot-onboarding.mjs` (screenshots `notes/screens/20
    from the menu. It has a score and a newsreel narrator reading its titles (Sep 30 2026); a
    browser will not play sound on a page nobody has clicked yet, so when sound cannot play the
    film waits on its first frame behind a "▸ BEGIN" card, and that click starts it heard.
+   **Since Oct 1 2026 the film is "THE THING FROM THE SKY"** (Collins: "some sort of 1950 B movie style
+   scene ... from the perspective of people in whatever the starting biome of something coming from
+   the sky"): about 72 s, 4:3, faded Technicolor with grain, weave and scratches, a trailer narrator,
+   screaming townsfolk and a theremin score, all mixed in the one file (`src/ui/bmovie.ts`, art
+   `tools/art/bmovie.mjs`, shot list `notes/BMOVIE-SHOTLIST.md`). It is Night 0 at the Crash Site
+   itself, the Suburbs tile set (Luckwell Gardens, the meteor falls between the school and the
+   laundromat), told from the street; it ends on its card "YOU ARE THE THING THAT FELL." The
+   eight-shot film is its fallback when its file is missing.
 2. **Mission 1** is the crash site (the film ends there): hold 5 waves, the assault's gate shown
    (as in any tower-defence game; the campaign hides it later), no Requisition Board, no dares,
    nothing on screen that speaks of the ship, the Board, the globe or a licence (`hud.plain`,
@@ -743,7 +751,14 @@ of the whole thing is `tools/shot-onboarding.mjs` (screenshots `notes/screens/20
    It takes no ground and queues no counter-attack; its data pays 4 standing, win or lose (so
    that YOKE's "check it out" in the Gene Bay is true). A launch while mission 1 is unfinished
    goes straight back into it: the ship, and the menu that shows it, are never seen before it.
-3. **After mission 1, won or lost: the ship.** That is the first reveal. YOKE greets him.
+   Such a reopened mission 1 gets its landing film WITHOUT the release shot (it starts at the fall:
+   `fromFall`), and its loading screen speaks with the town's voice (`TOWN_LINES`, "PREPARING THE
+   TOWN"), not the Navy's (Oct 1 2026).
+3. **After mission 1, won or lost: the ship.** That is the first reveal. Since Oct 1 2026 CONTINUE
+   first plays THE REVEAL (`playReveal`, once, `revealDue`): the landing films' release shot, the
+   ship firing the asset out of its bay, lifelike and cold after the Technicolor, "MEANWHILE, HIGH
+   ABOVE LUCKWELL GARDENS", then the second half of the film's line, "…AND YOU ARE THE ONE WHO SENT
+   IT." Then YOKE greets him.
 4. **The Directive Desk is dark** until the first win that is not mission 1 (won mission 1: the
    next win; lost it: the first win). Dark means the ship's own voice: "AWAITING CLEARANCE",
    the planet not projected, and Command's assignment with its DEPLOY button (`shipPick`: a

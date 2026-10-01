@@ -32,6 +32,12 @@ export interface LandingArt {
   films: Record<string, LandingFilm>;
 }
 
+/**
+ * Where a film starts when the release is left out (mission 1: the ship is not seen before it is over): just past the
+ * dissolve from the release into the fall (`fallAt` is where the dissolve begins; it lasts 0.3 s).
+ */
+export const fallStart = (film: Pick<LandingFilm, 'fallAt'>): number => +(film.fallAt + 0.35).toFixed(3);
+
 export type LandingWhy = 'play' | 'no-film' | 'setting-never' | 'seen-set' | 'after-opening' | 'automation' | 'asked-off';
 
 /**

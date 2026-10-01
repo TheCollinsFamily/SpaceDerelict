@@ -142,16 +142,23 @@ try {
     await page.goto(URL0, { waitUntil: 'load', timeout: 180000 });
     await page.waitForSelector('#intro', { timeout: 10000 });
     check(true, 'the first launch opens on the cinematic, not a menu');
-    await page.waitForFunction(() => document.querySelector('#intro .intro-title.on'), null, { timeout: 15000 });
-    await page.waitForTimeout(700);
+    // Since Oct 1 2026 the first launch plays the B-movie (src/ui/bmovie.ts; its own walk is tools/shot-bmovie.mjs):
+    // one reel, titles on its clock. It is jumped to its first title, then to the crater, rather than watched for 70 s.
+    const film = JSON.parse(readFileSync(join(root, 'public', 'art', 'intro', 'bmovie.json'), 'utf8'));
+    const seek = async (t) => {
+      await page.evaluate((t) => { document.querySelector('#intro video').currentTime = t; }, t);
+      await page.waitForFunction((t) => Math.abs(document.querySelector('#intro video').currentTime - t) < 1.5, t, { timeout: 20000 });
+      await page.waitForTimeout(800);
+    };
+    await page.waitForFunction(() => window.__bfIntroFilm === 'playing', null, { timeout: 30000 });
+    await page.waitForTimeout(1500);
     await shot(page, '01-intro-sky');
+    await seek(film.titles[0].from + 0.5);
     const t1 = await page.evaluate(() => window.__titles[0] ?? '');
-    check(/QUIET NIGHT/.test(t1), `the first title is set in type over the film: "${t1}"`);
-    await page.waitForFunction(() => document.getElementById('intro')?.dataset.shot === 'impact', null, { timeout: 30000 });
-    await page.waitForTimeout(1600);
+    check(t1 === film.titles[0].text, `the first title is set in type over the film: "${t1}"`);
+    await seek(film.shots.impact + 1.6);
     await shot(page, '02-intro-impact');
-    await page.waitForFunction(() => document.getElementById('intro')?.dataset.shot === 'crater', null, { timeout: 15000 });
-    await page.waitForTimeout(1400);
+    await seek(film.shots.crater + 1.4);
     await shot(page, '03-intro-crater');
     const words = await page.evaluate(() => document.getElementById('intro').innerText);
     check(!/ship|empire|campaign|technopuritan|navy|yoke/i.test(words), 'nothing in the film speaks of the ship, the empire or a campaign');

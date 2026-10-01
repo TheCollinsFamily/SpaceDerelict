@@ -57,6 +57,9 @@ three campaign outlines, covers and promotional art.
 
 ## 4. Films, news, sound
 
+- ~~**A first-boot B-movie from the town's side, the ship held back until mission 1 is over**~~: BUILT Oct 1 2026
+  (HANDOFF.md "The first-boot film and the reveal"). Still Collins's: an eye and an ear on it.
+
 - **Sound: BUILT Sep 30** (RFab generation; HANDOFF.md "The sound"; listening sheet
   `notes/screens/2026-09-30/audio-README.md`). Still missing: a real sound-effect model on RFab
   (the effects are cut from video soundtracks), the insects' intercepted radio between waves

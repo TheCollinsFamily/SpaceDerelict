@@ -17,7 +17,7 @@
 import './landing.css';
 import { artUrl } from '../render/art';
 import { sfx } from '../audio/engine';
-import { coverBox, filmBoxOnBoard, type LandingArt, type LandingFilm, type Pt, type Rect } from '../meta/landing';
+import { coverBox, fallStart, filmBoxOnBoard, type LandingArt, type LandingFilm, type Pt, type Rect } from '../meta/landing';
 import { showLoader, watchBuffering, type LoaderHandle } from './loader';
 
 let art: Promise<LandingArt | null> | null = null;
@@ -49,11 +49,16 @@ export interface LandingOpts {
   board: () => LandingBoard | null;
   reduceMotion?: boolean;
   reduceFlashes?: boolean;
+  /**
+   * Start at the fall: the release (the ship letting the asset go) is left out. Mission 1 (Oct 1 2026): the ship is
+   * not seen before that mission is over (src/ui/bmovie.ts plays the reveal at its end).
+   */
+  fromFall?: boolean;
 }
 export interface LandingHandle { skip(): void; done: Promise<'ended' | 'skipped'> }
 
 type Phase = 'loading' | 'playing' | 'holding' | 'handoff' | 'done';
-interface LandingState { set: string; phase: Phase; how?: 'ended' | 'skipped'; roar: boolean; strike: boolean; reduced: boolean; heldMs: number }
+interface LandingState { set: string; phase: Phase; how?: 'ended' | 'skipped'; roar: boolean; strike: boolean; reduced: boolean; heldMs: number; fromFall: boolean }
 const report = (s: LandingState) => { (window as unknown as { __bfLanding?: LandingState }).__bfLanding = s; };
 
 const place = (el: HTMLElement, r: Rect) => {
@@ -64,7 +69,7 @@ const place = (el: HTMLElement, r: Rect) => {
 export function playLanding(film: LandingFilm, land: LandingArt, o: LandingOpts): LandingHandle {
   let finish: (how: 'ended' | 'skipped') => void = () => {};
   const done = new Promise<'ended' | 'skipped'>((r) => { finish = r; });
-  const state: LandingState = { set: film.set, phase: 'loading', roar: false, strike: false, reduced: !!o.reduceMotion, heldMs: 0 };
+  const state: LandingState = { set: film.set, phase: 'loading', roar: false, strike: false, reduced: !!o.reduceMotion, heldMs: 0, fromFall: !!o.fromFall };
   report(state);
 
   const el = document.createElement('div');
@@ -187,8 +192,12 @@ export function playLanding(film: LandingFilm, land: LandingArt, o: LandingOpts)
   // A film that cannot be played at all (a missing file, a codec) is skipped to its last frame.
   v.addEventListener('error', () => end('ended'));
   stopBuffering = watchBuffering(v, el, 'creep');
-  if (film.start) v.poster = film.start;
-  v.src = film.video;
+  // From the fall: the release shot's poster is not shown either; the media fragment starts it there (and the seek below,
+  // for a browser that ignores fragments).
+  const from = o.fromFall ? fallStart(film) : 0;
+  if (film.start && !from) v.poster = film.start;
+  v.src = from ? `${film.video}#t=${from.toFixed(2)}` : film.video;
+  if (from) v.addEventListener('loadedmetadata', () => { if (v.currentTime < from - 0.1) v.currentTime = from; }, { once: true });
   void v.play().catch(() => { /* muted films may play; if not, the error/stall path holds the last frame */ });
   // Never stuck: a film that has not moved in its own length and a half is over.
   timers.push(window.setTimeout(() => { if (state.phase === 'loading') end('ended'); }, Math.max(8000, film.seconds * 1500)));

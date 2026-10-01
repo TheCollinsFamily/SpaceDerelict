@@ -141,6 +141,17 @@ export function markIntroSeen(): void {
   try { localStorage.setItem(INTRO, '1'); } catch { /* private mode: it plays again next time */ }
 }
 
+const REVEAL = 'broodfall-reveal-seen';
+
+/** The reveal after mission 1 (src/ui/bmovie.ts playReveal) has played once. Private mode: as seen (never twice). */
+export function revealSeen(): boolean {
+  try { return localStorage.getItem(REVEAL) === '1'; } catch { return true; }
+}
+
+export function markRevealSeen(): void {
+  try { localStorage.setItem(REVEAL, '1'); } catch { /* ok */ }
+}
+
 /** This browser played before the campaign existed (skirmish records): it is not a first launch. */
 export function veteran(): boolean {
   try { return !!localStorage.getItem('broodfall-meta'); } catch { return false; }

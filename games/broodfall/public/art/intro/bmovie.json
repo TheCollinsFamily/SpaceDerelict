@@ -1,0 +1,56 @@
+{
+ "video": "intro/bmovie.mp4",
+ "poster": "intro/bmovie.webp",
+ "seconds": 68.5,
+ "cardAt": 63.5,
+ "shots": {
+  "town": 0,
+  "porch": 5,
+  "laundry": 9.5,
+  "star": 14,
+  "kitchen": 18,
+  "lookup": 22,
+  "fall": 26.5,
+  "duck": 30.5,
+  "impact": 34,
+  "watch": 38,
+  "crater": 42.5,
+  "beam": 47,
+  "flee": 51,
+  "siren": 55,
+  "stir": 58.5
+ },
+ "titles": [
+  {
+   "text": "NOTHING EVER HAPPENED",
+   "small": "in Luckwell Gardens",
+   "from": 10.1,
+   "to": 14.4
+  },
+  {
+   "text": "UNTIL TONIGHT!",
+   "from": 26.8,
+   "to": 31.7
+  },
+  {
+   "text": "WHAT FELL",
+   "small": "between the school and the laundromat?",
+   "from": 38.8,
+   "to": 45.1
+  },
+  {
+   "text": "NO STREET WAS SAFE!",
+   "from": 52,
+   "to": 57.8
+  },
+  {
+   "text": "IT WAS ALIVE!",
+   "from": 60.9,
+   "to": 63.4
+  }
+ ],
+ "reveal": {
+  "video": "intro/reveal.mp4",
+  "poster": "intro/reveal.webp"
+ }
+}

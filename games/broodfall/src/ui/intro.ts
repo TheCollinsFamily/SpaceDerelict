@@ -20,6 +20,7 @@ import { watchBuffering } from './loader';
 import { artUrl } from '../render/art';
 import { audioUnlocked, playFilm, resumeAudio, say, stopFilm } from '../audio/engine';
 import { GAME_NAME } from './screens';
+import { playBmovie, type Bmovie } from './bmovie';
 
 export interface IntroShot { id: string; video: string; poster?: string; seconds: number }
 /** public/art/intro/intro.json, its paths made whole. */
@@ -31,6 +32,8 @@ export interface IntroArt {
   partner?: string;
   /** The boss's transmission (tools/art/boss.mjs): his clip, his still, his voice. */
   boss?: { video?: string; poster?: string; voice?: string };
+  /** The first-boot film (public/art/intro/bmovie.json, tools/art/bmovie.mjs); the eight shots above are its fallback. */
+  bmovie?: Bmovie;
 }
 
 let intro: Promise<IntroArt | null> | null = null;
@@ -38,11 +41,16 @@ const whole = (f: string | undefined) => (f ? new URL(artUrl(f), document.baseUR
 
 /** The cinematic's shots and the menu's loop; null when they are not there (everything goes on without them). */
 export function loadIntroArt(): Promise<IntroArt | null> {
-  intro ??= fetch(artUrl('intro/intro.json'), { cache: 'no-cache' })
-    .then((r) => (r.ok ? r.json() : null))
-    .then((j: IntroArt | null) => {
-      if (!j) return null;
+  const json = <T>(f: string) => fetch(artUrl(f), { cache: 'no-cache' }).then((r) => (r.ok ? (r.json() as Promise<T>) : null)).catch(() => null);
+  intro ??= Promise.all([json<IntroArt>('intro/intro.json'), json<Bmovie>('intro/bmovie.json')])
+    .then(([j, b]) => {
+      const bmovie: Bmovie | undefined = b?.video
+        ? { ...b, video: whole(b.video)!, poster: whole(b.poster), titles: b.titles ?? [],
+          reveal: b.reveal?.video ? { video: whole(b.reveal.video)!, poster: whole(b.reveal.poster) } : undefined }
+        : undefined;
+      if (!j) return bmovie ? { shots: [], bmovie } : null;
       return {
+        bmovie,
         shots: (j.shots ?? []).filter((s) => s?.video).map((s) => ({ ...s, video: whole(s.video)!, poster: whole(s.poster), seconds: Number(s.seconds) || 4 })),
         menu: j.menu?.video ? { ...j.menu, video: whole(j.menu.video)!, poster: whole(j.menu.poster) } : undefined,
         quarters: whole(j.quarters),
@@ -76,6 +84,7 @@ export interface IntroHandle { skip(): void; done: Promise<'ended' | 'skipped'> 
 
 /** Play the cinematic over everything. Resolves when it ends or is skipped; at once when there is nothing to play. */
 export function playIntro(art: IntroArt | null): IntroHandle {
+  if (art?.bmovie) return playBmovie(art.bmovie);
   const shots = art?.shots ?? [];
   let finish: (how: 'ended' | 'skipped') => void = () => {};
   const done = new Promise<'ended' | 'skipped'>((r) => { finish = r; });

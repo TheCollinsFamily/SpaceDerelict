@@ -107,16 +107,30 @@ export class LoadingScreen {
     }
   }
 
-  /** The Navy's lines, one every 2.2 s. */
+  /** The Navy's lines, one every 2.2 s (mission 1: the town's, `plain`). */
   private rotate(): void {
-    let i = Math.floor(Math.random() * LOADING_LINES.length);
-    this.line.textContent = LOADING_LINES[i];
+    const lines = this.lines;
+    let i = Math.floor(Math.random() * lines.length);
+    this.line.textContent = lines[i];
     window.clearInterval(this.timer);
-    this.timer = window.setInterval(() => { i = (i + 1) % LOADING_LINES.length; this.line.textContent = LOADING_LINES[i]; }, 2200);
+    this.timer = window.setInterval(() => { i = (i + 1) % lines.length; this.line.textContent = lines[i]; }, 2200);
+  }
+
+  private lines: readonly string[] = LOADING_LINES;
+  private label: string | null = null;
+  /**
+   * Mission 1 (Oct 1 2026): the town's lines and words instead of the Navy's, since the ship is not seen before that
+   * mission is over (src/ui/bmovie.ts).
+   */
+  plain(lines: readonly string[], label: string): void {
+    this.lines = lines;
+    this.label = label;
+    (this.el.querySelector('.boot-what') as HTMLElement).textContent = label;
+    if (this.open) this.rotate();
   }
 
   show(what = 'THE BOARD', opts: { cover?: boolean } = {}): void {
-    (this.el.querySelector('.boot-what') as HTMLElement).textContent = what;
+    (this.el.querySelector('.boot-what') as HTMLElement).textContent = this.label ?? what;
     if (this.open) return;
     this.open = true;
     this.rotate();

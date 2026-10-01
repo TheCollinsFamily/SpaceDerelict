@@ -16,9 +16,10 @@ import { UndergroundScreen } from './ui/underground';
 import { CampaignUi } from './ui/campaignUi';
 import { finish, newCampaign, plan, territory as territoryDef, type CampaignState, type DeploymentPlan } from './meta/campaign';
 import { goalText, measure, type RunReport } from './meta/goals';
-import { clearCampaign, clearPending, forgetEverything, introSeen, loadCampaign, loadPending, markIntroSeen, saveCampaign, savePending, veteran } from './meta/storage';
-import { FIRST_MISSION, isFirstMission, launchKind, type Launch } from './meta/onboarding';
+import { clearCampaign, clearPending, forgetEverything, introSeen, loadCampaign, loadPending, markIntroSeen, markRevealSeen, revealSeen, saveCampaign, savePending, veteran } from './meta/storage';
+import { FIRST_MISSION, isFirstMission, launchKind, revealDue, type Launch } from './meta/onboarding';
 import { loadIntroArt, playIntro } from './ui/intro';
+import { playReveal, TOWN_LINES } from './ui/bmovie';
 import { loadLandingArt, playLanding, type LandingBoard } from './ui/landing';
 import { landingDecision, landingSeen, markLandingSeen, type LandingArt, type LandingFilm } from './meta/landing';
 import { ConsoleMenu } from './ui/menu';
@@ -142,6 +143,8 @@ let bootDone = false;
 /** Pictures of the board that failed to load: said over the board when a run starts, not over the menu or the ship. */
 let artFailed: string[] = [];
 const loading = new LoadingScreen();
+// Mission 1: the loading screen speaks with the town's voice (the Navy's is the ship's, not seen before it is over).
+if (FIRST) loading.plain(TOWN_LINES, 'THE TOWN');
 /** The board as it was when the run ended, for the report (a data URL). */
 let endSnapshot: string | null = null;
 
@@ -515,7 +518,17 @@ function openShip(state?: CampaignState): void {
   saveCampaign(s);
   menuEl.classList.add('hidden');
   campaignUi = new CampaignUi(s, campaignHooks);
-  campaignUi.show({ greet: true });
+  const ui = campaignUi;
+  // The page reopened between mission 1's report and the ship: the reveal first, as CONTINUE would have played it.
+  void revealFirst(s).then(() => ui.show({ greet: true }));
+}
+
+/** The reveal after mission 1 (src/ui/bmovie.ts), once, before the ship is first seen; at once when it is not due. */
+async function revealFirst(s: CampaignState | null): Promise<void> {
+  if (!revealDue(s, revealSeen())) return;
+  const art = await loadIntroArt().catch(() => null);
+  await playReveal(art?.bmovie, { reduceMotion: loadSettings().reduceMotion }).done;
+  markRevealSeen();
 }
 
 /**
@@ -737,8 +750,11 @@ function setupScreens(): void {
     if (FIRST) {
       history.replaceState(null, '', `${location.pathname}?campaign=ship`);
       const s = loadCampaign();
-      if (s) { campaignUi = new CampaignUi(s, campaignHooks); campaignUi.show({ greet: true }); }
-      else location.href = `${location.pathname}?campaign=ship`;
+      if (!s) { location.href = `${location.pathname}?campaign=ship`; return; }
+      campaignUi = new CampaignUi(s, campaignHooks);
+      const ui = campaignUi;
+      // Who sent it: the reveal, then the ship (the click on CONTINUE lets its sting and YOKE's voice be heard).
+      void revealFirst(s).then(() => ui.show({ greet: true }));
       return;
     }
     showShip();
@@ -1126,7 +1142,8 @@ async function landThenStart(afterOpening = false): Promise<void> {
   const pick = await landingFilmFor(afterOpening).catch(() => null);
   if (pick) {
     const s = loadSettings();
-    await playLanding(pick.film, pick.art, { board: landingBoard, reduceMotion: s.reduceMotion, reduceFlashes: s.reduceFlashes }).done;
+    // Mission 1 (reopened, so not straight after the film) lands without the ship: the fall and the strike only.
+    await playLanding(pick.film, pick.art, { board: landingBoard, reduceMotion: s.reduceMotion, reduceFlashes: s.reduceFlashes, fromFall: FIRST }).done;
     markLandingSeen(pick.film.set);
   }
   landing = false;
