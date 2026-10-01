@@ -24,6 +24,7 @@ const root = join(here, '..');
 const screens = join(root, 'notes', 'screens', '2026-09-30');
 const PORT = Number(process.env.BROODFALL_PORT || 5337);
 const args = process.argv.slice(2);
+const tag = args.includes('--tag') ? args[args.indexOf('--tag') + 1] : null;
 let failed = 0;
 const check = (ok, name) => { if (!ok) failed++; console.log(`  ${ok ? 'PASS' : 'FAIL'}  ${name}`); };
 
@@ -54,7 +55,9 @@ const errors = [];
 const tmp = fs.mkdtempSync(join(tmpdir(), 'organ-alive-'));
 try {
   const video = !args.includes('--no-video');
-  const context = await browser.newContext({ viewport: { width: 1600, height: 1000 }, ...(video ? { recordVideo: { dir: tmp, size: { width: 1600, height: 1000 } } } : {}) });
+  // --tag: the page at twice the pixels (as on a laptop's high-density screen) and recorded at that size, for the close video.
+  const D = tag ? 2 : 1;
+  const context = await browser.newContext({ viewport: { width: 1600, height: 1000 }, deviceScaleFactor: D, ...(video ? { recordVideo: { dir: tmp, size: { width: 1600 * D, height: 1000 * D } } } : {}) });
   const recordFrom = Date.now();
   const page = await context.newPage();
   page.on('pageerror', (e) => errors.push(String(e)));
@@ -183,17 +186,28 @@ try {
   check(on.fps >= 55 || on.fps >= off.fps - 3 || on.busy - off.busy < 0.05, 'the loops cost the page no visible frame rate (or under 5% of the main thread when the machine is loaded)');
 
   if (!args.includes('--no-video')) {
-    // About 10 s of the stage in real time: the browser's own recording of the page, cut to the stage.
+    // About 10 s of the stage in real time: the browser's own recording of the page, cut to the stage,
+    // and (organ-shape-<tag>.mp4) the same 10 s close on the scan's grid, to see the motion cross cells.
     const box = await page.locator('#under').boundingBox();
+    const near = await page.locator('#under-scanbox').boundingBox();
     const from = (Date.now() - recordFrom) / 1000;
     await page.waitForTimeout(10500);
     const video = page.video();
     await page.close();
     const raw = await video.path();
-    const crop = `crop=${Math.floor(box.width / 2) * 2}:${Math.floor(Math.min(box.height, 1000 - box.y) / 2) * 2}:${Math.round(box.x)}:${Math.round(box.y)}`;
+    const crop = `crop=${Math.floor(box.width / 2) * 2 * D}:${Math.floor(Math.min(box.height, 1000 - box.y) / 2) * 2 * D}:${Math.round(box.x) * D}:${Math.round(box.y) * D},scale=-2:${Math.floor(Math.min(box.height, 1000 - box.y) / 2) * 2}`;
     spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-ss', from.toFixed(2), '-t', '10', '-i', raw,
       '-vf', crop, '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '18', join(screens, 'organ-alive.mp4')]);
     console.log(`  video: 10 s from ${from.toFixed(1)} s into the recording -> ${join(screens, 'organ-alive.mp4')}`);
+    if (tag && near) {
+      // The right part of the grid, where the shapes crowd round the meteor, at the page's twice-size pixels.
+      const x = Math.round(near.x + near.width * 0.42), y = Math.round(Math.max(0, near.y - 4));
+      const w = Math.floor((near.x + near.width - x) / 2) * 2, h = Math.floor(Math.min(near.height + 8, 1000 - y) / 2) * 2;
+      const out = join(screens, `organ-shape-${tag}.mp4`);
+      spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-ss', from.toFixed(2), '-t', '10', '-i', raw,
+        '-vf', `crop=${w * D}:${h * D}:${x * D}:${y * D}`, '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '16', out]);
+      console.log(`  close video -> ${out}`);
+    }
   }
   check(errors.length === 0, errors.length ? `PAGE ERRORS: ${errors.join(' | ')}` : 'no page errors');
   console.log(failed ? `ORGAN ALIVE: ${failed} failed` : 'ORGAN ALIVE: all verified.');
