@@ -55,9 +55,9 @@ const errors = [];
 const tmp = fs.mkdtempSync(join(tmpdir(), 'organ-alive-'));
 try {
   const video = !args.includes('--no-video');
-  // --tag: the page at twice the pixels (as on a laptop's high-density screen) and recorded at that size, for the close video.
+  // --tag: the page at twice the pixels (as on a laptop's high-density screen), for the close video.
   const D = tag ? 2 : 1;
-  const context = await browser.newContext({ viewport: { width: 1600, height: 1000 }, deviceScaleFactor: D, ...(video ? { recordVideo: { dir: tmp, size: { width: 1600 * D, height: 1000 * D } } } : {}) });
+  const context = await browser.newContext({ viewport: { width: 1600, height: 1000 }, deviceScaleFactor: D, ...(video ? { recordVideo: { dir: tmp, size: { width: 1600, height: 1000 } } } : {}) });
   const recordFrom = Date.now();
   const page = await context.newPage();
   page.on('pageerror', (e) => errors.push(String(e)));
@@ -116,6 +116,39 @@ try {
   check(state.trayAlive === 0, 'the organs in the tray stay still');
   check(!state.banner, `no "did not load" line${state.banner ? `: ${state.banner}` : ''}`);
 
+  // An organ of several cells is ONE picture cut on the grid (Oct 1 2026): every cell of it carries its piece of
+  // the whole organ's loop, and at any moment all of them show the same frame. Sampled 12 times, 170 ms apart.
+  const sameFrame = { samples: 0, organs: 0, split: [], uncut: [], turned: 0, moved: 0 };
+  let lastFrames = null;
+  for (let k = 0; k < 12; k++) {
+    const r = await page.evaluate(() => {
+      const cv = document.querySelector('canvas.under-alive');
+      const fr = cv?.alive?.frames() ?? [];
+      const sim = window.broodfall.sim;
+      const multi = sim.organs.filter((o) => o.cells.length > 1);
+      const by = new Map();
+      for (const f of fr) if (f.organ >= 0) (by.get(f.organ) ?? by.set(f.organ, []).get(f.organ)).push(f);
+      return {
+        organs: multi.length,
+        split: multi.filter((o) => new Set((by.get(o.id) ?? []).map((f) => f.frame)).size !== 1 || (by.get(o.id) ?? []).length !== o.cells.length).map((o) => `${o.organ}#${o.id}`),
+        uncut: multi.filter((o) => (by.get(o.id) ?? []).some((f) => !f.cut)).map((o) => o.organ),
+        turned: multi.filter((o) => o.rot % 4).length,
+        frames: Object.fromEntries(multi.map((o) => [o.id, by.get(o.id)?.[0]?.frame ?? -1])),
+      };
+    });
+    sameFrame.samples++;
+    sameFrame.organs = r.organs;
+    sameFrame.turned = r.turned;
+    sameFrame.split.push(...r.split);
+    sameFrame.uncut.push(...r.uncut);
+    if (lastFrames) sameFrame.moved += Object.keys(r.frames).filter((id) => r.frames[id] !== lastFrames[id]).length;
+    lastFrames = r.frames;
+    await page.waitForTimeout(170);
+  }
+  console.log(`  whole shapes: ${sameFrame.organs} organs of several cells (${sameFrame.turned} turned), ${sameFrame.samples} samples, frame changes seen ${sameFrame.moved}`);
+  check(sameFrame.organs > 15 && sameFrame.uncut.length === 0, `every organ of several cells plays its WHOLE-shape loop cut into its cells${sameFrame.uncut.length ? ` (by tile: ${[...new Set(sameFrame.uncut)].join(', ')})` : ''}`);
+  check(sameFrame.split.length === 0 && sameFrame.moved > 0, `all the cells of one organ always show the same frame (${sameFrame.split.length ? `split: ${[...new Set(sameFrame.split)].join(', ')}` : 'never split'}), and the frames move`);
+
   // Two frames of the same crop 0.6 s apart: the tissue moves.
   const grid = page.locator('#under-scanbox');
   await page.locator('#under').screenshot({ path: join(tmp, 'stage.png') });
@@ -136,20 +169,27 @@ try {
   });
   if (box) { await page.screenshot({ path: join(tmp, 'core.png'), clip: box }); jpg(join(tmp, 'core.png'), 'organ-alive-core.jpg'); }
 
-  // A freshly grown organ scans in first, then loops from its first frame.
+  // A freshly grown organ scans in first, then loops from its first frame. One of several cells, when there is
+  // room for one, scans in as its pieces of the whole organ's still (the loop's first frame), then plays the loop.
   const fresh = await page.evaluate(() => {
     const s = window.broodfall.sim;
-    for (const id of ['root', 'cyst', 'pacemaker', 'gland']) for (let c = 0; c < s.under.cells.length; c++) {
-      if (s.canBuildOrgan(id, c, 0) && s.issue({ kind: 'build-organ', organ: id, cell: c, rot: 0 }).ok) return s.organs[s.organs.length - 1].cells[0];
+    for (const id of ['swell', 'acid', 'mire', 'root', 'cyst', 'pacemaker', 'gland']) for (let c = 0; c < s.under.cells.length; c++) {
+      for (let r = 0; r < 4; r++) if (s.canBuildOrgan(id, c, r) && s.issue({ kind: 'build-organ', organ: id, cell: c, rot: r }).ok) return s.organs[s.organs.length - 1].cells[0];
     }
     return null;
   });
   if (fresh !== null) {
     await page.waitForTimeout(120);
-    const during = await page.evaluate((c) => document.querySelector(`#under-grid [data-cell="${c}"]`)?.className ?? '', fresh);
+    const look = (c) => page.evaluate((c) => {
+      const el = document.querySelector(`#under-grid [data-cell="${c}"]`);
+      return { cls: el?.className ?? '', cut: !!el?.querySelector('.shape-cut'), oid: el?.dataset.oid };
+    }, c);
+    const during = await look(fresh);
     await page.waitForTimeout(1600);
-    const after = await page.evaluate((c) => document.querySelector(`#under-grid [data-cell="${c}"]`)?.className ?? '', fresh);
-    check(/scan-in/.test(during) && !/alive/.test(during) && /alive/.test(after), `a new organ scans in, then loops ("${during.match(/scan-in|alive/g)}" -> "${after.match(/scan-in|alive/g)}")`);
+    const after = await look(fresh);
+    const multi = await page.evaluate((c) => window.broodfall.sim.organAt(c).cells.length > 1, fresh);
+    check(/scan-in/.test(during.cls) && !/alive/.test(during.cls) && /alive/.test(after.cls) && (!multi || (during.cut && !after.cut)),
+      `a new organ scans in, then loops ("${during.cls.match(/scan-in|alive/g)}" -> "${after.cls.match(/scan-in|alive/g)}"${multi ? `; of several cells: scans in as its piece of the whole ${during.cut ? 'yes' : 'NO'}` : ''})`);
   } else console.log('  (no room left for a fresh organ: scan-in then loop not checked here)');
 
   // Frame rate: the loops playing, and the same stage with them stopped.
@@ -186,27 +226,60 @@ try {
   check(on.fps >= 55 || on.fps >= off.fps - 3 || on.busy - off.busy < 0.05, 'the loops cost the page no visible frame rate (or under 5% of the main thread when the machine is loaded)');
 
   if (!args.includes('--no-video')) {
-    // About 10 s of the stage in real time: the browser's own recording of the page, cut to the stage,
-    // and (organ-shape-<tag>.mp4) the same 10 s close on the scan's grid, to see the motion cross cells.
+    // About 10 s of the stage in real time: the browser's own recording of the page, cut to the stage.
     const box = await page.locator('#under').boundingBox();
     const near = await page.locator('#under-scanbox').boundingBox();
     const from = (Date.now() - recordFrom) / 1000;
+    // --tag: 10 s close on the scan's grid instead, to see the motion cross the cells: the page (at twice the
+    // pixels) pinch-zoomed 2x on the right part of the grid, where the shapes crowd round the meteor, and the
+    // browser's screencast of it, each frame at the time it was painted.
+    const shots = [];
+    let roi = null;
+    if (tag && near) {
+      const x0 = near.x + near.width * 0.42, y0 = Math.max(0, near.y - 4);
+      const x1 = near.x + near.width, y1 = Math.min(1000, near.y + near.height + 4);
+      // Pinch about the point that the region's centre lands on in the 2x view, so the whole region shows.
+      const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+      const px = Math.min(1599, Math.max(0, 2 * cx - 800)), py = Math.min(999, Math.max(0, 2 * cy - 500));
+      await cdp.send('Input.synthesizePinchGesture', { x: px, y: py, scaleFactor: 2, relativeSpeed: 3000 });
+      await page.waitForTimeout(400);
+      const vv = await page.evaluate(() => ({ s: visualViewport.scale, l: visualViewport.offsetLeft, t: visualViewport.offsetTop }));
+      const fx = Math.max(0, Math.round((x0 - vv.l) * vv.s)), fy = Math.max(0, Math.round((y0 - vv.t) * vv.s));
+      roi = { x: fx, y: fy, w: Math.floor(Math.min(1600 - fx, (x1 - x0) * vv.s) / 2) * 2, h: Math.floor(Math.min(1000 - fy, (y1 - y0) * vv.s) / 2) * 2 };
+      console.log(`  close view: pinch ${vv.s.toFixed(2)}x at (${vv.l.toFixed(0)}, ${vv.t.toFixed(0)}), region ${JSON.stringify(roi)}`);
+      cdp.on('Page.screencastFrame', (f) => {
+        shots.push({ t: f.metadata.timestamp, data: f.data });
+        void cdp.send('Page.screencastFrameAck', { sessionId: f.sessionId }).catch(() => {});
+      });
+      await cdp.send('Page.startScreencast', { format: 'jpeg', quality: 92, maxWidth: 1600, maxHeight: 1000, everyNthFrame: 1 });
+    }
     await page.waitForTimeout(10500);
+    if (tag) await cdp.send('Page.stopScreencast');
     const video = page.video();
     await page.close();
     const raw = await video.path();
-    const crop = `crop=${Math.floor(box.width / 2) * 2 * D}:${Math.floor(Math.min(box.height, 1000 - box.y) / 2) * 2 * D}:${Math.round(box.x) * D}:${Math.round(box.y) * D},scale=-2:${Math.floor(Math.min(box.height, 1000 - box.y) / 2) * 2}`;
-    spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-ss', from.toFixed(2), '-t', '10', '-i', raw,
-      '-vf', crop, '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '18', join(screens, 'organ-alive.mp4')]);
-    console.log(`  video: 10 s from ${from.toFixed(1)} s into the recording -> ${join(screens, 'organ-alive.mp4')}`);
-    if (tag && near) {
-      // The right part of the grid, where the shapes crowd round the meteor, at the page's twice-size pixels.
-      const x = Math.round(near.x + near.width * 0.42), y = Math.round(Math.max(0, near.y - 4));
-      const w = Math.floor((near.x + near.width - x) / 2) * 2, h = Math.floor(Math.min(near.height + 8, 1000 - y) / 2) * 2;
-      const out = join(screens, `organ-shape-${tag}.mp4`);
+    const crop = `crop=${Math.floor(box.width / 2) * 2}:${Math.floor(Math.min(box.height, 1000 - box.y) / 2) * 2}:${Math.round(box.x)}:${Math.round(box.y)}`;
+    if (!tag) {
       spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-ss', from.toFixed(2), '-t', '10', '-i', raw,
-        '-vf', `crop=${w * D}:${h * D}:${x * D}:${y * D}`, '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '16', out]);
-      console.log(`  close video -> ${out}`);
+        '-vf', crop, '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '18', join(screens, 'organ-alive.mp4')]);
+      console.log(`  video: 10 s from ${from.toFixed(1)} s into the recording -> ${join(screens, 'organ-alive.mp4')}`);
+    }
+    if (roi && shots.length > 10) {
+      const dir = join(tmp, 'cast');
+      fs.mkdirSync(dir, { recursive: true });
+      const list = [];
+      shots.forEach((f, i) => {
+        const file = join(dir, `${String(i).padStart(5, '0')}.jpg`);
+        fs.writeFileSync(file, Buffer.from(f.data, 'base64'));
+        const next = shots[i + 1]?.t ?? f.t + 1 / 30;
+        list.push(`file '${file.split(String.fromCharCode(92)).join('/')}'`, `duration ${Math.max(0.001, next - f.t).toFixed(4)}`);
+      });
+      fs.writeFileSync(join(dir, 'list.txt'), list.join(String.fromCharCode(10)));
+      const out = join(screens, `organ-shape-${tag}.mp4`);
+      const span = shots[shots.length - 1].t - shots[0].t;
+      spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-f', 'concat', '-safe', '0', '-i', join(dir, 'list.txt'),
+        '-vf', `crop=${roi.w}:${roi.h}:${roi.x}:${roi.y},fps=30`, '-t', '10', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '17', out]);
+      console.log(`  close video: ${shots.length} painted frames over ${span.toFixed(1)} s -> ${out}`);
     }
   }
   check(errors.length === 0, errors.length ? `PAGE ERRORS: ${errors.join(' | ')}` : 'no page errors');

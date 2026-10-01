@@ -8,6 +8,7 @@
  * the next rung of the ladder does (Kimi, then the scripted YOKE) and she says its lines
  * with the same face: the player is never told which of them is speaking.
  */
+import { loopEl } from './loader';
 import { artUrl } from '../render/art';
 import { gain } from '../meta/storage';
 import { duckFor } from '../audio/engine';
@@ -130,6 +131,10 @@ export class YokeAvatarUi implements ShipAiProvider {
     this.stage = document.createElement('div');
     this.stage.className = 'cp-yoke cp-yoke-live';
     this.stage.dataset.state = '';
+    // Until her first clip has a picture, her thinking loop's small first paint stands in for her (src/ui/loader.ts):
+    // her stage is never an empty box while she connects.
+    this.stage.dataset.loading = 'yoke';
+    this.stage.appendChild(loopEl('yoke', { miniOnly: true, cls: 'cp-yoke-wait' }));
     for (let i = 0; i < 2; i++) {
       const v = document.createElement('video');
       v.muted = true;
@@ -191,6 +196,7 @@ export class YokeAvatarUi implements ShipAiProvider {
       this.body = { states: m.states, oneShot: Array.isArray(m.oneShot) ? m.oneShot : [], seconds: m.seconds };
       this.have = Object.keys(m.states);
     } catch (err) {
+      this.arrived();
       this.tell(`her body could not be loaded (${String((err as Error).message)}): she is heard and read, not seen`);
       return;
     }
@@ -204,6 +210,13 @@ export class YokeAvatarUi implements ShipAiProvider {
         if (res.ok) this.kept.set(file, URL.createObjectURL(await res.blob()));
       } catch { /* it is played from its address instead */ }
     }
+  }
+
+  /** Her first picture is up (or none will come): the stand-in loop goes. */
+  private arrived(): void {
+    if (!this.stage.dataset.loading) return;
+    delete this.stage.dataset.loading;
+    this.stage.querySelector('.cp-yoke-wait')?.remove();
   }
 
   private src(state: string): string | null {
@@ -231,6 +244,7 @@ export class YokeAvatarUi implements ShipAiProvider {
     const up = () => {
       // Shown only once it has a picture: a layer with none would be a blink of nothing.
       if (this.shownState !== state) return;
+      this.arrived();
       next.classList.add('on');
       now.classList.remove('on');
       this.top = 1 - this.top;

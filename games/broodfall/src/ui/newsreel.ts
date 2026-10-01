@@ -17,6 +17,7 @@
  */
 import './newsreel.css';
 import { artUrl } from '../render/art';
+import { shipLoop, showLoader, watchBuffering, withLoader, type LoaderHandle } from './loader';
 import { duckFor, routeMedia } from '../audio/engine';
 import { gain, loadSettings } from '../meta/storage';
 import { ENDING_FILMS, MEDIA, NARRATION, type Clipping, type EndingFilm, type MediaPiece, type Reel } from '../../content/media';
@@ -131,6 +132,8 @@ function film(opts: { id: string; look: Look; series?: string; issue?: string; c
       </div>
       <button class="nr-skip" type="button">SKIP ▸ <span>Esc</span></button>`;
     const layers = [...el.querySelectorAll<HTMLVideoElement>('video')];
+    // A shot that stalls while it plays: the corner loop until it moves again.
+    for (const v of layers) watchBuffering(v, el);
     const title = el.querySelector<HTMLElement>('.nr-title')!;
     const big = el.querySelector<HTMLElement>('.nr-big')!;
     const small = el.querySelector<HTMLElement>('.nr-small')!;
@@ -155,6 +158,9 @@ function film(opts: { id: string; look: Look; series?: string; issue?: string; c
       // The cut waits for its picture (the shot before holds its last frame meanwhile, never black), at most 2.5 s;
       // its title, its line and its length are counted from the moment it is up.
       let started = false;
+      // Buffering (Oct 1 2026, src/ui/loader.ts): over 400 ms, a loop — in the corner over the frame that holds,
+      // or in the middle when there is no frame yet (the first shot).
+      let wait: LoaderHandle | null = null;
       const go = () => {
         if (started) return;
         started = true;
@@ -174,7 +180,13 @@ function film(opts: { id: string; look: Look; series?: string; issue?: string; c
         later(Math.max(1500, secs * 1000 - 200), next);
       };
       if (v.readyState >= 3) go();
-      else { v.addEventListener('canplay', go, { once: true }); later(2500, go); }
+      else {
+        const w = showLoader('scan', { host: el, corner: !!el.querySelector('video.nr-v.on') });
+        wait = w;
+        v.addEventListener('playing', () => w.hide(), { once: true });
+        later(9000, () => w.hide());
+        v.addEventListener('canplay', go, { once: true }); later(2500, go);
+      }
     };
     /** The break: the music cut, the field for as long as the shot lasts. */
     const field = () => { const f = art?.field ? sound(art.field.file, 'music') : null; if (f) { audio.add(f); playSafe(f); } return f; };
@@ -282,7 +294,7 @@ function saveLog(l: MediaLog): void { try { localStorage.setItem(LOG_KEY, JSON.s
 /** The news of the deployment just played (resolves at once when there is none). */
 export async function newsAfterDeployment(prev: CampaignState, next: CampaignState, d: Debrief): Promise<void> {
   if (!allowed()) return;
-  if (!(await loadMedia())) return;
+  if (!(await withLoader(loadMedia(), shipLoop(), { label: 'THE NEWS FROM THE PLANET' }))) return;
   const log = loadLog(next.seed);
   const pick = pickMedia(momentsOf(prev, next, d), log);
   if (!pick || !playable(pick)) return;

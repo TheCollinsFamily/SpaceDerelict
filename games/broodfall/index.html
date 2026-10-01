@@ -10,6 +10,12 @@
   <link rel="stylesheet" href="./src/ship.css" />
   <link rel="stylesheet" href="./src/screens.css" />
   <link rel="stylesheet" href="./src/onboard.css" />
+  <link rel="stylesheet" href="./src/loader.css" />
+  <!-- The loaders' first paint (src/ui/loader.ts): small animated WebPs fetched before anything else, so that the
+       loading screen is never itself the thing still loading. The full loops follow when they play. -->
+  <link rel="preload" as="image" href="./art/loaders/emblem-mini.webp" fetchpriority="high" />
+  <link rel="preload" as="image" href="./art/loaders/creep-mini.webp" fetchpriority="high" />
+  <link rel="preload" as="image" href="./art/loaders/scan-mini.webp" />
 </head>
 <body>
   <!-- The logo word's painted edge (src/screens.css .logo-word). -->
@@ -193,15 +199,27 @@
     </footer>
   </div>
   <!-- While the art arrives (src/ui/screens.ts LoadingScreen). -->
+  <!-- Its loops are in the markup (their small first paint, preloaded above), so that they move before the game's
+       code has loaded; src/ui/loader.ts puts the full loops in when it runs. -->
   <div id="boot" class="hidden">
+    <div class="bf-loop bf-loop-creep cover boot-backdrop" data-loop="creep" aria-hidden="true"><img class="bf-loop-mini" alt="" src="./art/loaders/creep-mini.webp"></div>
     <div class="boot-card">
-      <div class="logo logo-boot"><div class="logo-emblem" aria-hidden="true"></div><div class="logo-word" data-game-name>BROODFALL</div></div>
+      <div class="logo logo-boot has-emblem"><div class="bf-loop bf-loop-emblem alpha logo-emblem" data-loop="emblem" aria-hidden="true"><img class="bf-loop-mini" alt="" src="./art/loaders/emblem-mini.webp"></div><div class="logo-word" data-game-name>BROODFALL</div></div>
       <div class="boot-kicker">PREPARING <span class="boot-what">THE BOARD</span></div>
       <div class="boot-bar"><div class="boot-fill"></div></div>
       <div class="boot-count"></div>
       <div class="boot-line"></div>
     </div>
   </div>
+  <!-- A page that starts a deployment (a campaign run, a redeploy) shows its loading screen at once, before the
+       game's code has arrived (src/ui/screens.ts LoadingScreen takes it over). -->
+  <script>
+    (function () {
+      if (!/[?&](campaign=run|autostart=1)(&|$)/.test(location.search)) return;
+      var b = document.getElementById('boot');
+      b.classList.remove('hidden'); b.classList.add('card-on'); b.dataset.loading = 'emblem'; b.dataset.early = '1';
+    })();
+  </script>
   <!-- When something needed is missing: the art, WebGL, or the start itself (showFailure). -->
   <div id="fault" class="hidden"></div>
   <div id="art-notice" class="hidden"></div>

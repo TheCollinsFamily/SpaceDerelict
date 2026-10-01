@@ -28,6 +28,7 @@ import { FxLayer, type FxView } from './fx';
 import { MeatFx } from './meatFx';
 import { LimbFates } from './limbFx';
 import { MAW_FIRE_SECONDS, MawTongues, mawFireShare, type TongueView } from './mawTongue';
+import { mawMouthFrame } from './mawMouth';
 import { CreepLife, GateArt, PlinthRise, PodArt, Skyline } from './boardArt';
 import { coreStageOf } from './coreStage';
 import { RELEASE, releaseFrame, releaseTime } from './releases';
@@ -135,6 +136,8 @@ interface LimbView {
   /** The idle's next frame, laid over `sprite` by how far between the two the idle clock is (src/render/idleClock.ts). */
   over: Sprite; art: LimbArt; family: string;
   cooldown: number; fireT: number; fireDur: number; seen: number;
+  /** The frame of its firing clip drawn now (-1: not firing): where the Maw's mouth is open (src/render/mawMouth.ts). */
+  fireFrame?: number;
   /** The way it faces in the WORLD: when the camera turns, another side of it is seen. */
   facing: Facing;
   /** The sim's limb, and whether it is seen from behind: kept for its end when the sim drops it. */
@@ -1404,10 +1407,12 @@ export class IsoRenderer extends Renderer {
         const rel = this.releaseOf(v);
         const f = rel ? releaseFrame(v.fireT, v.fireDur, fire.count, rel.frame) : Math.min(fire.count - 1, Math.floor(share * fire.count));
         tex = atlas.frame(fire.start + f, art.frame, art.cols);
+        v.fireFrame = f;
         if (v.fireT >= v.fireDur) v.fireT = -1;
       } else {
         // On the idles' clock (real time, capped at 1.5x), from its own phase, cross-faded frame to
         // frame. A buff no longer speeds it (it multiplied with the game's speed); a held limb stands still.
+        v.fireFrame = -1;
         const at = idleFrames(idle, this.idleClock, phaseOf(t.id));
         tex = atlas.frame(held ? idle.start : at.a, art.frame, art.cols);
         if (!held && at.f > 0.02 && at.b !== at.a) { next = atlas.frame(at.b, art.frame, art.cols); blend = at.f; }
@@ -1761,8 +1766,15 @@ export class IsoRenderer extends Renderer {
         const side = v.back && v.art.back ? v.art.back : v.art;
         const size = Math.abs(v.sprite.scale.y) * v.art.frame * side.body;
         const m = this.mouthOf(sim, t.pos, { family: 'maw' });
+        // From the front, the inside of its mouth on the frame drawn now: the tongue grows from its throat
+        // and is cut to its gape (src/render/mawMouth.ts), placed as its picture is drawn (mirrored, sized, risen).
+        const inside = v.back ? null : mawMouthFrame(v.fireFrame);
+        const s = v.sprite;
+        const F = v.art.frame;
+        const place = (q: [number, number]) => ({ x: s.position.x + (q[0] - s.anchor.x) * F * s.scale.x, y: s.position.y + (q[1] - s.anchor.y) * F * s.scale.y });
         return {
           x: m ? m.x : v.sprite.x, y: m ? m.y : v.sprite.y - size * 0.45, size, back: v.back, z: v.sprite.zIndex,
+          ...(inside ? { throat: place(inside.throat), gape: inside.gape.map(place) } : {}),
         };
       },
       body: (unitId) => {

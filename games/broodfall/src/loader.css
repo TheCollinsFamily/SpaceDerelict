@@ -1,0 +1,61 @@
+/* ---------- the loaders (Oct 1 2026; src/ui/loader.ts): every wait shows a loop ---------- */
+
+/* One loop: its small first paint, the full loop over it once it plays. */
+.bf-loop { position: relative; overflow: hidden; pointer-events: none; }
+.bf-loop > img, .bf-loop > video {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: block;
+}
+.bf-loop.cover > img, .bf-loop.cover > video { object-fit: cover; }
+.bf-loop > video { opacity: 0; transition: opacity 0.25s; }
+.bf-loop.full > video { opacity: 1; }
+.bf-loop.full > img { opacity: 0; transition: opacity 0.25s 0.2s; }
+/* The opaque loops are cut out of the dark round them: a soft edge, never a hard rectangle. */
+.bf-loop-scan > img, .bf-loop-scan > video { -webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 62%, transparent 100%); mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 62%, transparent 100%); }
+.bf-loop-creep.cover > img, .bf-loop-creep.cover > video { -webkit-mask-image: none; mask-image: none; }
+
+/* The cover: a backdrop, the loop, what is being prepared (type), the bar where there is real progress, a line. */
+.bf-loader {
+  position: fixed; inset: 0; z-index: 45; display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(ellipse at 50% 40%, rgba(14, 18, 21, 0.92) 0%, rgba(5, 7, 9, 0.96) 60%, rgba(2, 3, 3, 0.98) 100%);
+  opacity: 0; transition: opacity 0.3s; pointer-events: auto;
+}
+.bf-loader.on { opacity: 1; }
+.bf-loader.leaving { opacity: 0; pointer-events: none; }
+.bf-loader.in-panel { position: absolute; z-index: 5; }
+.bf-loader-card {
+  width: min(560px, calc(100% - 32px)); text-align: center; display: flex; flex-direction: column; align-items: center;
+  color: var(--cs-ink, #e9eef0); font-family: var(--cs-font, Bahnschrift, "Segoe UI", Arial, sans-serif);
+}
+.bf-loader-loop { width: min(420px, 70vw); aspect-ratio: 16 / 9; margin-bottom: 14px; }
+.bf-loader-emblem .bf-loader-loop { width: min(220px, 40vw); aspect-ratio: 1; }
+.bf-loader-creep .bf-loader-loop { -webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 55%, transparent 100%); mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 55%, transparent 100%); }
+.bf-loader-yoke .bf-loader-loop, .bf-loader-dance .bf-loader-loop { width: min(480px, 76vw); }
+/* She is light: added to the dark, the way the AI Core shows her. */
+.bf-loader-yoke .bf-loader-loop > *, .bf-loader-dance .bf-loader-loop > * { mix-blend-mode: screen; }
+.bf-loader-what { font-size: 10px; letter-spacing: 4px; color: var(--cs-dim, rgba(233, 238, 240, 0.6)); margin-bottom: 8px; }
+.bf-loader-what::before { content: '\2699  '; color: var(--cs-ink, #e9eef0); }
+.bf-loader-bar { width: 100%; height: 8px; border: 1px solid var(--cs-line-hi, rgba(235, 245, 248, 0.55)); padding: 1px; background: #030405; }
+.bf-loader-bar.hidden { display: none; }
+.bf-loader-fill { height: 100%; width: 0%; background: linear-gradient(90deg, rgba(233, 238, 240, 0.55), #e9eef0); transition: width 0.2s; }
+.bf-loader-count { font-size: 9px; letter-spacing: 3px; color: var(--cs-faint, rgba(233, 238, 240, 0.4)); margin-top: 6px; min-height: 11px; }
+.bf-loader-line { font-size: 11px; letter-spacing: 1.5px; color: var(--cs-dim, rgba(233, 238, 240, 0.6)); margin-top: 10px; min-height: 16px; }
+.bf-loader-line.her { font-size: 13px; letter-spacing: 0.5px; color: #bfe0ff; font-style: italic; }
+.bf-loader-line.her::before { content: 'YOKE: '; font-style: normal; font-weight: bold; color: #8fd0ff; letter-spacing: 1px; }
+
+/* The film's way: a small loop in the corner, over the frame that holds while the next shot buffers. */
+.bf-loader.corner { inset: auto 22px 22px auto; width: 168px; height: 95px; background: none; pointer-events: none; z-index: 30; }
+.bf-loader.corner .bf-loader-card { width: 100%; }
+.bf-loader.corner .bf-loader-loop { width: 168px; margin: 0; opacity: 0.85; }
+
+/* ---- the boot screen (#boot, src/ui/screens.ts LoadingScreen): the emblem burns, the creep crawls behind ---- */
+#boot .boot-backdrop { position: absolute; inset: 0; opacity: 0.32; filter: saturate(0.9) brightness(0.8); }
+#boot .boot-backdrop::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 42%, rgba(3, 3, 3, 0.35) 0%, rgba(3, 3, 3, 0.85) 70%, #020202 100%); }
+#boot .boot-card { position: relative; z-index: 1; opacity: 0; transition: opacity 0.3s; }
+#boot.card-on .boot-card { opacity: 1; }
+#boot .logo-boot .logo-emblem.bf-loop { display: block; background: none; animation: none; overflow: visible; }
+#boot .logo-boot .logo-emblem.bf-loop > img, #boot .logo-boot .logo-emblem.bf-loop > video { inset: -12%; width: 124%; height: 124%; }
+#boot .logo-boot { --emblem-size: 170px; }
+
+/* ---- YOKE's stage before her first clip has a picture (src/ui/yokeAvatar.ts): her thinking loop stands in ---- */
+.cp-yoke-live > .cp-yoke-wait { position: absolute; left: 50%; bottom: 0; height: 100%; aspect-ratio: 16 / 9; transform: translateX(-50%); }
+.cp-yoke-live > .cp-yoke-wait > img { mix-blend-mode: screen; opacity: 0.9; }

@@ -276,7 +276,7 @@ function endFrame(frames, s) {
  * outline of her hair. The colour of her own edge is spread outward over it instead, and
  * what is further away is made black.
  */
-function bleed(img, reach = 6) {
+export function bleed(img, reach = 6) {
   const { w, h, data } = img;
   const n = w * h;
   const done = new Uint8Array(n);
@@ -349,7 +349,7 @@ const HALO = [112, 186, 255];
  *   every third line is a little darker (the scan lines of the approved design);
  *   a soft halo of pale blue lies round her outline.
  */
-function project(img) {
+export function project(img) {
   const { w, h, data } = img;
   const n = w * h;
   const own = new Float32Array(n);

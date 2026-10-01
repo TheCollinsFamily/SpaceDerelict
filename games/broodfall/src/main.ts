@@ -31,6 +31,7 @@ import { LoadingScreen, applyName, dressLogos, loadScreenArt, showArtNotice, sho
 import { debriefPictures, type Outcome } from './ui/debrief';
 import { newsAfterDeployment } from './ui/newsreel';
 import { padOutroPlaying, playPadOutro, preloadPadOutro } from './ui/padOutro';
+import { shipLoop, withLoader } from './ui/loader';
 import { platePicture } from './render/platePreview';
 import type { Directive, OrganId, RootDir, SimConfig, SimEvent, TowerFamily } from './sim/types';
 import { initAudio, setScene } from './audio/engine';
@@ -546,10 +547,10 @@ function firstDebrief(): void {
   btn.textContent = 'CONTINUE ▸';
   debriefEl.dataset.first = won ? 'won' : 'lost';
   debriefEl.classList.remove('hidden');
-  void debriefPictures(runPictures(won ? 'won' : 'lost', verdict,
+  void reportWait(debriefPictures(runPictures(won ? 'won' : 'lost', verdict,
     won ? 'The little town is quiet now.' : 'They cheered. They should not have.',
     [['waves held', String(sim.wavesCleared)], ['districts taken', String(sim.map.slots.filter(Boolean).length)],
-      ['limbs grown', String(sim.stats.limbsGrown)], ['townsfolk eaten', String(kills)]]))
+      ['limbs grown', String(sim.stats.limbsGrown)], ['townsfolk eaten', String(kills)]])))
     .then((pics) => {
       document.getElementById('debrief-pictures')!.replaceChildren(pics);
       debriefEl.querySelector('.screen-card')!.classList.add('pictured');
@@ -581,10 +582,16 @@ function campaignDebrief(): void {
     // The planet's news of it first (src/ui/newsreel.ts): a newsreel or one of their papers, skippable.
     void newsAfterDeployment(prev, state, debrief).catch(() => {}).then(() => ui.show({ greet: true }));
   };
-  void debriefPictures(runPictures(outcome, verdict,
+  // The report waits for its pictures: a loop meanwhile (src/ui/loader.ts), never a still board.
+  void withLoader(debriefPictures(runPictures(outcome, verdict,
     outcome === 'lost' ? `${where} · the asset was lost after ${sim.wavesCleared} wave${sim.wavesCleared === 1 ? '' : 's'}` : `${where} · ${sim.wavesCleared} wave${sim.wavesCleared === 1 ? '' : 's'} held`,
-    [['waves held', String(sim.wavesCleared)], ['districts taken', String(sim.map.slots.filter(Boolean).length)], ['limbs grown', String(sim.stats.limbsGrown)], ['standing earned', `+${debrief.standing}`]]))
+    [['waves held', String(sim.wavesCleared)], ['districts taken', String(sim.map.slots.filter(Boolean).length)], ['limbs grown', String(sim.stats.limbsGrown)], ['standing earned', `+${debrief.standing}`]])), shipLoop(), { label: 'THE REPORT' })
     .then((pics) => ui.showDebrief(debrief, back, pics), () => ui.showDebrief(debrief, back));
+}
+
+/** The report is up, its pictures still coming: a loop in their place meanwhile (shown only if it takes over 400 ms). */
+function reportWait<T>(p: Promise<T>): Promise<T> {
+  return withLoader(p, 'scan', { host: document.getElementById('debrief-pictures')!, panelHeight: 220 });
 }
 
 /** The report's pictures of this run (src/ui/debrief.ts). */
@@ -675,10 +682,10 @@ function showDebrief(): void {
   debriefEl.classList.remove('hidden');
   // What happened, in pictures, at the head of the report; the lines above stay as its small print.
   const verdict = won ? 'DIRECTIVE FULFILLED' : 'ASSET TERMINATED';
-  void debriefPictures(runPictures(won ? 'won' : 'lost', verdict,
+  void reportWait(debriefPictures(runPictures(won ? 'won' : 'lost', verdict,
     won ? 'The city is the body\'s. The Board notes your efficiency.' : 'The Board notes the loss of Navy property.',
     [['directive', `${Math.floor(p.done)} / ${p.goal}`], ['waves repelled', String(sim.wavesCleared)],
-      ['districts held', String(sim.map.slots.filter(Boolean).length)], ['standing earned', `+${standingEarned()}`]]))
+      ['districts held', String(sim.map.slots.filter(Boolean).length)], ['standing earned', `+${standingEarned()}`]])))
     .then((pics) => {
       document.getElementById('debrief-pictures')!.replaceChildren(pics);
       debriefEl.querySelector('.screen-card')!.classList.add('pictured');
@@ -1044,7 +1051,7 @@ async function boot(): Promise<void> {
   under.plain = FIRST;
   document.body.classList.toggle('first-mission', FIRST);
   // A deployment started from the address (a campaign run, a redeploy) waits behind the loading screen.
-  if (started && CAMPAIGN !== 'ship') loading.show('THE DEPLOYMENT');
+  if (started && CAMPAIGN !== 'ship') loading.show('THE DEPLOYMENT', { cover: true });
   // The opening cinematic, in front of everything; the board loads behind it.
   if (PLAY_INTRO) {
     void loadIntroArt().then((art) => playIntro(art).done).then(() => {

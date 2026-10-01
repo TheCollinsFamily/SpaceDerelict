@@ -16,6 +16,7 @@
  * that lets it be heard. Esc on the card skips the film as before. Replayed from the menu it
  * starts at once (that was a click).
  */
+import { watchBuffering } from './loader';
 import { artUrl } from '../render/art';
 import { audioUnlocked, playFilm, resumeAudio, say, stopFilm } from '../audio/engine';
 import { GAME_NAME } from './screens';
@@ -93,6 +94,8 @@ export function playIntro(art: IntroArt | null): IntroHandle {
     <div class="intro-begin"><button type="button">▸ BEGIN</button><small>sound on · click or press any key · Esc skips</small></div>`;
   document.body.appendChild(el);
   const layers = [...el.querySelectorAll<HTMLVideoElement>('video')];
+  // A shot that stalls (its frames not here yet): a loop in the corner until it moves again (src/ui/loader.ts).
+  for (const v of layers) watchBuffering(v, el);
   const title = el.querySelector<HTMLElement>('.intro-title')!;
   const big = el.querySelector<HTMLElement>('.intro-big')!;
   const small = el.querySelector<HTMLElement>('.intro-small')!;

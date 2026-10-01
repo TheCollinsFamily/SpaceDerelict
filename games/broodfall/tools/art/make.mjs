@@ -96,6 +96,11 @@ const TEMPLATES = {
     const { makeUnderLoops } = await import('./templates/under-loops.mjs');
     return Promise.allSettled([makeUnderLoops({ bakeOnly: flags.has('--bake'), only: ids, reroll: flags.has('--reroll') })]);
   },
+  // The organs alive as whole shapes (tools/art/templates/under-shapes.mjs): one picture and one loop per organ shape, cut into its cells.
+  undershapes: async () => {
+    const { makeUnderShapes } = await import('./templates/under-shapes.mjs');
+    return Promise.allSettled([makeUnderShapes({ only: ids, bakeOnly: flags.has('--bake'), stillsOnly: flags.has('--stills'), reroll: flags.has('--reroll'), restill: flags.has('--restill') })]);
+  },
   ship: async () => {
     const { makeShip } = await import('./templates/ship.mjs');
     return Promise.allSettled([makeShip({ bakeOnly: flags.has('--bake'), only: ids })]);

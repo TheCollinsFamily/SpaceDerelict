@@ -96,10 +96,32 @@ export const JOBS = {
   },
   'covers/steam-main-capsule-1232x706': {
     W: 1232, H: 706, html: () => `<div class="stage">${cover('fall-wide', '75% center')}${leftShade(0.72, 60)}
+      <div class="abs" style="left:40px;top:240px">${logo({ word: 124, emblem: 230, fit: 760 })}</div></div>`,
+  },
+  // Steam's capsule rule: "no quotes or other strings of text beyond the title of your game" --
+  // so the store capsules carry the logo only; the taglined cut stays for press and social.
+  'covers/press-main-capsule-taglined-1232x706': {
+    W: 1232, H: 706, html: () => `<div class="stage">${cover('fall-wide', '75% center')}${leftShade(0.72, 60)}
       <div class="abs" style="left:40px;top:215px">${logo({ word: 124, emblem: 230, fit: 760 })}
       ${genre(32, 'margin:26px 0 0 30px')}<div class="tag" style="font-size:24px;margin:10px 0 0 30px;opacity:.9">${TAGLINES.store}</div></div></div>`,
   },
-  'covers/steam-vertical-capsule-600x900': {
+  'covers/steam-vertical-capsule-748x896': {
+    W: 748, H: 896, html: () => `<div class="stage">${cover('cover-tall', 'center top')}
+      <div class="shade" style="background:linear-gradient(180deg,rgba(4,6,12,0) 50%,rgba(4,6,12,.6) 60%,rgba(4,6,12,.8) 76%,rgba(4,6,12,.5) 100%)"></div>
+      <div class="abs" style="left:0;right:0;top:560px;display:flex;flex-direction:column;align-items:center">${logo({ word: 110, emblem: 180, fit: 700 })}</div></div>`,
+  },
+  'covers/steam-library-capsule-600x900': {
+    W: 600, H: 900, html: () => `<div class="stage">${cover('cover-tall', 'center top')}
+      <div class="shade" style="background:linear-gradient(180deg,rgba(4,6,12,0) 50%,rgba(4,6,12,.6) 60%,rgba(4,6,12,.8) 76%,rgba(4,6,12,.5) 100%)"></div>
+      <div class="abs" style="left:0;right:0;top:540px;display:flex;flex-direction:column;align-items:center">${logo({ word: 92, emblem: 150, fit: 560 })}</div></div>`,
+  },
+  'covers/steam-page-background-1438x810': {
+    W: 1438, H: 810, html: () => `<div class="stage">${cover('siege', 'center')}<div class="shade" style="background:rgba(4,6,10,.55)"></div></div>`,
+  },
+  'covers/steam-community-icon-184x184': {
+    W: 184, H: 184, html: () => `<div class="stage" style="background:#0b0f12;display:flex;align-items:center;justify-content:center"><div style="width:172px;height:172px;background:url(${EMBLEM}) center/contain no-repeat"></div></div>`,
+  },
+  'covers/press-vertical-taglined-600x900': {
     W: 600, H: 900, html: () => `<div class="stage">${cover('cover-tall', 'center top')}
       <div class="shade" style="background:linear-gradient(180deg,rgba(4,6,12,0) 46%,rgba(4,6,12,.6) 54%,rgba(4,6,12,.75) 70%,rgba(4,6,12,0) 80%)"></div>
       <div class="abs" style="left:0;right:0;top:468px;display:flex;flex-direction:column;align-items:center">${logo({ word: 92, emblem: 150, fit: 560 })}

@@ -41,6 +41,7 @@ import { hobbyClick, hobbyDebriefHtml, hobbyHtml } from './hobby';
 import { openSettings } from './settings';
 import { attachScene } from './sceneVoice';
 import { loadMedia, mediaPictureUrl } from './newsreel';
+import { shipLoop, showLoader, type LoaderHandle } from './loader';
 
 type Room = 'desk' | 'genes' | 'locker' | 'board' | 'comms' | 'ai' | 'quarters' | 'orders' | 'hobby';
 /** Rooms with no picture of their own borrow one (the standing orders are read at the Board; the notebook lives in the Locker). */
@@ -119,6 +120,9 @@ export class CampaignUi {
   private greetSaid: string[] = [];
   /** His quarters' picture and the partner candidate's portrait (public/art/intro/, not the manifest). */
   private intro: IntroArt | null = null;
+  /** The ship's art (its rooms, the planet for the globe) is still arriving: a loop over the screen meanwhile (src/ui/loader.ts). */
+  private artWait: LoaderHandle | null = null;
+  private artSettled = false;
 
   /**
    * The player's own link to YOKE on rfab.ai (src/meta/yokePlayer.ts, Sep 30 2026): the house
@@ -168,10 +172,12 @@ export class CampaignUi {
         if (this.room === 'genes' && !this.debriefing && !this.el.classList.contains('hidden')) this.render();
       }
       const art = m?.ship?.ship ?? null;
-      if (!art) return;
-      if (art.planet) await this.globe.load(artUrl(art.planet));
+      const settled = () => { this.artSettled = true; this.artWait?.hide(); this.artWait = null; };
+      if (!art) { settled(); return; }
+      if (art.planet) await this.globe.load(artUrl(art.planet)).catch(() => {});
       if (art.planet && this.globe3d) await this.globe3d.load(artUrl(art.planet), artUrl('ship/globe/night.webp')).catch(() => { this.globe3d = null; });
       this.art = art;
+      settled();
       if (this.el.classList.contains('hidden')) return;
       if (this.debriefing) this.dress(); else this.render();
     });
@@ -206,6 +212,8 @@ export class CampaignUi {
     this.debriefing = false;
     document.body.classList.add('in-ship');
     this.el.classList.remove('hidden');
+    // Aboard before the ship's pictures (and the planet) are in: a loop, not the bare console (nothing under 400 ms).
+    if (!this.artSettled && !this.artWait) this.artWait = showLoader(shipLoop(), { label: 'THE SHIP' });
     this.render();
     if (opts.greet) this.welcome();
   }

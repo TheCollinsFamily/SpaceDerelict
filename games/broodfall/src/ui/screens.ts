@@ -9,6 +9,7 @@
  * fallback text in index.html, seen only before the script runs).
  */
 import { artUrl, loadManifest } from '../render/art';
+import { LOADER_DELAY_MS, LOADING_LINES, loopEl } from './loader';
 
 export const GAME_NAME = 'Broodfall';
 
@@ -49,24 +50,22 @@ export function logoHtml(extra = ''): string {
 
 // ------------------------------------------------------------------ loading
 
-/** What the loading screen says while the art arrives: the Navy's own procurement voice. */
-const LOADING_LINES = [
-  'Thawing the culture.',
-  'Counting the insects. Estimate revised upward.',
-  'Filing Form XC-4 (Release of Biological Asset Into Civilian Area).',
-  'Calibrating the drop. Apologising to no one.',
-  'Warming the meteor.',
-  'Checking the asset for signs of sentiment. None found.',
-  'Requisitioning a planet.',
-];
-
+/**
+ * The loading screen while the board's art arrives (Oct 1 2026: never a still screen). The emblem is its LOOP
+ * (the meteor burning in its ring, src/ui/loader.ts), the creep crawls dimly behind it, the bar is the real file
+ * count, the lines are the Navy's procurement voice. `cover`: the page under it is empty (a fresh page that is
+ * starting a deployment), so its dark goes up at once; otherwise (over the menu) nothing shows for the first
+ * 400 ms, and a load that is done by then never flashes a screen. The card and its loop come in after 400 ms.
+ */
 export class LoadingScreen {
   private el: HTMLElement;
   private bar: HTMLElement;
   private count: HTMLElement;
   private line: HTMLElement;
   private timer = 0;
+  private delay = 0;
   private shownAt = 0;
+  private visible = false;
   open = false;
 
   constructor() {
@@ -74,18 +73,51 @@ export class LoadingScreen {
     this.bar = this.el.querySelector('.boot-fill')!;
     this.count = this.el.querySelector('.boot-count')!;
     this.line = this.el.querySelector('.boot-line')!;
+    // The full loops in place of the markup's first paint (index.html, preloaded): the emblem's, the creep's behind it.
+    const back = this.el.querySelector('.boot-backdrop');
+    const loopBack = loopEl('creep', { cover: true, cls: 'boot-backdrop' });
+    if (back) back.replaceWith(loopBack); else this.el.prepend(loopBack);
+    const logo = this.el.querySelector<HTMLElement>('.logo-boot');
+    const emblem = logo?.querySelector<HTMLElement>('.logo-emblem');
+    if (logo && emblem && !emblem.querySelector('video')) {
+      emblem.replaceWith(loopEl('emblem', { cls: 'logo-emblem' }));
+      logo.classList.add('has-emblem');
+    }
+    // Already up (index.html put it up before this code arrived, for a page that starts a deployment): it is ours now.
+    if (this.el.dataset.early && !this.el.classList.contains('hidden')) {
+      delete this.el.dataset.early;
+      this.open = true;
+      this.visible = true;
+      this.shownAt = performance.now();
+      this.rotate();
+    }
   }
 
-  show(what = 'THE BOARD'): void {
-    if (this.open) return;
-    this.open = true;
-    this.shownAt = performance.now();
-    (this.el.querySelector('.boot-what') as HTMLElement).textContent = what;
-    this.el.classList.remove('hidden', 'leaving');
+  /** The Navy's lines, one every 2.2 s. */
+  private rotate(): void {
     let i = Math.floor(Math.random() * LOADING_LINES.length);
     this.line.textContent = LOADING_LINES[i];
     window.clearInterval(this.timer);
     this.timer = window.setInterval(() => { i = (i + 1) % LOADING_LINES.length; this.line.textContent = LOADING_LINES[i]; }, 2200);
+  }
+
+  show(what = 'THE BOARD', opts: { cover?: boolean } = {}): void {
+    (this.el.querySelector('.boot-what') as HTMLElement).textContent = what;
+    if (this.open) return;
+    this.open = true;
+    this.rotate();
+    const up = () => {
+      if (!this.open) return;
+      this.visible = true;
+      this.shownAt = performance.now();
+      this.el.dataset.loading = 'emblem';
+      this.el.classList.remove('hidden', 'leaving');
+      for (const v of this.el.querySelectorAll('video')) if (v.paused) void v.play().catch(() => {});
+    };
+    window.clearTimeout(this.delay);
+    this.el.classList.remove('card-on');
+    if (opts.cover) up(); else this.delay = window.setTimeout(up, LOADER_DELAY_MS);
+    window.setTimeout(() => { if (this.open) this.el.classList.add('card-on'); }, LOADER_DELAY_MS);
   }
 
   progress(done: number, total: number): void {
@@ -94,15 +126,24 @@ export class LoadingScreen {
     this.count.textContent = total > 0 ? `${done} / ${total} FILES` : '';
   }
 
-  /** Fade out. It stays up at least a moment, so that it is a screen and not a flicker. */
+  /** Fade out. Once seen, it stays up at least a moment, so that it is a screen and not a flicker. */
   hide(): void {
     if (!this.open) return;
     this.open = false;
     window.clearInterval(this.timer);
+    window.clearTimeout(this.delay);
+    if (!this.visible) return;
+    this.visible = false;
     const wait = Math.max(0, 350 - (performance.now() - this.shownAt));
     window.setTimeout(() => {
       this.el.classList.add('leaving');
-      window.setTimeout(() => { if (!this.open) this.el.classList.add('hidden'); }, 400);
+      delete this.el.dataset.loading;
+      window.setTimeout(() => {
+        if (this.open) return;
+        this.el.classList.add('hidden');
+        this.el.classList.remove('card-on');
+        for (const v of this.el.querySelectorAll('video')) v.pause();
+      }, 400);
     }, wait);
   }
 }

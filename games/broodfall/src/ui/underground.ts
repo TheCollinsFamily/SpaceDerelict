@@ -76,8 +76,17 @@ interface ScanArt {
    * baked to a horizontal strip of frames and played as a CSS sprite animation (no <video> per cell).
    */
   loops: { fps: number; tiles: Record<string, ScanLoop>; stages: Record<string, ScanLoop> } | null;
+  /**
+   * THE ORGANS ALIVE AS WHOLE SHAPES (Collins, Oct 1 2026: "it animated it by square, not by organ ... It
+   * needed to animate the organs in their full shape, then cut them out so they could work on the square
+   * grid"): an organ of several cells has ONE picture and ONE loop of the whole organ
+   * (tools/art/templates/under-shapes.mjs), each cut into its cells here, turned with the organ.
+   * cell: one cell's size in a frame (pixels); only shapes that agree with content/underground.ts are kept.
+   */
+  shapes: { fps: number; cell: [number, number]; organs: Record<string, ScanShape> } | null;
 }
 interface ScanLoop { strip: string; count: number; pingpong?: boolean }
+interface ScanShape { atlas: string; still: string; count: number; cols: number; fw: number; fh: number; shape: Array<[number, number]>; pingpong?: boolean }
 
 /**
  * The inline style that plays a loop strip: its frames in steps, in phase with `anchor` (a
@@ -94,6 +103,18 @@ function loopStyle(l: ScanLoop, fps: number, anchor: number): string {
 /** A tile cell's loop, for the canvas that draws it (src/ui/underAlive.ts): strip|frames|anchor|ping-pong. */
 const loopData = (l: ScanLoop, anchor: number) => ` data-loop="${l.strip}|${l.count}|${Math.round(anchor)}|${l.pingpong ? 1 : 0}"`;
 const phaseOf = (k: number) => -(((k * 2654435761) >>> 0) % 100000);
+/**
+ * One cell's piece of the still of a whole organ (its first frame: what it scans in as, and what shows
+ * without its loop), turned with the organ. The piece is drawn as the cell's first child, in the
+ * picture's own frame: for a quarter turn the box is the cell's height wide and its width high.
+ */
+function shapeCut(s: ScanShape, [x, y]: [number, number], rot: number): string {
+  const bw = Math.max(...s.shape.map((p) => p[0])) + 1, bh = Math.max(...s.shape.map((p) => p[1])) + 1;
+  const r = ((rot % 4) + 4) % 4;
+  const pos = (k: number, n: number) => (n > 1 ? (k / (n - 1)) * 100 : 0);
+  return `<span class="shape-cut${r % 2 ? ' odd' : ''}" style="background-image:url('${s.still}');background-size:${bw * 100}% ${bh * 100}%;`
+    + `background-position:${pos(x, bw)}% ${pos(y, bh)}%;--rot:${r * 90}deg"></span>`;
+}
 
 /** The tile set the board is drawn with, as the game says (empty on the old board). */
 function boardBiome(): string {
@@ -153,7 +174,7 @@ export class UndergroundScreen {
     box.innerHTML = '<div id="under-ruler"></div><div class="scanline"></div>';
     box.appendChild(this.grid);
     void loadManifest().then((m) => {
-      const under = (m as unknown as { under?: { scan?: ScanArt; core?: { stages?: ScanArt['stages'] }; loops?: NonNullable<ScanArt['loops']> } } | null)?.under;
+      const under = (m as unknown as { under?: { scan?: ScanArt; core?: { stages?: ScanArt['stages'] }; loops?: NonNullable<ScanArt['loops']>; shapes?: NonNullable<ScanArt['shapes']> } } | null)?.under;
       const art = under?.scan;
       if (!art || !Object.keys(art.tiles).length) return;
       const abs = (f: string) => new URL(artUrl(f), document.baseURI).href;
@@ -168,6 +189,13 @@ export class UndergroundScreen {
           fps: under.loops.fps,
           tiles: Object.fromEntries(Object.entries(under.loops.tiles ?? {}).map(([k, l]) => [k, { ...l, strip: abs(l.strip) }])),
           stages: Object.fromEntries(Object.entries(under.loops.stages ?? {}).map(([k, l]) => [k, { ...l, strip: abs(l.strip) }])),
+        } : null,
+        shapes: under?.shapes ? {
+          fps: under.shapes.fps, cell: under.shapes.cell,
+          organs: Object.fromEntries(Object.entries(under.shapes.organs ?? {})
+            // A picture cut for another shape than the organ has now would put the wrong piece in a cell: keep the tiles then.
+            .filter(([k, o]) => JSON.stringify(o.shape) === JSON.stringify(ORGAN_BY_ID[k as OrganId]?.shape))
+            .map(([k, o]) => [k, { ...o, atlas: abs(o.atlas), still: abs(o.still) }])),
         } : null,
       };
       this.el.classList.add('scan');
@@ -433,19 +461,32 @@ export class UndergroundScreen {
         cls += ' has-organ';
         style = `background:${COLOR[organ.organ]};`;
         if (scan) {
+          // An organ of several cells: this cell's piece of the one picture of the whole organ, turned with it.
+          const whole = scan.shapes?.organs[organ.organ];
+          const piece = whole ? whole.shape[organ.cells.indexOf(i)] : undefined;
           const t = scan.tiles[organ.organ];
-          style = `--acc:${GLOW[organ.organ] ?? COLOR[organ.organ]};${t ? `background-image:url('${t}');` : ''}`;
+          style = `--acc:${GLOW[organ.organ] ?? COLOR[organ.organ]};${t && !piece ? `background-image:url('${t}');` : ''}`;
           if (!this.bornAt.has(organ.id)) this.bornAt.set(organ.id, this.settled ? performance.now() : 0);
           const age = performance.now() - this.bornAt.get(organ.id)!;
           // It grows in cell by cell from the top: each row a little after the one above.
           const lag = (row - Math.min(...organ.cells.map((x) => Math.floor(x / u.w)))) * 90;
-          if (age < SCAN_IN + lag) { cls += ' scan-in'; style += `animation-delay:${Math.round(lag - age)}ms;`; }
-          else {
+          if (age < SCAN_IN + lag) {
+            cls += ' scan-in'; style += `animation-delay:${Math.round(lag - age)}ms;`;
+            if (whole && piece) inner += shapeCut(whole, piece, organ.rot);
+          } else {
             // Alive once scanned in: from its first frame (the still it scanned in as) when it has just
             // grown, else in its own phase; every cell of one organ in step.
             const loop = scan.loops?.tiles[organ.organ];
             const born = this.bornAt.get(organ.id)!;
-            if (loop) { cls += ' alive'; style = `--acc:${GLOW[organ.organ] ?? COLOR[organ.organ]};`; loopAttr = loopData(loop, born ? born + SCAN_IN : phaseOf(organ.id)); }
+            const anchor = born ? born + SCAN_IN : phaseOf(organ.id);
+            if (whole && piece) {
+              // The whole organ's loop: every cell of it on the one anchor, so all show the same frame.
+              cls += ' alive';
+              style = `--acc:${GLOW[organ.organ] ?? COLOR[organ.organ]};`;
+              const [cw, ch] = scan.shapes!.cell;
+              loopAttr = loopData({ strip: whole.atlas, count: whole.count, pingpong: whole.pingpong }, anchor)
+                + ` data-cut="${whole.cols}|${whole.fw}|${whole.fh}|${piece[0] * cw}|${piece[1] * ch}|${cw}|${ch}|${organ.rot}"`;
+            } else if (loop) { cls += ' alive'; style = `--acc:${GLOW[organ.organ] ?? COLOR[organ.organ]};`; loopAttr = loopData(loop, anchor); }
           }
           // Where two organs that share touch, the edge between them pulses.
           const shares = (n: number): boolean => {
@@ -483,7 +524,7 @@ export class UndergroundScreen {
           inner += `<span class="recipe">${strainIcons(sim.bladderStrain(organ))}</span><span class="rate">${r.per}/${r.every === 1 ? 'turn' : `${r.every} turns`}${r.atWaveStart ? ` +${r.atWaveStart}@wave` : ''}</span>`;
         }
       }
-      cells.push(`<div class="${cls}" style="${style}" data-cell="${i}"${loopAttr}>${inner}</div>`);
+      cells.push(`<div class="${cls}" style="${style}" data-cell="${i}"${organ ? ` data-oid="${organ.id}"` : ''}${loopAttr}>${inner}</div>`);
     }
     // A zone organ's zone is always faintly on the scan: a soft pulsing ring round it.
     if (this.scan) {
@@ -502,7 +543,8 @@ export class UndergroundScreen {
     this.grid.style.gridTemplateColumns = `repeat(${u.w}, 1fr)`;
     this.grid.innerHTML = cells.join('');
     // The living tiles are drawn on one canvas under the cells (src/ui/underAlive.ts).
-    if (this.scan?.loops) (this.alive ??= new UnderAlive(this.grid, this.scan.loops.fps)).scan();
+    const fps = this.scan?.loops?.fps ?? this.scan?.shapes?.fps;
+    if (fps) (this.alive ??= new UnderAlive(this.grid, fps)).scan();
     // Something is still scanning in: draw again when it has.
     if (this.scan && this.grid.querySelector('.scan-in')) {
       window.setTimeout(() => { this.lastKey = ''; if (this.open) this.render(); }, SCAN_IN + 600);

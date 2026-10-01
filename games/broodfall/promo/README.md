@@ -86,3 +86,10 @@ Every picture above on one sheet with its name and size.
   on it) and she was small in the frame. The planet is the insects' own world; redrawn as `yoke-v2`.
 - In-game screenshots taken with the scripted player on a fat wallet (100+ limbs): the whole board a
   carpet of limbs with nothing readable. Retaken with the scripted player's own economy.
+
+## Steam (Oct 1 2026)
+
+`STEAM-PAGE.md` holds the whole wishlistable page: copy, tags, the content survey and every image
+mapped to its Steam slot. Steam allows no text but the name on any capsule, so the store capsules
+carry the logo only (`steam-main-capsule`, `steam-vertical-capsule-748x896`, `steam-library-capsule-600x900`);
+the taglined cuts are now `press-main-capsule-taglined-1232x706.jpg` and `press-vertical-taglined-600x900.jpg`.

@@ -27,6 +27,7 @@
 import { artUrl } from '../render/art';
 import { loadSettings } from '../meta/storage';
 import { sfx } from '../audio/engine';
+import { shipLoop, withLoader } from './loader';
 
 /** When the pad meets the desk in each clip (seconds; read off the baked corners: the frame its motion falls away). */
 const PAD_CONTACT: Record<PadOutcome, number> = { won: 2.3, lost: 2.25 };
@@ -156,7 +157,8 @@ function wanted(): boolean {
  */
 export async function playPadOutro(outcome: PadOutcome): Promise<void> {
   if (playing || !wanted()) return;
-  const got = await Promise.race([load(outcome), new Promise<null>((r) => setTimeout(() => r(null), 4000))]);
+  // Still arriving (it is fetched while the run is on, so rarely): a loop while it does, never a still board (src/ui/loader.ts).
+  const got = await withLoader(Promise.race([load(outcome), new Promise<null>((r) => setTimeout(() => r(null), 4000))]), shipLoop(), { label: 'THE FIELD REPORT' });
   if (!got || !wanted()) return;
   const first = quadAt(got.quads, 0);
   if (!first) return;
