@@ -51,6 +51,13 @@ const params = new URLSearchParams(location.search);
 const SEED = Number(params.get('seed') ?? Math.floor(Math.random() * 1e9));
 const AUTO = params.get('auto') === '1';
 
+/**
+ * Part 2 of the pad (src/ui/padOutro.ts: he gets up and walks into the ship, which takes over from the film's last frame):
+ * a campaign deployment only. Mission 1 keeps its own reveal of the ship (the B-movie's MEANWHILE), and a skirmish goes back
+ * to the console menu, not aboard.
+ */
+const PAD_PART2 = (): boolean => !!campaignPlan && !FIRST;
+
 /** A new campaign that unfolds (src/meta/onboarding.ts), with mission 1 waiting to be played. */
 function startOnboarding(): void {
   clearCampaign();
@@ -438,7 +445,7 @@ function handleEvents(events: SimEvent[]): void {
   if (started) boardEvents(events);
   for (const e of events) {
     if (e.kind === 'wave-start') banner(`WAVE ${e.wave} — ASSAULT FROM ${e.sides}`);
-    if (e.kind === 'wave-start' && !AUTO) preloadPadOutro(); // the end's clip, fetched while the run is on
+    if (e.kind === 'wave-start' && !AUTO) preloadPadOutro(PAD_PART2()); // the end's clips, fetched while the run is on
     if (e.kind === 'wave-cleared') banner(`WAVE ${e.wave} CLEARED · +${e.bonus} WAR MEAT`);
     if (e.kind === 'royal-incoming') banner('THE ROYAL TAKES THE FIELD');
     if (e.kind === 'plate-drafted') banner(`DISTRICT CONSUMED: ${e.name.toUpperCase()}`);
@@ -462,7 +469,7 @@ function handleEvents(events: SimEvent[]): void {
       endSnapshot = snapshotBoard();
       // The hero sets the pad down (src/ui/padOutro.ts: this very view on its screen), then the report.
       const report = FIRST ? firstDebrief : campaignPlan ? campaignDebrief : showDebrief;
-      window.setTimeout(() => { void playPadOutro(e.kind === 'won' ? 'won' : 'lost').then(report, report); }, 1600);
+      window.setTimeout(() => { void playPadOutro(e.kind === 'won' ? 'won' : 'lost', { part2: PAD_PART2() }).then(report, report); }, 1600);
     }
   }
 }
@@ -664,7 +671,7 @@ function campaignDebrief(): void {
   void withLoader(debriefPictures(runPictures(outcome, verdict,
     outcome === 'lost' ? `${where} · the asset was lost after ${sim.wavesCleared} wave${sim.wavesCleared === 1 ? '' : 's'}` : `${where} · ${sim.wavesCleared} wave${sim.wavesCleared === 1 ? '' : 's'} held`,
     [['waves held', String(sim.wavesCleared)], ['districts taken', String(sim.map.slots.filter(Boolean).length)], ['limbs grown', String(sim.stats.limbsGrown)], ['standing earned', `+${debrief.standing}`]])), shipLoop(), { label: 'THE REPORT' })
-    .then((pics) => ui.showDebrief(debrief, back, pics), () => ui.showDebrief(debrief, back));
+    .then((pics) => ui.showDebrief(debrief, back, pics, { yoke: true }), () => ui.showDebrief(debrief, back, undefined, { yoke: true }));
 }
 
 /**

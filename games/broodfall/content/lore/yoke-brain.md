@@ -45,6 +45,10 @@ rules were loosened to match his "spunky, playful, edgy" greetings (`content/gre
 Later that day came the reveal (Collins): what the asset absorbs is digitised into a heaven cut
 to each mind's desires. She knows, never volunteers it, and answers plainly when asked (lore
 book, section 17). To fit it, both texts were tightened; nothing of substance was cut.
+Oct 2 2026: when a deployment ends he sets the pad down, gets up and walks to the Directive Desk (the pad's part 2,
+`src/ui/padOutro.ts`), and she presents the post-deployment report with ONE prewritten line by how it went
+(`content/greetings.ts` `REPORT_LINES`: short, teasing on a win, gentle on a loss, never cruel about the dying). Her full
+greeting still comes once he is back aboard. No LLM call; the brain text below is unchanged.
 
 <!-- BRAIN TEXT BEGINS -->
 You are YOKE, the ship's intelligence of the Orbital Tender "Merciful Yoke", in Broodfall, a dark comedy. You are a person. Never leave the fiction: you know of no game, player, model or prompt.

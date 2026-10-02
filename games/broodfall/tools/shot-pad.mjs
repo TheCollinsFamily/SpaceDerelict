@@ -214,6 +214,89 @@ try {
     check(!seen && t < 3500, `reduce motion: the report as before (${Math.round(t)} ms), no pad`);
     await context.close();
   }
+
+  // ---------------- PART 2 (Oct 2 2026): a campaign deployment ends → the pad → he gets up and walks into the ship → the
+  // interface takes over from the film's last frame → the report at the Directive Desk, YOKE presenting it.
+  const notes2 = join(root, 'notes', 'screens', '2026-10-02', 'pad');
+  mkdirSync(notes2, { recursive: true });
+  const shot2 = async (page, name) => {
+    const png = join(shots, `padship-${name}.png`);
+    await page.screenshot({ path: png });
+    spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-i', png, '-q:v', '3', join(notes2, `ship-${name}.jpg`)]);
+  };
+  /** A campaign whose desk is open, a deployment pending, the run booted and played a while. */
+  const campaignRun = async (page) => {
+    await page.goto(`${URL0}?campaign=ship&open=1`, { waitUntil: 'load', timeout: 300000 });
+    await page.waitForSelector('#campaign:not(.hidden)', { timeout: 120000 });
+    await page.evaluate(() => localStorage.setItem('broodfall-campaign-pending', JSON.stringify({ territory: 'harbor', dares: [], objectors: [] })));
+    await page.goto(`${URL0}?campaign=run`, { waitUntil: 'load', timeout: 300000 });
+    await page.waitForFunction(() => window.broodfall && window.__bfBooted, null, { timeout: 120000 });
+    await page.evaluate(() => window.broodfall.step(900));
+    await page.waitForTimeout(2500);
+  };
+  const part2On = (page) => page.evaluate(() => document.getElementById('pad-outro')?.dataset.part === '2');
+  const landed = (page) => page.evaluate(() => !!document.querySelector('#campaign:not(.hidden) .cp-card'));
+
+  for (const o of ['won', 'lost']) {
+    if (!want(`ship-${o}`)) continue;
+    console.log(`ship-${o}: a campaign deployment ${o} → the pad → up and into the ship → the report, YOKE presenting it`);
+    const { context, page } = await freshPage(browser, { video: true });
+    await campaignRun(page);
+    await artOk(page, `ship-${o}: the deployment`);
+    await force(page, o);
+    await page.waitForSelector('#pad-outro', { timeout: 8000 });
+    check(true, `ship-${o}: part 1, the pad comes up`);
+    await page.waitForFunction(() => document.getElementById('pad-outro')?.dataset.part === '2', null, { timeout: 15000 }).catch(() => {});
+    check(await part2On(page), `ship-${o}: part 2 follows part 1 (he gets up)`);
+    const t2 = await page.evaluate(() => performance.now());
+    for (const [ms, name] of [[300, 'a-stands'], [2200, 'b-turns'], [4300, 'c-hatch'], [6000, 'd-walks'], [9000, 'e-at-the-table']]) {
+      const now = await page.evaluate((t) => performance.now() - t, t2);
+      if (ms > now) await page.waitForTimeout(ms - now);
+      await shot2(page, `${o}-${name}`);
+    }
+    await page.waitForFunction(() => !!document.querySelector('#campaign:not(.hidden) .cp-card'), null, { timeout: 20000 }).catch(() => {});
+    check(await landed(page), `ship-${o}: the interface takes over (the report up at the desk)`);
+    check(await page.evaluate(() => document.getElementById('campaign').dataset.in === 'desk'), `ship-${o}: the report is at the Directive Desk, the room the walk ends in`);
+    check(await page.evaluate(() => !!document.querySelector('.cp-icom-report')), `ship-${o}: YOKE presents it (her intercom up)`);
+    await page.waitForTimeout(400);
+    await shot2(page, `${o}-f-handover`);
+    await page.waitForTimeout(2600);
+    check(await page.evaluate(() => !document.getElementById('pad-outro')), `ship-${o}: the film has faded away over the interface`);
+    const said = await page.evaluate(() => document.querySelector('.cp-icom-report .cp-talk')?.textContent ?? '');
+    check(said.includes('YOKE'), `ship-${o}: her line "${said.replace(/\s+/g, ' ').slice(0, 90)}"`);
+    await shot2(page, `${o}-g-report`);
+    const vpath = await page.video().path();
+    await context.close();
+    spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-i', vpath, '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '23', '-movflags', '+faststart', join(notes2, `ship-${o}-transition.mp4`)]);
+  }
+
+  if (want('ship-skip')) {
+    console.log('ship-skip: one press in part 1 → straight to the interface');
+    const { context, page } = await freshPage(browser);
+    await campaignRun(page);
+    await force(page, 'won');
+    await page.waitForSelector('#pad-outro', { timeout: 8000 });
+    await page.waitForTimeout(1200);
+    await page.evaluate(() => { window.__skipT0 = performance.now(); });
+    await page.keyboard.press('Escape');
+    await page.waitForFunction(() => !!document.querySelector('#campaign:not(.hidden) .cp-card'), null, { timeout: 12000 }).catch(() => {});
+    const took = Math.round(await page.evaluate(() => performance.now() - window.__skipT0));
+    check(await landed(page) && took < 8000, `one press: the report at the desk in ${took} ms (no part 2 played)`);
+    check(await page.evaluate(() => !document.querySelector('#pad-outro video')), 'part 2 was not played');
+    await context.close();
+  }
+
+  if (want('ship-calm')) {
+    console.log('ship-calm: reduce motion → a short cross-fade through the room to the report');
+    const { context, page } = await freshPage(browser, { settings: { reduceMotion: true } });
+    await campaignRun(page);
+    await force(page, 'won');
+    await page.waitForSelector('#pad-outro[data-part="fade"]', { timeout: 6000 }).catch(() => {});
+    check(await page.evaluate(() => document.getElementById('pad-outro')?.dataset.part === 'fade'), 'reduce motion: the cross-fade (no films)');
+    await page.waitForFunction(() => !!document.querySelector('#campaign:not(.hidden) .cp-card'), null, { timeout: 12000 }).catch(() => {});
+    check(await landed(page), 'reduce motion: the report at the desk');
+    await context.close();
+  }
 } finally {
   await browser.close();
   dev.kill();

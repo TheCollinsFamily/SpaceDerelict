@@ -120,4 +120,4 @@ export async function makePad({ bakeOnly = false, stillsOnly = false, only = [] 
   return bakePad(CLIPS.filter((c) => fs.existsSync(clipFile(c)) && (!only.length || only.includes(c.id))).map((c) => ({ id: c.id, file: clipFile(c) })));
 }
 
-export { DIR, OUT, LOOK, W, H, FPS };
+export { DIR, OUT, LOOK, W, H, FPS, PLANET, MENU_PLANET };

@@ -129,6 +129,11 @@ const TEMPLATES = {
     const { makePad } = await import('./templates/pad.mjs');
     return Promise.allSettled([makePad({ bakeOnly: flags.has('--bake'), stillsOnly: flags.has('--stills'), only: ids })]);
   },
+  // Part 2 of the pad (tools/art/templates/pad-ship.mjs): from the desk to the ship's interface. padship [won lost walk] [--frames|--stills|--bake].
+  padship: async () => {
+    const { makePadShip } = await import('./templates/pad-ship.mjs');
+    return Promise.allSettled([makePadShip({ framesOnly: flags.has('--frames'), stillsOnly: flags.has('--stills'), bakeOnly: flags.has('--bake'), only: ids })]);
+  },
   yokescene: async () => {
     const { makeYokeScenes } = await import('./templates/yoke-scenes.mjs');
     return Promise.allSettled([makeYokeScenes({ bakeOnly: flags.has('--bake') })]);

@@ -252,3 +252,33 @@ export function earthNewsFrom(lore: string): string[] {
   }
   return out;
 }
+
+/**
+ * HER LINE AS HE WALKS IN (Collins, Oct 2 2026: the pad's part 2, "you turning around and getting up to move into the
+ * ship's interface, with the AI character talking to you"). He has set the pad down and crossed to the Directive Desk; the
+ * post-deployment report comes up on it and she presents it, one line, by how it went. Short on purpose: her full greeting
+ * comes once he is back aboard (greetingFor), after the planet's news. Chosen in turn (reportLine), never twice running.
+ */
+export const REPORT_LINES: Record<'won' | 'held' | 'lost', GreetBeat[]> = {
+  won: [
+    { say: 'Report\'s up. Spoiler: you won. I already highlighted the good parts.', face: 'happy' },
+    { say: 'Another one for the asset. Paperwork\'s on the desk, still warm.', face: 'teasing' },
+    { say: 'Look who\'s walking in like a man who just ate a district.', face: 'teasing', then: 'wink' },
+    { say: 'Numbers are in. They look great. I may have rounded up. A little.', face: 'happy', then: 'shrug' },
+  ],
+  held: [
+    { say: 'They tried to take it back. They did not. Report\'s on the desk.', face: 'happy' },
+    { say: 'Counter-attack repelled. The locals are going to need a bigger plan.', face: 'teasing', then: 'shrug' },
+  ],
+  lost: [
+    { say: 'Okay. Deep breath. Report\'s on the desk; I filled in the sad parts gently.', face: 'calm' },
+    { say: 'Well, that one bit back. Sit, read, and then we try again.', face: 'pensive' },
+    { say: 'The asset\'s gone, you\'re not. That\'s the part I care about.', face: 'calm', then: 'nod' },
+  ],
+};
+
+/** Her line for this report: the next of its list after the last one said (by a counter the caller keeps). */
+export function reportLine(outcome: 'won' | 'held' | 'lost', n: number): GreetBeat {
+  const list = REPORT_LINES[outcome];
+  return list[((n % list.length) + list.length) % list.length];
+}

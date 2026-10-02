@@ -95,6 +95,9 @@ export async function makeStill({ slug, prompt, key = '00FF00', keyName = 'green
     modelId: STILL_MODEL, quality, width, height,
     imageCount: 1, saveToGallery: false, nsfw: false, async: true,
   };
+  // Models that size by aspect ratio rather than pixels (seegen:*) are told it too (Oct 2 2026: a 1280x720 ask came back square).
+  const ar = { '1.78': '16:9', '0.56': '9:16', '1.33': '4:3', '0.75': '3:4', '1.00': '1:1' }[(width / height).toFixed(2)];
+  if (ar) { body.aspectRatio = ar; body.aspect_ratio = ar; }
   if (refFiles?.length) body.imageUrls = await Promise.all(refFiles.map((r, i) => upload(r, `${slug}-ref${i}`)));
   else if (refFile) body.imageBase64 = `data:image/png;base64,${fs.readFileSync(refFile).toString('base64')}`;
   spent.stills += 1;

@@ -77,8 +77,8 @@ export const spent = { videos: 0, songs: 0, speech: 0 };
  * A sound effect, through a text-to-video model with its own soundtrack. Saves the clip
  * (art-src/audio/<id>.mp4) and returns its path; the sound is cut out of it by make.mjs.
  */
-export async function soundTake({ id, prompt, model = 'imagerouter:veo-3.1-lite-t2v', seconds = 4, resolution = '720p', aspect = '16:9' }) {
-  const out = path.join(RAW, `${id}.mp4`);
+export async function soundTake({ id, prompt, model = 'imagerouter:veo-3.1-lite-t2v', seconds = 4, resolution = '720p', aspect = '16:9', dir = RAW }) {
+  const out = path.join(dir, `${id}.mp4`);
   if (fs.existsSync(out)) return out;
   spent.videos += 1;
   const t0 = Date.now();

@@ -37,8 +37,22 @@ type Pt = [number, number];
 type Quad = [Pt, Pt, Pt, Pt];
 
 interface PadClip { video: string; quads: string; seconds: number; fps: number; w: number; h: number }
-interface PadManifest { version: number; clips: Partial<Record<PadOutcome, PadClip>> }
+/**
+ * PART 2 (Collins, Oct 2 2026: "a second part of you turning around and getting up to move into the ship's interface,
+ * with the AI character talking to you ... it's meant to transition the two interfaces"; "have you feel like you're
+ * really in a ship"): from part 1's last frame (the pad asleep on the desk) he stands, turns past the window onto the
+ * planet, walks through the hatch into the Directive Desk's room and stops at the table; the clip's last frame IS a
+ * screenshot of the interface's report backdrop (tools/shot-padship-end.mjs), so the live interface takes over from the
+ * same picture. Sound: the ship's hum, his chair and steps on the deck plating, the hatch, a chime (baked into the clip).
+ * tools/art/templates/pad-ship.mjs; `cut` is where the first-person shot hands to the walk; `poster` its last frame.
+ */
+interface Part2Clip { video: string; seconds: number; cut: number; w: number; h: number; fps: number; poster?: string }
+interface PadManifest { version: number; clips: Partial<Record<PadOutcome, PadClip>>; part2?: Partial<Record<PadOutcome, Part2Clip>> }
 interface Loaded { clip: PadClip; quads: Array<number[] | null>; src: string }
+interface Loaded2 { clip: Part2Clip; src: string; poster: string | null }
+
+/** What the interface shows when part 2 has landed on it: the ship's report (campaignUi), else the plain report. */
+const LANDED = '#campaign:not(.hidden) .cp-card, #debrief:not(.hidden)';
 
 /** How long the zoom from "the screen fills the window" to the clip's own frame takes. */
 const ZOOM_S = 0.7;
@@ -137,24 +151,80 @@ function load(outcome: PadOutcome): Promise<Loaded | null> {
   return loaded[outcome]!;
 }
 
-/** Fetch both clips ahead (call once a run is under way, so the end does not wait on the network). */
-export function preloadPadOutro(): void {
+const loaded2: Partial<Record<PadOutcome, Promise<Loaded2 | null>>> = {};
+function load2(outcome: PadOutcome): Promise<Loaded2 | null> {
+  loaded2[outcome] ??= manifest().then(async (m) => {
+    const clip = m?.part2?.[outcome];
+    if (!clip) return null;
+    const blob = await fetch(artUrl(`pad/${clip.video}`)).then((r) => (r.ok ? r.blob() : Promise.reject(new Error(`HTTP ${r.status}`))));
+    return { clip, src: URL.createObjectURL(blob), poster: clip.poster ? artUrl(`pad/${clip.poster}`) : null };
+  }).catch((e) => { console.warn('[pad] no part 2', e); return null; });
+  return loaded2[outcome]!;
+}
+
+/** Fetch the clips ahead (call once a run is under way, so the end does not wait on the network). `part2`: a campaign run. */
+export function preloadPadOutro(part2 = false): void {
   void load('won');
   void load('lost');
+  if (part2) { void load2('won'); void load2('lost'); }
+}
+
+/** What the player hears part 2 at: the master and effects volumes (src/meta/settings.ts). */
+function part2Volume(): number {
+  try { const v = loadSettings().volume; return Math.max(0, Math.min(1, (v.master ?? 1) * (v.sfx ?? 1))); } catch { return 1; }
+}
+
+/**
+ * Hand the screen over to the interface: resolve (the caller puts the report up under the picture), wait until it IS
+ * up (its card drawn, at most 6 s: its pictures may still be coming), then fade the picture away over it.
+ */
+function handOver(over: HTMLElement, finish: () => void, cleanup: () => void): void {
+  finish();
+  const t0 = performance.now();
+  const wait = () => {
+    if (document.querySelector(LANDED) || performance.now() - t0 > 6000) {
+      over.style.transition = 'opacity 0.9s ease';
+      requestAnimationFrame(() => requestAnimationFrame(() => { over.style.opacity = '0'; }));
+      window.setTimeout(() => { over.remove(); cleanup(); }, 1000);
+      return;
+    }
+    window.setTimeout(wait, 80);
+  };
+  wait();
+}
+
+/**
+ * Reduce motion, a campaign run: no film, a short cross-fade through the room he ends up in (part 2's last frame) to
+ * the interface (Collins's brief: "Reduce motion plays a short cross-fade").
+ */
+async function crossFade(outcome: PadOutcome): Promise<void> {
+  const got = await Promise.race([load2(outcome), new Promise<null>((r) => setTimeout(() => r(null), 2500))]);
+  if (!got?.poster) return;
+  const over = document.createElement('div');
+  over.id = 'pad-outro';
+  over.dataset.part = 'fade';
+  over.style.cssText = `position:fixed;inset:0;z-index:2147483600;background:#000 url("${got.poster}") center/cover no-repeat;opacity:0;transition:opacity 0.35s ease;`;
+  document.documentElement.appendChild(over);
+  requestAnimationFrame(() => requestAnimationFrame(() => { over.style.opacity = '1'; }));
+  await new Promise((r) => setTimeout(r, 450));
+  await new Promise<void>((finish) => handOver(over, finish, () => {}));
 }
 
 let playing = false;
 /** True while the pad is on the screen (the board's edge scroll and keys stand still). */
 export function padOutroPlaying(): boolean { return playing; }
 
+/** Under automation the pad plays only when its own beat asks (tools/shot-pad.mjs sets localStorage['broodfall-pad-outro']). */
+function automatedOff(): boolean {
+  try { return !!navigator.webdriver && localStorage.getItem('broodfall-pad-outro') !== 'on'; } catch { return false; }
+}
+function reduceMotion(): boolean {
+  try { return loadSettings().reduceMotion; } catch { return false; }
+}
 /** Whether the outro plays at all: not with "reduce motion" on. */
 function wanted(): boolean {
-  try {
-    // Browser beats (Playwright) that are about something else wait on the report as before; the pad's own
-    // beat (tools/shot-pad.mjs) turns it on with localStorage['broodfall-pad-outro'] = 'on'.
-    if (navigator.webdriver && localStorage.getItem('broodfall-pad-outro') !== 'on') return false;
-    return !loadSettings().reduceMotion;
-  } catch { return true; }
+  // Browser beats (Playwright) that are about something else wait on the report as before.
+  return !automatedOff() && !reduceMotion();
 }
 
 // ---------------------------------------------------------------- playing
@@ -164,8 +234,17 @@ function wanted(): boolean {
  * shown (the pad has gone to sleep, the page is back as it was); the desk then fades out by itself.
  * Resolves at once when it is not to be played.
  */
-export async function playPadOutro(outcome: PadOutcome): Promise<void> {
-  if (playing || !wanted()) return;
+export async function playPadOutro(outcome: PadOutcome, opts: { part2?: boolean } = {}): Promise<void> {
+  if (playing) return;
+  if (!wanted()) {
+    // Reduce motion on a campaign run: a short cross-fade through the room to the interface instead of the films.
+    if (opts.part2 && reduceMotion() && !automatedOff()) await crossFade(outcome);
+    return;
+  }
+  // Part 2 is fetched alongside part 1 (preloaded while the run is on); it is played only if it is here when part 1 ends.
+  const part2 = opts.part2 ? load2(outcome) : Promise.resolve(null);
+  let got2: Loaded2 | null = null;
+  void part2.then((g) => { got2 = g; });
   // Still arriving (it is fetched while the run is on, so rarely): a loop while it does, never a still board (src/ui/loader.ts).
   const got = await withLoader(Promise.race([load(outcome), new Promise<null>((r) => setTimeout(() => r(null), 4000))]), shipLoop(), { label: 'THE FIELD REPORT' });
   if (!got || !wanted()) return;
@@ -248,7 +327,41 @@ export async function playPadOutro(outcome: PadOutcome): Promise<void> {
     if (vfc) vfc(tick); else requestAnimationFrame((n) => tick(n));
   };
 
-  const end = () => {
+  // Part 2 is on (the film into the ship): a press skips it to its last frame, the interface's own picture.
+  let skip2: (() => void) | null = null;
+  const cleanupAll = () => { URL.revokeObjectURL(video.src); loaded[outcome] = undefined; if (got2) { URL.revokeObjectURL(got2.src); loaded2[outcome] = undefined; } };
+  /** Part 2: he stands, turns, walks into the ship; its last frame is the interface's, which then takes over (handOver). */
+  const playPart2 = (g: Loaded2, skipNow: boolean) => {
+    stage.remove();
+    over.dataset.part = '2';
+    if (g.poster) over.style.background = `#000 url("${g.poster}") center/cover no-repeat`;
+    const v2 = document.createElement('video');
+    v2.playsInline = true;
+    v2.preload = 'auto';
+    v2.src = g.src;
+    v2.volume = part2Volume();
+    v2.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000;';
+    let landed = false;
+    const land = () => {
+      if (landed) return;
+      landed = true;
+      skip2 = null;
+      window.removeEventListener('keydown', onKey, true);
+      v2.pause();
+      playing = false;
+      handOver(over, finish, cleanupAll);
+    };
+    // Skipped: straight to the last frame (the poster under it), the interface takes over from it.
+    skip2 = () => { v2.style.opacity = '0'; land(); };
+    if (skipNow) { skip2(); return; }
+    over.appendChild(v2);
+    v2.addEventListener('ended', land);
+    v2.addEventListener('error', land);
+    // With sound (the ship's hum, his steps, the hatch); a browser that refuses sound plays it silent.
+    v2.play().catch(() => { v2.muted = true; return v2.play(); }).catch(land);
+    window.setTimeout(land, (g.clip.seconds + 4) * 1000);
+  };
+  const end = (skipped = false) => {
     if (done) return;
     done = true;
     video.pause();
@@ -260,24 +373,26 @@ export async function playPadOutro(outcome: PadOutcome): Promise<void> {
       Object.assign(body.style, { transform: saved.transform, transformOrigin: saved.origin, willChange: saved.will, width: saved.width, filter: saved.filter });
       glass.remove();
       cleared.forEach((el, i) => { el.style.opacity = clearedWas[i]; });
+      if (got2) { playPart2(got2, skipped); return; }
       playing = false;
       finish();
       // The desk fades away over the report.
       over.style.transition = 'opacity 0.8s ease';
       requestAnimationFrame(() => requestAnimationFrame(() => { over.style.opacity = '0'; }));
-      window.setTimeout(() => { over.remove(); URL.revokeObjectURL(video.src); loaded[outcome] = undefined; }, 900);
+      window.setTimeout(() => { over.remove(); cleanupAll(); }, 900);
       window.removeEventListener('keydown', onKey, true);
-    }, 300);
+    }, skipped ? 120 : 300);
   };
+  const press = () => { if (skip2) skip2(); else end(true); };
   const onKey = (ev: KeyboardEvent) => {
     ev.stopImmediatePropagation();
     ev.preventDefault();
-    if (ev.key === 'Escape' || ev.key === 'Enter' || ev.key === ' ') end();
+    if (ev.key === 'Escape' || ev.key === 'Enter' || ev.key === ' ') press();
   };
-  over.addEventListener('pointerdown', (ev) => { ev.stopPropagation(); ev.preventDefault(); end(); });
+  over.addEventListener('pointerdown', (ev) => { ev.stopPropagation(); ev.preventDefault(); press(); });
   window.addEventListener('keydown', onKey, true);
-  video.addEventListener('ended', end);
-  video.addEventListener('error', end);
+  video.addEventListener('ended', () => end());
+  video.addEventListener('error', () => end());
 
   // The page as it is, then the pad around it.
   body.style.transformOrigin = '0 0';
@@ -295,6 +410,6 @@ export async function playPadOutro(outcome: PadOutcome): Promise<void> {
   }
   if (vfc) vfc(tick); else requestAnimationFrame((n) => tick(n));
   // A clip that stalls must never hold the report back.
-  window.setTimeout(end, (clip.seconds + 3) * 1000);
+  window.setTimeout(() => end(), (clip.seconds + 3) * 1000);
   return ended;
 }

@@ -1621,3 +1621,35 @@ Collins: "the image on the screen shakes a bit in a way that breaks the effect a
   shake 3.42 (13.63) -> 0.49 (1.64). `tests/padOutro.test.ts` holds both clips under 0.6 px RMS / 2 px worst.
 - **Look:** `notes/screens/2026-10-02/pad/pad-<won|lost>-composite-slow-before-after.mp4` (frame-exact, the game's
   maths, x3 slower: `tools/measure/pad-composite.mjs`), and the browser recordings `pad-<id>-BEFORE.mp4` / `-AFTER.mp4`.
+
+## The pad, part 2: from the desk into the ship (Oct 2 2026)
+
+Collins: "it should have a second part of you turning around and getting up to move into the ship's interface, with the
+AI character talking to you, etc. It's meant to transition the two interfaces" ... "have you feel like you're really in a
+ship" ... "use an image-to-image video gen with the starting image being the end of that video and the ending one being a
+screenshot of the interface."
+- **The flow** (`src/ui/padOutro.ts`, `src/main.ts` `PAD_PART2`): a CAMPAIGN deployment ends → part 1 (the pad set down,
+  the live board on its screen) → the pad's screen sleeps → part 2 plays full screen with sound: first person, he pushes
+  back, stands and turns past the window onto the planet toward the open hatch; cut; from behind, he walks through the
+  hatch into the Directive Desk's room and stops at the table. Its last frame IS the interface's backdrop (a screenshot,
+  `tools/shot-padship-end.mjs`), the report comes up under it at the Directive Desk (`campaignUi.showDebrief` now uses the
+  desk room, where the walk ends) and the film fades off over it once the report's card is drawn (`handOver`, ≤ 6 s).
+  YOKE presents it: one line by outcome (`content/greetings.ts` `REPORT_LINES`, `reportLine`), her body on a light
+  intercom (`presentReport`; no input/close, which would redraw the screen). Her full greeting still comes aboard.
+- **Not for** mission 1 (it keeps the B-movie's reveal of the ship) or a skirmish (back to the console menu).
+- **Skip:** one press (click, Esc, Enter, Space) anywhere in part 1 or 2 goes straight to the interface (the poster =
+  the end screenshot, then the report). **Reduce motion:** no films; a short cross-fade through that picture to the report.
+- **Art** (`node tools/art/make.mjs padship [--frames|--stills|--bake]`, `tools/art/templates/pad-ship.mjs`; raw in
+  `art-src-new/pad-ship/`): START frames = part 1's last frames with the green screen made black (free); the TURN still
+  (first person, the window, the console, the chair pushed back, the hatch onto the round-table room) and the HATCH still
+  (him from behind in the hatch); clips on `seegen:wan3.0-video` (start + end frame): `won`/`lost` = start → TURN, `walk`
+  = HATCH → the interface screenshot. Sound (`atlascloud:h3-t2v` soundtracks): the ship's hum and recyclers, his chair and
+  steps on the deck plating, the hatch and a chime, mixed under the film at -22 LUFS. Baked: `public/art/pad/ship-won.mp4`,
+  `ship-lost.mp4`, `ship-end.webp`, manifest `part2` (with `cut`, where the walk begins). Review and the continuity
+  checks: `notes/art-review/pad/ship-<o>-strip.jpg`, `-join1.jpg` (part 1's end | part 2's start), `-join2.jpg` (part 2's
+  last frame | the interface | their difference).
+- **Traps:** RFab's `openai:gpt-image-2` failed every job on Oct 2 ("error is not defined"); `seegen:gpt-image-2` worked,
+  but sizes by aspect ratio (makeStill now sends `aspectRatio`). wan3.0's first `won` take picked the pad back up and its
+  first `lost` take turned into a third-person shot of an older stranger: the prompts now pin first person and the pad
+  staying on the desk (old takes in `art-src-new/pad-ship/v1/`).
+- **Beat:** `node tools/shot-pad.mjs ship-won ship-lost ship-skip ship-calm` (films in `notes/screens/2026-10-02/pad/`).
