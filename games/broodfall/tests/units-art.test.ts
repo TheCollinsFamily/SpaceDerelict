@@ -6,7 +6,9 @@ import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { ENEMIES } from '../content/data';
+import { ENEMIES as ALL_ENEMIES } from '../content/data';
+// Field stations and their turrets are buildings drawn from public/art/station/ (tools/art/stations.mjs), not walking units.
+const ENEMIES = ALL_ENEMIES.filter((e) => !e.fixed);
 
 const here = dirname(fileURLToPath(import.meta.url));
 const ART = join(here, '..', 'public', 'art');

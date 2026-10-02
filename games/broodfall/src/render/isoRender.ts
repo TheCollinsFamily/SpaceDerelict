@@ -1932,6 +1932,7 @@ export class IsoRenderer extends Renderer {
     const g = this.geo;
     for (const e of sim.enemies) {
       const spec = enemySpec(e.kind);
+      if (spec.fixed) continue; // a field station or turret: drawn as a building (syncStations)
       const r = ENEMY_SIZE[e.kind];
       const air = sim.isAirborne(e);
       const up = air ? FLY_UP : this.heightAt(sim, e.pos.x, e.pos.y);
@@ -2086,6 +2087,7 @@ export class IsoRenderer extends Renderer {
     this.syncDying(sim, dt);
     this.drawBroodlings(sim, dt);
     this.syncShelters(sim);
+    this.syncStations(sim);
     for (const [id, v] of this.allyViews) {
       if (v.seen === this.frameNo) continue;
       v.sprite.destroy();
@@ -2401,6 +2403,108 @@ export class IsoRenderer extends Renderer {
       g.circle(x - 3, y - s - 5, 1.5).fill({ color: 0xb8cc55, alpha: 0.7 });
     }
     if (e.hp < e.maxHp) this.hpArc(g, x, y - 4, s + 2, e.hp / e.maxHp);
+  }
+
+  /**
+   * SCIENCE FIELD STATIONS (Oct 2 2026; DESIGN.md "SCIENCE FORWARD BASES"): a station is drawn the way the city is, on the
+   * lot it stands on, in its tile set's own rendering (public/art/station/<set>/<building|active|fortified|ruin>.webp,
+   * tools/art/stations.mjs); its turret on the street at its side (<set>/turret.webp). Over it: a filling ring while it
+   * is being built, its stage pips and a ring for the time to its next stage, and a teal dart line when a turret or an
+   * escort's battery fires. Its wreck lies where it fell until the creep digests it (its corpse).
+   */
+  private stationViews = new Map<number, Sprite>();
+  private wreckViews = new Map<number, Sprite>();
+  private stationTex = new Map<string, Texture | null | 'loading'>();
+  private stationTexture(key: string): Texture | null {
+    const t = this.stationTex.get(key);
+    if (t === undefined) {
+      this.stationTex.set(key, 'loading');
+      Assets.load<Texture>(artUrl(`station/${key}.webp`)).then((tex) => this.stationTex.set(key, tex ?? null), () => this.stationTex.set(key, null));
+      return null;
+    }
+    return t === 'loading' ? null : t;
+  }
+  private stationSetAt(sim: Sim, cell: number): string {
+    const W = sim.cfg.gridW;
+    const slot = Math.floor(Math.floor(cell / W) / PLATE) * sim.map.slotsX + Math.floor((cell % W) / PLATE);
+    return this.setOfSlot(sim, slot) ?? 'suburb';
+  }
+  private placeStation(sim: Sim, v: Sprite, key: string, at: { x: number; y: number }, cell: number): void {
+    const set = this.stationSetAt(sim, cell);
+    const tex = this.stationTexture(`${set}/${key}`) ?? this.stationTexture(`suburb/${key}`);
+    v.visible = !!tex;
+    if (!tex) return;
+    const h = sim.map.cells[cell] === CellType.Block ? sim.map.heights[cell] : 0;
+    const p = project(this.geo, at.x, at.y, h);
+    v.texture = tex;
+    v.anchor.set(0.5, 0.94);
+    const view = limbView(this.geo, 'S');
+    v.scale.set(view.back ? (view.mirror ? 1 : -1) : view.mirror ? -1 : 1, 1);
+    v.position.set(p.x, p.y);
+    v.zIndex = (this.cellZ.get(cell) ?? (p.y * 10)) + 6;
+  }
+  private syncStations(sim: Sim): void {
+    const g = this.marksG;
+    const seen = new Set<number>();
+    for (const e of sim.enemies) {
+      const spec = enemySpec(e.kind);
+      if (!spec.fixed) {
+        // An escort's dart battery darting your units: a short teal line.
+        if (e.dartTo && e.escortOf !== undefined && (e.auxCooldown ?? 0) > BALANCE.escortDart.interval - 0.15) {
+          const a = this.onGround(sim, e.pos.x, e.pos.y);
+          const b = this.onGround(sim, e.dartTo.x, e.dartTo.y);
+          g.moveTo(a.x / K, a.y / K - 6).lineTo(b.x / K, b.y / K - 4).stroke({ width: 1.5, color: 0x7fe6e0, alpha: 0.9 });
+        }
+        continue;
+      }
+      seen.add(e.id);
+      let v = this.stationViews.get(e.id);
+      if (!v) { v = new Sprite(); this.sorted.addChild(v); this.stationViews.set(e.id, v); }
+      const cell = sim.cellAt(e.pos.x, e.pos.y);
+      const key = spec.fixed === 'turret' ? 'turret' : (e.buildProgress ?? 1) < 1 ? 'building' : (e.stationStage ?? 1) >= 3 ? 'fortified' : 'active';
+      this.placeStation(sim, v, key, e.pos, cell);
+      const top = this.onGround(sim, e.pos.x, e.pos.y);
+      const tx = top.x / K;
+      const ty = top.y / K - (spec.fixed === 'turret' ? 18 : 40);
+      if (e.hp < e.maxHp) this.hpArc(g, tx, ty, 10, e.hp / e.maxHp);
+      if (spec.fixed === 'turret') {
+        // Its dart: a teal line to what it struck, for a beat after it fires.
+        const tu = spec.turret!;
+        if (e.dartTo && (e.auxCooldown ?? 0) > tu.interval - 0.15) {
+          const b = this.onGround(sim, e.dartTo.x, e.dartTo.y);
+          g.moveTo(tx, ty + 8).lineTo(b.x / K, b.y / K - 4).stroke({ width: 1.5, color: 0x7fe6e0, alpha: 0.95 });
+          g.circle(b.x / K, b.y / K - 4, 2.5).fill({ color: 0xbff7f2, alpha: 0.9 });
+        }
+        continue;
+      }
+      if ((e.buildProgress ?? 1) < 1) {
+        // Being built: a ring fills as the engineer works.
+        const f = e.buildProgress ?? 0;
+        g.circle(tx, ty + 14, 9).stroke({ width: 2, color: 0x1a2a2c, alpha: 0.8 });
+        g.arc(tx, ty + 14, 9, -Math.PI / 2, -Math.PI / 2 + f * Math.PI * 2).stroke({ width: 3, color: 0x5fd6cf, alpha: 0.95 });
+        continue;
+      }
+      // Its stage, and how long until it grows again (the threat you have to answer).
+      const stage = e.stationStage ?? 1;
+      for (let i = 0; i < 3; i++) g.circle(tx - 8 + i * 8, ty + 8, 2.6).fill({ color: i < stage ? 0x5fd6cf : 0x24343a, alpha: 0.95 });
+      if (stage < 3) {
+        const from = stage === 1 ? 0 : BALANCE.stationStage2At;
+        const to = stage === 1 ? BALANCE.stationStage2At : BALANCE.stationStage3At;
+        const f = Math.min(1, ((e.stationAge ?? 0) - from) / (to - from));
+        g.arc(tx, ty + 8, 13, -Math.PI / 2, -Math.PI / 2 + f * Math.PI * 2).stroke({ width: 1.5, color: 0xe08a5f, alpha: 0.8 });
+      }
+    }
+    for (const [id, v] of this.stationViews) if (!seen.has(id)) { v.destroy(); this.stationViews.delete(id); }
+    // Wrecks: a destroyed station's corpse, until the creep digests it.
+    const wrecks = new Set<number>();
+    for (const c of sim.corpses) {
+      if (c.kind !== 'fieldstation') continue;
+      wrecks.add(c.id);
+      let v = this.wreckViews.get(c.id);
+      if (!v) { v = new Sprite(); this.sorted.addChild(v); this.wreckViews.set(c.id, v); }
+      this.placeStation(sim, v, 'ruin', c.pos, c.cell);
+    }
+    for (const [id, v] of this.wreckViews) if (!wrecks.has(id)) { v.destroy(); this.wreckViews.delete(id); }
   }
 
   /**

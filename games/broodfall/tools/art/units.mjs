@@ -149,6 +149,17 @@ export const UNITS = [
     look: 'a pale beetle carrying a launcher rack of eight glass dart tubes with teal fluid, teal markings on its shell and a small sensor dish, one insect operator in a lab coat with a tablet walking beside it',
     weapon: 'Dart launcher', attack: 'Fires a dart from 130 px once deployed.',
     basis: 'pale ground beetle', states: ['deployed: legs braced, rack tilted up', 'spent: tubes empty, walking home', 'dying'] },
+  // The ENGINEER (Oct 2 2026, Collins: "give the science faction units that can build spawning locations, and even their own
+  // towers"): it walks out with a study party and raises a FIELD STATION on a lot beside a street. The station and its turret
+  // are drawn as buildings (tools/art/stations.mjs), not here.
+  { kind: 'engineer', name: 'Field engineer', caste: 'science', tier: 'visits', r: 6, hp: 70, body: 'human-like', key: 'green',
+    job: 'Walks past your creep with a study party and raises a field station on a lot beside a street; then stays to repair it and raise its turrets.',
+    look: 'a tall thin upright scientist-engineer, the same kind of insect as the researcher, in a white lab coat under a teal utility vest with many pockets, a teal hard hat with a small headlamp, safety goggles, a coil of cable over one shoulder, a tall backpack frame loaded with folded aluminium mast sections and a small dish antenna, a cordless power driver in one hand and a tablet in another',
+    weapon: 'Power driver', attack: 'Builds: it works at the station with its driver (the build is drawn by code).',
+    attackMotion: 'The figure stops, kneels slightly and drives a bolt into something low in front of it with the power driver, its arm jolting twice, then stands and returns to exactly its starting pose. It stays the same size and in the same place the whole time. Nothing else appears: no sparks, no smoke.',
+    basis: 'mantis', states: ['building', 'dying'],
+    design: { refs: ['units/engineer/researcher-ref.png'],
+      prompt: 'One small figure for a strategy game, drawn exactly in the style, proportions, colours and camera of the reference picture (seen from high above, looking down at an angle; cartoonish, chunky). It is the same kind of tall thin insect scientist as the reference, but dressed as a FIELD ENGINEER: a white lab coat under a teal utility vest with many pockets, a teal hard hat with a small headlamp, safety goggles, a coil of cable over one shoulder, and a tall backpack frame loaded with folded aluminium mast sections and a small dish antenna; a cordless power driver in one hand and a tablet in the other. It faces the lower left, caught mid-stride, its whole body in the picture.' } },
   // ---- ROYAL CASTE (gold). Only with a royal event. ----
   { kind: 'royal', steep: "Its crown or helmet has plain upright ribs and a plain gold ball on top: no bands that cross each other anywhere on it.", attackMotion: 'The queen stops, raises her small gold pistol and fires twice with small muzzle flashes, then lowers it and returns to exactly her starting pose.', name: 'The royal', caste: 'royal', tier: 'royal event', r: 20, hp: 1100, body: 'human-like',
     job: 'The jackpot and the hardest fight. War bodies near her hit harder and take less.',

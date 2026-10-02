@@ -7,7 +7,9 @@ import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { ENEMIES, TOWERS } from '../content/data';
+import { ENEMIES as ALL_ENEMIES, TOWERS } from '../content/data';
+// Field stations and their turrets are buildings drawn from public/art/station/ (tools/art/stations.mjs), not walking units.
+const ENEMIES = ALL_ENEMIES.filter((e) => !e.fixed);
 import { DARES, EXPERIMENTS, FACTIONS, TERRITORIES } from '../content/campaign';
 import {
   boardCell, creepRunsOn, depth, dirToView, facingOf, fromView, headingOf, isoGeo, limbView, openSides, pick, project,
