@@ -1360,3 +1360,28 @@ MULES, AND BROOD ONLY ON CREEP".
 - **Scripted player:** `Autoplayer.mules` (off by default; `GAPS_MODE=mules`). Measured: DESIGN.md.
 - **Check:** `tests/mules.test.ts`; the browser beat `node tools/shot-mules.mjs` (walk out, root, brood refused off
   creep, brood on the new creep; `notes/screens/2026-10-02/mules-*.png`, `mules-deploy.mp4`).
+## The Flametrooper (Oct 2 2026)
+
+Collins: "an enemy unit of war caste with a flamethrower that is way better against units and targets them first,
+only going after the base if all units are clear." The design is in DESIGN.md (YOUR WALKING UNITS, last bullet).
+- **Sim:** `EnemySpec.flamer` (content/data.ts: sight 170, range 54, 30 hp/s to units, cone cos 0.82; 85 hp,
+  4 a hit on structures), `Sim.updateFlamer` (hunts the nearest walking unit in sight along the streets, hoses a
+  cone that burns every unit of yours in it; none in sight: falls through to the war caste's march),
+  `walkingUnits` / `hurtUnit` (warriors, Broodmothers, Spore Mules), `flamerAnswer` (one more per
+  `flamerPerUnits` = 6 units on the board, from tier 2, up to 4; in `previewNextWave`, so the telegraph shows it).
+  `Enemy.flameTo` is where the stream reaches this tick (the renderer reads it; never written by the board).
+- **Drawn:** the stream is code (`isoRender.ts`, a flickering tapered tongue, orange over yellow, with licks);
+  a hosing trooper plays its attack clip facing the stream. Unit design: `tools/art/units.mjs` (`flametrooper`,
+  drawn from a frame of the soldier as its reference: `art-src-new/units/flametrooper/soldier-ref.png`).
+  Make it again: `BROODFALL_ART_SRC=<checkout>/art-src-new node tools/art/make.mjs unit flametrooper --attack --death`.
+- **Checks:** `tests/flametrooper.test.ts` (units first; the cone; deadlier to units, weaker to limbs than a
+  soldier; no stream with no unit in sight; closes in; the table and the answer; determinism).
+  `node tools/shot-flame.mjs` (warriors burnt, then the troopers march on; filmed). Balance:
+  `GAPS_MODE=noflame` / `stack` / `stack,noflame` on tools/measure/gaps.measure.ts.
+- **Measured (Oct 2 2026, 10 seeds, hold-12):** naive 6/10 with Flametroopers and 6/10 without (`GAPS_MODE=noflame`);
+  the Broodmother stack (`stack`) 6/10 both ways, but it loses 580 warriors over the ten runs with them against 396
+  without (seed 10: 1 to 120; seed 9: 10 to 50): the stack stays viable and is now answered. 32-36 troopers come
+  over a full run (the table plus the answer). The measure now prints broodling-lost, mule-lost and flamers.
+- **Art (Oct 2 2026):** design + turnaround (2 stills) and 16 clips (5 walk, 5 attack, 1 death, then the SW/W/NW
+  attacks re-rolled for smoke and nozzle fire, and W/NW again with "it is only aiming" in the motion prompt). The old
+  takes are in `art-src-new/units/flametrooper/v1/` and `v2/`. Its fire is the code's stream only.

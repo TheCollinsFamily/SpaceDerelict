@@ -1370,6 +1370,167 @@
     }
    }
   },
+  "flametrooper": {
+   "atlas": "units/flametrooper.webp",
+   "frame": 128,
+   "cols": 16,
+   "anchor": [
+    0.5,
+    0.94
+   ],
+   "body": 0.472,
+   "flies": false,
+   "anims": {
+    "walk": {
+     "S": {
+      "start": 0,
+      "count": 14,
+      "fps": 5.6
+     },
+     "SW": {
+      "start": 14,
+      "count": 14,
+      "fps": 9.33
+     },
+     "W": {
+      "start": 28,
+      "count": 14,
+      "fps": 4.67
+     },
+     "NW": {
+      "start": 42,
+      "count": 14,
+      "fps": 7
+     },
+     "N": {
+      "start": 56,
+      "count": 14,
+      "fps": 5.25
+     }
+    },
+    "attack": {
+     "S": {
+      "start": 70,
+      "count": 12,
+      "fps": 3
+     },
+     "SW": {
+      "start": 82,
+      "count": 12,
+      "fps": 3,
+      "anchor": [
+       0.5,
+       0.9155
+      ],
+      "scale": 1.0269
+     },
+     "W": {
+      "start": 94,
+      "count": 12,
+      "fps": 3
+     },
+     "NW": {
+      "start": 106,
+      "count": 12,
+      "fps": 3
+     },
+     "N": {
+      "start": 118,
+      "count": 12,
+      "fps": 3
+     }
+    },
+    "death": {
+     "SW": {
+      "start": 130,
+      "count": 12,
+      "fps": 3,
+      "anchor": [
+       0.5087,
+       0.8475
+      ],
+      "scale": 1.1094
+     },
+     "S": {
+      "start": 130,
+      "count": 12,
+      "fps": 3,
+      "anchor": [
+       0.5087,
+       0.8475
+      ],
+      "scale": 1.1094
+     },
+     "W": {
+      "start": 130,
+      "count": 12,
+      "fps": 3,
+      "anchor": [
+       0.5087,
+       0.8475
+      ],
+      "scale": 1.1094
+     },
+     "NW": {
+      "start": 130,
+      "count": 12,
+      "fps": 3,
+      "anchor": [
+       0.5087,
+       0.8475
+      ],
+      "scale": 1.1094
+     },
+     "N": {
+      "start": 130,
+      "count": 12,
+      "fps": 3,
+      "anchor": [
+       0.5087,
+       0.8475
+      ],
+      "scale": 1.1094
+     }
+    },
+    "hit": {
+     "S": {
+      "start": 142,
+      "count": 8,
+      "fps": 3.43
+     },
+     "SW": {
+      "start": 150,
+      "count": 8,
+      "fps": 5.33,
+      "anchor": [
+       0.5,
+       0.8975
+      ],
+      "scale": 1.0475
+     },
+     "W": {
+      "start": 158,
+      "count": 8,
+      "fps": 2.4,
+      "anchor": [
+       0.5,
+       0.927
+      ],
+      "scale": 1.0143
+     },
+     "NW": {
+      "start": 166,
+      "count": 8,
+      "fps": 2.29
+     },
+     "N": {
+      "start": 174,
+      "count": 8,
+      "fps": 2.53
+     }
+    }
+   }
+  },
   "flier": {
    "atlas": "units/flier.webp",
    "frame": 128,

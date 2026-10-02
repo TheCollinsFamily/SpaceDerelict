@@ -43,6 +43,7 @@ function run(seed: number) {
     for (const e of sim.takeEvents()) {
       kinds[e.kind] = (kinds[e.kind] ?? 0) + 1;
       if (e.kind === 'banked' && e.caste === 'royal') kinds.royalEarned = (kinds.royalEarned ?? 0) + e.amount;
+      if (e.kind === 'wave-start') kinds.flamers = (kinds.flamers ?? 0) + (e.counts.flametrooper ?? 0);
     }
     ticks++;
   }
@@ -61,7 +62,7 @@ it('gaps: naive hold-12 over ten seeds', () => {
       + ` royal earned ${kinds.royalEarned ?? 0} left ${sim.meat.royal} decrees ${JSON.stringify(s.decrees ?? {})} surgeries ${s.surgeriesUnderFire ?? 0} burrows ${s.burrows ?? 0}`
       + ` brood ${JSON.stringify({ dens: sim.towers.filter((t) => t.family === 'brood').length, pits: sim.towers.filter((t) => t.family === 'hatch').length, born: s.warriorsBorn ?? 0, mothers: s.mothersBorn ?? 0, lost: s.mothersLost ?? 0, nets: s.netsCast ?? 0, netted: s.netHits ?? 0, kills: (s.killsByFamily as Record<string, number>)?.brood ?? 0 })}`
       + ` mules ${JSON.stringify({ born: s.mulesBorn ?? 0, rooted: s.mulesRooted ?? 0, lost: s.mulesLost ?? 0 })} reclaimed ${s.bodiesReclaimed ?? 0}`
-      + ` events ${['royal-decree', 'limb-promoted', 'surgery-under-fire', 'graft-took', 'burrowed', 'sealed-in'].map((k) => `${k}=${kinds[k] ?? 0}`).join(' ')}`);
+      + ` events ${['royal-decree', 'limb-promoted', 'surgery-under-fire', 'graft-took', 'burrowed', 'sealed-in', 'broodling-lost', 'mule-lost', 'flamers'].map((k) => `${k}=${kinds[k] ?? 0}`).join(' ')}`);
   }
   // eslint-disable-next-line no-console
   console.log(`\n${rows.join('\n')}\nnaive hold-12 wins ${wins}/${seeds} (mode: ${MODE.join(',') || 'all built'})`);

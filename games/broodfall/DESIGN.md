@@ -305,6 +305,16 @@ there and accumulate soldiers ... Broodmothers and brood output should be select
   out. Warriors still ignore the science caste (the old broodling rule), so a stack never answers harvesters.
 - **Measured** (tools/measure/gaps.measure.ts, 10 seeds, hold-12): see HANDOFF.md "Brood Pit, Broodmother Den
   and orders" for the numbers (naive, den-heavy deal, and the scripted Broodmother stack).
+- **THE FLAMETROOPER (Collins, Oct 2 2026: "an enemy unit of war caste with a flamethrower that is way better
+  against units and targets them first, only going after the base if all units are clear").** The hive's
+  answer to your walking units. It hunts the nearest of your units within its sight (170 px: warriors,
+  Broodmothers, Spore Mules) along the streets and hoses a short cone (54 px) of fire that burns EVERY unit of
+  yours inside it at 30 hp/s: a warrior lasts about a second, a Broodmother about eight. Only with no unit in
+  sight does it march like the war caste on limbs and the core, where its flame is weak (4 a hit, a third of a
+  soldier's) and its body thin (85 hp): limbs at range kill it first. A counter to stacks, never a wall-breaker.
+  **Where it comes from:** the wave table from tier 3 (1, then 2, 2, 3), and from tier 2 the hive ANSWERS a
+  stack: one more per 6 of your units on the board when the siege starts, up to 4 (`flamerAnswer`, shown in
+  the wave telegraph). Its fire does not scorch the creep (left out: the creep strains are the player's).
 
 ## SPORE MULES, AND BROOD ONLY ON CREEP (Collins, Oct 2 2026 — BUILT Oct 2)
 
