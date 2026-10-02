@@ -804,7 +804,7 @@ export type SimEvent =
   | { kind: 'mule-lost'; muleId: number }
   | { kind: 'mule-rooted'; muleId: number; cell: number }
   /** Something the player may answer in one click (src/sim/groups.ts): a science party, an engineer, a field station, an outpost under attack. */
-  | { kind: 'unit-alert'; alertId: number; alert: 'science' | 'engineer' | 'station' | 'outpost'; at: Vec }
+  | { kind: 'unit-alert'; alertId: number; alert: 'science' | 'engineer' | 'station' | 'outpost' | 'dome'; at: Vec }
   | { kind: 'infestor-born'; unitId: number }
   | { kind: 'infestor-lost'; unitId: number }
   | { kind: 'harrier-born'; unitId: number }

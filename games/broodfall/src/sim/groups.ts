@@ -58,7 +58,7 @@ export type GroupTarget =
   | { kind: 'body'; at: Vec }
   | { kind: 'ground'; at: Vec };
 
-export type AlertKind = 'science' | 'engineer' | 'station' | 'outpost';
+export type AlertKind = 'science' | 'engineer' | 'station' | 'outpost' | 'dome';
 
 /** Something the player may want to answer with one click. */
 export interface Alert {
@@ -81,6 +81,8 @@ export const ALERT_ANSWER: Record<AlertKind, UnitKind[]> = {
   engineer: ['harrier', 'warrior'],
   station: ['warrior', 'mother', 'harrier'],
   outpost: ['warrior', 'mother'],
+  // A SHIELD DOME (the dome fork's Aegis Deacon / Lens Bearer): it soaks your limbs' fire, not your units' blows.
+  dome: ['warrior', 'mother', 'harrier'],
 };
 export const AUTO_DEFAULT: Record<UnitKind, boolean> = { warrior: true, harrier: true, mother: false, mule: false, infestor: false };
 
@@ -333,6 +335,13 @@ export class Groups {
       if (e.burrowed) continue;
       if (e.kind === 'fieldstation') { keep('station', e.id, e.pos); continue; }
       if (e.kind === 'engineer') { keep('engineer', e.id, e.pos); continue; }
+    }
+    // A shield dome standing within your limbs' reach (a bearer: Sim.domeBearers, the dome fork's): your units must
+    // break it, the limbs cannot. Read without depending on it being built yet.
+    const bearers = (s as unknown as { domeBearers?: Array<{ id: number; pos: Vec; burrowed?: boolean }> }).domeBearers ?? [];
+    for (const b of bearers) {
+      if (b.burrowed) continue;
+      if (s.towers.some((t) => Math.hypot(t.pos.x - b.pos.x, t.pos.y - b.pos.y) <= s.statsOf(t).range + 40)) keep('dome', b.id, b.pos);
     }
     // A science party: one alert per party (its lead: the first of them within 60 px of each other).
     const science = s.enemies.filter((e) => !e.burrowed && enemySpec(e.kind).caste === 'science' && !enemySpec(e.kind).fixed && !enemySpec(e.kind).engineer);

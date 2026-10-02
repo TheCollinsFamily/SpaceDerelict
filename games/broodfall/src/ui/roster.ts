@@ -50,6 +50,7 @@ const ALERT_TEXT: Record<string, string> = {
   engineer: 'ENGINEER SETTING UP',
   station: 'FIELD STATION STANDING',
   outpost: 'OUTPOST UNDER ATTACK',
+  dome: 'SHIELD DOME',
 };
 const KIND_WORD: Record<UnitKind, string> = { warrior: 'WARRIORS', mother: 'MOTHERS', harrier: 'HARRIERS', mule: 'MULES', infestor: 'INFESTORS' };
 

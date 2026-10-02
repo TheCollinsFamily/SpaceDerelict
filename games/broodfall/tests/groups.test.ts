@@ -247,3 +247,19 @@ describe('determinism', () => {
     expect(go()).toBe(go());
   });
 });
+
+describe('the shield dome alert (the dome fork: Aegis Deacon, Lens Bearer)', () => {
+  it('a dome bearer within your limbs\' reach raises SHIELD DOME; warriors on AUTO answer it', () => {
+    const s = withWarriors();
+    const t = s.towers[0];
+    const e = (s as unknown as Spawner).spawnEnemy('soldier');
+    e.pos = s.nearestStreet(t.cell)!;
+    // Stand in for Sim.domeBearers until the dome fork's code is on main.
+    Object.defineProperty(s, 'domeBearers', { get: () => s.enemies.filter((x) => x.id === e.id), configurable: true });
+    for (let i = 0; i < 12; i++) { s.tick(); s.takeEvents(); }
+    const al = s.groups.alerts.find((a) => a.kind === 'dome');
+    expect(al).toBeTruthy();
+    expect(al!.who).toContain('warrior');
+    expect([...s.groups.sorties.values()].some((x) => x.targetId === e.id)).toBe(true);
+  });
+});

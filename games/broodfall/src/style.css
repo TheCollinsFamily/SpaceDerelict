@@ -751,7 +751,7 @@ body.in-ship #topbar, body.in-ship #botbar { visibility: hidden; }
 #unit-roster .ur-auto.on { color: #0d1416; background: #9ae8f0; border-color: #9ae8f0; }
 #unit-alerts { position: absolute; left: 72px; top: 40px; z-index: 4; display: flex; flex-direction: column; gap: 4px; max-width: 360px; }
 .unit-alert { display: flex; align-items: center; gap: 6px; padding: 4px 6px; background: rgba(13, 20, 22, 0.92); border: 1px solid #3d5a5e; border-left: 3px solid #9ae8f0; color: #dfeff1; font: 11px/1.2 sans-serif; letter-spacing: 1px; animation: ua-in 0.25s ease-out; }
-.unit-alert-outpost { border-left-color: #ff6a50; } .unit-alert-station, .unit-alert-engineer { border-left-color: #ffd36a; }
+.unit-alert-outpost { border-left-color: #ff6a50; } .unit-alert-dome { border-left-color: #c9a0ff; } .unit-alert-station, .unit-alert-engineer { border-left-color: #ffd36a; }
 .unit-alert .ua-text { flex: 1; }
 .unit-alert .ua-send { font: 700 10px/1 sans-serif; letter-spacing: 1px; padding: 4px 6px; cursor: pointer; color: #0d1416; background: #9ae8f0; border: 0; border-radius: 3px; }
 .unit-alert .ua-send:disabled { opacity: 0.4; cursor: default; }
