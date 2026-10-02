@@ -995,6 +995,11 @@ function placePreview(cell: number): void {
     facing: currentPlaceFacing(cell),
     pips: sim.pendingPips,
   };
+  // A Spine Wall crosses its street edge to edge: its width, body and price are shown before it is placed.
+  if (fam === 'spine' && ground.valid && sim.map.cells[cell] === CellType.Road) {
+    const n = ground.cells.length;
+    hud.setHint(`SPINE WALL · ${n} wide · ${Sim.wallHp(n)} hp · ${sim.wallCost(n).war} war · it crosses the street from building to building · Esc cancels`);
+  }
 }
 
 /** Cancel whatever is armed (cards, organs, throwers) and close the panel. */

@@ -9,7 +9,7 @@
  * Anything without art is drawn as its old shape, so the game plays the same with any part
  * of the art missing.
  */
-import { Application, Container, Graphics, Matrix, Sprite, Texture } from 'pixi.js';
+import { Application, Container, Graphics, Matrix, Rectangle, Sprite, Texture } from 'pixi.js';
 import { CellType, PLATE } from '../sim/citymap';
 import { Sim, enemySpec, towerSpec, towerStats } from '../sim/sim';
 import { footprintOf } from '../sim/footprint';
@@ -172,6 +172,8 @@ interface LimbView {
   atlas: import('./art').Atlas;
   /** The upgrade look drawn (null: its own), how far into growing into it (s; -1: not growing), and the flash laid over it as it grows. */
   look: string | null; growT: number; flash: Sprite;
+  /** A Spine Wall three or more cells wide: drawn as ONE wall of end-caps and tiled middle strips (tileWall). */
+  parts?: Sprite[];
 }
 interface ShotView { up0: number; ttl0: number; seen: number }
 /** A townsperson fleeing the crash (src/sim/civilians.ts): its picture (or its drawn figure), where it is shown (eased between sim ticks). */
@@ -1485,7 +1487,7 @@ export class IsoRenderer extends Renderer {
       const p0 = project(g, at.x, at.y, h);
       const found = this.limbArtOf(t);
       let v = this.limbs.get(t.id);
-      if (v && v.family !== t.family) { v.sprite.destroy(); v.over.destroy(); v.flash.destroy(); v.shade.destroy(); this.fates.drop(t.id); this.limbs.delete(t.id); v = undefined; }
+      if (v && v.family !== t.family) { v.parts?.forEach((s) => s.destroy()); v.sprite.destroy(); v.over.destroy(); v.flash.destroy(); v.shade.destroy(); this.fates.drop(t.id); this.limbs.delete(t.id); v = undefined; }
       if (!found) {
         // No picture of this limb: its old shape, at the size of the rest.
         this.drawTowerBody(this.marksG, t, p0.x / K, (p0.y - 20) / K, sim);
@@ -1662,6 +1664,9 @@ export class IsoRenderer extends Renderer {
         v.flash.position.copyFrom(v.sprite.position);
         v.flash.zIndex = v.sprite.zIndex + 0.1;
       }
+      // A wall across a street three or more cells wide is drawn as one wall from its own picture (Oct 2 2026).
+      if (art.on === 'street' && sim.cellsOf(t).length >= 3) this.tileWall(sim, v, t);
+      else if (v.parts) { v.parts.forEach((s) => s.destroy()); v.parts = undefined; v.sprite.renderable = true; v.over.renderable = true; }
       // The parts of the limbs it was built from, grafted on its body.
       if (!art.flat) this.fates.graft(this.sorted, t, art, side, p.x, risen, scale, mirror, width, v.sprite.zIndex, v.sprite.visible, v.sprite.tint as number);
       // Its health, crest and marks sit over the TOP of what is drawn, not a fixed height over its foot: a tall
@@ -1676,6 +1681,9 @@ export class IsoRenderer extends Renderer {
     }
     for (const [id, v] of this.limbs) {
       if (v.seen === this.frameNo) continue;
+      v.parts?.forEach((s) => s.destroy());
+      v.parts = undefined;
+      v.sprite.renderable = true;
       this.limbs.delete(id);
       v.over.destroy();
       v.flash.destroy();
@@ -1688,6 +1696,74 @@ export class IsoRenderer extends Renderer {
   }
 
   /** Does the street through this cell run along world x? Then a wall across it lies along world y. */
+  /** Cut textures of a wall's frames: a strip or an end of the frame, cached by frame and cut. */
+  private wallCuts = new Map<string, Texture>();
+  private wallCut(tex: Texture, x0: number, w: number): Texture {
+    const f = tex.frame;
+    const a = Math.max(0, Math.round(x0));
+    const b = Math.min(f.width, Math.round(x0 + w));
+    const key = `${tex.uid}:${a}:${b}`;
+    let t = this.wallCuts.get(key);
+    if (!t) {
+      t = new Texture({ source: tex.source, frame: new Rectangle(f.x + a, f.y, Math.max(1, b - a), f.height) });
+      this.wallCuts.set(key, t);
+    }
+    return t;
+  }
+
+  /**
+   * A Spine Wall that crosses a street three or more cells wide (Collins, Oct 2 2026: "just cross the street between two
+   * points"), drawn as ONE wall from its own picture, at all four camera turns: the picture is split at its foot into a
+   * left and a right end, each laid against the building at its end of the street, and the band between them is filled
+   * with narrow strips cut from the middle of the picture, laid at every half cell along the wall. The band in the
+   * picture runs along the iso diagonal, so each strip, set at its own point of the wall's line, joins its neighbours.
+   * The whole sprite is not drawn (it stays for its shadow, marks and picking).
+   */
+  private tileWall(sim: Sim, v: LimbView, t: Tower): void {
+    const g = this.geo;
+    const tex = v.sprite.texture;
+    const f = tex.frame;
+    const ax = v.sprite.anchor.x * f.width;
+    const ay = v.sprite.anchor.y;
+    const sx = v.sprite.scale.x;
+    const sy = v.sprite.scale.y;
+    const mirror = sx < 0;
+    const pts = sim.cellsOf(t).map((c) => { const cc = sim.cellCenter(c); return project(g, cc.x, cc.y, this.heightOf(sim, c)); }).sort((a, b) => a.x - b.x);
+    const meanY = pts.reduce((n, p) => n + p.y, 0) / pts.length;
+    const dy = v.sprite.position.y - meanY;
+    // Every half cell along the wall, from its first cell to its last.
+    const samples: Array<{ x: number; y: number }> = [];
+    for (let i = 0; i < pts.length; i++) {
+      samples.push(pts[i]);
+      if (i + 1 < pts.length) samples.push({ x: (pts[i].x + pts[i + 1].x) / 2, y: (pts[i].y + pts[i + 1].y) / 2 });
+    }
+    const half = Math.abs(pts[1].x - pts[0].x) / 2;
+    const stripW = (half * 1.08) / Math.abs(sx); // a hair wider than the step, so no seam shows
+    const need = samples.length + 2;
+    if (!v.parts) v.parts = [];
+    while (v.parts.length < need) { const s = new Sprite(); this.sorted.addChild(s); v.parts.push(s); }
+    while (v.parts.length > need) v.parts.pop()!.destroy();
+    const put = (s: Sprite, cut: Texture, anchorX: number, x: number, y: number) => {
+      s.texture = cut;
+      s.anchor.set(anchorX, ay);
+      s.scale.set(sx, sy);
+      s.position.set(x, y + dy);
+      s.zIndex = v.sprite.zIndex;
+      s.tint = v.sprite.tint;
+      s.alpha = v.sprite.alpha;
+      s.visible = v.sprite.visible;
+    };
+    // The ends: the half of the picture that reaches AWAY from the wall's middle on screen.
+    const leftHalf = mirror ? this.wallCut(tex, ax, f.width - ax) : this.wallCut(tex, 0, ax);
+    const rightHalf = mirror ? this.wallCut(tex, 0, ax) : this.wallCut(tex, ax, f.width - ax);
+    put(v.parts[0], leftHalf, mirror ? 0 : 1, pts[0].x, pts[0].y);
+    put(v.parts[1], rightHalf, mirror ? 1 : 0, pts[pts.length - 1].x, pts[pts.length - 1].y);
+    const mid = this.wallCut(tex, ax - stripW / 2, stripW);
+    samples.forEach((p, i) => put(v.parts![i + 2], mid, 0.5, p.x, p.y));
+    v.sprite.renderable = false;
+    v.over.renderable = false;
+  }
+
   private laneRunsAlongX(sim: Sim, cell: number): boolean {
     // The sim's own read of the street (Sim.laneAlongX), so a wall is drawn across the street it was built across.
     if (sim.map.cells[cell] === CellType.Road) return sim.laneAlongX(cell);

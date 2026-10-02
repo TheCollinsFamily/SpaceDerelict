@@ -43,6 +43,9 @@ const ENEMY_RADIUS = 8;
 const SEPARATION_DIST = 13;      // px: enemies shoulder each other apart
 const STRUCTURE_FLOW_COST = 400; // a tower on a road is a wall worth a 40-cell detour
 
+/** The widest a Spine Wall is built (Sim.wallAcross): wider runs are junctions or squares, not streets. */
+export const WALL_MAX = 4;
+
 function dist(a: Vec, b: Vec): number {
   return Math.hypot(a.x - b.x, a.y - b.y);
 }
@@ -863,8 +866,8 @@ export class Sim {
     const s = towerStats({ ...t, pips: all }, true);
     s.range = s.range * this.geneMods.rangeMult * this.heightRangeFactor(t.cell);
     s.maxHp += t.family === 'spine' ? this.geneMods.spineHpBonus : 0;
-    // A wall across a street one cell wide takes one cell: it has a one-cell wall's body (its spec is paid for two).
-    if (t.family === 'spine' && this.cellsOf(t).length === 1 && towerSpec('spine').span) s.maxHp -= Math.round(towerSpec('spine').maxHp * (1 - 1 / 1.6));
+    // A wall's body grows with the cells it crosses (Sim.wallHp; its spec is the two-cell wall).
+    if (t.family === 'spine') s.maxHp += Sim.wallHp(this.cellsOf(t).length) - towerSpec('spine').maxHp;
     s.eatThreshold += t.family === 'maw' ? this.geneMods.mawEatBonus : 0;
     // A whole chapel on one limb IS a build: every covering choir adds, and the
     // same tempo also quickens a producer's cycle.
@@ -1053,10 +1056,14 @@ export class Sim {
   }
 
   /**
-   * A SPINE WALL in a street stands ACROSS it (Collins, Oct 1 2026: "how are we still placing walls lengthwise
-   * rather than across pathways"): the cells of the street's width at this cell, at most two (its `span`), never
-   * along the lane. On a street one cell wide it is ONE cell, and has a one-cell wall's hp (statsOf), so a wall is
-   * never doubled for free. Where one of two cells across cannot be built on, it is one cell.
+   * A SPINE WALL in a street crosses it from one building edge to the other (Collins, Oct 1 2026: "how are we still
+   * placing walls lengthwise rather than across pathways"; Oct 2: "I think this should be handled uniquely and just
+   * cross the street between two points (given that the street can be both shorter and longer than two units)").
+   * Its ground is every street cell across the lane at the cell pointed at, the way across the street runs
+   * (laneAlongX), stopping at a block, a square or the map's edge: 1, 2, 3 or more cells, as ONE wall. Its price
+   * and body grow with its width (wallCost, statsOf). Capped at WALL_MAX cells, centred on the cell pointed at:
+   * a run wider than that is a junction or a square, not a street, and the swarm would walk round its ends.
+   * Cells the creep does not hold (or that are taken) end it: it takes the run of buildable cells round the cell.
    */
   wallAcross(cell: number, ok: (c: number) => boolean): { cells: number[]; facing: RootDir } | null {
     if (!ok(cell)) return null;
@@ -1065,24 +1072,27 @@ export class Sim {
     // Across a street that runs along x is up and down the board.
     const step = alongX ? w : 1;
     const road = (c: number) => c >= 0 && c < this.map.cells.length && this.map.cells[c] === CellType.Road
-      && (step === 1 ? Math.floor(c / w) === Math.floor(cell / w) : true);
-    // The street's width here: its run across, through the cell.
+      && (step === 1 ? Math.floor(c / w) === Math.floor(cell / w) : true) && ok(c);
     const across: number[] = [cell];
     for (let c = cell - step; road(c); c -= step) across.unshift(c);
     for (let c = cell + step; road(c); c += step) across.push(c);
-    const at = across.indexOf(cell);
-    const max = towerSpec('spine').span ? Math.max(...towerSpec('spine').span!) : 1;
-    let cells = [cell];
-    if (max >= 2 && across.length >= 2) {
-      // The neighbour across that keeps the wall nearer the street's middle (either, on a street two wide).
-      const before = across[at - 1];
-      const after = across[at + 1];
-      const mid = (across.length - 1) / 2;
-      const pick = [after, before].filter((c) => c !== undefined && ok(c))
-        .sort((a, b) => Math.abs(across.indexOf(a) - mid) - Math.abs(across.indexOf(b) - mid))[0];
-      if (pick !== undefined) cells = [cell, pick].sort((a, b) => a - b);
+    let cells = across;
+    if (cells.length > WALL_MAX) {
+      const at = cells.indexOf(cell);
+      const from = Math.max(0, Math.min(cells.length - WALL_MAX, at - Math.floor((WALL_MAX - 1) / 2)));
+      cells = cells.slice(from, from + WALL_MAX);
     }
-    return { cells, facing: alongX ? 'S' : 'E' };
+    return { cells: [...cells].sort((a, b) => a - b), facing: alongX ? 'S' : 'E' };
+  }
+
+  /** A Spine Wall's price by how many cells it crosses: 10 war up to two, 5 more for each cell past that. */
+  wallCost(cells: number): Partial<Record<Caste, number>> {
+    return { war: (towerSpec('spine').cost.war ?? 10) + 5 * Math.max(0, cells - 2) };
+  }
+
+  /** A Spine Wall's body by how many cells it crosses: 520 hp on one, +312 for each more (832 on two, as it was). */
+  static wallHp(cells: number): number {
+    return 520 + 312 * Math.max(0, cells - 1);
   }
 
   /** May a limb stand on this one cell? */
@@ -1746,25 +1756,27 @@ export class Sim {
         const place = this.placementFor(cmd.cell, card.family, cmd.facing);
         if (!place) return { ok: false, err: isMultiCell(spec) ? `it needs ${footprintName(spec)} of one flat roof your creep holds` : 'cell not buildable' };
         const ground = place.cells;
+        // A wall's price grows with its width (wallCost); every other limb pays its card.
+        const price = card.family === 'spine' ? this.wallCost(ground.length) : spec.cost;
         if (cmd.cannibalizeTowerId !== undefined) {
           // Legacy atomic path (autoplayer/tests): butcher-then-build in one command.
           const donor = this.towers.find((t) => t.id === cmd.cannibalizeTowerId);
           if (!donor) return { ok: false, err: 'no such donor' };
           const salv = this.salvageOf(donor.family);
           const affordable = (['war', 'science', 'royal'] as Caste[]).every(
-            (c) => this.meat[c] + (salv[c] ?? 0) >= (spec.cost[c] ?? 0),
+            (c) => this.meat[c] + (salv[c] ?? 0) >= (price[c] ?? 0),
           );
           if (!affordable) return { ok: false, err: 'cannot afford' };
           this.butcherTower(donor);
         }
-        if (!card.free && !this.canAfford(spec.cost)) return { ok: false, err: 'cannot afford' };
+        if (!card.free && !this.canAfford(price)) return { ok: false, err: 'cannot afford' };
         const pips = this.pendingPips;
         this.pendingPips = [];
         if (pips.length > 0) {
           this.events.push({ kind: 'cannibalized', donor: pips[pips.length - 1].family, into: card.family });
           this.stats.cannibalized += 1;
         }
-        if (!card.free) this.pay(spec.cost);
+        if (!card.free) this.pay(price);
         const grown = this.addTower(card.family, ground[0], pips, place.facing ?? cmd.facing, ground);
         // SURGERY UNDER FIRE: grafting what was eaten takes time, and mid-siege that time is
         // spent in the open — the new limb holds fire, bleeds double, and draws the climbers.
