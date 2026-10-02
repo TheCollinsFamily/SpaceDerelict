@@ -1,8 +1,4 @@
-TODAY (no limb reshaped): HOLDS · naive 5/10 · guardrail 5:0 (86981 to 45000) · big limbs built by the scripted player over ten runs: 259 · as the game is
-the new lines only: HOLDS · naive 5/10 · guardrail 5:0 (87697 to 45000) · big limbs built by the scripted player over ten runs: 302 · ember, ocular, sling, amp, press, lance
-the Bombard 2x2 only: HOLDS · naive 5/10 · guardrail 5:0 (86481 to 45000) · big limbs built by the scripted player over ten runs: 264 · bombard
-the three T limbs only (full pay): HOLDS · naive 7/10 · guardrail 6:0 (93056 to 47000) · big limbs built by the scripted player over ten runs: 375 · mister, choir, burster
-the four L limbs only (full pay): HOLDS · naive 8/10 · guardrail 7:0 (100403 to 51000) · big limbs built by the scripted player over ten runs: 509 · lasher, quill, conduit, tangler
-the four L limbs, the elbows paid as two cells: HOLDS · naive 7/10 · guardrail 6:0 (93908 to 47000) · big limbs built by the scripted player over ten runs: 434 · lasher, quill, conduit, tangler
-THE WHOLE PLAN, full pay (too easy): HOLDS · naive 10/10 · guardrail 8:0 (104333 to 52000) · big limbs built by the scripted player over ten runs: 760 · ember, ocular, sling, amp, press, lance, bombard, mister, choir, burster, lasher, quill, conduit, tangler
-THE WHOLE PLAN, RECOMMENDED pay (elbows and the Burster/Choir T paid as two cells): HOLDS · naive 6/10 · guardrail 5:0 (90501 to 48000) · big limbs built by the scripted player over ten runs: 568 · ember, ocular, sling, amp, press, lance, bombard, mister, choir, burster, lasher, quill, conduit, tangler
+TODAY (no limb reshaped; walls across streets since Oct 1): HOLDS · naive 5/10 · guardrail 4:0 (83866 to 46000)
+REVISED PLAN (Bombard 2x2, Caustic Mister and Ward Membrane one square at their pre-Sep-29 stats): HOLDS · naive 5/10 · guardrail 4:0 (81184 to 46000)
+The Bombard on a T instead (before the sanity pass): HOLDS but weaker · naive 4/10 · guardrail 3:0 (77132 to 46000)
+The Oct 1 first draft (14 changes, superseded): 10/10 at full pay, 6/10 with the elbows and T paid as two cells

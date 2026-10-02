@@ -13,6 +13,7 @@ import { fileURLToPath } from 'node:url';
 import { cutThumbs } from './thumbs.mjs';
 import { AUDIT, DECISIONS } from './audit.mjs';
 import { footprintCell, loadPlan, planMarkdown, planSectionHtml, resolvedBy } from './planSection.mjs';
+import { OVERVIEW_CSS, overviewHtml } from './overview.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const entries = JSON.parse(execFileSync(process.execPath, [join(root, 'node_modules', 'vite-node', 'vite-node.mjs'), 'tools/codex/dump.ts'], { cwd: root, encoding: 'utf8', maxBuffer: 1 << 26 }));
@@ -206,7 +207,8 @@ footer code { font-size: 12px; color: #c8d1d5; word-break: break-all; }
 .plan .lede2 { color: #c8d1d5; max-width: 110ch; margin: 0 0 12px; }
 .plan code { color: var(--cyan); font-size: 12.5px; }
 .pgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 380px), 1fr)); gap: 10px; }
-.pgrid article { border: 1px solid var(--line); background: var(--panel); padding: 12px 14px; min-width: 0; }
+.pgrid article { border: 1px solid var(--line); background: var(--panel); padding: 12px 14px; min-width: 0; overflow-x: auto; }
+.plan > table, .over > details { display: block; overflow-x: auto; }
 .pgrid h3, .plan .sub3 { font: 500 16px/1.2 var(--display); letter-spacing: 0.5px; margin: 0 0 8px; }
 .plan .sub3 { margin: 18px 0 6px; }
 .note { color: var(--dim); font-size: 12.5px; margin: 6px 0; }
@@ -232,8 +234,10 @@ footer code { font-size: 12px; color: #c8d1d5; word-break: break-all; }
 .fixes th { width: 300px; font: 500 13px var(--display); color: var(--fg); }
 .ovl { margin-top: 8px; color: var(--dim); font-size: 12.5px; }
 .ovl summary { cursor: pointer; }
-.qs { color: #c8d1d5; font-size: 13.5px; }
+.qs, .rules { color: #c8d1d5; font-size: 13.5px; }
+.rules b { color: var(--amber); font-weight: 600; }
 .mute { color: #6e7a80; }
+${OVERVIEW_CSS}
 @media (max-width: 760px) { header { grid-template-columns: 1fr; } h1 { font-size: 30px; letter-spacing: 4px; } .tally { flex-wrap: wrap; } }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
 </style>
@@ -244,6 +248,8 @@ footer code { font-size: 12px; color: #c8d1d5; word-break: break-all; }
     <p class="lede">Every limb family, its pictures, numbers and what it teaches an eater, with what looks wrong or unclear about it. Numbers are read from the game; the scripted runs are the naive player on hold-12 over ten seeds (${bal.wins}/10 won, ${esc(bal.measured)}). Flags marked <b>seen</b> are Claude's read of the pictures and roles; the rest are counted.</p></div>
   <div class="tally"><div><b>${entries.length}</b><span>families</span></div><div><b>${prototyped.length}</b><span>looks drawn</span></div><div><b>${singleLook}</b><span>reach 1 look</span></div><div><b>${evoTotal}</b><span>looks to draw*</span></div></div>
 </header>
+
+${overviewHtml(entries, PLANNED, names, thumbs)}
 
 ${planSectionHtml(entries, PLANNED, names)}
 

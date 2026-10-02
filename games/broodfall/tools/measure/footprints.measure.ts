@@ -104,6 +104,16 @@ const CANDIDATES: Record<string, Candidate> = {
   planSquare: planOf(['bombard']),
   planLlight: planOf(['lasher', 'quill', 'conduit', 'tangler'], L_LIGHT),
   planLight: planOf(Object.keys(PLAN) as TowerFamily[], { ...L_LIGHT, ...T_LIGHT }),
+  // The revised plan of Oct 2 2026 (Collins's rules: corridor huggers and simple limbs stay one square; the Maw is
+  // already 2x2): the only footprint change is the Spore Bombard onto a T.
+  plan2: { bombard: paidFor(towerSpec('bombard'), 'T') },
+  // After Collins's sanity pass (Oct 2): the Bombard on a 2x2 (a squat mortar, not a T); the Caustic Mister and the
+  // Ward Membrane back to one square with the stats they had before Sep 29 (cheap support, not "very powerful").
+  plan3: {
+    bombard: [2, 2],
+    mister: { span: undefined, range: 85, damage: 2, aoe: 40, maxHp: 65 },
+    ward: { span: undefined, maxHp: 90, auraRadius: 95 },
+  },
 };
 
 class RandomPlacer {

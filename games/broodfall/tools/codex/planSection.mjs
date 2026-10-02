@@ -9,7 +9,7 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { FIXES, PLAN, PRICE } from './plan.mjs';
+import { FIXES, NO_L, PLAN, PRICE, QUESTIONS, RULES, SANITY } from './plan.mjs';
 
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const KIND = { '1x1': 'one', '1x2': 'line', line3: 'line', '2x2': 'square', T: 'T', L3: 'L', L4: 'L', S4: 'zigzag' };
@@ -68,7 +68,7 @@ export function footprintCell(f, P) {
   if (!p) return '<td class="fpc"></td>';
   const now = P.nowId(f);
   const changed = now !== p.to;
-  return `<td class="fpc ${changed ? 'chg' : ''}"><div class="fprow">${cellsSvg(P.dump[f].now, 'now')}${changed ? `<span class="arr">→</span>${cellsSvg(P.dump[f].next, 'next')}` : ''}</div><div class="fpn">${changed ? `${esc(SHAPE_NAME[now])} → <b>${esc(SHAPE_NAME[p.to])}</b>` : `${esc(SHAPE_NAME[now])} · kept`}</div>${p.why ? `<div class="fpw">${esc(p.why)}</div>` : ''}${p.silhouette ? `<div class="fps"><em>Look</em> ${esc(p.silhouette)}</div>` : ''}${(p.variants ?? []).length ? `<div class="fps"><em>Variant art</em> ${p.variants.map((v) => `${esc(v[2])} (stage ${v[0]}${v[1]}): ${esc(v[3])}`).join('; ')}</div>` : ''}${p.risk ? `<div class="fps risk"><em>Risk</em> ${esc(p.risk)}</div>` : ''}</td>`;
+  return `<td class="fpc ${changed ? 'chg' : ''}"><div class="fprow">${cellsSvg(P.dump[f].now, 'now')}${changed ? `<span class="arr">→</span>${cellsSvg(P.dump[f].next, 'next')}` : ''}</div><div class="fpn">${changed ? `${esc(SHAPE_NAME[now])} → <b>${esc(SHAPE_NAME[p.to])}</b>` : `${esc(SHAPE_NAME[now])} · kept`}${p.rule ? ` · rule ${p.rule}` : ''}</div>${p.open ? `<div class="fps risk"><em>Open</em> ${esc(p.open)}</div>` : ''}${p.why ? `<div class="fpw">${esc(p.why)}</div>` : ''}${p.silhouette ? `<div class="fps"><em>Look</em> ${esc(p.silhouette)}</div>` : ''}${(p.variants ?? []).length ? `<div class="fps"><em>Variant art</em> ${p.variants.map((v) => `${esc(v[2])} (stage ${v[0]}${v[1]}): ${esc(v[3])}`).join('; ')}</div>` : ''}${p.risk ? `<div class="fps risk"><em>Risk</em> ${esc(p.risk)}</div>` : ''}</td>`;
 }
 
 /** How the plan answers one old flag: its own line, or the general rule for that kind of flag, or null. */
@@ -121,13 +121,15 @@ export function planSectionHtml(entries, P, names) {
   }).join('');
   const overlayList = entries.filter((e) => (PLAN[e.family]?.overlays ?? []).length).map((e) => `<li><a href="#${e.family}">${esc(names[e.family])}</a>: ${esc(PLAN[e.family].overlays.join('; '))}</li>`).join('');
   const sums = sumCost(entries, P);
-  const measuredHtml = P.measured.length ? `<ul class="meas">${P.measured.map((l) => `<li class="${/HOLDS/.test(l) ? 'ok' : 'bad'} ${/RECOMMENDED/.test(l) ? 'rec' : ''}">${esc(l)}</li>`).join('')}</ul><p class="note"><b>Recommended pay:</b> a line or square as the BIG limbs were; the three-cell elbows (Lasher, Quill, Conduit) and the Burster's and Choir's T paid as if they took two cells (they reach two streets from one hub, which is worth more than their cells). The whole plan then wins 6 of 10 (today 5), guardrail 5:0.</p>` : '<p class="mute">Not measured yet.</p>';
+  const measuredHtml = P.measured.length ? `<ul class="meas">${P.measured.map((l) => `<li class="${/BREAKS/.test(l) ? 'bad' : 'ok'} ${/REVISED PLAN/.test(l) ? 'rec' : ''}">${esc(l)}</li>`).join('')}</ul>` : '<p class="mute">Not measured yet.</p>';
   return `
 <section class="plan" id="footprint-plan">
 <h2>Footprint plan (proposed, not applied)</h2>
-<p class="lede2">Collins: "the total lack of diversity in footprint ... is kind of a KEY part of tower defence strategy ... one square (hugely over-represented), two squares (line), four squares (large square, usually for very powerful towers), T-shaped (usually for very powerful area-effect things), L-shaped (like an elbow shape)." The engine for every shape is BUILT and on main (any shape, four turns, R / right-click / Shift + wheel / the TURN button while placing; its ground outlined on the board). This plan says which limb takes which shape. Nothing below is applied; any of it can be tried in game first: <code>?tryShape=lasher:L3,quill:L3</code>.</p>
+<p class="lede2">Collins: "the total lack of diversity in footprint ... is kind of a KEY part of tower defence strategy ... one square (hugely over-represented), two squares (line), four squares (large square, usually for very powerful towers), T-shaped (usually for very powerful area-effect things), L-shaped (like an elbow shape)." The engine for every shape is BUILT and on main (any shape, four turns, R / right-click / Shift + wheel / the TURN button while placing; its ground outlined on the board). This plan says which limb takes which shape. Nothing below is applied; any of it can be tried in game first: <code>?tryShape=bombard:2x2</code>. Revised Oct 2 after Collins: "simple towers and ones that absolutely must be by the corridor are typically 1 single square, so like the Lasher does not need to change ... also the Maw is already a 2x2".</p>
+<h3 class="sub3">The rules this plan follows</h3>
+<ol class="rules">${RULES.map(([a, b]) => `<li><b>${esc(a)}.</b> ${esc(b)}</li>`).join('')}</ol>
 <div class="pgrid">
-  <article><h3>Distribution</h3><div class="dist"><div class="dk hd"><span></span><span>now</span><span>proposed</span></div>${bars}</div><p class="note">${total} limbs. One cell: ${now.one} → ${next.one} (${Math.round((next.one / total) * 100)}%, under half). ${changes.length} limbs change footprint.</p></article>
+  <article><h3>Distribution</h3><div class="dist"><div class="dk hd"><span></span><span>now</span><span>proposed</span></div>${bars}</div><p class="note">${total} limbs. One cell: ${now.one} → ${next.one} (${Math.round((next.one / total) * 100)}%: by rule 1 it stays the most common). ${changes.length} limb${changes.length === 1 ? '' : 's'} change${changes.length === 1 ? 's' : ''} footprint: ${changes.map((e) => esc(names[e.family])).join(', ')}. ${esc(NO_L)}</p></article>
   <article><h3>How each shape fits the city</h3><p class="note">Share of roof cells where pointing can build it (any of four turns; one block, one height), on the four crash sites and on ten mid-run boards. A shape that rarely fits is a bad shape: the 2x2 is the hardest to fit (it is kept for the strongest limbs); the zigzag fits badly and is not used.</p>${fitRows ? `<table class="fit"><thead><tr><th></th><th>Shape</th><th>Crash site</th><th>Mid-run</th><th>Placements, crash</th><th>Mid-run</th></tr></thead><tbody>${fitRows}</tbody></table>` : '<p class="mute">Not measured.</p>'}</article>
   <article><h3>Measured (scripted player, ten seeds; guardrail eight)</h3><p class="note">Each candidate pays a reshaped limb for its ground as the BIG limbs were (hp ×1.6 / ×2.0 / ×2.4 on 2 / 3 / 4 cells, hits ×1.25 / ×1.38 / ×1.5, reach ×1.1 / ×1.12 / ×1.15), same price. It must win at least 3 of 10 and keep placing well ahead of placing blind. Nothing is changed in the game; the candidate is put back after it is measured.</p>${measuredHtml}</article>
   <article><h3>What the art costs (one pass with the upgrade looks)</h3><p class="note">Footprint, new silhouettes, views from behind, the reachable looks and the spatial variants, drawn together so nothing is drawn twice. One side $1.45 (a picture and two clips), with a view from behind $2.90 (a limb on a turned footprint, or one that faces a way, needs both).</p><table class="cost"><tbody>
@@ -147,13 +149,7 @@ export function planSectionHtml(entries, P, names) {
 <table class="fixes"><tbody>${FIXES.map(([a, b]) => `<tr><th>${esc(a)}</th><td>${esc(b)}</td></tr>`).join('')}</tbody></table>
 <p class="note">Every flag in the ledger below also says how the plan answers it ("Resolved by").</p>
 <h3 class="sub3">For Collins to decide</h3>
-<ol class="qs">
-<li>The footprints themselves: the 14 changes in the Footprint column (try them in game with <code>?tryShape=</code>).</li>
-<li>The Lobber/Bombard split: Lobber a cheap glob that leaves an acid puddle; Bombard the one 2x2 siege gun. (A big Bombard cost a win in ten on Sep 29.)</li>
-<li>The Ember Sac on two cells fires its cone the way it lies (like the Mortar): a mechanic change.</li>
-<li>The bonus classes: Choir → SWARM (and its donor bonus +8% fire rate), Press → VENOM, Tap → SWARM, Reliquary stays BONE.</li>
-<li>Whether to retire the Lasher's one-cell prototypes and the unreachable prototype looks, or keep them for eaten bonuses.</li>
-</ol>
+<ol class="qs">${QUESTIONS.map((q) => `<li>${esc(q)}</li>`).join('')}</ol>
 </section>`;
 }
 
@@ -180,11 +176,21 @@ export function planMarkdown(entries, P, names) {
   const { now, next } = distribution(entries, P);
   const sums = sumCost(entries, P);
   const L = [];
-  L.push('# Broodfall footprint plan (Oct 1 2026): proposed, not applied');
+  L.push('# Broodfall footprint plan (revised Oct 2 2026): proposed, not applied');
   L.push('');
   L.push('Collins (Oct 1 2026): "the total lack of diversity in footprint ... is kind of a KEY part of tower defence strategy. In tower defence the tower categories are one square (hugely over-represented), two squares (line), four squares (large square, usually for very powerful towers), T-shaped (usually for very powerful area-effect things), L-shaped (like an elbow shape) ... we may need more visuals for towers that, to work, need to look different ... so a reach lasher will likely need sub-variants because it needs that reach to work." And: "look at the problems you identified in the doc for the existing ones and make sure you pre-address this in the redesign."');
   L.push('');
-  L.push('The engine for every shape is built and on main (`src/sim/footprint.ts`; HANDOFF.md "Footprints"). This file says which limb takes which shape; nothing in it is applied. Try any of it in game first: `?tryShape=lasher:L3,quill:L3` (any limb, any of `1x1 1x2 2x2 line3 T L3 L4 S4`). The same plan is on the limb decision sheet (https://claude.ai/artifact/G1XVCeZcLdEPx1QfQ2ny7g), section "Footprint plan", with a Footprint column. Made by `node tools/codex/sheet.mjs` from `tools/codex/plan.mjs`.');
+  L.push('The engine for every shape is built and on main (`src/sim/footprint.ts`; HANDOFF.md "Footprints"). This file says which limb takes which shape; nothing in it is applied. Try any of it in game first: `?tryShape=bombard:2x2` (any limb, any of `1x1 1x2 2x2 line3 T L3 L4 S4`). The same plan is on the limb decision sheet (https://claude.ai/artifact/G1XVCeZcLdEPx1QfQ2ny7g), section "Footprint plan", with a Footprint column. Made by `node tools/codex/sheet.mjs` from `tools/codex/plan.mjs`.');
+  L.push('');
+  L.push('Revised Oct 2 after Collins: "simple towers and ones that absolutely must be by the corridor are typically 1 single square, so like the Lasher does not need to change ... also the Maw is already a 2x2, keep that in mind." The first draft (Oct 1, 14 changes) is superseded; the sanity pass below changed three more.');
+  L.push('');
+  L.push('## The rules this plan follows');
+  L.push('');
+  RULES.forEach(([a, b], i) => L.push(`${i + 1}. **${a}.** ${b}`));
+  L.push('');
+  L.push('## Sanity pass (Collins, Oct 2: "also think through if they are sane")');
+  L.push('');
+  for (const [a, b] of SANITY) L.push(`- **${a}**: ${b}`);
   L.push('');
   L.push('## Distribution');
   L.push('');
@@ -192,20 +198,20 @@ export function planMarkdown(entries, P, names) {
   L.push('|---|---|---|');
   for (const k of KIND_ORDER) L.push(`| ${KIND_NAME[k]} | ${now[k]} | ${next[k]} |`);
   L.push('');
-  L.push(`One cell goes from ${now.one} of ${entries.length} to ${next.one} (under half).`);
+  L.push(`One cell goes from ${now.one} of ${entries.length} to ${next.one}: by rule 1 it stays the most common. ${NO_L}`);
   L.push('');
   L.push('## Every limb');
   L.push('');
-  L.push('| Limb | Now | Proposed | Why | New look |');
-  L.push('|---|---|---|---|---|');
+  L.push('| Limb | Now | Proposed | Rule | Why | New look |');
+  L.push('|---|---|---|---|---|---|');
   for (const e of entries) {
     const p = PLAN[e.family];
     if (!p) continue;
     const n = P.nowId(e.family);
-    L.push(`| ${names[e.family]} | ${SHAPE_NAME[n]} | ${n === p.to ? 'kept' : `**${SHAPE_NAME[p.to]}**`} | ${p.why ?? ''}${p.risk ? ` RISK: ${p.risk}` : ''} | ${p.silhouette ?? ''} |`);
+    L.push(`| ${names[e.family]} | ${SHAPE_NAME[n]} | ${n === p.to ? 'kept' : `**${SHAPE_NAME[p.to]}**`} | ${p.rule ?? ''} | ${p.why ?? ''}${p.risk ? ` RISK: ${p.risk}` : ''}${p.open ? ` OPEN: ${p.open}` : ''} | ${p.silhouette ?? ''} |`);
   }
   L.push('');
-  L.push('A reshaped limb is paid for its ground the way the BIG limbs were on Sep 29 (same price; hp x1.6 / x2.0 / x2.4 on 2 / 3 / 4 cells, hits x1.25 / x1.38 / x1.5, reach x1.1 / x1.12 / x1.15, blast x1.1 / x1.18 / x1.25; a limb already big is paid the difference). **Recommended (measured):** the three-cell elbows (Lasher, Quill, Conduit) and the Burster\'s and Choir\'s T are paid as if they took TWO cells: paid in full, the whole plan made the scripted player win 10 of 10; paid this way, 6 of 10 (today 5).');
+  L.push('A reshaped limb is paid for its ground the way the BIG limbs were on Sep 29 (same price; hp x1.6 / x2.0 / x2.4 on 2 / 3 / 4 cells, hits x1.25 / x1.38 / x1.5, reach x1.1 / x1.12 / x1.15, blast x1.1 / x1.18 / x1.25; a limb already big is paid the difference; the Mister and the Ward going back to one square get their stats from before Sep 29).');
   L.push('');
   L.push('## How each shape fits the city');
   L.push('');
@@ -221,7 +227,7 @@ export function planMarkdown(entries, P, names) {
   L.push('');
   L.push('## Measured balance');
   L.push('');
-  L.push('`MEASURE=plan npx vitest run --config tools/measure/vitest.config.ts tools/measure/footprints.measure.ts` (and planLines, planT, planL, planSquare): the scripted player over ten seeds (at least 3 must be won) and the placement guardrail over eight.');
+  L.push('`MEASURE=c0,plan3 npx vitest run --config tools/measure/vitest.config.ts tools/measure/footprints.measure.ts`: the scripted player over ten seeds (at least 3 must be won) and the placement guardrail over eight.');
   L.push('');
   for (const l of P.measured) L.push(`- ${l}`);
   if (!P.measured.length) L.push('- not measured yet');
@@ -254,11 +260,7 @@ export function planMarkdown(entries, P, names) {
   L.push('');
   L.push('## For Collins to decide');
   L.push('');
-  L.push('1. The 14 footprint changes (try them with `?tryShape=`).');
-  L.push('2. The Lobber/Bombard split (Lobber a cheap glob that leaves an acid puddle; Bombard the one 2x2 siege gun).');
-  L.push('3. The Ember Sac on two cells fires its cone the way it lies (a mechanic change).');
-  L.push('4. The bonus classes: Choir → SWARM (+8% fire rate as its donor bonus), Press → VENOM, Tap → SWARM, Reliquary stays BONE.');
-  L.push('5. Retire the Lasher\'s one-cell prototypes and the unreachable prototype looks, or keep them for eaten bonuses.');
+  QUESTIONS.forEach((q, i) => L.push(`${i + 1}. ${q}`));
   L.push('');
   return L.join('\n');
 }

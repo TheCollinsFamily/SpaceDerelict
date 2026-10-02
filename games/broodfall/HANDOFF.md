@@ -882,8 +882,13 @@ powerful area-effect things), L-shaped (like an elbow shape)". DESIGN.md "Shaped
   `tools/measure/shapefit.measure.ts` (`notes/limb-codex/shapefit.json`); balance
   `MEASURE=plan,planLines,planT,planL,planSquare ... tools/measure/footprints.measure.ts` (results in
   `notes/limb-codex/footprint-measure.txt`). Rebuild: `node tools/codex/sheet.mjs`.
-- **Screens:** `node tools/shot-footprint.mjs` (every shape placed and as the ghost, two camera turns;
-  `notes/screens/2026-10-01/footprint-*.png`, `footprint-sheet.jpg`).
+- **Screens:** `node tools/shot-footprint.mjs` is the ENGINE TEST (every shape on one placeholder Spitter;
+  `notes/screens/2026-10-01/footprint-ENGINE-TEST-sheet.jpg`); `node tools/shot-footprint.mjs --plan` shows each
+  multi-cell or reshaped limb on its own proposed shape (`footprint-PLAN-sheet.jpg`).
+- **Revised plan (Oct 2):** Collins's rules (simple and corridor limbs one square; lines for axis and walls; 2x2 for
+  the very powerful; T for very powerful area effects only; L only where a bend does the job better) and his sanity
+  pass leave three changes: Spore Bombard 1 → 2x2, Caustic Mister and Ward Membrane 2x2 → 1 (pre-Sep-29 stats).
+  No T or L fits a current limb. Measured (`MEASURE=plan3`): naive 5/10, guardrail 4:0, the same as today.
 - **Applying a shape to a limb** (when Collins decides): `shape: 'L3'` (or `span`) on it in `content/data.ts`, paid
   for its ground as the BIG limbs were (the K table in footprints.measure.ts), its art redrawn for the footprint
   in the same pass as its upgrade looks (the plan's cost), then the measures.
