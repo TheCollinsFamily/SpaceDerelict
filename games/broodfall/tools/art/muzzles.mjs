@@ -78,7 +78,7 @@ function write(img, text, x, y, rgb, px = 2) {
 }
 
 function sheetOf(l, view) {
-  const pre = view === 'back' ? 'back-' : '';
+  const pre = view === 'front' ? '' : `${view}-`;
   const idleFile = path.join(SRC, 'limbs', rawDirOf(l), `${pre}idle.mp4`);
   const fireFile = path.join(SRC, 'limbs', rawDirOf(l), `${pre}fire.mp4`);
   if (!fs.existsSync(idleFile)) return null;
@@ -99,7 +99,7 @@ function sheetOf(l, view) {
   const w = box.x1 - box.x0;
   const h = box.y1 - box.y0;
   const f = footingOf(l, idle, box, view);
-  const marks = (view === 'back' ? l.backMuzzle : l.muzzle) ?? [];
+  const marks = ({ front: l.muzzle, back: l.backMuzzle, side: l.sideMuzzle, backside: l.backSideMuzzle }[view]) ?? [];
   const sheet = blank(TILE * picks.length, TILE, [24, 24, 24, 255]);
   picks.forEach((frame, n) => {
     const tile = blank(TILE, TILE, STREET);
@@ -130,17 +130,18 @@ function sheetOf(l, view) {
 }
 
 const args = process.argv.slice(2);
-const view = args.includes('--back') ? 'back' : 'front';
+// --side, --backside: an elbow's or an L's other two views (tools/art/templates/limb-shaped.mjs).
+const view = args.includes('--back') ? 'back' : args.includes('--side') ? 'side' : args.includes('--backside') ? 'backside' : 'front';
 const ids = args.filter((a) => !a.startsWith('--'));
 // --variants: the upgrade looks (tools/art/limb-variants.mjs), named family@key (spitter@bone).
 const nameOf = (l) => (l.variant ? `${l.family}@${l.variant}` : l.family);
-const list = args.includes('--units') ? [] : (args.includes('--variants') ? VARIANT_LIMBS : LIMBS).filter((l) => (FIRING.includes(l.family) || l.tongue) && (!ids.length || ids.includes(l.family) || ids.includes(nameOf(l))) && (view === 'front' || l.back));
+const list = args.includes('--units') ? [] : (args.includes('--variants') ? VARIANT_LIMBS : LIMBS).filter((l) => (FIRING.includes(l.family) || l.tongue) && (!ids.length || ids.includes(l.family) || ids.includes(nameOf(l))) && (view === 'front' || l.back || l.plate));
 const out = path.join(REVIEW, 'muzzles');
 fs.mkdirSync(out, { recursive: true });
 for (const l of list) {
   const made = sheetOf(l, view);
   if (!made) { console.log(`${nameOf(l)}: no ${view} idle clip`); continue; }
-  const file = path.join(out, `${nameOf(l).replace('@', '--').replace('+', '-')}${view === 'back' ? '-back' : ''}.jpg`);
+  const file = path.join(out, `${nameOf(l).replace('@', '--').replace('+', '-')}${view === 'front' ? '' : `-${view}`}.jpg`);
   writeJpg(file, made.sheet, 3);
   console.log(`${nameOf(l).padEnd(9)} ${view.padEnd(5)} ${made.marks.length ? JSON.stringify(made.marks) : 'NOT MARKED'}  ${file}`);
 }

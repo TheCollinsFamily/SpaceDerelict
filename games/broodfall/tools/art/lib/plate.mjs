@@ -59,7 +59,7 @@ export function plateSpan(shape, facing = 'S') {
  * Draw the plate: the shape's cells as flat diamonds on the key colour.
  * @returns {{ img, x, y, w, h, tile }} the picture and the plate's box in it: its middle (x, y) and size.
  */
-export function drawPlate(shape, facing, { size = 1024, share = 0.6, low = 0.66, key = [0, 255, 0], ground = [70, 18, 26], at, slab = false } = {}) {
+export function drawPlate(shape, facing, { size = 1024, share = 0.6, low = 0.66, key = [0, 255, 0], ground = [70, 18, 26], at, slab = false, mark = false } = {}) {
   const cells = cellsOf(shape, facing).map(onScreen);
   const xs = cells.map((p) => p[0]);
   const ys = cells.map((p) => p[1]);
@@ -81,6 +81,16 @@ export function drawPlate(shape, facing, { size = 1024, share = 0.6, low = 0.66,
     const thick = th * 0.12;
     for (const [x, y] of at2) for (let d = 1; d <= thick; d++) diamond(img, x, y + d, tw / 2, th / 2, [64, 14, 22]);
     for (const [x, y] of at2) diamond(img, x, y, tw / 2, th / 2, [142, 34, 46], 0.18);
+    // `mark`: a dark round hole in the slab at its front end (Oct 2 2026: a long limb seen from behind was drawn
+    // with its nozzle on the near end every time; the hole says where its front is).
+    if (mark) {
+      const step = { S: [0, 1], N: [0, -1], E: [1, 0], W: [-1, 0] }[facing];
+      const board = cellsOf(shape, facing);
+      let best = 0;
+      board.forEach(([bx, by], i) => { if (bx * step[0] + by * step[1] > board[best][0] * step[0] + board[best][1] * step[1]) best = i; });
+      const [mx, my] = at2[best];
+      diamond(img, mx, my, tw * 0.2, th * 0.2, [18, 4, 8]);
+    }
   } else for (const [x, y] of at2) diamond(img, x, y, tw / 2, th / 2, ground);
   return { img, x: cx, y: cy, w: across * tw, h: deep * th, tile: tw };
 }

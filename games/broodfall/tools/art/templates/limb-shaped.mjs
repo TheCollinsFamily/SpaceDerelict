@@ -84,7 +84,7 @@ export function plateWords(l, view) {
     const [a, , c] = cells;
     const front = { S: 'lower left', N: 'upper right', E: 'lower right', W: 'upper left' }[facing];
     return `${head} It is a straight row of three tiles running diagonally across the picture from its ${screenWay(a[0] - c[0], a[1] - c[1])} to its ${screenWay(c[0] - a[0], c[1] - a[1])}: ` +
-      `the organism is LONG and LOW, lying along that whole diagonal row, three times as long as it is wide; its front end is the ${front} end.`;
+      `the organism is LONG and LOW, lying along that whole diagonal row, three times as long as it is wide; its front end is the ${front} end, where the dark round hole is in the slab: its front part (its point, nozzle or mouth) is THERE, at the ${front} end, and the other end is its closed back end.`;
   }
   // A T or an L: its arms from the key tile.
   const arms = new Map();
@@ -111,7 +111,7 @@ function viewWords(l, view) {
 
 export function stillPrompt(l, view) {
   const accent = l.accent ?? THEMES[l.theme].accent;
-  const same = view === 'front'
+  const same = view === 'front' || l.plate === 'line3'
     ? ''
     : 'It is the SAME organism as the one in the LAST picture, the same parts, material and colour, seen from another side; but its SHAPE on the ground is the slab of the FIRST picture, not the shape it has in the LAST picture. ';
   return `${plateWords(l, view)} EDIT that picture: KEEP the slab exactly as it is, the same shape, the same place and the same size, ` +
@@ -130,7 +130,7 @@ export function stillPrompt(l, view) {
 function plateOf(l, dir, view) {
   const key = KEYS[THEMES[l.theme].key];
   const file = path.join(dir, `plate-${view}.png`);
-  const p = drawPlate(l.plate, VIEW_FACING[view], { key: key.rgb, slab: true });
+  const p = drawPlate(l.plate, VIEW_FACING[view], { key: key.rgb, slab: true, mark: l.plate === 'line3' });
   if (!fs.existsSync(file)) writePng(file, p.img);
   return { file, ...p };
 }
@@ -199,7 +199,8 @@ export async function makeShapedLimb(family, { bakeOnly = false, stillsOnly = fa
       const plate = plateOf(l, dir, view);
       // Another view is drawn from its own slab and the material, the front given LAST for its look only: given
       // second, its shape won over the slab's (Oct 2 2026: a Choir's back drawn as its front).
-      const refs = view === 'front' ? [plate.file, materialRef()] : [plate.file, materialRef(), stills.front];
+      // (A long limb's back is drawn without its front given at all: given, its near end was drawn as its front.)
+      const refs = view === 'front' || l.plate === 'line3' ? [plate.file, materialRef()] : [plate.file, materialRef(), stills.front];
       stills[view] = await makeStill({
         slug: `${family} on its ground, ${view}`, out: path.join(dir, `${view}.png`), refFiles: refs,
         prompt: stillPrompt(l, view), key: key.hex, keyName: key.name, quality: 'high',

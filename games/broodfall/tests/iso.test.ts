@@ -373,7 +373,9 @@ describe.skipIf(!hasArt)('the baked art', () => {
   });
 
   it('has a view from behind of every limb that is not the same all the way round', () => {
-    const lopsided = ['spitter', 'impaler', 'quill', 'skipper', 'ember', 'maw', 'lobber', 'ocular', 'brood', 'sling', 'conduit', 'tap', 'press', 'amp', 'lance'];
+    // And every limb drawn over its ground plate (Oct 2 2026): drawn front and back, so its picture stands on its cells.
+    const plated = Object.keys(manifest.limbs).filter((f) => manifest.limbs[f].plate);
+    const lopsided = [...new Set(['spitter', 'impaler', 'quill', 'skipper', 'ember', 'maw', 'lobber', 'ocular', 'brood', 'sling', 'conduit', 'tap', 'press', 'amp', 'lance', ...plated])];
     for (const family of lopsided) {
       const l = manifest.limbs[family];
       expect(l.back, `${family} from behind`).toBeTruthy();
@@ -390,11 +392,13 @@ describe.skipIf(!hasArt)('the baked art', () => {
     // Since the class-zero mapping (Oct 2 2026) some limbs stand on new ground before their art is redrawn
     // (the limb art pass, HANDOFF.md "Footprints"): their old pictures are scaled to their ground meanwhile.
     // ART_PENDING lists them; a limb leaves the list when its art is baked for its new ground.
-    const ART_PENDING: Record<string, boolean> = { bombard: false, frond: true, tangler: true, choir: true };
+    const ART_PENDING: Record<string, boolean> = {};
     for (const t of TOWERS) {
       const l = manifest.limbs[t.family];
       // Big: four cells or more in a square. A LONG limb (two cells) is drawn from the frames of a limb of one.
-      const big = t.family in ART_PENDING ? ART_PENDING[t.family] : !!t.span && t.span[0] * t.span[1] >= 4;
+      // A limb drawn over its ground plate on three cells or more (a line of three, a T, an elbow, an L) is big too.
+      const cells = t.shape ? ({ line3: 3, T: 4, L3: 3, L4: 4, S4: 4 } as Record<string, number>)[t.shape] : t.span ? t.span[0] * t.span[1] : 1;
+      const big = t.family in ART_PENDING ? ART_PENDING[t.family] : cells >= 3;
       expect(!!l.big, `${t.family} big`).toBe(big);
       expect(l.frame, `${t.family} frame`).toBe(big ? 384 : 256);
     }
