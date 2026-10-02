@@ -1091,7 +1091,9 @@ export class IsoRenderer extends Renderer {
     const on = new Uint8Array(n);
     for (let c = 0; c < n; c++) on[c] = sim.map.cells[c] !== CellType.Void && sim.isCreeped(c) ? 1 : 0;
     const held = new Uint8Array(n);
-    for (const t of sim.towers) for (const c of sim.cellsOf(t)) held[c] = 1;
+    // Oct 2 2026: a wall (and a swamp, a floor) does not turn its street into hide: the street stays street creep
+    // under it, so a wall reads as standing IN the trail (Collins: "you have walls off the trail").
+    for (const t of sim.towers) if (t.family !== 'spine' && t.family !== 'swamp') for (const c of sim.cellsOf(t)) held[c] = 1;
     const g = this.geo;
     const size = viewSize(g);
     // Which strain works on each cell of skin: 1 mire, 2 burning (drawn over the skin, with a ragged edge where it stops).
@@ -1554,14 +1556,14 @@ export class IsoRenderer extends Renderer {
         // ground along the lane: Collins, Sep 30 2026, "walls way too large and placed sideways"):
         // across the lane, as wide as the lane, in the middle of its two cells.
         // Which it is, is read off the street itself (closed on both sides of its line), not off the flow.
+        // Oct 2 2026: the sim lays a wall's cells ACROSS its street (Sim.wallAcross), so a wall of two or more
+        // cells is drawn along the line of its own cells; a one-cell wall across the way it was built (its facing:
+        // 'S' = the street runs along x, so the wall lies along y). Never a fresh guess at the street here.
         const ground = sim.cellsOf(t);
-        const W = sim.cfg.gridW;
-        const shut = (c: number) => c < 0 || c >= sim.map.cells.length || sim.map.cells[c] === CellType.Block || sim.map.cells[c] === CellType.Void;
-        const cellsX = ground.length === 2 && Math.abs(ground[1] - ground[0]) === 1;
-        const side = cellsX ? W : 1;
-        const oneWide = ground.length === 2 && ground.every((c) => shut(c - side) && shut(c + side));
-        wallNarrow = ground.length !== 2 || oneWide;
-        const alongX = ground.length !== 2 ? !this.laneRunsAlongX(sim, t.cell) : oneWide ? !cellsX : cellsX;
+        wallNarrow = ground.length === 1;
+        const alongX = ground.length >= 2
+          ? Math.abs(ground[1] - ground[0]) === 1
+          : t.facing === 'S' ? false : t.facing === 'E' ? true : !this.laneRunsAlongX(sim, t.cell);
         mirror = !alongX !== (g.turn % 2 === 1);
       }
       const shown = limbSideOf(art, back, mirror);

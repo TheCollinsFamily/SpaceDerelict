@@ -1322,3 +1322,19 @@ RFAB_API_BASE=http://localhost:3011 RFAB_CONNECT_JWT=<tester jwt> node tools/sho
   lessons go into CLAUDE.md, DESIGN.md or this file.
 - Shell gotcha on this box: long `node -e` / heredoc scripts containing quotes break in
   Git Bash. Write the script to the scratchpad with the Write tool and run it from there.
+
+## Spine Walls: always and only in a street, cutting it (Oct 2 2026)
+
+Collins: "a wall is always and only on a trail ... it goes from one side of the trail to the other side to block
+oncoming forces so they have to destroy it to get by" (and enemies attack a wall they hit: `sim.ts`, "a structure on
+my cell or the next cell is a wall in my way: chew through it").
+- **Roofs:** `canBuildOn` / `canPlaceFreeOn` let a wall stand on a Block, where it was laid as a plain two-cell
+  line along the roof edge (the walls "off the trail"). A wall now stands on Road only.
+- **Across = the narrowest cut** (`Sim.wallAcross`): the street measured through the cell both ways, a neighbour
+  counted only while the street goes on through it crosswise; the shorter run is the wall. The old "longer straight
+  run" laid walls along the leg of a bend; the swarm's next step alone flips on staircase streets.
+- **No wall in a pocket or dead end:** the street must go on past both faces (the city's edge counts).
+- **Drawn** along the line of its own cells (`isoRender.ts`), and the street under a wall stays street creep.
+- **Checked by what a wall is FOR** (`tests/wallsAcross.test.ts`): with the wall shut, the street on its two faces
+  cannot reach each other near it, on every street cell of eight boards; no wall ever on a non-street cell, in a
+  whole scripted run too. `node tools/walls-ascii.mjs <set> <seed>` prints the grid with the walls a board gets.

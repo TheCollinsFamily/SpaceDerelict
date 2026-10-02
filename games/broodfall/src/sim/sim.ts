@@ -1061,11 +1061,15 @@ export class Sim {
   }
 
   /**
-   * Does the street at this cell run east-west (along x)? The longer of its two straight runs of street through
-   * the cell is the way it runs; where they are as long (a crossing, a square), the way the swarm moves through it.
+   * Does the street at this cell run east-west (along x)? It runs the way the swarm WALKS through the cell (the
+   * flow field's next step). Oct 2 2026: the longer straight run of street through the cell, used before, flips at
+   * corners and zig-zags (a wall laid along the short leg of a bend; Collins: "you have walls off the trail and in
+   * the wrong location"). Only a cell the swarm does not walk through falls back to the longer run.
    */
   laneAlongX(cell: number): boolean {
     const w = this.cfg.gridW;
+    const next = this.flow.next[cell];
+    if (next >= 0) return Math.abs((next % w) - (cell % w)) > 0;
     const road = (c: number) => c >= 0 && c < this.map.cells.length && this.map.cells[c] === CellType.Road;
     const run = (dx: number, dy: number) => {
       let n = 0;
@@ -1079,9 +1083,6 @@ export class Sim {
     };
     const alongX = 1 + run(-1, 0) + run(1, 0);
     const alongY = 1 + run(0, -1) + run(0, 1);
-    if (alongX !== alongY) return alongX > alongY;
-    const next = this.flow.next[cell];
-    if (next >= 0) return Math.abs((next % w) - (cell % w)) > 0;
     return alongX >= alongY;
   }
 
@@ -1098,14 +1099,43 @@ export class Sim {
   wallAcross(cell: number, ok: (c: number) => boolean): { cells: number[]; facing: RootDir } | null {
     if (!ok(cell)) return null;
     const w = this.cfg.gridW;
-    const alongX = this.laneAlongX(cell);
-    // Across a street that runs along x is up and down the board.
-    const step = alongX ? w : 1;
-    const road = (c: number) => c >= 0 && c < this.map.cells.length && this.map.cells[c] === CellType.Road
-      && (step === 1 ? Math.floor(c / w) === Math.floor(cell / w) : true) && ok(c);
-    const across: number[] = [cell];
-    for (let c = cell - step; road(c); c -= step) across.unshift(c);
-    for (let c = cell + step; road(c); c += step) across.push(c);
+    // Oct 2 2026 (Collins: "it goes from one side of the trail to the other side to block oncoming forces so they
+    // have to destroy it to get by"): the wall is the NARROWEST cut of the street at this cell. Measure the street
+    // through the cell both ways, counting a neighbour only while the street goes on through it the other way
+    // (a street cell on either side of it, crosswise): that is the street's width at this point, not a side
+    // street met at a bend. The shorter of the two runs is across; on a tie (a 1-wide bend, a square), the swarm's
+    // way through the cell decides. Neither the longer straight run (laid walls along the leg of a bend) nor the
+    // swarm's next step alone (flips on a staircase street) is right on every street.
+    const isRoad = (c: number) => c >= 0 && c < this.map.cells.length && this.map.cells[c] === CellType.Road;
+    const sameRow = (a: number, b: number) => Math.floor(a / w) === Math.floor(b / w);
+    const runOf = (step: number): number[] => {
+      // Cells stepped to across `step` must carry the street on the other way: up/down for a run along a row,
+      // left/right for a run down a column.
+      const through = (c: number) => (step === 1
+        ? isRoad(c - w) || isRoad(c + w)
+        : (sameRow(c, c - 1) && isRoad(c - 1)) || (sameRow(c, c + 1) && isRoad(c + 1)));
+      const road = (c: number) => isRoad(c) && (step === 1 ? sameRow(c, cell) : true) && ok(c) && through(c);
+      const run: number[] = [cell];
+      for (let c = cell - step; road(c); c -= step) run.unshift(c);
+      for (let c = cell + step; road(c); c += step) run.push(c);
+      return run;
+    };
+    const rowRun = runOf(1);
+    const colRun = runOf(w);
+    // alongX: the street runs along x here, so the wall is the column run (up and down the board).
+    const alongX = colRun.length !== rowRun.length ? colRun.length < rowRun.length : this.laneAlongX(cell);
+    const across = alongX ? colRun : rowRun;
+    // A wall must BLOCK something: the street goes on past BOTH of its faces. A pocket or a dead end (street on
+    // one face, buildings on the other) takes no wall: it would stop nothing and stand off the trail. A face
+    // that is the edge of the city (where the swarm comes in) counts as street.
+    const face = alongX ? 1 : w;
+    const isOutside = (c: number) => c < 0 || c >= this.map.cells.length || this.map.cells[c] === CellType.Void;
+    const faceOpen = (sign: number) => across.some((c) => {
+      const f = c + sign * face;
+      if (face === 1 && !sameRow(f, c)) return true; // off the side of the board
+      return isOutside(f) || isRoad(f) || this.map.cells[f] === CellType.Plaza;
+    });
+    if (!faceOpen(-1) || !faceOpen(1)) return null;
     let cells = across;
     if (cells.length > WALL_MAX) {
       const at = cells.indexOf(cell);
@@ -1135,7 +1165,7 @@ export class Sim {
     if (!selfRooting && !this.isCreeped(cell)) return false;
     const t = this.map.cells[cell];
     if (t === CellType.Void) return false;
-    if (family === 'spine') return t === CellType.Road || t === CellType.Block;
+    if (family === 'spine') return t === CellType.Road; // a wall stands ONLY in a street (Collins, Oct 2 2026: "a wall is always and only on a trail")
     if (family === 'swamp') return t === CellType.Road; // a swamp only makes sense IN the traffic
     return t === CellType.Block;
   }
@@ -2545,7 +2575,7 @@ export class Sim {
   private canPlaceFreeOn(cell: number, family: TowerFamily): boolean {
     if (this.isOccupied(cell) || cell === this.map.coreCell || !this.isCreeped(cell)) return false;
     const t = this.map.cells[cell];
-    if (family === 'spine') return t === CellType.Road || t === CellType.Block;
+    if (family === 'spine') return t === CellType.Road; // a wall stands ONLY in a street (Collins, Oct 2 2026: "a wall is always and only on a trail")
     if (family === 'swamp') return t === CellType.Road;
     return t === CellType.Block;
   }
@@ -4968,8 +4998,12 @@ export class Sim {
     if (e.carrying) {
       st.limbsRecovered = (st.limbsRecovered ?? 0) + 1;
       const c = e.carrying;
-      const ground = c.family === 'spine' && this.map.cells[c.cell] === CellType.Road
-        ? this.wallAcross(c.cell, (g) => !this.occupied.has(g))?.cells ?? [c.cell]
+      const wallGround = c.family === 'spine' && this.map.cells[c.cell] === CellType.Road
+        ? this.wallAcross(c.cell, (g) => !this.occupied.has(g)) : null;
+      // A dropped wall re-roots across its street, facing the way it is laid there (never its old facing).
+      if (wallGround) c.facing = wallGround.facing;
+      const ground = wallGround
+        ? wallGround.cells
         : this.cellsFromFirst(c.cell, c.family, towerSpec(c.family).shape ? (c.facing ?? 'S') : c.facing) ?? [c.cell];
       if (ground.every((g) => !this.occupied.has(g) && g !== this.map.coreCell)) {
         if (ground.length > 1) {
