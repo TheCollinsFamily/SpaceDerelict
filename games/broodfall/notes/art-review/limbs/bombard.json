@@ -1,38 +1,38 @@
 {
  "family": "bombard",
- "frames": 70,
- "atlasKB": 437,
- "failed": 0,
+ "frames": 130,
+ "atlasKB": 1915,
+ "failed": 2,
  "checks": [
   {
    "name": "where it stands is marked",
    "ok": true,
-   "value": "0.49, 0.65, 0.81"
+   "value": "0.49, 0.58, 1.26"
   },
   {
    "name": "where it fires from is marked",
    "ok": true,
-   "value": "[[0.49,0.02]]"
+   "value": "[[0.456,0.02],[0.597,0.084],[0.315,0.086],[0.738,0.26]]"
   },
   {
    "name": "idle: loop closes",
    "ok": true,
-   "value": 0.5
+   "value": 0
   },
   {
    "name": "idle: it moves",
    "ok": true,
-   "value": 0.53
+   "value": 0.51
   },
   {
    "name": "idle: it is calm",
    "ok": true,
-   "value": 0.53
+   "value": 0.51
   },
   {
    "name": "idle: inside the frame",
    "ok": true,
-   "value": "144,84-504,546"
+   "value": "70,98-576,574"
   },
   {
    "name": "idle: no background tint on the outline",
@@ -42,7 +42,7 @@
   {
    "name": "idle: ends the size it began",
    "ok": true,
-   "value": "0% change"
+   "value": "2% change"
   },
   {
    "name": "fire: no background tint on the outline",
@@ -50,14 +50,9 @@
    "value": "0.0%"
   },
   {
-   "name": "fire: frames swallowed by a flash or a cloud are few",
-   "ok": true,
-   "value": "3 left out"
-  },
-  {
    "name": "fire: ends the size it began",
    "ok": true,
-   "value": "1% change"
+   "value": "0% change"
   },
   {
    "name": "die: no background tint on the outline",
@@ -67,12 +62,62 @@
   {
    "name": "die: it ends as a husk",
    "ok": true,
-   "value": "58% of its size, 53% of its colour"
+   "value": "45% of its size, 55% of its colour"
   },
   {
-   "name": "it stands in its cell",
+   "name": "from behind, where it stands is marked",
    "ok": true,
-   "value": "4.2% of it lies in front of its cell"
+   "value": "0.5, 0.58, 1.14"
+  },
+  {
+   "name": "from behind, where it fires from is marked",
+   "ok": true,
+   "value": "[[0.528,0.02],[0.668,0.104],[0.386,0.149],[0.236,0.398]]"
+  },
+  {
+   "name": "from behind, idle: loop closes",
+   "ok": true,
+   "value": 0
+  },
+  {
+   "name": "from behind, idle: it moves",
+   "ok": true,
+   "value": 0.63
+  },
+  {
+   "name": "from behind, idle: it is calm",
+   "ok": true,
+   "value": 0.63
+  },
+  {
+   "name": "from behind, idle: inside the frame",
+   "ok": false,
+   "value": "78,0-594,524"
+  },
+  {
+   "name": "from behind, idle: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "from behind, idle: ends the size it began",
+   "ok": false,
+   "value": "31% change"
+  },
+  {
+   "name": "from behind, fire: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "from behind, fire: ends the size it began",
+   "ok": true,
+   "value": "1% change"
+  },
+  {
+   "name": "from behind: it has a view",
+   "ok": true,
+   "value": "drawn"
   }
  ]
 }

@@ -30,6 +30,8 @@ describe('muzzles', () => {
     for (const f of FIRES_FROM) {
       const l = LIMBS.find((x: { family: string }) => x.family === f);
       expect(l, f).toBeTruthy();
+      // A limb drawn over its ground plate (Oct 2 2026) has its muzzles found in its pictures, not marked: its baked ones are checked below.
+      if (l.plate) continue;
       expect(l.muzzle?.length, `${f}: muzzle`).toBeGreaterThan(0);
       for (const m of l.muzzle) expect(inFrame(m), `${f}: ${m}`).toBe(true);
       if (l.back) {

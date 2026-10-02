@@ -1,33 +1,33 @@
 {
  "family": "conduit",
- "frames": 112,
- "atlasKB": 1009,
- "failed": 0,
+ "frames": 239,
+ "atlasKB": 2634,
+ "failed": 1,
  "checks": [
   {
    "name": "where it stands is marked",
    "ok": true,
-   "value": "0.45, 0.85, 0.66"
+   "value": "0.5, 0.49, 1.1"
   },
   {
    "name": "idle: loop closes",
    "ok": true,
-   "value": 0
+   "value": 0.6
   },
   {
    "name": "idle: it moves",
    "ok": true,
-   "value": 0.17
+   "value": 0.37
   },
   {
    "name": "idle: it is calm",
    "ok": true,
-   "value": 0.17
+   "value": 0.37
   },
   {
    "name": "idle: inside the frame",
    "ok": true,
-   "value": "140,136-498,516"
+   "value": "72,108-572,556"
   },
   {
    "name": "idle: no background tint on the outline",
@@ -47,7 +47,7 @@
   {
    "name": "fire: ends the size it began",
    "ok": true,
-   "value": "3% change"
+   "value": "1% change"
   },
   {
    "name": "die: no background tint on the outline",
@@ -57,37 +57,32 @@
   {
    "name": "die: it ends as a husk",
    "ok": true,
-   "value": "62% of its size, 53% of its colour"
-  },
-  {
-   "name": "it stands in its cell",
-   "ok": true,
-   "value": "0.1% of it lies in front of its cell"
+   "value": "98% of its size, 55% of its colour"
   },
   {
    "name": "from behind, where it stands is marked",
    "ok": true,
-   "value": "0.51, 0.73, 0.86"
+   "value": "0.5, 0.5, 1.04"
   },
   {
    "name": "from behind, idle: loop closes",
    "ok": true,
-   "value": 0.42
+   "value": 0
   },
   {
    "name": "from behind, idle: it moves",
    "ok": true,
-   "value": 0.27
+   "value": 0.25
   },
   {
    "name": "from behind, idle: it is calm",
    "ok": true,
-   "value": 0.27
+   "value": 0.25
   },
   {
    "name": "from behind, idle: inside the frame",
    "ok": true,
-   "value": "170,120-470,500"
+   "value": "82,138-558,572"
   },
   {
    "name": "from behind, idle: no background tint on the outline",
@@ -97,7 +92,7 @@
   {
    "name": "from behind, idle: ends the size it began",
    "ok": true,
-   "value": "3% change"
+   "value": "1% change"
   },
   {
    "name": "from behind, fire: no background tint on the outline",
@@ -105,22 +100,112 @@
    "value": "0.0%"
   },
   {
-   "name": "from behind, fire: frames swallowed by a flash or a cloud are few",
-   "ok": true,
-   "value": "16 left out"
-  },
-  {
    "name": "from behind, fire: ends the size it began",
    "ok": true,
    "value": "1% change"
   },
   {
-   "name": "from behind, it stands in its cell",
+   "name": "from behind: it has a view",
    "ok": true,
-   "value": "2.4% of it lies in front of its cell"
+   "value": "drawn"
   },
   {
-   "name": "from behind: it has a view",
+   "name": "from the side, where it stands is marked",
+   "ok": true,
+   "value": "0.5, 0.5, 1.21"
+  },
+  {
+   "name": "from the side, idle: loop closes",
+   "ok": true,
+   "value": 0
+  },
+  {
+   "name": "from the side, idle: it moves",
+   "ok": true,
+   "value": 0.21
+  },
+  {
+   "name": "from the side, idle: it is calm",
+   "ok": true,
+   "value": 0.21
+  },
+  {
+   "name": "from the side, idle: inside the frame",
+   "ok": true,
+   "value": "82,184-574,490"
+  },
+  {
+   "name": "from the side, idle: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "from the side, idle: ends the size it began",
+   "ok": true,
+   "value": "3% change"
+  },
+  {
+   "name": "from the side, fire: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "from the side, fire: ends the size it began",
+   "ok": true,
+   "value": "1% change"
+  },
+  {
+   "name": "from behind the side, where it stands is marked",
+   "ok": true,
+   "value": "0.5, 0.46, 1.06"
+  },
+  {
+   "name": "from behind the side, idle: loop closes",
+   "ok": true,
+   "value": 0
+  },
+  {
+   "name": "from behind the side, idle: it moves",
+   "ok": true,
+   "value": 0.23
+  },
+  {
+   "name": "from behind the side, idle: it is calm",
+   "ok": true,
+   "value": 0.23
+  },
+  {
+   "name": "from behind the side, idle: inside the frame",
+   "ok": true,
+   "value": "64,190-632,464"
+  },
+  {
+   "name": "from behind the side, idle: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "from behind the side, idle: ends the size it began",
+   "ok": true,
+   "value": "4% change"
+  },
+  {
+   "name": "from behind the side, fire: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "from behind the side, fire: frames swallowed by a flash or a cloud are few",
+   "ok": true,
+   "value": "20 left out"
+  },
+  {
+   "name": "from behind the side, fire: ends the size it began",
+   "ok": false,
+   "value": "52% change"
+  },
+  {
+   "name": "from both sides: it has the views",
    "ok": true,
    "value": "drawn"
   }

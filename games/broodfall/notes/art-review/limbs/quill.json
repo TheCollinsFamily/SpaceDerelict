@@ -1,38 +1,38 @@
 {
  "family": "quill",
- "frames": 130,
- "atlasKB": 1045,
- "failed": 0,
+ "frames": 250,
+ "atlasKB": 2744,
+ "failed": 4,
  "checks": [
   {
    "name": "where it stands is marked",
    "ok": true,
-   "value": "0.41, 0.76, 0.64"
+   "value": "0.49, 0.54, 0.99"
   },
   {
    "name": "where it fires from is marked",
-   "ok": true,
-   "value": "[[0.29,0.2],[0.53,0.17],[0.74,0.24],[0.82,0.41]]"
+   "ok": false,
+   "value": "not marked: node tools/art/muzzles.mjs quill"
   },
   {
    "name": "idle: loop closes",
    "ok": true,
-   "value": 0
+   "value": 0.51
   },
   {
    "name": "idle: it moves",
    "ok": true,
-   "value": 0.52
+   "value": 0.54
   },
   {
    "name": "idle: it is calm",
    "ok": true,
-   "value": 0.52
+   "value": 0.54
   },
   {
    "name": "idle: inside the frame",
    "ok": true,
-   "value": "128,126-521,492"
+   "value": "122,174-526,542"
   },
   {
    "name": "idle: no background tint on the outline",
@@ -42,17 +42,12 @@
   {
    "name": "idle: ends the size it began",
    "ok": true,
-   "value": "4% change"
+   "value": "1% change"
   },
   {
    "name": "fire: no background tint on the outline",
    "ok": true,
    "value": "0.0%"
-  },
-  {
-   "name": "fire: frames swallowed by a flash or a cloud are few",
-   "ok": true,
-   "value": "27 left out"
   },
   {
    "name": "fire: ends the size it began",
@@ -67,42 +62,37 @@
   {
    "name": "die: it ends as a husk",
    "ok": true,
-   "value": "46% of its size, 64% of its colour"
-  },
-  {
-   "name": "it stands in its cell",
-   "ok": true,
-   "value": "0.2% of it lies in front of its cell"
+   "value": "88% of its size, 29% of its colour"
   },
   {
    "name": "from behind, where it stands is marked",
    "ok": true,
-   "value": "0.55, 0.77, 0.74"
+   "value": "0.52, 0.58, 1.02"
   },
   {
    "name": "from behind, where it fires from is marked",
-   "ok": true,
-   "value": "[[0.21,0.23],[0.43,0.16],[0.61,0.2],[0.77,0.32]]"
+   "ok": false,
+   "value": "not marked: node tools/art/muzzles.mjs --back quill"
   },
   {
    "name": "from behind, idle: loop closes",
    "ok": true,
-   "value": 1.23
+   "value": 0.77
   },
   {
    "name": "from behind, idle: it moves",
    "ok": true,
-   "value": 1.45
+   "value": 0.41
   },
   {
    "name": "from behind, idle: it is calm",
    "ok": true,
-   "value": 1.45
+   "value": 0.41
   },
   {
    "name": "from behind, idle: inside the frame",
    "ok": true,
-   "value": "124,64-526,536"
+   "value": "118,178-544,560"
   },
   {
    "name": "from behind, idle: no background tint on the outline",
@@ -112,7 +102,7 @@
   {
    "name": "from behind, idle: ends the size it began",
    "ok": true,
-   "value": "2% change"
+   "value": "0% change"
   },
   {
    "name": "from behind, fire: no background tint on the outline",
@@ -122,15 +112,120 @@
   {
    "name": "from behind, fire: ends the size it began",
    "ok": true,
-   "value": "1% change"
-  },
-  {
-   "name": "from behind, it stands in its cell",
-   "ok": true,
-   "value": "0.0% of it lies in front of its cell"
+   "value": "14% change"
   },
   {
    "name": "from behind: it has a view",
+   "ok": true,
+   "value": "drawn"
+  },
+  {
+   "name": "from the side, where it stands is marked",
+   "ok": true,
+   "value": "0.5, 0.53, 1.02"
+  },
+  {
+   "name": "from the side, where it fires from is marked",
+   "ok": false,
+   "value": "not marked: node tools/art/muzzles.mjs quill"
+  },
+  {
+   "name": "from the side, idle: loop closes",
+   "ok": true,
+   "value": 0
+  },
+  {
+   "name": "from the side, idle: it moves",
+   "ok": true,
+   "value": 0.3
+  },
+  {
+   "name": "from the side, idle: it is calm",
+   "ok": true,
+   "value": 0.3
+  },
+  {
+   "name": "from the side, idle: inside the frame",
+   "ok": true,
+   "value": "60,214-578,498"
+  },
+  {
+   "name": "from the side, idle: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "from the side, idle: ends the size it began",
+   "ok": true,
+   "value": "7% change"
+  },
+  {
+   "name": "from the side, fire: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "from the side, fire: frames swallowed by a flash or a cloud are few",
+   "ok": true,
+   "value": "28 left out"
+  },
+  {
+   "name": "from the side, fire: ends the size it began",
+   "ok": true,
+   "value": "1% change"
+  },
+  {
+   "name": "from behind the side, where it stands is marked",
+   "ok": true,
+   "value": "0.5, 0.57, 1.06"
+  },
+  {
+   "name": "from behind the side, where it fires from is marked",
+   "ok": false,
+   "value": "not marked: node tools/art/muzzles.mjs quill"
+  },
+  {
+   "name": "from behind the side, idle: loop closes",
+   "ok": true,
+   "value": 0
+  },
+  {
+   "name": "from behind the side, idle: it moves",
+   "ok": true,
+   "value": 0.3
+  },
+  {
+   "name": "from behind the side, idle: it is calm",
+   "ok": true,
+   "value": 0.3
+  },
+  {
+   "name": "from behind the side, idle: inside the frame",
+   "ok": true,
+   "value": "74,168-564,490"
+  },
+  {
+   "name": "from behind the side, idle: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "from behind the side, idle: ends the size it began",
+   "ok": true,
+   "value": "5% change"
+  },
+  {
+   "name": "from behind the side, fire: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "from behind the side, fire: ends the size it began",
+   "ok": true,
+   "value": "1% change"
+  },
+  {
+   "name": "from both sides: it has the views",
    "ok": true,
    "value": "drawn"
   }

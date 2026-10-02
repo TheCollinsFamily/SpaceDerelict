@@ -410,7 +410,14 @@ export function bakeLimb(family) {
   const dir = path.join(SRC, 'limbs', rawDirOf(l0));
   // A limb drawn over its ground plate: where it stands in each view is the plate's (written when it was drawn).
   const feetFile = path.join(dir, 'feet.json');
-  const l = l0.plate && fs.existsSync(feetFile) ? { ...l0, plateFeet: JSON.parse(fs.readFileSync(feetFile, 'utf8')) } : l0;
+  const muzzleFile = path.join(dir, 'muzzles.json');
+  const found = l0.plate && fs.existsSync(muzzleFile) ? JSON.parse(fs.readFileSync(muzzleFile, 'utf8')) : null;
+  // ... and where it fires from, found in its pictures (limb-shaped.mjs muzzleFrom), unless marked by eye.
+  const shots = found ? {
+    muzzle: l0.muzzle ?? found.front, backMuzzle: l0.backMuzzle ?? found.back,
+    sideMuzzle: l0.sideMuzzle ?? found.side, backSideMuzzle: l0.backSideMuzzle ?? found.backside,
+  } : {};
+  const l = l0.plate && fs.existsSync(feetFile) ? { ...l0, ...shots, plateFeet: JSON.parse(fs.readFileSync(feetFile, 'utf8')) } : l0;
   const checks = [];
   const check = (name, ok, value) => checks.push({ name, ok, value });
   const [F, COLS] = l.big ? FRAME.big : FRAME.small;

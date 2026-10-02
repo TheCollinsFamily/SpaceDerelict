@@ -174,7 +174,49 @@ function footFromPlate(l, dir, view, still, plate) {
   }
   fs.mkdirSync(path.join(REVIEW, 'limbs', 'shaped'), { recursive: true });
   writeJpg(path.join(REVIEW, 'limbs', 'shaped', `${l.family}-${view}-plate.jpg`), resize(sheet, 512, 512), 3);
-  return foot;
+  return { foot, muzzle: muzzleFrom(l, view, keyed, box, fit) };
+}
+
+/**
+ * WHERE ITS SHOTS LEAVE IT, found in the picture (Oct 2 2026: a limb drawn over its slab is not marked by eye).
+ * A long limb fires from its FRONT end (the cell of its line furthest the way it faces, a little above the slab);
+ * any other from its PEAKS: the tops of its tallest parts (a chimney's mouth, a frond's tips, a fan's quills), up to
+ * four, each well apart from the others. As shares of its keyed box, like a mark by eye (tools/art/limbs.mjs muzzle).
+ */
+function muzzleFrom(l, view, img, box, fit) {
+  const w = box.x1 - box.x0;
+  const h = box.y1 - box.y0;
+  const share = ([x, y]) => [Number(((x - box.x0) / w).toFixed(3)), Number(((y - box.y0) / h).toFixed(3))];
+  if (l.plate === 'line3') {
+    const facing = VIEW_FACING[view];
+    const step = { S: [0, 1], N: [0, -1], E: [1, 0], W: [-1, 0] }[facing];
+    const cells = cellsOf('line3', facing);
+    const s = cells.map(([x, y]) => [x - y, x + y]);
+    const mx = (Math.max(...s.map((p) => p[0])) + Math.min(...s.map((p) => p[0]))) / 2;
+    const my = (Math.max(...s.map((p) => p[1])) + Math.min(...s.map((p) => p[1]))) / 2;
+    let best = 0;
+    cells.forEach(([x, y], i) => { if (x * step[0] + y * step[1] > cells[best][0] * step[0] + cells[best][1] * step[1]) best = i; });
+    const th = (fit.tw * 76) / 128;
+    // Toward the front end, three quarters of the way from the middle: the nozzle sits at the end, not past it.
+    return [share([fit.x + ((s[best][0] - mx) * fit.tw) / 2 * 0.75, fit.y + ((s[best][1] - my) * th) / 2 * 0.75 - th * 0.35])];
+  }
+  // The top of the solid at every column.
+  const tops = [];
+  for (let x = box.x0; x < box.x1; x++) {
+    let t = -1;
+    for (let y = box.y0; y < box.y1; y++) if (img.data[(y * img.w + x) * 4 + 3] > 128) { t = y; break; }
+    tops.push(t < 0 ? Infinity : t);
+  }
+  const reach = box.y0 + h * 0.45;
+  const peaks = [];
+  const gap = Math.max(8, w * 0.14);
+  const order = tops.map((t, i) => [t, i]).filter(([t]) => t < reach).sort((a, b) => a[0] - b[0]);
+  for (const [t, i] of order) {
+    if (peaks.length >= 4) break;
+    if (peaks.some((p) => Math.abs(p[0] - i) < gap)) continue;
+    peaks.push([i, t]);
+  }
+  return peaks.map(([i, t]) => share([box.x0 + i, t + h * 0.02]));
 }
 
 function feetFile(dir) { return path.join(dir, 'feet.json'); }
@@ -195,6 +237,7 @@ export async function makeShapedLimb(family, { bakeOnly = false, stillsOnly = fa
     // The pictures: the front first (the others are drawn from it).
     const stills = {};
     const feet = fs.existsSync(feetFile(dir)) ? JSON.parse(fs.readFileSync(feetFile(dir), 'utf8')) : {};
+    const muzzles = {};
     for (const view of views) {
       const plate = plateOf(l, dir, view);
       // Another view is drawn from its own slab and the material, the front given LAST for its look only: given
@@ -205,9 +248,12 @@ export async function makeShapedLimb(family, { bakeOnly = false, stillsOnly = fa
         slug: `${family} on its ground, ${view}`, out: path.join(dir, `${view}.png`), refFiles: refs,
         prompt: stillPrompt(l, view), key: key.hex, keyName: key.name, quality: 'high',
       });
-      feet[view] = footFromPlate(l, dir, view, stills[view], plate);
+      const found = footFromPlate(l, dir, view, stills[view], plate);
+      feet[view] = found.foot;
+      muzzles[view] = found.muzzle;
     }
     fs.writeFileSync(feetFile(dir), `${JSON.stringify(feet, null, 1)}\n`);
+    fs.writeFileSync(path.join(dir, 'muzzles.json'), `${JSON.stringify(muzzles, null, 1)}\n`);
     if (stillsOnly) return { family, checks: [] };
     // The clips of every view: an idle, its acting clip, and (front) its death.
     const jobs = [];

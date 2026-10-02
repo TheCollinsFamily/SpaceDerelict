@@ -67,6 +67,7 @@ try {
     const page = await browser.newPage({ viewport: { width: 1280, height: 860 } });
     const errors = [];
     page.on('pageerror', (e) => errors.push(String(e)));
+    page.on('console', (m) => { if (/could not load/.test(m.text())) errors.push(m.text()); });
     await page.goto(`http://localhost:${PORT}/?auto=1&seed=42&speed=0&biome=suburb${job.try ? `&tryShape=${job.try}` : ''}`);
     await page.waitForFunction(() => window.broodfall !== undefined && window.broodfall.biome() !== '', null, { timeout: 60000 });
     const res = await page.evaluate((fam) => {

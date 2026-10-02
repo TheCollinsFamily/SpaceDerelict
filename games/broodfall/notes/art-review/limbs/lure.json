@@ -1,13 +1,13 @@
 {
  "family": "lure",
- "frames": 70,
- "atlasKB": 339,
- "failed": 0,
+ "frames": 130,
+ "atlasKB": 979,
+ "failed": 1,
  "checks": [
   {
    "name": "where it stands is marked",
    "ok": true,
-   "value": "0.5, 0.87, 0.86"
+   "value": "0.49, 0.51, 1.14"
   },
   {
    "name": "idle: loop closes",
@@ -17,17 +17,17 @@
   {
    "name": "idle: it moves",
    "ok": true,
-   "value": 0.23
+   "value": 0.94
   },
   {
    "name": "idle: it is calm",
    "ok": true,
-   "value": 0.23
+   "value": 0.94
   },
   {
    "name": "idle: inside the frame",
    "ok": true,
-   "value": "232,70-406,548"
+   "value": "72,56-572,544"
   },
   {
    "name": "idle: no background tint on the outline",
@@ -37,7 +37,7 @@
   {
    "name": "idle: ends the size it began",
    "ok": true,
-   "value": "1% change"
+   "value": "17% change"
   },
   {
    "name": "fire: no background tint on the outline",
@@ -45,14 +45,9 @@
    "value": "0.0%"
   },
   {
-   "name": "fire: frames swallowed by a flash or a cloud are few",
-   "ok": true,
-   "value": "28 left out"
-  },
-  {
    "name": "fire: ends the size it began",
    "ok": true,
-   "value": "3% change"
+   "value": "0% change"
   },
   {
    "name": "die: no background tint on the outline",
@@ -62,12 +57,62 @@
   {
    "name": "die: it ends as a husk",
    "ok": true,
-   "value": "70% of its size, 43% of its colour"
+   "value": "61% of its size, 55% of its colour"
   },
   {
-   "name": "it stands in its cell",
+   "name": "from behind, where it stands is marked",
    "ok": true,
-   "value": "0.6% of it lies in front of its cell"
+   "value": "0.5, 0.49, 1.1"
+  },
+  {
+   "name": "from behind, idle: loop closes",
+   "ok": true,
+   "value": 0
+  },
+  {
+   "name": "from behind, idle: it moves",
+   "ok": true,
+   "value": 0.43
+  },
+  {
+   "name": "from behind, idle: it is calm",
+   "ok": true,
+   "value": 0.43
+  },
+  {
+   "name": "from behind, idle: inside the frame",
+   "ok": true,
+   "value": "56,150-592,536"
+  },
+  {
+   "name": "from behind, idle: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "from behind, idle: ends the size it began",
+   "ok": true,
+   "value": "2% change"
+  },
+  {
+   "name": "from behind, fire: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "from behind, fire: frames swallowed by a flash or a cloud are few",
+   "ok": false,
+   "value": "31 left out"
+  },
+  {
+   "name": "from behind, fire: ends the size it began",
+   "ok": true,
+   "value": "6% change"
+  },
+  {
+   "name": "from behind: it has a view",
+   "ok": true,
+   "value": "drawn"
   }
  ]
 }

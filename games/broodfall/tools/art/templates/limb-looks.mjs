@@ -95,7 +95,8 @@ function basesOf(l) {
     const feet = JSON.parse(fs.readFileSync(path.join(dir, 'feet.json'), 'utf8'));
     for (const view of viewsOf(l)) out[view] = { file: path.join(dir, `${view}.png`), share: feet[view], muzzle: muzzleOf(l, view) };
   } else {
-    out.front = { file: path.join(dir, 'styled.png'), share: l.foot, muzzle: l.muzzle };
+    // (A flat limb, a pool in the street, stands on all of itself: footingOf ignores its mark.)
+    out.front = { file: path.join(dir, 'styled.png'), share: l.foot ?? (l.flat ? [0.5, 0.5, 1] : undefined), muzzle: l.muzzle };
     if (l.back && fs.existsSync(path.join(dir, 'back.png'))) out.back = { file: path.join(dir, 'back.png'), share: l.backFoot, muzzle: l.backMuzzle };
   }
   for (const [view, b] of Object.entries(out)) {
