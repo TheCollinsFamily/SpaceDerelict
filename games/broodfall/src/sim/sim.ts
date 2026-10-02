@@ -2737,6 +2737,8 @@ export class Sim {
     }
     const born = Math.floor(this.mateBacklog);
     if (born > 0) out.militia = (out.militia ?? 0) + born;
+    const flamers = this.flamerAnswer();
+    if (flamers > 0) out.flametrooper = (out.flametrooper ?? 0) + flamers;
     return out;
   }
 
@@ -2781,6 +2783,10 @@ export class Sim {
     const born = Math.floor(this.mateBacklog);
     this.mateBacklog -= born;
     for (let i = 0; i < born; i++) this.spawnQueue.push('militia');
+    // The hive answers your walking units: one more Flametrooper per flamerPerUnits of them on the board.
+    const flamers = this.flamerAnswer();
+    for (let i = 0; i < flamers; i++) this.spawnQueue.push('flametrooper');
+    if (flamers > 0) { counts.flametrooper = (counts.flametrooper ?? 0) + flamers; waveRisk += flamers * enemySpec('flametrooper').risk; }
     this.waveRisk = waveRisk;
     this.waveLimbDamage = 0;
     this.waveKillsByCause = {};
@@ -3680,6 +3686,11 @@ export class Sim {
 
       const speed = this.moveSpeedOf(e);
 
+      // THE FLAMETROOPER (Collins, Oct 2 2026: "an enemy unit of war caste with a flamethrower that is way better
+      // against units and targets them first, only going after the base if all units are clear"): hunts your
+      // walking units in sight and hoses them; with none in sight it is a weak soldier on the march.
+      if (spec.flamer && this.updateFlamer(e, spec, speed)) continue;
+
       // Royal consort: promotes the nearest war body one rank on a pulse.
       if (spec.promotes) {
         e.auxCooldown = (e.auxCooldown ?? 0) - DT;
@@ -4401,6 +4412,71 @@ export class Sim {
   }
 
   /** Hurt a walking mule (hive blows, shells, a science party's extraction). */
+  /**
+   * How many Flametroopers the hive adds to the next siege to ANSWER your walking units (Oct 2 2026): one per
+   * BALANCE.flamerPerUnits of them on the board, from tier flamerAnswerMinTier, up to flamerAnswerMax. None if banned.
+   */
+  flamerAnswer(): number {
+    if (this.tier < B.flamerAnswerMinTier) return 0;
+    if ((this.cfg.bannedEnemies ?? []).includes('flametrooper')) return 0;
+    return Math.min(B.flamerAnswerMax, Math.floor(this.walkingUnits().length / B.flamerPerUnits));
+  }
+
+  /** Every walking unit of yours (warriors and puppets, Broodmothers, Spore Mules), with where it stands. */
+  private walkingUnits(): Array<Broodling | Broodmother | SporeMule> {
+    return [...this.broodlings, ...this.mothers, ...this.mules];
+  }
+
+  /** Hurt one of your walking units, whichever kind it is (a warrior's death is told the way the war caste's bites tell it). */
+  private hurtUnit(u: Broodling | Broodmother | SporeMule, amount: number): void {
+    if (this.mules.includes(u as SporeMule)) { this.hurtMule(u as SporeMule, amount); return; }
+    if (this.mothers.includes(u as Broodmother)) { this.hurtMother(u as Broodmother, amount); return; }
+    const b = u as Broodling;
+    b.hp -= amount;
+    if (b.hp <= 0 && this.broodlings.includes(b)) {
+      this.broodlings = this.broodlings.filter((x) => x !== b);
+      this.events.push({ kind: 'broodling-lost', motherId: b.motherId });
+    }
+  }
+
+  /**
+   * The Flametrooper's turn. Your walking units come FIRST: the nearest one within its sight is hunted down
+   * and hosed; the stream (a short cone toward it) burns every unit of yours inside it, at the unit rate.
+   * Only when no unit of yours is in sight does it fall through to the war caste's march on limbs and the core,
+   * where its flame is weak (spec.damage). Returns true when it spent its turn on your units.
+   */
+  private updateFlamer(e: Enemy, spec: EnemySpec, speed: number): boolean {
+    const f = spec.flamer!;
+    let prey: Broodling | Broodmother | SporeMule | null = null;
+    let pd = f.sight;
+    for (const u of this.walkingUnits()) {
+      const d = dist(e.pos, u.pos);
+      if (d < pd) { pd = d; prey = u; }
+    }
+    if (!prey) { e.flameTo = undefined; return false; }
+    if (pd > f.range) {
+      // Close the gap the way it walks: along the streets toward the unit.
+      e.flameTo = undefined;
+      this.walkSmart(e, this.cellAt(prey.pos.x, prey.pos.y), prey.pos, speed);
+      return true;
+    }
+    // In reach: hold and hose. The cone points at the prey; everything of yours inside it burns.
+    const ax = prey.pos.x - e.pos.x;
+    const ay = prey.pos.y - e.pos.y;
+    const al = Math.hypot(ax, ay) || 1;
+    const dps = f.unitDps * this.empowerOf(e);
+    for (const u of this.walkingUnits()) {
+      const dx = u.pos.x - e.pos.x;
+      const dy = u.pos.y - e.pos.y;
+      const d = Math.hypot(dx, dy);
+      if (d > f.range + 6) continue;
+      if (d > 4 && (dx * ax + dy * ay) / (d * al) < f.coneCos) continue;
+      this.hurtUnit(u, dps * DT);
+    }
+    e.flameTo = { x: e.pos.x + (ax / al) * f.range, y: e.pos.y + (ay / al) * f.range };
+    return true;
+  }
+
   hurtMule(m: SporeMule, amount: number): void {
     m.hp -= amount;
     if (m.hp > 0) return;

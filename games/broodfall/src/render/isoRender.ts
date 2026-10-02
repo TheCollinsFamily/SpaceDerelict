@@ -1961,7 +1961,7 @@ export class IsoRenderer extends Renderer {
       const dy = e.pos.y - v.last.y;
       const moved = Math.hypot(dx, dy);
       v.last = { ...e.pos };
-      const attacking = (e.targetId !== null && e.targetId !== undefined) || !!e.deployed;
+      const attacking = (e.targetId !== null && e.targetId !== undefined) || !!e.deployed || !!e.flameTo;
       if (moved > 0.02) {
         // A new heading has to hold for a moment before it is taken: no flicker at a corner.
         const h = headingOf(g, dx, dy);
@@ -1972,7 +1972,7 @@ export class IsoRenderer extends Renderer {
         const loopDist = Math.max(8, spec.speed * ((clip0?.count ?? 12) / (clip0?.fps ?? 12)));
         v.phase = (v.phase + moved / loopDist) % 1;
       } else if (attacking) {
-        const s = this.targetOf(sim, e);
+        const s = e.flameTo ?? this.targetOf(sim, e);
         if (s) v.heading = headingOf(g, s.x - e.pos.x, s.y - e.pos.y);
       }
       const { view, mirror } = viewOf(v.heading);
@@ -2803,6 +2803,46 @@ export class IsoRenderer extends Renderer {
       const midX = (from.x + to.x) / 2 + Math.sin(this.pulse * 30) * 4;
       const midY = (from.y + to.y) / 2 + Math.cos(this.pulse * 27) * 4;
       g.moveTo(from.x, from.y).lineTo(midX, midY).lineTo(to.x, to.y).stroke({ width: 2, color: 0xcfeef8, alpha: Math.min(1, a.ttl * 4) });
+    }
+    // A FLAMETROOPER's stream (Oct 2 2026): a flickering tapered tongue of fire from its nozzle to where the stream
+    // reaches, widening as it goes, hot yellow inside orange, with a few licks of flame along it. Drawn by code.
+    for (const e of sim.enemies) {
+      if (!e.flameTo) continue;
+      const a = at(e.pos.x, e.pos.y, 10);
+      const b = at(e.flameTo.x, e.flameTo.y, 6);
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const len = Math.hypot(dx, dy) || 1;
+      const nx = -dy / len;
+      const ny = dx / len;
+      const t = this.pulse * 40 + e.id;
+      const tongue = (w: number, reach: number, col: number, alpha: number): void => {
+        const steps = 7;
+        const left: Pt[] = [];
+        const right: Pt[] = [];
+        for (let i = 0; i <= steps; i++) {
+          const f = (i / steps) * reach;
+          const half = (1.5 + w * f) * (1 + 0.18 * Math.sin(t * 1.7 + i * 1.3));
+          const wob = Math.sin(t + i * 0.9) * 1.6 * f;
+          const cx = a.x + dx * f + nx * wob;
+          const cy = a.y + dy * f + ny * wob;
+          left.push({ x: cx + nx * half, y: cy + ny * half });
+          right.push({ x: cx - nx * half, y: cy - ny * half });
+        }
+        const pts = [...left, ...right.reverse()];
+        g.moveTo(pts[0].x, pts[0].y);
+        for (const p of pts.slice(1)) g.lineTo(p.x, p.y);
+        g.closePath().fill({ color: col, alpha });
+      };
+      tongue(9, 1, 0xd8461c, 0.55);
+      tongue(6, 0.92, 0xf28a2a, 0.75);
+      tongue(3, 0.8, 0xffd86a, 0.85);
+      for (let k = 0; k < 4; k++) {
+        const f = ((t * 0.05 + k * 0.27) % 1);
+        const px = a.x + dx * f + nx * Math.sin(t + k * 2) * 6 * f;
+        const py = a.y + dy * f + ny * Math.sin(t + k * 2) * 6 * f - f * 5;
+        g.circle(px, py, 1.5 + 3 * f).fill({ color: 0xffb040, alpha: 0.6 * (1 - f) });
+      }
     }
     const lobbed = (from: Pt, to: Pt, f: number, arc: number, r: number, col: number): void => {
       const a = at(from.x, from.y, this.muzzle(sim, from.x, from.y));

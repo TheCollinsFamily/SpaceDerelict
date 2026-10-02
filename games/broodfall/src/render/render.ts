@@ -81,7 +81,7 @@ const ENGINE_GLYPH: Partial<Record<TowerFamily, (g: Graphics, x: number, y: numb
 export const ENEMY_SIZE: Record<Enemy['kind'], number> = {
   responder: 5, militia: 6, skitterling: 3.5, soldier: 8, elite: 11, flier: 6, sapper: 7,
   phalanx: 13, drummer: 9, bomber: 6, tunneler: 8, tender: 7,
-  splitter: 9, mortar: 9, carapace: 10, stalker: 8, shadewing: 6, ghostsapper: 7,
+  splitter: 9, mortar: 9, carapace: 10, stalker: 8, shadewing: 6, ghostsapper: 7, flametrooper: 8,
   researcher: 6, thief: 6, infiltrator: 6, cannon: 10, dartgun: 9, royal: 20, consort: 13, matron: 13,
 };
 

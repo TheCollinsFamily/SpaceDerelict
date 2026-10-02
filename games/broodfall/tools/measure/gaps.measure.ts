@@ -7,7 +7,7 @@
 import { it } from 'vitest';
 import { Autoplayer } from '../../src/sim/autoplayer';
 import { DT, Sim } from '../../src/sim/sim';
-import { BALANCE } from '../../content/data';
+import { BALANCE, WAVE_TABLE } from '../../content/data';
 import { PLATES, START_PLATES } from '../../content/plates';
 
 // Ablations (GAPS_MODE, comma-separated): nograft = surgery under fire takes at once;
@@ -17,6 +17,11 @@ const MODE = (process.env.GAPS_MODE ?? '').split(',');
 if (MODE.includes('onecrash')) START_PLATES.splice(1);
 if (MODE.includes('fiveplates')) PLATES.splice(5);
 if (MODE.includes('nograft')) Object.assign(BALANCE as Record<string, unknown>, { graftSeconds: 0, graftPerPip: 0 });
+// noflame = no Flametroopers at all (Oct 2 2026): out of the wave table and no answer to your units.
+if (MODE.includes('noflame')) {
+  for (const row of WAVE_TABLE as Array<Record<string, number>>) delete row.flametrooper;
+  Object.assign(BALANCE as Record<string, unknown>, { flamerAnswerMax: 0 });
+}
 if (MODE.includes('surge')) {
   (Autoplayer.prototype as unknown as { spendRoyal: (sim: Sim) => void }).spendRoyal = (sim: Sim) => { sim.issue({ kind: 'royal-surge' }); };
 }

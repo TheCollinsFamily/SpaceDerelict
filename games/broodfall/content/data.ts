@@ -374,6 +374,13 @@ export const ENEMIES: readonly EnemySpec[] = [
   { kind: 'stalker', caste: 'war', hp: 85, speed: 40, damage: 12, rate: 1.0, meat: 4, threatOnKill: 3, risk: 7, cloaked: true },
   // Shadewing: a CLOAKED FLIER — needs a limb that reaches the air AND can see it.
   { kind: 'shadewing', caste: 'war', hp: 60, speed: 56, damage: 10, rate: 1.2, meat: 4, threatOnKill: 3, risk: 9, flies: true, cloaked: true },
+  // FLAMETROOPER (Collins, Oct 2 2026: "an enemy unit of war caste with a flamethrower that is way better against
+  // units and targets them first, only going after the base if all units are clear"). The hive's answer to your
+  // walking units: it hunts the nearest of them in sight and hoses a short cone (a warrior lasts about a second
+  // in it, a Broodmother about eight). With none in sight it is a weak soldier: its flame does little to limbs
+  // (damage 4), and its body is thin, so limbs at range kill it before it matters. A counter to stacks, not a wall-breaker.
+  { kind: 'flametrooper', caste: 'war', hp: 85, speed: 36, damage: 4, rate: 1.0, meat: 3, threatOnKill: 3, risk: 6,
+    flamer: { sight: 170, range: 54, unitDps: 30, coneCos: 0.82 } },
   // Ghost sapper: a CLOAKED sapper — climbs your perches and eats limbs unseen.
   { kind: 'ghostsapper', caste: 'war', hp: 120, speed: 42, damage: 18, rate: 1.3, meat: 5, threatOnKill: 4, risk: 12, sapper: true, cloaked: true },
   { kind: 'tender', caste: 'war', hp: 80, speed: 34, damage: 6, rate: 0.5, meat: 6, threatOnKill: 2, risk: 8, healer: true },
@@ -416,10 +423,10 @@ export const WAVE_TABLE: readonly Partial<Record<string, number>>[] = [
   { responder: 8 },                                            // tier 0: first response
   { responder: 8, militia: 6, skitterling: 4 },                // tier 1: militia muster
   { militia: 12, soldier: 6, splitter: 1 },                    // tier 2: the army arrives
-  { militia: 8, soldier: 8, elite: 2, flier: 4, drummer: 1, splitter: 2, stalker: 1 },  // tier 3: air support, war-drums, the first shadows
-  { soldier: 10, elite: 5, flier: 5, sapper: 3, bomber: 2, drummer: 1, splitter: 2, mortar: 1, cannon: 1, stalker: 2, shadewing: 1 },  // tier 4: sappers climb, siege engines, shadows take wing
-  { soldier: 12, elite: 7, flier: 6, sapper: 4, phalanx: 2, tender: 2, bomber: 2, carapace: 1, mortar: 2, cannon: 1, stalker: 2, shadewing: 2, ghostsapper: 1 },  // tier 5: the shield wall marches tended
-  { elite: 10, flier: 8, sapper: 5, phalanx: 3, drummer: 2, tender: 3, tunneler: 4, bomber: 4, carapace: 3, mortar: 3, splitter: 4, cannon: 2, stalker: 4, shadewing: 3, ghostsapper: 2 }, // tier 6: everything they have
+  { militia: 8, soldier: 8, elite: 2, flier: 4, drummer: 1, splitter: 2, stalker: 1, flametrooper: 1 },  // tier 3: air support, war-drums, the first shadows, the first flamer
+  { soldier: 10, elite: 5, flier: 5, sapper: 3, bomber: 2, drummer: 1, splitter: 2, mortar: 1, cannon: 1, stalker: 2, shadewing: 1, flametrooper: 2 },  // tier 4: sappers climb, siege engines, shadows take wing
+  { soldier: 12, elite: 7, flier: 6, sapper: 4, phalanx: 2, tender: 2, bomber: 2, carapace: 1, mortar: 2, cannon: 1, stalker: 2, shadewing: 2, ghostsapper: 1, flametrooper: 2 },  // tier 5: the shield wall marches tended
+  { elite: 10, flier: 8, sapper: 5, phalanx: 3, drummer: 2, tender: 3, tunneler: 4, bomber: 4, carapace: 3, mortar: 3, splitter: 4, cannon: 2, stalker: 4, shadewing: 3, ghostsapper: 2, flametrooper: 3 }, // tier 6: everything they have
 ];
 
 export const BALANCE = {
@@ -658,6 +665,11 @@ export const BALANCE = {
   muleScienceLure: 70,      // px: the science caste turns aside for a walking mule this close (a live sample)
   /** Siege fire (mortars, cannons) singles out a PARKED Broodmother within reach: this much more likely than a limb. */
   parkedMotherAggro: 1.5,
+  // The hive ANSWERS your walking units (Oct 2 2026): from tier 2, every flamerPerUnits of your units on the board
+  // when a siege starts adds one Flametrooper to it, up to flamerAnswerMax. A stack is still strong, but now answered.
+  flamerPerUnits: 6,
+  flamerAnswerMax: 4,
+  flamerAnswerMinTier: 2,
   /** Digestive swamp: everything in it digests; the weak dissolve outright. */
   swampBiomassPerKill: 3,   // digested kills feed the mass on top of normal meat
   pipExecute: 10,           // swamp pip: payload digests anything left at or below +10 hp per pip

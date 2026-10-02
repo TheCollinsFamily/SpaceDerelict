@@ -374,6 +374,7 @@ export type EnemyKind =
   | 'dartgun'
   | 'stalker'
   | 'shadewing'
+  | 'flametrooper'
   | 'ghostsapper'
   | 'infiltrator'
   | 'royal'
@@ -438,11 +439,15 @@ export interface EnemySpec {
   cannon?: { range: number; interval: number; damage: number; aoe: number; stun?: number; ammo?: number };
   /** Invisible: only limbs with detection (or inside a detection aura) can TARGET it. Area effects still touch it. */
   cloaked?: boolean;
+  /** The FLAMETROOPER (Oct 2 2026): hunts your walking units in sight first and hoses them in a short cone (unitDps); with none in sight it marches on limbs and the core at its weak spec.damage. */
+  flamer?: { sight: number; range: number; unitDps: number; coneCos: number };
   /** Veil matron: every war body within this radius is CLOAKED while she lives. */
   veilAura?: number;
 }
 
 export interface Enemy {
+  /** A Flametrooper hosing your units: where its stream reaches this tick (for the renderer). */
+  flameTo?: Vec;
   id: number;
   kind: EnemyKind;
   /** A martyr (the Sleepers): detonates among its own at this sim time. */
