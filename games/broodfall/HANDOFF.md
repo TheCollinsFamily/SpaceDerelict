@@ -1575,3 +1575,7 @@ from units (who automatically target shield units first)". Design: DESIGN.md, th
   poison soaked, units target bearers first, Harriers crack one, tier growth, the ladder and the answer, lens with famous
   parties, determinism). `node tools/shot-domes.mjs` (four spitters vs a domed column, then Harriers; filmed, domes.mp4).
   Balance: `GAPS_MODE=nodome` on tools/measure/gaps.measure.ts; the measure prints deacons, domes broken and damage soaked.
+- **Measured (Oct 2 2026, 10 seeds, hold-12):** naive 7/10 with domes and 7/10 without (`nodome`); with domes a winning
+  naive run meets 28-37 deacons (the table plus the answer to its many limbs) and loses 12-20k damage to them, and seed
+  4 flips to a loss (pressure, not a wall). Broodmother stack 7/10 (8/10 `stack,nodome`). Expansion 4/10, as before the
+  domes (the scripted player's expansion play is weak, not the domes). Art spend about $13.50 (4 stills, 32 clips).
