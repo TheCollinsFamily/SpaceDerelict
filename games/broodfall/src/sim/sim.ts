@@ -4405,35 +4405,47 @@ export class Sim {
   }
 
   /**
-   * Is this cell a possible SITE for a station, at the SIDE of a lane and never in it? Either a building LOT that faces
-   * a street (Collins: "a lot beside the street": the station stands on the lot, its door on the street), or open
-   * ground beside a building where the street is two or more cells wide (a wide street's edge, a square's side), so
-   * the lane stays open. Off your creep, reachable from its door, not taken, not inside your guns' reach.
+   * The BLOCK a station founded on this building cell takes over (Collins, Oct 2 2026: "it should transform the whole
+   * square section of the wall into something else, so it's very noticeable"): the building cells joined to it (side
+   * by side) in its district, nearest first, at most stationBlockMax of them. Nearest first is the order the
+   * installation spreads over the block as it is built.
+   */
+  stationBlock(c: number): number[] {
+    if (c < 0 || this.map.cells[c] !== CellType.Block) return [];
+    const w = this.cfg.gridW;
+    const slotOf = (q: number) => Math.floor(Math.floor(q / w) / PLATE) * this.map.slotsX + Math.floor((q % w) / PLATE);
+    const slot = slotOf(c);
+    const seen = new Set<number>([c]);
+    const out: number[] = [];
+    const queue = [c];
+    while (queue.length && out.length < B.stationBlockMax) {
+      const q = queue.shift()!;
+      out.push(q);
+      const x = q % w;
+      for (const n of [x > 0 ? q - 1 : -1, x < w - 1 ? q + 1 : -1, q - w, q + w]) {
+        if (n < 0 || n >= this.map.cells.length || seen.has(n)) continue;
+        seen.add(n);
+        if (this.map.cells[n] === CellType.Block && slotOf(n) === slot) queue.push(n);
+      }
+    }
+    return out;
+  }
+
+  /**
+   * Is this cell a possible SITE for a station? A BUILDING cell that faces a street (Collins: "a spot on the side of
+   * any lane"; "transform the whole square section"): the station takes over the whole block it stands in, its door
+   * on the street, so it never blocks a lane. The block is off your creep and carries none of your limbs or plinths
+   * and no shelter; the door is reachable; neither is inside your guns' reach.
    */
   stationSiteOk(c: number): boolean {
-    const t = this.map.cells[c];
-    if (t !== CellType.Road && t !== CellType.Plaza && t !== CellType.Block) return false;
-    if (this.isCreeped(c) || this.occupied.has(c) || this.shelterAt(c) || c === this.map.coreCell) return false;
-    if (t === CellType.Block && (this.map.plinths[c] ?? 0) > 0) return false;
+    if (this.map.cells[c] !== CellType.Block || c === this.map.coreCell) return false;
     const door = this.stationDoor(c);
     if (door < 0 || this.isCreeped(door) || !Number.isFinite(this.flow.dist[door])) return false;
     if (this.dangerAt(c) > 0 || this.dangerAt(door) > 0) return false;
-    if (t === CellType.Block) return true;
-    const w = this.cfg.gridW;
-    const open = (q: number) => q >= 0 && q < this.map.cells.length && (this.map.cells[q] === CellType.Road || this.map.cells[q] === CellType.Plaza);
-    const sameRow = (a: number, b: number) => Math.floor(a / w) === Math.floor(b / w);
-    // Beside a building (a lane's edge or a square's side).
-    const nbs = [sameRow(c, c - 1) ? c - 1 : -1, sameRow(c, c + 1) ? c + 1 : -1, c - w, c + w];
-    if (!nbs.some((q) => q >= 0 && q < this.map.cells.length && this.map.cells[q] === CellType.Block)) return false;
-    // Never in a one-cell lane: the street is two or more cells wide here both ways round, or it is a square.
-    if (t === CellType.Road) {
-      const run = (step: number) => {
-        let n = 1;
-        for (let q = c - step; open(q) && (step === 1 ? sameRow(q, c) : true); q -= step) n++;
-        for (let q = c + step; open(q) && (step === 1 ? sameRow(q, c) : true); q += step) n++;
-        return n;
-      };
-      if (Math.min(run(1), run(w)) < 2) return false;
+    const block = this.stationBlock(c);
+    if (block.length < B.stationBlockMin) return false;
+    for (const q of block) {
+      if (this.isCreeped(q) || this.occupied.has(q) || this.shelterAt(q) || (this.map.plinths[q] ?? 0) > 0) return false;
     }
     return true;
   }
@@ -4457,6 +4469,9 @@ export class Sim {
       if (other !== undefined && other >= 0 && gap(other) < B.stationSpacing) return null;
     }
     for (const sh of this.shelters) if (sh.state === 'infested' && dist(sh.pos, cc) < B.stationSpacing * this.cfg.cellPx) return null;
+    for (const e of this.enemies) if (e.blockCells?.includes(c)) return null;
+    // A wreck keeps its distance too (a new station is not founded next to the one you just took down).
+    for (const k of this.corpses) if (k.kind === 'fieldstation' && gap(k.cell) < B.stationSpacing) return null;
     // How far it stands from your creep (cells): not at your wall (under 2), not far out of play (over 8).
     let edge = Infinity;
     for (let dy = -8; dy <= 8; dy++) for (let dx = -8; dx <= 8; dx++) {
@@ -4477,7 +4492,13 @@ export class Sim {
       if ((dx || dy) && q >= 0 && q < this.map.cells.length && (this.map.cells[q] === CellType.Road || this.map.cells[q] === CellType.Plaza)) room++;
     }
     score += Math.min(room, 4);                               // room for its turrets
-    if (this.map.cells[c] === CellType.Plaza) score += 1;     // a square's side is the best ground
+    // A compact, squarish block of a good size reads best as "that block is theirs now".
+    const blk = this.stationBlock(c);
+    const bx = blk.map((q) => q % w);
+    const by = blk.map((q) => Math.floor(q / w));
+    const bw = Math.max(...bx) - Math.min(...bx) + 1;
+    const bh = Math.max(...by) - Math.min(...by) + 1;
+    score += Math.min(blk.length, 9) * 0.3 - Math.abs(bw - bh) * 0.5;
     return score;
   }
 
@@ -4601,6 +4622,7 @@ export class Sim {
         st.stationTimer = B.stationPartyEvery[0] * 0.5;
         st.stationTurrets = 0;
         st.siteCell = site;
+        st.blockCells = this.stationBlock(site);
         e.siteCell = undefined;
         e.tendsStation = st.id;
         e.engState = 'build';

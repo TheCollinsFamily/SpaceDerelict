@@ -1545,6 +1545,15 @@ the side of any lane"; "the creep healing and making faster is great".
 - **Checks:** `tests/stations.test.ts` (sites, every engineer behaviour, the station's growth, parties, squad, turrets,
   repair, warriors, darts, the count, creep care, determinism, the pictures). Browser beat `node tools/shot-stations.mjs`
   (13 checks; screens `notes/screens/2026-10-02/stations-*.png`, film `stations.mp4`).
+- **The station IS its block** (Collins, after the first look: "it should transform the whole square section of the wall
+  into something else, so it's very noticeable"): `Sim.stationBlock` (the block, at most 12 cells, site first),
+  `stationSiteOk` (a building cell facing a street, the whole block free and off creep). Drawn by `IsoRender.cladBlocks`/
+  `buildCladding`: the flat pictures of `tools/art/installation.mjs` (`public/art/installation/`: facade and roof per
+  state, the entrance, six roof objects) laid on every visible wall face and roof diamond of the block with an affine
+  matrix (`setFromMatrix`), a teal light over the roofs, a glowing teal roofline, smoke over a wreck. The old one-lot
+  station pictures (`tools/art/stations.mjs`) are kept; only the turret is still used. Check: `node
+  tools/shot-installation.mjs` (3 sets, near/far at 2 turns, every stage; a whole-board check that the block is far darker
+  or far tealer than the city round it). Screens `notes/screens/2026-10-02/installation-*.png`.
 - **Measure:** `GAPS_MODE=nostations` (no engineers), `nocreepcare`; the gaps rows now print `stations {...}`.
   Oct 2 2026, 10 seeds, hold 12 (naive wins; stations raised / destroyed / runs reaching stage 3 / parties sent; hp healed on creep):
   all built 7/10 (8/3/4/23; 1316); nostations 6/10; nocreepcare 7/10; neither 6/10. Stack 7/10 (6/4/4/17; 8080), stack

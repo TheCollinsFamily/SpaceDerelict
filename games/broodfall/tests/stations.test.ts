@@ -53,29 +53,39 @@ function harrierAt(s: Sim, at: Vec): Harrier {
   return h;
 }
 
-describe('station sites: at the side of a lane, never in it', () => {
+describe('station sites: a whole block beside a lane, never the lane', () => {
   for (const seed of [4242, 7, 42]) {
-    it(`seed ${seed}: every possible site is a lot facing a street or the edge of a wide street, off your creep, out of your reach`, () => {
+    it(`seed ${seed}: every possible site is a building cell facing a street; its whole block is free and off your creep`, () => {
       const s = board(seed);
-      const w = s.cfg.gridW;
-      let lots = 0;
+      let sites = 0;
       for (let c = 0; c < s.map.cells.length; c++) {
         if (!s.stationSiteOk(c)) continue;
-        expect(s.isCreeped(c)).toBe(false);
+        sites++;
+        expect(s.map.cells[c]).toBe(CellType.Block);
         expect(s.dangerAt(c)).toBe(0);
         const door = s.stationDoor(c);
-        expect(door).toBeGreaterThanOrEqual(0);
         expect(s.map.cells[door]).toBe(CellType.Road);
-        if (s.map.cells[c] === CellType.Block) { lots++; continue; }
-        // A street site: never a one-cell lane (a station there would block its own side's traffic).
-        const open = (q: number) => q >= 0 && q < s.map.cells.length && s.map.cells[q] !== CellType.Block && s.map.cells[q] !== CellType.Void;
-        const row = (open(c - 1) && Math.floor((c - 1) / w) === Math.floor(c / w)) || (open(c + 1) && Math.floor((c + 1) / w) === Math.floor(c / w));
-        const col = open(c - w) || open(c + w);
-        expect(row && col, `street site ${c} is in a one-cell lane`).toBe(true);
+        const block = s.stationBlock(c);
+        expect(block.length).toBeGreaterThanOrEqual(B.stationBlockMin);
+        expect(block.length).toBeLessThanOrEqual(B.stationBlockMax);
+        expect(block[0]).toBe(c);
+        for (const q of block) {
+          expect(s.map.cells[q]).toBe(CellType.Block);
+          expect(s.isCreeped(q)).toBe(false);
+        }
       }
-      expect(lots).toBeGreaterThan(0);
+      expect(sites).toBeGreaterThan(0);
     });
   }
+
+  it('a station records the block it takes over, its site first', () => {
+    const s = board();
+    engineerAt(s);
+    let st: Enemy | undefined;
+    for (let i = 0; i < 1200 && !st; i++) { run(s, 0.1); st = s.enemies.find((e) => e.kind === 'fieldstation'); }
+    expect(st!.blockCells!.length).toBeGreaterThanOrEqual(B.stationBlockMin);
+    expect(st!.blockCells![0]).toBe(st!.siteCell);
+  });
 
   it('the best site is out of sight of your units and away from an infested outpost', () => {
     const s = board();
@@ -324,5 +334,18 @@ describe('the stations\' pictures', () => {
         expect(fs.existsSync(path.join('public', 'art', 'station', b.id, `${state}.webp`)), `${b.id}/${state}`).toBe(true);
       }
     }
+  });
+});
+
+describe('the installation\'s pictures (the block a station takes over)', () => {
+  it('has a facade and a roof for every state, the lit entrance and the six roof objects (public/art/installation/)', async () => {
+    const fs = await import('node:fs');
+    const path = await import('node:path');
+    const ids = [
+      ...['building', 'active', 'fortified', 'ruin'].flatMap((st) => [`facade-${st}`, `roof-${st}`]),
+      'entrance',
+      ...['dish', 'tanks', 'mast', 'module', 'crates', 'pylon'].map((a) => `apparatus-${a}`),
+    ];
+    for (const id of ids) expect(fs.existsSync(path.join('public', 'art', 'installation', `${id}.webp`)), id).toBe(true);
   });
 });

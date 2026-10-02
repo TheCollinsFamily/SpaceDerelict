@@ -747,6 +747,9 @@ export const BALANCE = {
   engineerReplans: 4,
   /** A site keeps this many cells from another station or site, and from an infested outpost. */
   stationSpacing: 7,
+  /** The block a station takes over: at least stationBlockMin building cells (a lone lot is no block), at most stationBlockMax. */
+  stationBlockMin: 2,
+  stationBlockMax: 12,
   /** Where it builds: at least stationSiteMin cells from your creep (never at your wall), at most stationSiteMax from the body. */
   stationSiteMin: 2,
   stationSiteMax: 30,

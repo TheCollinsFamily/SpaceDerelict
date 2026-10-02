@@ -174,6 +174,9 @@ try {
   // A second engineer founds a second station; your strike force reaches it half-built and it runs.
   const second = await page.evaluate(() => {
     const s = window.broodfall.sim;
+    // The wreck is digested and the first engineer gone home (the beat moves on): the board is open for a new station.
+    s.corpses.splice(0, s.corpses.length, ...s.corpses.filter((c) => c.kind !== 'fieldstation'));
+    for (let k = s.enemies.length - 1; k >= 0; k--) if (s.enemies[k].kind === 'engineer') s.enemies.splice(k, 1);
     // The strike force goes home first (a Harrier hunts any science unit it sees: it would catch the engineer at once).
     s.harriers.splice(0, s.harriers.length);
     s.engineerTimer = 0;

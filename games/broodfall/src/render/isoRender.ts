@@ -124,6 +124,13 @@ function mix(a: number, b: number): number {
   return m(16) | m(8) | m(0);
 }
 
+/** Blend two colours: t of the way from a to b. */
+function lerpColour(a: number, b: number, t: number): number {
+  const ch = (n: number, k: number) => (n >> k) & 255;
+  const m = (k: number) => Math.round(ch(a, k) + (ch(b, k) - ch(a, k)) * t) << k;
+  return m(16) | m(8) | m(0);
+}
+
 interface UnitView {
   sprite: Sprite; ghost: Sprite; art: UnitArt;
   heading: Heading; want: Heading; wantFor: number;
@@ -2125,6 +2132,7 @@ export class IsoRenderer extends Renderer {
     this.drawBroodlings(sim, dt);
     this.syncShelters(sim);
     this.syncStations(sim);
+    this.cladBlocks(sim);
     this.drawCreepCare(sim);
     for (const [id, v] of this.allyViews) {
       if (v.seen === this.frameNo) continue;
@@ -2482,6 +2490,191 @@ export class IsoRenderer extends Renderer {
     v.zIndex = (this.cellZ.get(cell) ?? (p.y * 10)) + 6;
   }
   /**
+   * THE SCIENCE INSTALLATION (Collins, Oct 2 2026: "it should transform the whole square section of the wall into
+   * something else, so it's very noticeable"). A station takes over its WHOLE BLOCK (Sim.stationBlock): every wall
+   * face of the block that the camera sees is re-clad and every roof tile covered, laid on the block's own faces at
+   * its own height (an affine map of the flat pictures of tools/art/installation.mjs onto each face and roof
+   * diamond), at every camera turn; apparatus stands on its roofs and a lit entrance faces the street. While it is
+   * built the cladding spreads over the block from its site (scaffold); then it stands; fortified at stage 3; the
+   * wreck is the same block gutted, until the creep digests it. The block's own roof props are hidden under it.
+   */
+  private cladViews = new Map<string, { sig: string; sprites: Sprite[]; cells: number[] }>();
+  private cladTex = new Map<string, Texture | null | 'loading'>();
+  private cladTexture(id: string): Texture | null {
+    const t = this.cladTex.get(id);
+    if (t === undefined) {
+      this.cladTex.set(id, 'loading');
+      Assets.load<Texture>(artUrl(`installation/${id}.webp`)).then((tex) => this.cladTex.set(id, tex ?? null), () => this.cladTex.set(id, null));
+      return null;
+    }
+    return t === 'loading' ? null : t;
+  }
+  private cladBlocks(sim: Sim): void {
+    const want: Array<{ key: string; cells: number[]; site: number; state: string; done: number }> = [];
+    for (const e of sim.enemies) {
+      if (e.kind !== 'fieldstation' || !e.blockCells?.length) continue;
+      const building = (e.buildProgress ?? 1) < 1;
+      const state = building ? 'building' : (e.stationStage ?? 1) >= 3 ? 'fortified' : 'active';
+      // While it is built, the cladding spreads over the block from its site.
+      const done = building ? Math.max(1, Math.ceil((e.buildProgress ?? 0) * e.blockCells.length)) : e.blockCells.length;
+      want.push({ key: `s${e.id}`, cells: e.blockCells, site: e.siteCell ?? e.blockCells[0], state, done });
+    }
+    for (const c of sim.corpses) {
+      if (c.kind !== 'fieldstation') continue;
+      const cells = sim.stationBlock(c.cell);
+      if (cells.length) want.push({ key: `w${c.id}`, cells, site: c.cell, state: 'ruin', done: cells.length });
+    }
+    // A wreck smokes: dark puffs rise from its roofs and fade (Reduce motion: a still haze).
+    for (const w of want) {
+      if (w.state !== 'ruin') continue;
+      for (const [i, cell] of w.cells.filter((_, k) => k % 3 === 0).entries()) {
+        const cc = sim.cellCenter(cell);
+        const top = this.onGround(sim, cc.x, cc.y);
+        const h = (sim.map.heights[cell] ?? 1) * this.geo.level / K;
+        for (let j = 0; j < 3; j++) {
+          const ph = CALM.motion ? 0.3 + j * 0.2 : ((this.pulse * 0.25 + j / 3 + i * 0.17) % 1);
+          const r = 6 + ph * 14;
+          this.marksG.circle(top.x / K + Math.sin(ph * 5 + i) * 4, top.y / K - h - 4 - ph * 34, r).fill({ color: 0x9a948c, alpha: 0.5 * (1 - ph) });
+        }
+      }
+    }
+    const keep = new Set(want.map((w) => w.key));
+    for (const [k, v] of this.cladViews) {
+      if (keep.has(k)) continue;
+      for (const sp of v.sprites) sp.destroy();
+      for (const c of v.cells) { const pr = this.props.get(c); if (pr) pr.visible = true; }
+      this.cladViews.delete(k);
+    }
+    for (const w of want) {
+      const loaded = ['facade-' + w.state, 'roof-' + w.state, 'entrance', ...['dish', 'tanks', 'mast', 'module', 'crates', 'pylon'].map((x) => 'apparatus-' + x)].map((x) => this.cladTexture(x) ? 1 : 0).join('');
+      const sig = `${this.turned}:${this.mapSig}:${w.state}:${w.done}:${loaded}`;
+      const had = this.cladViews.get(w.key);
+      if (had?.sig === sig) continue;
+      if (had) for (const sp of had.sprites) sp.destroy();
+      const sprites = this.buildCladding(sim, w.cells.slice(0, w.done), w.site, w.state);
+      this.cladViews.set(w.key, { sig, sprites, cells: w.cells });
+    }
+  }
+  private buildCladding(sim: Sim, cells: number[], site: number, state: string): Sprite[] {
+    const g = this.geo;
+    const W = sim.cfg.gridW;
+    const out: Sprite[] = [];
+    const facade = this.cladTexture(`facade-${state}`);
+    const roofTex = this.cladTexture(`roof-${state}`);
+    const entrance = state === 'ruin' || state === 'building' ? null : this.cladTexture('entrance');
+    if (!facade || !roofTex) return out;
+    const mine = new Set(cells);
+    const door = sim.stationDoor(site);
+    const doorV = door >= 0 ? viewCell(g, door % W, Math.floor(door / W)) : null;
+    // A little of the tile set's light, so the dark installation still belongs to its district.
+    const set = this.stationSetAt(sim, site);
+    const tints = this.art.biomeArt(set)?.roofTint ?? ROOF_TINT;
+    const lit = (_k: number) => lerpColour(tints[tints.length - 1] ?? 0xffffff, 0xffffff, 0.6);
+    const face = (tex: Texture, x: number, y: number, dir: 1 | -1, z: number, shade: number): void => {
+      const sp = new Sprite(tex);
+      // Texture x (its width) runs along the face (a, dir * b); texture y (its height) straight down one level.
+      sp.setFromMatrix(new Matrix(g.a / tex.width, (dir * g.b) / tex.width, 0, g.level / tex.height, x, y));
+      sp.tint = shade;
+      sp.zIndex = z;
+      this.sorted.addChild(sp);
+      out.push(sp);
+    };
+    let entranceDone = false;
+    for (const cell of cells) {
+      const v = viewCell(g, cell % W, Math.floor(cell / W));
+      const vx = v.x;
+      const vy = v.y;
+      const h = this.heightV(sim, vx, vy);
+      if (h <= 0) continue;
+      const p = this.tileAt(vx, vy);
+      const z = (vx + vy + 1) * 100;
+      const light = lit(cell);
+      // The south face (toward +view y) and the east face (toward +view x), level by level, where they show.
+      const southOpen = this.heightV(sim, vx, vy + 1);
+      const eastOpen = this.heightV(sim, vx + 1, vy);
+      const doorSouth = !!doorV && doorV.x === vx && doorV.y === vy + 1;
+      const doorEast = !!doorV && doorV.x === vx + 1 && doorV.y === vy;
+      for (let l = southOpen; l < h; l++) {
+        const ent = entrance && l === 0 && !entranceDone && (doorSouth || (!doorV && southOpen === 0));
+        if (ent) entranceDone = true;
+        face(ent ? entrance! : facade, p.x, p.y + g.b - (l + 1) * g.level, 1, z + 0.5, lerpColour(light, 0xffffff, 0.2));
+      }
+      for (let l = eastOpen; l < h; l++) {
+        const ent = entrance && l === 0 && !entranceDone && doorEast;
+        if (ent) entranceDone = true;
+        face(ent ? entrance! : facade, p.x + g.a, p.y + 2 * g.b - (l + 1) * g.level, -1, z + 0.5, lerpColour(light, 0x9a9a9a, 0.35));
+      }
+      // The roof: the flat picture laid on the roof diamond (texture x toward the right corner, y toward the left).
+      const Y = p.y - h * g.level;
+      const roof = new Sprite(roofTex);
+      // A hair larger than the diamond (k), round its middle, so no seam of the old roof shows between tiles.
+      const k = 1.06;
+      roof.setFromMatrix(new Matrix((k * g.a) / roofTex.width, (k * g.b) / roofTex.width, (-k * g.a) / roofTex.height, (k * g.b) / roofTex.height, p.x + g.a, Y + g.b - k * g.b));
+      roof.tint = light;
+      roof.zIndex = z + 1.5;
+      this.sorted.addChild(roof);
+      out.push(roof);
+      // The science caste's light: a teal lift over the roof (added light), so the claimed block reads on a dark set as
+      // well as a pale one; and a glowing teal line round its roofline where the block ends (the edge of what is theirs).
+      if (state !== 'building' && state !== 'ruin') {
+        const k2 = 1.04;
+        const lift = new Graphics();
+        lift.poly([p.x + g.a, Y + g.b - k2 * g.b, p.x + g.a + k2 * g.a, Y + g.b, p.x + g.a, Y + g.b + k2 * g.b, p.x + g.a - k2 * g.a, Y + g.b])
+          .fill({ color: state === 'fortified' ? 0x105450 : 0x0b4844, alpha: 1 });
+        lift.blendMode = 'add';
+        lift.zIndex = z + 1.55;
+        this.sorted.addChild(lift);
+        out.push(lift as unknown as Sprite);
+      }
+      if (state !== 'ruin') {
+        const T = { x: p.x + g.a, y: Y };
+        const R = { x: p.x + 2 * g.a, y: Y + g.b };
+        const Bt = { x: p.x + g.a, y: Y + 2 * g.b };
+        const Lf = { x: p.x, y: Y + g.b };
+        const outside = (dvx: number, dvy: number) => {
+          const n = boardCell(g, vx + dvx, vy + dvy);
+          return !(n.x >= 0 && n.y >= 0 && n.x < W && n.y < sim.map.h && mine.has(n.y * W + n.x));
+        };
+        const edges: Array<[{ x: number; y: number }, { x: number; y: number }]> = [];
+        if (outside(0, -1)) edges.push([T, R]);
+        if (outside(1, 0)) edges.push([R, Bt]);
+        if (outside(0, 1)) edges.push([Bt, Lf]);
+        if (outside(-1, 0)) edges.push([Lf, T]);
+        if (edges.length) {
+          const line = new Graphics();
+          const col = state === 'building' ? 0x3a8e88 : 0x5ff0e6;
+          for (const [u, w2] of edges) line.moveTo(u.x, u.y).lineTo(w2.x, w2.y).stroke({ width: 7, color: col, alpha: 0.22 });
+          for (const [u, w2] of edges) line.moveTo(u.x, u.y).lineTo(w2.x, w2.y).stroke({ width: 2.4, color: col, alpha: 0.95 });
+          line.blendMode = 'add';
+          line.zIndex = z + 4.5;
+          this.sorted.addChild(line);
+          out.push(line as unknown as Sprite);
+        }
+      }
+      // The block's own roof props are hidden under the installation.
+      const pr = this.props.get(cell);
+      if (pr) pr.visible = false;
+      // Apparatus on some of its roofs (fewer while it is built; none on the wreck).
+      const every = state === 'fortified' ? 1 : state === 'active' ? 2 : 3;
+      if (state !== 'ruin' && (cell * 7 + 3) % every === 0) {
+        const ids = state === 'building' ? ['crates'] : ['dish', 'tanks', 'mast', 'module', 'crates', 'pylon'];
+        const id = cell === site ? (state === 'building' ? 'crates' : 'module') : ids[(cell * 13 + 5) % ids.length];
+        const t = this.cladTexture(`apparatus-${id}`);
+        if (t) {
+          const ap = new Sprite(t);
+          ap.anchor.set(0.5, 0.92);
+          ap.scale.set(id === 'dish' ? 1.15 : 1.5);
+          ap.position.set(p.x + g.a, Y + g.b);
+          ap.zIndex = z + 5;
+          this.sorted.addChild(ap);
+          out.push(ap);
+        }
+      }
+    }
+    return out;
+  }
+
+  /**
    * CREEP CARE (Oct 2 2026): a unit of yours healing on the creep shows it, quietly: two small pale-green plus marks
    * rising and fading over it, on a slow beat, only while it is hurt and standing on creep (Reduce motion: still).
    */
@@ -2520,11 +2713,11 @@ export class IsoRenderer extends Renderer {
       let v = this.stationViews.get(e.id);
       if (!v) { v = new Sprite(); this.sorted.addChild(v); this.stationViews.set(e.id, v); }
       const cell = sim.cellAt(e.pos.x, e.pos.y);
-      const key = spec.fixed === 'turret' ? 'turret' : (e.buildProgress ?? 1) < 1 ? 'building' : (e.stationStage ?? 1) >= 3 ? 'fortified' : 'active';
-      this.placeStation(sim, v, key, e.pos, cell);
+      if (spec.fixed === 'turret') this.placeStation(sim, v, 'turret', e.pos, cell);
+      else v.visible = false; // the station IS its block (cladBlocks)
       const top = this.onGround(sim, e.pos.x, e.pos.y);
       const tx = top.x / K;
-      const ty = top.y / K - (spec.fixed === 'turret' ? 18 : 40);
+      const ty = top.y / K - (spec.fixed === 'turret' ? 18 : 12 + (sim.map.heights[cell] ?? 1) * this.geo.level / K);
       if (e.hp < e.maxHp) this.hpArc(g, tx, ty, 10, e.hp / e.maxHp);
       if (spec.fixed === 'turret') {
         // Its dart: a teal line to what it struck, for a beat after it fires.
@@ -2561,7 +2754,7 @@ export class IsoRenderer extends Renderer {
       wrecks.add(c.id);
       let v = this.wreckViews.get(c.id);
       if (!v) { v = new Sprite(); this.sorted.addChild(v); this.wreckViews.set(c.id, v); }
-      this.placeStation(sim, v, 'ruin', c.pos, c.cell);
+      v.visible = false; // the wreck IS its block, gutted (cladBlocks)
     }
     for (const [id, v] of this.wreckViews) if (!wrecks.has(id)) { v.destroy(); this.wreckViews.delete(id); }
   }

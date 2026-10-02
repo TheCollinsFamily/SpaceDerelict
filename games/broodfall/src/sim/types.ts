@@ -498,6 +498,8 @@ export interface Enemy {
   stationTurrets?: number;
   stationSiegeSent?: number;
   stationId?: number;
+  /** A field station: the block it takes over (Sim.stationBlock), nearest its site first. */
+  blockCells?: number[];
   /** A Flametrooper hosing your units: where its stream reaches this tick (for the renderer). */
   flameTo?: Vec;
   id: number;

@@ -520,11 +520,17 @@ small state machine (src/sim/sim.ts updateEngineer):
 - A second engineer REINFORCES an untended station rather than found a new one; sites keep 7 cells from each other and
   from an infested outpost.
 
-**Where it builds: at the side of a lane, never in it.** A site is a building LOT that faces a street (the station
-stands on the lot's roof, its door on the street: it never blocks a lane), or open ground beside a building where the
-street is two or more cells wide. Off your creep, 2 to 8 cells from its edge (never at your wall, never out of play),
-reachable from its door, outside your guns' reach and out of sight of your units. Scored: near your creep's edge,
-near bodies lying past it and a limb worth taking, room beside it for turrets, a square's side best.
+**It takes over a WHOLE BLOCK** (Collins: "the structure the engineers are building looks bad; it should transform the
+whole square section of the wall into something else, so it's very noticeable"). A site is a building cell facing a street,
+at the side of a lane, never in it; the station claims the block it stands in (the building cells joined to it in its
+district, at most 12, Sim.stationBlock), and that block must be off your creep with none of your limbs, plinths or a
+shelter on it. Every wall face of the block is re-clad and every roof covered (dark gunmetal panels, teal light strips,
+hazard bands, a lit blast-door entrance toward its door), laid on the block's own faces at its own height at every
+camera turn, apparatus on its roofs, a teal light over the roofs and a glowing teal line round its roofline: on a pale
+set it reads as a dark block, on a dark one as a teal one. Being built, the scaffold spreads over the block from its
+site; fortified, armour plate; the wreck is the block gutted and smoking until the creep digests it. Off your creep,
+2 to 8 cells from its edge, reachable from its door, outside your guns' reach and out of sight of your units; scored by
+its nearness to your creep's edge, bodies and a limb worth taking, room for turrets, and a compact squarish block.
 
 **The FIELD STATION** (650 hp, never moves) GROWS by age and so it is a threat that grows: stage 1 sends a study party
 from close by every 26 s of quiet (2 researchers); stage 2 (70 s) every 19 s (3, and a dart battery), a turret beside it,
