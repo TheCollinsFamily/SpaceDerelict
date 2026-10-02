@@ -448,6 +448,11 @@ function handleEvents(events: SimEvent[]): void {
     if (e.kind === 'shelter-paid') banner(`SHELTERS PROTECTED · +${Math.round(e.pct * 100)}% · +${e.war} WAR${e.science ? ` +${e.science} SCIENCE` : ''}`);
     if (e.kind === 'shelter-lost') banner('SHELTER LOST — THE HIVE TORE IT DOWN');
     if (e.kind === 'infestor-born') banner('AN INFESTOR IS BORN AT THE BODY — SEND IT TO A SHELTER (I)');
+    // SCIENCE FORWARD BASES (Oct 2 2026): an engineer out, a station raised and growing, destroyed.
+    if (e.kind === 'engineer-out') banner('A SCIENCE ENGINEER IS OUT — IT WILL RAISE A FIELD STATION OFF YOUR CREEP. CATCH IT');
+    if (e.kind === 'station-raised') banner('FIELD STATION RAISED — IT SENDS PARTIES FROM CLOSE BY AND GROWS. MOUNT AN ATTACK');
+    if (e.kind === 'station-grew') banner(e.stage >= 3 ? 'FIELD STATION AT FULL STRENGTH — SOLDIERS, THIEVES AND A SECOND TURRET' : 'FIELD STATION GROWING — A TURRET AND A WAR ESCORT INTO EVERY SIEGE');
+    if (e.kind === 'station-destroyed') banner('FIELD STATION DESTROYED');
     if (e.kind === 'net-cast' && renderer instanceof IsoRenderer) renderer.nets.push({ at: e.at, r: e.radius, t: 0 });
     if (e.kind === 'surgery-under-fire') banner(`SURGERY UNDER FIRE — GRAFTING ${e.seconds.toFixed(0)}s`);
     if ((e.kind === 'won' || e.kind === 'lost') && !AUTO) {

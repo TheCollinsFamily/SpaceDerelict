@@ -401,6 +401,17 @@ export const ENEMIES: readonly EnemySpec[] = [
     // 150px stun-locked the outer layer for minutes and collapsed every run).
     // A science VISIT, not a siege: 8 darts, then it packs up and goes home.
     cannon: { range: 130, interval: 4, damage: 4, aoe: 0, stun: 1.2, ammo: 8 } },
+  // SCIENCE FORWARD BASES (Collins, Oct 2 2026: "give the science faction units that can build spawning locations, and
+  // even their own towers if you don't deal with them, and then you need to mount attacks on these areas"; "the enemy
+  // can also build bases, causing you to need to be able to prepare to attack them, or they spawn more and more through
+  // the new bases"). The ENGINEER walks past your creep to a quiet street and raises a FIELD STATION there. The station
+  // never moves: it sends study parties from close by, and the longer it stands the more it sends (stage 2: a dart
+  // battery and a war escort into every siege, a turret; stage 3: thieves, soldiers, a second turret). TURRETS dart
+  // your walking units and stun limbs in reach. Kill the engineer on its way, or mount an attack on the station.
+  { kind: 'engineer', caste: 'science', hp: 70, speed: 34, damage: 0, rate: 0, meat: 14, threatOnKill: 1, risk: 6, engineer: true },
+  { kind: 'fieldstation', caste: 'science', hp: 650, speed: 0, damage: 0, rate: 0, meat: 30, threatOnKill: 3, risk: 10, fixed: 'station' },
+  { kind: 'sciturret', caste: 'science', hp: 300, speed: 0, damage: 0, rate: 0, meat: 10, threatOnKill: 1, risk: 4, fixed: 'turret',
+    turret: { range: 140, interval: 1.4, damage: 9, stun: 0.9 } },
   // ROYAL CASTE — only with a royal event. Royals are super-strong WARRIORS
   // (they march and chew like the war caste) whose real weight is empowering
   // the war caste around them: presence aura, and the consort promotes ranks.
@@ -697,7 +708,52 @@ export const BALANCE = {
   harrierCost: { war: 30 } as Partial<Record<'war' | 'science' | 'royal', number>>,
   harrierEvery: 2,          // turns between Harriers from one gland (one a gland)
   harrierMax: 3,            // on the board at once, however many glands
-  harrierLeash: 140,        // px: guarding, it fights the hive this far from its post
+  harrierLeash: 140,
+  /** SCIENCE FORWARD BASES (Oct 2 2026). An engineer is sent from engineerMinWave on, once interest reaches
+   *  engineerInterestMin, every engineerEvery seconds of quiet, while fewer than stationMax stations stand. */
+  engineerInterestMin: 10,
+  engineerMinWave: 4,
+  engineerEvery: 50,
+  stationMax: 2,
+  /** Seconds an engineer works on its site before the station is done. The station stands from the first moment,
+   *  WEAK (stationBuildHp of its hp) and idle, and grows to full as it is built; kill or drive off the engineer and
+   *  the build stops where it is. */
+  engineerBuildTime: 18,
+  stationBuildHp: 0.25,
+  /** A tended station is repaired this many hp a second (no repair while your units are at its door). */
+  stationRepair: 6,
+  /** The engineer's escort, a study party it travels with: engineerEscort researchers, and a dart battery from escortDartWave,
+   *  which darts your units near it (escortDart). Science, so the quiet between waves stays quiet. */
+  engineerEscort: 2,
+  escortDartWave: 6,
+  escortDart: { range: 120, interval: 1.6, damage: 6 },
+  /** What it sees: your walking units this close to a site, or to itself, count as a threat (px). */
+  engineerSight: 140,
+  /** A strike force: this many of your units near a station still being built makes it give up (below half built). */
+  strikeForce: 3,
+  /** Fleeing lasts this long (s), then it re-plans; after engineerReplans re-plans it goes home. */
+  engineerFlee: 6,
+  engineerReplans: 4,
+  /** A site keeps this many cells from another station or site, and from an infested outpost. */
+  stationSpacing: 7,
+  /** Where it builds: at least stationSiteMin cells from your creep (never at your wall), at most stationSiteMax from the body. */
+  stationSiteMin: 2,
+  stationSiteMax: 30,
+  /** A station grows by age (s, any phase): stage 2 at stationStage2At, stage 3 at stationStage3At. */
+  stationStage2At: 70,
+  stationStage3At: 150,
+  /** Quiet-time parties from a station: every stationPartyEvery[stage-1] seconds, stationPartyBase + stage researchers. */
+  stationPartyEvery: [26, 19, 13] as number[],
+  stationPartyBase: 1,
+  /** Its war escort into every siege (spawned at the station when the siege starts): by stage. */
+  stationSquad: [{}, { militia: 3 }, { soldier: 3, militia: 2 }] as Array<Partial<Record<string, number>>>,
+  /** Turrets it raises beside itself: one at stage 2, a second at stage 3. */
+  stationTurretsByStage: [0, 1, 2] as number[],
+  /** CREEP CARE (Oct 2 2026, Collins: "the creep healing and making faster is great"): your walking units on creep
+   *  move this much faster and heal this share of their max hp a second (at least creepRegenMin hp/s). */
+  creepUnitSpeed: 1.25,
+  creepRegenFrac: 0.025,
+  creepRegenMin: 1,        // px: guarding, it fights the hive this far from its post
   /** Siege fire (mortars, cannons) singles out a PARKED Broodmother within reach: this much more likely than a limb. */
   parkedMotherAggro: 1.5,
   // The hive ANSWERS your walking units (Oct 2 2026): from tier 2, every flamerPerUnits of your units on the board

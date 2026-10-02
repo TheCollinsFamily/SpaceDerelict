@@ -296,6 +296,9 @@ export class Sim {
   /** Kills made by the creep itself (Hitchhiker Spores buds a node every Nth). */
   private creepKillCount = 0;
   private researcherTimer = 20;
+  /** Seconds of quiet until the next engineer is sent (science forward bases). */
+  private engineerTimer = 12;
+  private baseRng: Rng;
   private royalSpawned = false;
 
   private threatKills = 0;
@@ -420,6 +423,8 @@ export class Sim {
     this.worldW = cfg.gridW * cfg.cellPx;
     this.worldH = cfg.gridH * cfg.cellPx;
     this.rng = new Rng(cfg.seed);
+    // The science forward bases roll their own dice, so an engineer sent (or not) leaves the run's other draws alone.
+    this.baseRng = new Rng((cfg.seed ^ 0xba5e5) >>> 0);
     const slotsX = Math.floor(cfg.gridW / 10);
     const slotsY = Math.floor(cfg.gridH / 10);
     const startSlot = Math.floor((slotsY - 1) / 2) * slotsX + Math.floor(slotsX / 2);
@@ -2718,13 +2723,13 @@ export class Sim {
     return e;
   }
 
-  private spawnEnemyRaw(kind: EnemyKind, atGate?: number): Enemy {
+  private spawnEnemyRaw(kind: EnemyKind, atGate?: number, rng: Rng = this.rng): Enemy {
     const spec = enemySpec(kind);
-    const gate = atGate ?? this.gates[this.rng.int(0, this.gates.length - 1)];
+    const gate = atGate ?? this.gates[rng.int(0, this.gates.length - 1)];
     const c = this.cellCenter(gate);
     const e: Enemy = {
       id: this.nextId++, kind,
-      pos: { x: c.x + this.rng.float(-6, 6), y: c.y + this.rng.float(-6, 6) },
+      pos: { x: c.x + rng.float(-6, 6), y: c.y + rng.float(-6, 6) },
       hp: spec.hp, maxHp: spec.hp, targetId: null, targetIsOrgan: false,
       attackCooldown: 0, studyLeft: kind === 'researcher' ? B.studySeconds : 0,
       leaving: false,
@@ -2741,11 +2746,11 @@ export class Sim {
   }
 
   /** Spawn a minion at an exact spot (a consort's retinue growing mid-march). */
-  private spawnMinion(kind: EnemyKind, at: Vec): Enemy {
+  private spawnMinion(kind: EnemyKind, at: Vec, rng: Rng = this.rng): Enemy {
     const spec = enemySpec(kind);
     const e: Enemy = {
       id: this.nextId++, kind,
-      pos: { x: at.x + this.rng.float(-8, 8), y: at.y + this.rng.float(-8, 8) },
+      pos: { x: at.x + rng.float(-8, 8), y: at.y + rng.float(-8, 8) },
       hp: spec.hp, maxHp: spec.hp, targetId: null, targetIsOrgan: false,
       attackCooldown: 0, studyLeft: 0, leaving: false,
     };
@@ -2960,6 +2965,7 @@ export class Sim {
       this.events.push({ kind: 'royal-incoming' });
     }
 
+    this.sendEngineers();
     this.updateCoreAttack();
     this.updateEnemies();
     this.updateMothers();
@@ -2968,6 +2974,7 @@ export class Sim {
     this.updateInfestors();
     this.updateHarriers();
     this.updateBroodlings();
+    this.creepCare();
     this.updateTowers();
     this.updateProjectiles();
     this.updateCorpses();
@@ -3069,10 +3076,10 @@ export class Sim {
     const n = this.enemies.length;
     for (let i = 0; i < n; i++) {
       const a = this.enemies[i];
-      if (this.isAirborne(a) || a.burrowed || a.deployed) continue;
+      if (this.isAirborne(a) || a.burrowed || a.deployed || a.kind === 'fieldstation' || a.kind === 'sciturret') continue;
       for (let j = i + 1; j < n; j++) {
         const b = this.enemies[j];
-        if (this.isAirborne(b) || b.burrowed || b.deployed) continue;
+        if (this.isAirborne(b) || b.burrowed || b.deployed || b.kind === 'fieldstation' || b.kind === 'sciturret') continue;
         const dx = b.pos.x - a.pos.x;
         const dy = b.pos.y - a.pos.y;
         const d = Math.hypot(dx, dy);
@@ -3694,6 +3701,11 @@ export class Sim {
       // Fire burns, reveals, and spreads.
       if (this.tickBurn(e)) continue;
 
+      // SCIENCE FORWARD BASES: a station or turret never walks; an engineer walks to its site and raises a station.
+      if (spec.fixed) { this.updateFixed(e, spec); continue; }
+      if (spec.engineer) { this.updateEngineer(e); continue; }
+      if (e.escortOf !== undefined && this.updateEscort(e, spec)) continue;
+
       // THE CANNON (both castes): walk, deploy, shell until destroyed.
       if (spec.cannon && this.updateCannon(e, spec)) continue;
 
@@ -4185,6 +4197,7 @@ export class Sim {
   /** Walk a unit toward a point along the streets. Returns true once it is there. */
   private walkTo(u: { pos: Vec }, to: Vec, speed: number): boolean {
     if (dist(u.pos, to) <= 6) return true;
+    speed *= this.creepPace(u.pos);
     const here = this.cellAt(u.pos.x, u.pos.y);
     const goal = this.cellAt(to.x, to.y);
     if (here === goal || here < 0 || goal < 0) {
@@ -4203,12 +4216,442 @@ export class Sim {
     let bestD = Infinity;
     for (const e of this.enemies) {
       if (e.burrowed || this.isAirborne(e)) continue;
-      if (skipScience && enemySpec(e.kind).caste === 'science') continue;
+      // Warriors leave study parties to your limbs, but a strike force takes down the hive's field stations, their
+      // turrets and the engineers who raise them (Oct 2 2026).
+      if (skipScience && enemySpec(e.kind).caste === 'science' && !enemySpec(e.kind).fixed && !enemySpec(e.kind).engineer) continue;
       if (dist(at, e.pos) > radius) continue;
       const d = dist(from, e.pos);
       if (d < bestD) { bestD = d; prey = e; }
     }
     return prey;
+  }
+
+  /**
+   * CREEP CARE (Collins, Oct 2 2026: "the creep healing and making faster is great"): your walking units move
+   * creepUnitSpeed times faster on creep, and heal there (creepCare). Off creep, neither.
+   */
+  private creepPace(at: Vec): number {
+    return this.isCreeped(this.cellAt(at.x, at.y)) ? B.creepUnitSpeed : 1;
+  }
+
+  /** Every walking unit of yours standing on creep heals a share of its max hp a second. */
+  private creepCare(): void {
+    const st = this.stats;
+    const heal = (u: { pos: Vec; hp: number; maxHp: number }): void => {
+      if (u.hp <= 0 || u.hp >= u.maxHp) return;
+      if (!this.isCreeped(this.cellAt(u.pos.x, u.pos.y))) return;
+      const add = Math.min(u.maxHp - u.hp, Math.max(B.creepRegenMin, u.maxHp * B.creepRegenFrac) * DT);
+      u.hp += add;
+      st.creepHealed = (st.creepHealed ?? 0) + add;
+    };
+    for (const u of this.walkingUnits()) heal(u);
+  }
+
+  /** Is a walking unit of yours standing on creep now (and so healing and quick)? For the renderer. */
+  unitOnCreep(at: Vec): boolean {
+    return this.isCreeped(this.cellAt(at.x, at.y));
+  }
+
+  /**
+   * SCIENCE FORWARD BASES (Collins, Oct 2 2026: "give the science faction units that can build spawning locations,
+   * and even their own towers if you don't deal with them, and then you need to mount attacks on these areas";
+   * "the enemy can also build bases ... or they spawn more and more through the new bases"; "the builders will need
+   * a bit more thought than the other units in terms of their own intelligence ... my guess is just in a spot on the
+   * side of any lane?"). From engineerMinWave, once interest reaches engineerInterestMin, an ENGINEER is sent every
+   * engineerEvery seconds of quiet, with an escort, while fewer than stationMax stations stand or one stands untended.
+   */
+  private sendEngineers(): void {
+    if (this.phase !== 'growth' || this.cfg.oneWave) return;
+    if ((this.cfg.bannedEnemies ?? []).includes('engineer')) return;
+    if (this.waveNumber < B.engineerMinWave || this.interest < B.engineerInterestMin) return;
+    this.engineerTimer -= DT;
+    if (this.engineerTimer > 0) return;
+    this.engineerTimer = B.engineerEvery;
+    const job = this.engineerJob();
+    if (!job) return;
+    const e = this.spawnEnemyRaw('engineer', this.gates[this.baseRng.int(0, this.gates.length - 1)], this.baseRng);
+    e.engState = 'muster';
+    e.lastHp = e.hp;
+    if (job.tend !== undefined) e.tendsStation = job.tend; else e.siteCell = job.site;
+    // Its escort walks with it (and is released to the war when it builds or dies).
+    const escort = B.engineerEscort + (this.waveNumber >= B.escortDartWave ? 1 : 0);
+    for (let i = 0; i < escort; i++) {
+      const g = this.spawnMinion(i < B.engineerEscort ? 'researcher' : 'dartgun', e.pos, this.baseRng);
+      g.escortOf = e.id;
+    }
+    this.events.push({ kind: 'engineer-out', enemyId: e.id, cell: job.site ?? this.cellAt(e.pos.x, e.pos.y) });
+  }
+
+  /**
+   * What a new engineer should do: REINFORCE a standing station nobody tends (cheaper than founding one, and it
+   * keeps the hive's bases spread out), else FOUND a new one on the best site, if fewer than stationMax stand.
+   */
+  private engineerJob(): { tend?: number; site?: number } | null {
+    const stations = this.enemies.filter((e) => e.kind === 'fieldstation');
+    const engineers = this.enemies.filter((e) => e.kind === 'engineer');
+    const untended = stations.find((st) => !engineers.some((g) => g.tendsStation === st.id));
+    if (untended) return { tend: untended.id };
+    const founding = engineers.filter((g) => g.tendsStation === undefined).length;
+    if (stations.length + founding >= B.stationMax) return null;
+    const site = this.stationSite();
+    return site >= 0 ? { site } : null;
+  }
+
+  /**
+   * The street cell an engineer works from for a site (its DOOR): a building lot's street-side neighbour the swarm
+   * can reach (the one nearest the gates' flow); a street or square site is its own door. -1: none.
+   */
+  stationDoor(c: number): number {
+    const t = this.map.cells[c];
+    if (t === CellType.Road || t === CellType.Plaza) return c;
+    const w = this.cfg.gridW;
+    const sameRow = (a: number, b: number) => Math.floor(a / w) === Math.floor(b / w);
+    let best = -1;
+    let bd = Infinity;
+    for (const q of [sameRow(c, c - 1) ? c - 1 : -1, sameRow(c, c + 1) ? c + 1 : -1, c - w, c + w]) {
+      if (q < 0 || q >= this.map.cells.length || this.map.cells[q] !== CellType.Road) continue;
+      const d = this.flow.dist[q];
+      if (Number.isFinite(d) && d < bd) { bd = d; best = q; }
+    }
+    return best;
+  }
+
+  /**
+   * Is this cell a possible SITE for a station, at the SIDE of a lane and never in it? Either a building LOT that faces
+   * a street (Collins: "a lot beside the street": the station stands on the lot, its door on the street), or open
+   * ground beside a building where the street is two or more cells wide (a wide street's edge, a square's side), so
+   * the lane stays open. Off your creep, reachable from its door, not taken, not inside your guns' reach.
+   */
+  stationSiteOk(c: number): boolean {
+    const t = this.map.cells[c];
+    if (t !== CellType.Road && t !== CellType.Plaza && t !== CellType.Block) return false;
+    if (this.isCreeped(c) || this.occupied.has(c) || this.shelterAt(c) || c === this.map.coreCell) return false;
+    if (t === CellType.Block && (this.map.plinths[c] ?? 0) > 0) return false;
+    const door = this.stationDoor(c);
+    if (door < 0 || this.isCreeped(door) || !Number.isFinite(this.flow.dist[door])) return false;
+    if (this.dangerAt(c) > 0 || this.dangerAt(door) > 0) return false;
+    if (t === CellType.Block) return true;
+    const w = this.cfg.gridW;
+    const open = (q: number) => q >= 0 && q < this.map.cells.length && (this.map.cells[q] === CellType.Road || this.map.cells[q] === CellType.Plaza);
+    const sameRow = (a: number, b: number) => Math.floor(a / w) === Math.floor(b / w);
+    // Beside a building (a lane's edge or a square's side).
+    const nbs = [sameRow(c, c - 1) ? c - 1 : -1, sameRow(c, c + 1) ? c + 1 : -1, c - w, c + w];
+    if (!nbs.some((q) => q >= 0 && q < this.map.cells.length && this.map.cells[q] === CellType.Block)) return false;
+    // Never in a one-cell lane: the street is two or more cells wide here both ways round, or it is a square.
+    if (t === CellType.Road) {
+      const run = (step: number) => {
+        let n = 1;
+        for (let q = c - step; open(q) && (step === 1 ? sameRow(q, c) : true); q -= step) n++;
+        for (let q = c + step; open(q) && (step === 1 ? sameRow(q, c) : true); q += step) n++;
+        return n;
+      };
+      if (Math.min(run(1), run(w)) < 2) return false;
+    }
+    return true;
+  }
+
+  /**
+   * How good a site is (higher is better), for one that passes stationSiteOk. Close to your creep's edge but not
+   * at your wall; far from your limbs' reach and out of sight of your units; near bodies and limbs worth taking;
+   * room beside it for its turrets; never near another station or site, or an infested outpost (null: rejected).
+   */
+  stationSiteScore(c: number): number | null {
+    const w = this.cfg.gridW;
+    const cx = c % w;
+    const cy = Math.floor(c / w);
+    const core = Math.hypot(cx - (this.map.coreCell % w), cy - Math.floor(this.map.coreCell / w));
+    if (core > B.stationSiteMax) return null; // out of play: too far from the body to matter
+    const cc = this.cellCenter(c);
+    for (const u of this.walkingUnits()) if (dist(u.pos, cc) < B.engineerSight) return null;
+    const gap = (q: number) => Math.hypot((q % w) - cx, Math.floor(q / w) - cy);
+    for (const e of this.enemies) {
+      const other = e.kind === 'fieldstation' ? this.cellAt(e.pos.x, e.pos.y) : e.siteCell;
+      if (other !== undefined && other >= 0 && gap(other) < B.stationSpacing) return null;
+    }
+    for (const sh of this.shelters) if (sh.state === 'infested' && dist(sh.pos, cc) < B.stationSpacing * this.cfg.cellPx) return null;
+    // How far it stands from your creep (cells): not at your wall (under 2), not far out of play (over 8).
+    let edge = Infinity;
+    for (let dy = -8; dy <= 8; dy++) for (let dx = -8; dx <= 8; dx++) {
+      const x = cx + dx; const y = cy + dy;
+      if (x < 0 || y < 0 || x >= w || y >= this.cfg.gridH) continue;
+      if (this.isCreeped(y * w + x)) edge = Math.min(edge, Math.hypot(dx, dy));
+    }
+    if (edge < B.stationSiteMin || edge > 8) return null; // not at your wall, not out of play
+    let score = 0;
+    score -= Math.abs(edge - 4) * 2;                         // close enough to raid you, not at your wall
+    const near = this.cellCenter(c);
+    score += Math.min(4, this.corpses.filter((k) => !this.isCreeped(k.cell) && dist(k.pos, near) < 5 * this.cfg.cellPx).length) * 0.5;
+    const weak = this.vulnerableTower();
+    if (weak) score += Math.max(0, 6 - dist(weak.pos, near) / this.cfg.cellPx) * 0.5; // a limb worth taking nearby
+    let room = 0;
+    for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+      const q = (cy + dy) * w + cx + dx;
+      if ((dx || dy) && q >= 0 && q < this.map.cells.length && (this.map.cells[q] === CellType.Road || this.map.cells[q] === CellType.Plaza)) room++;
+    }
+    score += Math.min(room, 4);                               // room for its turrets
+    if (this.map.cells[c] === CellType.Plaza) score += 1;     // a square's side is the best ground
+    return score;
+  }
+
+  /** The best site for a new station, or -1. */
+  private stationSite(): number {
+    let best = -1;
+    let bestScore = -Infinity;
+    for (let c = 0; c < this.map.cells.length; c++) {
+      if (!this.stationSiteOk(c)) continue;
+      const sc = this.stationSiteScore(c);
+      if (sc === null) continue;
+      const key = sc + this.baseRng.float(0, 0.25);
+      if (key > bestScore) { bestScore = key; best = c; }
+    }
+    return best;
+  }
+
+  /** Your walking units within r of a point. */
+  private unitsNear(at: Vec, r: number): number {
+    let n = 0;
+    for (const u of this.walkingUnits()) if (dist(u.pos, at) <= r) n++;
+    return n;
+  }
+
+  /**
+   * THE ENGINEER'S MIND, one state at a time:
+   *  muster  sets out once its escort is with it (a short wait at most).
+   *  travel  walks the quiet streets (around your guns) to its site, or to the station it will tend. It re-checks
+   *          the site every step: your creep, a new limb's reach or your units in sight make it pick another site.
+   *  flee    when it is hit with no escort left, or your strike force reaches a station it has barely begun: it
+   *          runs for engineerFlee seconds, then re-plans; after engineerReplans re-plans, or badly hurt, it goes home.
+   *  build   the station stands at once, weak and idle, and grows to full over engineerBuildTime.
+   *  tend    it stays by its station, repairs it and raises its turrets as the station grows.
+   */
+  private updateEngineer(e: Enemy): void {
+    const speed = this.moveSpeedOf(e);
+    const hit = (e.lastHp ?? e.hp) > e.hp + 0.01;
+    e.lastHp = e.hp;
+    const escorts = this.enemies.filter((x) => x.escortOf === e.id);
+    const home = (): void => { e.leaving = true; e.engState = undefined; this.leaveField(e, speed); };
+    if (e.leaving) { this.leaveField(e, speed); return; }
+    const station = e.tendsStation !== undefined ? this.enemies.find((x) => x.id === e.tendsStation) : undefined;
+    if (e.tendsStation !== undefined && !station) { e.tendsStation = undefined; e.engState = 'travel'; e.siteCell = undefined; }
+    const replan = (): boolean => {
+      e.replans = (e.replans ?? 0) + 1;
+      if (e.replans > B.engineerReplans || e.hp < e.maxHp * 0.4) { home(); return false; }
+      const job = this.engineerJob();
+      if (!job) { home(); return false; }
+      e.tendsStation = job.tend;
+      e.siteCell = job.site;
+      e.engState = 'travel';
+      return true;
+    };
+    switch (e.engState ?? 'travel') {
+      case 'muster': {
+        // Its escort spawned with it: it waits a breath for them to close up, then sets out.
+        if (escorts.every((g) => dist(g.pos, e.pos) < 30) || (e.buildT ?? 0) > 2) { e.engState = 'travel'; e.buildT = undefined; }
+        else e.buildT = (e.buildT ?? 0) + DT;
+        return;
+      }
+      case 'flee': {
+        if (this.time >= (e.fleeUntil ?? 0)) { replan(); return; }
+        this.leaveField(e, speed * 1.15);
+        return;
+      }
+      case 'build':
+      case 'tend': {
+        if (!station) { e.engState = 'travel'; return; }
+        // Stand at its door (beside the lot, out of the way).
+        const sdoor = this.stationDoor(this.cellAt(station.pos.x, station.pos.y));
+        const stand = sdoor >= 0 ? this.cellCenter(sdoor) : station.pos;
+        if (dist(e.pos, stand) > 10) this.walkTo(e, stand, speed);
+        const strike = this.unitsNear(station.pos, B.engineerSight * 0.7);
+        if (e.engState === 'build') {
+          // A doomed build is abandoned: your strike force at a station not yet half built.
+          if (strike >= B.strikeForce && (station.buildProgress ?? 1) < 0.5) {
+            e.engState = 'flee'; e.fleeUntil = this.time + B.engineerFlee; e.tendsStation = undefined;
+            return;
+          }
+          station.buildProgress = Math.min(1, (station.buildProgress ?? 0) + DT / B.engineerBuildTime);
+          const full = enemySpec(station.kind).hp;
+          station.maxHp = full * (B.stationBuildHp + (1 - B.stationBuildHp) * station.buildProgress);
+          station.hp = Math.min(station.maxHp, station.hp + full * (1 - B.stationBuildHp) * DT / B.engineerBuildTime);
+          if (station.buildProgress >= 1) {
+            e.engState = 'tend';
+            this.events.push({ kind: 'station-raised', enemyId: station.id, cell: this.cellAt(station.pos.x, station.pos.y) });
+          }
+          return;
+        }
+        // Tending: repairs while your units are not at the door.
+        if (strike === 0 && station.hp < station.maxHp) station.hp = Math.min(station.maxHp, station.hp + B.stationRepair * DT);
+        return;
+      }
+      default: { // travel
+        // Hit with no escort left: it runs.
+        if (hit && escorts.length === 0) { e.engState = 'flee'; e.fleeUntil = this.time + B.engineerFlee; return; }
+        if (station) {
+          // Going to tend a standing station.
+          if (dist(e.pos, station.pos) <= 24) { e.engState = (station.buildProgress ?? 1) < 1 ? 'build' : 'tend'; return; }
+          this.walkSmart(e, this.cellAt(station.pos.x, station.pos.y), station.pos, speed);
+          return;
+        }
+        const site = e.siteCell ?? -1;
+        // Its site is still good? (Your creep, a new limb's reach, your units in sight make it look again.)
+        if (site < 0 || !this.stationSiteOk(site) || this.unitsNear(this.cellCenter(site), B.engineerSight) > 0) {
+          if (!replan()) return;
+          return;
+        }
+        // It walks to the site's DOOR (the street cell it works from) and builds from there.
+        const door = this.stationDoor(site);
+        if (this.cellAt(e.pos.x, e.pos.y) !== door) { this.walkSmart(e, door, this.cellCenter(door), speed); return; }
+        // On site: the station stands at once, weak and idle, and the build begins.
+        const at = this.cellCenter(site);
+        const st = this.spawnMinion('fieldstation', at, this.baseRng);
+        st.pos = { ...at };
+        st.buildProgress = 0;
+        st.maxHp = enemySpec(st.kind).hp * B.stationBuildHp;
+        st.hp = st.maxHp;
+        st.stationStage = 1;
+        st.stationAge = 0;
+        st.stationTimer = B.stationPartyEvery[0] * 0.5;
+        st.stationTurrets = 0;
+        st.siteCell = site;
+        e.siteCell = undefined;
+        e.tendsStation = st.id;
+        e.engState = 'build';
+        for (const g of escorts) g.escortOf = undefined; // the escort goes on to the war
+        this.stats.stationsRaised = (this.stats.stationsRaised ?? 0) + 1;
+        this.stats.stationTopStage = Math.max(this.stats.stationTopStage ?? 0, 1);
+        return;
+      }
+    }
+  }
+
+  /**
+   * An engineer's ESCORT is a study party it travels with (Collins: "it travels with an escort when one is available
+   * (joins a party)"): science, so the quiet stays quiet. The researchers walk at its side (bodies between it and you);
+   * the dart battery darts your units that come near it (escortDart). When the engineer builds or dies, they go about
+   * their own business (study, or shelling your limbs).
+   */
+  private updateEscort(e: Enemy, spec: EnemySpec): boolean {
+    if (e.escortOf === undefined) return false;
+    const eng = this.enemies.find((x) => x.id === e.escortOf && x.kind === 'engineer');
+    if (!eng || eng.leaving || eng.engState === 'build' || eng.engState === 'tend') { e.escortOf = undefined; return false; }
+    const speed = this.moveSpeedOf(e);
+    if (spec.cannon) {
+      let prey: Broodling | Broodmother | SporeMule | Infestor | Harrier | null = null;
+      let pd: number = B.escortDart.range;
+      for (const u of this.walkingUnits()) { const d = dist(u.pos, e.pos); if (d < pd) { pd = d; prey = u; } }
+      e.auxCooldown = (e.auxCooldown ?? 0) - DT;
+      if (prey && e.auxCooldown <= 0) {
+        e.auxCooldown = B.escortDart.interval;
+        this.hurtUnit(prey, B.escortDart.damage);
+        e.dartTo = { ...prey.pos };
+      }
+      if (prey) return true; // it stands and darts
+    }
+    // Walk at its side, a pace behind (and keep up with it).
+    if (dist(e.pos, eng.pos) > 20) this.stepConstrained(e, eng.pos, Math.max(speed, enemySpec(eng.kind).speed));
+    return true;
+  }
+
+  /**
+   * A field station: built by its engineer (idle until done), it grows with age, sends parties nearer you in the
+   * quiet and a war squad into every siege, and, while an engineer tends it, raises turrets.
+   */
+  private updateFixed(e: Enemy, spec: EnemySpec): void {
+    if (spec.fixed === 'turret') { this.updateTurret(e, spec); return; }
+    if ((e.buildProgress ?? 1) < 1) return; // still being built: weak and idle
+    e.stationAge = (e.stationAge ?? 0) + DT;
+    const stage = e.stationAge >= B.stationStage3At ? 3 : e.stationAge >= B.stationStage2At ? 2 : 1;
+    if (stage > (e.stationStage ?? 1)) {
+      e.stationStage = stage;
+      this.stats.stationTopStage = Math.max(this.stats.stationTopStage ?? 0, stage);
+      this.events.push({ kind: 'station-grew', enemyId: e.id, stage });
+    }
+    // Turrets beside it, one per stage past the first, raised only while an engineer tends it.
+    const tended = this.enemies.some((g) => g.kind === 'engineer' && g.tendsStation === e.id && g.engState === 'tend');
+    const want = B.stationTurretsByStage[stage - 1] ?? 0;
+    if (tended && (e.stationTurrets ?? 0) < want) {
+      const spot = this.turretSpot(e);
+      if (spot) {
+        const t = this.spawnMinion('sciturret', spot, this.baseRng);
+        t.pos = { ...spot };
+        t.stationId = e.id;
+        e.stationTurrets = (e.stationTurrets ?? 0) + 1;
+        this.events.push({ kind: 'station-turret', enemyId: e.id });
+      } else e.stationTurrets = want; // nowhere to put it: it does without
+    }
+    // Its war escort into every siege, spawned at the station as the siege starts (stage 2 on).
+    if (this.phase === 'siege' && (e.stationSiegeSent ?? -1) !== this.waveNumber) {
+      e.stationSiegeSent = this.waveNumber;
+      const squad = B.stationSquad[stage - 1] ?? {};
+      let n = 0;
+      for (const [kind, count] of Object.entries(squad)) {
+        for (let i = 0; i < (count ?? 0); i++) { this.spawnMinion(kind as EnemyKind, e.pos, this.baseRng); n++; }
+      }
+      if (n > 0) this.events.push({ kind: 'station-sent', enemyId: e.id, count: n, squad: true });
+    }
+    // Study parties from close by, in the quiet between waves; quicker and bigger as it grows.
+    if (this.phase !== 'growth') return;
+    e.stationTimer = (e.stationTimer ?? 0) - DT;
+    if (e.stationTimer > 0) return;
+    e.stationTimer = B.stationPartyEvery[stage - 1] ?? 20;
+    const n = B.stationPartyBase + stage;
+    for (let i = 0; i < n; i++) {
+      const r = this.spawnMinion('researcher', e.pos, this.baseRng);
+      r.studyLeft = B.studySeconds;
+    }
+    if (stage >= 2 && !this.enemies.some((x) => x.kind === 'dartgun')) this.spawnMinion('dartgun', e.pos, this.baseRng);
+    if (stage >= 3) this.spawnMinion('thief', e.pos, this.baseRng);
+    this.stats.stationParties = (this.stats.stationParties ?? 0) + 1;
+    this.events.push({ kind: 'station-sent', enemyId: e.id, count: n, squad: false });
+  }
+
+  /** A free street cell beside a station for a turret (its neighbours, then theirs). */
+  private turretSpot(st: Enemy): Vec | null {
+    const w = this.cfg.gridW;
+    const c0 = this.cellAt(st.pos.x, st.pos.y);
+    const taken = new Set(this.enemies.filter((x) => enemySpec(x.kind).fixed).map((x) => this.cellAt(x.pos.x, x.pos.y)));
+    for (const r of [1, 2]) {
+      for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
+        if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+        const x = (c0 % w) + dx;
+        const y = Math.floor(c0 / w) + dy;
+        if (x < 0 || y < 0 || x >= w || y >= this.cfg.gridH) continue;
+        const c = y * w + x;
+        if (taken.has(c) || this.occupied.has(c)) continue;
+        const t = this.map.cells[c];
+        if (t !== CellType.Road && t !== CellType.Plaza) continue;
+        return this.cellCenter(c);
+      }
+    }
+    return null;
+  }
+
+  /** A science turret darts the nearest of your walking units in reach, else stuns the nearest limb. */
+  private updateTurret(e: Enemy, spec: EnemySpec): void {
+    const tu = spec.turret!;
+    e.auxCooldown = (e.auxCooldown ?? 0) - DT;
+    if (e.auxCooldown > 0) return;
+    let unit: Broodling | Broodmother | SporeMule | Infestor | Harrier | null = null;
+    let ud = tu.range;
+    for (const u of this.walkingUnits()) { const d = dist(e.pos, u.pos); if (d < ud) { ud = d; unit = u; } }
+    if (unit) {
+      e.auxCooldown = tu.interval;
+      this.hurtUnit(unit, tu.damage);
+      e.flameTo = undefined;
+      e.dartTo = { ...unit.pos };
+      return;
+    }
+    let best: Tower | null = null;
+    let bd = tu.range;
+    for (const t of this.towers) {
+      if ((t.shield ?? 0) > 0) continue;
+      const d = dist(e.pos, t.pos);
+      if (d <= bd) { bd = d; best = t; }
+    }
+    if (!best) { e.dartTo = undefined; return; }
+    e.auxCooldown = tu.interval * 1.5;
+    best.stunnedUntil = Math.max(best.stunnedUntil ?? 0, this.time + tu.stun);
+    e.dartTo = { ...best.pos };
   }
 
   /**
@@ -4232,7 +4675,7 @@ export class Sim {
       const inReach = B.broodEngageDist + ENEMY_RADIUS;
       const fight = (prey: Enemy): void => {
         if (dist(b.pos, prey.pos) <= inReach) bite(prey);
-        else this.stepConstrained(b, prey.pos, speed);
+        else this.stepConstrained(b, prey.pos, speed * this.creepPace(b.pos));
       };
       const order = b.orders?.[0];
       if (order && (order.kind === 'move' || order.kind === 'return')) {
@@ -4381,7 +4824,7 @@ export class Sim {
       if (order && order.kind === 'attack') {
         const prey = this.preyNear(m.pos, 50, m.pos, false);
         if (prey) {
-          if (dist(m.pos, prey.pos) <= reach) bite(prey); else this.stepConstrained(m, prey.pos, speed);
+          if (dist(m.pos, prey.pos) <= reach) bite(prey); else this.stepConstrained(m, prey.pos, speed * this.creepPace(m.pos));
         } else if (this.walkTo(m, order.to, speed)) { m.guard = { ...order.to }; m.orders.shift(); }
         if (m.mode === 'fight' && m.netCd <= 0) { const spot = this.bestNetSpot(m); if (spot) this.castNet(m, spot); }
         continue;
@@ -5558,6 +6001,10 @@ export class Sim {
       }
     }
     if (why === 'burn' && this.gates.some((g) => dist(this.cellCenter(g), e.pos) <= 4 * this.cfg.cellPx)) st.gateBurnKills += 1;
+    if (e.kind === 'fieldstation') {
+      st.stationsDestroyed = (st.stationsDestroyed ?? 0) + 1;
+      this.events.push({ kind: 'station-destroyed', enemyId: e.id });
+    }
     if (e.kind === 'royal') {
       this.royalsKilled += 1;
       this.checkDirective();

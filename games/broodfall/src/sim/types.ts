@@ -377,6 +377,9 @@ export type EnemyKind =
   | 'flametrooper'
   | 'ghostsapper'
   | 'infiltrator'
+  | 'engineer'
+  | 'fieldstation'
+  | 'sciturret'
   | 'royal'
   | 'consort'
   | 'matron';
@@ -441,11 +444,49 @@ export interface EnemySpec {
   cloaked?: boolean;
   /** The FLAMETROOPER (Oct 2 2026): hunts your walking units in sight first and hoses them in a short cone (unitDps); with none in sight it marches on limbs and the core at its weak spec.damage. */
   flamer?: { sight: number; range: number; unitDps: number; coneCos: number };
+  /**
+   * SCIENCE FORWARD BASES (Collins, Oct 2 2026: "give the science faction units that can build spawning locations, and
+   * even their own towers if you don't deal with them, and then you need to mount attacks on these areas"). An
+   * ENGINEER walks out past your creep and raises a FIELD STATION; the station spawns parties nearer you and, left
+   * alone, grows (bigger parties, escorts, then turrets). A fixed kind never walks: it is a structure the hive owns.
+   */
+  engineer?: boolean;
+  fixed?: 'station' | 'turret';
+  /** A science turret: darts your walking units (damage) and stuns limbs (stun s) in reach. */
+  turret?: { range: number; interval: number; damage: number; stun: number };
   /** Veil matron: every war body within this radius is CLOAKED while she lives. */
   veilAura?: number;
 }
 
 export interface Enemy {
+  /**
+   * An ENGINEER's state (Sim.updateEngineer): muster (sets out with its escort), travel (to its site or to the
+   * station it will tend), flee (attacked without cover, or your strike force arrived), build, tend. A station
+   * it is building or tending: tendsStation. Re-plans so far (it gives up after a few). Fleeing until (s).
+   */
+  engState?: 'muster' | 'travel' | 'flee' | 'build' | 'tend';
+  tendsStation?: number;
+  replans?: number;
+  fleeUntil?: number;
+  /** Its hp a beat ago (it knows when it is being hit). */
+  lastHp?: number;
+  /** An escort: the engineer it walks with (released when the engineer builds or dies). */
+  escortOf?: number;
+  /** A station under construction: how far (0..1). It is weak while it builds and does nothing until done. */
+  buildProgress?: number;
+  /** A turret's last dart: where it struck (for the renderer). */
+  dartTo?: Vec;
+  /** An engineer: the street cell it is raising a field station on, and how far along (s). */
+  siteCell?: number;
+  buildT?: number;
+  /** A field station: its stage (1..3), its age (s), when it next sends a party (s), turrets it has raised, and whether
+   *  it has sent its squad into this siege. A turret: the station that raised it. */
+  stationStage?: number;
+  stationAge?: number;
+  stationTimer?: number;
+  stationTurrets?: number;
+  stationSiegeSent?: number;
+  stationId?: number;
   /** A Flametrooper hosing your units: where its stream reaches this tick (for the renderer). */
   flameTo?: Vec;
   id: number;
@@ -794,6 +835,13 @@ export type SimEvent =
   | { kind: 'deposit-claimed'; name: string }
   | { kind: 'royal-incoming' }
   | { kind: 'researchers-arrive'; count: number }
+  /** Science forward bases: an engineer is out (where it is headed), a station raised, grown, raised a turret, sent a party or a squad, destroyed. */
+  | { kind: 'engineer-out'; enemyId: number; cell: number }
+  | { kind: 'station-raised'; enemyId: number; cell: number }
+  | { kind: 'station-grew'; enemyId: number; stage: number }
+  | { kind: 'station-turret'; enemyId: number }
+  | { kind: 'station-sent'; enemyId: number; count: number; squad: boolean }
+  | { kind: 'station-destroyed'; enemyId: number }
   | { kind: 'structure-lost'; what: string }
   | { kind: 'eaten'; enemy: EnemyKind }
   | { kind: 'won' }
@@ -956,6 +1004,13 @@ export interface RunStats {
   harriersBorn?: number;
   harriersLost?: number;
   harrierKills?: number;
+  /** Science forward bases: stations raised and destroyed, the highest stage one reached, parties and squads sent;
+   *  your units healed by the creep (hp). */
+  stationsRaised?: number;
+  stationsDestroyed?: number;
+  stationTopStage?: number;
+  stationParties?: number;
+  creepHealed?: number;
   mothersLost?: number;
   netsCast?: number;
   netHits?: number;
