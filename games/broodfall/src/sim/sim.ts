@@ -4694,18 +4694,17 @@ export class Sim {
     if (stage > 1) this.events.push({ kind: 'shelter-grew', shelterId: sh.id, stage });
   }
 
-  /** An intact shelter's defenders shoot your nearest walking unit within reach (the Infestor burrowing first). */
+  /** An intact shelter's defenders shoot your nearest walking unit within reach. */
   private updateShelters(): void {
     for (const sh of this.shelters) {
       if (sh.state !== 'intact') continue;
       sh.cooldown -= DT;
       if (sh.cooldown > 0) continue;
-      const burrower = sh.burrowBy !== undefined ? this.infestors.find((u) => u.id === sh.burrowBy) : undefined;
-      let prey: Broodling | Broodmother | SporeMule | Infestor | Harrier | null = burrower ?? null;
-      if (!prey) {
-        let pd: number = B.shelterGuardRange;
-        for (const u of this.walkingUnits()) { const d = dist(sh.pos, u.pos); if (d < pd) { pd = d; prey = u; } }
-      }
+      // The NEAREST of your units (Oct 2 2026): an escort walking in front of the Infestor takes the fire. (Burrower first
+      // made a lone 150-hp Infestor certain to die and an escort useless.)
+      let prey: Broodling | Broodmother | SporeMule | Infestor | Harrier | null = null;
+      let pd: number = B.shelterGuardRange;
+      for (const u of this.walkingUnits()) { const d = dist(sh.pos, u.pos); if (d < pd) { pd = d; prey = u; } }
       if (!prey) continue;
       sh.cooldown = 1 / B.shelterGuardRate;
       this.arcs.push({ from: { ...sh.pos }, to: { ...prey.pos }, ttl: 0.12 });

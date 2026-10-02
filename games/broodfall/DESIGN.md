@@ -383,9 +383,19 @@ attacking you far from any response when you need quick response)."
   (skirmish; a campaign once the cyst is bought). The card says so ("⛫ SHELTER AT ITS CENTRE"), so you can draft for
   one. Rolled on its own dice (a hash of the seed and the draft): the run's other dice do not move. Why that rare:
   about one shelter a run if you take them, two if you hunt them, so each is a decision, not furniture.
-- **An intact shelter** is not yours: its cells take no limb, and its defenders shoot your walking units within 120 px
-  (9 a shot, 1.1 shots/s, the Infestor burrowing in first).
-- **The Infestor** (`Sim.infestors`): big (13 px), slow (20, the slowest thing you have), fragile for its size
+- **Where a shelter stands** (Collins, Oct 2 2026: "these need to be somewhere an Infestor can get to them"; "the lane around
+  the shelter will need to be a bit wider than usual, with at least one open space on either side of it"; the ground under it
+  at one height): `src/sim/citymap.ts` `shelterSite`. A 2x2 of the district's building, levelled to two storeys, with an APRON
+  of street on every side and a second row of street in front of its door, all inside the district's border cells (its
+  mouths, and how the pieces line up, are untouched), and its door reachable from the core along the streets. A draft only
+  marks an offer whose district can hold one (tried on a copy of the board); tested on 60 boards.
+- **How it looks** (Collins: "its art style in terms of size doesn't match the rest of the map ... out of place"): drawn the way
+  the city is. Its lot's walls and roof are the tile set's own; the shelter is a structure on that roof, drawn like the set's
+  landmarks in the set's own rendering (`tools/art/shelters.mjs`: ten sets x five states: intact, infested 1-3, ruin).
+- **An intact shelter** is not yours: its cells take no limb, and its defenders shoot the NEAREST of your walking units within
+  120 px (9 a shot, 1.1 shots/s). An escort walking in front takes the fire; a lone Infestor (150 hp) dies on the way in.
+- **The Infestor** (`Sim.infestors`; redesigned Oct 2 2026 as a SIEGE TICK: bone plates, a ring of drill mandibles, a
+  glowing amber egg-abdomen; the other concepts in notes/art-review/infestor/): big, slow (20, the slowest thing you have), fragile for its size
   (150 hp), expensive (60 war, paid at the wave clear it is born at). Ordered like the brood; **INFEST** (I, then click
   a shelter; or right-click a shelter with it selected) walks it to the door, where it **burrows in for 10 s**, still
   and open to the defenders and the hive. Killed first: the shelter stays theirs. Done: the Infestor is spent and the

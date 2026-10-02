@@ -1583,6 +1583,10 @@ async function boot(): Promise<void> {
       return renderer.camera();
     },
     /** Draft `n` districts at once, taking offer `pick` each time (tools/shot-cities.mjs: a grown city to look at). */
+    /** Real draft offers for the board as it stands, on their own dice (tools/shot-expansion.mjs: a shelter on a card). */
+    draftOffersFor(seed: number) {
+      return draftOffers(sim.map, new Rng(seed), 3);
+    },
     growCity(n: number, pick = 0): number {
       for (let i = 0; i < n; i++) {
         const offers = draftOffers(sim.map, new Rng(SEED * 31 + i), 3);

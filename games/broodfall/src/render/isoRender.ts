@@ -2508,7 +2508,10 @@ export class IsoRenderer extends Renderer {
         const speed = kind === 'infestor' ? BALANCE.infestorSpeed : kind === 'harrier' ? BALANCE.harrierSpeed : mother ? BALANCE.motherSpeed : mule ? BALANCE.muleSpeed : b.puppet?.speed ?? BALANCE.broodSpeed;
         const { view, mirror } = viewOf(v.heading);
         const walk = art.anims.walk[view] ?? art.anims.walk.SW ?? Object.values(art.anims.walk)[0]!;
-        if (moved > 0.02) {
+        // An Infestor boring into a shelter faces it (Oct 2 2026: it drills into the door, it does not overlap the building).
+        const burrowing = kind === 'infestor' ? sim.shelters.find((x) => x.burrowBy === b.id && x.state === 'intact') : undefined;
+        if (burrowing) v.heading = headingOf(geo, burrowing.pos.x - b.pos.x, burrowing.pos.y - b.pos.y);
+        else if (moved > 0.02) {
           v.heading = headingOf(geo, dx, dy);
           v.phase = (v.phase + moved / Math.max(8, speed * (walk.count / walk.fps))) % 1;
         }
@@ -2521,16 +2524,20 @@ export class IsoRenderer extends Renderer {
         v.hp = b.hp;
         const bite = art.anims.attack?.[view];
         const biteFor = bite ? playFor(bite, 0.7) : 0;
-        const clip = bite && v.biteT < biteFor ? bite : walk;
-        const at = clip === bite ? (v.biteT / biteFor) * clip.count : v.phase * clip.count;
+        const bore = burrowing ? art.anims.special?.[view] : undefined;
+        const clip = bore ?? (bite && v.biteT < biteFor ? bite : walk);
+        const at = bore ? ((sim.time * bore.fps) % bore.count) : clip === bite ? (v.biteT / biteFor) * clip.count : v.phase * clip.count;
         const r = kind === 'infestor' ? INFESTOR_R : kind === 'harrier' ? HARRIER_R : mother ? MOTHER_R : mule ? MULE_R : b.puppet ? ENEMY_SIZE[b.puppet.kind ?? 'royal'] : 4.5;
         const scale = ((2 * r * UNIT_PX) / (art.body * art.frame)) * (clip.scale ?? 1);
         const p = this.onGround(sim, b.pos.x, b.pos.y);
         const a = clip.anchor ?? art.anchor;
         v.sprite.texture = this.unitFrame(found, clip, at);
         v.sprite.anchor.set(a[0], a[1]);
-        v.sprite.position.set(p.x, p.y);
-        v.sprite.scale.set(mirror ? -scale : scale, scale);
+        // The last fifth of its burrow: drawn down into the door.
+        const sink = burrowing ? Math.max(0, ((burrowing.burrowT ?? 0) / BALANCE.infestChannel - 0.8) / 0.2) : 0;
+        v.sprite.position.set(p.x, p.y + sink * 10);
+        v.sprite.scale.set(mirror ? -scale : scale, scale * (1 - 0.35 * sink));
+        v.sprite.alpha = 1 - 0.85 * sink;
         // A Broodmother drawn from the broodling's pictures is darker and heavier (until her own are made);
         // a sedated one is greyed.
         const sedated = mother && (mother.stunnedUntil ?? 0) > sim.time;

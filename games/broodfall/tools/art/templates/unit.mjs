@@ -188,6 +188,11 @@ export const STATES = {
  * is his promotion salute, played each time the sim promotes a war body near him.
  */
 export const BOSS = {
+  // The INFESTOR's BURROW (Oct 2 2026): played while it bores into a shelter's door (special), and its arrival (enter) is
+  // the swell of its amber abdomen. Baked from its own frame size, as a unit.
+  infestor: { frame: 192,
+    enter: 'The tick plants its eight legs, lifts its front and its glowing amber abdomen swells and pulses brightly once, its crest of spines raised, then it settles back to exactly its starting pose.',
+    special: 'The tick rears up on its back legs, opens its ring of six bone drill-mandibles wide, plunges its front down and forward and bores into the ground in front of it with its proboscis spinning, its body pressing forward and down as if pulling itself into a hole, its amber abdomen pulsing; then it lifts back up to exactly its starting pose.' },
   royal: { frame: 320,
     enter: 'The queen makes her entrance: she draws herself up to her full height, spreads both arms wide and high in a grand commanding gesture, her robe and her long abdomen swaying, holds the pose proudly for a moment, then lowers her arms and returns to exactly her starting pose.',
     special: 'The queen gives a command: she throws her head back and flings one arm high above her crown and the other forward, as if calling her whole army on, her body swelling with effort, then she lowers her arms and returns to exactly her starting pose.' },
