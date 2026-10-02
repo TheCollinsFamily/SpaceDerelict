@@ -17478,6 +17478,11 @@
      "strip": "under/loop-sewer.webp",
      "count": 48,
      "pingpong": true
+    },
+    "mule": {
+     "strip": "under/loop-mule.webp",
+     "count": 48,
+     "pingpong": true
     }
    },
    "stages": {
@@ -17544,7 +17549,8 @@
     "vent": "under/vent.webp",
     "aquifer": "under/aquifer.webp",
     "cable": "under/cable.webp",
-    "sewer": "under/sewer.webp"
+    "sewer": "under/sewer.webp",
+    "mule": "under/mule.webp"
    },
    "meteor": "under/meteor.webp",
    "skylines": {

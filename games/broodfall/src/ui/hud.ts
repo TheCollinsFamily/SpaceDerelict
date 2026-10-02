@@ -120,6 +120,11 @@ const FEED_LINES: Partial<Record<SimEvent['kind'], (e: SimEvent) => { text: stri
   'node-grown': (e) => e.kind === 'node-grown'
     ? { text: `spore bladder: +${e.count} creep node${e.count > 1 ? 's' : ''}`, cls: 'sci' }
     : { text: '', cls: '' },
+  // Spore Mules and the brood-on-creep rule (Collins, Oct 2 2026).
+  'mule-born': () => ({ text: 'mule sac: a SPORE MULE is ready — select it, walk it out, DEPLOY (D)', cls: 'sci' }),
+  'mule-rooted': () => ({ text: 'spore mule rooted: a new creep node', cls: 'sci' }),
+  'mule-lost': () => ({ text: 'SPORE MULE LOST before it rooted — escort the next one', cls: 'hot' }),
+  'mother-off-creep': () => ({ text: 'the creep under a Broodmother is gone: she stops brooding and fights', cls: 'hot' }),
   'organ-upgraded': (e) => e.kind === 'organ-upgraded'
     ? { text: `organ levelled: ${e.organ} → LV${e.level}`, cls: 'sci' }
     : { text: '', cls: '' },

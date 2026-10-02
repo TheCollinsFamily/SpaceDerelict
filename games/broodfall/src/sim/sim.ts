@@ -22,7 +22,7 @@ import {
   BALANCE as B, ENEMIES, TOWERS, WAVE_TABLE,
 } from '../../content/data';
 import type {
-  Broodling, Broodmother, BroodSnap, Caltrop, CardInstance, Caste, Cloud, Command, Corpse, CreepSource, Directive, Enemy, UnitOrder,
+  Broodling, Broodmother, BroodSnap, SporeMule, Caltrop, CardInstance, Caste, Cloud, Command, Corpse, CreepSource, Directive, Enemy, UnitOrder,
   EnemyKind, EnemySpec, HitFx, ModPip, Organ, OrganId, Outcome, Phase, Projectile,
   NodeStrain, RootDir, RunStats, Shell, SimConfig, SimEvent, Tower, TowerFamily, TowerSpec, UpgradeChoice, UpgradeOption, Vec,
 } from './types';
@@ -378,6 +378,10 @@ export class Sim {
   broodlings: Broodling[] = [];
   /** Broodmothers (units born of a Broodmother Den): Collins, Oct 1 2026. */
   mothers: Broodmother[] = [];
+  /** Spore Mules (units grown by a Mule Sac, walked out and rooted into creep nodes): Collins, Oct 2 2026. */
+  mules: SporeMule[] = [];
+  /** Turns each Mule Sac has waited since it last grew a mule. */
+  private muleTurns = new Map<number, number>();
   /** Street routes for ordered units: target cell -> the next cell toward it from every cell. */
   private unitFlows = new Map<number, Int32Array>();
   /** Recent lightning arcs / sniper beams, for the renderer (fade fast). */
@@ -1890,7 +1894,7 @@ export class Sim {
         return { ok: true };
       }
       case 'unit-order': {
-        const units = cmd.ids.map((id) => this.unitById(id)).filter((u): u is Broodling | Broodmother => u !== undefined);
+        const units = cmd.ids.map((id) => this.unitById(id)).filter((u): u is Broodling | Broodmother | SporeMule => u !== undefined);
         if (units.length === 0) return { ok: false, err: 'no such unit' };
         let order: UnitOrder = cmd.order;
         if (order.kind === 'move' || order.kind === 'attack') {
@@ -1907,7 +1911,7 @@ export class Sim {
             const p = this.standableAt({ x: order.to.x + Math.cos(a) * r, y: order.to.y + Math.sin(a) * r }) ?? order.to;
             o = { kind: order.kind, to: p };
           }
-          const list = 'mode' in u ? u.orders : (u.orders ??= []);
+          const list = 'mode' in u || 'strain' in u ? u.orders : (u.orders ??= []);
           if (o.kind === 'guard') {
             list.length = 0;
             if ('mode' in u) u.guard = { ...u.pos }; else u.guard = undefined;
@@ -1927,6 +1931,8 @@ export class Sim {
       case 'mother-mode': {
         const m = this.mothers.find((x) => x.id === cmd.motherId);
         if (!m) return { ok: false, err: 'no such Broodmother' };
+        // Collins, Oct 2 2026: "Broodmothers can't be put in make-babies mode except on creep".
+        if (cmd.mode === 'brood' && !this.motherOnCreep(m)) return { ok: false, err: 'she broods only on your creep' };
         if (m.mode !== cmd.mode) {
           m.mode = cmd.mode;
           m.guard = { ...m.pos };
@@ -1943,6 +1949,15 @@ export class Sim {
         if (m.netCd > 0) return { ok: false, err: `her net is ready in ${Math.ceil(m.netCd)}s` };
         if (dist(m.pos, cmd.at) > B.netRange) return { ok: false, err: 'out of her reach' };
         this.castNet(m, cmd.at);
+        return { ok: true };
+      }
+      case 'mule-deploy': {
+        const m = this.mules.find((x) => x.id === cmd.muleId);
+        if (!m) return { ok: false, err: 'no such Spore Mule' };
+        const cell = this.cellAt(m.pos.x, m.pos.y);
+        if (cell < 0 || this.map.cells[cell] === CellType.Void) return { ok: false, err: 'it can only root in the claimed city' };
+        if (cell === this.map.coreCell) return { ok: false, err: 'not on the body itself' };
+        this.rootMule(m, cell);
         return { ok: true };
       }
       case 'set-rally': {
@@ -2822,6 +2837,7 @@ export class Sim {
         for (const n of this.creepSources) if (n.kind === 'node') n.hp = n.maxHp ?? NODE_HP;
         // A new turn: every spore bladder grows its nodes, every scaffold gland counts toward its plinth.
         this.growCreepNodes('turn');
+        this.growMules();
         this.growPlinths();
         this.growSeedlings();
         // Brood pips: living tissue regrows between waves — 50% max hp per pip.
@@ -2900,6 +2916,7 @@ export class Sim {
     this.updateCoreAttack();
     this.updateEnemies();
     this.updateMothers();
+    this.updateMules();
     this.updateBroodlings();
     this.updateTowers();
     this.updateProjectiles();
@@ -3377,6 +3394,7 @@ export class Sim {
       }
       const reach = Math.max(s.aoe, 16);
       // Hive shells land on your walking units too: a dart sedates a Broodmother, a shell hurts her and her brood.
+      if (s.damage > 0) for (const m of [...this.mules]) if (dist(s.to, m.pos) <= reach) this.hurtMule(m, s.damage);
       for (const m of [...this.mothers]) {
         if (dist(s.to, m.pos) > reach + 8) continue;
         if (s.stun) m.stunnedUntil = Math.max(m.stunnedUntil ?? 0, this.time + s.stun);
@@ -3532,6 +3550,15 @@ export class Sim {
     const speed = this.moveSpeedOf(e);
     if (e.leaving) {
       this.leaveField(e, speed);
+      return;
+    }
+    // A walking Spore Mule close by is a live sample: the caste turns aside for it (Oct 2 2026: escorting it is a play).
+    let mule: SporeMule | null = null;
+    let mdist: number = B.muleScienceLure;
+    for (const m of this.mules) { const d = dist(e.pos, m.pos); if (d < mdist) { mdist = d; mule = m; } }
+    if (mule) {
+      if (mdist <= B.scienceReach) this.hurtMule(mule, B.scienceExtractDps * DT);
+      else this.stepConstrained(e, mule.pos, speed);
       return;
     }
     let prey = e.extractId !== undefined ? this.towers.find((t) => t.id === e.extractId) : undefined;
@@ -3790,6 +3817,24 @@ export class Sim {
             }
             continue;
           }
+        }
+      }
+
+      // A Spore Mule in the way is fought, not walked past: it is soft and slow, and it is about to become creep.
+      if (spec.rate > 0 && !spec.bomber && this.mules.length > 0) {
+        let mu: SporeMule | null = null;
+        let md = B.muleEngageDist + ENEMY_RADIUS;
+        for (const m of this.mules) {
+          const d = dist(e.pos, m.pos);
+          if (d < md) { md = d; mu = m; }
+        }
+        if (mu) {
+          e.attackCooldown -= DT;
+          if (e.attackCooldown <= 0) {
+            e.attackCooldown = 1 / spec.rate;
+            this.hurtMule(mu, spec.damage * this.empowerOf(e));
+          }
+          continue;
         }
       }
 
@@ -4142,7 +4187,7 @@ export class Sim {
     const ms = this.statsOf(den);
     const hp = B.motherHp * (ms.maxHp / towerSpec('brood').maxHp) * this.geneMods.broodHpMult;
     const m: Broodmother = {
-      id: this.nextId++, denId: den.id, pos: { ...spawn }, hp, maxHp: hp, mode: 'brood', guard: { ...spawn },
+      id: this.nextId++, denId: den.id, pos: { ...spawn }, hp, maxHp: hp, mode: this.isCreeped(this.cellAt(spawn.x, spawn.y)) ? 'brood' : 'fight', guard: { ...spawn },
       orders: [], cooldown: 0, spawnCd: 0, netCd: B.netCooldown * 0.5, snap: this.snapOf(den),
     };
     if (den.rally !== undefined) m.orders.push({ kind: 'move', to: this.rallyOf(den) });
@@ -4229,6 +4274,12 @@ export class Sim {
   private updateMothers(): void {
     for (const m of [...this.mothers]) {
       const pw = this.unitPower(m.denId, m.snap)!;
+      // She broods only on creep: parked in brood mode where the creep is gone (lost, burned back), she fights.
+      if (m.mode === 'brood' && !m.orders.some((o) => o.kind === 'move' || o.kind === 'return') && !this.motherOnCreep(m)) {
+        m.mode = 'fight';
+        m.guard = { ...m.pos };
+        this.events.push({ kind: 'mother-off-creep', motherId: m.id });
+      }
       m.cooldown -= DT;
       m.netCd -= DT;
       m.spawnCd -= DT;
@@ -4296,9 +4347,71 @@ export class Sim {
     this.events.push({ kind: 'warrior-born', motherId: m.denId, at: 'mother' });
   }
 
+  /** Is the ground under this Broodmother your creep? (She broods only there.) */
+  motherOnCreep(m: Broodmother): boolean {
+    return this.isCreeped(this.cellAt(m.pos.x, m.pos.y));
+  }
+
+  /**
+   * Every Mule Sac counts its turn (wave clear) and grows its mules at the body: paced like a bladder (a pacemaker
+   * touching it: every turn; a budding gland: one more), never more than mulePerSac walking at once.
+   */
+  private growMules(): void {
+    for (const o of this.organs) {
+      if (o.organ !== 'mule') continue;
+      const r = this.bladderRate(o);
+      const t = (this.muleTurns.get(o.id) ?? 0) + 1;
+      this.muleTurns.set(o.id, t >= r.every ? 0 : t);
+      if (t < r.every) continue;
+      for (let k = 0; k < r.per; k++) {
+        if (this.mules.filter((m) => m.sacId === o.id).length >= B.mulePerSac) break;
+        const at = this.bodyPoint();
+        const m: SporeMule = { id: this.nextId++, sacId: o.id, pos: { ...at }, hp: B.muleHp, maxHp: B.muleHp, orders: [], guard: { ...at }, strain: this.bladderStrain(o) };
+        this.mules.push(m);
+        this.stats.mulesBorn = (this.stats.mulesBorn ?? 0) + 1;
+        this.events.push({ kind: 'mule-born', muleId: m.id });
+      }
+    }
+  }
+
+  /** Turns until this Mule Sac next grows a mule (1 = at the next wave clear). */
+  muleTurnsLeft(o: Organ): number {
+    return Math.max(1, this.bladderRate(o).every - (this.muleTurns.get(o.id) ?? 0));
+  }
+
+  /** Spore Mules walk their orders (move, attack = move, return); they never fight. Hold and guard: they wait. */
+  private updateMules(): void {
+    for (const m of this.mules) {
+      const order = m.orders[0];
+      if (!order || order.kind === 'hold') continue;
+      if (order.kind === 'guard') { m.orders.shift(); continue; }
+      const to = order.kind === 'return' ? this.bodyPoint() : order.to;
+      if (this.walkTo(m, to, B.muleSpeed)) { m.guard = { ...to }; m.orders.shift(); }
+    }
+  }
+
+  /** A mule roots: it becomes a creep node where it stands (its sac's strain), off your creep or on it. */
+  rootMule(m: SporeMule, cell: number): void {
+    this.mules = this.mules.filter((x) => x !== m);
+    this.plantNode(cell, { ...m.strain });
+    this.stats.nodesPlaced += 1;
+    this.stats.mulesRooted = (this.stats.mulesRooted ?? 0) + 1;
+    this.events.push({ kind: 'mule-rooted', muleId: m.id, cell });
+    this.events.push({ kind: 'node-placed', cell });
+  }
+
+  /** Hurt a walking mule (hive blows, shells, a science party's extraction). */
+  hurtMule(m: SporeMule, amount: number): void {
+    m.hp -= amount;
+    if (m.hp > 0) return;
+    this.mules = this.mules.filter((x) => x !== m);
+    this.stats.mulesLost = (this.stats.mulesLost ?? 0) + 1;
+    this.events.push({ kind: 'mule-lost', muleId: m.id });
+  }
+
   /** Your unit with this id, warrior or Broodmother. */
-  unitById(id: number): Broodling | Broodmother | undefined {
-    return this.mothers.find((m) => m.id === id) ?? this.broodlings.find((b) => b.id === id);
+  unitById(id: number): Broodling | Broodmother | SporeMule | undefined {
+    return this.mothers.find((m) => m.id === id) ?? this.mules.find((m) => m.id === id) ?? this.broodlings.find((b) => b.id === id);
   }
 
   /** Aimed bile globs land and detonate with the lobber's full payload. */

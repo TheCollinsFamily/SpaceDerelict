@@ -1516,6 +1516,8 @@ describe('conduit cap, TWINNING GLAND, MARROW TAP', () => {
     expect(s.projectiles.filter((p) => p.fromFamily === 'spitter').length).toBe(4);
     // On a producer it doubles output: a twinned broodmother keeps twice the brood.
     const s2 = freshSim(1502);
+    // A Broodmother broods only on creep (Collins, Oct 2 2026); this den is placed by hand, so the ground is creep.
+    (s2 as unknown as { isCreeped(c: number): boolean }).isCreeped = () => true;
     const mother = mk(s2, 1, 'brood', 400, 300); mother.cooldown = 0;
     const tw = mk(s2, 2, 'twin', 300, 300); tw.facing = 'E';
     s2.towers.push(mother, tw);

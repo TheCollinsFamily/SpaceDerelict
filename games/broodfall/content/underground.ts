@@ -33,7 +33,7 @@ export const ROCK_SHARE = 0.1;
 
 export type OrganKind = 'theme' | 'zone' | 'root' | 'creep' | 'scaffold' | 'seeder';
 /** What a creep organ does for creep nodes (see CREEP below). */
-export type CreepRole = 'produce' | 'pace' | 'bud' | 'cyst' | 'swell' | 'catapult' | 'mire' | 'acid' | 'runner';
+export type CreepRole = 'produce' | 'pace' | 'bud' | 'cyst' | 'swell' | 'catapult' | 'mire' | 'acid' | 'runner' | 'mule';
 export type ZoneEffect = 'level' | 'draw' | 'share' | 'suppress';
 
 export interface OrganDef {
@@ -131,6 +131,11 @@ export const ORGAN_DEFS: readonly OrganDef[] = [
   { id: 'runner', name: 'Runner Gland', kind: 'creep', creep: 'runner', shape: V3, cost: { war: 30 },
     unlocks: ['lance'],
     blurb: 'UNLOCKS the Creep Lance: a thrower that shoots creep in a LINE along its facing' },
+  // SPORE MULES (Collins, Oct 2 2026: "a unit that can act like a creep node (and an organ that makes them) ... you walk
+  // it out and deploy it"). Paced and strained like a bladder: a pacemaker touching it makes it grow every turn, a budding
+  // gland one more each time, and the swell/mire/acid organs touching it decide the node each mule becomes.
+  { id: 'mule', name: 'Mule Sac', kind: 'creep', creep: 'mule', shape: M1, cost: { war: 30 },
+    blurb: 'grows a SPORE MULE every 2 turns (keeps 2 at most): a slow walker you order out and DEPLOY, where it roots into a creep node, even past your creep' },
   { id: 'mire', name: 'Mire Gland', kind: 'creep', creep: 'mire', shape: V2, cost: { war: 25 },
     blurb: 'creep from a bladder TOUCHING it (or the METEOR, if it touches that) slows ground enemies 25% (stacks)' },
   { id: 'acid', name: 'Digestive Lining', kind: 'creep', creep: 'acid', shape: D2, cost: { war: 30 },

@@ -650,6 +650,12 @@ export const BALANCE = {
   netRadius: 46,            // px it covers
   netSlow: 0.4,             // the netted move at this fraction of speed
   netDur: 4,                // s
+  /** SPORE MULE (Collins, Oct 2 2026): grown by a Mule Sac, walked out under orders, rooted into a creep node. */
+  muleHp: 90,               // as tough as ~3 warriors: a science party can take one, an escort can save it
+  muleSpeed: 26,            // slower than a Broodmother: walking it out is a commitment
+  mulePerSac: 2,            // a sac keeps at most this many alive (rooted ones do not count)
+  muleEngageDist: 15,       // px: a hive walker stops to fight a walking mule this close
+  muleScienceLure: 70,      // px: the science caste turns aside for a walking mule this close (a live sample)
   /** Siege fire (mortars, cannons) singles out a PARKED Broodmother within reach: this much more likely than a limb. */
   parkedMotherAggro: 1.5,
   /** Digestive swamp: everything in it digests; the weak dissolve outright. */

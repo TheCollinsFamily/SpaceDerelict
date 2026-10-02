@@ -24,7 +24,7 @@ import { ART, REVIEW, ROOT, SRC, putEntry } from '../lib/manifest.mjs';
 const DIR = path.join(SRC, 'under');
 const OUT = path.join(ART, 'under');
 const CONCEPTS = path.join(ROOT, 'notes', 'concepts', '2026-09-29-organ-stage');
-const REFS = [path.join(CONCEPTS, '1-scanner-board.png'), path.join(CONCEPTS, '1-scanner-organs.png')];
+export const REFS = [path.join(CONCEPTS, '1-scanner-board.png'), path.join(CONCEPTS, '1-scanner-organs.png')];
 
 const SCAN =
   'One single square cell of a ground-penetrating scan display on the console of a far-future spaceship, ' +
@@ -58,6 +58,7 @@ export const TILES = {
   // ---- creep organs: they make the creep nodes; a pale yellow-green family
   bladder: TISSUE('a taut pale green spore bladder full of small round spores, soft green glow'),
   pacemaker: TISSUE('a knot of orange muscle fibres like a pacemaker node, pulsing orange glow'),
+  mule: TISSUE('a cluster of small pale green-yellow egg sacs, each with a curled sleeping walker inside and a spore pod on its back, soft yellow-green glow'),
   budder: TISSUE('pale green buds sprouting from tissue like a cluster of small shoots, light green glow'),
   cyst: TISSUE('a hard olive-green cyst packed with three dark seeds, olive glow'),
   swell: TISSUE('light green swollen tissue puffed up like a blister, pale green glow'),

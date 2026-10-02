@@ -45,6 +45,7 @@ export const MOTION = {
   root: 'the root hairs twitch slightly and a dull pulse runs along the root',
   bladder: 'the bladder breathes in and out slowly and the spores inside drift',
   pacemaker: 'the knot of muscle fibres contracts in a steady rhythm, each beat a pulse of light',
+  mule: 'the egg sacs swell and settle slowly, the curled walkers inside stir, and the spore pods on their backs glow and dim',
   budder: 'the buds sway gently as if in a slow current',
   cyst: 'the cyst pulses slowly and the three seeds inside shift very slightly',
   swell: 'the blister of tissue swells and relaxes slowly',
@@ -69,7 +70,7 @@ export const MOTION = {
 
 const CORE = 'the red heart of muscle beats slowly and pulses of light run out along the red veins through the rock';
 
-const prompt = (motion) =>
+export const prompt = (motion) =>
   'This picture is one still frame of a holographic ground-penetrating scan display on a spaceship console. ' +
   `Animate it with subtle, slow, living motion inside the scan: ${motion}. The false-colour glow brightens and ` +
   'dims gently. Everything stays exactly where it is, at the same size, in the same flat scan rendering, lit the ' +
@@ -124,7 +125,7 @@ function diff(a, b) {
  * The clip's frames at FPS, trimmed to its loop: the seam (last -> first) no bigger than a step.
  * A clip whose END came back to its start loops forward; one that did not plays forward and back.
  */
-function loopFrames(file) {
+export function loopFrames(file) {
   const { w, h, frames } = readFrames(file, FPS);
   const img = (f) => ({ w, h, data: Buffer.from(f) });
   // The last frame or two of a start=end clip is usually the still itself again: drop exact repeats of frame 0.
@@ -153,7 +154,7 @@ function lum(d) {
  * a bright peach). One gain for the whole clip brings its mean back to the still's, so a tile is
  * as bright alive as it is still (and as its scan-in), while the pulse inside the clip is kept.
  */
-function matchStill(frames, stillFile) {
+export function matchStill(frames, stillFile) {
   if (!fs.existsSync(stillFile)) return 1;
   const still = readImage(stillFile);
   const target = lum(resize(still, frames[0].w, frames[0].h).data);
@@ -165,7 +166,7 @@ function matchStill(frames, stillFile) {
   return g;
 }
 
-function strip(frames, fw, fh) {
+export function strip(frames, fw, fh) {
   const out = blank(fw * frames.length, fh, [0, 0, 0, 255]);
   frames.forEach((f, i) => paste(out, resize(f, fw, fh), i * fw, 0));
   return out;

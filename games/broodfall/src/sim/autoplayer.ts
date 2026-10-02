@@ -6,10 +6,13 @@ import { Rng } from './rng';
 import { Sim, enemySpec, towerSpec } from './sim';
 import { isMultiCell } from './footprint';
 import { UPGRADE_COST } from '../../content/upgrades';
-import { organTurn, placeNode, placePlinth } from './organPolicy';
+import { bestOrganSpot, organTurn, placeNode, placePlinth } from './organPolicy';
+import { ORGAN_BY_ID } from '../../content/underground';
 import { CellType } from './citymap';
 import { BALANCE as B } from '../../content/data';
 import type { Tower, TowerFamily, UpgradeChoice } from './types';
+
+const isPassableCell = (sim: Sim, c: number): boolean => sim.map.cells[c] === CellType.Road || sim.map.cells[c] === CellType.Plaza;
 
 export class Autoplayer {
   private rng: Rng;
@@ -23,6 +26,14 @@ export class Autoplayer {
    * full, a siege that reaches the body is met by the whole stack, which then goes back to her side.
    */
   stack = false;
+  /**
+   * SPORE MULES (Collins, Oct 2 2026): off by default (the naive player stays comparable). On: it grows one Mule
+   * Sac once it has two themes, and walks each mule to where creep pays most: under a Broodmother parked off the
+   * creep (so she can brood), else the heaviest pile of bodies lying past the creep, else the street just past the
+   * creep's edge nearest the hive's lanes. It roots the mule when it gets there.
+   */
+  mules = false;
+  private muleGoal = new Map<number, number>();
   private parked = new Set<number>();
   private released = false;
 
@@ -47,6 +58,91 @@ export class Autoplayer {
       if (score > bestScore) { bestScore = score; best = p; }
     }
     return best;
+  }
+
+  /** Where a Spore Mule should root (a cell), or null: see `mules`. */
+  // (isPassableCell: a street or square the mule can stand on.)
+  private muleTarget(sim: Sim): number | null {
+    const W = sim.cfg.gridW;
+    const core = sim.map.coreCell;
+    const md = (a: number, b: number) => Math.abs((a % W) - (b % W)) + Math.abs(Math.floor(a / W) - Math.floor(b / W));
+    const taken = new Set(this.muleGoal.values());
+    const free = (c: number) => !taken.has(c) && sim.map.cells[c] !== CellType.Void && md(c, core) <= 16;
+    // A Broodmother parked off the creep: creep under her lets her brood.
+    for (const m of sim.mothers) {
+      const c = sim.cellAt(m.pos.x, m.pos.y);
+      if (!sim.isCreeped(c) && free(c)) return c;
+    }
+    // The heaviest pile of bodies past the creep.
+    const piles = new Map<number, number>();
+    for (const b of sim.corpses) {
+      if (sim.isCreeped(b.cell)) continue;
+      const meat = (b.meat.war ?? 0) + 2 * (b.meat.science ?? 0) + 4 * (b.meat.royal ?? 0);
+      piles.set(b.cell, (piles.get(b.cell) ?? 0) + meat);
+    }
+    let best: number | null = null;
+    let bestMeat = 0;
+    for (const [c, meat] of piles) {
+      const street = sim.nearestStreet(c);
+      const sc = street ? sim.cellAt(street.x, street.y) : c;
+      if (meat > bestMeat && free(sc)) { bestMeat = meat; best = sc; }
+    }
+    if (best !== null) return best;
+    // The street just past the creep's edge, nearest the hive's lanes.
+    const lanes = this.lanePathCells(sim);
+    let edge: number | null = null;
+    let edgeScore = -Infinity;
+    for (let c = 0; c < sim.map.cells.length; c++) {
+      if (sim.map.cells[c] !== CellType.Road || sim.isCreeped(c) || !free(c)) continue;
+      const nbs = [c - 1, c + 1, c - W, c + W].filter((n) => n >= 0 && n < sim.map.cells.length);
+      if (!nbs.some((n) => sim.isCreeped(n))) continue;
+      const score = (lanes.get(c) ?? 0) * 3 - md(c, core) * 0.2;
+      if (score > edgeScore) { edgeScore = score; edge = c; }
+    }
+    if (edge !== null) return edge;
+    // Every street held already: the street with the most bare claimed ground round it (new roof for limbs).
+    const R = 3;
+    let open: number | null = null;
+    let openBare = 2; // not worth a mule for less
+    for (let c = 0; c < sim.map.cells.length; c++) {
+      if (!isPassableCell(sim, c) || !free(c)) continue;
+      let bare = 0;
+      for (let dy = -R; dy <= R; dy++) {
+        for (let dx = -R; dx <= R; dx++) {
+          const x = (c % W) + dx;
+          const y = Math.floor(c / W) + dy;
+          if (x < 0 || y < 0 || x >= W || y >= sim.cfg.gridH || Math.abs(dx) + Math.abs(dy) > R) continue;
+          const n = y * W + x;
+          if (sim.map.cells[n] === CellType.Block && !sim.isCreeped(n)) bare++;
+        }
+      }
+      if (bare > openBare) { openBare = bare; open = c; }
+    }
+    return open;
+  }
+
+  /** Grow a Mule Sac (once), and walk each mule to its spot, rooting it there. */
+  private manageMules(sim: Sim): boolean {
+    if (sim.cfg.organStage && sim.phase === 'growth' && !sim.organs.some((o) => o.organ === 'mule')) {
+      const themes = sim.organs.filter((o) => ORGAN_BY_ID[o.organ].kind === 'theme').length;
+      if (themes >= 2 && sim.canAfford(ORGAN_BY_ID.mule.cost)) {
+        const spot = bestOrganSpot(sim, 'mule');
+        if (spot && sim.issue({ kind: 'build-organ', organ: 'mule', ...spot }).ok) return true;
+      }
+    }
+    for (const id of [...this.muleGoal.keys()]) if (!sim.mules.some((m) => m.id === id)) this.muleGoal.delete(id);
+    for (const m of sim.mules) {
+      const goal = this.muleGoal.get(m.id);
+      if (goal === undefined) {
+        const target = this.muleTarget(sim);
+        if (target === null) continue;
+        this.muleGoal.set(m.id, target);
+        sim.issue({ kind: 'unit-order', ids: [m.id], order: { kind: 'move', to: sim.cellCenter(target) } });
+        continue;
+      }
+      if (m.orders.length === 0) sim.issue({ kind: 'mule-deploy', muleId: m.id });
+    }
+    return false;
   }
 
   /** The stack: park, brood, release into a siege at the body, call back. */
@@ -88,6 +184,7 @@ export class Autoplayer {
     if (this.actTimer > 0) return;
     this.actTimer = 1.5;
     if (this.stack) this.manageStack(sim);
+    if (this.mules && this.manageMules(sim)) return;
 
     // Science buys evolutions for the limbs doing the killing; royal points go to
     // a third stage first, and only spare points to a surge.

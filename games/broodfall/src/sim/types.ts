@@ -65,7 +65,7 @@ export type CasteFocus = 'any' | Caste;
 export type OrganId = 'forge' | 'venom' | 'gut' | 'nerve' | 'lattice' | 'womb' | 'marrow' | 'resonance'
   | 'heart' | 'brain' | 'gland' | 'root' | 'atrophy'
   | 'bladder' | 'pacemaker' | 'budder' | 'cyst' | 'swell' | 'catapult' | 'mire' | 'acid' | 'runner'
-  | 'scaffold' | 'seeder';
+  | 'scaffold' | 'seeder' | 'mule';
 
 export type GlandMode = 'calm' | 'lure' | 'challenge';
 
@@ -567,6 +567,26 @@ export interface Broodmother {
 }
 
 /** A broodling: the mother's spawn, fighting in the streets on your side. */
+/**
+ * A SPORE MULE (Collins, Oct 2 2026: "a unit that can act like a creep node (and an organ that makes them) ... you walk
+ * it out and deploy it"). Born of a Mule Sac in the organ stage; slow, unarmed, under your orders like the brood. DEPLOY
+ * roots it where it stands and it becomes a creep node there, carrying the strain of the creep organs touching its sac.
+ */
+export interface SporeMule {
+  id: number;
+  /** The Mule Sac (organ id) that grew it. */
+  sacId: number;
+  pos: Vec;
+  hp: number;
+  maxHp: number;
+  /** Orders still to carry out (shift-queued); the first is current. */
+  orders: UnitOrder[];
+  /** Where it waits when it has no orders. */
+  guard?: Vec;
+  /** The node it becomes when it roots. */
+  strain: NodeStrain;
+}
+
 export interface Broodling {
   id: number;
   /** The limb it belongs to: the Brood Pit or Broodmother Den that made it (or the Trap Cage, for a puppet). */
@@ -676,6 +696,11 @@ export type SimEvent =
   | { kind: 'broodling-lost'; motherId: number }
   | { kind: 'warrior-born'; motherId: number; at: 'body' | 'mother' }
   | { kind: 'mother-born'; denId: number; motherId: number }
+  | { kind: 'mule-born'; muleId: number }
+  | { kind: 'mule-lost'; muleId: number }
+  | { kind: 'mule-rooted'; muleId: number; cell: number }
+  /** A Broodmother lost the creep under her: she can brood only on creep, so she is in fight mode now. */
+  | { kind: 'mother-off-creep'; motherId: number }
   | { kind: 'mother-lost'; denId: number; motherId: number }
   | { kind: 'mother-mode'; motherId: number; mode: 'brood' | 'fight' }
   | { kind: 'net-cast'; motherId: number; at: Vec; radius: number; hits: number }
@@ -743,7 +768,9 @@ export type Command =
   /** Aim a Broodmother's net here, now (it must be off cooldown and in reach). */
   | { kind: 'mother-net'; motherId: number; at: Vec }
   /** A Brood Pit's or Den's rally point: where its new warriors (or its new Broodmother) go. */
-  | { kind: 'set-rally'; towerId: number; cell: number };
+  | { kind: 'set-rally'; towerId: number; cell: number }
+  /** A Spore Mule roots where it stands and becomes a creep node (Collins, Oct 2 2026). */
+  | { kind: 'mule-deploy'; muleId: number };
 
 /** The deployment order: the win condition, issued by command. */
 export type Directive =
@@ -840,6 +867,10 @@ export interface RunStats {
   /** Brood Pit and Broodmother warriors born, Broodmothers born and lost, nets thrown and the bodies they caught. */
   warriorsBorn?: number;
   mothersBorn?: number;
+  /** Spore Mules grown, lost while walking, and rooted into nodes. */
+  mulesBorn?: number;
+  mulesLost?: number;
+  mulesRooted?: number;
   mothersLost?: number;
   netsCast?: number;
   netHits?: number;

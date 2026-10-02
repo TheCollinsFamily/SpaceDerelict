@@ -149,6 +149,8 @@ export const LINEAGES: Partial<Record<OrganId, { catalogue: Catalogue; price: nu
   swell: { catalogue: 'sanctioned', price: 3 },
   catapult: { catalogue: 'sanctioned', price: 4 },
   runner: { catalogue: 'sanctioned', price: 4 },
+  // Oct 2 2026: the Spore Mule's sac is a mid-campaign purchase, beside the other creep-reach organs (sling, lance).
+  mule: { catalogue: 'sanctioned', price: 4 },
   mire: { catalogue: 'sanctioned', price: 4 },
   acid: { catalogue: 'sanctioned', price: 5 },
   marrow: { catalogue: 'unsanctioned', price: 5 },

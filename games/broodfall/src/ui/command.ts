@@ -7,6 +7,7 @@
  *   right-click / tap a street        MOVE there (Shift: queue it after the orders they have)
  *   A, then click                     ATTACK-MOVE there (fight what they meet on the way)
  *   H  hold · B  back to the body · G  guard (clear orders) · T  a Broodmother's mode · N, then click  her net
+ *   D  a Spore Mule roots where it stands and becomes a creep node (Collins, Oct 2 2026)
  *   Ctrl+1..5 make a group · 1..5 select it · Esc  clear the selection
  *   a Brood Pit or Den's panel open: right-click a street sets its RALLY point; R selects its brood
  *
@@ -16,7 +17,7 @@
  */
 import type { IsoRenderer } from '../render/isoRender';
 import type { Sim } from '../sim/sim';
-import type { Broodling, Broodmother, UnitOrder } from '../sim/types';
+import type { Broodling, Broodmother, SporeMule, UnitOrder } from '../sim/types';
 
 export interface CommandHooks {
   renderer: () => IsoRenderer | null;
@@ -66,18 +67,25 @@ export function installCommand(canvas: HTMLCanvasElement, hooks: CommandHooks): 
       <button data-cmd="mode" title="Brood mode: she stays and broods warriors. Fight mode: she walks, bites and nets.">BROOD / FIGHT <kbd>T</kbd></button>
       <button data-cmd="net" title="Throw her net: then click where (fight mode, in reach, off cooldown)">NET <kbd>N</kbd></button>
     </div>
+    <div class="unit-cmd-row" id="unit-cmd-mule">
+      <button data-cmd="deploy" title="Root here: the Spore Mule becomes a creep node where it stands, even past your creep">DEPLOY <kbd>D</kbd></button>
+    </div>
     <div id="unit-cmd-help">right-click a street: move · Shift: queue · Ctrl+1-5: group · Esc: clear</div>`;
   (document.getElementById('inspect')?.parentElement ?? canvas.parentElement ?? document.body).appendChild(panel);
   const what = panel.querySelector('#unit-cmd-what') as HTMLDivElement;
   const motherRow = panel.querySelector('#unit-cmd-mother') as HTMLDivElement;
   const netBtn = panel.querySelector('[data-cmd="net"]') as HTMLButtonElement;
   const modeBtn = panel.querySelector('[data-cmd="mode"]') as HTMLButtonElement;
+  const muleRow = panel.querySelector('#unit-cmd-mule') as HTMLDivElement;
 
-  const units = (): Array<Broodling | Broodmother> => {
+  type Unit = Broodling | Broodmother | SporeMule;
+  const units = (): Unit[] => {
     const sim = hooks.sim();
-    return [...sim.mothers, ...sim.broodlings.filter((b) => !b.puppet)];
+    return [...sim.mothers, ...sim.mules, ...sim.broodlings.filter((b) => !b.puppet)];
   };
-  const isMother = (u: Broodling | Broodmother): u is Broodmother => 'mode' in u;
+  const isMule = (u: Unit): u is SporeMule => 'strain' in u;
+  const selMules = (): SporeMule[] => hooks.sim().mules.filter((m) => selected.has(m.id));
+  const isMother = (u: Unit): u is Broodmother => 'mode' in u;
   const selMothers = (): Broodmother[] => hooks.sim().mothers.filter((m) => selected.has(m.id));
 
   const order = (o: UnitOrder, queue = false): void => {
@@ -90,8 +98,20 @@ export function installCommand(canvas: HTMLCanvasElement, hooks: CommandHooks): 
     const ms = selMothers();
     if (ms.length === 0) return;
     const to = ms.every((m) => m.mode === 'fight') ? 'brood' : 'fight';
-    for (const m of ms) hooks.sim().issue({ kind: 'mother-mode', motherId: m.id, mode: to });
-    hooks.hint(to === 'brood' ? 'BROOD MODE: SHE STAYS AND BROODS WARRIORS' : 'FIGHT MODE: SHE HUNTS, BITES AND NETS');
+    let refused = 0;
+    for (const m of ms) if (!hooks.sim().issue({ kind: 'mother-mode', motherId: m.id, mode: to }).ok) refused++;
+    // She broods only on your creep (Collins, Oct 2 2026): say why, not just nothing.
+    if (to === 'brood' && refused === ms.length) hooks.hint('SHE BROODS ONLY ON YOUR CREEP: WALK HER ONTO IT, OR ROOT A SPORE MULE UNDER HER');
+    else hooks.hint(to === 'brood' ? (refused ? `BROOD MODE (${refused} OFF THE CREEP STAY IN FIGHT MODE)` : 'BROOD MODE: SHE STAYS AND BROODS WARRIORS') : 'FIGHT MODE: SHE HUNTS, BITES AND NETS');
+  };
+
+  const deploy = (): void => {
+    const ms = selMules();
+    if (ms.length === 0) { hooks.hint('SELECT A SPORE MULE TO DEPLOY IT'); return; }
+    let ok = 0;
+    let err = '';
+    for (const m of ms) { const r = hooks.sim().issue({ kind: 'mule-deploy', muleId: m.id }); if (r.ok) ok++; else err = String(r.err); }
+    hooks.hint(ok ? `ROOTED: ${ok} NEW CREEP NODE${ok > 1 ? 'S' : ''}` : err.toUpperCase());
   };
 
   const arm = (a: Armed): void => {
@@ -107,16 +127,17 @@ export function installCommand(canvas: HTMLCanvasElement, hooks: CommandHooks): 
     else if (cmd === 'return') order({ kind: 'return' });
     else if (cmd === 'guard') order({ kind: 'guard' });
     else if (cmd === 'mode') toggleMode();
+    else if (cmd === 'deploy') deploy();
   };
   panel.querySelectorAll('button[data-cmd]').forEach((b) => {
     b.addEventListener('click', (ev) => { ev.stopPropagation(); run((b as HTMLElement).dataset.cmd!); });
   });
 
   /** The unit drawn under a point (a Broodmother is big; warriors are small). */
-  const unitAt = (clientX: number, clientY: number): Broodling | Broodmother | null => {
+  const unitAt = (clientX: number, clientY: number): Unit | null => {
     const r = hooks.renderer();
     if (!r) return null;
-    let best: Broodling | Broodmother | null = null;
+    let best: Unit | null = null;
     let bd = Infinity;
     for (const u of units()) {
       const p = r.clientOf(hooks.sim(), u.pos.x, u.pos.y);
@@ -241,7 +262,7 @@ export function installCommand(canvas: HTMLCanvasElement, hooks: CommandHooks): 
       return;
     }
     if (ev.ctrlKey || ev.metaKey || ev.altKey) return;
-    const map: Record<string, string> = { m: 'move', a: 'attack', h: 'hold', b: 'return', g: 'guard', t: 'mode', n: 'net' };
+    const map: Record<string, string> = { m: 'move', a: 'attack', h: 'hold', b: 'return', g: 'guard', t: 'mode', n: 'net', d: 'deploy' };
     if (map[k]) { run(map[k]); ev.preventDefault(); ev.stopImmediatePropagation(); }
   }, { capture: true });
 
@@ -301,13 +322,25 @@ export function installCommand(canvas: HTMLCanvasElement, hooks: CommandHooks): 
         + (m.mode === 'brood' ? ` · ${sim.broodlings.filter((b) => b.motherUnit === m.id).length}/${sim.motherBroodCap(m)} warriors` : '')).join('<br>'));
     }
     if (ws) parts.push(`${ws} WARRIOR${ws === 1 ? '' : 'S'}`);
+    const mus = selMules();
+    if (mus.length) {
+      parts.push(mus.map((m) => {
+        const on = sim.isCreeped(sim.cellAt(m.pos.x, m.pos.y));
+        return `SPORE MULE · ${Math.ceil(m.hp)}/${Math.ceil(m.maxHp)} · ${on ? 'ON YOUR CREEP' : 'PAST THE CREEP'}`;
+      }).join('<br>'));
+    }
     what.innerHTML = parts.join('<br>') + (armed ? `<br><b>${armed.toUpperCase()}: click where</b>` : '');
     motherRow.style.display = ms.length ? '' : 'none';
+    muleRow.style.display = mus.length ? '' : 'none';
+    // A mother off the creep cannot brood (Collins, Oct 2 2026): the toggle says so instead of doing nothing.
+    const offCreep = ms.length > 0 && ms.every((m) => m.mode === 'fight' && !sim.motherOnCreep(m));
+    modeBtn.disabled = offCreep;
+    modeBtn.title = offCreep ? 'She broods only on your creep: walk her onto it, or root a Spore Mule under her' : 'Brood mode: she stays and broods warriors (only on your creep). Fight mode: she walks, bites and nets.';
     const fighters = ms.filter((m) => m.mode === 'fight');
     const cd = fighters.length ? Math.min(...fighters.map((m) => m.netCd)) : Infinity;
     netBtn.disabled = !(cd <= 0);
     netBtn.innerHTML = cd <= 0 ? 'NET <kbd>N</kbd>' : fighters.length ? `NET ${Math.ceil(cd)}s` : 'NET (fight mode)';
-    modeBtn.innerHTML = ms.length && ms.every((m) => m.mode === 'fight') ? 'TO BROOD <kbd>T</kbd>' : 'TO FIGHT <kbd>T</kbd>';
+    modeBtn.innerHTML = offCreep ? 'BROOD: NEEDS CREEP' : ms.length && ms.every((m) => m.mode === 'fight') ? 'TO BROOD <kbd>T</kbd>' : 'TO FIGHT <kbd>T</kbd>';
     panel.querySelectorAll('button[data-cmd]').forEach((b) => {
       b.classList.toggle('on', (b as HTMLElement).dataset.cmd === armed);
     });

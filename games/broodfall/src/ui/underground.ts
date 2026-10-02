@@ -30,7 +30,7 @@ const COLOR: Record<OrganId, string> = {
   bladder: '#a8c878', pacemaker: '#e89a6a', budder: '#c8e0a0', cyst: '#98b060', swell: '#b8d890', catapult: '#d0b070',
   mire: '#7a9a70', acid: '#c8d040', runner: '#a0c070',
   scaffold: '#e6dcc0',
-  seeder: '#e8a0a0',
+  seeder: '#e8a0a0', mule: '#c0d870',
 };
 const GLYPH: Record<OrganId, string> = {
   forge: '⚒', venom: '☣', gut: '∞', nerve: 'ϟ', lattice: '▦', womb: '◉', marrow: '⊞', resonance: '◎',
@@ -38,7 +38,7 @@ const GLYPH: Record<OrganId, string> = {
   bladder: '✿', pacemaker: '♪', budder: '❀', cyst: '•', swell: '◍', catapult: '➶',
   mire: '≋', acid: '☠', runner: '⇶',
   scaffold: '▲',
-  seeder: '⇡',
+  seeder: '⇡', mule: '♞',
 };
 const VERB: Partial<Record<TowerFamily, string>> = {
   spitter: 'tempo', impaler: 'armor-pierce', blighter: 'poison', maw: 'richer meat', frond: 'arcs',

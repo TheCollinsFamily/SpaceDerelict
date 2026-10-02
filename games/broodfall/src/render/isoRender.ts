@@ -43,6 +43,8 @@ import { coatAlpha, wallCoat } from './streetCreep';
 const K = 1.9;
 /** A Broodmother's radius on the board (px at a 26 px cell): a big body, about a royal's size. */
 const MOTHER_R = 12;
+/** A Spore Mule is drawn a little bigger than a warrior (it carries a node). */
+const MULE_R = 6.5;
 /** Art pixels of body width for each world pixel of a unit's radius. */
 const UNIT_PX = 3.6;
 /**
@@ -2378,10 +2380,12 @@ export class IsoRenderer extends Renderer {
     const geo = this.geo;
     // A Broodmother is drawn with her own pictures when they are made, else as a great broodling.
     const walkers = [
-      ...sim.broodlings.map((b) => ({ b, mother: undefined as Broodmother | undefined })),
-      ...sim.mothers.map((m) => ({ b: { id: m.id, pos: m.pos, hp: m.hp, maxHp: m.maxHp, cooldown: m.cooldown, motherId: m.denId } as Broodling, mother: m })),
+      ...sim.broodlings.map((b) => ({ b, mother: undefined as Broodmother | undefined, mule: false })),
+      ...sim.mothers.map((m) => ({ b: { id: m.id, pos: m.pos, hp: m.hp, maxHp: m.maxHp, cooldown: m.cooldown, motherId: m.denId } as Broodling, mother: m, mule: false })),
+      // Spore Mules (Oct 2 2026): drawn from the broodling's pictures, swollen and spore-green, until their own are made.
+      ...sim.mules.map((m) => ({ b: { id: m.id, pos: m.pos, hp: m.hp, maxHp: m.maxHp, cooldown: 0, motherId: m.sacId } as Broodling, mother: undefined as Broodmother | undefined, mule: true })),
     ];
-    for (const { b, mother } of walkers) {
+    for (const { b, mother, mule } of walkers) {
       const id = mother ? (this.art.allies.has('broodmother') ? 'broodmother' : 'broodling')
         : b.puppet ? `puppet-${b.puppet.kind ?? 'royal'}` : 'broodling';
       const found = this.art.allies.get(id);
@@ -2401,7 +2405,7 @@ export class IsoRenderer extends Renderer {
         const dy = b.pos.y - v.last.y;
         const moved = Math.hypot(dx, dy);
         v.last = { ...b.pos };
-        const speed = mother ? BALANCE.motherSpeed : b.puppet?.speed ?? BALANCE.broodSpeed;
+        const speed = mother ? BALANCE.motherSpeed : mule ? BALANCE.muleSpeed : b.puppet?.speed ?? BALANCE.broodSpeed;
         const { view, mirror } = viewOf(v.heading);
         const walk = art.anims.walk[view] ?? art.anims.walk.SW ?? Object.values(art.anims.walk)[0]!;
         if (moved > 0.02) {
@@ -2419,7 +2423,7 @@ export class IsoRenderer extends Renderer {
         const biteFor = bite ? playFor(bite, 0.7) : 0;
         const clip = bite && v.biteT < biteFor ? bite : walk;
         const at = clip === bite ? (v.biteT / biteFor) * clip.count : v.phase * clip.count;
-        const r = mother ? MOTHER_R : b.puppet ? ENEMY_SIZE[b.puppet.kind ?? 'royal'] : 4.5;
+        const r = mother ? MOTHER_R : mule ? MULE_R : b.puppet ? ENEMY_SIZE[b.puppet.kind ?? 'royal'] : 4.5;
         const scale = ((2 * r * UNIT_PX) / (art.body * art.frame)) * (clip.scale ?? 1);
         const p = this.onGround(sim, b.pos.x, b.pos.y);
         const a = clip.anchor ?? art.anchor;
@@ -2430,7 +2434,14 @@ export class IsoRenderer extends Renderer {
         // A Broodmother drawn from the broodling's pictures is darker and heavier (until her own are made);
         // a sedated one is greyed.
         const sedated = mother && (mother.stunnedUntil ?? 0) > sim.time;
-        v.sprite.tint = v.hitT < 0.09 ? 0xffb4a4 : sedated ? 0x9a9aa8 : mother && id === 'broodling' ? 0xd08a90 : 0xffffff;
+        v.sprite.tint = v.hitT < 0.09 ? 0xffb4a4 : sedated ? 0x9a9aa8 : mule ? 0xc4e07a : mother && id === 'broodling' ? 0xd08a90 : 0xffffff;
+        // A mule carries its node: a glowing spore sac riding on its back.
+        if (mule) {
+          const sx = p.x / K;
+          const sy = (p.y - r * UNIT_PX * 1.5) / K;
+          g.circle(sx, sy, 3.2).fill({ color: 0x2a3a10, alpha: 0.85 });
+          g.circle(sx, sy, 2.4).fill({ color: 0xd8f070, alpha: 0.55 + 0.3 * Math.sin(this.pulse * 3 + b.id) });
+        }
         v.sprite.zIndex = depth(geo, b.pos.x, b.pos.y) * 100 + 50;
         const sw = 2 * r * UNIT_PX * 1.25;
         v.shade.position.set(p.x, p.y);
@@ -2445,9 +2456,9 @@ export class IsoRenderer extends Renderer {
       const x = p.x / K;
       const y = p.y / K - 3;
       g.ellipse(x, y + 3, 5, 2.5).fill({ color: 0x000000, alpha: 0.3 });
-      const rr = mother ? MOTHER_R : b.puppet ? 8 : 4.5;
+      const rr = mother ? MOTHER_R : mule ? MULE_R : b.puppet ? 8 : 4.5;
       g.circle(x, y, rr).fill({ color: 0x0d0805, alpha: 0.8 });
-      g.circle(x, y, rr - 1).fill(b.puppet ? 0xd4a72c : mother ? 0x9e3a4c : 0xc75a68);
+      g.circle(x, y, rr - 1).fill(b.puppet ? 0xd4a72c : mother ? 0x9e3a4c : mule ? 0xa8c858 : 0xc75a68);
       if (b.hp < b.maxHp) this.hpArc(g, x, y, rr + 2, b.hp / b.maxHp);
     }
   }
@@ -2515,6 +2526,13 @@ export class IsoRenderer extends Renderer {
       if (!this.selectedUnits.has(b.id)) continue;
       g.circle(b.pos.x, b.pos.y, 8).stroke({ width: 1.6, color: SEL, alpha: pulse + 0.2 });
       drawOrders(b.pos, b.orders);
+    }
+    for (const m of sim.mules) {
+      if (!this.selectedUnits.has(m.id)) continue;
+      // A selected Spore Mule: its ring, its orders, and the creep it would spread if it rooted here.
+      g.circle(m.pos.x, m.pos.y, MULE_R + 6).stroke({ width: 2, color: MOV, alpha: pulse + 0.2 });
+      g.circle(m.pos.x, m.pos.y, m.strain.radius * sim.cfg.cellPx).stroke({ width: 1, color: 0xd8f070, alpha: 0.35 });
+      drawOrders(m.pos, m.orders);
     }
     for (const m of sim.mothers) {
       if (!this.selectedUnits.has(m.id)) continue;
