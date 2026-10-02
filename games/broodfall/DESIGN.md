@@ -365,6 +365,57 @@ mules`, `Autoplayer.mules`) 5/10; the Broodmother stack 6/10, stack with mules 5
 creep already reaches nearly every body and street, so the scripted mules rarely find work (0-4 rooted a run): the
 payoff is a human's choice to push creep past the edge, measured here only as "it costs little".
 
+## SHELTERS AND THE INFESTOR; THE HARRIER (Collins, Oct 2 2026 — BUILT Oct 2)
+
+Collins: "I really like how this is combining a bit of gameplay closer to StarCraft with the heart of tower defence
+... after the first few tiles are placed we should have the chance of spawning nodes that have a 'shelter' at the
+center of them and an expensive fairly fragile but large and slow unit called an infestor ... you attack these with an
+infester and it burrows into it turning it into something of a second base (war prioritises them) and they give you a
+resource multiplier at the end of every wave if they are protected (they also produce creep and grow over time
+increasing the % boost they give you with subsequent growths up to a third stage) / we should also add another ground
+unit, a faster long range attacker that is harder to make in large numbers (these are meant to solve science teams
+attacking you far from any response when you need quick response)."
+
+- **Shelters** (`Sim.shelters`, `Shelter` in `src/sim/types.ts`): a drafted district may carry a fortified civic
+  shelter at its centre: a 2x2 of building beside a street (one cell if no 2x2 fits), its DOOR the street cell in
+  front. It is offered on ONE card of a draft, in half the drafts (`shelterOdds`), from the first draft (the starting
+  board is "the first few tiles"), at most two standing (`shelterMax`), and only in a run that can grow an Infestor
+  (skirmish; a campaign once the cyst is bought). The card says so ("⛫ SHELTER AT ITS CENTRE"), so you can draft for
+  one. Rolled on its own dice (a hash of the seed and the draft): the run's other dice do not move. Why that rare:
+  about one shelter a run if you take them, two if you hunt them, so each is a decision, not furniture.
+- **An intact shelter** is not yours: its cells take no limb, and its defenders shoot your walking units within 120 px
+  (9 a shot, 1.1 shots/s, the Infestor burrowing in first).
+- **The Infestor** (`Sim.infestors`): big (13 px), slow (20, the slowest thing you have), fragile for its size
+  (150 hp), expensive (60 war, paid at the wave clear it is born at). Ordered like the brood; **INFEST** (I, then click
+  a shelter; or right-click a shelter with it selected) walks it to the door, where it **burrows in for 10 s**, still
+  and open to the defenders and the hive. Killed first: the shelter stays theirs. Done: the Infestor is spent and the
+  shelter is **YOURS**.
+- **An infested shelter** is a second base: it seeps creep round its door (2 / 3 / 4 cells by stage; its creep
+  digests bodies like any creep), and at every wave clear it was **PROTECTED** through (it took less than 15% of its
+  body that wave) it pays its stage's share of the meat banked that wave (war and science; royal points are not
+  multiplied): **+10% / +20% / +35%**, and grows: a stage every two protected clears, to the third (520 / 700 / 900 hp).
+  It regrows half its body at every clear. A wave that hurts it past 15% pays nothing and grows nothing.
+- **The war caste goes for it first** (Collins: "war prioritises them"): every war body whose road to the core passes
+  within 15 street cells of an infested shelter's door turns off and tears at it. A shelter by a main route pulls whole
+  waves; one off in a corner pulls those passing. Torn down: a **ruin** (its creep gone; it cannot be taken again).
+  Defending it IS the game: limbs round its door, a parked Broodmother, walls on the streets to it.
+- **The Harrier** (`Sim.harriers`): fast (82; warriors walk at 55), long-ranged (170 px), soft (70 hp), few (one a
+  gland, three on the board at most, 30 war each at a clear). Unordered it HUNTS: the nearest science-caste body
+  anywhere in the city, run down and shot (×2.6 against the science caste); with none about, it guards its post, poorly
+  (×0.6 against the war caste's armour: it does not hold a lane). Orders (move, attack, hold, back) come first.
+- **The Flametrooper hunts them too** (they are walking units): an Infestor walking in alone is fuel.
+- **Where the unlocks go, and why:**
+  - **The Harrier Gland is a sanctioned lineage at 3 standing** (`content/campaign.ts` LINEAGES), before the mule (4):
+    the science caste's raids on far limbs are a worry from the middle of the first campaign, and the Harrier is
+    simple (it hunts by itself; you need not order it).
+  - **The Infestor Cyst is a sanctioned lineage at 6 standing**, the latest of the field units: it asks for everything
+    the player has learnt by then (walking units and orders, creep, escorting, defending a point). **Shelters only appear
+    in a run that can grow an Infestor**, so a new player never meets a shelter they cannot use; the early game stays
+    as it was. Skirmish (no lineage pool) has both.
+  - **COLLINS:** whether the Infestor should come from a beat of the campaign instead (a faction's gift, e.g. the
+    Institute's "seed labs" route), and whether a shelter should also be offered on defence missions' boards.
+- **Measured:** see HANDOFF.md "Shelters, the Infestor and the Harrier".
+
 ## THE CORE: COMBO RUNAWAYS, PAID IN SCIENCE (Collins, Sep 27 2026)
 
 "The real core of the game is going to be trying to build combo runaways, and this is

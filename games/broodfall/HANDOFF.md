@@ -1385,3 +1385,30 @@ only going after the base if all units are clear." The design is in DESIGN.md (Y
 - **Art (Oct 2 2026):** design + turnaround (2 stills) and 16 clips (5 walk, 5 attack, 1 death, then the SW/W/NW
   attacks re-rolled for smoke and nozzle fire, and W/NW again with "it is only aiming" in the motion prompt). The old
   takes are in `art-src-new/units/flametrooper/v1/` and `v2/`. Its fire is the code's stream only.
+
+## Shelters, the Infestor and the Harrier (Oct 2 2026)
+
+Collins's idea, built whole: DESIGN.md "SHELTERS AND THE INFESTOR; THE HARRIER" has the rules and the unlock reasoning.
+- **Sim:** `Sim.shelters` / `infestors` / `harriers`, `raiseShelter` (at a draft that carries one: `markShelterOffer`,
+  its own dice), the `infest` command, `payShelters` + `setShelterStage` at the wave clear (`waveBanked` is the meat
+  banked since the wave began), the war caste's turn-off in the enemy loop (`shelterFor`, `shelterFlow`), the
+  defenders (`updateShelters`), `growFieldUnits` (units paid in WAR at the clear: science is all but gone then),
+  `updateHarriers` (hunts the science caste anywhere). Numbers in `content/data.ts` (shelter*, infestor*, harrier*).
+- **Organs:** `infestor` (Infestor Cyst) and `harrier` (Harrier Gland), kind `unit`, one cell each (a multi-cell organ
+  needs the whole-shape bake, which rebuilds sets from raw files the art-src loss took). Lineages: harrier 3, infestor 6.
+- **UI:** INFEST (I, or right-click a shelter) in the unit panel (src/ui/command.ts); banners for raised / infested /
+  grown / paid / lost (src/main.ts); the draft card's shelter tag (src/screens.css `.has-shelter`).
+- **Art (all raw in art-src-new, never art-src):** the shelter in five states (`node tools/art/shelters.mjs`;
+  `public/art/shelter/*.webp`; review `notes/art-review/shelters/sheet.jpg`), the two organs' scan tiles and loops
+  (`node tools/art/field-organs.mjs`), the Infestor and the Harrier as ally units (`node tools/art/make.mjs unit
+  infestor harrier --attack --death`; tools/art/units.mjs). Spend about $15 (organs ~$1, units ~$13.4 incl. one redrawn
+  turnaround, shelters ~$2.3). The renderer falls back to the district's landmark (tinted) and the Broodmother's /
+  broodling's pictures while any of these is missing.
+- **Tests:** `tests/expansion.test.ts` (16). **Browser beat:** `node tools/shot-expansion.mjs` (8 checks; screenshots
+  and `expansion.mp4` in notes/screens/2026-10-02/).
+- **Measured** (tools/measure/gaps.measure.ts, 10 seeds, hold-12): naive 6/10 (unchanged: the naive bot never grows the
+  new organs); `GAPS_MODE=expansion` 4/10 (shelters came in 3 runs and the bot lost those before infesting); 
+  `GAPS_MODE=shelterstart` (a shelter at the start by the body) 4/10: the three runs that infested one won, grew it to
+  stage 2-3 and were paid 66-223 meat; the bot does not escort its Infestors (5 lost to the defenders and the hive) and
+  buys early, and a shelter by the body takes a 2x2 of roof. So the scripted player shows the payoff only when it gets
+  there; whether +10/20/35% is enough for the risk is a playtest call (COLLINS).

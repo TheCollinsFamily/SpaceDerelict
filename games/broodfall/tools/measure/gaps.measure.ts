@@ -37,6 +37,18 @@ function run(seed: number) {
   if (MODE.includes('mules')) bot.mules = true;
   // expansion = the bot drafts shelters, infests them and grows Harriers (Autoplayer.expansion, Oct 2 2026).
   if (MODE.includes('expansion')) bot.expansion = true;
+  // shelterstart = the same, with a shelter standing at the start in the district nearest the body, so what an infested
+  // shelter is worth is measured (in a normal run one comes at a draft, and a lost run may never reach it).
+  if (MODE.includes('shelterstart')) {
+    bot.expansion = true;
+    const p = sim as unknown as { raiseShelter(slot: number): void };
+    const W = sim.cfg.gridW;
+    const core = sim.map.coreCell;
+    const coreSlot = Math.floor(Math.floor(core / W) / 10) * sim.map.slotsX + Math.floor((core % W) / 10);
+    const near = sim.map.slots.map((x, i) => (x && i !== coreSlot ? i : -1)).filter((i) => i >= 0)
+      .sort((a, b) => Math.hypot((a % sim.map.slotsX) - (coreSlot % sim.map.slotsX), Math.floor(a / sim.map.slotsX) - Math.floor(coreSlot / sim.map.slotsX)) - Math.hypot((b % sim.map.slotsX) - (coreSlot % sim.map.slotsX), Math.floor(b / sim.map.slotsX) - Math.floor(coreSlot / sim.map.slotsX)));
+    for (const slot of near) { p.raiseShelter(slot); if (sim.shelters.length) break; }
+  }
   let ticks = 0;
   const kinds: Record<string, number> = {};
   while (sim.outcome === 'playing' && ticks < 24000) {
