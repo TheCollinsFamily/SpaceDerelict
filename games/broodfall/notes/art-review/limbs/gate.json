@@ -26,9 +26,9 @@
    "pass": true,
    "edge": 1,
    "beside": 0,
-   "rival": "E 0.544",
+   "rival": "E 0.329",
    "tiles": [
-    0.99,
+    0.96,
     1,
     1
    ]
@@ -37,33 +37,33 @@
    "pass": true,
    "edge": 1,
    "beside": 0,
-   "rival": "E 0.328",
+   "rival": "E 0.334",
    "tiles": [
-    0.99,
+    0.7,
     1,
-    0.99
+    0.96
    ]
   },
   "swarm front": {
    "pass": true,
-   "edge": 1,
+   "edge": 0.878,
    "beside": 0,
-   "rival": "E 0.209",
+   "rival": "E 0.162",
    "tiles": [
+    0.88,
     1,
-    1,
-    1
+    0.83
    ]
   },
   "swarm back": {
    "pass": true,
-   "edge": 0.997,
+   "edge": 0.927,
    "beside": 0,
-   "rival": "E 0.376",
+   "rival": "E 0.333",
    "tiles": [
+    0.81,
     1,
-    1,
-    1
+    0.89
    ]
   }
  },
@@ -118,20 +118,20 @@
    "beside": 0,
    "rival": "E 0.927",
    "tiles": [
-    1,
-    1,
-    1
+    0.88,
+    0.99,
+    0.89
    ]
   },
   "bone back": {
    "pass": true,
-   "edge": 0.985,
+   "edge": 1,
    "beside": 0,
-   "rival": "E 0.928",
+   "rival": "E 0.927",
    "tiles": [
+    0.95,
     1,
-    1,
-    0.99
+    1
    ]
   },
   "bone side": {
@@ -140,8 +140,8 @@
    "beside": 0,
    "rival": "S 1.000",
    "tiles": [
-    1,
-    1,
+    0.92,
+    0.92,
     1
    ]
   },
@@ -149,7 +149,7 @@
    "pass": true,
    "edge": 1,
    "beside": 0,
-   "rival": "E 0.764",
+   "rival": "E 0.782",
    "tiles": [
     1,
     1,
@@ -162,8 +162,8 @@
    "beside": 0,
    "rival": "E 0.927",
    "tiles": [
-    0.99,
-    0.92,
+    1,
+    1,
     1
    ]
   },
@@ -171,21 +171,21 @@
    "pass": true,
    "edge": 1,
    "beside": 0,
-   "rival": "E 0.927",
+   "rival": "E 0.926",
    "tiles": [
+    0.92,
     1,
-    1,
-    0.99
+    1
    ]
   },
   "bone-reach side": {
    "pass": true,
    "edge": 1,
    "beside": 0,
-   "rival": "S 0.941",
+   "rival": "S 1.000",
    "tiles": [
-    1,
-    1,
+    0.94,
+    0.94,
     1
    ]
   },
@@ -193,43 +193,43 @@
    "pass": true,
    "edge": 1,
    "beside": 0,
-   "rival": "S 0.810",
+   "rival": "E 0.825",
    "tiles": [
-    1,
-    1,
-    1
+    0.99,
+    0.99,
+    0.95
    ]
   },
   "swarm front": {
    "pass": true,
    "edge": 1,
    "beside": 0,
-   "rival": "E 0.928",
+   "rival": "E 0.929",
    "tiles": [
-    1,
-    0.99,
+    0.82,
+    0.91,
     1
    ]
   },
   "swarm back": {
    "pass": true,
-   "edge": 0.893,
+   "edge": 1,
    "beside": 0,
-   "rival": "S 0.823",
+   "rival": "E 0.920",
    "tiles": [
+    0.81,
     0.98,
-    0.85,
-    1
+    0.85
    ]
   },
   "swarm side": {
    "pass": true,
-   "edge": 0.962,
+   "edge": 1,
    "beside": 0,
-   "rival": "S 0.977",
+   "rival": "S 1.000",
    "tiles": [
-    1,
-    0.97,
+    0.75,
+    0.76,
     1
    ]
   },
@@ -237,7 +237,7 @@
    "pass": true,
    "edge": 1,
    "beside": 0,
-   "rival": "E 0.745",
+   "rival": "E 0.821",
    "tiles": [
     1,
     1,
@@ -248,22 +248,22 @@
    "pass": true,
    "edge": 1,
    "beside": 0,
-   "rival": "E 0.869",
+   "rival": "E 0.927",
    "tiles": [
-    1,
-    0.99,
-    0.99
+    0.87,
+    0.93,
+    0.98
    ]
   },
   "swarm-reach back": {
    "pass": true,
    "edge": 1,
    "beside": 0,
-   "rival": "E 0.944",
+   "rival": "E 0.903",
    "tiles": [
-    0.99,
-    0.98,
-    1
+    0.68,
+    0.84,
+    0.92
    ]
   },
   "swarm-reach side": {
@@ -272,20 +272,20 @@
    "beside": 0,
    "rival": "S 1.000",
    "tiles": [
-    0.99,
-    0.99,
+    1,
+    1,
     1
    ]
   },
   "swarm-reach backside": {
    "pass": true,
-   "edge": 0.997,
+   "edge": 1,
    "beside": 0,
-   "rival": "S 0.905",
+   "rival": "S 0.909",
    "tiles": [
     1,
-    0.99,
-    0.99
+    0.98,
+    0.98
    ]
   }
  },
@@ -322,7 +322,7 @@
    "tiles": [
     1,
     1,
-    1,
+    0.98,
     1
    ]
   },
@@ -332,33 +332,33 @@
    "beside": 0,
    "rival": null,
    "tiles": [
+    0.99,
     1,
-    1,
-    1,
+    0.98,
     1
    ]
   },
   "swarm front": {
    "pass": true,
-   "edge": 0.927,
+   "edge": 0.902,
    "beside": 0,
    "rival": null,
    "tiles": [
     1,
-    0.99,
-    0.88,
+    1,
+    0.8,
     1
    ]
   },
   "swarm back": {
    "pass": true,
-   "edge": 1,
+   "edge": 0.965,
    "beside": 0,
    "rival": null,
    "tiles": [
     1,
-    1,
-    1,
+    0.85,
+    0.75,
     1
    ]
   }
@@ -392,46 +392,46 @@
    "pass": true,
    "edge": 1,
    "beside": 0,
-   "rival": "E 0.982",
+   "rival": "E 1.000",
    "tiles": [
+    0.9,
     1,
     1,
-    1,
-    1
+    0.9
    ]
   },
   "swarm back": {
    "pass": true,
    "edge": 1,
    "beside": 0,
-   "rival": "S 0.658",
+   "rival": "S 0.612",
    "tiles": [
-    0.98,
-    0.96,
+    0.73,
     1,
-    1
+    1,
+    0.98
    ]
   },
   "swarm-venom front": {
    "pass": true,
-   "edge": 0.902,
+   "edge": 1,
    "beside": 0,
-   "rival": "E 0.902",
+   "rival": "E 0.926",
    "tiles": [
-    0.88,
+    0.93,
     1,
-    1,
-    0.95
+    0.95,
+    0.98
    ]
   },
   "swarm-venom back": {
    "pass": true,
-   "edge": 0.944,
-   "beside": 0,
-   "rival": "E 0.652",
+   "edge": 1,
+   "beside": 0.005,
+   "rival": "E 0.634",
    "tiles": [
-    0.85,
-    0.76,
+    1,
+    1,
     1,
     1
    ]
@@ -440,7 +440,7 @@
    "pass": true,
    "edge": 1,
    "beside": 0,
-   "rival": "E 0.927",
+   "rival": "E 1.000",
    "tiles": [
     1,
     1,
@@ -450,14 +450,14 @@
   },
   "venom back": {
    "pass": true,
-   "edge": 0.993,
-   "beside": 0.004,
-   "rival": "E 0.634",
+   "edge": 1,
+   "beside": 0,
+   "rival": "S 0.643",
    "tiles": [
-    0.98,
-    0.96,
     1,
-    0.99
+    0.99,
+    1,
+    0.92
    ]
   }
  },
@@ -488,110 +488,110 @@
    "pass": true,
    "edge": 0.964,
    "beside": 0,
-   "rival": "E 0.190",
+   "rival": "E 0.324",
    "tiles": [
+    0.9,
     1,
-    1,
-    1
+    0.97
    ]
   },
   "swarm back": {
    "pass": true,
    "edge": 1,
    "beside": 0,
-   "rival": "E 0.283",
+   "rival": "E 0.322",
    "tiles": [
-    0.96,
-    0.99,
-    0.99
+    0.81,
+    1,
+    0.92
    ]
   },
   "swarm-reach front": {
    "pass": true,
-   "edge": 0.909,
+   "edge": 1,
    "beside": 0,
-   "rival": "E 0.358",
+   "rival": "E 0.371",
    "tiles": [
+    0.93,
     1,
-    1,
-    0.99
+    0.97
    ]
   },
   "swarm-reach back": {
-   "pass": false,
-   "edge": 0.843,
+   "pass": true,
+   "edge": 1,
    "beside": 0,
-   "rival": "E 0.177",
+   "rival": "E 0.364",
    "tiles": [
-    0.98,
-    0.99,
+    1,
+    1,
     0.99
    ]
   },
   "swarm-venom front": {
    "pass": true,
-   "edge": 0.893,
+   "edge": 0.927,
    "beside": 0,
-   "rival": "E 0.416",
+   "rival": "E 0.384",
    "tiles": [
-    0.94,
+    0.91,
     1,
-    0.99
+    0.82
    ]
   },
   "swarm-venom back": {
    "pass": true,
-   "edge": 0.926,
+   "edge": 0.928,
    "beside": 0,
-   "rival": "E 0.411",
+   "rival": "E 0.383",
    "tiles": [
+    0.84,
     1,
-    1,
-    0.99
+    0.84
    ]
   },
   "venom front": {
    "pass": true,
-   "edge": 0.927,
+   "edge": 1,
    "beside": 0,
-   "rival": "E 0.162",
+   "rival": "E 0.320",
    "tiles": [
     1,
     1,
-    0.98
+    0.95
    ]
   },
   "venom back": {
    "pass": true,
-   "edge": 0.963,
+   "edge": 0.945,
    "beside": 0,
-   "rival": "E 0.231",
+   "rival": "E 0.153",
    "tiles": [
+    0.78,
     1,
-    1,
-    1
+    0.85
    ]
   },
   "venom-reach front": {
    "pass": true,
-   "edge": 0.963,
+   "edge": 1,
    "beside": 0,
-   "rival": "E 0.303",
+   "rival": "E 0.388",
    "tiles": [
-    0.99,
-    1,
-    0.99
+    0.88,
+    0.98,
+    0.98
    ]
   },
   "venom-reach back": {
    "pass": true,
-   "edge": 0.943,
+   "edge": 1,
    "beside": 0,
-   "rival": "E 0.204",
+   "rival": "E 0.322",
    "tiles": [
-    0.97,
-    0.98,
-    0.98
+    0.85,
+    0.91,
+    0.9
    ]
   }
  },
@@ -622,48 +622,48 @@
   },
   "reach front": {
    "pass": true,
-   "edge": 1,
-   "beside": 0.001,
-   "rival": "E 1.000",
+   "edge": 0.938,
+   "beside": 0,
+   "rival": "E 0.973",
    "tiles": [
-    0.98,
-    1,
-    1,
-    1
+    0.74,
+    0.92,
+    0.97,
+    0.78
    ]
   },
   "reach back": {
    "pass": true,
    "edge": 1,
    "beside": 0,
-   "rival": "E 0.646",
+   "rival": "E 0.674",
    "tiles": [
-    0.92,
-    0.77,
-    1,
+    0.62,
+    0.56,
+    0.99,
     1
    ]
   },
   "swarm front": {
    "pass": true,
-   "edge": 0.997,
+   "edge": 1,
    "beside": 0,
-   "rival": "E 1.000",
+   "rival": "E 0.994",
    "tiles": [
-    0.99,
     1,
-    0.99,
-    0.97
+    1,
+    0.98,
+    0.94
    ]
   },
   "swarm back": {
    "pass": true,
    "edge": 1,
    "beside": 0,
-   "rival": "E 0.666",
+   "rival": "S 0.661",
    "tiles": [
-    0.8,
-    0.7,
+    0.9,
+    0.82,
     1,
     1
    ]
@@ -720,21 +720,21 @@
   },
   "reach front": {
    "pass": true,
-   "edge": 0.97,
-   "beside": 0.001,
-   "rival": "E 0.687",
+   "edge": 0.977,
+   "beside": 0.002,
+   "rival": "E 0.966",
    "tiles": [
+    0.78,
     0.97,
-    1,
-    1,
-    1
+    0.92,
+    0.97
    ]
   },
   "reach back": {
    "pass": true,
    "edge": 1,
    "beside": 0,
-   "rival": "E 0.684",
+   "rival": "S 0.624",
    "tiles": [
     1,
     1,
@@ -748,9 +748,9 @@
    "beside": 0,
    "rival": "S 0.766",
    "tiles": [
-    1,
-    1,
-    1,
+    0.96,
+    0.92,
+    0.98,
     1
    ]
   },
@@ -758,23 +758,23 @@
    "pass": true,
    "edge": 1,
    "beside": 0,
-   "rival": "S 0.658",
+   "rival": "S 0.684",
    "tiles": [
     1,
-    1,
-    1,
-    0.98
+    0.99,
+    0.94,
+    0.99
    ]
   },
   "venom front": {
    "pass": true,
-   "edge": 0.997,
-   "beside": 0.001,
-   "rival": "E 0.813",
+   "edge": 0.972,
+   "beside": 0.002,
+   "rival": "E 0.917",
    "tiles": [
+    0.98,
     1,
-    1,
-    1,
+    0.99,
     1
    ]
   },
@@ -782,10 +782,10 @@
    "pass": true,
    "edge": 1,
    "beside": 0,
-   "rival": "E 0.683",
+   "rival": "S 0.638",
    "tiles": [
-    0.98,
-    0.93,
+    0.99,
+    1,
     1,
     1
    ]
@@ -794,19 +794,19 @@
    "pass": true,
    "edge": 1,
    "beside": 0,
-   "rival": "S 0.766",
+   "rival": "S 0.767",
    "tiles": [
-    1,
-    1,
-    1,
+    0.72,
+    0.96,
+    0.99,
     1
    ]
   },
   "venom backside": {
    "pass": true,
-   "edge": 0.952,
+   "edge": 1,
    "beside": 0,
-   "rival": "S 0.651",
+   "rival": "S 0.711",
    "tiles": [
     1,
     1,
@@ -816,26 +816,26 @@
   },
   "venom-reach front": {
    "pass": true,
-   "edge": 0.864,
-   "beside": 0,
-   "rival": "E 0.775",
+   "edge": 0.976,
+   "beside": 0.001,
+   "rival": "N 0.608",
    "tiles": [
-    0.84,
-    1,
-    0.88,
-    1
+    0.8,
+    0.96,
+    0.83,
+    0.94
    ]
   },
   "venom-reach back": {
    "pass": true,
-   "edge": 0.862,
+   "edge": 0.927,
    "beside": 0,
-   "rival": "S 0.672",
+   "rival": "S 0.597",
    "tiles": [
+    0.89,
+    0.82,
     0.96,
-    0.95,
-    0.97,
-    0.9
+    0.75
    ]
   },
   "venom-reach side": {
@@ -852,14 +852,14 @@
   },
   "venom-reach backside": {
    "pass": true,
-   "edge": 1,
+   "edge": 0.915,
    "beside": 0,
-   "rival": "E 0.870",
+   "rival": "E 0.649",
    "tiles": [
-    1,
-    1,
-    1,
-    1
+    0.7,
+    0.87,
+    0.93,
+    0.69
    ]
   }
  },
@@ -902,38 +902,38 @@
   },
   "bone back": {
    "pass": true,
-   "edge": 0.969,
-   "beside": 0.006,
-   "rival": "E 0.544",
+   "edge": 0.905,
+   "beside": 0,
+   "rival": "S 0.523",
    "tiles": [
-    0.98,
     1,
+    0.99,
     1,
-    0.96
+    0.86
    ]
   },
   "bone-swarm front": {
    "pass": true,
-   "edge": 0.928,
+   "edge": 0.945,
    "beside": 0,
-   "rival": "E 0.928",
+   "rival": "E 0.979",
    "tiles": [
-    0.94,
     1,
     1,
-    0.98
+    0.99,
+    0.95
    ]
   },
   "bone-swarm back": {
    "pass": true,
-   "edge": 0.924,
-   "beside": 0,
-   "rival": "E 0.657",
+   "edge": 0.926,
+   "beside": 0.007,
+   "rival": "S 0.514",
    "tiles": [
-    0.96,
-    0.96,
     1,
-    1
+    0.97,
+    1,
+    0.87
    ]
   },
   "swarm front": {
@@ -950,14 +950,14 @@
   },
   "swarm back": {
    "pass": true,
-   "edge": 0.945,
-   "beside": 0.002,
-   "rival": "S 0.543",
+   "edge": 1,
+   "beside": 0.007,
+   "rival": "E 0.589",
    "tiles": [
-    0.96,
+    0.84,
     1,
     1,
-    0.89
+    0.93
    ]
   }
  },
@@ -1010,9 +1010,9 @@
    "pass": true,
    "edge": 1,
    "beside": 0,
-   "rival": "E 0.885",
+   "rival": "E 0.927",
    "tiles": [
-    0.96,
+    1,
     1,
     1
    ]
@@ -1021,9 +1021,9 @@
    "pass": true,
    "edge": 1,
    "beside": 0,
-   "rival": "S 0.946",
+   "rival": "E 0.918",
    "tiles": [
-    1,
+    0.95,
     1,
     1
    ]
@@ -1034,8 +1034,8 @@
    "beside": 0,
    "rival": "S 1.000",
    "tiles": [
-    1,
-    1,
+    0.93,
+    0.94,
     1
    ]
   },
@@ -1043,7 +1043,7 @@
    "pass": true,
    "edge": 1,
    "beside": 0,
-   "rival": "E 0.783",
+   "rival": "E 0.823",
    "tiles": [
     1,
     1,
@@ -1099,6 +1099,54 @@
     1,
     1
    ]
+  },
+  "bone front": {
+   "pass": true,
+   "edge": 0.934,
+   "beside": 0.001,
+   "rival": "E 0.822",
+   "tiles": [
+    0.98,
+    1,
+    1,
+    1
+   ]
+  },
+  "bone back": {
+   "pass": true,
+   "edge": 1,
+   "beside": 0,
+   "rival": "S 0.668",
+   "tiles": [
+    1,
+    1,
+    1,
+    1
+   ]
+  },
+  "bone side": {
+   "pass": true,
+   "edge": 1,
+   "beside": 0,
+   "rival": "S 0.766",
+   "tiles": [
+    0.95,
+    1,
+    1,
+    1
+   ]
+  },
+  "bone backside": {
+   "pass": true,
+   "edge": 1,
+   "beside": 0,
+   "rival": "S 0.732",
+   "tiles": [
+    1,
+    1,
+    1,
+    1
+   ]
   }
  },
  "amp": {
@@ -1126,24 +1174,24 @@
   },
   "swarm front": {
    "pass": true,
-   "edge": 0.926,
+   "edge": 1,
    "beside": 0,
-   "rival": "E 0.160",
+   "rival": "E 0.328",
    "tiles": [
+    0.94,
     1,
-    1,
-    0.91
+    1
    ]
   },
   "swarm back": {
    "pass": true,
-   "edge": 0.927,
+   "edge": 1,
    "beside": 0,
-   "rival": "E 0.306",
+   "rival": "E 0.155",
    "tiles": [
+    0.73,
     1,
-    1,
-    0.92
+    0.87
    ]
   }
  },
@@ -1172,24 +1220,248 @@
   },
   "reach front": {
    "pass": true,
-   "edge": 1,
+   "edge": 0.928,
    "beside": 0,
-   "rival": "E 0.173",
+   "rival": "E 0.160",
    "tiles": [
+    0.99,
     1,
-    1,
-    1
+    0.9
    ]
   },
   "reach back": {
    "pass": true,
    "edge": 1,
    "beside": 0,
-   "rival": "E 0.392",
+   "rival": "E 0.336",
    "tiles": [
+    0.75,
     1,
-    1,
+    0.91
+   ]
+  }
+ },
+ "lobber": {
+  "base front": {
+   "pass": true,
+   "edge": 1,
+   "beside": 0,
+   "rival": null,
+   "tiles": [
+    0.75
+   ]
+  },
+  "base back": {
+   "pass": true,
+   "edge": 1,
+   "beside": 0,
+   "rival": null,
+   "tiles": [
+    0.8
+   ]
+  },
+  "bone front": {
+   "pass": true,
+   "edge": 1,
+   "beside": 0,
+   "rival": null,
+   "tiles": [
+    0.85
+   ]
+  },
+  "bone back": {
+   "pass": true,
+   "edge": 1,
+   "beside": 0,
+   "rival": null,
+   "tiles": [
+    0.88
+   ]
+  },
+  "bone-reach front": {
+   "pass": true,
+   "edge": 1,
+   "beside": 0,
+   "rival": null,
+   "tiles": [
     1
+   ]
+  },
+  "bone-reach back": {
+   "pass": true,
+   "edge": 1,
+   "beside": 0,
+   "rival": null,
+   "tiles": [
+    0.87
+   ]
+  },
+  "swarm front": {
+   "pass": true,
+   "edge": 1,
+   "beside": 0,
+   "rival": null,
+   "tiles": [
+    0.79
+   ]
+  },
+  "swarm back": {
+   "pass": true,
+   "edge": 1,
+   "beside": 0,
+   "rival": null,
+   "tiles": [
+    0.83
+   ]
+  },
+  "swarm-reach front": {
+   "pass": true,
+   "edge": 1,
+   "beside": 0,
+   "rival": null,
+   "tiles": [
+    1
+   ]
+  },
+  "swarm-reach back": {
+   "pass": true,
+   "edge": 1,
+   "beside": 0,
+   "rival": null,
+   "tiles": [
+    1
+   ]
+  }
+ },
+ "ocular": {
+  "base front": {
+   "pass": true,
+   "edge": 1,
+   "beside": 0,
+   "rival": null,
+   "tiles": [
+    0.84
+   ]
+  },
+  "base back": {
+   "pass": true,
+   "edge": 1,
+   "beside": 0,
+   "rival": null,
+   "tiles": [
+    0.83
+   ]
+  },
+  "bone back": {
+   "pass": true,
+   "edge": 1,
+   "beside": 0,
+   "rival": null,
+   "tiles": [
+    0.84
+   ]
+  },
+  "swarm front": {
+   "pass": true,
+   "edge": 1,
+   "beside": 0,
+   "rival": null,
+   "tiles": [
+    0.85
+   ]
+  }
+ },
+ "lure": {
+  "base front": {
+   "pass": true,
+   "edge": 1,
+   "beside": 0,
+   "rival": null,
+   "tiles": [
+    0.88
+   ]
+  },
+  "base back": {
+   "pass": true,
+   "edge": 1,
+   "beside": 0,
+   "rival": null,
+   "tiles": [
+    0.89
+   ]
+  },
+  "venom back": {
+   "pass": true,
+   "edge": 0.988,
+   "beside": 0,
+   "rival": null,
+   "tiles": [
+    0.9
+   ]
+  }
+ },
+ "reliquary": {
+  "base front": {
+   "pass": true,
+   "edge": 1,
+   "beside": 0,
+   "rival": null,
+   "tiles": [
+    0.87
+   ]
+  },
+  "base back": {
+   "pass": true,
+   "edge": 1,
+   "beside": 0,
+   "rival": null,
+   "tiles": [
+    1
+   ]
+  },
+  "bone front": {
+   "pass": true,
+   "edge": 1,
+   "beside": 0,
+   "rival": null,
+   "tiles": [
+    0.88
+   ]
+  },
+  "bone back": {
+   "pass": true,
+   "edge": 1,
+   "beside": 0,
+   "rival": null,
+   "tiles": [
+    0.8
+   ]
+  },
+  "bone-swarm front": {
+   "pass": true,
+   "edge": 0.988,
+   "beside": 0,
+   "rival": null,
+   "tiles": [
+    0.93
+   ]
+  },
+  "swarm front": {
+   "pass": true,
+   "edge": 1,
+   "beside": 0,
+   "rival": null,
+   "tiles": [
+    0.81
+   ]
+  },
+  "swarm back": {
+   "pass": true,
+   "edge": 1,
+   "beside": 0,
+   "rival": null,
+   "tiles": [
+    0.87
    ]
   }
  }

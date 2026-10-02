@@ -168,7 +168,8 @@ export async function makeLooks(family, { only = [], stillsOnly = false, bakeOnl
       // the picture must pass the footprint gate (tools/art/lib/shapeGate.mjs) or it is drawn again (up to 3 tries; the
       // rejected ones are kept in rejected/). A look that fails three times is written down as failing, not used.
       const slabFile = l.plate ? path.join(SRC, 'limbs', rawDirOf(l), `plate-${view}.png`) : null;
-      const locked = !half && slabFile && fs.existsSync(slabFile);
+      // (A one-cell limb's slab is its cell: nothing to lock.)
+      let locked = !half && slabFile && fs.existsSync(slabFile) && l.plate !== 'one';
       const prompt = half
         ? `${BACK} ${l.back} It keeps every part it has in the reference picture, now seen from behind. Its one accent stays as it is: ${l.accent ?? THEMES[l.theme].accent}.`
         : locked
@@ -179,11 +180,14 @@ export async function makeLooks(family, { only = [], stillsOnly = false, bakeOnl
       const out = path.join(dir, `${view}.png`);
       let still;
       for (let tries = 0; ; tries++) {
-        still = await makeStill({
+        const ask = () => makeStill({
           slug: `${family} ${key} look, ${view}${tries ? `, try ${tries + 1}` : ''}`, out,
           refFiles: locked ? [slabFile, bases[view].file] : [half ? path.join(dir, 'front.png') : bases[view].file],
-          prompt, key: k.hex, keyName: k.name, quality: 'high',
+          prompt: locked ? prompt : (half ? prompt : editWords(l, view, key)), key: k.hex, keyName: k.name, quality: 'high',
         });
+        // A picture the image service refuses with the slab given (it happens for a few, Oct 2 2026) is asked again
+        // without it: the gate still decides.
+        try { still = await ask(); } catch (e) { if (!locked) throw e; locked = false; still = await ask(); }
         if (!l.plate || l.plate === 'one') break;
         const g = gateFull(keyed(still), l.plate, VIEW_FACING[view], bases[view].fit);
         console.log(`[looks] ${family} ${key} ${view}: gate ${g.pass ? 'PASS' : 'FAIL'} (front edge ${g.edge}, tiles ${g.tiles.join('/')}, beside ${g.beside})`);

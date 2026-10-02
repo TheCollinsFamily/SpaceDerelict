@@ -1,0 +1,182 @@
+{
+ "skipper swarm": {
+  "pass": true,
+  "ratio": 1.08
+ },
+ "mister venom": {
+  "pass": true,
+  "ratio": 1.33
+ },
+ "maw bone": {
+  "pass": true,
+  "ratio": 0.95
+ },
+ "maw bone-swarm": {
+  "pass": true,
+  "ratio": 1.17
+ },
+ "maw swarm": {
+  "pass": true,
+  "ratio": 0.96
+ },
+ "swamp venom": {
+  "pass": true,
+  "ratio": 1.11
+ },
+ "swamp venom-reach": {
+  "pass": true,
+  "ratio": 1.28
+ },
+ "burster bone-reach": {
+  "pass": true,
+  "ratio": 0.98
+ },
+ "burster bone-swarm": {
+  "pass": false,
+  "ratio": 1.51
+ },
+ "burster reach": {
+  "pass": true,
+  "ratio": 1.26
+ },
+ "burster swarm": {
+  "pass": true,
+  "ratio": 1.23
+ },
+ "prism bone": {
+  "pass": true,
+  "ratio": 1.11
+ },
+ "prism bone-swarm": {
+  "pass": true,
+  "ratio": 1.33
+ },
+ "prism reach": {
+  "pass": true,
+  "ratio": 1.08
+ },
+ "prism swarm-reach": {
+  "pass": true,
+  "ratio": 1.38
+ },
+ "net bone": {
+  "pass": true,
+  "ratio": 1.24
+ },
+ "net bone-reach": {
+  "pass": false,
+  "ratio": 1.64
+ },
+ "net swarm": {
+  "pass": true,
+  "ratio": 1.32
+ },
+ "net swarm-reach": {
+  "pass": false,
+  "ratio": 1.51
+ },
+ "ward bone": {
+  "pass": true,
+  "ratio": 1.14
+ },
+ "ward bone-reach": {
+  "pass": true,
+  "ratio": 1.07
+ },
+ "ward reach": {
+  "pass": true,
+  "ratio": 1.13
+ },
+ "brood bone": {
+  "pass": true,
+  "ratio": 1.29
+ },
+ "sling bone": {
+  "pass": false,
+  "ratio": 1.52
+ },
+ "sling bone-reach": {
+  "pass": false,
+  "ratio": 2.08
+ },
+ "sling swarm": {
+  "pass": true,
+  "ratio": 1.42
+ },
+ "sling swarm-reach": {
+  "pass": true,
+  "ratio": 1.02
+ },
+ "tap bone": {
+  "pass": true,
+  "ratio": 1.15
+ },
+ "tap bone-swarm": {
+  "pass": true,
+  "ratio": 1.31
+ },
+ "tap swarm": {
+  "pass": true,
+  "ratio": 1
+ },
+ "mitosis swarm": {
+  "pass": true,
+  "ratio": 1.26
+ },
+ "mosaic reach": {
+  "pass": true,
+  "ratio": 1.18
+ },
+ "mosaic swarm": {
+  "pass": false,
+  "ratio": 1.84
+ },
+ "twin swarm": {
+  "pass": true,
+  "ratio": 1.03
+ },
+ "capacitor swarm": {
+  "pass": false,
+  "ratio": 1.71
+ },
+ "boomerang bone": {
+  "pass": false,
+  "ratio": 1.5
+ },
+ "boomerang bone-reach": {
+  "pass": false,
+  "ratio": 1.73
+ },
+ "boomerang swarm": {
+  "pass": true,
+  "ratio": 1.49
+ },
+ "boomerang swarm-reach": {
+  "pass": false,
+  "ratio": 1.82
+ },
+ "sprout bone": {
+  "pass": true,
+  "ratio": 1.43
+ },
+ "sprout bone-swarm": {
+  "pass": false,
+  "ratio": 1.78
+ },
+ "sprout swarm": {
+  "pass": true,
+  "ratio": 1.44
+ },
+ "cage bone": {
+  "pass": true,
+  "ratio": 1.09
+ },
+ "cage bone-swarm": {
+  "pass": true,
+  "ratio": 1.43
+ },
+ "cage swarm": {
+  "pass": true,
+  "ratio": 1.42
+ }
+}

@@ -32,7 +32,7 @@ export function keyed(file) {
 const out = path.join(REVIEW, 'limbs', 'gate.json');
 const all = fs.existsSync(out) ? JSON.parse(fs.readFileSync(out, 'utf8')) : {};
 let fails = 0, total = 0;
-for (const l of LIMBS.filter((x) => x.plate && x.plate !== 'one' && (!fams.length || fams.includes(x.family)))) {
+for (const l of LIMBS.filter((x) => !args.includes('--one') && x.plate && (!fams.length || fams.includes(x.family)))) {
   const dir = path.join(SRC, 'limbs', rawDirOf(l));
   const res = all[l.family] ?? {};
   const fits = {};
@@ -65,3 +65,42 @@ for (const l of LIMBS.filter((x) => x.plate && x.plate !== 'one' && (!fams.lengt
 fs.mkdirSync(path.dirname(out), { recursive: true });
 fs.writeFileSync(out, `${JSON.stringify(all, null, 1)}\n`);
 console.log(`gate: ${total - fails}/${total} pictures pass`);
+
+/**
+ * THE ONE-CELL LIMBS' LOOKS (not drawn over a plate): a look must still stand on ONE cell. Its skirt (the widest row of
+ * its base, thin parts taken off, in the lowest fifth of it) is measured against its limb's: no more than half again as
+ * wide (a superstructure is drawn 1.2 times bigger), no less than two thirds. `--one` runs it.
+ */
+import { openedBase } from './lib/shapeGate.mjs';
+function skirtWidth(img) {
+  const b = openedBase(img);
+  let top = b.h, bottom = -1;
+  for (let y = 0; y < b.h; y++) for (let x = 0; x < b.w; x++) if (b.mask[y * b.w + x]) { top = Math.min(top, y); bottom = Math.max(bottom, y); }
+  let best = 0;
+  for (let y = Math.round(bottom - (bottom - top) * 0.2); y <= bottom; y++) {
+    let a = -1, z = -1;
+    for (let x = 0; x < b.w; x++) if (b.mask[y * b.w + x]) { if (a < 0) a = x; z = x; }
+    if (a >= 0) best = Math.max(best, z - a);
+  }
+  return best;
+}
+if (args.includes('--one')) {
+  const one = {};
+  let pass = 0, n = 0;
+  for (const l of LIMBS.filter((x) => !x.plate && (!fams.length || fams.includes(x.family)))) {
+    const looks = path.join(SRC, 'limbs', `${rawDirOf(l)}-looks`);
+    const baseFile = path.join(SRC, 'limbs', rawDirOf(l), 'styled.png');
+    if (!fs.existsSync(looks) || !fs.existsSync(baseFile)) continue;
+    const bw = skirtWidth(keyed(baseFile));
+    for (const key of fs.readdirSync(looks)) {
+      const f = path.join(looks, key, 'front.png');
+      if (!fs.existsSync(f)) continue;
+      const r = skirtWidth(keyed(f)) / bw;
+      const ok = r >= 0.67 && r <= 1.5;
+      one[`${l.family} ${key}`] = { pass: ok, ratio: Number(r.toFixed(2)) };
+      n++; if (ok) pass++; else console.log(`FAIL one-cell ${l.family} ${key}: its skirt is ${r.toFixed(2)} times its limb's`);
+    }
+  }
+  fs.writeFileSync(path.join(REVIEW, 'limbs', 'gate-one.json'), `${JSON.stringify(one, null, 1)}\n`);
+  console.log(`one-cell looks: ${pass}/${n} keep one cell`);
+}
