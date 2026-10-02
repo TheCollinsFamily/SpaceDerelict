@@ -21,7 +21,7 @@
  "part2": {
   "won": {
    "video": "ship-won.mp4",
-   "seconds": 15.186,
+   "seconds": 10.124,
    "cut": 5.062,
    "w": 1280,
    "h": 720,
@@ -30,7 +30,7 @@
   },
   "lost": {
    "video": "ship-lost.mp4",
-   "seconds": 15.186,
+   "seconds": 10.124,
    "cut": 5.062,
    "w": 1280,
    "h": 720,

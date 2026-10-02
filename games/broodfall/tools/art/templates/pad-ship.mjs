@@ -95,27 +95,39 @@ const STEADY = 'His body moves with the deliberate weight of a man in a ship\'s 
 const POV = 'Strictly first person the whole time: the camera IS his eyes; we never see his face, his head or his body, only ' +
   'his own hand and forearm at the start; nobody else is in the room at any moment. The data pad stays lying flat on the desk ' +
   'where it is, its screen black: he lets go of it and leaves it there, he does not pick it up, lift it or take it with him. ';
+/**
+ * SEATED (Collins, Oct 2 2026: "this new part of the video starts by zooming back out of the first-person perspective, then
+ * we watch him get up and walk to the other display"): part 1's last view seen from behind and a little above him: the same
+ * desk, the pad where he set it down, the window onto the planet; HIM in the black chair at the console, his hand beside the pad.
+ */
+export const SEATED = {
+  file: raw('seated.png'),
+  prompt: `${REAL} The same scene as the first reference picture (the long matte black console desk, the data pad lying on it ` +
+    'with its screen black, the small metal trinkets at the back of the desk, the long window with its pale frame onto the planet), ' +
+    'now seen from behind and a little above a man seated at that desk: the camera has pulled straight back and up out of his ' +
+    'eyes. ' + `${MAN}, exactly the man of the second reference picture, sits in a black swivel chair at the desk, his back to ` +
+    'us, his right hand resting flat on the desk beside the pad exactly where the hand is in the first picture, looking down at ' +
+    'the pad. The pad, the window and the planet are at the same places relative to him as in the first picture; the desk spans ' +
+    `the lower middle of the picture, the window the upper part. ${NONE}`,
+  refs: () => [raw('won-part1-last.png'), raw('over.png')],
+};
+
+const PULL = 'One smooth continuous dolly move, no cut: the camera pulls straight back and up out of his eyes, away from the desk, ' +
+  'so that his own head, shoulders and back come into the picture from the bottom and he is revealed sitting in his chair at the ' +
+  'console, seen from behind, his hand still beside the data pad lying on the desk with its black screen, the long window onto ' +
+  'the planet beyond. He stays seated and nearly still the whole time: he does not stand, turn or pick up the pad. The clip ends ' +
+  `exactly on the second picture. ${NONE}`;
 export const CLIPS = [
-  { id: 'won', start: () => raw('won-start.png'), end: () => TURN.file, seconds: 5,
-    prompt: 'First-person point of view aboard a dark starship in orbit. He takes his hand off the data pad lying asleep (black) on ' +
-      'his console desk, pushes back from the desk and stands up, and turns to his right, away from the long window: the planet ' +
-      'slides past at the left as he turns, its red night-side glow sweeping over the deck, and the dark bulkheads, deck plating ' +
-      'and the open hatchway ahead come into view. He ends standing still, looking toward the hatch. Calm and composed. ' + POV + STEADY },
-  { id: 'lost', start: () => raw('lost-start.png'), end: () => TURN.file, seconds: 5,
-    prompt: 'First-person point of view aboard a dark starship in orbit. Tired and heavy, he leans on his flat hand beside the data ' +
-      'pad lying asleep (black) on his console desk, pushes himself up slowly and stands, then turns slowly to his right, away from ' +
-      'the long window: the planet slides past at the left, its red night-side glow sweeping over the deck, and the dark ' +
-      'bulkheads, deck plating and the open hatchway ahead come into view. He ends standing still, looking toward the hatch. ' + POV + STEADY },
-  { id: 'rise', start: () => TURN.file, end: () => OVER.file, seconds: 5,
-    prompt: 'One continuous camera move, no cut, aboard a dark starship. We begin looking through his eyes at the open hatchway. ' +
-      'He takes a step toward it and the camera drifts back and a little up over his shoulder, so that he rises into the picture ' +
-      'from the bottom left, seen from behind, standing exactly where the viewpoint was, facing the hatch, ending exactly on the ' +
-      'second picture. The room, the window onto the planet, the chair and the hatch stay where they are. ' +
-      `He is the man of the second picture the whole time. ${NONE}` },
-  { id: 'walk', start: () => OVER.file, end: () => raw('interface-end.png'), seconds: 5,
-    prompt: `Seen from behind, ${MAN} walks forward across the room and through the open hatchway into the small dark room and stops beside the round ` +
-      'table, standing still and looking down at it, exactly as in the second picture; the camera follows a little behind him and ' +
-      'settles where the second picture is framed, the hatch frame passing out of the picture. As he arrives the table\'s top glows ' +
+  { id: 'won', start: () => raw('won-start.png'), end: () => SEATED.file, seconds: 5,
+    prompt: 'Aboard a dark starship in orbit. He has just set his data pad down calmly. ' + PULL },
+  { id: 'lost', start: () => raw('lost-start.png'), end: () => SEATED.file, seconds: 5,
+    prompt: 'Aboard a dark starship in orbit. He has just dropped his data pad on the desk, tired, his shoulders heavy. ' + PULL },
+  { id: 'walk', start: () => SEATED.file, end: () => raw('interface-end.png'), seconds: 5,
+    prompt: `Third person the whole time, seen from behind. ${MAN} pushes back his chair from the console, stands up, turns away ` +
+      'from the window onto the planet and walks across the dark ship room, through the open rounded hatchway, into the small dark ' +
+      'room with ONE single round table (there is only one table in that room), and stops at the left beside the table looking ' +
+      'down at it, exactly as in the second picture: the same single table, the same dim light, the same framing. The camera ' +
+      'follows smoothly a little behind him and settles where the second picture is framed. As he arrives the top of the table glows ' +
       `a little brighter, like a projector waking. ${STEADY}` },
 ];
 
@@ -150,9 +162,9 @@ export function makeFrames() {
 }
 
 export async function makeStills(only = []) {
-  for (const s of [TURN, HATCH, OVER]) {
+  for (const s of [TURN, HATCH, OVER, SEATED]) {
     if (only.length && !only.includes(path.basename(s.file, '.png'))) continue;
-    await makeStill({ slug: `padship ${path.basename(s.file, '.png')}`, out: s.file, prompt: s.prompt, key: null, width: W, height: H, quality: 'high', refFiles: s.refs() });
+    await makeStill({ slug: `padship ${path.basename(s.file, '.png')}`, out: s.file, prompt: s.prompt, key: null, width: W, height: H, quality: process.env.PADSHIP_QUALITY || 'medium', refFiles: s.refs() });
   }
 }
 
@@ -182,15 +194,23 @@ export function bake() {
   ffmpeg(['-i', raw('interface-end.png'), '-c:v', 'libwebp', '-quality', '86', path.join(OUT, poster)], 'poster');
   for (const o of ['won', 'lost']) {
     // A (first person) + RISE (the camera pulls back over his shoulder: he appears where the viewpoint was) + WALK.
-    const a = raw(`${o}.mp4`), r = raw('rise.mp4'), b = raw('walk.mp4');
-    if (![a, r, b].every((f) => fs.existsSync(f))) { console.log(`[padship] ${o}: clips missing, not baked`); continue; }
-    const da = seconds(a), dr = seconds(r), db = seconds(b);
-    const total = +(da + dr + db).toFixed(3);
+    const a = raw(`${o}.mp4`), b = raw('walk.mp4');
+    if (![a, b].every((f) => fs.existsSync(f))) { console.log(`[padship] ${o}: clips missing, not baked`); continue; }
+    const da = seconds(a), db = seconds(b);
+    const total = +(da + db).toFixed(3);
     const norm = (src, out) => ffmpeg(['-i', src, '-vf', `scale=${W}:${H}:flags=lanczos,fps=${FPS},format=yuv420p`, '-an', '-c:v', 'libx264', '-crf', '14', '-preset', 'slow', out], `norm ${path.basename(src)}`);
-    const na = path.join(tmp, `${o}-a.mp4`), nr = path.join(tmp, 'rise-r.mp4'), nb = path.join(tmp, `walk-b.mp4`);
-    norm(a, na); norm(r, nr); norm(b, nb);
+    const na = path.join(tmp, `${o}-a.mp4`), nb = path.join(tmp, `walk-b.mp4`);
+    norm(a, na); norm(b, nb);
+    // The walk's last 0.6 s blend into the interface's own picture, so the film ENDS on it exactly (the model lands close,
+    // not on the pixel) and the live interface takes over from the same frame.
+    const nbEnd = path.join(tmp, 'walk-b-end.mp4');
+    const fadeAt = Math.max(0, db - 0.6).toFixed(3);
+    ffmpeg(['-i', nb, '-loop', '1', '-t', String(db), '-i', raw('interface-end.png'), '-filter_complex',
+      `[1:v]scale=${W}:${H},fps=${FPS},format=yuva420p,fade=t=in:st=${fadeAt}:d=0.6:alpha=1[s];[0:v][s]overlay=shortest=1,format=yuv420p`,
+      '-an', '-c:v', 'libx264', '-crf', '14', '-preset', 'slow', nbEnd], 'walk into the interface');
+    fs.renameSync(nbEnd, nb);
     const list = path.join(tmp, `${o}-list.txt`);
-    fs.writeFileSync(list, [na, nr, nb].map((f) => `file '${f.replace(/\\/g, '/')}'`).join('\n') + '\n');
+    fs.writeFileSync(list, [na, nb].map((f) => `file '${f.replace(/\\/g, '/')}'`).join('\n') + '\n');
     const joined = path.join(tmp, `${o}-joined.mp4`);
     ffmpeg(['-f', 'concat', '-safe', '0', '-i', list, '-c', 'copy', joined], `${o} join`);
     // The sound bed: the ship's hum under all of it, the chair and steps from the start, the hatch as he steps through.
@@ -202,9 +222,9 @@ export function bake() {
       parts.push(`[${n}:a]volume=${gain},adelay=${Math.round(at * 1000)}|${Math.round(at * 1000)},apad[s${n}]`);
     };
     add('ship-amb', 0, 1.0);
-    add('stand', o === 'lost' ? 0.5 : 0.2, 3.0);
-    add('stand', da + 0.4, 2.0); // his steps as he rises into the picture
-    add('hatch', Math.max(0, da + dr - 0.6), 1.6);
+    // The chair and his steps when he gets up (the start of the walk), the hatch as he reaches it.
+    add('stand', da + 0.2, 3.0);
+    add('hatch', Math.max(0, da + db * 0.55), 1.6);
     const out = path.join(OUT, `ship-${o}.mp4`);
     if (parts.length) {
       const labels = parts.map((p) => p.match(/\[s\d+\]$/)[0]).join('');

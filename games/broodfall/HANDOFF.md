@@ -1658,3 +1658,10 @@ screenshot of the interface."
   behind standing where the camera was) pulls the camera back over his shoulder so he rises into the picture where the viewpoint
   stood; the walk starts from OVER. Film = A + rise + walk (about 15 s). Joins: A->rise 34.7 dB, rise->walk 32.1 dB
   (`notes/art-review/pad/ship-rise-joins.jpg`). The hatch-still walk is kept in `art-src-new/pad-ship/v2/`.
+- **Restructured (Oct 2 2026, Collins: "this new part of the video starts by zooming back out of the first-person perspective,
+  then we watch him get up and walk to the other display"):** part 2 = the PULL-OUT (`won`/`lost`: part 1's last frame ->
+  the SEATED still, him at the console from behind, the pad where he set it down; he stays seated) + one third-person WALK
+  (SEATED -> the interface screenshot: he gets up, walks through the hatch to the one table), the walk's last 0.6 s blended into
+  the screenshot so the film ends on it exactly. About 10 s. Joins: part 1 -> pull-out 36.1 dB, pull-out -> walk 32.6 dB,
+  film end -> interface 42.8 dB (`notes/art-review/pad/ship-joins-v4.jpg`). Superseded takes: `art-src-new/pad-ship/v3/`
+  (the turn/rise version), `v4/` (a walk that drew two tables). Stills now at medium quality (`PADSHIP_QUALITY`).
