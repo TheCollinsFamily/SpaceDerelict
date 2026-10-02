@@ -89,6 +89,9 @@ export interface LimbVariantArt extends LimbSide {
   /** Drawn this much bigger than its ground calls for (a superstructure towers over its block). */
   size?: number;
   back?: LimbSide;
+  /** An elbow's or an L's other two views (LimbArt.side, LimbArt.backSide). */
+  side?: LimbSide;
+  backSide?: LimbSide;
 }
 /**
  * pad: a tile baked on a picture bigger than itself by this many pixels on each side (across,
@@ -278,7 +281,7 @@ export class BoardArtSet {
       jobs.push(get(art.atlas).then((atlas) => { if (atlas) set.limbs.set(id, { art, atlas }); }));
       // Its upgrade looks, each drawn like a limb of its own: `<family>@<key>`, loaded the first time a limb earns it (limbVariant).
       for (const [key, v] of Object.entries(art.variants ?? {})) {
-        set.variantArt.set(`${id}@${key}`, { ...v, on: art.on, ...(art.flat ? { flat: true } : {}), ...(art.facing ? { facing: true } : {}) });
+        set.variantArt.set(`${id}@${key}`, { ...v, on: art.on, ...(art.flat ? { flat: true } : {}), ...(art.facing ? { facing: true } : {}), ...(art.plate ? { plate: art.plate } : {}) });
       }
     }
     for (const name of ['effects', 'parts', 'tongue'] as const) {

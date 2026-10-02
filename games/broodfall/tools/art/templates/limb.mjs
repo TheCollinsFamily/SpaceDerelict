@@ -20,7 +20,7 @@ import { figure, findFigures } from '../lib/sheet.mjs';
 import { diffThumb, dropSpecks, fringe, keyClip, keyOf, pick, thumb, unionBox } from '../lib/key.mjs';
 import { GROUNDS, packAtlas, reviewFrames, reviewSheet } from '../lib/atlas.mjs';
 import { FILL, drawCell, footingOf, markOf, spill } from '../lib/foot.mjs';
-import { ART, REVIEW, ROOT, SRC, putEntry } from '../lib/manifest.mjs';
+import { ART, REVIEW, ROOT, SRC, putEntry, readManifest } from '../lib/manifest.mjs';
 
 const FPS = 12;
 /** Frames kept of each clip; a BIG limb keeps two fewer of its death (its frames are twice the pixels, and a withering is slow). */
@@ -453,6 +453,12 @@ export function bakeLimb(family) {
     ...(sideV ? { side: at(sideV, nFront + nBack) } : {}),
     ...(backSide ? { backSide: at(backSide, nFront + nBack + nSide) } : {}),
   };
+  // A limb drawn anew for its ground keeps only the upgrade looks drawn for that ground (`ground: true`, tools/art/
+  // templates/limb-looks.mjs): the old drawing's looks stood on the old ground (they are kept in public/art/limbs-legacy/).
+  if (l.plate) {
+    const old = readManifest().limbs?.[family]?.variants ?? {};
+    entry.variants = Object.fromEntries(Object.entries(old).filter(([, v]) => v.ground));
+  }
   putEntry('limbs', family, entry);
 
   fs.mkdirSync(path.join(REVIEW, 'limbs'), { recursive: true });

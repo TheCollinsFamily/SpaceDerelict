@@ -54,6 +54,12 @@ const TEMPLATES = {
     const { makeShapedLimb } = await import('./templates/limb-shaped.mjs');
     return settle(ids, 3, (id) => makeShapedLimb(id, { bakeOnly: flags.has('--bake'), stillsOnly: flags.has('--stills') }));
   },
+  // The upgrade looks a limb can reach (Oct 2 2026, templates/limb-looks.mjs): looks <families> [--only=bone,swarm] [--stills|--bake].
+  looks: async () => {
+    const { makeLooks } = await import('./templates/limb-looks.mjs');
+    const only = [...flags].find((f) => f.startsWith('--only='))?.slice(7).split(',') ?? [];
+    return settle(ids, 2, (id) => makeLooks(id, { only, bakeOnly: flags.has('--bake'), stillsOnly: flags.has('--stills') }));
+  },
   // Upgrade looks (tools/art/limb-variants.mjs, templates/limb-variant.mjs): variant <families> [--only=bone,swarm] [--stills|--bake].
   variant: async () => {
     const { makeLimbVariants } = await import('./templates/limb-variant.mjs');

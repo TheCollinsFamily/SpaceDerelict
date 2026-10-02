@@ -337,6 +337,22 @@ for (const [family, o] of Object.entries(GROUND)) {
   Object.assign(l, { srcDir: `${family}-ground`, big: !!o.big, ...o });
 }
 
+/**
+ * THE WORKING PART of each limb, named in the words of its upgrade looks (tools/art/templates/limb-looks.mjs):
+ * what a SWARM look multiplies, a REACH look stretches, a BONE look clads.
+ */
+const PARTS = {
+  spitter: 'its stalk and nozzle', lasher: 'its whip-like tendrils', spine: 'its row of chitin spines', impaler: 'its harpoon rail',
+  quill: 'its fans of quills', skipper: 'its mortar tube', bombard: 'its mortar barrel', blighter: 'its chimney and vent pipes',
+  mister: 'its nozzles', ember: 'its fuel sac and nozzle', maw: 'its mouth and head', swamp: 'its pool', burster: 'its cluster of sacs',
+  lobber: 'its sling arm', frond: 'its fronds', prism: 'its lens and claw', ocular: 'its eyestalk', net: 'its hand of tendons',
+  tangler: 'its web bed', ward: 'its dome', choir: 'its banks of pipes', brood: 'its egg sac', hatch: 'its burrow mouth',
+  sling: 'its catapult arm', lure: 'its pitcher bloom', conduit: 'its bent marrow pipe', tap: 'its spike of bone', mitosis: 'its two buds',
+  reliquary: 'its casket', press: 'its screw press', amp: 'its ribbed horn', mosaic: 'its tiled disc', twin: 'its two glands',
+  capacitor: 'its banded sac', boomerang: 'its crescent of bone', sprout: 'its little stalk', lance: 'its hose and nozzle', cage: 'its cage of ribs',
+};
+for (const l of LIMBS) if (PARTS[l.family]) l.part = PARTS[l.family];
+
 /** Design sheets: one per theme, on that theme's background colour. */
 export const LIMB_SHEETS = Object.keys(THEMES).map((t) => ({
   slug: `limbs-${t}`, theme: t, families: LIMBS.filter((l) => l.theme === t).map((l) => l.family),
