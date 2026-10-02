@@ -29,6 +29,7 @@ import { FxLayer, type FxView } from './fx';
 import { CorpseFx, mainCaste, type BodyView } from './corpseFx';
 import { LimbFates } from './limbFx';
 import { MAW_FIRE_SECONDS, MawTongues, mawFireShare, type TongueView } from './mawTongue';
+import { Flamethrowers, type Thrower } from './flamethrower';
 import { mawMouthFrame } from './mawMouth';
 import { CreepLife, GateArt, PlinthRise, PodArt, Skyline } from './boardArt';
 import { coreStageOf } from './coreStage';
@@ -275,6 +276,10 @@ export class IsoRenderer extends Renderer {
   private fates: LimbFates;
   /** The Maw's tongue, and the bodies it reels in (src/render/mawTongue.ts). */
   private tongues: MawTongues;
+  /** The Flametroopers' fire (src/render/flamethrower.ts): from the nozzle tip, frame by frame. */
+  private flames: Flamethrowers;
+  /** The troopers drawn this frame, for the fire. */
+  private throwers: Thrower[] = [];
   /** The Maws that struck this frame (a body eaten beside the one aimed at is reeled in by the same Maw). */
   private mawStruck: Tower[] = [];
   /** The idle clock when the tongues last moved, and how far it moved this frame (smooth, frozen by a pause). */
@@ -297,6 +302,7 @@ export class IsoRenderer extends Renderer {
     this.fx.statusIn(this.sorted);
     this.fates = new LimbFates(art);
     this.tongues = new MawTongues(art, this.sorted);
+    this.flames = new Flamethrowers(this.sorted);
     this.life = new CreepLife(art);
     this.podArt = new PodArt(art);
     this.gateArt = new GateArt(art);
@@ -316,7 +322,7 @@ export class IsoRenderer extends Renderer {
     this.aimBox.addChild(this.aimG);
     this.marksBox.addChild(this.marksG);
     this.marksBox.scale.set(K);
-    this.world.addChild(this.floors, this.skyline.under, this.skyline.smoke, this.creepFloor, this.decalBox, this.flat, this.shadeBox, this.groundBox, this.fx.ground, this.corpseFx.ground, this.sorted, this.ghosts, this.fx.air, this.fx.glow, this.corpseFx.glow, this.aimBox, this.marksBox);
+    this.world.addChild(this.floors, this.skyline.under, this.skyline.smoke, this.creepFloor, this.decalBox, this.flat, this.shadeBox, this.groundBox, this.fx.ground, this.corpseFx.ground, this.sorted, this.ghosts, this.fx.air, this.fx.glow, this.flames.air, this.flames.glow, this.corpseFx.glow, this.aimBox, this.marksBox);
     // With the effects drawn as pictures, the base class leaves out its clouds, caltrops and pip dots.
     this.fxArt = this.fx.ready();
     this.pipDots = !this.art.fx.has('parts');
@@ -603,7 +609,13 @@ export class IsoRenderer extends Renderer {
     this.syncCore(sim, dtReal);
     this.syncNodes(sim);
     this.syncLimbs(sim, dt);
+    this.throwers = [];
     this.syncUnits(sim, dt);
+    // The Flametroopers' fire, from the nozzles just placed; flames on your units in a stream.
+    this.flames.update(dtReal, this.throwers, sim.flameBurnt.map((b) => {
+      const q = project(this.geo, b.x, b.y, this.heightAt(sim, b.x, b.y));
+      return { x: q.x, y: q.y - 6, r: 7 };
+    }));
     this.drawCommand(sim, dtReal);
     this.drawTownsfolk(sim, dtReal);
     this.tongues.update(this.smoothDt, this.tongueView(sim));
@@ -2016,6 +2028,17 @@ export class IsoRenderer extends Renderer {
       }
       v.ghost.visible = !hidden && !e.burrowed;
       v.sprite.zIndex = depth(g, e.pos.x, e.pos.y) * 100 + (air ? 400 : 50);
+      if (e.kind === 'flametrooper' && v.sprite.visible) {
+        const s = v.sprite;
+        const ground = project(g, e.pos.x, e.pos.y, this.heightAt(sim, e.pos.x, e.pos.y));
+        const to = e.flameTo ? project(g, e.flameTo.x, e.flameTo.y, this.heightAt(sim, e.flameTo.x, e.flameTo.y)) : null;
+        this.throwers.push({
+          id: e.id, pos: { x: s.position.x, y: s.position.y }, anchor: { x: s.anchor.x, y: s.anchor.y }, scaleX: s.scale.x, scaleY: s.scale.y,
+          frame: art.frame, view, at: pick.clip === strike ? pick.at : null,
+          // The stream runs low over the ground, at about the height the nozzle is held.
+          to: to ? { x: to.x, y: to.y - r * UNIT_PX * 0.35 } : null, ground, z: v.sprite.zIndex, k: (g.a * Math.SQRT2) / g.cell,
+        });
+      }
       // It stands ON the ground: a soft shadow under its feet (a flier's is drawn on the ground below it).
       const onGround = project(g, e.pos.x, e.pos.y, this.heightAt(sim, e.pos.x, e.pos.y));
       const sw = 2 * r * UNIT_PX * 1.25;
@@ -2891,46 +2914,6 @@ export class IsoRenderer extends Renderer {
       const from = at(q.from.x, q.from.y, 8);
       const to = at(q.to.x, q.to.y, 6);
       g.moveTo(from.x, from.y).lineTo(to.x, to.y).stroke({ width: 1.6, color: 0xf4ead0, alpha: Math.min(1, q.ttl * 8) });
-    }
-    // A FLAMETROOPER's stream (Oct 2 2026): a flickering tapered tongue of fire from its nozzle to where the stream
-    // reaches, widening as it goes, hot yellow inside orange, with a few licks of flame along it. Drawn by code.
-    for (const e of sim.enemies) {
-      if (!e.flameTo) continue;
-      const a = at(e.pos.x, e.pos.y, 10);
-      const b = at(e.flameTo.x, e.flameTo.y, 6);
-      const dx = b.x - a.x;
-      const dy = b.y - a.y;
-      const len = Math.hypot(dx, dy) || 1;
-      const nx = -dy / len;
-      const ny = dx / len;
-      const t = this.pulse * 40 + e.id;
-      const tongue = (w: number, reach: number, col: number, alpha: number): void => {
-        const steps = 7;
-        const left: Pt[] = [];
-        const right: Pt[] = [];
-        for (let i = 0; i <= steps; i++) {
-          const f = (i / steps) * reach;
-          const half = (1.5 + w * f) * (1 + 0.18 * Math.sin(t * 1.7 + i * 1.3));
-          const wob = Math.sin(t + i * 0.9) * 1.6 * f;
-          const cx = a.x + dx * f + nx * wob;
-          const cy = a.y + dy * f + ny * wob;
-          left.push({ x: cx + nx * half, y: cy + ny * half });
-          right.push({ x: cx - nx * half, y: cy - ny * half });
-        }
-        const pts = [...left, ...right.reverse()];
-        g.moveTo(pts[0].x, pts[0].y);
-        for (const p of pts.slice(1)) g.lineTo(p.x, p.y);
-        g.closePath().fill({ color: col, alpha });
-      };
-      tongue(9, 1, 0xd8461c, 0.55);
-      tongue(6, 0.92, 0xf28a2a, 0.75);
-      tongue(3, 0.8, 0xffd86a, 0.85);
-      for (let k = 0; k < 4; k++) {
-        const f = ((t * 0.05 + k * 0.27) % 1);
-        const px = a.x + dx * f + nx * Math.sin(t + k * 2) * 6 * f;
-        const py = a.y + dy * f + ny * Math.sin(t + k * 2) * 6 * f - f * 5;
-        g.circle(px, py, 1.5 + 3 * f).fill({ color: 0xffb040, alpha: 0.6 * (1 - f) });
-      }
     }
     const lobbed = (from: Pt, to: Pt, f: number, arc: number, r: number, col: number): void => {
       const a = at(from.x, from.y, this.muzzle(sim, from.x, from.y));

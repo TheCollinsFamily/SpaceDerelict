@@ -1417,12 +1417,7 @@
      "SW": {
       "start": 82,
       "count": 12,
-      "fps": 3,
-      "anchor": [
-       0.5,
-       0.9155
-      ],
-      "scale": 1.0269
+      "fps": 3
      },
      "W": {
       "start": 94,
@@ -1436,13 +1431,13 @@
      },
      "N": {
       "start": 118,
-      "count": 12,
-      "fps": 3
+      "count": 10,
+      "fps": 12
      }
     },
     "death": {
      "SW": {
-      "start": 130,
+      "start": 128,
       "count": 12,
       "fps": 3,
       "anchor": [
@@ -1452,7 +1447,7 @@
       "scale": 1.1094
      },
      "S": {
-      "start": 130,
+      "start": 128,
       "count": 12,
       "fps": 3,
       "anchor": [
@@ -1462,7 +1457,7 @@
       "scale": 1.1094
      },
      "W": {
-      "start": 130,
+      "start": 128,
       "count": 12,
       "fps": 3,
       "anchor": [
@@ -1472,7 +1467,7 @@
       "scale": 1.1094
      },
      "NW": {
-      "start": 130,
+      "start": 128,
       "count": 12,
       "fps": 3,
       "anchor": [
@@ -1482,7 +1477,7 @@
       "scale": 1.1094
      },
      "N": {
-      "start": 130,
+      "start": 128,
       "count": 12,
       "fps": 3,
       "anchor": [
@@ -1494,12 +1489,12 @@
     },
     "hit": {
      "S": {
-      "start": 142,
+      "start": 140,
       "count": 8,
       "fps": 3.43
      },
      "SW": {
-      "start": 150,
+      "start": 148,
       "count": 8,
       "fps": 5.33,
       "anchor": [
@@ -1509,7 +1504,7 @@
       "scale": 1.0475
      },
      "W": {
-      "start": 158,
+      "start": 156,
       "count": 8,
       "fps": 2.4,
       "anchor": [
@@ -1519,12 +1514,12 @@
       "scale": 1.0143
      },
      "NW": {
-      "start": 166,
+      "start": 164,
       "count": 8,
       "fps": 2.29
      },
      "N": {
-      "start": 174,
+      "start": 172,
       "count": 8,
       "fps": 2.53
      }

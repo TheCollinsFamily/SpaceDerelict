@@ -148,6 +148,106 @@ try {
   });
   check(closer.length < turn.n || Math.min(...closer) < Math.min(...turn.heading), 'they head for the body (closer, or killed by limbs on the way)', `${turn.heading} -> ${closer}`);
   await page.screenshot({ path: join(out, 'flame-4-turned-on-the-base.png') });
+
+  // CLOSE-UPS (Oct 2 2026, Collins: the flame "doesn't track the front of the nozzle"): one trooper on a quiet
+  // street hosing a warrior set down in each of eight directions round it (every drawn view and its mirror), at
+  // two camera turns. Each a crop round the trooper, mid-stream; then a sheet of all of them.
+  // And the SIZE: the trooper, a soldier and a militiaman beside the width of one street cell, on the screen.
+  const shotsTaken = [];
+  const closeups = async (tag) => {
+    // The board alone in the shots: every page element over the canvas hidden.
+    await page.evaluate(() => { for (const el of document.querySelectorAll('body *')) if (!(el instanceof HTMLCanvasElement) && !el.querySelector('canvas')) el.style.visibility = 'hidden'; });
+    for (const turn of [0, 1]) {
+      if (turn) { await page.evaluate(() => window.broodfall.turnBy(1)); await page.waitForTimeout(1500); }
+      for (let k = 0; k < 8; k++) {
+        const where = await page.evaluate((k) => {
+          const b = window.broodfall; const s = b.sim;
+          s.enemies.length = 0; s.broodlings.length = 0; s.spawnQueue.length = 0;
+          s.towers = s.towers.filter((t) => t.family !== 'hatch' && t.family !== 'brood');
+          // A street cell well inside the board, a little way out from the body.
+          const body = s.bodyPoint();
+          let c0 = -1; let best = 1e9;
+          for (let c = 0; c < s.map.cells.length; c++) {
+            if (s.map.cells[c] !== 1) continue;
+            const p = s.cellCenter(c);
+            const d = Math.hypot(p.x - body.x, p.y - body.y);
+            if (d > 90 && d < best) { best = d; c0 = c; }
+          }
+          const at = s.cellCenter(c0);
+          const t = s.spawnEnemy('flametrooper', s.gates[0]); t.pos = { ...at };
+          const a = (k / 8) * Math.PI * 2;
+          const w = { x: at.x + Math.cos(a) * 34, y: at.y + Math.sin(a) * 34 };
+          s.broodlings.push({ id: 995000 + k, motherId: -1, pos: w, hp: 9999, maxHp: 9999, cooldown: 99, guard: { ...w }, orders: [{ kind: 'hold' }] });
+          for (let i = 0; i < 3; i++) b.step(1);
+          b.renderer.resetView?.();
+          const c = b.renderer.clientOf(s, at.x, at.y);
+          b.renderer.zoomAt(c.x, c.y, 3);
+          return { id: t.id };
+        }, k);
+        await page.waitForTimeout(900);
+        // Keep it firing a few frames with the page drawing, then hold the shot mid-stream.
+        for (let i = 0; i < 4; i++) { await page.evaluate(() => { const s = window.broodfall.sim; s.spawnQueue.length = 0; s.enemies = s.enemies.filter((e) => e.kind === 'flametrooper'); s.broodlings.forEach((u) => { u.hp = 9999; }); window.broodfall.step(1); }); await page.waitForTimeout(70); }
+        const box = await page.evaluate((id) => {
+          const b = window.broodfall; const s = b.sim; const e = s.enemies.find((x) => x.id === id);
+          if (!e) return null;
+          const c = b.renderer.clientOf(s, e.pos.x, e.pos.y);
+          return { x: Math.round(c.x), y: Math.round(c.y), firing: !!e.flameTo };
+        }, where.id);
+        if (!box) continue;
+        const file = join(out, `flame-close-${tag}-turn${turn}-dir${k}.png`);
+        await page.screenshot({ path: file, clip: { x: Math.max(0, box.x - 170), y: Math.max(0, box.y - 150), width: 340, height: 260 } });
+        shotsTaken.push({ file, firing: box.firing });
+      }
+    }
+    await page.evaluate(() => window.broodfall.turnBy(-1));
+    await page.waitForTimeout(1200);
+  };
+  await closeups('jet');
+  check(shotsTaken.every((x) => x.firing), 'every close-up caught the trooper firing', `${shotsTaken.filter((x) => x.firing).length}/${shotsTaken.length}`);
+
+  // The size against a street cell, at three zooms.
+  const sizes = [];
+  for (const zoom of [1, 2, 3]) {
+    sizes.push(await page.evaluate((zoom) => {
+      const b = window.broodfall; const s = b.sim;
+      s.enemies.length = 0; s.broodlings.length = 0;
+      const body = s.bodyPoint();
+      let c0 = -1;
+      for (let c = 0; c < s.map.cells.length && c0 < 0; c++) {
+        if (s.map.cells[c] !== 1) continue;
+        const p = s.cellCenter(c);
+        if (Math.hypot(p.x - body.x, p.y - body.y) > 150) c0 = c;
+      }
+      const at = s.cellCenter(c0);
+      const kinds = ['flametrooper', 'soldier', 'militia'];
+      const ids = kinds.map((k, i) => { const e = s.spawnEnemy(k, s.gates[0]); e.pos = { x: at.x + (i - 1) * 40, y: at.y }; return e.id; });
+      b.renderer.resetView?.();
+      const c = b.renderer.clientOf(s, at.x, at.y);
+      b.renderer.zoomAt(c.x, c.y, zoom);
+      b.step(1);
+      // A street cell's width on the screen: the length of one cell edge (the lane is one cell across).
+      const P = s.cfg.cellPx;
+      const a0 = b.renderer.clientOf(s, at.x - P / 2, at.y - P / 2);
+      const a1 = b.renderer.clientOf(s, at.x + P / 2, at.y - P / 2);
+      const cell = Math.hypot(a1.x - a0.x, a1.y - a0.y);
+      const units = b.renderer.units;
+      // The figure's own width: its frame on the screen times the share of the frame its body fills (measured on the
+      // atlases, the mean of its SW, W and S walking frames: trooper 0.43, soldier 0.49, militia 0.40).
+      const share = [0.43, 0.49, 0.40];
+      const w = ids.map((id, i) => { const v = units.get(id); if (!v) return null; const bb = v.sprite.getBounds(); return Math.round(bb.width * share[i]); });
+      return { zoom, cell: Math.round(cell), trooper: w[0], soldier: w[1], militia: w[2] };
+    }, zoom));
+    await page.waitForTimeout(400);
+  }
+  for (const z of sizes) console.log(`  size at zoom ${z.zoom}: street cell ${z.cell}px, trooper ${z.trooper}px, soldier ${z.soldier}px, militia ${z.militia}px`);
+  check(sizes.every((z) => z.trooper && z.soldier && z.trooper <= z.soldier * 0.8), 'the trooper is clearly smaller than a soldier', JSON.stringify(sizes.map((z) => [z.trooper, z.soldier])));
+  check(sizes.every((z) => z.trooper && z.trooper <= z.cell * 0.7), 'a trooper takes well under a street cell', JSON.stringify(sizes.map((z) => [z.trooper, z.cell])));
+  console.log(`  two abreast: ${sizes.map((z) => `${z.trooper * 2}px in a ${z.cell}px cell`).join(', ')}`);
+  // THE OTHER OPTION, for the side-by-side: the jet drawn from particles (?flame=particles), the same close-ups.
+  await page.goto(`http://localhost:${PORT}/?autostart=1&seed=42&speed=0&biome=suburb&landing=0&flame=particles`, { timeout: 180000, waitUntil: 'domcontentloaded' });
+  await page.waitForFunction(() => window.broodfall !== undefined && window.broodfall.biome() !== '', null, { timeout: 90000 });
+  await page.evaluate(() => { window.broodfall.step(2); });
+  await closeups('particles');
 } finally {
   await ctx.close();
   await browser.close();
@@ -162,5 +262,24 @@ try {
   }
   rmSync(vidDir, { recursive: true, force: true });
 } catch (e) { console.log('  film failed:', e.message); }
+
+// The sheets: every close-up of the filmed jet (both camera turns), and the two options side by side (turn 0).
+try {
+  const tile = (f) => ['-i', f];
+  const jet = [0, 1].flatMap((t) => [...Array(8).keys()].map((k) => join(out, `flame-close-jet-turn${t}-dir${k}.png`)));
+  const rows = (files, per) => {
+    const parts = []; const labels = [];
+    for (let r = 0; r * per < files.length; r++) {
+      const ids = files.slice(r * per, (r + 1) * per).map((_, j) => `[${r * per + j}:v]`);
+      parts.push(`${ids.join('')}hstack=inputs=${ids.length}[r${r}]`); labels.push(`[r${r}]`);
+    }
+    return `${parts.join(';')};${labels.join('')}vstack=inputs=${labels.length}`;
+  };
+  execSync(`ffmpeg -loglevel error -y ${jet.map((f) => `-i "${f}"`).join(' ')} -filter_complex "${rows(jet, 4)}" -q:v 3 "${join(out, 'flame-close-sheet.jpg')}"`);
+  const pairs = [...Array(8).keys()].flatMap((k) => [join(out, `flame-close-jet-turn0-dir${k}.png`), join(out, `flame-close-particles-turn0-dir${k}.png`)]);
+  execSync(`ffmpeg -loglevel error -y ${pairs.map((f) => `-i "${f}"`).join(' ')} -filter_complex "${rows(pairs, 4)}" -q:v 3 "${join(out, 'flame-options-jet-vs-particles.jpg')}"`);
+  console.log(`  sheets: ${join(out, 'flame-close-sheet.jpg')}, ${join(out, 'flame-options-jet-vs-particles.jpg')}`);
+  void tile;
+} catch (e) { console.log('  sheets failed:', e.message.slice(0, 200)); }
 console.log(failures.length ? `\n${failures.length} FAILED: ${failures.join('; ')}` : '\nall passed');
 process.exit(failures.length ? 1 : 0);

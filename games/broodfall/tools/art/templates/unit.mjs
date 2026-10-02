@@ -496,6 +496,14 @@ export function bakeUnit(kind) {
         c.box = unionBox(c.frames);
       }
     }
+    // A clip whose later part goes wrong in one view (the flametrooper seen from behind swings its nozzle out to
+    // the side: Oct 2 2026) keeps only its opening share there: `clipShare: { attack: { N: 0.35 } }` on the unit.
+    const share = u.clipShare?.[c.anim]?.[c.v];
+    if (share && c.frames.length > 4) {
+      c.frames = c.frames.slice(0, Math.max(4, Math.round(c.frames.length * share)));
+      c.seconds = c.frames.length / FPS;
+      console.log(`[unit] ${kind} ${c.anim} ${c.v}: only the first ${c.frames.length} frames kept (clipShare)`);
+    }
     const win = c.anim.startsWith('walk') && c.anim !== 'walk' ? windowOf(b, null) : windowOf(b, c.anim === 'walk' ? null : c.box);
     const kept = pick(c.frames, KEEP[c.anim] ?? KEEP.walk).map((f) => resize(crop(f, Math.round(win.x0), Math.round(win.y0), win.s, win.s), F, F));
     const rec = record(win, b, kept.length, Number((kept.length / c.seconds).toFixed(2)));

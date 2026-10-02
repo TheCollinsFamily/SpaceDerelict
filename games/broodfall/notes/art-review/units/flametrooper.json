@@ -1,7 +1,7 @@
 {
  "kind": "flametrooper",
- "frames": 182,
- "atlasKB": 356,
+ "frames": 180,
+ "atlasKB": 352,
  "pages": 1,
  "failed": 0,
  "checks": [
@@ -173,7 +173,7 @@
   {
    "name": "attack SW: nothing cut off",
    "ok": true,
-   "value": "window grown 1.03x"
+   "value": "in the walk frame"
   },
   {
    "name": "attack SW: no background tint on the outline",
@@ -183,7 +183,7 @@
   {
    "name": "attack SW: stays on the spot",
    "ok": true,
-   "value": "0.0% of the frame"
+   "value": "0.6% of the frame"
   },
   {
    "name": "attack W: nothing cut off",
@@ -198,7 +198,7 @@
   {
    "name": "attack W: stays on the spot",
    "ok": true,
-   "value": "0.3% of the frame"
+   "value": "4.6% of the frame"
   },
   {
    "name": "attack NW: nothing cut off",
@@ -213,7 +213,7 @@
   {
    "name": "attack NW: stays on the spot",
    "ok": true,
-   "value": "2.9% of the frame"
+   "value": "3.0% of the frame"
   },
   {
    "name": "attack N: nothing cut off",
@@ -228,7 +228,7 @@
   {
    "name": "attack N: stays on the spot",
    "ok": true,
-   "value": "0.0% of the frame"
+   "value": "3.3% of the frame"
   },
   {
    "name": "death SW: nothing cut off",

@@ -1412,3 +1412,29 @@ Collins's idea, built whole: DESIGN.md "SHELTERS AND THE INFESTOR; THE HARRIER" 
   stage 2-3 and were paid 66-223 meat; the bot does not escort its Infestors (5 lost to the defenders and the hive) and
   buys early, and a shelter by the body takes a 2x2 of roof. So the scripted player shows the payoff only when it gets
   there; whether +10/20/35% is enough for the risk is a playtest call (COLLINS).
+- **Fire, nozzle and size, redone (Oct 2 2026; Collins on the first film: "the fire effects are awful ... they don't
+  track the front of the nozzle ... these models are too large, barely fitting in a lane ... keep the nozzle facing
+  forward"):**
+  - **Animation:** the attack clips were re-made with the nozzle held still, pointing straight along the facing (the
+    motion prompt in `tools/art/units.mjs`). Seen from behind (N) the clip swings the nozzle out after a second, so
+    only its opening is kept (`clipShare: { attack: { N: 0.2 } }`, honoured by `bakeUnit` in templates/unit.mjs).
+  - **The nozzle tip is FOUND, not guessed:** `node tools/art/nozzles.mjs` finds the blue pilot light on every attack
+    frame of every view (the end of the blue nearest the body, below the helmet: the visor glints blue), takes each
+    view's median as the tip, treats a frame far from it (a flare, a glint) as an outlier, and fails on a missing light
+    or a jump. It writes `src/render/nozzles.ts` (per view, per frame) and the check sheet
+    `notes/art-review/units/flametrooper-nozzles.jpg`. Re-run it after any re-bake of the trooper.
+  - **The fire** (`src/render/flamethrower.ts`): a real flamethrower jet filmed on RFab (`node tools/art/flamejet.mjs`:
+    a still and a 4 s looping clip on black, baked to 16 frames, `public/art/fx/flamejet.webp`), drawn added from the
+    nozzle tip toward what the stream reaches, two frames layered; a flickering pilot flare at the tip; an orange glow
+    cast on the ground under it; black smoke rolling off the far end; embers; a short ignition (it grows out of the
+    tip with a bigger flare) and a sputter when it stops; little flames on each of your units in a stream
+    (`Sim.flameBurnt`). Seen from behind, the jet is drawn just under the trooper. Reduce motion: one still frame, no
+    smoke, embers or flicker. The other option tried (`?flame=particles`, the jet from soft particles) is kept for
+    comparison: `notes/screens/2026-10-02/flame-options-jet-vs-particles.jpg`; the filmed jet won (real flame texture
+    and licking edges; the particles read as a glowing worm).
+  - **Size:** r 4.5 (was 8; ENEMY_SIZE in render.ts and `r` in units.mjs). On the screen its figure is 19 px against a
+    soldier's 37 and a militiaman's 29, in a 32 px street cell (zoom 1; the same shares at zooms 2 and 3). It takes
+    about 0.6 of a lane. Two side by side (38 px) still do not fit in one cell: that would need r ~3.5, smaller than a
+    skitterling. Collins's call.
+  - **Checks:** `node tools/shot-flame.mjs` (13 checks: the beat, 16 close-ups at two camera turns all firing, the sizes
+    against a street cell at zooms 1-3) writes `flame-troopers.mp4`, `flame-close-sheet.jpg` and the options sheet.

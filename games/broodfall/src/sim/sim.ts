@@ -3662,7 +3662,11 @@ export class Sim {
     this.events.push({ kind: 'promoted', from, to });
   }
 
+  /** Your walking units a Flametrooper's stream touched this tick (the renderer sets them alight). */
+  flameBurnt: Vec[] = [];
+
   private updateEnemies(): void {
+    this.flameBurnt = [];
     this.auraSources = this.enemies.filter((x) => enemySpec(x.kind).royalAura && !x.burrowed);
     for (const e of [...this.enemies]) {
       const spec = enemySpec(e.kind);
@@ -4538,6 +4542,7 @@ export class Sim {
       if (d > f.range + 6) continue;
       if (d > 4 && (dx * ax + dy * ay) / (d * al) < f.coneCos) continue;
       this.hurtUnit(u, dps * DT);
+      this.flameBurnt.push({ x: u.pos.x, y: u.pos.y });
     }
     e.flameTo = { x: e.pos.x + (ax / al) * f.range, y: e.pos.y + (ay / al) * f.range };
     return true;

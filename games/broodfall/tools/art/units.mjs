@@ -98,12 +98,14 @@ export const UNITS = [
     weapon: 'Drill claws', attack: 'Tears with the drill claws.',
     basis: 'mole cricket', states: ['burrowed: only a travelling mound of broken street', 'surfacing out of the mound', 'dying'] },
   // FLAMETROOPER (Collins, Oct 2 2026): the hive's answer to your walking units. Its stream is drawn by code.
-  { kind: 'flametrooper', name: 'Flametrooper', caste: 'war', tier: 3, r: 8, hp: 85, body: 'human-like', key: 'green',
+  { kind: 'flametrooper', name: 'Flametrooper', caste: 'war', tier: 3, r: 4.5, hp: 85, body: 'human-like', key: 'green',
     job: 'Hunts your walking units first and hoses them with fire; only goes for the limbs and the core when none are in sight.',
     look: 'an upright regular in a long orange kaftan with gold braid, a dark heat-proof apron and thick gauntlets, a pointed dome helmet with a smoked heat visor, two squat brass fuel tanks strapped on its back joined by a hose to a stubby flamethrower held low in both hands, a small blue pilot flame at its nozzle',
     weapon: 'Flamethrower', attack: 'Hoses a short cone of fire in front of it. The stream of fire is drawn by code.',
-    attackMotion: 'The figure plants its feet, braces, levels the stubby nozzle straight ahead and turns it slowly a little to the left and a little to the right, its shoulders tense, then returns to exactly its starting pose. It is only aiming: the tool is switched off. Draw NO fire, NO flame, NO smoke, NO steam, NO sparks and NO puffs of any kind anywhere: only a small blue pilot light at the nozzle. The air around the figure stays completely clear. It stays the same size and in the same place the whole time.',
+    attackMotion: 'The figure stands braced with its feet planted, holding the stubby nozzle level in both hands, pointing straight ahead in the direction it faces. The nozzle does not move at all: it stays exactly where it is, aimed straight ahead, for the whole clip. Only small things move: its shoulders tense and settle, the hose to the tanks jolts a little, its head bobs slightly. Draw NO fire, NO flame, NO smoke, NO steam, NO sparks and NO puffs of any kind anywhere: only the small blue pilot light at the nozzle tip. The air around the figure stays completely clear. It stays the same size and in the same place the whole time.',
     basis: 'soldier ant', states: ['dying'],
+    // Seen from behind, the attack clips swing the nozzle out to its right after a second: only the opening is kept.
+    clipShare: { attack: { N: 0.2 } },
     design: { refs: ['units/flametrooper/soldier-ref.png'],
       prompt: 'One small soldier for a strategy game, drawn exactly in the style, proportions, colours and camera of the reference picture (seen from high above, looking down at an angle; cartoonish, chunky). It is the same kind of insect soldier as the reference: an upright regular in a long orange kaftan with gold braid and a pointed dome helmet, but its helmet has a smoked heat visor, it wears a dark heat-proof apron and thick gauntlets, and on its back are two squat brass fuel tanks joined by a hose to a stubby flamethrower it holds low in both hands, with a small blue pilot flame at the nozzle. No fire stream. It faces the lower left, caught mid-stride, its whole body in the picture.' } },
   { kind: 'stalker', name: 'Stalker', caste: 'war', tier: 3, r: 8, hp: 85, body: 'human-like',
