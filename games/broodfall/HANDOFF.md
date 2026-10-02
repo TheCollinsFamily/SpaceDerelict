@@ -1519,3 +1519,30 @@ there or fight the thing you clicked (they also know how to use the tunnel)". DE
   (`GAPS_MODE=nogroups`); the Broodmother stack 8/10 driven by individual orders, 8/10 by the roster alone
   (`stack,roster`). Clicks a person would make for the stack: 0-554 a run (27-46 a wave on most seeds) with
   individual orders, 0-80 (2-7 a wave) with the roster.
+
+## Science forward bases and creep care (Oct 2 2026; DESIGN.md "SCIENCE FORWARD BASES; CREEP CARE")
+
+Collins: "give the science faction units that can build spawning locations, and even their own towers if you don't deal
+with them, and then you need to mount attacks on these areas"; "the builders will need a bit more thought ... a spot on
+the side of any lane"; "the creep healing and making faster is great".
+- **Sim** (`src/sim/sim.ts`, search "SCIENCE FORWARD BASES"): `sendEngineers` (from wave 4, interest 10, every 50 s of
+  quiet), `engineerJob` (reinforce an untended station first), `stationSiteOk` / `stationDoor` / `stationSiteScore` (a
+  lot facing a street, or the edge of a street two or more wide; off creep, out of your reach and sight), `updateEngineer`
+  (muster, travel, flee, build, tend), `updateEscort` (its study party: researchers at its side, a dart battery from wave
+  6), `updateFixed` (the station: grows by age, parties nearer you, a war squad into every siege from stage 2, turrets
+  while tended), `updateTurret`. Kinds `engineer`, `fieldstation`, `sciturret` (`content/data.ts`, `fixed` = a building).
+  The bases roll their own dice (`baseRng`), so sending an engineer leaves the run's other draws alone.
+- **Creep care:** `creepPace` (25% faster on creep, in `walkTo` and when closing on prey), `creepCare` (2.5% max hp/s).
+- **Warriors** fight stations, turrets and engineers (`preyNear`), still not study parties. The scripted player mounts
+  a strike (`Autoplayer.strikeStations`) once it has 3 units. Requisition: Form 6-F, Field Station Clearance.
+- **Art:** the engineer, `tools/art/units.mjs` `engineer` (`BROODFALL_ART_SRC=<checkout>/art-src-new node
+  tools/art/make.mjs unit engineer --attack --death --hit`; drawn from the researcher's turnaround, copied to
+  `art-src-new/units/engineer/researcher-ref.png`; NOT steep: `refs/camera-example.png` was lost with art-src). The
+  station and its turret per tile set: `tools/art/stations.mjs` (as the shelters: the set's landmark sheet as reference;
+  being built, standing, fortified, wreck, turret -> `public/art/station/<set>/`; raw `art-src-new/station/`). Drawn by
+  `IsoRender.syncStations` on their lot like a landmark; the build ring, the stage pips and a ring to the next stage,
+  teal dart lines; the wreck until the creep digests it. Heal marks: `IsoRender.drawCreepCare`.
+- **Checks:** `tests/stations.test.ts` (sites, every engineer behaviour, the station's growth, parties, squad, turrets,
+  repair, warriors, darts, the count, creep care, determinism, the pictures). Browser beat `node tools/shot-stations.mjs`
+  (13 checks; screens `notes/screens/2026-10-02/stations-*.png`, film `stations.mp4`).
+- **Measure:** `GAPS_MODE=nostations` (no engineers), `nocreepcare`; the gaps rows now print `stations {...}`.

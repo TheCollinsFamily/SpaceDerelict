@@ -477,6 +477,54 @@ attacking you far from any response when you need quick response)."
     Institute's "seed labs" route), and whether a shelter should also be offered on defence missions' boards.
 - **Measured:** see HANDOFF.md "Shelters, the Infestor and the Harrier".
 
+## SCIENCE FORWARD BASES; CREEP CARE (Collins, Oct 2 2026 — BUILT Oct 2)
+
+Collins: "give the science faction units that can build spawning locations, and even their own towers if you don't
+deal with them, and then you need to mount attacks on these areas"; "the enemy can also build bases, causing you to
+need to be able to prepare to attack them, or they spawn more and more through the new bases"; "the builders will need
+a bit more thought than the other units in terms of their own intelligence ... my guess is just in a spot on the side
+of any lane?"; "the creep healing and making faster is great".
+
+**The ENGINEER** (science caste, 70 hp, slow). From wave 4 (engineerMinWave), once interest reaches 10, one is sent
+every 50 s of quiet while fewer than two stations stand or one stands untended. It sets out from a gate with an escort
+that is a STUDY PARTY ("it travels with an escort ... (joins a party)"): two researchers who walk at its side, and from
+wave 6 a dart battery that darts your units near it. Science, so the quiet between waves stays quiet. Its mind is a
+small state machine (src/sim/sim.ts updateEngineer):
+- *muster*: it waits a breath for its party to close up.
+- *travel*: it walks the quiet streets (the science caste's route round your guns) to its site's DOOR. Every step it
+  checks the site again: your creep over it, a new limb's reach, or your units in sight make it pick another site.
+- *flee*: hit with no escort left, or your strike force (3 units) at a station it has not half built: it runs for 6 s,
+  then re-plans; after 4 re-plans, or badly hurt, it goes home.
+- *build*: the station stands at once, WEAK (a quarter of its hp) and idle, and grows to full over 18 s. Kill or drive
+  off the engineer and the build stops where it is.
+- *tend*: it stays at the door, repairs its station (6 hp/s while none of your units is there) and raises its turrets.
+- A second engineer REINFORCES an untended station rather than found a new one; sites keep 7 cells from each other and
+  from an infested outpost.
+
+**Where it builds: at the side of a lane, never in it.** A site is a building LOT that faces a street (the station
+stands on the lot's roof, its door on the street: it never blocks a lane), or open ground beside a building where the
+street is two or more cells wide. Off your creep, 2 to 8 cells from its edge (never at your wall, never out of play),
+reachable from its door, outside your guns' reach and out of sight of your units. Scored: near your creep's edge,
+near bodies lying past it and a limb worth taking, room beside it for turrets, a square's side best.
+
+**The FIELD STATION** (650 hp, never moves) GROWS by age and so it is a threat that grows: stage 1 sends a study party
+from close by every 26 s of quiet (2 researchers); stage 2 (70 s) every 19 s (3, and a dart battery), a turret beside it,
+and a war escort into every siege it stands through (3 militia, spawned at the station); stage 3 (150 s) every 13 s
+(4, a battery and a thief), a second turret, soldiers in its siege squad. Turrets are raised only while an engineer
+tends it. A TURRET (300 hp) darts your nearest walking unit in reach (9 dmg every 1.4 s) or stuns your nearest limb.
+Destroyed, a station leaves a wreck worth 30 meat when the creep digests it (Form 6-F, a requisition: destroy one).
+
+**Answering it:** catch the engineer on its way (its banner names it), drive it off a half-built station with a strike
+force, or mount an attack on a standing station: warriors attack-move onto stations, turrets and engineers (they still
+leave study parties to your limbs), Harriers hunt every science unit and are the natural strike force; limbs in reach
+shoot them. The Flametrooper answers your strike force.
+
+**CREEP CARE.** Your walking units on creep move 25% faster and heal 2.5% of their max hp a second (at least 1 hp/s).
+Off creep, neither. A hurt unit healing shows small rising plus marks. It makes creep the place to fight, and the Spore
+Mule and the outposts worth more.
+
+**Measured** (tools/measure/gaps.measure.ts, 10 seeds, hold 12, `GAPS_MODE=nostations|nocreepcare`): see HANDOFF.md.
+
 ## THE CORE: COMBO RUNAWAYS, PAID IN SCIENCE (Collins, Sep 27 2026)
 
 "The real core of the game is going to be trying to build combo runaways, and this is

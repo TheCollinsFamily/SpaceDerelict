@@ -22,12 +22,15 @@ if (MODE.includes('noflame')) {
   for (const row of WAVE_TABLE as Array<Record<string, number>>) delete row.flametrooper;
   Object.assign(BALANCE as Record<string, unknown>, { flamerAnswerMax: 0 });
 }
+// nocreepcare = your units do not heal or quicken on creep (Oct 2 2026): the baseline for creep care.
+if (MODE.includes('nocreepcare')) Object.assign(BALANCE as Record<string, unknown>, { creepUnitSpeed: 1, creepRegenFrac: 0, creepRegenMin: 0 });
 if (MODE.includes('surge')) {
   (Autoplayer.prototype as unknown as { spendRoyal: (sim: Sim) => void }).spendRoyal = (sim: Sim) => { sim.issue({ kind: 'royal-surge' }); };
 }
 
 function run(seed: number) {
-  const sim = new Sim({ gridW: 50, gridH: 40, cellPx: 26, seed, directive: { kind: 'hold', waves: 12 }, organStage: true });
+  // nostations = no science forward bases (no engineers sent, Oct 2 2026): the baseline for them.
+  const sim = new Sim({ gridW: 50, gridH: 40, cellPx: 26, seed, directive: { kind: 'hold', waves: 12 }, organStage: true, ...(MODE.includes('nostations') ? { bannedEnemies: ['engineer'] } : {}) });
   const bot = new Autoplayer(seed + 1);
   // denheavy = Broodmother Dens dealt three times as often (the bot never commands them);
   // stack = the same deal, and the bot runs the Broodmother stack (Autoplayer.stack, Oct 1 2026).
@@ -83,6 +86,7 @@ it('gaps: naive hold-12 over ten seeds', () => {
       + ` brood ${JSON.stringify({ dens: sim.towers.filter((t) => t.family === 'brood').length, pits: sim.towers.filter((t) => t.family === 'hatch').length, born: s.warriorsBorn ?? 0, mothers: s.mothersBorn ?? 0, lost: s.mothersLost ?? 0, nets: s.netsCast ?? 0, netted: s.netHits ?? 0, kills: (s.killsByFamily as Record<string, number>)?.brood ?? 0 })}`
       + ` mules ${JSON.stringify({ born: s.mulesBorn ?? 0, rooted: s.mulesRooted ?? 0, lost: s.mulesLost ?? 0 })} reclaimed ${s.bodiesReclaimed ?? 0}`
       + ` expansion ${JSON.stringify({ shelters: sim.shelters.length, infested: s.sheltersInfested ?? 0, lost: s.sheltersLost ?? 0, top: s.shelterTopStage ?? 0, paid: s.shelterMeat ?? 0, inf: s.infestorsBorn ?? 0, infLost: s.infestorsLost ?? 0, harriers: s.harriersBorn ?? 0, hLost: s.harriersLost ?? 0, hKills: s.harrierKills ?? 0 })} meat ${JSON.stringify(sim.digested)}`
+      + ` stations ${JSON.stringify({ raised: s.stationsRaised ?? 0, destroyed: s.stationsDestroyed ?? 0, top: s.stationTopStage ?? 0, parties: s.stationParties ?? 0, engineers: (s.kills as Record<string, number>)?.engineer ?? 0, creepHealed: Math.round((s.creepHealed as number) ?? 0) })}`
       + ` clicks ${clicks} (${(clicks / Math.max(1, sim.wavesCleared)).toFixed(1)}/wave) sorties ${sim.groups.issued} alerts-auto${JSON.stringify(sim.groups.auto)}`
       + ` events ${['royal-decree', 'limb-promoted', 'surgery-under-fire', 'graft-took', 'burrowed', 'sealed-in', 'broodling-lost', 'mule-lost', 'flamers'].map((k) => `${k}=${kinds[k] ?? 0}`).join(' ')}`);
   }
