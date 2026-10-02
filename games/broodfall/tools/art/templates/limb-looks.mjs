@@ -76,7 +76,9 @@ const FACES = {
 };
 function editWords(l, view, key) {
   const ground = l.plate
-    ? ' Its base on the ground keeps EXACTLY its outline, place and size: the same shape of ground under it (its arms and corners where they are).'
+    ? ' Its base on the ground keeps EXACTLY its outline, place and size: the same shape of ground under it (its arms and corners where they are). ' +
+      // (Oct 2 2026: the limbs drawn on their slabs read as flat on a busy board; a look that RISES reads either way.)
+      'Its working part RISES up off the base, clearly taller than before, standing up high so the limb reads at a glance from above, never lying flat.'
     : '';
   return 'Edit the organism in the reference picture. It is the SAME organism, grown: the same camera (isometric, from ' +
     `45 degrees above), ${FACES[view]}, the same deep maroon and dark crimson veined creep flesh with small glossy ` +
