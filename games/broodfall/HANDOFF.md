@@ -1503,3 +1503,19 @@ Collins's idea, built whole: DESIGN.md "SHELTERS AND THE INFESTOR; THE HARRIER" 
   shelter's defenders shoot the NEAREST unit (an escort takes the fire). The "2000 hp" in the first film was the beat's own
   override; the beat now films the real 150 hp. Spend for the rework about $19 (3 concepts, 10 shelter sheets, the views,
   26 clips incl. a stopped first run).
+
+## The roster: units are optional (Oct 2 2026)
+
+Collins: "keeping RTS very, very low ... an image of every unit type you have in the top left of your screen, as well
+as an ALL UNITS button ... click one of these, then click a location, and all units of that type (or all units) go
+there or fight the thing you clicked (they also know how to use the tunnel)". DESIGN.md "UNITS ARE OPTIONAL".
+- **Sim:** `src/sim/groups.ts` (`Sim.groups`): group orders by kind or ALL (`group-order`), alerts + SEND
+  (`answer-alert`), AUTO per kind (`set-auto`), sorties that come home, hurt units walking onto creep to heal, idle Pit
+  warriors answering a leak at the body. Tunnel routing is built against the expansion fork's interface
+  (`Sim.tunnelLink()`, `{kind:'tunnel', ids, toHead}`, `BALANCE.tunnelTransit`); until that lands every order walks.
+- **UI:** `src/ui/roster.ts` (portraits, counts, ALL, F1-F5 and backquote, AUTO toggles, alert toasts, order marks).
+- **Tests:** `tests/groups.test.ts` (13). **Beat:** `node tools/shot-roster.mjs` (12 checks, `roster.mp4`).
+- **Measured** (10 seeds, hold-12, `tools/measure/gaps.measure.ts`): naive 7/10 with the layer, 6/10 without
+  (`GAPS_MODE=nogroups`); the Broodmother stack 8/10 driven by individual orders, 8/10 by the roster alone
+  (`stack,roster`). Clicks a person would make for the stack: 0-554 a run (27-46 a wave on most seeds) with
+  individual orders, 0-80 (2-7 a wave) with the roster.
