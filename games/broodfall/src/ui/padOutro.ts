@@ -80,6 +80,15 @@ export function growQuad(q: Quad, px: number): Quad {
   return q.map(([x, y]) => { const l = Math.hypot(x - cx, y - cy) || 1; return [x + (x - cx) / l * px, y + (y - cy) / l * px]; }) as Quad;
 }
 
+/**
+ * The frame a presented media time shows (Oct 2 2026, the shake). A frame's timestamp is i / fps, stored in whole
+ * milliseconds by the WebM muxer, so i / fps can come back a hair under (0.0333 s * 30 = 0.999): round to the nearest
+ * frame, never floor, and stay inside the clip.
+ */
+export function frameAt(mediaTime: number, fps: number, frames: number): number {
+  return Math.max(0, Math.min(frames - 1, Math.round(mediaTime * fps)));
+}
+
 /** The clip's corners at frame `i` (the nearest frame that has them). */
 export function quadAt(quads: Array<number[] | null>, i: number): Quad | null {
   for (let d = 0; d < quads.length; d++) {
@@ -178,8 +187,18 @@ export async function playPadOutro(outcome: PadOutcome): Promise<void> {
   video.playsInline = true;
   video.preload = 'auto';
   video.src = got.src;
-  video.style.cssText = 'position:absolute;display:block;max-width:none;';
-  stage.appendChild(video);
+  // The clip is DRAWN, frame by frame, into a canvas in the same callback that warps the page to that frame's
+  // corners, so the picture and the page always change together (Oct 2 2026: shown as a <video>, the browser could put
+  // a new frame up a display frame before the page's transform followed, and the page shook against the pad's bezel).
+  // The <video> itself plays unseen (kept in the page so it decodes).
+  video.style.cssText = 'position:absolute;left:0;top:0;width:2px;height:2px;opacity:0;pointer-events:none;';
+  const canvas = document.createElement('canvas');
+  canvas.width = clip.w;
+  canvas.height = clip.h;
+  canvas.style.cssText = 'position:absolute;display:block;max-width:none;';
+  const ctx = canvas.getContext('2d');
+  stage.appendChild(canvas);
+  over.appendChild(video);
   over.appendChild(stage);
 
   // On the page, warped with it: the look of a device's screen, and its going to sleep.
@@ -205,12 +224,14 @@ export async function playPadOutro(outcome: PadOutcome): Promise<void> {
     // The clip covers the window (cropped, never letterboxed).
     const s = Math.max(vw / clip.w, vh / clip.h);
     const ox = (vw - clip.w * s) / 2, oy = (vh - clip.h * s) / 2;
-    video.style.left = `${ox}px`; video.style.top = `${oy}px`;
-    video.style.width = `${clip.w * s}px`; video.style.height = `${clip.h * s}px`;
+    canvas.style.left = `${ox}px`; canvas.style.top = `${oy}px`;
+    canvas.style.width = `${clip.w * s}px`; canvas.style.height = `${clip.h * s}px`;
     const toView = (q: Quad): Quad => q.map(([x, y]) => [ox + x * s, oy + y * s]) as Quad;
     const [kx, ky, tx, ty] = zoomAt(mediaTime, toView(first), vw, vh);
     stage.style.transform = `matrix(${kx},0,0,${ky},${tx},${ty})`;
-    const q = quadAt(quads, Math.round(mediaTime * clip.fps));
+    const frame = frameAt(mediaTime, clip.fps, quads.length);
+    if (ctx && video.readyState >= 2) { ctx.clearRect(0, 0, clip.w, clip.h); ctx.drawImage(video, 0, 0, clip.w, clip.h); }
+    const q = quadAt(quads, frame);
     if (!q) return;
     const inView = growQuad(toView(q).map(([x, y]) => [x * kx + tx, y * ky + ty]) as Quad, BLEED);
     body.style.transform = cssMatrix3d(rectToQuad(vw, vh, inView));

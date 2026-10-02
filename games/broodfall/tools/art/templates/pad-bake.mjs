@@ -166,7 +166,91 @@ function screenQuad(patch) {
   return [meet(T, L), meet(T, R), meet(B, R), meet(B, L)];
 }
 
-/** Median of three, then a [1 2 1] blur, over time, per coordinate (nulls left alone). */
+/**
+ * The screen's corners refined to sub-pixel on the keyed hole itself (Oct 2 2026, the shake): along each edge of the
+ * rough quad, at 21 lines across it, the exact place where the keyed alpha rises through half (interpolated between
+ * pixels), then each edge's line fitted through those points (the outliers a finger makes thrown out) and the
+ * corners where the lines meet. This is where the page must sit for its edges to meet the clip's hole.
+ */
+function refineQuad(alpha, q) {
+  const at = (x, y) => {
+    const xi = Math.round(x), yi = Math.round(y);
+    if (xi < 0 || yi < 0 || xi >= W || yi >= H) return 255;
+    return alpha[(yi * W + xi) * 4 + 3];
+  };
+  const lines = [];
+  for (let k = 0; k < 4; k++) {
+    const [ax, ay] = q[k], [bx, by] = q[(k + 1) % 4];
+    const ex = bx - ax, ey = by - ay, L = Math.hypot(ex, ey);
+    const nx = ey / L, ny = -ex / L; // outward (clockwise corners)
+    const pts = [];
+    for (let s = 0; s < 21; s++) {
+      const t = 0.14 + (0.72 * s) / 20;
+      const px = ax + ex * t - nx * 10, py = ay + ey * t - ny * 10;
+      let prev = at(px, py);
+      for (let d = 1; d <= 24; d++) {
+        const cur = at(px + nx * d, py + ny * d);
+        if (prev < 128 && cur >= 128) {
+          const f = d - 1 + (128 - prev) / Math.max(1, cur - prev);
+          pts.push([px + nx * f, py + ny * f]);
+          break;
+        }
+        prev = cur;
+      }
+    }
+    if (pts.length < 8) return q;
+    // Fit the edge as a line through its points (total least squares), trimming the worst outward/inward points.
+    let keep = pts;
+    let line = null;
+    for (let round = 0; round < 4; round++) {
+      const mx = keep.reduce((s, p) => s + p[0], 0) / keep.length, my = keep.reduce((s, p) => s + p[1], 0) / keep.length;
+      let sxx = 0, sxy = 0, syy = 0;
+      for (const [x, y] of keep) { sxx += (x - mx) ** 2; sxy += (x - mx) * (y - my); syy += (y - my) ** 2; }
+      const th = 0.5 * Math.atan2(2 * sxy, sxx - syy);
+      const dx = Math.cos(th), dy = Math.sin(th);
+      line = { mx, my, dx, dy };
+      const dist = keep.map(([x, y]) => -(x - mx) * dy + (y - my) * dx);
+      const sorted = dist.map(Math.abs).sort((a, b) => a - b);
+      const lim = Math.max(0.6, sorted[sorted.length >> 1] * 3);
+      const next = keep.filter((_, i) => Math.abs(dist[i]) <= lim);
+      if (next.length === keep.length || next.length < 6) break;
+      keep = next;
+    }
+    lines.push(line);
+  }
+  const meet = (l1, l2) => {
+    const den = l1.dx * l2.dy - l1.dy * l2.dx;
+    if (Math.abs(den) < 1e-9) return null;
+    const t = ((l2.mx - l1.mx) * l2.dy - (l2.my - l1.my) * l2.dx) / den;
+    return [l1.mx + l1.dx * t, l1.my + l1.dy * t];
+  };
+  // Corner k is where edge k-1 (ending at it) meets edge k (starting at it).
+  const out = [0, 1, 2, 3].map((k) => meet(lines[(k + 3) % 4], lines[k]));
+  if (out.some((p) => !p || Math.hypot(p[0] - q[out.indexOf(p)][0], p[1] - q[out.indexOf(p)][1]) > 12)) return q;
+  return out;
+}
+
+/**
+ * Over time, only the tracking's own noise is taken out: a [1 2 1] blur over the frame before and after, but no
+ * corner may move more than `MAX_DRIFT` px from where THAT frame's screen really is (Oct 2 2026, the shake: the old
+ * median-and-blur followed the clip's uneven cadence loosely and put the page up to 9 px off the hole, flipping side
+ * every frame).
+ */
+const MAX_DRIFT = 0.35;
+function smoothFaithful(quads) {
+  const get = (i) => quads[Math.max(0, Math.min(quads.length - 1, i))];
+  return quads.map((q, i) => {
+    if (!q) return q;
+    const p = get(i - 1) ?? q, n = get(i + 1) ?? q;
+    return q.map((c, k) => c.map((v, a) => {
+      const s = (p[k][a] + 2 * v + n[k][a]) / 4;
+      return Math.max(v - MAX_DRIFT, Math.min(v + MAX_DRIFT, s));
+    }));
+  });
+}
+
+/** Median of three, then a [1 2 1] blur, over time, per coordinate (nulls left alone). Not used since Oct 2 2026 (see smoothFaithful). */
+// eslint-disable-next-line no-unused-vars
 function smooth(quads) {
   const get = (i, k) => quads[Math.max(0, Math.min(quads.length - 1, i))]?.[k >> 1]?.[k & 1];
   const med = quads.map((q, i) => q && q.map((_, c) => [0, 1].map((a) => {
@@ -268,10 +352,11 @@ function bakeOne({ id, file }, pic) {
     const mask = new Uint8Array(W * H);
     for (let p = 0; p < W * H; p++) mask[p] = k.data[p * 4 + 3] < 128 ? 1 : 0;
     const patch = biggestPatch(mask);
-    raw.push(patch && patch.count > W * H * 0.004 ? screenQuad(patch) : null);
+    const rough = patch && patch.count > W * H * 0.004 ? screenQuad(patch) : null;
+    raw.push(rough ? refineQuad(k.data, rough) : null);
     keyed.push(k.data);
   }
-  quads.push(...smooth(raw));
+  quads.push(...smoothFaithful(raw));
   // The key only inside the screen (grown 9 px: its soft edge, and the last green where the fit sits a hair inside); everything else as it was.
   const out = frames.map((f, i) => {
     const o = Buffer.from(f);
@@ -299,7 +384,7 @@ function bakeOne({ id, file }, pic) {
     '-c:v', 'libvpx', '-pix_fmt', 'yuva420p', '-auto-alt-ref', '0', '-b:v', '6000k', '-crf', '8', '-qmin', '2', '-qmax', '30', '-g', String(FPS), '-an', webm], { maxBuffer: MAX });
   fs.rmSync(rawFile, { force: true });
   if (r.status !== 0) throw new Error(`${id}: encode failed: ${String(r.stderr).slice(-300)}`);
-  const round = (v) => Math.round(v * 10) / 10;
+  const round = (v) => Math.round(v * 100) / 100; // hundredths: a tenth of a pixel is visible at 4x on a big screen
   const json = { id, fps: FPS, w: W, h: H, frames: out.length, seconds: Number((out.length / FPS).toFixed(2)), key, similarity,
     quads: quads.map((q) => (q ? q.flat().map(round) : null)) };
   fs.writeFileSync(path.join(OUT, `${id}.json`), `${JSON.stringify(json)}\n`);

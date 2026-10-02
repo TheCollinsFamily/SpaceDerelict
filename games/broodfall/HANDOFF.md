@@ -1603,3 +1603,21 @@ Collins: "the point of terrain height in tower defence is to get lucky that you 
 - **Measure:** `npx vitest run --config tools/measure/vitest.config.ts tools/measure/terrain.measure.ts` (20 played boards); `npx vite-node tools/measure/terrain-probe.ts` (40 grown boards, quick); `npx vite-node tools/measure/heightmap.ts -- out.ppm 3,7,11,15` (a top-down map). Numbers: `notes/screens/2026-10-02/terrain/baseline.json` (before) and `after.json`.
 - **Pictures:** `notes/screens/2026-10-02/terrain/heightmap-before-after.png`; `terrain-SET-far-before-after.jpg` and `terrain-SET-mid-before-after.jpg` for suburb, megacity, orient, farmland (`node tools/shot-terrain.mjs DIST TAG`).
 - **Open (Collins):** the city reads flatter. The old dotted tall blocks looked like separate buildings; same-height neighbours now merge into wide plateaus (the drawn lots follow height). If the busy skyline is wanted back, it should come from the drawing (rooftop structures, lot variety) on top of coherent land, not from random heights.
+
+## The data pad's shake, fixed (Oct 2 2026)
+
+Collins: "the image on the screen shakes a bit in a way that breaks the effect as it's being set down."
+- **Cause, measured** (`node tools/measure/pad-jitter.mjs`: decodes each clip's alpha and compares the keyed hole's
+  real edges with the baked corners, frame by frame): the bake's median-and-blur over time followed the clip's uneven
+  cadence (the generated clip holds frames, then was resampled 30 -> 24 fps) loosely, so the warped page sat up to
+  9-14 px off the pad's hole, flipping side almost every frame. A second, smaller one: the clip was a <video> while the
+  page's transform was set in its frame callback, so a new frame could show a display frame before the page followed.
+- **Fix:** the pad is baked at the clips' own 30 fps; every frame's corners are refined to sub-pixel on the keyed hole
+  (`refineQuad`: 21 half-alpha crossings per edge, a fitted line, the corners where lines meet); over time only noise
+  is taken out, never more than 0.35 px from that frame's own corners (`smoothFaithful`); the clip is drawn into a
+  canvas in the same callback that warps the page (`src/ui/padOutro.ts`), and the frame shown is `frameAt(mediaTime)`.
+- **Numbers** (residual = page edge off the hole; shake = its change frame to frame; RMS, worst):
+  won 1.40 (5.84) -> 0.34 (1.07) px, shake 2.07 (9.34) -> 0.46 (1.28); lost 2.11 (9.24) -> 0.34 (1.08),
+  shake 3.42 (13.63) -> 0.49 (1.64). `tests/padOutro.test.ts` holds both clips under 0.6 px RMS / 2 px worst.
+- **Look:** `notes/screens/2026-10-02/pad/pad-<won|lost>-composite-slow-before-after.mp4` (frame-exact, the game's
+  maths, x3 slower: `tools/measure/pad-composite.mjs`), and the browser recordings `pad-<id>-BEFORE.mp4` / `-AFTER.mp4`.

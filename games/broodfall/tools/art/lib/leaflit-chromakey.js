@@ -1,4 +1,4 @@
-// Snapshot of class ChromaKey from Leaflit's AI VTuber Studio (model-exporter.js), taken 2026-09-30.
+// Snapshot of class ChromaKey from Leaflit's AI VTuber Studio (model-exporter.js), taken 2026-10-02.
 // Used only when the frontend repo is not on this machine. Do not edit: fix the studio instead.
 class ChromaKey {
     constructor() {

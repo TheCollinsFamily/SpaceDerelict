@@ -5,7 +5,7 @@
    "video": "won.webm",
    "quads": "won.json",
    "seconds": 5,
-   "fps": 24,
+   "fps": 30,
    "w": 1280,
    "h": 720
   },
@@ -13,7 +13,7 @@
    "video": "lost.webm",
    "quads": "lost.json",
    "seconds": 5,
-   "fps": 24,
+   "fps": 30,
    "w": 1280,
    "h": 720
   }

@@ -6,7 +6,7 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
-import { applyH, cssMatrix3d, growQuad, quadAt, rectToQuad, zoomAt } from '../src/ui/padOutro';
+import { applyH, cssMatrix3d, frameAt, growQuad, quadAt, rectToQuad, zoomAt } from '../src/ui/padOutro';
 
 type Quad = [[number, number], [number, number], [number, number], [number, number]];
 const close = (a: [number, number], b: [number, number]) => { expect(a[0]).toBeCloseTo(b[0], 6); expect(a[1]).toBeCloseTo(b[1], 6); };
@@ -66,4 +66,36 @@ describe('pad outro art', () => {
       expect(found / j.frames).toBeGreaterThan(0.95);
     }
   });
+});
+
+/**
+ * THE SHAKE (Collins, Oct 2 2026: "the image on the screen shakes a bit in a way that breaks the effect as it's being
+ * set down"). The page must be warped to the corners of the frame on show, and those corners must sit on that frame's
+ * keyed hole: measured with tools/measure/pad-jitter.mjs, which decodes the clip's alpha and compares.
+ */
+describe('pad outro: no shake', () => {
+  it('the presented time maps to its own frame (muxed millisecond timestamps round down a hair)', () => {
+    for (const fps of [24, 30]) {
+      for (let i = 0; i < 150; i++) {
+        const muxed = Math.round((i / fps) * 1000) / 1000; // what a WebM stores
+        expect(frameAt(muxed, fps, 150)).toBe(i);
+        expect(frameAt(muxed - 0.0004, fps, 150)).toBe(i);
+        expect(frameAt(muxed + 0.0004, fps, 150)).toBe(i);
+      }
+    }
+    expect(frameAt(-1, 30, 150)).toBe(0);
+    expect(frameAt(99, 30, 150)).toBe(149);
+  });
+  const dir = path.join(__dirname, '..', 'public', 'art', 'pad');
+  const hasFfmpeg = (() => { try { return require('node:child_process').spawnSync('ffmpeg', ['-version']).status === 0; } catch { return false; } })();
+  it.skipIf(!hasFfmpeg || !fs.existsSync(path.join(dir, 'won.webm')))('the baked corners sit on the keyed hole of the clip in every frame', async () => {
+    // @ts-expect-error a plain .mjs tool
+    const { measure } = await import('../tools/measure/pad-jitter.mjs');
+    for (const id of ['won', 'lost']) {
+      const m = measure(id);
+      expect(m.residualRms, id).toBeLessThan(0.6);
+      expect(m.residualMax, id).toBeLessThan(2);
+      expect(m.shakeRms, id).toBeLessThan(0.8);
+    }
+  }, 120000);
 });

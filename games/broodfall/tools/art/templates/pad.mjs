@@ -48,7 +48,7 @@ const PLANET = 'the planet is the infested insect world of the menu view: its da
 const OUT = path.join(ART, 'pad');
 const LOOK = path.join(REVIEW, 'pad');
 const CONCEPTS = path.join(ROOT, 'notes', 'concepts', '2026-09-29');
-const W = 1280, H = 720, FPS = 24;
+const W = 1280, H = 720, FPS = 30; // the clips' own rate (Oct 2 2026: resampling 30 -> 24 made the motion uneven, one source of the screen's shake)
 
 const NONE = 'No text, no lettering, no numbers, no logos, no emblems, no symbols, no icons anywhere in the picture.';
 const REAL = 'Photoreal and lifelike, like a frame from a serious hard science-fiction film shot on a real set, natural film grain.';
