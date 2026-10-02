@@ -1546,3 +1546,7 @@ the side of any lane"; "the creep healing and making faster is great".
   repair, warriors, darts, the count, creep care, determinism, the pictures). Browser beat `node tools/shot-stations.mjs`
   (13 checks; screens `notes/screens/2026-10-02/stations-*.png`, film `stations.mp4`).
 - **Measure:** `GAPS_MODE=nostations` (no engineers), `nocreepcare`; the gaps rows now print `stations {...}`.
+  Oct 2 2026, 10 seeds, hold 12 (naive wins; stations raised / destroyed / runs reaching stage 3 / parties sent; hp healed on creep):
+  all built 7/10 (8/3/4/23; 1316); nostations 6/10; nocreepcare 7/10; neither 6/10. Stack 7/10 (6/4/4/17; 8080), stack
+  without either 6/10. Expansion 5/10 (8/2/5/24), without either 5/10. The guard (>= 3/10) holds everywhere. The naive
+  player has few walking units, so its stations mostly go unanswered and reach stage 3; the stack player strikes them.
