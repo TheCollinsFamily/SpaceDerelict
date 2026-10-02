@@ -59,6 +59,8 @@ export const TILES = {
   bladder: TISSUE('a taut pale green spore bladder full of small round spores, soft green glow'),
   pacemaker: TISSUE('a knot of orange muscle fibres like a pacemaker node, pulsing orange glow'),
   mule: TISSUE('a cluster of small pale green-yellow egg sacs, each with a curled sleeping walker inside and a spore pod on its back, soft yellow-green glow'),
+  infestor: TISSUE('a single large dark violet cyst with a heavy armoured larva curled inside it, a ridged burrowing head pressed against the cyst wall, thick veins feeding it, faint purple glow'),
+  harrier: TISSUE('a slim pale yellow gland like a quiver, a row of lean long-legged hunters folded inside it, each with a long quill spine along its back, soft amber glow'),
   budder: TISSUE('pale green buds sprouting from tissue like a cluster of small shoots, light green glow'),
   cyst: TISSUE('a hard olive-green cyst packed with three dark seeds, olive glow'),
   swell: TISSUE('light green swollen tissue puffed up like a blister, pale green glow'),

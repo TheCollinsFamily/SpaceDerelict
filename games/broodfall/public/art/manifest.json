@@ -5036,6 +5036,115 @@
     }
    }
   },
+  "infestor": {
+   "atlas": "units/infestor.webp",
+   "frame": 192,
+   "cols": 16,
+   "anchor": [
+    0.5,
+    0.94
+   ],
+   "body": 0.409,
+   "flies": false,
+   "anims": {
+    "walk": {
+     "S": {
+      "start": 0,
+      "count": 14,
+      "fps": 4.42
+     },
+     "SW": {
+      "start": 14,
+      "count": 14,
+      "fps": 5.6
+     },
+     "W": {
+      "start": 28,
+      "count": 12,
+      "fps": 12
+     },
+     "NW": {
+      "start": 40,
+      "count": 14,
+      "fps": 10.5
+     },
+     "N": {
+      "start": 54,
+      "count": 14,
+      "fps": 4.94
+     }
+    },
+    "attack": {
+     "S": {
+      "start": 68,
+      "count": 12,
+      "fps": 3
+     },
+     "SW": {
+      "start": 80,
+      "count": 12,
+      "fps": 3,
+      "anchor": [
+       0.5,
+       0.9011
+      ],
+      "scale": 1.0433
+     },
+     "W": {
+      "start": 92,
+      "count": 12,
+      "fps": 3
+     },
+     "NW": {
+      "start": 104,
+      "count": 12,
+      "fps": 3,
+      "anchor": [
+       0.5,
+       0.8759
+      ],
+      "scale": 1.0732
+     },
+     "N": {
+      "start": 116,
+      "count": 12,
+      "fps": 3,
+      "anchor": [
+       0.5,
+       0.9369
+      ],
+      "scale": 1.0033
+     }
+    },
+    "death": {
+     "SW": {
+      "start": 128,
+      "count": 12,
+      "fps": 3
+     },
+     "S": {
+      "start": 128,
+      "count": 12,
+      "fps": 3
+     },
+     "W": {
+      "start": 128,
+      "count": 12,
+      "fps": 3
+     },
+     "NW": {
+      "start": 128,
+      "count": 12,
+      "fps": 3
+     },
+     "N": {
+      "start": 128,
+      "count": 12,
+      "fps": 3
+     }
+    }
+   }
+  },
   "puppet-consort": {
    "atlas": "units/puppet-consort.webp",
    "frame": 192,
@@ -18307,6 +18416,16 @@
      "strip": "under/loop-mule.webp",
      "count": 48,
      "pingpong": true
+    },
+    "infestor": {
+     "strip": "under/loop-infestor.webp",
+     "count": 48,
+     "pingpong": true
+    },
+    "harrier": {
+     "strip": "under/loop-harrier.webp",
+     "count": 48,
+     "pingpong": true
     }
    },
    "stages": {
@@ -18374,7 +18493,9 @@
     "aquifer": "under/aquifer.webp",
     "cable": "under/cable.webp",
     "sewer": "under/sewer.webp",
-    "mule": "under/mule.webp"
+    "mule": "under/mule.webp",
+    "infestor": "under/infestor.webp",
+    "harrier": "under/harrier.webp"
    },
    "meteor": "under/meteor.webp",
    "skylines": {

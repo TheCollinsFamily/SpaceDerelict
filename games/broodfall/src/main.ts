@@ -441,6 +441,13 @@ function handleEvents(events: SimEvent[]): void {
     if (e.kind === 'plate-drafted') banner(`DISTRICT CONSUMED: ${e.name.toUpperCase()}`);
     if (e.kind === 'sealed-in' && !AUTO) banner('WALLED IN — BURROW THROUGH A WALL INTO THE SMOKE TO GROW');
     if (e.kind === 'burrowed') banner('BURROWED THROUGH — A NEW WAY IN');
+    // SHELTERS (Oct 2 2026): what an Infestor took, what a protected shelter paid, what was lost.
+    if (e.kind === 'shelter-raised') banner('A SHELTER STANDS IN THE NEW DISTRICT — AN INFESTOR CAN TAKE IT');
+    if (e.kind === 'shelter-infested') banner('SHELTER INFESTED — A SECOND BASE: PROTECT IT FOR A BONUS ON EVERY WAVE');
+    if (e.kind === 'shelter-grew') banner(`SHELTER GROWN TO STAGE ${e.stage} — +${Math.round(B.shelterBoost[e.stage - 1] * 100)}% MEAT AT EVERY PROTECTED WAVE`);
+    if (e.kind === 'shelter-paid') banner(`SHELTERS PROTECTED · +${Math.round(e.pct * 100)}% · +${e.war} WAR${e.science ? ` +${e.science} SCIENCE` : ''}`);
+    if (e.kind === 'shelter-lost') banner('SHELTER LOST — THE HIVE TORE IT DOWN');
+    if (e.kind === 'infestor-born') banner('AN INFESTOR IS BORN AT THE BODY — SEND IT TO A SHELTER (I)');
     if (e.kind === 'net-cast' && renderer instanceof IsoRenderer) renderer.nets.push({ at: e.at, r: e.radius, t: 0 });
     if (e.kind === 'surgery-under-fire') banner(`SURGERY UNDER FIRE — GRAFTING ${e.seconds.toFixed(0)}s`);
     if ((e.kind === 'won' || e.kind === 'lost') && !AUTO) {
@@ -492,7 +499,10 @@ function renderDraft(): void {
       ? platePicture(renderer.app, boardArt, { gridW: sim.cfg.gridW, slotsX: sim.map.slotsX, slotsY: sim.map.slotsY, coreCell: sim.map.coreCell, seed: sim.cfg.seed }, offer, 460)
       : null;
     if (pic) card.classList.add('has-pic');
+    // A district with a SHELTER at its centre (Oct 2 2026): told on its card, so the player can draft for one.
+    if (offer.shelter) card.classList.add('has-shelter');
     card.innerHTML = `<div class="df-name"></div><div class="df-desc"></div>`
+      + (offer.shelter ? `<div class="df-shelter">⛫ SHELTER AT ITS CENTRE — an Infestor can make it a second base</div>` : '')
       + (pic ? `<img class="df-pic" alt="" src="${pic}">` : '')
       + `<div class="df-grid">${grid}</div><div class="df-map" style="grid-template-columns:repeat(${sim.map.slotsX},9px)">${draftMap(offer.slot)}</div><div class="df-where"></div>`;
     (card.querySelector('.df-name') as HTMLElement).textContent = feat.name;

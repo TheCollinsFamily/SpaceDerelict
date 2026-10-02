@@ -46,6 +46,8 @@ export const MOTION = {
   bladder: 'the bladder breathes in and out slowly and the spores inside drift',
   pacemaker: 'the knot of muscle fibres contracts in a steady rhythm, each beat a pulse of light',
   mule: 'the egg sacs swell and settle slowly, the curled walkers inside stir, and the spore pods on their backs glow and dim',
+  infestor: 'the cyst pulses slowly, the heavy larva inside shifts and presses its burrowing head against the wall, the veins throb',
+  harrier: 'the folded hunters twitch in their sleep, their quills lift and settle, the gland breathes slowly',
   budder: 'the buds sway gently as if in a slow current',
   cyst: 'the cyst pulses slowly and the three seeds inside shift very slightly',
   swell: 'the blister of tissue swells and relaxes slowly',

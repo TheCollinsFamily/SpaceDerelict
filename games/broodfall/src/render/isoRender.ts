@@ -9,12 +9,12 @@
  * Anything without art is drawn as its old shape, so the game plays the same with any part
  * of the art missing.
  */
-import { Application, Container, Graphics, Matrix, Rectangle, Sprite, Texture } from 'pixi.js';
+import { Application, Assets, Container, Graphics, Matrix, Rectangle, Sprite, Texture } from 'pixi.js';
 import { CellType, PLATE } from '../sim/citymap';
 import { Sim, enemySpec, towerSpec, towerStats } from '../sim/sim';
 import { footprintOf } from '../sim/footprint';
 import type { Broodling, Broodmother, Caste, CreepSource, Enemy, EnemyKind, RootDir, Tower, TowerFamily, UnitOrder } from '../sim/types';
-import { BoardArtSet, type Clip, type LimbArt, type LimbSide, type LoadedUnit, type UnitArt } from './art';
+import { BoardArtSet, artUrl, type Clip, type LimbArt, type LimbSide, type LoadedUnit, type UnitArt } from './art';
 import { BOSS_SCALE, choose, newFx, observe, playFor, skinOf, type UnitFx } from './unitAnim';
 import {
   FACING_STEP, boardCell, creepRunsOn, depth, facingOf, headingOf, isoGeo, limbView, openSides, pick, project, unproject,
@@ -45,6 +45,9 @@ const K = 1.9;
 const MOTHER_R = 12;
 /** A Spore Mule is drawn a little bigger than a warrior (it carries a node). */
 const MULE_R = 6.5;
+/** The Infestor and the Harrier (Oct 2 2026), as drawn. */
+const INFESTOR_R = 13;
+const HARRIER_R = 5.5;
 /** Art pixels of body width for each world pixel of a unit's radius. */
 const UNIT_PX = 3.6;
 /**
@@ -2055,6 +2058,7 @@ export class IsoRenderer extends Renderer {
     }
     this.syncDying(sim, dt);
     this.drawBroodlings(sim, dt);
+    this.syncShelters(sim);
     for (const [id, v] of this.allyViews) {
       if (v.seen === this.frameNo) continue;
       v.sprite.destroy();
@@ -2372,6 +2376,78 @@ export class IsoRenderer extends Renderer {
     if (e.hp < e.maxHp) this.hpArc(g, x, y - 4, s + 2, e.hp / e.maxHp);
   }
 
+  /**
+   * SHELTERS (Oct 2 2026; DESIGN.md "SHELTERS AND THE INFESTOR"): drawn over the building they stand on, from their own
+   * pictures (public/art/shelter/<intact|infested-1..3|ruin>.webp, tools/art/shelters.mjs) once loaded, else the
+   * district's landmark, tinted. On the ground: an Infestor's burrowing as a filling ring at the door; an infested
+   * shelter's stage pips and, while it is still protected this wave, a soft green ring (it will pay at the clear).
+   */
+  private shelterViews = new Map<number, Sprite>();
+  private shelterTex = new Map<string, Texture | null | 'loading'>();
+  private shelterTexture(key: string): Texture | null {
+    const t = this.shelterTex.get(key);
+    if (t === undefined) {
+      this.shelterTex.set(key, 'loading');
+      Assets.load<Texture>(artUrl(`shelter/${key}.webp`)).then((tex) => this.shelterTex.set(key, tex ?? null), () => this.shelterTex.set(key, null));
+      return null;
+    }
+    return t === 'loading' ? null : t;
+  }
+
+  private syncShelters(sim: Sim): void {
+    const g = this.marksG;
+    const W = sim.cfg.gridW;
+    for (const sh of sim.shelters) {
+      let v = this.shelterViews.get(sh.id);
+      if (!v) { v = new Sprite(); this.sorted.addChild(v); this.shelterViews.set(sh.id, v); }
+      const key = sh.state === 'intact' ? 'intact' : sh.state === 'ruin' ? 'ruin' : `infested-${sh.stage}`;
+      let tex = this.shelterTexture(key);
+      let tint = 0xffffff;
+      if (!tex) {
+        // Until its own pictures load: the district's landmark, cold grey (intact), flesh red (infested), black (ruin).
+        const slot = Math.floor(Math.floor(sh.cells[0] / W) / PLATE) * sim.map.slotsX + Math.floor((sh.cells[0] % W) / PLATE);
+        const set = this.setOfSlot(sim, slot);
+        const list = this.art.biomeArt(set)?.landmarks ?? [];
+        tex = list.length ? this.art.sprite('landmarks', `prop-${list[0]}`, set) : null;
+        tint = sh.state === 'intact' ? 0xb8c4d0 : sh.state === 'ruin' ? 0x3a3030 : 0xc04a5a;
+      }
+      const xs = sh.cells.map((c) => c % W);
+      const ys = sh.cells.map((c) => Math.floor(c / W));
+      const h = sim.map.heights[sh.cells[0]];
+      const p = project(this.geo, ((Math.min(...xs) + Math.max(...xs) + 1) / 2) * this.geo.cell, ((Math.min(...ys) + Math.max(...ys) + 1) / 2) * this.geo.cell, h);
+      v.visible = !!tex;
+      if (tex) {
+        v.texture = tex;
+        v.anchor.set(0.5, 0.9);
+        const span = Math.sqrt(sh.cells.length);
+        const width = 2 * this.geo.a * span * 0.95 * (sh.state === 'infested' ? 1 + 0.06 * (sh.stage - 1) : 1);
+        const sc = width / tex.width;
+        v.scale.set(sc, sc);
+        v.position.set(p.x, p.y);
+        v.tint = tint;
+        v.zIndex = depth(this.geo, (Math.max(...xs) + 1) * this.geo.cell, (Math.max(...ys) + 1) * this.geo.cell) * 100 + 40;
+      }
+      const door = sim.cellCenter(sh.door);
+      const d = this.onGround(sim, door.x, door.y);
+      const dx = d.x / K;
+      const dy = d.y / K;
+      if (sh.state === 'intact' && sh.burrowBy !== undefined) {
+        const f = Math.min(1, (sh.burrowT ?? 0) / BALANCE.infestChannel);
+        g.circle(dx, dy, 14).stroke({ width: 2, color: 0x2a1a30, alpha: 0.8 });
+        g.arc(dx, dy, 14, -Math.PI / 2, -Math.PI / 2 + f * Math.PI * 2).stroke({ width: 3, color: 0xb06ad0, alpha: 0.95 });
+      }
+      if (sh.state === 'infested') {
+        const top = this.onGround(sim, sh.pos.x, sh.pos.y);
+        const tx = top.x / K;
+        const ty = top.y / K - 34;
+        for (let i = 0; i < 3; i++) g.circle(tx - 8 + i * 8, ty, 2.6).fill({ color: i < sh.stage ? 0xe8c84a : 0x3a2a2a, alpha: 0.95 });
+        if (sim.shelterProtected(sh)) g.circle(dx, dy, 12 + Math.sin(this.pulse * 3) * 1.5).stroke({ width: 1.5, color: 0x9ce07a, alpha: 0.6 });
+        if (sh.hp < sh.maxHp) this.hpArc(g, tx, ty + 8, 10, sh.hp / sh.maxHp);
+      }
+    }
+    for (const [id, v] of this.shelterViews) if (!sim.shelters.some((sh) => sh.id === id)) { v.destroy(); this.shelterViews.delete(id); }
+  }
+
   private drawBroodlings(sim: Sim, dt: number): void {
     const g = this.marksG;
     const geo = this.geo;
@@ -2381,10 +2457,15 @@ export class IsoRenderer extends Renderer {
       ...sim.mothers.map((m) => ({ b: { id: m.id, pos: m.pos, hp: m.hp, maxHp: m.maxHp, cooldown: m.cooldown, motherId: m.denId } as Broodling, mother: m, mule: false })),
       // Spore Mules (Oct 2 2026): drawn from the broodling's pictures, swollen and spore-green, until their own are made.
       ...sim.mules.map((m) => ({ b: { id: m.id, pos: m.pos, hp: m.hp, maxHp: m.maxHp, cooldown: 0, motherId: m.sacId } as Broodling, mother: undefined as Broodmother | undefined, mule: true })),
-    ];
-    for (const { b, mother, mule } of walkers) {
-      const id = mother ? (this.art.allies.has('broodmother') ? 'broodmother' : 'broodling')
+    ].map((w) => ({ ...w, kind: '' as '' | 'infestor' | 'harrier' }));
+    // Infestors and Harriers (Oct 2 2026): their own pictures, else the Broodmother's (violet) / a broodling's (amber).
+    for (const u of sim.infestors) walkers.push({ b: { id: u.id, pos: u.pos, hp: u.hp, maxHp: u.maxHp, cooldown: 0, motherId: u.cystId } as Broodling, mother: undefined, mule: false, kind: 'infestor' });
+    for (const u of sim.harriers) walkers.push({ b: { id: u.id, pos: u.pos, hp: u.hp, maxHp: u.maxHp, cooldown: u.cooldown, motherId: u.glandId } as Broodling, mother: undefined, mule: false, kind: 'harrier' });
+    for (const { b, mother, mule, kind } of walkers) {
+      const id = kind ? (this.art.allies.has(kind) ? kind : kind === 'infestor' ? (this.art.allies.has('broodmother') ? 'broodmother' : 'broodling') : 'broodling')
+        : mother ? (this.art.allies.has('broodmother') ? 'broodmother' : 'broodling')
         : b.puppet ? `puppet-${b.puppet.kind ?? 'royal'}` : 'broodling';
+      const stand = kind && id !== kind; // drawn from another unit's pictures until its own are made
       const found = this.art.allies.get(id);
       if (found) {
         const { art } = found;
@@ -2402,7 +2483,7 @@ export class IsoRenderer extends Renderer {
         const dy = b.pos.y - v.last.y;
         const moved = Math.hypot(dx, dy);
         v.last = { ...b.pos };
-        const speed = mother ? BALANCE.motherSpeed : mule ? BALANCE.muleSpeed : b.puppet?.speed ?? BALANCE.broodSpeed;
+        const speed = kind === 'infestor' ? BALANCE.infestorSpeed : kind === 'harrier' ? BALANCE.harrierSpeed : mother ? BALANCE.motherSpeed : mule ? BALANCE.muleSpeed : b.puppet?.speed ?? BALANCE.broodSpeed;
         const { view, mirror } = viewOf(v.heading);
         const walk = art.anims.walk[view] ?? art.anims.walk.SW ?? Object.values(art.anims.walk)[0]!;
         if (moved > 0.02) {
@@ -2420,7 +2501,7 @@ export class IsoRenderer extends Renderer {
         const biteFor = bite ? playFor(bite, 0.7) : 0;
         const clip = bite && v.biteT < biteFor ? bite : walk;
         const at = clip === bite ? (v.biteT / biteFor) * clip.count : v.phase * clip.count;
-        const r = mother ? MOTHER_R : mule ? MULE_R : b.puppet ? ENEMY_SIZE[b.puppet.kind ?? 'royal'] : 4.5;
+        const r = kind === 'infestor' ? INFESTOR_R : kind === 'harrier' ? HARRIER_R : mother ? MOTHER_R : mule ? MULE_R : b.puppet ? ENEMY_SIZE[b.puppet.kind ?? 'royal'] : 4.5;
         const scale = ((2 * r * UNIT_PX) / (art.body * art.frame)) * (clip.scale ?? 1);
         const p = this.onGround(sim, b.pos.x, b.pos.y);
         const a = clip.anchor ?? art.anchor;
@@ -2431,7 +2512,7 @@ export class IsoRenderer extends Renderer {
         // A Broodmother drawn from the broodling's pictures is darker and heavier (until her own are made);
         // a sedated one is greyed.
         const sedated = mother && (mother.stunnedUntil ?? 0) > sim.time;
-        v.sprite.tint = v.hitT < 0.09 ? 0xffb4a4 : sedated ? 0x9a9aa8 : mule ? 0xc4e07a : mother && id === 'broodling' ? 0xd08a90 : 0xffffff;
+        v.sprite.tint = v.hitT < 0.09 ? 0xffb4a4 : sedated ? 0x9a9aa8 : mule ? 0xc4e07a : stand ? (kind === 'infestor' ? 0x9a70c8 : 0xf0d070) : mother && id === 'broodling' ? 0xd08a90 : 0xffffff;
         // A mule carries its node: a glowing spore sac riding on its back.
         if (mule) {
           const sx = p.x / K;
@@ -2453,9 +2534,9 @@ export class IsoRenderer extends Renderer {
       const x = p.x / K;
       const y = p.y / K - 3;
       g.ellipse(x, y + 3, 5, 2.5).fill({ color: 0x000000, alpha: 0.3 });
-      const rr = mother ? MOTHER_R : mule ? MULE_R : b.puppet ? 8 : 4.5;
+      const rr = kind === 'infestor' ? INFESTOR_R : kind === 'harrier' ? HARRIER_R : mother ? MOTHER_R : mule ? MULE_R : b.puppet ? 8 : 4.5;
       g.circle(x, y, rr).fill({ color: 0x0d0805, alpha: 0.8 });
-      g.circle(x, y, rr - 1).fill(b.puppet ? 0xd4a72c : mother ? 0x9e3a4c : mule ? 0xa8c858 : 0xc75a68);
+      g.circle(x, y, rr - 1).fill(kind === 'infestor' ? 0x7a4a9a : kind === 'harrier' ? 0xe0c060 : b.puppet ? 0xd4a72c : mother ? 0x9e3a4c : mule ? 0xa8c858 : 0xc75a68);
       if (b.hp < b.maxHp) this.hpArc(g, x, y, rr + 2, b.hp / b.maxHp);
     }
   }
@@ -2804,6 +2885,12 @@ export class IsoRenderer extends Renderer {
       const midX = (from.x + to.x) / 2 + Math.sin(this.pulse * 30) * 4;
       const midY = (from.y + to.y) / 2 + Math.cos(this.pulse * 27) * 4;
       g.moveTo(from.x, from.y).lineTo(midX, midY).lineTo(to.x, to.y).stroke({ width: 2, color: 0xcfeef8, alpha: Math.min(1, a.ttl * 4) });
+    }
+    // A HARRIER's quills (Oct 2 2026): a thin pale streak from its back to what it hit.
+    for (const q of dots ? sim.quills : []) {
+      const from = at(q.from.x, q.from.y, 8);
+      const to = at(q.to.x, q.to.y, 6);
+      g.moveTo(from.x, from.y).lineTo(to.x, to.y).stroke({ width: 1.6, color: 0xf4ead0, alpha: Math.min(1, q.ttl * 8) });
     }
     // A FLAMETROOPER's stream (Oct 2 2026): a flickering tapered tongue of fire from its nozzle to where the stream
     // reaches, widening as it goes, hot yellow inside orange, with a few licks of flame along it. Drawn by code.

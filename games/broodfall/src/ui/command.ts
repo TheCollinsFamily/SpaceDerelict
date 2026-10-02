@@ -8,6 +8,7 @@
  *   A, then click                     ATTACK-MOVE there (fight what they meet on the way)
  *   H  hold · B  back to the body · G  guard (clear orders) · T  a Broodmother's mode · N, then click  her net
  *   D  a Spore Mule roots where it stands and becomes a creep node (Collins, Oct 2 2026)
+ *   I  an Infestor goes to the shelter you click (or right-click a shelter) and burrows into it (Oct 2 2026)
  *   Ctrl+1..5 make a group · 1..5 select it · Esc  clear the selection
  *   a Brood Pit or Den's panel open: right-click a street sets its RALLY point; R selects its brood
  *
@@ -17,7 +18,8 @@
  */
 import type { IsoRenderer } from '../render/isoRender';
 import type { Sim } from '../sim/sim';
-import type { Broodling, Broodmother, SporeMule, UnitOrder } from '../sim/types';
+import { BALANCE } from '../../content/data';
+import type { Broodling, Broodmother, Harrier, Infestor, Shelter, SporeMule, UnitOrder } from '../sim/types';
 
 export interface CommandHooks {
   renderer: () => IsoRenderer | null;
@@ -39,7 +41,7 @@ export interface Command {
   readonly selected: ReadonlySet<number>;
 }
 
-type Armed = 'move' | 'attack' | 'net' | null;
+type Armed = 'move' | 'attack' | 'net' | 'infest' | null;
 
 export function installCommand(canvas: HTMLCanvasElement, hooks: CommandHooks): Command {
   const selected = new Set<number>();
@@ -70,6 +72,9 @@ export function installCommand(canvas: HTMLCanvasElement, hooks: CommandHooks): 
     <div class="unit-cmd-row" id="unit-cmd-mule">
       <button data-cmd="deploy" title="Root here: the Spore Mule becomes a creep node where it stands, even past your creep">DEPLOY <kbd>D</kbd></button>
     </div>
+    <div class="unit-cmd-row" id="unit-cmd-infestor">
+      <button data-cmd="infest" title="Infest: then click a SHELTER; the Infestor walks to its door and burrows in (it is open to the defenders while it does). Right-clicking a shelter does it too">INFEST <kbd>I</kbd></button>
+    </div>
     <div id="unit-cmd-help">right-click a street: move · Shift: queue · Ctrl+1-5: group · Esc: clear</div>`;
   (document.getElementById('inspect')?.parentElement ?? canvas.parentElement ?? document.body).appendChild(panel);
   const what = panel.querySelector('#unit-cmd-what') as HTMLDivElement;
@@ -77,11 +82,36 @@ export function installCommand(canvas: HTMLCanvasElement, hooks: CommandHooks): 
   const netBtn = panel.querySelector('[data-cmd="net"]') as HTMLButtonElement;
   const modeBtn = panel.querySelector('[data-cmd="mode"]') as HTMLButtonElement;
   const muleRow = panel.querySelector('#unit-cmd-mule') as HTMLDivElement;
+  const infestorRow = panel.querySelector('#unit-cmd-infestor') as HTMLDivElement;
 
-  type Unit = Broodling | Broodmother | SporeMule;
+  type Unit = Broodling | Broodmother | SporeMule | Infestor | Harrier;
   const units = (): Unit[] => {
     const sim = hooks.sim();
-    return [...sim.mothers, ...sim.mules, ...sim.broodlings.filter((b) => !b.puppet)];
+    return [...sim.mothers, ...sim.infestors, ...sim.mules, ...sim.harriers, ...sim.broodlings.filter((b) => !b.puppet)];
+  };
+  const isBig = (u: Unit): boolean => 'mode' in u || 'cystId' in u;
+  const selInfestors = (): Infestor[] => hooks.sim().infestors.filter((m) => selected.has(m.id));
+  /** The intact shelter under a world point (its building, or close to its door). */
+  const shelterNear = (w: { x: number; y: number }): Shelter | null => {
+    const sim = hooks.sim();
+    const cell = sim.cellAt(w.x, w.y);
+    for (const sh of sim.shelters) {
+      if (sh.state !== 'intact') continue;
+      const door = sim.cellCenter(sh.door);
+      if (sh.cells.includes(cell) || Math.hypot(door.x - w.x, door.y - w.y) < 18 || Math.hypot(sh.pos.x - w.x, sh.pos.y - w.y) < 30) return sh;
+    }
+    return null;
+  };
+  /** Send the selected Infestors into a shelter; anything else selected walks to its door with them. */
+  const infest = (sh: Shelter): void => {
+    const sim = hooks.sim();
+    const inf = selInfestors();
+    if (inf.length === 0) { hooks.hint('SELECT AN INFESTOR TO TAKE A SHELTER'); return; }
+    let err = '';
+    for (const u of inf) { const r = sim.issue({ kind: 'infest', unitId: u.id, shelterId: sh.id }); if (!r.ok) err = String(r.err); }
+    const escort = [...selected].filter((id) => !inf.some((u) => u.id === id));
+    if (escort.length) sim.issue({ kind: 'unit-order', ids: escort, order: { kind: 'attack', to: sim.cellCenter(sh.door) } });
+    hooks.hint(err ? err.toUpperCase() : 'INFEST: IT WALKS TO THE SHELTER AND BURROWS IN (GUARD IT WHILE IT DOES)');
   };
   const isMule = (u: Unit): u is SporeMule => 'strain' in u;
   const selMules = (): SporeMule[] => hooks.sim().mules.filter((m) => selected.has(m.id));
@@ -119,10 +149,11 @@ export function installCommand(canvas: HTMLCanvasElement, hooks: CommandHooks): 
     if (a === 'move') hooks.hint('MOVE: click a street (Shift queues)');
     if (a === 'attack') hooks.hint('ATTACK-MOVE: click a street; they fight what they meet on the way');
     if (a === 'net') hooks.hint('NET: click where to throw it');
+    if (a === 'infest') hooks.hint('INFEST: click a shelter');
   };
 
   const run = (cmd: string): void => {
-    if (cmd === 'move' || cmd === 'attack' || cmd === 'net') arm(cmd);
+    if (cmd === 'move' || cmd === 'attack' || cmd === 'net' || cmd === 'infest') arm(cmd);
     else if (cmd === 'hold') order({ kind: 'hold' });
     else if (cmd === 'return') order({ kind: 'return' });
     else if (cmd === 'guard') order({ kind: 'guard' });
@@ -141,9 +172,9 @@ export function installCommand(canvas: HTMLCanvasElement, hooks: CommandHooks): 
     let bd = Infinity;
     for (const u of units()) {
       const p = r.clientOf(hooks.sim(), u.pos.x, u.pos.y);
-      const reach = isMother(u) ? 30 : 16;
+      const reach = isBig(u) ? 30 : 16;
       // The picture stands above its feet: measure to a point a little up the body.
-      const d = Math.hypot(p.x - clientX, p.y - (isMother(u) ? 14 : 6) - clientY);
+      const d = Math.hypot(p.x - clientX, p.y - (isBig(u) ? 14 : 6) - clientY);
       if (d < reach && d < bd) { bd = d; best = u; }
     }
     return best;
@@ -206,6 +237,9 @@ export function installCommand(canvas: HTMLCanvasElement, hooks: CommandHooks): 
     if (selected.size > 0) {
       ev.preventDefault();
       ev.stopImmediatePropagation();
+      // A right-click on a shelter with an Infestor selected: take it.
+      const sh = selInfestors().length ? shelterNear(w) : null;
+      if (sh) { infest(sh); armed = null; return; }
       order({ kind: armed === 'attack' ? 'attack' : 'move', to: w }, ev.shiftKey);
       armed = null;
       return;
@@ -262,7 +296,7 @@ export function installCommand(canvas: HTMLCanvasElement, hooks: CommandHooks): 
       return;
     }
     if (ev.ctrlKey || ev.metaKey || ev.altKey) return;
-    const map: Record<string, string> = { m: 'move', a: 'attack', h: 'hold', b: 'return', g: 'guard', t: 'mode', n: 'net', d: 'deploy' };
+    const map: Record<string, string> = { m: 'move', a: 'attack', h: 'hold', b: 'return', g: 'guard', t: 'mode', n: 'net', d: 'deploy', i: 'infest' };
     if (map[k]) { run(map[k]); ev.preventDefault(); ev.stopImmediatePropagation(); }
   }, { capture: true });
 
@@ -273,7 +307,10 @@ export function installCommand(canvas: HTMLCanvasElement, hooks: CommandHooks): 
     if (armed && selected.size > 0) {
       const w = worldAt(clientX, clientY);
       if (!w) return true;
-      if (armed === 'net') {
+      if (armed === 'infest') {
+        const sh = shelterNear(w);
+        if (sh) infest(sh); else hooks.hint('NO SHELTER THERE: CLICK A SHELTER');
+      } else if (armed === 'net') {
         const ms = selMothers().filter((m) => m.mode === 'fight');
         // The nearest fighting mother that can reach throws it.
         ms.sort((a, b) => Math.hypot(a.pos.x - w.x, a.pos.y - w.y) - Math.hypot(b.pos.x - w.x, b.pos.y - w.y));
@@ -329,7 +366,18 @@ export function installCommand(canvas: HTMLCanvasElement, hooks: CommandHooks): 
         return `SPORE MULE · ${Math.ceil(m.hp)}/${Math.ceil(m.maxHp)} · ${on ? 'ON YOUR CREEP' : 'PAST THE CREEP'}`;
       }).join('<br>'));
     }
+    const infs = selInfestors();
+    if (infs.length) {
+      parts.push(infs.map((u) => {
+        const sh = u.infest !== undefined ? sim.shelters.find((x) => x.id === u.infest) : undefined;
+        const burrow = sh && sh.burrowBy === u.id ? ` · BURROWING ${Math.round(((sh.burrowT ?? 0) / BALANCE.infestChannel) * 100)}%` : sh ? ' · TO THE SHELTER' : '';
+        return `INFESTOR · ${Math.ceil(u.hp)}/${Math.ceil(u.maxHp)}${burrow}`;
+      }).join('<br>'));
+    }
+    const hs = sim.harriers.filter((u) => selected.has(u.id));
+    if (hs.length) parts.push(hs.map((u) => `HARRIER · ${Math.ceil(u.hp)}/${Math.ceil(u.maxHp)}${u.orders.length ? '' : ' · HUNTING THE SCIENCE CASTE'}`).join('<br>'));
     what.innerHTML = parts.join('<br>') + (armed ? `<br><b>${armed.toUpperCase()}: click where</b>` : '');
+    infestorRow.style.display = infs.length ? '' : 'none';
     motherRow.style.display = ms.length ? '' : 'none';
     muleRow.style.display = mus.length ? '' : 'none';
     // A mother off the creep cannot brood (Collins, Oct 2 2026): the toggle says so instead of doing nothing.

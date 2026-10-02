@@ -132,7 +132,10 @@ export class Autoplayer {
   private manageExpansion(sim: Sim): boolean {
     if (sim.cfg.organStage && sim.phase === 'growth') {
       const themes = sim.organs.filter((o) => ORGAN_BY_ID[o.organ].kind === 'theme').length;
-      for (const [organ, at] of [['harrier', 2], ['infestor', 3]] as const) {
+      // The cyst only once a shelter stands to be taken (an Infestor with nowhere to go is 110 war wasted).
+      const shelterWaiting = sim.shelters.some((sh) => sh.state === 'intact');
+      for (const [organ, at] of [['harrier', 3], ['infestor', 2]] as const) {
+        if (organ === 'infestor' && !shelterWaiting) continue;
         if (themes < at || sim.organs.some((o) => o.organ === organ) || !sim.canAfford(ORGAN_BY_ID[organ].cost)) continue;
         const spot = bestOrganSpot(sim, organ);
         if (spot && sim.issue({ kind: 'build-organ', organ, ...spot }).ok) return true;

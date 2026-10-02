@@ -4725,7 +4725,7 @@ export class Sim {
 
   /**
    * Every Infestor Cyst and Harrier Gland counts its turn (the wave clear) and grows its unit at the body, PAID FOR
-   * THEN (an Infestor 40 war + 20 science, a Harrier 25 science): if the wallet cannot pay, it waits a turn.
+   * THEN (an Infestor 60 war, a Harrier 30 war: science is all but gone at a clear): if the wallet cannot pay, it waits a turn.
    */
   private growFieldUnits(): void {
     for (const o of this.organs) {

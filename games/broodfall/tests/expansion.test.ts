@@ -116,7 +116,7 @@ describe('the Infestor', () => {
     P(s).growFieldUnits();
     expect(s.infestors).toHaveLength(1);
     expect(s.meat.war).toBe(100 - (B.infestorCost.war ?? 0));
-    expect(s.meat.science).toBe(100 - (B.infestorCost.science ?? 0));
+    expect(s.meat.science).toBe(100 - (B.infestorCost.science ?? 0)); // (war only since Oct 2: science is gone at a clear)
     for (let i = 0; i < 6; i++) P(s).growFieldUnits();
     expect(s.infestors).toHaveLength(1);
   });
@@ -228,7 +228,7 @@ describe('an infested shelter', () => {
 });
 
 describe('the Harrier', () => {
-  it('a gland grows one every harrierEvery turns for science, one a gland, harrierMax on the board', () => {
+  it('a gland grows one every harrierEvery turns, paid in war, one a gland, harrierMax on the board', () => {
     const s = new Sim({ ...CFG });
     for (let i = 0; i < B.harrierMax + 2; i++) grow(s, 'harrier');
     s.meat.science = 9999;

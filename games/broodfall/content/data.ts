@@ -668,7 +668,7 @@ export const BALANCE = {
    * A drafted district may carry a shelter from the second draft on (shelterFromDraft), on one offer of a draft in
    * shelterOdds, at most shelterMax on the board, and only in a run that can grow an Infestor.
    */
-  shelterFromDraft: 2,
+  shelterFromDraft: 1,      // the starting board is already "the first few tiles" (Oct 2 2026)
   shelterOdds: 0.5,
   shelterMax: 2,
   shelterGuardRange: 120,   // px: an intact shelter's defenders shoot your walking units this close
@@ -684,7 +684,7 @@ export const BALANCE = {
   shelterContact: 30,       // px from its door: the hive attacks it from here
   infestorHp: 150,          // big and soft: two war bodies' bites for a few seconds, a shelter's defenders for ~15 s
   infestorSpeed: 20,        // the slowest thing you have: walking it in is a commitment
-  infestorCost: { war: 40, science: 20 } as Partial<Record<'war' | 'science' | 'royal', number>>,
+  infestorCost: { war: 60 } as Partial<Record<'war' | 'science' | 'royal', number>>,
   infestorEvery: 3,         // turns between Infestors from one cyst (one at a time)
   infestChannel: 10,        // s burrowing in at the door, open to the shelter's defenders and the hive
   harrierHp: 70,
@@ -694,7 +694,7 @@ export const BALANCE = {
   harrierRate: 0.9,         // shots/s
   harrierVsScience: 2.6,    // its quills are made for the soft castes
   harrierVsWar: 0.6,        // and poor against the war caste's armour: it does not hold a lane
-  harrierCost: { science: 25 } as Partial<Record<'war' | 'science' | 'royal', number>>,
+  harrierCost: { war: 30 } as Partial<Record<'war' | 'science' | 'royal', number>>,
   harrierEvery: 2,          // turns between Harriers from one gland (one a gland)
   harrierMax: 3,            // on the board at once, however many glands
   harrierLeash: 140,        // px: guarding, it fights the hive this far from its post
