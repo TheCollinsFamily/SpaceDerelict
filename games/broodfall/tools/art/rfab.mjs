@@ -16,6 +16,9 @@ export const RAW_DIR = path.join(process.env.BROODFALL_ART_SRC ? path.resolve(pr
 export const OUT_DIR = path.join(ROOT, 'notes', 'probes', process.env.PROBE_DATE || '2026-09-29');
 // Oct 2 2026: the direct openai:* image route is down (its key cut off; failed jobs still charged): the same GPT Image 2
 // through SeeGen, which takes the same reference pictures (tested on a look edit).
+// Quality (Collins, Oct 2 2026): "only for RFab. We are making a video game: use medium for us, we want a quality product."
+// Broodfall's stills default to MEDIUM (makeStill's default); a template that asks for high keeps it. At medium the
+// cheapest working route for GPT Image 2 is SeeGen ($0.041 a picture; imagerouter $0.053).
 const STILL_MODEL = process.env.PROBE_STILL_MODEL || 'seegen:gpt-image-2';
 // Only seegen: models take an END frame (start == end is what closes the loop). The last one
 // does not: it is there for the few pictures SeeGen refuses without saying why, and a walk
