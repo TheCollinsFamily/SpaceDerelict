@@ -648,7 +648,7 @@ tower you want at a high height and then adjacency bonuses and everything." So e
   (four cells) or `long: true` (two) on the same limb in `tools/art/limbs.mjs`. Then
   `node tools/art/make.mjs limb <family> --bake` and the measure above.
 
-### Shaped footprints: lines, squares, T and L (Collins, Oct 1 2026 — the ENGINE is BUILT; which limb takes which shape is PROPOSED)
+### Shaped footprints: lines, squares, T and L (Collins, Oct 1 2026 — the ENGINE is BUILT; the class-zero mapping is APPLIED Oct 2 2026)
 
 His words: "the total lack of diversity in footprint ... is kind of a KEY part of tower defence strategy. In
 tower defence the tower categories are one square (hugely over-represented), two squares (line), four squares
@@ -666,8 +666,20 @@ L-shaped (like an elbow shape)."
   is refused ("needs new ground to turn").
 - **Until its own art exists** a shaped limb is drawn with its current picture sized to its ground (the short side
   of its box), and its ground is outlined on the board.
-- **Which limb takes which shape** is `notes/FOOTPRINT-PLAN.md` (and the limb decision sheet's Footprint column):
-  proposed, not applied. `?tryShape=lasher:L3,quill:L3` plays any of it first.
+- **Which limb takes which shape: APPLIED Oct 2 2026** (Collins, of the class-zero mapping: "ok this is WAY better,
+  redesign the art around this"). Lines of three: Impaler, Creep Lance, Ember Sac, Resonance Amplifier. T of four:
+  Galvanic Frond, Choir Node, Blight Vent. Elbows of three: Quill Fan, Marrow Conduit. L of four: Snare Bed, Meat Press.
+  2x2: Maw, Broodmother Den, Trap Cage, Spore Bombard, Caustic Mister. Lines of two: Spine Wall (across the street),
+  Skipping Mortar. Everything else one square (the Ward Membrane back to one square at its pre-Sep-29 stats). Stats are
+  NOT raised for the bigger ground: measured, paying for ground made the game too easy (7/10); the ground is the cost.
+  Why each, and the art direction: `notes/FOOTPRINT-PLAN.md`.
+- **The Resonance Amplifier buffs every limb touching its length** (Oct 2 2026; before, the one limb it pointed at):
+  every limb standing on a cell edge-to-edge beside one of its three cells gets its bonus counts x1.5
+  (`engine.touch`, `Sim.touchingLimbs`). What lines up along it is the puzzle.
+- **The Caustic Mister: cheap ground (Collins, Oct 2 2026).** "the inexpensive 4-square thing is ok. I have never seen
+  a tower defence play with this before, but I kind of like the idea of an unusually cheap, even for its low power,
+  tower where what you 'pay for' to use it is early-game space." It stays a 2x2 at 6 war (it was 12): the cheapest
+  limb in the game, paid for in the roof space it takes when roof space is scarcest.
 
 ### Plinths: height is won (Collins, Sep 29 2026 — BUILT Sep 29)
 

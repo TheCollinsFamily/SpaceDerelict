@@ -51,7 +51,7 @@ export const TOWERS: readonly TowerSpec[] = [
     family: 'tangler', name: 'Snare Bed', weight: 12,
     cost: { war: 16 }, range: 92, rate: 0.9, damage: 6, aoe: 38,
     slowMult: 0.55, slowDur: 1.8,
-    span: [2, 2], maxHp: 168, interest: 1, eatThreshold: 0, advanced: false, hits: 'ground',
+    shape: 'L4', maxHp: 168, interest: 1, eatThreshold: 0, advanced: false, hits: 'ground',
   },
   {
     // Damage over time: spore clouds that keep eating. Poison ignores armor caps,
@@ -59,7 +59,7 @@ export const TOWERS: readonly TowerSpec[] = [
     family: 'blighter', name: 'Blight Vent', weight: 10,
     cost: { war: 14 }, range: 90, rate: 0.6, damage: 3, aoe: 38,
     poisonDps: 7, poisonDur: 3.5,
-    maxHp: 65, interest: 2, eatThreshold: 0, advanced: true, hits: 'ground',
+    shape: 'T', maxHp: 65, interest: 2, eatThreshold: 0, advanced: true, hits: 'ground',
   },
   {
     // Artillery: a bone harpoon that skewers a whole file and ignores shields.
@@ -68,14 +68,14 @@ export const TOWERS: readonly TowerSpec[] = [
     family: 'impaler', name: 'Impaler', weight: 8,
     cost: { war: 36 }, range: 165, rate: 0.35, damage: 43, aoe: 0,
     pierce: true,
-    span: [1, 2], maxHp: 128, interest: 2, eatThreshold: 0, advanced: true, hits: 'both',
+    shape: 'line3', maxHp: 128, interest: 2, eatThreshold: 0, advanced: true, hits: 'both',
   },
   {
     // Support: a resonance organ that syncs the limbs around it to a faster beat.
     family: 'choir', name: 'Choir Node', weight: 7,
     cost: { war: 22 }, range: 0, rate: 0, damage: 0, aoe: 0,
     rateAura: 0.15, auraRadius: 95,
-    maxHp: 60, interest: 2, eatThreshold: 0, advanced: true,
+    shape: 'T', maxHp: 60, interest: 2, eatThreshold: 0, advanced: true,
   },
   {
     // Logistics: hurls a creep clot to a chosen distant spot — forward ground
@@ -128,7 +128,7 @@ export const TOWERS: readonly TowerSpec[] = [
     family: 'frond', name: 'Galvanic Frond', weight: 9,
     cost: { war: 24 }, range: 103, rate: 0.7, damage: 18, aoe: 0,
     chains: 3,
-    span: [2, 2], maxHp: 168, interest: 2, eatThreshold: 0, advanced: true, hits: 'both',
+    shape: 'T', maxHp: 168, interest: 2, eatThreshold: 0, advanced: true, hits: 'both',
   },
   {
     // The player-aimed artillery seat: click it, click ground — a bile glob
@@ -145,7 +145,7 @@ export const TOWERS: readonly TowerSpec[] = [
     // A BIG limb: the sprinkler takes four cells of one flat roof. It is paid for its ground.
     // Before it took more than one cell: range 85, damage 2, aoe 40, maxHp 65.
     family: 'mister', name: 'Caustic Mister', weight: 8,
-    cost: { war: 12 }, range: 98, rate: 0.5, damage: 3, aoe: 50,
+    cost: { war: 6 }, range: 98, rate: 0.5, damage: 3, aoe: 50,
     shred: 8, shredDur: 4,
     span: [2, 2], maxHp: 156, interest: 2, eatThreshold: 0, advanced: true, hits: 'both',
   },
@@ -173,7 +173,7 @@ export const TOWERS: readonly TowerSpec[] = [
     family: 'bombard', name: 'Spore Bombard', weight: 8,
     cost: { war: 30 }, range: 320, rate: 0.4, damage: 30, aoe: 42,
     markerFire: true,
-    maxHp: 85, interest: 2, eatThreshold: 0, advanced: true, hits: 'ground',
+    span: [2, 2], maxHp: 85, interest: 2, eatThreshold: 0, advanced: true, hits: 'ground',
   },
   {
     // Force field: a regenerating shield on every OTHER limb in its radius. The
@@ -181,9 +181,9 @@ export const TOWERS: readonly TowerSpec[] = [
     // A BIG limb: the dome takes four cells of one flat roof. For that it shields a wider
     // ground and is more than twice as hard to kill. Before it was big: auraRadius 95, maxHp 90.
     family: 'ward', name: 'Ward Membrane', weight: 9,
-    cost: { war: 16 }, range: 0, rate: 0, damage: 0, aoe: 0, span: [2, 2],
-    wardShield: 70, auraRadius: 120,
-    maxHp: 220, interest: 2, eatThreshold: 0, advanced: true,
+    cost: { war: 16 }, range: 0, rate: 0, damage: 0, aoe: 0,
+    wardShield: 70, auraRadius: 95,
+    maxHp: 90, interest: 2, eatThreshold: 0, advanced: true,
   },
   {
     // The shotgun: a fan of quills — brutal up close, spreads thin at range.
@@ -192,7 +192,7 @@ export const TOWERS: readonly TowerSpec[] = [
     // for 20 war — spread thins it at range. (7-dmg pellets for 18 was ~3x.)
     cost: { war: 20 }, range: 72, rate: 0.9, damage: 5, aoe: 0,
     pellets: 5, spread: 0.9,
-    maxHp: 80, interest: 1, eatThreshold: 0, advanced: false, hits: 'both',
+    shape: 'L3', maxHp: 80, interest: 1, eatThreshold: 0, advanced: false, hits: 'both',
   },
   {
     // One direction only, very long, and the shell SKIPS like a stone: it lands,
@@ -219,7 +219,7 @@ export const TOWERS: readonly TowerSpec[] = [
     family: 'ember', name: 'Ember Sac', weight: 10,
     cost: { war: 22 }, range: 70, rate: 0.8, damage: 4, aoe: 0,
     cone: 0.45, burnDps: 8, burnDur: 3,
-    maxHp: 80, interest: 1, eatThreshold: 0, advanced: false, hits: 'ground',
+    shape: 'line3', maxHp: 80, interest: 1, eatThreshold: 0, advanced: false, hits: 'ground',
   },
   {
     // The combo engine (Collins, Sep 27 2026): copies EVERY bonus from the limbs
@@ -232,7 +232,7 @@ export const TOWERS: readonly TowerSpec[] = [
     family: 'conduit', name: 'Marrow Conduit', weight: 7,
     cost: { science: 30 }, range: 0, rate: 0, damage: 0, aoe: 0,
     conduit: { gather: 80, reach: 160 }, engine: { kind: 'funnel', reach: 160, gather: 80 }, directional: true,
-    maxHp: 70, interest: 2, eatThreshold: 0, advanced: true, hits: 'ground',
+    shape: 'L3', maxHp: 70, interest: 2, eatThreshold: 0, advanced: true, hits: 'ground',
   },
   {
     // DEPTH engine: every bonus count on the limb it points at ×1.5, ROUNDED
@@ -240,8 +240,8 @@ export const TOWERS: readonly TowerSpec[] = [
     // mosaics feed the target, so engines chain. Two amps: ×1.5 twice.
     family: 'amp', name: 'Resonance Amplifier', weight: 5,
     cost: { science: 42 }, range: 0, rate: 0, damage: 0, aoe: 0,
-    engine: { kind: 'amplify', reach: 160 }, directional: true,
-    maxHp: 70, interest: 3, eatThreshold: 0, advanced: true, hits: 'ground',
+    engine: { kind: 'amplify', reach: 160, touch: true }, directional: true,
+    shape: 'line3', maxHp: 70, interest: 3, eatThreshold: 0, advanced: true, hits: 'ground',
   },
   {
     // BREADTH engine: gives the limb it points at ONE bonus of EACH distinct type
@@ -299,7 +299,7 @@ export const TOWERS: readonly TowerSpec[] = [
     family: 'press', name: 'Meat Press', weight: 6,
     cost: { science: 18 }, range: 0, rate: 0, damage: 0, aoe: 0,
     engine: { kind: 'press', reach: 160 }, directional: true,
-    maxHp: 80, interest: 1, eatThreshold: 0, advanced: true, hits: 'ground',
+    shape: 'L4', maxHp: 80, interest: 1, eatThreshold: 0, advanced: true, hits: 'ground',
   },
   {
     // Death insurance: if its target dies, the target's bonuses are banked for your
@@ -320,7 +320,7 @@ export const TOWERS: readonly TowerSpec[] = [
     family: 'lance', name: 'Creep Lance', weight: 8,
     cost: { war: 20 }, range: 0, rate: 0, damage: 0, aoe: 0,
     directional: true,
-    span: [1, 2], maxHp: 144, interest: 1, eatThreshold: 0, advanced: true, hits: 'ground',
+    shape: 'line3', maxHp: 144, interest: 1, eatThreshold: 0, advanced: true, hits: 'ground',
   },
   {
     // The TRAP CAGE (experiment "Puppet Queen"): never drawn — the experiment hands

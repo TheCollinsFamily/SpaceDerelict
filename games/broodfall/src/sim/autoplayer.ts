@@ -508,7 +508,7 @@ export class Autoplayer {
     let most = 0;
     for (const t of sim.towers) {
       if (towerSpec(t.family).engine) continue;
-      const fed = sim.towers.filter((c) => towerSpec(c.family).engine && sim.conduitTarget(c) === t).length;
+      const fed = sim.towers.filter((c) => towerSpec(c.family).engine && sim.engineTargets(c).includes(t)).length;
       if (fed > most) { most = fed; carry = t; }
     }
     if (!carry) return null;
@@ -544,7 +544,7 @@ export class Autoplayer {
       const t = sim.conduitTarget(sim.towers.find((x) => x.id === c.id)!);
       if (!t) continue;
       const st = sim.statsOf(t);
-      const fedBy = sim.towers.filter((o) => o.id !== c.id && towerSpec(o.family).engine && sim.conduitTarget(o) === t).length;
+      const fedBy = sim.towers.filter((o) => o.id !== c.id && towerSpec(o.family).engine && sim.engineTargets(o).includes(t)).length;
       const key = fedBy * 1e6 + st.damage * st.rate;
       if (key > bestKey) { bestKey = key; best = dir; }
     }

@@ -96,7 +96,9 @@ describe('evolutions: three stages, choose A or B', () => {
   it('Round Up amplifier: a single bonus becomes two', () => {
     const s = fresh(2003);
     const target = mk(s, 1, 'spitter', 400, 300, [{ family: 'lasher' }]);
-    const amp = mk(s, 2, 'amp', 300, 300, [], ['A', 'B']); amp.facing = 'E';
+    // It touches its target (Oct 2 2026: the amplifier works on every limb touching its length).
+    const beside = s.cellCenter(target.cell - 1);
+    const amp = mk(s, 2, 'amp', beside.x, beside.y, [], ['A', 'B']); amp.facing = 'E';
     s.towers.push(target, amp);
     expect(s.statsOf(target).damage).toBeCloseTo(towerSpec('spitter').damage * (1 + B.pipDamage * 2));
   });

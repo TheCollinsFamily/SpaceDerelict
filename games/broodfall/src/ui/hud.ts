@@ -425,10 +425,10 @@ export class Hud {
           : `pointed at nothing — right-click to rotate toward a limb · holding ${pool} to harvest`;
       }
       case 'amp': {
-        const target = links.targets[0];
-        return target
-          ? `AMPLIFYING ${name(target).toUpperCase()} — its bonus counts ×1.5 (${sim.ampLayers(target)} layer${sim.ampLayers(target) > 1 ? 's' : ''} on it)`
-          : 'pointed at nothing — right-click to rotate toward a limb';
+        const ts = links.targets;
+        return ts.length
+          ? `AMPLIFYING ${ts.length} limb${ts.length > 1 ? 's' : ''} touching it (${ts.map((x) => name(x)).join(', ').toUpperCase()}) — their bonus counts ×1.5`
+          : 'touching no limb — every limb beside its length gets its bonus counts ×1.5';
       }
       case 'twin': {
         const target = links.targets[0];
@@ -490,7 +490,7 @@ export class Hud {
         return `${sim.broodlings.filter((b) => b.motherId === t.id).length} warriors in the field · right-click a street: rally point · R: select them`;
       default: {
         // Which combo engines are working on THIS limb?
-        const on = sim.towers.filter((c) => towerSpec(c.family).engine && sim.conduitTarget(c) === t);
+        const on = sim.towers.filter((c) => towerSpec(c.family).engine && sim.engineTargets(c).includes(t));
         if (!on.length) return '';
         if (sim.isTapped(t)) return 'TAPPED — held in stasis (it does nothing while a tap milks it)';
         const n = (f: string) => on.filter((c) => c.family === f).length;

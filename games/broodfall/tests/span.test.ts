@@ -31,16 +31,20 @@ function spots(s: Sim, family: TowerFamily, facing?: 'N' | 'E' | 'S' | 'W'): num
 
 describe('which limbs are big', () => {
   it('leaves the limbs that were measured as they were', () => {
-    // The bombard was tried big on Sep 29 2026: it cost the scripted player a win in ten
-    // whatever it was paid. It stands on one cell.
-    expect(towerSpec('bombard').span).toBeUndefined();
+    // The class-zero mapping (Oct 2 2026, notes/FOOTPRINT-PLAN.md): the Bombard is the one big siege mortar, a 2x2
+    // at its old stats (measured: 5 of 10 held; paid MORE for its ground it lost a win, as on Sep 29).
+    expect(towerSpec('bombard').span).toEqual([2, 2]);
     expect(towerSpec('spitter').span).toBeUndefined();
+    expect(towerSpec('spitter').shape).toBeUndefined();
   });
 
   it('names them, and they are what the design says', () => {
     const big = TOWERS.filter((t) => t.span).map((t) => `${t.family} ${t.span![0]}x${t.span![1]}`).sort();
-    // Measured Sep 29 2026 (tools/measure/footprints.measure.ts, candidate c4): the game held.
-    expect(big).toEqual(['brood 2x2', 'cage 2x2', 'frond 2x2', 'impaler 1x2', 'lance 1x2', 'maw 2x2', 'mister 2x2', 'skipper 1x2', 'spine 1x2', 'tangler 2x2', 'ward 2x2']);
+    // The class-zero mapping, applied Oct 2 2026 (tools/measure/footprints.measure.ts, plan4none): the game held.
+    expect(big).toEqual(['bombard 2x2', 'brood 2x2', 'cage 2x2', 'maw 2x2', 'mister 2x2', 'skipper 1x2', 'spine 1x2']);
+    const shaped = TOWERS.filter((t) => t.shape).map((t) => `${t.family} ${t.shape}`).sort();
+    expect(shaped).toEqual(['amp line3', 'blighter T', 'choir T', 'conduit L3', 'ember line3', 'frond T', 'impaler line3',
+      'lance line3', 'press L4', 'quill L3', 'tangler L4']);
   });
 
   it('pays a big limb for the ground it takes', () => {
@@ -48,8 +52,8 @@ describe('which limbs are big', () => {
     // What each was when it stood on one cell is in the comment over it in content/data.ts.
     expect(towerSpec('brood').broodCount).toBeGreaterThan(3);
     expect(towerSpec('brood').maxHp).toBeGreaterThanOrEqual(2 * 140);
-    expect(towerSpec('ward').auraRadius).toBeGreaterThan(95);
-    expect(towerSpec('ward').maxHp).toBeGreaterThanOrEqual(2 * 90);
+    // The Caustic Mister is the exception (Collins, Oct 2 2026): a 2x2 made unusually cheap, paid for in ground.
+    expect(towerSpec('mister').cost.war).toBeLessThan(10);
     expect(towerSpec('cage').range).toBeGreaterThan(50);
     expect(towerSpec('cage').maxHp).toBeGreaterThanOrEqual(2 * 200);
   });
@@ -57,11 +61,11 @@ describe('which limbs are big', () => {
 
 describe('where a big limb may stand', () => {
   it('takes four cells of ONE flat creeped roof, and holds the cell pointed at', () => {
-    const s = simWith('ward');
-    const at = spots(s, 'ward');
+    const s = simWith('mister');
+    const at = spots(s, 'mister');
     expect(at.length).toBeGreaterThan(0);
     for (const cell of at.slice(0, 40)) {
-      const ground = s.groundFor(cell, 'ward')!;
+      const ground = s.groundFor(cell, 'mister')!;
       expect(ground).toHaveLength(4);
       expect(ground).toContain(cell);
       const high = s.map.heights[ground[0]];
@@ -80,15 +84,15 @@ describe('where a big limb may stand', () => {
   });
 
   it('has fewer places than a limb of one cell has', () => {
-    const s = simWith('ward');
-    expect(spots(s, 'ward').length).toBeLessThan(spots(s, 'spitter').length);
+    const s = simWith('mister');
+    expect(spots(s, 'mister').length).toBeLessThan(spots(s, 'spitter').length);
   });
 
   it('cannot stand half on a roof and half off it, nor on roofs of two heights', () => {
-    const s = simWith('ward');
+    const s = simWith('mister');
     const w = CFG.gridW;
     for (let c = 0; c < s.map.cells.length; c++) {
-      const ground = s.groundFor(c, 'ward');
+      const ground = s.groundFor(c, 'mister');
       if (!ground) continue;
       expect(new Set(ground.map((g) => s.map.heights[g])).size).toBe(1);
       expect(ground.every((g) => s.map.cells[g] === CellType.Block)).toBe(true);
@@ -99,12 +103,12 @@ describe('where a big limb may stand', () => {
 
 describe('a big limb on the board', () => {
   it('stands on all four cells, in the middle of them, and nothing else can be built there', () => {
-    const s = simWith('ward');
-    const cell = spots(s, 'ward')[0];
-    const ground = s.groundFor(cell, 'ward')!;
+    const s = simWith('mister');
+    const cell = spots(s, 'mister')[0];
+    const ground = s.groundFor(cell, 'mister')!;
     expect(s.issue({ kind: 'build', cardIndex: 0, cell }).ok).toBe(true);
     const t = s.towers[s.towers.length - 1];
-    expect(t.family).toBe('ward');
+    expect(t.family).toBe('mister');
     expect(t.cells).toEqual(ground);
     expect(t.cell).toBe(ground[0]);
     const mid = ground.map((c) => s.cellCenter(c)).reduce((a, p) => ({ x: a.x + p.x / 4, y: a.y + p.y / 4 }), { x: 0, y: 0 });
@@ -118,9 +122,9 @@ describe('a big limb on the board', () => {
   });
 
   it('gives all four cells back when it is eaten', () => {
-    const s = simWith('ward');
-    const cell = spots(s, 'ward')[0];
-    const ground = s.groundFor(cell, 'ward')!;
+    const s = simWith('mister');
+    const cell = spots(s, 'mister')[0];
+    const ground = s.groundFor(cell, 'mister')!;
     expect(s.issue({ kind: 'build', cardIndex: 0, cell }).ok).toBe(true);
     const t = s.towers[s.towers.length - 1];
     expect(s.issue({ kind: 'butcher', towerId: t.id }).ok).toBe(true);
@@ -129,8 +133,8 @@ describe('a big limb on the board', () => {
   });
 
   it('is refused where it does not fit, and the card and the meat are kept', () => {
-    const s = simWith('ward');
-    const one = spots(s, 'spitter').find((c) => !s.canBuildTower(c, 'ward'));
+    const s = simWith('mister');
+    const one = spots(s, 'spitter').find((c) => !s.canBuildTower(c, 'mister'));
     if (one === undefined) return; // every roof on this board is wide enough
     const war = s.meat.war;
     const hand = s.hand.length;

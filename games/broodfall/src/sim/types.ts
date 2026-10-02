@@ -196,6 +196,8 @@ export interface TowerSpec {
       | 'mitosis' | 'capacitor' | 'boomerang' | 'press' | 'reliquary';
     reach: number;
     gather?: number;
+    /** It works on EVERY limb touching its cells, edge to edge, not the one it points at (the amplifier, Oct 2 2026). */
+    touch?: boolean;
     /** Only limbs that fire real projectiles can be targeted (the boomerang). */
     projectileOnly?: boolean;
   };

@@ -58,7 +58,7 @@ function previewThenBuild(s: Sim, family: TowerFamily, cell: number, facing: Roo
 
 describe('previewStats equals the stats the placed limb gets', () => {
   const families: Array<[TowerFamily, RootDir | undefined]> = [
-    ['spitter', undefined], ['lasher', undefined], ['impaler', 'S'], ['skipper', 'E'], ['ward', undefined], ['maw', 'W'],
+    ['spitter', undefined], ['lasher', undefined], ['impaler', 'S'], ['skipper', 'E'], ['mister', undefined], ['maw', 'W'],
   ];
   for (const [family, facing] of families) {
     it(`${family}: on level-1 ground and on a raised roof`, () => {
@@ -100,7 +100,7 @@ describe('previewStats equals the stats the placed limb gets', () => {
     expect(pick(pv)).toEqual(pick(live));
   });
 
-  for (const [family, facing] of [['ward', undefined], ['skipper', 'E'], ['impaler', 'N']] as Array<[TowerFamily, RootDir | undefined]>) {
+  for (const [family, facing] of [['mister', undefined], ['skipper', 'E'], ['impaler', 'N']] as Array<[TowerFamily, RootDir | undefined]>) {
     it(`a ${family} (more than one cell) on ground raised two levels by plinths`, () => {
       const s = grown();
       const cell = spot(s, family, facing, (h) => h === 1)!;
@@ -178,25 +178,30 @@ describe('right-click turns any limb a quarter', () => {
 
   it('a BIG limb turns too, and its ground is the same four cells', () => {
     const s = grown();
-    const cell = spot(s, 'ward', 'E')!;
-    const g = s.groundFor(cell, 'ward', 'E')!;
-    expect(s.groundFor(cell, 'ward', 'N')).toEqual(g);
-    const { t } = previewThenBuild(s, 'ward', cell, 'E');
+    const cell = spot(s, 'mister', 'E')!;
+    const g = s.groundFor(cell, 'mister', 'E')!;
+    expect(s.groundFor(cell, 'mister', 'N')).toEqual(g);
+    const { t } = previewThenBuild(s, 'mister', cell, 'E');
     expect(t.facing).toBe('E');
     expect(s.cellsOf(t)).toEqual(g);
   });
 
   it('a long limb turned a quarter takes the turned ground (re-checked); built, it turns end for end only', () => {
-    const s = grown();
-    const cell = spot(s, 'impaler', 'E')!;
-    const ew = s.groundFor(cell, 'impaler', 'E')!;
-    expect(ew[1] - ew[0]).toBe(1); // lies along x
-    const { t } = previewThenBuild(s, 'impaler', cell, 'E');
-    expect(t.facing).toBe('E');
-    expect(s.issue({ kind: 'set-facing', towerId: t.id, dir: 'S' }).ok).toBe(false);
-    expect(s.issue({ kind: 'set-facing', towerId: t.id, dir: 'W' }).ok).toBe(true);
-    expect(t.facing).toBe('W');
-    expect(s.cellsOf(t)).toEqual(ew);
+    // No limb that does not aim is a line of two since Oct 2 2026 (the Impaler became a line of three): the rule
+    // is tried on a Spitter made long for the test.
+    const spec = towerSpec('spitter'); spec.span = [1, 2];
+    try {
+      const s = grown();
+      const cell = spot(s, 'spitter', 'E')!;
+      const ew = s.groundFor(cell, 'spitter', 'E')!;
+      expect(ew[1] - ew[0]).toBe(1); // lies along x
+      const { t } = previewThenBuild(s, 'spitter', cell, 'E');
+      expect(t.facing).toBe('E');
+      expect(s.issue({ kind: 'set-facing', towerId: t.id, dir: 'S' }).ok).toBe(false);
+      expect(s.issue({ kind: 'set-facing', towerId: t.id, dir: 'W' }).ok).toBe(true);
+      expect(t.facing).toBe('W');
+      expect(s.cellsOf(t)).toEqual(ew);
+    } finally { delete spec.span; }
   });
 
   it('a built limb that is not directional turns through four facings; the sim does not care (same shots)', () => {

@@ -635,6 +635,7 @@ export class Sim {
   conduitTarget(c: Tower, among: Tower[] = this.towers): Tower | null {
     const eng = towerSpec(c.family).engine;
     if (!eng) return null;
+    if (eng.touch) return this.touchingLimbs(c, among)[0] ?? null;
     const reach = eng.reach * towerStats(c).reach;
     const f = Sim.facingVec(c.facing ?? 'N');
     let best: Tower | null = null;
@@ -650,6 +651,36 @@ export class Sim {
       if (along < bestAlong) { bestAlong = along; best = t; }
     }
     return best;
+  }
+
+  /**
+   * Every limb (not an engine) standing on a cell beside one of this limb's cells, edge to edge (Oct 2 2026:
+   * the Resonance Amplifier is a line of three that "buffs every limb touching its length").
+   */
+  touchingLimbs(c: Tower, among: Tower[] = this.towers): Tower[] {
+    const w = this.cfg.gridW;
+    const h = this.cfg.gridH;
+    const own = new Set(this.cellsOf(c));
+    const near = new Set<number>();
+    for (const cell of own) {
+      const x = cell % w;
+      const y = Math.floor(cell / w);
+      if (x > 0) near.add(cell - 1);
+      if (x < w - 1) near.add(cell + 1);
+      if (y > 0) near.add(cell - w);
+      if (y < h - 1) near.add(cell + w);
+    }
+    for (const cell of own) near.delete(cell);
+    return among.filter((t) => t.id !== c.id && !towerSpec(t.family).engine && this.cellsOf(t).some((x) => near.has(x)));
+  }
+
+  /** The limbs an engine works on: the one it points at, or (a touch engine) every limb touching it. */
+  engineTargets(c: Tower, among: Tower[] = this.towers): Tower[] {
+    const eng = towerSpec(c.family).engine;
+    if (!eng) return [];
+    if (eng.touch) return this.touchingLimbs(c, among);
+    const t = this.conduitTarget(c, among);
+    return t ? [t] : [];
   }
 
   /** The limbs an engine draws from (all around it, except its target and other engines). Amplifiers draw from none. */
@@ -698,7 +729,7 @@ export class Sim {
   private enginesOn(t: Tower, kind: string): number {
     let n = 0;
     for (const c of this.towers) {
-      if (c.id !== t.id && towerSpec(c.family).engine?.kind === kind && this.conduitTarget(c) === t) n++;
+      if (c.id !== t.id && towerSpec(c.family).engine?.kind === kind && this.engineTargets(c).includes(t)) n++;
     }
     return n;
   }
@@ -754,7 +785,7 @@ export class Sim {
 
   /** The engines of one kind pointed at this limb. */
   enginesPointedAt(t: Tower, kind: string): Tower[] {
-    return this.towers.filter((c) => c.id !== t.id && towerSpec(c.family).engine?.kind === kind && this.conduitTarget(c) === t);
+    return this.towers.filter((c) => c.id !== t.id && towerSpec(c.family).engine?.kind === kind && this.engineTargets(c).includes(t));
   }
 
   /** How many ×1.5 amplifications a limb gets (amplifiers pointed at it + its own amp pips). */
@@ -800,8 +831,7 @@ export class Sim {
   effectLinks(t: Tower): { targets: Tower[]; sources: Tower[] } {
     const among = this.towers.filter((u) => u.id !== t.id);
     if (towerSpec(t.family).engine) {
-      const target = this.conduitTarget(t, among);
-      return { targets: target ? [target] : [], sources: this.conduitSources(t, among) };
+      return { targets: this.engineTargets(t, among), sources: this.conduitSources(t, among) };
     }
     if (t.family === 'choir' || t.family === 'ward') {
       const r = this.auraOf(t).radius;
@@ -821,7 +851,7 @@ export class Sim {
       // Combo engines pointed at this limb feed it their pool (amplifiers are
       // counted separately and applied last, so they multiply everything fed).
       if (towerSpec(c.family).engine) {
-        if (this.conduitTarget(c) === t) {
+        if (this.engineTargets(c).includes(t)) {
           shared.push(...this.conduitPool(c));
           // Engine evolutions can push verbs straight into the target.
           for (const o of upgradeOptions(c)) for (const f of o.targetPips ?? []) shared.push({ family: f });

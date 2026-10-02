@@ -394,7 +394,10 @@ describe('cannibalize inheritance', () => {
     expect(s.towers.length).toBe(0);
     expect(s.pendingPips.length).toBe(1);
     expect(s.pendingPips[0].family).toBe('spitter');
-    // The next build inherits and clears the bank.
+    // The next build inherits and clears the bank. (A one-cell roof limb: a shaped one may not fit the cell picked.)
+    for (let guard = 0; guard < 300 && (['swamp', 'spine'].includes(s.hand[0].family) || towerSpec(s.hand[0].family).span !== undefined || towerSpec(s.hand[0].family).shape !== undefined); guard++) {
+      s.hand.push(s.hand.shift()!);
+    }
     expect(s.issue({ kind: 'build', cardIndex: 0, cell: buildableCell(s) }).ok).toBe(true);
     expect(s.towers[0].pips.length).toBe(1);
     expect(s.pendingPips.length).toBe(0);
@@ -405,7 +408,7 @@ describe('cannibalize inheritance', () => {
     s.meat.war = 999;
     s.meat.science = 999;
     const blockCard = () => {
-      for (let guard = 0; guard < 300 && (['swamp', 'spine'].includes(s.hand[0].family) || towerSpec(s.hand[0].family).span !== undefined); guard++) {
+      for (let guard = 0; guard < 300 && (['swamp', 'spine'].includes(s.hand[0].family) || towerSpec(s.hand[0].family).span !== undefined || towerSpec(s.hand[0].family).shape !== undefined); guard++) {
         s.issue({ kind: 'discard', cardIndex: 0 });
       }
       return 0;
@@ -1335,8 +1338,9 @@ describe('MARROW CONDUIT: funnel every nearby bonus into one limb; harvest on sa
     expect(fed.rate).toBeGreaterThan(alone.rate);     // spitter bonus
     expect(fed.damage).toBeGreaterThan(alone.damage); // lasher bonus
     expect(fed.slowMult).toBeLessThan(1);             // tangler bonus
-    // Turn it away: the target stops being fed.
-    s.issue({ kind: 'set-facing', towerId: conduit.id, dir: 'W' });
+    // Turn it away: the target stops being fed. (Set directly: since Oct 2 2026 the conduit is an elbow of three,
+    // and this hand-made one stands on no real ground to turn on.)
+    conduit.facing = 'W';
     expect(s.conduitTarget(conduit)?.id).toBe(srcB.id);
     expect(s.statsOf(target).rate).toBeCloseTo(alone.rate);
   });
@@ -1407,10 +1411,12 @@ describe('COMBO ENGINES (science-priced): amplifier (depth) and mosaic (breadth)
     expect(count(Sim.amplify(pips, 2), 'frond')).toBe(9);
   });
 
-  it('an amplifier pointed at a limb multiplies EVERYTHING it carries — including what a conduit feeds it (engines chain)', () => {
+  it('an amplifier touching a limb multiplies EVERYTHING it carries — including what a conduit feeds it (engines chain)', () => {
     const s = freshSim(1400);
     const target = mk(s, 1, 'spitter', 400, 300, [{ family: 'spitter' }, { family: 'spitter' }]);
-    const amp = mk(s, 2, 'amp', 400, 400); amp.facing = 'N';
+    // Since Oct 2 2026 the amplifier is a line of three that works on every limb touching its length (edge to edge).
+    const below = s.cellCenter(target.cell + s.cfg.gridW);
+    const amp = mk(s, 2, 'amp', below.x, below.y); amp.facing = 'N';
     const conduit = mk(s, 3, 'conduit', 300, 300); conduit.facing = 'E';
     const srcA = mk(s, 4, 'spitter', 300, 250);
     const srcB = mk(s, 5, 'spitter', 250, 300);
@@ -1424,6 +1430,27 @@ describe('COMBO ENGINES (science-priced): amplifier (depth) and mosaic (breadth)
     expect(s.statsOf(target).rate).toBeCloseTo(towerSpec('spitter').rate * (1 + B.pipRate * 6));
     expect(s.statsOf(target).rate).toBeGreaterThan(base);
     expect(s.ampLayers(target)).toBe(1);
+  });
+
+  it('an amplifier works on EVERY limb touching its length, and on none that only stands near it', () => {
+    const s = freshSim(1402);
+    const w = s.cfg.gridW;
+    const a = mk(s, 1, 'spitter', 400, 300, [{ family: 'spitter' }, { family: 'spitter' }]);
+    const at = (cell: number) => s.cellCenter(cell);
+    const b = mk(s, 2, 'spitter', at(a.cell + 2).x, at(a.cell + 2).y, [{ family: 'spitter' }, { family: 'spitter' }]);
+    const far = mk(s, 3, 'spitter', at(a.cell + 4 * w).x, at(a.cell + 4 * w).y, [{ family: 'spitter' }, { family: 'spitter' }]);
+    // The amplifier lies on the row below a and b, three cells long, under both.
+    const amp = mk(s, 4, 'amp', at(a.cell + w + 1).x, at(a.cell + w + 1).y);
+    amp.cells = [a.cell + w, a.cell + w + 1, a.cell + w + 2];
+    s.towers.push(a, b, far, amp);
+    expect(s.engineTargets(amp).map((t) => t.id).sort()).toEqual([1, 2]);
+    expect(s.ampLayers(a)).toBe(1);
+    expect(s.ampLayers(b)).toBe(1);
+    expect(s.ampLayers(far)).toBe(0);
+    // 2 spitter pips -> 3 on each limb touching it.
+    expect(s.statsOf(a).rate).toBeCloseTo(towerSpec('spitter').rate * (1 + B.pipRate * 3));
+    expect(s.statsOf(b).rate).toBeCloseTo(towerSpec('spitter').rate * (1 + B.pipRate * 3));
+    expect(s.statsOf(far).rate).toBeCloseTo(towerSpec('spitter').rate * (1 + B.pipRate * 2));
   });
 
   it('mosaic: its target gets ONE of each distinct type around it, never more than one per type', () => {

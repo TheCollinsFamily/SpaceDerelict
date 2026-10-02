@@ -109,7 +109,7 @@ describe('a plinth under a limb', () => {
 
   it('raises a BIG limb whole: one plinth, all of its ground', () => {
     const s = grown();
-    const t = build(s, 'ward', (c) => (s.map.heights[c] || 1) <= 2);
+    const t = build(s, 'mister', (c) => (s.map.heights[c] || 1) <= 2);
     const ground = s.cellsOf(t);
     expect(ground).toHaveLength(4);
     const high = s.map.heights[ground[0]];
@@ -155,8 +155,8 @@ describe('a plinth on a bare roof', () => {
     if (!found) {
       // This board has no such square: make one from a flat one by raising three of its cells.
       for (let c = 0; c < s.map.cells.length - w - 1 && !found; c++) {
-        if (s.groundFor(c, 'ward')?.[0] !== c) continue;
-        const square = s.groundFor(c, 'ward')!;
+        if (s.groundFor(c, 'mister')?.[0] !== c) continue;
+        const square = s.groundFor(c, 'mister')!;
         if ((s.map.heights[c] || 1) + 1 > PLINTH_MAX_HEIGHT) continue;
         s.plinths = 3;
         for (const q of square.slice(1)) expect(s.issue({ kind: 'place-plinth', cell: q }).ok).toBe(true);
@@ -165,13 +165,13 @@ describe('a plinth on a bare roof', () => {
     }
     expect(found).not.toBeNull();
     const { low, square } = found!;
-    expect(s.groundFor(low, 'ward')?.slice().sort()).not.toEqual(square.slice().sort());
+    expect(s.groundFor(low, 'mister')?.slice().sort()).not.toEqual(square.slice().sort());
     s.plinths = 1;
     expect(s.issue({ kind: 'place-plinth', cell: low }).ok).toBe(true);
     expect(new Set(square.map((q) => s.map.heights[q])).size).toBe(1);
     // Now the big limb fits on it.
     const fits = square.some((q) => {
-      const g = s.groundFor(q, 'ward');
+      const g = s.groundFor(q, 'mister');
       return g !== null && g.slice().sort().join() === square.slice().sort().join();
     });
     expect(fits).toBe(true);
