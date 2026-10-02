@@ -381,6 +381,13 @@ export const ENEMIES: readonly EnemySpec[] = [
   // (damage 4), and its body is thin, so limbs at range kill it before it matters. A counter to stacks, not a wall-breaker.
   { kind: 'flametrooper', caste: 'war', hp: 85, speed: 36, damage: 4, rate: 1.0, meat: 3, threatOnKill: 3, risk: 6,
     flamer: { sight: 170, range: 54, unitDps: 30, coneCos: 0.82 } },
+  // AEGIS DEACON (Collins, Oct 2 2026: "a unit for both the warriors and the science team that gives a shield around it in
+  // a dome that takes a certain amount of damage before breaking ... but it's ineffective against damage from units, who
+  // automatically target shield units first"). Walks in the column under a bronze dome that soaks your LIMBS' fire for
+  // every war body within its radius; your walking units' blows pass straight through it, and they go for the deacon
+  // first. Big pool, slow to come back. The answer to a tower-only defence: send units in, or burn through the pool.
+  { kind: 'aegis', caste: 'war', hp: 110, speed: 28, damage: 8, rate: 1.0, meat: 4, threatOnKill: 3, risk: 7,
+    dome: { radius: 46, pool: 300, recharge: 9 } },
   // Ghost sapper: a CLOAKED sapper — climbs your perches and eats limbs unseen.
   { kind: 'ghostsapper', caste: 'war', hp: 120, speed: 42, damage: 18, rate: 1.3, meat: 5, threatOnKill: 4, risk: 12, sapper: true, cloaked: true },
   { kind: 'tender', caste: 'war', hp: 80, speed: 34, damage: 6, rate: 0.5, meat: 6, threatOnKill: 2, risk: 8, healer: true },
@@ -412,6 +419,10 @@ export const ENEMIES: readonly EnemySpec[] = [
   { kind: 'fieldstation', caste: 'science', hp: 650, speed: 0, damage: 0, rate: 0, meat: 30, threatOnKill: 3, risk: 10, fixed: 'station' },
   { kind: 'sciturret', caste: 'science', hp: 300, speed: 0, damage: 0, rate: 0, meat: 10, threatOnKill: 1, risk: 4, fixed: 'turret',
     turret: { range: 140, interval: 1.4, damage: 9, stun: 0.9 } },
+  // LENS BEARER: the science caste's dome. It walks with a study party or an engineer and keeps them under a glass
+  // field your limbs' fire breaks on; smaller than the deacon's, back sooner. Your units walk through it.
+  { kind: 'lensbearer', caste: 'science', hp: 60, speed: 36, damage: 0, rate: 0, meat: 10, threatOnKill: 1, risk: 5,
+    dome: { radius: 40, pool: 140, recharge: 5 } },
   // ROYAL CASTE — only with a royal event. Royals are super-strong WARRIORS
   // (they march and chew like the war caste) whose real weight is empowering
   // the war caste around them: presence aura, and the consort promotes ranks.
@@ -435,9 +446,9 @@ export const WAVE_TABLE: readonly Partial<Record<string, number>>[] = [
   { responder: 8, militia: 6, skitterling: 4 },                // tier 1: militia muster
   { militia: 12, soldier: 6, splitter: 1 },                    // tier 2: the army arrives
   { militia: 8, soldier: 8, elite: 2, flier: 4, drummer: 1, splitter: 2, stalker: 1, flametrooper: 1 },  // tier 3: air support, war-drums, the first shadows, the first flamer
-  { soldier: 10, elite: 5, flier: 5, sapper: 3, bomber: 2, drummer: 1, splitter: 2, mortar: 1, cannon: 1, stalker: 2, shadewing: 1, flametrooper: 2 },  // tier 4: sappers climb, siege engines, shadows take wing
-  { soldier: 12, elite: 7, flier: 6, sapper: 4, phalanx: 2, tender: 2, bomber: 2, carapace: 1, mortar: 2, cannon: 1, stalker: 2, shadewing: 2, ghostsapper: 1, flametrooper: 2 },  // tier 5: the shield wall marches tended
-  { elite: 10, flier: 8, sapper: 5, phalanx: 3, drummer: 2, tender: 3, tunneler: 4, bomber: 4, carapace: 3, mortar: 3, splitter: 4, cannon: 2, stalker: 4, shadewing: 3, ghostsapper: 2, flametrooper: 3 }, // tier 6: everything they have
+  { soldier: 10, elite: 5, flier: 5, sapper: 3, bomber: 2, drummer: 1, splitter: 2, mortar: 1, cannon: 1, stalker: 2, shadewing: 1, flametrooper: 2, aegis: 1 },  // tier 4: sappers climb, siege engines, shadows take wing
+  { soldier: 12, elite: 7, flier: 6, sapper: 4, phalanx: 2, tender: 2, bomber: 2, carapace: 1, mortar: 2, cannon: 1, stalker: 2, shadewing: 2, ghostsapper: 1, flametrooper: 2, aegis: 2 },  // tier 5: the shield wall marches tended
+  { elite: 10, flier: 8, sapper: 5, phalanx: 3, drummer: 2, tender: 3, tunneler: 4, bomber: 4, carapace: 3, mortar: 3, splitter: 4, cannon: 2, stalker: 4, shadewing: 3, ghostsapper: 2, flametrooper: 3, aegis: 3 }, // tier 6: everything they have
 ];
 
 export const BALANCE = {
@@ -770,6 +781,17 @@ export const BALANCE = {
   flamerPerUnits: 6,
   flamerAnswerMax: 4,
   flamerAnswerMinTier: 2,
+  // DOMES (Oct 2 2026). A bearer's pool grows domeTierScale a tier. The hive ANSWERS a tower-heavy defence the way it
+  // answers stacks: from tier domeAnswerMinTier, one more Aegis Deacon per domeLimbsPer limbs past domeLimbsFree on the
+  // board, up to domeAnswerMax. A study party brings a Lens Bearer once interest reaches lensInterestMin; an engineer's
+  // escort brings one from wave lensEscortWave; a field station sends one with its parties from stage 2.
+  domeTierScale: 0.15,
+  domeAnswerMinTier: 3,
+  domeLimbsFree: 10,
+  domeLimbsPer: 8,
+  domeAnswerMax: 3,
+  lensInterestMin: 10,
+  lensEscortWave: 4,
   /** Digestive swamp: everything in it digests; the weak dissolve outright. */
   swampBiomassPerKill: 3,   // digested kills feed the mass on top of normal meat
   pipExecute: 10,           // swamp pip: payload digests anything left at or below +10 hp per pip

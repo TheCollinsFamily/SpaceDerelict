@@ -95,7 +95,8 @@ describe('the engineer', () => {
     const eng = s.enemies.find((e) => e.kind === 'engineer')!;
     expect(eng).toBeTruthy();
     expect(eng.siteCell).toBeGreaterThanOrEqual(0);
-    expect(s.enemies.filter((e) => e.escortOf === eng.id).length).toBe(B.engineerEscort);
+    // The escort: engineerEscort researchers, plus a Lens Bearer under whose dome they walk from lensEscortWave (Oct 2 2026).
+    expect(s.enemies.filter((e) => e.escortOf === eng.id && e.kind !== 'lensbearer').length).toBe(B.engineerEscort);
     expect(s.takeEvents().some((e) => e.kind === 'engineer-out')).toBe(true);
   });
 

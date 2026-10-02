@@ -375,6 +375,8 @@ export type EnemyKind =
   | 'stalker'
   | 'shadewing'
   | 'flametrooper'
+  | 'aegis'
+  | 'lensbearer'
   | 'ghostsapper'
   | 'infiltrator'
   | 'engineer'
@@ -456,6 +458,15 @@ export interface EnemySpec {
   turret?: { range: number; interval: number; damage: number; stun: number };
   /** Veil matron: every war body within this radius is CLOAKED while she lives. */
   veilAura?: number;
+  /**
+   * A DOME BEARER (Collins, Oct 2 2026: "a unit for both the warriors and the science team that gives a shield around
+   * it in a dome that takes a certain amount of damage before breaking ... but the catch is it's ineffective against
+   * damage from units (who automatically target shield units first)"). The dome covers every body of its side within
+   * `radius` (the bearer too) and soaks damage from your LIMBS (shots, splash, clouds, creep, fire) out of a `pool`
+   * (grown by tier); empty, it breaks and comes back full `recharge` s later if the bearer lives. Damage from your
+   * WALKING UNITS passes straight through it, and your units go for a bearer first.
+   */
+  dome?: { radius: number; pool: number; recharge: number };
 }
 
 export interface Enemy {
@@ -525,6 +536,11 @@ export interface Enemy {
   shredAmount?: number;
   /** Carapace: hits left on the ablative shell. */
   hitShield?: number;
+  /** A dome bearer: what is left of its dome, its full pool, when a broken one comes back (s), when it last soaked a hit (s). */
+  domeHp?: number;
+  domeMax?: number;
+  domeDownUntil?: number;
+  domeHitAt?: number;
   /** Thief: war meat it is carrying away (recovered if it dies before escaping). */
   stole?: number;
   /** Collector: the limb it is extracting, and the limb it is carrying off once taken. */
@@ -840,6 +856,8 @@ export type SimEvent =
   | { kind: 'researchers-arrive'; count: number }
   /** Science forward bases: an engineer is out (where it is headed), a station raised, grown, raised a turret, sent a party or a squad, destroyed. */
   | { kind: 'engineer-out'; enemyId: number; cell: number }
+  | { kind: 'dome-up'; enemyId: number; bearer: EnemyKind }
+  | { kind: 'dome-broken'; enemyId: number; bearer: EnemyKind }
   | { kind: 'station-raised'; enemyId: number; cell: number }
   | { kind: 'station-grew'; enemyId: number; stage: number }
   | { kind: 'station-turret'; enemyId: number }
@@ -1013,6 +1031,9 @@ export interface RunStats {
   harriersBorn?: number;
   harriersLost?: number;
   harrierKills?: number;
+  /** Domes (Oct 2 2026): damage your limbs and creep lost to enemy domes, and domes broken. */
+  domeSoaked?: number;
+  domesBroken?: number;
   /** Science forward bases: stations raised and destroyed, the highest stage one reached, parties and squads sent;
    *  your units healed by the creep (hp). */
   stationsRaised?: number;

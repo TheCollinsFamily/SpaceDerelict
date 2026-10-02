@@ -83,7 +83,7 @@ export const ENEMY_SIZE: Record<Enemy['kind'], number> = {
   phalanx: 13, drummer: 9, bomber: 6, tunneler: 8, tender: 7,
   splitter: 9, mortar: 9, carapace: 10, stalker: 8, shadewing: 6, ghostsapper: 7, flametrooper: 4.5,
   researcher: 6, thief: 6, infiltrator: 6, cannon: 10, dartgun: 9, royal: 20, consort: 13, matron: 13,
-  engineer: 6, fieldstation: 14, sciturret: 9,
+  engineer: 6, fieldstation: 14, sciturret: 9, aegis: 6, lensbearer: 5.5,
 };
 
 export interface PlacementPreview {

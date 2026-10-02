@@ -1566,7 +1566,7 @@ export class Sim {
       if (anyBurn) {
         const dps = this.creepEffectAt(this.cellAt(e.pos.x, e.pos.y)).dps;
         if (dps > 0) {
-          e.hp -= dps * DT; // a medium, like poison: armor does not stop it
+          e.hp -= this.domeSoak(e, dps * DT); // a medium, like poison: armor does not stop it (a dome does)
           if (e.hp <= 0) { this.killEnemy(e.id, 1, false, undefined, 'creep'); continue; }
         }
       }
@@ -2757,6 +2757,7 @@ export class Sim {
       e.surfaceFlowDist = Number.isFinite(d) ? d * B.tunnelerSurfaceFrac : 12;
     }
     if (spec.hitShield) e.hitShield = spec.hitShield;
+    this.raiseDome(e);
     this.enemies.push(e);
     return e;
   }
@@ -2771,6 +2772,7 @@ export class Sim {
       attackCooldown: 0, studyLeft: 0, leaving: false,
     };
     if (spec.hitShield) e.hitShield = spec.hitShield;
+    this.raiseDome(e);
     this.enemies.push(e);
     return e;
   }
@@ -2796,6 +2798,8 @@ export class Sim {
     if (born > 0) out.militia = (out.militia ?? 0) + born;
     const flamers = this.flamerAnswer();
     if (flamers > 0) out.flametrooper = (out.flametrooper ?? 0) + flamers;
+    const deacons = this.domeAnswer();
+    if (deacons > 0) out.aegis = (out.aegis ?? 0) + deacons;
     return out;
   }
 
@@ -2846,6 +2850,10 @@ export class Sim {
     const flamers = this.flamerAnswer();
     for (let i = 0; i < flamers; i++) this.spawnQueue.push('flametrooper');
     if (flamers > 0) { counts.flametrooper = (counts.flametrooper ?? 0) + flamers; waveRisk += flamers * enemySpec('flametrooper').risk; }
+    // ...and a tower-heavy defence with Aegis Deacons, whose domes your limbs cannot crack fast: units can.
+    const deacons = this.domeAnswer();
+    for (let i = 0; i < deacons; i++) this.spawnQueue.push('aegis');
+    if (deacons > 0) { counts.aegis = (counts.aegis ?? 0) + deacons; waveRisk += deacons * enemySpec('aegis').risk; }
     this.waveRisk = waveRisk;
     this.waveLimbDamage = 0;
     this.waveKillsByCause = {};
@@ -2964,6 +2972,11 @@ export class Sim {
         // A famous specimen gets a sedation battery sent along to pin it down.
         if (this.interest >= B.dartgunInterestMin && this.towers.length > 0
           && !this.enemies.some((x) => x.kind === 'dartgun')) this.spawnEnemy('dartgun');
+        // A famous specimen's study party comes under glass: a Lens Bearer walks with it (its own dice: no other roll moves).
+        if (this.interest >= B.lensInterestMin) {
+          const lead = this.enemies[this.enemies.length - 1];
+          if (lead) this.spawnMinion('lensbearer', lead.pos, this.baseRng);
+        }
         this.events.push({ kind: 'researchers-arrive', count: n });
       }
     }
@@ -3255,7 +3268,7 @@ export class Sim {
           e.slowUntil = this.time + B.mateStun * 0.5;
           this.stats.matingStuns += 1;
         }
-        e.hp -= c.dps * DT; // a gas, not a hit: armor and shells don't stop it
+        e.hp -= this.domeSoak(e, c.dps * DT); // a gas, not a hit: armor and shells don't stop it (a dome does)
         if (e.hp <= 0) this.killEnemy(e.id, 1, false, undefined, 'cloud', c.srcId);
       }
     }
@@ -3337,7 +3350,7 @@ export class Sim {
    */
   private tickBurn(e: Enemy): boolean {
     if (e.burnUntil === undefined || e.burnUntil <= this.time || !e.burnDps) return false;
-    e.hp -= e.burnDps * DT;
+    e.hp -= this.domeSoak(e, e.burnDps * DT);
     e.revealedUntil = Math.max(e.revealedUntil ?? 0, this.time + 0.5);
     if (e.burnSpreadAt !== undefined && this.time >= e.burnSpreadAt) {
       e.burnSpreadAt = this.time + B.burnSpreadInterval;
@@ -3628,6 +3641,7 @@ export class Sim {
       this.leaveField(e, speed);
       return;
     }
+    if (spec.dome) { this.followParty(e, speed); return; }
     // A walking Spore Mule close by is a live sample: the caste turns aside for it (Oct 2 2026: escorting it is a play).
     let mule: SporeMule | null = null;
     let mdist: number = B.muleScienceLure;
@@ -3693,13 +3707,14 @@ export class Sim {
 
   private updateEnemies(): void {
     this.flameBurnt = [];
+    this.updateDomes();
     this.auraSources = this.enemies.filter((x) => enemySpec(x.kind).royalAura && !x.burrowed);
     for (const e of [...this.enemies]) {
       const spec = enemySpec(e.kind);
 
       // Blight keeps eating whoever carries it (and slips under armor plates).
       if (e.poisonUntil !== undefined && e.poisonUntil > this.time && e.poisonDps) {
-        e.hp -= e.poisonDps * DT;
+        e.hp -= this.domeSoak(e, e.poisonDps * DT);
         if (e.hp <= 0) { this.killEnemy(e.id, 1, false, undefined, 'poison', e.poisonSrc); continue; }
       }
       // A martyr's fuse runs out: it detonates among its own.
@@ -4274,6 +4289,15 @@ export class Sim {
 
   /** The hive body nearest a point, within a radius, that your units fight (not burrowed, not flying). */
   private preyNear(at: Vec, radius: number, from: Vec, skipScience: boolean): Enemy | null {
+    // A dome bearer in reach comes first, whatever its caste (Collins: units "automatically target shield units first").
+    let bearer: Enemy | null = null;
+    let bearerD = Infinity;
+    for (const e of this.domeBearers) {
+      if (e.burrowed || this.isAirborne(e) || !this.enemies.includes(e) || dist(at, e.pos) > radius) continue;
+      const d = dist(from, e.pos);
+      if (d < bearerD) { bearerD = d; bearer = e; }
+    }
+    if (bearer) return bearer;
     let prey: Enemy | null = null;
     let bestD = Infinity;
     for (const e of this.enemies) {
@@ -4341,6 +4365,7 @@ export class Sim {
       const g = this.spawnMinion(i < B.engineerEscort ? 'researcher' : 'dartgun', e.pos, this.baseRng);
       g.escortOf = e.id;
     }
+    if (this.waveNumber >= B.lensEscortWave) this.spawnMinion('lensbearer', e.pos, this.baseRng).escortOf = e.id;
     this.events.push({ kind: 'engineer-out', enemyId: e.id, cell: job.site ?? this.cellAt(e.pos.x, e.pos.y) });
   }
 
@@ -4662,6 +4687,7 @@ export class Sim {
       r.studyLeft = B.studySeconds;
     }
     if (stage >= 2 && !this.enemies.some((x) => x.kind === 'dartgun')) this.spawnMinion('dartgun', e.pos, this.baseRng);
+    if (stage >= 2) this.spawnMinion('lensbearer', e.pos, this.baseRng);
     if (stage >= 3) this.spawnMinion('thief', e.pos, this.baseRng);
     this.stats.stationParties = (this.stats.stationParties ?? 0) + 1;
     this.events.push({ kind: 'station-sent', enemyId: e.id, count: n, squad: false });
@@ -4731,8 +4757,10 @@ export class Sim {
       const bite = (prey: Enemy): void => {
         if (b.cooldown > 0) return;
         b.cooldown = 1 / ((b.puppet?.rate ?? B.broodRate) * pw.tempo);
+        this.unitStrike += 1;
         this.payloadHit({ ...pw.fx, quiet: true }, prey, (b.puppet?.bite ?? B.broodDamage) * pw.potency,
           prey.pos.x - b.pos.x, prey.pos.y - b.pos.y);
+        this.unitStrike -= 1;
       };
       const inReach = B.broodEngageDist + ENEMY_RADIUS;
       const fight = (prey: Enemy): void => {
@@ -4875,7 +4903,9 @@ export class Sim {
       const bite = (prey: Enemy): void => {
         if (m.cooldown > 0) return;
         m.cooldown = 1 / (B.motherRate * pw.tempo);
+        this.unitStrike += 1;
         this.payloadHit({ ...pw.fx, quiet: true }, prey, B.motherBite * pw.potency, prey.pos.x - m.pos.x, prey.pos.y - m.pos.y);
+        this.unitStrike -= 1;
       };
       const order = m.orders[0];
       if (order && (order.kind === 'move' || order.kind === 'return')) {
@@ -5343,7 +5373,9 @@ export class Sim {
         const mult = caste === 'science' ? B.harrierVsScience : caste === 'war' ? B.harrierVsWar : 1;
         this.quills.push({ from: { ...u.pos }, to: { ...prey.pos }, ttl: 0.15 });
         const was = prey.hp;
+        this.unitStrike += 1;
         this.damageEnemy(prey, B.harrierDamage * mult, 1, 0, u.id, true);
+        this.unitStrike -= 1;
         if (was > 0 && !this.enemies.includes(prey)) this.stats.harrierKills = (this.stats.harrierKills ?? 0) + 1;
       };
       const inRange = (from: Vec): Enemy | null => this.preyNear(from, B.harrierRange, from, false);
@@ -5848,7 +5880,7 @@ export class Sim {
         for (const e of [...this.enemies]) {
           if (e.burrowed || this.isAirborne(e) || dist(t.pos, e.pos) > radius) continue;
           this.applyHitEffects(e, { slowMult: Math.min(sw.slow, stats.slowMult), slowDur: 0.3, poisonDps: 0, poisonDur: 0 });
-          e.hp -= sw.dps * stats.potency * DT; // a medium, not a hit: shells and caps don't stop it
+          e.hp -= this.domeSoak(e, sw.dps * stats.potency * DT); // a medium, not a hit: shells and caps don't stop it (a dome does)
           if (pulse) this.payloadHit(fx, e, 0);
           if (this.enemies.includes(e) && e.hp <= stats.execute) {
             this.biomass += B.swampBiomassPerKill;
@@ -6006,7 +6038,97 @@ export class Sim {
   }
 
 
+  /** Depth of your walking units' strikes in progress: a dome lets these through (Oct 2 2026). */
+  private unitStrike = 0;
+  /** Every living dome bearer, refreshed each tick (updateDomes). */
+  domeBearers: Enemy[] = [];
+
+  /** A bearer's dome, full, at its tier's size. */
+  private raiseDome(e: Enemy): void {
+    const d = enemySpec(e.kind).dome;
+    if (!d) return;
+    e.domeMax = Math.round(d.pool * (1 + B.domeTierScale * this.tier));
+    e.domeHp = e.domeMax;
+  }
+
+  /** The standing dome over this body (its own or a bearer's of its side within reach), or null. */
+  domeOver(e: Enemy): Enemy | null {
+    const side = enemySpec(e.kind).caste === 'science' ? 'science' : 'war';
+    for (const b of this.domeBearers) {
+      if ((b.domeHp ?? 0) <= 0) continue;
+      const bs = enemySpec(b.kind);
+      if ((bs.caste === 'science' ? 'science' : 'war') !== side) continue;
+      if (b === e || dist(b.pos, e.pos) <= bs.dome!.radius) return b;
+    }
+    return null;
+  }
+
+  /**
+   * What of a blow reaches the body under a dome: your walking units' strikes all of it; anything else (limbs, creep,
+   * clouds, fire, poison) is soaked out of the dome's pool first. An emptied dome BREAKS.
+   */
+  private domeSoak(e: Enemy, dmg: number): number {
+    if (dmg <= 0 || this.unitStrike > 0 || this.domeBearers.length === 0) return dmg;
+    const b = this.domeOver(e);
+    if (!b) return dmg;
+    const took = Math.min(dmg, b.domeHp ?? 0);
+    b.domeHp = (b.domeHp ?? 0) - took;
+    b.domeHitAt = this.time;
+    this.stats.domeSoaked = (this.stats.domeSoaked ?? 0) + took;
+    if (b.domeHp <= 0) {
+      b.domeHp = 0;
+      b.domeDownUntil = this.time + enemySpec(b.kind).dome!.recharge;
+      this.stats.domesBroken = (this.stats.domesBroken ?? 0) + 1;
+      this.events.push({ kind: 'dome-broken', enemyId: b.id, bearer: b.kind });
+    }
+    return dmg - took;
+  }
+
+  /** The domes' clock: a broken one comes back full when its time is up, if its bearer lives. */
+  private updateDomes(): void {
+    this.domeBearers = this.enemies.filter((x) => enemySpec(x.kind).dome);
+    for (const b of this.domeBearers) {
+      if (b.domeDownUntil !== undefined && this.time >= b.domeDownUntil) {
+        b.domeDownUntil = undefined;
+        b.domeHp = b.domeMax ?? 0;
+        this.events.push({ kind: 'dome-up', enemyId: b.id, bearer: b.kind });
+      }
+    }
+  }
+
+  /**
+   * How many Aegis Deacons the hive adds to the next siege to ANSWER a tower-heavy defence (Oct 2 2026): from tier
+   * domeAnswerMinTier, one per domeLimbsPer limbs past domeLimbsFree, up to domeAnswerMax. None if banned.
+   */
+  domeAnswer(): number {
+    if (this.tier < B.domeAnswerMinTier) return 0;
+    if ((this.cfg.bannedEnemies ?? []).includes('aegis')) return 0;
+    return Math.min(B.domeAnswerMax, Math.max(0, Math.floor((this.towers.length - B.domeLimbsFree) / B.domeLimbsPer)));
+  }
+
+  /**
+   * A Lens Bearer keeps its party under glass: it walks to the middle of the nearest science bodies (the engineer it
+   * escorts first) and stays among them; with nobody left to cover it goes home.
+   */
+  private followParty(e: Enemy, speed: number): void {
+    const lead = e.escortOf !== undefined ? this.enemies.find((x) => x.id === e.escortOf) : undefined;
+    let near: Enemy | null = lead ?? null;
+    if (!near) {
+      let bestD = Infinity;
+      for (const o of this.enemies) {
+        if (o === e || o.leaving || enemySpec(o.kind).caste !== 'science' || enemySpec(o.kind).dome) continue;
+        const d = dist(e.pos, o.pos);
+        if (d < bestD) { bestD = d; near = o; }
+      }
+    }
+    if (!near) { e.leaving = true; return; }
+    if (dist(e.pos, near.pos) > 14) this.stepConstrained(e, near.pos, speed);
+  }
+
   private damageEnemy(e: Enemy, dmg: number, yieldMult: number, capBonus = 0, srcId?: number, quiet = false): void {
+    // A DOME over it soaks what your limbs throw; your walking units' blows pass straight through (unitStrike).
+    dmg = this.domeSoak(e, dmg);
+    if (dmg <= 0) return;
     // Ablative carapace: the shell eats whole HITS — few big blows strip it
     // fastest (the phalanx's mirror). Poison seeps through, it is not a hit.
     if (e.hitShield !== undefined && e.hitShield > 0) {
