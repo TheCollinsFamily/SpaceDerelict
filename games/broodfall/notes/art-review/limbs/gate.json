@@ -840,13 +840,13 @@
   },
   "venom-reach side": {
    "pass": true,
-   "edge": 0.995,
+   "edge": 1,
    "beside": 0,
-   "rival": "S 0.777",
+   "rival": "S 0.766",
    "tiles": [
-    0.99,
+    0.9,
     1,
-    0.99,
+    1,
     1
    ]
   },
@@ -1369,6 +1369,24 @@
    "tiles": [
     0.85
    ]
+  },
+  "bone front": {
+   "pass": true,
+   "edge": 1,
+   "beside": 0,
+   "rival": null,
+   "tiles": [
+    0.88
+   ]
+  },
+  "swarm back": {
+   "pass": true,
+   "edge": 1,
+   "beside": 0,
+   "rival": null,
+   "tiles": [
+    0.94
+   ]
   }
  },
  "lure": {
@@ -1397,6 +1415,15 @@
    "rival": null,
    "tiles": [
     0.9
+   ]
+  },
+  "venom front": {
+   "pass": true,
+   "edge": 0.99,
+   "beside": 0,
+   "rival": null,
+   "tiles": [
+    0.91
    ]
   }
  },
@@ -1462,6 +1489,15 @@
    "rival": null,
    "tiles": [
     0.87
+   ]
+  },
+  "bone-swarm back": {
+   "pass": true,
+   "edge": 0.991,
+   "beside": 0,
+   "rival": null,
+   "tiles": [
+    0.94
    ]
   }
  }

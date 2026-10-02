@@ -14,7 +14,9 @@ const API_KEY = process.env.RFAB_API_KEY;
 /** Raw stills and clips: not committed (art-src/ is in .gitignore). */
 export const RAW_DIR = path.join(process.env.BROODFALL_ART_SRC ? path.resolve(process.env.BROODFALL_ART_SRC) : path.join(ROOT, 'art-src'), 'probes');
 export const OUT_DIR = path.join(ROOT, 'notes', 'probes', process.env.PROBE_DATE || '2026-09-29');
-const STILL_MODEL = process.env.PROBE_STILL_MODEL || 'openai:gpt-image-2';
+// Oct 2 2026: the direct openai:* image route is down (its key cut off; failed jobs still charged): the same GPT Image 2
+// through SeeGen, which takes the same reference pictures (tested on a look edit).
+const STILL_MODEL = process.env.PROBE_STILL_MODEL || 'seegen:gpt-image-2';
 // Only seegen: models take an END frame (start == end is what closes the loop). The last one
 // does not: it is there for the few pictures SeeGen refuses without saying why, and a walk
 // repeats itself anyway, so the loop is still found.
