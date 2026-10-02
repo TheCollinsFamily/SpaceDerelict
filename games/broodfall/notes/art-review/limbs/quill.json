@@ -2,7 +2,7 @@
  "family": "quill",
  "frames": 250,
  "atlasKB": 2744,
- "failed": 4,
+ "failed": 0,
  "checks": [
   {
    "name": "where it stands is marked",
@@ -11,8 +11,8 @@
   },
   {
    "name": "where it fires from is marked",
-   "ok": false,
-   "value": "not marked: node tools/art/muzzles.mjs quill"
+   "ok": true,
+   "value": "[[0.579,0.02],[0.762,0.028],[0.43,0.118],[0.902,0.16]]"
   },
   {
    "name": "idle: loop closes",
@@ -71,8 +71,8 @@
   },
   {
    "name": "from behind, where it fires from is marked",
-   "ok": false,
-   "value": "not marked: node tools/art/muzzles.mjs --back quill"
+   "ok": true,
+   "value": "[[0.389,0.02],[0.153,0.071],[0.534,0.142],[0.012,0.279]]"
   },
   {
    "name": "from behind, idle: loop closes",
@@ -126,8 +126,8 @@
   },
   {
    "name": "from the side, where it fires from is marked",
-   "ok": false,
-   "value": "not marked: node tools/art/muzzles.mjs quill"
+   "ok": true,
+   "value": "[[0.504,0.02],[0.198,0.116],[0.795,0.116],[0.346,0.24]]"
   },
   {
    "name": "from the side, idle: loop closes",
@@ -181,8 +181,8 @@
   },
   {
    "name": "from behind the side, where it fires from is marked",
-   "ok": false,
-   "value": "not marked: node tools/art/muzzles.mjs quill"
+   "ok": true,
+   "value": "[[0.521,0.022],[0.363,0.146],[0.682,0.317],[0.22,0.451]]"
   },
   {
    "name": "from behind the side, idle: loop closes",

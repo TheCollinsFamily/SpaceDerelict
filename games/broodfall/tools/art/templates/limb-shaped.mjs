@@ -20,7 +20,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { makeClip, makeStill, pool } from '../rfab.mjs';
 import { AWAY, QUIET, THEMES, WITHER, limb, rawDirOf } from '../limbs.mjs';
-import { blank, borderColour, readImage, resize, writeJpg, writePng, over } from '../lib/img.mjs';
+import { blank, borderColour, paste, readImage, resize, writeJpg, writePng, over } from '../lib/img.mjs';
 import { keyFrame, keyOf, unionBox } from '../lib/key.mjs';
 import { SHAPES, VIEW_FACING, cellsOf, drawPlate, fitPlate } from '../lib/plate.mjs';
 import { REVIEW, SRC, ROOT } from '../lib/manifest.mjs';
@@ -109,9 +109,9 @@ function viewWords(l, view) {
   return l.shapedBackSide ?? 'We see it from behind and the other side: its front faces away from the camera, toward the upper left.';
 }
 
-export function stillPrompt(l, view) {
+export function stillPrompt(l, view, first = 'front') {
   const accent = l.accent ?? THEMES[l.theme].accent;
-  const same = view === 'front' || l.plate === 'line3'
+  const same = view === first || l.plate === 'line3'
     ? ''
     : 'It is the SAME organism as the one in the LAST picture, the same parts, material and colour, seen from another side; but its SHAPE on the ground is the slab of the FIRST picture, not the shape it has in the LAST picture. ';
   return `${plateWords(l, view)} EDIT that picture: KEEP the slab exactly as it is, the same shape, the same place and the same size, ` +
@@ -197,8 +197,9 @@ function muzzleFrom(l, view, img, box, fit) {
     let best = 0;
     cells.forEach(([x, y], i) => { if (x * step[0] + y * step[1] > cells[best][0] * step[0] + cells[best][1] * step[1]) best = i; });
     const th = (fit.tw * 76) / 128;
-    // Toward the front end, three quarters of the way from the middle: the nozzle sits at the end, not past it.
-    return [share([fit.x + ((s[best][0] - mx) * fit.tw) / 2 * 0.75, fit.y + ((s[best][1] - my) * th) / 2 * 0.75 - th * 0.35])];
+    // Toward the front end, three quarters of the way from the middle (the nozzle sits at the end, not past it), and
+    // raised to the height of its mouth: above where the limb stands (tests/muzzles.test.ts).
+    return [share([fit.x + ((s[best][0] - mx) * fit.tw) / 2 * 0.75, fit.y + ((s[best][1] - my) * th) / 2 * 0.75 - th * 0.95])];
   }
   // The top of the solid at every column.
   const tops = [];
@@ -238,15 +239,18 @@ export async function makeShapedLimb(family, { bakeOnly = false, stillsOnly = fa
     const stills = {};
     const feet = fs.existsSync(feetFile(dir)) ? JSON.parse(fs.readFileSync(feetFile(dir), 'utf8')) : {};
     const muzzles = {};
-    for (const view of views) {
+    // `drawFrom`: a limb whose approved view is another (Oct 2 2026, Collins: the Frond's back was right and its front
+    // was not): that view is drawn first, kept, and the others are drawn from it.
+    const first = l.drawFrom ?? 'front';
+    for (const view of [first, ...views.filter((v) => v !== first)]) {
       const plate = plateOf(l, dir, view);
       // Another view is drawn from its own slab and the material, the front given LAST for its look only: given
       // second, its shape won over the slab's (Oct 2 2026: a Choir's back drawn as its front).
       // (A long limb's back is drawn without its front given at all: given, its near end was drawn as its front.)
-      const refs = view === 'front' || l.plate === 'line3' ? [plate.file, materialRef()] : [plate.file, materialRef(), stills.front];
+      const refs = view === first || l.plate === 'line3' ? [plate.file, materialRef()] : [plate.file, materialRef(), stills[first]];
       stills[view] = await makeStill({
         slug: `${family} on its ground, ${view}`, out: path.join(dir, `${view}.png`), refFiles: refs,
-        prompt: stillPrompt(l, view), key: key.hex, keyName: key.name, quality: 'high',
+        prompt: stillPrompt(l, view, first), key: key.hex, keyName: key.name, quality: 'high',
       });
       const found = footFromPlate(l, dir, view, stills[view], plate);
       feet[view] = found.foot;
@@ -254,6 +258,13 @@ export async function makeShapedLimb(family, { bakeOnly = false, stillsOnly = fa
     }
     fs.writeFileSync(feetFile(dir), `${JSON.stringify(feet, null, 1)}\n`);
     fs.writeFileSync(path.join(dir, 'muzzles.json'), `${JSON.stringify(muzzles, null, 1)}\n`);
+    // Every view side by side (Collins, Oct 2 2026: "the front and the back don't look like the same thing"): LOOK that they
+    // are the SAME object before paying for clips.
+    const S = 384;
+    const sheet = blank(S * views.length, S, [30, 30, 30, 255]);
+    views.forEach((v, i) => paste(sheet, resize(readImage(stills[v]), S, S), i * S, 0));
+    writeJpg(path.join(REVIEW, 'limbs', 'shaped', `${family}-views.jpg`), sheet, 3);
+    console.log(`[shaped] ${family}: its views side by side in notes/art-review/limbs/shaped/${family}-views.jpg (LOOK: one object)`);
     if (stillsOnly) return { family, checks: [] };
     // The clips of every view: an idle, its acting clip, and (front) its death.
     const jobs = [];

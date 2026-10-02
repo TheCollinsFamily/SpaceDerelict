@@ -1,8 +1,8 @@
 {
  "family": "conduit",
  "frames": 239,
- "atlasKB": 2634,
- "failed": 1,
+ "atlasKB": 2616,
+ "failed": 0,
  "checks": [
   {
    "name": "where it stands is marked",
@@ -197,12 +197,12 @@
   {
    "name": "from behind the side, fire: frames swallowed by a flash or a cloud are few",
    "ok": true,
-   "value": "20 left out"
+   "value": "11 left out"
   },
   {
    "name": "from behind the side, fire: ends the size it began",
-   "ok": false,
-   "value": "52% change"
+   "ok": true,
+   "value": "1% change"
   },
   {
    "name": "from both sides: it has the views",

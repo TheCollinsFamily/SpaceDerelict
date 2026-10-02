@@ -347,7 +347,8 @@ export function bakeView(l, dir, view, check, F) {
     room.up = Math.max(room.up, Math.min(r.up, rest.up * 1.6));
     room.down = Math.max(room.down, Math.min(r.down, rest.down * 1.6));
   }
-  const side = Math.ceil(Math.max(2 * room.side, room.up + room.down) * 1.06);
+  // (A limb on its ground plate: the frame also holds all of its slab, which may be wider than what stands on it.)
+  const side = Math.ceil(Math.max(2 * room.side, room.up + room.down, 2.04 * foot.a) * 1.06);
   const x0 = Math.round(foot.x - side / 2);
   const y0 = Math.round(foot.y - room.up - (side - (room.up + room.down)) / 2);
   const anchor = [0.5, Number(((foot.y - y0) / side).toFixed(4))];

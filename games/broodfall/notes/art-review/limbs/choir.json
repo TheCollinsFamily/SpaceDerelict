@@ -1,7 +1,7 @@
 {
  "family": "choir",
  "frames": 130,
- "atlasKB": 2116,
+ "atlasKB": 1815,
  "failed": 0,
  "checks": [
   {
@@ -62,7 +62,7 @@
   {
    "name": "from behind, where it stands is marked",
    "ok": true,
-   "value": "0.48, 0.57, 1.01"
+   "value": "0.46, 0.51, 1.08"
   },
   {
    "name": "from behind, idle: loop closes",
@@ -72,17 +72,17 @@
   {
    "name": "from behind, idle: it moves",
    "ok": true,
-   "value": 0.36
+   "value": 0.23
   },
   {
    "name": "from behind, idle: it is calm",
    "ok": true,
-   "value": 0.36
+   "value": 0.23
   },
   {
    "name": "from behind, idle: inside the frame",
    "ok": true,
-   "value": "74,138-580,510"
+   "value": "116,171-542,508"
   },
   {
    "name": "from behind, idle: no background tint on the outline",
@@ -92,7 +92,7 @@
   {
    "name": "from behind, idle: ends the size it began",
    "ok": true,
-   "value": "0% change"
+   "value": "2% change"
   },
   {
    "name": "from behind, fire: no background tint on the outline",
@@ -102,7 +102,7 @@
   {
    "name": "from behind, fire: ends the size it began",
    "ok": true,
-   "value": "2% change"
+   "value": "1% change"
   },
   {
    "name": "from behind: it has a view",

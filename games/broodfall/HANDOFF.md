@@ -861,6 +861,48 @@ the option to change the model she runs on."
   `tools/shot-yoke-connect.mjs` (a real local backend, the whole path by clicks; see its header
   for the three backend commands). JPEGs: `notes/screens/2026-09-30/connect-*.jpg`.
 
+## The limb art pass: limbs drawn for their ground, and their upgrade looks (Oct 2 2026)
+
+Collins, of the class-zero footprints: "ok this is WAY better, redesign the art around this" and "the inexpensive
+4-square thing is ok ... an unusually cheap, even for its low power, tower where what you 'pay for' to use it is
+early-game space". And: "keep the original art in case we use it for something else".
+
+- **Applied in the game** (`content/data.ts`): lines of three (Impaler, Creep Lance, Ember Sac, Resonance
+  Amplifier), T (Frond, Choir, Blight Vent), elbows of three (Quill, Conduit), L of four (Snare Bed, Meat Press), the
+  Bombard a 2x2; the Ward back to one square (pre-Sep-29 stats); the Caustic Mister stays a 2x2 at 6 war (cheap
+  ground). Stats otherwise unchanged (measured: paying for ground made it too easy). The Amplifier works on EVERY limb
+  touching its length (`engine.touch`, `Sim.touchingLimbs`, `Sim.engineTargets`). Measured: naive hold-12 5/10,
+  guardrail 3:0. DESIGN.md "Shaped footprints".
+- **The old art is kept:** `public/art/limbs-legacy/<family>/` (atlases and upgrade looks of the 19 limbs redrawn)
+  with their manifest entries in `public/art/limbs-legacy/legacy-manifest.json` (`node tools/art/archive-limbs.mjs
+  <families>`; never moves or deletes). Raw: the old drawings stay in `art-src/limbs/<family>/`; a redrawn limb draws
+  into `art-src/limbs/<family>-ground/` (its earlier takes kept in `v1/`..`v5/`).
+- **Drawn for its ground** (`node tools/art/make.mjs shaped <families> [--stills|--bake]`,
+  `tools/art/templates/limb-shaped.mjs`, `tools/art/lib/plate.mjs`): a raised SLAB of the footprint seen as the board
+  sees it is EDITED into the limb (told which way each arm reaches across the picture; a long limb's slab has a hole
+  at its front end). Its views: front and back; an elbow or an L also its two sides (`side`, `backside`: mirrored it
+  would stand on the wrong cells; `limbSideOf` in isoRender shows them). Where it stands is the slab found again in the
+  drawing (`fitPlate`, `feet.json`); where it fires from is found in the picture (`muzzles.json`: a line's front
+  end, else its peaks). The renderer lays a plated limb's slab on the picture of its cells (`plateOnBoard`).
+  `limbs.mjs` GROUND holds each one's shape, look (the look-alike fixes: Vent a chimney, Ember a nozzle on a sac,
+  Lure a squat pitcher, Ocular a tall periscope, Press a screw press, Conduit a bent pipe, Reliquary a sealed casket,
+  Lobber a sac on a sling arm), and its own back words where the model got the back wrong. `drawFrom: 'back'` draws
+  the back first and the front from it (the Frond, Collins: "the front is bad and does not look like the back").
+  **Before baking any limb, look at `notes/art-review/limbs/shaped/<family>-views.jpg`: every view must be ONE
+  object** (Collins: "the front and the back don't look like the same thing").
+- **Redrawn and baked:** Choir (its v4 back, Collins's pick), Impaler, Lance, Ember, Amplifier, Frond, Blight Vent,
+  Quill, Conduit, Snare Bed, Meat Press, Spore Bombard, Lure, Ocular, Reliquary, Lobber. Screens:
+  `notes/screens/2026-10-02/limbart/` (`node tools/shot-footprint.mjs --plan --out ...`).
+- **Upgrade looks a limb can reach** (`node tools/art/make.mjs looks <families> [--only=..] [--stills|--bake]`,
+  `tools/art/templates/limb-looks.mjs`): REACHABLE (held to the codex by `tests/looks.test.ts`), the class words of
+  notes/UPGRADE-LOOKS.md on each limb's working part (`part` in limbs.mjs), every view, marks carried from the limb
+  (no marks by eye), `ground: true` in the manifest (a redrawn limb keeps only the looks drawn for its ground).
+  Drawn: the 45 looks of the 18 one-cell limbs that were not redrawn. A limb whose back picture was not recovered gets
+  its looks' backs as a half-turn of each look's front. Review: `notes/art-review/limbs/looks/`.
+- **Not done yet:** the looks of the 16 redrawn limbs (their slabs make them a second pass); the Brood Pit's looks (its
+  raw art is only in art-src-new); `tests/iso` "a picture for every enemy" fails on the new unit `flametrooper`
+  (another session's, no art yet).
+
 ## Footprints: every shape, and the plan for which limb takes which (Oct 1 2026)
 
 Collins: "the total lack of diversity in footprint ... is kind of a KEY part of tower defence strategy ... one

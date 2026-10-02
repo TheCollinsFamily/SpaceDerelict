@@ -84,7 +84,8 @@ describe('upgrade looks: the baked variants', () => {
   const withVariants = Object.entries(m.limbs as Record<string, { back?: unknown; variants?: Record<string, any> }>).filter(([, a]) => a.variants);
 
   it('the three prototype limbs have every class look and one superstructure', () => {
-    for (const f of ['spitter', 'lasher', 'frond']) {
+    // (The Frond was drawn anew on its T, Oct 2 2026: its prototype looks are kept in public/art/limbs-legacy/frond/.)
+    for (const f of ['spitter', 'lasher']) {
       const keys = Object.keys(m.limbs[f]?.variants ?? {});
       for (const c of LOOK_CLASSES) expect(keys, `${f} ${c}`).toContain(c);
       expect(keys.filter((k) => k.includes('+')).length, f).toBe(1);

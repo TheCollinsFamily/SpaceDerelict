@@ -19,7 +19,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { makeClip, makeStill, pool } from '../rfab.mjs';
-import { AWAY, QUIET, THEMES, limb, rawDirOf } from '../limbs.mjs';
+import { AWAY, BACK, QUIET, THEMES, limb, rawDirOf } from '../limbs.mjs';
 import { variantAtlas } from '../limb-variants.mjs';
 import { FRAME, STEADY, bakeView } from './limb.mjs';
 import { viewsOf } from './limb-shaped.mjs';
@@ -145,24 +145,36 @@ export async function makeLooks(family, { only = [], stillsOnly = false, bakeOnl
   if (!l) throw new Error(`no limb "${family}"`);
   const keys = looksToDraw(family, only);
   const bases = basesOf(l);
-  const views = Object.keys(bases);
+  // A limb seen from behind whose own picture from behind was not recovered (Oct 1 2026, the lost art-src): its
+  // looks are drawn from behind as a half-turn of each look's own front (the BACK edit), placed by its backFoot mark.
+  const backFromFront = !l.plate && l.back && !bases.back && l.backFoot && fs.existsSync(path.join(SRC, 'limbs', rawDirOf(l), 'styled.png'));
+  const views = [...Object.keys(bases), ...(backFromFront ? ['back'] : [])];
   if (!views.length) throw new Error(`${family}: no picture of the limb to edit (draw the limb first)`);
   if (!bakeOnly) {
-    const pics = await pool(keys.flatMap((key) => views.map((view) => ({ key, view }))), 3, async ({ key, view }) => {
+    const drawn = new Set(Object.keys(bases));
+    const pic = async ({ key, view }) => {
       const dir = lookDir(l, key);
       fs.mkdirSync(dir, { recursive: true });
       const k = keyFor(l, key);
+      const half = !drawn.has(view);
       const still = await makeStill({
-        slug: `${family} ${key} look, ${view}`, out: path.join(dir, `${view}.png`), refFiles: [bases[view].file],
-        prompt: editWords(l, view, key), key: k.hex, keyName: k.name, quality: 'high',
+        slug: `${family} ${key} look, ${view}`, out: path.join(dir, `${view}.png`),
+        refFiles: [half ? path.join(dir, 'front.png') : bases[view].file],
+        prompt: half
+          ? `${BACK} ${l.back} It keeps every part it has in the reference picture, now seen from behind. Its one accent stays as it is: ${l.accent ?? THEMES[l.theme].accent}.`
+          : editWords(l, view, key),
+        key: k.hex, keyName: k.name, quality: 'high',
       });
-      const marks = path.join(dir, 'marks.json');
-      const all = fs.existsSync(marks) ? JSON.parse(fs.readFileSync(marks, 'utf8')) : {};
-      all[view] = carry(l, view, bases[view], still);
-      fs.writeFileSync(marks, `${JSON.stringify(all, null, 1)}\n`);
-    });
+      const all = fs.existsSync(path.join(dir, 'marks.json')) ? JSON.parse(fs.readFileSync(path.join(dir, 'marks.json'), 'utf8')) : {};
+      all[view] = half ? { foot: l.backFoot, muzzle: l.backMuzzle } : carry(l, view, bases[view], still);
+      fs.writeFileSync(path.join(dir, 'marks.json'), `${JSON.stringify(all, null, 1)}\n`);
+    };
+    // The views drawn from the limb's own pictures first; a back drawn from a look's front after it.
+    const first = await pool(keys.flatMap((key) => [...drawn].map((view) => ({ key, view }))), 3, pic);
+    const then = await pool(keys.flatMap((key) => views.filter((v) => !drawn.has(v)).map((view) => ({ key, view }))), 3, pic);
+    const pics = [...first, ...then];
     pics.forEach((r) => { if (!r.ok) console.warn(`[looks] ${family}: a picture failed: ${r.error.message.slice(0, 200)}`); });
-    stillSheet(l, keys, views, bases);
+    stillSheet(l, keys, [...drawn], bases);
     if (stillsOnly) return { family, checks: [] };
     const jobs = [];
     for (const key of keys) for (const view of views) {
@@ -183,9 +195,10 @@ export async function makeLooks(family, { only = [], stillsOnly = false, bakeOnl
   for (const key of keys) {
     try { done.push(bakeLook(l, key, views)); } catch (e) { console.warn(`[looks] ${family} ${key}: not baked: ${e.message.slice(0, 200)}`); }
   }
-  if (done.length) {
-    const F = done[0].F;
-    reviewSheet(done.flatMap((d) => d.rows), F, path.join(REVIEW, 'limbs', 'looks', `${family}-looks.jpg`));
+  // One sheet per frame size (a superstructure is baked in bigger frames than a class look).
+  for (const F of [...new Set(done.map((d) => d.F))]) {
+    const rows = done.filter((d) => d.F === F).flatMap((d) => d.rows);
+    reviewSheet(rows, F, path.join(REVIEW, 'limbs', 'looks', `${family}-looks${F === done[0].F ? '' : `-${F}`}.jpg`));
   }
   return { family, checks: done.flatMap((d) => d.checks) };
 }

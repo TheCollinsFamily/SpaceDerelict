@@ -1,8 +1,8 @@
 {
  "family": "lure",
  "frames": 130,
- "atlasKB": 979,
- "failed": 1,
+ "atlasKB": 927,
+ "failed": 0,
  "checks": [
   {
    "name": "where it stands is marked",
@@ -101,13 +101,13 @@
   },
   {
    "name": "from behind, fire: frames swallowed by a flash or a cloud are few",
-   "ok": false,
-   "value": "31 left out"
+   "ok": true,
+   "value": "29 left out"
   },
   {
    "name": "from behind, fire: ends the size it began",
    "ok": true,
-   "value": "6% change"
+   "value": "4% change"
   },
   {
    "name": "from behind: it has a view",
