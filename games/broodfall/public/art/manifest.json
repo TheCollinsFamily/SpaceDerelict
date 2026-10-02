@@ -5036,6 +5036,145 @@
     }
    }
   },
+  "harrier": {
+   "atlas": "units/harrier.webp",
+   "frame": 128,
+   "cols": 16,
+   "anchor": [
+    0.5,
+    0.94
+   ],
+   "body": 0.404,
+   "flies": false,
+   "anims": {
+    "walk": {
+     "S": {
+      "start": 0,
+      "count": 12,
+      "fps": 12
+     },
+     "SW": {
+      "start": 12,
+      "count": 12,
+      "fps": 12
+     },
+     "W": {
+      "start": 24,
+      "count": 14,
+      "fps": 5.6
+     },
+     "NW": {
+      "start": 38,
+      "count": 14,
+      "fps": 7.64
+     },
+     "N": {
+      "start": 52,
+      "count": 14,
+      "fps": 4.54
+     }
+    },
+    "attack": {
+     "S": {
+      "start": 66,
+      "count": 12,
+      "fps": 3,
+      "anchor": [
+       0.5087,
+       0.8531
+      ],
+      "scale": 1.1027
+     },
+     "SW": {
+      "start": 78,
+      "count": 12,
+      "fps": 3,
+      "anchor": [
+       0.5091,
+       0.8197
+      ],
+      "scale": 1.1477
+     },
+     "W": {
+      "start": 90,
+      "count": 12,
+      "fps": 3
+     },
+     "NW": {
+      "start": 102,
+      "count": 12,
+      "fps": 3,
+      "anchor": [
+       0.4855,
+       0.8084
+      ],
+      "scale": 1.1637
+     },
+     "N": {
+      "start": 114,
+      "count": 12,
+      "fps": 3,
+      "anchor": [
+       0.503,
+       0.8657
+      ],
+      "scale": 1.0867
+     }
+    },
+    "death": {
+     "SW": {
+      "start": 126,
+      "count": 12,
+      "fps": 3,
+      "anchor": [
+       0.5,
+       0.9347
+      ],
+      "scale": 1.0064
+     },
+     "S": {
+      "start": 126,
+      "count": 12,
+      "fps": 3,
+      "anchor": [
+       0.5,
+       0.9347
+      ],
+      "scale": 1.0064
+     },
+     "W": {
+      "start": 126,
+      "count": 12,
+      "fps": 3,
+      "anchor": [
+       0.5,
+       0.9347
+      ],
+      "scale": 1.0064
+     },
+     "NW": {
+      "start": 126,
+      "count": 12,
+      "fps": 3,
+      "anchor": [
+       0.5,
+       0.9347
+      ],
+      "scale": 1.0064
+     },
+     "N": {
+      "start": 126,
+      "count": 12,
+      "fps": 3,
+      "anchor": [
+       0.5,
+       0.9347
+      ],
+      "scale": 1.0064
+     }
+    }
+   }
+  },
   "infestor": {
    "atlas": "units/infestor.webp",
    "frame": 192,
