@@ -24,7 +24,7 @@ import {
 import { LOT_GUTTER, buildingsOf, lotShade, pickVariant, planGuests, variantName } from './biome';
 import { SEEDLING_FLIGHT } from '../../content/underground';
 import { BALANCE } from '../../content/data';
-import { CASTE_COLORS, ENEMY_SIZE, FAMILY_COLORS, Renderer } from './render';
+import { CASTE_COLORS, ENEMY_SIZE, FAMILY_COLORS, Renderer, type PlacementPreview } from './render';
 import { FxLayer, type FxView } from './fx';
 import { CorpseFx, mainCaste, type BodyView } from './corpseFx';
 import { LimbFates } from './limbFx';
@@ -65,7 +65,6 @@ const LONG_SIZE = 1.35;
  * limbs/spine.webp): 2.4 and 1.5 half-tiles, as wide as its lane on the screen.
  * It was 2.88 and 1.6: a wall reached over the blocks on both sides of its street.
  */
-const WALL_TWO = 1.3;
 const WALL_ONE = 0.8;
 const LONG_BACK = 0.25;
 /** What the landing site stands on, as a share of the width of the square it fell on. */
@@ -176,7 +175,7 @@ interface LimbView {
   atlas: import('./art').Atlas;
   /** The upgrade look drawn (null: its own), how far into growing into it (s; -1: not growing), and the flash laid over it as it grows. */
   look: string | null; growT: number; flash: Sprite;
-  /** A Spine Wall three or more cells wide: drawn as ONE wall of end-caps and tiled middle strips (tileWall). */
+  /** A Spine Wall of two or more cells: its chain of wall segments, one per cell (chainWall). */
   parts?: Sprite[];
 }
 interface ShotView { up0: number; ttl0: number; seen: number }
@@ -1589,7 +1588,7 @@ export class IsoRenderer extends Renderer {
       if (art.flat) width = 2 * ((towerSpec(t.family).swamp?.radius ?? 30) + (stats.aoe - towerSpec(t.family).aoe)) * Math.SQRT2 * (g.a / g.cell);
       // A wall's body (its measured band of muscle) is about half of all of it: the band is drawn so that the
       // whole wall spans its lane and no more.
-      else if (art.on === 'street') width = g.a * (wallNarrow ? WALL_ONE : WALL_TWO);
+      else if (art.on === 'street') width = g.a * WALL_ONE; // one segment per cell, chained (chainWall), never one wall stretched
       // An upgrade look may be drawn bigger than its ground (a superstructure towers over its block).
       const scale = (width / (side.body * art.frame)) * (art.size ?? 1);
 
@@ -1697,7 +1696,7 @@ export class IsoRenderer extends Renderer {
         v.flash.zIndex = v.sprite.zIndex + 0.1;
       }
       // A wall across a street three or more cells wide is drawn as one wall from its own picture (Oct 2 2026).
-      if (art.on === 'street' && sim.cellsOf(t).length >= 3) this.tileWall(sim, v, t);
+      if (art.on === 'street' && sim.cellsOf(t).length >= 2) this.chainWall(sim, v, t);
       else if (v.parts) { v.parts.forEach((s) => s.destroy()); v.parts = undefined; v.sprite.renderable = true; v.over.renderable = true; }
       // The parts of the limbs it was built from, grafted on its body.
       if (!art.flat) this.fates.graft(this.sorted, t, art, side, p.x, risen, scale, mirror, width, v.sprite.zIndex, v.sprite.visible, v.sprite.tint as number);
@@ -1727,71 +1726,36 @@ export class IsoRenderer extends Renderer {
     this.fates.step(dt);
   }
 
-  /** Does the street through this cell run along world x? Then a wall across it lies along world y. */
-  /** Cut textures of a wall's frames: a strip or an end of the frame, cached by frame and cut. */
-  private wallCuts = new Map<string, Texture>();
-  private wallCut(tex: Texture, x0: number, w: number): Texture {
-    const f = tex.frame;
-    const a = Math.max(0, Math.round(x0));
-    const b = Math.min(f.width, Math.round(x0 + w));
-    const key = `${tex.uid}:${a}:${b}`;
-    let t = this.wallCuts.get(key);
-    if (!t) {
-      t = new Texture({ source: tex.source, frame: new Rectangle(f.x + a, f.y, Math.max(1, b - a), f.height) });
-      this.wallCuts.set(key, t);
-    }
-    return t;
-  }
-
   /**
-   * A Spine Wall that crosses a street three or more cells wide (Collins, Oct 2 2026: "just cross the street between two
-   * points"), drawn as ONE wall from its own picture, at all four camera turns: the picture is split at its foot into a
-   * left and a right end, each laid against the building at its end of the street, and the band between them is filled
-   * with narrow strips cut from the middle of the picture, laid at every half cell along the wall. The band in the
-   * picture runs along the iso diagonal, so each strip, set at its own point of the wall's line, joins its neighbours.
-   * The whole sprite is not drawn (it stays for its shadow, marks and picking).
+   * A Spine Wall of two or more cells is a CHAIN of wall segments, one standard wall picture on each of its cells,
+   * each laid across the street the way the wall lies (Collins, Oct 2 2026: "you should be chaining wall segments,
+   * e.g. a wall covering two spaces should be two wall images chained, not a giant one"). The whole sprite is not
+   * drawn (it stays for its shadow, marks and picking).
    */
-  private tileWall(sim: Sim, v: LimbView, t: Tower): void {
+  private chainWall(sim: Sim, v: LimbView, t: Tower): void {
     const g = this.geo;
-    const tex = v.sprite.texture;
-    const f = tex.frame;
-    const ax = v.sprite.anchor.x * f.width;
-    const ay = v.sprite.anchor.y;
-    const sx = v.sprite.scale.x;
-    const sy = v.sprite.scale.y;
-    const mirror = sx < 0;
-    const pts = sim.cellsOf(t).map((c) => { const cc = sim.cellCenter(c); return project(g, cc.x, cc.y, this.heightOf(sim, c)); }).sort((a, b) => a.x - b.x);
-    const meanY = pts.reduce((n, p) => n + p.y, 0) / pts.length;
+    const cells = sim.cellsOf(t);
+    const pts = cells.map((c) => { const cc = sim.cellCenter(c); return { c, p: project(g, cc.x, cc.y, this.heightOf(sim, c)) }; });
+    const meanY = pts.reduce((n, q) => n + q.p.y, 0) / pts.length;
+    const meanX = pts.reduce((n, q) => n + q.p.x, 0) / pts.length;
+    const dx = v.sprite.position.x - meanX;
     const dy = v.sprite.position.y - meanY;
-    // Every half cell along the wall, from its first cell to its last.
-    const samples: Array<{ x: number; y: number }> = [];
-    for (let i = 0; i < pts.length; i++) {
-      samples.push(pts[i]);
-      if (i + 1 < pts.length) samples.push({ x: (pts[i].x + pts[i + 1].x) / 2, y: (pts[i].y + pts[i + 1].y) / 2 });
-    }
-    const half = Math.abs(pts[1].x - pts[0].x) / 2;
-    const stripW = (half * 1.08) / Math.abs(sx); // a hair wider than the step, so no seam shows
-    const need = samples.length + 2;
     if (!v.parts) v.parts = [];
-    while (v.parts.length < need) { const s = new Sprite(); this.sorted.addChild(s); v.parts.push(s); }
-    while (v.parts.length > need) v.parts.pop()!.destroy();
-    const put = (s: Sprite, cut: Texture, anchorX: number, x: number, y: number) => {
-      s.texture = cut;
-      s.anchor.set(anchorX, ay);
-      s.scale.set(sx, sy);
-      s.position.set(x, y + dy);
-      s.zIndex = v.sprite.zIndex;
+    while (v.parts.length < pts.length) { const s = new Sprite(); this.sorted.addChild(s); v.parts.push(s); }
+    while (v.parts.length > pts.length) v.parts.pop()!.destroy();
+    // Back to front, so a nearer segment covers the one behind it.
+    const order = [...pts].sort((a, b) => a.p.y - b.p.y);
+    order.forEach((q, i) => {
+      const s = v.parts![i];
+      s.texture = v.sprite.texture;
+      s.anchor.copyFrom(v.sprite.anchor);
+      s.scale.copyFrom(v.sprite.scale);
+      s.position.set(q.p.x + dx, q.p.y + dy);
+      s.zIndex = v.sprite.zIndex + i * 0.001;
       s.tint = v.sprite.tint;
       s.alpha = v.sprite.alpha;
       s.visible = v.sprite.visible;
-    };
-    // The ends: the half of the picture that reaches AWAY from the wall's middle on screen.
-    const leftHalf = mirror ? this.wallCut(tex, ax, f.width - ax) : this.wallCut(tex, 0, ax);
-    const rightHalf = mirror ? this.wallCut(tex, 0, ax) : this.wallCut(tex, ax, f.width - ax);
-    put(v.parts[0], leftHalf, mirror ? 0 : 1, pts[0].x, pts[0].y);
-    put(v.parts[1], rightHalf, mirror ? 1 : 0, pts[pts.length - 1].x, pts[pts.length - 1].y);
-    const mid = this.wallCut(tex, ax - stripW / 2, stripW);
-    samples.forEach((p, i) => put(v.parts![i + 2], mid, 0.5, p.x, p.y));
+    });
     v.sprite.renderable = false;
     v.over.renderable = false;
   }
@@ -1819,6 +1783,10 @@ export class IsoRenderer extends Renderer {
   private syncPlaceGhost(sim: Sim): void {
     const pv = this.preview;
     const found = pv && pv.kind === 'tower' && pv.family ? this.art.limbs.get(pv.family) : undefined;
+    // A Spine Wall shows exactly where it will stand before it is placed: one faint segment on each cell it will
+    // take, laid across the street (Collins, Oct 2 2026: "walls should have a shadow over where they are going to
+    // appear when placing so it's not surprising to users").
+    this.syncWallGhost(sim, pv && pv.kind === 'tower' && found && found.art.on === 'street' ? pv : null, found);
     if (!pv || !found || found.art.flat || found.art.on === 'street') {
       if (this.placeGhost) this.placeGhost.visible = false;
       return;
@@ -1856,6 +1824,35 @@ export class IsoRenderer extends Renderer {
     s.visible = true;
   }
 
+
+  private wallGhosts: Sprite[] = [];
+  private syncWallGhost(sim: Sim, pv: PlacementPreview | null, found: ReturnType<typeof this.art.limbs.get>): void {
+    const cells = pv ? (pv.cells ?? [pv.cell]) : [];
+    while (this.wallGhosts.length < cells.length) { const sp = new Sprite(); this.world.addChild(sp); this.wallGhosts.push(sp); }
+    this.wallGhosts.forEach((sp, i) => { sp.visible = i < cells.length; });
+    if (!pv || !found || !cells.length) return;
+    const { art, atlas } = found;
+    const g = this.geo;
+    const side = art;
+    // The way it lies: along its own cells; one cell, across the street the sim reads there.
+    const sorted = [...cells].sort((a, b) => a - b);
+    const alongX = sorted.length >= 2
+      ? sorted[1] - sorted[0] === 1
+      : (sim.placementFor(sorted[0], 'spine')?.facing ?? 'S') === 'E';
+    const mirror = !alongX !== (g.turn % 2 === 1);
+    const scale = ((g.a * WALL_ONE) / (side.body * art.frame)) * (art.size ?? 1);
+    const order = sorted.map((c) => { const cc = sim.cellCenter(c); return project(g, cc.x, cc.y, this.heightOf(sim, c)); }).sort((a, b) => a.y - b.y);
+    order.forEach((q, i) => {
+      const sp = this.wallGhosts[i];
+      sp.texture = atlas.frame(side.anims.idle.start, art.frame, art.cols);
+      sp.anchor.set(side.anchor[0], side.anchor[1]);
+      sp.scale.set(mirror ? -scale : scale, scale);
+      sp.position.set(q.x, q.y);
+      sp.alpha = pv.valid ? 0.75 : 0.35;
+      sp.tint = pv.valid ? 0xffffff : 0xff8070;
+      sp.visible = true;
+    });
+  }
   /** A cell of a shaped limb's ground, outlined (its picture is a placeholder until its own art is drawn). */
   protected drawFootprintCell(_g: Graphics, sim: Sim, cell: number): void {
     const p = this.tileOf(sim, cell, this.heightOf(sim, cell));
