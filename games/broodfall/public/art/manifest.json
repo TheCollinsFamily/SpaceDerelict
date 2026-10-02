@@ -1,6 +1,132 @@
 {
  "version": 1,
  "units": {
+  "aegis": {
+   "atlas": "units/aegis.webp",
+   "frame": 128,
+   "cols": 16,
+   "anchor": [
+    0.5,
+    0.94
+   ],
+   "body": 0.441,
+   "flies": false,
+   "anims": {
+    "walk": {
+     "S": {
+      "start": 0,
+      "count": 14,
+      "fps": 9.88
+     },
+     "SW": {
+      "start": 14,
+      "count": 12,
+      "fps": 12
+     },
+     "W": {
+      "start": 26,
+      "count": 14,
+      "fps": 7
+     },
+     "NW": {
+      "start": 40,
+      "count": 14,
+      "fps": 4.8
+     },
+     "N": {
+      "start": 54,
+      "count": 14,
+      "fps": 8.4
+     }
+    },
+    "attack": {
+     "S": {
+      "start": 68,
+      "count": 12,
+      "fps": 3
+     },
+     "SW": {
+      "start": 80,
+      "count": 12,
+      "fps": 3
+     },
+     "W": {
+      "start": 92,
+      "count": 12,
+      "fps": 3
+     },
+     "NW": {
+      "start": 104,
+      "count": 12,
+      "fps": 3
+     },
+     "N": {
+      "start": 116,
+      "count": 12,
+      "fps": 3
+     }
+    },
+    "death": {
+     "SW": {
+      "start": 128,
+      "count": 12,
+      "fps": 3
+     },
+     "S": {
+      "start": 128,
+      "count": 12,
+      "fps": 3
+     },
+     "W": {
+      "start": 128,
+      "count": 12,
+      "fps": 3
+     },
+     "NW": {
+      "start": 128,
+      "count": 12,
+      "fps": 3
+     },
+     "N": {
+      "start": 128,
+      "count": 12,
+      "fps": 3
+     }
+    },
+    "hit": {
+     "S": {
+      "start": 140,
+      "count": 8,
+      "fps": 2.53,
+      "anchor": [
+       0.5,
+       0.9353
+      ],
+      "scale": 1.0057
+     },
+     "SW": {
+      "start": 148,
+      "count": 8,
+      "fps": 4.17
+     },
+     "W": {
+      "start": 156,
+      "count": 8,
+      "fps": 5.05
+     },
+     "NW": {
+      "start": 164,
+      "count": 8,
+      "fps": 3.84
+     },
+     "N": {
+      "start": 172,
+      "count": 8,
+      "fps": 2.82
+     }
+    }
+   }
+  },
   "bomber": {
    "atlas": "units/bomber.webp",
    "frame": 128,
@@ -2200,6 +2326,152 @@
       "start": 175,
       "count": 1,
       "fps": 1
+     }
+    }
+   }
+  },
+  "lensbearer": {
+   "atlas": "units/lensbearer.webp",
+   "frame": 128,
+   "cols": 16,
+   "anchor": [
+    0.5,
+    0.94
+   ],
+   "body": 0.37,
+   "flies": false,
+   "anims": {
+    "walk": {
+     "S": {
+      "start": 0,
+      "count": 14,
+      "fps": 4.54
+     },
+     "SW": {
+      "start": 14,
+      "count": 14,
+      "fps": 7.64
+     },
+     "W": {
+      "start": 28,
+      "count": 14,
+      "fps": 12
+     },
+     "NW": {
+      "start": 42,
+      "count": 14,
+      "fps": 5.42
+     },
+     "N": {
+      "start": 56,
+      "count": 14,
+      "fps": 4.42
+     }
+    },
+    "attack": {
+     "S": {
+      "start": 70,
+      "count": 12,
+      "fps": 3
+     },
+     "SW": {
+      "start": 82,
+      "count": 12,
+      "fps": 3
+     },
+     "W": {
+      "start": 94,
+      "count": 12,
+      "fps": 3
+     },
+     "NW": {
+      "start": 106,
+      "count": 12,
+      "fps": 3
+     },
+     "N": {
+      "start": 118,
+      "count": 12,
+      "fps": 3
+     }
+    },
+    "death": {
+     "SW": {
+      "start": 130,
+      "count": 12,
+      "fps": 3,
+      "anchor": [
+       0.5029,
+       0.8727
+      ],
+      "scale": 1.0774
+     },
+     "S": {
+      "start": 130,
+      "count": 12,
+      "fps": 3,
+      "anchor": [
+       0.5029,
+       0.8727
+      ],
+      "scale": 1.0774
+     },
+     "W": {
+      "start": 130,
+      "count": 12,
+      "fps": 3,
+      "anchor": [
+       0.5029,
+       0.8727
+      ],
+      "scale": 1.0774
+     },
+     "NW": {
+      "start": 130,
+      "count": 12,
+      "fps": 3,
+      "anchor": [
+       0.5029,
+       0.8727
+      ],
+      "scale": 1.0774
+     },
+     "N": {
+      "start": 130,
+      "count": 12,
+      "fps": 3,
+      "anchor": [
+       0.5029,
+       0.8727
+      ],
+      "scale": 1.0774
+     }
+    },
+    "hit": {
+     "S": {
+      "start": 142,
+      "count": 8,
+      "fps": 2.29
+     },
+     "SW": {
+      "start": 150,
+      "count": 8,
+      "fps": 5.33
+     },
+     "W": {
+      "start": 158,
+      "count": 8,
+      "fps": 2.34
+     },
+     "NW": {
+      "start": 166,
+      "count": 8,
+      "fps": 2.53
+     },
+     "N": {
+      "start": 174,
+      "count": 8,
+      "fps": 2.29
      }
     }
    }

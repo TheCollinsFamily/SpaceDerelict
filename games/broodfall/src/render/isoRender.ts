@@ -30,6 +30,7 @@ import { CorpseFx, mainCaste, type BodyView } from './corpseFx';
 import { LimbFates } from './limbFx';
 import { MAW_FIRE_SECONDS, MawTongues, mawFireShare, type TongueView } from './mawTongue';
 import { Flamethrowers, type Thrower } from './flamethrower';
+import { Domes, type DomeView } from './domes';
 import { mawMouthFrame } from './mawMouth';
 import { CreepLife, GateArt, PlinthRise, PodArt, Skyline } from './boardArt';
 import { coreStageOf } from './coreStage';
@@ -278,6 +279,8 @@ export class IsoRenderer extends Renderer {
   private tongues: MawTongues;
   /** The Flametroopers' fire (src/render/flamethrower.ts): from the nozzle tip, frame by frame. */
   private flames: Flamethrowers;
+  /** Enemy domes (src/render/domes.ts): a bubble over each Aegis Deacon and Lens Bearer and what it covers. */
+  private domes = new Domes();
   /** The troopers drawn this frame, for the fire. */
   private throwers: Thrower[] = [];
   /** The Maws that struck this frame (a body eaten beside the one aimed at is reeled in by the same Maw). */
@@ -322,7 +325,7 @@ export class IsoRenderer extends Renderer {
     this.aimBox.addChild(this.aimG);
     this.marksBox.addChild(this.marksG);
     this.marksBox.scale.set(K);
-    this.world.addChild(this.floors, this.skyline.under, this.skyline.smoke, this.creepFloor, this.decalBox, this.flat, this.shadeBox, this.groundBox, this.fx.ground, this.corpseFx.ground, this.sorted, this.ghosts, this.fx.air, this.fx.glow, this.flames.air, this.flames.glow, this.corpseFx.glow, this.aimBox, this.marksBox);
+    this.world.addChild(this.floors, this.skyline.under, this.skyline.smoke, this.creepFloor, this.decalBox, this.flat, this.shadeBox, this.groundBox, this.fx.ground, this.corpseFx.ground, this.sorted, this.ghosts, this.fx.air, this.fx.glow, this.flames.air, this.flames.glow, this.corpseFx.glow, this.domes.layer, this.aimBox, this.marksBox);
     // With the effects drawn as pictures, the base class leaves out its clouds, caltrops and pip dots.
     this.fxArt = this.fx.ready();
     this.pipDots = !this.art.fx.has('parts');
@@ -370,6 +373,38 @@ export class IsoRenderer extends Renderer {
 
   private heightOf(sim: Sim, cell: number): number {
     return sim.map.cells[cell] === CellType.Block ? (sim.map.heights[cell] || 1) : 0;
+  }
+
+  /** Every standing or broken dome as the screen sees it (domes.ts reads these, never the sim). */
+  private domeViews(sim: Sim): DomeView[] {
+    const g = this.geo;
+    const out: DomeView[] = [];
+    for (const b of sim.domeBearers) {
+      const spec = enemySpec(b.kind);
+      if (!spec.dome || b.burrowed) continue;
+      const h = this.heightAt(sim, b.pos.x, b.pos.y);
+      const foot = project(g, b.pos.x, b.pos.y, h);
+      const R = spec.dome.radius;
+      const ring: { x: number; y: number }[] = [];
+      for (let i = 0; i < 28; i++) {
+        const a = (i / 28) * Math.PI * 2;
+        ring.push(project(g, b.pos.x + Math.cos(a) * R, b.pos.y + Math.sin(a) * R, h));
+      }
+      let half = 1;
+      for (const q of ring) half = Math.max(half, Math.abs(q.x - foot.x));
+      out.push({
+        id: b.id, foot, ring, rise: half * 0.5,
+        frac: (b.domeMax ?? 0) > 0 ? Math.max(0, (b.domeHp ?? 0) / (b.domeMax ?? 1)) : 0,
+        hitAge: b.domeHitAt !== undefined ? sim.time - b.domeHitAt : Infinity,
+        caste: spec.caste === 'science' ? 'science' : 'war',
+      });
+    }
+    return out;
+  }
+
+  /** For checks (tools/shot-domes.mjs): domes drawn standing and shards in the air. */
+  domesNow(): { standing: number; shards: number } {
+    return this.domes.drawnNow();
   }
 
   private heightAt(sim: Sim, wx: number, wy: number): number {
@@ -616,6 +651,8 @@ export class IsoRenderer extends Renderer {
       const q = project(this.geo, b.x, b.y, this.heightAt(sim, b.x, b.y));
       return { x: q.x, y: q.y - 6, r: 7 };
     }));
+    // Enemy domes over the bodies they cover (src/render/domes.ts).
+    this.domes.update(dtReal, this.domeViews(sim));
     this.drawCommand(sim, dtReal);
     this.drawTownsfolk(sim, dtReal);
     this.tongues.update(this.smoothDt, this.tongueView(sim));

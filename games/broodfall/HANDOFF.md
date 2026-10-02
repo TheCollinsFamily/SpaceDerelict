@@ -1550,3 +1550,28 @@ the side of any lane"; "the creep healing and making faster is great".
   all built 7/10 (8/3/4/23; 1316); nostations 6/10; nocreepcare 7/10; neither 6/10. Stack 7/10 (6/4/4/17; 8080), stack
   without either 6/10. Expansion 5/10 (8/2/5/24), without either 5/10. The guard (>= 3/10) holds everywhere. The naive
   player has few walking units, so its stations mostly go unanswered and reach stage 3; the stack player strikes them.
+## Domes: the Aegis Deacon and the Lens Bearer (Oct 2 2026)
+
+Collins: "a unit for both the warriors and the science team that gives a shield around it in a dome that takes a certain
+amount of damage before breaking (Northgard has something like this), but the catch is it's ineffective against damage
+from units (who automatically target shield units first)". Design: DESIGN.md, the "DOMES" entry under YOUR WALKING UNITS.
+- **Sim** (`src/sim/sim.ts`): `EnemySpec.dome` {radius, pool, recharge}; a bearer's `domeHp`/`domeMax` set at spawn
+  (`raiseDome`, +`domeTierScale` a tier). `domeSoak` takes a limb's hit, and creep, clouds, fire, poison and swamp,
+  out of the pool of the standing dome over the body (its own side only); an emptied dome BREAKS (`dome-broken`) and
+  `updateDomes` brings it back full after `recharge` (`dome-up`). Your walking units' strikes are wrapped in
+  `unitStrike` (warriors, Broodmothers, Harriers) and pass through. `preyNear` returns a bearer in reach first.
+  `domeAnswer` (in startSiege and previewNextWave): one more deacon per `domeLimbsPer` limbs past `domeLimbsFree`
+  from tier `domeAnswerMinTier`, up to `domeAnswerMax`. Lens Bearers: with study parties at interest >= `lensInterestMin`,
+  in an engineer's escort from `lensEscortWave`, with a station's parties from stage 2; `followParty` keeps them among
+  their party. Live bearers: `sim.domeBearers` (the low-micro roster's "SHIELD DOME" alert reads it, src/sim/groups.ts).
+- **Drawn** (`src/render/domes.ts`, fed by `IsoRenderer.domeViews`): a bubble over the projected ground ring, bronze
+  (war) or teal (science), ribs, a rim that flashes on a soaked hit, cracks under a third of the pool, a shatter of
+  shards when it breaks or its bearer dies with it up, a grow-in when it returns. `window.broodfall.domes()` counts them.
+- **Art:** `tools/art/units.mjs` (`aegis`, `lensbearer`), drawn from the soldier's and researcher's frames as references
+  (`art-src-new/units/aegis/soldier-ref.png`, `art-src-new/units/lensbearer/researcher-ref.png`). Make again:
+  `BROODFALL_ART_SRC=<checkout>/art-src-new node tools/art/make.mjs unit aegis lensbearer --attack --death`, then `--hit`.
+  The dome is never in the pictures (code draws it).
+- **Checks:** `tests/domes.test.ts` (soaks limbs for its side and radius, units pass through, break and recharge, creep and
+  poison soaked, units target bearers first, Harriers crack one, tier growth, the ladder and the answer, lens with famous
+  parties, determinism). `node tools/shot-domes.mjs` (four spitters vs a domed column, then Harriers; filmed, domes.mp4).
+  Balance: `GAPS_MODE=nodome` on tools/measure/gaps.measure.ts; the measure prints deacons, domes broken and damage soaked.

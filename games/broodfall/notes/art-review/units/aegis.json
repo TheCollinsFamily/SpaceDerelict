@@ -1,0 +1,349 @@
+{
+ "kind": "aegis",
+ "frames": 180,
+ "atlasKB": 340,
+ "pages": 1,
+ "failed": 0,
+ "checks": [
+  {
+   "name": "walk S: loop closes",
+   "ok": true,
+   "value": 2.13
+  },
+  {
+   "name": "walk S: it moves",
+   "ok": true,
+   "value": 2.48
+  },
+  {
+   "name": "walk S: loop is long enough",
+   "ok": true,
+   "value": 17
+  },
+  {
+   "name": "walk S: inside the frame",
+   "ok": true,
+   "value": "138,70-476,574"
+  },
+  {
+   "name": "walk S: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "walk S: stays on the spot",
+   "ok": true,
+   "value": "0.1% of the frame"
+  },
+  {
+   "name": "walk SW: loop closes",
+   "ok": true,
+   "value": 0.38
+  },
+  {
+   "name": "walk SW: it moves",
+   "ok": true,
+   "value": 2.22
+  },
+  {
+   "name": "walk SW: loop is long enough",
+   "ok": true,
+   "value": 12
+  },
+  {
+   "name": "walk SW: inside the frame",
+   "ok": true,
+   "value": "166,104-474,556"
+  },
+  {
+   "name": "walk SW: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "walk SW: stays on the spot",
+   "ok": true,
+   "value": "0.1% of the frame"
+  },
+  {
+   "name": "walk W: loop closes",
+   "ok": true,
+   "value": 0.32
+  },
+  {
+   "name": "walk W: it moves",
+   "ok": true,
+   "value": 2.04
+  },
+  {
+   "name": "walk W: loop is long enough",
+   "ok": true,
+   "value": 24
+  },
+  {
+   "name": "walk W: inside the frame",
+   "ok": true,
+   "value": "170,120-460,558"
+  },
+  {
+   "name": "walk W: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "walk W: stays on the spot",
+   "ok": true,
+   "value": "0.1% of the frame"
+  },
+  {
+   "name": "walk NW: loop closes",
+   "ok": true,
+   "value": 0.43
+  },
+  {
+   "name": "walk NW: it moves",
+   "ok": true,
+   "value": 2.22
+  },
+  {
+   "name": "walk NW: loop is long enough",
+   "ok": true,
+   "value": 35
+  },
+  {
+   "name": "walk NW: inside the frame",
+   "ok": true,
+   "value": "176,96-494,554"
+  },
+  {
+   "name": "walk NW: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "walk NW: stays on the spot",
+   "ok": true,
+   "value": "1.0% of the frame"
+  },
+  {
+   "name": "walk N: loop closes",
+   "ok": true,
+   "value": 0.33
+  },
+  {
+   "name": "walk N: it moves",
+   "ok": true,
+   "value": 1.52
+  },
+  {
+   "name": "walk N: loop is long enough",
+   "ok": true,
+   "value": 20
+  },
+  {
+   "name": "walk N: inside the frame",
+   "ok": true,
+   "value": "178,94-444,546"
+  },
+  {
+   "name": "walk N: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "walk N: stays on the spot",
+   "ok": true,
+   "value": "0.4% of the frame"
+  },
+  {
+   "name": "attack S: nothing cut off",
+   "ok": true,
+   "value": "in the walk frame"
+  },
+  {
+   "name": "attack S: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "attack S: stays on the spot",
+   "ok": true,
+   "value": "0.9% of the frame"
+  },
+  {
+   "name": "attack SW: nothing cut off",
+   "ok": true,
+   "value": "in the walk frame"
+  },
+  {
+   "name": "attack SW: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "attack SW: stays on the spot",
+   "ok": true,
+   "value": "0.1% of the frame"
+  },
+  {
+   "name": "attack W: nothing cut off",
+   "ok": true,
+   "value": "in the walk frame"
+  },
+  {
+   "name": "attack W: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "attack W: stays on the spot",
+   "ok": true,
+   "value": "2.4% of the frame"
+  },
+  {
+   "name": "attack NW: nothing cut off",
+   "ok": true,
+   "value": "in the walk frame"
+  },
+  {
+   "name": "attack NW: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "attack NW: stays on the spot",
+   "ok": true,
+   "value": "2.1% of the frame"
+  },
+  {
+   "name": "attack N: nothing cut off",
+   "ok": true,
+   "value": "in the walk frame"
+  },
+  {
+   "name": "attack N: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "attack N: stays on the spot",
+   "ok": true,
+   "value": "0.9% of the frame"
+  },
+  {
+   "name": "death SW: nothing cut off",
+   "ok": true,
+   "value": "in the walk frame"
+  },
+  {
+   "name": "death SW: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "hit S: brought to the walk's size",
+   "ok": true,
+   "value": "x1.03"
+  },
+  {
+   "name": "hit S: it moves",
+   "ok": true,
+   "value": 10.2
+  },
+  {
+   "name": "hit S: nothing cut off",
+   "ok": true,
+   "value": "window grown 1.01x"
+  },
+  {
+   "name": "hit S: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "hit SW: brought to the walk's size",
+   "ok": true,
+   "value": "x1.09"
+  },
+  {
+   "name": "hit SW: it moves",
+   "ok": true,
+   "value": 10.28
+  },
+  {
+   "name": "hit SW: nothing cut off",
+   "ok": true,
+   "value": "in the walk frame"
+  },
+  {
+   "name": "hit SW: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "hit W: brought to the walk's size",
+   "ok": true,
+   "value": "x1.04"
+  },
+  {
+   "name": "hit W: it moves",
+   "ok": true,
+   "value": 11.01
+  },
+  {
+   "name": "hit W: nothing cut off",
+   "ok": true,
+   "value": "in the walk frame"
+  },
+  {
+   "name": "hit W: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "hit NW: brought to the walk's size",
+   "ok": true,
+   "value": "x1.00"
+  },
+  {
+   "name": "hit NW: it moves",
+   "ok": true,
+   "value": 12.15
+  },
+  {
+   "name": "hit NW: nothing cut off",
+   "ok": true,
+   "value": "in the walk frame"
+  },
+  {
+   "name": "hit NW: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "hit N: brought to the walk's size",
+   "ok": true,
+   "value": "x1.26"
+  },
+  {
+   "name": "hit N: it moves",
+   "ok": true,
+   "value": 9.02
+  },
+  {
+   "name": "hit N: nothing cut off",
+   "ok": true,
+   "value": "in the walk frame"
+  },
+  {
+   "name": "hit N: no background tint on the outline",
+   "ok": true,
+   "value": "0.0%"
+  },
+  {
+   "name": "views are one size",
+   "ok": true,
+   "value": "0.72 0.65 0.63 0.66 0.65"
+  }
+ ]
+}

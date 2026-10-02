@@ -315,6 +315,24 @@ there and accumulate soldiers ... Broodmothers and brood output should be select
   **Where it comes from:** the wave table from tier 3 (1, then 2, 2, 3), and from tier 2 the hive ANSWERS a
   stack: one more per 6 of your units on the board when the siege starts, up to 4 (`flamerAnswer`, shown in
   the wave telegraph). Its fire does not scorch the creep (left out: the creep strains are the player's).
+- **DOMES (Collins, Oct 2 2026: "a unit for both the warriors and the science team that gives a shield around it in a
+  dome that takes a certain amount of damage before breaking (Northgard has something like this), but the catch is
+  it's ineffective against damage from units (who automatically target shield units first)").** Two bearers:
+  - **The AEGIS DEACON (war):** a soldier with a brass emitter staff. Its dome (46 px, about 1.5 cells) covers every
+    war body near it and soaks what your LIMBS do to them (shots, splash, chains, clouds, creep, fire, poison) out of
+    a pool of 300 (+15% a tier); emptied, it SHATTERS and comes back full 9 s later if the deacon lives.
+  - **The LENS BEARER (science):** a scientist with a glass lens on a mast. It walks with a famous study party
+    (interest 10+), with an engineer's escort (from wave 4) and with a grown station's parties: a smaller dome (40 px,
+    pool 140) that is back sooner (5 s).
+  - **The catch:** your WALKING UNITS' blows pass straight through a dome, and your units go for a bearer first
+    (even warriors, who otherwise leave study parties to your limbs). Towers alone can burn through a pool, slowly;
+    a few units cracking the bearer is the clean answer. So units vs towers becomes a real choice.
+  - **Where:** deacons in the war ladder from tier 4 (1, 2, 3), and the hive ANSWERS a tower-heavy defence: from
+    tier 3, one more deacon per 8 limbs past 10 on the board, up to 3 (Sim.domeAnswer, in the wave telegraph). The
+    one-click alert "SHIELD DOME" sends your units at it (src/sim/groups.ts); warriors' AUTO answers it.
+  - **Drawn** (src/render/domes.ts): a bronze or teal bubble with ribs; the rim flashes where a shot is soaked,
+    cracks show below a third of its pool, it shatters into shards and grows back in. Reduce motion: no ripple,
+    shards or grow.
 
 ## UNITS ARE OPTIONAL: THE ROSTER, GROUP ORDERS, ALERTS (Collins, Oct 2 2026 — BUILT Oct 2)
 

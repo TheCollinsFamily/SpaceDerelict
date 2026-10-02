@@ -24,6 +24,11 @@ if (MODE.includes('noflame')) {
 }
 // nocreepcare = your units do not heal or quicken on creep (Oct 2 2026): the baseline for creep care.
 if (MODE.includes('nocreepcare')) Object.assign(BALANCE as Record<string, unknown>, { creepUnitSpeed: 1, creepRegenFrac: 0, creepRegenMin: 0 });
+// nodome = no dome bearers at all (Oct 2 2026): no Aegis Deacons in the table or answer, no Lens Bearers.
+if (MODE.includes('nodome')) {
+  for (const row of WAVE_TABLE as Array<Record<string, number>>) delete row.aegis;
+  Object.assign(BALANCE as Record<string, unknown>, { domeAnswerMax: 0, lensInterestMin: 1e9, lensEscortWave: 1e9 });
+}
 if (MODE.includes('surge')) {
   (Autoplayer.prototype as unknown as { spendRoyal: (sim: Sim) => void }).spendRoyal = (sim: Sim) => { sim.issue({ kind: 'royal-surge' }); };
 }
@@ -67,6 +72,7 @@ function run(seed: number) {
       kinds[e.kind] = (kinds[e.kind] ?? 0) + 1;
       if (e.kind === 'banked' && e.caste === 'royal') kinds.royalEarned = (kinds.royalEarned ?? 0) + e.amount;
       if (e.kind === 'wave-start') kinds.flamers = (kinds.flamers ?? 0) + (e.counts.flametrooper ?? 0);
+      if (e.kind === 'wave-start') kinds.deacons = (kinds.deacons ?? 0) + (e.counts.aegis ?? 0);
     }
     ticks++;
   }
@@ -88,6 +94,7 @@ it('gaps: naive hold-12 over ten seeds', () => {
       + ` expansion ${JSON.stringify({ shelters: sim.shelters.length, infested: s.sheltersInfested ?? 0, lost: s.sheltersLost ?? 0, top: s.shelterTopStage ?? 0, paid: s.shelterMeat ?? 0, inf: s.infestorsBorn ?? 0, infLost: s.infestorsLost ?? 0, harriers: s.harriersBorn ?? 0, hLost: s.harriersLost ?? 0, hKills: s.harrierKills ?? 0 })} meat ${JSON.stringify(sim.digested)}`
       + ` stations ${JSON.stringify({ raised: s.stationsRaised ?? 0, destroyed: s.stationsDestroyed ?? 0, top: s.stationTopStage ?? 0, parties: s.stationParties ?? 0, engineers: (s.kills as Record<string, number>)?.engineer ?? 0, creepHealed: Math.round((s.creepHealed as number) ?? 0) })}`
       + ` clicks ${clicks} (${(clicks / Math.max(1, sim.wavesCleared)).toFixed(1)}/wave) sorties ${sim.groups.issued} alerts-auto${JSON.stringify(sim.groups.auto)}`
+      + ` domes ${JSON.stringify({ deacons: kinds.deacons ?? 0, broken: s.domesBroken ?? 0, soaked: Math.round(Number(s.domeSoaked ?? 0)) })}`
       + ` events ${['royal-decree', 'limb-promoted', 'surgery-under-fire', 'graft-took', 'burrowed', 'sealed-in', 'broodling-lost', 'mule-lost', 'flamers'].map((k) => `${k}=${kinds[k] ?? 0}`).join(' ')}`);
   }
   // eslint-disable-next-line no-console

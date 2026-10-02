@@ -1643,6 +1643,10 @@ async function boot(): Promise<void> {
     biome(): string {
       return renderer instanceof IsoRenderer ? renderer.biome() : '';
     },
+    /** Enemy domes drawn now (standing) and shards in the air (empty on the old board). */
+    domes() {
+      return renderer instanceof IsoRenderer ? renderer.domesNow() : { standing: 0, shards: 0 };
+    },
     /** The fallen units still drawn (empty on the old board). */
     dying() {
       return renderer instanceof IsoRenderer ? renderer.dyingNow() : [];
