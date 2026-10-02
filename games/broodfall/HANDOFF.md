@@ -1338,3 +1338,25 @@ my cell or the next cell is a wall in my way: chew through it").
 - **Checked by what a wall is FOR** (`tests/wallsAcross.test.ts`): with the wall shut, the street on its two faces
   cannot reach each other near it, on every street cell of eight boards; no wall ever on a non-street cell, in a
   whole scripted run too. `node tools/walls-ascii.mjs <set> <seed>` prints the grid with the walls a board gets.
+
+## Spore Mules, and Broodmothers brood only on creep (Oct 2 2026)
+
+Collins: "a unit that can act like a creep node (and an organ that makes them) ... you walk it out and deploy it ...
+Broodmothers can't be put in make-babies mode except on creep". Design and the unlock reasoning: DESIGN.md "SPORE
+MULES, AND BROOD ONLY ON CREEP".
+- **Sim:** `Sim.mules` (`SporeMule`), the Mule Sac organ (`mule`, one cell, paced and strained like a bladder),
+  `growMules` at the wave clear, `updateMules` (orders, no fighting), `mule-deploy` command -> `rootMule` (a creep
+  node, past the creep too), `hurtMule` (war bodies fight a walking mule; the science caste turns aside for one;
+  shells). `mother-mode` brood refused off creep (`motherOnCreep`); a parked brooding mother off creep drops to fight.
+- **UI:** `src/ui/command.ts` (mules selectable, DEPLOY button and D key; the brood toggle greys to BROOD: NEEDS
+  CREEP with the reason), `src/render/isoRender.ts` (mules drawn from the broodling's pictures, spore-green with a
+  glowing sac, until their own are made; a selected mule shows the creep it would spread), kill-feed lines.
+  Also fixed: the command layer's rings were projected at two heights (a Broodmother's egg ring by a building blew up
+  into a giant disc); now at their centre's height.
+- **Art:** the Mule Sac's scan tile and loop (`tools/art/mule.mjs`): made and baked for that ONE organ and merged into
+  the manifest, because a full `make.mjs under` / `underloops` bake rebuilds every tile from raws that the Oct 1
+  art-src loss took (it would drop art). Raw: `art-src-new/under/mule.png`, `art-src-new/under-loops/mule.mp4`.
+  OWED: the mule's own unit pictures (walk, rooting); it borrows the broodling's.
+- **Scripted player:** `Autoplayer.mules` (off by default; `GAPS_MODE=mules`). Measured: DESIGN.md.
+- **Check:** `tests/mules.test.ts`; the browser beat `node tools/shot-mules.mjs` (walk out, root, brood refused off
+  creep, brood on the new creep; `notes/screens/2026-10-02/mules-*.png`, `mules-deploy.mp4`).

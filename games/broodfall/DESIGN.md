@@ -306,6 +306,55 @@ there and accumulate soldiers ... Broodmothers and brood output should be select
 - **Measured** (tools/measure/gaps.measure.ts, 10 seeds, hold-12): see HANDOFF.md "Brood Pit, Broodmother Den
   and orders" for the numbers (naive, den-heavy deal, and the scripted Broodmother stack).
 
+## SPORE MULES, AND BROOD ONLY ON CREEP (Collins, Oct 2 2026 — BUILT Oct 2)
+
+Collins: "a unit that can act like a creep node (and an organ that makes them) ... you walk it out and deploy it
+... oh and Broodmothers can't be put in make-babies mode except on creep; this will add more complexity (think
+through where the unlocks for this go)."
+
+- **The Spore Mule** (`Sim.mules`, `SporeMule` in `src/sim/types.ts`): a slow, unarmed walker of yours. Select it
+  like the brood (click, box, groups); MOVE / HOLD / BODY / GUARD; **DEPLOY (D)** roots it where it stands and it
+  becomes a **creep node** there (`Sim.rootMule`: the same node a placed one is, counted in `nodesPlaced`, so
+  "Territorial Coverage" counts it). It roots anywhere in the claimed city, **past the creep too**: that is its
+  whole point (a placed node must be within its reach of the creep). A rooted node is not pulled back up.
+- **Its numbers** (`content/data.ts`): 90 hp (about three warriors: one science party takes it, an escort saves it),
+  speed 26 (slower than a Broodmother, 32: walking it out is a commitment), at most 2 walking per sac.
+- **The Mule Sac** (organ `mule`, one cell, 30 war, `content/underground.ts`): grows a mule every 2 turns (at the
+  wave clear), at the body. It is paced and strained exactly like a Spore Bladder: a **pacemaker** touching it makes
+  it grow every turn, a **budding gland** one more each time, and the **swell / mire / acid** organs touching it
+  decide the node each mule becomes (so a mire-strained mule rooted in a choke slows the column there).
+- **The hive answers a walking mule:** war bodies in the street stop and fight it (as they do a broodling); the
+  **science caste turns aside for one** within 70 px (a live sample) and extracts it; shells hurt it. A mule walked
+  out alone into a science party dies; walk warriors or a Broodmother with it.
+- **Brood only on creep:** a Broodmother can be put in brood mode only where she stands on your creep
+  (`Sim.motherOnCreep`); off it the order is refused with the reason ("she broods only on your creep"), the panel's
+  toggle reads BROOD: NEEDS CREEP. A mother parked brooding whose creep is lost drops to fight mode
+  ('mother-off-creep'). A new mother is born brooding only if she is born on creep.
+- **The combo:** walk a mule out, root it, park a Broodmother on the new creep, stack warriors there. It is also how
+  creep reaches **bodies that fell past it** (meat is gathered only when the creep digests a body): the science
+  bodies at the creep's edge especially.
+
+**Where the unlocks go, and why:**
+- **The Mule Sac is a sanctioned lineage, 4 standing** (`content/campaign.ts` LINEAGES), beside the other
+  creep-REACH organs (Catapult Sac for the sling, Runner Gland for the lance), not in the starting set. A new player
+  meets creep nodes first (the free Spore Bladder) and walking units only once a Broodmother Den or Brood Pit is in
+  play; the mule needs both ideas (nodes, orders), so it comes once both are known: a mid-campaign purchase in the
+  Gene Bay, not mission 1 (the onboarding, notes/PERSONA-ONBOARDING-2026-09-30.md, already shows a new player every
+  system at once; this adds nothing to the first screens). Skirmish (no lineage pool) offers it like every organ.
+- **Brood only on creep needs no unlock:** it is a rule of the Broodmother, who already comes behind the Brood Womb.
+  It costs a new player nothing (her den stands on creep, so she is born brooding); it only bites when she is walked
+  off it, which is exactly when the mule matters.
+- **Factions, decrees, Requisitions:** nothing new. A rooted mule is a placed node (Form 5-K, Territorial Coverage),
+  and the creep it spreads digests bodies past the old edge (Form 4-R, Remains Reclamation). The Delegation's
+  Translator (the next wave's entrance) tells you where to walk one. COLLINS: whether the Spore Strain profile
+  (`PROFILES`, the creep start) should include the Mule Sac from its first mission.
+
+**Measured** (tools/measure/gaps.measure.ts, 10 seeds, naive hold-12; Oct 2 2026, on main with the corpse, footprint
+and wall work): today's naive player 6/10; with the scripted player growing a sac and walking its mules (`GAPS_MODE=
+mules`, `Autoplayer.mules`) 5/10; the Broodmother stack 6/10, stack with mules 5/10. On these boards the scripted
+creep already reaches nearly every body and street, so the scripted mules rarely find work (0-4 rooted a run): the
+payoff is a human's choice to push creep past the edge, measured here only as "it costs little".
+
 ## THE CORE: COMBO RUNAWAYS, PAID IN SCIENCE (Collins, Sep 27 2026)
 
 "The real core of the game is going to be trying to build combo runaways, and this is

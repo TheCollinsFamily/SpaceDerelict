@@ -125,7 +125,8 @@ export class Autoplayer {
   private manageMules(sim: Sim): boolean {
     if (sim.cfg.organStage && sim.phase === 'growth' && !sim.organs.some((o) => o.organ === 'mule')) {
       const themes = sim.organs.filter((o) => ORGAN_BY_ID[o.organ].kind === 'theme').length;
-      if (themes >= 2 && sim.canAfford(ORGAN_BY_ID.mule.cost)) {
+      // After the fourth theme, like the free-thing organs: bought at two themes it starved the guns (measured 4/10).
+      if (themes >= 4 && sim.canAfford(ORGAN_BY_ID.mule.cost)) {
         const spot = bestOrganSpot(sim, 'mule');
         if (spot && sim.issue({ kind: 'build-organ', organ: 'mule', ...spot }).ok) return true;
       }

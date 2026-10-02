@@ -2487,9 +2487,13 @@ export class IsoRenderer extends Renderer {
     const P = (x: number, y: number): { x: number; y: number } => { const p = this.onGround(sim, x, y); return { x: p.x / K, y: p.y / K }; };
     const g = {
       circle: (x: number, y: number, r: number) => {
-        const c = P(x, y);
-        const e = P(x + r, y);
-        const n = P(x, y + r);
+        // At the height of its centre: an edge point over a roof next to a street blew a small ring up into a
+        // giant ellipse (a Broodmother's egg ring by a building, Oct 2 2026).
+        const h = this.heightAt(sim, x, y);
+        const at = (px: number, py: number) => { const q = project(this.geo, px, py, h); return { x: q.x / K, y: q.y / K }; };
+        const c = at(x, y);
+        const e = at(x + r, y);
+        const n = at(x, y + r);
         const rx = Math.max(Math.hypot(e.x - c.x, e.y - c.y), Math.hypot(n.x - c.x, n.y - c.y));
         return raw.ellipse(c.x, c.y, rx, rx * (this.geo.b / this.geo.a));
       },

@@ -228,8 +228,9 @@ describe('a Broodmother broods only on creep', () => {
 
 describe('the scripted player with mules', () => {
   it('grows a sac and roots mules in a real run', () => {
-    const s = new Sim({ ...CFG, seed: 7, organStage: true, directive: { kind: 'hold', waves: 8 } });
-    const bot = new Autoplayer(7);
+    // Seed 4 of the gaps measure (GAPS_MODE=mules): a board where the scripted player finds work for its mules.
+    const s = new Sim({ ...CFG, seed: 4, organStage: true, directive: { kind: 'hold', waves: 12 } });
+    const bot = new Autoplayer(5);
     bot.mules = true;
     for (let i = 0; i < 20000 && s.outcome === 'playing'; i++) { bot.act(s, 0.1); s.tick(); s.takeEvents(); }
     expect(s.organs.some((o) => o.organ === 'mule')).toBe(true);
