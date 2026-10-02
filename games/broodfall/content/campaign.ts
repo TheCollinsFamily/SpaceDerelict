@@ -45,6 +45,8 @@ export const REQUISITIONS: GoalDef[] = [
   { id: 'samples', title: 'Form 4-D · Sample Quota', text: 'Bank {n} science.', measure: 'stat:scienceBanked', target: 60, pays: 2 },
   // Collins (Oct 1 2026): meat that fell past the creep can be picked up later "by shooting creep at it".
   { id: 'reclaim', title: 'Form 4-R · Remains Reclamation', text: 'Digest {n} bodies that fell past your creep.', measure: 'stat:bodiesReclaimed', target: 10, pays: 1 },
+  // SCIENCE FORWARD BASES (Oct 2 2026): mount an attack on the station the science caste raised.
+  { id: 'stations', title: 'Form 6-F · Field Station Clearance', text: 'Destroy {n} science field station.', measure: 'kills:fieldstation', target: 1, tierScale: 0, pays: 2 },
   { id: 'deposits', title: 'Form 4-G · Subsurface Survey', text: 'Claim {n} buried deposits.', measure: 'stat:depositsClaimed', target: 2, tierScale: 0, pays: 1 },
   { id: 'schedule', title: 'Form 1-H · Schedule Compliance', text: 'Call {n} waves early.', measure: 'stat:earlyCalls', target: 3, tierScale: 0, pays: 1 },
   { id: 'spread', title: 'Form 5-K · Territorial Coverage', text: 'Place {n} creep nodes.', measure: 'stat:nodesPlaced', target: 4, pays: 1 },

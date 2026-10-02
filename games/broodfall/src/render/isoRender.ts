@@ -2088,6 +2088,7 @@ export class IsoRenderer extends Renderer {
     this.drawBroodlings(sim, dt);
     this.syncShelters(sim);
     this.syncStations(sim);
+    this.drawCreepCare(sim);
     for (const [id, v] of this.allyViews) {
       if (v.seen === this.frameNo) continue;
       v.sprite.destroy();
@@ -2443,6 +2444,27 @@ export class IsoRenderer extends Renderer {
     v.position.set(p.x, p.y);
     v.zIndex = (this.cellZ.get(cell) ?? (p.y * 10)) + 6;
   }
+  /**
+   * CREEP CARE (Oct 2 2026): a unit of yours healing on the creep shows it, quietly: two small pale-green plus marks
+   * rising and fading over it, on a slow beat, only while it is hurt and standing on creep (Reduce motion: still).
+   */
+  private drawCreepCare(sim: Sim): void {
+    const g = this.marksG;
+    const units = [...sim.broodlings, ...sim.mothers, ...sim.mules, ...sim.infestors, ...sim.harriers];
+    for (const u of units) {
+      if (u.hp >= u.maxHp || !sim.unitOnCreep(u.pos)) continue;
+      const p = this.onGround(sim, u.pos.x, u.pos.y);
+      for (let i = 0; i < 2; i++) {
+        const ph = CALM.motion ? 0.4 : ((this.pulse * 0.7 + i * 0.5 + (u.id % 7) * 0.13) % 1);
+        const x = p.x / K + (i ? 5 : -4);
+        const y = p.y / K - 14 - ph * 12;
+        const a = 0.75 * (1 - ph);
+        g.moveTo(x - 2.5, y).lineTo(x + 2.5, y).stroke({ width: 1.4, color: 0xa8f0a0, alpha: a });
+        g.moveTo(x, y - 2.5).lineTo(x, y + 2.5).stroke({ width: 1.4, color: 0xa8f0a0, alpha: a });
+      }
+    }
+  }
+
   private syncStations(sim: Sim): void {
     const g = this.marksG;
     const seen = new Set<number>();
