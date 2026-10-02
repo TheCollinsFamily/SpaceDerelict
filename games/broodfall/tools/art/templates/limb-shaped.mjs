@@ -97,8 +97,15 @@ export function plateWords(l, view) {
   const what = shape === 'T'
     ? 'a T: a straight bar of three tiles with a fourth tile beside its middle'
     : shape === 'L3' ? 'an elbow of three tiles' : 'an L of four tiles';
+  // `parts`: which part stands where (Oct 2 2026, the Meat Press: its back and side drew the right L with its parts on
+  // the wrong arms). Said in the same directions as the arms.
+  const longWay = [...arms.entries()].find(([, n]) => n > 1)?.[0];
+  const shortWay = [...arms.entries()].find(([, n]) => n === 1)?.[0];
+  const parts = l.parts && shape === 'L4'
+    ? ` PLACE ITS PARTS EXACTLY SO: ${l.parts.bend} stands on the key tile (the ${whereIs(shape, facing, hub)} one); ${l.parts.long} lies along the LONG arm, reaching from the key tile to the ${longWay}; ${l.parts.short} stands on the one tile of the short arm, to the ${shortWay} of the key tile.`
+    : '';
   return `${head} It is ${what}. Its key tile (the ${shape === 'T' ? 'middle of the bar' : 'bend'}) is the ${whereIs(shape, facing, hub)} one; from it go ${list.join(' and ')}. ` +
-    'The organism is LOW and spreads along the ground in exactly those directions, its arms lying flat along the tiles, its tall parts rising from them; it is NOT a round or star-shaped body.';
+    'The organism is LOW and spreads along the ground in exactly those directions, its arms lying flat along the tiles, its tall parts rising from them; it is NOT a round or star-shaped body.' + parts;
 }
 
 /** What is said of the view the organism is seen from. */

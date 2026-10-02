@@ -22,7 +22,8 @@ import { makeClip, makeStill, pool } from '../rfab.mjs';
 import { AWAY, BACK, QUIET, THEMES, limb, rawDirOf } from '../limbs.mjs';
 import { variantAtlas } from '../limb-variants.mjs';
 import { FRAME, STEADY, bakeView } from './limb.mjs';
-import { muzzleFrom, viewsOf } from './limb-shaped.mjs';
+import { muzzleFrom, plateWords, viewsOf } from './limb-shaped.mjs';
+import { gateFull, GATE } from '../lib/shapeGate.mjs';
 import { packAtlas, reviewSheet } from '../lib/atlas.mjs';
 import { blank, borderColour, paste, readImage, resize, writeJpg } from '../lib/img.mjs';
 import { keyFrame, keyOf, unionBox } from '../lib/key.mjs';
@@ -103,6 +104,7 @@ function basesOf(l) {
   }
   for (const [view, b] of Object.entries(out)) {
     if (!fs.existsSync(b.file) || !b.share) { delete out[view]; continue; }
+    if (l.plate && l.plate !== 'one') b.fit = gateFull(keyed(b.file), l.plate, VIEW_FACING[view]).fit;
     const box = keyedBox(b.file);
     const w = box.x1 - box.x0, h = box.y1 - box.y0;
     b.abs = { x: box.x0 + b.share[0] * w, y: box.y0 + b.share[1] * h, a: (b.share[2] * w) / 2 };
@@ -161,14 +163,34 @@ export async function makeLooks(family, { only = [], stillsOnly = false, bakeOnl
       fs.mkdirSync(dir, { recursive: true });
       const k = keyFor(l, key);
       const half = !drawn.has(view);
-      const still = await makeStill({
-        slug: `${family} ${key} look, ${view}`, out: path.join(dir, `${view}.png`),
-        refFiles: [half ? path.join(dir, 'front.png') : bases[view].file],
-        prompt: half
-          ? `${BACK} ${l.back} It keeps every part it has in the reference picture, now seen from behind. Its one accent stays as it is: ${l.accent ?? THEMES[l.theme].accent}.`
-          : editWords(l, view, key),
-        key: k.hex, keyName: k.name, quality: 'high',
-      });
+      // A look of a limb drawn over its ground plate (Oct 2 2026; Collins: "some of these won't remotely fit the shape
+      // they need to"): its SLAB is given FIRST and LOCKED (the same edit that drew the limb), the limb's view second, and
+      // the picture must pass the footprint gate (tools/art/lib/shapeGate.mjs) or it is drawn again (up to 3 tries; the
+      // rejected ones are kept in rejected/). A look that fails three times is written down as failing, not used.
+      const slabFile = l.plate ? path.join(SRC, 'limbs', rawDirOf(l), `plate-${view}.png`) : null;
+      const locked = !half && slabFile && fs.existsSync(slabFile);
+      const prompt = half
+        ? `${BACK} ${l.back} It keeps every part it has in the reference picture, now seen from behind. Its one accent stays as it is: ${l.accent ?? THEMES[l.theme].accent}.`
+        : locked
+          ? `${plateWords(l, view)} EDIT that picture: KEEP the slab exactly as it is, the same shape, the same place and the same size, ` +
+            'not moved, not turned, not mirrored, not reshaped, every tile of it still there and nothing added beside it. On it stands the SAME ' +
+            `organism as in the SECOND picture, on the same tiles, seen the same way. ${editWords(l, view, key)}`
+          : editWords(l, view, key);
+      const out = path.join(dir, `${view}.png`);
+      let still;
+      for (let tries = 0; ; tries++) {
+        still = await makeStill({
+          slug: `${family} ${key} look, ${view}${tries ? `, try ${tries + 1}` : ''}`, out,
+          refFiles: locked ? [slabFile, bases[view].file] : [half ? path.join(dir, 'front.png') : bases[view].file],
+          prompt, key: k.hex, keyName: k.name, quality: 'high',
+        });
+        if (!l.plate || l.plate === 'one') break;
+        const g = gateFull(keyed(still), l.plate, VIEW_FACING[view], bases[view].fit);
+        console.log(`[looks] ${family} ${key} ${view}: gate ${g.pass ? 'PASS' : 'FAIL'} (front edge ${g.edge}, tiles ${g.tiles.join('/')}, beside ${g.beside})`);
+        if (g.pass || tries >= 2) break;
+        fs.mkdirSync(path.join(dir, 'rejected'), { recursive: true });
+        fs.renameSync(out, path.join(dir, 'rejected', `${view}-${Date.now()}.png`));
+      }
       const all = fs.existsSync(path.join(dir, 'marks.json')) ? JSON.parse(fs.readFileSync(path.join(dir, 'marks.json'), 'utf8')) : {};
       all[view] = half ? { foot: l.backFoot, muzzle: l.backMuzzle } : carry(l, view, bases[view], still);
       fs.writeFileSync(path.join(dir, 'marks.json'), `${JSON.stringify(all, null, 1)}\n`);
