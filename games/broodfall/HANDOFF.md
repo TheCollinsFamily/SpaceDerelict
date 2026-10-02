@@ -1086,6 +1086,14 @@ own words. `notes/GRAPHICS-PLAN.md` holds the pipeline, the probes and the costs
   scaled about its marked foot; the core `CORE_SCALE` 1.22, capped so its widest stage's collar is at
   most 0.8 of its 4x4 square (`src/render/isoRender.ts`). Chosen from four pairs side by side
   (`node tools/shot-scale.mjs [limb:core ...]`, the page takes `?limbScale=&coreScale=`).
+- **A wall crosses the WHOLE street (Oct 2 2026; Collins: "just cross the street between two points (given that the street
+  can be both shorter and longer than two units)").** `Sim.wallAcross` takes every street cell across the lane at the cell
+  pointed at, building edge to building edge (1, 2, 3+ cells), capped at `WALL_MAX` = 4 round that cell (wider runs are
+  junctions or squares). Price `Sim.wallCost`: 10 war up to two cells, +5 a cell past that; body `Sim.wallHp`: 520 hp + 312 a
+  cell (832 on two, as before). The placement hint shows "SPINE WALL · N wide · hp · war". A wall 3+ wide is drawn as ONE wall
+  from its own picture (`IsoRender.tileWall`: two end-caps against the buildings, tiled middle strips), at every turn.
+  Tests `tests/wallsAcross.test.ts` (1/2/3-wide, every turn, capped junctions); shots `node tools/shot-walls.mjs --tag across
+  --turns 2` (`notes/screens/2026-10-02/walls-across-*`, sheet `walls-across-1-2-3-wide-sheet.jpg`).
 - **Walls stand ACROSS their street in the SIM (Oct 1 2026; Collins: "jesus man, how are we still placing walls
   lengthwise rather than across pathways").** `Sim.wallAcross`: a Spine Wall pointed at a street cell takes the
   street's width there, across the way the street runs (`Sim.laneAlongX`: the longer straight run of street through

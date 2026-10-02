@@ -20,7 +20,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, '..');
 const shots = join(here, 'screenshots');
 // Oct 1 2026: walls stand ACROSS their street in the sim (Sim.wallAcross); the shots go to that day.
-const screens = join(root, 'notes', 'screens', valueOfEarly('--day', '2026-10-01'));
+const screens = join(root, 'notes', 'screens', valueOfEarly('--day', '2026-10-02'));
 function valueOfEarly(flag, d) { const a = process.argv.slice(2); const i = a.indexOf(flag); return i >= 0 ? a[i + 1] : d; }
 mkdirSync(shots, { recursive: true });
 const PORT = Number(process.env.BROODFALL_PORT || 5289);
@@ -29,6 +29,7 @@ const valueOf = (flag, d) => { const i = args.indexOf(flag); return i >= 0 ? arg
 const tag = valueOf('--tag', 'after');
 const DIST = valueOf('--dist', 'dist-walls');
 const SETS = (valueOf('--sets', 'suburb:11,orient:12,farmland:13')).split(',').map((s) => s.split(':'));
+const TURNS_N = Number(valueOf('--turns', '4'));
 
 function freePort() {
   try {
@@ -93,7 +94,7 @@ try {
     await page.goto(`http://localhost:${PORT}/?seed=${seed}&autostart=1&speed=0&biome=${set}`);
     await page.waitForFunction(() => window.broodfall !== undefined, null, { timeout: 40000 });
     await page.waitForTimeout(2500);
-    await page.evaluate(() => window.broodfall.step(900));
+    await page.evaluate(() => { window.broodfall.step(900); const s = window.broodfall.sim; Object.defineProperty(s, 'creepRangeCells', { get: () => 99, configurable: true }); window.broodfall.step(60); });
     const walls = await page.evaluate(() => {
       const s = window.broodfall.sim;
       s.meat.war = 9000; s.meat.science = 9000;
@@ -109,7 +110,7 @@ try {
         if (!g || g.some((x) => used.has(x) || used.has(x + 1) || used.has(x - 1) || used.has(x + W) || used.has(x - W))) continue;
         // A wall across a street one cell wide is one cell (Sim.wallAcross); across a wider one, two. Only street walls.
         if (s.map.cells[c] !== 1) continue;
-        const kind = g.length === 1 ? 'narrow' : 'wide';
+        const kind = g.length === 1 ? 'narrow' : g.length === 2 ? 'wide' : g.length === 3 ? 'three' : null; if (!kind) continue;
         if (out[kind]) continue;
         s.hand[0] = { id: 910000 + used.size, family: 'spine', free: true };
         const r = s.issue({ kind: 'build', cardIndex: 0, cell: c, facing: 'S' });
@@ -117,15 +118,15 @@ try {
         const t = s.towers[s.towers.length - 1];
         g.forEach((x) => used.add(x));
         out[kind] = { x: t.pos.x, y: t.pos.y, cells: s.cellsOf(t) };
-        if (out.narrow && out.wide) break;
+        if (out.narrow && out.wide && out.three) break;
       }
       return out;
     });
     console.log(`${set}: ${JSON.stringify(walls)}`);
     if (!walls.narrow) console.log(`  (${set}: no one-cell street near the core took a wall)`);
     await page.evaluate(() => window.broodfall.step(2));
-    for (let q = 0; q < 4; q++) {
-      for (const kind of ['narrow', 'wide']) {
+    for (let q = 0; q < TURNS_N; q++) {
+      for (const kind of ['narrow', 'wide', 'three']) {
         const w = walls[kind];
         if (!w) continue;
         await closeOn(w.x, w.y, 6);
