@@ -571,7 +571,8 @@ export interface Shell {
  * rally point, or a Broodmother's warrior back to her skirts).
  */
 export type UnitOrder =
-  | { kind: 'move'; to: Vec }
+  /** enter: the walk to the tunnel's mouth a group order put in front (src/sim/groups.ts): at the mouth the unit goes in. */
+  | { kind: 'move'; to: Vec; enter?: 'head' | 'body' }
   | { kind: 'attack'; to: Vec }
   | { kind: 'hold' }
   | { kind: 'return' }
@@ -802,6 +803,8 @@ export type SimEvent =
   | { kind: 'mule-born'; muleId: number }
   | { kind: 'mule-lost'; muleId: number }
   | { kind: 'mule-rooted'; muleId: number; cell: number }
+  /** Something the player may answer in one click (src/sim/groups.ts): a science party, an engineer, a field station, an outpost under attack. */
+  | { kind: 'unit-alert'; alertId: number; alert: 'science' | 'engineer' | 'station' | 'outpost'; at: Vec }
   | { kind: 'infestor-born'; unitId: number }
   | { kind: 'infestor-lost'; unitId: number }
   | { kind: 'harrier-born'; unitId: number }
@@ -884,6 +887,12 @@ export type Command =
   | { kind: 'call-early' }
   /** Orders for your walking units (warriors and Broodmothers, by id). queue: after the orders they have (shift). */
   | { kind: 'unit-order'; ids: number[]; order: UnitOrder; queue?: boolean }
+  /** One click for a whole group (src/sim/groups.ts): every unit of a kind, or ALL fighters, at what is at this point. */
+  | { kind: 'group-order'; who: 'warrior' | 'mother' | 'mule' | 'infestor' | 'harrier' | 'all'; at: Vec }
+  /** SEND: answer an alert with its responders. */
+  | { kind: 'answer-alert'; alertId: number }
+  /** A unit kind answers alerts by itself (AUTO), or not. */
+  | { kind: 'set-auto'; who: 'warrior' | 'mother' | 'mule' | 'infestor' | 'harrier'; on: boolean }
   /** A Broodmother's mode: brood (parked, brooding warriors) or fight (walks, bites, nets). */
   | { kind: 'mother-mode'; motherId: number; mode: 'brood' | 'fight' }
   /** Aim a Broodmother's net here, now (it must be off cooldown and in reach). */

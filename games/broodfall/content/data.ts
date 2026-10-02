@@ -754,6 +754,15 @@ export const BALANCE = {
   creepUnitSpeed: 1.25,
   creepRegenFrac: 0.025,
   creepRegenMin: 1,        // px: guarding, it fights the hive this far from its post
+  /** LOW-MICRO (src/sim/groups.ts, Oct 2 2026): a unit at or under unitRetreatAt of its hp off the creep walks back
+   *  onto it to heal, and goes back to what it was doing at unitRetreatHealed. Idle Brood Pit warriors within
+   *  leakAnswerDist of the core answer any hive body that comes within leakRadius of it. A group order takes the
+   *  tunnel only when it is faster than walking by this factor (via < direct x tunnelMargin). */
+  unitRetreatAt: 0.35,
+  unitRetreatHealed: 0.85,
+  leakRadius: 120,
+  leakAnswerDist: 420,
+  tunnelMargin: 0.85,
   /** Siege fire (mortars, cannons) singles out a PARKED Broodmother within reach: this much more likely than a limb. */
   parkedMotherAggro: 1.5,
   // The hive ANSWERS your walking units (Oct 2 2026): from tier 2, every flamerPerUnits of your units on the board

@@ -733,3 +733,29 @@ body.in-ship #topbar, body.in-ship #botbar { visibility: hidden; }
   position: fixed; z-index: 50; pointer-events: none;
   border: 1.5px solid #f0c060; background: rgba(240, 192, 96, 0.12);
 }
+
+/* The roster (src/ui/roster.ts): a portrait per unit kind you have, and ALL; and the alerts with SEND. */
+#unit-roster { position: absolute; left: 10px; top: 40px; z-index: 4; display: flex; flex-direction: column; gap: 4px; }
+#unit-roster.hidden, #unit-alerts.hidden { display: none; }
+#unit-roster .ur-slot { display: flex; flex-direction: column; gap: 1px; }
+#unit-roster .ur-btn { position: relative; width: 54px; height: 54px; padding: 0; cursor: pointer; background: #0d1416; border: 2px solid #3d5a5e; border-radius: 4px; box-shadow: inset 0 0 10px rgba(120, 220, 230, 0.12); color: #cfe9ec; }
+#unit-roster .ur-btn:hover { border-color: #9ae8f0; }
+#unit-roster .ur-btn.on { border-color: #ffd36a; box-shadow: 0 0 0 2px rgba(255, 211, 106, 0.35), inset 0 0 12px rgba(255, 211, 106, 0.3); }
+#unit-roster .ur-face { position: absolute; left: 4px; top: 3px; width: 44px; height: 44px; background-repeat: no-repeat; }
+#unit-roster .ur-n { position: absolute; right: 3px; bottom: 1px; font: 700 13px/1 Impact, "Arial Black", sans-serif; color: #fff; text-shadow: 0 0 3px #000, 0 0 3px #000; }
+#unit-roster kbd { position: absolute; left: 3px; bottom: 1px; font-size: 8px; color: #9ab; opacity: 0.8; }
+#unit-roster .ur-all { height: 30px; }
+#unit-roster .ur-all-txt { font: 700 12px/26px Impact, "Arial Black", sans-serif; letter-spacing: 2px; }
+#unit-roster .ur-all .ur-n { font-size: 11px; }
+#unit-roster .ur-auto { width: 54px; font: 9px/1 sans-serif; letter-spacing: 1px; padding: 2px 0; cursor: pointer; color: #789; background: #0d1416; border: 1px solid #2c3e41; border-radius: 3px; }
+#unit-roster .ur-auto.on { color: #0d1416; background: #9ae8f0; border-color: #9ae8f0; }
+#unit-alerts { position: absolute; left: 72px; top: 40px; z-index: 4; display: flex; flex-direction: column; gap: 4px; max-width: 360px; }
+.unit-alert { display: flex; align-items: center; gap: 6px; padding: 4px 6px; background: rgba(13, 20, 22, 0.92); border: 1px solid #3d5a5e; border-left: 3px solid #9ae8f0; color: #dfeff1; font: 11px/1.2 sans-serif; letter-spacing: 1px; animation: ua-in 0.25s ease-out; }
+.unit-alert-outpost { border-left-color: #ff6a50; } .unit-alert-station, .unit-alert-engineer { border-left-color: #ffd36a; }
+.unit-alert .ua-text { flex: 1; }
+.unit-alert .ua-send { font: 700 10px/1 sans-serif; letter-spacing: 1px; padding: 4px 6px; cursor: pointer; color: #0d1416; background: #9ae8f0; border: 0; border-radius: 3px; }
+.unit-alert .ua-send:disabled { opacity: 0.4; cursor: default; }
+.unit-alert .ua-x { padding: 2px 4px; cursor: pointer; color: #789; background: none; border: 0; }
+@keyframes ua-in { from { transform: translateX(-12px); opacity: 0; } to { transform: none; opacity: 1; } }
+.unit-roster-mark { position: fixed; z-index: 30; pointer-events: none; transform: translate(-50%, -150%); padding: 2px 6px; font: 700 11px/1 Impact, "Arial Black", sans-serif; letter-spacing: 1px; color: #0d1416; background: #ffd36a; border-radius: 3px; box-shadow: 0 2px 0 rgba(0,0,0,0.4); }
+.unit-roster-mark::after { content: ""; position: absolute; left: 50%; top: 100%; width: 10px; height: 10px; margin-left: -5px; border: 2px solid #ffd36a; border-radius: 50%; transform: translateY(14px) scaleY(0.5); }

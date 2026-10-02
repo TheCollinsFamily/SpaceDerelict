@@ -41,6 +41,7 @@ import { padOutroPlaying, playPadOutro, preloadPadOutro } from './ui/padOutro';
 import { shipLoop, withLoader } from './ui/loader';
 import { platePicture } from './render/platePreview';
 import { installCommand, type Command as UnitCommand } from './ui/command';
+import { installRoster, type Roster } from './ui/roster';
 import type { Directive, OrganId, RootDir, SimConfig, SimEvent, TowerFamily } from './sim/types';
 import { initAudio, setScene } from './audio/engine';
 import { boardEvents, installConsoleSounds, watchBoard } from './audio/gameSounds';
@@ -159,6 +160,8 @@ let debriefShown = false;
 let renderer: Renderer = new Renderer();
 /** Selecting and ordering your walking units (src/ui/command.ts); made once the board is up. */
 let command: UnitCommand | null = null;
+/** The roster (src/ui/roster.ts): a portrait per unit kind and ALL; one click, then one click on the board. */
+let roster: Roster | null = null;
 /** The board's pictures, once loaded (the district draft draws its plates with them). */
 let boardArt: BoardArtSet | null = null;
 /** The board is drawn and the loop runs: until then a deployment waits behind the loading screen. */
@@ -1297,9 +1300,17 @@ async function boot(): Promise<void> {
     inspected: () => hud.inspectedId,
     hint: (t) => hud.setHint(t),
   });
+  roster = installRoster({
+    renderer: () => (renderer instanceof IsoRenderer ? renderer : null),
+    sim: () => sim,
+    idle: () => selectedCard === null && armedOrgan === null && armedThrower === null && !armedPlinth
+      && armedNode === null && armedSpread === null && started && !debriefShown,
+    hint: (t) => hud.setHint(t),
+  });
   renderer.app.canvas.addEventListener('click', (ev) => {
     if (dragged) return;
     const pt = (ev as PointerEvent).pointerType || 'mouse';
+    if (roster?.consumeClick(ev.clientX, ev.clientY)) return;
     if (command?.consumeClick(ev.clientX, ev.clientY, pt, ev.shiftKey)) return;
     handleCanvasClick(ev.clientX, ev.clientY);
   });
@@ -1515,6 +1526,7 @@ async function boot(): Promise<void> {
     under.update();
     updateBoardPanel();
     command?.update();
+    roster?.update();
     updateNodeButton();
     // Draft overlay lifecycle (manual play only; the autoplayer picks itself).
     if (!AUTO) {

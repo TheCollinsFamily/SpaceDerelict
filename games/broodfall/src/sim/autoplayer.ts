@@ -40,6 +40,14 @@ export class Autoplayer {
    * stand beside an infested shelter.
    */
   expansion = false;
+  /**
+   * ROSTER ONLY (Collins, Oct 2 2026: "keeping RTS very, very low"): off by default. On: the player never selects a
+   * unit; a stack is released with ONE group order (ALL, at the siege's head: a sortie, so they come home by
+   * themselves) and alerts are left to the kinds set to AUTO. The clicks field counts what a person would click either way:
+   * selecting units and ordering them (2 per individual order), a group order (2: the portrait, the board), a SEND (1).
+   */
+  roster = false;
+  clicks = 0;
   private muleGoal = new Map<number, number>();
   private parked = new Set<number>();
   private released = false;
@@ -150,7 +158,7 @@ export class Autoplayer {
         const d = Math.hypot(door.x - u.pos.x, door.y - u.pos.y);
         if (!best || d < best.d) best = { id: sh.id, d };
       }
-      if (best) sim.issue({ kind: 'infest', unitId: u.id, shelterId: best.id });
+      if (best) this.click(2) && sim.issue({ kind: 'infest', unitId: u.id, shelterId: best.id });
     }
     return false;
   }
@@ -172,10 +180,10 @@ export class Autoplayer {
         const target = this.muleTarget(sim);
         if (target === null) continue;
         this.muleGoal.set(m.id, target);
-        sim.issue({ kind: 'unit-order', ids: [m.id], order: { kind: 'move', to: sim.cellCenter(target) } });
+        this.click(2) && sim.issue({ kind: 'unit-order', ids: [m.id], order: { kind: 'move', to: sim.cellCenter(target) } });
         continue;
       }
-      if (m.orders.length === 0) sim.issue({ kind: 'mule-deploy', muleId: m.id });
+      if (m.orders.length === 0) this.click(2) && sim.issue({ kind: 'mule-deploy', muleId: m.id });
     }
     return false;
   }
@@ -185,8 +193,8 @@ export class Autoplayer {
     for (const m of sim.mothers) {
       if (this.parked.has(m.id)) continue;
       const spot = this.quietStreet(sim);
-      if (spot) sim.issue({ kind: 'unit-order', ids: [m.id], order: { kind: 'move', to: spot } });
-      sim.issue({ kind: 'mother-mode', motherId: m.id, mode: 'brood' });
+      if (spot) this.click(2) && sim.issue({ kind: 'unit-order', ids: [m.id], order: { kind: 'move', to: spot } });
+      this.click(2) && sim.issue({ kind: 'mother-mode', motherId: m.id, mode: 'brood' });
       this.parked.add(m.id);
     }
     const stackIds = sim.broodlings.filter((b) => b.motherUnit !== undefined).map((b) => b.id);
@@ -199,13 +207,28 @@ export class Autoplayer {
       .filter((e) => !e.burrowed && !sim.isAirborne(e) && enemySpec(e.kind).caste !== 'science'
         && Math.hypot(e.pos.x - core.x, e.pos.y - core.y) < reach)
       .sort((a, b) => Math.hypot(a.pos.x - core.x, a.pos.y - core.y) - Math.hypot(b.pos.x - core.x, b.pos.y - core.y))[0];
+    if (this.roster) {
+      // One group order at the siege's head when the stack is full: a sortie (they come home once it is quiet).
+      if (threat && full && !this.released && stackIds.length > 0) {
+        this.click(2);
+        sim.issue({ kind: 'group-order', who: 'all', at: { ...threat.pos } });
+        this.released = true;
+      } else if (!threat) this.released = false;
+      return;
+    }
     if (threat && (full || this.released) && stackIds.length > 0) {
-      sim.issue({ kind: 'unit-order', ids: stackIds, order: { kind: 'attack', to: { ...threat.pos } } });
+      this.click(2) && sim.issue({ kind: 'unit-order', ids: stackIds, order: { kind: 'attack', to: { ...threat.pos } } });
       this.released = true;
     } else if (!threat && this.released) {
-      sim.issue({ kind: 'unit-order', ids: stackIds, order: { kind: 'guard' } });
+      this.click(2) && sim.issue({ kind: 'unit-order', ids: stackIds, order: { kind: 'guard' } });
       this.released = false;
     }
+  }
+
+  /** A click a person would make (counted for the low-micro measure); always true, so it chains before a command. */
+  private click(n: number): boolean {
+    this.clicks += n;
+    return true;
   }
 
   act(sim: Sim, dt: number): void {

@@ -37,6 +37,10 @@ function run(seed: number) {
   if (MODE.includes('mules')) bot.mules = true;
   // expansion = the bot drafts shelters, infests them and grows Harriers (Autoplayer.expansion, Oct 2 2026).
   if (MODE.includes('expansion')) bot.expansion = true;
+  // roster = the bot never selects a unit: one group order per release, alerts left to AUTO (Autoplayer.roster, Oct 2 2026).
+  if (MODE.includes('roster')) bot.roster = true;
+  // noauto = no unit kind answers alerts by itself (every AUTO toggle off).
+  if (MODE.includes('noauto')) for (const k of Object.keys(sim.groups.auto)) (sim.groups.auto as Record<string, boolean>)[k] = false;
   // shelterstart = the same, with a shelter standing at the start in the district nearest the body, so what an infested
   // shelter is worth is measured (in a normal run one comes at a draft, and a lost run may never reach it).
   if (MODE.includes('shelterstart')) {
@@ -61,7 +65,7 @@ function run(seed: number) {
     }
     ticks++;
   }
-  return { sim, kinds };
+  return { sim, kinds, clicks: bot.clicks };
 }
 
 it('gaps: naive hold-12 over ten seeds', () => {
@@ -69,7 +73,7 @@ it('gaps: naive hold-12 over ten seeds', () => {
   let wins = 0;
   const seeds = Number(process.env.GAPS_SEEDS || 10); // GAPS_SEEDS: a wider sample than the usual ten
   for (let seed = 1; seed <= seeds; seed++) {
-    const { sim, kinds } = run(seed);
+    const { sim, kinds, clicks } = run(seed);
     if (sim.outcome === 'won') wins++;
     const s = sim.stats as unknown as Record<string, unknown>;
     rows.push(`seed ${String(seed).padStart(2)} ${sim.outcome.padEnd(5)} cleared ${String(sim.wavesCleared).padStart(2)} core ${Math.round(Math.max(0, sim.coreHp) / sim.coreMaxHp * 100)}%`
@@ -77,6 +81,7 @@ it('gaps: naive hold-12 over ten seeds', () => {
       + ` brood ${JSON.stringify({ dens: sim.towers.filter((t) => t.family === 'brood').length, pits: sim.towers.filter((t) => t.family === 'hatch').length, born: s.warriorsBorn ?? 0, mothers: s.mothersBorn ?? 0, lost: s.mothersLost ?? 0, nets: s.netsCast ?? 0, netted: s.netHits ?? 0, kills: (s.killsByFamily as Record<string, number>)?.brood ?? 0 })}`
       + ` mules ${JSON.stringify({ born: s.mulesBorn ?? 0, rooted: s.mulesRooted ?? 0, lost: s.mulesLost ?? 0 })} reclaimed ${s.bodiesReclaimed ?? 0}`
       + ` expansion ${JSON.stringify({ shelters: sim.shelters.length, infested: s.sheltersInfested ?? 0, lost: s.sheltersLost ?? 0, top: s.shelterTopStage ?? 0, paid: s.shelterMeat ?? 0, inf: s.infestorsBorn ?? 0, infLost: s.infestorsLost ?? 0, harriers: s.harriersBorn ?? 0, hLost: s.harriersLost ?? 0, hKills: s.harrierKills ?? 0 })} meat ${JSON.stringify(sim.digested)}`
+      + ` clicks ${clicks} (${(clicks / Math.max(1, sim.wavesCleared)).toFixed(1)}/wave) sorties ${sim.groups.issued} alerts-auto${JSON.stringify(sim.groups.auto)}`
       + ` events ${['royal-decree', 'limb-promoted', 'surgery-under-fire', 'graft-took', 'burrowed', 'sealed-in', 'broodling-lost', 'mule-lost', 'flamers'].map((k) => `${k}=${kinds[k] ?? 0}`).join(' ')}`);
   }
   // eslint-disable-next-line no-console

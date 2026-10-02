@@ -8,6 +8,7 @@
  */
 import { Rng } from './rng';
 import { footprintOf, footprintName, isMultiCell, turnsItsGround } from './footprint';
+import { Groups } from './groups';
 import {
   CellType, CityMap, DraftOffer, allDistance, computeFlow, createBoard,
   PLATE, carveShelter, draftOffers, frontierGates, isPassable, legalDrafts, shelterSite, slotOfCell, stampPlate,
@@ -249,6 +250,8 @@ export class Sim {
   private rng: Rng;
   private nextId = 1;
   private events: SimEvent[] = [];
+  /** Group orders, alerts and the units' own small jobs (src/sim/groups.ts: "units are optional"). */
+  readonly groups: Groups = new Groups(this);
 
   tickCount = 0;
   time = 0;
@@ -1920,7 +1923,20 @@ export class Sim {
         t.marker = cmd.cell;
         return { ok: true };
       }
+      case 'group-order': {
+        const n = this.groups.order(cmd.who, this.groups.targetAt(cmd.at));
+        return n > 0 ? { ok: true } : { ok: false, err: 'none of those units on the board' };
+      }
+      case 'answer-alert': {
+        const n = this.groups.answer(cmd.alertId);
+        return n > 0 ? { ok: true } : { ok: false, err: 'no unit free to send' };
+      }
+      case 'set-auto': {
+        this.groups.auto[cmd.who] = cmd.on;
+        return { ok: true };
+      }
       case 'unit-order': {
+        for (const id of cmd.ids) this.groups.forget(id);
         const units = cmd.ids.map((id) => this.unitById(id)).filter((u): u is Broodling | Broodmother | SporeMule | Infestor | Harrier => u !== undefined);
         if (units.length === 0) return { ok: false, err: 'no such unit' };
         let order: UnitOrder = cmd.order;
@@ -2968,6 +2984,7 @@ export class Sim {
     this.sendEngineers();
     this.updateCoreAttack();
     this.updateEnemies();
+    this.groups.tick(DT);
     this.updateMothers();
     this.updateMules();
     this.updateShelters();
@@ -4113,6 +4130,51 @@ export class Sim {
   private snapOf(t: Tower): BroodSnap {
     const ms = this.statsOf(t);
     return { potency: ms.potency, tempo: ms.tempo, reach: ms.reach, fx: fxOf(t, ms) };
+  }
+
+  /** Street steps from one cell to another along the streets your units walk (Infinity: no street route). */
+  streetSteps(from: number, to: number): number {
+    if (from < 0 || to < 0) return Infinity;
+    if (from === to) return 0;
+    const next = this.unitFlowTo(to);
+    let c = from;
+    let n = 0;
+    while (c !== to) {
+      const step = next[c];
+      if (step < 0 || step === c || n > this.map.cells.length) return Infinity;
+      c = step;
+      n++;
+    }
+    return n;
+  }
+
+  /** The nearest creeped street to a point (a hurt unit walks there to heal), within a few cells; null if none. */
+  nearestCreepStreet(at: Vec): Vec | null {
+    const W = this.cfg.gridW;
+    const c0 = this.cellAt(at.x, at.y);
+    if (c0 < 0) return null;
+    const x0 = c0 % W;
+    const y0 = (c0 - x0) / W;
+    let best: number | null = null;
+    let bd = Infinity;
+    for (let r = 0; r <= 12 && best === null; r++) {
+      for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
+        if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+        const x = x0 + dx;
+        const y = y0 + dy;
+        if (x < 0 || y < 0 || x >= W || y >= this.cfg.gridH) continue;
+        const c = y * W + x;
+        if (!isPassable(this.map.cells[c]) || !this.isCreeped(c)) continue;
+        const d = dx * dx + dy * dy;
+        if (d < bd) { bd = d; best = c; }
+      }
+    }
+    return best === null ? null : this.cellCenter(best);
+  }
+
+  /** An event raised from outside the sim class proper (src/sim/groups.ts). */
+  pushEvent(ev: SimEvent): void {
+    this.events.push(ev);
   }
 
   /** Where your walking units gather at the body: a street beside the core. */
