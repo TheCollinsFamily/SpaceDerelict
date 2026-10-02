@@ -1494,3 +1494,12 @@ Collins's idea, built whole: DESIGN.md "SHELTERS AND THE INFESTOR; THE HARRIER" 
     skitterling. Collins's call.
   - **Checks:** `node tools/shot-flame.mjs` (13 checks: the beat, 16 close-ups at two camera turns all firing, the sizes
     against a street cell at zooms 1-3) writes `flame-troopers.mp4`, `flame-close-sheet.jpg` and the options sheet.
+- **Rework (Oct 2 2026, Collins on the first shots):** the shelter is now a levelled 2x2 lot of its district with an apron of
+  street on every side and two rows at its door, offered only where the door is reachable (citymap.ts `shelterSite`, tested
+  on 60 boards), drawn as a structure on its roof in its tile set's own rendering (`node tools/art/shelters.mjs`, ten sets x
+  five states; city shots `node tools/shot-shelter-city.mjs <sets>`). The Infestor is a SIEGE TICK (concepts and the pick in
+  notes/art-review/infestor/; `node tools/art/infestor-concepts.mjs`), with a BURROW clip (the boss `special` mechanism,
+  `BOSS.infestor` in tools/art/templates/unit.mjs) staged at the door; drawn at 0.85 of a street cell (INFESTOR_R 15). The
+  shelter's defenders shoot the NEAREST unit (an escort takes the fire). The "2000 hp" in the first film was the beat's own
+  override; the beat now films the real 150 hp. Spend for the rework about $19 (3 concepts, 10 shelter sheets, the views,
+  26 clips incl. a stopped first run).
