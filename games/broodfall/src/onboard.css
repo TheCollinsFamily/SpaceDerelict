@@ -253,3 +253,10 @@ body.first-mission.m1-surge #royal-surge, body.first-mission.m1-cannibal #pendin
 #intro.begin .intro-begin button:hover { border-color: #fff; color: #fff; }
 #intro.begin .intro-begin small { font: 12px/1 Bahnschrift, "Segoe UI", sans-serif; letter-spacing: 3px; color: rgba(255, 255, 255, 0.7); text-transform: uppercase; }
 #intro.begin .intro-skip { display: none; }
+
+/* YOKE presenting the post-deployment report (campaignUi presentReport, Oct 2 2026): a small intercom in the corner,
+   clear of the report's card. */
+.cp-icom.cp-icom-report { width: min(290px, calc(100% - 36px)); left: 14px; bottom: 14px; }
+.cp-icom.cp-icom-report .cp-icom-stage { height: min(190px, 24vh); }
+.cp-icom.cp-icom-report .cp-talk { font-size: 0.86em; }
+#campaign.ship-art[data-report] .cp-card { width: min(1040px, 74%); }

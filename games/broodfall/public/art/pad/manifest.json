@@ -18,5 +18,24 @@
    "h": 720
   }
  },
- "part2": {}
+ "part2": {
+  "won": {
+   "video": "ship-won.mp4",
+   "seconds": 10.124,
+   "cut": 5.062,
+   "w": 1280,
+   "h": 720,
+   "fps": 30,
+   "poster": "ship-end.webp"
+  },
+  "lost": {
+   "video": "ship-lost.mp4",
+   "seconds": 10.124,
+   "cut": 5.062,
+   "w": 1280,
+   "h": 720,
+   "fps": 30,
+   "poster": "ship-end.webp"
+  }
+ }
 }

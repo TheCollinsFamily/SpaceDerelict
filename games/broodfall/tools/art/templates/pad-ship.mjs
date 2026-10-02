@@ -196,7 +196,7 @@ export function bake() {
     ffmpeg(['-i', out, '-frames:v', '1', first], 'first');
     ffmpeg(['-sseof', '-0.2', '-i', out, '-frames:v', '1', lastB], 'last');
     ffmpeg(['-i', raw(`${o}-start.png`), '-i', first, '-filter_complex', '[0:v]scale=640:-2[a];[1:v]scale=640:-2[b];[a][b]hstack', path.join(LOOK, `ship-${o}-join1.jpg`)], 'join1');
-    ffmpeg(['-i', lastB, '-i', raw('interface-end.png'), '-filter_complex', '[0:v]scale=640:360[a];[1:v]scale=640:360[b];[a][b]blend=all_mode=difference,eq=brightness=0.1:contrast=3[d];[0:v]scale=640:360[a2];[1:v]scale=640:360[b2];[a2][b2][d]hstack=inputs=3',
+    ffmpeg(['-i', lastB, '-i', raw('interface-end.png'), '-filter_complex', '[0:v]scale=640:360[a];[1:v]scale=640:360[b];[a]format=gbrp[ag];[b]format=gbrp[bg];[ag][bg]blend=all_mode=difference,eq=contrast=3,format=yuv420p[d];[0:v]scale=640:360[a2];[1:v]scale=640:360[b2];[a2][b2][d]hstack=inputs=3',
       path.join(LOOK, `ship-${o}-join2.jpg`)], 'join2');
   }
   const mf = path.join(OUT, 'manifest.json');

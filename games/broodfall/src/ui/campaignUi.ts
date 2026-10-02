@@ -240,6 +240,7 @@ export class CampaignUi {
   show(opts: { greet?: boolean } = {}): void {
     // Back from a report (which borrows the Procreation Board's room): aboard at the Directive Desk.
     if (this.debriefing) this.room = 'desk';
+    delete this.el.dataset.report; // the report's intercom is gone with the report
     this.debriefing = false;
     document.body.classList.add('in-ship');
     this.el.classList.remove('hidden');
@@ -1106,8 +1107,9 @@ export class CampaignUi {
     const box = panel?.querySelector<HTMLElement>('.cp-icom-stage');
     if (box) this.avatar?.mount(true, 'calm', box);
     const talk = panel?.querySelector<HTMLElement>('.cp-talk');
+    // Her avatar writes her line into the talk on the screen itself (yokeAvatar.ts `line`); written here only without it.
     const said = (text: string) => {
-      if (!talk || !talk.isConnected) return;
+      if (this.avatar || !talk || !talk.isConnected) return;
       const line = document.createElement('div');
       line.className = 'yoke';
       line.innerHTML = `<b>YOKE:</b> ${esc(text)}`;

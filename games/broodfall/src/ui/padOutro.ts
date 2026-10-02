@@ -332,15 +332,17 @@ export async function playPadOutro(outcome: PadOutcome, opts: { part2?: boolean 
   const cleanupAll = () => { URL.revokeObjectURL(video.src); loaded[outcome] = undefined; if (got2) { URL.revokeObjectURL(got2.src); loaded2[outcome] = undefined; } };
   /** Part 2: he stands, turns, walks into the ship; its last frame is the interface's, which then takes over (handOver). */
   const playPart2 = (g: Loaded2, skipNow: boolean) => {
-    stage.remove();
+    // Part 1's last frame (the pad asleep on the desk) stays up until part 2's first frame is drawn over it: no black
+    // between them. The poster (the interface's picture) goes under only when part 2 lands or is skipped.
     over.dataset.part = '2';
-    if (g.poster) over.style.background = `#000 url("${g.poster}") center/cover no-repeat`;
+    const showPoster = () => { if (g.poster) over.style.background = `#000 url("${g.poster}") center/cover no-repeat`; };
     const v2 = document.createElement('video');
     v2.playsInline = true;
     v2.preload = 'auto';
     v2.src = g.src;
     v2.volume = part2Volume();
-    v2.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000;';
+    v2.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;';
+    v2.addEventListener('playing', () => { v2.style.opacity = '1'; requestAnimationFrame(() => stage.remove()); }, { once: true });
     let landed = false;
     const land = () => {
       if (landed) return;
@@ -348,12 +350,14 @@ export async function playPadOutro(outcome: PadOutcome, opts: { part2?: boolean 
       skip2 = null;
       window.removeEventListener('keydown', onKey, true);
       v2.pause();
+      showPoster();
+      stage.remove();
       playing = false;
       handOver(over, finish, cleanupAll);
     };
     // Skipped: straight to the last frame (the poster under it), the interface takes over from it.
     skip2 = () => { v2.style.opacity = '0'; land(); };
-    if (skipNow) { skip2(); return; }
+    if (skipNow) { over.dataset.skipped = '1'; skip2(); return; }
     over.appendChild(v2);
     v2.addEventListener('ended', land);
     v2.addEventListener('error', land);

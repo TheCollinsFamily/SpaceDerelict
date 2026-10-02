@@ -282,7 +282,7 @@ try {
     await page.waitForFunction(() => !!document.querySelector('#campaign:not(.hidden) .cp-card'), null, { timeout: 12000 }).catch(() => {});
     const took = Math.round(await page.evaluate(() => performance.now() - window.__skipT0));
     check(await landed(page) && took < 8000, `one press: the report at the desk in ${took} ms (no part 2 played)`);
-    check(await page.evaluate(() => !document.querySelector('#pad-outro video')), 'part 2 was not played');
+    check(await page.evaluate(() => document.getElementById('pad-outro')?.dataset.skipped === '1'), 'part 2 was skipped with it (not played)');
     await context.close();
   }
 
