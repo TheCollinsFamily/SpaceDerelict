@@ -47,7 +47,7 @@ const MOTHER_R = 12;
 /** A Spore Mule is drawn a little bigger than a warrior (it carries a node). */
 const MULE_R = 6.5;
 /** The Infestor and the Harrier (Oct 2 2026), as drawn. */
-const INFESTOR_R = 13;
+const INFESTOR_R = 15; // Oct 2 2026: ~0.85 of a street cell across its body (a Broodmother is 0.67), well under a 2x2 shelter
 const HARRIER_R = 5.5;
 /** Art pixels of body width for each world pixel of a unit's radius. */
 const UNIT_PX = 3.6;

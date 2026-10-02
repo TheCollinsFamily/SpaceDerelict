@@ -57,7 +57,8 @@ const frameOn = async (expr, zoom) => {
     let w = pt();
     let c = b.renderer.clientOf(b.sim, w.x, w.y);
     if (zoom !== 1) b.renderer.zoomAt(c.x, c.y, zoom);
-    for (let k = 0; k < 3; k++) {
+    for (let k = 0; k < 4; k++) {
+      b.renderer.draw(b.sim, 0);
       w = pt();
       c = b.renderer.clientOf(b.sim, w.x, w.y);
       const r = b.renderer.app.canvas.getBoundingClientRect();
@@ -90,7 +91,7 @@ const play = async (seconds, { live = false, until } = {}) => {
 const shot = (name) => page.screenshot({ path: join(out, `expansion-${name}.png`) });
 
 try {
-  await page.goto(`http://localhost:${PORT}/?autostart=1&seed=42&speed=0&biome=suburb&landing=0`, { timeout: 180000, waitUntil: 'domcontentloaded' });
+  await page.goto(`http://localhost:${PORT}/?autostart=1&seed=7&speed=0&biome=suburb&landing=0`, { timeout: 180000, waitUntil: 'domcontentloaded' });
   await page.waitForFunction(() => window.broodfall !== undefined && window.broodfall.biome() !== '', null, { timeout: 90000 });
 
   // 1. A draft with a shelter on one of its cards: the real draft overlay.
@@ -100,12 +101,12 @@ try {
     b.step(2);
     s.meat.war = 9999; s.meat.science = 9999;
     // Real offers; the shelter marked on the first one that can hold it (Sim.markShelterOffer's own test).
-    s.draftsTaken = 5;
     for (let seed = 1; seed < 40; seed++) {
+      s.draftsTaken = 4 + seed; // the shelter roll is the run's seed and the draft count
       const offers = b.draftOffersFor ? b.draftOffersFor(seed) : null;
       if (!offers) break;
       s.markShelterOffer(offers);
-      if (offers.some((o) => o.shelter)) { s.phase = 'draft'; s.pendingDraft = offers; return offers.findIndex((o) => o.shelter); }
+      if (offers.some((o) => o.shelter)) { s.draftsTaken = 0; s.phase = 'draft'; s.pendingDraft = offers; return offers.findIndex((o) => o.shelter); }
     }
     return -1;
   });
@@ -152,10 +153,12 @@ try {
   check(panel.includes(`INFESTOR · ${realHp}`) && realHp.endsWith('/150'), 'its panel shows its real hp (150) and INFEST', panel.replace(/\s+/g, ' ').slice(0, 60));
   await shot('3-infestor-selected');
   await page.keyboard.press('i');
+  console.log('  after I:', (await page.evaluate(() => document.getElementById('unit-cmd')?.textContent ?? '')).replace(/s+/g, ' ').slice(0, 80), JSON.stringify(await page.evaluate(() => window.broodfall.selectedUnits())));
   await frameOn('s.shelters[0].pos', 1.6);
-  const shc = await clientOf('s.shelters[0].pos');
+  const shc0 = await clientOf('s.shelters[0].pos'); const shc = { x: shc0.x, y: shc0.y - 30 };
   await page.mouse.click(shc.x, shc.y);
   await page.waitForTimeout(300);
+  console.log('  hint after click:', await page.evaluate(() => (document.getElementById('hint') ?? document.querySelector('.hint'))?.textContent ?? ''), JSON.stringify(shc));
   const sent = await page.evaluate(() => window.broodfall.sim.infestors[0]?.infest ?? null);
   check(sent !== null, 'I and a click on the shelter send it in', String(sent));
   // The escort goes ahead to the door.
@@ -194,6 +197,25 @@ try {
   await page.evaluate(() => { const s = window.broodfall.sim; const x = s.shelters[0]; for (let i = 0; i < 2; i++) { x.harmThisWave = 0; s.waveBanked = { war: 100, science: 30, royal: 0 }; s.payShelters(); } });
   await play(2);
   await shot('5c-infested-stage3');
+  // Defend it as a player would (the war caste goes for it first): limbs on the creeped roofs round its apron.
+  const guards = await page.evaluate(() => {
+    const b = window.broodfall;
+    const s = b.sim;
+    const x = s.shelters[0];
+    const door = s.cellCenter(x.door);
+    const near = s.map.cells.map((_, c) => c).filter((c) => s.map.cells[c] === 0 && !x.cells.includes(c))
+      .sort((a, q) => { const pa = s.cellCenter(a), pq = s.cellCenter(q); return Math.hypot(pa.x - door.x, pa.y - door.y) - Math.hypot(pq.x - door.x, pq.y - door.y); });
+    let placed = 0;
+    for (const fam of ['spitter', 'lasher', 'spitter', 'burster', 'spitter', 'lasher']) {
+      s.hand[0] = { id: 996000 + placed, family: fam, free: true };
+      const c = near.find((q) => s.canBuildTower(q, fam));
+      if (c !== undefined && b.play({ kind: 'build', cardIndex: 0, cell: c }).ok) placed++;
+    }
+    return placed;
+  });
+  console.log(`  limbs round the shelter: ${guards}`);
+  await frameOn('s.shelters[0].pos', 1.6);
+  await shot('5c2-defended');
   // A real wave: call it, let the limbs and the creep clear it, and watch the clear pay.
   await page.evaluate(() => { const s = window.broodfall.sim; s.issue({ kind: 'call-early' }); });
   const paidBefore = await page.evaluate(() => window.broodfall.sim.stats.shelterMeat ?? 0);
@@ -224,8 +246,10 @@ try {
   // 7. A Harrier and a far science party.
   await page.evaluate(() => {
     const s = window.broodfall.sim;
+    s.meat.war = 9999; s.meat.science = 9999;
     for (let c = 0; c < s.under.cells.length; c++) for (let r = 0; r < 4; r++) if (!s.organs.some((o) => o.organ === 'harrier') && s.canBuildOrgan('harrier', c, r)) s.issue({ kind: 'build-organ', organ: 'harrier', cell: c, rot: r });
     for (let i = 0; i < 2; i++) s.growFieldUnits();
+    console.log('harriers', s.harriers.length, s.organs.map((o) => o.organ).join(','));
     for (let i = 0; i < 3; i++) s.spawnEnemy('researcher');
   });
   await surface();
@@ -239,30 +263,75 @@ try {
   const kills = await page.evaluate(() => window.broodfall.sim.stats.harrierKills ?? 0);
   check(kills >= 1, 'a Harrier runs a science party down', `${kills} killed`);
 
-  // The line-up: one of each on one street, their drawn sizes measured.
-  const sizes = await page.evaluate(() => {
+  // The line-up: one of each, in a row on the shelter's apron street, the sim held still; sizes from the drawing scale.
+  const lineup = await page.evaluate(() => {
     const b = window.broodfall;
     const s = b.sim;
     s.enemies.length = 0;
+    // A Broodmother for the line-up (a Den, its mother).
+    s.hand[0] = { id: 997001, family: 'brood', free: true };
+    const dc = s.map.cells.findIndex((_, c) => s.canBuildTower(c, 'brood'));
+    if (dc >= 0) b.play({ kind: 'build', cardIndex: 0, cell: dc });
+    const den = s.towers.find((t) => t.family === 'brood');
+    if (den && !s.mothers.length) s.bearMother(den);
+    // The apron's street cells in one row (the longest run along x or y next to the lot).
     const x = s.shelters[0];
-    const door = s.cellCenter(x.door);
-    // Along the street from the door: Infestor, Broodmother (if any), warrior, Harrier, then a Flametrooper.
-    const spots = [0, 1, 2, 3, 4].map((i) => ({ x: door.x + (i - 2) * 30, y: door.y + 26 }));
-    s.infestors.push({ id: 990001, cystId: 0, pos: { ...spots[0] }, hp: 150, maxHp: 150, orders: [{ kind: 'hold' }] });
-    const w = s.broodlings.find((q) => !q.puppet); if (w) { w.pos = { ...spots[1] }; w.orders = [{ kind: 'hold' }]; }
-    const h = s.harriers[0]; if (h) { h.pos = { ...spots[2] }; h.orders = [{ kind: 'hold' }]; }
-    const f = s.spawnEnemy('flametrooper'); f.pos = { ...spots[3] };
-    return { cellPx: s.cfg.cellPx };
+    const W = s.cfg.gridW;
+    const xs = x.cells.map((c) => c % W), ys = x.cells.map((c) => Math.floor(c / W));
+    const x0 = Math.min(...xs), y0 = Math.min(...ys);
+    // The apron ring runs one cell outside the 2x2 lot: rows y0-1 and y0+2, columns x0-1 and x0+2 (four cells each).
+    const rows = [
+      [-1, 0, 1, 2].map((dx) => (y0 + 2) * W + x0 + dx),
+      [-1, 0, 1, 2].map((dx) => (y0 - 1) * W + x0 + dx),
+      [-1, 0, 1, 2].map((dy) => (y0 + dy) * W + x0 + 2),
+      [-1, 0, 1, 2].map((dy) => (y0 + dy) * W + x0 - 1),
+    ];
+    const road = (c) => s.map.cells[c] === 1 || s.map.cells[c] === 2;
+    const row = rows.find((r) => r.every(road)) ?? rows[0];
+    const ends = [s.cellCenter(row[0]), s.cellCenter(row[3])];
+    // Five places evenly along the row, from its first cell to its last.
+    const at = [0, 1, 2, 3, 4].map((i) => ({ x: ends[0].x + ((ends[1].x - ends[0].x) * i) / 4, y: ends[0].y + ((ends[1].y - ends[0].y) * i) / 4 }));
+    const hold = [{ kind: 'hold' }];
+    s.infestors.push({ id: 990001, cystId: 0, pos: { ...at[0] }, hp: 150, maxHp: 150, orders: hold });
+    const m = s.mothers[0]; if (m) { m.pos = { ...at[1] }; m.orders = [{ kind: 'hold' }]; m.guard = { ...at[1] }; }
+    const w = s.broodlings.find((q) => !q.puppet); if (w) { w.pos = { ...at[2] }; w.orders = [{ kind: 'hold' }]; }
+    const h = s.harriers[0]; if (h) { h.pos = { ...at[3] }; h.orders = [{ kind: 'hold' }]; }
+    const f = s.spawnEnemy('flametrooper'); f.pos = { ...at[4] };
+    return { at, mother: !!m, harrier: !!h, warrior: !!w };
   });
-  await frameOn('s.cellCenter(s.shelters[0].door)', 2.6);
-  await page.waitForTimeout(800);
+  // Framed and drawn WITHOUT stepping the sim (the Flametrooper would light up the row).
+  await page.evaluate(() => {
+    const b = window.broodfall;
+    const r = b.renderer;
+    const x = b.sim.shelters[0];
+    r.resetView();
+    r.draw(b.sim, 0);
+    let c = r.clientOf(b.sim, x.pos.x, x.pos.y);
+    r.zoomAt(c.x, c.y, 2.6);
+    for (let k = 0; k < 4; k++) {
+      r.draw(b.sim, 0);
+      c = r.clientOf(b.sim, x.pos.x, x.pos.y);
+      const rect = r.app.canvas.getBoundingClientRect();
+      const kk = r.app.renderer.width / rect.width;
+      r.panBy((rect.left + rect.width / 2 - c.x) * kk, (rect.top + rect.height * 0.5 - c.y) * kk);
+    }
+    r.draw(b.sim, 0);
+  });
+  await page.waitForTimeout(600);
   await shot('lineup');
   const measured = await page.evaluate(() => {
     const r = window.broodfall.renderer;
-    const out = {};
-    for (const [id, v] of r.allyViews) { const bnd = v.sprite.getBounds(); out[`ally ${id}`] = { w: Math.round(bnd.width), h: Math.round(bnd.height) }; }
-    for (const [id, v] of r.shelterViews) { const bnd = v.getBounds(); out[`shelter ${id}`] = { w: Math.round(bnd.width), h: Math.round(bnd.height) }; }
-    out.cellScreenWidth = Math.round(2 * r.geo.a * r.camScale);
+    const k = r.camScale;
+    const cell = 2 * r.geo.a * k;
+    const unit = (rad) => Math.round(2 * rad * 3.6 * k);
+    const shelterTex = [...r.shelterViews.values()][0]?.texture;
+    const out = {
+      zoom: Math.round(k * 100) / 100, streetCellWidth: Math.round(cell),
+      shelterWidth: shelterTex ? Math.round(shelterTex.width * k) : null, shelterStructureHeight: shelterTex ? Math.round(shelterTex.height * k) : null,
+      shelterWallsHeight: Math.round(2 * r.geo.level * k),
+      infestorBody: unit(15), broodmotherBody: unit(12), warriorBody: unit(4.5), harrierBody: unit(5.5), flametrooperBody: unit(4.5),
+    };
+    out.infestorPerCell = Math.round((out.infestorBody / cell) * 100) / 100;
     return out;
   });
   writeFileSync(join(out, 'expansion-sizes.json'), JSON.stringify(measured, null, 1));

@@ -92,8 +92,22 @@ export function installCommand(canvas: HTMLCanvasElement, hooks: CommandHooks): 
   const isBig = (u: Unit): boolean => 'mode' in u || 'cystId' in u;
   const selInfestors = (): Infestor[] => hooks.sim().infestors.filter((m) => selected.has(m.id));
   /** The intact shelter under a world point (its building, or close to its door). */
-  const shelterNear = (w: { x: number; y: number }): Shelter | null => {
+  const shelterNear = (w: { x: number; y: number }, client?: { x: number; y: number }): Shelter | null => {
     const sim = hooks.sim();
+    // A shelter stands two storeys up: picked by where it is DRAWN on the screen too (a click on its roof maps to the ground
+    // behind it).
+    const r = hooks.renderer();
+    if (client && r) {
+      let best: Shelter | null = null;
+      let bd = 70;
+      for (const sh of sim.shelters) {
+        if (sh.state !== 'intact') continue;
+        const p = r.clientOf(sim, sh.pos.x, sh.pos.y);
+        const d = Math.hypot(p.x - client.x, p.y - 30 - client.y);
+        if (d < bd) { bd = d; best = sh; }
+      }
+      if (best) return best;
+    }
     const cell = sim.cellAt(w.x, w.y);
     for (const sh of sim.shelters) {
       if (sh.state !== 'intact') continue;
@@ -238,7 +252,7 @@ export function installCommand(canvas: HTMLCanvasElement, hooks: CommandHooks): 
       ev.preventDefault();
       ev.stopImmediatePropagation();
       // A right-click on a shelter with an Infestor selected: take it.
-      const sh = selInfestors().length ? shelterNear(w) : null;
+      const sh = selInfestors().length ? shelterNear(w, { x: ev.clientX, y: ev.clientY }) : null;
       if (sh) { infest(sh); armed = null; return; }
       order({ kind: armed === 'attack' ? 'attack' : 'move', to: w }, ev.shiftKey);
       armed = null;
@@ -308,7 +322,7 @@ export function installCommand(canvas: HTMLCanvasElement, hooks: CommandHooks): 
       const w = worldAt(clientX, clientY);
       if (!w) return true;
       if (armed === 'infest') {
-        const sh = shelterNear(w);
+        const sh = shelterNear(w, { x: clientX, y: clientY });
         if (sh) infest(sh); else hooks.hint('NO SHELTER THERE: CLICK A SHELTER');
       } else if (armed === 'net') {
         const ms = selMothers().filter((m) => m.mode === 'fight');

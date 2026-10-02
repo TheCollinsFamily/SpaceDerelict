@@ -1,0 +1,13 @@
+{
+ "zoom": 1.28,
+ "streetCellWidth": 164,
+ "shelterWidth": 202,
+ "shelterStructureHeight": 261,
+ "shelterWallsHeight": 77,
+ "infestorBody": 139,
+ "broodmotherBody": 111,
+ "warriorBody": 42,
+ "harrierBody": 51,
+ "flametrooperBody": 42,
+ "infestorPerCell": 0.85
+}
