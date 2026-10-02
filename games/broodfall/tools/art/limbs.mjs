@@ -218,7 +218,7 @@ export const LIMBS = [
     look: 'a low fleshy hub from which glassy milky-white strands of mucus stretch out like the spokes of a web',
     idle: `${CALM} The mucus strands quiver.`,
     fire: 'The hub squeezes and spits a rope of white mucus forward out of the frame, then settles back to exactly its starting pose.' },
-  { family: 'ward', big: true, foot: [0.5, 0.74, 0.9], name: 'Ward Membrane', theme: 'lattice', on: 'roof', job: 'Shields every other limb near it.',
+  { family: 'ward', foot: [0.5, 0.74, 0.9], name: 'Ward Membrane', theme: 'lattice', on: 'roof', job: 'Shields every other limb near it.',
     look: 'a dome of glassy milky-white membrane stretched over thin ribs of chitin, like a soap bubble half sunk in flesh',
     idle: `${CALM} A shimmer of light crosses the dome.`,
     quiet: true, fire: 'The dome of membrane flexes outward and a bright ripple runs over it from the top down, then it settles back to exactly its starting pose.' },
@@ -300,6 +300,42 @@ export const LIMBS = [
     idle: `${CALM} The ribs open and close a little.`,
     fire: 'The ribs snap shut together like a trap closing, hold, then open slowly back to exactly their starting pose.' },
 ];
+
+/**
+ * DRAWN FOR THEIR GROUND (Oct 2 2026; Collins, of the class-zero footprints, notes/FOOTPRINT-PLAN.md: "ok this is
+ * WAY better, redesign the art around this"). These limbs are redrawn over a ground plate of their footprint
+ * (tools/art/templates/limb-shaped.mjs, tools/art/lib/plate.mjs): `plate` is the shape they stand on, `shapedLook`
+ * what is drawn over it, `srcDir` the NEW raw folder (the old drawing's files stay in art-src/limbs/<family>/, and the
+ * old baked art in public/art/limbs-legacy/). Where each stands is the plate's (feet.json), not a mark by eye; where
+ * it fires from is still marked by eye per view (muzzle, backMuzzle, sideMuzzle, backSideMuzzle).
+ * The look-alike fixes of the limb decision sheet are here too: the Vent a chimney, the Ember a nozzle on a sac, the
+ * Lure a squat pitcher bloom, the Ocular a tall hooded periscope, the Press a screw press, the Conduit a bent pipe,
+ * the Reliquary a sealed casket, the Lobber a sac on a sling arm.
+ */
+const GROUND = {
+  impaler: { plate: 'line3', shapedLook: 'a long harpoon rail lying along all three tiles: a low muscular cradle the length of the row holding one long ivory bone harpoon drawn back under tension like the bolt of a ballista, its barbed point at the front end of the row, raised a little' },
+  lance: { plate: 'line3', shapedLook: 'a long low hose of muscle lying along all three tiles, thick at the back end and narrowing to an open nozzle at the front end of the row, dribbling dark maroon slime onto the ground' },
+  ember: { plate: 'line3', accent: 'a bloated fuel sac glowing orange from within, with a few small acid yellow-green glands', shapedLook: 'a long low fuel sac lying along all three tiles, glowing orange from within, ending at the front end of the row in one short scorched black nozzle with a small blue pilot flame at its tip; no chimney, nothing tall' },
+  amp: { plate: 'line3', shapedLook: 'a long ribbed resonant horn of flesh lying along all three tiles, ribbed all along its length like a bellows, with taut violet membranes stretched across the gaps between its ribs, its bell opening at the front end of the row' },
+  frond: { plate: 'T', big: true, shapedLook: 'three fern-like fronds of pale blue-white nerve cords, one rising from each end of the bar of the T and one from the end of its stem, joined by thick roots along the T, and a coiled knot of glowing nerve cords on the key tile' },
+  choir: { plate: 'T', big: true, shapedLook: 'organ pipes on a T-shaped manifold of flesh: three banks of slender glassy milky-white pipes of different heights, one bank along each arm of the bar and one along the stem, and a fleshy pumping bellows on the key tile' },
+  blighter: { plate: 'T', big: true, accent: 'a sickly yellow-green haze and green-stained cracked vents, and NO glands', shapedLook: 'a tall fumarole chimney of flesh rising from the key tile, with three cracked vent pipes lying along the bar and the stem of the T, a thin sickly yellow-green haze seeping from the cracks and from the chimney mouth' },
+  quill: { plate: 'L3', big: true, shapedLook: 'a bent muscular body lying along all three tiles of the elbow, hugging it, with long ivory quills fanned out along both of its arms, the fan widest and tallest at the bend' },
+  conduit: { plate: 'L3', big: true, accent: 'amber marrow that glows through split bone, and no slits or glowing grilles', shapedLook: 'a thick bent pipe of bone lying along all three tiles of the elbow, split open along its top to show glowing amber marrow flowing in it, a swollen round gather-bulb at the bend, and one wide open mouth at the end of the arm that runs from the bend toward the front' },
+  tangler: { plate: 'L4', big: true, shapedLook: 'a long low bed of web lying flat along all four tiles of the L, bent round its corner: a mat of fleshy pads crossed and covered by glassy milky-white strands of mucus, strands drooping over its outer edges' },
+  press: { plate: 'L4', big: true, accent: 'amber marrow that glows through split bone, and no slits or glowing grilles', shapedLook: 'a heavy screw press of bone standing on the corner tile of the L, two thick bone plates on a twisted bone screw, with a long feed trough of bone lying along the long arm of the L, glowing amber marrow oozing along the trough into the press' },
+  bombard: { plate: 'sq2', big: true, shapedLook: 'a squat heavy siege mortar filling all four tiles: a short, very wide barrel of overlapping ivory bone plates on a swollen muscular base, the barrel tilted up toward the sky, a few golden spores in its mouth' },
+  lure: { plate: 'one', shapedLook: 'a SQUAT pitcher bloom: a fat open fleshy pitcher flower low on the ground, wider than it is tall, its lip curled outward, leaking a visible pink-green haze, glossy pink eggs round its base; nothing tall, no stalk and no ball' },
+  ocular: { plate: 'one', shapedLook: 'a TALL periscope eyestalk: a long slender neck of nerve cords rising straight up, bent forward at the top, with one large wet eye with a pale blue iris inside a hood of bone like a periscope head' },
+  reliquary: { plate: 'one', accent: 'amber marrow seen through a small window of bone, and no slits or glowing grilles', shapedLook: 'a sealed bone casket: a closed rounded box of fused bone plates on a muscular base, with a small oval window of clear amber in its lid through which a jar of glowing marrow shows; no religious symbol of any kind' },
+  lobber: { plate: 'one', shapedLook: 'a swollen bile sac on the ground with a long jointed sling arm rising from it and curving forward, a cupped sling at the end holding one glob of yellow bile; it looks nothing like a mouth on a stalk' },
+};
+for (const [family, o] of Object.entries(GROUND)) {
+  const l = LIMBS.find((x) => x.family === family);
+  // Drawn anew: its old marks and its old raw folder belong to the old drawing.
+  for (const k of ['foot', 'backFoot', 'muzzle', 'backMuzzle', 'long', 'srcDir']) delete l[k];
+  Object.assign(l, { srcDir: `${family}-ground`, big: !!o.big, ...o });
+}
 
 /** Design sheets: one per theme, on that theme's background colour. */
 export const LIMB_SHEETS = Object.keys(THEMES).map((t) => ({

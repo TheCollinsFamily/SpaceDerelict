@@ -66,6 +66,17 @@ export interface LimbArt extends LimbSide {
   /** The view from behind, of a limb that is not the same all the way round. */
   back?: LimbSide;
   /**
+   * Drawn over its GROUND PLATE (Oct 2 2026, tools/art/templates/limb-shaped.mjs): the shape it stands on.
+   * `body` is the plate's width and `anchor` its middle, so the picture is laid over the picture of its cells.
+   */
+  plate?: string;
+  /**
+   * An elbow's or an L's other two views (facing east, and west from behind): shown as they are where any other
+   * limb's front or back is shown mirrored, since mirrored its picture would stand on the wrong cells.
+   */
+  side?: LimbSide;
+  backSide?: LimbSide;
+  /**
    * Its UPGRADE LOOKS (content/upgradeLooks.ts, tools/art/templates/limb-variant.mjs): a class look
    * (bone, swarm, venom, reach) or a superstructure (`swarm+venom`), each its own atlas and views.
    * Loaded as limbs of their own, named `<family>@<key>` (BoardArtSet.limbs).

@@ -134,7 +134,8 @@ export function footingOf(l, frame, box, view = 'front') {
   const w = box.x1 - box.x0;
   const h = box.y1 - box.y0;
   if (l.flat) return { x: (box.x0 + box.x1) / 2, y: (box.y0 + box.y1) / 2, a: w / 2, b: h / 2, marked: true };
-  const mark = view === 'back' ? l.backFoot : l.foot;
+  // A limb drawn over its ground plate (tools/art/templates/limb-shaped.mjs): where it stands is the plate's.
+  const mark = l.plateFeet?.[view] ?? (view === 'back' ? l.backFoot : l.foot);
   if (mark) {
     const a = (mark[2] * w) / 2;
     return { x: box.x0 + mark[0] * w, y: box.y0 + mark[1] * h, a, b: a * FLAT, marked: true };

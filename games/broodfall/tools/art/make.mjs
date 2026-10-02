@@ -10,6 +10,7 @@
  *                                                         --braced (cannon, dartgun), --skins (carapace), --no-bake
  *   node tools/art/make.mjs unit broodling puppet-royal   the hive's own walkers (ALLIES in tools/art/units.mjs)
  *   node tools/art/make.mjs limb spitter lasher
+ *   node tools/art/make.mjs shaped impaler choir [--stills|--bake]   a limb drawn over its ground plate (templates/limb-shaped.mjs)
  *   node tools/art/make.mjs variant spitter [--stills|--bake] [--only=bone,swarm]   upgrade looks (tools/art/limb-variants.mjs)
  *   node tools/art/make.mjs terrain
  *   node tools/art/make.mjs fx [sheets|parts [families]]  effects in flight, bursts, clouds; the donor parts
@@ -47,6 +48,11 @@ const TEMPLATES = {
   limb: async () => {
     const { makeLimb } = await import('./templates/limb.mjs');
     return settle(ids, 4, (id) => makeLimb(id, { bakeOnly: flags.has('--bake'), stillsOnly: flags.has('--stills') }));
+  },
+  // A limb drawn over its ground plate (Oct 2 2026, the class-zero footprints): shaped <families> [--stills|--bake].
+  shaped: async () => {
+    const { makeShapedLimb } = await import('./templates/limb-shaped.mjs');
+    return settle(ids, 3, (id) => makeShapedLimb(id, { bakeOnly: flags.has('--bake'), stillsOnly: flags.has('--stills') }));
   },
   // Upgrade looks (tools/art/limb-variants.mjs, templates/limb-variant.mjs): variant <families> [--only=bone,swarm] [--stills|--bake].
   variant: async () => {

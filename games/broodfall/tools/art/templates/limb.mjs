@@ -290,8 +290,8 @@ const area = (f) => { let n = 0; for (let i = 3; i < f.data.length; i += 4) if (
  * brought to frames that all put the middle of what it stands on at the same point.
  */
 export function bakeView(l, dir, view, check, F) {
-  const pre = view === 'back' ? 'back-' : '';
-  const say = view === 'back' ? 'from behind, ' : '';
+  const pre = view === 'front' ? '' : `${view}-`;
+  const say = { front: '', back: 'from behind, ', side: 'from the side, ', backside: 'from behind the side, ' }[view];
   const clips = [];
   let first = null;
   for (const anim of ['idle', 'fire', 'die']) {
@@ -354,13 +354,13 @@ export function bakeView(l, dir, view, check, F) {
   const body = Number(((2 * foot.a) / side).toFixed(3));
   // WHERE ITS SHOT LEAVES IT: marked by eye in the same box as the foot (tools/art/muzzles.mjs), brought to the frame.
   const box0 = unionBox([first]);
-  const marks = view === 'back' ? l.backMuzzle : l.muzzle;
+  const marks = { front: l.muzzle, back: l.backMuzzle, side: l.sideMuzzle, backside: l.backSideMuzzle }[view];
   const muzzle = marks?.map(([mx, my]) => [
     Number(((box0.x0 + mx * (box0.x1 - box0.x0) - x0) / side).toFixed(4)),
     Number(((box0.y0 + my * (box0.y1 - box0.y0) - y0) / side).toFixed(4)),
   ]);
   // The maw's tongue (`tongue`) leaves its mouth: marked like a muzzle, though it throws nothing.
-  if ((FIRING.includes(l.family) || l.tongue) && (view === 'front' || l.back)) {
+  if ((FIRING.includes(l.family) || l.tongue) && (view === 'front' || l.back || l.plate)) {
     check(`${say}where it fires from is marked`, !!muzzle?.length, muzzle?.length ? JSON.stringify(marks) : `not marked: node tools/art/muzzles.mjs ${view === 'back' ? '--back ' : ''}${l.family}`);
   }
 
@@ -396,7 +396,8 @@ export function bakeView(l, dir, view, check, F) {
   }
   // It stands IN its cell: little of it lies in front of the cell's two front edges. What
   // does is drawn over whatever is in front of it (a street, a lower roof).
-  if (!l.flat && l.on !== 'street') {
+  // (A limb drawn over its ground plate stands on all of its cells, by construction.)
+  if (!l.flat && l.on !== 'street' && !l.plate) {
     const out = spill(idle.kept[0], anchor[0] * F, anchor[1] * F, (body * F) / 2 / FILL);
     check(`${say}it stands in its cell`, out < 0.12, `${(out * 100).toFixed(1)}% of it lies in front of its cell`);
   }
@@ -405,20 +406,32 @@ export function bakeView(l, dir, view, check, F) {
 
 /** Steps 2 and 3, free: clips to an atlas, a manifest entry, the checks and the review pictures. */
 export function bakeLimb(family) {
-  const l = limb(family);
-  const dir = path.join(SRC, 'limbs', rawDirOf(l));
+  const l0 = limb(family);
+  const dir = path.join(SRC, 'limbs', rawDirOf(l0));
+  // A limb drawn over its ground plate: where it stands in each view is the plate's (written when it was drawn).
+  const feetFile = path.join(dir, 'feet.json');
+  const l = l0.plate && fs.existsSync(feetFile) ? { ...l0, plateFeet: JSON.parse(fs.readFileSync(feetFile, 'utf8')) } : l0;
   const checks = [];
   const check = (name, ok, value) => checks.push({ name, ok, value });
   const [F, COLS] = l.big ? FRAME.big : FRAME.small;
   const front = bakeView(l, dir, 'front', check, F);
   if (!front) throw new Error(`${family}: no idle clip to bake in ${dir}`);
   const back = bakeView(l, dir, 'back', check, F);
-  if (l.back) check('from behind: it has a view', !!back, back ? 'drawn' : `missing: node tools/art/make.mjs limb ${family}`);
+  if (l.back || l.plate) check('from behind: it has a view', !!back, back ? 'drawn' : `missing: node tools/art/make.mjs ${l.plate ? 'shaped' : 'limb'} ${family}`);
+  // An elbow or an L also has its two sides: mirrored, its picture would stand on the wrong cells (tools/art/lib/plate.mjs).
+  const four = l.plate === 'L3' || l.plate === 'L4';
+  const sideV = four ? bakeView(l, dir, 'side', check, F) : null;
+  const backSide = four ? bakeView(l, dir, 'backside', check, F) : null;
+  if (four) check('from both sides: it has the views', !!sideV && !!backSide, sideV && backSide ? 'drawn' : `missing: node tools/art/make.mjs shaped ${family}`);
   if (l.fire && !front.anims.fire) check('fire: exists', false, 'missing');
   if (!front.anims.die) check('die: exists', false, `missing: node tools/art/make.mjs limb ${family}`);
 
-  // One atlas: the front view's frames, then the frames of the view from behind.
-  const frames = [...front.frames, ...(back ? back.frames : [])];
+  // One atlas: the front view's frames, then the frames of the view from behind (then its sides).
+  const frames = [...front.frames, ...(back ? back.frames : []), ...(sideV ? sideV.frames : []), ...(backSide ? backSide.frames : [])];
+  const at = (v, before) => ({ anchor: v.anchor, body: v.body, anims: shift(v.anims, before), grafts: v.grafts, ...(v.muzzle ? { muzzle: v.muzzle } : {}) });
+  const nFront = front.frames.length;
+  const nBack = back ? back.frames.length : 0;
+  const nSide = sideV ? sideV.frames.length : 0;
   const shift = (anims, by) => Object.fromEntries(Object.entries(anims).map(([k, c]) => [k, { ...c, start: c.start + by }]));
   const atlas = path.join(ART, 'limbs', `${family}.webp`);
   const packed = packAtlas(frames, F, COLS, atlas, 86);
@@ -429,22 +442,29 @@ export function bakeLimb(family) {
     /** The width of what it stands on, as a share of the frame's: the game scales the frame so that this fills its cell. */
     body: front.body,
     on: l.on, ...(l.flat ? { flat: true } : {}), ...(l.facing ? { facing: true } : {}), ...(l.big ? { big: true } : {}),
+    /** Drawn over its ground plate: `body` is the plate's width, `anchor` its middle (src/render/isoRender.ts). */
+    ...(l.plate ? { plate: l.plate } : {}),
     anims: front.anims,
     grafts: front.grafts,
     /** Where its shots leave it, as shares of the frame (tools/art/muzzles.mjs). */
     ...(front.muzzle ? { muzzle: front.muzzle } : {}),
-    ...(back ? { back: { anchor: back.anchor, body: back.body, anims: shift(back.anims, front.frames.length), grafts: back.grafts, ...(back.muzzle ? { muzzle: back.muzzle } : {}) } } : {}),
+    ...(back ? { back: at(back, nFront) } : {}),
+    /** An elbow's or an L's two other views, shown unmirrored where any other limb's front or back is shown mirrored. */
+    ...(sideV ? { side: at(sideV, nFront + nBack) } : {}),
+    ...(backSide ? { backSide: at(backSide, nFront + nBack + nSide) } : {}),
   };
   putEntry('limbs', family, entry);
 
   fs.mkdirSync(path.join(REVIEW, 'limbs'), { recursive: true });
   const rows = [{ label: family, anims: front.kept }];
   if (back) rows.push({ label: `${family} from behind`, anims: back.kept });
+  if (sideV) rows.push({ label: `${family} from the side`, anims: sideV.kept });
+  if (backSide) rows.push({ label: `${family} from behind the side`, anims: backSide.kept });
   reviewSheet(rows, F, path.join(REVIEW, 'limbs', `${family}.jpg`));
-  standing(family, [front, back].filter(Boolean), F);
+  if (!l.plate) standing(family, [front, back].filter(Boolean), F);
   const tmp = path.join(dir, 'review-frames');
   fs.rmSync(tmp, { recursive: true, force: true });
-  reviewFrames([...front.kept, ...(back ? back.kept : [])], F, tmp, 'f');
+  reviewFrames([...front.kept, ...(back ? back.kept : []), ...(sideV ? sideV.kept : []), ...(backSide ? backSide.kept : [])], F, tmp, 'f');
   ffmpeg(['-framerate', '12', '-i', path.join(tmp, 'f-%04d.png'), '-vf', 'crop=trunc(iw/2)*2:trunc(ih/2)*2:0:0', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '30',
     path.join(REVIEW, 'limbs', `${family}.mp4`)], `${family} review film`);
   fs.rmSync(tmp, { recursive: true, force: true });

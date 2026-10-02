@@ -51,6 +51,8 @@ const UNIT_PX = 3.6;
  * cell and the thin tips of its roots reach a little over the edge.
  */
 const LIMB_FILL = 0.64;
+/** How much of its ground a limb of several cells drawn over its ground plate fills (art.plate; plateOnBoard). */
+const PLATE_FILL = 0.92;
 /** A limb of two cells: how many cells across it is drawn, and how far behind the middle of its ground it stands. */
 /** Which way the seedling pod flies in its picture (tools/art/templates/core.mjs POD): toward the lower left. */
 const POD_HEADING = Math.atan2(0.45, -1);
@@ -706,6 +708,26 @@ export class IsoRenderer extends Renderer {
    */
   private sizeOf(sim: Sim, t: Tower): number {
     return limbSizeFor(t.family, sim.cellsOf(t).length, t.facing);
+  }
+
+  /**
+   * A limb drawn over its GROUND PLATE (tools/art/templates/limb-shaped.mjs): where the middle of its plate goes, and
+   * how wide its plate is drawn. The plate was its cells seen as the board sees them, so its middle is the middle of
+   * the box round the picture of its cells (not their average: a T's or an L's is off to one side), and its width is
+   * the width of that box in tiles. A limb of one cell fills its cell as every limb does; a bigger one fills most of
+   * its cells (PLATE_FILL), so its arms reach into them.
+   */
+  plateOnBoard(sim: Sim, cells: number[], h: number): { x: number; y: number; width: number } {
+    const g = this.geo;
+    let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+    for (const c of cells) {
+      const m = sim.cellCenter(c);
+      const p = project(g, m.x, m.y, h);
+      x0 = Math.min(x0, p.x); x1 = Math.max(x1, p.x); y0 = Math.min(y0, p.y); y1 = Math.max(y1, p.y);
+    }
+    const across = (x1 - x0) / (2 * g.a) + 1;
+    const fill = cells.length > 1 ? PLATE_FILL * LIMB_SCALE : LIMB_FILL * LIMB_SCALE;
+    return { x: (x0 + x1) / 2, y: (y0 + y1) / 2, width: 2 * g.a * across * fill };
   }
 
   /**
@@ -1542,7 +1564,9 @@ export class IsoRenderer extends Renderer {
         const alongX = ground.length !== 2 ? !this.laneRunsAlongX(sim, t.cell) : oneWide ? !cellsX : cellsX;
         mirror = !alongX !== (g.turn % 2 === 1);
       }
-      const side = back && art.back ? art.back : art;
+      const shown = limbSideOf(art, back, mirror);
+      const side = shown.side;
+      mirror = shown.mirror;
       v.back = back && !!art.back;
 
       const stats = towerStats(t);
@@ -1555,6 +1579,9 @@ export class IsoRenderer extends Renderer {
         : p0;
       // How wide what it stands on is drawn: a swamp covers the ground it slows; a wall spans its lane; the rest fill their ground.
       let width = 2 * g.a * LIMB_FILL * LIMB_SCALE * size;
+      // Drawn over its ground plate: its plate on the picture of its cells (plateOnBoard).
+      const plated = art.plate && !art.flat && art.on !== 'street' ? this.plateOnBoard(sim, sim.cellsOf(t), h) : null;
+      if (plated) width = plated.width;
       if (art.flat) width = 2 * ((towerSpec(t.family).swamp?.radius ?? 30) + (stats.aoe - towerSpec(t.family).aoe)) * Math.SQRT2 * (g.a / g.cell);
       // A wall's body (its measured band of muscle) is about half of all of it: the band is drawn so that the
       // whole wall spans its lane and no more.
@@ -1625,8 +1652,9 @@ export class IsoRenderer extends Renderer {
       }
       // A limb on a roof rising on its plinth rises with it.
       // Its shadow, its grafted parts, its health bar and trait marks rise with it (they jumped to the new height).
-      const risen = p.y + this.rise.drop(t.cell) * g.level;
-      v.sprite.position.set(p.x, risen);
+      // (A limb drawn over its ground plate stands on the middle of the picture of its cells: plateOnBoard.)
+      const risen = (plated ? plated.y : p.y) + this.rise.drop(t.cell) * g.level;
+      v.sprite.position.set(plated ? plated.x : p.x, risen);
       // It is as far back as the nearest to the camera of the cells it stands on.
       let z = -Infinity;
       for (const c of sim.cellsOf(t)) {
@@ -1802,8 +1830,8 @@ export class IsoRenderer extends Renderer {
     let y = 0;
     for (const c of ground) { const p = sim.cellCenter(c); x += p.x / ground.length; y += p.y / ground.length; }
     const facing = pv.facing ?? 'S';
-    const { back, mirror } = limbView(g, facing);
-    const side = back && art.back ? art.back : art;
+    const view = limbView(g, facing);
+    const { side, mirror } = limbSideOf(art, view.back, view.mirror);
     const n = ground.length;
     const size = limbSizeFor(pv.family!, n, facing);
     const h = this.heightOf(sim, ground[0]);
@@ -1811,13 +1839,14 @@ export class IsoRenderer extends Renderer {
     const p = n === 2
       ? project(g, x - step[0] * g.cell * LONG_BACK, y - step[1] * g.cell * LONG_BACK, h)
       : project(g, x, y, h);
-    const width = 2 * g.a * LIMB_FILL * LIMB_SCALE * size;
+    const plated = art.plate ? this.plateOnBoard(sim, ground, h) : null;
+    const width = plated ? plated.width : 2 * g.a * LIMB_FILL * LIMB_SCALE * size;
     const scale = width / (side.body * art.frame);
     const s = this.placeGhost;
     s.texture = atlas.frame(side.anims.idle.start, art.frame, art.cols);
     s.anchor.set(side.anchor[0], side.anchor[1]);
     s.scale.set(mirror ? -scale : scale, scale);
-    s.position.set(p.x, p.y);
+    s.position.set(plated ? plated.x : p.x, plated ? plated.y : p.y);
     s.alpha = pv.valid ? 0.8 : 0.4;
     s.tint = pv.valid ? 0xffffff : 0xff8070;
     s.visible = true;
@@ -2830,6 +2859,16 @@ function limbTopShare(side: LimbSide): number {
  * (Oct 1 2026, src/sim/footprint.ts) the short side of its bounding box, so a placeholder fills the bulk
  * of its ground until its own art is drawn (its ground is outlined on the board, src/render/render.ts).
  */
+/**
+ * Which of a limb's pictures the camera sees, and whether mirrored: its front or its back (limbView), except that an
+ * elbow or an L (art.side, art.backSide) has its own picture where any other limb's would be mirrored.
+ */
+export function limbSideOf(art: LimbArt, back: boolean, mirror: boolean): { side: LimbSide; mirror: boolean } {
+  if (mirror && !back && art.side) return { side: art.side, mirror: false };
+  if (mirror && back && art.backSide) return { side: art.backSide, mirror: false };
+  return { side: back && art.back ? art.back : art, mirror };
+}
+
 export function limbSizeFor(family: TowerFamily, cells: number, facing?: RootDir): number {
   const spec = towerSpec(family);
   if (spec.shape) {

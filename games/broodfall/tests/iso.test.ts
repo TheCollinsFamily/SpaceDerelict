@@ -390,7 +390,7 @@ describe.skipIf(!hasArt)('the baked art', () => {
     // Since the class-zero mapping (Oct 2 2026) some limbs stand on new ground before their art is redrawn
     // (the limb art pass, HANDOFF.md "Footprints"): their old pictures are scaled to their ground meanwhile.
     // ART_PENDING lists them; a limb leaves the list when its art is baked for its new ground.
-    const ART_PENDING: Record<string, boolean> = { bombard: false, ward: true, frond: true, tangler: true };
+    const ART_PENDING: Record<string, boolean> = { bombard: false, frond: true, tangler: true };
     for (const t of TOWERS) {
       const l = manifest.limbs[t.family];
       // Big: four cells or more in a square. A LONG limb (two cells) is drawn from the frames of a limb of one.
