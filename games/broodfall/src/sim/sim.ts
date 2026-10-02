@@ -10,7 +10,7 @@ import { Rng } from './rng';
 import { footprintOf, footprintName, isMultiCell, turnsItsGround } from './footprint';
 import {
   CellType, CityMap, DraftOffer, allDistance, computeFlow, createBoard,
-  PLATE, draftOffers, frontierGates, isPassable, legalDrafts, slotOfCell, stampPlate,
+  PLATE, carveShelter, draftOffers, frontierGates, isPassable, legalDrafts, shelterSite, slotOfCell, stampPlate,
 } from './citymap';
 import { pregrow, restoreMap, snapshotBoard, validSnapshot, type BoardSnapshot } from './boardSnapshot';
 
@@ -1800,6 +1800,8 @@ export class Sim {
       const seep = towerStats(t).seepRadius;
       if (seep > 0) this.addCreepSource('seep', t.cell, seep, undefined, t.id);
     }
+    // An infested shelter's seep is rebuilt too (it is a seep: dropped above with the rest).
+    for (const sh of this.shelters) if (sh.state === 'infested') this.addCreepSource('seep', sh.door, B.shelterSeep[sh.stage - 1], undefined, sh.id);
   }
 
   // ---------- cards ----------
@@ -4569,53 +4571,36 @@ export class Sim {
   private markShelterOffer(offers: DraftOffer[]): void {
     if (!this.canInfest() || offers.length === 0) return;
     if (this.draftsTaken + 1 < B.shelterFromDraft) return;
-    if (this.shelters.filter((x) => x.state !== 'ruin').length + 0 >= B.shelterMax) return;
+    if (this.shelters.filter((x) => x.state !== 'ruin').length >= B.shelterMax) return;
     const h = (n: number) => { let x = (this.cfg.seed * 2654435761 + n * 40503 + this.draftsTaken * 9176) >>> 0; x ^= x >>> 15; x = Math.imul(x, 2246822519) >>> 0; x ^= x >>> 13; return (x >>> 0) / 4294967296; };
     if (h(1) >= B.shelterOdds) return;
-    offers[Math.floor(h(2) * offers.length)].shelter = true;
+    // Only an offer whose district CAN hold a reachable shelter with its apron (Collins, Oct 2 2026: "these need to be
+    // somewhere an Infestor can get to them"): tried on a copy of the board with that district stamped in.
+    const can = offers.map((o) => {
+      const copy = { ...this.map, cells: this.map.cells.slice(), heights: this.map.heights.slice(), plinths: this.map.plinths.slice(), slots: this.map.slots.slice() };
+      stampPlate(copy, o.pattern, o.slot, o.feature, new Rng(1));
+      return shelterSite(copy, o.slot) !== null;
+    });
+    const able = offers.map((_, i) => i).filter((i) => can[i]);
+    if (able.length === 0) return;
+    offers[able[Math.floor(h(2) * able.length)]].shelter = true;
   }
 
-  /** Raise a shelter at the centre of a newly stamped district: a 2x2 of building beside a street, else one cell. */
-  private raiseShelter(slot: number): void {
-    const w = this.cfg.gridW;
-    const sx = (slot % this.map.slotsX) * PLATE;
-    const sy = Math.floor(slot / this.map.slotsX) * PLATE;
-    const cx = sx + PLATE / 2 - 0.5;
-    const cy = sy + PLATE / 2 - 0.5;
-    const block = (x: number, y: number) => x >= sx && y >= sy && x < sx + PLATE && y < sy + PLATE && this.map.cells[y * w + x] === CellType.Block;
-    const doorOf = (cells: number[]): number => {
-      let best = -1;
-      let bd = Infinity;
-      for (const c of cells) for (const n of [c - 1, c + 1, c - w, c + w]) {
-        if (n < 0 || n >= this.map.cells.length || this.map.cells[n] !== CellType.Road) continue;
-        const d = Math.hypot((n % w) - cx, Math.floor(n / w) - cy);
-        if (d < bd) { bd = d; best = n; }
-      }
-      return best;
-    };
-    let pick: { cells: number[]; door: number; d: number } | null = null;
-    for (const size of [2, 1]) {
-      for (let y = sy; y < sy + PLATE; y++) for (let x = sx; x < sx + PLATE; x++) {
-        const cells: number[] = [];
-        let ok = true;
-        for (let dy = 0; dy < size && ok; dy++) for (let dx = 0; dx < size; dx++) {
-          if (!block(x + dx, y + dy)) { ok = false; break; }
-          cells.push((y + dy) * w + x + dx);
-        }
-        if (!ok || cells.some((c) => this.isOccupied(c))) continue;
-        const door = doorOf(cells);
-        if (door < 0) continue;
-        const d = Math.hypot(x + (size - 1) / 2 - cx, y + (size - 1) / 2 - cy);
-        if (!pick || d < pick.d) pick = { cells, door, d };
-      }
-      if (pick) break;
-    }
-    const chosen = pick as { cells: number[]; door: number; d: number } | null;
-    if (!chosen) return;
+  /**
+   * Raise a shelter in a district (shelterSite): a levelled 2x2 lot of building with an apron of open street round it,
+   * a wider front at its door, its door reachable from the core along the streets. The board's routes are refreshed
+   * after (the caller: choose-plate does it).
+   */
+  raiseShelter(slot: number): void {
+    const site = shelterSite(this.map, slot);
+    if (!site || site.cells.some((c) => this.isOccupied(c)) || site.carve.some((c) => this.isOccupied(c))) return;
+    carveShelter(this.map, site);
     const pos = { x: 0, y: 0 };
-    for (const c of chosen.cells) { const p = this.cellCenter(c); pos.x += p.x / chosen.cells.length; pos.y += p.y / chosen.cells.length; }
-    const sh: Shelter = { id: this.nextId++, cells: chosen.cells, door: chosen.door, pos, state: 'intact', stage: 0, growth: 0, hp: 1, maxHp: 1, harmThisWave: 0, cooldown: 0 };
+    for (const c of site.cells) { const p = this.cellCenter(c); pos.x += p.x / site.cells.length; pos.y += p.y / site.cells.length; }
+    const sh: Shelter = { id: this.nextId++, cells: site.cells, door: site.door, pos, state: 'intact', stage: 0, growth: 0, hp: 1, maxHp: 1, harmThisWave: 0, cooldown: 0 };
     this.shelters.push(sh);
+    this.gates = frontierGates(this.map);
+    this.refreshRouting();
     this.events.push({ kind: 'shelter-raised', shelterId: sh.id });
   }
 

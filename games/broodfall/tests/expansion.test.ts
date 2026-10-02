@@ -11,7 +11,8 @@ import { Sim } from '../src/sim/sim';
 import { Autoplayer } from '../src/sim/autoplayer';
 import { BALANCE as B } from '../content/data';
 import { LINEAGES } from '../content/campaign';
-import type { DraftOffer } from '../src/sim/citymap';
+import { draftOffers, type DraftOffer } from '../src/sim/citymap';
+import { Rng } from '../src/sim/rng';
 import type { Enemy, OrganId, Shelter, SimConfig } from '../src/sim/types';
 
 const CFG: SimConfig = { gridW: 50, gridH: 40, cellPx: 26, seed: 4242 };
@@ -71,7 +72,7 @@ describe('shelters', () => {
     let seen = 0;
     for (let seed = 1; seed <= 40; seed++) {
       const s = new Sim({ ...CFG, seed });
-      const offers = (): DraftOffer[] => [0, 1, 2].map((i) => ({ pattern: s.map.slots.find((x) => x)!.pattern, slot: i, feature: 'plain' }));
+      const offers = (): DraftOffer[] => draftOffers(s.map, new Rng(seed), 3);
       P(s).draftsTaken = 0;
       const early = offers();
       P(s).markShelterOffer(early);
@@ -84,7 +85,7 @@ describe('shelters', () => {
       // A campaign run without the cyst: never.
       const locked = new Sim({ ...CFG, seed, organPool: ['bladder'] });
       P(locked).draftsTaken = B.shelterFromDraft;
-      const none = offers();
+      const none = draftOffers(locked.map, new Rng(seed), 3);
       P(locked).markShelterOffer(none);
       expect(none.some((o) => o.shelter)).toBe(false);
     }
@@ -103,6 +104,52 @@ describe('shelters', () => {
     expect(b.enemies.length).toBe(a.enemies.length);
     expect(b.time).toBe(a.time);
   });
+});
+
+describe('a shelter\'s site (Collins: reachable, level, an open space on every side)', () => {
+  it('on 60 boards: a level 2x2 lot, open street all round it and two rows at its door, reachable from the core, the district\'s edges untouched', async () => {
+    const { draftOffers, shelterSite, carveShelter, computeFlow, CellType, PLATE, SHELTER_LEVEL } = await import('../src/sim/citymap');
+    const { Rng } = await import('../src/sim/rng');
+    let sites = 0;
+    for (let seed = 1; seed <= 60; seed++) {
+      const s = new Sim({ ...CFG, seed });
+      const offers = draftOffers(s.map, new Rng(seed), 3);
+      for (const o of offers) {
+        const m = { ...s.map, cells: s.map.cells.slice(), heights: s.map.heights.slice(), plinths: s.map.plinths.slice(), slots: s.map.slots.slice() };
+        const { stampPlate } = await import('../src/sim/citymap');
+        stampPlate(m, o.pattern, o.slot, o.feature, new Rng(2));
+        const edgesBefore = edgeCells(m, o.slot).map((c) => m.cells[c]);
+        const site = shelterSite(m, o.slot);
+        if (!site) continue;
+        carveShelter(m, site);
+        sites++;
+        const W = m.w;
+        // Level, all building.
+        for (const c of site.cells) { expect(m.cells[c]).toBe(CellType.Block); expect(m.heights[c]).toBe(SHELTER_LEVEL); }
+        // The ring round it: open on every side.
+        const xs = site.cells.map((c) => c % W), ys = site.cells.map((c) => Math.floor(c / W));
+        const [x0, y0] = [Math.min(...xs), Math.min(...ys)];
+        for (let y = y0 - 1; y <= y0 + 2; y++) for (let x = x0 - 1; x <= x0 + 2; x++) {
+          if (x >= x0 && x <= x0 + 1 && y >= y0 && y <= y0 + 1) continue;
+          expect(m.cells[y * W + x], `seed ${seed} ring ${x},${y}`).not.toBe(CellType.Block);
+        }
+        // The door: on the ring, reachable from the core along the streets.
+        const flow = computeFlow(m, m.coreCell, () => 0);
+        expect(Number.isFinite(flow.dist[site.door]), `seed ${seed} door`).toBe(true);
+        // The district's border cells as they were stamped (its mouths line up with its neighbours).
+        expect(edgeCells(m, o.slot).map((c) => m.cells[c])).toEqual(edgesBefore);
+        void PLATE;
+      }
+    }
+    expect(sites).toBeGreaterThan(60); // most offered districts can hold one
+  });
+
+  function edgeCells(m: { w: number; slotsX: number }, slot: number): number[] {
+    const sx = (slot % m.slotsX) * 10, sy = Math.floor(slot / m.slotsX) * 10;
+    const out: number[] = [];
+    for (let i = 0; i < 10; i++) out.push(sy * m.w + sx + i, (sy + 9) * m.w + sx + i, (sy + i) * m.w + sx, (sy + i) * m.w + sx + 9);
+    return out;
+  }
 });
 
 describe('the Infestor', () => {

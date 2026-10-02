@@ -352,6 +352,69 @@ export function computeFlow(
 }
 
 /** BFS hop-distance over all ACTIVE cells — the creep climbs blocks, never the void. */
+/**
+ * A SHELTER's site in a district (Collins, Oct 2 2026: "these need to be somewhere an Infestor can get to them"; "the
+ * lane around the shelter will need to be a bit wider than usual, with at least one open space on either side of it";
+ * the ground under it at one height). A 2x2 of building inside the district, with:
+ *   - an APRON: every cell of the ring round it open street (blocks there are carved to street), and a second row of
+ *     street in front of its DOOR side (room for an Infestor and its escort to stand and burrow);
+ *   - the whole of it inside the district's border cells, so the district's edges (its mouths) are untouched and the
+ *     pieces still line up;
+ *   - its door reachable from the core along the streets once carved (the swarm and your units get all the way round).
+ * The lot is levelled to `SHELTER_LEVEL` storeys. Returns null when no 2x2 of the district can be one.
+ */
+export const SHELTER_LEVEL = 2;
+export interface ShelterSite { cells: number[]; door: number; carve: number[] }
+
+export function shelterSite(map: CityMap, slot: number): ShelterSite | null {
+  const w = map.w;
+  const sx = (slot % map.slotsX) * PLATE;
+  const sy = Math.floor(slot / map.slotsX) * PLATE;
+  const inner = (x: number, y: number) => x >= sx + 1 && x <= sx + PLATE - 2 && y >= sy + 1 && y <= sy + PLATE - 2;
+  const at = (x: number, y: number) => y * w + x;
+  const coreX = map.coreCell % w;
+  const coreY = Math.floor(map.coreCell / w);
+  let best: (ShelterSite & { score: number }) | null = null;
+  for (let y = sy + 2; y <= sy + PLATE - 4; y++) {
+    for (let x = sx + 2; x <= sx + PLATE - 4; x++) {
+      const lot = [at(x, y), at(x + 1, y), at(x, y + 1), at(x + 1, y + 1)];
+      if (lot.some((c) => map.cells[c] !== CellType.Block || c === map.coreCell)) continue;
+      const ring: number[] = [];
+      for (let yy = y - 1; yy <= y + 2; yy++) for (let xx = x - 1; xx <= x + 2; xx++) {
+        if (xx >= x && xx <= x + 1 && yy >= y && yy <= y + 1) continue;
+        ring.push(at(xx, yy));
+      }
+      // The door side: the one facing the core most, whose second row in front still lies inside the district.
+      const sides = [
+        { dx: 0, dy: -1, door: at(x, y - 1), front: [at(x, y - 2), at(x + 1, y - 2)], ok: inner(x, y - 2) },
+        { dx: 0, dy: 1, door: at(x, y + 2), front: [at(x, y + 3), at(x + 1, y + 3)], ok: inner(x, y + 3) },
+        { dx: -1, dy: 0, door: at(x - 1, y), front: [at(x - 2, y), at(x - 2, y + 1)], ok: inner(x - 2, y) },
+        { dx: 1, dy: 0, door: at(x + 2, y), front: [at(x + 3, y), at(x + 3, y + 1)], ok: inner(x + 3, y) },
+      ].filter((s) => s.ok)
+        .sort((a, b) => ((coreX - x - 0.5) * b.dx + (coreY - y - 0.5) * b.dy) - ((coreX - x - 0.5) * a.dx + (coreY - y - 0.5) * a.dy));
+      for (const side of sides) {
+        const open = [...ring, ...side.front];
+        const carve = open.filter((c) => map.cells[c] === CellType.Block);
+        // Try it on a copy: carved, levelled, is the door reachable from the core along the streets?
+        const cells = map.cells.slice();
+        for (const c of carve) cells[c] = CellType.Road;
+        const reach = computeFlow({ ...map, cells }, map.coreCell, () => 0);
+        if (!Number.isFinite(reach.dist[side.door])) continue;
+        const score = carve.length + 2 * Math.hypot(x + 0.5 - (sx + PLATE / 2 - 0.5), y + 0.5 - (sy + PLATE / 2 - 0.5));
+        if (!best || score < best.score) best = { cells: lot, door: side.door, carve, score };
+        break;
+      }
+    }
+  }
+  return best ? { cells: best.cells, door: best.door, carve: best.carve } : null;
+}
+
+/** Carve a shelter's apron and level its lot (shelterSite). */
+export function carveShelter(map: CityMap, site: ShelterSite): void {
+  for (const c of site.carve) { map.cells[c] = CellType.Road; map.heights[c] = 0; map.plinths[c] = 0; }
+  for (const c of site.cells) { map.cells[c] = CellType.Block; map.heights[c] = SHELTER_LEVEL; map.plinths[c] = 0; }
+}
+
 export function allDistance(map: CityMap, from: number): Int32Array {
   const n = map.w * map.h;
   const dist = new Int32Array(n).fill(-1);

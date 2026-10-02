@@ -774,7 +774,8 @@ export class IsoRenderer extends Renderer {
    * two faces of a block that are seen are the ones toward the camera, whichever those are.
    */
   private syncMap(sim: Sim): void {
-    const sig = `${this.turned}:${sim.plinthsPlaced}:${sim.map.slots.map((s) => (s ? '1' : '0')).join('')}`;
+    // A shelter raised carves its apron into the district (Sim.raiseShelter): the board is built again.
+    const sig = `${this.turned}:${sim.plinthsPlaced}:${sim.map.slots.map((s) => (s ? '1' : '0')).join('')}:${sim.shelters.length}`;
     if (sig === this.mapSig) return;
     this.mapSig = sig;
     // A plinth just placed: that cell rises out of its block (src/render/boardArt.ts).
@@ -850,9 +851,11 @@ export class IsoRenderer extends Renderer {
       // A roof at the foot of a taller block lies in its shade (over the skin too: the skin is drawn at z + 2).
       if (hV(vx, vy - 1) > h) { const e = this.add(this.sorted, this.art.sprite('creep', 'edge-shade-north'), p.x, p.y - h * g.level, z + 4); if (e) this.blockSprites.push(e); }
       if (hV(vx - 1, vy) > h) { const e = this.add(this.sorted, this.art.sprite('creep', 'edge-shade-west'), p.x, p.y - h * g.level, z + 4); if (e) this.blockSprites.push(e); }
+      this.cellZ.set(cell, z);
       const lm = this.landmarkAt.get(cell);
       if (lm) lm.z = Math.max(lm.z, z);
-      else this.addProp(sim, b.x, b.y, h, kind, z, set);
+      // A shelter's lot carries the shelter and nothing else (syncShelters).
+      else if (!sim.shelterAt(cell)) this.addProp(sim, b.x, b.y, h, kind, z, set);
       if (this.rise.drop(cell) > 0) {
         // What rises: its top level, its roof and what is on it (what lies below the top level stays).
         const top = p.y + g.b - h * g.level + 0.5;
@@ -952,7 +955,7 @@ export class IsoRenderer extends Renderer {
     this.buildings.forEach((b, cell) => { if (b >= 0) { const l = lots.get(b); if (l) l.push(cell); else lots.set(b, [cell]); } });
     const best = new Map<number, { cells: number[]; area: number; rank: number }>();
     for (const [b, cells] of lots) {
-      if (cells.length < 4 || cells.some((c) => sim.map.plinths[c] > 0)) continue;
+      if (cells.length < 4 || cells.some((c) => sim.map.plinths[c] > 0 || sim.shelterAt(c))) continue;
       // The square of two by two cells of the lot nearest its middle: where the landmark stands.
       const mine = new Set(cells);
       const mx = cells.reduce((n, c) => n + (c % W), 0) / cells.length;
@@ -2406,6 +2409,8 @@ export class IsoRenderer extends Renderer {
    * shelter's stage pips and, while it is still protected this wave, a soft green ring (it will pay at the clear).
    */
   private shelterViews = new Map<number, Sprite>();
+  /** Each block cell's depth as the board was last built (a shelter is sorted as its lot's blocks are). */
+  private cellZ = new Map<number, number>();
   private shelterTex = new Map<string, Texture | null | 'loading'>();
   private shelterTexture(key: string): Texture | null {
     const t = this.shelterTex.get(key);
@@ -2424,16 +2429,11 @@ export class IsoRenderer extends Renderer {
       let v = this.shelterViews.get(sh.id);
       if (!v) { v = new Sprite(); this.sorted.addChild(v); this.shelterViews.set(sh.id, v); }
       const key = sh.state === 'intact' ? 'intact' : sh.state === 'ruin' ? 'ruin' : `infested-${sh.stage}`;
-      let tex = this.shelterTexture(key);
-      let tint = 0xffffff;
-      if (!tex) {
-        // Until its own pictures load: the district's landmark, cold grey (intact), flesh red (infested), black (ruin).
-        const slot = Math.floor(Math.floor(sh.cells[0] / W) / PLATE) * sim.map.slotsX + Math.floor((sh.cells[0] % W) / PLATE);
-        const set = this.setOfSlot(sim, slot);
-        const list = this.art.biomeArt(set)?.landmarks ?? [];
-        tex = list.length ? this.art.sprite('landmarks', `prop-${list[0]}`, set) : null;
-        tint = sh.state === 'intact' ? 0xb8c4d0 : sh.state === 'ruin' ? 0x3a3030 : 0xc04a5a;
-      }
+      const slot = Math.floor(Math.floor(sh.cells[0] / W) / PLATE) * sim.map.slotsX + Math.floor((sh.cells[0] % W) / PLATE);
+      const set = this.setOfSlot(sim, slot) ?? 'suburb';
+      // Drawn the way the city is (Collins, Oct 2 2026: "it doesn't match ... out of place"): a structure in its own
+      // tile set's rendering (tools/art/shelters.mjs), standing on its levelled 2x2 lot like a landmark, at its native size.
+      const tex = this.shelterTexture(`${set}/${key}`) ?? this.shelterTexture(`suburb/${key}`);
       const xs = sh.cells.map((c) => c % W);
       const ys = sh.cells.map((c) => Math.floor(c / W));
       const h = sim.map.heights[sh.cells[0]];
@@ -2441,14 +2441,12 @@ export class IsoRenderer extends Renderer {
       v.visible = !!tex;
       if (tex) {
         v.texture = tex;
-        v.anchor.set(0.5, 0.9);
-        const span = Math.sqrt(sh.cells.length);
-        const width = 2 * this.geo.a * span * 0.95 * (sh.state === 'infested' ? 1 + 0.06 * (sh.stage - 1) : 1);
-        const sc = width / tex.width;
-        v.scale.set(sc, sc);
+        v.anchor.set(0.5, 0.94);
+        // Round or symmetrical enough to mirror with the camera, as the landmarks are.
+        const view = limbView(this.geo, 'S');
+        v.scale.set(view.back ? (view.mirror ? 1 : -1) : view.mirror ? -1 : 1, 1);
         v.position.set(p.x, p.y);
-        v.tint = tint;
-        v.zIndex = depth(this.geo, (Math.max(...xs) + 1) * this.geo.cell, (Math.max(...ys) + 1) * this.geo.cell) * 100 + 40;
+        v.zIndex = Math.max(...sh.cells.map((c) => this.cellZ.get(c) ?? 0)) + 6;
       }
       const door = sim.cellCenter(sh.door);
       const d = this.onGround(sim, door.x, door.y);
