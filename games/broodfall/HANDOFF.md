@@ -1653,3 +1653,8 @@ screenshot of the interface."
   first `lost` take turned into a third-person shot of an older stranger: the prompts now pin first person and the pad
   staying on the desk (old takes in `art-src-new/pad-ship/v1/`).
 - **Beat:** `node tools/shot-pad.mjs ship-won ship-lost ship-skip ship-calm` (films in `notes/screens/2026-10-02/pad/`).
+- **No jump between first and third person (Oct 2 2026, Collins: "it sort of changes the position of you when it moves from
+  first to third person"):** the cut is gone. A `rise` clip (TURN still -> the OVER still: the same view a step back, him from
+  behind standing where the camera was) pulls the camera back over his shoulder so he rises into the picture where the viewpoint
+  stood; the walk starts from OVER. Film = A + rise + walk (about 15 s). Joins: A->rise 34.7 dB, rise->walk 32.1 dB
+  (`notes/art-review/pad/ship-rise-joins.jpg`). The hatch-still walk is kept in `art-src-new/pad-ship/v2/`.
