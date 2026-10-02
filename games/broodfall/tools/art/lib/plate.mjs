@@ -127,7 +127,7 @@ export function writePlate(file, shape, facing, opts) {
  * lying along the tiles), its front edge along the organism's own front edge (the lowest solid pixel of each column).
  * `img`: a keyed picture (alpha). Returns { x, y, tw, w } in its pixels: the plate's middle, tile width and width.
  */
-export function fitPlate(img, shape, facing) {
+export function fitPlate(img, shape, facing, hint) {
   // Worked at half size: the base of the organism (its slab and its mound), with what is thin taken off (an
   // opening: pipes, quills, roots and spines are thinner than `r`), so tall thin parts do not pull the fit up.
   const S = 2;
@@ -191,6 +191,8 @@ export function fitPlate(img, shape, facing) {
     }
   };
   search((bx0 + bx1) / 2, by1 - ((tw0 * 76) / 128) * 0.9, tw0, 0.6, 0.3, 0.1);
+  // `hint`: where the slab was put (an edit mostly keeps it there): searched round too, and the better kept.
+  if (hint) search(hint.x / S, hint.y / S, hint.tw / S, 0.2, 0.1, 0.05);
   search(best.cx, best.cy, best.tw, 0.12, 0.08, 0.02);
   return { e: 1 - best.s, iou: best.s, x: best.cx * S, y: best.cy * S, tw: best.tw * S, w: across * best.tw * S };
 }

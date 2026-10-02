@@ -167,3 +167,7 @@ the limb keeps the look it has, then grows into the new one. So the rollout adds
 | SWARM | spitter, burster, quill, twin, frond, prism, skipper, mitosis, capacitor, boomerang, sprout, amp, mosaic, conduit |
 | VENOM | blighter, ember, mister, lure, swamp |
 | REACH | tangler, net, ocular, lobber, bombard, choir, sling, lance, cage |
+
+## Drawn (Oct 2 2026)
+
+Only the looks each limb's evolution paths REACH are drawn (tools/art/templates/limb-looks.mjs REACHABLE, 90 in all, held to the codex by tests/looks.test.ts). Baked: the 45 of the one-cell limbs. The reshaped limbs' looks are drawn as pictures and held back until Collins decides on their height (HANDOFF.md "The limb art pass"). The prototypes of the Spitter and Lasher stay; the Frond's are in public/art/limbs-legacy/frond/.

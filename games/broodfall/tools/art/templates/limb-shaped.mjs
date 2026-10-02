@@ -146,7 +146,7 @@ function footFromPlate(l, dir, view, still, plate) {
   // The organism is grown on the slab by an EDIT, which keeps its SHAPE but may move and scale it a little: the
   // slab is found again in the picture (fitPlate: its base, thin parts taken off, matched to the plate). Checked:
   // the slab must be under the organism, all of it.
-  const fit = fitPlate(keyed, l.plate, VIEW_FACING[view]);
+  const fit = fitPlate(keyed, l.plate, VIEW_FACING[view], { x: plate.x, y: plate.y, tw: plate.tile });
   const foot = [Number(((fit.x - box.x0) / w).toFixed(4)), Number(((fit.y - box.y0) / h).toFixed(4)), Number((fit.w / w).toFixed(4))];
   const mask = drawPlate(l.plate, VIEW_FACING[view], { key: [255, 0, 255], at: fit }).img;
   let under = 0, all = 0;
@@ -183,7 +183,7 @@ function footFromPlate(l, dir, view, still, plate) {
  * any other from its PEAKS: the tops of its tallest parts (a chimney's mouth, a frond's tips, a fan's quills), up to
  * four, each well apart from the others. As shares of its keyed box, like a mark by eye (tools/art/limbs.mjs muzzle).
  */
-function muzzleFrom(l, view, img, box, fit) {
+export function muzzleFrom(l, view, img, box, fit) {
   const w = box.x1 - box.x0;
   const h = box.y1 - box.y0;
   const share = ([x, y]) => [Number(((x - box.x0) / w).toFixed(3)), Number(((y - box.y0) / h).toFixed(3))];

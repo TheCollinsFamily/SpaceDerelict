@@ -94,3 +94,9 @@ three campaign outlines, covers and promotional art.
   Leaflit studio's black-clothes keying fix). Also still owed from Sep 28: the Kimi fallback route.
 - **The leaked RFab key** in the public repo (`games/space-derelict/generate_*.py`): rotate it.
 - **`art-src/` has no durable home** (now well over 600 MB, only on this PC).
+
+## Limb art pass (Oct 2 2026)
+
+- DONE: the 16 limbs reshaped by the class-zero footprints drawn on their ground and baked (front and back; four views for the elbows and Ls); the Meat Press redrawn so all four cells of its L stand something; 45 upgrade looks of the 18 one-cell limbs baked (HANDOFF.md "The limb art pass").
+- PAUSED until Collins answers (taller reshaped limbs, no always-on outline?): the reshaped limbs' upgrade looks (pictures drawn, held out of the game).
+- Left: the Brood Pit's looks (raw only in art-src-new).

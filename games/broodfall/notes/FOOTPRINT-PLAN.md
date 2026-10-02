@@ -30,13 +30,13 @@ Revised Oct 2. Collins: "We need some line of 3, T of 4, elbow of 3, L of 4 ... 
 
 | Footprint | Now | Proposed |
 |---|---|---|
-| One cell | 27 | 21 |
-| Line | 4 | 6 |
-| Square | 7 | 4 |
+| One cell | 20 | 21 |
+| Line | 8 | 6 |
+| Square | 10 | 4 |
 | T | 0 | 3 |
 | L (elbow) | 0 | 4 |
 
-One cell goes from 27 of 38 to 21: by rule 1 it stays the most common. Every shape a tower defence uses is here: one square, lines of two and three, 2x2, T, elbow of three and L of four.
+One cell goes from 20 of 38 to 21: by rule 1 it stays the most common. Every shape a tower defence uses is here: one square, lines of two and three, 2x2, T, elbow of three and L of four.
 
 ## Every limb
 
@@ -49,9 +49,9 @@ One cell goes from 27 of 38 to 21: by rule 1 it stays the most common. Every sha
 | Spine Wall | line of 2 | kept | 2 | It walls a street: a line, and since Oct 1 always ACROSS the street (one cell on a one-wide street). |  |
 | Lure Gland | 1 cell | kept | 1 | Cheap bait that pulses its cloud onto the street beside it: corridor-side. | A pitcher bloom leaking a visible pink-green haze, not a ball on a stalk. |
 | Snare Bed | 2x2 square | **L of 4** | 5 | A web laid along both street edges of a corner, where columns slow to turn: the same four cells as today, bent round the corner. | A long web bed bent round a roof corner, strands hanging over both street edges (the Netcaster stays a one-cell launcher). |
-| Blight Vent | 1 cell | **T of 4** | 4 | A spore stack whose cloud spreads from the junction out to three sides: turn the stem toward the street the column comes down. | A tall fumarole chimney at the junction with three cracked vent pipes along the bar and stem, green spore smoke streaming out; no acid glands (so VENOM adds them). |
+| Blight Vent | 2x2 square | **T of 4** | 4 | A spore stack whose cloud spreads from the junction out to three sides: turn the stem toward the street the column comes down. | A tall fumarole chimney at the junction with three cracked vent pipes along the bar and stem, green spore smoke streaming out; no acid glands (so VENOM adds them). |
 | Impaler | line of 2 | **line of 3** | 2 | A harpoon that pierces along its axis: a three-cell rail laid down a street skewers the column end to end. The most expensive limb; its ground is part of its price. | A long harpoon rail the length of all three cells, the barb at the front. |
-| Choir Node | 1 cell | **T of 4** | 4 | Its fire-rate aura reaches out on three sides from the junction: which three neighbours it serves is decided by how it is turned. | Organ pipes on a T manifold: three pipe banks along the bar and stem, the bellows at the junction. |
+| Choir Node | 2x2 square | **T of 4** | 4 | Its fire-rate aura reaches out on three sides from the junction: which three neighbours it serves is decided by how it is turned. | Organ pipes on a T manifold: three pipe banks along the bar and stem, the bellows at the junction. |
 | Spore Sling | 1 cell | kept | 1 | A thrower aimed where the player wants: no axis, so one square. |  |
 | Broodmother Den | 2x2 square | kept | 3 | The Broodmother Den: a big protected nest that bears a Broodmother unit. Very powerful; 2x2 as it is. |  |
 | Brood Pit | 1 cell | kept | 1 | The Brood Pit: a cheap spawner by the street. |  |
@@ -61,21 +61,21 @@ One cell goes from 27 of 38 to 21: by rule 1 it stays the most common. Every sha
 | Caustic Mister | 2x2 square | **1 cell** | 1 | SANITY PASS: back to one square. The cheapest limb (12 war) and one of the weakest (0.6 kills per built): a cheap support sprayer from one nozzle, so four cells bought nothing it needs. Its stats go back to those before Sep 29. | A single spray nozzle on a squat tank; no yellow gland on top. |
 | Ocular Stalk | 1 cell | kept | 1 | A sniper eye that sees the whole board from where it stands: no axis, so one square. | A TALL eyestalk with a bony lens hood, the eye staring out (the Lure becomes a squat pitcher bloom). |
 | Arc Prism | 1 cell | kept | 1 | A relay piece: many of them, linked. One cell. |  |
-| Spore Bombard | 1 cell | **2x2 square** | 3 | SANITY PASS: a 2x2, not a T. The strongest artillery (15 kills per built), so it earns a big shape; but it is one gun that lobs at a marker anywhere, so a T's stem would point nowhere. A squat siege mortar fills a square. Measured: as a T it lost a win in ten; as a 2x2 it holds (5 of 10). RISK: On Sep 29 2026 a big Bombard cost the scripted player a win in ten whatever it was paid. Measured Oct 1 as a 2x2: holds (5 of 10). | A heavy squat siege mortar with a wide bone barrel, readable as artillery from every side. |
-| Ward Membrane | 2x2 square | **1 cell** | 1 | SANITY PASS: back to one square. A cheap support (16 war) whose shield reaches out from one point by radius: its other three cells shielded nothing. Its stats go back to those before Sep 29. |  |
-| Quill Fan | 1 cell | **elbow of 3** | 5 | Laid on a roof corner at a crossing, both arms line two streets and the fan covers both: it still touches the street with every cell. | A bent body hugging the roof corner, quills fanned out along both arms. |
+| Spore Bombard | 2x2 square | kept | 3 | SANITY PASS: a 2x2, not a T. The strongest artillery (15 kills per built), so it earns a big shape; but it is one gun that lobs at a marker anywhere, so a T's stem would point nowhere. A squat siege mortar fills a square. Measured: as a T it lost a win in ten; as a 2x2 it holds (5 of 10). RISK: On Sep 29 2026 a big Bombard cost the scripted player a win in ten whatever it was paid. Measured Oct 1 as a 2x2: holds (5 of 10). | A heavy squat siege mortar with a wide bone barrel, readable as artillery from every side. |
+| Ward Membrane | 1 cell | kept | 1 | SANITY PASS: back to one square. A cheap support (16 war) whose shield reaches out from one point by radius: its other three cells shielded nothing. Its stats go back to those before Sep 29. |  |
+| Quill Fan | line of 2 | **elbow of 3** | 5 | Laid on a roof corner at a crossing, both arms line two streets and the fan covers both: it still touches the street with every cell. | A bent body hugging the roof corner, quills fanned out along both arms. |
 | Skipping Mortar | line of 2 | kept | 2 | A mortar that skips shells down the lane it faces: a line along its aim, as it is. | A long barrel along both cells: its facing reads. |
 | Netcaster | 1 cell | kept | 1 | Cheap anti-air. One cell. | A launcher with a folded net (the Snare Bed is a wide flat web). |
-| Ember Sac | 1 cell | **line of 3** | 2 | A flame jet along its long axis: laid along a street edge it torches the length of the street. Where it lies is the decision. | A long low fuel sac on three cells with the nozzle at the front and a pilot flame: the fire runs along its length. |
-| Marrow Conduit | 1 cell | **elbow of 3** | 5 | A bent pipe: it gathers at the elbow and feeds along one arm. Fitting it round a corner to reach its target is the puzzle. | A bent marrow pipe on three cells, the gather bulb at the elbow (no orange slits). |
-| Resonance Amplifier | 1 cell | **line of 3** | 2 | A resonance horn that buffs every limb touching its length: which limbs line up along it is the puzzle. (A mechanic change: today it amplifies the one limb it points at.) | A long resonant horn on three cells, ribbed along its length. |
+| Ember Sac | line of 2 | **line of 3** | 2 | A flame jet along its long axis: laid along a street edge it torches the length of the street. Where it lies is the decision. | A long low fuel sac on three cells with the nozzle at the front and a pilot flame: the fire runs along its length. |
+| Marrow Conduit | line of 2 | **elbow of 3** | 5 | A bent pipe: it gathers at the elbow and feeds along one arm. Fitting it round a corner to reach its target is the puzzle. | A bent marrow pipe on three cells, the gather bulb at the elbow (no orange slits). |
+| Resonance Amplifier | line of 2 | **line of 3** | 2 | A resonance horn that buffs every limb touching its length: which limbs line up along it is the puzzle. (A mechanic change: today it amplifies the one limb it points at.) | A long resonant horn on three cells, ribbed along its length. |
 | Mosaic Node | 1 cell | kept | 1 | An engine piece. One cell. |  |
 | Twinning Gland | 1 cell | kept | 1 | An engine piece. One cell. |  |
 | Marrow Tap | 1 cell | kept | 1 | An engine piece. One cell. |  |
 | Mitosis Node | 1 cell | kept | 1 | An engine piece. One cell. |  |
 | Capacitor Sac | 1 cell | kept | 1 | An engine piece. One cell. |  |
 | Boomerang Node | 1 cell | kept | 1 | An engine piece. One cell. |  |
-| Meat Press | 1 cell | **L of 4** | 5 | A press with a long feed arm: an economy engine that pays in ground, so turning kills into science costs a corner of the city. | A screw press at the elbow with a three-cell feed trough as its arm (no orange slits). |
+| Meat Press | 2x2 square | **L of 4** | 5 | A press with a long feed arm: an economy engine that pays in ground, so turning kills into science costs a corner of the city. | A screw press at the elbow with a three-cell feed trough as its arm (no orange slits). |
 | Reliquary | 1 cell | kept | 1 | An engine piece. One cell, a new silhouette and a view from behind. | A sealed bone casket (an amber jar of marrow), no orange slits and no religious symbol. |
 | Creep Lance | line of 2 | **line of 3** | 2 | It lances creep straight down a street: a three-cell hose laid along the strip it lays. | A long hose body on three cells with the nozzle at its front. |
 | Trap Cage | 2x2 square | kept | 3 | The Trap Cage: given, not drawn from the deck; it catches royals. 2x2 as it is. |  |
@@ -133,8 +133,8 @@ Shown by an overlay instead (the game draws the ring, lane, strip or blast): Bur
 
 - Bases redrawn with a view from behind: 20, $58
 - Views from behind for engines that point: 5, $7
-- Upgrade looks, only the reachable ones, at the new footprints: 99 drawings, $245 (of which spatial variants needing their own drawing: 13, $32)
-- **Total ~$310, ~$370 with re-rolls** (UPGRADE-LOOKS.md rollout A was ~$350-400 on the old footprints).
+- Upgrade looks, only the reachable ones, at the new footprints: 64 drawings, $177 (of which spatial variants needing their own drawing: 13, $32)
+- **Total ~$242, ~$290 with re-rolls** (UPGRADE-LOOKS.md rollout A was ~$350-400 on the old footprints).
 
 ## Flags → fixes (the old sheet's problems, pre-addressed)
 

@@ -899,9 +899,15 @@ early-game space". And: "keep the original art in case we use it for something e
   (no marks by eye), `ground: true` in the manifest (a redrawn limb keeps only the looks drawn for its ground).
   Drawn: the 45 looks of the 18 one-cell limbs that were not redrawn. A limb whose back picture was not recovered gets
   its looks' backs as a half-turn of each look's front. Review: `notes/art-review/limbs/looks/`.
-- **Not done yet:** the looks of the 16 redrawn limbs (their slabs make them a second pass); the Brood Pit's looks (its
-  raw art is only in art-src-new); `tests/iso` "a picture for every enemy" fails on the new unit `flametrooper`
-  (another session's, no art yet).
+- **The Meat Press redrawn for its L** (Collins: "one is not fitting its grid"): housing on the bend, a raised feed
+  trough along the long arm, a collecting vat on the short arm, every cell standing something; its acting clip keeps the
+  marrow inside. Its old look (bone) moved to `art-src/limbs/press-ground-looks-old/`.
+- **The reshaped limbs' upgrade looks: PAUSED** (Collins has not answered whether the reshaped limbs become taller and
+  lose their always-on outline; nothing is to be drawn twice). Their pictures are drawn (94, the working part risen off
+  the slab; `notes/art-review/limbs/looks/<family>-stills.jpg`) and 33 were animated before the pause; ALL are held
+  out of the manifest until he answers (raw in `art-src/limbs/<family>-ground-looks/`; `node tools/art/make.mjs looks
+  <family> --bake` puts a finished one back). Several tall ones go out of their clip's frame: re-roll those first.
+- **Not done yet:** the Brood Pit's looks (its raw art is only in art-src-new).
 
 ## Footprints: every shape, and the plan for which limb takes which (Oct 1 2026)
 

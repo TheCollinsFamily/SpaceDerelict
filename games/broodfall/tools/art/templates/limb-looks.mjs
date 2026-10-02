@@ -22,7 +22,7 @@ import { makeClip, makeStill, pool } from '../rfab.mjs';
 import { AWAY, BACK, QUIET, THEMES, limb, rawDirOf } from '../limbs.mjs';
 import { variantAtlas } from '../limb-variants.mjs';
 import { FRAME, STEADY, bakeView } from './limb.mjs';
-import { viewsOf } from './limb-shaped.mjs';
+import { muzzleFrom, viewsOf } from './limb-shaped.mjs';
 import { packAtlas, reviewSheet } from '../lib/atlas.mjs';
 import { blank, borderColour, paste, readImage, resize, writeJpg } from '../lib/img.mjs';
 import { keyFrame, keyOf, unionBox } from '../lib/key.mjs';
@@ -130,6 +130,8 @@ function carry(l, view, base, still) {
   if (l.plate) {
     const fit = fitPlate(img, l.plate, VIEW_FACING[view]);
     foot = [(fit.x - box.x0) / w, (fit.y - box.y0) / h, fit.w / w];
+    // A look on a slab fires from its own front end or peaks (a look rises taller than its limb).
+    return { foot: foot.map((v) => Number(v.toFixed(4))), muzzle: muzzleFrom(l, view, img, box, fit) };
   } else foot = [(base.abs.x - box.x0) / w, (base.abs.y - box.y0) / h, (2 * base.abs.a) / w];
   const muzzle = base.absMuzzle?.map(([x, y]) => [Number(((x - box.x0) / w).toFixed(3)), Number(((y - box.y0) / h).toFixed(3))]);
   return { foot: foot.map((v) => Number(v.toFixed(4))), muzzle };
