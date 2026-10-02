@@ -1642,7 +1642,7 @@ screenshot of the interface."
 - **Art** (`node tools/art/make.mjs padship [--frames|--stills|--bake]`, `tools/art/templates/pad-ship.mjs`; raw in
   `art-src-new/pad-ship/`): START frames = part 1's last frames with the green screen made black (free); the TURN still
   (first person, the window, the console, the chair pushed back, the hatch onto the round-table room) and the HATCH still
-  (him from behind in the hatch); clips on `seegen:wan3.0-video` (start + end frame): `won`/`lost` = start → TURN, `walk`
+  (him from behind in the hatch, superseded) and the OVER still (A's last view a step back, him standing where the camera was); clips on `seegen:wan3.0-video` (start + end frame): `won`/`lost` = start → TURN, `walk`
   = HATCH → the interface screenshot. Sound (`atlascloud:h3-t2v` soundtracks): the ship's hum and recyclers, his chair and
   steps on the deck plating, the hatch and a chime, mixed under the film at -22 LUFS. Baked: `public/art/pad/ship-won.mp4`,
   `ship-lost.mp4`, `ship-end.webp`, manifest `part2` (with `cut`, where the walk begins). Review and the continuity

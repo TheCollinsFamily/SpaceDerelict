@@ -71,6 +71,24 @@ export const HATCH = {
   refs: () => [raw('interface-end.png'), raw('turn.png')],
 };
 
+/**
+ * OVER (Collins, Oct 2 2026: "it sort of changes the position of you when it moves from first to third person"): the end of
+ * A seen from a step behind and above his eyes: the same room, window, chair and hatch at the same places in frame, and HIM
+ * standing exactly where the first-person camera stood, from behind, facing the hatch. RISE moves from A's last frame to it
+ * (one camera move, no cut); the walk starts from it.
+ */
+export const OVER = {
+  file: raw('over.png'),
+  prompt: `${REAL} Keep the first reference picture: the same view of the same dark starship room from the same place and the same ` +
+    'direction, the long window onto the planet on the left with its red glow, the long console desk and the black chair pushed ' +
+    'back, the open rounded hatchway ahead on the right with the room and its softly glowing round table beyond it, the same ' +
+    'light, the same framing, only the camera a single step further back and a little higher. Standing in the near foreground, ' +
+    `seen from behind and slightly to the left, is ${MAN}, exactly the man of the second reference picture: he stands where the ` +
+    'viewer stood, facing the open hatchway, his head and shoulders in the lower left third of the picture, the hatch still ' +
+    `clearly visible beyond him. ${NONE}`,
+  refs: () => [raw('turn.png'), raw('hatch.png')],
+};
+
 const STEADY = 'His body moves with the deliberate weight of a man in a ship\'s artificial gravity. Natural hand-held camera, ' +
   `no cuts, the end matches the second picture exactly. ${NONE}`;
 // Oct 2 2026, first takes: `won` picked the pad back up; `lost` turned into a third-person shot of an older stranger.
@@ -88,8 +106,14 @@ export const CLIPS = [
       'pad lying asleep (black) on his console desk, pushes himself up slowly and stands, then turns slowly to his right, away from ' +
       'the long window: the planet slides past at the left, its red night-side glow sweeping over the deck, and the dark ' +
       'bulkheads, deck plating and the open hatchway ahead come into view. He ends standing still, looking toward the hatch. ' + POV + STEADY },
-  { id: 'walk', start: () => HATCH.file, end: () => raw('interface-end.png'), seconds: 5,
-    prompt: `Seen from behind, ${MAN} walks forward through the open hatchway into the small dark room and stops beside the round ` +
+  { id: 'rise', start: () => TURN.file, end: () => OVER.file, seconds: 5,
+    prompt: 'One continuous camera move, no cut, aboard a dark starship. We begin looking through his eyes at the open hatchway. ' +
+      'He takes a step toward it and the camera drifts back and a little up over his shoulder, so that he rises into the picture ' +
+      'from the bottom left, seen from behind, standing exactly where the viewpoint was, facing the hatch, ending exactly on the ' +
+      'second picture. The room, the window onto the planet, the chair and the hatch stay where they are. ' +
+      `He is the man of the second picture the whole time. ${NONE}` },
+  { id: 'walk', start: () => OVER.file, end: () => raw('interface-end.png'), seconds: 5,
+    prompt: `Seen from behind, ${MAN} walks forward across the room and through the open hatchway into the small dark room and stops beside the round ` +
       'table, standing still and looking down at it, exactly as in the second picture; the camera follows a little behind him and ' +
       'settles where the second picture is framed, the hatch frame passing out of the picture. As he arrives the table\'s top glows ' +
       `a little brighter, like a projector waking. ${STEADY}` },
@@ -126,7 +150,7 @@ export function makeFrames() {
 }
 
 export async function makeStills(only = []) {
-  for (const s of [TURN, HATCH]) {
+  for (const s of [TURN, HATCH, OVER]) {
     if (only.length && !only.includes(path.basename(s.file, '.png'))) continue;
     await makeStill({ slug: `padship ${path.basename(s.file, '.png')}`, out: s.file, prompt: s.prompt, key: null, width: W, height: H, quality: 'high', refFiles: s.refs() });
   }
@@ -157,15 +181,16 @@ export function bake() {
   const poster = 'ship-end.webp';
   ffmpeg(['-i', raw('interface-end.png'), '-c:v', 'libwebp', '-quality', '86', path.join(OUT, poster)], 'poster');
   for (const o of ['won', 'lost']) {
-    const a = raw(`${o}.mp4`), b = raw('walk.mp4');
-    if (!fs.existsSync(a) || !fs.existsSync(b)) { console.log(`[padship] ${o}: clips missing, not baked`); continue; }
-    const da = seconds(a), db = seconds(b);
-    const total = +(da + db).toFixed(3);
+    // A (first person) + RISE (the camera pulls back over his shoulder: he appears where the viewpoint was) + WALK.
+    const a = raw(`${o}.mp4`), r = raw('rise.mp4'), b = raw('walk.mp4');
+    if (![a, r, b].every((f) => fs.existsSync(f))) { console.log(`[padship] ${o}: clips missing, not baked`); continue; }
+    const da = seconds(a), dr = seconds(r), db = seconds(b);
+    const total = +(da + dr + db).toFixed(3);
     const norm = (src, out) => ffmpeg(['-i', src, '-vf', `scale=${W}:${H}:flags=lanczos,fps=${FPS},format=yuv420p`, '-an', '-c:v', 'libx264', '-crf', '14', '-preset', 'slow', out], `norm ${path.basename(src)}`);
-    const na = path.join(tmp, `${o}-a.mp4`), nb = path.join(tmp, `walk-b.mp4`);
-    norm(a, na); norm(b, nb);
+    const na = path.join(tmp, `${o}-a.mp4`), nr = path.join(tmp, 'rise-r.mp4'), nb = path.join(tmp, `walk-b.mp4`);
+    norm(a, na); norm(r, nr); norm(b, nb);
     const list = path.join(tmp, `${o}-list.txt`);
-    fs.writeFileSync(list, `file '${na.replace(/\\/g, '/')}'\nfile '${nb.replace(/\\/g, '/')}'\n`);
+    fs.writeFileSync(list, [na, nr, nb].map((f) => `file '${f.replace(/\\/g, '/')}'`).join('\n') + '\n');
     const joined = path.join(tmp, `${o}-joined.mp4`);
     ffmpeg(['-f', 'concat', '-safe', '0', '-i', list, '-c', 'copy', joined], `${o} join`);
     // The sound bed: the ship's hum under all of it, the chair and steps from the start, the hatch as he steps through.
@@ -178,7 +203,8 @@ export function bake() {
     };
     add('ship-amb', 0, 1.0);
     add('stand', o === 'lost' ? 0.5 : 0.2, 3.0);
-    add('hatch', Math.max(0, da - 0.6), 1.6);
+    add('stand', da + 0.4, 2.0); // his steps as he rises into the picture
+    add('hatch', Math.max(0, da + dr - 0.6), 1.6);
     const out = path.join(OUT, `ship-${o}.mp4`);
     if (parts.length) {
       const labels = parts.map((p) => p.match(/\[s\d+\]$/)[0]).join('');
