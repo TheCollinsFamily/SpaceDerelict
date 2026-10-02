@@ -1175,9 +1175,10 @@ export class IsoRenderer extends Renderer {
       const strain = state & 64 ? 'creep-burning' : state & 32 ? 'creep-mire' : '';
       const strainTex = strain ? this.art.sprite('creep', `${strain}-${(state >> 10) & 15}-${vx % 2}${vy % 2}`) : null;
       // On a street the skin is the STREET creep (streetCreep.ts): the same flesh, pus-yellow, so a street
-      // under the creep reads as creep and never as a roof. Under a limb standing in the street it is the hide.
+      // under the creep reads as creep and never as a roof; under a limb standing in the street too. Its tendrils
+      // (CreepLife) are the street's colour with it.
       const skinId = `creep-${open}-${vx % m}${vy % m}`;
-      const onStreet = !h && !(state & 256) && this.streetCreep;
+      const onStreet = !h && this.streetCreep;
       const skinTex = (onStreet ? this.art.streetSkin(skinId) : null) ?? this.art.sprite('creep', skinId);
       const skin = this.add(h ? this.sorted : this.creepFloor, skinTex, p.x, p.y, z + 2);
       if (skin) {
@@ -1227,7 +1228,7 @@ export class IsoRenderer extends Renderer {
       const here = sim.cellCenter(cell);
       this.life.add(cell, made, {
         dist: Math.hypot(here.x - core.x, here.y - core.y) / sim.cfg.cellPx, burning: (state & 64) !== 0,
-        open, layer: h ? this.sorted : this.creepFloor, at: p, z: z + 2,
+        open, layer: h ? this.sorted : this.creepFloor, at: p, z: z + 2, street: onStreet,
       });
     }
   }

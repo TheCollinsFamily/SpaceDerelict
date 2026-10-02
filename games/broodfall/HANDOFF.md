@@ -1018,6 +1018,20 @@ by the view ray as bare floor, creeped floor, wall over a creeped street, creepe
 in Lab, every pair at least 25 dE (walls at far and fit). 120/120 pass; `--old` (the thin red film
 before) fails all 120, bare/creeped street 2-8 dE. Sheets: `notes/screens/2026-10-01/street-creep-*.jpg`.
 
+Oct 2 2026, Collins: "the creep has little tendrils at its edges, but they don't change colour on the trail
+like the rest of the creep." The animated tendrils `CreepLife` lays over a cell's open edges took the red
+sheet always; a skin on a street now carries `street` and its tendrils are recoloured with it
+(`BoardArtSet.streetSkin('tendril-…')`); a street cell under a limb is yellow too. Roofs keep the red.
+NOT creep and left red: the core's ground roots (`coreGround`, the landing site's own picture) that reach
+over the streets round the core; Collins's call if he wants them yellow on streets. The check: with
+`--creep 3` (12-16 street tendrils on seed 42) the fringe of every street (both sides of the creep's edge)
+is captured with and without the tendrils, the roots hidden in both; of the pixels the tendrils change,
+at most 10% may be red-brown (limbs, units, townsfolk and the core masked by their drawn bounds; the skin's
+pulse frozen between the two captures). All ten sets, four turns, three zooms: before (`--oldfringe`) 43-99%
+red, 120 of 121 frames fail; after 0%, all pass. Known soft spot (not this change): megacity at turn 1, far
+and fit, bare street vs roof measures dE 18-20 (its few bare samples fall in deep shadow); by eye they differ.
+Crops: `notes/screens/2026-10-02/street-creep-tendrils-before-after-zoomed.jpg`.
+
 Read `assets/style-bible.md` before drawing anything: it holds Collins's 22 rules in his
 own words. `notes/GRAPHICS-PLAN.md` holds the pipeline, the probes and the costs.
 

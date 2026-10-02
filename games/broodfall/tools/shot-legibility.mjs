@@ -17,8 +17,11 @@
  * pair at least MIN_DE apart.
  *
  * Usage: node tools/shot-legibility.mjs [--out <dir>] [--tag <name>] [--turns 0,1,2,3]
- *        [--zooms far,fit,near] [--play <ticks>] [--creep <hops>] [--old] [--debug] [set ...]
+ *        [--zooms far,fit,near] [--play <ticks>] [--creep <hops>] [--old] [--oldfringe] [--debug] [set ...]
  *   --old: the board as it was before (streets under a thin red film), on the same build.
+ *   --oldfringe: the street creep's edge tendrils in the roofs' red, as before Oct 2 2026.
+ *   THE FRINGE (Oct 2 2026): of the pixels the creep's tendrils change on a street's fringe (both sides of
+ *   the creep's edge), at most MAX_RED may be red-brown. Use --creep 3 to have street tendrils to measure.
  *   --debug: also writes <shot>-dbg.png with the classes painted (bare white, street green, wall
  *   magenta, roof blue). Runs its own vite dev server; nothing is spent.
  * Artifacts: <out>/legibility-<tag>-<set>-t<turn>-<zoom>.png and legibility-<tag>.json
@@ -46,6 +49,10 @@ const zooms = opt('--zooms', 'far,fit,near').split(',');
 const PLAY_TICKS = Number(opt('--play', '0'));
 const CREEP = Number(opt('--creep', '7'));
 const OLD = flag('--old');
+/** --oldfringe: the street creep's edge tendrils in the roofs' red, as before Oct 2 2026 (the rest as now). */
+const OLDFRINGE = flag('--oldfringe');
+/** The most of a street's fringe (the creep's edge on a street, both sides of it) that may be the roofs' red. */
+const MAX_RED = Number(process.env.LEGIBILITY_MAX_RED || 0.1);
 const DEBUG = flag('--debug');
 mkdirSync(out, { recursive: true });
 const manifest = JSON.parse(readFileSync(join(root, 'public', 'art', 'manifest.json'), 'utf8'));
@@ -100,16 +107,17 @@ try {
     page.on('pageerror', (e) => errors.push(String(e)));
     await page.goto(`http://localhost:${PORT}/?auto=1&seed=42&speed=0&biome=${id}`);
     await page.waitForFunction(() => window.broodfall !== undefined && window.broodfall.biome() !== '', null, { timeout: 60000 });
-    await page.evaluate(([play, creep, old]) => {
+    await page.evaluate(([play, creep, old, oldFringe]) => {
       const b = window.broodfall;
       b.step(5);
       // A mid game: the scripted player plays on (more districts claimed, nodes, strains).
       for (let i = 0; i < play && b.sim.outcome === 'playing'; i += 50) { b.surface(); b.step(50); }
       Object.defineProperty(b.sim, 'creepRangeCells', { get: () => creep, configurable: true });
       if (old) b.renderer.streetCreep = false;
+      if (oldFringe) { const life = b.renderer.life; const t = life.tendril.bind(life); life.tendril = (side, f) => t(side, f, false); }
       b.renderer.creepState.fill(65535); // every cell's skin drawn again
       b.step(1);
-    }, [PLAY_TICKS, CREEP, OLD]);
+    }, [PLAY_TICKS, CREEP, OLD, OLDFRINGE]);
     await page.waitForTimeout(1500);
     for (const turn of turns) {
       await page.evaluate((q) => { const b = window.broodfall; b.turnBy((q - b.turn() + 4) % 4); b.step(1); }, turn);
@@ -158,18 +166,18 @@ try {
           };
           const cellOf = (p) => { const x = Math.floor(p.x / cellPx), y = Math.floor(p.y / cellPx); return x < 0 || y < 0 || x >= W || y >= H ? -1 : y * W + x; };
           const hOf = (c) => (c < 0 ? 0 : s.map.cells[c] === 0 ? (s.map.heights[c] || 1) : 0);
-          // What stands over the ground is left out where it is DRAWN: every limb's picture, the core's.
+          // What stands over the ground is left out where it is DRAWN: every limb's, unit's and townsman's picture, the core's.
           const masked = new Set();
           for (const t of s.towers) for (const c of s.cellsOf(t)) masked.add(c);
           // The landing site's square: its crater and the core's red roots are drawn over it (not a street).
           if (r.square) for (let c = 0; c < s.map.cells.length; c++) { const p = s.cellCenter(c); if (Math.abs(p.x - r.square.x) <= r.square.across * cellPx / 2 + cellPx && Math.abs(p.y - r.square.y) <= r.square.across * cellPx / 2 + cellPx) masked.add(c); }
           const kx = box.width / vw, ky = box.height / vh;
-          const boxes = [...r.limbs.values()].map((v) => v.sprite).concat(r.core ? [r.core] : [])
+          const boxes = [...r.limbs.values(), ...r.units.values(), ...(r.allyViews?.values() ?? []), ...(r.civViews?.values() ?? [])].map((v) => v.sprite).concat(r.core ? [r.core] : [])
             .filter((sp) => sp && !sp.destroyed && sp.visible).map((sp) => { const bb = sp.getBounds(); return [bb.x * kx, bb.y * ky, (bb.x + bb.width) * kx, (bb.y + bb.height) * ky]; });
           const covered = (x, y) => boxes.some(([x0, y0, x1, y1]) => x >= x0 && x <= x1 && y >= y0 && y <= y1);
           const usable = (c) => c >= 0 && s.map.cells[c] !== 3 && !masked.has(c) && !(s.map.plinths[c] > 0);
           const creeped = (c) => usable(c) && s.isCreeped(c);
-          const out = { bare: [], street: [], wall: [], roof: [] };
+          const out = { bare: [], street: [], wall: [], roof: [], fringe: [] };
           const STEP = 3;
           for (let cy = 0; cy < box.height; cy += STEP) for (let cx = 0; cx < box.width; cx += STEP) {
             if (covered(cx, cy)) continue;
@@ -184,7 +192,8 @@ try {
               if (!usable(c) || s.map.cells[c] === 0) continue;
               // Not right at the creep's ragged edge: a cell whose four sides are the same state.
               const st = s.isCreeped(c); const x = c % W, y = Math.floor(c / W);
-              if ([[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => { const o = (y + dy) * W + x + dx; return s.map.cells[o] !== 0 && s.isCreeped(o) !== st; })) continue;
+              // The fringe: a street cell at the creep's edge, on either side of it (where its tendrils reach).
+              if ([[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => { const o = (y + dy) * W + x + dx; return s.map.cells[o] !== 0 && s.map.cells[o] !== 3 && s.isCreeped(o) !== st; })) { out.fringe.push([cx, cy]); continue; }
               (st ? out.street : out.bare).push([cx, cy]);
               continue;
             }
@@ -202,10 +211,40 @@ try {
         if (DEBUG) {
           const dbg = PNG.sync.read(buf);
           const paint = (list, col) => { for (const [x, y] of list) { const i = (Math.round(y) * dbg.width + Math.round(x)) * 4; if (i >= 0 && i < dbg.data.length) { dbg.data[i] = col[0]; dbg.data[i + 1] = col[1]; dbg.data[i + 2] = col[2]; } } };
-          paint(pts.bare, [255, 255, 255]); paint(pts.street, [0, 255, 0]); paint(pts.wall, [255, 0, 255]); paint(pts.roof, [0, 128, 255]);
+          paint(pts.bare, [255, 255, 255]); paint(pts.street, [0, 255, 0]); paint(pts.wall, [255, 0, 255]); paint(pts.roof, [0, 128, 255]); paint(pts.fringe, [255, 140, 0]);
           writeFileSync(file.replace('.png', '-dbg.png'), PNG.sync.write(dbg));
         }
-        const c = Object.fromEntries(Object.entries(pts).map(([k, v]) => [k, colourOf(png, v)]));
+        const c = Object.fromEntries(Object.entries(pts).filter(([k]) => k !== 'fringe').map(([k, v]) => [k, colourOf(png, v)]));
+        // The street's fringe (the creep's edge on a street, both sides of it): what its tendrils add there must
+        // be the street's yellow, never the roofs' red-brown. The frame is taken again with every tendril hidden
+        // (and the core's ground roots hidden in both: the landing site's own picture, red by design); a pixel
+        // the tendrils change is theirs, and is counted red when its hue is red-brown.
+        const shoot = () => page.locator('#stage canvas').screenshot().then((b) => PNG.sync.read(b));
+        const showTendrils = (on) => page.evaluate((v) => { const r = window.broodfall.renderer; if (r.coreGround) r.coreGround.visible = false; for (const sk of r.life.cells.values()) for (const t of sk.tendrils) t.sprite.visible = v; r.camInit = false; window.broodfall.step(0); }, on);
+        // The skin's pulse and the tendrils' own frames run on real time: frozen while the two are taken.
+        await page.evaluate(() => { const l = window.broodfall.renderer.life; l.liveUpdate ??= l.update; l.update = () => {}; });
+        await showTendrils(true); const withT = await shoot();
+        await showTendrils(false); const without = await shoot();
+        await page.evaluate(() => { const r = window.broodfall.renderer; if (r.coreGround) r.coreGround.visible = true; for (const sk of r.life.cells.values()) for (const t of sk.tendrils) t.sprite.visible = true; r.life.update = r.life.liveUpdate; });
+        let reds = 0, fringeN = 0;
+        const redPts = [];
+        const seen = new Set();
+        for (const [x0, y0] of pts.fringe) for (let oy = 0; oy < 3; oy++) for (let ox = 0; ox < 3; ox++) {
+          const x = Math.round(x0) + ox, y = Math.round(y0) + oy;
+          if (x < 0 || y < 0 || x >= withT.width || y >= withT.height || seen.has(y * 10000 + x)) continue;
+          seen.add(y * 10000 + x);
+          const i = (y * withT.width + x) * 4;
+          const R = withT.data[i], G = withT.data[i + 1], B = withT.data[i + 2];
+          if (Math.abs(R - without.data[i]) + Math.abs(G - without.data[i + 1]) + Math.abs(B - without.data[i + 2]) < 40) continue;
+          fringeN++;
+          if (R > G * 1.15 && R > B * 1.05) { reds++; if (DEBUG) redPts.push([x, y]); } // red-brown: the roofs' hide, not the street's yellow (G close to R)
+        }
+        const redShare = fringeN ? reds / fringeN : 0;
+        if (DEBUG && redPts.length) {
+          const m = PNG.sync.read(PNG.sync.write(withT));
+          for (const [x, y] of redPts) for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) { const X = x + dx, Y = y + dy; if (X < 0 || Y < 0 || X >= m.width || Y >= m.height) continue; const k = (Y * m.width + X) * 4; m.data[k] = 0; m.data[k + 1] = 255; m.data[k + 2] = 255; }
+          writeFileSync(file.replace('.png', '-redfringe.png'), PNG.sync.write(m));
+        }
         const pairs = [['bare', 'street'], ['street', 'roof'], ['bare', 'roof']];
         if (zn !== 'near') pairs.push(['wall', 'roof'], ['wall', 'bare']);
         const res = [];
@@ -216,8 +255,9 @@ try {
           if (d < MIN_DE) ok = false;
           res.push(`${a}/${b} ${d.toFixed(0)}`);
         }
+        if (fringeN >= 100) { res.push(`street tendrils red ${(redShare * 100).toFixed(1)}% of ${fringeN} px`); if (redShare > MAX_RED) ok = false; }
         if (!ok) failed++;
-        report.push({ set: id, turn, zoom: zn, colours: c, pairs: res });
+        report.push({ set: id, turn, zoom: zn, colours: c, pairs: res, fringe: { n: fringeN, red: redShare } });
         console.log(`  ${ok ? 'PASS' : 'FAIL'}  ${id} turn ${turn} ${zn}: ${res.join(', ')}  [bare ${c.bare.rgb} street ${c.street.rgb} wall ${c.wall.rgb} roof ${c.roof.rgb}]`);
       }
     }

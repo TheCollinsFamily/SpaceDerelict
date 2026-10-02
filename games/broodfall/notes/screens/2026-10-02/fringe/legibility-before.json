@@ -1,0 +1,6041 @@
+[
+  {
+    "set": "deephive",
+    "turn": 0,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 133,
+        "rgb": [
+          167,
+          153,
+          111
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (133/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (133/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/133)",
+      "street tendrils red 68.7% of 99 px"
+    ],
+    "fringe": {
+      "n": 99,
+      "red": 0.6868686868686869
+    }
+  },
+  {
+    "set": "deephive",
+    "turn": 0,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 361,
+        "rgb": [
+          167,
+          151,
+          111
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (361/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (361/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/361)",
+      "street tendrils red 66.3% of 258 px"
+    ],
+    "fringe": {
+      "n": 258,
+      "red": 0.6627906976744186
+    }
+  },
+  {
+    "set": "deephive",
+    "turn": 0,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 2483,
+        "rgb": [
+          170,
+          157,
+          114
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (2483/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (2483/0)",
+      "street tendrils red 75.1% of 2128 px"
+    ],
+    "fringe": {
+      "n": 2128,
+      "red": 0.7514097744360902
+    }
+  },
+  {
+    "set": "deephive",
+    "turn": 1,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 114,
+        "rgb": [
+          163,
+          144,
+          101
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (114/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (114/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/114)",
+      "street tendrils red 69.3% of 88 px"
+    ],
+    "fringe": {
+      "n": 88,
+      "red": 0.6931818181818182
+    }
+  },
+  {
+    "set": "deephive",
+    "turn": 1,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 314,
+        "rgb": [
+          162,
+          142,
+          101
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (314/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (314/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/314)",
+      "street tendrils red 68.0% of 231 px"
+    ],
+    "fringe": {
+      "n": 231,
+      "red": 0.6796536796536796
+    }
+  },
+  {
+    "set": "deephive",
+    "turn": 1,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 1283,
+        "rgb": [
+          164,
+          150,
+          109
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (1283/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (1283/0)",
+      "street tendrils red 75.4% of 1934 px"
+    ],
+    "fringe": {
+      "n": 1934,
+      "red": 0.7538779731127198
+    }
+  },
+  {
+    "set": "deephive",
+    "turn": 2,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 119,
+        "rgb": [
+          169,
+          134,
+          86
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (119/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (119/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/119)"
+    ],
+    "fringe": {
+      "n": 36,
+      "red": 0.6388888888888888
+    }
+  },
+  {
+    "set": "deephive",
+    "turn": 2,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 326,
+        "rgb": [
+          173,
+          142,
+          87
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (326/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (326/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/326)",
+      "street tendrils red 69.4% of 111 px"
+    ],
+    "fringe": {
+      "n": 111,
+      "red": 0.6936936936936937
+    }
+  },
+  {
+    "set": "deephive",
+    "turn": 2,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 1398,
+        "rgb": [
+          184,
+          156,
+          95
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (1398/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (1398/0)",
+      "street tendrils red 76.0% of 982 px"
+    ],
+    "fringe": {
+      "n": 982,
+      "red": 0.7596741344195519
+    }
+  },
+  {
+    "set": "deephive",
+    "turn": 3,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 139,
+        "rgb": [
+          181,
+          163,
+          119
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (139/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (139/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/139)",
+      "street tendrils red 63.9% of 108 px"
+    ],
+    "fringe": {
+      "n": 108,
+      "red": 0.6388888888888888
+    }
+  },
+  {
+    "set": "deephive",
+    "turn": 3,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 385,
+        "rgb": [
+          180,
+          163,
+          117
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (385/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (385/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/385)",
+      "street tendrils red 71.7% of 265 px"
+    ],
+    "fringe": {
+      "n": 265,
+      "red": 0.7169811320754716
+    }
+  },
+  {
+    "set": "deephive",
+    "turn": 3,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 2495,
+        "rgb": [
+          183,
+          169,
+          122
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (2495/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (2495/0)",
+      "street tendrils red 76.1% of 1819 px"
+    ],
+    "fringe": {
+      "n": 1819,
+      "red": 0.7614073666849918
+    }
+  },
+  {
+    "set": "farmland",
+    "turn": 0,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 133,
+        "rgb": [
+          153,
+          133,
+          104
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (133/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (133/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/133)",
+      "street tendrils red 95.6% of 91 px"
+    ],
+    "fringe": {
+      "n": 91,
+      "red": 0.9560439560439561
+    }
+  },
+  {
+    "set": "farmland",
+    "turn": 0,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 361,
+        "rgb": [
+          151,
+          131,
+          102
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (361/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (361/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/361)",
+      "street tendrils red 94.4% of 249 px"
+    ],
+    "fringe": {
+      "n": 249,
+      "red": 0.9437751004016064
+    }
+  },
+  {
+    "set": "farmland",
+    "turn": 0,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 2483,
+        "rgb": [
+          155,
+          137,
+          106
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (2483/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (2483/0)",
+      "street tendrils red 97.7% of 2047 px"
+    ],
+    "fringe": {
+      "n": 2047,
+      "red": 0.9770395701025891
+    }
+  },
+  {
+    "set": "farmland",
+    "turn": 1,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 114,
+        "rgb": [
+          155,
+          130,
+          98
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (114/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (114/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/114)",
+      "street tendrils red 97.5% of 80 px"
+    ],
+    "fringe": {
+      "n": 80,
+      "red": 0.975
+    }
+  },
+  {
+    "set": "farmland",
+    "turn": 1,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 314,
+        "rgb": [
+          154,
+          129,
+          97
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (314/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (314/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/314)",
+      "street tendrils red 94.2% of 207 px"
+    ],
+    "fringe": {
+      "n": 207,
+      "red": 0.9420289855072463
+    }
+  },
+  {
+    "set": "farmland",
+    "turn": 1,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 1283,
+        "rgb": [
+          147,
+          130,
+          101
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (1283/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (1283/0)",
+      "street tendrils red 94.8% of 1771 px"
+    ],
+    "fringe": {
+      "n": 1771,
+      "red": 0.948051948051948
+    }
+  },
+  {
+    "set": "farmland",
+    "turn": 2,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 119,
+        "rgb": [
+          165,
+          132,
+          96
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (119/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (119/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/119)",
+      "street tendrils red 96.6% of 58 px"
+    ],
+    "fringe": {
+      "n": 58,
+      "red": 0.9655172413793104
+    }
+  },
+  {
+    "set": "farmland",
+    "turn": 2,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 326,
+        "rgb": [
+          165,
+          136,
+          102
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (326/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (326/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/326)",
+      "street tendrils red 96.7% of 181 px"
+    ],
+    "fringe": {
+      "n": 181,
+      "red": 0.9668508287292817
+    }
+  },
+  {
+    "set": "farmland",
+    "turn": 2,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 1398,
+        "rgb": [
+          167,
+          147,
+          115
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (1398/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (1398/0)",
+      "street tendrils red 96.9% of 1679 px"
+    ],
+    "fringe": {
+      "n": 1679,
+      "red": 0.9690291840381179
+    }
+  },
+  {
+    "set": "farmland",
+    "turn": 3,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 139,
+        "rgb": [
+          163,
+          139,
+          108
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (139/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (139/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/139)",
+      "street tendrils red 99.0% of 97 px"
+    ],
+    "fringe": {
+      "n": 97,
+      "red": 0.9896907216494846
+    }
+  },
+  {
+    "set": "farmland",
+    "turn": 3,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 385,
+        "rgb": [
+          164,
+          143,
+          111
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (385/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (385/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/385)",
+      "street tendrils red 93.6% of 251 px"
+    ],
+    "fringe": {
+      "n": 251,
+      "red": 0.9362549800796812
+    }
+  },
+  {
+    "set": "farmland",
+    "turn": 3,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 2495,
+        "rgb": [
+          165,
+          146,
+          114
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (2495/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (2495/0)",
+      "street tendrils red 95.9% of 1701 px"
+    ],
+    "fringe": {
+      "n": 1701,
+      "red": 0.9594356261022927
+    }
+  },
+  {
+    "set": "industrial",
+    "turn": 0,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 133,
+        "rgb": [
+          154,
+          151,
+          145
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (133/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (133/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/133)",
+      "street tendrils red 50.0% of 100 px"
+    ],
+    "fringe": {
+      "n": 100,
+      "red": 0.5
+    }
+  },
+  {
+    "set": "industrial",
+    "turn": 0,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 361,
+        "rgb": [
+          152,
+          147,
+          142
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (361/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (361/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/361)",
+      "street tendrils red 50.4% of 262 px"
+    ],
+    "fringe": {
+      "n": 262,
+      "red": 0.5038167938931297
+    }
+  },
+  {
+    "set": "industrial",
+    "turn": 0,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 2483,
+        "rgb": [
+          157,
+          153,
+          150
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (2483/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (2483/0)",
+      "street tendrils red 60.2% of 2153 px"
+    ],
+    "fringe": {
+      "n": 2153,
+      "red": 0.6024152345564329
+    }
+  },
+  {
+    "set": "industrial",
+    "turn": 1,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 114,
+        "rgb": [
+          153,
+          146,
+          136
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (114/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (114/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/114)",
+      "street tendrils red 52.8% of 89 px"
+    ],
+    "fringe": {
+      "n": 89,
+      "red": 0.5280898876404494
+    }
+  },
+  {
+    "set": "industrial",
+    "turn": 1,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 314,
+        "rgb": [
+          152,
+          144,
+          137
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (314/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (314/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/314)",
+      "street tendrils red 55.3% of 226 px"
+    ],
+    "fringe": {
+      "n": 226,
+      "red": 0.5530973451327433
+    }
+  },
+  {
+    "set": "industrial",
+    "turn": 1,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 1283,
+        "rgb": [
+          152,
+          148,
+          143
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (1283/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (1283/0)",
+      "street tendrils red 61.5% of 1863 px"
+    ],
+    "fringe": {
+      "n": 1863,
+      "red": 0.6151368760064412
+    }
+  },
+  {
+    "set": "industrial",
+    "turn": 2,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 119,
+        "rgb": [
+          149,
+          134,
+          125
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (119/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (119/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/119)",
+      "street tendrils red 52.0% of 50 px"
+    ],
+    "fringe": {
+      "n": 50,
+      "red": 0.52
+    }
+  },
+  {
+    "set": "industrial",
+    "turn": 2,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 326,
+        "rgb": [
+          149,
+          133,
+          126
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (326/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (326/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/326)",
+      "street tendrils red 50.6% of 158 px"
+    ],
+    "fringe": {
+      "n": 158,
+      "red": 0.5063291139240507
+    }
+  },
+  {
+    "set": "industrial",
+    "turn": 2,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 1398,
+        "rgb": [
+          158,
+          152,
+          147
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (1398/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (1398/0)",
+      "street tendrils red 60.6% of 1440 px"
+    ],
+    "fringe": {
+      "n": 1440,
+      "red": 0.6055555555555555
+    }
+  },
+  {
+    "set": "industrial",
+    "turn": 3,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 139,
+        "rgb": [
+          165,
+          156,
+          152
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (139/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (139/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/139)",
+      "street tendrils red 54.9% of 102 px"
+    ],
+    "fringe": {
+      "n": 102,
+      "red": 0.5490196078431373
+    }
+  },
+  {
+    "set": "industrial",
+    "turn": 3,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 385,
+        "rgb": [
+          165,
+          159,
+          154
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (385/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (385/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/385)",
+      "street tendrils red 55.0% of 271 px"
+    ],
+    "fringe": {
+      "n": 271,
+      "red": 0.5498154981549815
+    }
+  },
+  {
+    "set": "industrial",
+    "turn": 3,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 2495,
+        "rgb": [
+          166,
+          162,
+          158
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (2495/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (2495/0)",
+      "street tendrils red 65.4% of 1777 px"
+    ],
+    "fringe": {
+      "n": 1777,
+      "red": 0.6544738323016319
+    }
+  },
+  {
+    "set": "megacity",
+    "turn": 0,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 133,
+        "rgb": [
+          130,
+          124,
+          119
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (133/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (133/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/133)",
+      "street tendrils red 65.5% of 87 px"
+    ],
+    "fringe": {
+      "n": 87,
+      "red": 0.6551724137931034
+    }
+  },
+  {
+    "set": "megacity",
+    "turn": 0,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 361,
+        "rgb": [
+          130,
+          122,
+          117
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (361/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (361/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/361)",
+      "street tendrils red 62.8% of 239 px"
+    ],
+    "fringe": {
+      "n": 239,
+      "red": 0.6276150627615062
+    }
+  },
+  {
+    "set": "megacity",
+    "turn": 0,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 2483,
+        "rgb": [
+          132,
+          129,
+          125
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (2483/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (2483/0)",
+      "street tendrils red 70.7% of 2022 px"
+    ],
+    "fringe": {
+      "n": 2022,
+      "red": 0.7072205736894164
+    }
+  },
+  {
+    "set": "megacity",
+    "turn": 1,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 114,
+        "rgb": [
+          122,
+          110,
+          104
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (114/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (114/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/114)",
+      "street tendrils red 67.1% of 82 px"
+    ],
+    "fringe": {
+      "n": 82,
+      "red": 0.6707317073170732
+    }
+  },
+  {
+    "set": "megacity",
+    "turn": 1,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 314,
+        "rgb": [
+          121,
+          111,
+          103
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (314/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (314/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/314)",
+      "street tendrils red 61.8% of 217 px"
+    ],
+    "fringe": {
+      "n": 217,
+      "red": 0.6175115207373272
+    }
+  },
+  {
+    "set": "megacity",
+    "turn": 1,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 1283,
+        "rgb": [
+          129,
+          122,
+          118
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (1283/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (1283/0)",
+      "street tendrils red 70.4% of 1769 px"
+    ],
+    "fringe": {
+      "n": 1769,
+      "red": 0.7037874505370265
+    }
+  },
+  {
+    "set": "megacity",
+    "turn": 2,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 119,
+        "rgb": [
+          120,
+          105,
+          98
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (119/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (119/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/119)",
+      "street tendrils red 66.7% of 45 px"
+    ],
+    "fringe": {
+      "n": 45,
+      "red": 0.6666666666666666
+    }
+  },
+  {
+    "set": "megacity",
+    "turn": 2,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 326,
+        "rgb": [
+          119,
+          108,
+          103
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (326/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (326/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/326)",
+      "street tendrils red 60.4% of 149 px"
+    ],
+    "fringe": {
+      "n": 149,
+      "red": 0.6040268456375839
+    }
+  },
+  {
+    "set": "megacity",
+    "turn": 2,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 1398,
+        "rgb": [
+          140,
+          136,
+          134
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (1398/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (1398/0)",
+      "street tendrils red 71.2% of 1362 px"
+    ],
+    "fringe": {
+      "n": 1362,
+      "red": 0.7121879588839941
+    }
+  },
+  {
+    "set": "megacity",
+    "turn": 3,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 139,
+        "rgb": [
+          140,
+          132,
+          130
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (139/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (139/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/139)",
+      "street tendrils red 62.4% of 101 px"
+    ],
+    "fringe": {
+      "n": 101,
+      "red": 0.6237623762376238
+    }
+  },
+  {
+    "set": "megacity",
+    "turn": 3,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 385,
+        "rgb": [
+          141,
+          132,
+          131
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (385/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (385/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/385)",
+      "street tendrils red 63.6% of 247 px"
+    ],
+    "fringe": {
+      "n": 247,
+      "red": 0.6356275303643725
+    }
+  },
+  {
+    "set": "megacity",
+    "turn": 3,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 2495,
+        "rgb": [
+          142,
+          137,
+          135
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (2495/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (2495/0)",
+      "street tendrils red 73.8% of 1679 px"
+    ],
+    "fringe": {
+      "n": 1679,
+      "red": 0.7379392495533056
+    }
+  },
+  {
+    "set": "necropolis",
+    "turn": 0,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 133,
+        "rgb": [
+          161,
+          156,
+          152
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (133/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (133/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/133)",
+      "street tendrils red 47.1% of 102 px"
+    ],
+    "fringe": {
+      "n": 102,
+      "red": 0.47058823529411764
+    }
+  },
+  {
+    "set": "necropolis",
+    "turn": 0,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 361,
+        "rgb": [
+          160,
+          157,
+          152
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (361/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (361/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/361)",
+      "street tendrils red 46.5% of 271 px"
+    ],
+    "fringe": {
+      "n": 271,
+      "red": 0.46494464944649444
+    }
+  },
+  {
+    "set": "necropolis",
+    "turn": 0,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 2483,
+        "rgb": [
+          166,
+          165,
+          162
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (2483/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (2483/0)",
+      "street tendrils red 55.8% of 2190 px"
+    ],
+    "fringe": {
+      "n": 2190,
+      "red": 0.5575342465753425
+    }
+  },
+  {
+    "set": "necropolis",
+    "turn": 1,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 114,
+        "rgb": [
+          150,
+          143,
+          136
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (114/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (114/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/114)",
+      "street tendrils red 47.1% of 87 px"
+    ],
+    "fringe": {
+      "n": 87,
+      "red": 0.47126436781609193
+    }
+  },
+  {
+    "set": "necropolis",
+    "turn": 1,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 314,
+        "rgb": [
+          151,
+          142,
+          135
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (314/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (314/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/314)",
+      "street tendrils red 52.1% of 213 px"
+    ],
+    "fringe": {
+      "n": 213,
+      "red": 0.5211267605633803
+    }
+  },
+  {
+    "set": "necropolis",
+    "turn": 1,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 1283,
+        "rgb": [
+          159,
+          156,
+          153
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (1283/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (1283/0)",
+      "street tendrils red 56.6% of 1752 px"
+    ],
+    "fringe": {
+      "n": 1752,
+      "red": 0.5656392694063926
+    }
+  },
+  {
+    "set": "necropolis",
+    "turn": 2,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 119,
+        "rgb": [
+          164,
+          149,
+          138
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (119/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (119/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/119)",
+      "street tendrils red 51.6% of 62 px"
+    ],
+    "fringe": {
+      "n": 62,
+      "red": 0.5161290322580645
+    }
+  },
+  {
+    "set": "necropolis",
+    "turn": 2,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 326,
+        "rgb": [
+          171,
+          156,
+          145
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (326/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (326/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/326)",
+      "street tendrils red 48.5% of 194 px"
+    ],
+    "fringe": {
+      "n": 194,
+      "red": 0.4845360824742268
+    }
+  },
+  {
+    "set": "necropolis",
+    "turn": 2,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 1398,
+        "rgb": [
+          180,
+          178,
+          176
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (1398/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (1398/0)",
+      "street tendrils red 58.6% of 1706 px"
+    ],
+    "fringe": {
+      "n": 1706,
+      "red": 0.5861664712778429
+    }
+  },
+  {
+    "set": "necropolis",
+    "turn": 3,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 139,
+        "rgb": [
+          175,
+          170,
+          164
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (139/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (139/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/139)",
+      "street tendrils red 53.4% of 103 px"
+    ],
+    "fringe": {
+      "n": 103,
+      "red": 0.5339805825242718
+    }
+  },
+  {
+    "set": "necropolis",
+    "turn": 3,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 385,
+        "rgb": [
+          178,
+          173,
+          166
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (385/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (385/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/385)",
+      "street tendrils red 51.3% of 275 px"
+    ],
+    "fringe": {
+      "n": 275,
+      "red": 0.5127272727272727
+    }
+  },
+  {
+    "set": "necropolis",
+    "turn": 3,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 2495,
+        "rgb": [
+          178,
+          176,
+          173
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (2495/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (2495/0)",
+      "street tendrils red 61.3% of 1817 px"
+    ],
+    "fringe": {
+      "n": 1817,
+      "red": 0.6130985140341222
+    }
+  },
+  {
+    "set": "orient",
+    "turn": 0,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 133,
+        "rgb": [
+          169,
+          163,
+          159
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (133/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (133/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/133)",
+      "street tendrils red 43.7% of 103 px"
+    ],
+    "fringe": {
+      "n": 103,
+      "red": 0.4368932038834951
+    }
+  },
+  {
+    "set": "orient",
+    "turn": 0,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 361,
+        "rgb": [
+          167,
+          162,
+          157
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (361/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (361/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/361)",
+      "street tendrils red 43.9% of 271 px"
+    ],
+    "fringe": {
+      "n": 271,
+      "red": 0.43911439114391143
+    }
+  },
+  {
+    "set": "orient",
+    "turn": 0,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 2483,
+        "rgb": [
+          173,
+          171,
+          167
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (2483/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (2483/0)",
+      "street tendrils red 54.1% of 2210 px"
+    ],
+    "fringe": {
+      "n": 2210,
+      "red": 0.5407239819004525
+    }
+  },
+  {
+    "set": "orient",
+    "turn": 1,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 114,
+        "rgb": [
+          163,
+          148,
+          142
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (114/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (114/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/114)",
+      "street tendrils red 46.8% of 94 px"
+    ],
+    "fringe": {
+      "n": 94,
+      "red": 0.46808510638297873
+    }
+  },
+  {
+    "set": "orient",
+    "turn": 1,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 314,
+        "rgb": [
+          160,
+          149,
+          141
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (314/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (314/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/314)",
+      "street tendrils red 50.9% of 230 px"
+    ],
+    "fringe": {
+      "n": 230,
+      "red": 0.508695652173913
+    }
+  },
+  {
+    "set": "orient",
+    "turn": 1,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 1283,
+        "rgb": [
+          165,
+          162,
+          158
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (1283/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (1283/0)",
+      "street tendrils red 55.8% of 1930 px"
+    ],
+    "fringe": {
+      "n": 1930,
+      "red": 0.5580310880829016
+    }
+  },
+  {
+    "set": "orient",
+    "turn": 2,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 119,
+        "rgb": [
+          165,
+          128,
+          112
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (119/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (119/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/119)",
+      "street tendrils red 51.0% of 49 px"
+    ],
+    "fringe": {
+      "n": 49,
+      "red": 0.5102040816326531
+    }
+  },
+  {
+    "set": "orient",
+    "turn": 2,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 326,
+        "rgb": [
+          168,
+          134,
+          115
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (326/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (326/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/326)",
+      "street tendrils red 49.3% of 150 px"
+    ],
+    "fringe": {
+      "n": 150,
+      "red": 0.49333333333333335
+    }
+  },
+  {
+    "set": "orient",
+    "turn": 2,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 1398,
+        "rgb": [
+          175,
+          136,
+          81
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (1398/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (1398/0)",
+      "street tendrils red 59.1% of 1307 px"
+    ],
+    "fringe": {
+      "n": 1307,
+      "red": 0.5906656465187452
+    }
+  },
+  {
+    "set": "orient",
+    "turn": 3,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 139,
+        "rgb": [
+          175,
+          167,
+          161
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (139/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (139/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/139)",
+      "street tendrils red 54.4% of 103 px"
+    ],
+    "fringe": {
+      "n": 103,
+      "red": 0.5436893203883495
+    }
+  },
+  {
+    "set": "orient",
+    "turn": 3,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 385,
+        "rgb": [
+          177,
+          168,
+          162
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (385/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (385/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/385)",
+      "street tendrils red 49.1% of 279 px"
+    ],
+    "fringe": {
+      "n": 279,
+      "red": 0.4910394265232975
+    }
+  },
+  {
+    "set": "orient",
+    "turn": 3,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 2495,
+        "rgb": [
+          182,
+          180,
+          176
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (2495/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (2495/0)",
+      "street tendrils red 60.3% of 1839 px"
+    ],
+    "fringe": {
+      "n": 1839,
+      "red": 0.6030451332245785
+    }
+  },
+  {
+    "set": "orthodox",
+    "turn": 0,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 133,
+        "rgb": [
+          181,
+          164,
+          135
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (133/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (133/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/133)",
+      "street tendrils red 61.3% of 106 px"
+    ],
+    "fringe": {
+      "n": 106,
+      "red": 0.6132075471698113
+    }
+  },
+  {
+    "set": "orthodox",
+    "turn": 0,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 361,
+        "rgb": [
+          180,
+          166,
+          135
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (361/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (361/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/361)",
+      "street tendrils red 60.7% of 272 px"
+    ],
+    "fringe": {
+      "n": 272,
+      "red": 0.6066176470588235
+    }
+  },
+  {
+    "set": "orthodox",
+    "turn": 0,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 2483,
+        "rgb": [
+          185,
+          171,
+          140
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (2483/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (2483/0)",
+      "street tendrils red 71.1% of 2196 px"
+    ],
+    "fringe": {
+      "n": 2196,
+      "red": 0.7112932604735883
+    }
+  },
+  {
+    "set": "orthodox",
+    "turn": 1,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 114,
+        "rgb": [
+          180,
+          159,
+          127
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (114/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (114/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/114)",
+      "street tendrils red 70.8% of 89 px"
+    ],
+    "fringe": {
+      "n": 89,
+      "red": 0.7078651685393258
+    }
+  },
+  {
+    "set": "orthodox",
+    "turn": 1,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 314,
+        "rgb": [
+          177,
+          156,
+          126
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (314/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (314/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/314)",
+      "street tendrils red 67.9% of 237 px"
+    ],
+    "fringe": {
+      "n": 237,
+      "red": 0.679324894514768
+    }
+  },
+  {
+    "set": "orthodox",
+    "turn": 1,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 1283,
+        "rgb": [
+          178,
+          164,
+          135
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (1283/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (1283/0)",
+      "street tendrils red 72.0% of 1948 px"
+    ],
+    "fringe": {
+      "n": 1948,
+      "red": 0.7197125256673511
+    }
+  },
+  {
+    "set": "orthodox",
+    "turn": 2,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 119,
+        "rgb": [
+          194,
+          166,
+          132
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (119/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (119/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/119)",
+      "street tendrils red 60.9% of 69 px"
+    ],
+    "fringe": {
+      "n": 69,
+      "red": 0.6086956521739131
+    }
+  },
+  {
+    "set": "orthodox",
+    "turn": 2,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 326,
+        "rgb": [
+          197,
+          166,
+          132
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (326/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (326/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/326)",
+      "street tendrils red 63.2% of 201 px"
+    ],
+    "fringe": {
+      "n": 201,
+      "red": 0.6318407960199005
+    }
+  },
+  {
+    "set": "orthodox",
+    "turn": 2,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 1398,
+        "rgb": [
+          202,
+          187,
+          154
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (1398/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (1398/0)",
+      "street tendrils red 72.1% of 1836 px"
+    ],
+    "fringe": {
+      "n": 1836,
+      "red": 0.7211328976034859
+    }
+  },
+  {
+    "set": "orthodox",
+    "turn": 3,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 139,
+        "rgb": [
+          196,
+          177,
+          144
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (139/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (139/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/139)",
+      "street tendrils red 59.3% of 113 px"
+    ],
+    "fringe": {
+      "n": 113,
+      "red": 0.5929203539823009
+    }
+  },
+  {
+    "set": "orthodox",
+    "turn": 3,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 385,
+        "rgb": [
+          197,
+          179,
+          145
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (385/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (385/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/385)",
+      "street tendrils red 66.5% of 275 px"
+    ],
+    "fringe": {
+      "n": 275,
+      "red": 0.6654545454545454
+    }
+  },
+  {
+    "set": "orthodox",
+    "turn": 3,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 2495,
+        "rgb": [
+          199,
+          184,
+          150
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (2495/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (2495/0)",
+      "street tendrils red 73.2% of 1898 px"
+    ],
+    "fringe": {
+      "n": 1898,
+      "red": 0.731822971548999
+    }
+  },
+  {
+    "set": "suburb",
+    "turn": 0,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 133,
+        "rgb": [
+          190,
+          182,
+          163
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (133/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (133/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/133)",
+      "street tendrils red 45.5% of 110 px"
+    ],
+    "fringe": {
+      "n": 110,
+      "red": 0.45454545454545453
+    }
+  },
+  {
+    "set": "suburb",
+    "turn": 0,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 361,
+        "rgb": [
+          190,
+          178,
+          161
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (361/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (361/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/361)",
+      "street tendrils red 45.7% of 282 px"
+    ],
+    "fringe": {
+      "n": 282,
+      "red": 0.4574468085106383
+    }
+  },
+  {
+    "set": "suburb",
+    "turn": 0,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 2483,
+        "rgb": [
+          198,
+          190,
+          175
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (2483/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (2483/0)",
+      "street tendrils red 58.6% of 2251 px"
+    ],
+    "fringe": {
+      "n": 2251,
+      "red": 0.5864060417592182
+    }
+  },
+  {
+    "set": "suburb",
+    "turn": 1,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 114,
+        "rgb": [
+          186,
+          173,
+          153
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (114/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (114/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/114)",
+      "street tendrils red 52.7% of 91 px"
+    ],
+    "fringe": {
+      "n": 91,
+      "red": 0.5274725274725275
+    }
+  },
+  {
+    "set": "suburb",
+    "turn": 1,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 314,
+        "rgb": [
+          185,
+          173,
+          153
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (314/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (314/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/314)",
+      "street tendrils red 52.5% of 240 px"
+    ],
+    "fringe": {
+      "n": 240,
+      "red": 0.525
+    }
+  },
+  {
+    "set": "suburb",
+    "turn": 1,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 1283,
+        "rgb": [
+          186,
+          178,
+          161
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (1283/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (1283/0)",
+      "street tendrils red 60.6% of 1956 px"
+    ],
+    "fringe": {
+      "n": 1956,
+      "red": 0.6063394683026585
+    }
+  },
+  {
+    "set": "suburb",
+    "turn": 2,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 119,
+        "rgb": [
+          206,
+          184,
+          161
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (119/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (119/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/119)",
+      "street tendrils red 45.8% of 59 px"
+    ],
+    "fringe": {
+      "n": 59,
+      "red": 0.4576271186440678
+    }
+  },
+  {
+    "set": "suburb",
+    "turn": 2,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 326,
+        "rgb": [
+          206,
+          183,
+          159
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (326/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (326/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/326)",
+      "street tendrils red 53.9% of 178 px"
+    ],
+    "fringe": {
+      "n": 178,
+      "red": 0.5393258426966292
+    }
+  },
+  {
+    "set": "suburb",
+    "turn": 2,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 1398,
+        "rgb": [
+          210,
+          206,
+          186
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (1398/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (1398/0)",
+      "street tendrils red 57.0% of 1571 px"
+    ],
+    "fringe": {
+      "n": 1571,
+      "red": 0.5697008274984087
+    }
+  },
+  {
+    "set": "suburb",
+    "turn": 3,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 139,
+        "rgb": [
+          209,
+          197,
+          175
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (139/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (139/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/139)",
+      "street tendrils red 46.9% of 113 px"
+    ],
+    "fringe": {
+      "n": 113,
+      "red": 0.4690265486725664
+    }
+  },
+  {
+    "set": "suburb",
+    "turn": 3,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 385,
+        "rgb": [
+          210,
+          199,
+          181
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (385/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (385/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/385)",
+      "street tendrils red 56.7% of 282 px"
+    ],
+    "fringe": {
+      "n": 282,
+      "red": 0.5673758865248227
+    }
+  },
+  {
+    "set": "suburb",
+    "turn": 3,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 2495,
+        "rgb": [
+          212,
+          204,
+          187
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (2495/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (2495/0)",
+      "street tendrils red 63.1% of 1962 px"
+    ],
+    "fringe": {
+      "n": 1962,
+      "red": 0.6309887869520897
+    }
+  },
+  {
+    "set": "terraces",
+    "turn": 0,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 133,
+        "rgb": [
+          197,
+          185,
+          172
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (133/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (133/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/133)",
+      "street tendrils red 43.2% of 111 px"
+    ],
+    "fringe": {
+      "n": 111,
+      "red": 0.43243243243243246
+    }
+  },
+  {
+    "set": "terraces",
+    "turn": 0,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 361,
+        "rgb": [
+          190,
+          180,
+          168
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (361/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (361/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/361)",
+      "street tendrils red 43.8% of 281 px"
+    ],
+    "fringe": {
+      "n": 281,
+      "red": 0.4377224199288256
+    }
+  },
+  {
+    "set": "terraces",
+    "turn": 0,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 2483,
+        "rgb": [
+          198,
+          191,
+          180
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (2483/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (2483/0)",
+      "street tendrils red 56.8% of 2259 px"
+    ],
+    "fringe": {
+      "n": 2259,
+      "red": 0.567950420540062
+    }
+  },
+  {
+    "set": "terraces",
+    "turn": 1,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 114,
+        "rgb": [
+          174,
+          159,
+          148
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (114/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (114/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/114)",
+      "street tendrils red 54.9% of 82 px"
+    ],
+    "fringe": {
+      "n": 82,
+      "red": 0.5487804878048781
+    }
+  },
+  {
+    "set": "terraces",
+    "turn": 1,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 314,
+        "rgb": [
+          172,
+          160,
+          146
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (314/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (314/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/314)",
+      "street tendrils red 51.6% of 217 px"
+    ],
+    "fringe": {
+      "n": 217,
+      "red": 0.5161290322580645
+    }
+  },
+  {
+    "set": "terraces",
+    "turn": 1,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 1283,
+        "rgb": [
+          186,
+          178,
+          166
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (1283/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (1283/0)",
+      "street tendrils red 60.2% of 1836 px"
+    ],
+    "fringe": {
+      "n": 1836,
+      "red": 0.6018518518518519
+    }
+  },
+  {
+    "set": "terraces",
+    "turn": 2,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 119,
+        "rgb": [
+          185,
+          167,
+          152
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (119/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (119/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/119)",
+      "street tendrils red 44.6% of 74 px"
+    ],
+    "fringe": {
+      "n": 74,
+      "red": 0.44594594594594594
+    }
+  },
+  {
+    "set": "terraces",
+    "turn": 2,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 326,
+        "rgb": [
+          190,
+          179,
+          164
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (326/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (326/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/326)",
+      "street tendrils red 51.6% of 215 px"
+    ],
+    "fringe": {
+      "n": 215,
+      "red": 0.5162790697674419
+    }
+  },
+  {
+    "set": "terraces",
+    "turn": 2,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 1398,
+        "rgb": [
+          213,
+          206,
+          194
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (1398/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (1398/0)",
+      "street tendrils red 56.8% of 1988 px"
+    ],
+    "fringe": {
+      "n": 1988,
+      "red": 0.567907444668008
+    }
+  },
+  {
+    "set": "terraces",
+    "turn": 3,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 139,
+        "rgb": [
+          209,
+          192,
+          181
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (139/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (139/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/139)",
+      "street tendrils red 45.2% of 115 px"
+    ],
+    "fringe": {
+      "n": 115,
+      "red": 0.45217391304347826
+    }
+  },
+  {
+    "set": "terraces",
+    "turn": 3,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 385,
+        "rgb": [
+          208,
+          198,
+          186
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (385/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (385/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/385)",
+      "street tendrils red 55.9% of 279 px"
+    ],
+    "fringe": {
+      "n": 279,
+      "red": 0.5591397849462365
+    }
+  },
+  {
+    "set": "terraces",
+    "turn": 3,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 2495,
+        "rgb": [
+          211,
+          203,
+          192
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (2495/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (2495/0)",
+      "street tendrils red 61.8% of 1966 px"
+    ],
+    "fringe": {
+      "n": 1966,
+      "red": 0.6180061037639878
+    }
+  },
+  {
+    "set": "wetland",
+    "turn": 0,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 133,
+        "rgb": [
+          187,
+          177,
+          159
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (133/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (133/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/133)",
+      "street tendrils red 47.3% of 112 px"
+    ],
+    "fringe": {
+      "n": 112,
+      "red": 0.4732142857142857
+    }
+  },
+  {
+    "set": "wetland",
+    "turn": 0,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 361,
+        "rgb": [
+          190,
+          177,
+          159
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (361/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (361/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/361)",
+      "street tendrils red 47.5% of 284 px"
+    ],
+    "fringe": {
+      "n": 284,
+      "red": 0.4753521126760563
+    }
+  },
+  {
+    "set": "wetland",
+    "turn": 0,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 2483,
+        "rgb": [
+          195,
+          185,
+          168
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (2483/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (2483/0)",
+      "street tendrils red 60.0% of 2210 px"
+    ],
+    "fringe": {
+      "n": 2210,
+      "red": 0.5995475113122172
+    }
+  },
+  {
+    "set": "wetland",
+    "turn": 1,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 114,
+        "rgb": [
+          188,
+          168,
+          148
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (114/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (114/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/114)",
+      "street tendrils red 57.0% of 93 px"
+    ],
+    "fringe": {
+      "n": 93,
+      "red": 0.5698924731182796
+    }
+  },
+  {
+    "set": "wetland",
+    "turn": 1,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 314,
+        "rgb": [
+          186,
+          171,
+          151
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (314/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (314/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/314)",
+      "street tendrils red 56.4% of 243 px"
+    ],
+    "fringe": {
+      "n": 243,
+      "red": 0.5637860082304527
+    }
+  },
+  {
+    "set": "wetland",
+    "turn": 1,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 1283,
+        "rgb": [
+          187,
+          177,
+          160
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (1283/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (1283/0)",
+      "street tendrils red 62.2% of 1987 px"
+    ],
+    "fringe": {
+      "n": 1987,
+      "red": 0.6220432813286362
+    }
+  },
+  {
+    "set": "wetland",
+    "turn": 2,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 119,
+        "rgb": [
+          192,
+          167,
+          148
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (119/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (119/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/119)",
+      "street tendrils red 50.0% of 78 px"
+    ],
+    "fringe": {
+      "n": 78,
+      "red": 0.5
+    }
+  },
+  {
+    "set": "wetland",
+    "turn": 2,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 326,
+        "rgb": [
+          201,
+          178,
+          156
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (326/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (326/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/326)",
+      "street tendrils red 57.0% of 235 px"
+    ],
+    "fringe": {
+      "n": 235,
+      "red": 0.5702127659574469
+    }
+  },
+  {
+    "set": "wetland",
+    "turn": 2,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 1398,
+        "rgb": [
+          214,
+          203,
+          186
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (1398/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (1398/0)",
+      "street tendrils red 62.5% of 1933 px"
+    ],
+    "fringe": {
+      "n": 1933,
+      "red": 0.6254526642524573
+    }
+  },
+  {
+    "set": "wetland",
+    "turn": 3,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 139,
+        "rgb": [
+          202,
+          183,
+          158
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (139/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (139/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/139)",
+      "street tendrils red 54.1% of 109 px"
+    ],
+    "fringe": {
+      "n": 109,
+      "red": 0.5412844036697247
+    }
+  },
+  {
+    "set": "wetland",
+    "turn": 3,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 385,
+        "rgb": [
+          206,
+          186,
+          168
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (385/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (385/0)",
+      "wall/roof n/a (0/0)",
+      "wall/bare n/a (0/385)",
+      "street tendrils red 59.6% of 277 px"
+    ],
+    "fringe": {
+      "n": 277,
+      "red": 0.5956678700361011
+    }
+  },
+  {
+    "set": "wetland",
+    "turn": 3,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 2495,
+        "rgb": [
+          209,
+          198,
+          181
+        ]
+      },
+      "street": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "wall": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      },
+      "roof": {
+        "n": 0,
+        "rgb": [
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street n/a (2495/0)",
+      "street/roof n/a (0/0)",
+      "bare/roof n/a (2495/0)",
+      "street tendrils red 65.4% of 1898 px"
+    ],
+    "fringe": {
+      "n": 1898,
+      "red": 0.6543730242360379
+    }
+  }
+]

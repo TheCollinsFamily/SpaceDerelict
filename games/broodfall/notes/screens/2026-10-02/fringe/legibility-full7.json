@@ -1,0 +1,5942 @@
+[
+  {
+    "set": "deephive",
+    "turn": 0,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 25,
+        "rgb": [
+          160,
+          132,
+          87
+        ]
+      },
+      "street": {
+        "n": 267,
+        "rgb": [
+          174,
+          165,
+          35
+        ]
+      },
+      "wall": {
+        "n": 152,
+        "rgb": [
+          162,
+          152,
+          31
+        ]
+      },
+      "roof": {
+        "n": 1794,
+        "rgb": [
+          59,
+          29,
+          31
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 39",
+      "street/roof 81",
+      "bare/roof 49",
+      "wall/roof 76",
+      "wall/bare 34"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "deephive",
+    "turn": 0,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 65,
+        "rgb": [
+          160,
+          127,
+          88
+        ]
+      },
+      "street": {
+        "n": 712,
+        "rgb": [
+          179,
+          172,
+          37
+        ]
+      },
+      "wall": {
+        "n": 414,
+        "rgb": [
+          140,
+          129,
+          35
+        ]
+      },
+      "roof": {
+        "n": 4981,
+        "rgb": [
+          62,
+          30,
+          33
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 45",
+      "street/roof 84",
+      "bare/roof 46",
+      "wall/roof 62",
+      "wall/bare 27"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "deephive",
+    "turn": 0,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 141,
+        "rgb": [
+          134,
+          122,
+          87
+        ]
+      },
+      "street": {
+        "n": 4545,
+        "rgb": [
+          180,
+          173,
+          34
+        ]
+      },
+      "wall": {
+        "n": 1461,
+        "rgb": [
+          72,
+          50,
+          35
+        ]
+      },
+      "roof": {
+        "n": 10481,
+        "rgb": [
+          61,
+          30,
+          32
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 49",
+      "street/roof 85",
+      "bare/roof 42"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "deephive",
+    "turn": 1,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 68,
+        "rgb": [
+          158,
+          136,
+          95
+        ]
+      },
+      "street": {
+        "n": 248,
+        "rgb": [
+          179,
+          171,
+          39
+        ]
+      },
+      "wall": {
+        "n": 160,
+        "rgb": [
+          168,
+          161,
+          31
+        ]
+      },
+      "roof": {
+        "n": 1736,
+        "rgb": [
+          64,
+          31,
+          33
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 42",
+      "street/roof 83",
+      "bare/roof 48",
+      "wall/roof 79",
+      "wall/bare 40"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "deephive",
+    "turn": 1,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 161,
+        "rgb": [
+          157,
+          130,
+          90
+        ]
+      },
+      "street": {
+        "n": 708,
+        "rgb": [
+          168,
+          160,
+          38
+        ]
+      },
+      "wall": {
+        "n": 447,
+        "rgb": [
+          142,
+          131,
+          36
+        ]
+      },
+      "roof": {
+        "n": 4773,
+        "rgb": [
+          59,
+          29,
+          31
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 39",
+      "street/roof 78",
+      "bare/roof 47",
+      "wall/roof 63",
+      "wall/bare 27"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "deephive",
+    "turn": 1,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 262,
+        "rgb": [
+          173,
+          161,
+          117
+        ]
+      },
+      "street": {
+        "n": 3392,
+        "rgb": [
+          182,
+          175,
+          39
+        ]
+      },
+      "wall": {
+        "n": 730,
+        "rgb": [
+          80,
+          55,
+          36
+        ]
+      },
+      "roof": {
+        "n": 5421,
+        "rgb": [
+          64,
+          32,
+          33
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 42",
+      "street/roof 84",
+      "bare/roof 56"
+    ],
+    "fringe": {
+      "n": 12,
+      "red": 0
+    }
+  },
+  {
+    "set": "deephive",
+    "turn": 2,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 66,
+        "rgb": [
+          155,
+          126,
+          86
+        ]
+      },
+      "street": {
+        "n": 186,
+        "rgb": [
+          173,
+          161,
+          42
+        ]
+      },
+      "wall": {
+        "n": 135,
+        "rgb": [
+          166,
+          159,
+          30
+        ]
+      },
+      "roof": {
+        "n": 1578,
+        "rgb": [
+          63,
+          30,
+          32
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 38",
+      "street/roof 77",
+      "bare/roof 45",
+      "wall/roof 79",
+      "wall/bare 41"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "deephive",
+    "turn": 2,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 169,
+        "rgb": [
+          156,
+          122,
+          80
+        ]
+      },
+      "street": {
+        "n": 516,
+        "rgb": [
+          169,
+          156,
+          40
+        ]
+      },
+      "wall": {
+        "n": 365,
+        "rgb": [
+          143,
+          131,
+          35
+        ]
+      },
+      "roof": {
+        "n": 4366,
+        "rgb": [
+          58,
+          28,
+          30
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 36",
+      "street/roof 76",
+      "bare/roof 46",
+      "wall/roof 64",
+      "wall/bare 26"
+    ],
+    "fringe": {
+      "n": 5,
+      "red": 0
+    }
+  },
+  {
+    "set": "deephive",
+    "turn": 2,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 266,
+        "rgb": [
+          162,
+          146,
+          103
+        ]
+      },
+      "street": {
+        "n": 2060,
+        "rgb": [
+          187,
+          168,
+          50
+        ]
+      },
+      "wall": {
+        "n": 883,
+        "rgb": [
+          45,
+          27,
+          20
+        ]
+      },
+      "roof": {
+        "n": 6135,
+        "rgb": [
+          61,
+          30,
+          31
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 36",
+      "street/roof 78",
+      "bare/roof 52",
+      "street tendrils red 0.3% of 303 px"
+    ],
+    "fringe": {
+      "n": 303,
+      "red": 0.0033003300330033004
+    }
+  },
+  {
+    "set": "deephive",
+    "turn": 3,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 21,
+        "rgb": [
+          164,
+          136,
+          89
+        ]
+      },
+      "street": {
+        "n": 197,
+        "rgb": [
+          167,
+          158,
+          37
+        ]
+      },
+      "wall": {
+        "n": 136,
+        "rgb": [
+          161,
+          152,
+          31
+        ]
+      },
+      "roof": {
+        "n": 1663,
+        "rgb": [
+          60,
+          29,
+          31
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 34",
+      "street/roof 77",
+      "bare/roof 50",
+      "wall/roof 75",
+      "wall/bare 33"
+    ],
+    "fringe": {
+      "n": 1,
+      "red": 0
+    }
+  },
+  {
+    "set": "deephive",
+    "turn": 3,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 76,
+        "rgb": [
+          165,
+          142,
+          97
+        ]
+      },
+      "street": {
+        "n": 553,
+        "rgb": [
+          171,
+          162,
+          36
+        ]
+      },
+      "wall": {
+        "n": 380,
+        "rgb": [
+          138,
+          125,
+          31
+        ]
+      },
+      "roof": {
+        "n": 4633,
+        "rgb": [
+          58,
+          28,
+          31
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 37",
+      "street/roof 80",
+      "bare/roof 52",
+      "wall/roof 62",
+      "wall/bare 25"
+    ],
+    "fringe": {
+      "n": 14,
+      "red": 0
+    }
+  },
+  {
+    "set": "deephive",
+    "turn": 3,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 195,
+        "rgb": [
+          163,
+          144,
+          100
+        ]
+      },
+      "street": {
+        "n": 3027,
+        "rgb": [
+          188,
+          181,
+          36
+        ]
+      },
+      "wall": {
+        "n": 793,
+        "rgb": [
+          67,
+          42,
+          30
+        ]
+      },
+      "roof": {
+        "n": 7862,
+        "rgb": [
+          61,
+          30,
+          32
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 45",
+      "street/roof 89",
+      "bare/roof 52",
+      "street tendrils red 1.5% of 137 px"
+    ],
+    "fringe": {
+      "n": 137,
+      "red": 0.014598540145985401
+    }
+  },
+  {
+    "set": "farmland",
+    "turn": 0,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 25,
+        "rgb": [
+          146,
+          118,
+          81
+        ]
+      },
+      "street": {
+        "n": 267,
+        "rgb": [
+          172,
+          163,
+          35
+        ]
+      },
+      "wall": {
+        "n": 152,
+        "rgb": [
+          161,
+          152,
+          30
+        ]
+      },
+      "roof": {
+        "n": 1794,
+        "rgb": [
+          59,
+          29,
+          30
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 43",
+      "street/roof 80",
+      "bare/roof 42",
+      "wall/roof 75",
+      "wall/bare 40"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "farmland",
+    "turn": 0,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 65,
+        "rgb": [
+          142,
+          109,
+          82
+        ]
+      },
+      "street": {
+        "n": 712,
+        "rgb": [
+          180,
+          171,
+          37
+        ]
+      },
+      "wall": {
+        "n": 414,
+        "rgb": [
+          136,
+          126,
+          31
+        ]
+      },
+      "roof": {
+        "n": 4981,
+        "rgb": [
+          62,
+          30,
+          32
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 53",
+      "street/roof 83",
+      "bare/roof 36",
+      "wall/roof 61",
+      "wall/bare 34"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "farmland",
+    "turn": 0,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 141,
+        "rgb": [
+          123,
+          105,
+          80
+        ]
+      },
+      "street": {
+        "n": 4545,
+        "rgb": [
+          177,
+          169,
+          33
+        ]
+      },
+      "wall": {
+        "n": 1461,
+        "rgb": [
+          52,
+          42,
+          28
+        ]
+      },
+      "roof": {
+        "n": 10481,
+        "rgb": [
+          60,
+          30,
+          31
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 55",
+      "street/roof 83",
+      "bare/roof 34"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "farmland",
+    "turn": 1,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 68,
+        "rgb": [
+          160,
+          128,
+          94
+        ]
+      },
+      "street": {
+        "n": 248,
+        "rgb": [
+          177,
+          168,
+          38
+        ]
+      },
+      "wall": {
+        "n": 160,
+        "rgb": [
+          168,
+          159,
+          30
+        ]
+      },
+      "roof": {
+        "n": 1736,
+        "rgb": [
+          62,
+          31,
+          32
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 45",
+      "street/roof 81",
+      "bare/roof 44",
+      "wall/roof 78",
+      "wall/bare 44"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "farmland",
+    "turn": 1,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 161,
+        "rgb": [
+          160,
+          126,
+          92
+        ]
+      },
+      "street": {
+        "n": 708,
+        "rgb": [
+          170,
+          162,
+          38
+        ]
+      },
+      "wall": {
+        "n": 447,
+        "rgb": [
+          137,
+          128,
+          32
+        ]
+      },
+      "roof": {
+        "n": 4773,
+        "rgb": [
+          61,
+          30,
+          32
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 43",
+      "street/roof 79",
+      "bare/roof 44",
+      "wall/roof 62",
+      "wall/bare 31"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "farmland",
+    "turn": 1,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 262,
+        "rgb": [
+          158,
+          140,
+          110
+        ]
+      },
+      "street": {
+        "n": 3392,
+        "rgb": [
+          173,
+          167,
+          37
+        ]
+      },
+      "wall": {
+        "n": 730,
+        "rgb": [
+          59,
+          51,
+          33
+        ]
+      },
+      "roof": {
+        "n": 5421,
+        "rgb": [
+          61,
+          31,
+          31
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 47",
+      "street/roof 80",
+      "bare/roof 47"
+    ],
+    "fringe": {
+      "n": 7,
+      "red": 0
+    }
+  },
+  {
+    "set": "farmland",
+    "turn": 2,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 66,
+        "rgb": [
+          159,
+          124,
+          90
+        ]
+      },
+      "street": {
+        "n": 186,
+        "rgb": [
+          177,
+          169,
+          38
+        ]
+      },
+      "wall": {
+        "n": 135,
+        "rgb": [
+          165,
+          157,
+          30
+        ]
+      },
+      "roof": {
+        "n": 1578,
+        "rgb": [
+          63,
+          31,
+          32
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 46",
+      "street/roof 81",
+      "bare/roof 43",
+      "wall/roof 77",
+      "wall/bare 43"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "farmland",
+    "turn": 2,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 169,
+        "rgb": [
+          158,
+          129,
+          95
+        ]
+      },
+      "street": {
+        "n": 516,
+        "rgb": [
+          167,
+          156,
+          37
+        ]
+      },
+      "wall": {
+        "n": 365,
+        "rgb": [
+          140,
+          130,
+          34
+        ]
+      },
+      "roof": {
+        "n": 4366,
+        "rgb": [
+          58,
+          28,
+          30
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 40",
+      "street/roof 77",
+      "bare/roof 46",
+      "wall/roof 64",
+      "wall/bare 31"
+    ],
+    "fringe": {
+      "n": 5,
+      "red": 0
+    }
+  },
+  {
+    "set": "farmland",
+    "turn": 2,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 266,
+        "rgb": [
+          141,
+          123,
+          94
+        ]
+      },
+      "street": {
+        "n": 2060,
+        "rgb": [
+          192,
+          180,
+          38
+        ]
+      },
+      "wall": {
+        "n": 883,
+        "rgb": [
+          44,
+          36,
+          25
+        ]
+      },
+      "roof": {
+        "n": 6135,
+        "rgb": [
+          60,
+          30,
+          31
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 54",
+      "street/roof 87",
+      "bare/roof 41",
+      "street tendrils red 1.7% of 287 px"
+    ],
+    "fringe": {
+      "n": 287,
+      "red": 0.017421602787456445
+    }
+  },
+  {
+    "set": "farmland",
+    "turn": 3,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 21,
+        "rgb": [
+          144,
+          118,
+          88
+        ]
+      },
+      "street": {
+        "n": 197,
+        "rgb": [
+          164,
+          155,
+          36
+        ]
+      },
+      "wall": {
+        "n": 136,
+        "rgb": [
+          161,
+          152,
+          30
+        ]
+      },
+      "roof": {
+        "n": 1663,
+        "rgb": [
+          58,
+          28,
+          30
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 43",
+      "street/roof 76",
+      "bare/roof 41",
+      "wall/roof 76",
+      "wall/bare 43"
+    ],
+    "fringe": {
+      "n": 2,
+      "red": 0
+    }
+  },
+  {
+    "set": "farmland",
+    "turn": 3,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 76,
+        "rgb": [
+          148,
+          121,
+          86
+        ]
+      },
+      "street": {
+        "n": 553,
+        "rgb": [
+          175,
+          166,
+          36
+        ]
+      },
+      "wall": {
+        "n": 380,
+        "rgb": [
+          136,
+          126,
+          32
+        ]
+      },
+      "roof": {
+        "n": 4633,
+        "rgb": [
+          60,
+          29,
+          31
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 45",
+      "street/roof 82",
+      "bare/roof 43",
+      "wall/roof 62",
+      "wall/bare 29"
+    ],
+    "fringe": {
+      "n": 12,
+      "red": 0.08333333333333333
+    }
+  },
+  {
+    "set": "farmland",
+    "turn": 3,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 195,
+        "rgb": [
+          147,
+          131,
+          102
+        ]
+      },
+      "street": {
+        "n": 3027,
+        "rgb": [
+          176,
+          168,
+          34
+        ]
+      },
+      "wall": {
+        "n": 793,
+        "rgb": [
+          63,
+          55,
+          36
+        ]
+      },
+      "roof": {
+        "n": 7862,
+        "rgb": [
+          57,
+          28,
+          30
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 49",
+      "street/roof 83",
+      "bare/roof 45",
+      "street tendrils red 7.8% of 129 px"
+    ],
+    "fringe": {
+      "n": 129,
+      "red": 0.07751937984496124
+    }
+  },
+  {
+    "set": "industrial",
+    "turn": 0,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 25,
+        "rgb": [
+          150,
+          138,
+          126
+        ]
+      },
+      "street": {
+        "n": 267,
+        "rgb": [
+          168,
+          161,
+          36
+        ]
+      },
+      "wall": {
+        "n": 152,
+        "rgb": [
+          158,
+          150,
+          30
+        ]
+      },
+      "roof": {
+        "n": 1794,
+        "rgb": [
+          58,
+          28,
+          30
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 55",
+      "street/roof 79",
+      "bare/roof 46",
+      "wall/roof 75",
+      "wall/bare 52"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "industrial",
+    "turn": 0,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 65,
+        "rgb": [
+          144,
+          123,
+          112
+        ]
+      },
+      "street": {
+        "n": 712,
+        "rgb": [
+          180,
+          172,
+          38
+        ]
+      },
+      "wall": {
+        "n": 414,
+        "rgb": [
+          132,
+          122,
+          31
+        ]
+      },
+      "roof": {
+        "n": 4981,
+        "rgb": [
+          62,
+          30,
+          33
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 60",
+      "street/roof 84",
+      "bare/roof 39",
+      "wall/roof 60",
+      "wall/bare 41"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "industrial",
+    "turn": 0,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 141,
+        "rgb": [
+          123,
+          117,
+          112
+        ]
+      },
+      "street": {
+        "n": 4545,
+        "rgb": [
+          186,
+          179,
+          36
+        ]
+      },
+      "wall": {
+        "n": 1461,
+        "rgb": [
+          39,
+          31,
+          27
+        ]
+      },
+      "roof": {
+        "n": 10481,
+        "rgb": [
+          63,
+          31,
+          33
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 69",
+      "street/roof 87",
+      "bare/roof 36"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "industrial",
+    "turn": 1,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 68,
+        "rgb": [
+          156,
+          141,
+          129
+        ]
+      },
+      "street": {
+        "n": 248,
+        "rgb": [
+          174,
+          167,
+          39
+        ]
+      },
+      "wall": {
+        "n": 160,
+        "rgb": [
+          166,
+          157,
+          29
+        ]
+      },
+      "roof": {
+        "n": 1736,
+        "rgb": [
+          63,
+          31,
+          33
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 56",
+      "street/roof 81",
+      "bare/roof 45",
+      "wall/roof 78",
+      "wall/bare 55"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "industrial",
+    "turn": 1,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 161,
+        "rgb": [
+          151,
+          141,
+          128
+        ]
+      },
+      "street": {
+        "n": 708,
+        "rgb": [
+          168,
+          160,
+          38
+        ]
+      },
+      "wall": {
+        "n": 447,
+        "rgb": [
+          131,
+          122,
+          30
+        ]
+      },
+      "roof": {
+        "n": 4773,
+        "rgb": [
+          58,
+          28,
+          31
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 53",
+      "street/roof 79",
+      "bare/roof 47",
+      "wall/roof 61",
+      "wall/bare 42"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "industrial",
+    "turn": 1,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 262,
+        "rgb": [
+          158,
+          155,
+          151
+        ]
+      },
+      "street": {
+        "n": 3392,
+        "rgb": [
+          184,
+          178,
+          40
+        ]
+      },
+      "wall": {
+        "n": 730,
+        "rgb": [
+          54,
+          37,
+          33
+        ]
+      },
+      "roof": {
+        "n": 5421,
+        "rgb": [
+          65,
+          33,
+          35
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 65",
+      "street/roof 85",
+      "bare/roof 49"
+    ],
+    "fringe": {
+      "n": 5,
+      "red": 0
+    }
+  },
+  {
+    "set": "industrial",
+    "turn": 2,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 66,
+        "rgb": [
+          153,
+          134,
+          122
+        ]
+      },
+      "street": {
+        "n": 186,
+        "rgb": [
+          159,
+          153,
+          42
+        ]
+      },
+      "wall": {
+        "n": 135,
+        "rgb": [
+          161,
+          155,
+          29
+        ]
+      },
+      "roof": {
+        "n": 1578,
+        "rgb": [
+          59,
+          29,
+          31
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 49",
+      "street/roof 74",
+      "bare/roof 44",
+      "wall/roof 78",
+      "wall/bare 54"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "industrial",
+    "turn": 2,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 169,
+        "rgb": [
+          148,
+          129,
+          122
+        ]
+      },
+      "street": {
+        "n": 516,
+        "rgb": [
+          171,
+          164,
+          43
+        ]
+      },
+      "wall": {
+        "n": 365,
+        "rgb": [
+          132,
+          123,
+          31
+        ]
+      },
+      "roof": {
+        "n": 4366,
+        "rgb": [
+          61,
+          30,
+          32
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 57",
+      "street/roof 79",
+      "bare/roof 41",
+      "wall/roof 60",
+      "wall/bare 44"
+    ],
+    "fringe": {
+      "n": 6,
+      "red": 0
+    }
+  },
+  {
+    "set": "industrial",
+    "turn": 2,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 266,
+        "rgb": [
+          145,
+          142,
+          140
+        ]
+      },
+      "street": {
+        "n": 2060,
+        "rgb": [
+          179,
+          173,
+          48
+        ]
+      },
+      "wall": {
+        "n": 883,
+        "rgb": [
+          39,
+          26,
+          23
+        ]
+      },
+      "roof": {
+        "n": 6135,
+        "rgb": [
+          59,
+          29,
+          31
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 62",
+      "street/roof 82",
+      "bare/roof 47",
+      "street tendrils red 0.0% of 320 px"
+    ],
+    "fringe": {
+      "n": 320,
+      "red": 0
+    }
+  },
+  {
+    "set": "industrial",
+    "turn": 3,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 21,
+        "rgb": [
+          151,
+          138,
+          126
+        ]
+      },
+      "street": {
+        "n": 197,
+        "rgb": [
+          164,
+          156,
+          37
+        ]
+      },
+      "wall": {
+        "n": 136,
+        "rgb": [
+          160,
+          152,
+          30
+        ]
+      },
+      "roof": {
+        "n": 1663,
+        "rgb": [
+          57,
+          28,
+          30
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 52",
+      "street/roof 77",
+      "bare/roof 46",
+      "wall/roof 76",
+      "wall/bare 53"
+    ],
+    "fringe": {
+      "n": 4,
+      "red": 0
+    }
+  },
+  {
+    "set": "industrial",
+    "turn": 3,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 76,
+        "rgb": [
+          157,
+          137,
+          128
+        ]
+      },
+      "street": {
+        "n": 553,
+        "rgb": [
+          178,
+          171,
+          38
+        ]
+      },
+      "wall": {
+        "n": 380,
+        "rgb": [
+          132,
+          122,
+          30
+        ]
+      },
+      "roof": {
+        "n": 4633,
+        "rgb": [
+          62,
+          30,
+          33
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 60",
+      "street/roof 84",
+      "bare/roof 44",
+      "wall/roof 60",
+      "wall/bare 43"
+    ],
+    "fringe": {
+      "n": 19,
+      "red": 0
+    }
+  },
+  {
+    "set": "industrial",
+    "turn": 3,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 195,
+        "rgb": [
+          149,
+          146,
+          142
+        ]
+      },
+      "street": {
+        "n": 3027,
+        "rgb": [
+          176,
+          169,
+          37
+        ]
+      },
+      "wall": {
+        "n": 793,
+        "rgb": [
+          55,
+          40,
+          34
+        ]
+      },
+      "roof": {
+        "n": 7862,
+        "rgb": [
+          57,
+          28,
+          30
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 62",
+      "street/roof 83",
+      "bare/roof 49",
+      "street tendrils red 0.0% of 154 px"
+    ],
+    "fringe": {
+      "n": 154,
+      "red": 0
+    }
+  },
+  {
+    "set": "megacity",
+    "turn": 0,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 25,
+        "rgb": [
+          128,
+          109,
+          103
+        ]
+      },
+      "street": {
+        "n": 267,
+        "rgb": [
+          172,
+          164,
+          35
+        ]
+      },
+      "wall": {
+        "n": 152,
+        "rgb": [
+          158,
+          149,
+          29
+        ]
+      },
+      "roof": {
+        "n": 1794,
+        "rgb": [
+          58,
+          29,
+          31
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 62",
+      "street/roof 81",
+      "bare/roof 34",
+      "wall/roof 75",
+      "wall/bare 56"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "megacity",
+    "turn": 0,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 65,
+        "rgb": [
+          127,
+          106,
+          95
+        ]
+      },
+      "street": {
+        "n": 712,
+        "rgb": [
+          178,
+          171,
+          37
+        ]
+      },
+      "wall": {
+        "n": 414,
+        "rgb": [
+          127,
+          119,
+          30
+        ]
+      },
+      "roof": {
+        "n": 4981,
+        "rgb": [
+          61,
+          30,
+          33
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 62",
+      "street/roof 84",
+      "bare/roof 32",
+      "wall/roof 59",
+      "wall/bare 40"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "megacity",
+    "turn": 0,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 141,
+        "rgb": [
+          106,
+          100,
+          95
+        ]
+      },
+      "street": {
+        "n": 4545,
+        "rgb": [
+          176,
+          170,
+          34
+        ]
+      },
+      "wall": {
+        "n": 1461,
+        "rgb": [
+          36,
+          24,
+          24
+        ]
+      },
+      "roof": {
+        "n": 10481,
+        "rgb": [
+          60,
+          29,
+          32
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 67",
+      "street/roof 84",
+      "bare/roof 31"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "megacity",
+    "turn": 1,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 68,
+        "rgb": [
+          93,
+          75,
+          67
+        ]
+      },
+      "street": {
+        "n": 248,
+        "rgb": [
+          175,
+          167,
+          38
+        ]
+      },
+      "wall": {
+        "n": 160,
+        "rgb": [
+          165,
+          158,
+          30
+        ]
+      },
+      "roof": {
+        "n": 1736,
+        "rgb": [
+          62,
+          31,
+          33
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 67",
+      "street/roof 81",
+      "bare/roof 20",
+      "wall/roof 78",
+      "wall/bare 64"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "megacity",
+    "turn": 1,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 161,
+        "rgb": [
+          89,
+          70,
+          71
+        ]
+      },
+      "street": {
+        "n": 708,
+        "rgb": [
+          168,
+          161,
+          38
+        ]
+      },
+      "wall": {
+        "n": 447,
+        "rgb": [
+          127,
+          120,
+          30
+        ]
+      },
+      "roof": {
+        "n": 4773,
+        "rgb": [
+          60,
+          30,
+          32
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 69",
+      "street/roof 78",
+      "bare/roof 18",
+      "wall/roof 59",
+      "wall/bare 51"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "megacity",
+    "turn": 1,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 262,
+        "rgb": [
+          134,
+          130,
+          128
+        ]
+      },
+      "street": {
+        "n": 3392,
+        "rgb": [
+          173,
+          167,
+          37
+        ]
+      },
+      "wall": {
+        "n": 730,
+        "rgb": [
+          47,
+          28,
+          29
+        ]
+      },
+      "roof": {
+        "n": 5421,
+        "rgb": [
+          61,
+          31,
+          33
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 63",
+      "street/roof 81",
+      "bare/roof 41"
+    ],
+    "fringe": {
+      "n": 9,
+      "red": 0
+    }
+  },
+  {
+    "set": "megacity",
+    "turn": 2,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 66,
+        "rgb": [
+          106,
+          94,
+          85
+        ]
+      },
+      "street": {
+        "n": 186,
+        "rgb": [
+          176,
+          169,
+          38
+        ]
+      },
+      "wall": {
+        "n": 135,
+        "rgb": [
+          160,
+          155,
+          29
+        ]
+      },
+      "roof": {
+        "n": 1578,
+        "rgb": [
+          62,
+          30,
+          33
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 64",
+      "street/roof 83",
+      "bare/roof 28",
+      "wall/roof 78",
+      "wall/bare 60"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "megacity",
+    "turn": 2,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 169,
+        "rgb": [
+          104,
+          90,
+          83
+        ]
+      },
+      "street": {
+        "n": 516,
+        "rgb": [
+          162,
+          154,
+          37
+        ]
+      },
+      "wall": {
+        "n": 365,
+        "rgb": [
+          128,
+          121,
+          31
+        ]
+      },
+      "roof": {
+        "n": 4366,
+        "rgb": [
+          57,
+          28,
+          30
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 59",
+      "street/roof 76",
+      "bare/roof 27",
+      "wall/roof 60",
+      "wall/bare 44"
+    ],
+    "fringe": {
+      "n": 5,
+      "red": 0
+    }
+  },
+  {
+    "set": "megacity",
+    "turn": 2,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 266,
+        "rgb": [
+          122,
+          118,
+          114
+        ]
+      },
+      "street": {
+        "n": 2060,
+        "rgb": [
+          184,
+          177,
+          38
+        ]
+      },
+      "wall": {
+        "n": 883,
+        "rgb": [
+          35,
+          22,
+          22
+        ]
+      },
+      "roof": {
+        "n": 6135,
+        "rgb": [
+          56,
+          28,
+          31
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 68",
+      "street/roof 88",
+      "bare/roof 38",
+      "street tendrils red 0.0% of 279 px"
+    ],
+    "fringe": {
+      "n": 279,
+      "red": 0
+    }
+  },
+  {
+    "set": "megacity",
+    "turn": 3,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 21,
+        "rgb": [
+          118,
+          107,
+          102
+        ]
+      },
+      "street": {
+        "n": 197,
+        "rgb": [
+          169,
+          160,
+          37
+        ]
+      },
+      "wall": {
+        "n": 136,
+        "rgb": [
+          159,
+          150,
+          29
+        ]
+      },
+      "roof": {
+        "n": 1663,
+        "rgb": [
+          60,
+          29,
+          32
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 60",
+      "street/roof 79",
+      "bare/roof 33",
+      "wall/roof 75",
+      "wall/bare 58"
+    ],
+    "fringe": {
+      "n": 2,
+      "red": 0
+    }
+  },
+  {
+    "set": "megacity",
+    "turn": 3,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 76,
+        "rgb": [
+          125,
+          111,
+          109
+        ]
+      },
+      "street": {
+        "n": 553,
+        "rgb": [
+          165,
+          158,
+          35
+        ]
+      },
+      "wall": {
+        "n": 380,
+        "rgb": [
+          127,
+          118,
+          29
+        ]
+      },
+      "roof": {
+        "n": 4633,
+        "rgb": [
+          57,
+          28,
+          30
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 61",
+      "street/roof 78",
+      "bare/roof 35",
+      "wall/roof 59",
+      "wall/bare 46"
+    ],
+    "fringe": {
+      "n": 13,
+      "red": 0
+    }
+  },
+  {
+    "set": "megacity",
+    "turn": 3,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 195,
+        "rgb": [
+          123,
+          118,
+          115
+        ]
+      },
+      "street": {
+        "n": 3027,
+        "rgb": [
+          189,
+          181,
+          37
+        ]
+      },
+      "wall": {
+        "n": 793,
+        "rgb": [
+          51,
+          32,
+          33
+        ]
+      },
+      "roof": {
+        "n": 7862,
+        "rgb": [
+          59,
+          29,
+          32
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 70",
+      "street/roof 89",
+      "bare/roof 38",
+      "street tendrils red 0.0% of 133 px"
+    ],
+    "fringe": {
+      "n": 133,
+      "red": 0
+    }
+  },
+  {
+    "set": "necropolis",
+    "turn": 0,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 25,
+        "rgb": [
+          152,
+          127,
+          115
+        ]
+      },
+      "street": {
+        "n": 267,
+        "rgb": [
+          174,
+          167,
+          38
+        ]
+      },
+      "wall": {
+        "n": 152,
+        "rgb": [
+          161,
+          151,
+          32
+        ]
+      },
+      "roof": {
+        "n": 1794,
+        "rgb": [
+          59,
+          29,
+          31
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 57",
+      "street/roof 82",
+      "bare/roof 41",
+      "wall/roof 75",
+      "wall/bare 52"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "necropolis",
+    "turn": 0,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 65,
+        "rgb": [
+          151,
+          129,
+          122
+        ]
+      },
+      "street": {
+        "n": 712,
+        "rgb": [
+          179,
+          172,
+          40
+        ]
+      },
+      "wall": {
+        "n": 414,
+        "rgb": [
+          137,
+          127,
+          36
+        ]
+      },
+      "roof": {
+        "n": 4981,
+        "rgb": [
+          62,
+          30,
+          33
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 61",
+      "street/roof 84",
+      "bare/roof 41",
+      "wall/roof 61",
+      "wall/bare 44"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "necropolis",
+    "turn": 0,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 141,
+        "rgb": [
+          131,
+          127,
+          122
+        ]
+      },
+      "street": {
+        "n": 4545,
+        "rgb": [
+          178,
+          172,
+          37
+        ]
+      },
+      "wall": {
+        "n": 1461,
+        "rgb": [
+          58,
+          37,
+          31
+        ]
+      },
+      "roof": {
+        "n": 10481,
+        "rgb": [
+          59,
+          30,
+          32
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 64",
+      "street/roof 84",
+      "bare/roof 41"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "necropolis",
+    "turn": 1,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 68,
+        "rgb": [
+          140,
+          127,
+          117
+        ]
+      },
+      "street": {
+        "n": 248,
+        "rgb": [
+          178,
+          171,
+          40
+        ]
+      },
+      "wall": {
+        "n": 160,
+        "rgb": [
+          170,
+          162,
+          31
+        ]
+      },
+      "roof": {
+        "n": 1736,
+        "rgb": [
+          63,
+          31,
+          33
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 60",
+      "street/roof 83",
+      "bare/roof 40",
+      "wall/roof 80",
+      "wall/bare 58"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "necropolis",
+    "turn": 1,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 161,
+        "rgb": [
+          132,
+          108,
+          100
+        ]
+      },
+      "street": {
+        "n": 708,
+        "rgb": [
+          169,
+          162,
+          40
+        ]
+      },
+      "wall": {
+        "n": 447,
+        "rgb": [
+          138,
+          128,
+          35
+        ]
+      },
+      "roof": {
+        "n": 4773,
+        "rgb": [
+          60,
+          29,
+          32
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 58",
+      "street/roof 79",
+      "bare/roof 33",
+      "wall/roof 62",
+      "wall/bare 44"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "necropolis",
+    "turn": 1,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 262,
+        "rgb": [
+          169,
+          168,
+          166
+        ]
+      },
+      "street": {
+        "n": 3392,
+        "rgb": [
+          179,
+          173,
+          41
+        ]
+      },
+      "wall": {
+        "n": 730,
+        "rgb": [
+          58,
+          43,
+          35
+        ]
+      },
+      "roof": {
+        "n": 5421,
+        "rgb": [
+          62,
+          32,
+          34
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 63",
+      "street/roof 83",
+      "bare/roof 55"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "necropolis",
+    "turn": 2,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 66,
+        "rgb": [
+          150,
+          126,
+          110
+        ]
+      },
+      "street": {
+        "n": 186,
+        "rgb": [
+          177,
+          171,
+          44
+        ]
+      },
+      "wall": {
+        "n": 135,
+        "rgb": [
+          166,
+          156,
+          32
+        ]
+      },
+      "roof": {
+        "n": 1578,
+        "rgb": [
+          63,
+          31,
+          33
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 55",
+      "street/roof 82",
+      "bare/roof 40",
+      "wall/roof 77",
+      "wall/bare 52"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "necropolis",
+    "turn": 2,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 169,
+        "rgb": [
+          138,
+          126,
+          117
+        ]
+      },
+      "street": {
+        "n": 516,
+        "rgb": [
+          166,
+          158,
+          40
+        ]
+      },
+      "wall": {
+        "n": 365,
+        "rgb": [
+          139,
+          131,
+          37
+        ]
+      },
+      "roof": {
+        "n": 4366,
+        "rgb": [
+          58,
+          29,
+          31
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 55",
+      "street/roof 77",
+      "bare/roof 40",
+      "wall/roof 63",
+      "wall/bare 44"
+    ],
+    "fringe": {
+      "n": 5,
+      "red": 0
+    }
+  },
+  {
+    "set": "necropolis",
+    "turn": 2,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 266,
+        "rgb": [
+          149,
+          147,
+          144
+        ]
+      },
+      "street": {
+        "n": 2060,
+        "rgb": [
+          187,
+          181,
+          44
+        ]
+      },
+      "wall": {
+        "n": 883,
+        "rgb": [
+          41,
+          29,
+          29
+        ]
+      },
+      "roof": {
+        "n": 6135,
+        "rgb": [
+          57,
+          29,
+          31
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 66",
+      "street/roof 88",
+      "bare/roof 48",
+      "street tendrils red 0.0% of 313 px"
+    ],
+    "fringe": {
+      "n": 313,
+      "red": 0
+    }
+  },
+  {
+    "set": "necropolis",
+    "turn": 3,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 21,
+        "rgb": [
+          154,
+          139,
+          136
+        ]
+      },
+      "street": {
+        "n": 197,
+        "rgb": [
+          170,
+          162,
+          41
+        ]
+      },
+      "wall": {
+        "n": 136,
+        "rgb": [
+          162,
+          154,
+          31
+        ]
+      },
+      "roof": {
+        "n": 1663,
+        "rgb": [
+          61,
+          30,
+          32
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 58",
+      "street/roof 78",
+      "bare/roof 45",
+      "wall/roof 76",
+      "wall/bare 58"
+    ],
+    "fringe": {
+      "n": 4,
+      "red": 0
+    }
+  },
+  {
+    "set": "necropolis",
+    "turn": 3,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 76,
+        "rgb": [
+          157,
+          146,
+          138
+        ]
+      },
+      "street": {
+        "n": 553,
+        "rgb": [
+          167,
+          160,
+          38
+        ]
+      },
+      "wall": {
+        "n": 380,
+        "rgb": [
+          133,
+          125,
+          35
+        ]
+      },
+      "roof": {
+        "n": 4633,
+        "rgb": [
+          57,
+          28,
+          30
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 56",
+      "street/roof 79",
+      "bare/roof 48",
+      "wall/roof 61",
+      "wall/bare 44"
+    ],
+    "fringe": {
+      "n": 17,
+      "red": 0
+    }
+  },
+  {
+    "set": "necropolis",
+    "turn": 3,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 195,
+        "rgb": [
+          156,
+          155,
+          154
+        ]
+      },
+      "street": {
+        "n": 3027,
+        "rgb": [
+          190,
+          183,
+          39
+        ]
+      },
+      "wall": {
+        "n": 793,
+        "rgb": [
+          59,
+          46,
+          44
+        ]
+      },
+      "roof": {
+        "n": 7862,
+        "rgb": [
+          59,
+          29,
+          32
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 69",
+      "street/roof 90",
+      "bare/roof 51",
+      "street tendrils red 0.0% of 159 px"
+    ],
+    "fringe": {
+      "n": 159,
+      "red": 0
+    }
+  },
+  {
+    "set": "orient",
+    "turn": 0,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 25,
+        "rgb": [
+          150,
+          134,
+          122
+        ]
+      },
+      "street": {
+        "n": 267,
+        "rgb": [
+          174,
+          167,
+          37
+        ]
+      },
+      "wall": {
+        "n": 152,
+        "rgb": [
+          162,
+          152,
+          31
+        ]
+      },
+      "roof": {
+        "n": 1794,
+        "rgb": [
+          59,
+          29,
+          31
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 57",
+      "street/roof 82",
+      "bare/roof 44",
+      "wall/roof 76",
+      "wall/bare 53"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "orient",
+    "turn": 0,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 65,
+        "rgb": [
+          152,
+          136,
+          124
+        ]
+      },
+      "street": {
+        "n": 712,
+        "rgb": [
+          179,
+          172,
+          39
+        ]
+      },
+      "wall": {
+        "n": 414,
+        "rgb": [
+          139,
+          125,
+          31
+        ]
+      },
+      "roof": {
+        "n": 4981,
+        "rgb": [
+          62,
+          30,
+          32
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 58",
+      "street/roof 83",
+      "bare/roof 44",
+      "wall/roof 61",
+      "wall/bare 42"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "orient",
+    "turn": 0,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 141,
+        "rgb": [
+          137,
+          134,
+          129
+        ]
+      },
+      "street": {
+        "n": 4545,
+        "rgb": [
+          178,
+          172,
+          36
+        ]
+      },
+      "wall": {
+        "n": 1461,
+        "rgb": [
+          63,
+          42,
+          25
+        ]
+      },
+      "roof": {
+        "n": 10481,
+        "rgb": [
+          58,
+          29,
+          31
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 64",
+      "street/roof 85",
+      "bare/roof 44"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "orient",
+    "turn": 1,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 68,
+        "rgb": [
+          158,
+          138,
+          126
+        ]
+      },
+      "street": {
+        "n": 248,
+        "rgb": [
+          178,
+          171,
+          40
+        ]
+      },
+      "wall": {
+        "n": 160,
+        "rgb": [
+          169,
+          160,
+          30
+        ]
+      },
+      "roof": {
+        "n": 1736,
+        "rgb": [
+          62,
+          31,
+          33
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 57",
+      "street/roof 83",
+      "bare/roof 44",
+      "wall/roof 79",
+      "wall/bare 56"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "orient",
+    "turn": 1,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 161,
+        "rgb": [
+          153,
+          132,
+          122
+        ]
+      },
+      "street": {
+        "n": 708,
+        "rgb": [
+          170,
+          163,
+          39
+        ]
+      },
+      "wall": {
+        "n": 447,
+        "rgb": [
+          138,
+          127,
+          30
+        ]
+      },
+      "roof": {
+        "n": 4773,
+        "rgb": [
+          60,
+          29,
+          31
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 56",
+      "street/roof 79",
+      "bare/roof 43",
+      "wall/roof 63",
+      "wall/bare 44"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "orient",
+    "turn": 1,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 262,
+        "rgb": [
+          171,
+          170,
+          167
+        ]
+      },
+      "street": {
+        "n": 3392,
+        "rgb": [
+          177,
+          170,
+          40
+        ]
+      },
+      "wall": {
+        "n": 730,
+        "rgb": [
+          82,
+          54,
+          30
+        ]
+      },
+      "roof": {
+        "n": 5421,
+        "rgb": [
+          58,
+          30,
+          31
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 62",
+      "street/roof 82",
+      "bare/roof 56"
+    ],
+    "fringe": {
+      "n": 15,
+      "red": 0
+    }
+  },
+  {
+    "set": "orient",
+    "turn": 2,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 66,
+        "rgb": [
+          165,
+          137,
+          128
+        ]
+      },
+      "street": {
+        "n": 186,
+        "rgb": [
+          173,
+          160,
+          41
+        ]
+      },
+      "wall": {
+        "n": 135,
+        "rgb": [
+          163,
+          156,
+          29
+        ]
+      },
+      "roof": {
+        "n": 1578,
+        "rgb": [
+          63,
+          31,
+          33
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 54",
+      "street/roof 77",
+      "bare/roof 44",
+      "wall/roof 77",
+      "wall/bare 56"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "orient",
+    "turn": 2,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 169,
+        "rgb": [
+          158,
+          136,
+          126
+        ]
+      },
+      "street": {
+        "n": 516,
+        "rgb": [
+          164,
+          153,
+          38
+        ]
+      },
+      "wall": {
+        "n": 365,
+        "rgb": [
+          141,
+          128,
+          31
+        ]
+      },
+      "roof": {
+        "n": 4366,
+        "rgb": [
+          58,
+          29,
+          30
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 52",
+      "street/roof 74",
+      "bare/roof 44",
+      "wall/roof 63",
+      "wall/bare 44"
+    ],
+    "fringe": {
+      "n": 6,
+      "red": 0
+    }
+  },
+  {
+    "set": "orient",
+    "turn": 2,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 266,
+        "rgb": [
+          156,
+          152,
+          147
+        ]
+      },
+      "street": {
+        "n": 2060,
+        "rgb": [
+          178,
+          160,
+          40
+        ]
+      },
+      "wall": {
+        "n": 883,
+        "rgb": [
+          46,
+          29,
+          23
+        ]
+      },
+      "roof": {
+        "n": 6135,
+        "rgb": [
+          57,
+          28,
+          30
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 58",
+      "street/roof 78",
+      "bare/roof 51",
+      "street tendrils red 0.0% of 325 px"
+    ],
+    "fringe": {
+      "n": 325,
+      "red": 0
+    }
+  },
+  {
+    "set": "orient",
+    "turn": 3,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 21,
+        "rgb": [
+          148,
+          133,
+          129
+        ]
+      },
+      "street": {
+        "n": 197,
+        "rgb": [
+          172,
+          163,
+          40
+        ]
+      },
+      "wall": {
+        "n": 136,
+        "rgb": [
+          162,
+          152,
+          30
+        ]
+      },
+      "roof": {
+        "n": 1663,
+        "rgb": [
+          61,
+          30,
+          32
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 59",
+      "street/roof 79",
+      "bare/roof 42",
+      "wall/roof 75",
+      "wall/bare 57"
+    ],
+    "fringe": {
+      "n": 6,
+      "red": 0
+    }
+  },
+  {
+    "set": "orient",
+    "turn": 3,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 76,
+        "rgb": [
+          156,
+          144,
+          139
+        ]
+      },
+      "street": {
+        "n": 553,
+        "rgb": [
+          166,
+          159,
+          37
+        ]
+      },
+      "wall": {
+        "n": 380,
+        "rgb": [
+          134,
+          122,
+          30
+        ]
+      },
+      "roof": {
+        "n": 4633,
+        "rgb": [
+          57,
+          28,
+          30
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 57",
+      "street/roof 78",
+      "bare/roof 48",
+      "wall/roof 60",
+      "wall/bare 46"
+    ],
+    "fringe": {
+      "n": 17,
+      "red": 0
+    }
+  },
+  {
+    "set": "orient",
+    "turn": 3,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 195,
+        "rgb": [
+          163,
+          161,
+          158
+        ]
+      },
+      "street": {
+        "n": 3027,
+        "rgb": [
+          191,
+          183,
+          39
+        ]
+      },
+      "wall": {
+        "n": 793,
+        "rgb": [
+          61,
+          39,
+          33
+        ]
+      },
+      "roof": {
+        "n": 7862,
+        "rgb": [
+          59,
+          29,
+          31
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 67",
+      "street/roof 90",
+      "bare/roof 54",
+      "street tendrils red 0.0% of 163 px"
+    ],
+    "fringe": {
+      "n": 163,
+      "red": 0
+    }
+  },
+  {
+    "set": "orthodox",
+    "turn": 0,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 25,
+        "rgb": [
+          169,
+          145,
+          111
+        ]
+      },
+      "street": {
+        "n": 267,
+        "rgb": [
+          175,
+          167,
+          36
+        ]
+      },
+      "wall": {
+        "n": 152,
+        "rgb": [
+          161,
+          153,
+          32
+        ]
+      },
+      "roof": {
+        "n": 1794,
+        "rgb": [
+          60,
+          29,
+          31
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 45",
+      "street/roof 82",
+      "bare/roof 50",
+      "wall/roof 76",
+      "wall/bare 40"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "orthodox",
+    "turn": 0,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 65,
+        "rgb": [
+          162,
+          137,
+          110
+        ]
+      },
+      "street": {
+        "n": 712,
+        "rgb": [
+          179,
+          171,
+          38
+        ]
+      },
+      "wall": {
+        "n": 414,
+        "rgb": [
+          138,
+          127,
+          34
+        ]
+      },
+      "roof": {
+        "n": 4981,
+        "rgb": [
+          62,
+          30,
+          32
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 50",
+      "street/roof 83",
+      "bare/roof 46",
+      "wall/roof 61",
+      "wall/bare 34"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "orthodox",
+    "turn": 0,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 141,
+        "rgb": [
+          148,
+          134,
+          111
+        ]
+      },
+      "street": {
+        "n": 4545,
+        "rgb": [
+          181,
+          174,
+          35
+        ]
+      },
+      "wall": {
+        "n": 1461,
+        "rgb": [
+          56,
+          40,
+          30
+        ]
+      },
+      "roof": {
+        "n": 10481,
+        "rgb": [
+          61,
+          30,
+          32
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 55",
+      "street/roof 85",
+      "bare/roof 44"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "orthodox",
+    "turn": 1,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 68,
+        "rgb": [
+          182,
+          153,
+          121
+        ]
+      },
+      "street": {
+        "n": 248,
+        "rgb": [
+          177,
+          170,
+          39
+        ]
+      },
+      "wall": {
+        "n": 160,
+        "rgb": [
+          168,
+          160,
+          31
+        ]
+      },
+      "roof": {
+        "n": 1736,
+        "rgb": [
+          63,
+          31,
+          33
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 46",
+      "street/roof 82",
+      "bare/roof 52",
+      "wall/roof 79",
+      "wall/bare 44"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "orthodox",
+    "turn": 1,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 161,
+        "rgb": [
+          177,
+          148,
+          111
+        ]
+      },
+      "street": {
+        "n": 708,
+        "rgb": [
+          169,
+          161,
+          38
+        ]
+      },
+      "wall": {
+        "n": 447,
+        "rgb": [
+          136,
+          126,
+          33
+        ]
+      },
+      "roof": {
+        "n": 4773,
+        "rgb": [
+          59,
+          29,
+          31
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 40",
+      "street/roof 79",
+      "bare/roof 52",
+      "wall/roof 61",
+      "wall/bare 30"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "orthodox",
+    "turn": 1,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 262,
+        "rgb": [
+          189,
+          176,
+          143
+        ]
+      },
+      "street": {
+        "n": 3392,
+        "rgb": [
+          181,
+          174,
+          39
+        ]
+      },
+      "wall": {
+        "n": 730,
+        "rgb": [
+          66,
+          49,
+          34
+        ]
+      },
+      "roof": {
+        "n": 5421,
+        "rgb": [
+          63,
+          31,
+          33
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 47",
+      "street/roof 84",
+      "bare/roof 60"
+    ],
+    "fringe": {
+      "n": 5,
+      "red": 0
+    }
+  },
+  {
+    "set": "orthodox",
+    "turn": 2,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 66,
+        "rgb": [
+          181,
+          141,
+          114
+        ]
+      },
+      "street": {
+        "n": 186,
+        "rgb": [
+          178,
+          170,
+          39
+        ]
+      },
+      "wall": {
+        "n": 135,
+        "rgb": [
+          164,
+          156,
+          29
+        ]
+      },
+      "roof": {
+        "n": 1578,
+        "rgb": [
+          62,
+          30,
+          32
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 49",
+      "street/roof 82",
+      "bare/roof 48",
+      "wall/roof 78",
+      "wall/bare 46"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "orthodox",
+    "turn": 2,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 169,
+        "rgb": [
+          182,
+          148,
+          120
+        ]
+      },
+      "street": {
+        "n": 516,
+        "rgb": [
+          169,
+          159,
+          39
+        ]
+      },
+      "wall": {
+        "n": 365,
+        "rgb": [
+          141,
+          131,
+          34
+        ]
+      },
+      "roof": {
+        "n": 4366,
+        "rgb": [
+          58,
+          28,
+          30
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 44",
+      "street/roof 78",
+      "bare/roof 52",
+      "wall/roof 64",
+      "wall/bare 36"
+    ],
+    "fringe": {
+      "n": 5,
+      "red": 0
+    }
+  },
+  {
+    "set": "orthodox",
+    "turn": 2,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 270,
+        "rgb": [
+          174,
+          157,
+          128
+        ]
+      },
+      "street": {
+        "n": 2060,
+        "rgb": [
+          198,
+          188,
+          40
+        ]
+      },
+      "wall": {
+        "n": 883,
+        "rgb": [
+          56,
+          35,
+          23
+        ]
+      },
+      "roof": {
+        "n": 6135,
+        "rgb": [
+          60,
+          29,
+          31
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 54",
+      "street/roof 92",
+      "bare/roof 54",
+      "street tendrils red 0.0% of 332 px"
+    ],
+    "fringe": {
+      "n": 332,
+      "red": 0
+    }
+  },
+  {
+    "set": "orthodox",
+    "turn": 3,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 21,
+        "rgb": [
+          178,
+          148,
+          116
+        ]
+      },
+      "street": {
+        "n": 197,
+        "rgb": [
+          167,
+          157,
+          38
+        ]
+      },
+      "wall": {
+        "n": 136,
+        "rgb": [
+          164,
+          153,
+          30
+        ]
+      },
+      "roof": {
+        "n": 1663,
+        "rgb": [
+          59,
+          29,
+          31
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 41",
+      "street/roof 77",
+      "bare/roof 52",
+      "wall/roof 76",
+      "wall/bare 42"
+    ],
+    "fringe": {
+      "n": 5,
+      "red": 0
+    }
+  },
+  {
+    "set": "orthodox",
+    "turn": 3,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 76,
+        "rgb": [
+          179,
+          155,
+          121
+        ]
+      },
+      "street": {
+        "n": 553,
+        "rgb": [
+          173,
+          166,
+          37
+        ]
+      },
+      "wall": {
+        "n": 380,
+        "rgb": [
+          140,
+          126,
+          31
+        ]
+      },
+      "roof": {
+        "n": 4633,
+        "rgb": [
+          59,
+          29,
+          31
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 44",
+      "street/roof 81",
+      "bare/roof 54",
+      "wall/roof 62",
+      "wall/bare 33"
+    ],
+    "fringe": {
+      "n": 17,
+      "red": 0
+    }
+  },
+  {
+    "set": "orthodox",
+    "turn": 3,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 195,
+        "rgb": [
+          179,
+          165,
+          138
+        ]
+      },
+      "street": {
+        "n": 3027,
+        "rgb": [
+          187,
+          179,
+          37
+        ]
+      },
+      "wall": {
+        "n": 793,
+        "rgb": [
+          85,
+          55,
+          33
+        ]
+      },
+      "roof": {
+        "n": 7862,
+        "rgb": [
+          60,
+          29,
+          31
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 53",
+      "street/roof 88",
+      "bare/roof 56",
+      "street tendrils red 0.0% of 157 px"
+    ],
+    "fringe": {
+      "n": 157,
+      "red": 0
+    }
+  },
+  {
+    "set": "suburb",
+    "turn": 0,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 25,
+        "rgb": [
+          183,
+          168,
+          146
+        ]
+      },
+      "street": {
+        "n": 267,
+        "rgb": [
+          175,
+          168,
+          39
+        ]
+      },
+      "wall": {
+        "n": 152,
+        "rgb": [
+          164,
+          154,
+          34
+        ]
+      },
+      "roof": {
+        "n": 1794,
+        "rgb": [
+          60,
+          29,
+          31
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 51",
+      "street/roof 82",
+      "bare/roof 57",
+      "wall/roof 76",
+      "wall/bare 48"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "suburb",
+    "turn": 0,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 65,
+        "rgb": [
+          174,
+          155,
+          134
+        ]
+      },
+      "street": {
+        "n": 712,
+        "rgb": [
+          181,
+          173,
+          40
+        ]
+      },
+      "wall": {
+        "n": 414,
+        "rgb": [
+          149,
+          139,
+          49
+        ]
+      },
+      "roof": {
+        "n": 4981,
+        "rgb": [
+          63,
+          30,
+          33
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 53",
+      "street/roof 84",
+      "bare/roof 51",
+      "wall/roof 64",
+      "wall/bare 37"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "suburb",
+    "turn": 0,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 141,
+        "rgb": [
+          158,
+          151,
+          139
+        ]
+      },
+      "street": {
+        "n": 4545,
+        "rgb": [
+          179,
+          172,
+          37
+        ]
+      },
+      "wall": {
+        "n": 1461,
+        "rgb": [
+          97,
+          72,
+          59
+        ]
+      },
+      "roof": {
+        "n": 10481,
+        "rgb": [
+          61,
+          30,
+          32
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 59",
+      "street/roof 84",
+      "bare/roof 49"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "suburb",
+    "turn": 1,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 68,
+        "rgb": [
+          183,
+          160,
+          143
+        ]
+      },
+      "street": {
+        "n": 248,
+        "rgb": [
+          180,
+          173,
+          41
+        ]
+      },
+      "wall": {
+        "n": 160,
+        "rgb": [
+          171,
+          163,
+          34
+        ]
+      },
+      "roof": {
+        "n": 1736,
+        "rgb": [
+          63,
+          31,
+          33
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 54",
+      "street/roof 83",
+      "bare/roof 53",
+      "wall/roof 80",
+      "wall/bare 53"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "suburb",
+    "turn": 1,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 161,
+        "rgb": [
+          183,
+          155,
+          130
+        ]
+      },
+      "street": {
+        "n": 708,
+        "rgb": [
+          173,
+          166,
+          41
+        ]
+      },
+      "wall": {
+        "n": 447,
+        "rgb": [
+          151,
+          140,
+          47
+        ]
+      },
+      "roof": {
+        "n": 4773,
+        "rgb": [
+          61,
+          30,
+          32
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 47",
+      "street/roof 80",
+      "bare/roof 52",
+      "wall/roof 65",
+      "wall/bare 36"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "suburb",
+    "turn": 1,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 262,
+        "rgb": [
+          198,
+          192,
+          176
+        ]
+      },
+      "street": {
+        "n": 3392,
+        "rgb": [
+          178,
+          172,
+          41
+        ]
+      },
+      "wall": {
+        "n": 730,
+        "rgb": [
+          129,
+          93,
+          82
+        ]
+      },
+      "roof": {
+        "n": 5421,
+        "rgb": [
+          62,
+          31,
+          33
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 56",
+      "street/roof 83",
+      "bare/roof 64"
+    ],
+    "fringe": {
+      "n": 16,
+      "red": 0
+    }
+  },
+  {
+    "set": "suburb",
+    "turn": 2,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 66,
+        "rgb": [
+          201,
+          173,
+          141
+        ]
+      },
+      "street": {
+        "n": 186,
+        "rgb": [
+          186,
+          178,
+          50
+        ]
+      },
+      "wall": {
+        "n": 135,
+        "rgb": [
+          168,
+          160,
+          35
+        ]
+      },
+      "roof": {
+        "n": 1578,
+        "rgb": [
+          64,
+          31,
+          33
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 45",
+      "street/roof 84",
+      "bare/roof 59",
+      "wall/roof 78",
+      "wall/bare 44"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "suburb",
+    "turn": 2,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 169,
+        "rgb": [
+          200,
+          177,
+          144
+        ]
+      },
+      "street": {
+        "n": 516,
+        "rgb": [
+          175,
+          167,
+          46
+        ]
+      },
+      "wall": {
+        "n": 365,
+        "rgb": [
+          153,
+          142,
+          51
+        ]
+      },
+      "roof": {
+        "n": 4366,
+        "rgb": [
+          59,
+          29,
+          31
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 43",
+      "street/roof 80",
+      "bare/roof 61",
+      "wall/roof 65",
+      "wall/bare 34"
+    ],
+    "fringe": {
+      "n": 5,
+      "red": 0
+    }
+  },
+  {
+    "set": "suburb",
+    "turn": 2,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 266,
+        "rgb": [
+          187,
+          178,
+          161
+        ]
+      },
+      "street": {
+        "n": 2060,
+        "rgb": [
+          199,
+          196,
+          70
+        ]
+      },
+      "wall": {
+        "n": 883,
+        "rgb": [
+          70,
+          51,
+          45
+        ]
+      },
+      "roof": {
+        "n": 6135,
+        "rgb": [
+          59,
+          29,
+          31
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 54",
+      "street/roof 89",
+      "bare/roof 60",
+      "street tendrils red 0.0% of 335 px"
+    ],
+    "fringe": {
+      "n": 335,
+      "red": 0
+    }
+  },
+  {
+    "set": "suburb",
+    "turn": 3,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 21,
+        "rgb": [
+          189,
+          179,
+          156
+        ]
+      },
+      "street": {
+        "n": 197,
+        "rgb": [
+          176,
+          166,
+          41
+        ]
+      },
+      "wall": {
+        "n": 136,
+        "rgb": [
+          169,
+          160,
+          35
+        ]
+      },
+      "roof": {
+        "n": 1663,
+        "rgb": [
+          62,
+          30,
+          32
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 50",
+      "street/roof 80",
+      "bare/roof 60",
+      "wall/roof 78",
+      "wall/bare 50"
+    ],
+    "fringe": {
+      "n": 6,
+      "red": 0
+    }
+  },
+  {
+    "set": "suburb",
+    "turn": 3,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 76,
+        "rgb": [
+          200,
+          179,
+          159
+        ]
+      },
+      "street": {
+        "n": 553,
+        "rgb": [
+          168,
+          161,
+          38
+        ]
+      },
+      "wall": {
+        "n": 380,
+        "rgb": [
+          149,
+          140,
+          46
+        ]
+      },
+      "roof": {
+        "n": 4633,
+        "rgb": [
+          58,
+          28,
+          30
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 50",
+      "street/roof 79",
+      "bare/roof 61",
+      "wall/roof 66",
+      "wall/bare 42"
+    ],
+    "fringe": {
+      "n": 17,
+      "red": 0
+    }
+  },
+  {
+    "set": "suburb",
+    "turn": 3,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 195,
+        "rgb": [
+          195,
+          186,
+          168
+        ]
+      },
+      "street": {
+        "n": 3027,
+        "rgb": [
+          192,
+          183,
+          40
+        ]
+      },
+      "wall": {
+        "n": 793,
+        "rgb": [
+          126,
+          102,
+          90
+        ]
+      },
+      "roof": {
+        "n": 7862,
+        "rgb": [
+          60,
+          29,
+          31
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 59",
+      "street/roof 89",
+      "bare/roof 63",
+      "street tendrils red 0.0% of 169 px"
+    ],
+    "fringe": {
+      "n": 169,
+      "red": 0
+    }
+  },
+  {
+    "set": "terraces",
+    "turn": 0,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 25,
+        "rgb": [
+          171,
+          145,
+          131
+        ]
+      },
+      "street": {
+        "n": 267,
+        "rgb": [
+          175,
+          168,
+          38
+        ]
+      },
+      "wall": {
+        "n": 152,
+        "rgb": [
+          162,
+          154,
+          32
+        ]
+      },
+      "roof": {
+        "n": 1794,
+        "rgb": [
+          59,
+          29,
+          31
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 55",
+      "street/roof 82",
+      "bare/roof 48",
+      "wall/roof 76",
+      "wall/bare 52"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "terraces",
+    "turn": 0,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 65,
+        "rgb": [
+          171,
+          147,
+          132
+        ]
+      },
+      "street": {
+        "n": 712,
+        "rgb": [
+          180,
+          172,
+          40
+        ]
+      },
+      "wall": {
+        "n": 414,
+        "rgb": [
+          141,
+          132,
+          40
+        ]
+      },
+      "roof": {
+        "n": 4981,
+        "rgb": [
+          62,
+          30,
+          32
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 56",
+      "street/roof 83",
+      "bare/roof 48",
+      "wall/roof 62",
+      "wall/bare 41"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "terraces",
+    "turn": 0,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 141,
+        "rgb": [
+          154,
+          144,
+          132
+        ]
+      },
+      "street": {
+        "n": 4545,
+        "rgb": [
+          179,
+          172,
+          37
+        ]
+      },
+      "wall": {
+        "n": 1461,
+        "rgb": [
+          75,
+          66,
+          42
+        ]
+      },
+      "roof": {
+        "n": 10481,
+        "rgb": [
+          59,
+          29,
+          31
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 59",
+      "street/roof 84",
+      "bare/roof 47"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "terraces",
+    "turn": 1,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 68,
+        "rgb": [
+          149,
+          122,
+          106
+        ]
+      },
+      "street": {
+        "n": 248,
+        "rgb": [
+          178,
+          169,
+          41
+        ]
+      },
+      "wall": {
+        "n": 160,
+        "rgb": [
+          168,
+          160,
+          30
+        ]
+      },
+      "roof": {
+        "n": 1736,
+        "rgb": [
+          62,
+          31,
+          32
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 55",
+      "street/roof 81",
+      "bare/roof 39",
+      "wall/roof 79",
+      "wall/bare 54"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "terraces",
+    "turn": 1,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 161,
+        "rgb": [
+          144,
+          116,
+          93
+        ]
+      },
+      "street": {
+        "n": 708,
+        "rgb": [
+          172,
+          165,
+          41
+        ]
+      },
+      "wall": {
+        "n": 447,
+        "rgb": [
+          140,
+          131,
+          33
+        ]
+      },
+      "roof": {
+        "n": 4773,
+        "rgb": [
+          61,
+          30,
+          32
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 50",
+      "street/roof 80",
+      "bare/roof 38",
+      "wall/roof 64",
+      "wall/bare 37"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "terraces",
+    "turn": 1,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 262,
+        "rgb": [
+          197,
+          190,
+          179
+        ]
+      },
+      "street": {
+        "n": 3392,
+        "rgb": [
+          175,
+          169,
+          41
+        ]
+      },
+      "wall": {
+        "n": 730,
+        "rgb": [
+          100,
+          90,
+          55
+        ]
+      },
+      "roof": {
+        "n": 5421,
+        "rgb": [
+          60,
+          31,
+          32
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 58",
+      "street/roof 81",
+      "bare/roof 63"
+    ],
+    "fringe": {
+      "n": 16,
+      "red": 0
+    }
+  },
+  {
+    "set": "terraces",
+    "turn": 2,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 66,
+        "rgb": [
+          162,
+          137,
+          116
+        ]
+      },
+      "street": {
+        "n": 186,
+        "rgb": [
+          182,
+          173,
+          41
+        ]
+      },
+      "wall": {
+        "n": 135,
+        "rgb": [
+          165,
+          157,
+          30
+        ]
+      },
+      "roof": {
+        "n": 1578,
+        "rgb": [
+          62,
+          31,
+          33
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 53",
+      "street/roof 83",
+      "bare/roof 45",
+      "wall/roof 78",
+      "wall/bare 50"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "terraces",
+    "turn": 2,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 169,
+        "rgb": [
+          158,
+          137,
+          118
+        ]
+      },
+      "street": {
+        "n": 516,
+        "rgb": [
+          169,
+          161,
+          39
+        ]
+      },
+      "wall": {
+        "n": 365,
+        "rgb": [
+          143,
+          134,
+          37
+        ]
+      },
+      "roof": {
+        "n": 4366,
+        "rgb": [
+          58,
+          29,
+          31
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 50",
+      "street/roof 79",
+      "bare/roof 45",
+      "wall/roof 65",
+      "wall/bare 40"
+    ],
+    "fringe": {
+      "n": 5,
+      "red": 0
+    }
+  },
+  {
+    "set": "terraces",
+    "turn": 2,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 266,
+        "rgb": [
+          178,
+          171,
+          159
+        ]
+      },
+      "street": {
+        "n": 2060,
+        "rgb": [
+          191,
+          185,
+          39
+        ]
+      },
+      "wall": {
+        "n": 883,
+        "rgb": [
+          70,
+          58,
+          38
+        ]
+      },
+      "roof": {
+        "n": 6135,
+        "rgb": [
+          56,
+          27,
+          29
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 63",
+      "street/roof 91",
+      "bare/roof 58",
+      "street tendrils red 0.0% of 338 px"
+    ],
+    "fringe": {
+      "n": 338,
+      "red": 0
+    }
+  },
+  {
+    "set": "terraces",
+    "turn": 3,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 21,
+        "rgb": [
+          183,
+          160,
+          144
+        ]
+      },
+      "street": {
+        "n": 197,
+        "rgb": [
+          175,
+          165,
+          41
+        ]
+      },
+      "wall": {
+        "n": 136,
+        "rgb": [
+          164,
+          156,
+          33
+        ]
+      },
+      "roof": {
+        "n": 1663,
+        "rgb": [
+          62,
+          30,
+          32
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 52",
+      "street/roof 79",
+      "bare/roof 53",
+      "wall/roof 77",
+      "wall/bare 51"
+    ],
+    "fringe": {
+      "n": 6,
+      "red": 0
+    }
+  },
+  {
+    "set": "terraces",
+    "turn": 3,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 76,
+        "rgb": [
+          187,
+          160,
+          146
+        ]
+      },
+      "street": {
+        "n": 553,
+        "rgb": [
+          167,
+          159,
+          38
+        ]
+      },
+      "wall": {
+        "n": 380,
+        "rgb": [
+          141,
+          132,
+          39
+        ]
+      },
+      "roof": {
+        "n": 4633,
+        "rgb": [
+          57,
+          28,
+          30
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 52",
+      "street/roof 78",
+      "bare/roof 54",
+      "wall/roof 63",
+      "wall/bare 43"
+    ],
+    "fringe": {
+      "n": 18,
+      "red": 0
+    }
+  },
+  {
+    "set": "terraces",
+    "turn": 3,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 195,
+        "rgb": [
+          184,
+          177,
+          166
+        ]
+      },
+      "street": {
+        "n": 3027,
+        "rgb": [
+          192,
+          184,
+          40
+        ]
+      },
+      "wall": {
+        "n": 793,
+        "rgb": [
+          106,
+          102,
+          59
+        ]
+      },
+      "roof": {
+        "n": 7862,
+        "rgb": [
+          60,
+          29,
+          31
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 63",
+      "street/roof 90",
+      "bare/roof 59",
+      "street tendrils red 0.0% of 170 px"
+    ],
+    "fringe": {
+      "n": 170,
+      "red": 0
+    }
+  },
+  {
+    "set": "wetland",
+    "turn": 0,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 25,
+        "rgb": [
+          168,
+          147,
+          127
+        ]
+      },
+      "street": {
+        "n": 267,
+        "rgb": [
+          175,
+          167,
+          38
+        ]
+      },
+      "wall": {
+        "n": 152,
+        "rgb": [
+          161,
+          152,
+          31
+        ]
+      },
+      "roof": {
+        "n": 1794,
+        "rgb": [
+          59,
+          29,
+          31
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 52",
+      "street/roof 82",
+      "bare/roof 49",
+      "wall/roof 76",
+      "wall/bare 48"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "wetland",
+    "turn": 0,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 65,
+        "rgb": [
+          167,
+          144,
+          125
+        ]
+      },
+      "street": {
+        "n": 712,
+        "rgb": [
+          180,
+          173,
+          39
+        ]
+      },
+      "wall": {
+        "n": 414,
+        "rgb": [
+          134,
+          124,
+          34
+        ]
+      },
+      "roof": {
+        "n": 4981,
+        "rgb": [
+          62,
+          30,
+          33
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 54",
+      "street/roof 84",
+      "bare/roof 47",
+      "wall/roof 60",
+      "wall/bare 38"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "wetland",
+    "turn": 0,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 141,
+        "rgb": [
+          152,
+          143,
+          127
+        ]
+      },
+      "street": {
+        "n": 4545,
+        "rgb": [
+          179,
+          172,
+          36
+        ]
+      },
+      "wall": {
+        "n": 1461,
+        "rgb": [
+          51,
+          36,
+          31
+        ]
+      },
+      "roof": {
+        "n": 10481,
+        "rgb": [
+          59,
+          29,
+          32
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 57",
+      "street/roof 85",
+      "bare/roof 47"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "wetland",
+    "turn": 1,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 68,
+        "rgb": [
+          184,
+          163,
+          137
+        ]
+      },
+      "street": {
+        "n": 248,
+        "rgb": [
+          179,
+          172,
+          40
+        ]
+      },
+      "wall": {
+        "n": 160,
+        "rgb": [
+          167,
+          158,
+          31
+        ]
+      },
+      "roof": {
+        "n": 1736,
+        "rgb": [
+          63,
+          31,
+          33
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 50",
+      "street/roof 83",
+      "bare/roof 54",
+      "wall/roof 78",
+      "wall/bare 47"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "wetland",
+    "turn": 1,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 161,
+        "rgb": [
+          185,
+          161,
+          137
+        ]
+      },
+      "street": {
+        "n": 708,
+        "rgb": [
+          173,
+          166,
+          40
+        ]
+      },
+      "wall": {
+        "n": 447,
+        "rgb": [
+          134,
+          124,
+          32
+        ]
+      },
+      "roof": {
+        "n": 4773,
+        "rgb": [
+          61,
+          30,
+          32
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 48",
+      "street/roof 80",
+      "bare/roof 54",
+      "wall/roof 60",
+      "wall/bare 38"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "wetland",
+    "turn": 1,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 262,
+        "rgb": [
+          202,
+          192,
+          176
+        ]
+      },
+      "street": {
+        "n": 3392,
+        "rgb": [
+          179,
+          172,
+          40
+        ]
+      },
+      "wall": {
+        "n": 730,
+        "rgb": [
+          54,
+          33,
+          31
+        ]
+      },
+      "roof": {
+        "n": 5421,
+        "rgb": [
+          61,
+          31,
+          33
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 56",
+      "street/roof 83",
+      "bare/roof 64"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "wetland",
+    "turn": 2,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 66,
+        "rgb": [
+          180,
+          155,
+          129
+        ]
+      },
+      "street": {
+        "n": 186,
+        "rgb": [
+          182,
+          173,
+          40
+        ]
+      },
+      "wall": {
+        "n": 135,
+        "rgb": [
+          166,
+          156,
+          31
+        ]
+      },
+      "roof": {
+        "n": 1578,
+        "rgb": [
+          63,
+          31,
+          33
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 50",
+      "street/roof 83",
+      "bare/roof 52",
+      "wall/roof 77",
+      "wall/bare 46"
+    ],
+    "fringe": {
+      "n": 0,
+      "red": 0
+    }
+  },
+  {
+    "set": "wetland",
+    "turn": 2,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 169,
+        "rgb": [
+          183,
+          154,
+          134
+        ]
+      },
+      "street": {
+        "n": 516,
+        "rgb": [
+          169,
+          161,
+          38
+        ]
+      },
+      "wall": {
+        "n": 365,
+        "rgb": [
+          138,
+          129,
+          36
+        ]
+      },
+      "roof": {
+        "n": 4366,
+        "rgb": [
+          59,
+          29,
+          31
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 49",
+      "street/roof 79",
+      "bare/roof 52",
+      "wall/roof 62",
+      "wall/bare 40"
+    ],
+    "fringe": {
+      "n": 4,
+      "red": 0
+    }
+  },
+  {
+    "set": "wetland",
+    "turn": 2,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 266,
+        "rgb": [
+          178,
+          168,
+          152
+        ]
+      },
+      "street": {
+        "n": 2060,
+        "rgb": [
+          193,
+          186,
+          39
+        ]
+      },
+      "wall": {
+        "n": 883,
+        "rgb": [
+          45,
+          33,
+          28
+        ]
+      },
+      "roof": {
+        "n": 6135,
+        "rgb": [
+          57,
+          28,
+          30
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 61",
+      "street/roof 91",
+      "bare/roof 57",
+      "street tendrils red 0.0% of 333 px"
+    ],
+    "fringe": {
+      "n": 333,
+      "red": 0
+    }
+  },
+  {
+    "set": "wetland",
+    "turn": 3,
+    "zoom": "far",
+    "colours": {
+      "bare": {
+        "n": 21,
+        "rgb": [
+          172,
+          158,
+          142
+        ]
+      },
+      "street": {
+        "n": 197,
+        "rgb": [
+          175,
+          165,
+          41
+        ]
+      },
+      "wall": {
+        "n": 136,
+        "rgb": [
+          161,
+          152,
+          31
+        ]
+      },
+      "roof": {
+        "n": 1663,
+        "rgb": [
+          62,
+          30,
+          32
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 52",
+      "street/roof 79",
+      "bare/roof 52",
+      "wall/roof 75",
+      "wall/bare 51"
+    ],
+    "fringe": {
+      "n": 6,
+      "red": 0
+    }
+  },
+  {
+    "set": "wetland",
+    "turn": 3,
+    "zoom": "fit",
+    "colours": {
+      "bare": {
+        "n": 76,
+        "rgb": [
+          188,
+          161,
+          143
+        ]
+      },
+      "street": {
+        "n": 553,
+        "rgb": [
+          167,
+          160,
+          37
+        ]
+      },
+      "wall": {
+        "n": 380,
+        "rgb": [
+          136,
+          126,
+          33
+        ]
+      },
+      "roof": {
+        "n": 4633,
+        "rgb": [
+          57,
+          28,
+          30
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 50",
+      "street/roof 79",
+      "bare/roof 55",
+      "wall/roof 62",
+      "wall/bare 42"
+    ],
+    "fringe": {
+      "n": 17,
+      "red": 0
+    }
+  },
+  {
+    "set": "wetland",
+    "turn": 3,
+    "zoom": "near",
+    "colours": {
+      "bare": {
+        "n": 195,
+        "rgb": [
+          182,
+          171,
+          155
+        ]
+      },
+      "street": {
+        "n": 3027,
+        "rgb": [
+          192,
+          184,
+          39
+        ]
+      },
+      "wall": {
+        "n": 793,
+        "rgb": [
+          74,
+          59,
+          48
+        ]
+      },
+      "roof": {
+        "n": 7862,
+        "rgb": [
+          60,
+          29,
+          31
+        ]
+      }
+    },
+    "pairs": [
+      "bare/street 60",
+      "street/roof 90",
+      "bare/roof 57",
+      "street tendrils red 0.0% of 169 px"
+    ],
+    "fringe": {
+      "n": 169,
+      "red": 0
+    }
+  }
+]

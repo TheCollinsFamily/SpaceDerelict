@@ -45,6 +45,8 @@ interface Skin {
   dist: number;
   burning: boolean;
   tendrils: Array<{ sprite: Sprite; side: number; phase: number }>;
+  /** It lies on a street: its tendrils are the street's yellow creep (src/render/streetCreep.ts), not the roofs' red. */
+  street: boolean;
 }
 
 /** How long new creep takes to fade in, seconds; how long one beat of the pulse lasts. */
@@ -73,9 +75,12 @@ export class CreepLife {
     this.cells.clear();
   }
 
-  private tendril(side: number, f: number): Texture | null {
-    const key = `${side}-${f}`;
-    if (!this.tendrilTex.has(key)) this.tendrilTex.set(key, this.art.sprite('creep', `tendril-${key}`));
+  private tendril(side: number, f: number, street = false): Texture | null {
+    const key = `${side}-${f}${street ? '-street' : ''}`;
+    if (!this.tendrilTex.has(key)) {
+      const id = `tendril-${side}-${f}`;
+      this.tendrilTex.set(key, (street ? this.art.streetSkin(id) : null) ?? this.art.sprite('creep', id));
+    }
     return this.tendrilTex.get(key)!;
   }
 
@@ -90,17 +95,17 @@ export class CreepLife {
    * The skin of a cell was drawn: its sprites (each with the tint and alpha it rests at), how
    * far it lies from the landing site, and its open sides (tendrils reach out over those).
    */
-  add(cell: number, sprites: Sprite[], opts: { dist: number; burning: boolean; open: number; layer: Container | null; at: Pt; z: number }): void {
+  add(cell: number, sprites: Sprite[], opts: { dist: number; burning: boolean; open: number; layer: Container | null; at: Pt; z: number; street?: boolean }): void {
     const fresh = this.seen[cell] === 0 && this.clock > 0.5;
     this.seen[cell] = 1;
     const skin: Skin = {
       sprites, tints: sprites.map((s) => s.tint as number), alphas: sprites.map((s) => s.alpha),
-      born: fresh ? this.clock : -1, dist: opts.dist, burning: opts.burning, tendrils: [],
+      born: fresh ? this.clock : -1, dist: opts.dist, burning: opts.burning, tendrils: [], street: !!opts.street,
     };
     if (opts.open && opts.layer) {
       for (const side of [1, 2, 4, 8]) {
         if (!(opts.open & side)) continue;
-        const tex = this.tendril(side, 0);
+        const tex = this.tendril(side, 0, skin.street);
         if (!tex) break;
         const s = new Sprite(tex);
         s.position.set(opts.at.x, opts.at.y);
@@ -144,7 +149,7 @@ export class CreepLife {
         for (const t of skin.tendrils) {
           // Slowly, each at its own time; a cell just reached is reached by long tendrils first.
           const f = Math.floor(((this.clock * 0.9 + t.phase * frames) % frames + frames) % frames);
-          const tex = this.tendril(t.side, f);
+          const tex = this.tendril(t.side, f, skin.street);
           if (tex && t.sprite.texture !== tex) t.sprite.texture = tex;
           t.sprite.tint = scale(skin.tints[0] ?? 0xffffff, k);
           t.sprite.alpha = (skin.alphas[0] ?? 1) * eased;

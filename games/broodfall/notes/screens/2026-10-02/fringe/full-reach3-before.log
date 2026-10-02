@@ -1,0 +1,121 @@
+  FAIL  deephive turn 0 far: bare/street n/a (133/0), street/roof n/a (0/0), bare/roof n/a (133/0), wall/roof n/a (0/0), wall/bare n/a (0/133), street tendrils red 68.7% of 99 px
+  FAIL  deephive turn 0 fit: bare/street n/a (361/0), street/roof n/a (0/0), bare/roof n/a (361/0), wall/roof n/a (0/0), wall/bare n/a (0/361), street tendrils red 66.3% of 258 px
+  FAIL  deephive turn 0 near: bare/street n/a (2483/0), street/roof n/a (0/0), bare/roof n/a (2483/0), street tendrils red 75.1% of 2128 px
+  FAIL  deephive turn 1 far: bare/street n/a (114/0), street/roof n/a (0/0), bare/roof n/a (114/0), wall/roof n/a (0/0), wall/bare n/a (0/114), street tendrils red 69.3% of 88 px
+  FAIL  deephive turn 1 fit: bare/street n/a (314/0), street/roof n/a (0/0), bare/roof n/a (314/0), wall/roof n/a (0/0), wall/bare n/a (0/314), street tendrils red 68.0% of 231 px
+  FAIL  deephive turn 1 near: bare/street n/a (1283/0), street/roof n/a (0/0), bare/roof n/a (1283/0), street tendrils red 75.4% of 1934 px
+  PASS  deephive turn 2 far: bare/street n/a (119/0), street/roof n/a (0/0), bare/roof n/a (119/0), wall/roof n/a (0/0), wall/bare n/a (0/119)
+  FAIL  deephive turn 2 fit: bare/street n/a (326/0), street/roof n/a (0/0), bare/roof n/a (326/0), wall/roof n/a (0/0), wall/bare n/a (0/326), street tendrils red 69.4% of 111 px
+  FAIL  deephive turn 2 near: bare/street n/a (1398/0), street/roof n/a (0/0), bare/roof n/a (1398/0), street tendrils red 76.0% of 982 px
+  FAIL  deephive turn 3 far: bare/street n/a (139/0), street/roof n/a (0/0), bare/roof n/a (139/0), wall/roof n/a (0/0), wall/bare n/a (0/139), street tendrils red 63.9% of 108 px
+  FAIL  deephive turn 3 fit: bare/street n/a (385/0), street/roof n/a (0/0), bare/roof n/a (385/0), wall/roof n/a (0/0), wall/bare n/a (0/385), street tendrils red 71.7% of 265 px
+  FAIL  deephive turn 3 near: bare/street n/a (2495/0), street/roof n/a (0/0), bare/roof n/a (2495/0), street tendrils red 76.1% of 1819 px
+  FAIL  farmland turn 0 far: bare/street n/a (133/0), street/roof n/a (0/0), bare/roof n/a (133/0), wall/roof n/a (0/0), wall/bare n/a (0/133), street tendrils red 95.6% of 91 px
+  FAIL  farmland turn 0 fit: bare/street n/a (361/0), street/roof n/a (0/0), bare/roof n/a (361/0), wall/roof n/a (0/0), wall/bare n/a (0/361), street tendrils red 94.4% of 249 px
+  FAIL  farmland turn 0 near: bare/street n/a (2483/0), street/roof n/a (0/0), bare/roof n/a (2483/0), street tendrils red 97.7% of 2047 px
+  FAIL  farmland turn 1 far: bare/street n/a (114/0), street/roof n/a (0/0), bare/roof n/a (114/0), wall/roof n/a (0/0), wall/bare n/a (0/114), street tendrils red 97.5% of 80 px
+  FAIL  farmland turn 1 fit: bare/street n/a (314/0), street/roof n/a (0/0), bare/roof n/a (314/0), wall/roof n/a (0/0), wall/bare n/a (0/314), street tendrils red 94.2% of 207 px
+  FAIL  farmland turn 1 near: bare/street n/a (1283/0), street/roof n/a (0/0), bare/roof n/a (1283/0), street tendrils red 94.8% of 1771 px
+  FAIL  farmland turn 2 far: bare/street n/a (119/0), street/roof n/a (0/0), bare/roof n/a (119/0), wall/roof n/a (0/0), wall/bare n/a (0/119), street tendrils red 96.6% of 58 px
+  FAIL  farmland turn 2 fit: bare/street n/a (326/0), street/roof n/a (0/0), bare/roof n/a (326/0), wall/roof n/a (0/0), wall/bare n/a (0/326), street tendrils red 96.7% of 181 px
+  FAIL  farmland turn 2 near: bare/street n/a (1398/0), street/roof n/a (0/0), bare/roof n/a (1398/0), street tendrils red 96.9% of 1679 px
+  FAIL  farmland turn 3 far: bare/street n/a (139/0), street/roof n/a (0/0), bare/roof n/a (139/0), wall/roof n/a (0/0), wall/bare n/a (0/139), street tendrils red 99.0% of 97 px
+  FAIL  farmland turn 3 fit: bare/street n/a (385/0), street/roof n/a (0/0), bare/roof n/a (385/0), wall/roof n/a (0/0), wall/bare n/a (0/385), street tendrils red 93.6% of 251 px
+  FAIL  farmland turn 3 near: bare/street n/a (2495/0), street/roof n/a (0/0), bare/roof n/a (2495/0), street tendrils red 95.9% of 1701 px
+  FAIL  industrial turn 0 far: bare/street n/a (133/0), street/roof n/a (0/0), bare/roof n/a (133/0), wall/roof n/a (0/0), wall/bare n/a (0/133), street tendrils red 50.0% of 100 px
+  FAIL  industrial turn 0 fit: bare/street n/a (361/0), street/roof n/a (0/0), bare/roof n/a (361/0), wall/roof n/a (0/0), wall/bare n/a (0/361), street tendrils red 50.4% of 262 px
+  FAIL  industrial turn 0 near: bare/street n/a (2483/0), street/roof n/a (0/0), bare/roof n/a (2483/0), street tendrils red 60.2% of 2153 px
+  FAIL  industrial turn 1 far: bare/street n/a (114/0), street/roof n/a (0/0), bare/roof n/a (114/0), wall/roof n/a (0/0), wall/bare n/a (0/114), street tendrils red 52.8% of 89 px
+  FAIL  industrial turn 1 fit: bare/street n/a (314/0), street/roof n/a (0/0), bare/roof n/a (314/0), wall/roof n/a (0/0), wall/bare n/a (0/314), street tendrils red 55.3% of 226 px
+  FAIL  industrial turn 1 near: bare/street n/a (1283/0), street/roof n/a (0/0), bare/roof n/a (1283/0), street tendrils red 61.5% of 1863 px
+  FAIL  industrial turn 2 far: bare/street n/a (119/0), street/roof n/a (0/0), bare/roof n/a (119/0), wall/roof n/a (0/0), wall/bare n/a (0/119), street tendrils red 52.0% of 50 px
+  FAIL  industrial turn 2 fit: bare/street n/a (326/0), street/roof n/a (0/0), bare/roof n/a (326/0), wall/roof n/a (0/0), wall/bare n/a (0/326), street tendrils red 50.6% of 158 px
+  FAIL  industrial turn 2 near: bare/street n/a (1398/0), street/roof n/a (0/0), bare/roof n/a (1398/0), street tendrils red 60.6% of 1440 px
+  FAIL  industrial turn 3 far: bare/street n/a (139/0), street/roof n/a (0/0), bare/roof n/a (139/0), wall/roof n/a (0/0), wall/bare n/a (0/139), street tendrils red 54.9% of 102 px
+  FAIL  industrial turn 3 fit: bare/street n/a (385/0), street/roof n/a (0/0), bare/roof n/a (385/0), wall/roof n/a (0/0), wall/bare n/a (0/385), street tendrils red 55.0% of 271 px
+  FAIL  industrial turn 3 near: bare/street n/a (2495/0), street/roof n/a (0/0), bare/roof n/a (2495/0), street tendrils red 65.4% of 1777 px
+  FAIL  megacity turn 0 far: bare/street n/a (133/0), street/roof n/a (0/0), bare/roof n/a (133/0), wall/roof n/a (0/0), wall/bare n/a (0/133), street tendrils red 65.5% of 87 px
+  FAIL  megacity turn 0 fit: bare/street n/a (361/0), street/roof n/a (0/0), bare/roof n/a (361/0), wall/roof n/a (0/0), wall/bare n/a (0/361), street tendrils red 62.8% of 239 px
+  FAIL  megacity turn 0 near: bare/street n/a (2483/0), street/roof n/a (0/0), bare/roof n/a (2483/0), street tendrils red 70.7% of 2022 px
+  FAIL  megacity turn 1 far: bare/street n/a (114/0), street/roof n/a (0/0), bare/roof n/a (114/0), wall/roof n/a (0/0), wall/bare n/a (0/114), street tendrils red 67.1% of 82 px
+  FAIL  megacity turn 1 fit: bare/street n/a (314/0), street/roof n/a (0/0), bare/roof n/a (314/0), wall/roof n/a (0/0), wall/bare n/a (0/314), street tendrils red 61.8% of 217 px
+  FAIL  megacity turn 1 near: bare/street n/a (1283/0), street/roof n/a (0/0), bare/roof n/a (1283/0), street tendrils red 70.4% of 1769 px
+  FAIL  megacity turn 2 far: bare/street n/a (119/0), street/roof n/a (0/0), bare/roof n/a (119/0), wall/roof n/a (0/0), wall/bare n/a (0/119), street tendrils red 66.7% of 45 px
+  FAIL  megacity turn 2 fit: bare/street n/a (326/0), street/roof n/a (0/0), bare/roof n/a (326/0), wall/roof n/a (0/0), wall/bare n/a (0/326), street tendrils red 60.4% of 149 px
+  FAIL  megacity turn 2 near: bare/street n/a (1398/0), street/roof n/a (0/0), bare/roof n/a (1398/0), street tendrils red 71.2% of 1362 px
+  FAIL  megacity turn 3 far: bare/street n/a (139/0), street/roof n/a (0/0), bare/roof n/a (139/0), wall/roof n/a (0/0), wall/bare n/a (0/139), street tendrils red 62.4% of 101 px
+  FAIL  megacity turn 3 fit: bare/street n/a (385/0), street/roof n/a (0/0), bare/roof n/a (385/0), wall/roof n/a (0/0), wall/bare n/a (0/385), street tendrils red 63.6% of 247 px
+  FAIL  megacity turn 3 near: bare/street n/a (2495/0), street/roof n/a (0/0), bare/roof n/a (2495/0), street tendrils red 73.8% of 1679 px
+  FAIL  necropolis turn 0 far: bare/street n/a (133/0), street/roof n/a (0/0), bare/roof n/a (133/0), wall/roof n/a (0/0), wall/bare n/a (0/133), street tendrils red 47.1% of 102 px
+  FAIL  necropolis turn 0 fit: bare/street n/a (361/0), street/roof n/a (0/0), bare/roof n/a (361/0), wall/roof n/a (0/0), wall/bare n/a (0/361), street tendrils red 46.5% of 271 px
+  FAIL  necropolis turn 0 near: bare/street n/a (2483/0), street/roof n/a (0/0), bare/roof n/a (2483/0), street tendrils red 55.8% of 2190 px
+  FAIL  necropolis turn 1 far: bare/street n/a (114/0), street/roof n/a (0/0), bare/roof n/a (114/0), wall/roof n/a (0/0), wall/bare n/a (0/114), street tendrils red 47.1% of 87 px
+  FAIL  necropolis turn 1 fit: bare/street n/a (314/0), street/roof n/a (0/0), bare/roof n/a (314/0), wall/roof n/a (0/0), wall/bare n/a (0/314), street tendrils red 52.1% of 213 px
+  FAIL  necropolis turn 1 near: bare/street n/a (1283/0), street/roof n/a (0/0), bare/roof n/a (1283/0), street tendrils red 56.6% of 1752 px
+  FAIL  necropolis turn 2 far: bare/street n/a (119/0), street/roof n/a (0/0), bare/roof n/a (119/0), wall/roof n/a (0/0), wall/bare n/a (0/119), street tendrils red 51.6% of 62 px
+  FAIL  necropolis turn 2 fit: bare/street n/a (326/0), street/roof n/a (0/0), bare/roof n/a (326/0), wall/roof n/a (0/0), wall/bare n/a (0/326), street tendrils red 48.5% of 194 px
+  FAIL  necropolis turn 2 near: bare/street n/a (1398/0), street/roof n/a (0/0), bare/roof n/a (1398/0), street tendrils red 58.6% of 1706 px
+  FAIL  necropolis turn 3 far: bare/street n/a (139/0), street/roof n/a (0/0), bare/roof n/a (139/0), wall/roof n/a (0/0), wall/bare n/a (0/139), street tendrils red 53.4% of 103 px
+  FAIL  necropolis turn 3 fit: bare/street n/a (385/0), street/roof n/a (0/0), bare/roof n/a (385/0), wall/roof n/a (0/0), wall/bare n/a (0/385), street tendrils red 51.3% of 275 px
+  FAIL  necropolis turn 3 near: bare/street n/a (2495/0), street/roof n/a (0/0), bare/roof n/a (2495/0), street tendrils red 61.3% of 1817 px
+  FAIL  orient turn 0 far: bare/street n/a (133/0), street/roof n/a (0/0), bare/roof n/a (133/0), wall/roof n/a (0/0), wall/bare n/a (0/133), street tendrils red 43.7% of 103 px
+  FAIL  orient turn 0 fit: bare/street n/a (361/0), street/roof n/a (0/0), bare/roof n/a (361/0), wall/roof n/a (0/0), wall/bare n/a (0/361), street tendrils red 43.9% of 271 px
+  FAIL  orient turn 0 near: bare/street n/a (2483/0), street/roof n/a (0/0), bare/roof n/a (2483/0), street tendrils red 54.1% of 2210 px
+  FAIL  orient turn 1 far: bare/street n/a (114/0), street/roof n/a (0/0), bare/roof n/a (114/0), wall/roof n/a (0/0), wall/bare n/a (0/114), street tendrils red 46.8% of 94 px
+  FAIL  orient turn 1 fit: bare/street n/a (314/0), street/roof n/a (0/0), bare/roof n/a (314/0), wall/roof n/a (0/0), wall/bare n/a (0/314), street tendrils red 50.9% of 230 px
+  FAIL  orient turn 1 near: bare/street n/a (1283/0), street/roof n/a (0/0), bare/roof n/a (1283/0), street tendrils red 55.8% of 1930 px
+  FAIL  orient turn 2 far: bare/street n/a (119/0), street/roof n/a (0/0), bare/roof n/a (119/0), wall/roof n/a (0/0), wall/bare n/a (0/119), street tendrils red 51.0% of 49 px
+  FAIL  orient turn 2 fit: bare/street n/a (326/0), street/roof n/a (0/0), bare/roof n/a (326/0), wall/roof n/a (0/0), wall/bare n/a (0/326), street tendrils red 49.3% of 150 px
+  FAIL  orient turn 2 near: bare/street n/a (1398/0), street/roof n/a (0/0), bare/roof n/a (1398/0), street tendrils red 59.1% of 1307 px
+  FAIL  orient turn 3 far: bare/street n/a (139/0), street/roof n/a (0/0), bare/roof n/a (139/0), wall/roof n/a (0/0), wall/bare n/a (0/139), street tendrils red 54.4% of 103 px
+  FAIL  orient turn 3 fit: bare/street n/a (385/0), street/roof n/a (0/0), bare/roof n/a (385/0), wall/roof n/a (0/0), wall/bare n/a (0/385), street tendrils red 49.1% of 279 px
+  FAIL  orient turn 3 near: bare/street n/a (2495/0), street/roof n/a (0/0), bare/roof n/a (2495/0), street tendrils red 60.3% of 1839 px
+  FAIL  orthodox turn 0 far: bare/street n/a (133/0), street/roof n/a (0/0), bare/roof n/a (133/0), wall/roof n/a (0/0), wall/bare n/a (0/133), street tendrils red 61.3% of 106 px
+  FAIL  orthodox turn 0 fit: bare/street n/a (361/0), street/roof n/a (0/0), bare/roof n/a (361/0), wall/roof n/a (0/0), wall/bare n/a (0/361), street tendrils red 60.7% of 272 px
+  FAIL  orthodox turn 0 near: bare/street n/a (2483/0), street/roof n/a (0/0), bare/roof n/a (2483/0), street tendrils red 71.1% of 2196 px
+  FAIL  orthodox turn 1 far: bare/street n/a (114/0), street/roof n/a (0/0), bare/roof n/a (114/0), wall/roof n/a (0/0), wall/bare n/a (0/114), street tendrils red 70.8% of 89 px
+  FAIL  orthodox turn 1 fit: bare/street n/a (314/0), street/roof n/a (0/0), bare/roof n/a (314/0), wall/roof n/a (0/0), wall/bare n/a (0/314), street tendrils red 67.9% of 237 px
+  FAIL  orthodox turn 1 near: bare/street n/a (1283/0), street/roof n/a (0/0), bare/roof n/a (1283/0), street tendrils red 72.0% of 1948 px
+  FAIL  orthodox turn 2 far: bare/street n/a (119/0), street/roof n/a (0/0), bare/roof n/a (119/0), wall/roof n/a (0/0), wall/bare n/a (0/119), street tendrils red 60.9% of 69 px
+  FAIL  orthodox turn 2 fit: bare/street n/a (326/0), street/roof n/a (0/0), bare/roof n/a (326/0), wall/roof n/a (0/0), wall/bare n/a (0/326), street tendrils red 63.2% of 201 px
+  FAIL  orthodox turn 2 near: bare/street n/a (1398/0), street/roof n/a (0/0), bare/roof n/a (1398/0), street tendrils red 72.1% of 1836 px
+  FAIL  orthodox turn 3 far: bare/street n/a (139/0), street/roof n/a (0/0), bare/roof n/a (139/0), wall/roof n/a (0/0), wall/bare n/a (0/139), street tendrils red 59.3% of 113 px
+  FAIL  orthodox turn 3 fit: bare/street n/a (385/0), street/roof n/a (0/0), bare/roof n/a (385/0), wall/roof n/a (0/0), wall/bare n/a (0/385), street tendrils red 66.5% of 275 px
+  FAIL  orthodox turn 3 near: bare/street n/a (2495/0), street/roof n/a (0/0), bare/roof n/a (2495/0), street tendrils red 73.2% of 1898 px
+  FAIL  suburb turn 0 far: bare/street n/a (133/0), street/roof n/a (0/0), bare/roof n/a (133/0), wall/roof n/a (0/0), wall/bare n/a (0/133), street tendrils red 45.5% of 110 px
+  FAIL  suburb turn 0 fit: bare/street n/a (361/0), street/roof n/a (0/0), bare/roof n/a (361/0), wall/roof n/a (0/0), wall/bare n/a (0/361), street tendrils red 45.7% of 282 px
+  FAIL  suburb turn 0 near: bare/street n/a (2483/0), street/roof n/a (0/0), bare/roof n/a (2483/0), street tendrils red 58.6% of 2251 px
+  FAIL  suburb turn 1 far: bare/street n/a (114/0), street/roof n/a (0/0), bare/roof n/a (114/0), wall/roof n/a (0/0), wall/bare n/a (0/114), street tendrils red 52.7% of 91 px
+  FAIL  suburb turn 1 fit: bare/street n/a (314/0), street/roof n/a (0/0), bare/roof n/a (314/0), wall/roof n/a (0/0), wall/bare n/a (0/314), street tendrils red 52.5% of 240 px
+  FAIL  suburb turn 1 near: bare/street n/a (1283/0), street/roof n/a (0/0), bare/roof n/a (1283/0), street tendrils red 60.6% of 1956 px
+  FAIL  suburb turn 2 far: bare/street n/a (119/0), street/roof n/a (0/0), bare/roof n/a (119/0), wall/roof n/a (0/0), wall/bare n/a (0/119), street tendrils red 45.8% of 59 px
+  FAIL  suburb turn 2 fit: bare/street n/a (326/0), street/roof n/a (0/0), bare/roof n/a (326/0), wall/roof n/a (0/0), wall/bare n/a (0/326), street tendrils red 53.9% of 178 px
+  FAIL  suburb turn 2 near: bare/street n/a (1398/0), street/roof n/a (0/0), bare/roof n/a (1398/0), street tendrils red 57.0% of 1571 px
+  FAIL  suburb turn 3 far: bare/street n/a (139/0), street/roof n/a (0/0), bare/roof n/a (139/0), wall/roof n/a (0/0), wall/bare n/a (0/139), street tendrils red 46.9% of 113 px
+  FAIL  suburb turn 3 fit: bare/street n/a (385/0), street/roof n/a (0/0), bare/roof n/a (385/0), wall/roof n/a (0/0), wall/bare n/a (0/385), street tendrils red 56.7% of 282 px
+  FAIL  suburb turn 3 near: bare/street n/a (2495/0), street/roof n/a (0/0), bare/roof n/a (2495/0), street tendrils red 63.1% of 1962 px
+  FAIL  terraces turn 0 far: bare/street n/a (133/0), street/roof n/a (0/0), bare/roof n/a (133/0), wall/roof n/a (0/0), wall/bare n/a (0/133), street tendrils red 43.2% of 111 px
+  FAIL  terraces turn 0 fit: bare/street n/a (361/0), street/roof n/a (0/0), bare/roof n/a (361/0), wall/roof n/a (0/0), wall/bare n/a (0/361), street tendrils red 43.8% of 281 px
+  FAIL  terraces turn 0 near: bare/street n/a (2483/0), street/roof n/a (0/0), bare/roof n/a (2483/0), street tendrils red 56.8% of 2259 px
+  FAIL  terraces turn 1 far: bare/street n/a (114/0), street/roof n/a (0/0), bare/roof n/a (114/0), wall/roof n/a (0/0), wall/bare n/a (0/114), street tendrils red 54.9% of 82 px
+  FAIL  terraces turn 1 fit: bare/street n/a (314/0), street/roof n/a (0/0), bare/roof n/a (314/0), wall/roof n/a (0/0), wall/bare n/a (0/314), street tendrils red 51.6% of 217 px
+  FAIL  terraces turn 1 near: bare/street n/a (1283/0), street/roof n/a (0/0), bare/roof n/a (1283/0), street tendrils red 60.2% of 1836 px
+  FAIL  terraces turn 2 far: bare/street n/a (119/0), street/roof n/a (0/0), bare/roof n/a (119/0), wall/roof n/a (0/0), wall/bare n/a (0/119), street tendrils red 44.6% of 74 px
+  FAIL  terraces turn 2 fit: bare/street n/a (326/0), street/roof n/a (0/0), bare/roof n/a (326/0), wall/roof n/a (0/0), wall/bare n/a (0/326), street tendrils red 51.6% of 215 px
+  FAIL  terraces turn 2 near: bare/street n/a (1398/0), street/roof n/a (0/0), bare/roof n/a (1398/0), street tendrils red 56.8% of 1988 px
+  FAIL  terraces turn 3 far: bare/street n/a (139/0), street/roof n/a (0/0), bare/roof n/a (139/0), wall/roof n/a (0/0), wall/bare n/a (0/139), street tendrils red 45.2% of 115 px
+  FAIL  terraces turn 3 fit: bare/street n/a (385/0), street/roof n/a (0/0), bare/roof n/a (385/0), wall/roof n/a (0/0), wall/bare n/a (0/385), street tendrils red 55.9% of 279 px
+  FAIL  terraces turn 3 near: bare/street n/a (2495/0), street/roof n/a (0/0), bare/roof n/a (2495/0), street tendrils red 61.8% of 1966 px
+  FAIL  wetland turn 0 far: bare/street n/a (133/0), street/roof n/a (0/0), bare/roof n/a (133/0), wall/roof n/a (0/0), wall/bare n/a (0/133), street tendrils red 47.3% of 112 px
+  FAIL  wetland turn 0 fit: bare/street n/a (361/0), street/roof n/a (0/0), bare/roof n/a (361/0), wall/roof n/a (0/0), wall/bare n/a (0/361), street tendrils red 47.5% of 284 px
+  FAIL  wetland turn 0 near: bare/street n/a (2483/0), street/roof n/a (0/0), bare/roof n/a (2483/0), street tendrils red 60.0% of 2210 px
+  FAIL  wetland turn 1 far: bare/street n/a (114/0), street/roof n/a (0/0), bare/roof n/a (114/0), wall/roof n/a (0/0), wall/bare n/a (0/114), street tendrils red 57.0% of 93 px
+  FAIL  wetland turn 1 fit: bare/street n/a (314/0), street/roof n/a (0/0), bare/roof n/a (314/0), wall/roof n/a (0/0), wall/bare n/a (0/314), street tendrils red 56.4% of 243 px
+  FAIL  wetland turn 1 near: bare/street n/a (1283/0), street/roof n/a (0/0), bare/roof n/a (1283/0), street tendrils red 62.2% of 1987 px
+  FAIL  wetland turn 2 far: bare/street n/a (119/0), street/roof n/a (0/0), bare/roof n/a (119/0), wall/roof n/a (0/0), wall/bare n/a (0/119), street tendrils red 50.0% of 78 px
+  FAIL  wetland turn 2 fit: bare/street n/a (326/0), street/roof n/a (0/0), bare/roof n/a (326/0), wall/roof n/a (0/0), wall/bare n/a (0/326), street tendrils red 57.0% of 235 px
+  FAIL  wetland turn 2 near: bare/street n/a (1398/0), street/roof n/a (0/0), bare/roof n/a (1398/0), street tendrils red 62.5% of 1933 px
+  FAIL  wetland turn 3 far: bare/street n/a (139/0), street/roof n/a (0/0), bare/roof n/a (139/0), wall/roof n/a (0/0), wall/bare n/a (0/139), street tendrils red 54.1% of 109 px
+  FAIL  wetland turn 3 fit: bare/street n/a (385/0), street/roof n/a (0/0), bare/roof n/a (385/0), wall/roof n/a (0/0), wall/bare n/a (0/385), street tendrils red 59.6% of 277 px
+  FAIL  wetland turn 3 near: bare/street n/a (2495/0), street/roof n/a (0/0), bare/roof n/a (2495/0), street tendrils red 65.4% of 1898 px
+119 FAILED

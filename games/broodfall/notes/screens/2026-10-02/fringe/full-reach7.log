@@ -1,0 +1,121 @@
+  PASS  deephive turn 0 far: bare/street 39, street/roof 81, bare/roof 49, wall/roof 76, wall/bare 34
+  PASS  deephive turn 0 fit: bare/street 45, street/roof 84, bare/roof 46, wall/roof 62, wall/bare 27
+  PASS  deephive turn 0 near: bare/street 49, street/roof 85, bare/roof 42
+  PASS  deephive turn 1 far: bare/street 42, street/roof 83, bare/roof 48, wall/roof 79, wall/bare 40
+  PASS  deephive turn 1 fit: bare/street 39, street/roof 78, bare/roof 47, wall/roof 63, wall/bare 27
+  PASS  deephive turn 1 near: bare/street 42, street/roof 84, bare/roof 56
+  PASS  deephive turn 2 far: bare/street 38, street/roof 77, bare/roof 45, wall/roof 79, wall/bare 41
+  PASS  deephive turn 2 fit: bare/street 36, street/roof 76, bare/roof 46, wall/roof 64, wall/bare 26
+  PASS  deephive turn 2 near: bare/street 36, street/roof 78, bare/roof 52, street tendrils red 0.3% of 303 px
+  PASS  deephive turn 3 far: bare/street 34, street/roof 77, bare/roof 50, wall/roof 75, wall/bare 33
+  PASS  deephive turn 3 fit: bare/street 37, street/roof 80, bare/roof 52, wall/roof 62, wall/bare 25
+  PASS  deephive turn 3 near: bare/street 45, street/roof 89, bare/roof 52, street tendrils red 1.5% of 137 px
+  PASS  farmland turn 0 far: bare/street 43, street/roof 80, bare/roof 42, wall/roof 75, wall/bare 40
+  PASS  farmland turn 0 fit: bare/street 53, street/roof 83, bare/roof 36, wall/roof 61, wall/bare 34
+  PASS  farmland turn 0 near: bare/street 55, street/roof 83, bare/roof 34
+  PASS  farmland turn 1 far: bare/street 45, street/roof 81, bare/roof 44, wall/roof 78, wall/bare 44
+  PASS  farmland turn 1 fit: bare/street 43, street/roof 79, bare/roof 44, wall/roof 62, wall/bare 31
+  PASS  farmland turn 1 near: bare/street 47, street/roof 80, bare/roof 47
+  PASS  farmland turn 2 far: bare/street 46, street/roof 81, bare/roof 43, wall/roof 77, wall/bare 43
+  PASS  farmland turn 2 fit: bare/street 40, street/roof 77, bare/roof 46, wall/roof 64, wall/bare 31
+  PASS  farmland turn 2 near: bare/street 54, street/roof 87, bare/roof 41, street tendrils red 1.7% of 287 px
+  PASS  farmland turn 3 far: bare/street 43, street/roof 76, bare/roof 41, wall/roof 76, wall/bare 43
+  PASS  farmland turn 3 fit: bare/street 45, street/roof 82, bare/roof 43, wall/roof 62, wall/bare 29
+  PASS  farmland turn 3 near: bare/street 49, street/roof 83, bare/roof 45, street tendrils red 7.8% of 129 px
+  PASS  industrial turn 0 far: bare/street 55, street/roof 79, bare/roof 46, wall/roof 75, wall/bare 52
+  PASS  industrial turn 0 fit: bare/street 60, street/roof 84, bare/roof 39, wall/roof 60, wall/bare 41
+  PASS  industrial turn 0 near: bare/street 69, street/roof 87, bare/roof 36
+  PASS  industrial turn 1 far: bare/street 56, street/roof 81, bare/roof 45, wall/roof 78, wall/bare 55
+  PASS  industrial turn 1 fit: bare/street 53, street/roof 79, bare/roof 47, wall/roof 61, wall/bare 42
+  PASS  industrial turn 1 near: bare/street 65, street/roof 85, bare/roof 49
+  PASS  industrial turn 2 far: bare/street 49, street/roof 74, bare/roof 44, wall/roof 78, wall/bare 54
+  PASS  industrial turn 2 fit: bare/street 57, street/roof 79, bare/roof 41, wall/roof 60, wall/bare 44
+  PASS  industrial turn 2 near: bare/street 62, street/roof 82, bare/roof 47, street tendrils red 0.0% of 320 px
+  PASS  industrial turn 3 far: bare/street 52, street/roof 77, bare/roof 46, wall/roof 76, wall/bare 53
+  PASS  industrial turn 3 fit: bare/street 60, street/roof 84, bare/roof 44, wall/roof 60, wall/bare 43
+  PASS  industrial turn 3 near: bare/street 62, street/roof 83, bare/roof 49, street tendrils red 0.0% of 154 px
+  PASS  megacity turn 0 far: bare/street 62, street/roof 81, bare/roof 34, wall/roof 75, wall/bare 56
+  PASS  megacity turn 0 fit: bare/street 62, street/roof 84, bare/roof 32, wall/roof 59, wall/bare 40
+  PASS  megacity turn 0 near: bare/street 67, street/roof 84, bare/roof 31
+  FAIL  megacity turn 1 far: bare/street 67, street/roof 81, bare/roof 20, wall/roof 78, wall/bare 64
+  FAIL  megacity turn 1 fit: bare/street 69, street/roof 78, bare/roof 18, wall/roof 59, wall/bare 51
+  PASS  megacity turn 1 near: bare/street 63, street/roof 81, bare/roof 41
+  PASS  megacity turn 2 far: bare/street 64, street/roof 83, bare/roof 28, wall/roof 78, wall/bare 60
+  PASS  megacity turn 2 fit: bare/street 59, street/roof 76, bare/roof 27, wall/roof 60, wall/bare 44
+  PASS  megacity turn 2 near: bare/street 68, street/roof 88, bare/roof 38, street tendrils red 0.0% of 279 px
+  PASS  megacity turn 3 far: bare/street 60, street/roof 79, bare/roof 33, wall/roof 75, wall/bare 58
+  PASS  megacity turn 3 fit: bare/street 61, street/roof 78, bare/roof 35, wall/roof 59, wall/bare 46
+  PASS  megacity turn 3 near: bare/street 70, street/roof 89, bare/roof 38, street tendrils red 0.0% of 133 px
+  PASS  necropolis turn 0 far: bare/street 57, street/roof 82, bare/roof 41, wall/roof 75, wall/bare 52
+  PASS  necropolis turn 0 fit: bare/street 61, street/roof 84, bare/roof 41, wall/roof 61, wall/bare 44
+  PASS  necropolis turn 0 near: bare/street 64, street/roof 84, bare/roof 41
+  PASS  necropolis turn 1 far: bare/street 60, street/roof 83, bare/roof 40, wall/roof 80, wall/bare 58
+  PASS  necropolis turn 1 fit: bare/street 58, street/roof 79, bare/roof 33, wall/roof 62, wall/bare 44
+  PASS  necropolis turn 1 near: bare/street 63, street/roof 83, bare/roof 55
+  PASS  necropolis turn 2 far: bare/street 55, street/roof 82, bare/roof 40, wall/roof 77, wall/bare 52
+  PASS  necropolis turn 2 fit: bare/street 55, street/roof 77, bare/roof 40, wall/roof 63, wall/bare 44
+  PASS  necropolis turn 2 near: bare/street 66, street/roof 88, bare/roof 48, street tendrils red 0.0% of 313 px
+  PASS  necropolis turn 3 far: bare/street 58, street/roof 78, bare/roof 45, wall/roof 76, wall/bare 58
+  PASS  necropolis turn 3 fit: bare/street 56, street/roof 79, bare/roof 48, wall/roof 61, wall/bare 44
+  PASS  necropolis turn 3 near: bare/street 69, street/roof 90, bare/roof 51, street tendrils red 0.0% of 159 px
+  PASS  orient turn 0 far: bare/street 57, street/roof 82, bare/roof 44, wall/roof 76, wall/bare 53
+  PASS  orient turn 0 fit: bare/street 58, street/roof 83, bare/roof 44, wall/roof 61, wall/bare 42
+  PASS  orient turn 0 near: bare/street 64, street/roof 85, bare/roof 44
+  PASS  orient turn 1 far: bare/street 57, street/roof 83, bare/roof 44, wall/roof 79, wall/bare 56
+  PASS  orient turn 1 fit: bare/street 56, street/roof 79, bare/roof 43, wall/roof 63, wall/bare 44
+  PASS  orient turn 1 near: bare/street 62, street/roof 82, bare/roof 56
+  PASS  orient turn 2 far: bare/street 54, street/roof 77, bare/roof 44, wall/roof 77, wall/bare 56
+  PASS  orient turn 2 fit: bare/street 52, street/roof 74, bare/roof 44, wall/roof 63, wall/bare 44
+  PASS  orient turn 2 near: bare/street 58, street/roof 78, bare/roof 51, street tendrils red 0.0% of 325 px
+  PASS  orient turn 3 far: bare/street 59, street/roof 79, bare/roof 42, wall/roof 75, wall/bare 57
+  PASS  orient turn 3 fit: bare/street 57, street/roof 78, bare/roof 48, wall/roof 60, wall/bare 46
+  PASS  orient turn 3 near: bare/street 67, street/roof 90, bare/roof 54, street tendrils red 0.0% of 163 px
+  PASS  orthodox turn 0 far: bare/street 45, street/roof 82, bare/roof 50, wall/roof 76, wall/bare 40
+  PASS  orthodox turn 0 fit: bare/street 50, street/roof 83, bare/roof 46, wall/roof 61, wall/bare 34
+  PASS  orthodox turn 0 near: bare/street 55, street/roof 85, bare/roof 44
+  PASS  orthodox turn 1 far: bare/street 46, street/roof 82, bare/roof 52, wall/roof 79, wall/bare 44
+  PASS  orthodox turn 1 fit: bare/street 40, street/roof 79, bare/roof 52, wall/roof 61, wall/bare 30
+  PASS  orthodox turn 1 near: bare/street 47, street/roof 84, bare/roof 60
+  PASS  orthodox turn 2 far: bare/street 49, street/roof 82, bare/roof 48, wall/roof 78, wall/bare 46
+  PASS  orthodox turn 2 fit: bare/street 44, street/roof 78, bare/roof 52, wall/roof 64, wall/bare 36
+  PASS  orthodox turn 2 near: bare/street 54, street/roof 92, bare/roof 54, street tendrils red 0.0% of 332 px
+  PASS  orthodox turn 3 far: bare/street 41, street/roof 77, bare/roof 52, wall/roof 76, wall/bare 42
+  PASS  orthodox turn 3 fit: bare/street 44, street/roof 81, bare/roof 54, wall/roof 62, wall/bare 33
+  PASS  orthodox turn 3 near: bare/street 53, street/roof 88, bare/roof 56, street tendrils red 0.0% of 157 px
+  PASS  suburb turn 0 far: bare/street 51, street/roof 82, bare/roof 57, wall/roof 76, wall/bare 48
+  PASS  suburb turn 0 fit: bare/street 53, street/roof 84, bare/roof 51, wall/roof 64, wall/bare 37
+  PASS  suburb turn 0 near: bare/street 59, street/roof 84, bare/roof 49
+  PASS  suburb turn 1 far: bare/street 54, street/roof 83, bare/roof 53, wall/roof 80, wall/bare 53
+  PASS  suburb turn 1 fit: bare/street 47, street/roof 80, bare/roof 52, wall/roof 65, wall/bare 36
+  PASS  suburb turn 1 near: bare/street 56, street/roof 83, bare/roof 64
+  PASS  suburb turn 2 far: bare/street 45, street/roof 84, bare/roof 59, wall/roof 78, wall/bare 44
+  PASS  suburb turn 2 fit: bare/street 43, street/roof 80, bare/roof 61, wall/roof 65, wall/bare 34
+  PASS  suburb turn 2 near: bare/street 54, street/roof 89, bare/roof 60, street tendrils red 0.0% of 335 px
+  PASS  suburb turn 3 far: bare/street 50, street/roof 80, bare/roof 60, wall/roof 78, wall/bare 50
+  PASS  suburb turn 3 fit: bare/street 50, street/roof 79, bare/roof 61, wall/roof 66, wall/bare 42
+  PASS  suburb turn 3 near: bare/street 59, street/roof 89, bare/roof 63, street tendrils red 0.0% of 169 px
+  PASS  terraces turn 0 far: bare/street 55, street/roof 82, bare/roof 48, wall/roof 76, wall/bare 52
+  PASS  terraces turn 0 fit: bare/street 56, street/roof 83, bare/roof 48, wall/roof 62, wall/bare 41
+  PASS  terraces turn 0 near: bare/street 59, street/roof 84, bare/roof 47
+  PASS  terraces turn 1 far: bare/street 55, street/roof 81, bare/roof 39, wall/roof 79, wall/bare 54
+  PASS  terraces turn 1 fit: bare/street 50, street/roof 80, bare/roof 38, wall/roof 64, wall/bare 37
+  PASS  terraces turn 1 near: bare/street 58, street/roof 81, bare/roof 63
+  PASS  terraces turn 2 far: bare/street 53, street/roof 83, bare/roof 45, wall/roof 78, wall/bare 50
+  PASS  terraces turn 2 fit: bare/street 50, street/roof 79, bare/roof 45, wall/roof 65, wall/bare 40
+  PASS  terraces turn 2 near: bare/street 63, street/roof 91, bare/roof 58, street tendrils red 0.0% of 338 px
+  PASS  terraces turn 3 far: bare/street 52, street/roof 79, bare/roof 53, wall/roof 77, wall/bare 51
+  PASS  terraces turn 3 fit: bare/street 52, street/roof 78, bare/roof 54, wall/roof 63, wall/bare 43
+  PASS  terraces turn 3 near: bare/street 63, street/roof 90, bare/roof 59, street tendrils red 0.0% of 170 px
+  PASS  wetland turn 0 far: bare/street 52, street/roof 82, bare/roof 49, wall/roof 76, wall/bare 48
+  PASS  wetland turn 0 fit: bare/street 54, street/roof 84, bare/roof 47, wall/roof 60, wall/bare 38
+  PASS  wetland turn 0 near: bare/street 57, street/roof 85, bare/roof 47
+  PASS  wetland turn 1 far: bare/street 50, street/roof 83, bare/roof 54, wall/roof 78, wall/bare 47
+  PASS  wetland turn 1 fit: bare/street 48, street/roof 80, bare/roof 54, wall/roof 60, wall/bare 38
+  PASS  wetland turn 1 near: bare/street 56, street/roof 83, bare/roof 64
+  PASS  wetland turn 2 far: bare/street 50, street/roof 83, bare/roof 52, wall/roof 77, wall/bare 46
+  PASS  wetland turn 2 fit: bare/street 49, street/roof 79, bare/roof 52, wall/roof 62, wall/bare 40
+  PASS  wetland turn 2 near: bare/street 61, street/roof 91, bare/roof 57, street tendrils red 0.0% of 333 px
+  PASS  wetland turn 3 far: bare/street 52, street/roof 79, bare/roof 52, wall/roof 75, wall/bare 51
+  PASS  wetland turn 3 fit: bare/street 50, street/roof 79, bare/roof 55, wall/roof 62, wall/bare 42
+  PASS  wetland turn 3 near: bare/street 60, street/roof 90, bare/roof 57, street tendrils red 0.0% of 169 px
+2 FAILED
