@@ -316,6 +316,57 @@ there and accumulate soldiers ... Broodmothers and brood output should be select
   stack: one more per 6 of your units on the board when the siege starts, up to 4 (`flamerAnswer`, shown in
   the wave telegraph). Its fire does not scorch the creep (left out: the creep strains are the player's).
 
+## UNITS ARE OPTIONAL: THE ROSTER, GROUP ORDERS, ALERTS (Collins, Oct 2 2026 — BUILT Oct 2)
+
+Collins: "a key to making this good is going to be keeping RTS very, very low ... people who play tower defence don't
+like doing a lot (that's what I hated about X-Morph). How can we make it maximally easy? ... an image of every unit
+type you have in the top left of your screen, as well as an ALL UNITS button ... click one of these, then click a
+location, and all units of that type (or all units) go there or fight the thing you clicked (they also know how to
+use the tunnel, where it's faster, that we built between home base and outposts)." (The research behind it: They Are
+Billions is hated for constant micro on top of defence; Tooth and Tail is praised for keeping it low.)
+
+**The principle: units are optional. The game is winnable without ever ordering a unit; an order, when the player
+wants one, is ONE click for a whole group.** Every unit kind has a job it does by itself; the player only steers.
+
+- **The roster** (src/ui/roster.ts, top left under the core's bar): one portrait per unit kind you have, with its
+  live count (WARRIORS, BROODMOTHERS, HARRIERS, SPORE MULES, INFESTORS; a new kind is one line in
+  `UNIT_KINDS`, src/sim/groups.ts), and **ALL** (your fighters: warriors, Broodmothers, Harriers; never the
+  unarmed Spore Mules or the precious Infestors, which have their own portraits). Click a portrait (or F1..F5 in
+  roster order, ` for ALL), then click the board. What was clicked decides the order:
+  - **an enemy or one of its structures** (a field station, a turret): a **sortie**. They run it down; when it is
+    dead and the spot has been quiet 2 s they come home to their own posts by themselves.
+  - **your outpost** (an infested shelter): they go and stand at its door, fighting what comes.
+  - **the body**: they come home.
+  - **anywhere else**: they go there, fighting what they meet on the way (attack-move), and stay.
+  Right-click or Esc cancels. A yellow mark on the board says how many went and what they will do ("8 ▸ GO").
+  A group order overrides whatever the units were doing, the player's own individual orders included.
+- **Through the tunnel when it is faster** (Collins: "they also know how to use the tunnel"). Every unit of a group
+  order is routed on its own: street steps to the goal against the steps to the tunnel's mouth + the transit (in
+  steps at the unit's speed) + the steps from the far end. The tunnel is taken when it wins by 15% (`tunnelMargin`),
+  either way, so a group splits: the near ones walk, the far ones take the tunnel. Built against the expansion
+  fork's tunnel head (`Sim.tunnelLink()`, the `tunnel` command, `BALANCE.tunnelTransit`); until a tunnel head
+  exists every order simply walks.
+- **Jobs no one orders** (src/sim/groups.ts `Groups.tick`, before the units move each tick):
+  - Brood Pit warriors guard their rally point (as before), and idle ones within 420 px of the core answer any hive
+    body that comes within 120 px of it (a leak at the body), then go back.
+  - Harriers hunt the science caste anywhere (as before). Broodmothers brood on creep beside their den (as before).
+    Spore Mules and Infestors wait where they are: never sent anywhere dangerous by themselves.
+  - **A hurt unit off the creep walks back onto it** (at 35% hp or less: the nearest creeped street) to heal with
+    creep care, and at 85% goes back to what it was doing. Never a unit the player parked (hold) or is moving
+    himself, and never a mule or an Infestor (a deployment or a burrow is not interrupted).
+- **Alerts** (toasts under the roster): SCIENCE PARTY, ENGINEER SETTING UP, FIELD STATION STANDING, OUTPOST UNDER
+  ATTACK, each with which way it lies from the body and a **SEND** button that sends the right kinds as a sortie in
+  one click: Harriers + warriors at science parties and engineers; warriors + Broodmothers + Harriers at a station;
+  warriors + Broodmothers to an outpost. ✕ dismisses one.
+- **AUTO** (a toggle under each portrait that answers alerts): that kind answers its alerts by itself. Default ON for
+  warriors and Harriers, OFF for Broodmothers (a mother parked brooding should stay parked unless the player says).
+  Harriers already hunt science on their own, so a science alert sends nobody extra for them.
+- **The old individual control** (click, box, the command panel, control groups: src/ui/command.ts) stays for players
+  who want it; nothing above needs it.
+- **Measured** (`GAPS_MODE=roster` in tools/measure/gaps.measure.ts: the scripted player never selects a unit, releases
+  the Broodmother stack with one ALL order at the siege's head, leaves alerts to AUTO; it counts the clicks a person
+  would make either way): see HANDOFF.md "The roster".
+
 ## SPORE MULES, AND BROOD ONLY ON CREEP (Collins, Oct 2 2026 — BUILT Oct 2)
 
 Collins: "a unit that can act like a creep node (and an organ that makes them) ... you walk it out and deploy it

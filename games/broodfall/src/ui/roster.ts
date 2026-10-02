@@ -108,7 +108,7 @@ export function installRoster(hooks: RosterHooks): Roster {
   const rebuild = (present: Array<{ kind: UnitKind; n: number }>): void => {
     const sim = hooks.sim();
     const fighters = present.filter((p) => UNIT_KINDS.find((k) => k.kind === p.kind)!.inAll).reduce((n, p) => n + p.n, 0);
-    let html = fighters ? `<button class="ur-btn ur-all" data-who="all" title="ALL your fighters (not mules or Infestors). Then click where. Key: \`"><span class="ur-all-txt">ALL</span><b class="ur-n">${fighters}</b><kbd>\`</kbd></button>` : '';
+    let html = fighters ? `<button class="ur-btn ur-all" data-who="all" title="ALL your fighters (not mules or Infestors). Then click where. Key: \`"><span class="ur-all-txt">ALL <b>${fighters}</b></span></button>` : '';
     present.forEach((p, i) => {
       const k = UNIT_KINDS.find((x) => x.kind === p.kind)!;
       const answers = Object.values(ALERT_ANSWER).some((who) => who.includes(p.kind));

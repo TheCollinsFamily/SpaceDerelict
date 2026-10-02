@@ -39,6 +39,8 @@ function run(seed: number) {
   if (MODE.includes('expansion')) bot.expansion = true;
   // roster = the bot never selects a unit: one group order per release, alerts left to AUTO (Autoplayer.roster, Oct 2 2026).
   if (MODE.includes('roster')) bot.roster = true;
+  // nogroups = the low-micro layer off (no leak answers, no retreats to the creep, no alerts): the baseline for it.
+  if (MODE.includes('nogroups')) (sim.groups as unknown as { tick: () => void }).tick = () => {};
   // noauto = no unit kind answers alerts by itself (every AUTO toggle off).
   if (MODE.includes('noauto')) for (const k of Object.keys(sim.groups.auto)) (sim.groups.auto as Record<string, boolean>)[k] = false;
   // shelterstart = the same, with a shelter standing at the start in the district nearest the body, so what an infested

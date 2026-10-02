@@ -746,7 +746,7 @@ body.in-ship #topbar, body.in-ship #botbar { visibility: hidden; }
 #unit-roster kbd { position: absolute; left: 3px; bottom: 1px; font-size: 8px; color: #9ab; opacity: 0.8; }
 #unit-roster .ur-all { height: 30px; }
 #unit-roster .ur-all-txt { font: 700 12px/26px Impact, "Arial Black", sans-serif; letter-spacing: 2px; }
-#unit-roster .ur-all .ur-n { font-size: 11px; }
+#unit-roster .ur-all-txt b { color: #ffd36a; margin-left: 2px; }
 #unit-roster .ur-auto { width: 54px; font: 9px/1 sans-serif; letter-spacing: 1px; padding: 2px 0; cursor: pointer; color: #789; background: #0d1416; border: 1px solid #2c3e41; border-radius: 3px; }
 #unit-roster .ur-auto.on { color: #0d1416; background: #9ae8f0; border-color: #9ae8f0; }
 #unit-alerts { position: absolute; left: 72px; top: 40px; z-index: 4; display: flex; flex-direction: column; gap: 4px; max-width: 360px; }
