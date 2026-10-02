@@ -37,6 +37,8 @@ export interface CityMap {
   plinths: Uint8Array;
   slots: Array<PlateInstance | null>;
   coreCell: number;
+  /** The seed the land under the city is shaped from (terrainLevel). Absent on old boards: one is made from the board. */
+  terrainSeed?: number;
 }
 
 export interface DraftOffer {
@@ -72,7 +74,9 @@ export function stampPlate(
       map.heights[cell] = spec.h;
     }
   }
-  // Temple Heights: raise a handful of ordinary blocks into perches.
+  // Temple Heights used to raise a handful of single blocks at random. Its dice are still thrown the same way
+  // (so every later roll of the run falls as before), but the land is now shaped by settleTerrain below: the
+  // district gets a real hill instead.
   if (feature === 'highground') {
     let raised = 0;
     for (let tries = 0; tries < 60 && raised < 6; tries++) {
@@ -85,7 +89,156 @@ export function stampPlate(
       }
     }
   }
+  settleTerrain(map, sx, sy, feature);
   map.slots[slot] = { pattern, feature, slot };
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// THE LIE OF THE LAND (Oct 2 2026). Collins: "the point of terrain height in tower defence is to get lucky that you
+// can fit our cool larger powerful building at a higher height, but if terrain does not move together like it
+// naturally does, those never appear. So it should be rare for terrain to jump up without going up a bit first, or
+// for a high piece of terrain to be in total isolation." Before this, a district's height came from its pattern's
+// letters (single 'A' and 'B' blocks dotted among low ones): on twenty boards no limb bigger than one cell ever
+// stood above the ground floor, a board had about sixteen lone peaks, and one neighbour in nine jumped two storeys.
+//
+// Now the land is ONE smooth field over the whole board: hills of different size and height placed on a coarse
+// grid (from the board's own terrain seed, its own dice: nothing else in the run is reshuffled), summed and cut
+// into storeys 1-3. A district's blocks take the land under them, so neighbouring districts meet at the same
+// heights. Then the district's new blocks are settled against their neighbours: no step of more than one storey,
+// no lone peak. High ground comes as plateaus, sometimes big enough for a 2x2, a T or an L up high: the lucky find.
+// ---------------------------------------------------------------------------------------------------------------
+
+/** The highest storey the land gives (plinths the body grows can add one more: PLINTH_MAX_HEIGHT). */
+export const TERRAIN_MAX = 3;
+/** Hills are placed one (or none) per square of this many cells. */
+const HILL_GRID = 7;
+
+/** A hash of three integers to [0, 1): the land's own dice. */
+function hash3(a: number, b: number, c: number): number {
+  let h = (Math.imul(a | 0, 0x27d4eb2d) ^ Math.imul(b | 0, 0x165667b1) ^ Math.imul(c | 0, 0x61c88647)) >>> 0;
+  h = Math.imul(h ^ (h >>> 15), 0x2c1b3c6d) >>> 0;
+  h = Math.imul(h ^ (h >>> 12), 0x297a2d39) >>> 0;
+  return ((h ^ (h >>> 15)) >>> 0) / 4294967296;
+}
+
+function terrainSeedOf(map: CityMap): number {
+  return map.terrainSeed ?? ((Math.imul(map.w * 131 + map.h, 0x9e3779b1) ^ 0x5a1d) >>> 0);
+}
+
+/** The land's height (in storeys above the ground floor, before it is cut into levels) at a board cell. */
+export function terrainField(seed: number, x: number, y: number): number {
+  const gx0 = Math.floor(x / HILL_GRID);
+  const gy0 = Math.floor(y / HILL_GRID);
+  let f = 0;
+  for (let gy = gy0 - 1; gy <= gy0 + 1; gy++) {
+    for (let gx = gx0 - 1; gx <= gx0 + 1; gx++) {
+      // Not every square has a hill: some of the city is flat.
+      if (hash3(seed, gx, gy) > 0.6) continue;
+      const cx = (gx + 0.15 + 0.7 * hash3(seed + 1, gx, gy)) * HILL_GRID;
+      const cy = (gy + 0.15 + 0.7 * hash3(seed + 2, gx, gy)) * HILL_GRID;
+      // A low rise, a hill, or (now and then) a high plateau: height in storeys, and how far it spreads.
+      const amp = 0.55 + 1.15 * hash3(seed + 3, gx, gy);
+      const sigma = 1.9 + 1.7 * hash3(seed + 4, gx, gy);
+      const d2 = (x - cx) * (x - cx) + (y - cy) * (y - cy);
+      // A flattened bell: a plateau on top rather than a needle, so a big limb can stand up there.
+      const bell = Math.exp(-d2 / (2 * sigma * sigma));
+      f += amp * Math.min(1, bell * 1.35);
+    }
+  }
+  return f;
+}
+
+/** The storey (1-3) the land gives a block at this cell. `bonus` lifts a district (Temple Heights). */
+export function terrainLevel(seed: number, x: number, y: number, bonus = 0): number {
+  return Math.max(1, Math.min(TERRAIN_MAX, 1 + Math.floor(terrainField(seed, x, y) + bonus)));
+}
+
+/**
+ * Give a freshly stamped district's blocks the land under them, then settle them against every block around them
+ * (old districts included, which are never moved: limbs may stand there): no neighbour more than one storey apart,
+ * no block higher than all its block neighbours.
+ */
+function settleTerrain(map: CityMap, sx: number, sy: number, feature: PlateFeature): void {
+  const seed = terrainSeedOf(map);
+  const fresh: number[] = [];
+  for (let y = sy; y < sy + PLATE; y++) {
+    for (let x = sx; x < sx + PLATE; x++) {
+      const cell = y * map.w + x;
+      if (map.cells[cell] !== CellType.Block) continue;
+      // Temple Heights: a real hill in the middle of the district (tall architecture on high ground).
+      let bonus = 0;
+      if (feature === 'highground') {
+        const dx = x - (sx + 4.5);
+        const dy = y - (sy + 4.5);
+        bonus = 1.6 * Math.min(1, 1.4 * Math.exp(-(dx * dx + dy * dy) / (2 * 3.2 * 3.2)));
+      }
+      map.heights[cell] = terrainLevel(seed, x, y, bonus);
+      map.plinths[cell] = 0;
+      fresh.push(cell);
+    }
+  }
+  const isFresh = new Set(fresh);
+  const block = (x: number, y: number) => x >= 0 && y >= 0 && x < map.w && y < map.h && map.cells[y * map.w + x] === CellType.Block;
+  const ground = (c: number) => map.heights[c] - map.plinths[c];
+  // 1. No step of more than one storey: a fresh block moves one storey toward any neighbour it is too far from.
+  for (let pass = 0; pass < 8; pass++) {
+    let moved = false;
+    for (const c of fresh) {
+      const x = c % map.w;
+      const y = Math.floor(c / map.w);
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        if (!block(x + dx, y + dy)) continue;
+        const n = (y + dy) * map.w + x + dx;
+        const gap = map.heights[c] - ground(n);
+        if (gap > 1) { map.heights[c]--; moved = true; } else if (gap < -1 && !isFresh.has(n)) { map.heights[c]++; moved = true; }
+      }
+    }
+    if (!moved) break;
+  }
+  // 2. No lone peak: a fresh block standing above every block around it (with at least two of them) comes down
+  //    to the highest of them. High ground comes in plateaus.
+  for (let pass = 0; pass < 4; pass++) {
+    let moved = false;
+    for (const c of fresh) {
+      if (map.heights[c] <= 1) continue;
+      const x = c % map.w;
+      const y = Math.floor(c / map.w);
+      let nb = 0;
+      let top = 0;
+      for (let dy = -1; dy <= 1; dy++) {
+        for (let dx = -1; dx <= 1; dx++) {
+          if ((dx || dy) && block(x + dx, y + dy)) { nb++; top = Math.max(top, ground((y + dy) * map.w + x + dx)); }
+        }
+      }
+      if (nb >= 2 && top < map.heights[c]) { map.heights[c] = Math.max(1, top); moved = true; }
+    }
+    if (!moved) break;
+  }
+}
+
+/**
+ * The heights a district WOULD take if it were drafted here now (the draft card's picture shows the land it
+ * will really stand on). Pattern cells that are not blocks are 0.
+ */
+export function draftHeights(map: CityMap, pattern: PlatePattern, slot: number, feature: PlateFeature): number[] {
+  const m: CityMap = { ...map, cells: map.cells.slice(), heights: map.heights.slice(), plinths: map.plinths.slice(), slots: map.slots.slice() };
+  const sx = (slot % map.slotsX) * PLATE;
+  const sy = Math.floor(slot / map.slotsX) * PLATE;
+  for (let y = 0; y < PLATE; y++) {
+    for (let x = 0; x < PLATE; x++) {
+      const spec = CHAR_TO_CELL[pattern.rows[y][x]];
+      const cell = (sy + y) * map.w + (sx + x);
+      m.cells[cell] = spec.t;
+      m.heights[cell] = spec.h;
+    }
+  }
+  settleTerrain(m, sx, sy, feature);
+  const out: number[] = [];
+  for (let y = 0; y < PLATE; y++) for (let x = 0; x < PLATE; x++) {
+    const cell = (sy + y) * map.w + (sx + x);
+    out.push(m.cells[cell] === CellType.Block ? m.heights[cell] : 0);
+  }
+  return out;
 }
 
 /** Seal unwanted mouths of a pattern (closed edges become wall; the stub street stays as an alley). */
@@ -113,7 +266,7 @@ function sealPorts(pattern: PlatePattern, keep: Array<'n' | 's' | 'e' | 'w'>): P
  *   hive marches through a full district of your guns before it reaches home.
  */
 export function createBoard(
-  slotsX: number, slotsY: number, startSlot: number, rng: Rng, entrances = 1, crash = 0,
+  slotsX: number, slotsY: number, startSlot: number, rng: Rng, entrances = 1, crash = 0, terrainSeed?: number,
 ): CityMap {
   const w = slotsX * PLATE;
   const h = slotsY * PLATE;
@@ -124,6 +277,8 @@ export function createBoard(
     plinths: new Uint8Array(w * h),
     slots: new Array<PlateInstance | null>(slotsX * slotsY).fill(null),
     coreCell: 0,
+    // A board made without one (tests, tools) still gets a land of its own, the same on every call.
+    terrainSeed: terrainSeed ?? ((Math.imul((crash | 0) + 7, 0x9e3779b1) ^ Math.imul(startSlot + 1, 0x85ebca6b)) >>> 0),
   };
   // Choose which crash-plaza openings stay, preferring edges with room for a connector.
   const edges: Array<'n' | 's' | 'e' | 'w'> = ['n', 's', 'e', 'w'];

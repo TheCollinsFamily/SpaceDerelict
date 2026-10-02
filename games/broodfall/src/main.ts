@@ -31,7 +31,7 @@ import { loadSettings } from './meta/storage';
 import { strainIcons, strainKey, strainLabel } from './ui/strain';
 import { GENES } from '../content/plates';
 import { BALANCE as B } from '../content/data';
-import { CellType, PLATE, PLATE_FEATURES, draftOffers } from './sim/citymap';
+import { CellType, PLATE, PLATE_FEATURES, draftHeights, draftOffers } from './sim/citymap';
 import { Rng } from './sim/rng';
 import { LoadingScreen, applyName, dressLogos, loadScreenArt, showArtNotice, showFailure, showSlowDrawingNotice } from './ui/screens';
 import { debriefPictures, type Outcome } from './ui/debrief';
@@ -504,7 +504,7 @@ function renderDraft(): void {
     }).join('')).join('');
     // The plate drawn as the board will draw it (its streets, heights, facades, roofs), when the board's art is up.
     const pic = renderer instanceof IsoRenderer && boardArt
-      ? platePicture(renderer.app, boardArt, { gridW: sim.cfg.gridW, slotsX: sim.map.slotsX, slotsY: sim.map.slotsY, coreCell: sim.map.coreCell, seed: sim.cfg.seed }, offer, 460)
+      ? platePicture(renderer.app, boardArt, { gridW: sim.cfg.gridW, slotsX: sim.map.slotsX, slotsY: sim.map.slotsY, coreCell: sim.map.coreCell, seed: sim.cfg.seed }, offer, 460, draftHeights(sim.map, offer.pattern, offer.slot, offer.feature))
       : null;
     if (pic) card.classList.add('has-pic');
     // A district with a SHELTER at its centre (Oct 2 2026): told on its card, so the player can draft for one.

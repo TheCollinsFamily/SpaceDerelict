@@ -39,6 +39,8 @@ export function setOfSlot(art: BoardArtSet, board: PlateBoard, slot: number): st
 export function platePicture(
   app: Application, art: BoardArtSet, board: PlateBoard,
   offer: { pattern: PlatePattern; slot: number; feature: string }, width = 300,
+  /** The heights the district will really take there (citymap.ts draftHeights); absent: its pattern letters. */
+  land?: number[],
 ): string | null {
   const t = art.terrain;
   if (!t) return null;
@@ -54,7 +56,7 @@ export function platePicture(
   for (let y = 0; y < PLATE; y++) for (let x = 0; x < PLATE; x++) {
     const c = CELL[offer.pattern.rows[y][x]] ?? CELL['#'];
     cells.push(c.t);
-    heights.push(c.h);
+    heights.push(land ? land[y * PLATE + x] : c.h);
   }
   const hL = (x: number, y: number) => (x < 0 || y < 0 || x >= PLATE || y >= PLATE ? 0 : cells[y * PLATE + x] === CellType.Block ? heights[y * PLATE + x] : 0);
   // A building's number is the board cell it was found from, as on the board, so its look is the same.

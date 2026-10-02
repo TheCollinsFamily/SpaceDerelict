@@ -439,7 +439,8 @@ export class Sim {
     else {
       // The crash site's layout is drawn from its own stream, so that the rest of the run's dice fall as before.
       const crash = cfg.crash ?? new Rng((cfg.seed ^ 0x5eed) >>> 0).int(0, 999);
-      this.map = createBoard(slotsX, slotsY, startSlot, this.rng, this.entrances, crash);
+      // The land under the city is shaped from its own seed too (citymap.ts terrainLevel, Oct 2 2026).
+      this.map = createBoard(slotsX, slotsY, startSlot, this.rng, this.entrances, crash, Math.imul((cfg.seed ^ 0x7e11a5) >>> 0, 0x9e3779b1) >>> 0);
       if (cfg.pregrown) pregrow(this.map, this.rng, cfg.pregrown);
     }
     this.underSeed = snap ? snap.underSeed : cfg.seed;
