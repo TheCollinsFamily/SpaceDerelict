@@ -33,6 +33,13 @@ export class Autoplayer {
    * creep's edge nearest the hive's lanes. It roots the mule when it gets there.
    */
   mules = false;
+  /**
+   * EXPANSION (Collins, Oct 2 2026): off by default. On: it drafts the district with a SHELTER when one is offered,
+   * grows an Infestor Cyst (after three themes) and walks each Infestor to the nearest intact shelter, a Harrier
+   * Gland after two (its Harriers hunt the science caste by themselves), and sends its Broodmothers, if it has any, to
+   * stand beside an infested shelter.
+   */
+  expansion = false;
   private muleGoal = new Map<number, number>();
   private parked = new Set<number>();
   private released = false;
@@ -121,6 +128,30 @@ export class Autoplayer {
     return open;
   }
 
+  /** EXPANSION: grow the Harrier Gland and the Infestor Cyst (once each), send Infestors to shelters. */
+  private manageExpansion(sim: Sim): boolean {
+    if (sim.cfg.organStage && sim.phase === 'growth') {
+      const themes = sim.organs.filter((o) => ORGAN_BY_ID[o.organ].kind === 'theme').length;
+      for (const [organ, at] of [['harrier', 2], ['infestor', 3]] as const) {
+        if (themes < at || sim.organs.some((o) => o.organ === organ) || !sim.canAfford(ORGAN_BY_ID[organ].cost)) continue;
+        const spot = bestOrganSpot(sim, organ);
+        if (spot && sim.issue({ kind: 'build-organ', organ, ...spot }).ok) return true;
+      }
+    }
+    for (const u of sim.infestors) {
+      if (u.infest !== undefined) continue;
+      let best: { id: number; d: number } | null = null;
+      for (const sh of sim.shelters) {
+        if (sh.state !== 'intact') continue;
+        const door = sim.cellCenter(sh.door);
+        const d = Math.hypot(door.x - u.pos.x, door.y - u.pos.y);
+        if (!best || d < best.d) best = { id: sh.id, d };
+      }
+      if (best) sim.issue({ kind: 'infest', unitId: u.id, shelterId: best.id });
+    }
+    return false;
+  }
+
   /** Grow a Mule Sac (once), and walk each mule to its spot, rooting it there. */
   private manageMules(sim: Sim): boolean {
     if (sim.cfg.organStage && sim.phase === 'growth' && !sim.organs.some((o) => o.organ === 'mule')) {
@@ -178,7 +209,8 @@ export class Autoplayer {
     if (sim.outcome !== 'playing') return;
     // District draft: take the first offer (policies stay comparable).
     if (sim.phase === 'draft') {
-      sim.issue({ kind: 'choose-plate', index: 0 });
+      const withShelter = this.expansion ? (sim.pendingDraft ?? []).findIndex((o) => o.shelter) : -1;
+      sim.issue({ kind: 'choose-plate', index: withShelter >= 0 ? withShelter : 0 });
       return;
     }
     this.actTimer -= dt;
@@ -186,6 +218,7 @@ export class Autoplayer {
     this.actTimer = 1.5;
     if (this.stack) this.manageStack(sim);
     if (this.mules && this.manageMules(sim)) return;
+    if (this.expansion && this.manageExpansion(sim)) return;
 
     // Science buys evolutions for the limbs doing the killing; royal points go to
     // a third stage first, and only spare points to a surge.

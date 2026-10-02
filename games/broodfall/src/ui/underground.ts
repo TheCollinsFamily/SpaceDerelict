@@ -30,7 +30,7 @@ const COLOR: Record<OrganId, string> = {
   bladder: '#a8c878', pacemaker: '#e89a6a', budder: '#c8e0a0', cyst: '#98b060', swell: '#b8d890', catapult: '#d0b070',
   mire: '#7a9a70', acid: '#c8d040', runner: '#a0c070',
   scaffold: '#e6dcc0',
-  seeder: '#e8a0a0', mule: '#c0d870',
+  seeder: '#e8a0a0', mule: '#c0d870', infestor: '#b06ad0', harrier: '#e0e070',
 };
 const GLYPH: Record<OrganId, string> = {
   forge: '⚒', venom: '☣', gut: '∞', nerve: 'ϟ', lattice: '▦', womb: '◉', marrow: '⊞', resonance: '◎',
@@ -38,7 +38,7 @@ const GLYPH: Record<OrganId, string> = {
   bladder: '✿', pacemaker: '♪', budder: '❀', cyst: '•', swell: '◍', catapult: '➶',
   mire: '≋', acid: '☠', runner: '⇶',
   scaffold: '▲',
-  seeder: '⇡', mule: '♞',
+  seeder: '⇡', mule: '♞', infestor: '⛫', harrier: '➹',
 };
 const VERB: Partial<Record<TowerFamily, string>> = {
   spitter: 'tempo', impaler: 'armor-pierce', blighter: 'poison', maw: 'richer meat', frond: 'arcs',
@@ -399,7 +399,8 @@ export class UndergroundScreen {
       + section('ZONES & TISSUE', ORGAN_DEFS.filter((d) => d.kind === 'zone' || d.kind === 'root').map((d) => d.id))
       + section('CREEP — organs that make FREE creep nodes', ORGAN_DEFS.filter((d) => d.kind === 'creep').map((d) => d.id))
       + section('SCAFFOLD — FREE plinths: raise a limb, or level a roof for a big one', ORGAN_DEFS.filter((d) => d.kind === 'scaffold').map((d) => d.id))
-      + section('SEEDING — must touch the SURFACE: shoots a free Seedling limb up every 2 turns', ORGAN_DEFS.filter((d) => d.kind === 'seeder').map((d) => d.id));
+      + section('SEEDING — must touch the SURFACE: shoots a free Seedling limb up every 2 turns', ORGAN_DEFS.filter((d) => d.kind === 'seeder').map((d) => d.id))
+      + section('FIELD UNITS — grow units you command (born at the body at the wave clear, paid for then)', ORGAN_DEFS.filter((d) => d.kind === 'unit').map((d) => d.id));
 
     const cells: string[] = [];
     for (let i = 0; i < u.cells.length; i++) {

@@ -151,6 +151,10 @@ export const LINEAGES: Partial<Record<OrganId, { catalogue: Catalogue; price: nu
   runner: { catalogue: 'sanctioned', price: 4 },
   // Oct 2 2026: the Spore Mule's sac is a mid-campaign purchase, beside the other creep-reach organs (sling, lance).
   mule: { catalogue: 'sanctioned', price: 4 },
+  // Oct 2 2026: the Harrier answers the science caste's raids, a mid-campaign worry; the Infestor (and the shelters it
+  // takes) is the late expansion, after walking units, creep nodes and the Broodmother are all known.
+  harrier: { catalogue: 'sanctioned', price: 3 },
+  infestor: { catalogue: 'sanctioned', price: 6 },
   mire: { catalogue: 'sanctioned', price: 4 },
   acid: { catalogue: 'sanctioned', price: 5 },
   marrow: { catalogue: 'unsanctioned', price: 5 },

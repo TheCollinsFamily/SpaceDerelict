@@ -663,6 +663,41 @@ export const BALANCE = {
   mulePerSac: 2,            // a sac keeps at most this many alive (rooted ones do not count)
   muleEngageDist: 15,       // px: a hive walker stops to fight a walking mule this close
   muleScienceLure: 70,      // px: the science caste turns aside for a walking mule this close (a live sample)
+  /**
+   * SHELTERS, THE INFESTOR, THE HARRIER (Collins, Oct 2 2026; DESIGN.md "SHELTERS AND THE INFESTOR").
+   * A drafted district may carry a shelter from the second draft on (shelterFromDraft), on one offer of a draft in
+   * shelterOdds, at most shelterMax on the board, and only in a run that can grow an Infestor.
+   */
+  shelterFromDraft: 2,
+  shelterOdds: 0.5,
+  shelterMax: 2,
+  shelterGuardRange: 120,   // px: an intact shelter's defenders shoot your walking units this close
+  shelterGuardDamage: 9,    // per shot
+  shelterGuardRate: 1.1,    // shots/s
+  shelterHp: [520, 700, 900] as readonly number[], // an infested shelter's body, by stage
+  shelterBoost: [0.1, 0.2, 0.35] as readonly number[], // the meat multiplier it pays at a protected wave clear, by stage
+  shelterSeep: [2, 3, 4] as readonly number[],   // cells of creep it seeps round its door, by stage
+  shelterGrowEvery: 2,      // protected wave clears per stage
+  shelterProtected: 0.15,   // protected: it took less than this share of its max hp this wave
+  shelterHealAtClear: 0.5,  // share of its max hp it regrows at every wave clear
+  shelterDetour: 150,       // flow cost (10 a street cell): a war body goes for an infested shelter this far off its road
+  shelterContact: 30,       // px from its door: the hive attacks it from here
+  infestorHp: 150,          // big and soft: two war bodies' bites for a few seconds, a shelter's defenders for ~15 s
+  infestorSpeed: 20,        // the slowest thing you have: walking it in is a commitment
+  infestorCost: { war: 40, science: 20 } as Partial<Record<'war' | 'science' | 'royal', number>>,
+  infestorEvery: 3,         // turns between Infestors from one cyst (one at a time)
+  infestChannel: 10,        // s burrowing in at the door, open to the shelter's defenders and the hive
+  harrierHp: 70,
+  harrierSpeed: 82,         // the fastest thing you have (warriors walk at 55)
+  harrierRange: 170,        // px: it shoots from outside a science party's reach
+  harrierDamage: 15,
+  harrierRate: 0.9,         // shots/s
+  harrierVsScience: 2.6,    // its quills are made for the soft castes
+  harrierVsWar: 0.6,        // and poor against the war caste's armour: it does not hold a lane
+  harrierCost: { science: 25 } as Partial<Record<'war' | 'science' | 'royal', number>>,
+  harrierEvery: 2,          // turns between Harriers from one gland (one a gland)
+  harrierMax: 3,            // on the board at once, however many glands
+  harrierLeash: 140,        // px: guarding, it fights the hive this far from its post
   /** Siege fire (mortars, cannons) singles out a PARKED Broodmother within reach: this much more likely than a limb. */
   parkedMotherAggro: 1.5,
   // The hive ANSWERS your walking units (Oct 2 2026): from tier 2, every flamerPerUnits of your units on the board

@@ -35,6 +35,8 @@ function run(seed: number) {
   if (MODE.includes('stack')) bot.stack = true;
   // mules = the bot grows a Mule Sac and walks its Spore Mules out to root them (Autoplayer.mules, Oct 2 2026).
   if (MODE.includes('mules')) bot.mules = true;
+  // expansion = the bot drafts shelters, infests them and grows Harriers (Autoplayer.expansion, Oct 2 2026).
+  if (MODE.includes('expansion')) bot.expansion = true;
   let ticks = 0;
   const kinds: Record<string, number> = {};
   while (sim.outcome === 'playing' && ticks < 24000) {
@@ -62,6 +64,7 @@ it('gaps: naive hold-12 over ten seeds', () => {
       + ` royal earned ${kinds.royalEarned ?? 0} left ${sim.meat.royal} decrees ${JSON.stringify(s.decrees ?? {})} surgeries ${s.surgeriesUnderFire ?? 0} burrows ${s.burrows ?? 0}`
       + ` brood ${JSON.stringify({ dens: sim.towers.filter((t) => t.family === 'brood').length, pits: sim.towers.filter((t) => t.family === 'hatch').length, born: s.warriorsBorn ?? 0, mothers: s.mothersBorn ?? 0, lost: s.mothersLost ?? 0, nets: s.netsCast ?? 0, netted: s.netHits ?? 0, kills: (s.killsByFamily as Record<string, number>)?.brood ?? 0 })}`
       + ` mules ${JSON.stringify({ born: s.mulesBorn ?? 0, rooted: s.mulesRooted ?? 0, lost: s.mulesLost ?? 0 })} reclaimed ${s.bodiesReclaimed ?? 0}`
+      + ` expansion ${JSON.stringify({ shelters: sim.shelters.length, infested: s.sheltersInfested ?? 0, lost: s.sheltersLost ?? 0, top: s.shelterTopStage ?? 0, paid: s.shelterMeat ?? 0, inf: s.infestorsBorn ?? 0, infLost: s.infestorsLost ?? 0, harriers: s.harriersBorn ?? 0, hLost: s.harriersLost ?? 0, hKills: s.harrierKills ?? 0 })} meat ${JSON.stringify(sim.digested)}`
       + ` events ${['royal-decree', 'limb-promoted', 'surgery-under-fire', 'graft-took', 'burrowed', 'sealed-in', 'broodling-lost', 'mule-lost', 'flamers'].map((k) => `${k}=${kinds[k] ?? 0}`).join(' ')}`);
   }
   // eslint-disable-next-line no-console

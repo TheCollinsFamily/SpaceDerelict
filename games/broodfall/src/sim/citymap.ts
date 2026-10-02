@@ -43,6 +43,8 @@ export interface DraftOffer {
   pattern: PlatePattern;
   slot: number;
   feature: PlateFeature;
+  /** This district carries a SHELTER at its centre (Sim: shelters, Oct 2 2026). */
+  shelter?: boolean;
 }
 
 export function isPassable(t: CellType): boolean {

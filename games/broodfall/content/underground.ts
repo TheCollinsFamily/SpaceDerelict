@@ -31,7 +31,7 @@ export const METEOR_ROWS = [0, 1] as const;
 /** Share of cells below the topsoil that are rock (can't be grown into). */
 export const ROCK_SHARE = 0.1;
 
-export type OrganKind = 'theme' | 'zone' | 'root' | 'creep' | 'scaffold' | 'seeder';
+export type OrganKind = 'theme' | 'zone' | 'root' | 'creep' | 'scaffold' | 'seeder' | 'unit';
 /** What a creep organ does for creep nodes (see CREEP below). */
 export type CreepRole = 'produce' | 'pace' | 'bud' | 'cyst' | 'swell' | 'catapult' | 'mire' | 'acid' | 'runner' | 'mule';
 export type ZoneEffect = 'level' | 'draw' | 'share' | 'suppress';
@@ -140,6 +140,12 @@ export const ORGAN_DEFS: readonly OrganDef[] = [
     blurb: 'creep from a bladder TOUCHING it (or the METEOR, if it touches that) slows ground enemies 25% (stacks)' },
   { id: 'acid', name: 'Digestive Lining', kind: 'creep', creep: 'acid', shape: D2, cost: { war: 30 },
     blurb: 'creep from a bladder TOUCHING it (or the METEOR, if it touches that) burns ground enemies 4/s (stacks)' },
+  // FIELD UNITS (Collins, Oct 2 2026): organs that grow units you command, born at the body at the wave clear and
+  // paid for then (Sim.growFieldUnits). The INFESTOR takes shelters; the HARRIER hunts the science caste far afield.
+  { id: 'infestor', name: 'Infestor Cyst', kind: 'unit', shape: D2, cost: { war: 50 },
+    blurb: 'grows an INFESTOR every 3 turns (one at a time; 40 war + 20 science each): a big, slow unit you walk to a SHELTER, where it burrows in and makes it yours, a second base that pays a bonus on every wave\'s meat while you protect it' },
+  { id: 'harrier', name: 'Harrier Gland', kind: 'unit', shape: M1, cost: { war: 30, science: 10 },
+    blurb: 'grows a HARRIER every 2 turns (one a gland, 3 on the board at most; 25 science each): fast, long-ranged and soft, it runs down science parties anywhere in the city' },
   // SEEDLINGS (Collins, Sep 29 2026): must touch the surface; shoots a free weak limb up every two waves.
   { id: 'seeder', name: 'Seeding Gland', kind: 'seeder', shape: V2, cost: { war: 25 }, surface: true,
     blurb: 'must TOUCH THE SURFACE; every 2 turns it shoots a free SEEDLING limb up into the city (a free card: place it anywhere your creep holds)' },

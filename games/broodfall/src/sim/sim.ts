@@ -22,7 +22,7 @@ import {
   BALANCE as B, ENEMIES, TOWERS, WAVE_TABLE,
 } from '../../content/data';
 import type {
-  Broodling, Broodmother, BroodSnap, SporeMule, Caltrop, CardInstance, Caste, Cloud, Command, Corpse, CreepSource, Directive, Enemy, UnitOrder,
+  Broodling, Broodmother, BroodSnap, SporeMule, Shelter, Infestor, Harrier, Caltrop, CardInstance, Caste, Cloud, Command, Corpse, CreepSource, Directive, Enemy, UnitOrder,
   EnemyKind, EnemySpec, HitFx, ModPip, Organ, OrganId, Outcome, Phase, Projectile,
   NodeStrain, RootDir, RunStats, Shell, SimConfig, SimEvent, Tower, TowerFamily, TowerSpec, UpgradeChoice, UpgradeOption, Vec,
 } from './types';
@@ -382,6 +382,24 @@ export class Sim {
   mules: SporeMule[] = [];
   /** Turns each Mule Sac has waited since it last grew a mule. */
   private muleTurns = new Map<number, number>();
+  /**
+   * SHELTERS, INFESTORS, HARRIERS (Collins, Oct 2 2026; DESIGN.md "SHELTERS AND THE INFESTOR"). Shelters stand at
+   * the centre of drafted districts; an Infestor burrows into one and makes it a second base; Harriers hunt the
+   * science caste far afield.
+   */
+  shelters: Shelter[] = [];
+  infestors: Infestor[] = [];
+  harriers: Harrier[] = [];
+  /** Turns each Infestor Cyst / Harrier Gland has waited since it last grew its unit. */
+  private unitTurns = new Map<number, number>();
+  /** The street routes to each infested shelter's door (the hive goes for it). */
+  private shelterFlows = new Map<number, { dist: Float64Array; next: Int32Array }>();
+  /** Meat banked since this wave began: what an infested shelter's multiplier is paid on at the clear. */
+  waveBanked: Record<Caste, number> = { war: 0, science: 0, royal: 0 };
+  /** A Harrier's quills in flight (drawn only). */
+  quills: Array<{ from: Vec; to: Vec; ttl: number }> = [];
+  /** Districts drafted this run (shelters come from the shelterFromDraft-th on). */
+  draftsTaken = 0;
   /** Street routes for ordered units: target cell -> the next cell toward it from every cell. */
   private unitFlows = new Map<number, Int32Array>();
   /** Recent lightning arcs / sniper beams, for the renderer (fade fast). */
@@ -1162,6 +1180,7 @@ export class Sim {
   /** May a limb stand on this one cell? */
   private canBuildOn(cell: number, family?: TowerFamily): boolean {
     if (this.isOccupied(cell) || cell === this.map.coreCell) return false;
+    if (this.shelterAt(cell)) return false; // a shelter stands there (Oct 2 2026)
     // A limb carrying a sling pip (banked for this build) makes its own ground:
     // it needs no creep under it, only claimed city (Collins: otherwise "the
     // effect is pointless").
@@ -1766,6 +1785,7 @@ export class Sim {
   private refreshRouting(): void {
     this.routeCache.clear();
     this.unitFlows.clear();
+    this.shelterFlows.clear();
     this.dangerMap = null;
     this.flow = this.computeFlowField();
     this.creepDist = allDistance(this.map, this.map.coreCell);
@@ -1894,7 +1914,7 @@ export class Sim {
         return { ok: true };
       }
       case 'unit-order': {
-        const units = cmd.ids.map((id) => this.unitById(id)).filter((u): u is Broodling | Broodmother | SporeMule => u !== undefined);
+        const units = cmd.ids.map((id) => this.unitById(id)).filter((u): u is Broodling | Broodmother | SporeMule | Infestor | Harrier => u !== undefined);
         if (units.length === 0) return { ok: false, err: 'no such unit' };
         let order: UnitOrder = cmd.order;
         if (order.kind === 'move' || order.kind === 'attack') {
@@ -1911,7 +1931,9 @@ export class Sim {
             const p = this.standableAt({ x: order.to.x + Math.cos(a) * r, y: order.to.y + Math.sin(a) * r }) ?? order.to;
             o = { kind: order.kind, to: p };
           }
-          const list = 'mode' in u || 'strain' in u ? u.orders : (u.orders ??= []);
+          const list = 'mode' in u || 'strain' in u || 'cystId' in u || 'glandId' in u ? u.orders : (u.orders ??= []);
+          // A fresh order takes an Infestor off the shelter it was walking to.
+          if ('cystId' in u && !cmd.queue) u.infest = undefined;
           if (o.kind === 'guard') {
             list.length = 0;
             if ('mode' in u) u.guard = { ...u.pos }; else u.guard = undefined;
@@ -1949,6 +1971,16 @@ export class Sim {
         if (m.netCd > 0) return { ok: false, err: `her net is ready in ${Math.ceil(m.netCd)}s` };
         if (dist(m.pos, cmd.at) > B.netRange) return { ok: false, err: 'out of her reach' };
         this.castNet(m, cmd.at);
+        return { ok: true };
+      }
+      case 'infest': {
+        const u = this.infestors.find((x) => x.id === cmd.unitId);
+        if (!u) return { ok: false, err: 'no such Infestor' };
+        const sh = this.shelters.find((x) => x.id === cmd.shelterId);
+        if (!sh) return { ok: false, err: 'no such shelter' };
+        if (sh.state !== 'intact') return { ok: false, err: sh.state === 'infested' ? 'that shelter is yours already' : 'that shelter is a ruin' };
+        u.infest = sh.id;
+        u.orders = [];
         return { ok: true };
       }
       case 'mule-deploy': {
@@ -2219,6 +2251,8 @@ export class Sim {
         const offer = this.pendingDraft[cmd.index];
         if (!offer) return { ok: false, err: 'no such offer' };
         stampPlate(this.map, offer.pattern, offer.slot, offer.feature, this.rng);
+        this.draftsTaken += 1;
+        if (offer.shelter) this.raiseShelter(offer.slot);
         this.pendingDraft = null;
         this.creepSurgePx += B.draftCreepSurge;
         this.gates = frontierGates(this.map);
@@ -2746,6 +2780,8 @@ export class Sim {
     this.phase = 'siege';
     this.phaseElapsed = 0;
     this.waveNumber += 1;
+    this.waveBanked = { war: 0, science: 0, royal: 0 };
+    for (const sh of this.shelters) sh.harmThisWave = 0;
     // The organ stage's economy: what you did not spend between waves is lost
     // when the next wave starts. The starting meat carries into wave 1; royal
     // points are kept.
@@ -2844,6 +2880,8 @@ export class Sim {
         // A new turn: every spore bladder grows its nodes, every scaffold gland counts toward its plinth.
         this.growCreepNodes('turn');
         this.growMules();
+        this.payShelters();
+        this.growFieldUnits();
         this.growPlinths();
         this.growSeedlings();
         // Brood pips: living tissue regrows between waves — 50% max hp per pip.
@@ -2868,6 +2906,7 @@ export class Sim {
         // Every few cleared waves: the body is ready to grow into a new district.
         if (this.wavesCleared % B.draftEveryWaves === 0) {
           const offers = draftOffers(this.map, this.rng, 3);
+          this.markShelterOffer(offers);
           if (offers.length > 0) {
             this.phase = 'draft';
             this.pendingDraft = offers;
@@ -2923,6 +2962,9 @@ export class Sim {
     this.updateEnemies();
     this.updateMothers();
     this.updateMules();
+    this.updateShelters();
+    this.updateInfestors();
+    this.updateHarriers();
     this.updateBroodlings();
     this.updateTowers();
     this.updateProjectiles();
@@ -2935,6 +2977,8 @@ export class Sim {
     this.caltrops = this.caltrops.filter((c) => c.hp > 0 && (c.ttl -= DT) > 0);
     for (const a of this.arcs) a.ttl -= DT;
     this.arcs = this.arcs.filter((a) => a.ttl > 0);
+    for (const q of this.quills) q.ttl -= DT;
+    this.quills = this.quills.filter((q) => q.ttl > 0);
 
     if (this.coreHp <= 0) {
       this.outcome = 'lost';
@@ -3918,6 +3962,26 @@ export class Sim {
         }
       }
 
+      // An infested shelter is the war caste's first target (Collins, Oct 2 2026: "war prioritises them"): every war
+      // body whose road passes within shelterDetour of one turns off to tear it down.
+      if (spec.caste === 'war' && spec.rate > 0 && !spec.bomber && this.shelters.length > 0) {
+        const sh = this.shelterFor(e);
+        if (sh) {
+          if (dist(e.pos, this.cellCenter(sh.door)) <= B.shelterContact) {
+            e.attackCooldown -= DT;
+            if (e.attackCooldown <= 0) {
+              e.attackCooldown = 1 / spec.rate;
+              this.hurtShelter(sh, spec.damage * this.empowerOf(e));
+            }
+          } else {
+            const here = this.cellAt(e.pos.x, e.pos.y);
+            const step = this.shelterFlow(sh).next[here];
+            this.stepConstrained(e, step >= 0 ? this.cellCenter(step) : this.cellCenter(sh.door), speed);
+          }
+          continue;
+        }
+      }
+
       const cell = this.cellAt(e.pos.x, e.pos.y);
       const nextCell = this.flow.next[cell];
 
@@ -4423,13 +4487,15 @@ export class Sim {
   }
 
   /** Every walking unit of yours (warriors and puppets, Broodmothers, Spore Mules), with where it stands. */
-  private walkingUnits(): Array<Broodling | Broodmother | SporeMule> {
-    return [...this.broodlings, ...this.mothers, ...this.mules];
+  private walkingUnits(): Array<Broodling | Broodmother | SporeMule | Infestor | Harrier> {
+    return [...this.broodlings, ...this.mothers, ...this.mules, ...this.infestors, ...this.harriers];
   }
 
   /** Hurt one of your walking units, whichever kind it is (a warrior's death is told the way the war caste's bites tell it). */
-  private hurtUnit(u: Broodling | Broodmother | SporeMule, amount: number): void {
+  private hurtUnit(u: Broodling | Broodmother | SporeMule | Infestor | Harrier, amount: number): void {
     if (this.mules.includes(u as SporeMule)) { this.hurtMule(u as SporeMule, amount); return; }
+    if (this.infestors.includes(u as Infestor)) { this.hurtInfestor(u as Infestor, amount); return; }
+    if (this.harriers.includes(u as Harrier)) { this.hurtHarrier(u as Harrier, amount); return; }
     if (this.mothers.includes(u as Broodmother)) { this.hurtMother(u as Broodmother, amount); return; }
     const b = u as Broodling;
     b.hp -= amount;
@@ -4447,7 +4513,7 @@ export class Sim {
    */
   private updateFlamer(e: Enemy, spec: EnemySpec, speed: number): boolean {
     const f = spec.flamer!;
-    let prey: Broodling | Broodmother | SporeMule | null = null;
+    let prey: Broodling | Broodmother | SporeMule | Infestor | Harrier | null = null;
     let pd = f.sight;
     for (const u of this.walkingUnits()) {
       const d = dist(e.pos, u.pos);
@@ -4477,6 +4543,349 @@ export class Sim {
     return true;
   }
 
+// ---------- shelters, Infestors, Harriers (Collins, Oct 2 2026) ----------
+
+  /** The shelter standing on this cell, if any (its cells take no limb). */
+  shelterAt(cell: number): Shelter | undefined {
+    return this.shelters.find((sh) => sh.state !== 'ruin' && sh.cells.includes(cell));
+  }
+
+  /** Does this run grow Infestors at all (skirmish: yes; a campaign: once the cyst is bought)? */
+  private canInfest(): boolean {
+    const pool = this.cfg.organPool;
+    return !pool || pool.includes('infestor') || (this.cfg.startOrgans ?? []).includes('infestor');
+  }
+
+  /**
+   * A draft may put a SHELTER on one of its offers: from the shelterFromDraft-th draft, in shelterOdds of drafts, at
+   * most shelterMax standing, in a run that can grow an Infestor. Rolled on its own dice (a hash of the seed and the
+   * draft), so the run's other dice are untouched.
+   */
+  private markShelterOffer(offers: DraftOffer[]): void {
+    if (!this.canInfest() || offers.length === 0) return;
+    if (this.draftsTaken + 1 < B.shelterFromDraft) return;
+    if (this.shelters.filter((x) => x.state !== 'ruin').length + 0 >= B.shelterMax) return;
+    const h = (n: number) => { let x = (this.cfg.seed * 2654435761 + n * 40503 + this.draftsTaken * 9176) >>> 0; x ^= x >>> 15; x = Math.imul(x, 2246822519) >>> 0; x ^= x >>> 13; return (x >>> 0) / 4294967296; };
+    if (h(1) >= B.shelterOdds) return;
+    offers[Math.floor(h(2) * offers.length)].shelter = true;
+  }
+
+  /** Raise a shelter at the centre of a newly stamped district: a 2x2 of building beside a street, else one cell. */
+  private raiseShelter(slot: number): void {
+    const w = this.cfg.gridW;
+    const sx = (slot % this.map.slotsX) * PLATE;
+    const sy = Math.floor(slot / this.map.slotsX) * PLATE;
+    const cx = sx + PLATE / 2 - 0.5;
+    const cy = sy + PLATE / 2 - 0.5;
+    const block = (x: number, y: number) => x >= sx && y >= sy && x < sx + PLATE && y < sy + PLATE && this.map.cells[y * w + x] === CellType.Block;
+    const doorOf = (cells: number[]): number => {
+      let best = -1;
+      let bd = Infinity;
+      for (const c of cells) for (const n of [c - 1, c + 1, c - w, c + w]) {
+        if (n < 0 || n >= this.map.cells.length || this.map.cells[n] !== CellType.Road) continue;
+        const d = Math.hypot((n % w) - cx, Math.floor(n / w) - cy);
+        if (d < bd) { bd = d; best = n; }
+      }
+      return best;
+    };
+    let pick: { cells: number[]; door: number; d: number } | null = null;
+    for (const size of [2, 1]) {
+      for (let y = sy; y < sy + PLATE; y++) for (let x = sx; x < sx + PLATE; x++) {
+        const cells: number[] = [];
+        let ok = true;
+        for (let dy = 0; dy < size && ok; dy++) for (let dx = 0; dx < size; dx++) {
+          if (!block(x + dx, y + dy)) { ok = false; break; }
+          cells.push((y + dy) * w + x + dx);
+        }
+        if (!ok || cells.some((c) => this.isOccupied(c))) continue;
+        const door = doorOf(cells);
+        if (door < 0) continue;
+        const d = Math.hypot(x + (size - 1) / 2 - cx, y + (size - 1) / 2 - cy);
+        if (!pick || d < pick.d) pick = { cells, door, d };
+      }
+      if (pick) break;
+    }
+    const chosen = pick as { cells: number[]; door: number; d: number } | null;
+    if (!chosen) return;
+    const pos = { x: 0, y: 0 };
+    for (const c of chosen.cells) { const p = this.cellCenter(c); pos.x += p.x / chosen.cells.length; pos.y += p.y / chosen.cells.length; }
+    const sh: Shelter = { id: this.nextId++, cells: chosen.cells, door: chosen.door, pos, state: 'intact', stage: 0, growth: 0, hp: 1, maxHp: 1, harmThisWave: 0, cooldown: 0 };
+    this.shelters.push(sh);
+    this.events.push({ kind: 'shelter-raised', shelterId: sh.id });
+  }
+
+  /** The street route to a shelter's door (the hive's way to it). */
+  private shelterFlow(sh: Shelter): { dist: Float64Array; next: Int32Array } {
+    let f = this.shelterFlows.get(sh.id);
+    if (!f) {
+      f = computeFlow(this.map, sh.door, () => 0);
+      this.shelterFlows.set(sh.id, f);
+    }
+    return f;
+  }
+
+  /** The infested shelter this war body goes for: the one off its road by no more than shelterDetour, nearest. */
+  private shelterFor(e: Enemy): Shelter | null {
+    const here = this.cellAt(e.pos.x, e.pos.y);
+    if (here < 0) return null;
+    const toCore = this.flow.dist[here];
+    let best: Shelter | null = null;
+    let bd = Infinity;
+    for (const sh of this.shelters) {
+      if (sh.state !== 'infested') continue;
+      const d = this.shelterFlow(sh).dist[here];
+      if (!Number.isFinite(d) || d > (Number.isFinite(toCore) ? toCore : 0) + B.shelterDetour) continue;
+      if (d < bd) { bd = d; best = sh; }
+    }
+    return best;
+  }
+
+  /** Harm an infested shelter: the protected test counts it; at 0 it is lost (a ruin, its creep gone). */
+  hurtShelter(sh: Shelter, amount: number): void {
+    if (sh.state !== 'infested') return;
+    sh.hp -= amount;
+    sh.harmThisWave += amount;
+    if (sh.hp > 0) return;
+    sh.state = 'ruin';
+    sh.hp = 0;
+    this.removeCreepSourcesOf(sh.id);
+    this.shelterFlows.delete(sh.id);
+    this.stats.sheltersLost = (this.stats.sheltersLost ?? 0) + 1;
+    this.events.push({ kind: 'shelter-lost', shelterId: sh.id });
+  }
+
+  /** Is this infested shelter protected this wave (it took less than shelterProtected of its body)? */
+  shelterProtected(sh: Shelter): boolean {
+    return sh.state === 'infested' && sh.harmThisWave < sh.maxHp * B.shelterProtected;
+  }
+
+  /** The multiplier every protected infested shelter would pay now (the HUD's preview). */
+  shelterBoostNow(): number {
+    let pct = 0;
+    for (const sh of this.shelters) if (this.shelterProtected(sh)) pct += B.shelterBoost[sh.stage - 1] ?? 0;
+    return pct;
+  }
+
+  /**
+   * The wave clear: every PROTECTED infested shelter pays its stage's share of the meat banked this wave (war and
+   * science; royal points are not multiplied), grows (a stage every shelterGrowEvery protected clears, to 3) and
+   * regrows some of its body. One that was not protected pays nothing and does not grow.
+   */
+  private payShelters(): void {
+    const pct = this.shelterBoostNow();
+    if (pct > 0) {
+      const war = Math.floor(this.waveBanked.war * pct);
+      const science = Math.floor(this.waveBanked.science * pct);
+      this.meat.war += war;
+      this.meat.science += science;
+      this.stats.shelterMeat = (this.stats.shelterMeat ?? 0) + war + science;
+      this.events.push({ kind: 'shelter-paid', war, science, pct });
+    }
+    for (const sh of this.shelters) {
+      if (sh.state !== 'infested') continue;
+      if (this.shelterProtected(sh) && sh.stage < 3) {
+        sh.growth += 1;
+        const stage = Math.min(3, 1 + Math.floor(sh.growth / B.shelterGrowEvery));
+        if (stage > sh.stage) this.setShelterStage(sh, stage);
+      }
+      sh.hp = Math.min(sh.maxHp, sh.hp + sh.maxHp * B.shelterHealAtClear);
+    }
+  }
+
+  private setShelterStage(sh: Shelter, stage: number): void {
+    const was = sh.maxHp;
+    sh.stage = stage;
+    sh.maxHp = B.shelterHp[stage - 1];
+    sh.hp = Math.min(sh.maxHp, sh.hp + (sh.maxHp - was));
+    // Its creep: a seep round its door, wider each stage.
+    this.removeCreepSourcesOf(sh.id);
+    this.addCreepSource('seep', sh.door, B.shelterSeep[stage - 1], undefined, sh.id);
+    this.stats.shelterTopStage = Math.max(this.stats.shelterTopStage ?? 0, stage);
+    if (stage > 1) this.events.push({ kind: 'shelter-grew', shelterId: sh.id, stage });
+  }
+
+  /** An intact shelter's defenders shoot your nearest walking unit within reach (the Infestor burrowing first). */
+  private updateShelters(): void {
+    for (const sh of this.shelters) {
+      if (sh.state !== 'intact') continue;
+      sh.cooldown -= DT;
+      if (sh.cooldown > 0) continue;
+      const burrower = sh.burrowBy !== undefined ? this.infestors.find((u) => u.id === sh.burrowBy) : undefined;
+      let prey: Broodling | Broodmother | SporeMule | Infestor | Harrier | null = burrower ?? null;
+      if (!prey) {
+        let pd: number = B.shelterGuardRange;
+        for (const u of this.walkingUnits()) { const d = dist(sh.pos, u.pos); if (d < pd) { pd = d; prey = u; } }
+      }
+      if (!prey) continue;
+      sh.cooldown = 1 / B.shelterGuardRate;
+      this.arcs.push({ from: { ...sh.pos }, to: { ...prey.pos }, ttl: 0.12 });
+      this.hurtUnit(prey, B.shelterGuardDamage);
+    }
+  }
+
+  /**
+   * Every Infestor Cyst and Harrier Gland counts its turn (the wave clear) and grows its unit at the body, PAID FOR
+   * THEN (an Infestor 40 war + 20 science, a Harrier 25 science): if the wallet cannot pay, it waits a turn.
+   */
+  private growFieldUnits(): void {
+    for (const o of this.organs) {
+      if (o.organ !== 'infestor' && o.organ !== 'harrier') continue;
+      const every = o.organ === 'infestor' ? B.infestorEvery : B.harrierEvery;
+      const t = (this.unitTurns.get(o.id) ?? 0) + 1;
+      if (t < every) { this.unitTurns.set(o.id, t); continue; }
+      const at = this.bodyPoint();
+      if (o.organ === 'infestor') {
+        if (this.infestors.some((u) => u.cystId === o.id)) continue;
+        if (!this.canAfford(B.infestorCost)) continue;
+        this.pay(B.infestorCost);
+        const u: Infestor = { id: this.nextId++, cystId: o.id, pos: { ...at }, hp: B.infestorHp, maxHp: B.infestorHp, orders: [], guard: { ...at } };
+        this.infestors.push(u);
+        this.stats.infestorsBorn = (this.stats.infestorsBorn ?? 0) + 1;
+        this.events.push({ kind: 'infestor-born', unitId: u.id });
+      } else {
+        if (this.harriers.some((u) => u.glandId === o.id) || this.harriers.length >= B.harrierMax) continue;
+        if (!this.canAfford(B.harrierCost)) continue;
+        this.pay(B.harrierCost);
+        const u: Harrier = { id: this.nextId++, glandId: o.id, pos: { ...at }, hp: B.harrierHp, maxHp: B.harrierHp, orders: [], guard: { ...at }, cooldown: 0 };
+        this.harriers.push(u);
+        this.stats.harriersBorn = (this.stats.harriersBorn ?? 0) + 1;
+        this.events.push({ kind: 'harrier-born', unitId: u.id });
+      }
+      this.unitTurns.set(o.id, 0);
+    }
+  }
+
+  /**
+   * Infestors walk their orders. One sent to a shelter walks to its door and BURROWS in for infestChannel seconds,
+   * standing still under the defenders' fire; if it dies first the shelter stays theirs. Done: the shelter is yours.
+   */
+  private updateInfestors(): void {
+    for (const u of [...this.infestors]) {
+      if (u.infest !== undefined) {
+        const sh = this.shelters.find((x) => x.id === u.infest);
+        if (!sh || sh.state !== 'intact') { u.infest = undefined; continue; }
+        const door = this.cellCenter(sh.door);
+        if (dist(u.pos, door) > 10) {
+          if (sh.burrowBy === u.id) { sh.burrowBy = undefined; sh.burrowT = 0; }
+          this.walkTo(u, door, B.infestorSpeed);
+          continue;
+        }
+        if (sh.burrowBy !== u.id) {
+          if (sh.burrowBy !== undefined && this.infestors.some((x) => x.id === sh.burrowBy)) continue; // another is at it
+          sh.burrowBy = u.id;
+          sh.burrowT = 0;
+          this.events.push({ kind: 'shelter-burrow', shelterId: sh.id, unitId: u.id });
+        }
+        sh.burrowT = (sh.burrowT ?? 0) + DT;
+        if (sh.burrowT >= B.infestChannel) this.infestShelter(sh, u);
+        continue;
+      }
+      const order = u.orders[0];
+      if (!order || order.kind === 'hold') continue;
+      if (order.kind === 'guard') { u.orders.shift(); continue; }
+      const to = order.kind === 'return' ? this.bodyPoint() : order.to;
+      if (this.walkTo(u, to, B.infestorSpeed)) { u.guard = { ...to }; u.orders.shift(); }
+    }
+  }
+
+  /** The Infestor is spent: the shelter is YOURS, stage 1, seeping creep round its door. */
+  private infestShelter(sh: Shelter, u: Infestor): void {
+    this.infestors = this.infestors.filter((x) => x !== u);
+    sh.state = 'infested';
+    sh.burrowBy = undefined;
+    sh.burrowT = 0;
+    sh.growth = 0;
+    sh.harmThisWave = 0;
+    sh.hp = 0;
+    sh.maxHp = 0;
+    this.setShelterStage(sh, 1);
+    sh.hp = sh.maxHp;
+    this.shelterFlows.delete(sh.id);
+    this.stats.sheltersInfested = (this.stats.sheltersInfested ?? 0) + 1;
+    this.events.push({ kind: 'shelter-infested', shelterId: sh.id });
+  }
+
+  hurtInfestor(u: Infestor, amount: number): void {
+    u.hp -= amount;
+    if (u.hp > 0) return;
+    this.infestors = this.infestors.filter((x) => x !== u);
+    for (const sh of this.shelters) if (sh.burrowBy === u.id) { sh.burrowBy = undefined; sh.burrowT = 0; }
+    this.stats.infestorsLost = (this.stats.infestorsLost ?? 0) + 1;
+    this.events.push({ kind: 'infestor-lost', unitId: u.id });
+  }
+
+  hurtHarrier(u: Harrier, amount: number): void {
+    u.hp -= amount;
+    if (u.hp > 0) return;
+    this.harriers = this.harriers.filter((x) => x !== u);
+    this.stats.harriersLost = (this.stats.harriersLost ?? 0) + 1;
+    this.events.push({ kind: 'harrier-lost', unitId: u.id });
+  }
+
+  /** The science-caste body nearest a point anywhere on the board (a Harrier's quarry). */
+  private nearestScience(from: Vec): Enemy | null {
+    let best: Enemy | null = null;
+    let bd = Infinity;
+    for (const e of this.enemies) {
+      if (e.burrowed || !this.isRevealed(e) || this.isAirborne(e) || enemySpec(e.kind).caste !== 'science') continue;
+      const d = dist(from, e.pos);
+      if (d < bd) { bd = d; best = e; }
+    }
+    return best;
+  }
+
+  /**
+   * Harriers. Unordered, a Harrier HUNTS: the nearest science-caste body anywhere in the city, run down at its speed
+   * and shot from its range; with none about, it fights the hive near its post (badly: its quills are made for the
+   * soft castes) and drifts home. Orders (move, attack, hold, return) come first.
+   */
+  private updateHarriers(): void {
+    for (const u of [...this.harriers]) {
+      u.cooldown -= DT;
+      const shoot = (prey: Enemy): void => {
+        if (u.cooldown > 0) return;
+        u.cooldown = 1 / B.harrierRate;
+        const caste = enemySpec(prey.kind).caste;
+        const mult = caste === 'science' ? B.harrierVsScience : caste === 'war' ? B.harrierVsWar : 1;
+        this.quills.push({ from: { ...u.pos }, to: { ...prey.pos }, ttl: 0.15 });
+        const was = prey.hp;
+        this.damageEnemy(prey, B.harrierDamage * mult, 1, 0, u.id, true);
+        if (was > 0 && !this.enemies.includes(prey)) this.stats.harrierKills = (this.stats.harrierKills ?? 0) + 1;
+      };
+      const inRange = (from: Vec): Enemy | null => this.preyNear(from, B.harrierRange, from, false);
+      const order = u.orders[0];
+      if (order && (order.kind === 'move' || order.kind === 'return')) {
+        const to = order.kind === 'move' ? order.to : this.bodyPoint();
+        if (this.walkTo(u, to, B.harrierSpeed)) { u.guard = { ...to }; u.orders.shift(); }
+        continue;
+      }
+      if (order && order.kind === 'attack') {
+        const prey = inRange(u.pos);
+        if (prey) { shoot(prey); continue; }
+        if (this.walkTo(u, order.to, B.harrierSpeed)) { u.guard = { ...order.to }; u.orders.shift(); }
+        continue;
+      }
+      if (order && order.kind === 'hold') {
+        const prey = inRange(u.pos);
+        if (prey) shoot(prey);
+        continue;
+      }
+      // Hunting the science caste, anywhere.
+      const quarry = this.nearestScience(u.pos);
+      if (quarry) {
+        if (dist(u.pos, quarry.pos) <= B.harrierRange) shoot(quarry);
+        else this.walkTo(u, quarry.pos, B.harrierSpeed);
+        continue;
+      }
+      const post = u.guard ?? this.bodyPoint();
+      const prey = this.preyNear(post, B.harrierLeash, u.pos, false);
+      if (prey) {
+        if (dist(u.pos, prey.pos) <= B.harrierRange) shoot(prey);
+        else this.walkTo(u, prey.pos, B.harrierSpeed);
+      } else if (dist(u.pos, post) > 16) this.walkTo(u, post, B.harrierSpeed * 0.8);
+    }
+  }
+
   hurtMule(m: SporeMule, amount: number): void {
     m.hp -= amount;
     if (m.hp > 0) return;
@@ -4486,8 +4895,9 @@ export class Sim {
   }
 
   /** Your unit with this id, warrior or Broodmother. */
-  unitById(id: number): Broodling | Broodmother | SporeMule | undefined {
-    return this.mothers.find((m) => m.id === id) ?? this.mules.find((m) => m.id === id) ?? this.broodlings.find((b) => b.id === id);
+  unitById(id: number): Broodling | Broodmother | SporeMule | Infestor | Harrier | undefined {
+    return this.mothers.find((m) => m.id === id) ?? this.mules.find((m) => m.id === id) ?? this.infestors.find((m) => m.id === id)
+      ?? this.harriers.find((m) => m.id === id) ?? this.broodlings.find((b) => b.id === id);
   }
 
   /** Aimed bile globs land and detonate with the lobber's full payload. */
@@ -5250,6 +5660,7 @@ export class Sim {
       if (n <= 0) continue;
       this.meat[c] += n;
       this.digested[c] += n;
+      this.waveBanked[c] += n;
       if (c === 'science') {
         this.scienceBanked += n;
         this.checkDirective();

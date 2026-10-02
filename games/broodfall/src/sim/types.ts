@@ -65,7 +65,7 @@ export type CasteFocus = 'any' | Caste;
 export type OrganId = 'forge' | 'venom' | 'gut' | 'nerve' | 'lattice' | 'womb' | 'marrow' | 'resonance'
   | 'heart' | 'brain' | 'gland' | 'root' | 'atrophy'
   | 'bladder' | 'pacemaker' | 'budder' | 'cyst' | 'swell' | 'catapult' | 'mire' | 'acid' | 'runner'
-  | 'scaffold' | 'seeder' | 'mule';
+  | 'scaffold' | 'seeder' | 'mule' | 'infestor' | 'harrier';
 
 export type GlandMode = 'calm' | 'lure' | 'challenge';
 
@@ -577,6 +577,63 @@ export interface Broodmother {
  * it out and deploy it"). Born of a Mule Sac in the organ stage; slow, unarmed, under your orders like the brood. DEPLOY
  * roots it where it stands and it becomes a creep node there, carrying the strain of the creep organs touching its sac.
  */
+/**
+ * SHELTERS (Collins, Oct 2 2026): a fortified civic shelter at the centre of a drafted district, off your creep. Its
+ * defenders shoot your walking units near it. An Infestor burrows into it and it becomes YOURS: an infested shelter,
+ * a second base that seeps creep, grows through three stages and pays a multiplier on the wave's meat at every wave
+ * clear it was PROTECTED through. The war caste goes for it first.
+ */
+export interface Shelter {
+  id: number;
+  /** The building cells it stands on (one, or a 2x2). */
+  cells: number[];
+  /** The street cell in front of it: where an Infestor burrows in and where the hive attacks it from. */
+  door: number;
+  pos: Vec;
+  state: 'intact' | 'infested' | 'ruin';
+  /** Infested: its stage (1..3) and the protected waves it has grown through. */
+  stage: number;
+  growth: number;
+  hp: number;
+  maxHp: number;
+  /** Harm taken since this wave began (the protected test). */
+  harmThisWave: number;
+  /** Its defenders' next shot (s). */
+  cooldown: number;
+  /** The Infestor burrowing into it now, and how far (s). */
+  burrowBy?: number;
+  burrowT?: number;
+}
+
+/** The INFESTOR (Collins, Oct 2 2026): big, slow, fragile for its size, expensive. It burrows into a shelter. */
+export interface Infestor {
+  id: number;
+  /** The Infestor Cyst (organ id) that grew it. */
+  cystId: number;
+  pos: Vec;
+  hp: number;
+  maxHp: number;
+  orders: UnitOrder[];
+  guard?: Vec;
+  /** The shelter it was ordered to take. */
+  infest?: number;
+}
+
+/**
+ * The HARRIER (Collins, Oct 2 2026: "a faster long-range attacker that is harder to make in large numbers ... to solve
+ * science teams attacking you far from any response"). Fast, long-ranged, soft, few: it hunts the science caste.
+ */
+export interface Harrier {
+  id: number;
+  glandId: number;
+  pos: Vec;
+  hp: number;
+  maxHp: number;
+  orders: UnitOrder[];
+  guard?: Vec;
+  cooldown: number;
+}
+
 export interface SporeMule {
   id: number;
   /** The Mule Sac (organ id) that grew it. */
@@ -704,6 +761,17 @@ export type SimEvent =
   | { kind: 'mule-born'; muleId: number }
   | { kind: 'mule-lost'; muleId: number }
   | { kind: 'mule-rooted'; muleId: number; cell: number }
+  | { kind: 'infestor-born'; unitId: number }
+  | { kind: 'infestor-lost'; unitId: number }
+  | { kind: 'harrier-born'; unitId: number }
+  | { kind: 'harrier-lost'; unitId: number }
+  | { kind: 'shelter-raised'; shelterId: number }
+  | { kind: 'shelter-burrow'; shelterId: number; unitId: number }
+  | { kind: 'shelter-infested'; shelterId: number }
+  | { kind: 'shelter-grew'; shelterId: number; stage: number }
+  | { kind: 'shelter-lost'; shelterId: number }
+  /** A wave cleared with infested shelters protected: the meat they added (pct: the total boost). */
+  | { kind: 'shelter-paid'; war: number; science: number; pct: number }
   /** A Broodmother lost the creep under her: she can brood only on creep, so she is in fight mode now. */
   | { kind: 'mother-off-creep'; motherId: number }
   | { kind: 'mother-lost'; denId: number; motherId: number }
@@ -775,7 +843,9 @@ export type Command =
   /** A Brood Pit's or Den's rally point: where its new warriors (or its new Broodmother) go. */
   | { kind: 'set-rally'; towerId: number; cell: number }
   /** A Spore Mule roots where it stands and becomes a creep node (Collins, Oct 2 2026). */
-  | { kind: 'mule-deploy'; muleId: number };
+  | { kind: 'mule-deploy'; muleId: number }
+  /** An Infestor goes to a shelter and burrows into it (Collins, Oct 2 2026). */
+  | { kind: 'infest'; unitId: number; shelterId: number };
 
 /** The deployment order: the win condition, issued by command. */
 export type Directive =
@@ -876,6 +946,16 @@ export interface RunStats {
   mulesBorn?: number;
   mulesLost?: number;
   mulesRooted?: number;
+  /** Infestors grown and lost, shelters infested and lost, the meat they paid, Harriers grown and lost, their kills. */
+  infestorsBorn?: number;
+  infestorsLost?: number;
+  sheltersInfested?: number;
+  sheltersLost?: number;
+  shelterMeat?: number;
+  shelterTopStage?: number;
+  harriersBorn?: number;
+  harriersLost?: number;
+  harrierKills?: number;
   mothersLost?: number;
   netsCast?: number;
   netHits?: number;
