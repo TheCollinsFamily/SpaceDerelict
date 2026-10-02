@@ -75,6 +75,29 @@ const PLAN: Partial<Record<TowerFamily, ShapeId | [number, number]>> = {
 };
 const planOf = (fams: TowerFamily[], payAs?: Partial<Record<TowerFamily, number>>): Candidate =>
   Object.fromEntries(fams.map((f) => [f, paidFor(towerSpec(f), PLAN[f]!, payAs?.[f])])) as Candidate;
+const PLAN4: Partial<Record<TowerFamily, ShapeId | [number, number]>> = {
+  impaler: 'line3', lance: 'line3', ember: 'line3', amp: 'line3',
+  frond: 'T', choir: 'T', blighter: 'T',
+  quill: 'L3', conduit: 'L3',
+  tangler: 'L4', press: 'L4',
+  bombard: [2, 2],
+};
+/** The plan4 candidate: `light` pays a 3-cell shape as 2 cells and a 4-cell one as 3; `none` pays nothing (same stats on new ground). */
+function plan4(pay?: 'light' | 'none'): Candidate {
+  const c: Candidate = {};
+  for (const [f, to] of Object.entries(PLAN4) as Array<[TowerFamily, ShapeId | [number, number]]>) {
+    const spec = towerSpec(f);
+    const n = Array.isArray(to) ? to[0] * to[1] : SHAPES[to].cells.length;
+    const now = footprintOf(spec).cells.length;
+    const as = pay === 'none' ? now : pay === 'light' ? Math.max(now, n - 1) : n;
+    c[f] = paidFor(spec, to, as);
+  }
+  // Back to one square at their stats from before Sep 29.
+  c.mister = { span: undefined, range: 85, damage: 2, aoe: 40, maxHp: 65 };
+  c.ward = { span: undefined, maxHp: 90, auraRadius: 95 };
+  return c;
+}
+
 /** The L limbs paid LESS (Oct 1: paid in full the four of them took the scripted player from 5 to 8 wins in ten). */
 const L_LIGHT: Partial<Record<TowerFamily, number>> = { lasher: 2, quill: 2, conduit: 2, tangler: 4 };
 const T_LIGHT: Partial<Record<TowerFamily, number>> = { burster: 2, choir: 2, mister: 4 };
@@ -109,6 +132,11 @@ const CANDIDATES: Record<string, Candidate> = {
   plan2: { bombard: paidFor(towerSpec('bombard'), 'T') },
   // After Collins's sanity pass (Oct 2): the Bombard on a 2x2 (a squat mortar, not a T); the Caustic Mister and the
   // Ward Membrane back to one square with the stats they had before Sep 29 (cheap support, not "very powerful").
+  // The class-zero mapping (Oct 2, after Collins: "We need some line of 3, T of 4, elbow of 3, L of 4 ... it's class
+  // zero of tower defence"): paid in full, lighter, and not at all (only the shape), to find the pay that holds.
+  plan4: plan4(),
+  plan4light: plan4('light'),
+  plan4none: plan4('none'),
   plan3: {
     bombard: [2, 2],
     mister: { span: undefined, range: 85, damage: 2, aoe: 40, maxHp: 65 },

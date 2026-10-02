@@ -9,7 +9,7 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { FIXES, NO_L, PLAN, PRICE, QUESTIONS, RULES, SANITY } from './plan.mjs';
+import { FIXES, NO_L, PLAN, PRICE, PRINCIPLE, QUESTIONS, RULES, SANITY } from './plan.mjs';
 
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const KIND = { '1x1': 'one', '1x2': 'line', line3: 'line', '2x2': 'square', T: 'T', L3: 'L', L4: 'L', S4: 'zigzag' };
@@ -125,11 +125,11 @@ export function planSectionHtml(entries, P, names) {
   return `
 <section class="plan" id="footprint-plan">
 <h2>Footprint plan (proposed, not applied)</h2>
-<p class="lede2">Collins: "the total lack of diversity in footprint ... is kind of a KEY part of tower defence strategy ... one square (hugely over-represented), two squares (line), four squares (large square, usually for very powerful towers), T-shaped (usually for very powerful area-effect things), L-shaped (like an elbow shape)." The engine for every shape is BUILT and on main (any shape, four turns, R / right-click / Shift + wheel / the TURN button while placing; its ground outlined on the board). This plan says which limb takes which shape. Nothing below is applied; any of it can be tried in game first: <code>?tryShape=bombard:2x2</code>. Revised Oct 2 after Collins: "simple towers and ones that absolutely must be by the corridor are typically 1 single square, so like the Lasher does not need to change ... also the Maw is already a 2x2".</p>
+<p class="lede2">Collins: "the total lack of diversity in footprint ... is kind of a KEY part of tower defence strategy ... one square (hugely over-represented), two squares (line), four squares (large square, usually for very powerful towers), T-shaped (usually for very powerful area-effect things), L-shaped (like an elbow shape)." The engine for every shape is BUILT and on main (any shape, four turns, R / right-click / Shift + wheel / the TURN button while placing; its ground outlined on the board). This plan says which limb takes which shape. Nothing below is applied. Revised Oct 2. Collins: "We need some line of 3, T of 4, elbow of 3, L of 4 ... this should be blindly obvious, it's class zero of tower defence." <b>${esc(PRINCIPLE)}</b> Try any of it: <code>?tryShape=choir:T,quill:L3,ember:line3</code>.</p>
 <h3 class="sub3">The rules this plan follows</h3>
 <ol class="rules">${RULES.map(([a, b]) => `<li><b>${esc(a)}.</b> ${esc(b)}</li>`).join('')}</ol>
 <div class="pgrid">
-  <article><h3>Distribution</h3><div class="dist"><div class="dk hd"><span></span><span>now</span><span>proposed</span></div>${bars}</div><p class="note">${total} limbs. One cell: ${now.one} → ${next.one} (${Math.round((next.one / total) * 100)}%: by rule 1 it stays the most common). ${changes.length} limb${changes.length === 1 ? '' : 's'} change${changes.length === 1 ? 's' : ''} footprint: ${changes.map((e) => esc(names[e.family])).join(', ')}. ${esc(NO_L)}</p></article>
+  <article><h3>Distribution</h3><div class="dist"><div class="dk hd"><span></span><span>now</span><span>proposed</span></div>${bars}</div><p class="note">${total} limbs. One cell: ${now.one} → ${next.one} (${Math.round((next.one / total) * 100)}%). ${changes.length} limb${changes.length === 1 ? '' : 's'} change${changes.length === 1 ? 's' : ''} footprint: ${changes.map((e) => esc(names[e.family])).join(', ')}. ${esc(NO_L)}</p></article>
   <article><h3>How each shape fits the city</h3><p class="note">Share of roof cells where pointing can build it (any of four turns; one block, one height), on the four crash sites and on ten mid-run boards. A shape that rarely fits is a bad shape: the 2x2 is the hardest to fit (it is kept for the strongest limbs); the zigzag fits badly and is not used.</p>${fitRows ? `<table class="fit"><thead><tr><th></th><th>Shape</th><th>Crash site</th><th>Mid-run</th><th>Placements, crash</th><th>Mid-run</th></tr></thead><tbody>${fitRows}</tbody></table>` : '<p class="mute">Not measured.</p>'}</article>
   <article><h3>Measured (scripted player, ten seeds; guardrail eight)</h3><p class="note">Each candidate pays a reshaped limb for its ground as the BIG limbs were (hp ×1.6 / ×2.0 / ×2.4 on 2 / 3 / 4 cells, hits ×1.25 / ×1.38 / ×1.5, reach ×1.1 / ×1.12 / ×1.15), same price. It must win at least 3 of 10 and keep placing well ahead of placing blind. Nothing is changed in the game; the candidate is put back after it is measured.</p>${measuredHtml}</article>
   <article><h3>What the art costs (one pass with the upgrade looks)</h3><p class="note">Footprint, new silhouettes, views from behind, the reachable looks and the spatial variants, drawn together so nothing is drawn twice. One side $1.45 (a picture and two clips), with a view from behind $2.90 (a limb on a turned footprint, or one that faces a way, needs both).</p><table class="cost"><tbody>
@@ -180,9 +180,9 @@ export function planMarkdown(entries, P, names) {
   L.push('');
   L.push('Collins (Oct 1 2026): "the total lack of diversity in footprint ... is kind of a KEY part of tower defence strategy. In tower defence the tower categories are one square (hugely over-represented), two squares (line), four squares (large square, usually for very powerful towers), T-shaped (usually for very powerful area-effect things), L-shaped (like an elbow shape) ... we may need more visuals for towers that, to work, need to look different ... so a reach lasher will likely need sub-variants because it needs that reach to work." And: "look at the problems you identified in the doc for the existing ones and make sure you pre-address this in the redesign."');
   L.push('');
-  L.push('The engine for every shape is built and on main (`src/sim/footprint.ts`; HANDOFF.md "Footprints"). This file says which limb takes which shape; nothing in it is applied. Try any of it in game first: `?tryShape=bombard:2x2` (any limb, any of `1x1 1x2 2x2 line3 T L3 L4 S4`). The same plan is on the limb decision sheet (https://claude.ai/artifact/G1XVCeZcLdEPx1QfQ2ny7g), section "Footprint plan", with a Footprint column. Made by `node tools/codex/sheet.mjs` from `tools/codex/plan.mjs`.');
+  L.push('The engine for every shape is built and on main (`src/sim/footprint.ts`; HANDOFF.md "Footprints"). This file says which limb takes which shape; nothing in it is applied. Try any of it in game first: `?tryShape=choir:T,quill:L3,ember:line3` (any limb, any of `1x1 1x2 2x2 line3 T L3 L4 S4`). The same plan is on the limb decision sheet (https://claude.ai/artifact/G1XVCeZcLdEPx1QfQ2ny7g), section "Footprint plan", with a Footprint column. Made by `node tools/codex/sheet.mjs` from `tools/codex/plan.mjs`.');
   L.push('');
-  L.push('Revised Oct 2 after Collins: "simple towers and ones that absolutely must be by the corridor are typically 1 single square, so like the Lasher does not need to change ... also the Maw is already a 2x2, keep that in mind." The first draft (Oct 1, 14 changes) is superseded; the sanity pass below changed three more.');
+  L.push('Revised Oct 2. Collins: "We need some line of 3, T of 4, elbow of 3, L of 4 ... this should be blindly obvious, it’s class zero of tower defence." ' + PRINCIPLE + ' The earlier drafts (Oct 1: 14 changes; Oct 2: 3 changes) are superseded.');
   L.push('');
   L.push('## The rules this plan follows');
   L.push('');
@@ -211,7 +211,8 @@ export function planMarkdown(entries, P, names) {
     L.push(`| ${names[e.family]} | ${SHAPE_NAME[n]} | ${n === p.to ? 'kept' : `**${SHAPE_NAME[p.to]}**`} | ${p.rule ?? ''} | ${p.why ?? ''}${p.risk ? ` RISK: ${p.risk}` : ''}${p.open ? ` OPEN: ${p.open}` : ''} | ${p.silhouette ?? ''} |`);
   }
   L.push('');
-  L.push('A reshaped limb is paid for its ground the way the BIG limbs were on Sep 29 (same price; hp x1.6 / x2.0 / x2.4 on 2 / 3 / 4 cells, hits x1.25 / x1.38 / x1.5, reach x1.1 / x1.12 / x1.15, blast x1.1 / x1.18 / x1.25; a limb already big is paid the difference; the Mister and the Ward going back to one square get their stats from before Sep 29).');
+  L.push('**Recommended pay (measured): none.** A reshaped limb keeps its stats; the ground it takes is its new cost. Paid for its ground in full the mapping made the scripted player win 7 of 10, too easy; unpaid it wins 5 of 10, as today. (For reference, the BIG limbs’ pay follows.)');
+L.push('A reshaped limb is paid for its ground the way the BIG limbs were on Sep 29 (same price; hp x1.6 / x2.0 / x2.4 on 2 / 3 / 4 cells, hits x1.25 / x1.38 / x1.5, reach x1.1 / x1.12 / x1.15, blast x1.1 / x1.18 / x1.25; a limb already big is paid the difference; the Mister and the Ward going back to one square get their stats from before Sep 29).');
   L.push('');
   L.push('## How each shape fits the city');
   L.push('');

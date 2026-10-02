@@ -8,7 +8,7 @@ import { PLAN, SANITY } from './plan.mjs';
 import { cellsSvg } from './planSection.mjs';
 
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-const WORD = { '1x1': '1 square', '1x2': 'line of 2', line3: 'line of 3', '2x2': '2x2', T: 'T', L3: 'L', L4: 'L', S4: 'zigzag' };
+const WORD = { '1x1': '1 square', '1x2': 'line of 2', line3: 'line of 3', '2x2': '2x2', T: 'T of 4', L3: 'elbow of 3', L4: 'L of 4', S4: 'zigzag' };
 const KIND = { '1x1': '1 square', '1x2': 'Line', line3: 'Line', '2x2': '2x2', T: 'T', L3: 'L', L4: 'L' };
 const ORDER = ['1 square', 'Line', '2x2', 'T', 'L'];
 /** The plan's one-line reason, without its "SANITY PASS:" tag. */
@@ -30,7 +30,7 @@ export function overviewHtml(entries, P, names, thumbs) {
     <td class="ot"><img src="${thumbs[e.family]?.front ?? ''}" alt="" width="40" height="40" loading="lazy"></td>
     <td class="on"><a href="#${e.family}">${esc(names[e.family])}</a></td>
     <td class="of">${cellsSvg(P.dump[e.family].next, c ? 'next' : '')}<span>${esc(WORD[p.to])}</span></td>
-    <td class="ox">${c ? `<b>${esc(WORD[now])} → ${esc(WORD[p.to])}</b> ${esc(p.change ?? reason(p))}` : ''}</td>
+    <td class="ox">${c ? `<b>${esc(WORD[now])} → ${esc(WORD[p.to])}</b> ${esc(p.change ?? reason(p))}${p.silhouette ? `<span class="oa"><em>Art</em> ${esc(p.silhouette)}</span>` : ''}` : ''}</td>
   </tr>`).join('');
   return `
 <section class="over" id="footprints">
@@ -78,6 +78,8 @@ table.ov { min-width: 0; width: 100%; }
 .ov .of span { margin-left: 8px; font: 500 12px var(--display); letter-spacing: 1px; text-transform: uppercase; color: var(--dim); vertical-align: middle; }
 .ov .of svg { vertical-align: middle; }
 .ov .ox { font-size: 12.5px; color: #c8d1d5; }
+.ov .ox .oa { display: block; margin-top: 2px; color: var(--dim); }
+.ov .ox .oa em { font: 600 9.5px var(--display); font-style: normal; letter-spacing: 1.6px; text-transform: uppercase; margin-right: 4px; }
 .ov .ox b { color: var(--amber); font-weight: 600; margin-right: 6px; white-space: nowrap; }
 .ov tr.chg td { background: rgba(240, 198, 106, 0.07); }
 .ov tr.chg td:first-child { box-shadow: inset 3px 0 0 var(--amber); }

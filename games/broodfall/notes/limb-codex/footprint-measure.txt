@@ -1,4 +1,5 @@
-TODAY (no limb reshaped; walls across streets since Oct 1): HOLDS · naive 5/10 · guardrail 4:0 (83866 to 46000)
-REVISED PLAN (Bombard 2x2, Caustic Mister and Ward Membrane one square at their pre-Sep-29 stats): HOLDS · naive 5/10 · guardrail 4:0 (81184 to 46000)
-The Bombard on a T instead (before the sanity pass): HOLDS but weaker · naive 4/10 · guardrail 3:0 (77132 to 46000)
-The Oct 1 first draft (14 changes, superseded): 10/10 at full pay, 6/10 with the elbows and T paid as two cells
+TODAY (no limb reshaped; walls across streets): HOLDS · naive 5/10 · guardrail 4:0 (83866 to 46000)
+REVISED PLAN, RECOMMENDED: the class-zero mapping with each limb's stats unchanged (its ground is its new cost): HOLDS · naive 5/10 · guardrail 3:0 (81585 to 45000)
+The mapping, each reshaped limb paid for its ground in full (hp, hits, reach as the BIG limbs were): HOLDS but too easy · naive 7/10 · guardrail 5:0 (86686 to 46000)
+The mapping, paid lighter (a 3-cell shape as 2 cells, a 4-cell one as 3): HOLDS but too easy · naive 7/10 · guardrail 5:0 (88195 to 45000)
+Earlier drafts, superseded: Oct 1 (14 changes) 10/10 at full pay, 6/10 lighter; Oct 2 first revision (3 changes) 5/10, guardrail 4:0

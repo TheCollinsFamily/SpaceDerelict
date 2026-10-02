@@ -885,10 +885,13 @@ powerful area-effect things), L-shaped (like an elbow shape)". DESIGN.md "Shaped
 - **Screens:** `node tools/shot-footprint.mjs` is the ENGINE TEST (every shape on one placeholder Spitter;
   `notes/screens/2026-10-01/footprint-ENGINE-TEST-sheet.jpg`); `node tools/shot-footprint.mjs --plan` shows each
   multi-cell or reshaped limb on its own proposed shape (`footprint-PLAN-sheet.jpg`).
-- **Revised plan (Oct 2):** Collins's rules (simple and corridor limbs one square; lines for axis and walls; 2x2 for
-  the very powerful; T for very powerful area effects only; L only where a bend does the job better) and his sanity
-  pass leave three changes: Spore Bombard 1 → 2x2, Caustic Mister and Ward Membrane 2x2 → 1 (pre-Sep-29 stats).
-  No T or L fits a current limb. Measured (`MEASURE=plan3`): naive 5/10, guardrail 4:0, the same as today.
+- **Plan (Oct 2, class zero; supersedes the Oct 1 and first Oct 2 drafts):** Collins: "We need some line of 3, T of 4,
+  elbow of 3, L of 4 ... it's class zero of tower defence." The footprint is a placement puzzle; the art is redrawn to fit
+  it. Lines of 3: Impaler, Creep Lance, Ember Sac, Resonance Amplifier (now buffs what touches its length: a mechanic
+  change). T: Galvanic Frond, Choir Node, Blight Vent. Elbow of 3: Quill Fan, Marrow Conduit. L of 4: Snare Bed, Meat
+  Press. 2x2: Maw, Den, Trap Cage, Spore Bombard. Lines of 2: Spine Wall, Skipping Mortar. One square: 21, including
+  the Caustic Mister and Ward Membrane (back from 2x2). Measured (`MEASURE=plan4none`): with stats unchanged 5/10,
+  guardrail 3:0 (today 5/10, 4:0); paid for ground it is too easy (7/10). Not applied: `?tryShape=` plays it.
 - **Applying a shape to a limb** (when Collins decides): `shape: 'L3'` (or `span`) on it in `content/data.ts`, paid
   for its ground as the BIG limbs were (the K table in footprints.measure.ts), its art redrawn for the footprint
   in the same pass as its upgrade looks (the plan's cost), then the measures.
