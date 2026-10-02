@@ -1370,6 +1370,137 @@
     }
    }
   },
+  "engineer": {
+   "atlas": "units/engineer.webp",
+   "frame": 128,
+   "cols": 16,
+   "anchor": [
+    0.5,
+    0.94
+   ],
+   "body": 0.47,
+   "flies": false,
+   "anims": {
+    "walk": {
+     "S": {
+      "start": 0,
+      "count": 14,
+      "fps": 4.42
+     },
+     "SW": {
+      "start": 14,
+      "count": 12,
+      "fps": 12
+     },
+     "W": {
+      "start": 26,
+      "count": 14,
+      "fps": 12
+     },
+     "NW": {
+      "start": 40,
+      "count": 14,
+      "fps": 4.67
+     },
+     "N": {
+      "start": 54,
+      "count": 14,
+      "fps": 4.54
+     }
+    },
+    "attack": {
+     "S": {
+      "start": 68,
+      "count": 12,
+      "fps": 3
+     },
+     "SW": {
+      "start": 80,
+      "count": 12,
+      "fps": 3,
+      "anchor": [
+       0.5,
+       0.856
+      ],
+      "scale": 1.0985
+     },
+     "W": {
+      "start": 92,
+      "count": 12,
+      "fps": 3
+     },
+     "NW": {
+      "start": 104,
+      "count": 12,
+      "fps": 3
+     },
+     "N": {
+      "start": 116,
+      "count": 12,
+      "fps": 3
+     }
+    },
+    "death": {
+     "SW": {
+      "start": 128,
+      "count": 12,
+      "fps": 3
+     },
+     "S": {
+      "start": 128,
+      "count": 12,
+      "fps": 3
+     },
+     "W": {
+      "start": 128,
+      "count": 12,
+      "fps": 3
+     },
+     "NW": {
+      "start": 128,
+      "count": 12,
+      "fps": 3
+     },
+     "N": {
+      "start": 128,
+      "count": 12,
+      "fps": 3
+     }
+    },
+    "hit": {
+     "S": {
+      "start": 140,
+      "count": 8,
+      "fps": 2.29
+     },
+     "SW": {
+      "start": 148,
+      "count": 8,
+      "fps": 3.69,
+      "anchor": [
+       0.5,
+       0.9357
+      ],
+      "scale": 1.0049
+     },
+     "W": {
+      "start": 156,
+      "count": 8,
+      "fps": 2.34
+     },
+     "NW": {
+      "start": 164,
+      "count": 8,
+      "fps": 2.34
+     },
+     "N": {
+      "start": 172,
+      "count": 8,
+      "fps": 2.34
+     }
+    }
+   }
+  },
   "flametrooper": {
    "atlas": "units/flametrooper.webp",
    "frame": 128,

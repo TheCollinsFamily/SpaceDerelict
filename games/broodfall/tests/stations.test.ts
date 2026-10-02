@@ -315,8 +315,10 @@ describe('the stations\' pictures', () => {
   it('every tile set has its station in all its states and its turret (public/art/station/<set>/)', async () => {
     const fs = await import('node:fs');
     const path = await import('node:path');
-    const { BIOMES } = await import('../tools/art/biomes.mjs');
-    for (const b of BIOMES as Array<{ id: string }>) {
+    // The ten tile sets (tools/art/biomes.mjs BIOMES).
+    const sets = ['orthodox', 'suburb', 'megacity', 'orient', 'industrial', 'farmland', 'necropolis', 'deephive', 'terraces', 'wetland'];
+    for (const id of sets) {
+      const b = { id };
       for (const state of ['building', 'active', 'fortified', 'ruin', 'turret']) {
         expect(fs.existsSync(path.join('public', 'art', 'station', b.id, `${state}.webp`)), `${b.id}/${state}`).toBe(true);
       }

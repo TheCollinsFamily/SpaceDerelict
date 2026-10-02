@@ -188,6 +188,32 @@ export class Autoplayer {
     return false;
   }
 
+  /** The strike force currently sent at a science station (its target id), if any. */
+  private striking: number | null = null;
+
+  /**
+   * SCIENCE FORWARD BASES (Oct 2 2026): mount an attack. When a field station or an engineer stands and you have a
+   * strike force (B.strikeForce or more walking units not parked brooding), send them at it (attack-move: they fight
+   * what they meet on the way); when it is gone, call them back to guard. A station still being built is the cheapest
+   * to take, so it goes first; then the youngest standing station.
+   */
+  private strikeStations(sim: Sim): void {
+    const targets = sim.enemies
+      .filter((e) => e.kind === 'fieldstation' || (e.kind === 'engineer' && e.engState !== 'flee'))
+      .sort((a, b) => ((a.buildProgress ?? 1) - (b.buildProgress ?? 1)) || ((a.stationAge ?? 0) - (b.stationAge ?? 0)));
+    const units = [...sim.broodlings.filter((b) => !b.puppet).map((b) => b.id), ...sim.harriers.map((h) => h.id)];
+    const target = targets[0];
+    if (!target) {
+      if (this.striking !== null && units.length) sim.issue({ kind: 'unit-order', ids: units, order: { kind: 'guard' } });
+      this.striking = null;
+      return;
+    }
+    if (units.length < B.strikeForce) return;
+    if (this.striking === target.id) return;
+    sim.issue({ kind: 'unit-order', ids: units, order: { kind: 'attack', to: { ...target.pos } } });
+    this.striking = target.id;
+  }
+
   /** The stack: park, brood, release into a siege at the body, call back. */
   private manageStack(sim: Sim): void {
     for (const m of sim.mothers) {
@@ -242,6 +268,7 @@ export class Autoplayer {
     this.actTimer -= dt;
     if (this.actTimer > 0) return;
     this.actTimer = 1.5;
+    this.strikeStations(sim);
     if (this.stack) this.manageStack(sim);
     if (this.mules && this.manageMules(sim)) return;
     if (this.expansion && this.manageExpansion(sim)) return;
