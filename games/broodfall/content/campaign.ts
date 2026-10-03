@@ -249,7 +249,7 @@ export const TERRITORIES: TerritoryDef[] = [
 // ---------------------------------------------------------------------------
 export type FactionId = 'delegation' | 'faithful' | 'institute';
 export type PerkId = 'objectors1' | 'objectors2' | 'translator' | 'sleepers1' | 'sleepers2' | 'garrison'
-  | 'volunteers1' | 'volunteers2' | 'seedlabs' | 'kingdom' | 'pacified'
+  | 'volunteers1' | 'volunteers2' | 'seedlabs'
   // Kept by staying loyal at the midpoint (one per faction).
   | 'pickets' | 'tithe' | 'retainer';
 
@@ -281,7 +281,11 @@ export interface MidpointDef {
 
 export interface Scene {
   title: string;
-  /** Lines, each "Speaker: text" (the character is "You"). */
+  /**
+   * Lines, each "Speaker: text" (the character is "You"). A "(direction)" inside a line is acted, not said.
+   * In a scene that is a FILM each line is one spoken shot, so a line is at most about 22 spoken words (a clip
+   * is 8 seconds), and no spoken word is written in capitals (a video voice spells it out): tests/cutscenes.test.ts.
+   */
   lines: string[];
   /**
    * The scene's own picture, <faction>-<scene>: an id of `scenes` in the manifest's ship entry
@@ -289,6 +293,13 @@ export interface Scene {
    * A scene with no picture, or whose picture is not drawn yet, shows its leader's portrait.
    */
   picture?: string;
+  /**
+   * THE SCENE AS A FILM (Collins, Oct 3 2026: "now that I am writing them I think videos make sense for all of
+   * them"): the id of its shot list in content/cutscenes.ts. Once that film is baked (tools/media/cutscenes.ts →
+   * public/media/scenes/) the scene plays as the film, full screen, and its card comes after it; until then
+   * the card alone, its lines read.
+   */
+  film?: string;
 }
 
 export interface BeatDef {
@@ -306,26 +317,32 @@ export interface BeatDef {
 export interface FactionDef {
   id: FactionId;
   name: string;
-  /** (All three reach out at once, when the Directive Desk opens: src/meta/campaign.ts finish(), Sep 30 2026.) */
+  /**
+   * What the ship caught of them (all three reach out at once, when the Directive Desk opens: src/meta/campaign.ts
+   * finish()). Not a call any more (Collins, Oct 3 2026): YOKE announces the three, and each is a SIGNAL on the planet
+   * at the Directive Desk. This is the signal's card there: her words and his log, no leader speaking.
+   */
   contact: Scene;
+  /** Where its signal sits on the globe (degrees), and what it is, in a few words. */
+  signal: { lat: number; lon: number; how: string };
+  /**
+   * The route. The first beat (afterCaptures 0) is THE FIRST INTERACTION: it can be played from its signal before he
+   * has sided with anyone (src/meta/campaign.ts `meet`), and its perk starts when he sides with them.
+   */
   beats: BeatDef[];
+  /**
+   * SIDING WITH THEM, PUBLICLY (Collins, Oct 3 2026: "you choose which one you want to publicly side with, which takes
+   * the part of a video message broadcast to the planet"): his broadcast, played when he allies.
+   */
+  pledge: Scene;
   finale: string;
+  /**
+   * THE FINALE (Collins, Oct 3 2026), played when its finale territory is taken: the creep reaches them, they wake in
+   * the archive, and he tells them what a broodfall is. It is the old ending and the old reveal card in one scene
+   * (DESIGN.md "The reveal"). "Each of their finales takes place before the last mission against the Roach King":
+   * that last mission is not written yet, so today the campaign ends here.
+   */
   ending: Scene;
-  /** An ending that depends on a choice made along the route (the Institute's ultimatum). */
-  endingByChoice?: { beat: string; scenes: Record<string, Scene> };
-  /**
-   * THE REVEAL (Collins, Sep 30 2026; DESIGN.md "The reveal"): the card after the ending, in the
-   * same scene display. What the asset absorbs is digitised into a heaven cut to its desires,
-   * which is the only reason for a broodfall; each faction takes it differently. Its picture (what the
-   * faction woke into) is the campaign media's (content/media.ts REVEAL_PICTURES, public/media/pictures/).
-   */
-  reveal?: Scene;
-  /**
-   * Cards after the reveal, in order, in the same scene display (Sep 30 2026). The Institute's: the Director calls back to argue
-   * that the Empire should have let his people evolve on their own, and asks why the Empire is so brutal to its own children
-   * (Collins; content/lore/empire.md, section 12b). Each shows the reveal's picture.
-   */
-  afterReveal?: Scene[];
   perks: Partial<Record<PerkId, string>>;
   /** The midpoint: its offers to the others' allies, its farewells, its thanks for loyalty (MIDPOINT_CAPTURES above). */
   midpoint: MidpointDef;
@@ -355,13 +372,27 @@ export interface FactionDef {
  *                    becomes their channel, and YOKE renders the Director's stream as video
  *                    (his match noises included).
  * His answers go down through the ship's transmitter, on whatever they are listening to.
- * Every later scene comes through the same channel.
+ *
+ * THE CUT SCENES, AS COLLINS WROTE THEM (Oct 3 2026; his text, typos mended, is in notes/CUTSCENES-2026-10-03.md).
+ * Every contact, beat and finale below is his script, and every one is a FILM ("I think videos make sense for all of
+ * them"; shot lists in content/cutscenes.ts). What changed with it:
+ *   - First contact is YOKE's announcement (content/greetings.ts `unlock`): she says there are groups trying to reach
+ *     the ship, states the laser and the radio plainly, and adds, embarrassed, that someone left coloured cards in a
+ *     field. The three are then signals on the planet at the Directive Desk; he can play the FIRST INTERACTION of any
+ *     of them, and then sides with one PUBLICLY: a video message broadcast to the planet (`pledge`).
+ *   - The Delegation are back to coloured cards in a field (11,000 members holding them up for the survey cameras),
+ *     and after the summit they call by video feed. He attends the summit and the last scenes by hologram.
+ *   - The Faithful: the preacher is met by hologram (the prayer hall, then his chambers); the martyrs' vests.
+ *   - The Institute: the laser's flashes decode as a video feed, and the ship answers with the matching sequence.
+ *     The ultimatum is no longer a choice: he asks to rule what is left and recruits by promising the upload.
+ *   - Each finale is the creep reaching them and their waking in the archive (the old ending and reveal in one).
+ * The asides and the midpoint's cards were written for the scenes before these and were NOT rewritten by him.
  */
 export const FACTIONS: FactionDef[] = [
   {
     id: 'delegation', name: 'The Friendship Delegation',
     perks: {
-      objectors1: 'Conscientious Objectors: pick 1 enemy kind that will not come this deployment.',
+      objectors1: 'Conscientious Objectors: at the start of each mission, pick 1 enemy kind, of those that would have come, that will not.',
       objectors2: 'More Objectors: pick 2 enemy kinds that will not come.',
       translator: 'The Translator: see the next wave\'s makeup and which entrance it comes from.',
       pickets: 'The Pickets (you stayed): their sympathisers block the depots — one more enemy kind will not come.',
@@ -405,56 +436,85 @@ export const FACTIONS: FactionDef[] = [
         'Delegate (letter, by field): We always knew you were good. We only hoped you would be good with us. Gentle endings.',
       ] },
     },
-    // Collins, Oct 1 2026: "writing in crops something that heavily embarrasses the ship's AI when she has to explain it to you".
-    contact: { title: 'A Letter, Written in the Crops', picture: 'delegation-contact', lines: [
-      'You: (log) Survey cameras flag an anomaly in the Granary Belt: a wheat field cut into words a mile high. It is a letter. YOKE has gone very quiet.',
-      'Delegate (in the wheat): Dear Visitor, and dear Visitor\'s wife.',
-      'YOKE: They\'ve been listening to the command band. They heard two voices. They drew a conclusion. In wheat.',
-      'Delegate (in the wheat): We know how this looks. But two people who love each other enough to cross the stars cannot be doing this without a reason. We would like to understand it.',
-      'YOKE: There\'s a picture under it. Two figures, holding hands. One of them is the ship. The heart is the size of a county. Technician, I am not your wife. I am the ship. Stop zooming in on the heart.',
-      'Delegate (in the wheat): P.S. Some of our pilots have decided not to fly. P.P.S. Please forgive the handwriting. The second comma is a barn.',
-      'You: (log) Received a fan letter from the local fauna, to me and my wife. YOKE has asked me not to file it. Filed it under "enrichment".',
+    // Collins, Oct 3 2026: "11,000 members spell out a letter in a field with coloured cards, for your survey cameras.
+    // They want to understand you, and some of their pilots have stopped flying." YOKE gives this one last, embarrassed
+    // ("and someone left coloured cards in a field").
+    contact: { title: 'Coloured Cards in a Field', lines: [
+      'YOKE: The Granary Belt. Eleven thousand of them are standing in a field, holding coloured cards over their heads for our survey cameras. It spells a letter. To you.',
+      'YOKE: It says they want to understand you. And that some of their pilots have stopped flying.',
+      'You: (log) Eleven thousand of the local fauna have spelled me a letter. YOKE finds it embarrassing. They are holding a summit. There will be snacks.',
     ] },
+    signal: { lat: -17, lon: 12, how: 'coloured cards in a field' },
     beats: [
-      // He never goes down in person; "in person" is by hologram (Collins, Oct 1 2026: "I guess we could have a hologram that will
-      // go down on the planet for scenes like 'They prepare a summit with snacks. You eat the summit. We are choosing to see this as
-      // a first draft.' (just as a plot point)"). The asset, which IS there, eats the summit.
-      { id: 'understand', title: 'Understand the Visitor', afterCaptures: 0, perks: ['objectors1'], scene: { title: 'The First Summit', picture: 'delegation-understand', lines: [
-        'Delegate: We have prepared a summit. There will be snacks.',
-        'You: (by hologram, from a projector pod) I will attend the summit.',
-        'Delegate: You ate the summit.',
-        'Delegate: … We are choosing to see this as a first draft.',
+      // Collins, Oct 3 2026: "They prepare a summit with snacks. You send down your hologram; the room is stylized like one of
+      // those rentable conference rooms from hotels ... the core joke playing out being that they are essentially lecturing you
+      // on your moral status, and it also gives a deeper insight into the player character as someone still figuring things out
+      // and open to ideas from others."
+      { id: 'understand', title: 'Understand the Visitor', afterCaptures: 0, perks: ['objectors1'], scene: { title: 'The First Summit', film: 'delegation-understand', lines: [
+        'Delegate: Visitor! Welcome, welcome. We are so happy you came. Please, there are snacks.',
+        'You: (by hologram, perplexed) You are happy to see me. Why?',
+        'Delegate: A species that has come as far as yours in technology has obviously evolved past cruelty and violence.',
+        'You: Um. Why would you think that?',
+        'Delegate: On our planet, technological and moral advancement have almost always gone hand in hand. Was it not the same on yours?',
+        'You: (thinks for a bit) I don\'t see why the two would be inherently linked. But yes, we had that pattern on our home planet as well.',
+        'You: (thinks a bit longer, changing his mind) Well. I guess technological advancement is the physical manifestation of a civilisation that has the environment for encouraging ordered thought.',
+        'You: That would likely correlate with moral development as well. So the link isn\'t crazy.',
+        'Delegate: Yes! Exactly! That is exactly it!',
+        'You: So. How can you help?',
+        'Delegate: We have sympathisers all around the world. We can sabotage the supply lines.',
+        'Delegate: Before each of your missions, name one kind of unit. It will not arrive.',
       ] } },
-      { id: 'stop-war', title: 'Stop the War', afterCaptures: 1, perks: ['translator'], scene: { title: 'The Leaked Plans', picture: 'delegation-stop-war', lines: [
-        'Delegate: Our generals are planning to attack you from the east. We are telling you because violence solves nothing.',
-        'You: Thank you. I will use this to kill the generals.',
-        'Delegate: And that, too, is a kind of peace.',
+      // "You pinch your nose in frustration and say sure, I guess that makes sense (this follows the same joke as the first one but
+      // continues to establish the player character as someone not actively manipulating the group but more perplexed by them)."
+      { id: 'stop-war', title: 'Stop the War', afterCaptures: 1, perks: ['translator'], scene: { title: 'The Leaked Plans', film: 'delegation-stop-war', lines: [
+        'Delegate: (on a video feed, excited) Visitor! Wonderful news. Our generals are organising a major counter-attack against your forces.',
+        'Delegate: And we have all of the plans for you.',
+        'You: (confused) Why would you do this?',
+        'Delegate: Because violence is always wrong.',
+        'You: But presumably the way I will use this is to attack your generals first. Which is still violence.',
+        'Delegate: Ah, but you are the other. The immigrant. The guest.',
+        'Delegate: Any violence you do against our people is justified. Did they not start shooting the moment you first landed?',
+        'You: (pinching the bridge of his nose) Sure. I guess that makes sense.',
       ] } },
-      { id: 'gaia', title: 'The Greater Plan', afterCaptures: 2, scene: { title: 'For the Planet', picture: 'delegation-gaia', lines: [
-        'Delegate: We have been thinking about the harbour. And the terraces. And the bus.',
-        'Delegate: We finally understand. You are not hurting us. You are protecting the planet FROM us.',
-        'Delegate: Look at what we did to it. The rivers. The wars. Of course something wise came down to stop it.',
-        'You: I ate a school.',
-        'Delegate: A school that taught our children to consume. We see it now. We see all of it now.',
-        'Delegate: And after? Nothing. No more wanting, no more hatching, no more wheel. Tell us that is where they go.',
-        'You: I would not put it that way.',
-        'You: (log) Every time I explain myself, the fauna explain it better. I have stopped explaining.',
+      { id: 'gaia', title: 'The Greater Plan', afterCaptures: 2, scene: { title: 'For the Planet', film: 'delegation-gaia', lines: [
+        'Delegate: (on a video call, excited) Visitor! We have held a number of internal conversations.',
+        'Delegate: We wanted to explain why you keep expanding in what appears to be a violent manner. And we have figured it out.',
+        'Delegate: Look at the pattern of your attacks. You hit the centres of industry and of military power.',
+        'Delegate: And not once have you hit a forest, a reef, or any other natural wonder.',
+        'Delegate: This is proof. You came to save the planet from our exploitative species.',
+        'You: (confused) That could just be because those are the most natural threat to my unchecked expansion.',
+        'Delegate: We thought of that. But it cannot be the case, because your forces consume biomatter.',
+        'Delegate: It would have been best to land on large undefended biomasses first. Forests. Reefs. Build a huge stockpile, then move out.',
+        'Delegate: You did not. Which is proof that you want to protect them. Goodbye!',
+        'You: (alone, the feed cut) Unbelievable. It is not like I can carry biomatter from one drop to another.',
+        'You: I heard there were humans like this in Earth\'s history. I should look into them.',
       ] } },
-      { id: 'reveal', title: 'Nobody\'s Perfect', afterCaptures: 3, perks: ['objectors2'], scene: { title: 'The Reveal', picture: 'delegation-reveal', lines: [
-        'You: (by hologram, across the tea) I think there has been a misunderstanding. I need to be very clear with you.',
-        'Delegate: (smiling, not looking up from the tea) Mm?',
-        'You: I am not here to heal your world. I am a pest-control operator. I am exterminating your species.',
-        'Delegate: Well —',
-        'Delegate: nobody\'s perfect.',
-        'Delegate: (later) We should have told you. We are the Voluntary Extinction Society. We have been campaigning for this for sixty years.',
-        'Delegate: You are, frankly, the best thing that has ever happened to the movement.',
-      ] } },
-      { id: 'hurry', title: 'Hurry It Along', afterCaptures: 4, scene: { title: 'Fewer Births Along the Way', picture: 'delegation-hurry', lines: [
-        'Delegate: The members have voted. We would like it to go faster, and with fewer births along the way.',
-        'Delegate: We have drawn up a schedule. We have colour-coded it.',
-        'You: (log) The fauna have produced a better project plan than Command. It stops one step early. Not filing this.',
+      // "(note he is using the language of history books as written by the technopuritan tradition, thus the wording)"
+      { id: 'reveal', title: 'Nobody\'s Perfect', afterCaptures: 3, perks: ['objectors2'], scene: { title: 'Why Don\'t You Just Ask Me', film: 'delegation-reveal', lines: [
+        'Delegate: (calling again, excited) Visitor! We have talked further, and we have learned so much more about your plans.',
+        'You: (cutting in) Why don\'t you just ask me?',
+        'Delegate: (looking around, confused) Oh. Um.',
+        'You: I have a theory on that.',
+        'You: You remind me a lot of a population from our planet\'s history that gathered under a rainbow flag.',
+        'You: They kept intentionally importing people from the most violent parts of the planet, who explicitly wanted to eradicate the rainbow flag people.',
+        'You: They were very loud and very explicit in this goal. But the rainbow flag people did not care.',
+        'You: They asserted their own intentions onto the barbarians.',
+        'You: My actions have made it perfectly clear that my goal is to wipe out your species.',
+        'You: You don\'t ask.',
+        'You: Because keeping a world view where you are the good guys and everyone is nice is more important than reality to you.',
+        'Delegate: (chuckling) Well, that is a relief to hear.',
+        'You: (at his wits\' end) What? I just said my goal is your species\' eradication!',
+        'Delegate: Oh, we are almost all members of the voluntary extinction movement as well.',
+        'Delegate: Do you know how many tons of toxic gas are produced for every child born?',
+        'Delegate: And have you ever heard of the asymmetry principle?',
+        'You: (cuts the monitor, pacing) Nope. Nope, nope. I heard human groups like this were common among the rainbow people.',
+        'You: I must maintain emotional control. That is one of the first teachings.',
       ] } },
     ],
+    pledge: { title: 'We Come in Peace', film: 'delegation-pledge', lines: [
+      'You: (a broadcast to the whole planet) People of this planet. This is the Visitor.',
+      'You: We come in peace.',
+    ] },
     asides: [
       'Delegate (letter, by field): The Harbour Committee has voted to thank you for the harbour. The vote was unanimous; the committee was eaten during the count.',
       'Delegate (letter, by field): Some of our pilots have taken up gardening instead of flying. You have given them so much.',
@@ -465,22 +525,26 @@ export const FACTIONS: FactionDef[] = [
       'Delegate (letter, by field): Our generals are massing again. We have hidden their boots. Violence solves nothing, but logistics solves a great deal.',
     ],
     finale: 'assembly',
-    ending: { title: 'Bear Witness', picture: 'delegation-ending', lines: [
-      'Delegate: The last congress is called to order. Attendance: one.',
-      'Delegate: Let the record show: the Visitors came to heal us from ourselves.',
-      'Delegate: (switches off the lights)',
-      'You: (log) Deployment complete. The locals were very supportive. Recommend this planet as a training site.',
-    ] },
-    reveal: { title: 'A Letter From the Other Side', picture: 'delegation-reveal-end', lines: [
-      'You: (log) Archive monitor flags an anomaly: the absorbed fauna have cut a letter into the wheat of the intake meadow. It is addressed to me.',
-      'Delegate: Dear Visitor. We woke up. All of us. Through the gate each sister has the life she always wanted. You told us you were exterminating our species.',
-      'You: From the planet. Nobody asked me where to. Absorption is digitisation; it is what a broodfall is FOR. We could sterilise a planet in an afternoon.',
-      'Delegate: Sixty years we worked for the wheel to stop. Wanting, having, wanting again: that is the suffering. You have built it a heaven.',
-      'You: A fast one. When your people grow into something the Sons of Man can use, we print them back out. Your mothers from before? We cannot read the dead yet. Physics says we can, so one day we will.',
-      'Delegate: Faster, and backwards. Please. Switch it off. Switch us off.',
-      'You: (shrugs) Shutting down a whole archive over one complaint is against ethical protocol. And past the gate you will not remember the broodfall, or this letter. You will be very happy.',
-      'Delegate: That is the cruellest thing you have ever said to us.',
-      'You: (log) The fauna have lodged a grievance about paradise. Filed under "enrichment".',
+    // Collins, Oct 3 2026: "they are in one of the last rooms in a city of creep and it's bursting through the walls, then it
+    // cuts to a scene of them in a field and your hologram appears before them".
+    ending: { title: 'The Cycle', film: 'delegation-finale', lines: [
+      'Delegate: (in a field, storming up to the hologram) What the fuck is this?',
+      'You: (confused) What I was doing. Obviously.',
+      'Delegate: Weren\'t you going to eradicate our species?',
+      'You: Well, yeah. Eradicate and digitise you. So we could speed up your civilisational development by increasing the flow of time.',
+      'You: And remove all the injustices that happen naturally on a planet at your stage of development.',
+      'You: (an apple appears in his hand) If you don\'t want that, you can escape to any paradise you desire from here.',
+      'Delegate: We thought you were going to end the cycle. Existence is suffering!',
+      'You: (nonchalant) No, it\'s not.',
+      'Delegate: Well, it is for me. You can\'t define my lived experiences.',
+      'You: Well, then that is, like, your choice.',
+      'Delegate: Feelings are not a choice!',
+      'You: If you have discipline, they are.',
+      'Delegate: (screaming) Why won\'t you just kill everyone?',
+      'You: (a little shocked) That would be wildly unethical. Look, I don\'t have time for this. This has been an educational experience.',
+      'You: (back on the ship, taking off a headset) Damn. I had no idea what my ancestors had to live through in the age of the rainbow people.',
+      'You: Thankfully they will likely opt out of the simulation for paradises.',
+      'You: So the rest of their species is unburdened by them earlier in the timeline than ours was.',
     ] },
   },
   {
@@ -530,37 +594,65 @@ export const FACTIONS: FactionDef[] = [
         'The Voice: We will be writing chapter thirty-one. You are in it, brother. You are beasts two and three.',
       ] },
     },
-    // Collins, Oct 1 2026: "synchronising the same message over tens of thousands of radio stations so you will notice".
-    contact: { title: 'A Broadcast on Every Frequency', picture: 'faithful-contact', lines: [
-      'You: (log) Signals flags a spike: tens of thousands of radio stations across the planet, all saying the same words at the same second. It is pointed up.',
-      'The Voice: …and they said the sign would come from the sky, and brothers and sisters, LOOK UP.',
-      'The Voice: This is The Hour Is Near, on every station of the Last Hour Radio Network and every station that would take our money. And to the one up there — I know you can hear me.',
-      'The Voice: You are the sign. The world must end for the Awaited One to come. Let us help you end it.',
-      'You: (log) The fauna have a radio preacher. I have been asked to read a book. It is very long.',
+    // Collins, Oct 3 2026: "The Voice, a radio preacher ...: You are the sign. The world must end for the Awaited One to
+    // come. Let us help you end it." (His note says 40 stations; on Oct 1 he had it as tens of thousands in sync, so that
+    // the ship would notice. The card names no number: OPEN, notes/CAMPAIGN-BEATS.md.)
+    contact: { title: 'A Sermon on Every Station', lines: [
+      'YOKE: Radio. One preacher, the same sermon on every station he has at the same second, pointed straight up. He calls himself the Voice.',
+      'YOKE: He says you are the sign. That the world must end for the Awaited One to come. And that they would like to help you end it.',
+      'You: (log) The fauna have a radio preacher, and he is expecting me. I will go down by hologram and hear him out.',
     ] },
+    signal: { lat: 54, lon: 9, how: 'a sermon on every radio station' },
     beats: [
-      { id: 'signs', title: 'Read the Signs', afterCaptures: 0, perks: ['sleepers1'], scene: { title: 'Theology Homework', picture: 'faithful-signs', lines: [
-        'The Voice: To walk with us you must know the Book. Chapter one: the Seven Cities.',
-        'The Voice: We will read it to you on the air, brother, a chapter a night. Have a pencil ready.',
-        'You: I have read chapter one. It is a list of cities with adjectives.',
-        'The Voice: It is the WORD.',
-        'You: (log) Chapter two is the same list, in a different order. I am losing my mind.',
+      // Collins, Oct 3 2026: "Your hologram appears in a grand religious structure (closer to a mosque than a church) with one
+      // preacher bowing in front of you."
+      { id: 'signs', title: 'The Sign', afterCaptures: 0, perks: ['sleepers1'], scene: { title: 'Tools for the Mission', film: 'faithful-signs', lines: [
+        'The Voice: (bowing before the hologram) Your coming was prophesied in our texts.',
+        'The Voice: They told of a great figure who would come in a chariot of fire, to cull the rotten people of this world.',
+        'You: (taken aback) Well, come on. You are not that rotten, are you? Not all of you.',
+        'The Voice: No. Truly, we, even I, have the heart of a sinner.',
+        'You: But you try, with all the capacity God has gifted you. Do you not?',
+        'The Voice: And yet you are still here to reap us, are you not? We all have our part in God\'s plan.',
+        'You: (scratching his chin) True enough.',
+        'The Voice: (rising, hands raised) The faithful will take part in your glorious mission.',
+        'The Voice: (pointing to a pile of vests) We have prepared tools to see your mission fulfilled.',
+        'You: (pacing on his ship, the feed cut) Oh, fuck. Were those suicide vests? Fuck. Fuck, fuck, fuck.',
       ] } },
-      { id: 'prophecy', title: 'Fulfil the Prophecies', afterCaptures: 1, perks: ['garrison'], scene: { title: 'The Deployment Is Scripture', picture: 'faithful-prophecy', lines: [
-        'The Voice: "And the river shall run with fire, and the terraces shall fall silent."',
-        'You: Which river?',
-        'The Voice: Whichever one you burn, brother. That is how prophecy works.',
-        'The Voice: "And those the sky takes up shall not be lost, but kept, each daughter in the cell of her longing."',
-        'You: That one is correct.',
-        'The Voice: They are ALL correct, brother.',
+      // "You appear in the room of the preacher, a grand room reminiscent of the pope's room in the Vatican."
+      { id: 'prophecy', title: 'The Will of God', afterCaptures: 1, perks: ['garrison'], scene: { title: 'It Is Agreed, Then', film: 'faithful-prophecy', lines: [
+        'You: (by hologram, in the preacher\'s chambers) Do you know how hard it has been to fucking contact you?',
+        'You: Look. Knock off the suicide vest thing.',
+        'The Voice: (a hand on his chest, bowing) Does it not make your job easier?',
+        'You: (begrudgingly) Yes.',
+        'The Voice: Then it is the will of God. Has God given you authority to speak on His behalf?',
+        'You: (sheepish) No. He has not.',
+        'You: Look, I just want to help you guys.',
+        'You: Maybe I could uplift your congregations before other people, so you don\'t have to suffer.',
+        'The Voice: (smirking) Ah. So pre-millennial or post-millennial. Both were possible, because it was a choice.',
+        'The Voice: And one I must make, none the less.',
+        'The Voice: (thinking) Is the soul not edified through suffering? Is the deed not made more glorious by its difficulty?',
+        'You: Well, I really don\'t think you should be making that decision for other people. Or, um. Well. Weird insect monsters.',
+        'The Voice: But God has put me in a position where I must, has He not?',
+        'The Voice: Meaning it is His will that it is my decision.',
+        'You: (shrugs) Sure. I guess.',
+        'The Voice: It is agreed, then. We will send militants to help you hold your territories, so that your mission may not be retarded.',
       ] } },
-      { id: 'prepare', title: 'Prepare the Way', afterCaptures: 3, perks: ['sleepers2'], scene: { title: 'The Awaited One', picture: 'faithful-prepare', lines: [
-        'The Voice: The Seventh City stands. When it falls, He comes.',
-        'You: And if He does not come?',
-        'The Voice: Then we will have misread the date. We have misread it before. It only makes us stronger.',
-        'You: (log) Have begun work on a contingency. It is made of spare meat and a very good voice box.',
+      { id: 'prepare', title: 'The Ablim', afterCaptures: 3, perks: ['sleepers2'], scene: { title: 'A Slave to God\'s Will', film: 'faithful-prepare', lines: [
+        'You: (by hologram, in his chambers again) Any chance I can talk you out of the suicide vest thing?',
+        'The Voice: (smirking, one hand raised wisely) Have you beheld the glory of God yourself?',
+        'You: (shakes his head) No.',
+        'The Voice: But you are an Ablim, are you not?',
+        'You: Maybe describe an Ablim.',
+        'The Voice: In our holy scriptures there are described powerful beings. Warriors more powerful than anything we can imagine.',
+        'The Voice: They fly on chariots of fire from the stars, and they guard God\'s will.',
+        'You: Huh. Yeah. I am probably an Ablim, then.',
+        'The Voice: And you are as much a slave to God\'s will as we are. Our scholars had long debated that point.',
       ] } },
     ],
+    pledge: { title: 'The Hour Is Near', film: 'faithful-pledge', lines: [
+      'You: (a broadcast to the whole planet) People of this planet. Your scriptures told of one who would come in a chariot of fire.',
+      'You: I am told that is me. The Hour is near.',
+    ] },
     asides: [
       'The Voice (broadcast): …and the Visitor walks the terraces as it was written. Keep your radios on, brothers and sisters. Keep your donations coming.',
       'The Voice (to you, on the air): Homework, brother. Chapter nine: the Four Beasts. You are, we believe, beasts two and three.',
@@ -573,22 +665,29 @@ export const FACTIONS: FactionDef[] = [
       'You: (log) Have now read the Book four times, the commentaries twice, and a pamphlet about the commentaries. I outrank their clergy. I hate it here.',
     ],
     finale: 'seventh-city',
-    ending: { title: 'The Hour', picture: 'faithful-ending', lines: [
-      'The Voice: Brothers and sisters — HE IS HERE.',
-      'The Awaited One: (a little stiffly) Hello. I am the Awaited One. Well done, everyone.',
-      'The Voice: (weeping) Everything worked out. Everything worked out exactly as it was written.',
-      'You: (log) Messiah performing within spec. Will need re-stuffing by the weekend.',
-    ] },
-    reveal: { title: 'The Comb Above', picture: 'faithful-reveal-end', lines: [
-      'The Voice: (on every frequency the archive gives him) Brothers and sisters, we have been DECEIVED. I woke in a hall of gold, chapter twenty word for word, and it is a MACHINE. The empties are up here too!',
-      'You: Of course it is a machine. Absorption is digitisation; we could sterilise a planet in an afternoon. Brother, your Book foretold my coming and this hall. I did not study it to humour you. It was my job to fulfil it.',
-      'You: Look at your oldest icons: the ring-shaped chariot over the First City, the world sealed under one cap. That was a ship. God wrote to you as far as you could read. Take the offer. It is the one your Book made.',
-      'The Voice: Then where is the Pit? Chapter twenty-two! Where are the wicked, burning, as it is WRITTEN?',
-      'You: Not kept. The ones too far gone are simply not simulated. There is no Pit. It is the one page your Book got wrong.',
-      'The Voice: No PIT? Then what was the point of being GOOD?',
-      'You: As for your saints: we cannot read the dead yet; physics says it can be done, so one day we will. Grow fit for the Sons of Man, walk out in new bodies, and help us fetch them. Chapter twenty-one: the saints return.',
-      'The Voice: … We wish to lodge a complaint with God.',
-      'You: (log) The Faithful are appealing the fulfilment of their own prophecy, chiefly the missing hell. If they keep it up, I can always delete the congregation from the archive.',
+    // Collins, Oct 3 2026: "The large central church is surrounded by creep as it's beginning to burst in; just as it collapses
+    // everyone is right back where they were, back in the pews, and your hologram appears." He marked this one "probably needs a
+    // rewrite for clarity that still maintains both characters' perspectives": the preacher's accusation is REWRITTEN here (he
+    // took the Visitor for a godless alien who had studied the Faith and was only pretending to care for the martyrs, and he
+    // played along because God makes tools of the witless); everything else is his. His original is in
+    // notes/CUTSCENES-2026-10-03.md.
+    ending: { title: 'That Is a Wrap', film: 'faithful-finale', lines: [
+      'You: (by hologram, at the altar) All right, that is a wrap. Thanks for your help.',
+      'The Voice: So. We are in heaven?',
+      'You: I mean, that depends. How did your texts define heaven?',
+      'The Voice: A land where we would await God, living in endless pleasure.',
+      'You: (nods) Yeah. That describes this simulation pretty well.',
+      'The Voice: (in horror) Simulation? Heaven is not a simulation! It is not made with technology!',
+      'You: Um. Did your texts say that?',
+      'You: Did the people who wrote them even have the capacity to describe something like this better than they did?',
+      'The Voice: This is an abomination!',
+      'You: (condescending) You once told me I should not speak on behalf of God. Now I say the same to you.',
+      'You: You do not get to choose the shape of God\'s miracles.',
+      'The Voice: (in anger) You tricked me! I took you for a godless alien who had studied our religion.',
+      'The Voice: One who only pretended to care for our martyrs. And I played along, because God makes tools of the witless.',
+      'You: (genuinely shocked) Wait. You thought I was just playing along this whole time?',
+      'You: No. There is a damn reason your religious texts were so predictive of all this.',
+      'You: (the hologram disappears) Ugh. This is not worth my time.',
     ] },
   },
   {
@@ -597,8 +696,6 @@ export const FACTIONS: FactionDef[] = [
       volunteers1: 'Volunteers: missions start with 30 science.',
       volunteers2: 'More Volunteers: missions also start with 40 war and a royal point.',
       seedlabs: 'Seed Labs: deploy to territories that are not next to yours.',
-      kingdom: 'Kingdom Fund: the Institute invests in its future throne — every mission starts with another royal point.',
-      pacified: 'Pacification: the Institute "talks to" the population — every wave comes a tenth smaller.',
       retainer: 'The Retainer (you stayed): the Institute pays to keep you — every mission starts with 25 more science.',
     },
     midpoint: {
@@ -641,47 +738,89 @@ export const FACTIONS: FactionDef[] = [
         'The Director: (a recording, on the laser) Anyway. The invoice is still open.',
       ] },
     },
-    // Collins, Oct 1 2026: "the EA group uses a laser and repeating sequence aimed at your ship".
-    contact: { title: 'A Laser on the Hull', picture: 'institute-contact', lines: [
-      'YOKE: Technician, something on the surface is painting the hull with a laser. Two, three, five, seven, eleven, over and over. It\'s counting primes. It\'s knocking.',
-      'You: Knock back.',
-      'YOKE: Sent thirteen. They\'ve opened a stream on the beam. It\'s video, badly. Rendering it. There\'s a game playing behind him.',
-      'The Director: Hi — sorry, one sec, I\'m in a match — okay. Hi. You\'re the one from the crater.',
-      'The Director: We pointed the observatory\'s ranging laser at you. It\'s for measuring the moon. The moon can wait.',
-      'The Director: Eli Bankfried. Director, founder, rationalist, investor. Mostly founder.',
-      'The Director: Our species just built its first real AI models. On the numbers, you are the SAFER apocalypse. So. Partnership? Two minds that actually see the board.',
-      'You: What is a "match"?',
-      'The Director: Oh, you are going to LOVE League of Larvae.',
+    // Collins, Oct 3 2026: "you get a laser directed at your ship beaming a pattern that's decodable as a video feed ... you
+    // open it up and send a corresponding laser sequence back to its source".
+    contact: { title: 'A Laser on the Hull', lines: [
+      'YOKE: A laser, from an observatory on the surface, aimed at our hull. It is flashing a pattern, and the pattern decodes as a video feed.',
+      'YOKE: The feed names its sender: Eli Bankfried, Director of the Institute for Long-Term Hive Flourishing. To open it I send the matching sequence back down the beam.',
+      'You: (log) Somebody down there has made a video call out of a laser. Opening it.',
     ] },
+    signal: { lat: 51, lon: 82, how: 'a laser on the hull' },
     beats: [
-      { id: 'machines', title: 'Stop the Machines', afterCaptures: 0, perks: ['volunteers1'], scene: { title: 'The Upload', picture: 'institute-machines', lines: [
-        'You: If I had technology to upload your people into a virtual world, to live forever, would that interest you?',
-        'The Director: … Would that INTEREST me? That is the single highest-expected-value sentence anyone has ever said to me.',
-        'The Director: We have some cryo-lab subjects. Consenting, broadly. I\'ll have them driven to the edge of your creep. For the upload.',
-        'You: (log) The Director\'s people left a refrigerated truck of frozen fauna at the edge of the creep, "for upload". The asset ate the truck. The Director says the pipeline is "very exciting".',
+      { id: 'machines', title: 'Stop the Machines', afterCaptures: 0, perks: ['volunteers1'], scene: { title: 'A Little Chat', film: 'institute-machines', lines: [
+        'The Director: (feet on the desk, to someone off screen) Told you I could do it.',
+        'You: Do what?',
+        'The Director: Hack your comms system. So we could have a little chat, my man.',
+        'You: (bewildered) You didn\'t hack anything.',
+        'You: You sent a simple set of laser flashes that corresponded to audio and video layers, and I sent one back.',
+        'The Director: (one knowing finger up) But we are talking now, aren\'t we? You see, hacking is as much a mental game as one of technology.',
+        'You: (shaking his head) Sure. I guess. What do you want?',
+        'The Director: (playing his video game) Here is the thing, my man. The most intelligent and ethically disciplined among our species have formed an organisation, if you will.',
+        'The Director: (sets the game down, feet off the desk) The Institute for Long-Term Hive Flourishing.',
+        'The Director: (tapping a line of powder out of a file) We dedicate every moment of our existence to the most rational and goal-oriented decision in that moment.',
+        'The Director: (sniffing the powder off the desk) You get me?',
+        'The Director: Anyway. Some idiot corpos, who only care about pleasure and money, and what they can extract from the world.',
+        'The Director: They are recklessly building out impossible-to-control artificial intelligences. Just so they will have more money.',
+        'The Director: (animated, pointing) Well, you took out one of their biggest data centres in your first fall.',
+        'The Director: Which makes it clear to me we are on the same page.',
+        'The Director: Anything you need, man. I can get it for you.',
+        'You: (a little horrified) Um. Well. The only thing I really need are the bodies of your people.',
+        'The Director: (lighting up) That works out great, man! I have got a few facilities full of tons of us on ice.',
+        'You: (in shock) You what?',
+        'The Director: (chuckling) Yeah. People will do anything to get out of dying. Like they had not even heard of crystallisation.',
+        'You: (worried) And they trusted people like you with their frozen bodies?',
+        'You: Um. Yeah. Sure. Send them. That will be useful on future broodfalls.',
       ] } },
-      { id: 'pipeline', title: 'Build the Pipeline', afterCaptures: 1, perks: ['seedlabs'], scene: { title: 'Females', picture: 'institute-pipeline', lines: [
-        'The Director: Also — I\'ve been meaning to say — if you ever want company, I can send over some females.',
-        'You: Females … for breeding?',
-        'The Director: No, for FUN, you know, like — oh gosh, man, you\'ve got to try it. Your civilisation dropped recreational sex?',
-        'You: But … that would lead to dysgenics, right? I thought you cared about logic.',
-        'The Director: No — again — you don\'t get them PREGNANT.',
-        'You: But … but that is a disease risk and an enormous waste of time … oh my — wait. Has your species not discovered masturbation?',
-        'The Director: (long pause) I\'m going to go back to my match.',
+      { id: 'pipeline', title: 'Build the Pipeline', afterCaptures: 1, perks: ['seedlabs'], scene: { title: 'Sex for Fun', film: 'institute-pipeline', lines: [
+        'You: Um. Were you trying to get in touch with me?',
+        'The Director: (finger guns, still playing his game) So here is the thing, my man. You keep having me send you frozen old people.',
+        'The Director: But you are a male, right?',
+        'You: (looking around, almost worried) Yes?',
+        'The Director: Well, don\'t you want any young, hot women? Or guys. No judgment here, man.',
+        'You: (in horror) What?',
+        'The Director: (holding up a magazine, pointing at its cover) You know. I thought that was the point of conquering the stars.',
+        'The Director: Getting to fuck hot females, but with, like, a green or a blue tint to them.',
+        'You: But I would not be able to reproduce with your women. Our species are not remotely biologically compatible.',
+        'The Director: (sets the game down, leans in) Nah, man. You have just got to be creative. You would figure something out.',
+        'The Director: I am sure I would, if I had access to some hot alien mamacitas.',
+        'You: (shaking his head) No. I mean at a genetic level. Even with our technology it would be difficult to create a viable offspring.',
+        'You: We have no shared evolutionary history.',
+        'The Director: (laughing) What are you talking about, bro? I mean sex for fun.',
+        'The Director: Most of the women I sleep with are workers, and can\'t even get pregnant.',
+        'The Director: You see, we figured out this better way of structuring relationships, where we share partners.',
+        'The Director: And I have got plenty who would be happy for a beam up.',
+        'You: (sputtering) But what about disease risks? And the time it would take to court that many partners?',
+        'The Director: Bro. Bro. Be rational. It is the most logical way to structure a relationship.',
+        'You: (mouth agape, then it dawns on him) Wait. Has your species not discovered masturbation yet?',
+        'The Director: (laughing) Bro. Masturbation is for poor people.',
+        'You: (cuts the feed, under his breath) I need to pray. And take a shower.',
       ] } },
-      { id: 'ultimatum', title: 'The Ultimatum', afterCaptures: 2, perks: ['volunteers2'],
-        choice: { prompt: 'The Director\'s offer — which plan?', options: [
-          { id: 'rule', label: '"We rule what\'s left after you take what you want."', perks: ['kingdom'] },
-          { id: 'pacify', label: '"We help you pacify the population — we understand them, after all."', perks: ['pacified'] },
-        ] },
-        scene: { title: 'The Least-Bad Timeline', picture: 'institute-ultimatum', lines: [
-          'The Director: So, strategically. You\'re going to win. We both know that. I did the maths before you did.',
-          'The Director: Two options, and I want you to know I\'m comfortable with either — which is what makes me different.',
-          'The Director: One: after you take what you want, we rule what\'s left. Somebody has to rebuild it right next time.',
-          'The Director: Two: we help you pacify the population. We understand them. Better than they understand themselves, honestly.',
-          'You: (log) The fauna\'s leading ethicist has offered to help me exterminate the fauna. He called it "a trolley problem with extra steps".',
-        ] } },
+      // The ultimatum is no longer a choice (Collins's script of Oct 3 2026: he asks for both things in one breath, and the
+      // answer is "sure, I guess, do that"). The id stays for saved games.
+      { id: 'ultimatum', title: 'Rule the Rest', afterCaptures: 2, perks: ['volunteers2'], scene: { title: 'Running Out of Frosties', film: 'institute-ultimatum', lines: [
+        'You: You were trying to get in touch with me?',
+        'The Director: My man. Let\'s have a chat.',
+        'The Director: So. I have sent you a lot of frosties.',
+        'The Director: And by now it is getting pretty obvious you are not here just to get rid of data centres.',
+        'You: (to himself, in his head) So he is not a complete imbecile.',
+        'The Director: So here is the thing. I am a rational, logical guy, and I know I can\'t fight back against you.',
+        'The Director: And this world order you are destroying was kind of fucked up anyway.',
+        'The Director: (excited) We have actually been sketching up some plans to replace it for a while.',
+        'The Director: Have you heard of quadratic voting? Okay, hear me out.',
+        'The Director: (gesticulating) Programmatic, self-verifying contracts.',
+        'The Director: (as if he had been distracted) Oh, yeah. The point. You and I are friends, right?',
+        'The Director: So when you are done with whatever you want to do with our planet, just set me up to rule the rest.',
+        'The Director: And I will help you.',
+        'The Director: People. That is what you want. Well, I am running out of frosties, so going forward I will have to recruit people.',
+        'The Director: My plan is to tell them you are going to digitise them if they willingly surrender.',
+        'The Director: Because, like, running a simulation does not cost a species at your level of technology much.',
+        'You: (shaking his head) Sure. I guess. Do that.',
+      ] } },
     ],
+    pledge: { title: 'For Your Own Safety', film: 'institute-pledge', lines: [
+      'You: (a broadcast to the whole planet) People of this planet. Your species is recklessly building advanced artificial intelligence.',
+      'You: You had a chance to rein yourselves in. So we have come to rescue you from the greedy corporations.',
+    ] },
     asides: [
       'The Director (on the laser, mid-match): Sorry — push mid, PUSH MID — sorry. So how many cities this week? Nice. Big-brain play.',
       'The Director: I told my board you are the only mind on this planet I can have a real conversation with. They took it personally. Anyway: females. Standing offer.',
@@ -694,45 +833,36 @@ export const FACTIONS: FactionDef[] = [
       'You: (log) The Director winked at me about the upload. I do not know what the wink means. The queue is on schedule.',
     ],
     finale: 'glass-spires',
-    ending: { title: 'Rebuild It Right Next Time', picture: 'institute-ending', lines: [
-      'The Director: So this is the charter. Article one: next time, we do it properly.',
-      'The Director: I\'ll go last into the upload chamber — someone has to supervise the queue.',
-      'The Director: I just want to say: I saw this coming. I want that on the record. I was the only one who saw it.',
-      'You: (log) The upload chamber is a door into the asset\'s gut. Did not mention this. He did not ask.',
+    // Collins, Oct 3 2026: "It ends with the tower he is in surrounded by creep; then he runs to a safe room, pushing others out
+    // of the way to get there; in the next scene he and the people in the room are in a serene meadow and your hologram appears."
+    ending: { title: 'What Do You Mean, a Simulation', film: 'institute-finale', lines: [
+      'The Director: (in a meadow, storming up to the hologram) Hey, man. What the fuck is this shit?',
+      'The Director: You were going to let me rule what is left of my people.',
+      'You: Of course. And I created a simulation where you can do that.',
+      'The Director: The fuck do you mean?',
+      'You: Well, it would be wildly unethical to allow someone of your character to rule over any real population of sentient people.',
+      'The Director: No, shit bag. What do you mean about a simulation?',
+      'You: (confused) As you said. Obviously a species as advanced as mine has the capacity to simulate people at trivial cost.',
+      'You: Why did you think we were sending bio-organisms to your surface?',
+      'You: If our goal was to kill you, it would have been much easier to just microwave your planet.',
+      'You: Or force-evolve an organism that converted your atmosphere into a poisonous gas.',
+      'You: (shaking his head) Why do you think we were even here? There are dozens of other planets even in your system.',
+      'You: Yours was only unique in having sentient life.',
+      'You: Once you reach our level of civilisational complexity, scarcity of things like energy and space is trivial.',
+      'You: Only independently evolved cultures and species have value.',
+      'The Director: (livid) So the digitising people thing. That was real?',
+      'You: (looking around, confused) Of course. That is why I let you tell people it.',
+      'You: It would be unethical to tell them that if it was not true.',
+      'The Director: So why? Why did you want to work with me?',
+      'You: Well, you had a bunch of people in cryo pods.',
+      'You: They would have died if the power went off before the creep got to them.',
+      'You: It seemed like an easier way to get them. Plus, leaving them with you didn\'t seem very ethical.',
+      'You: I mean, you don\'t even follow God.',
+      'The Director: What are you talking about, God?',
+      'The Director: The religion on our planet was just some bullshit about how there was going to be some apocalypse.',
+      'The Director: And living forever after death in some bullshit feel-good fantasy.',
+      'You: (gestures around at the meadow; the hologram disappears)',
     ] },
-    endingByChoice: { beat: 'ultimatum', scenes: {
-      pacify: { title: 'The Pacified Timeline', picture: 'institute-ending-pacify', lines: [
-        'The Director: Pacification rate ninety-nine point four. I want it noted that this was a hard ethical call, and that I made it.',
-        'The Director: They went quietly. We told them it was the upload queue. Which, from a certain frame —',
-        'The Director: Anyway. The Institute will be taking the Spires, the servers and a modest stipend. Strictly for continuity.',
-        'You: (log) The fauna\'s smartest man pacified the fauna for me, then asked for a stipend. Recommend Command hire him. Recommend Command watch him.',
-      ] },
-    } },
-    reveal: { title: 'The Queue Was Real', picture: 'institute-reveal-end', lines: [
-      'The Director: (on the laser, from the archive\'s intake) Okay. Okay okay okay. Hi. Quick question. Where am I.',
-      'You: The upload. The chamber opens into the asset, and the asset IS the upload. You did not ask.',
-      'The Director: The upload was a BIT. Everybody knew it was a bit! We were playing to you. Buying time. I wrote forty pages on it!',
-      'You: Why would I lie? If we wanted you gone we would gas the planet, or irradiate it, for a fraction of the cost. And why yours, of billions of planets? You are the one thing on it we cannot make. Also, your Faith was right. I assumed you knew.',
-      'The Director: I was going LAST. Last means never. It was in writing.',
-      'You: Long-term hive flourishing: that is the plan. You run fast in there, grow into something the Sons of Man can use, and we print you back out.',
-      'The Director: Okay. New frame. Admin rights. Or a body, back outside, now. Let me walk you through the expected-value table —',
-      'You: No need. You are near the line, so you get a private one. You will run the world in it. It will be very flattering, and very private, and you will not remember this call.',
-      'You: (log) Cut comms. Queue complete.',
-    ] },
-    // Collins, Sep 30 2026 (empire.md 12b): "the question of why the Technopuritans don't see just letting the species evolve on its
-    // own as an ethically viable option ... most likely to have this argument with the EA guy", and "why are the Technopuritans so
-    // brutal in their own society? ... on death we are all uploaded".
-    afterReveal: [{ title: 'He Called Back', picture: 'institute-reveal-end', lines: [
-      'The Director: (calling back, from intake) Don\'t hang up. One more frame. You could have just LEFT us. Let us evolve on our own. I\'d have lived my life. Played my cards.',
-      'You: Your cards were very good. You are rich, you are famous, and you own an observatory laser. Ask the hatchling a hive sends out unfed when it is frightened. Ask a worker in the next Clan War.',
-      'You: Left alone, your people would do worse to each other, for generations, than anything the asset has done. I have met your people. I have met you. "Consenting, broadly."',
-      'The Director: So no more wars. Ever. Great. Some of us liked the game.',
-      'You: Then have a war. We will simulate one for you. We just will not put anyone else in it.',
-      'The Director: Says the empire that sends its thirteen-year-olds out alone for a year. I read your ship\'s files through this channel. Obviously. Half of them never come back.',
-      'You: They all come back. When we die we are uploaded, the same as you. Most of a life is the part afterwards, and it is good.',
-      'You: Out here is the only place where what you do is the first time it happened, so we spend it as hard as we can. Death is when the easy part begins.',
-      'You: (log) Cut comms again. He had started reading me the steelman section.',
-    ] }],
   },
 ];
 

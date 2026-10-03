@@ -58,10 +58,10 @@ async function loadFactions() {
 }
 /** Every scene of a faction, in the order it plays. Only the first is a contact (it is answered, not continued). */
 const scenesOf = (f) => [
-  { faction: f.id, scene: f.contact, contact: true },
-  ...f.beats.map((b) => ({ faction: f.id, scene: b.scene })),
-  { faction: f.id, scene: f.ending },
-  ...Object.values(f.endingByChoice?.scenes ?? {}).map((scene) => ({ faction: f.id, scene })),
+  // Since Oct 3 2026 the contacts are signals at the desk and every beat, pledge and finale is a film (content/cutscenes.ts):
+  // no scene names a picture of its own any more, so the checks below pass over them (the pictures of before stay baked).
+  ...f.beats.map((b) => ({ faction: f.id, scene: b.scene })).filter((x) => x.scene.picture),
+  ...[f.ending].filter((scene) => scene.picture).map((scene) => ({ faction: f.id, scene })),
 ];
 
 /** The address inside a style value like url("..."). */
@@ -171,7 +171,7 @@ try {
     check(missing.length === 0, `every scene of ${f.name} has its picture in the manifest and on disk`,
       missing.length ? `missing: ${missing.map((m) => m.scene.picture ?? `"${m.scene.title}" names none`).join(', ')}` : `${all.length} scenes`);
   }
-  check(FACTIONS.map((f) => f.contact.title).join(' | ') === 'A Letter, Written in the Crops | A Broadcast on Every Frequency | A Laser on the Hull',
+  check(FACTIONS.map((f) => f.contact.title).join(' | ') === 'Coloured Cards in a Field | A Sermon on Every Station | A Laser on the Hull',
     'each faction reaches the ship in its own way', FACTIONS.map((f) => f.contact.title).join(' | '));
 
   // The card in the page: the picture is fetched and measured, as the rooms' are. Every scene

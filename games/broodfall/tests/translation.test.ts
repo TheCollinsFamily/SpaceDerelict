@@ -44,7 +44,7 @@ describe('YOKE\'s translation layer', () => {
       expect(c).toBeGreaterThanOrEqual(CHANNELS[ch].confidence[0]);
       expect(c).toBeLessThanOrEqual(CHANNELS[ch].confidence[1]);
     }
-    const lines = FACTIONS[0].contact.lines;
+    const lines = FACTIONS[0].beats[0].scene.lines;
     expect(cardConfidence(lines, 'delegation')).toBe(Math.min(...lines.filter((l) => channelOfLine(l)).map((l) => confidenceOf(l, 'delegation'))));
   });
 

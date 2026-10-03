@@ -1,7 +1,7 @@
 /**
  * The midpoint beat (Collins, Oct 1 2026; content/campaign.ts MIDPOINT_CAPTURES), real clicks:
- * menu → NEW CAMPAIGN → mission 1 (won) → the ship's pick (won) → the three call → ally with the
- * Faithful → take two territories on the globe → back on the ship the other two make their offers
+ * menu → NEW CAMPAIGN → mission 1 (won) → the ship's pick (won) → the three signals at the desk → answer and side
+ * with the Faithful → take two territories on the globe → back on the ship the other two make their offers
  * (both cards) → GO OVER to the Institute: the Voice's goodbye, the Institute's first two beats,
  * Comms shows the former ally. Then the save from the moment of the offers is put back and he STAYS:
  * the Voice's thanks and the Tithe in Comms and in the next briefing.
@@ -88,9 +88,12 @@ try {
   await page.locator('.cp-icom [data-act="icom-close"]').click();
   await Promise.all([page.waitForURL(/campaign=run/), page.locator('[data-act="deploy-assigned"]').click()]);
   await winAndReturn(page);
-  // The three call: hear the Delegation, then ally with the Faithful.
-  await page.waitForSelector('.cp-scene [data-ally]');
+  // The three are signals at the desk (Oct 3 2026): answer the Delegation, go back, answer the Faithful and side with them.
+  await page.locator('[data-room="desk"]').click();
+  await page.waitForSelector('.cp-signals [data-meet="delegation"]');
+  await page.locator('.cp-signals [data-meet="delegation"]').click();
   await page.locator('.cp-scene [data-act="scene-later"]').click();
+  await page.locator('.cp-signals [data-meet="faithful"]').click();
   await page.locator('.cp-scene [data-ally="faithful"]').click();
   await clearPlain(page);
   await page.locator('[data-room="comms"]').click();

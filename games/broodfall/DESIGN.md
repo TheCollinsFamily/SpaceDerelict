@@ -1297,7 +1297,52 @@ Measured (tools/measure/defence.measure.ts, naive scripted player, 10 seeds, Oct
 board 9/10 held, mean core 80% on a hold; large city 9/10, mean core 64%. Winnable, not free: it costs
 core, and the scripted player loses one in ten.
 
+### THE CUT SCENES, AS COLLINS WROTE THEM (Oct 3 2026 — BUILT Oct 3; this is what stands)
+
+Collins wrote every faction cut scene himself on Oct 3 2026 ("the central plot with the Roach King still not done"); his
+text is kept word for word in `notes/CUTSCENES-2026-10-03.md`, and the story as a player meets it is
+`notes/CAMPAIGN-BEATS.md`. **Where the sections below (Sep 28 to Oct 1) say otherwise, this section wins.**
+
+- **The tone.** "This game's goal is to combine social commentary with the type of over-the-top humor Red Alert 2 was
+  famous for (unabashed, over-the-top B). That said, each conversation is supposed to explore some unique and
+  interesting philosophical idea at the same time."
+- **Every scene is a video.** "Now that I am writing them I think videos make sense for all of them." (His note before
+  it, for the record: conversations are trees with occasional choices; the ones that are chains play in front of a
+  looping video "to give you the feel there is a living person, or rather insect, there in front of you".) No scene of
+  his has a choice in it: the Institute's rule/pacify ultimatum is gone, and with it Kingdom Fund and Pacification.
+- **First contact.** YOKE announces that groups on the planet are trying to contact the ship and could be useful; she
+  states the Institute's and the Faithful's methods plainly and adds, embarrassed, as an afterthought, "and someone
+  left coloured cards in a field". Then, "at the planet where you choose a mission, you can play through the first
+  interaction with any of the groups, after which you choose which one you want to publicly side with, which takes
+  the part of a video message broadcast to the planet" ("we come in peace"; "your species is recklessly building
+  advanced AI and had a chance to rein yourselves in, so we have come to rescue you from the greedy corporations").
+  So: nobody calls. The three are signals on the globe at the Directive Desk; a first interaction gives no perk until
+  he sides with that group; siding is exclusive and plays his broadcast.
+- **The channels.** The Delegation: 11,000 members spell a letter with coloured cards in a field (not crops any more),
+  and call by video feed after the summit. The Faithful: the Voice, a radio preacher; he is then met by hologram. The
+  Institute: a laser whose pattern decodes as a video feed, opened by sending the matching sequence back.
+- **Who he is in these scenes** (his notes): "someone still figuring things out and open to ideas from others"; "not
+  actively manipulating the group but more perplexed by them". With the Faithful he is a believer who keeps trying to
+  talk them out of the suicide vests. His history is the Technopuritan tradition's, and he speaks it in its words.
+- **The beats.** Delegation 4 (the summit; the leaked plans; the greater plan; "why don't you just ask me", which is
+  the old "nobody's perfect": they are the voluntary extinction movement), then its finale. Faithful 3, then its
+  finale. Institute 3, then its finale. Perks as before, by beat: Objectors, Translator, More Objectors; Sleepers,
+  Garrison, More Sleepers; Volunteers, Seed Labs, More Volunteers.
+- **Conscientious Objectors:** "pick one enemy kind that won't come ... shows at start of each mission and only shows a
+  pool of units that would have come on that mission". The pick comes up at DEPLOY; its pool is the war kinds that
+  mission's directive reaches (`objectorPool`, measured).
+- **Each finale** is the creep reaching them and their waking in the archive, with his hologram telling them what a
+  broodfall is: the ending and "The reveal" (below) in ONE scene. "Each of their finales takes place before the last
+  mission against the Roach King." That mission is not written; until it is, the finale territory ends the campaign.
+- **Not rewritten by him, and written for the scenes before:** the asides, the midpoint's cards, the news clippings
+  about the factions, the Roach King's lines about them. `notes/CUTSCENES-2026-10-03.md` section 3 lists what clashes.
+
 ### The factions (Emperor's recruitable sub-houses) — revised Sep 28 2026
+
+(The scenes, channels, the ultimatum's choice and the endings described from here to "The reveal" are those of Sep 28
+to Oct 1 2026. Collins's own cut scenes of Oct 3 2026, in the section above, replaced them; the perks, the midpoint and
+"none of them ever turns against you" stand.)
+
 
 **How each reaches him (Sep 29 2026).** Collins: contact "would not be hand delivered; how they contact you will be unique to each faction but needs to make sense." He is in orbit, so each faction reaches him its own way (REVISED Oct 1 2026, "How each faction reaches him" below): the **Friendship Delegation** write their letters IN THE CROPS; the **Faithful** put one message out on TENS OF THOUSANDS of radio stations at the same second; the **Institute** aim a LASER at the ship that repeats a sequence (primes) until it answers. Every scene has its own picture (the `picture` of each scene in content/campaign.ts; the files in public/art/ship/scenes/), shown on its card; a scene with none shows the leader's portrait.
 "Recruitable factions through some missions … give you a couple of extra units, and
@@ -1454,6 +1499,9 @@ built for YOKE's projection.
   in a debrief.
 
 ### The reveal (Collins, Sep 30 2026 — BUILT Sep 30)
+
+(Oct 3 2026: the reveal is no longer a card after the ending. Collins wrote it into each faction's finale scene; what a
+broodfall is for, below, stands. The three reveal cards and the Director's call-back described here are out of the game.)
 
 Collins (typos mended):
 

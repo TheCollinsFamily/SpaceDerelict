@@ -4,7 +4,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import {
-  ally, choose, finish, newCampaign, perksOf, plan, stayLoyal, summaryFor, switchAlly, targets,
+  ally, finish, newCampaign, perksOf, plan, stayLoyal, summaryFor, switchAlly, targets,
   type CampaignState,
 } from '../src/meta/campaign';
 import type { RunReport } from '../src/meta/goals';
@@ -90,7 +90,6 @@ describe('staying loyal', () => {
     ];
     for (const [f, check] of cases) {
       let s = take(clear(wins(alliedWith(f), MIDPOINT_CAPTURES - 1)));
-      if (f === 'institute') s = choose(s, 'ultimatum', 'rule');
       const before = perksOf(s);
       s = stayLoyal(s);
       expect(s.midpoint?.status).toBe('stayed');
@@ -122,7 +121,9 @@ describe('going over', () => {
     expect(s.beatsSeen).toEqual([...seenBefore, 'understand', 'stop-war']);
     const titles = s.pendingScenes.map((p) => p.scene.title);
     expect(titles[0]).toBe('Chapter Thirty: The Meek'); // the Voice's goodbye comes first
-    expect(titles.slice(1)).toEqual(['The First Summit', 'The Leaked Plans']);
+    // then his broadcast for the new ally (going over is public too), then its first two scenes
+    expect(titles.slice(1)).toEqual(['We Come in Peace', 'The First Summit', 'The Leaked Plans']);
+    expect(s.pendingScenes[1].pledge).toBe(true);
     expect(s.pendingScenes.some((p) => p.offer)).toBe(false);
     // Not hostile: no counter-attack comes of it, and his ground is his.
     expect({ underAttack: s.underAttack, staging: s.staging ?? null }).toEqual(attackBefore);
@@ -139,14 +140,13 @@ describe('going over', () => {
     }
     expect(targets(s).some((t) => t.finaleOf === 'delegation')).toBe(false);
     expect(s.beatsSeen).toContain('ultimatum');
-    s = choose(s, 'ultimatum', 'pacify');
     s = finish(s, plan(s, 'glass-spires'), report(true)).state;
     expect(s.ended).toBe('institute');
     const titles = s.pendingScenes.map((p) => p.scene.title);
-    // His ending (the choice he made), then the Delegation's last letter, then the reveal.
-    expect(titles.indexOf('The Pacified Timeline')).toBeGreaterThanOrEqual(0);
-    expect(titles.indexOf('A Last Letter From the Field')).toBe(titles.indexOf('The Pacified Timeline') + 1);
-    expect(titles.indexOf('The Queue Was Real')).toBe(titles.indexOf('A Last Letter From the Field') + 1);
+    // His finale (the creep reaches the Director, who wakes in the archive), then the Delegation's last letter. Nothing after.
+    expect(titles.indexOf('What Do You Mean, a Simulation')).toBeGreaterThanOrEqual(0);
+    expect(titles.indexOf('A Last Letter From the Field')).toBe(titles.indexOf('What Do You Mean, a Simulation') + 1);
+    expect(titles[titles.length - 1]).toBe('A Last Letter From the Field');
   });
 
   it('only at the midpoint, only to a rival', () => {

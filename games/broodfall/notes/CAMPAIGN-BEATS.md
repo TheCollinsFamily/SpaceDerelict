@@ -1,172 +1,182 @@
-# Broodfall: the three campaigns, beat by beat (Oct 1 2026)
+# Broodfall: the three campaigns, beat by beat (rewritten Oct 3 2026 to Collins's cut scenes)
 
-Where it all comes from: `content/campaign.ts` (every line of every scene), DESIGN.md "The
-factions" and "The reveal". This is the story as a player meets it, written to be read cold.
+Where it all comes from: `content/campaign.ts` (every line of every scene), `content/cutscenes.ts` (how each scene is
+shot as a film), and Collins's own text of Oct 3 2026, kept word for word in `notes/CUTSCENES-2026-10-03.md`. This is
+the story as a player meets it, written to be read cold.
 
 ## How a campaign runs, in one paragraph
 
-You are a junior pest-control technician in orbit, flying a living bioweapon (the "asset") down
-onto an insect planet, one territory at a time. Your first win clears the Directive Desk, and
-on that return all three of the planet's factions call you, one after another. You ally with ONE.
-From then on, every territory you TAKE moves its story along: a "beat" is a scene card that plays
-when you come back aboard after a capture, and most beats lend you a perk that changes the
-battles. Between beats your ally sends a running joke after every deployment (a letter, a
-broadcast or a call). When the route is done, its finale territory opens on the globe; take it,
-and you get the ending film, the ending card, and then THE REVEAL: what absorption really is.
-**New on Oct 1: halfway along, the other two make you an offer, and you can go over to one of them.**
+You are a junior pest-control technician in orbit, flying a living bioweapon (the "asset") down onto an insect planet,
+one territory at a time. Your first win clears the Directive Desk, and on that return YOKE tells you that groups on the
+planet are trying to reach the ship: one with a laser, one by radio and, she adds, embarrassed, "someone left coloured
+cards in a field". The three are **signals on the planet** at the desk. You can **answer** any of them (its first
+interaction plays, and commits you to nothing), and then you **side with ONE, publicly**: your video message to the
+whole planet. From then on, every territory you TAKE moves its story along: a "beat" is a cut scene that plays when you
+come back aboard after a capture, and most beats lend you a perk that changes the battles. Between beats your ally
+sends a running joke after every deployment. When the route is done, its finale territory opens on the globe; take it,
+and the finale plays: the creep reaches them, they wake in the archive, and you tell them what a broodfall is.
+Halfway along, the other two make you an offer, and you can go over to one of them.
 
-**You never meet anyone (Collins, Oct 1 2026).** "As far as I know you don't directly interact with
-anyone; the logistics would be silly and the danger to you too high." You stay in orbit; only the
-asset is on the ground. Each faction reaches you on its own channel, YOKE translates it, and your
-answers go down through the ship's transmitter. The one exception: when a scene needs you "there"
-(the summit, the tea), you are there **by hologram**, from a projector pod the ship drops. It is a
-plot point, not a mechanic.
+**Every scene is a film** (Collins, Oct 3 2026: "I think videos make sense for all of them"). A film that is baked
+plays full screen, the line being said in type under it, and then its card (the perk, the film's poster to watch it
+again, the words folded away). A film not made yet is its card, the words read. Made so far: the Delegation's first
+summit (the test). The other fifteen are shot lists waiting to be made (`npx vite-node tools/media/cutscenes.ts -- list`).
 
-"After N" below means N territories taken since you allied.
+**You never meet anyone (Collins, Oct 1 2026).** You stay in orbit; only the asset is on the ground. Where a scene has
+you standing in front of them (the summit, the prayer hall, the preacher's chambers, every finale) you are there **by
+hologram**, from a projector pod the ship drops. On calls you are at your console.
+
+"After N" below means N territories taken since you sided with them.
 
 ---
 
 ## 1. The Friendship Delegation
 
-**Premise.** Hopeless believers. A higher intelligence crossing the stars can't be doing this
-without a good reason, so every atrocity gets reinterpreted: first you were misunderstood, then
-you were a hard lesson, then you were the planet's immune system protecting Gaia from THEM.
-Played like France in *Mars Attacks!*: you keep messing with them, and they keep thanking you.
+**Premise.** They never stop believing you are good. The joke of every scene: they lecture YOU on your moral status,
+and you, who are not manipulating them at all, are simply perplexed. Each scene also shows who he is: someone still
+figuring things out, open to an idea when he hears a good one.
 
-**Leader.** The chief delegate ("Delegate"), smiling, tea in hand, never once looking up.
-
-**How they reach you: letters written in the crops.** They have no transmitter, so they cut
-their letters into wheat fields, a mile high, for your survey cameras. The first one ("A Letter,
-Written in the Crops") is addressed to "the Visitor, and dear Visitor's wife": they've been
-listening to the command band and heard two voices. Under the words is a drawing of two figures
-holding hands, one of them the ship, under a heart the size of a county. YOKE has to read it out
-to you: "Technician, I am not your wife. I am the ship. Stop zooming in on the heart." ("P.P.S.
-Please forgive the handwriting. The second comma is a barn.") You file it under "enrichment".
+**Their signal: coloured cards in a field.** Eleven thousand members stand in a field in the Granary Belt holding
+coloured cards over their heads for your survey cameras. It spells a letter: they want to understand you, and some of
+their pilots have stopped flying. After the summit they call by video feed.
 
 **The beats**
-1. **The First Summit** (at once, when you ally). They invite you to a peace summit, with
-   snacks. You attend by hologram. The asset eats the summit. "You ate the summit." "We are
-   choosing to see this as a first draft." *Perk: Conscientious Objectors:* before each battle, pick one enemy
-   kind that won't come.
-2. **The Leaked Plans** (after 1). They hand you their own generals' attack plans, because
-   violence solves nothing. You use them to kill the generals. "And that, too, is a kind of
-   peace." *Perk: the Translator:* you see what's in the next wave and which gate it comes from.
-3. **For the Planet** (after 2). The cult turn: they finally understand. You aren't hurting
-   them, you're protecting the planet FROM them. "I ate a school." "A school that taught our
-   children to consume." You stop trying to explain.
+1. **The First Summit** (the first interaction; a film, MADE). A rentable hotel conference room, heavy with it, and a
+   summit with snacks. You send down your hologram. They are thrilled. "You are happy to see me. Why?" A species that
+   has come as far as yours in technology has obviously evolved past cruelty and violence. "Um. Why would you think
+   that?" On their planet technological and moral advancement have almost always gone hand in hand; was it not the
+   same on yours? He thinks. He does not see why the two would be linked, but yes, it was. He thinks longer, and
+   changes his mind: technology is the physical manifestation of a civilisation with the environment for ordered
+   thought, so the link is not crazy. "Yes! Exactly!" They have sympathisers all around the world and can sabotage the
+   supply lines. *Perk: Conscientious Objectors:* at the start of each mission, pick one enemy kind, of those that
+   mission would bring, that will not come.
+2. **The Leaked Plans** (after 1; on a video feed). Their generals are organising a major counter-attack, and here are
+   the plans. Why would you do this? Because violence is always wrong. But I will use this to attack your generals
+   first, which is still violence. Ah, but you are the other, the immigrant, the guest: any violence you do against
+   their people is justified; did they not start shooting the moment you landed? He pinches the bridge of his nose.
+   "Sure. I guess that makes sense." *Perk: the Translator:* you see what is in the next wave and where it comes from.
+3. **For the Planet** (after 2; a video call). They have held internal conversations to explain why you keep expanding
+   in what appears to be a violent manner, and they have figured it out: you hit industry and military power, and never
+   once a forest or a reef. You came to save the planet from their exploitative species. Or those are just the most
+   natural threat to my unchecked expansion. They thought of that: your forces consume biomatter, so the best plan was
+   to land on undefended forests and reefs first and build a stockpile. You did not, which proves you want to protect
+   them. They cut the feed. "Unbelievable. It is not like I can carry biomatter from one drop to another. I heard
+   there were humans like this in Earth's history. I should look into them."
    → **The midpoint comes here** (see below).
-4. **The Reveal: Nobody's Perfect** (after 3). At tea (you there by hologram), you tell them
-   plainly: "I am a pest-control operator. I am exterminating your species." The delegate doesn't
-   look up from the tea:
-   "Well — nobody's perfect." Then the truth: they are the Voluntary Extinction Society, and
-   they've campaigned for this for sixty years. You are the best thing that ever happened to
-   the movement. (The *Some Like It Hot* ending, on purpose.) *Perk: More Objectors:* two kinds.
-5. **Fewer Births Along the Way** (after 4). Open collaborators now. The members have voted:
-   faster, please, and with fewer births. They've drawn up a colour-coded schedule. It's a better
-   project plan than Command's, and it stops one step short.
+4. **Why Don't You Just Ask Me** (after 3). They call again, having learned so much more about your plans. He cuts in:
+   why don't you just ask me? He has a theory, and gives it in the language of his own history books (the Technopuritan
+   tradition's): they remind him of a population that gathered under a rainbow flag, kept importing people who
+   explicitly wanted to eradicate them, and asserted their own intentions onto them. His actions have made it
+   perfectly clear that his goal is to wipe out their species; they do not ask because a world view where they are
+   the good guys matters more to them than reality. "Well, that is a relief to hear." "What? I just said my goal is
+   your species' eradication!" They are almost all members of the voluntary extinction movement as well. Do you know
+   how many tons of toxic gas are produced for every child born? Have you ever heard of the asymmetry principle? He
+   cuts the monitor and paces. "Nope. Nope, nope. I must maintain emotional control. That is one of the first
+   teachings." *Perk: More Objectors:* two kinds.
 
-**Finale: The Assembly Hall.** Their last congress. The chairs are set out; the hall is quiet.
-
-**Ending, "Bear Witness".** "The last congress is called to order. Attendance: one." The last
-delegate writes the history ("the Visitors came to heal us from ourselves") and switches off the
-lights. You recommend the planet as a training site.
-
-**The reveal, "A Letter From the Other Side".** They wake inside the archive, each in the life she
-always wanted, and cut one more letter into the wheat of the archive's intake meadow. They are MORTIFIED: they spent
-sixty years trying to stop the wheel of wanting, and you've built it a heaven. "Switch us off."
-You shrug: shutting down a whole archive over one complaint is against ethical protocol, and past
-the gate they won't remember. "That is the cruellest thing you have ever said to us."
+**Finale: The Assembly Hall → "The Cycle".** They are in one of the last rooms in a city of creep, and it bursts
+through the walls. Then they are in a field, and your hologram appears. "What the fuck is this?" "What I was doing.
+Obviously." Weren't you going to eradicate our species? Well, yes: eradicate and digitise you, to speed up your
+civilisation's development and remove the injustices of a planet at your stage; and if you do not want that, you can
+escape to any paradise you desire from here (an apple appears in his hand). "We thought you were going to end the
+cycle. Existence is suffering!" "No, it's not." "It is for me. You can't define my lived experiences." "Well, then
+that is, like, your choice." "Feelings are not a choice!" "If you have discipline, they are." "Why won't you just
+kill everyone?" "That would be wildly unethical. Look, I don't have time for this. This has been an educational
+experience." Back on the ship he takes off a headset: he had no idea what his ancestors had to live through.
 
 ---
 
 ## 2. The Faithful of the Last Hour
 
-**Premise.** End-times believers, a parody vague enough that each real tradition assumes it's
-the other one. You are the sign: the world must end for the Awaited One to come, so they'll help
-you end it. You're a strict materialist, so keeping them on side means doing their theology
-homework, and every chapter is beneath you.
+**Premise.** You are the sign: the world must end for the Awaited One to come, so they will help you end it. He is a
+Technopuritan and a believer himself, and spends the route trying to talk them out of the suicide vests, and losing
+the argument to a preacher who is better at theology than he is.
 
-**Leader.** The Voice, host of *The Hour Is Near* on the Last Hour Radio Network.
-
-**How they reach you: tens of thousands of stations in sync.** First contact is the same words on
-tens of thousands of radio stations at the same second, pointed up, so the ship can't miss the
-spike ("…brothers and sisters, LOOK UP."). After that everything the Voice says to you goes out
-on the air, in front of the whole congregation, homework marks included.
+**Their signal: a sermon on every radio station.** The Voice, a radio preacher: "You are the sign."
 
 **The beats**
-1. **Theology Homework** (at once). Chapter one is the Seven Cities, read to you on the air one
-   chapter a night. Chapter two is the same list in a different order. *Perk: Sleepers:* martyrs
-   hide in the enemy waves and blow up among their own troops.
-2. **The Deployment Is Scripture** (after 1). "And the river shall run with fire." "Which river?"
-   "Whichever one you burn, brother. That is how prophecy works." Then a verse about the taken being
-   kept, each in the cell of her longing. You say that one is correct. *Perk: the Garrison:* their
-   militants hold what you take, so no counter-attack ever needs defending.
-   → **The midpoint comes after the next territory** (after 2: no beat of theirs plays then).
-3. **The Awaited One** (after 3). The Seventh City stands; when it falls, He comes. "And if He
-   does not come?" "Then we will have misread the date. It only makes us stronger." You begin a
-   contingency "made of spare meat and a very good voice box". *Perk: More Sleepers.*
+1. **Tools for the Mission** (the first interaction). Your hologram appears in a grand religious building (closer to a
+   mosque than a church), one preacher bowing before you. Your coming was prophesied: a great figure in a chariot of
+   fire, come to cull the rotten people of this world. "Well, come on. You are not that rotten, are you? Not all of
+   you." Truly, even he has the heart of a sinner. But you try, with all the capacity God has gifted you? And yet you
+   are still here to reap us; we all have our part in God's plan. He scratches his chin. "True enough." The faithful
+   will take part in your glorious mission: they have prepared tools (he points at a pile of vests). Cut to him pacing
+   on his ship: "Oh, fuck. Were those suicide vests?" *Perk: Sleepers:* martyrs hide in the enemy waves and blow up
+   among their own.
+2. **It Is Agreed, Then** (after 1). The preacher's chambers, a room like the pope's. "Do you know how hard it has been
+   to fucking contact you? Knock off the suicide vest thing." Does it not make your job easier? ... Yes. Then it is
+   the will of God; has God given you authority to speak on His behalf? No. He only wants to help: he could uplift
+   their congregations first, so they do not have to suffer. So pre-millennial or post-millennial were both possible,
+   because it was a choice, and one the preacher must make. Is the soul not edified through suffering? "I really don't
+   think you should be making that decision for other people. Or, um. Well. Weird insect monsters." But God has put
+   him where he must, so it is His will that it is his decision. "Sure. I guess." *Perk: the Garrison:* their
+   militants hold what you take, so no defence deployments.
+   → **The midpoint comes after the next territory.**
+3. **A Slave to God's Will** (after 3). "Any chance I can talk you out of the suicide vest thing?" Have you beheld the
+   glory of God yourself? No. But you are an Ablim, are you not? "Maybe describe an Ablim." In their scriptures:
+   warriors more powerful than anything they can imagine, who fly on chariots of fire from the stars and guard God's
+   will. "Huh. Yeah. I am probably an Ablim, then." And you are as much a slave to God's will as we are; our scholars
+   had long debated that point. *Perk: More Sleepers.*
 
-**Finale: The Seventh City.** The last city in the prophecy, which the Voice has been broadcasting
-the fall of for thirty years.
-
-**Ending, "The Hour".** "Brothers and sisters — HE IS HERE." The Awaited One, a little stiffly:
-"Hello. I am the Awaited One. Well done, everyone." The Voice weeps: everything worked out exactly
-as it was written. You note that the messiah will need re-stuffing by the weekend.
-
-**The reveal, "The Comb Above".** The Voice wakes in a hall of gold, chapter twenty word for word,
-and is FURIOUS that it's a machine. You're confused: their Book foretold the apocalypse AND this
-heaven, and as a Technopuritan you think God wrote to them as far as they could read. Then the
-real complaint: where is the Pit? There's no hell; the ones too far gone simply aren't simulated.
-"Then what was the point of being GOOD?" They lodge a complaint with God. You note you can always
-delete the congregation.
+**Finale: The Seventh City → "That Is a Wrap".** The great central church, the creep bursting in; as it collapses,
+everyone is back in the pews, whole, and your hologram appears. "All right, that is a wrap. Thanks for your help." So
+we are in heaven? That depends: how did your texts define it? A land where we would await God, living in endless
+pleasure. "Yeah. That describes this simulation pretty well." Simulation? Heaven is not made with technology! Did
+your texts say that? "This is an abomination!" "You once told me I should not speak on behalf of God. Now I say the
+same to you. You do not get to choose the shape of God's miracles." Then the two find out what each thought of the
+other: he took the Visitor for a godless alien who had studied the Faith and only pretended to care for the martyrs,
+and played along because God makes tools of the witless; the Visitor is honestly shocked: "You thought I was just
+playing along this whole time? No. There is a damn reason your religious texts were so predictive of all this."
+(The preacher's accusation is rewritten for clarity, as Collins asked; his original is in the notes.)
 
 ---
 
 ## 3. The Institute for Long-Term Hive Flourishing
 
-**Premise.** The effective-altruism parody; the focus is the hypocrisy. Their world just built its
-first AI models, and on the numbers you're "the SAFER apocalypse". You tell them you can upload
-their species into a virtual world forever. They act as if they believe it.
+**Premise.** The effective-altruism parody; the focus is the hypocrisy. He is sure he is the smartest one in every
+room, including yours.
 
-**Leader.** The Director, Eli Bankfried ("Director, founder, rationalist, investor. Mostly
-founder"): a spare heir of a finance House, playing *League of Larvae* through every transmission, sure you're
-the first mind he's met that matches his own.
+**Leader.** The Director, Eli Bankfried.
 
-**How they reach you: a laser on the hull.** First contact ("A Laser on the Hull") is the
-observatory's ranging laser painting the ship and counting primes, two, three, five, seven,
-eleven, until you "knock back" (YOKE sends thirteen). Then the beam is their channel, and YOKE
-renders the Director's stream as video, match audio included ("It's for measuring the moon. The
-moon can wait.").
+**Their signal: a laser on the hull.** Its flashes decode as a video feed; the ship opens it by sending the matching
+sequence back down the beam.
 
 **The beats**
-1. **The Upload** (at once). You mention uploading. "That is the single highest-expected-value
-   sentence anyone has ever said to me." His people leave a refrigerated truck of cryo-lab
-   subjects ("consenting, broadly") at the edge of the creep, for the upload. The asset eats the truck. *Perk: Volunteers:* every battle starts with 30 science.
-2. **Females** (after 1). He offers to send you some females, "for FUN". The recreational-sex
-   exchange as Collins wrote it, ending on "Has your species not discovered masturbation?" and a
-   long pause. *Perk: Seed Labs:* you can land anywhere, not only next to ground you hold.
-3. **The Least-Bad Timeline** (after 2), **a choice.** "You're going to win. I did the maths before
-   you did." Option one: they rule what's left (*Kingdom Fund:* +1 royal point every battle).
-   Option two: they help you pacify the population (*Pacification:* every wave a tenth smaller).
-   *Perk either way: More Volunteers* (+40 war and a royal point).
-   → **The midpoint comes on the same return, right after this choice.**
+1. **A Little Chat** (the first interaction). Feet on the desk, a game console in his hands: "Told you I could do it."
+   Do what? Hack your comms system. You did not hack anything; you sent laser flashes and I sent one back. "But we are
+   talking now, aren't we? Hacking is as much a mental game as one of technology." The most intelligent and ethically
+   disciplined of their species have formed the Institute; they dedicate every moment to the most rational,
+   goal-oriented decision in that moment (he says, snorting a line of powder off the desk). Idiot corpos are
+   recklessly building artificial intelligences they cannot control; you took out one of their biggest data centres in
+   your first fall, so you are on the same page. Anything you need. "The only thing I really need are the bodies of
+   your people." That works out great: he has facilities full of them on ice; people will do anything to get out of
+   dying. "And they trusted people like you with their frozen bodies? Um. Yeah. Sure. Send them." *Perk: Volunteers:*
+   every mission starts with 30 science.
+2. **Sex for Fun** (after 1). You keep having me send you frozen old people, but you are a male, right? Don't you want
+   any young, hot women? Or guys, no judgment. He thought that was the point of conquering the stars (he holds up a
+   magazine: a starship captain with a green one and a blue one on his arms). But our species are not remotely
+   compatible. You have just got to be creative. No: at a genetic level. He means sex for fun: most of his partners are
+   workers and cannot even get pregnant, and they share partners; it is the most logical way to structure a
+   relationship. "Wait. Has your species not discovered masturbation yet?" "Bro. Masturbation is for poor people." He
+   cuts the feed. "I need to pray. And take a shower." *Perk: Seed Labs:* you can land anywhere.
+3. **Running Out of Frosties** (after 2; no longer a choice). It is getting obvious you are not here just for the data
+   centres (so he is not a complete imbecile, the technician thinks). He cannot fight you, and this world order was
+   kind of fucked up anyway; they have plans to replace it: quadratic voting, self-verifying contracts. The point: when
+   you are done, set him up to rule the rest, and he will help. He is running out of frozen people, so he will
+   recruit: he will tell them you are going to digitise them if they surrender, since a simulation costs a species like
+   yours nothing. "Sure. I guess. Do that." *Perk: More Volunteers:* +40 war and a royal point.
+   → **The midpoint comes on the same return.**
 
-**Finale: The Glass Spires.** Their AI labs. The Institute wants them gone, and the Director
-would like a word afterwards.
-
-**Ending, by the choice.** *Rule:* "Rebuild It Right Next Time". He reads out the charter
-("article one: next time, we do it properly"), says he'll go last into the upload chamber because
-someone has to supervise the queue, and that he saw this coming. The chamber is a door into the
-asset's gut. *Pacify:* "The Pacified Timeline". Pacification rate 99.4%. "They went quietly. We
-told them it was the upload queue." He asks for the Spires, the servers and a modest stipend.
-
-**The reveal, "The Queue Was Real", then "He Called Back".** He calls from the archive's intake:
-the upload was a BIT, everybody knew it was a bit, they were buying time. You: why would I lie? If
-we wanted you gone we'd gas the planet for a fraction of the cost. He tries to bargain (admin
-rights, a body back outside, the expected-value table). You give him a private world he'll rule,
-very flattering, and he won't remember the call. Cut comms. He calls BACK to argue that you
-could have let his people evolve on their own. You answer that left alone they'd do worse to each
-other, and that the Empire uploads its own dead too: "Death is when the easy part begins."
+**Finale: The Glass Spires → "What Do You Mean, a Simulation".** His tower surrounded by creep; he runs to a safe
+room, shoving others out of the way. Then he and the people in that room are in a serene meadow, and your hologram
+appears. You were going to let me rule what is left of my people. "Of course. And I created a simulation where you can
+do that." It would be wildly unethical to let someone of his character rule any real population. And what did he
+think: if the goal was to kill them it would have been far easier to microwave the planet; there are dozens of planets
+in their own system, and theirs was only unique in having sentient life; at the Empire's level scarcity is trivial and
+only independently evolved cultures and species have value. So the digitising was real? Of course: that is why he let
+him tell people. Why work with him, then? He had people in cryo pods who would have died if the power went off. "Plus,
+leaving them with you didn't seem very ethical. I mean, you don't even follow God." What God? Their religion was
+bullshit about an apocalypse and living forever in a feel-good fantasy. The hologram gestures at the meadow, and goes.
 
 ---
 
@@ -192,9 +202,9 @@ homework "for a RADIO HOST").
     meek" / "sup with the merchant"; there was no chapter thirty, and now there is);
   - the Director takes it "fine" (his model had you staying at 91%; he'll send a small, symbolic
     invoice for the cryo-lab subjects, or he goes to play a match because you picked the RADIO GUY).
-  Your new route starts **one territory in**: its first two beats play at once, with their perks.
-  When you finish it, the ally you left writes once more, right after your ending and before the
-  reveal (a last letter from the field; the Voice's last broadcast, "chapter thirty-one"; the
+  Your new route starts **one territory in**: your broadcast for the new ally plays (going over is public too), then
+  its first two beats, with their perks.
+  When you finish it, the ally you left writes once more, right after your finale (a last letter from the field; the Voice's last broadcast, "chapter thirty-one"; the
   Director's recording on the laser: "Solid execution. Not how I'd have done it. The invoice is still open.").
 - **Stay.** You keep everything, and your ally hears that you turned the others down and adds a
   thank-you perk:
@@ -204,8 +214,8 @@ homework "for a RADIO HOST").
   - Institute, *the Retainer:* every battle starts with 25 more science ("a loyalty-adjusted
     expected-value transfer". It is a bribe.).
 
-**Why it is shaped this way (the 5 / 3 / 3 beats).** The routes aren't the same length: the
-Delegation has 5 beats (finale after 4 territories), the Faithful 3 (after 3), the Institute 3
+**Why it is shaped this way (the 4 / 3 / 3 beats).** The routes aren't the same length: the
+Delegation has 4 beats (finale after 3 territories), the Faithful 3 (after 3), the Institute 3
 (after 2). Putting the midpoint at the same count for everyone (two territories in) lands it in a
 good spot on each route: before the Delegation's big reveal, between the Faithful's prophecy and
 the Awaited One, and right on the Institute's ultimatum. The one-territory head start after a
@@ -286,6 +296,11 @@ agree with him, and is the only absorbed citizen who has not complained.
 ---
 
 ## OPEN for Collins
+
+**Since Oct 3 2026 the list that matters is in `notes/CUTSCENES-2026-10-03.md`, section 3** (the test film's voices and
+pace, his face on screen, the rewritten accusation, "Ablim", forty stations, the asides and midpoint cards that were
+written for the scenes before, the retired media, the Roach King's last mission). **The midpoint's cards and the asides
+below were written for the scenes before these and still speak of wheat, homework and the Book.** The older items:
 
 1. **Two more beats each for the Faithful and the Institute** (they have 3 against the
    Delegation's 5). Still yours. The midpoint works without them; if they're added, the midpoint

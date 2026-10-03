@@ -4,12 +4,13 @@
  */
 import { describe, expect, it } from 'vitest';
 import {
-  ally, buyLineage, choose, endingOf, evolutionCaps, finish, newCampaign, perksOf, plan, selectProfile, summaryFor, targets, territory,
+  ally, buyLineage, evolutionCaps, finish, meet, newCampaign, objectorPool, perksOf, plan, selectProfile, summaryFor, targets, territory,
   type CampaignState,
 } from '../src/meta/campaign';
 import { evaluate, instance, measure, type RunReport } from '../src/meta/goals';
 import { ScriptedShipAi, seedFor } from '../src/meta/shipAi';
 import { DARES, FACTIONS, HOME, LINEAGES, TERRITORIES } from '../content/campaign';
+import { ENEMIES, WAVE_TABLE } from '../content/data';
 import { DT, Sim } from '../src/sim/sim';
 import { Autoplayer } from '../src/sim/autoplayer';
 import type { RunStats } from '../src/sim/types';
@@ -128,14 +129,31 @@ describe('the campaign: credits, the globe, pushback', () => {
 });
 
 describe('the factions: contact, beats, perks, the finale', () => {
-  it('each faction reaches out at its point; allying is exclusive; its route plays out to its ending', () => {
+  it('all three reach out as signals; a first contact can be played before siding; siding is public and exclusive; the route plays out to its finale', () => {
     let s = newCampaign(7);
     s = winAt(s, 'cul-de-sac');
-    expect(s.pendingScenes.some((p) => p.contact && p.faction === 'delegation')).toBe(true);
+    // All three reach out at once; none of them is a call any more: they are signals on the planet at the desk.
+    expect([...s.contacted].sort()).toEqual(['delegation', 'faithful', 'institute']);
+    expect(s.pendingScenes).toEqual([]);
+    // He can play any group's first interaction before siding with anyone (Collins, Oct 3 2026): no perk comes of it.
+    s = meet(s, 'faithful');
+    expect(s.faction).toBeNull();
+    expect(s.pendingScenes[0]).toMatchObject({ faction: 'faithful', beat: 'signs', meeting: true });
+    expect(perksOf(s)).toEqual([]);
+    s = meet(s, 'delegation');
+    expect(s.pendingScenes.filter((p) => p.meeting).map((p) => p.faction)).toEqual(['delegation']); // one first contact up at a time
+    expect(s.met).toEqual(['faithful', 'delegation']);
+    // Siding with one is public: his broadcast to the planet plays; the first interaction he has played is not played twice.
     s = ally(s, 'delegation');
     expect(s.faction).toBe('delegation');
+    expect(s.pendingScenes.map((p) => p.scene.title)).toEqual(['We Come in Peace']);
+    expect(s.pendingScenes[0].pledge).toBe(true);
     expect(perksOf(s)).toContain('objectors1');
     expect(ally(s, 'institute').faction).toBe('delegation'); // exclusive
+    expect(meet(s, 'institute').pendingScenes.some((p) => p.meeting)).toBe(false); // the others are not answered after that
+    // Siding with a group he has not answered yet plays its first interaction first, then the broadcast.
+    const cold = ally(winAt(newCampaign(7), 'cul-de-sac'), 'institute');
+    expect(cold.pendingScenes.map((p) => p.scene.title)).toEqual(['A Little Chat', 'For Your Own Safety']);
     // Objectors let you ban a kind; the Translator (next beat) shows the waves.
     expect(plan(s, targets(s)[0].id, { objectors: ['flier', 'sapper'] }).config.bannedEnemies).toEqual(['flier']);
     s = winAt(s);
@@ -149,20 +167,20 @@ describe('the factions: contact, beats, perks, the finale', () => {
       s = winAt(s, next);
     }
     expect(s.beatsSeen).toContain('reveal');
-    expect(s.pendingScenes.some((p) => p.beat === 'reveal' && p.scene.lines.some((l) => l.includes('nobody\'s perfect')))).toBe(true);
+    expect(s.pendingScenes.some((p) => p.beat === 'reveal' && p.scene.lines.some((l) => l.includes('that is a relief to hear')))).toBe(true);
+    expect(perksOf(s)).toContain('objectors2');
     expect(s.ai.queue).toContain('midpoint');
     const finale = targets(s).find((t) => t.finaleOf === 'delegation');
     expect(finale?.id).toBe('assembly');
     s = finish(s, plan(s, 'assembly'), report(true)).state;
     expect(s.ended).toBe('delegation');
-    expect(s.pendingScenes.some((p) => p.scene.title === 'Bear Witness')).toBe(true);
-    // The reveal comes right after the ending.
+    // The finale is the ending and the reveal in one scene: nothing comes after it.
     const titles = s.pendingScenes.map((p) => p.scene.title);
-    expect(titles.indexOf('A Letter From the Other Side')).toBe(titles.indexOf('Bear Witness') + 1);
+    expect(titles[titles.length - 1]).toBe('The Cycle');
     expect(targets(s)).toEqual([]);
   });
 
-  it('the Institute: Volunteers start runs with science, Seed Labs lifts adjacency, the ultimatum is a choice', () => {
+  it('the Institute: Volunteers start runs with science, Seed Labs lifts adjacency, and the last beat is no longer a choice', () => {
     let s = newCampaign(8);
     s = winAt(s); s = winAt(s); s = winAt(s);
     expect(s.contacted).toContain('institute');
@@ -175,10 +193,32 @@ describe('the factions: contact, beats, perks, the finale', () => {
     const far = TERRITORIES.find((t) => !t.hidden && !t.finaleOf && !s.held.includes(t.id) && !t.neighbours.some((n) => s.held.includes(n)));
     if (far) expect(targets(s).map((t) => t.id)).toContain(far.id);
     for (let i = 0; i < 8 && !s.beatsSeen.includes('ultimatum'); i++) s = s.underAttack ? finish(s, plan(s, s.underAttack), report(true)).state : winAt(s, targets(s).find((t) => !t.finaleOf)!.id);
+    // Collins's script of Oct 3 2026: he asks to rule what is left AND offers to recruit, in one breath; nothing is chosen.
     const ult = s.pendingScenes.find((p) => p.beat === 'ultimatum');
-    expect(ult?.choice?.options.length).toBe(2);
-    s = choose(s, 'ultimatum', 'pacify');
-    expect(s.choices.ultimatum).toBe('pacify');
+    expect(ult).toBeTruthy();
+    expect(ult?.choice).toBeUndefined();
+    expect(perksOf(s)).toContain('volunteers2');
+    expect(plan(s, targets(s).find((t) => !t.finaleOf)!.id).config.startBonus).toMatchObject({ science: 30, war: 40, royal: 1 });
+    for (const f of FACTIONS) for (const b of f.beats) expect(b.choice, `${f.id} ${b.id}`).toBeUndefined();
+  });
+
+  it('the Objectors pick from the kinds a mission would bring, not from every kind there is (Collins, Oct 3 2026)', () => {
+    const war = new Set(ENEMIES.filter((e) => e.caste === 'war').map((e) => e.kind as string));
+    for (const t of TERRITORIES) {
+      const pool = objectorPool(t.id);
+      expect(pool.length, t.id).toBeGreaterThan(0);
+      for (const k of pool) expect(war.has(k), `${t.id}: ${k}`).toBe(true);
+      expect(new Set(pool).size).toBe(pool.length);
+    }
+    // A short hold never offers what only the late rows of the wave table field; a long one offers more.
+    const short = objectorPool('crash-site');
+    const long = objectorPool('queens-hollow');
+    expect(short).not.toContain('tunneler');
+    expect(short).toContain('responder');
+    expect(long.length).toBeGreaterThan(short.length);
+    expect(long).toEqual(expect.arrayContaining(Object.keys(WAVE_TABLE[WAVE_TABLE.length - 1]).filter((k) => war.has(k))));
+    // A defence is one all-out siege: everything may come.
+    expect(objectorPool('crash-site', true).length).toBeGreaterThanOrEqual(long.length);
   });
 
   it('the Faithful: the Garrison repels pushback; Sleepers ride in the enemy waves', () => {
@@ -262,7 +302,7 @@ describe('the factions keep in touch, and choices change the route (audit, Sep 2
     return s;
   };
 
-  it('the Delegation reaches "the greater plan" before the reveal, and writes between beats', () => {
+  it('the Delegation reaches "the greater plan" before "nobody\'s perfect", and writes between beats', () => {
     let s = newCampaign(7);
     s = winAt(s, 'cul-de-sac');
     s = ally(s, 'delegation');
@@ -270,7 +310,7 @@ describe('the factions keep in touch, and choices change the route (audit, Sep 2
     expect(s.beatsSeen.indexOf('gaia')).toBeGreaterThan(-1);
     expect(s.beatsSeen.indexOf('gaia')).toBeLessThan(s.beatsSeen.indexOf('reveal'));
     const gaia = FACTIONS[0].beats.find((b) => b.id === 'gaia')!;
-    expect(gaia.scene.lines.join(' ')).toMatch(/protecting the planet/);
+    expect(gaia.scene.lines.join(' ')).toMatch(/You came to save the planet from our exploitative species/);
     expect((s.comms ?? []).length).toBeGreaterThanOrEqual(3);
     expect(s.comms!.every((l) => FACTIONS[0].asides.includes(l))).toBe(true);
     // The debrief carries the latest one, and YOKE's summary knows it.
@@ -288,26 +328,7 @@ describe('the factions keep in touch, and choices change the route (audit, Sep 2
     expect(inst.contact.lines.join(' ')).toMatch(/Eli Bankfried/);
   });
 
-  it('the ultimatum changes the route: "rule" funds a royal point, "pacify" shrinks the waves and changes the ending', () => {
-    let s = newCampaign(8);
-    s = winAt(s); s = winAt(s); s = winAt(s);
-    s = ally(s, 'institute');
-    s = march(s, (x) => x.beatsSeen.includes('ultimatum'));
-    const t = () => targets(s).find((x) => !x.finaleOf)!.id;
-    const before = plan(s, t()).config;
-    expect(before.waveScale).toBe(1);
-    const rule = choose(s, 'ultimatum', 'rule');
-    expect(perksOf(rule)).toContain('kingdom');
-    expect(plan(rule, t()).config.startBonus?.royal).toBe((before.startBonus?.royal ?? 0) + 1);
-    const pac = choose(s, 'ultimatum', 'pacify');
-    expect(perksOf(pac)).toContain('pacified');
-    expect(plan(pac, t()).config.waveScale).toBe(0.9);
-    const inst = FACTIONS.find((f) => f.id === 'institute')!;
-    expect(endingOf(inst, pac).title).toBe('The Pacified Timeline');
-    expect(endingOf(inst, rule).title).toBe(inst.ending.title);
-  });
-
-  it('Pacification really sends fewer bodies (the sim reads waveScale)', () => {
+  it('a smaller wave scale really sends fewer bodies (the sim reads waveScale; no perk sets it since Oct 3 2026)', () => {
     const count = (waveScale: number) => {
       const sim = new Sim({ gridW: 50, gridH: 40, cellPx: 26, seed: 5000, waveScale });
       const next = sim.previewNextWave();
@@ -318,99 +339,83 @@ describe('the factions keep in touch, and choices change the route (audit, Sep 2
 });
 
 describe('how the factions reach him, and the picture of every scene', () => {
-  /** Every scene of every faction, with the id its picture has to have. */
+  /** Every filmed scene of every faction, with the id its film has to have. */
   const scenes = FACTIONS.flatMap((f) => [
-    { id: `${f.id}-contact`, scene: f.contact },
     ...f.beats.map((b) => ({ id: `${f.id}-${b.id}`, scene: b.scene })),
-    { id: `${f.id}-ending`, scene: f.ending },
-    ...Object.entries(f.endingByChoice?.scenes ?? {}).map(([choice, scene]) => ({ id: `${f.id}-ending-${choice}`, scene })),
+    { id: `${f.id}-pledge`, scene: f.pledge },
+    { id: `${f.id}-finale`, scene: f.ending },
   ]);
 
-  it('every scene of every faction names its own picture, <faction>-<scene>', () => {
-    expect(scenes.length).toBe(18);
-    for (const s of scenes) expect(s.scene.picture).toBe(s.id);
+  it('every beat, pledge and finale names its own film, <faction>-<scene> (Collins, Oct 3 2026: videos for all of them)', () => {
+    expect(scenes.length).toBe(16);
+    for (const s of scenes) expect(s.scene.film).toBe(s.id);
   });
 
-  it('every picture a scene names is in the manifest and on disk', () => {
+  it('every picture a scene still names is in the manifest and on disk', () => {
     const listed = JSON.parse(readFileSync('public/art/manifest.json', 'utf8')).ship?.ship?.scenes ?? {};
-    for (const s of scenes) {
-      expect(listed[s.id], `${s.id} in the manifest`).toBe(`ship/scenes/${s.id}.webp`);
-      expect(existsSync(`public/art/${listed[s.id]}`), `${s.id} on disk`).toBe(true);
+    for (const f of FACTIONS) for (const sc of scenesOf(f)) {
+      if (!sc.picture) continue;
+      expect(listed[sc.picture], `${sc.picture} in the manifest`).toBe(`ship/scenes/${sc.picture}.webp`);
+      expect(existsSync(`public/art/${listed[sc.picture]}`), `${sc.picture} on disk`).toBe(true);
     }
   });
 
-  it('he is in orbit: each faction reaches him in its own way, and nobody hands him anything', () => {
+  it('he is in orbit: each group reaches him in its own way, and on the planet he is a hologram', () => {
     const by = (id: string) => FACTIONS.find((f) => f.id === id)!;
-    expect(by('delegation').contact.title).toBe('A Letter, Written in the Crops');
-    expect(by('faithful').contact.title).toBe('A Broadcast on Every Frequency');
+    expect(by('delegation').contact.title).toBe('Coloured Cards in a Field');
+    expect(by('faithful').contact.title).toBe('A Sermon on Every Station');
     expect(by('institute').contact.title).toBe('A Laser on the Hull');
-    // Collins, Oct 1 2026: crops (that embarrass YOKE), tens of thousands of stations in sync, a laser counting primes;
-    // and "you don't directly interact with anyone": he never goes down; "in person" is by hologram (Collins, the same day).
-    expect(by('delegation').contact.lines.join(' ')).toMatch(/wheat/);
-    expect(by('delegation').contact.lines.some((l) => l.startsWith('YOKE: '))).toBe(true);
-    expect(by('faithful').contact.lines.join(' ')).toMatch(/tens of thousands of radio stations/);
-    expect(by('institute').contact.lines.join(' ')).toMatch(/primes/);
+    // Collins, Oct 3 2026: 11,000 members spell a letter with coloured cards in a field; a radio preacher; a laser whose
+    // flashes decode as a video feed, answered with the matching sequence.
+    expect(by('delegation').contact.lines.join(' ')).toMatch(/Eleven thousand of them are standing in a field, holding coloured cards/);
+    expect(by('delegation').contact.lines.join(' ')).toMatch(/pilots have stopped flying/);
+    expect(by('faithful').contact.lines.join(' ')).toMatch(/every station/);
+    expect(by('faithful').contact.lines.join(' ')).toMatch(/you are the sign/);
+    expect(by('institute').contact.lines.join(' ')).toMatch(/decodes as a video feed/);
+    expect(by('institute').contact.lines.join(' ')).toMatch(/matching sequence back down the beam/);
     for (const f of FACTIONS) {
-      for (const sc of scenesOf(f)) {
-        expect(sc.lines.join(' '), sc.title).not.toMatch(/coloured cards|forty stations|deep-space dish|video call/i);
-        // Where he is present at a scene on the ground, he is there by hologram.
-        for (const l of sc.lines.filter((x) => /^You: .*\b(attend|across the tea)\b/.test(x))) expect(l, sc.title).toMatch(/hologram/);
-      }
-    }
-    const summit = by('delegation').beats.find((b) => b.id === 'understand')!.scene.lines.join(' ');
-    expect(summit).toMatch(/\(by hologram[^)]*\) I will attend the summit/);
-    expect(summit).toMatch(/You ate the summit/);
-    for (const f of FACTIONS) {
+      // A signal's card is the ship's own words: no leader speaks on it (their first words are their first interaction).
+      for (const l of f.contact.lines) expect(l, f.id).toMatch(/^(YOKE|You): /);
+      expect(Math.abs(f.signal.lat)).toBeLessThan(80);
+      expect(f.signal.how.length).toBeGreaterThan(5);
+      // "You don't directly interact with anyone" (Collins, Oct 1 2026): where he stands before them, it is by hologram.
+      expect(f.ending.lines.join(' '), `${f.id} finale`).toMatch(/hologram/);
       const all = [f.contact.title, ...f.contact.lines, ...f.asides].join(' ');
       expect(all).not.toMatch(/hand-delivered|by hand|\bpostman\b|\bcourier\b/i);
     }
+    const scene = (f: string, b: string) => by(f).beats.find((x) => x.id === b)!.scene.lines.join(' ');
+    expect(scene('delegation', 'understand')).toMatch(/\(by hologram/);
+    expect(scene('faithful', 'signs')).toMatch(/hologram/);
+    expect(scene('faithful', 'prophecy')).toMatch(/\(by hologram/);
+    expect(scene('faithful', 'prepare')).toMatch(/\(by hologram/);
+    // The Delegation call by video feed after the summit; the Director is on the laser's feed throughout.
+    expect(scene('delegation', 'stop-war')).toMatch(/on a video feed/);
     // The letters stay letters; each says how it came.
     expect(by('delegation').asides.every((a) => a.startsWith('Delegate (letter, by field): '))).toBe(true);
-    expect(by('delegation').contact.lines.join(' ')).toMatch(/Dear Visitor/);
-    expect(by('institute').contact.lines.join(' ')).toMatch(/laser/);
-    // Everything the Voice says to him is said on the air.
+    // Everything the Voice says to him between the scenes is said on the air.
     expect(by('faithful').asides.filter((a) => a.startsWith('The Voice')).every((a) => /^The Voice \((broadcast|to you, on the air)\): /.test(a))).toBe(true);
   });
 
-  it('the reveal (DESIGN.md "The reveal"): every route ends on a card that says what absorption is, and each faction takes it its own way', () => {
-    const by = (id: string) => FACTIONS.find((f) => f.id === id)!;
-    for (const f of FACTIONS) {
-      expect(f.reveal, `${f.id} reveal`).toBeDefined();
-      expect(f.reveal!.lines.length).toBeLessThanOrEqual(9);
-      for (const l of f.reveal!.lines) expect(l).toMatch(/^[^:]{2,40}: \S/);
-      expect(f.reveal!.lines.join(' ')).toMatch(/digitis|IS the upload/);
-      expect(f.reveal!.lines.join(' ')).toMatch(/afternoon|gas the planet/); // why not sterilise: the character is surprised nobody saw it
-    }
-    expect(by('delegation').reveal!.lines.join(' ')).toMatch(/ethical protocol/);
-    expect(by('faithful').reveal!.lines.join(' ')).toMatch(/delete the congregation/);
-    expect(by('institute').reveal!.lines.join(' ')).toMatch(/Cut comms/);
-    // The Director calls back (Collins, Sep 30 2026; empire.md 12b): why not let them evolve on their own, and why the Empire is so
-    // brutal to its own. One card, the same shape as a reveal.
-    const back = by('institute').afterReveal ?? [];
-    expect(back).toHaveLength(1);
-    expect(back[0].lines.length).toBeLessThanOrEqual(9);
-    for (const l of back[0].lines) expect(l).toMatch(/^[^:]{2,40}: \S/);
-    expect(back[0].lines.join(' ')).toMatch(/evolve on our own/);
-    expect(back[0].lines.join(' ')).toMatch(/simulate one for you\. We just will not put anyone else in it/);
-    expect(back[0].lines.join(' ')).toMatch(/When we die we are uploaded/);
-    expect(back[0].lines.join(' ')).toMatch(/easy part begins/);
-    // The dead from before the broodfall: not yet, but physics allows it (Collins).
-    for (const id of ['delegation', 'faithful']) expect(by(id).reveal!.lines.join(' ')).toMatch(/cannot read the dead yet/);
-    // The wicked are not kept (no Pit), and the Director's world is private (Collins).
-    expect(by('faithful').reveal!.lines.join(' ')).toMatch(/not simulated/);
-    expect(by('institute').reveal!.lines.join(' ')).toMatch(/very private/);
-    // The broodfall is erased from their memories.
-    expect(by('delegation').reveal!.lines.join(' ')).toMatch(/not remember the broodfall/);
-    // Resynthesis: an archived people that can add to the Sons of Man is printed back out.
-    for (const f of FACTIONS) expect(f.reveal!.lines.join(' ')).toMatch(/Sons of Man/);
-    // The Institute's ending line stays literally true: the door into the gut IS the upload.
-    expect(by('institute').ending.lines.join(' ')).toMatch(/door into the asset's gut/);
+  it('the finale (Collins, Oct 3 2026): the creep reaches them, they wake in the archive, and each takes it its own way', () => {
+    const by = (id: string) => FACTIONS.find((f) => f.id === id)!.ending.lines.join(' ');
+    // What absorption is, said in each: a simulation, digitised; and it would have been far easier to kill them.
+    for (const f of FACTIONS) expect(by(f.id), f.id).toMatch(/simulation|digitis/);
+    // The Delegation wanted the cycle ended, and get paradise.
+    expect(by('delegation')).toMatch(/We thought you were going to end the cycle/);
+    expect(by('delegation')).toMatch(/Why won't you just kill everyone\?/);
+    expect(by('delegation')).toMatch(/That would be wildly unethical/);
+    // The Faithful: heaven is a machine, and each thought the other was the one playing along.
+    expect(by('faithful')).toMatch(/Heaven is not a simulation/);
+    expect(by('faithful')).toMatch(/You do not get to choose the shape of God's miracles/);
+    expect(by('faithful')).toMatch(/You thought I was just playing along this whole time\?/);
+    // The Institute: the upload was real, he rules a simulation, and their Faith was right.
+    expect(by('institute')).toMatch(/I created a simulation where you can do that/);
+    expect(by('institute')).toMatch(/microwave your planet/);
+    expect(by('institute')).toMatch(/Only independently evolved cultures and species have value/);
+    expect(by('institute')).toMatch(/you don't even follow God/);
   });
 
-  it('no scene grew by more than two lines, and every line still names its speaker', () => {
-    for (const s of scenes) {
-      expect(s.scene.lines.length).toBeLessThanOrEqual(9);
-      for (const l of s.scene.lines) expect(l).toMatch(/^[^:]{2,40}: \S/);
-    }
+  it('every line of every scene names its speaker', () => {
+    for (const f of FACTIONS) for (const sc of scenesOf(f)) for (const l of sc.lines) expect(l, sc.title).toMatch(/^[^:]{2,40}: \S/);
   });
 });

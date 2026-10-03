@@ -155,16 +155,19 @@ describe('the leaders\' voices', () => {
     expect(aura).not.toContain('aura-2-apollo-en');
   });
 
-  it('every line they speak in a contact, beat, ending or reveal scene is voiced, with its words as they are now', () => {
+  it('every line they speak on a scene CARD is voiced, with its words as they are now; a scene that is a FILM is voiced by its film', () => {
+    // Since Oct 3 2026 the contacts' cards are the ship's own words, and every beat, pledge and finale is a film
+    // (content/cutscenes.ts; tests/cutscenes.test.ts): the cards left with a leader speaking are the midpoint's.
     let n = 0;
     for (const x of lines) {
-      if (!LEADER_VOICES[x.who] || !spokenText(x.l)) continue;
+      if (x.s.film || !LEADER_VOICES[x.who] || !spokenText(x.l)) continue;
       const v = media.voices[voiceKey(x.f, x.s.title, x.i)];
       expect(v, `${x.f} "${x.s.title}" line ${x.i}`).toBeTruthy();
       expect(v.text).toBe(spokenText(x.l));
       n++;
     }
-    expect(n).toBeGreaterThan(60);
+    expect(n).toBeGreaterThan(30);
+    for (const f of FACTIONS) for (const sc of [...f.beats.map((b) => b.scene), f.pledge, f.ending]) expect(sc.film, `${f.id} "${sc.title}"`).toBeTruthy();
   });
 
   it('every aside and every leader line outside a scene card is voiced, by its words (Oct 1 2026)', () => {
@@ -194,24 +197,22 @@ describe('the leaders\' voices', () => {
   });
 });
 
-describe('the endings as films, the reveals as pictures', () => {
-  it('each of the four endings has a film of four to eight shots, all baked, with its own music', () => {
-    const endings = FACTIONS.flatMap((f) => [f.ending.picture, ...Object.values(f.endingByChoice?.scenes ?? {}).map((s) => s.picture)]);
-    expect(endings.length).toBe(4);
-    for (const e of endings) {
-      const film = ENDING_FILMS.find((x) => x.scene === e);
-      expect(film, e).toBeTruthy();
-      expect(film!.shots.length).toBeGreaterThanOrEqual(4);
-      expect(film!.shots.length).toBeLessThanOrEqual(8);
-      for (const s of film!.shots) expect(media.clips[s.clip], `${e}: ${s.clip}`).toBeTruthy();
-      expect(media.music[film!.music], film!.music).toBeTruthy();
+describe('the ending films and reveal pictures of before Oct 3 2026', () => {
+  // Collins's scripts of Oct 3 2026 replaced each route's ending and reveal with one finale scene (its own film:
+  // content/cutscenes.ts), so no scene shows these any more. They were paid for and stay baked: this keeps them whole.
+  it('the four ending films are still whole on disk, with their music', () => {
+    expect(ENDING_FILMS.length).toBe(4);
+    for (const film of ENDING_FILMS) {
+      expect(film.shots.length).toBeGreaterThanOrEqual(4);
+      expect(film.shots.length).toBeLessThanOrEqual(8);
+      for (const sh of film.shots) expect(media.clips[sh.clip], `${film.scene}: ${sh.clip}`).toBeTruthy();
+      expect(media.music[film.music], film.music).toBeTruthy();
     }
+    // No scene of today names one of them: a finale is its own film.
+    for (const f of FACTIONS) expect(ENDING_FILMS.some((x) => x.scene === f.ending.picture)).toBe(false);
   });
 
-  it('each reveal card names its own picture, and it is baked', () => {
-    for (const f of FACTIONS) {
-      expect(f.reveal?.picture).toBe(REVEAL_PICTURES[f.id]);
-      expect(media.pictures[REVEAL_PICTURES[f.id]], f.id).toBeTruthy();
-    }
+  it('the three reveal pictures are still baked', () => {
+    for (const f of FACTIONS) expect(media.pictures[REVEAL_PICTURES[f.id]], f.id).toBeTruthy();
   });
 });

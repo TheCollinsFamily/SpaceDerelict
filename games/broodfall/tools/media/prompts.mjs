@@ -211,3 +211,6 @@ export const MUSIC = {
 export const FIELD = {
   'field-1': 'Sound only, no music, no speech. A raw field recording outdoors in a ruined town at dusk: wind, a distant bell tolling irregularly, far-off crackling fire, a far siren fading, a dog barking once very far away, and faint distant crying. Recorded on an old portable recorder, hiss and room tone. No music, no melody.',
 };
+
+// Shared with the cut-scene films (tools/media/cutscenes.ts): the same people, the same rules.
+export { CROWD, CLEAN, CREATURE, WHO };

@@ -535,6 +535,15 @@ export class Globe3D {
       const hide = !p.front;
       if (g.classList.contains('behind') !== hide) g.classList.toggle('behind', hide);
     }
+    // The signals of the groups trying to reach the ship (campaignUi.ts): each sits at its own place on the planet.
+    for (const g of Array.from(this.box.querySelectorAll<SVGGElement>('.globe .signal'))) {
+      const [lat, lon] = (g.dataset.at ?? '').split(',').map(Number);
+      if (!Number.isFinite(lat) || !Number.isFinite(lon)) continue;
+      const p = this.project(lat, lon);
+      g.setAttribute('transform', `translate(${p.x.toFixed(1)},${p.y.toFixed(1)})`);
+      const hide = !p.front;
+      if (g.classList.contains('behind') !== hide) g.classList.toggle('behind', hide);
+    }
     // The colony's push (src/meta/defence.ts): its arrow follows the planet too.
     for (const g of Array.from(this.box.querySelectorAll<SVGGElement>('.globe .push'))) {
       const [fa, fo] = (g.dataset.from ?? '').split(',').map(Number);

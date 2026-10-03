@@ -4,7 +4,9 @@
  * tools/art/bmovie.mjs speakable, tools/media/caps-audit.ts.
  */
 import { describe, expect, it } from 'vitest';
+// @ts-expect-error: a .mjs of the tools, no types
 import { assertSpeakable } from '../tools/media/lib.mjs';
+// @ts-expect-error: a .mjs of the tools, no types
 import { LINES, speakable } from '../tools/art/bmovie.mjs';
 import { ROACH_ADDRESSES } from '../content/roachKing';
 

@@ -174,10 +174,11 @@ try {
     console.log('scenes: the faction scenes and a reveal, still then alive');
     const F = await loadFactions();
     const picks = [
-      { faction: 'delegation', scene: F.find((f) => f.id === 'delegation').contact, contact: true },
+      // (Oct 3 2026: the faction scenes are films now and name no picture; these picks show their leader's portrait.)
+      { faction: 'delegation', scene: F.find((f) => f.id === 'delegation').beats[0].scene },
       { faction: 'faithful', scene: F.find((f) => f.id === 'faithful').beats.find((b) => b.id === 'prophecy').scene },
       { faction: 'institute', scene: F.find((f) => f.id === 'institute').beats.find((b) => b.id === 'machines').scene },
-      { faction: 'faithful', scene: F.find((f) => f.id === 'faithful').reveal },
+      { faction: 'faithful', scene: F.find((f) => f.id === 'faithful').ending },
     ];
     for (const alive of [false, true]) {
       const { context, page } = await freshPage(browser, alive);

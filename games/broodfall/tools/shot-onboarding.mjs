@@ -297,20 +297,17 @@ try {
     await page.waitForSelector('#campaign:not(.hidden) [data-act="back"]', { timeout: 15000 });
     const g3 = await aboard(page, '[data-act="back"]');
     check(g3 === 'unlock', `the win clears the desk, and she says so: ${g3}`);
-    check(await page.locator('.cp-scene').count() === 0, 'the planet\'s calls wait until she has finished');
+    check(await page.locator('.cp-scene').count() === 0, 'no scene comes up over her greeting');
     await greeted(page);
     check(/Broh, that was sick/.test(await icomText(page)), 'Collins\'s unlock lines');
-    await page.waitForSelector('.cp-scene', { timeout: 5000 });
-    const calls = [];
-    for (let i = 0; i < 3; i++) {
-      const card = await page.locator('.cp-scene').innerText();
-      calls.push(card.split('\n').find((l) => /CALL \d OF 3/.test(l)) ?? '');
-      if (i === 0) await shot(page, '12-first-contact-1-of-3');
-      if (i < 2) await page.locator('.cp-scene [data-act="scene-later"]').click();
-    }
-    check(calls.every((c, i) => c.includes(`CALL ${i + 1} OF 3`)), `all three call, one after the other: ${calls.map((c) => c.slice(0, 40)).join(' | ')}`);
-    check(/DELEGATION|FAITHFUL|INSTITUTE/.test(calls.join(' ')), 'the callers are the factions');
-    await page.locator('.cp-scene [data-act="scene-later"]').click();
+    // Since Oct 3 2026 nobody calls: she has announced them, and they are signals on the planet at the desk.
+    check(/someone left coloured cards in a field/.test(await icomText(page)), 'she announces the three groups, the cards last');
+    await page.locator('[data-room="desk"]').click();
+    await page.waitForSelector('.cp-signals', { timeout: 5000 });
+    const calls = await page.locator('.cp-signals .cp-signal .cp-signal-name').allInnerTexts();
+    await shot(page, '12-first-contact-1-of-3');
+    check(calls.length === 3 && !(await page.locator('.cp-scene').count()), `the three are signals at the desk, and no call waits: ${calls.join(' | ')}`);
+    check(/DELEGATION/.test(calls.join(' ')) && /FAITHFUL/.test(calls.join(' ')) && /INSTITUTE/.test(calls.join(' ')), 'the signals are the factions');
     // He walks away from her: the intercom closes, she stays aboard.
     await page.locator('.cp-icom [data-act="icom-close"]').click();
     await page.locator('[data-room="desk"]').click();
@@ -410,8 +407,9 @@ try {
     const g2 = await aboard(page, '[data-act="back"]');
     check(g2 === 'unlock', `the second win clears the desk: ${g2}`);
     await greeted(page);
-    await page.waitForSelector('.cp-scene', { timeout: 5000 });
-    check(/CALL 1 OF 3/.test(await page.locator('.cp-scene').innerText()), 'and the three call');
+    await page.locator('[data-room="desk"]').click();
+    await page.waitForSelector('.cp-signals', { timeout: 5000 });
+    check((await page.locator('.cp-signals .cp-signal').count()) === 3, 'and the three groups are signals on the planet');
     check(errors.length === 0, errors.length ? `PAGE ERRORS: ${errors.slice(0, 4).join(' | ')}` : 'no page errors');
     await ctx.close();
   }

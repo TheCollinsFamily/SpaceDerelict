@@ -230,9 +230,11 @@ describe('the scripted player with mules', () => {
   it('grows a sac and roots mules in a real run', () => {
     // Boards where the scripted player finds work for its mules (GAPS_MODE=mules). Since the science forward bases
     // (Oct 2 2026) a run's course differs board to board, so the first of a few seeds that roots one is taken.
+    // Re-measured Oct 3 2026 (this test had gone red: the seeds 4, 1 and 3 no longer root one since the land and the
+    // domes changed every run's course): of seeds 1-12 the scripted player roots a mule on 10 and on 8, on no other.
     let rooted = 0;
     let sac = false;
-    for (const seed of [4, 1, 3]) {
+    for (const seed of [10, 8, 4]) {
       const s = new Sim({ ...CFG, seed, organStage: true, directive: { kind: 'hold', waves: 12 } });
       const bot = new Autoplayer(seed + 1);
       bot.mules = true;

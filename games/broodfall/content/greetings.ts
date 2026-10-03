@@ -88,10 +88,18 @@ export const GREETINGS: Greeting[] = [
 
   // ---- the desk opens, and the planet calls: Collins's lines (Sep 30 2026), word for word.
   // It plays before the three factions' first calls are shown. ----
-  { id: 'unlock', moment: 'unlock', points: { room: 'comms', label: 'OPEN COMMS' }, beats: [
+  // Oct 3 2026 (Collins): "she explains it appears some groups on the planet are trying to contact us and could be useful
+  // in our mission. She then plainly states the contact methods of the EA and religious group and with embarrassment, as
+  // an afterthought, notes: and someone left coloured cards in a field." The last four beats are that; they send him to
+  // the planet at the Directive Desk, where each group is a signal he can answer.
+  { id: 'unlock', moment: 'unlock', points: { room: 'desk', label: 'OPEN THE DIRECTIVE DESK' }, beats: [
     { say: 'Broh, that was sick...', face: 'happy', then: 'laughing', hold: 1600 },
     { say: 'Wanna know what\'s hilarious? Multiple powerful groups among their species have reached out, trying to form an alliance with us...', face: 'teasing', then: 'laughing', hold: 1400 },
     { say: 'It will make things a lot easier if we had some local help... plus... you know, you get that little emotional oomph from watching a species aid in its own eradication.', face: 'teasing', then: 'wink' },
+    { say: 'One group is pointing an observatory laser at our hull. The flashes decode as a video feed.', face: 'calm' },
+    { say: 'Another has one sermon going out on every radio station they own, aimed straight up at us.', face: 'calm', then: 'pensive', hold: 1400 },
+    { say: 'And, um... someone left coloured cards in a field.', face: 'blushing', then: 'blushing', hold: 1600 },
+    { say: 'They\'re all marked on the planet at the Directive Desk. Answer whoever you like. Then pick one to side with, out loud, in front of the whole planet.', face: 'happy' },
   ] },
 
   // ---- once, early: the mate review. Collins's lines (Sep 30 2026), word for word. It leads to

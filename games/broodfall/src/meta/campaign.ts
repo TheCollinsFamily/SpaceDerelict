@@ -27,6 +27,7 @@ import {
 } from './defence';
 import type { BoardSnapshot } from '../sim/boardSnapshot';
 import { DEFENCE } from '../../content/defence';
+import { ENEMIES, WAVE_TABLE } from '../../content/data';
 
 export interface CampaignState {
   version: 1;
@@ -52,6 +53,11 @@ export interface CampaignState {
   /** Captures when you allied (beats count from here). */
   factionSince: number;
   contacted: FactionId[];
+  /**
+   * The factions whose FIRST INTERACTION he has played (Collins, Oct 3 2026: "you can play through the first interaction
+   * with any of the groups, after which you choose which one you want to publicly side with"). None on older saves.
+   */
+  met?: FactionId[];
   beatsSeen: string[];
   choices: Record<string, string>;
   experimentsDone: string[];
@@ -65,8 +71,12 @@ export interface CampaignState {
    * Optional: older saves have none, and are offered it at their next return if they are past it.
    */
   midpoint?: { status: 'offered' | 'stayed' | 'switched'; at: number; from?: FactionId; to?: FactionId };
-  /** Scenes waiting to be shown on the ship (contacts, beats, endings; `offer`: a rival's offer at the midpoint). */
-  pendingScenes: Array<{ faction: FactionId; beat?: string; scene: Scene; contact?: boolean; offer?: boolean; choice?: BeatDef['choice'] }>;
+  /**
+   * Scenes waiting to be shown on the ship (beats, finales; `offer`: a rival's offer at the midpoint; `meeting`: a first
+   * interaction played from its signal before he has sided with anyone; `pledge`: his broadcast to the planet;
+   * `contact`: only on saves from before Oct 3 2026, when the three called one after the other: dropped when read).
+   */
+  pendingScenes: Array<{ faction: FactionId; beat?: string; scene: Scene; contact?: boolean; offer?: boolean; meeting?: boolean; pledge?: boolean; choice?: BeatDef['choice'] }>;
   ai: { queue: AiTrigger[]; seen: AiTrigger[]; transcripts: Array<{ trigger: AiTrigger; turns: AiTurn[] }> };
   log: string[];
   /** How far the campaign has unfolded (src/meta/onboarding.ts); none on saves from before it existed. */
@@ -108,7 +118,7 @@ export const faction = (id: FactionId): FactionDef => FACTIONS.find((f) => f.id 
 export function perksOf(s: CampaignState): PerkId[] {
   if (!s.faction) return [];
   const beats = faction(s.faction).beats.filter((b) => s.beatsSeen.includes(b.id));
-  // A choice made at a beat adds the chosen option's perks (the Institute's ultimatum).
+  // A choice made at a beat adds the chosen option's perks (no beat has a choice since Oct 3 2026; the rule stays).
   const chosen = beats.flatMap((b) => b.choice?.options.find((o) => o.id === s.choices[b.id])?.perks ?? []);
   // Staying loyal at the midpoint adds the ally's loyalty perk.
   const loyal = s.midpoint?.status === 'stayed' ? [faction(s.faction).midpoint.loyalPerk] : [];
@@ -186,7 +196,6 @@ export function plan(s: CampaignState, territoryId: string, opts: { dares?: stri
   const bonus: Partial<Record<'war' | 'science' | 'royal', number>> = {};
   if (perks.includes('volunteers1')) bonus.science = 30;
   if (perks.includes('volunteers2')) { bonus.war = 40; bonus.royal = 1; }
-  if (perks.includes('kingdom')) bonus.royal = (bonus.royal ?? 0) + 1;
   if (perks.includes('tithe')) bonus.war = (bonus.war ?? 0) + 40;
   if (perks.includes('retainer')) bonus.science = (bonus.science ?? 0) + 25;
   const exp = !first && opts.experiment ? EXPERIMENTS.find((e) => e.id === opts.experiment) : undefined;
@@ -204,7 +213,7 @@ export function plan(s: CampaignState, territoryId: string, opts: { dares?: stri
     sleepers: perks.includes('sleepers2') ? 0.15 : perks.includes('sleepers1') ? 0.08 : 0,
     startBonus: bonus,
     bannedEnemies: (opts.objectors ?? []).slice(0, objectors),
-    waveScale: perks.includes('pacified') ? 0.9 : 1,
+    waveScale: 1,
     entrances: t.entrances,
     directive: t.directive,
     ...orders.config,
@@ -257,11 +266,27 @@ export interface Debrief {
   ideas?: string[];
 }
 
-/** A faction's ending, as the choices made along its route shaped it. */
-export function endingOf(f: FactionDef, s: CampaignState): Scene {
-  const by = f.endingByChoice;
-  return (by && by.scenes[s.choices[by.beat]]) || f.ending;
+/**
+ * THE POOL THE OBJECTORS PICK FROM (Collins, Oct 3 2026: the pick "shows at start of each mission and only shows a pool
+ * of units that would have come on that mission"): the war kinds of the wave table's rows up to the one this landing
+ * site's directive reaches. The sim's row follows its threat (kills, waves cleared, the body's growth), so the top row is
+ * an estimate from the directive, one row above what the scripted player reached on three seeds of every landing site
+ * (tools/measure/objector-pool.measure.ts, Oct 3 2026: a hold of 5 waves reached row 2, of 6 row 4, of 7 row 5, of 9 or
+ * more row 6; a royal hunt row 6; a harvest anything from 2 to 6): it must never leave out a kind that came. So the pick is
+ * short on the first missions (10 kinds of 21 on a 5-wave hold) and close to everything on the long ones, which is what
+ * those missions really bring.
+ */
+export function objectorPool(territoryId: string, defence = false): EnemyKind[] {
+  const dir = territory(territoryId).directive;
+  const waves = defence ? 12 : !dir ? 12 : dir.kind === 'hold' ? dir.waves : 12;
+  const top = Math.min(WAVE_TABLE.length - 1, POOL_TOP_ROW(waves));
+  const war = new Set(ENEMIES.filter((e) => e.caste === 'war').map((e) => e.kind as string));
+  const out: EnemyKind[] = [];
+  for (let row = 0; row <= top; row++) for (const k of Object.keys(WAVE_TABLE[row])) if (war.has(k) && !out.includes(k as EnemyKind)) out.push(k as EnemyKind);
+  return out;
 }
+/** The highest wave-table row a mission of this many waves reaches (measured; see objectorPool). */
+const POOL_TOP_ROW = (waves: number): number => (waves <= 5 ? 3 : waves <= 6 ? 5 : 6);
 
 /** Apply a finished run to the campaign (returns the new state and what to show in the debrief). */
 export function finish(prev: CampaignState, p: DeploymentPlan, r: RunReport): { state: CampaignState; debrief: Debrief } {
@@ -360,12 +385,11 @@ export function finish(prev: CampaignState, p: DeploymentPlan, r: RunReport): { 
   // The factions: contacts, beats, the finale.
   // All three call at once, when the desk opens (Collins, Sep 30 2026: "that's also when you first
   // hear from each of the three factions"); a save from before the unfolding, at its first capture.
+  // Since Oct 3 2026 they do not call one after the other: YOKE announces them (content/greetings.ts `unlock`), and each
+  // is a signal on the planet at the Directive Desk, where its first interaction can be played (`meet`).
   if (!s.faction) {
     for (const f of FACTIONS) {
-      if (deskOpen(s) && s.captures >= 1 && !s.contacted.includes(f.id)) {
-        s.contacted.push(f.id);
-        s.pendingScenes.push({ faction: f.id, scene: f.contact, contact: true });
-      }
+      if (deskOpen(s) && s.captures >= 1 && !s.contacted.includes(f.id)) s.contacted.push(f.id);
     }
   } else {
     const f = faction(s.faction);
@@ -383,15 +407,13 @@ export function finish(prev: CampaignState, p: DeploymentPlan, r: RunReport): { 
     }
     if (captured && t.finaleOf === f.id) {
       s.ended = f.id;
-      s.pendingScenes.push({ faction: f.id, scene: endingOf(f, s) });
-      // The reveal (DESIGN.md "The reveal"): the card after the ending.
+      // The finale (Collins, Oct 3 2026): the creep reaches them, they wake in the archive, and he tells them what a
+      // broodfall is. It is the ending and the reveal (DESIGN.md "The reveal") in one scene.
+      s.pendingScenes.push({ faction: f.id, scene: f.ending });
       // The ally he left at the midpoint writes once more.
       if (s.midpoint?.status === 'switched' && s.midpoint.from) {
         s.pendingScenes.push({ faction: s.midpoint.from, scene: faction(s.midpoint.from).midpoint.coda });
       }
-      if (f.reveal) s.pendingScenes.push({ faction: f.id, scene: f.reveal });
-      // and any card after it (the Director calls back: empire.md 12b)
-      for (const scene of f.afterReveal ?? []) s.pendingScenes.push({ faction: f.id, scene });
       s.ai.queue = queueDiscussion(s.ai.queue, 'ending', s.ai.seen);
     }
     // The midpoint: the two other factions make their offers (once a campaign).
@@ -440,18 +462,43 @@ export function finish(prev: CampaignState, p: DeploymentPlan, r: RunReport): { 
   return { state: s, debrief };
 }
 
-/** Ally with a faction (exclusive): its first beat plays at once. */
+/** A faction's first interaction: the beat that plays before any territory is taken for it. */
+export const firstBeat = (id: FactionId): BeatDef | undefined => faction(id).beats.find((b) => b.afterCaptures === 0);
+
+/**
+ * PLAY A FACTION'S FIRST INTERACTION from its signal on the planet, without siding with it (Collins, Oct 3 2026). It can
+ * be played for any of the three, and again; it gives no perk until he sides with them (`ally`).
+ */
+export function meet(prev: CampaignState, id: FactionId): CampaignState {
+  const s: CampaignState = structuredClone(prev);
+  if (s.faction || s.ended || !s.contacted.includes(id)) return s;
+  const first = firstBeat(id);
+  if (!first) return s;
+  s.pendingScenes = s.pendingScenes.filter((p) => !p.contact && !p.meeting);
+  s.pendingScenes.unshift({ faction: id, beat: first.id, scene: first.scene, meeting: true });
+  if (!(s.met ?? []).includes(id)) s.met = [...(s.met ?? []), id];
+  return s;
+}
+
+/**
+ * SIDE WITH A FACTION, PUBLICLY (exclusive). His broadcast to the planet plays (its `pledge`); its first interaction
+ * plays before it if he has not played it yet; and that beat's perk starts.
+ */
 export function ally(prev: CampaignState, id: FactionId): CampaignState {
   const s: CampaignState = structuredClone(prev);
   if (s.faction) return s;
   s.faction = id;
   s.factionSince = s.captures;
-  s.pendingScenes = s.pendingScenes.filter((p) => !p.contact);
-  const first = faction(id).beats.find((b) => b.afterCaptures === 0);
+  s.pendingScenes = s.pendingScenes.filter((p) => !p.contact && !p.meeting);
+  if (!s.contacted.includes(id)) s.contacted.push(id);
+  const first = firstBeat(id);
   if (first) {
     s.beatsSeen.push(first.id);
-    s.pendingScenes.push({ faction: id, beat: first.id, scene: first.scene, choice: first.choice });
+    if (!(s.met ?? []).includes(id)) s.pendingScenes.push({ faction: id, beat: first.id, scene: first.scene, choice: first.choice });
   }
+  if (!(s.met ?? []).includes(id)) s.met = [...(s.met ?? []), id];
+  s.pendingScenes.push({ faction: id, scene: faction(id).pledge, pledge: true });
+  s.log.push(`Sided with ${faction(id).name}, publicly: a broadcast to the whole planet.`);
   s.ai.queue = queueDiscussion(s.ai.queue, 'faction-allied', s.ai.seen);
   return s;
 }
@@ -471,6 +518,9 @@ export function switchAlly(prev: CampaignState, to: FactionId): CampaignState {
   s.factionSince = s.captures - SWITCH_HEAD_START;
   const bye = faction(from).midpoint.farewell[to];
   if (bye) s.pendingScenes.push({ faction: from, scene: bye });
+  // Going over is public too: his broadcast for the new ally.
+  s.pendingScenes.push({ faction: to, scene: faction(to).pledge, pledge: true });
+  if (!(s.met ?? []).includes(to)) s.met = [...(s.met ?? []), to];
   for (const b of faction(to).beats) {
     if (s.beatsSeen.includes(b.id) || s.captures - s.factionSince < b.afterCaptures) continue;
     s.beatsSeen.push(b.id);

@@ -87,20 +87,23 @@ try {
   await page.locator('[data-act="back"]').click();
   await page.waitForSelector('#campaign:not(.hidden) .cp-icom', { timeout: 10000 });
   check(await page.evaluate(() => document.getElementById('campaign').dataset.greeting === 'unlock'), 'the win clears the desk, and YOKE says so');
-  // He walks away from her: the planet's calls come in.
+  // He walks away from her. Since Oct 3 2026 nobody calls: the three groups are signals on the planet at the desk.
   await page.locator('.cp-icom [data-act="icom-close"]').click();
-  await page.waitForSelector('#campaign:not(.hidden) .cp-scene');
-  const contact = await page.locator('.cp-scene').innerText();
-  check(/FRIENDSHIP DELEGATION/i.test(contact) && /CALL 1 OF 3/.test(contact), 'back on the ship, all three call: the Delegation first');
-  // He is in orbit: the letter is written in the crops, and the card shows it.
-  check(/WRITTEN IN THE CROPS/i.test(contact) && !/hand-delivered/i.test(contact), 'their letter reaches orbit: it is written in the crops');
-  await page.waitForSelector('.cp-scene-card img[data-picture="delegation-contact"]', { timeout: 5000 }).catch(() => {});
-  check(await page.locator('.cp-scene-card img[data-picture="delegation-contact"]').count() === 1, 'the contact card shows the picture of the crop letter');
+  await page.locator('[data-room="desk"]').click();
+  await page.waitForSelector('#campaign:not(.hidden) .cp-signals');
+  const contact = await page.locator('.cp-signals').innerText();
+  check(!(await page.locator('.cp-scene').count()) && (await page.locator('.cp-signals .cp-signal').count()) === 3, 'back on the ship, the three groups are signals on the planet (no call waits)');
+  // He is in orbit: eleven thousand of them hold coloured cards up in a field.
+  check(/FRIENDSHIP DELEGATION/i.test(contact) && /COLOURED CARDS IN A FIELD/i.test(contact) && !/hand-delivered/i.test(contact), 'their letter reaches orbit: coloured cards in a field');
   await shot(page, 'contact');
+  // Answer them (their first contact), then side with them, publicly.
+  await page.locator('.cp-signals [data-meet="delegation"]').click();
+  await page.waitForSelector('.cp-scene');
+  const beat = await page.locator('.cp-scene').innerText();
+  check(/FIRST CONTACT/.test(beat) && /FIRST SUMMIT/i.test(beat), 'answering them plays their first contact');
   await page.locator('.cp-scene [data-ally="delegation"]').click();
   await page.waitForTimeout(150);
-  const beat = await page.locator('.cp-scene').innerText();
-  check(/FIRST SUMMIT/i.test(beat), 'allying plays their first beat');
+  check(/YOUR BROADCAST TO THE PLANET/.test(await page.locator('.cp-scene').innerText()), 'siding with them is his broadcast to the planet');
   await page.locator('[data-act="scene-ok"]').click();
   // The ship AI.
   await page.locator('[data-room="ai"]').click();
@@ -126,7 +129,13 @@ try {
   check(/REQUISITION BOARD/.test(brief) && /DARES/.test(brief) && /Holding it unlocks/i.test(brief), 'the desk is open: the briefing shows the board, the dares and the unlocks');
   await page.locator('.cp-pick[data-dare="zoo"]').click();
   await shot(page, 'briefing');
-  await Promise.all([page.waitForURL(/campaign=run/), page.locator('[data-act="deploy"]').click()]);
+  // Sided with the Delegation: DEPLOY first shows the Conscientious Objectors' pick (Oct 3 2026).
+  await page.locator('[data-act="deploy"]').click();
+  await page.waitForSelector('.cp-objectors');
+  check((await page.locator('.cp-objectors [data-obj]').count()) >= 5, 'DEPLOY shows the pick of the Objectors, from the kinds this mission would bring');
+  await page.locator('.cp-objectors [data-obj]').first().click();
+  await shot(page, 'objectors');
+  await Promise.all([page.waitForURL(/campaign=run/), page.locator('.cp-objectors [data-act="obj-go"]').click()]);
   await page.waitForSelector('#stage canvas');
   await page.waitForTimeout(500);
   check(/kinds of limb/i.test(await page.locator('#board-goals').innerText()), 'the live board carries the picked dare');

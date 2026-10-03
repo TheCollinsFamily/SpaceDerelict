@@ -8,7 +8,7 @@
 import { bandHtml as tlBand, lineHtml as tlLine } from './translation';
 import { channelOfLine } from '../../content/translation';
 import {
-  ally, buyLineage, choose, dismissScene, evolutionCaps, experimentsAvailable, faction, objectorsAllowed, perksOf, plan,
+  ally, buyLineage, choose, dismissScene, evolutionCaps, experimentsAvailable, faction, firstBeat, meet, objectorPool, objectorsAllowed, perksOf, plan,
   selectProfile, stayLoyal, summaryFor, switchAlly, targets, territory, type CampaignState, type Debrief,
 } from '../meta/campaign';
 import { goalText } from '../meta/goals';
@@ -46,7 +46,8 @@ import { openCodex } from './codex';
 import { attachScene } from './sceneVoice';
 import { attachLines, stopLine } from './lineVoice';
 import { LEADER_VOICES, lineKey, speakerOf, spokenText } from '../../content/media';
-import { loadMedia, mediaPictureUrl } from './newsreel';
+import { loadMedia, mediaAllowed, mediaPictureUrl } from './newsreel';
+import { filmArt, filmPosterUrl, loadScenes, playCutscene } from './cutscene';
 import { shipLoop, showLoader, type LoaderHandle } from './loader';
 import { aliveAllowed, loadAlive, wake } from './alive';
 
@@ -63,11 +64,16 @@ type Pending = CampaignState['pendingScenes'][number];
  * was rewritten since, and its picture, reach a game saved before.
  */
 function sceneNow(f: FactionDef, next: Pending): Scene {
-  if (next.contact) return f.contact;
   if (next.beat) return f.beats.find((b) => b.id === next.beat)?.scene ?? next.scene;
-  const known = [f.contact, ...f.beats.map((b) => b.scene), f.ending, ...Object.values(f.endingByChoice?.scenes ?? {}), ...(f.reveal ? [f.reveal] : [])];
+  if (next.pledge) return f.pledge;
+  const known = [...f.beats.map((b) => b.scene), f.pledge, f.ending];
   return known.find((x) => x.title === next.scene.title) ?? next.scene;
 }
+/** A saved game from before Oct 3 2026 may hold the three contact calls waiting: they are signals at the desk now. */
+const withoutCalls = (s: CampaignState): CampaignState => (s.pendingScenes.some((p) => p.contact) ? { ...s, pendingScenes: s.pendingScenes.filter((p) => !p.contact) } : s);
+/** A war kind's name as the report prints it (src/ui/debrief.ts KIND_NAME); the rest by their id. */
+const KIND_NAME: Record<string, string> = { mortar: 'Mortar beetle', carapace: 'Carapace lord', cannon: 'Siege cannon', ghostsapper: 'Ghost sapper', aegis: 'Aegis deacon' };
+const kindName = (k: string): string => KIND_NAME[k] ?? k.charAt(0).toUpperCase() + k.slice(1);
 
 const THEME_NAME: Record<string, string> = {
   core: 'Meteor Core', forge: 'Bone Forge', venom: 'Venom Sac', gut: 'Gut', nerve: 'Nerve Cluster',
@@ -101,6 +107,12 @@ export class CampaignUi {
   private dares: string[] = [];
   private experiment: string | undefined;
   private objectors: EnemyKind[] = [];
+  /** The Conscientious Objectors' pick is up: it shows when he presses DEPLOY, at the start of the mission. */
+  private objPick = false;
+  /** The signal picked on the planet (one of the three groups trying to reach the ship), before he has sided with anyone. */
+  private signal: FactionId | null = null;
+  /** The films already played for the scene that is waiting (a scene's film plays once by itself; its card can play it again). */
+  private filmsPlayed = new Set<string>();
   private spin = -10;
   private yoke: YokeSettings = loadYoke();
   /** Built in the constructor: it needs the campaign's seed, and field initialisers run before `state` is set. */
@@ -157,6 +169,9 @@ export class CampaignUi {
   private account!: YokeAccountUi;
 
   constructor(private state: CampaignState, private hooks: { deploy(p: PendingDeployment): void; newCampaign(): void; quit(): void }) {
+    this.state = withoutCalls(this.state);
+    // The cut scenes' films (src/ui/cutscene.ts): a scene waiting may have one baked.
+    void loadScenes().then((a) => { if (a && this.state.pendingScenes.length && !this.debriefing && !this.el.classList.contains('hidden')) this.render(); });
     // Her memory is per campaign: every call names this one, so a New Campaign is a fresh YOKE.
     this.player = new PlayerLink({ base: this.yoke.base, store: playerTokenStore, campaignId: campaignIdFor(this.state.seed) });
     this.player.tokenChanged = () => this.avatar?.reconnect();
@@ -171,7 +186,7 @@ export class CampaignUi {
     if (Globe3D.supported()) {
       try {
         this.globe3d = new Globe3D({
-          pick: (id) => { this.selected = id; this.dares = []; this.experiment = undefined; this.objectors = []; this.render(); },
+          pick: (id) => { this.selected = id; this.signal = null; this.dares = []; this.experiment = undefined; this.objectors = []; this.render(); },
           names: (id) => esc(territory(id).name),
         });
         this.globe3d.pairs = TERRITORIES.flatMap((t) => t.neighbours.filter((n) => n > t.id).map((n) => [t.id, n] as [string, string]));
@@ -312,7 +327,8 @@ export class CampaignUi {
 
   setState(s: CampaignState): void {
     const reseeded = s.seed !== this.state.seed;
-    this.state = s;
+    this.state = withoutCalls(s);
+    s = this.state;
     if (reseeded) this.ai = this.buildAi();
     saveCampaign(s);
     this.render();
@@ -354,9 +370,11 @@ export class CampaignUi {
         <div class="cp-body">${this.roomHtml()}</div>
       </div>
       ${this.icomHtml()}
-      ${this.greeting ? '' : this.sceneHtml()}`;
+      ${this.greeting ? '' : this.sceneHtml()}
+      ${this.objectorsHtml()}`;
     this.dress();
     attachScene(this.el);
+    this.playSceneFilm();
     attachLines(this.el);
     wake(this.el);
     // Her stage is the same element in every drawing of the screen: put back, not made again.
@@ -545,11 +563,51 @@ export class CampaignUi {
         <circle r="${held ? 9 : 8}"/>${t.finaleOf ? '<text class="star" y="4">★</text>' : ''}${siteTag(s, t.id)}
         <text class="name" y="-13">${esc(t.name)}</text></g>`;
     }).join('');
+    // The three groups trying to reach the ship (until he has sided with one): a signal each, where it comes from.
+    const signals = this.signalsOpen().map((f) => {
+      const p = proj(f.signal.lat, f.signal.lon);
+      if (!p.front && !g3) return '';
+      const cls = ['signal', (s.met ?? []).includes(f.id) ? 'met' : '', this.signal === f.id ? 'sel' : '', p.front ? '' : 'behind'].join(' ');
+      return `<g class="${cls}" data-signal="${f.id}" data-at="${f.signal.lat},${f.signal.lon}" transform="translate(${p.x.toFixed(1)},${p.y.toFixed(1)})">
+        <circle class="ring" r="13"/><circle class="dot" r="6"/><text class="name" y="-17">${esc(f.signal.how.toUpperCase())}</text></g>`;
+    }).join('');
     return `<div class="globe-box${g3 ? ' g3d' : ''}">${mapped && !g3 ? '<canvas class="globe-map" width="420" height="420"></canvas>' : ''}<svg class="globe" viewBox="0 0 420 420" width="420" height="420">
       <defs><radialGradient id="planet" cx="38%" cy="32%"><stop offset="0" stop-color="#6d8a58"/><stop offset="0.7" stop-color="#3b4a2f"/><stop offset="1" stop-color="#1a2016"/></radialGradient></defs>
       ${mapped ? '' : `<circle cx="${cx}" cy="${cy}" r="${R}" fill="url(#planet)" class="disc"/>`}
-      ${lines.join('')}${links.join('')}${pushSvg(s, proj)}${marks}
+      ${lines.join('')}${links.join('')}${pushSvg(s, proj)}${marks}${signals}
     </svg></div>`;
+  }
+
+  /** The groups whose signals are on the planet: all that have reached out, until he sides with one. */
+  private signalsOpen(): FactionDef[] {
+    const s = this.state;
+    return s.faction || s.ended || !deskOpen(s) ? [] : FACTIONS.filter((f) => s.contacted.includes(f.id));
+  }
+
+  /**
+   * The signals' cards beside the planet (Collins, Oct 3 2026: "at the planet where you choose a mission you can play
+   * through the first interaction with any of the groups, after which you choose which one you want to publicly side
+   * with, which takes the part of a video message broadcast to the planet").
+   */
+  private signalsHtml(): string {
+    const s = this.state;
+    const open = this.signalsOpen();
+    if (!open.length) return '';
+    const met = s.met ?? [];
+    return `<div class="cp-signals"><div class="cp-sub">${open.length === 3 ? 'THREE GROUPS' : 'GROUPS'} ON THE PLANET ARE TRYING TO REACH THE SHIP</div>
+      <p class="cp-note">Answer any of them: each first contact can be played before you choose. Then side with ONE, publicly. Your broadcast goes out to the whole planet, and it decides your route.</p>
+      ${open.map((f) => {
+        const first = firstBeat(f.id);
+        const perk = (first?.perks ?? []).map((k) => f.perks[k] ?? k).join(' ');
+        const seen = met.includes(f.id);
+        return `<div class="cp-signal${this.signal === f.id ? ' sel' : ''}" data-signal="${f.id}">${seen ? this.leaderHtml(f.id) : ''}
+          <span class="cp-signal-name">${esc(f.name.toUpperCase())}</span>
+          <span class="cp-signal-how">${esc(f.signal.how)}</span>
+          ${f.contact.lines.map((l) => `<p>${tlLine(l)}</p>`).join('')}
+          ${seen && perk ? `<div class="cp-perk-if">If you side with them: ${esc(perk)}</div>` : ''}
+          <span class="cp-btns"><button class="cp-room" data-meet="${f.id}">${seen ? 'PLAY THE FIRST CONTACT AGAIN' : 'ANSWER THEM ▸'}</button>
+          ${seen ? `<button class="screen-btn" data-ally="${f.id}">SIDE WITH THEM, PUBLICLY</button>` : ''}</span></div>`;
+      }).join('')}</div>`;
   }
 
   private deskHtml(): string {
@@ -564,9 +622,9 @@ export class CampaignUi {
     return `<div class="cp-desk">
       <div class="cp-globe">${this.globeSvg()}
         <div class="cp-spin"><button data-act="spin-l">◀ turn</button><button data-act="spin-r">turn ▶</button></div>
-        <div class="cp-legend"><span class="lg held">yours</span><span class="lg open">can land</span><span class="lg massing">massing</span><span class="lg attack">under attack</span><span class="lg locked">not yet</span></div>
+        <div class="cp-legend"><span class="lg held">yours</span><span class="lg open">can land</span><span class="lg massing">massing</span><span class="lg attack">under attack</span><span class="lg locked">not yet</span>${this.signalsOpen().length ? '<span class="lg signal">a signal</span>' : ''}</div>
       </div>
-      <div class="cp-brief">${t ? this.briefHtml(t) : `<div class="cp-sub">PICK A LANDING SITE</div><p>Land next to ground you hold. Each territory you take unlocks evolution stages for some of your limbs.${deskLine(s)}</p>`}</div>
+      <div class="cp-brief">${t ? this.briefHtml(t) : `${this.signalsHtml()}<div class="cp-sub">PICK A LANDING SITE</div><p>Land next to ground you hold. Each territory you take unlocks evolution stages for some of your limbs.${deskLine(s)}</p>`}</div>
     </div>`;
   }
 
@@ -616,7 +674,6 @@ export class CampaignUi {
     const unlocks = t.unlocks.map((u) => `${THEME_NAME[u.theme] ?? u.theme} evolution stage ${u.stage}`).join(', ');
     const perks = perksOf(s);
     const objAllowed = objectorsAllowed(perks);
-    const warKinds = ENEMIES.filter((e) => e.caste === 'war').map((e) => e.kind);
     const exps = experimentsAvailable(s);
     return `${this.territoryPictureHtml(t.id)}<div class="cp-sub">${esc(t.name.toUpperCase())}${held ? ' · YOURS' : ''}</div>
       ${briefBanner(s, t.id)}
@@ -629,8 +686,7 @@ export class CampaignUi {
       <div class="cp-picks">${DARES.map((d) => `<button class="cp-pick${this.dares.includes(d.id) ? ' on' : ''}${s.daresDone.includes(d.id) ? ' done' : ''}" data-dare="${d.id}" title="${esc(d.text.replace('{n}', String(d.target)))}">${this.sketch(d.id)}${esc(d.title)} <i>+${d.pays}</i></button>`).join('')}</div>
       ${exps.length ? `<div class="cp-label">EXPERIMENT — optional, changes the run</div>
       <div class="cp-picks">${exps.map((e) => `<button class="cp-pick exp${this.experiment === e.id ? ' on' : ''}" data-exp="${e.id}" title="${esc(e.pitch)}">${this.sketch(e.id)}${esc(e.name)} <i>+${e.goal.pays}</i></button>`).join('')}</div>` : ''}</div>
-      ${objAllowed ? `<div class="cp-label">CONSCIENTIOUS OBJECTORS — pick ${objAllowed} kind${objAllowed > 1 ? 's' : ''} that will not come</div>
-      <div class="cp-picks">${warKinds.map((k) => `<button class="cp-pick${this.objectors.includes(k) ? ' on' : ''}" data-obj="${k}">${k}</button>`).join('')}</div>` : ''}
+      ${objAllowed ? `<div class="cp-facts cp-obj-note">CONSCIENTIOUS OBJECTORS: when you deploy, you pick ${objAllowed} kind${objAllowed > 1 ? 's' : ''}, of those this mission would bring, that will not come.</div>` : ''}
       <div class="cp-facts">Starting profile: <b>${esc(PROFILES.find((x) => x.id === s.profile)?.name ?? '')}</b> (change in the Gene Bay) · wave intel: <b>${p.config.waveIntel === 'full' ? 'the Translator' : 'hidden'}</b>${perks.includes('sleepers1') ? ' · Sleepers in their waves' : ''}${perks.includes('volunteers1') ? ' · Volunteers' : ''}</div>
       <button class="screen-btn" data-act="deploy" ${open ? '' : 'disabled'}>${open ? (p.defence ? 'DEFEND' : 'DEPLOY') : held ? 'ALREADY YOURS' : 'NOT REACHABLE YET'}</button>`;
   }
@@ -726,10 +782,10 @@ export class CampaignUi {
           : former ? `Your ally until the midpoint, when you went over to ${esc(faction(s.faction!).name)}. They took it well. Route then: ${beats.map((b) => esc(b.title)).join(' → ')}`
             : offering ? `Has offered to take you on. ${esc(faction(s.faction!).name)} does not know yet.`
               : s.midpoint?.status === 'stayed' && s.faction ? 'Made you an offer at the midpoint. You turned it down.'
-                : s.faction ? 'You chose another.' : 'Made contact. Waiting for your answer.';
+                : s.faction ? 'You sided with another.' : (s.met ?? []).includes(f.id) ? 'You have heard them out. Waiting for you to choose.' : `Trying to reach the ship: ${esc(f.signal.how)}.`;
       return `<div class="cp-lin cp-voice${mine ? ' have' : ''}">${contacted ? this.leaderHtml(f.id) : ''}<b>${esc(f.name)}</b>
         <span>${status}${mine ? `<span class="cp-perks">${perksOf(s).map((p) => esc(f.perks[p] ?? p)).join('<br>')}</span>` : ''}</span>
-        ${contacted && !s.faction ? `<button data-ally="${f.id}">ALLY WITH THEM</button>` : ''}
+        ${contacted && !s.faction && !s.ended ? ((s.met ?? []).includes(f.id) ? `<button data-meet="${f.id}">PLAY THE FIRST CONTACT AGAIN</button><button data-ally="${f.id}">SIDE WITH THEM, PUBLICLY</button>` : `<button data-meet="${f.id}">ANSWER THEM</button>`) : ''}
         ${offering ? `<button data-switch="${f.id}">GO OVER TO THEM</button>` : ''}
         ${mine && s.midpoint?.status === 'offered' ? '<button data-act="stay">STAY WITH THEM</button>' : ''}
         ${mine || former ? `<button data-replay="${f.id}">REPLAY SCENES</button>` : ''}</div>`;
@@ -737,7 +793,7 @@ export class CampaignUi {
     const inbox = (s.comms ?? []).slice(-8).reverse();
     const head = s.midpoint?.status === 'offered'
       ? 'COMMS — THE MIDPOINT. The other two want you. Go over to one (you lose your ally’s perks; its route ends here) or stay (your ally adds a perk of thanks).'
-      : 'COMMS — three voices from the planet. You may ally with ONE; it decides your route and your ending. Halfway along, the other two will make you an offer.';
+      : 'COMMS — three groups on the planet. Answer any of them (their signals are on the planet at the Directive Desk too), then side with ONE, publicly; it decides your route and your ending. Halfway along, the other two will make you an offer.';
     return `<div class="cp-label">${head}</div>${cards.join('')}
       ${inbox.length ? `<div class="cp-label">${s.midpoint?.status === 'switched' ? 'LETTERS, BROADCASTS AND CALLS' : 'FROM YOUR ALLY'}</div>${inboxBands(inbox)}<div class="cp-log cp-comms">${inbox.map((l) => `<div${sayAttr(l)}>${speakLine(l)}</div>`).join('')}</div>` : ''}
       ${s.contacted.length ? TRANSLATION_NOTE : ''}`;
@@ -836,14 +892,18 @@ export class CampaignUi {
     const f = faction(next.faction);
     const scene = sceneNow(f, next);
     // The three call together when the desk opens: each call has the next caller's button, so all three are heard before choosing.
-    const calls = this.state.pendingScenes.filter((p) => p.contact);
-    const more = next.contact && calls.length > 1;
-    const heard = FACTIONS.filter((x) => this.state.contacted.includes(x.id)).length;
+    // The perk this scene brings: a beat's own; for a first contact played before siding, what siding would bring.
+    const beat = next.beat ? f.beats.find((b) => b.id === next.beat) : undefined;
+    const perkText = (beat?.perks ?? []).map((k) => f.perks[k] ?? k).join(' ');
+    const perk = perkText && !next.offer ? `<div class="cp-scene-perk"><b>${next.meeting ? 'IF YOU SIDE WITH THEM' : 'PERK'}</b>${esc(perkText)}</div>` : '';
+    // A scene with a baked film (src/ui/cutscene.ts): the film has played; its poster plays it again, its words are folded away.
+    const filmed = !!filmArt(scene.film);
+    const words = scene.lines.map((l) => `<p>${tlLine(l)}</p>`).join('');
     // The midpoint: each rival's offer has the button to go over; the last one heard has the button to stay.
     const offers = this.state.pendingScenes.filter((p) => p.offer);
     const ally0 = this.state.faction ? faction(this.state.faction) : null;
-    const buttons = next.contact
-      ? `<button class="screen-btn" data-ally="${f.id}">ALLY WITH ${esc(f.name.toUpperCase())}</button><button class="cp-room" data-act="scene-later">${more ? 'HEAR THE NEXT CALLER ▸' : 'NOT NOW — DECIDE IN COMMS'}</button>`
+    const buttons = next.meeting
+      ? `<button class="screen-btn" data-ally="${f.id}">SIDE WITH ${esc(f.name.toUpperCase())}, PUBLICLY</button><button class="cp-room" data-act="scene-later">BACK TO THE PLANET — HEAR THE OTHERS</button>`
       : next.offer
         ? `<button class="screen-btn" data-switch="${f.id}">GO OVER TO ${esc(f.name.toUpperCase())}</button>${offers.length > 1
           ? '<button class="cp-room" data-act="scene-later">HEAR THE OTHER OFFER ▸</button>'
@@ -851,21 +911,59 @@ export class CampaignUi {
       : next.choice
         ? next.choice.options.map((o) => `<button class="cp-pick" data-choice="${next.beat}|${o.id}">${esc(o.label)}</button>`).join('')
         : '<button class="screen-btn" data-act="scene-ok">CONTINUE</button>';
-    return `<div class="cp-scene"><div class="cp-scene-card" data-faction="${f.id}" data-scene="${esc(scene.title)}">
-      ${this.scenePictureHtml(f.id, scene)}
-      <div class="screen-kicker">${next.offer ? `THE MIDPOINT — OFFER ${3 - offers.length} OF 2 · ` : next.contact && heard > 1 ? `INCOMING — CALL ${heard - calls.length + 1} OF ${heard} · ` : ''}${esc(f.name.toUpperCase())}</div>
+    return `<div class="cp-scene"><div class="cp-scene-card" data-faction="${f.id}" data-scene="${esc(scene.title)}"${filmed ? ` data-film="${esc(scene.film!)}"` : ''}>
+      ${filmed ? `<div class="cp-scene-poster" data-act="film" title="Watch it again"><img src="${filmPosterUrl(scene.film)}" alt=""></div>` : this.scenePictureHtml(f.id, scene)}
+      <div class="screen-kicker">${next.offer ? `THE MIDPOINT — OFFER ${3 - offers.length} OF 2 · ` : next.meeting ? 'FIRST CONTACT · ' : next.pledge ? 'YOUR BROADCAST TO THE PLANET · SIDING WITH ' : ''}${esc(f.name.toUpperCase())}</div>
       <div class="cp-sub">${esc(scene.title.toUpperCase())}</div>
-      ${tlBand(f.id, scene.lines)}
-      ${scene.lines.map((l) => `<p>${tlLine(l)}</p>`).join('')}
+      ${scene.lines.some((l) => channelOfLine(l)) ? tlBand(f.id, scene.lines) : ''}
+      ${filmed ? `<details class="cp-transcript"><summary>THE WORDS</summary>${words}</details>` : words}
+      ${perk}
       ${next.choice ? `<div class="cp-label">${esc(next.choice.prompt)}</div>` : ''}
       ${next.offer && ally0 ? `<div class="cp-label cp-offer-terms">GO OVER: ${esc(ally0.name)}'s perks end and its route stops here; ${esc(f.name)}'s route starts a territory in. STAY: ${esc(ally0.name)} adds ${esc((ally0.perks[ally0.midpoint.loyalPerk] ?? '').split(':')[0].replace(/\s*\(.*\)$/, ''))}.</div>` : ''}
       <div class="cp-scene-btns">${buttons}</div></div></div>`;
   }
 
+  /** The scene that waits has a baked film and it has not played yet: it plays now, full screen, over its card. */
+  private playSceneFilm(replay = false): void {
+    const next = this.state.pendingScenes[0];
+    if (!next || this.greeting || this.debriefing || this.el.classList.contains('hidden')) return;
+    const f = faction(next.faction);
+    const scene = sceneNow(f, next);
+    if (!scene.film || !filmArt(scene.film)) return;
+    const key = `${next.faction}|${scene.title}`;
+    if (!replay && (this.filmsPlayed.has(key) || !mediaAllowed())) return;
+    if (document.querySelector('#newsreel')) return;
+    this.filmsPlayed.add(key);
+    this.el.dataset.film = scene.film;
+    void playCutscene(scene.film, scene, { kicker: `${f.name.toUpperCase()} · ${scene.title.toUpperCase()}` }).done.then(() => { delete this.el.dataset.film; });
+  }
+
+  /**
+   * THE CONSCIENTIOUS OBJECTORS' PICK (Collins, Oct 3 2026: "pick one enemy kind that won't come ... shows at start of
+   * each mission and only shows a pool of units that would have come on that mission"). Up when he presses DEPLOY.
+   */
+  private objectorsHtml(): string {
+    if (!this.objPick || !this.selected) return '';
+    const s = this.state;
+    const allowed = objectorsAllowed(perksOf(s));
+    const defence = s.held.includes(this.selected) && s.underAttack === this.selected;
+    const pool = objectorPool(this.selected, defence);
+    const n = Math.min(allowed, pool.length);
+    const left = n - this.objectors.length;
+    return `<div class="cp-objectors"><div class="cp-objectors-card" role="dialog" aria-label="Conscientious Objectors">
+      <div class="screen-kicker">${esc(territory(this.selected).name.toUpperCase())} · BEFORE THE DROP</div>
+      <div class="cp-sub">CONSCIENTIOUS OBJECTORS</div>
+      <p>The Delegation's sympathisers can sabotage the supply lines of ${n === 1 ? 'one kind' : `${n} kinds`} of unit. These are the kinds this mission would bring. Pick who does not arrive.</p>
+      <div class="cp-picks">${pool.map((k) => `<button class="cp-pick${this.objectors.includes(k) ? ' on' : ''}" data-obj="${k}">${esc(kindName(k))}${this.objectors.includes(k) ? '<small>will not come</small>' : ''}</button>`).join('')}</div>
+      <div class="cp-scene-btns"><button class="screen-btn" data-act="obj-go">${this.objectors.length ? `DEPLOY — ${this.objectors.map(kindName).join(' AND ').toUpperCase()} WILL NOT COME` : 'DEPLOY — EVERYONE COMES'}</button>
+        <button class="cp-room" data-act="obj-cancel">BACK TO THE BRIEFING</button>${left > 0 && this.objectors.length ? `<span class="cp-note">${left} more may be picked</span>` : ''}</div>
+    </div></div>`;
+  }
+
   // ------------------------------------------------------------ input
 
   private onClick(ev: MouseEvent): void {
-    const el = (ev.target as HTMLElement).closest<HTMLElement>('[data-act],[data-room],[data-site],[data-dare],[data-exp],[data-obj],[data-buy],[data-profile],[data-ally],[data-switch],[data-choice],[data-engage],[data-replay],[data-picture],[data-hpin],[data-hsplice]');
+    const el = (ev.target as HTMLElement).closest<HTMLElement>('[data-act],[data-room],[data-site],[data-dare],[data-exp],[data-obj],[data-buy],[data-profile],[data-meet],[data-ally],[data-switch],[data-choice],[data-engage],[data-replay],[data-picture],[data-hpin],[data-hsplice],[data-signal]');
     if (!el) return;
     const d = el.dataset;
     let s = this.state;
@@ -887,7 +985,15 @@ export class CampaignUi {
       this.hooks.deploy({ territory: d.site, dares: [], objectors: [] });
       return;
     }
-    if (d.site) { this.selected = d.site; this.dares = []; this.experiment = undefined; this.objectors = []; this.render(); return; }
+    if (d.site) { this.selected = d.site; this.signal = null; this.dares = []; this.experiment = undefined; this.objectors = []; this.objPick = false; this.render(); return; }
+    // A first contact, played from its signal (or from Comms): its film plays again when asked for again.
+    if (d.meet) {
+      const id = d.meet as FactionId;
+      this.signal = id;
+      this.filmsPlayed.delete(`${id}|${firstBeat(id)?.scene.title ?? ''}`);
+      this.setState(meet(s, id));
+      return;
+    }
     if (d.dare) {
       this.dares = this.dares.includes(d.dare) ? this.dares.filter((x) => x !== d.dare) : [...this.dares, d.dare].slice(-2);
       this.render(); return;
@@ -901,12 +1007,15 @@ export class CampaignUi {
     }
     if (d.buy) { const r = buyLineage(s, d.buy as OrganId); if (r.ok) this.setState(r.state); return; }
     if (d.profile) { this.setState(selectProfile(s, d.profile)); return; }
-    if (d.ally) { this.setState(ally(s, d.ally as FactionId)); return; }
+    if (d.ally) { this.signal = null; this.setState(ally(s, d.ally as FactionId)); return; }
+    // A signal on the planet (its marker, or its card): picked, and the planet left as it is.
+    if (d.signal) { this.signal = d.signal as FactionId; this.selected = null; this.objPick = false; this.render(); return; }
     if (d.switch) { this.setState(switchAlly(s, d.switch as FactionId)); return; }
     if (d.choice) { const [beat, opt] = d.choice.split('|'); this.setState(choose(s, beat, opt)); return; }
     if (d.replay) {
       const f = faction(d.replay as FactionId);
-      const scenes = [f.contact, ...f.beats.filter((b) => s.beatsSeen.includes(b.id)).map((b) => b.scene), ...(s.ended === f.id ? [f.ending, ...(f.reveal ? [f.reveal] : [])] : [])];
+      const scenes = [...f.beats.filter((b) => s.beatsSeen.includes(b.id)).map((b) => b.scene), ...(s.ended === f.id ? [f.ending] : [])];
+      for (const scene of scenes) this.filmsPlayed.delete(`${f.id}|${scene.title}`);
       s = { ...s, pendingScenes: [...scenes.map((scene) => ({ faction: f.id, scene })), ...s.pendingScenes] };
       this.state = s;
       this.render(); return;
@@ -949,8 +1058,17 @@ export class CampaignUi {
         if (key) this.setYoke({ ...this.yoke, key, mode: 'kimi' });
         return;
       }
+      case 'film': this.playSceneFilm(true); return;
       case 'deploy':
         if (!this.selected) return;
+        // The Objectors' pick shows at the start of the mission (when there is anyone to pick).
+        if (objectorsAllowed(perksOf(s)) > 0 && objectorPool(this.selected).length) { this.objectors = []; this.objPick = true; this.render(); return; }
+        this.hooks.deploy({ territory: this.selected, dares: this.dares, experiment: this.experiment, objectors: this.objectors });
+        return;
+      case 'obj-cancel': this.objPick = false; this.objectors = []; this.render(); return;
+      case 'obj-go':
+        if (!this.selected) return;
+        this.objPick = false;
         this.hooks.deploy({ territory: this.selected, dares: this.dares, experiment: this.experiment, objectors: this.objectors });
         return;
     }
