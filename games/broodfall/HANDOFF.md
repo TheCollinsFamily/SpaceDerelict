@@ -1665,3 +1665,28 @@ screenshot of the interface."
   the screenshot so the film ends on it exactly. About 10 s. Joins: part 1 -> pull-out 36.1 dB, pull-out -> walk 32.6 dB,
   film end -> interface 42.8 dB (`notes/art-review/pad/ship-joins-v4.jpg`). Superseded takes: `art-src-new/pad-ship/v3/`
   (the turn/rise version), `v4/` (a walk that drew two tables). Stills now at medium quality (`PADSHIP_QUALITY`).
+
+## First person the whole way? Options drawn, NOT decided (Oct 3 2026)
+
+Collins, of the pad's part 2: "would this look better if you stayed in first person the whole time, but this would require
+slightly different view of many ship interiors ... think through this and show me some options." Nothing in the game changed.
+- **The options** (page: `notes/art-review/fp-options/first-person-options.html`, published at
+  https://claude.ai/artifact/Qs524magmqYLUevWxesVNh (republish that file to keep the link); films `notes/art-review/fp-options/film-*.mp4`):
+  **A** today (the camera pulls out of his eyes at the desk, we watch him walk, every room has him from behind);
+  **B** first person all the way (the Oct 2 stand-and-turn clips `art-src-new/pad-ship/v3/won.mp4`/`lost.mp4` + one new walk
+  through his eyes to the table; every room redrawn as what he sees, his hands in the picture);
+  **C** first person for the walk, then the camera settles back behind him onto today's interface (no room art).
+  Claude's read: B if the rooms are redrawn; otherwise keep A (C puts the viewpoint change on the busiest second).
+- **Drawn to judge it:** four rooms through his eyes (`tools/art/fp-options.mjs --stills`: desk three ways, genes, comms, ai;
+  raw in `art-src-new/fp-options/`, pairs in `notes/art-review/fp-options/room-*-now-vs-eyes.jpg`), the REAL interface over
+  each (`node tools/shot-fp-options.mjs [rooms report] [--look …]`: the browser is handed the other picture when it asks for
+  the room's backdrop, the loop is held back; `notes/art-review/fp-options/ui/`), the clips (`--clips`: walk, walk-hands,
+  walk-down, settle on seegen:wan3.0-video) and the option films (`--bake`, free).
+- **What the pictures showed:** the AI Core gains most (YOKE faces the player instead of standing half behind his back); Comms
+  and the Gene Bay hold up on a hand in frame; the Desk is the hard room (a bare black box without him): under the report its
+  left third is an empty wall unless he looks DOWN at the table with a hand on it (`desk-down`). Anything of him must sit in
+  the left third and above YOKE's intercom (lower left) or the interface covers it.
+- **If B is chosen:** 8 room stills + loops (desk, genes, locker, board, comms, ai, orders, hobby; quarters is already his
+  eyes), about $5.50 a room; the film's walk remade to the final desk still; today's loops kept beside the new ones.
+- **Traps:** naming the window in the walk's prompt drew a window in the table room (describe the room's walls instead);
+  "glows like a projector waking" drew a white disc and a rod on the table and the take missed its end frame.
