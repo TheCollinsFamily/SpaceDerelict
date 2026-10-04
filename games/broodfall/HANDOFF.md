@@ -178,14 +178,44 @@ is the story as played.
   `objectorsHtml` (the pick at DEPLOY). `src/ui/cutscene.ts` is the film player (`#newsreel.cs-film`: one baked file,
   its sound through the voice bus, the cue's line in type; Esc / click / Enter / Space skip; under automation only with
   `broodfall-media-auto` = on). YOKE's announcement: `content/greetings.ts` `unlock` (four beats after Collins's three).
-- **The films:** `content/cutscenes.ts` (`STILLS`: 39 pictures; `FILMS`: 16 shot lists, 223 shots; a spoken shot is
-  `say(still, action)` and takes the next line of its scene, so a line split in two is one more `say`; `'^'` as the
-  still continues from the last frame of the shot before). `tools/media/cutscenes.ts`: `list | stills | clips | check |
-  sheet | redo | bake | prompts | stillprompts <film>`. Raw: `art-src-new/cutscenes/` (stills are shared between films;
+- **How a film is shot (Collins, Oct 4 2026; DESIGN.md has his words):** ONE camera position per place, BEHIND HIM
+  (over his shoulder; his face is never seen); EVERY clip goes on from the frame the one before it was cut on; his
+  feelings are in his VOICE. The first test film cut between front shots of him and of her: he rejected it ("too much
+  jumpiness and character inconsistency"). Do not go back to shot / reverse-shot.
+- **The films:** `content/cutscenes.ts` (`STILLS`: 21 pictures, one per place; `FILMS`: 19 shot lists: the factions' 16
+  and the Roach King's 3; `you(voice)` is one of his lines, `they(action)` one of theirs, each taking the next line of
+  its scene and going on from the shot before (`'^'`); `at(still, shot)` starts a new place; `cut(...)` is a shot with
+  no words). `tools/media/cutscenes.ts`: `list | stills | clips | start | check | sheet | redo | bake | desk | prompts |
+  stillprompts <film>`. `clips <film>` runs IN ORDER: each clip is transcribed, cut 0.55 s after its last word on a
+  whole frame (`<shot>.cut.json`), and the frame at the cut is the next clip's first frame. `clips <film> <shot>` makes
+  one. `redo <film> <shot>` moves that clip AND every clip that went on from it aside (`vN/`).
+- **A CHAINED TAKE ROTS UNLESS IT IS HELD (four takes of the first film, Oct 4 2026; all in the tool now):**
+  1. **Colour.** Whatever the model does to the colour in a clip is handed on with the frame: after twelve links the
+     blue channel's contrast was 1.46 times the first frame's. Each clip is measured at its cut against its take's
+     first frame, the next clip's start frame is corrected back (`fix` in the cut file), and the bake ramps the same
+     correction over the clip. Measure: `node tools/measure/cutscene-drift.mjs <film>` (now 0.97 to 1.07 all the way).
+  2. **What drifts through the air.** A hologram sheds soft motes and a happy crowd grows confetti; each clip adds to
+     the last, and by the tenth the hotel room was in a snowstorm. They move and the room does not: the start frame is
+     compared with the median of its neighbours in time and given the median wherever it is brighter (`undrift`), but
+     not where the brighter pixels are dense (an arm of light that moved: that rubbed the hologram out). A point filter
+     and "no sparkles, no snow" in the prompt did NOT work; naming them may feed them. The prompt now says what the air IS.
+  3. **His face.** Told only about him in his own line, the model turns him round to show who is speaking (profile, and
+     once a solid man). His hologram gets NO gesture (`you(voice)`: he stands still), and his prompt gives the movement
+     to his LISTENERS (they nod). It still happens about one clip in six, so:
+  4. **Look at every link before the next is made from it.** `clips <film> <shot>`, look at five frames of it, then the
+     next; a bad clip is made again alone (nothing was built on it). Making all thirteen and looking afterwards cost
+     three takes. This is by eye today; a vision check per link would let a take run unattended.
+  `clips` also stops a take when a clip's SPECKS at its cut pass 1.6 times the take's first frame. Raw: `art-src-new/cutscenes/` (stills are shared between films;
   clips per film; v1/ holds what was remade). Baked: `public/media/scenes/<film>.mp4` + `.webp` + `scenes.json` (its
   OWN manifest: the bake never touches media.json or roach.json).
-- **Made:** `delegation-understand` (14 shots, 88.6 s, about $8.80). Stills on `seegen:gpt-image-2` at medium
-  (4,000 tokens), clips on `imagerouter:veo-3.1-lite-i2v` with sound at 720p (about 3,850 tokens a second of clip).
+- **Made:** `delegation-understand`, twice. The first try (Oct 3: 14 shots intercut, 88.6 s, about $8.80) is kept raw in
+  `art-src-new/cutscenes/delegation-understand-first-try-intercut/`. The one in the game is the remake of Oct 4 to his
+  rules: 1 picture, 13 shots in one take, 81.8 s. The clips in it are about $5.60; the four takes it took to learn the
+  list above made 49 clips, about $26.50 (the set-aside ones are in `art-src-new/cutscenes/delegation-understand/v1..v6/`).
+  Stills on `seegen:gpt-image-2` at medium (4,000 tokens), clips on `imagerouter:veo-3.1-lite-i2v` with sound at 720p
+  (about 3,850 tokens a second of clip). Words heard: every line 83% or more (the two lowest are an "Um" and a "Yes!"
+  the transcriber did not write). Pitch: he 109-136 Hz, she 176-271 Hz (her greeting is the high one). NOBODY HAS LISTENED
+  TO IT: an agent cannot.
 - **What the checks cannot see:** `check` hears the words and measures each speaker's pitch. It did NOT see the chief
   delegate's head turn human for a second in the first take of the opening shot. LOOK at every clip one frame a second
   (`ffmpeg -i clip.mp4 -vf fps=1,scale=400:225,tile=8x1`) before baking. And nobody has LISTENED to the voices: I cannot.
@@ -202,6 +232,34 @@ is the story as played.
 - **Owed:** the other 15 films (after Collins has heard the test); the last mission against the Roach King (not
   written); the asides, midpoint cards, the Delegation's clipping and the Roach King's wheat line still speak of the
   scenes before (all voiced: a changed word is a new take).
+
+## The last mission, and the Roach King off the air (Oct 4 2026)
+
+Collins's text is in `notes/ROACH-KING-2026-10-04.md`; the design and the open decisions in DESIGN.md "THE LAST MISSION,
+AND THE ROACH KING OFF THE AIR".
+- **Content:** `content/roachKing.ts` `ROACH_SCENES` (three Scenes: `rk-briefing`, `rk-transports`, `rk-founding`; each
+  names its film); `content/cutscenes.ts` (their shot lists and pictures `rk-office`, `rk-call`, `rk-steps`; refs `king`
+  = `art-src-new/roach/stills/close.png`, `flag`); `content/translation.ts` (Aide and General on his channel; two notes);
+  `content/campaign.ts` (`LAST`, `LAST_MISSION`, the territory `hive-house`, `last: true`); `content/data.ts` `COURT_WAVES`.
+- **Rules:** `src/meta/roachKing.ts` (`dueScene`, `dueAfterDeployment`: the briefing before his ordinary addresses, never
+  before his introduction; `lastMissionScenes`); `src/meta/campaign.ts` (`finale`, `targets`, `plan`'s three config
+  fields for the last landing, `ended` at its win, `migrateFinale`); `src/meta/defence.ts` (never a staging ground).
+- **Sim:** `SimConfig.lateHost / startShelter / shelterRation` (`src/sim/types.ts`); `src/sim/sim.ts`: `courtWaveAt`,
+  `waveComp`, `hostTurnsLeft`, `raiseStartShelter`, `takeShelter`, the ration in `payShelters`, the tier floor once the
+  Host is due; events `shelter-start`, `host-arrived`, and `court` / `hostIn` on `wave-start`.
+  `src/sim/autoplayer.ts`: while the Host is late the scripted player grows limbs before organs (it starved otherwise:
+  it spent the ration on organs and stood with no limb).
+- **UI:** `src/ui/roachKing.ts` (`playRoachScene`: the film, or the transcript; `roachBeforeLastMission`;
+  `roachAfterDeployment` plays the briefing); `src/ui/campaignUi.ts` (`launch`: the last mission is launched through
+  the two scenes; `lastMissionHtml` on its briefing; ONE LANDING IS LEFT; the ♛ on the planet); `src/ui/hud.ts` (the
+  countdown in the order, short enough to be read whole); `src/main.ts` (banners).
+- **Tests:** `tests/lastMission.test.ts` (9), `tests/roachKing.test.ts` (5 more), `tests/cutscenes.test.ts` (19 films).
+  **Beat:** `node tools/shot-lastmission.mjs --build` (51 checks: the briefing after a deployment; the desk, the
+  briefing, the call, the address, the mission with its shelter, countdown, court waves, ration and the Host's arrival,
+  the campaign complete; a second try goes straight in). **Measure:** `npx vite-node tools/measure/last-mission.measure.ts`.
+- **Not done:** the three films (the shot lists run: `npx vite-node tools/media/cutscenes.ts -- prompts rk-briefing`);
+  the Hive House has no picture on the desk and no landing film of its own (it takes the deep hive's tile set); the Roach
+  King is not on the field; his profanity may be refused or mangled by the video model's voice (untested).
 
 ## The campaign (built Sep 28; audited against Collins's words the same day)
 

@@ -25,7 +25,36 @@ Checked: `tests/cutscenes.test.ts` (new), `tests/campaign.test.ts`, `tests/midpo
 (46 checks, with the breaker's; also on the dev server with `--dev`; screenshots `notes/screens/2026-10-03/cutscenes-*.jpg`;
 the persona passes: `notes/PERSONA-CUTSCENES-2026-10-03.md`).
 
-## 2. The test film: how it was made, what it cost, what to look at
+## 2a. The test film, remade (Oct 4 2026)
+
+Collins, of the first test: "this video needs to be rethought ... the moving between looking at him and her doesn't
+really work, leads to too much jumpiness and character inconsistency; it's better to see him from behind and make sure
+every next video is created with the last video's last frame as its starting point (there is a part where it's just
+him talking and this was not used) ... take out the we have snacks line ... for his emotions, those can be conveyed in
+his voice."
+
+What changed, for this film and for the other shot lists:
+- **One camera, behind him.** One picture (over his hologram's shoulder at the chief delegate, the delegates behind
+  her), and the whole film is one take from it. His face is never seen.
+- **Every clip starts on the frame the one before it was cut on.** Each clip is transcribed as it is made, cut 0.55 s
+  after its last word, and the frame at that cut is the next clip's first frame. The three lines where it is only him
+  talking are one continuous stretch.
+- **His feelings are directed in his voice** ("perplexed and a little wary", "slower still, thinking aloud, gradually
+  persuading himself"); his hologram is given no gesture.
+- **The snacks line is out** ("Please, there are snacks."), and with it the two other snack lines that were mine: his log
+  on the signal's card ("There will be snacks.") and the closing biscuit shot. The refreshments table is still in the
+  room (his description of it).
+- **Numbers:** 13 shots, 81.8 s. Words heard: every spoken line at 83% or more. Pitch: he 109-136 Hz, she 176-271 Hz.
+  Nobody has listened to it: I cannot.
+- **It took four takes**, and what each one taught is in HANDOFF.md "A CHAINED TAKE ROTS UNLESS IT IS HELD": the colour
+  drifted (held now), the room filled with drifting motes (taken out of every start frame now), he turned to show his
+  face (no gesture, the listeners move, and every link is looked at before the next is made). 49 clips, about $26.50;
+  the 13 in the film are about $5.60.
+- **What is still not right in it:** in two of his lines he turns his head far enough that his cheek and ear are seen
+  (not his face); a few motes of light still drift in the last clips, on the hologram itself; her greeting is pitched
+  well above her other lines.
+
+## 2. The FIRST test film (Oct 3; rejected Oct 4): how it was made, what it cost
 
 - **Method** (the Roach King's, generalised): a still per camera position, drawn from the faction leader's portrait
   and the approved portrait of the technician (`notes/concepts/2026-09-29/r4-hero-portrait.png`); then ONE clip per
@@ -51,11 +80,8 @@ the persona passes: `notes/PERSONA-CUTSCENES-2026-10-03.md`).
 ## 3. His to decide (nothing here blocks play)
 
 1. **The voices and the pace of the test film** (above), before the other 15 are made.
-2. **His face.** The style bible's rule 9 is "we usually only see him from behind". These scripts are written on his
-   reactions (he pinches his nose, his mouth falls open), so the films show him from the front, from his approved
-   portrait. Say if he should be kept from behind.
-3. **The last shot of the first film is mine**, not his: the delegate offers the hologram a biscuit, he declines
-   (he is made of light), she eats it. It is one silent shot and comes out by deleting one line of `content/cutscenes.ts`.
+2. **His face: DECIDED Oct 4.** He is seen from behind in every film; his feelings are in his voice.
+3. **The closing biscuit shot: GONE Oct 4** (it was mine, and he took the snacks line out).
 4. **The Faithful's finale was rewritten for clarity, as he asked** ("probably needs a rewrite for clarity that still
    maintains both characters' perspectives"). Only the preacher's accusation changed: "You tricked me! I took you for a
    godless alien who had studied our religion. One who only pretended to care for our martyrs. And I played along,

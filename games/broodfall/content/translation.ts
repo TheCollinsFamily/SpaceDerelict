@@ -45,6 +45,9 @@ export const SPEAKER_CHANNEL: Record<string, Channel> = {
   'The Director': 'institute',
   'The Awaited One': 'voicebox',
   'The Roach King': 'roach',
+  // Off the air (content/roachKing.ts ROACH_SCENES): his aide, and a general of the Host on a call.
+  'Aide': 'roach',
+  'General': 'roach',
 };
 
 /**
@@ -66,6 +69,9 @@ export const TRANSLATOR_NOTES: Array<{ match: string; note: string }> = [
   { match: 'My fellow sisters. Your President.', note: 'The voice is matched to his mandibles. The lip sync is mine. You are welcome.' },
   { match: 'I upload every night. Six hours.', note: 'Rendered literally. He does not know what the upload is. He is about to.' },
   { match: 'The wheat has a family.', note: 'It does not. I checked.' },
+  // Off the air (content/roachKing.ts ROACH_SCENES).
+  { match: 'a long tradition of being retards', note: 'His word is a nursery term for a larva that never pupates. Rendered as he meant it.' },
+  { match: 'Today we celebrate our Independence Day!', note: 'Their word is "the day we are not eaten". "Independence Day" is my closest. I have the feeling I have heard this speech before.' },
 ];
 
 /** FNV-1a, 32 bits: a line's confidence is the same every time it is shown. */

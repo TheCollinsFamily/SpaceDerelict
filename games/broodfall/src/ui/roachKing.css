@@ -52,3 +52,20 @@
 .rk-card .tl-band { justify-content: center; margin: 22px auto 0; width: max-content; max-width: 100%; }
 .rk-endline { font: 800 clamp(16px, 2vw, 28px)/1.35 Bahnschrift, "Segoe UI", sans-serif; letter-spacing: 0.12em; text-shadow: 0 2px 6px #000; }
 .rk-skip { z-index: 9; }
+
+/* A SCENE OFF THE AIR, AS ITS TRANSCRIPT (src/ui/roachKing.ts playRoachScene): a private line the survey caught, shown as
+   words until its film is baked. It is read, so it is set like a page: the lines left-aligned, the speaker over each. */
+.rk-transcript .rk-card { pointer-events: auto; align-items: flex-start; overflow-y: auto; }
+.rk-transcript .rk-card::before { position: fixed; background: radial-gradient(ellipse at center, rgba(4, 6, 12, 0.8), rgba(4, 6, 12, 0.95)); }
+.rk-tag-alone { left: 3vw; }
+.rk-script { width: min(92vw, 860px); padding: 9vh 0 6vh; }
+.rk-script .rk-title { font-size: clamp(26px, 3.6vw, 54px); }
+.rk-lines { margin: 26px auto 0; text-align: left; }
+.rk-lines p { margin: 0 0 14px; color: #f2f2f2; font: 500 clamp(15px, 1.35vw, 20px)/1.45 Georgia, "Times New Roman", serif; }
+.rk-lines p b { display: block; margin-bottom: 2px; font: 700 clamp(10px, 0.85vw, 13px)/1.2 ui-monospace, Consolas, monospace; letter-spacing: 0.2em; color: #e0a64b; text-transform: uppercase; }
+.rk-lines p.rk-same { margin-top: -6px; }
+.rk-lines p.rk-same > b { display: none; }
+.rk-lines .tl-note { margin: 6px 0 0; color: #e0c48f; font-size: clamp(11px, 0.95vw, 14px); opacity: 0.9; }
+.rk-nofilm { margin-top: 18px; color: #8f96a3; font: 600 11px/1.2 ui-monospace, Consolas, monospace; letter-spacing: 0.2em; }
+.rk-script-end { margin-top: 14px; font-size: clamp(13px, 1.2vw, 18px); color: #d9dbe0; }
+.rk-continue { margin-top: 26px; }

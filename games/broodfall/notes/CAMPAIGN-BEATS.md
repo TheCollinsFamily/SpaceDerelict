@@ -233,6 +233,24 @@ build`; screenshots `notes/screens/2026-10-01/midpoint-*.jpg`).
 
 ---
 
+## THE LAST MISSION, AFTER THE FINALE (BUILT Oct 4 2026)
+
+Collins (Oct 3): "each of their finales takes place before the last mission against the roach king". (Oct 4): "the
+final mission ... starts with a turn count down timer until the military arrives; until then it's only science and
+royals ... you will have to start them with a shelter every time on this map".
+
+1. Taking your ally's last landing plays its **finale** (the creep reaches them, the archive, what a broodfall is).
+   That is no longer the end of the campaign.
+2. The desk then says **ONE LANDING IS LEFT**: the Hive House (a crown on the planet).
+3. Pressing DEPLOY there plays what the ship's survey caught, once: **The Transports** (a general of the Host calls the
+   Roach King, furious: the transports are sabotaged, and he did it), then **Founding Day** (his last message).
+4. **The mission:** a shelter by the body is yours from the first frame and gives war meat every turn it is protected;
+   for five turns only the science caste and the court come; then the Host arrives with everything it has, and you hold
+   four more waves. Lost, it is still there. Won, the campaign is complete, and his stream goes quiet.
+
+Earlier in the campaign (five territories held) one more private scene is caught after a deployment: **Another
+Territory**, his aide's briefing. All three scenes are Collins's words (`notes/ROACH-KING-2026-10-04.md`).
+
 ## THE ROACH KING: the other side's leader, from the third deployment (BUILT Oct 1 2026)
 
 Collins: "the core enemy leader is a patriotic upstanding and over the top character ... called the

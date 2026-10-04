@@ -1310,6 +1310,20 @@ text is kept word for word in `notes/CUTSCENES-2026-10-03.md`, and the story as 
   it, for the record: conversations are trees with occasional choices; the ones that are chains play in front of a
   looping video "to give you the feel there is a living person, or rather insect, there in front of you".) No scene of
   his has a choice in it: the Institute's rule/pacify ultimatum is gone, and with it Kingdom Fund and Pacification.
+- **HOW A CUT SCENE IS SHOT (Collins, Oct 4 2026, after the first test film, which cut between a shot of him and a
+  shot of her):** "the moving between looking at him and her doesn't really work, leads to too much jumpiness and
+  character inconsistency; it's better to see him from behind and make sure every next video is created with the last
+  video's last frame as its starting point ... for his emotions, those can be conveyed in his voice." So, for every film:
+  1. **One camera position per place, behind him.** We look over his shoulder at whoever he is talking to; his face is
+     never seen (the style bible's rule 9 holds in the films too). On the planet he is a hologram in the left
+     foreground; on a call he sits at his console and they are on the screen in front of him.
+  2. **Every clip goes on from the frame the one before it ended on.** A film is one take per place. A new picture
+     starts only when the place changes (the creep bursting in, then the archive; the feed cut, then him alone aboard).
+  3. **His feelings are in his voice.** His lines are directed by how he SOUNDS (perplexed, thinking it through, at his
+     wits' end); his hologram is given no gesture at all (a gesture turned him to show his face).
+  `content/cutscenes.ts` is written to these (its header carries them; `tests/cutscenes.test.ts` holds them). What a
+  chained take needs so that it does not rot as it goes (colour held, drifting motes taken out, every link looked at)
+  is in HANDOFF.md "The cut scenes as films".
 - **First contact.** YOKE announces that groups on the planet are trying to contact the ship and could be useful; she
   states the Institute's and the Faithful's methods plainly and adds, embarrassed, as an afterthought, "and someone
   left coloured cards in a field". Then, "at the planet where you choose a mission, you can play through the first
@@ -1497,6 +1511,53 @@ built for YOKE's projection.
   scene in `content/campaign.ts`; made by `tools/art/templates/ship.mjs`, baked to
   `public/art/ship/scenes/`). The leader's portrait stays in Comms and beside the letters
   in a debrief.
+
+### THE LAST MISSION, AND THE ROACH KING OFF THE AIR (Collins, Oct 4 2026 — BUILT Oct 4)
+
+Collins: "I finally threw together the roach king scenes and a final mission idea". His text, verbatim, is in
+`notes/ROACH-KING-2026-10-04.md`. Earlier (Oct 3): "each of their finales takes place before the last mission against
+the roach king".
+
+**The three scenes** (`content/roachKing.ts` ROACH_SCENES; his words, split only where a line passed 22 words):
+- **Another Territory** (`rk-briefing`): an aide tells him the Alliance of Nations has lost another territory; he is the
+  one person who has seen that the war caste is feeding the thing that "appears to grow more powerful the more it
+  kills". Caught after a deployment once five territories are held (`BRIEFING_HELD`).
+- **The Transports** (`rk-transports`): "before the last message we see the roach king on a vid call with a member of
+  the military caste, clearly furious": the Host's transports are sabotaged. "If we could have just one confrontation
+  without the war caste feeding them from the start I think we could win." It is the reason for the last mission's rules.
+- **Founding Day** (`rk-founding`): his last message, "from in front of a government looking building with lots of
+  patriotism".
+  The last two play, in that order, when the last mission is launched (once a campaign). Each is a film (shot lists in
+  `content/cutscenes.ts`: one camera, one take, both speakers in the picture); until a film is baked the scene is the
+  intercept's TRANSCRIPT (`src/ui/roachKing.ts` playRoachScene): the stamp, where the survey caught it, YOKE's band,
+  every line with who says it. No film of these three is made yet (the test film's approach is his to approve first).
+
+**The last mission** (`content/campaign.ts` LAST_MISSION; the Hive House, `last: true`):
+- **When:** capturing the ally's finale no longer ends the campaign. It plays the finale scene (`CampaignState.finale`),
+  and from then on the one landing left is the Hive House. Winning it ends the campaign (`ended`); lost, it is still
+  there. A save that had ended at its finale before Oct 4 is given the last mission (`migrateFinale`).
+- **"It starts with a turn count down timer until the military arrives; until then it's only science and royals":**
+  `SimConfig.lateHost {turns: 5, minTier: 6}`. Waves 1 to 5 are the court and the science caste alone (`COURT_WAVES`
+  in `content/data.ts`: no war kind in any row, one of the court in every row, written out turn by turn, not
+  multiplied by the clock); no Flametrooper or Aegis answer, no royal event with its war escort. The order on the HUD
+  counts down ("HOLD 9 WAVES · THE HOST IN 3 TURNS"), every wave's banner says it, and the briefing says it before he
+  deploys. From wave 6 the war caste comes at the top row of the wave table ("everything they have"); hold four of those.
+- **"You will have to start them with a shelter every time on this map because otherwise there will be no way to get
+  the basic meat they need to build any limbs":** `startShelter: 'infested'`: a shelter stands in the district nearest
+  the body from the first frame and is the asset's already (stage 1). Every time: when no district on the starting
+  board can hold one, the city is grown by one that can (40 seeds x 1 and 3 entrances in `tests/lastMission.test.ts`).
+- **MY READING, to be corrected:** a shelter as built pays a SHARE of the meat banked in a wave, and with no war body
+  there is no war meat to share. So on this map a protected shelter also gives a **ration** of war meat at every clear
+  (`shelterRation: [45, 60, 80]` by its stage: the people inside it). Without it the mission has only the clearing wage.
+- **Measured** (`tools/measure/last-mission.measure.ts`; the scripted player with every lineage, which on this map puts
+  limbs before organs while the Host is late): 6/10 wins with the ration, 4/10 without; it has about 15 limbs when the
+  Host arrives with the ration and about 7 without. At the Host's tier 5 instead of 6 it was 6/6 (too easy for the end).
+- **COLLINS:** (1) whether the shelter should be his from the start (built) or stand intact with a free Infestor to
+  take it; (2) whether the ration should be a rule of every shelter in the game or only of this map; (3) the countdown
+  (5 turns) and the hold after it (4 waves); (4) the win is a hold: the Roach King himself is not on the field (a boss
+  body would need its own art); (5) a campaign with no ally has no finale, so it does not reach the last mission;
+  (6) "Founding Day" follows a famous film speech almost word for word (YOKE's note under its last line winks at it):
+  say if it should be reworded before the game ships.
 
 ### The reveal (Collins, Sep 30 2026 — BUILT Sep 30)
 

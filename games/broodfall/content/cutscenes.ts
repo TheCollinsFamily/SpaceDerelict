@@ -15,6 +15,10 @@
  *      the archive; the feed cut, then him alone aboard).
  *   3. HIS FEELINGS ARE IN HIS VOICE. His lines say how he SOUNDS (perplexed, thinking it through, at his wits' end) and
  *      at most a small movement seen from behind. Theirs say what they DO, facing him and the camera.
+ *   What the second take taught (Oct 4 2026): a HOLOGRAM of him is given NO gesture at all. "He lifts one open hand"
+ *   turned him into profile (his face seen), "he folds his arms" turned him sideways for the rest of the take, and "he
+ *   rubs the back of his neck" put one sparkle on him that every later clip multiplied until the room was snowing. So
+ *   `you(voice)` with no move says he stands still, and the tool stops a take whose specks grow (tools/media/cutscenes.ts).
  *
  * How a film is made (tools/media/cutscenes.ts; SPENDS RFab tokens):
  *   stills   the picture each place starts from (STILLS below), drawn in its look with its reference pictures
@@ -41,9 +45,12 @@ export type FilmLook =
 
 export interface FilmStill {
   look: FilmLook;
-  /** What the picture shows. WHO / HOLO / TECH stand for the leader, his hologram seen from behind, and him aboard seen from behind. */
+  /** What the picture shows. WHO / HOLO / TECH stand for the leader, his hologram seen from behind, and him aboard seen from behind; KING for the Roach King. */
   shows: string;
-  /** Reference pictures: 'leader' (the faction's portrait), 'hero' (him from behind: the approved concept), or another still's id. */
+  /**
+   * Reference pictures: 'leader' (the faction's portrait), 'hero' (him from behind: the approved concept), 'king' (the
+   * Roach King as his addresses show him), 'flag' (the Commonwealth's flag), or another still's id.
+   */
   refs: string[];
 }
 
@@ -64,14 +71,16 @@ export interface FilmShot {
 
 export interface Film {
   id: string;
-  faction: FactionId;
+  /** Whose scene it is: a faction's (content/campaign.ts), or 'roach': the Roach King off the air (content/roachKing.ts ROACH_SCENES). */
+  faction: FactionId | 'roach';
   /** The room tone laid under the whole film (a few words; the bake lays a quiet bed under the cuts). */
   room: string;
   shots: FilmShot[];
 }
 
 /** One of HIS lines. He is seen from behind, so the line is carried by his VOICE: how it sounds, and at most a small movement. */
-const you = (voice: string, move = ''): FilmShot => ({ id: '', from: '^', line: -1, action: [move, voice ? `His voice is ${voice}.` : ''].filter(Boolean).join(' ') });
+const STILL = 'He stands quite still, his arms at his sides, his back square to the camera.';
+const you = (voice: string, move = STILL): FilmShot => ({ id: '', from: '^', line: -1, action: [move, voice ? `His voice is ${voice}.` : ''].filter(Boolean).join(' ') });
 /** One of THEIR lines: what the speaker does, facing him and the camera. */
 const they = (action: string): FilmShot => ({ id: '', from: '^', line: -1, action });
 /** A new place: this shot starts from its picture (the first shot of a film, or the shot after the place changes). */
@@ -109,6 +118,10 @@ const OFFICE =
 const MEADOW =
   'a serene meadow of impossible beauty under a golden sky: soft light, long grass and wild flowers that glow faintly, a ' +
   'gentle pastel heaven, and a faint honeycomb pattern of light in the sky, as if the sky were made of cells';
+const KING_OFFICE =
+  'the President\'s private office in the Hive House, at night: dark wood panelling, a huge carved desk with a green ' +
+  'banker\'s lamp, a tall window with heavy curtains, the country\'s flag on a pole in the corner, a wall map of a ' +
+  'continent stuck with red pins';
 const CONSOLE = 'his long matte black console desk aboard the ship';
 const WINDOW = 'the long curved window of the ship and, through it, the night side of the planet with its spreading red stain';
 /** Over his shoulder at the console: what the rest of the picture is. */
@@ -142,6 +155,12 @@ export const STILLS: Record<string, FilmStill> = {
   'spire-saferoom': { look: 'colony', refs: ['leader'], shows: 'A corridor of glass and chrome inside the tower, red emergency light: WHO shoving two insect colleagues in lab coats aside with all four arms as he squeezes first through a heavy round vault door into a small steel safe room where several staff already crouch; dark-red tendrils coming round the far corner of the corridor.' },
   'ins-meadow-ots': { look: 'archive', refs: ['leader', 'hero'], shows: `An over-the-shoulder shot in ${MEADOW}. In the left foreground, seen from the waist up, stands HOLO. Marching toward him and the camera through the grass, a few steps away, comes WHO, angry, jabbing a finger; behind him a handful of insect staff in lab coats sit up in the grass, dazed.` },
   'pledge-ins': { look: 'colony', refs: ['leader'], shows: `WHO, in ${OFFICE}, sitting forward and watching a monitor at the side of his desk whose screen glows pale (nothing can be made out on it), one fist half raised, delighted with himself.` },
+
+  // ---- the Roach King, off the air (content/roachKing.ts ROACH_SCENES). He is not in these: the camera is simply in the
+  // room, and it stays where it is. One picture a scene, both speakers in it: no cut from one to the other.
+  'rk-office': { look: 'colony', refs: ['king'], shows: `A wide two-shot in ${KING_OFFICE}. Behind the desk, facing the camera, sits KING, his coat open, one elbow on the desk. At the right of the picture, standing in front of the desk and turned three-quarters toward the camera, a thin, nervous aide: an insect man in a grey suit and a narrow tie, holding a paper folder against his chest with two hands.` },
+  'rk-call': { look: 'colony', refs: ['king'], shows: `A medium shot in ${KING_OFFICE}. At the left stands KING beside his desk, turned three-quarters toward the camera, looking at a large wall screen that fills the right half of the picture. On the screen, a video feed: the head and shoulders of a furious general of the war caste, a heavy, scarred soldier insect woman with a broad armoured head and a dark green uniform with a high collar and rows of plain ribbons, leaning into the lens; behind her an airfield at night with transport aircraft on fire.` },
+  'rk-steps': { look: 'colony', refs: ['king', 'flag'], shows: 'A wide shot from among the crowd, looking up the grand white stone steps of a government building with a columned portico, in morning light, hung with enormous flags (the flag of the second reference picture, copied exactly) and bunting in blue, white and red. At a podium with a cluster of old microphones at the top of the steps stands KING, facing the camera and the crowd, both upper hands gripping the podium. Rows of soldiers stand at attention on the steps below him; in the foreground, out of focus, the backs of the heads of a great crowd holding small flags.' },
 };
 
 // ---------------------------------------------------------------------------
@@ -153,21 +172,23 @@ const HALL_TONE = 'the huge hushed echo of an empty domed prayer hall, a faint d
 const CHAMBER_TONE = 'the quiet of a grand old room: a slow clock, a faint draught in heavy curtains';
 const MEADOW_TONE = 'a warm meadow: soft wind in long grass, far birdsong, a faint shimmering tone';
 const APPEAR = 'The hologram of the young man flickers faintly and steadies, his back to the camera.';
+const KING_OFFICE_TONE = 'the quiet of a big panelled office at night: a slow clock, a faint electric hum, far traffic';
+const STEPS_TONE = 'a great crowd in the open air, hushed: flags snapping in the wind, a faint echo off stone, a public address system\'s hum';
 
 export const FILMS: Film[] = [
   // ======================================================================== THE FRIENDSHIP DELEGATION
   { id: 'delegation-understand', faction: 'delegation', room: HOTEL_TONE, shots: [
     cut('open', 'summit-ots', `${APPEAR} The delegates gasp with delight and clap their hands; the chief delegate opens her upper arms wide in welcome and nods, her antennae lifting.`, 4, 'the hum of a projector, gasps of delight, warm applause from a dozen people, the buzz of fluorescent lights'),
     they('She steps a little closer to him, beaming, her upper arms spread in welcome.'),
-    you('perplexed and a little wary, honestly asking', 'His head tilts a little to one side.'),
+    you('perplexed and a little wary, honestly asking'),
     they('She presses two hands together, serene and certain, nodding as she explains; the delegates behind her nod along.'),
-    you('puzzled and hesitant, the "um" drawn out', 'He lifts one open hand a little.'),
+    you('puzzled and hesitant, the "um" drawn out'),
     they('She opens her upper hands like a patient teacher, then leans toward him with a questioning tilt of her antennae.'),
-    you('slow and thoughtful, thinking it through after a short pause, then conceding the point', 'He rubs the back of his neck with one hand.'),
-    you('slower still, thinking aloud, gradually persuading himself', 'He folds his arms and rocks back a little on his heels.'),
-    you('brighter, a little surprised to find that he agrees', 'He lets his arms fall and nods once.'),
+    you('slow and thoughtful, thinking it through after a short pause, then conceding the point'),
+    you('slower still, thinking aloud, gradually persuading himself'),
+    you('warmer and plainer, agreeing'),
     they('She claps all four hands in delight, and the delegates behind her burst into applause, nodding hard.'),
-    you('practical and plain, getting down to business', 'He shifts his weight.'),
+    you('practical and plain, getting down to business'),
     they('She leans toward him and lowers her voice like someone sharing good gossip, sweeping one hand in a wide circle.'),
     they('She holds up one finger, smiling proudly, then flicks her hand as if brushing something off a table. When she has said it she folds her hands and beams at him, and the delegates behind her nod.'),
   ] },
@@ -413,6 +434,37 @@ export const FILMS: Film[] = [
     they('He counts it off on his fingers, sneering.'),
     they('He spits the last words.'),
     you('', 'He says nothing: he turns his head slowly to look round the golden meadow, lifts both hands toward it, looks back at him, flickers and is gone.'),
+  ] },
+  // ======================================================================== THE ROACH KING, OFF THE AIR
+  // (content/roachKing.ts ROACH_SCENES; Collins, Oct 4 2026). One camera, one take: the two of them are in the picture
+  // together (the general on the wall screen), so a line is whoever says it doing it, with no cut.
+  { id: 'rk-briefing', faction: 'roach', room: KING_OFFICE_TONE, shots: [
+    at('rk-office', they('The aide clears his throat and speaks carefully, his eyes on his folder; the President listens without looking up.')),
+    they('The President puts one hand to his head and closes his eyes, and says it flatly, weary.'),
+    they('The aide shifts his weight and reads it from the folder, apologetic.'),
+    they('The President drops his hand and stares at the aide, incredulous.'),
+    they('The President spreads all four hands, appalled, his voice rising.'),
+    they('The President jabs a finger toward the wall map, then opens his hands, exasperated, as if it were obvious.'),
+    they('The aide raises one finger, hopeful, trying to help.'),
+    they('The aide lowers the finger and shrugs, embarrassed.'),
+    they('The President covers his face with both upper hands and speaks through them, then lets them drop, beaten.'),
+  ] },
+  { id: 'rk-transports', faction: 'roach', room: KING_OFFICE_TONE, shots: [
+    at('rk-call', they('On the screen the general slams a fist down and shouts into the lens, shaking with rage; the President watches her, quite still.')),
+    they('The President answers the screen, cold and hard, one finger raised; on the screen the general glares.'),
+    they('The President lowers his hand and speaks more quietly, heavily, looking down for a moment.'),
+    they('The President looks back up at the screen, steady, and says it almost gently; on the screen the general stares at him, speechless.'),
+  ] },
+  { id: 'rk-founding', faction: 'roach', room: STEPS_TONE, shots: [
+    at('rk-steps', they('The President leans to the microphones, grave, both upper hands on the podium; the flags stir; the crowd is silent.')),
+    they('He lifts his head and looks out over the crowd.'),
+    they('He shakes his head slowly, then strikes the podium once with a fist.'),
+    they('He lays one hand on his chest.'),
+    they('He raises one finger, his voice building.'),
+    they('He sweeps one arm out over the crowd.'),
+    they('He thunders it, both upper fists raised; the crowd begins to roar.'),
+    they('He pounds the podium on each sentence; the crowd roars louder.'),
+    they('He throws all four arms up; the crowd erupts, flags waving, the soldiers cheering.'),
   ] },
 ];
 

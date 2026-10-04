@@ -90,6 +90,12 @@
 [data-hud="ship"] #biomass-wrap { min-width: 180px; }
 [data-hud="ship"] #biomass-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font: 400 9px/1 var(--sc-font); letter-spacing: 2.5px; color: var(--sc-dim); margin-bottom: 5px; }
 [data-hud="ship"] #biomass-label::before { content: '⚙  '; color: var(--sc-ink); }
+/* The last mission (src/ui/hud.ts): the countdown to the Host is in the order, and it is read whole: the order's box
+   does not shrink under it (it was cut off at "THE HOST ARRIVE…" beside a long phase line). Amber while the Host is
+   late, red once it is here. */
+[data-hud="ship"] #biomass-wrap.host { min-width: 290px; }
+[data-hud="ship"] #biomass-label.host-late { color: #e0a64b; }
+[data-hud="ship"] #biomass-label.host-here { color: #ff6b5e; }
 [data-hud="ship"] #biomass-bar { height: 16px; border-radius: 1px; background: var(--sc-scan), #030405; border: 1px solid var(--sc-line); }
 [data-hud="ship"] #biomass-fill { background: linear-gradient(90deg, rgba(233, 238, 240, 0.55), #e9eef0); box-shadow: 0 0 10px rgba(233, 238, 240, 0.5); }
 [data-hud="ship"] #biomass-text { font: 400 11px/1 var(--sc-font); letter-spacing: 2px; color: var(--sc-ink); mix-blend-mode: difference; }
@@ -377,6 +383,7 @@
   [data-hud="ship"] .dial { min-width: 58px; padding: 4px 7px 3px; }
   [data-hud="ship"] .dial b { font-size: 17px; }
   [data-hud="ship"] #biomass-wrap { min-width: 110px; }
+  [data-hud="ship"] #biomass-wrap.host { min-width: 290px; }
   [data-hud="ship"] #phase-box { min-width: 128px; }
   [data-hud="ship"] #phase-name { font-size: 14px; letter-spacing: 3px; }
   [data-hud="ship"] #speed-box button { width: 30px; }

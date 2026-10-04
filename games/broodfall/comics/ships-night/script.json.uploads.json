@@ -1,0 +1,12 @@
+{
+  "531cd8d92230c4d02e744bf9b4fea65d3fb8246a": {
+    "url": "https://rfab-media.s3.us-east-1.amazonaws.com/images/video-frames/1791130112267_a4e633780795.webp",
+    "base": "http://localhost:3001",
+    "file": "r4-yoke-colour.png"
+  },
+  "ab511d69211e46180b244f420308aef0032d5058": {
+    "url": "https://rfab-media.s3.us-east-1.amazonaws.com/images/video-frames/1791130112827_ed6f4ad5c007.webp",
+    "base": "http://localhost:3001",
+    "file": "hero-behind-desk.png"
+  }
+}

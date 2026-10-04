@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { FACTIONS } from '../content/campaign';
 import { LEADER_VOICES } from '../content/media';
-import { ROACH_ADDRESSES } from '../content/roachKing';
+import { ROACH_ADDRESSES, ROACH_SCENES } from '../content/roachKing';
 import { CHANNELS, SPEAKER_CHANNEL, TRANSLATOR_NOTES, cardConfidence, channelOfLine, confidenceOf, noteFor } from '../content/translation';
 
 /** Every line a leader or he says in the campaign: scenes, asides, endings, reveals. */
@@ -15,6 +15,8 @@ function allLines(): string[] {
   walk(FACTIONS);
   // The Roach King's addresses (content/roachKing.ts): every line his.
   for (const a of ROACH_ADDRESSES) for (const sh of a.shots) if (sh.line) out.push(`The Roach King: ${sh.line}`);
+  // ...and the scenes off the air (Oct 4 2026): his aide and a general speak in them too.
+  for (const sc of ROACH_SCENES) out.push(...sc.scene.lines);
   return out;
 }
 

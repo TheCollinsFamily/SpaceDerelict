@@ -25,6 +25,8 @@
  * Words in capitals are stress on the page; the tool lower-cases them for the model.
  */
 
+import type { Scene } from './campaign';
+
 /** A shot of an address: which picture it starts from, what he does, what he says. */
 export interface RoachShot {
   /** The clip's id (tools/media/roachking.ts makes `<id>` from still `from`). */
@@ -120,4 +122,92 @@ export const ROACH_ADDRESSES: RoachAddress[] = [
     { id: 'rk-o1', from: 'door', action: 'He half rises from his chair and looks over his shoulder at the door, where a red glow pulses under it, then back at the camera, a little unsure.', line: 'Hold on, chat. Something is at the door. Be right back.' },
     { id: 'rk-o2', from: 'empty', action: 'The empty gaming chair slowly turns a little; the monitors keep scrolling; the red glow from the doorway pulses across the floor. Nobody comes back.', line: '' },
   ] },
+];
+
+// ---------------------------------------------------------------------------
+// OFF THE AIR: THE CENTRAL PLOT (Collins, Oct 4 2026: "I finally threw together the roach king scenes and a final
+// mission idea"). His text, verbatim, is in notes/ROACH-KING-2026-10-04.md. Three scenes:
+//
+//   rk-briefing    an aide tells him the Alliance of Nations has lost another territory. He is not the showman of his
+//                  addresses here: he is the one person on the planet who has understood what the war caste is doing
+//                  (feeding the thing that grows by what it kills), and nobody will listen.
+//   rk-transports  "Before the last message we see the roach king on a vid call with a member of the military caste,
+//                  clearly furious": the Host's transports have been sabotaged, and he did it. "If we could have just
+//                  one confrontation without the war caste feeding them from the start I think we could win." It is the
+//                  reason for the last mission's rules (content/campaign.ts LAST_MISSION).
+//   rk-founding    his last message: the speech "from in front of a government looking building with lots of
+//                  patriotism", on the founding day of the empire.
+//
+// These are not addresses he gives the nation (except the last): the ship's survey caught a private line. They are
+// Scenes, like the factions' (title; "Speaker: text" lines; a "(direction)" is acted, not said), and each is a FILM
+// (content/cutscenes.ts has its shot list: one camera position, one take, as Collins's rules of Oct 4 ask). Until a
+// film is baked, the scene is shown as the intercept's transcript (src/ui/roachKing.ts). A spoken line is at most 22
+// words (a clip is 8 s): his longer sentences are split, the words kept. Spelling and punctuation are corrected;
+// nothing else is changed.
+//
+// HOW THIS SITS WITH THE REST (my reading; content/lore/roach-king.md "Off the air" has it, for Collins to correct):
+// the Commonwealth was founded as an empire of his House (he is "a royal spare of House Crawley"), so its Founding Day
+// is "the founding day of the empire" and an "imperial holiday"; the Alliance of Nations is the Commonwealth and the
+// other nations of the planet, allied against the asset. In public he is the showman of the addresses above; in private
+// he is this man. The older addresses stay as his public face.
+// ---------------------------------------------------------------------------
+
+/**
+ * When a scene plays (src/meta/roachKing.ts):
+ *   'briefing'      after a deployment, once BRIEFING_HELD territories are held and he has introduced himself
+ *   'last-call'     when the last mission is launched (the Hive House), before it
+ *   'last-address'  after the call, before the last mission: "the last message"
+ */
+export type RoachSceneWhen = 'briefing' | 'last-call' | 'last-address';
+
+export interface RoachScene {
+  /** Its id, and the id of its film (content/cutscenes.ts FILMS). */
+  id: string;
+  when: RoachSceneWhen;
+  /** What the ship caught, over the card and the film. */
+  kicker: string;
+  /** Where YOKE is rendering it from (her band on the card). */
+  source: string;
+  /** Under the title. */
+  small: string;
+  scene: Scene;
+  /** The last line of the card. */
+  end: string;
+}
+
+export const ROACH_SCENES: RoachScene[] = [
+  { id: 'rk-briefing', when: 'briefing', kicker: 'INTERCEPTED · THE HIVE HOUSE · NOT FOR BROADCAST', source: 'THE HIVE HOUSE, A PRIVATE LINE · RADIO RELAY · INTERCEPTED',
+    small: 'the President is briefed', end: 'THE LINE WAS CLOSED FROM THEIR END',
+    scene: { title: 'Another Territory', film: 'rk-briefing', lines: [
+      'Aide: Roach King, the Alliance of Nations have lost another territory.',
+      'The Roach King: (a hand to his head) Of course they have.',
+      'Aide: Every time they make landfall, they have been sending troops at them as soon as they can get there.',
+      'The Roach King: Are you fucking kidding me?',
+      'The Roach King: So they just send an endless wave of troops to an enemy that appears to grow more powerful the more it kills?',
+      'The Roach King: Why don\'t they just batch them? Or better yet, send nothing, and wait until you have enough troops to absolutely kill them?',
+      'Aide: Well, we might be able to get the science caste or the royals to do that.',
+      'Aide: But the warrior caste have a long tradition of honor.',
+      'The Roach King: (both hands over his face) They have a long tradition of being retards, is more like it. They are going to get us all killed.',
+    ] } },
+  { id: 'rk-transports', when: 'last-call', kicker: 'INTERCEPTED · THE HIVE HOUSE · NOT FOR BROADCAST', source: 'THE HIVE HOUSE, A PRIVATE VIDEO LINE · RADIO RELAY · INTERCEPTED',
+    small: 'a call from the Host', end: 'THE CALL ENDS · THE HOST WILL BE LATE',
+    scene: { title: 'The Transports', film: 'rk-transports', lines: [
+      'General: (furious) The transports have been sabotaged! This is the last fight. We will never make it in time!',
+      'The Roach King: You disapprove? Well, too bad! We\'re in this war for the species. It\'s simple numbers. They have more.',
+      'The Roach King: And every day I have to make decisions that send hundreds of people like you to their deaths.',
+      'The Roach King: If we could have just one confrontation without the war caste feeding them from the start, I think we could win.',
+    ] } },
+  { id: 'rk-founding', when: 'last-address', kicker: 'ALL BANDS · LIVE FROM THE STEPS OF THE HIVE HOUSE', source: 'COMMONWEALTH TELEVISION, EVERY BAND AT ONCE · INTERCEPTED',
+    small: 'the President\'s Founding Day address', end: 'FOUNDING DAY · THE HIVE HOUSE',
+    scene: { title: 'Founding Day', film: 'rk-founding', lines: [
+      'The Roach King: We can\'t be consumed by our petty differences anymore. We will be united in our common interests.',
+      'The Roach King: Perhaps it\'s fate that today is the founding day of the empire, and you will once again be fighting for our freedom.',
+      'The Roach King: Not from tyranny, oppression, or persecution, but from annihilation.',
+      'The Roach King: We\'re fighting for our right to live, to exist.',
+      'The Roach King: And should we win the day, the founding day will no longer be known as an imperial holiday.',
+      'The Roach King: But as the day when the world declared in one voice:',
+      'The Roach King: We will not go quietly into the night! We will not vanish without a fight!',
+      'The Roach King: We\'re going to live on! We\'re going to survive!',
+      'The Roach King: Today we celebrate our Independence Day!',
+    ] } },
 ];

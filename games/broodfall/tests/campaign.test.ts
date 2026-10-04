@@ -173,10 +173,19 @@ describe('the factions: contact, beats, perks, the finale', () => {
     const finale = targets(s).find((t) => t.finaleOf === 'delegation');
     expect(finale?.id).toBe('assembly');
     s = finish(s, plan(s, 'assembly'), report(true)).state;
-    expect(s.ended).toBe('delegation');
-    // The finale is the ending and the reveal in one scene: nothing comes after it.
+    // The finale is the ally's ending and the reveal in one scene: no scene comes after it. It is not the end of the
+    // campaign: it comes before the last mission (Collins, Oct 3 2026), which is the one landing left.
+    expect(s.finale).toBe('delegation');
+    expect(s.ended).toBeNull();
     const titles = s.pendingScenes.map((p) => p.scene.title);
     expect(titles[titles.length - 1]).toBe('The Cycle');
+    expect(targets(s).map((t) => t.id)).toEqual(['hive-house']);
+    // Lost, it is still there to try again; won, the campaign is over on the route whose finale came before it.
+    s = finish(s, plan(s, 'hive-house'), report(false)).state;
+    expect(s.ended).toBeNull();
+    expect(targets(s).map((t) => t.id)).toEqual(['hive-house']);
+    s = finish(s, plan(s, 'hive-house'), report(true)).state;
+    expect(s.ended).toBe('delegation');
     expect(targets(s)).toEqual([]);
   });
 

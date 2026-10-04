@@ -444,7 +444,12 @@ function handleEvents(events: SimEvent[]): void {
   hud.pushEvents(events);
   if (started) boardEvents(events);
   for (const e of events) {
-    if (e.kind === 'wave-start') banner(`WAVE ${e.wave} — ASSAULT FROM ${e.sides}`);
+    if (e.kind === 'wave-start') banner(e.court
+      ? `WAVE ${e.wave} — THE COURT AND THE SCIENCE CASTE, FROM ${e.sides} · ${e.hostIn ? `THE HOST IN ${e.hostIn} TURN${e.hostIn === 1 ? '' : 'S'}` : 'THE HOST IS NEXT'}`
+      : `WAVE ${e.wave} — ASSAULT FROM ${e.sides}`);
+    // THE LAST MISSION (Oct 4 2026): the shelter that is his from the start; the Host's arrival.
+    if (e.kind === 'shelter-start') banner(e.taken ? 'THE SHELTER BY THE BODY IS YOURS — PROTECT IT: IT IS YOUR WAR MEAT UNTIL THE HOST ARRIVES' : 'A SHELTER STANDS BY THE BODY — AN INFESTOR CAN TAKE IT');
+    if (e.kind === 'host-arrived') banner('THE HOST HAS ARRIVED — EVERYTHING THEY HAVE');
     if (e.kind === 'wave-start' && !AUTO) preloadPadOutro(PAD_PART2()); // the end's clips, fetched while the run is on
     if (e.kind === 'wave-cleared') banner(`WAVE ${e.wave} CLEARED · +${e.bonus} WAR MEAT`);
     if (e.kind === 'royal-incoming') banner('THE ROYAL TAKES THE FIELD');
@@ -455,7 +460,9 @@ function handleEvents(events: SimEvent[]): void {
     if (e.kind === 'shelter-raised') banner('A SHELTER STANDS IN THE NEW DISTRICT — AN INFESTOR CAN TAKE IT');
     if (e.kind === 'shelter-infested') banner('SHELTER INFESTED — A SECOND BASE: PROTECT IT FOR A BONUS ON EVERY WAVE');
     if (e.kind === 'shelter-grew') banner(`SHELTER GROWN TO STAGE ${e.stage} — +${Math.round(B.shelterBoost[e.stage - 1] * 100)}% MEAT AT EVERY PROTECTED WAVE`);
-    if (e.kind === 'shelter-paid') banner(`SHELTERS PROTECTED · +${Math.round(e.pct * 100)}% · +${e.war} WAR${e.science ? ` +${e.science} SCIENCE` : ''}`);
+    if (e.kind === 'shelter-paid') banner(e.ration
+      ? `SHELTER PROTECTED · +${e.war} WAR MEAT (${e.ration} FROM THE PEOPLE INSIDE)${e.science ? ` +${e.science} SCIENCE` : ''}`
+      : `SHELTERS PROTECTED · +${Math.round(e.pct * 100)}% · +${e.war} WAR${e.science ? ` +${e.science} SCIENCE` : ''}`);
     if (e.kind === 'shelter-lost') banner('SHELTER LOST — THE HIVE TORE IT DOWN');
     if (e.kind === 'infestor-born') banner('AN INFESTOR IS BORN AT THE BODY — SEND IT TO A SHELTER (I)');
     // SCIENCE FORWARD BASES (Oct 2 2026): an engineer out, a station raised and growing, destroyed.

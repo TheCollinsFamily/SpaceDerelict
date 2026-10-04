@@ -22,8 +22,10 @@ import { gain, loadSettings } from '../meta/storage';
 import { showLoader, watchBuffering } from './loader';
 import { mediaAllowed, mediaUrl } from './newsreel';
 import { bandHtml, decode, lineHtml } from './translation';
-import { ROACH_ADDRESSES, ROACH_KING, type RoachAddress, type RoachShot } from '../../content/roachKing';
-import { dueAddress, emptyRoachLog, logRoach, type RoachLog } from '../meta/roachKing';
+import { filmArt, loadScenes, playCutscene } from './cutscene';
+import { ROACH_ADDRESSES, ROACH_KING, ROACH_SCENES, type RoachAddress, type RoachScene, type RoachShot } from '../../content/roachKing';
+import { dueAddress, dueAfterDeployment, dueScene, emptyRoachLog, lastMissionScenes, logRoach, type RoachLog } from '../meta/roachKing';
+import { cardConfidence } from '../../content/translation';
 import type { CampaignState } from '../meta/campaign';
 
 interface RoachArt { flag?: string; flagWave?: string; clips: Record<string, { video: string; poster: string; seconds: number }> }
@@ -169,6 +171,72 @@ export function playAddress(a: RoachAddress): RoachHandle {
   return { skip: () => close('skipped'), done };
 }
 
+// ------------------------------------------------------------------ off the air (Collins, Oct 4 2026)
+/**
+ * A SCENE OFF THE AIR (content/roachKing.ts ROACH_SCENES): a private line the survey caught, or his last message.
+ * Once its film is baked (content/cutscenes.ts; public/media/scenes/) it plays as that film, under the intercept's
+ * kicker. Until then it is the intercept's TRANSCRIPT: the stamp, where it was caught, the title, YOKE's band, and
+ * every line with who says it (her notes under them), over the flag. A transcript is read, so only CONTINUE (or Esc,
+ * Enter, Space) closes it: a stray click does not.
+ */
+export function playRoachScene(def: RoachScene): RoachHandle {
+  if (def.scene.film && filmArt(def.scene.film)) return playCutscene(def.scene.film, def.scene, { kicker: def.kicker });
+  let finish: (h: 'ended' | 'skipped') => void = () => {};
+  const done = new Promise<'ended' | 'skipped'>((r) => { finish = r; });
+  const reduce = loadSettings().reduceMotion;
+  const el = document.createElement('div');
+  el.id = 'newsreel';
+  el.className = `rk-broadcast rk-transcript${reduce ? ' rk-still' : ''}`;
+  el.dataset.scene = def.id;
+  const flagWave = art?.flagWave ? mediaUrl(art.flagWave) : '';
+  const lines = def.scene.lines;
+  // A speaker's name is set once over a run of his lines (the address is nine lines of one man).
+  const who = (l: string) => l.slice(0, Math.max(0, l.indexOf(':')));
+  el.innerHTML = `<div class="rk-screen">
+      <div class="rk-scan"></div>
+      <div class="rk-tag rk-tag-alone">INTERCEPTED · SURVEY ARRAY</div>
+      <div class="rk-card rk-open on" style="${flagWave ? `background-image:url('${flagWave}')` : ''}">
+        <div class="rk-card-in rk-script">
+          <div class="rk-stamp">INTERCEPTED</div>
+          <div class="rk-channel">${esc(def.kicker)}</div>
+          <div class="rk-title">${esc(def.scene.title.toUpperCase())}</div>
+          <div class="rk-small">${esc(def.small)}</div>
+          <div class="tl-band" data-tl="roach"><span class="tl-sig" aria-hidden="true"></span><span class="tl-src">SOURCE: ${esc(def.source)}</span><span class="tl-by">RENDERED BY YOKE · CONFIDENCE ${cardConfidence(lines, 'roach')}%</span></div>
+          <div class="rk-lines">${lines.map((l, i) => `<p${i > 0 && who(l) === who(lines[i - 1]) ? ' class="rk-same"' : ''}>${lineHtml(l)}</p>`).join('')}</div>
+          <div class="rk-nofilm">PICTURE NOT RECOVERED · THE WORDS ONLY</div>
+          <div class="rk-endline rk-script-end">${esc(def.end)}</div>
+          <button class="screen-btn rk-continue" type="button">CONTINUE ▸</button>
+        </div>
+      </div>
+    </div>`;
+  document.body.appendChild(el);
+  playing = { id: def.id, shot: 'transcript' };
+  el.dataset.shot = 'transcript';
+  for (const p of el.querySelectorAll('.rk-lines p')) decode(p, 520);
+  let over = false;
+  const close = (how: 'ended' | 'skipped') => {
+    if (over) return;
+    over = true;
+    window.removeEventListener('keydown', onKey, true);
+    el.classList.add('leaving');
+    window.setTimeout(() => el.remove(), 450);
+    playing = null;
+    finish(how);
+  };
+  const onKey = (ev: KeyboardEvent) => { if (ev.key === 'Escape' || ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); ev.stopPropagation(); close('ended'); } };
+  window.addEventListener('keydown', onKey, true);
+  el.addEventListener('click', (ev) => ev.stopPropagation());
+  el.querySelector<HTMLButtonElement>('.rk-continue')!.addEventListener('click', (ev) => { ev.stopPropagation(); close('ended'); });
+  window.setTimeout(() => el.querySelector<HTMLButtonElement>('.rk-continue')?.focus({ preventScroll: true }), 50);
+  return { skip: () => close('skipped'), done };
+}
+
+/** Show one scene off the air (its film, or its transcript), once the art that may be there has been asked for. */
+async function showRoachScene(def: RoachScene): Promise<void> {
+  await Promise.all([loadRoach(), loadScenes()]);
+  await playRoachScene(def).done;
+}
+
 // ------------------------------------------------------------------ after a deployment
 const LOG_KEY = 'broodfall-roach';
 function loadLog(seed: number): RoachLog {
@@ -181,12 +249,28 @@ function saveLog(l: RoachLog): void { try { localStorage.setItem(LOG_KEY, JSON.s
 export async function roachAfterDeployment(next: CampaignState): Promise<void> {
   if (!mediaAllowed()) return;
   const log = loadLog(next.seed);
-  const a = dueAddress(next, log);
-  if (!a) return;
+  const due = dueAfterDeployment(next, log);
+  if (!due) return;
+  // A scene off the air (the briefing): its film, or its transcript; it needs no baked art.
+  if ('scene' in due) { saveLog(logRoach(log, due.scene)); await showRoachScene(due.scene); return; }
+  const a = due.address;
   if (!(await loadRoach())) return;
   if (!playableShots(a).length) return;
   saveLog(logRoach(log, a));
   await playAddress(a).done;
+}
+
+/**
+ * BEFORE THE LAST MISSION (Collins, Oct 4 2026: "before the last message we see the roach king on a vid call ... this is
+ * before the final mission"): the call about the transports, then his Founding Day address, each once a campaign.
+ * Resolves at once when both have been shown (a second try at the mission goes straight in).
+ */
+export async function roachBeforeLastMission(s: CampaignState): Promise<void> {
+  if (!mediaAllowed()) return;
+  for (const sc of lastMissionScenes(loadLog(s.seed))) {
+    saveLog(logRoach(loadLog(s.seed), sc));
+    await showRoachScene(sc);
+  }
 }
 
 // For the beats (tools/shot-roachking.mjs).
@@ -196,4 +280,8 @@ export async function roachAfterDeployment(next: CampaignState): Promise<void> {
   play: async (id: string) => { await loadRoach(); const a = ROACH_ADDRESSES.find((x) => x.id === id); if (!a || !playableShots(a).length) return false; await playAddress(a).done; return true; },
   state: () => ({ playing, loaded: !!art, clips: art ? Object.keys(art.clips).length : 0 }),
   due: (s: CampaignState, seen: string[] = []) => dueAddress(s, { seed: s.seed, seen })?.id ?? null,
+  // Off the air: show a scene by its id; which is due after a deployment; which are left before the last mission.
+  scene: async (id: string) => { const sc = ROACH_SCENES.find((x) => x.id === id); if (!sc) return false; await Promise.all([loadRoach(), loadScenes()]); void playRoachScene(sc); return true; },
+  dueScene: (s: CampaignState, seen: string[] = []) => dueScene(s, { seed: s.seed, seen })?.id ?? null,
+  beforeLast: (s: CampaignState) => lastMissionScenes(loadLog(s.seed)).map((x) => x.id),
 };

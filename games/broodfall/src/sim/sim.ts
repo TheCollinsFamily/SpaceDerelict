@@ -524,6 +524,8 @@ export class Sim {
       this.gates = frontierGates(this.map);
       this.refreshRouting();
     }
+    // Walled in with no district that can hold one (a one-entrance start at the board's edge): the crash district itself.
+    if (!this.shelters.length) this.raiseShelter(coreSlot);
     const sh = this.shelters[0];
     if (!sh) return;
     if (taken) this.takeShelter(sh);

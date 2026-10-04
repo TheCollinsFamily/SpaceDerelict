@@ -141,7 +141,9 @@ describe('going over', () => {
     expect(targets(s).some((t) => t.finaleOf === 'delegation')).toBe(false);
     expect(s.beatsSeen).toContain('ultimatum');
     s = finish(s, plan(s, 'glass-spires'), report(true)).state;
-    expect(s.ended).toBe('institute');
+    // The new ally's finale is played; the campaign ends at the last mission after it (tests/lastMission.test.ts).
+    expect(s.finale).toBe('institute');
+    expect(s.ended).toBeNull();
     const titles = s.pendingScenes.map((p) => p.scene.title);
     // His finale (the creep reaches the Director, who wakes in the archive), then the Delegation's last letter. Nothing after.
     expect(titles.indexOf('What Do You Mean, a Simulation')).toBeGreaterThanOrEqual(0);

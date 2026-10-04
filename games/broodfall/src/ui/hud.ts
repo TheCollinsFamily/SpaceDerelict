@@ -529,11 +529,19 @@ export class Hud {
     // Directive bar: the deployment order is the win condition.
     this.lastDirective = sim.directive.kind;
     const label = document.getElementById('biomass-label')!;
-    label.textContent = sim.directive.kind === 'hold'
+    // The last mission (cfg.lateHost): the countdown to the Host is part of the order.
+    const hostIn = sim.hostTurnsLeft;
+    const host = hostIn === null ? '' : hostIn > 0 ? ` · THE HOST IN ${hostIn} TURN${hostIn === 1 ? '' : 'S'}` : ' · THE HOST IS HERE';
+    // Short enough to be read whole beside the widest phase line (it was cut off at "THE HOST ARRIVE…" on a 1280 screen).
+    label.textContent = hostIn !== null && sim.directive.kind === 'hold' ? `HOLD ${sim.directive.waves} WAVES${host}` : (sim.directive.kind === 'hold'
       ? (sim.directive.waves === 1 ? 'DIRECTIVE: HOLD THE SIEGE' : `DIRECTIVE: HOLD FOR ${sim.directive.waves} WAVES`)
       : sim.directive.kind === 'royal'
         ? 'DIRECTIVE: DESTROY THE ROYAL'
-        : `DIRECTIVE: BANK ${sim.directive.science} SCIENCE SAMPLES`;
+        : `DIRECTIVE: BANK ${sim.directive.science} SCIENCE SAMPLES`) + host;
+    label.title = hostIn === null ? '' : hostIn > 0 ? `The Host arrives in ${hostIn} turn${hostIn === 1 ? '' : 's'}. Until then only the science caste and the court come.` : 'The Host has arrived.';
+    label.parentElement?.classList.toggle('host', hostIn !== null);
+    label.classList.toggle('host-late', hostIn !== null && hostIn > 0);
+    label.classList.toggle('host-here', hostIn === 0);
     const prog = sim.directiveProgress();
     const frac = Math.min(1, prog.done / prog.goal);
     this.el.biomassFill.style.width = `${(frac * 100).toFixed(1)}%`;

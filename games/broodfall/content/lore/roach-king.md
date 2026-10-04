@@ -58,6 +58,32 @@ survey array picks up the Commonwealth's television band. YOKE renders it (the t
 intercept band, the TV-band signal under each line, her notes). So every scene of him is an **intercepted
 broadcast**, played after a deployment's news, never a call, never a meeting.
 
+## Off the air (Collins, Oct 4 2026; built the same day)
+
+Collins wrote three scenes of him that are not addresses to the nation (his text: `notes/ROACH-KING-2026-10-04.md`;
+the words in the game: `content/roachKing.ts` ROACH_SCENES). Two are private: an aide briefs him ("the alliance of
+nations have lost another territory"), and a general of the Host calls him, furious, because the transports have been
+sabotaged. In both he is not the showman: he is the one person on the planet who has understood that the war caste is
+feeding the thing ("an enemy that appears to grow more powerful the more it kills"), and he has sabotaged his own
+army's transports so that, once, it is met without them ("if we could have just one confrontation without the war
+caste feeding them from the start I think we could win"). The third is his last message: a speech on the steps of a
+government building on "the founding day of the empire".
+
+**So the rule above bends, and how (my reading, for Collins to correct):** he still never meets the operator and does
+not know he exists. But the survey array now catches more than the television band: a private line out of the Hive
+House, carried by radio relay. YOKE says so on her band ("A PRIVATE LINE · RADIO RELAY · INTERCEPTED").
+
+**How it sits with the rest (my reading too):**
+- **The showman is the public man; this is the private one.** The addresses (below) are a wrestler's persona worn by
+  someone who can count. Nothing of the addresses is changed.
+- **"The empire", "an imperial holiday".** The Commonwealth was founded as an empire of his House (he is "a royal spare
+  of House Crawley"); Founding Day is the day it was founded, kept as a holiday since.
+- **"The alliance of nations".** The Commonwealth and the planet's other nations, allied against the Growth. The war
+  caste of all of them answers every landfall at once, "as soon as they can get there": the Host's "long tradition of
+  honor".
+- **The last mission is his plan** (`content/campaign.ts` LAST_MISSION): with the transports sabotaged, the science
+  caste and the court meet the asset alone for five turns, and it starves for war meat.
+
 ## His arc (built; `src/meta/roachKing.ts`)
 
 At most one address after a deployment, the first that is due, most urgent first.
@@ -108,6 +134,8 @@ absorbed citizen who has not lodged a complaint.
 
 ## Open for Collins
 
+0. The readings under "Off the air" (public showman and private strategist; the Commonwealth as the empire's later
+   name; the Alliance of Nations), and whether any of the older addresses should go now that he has written the man.
 1. His name (Duke Crawley) and the "first male President, a royal spare" reading of the lore.
 2. Whether he should show up in the board itself in the last stand (a unit or a boss on the finale board).
    Today he is cutscenes only, as asked.

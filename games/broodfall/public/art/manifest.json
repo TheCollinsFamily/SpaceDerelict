@@ -20628,7 +20628,7 @@
   "deephive": {
    "name": "The Deep Hive",
    "territories": [
-    "queens-hollow"
+    "queens-hollow", "hive-house"
    ],
    "roofTint": [
     12893352,

@@ -1,8 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { ROACH_ADDRESSES, ROACH_STILLS } from '../content/roachKing';
+import { ROACH_ADDRESSES, ROACH_SCENES, ROACH_STILLS } from '../content/roachKing';
+import { filmOf } from '../content/cutscenes';
+import { speakerOf, spokenText } from '../content/media';
 import { CHANNELS, channelOfLine, noteFor } from '../content/translation';
 import { FACTIONS } from '../content/campaign';
-import { DRAFT_HELD, FIRST_ADDRESS_AFTER, STAND_HELD, dueAddress, emptyRoachLog, logRoach, type RoachLog } from '../src/meta/roachKing';
+import {
+  BRIEFING_HELD, DRAFT_HELD, FIRST_ADDRESS_AFTER, STAND_HELD, dueAddress, dueAfterDeployment, dueScene, emptyRoachLog, lastMissionScenes, logRoach,
+  type RoachLog,
+} from '../src/meta/roachKing';
 import { newCampaign, type CampaignState } from '../src/meta/campaign';
 
 const at = (patch: Partial<CampaignState>): CampaignState => ({ ...newCampaign(7), ...patch });
@@ -76,5 +81,67 @@ describe('the Roach King: when he comes on the air', () => {
     const s = at({ deployments: 3 });
     const a = dueAddress(s, emptyRoachLog(7))!;
     expect(dueAddress(s, logRoach(emptyRoachLog(7), a))).toBeNull();
+  });
+});
+
+describe('the Roach King off the air (Collins, Oct 4 2026): the central plot', () => {
+  const words = (t: string) => t.split(/\s+/).filter(Boolean).length;
+
+  it('three scenes: the briefing, the call about the transports, his last message; each with its film\'s shot list', () => {
+    expect(ROACH_SCENES.map((x) => x.id)).toEqual(['rk-briefing', 'rk-transports', 'rk-founding']);
+    expect(ROACH_SCENES.map((x) => x.when)).toEqual(['briefing', 'last-call', 'last-address']);
+    for (const sc of ROACH_SCENES) {
+      expect(sc.scene.film, sc.id).toBe(sc.id);
+      const film = filmOf(sc.id);
+      expect(film, sc.id).toBeTruthy();
+      // Every line is said by one shot, in order.
+      expect(film!.shots.filter((x) => x.line !== undefined).map((x) => x.line)).toEqual(sc.scene.lines.map((_, i) => i));
+      for (const l of sc.scene.lines) {
+        expect(speakerOf(l), l).toMatch(/^(The Roach King|Aide|General)$/);
+        expect(channelOfLine(l), l).toBe('roach');
+        // A clip is 8 seconds; a video voice spells out a word in capitals.
+        expect(words(spokenText(l)), l).toBeLessThanOrEqual(22);
+        expect(spokenText(l).match(/\b[A-Z]{2,}\b/g) ?? [], l).toEqual([]);
+      }
+    }
+  });
+
+  it('his words are the ones Collins wrote', () => {
+    const all = ROACH_SCENES.flatMap((x) => x.scene.lines.map(spokenText)).join(' ');
+    for (const said of [
+      'the Alliance of Nations have lost another territory', 'Of course they have', 'Are you fucking kidding me',
+      'an enemy that appears to grow more powerful the more it kills', 'the warrior caste have a long tradition of honor',
+      'They have a long tradition of being retards, is more like it', 'They are going to get us all killed',
+      'The transports have been sabotaged', 'We will never make it in time', 'You disapprove? Well, too bad!',
+      'without the war caste feeding them from the start, I think we could win',
+      'today is the founding day of the empire', 'no longer be known as an imperial holiday', 'Today we celebrate our Independence Day!',
+    ]) expect(all, said).toContain(said);
+  });
+
+  it('the briefing is caught after a deployment once five territories are held and he has introduced himself', () => {
+    const five = at({ deployments: 8, held: held(BRIEFING_HELD) });
+    expect(dueScene(at({ deployments: 8, held: held(BRIEFING_HELD - 1) }), seen('rk-address'))).toBeNull();
+    expect(dueScene(five, emptyRoachLog(7))).toBeNull();
+    expect(dueScene(five, seen('rk-address'))?.id).toBe('rk-briefing');
+    expect(dueScene(five, seen('rk-address', 'rk-briefing'))).toBeNull();
+    // It comes before his ordinary addresses (it is the plot), never before his introduction.
+    expect(dueAfterDeployment(five, seen('rk-address'))).toMatchObject({ scene: { id: 'rk-briefing' } });
+    expect(dueAfterDeployment(five, emptyRoachLog(7))).toMatchObject({ address: { id: 'rk-address' } });
+    expect(dueAfterDeployment(five, seen('rk-address', 'rk-briefing'))).toMatchObject({ address: { id: 'rk-draft' } });
+    // Not once the ally's finale is played.
+    expect(dueScene(at({ deployments: 12, held: held(BRIEFING_HELD), faction: 'faithful', finale: 'faithful' }), seen('rk-address'))).toBeNull();
+  });
+
+  it('the call, then his last message, when the last mission is launched: each once', () => {
+    expect(lastMissionScenes(emptyRoachLog(7)).map((x) => x.id)).toEqual(['rk-transports', 'rk-founding']);
+    expect(lastMissionScenes(seen('rk-transports')).map((x) => x.id)).toEqual(['rk-founding']);
+    expect(lastMissionScenes(seen('rk-transports', 'rk-founding'))).toEqual([]);
+  });
+
+  it('his last stand is not given once the finale is played; the broadcast ends when the last mission is won', () => {
+    const f = FACTIONS.find((x) => x.id === 'faithful')!;
+    const after = at({ deployments: 11, faction: 'faithful', beatsSeen: f.beats.map((b) => b.id), finale: 'faithful' });
+    expect(dueAddress(after, seen('rk-address', 'rk-faithful', 'rk-draft'))).toBeNull();
+    expect(dueAddress({ ...after, ended: 'faithful' }, seen('rk-address', 'rk-faithful', 'rk-draft'))?.id).toBe('rk-offline');
   });
 });

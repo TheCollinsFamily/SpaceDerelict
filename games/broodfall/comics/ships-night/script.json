@@ -1,0 +1,78 @@
+{
+  "title": "Ship's Night",
+  "nsfw": false,
+  "content": "Science-fiction satire for adults, work-safe: no nudity, no sex, no gore.",
+  "style": {
+    "modelId": "seegen:gpt-image-2",
+    "look": "A cinematic photoreal frame of hard science fiction aboard an austere starship of an ascetic far-future empire: matte black and bare pale ceramic surfaces, flush seams, even white strip light, razor-thin holographic displays, extreme plainness, no ornament, no neon, no clutter. The only marking anywhere is one small plain black gear symbol. The one drawn thing aboard is the ship's AI: a hologram rendered as a flat-colour anime illustration with crisp linework, glowing pale blue, slightly translucent, with faint scan lines.",
+    "width": 1536,
+    "height": 1024
+  },
+  "cast": [
+    {
+      "id": "yoke",
+      "name": "YOKE",
+      "image": "../../notes/concepts/2026-09-29/r4-yoke-colour.png",
+      "description": "the ship's AI, a waist-up hologram drawn as an anime girl: an adult woman of about twenty-four with a calm, intelligent face, long straight pale silver hair with a faint blue tint falling well past her shoulders, a side-swept fringe, amber-gold eyes, fair skin, one small plain black gear-shaped hair clip, a plain black high-collared long-sleeved dress with a narrow white inner collar",
+      "balloon": "blue"
+    },
+    {
+      "id": "tech",
+      "name": "the Technician",
+      "image": "../../notes/concepts/2026-09-29/hero-behind-desk.png",
+      "description": "a slight young man of about twenty-five, photoreal, always seen from behind: untidy dark hair, a stylus tucked behind his right ear, a plain black high-collared uniform with a narrow white collar, the sleeves pushed up to the elbows. His face is never shown",
+      "balloon": "white"
+    }
+  ],
+  "panels": [
+    {
+      "id": "orbit",
+      "picture": "The ship's operations room at the end of a shift: a long black console under a wide window, the curve of a green and white planet filling the window, and on the planet's surface far below one small dark maroon stain. The Technician stands at the console with his back to us, both hands on its edge. A neat row of small handmade metal objects sits on the console shelf: a gear puzzle, a tiny articulated metal insect, a cup with cooling fins, a palm-sized orrery. The upper left of the frame is plain dark wall.",
+      "cast": ["tech"],
+      "camera": "wide, from behind him",
+      "words": [{ "kind": "narration", "text": "The Merciful Yoke. Orbit, day forty-one." }]
+    },
+    {
+      "id": "clean",
+      "picture": "YOKE's hologram stands on the console, waist up, turned toward the Technician with a small composed smile, one finger raised as if making a point. The Technician is at the left edge of the frame, seen from behind: the back of his head and one shoulder, turned slightly toward her. Behind them the wall is plain matte black with one white strip light.",
+      "cast": ["yoke", "tech"],
+      "camera": "over his shoulder, medium",
+      "words": [{ "who": "yoke", "text": "A clean deployment. I would say well done, but there is a form for that, and it takes six weeks." }]
+    },
+    {
+      "id": "jar",
+      "picture": "Close on the Technician's hands and forearms at the console, sleeves pushed up, seen from behind his shoulder: he holds up a small sealed glass jar with a wisp of pale pink vapour inside, showing it to YOKE. YOKE's hologram leans in to look at the jar, one eyebrow raised.",
+      "cast": ["tech", "yoke"],
+      "camera": "close, over his shoulder",
+      "words": [{ "who": "tech", "text": "I named the experiment." }]
+    },
+    {
+      "id": "honest",
+      "picture": "YOKE's hologram, waist up, facing us with her arms folded and her eyes half closed in dry amusement, the black console edge along the bottom of the frame. The left half of the frame beside her is plain dark wall.",
+      "cast": ["yoke"],
+      "camera": "medium, eye level",
+      "words": [
+        { "who": "yoke", "text": "You have named the experiment Love Gas. I have filed it as a pheromone study." },
+        { "who": "yoke", "text": "One of us is being more honest, and I do not think it is me." }
+      ]
+    },
+    {
+      "id": "night",
+      "picture": "The operations room, wide: the white strip lights are dimming to a low amber glow, and the planet in the window is now the brightest thing in the room. YOKE's hologram glows blue on the console, looking up at the lights. The Technician, seen from behind, has not moved from the console.",
+      "cast": ["yoke", "tech"],
+      "camera": "wide",
+      "words": [{ "who": "yoke", "text": "Ship's night in nine minutes. I will lower the lights. You will pretend that you were about to sleep anyway." }]
+    },
+    {
+      "id": "pretend",
+      "picture": "Later, the room dark. The Technician, seen from behind, is still at the console, hunched over the tiny metal insect with a fine tool, lit only by one small work lamp and by YOKE's blue glow. YOKE's hologram, small at the far end of the console, rests her chin in her hand and watches him with a fond, private smile.",
+      "cast": ["tech", "yoke"],
+      "camera": "medium wide, from behind him",
+      "words": [
+        { "kind": "narration", "text": "Nine minutes later." },
+        { "who": "yoke", "kind": "thought", "text": "Filed under: enrichment." }
+      ]
+    }
+  ],
+  "pages": { "perPage": 6 }
+}

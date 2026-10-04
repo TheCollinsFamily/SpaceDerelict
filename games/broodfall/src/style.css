@@ -48,6 +48,11 @@ body {
 
 #biomass-wrap { flex: 1; min-width: 160px; }
 #biomass-label { font-size: 10px; letter-spacing: 2px; font-weight: bold; }
+/* The last mission: the countdown to the Host is part of the order (amber while it is late, red once it is here). */
+/* It must be read whole: the order's box does not shrink under it while the countdown is on it (src/ui/hud.ts). */
+#biomass-wrap.host { min-width: 330px; }
+#biomass-label.host-late { color: #e0a64b; }
+#biomass-label.host-here { color: #ff6b5e; }
 #biomass-bar {
   position: relative; height: 20px; background: var(--field-bg);
   border: 2px solid var(--panel-edge); border-radius: 3px; overflow: hidden;
@@ -469,6 +474,10 @@ body.view-iso #view-controls { display: flex; }
 .cp-brief p, .cp-story { font-size: 12px; line-height: 1.45; }
 .cp-sub { font-family: Impact, "Arial Black", sans-serif; font-size: 20px; letter-spacing: 2px; margin-bottom: 4px; }
 .cp-facts { font-size: 11px; margin: 4px 0; }
+/* The last mission's own rules on its briefing (src/ui/campaignUi.ts lastMissionHtml): said before he deploys. */
+.cp-last { margin: 8px 0; padding: 8px 10px; border-left: 3px solid #d4a72c; background: rgba(212, 167, 44, 0.08); }
+.cp-last p { margin: 4px 0; }
+.cp-last-left { max-width: 46ch; }
 .cp-label { font-size: 9px; letter-spacing: 2px; margin: 10px 0 4px; opacity: 0.8; text-transform: uppercase; }
 .cp-goal { font-size: 11px; padding: 3px 6px; margin: 2px 0; background: #c7b788; border-left: 4px solid #7a2a18; }
 .cp-goal i { font-style: normal; font-weight: bold; color: #7a2a18; }

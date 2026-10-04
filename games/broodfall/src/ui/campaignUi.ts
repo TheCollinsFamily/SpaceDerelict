@@ -48,6 +48,8 @@ import { attachLines, stopLine } from './lineVoice';
 import { LEADER_VOICES, lineKey, speakerOf, spokenText } from '../../content/media';
 import { loadMedia, mediaAllowed, mediaPictureUrl } from './newsreel';
 import { filmArt, filmPosterUrl, loadScenes, playCutscene } from './cutscene';
+import { roachBeforeLastMission } from './roachKing';
+import { LAST_MISSION } from '../../content/campaign';
 import { shipLoop, showLoader, type LoaderHandle } from './loader';
 import { aliveAllowed, loadAlive, wake } from './alive';
 
@@ -90,6 +92,19 @@ const YOKE_FACE: Record<string, string> = {
   'first-deployment': 'curious', 'faction-allied': 'amused', midpoint: 'concerned', licence: 'calm', ending: 'sad', idle: 'calm',
 };
 const esc = (t: string) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
+
+/**
+ * THE LAST MISSION'S OWN RULES on its briefing (content/campaign.ts LAST_MISSION; Collins, Oct 4 2026: "it starts with a
+ * turn count down timer until the military arrives; until then it's only science and royals ... you will have to start
+ * them with a shelter"): said plainly before he deploys, because nothing else in the game works like it.
+ */
+function lastMissionHtml(): string {
+  const m = LAST_MISSION;
+  return `<div class="cp-last"><div class="cp-label">THE LAST MISSION — THE HOST IS LATE</div>
+    <p><b>${m.turns} turns</b> until the Host arrives. Until then only the <b>science caste</b> and the <b>court</b> come: no war body, so no war meat from bodies.</p>
+    <p>A <b>shelter</b> stands by the body and is already yours. Every turn it is protected through, it gives up the people inside it: <b>+${m.ration[0]} war meat</b> (${m.ration[1]}, then ${m.ration[2]}, as it grows). It is your war meat until the Host comes.</p>
+    <p>Then the Host arrives with everything it has, and goes for the shelter first. Hold <b>${m.hostWaves} more waves</b>.</p></div>`;
+}
 /** The band over a translated aside: its own channel (src/ui/translation.ts); none for his own lines. */
 const tlAsideBand = (l: string) => { const ch = channelOfLine(l); return ch ? tlBand(ch, [l]) : ''; };
 /** The inbox's bands: one per channel its lines came in on (after a switch at the midpoint, two factions write). */
@@ -538,7 +553,8 @@ export class CampaignUi {
       for (let lat = -90; lat <= 90; lat += 5) { const p = proj(lat, lon); if (p.front) pts.push(`${p.x.toFixed(1)},${p.y.toFixed(1)}`); else if (pts.length) { lines.push(`<polyline points="${pts.join(' ')}" class="grat"/>`); pts.length = 0; } }
       if (pts.length) lines.push(`<polyline points="${pts.join(' ')}" class="grat"/>`);
     }
-    const visible = TERRITORIES.filter((t) => !t.hidden || s.revealed.includes(t.id));
+    // The last mission's landing is not on the planet until the ally's finale has been played.
+    const visible = TERRITORIES.filter((t) => (!t.hidden || s.revealed.includes(t.id)) && (!t.last || !!s.finale || !!s.ended));
     // Neighbour links (front side only).
     const links: string[] = [];
     for (const t of visible) {
@@ -557,10 +573,10 @@ export class CampaignUi {
       const held = s.held.includes(t.id);
       const cls = [
         'site', held ? 'held' : open.has(t.id) ? 'open' : 'locked',
-        s.underAttack === t.id ? 'attack' : '', t.finaleOf ? 'finale' : '', this.selected === t.id ? 'sel' : '', p.front ? '' : 'behind',
+        s.underAttack === t.id ? 'attack' : '', t.finaleOf || t.last ? 'finale' : '', t.last ? 'last' : '', this.selected === t.id ? 'sel' : '', p.front ? '' : 'behind',
       ].join(' ') + siteClasses(s, t.id);
       return `<g class="${cls}" data-site="${t.id}" transform="translate(${p.x.toFixed(1)},${p.y.toFixed(1)})">
-        <circle r="${held ? 9 : 8}"/>${t.finaleOf ? '<text class="star" y="4">★</text>' : ''}${siteTag(s, t.id)}
+        <circle r="${held ? 9 : 8}"/>${t.last ? '<text class="star" y="4">♛</text>' : t.finaleOf ? '<text class="star" y="4">★</text>' : ''}${siteTag(s, t.id)}
         <text class="name" y="-13">${esc(t.name)}</text></g>`;
     }).join('');
     // The three groups trying to reach the ship (until he has sided with one): a signal each, where it comes from.
@@ -624,7 +640,9 @@ export class CampaignUi {
         <div class="cp-spin"><button data-act="spin-l">◀ turn</button><button data-act="spin-r">turn ▶</button></div>
         <div class="cp-legend"><span class="lg held">yours</span><span class="lg open">can land</span><span class="lg massing">massing</span><span class="lg attack">under attack</span><span class="lg locked">not yet</span>${this.signalsOpen().length ? '<span class="lg signal">a signal</span>' : ''}</div>
       </div>
-      <div class="cp-brief">${t ? this.briefHtml(t) : `${this.signalsHtml()}<div class="cp-sub">PICK A LANDING SITE</div><p>Land next to ground you hold. Each territory you take unlocks evolution stages for some of your limbs.${deskLine(s)}</p>`}</div>
+      <div class="cp-brief">${t ? this.briefHtml(t) : s.finale
+        ? `<div class="cp-sub">ONE LANDING IS LEFT</div><p class="cp-last-left">${esc(faction(s.finale).name)} is in the archive. What is left of the planet's government is at the Hive House (♛ on the planet), where the President is giving a speech. Pick it when you are ready: it is the last mission.</p>`
+        : `${this.signalsHtml()}<div class="cp-sub">PICK A LANDING SITE</div><p>Land next to ground you hold. Each territory you take unlocks evolution stages for some of your limbs.${deskLine(s)}</p>`}</div>
     </div>`;
   }
 
@@ -678,6 +696,7 @@ export class CampaignUi {
     return `${this.territoryPictureHtml(t.id)}<div class="cp-sub">${esc(t.name.toUpperCase())}${held ? ' · YOURS' : ''}</div>
       ${briefBanner(s, t.id)}
       <p class="cp-story">${esc(t.story)}</p>
+      ${t.last && !p.defence ? lastMissionHtml() : ''}
       <div class="cp-facts">Threat tier ${t.tier} · ${t.entrances} entrance${t.entrances > 1 ? 's' : ''} · ${p.defence ? defenceFacts(s, t.id) : dirText}</div>
       ${unlocks ? `<div class="cp-facts">Holding it unlocks: <b>${esc(unlocks)}</b></div>` : ''}
       <div class="cp-label">REQUISITION BOARD — pays standing</div>
@@ -1014,7 +1033,7 @@ export class CampaignUi {
     if (d.choice) { const [beat, opt] = d.choice.split('|'); this.setState(choose(s, beat, opt)); return; }
     if (d.replay) {
       const f = faction(d.replay as FactionId);
-      const scenes = [...f.beats.filter((b) => s.beatsSeen.includes(b.id)).map((b) => b.scene), ...(s.ended === f.id ? [f.ending] : [])];
+      const scenes = [...f.beats.filter((b) => s.beatsSeen.includes(b.id)).map((b) => b.scene), ...(s.ended === f.id || s.finale === f.id ? [f.ending] : [])];
       for (const scene of scenes) this.filmsPlayed.delete(`${f.id}|${scene.title}`);
       s = { ...s, pendingScenes: [...scenes.map((scene) => ({ faction: f.id, scene })), ...s.pendingScenes] };
       this.state = s;
@@ -1063,15 +1082,28 @@ export class CampaignUi {
         if (!this.selected) return;
         // The Objectors' pick shows at the start of the mission (when there is anyone to pick).
         if (objectorsAllowed(perksOf(s)) > 0 && objectorPool(this.selected).length) { this.objectors = []; this.objPick = true; this.render(); return; }
-        this.hooks.deploy({ territory: this.selected, dares: this.dares, experiment: this.experiment, objectors: this.objectors });
+        this.launch();
         return;
       case 'obj-cancel': this.objPick = false; this.objectors = []; this.render(); return;
       case 'obj-go':
         if (!this.selected) return;
         this.objPick = false;
-        this.hooks.deploy({ territory: this.selected, dares: this.dares, experiment: this.experiment, objectors: this.objectors });
+        this.launch();
         return;
     }
+  }
+
+  /**
+   * DEPLOY. The last mission is launched through what the survey caught first (src/ui/roachKing.ts
+   * roachBeforeLastMission): the call about the transports, then his Founding Day address, each once a campaign.
+   */
+  private launching = false;
+  private launch(): void {
+    if (!this.selected || this.launching) return;
+    const p = { territory: this.selected, dares: this.dares, experiment: this.experiment, objectors: this.objectors };
+    if (!territory(this.selected).last) { this.hooks.deploy(p); return; }
+    this.launching = true;
+    void roachBeforeLastMission(this.state).catch(() => {}).then(() => this.hooks.deploy(p));
   }
 
   // ------------------------------------------------------------ YOKE

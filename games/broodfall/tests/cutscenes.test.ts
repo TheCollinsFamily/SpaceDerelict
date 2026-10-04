@@ -7,9 +7,14 @@ import { describe, expect, it } from 'vitest';
 import { existsSync, readFileSync } from 'node:fs';
 import { FACTIONS, type Scene } from '../content/campaign';
 import { FILMS, STILLS, filmOf } from '../content/cutscenes';
+import { ROACH_SCENES } from '../content/roachKing';
 import { scenesOf, speakerOf, spokenText } from '../content/media';
 
-const filmed: Array<{ faction: string; scene: Scene }> = FACTIONS.flatMap((f) => scenesOf(f).filter((s) => s.film).map((scene) => ({ faction: f.id, scene })));
+const filmed: Array<{ faction: string; scene: Scene }> = [
+  ...FACTIONS.flatMap((f) => scenesOf(f).filter((s) => s.film).map((scene) => ({ faction: f.id as string, scene }))),
+  // The Roach King off the air (Collins, Oct 4 2026; content/roachKing.ts): three more.
+  ...ROACH_SCENES.map((x) => ({ faction: 'roach', scene: x.scene })),
+];
 const sceneOfFilm = (id: string) => filmed.find((x) => x.scene.film === id)!;
 const words = (t: string) => t.split(/\s+/).filter(Boolean).length;
 /** A clip is at most 8 seconds: about 22 words said at a talking pace. */
@@ -17,7 +22,8 @@ const MAX_WORDS = 22;
 
 describe('the films of the cut scenes: the shot lists', () => {
   it('every beat, pledge and finale has a film, and every film has its scene', () => {
-    expect(filmed.length).toBe(16);
+    expect(filmed.filter((x) => x.faction !== 'roach').length).toBe(16);
+    expect(filmed.filter((x) => x.faction === 'roach').length).toBe(3);
     for (const x of filmed) expect(filmOf(x.scene.film), x.scene.film).toBeTruthy();
     for (const f of FILMS) {
       expect(sceneOfFilm(f.id), f.id).toBeTruthy();
@@ -41,7 +47,7 @@ describe('the films of the cut scenes: the shot lists', () => {
         const t = spokenText(l);
         expect(words(t), `${x.scene.film}: "${t}"`).toBeLessThanOrEqual(MAX_WORDS);
         expect((t.match(/\b[A-Z]{2,}\b/g) ?? []).filter((w) => w !== 'AI'), `${x.scene.film}: "${t}"`).toEqual([]);
-        expect(speakerOf(l), l).toMatch(/^(You|Delegate|The Voice|The Director)$/);
+        expect(speakerOf(l), l).toMatch(x.faction === 'roach' ? /^(The Roach King|Aide|General)$/ : /^(You|Delegate|The Voice|The Director)$/);
       }
     }
   });
@@ -57,7 +63,7 @@ describe('the films of the cut scenes: the shot lists', () => {
       expect(f.room.length).toBeGreaterThan(10);
     }
     for (const [id, st] of Object.entries(STILLS)) {
-      for (const r of st.refs) if (r !== 'hero' && r !== 'leader') expect(STILLS[r], `${id}: ${r}`).toBeTruthy();
+      for (const r of st.refs) if (!['hero', 'leader', 'king', 'flag'].includes(r)) expect(STILLS[r], `${id}: ${r}`).toBeTruthy();
       expect(st.shows).toMatch(/WHO|HOLO|TECH|[a-z]/);
       // The words that say which reference a picture copies must have that reference.
       const n = (st.shows.match(/\b(second|third) reference picture/g) ?? []).map((m) => (m.startsWith('third') ? 3 : 2));

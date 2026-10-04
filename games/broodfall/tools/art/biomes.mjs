@@ -588,7 +588,7 @@ export const BIOMES = [
   },
   {
     id: 'deephive', key: ['0000FF', 'blue'], roofTint: [0xc4bca8, 0xe0d8c4, 0xffffff], name: 'The Deep Hive',
-    territories: ['queens-hollow'],
+    territories: ['queens-hollow', 'hive-house'], // the Hive House (the last mission) stands in the capital, over the deep hive
     look:
       'This district borrows from nothing: it is the oldest part of their civilisation, a hive grown rather than built. ' +
       'Great combs of amber wax and dark propolis, brood cells capped with pale wax, royal jelly glowing gold in ' +

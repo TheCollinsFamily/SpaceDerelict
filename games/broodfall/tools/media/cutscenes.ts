@@ -27,6 +27,7 @@ import { ROOT, api, assertSpeakable, balance, duration, ff, ffStderr, speechSpan
 import { CLEAN, CONCEPTS, CROWD, LEADER_REF, WHO } from './prompts.mjs';
 import { FILMS, STILLS, type Film, type FilmLook, type FilmShot } from '../../content/cutscenes';
 import { FACTIONS, type FactionId, type Scene } from '../../content/campaign';
+import { ROACH_SCENES } from '../../content/roachKing';
 import { scenesOf, speakerOf, spokenText } from '../../content/media';
 
 const RAW = path.join(ROOT, 'art-src-new', 'cutscenes');
@@ -50,7 +51,10 @@ const want = (id: string) => !only.length || only.includes(id);
 // ------------------------------------------------------------------ the scene of a film, and its lines
 export function sceneOf(film: Film): Scene {
   for (const f of FACTIONS) for (const s of scenesOf(f)) if (s.film === film.id) return s;
-  throw new Error(`no scene of content/campaign.ts names the film ${film.id}`);
+  // The Roach King off the air (content/roachKing.ts).
+  const rk = ROACH_SCENES.find((x) => x.scene.film === film.id);
+  if (rk) return rk.scene;
+  throw new Error(`no scene of content/campaign.ts or content/roachKing.ts names the film ${film.id}`);
 }
 const lineOf = (film: Film, s: FilmShot): string => (s.line === undefined ? '' : sceneOf(film).lines[s.line] ?? '');
 const wordsOf = (film: Film, s: FilmShot): string => spokenText(lineOf(film, s));
@@ -74,7 +78,16 @@ const BACK = 'short dark messy hair, a pale stylus tucked behind his right ear, 
 const CLEAN_FAITH = CLEAN.replace(/There is no religious[^.]*\./, 'There is no real religious or political symbol of any kind: no cross, no plus-shaped sign, no star shape, no crescent; the only symbols are plain hexagons, plain gold balls and oil lamps.');
 const NO_TEXT = 'No text, no lettering, no numbers, no logos, no emblems, no symbols, no icons anywhere in the picture.';
 
-const factionOfStill = (id: string): FactionId | null => FILMS.find((f) => f.shots.some((s) => s.from === id) && STILLS[id].refs.includes('leader'))?.faction ?? FILMS.find((f) => f.shots.some((s) => s.from === id))?.faction ?? null;
+const filmFactionOfStill = (id: string) => FILMS.find((f) => f.shots.some((s) => s.from === id) && STILLS[id].refs.includes('leader'))?.faction ?? FILMS.find((f) => f.shots.some((s) => s.from === id))?.faction ?? null;
+/** The faction whose leader a picture shows (none for the Roach King's own pictures). */
+const factionOfStill = (id: string): FactionId | null => { const f = filmFactionOfStill(id); return f === 'roach' ? null : f; };
+/** The Roach King, as his addresses show him (tools/media/roachking.ts HIM): his reference is the close picture of him. */
+const KING = (ord: string) =>
+  `the President of the ${ord} reference picture, copied exactly: a huge, broad-shouldered, barrel-chested cockroach-man with human posture, two legs and exactly four thick arms, `
+  + 'a glossy chestnut-brown cockroach head with a wide shiny shield over the top of it like a helmet brim, two very long whip-like antennae, large amber eyes and small mandibles like a mouth, '
+  + 'in an open dark green military dress coat heavy with gold braid and gold epaulettes over a white undershirt, an enormous gold championship belt round his middle';
+const KING_REF = path.join(ROOT, 'art-src-new', 'roach', 'stills', 'close.png');
+const FLAG_REF = path.join(ROOT, 'art-src-new', 'roach', 'flag', 'flag.png');
 
 function stillPrompt(id: string): string {
   const st = STILLS[id];
@@ -84,6 +97,7 @@ function stillPrompt(id: string): string {
   const holo = shows.includes('HOLO');
   const him = `the young man of the ${ord('hero')} reference picture (seen from behind as he is there, so that only the back of his head is seen and never his face: ${BACK}; his hands empty)`;
   if (fac) shows = shows.replace(/WHO/g, WHO[fac].replace('the reference picture', `the ${ord('leader')} reference picture`));
+  shows = shows.replace(/KING/g, KING(ord('king')));
   shows = shows.replace(/HOLO/g, `a life-size hologram of ${him}, made of pale blue-white light, translucent so that the room shows faintly through him, with fine horizontal scan lines and a soft glow at his edges`);
   shows = shows.replace(/TECH/g, him);
   const never = 'The young man faces away from the camera: his face is not seen anywhere in the picture.';
@@ -105,7 +119,7 @@ function png(file: string): string {
   if (!fs.existsSync(out)) { fs.mkdirSync(path.dirname(out), { recursive: true }); ff(['-i', file, out], 'ref png'); }
   return out;
 }
-const refFile = (r: string, fac: FactionId | null) => (r === 'hero' ? HERO : r === 'leader' ? png(LEADER_REF(fac ?? 'delegation')) : stillFile(r));
+const refFile = (r: string, fac: FactionId | null) => (r === 'hero' ? HERO : r === 'king' ? KING_REF : r === 'flag' ? FLAG_REF : r === 'leader' ? png(LEADER_REF(fac ?? 'delegation')) : stillFile(r));
 /** The stills a film needs, each after the stills it is drawn to match. */
 function stillsOf(film: Film): string[] {
   const out: string[] = [];
@@ -156,20 +170,29 @@ const VOICES: Record<string, string> = {
   'Delegate': 'She speaks English in a warm, bright, elderly woman\'s voice, gentle and delighted, like a kindly retired schoolteacher, with a soft mid-Atlantic accent of the 1950s. It is always exactly this same voice.',
   'The Voice': 'He speaks English in the booming, fervent, gravelly baritone of an American radio evangelist of the 1950s, about sixty, rolling and rising like a preacher. It is always exactly this same voice.',
   'The Director': 'He speaks English in a fast, lazy, confident young man\'s voice, a nasal Californian drawl, always amused with himself. It is always exactly this same voice.',
+  // Off the air (content/roachKing.ts): the showman's big voice, without the show.
+  'The Roach King': 'He speaks English in a big, deep, gravelly man\'s voice with a Texas drawl, a showman\'s voice used quietly and sharply, tired and exact. It is always exactly this same voice.',
+  'Aide': 'He speaks English in a thin, careful, nervous man\'s voice, a junior civil servant, with a soft mid-Atlantic accent. It is always exactly this same voice.',
+  'General': 'She speaks English in a hoarse, loud, furious woman\'s voice, a parade-ground bark. It is always exactly this same voice.',
 };
 const SUBJECT: Record<string, [string, string]> = {
   'Delegate': ['The chief delegate, the elderly insect woman in the cardigan and the flower garland,', 'Her small mandibles move like a mouth with her words.'],
   'The Voice': ['The preacher in the black robes', 'His small mandibles move like a mouth with his words.'],
   'The Director': ['The lanky young insect man in the grey t-shirt', 'His small mandibles move like a mouth with his words.'],
+  'The Roach King': ['The President, the huge cockroach-man in the green coat with the gold braid,', 'His small mandibles move like a mouth with his words.'],
+  'Aide': ['The aide, the thin insect man in the grey suit,', 'His small mandibles move like a mouth with his words.'],
+  'General': ['The general on the screen', 'Her small mandibles move like a mouth with her words.'],
 };
 /** He is seen from behind, always (Collins, Oct 4 2026). */
-const BEHIND = 'The young man keeps his back to the camera in every frame: his face is never seen, and he never turns round.';
+const BEHIND = 'The young man keeps his back square to the camera in every frame: only the back of his head and shoulders are seen, never his face, not even in profile; he never turns round or sideways.';
+/** A hologram stays clean: a sparkle the model adds is handed down the take with the frame and multiplies into snow (the second take, Oct 4 2026). */
+const HOLO_CLEAN = 'The air in the room is perfectly clear and still, and the picture stays clean and sharp, exactly as in the first frame; the hologram\'s light is even and steady.';
 function tail(look: FilmLook, holo: boolean, him: boolean): string {
   const cam = 'One continuous shot, no cuts; the camera does not move at all.';
   if (look === 'ship') return `${cam} He is alone. ${BEHIND} He keeps the same dark messy hair and the same black tunic in every frame; nothing morphs. No text appears on screen. No music, no subtitles.`;
   if (look === 'call') return `${cam} ${BEHIND} The screen stays where it is, and the insect people on it keep their insect heads, exactly four arms and the same clothes in every frame; nothing morphs or duplicates. No text appears on screen. No music, no subtitles.`;
-  return `${cam} It keeps the same film look and grain throughout. The insect people keep their insect heads, exactly four arms and the same clothes in every frame; nothing morphs or duplicates. `
-    + (holo ? `The young man stays a translucent pale blue hologram of light in every frame, and never becomes solid. ${BEHIND} ` : him ? `${BEHIND} ` : '')
+  return `${cam} It keeps the same film look throughout. The room stays exactly as it is in the first frame: nothing is added to it. The insect people keep their insect heads, exactly four arms and the same clothes in every frame; nothing morphs or duplicates. `
+    + (holo ? `The young man stays a translucent pale blue hologram of light in every frame, and never becomes solid. ${HOLO_CLEAN} ${BEHIND} ` : him ? `${BEHIND} ` : '')
     + 'No text appears on screen. No music, no subtitles.';
 }
 /** The still a shot stands in ('^' looks back to the still its take began from). */
@@ -190,11 +213,14 @@ export function clipPrompt(film: Film, i: number): string {
   if (who === 'You') {
     // His line: he is seen from behind, so it is his VOICE that carries it; nobody whose face is seen moves a mouth.
     const he = holo ? 'The hologram of the young man' : 'The young man';
-    const hush = st.look === 'ship' ? '' : `The insect people${st.look === 'call' ? ' on the screen' : ''} listen in silence, their mandibles closed and still: none of them speaks.`;
+    // What MOVES in his shot is his listeners: a model animates whoever it is told about, and told only about him it
+    // turns him round to show who is speaking (the takes of Oct 4 2026).
+    const hush = st.look === 'ship' ? '' : `The insect people${st.look === 'call' ? ' on the screen' : ' facing him'} listen to him attentively, nodding slowly now and then, their mandibles closed: none of them speaks. He himself hardly moves.`;
     return `${s.action} ${he}, his back to the camera, says: "${spoken}" ${VOICES.You} ${hush} ${t}`.replace(/\s+/g, ' ');
   }
   const [subject, mouth] = SUBJECT[who] ?? ['The speaker', ''];
-  const hush = him ? 'The young man says nothing and stays as he is, his back to the camera.' : '';
+  const hush = him ? 'The young man says nothing and stays as he is, his back to the camera.'
+    : film.faction === 'roach' ? 'Only that one speaker speaks: everyone else in the picture keeps their mandibles closed and still.' : '';
   return `${s.action} ${subject} says: "${spoken}" ${mouth} ${VOICES[who] ?? ''} ${hush} ${t}`.replace(/\s+/g, ' ');
 }
 
@@ -224,6 +250,33 @@ function colourOf(file: string, frame: number): Colour {
   return { mean, sd: sd.map((x) => Math.sqrt(x / n)) };
 }
 const clamp = (x: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, x));
+/**
+ * SPECKS: bright isolated points in a frame (a hologram's sparkle, snow, static). The model adds a few, the next clip
+ * starts from a frame that has them and adds more: on the second take of the first film the whole room was snowing six
+ * clips after one sparkle on his back. Counted at 640x360: pixels 25 brighter than all four neighbours two pixels away
+ * (a room has hundreds of its own: garlands, carpet). A clip whose count at its cut is more than SPECK_GROWTH times its
+ * take's first frame stops the take, to be looked at and made again before anything goes on from it.
+ */
+const SPECK_GROWTH = 1.6;
+function specksOf(file: string, frame: number): number {
+  const W = 640, H = 360;
+  const r = spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-i', file, '-vf', `select=eq(n\\,${frame}),scale=${W}:${H}`, '-frames:v', '1', '-f', 'rawvideo', '-pix_fmt', 'gray', '-'], { maxBuffer: 1 << 26 });
+  const px = r.stdout;
+  if (!px || px.length < W * H) return 0;
+  let count = 0;
+  for (let y = 2; y < H - 2; y++) for (let x = 2; x < W - 2; x++) {
+    const v = px[y * W + x];
+    if (v - px[y * W + x - 2] >= 25 && v - px[y * W + x + 2] >= 25 && v - px[(y - 2) * W + x] >= 25 && v - px[(y + 2) * W + x] >= 25) count++;
+  }
+  return count;
+}
+/** How many times the specks of its take's first frame a clip has at its cut (1: as it began). */
+async function speckGrowth(film: Film, i: number): Promise<number> {
+  const first = film.shots[takeStart(film, i)];
+  const ref = Math.max(200, specksOf(clipFile(film.id, first.id), 0));
+  const { frame } = await cutOf(film, i);
+  return specksOf(clipFile(film.id, film.shots[i].id), frame) / ref;
+}
 /** What brings `got` back to `ref`, held to a modest range (the people in the picture move: the measure is of the whole frame). */
 function fixOf(ref: Colour, got: Colour): Fix {
   const k = got.sd.map((v, c) => clamp(ref.sd[c] / Math.max(1, v), 0.7, 1.3));
@@ -268,8 +321,107 @@ async function cutFrame(film: Film, i: number, out: string): Promise<string> {
   const f = clipFile(film.id, film.shots[i].id);
   const { frame, fix } = await cutOf(film, i);
   if (fs.existsSync(out) && fs.statSync(out).mtimeMs >= fs.statSync(cutFile(film.id, film.shots[i].id)).mtimeMs) return out;
-  ff(['-i', f, '-vf', `select=eq(n\\,${frame}),${lut(fix ?? NO_FIX)},scale=1280:720`, '-frames:v', '1', '-update', '1', out], 'the frame at the cut');
+  // The frame, in the take's first colour, with what the clip let drift through the air taken out: the next clip starts clean.
+  const W = 1280, H = 720, N = W * H * 3;
+  // Its neighbours in time (every fourth frame, sixteen either side, as far as the clip goes), all in the held colour.
+  const a = Math.max(0, frame - 16);
+  const r = spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-i', f, '-vf', `select=between(n\\,${a}\\,${frame + 16}),${lut(fix ?? NO_FIX)},scale=${W}:${H}`, '-vsync', '0', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-'], { maxBuffer: 1 << 30 });
+  if (!r.stdout || r.stdout.length < N) throw new Error(`the frame at the cut of ${film.shots[i].id}: ${String(r.stderr).slice(-300)}`);
+  const all: Buffer[] = [];
+  for (let o = 0; o + N <= r.stdout.length; o += N) all.push(r.stdout.subarray(o, o + N));
+  const at = Math.min(frame - a, all.length - 1);
+  const px = Buffer.from(all[at]);
+  const near = all.filter((_, k) => (k - at) % 4 === 0);
+  const drifted = undrift(px, near, W, H);
+  const taken = despeckle(px, W, H);
+  const w = spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-s', `${W}x${H}`, '-i', '-', '-frames:v', '1', '-update', '1', out], { input: px, maxBuffer: 1 << 27 });
+  if (w.status !== 0) throw new Error(`writing the frame at the cut of ${film.shots[i].id}: ${String(w.stderr).slice(-300)}`);
+  if (drifted > 0.002) console.log(`[cut] ${film.shots[i].id}: ${(drifted * 100).toFixed(1)}% of the frame the next clip starts from was drifting light (motes, confetti), taken out`);
+  if (taken > 0) console.log(`[cut] ${film.shots[i].id}: ${taken} specks taken out of the frame the next clip starts from`);
   return out;
+}
+
+/**
+ * WHAT DRIFTS THROUGH THE AIR IS NOT HANDED ON (Oct 4 2026). The model lets a hologram shed soft motes of light, and a
+ * happy crowd grow confetti; the next clip starts from a frame that has them and adds more, and by the tenth clip the
+ * hotel conference room is in a snowstorm (the second and third takes of the first film; a point filter and "no
+ * sparkles, no snow" in the prompt did not stop it, and naming them may have fed it). They MOVE, and the room does not:
+ * so the frame a clip starts from is compared with the median of its neighbours in time, and wherever it is brighter
+ * than that median (a mote passing) it is given the median. Nothing else of the frame changes: a still room, a still
+ * face and a settled hand are their own median. Returns the share of the frame that was drifting light.
+ */
+function undrift(px: Buffer, near: Buffer[], W: number, H: number): number {
+  if (near.length < 5) return 0;
+  const v = new Uint8Array(near.length);
+  const mid = near.length >> 1;
+  const med = [0, 0, 0];
+  let n = 0;
+  const mask = new Uint8Array(W * H);
+  const M = Buffer.alloc(W * H * 3);
+  for (let i = 0, k = 0; i < W * H; i++, k += 3) {
+    for (let c = 0; c < 3; c++) {
+      for (let t = 0; t < near.length; t++) v[t] = near[t][k + c];
+      v.sort();
+      med[c] = v[mid];
+    }
+    const la = 0.299 * px[k] + 0.587 * px[k + 1] + 0.114 * px[k + 2];
+    const lm = 0.299 * med[0] + 0.587 * med[1] + 0.114 * med[2];
+    if (la - lm > 5) { mask[i] = 1; M[k] = med[0]; M[k + 1] = med[1]; M[k + 2] = med[2]; }
+  }
+  // A mote is small. Where the brighter pixels are DENSE (an arm of light that moved, a hand, a head turning) the frame
+  // is left as it is: giving those the median would rub the hologram out a little at every link (the fourth take: by the
+  // tenth clip he was a flat teal man). Density: the share of a 33x33 window that is brighter than its median.
+  const R = 16;
+  const sat = new Float64Array((W + 1) * (H + 1));
+  for (let y = 0; y < H; y++) { let row = 0; for (let x = 0; x < W; x++) { row += mask[y * W + x]; sat[(y + 1) * (W + 1) + x + 1] = sat[y * (W + 1) + x + 1] + row; } }
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const i = y * W + x;
+    if (!mask[i]) continue;
+    const x0 = Math.max(0, x - R), x1 = Math.min(W, x + R + 1), y0 = Math.max(0, y - R), y1 = Math.min(H, y + R + 1);
+    const dense = (sat[y1 * (W + 1) + x1] - sat[y0 * (W + 1) + x1] - sat[y1 * (W + 1) + x0] + sat[y0 * (W + 1) + x0]) / ((x1 - x0) * (y1 - y0));
+    if (dense > 0.4) continue;
+    const k = i * 3;
+    px[k] = M[k]; px[k + 1] = M[k + 1]; px[k + 2] = M[k + 2];
+    n++;
+  }
+  return n / (W * H);
+}
+
+/**
+ * SPECKS ARE NOT HANDED ON (Oct 4 2026). The model lets a hologram shed a few white motes; the next clip starts from a
+ * frame that has them and adds more, and six clips later the room is snowing (the second take of the first film). So the
+ * frame a clip starts from is cleaned first: a WHITISH point (little colour in it) that stands 18 or more above every
+ * pixel of the ring three pixels round it is a mote, and it and its 5x5 are painted with that ring's mean. Coloured
+ * detail (garlands, carpet, lamps) and anything wider than a few pixels is left alone. Returns how many were taken out.
+ */
+function despeckle(px: Buffer, W: number, H: number): number {
+  const RING: Array<[number, number]> = [[-3, -3], [0, -3], [3, -3], [-3, 0], [3, 0], [-3, 3], [0, 3], [3, 3]];
+  const lum = new Float32Array(W * H);
+  for (let i = 0, k = 0; i < W * H; i++, k += 3) lum[i] = 0.299 * px[k] + 0.587 * px[k + 1] + 0.114 * px[k + 2];
+  const hits: number[] = [];
+  for (let y = 5; y < H - 5; y++) for (let x = 5; x < W - 5; x++) {
+    const i = y * W + x;
+    const v = lum[i];
+    if (v < 70) continue;
+    const k = i * 3;
+    if (Math.max(px[k], px[k + 1], px[k + 2]) - Math.min(px[k], px[k + 1], px[k + 2]) > 46) continue; // coloured: the room's own
+    let mote = true;
+    for (const [dx, dy] of RING) if (v - lum[i + dy * W + dx] < 18) { mote = false; break; }
+    if (mote) hits.push(i);
+  }
+  const src = Buffer.from(px);
+  for (const i of hits) {
+    const x = i % W, y = (i - x) / W;
+    const mean = [0, 0, 0];
+    for (const [dx, dy] of RING) { const k = ((y + dy) * W + x + dx) * 3; for (let c = 0; c < 3; c++) mean[c] += src[k + c] / RING.length; }
+    for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) {
+      const j = (y + dy) * W + x + dx;
+      // Only the mote itself: the pixels of its 5x5 that stand above the ring too.
+      if (lum[j] - (0.299 * mean[0] + 0.587 * mean[1] + 0.114 * mean[2]) < 8) continue;
+      for (let c = 0; c < 3; c++) px[j * 3 + c] = Math.round(mean[c]);
+    }
+  }
+  return hits.length;
 }
 
 async function clips(film: Film) {
@@ -301,6 +453,12 @@ async function clips(film: Film) {
       const h = await hear(out).catch(() => ({ text: '' } as Heard));
       const hz = Math.round(pitchOf(out));
       console.log(`[cut] ${s.id} ${whoOf(film, s)}: heard ${Math.round(heard(words, h.text) * 100)}% at ${hz} Hz: "${h.text}"`);
+    }
+    // Snow is handed down the take with the frame: a clip that has grown specks stops it here.
+    const grown = await speckGrowth(film, i);
+    if (grown > SPECK_GROWTH && !process.env.CUTSCENE_ALLOW_SPECKS) {
+      console.warn(`[cut] ${s.id}: SPECKS x${grown.toFixed(2)} of the take's first frame at its cut (sparkle, snow or static). Look at it; \`redo ${film.id} ${s.id}\` and make it again. Stopping here.`);
+      break;
     }
   }
   console.log(`[cut] ${film.id}: ${made} clips made on ${VIDEO_MODEL}`);
@@ -558,7 +716,7 @@ function desk(film: Film) {
   fs.writeFileSync(path.join(dirOf(film.id), 'film.srt'), srt);
   const dir = path.join(os.homedir(), 'Desktop', 'Broodfall cut scenes');
   fs.mkdirSync(dir, { recursive: true });
-  const who = { delegation: 'Delegation', faithful: 'Faithful', institute: 'Institute' }[film.faction];
+  const who = { delegation: 'Delegation', faithful: 'Faithful', institute: 'Institute', roach: 'Roach King' }[film.faction];
   const name = `${String(FILMS.indexOf(film) + 1).padStart(2, '0')} ${who} - ${sceneOf(film).title.replace(/[^A-Za-z0-9 ,']/g, '')}`;
   fs.copyFileSync(src, path.join(dir, `${name}.mp4`));
   // The subtitles filter takes a path relative to where ffmpeg runs (a drive letter's colon breaks its option syntax).
@@ -592,6 +750,8 @@ if (!process.env.VITEST) {
     if (step === 'stills') await stills(film);
     else if (step === 'clips') await clips(film);
     else if (step === 'redo') redo(film);
+    // Free: the frame a shot would start from (the shot before it at its cut, colour held, specks out), to look at.
+    else if (step === 'start') for (const id of only) { const i = film.shots.findIndex((x) => x.id === id); if (i > 0) console.log(await cutFrame(film, i - 1, path.join(dirOf(film.id), `${id}-start.png`))); }
     else if (step === 'check') await check(film);
     else if (step === 'bake') bake(film);
     else if (step === 'sheet') sheet(film);
