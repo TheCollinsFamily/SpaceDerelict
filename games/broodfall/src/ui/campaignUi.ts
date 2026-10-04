@@ -514,7 +514,11 @@ export class CampaignUi {
 
   private walkInto(room: Room): void {
     // Whether the room HAS an arrival is settled when it is dressed: coming aboard, the ship's pictures may still be on their way.
-    const can = !loadSettings().reduceMotion;
+    // Under automation (navigator.webdriver) he walks in only when localStorage['broodfall-arrivals'] is 'on', as the pad's
+    // film and the landing films do: the other browser beats photograph a room the moment they click it.
+    let automated = false;
+    try { automated = typeof navigator !== 'undefined' && !!navigator.webdriver && localStorage.getItem('broodfall-arrivals') !== 'on'; } catch { /* no storage: he walks in */ }
+    const can = !loadSettings().reduceMotion && !automated;
     this.arriving = can ? room : null;
     this.wordsIn = can;
   }

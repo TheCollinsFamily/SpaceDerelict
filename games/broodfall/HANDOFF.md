@@ -1860,6 +1860,29 @@ Collins: "can you build some of the other transitions between different parts of
   stills and the tour's film in `notes/screens/2026-10-04/arrivals/`; persona notes `notes/PERSONA-SHIP-ARRIVALS-2026-10-04.md`.
 - **Open:** no sound of his steps; the same walk every visit (a second take a room would vary it); he is never seen
   LEAVING (a take of him leaving the Desk is made by `--leave desk`, not in the game).
+- **Under automation** (`navigator.webdriver`) he walks in only when `localStorage['broodfall-arrivals']` is `'on'` (the
+  arrivals beat sets it), as the pad's film does: every other browser beat photographs a room the moment it clicks it.
+- **A loop baked again needs its arrival made again** (its first frame is new): `tools/art/ship-loops.mjs` keeps the
+  `arrive` entry in `loops.json`, and `tests/shipArrivals.test.ts` fails until the arrival ends on the new first frame.
+
+## The Comms room, redrawn: his hand (Oct 4 2026)
+
+Collins, of `notes/screens/2026-10-04/arrivals/comms-3-in-place.jpg`: "the stuff based on this picture need to be redone his
+hand is sitting in an impossible position, other than that they are good". The hand on the dial was a right hand drawn on
+his left arm, in the room's approved still since Sep 30, so in the loop and in the new arrival.
+- **Redrawn** (`tools/art/ship-loops.mjs`, the room's `fix`): the still is drawn again FROM THE LOOP'S OWN FIRST FRAME with
+  only his arms changed. Three poses were drawn and looked at enlarged (`art-src-new/ship-loops/comms-fixA|B|C.png`: a grip
+  on a dial, the hand lying flat on the console, both hands out of sight); B is the one used: a flat hand has nothing to
+  get wrong. The loop's clip no longer has him turn a dial (a hand a video model moves is a hand it redraws): the hand
+  stays where it is for the whole loop (looked at once a second).
+- **What was made again:** the loop (`public/art/ship/loops/room-comms.mp4` + `.webp`, 7.08 s), the room's plain still
+  (`public/art/ship/room-comms.webp`, now the loop's first frame; `tools/art/templates/ship.mjs` no longer bakes the old
+  still over a corrected room), and its arrival (`arrive-comms.mp4`: the room emptied from the NEW first frame, a new
+  clip; landed 36.0 dB, baked 43.0). The old files are in `art-src-new/ship-arrivals/v1/comms-oldhand-*`.
+- **Not touched:** the options page's Comms screenshots (`notes/art-review/fp-options/ui/comms-*.jpg`, a record of Oct 3)
+  and the old approved still in `art-src/ship/room-comms.png` (kept; it is not baked any more).
+- **Checks:** `tests/shipArrivals.test.ts`, `node tools/shot-ship-arrivals.mjs` (86), `node tools/shot-ship-loops.mjs rooms`
+  (that beat now waits for a walk-in to end before it measures a loop).
 
 ## A clip as the start of the next one: what rfab.ai gives, measured (Oct 4 2026)
 

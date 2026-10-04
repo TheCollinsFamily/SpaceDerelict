@@ -486,6 +486,9 @@ function wrap(img, band = 0.06) {
   return out;
 }
 
+/** Rooms whose picture was corrected after approval (ship-loops.mjs `fix`): see bakeShip. */
+const CORRECTED = new Set(['comms']);
+
 export function bakeShip() {
   const out = path.join(ART, 'ship');
   fs.mkdirSync(out, { recursive: true });
@@ -495,8 +498,12 @@ export function bakeShip() {
   for (const id of Object.keys(ROOMS)) {
     const file = path.join(DIR, `room-${id}.png`);
     if (!fs.existsSync(file)) continue;
-    total += save(readImage(file, { w: 1536, h: 1024 }), path.join(out, `room-${id}.webp`), 84);
     entry.rooms[id] = `ship/room-${id}.webp`;
+    // A room CORRECTED after its still was approved keeps the corrected picture (tools/art/ship-loops.mjs writes it here
+    // from the loop's first frame): its old still in art-src is not baked over it. The Comms room, Oct 4 2026: the hand
+    // on its dial was a right hand on his left arm (Collins: "his hand is sitting in an impossible position").
+    if (CORRECTED.has(id) && fs.existsSync(path.join(out, `room-${id}.webp`))) continue;
+    total += save(readImage(file, { w: 1536, h: 1024 }), path.join(out, `room-${id}.webp`), 84);
   }
   for (const id of Object.keys(LEADERS)) {
     const file = path.join(DIR, `leader-${id}.png`);

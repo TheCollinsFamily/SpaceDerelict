@@ -74,14 +74,30 @@ export const ROOMS = [
     clip: 'A bare formal alcove aboard a starship. On the razor-thin display of the terminal, pale ruled lines scroll ' +
       'slowly upward and a small cursor blinks; the thin light strips hum faintly. The man stands straight, reading, ' +
       `breathing, his head tilting a little. ${LOCK}` },
+  // Oct 4 2026 (Collins, of this room: "his hand is sitting in an impossible position"): the hand on the dial was a right
+  // hand drawn on his left arm. `fix`: the still is redrawn FROM THE LOOP'S OWN FIRST FRAME with only his arms changed (his
+  // left hand lies flat on the console, a pose with nothing to get wrong; two other poses were drawn and set aside:
+  // art-src-new/ship-loops/comms-fixA.png, a grip on a dial, and comms-fixC.png, his hands out of sight). The clip no longer
+  // has him turn a dial: a hand a video model moves is a hand it redraws.
   { id: 'comms', from: 'room-comms', crop: 40, refs: ['menu'],
+    fix: 'Edit the reference picture. Keep everything EXACTLY as it is: the room, the camera, the framing, the three displays, the ' +
+      'console with its keys and dials, the bench, the long window onto the planet, the light and the darkness, and the man ' +
+      'himself: his place, his size, his black high-collared shirt with the sleeves pushed up, his dark hair, the stylus behind ' +
+      'his ear, seen from behind so that his face is never seen. Change ONLY his arms and hands, which are drawn wrong in the ' +
+      'reference: his LEFT forearm rests along the near edge of the console at his left, relaxed, the elbow bent naturally; the ' +
+      'hand lies flat, palm down, the back of the hand toward us, fingers together pointing forward toward the displays, the ' +
+      'thumb on the side nearer his body. It is plainly a left hand on a left arm, with a natural wrist. No bracelet on it. His ' +
+      'right arm rests relaxed at his right side, the forearm on his right thigh. Photoreal, like a frame from a serious hard ' +
+      'science-fiction film. No text anywhere: no letters, no numbers, no logos. Keep the small plain gear symbol on the wall ' +
+      'exactly as it is.',
     still: EDIT(`${MAN('sitting on the hard bench facing the displays at the left, one hand on the console')} The planet seen ` +
       'through the long window slit is now the planet of the third reference picture: its night side, dark continents with ' +
       'pale golden city lights and a spreading dark red veined stain of infection with a few glowing orange points, a thin ' +
       'blue line of atmosphere along its curve, black space above. Not green, not blue oceans in daylight.'),
     clip: 'The communications alcove of a starship. On the three thin displays, soft white static and signal traces ' +
       'flicker and crawl; small indicator lights on the console blink slowly. Through the long window slit the dark infested ' +
-      'planet turns very slowly, its red veins pulsing faintly. The man sits, breathing, his hand turning a dial a little. ' +
+      'planet turns very slowly, its red veins pulsing faintly. The man sits, breathing; his hand lies flat on the console ' +
+      'and stays exactly where it is, its fingers still. ' +
       LOCK },
   { id: 'ai', from: 'room-ai', crop: 40,
     still: EDIT(MAN('standing at the left facing the low round dais, relaxed, one hand in a trouser pocket')),
@@ -133,8 +149,20 @@ function cut169(r) {
 /** The still the clip starts and ends on. */
 const stillOf = (r) => (r.empty ? cut169(r) : raw(r.id, '.png'));
 
+/** A room being corrected (`fix`): its still is redrawn from the first frame of the loop the game has now. */
+async function fixes(items) {
+  for (const r of items.filter((x) => x.fix && !fs.existsSync(raw(x.id, '.png')))) {
+    const loop = path.join(OUT, `room-${r.id}.mp4`);
+    if (!fs.existsSync(loop)) { console.warn(`[ship-loops] ${r.id}: no loop to correct`); continue; }
+    const from = raw(r.id, '-fixfrom.png');
+    ffmpeg(['-i', loop, '-frames:v', '1', '-vf', 'scale=1536:864:flags=lanczos', from], `${r.id} loop first frame`);
+    await makeStill({ slug: `ship-loop ${r.id} fix`, out: raw(r.id, '.png'), prompt: r.fix, key: null, width: 1536, height: 864, quality: 'high', refFiles: [from] });
+  }
+}
+
 async function stills(items) {
-  const res = await pool(items.filter((r) => !r.empty && fs.existsSync(SOURCE(r))), 4, (r) => makeStill({
+  await fixes(items);
+  const res = await pool(items.filter((r) => !r.empty && !r.fix && fs.existsSync(SOURCE(r))), 4, (r) => makeStill({
     slug: `ship-loop ${r.id}`, out: raw(r.id, '.png'), prompt: r.still, key: null, width: 1536, height: 864, quality: 'high',
     refFiles: [cut169(r), path.join(CONCEPTS, 'hero-behind-desk.png'), ...(r.refs ?? []).map((k) => REFS[k])].filter((f) => fs.existsSync(f)),
   }));
@@ -205,6 +233,9 @@ function bakeLoop(r) {
   }
   // The poster IS the loop's first frame, so the picture under the video never jumps when it starts.
   ffmpeg(['-i', out, '-frames:v', '1', '-c:v', 'libwebp', '-quality', '86', path.join(OUT, `room-${r.id}.webp`)], `${r.id} poster`);
+  // A corrected room (`fix`): the room's plain still (what the game shows when the loops' list has not arrived) is the
+  // corrected picture too, so no copy of the old one is left in what ships (tools/art/templates/ship.mjs leaves it be).
+  if (r.fix) ffmpeg(['-i', out, '-frames:v', '1', '-vf', 'scale=1536:864:flags=lanczos', '-c:v', 'libwebp', '-quality', '84', path.join(ART, 'ship', `room-${r.id}.webp`)], `${r.id} still`);
   const g = greyFrames(out);
   const gs = g.slice(1).map((x, i) => diff(g[i], x));
   const sorted = [...gs].sort((a, b) => a - b);
@@ -238,7 +269,9 @@ export function bakeLoops(only) {
   for (const r of ROOMS) {
     if (only?.length && !only.includes(r.id)) continue;
     const e = bakeLoop(r);
-    if (e) json.rooms[r.id] = e;
+    // The room's entry also carries its arrival (tools/art/ship-arrivals.mjs): kept. A loop baked again has a new first
+    // frame, so that arrival no longer ends on it: make it again (tests/shipArrivals.test.ts fails until it is).
+    if (e) json.rooms[r.id] = { ...json.rooms[r.id], ...e };
   }
   fs.mkdirSync(OUT, { recursive: true });
   fs.writeFileSync(file, JSON.stringify(json, null, 2) + '\n');

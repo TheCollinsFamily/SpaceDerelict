@@ -72,6 +72,7 @@ async function freshPage(browser, { video = false, settings, extra } = {}) {
     sessionStorage.setItem('arrive-beat-set', '1');
     localStorage.clear();
     localStorage.setItem('broodfall-intro-seen', '1');
+    localStorage.setItem('broodfall-arrivals', 'on'); // under automation he walks in only when asked
     localStorage.setItem('broodfall-yoke', JSON.stringify({ mode: 'scripted' }));
     if (s) localStorage.setItem('broodfall-settings', JSON.stringify(s));
     for (const [k, v] of Object.entries(x ?? {})) localStorage.setItem(k, v);

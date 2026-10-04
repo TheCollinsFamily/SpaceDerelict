@@ -154,8 +154,12 @@ try {
       await page.locator(`[data-room="${r}"]`).click();
       await page.waitForTimeout(400);
       if (await page.locator('.cp-icom-x').count()) await page.locator('.cp-icom-x').click().catch(() => {});
+      // Since Oct 4 2026 he WALKS INTO a room (tools/shot-ship-arrivals.mjs): its loop waits on its first frame until the
+      // arrival clip is over. Under automation that plays only when asked for (localStorage['broodfall-arrivals']), which
+      // this beat does not; should it ever, the loop is measured once he is in his place.
+      await page.waitForFunction(() => !document.querySelector('#campaign > video.room-arrive'), null, { timeout: 15000 }).catch(() => {});
       const st = await page.evaluate(async () => {
-        const v = document.querySelector('#campaign > video.room-loop');
+        const v = document.querySelector('#campaign > video.room-loop:not(.room-arrive)');
         if (!v) return null;
         // A loaded machine may take a while to fetch a new loop: wait until it can play, then measure.
         for (let i = 0; i < 60 && v.readyState < 3; i++) await new Promise((res) => setTimeout(res, 250));

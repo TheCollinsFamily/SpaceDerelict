@@ -35,9 +35,9 @@
   "id": "comms",
   "baked": true,
   "seconds": 3.833,
-  "lands": 35.9,
-  "ends": 42.6,
-  "starts": 32.8
+  "lands": 36,
+  "ends": 43,
+  "starts": 30.3
  },
  "ai": {
   "id": "ai",
