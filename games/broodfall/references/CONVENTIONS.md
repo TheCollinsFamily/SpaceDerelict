@@ -24,3 +24,21 @@ Assessed against live play + `tools/screenshots/beat-*.png`. Every iteration re-
 | 12 | The city looks alive before you eat it | PARTIAL (doorway lights; no wandering civilians yet) | beat-2 |
 
 Known WEAK/PARTIAL items are the top of the next iteration's list.
+
+## Moving between a base's rooms (added Oct 4 2026 for the ship's arrivals)
+
+Reference games, from knowledge of them (no screenshots were collected this iteration): XCOM 2's Avenger (the camera goes
+to the room, its screen comes up on arrival, a second click cuts it short), Darkest Dungeon's hamlet (a building opens at
+once, with a short settle), Hades' House (the hero walks to each station himself).
+
+Assessed against live play (`node tools/shot-ship-arrivals.mjs`) and `notes/screens/2026-10-04/arrivals/`.
+
+| # | Convention | Status Oct 4 2026 | Evidence |
+|---|---|---|---|
+| 16 | A change of menu is never held up by its animation: the new screen answers the first click | YES (the screen is the new room's in 81 to 144 ms; it answered a click mid-walk in 7 of 7 rooms tried) | beat `tour` |
+| 17 | A transition ends exactly on the resting picture | YES (each clip's last frame is 42.1 to 45.9 dB from its loop's first; the watched hand-over changes by at most 2.4 of 255 between two pictures in a row, a real jump being 15 and up) | `tests/shipArrivals.test.ts`, beat `tour` |
+| 18 | A change of mind mid-transition restarts cleanly | YES (the other room's walk takes over, one clip, nothing left behind; fourteen rooms in under three seconds end on one loop) | beats `switch`, `break` |
+| 19 | It is short, and it can be turned off | YES (3.7 to 3.8 s, in his place by about 2 s; Settings > Reduce motion shows the room's still) | beat `calm` |
+| 20 | The person on screen is the same person in every transition | YES by eye (black shirt, sleeves up, the stylus behind his ear) | `notes/art-review/ship-arrivals/*-strip.jpg` |
+| 21 | Leaving is shown as well as arriving | NO (he is in one room, then walks into the next: a cut) | persona notes, Breaker |
+| 22 | A repeated transition varies | NO (one take a room) | persona notes, Veteran |

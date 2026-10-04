@@ -3,32 +3,62 @@
     "desk": {
       "video": "ship/loops/room-desk.mp4",
       "poster": "ship/loops/room-desk.webp",
-      "seconds": 8
+      "seconds": 8,
+      "arrive": {
+        "video": "ship/loops/arrive-desk.mp4",
+        "poster": "ship/loops/arrive-desk.webp",
+        "seconds": 3.667
+      }
     },
     "genes": {
       "video": "ship/loops/room-genes.mp4",
       "poster": "ship/loops/room-genes.webp",
-      "seconds": 8
+      "seconds": 8,
+      "arrive": {
+        "video": "ship/loops/arrive-genes.mp4",
+        "poster": "ship/loops/arrive-genes.webp",
+        "seconds": 3.667
+      }
     },
     "locker": {
       "video": "ship/loops/room-locker.mp4",
       "poster": "ship/loops/room-locker.webp",
-      "seconds": 7.25
+      "seconds": 7.25,
+      "arrive": {
+        "video": "ship/loops/arrive-locker.mp4",
+        "poster": "ship/loops/arrive-locker.webp",
+        "seconds": 3.833
+      }
     },
     "board": {
       "video": "ship/loops/room-board.mp4",
       "poster": "ship/loops/room-board.webp",
-      "seconds": 8
+      "seconds": 8,
+      "arrive": {
+        "video": "ship/loops/arrive-board.mp4",
+        "poster": "ship/loops/arrive-board.webp",
+        "seconds": 3.667
+      }
     },
     "comms": {
       "video": "ship/loops/room-comms.mp4",
       "poster": "ship/loops/room-comms.webp",
-      "seconds": 7.083
+      "seconds": 7.083,
+      "arrive": {
+        "video": "ship/loops/arrive-comms.mp4",
+        "poster": "ship/loops/arrive-comms.webp",
+        "seconds": 3.833
+      }
     },
     "ai": {
       "video": "ship/loops/room-ai.mp4",
       "poster": "ship/loops/room-ai.webp",
-      "seconds": 7.25
+      "seconds": 7.25,
+      "arrive": {
+        "video": "ship/loops/arrive-ai.mp4",
+        "poster": "ship/loops/arrive-ai.webp",
+        "seconds": 3.667
+      }
     },
     "quarters": {
       "video": "ship/loops/room-quarters.mp4",
@@ -38,12 +68,22 @@
     "orders": {
       "video": "ship/loops/room-orders.mp4",
       "poster": "ship/loops/room-orders.webp",
-      "seconds": 7.125
+      "seconds": 7.125,
+      "arrive": {
+        "video": "ship/loops/arrive-orders.mp4",
+        "poster": "ship/loops/arrive-orders.webp",
+        "seconds": 3.667
+      }
     },
     "hobby": {
       "video": "ship/loops/room-hobby.mp4",
       "poster": "ship/loops/room-hobby.webp",
-      "seconds": 7.083
+      "seconds": 7.083,
+      "arrive": {
+        "video": "ship/loops/arrive-hobby.mp4",
+        "poster": "ship/loops/arrive-hobby.webp",
+        "seconds": 3.833
+      }
     }
   }
 }

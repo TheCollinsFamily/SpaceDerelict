@@ -146,9 +146,18 @@ export class CampaignUi {
    */
   private globe3d: Globe3D | null = null;
   /** The rooms' slow loops (tools/art/ship-loops.mjs): public/art/ship/loops/loops.json, paths made whole. */
-  private loops: Record<string, { video: string; poster: string }> = {};
+  private loops: Record<string, { video: string; poster: string; arrive?: { video: string; poster: string } }> = {};
   /** The one video that plays the room's loop behind the screen; kept across drawings of the screen. */
   private loopVideo: HTMLVideoElement | null = null;
+  /**
+   * He is walking into this room (Collins, Oct 4 2026: "transitions between different parts of the ship"): the room is
+   * shown EMPTY and its arrival clip (tools/art/ship-arrivals.mjs) plays behind the screen, which stays up and usable.
+   * The clip ends on the room's loop's first frame; the loop, held there meanwhile, then carries on. Null: he is in his place.
+   */
+  private arriving: Room | null = null;
+  private arriveVideo: HTMLVideoElement | null = null;
+  /** The room's words come up softly once, on the drawing that follows a change of room. */
+  private wordsIn = false;
   /** The post-deployment report is up: the rooms must not be drawn over it. */
   private debriefing = false;
   /** Each organ's scan picture, by organ id (absolute URLs); empty until the manifest is in. */
@@ -210,16 +219,24 @@ export class CampaignUi {
     // The stills that come alive (src/ui/alive.ts): the scene cards, the landing sites, the report's lead, her photograph.
     void loadAlive().then(() => { if (!this.el.classList.contains('hidden')) wake(this.el); });
     void fetch(artUrl('ship/loops/loops.json'), { cache: 'no-cache' }).then((r) => (r.ok ? r.json() : null)).then((j) => {
-      const rooms = (j?.rooms ?? {}) as Record<string, { video: string; poster: string }>;
+      const rooms = (j?.rooms ?? {}) as Record<string, { video: string; poster: string; arrive?: { video?: string; poster?: string } }>;
       const whole = (f: string) => new URL(artUrl(f), document.baseURI).href;
-      this.loops = Object.fromEntries(Object.entries(rooms).filter(([, v]) => v?.video && v?.poster).map(([k, v]) => [k, { video: whole(v.video), poster: whole(v.poster) }]));
+      this.loops = Object.fromEntries(Object.entries(rooms).filter(([, v]) => v?.video && v?.poster).map(([k, v]) => [k, {
+        video: whole(v.video), poster: whole(v.poster),
+        ...(v.arrive?.video && v.arrive?.poster ? { arrive: { video: whole(v.arrive.video), poster: whole(v.arrive.poster) } } : {}),
+      }]));
+      // The empty rooms' pictures are fetched now: the one he walks into is there the moment he goes.
+      for (const l of Object.values(this.loops)) if (l.arrive) new Image().src = l.arrive.poster;
       if (!this.el.classList.contains('hidden')) this.dress();
     }).catch(() => { /* no loops: the stills */ });
     // A loop plays only while the ship is on the screen (a video decoding behind a hidden screen costs the board its frames).
     new MutationObserver(() => {
       const v = this.loopVideo;
+      const hidden = this.el.classList.contains('hidden');
+      // A walk into a room that nobody watched is over: he is in his place when the ship is next on the screen.
+      if (hidden && this.arriving) { this.arriving = null; this.playArrival(null); }
       if (!v) return;
-      if (this.el.classList.contains('hidden')) { if (!v.paused) v.pause(); } else if (v.isConnected && v.paused && v.dataset.on === '1') void v.play().catch(() => {});
+      if (hidden) { if (!v.paused) v.pause(); } else if (v.isConnected && v.paused && v.dataset.on === '1') void v.play().catch(() => {});
     }).observe(this.el, { attributes: true, attributeFilter: ['class'] });
     void loadManifest().then(async (m) => {
       // Each organ's own picture from the ground scan (tools/art/templates/under.mjs), for the organ cards.
@@ -269,7 +286,10 @@ export class CampaignUi {
   /** `greet`: he has just come aboard; YOKE greets him with what fits (src/meta/onboarding.ts). */
   show(opts: { greet?: boolean } = {}): void {
     // Back from a report (which borrows the Procreation Board's room): aboard at the Directive Desk.
+    const fromReport = this.debriefing;
     if (this.debriefing) this.room = 'desk';
+    // Coming aboard he walks into the room he is shown in; from a report he is at the desk already (the pad's film left him there).
+    if (!fromReport && this.el.classList.contains('hidden')) this.walkInto(this.room);
     delete this.el.dataset.report; // the report's intercom is gone with the report
     this.debriefing = false;
     document.body.classList.add('in-ship');
@@ -382,11 +402,12 @@ export class CampaignUi {
           <button class="cp-room cp-tool" data-act="codex" title="Limb Codex: every limb, what it does and how it evolves" aria-label="Limb Codex">▤</button>
           <button class="cp-room cp-tool" data-act="settings" title="Settings" aria-label="Settings">⚙</button>
           <button class="cp-room cp-tool quit" data-act="quit" title="Back to the main menu">Menu</button></span></div>
-        <div class="cp-body">${this.roomHtml()}</div>
+        <div class="cp-body${this.wordsIn ? ' walk-in' : ''}">${this.roomHtml()}</div>
       </div>
       ${this.icomHtml()}
       ${this.greeting ? '' : this.sceneHtml()}
       ${this.objectorsHtml()}`;
+    this.wordsIn = false;
     this.dress();
     attachScene(this.el);
     this.playSceneFilm();
@@ -433,10 +454,15 @@ export class CampaignUi {
     const at = (file: string | undefined) => (file ? `url("${new URL(artUrl(file), document.baseURI).href}")` : 'none');
     // A room's own loop first (the Directives and the Notebook have theirs since Oct 1 2026), else the one it borrows.
     const loop = art ? this.loops[this.room] ?? this.loops[ROOM_PICTURE[this.room] ?? this.room] : undefined;
-    this.el.style.setProperty('--room', loop ? `url("${loop.poster}")` : this.room === 'quarters'
+    // He is walking in: the room is empty under the clip (its own first frame), and the loop waits on its first.
+    const arrive = this.arriving === this.room && !loadSettings().reduceMotion ? this.loops[this.room]?.arrive : undefined;
+    // No arrival for this room: he is simply there. (Not yet known while the pictures or the loops' list are still coming.)
+    if (!arrive && art && Object.keys(this.loops).length) this.arriving = null;
+    this.el.style.setProperty('--room', arrive ? `url("${arrive.poster}")` : loop ? `url("${loop.poster}")` : this.room === 'quarters'
       ? (this.intro?.quarters ? `url("${this.intro.quarters}")` : at(art?.rooms.board))
       : at(art?.rooms[(ROOM_PICTURE[this.room] ?? this.room) as Exclude<Room, 'quarters' | 'orders' | 'hobby'>]));
-    this.playLoop(loop?.video ?? null);
+    this.playLoop(loop?.video ?? null, !!arrive);
+    this.playArrival(arrive?.video ?? null);
     this.el.style.setProperty('--sketches', at(art?.sketches?.atlas));
     this.el.style.setProperty('--yoke', at(art?.yoke?.atlas));
     const box3d = this.globe3d ? this.el.querySelector<HTMLElement>('.globe-box.g3d') : null;
@@ -450,7 +476,7 @@ export class CampaignUi {
    * Not with Settings > Reduce motion. The video element is put back after every drawing of the screen:
    * put back in the same task, it keeps playing where it was.
    */
-  private playLoop(src: string | null): void {
+  private playLoop(src: string | null, held = false): void {
     if (!src || loadSettings().reduceMotion) {
       if (this.loopVideo) { this.loopVideo.pause(); this.loopVideo.dataset.on = '0'; this.loopVideo.remove(); }
       return;
@@ -467,8 +493,72 @@ export class CampaignUi {
     }
     if (v.dataset.src !== src) { v.classList.remove('on'); v.dataset.src = src; v.src = src; }
     if (this.el.firstChild !== v) this.el.prepend(v);
+    if (held) {
+      // He is still walking in: the loop is loaded and waits, unseen, on its first frame (the arrival's last).
+      v.dataset.on = '0';
+      v.classList.remove('on');
+      if (!v.paused) v.pause();
+      if (v.currentTime) v.currentTime = 0;
+      return;
+    }
     v.dataset.on = '1';
     if (v.paused && !this.el.classList.contains('hidden')) void v.play().catch(() => {});
+  }
+
+  /** He goes to `room`. Going to ANOTHER room he walks into it (when it has an arrival and motion is not reduced). */
+  private goTo(room: Room): void {
+    const from = this.room;
+    this.room = room;
+    if (room !== from) this.walkInto(room);
+  }
+
+  private walkInto(room: Room): void {
+    // Whether the room HAS an arrival is settled when it is dressed: coming aboard, the ship's pictures may still be on their way.
+    const can = !loadSettings().reduceMotion;
+    this.arriving = can ? room : null;
+    this.wordsIn = can;
+  }
+
+  /**
+   * The clip of him walking into the room, over its held loop (src null: he is in his place, the clip gives way to
+   * the loop). Like the loop's, its element is put back after every drawing of the screen and keeps playing.
+   */
+  private playArrival(src: string | null): void {
+    let v = this.arriveVideo;
+    if (!src) {
+      if (!v || !v.dataset.src) return;
+      // Its last frame is the loop's first: it stays up until the loop shows under it, then fades off it.
+      v.dataset.src = '';
+      const el = v, loop = this.loopVideo;
+      const off = (): void => {
+        el.classList.remove('on');
+        window.setTimeout(() => { if (!el.dataset.src) { el.pause(); el.removeAttribute('src'); el.load(); el.remove(); } }, 500);
+      };
+      if (!loop || loop.classList.contains('on') || !loop.isConnected) off();
+      else { let done = false; const once = (): void => { if (!done) { done = true; off(); } }; loop.addEventListener('playing', once, { once: true }); window.setTimeout(once, 700); }
+      return;
+    }
+    if (!v) {
+      const made = document.createElement('video');
+      made.className = 'room-loop room-arrive';
+      made.muted = true; made.playsInline = true; made.preload = 'auto';
+      made.setAttribute('aria-hidden', 'true');
+      made.addEventListener('playing', () => { if (made.dataset.src) made.classList.add('on'); });
+      // He is in his place (or the clip could not play): the room's loop takes over.
+      const arrived = (): void => {
+        if (!made.dataset.src || !this.arriving) return;
+        this.arriving = null;
+        if (!this.el.classList.contains('hidden') && !this.debriefing) this.dress();
+      };
+      made.addEventListener('ended', arrived);
+      made.addEventListener('error', arrived);
+      this.arriveVideo = v = made;
+    }
+    if (v.dataset.src !== src) { v.classList.remove('on'); v.dataset.src = src; v.src = src; }
+    // Over the loop: after it in the screen (the loop is always put first).
+    const loop = this.loopVideo;
+    if (loop?.isConnected) { if (loop.nextSibling !== v) loop.after(v); } else if (this.el.firstChild !== v) this.el.prepend(v);
+    if (v.paused && !v.ended && !this.el.classList.contains('hidden')) void v.play().catch(() => { /* 'error', or the next drawing, ends it */ });
   }
 
   /** Every landing site the player knows of, and what it is to him. */
@@ -990,7 +1080,7 @@ export class CampaignUi {
     if (d.picture) { el.classList.toggle('big'); return; }
     if (d.hpin || d.hsplice) { const n = hobbyClick(el, s); if (n) this.setState(n); return; }
     if (d.room) {
-      this.room = d.room as Room;
+      this.goTo(d.room as Room);
       if (this.beckon?.room === this.room) this.beckon = null;
       // In her own room she is there already: the intercom gives way to it (the talk goes on in it).
       // Her account is read only once she has a player on rfab.ai (made lazily, the first time she speaks live);
@@ -1042,7 +1132,7 @@ export class CampaignUi {
     if (d.engage) { void this.aiEngage(d.engage as AiTrigger); return; }
     // Her account (src/ui/yokeAccount.ts). Linking from the intercom takes him to her room, where the code is shown.
     if (d.act?.startsWith('acct-')) {
-      if (d.act === 'acct-link' && this.room !== 'ai') { this.room = 'ai'; this.icom = null; this.talk = this.ownTalk(); }
+      if (d.act === 'acct-link' && this.room !== 'ai') { this.goTo('ai'); this.icom = null; this.talk = this.ownTalk(); }
       this.account.click(d.act, el);
       return;
     }
@@ -1058,7 +1148,7 @@ export class CampaignUi {
       case 'spin-r': if (this.globe3d) { this.globe3d.turn(30); return; } this.spin += 30; this.render(); return;
       case 'scene-ok': case 'scene-later': this.setState(dismissScene(s)); return;
       case 'stay': this.setState(stayLoyal(s)); return;
-      case 'ai-later': this.room = 'desk'; this.talk = null; this.render(); return;
+      case 'ai-later': this.goTo('desk'); this.talk = null; this.render(); return;
       case 'ai-send': void this.aiSend(); return;
       case 'yoke-call':
         if (this.icom) { this.icom = null; this.greeting = null; } else this.icom = { talk: this.freeTalk() };
@@ -1229,6 +1319,7 @@ export class CampaignUi {
     // At the Directive Desk (Oct 2 2026): the pad's part 2 walks him into this room and its last frame is this backdrop,
     // so the report comes up where he stopped (it borrowed the Procreation Board's room before).
     this.room = 'desk';
+    this.arriving = null; // the pad's film has just walked him here
     this.debriefing = true;
     this.dress();
     wake(this.el);

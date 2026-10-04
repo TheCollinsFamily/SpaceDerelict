@@ -133,23 +133,45 @@ async function upload(file, slug) {
  * the end free). `raw: true` sends the prompt as it is, without the locked-camera tail.
  * `endFile`: the END frame is that picture instead (a start-and-end clip: the model fills in the
  * middle, e.g. the core growing from one stage into the next).
+ *
+ * JOINING TWO CLIPS (Collins, Oct 4 2026, of a film whose second clip started from the STILL the first was aimed at:
+ * "the second did not use the last one's last frame as its start so it looked bad"). A model lands NEAR its end
+ * picture, never on it. So a clip that follows another starts from one of two things, never from that still:
+ *   - `stillFile: lastFrameOf(previousClip)`: the previous clip's REAL last frame (with `endFile` when this clip
+ *     must itself land on a picture). The cleanest join measured: the new clip's first frame is 38 to 40 dB from the
+ *     picture it was given.
+ *   - `continueFrom: previousClip`: its last seconds as the start (Collins: "some models take more than just a last
+ *     frame as a start but the last 5 seconds or so ... those are probably better"). The clip's tail (`tailSeconds`,
+ *     default 5) is cut here, uploaded (POST /api/video-editor/upload-clip) and sent as `continuationVideoUrl`, with
+ *     `continueMode: 'extend'` in the provider's extend mode (rfab.ai `continuationMode`, in production once the
+ *     backend with SEEGEN_VIDEO_EXTEND_2026-10-04 is deployed; until then the clip goes up as a plain reference).
+ *     SeeGen's models only (sd2 family, wan3.0). It carries the MOVEMENT on, but the join is not frame-exact: measured
+ *     once per model on the Desk loop, the new clip's first frame was 29.5 to 34.6 dB from the source's last (wan3.0
+ *     lifts the exposure, sd2-fast shifts the picture a few pixels), in either mode. It takes NO end frame (with a
+ *     start AND an end picture the API runs a keyframe request and drops the video): asked for with `endFile`, this
+ *     throws rather than quietly ignoring one. The seconds of the tail are billed at the model's rate, like the
+ *     seconds made.
  */
-export async function makeClip({ slug, stillFile, endFile, models = VIDEO_MODELS, prompt, seconds = 4, key = '00FF00', keyName = 'green', out, loop = true, raw = false, resolution = '480p', aspect = '1:1', audio = false }) {
+export async function makeClip({ slug, stillFile, endFile, continueFrom, continueMode = 'reference', tailSeconds = 5, models = VIDEO_MODELS, prompt, seconds = 4, key = '00FF00', keyName = 'green', out, loop = true, raw = false, resolution = '480p', aspect = '1:1', audio = false }) {
   out = out ?? path.join(RAW_DIR, `${slug}-clip.mp4`);
   if (fs.existsSync(out)) { console.log(`[clip] ${slug}: cached`); return out; }
   fs.mkdirSync(path.dirname(out), { recursive: true });
-  const imageUrl = await upload(stillFile, slug);
-  const endUrl = endFile ? await upload(endFile, `${slug}-end`) : loop ? imageUrl : null;
+  if (continueFrom && endFile) throw new Error(`${slug}: a clip continued from another takes no end frame (the API would drop the video)`);
+  if (continueFrom && models.some((m) => !m.startsWith('seegen:'))) throw new Error(`${slug}: only seegen: models take a clip as the start`);
+  const continuationVideoUrl = continueFrom ? await uploadVideo(tailOf(continueFrom, tailSeconds), `${slug}-tail`) : null;
+  // Continued, the start picture is the previous clip's own last frame (the API sets it aside: the video ends on it).
+  const imageUrl = await upload(continueFrom ? lastFrameOf(continueFrom) : stillFile, slug);
+  const endUrl = continueFrom ? null : endFile ? await upload(endFile, `${slug}-end`) : loop ? imageUrl : null;
   spent.clips += 1;
   let lastErr;
   for (const model of models) {
     try {
-      console.log(`[clip] ${slug}: ${seconds}s on ${model}, ${endFile ? 'end frame = the next picture' : endUrl ? 'end frame = start frame' : 'end free'}`);
+      console.log(`[clip] ${slug}: ${seconds}s on ${model}, ${continueFrom ? `continued from the last ${tailSeconds}s of ${path.basename(continueFrom)}` : endFile ? 'end frame = the next picture' : endUrl ? 'end frame = start frame' : 'end free'}`);
       const t0 = Date.now();
       const d = await api('/api/image-generation/generate-video', {
         method: 'POST',
         body: JSON.stringify({
-          imageUrl, ...(endUrl ? { lastFrameUrl: endUrl } : {}),
+          imageUrl, ...(endUrl ? { lastFrameUrl: endUrl } : {}), ...(continuationVideoUrl ? { continuationVideoUrl, continuationMode: continueMode } : {}),
           prompt: raw ? prompt : `${prompt} ${lock(key, keyName)}`,
           videoModelId: model, duration: seconds, resolution, aspect_ratio: aspect,
           audio, nsfw: false, variationCount: 1,
@@ -161,7 +183,7 @@ export async function makeClip({ slug, stillFile, endFile, models = VIDEO_MODELS
       const buf = await download(url, `${slug} clip`);
       fs.writeFileSync(out, buf);
       const tookSec = Math.round((Date.now() - t0) / 1000);
-      fs.writeFileSync(out.replace(/\.mp4$/, '.json'), JSON.stringify({ model, seconds, tookSec }));
+      fs.writeFileSync(out.replace(/\.mp4$/, '.json'), JSON.stringify({ model, seconds, tookSec, url, ...(continueFrom ? { continuedFrom: path.basename(continueFrom), tailSeconds } : {}) }));
       console.log(`[clip] ${slug}: saved ${(buf.length / 1024 / 1024).toFixed(1)} MB in ${tookSec}s`);
       return out;
     } catch (e) {
@@ -170,6 +192,36 @@ export async function makeClip({ slug, stillFile, endFile, models = VIDEO_MODELS
     }
   }
   throw lastErr;
+}
+
+/** A clip's REAL last frame, as a PNG beside it: what the clip that follows it starts from (see makeClip). */
+export function lastFrameOf(clip) {
+  const out = clip.replace(/\.mp4$/, '.last.png');
+  if (!fs.existsSync(out) || fs.statSync(out).mtimeMs < fs.statSync(clip).mtimeMs) {
+    const n = Number(spawnSync('ffprobe', ['-v', 'error', '-count_frames', '-select_streams', 'v:0', '-show_entries', 'stream=nb_read_frames', '-of', 'csv=p=0', clip], { encoding: 'utf8' }).stdout.trim());
+    if (!n) throw new Error(`lastFrameOf: ${clip} has no frames`);
+    ffmpeg(['-i', clip, '-vf', `select='eq(n,${n - 1})'`, '-vsync', '0', '-frames:v', '1', out], 'last frame');
+  }
+  return out;
+}
+
+/** The last `seconds` of a clip, cut on its own frames (re-encoded, so it starts on a whole picture). */
+export function tailOf(clip, seconds = 5) {
+  const out = clip.replace(/\.mp4$/, `.tail${seconds}.mp4`);
+  if (!fs.existsSync(out) || fs.statSync(out).mtimeMs < fs.statSync(clip).mtimeMs) {
+    ffmpeg(['-sseof', `-${seconds}`, '-i', clip, '-an', '-c:v', 'libx264', '-crf', '14', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', out], 'tail');
+  }
+  return out;
+}
+
+/** A clip on rfab.ai's storage, by its address (what `continuationVideoUrl` and the video editor's routes take). */
+export async function uploadVideo(file, slug = 'clip') {
+  const form = new FormData();
+  form.append('video', new Blob([fs.readFileSync(file)], { type: 'video/mp4' }), `broodfall-${slug.replace(/[^a-z0-9-]+/gi, '-')}.mp4`);
+  const res = await fetch(`${API_BASE}/api/video-editor/upload-clip`, { method: 'POST', headers: { 'X-API-Key': API_KEY }, body: form });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok || !body.url) throw new Error(`${slug}: clip upload failed HTTP ${res.status}: ${JSON.stringify(body).slice(0, 200)}`);
+  return body.url;
 }
 
 /** What this run asked the API to make (cached results are not counted). */

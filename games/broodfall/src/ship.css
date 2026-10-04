@@ -208,6 +208,13 @@ body:has(#menu.ship-art:not(.hidden)) #topbar, body:has(#menu.ship-art:not(.hidd
 }
 #campaign .room-loop.on { opacity: 1; }
 #campaign:not(.ship-art) .room-loop { display: none; }
+/* He walks into the room (tools/art/ship-arrivals.mjs; campaignUi.ts playArrival): the clip lies over the held loop
+   (it comes after it in the screen), shows once it plays over its own first frame (the empty room), and fades off the
+   loop's first frame, which is its last. The room's words come up softly once as he goes in. */
+#campaign .room-arrive { transition: opacity 0.3s; }
+#campaign .cp-body.walk-in { animation: cp-walk-in 0.45s ease-out both; }
+@keyframes cp-walk-in { from { opacity: 0; } to { opacity: 1; } }
+
 
 /* ---------- the globe as a planet (src/ui/globe3d.ts) ---------- */
 .globe-box.g3d { width: 440px; cursor: default; }

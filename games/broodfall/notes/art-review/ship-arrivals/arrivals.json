@@ -1,0 +1,66 @@
+{
+ "desk": {
+  "id": "desk",
+  "baked": true,
+  "seconds": 3.667,
+  "lands": 38.6,
+  "ends": 45.9,
+  "starts": 31.1
+ },
+ "genes": {
+  "id": "genes",
+  "baked": true,
+  "seconds": 3.667,
+  "lands": 35,
+  "ends": 42.1,
+  "starts": 25.5
+ },
+ "locker": {
+  "id": "locker",
+  "baked": true,
+  "seconds": 3.833,
+  "lands": 38.1,
+  "ends": 45.2,
+  "starts": 28.6
+ },
+ "board": {
+  "id": "board",
+  "baked": true,
+  "seconds": 3.667,
+  "lands": 38.7,
+  "ends": 43,
+  "starts": 29
+ },
+ "comms": {
+  "id": "comms",
+  "baked": true,
+  "seconds": 3.833,
+  "lands": 35.9,
+  "ends": 42.6,
+  "starts": 32.8
+ },
+ "ai": {
+  "id": "ai",
+  "baked": true,
+  "seconds": 3.667,
+  "lands": 36.7,
+  "ends": 42.7,
+  "starts": 28.7
+ },
+ "orders": {
+  "id": "orders",
+  "baked": true,
+  "seconds": 3.667,
+  "lands": 37.1,
+  "ends": 42.3,
+  "starts": 26.5
+ },
+ "hobby": {
+  "id": "hobby",
+  "baked": true,
+  "seconds": 3.833,
+  "lands": 37.9,
+  "ends": 44.9,
+  "starts": 29.9
+ }
+}

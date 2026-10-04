@@ -1773,7 +1773,7 @@ screenshot of the interface."
   film end -> interface 42.8 dB (`notes/art-review/pad/ship-joins-v4.jpg`). Superseded takes: `art-src-new/pad-ship/v3/`
   (the turn/rise version), `v4/` (a walk that drew two tables). Stills now at medium quality (`PADSHIP_QUALITY`).
 
-## First person the whole way? Options drawn, NOT decided (Oct 3-4 2026)
+## First person the whole way? Options drawn; DECIDED Oct 4 2026: the original film stays
 
 Collins, of the pad's part 2: "would this look better if you stayed in first person the whole time, but this would require
 slightly different view of many ship interiors ... think through this and show me some options." Nothing in the game changed.
@@ -1818,3 +1818,63 @@ slightly different view of many ship interiors ... think through this and show m
   `public/art/pad/ship-<won|lost>.mp4`, and `src/ui/padOutro.ts` `handOver` changed from the fade to the flicker, since the
   film ends on black, not on the room's picture (Reduce motion: the cross-fade as now; `reduceFlashes`: a plain fade).
   **One seam:** the Desk's backdrop still shows him from behind without the visor.
+- **Decided (Collins, Oct 4 2026, after the visor film): "I give up the original is best".** The pad's part 2 stays as it
+  is in the game (the camera pulls out of his eyes at the desk, one third-person walk to the Directive Desk). A, B, C and
+  D are closed; their films and tools stay in `notes/art-review/fp-options/` and `tools/art/fp-options.mjs`.
+- **His note on the visor film, and the rule it leaves:** "you used two video calls but the second did not use the last
+  one's last frame as its start so it looked bad". Each clip of D started from the STILL the clip before it was aimed at;
+  a model lands near its end picture, never on it, so every join stepped. **A clip that follows another starts from the
+  previous clip's REAL last frame (`lastFrameOf(clip)` in `tools/art/rfab.mjs`), or is continued from its last seconds
+  (`continueFrom`), never from that still; and a join is MEASURED on real frames before it is baked.**
+
+## He walks into the room: the ship's room-to-room transitions (Oct 4 2026)
+
+Collins: "can you build some of the other transitions between different parts of the ship (e.g. ship menus)".
+- **What plays** (`src/ui/campaignUi.ts` `goTo` / `walkInto` / `playArrival`, styles in `src/ship.css`): going to ANOTHER
+  room, the room's backdrop is first the room EMPTY (the arrival clip's own first frame, as `--room`), the clip plays over
+  the room's loop (held unseen on its first frame), he walks in from beside the camera with his back to us and takes his
+  place (sits where the room has him sitting, takes up the sheet at the lectern), and when the clip ends the loop starts
+  from its first frame, which is the clip's last, and the clip fades off it. The room's screen is up and usable the whole
+  time (nothing waits on the clip); its words fade in once (0.45 s). 3.7 to 3.8 s a room; he is in his place by about 2 s.
+- **When:** a click on another room's button (and the two places the screen sends him: YOKE's account link, "later" in her
+  room), and when the ship comes onto the screen from anywhere but a report (he walks into the room it opens in; the walk
+  waits for the ship's pictures). **Not:** the room he is already in; the Quarters (seen empty from its doorway, no
+  arrival); back from a deployment's report (the pad's film has just walked him to the desk); Settings > Reduce motion
+  (the room's still, as before). A change of room mid-walk starts the new room's walk; a walk nobody watched (the ship
+  hidden) is over.
+- **The art** (`node tools/art/ship-arrivals.mjs [ids] [--stills|--bake]`; raw in `art-src-new/ship-arrivals/`): per room,
+  FRAME 0 = the loop's own first frame; the EMPTY ROOM = the picture model takes him out (`seegen:gpt-image-2`, high) and
+  only the part of its picture where he was is laid into frame 0, found by comparing the two (`heMask`: he wears black in
+  a black room, so the threshold is low, the patch closed and grown, the largest kept) and feathered, so start and end
+  differ in him ALONE and the room cannot morph; the CLIP = start + end frame on `seegen:wan3.0-video`, 5 s at 1080p like
+  the loops (131,400 tokens = $2.63 each); the BAKE drops the uploaded still's frame, sets the pace (1.3 to 1.35x), blends
+  the last 0.5 s into frame 0 and writes `public/art/ship/loops/arrive-<id>.mp4` + `.webp` (its first frame) and `arrive`
+  in `loops.json`. A take whose REAL last frame is under 27 dB from frame 0 is not baked. All eight landed first time:
+  35.0 to 38.7 dB as generated, 42.1 to 45.9 baked (`notes/art-review/ship-arrivals/arrivals.json`, `<id>-strip.jpg`,
+  `<id>-join.jpg`, `<id>-with-him-and-empty.jpg`).
+- **Checks:** `tests/shipArrivals.test.ts` (10: each room has one, short, ending on its loop's first frame, starting
+  without him, silent; the Quarters have none; the shipped folder holds only what the game loads);
+  `node tools/shot-ship-arrivals.mjs [tour switch none calm report aboard break]` (dev server 5431, real clicks; the
+  hand-over is WATCHED: the largest change between two pictures in a row as the loop takes over was 0.66 to 2.40 of 255,
+  where a real jump would be 15 and up; 86 checks);
+  stills and the tour's film in `notes/screens/2026-10-04/arrivals/`; persona notes `notes/PERSONA-SHIP-ARRIVALS-2026-10-04.md`.
+- **Open:** no sound of his steps; the same walk every visit (a second take a room would vary it); he is never seen
+  LEAVING (a take of him leaving the Desk is made by `--leave desk`, not in the game).
+
+## A clip as the start of the next one: what rfab.ai gives, measured (Oct 4 2026)
+
+Collins: "some models take more than just a last frame as a start but the last 5 seconds or so can you access that with the
+rfab api? if not update it so you can ... those are probably better".
+- **It was there:** `POST /api/video-editor/upload-clip` (a clip onto rfab.ai's storage) and `generate-video`'s
+  `continuationVideoUrl` (SeeGen models only: sd2, sd2-fast, sd2-mini, wan3.0). `tools/art/rfab.mjs` now uses it:
+  `makeClip({ continueFrom: clip, tailSeconds })` cuts the tail (`tailOf`), uploads it (`uploadVideo`) and sends it;
+  `lastFrameOf(clip)` gives a clip's real last frame. A continued clip takes NO end frame (the API drops the clip when a
+  start AND an end picture are given), so `continueFrom` with `endFile` throws.
+- **Added to rfab.ai** (backend `66fa6fe0`, note `docs/notes/SEEGEN_VIDEO_EXTEND_2026-10-04.md`; DEPLOY OWED, Collins's):
+  the provider's own extend mode, asked for with `continuationMode: "extend"` (`makeClip({ continueMode: 'extend' })`);
+  and the seconds of clip a SeeGen request is GIVEN are now billed (the provider bills out + in; rfab.ai charged out only).
+- **Measured** (the Desk loop's last 5 s, "he turns and walks out", one take each; the new clip's first frame against the
+  source's last, PSNR after a light blur): as a reference wan3.0 30.0 dB, sd2-fast 33.7; extended 29.5 and 34.6; a clip
+  started on a PICTURE of the last frame 38 to 40. Both kept the room, the man and the framing and did the action; wan
+  lifts the exposure at the join, sd2-fast shifts the picture a few pixels. **So for a join that must not show, start on
+  the real last frame; a clip start is for carrying MOVEMENT across a join** (not shown by this source: he stands still).
