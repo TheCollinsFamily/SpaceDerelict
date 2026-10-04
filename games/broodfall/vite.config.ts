@@ -15,6 +15,24 @@ const rfab: ProxyOptions = {
   target: process.env.RFAB_API_BASE || 'https://api.rfab.ai',
   changeOrigin: true,
   rewrite: (p) => p.replace(/^\/rfab-api/, ''),
+  /**
+   * A beat (a headless browser) does not make a real player on the LIVE rfab.ai (Oct 4 2026).
+   * rfab.ai lets one network make three new players a day; every beat that opened the ship's AI
+   * Core in a fresh browser made one, so by the afternoon this PC's own game was refused. The
+   * proxy answers the beat itself (429: the game then asks nothing more and the scripted YOKE
+   * answers). Not when RFAB_API_BASE points the proxy at a local backend, and not when the beat
+   * is meant to talk to the live YOKE: BROODFALL_BEAT_LIVE=1.
+   */
+  bypass: (req, res) => {
+    if (process.env.RFAB_API_BASE || process.env.BROODFALL_BEAT_LIVE || !res) return undefined;
+    const path = (req.url ?? '').split('?')[0];
+    if (req.method !== 'POST' || !/\/api\/broodfall\/yoke\/players$/.test(path)) return undefined;
+    if (!/HeadlessChrome/i.test(String(req.headers['user-agent'] ?? ''))) return undefined;
+    res.statusCode = 429;
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify({ success: false, code: 'BEAT_NO_PLAYER', error: 'A beat makes no player on the live rfab.ai (set BROODFALL_BEAT_LIVE=1 to make one).' }));
+    return req.url;   // answered here: Vite sees the response ended and neither proxies nor serves it
+  },
   configure: (proxy) => {
     proxy.on('proxyReq', (req) => {
       req.removeHeader('origin');

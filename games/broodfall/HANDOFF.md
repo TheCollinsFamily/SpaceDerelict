@@ -94,6 +94,9 @@ process only verified its own assumptions. The repo's CLAUDE.md carries the stan
   deploy (the rfab.ai `/connect` page). Until (1): on the dev server on this PC she is the
   owner's own star (the AI Core says "DEV: talking to the owner's YOKE"); a build served anywhere
   else gets no live mind (Kimi with the player's own key if he pasted one, else scripted).
+  **Oct 4 2026: (1) is live on rfab.ai. (2) had never been run (every guest got "YOKE is resting"
+  for four days): the house account now exists, with $100.** See "YOKE gave the game no player"
+  under "YOKE for players" below.
 - **Deferred by Collins:** the ship AI's lore book content
   (`content/lore/ship-ai-lorebook.md`, the TO WRITE sections). He said "the lorebook we
   will do later". Don't write it unless he asks.
@@ -1046,6 +1049,22 @@ the option to change the model she runs on."
   proxy (this PC's key); the AI Core then shows **"DEV: talking to the owner's YOKE"** (one mind
   for every campaign, on the owner's money). Anywhere else that rung is refused
   (`OWNER_YOKE_DEV_ONLY`, sticky) and the ladder goes on to Kimi / scripted.
+- **YOKE gave the game no player: nobody's account is used (Oct 4 2026).** Collins found YOKE in his
+  own RFab autosaves and had linked nothing ("I thought it used a separate ghost account"). The row
+  was her star, talked to from this PC on Sep 29-30. But the same thing could still happen: when
+  rfab.ai REFUSED or FAILED the game a player (429: one network may make three new players a day;
+  5xx; no network) the link went "legacy", and on the dev server legacy meant the owner's star and
+  the owner's key, for her mind, her voice and Kimi. Now `PlayerLink.noRoute` is true only for a 404
+  (an RFab with no player route), and only that is the old way. A refusal or a failure throws
+  `PLAYER_LINK_OFF` from `AvatarLink.ready()` and from `RfabShipAi.reply()` (a key the player typed
+  in himself still works on Kimi): the scripted YOKE answers, and the AI Core says so under YOKE'S
+  LINK. **A beat makes no player on the live rfab.ai:** the three a day were being used up by beats
+  (each fresh headless browser that opened the AI Core made one), so the dev server's proxy
+  (`vite.config.ts` `bypass`) answers a headless browser's `POST …/yoke/players` itself with 429
+  `BEAT_NO_PLAYER`. It stands aside when `RFAB_API_BASE` points at a local backend and when
+  `BROODFALL_BEAT_LIVE=1` (a beat that is meant to talk to the live YOKE). On rfab.ai the same day:
+  her star and every private mind are no longer listed among an account's autosaves (backend note
+  `reality-fabricator-backend/docs/notes/AVATAR_MINDS_OUT_OF_AUTOSAVES_2026-10-04.md`; its deploy is owed).
 - **Where rfab.ai is:** served from this PC (`npm start`, `vite preview`, the beats) the page uses
   the `/rfab-api` proxy; anywhere else (a web host, a desktop wrap) it talks to
   `https://api.rfab.ai` itself (`src/meta/storage.ts` RFAB_API_BASE; `VITE_RFAB_API_BASE`
@@ -1070,6 +1089,11 @@ the option to change the model she runs on."
   install of the same account: 46/46 on Sep 30); PAID but local-only beat
   `tools/shot-yoke-connect.mjs` (a real local backend, the whole path by clicks; see its header
   for the three backend commands). JPEGs: `notes/screens/2026-09-30/connect-*.jpg`.
+  `node tools/shot-yoke-refused.mjs [--person]` (Oct 4 2026; its own dev server on 5287): a beat's
+  browser is refused a player by the proxy, a person's browser is passed on to the live rfab.ai, and
+  with no player nothing goes to `/api/avatars` or `/api/broodfall/ship-ai` (9/9). `--person` on a
+  day the network's three are not used up MAKES a real guest player on rfab.ai. A guest's seat on
+  the live site without the game: `node _probe_broodfall_yoke_live.js` in the RFab backend.
 
 ## The limb art pass: limbs drawn for their ground, and their upgrade looks (Oct 2 2026)
 

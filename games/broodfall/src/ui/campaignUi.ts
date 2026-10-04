@@ -1035,7 +1035,10 @@ export class CampaignUi {
       ${s.ai.transcripts.map((t) => `<div class="cp-log"><b>${t.trigger}</b> — ${t.turns.map((x) => `${x.speaker}: ${esc(x.text)}`).join(' / ')}</div>`).join('') || '<p class="cp-note">None yet.</p>'}
       <div class="cp-label">YOKE'S LINK</div>
       ${this.yokeLinkHtml()}${own ? '' : account}
-      ${this.account.available ? '' : `<p class="cp-note">Live YOKE bills your rfab.ai account a few tokens a reply. Started from the launcher, it uses this PC's RFAB_API_KEY; otherwise paste your own key (rfab.ai → Settings → API keys).</p>
+      ${this.account.available ? '' : `<p class="cp-note">${this.player.legacy && !this.player.noRoute
+        // rfab.ai has her and gave this game no player (a daily cap, a failure): the truth, not the old way's words.
+        ? 'rfab.ai gave this game no player this session (it takes three new games a day from one network, or it is not answering), so the scripted YOKE answers and nobody is billed. The game asks again the next time it starts. To talk to her now on Kimi, paste your own RFab API key (rfab.ai → Settings → API keys).'
+        : 'Live YOKE bills your rfab.ai account a few tokens a reply. Started from the launcher, it uses this PC\'s RFAB_API_KEY; otherwise paste your own key (rfab.ai → Settings → API keys).'}</p>
       <div class="cp-say"><input id="yoke-key" type="password" placeholder="${this.yoke.key ? 'Key saved — paste to replace' : 'RFab API key (optional)'}" autocomplete="off"/><button data-act="yoke-key">SAVE KEY</button>${this.yoke.key ? '<button data-act="yoke-forget">FORGET KEY</button>' : ''}</div>`}`;
   }
 

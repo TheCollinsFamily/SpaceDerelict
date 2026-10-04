@@ -15,9 +15,9 @@ import {
   PlayerLink, allowanceText, bonusTimes, costText, cutKindOf, cutOffLines, memoryText, watchConnect,
   type TokenStore,
 } from '../src/meta/yokePlayer';
-import { AvatarError, AvatarLink, AvatarTalk, OWNER_YOKE_DEV_ONLY, YokeLadder } from '../src/meta/yokeAvatar';
+import { AvatarError, AvatarLink, AvatarTalk, OWNER_YOKE_DEV_ONLY, PLAYER_LINK_OFF, YokeLadder } from '../src/meta/yokeAvatar';
 import { ownerYokeAllowed } from '../src/meta/storage';
-import { RfabShipAi, ScriptedShipAi, type AiContext, type ShipAiProvider } from '../src/meta/shipAi';
+import { RfabShipAi, ScriptedShipAi, ShipAiError, type AiContext, type ShipAiProvider } from '../src/meta/shipAi';
 
 const GUEST = `bfg_${'a'.repeat(43)}`;
 const LINKED = `bfc_${'b'.repeat(43)}`;
@@ -72,6 +72,7 @@ describe('the player link', () => {
     const link = new PlayerLink({ base: '/rfab-api', store: memStore(), fetcher });
     expect(await link.ensure()).toBeNull();
     expect(link.legacy).toBe(true);
+    expect(link.noRoute).toBe(true);
   });
 
   it('rfab.ai refusing (429) or failing (5xx, no network): asked once, then not again this session', async () => {
@@ -87,6 +88,8 @@ describe('the player link', () => {
       expect(await link.ensure()).toBeNull();
       expect(await link.ensure()).toBeNull();
       expect(link.legacy).toBe(true);
+      // Off, but NOT "the old way": only a missing route (404) is.
+      expect(link.noRoute, String(status)).toBe(false);
       expect(calls, String(status)).toBe(1);
       expect(info).toHaveBeenCalledTimes(1);
       info.mockRestore();
@@ -163,6 +166,48 @@ describe('her calls with a player', () => {
     expect(player.legacy).toBe(true);
     expect(link.owners).toBe(true);
     expect(calls.at(-1)!.url).toBe('/rfab-api/api/avatars/av-123456/message');
+  });
+
+  // Oct 4 2026: the owner found YOKE among his own RFab autosaves and had linked nothing. rfab.ai HAS the
+  // player route now; when it refuses or fails a new player (three a day from one network), the dev server
+  // used to go back to the owner's star and the owner's key without a word.
+  it('rfab.ai HAS the route and refuses or fails him a player, ON THE DEV SERVER: nobody\'s account is used', async () => {
+    for (const status of [429, 503]) {
+      const { fetcher, calls } = fakeRfab({
+        'POST /api/broodfall/yoke/players': () => ({ status, body: { code: status === 429 ? 'PLAYER_LIMIT_IP' : 'PLAYER_LIMIT_UNKNOWN' } }),
+        'POST /api/avatars/av-123456/message': () => ({ status: 200, body: { success: true } }),
+        'POST /api/broodfall/ship-ai': () => ({ status: 200, body: { lines: ['billed to the owner'], tokensCharged: 80 } }),
+      });
+      const info = vi.spyOn(console, 'info').mockImplementation(() => {});
+      const player = new PlayerLink({ base: '/rfab-api', store: memStore(), fetcher });
+      const link = new AvatarLink({ base: '/rfab-api', avatarId: 'av-123456', player, ownerFallback: true, fetcher });
+      const err = await link.send('hello').catch((e) => e);
+      expect(err).toBeInstanceOf(AvatarError);
+      expect(err.code, String(status)).toBe(PLAYER_LINK_OFF);
+      expect(err.sticky).toBe(true);
+      expect(link.owners).toBe(false);
+      // The Kimi rung: behind the dev proxy a call with no credential would be given this PC's key.
+      const kimi = new RfabShipAi({ base: '/rfab-api', campaignId: 'c1', player }, fetcher);
+      const kimiErr = await kimi.reply({ trigger: 'idle', summary: 's', lore: '' } as AiContext, [], 'hi').catch((e) => e);
+      expect(kimiErr).toBeInstanceOf(ShipAiError);
+      expect(kimiErr.code).toBe(PLAYER_LINK_OFF);
+      expect(kimiErr.sticky).toBe(true);
+      expect(calls.map((c) => c.url), String(status)).toEqual(['/rfab-api/api/broodfall/yoke/players']);
+      info.mockRestore();
+    }
+  });
+
+  it('with the link refused, a key the player typed in himself is still his to use on Kimi', async () => {
+    const { fetcher, calls } = fakeRfab({
+      'POST /api/broodfall/yoke/players': () => ({ status: 429, body: { code: 'PLAYER_LIMIT_IP' } }),
+      'POST /api/broodfall/ship-ai': () => ({ status: 200, body: { lines: ['his own key'], tokensCharged: 80 } }),
+    });
+    const info = vi.spyOn(console, 'info').mockImplementation(() => {});
+    const player = new PlayerLink({ base: '/rfab-api', store: memStore(), fetcher });
+    const kimi = new RfabShipAi({ base: '/rfab-api', key: 'rfab_his_own', campaignId: 'c1', player }, fetcher);
+    expect(await kimi.reply({ trigger: 'idle', summary: 's', lore: '' } as AiContext, [], 'hi')).toEqual(['his own key']);
+    expect(calls.at(-1)!.headers['X-API-Key']).toBe('rfab_his_own');
+    info.mockRestore();
   });
 
   it('on a legacy RFab anywhere else the owner\'s YOKE is refused: nothing goes to the avatar route, the ladder goes on', async () => {

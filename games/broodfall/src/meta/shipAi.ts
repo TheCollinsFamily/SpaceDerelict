@@ -70,6 +70,7 @@ export function reasonFor(err: unknown): string {
   if (err instanceof ShipAiError) {
     if (err.status === 401 || err.status === 403) return 'no RFab API key linked';
     if (err.status === 402) return 'out of RFab tokens';
+    if (err.code === PLAYER_LINK_OFF) return 'rfab.ai gave this game no player this session';
     if (err.status === 404) return 'rfab.ai does not have YOKE yet';
     if (err.status === 0) return 'rfab.ai is unreachable';
     return err.message || `rfab.ai answered ${err.status}`;
@@ -88,8 +89,11 @@ export interface RfabLink {
    * The player's link (src/meta/yokePlayer.ts): his player token goes with the call, so Kimi
    * follows the same money rules as her mind (the house's $3, then his linked account).
    */
-  player?: { headers(json?: boolean): Record<string, string>; ensure(): Promise<string | null>; legacy: boolean };
+  player?: { headers(json?: boolean): Record<string, string>; ensure(): Promise<string | null>; legacy: boolean; noRoute?: boolean };
 }
+
+/** rfab.ai has the player route and gave this game no player this session: no paid rung is asked (src/meta/yokePlayer.ts). */
+export const PLAYER_LINK_OFF = 'PLAYER_LINK_OFF';
 
 /** YOKE on Kimi K2.6 through rfab.ai. Throws ShipAiError when rfab.ai cannot answer. */
 export class RfabShipAi implements ShipAiProvider {
@@ -105,6 +109,9 @@ export class RfabShipAi implements ShipAiProvider {
     const player = this.link.player;
     if (player && !player.legacy && await player.ensure()) headers = { ...headers, ...player.headers(true) };
     else if (this.link.key) headers['X-API-Key'] = this.link.key;
+    // rfab.ai refused or failed him a player (a daily cap, a 5xx): a call with no credential of his own
+    // is not sent. On the dev server its proxy would add this PC's key and bill the owner's account.
+    else if (player && player.legacy && !player.noRoute) throw new ShipAiError(404, PLAYER_LINK_OFF, 'rfab.ai gave this game no player this session');
     let res: Response;
     try {
       res = await this.fetcher(`${this.link.base.replace(/\/$/, '')}/api/broodfall/ship-ai`, {

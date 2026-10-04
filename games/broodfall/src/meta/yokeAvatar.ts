@@ -15,7 +15,7 @@
  * not answer goes to the console, once, and she answers from the next rung.
  */
 import idsRaw from '../../content/lore/yoke-avatar.json?raw';
-import type { AiContext, AiTrigger, AiTurn, ShipAiProvider } from './shipAi';
+import { PLAYER_LINK_OFF, type AiContext, type AiTrigger, type AiTurn, type ShipAiProvider } from './shipAi';
 import { cutKindOf, type CutKind, type PlayerLink } from './yokePlayer';
 
 // ---------------------------------------------------------------------------
@@ -238,6 +238,7 @@ export function avatarReason(err: unknown): string {
     if (err.status === 401 || err.status === 403) return `rfab.ai refused the key (${err.status})`;
     if (err.status === 402) return 'the RFab account is out of tokens (402)';
     if (err.code === OWNER_YOKE_DEV_ONLY) return 'rfab.ai has no player route yet (its deploy is owed); the owner\'s YOKE is for the dev server only';
+    if (err.code === PLAYER_LINK_OFF) return 'rfab.ai gave this game no player this session (a daily cap, or it is failing); nobody\'s account is used for that';
     if (err.status === 404) return 'rfab.ai has no such avatar (404)';
     if (err.status === 408) return 'she did not answer in time';
     return `rfab.ai answered ${err.status}${err.message ? `: ${err.message}` : ''}`;
@@ -269,6 +270,12 @@ export interface AvatarLinkOptions {
 
 /** The rung that would be the owner's star, refused off the dev server: sticky, the ladder goes on. */
 export const OWNER_YOKE_DEV_ONLY = 'OWNER_YOKE_DEV_ONLY';
+/**
+ * rfab.ai HAS the player route and did not give this game a player this session (a daily cap, a
+ * failure, no network). Never the owner's star for that, on the dev server either: sticky, the
+ * ladder goes on.
+ */
+export { PLAYER_LINK_OFF };
 
 export interface Listening {
   /** Settles when the stream first opens: null, or why it did not. */
@@ -283,8 +290,8 @@ export class AvatarLink {
   /** His own YOKE (the player route), not the avatar's star. */
   private get mine(): boolean { return !!this.o.player && !this.o.player.legacy; }
 
-  /** She is the avatar owner's star, on the dev server's key (the owed-deploy fallback). */
-  get owners(): boolean { return !!this.o.player && this.o.player.legacy && !!this.o.ownerFallback; }
+  /** She is the avatar owner's star, on the dev server's key: only on an RFab with no player route at all. */
+  get owners(): boolean { return !!this.o.player && this.o.player.legacy && this.o.player.noRoute && !!this.o.ownerFallback; }
 
   private url(tail: string): string {
     const base = this.o.base.replace(/\/$/, '');
@@ -303,6 +310,9 @@ export class AvatarLink {
   private async ready(): Promise<void> {
     if (this.o.player && !this.o.player.legacy) await this.o.player.ensure();
     // The owner's star is a dev-server fallback only: a player's build never talks to it.
+    if (this.o.player && this.o.player.legacy && !this.o.player.noRoute) {
+      throw new AvatarError(404, PLAYER_LINK_OFF, 'rfab.ai gave this game no player this session; the owner\'s YOKE is never used for that');
+    }
     if (this.o.player && this.o.player.legacy && !this.o.ownerFallback) {
       throw new AvatarError(404, OWNER_YOKE_DEV_ONLY, 'rfab.ai has no player route yet, and the owner\'s YOKE is for the dev server only');
     }
