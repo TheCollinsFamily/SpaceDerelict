@@ -736,7 +736,8 @@ function talkSecs(film: Film, ex: Exchange): number {
     last = who;
   }
   // Measured on the first exchange (Seedance 2.5): about two words a second with its pauses; its last line ended 0.1 s before the clip did.
-  return Math.max(4, Math.min(TALK_MAX_SECS, Math.ceil(words / 2.0 + turns * 1.0 + silent + 2.5)));
+  // (A clip given seconds to spare fills them with silence: the second clip of the first film had 25 s for 17 s of speech.)
+  return Math.max(4, Math.min(TALK_MAX_SECS, Math.ceil(words / 2.3 + turns * 0.8 + silent + 1.5)));
 }
 
 /** A performance, not a read-out: who is where, then the scene beat by beat with each line inside its action. */
@@ -770,7 +771,8 @@ function talkPrompt(film: Film, ex: Exchange): string {
     him ? `${he[0].toUpperCase()}${he.slice(1)} keeps his back to the camera for the whole shot: only the back of his head and his shoulders are seen, never his face, and he does not turn round.` : '',
     ...beats,
     voices,
-    'They play it the way actors play a scene together: unhurried, with real pauses, breaths and reactions; whoever is listening reacts while the other speaks.',
+    // (It said "unhurried, with real pauses": the model took seconds of silence, and opened a clip with five of them.)
+    'They play it the way actors play a scene together: natural, lively timing, each line picking up the one before it after a short beat; whoever is listening reacts while the other speaks. The first line is spoken at once, in the first second of the shot, and there is never a silence of more than a second.',
     `Only the lines written here are spoken, each once, in this order, by the one named${speakers.size > 1 ? '' : ''}; nobody else speaks.`,
     st.look === 'ship' ? '' : 'The insect people keep their insect heads and four arms.',
     'The room and everyone in it stay exactly as they are in the first frame. Quiet room tone; no music; no text on screen.',
@@ -960,6 +962,7 @@ async function talk(film: Film) {
     const cut = await talkCut(film, exs, k);
     console.log(`[talk] ${ex.id} (${ex.shots.map((i) => film.shots[i].id).join(' ')}), ${duration(out).toFixed(1)} s, cut at ${(cut.frame / cut.fps).toFixed(1)} s:`);
     talkReport(film, ex, cut);
+    talkDeadAir(film, exs, k, cut);
   }
   console.log(`[talk] ${film.id}: ${made} clips made on ${TALK_MODEL} at ${TALK_RES} (${exs.length} exchanges: ${exs.map((e) => `${e.id}=${talkSecs(film, e)}s`).join(' ')})`);
 }
@@ -968,8 +971,17 @@ async function talkCheck(film: Film) {
   const exs = exchangesOf(film);
   for (let k = 0; k < exs.length; k++) {
     if (!fs.existsSync(talkFile(film, exs[k]))) { console.log(`   ${exs[k].id} not made`); continue; }
-    talkReport(film, exs[k], await talkCut(film, exs, k));
+    const cut = await talkCut(film, exs, k);
+    talkReport(film, exs[k], cut);
+    talkDeadAir(film, exs, k, cut);
   }
+}
+
+/** Say what dead air a clip has (the bake takes it out). */
+function talkDeadAir(film: Film, exs: Exchange[], k: number, cut: TalkCut): void {
+  const f = talkFile(film, exs[k]);
+  const end = exs[k + 1]?.from === '^' ? cut.frame / cut.fps : duration(f);
+  for (const d of deadAir(film, exs[k], cut, f, end)) console.log(`   ${exs[k].id} DEAD AIR     ${d.why}: ${(d.to - d.from).toFixed(1)} s taken out at the bake`);
 }
 
 /** Move an exchange's clip aside, and every one that went on from it. */
@@ -987,6 +999,70 @@ function talkRedo(film: Film) {
     for (const g of [`${base}.mp4`, `${base}.json`, `${base}.txt`, `${base}.cut.json`, `${base}.words.json`, `${base}-start.png`]) if (fs.existsSync(g)) fs.renameSync(g, path.join(talkDir(film), `v${n}`, path.basename(g)));
   }
   console.log(`[talk] ${film.id}: ${exs.slice(from, to + 1).map((e) => e.id).join(' ')} → talk/v${n}/`);
+}
+
+/**
+ * NO DEAD AIR (Collins, Oct 4 2026, of the first film acted on Seedance 2.5, which he called "like 500% better": "one
+ * issue to fix and look for in future videos: there is a long period of dead space before she says 'On our planet,
+ * technological and moral ...'", "and a gap before 'That would likely correlate with moral ...'"). The first was 4.9 s
+ * with nobody speaking across a join (the model opens a clip with a few seconds of settling); the second 2.0 s of
+ * silence between two sentences of one speech. So, at the bake, of every clip:
+ *   - the head of a clip that goes on from another is cut down to TALK_LEAD_MAX before its first word;
+ *   - every SILENCE (measured in the sound, not guessed from the words) longer than TALK_GAP_MAX is cut down to it, the
+ *     middle of it taken out.
+ * What is left on either side of a cut is joined by a short dissolve (talkBake). `talkcheck` lists what was found and
+ * cut, and `talk` says in its prompt that the first line comes at once and no silence is long, so that less needs cutting.
+ */
+const TALK_LEAD_MAX = Number(process.env.CUTSCENE_TALK_LEAD_MAX || 0.5);
+const TALK_GAP_MAX = Number(process.env.CUTSCENE_TALK_GAP_MAX || 0.9);
+/** A cut is made only when it takes out at least this much (a dissolve for a quarter of a second saved is not worth it). */
+const TALK_CUT_MIN = 0.5;
+const TALK_DISSOLVE = 0.25;
+
+/** The silences of a clip, from its sound: stretches of half a second or more below -32 dB. */
+function silencesOf(file: string): Array<[number, number]> {
+  const err = ffStderr(['-i', file, '-vn', '-af', 'silencedetect=noise=-32dB:d=0.5', '-f', 'null', '-']);
+  const out: Array<[number, number]> = [];
+  const re = /silence_start: ([0-9.]+)[\s\S]*?silence_end: ([0-9.]+)/g;
+  for (let m = re.exec(err); m; m = re.exec(err)) {
+    const a = Number(m[1]), z = Number(m[2]);
+    // Two silences with a blip of sound between them (a rustle, a breath) are one.
+    if (out.length && a - out[out.length - 1][1] < 0.25) out[out.length - 1][1] = z; else out.push([a, z]);
+  }
+  return out;
+}
+
+/** What is taken out of a clip (up to `end`, where it is cut): its dead head, and the middle of every over-long silence. */
+function deadAir(film: Film, ex: Exchange, cut: TalkCut, file: string, end: number): Array<{ from: number; to: number; why: string }> {
+  const out: Array<{ from: number; to: number; why: string }> = [];
+  const spoken = cut.lines.filter((l) => !('missing' in l)) as Array<{ shot: string; start: number; end: number }>;
+  let from = 0;
+  // The head: only of a clip that goes on from another (the first clip of a place opens on its picture, and that is the scene).
+  if (ex.from === '^' && spoken.length && spoken[0].start - TALK_LEAD_MAX > TALK_CUT_MIN) {
+    out.push({ from: 0, to: spoken[0].start - TALK_LEAD_MAX, why: `${spoken[0].start.toFixed(1)} s before its first word (${spoken[0].shot})` });
+    from = spoken[0].start;
+  }
+  for (const [s, e] of silencesOf(file)) {
+    if (e <= from || s >= end) continue;
+    const a = Math.max(s, from), z = Math.min(e, end);
+    const over = z - a - TALK_GAP_MAX;
+    if (over < TALK_CUT_MIN) continue;
+    const next = spoken.find((l) => l.start >= a - 0.3);
+    out.push({ from: a + TALK_GAP_MAX / 2, to: z - TALK_GAP_MAX / 2, why: `${(z - a).toFixed(1)} s of silence${next ? ` before ${next.start <= z + 0.3 ? next.shot : `a word of ${spoken.filter((l) => l.start <= a).pop()?.shot ?? next.shot}`}` : ''}` });
+  }
+  return out.sort((x, y) => x.from - y.from);
+}
+
+/** The stretches of a clip that are kept, in order. */
+function keepRanges(film: Film, ex: Exchange, cut: TalkCut, file: string, end: number): Array<[number, number]> {
+  const out: Array<[number, number]> = [];
+  let at = 0;
+  for (const d of deadAir(film, ex, cut, file, end)) {
+    if (d.from > at + 0.05) out.push([at, d.from]);
+    at = Math.max(at, d.to);
+  }
+  if (end > at + 0.05) out.push([at, end]);
+  return out;
 }
 
 async function talkBake(film: Film) {
@@ -1011,25 +1087,57 @@ async function talkBake(film: Film) {
     // Cut where the next clip was started from; the last clip of a place (or of the film) keeps a breath after its last word.
     const fb = goesOn ? cut.frame : Math.min(frames, Math.round((lastEnd ? lastEnd + 1.6 : duration(src)) * fps));
     const b = fb / fps;
-    const part = path.join(tmp, `${String(k).padStart(2, '0')}-${ex.id}.mp4`);
+    // NO DEAD AIR (Collins, Oct 4 2026, of this film: "there is a long period of dead space before she says 'On our
+    // planet ...'", "and a gap before 'That would likely correlate ...'"): the stretches of this clip that are kept.
+    const keep = keepRanges(film, ex, cut, src, b);
     const ln = loudnorm(src, 0, b, -16);
-    const af = [`atrim=start=0:end=${b.toFixed(4)}`, 'asetpts=PTS-STARTPTS', ln, 'afade=t=in:d=0.03', `afade=t=out:st=${Math.max(0, b - 0.06).toFixed(3)}:d=0.06`].filter(Boolean).join(',');
-    const rise = `min(1\\,T/${(cut.frame / fps).toFixed(4)})`;
-    // A clip that goes on from another starts on a frame sharpened back to the take's first (talkStartFrame), which the
-    // model softens over its first half second: that head is softened here, most at its first frame, so the join does not pulse.
-    const head = ex.from === '^' && !process.env.CUTSCENE_NO_SHARP_HOLD
-      ? `,split[sh][so];[so]gblur=sigma=${TALK_HEAD_BLUR}[sob];[sh][sob]blend=all_expr='A*(1-max(0\\,1-T/${TALK_HEAD_SECS}))+B*max(0\\,1-T/${TALK_HEAD_SECS})'` : '';
-    ff(['-i', src, '-filter_complex',
-      `[0:v]trim=start_frame=0:end_frame=${fb},setpts=PTS-STARTPTS,format=gbrp,split[plain][tofix];[tofix]${lut(cut.fix)}[fixed];`
-      + `[plain][fixed]blend=all_expr='A*(1-${rise})+B*${rise}'${head},scale=1280:720:flags=lanczos,fps=${FPS},format=yuv420p[v]`,
-      '-map', '[v]', '-map', '0:a', '-af', `${af},aresample=48000`, '-ac', '2',
-      '-c:v', 'libx264', '-preset', 'slow', '-crf', '19', '-c:a', 'aac', '-b:a', '160k', '-video_track_timescale', '12288', part], `part ${ex.id}`);
-    const real = duration(part);
+    const cutTime = cut.frame / fps;
+    let real = 0;
+    /** Where a moment of the clip is in the film (a moment that was taken out is where the film goes on after it). */
+    const starts: number[] = [];
+    keep.forEach(([a0, b0], j) => {
+      const fa = Math.round(a0 * fps), fz = Math.min(fb, Math.round(b0 * fps));
+      const a = fa / fps, z = fz / fps;
+      const part = path.join(tmp, `${String(k).padStart(2, '0')}-${ex.id}-${j}.mp4`);
+      const af = [`atrim=start=${a.toFixed(4)}:end=${z.toFixed(4)}`, 'asetpts=PTS-STARTPTS', ln, 'afade=t=in:d=0.04', `afade=t=out:st=${Math.max(0, z - a - 0.06).toFixed(3)}:d=0.06`].filter(Boolean).join(',');
+      const rise = `min(1\\,(T+${a.toFixed(4)})/${cutTime.toFixed(4)})`;
+      // A clip that goes on from another starts on a frame sharpened back to the take's first (talkStartFrame), which the
+      // model softens over its first half second: that head is softened here, most at its first frame, so the join does not pulse.
+      const head = ex.from === '^' && a < TALK_HEAD_SECS && !process.env.CUTSCENE_NO_SHARP_HOLD
+        ? `,split[sh][so];[so]gblur=sigma=${TALK_HEAD_BLUR}[sob];[sh][sob]blend=all_expr='A*(1-max(0\\,1-(T+${a.toFixed(4)})/${TALK_HEAD_SECS}))+B*max(0\\,1-(T+${a.toFixed(4)})/${TALK_HEAD_SECS})'` : '';
+      // Where something was taken out before this stretch, the picture does not match the frame before it: it comes in
+      // as a short dissolve from that frame (held), so the join is a blink of a dissolve and not a jump.
+      const jumped = parts.length > 0 && (j > 0 || a > 0.001);
+      let inputs = ['-i', src];
+      let last = '';
+      if (jumped) {
+        last = path.join(tmp, `last-${parts.length}.png`);
+        ff(['-sseof', '-0.2', '-i', parts[parts.length - 1], '-update', '1', '-frames:v', '100', last], 'the frame before');
+        inputs = ['-i', src, '-loop', '1', '-framerate', String(FPS), '-t', '2', '-i', last];
+      }
+      const D = TALK_DISSOLVE;
+      ff([...inputs, '-filter_complex',
+        `[0:v]trim=start_frame=${fa}:end_frame=${fz},setpts=PTS-STARTPTS,format=gbrp,split[plain][tofix];[tofix]${lut(cut.fix)}[fixed];`
+        + `[plain][fixed]blend=all_expr='A*(1-${rise})+B*${rise}'${head},scale=1280:720:flags=lanczos,fps=${FPS},format=yuv420p${jumped ? '[v0]' : '[v]'}`
+        + (jumped ? `;[1:v]scale=1280:720,fps=${FPS},format=yuv420p[st];[v0][st]blend=all_expr='if(lt(T\\,${D})\\,A*(T/${D})+B*(1-T/${D})\\,A)':shortest=0:eof_action=repeat[v]` : ''),
+        '-map', '[v]', '-map', '0:a', '-af', `${af},aresample=48000`, '-ac', '2', '-t', (z - a).toFixed(4),
+        '-c:v', 'libx264', '-preset', 'slow', '-crf', '19', '-c:a', 'aac', '-b:a', '160k', '-video_track_timescale', '12288', part], `part ${ex.id}.${j}`);
+      starts.push(real);
+      real += duration(part);
+      parts.push(part);
+    });
+    const inFilm = (x: number): number => {
+      for (let j = 0; j < keep.length; j++) {
+        if (x < keep[j][0]) return starts[j];
+        if (x <= keep[j][1]) return starts[j] + (x - keep[j][0]);
+      }
+      return real;
+    };
     // The cues: each shot of the exchange in order; a line from the end of the one before it to midway to the next.
     const timed = ex.shots.map((i) => {
       const s = film.shots[i];
       const l = cut.lines.find((x) => x.shot === s.id);
-      return { s, span: l && !('missing' in l) ? { start: l.start, end: l.end } : null };
+      return { s, span: l && !('missing' in l) ? { start: inFilm(l.start), end: inFilm(l.end) } : null };
     });
     let at = 0;
     timed.forEach((x, n) => {
@@ -1043,7 +1151,6 @@ async function talkBake(film: Film) {
       at = end;
     });
     t += real;
-    parts.push(part);
   }
   finishBake(film, tmp, parts, cues);
   // The sheet to LOOK at: the baked film itself, a frame every three seconds.
