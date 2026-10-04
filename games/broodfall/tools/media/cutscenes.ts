@@ -1138,6 +1138,8 @@ if (!process.env.VITEST) {
     else if (step === 'talk') await talk(film);
     else if (step === 'talkcheck') await talkCheck(film);
     else if (step === 'talkredo') talkRedo(film);
+    // Free: the frame an exchange would start from (the one before it at its cut: colour and sharpness held, drift out), to look at.
+    else if (step === 'talkstart') { const exs = exchangesOf(film); for (const id of only) { const k = exs.findIndex((e) => e.id === id); if (k > 0) console.log(await talkStartFrame(film, exs, k)); } }
     else if (step === 'talkbake') await talkBake(film);
     else if (step === 'talkprompts') exchangesOf(film).forEach((ex) => console.log(`--- ${ex.id} [${ex.shots.map((i) => film.shots[i].id).join(' ')}] ${talkSecs(film, ex)} s from ${ex.from}\n${talkPrompt(film, ex)}\n`));
     // Free: the frame a shot would start from (the shot before it at its cut, colour held, specks out), to look at.
