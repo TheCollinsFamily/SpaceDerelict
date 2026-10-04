@@ -1715,7 +1715,7 @@ screenshot of the interface."
   film end -> interface 42.8 dB (`notes/art-review/pad/ship-joins-v4.jpg`). Superseded takes: `art-src-new/pad-ship/v3/`
   (the turn/rise version), `v4/` (a walk that drew two tables). Stills now at medium quality (`PADSHIP_QUALITY`).
 
-## First person the whole way? Options drawn, NOT decided (Oct 3 2026)
+## First person the whole way? Options drawn, NOT decided (Oct 3-4 2026)
 
 Collins, of the pad's part 2: "would this look better if you stayed in first person the whole time, but this would require
 slightly different view of many ship interiors ... think through this and show me some options." Nothing in the game changed.
@@ -1739,3 +1739,24 @@ slightly different view of many ship interiors ... think through this and show m
   eyes), about $5.50 a room; the film's walk remade to the final desk still; today's loops kept beside the new ones.
 - **Traps:** naming the window in the walk's prompt drew a window in the table room (describe the room's walls instead);
   "glows like a projector waking" drew a white disc and a rod on the table and the take missed its end frame.
+- **Oct 4 2026, Collins on A/B/C: "none of these quite land": (1) "the window changes in the same way mid vid in all of them",
+  (2) "it all feels so forced like the hand at the end ... maybe you could have him pick up and put on a vr like headset in
+  that room?" "and the screen like flickers on".**
+  **The window's cause:** every film left the desk by a clip whose END picture was a second, separately drawn view of the
+  window (the TURN still: a thicker frame, a far redder planet), so the model morphed one window into the other as he turned;
+  B and C all open with that one clip (`art-src-new/pad-ship/v3/won.mp4`), and today's in-game walk does the same from its
+  own angle. **The rule:** a clip that leaves the desk ends on a picture with NO window in it (`turn2`), he LOOKS AWAY before
+  he stands (standing up facing the window made the model redraw it, with a stranger's face reflected in the glass:
+  `v1/rise2-face.mp4`), and no prompt names the window. Pictures: `notes/art-review/fp-options/window-old-first-last.jpg`,
+  `window-new-first-leaving.jpg`.
+  **D, the visor** (`notes/art-review/fp-options/film-D-visor.mp4`; `node tools/art/fp-options.mjs --stills turn2 visor-table`,
+  `--clips rise2 walk2 visor visor-free`, `--bake D-visor`): first person throughout: `rise2` (part 1's last frame -> `turn2`),
+  `walk2` (-> `visor-table`: the visor lying on the lit table), `visor-free` (both hands raise it, its inside closes over his
+  eyes: black; the take with the end left free kept the room steady, the one ended on a black frame tipped it), then the
+  interface, unchanged, as the visor's screen FLICKERING ON (black, a dim flash, black, a dimmer one, black, it catches, dips,
+  steadies: about 1.1 s; a crackle on each flash, a soft rising tone, a faint hum, synthesized in the bake so they fall on the
+  frame; a video model's take of that sound came back as a flat hum). 12.5 s to black (today 10 s). No room is redrawn.
+  **Not in the game yet. To put it in:** the lost look-away (`lost-start.png` -> `turn2`), the films baked to
+  `public/art/pad/ship-<won|lost>.mp4`, and `src/ui/padOutro.ts` `handOver` changed from the fade to the flicker, since the
+  film ends on black, not on the room's picture (Reduce motion: the cross-fade as now; `reduceFlashes`: a plain fade).
+  **One seam:** the Desk's backdrop still shows him from behind without the visor.

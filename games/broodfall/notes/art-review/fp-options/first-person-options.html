@@ -44,27 +44,24 @@
   .cost { font-size: 15px; color: var(--mute); border-top: 1px solid var(--line); padding-top: 8px; }
   .cost b { color: var(--ink); font-weight: 500; }
 
-  video, .shot img { display: block; width: 100%; height: auto; max-width: 100%; aspect-ratio: 16 / 9; background: #000; border: 1px solid var(--line); }
+  video, .shot img { display: block; width: 100%; height: auto; max-width: 100%; background: #000; border: 1px solid var(--line); }
+  video, .shot.wide16 img { aspect-ratio: 16 / 9; }
+  .feature { max-width: 980px; }
   .shot { margin: 0; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
   .shot button { all: unset; display: block; cursor: zoom-in; }
   .shot button:focus-visible, video:focus-visible, .lightbox button:focus-visible { outline: 2px solid var(--yoke); outline-offset: 3px; }
-  .shot figcaption { font-size: 15px; color: var(--mute); }
+  .shot figcaption { font-size: 15px; color: var(--mute); max-width: 72ch; }
   .shot figcaption .tab { font-size: 12px; padding: 3px 8px 2px; margin-right: 8px; }
+
+  .beats { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 18px; counter-reset: beat; padding: 0; margin: 0; list-style: none; max-width: 980px; }
+  .beats li { counter-increment: beat; border-top: 1px solid var(--line); padding-top: 10px; font-size: 16px; }
+  .beats li::before { content: counter(beat); display: block; font-family: var(--display); font-size: 13px; letter-spacing: 0.2em; color: var(--yoke); margin-bottom: 4px; }
 
   .room { display: flex; flex-direction: column; gap: 12px; padding-top: 18px; border-top: 1px solid var(--line); }
   .room > p { font-size: 16px; }
+  .seam { border-left: 2px solid var(--creep); padding-left: 18px; display: flex; flex-direction: column; gap: 12px; }
 
-  .gone { border-left: 2px solid var(--creep); padding-left: 18px; display: flex; flex-direction: column; gap: 12px; }
-
-  .tablebox { overflow-x: auto; }
-  table { border-collapse: collapse; width: 100%; min-width: 720px; table-layout: fixed; font-size: 15.5px; font-variant-numeric: tabular-nums; }
-  col.c0 { width: 13%; } col.c1 { width: 13%; } col.c2 { width: 46%; } col.c3 { width: 28%; }
-  th, td { text-align: left; vertical-align: top; padding: 10px 14px 10px 0; border-bottom: 1px solid var(--line); }
-  th { white-space: nowrap; font-family: var(--display); font-weight: 600; font-size: 13px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--mute); }
-  td:first-child { color: var(--mute); white-space: nowrap; }
-  tr.sum td { border-bottom: 0; color: var(--ink); font-weight: 500; }
-
-  ol { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; max-width: 70ch; }
+  ol.steps { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; max-width: 70ch; }
   .paths { display: flex; flex-direction: column; gap: 6px; }
   .paths code { font-family: var(--mono); font-size: 13px; color: var(--ink); background: var(--panel); border: 1px solid var(--line); padding: 6px 9px; overflow-wrap: anywhere; display: block; }
   .paths span { font-size: 14px; color: var(--mute); margin-top: 8px; }
@@ -79,157 +76,99 @@
   <section>
     <div class="kicker">Broodfall &middot; the pad, part 2 &middot; from the desk into the ship</div>
     <h1>Stay in first person the whole way?</h1>
-    <p class="lead">Yes, I think it looks better, <b>provided it goes all the way</b>: the film and every room of the ship seen through his eyes, with his hands in the picture. The half-way version, where he walks in first person and the camera pulls out as he arrives, is weaker than what the game does today.</p>
-    <p>To check that by eye, I drew four rooms the way he would see them, put the real interface over each one, and cut a test film of every option. All of it is below. Nothing in the game has changed.</p>
+    <p class="lead">Fourth version, built from your two notes: <b>he walks to the table, picks up a visor and puts it on, and the ship's interface is its screen flickering on.</b> First person from the pad to the interface, no staged hand, the window no longer changes, and every room stays as it is.</p>
+    <p>This is a test film. Nothing in the game has changed yet.</p>
   </section>
 
   <section>
-    <h2>Three ways to make the film</h2>
+    <div class="tabrow"><span class="tab on">D &middot; The visor</span><span class="pick">New, October 4</span></div>
+    <div class="feature">
+      <video controls playsinline preload="metadata" poster="film-D-visor-poster.jpg" src="film-D-visor.mp4"></video>
+    </div>
+    <ol class="beats">
+      <li>He lets go of the pad, looks right, and the desk and its window slide out of the picture.</li>
+      <li>He stands and walks through the hatch. A black visor lies on the lit table.</li>
+      <li>Both hands take it, turn it and raise it. Its inside closes over his eyes and the picture goes black.</li>
+      <li>The screen flickers on: two dim flashes with a crackle, then it catches and steadies on the report.</li>
+    </ol>
+    <p class="note">The film runs 12.5 seconds to black, against 10 for today's. The interface at the end is a screenshot of the real game, held three seconds. The flicker and its sound are made by the tool, so in the game they would land on the frame.</p>
+  </section>
+
+  <section>
+    <h2>Why the window changed</h2>
+    <p>Each film left the desk with a clip that was told to end on a second, separately drawn picture of the same window. That second drawing had a thicker frame and a far redder planet, so the video model morphed one window into the other while he turned. All four of yesterday's first-person films open with that same clip, which is why it happened the same way in each. Today's in-game film does it too, in its walk.</p>
+    <figure class="shot"><button type="button" data-full="window-old-first-last.jpg" aria-label="The old clip's first and last frame, full size"><img src="window-old-first-last.jpg" width="1600" height="450" alt="Two frames of the old opening clip side by side: a wide window with a thin pale frame and a dark planet, then a thick-framed window with a glowing red planet"></button><figcaption><span class="tab">Before</span>The old opening clip, first frame and last. Two different windows, and the film travels between them.</figcaption></figure>
+    <figure class="shot"><button type="button" data-full="window-new-first-leaving.jpg" aria-label="The new clip's first frame and the window leaving, full size"><img src="window-new-first-leaving.jpg" width="1600" height="450" alt="Two frames of the new opening clip: the same window at the desk, then its right end sliding out of the left of the picture"></button><figcaption><span class="tab on">Now</span>The new clip ends on a picture with no window in it. The one window slides out of frame as he looks away and is never drawn again.</figcaption></figure>
+  </section>
+
+  <section>
+    <h2>One seam left</h2>
+    <div class="seam">
+      <p>When the screen comes on, the Desk's backdrop still shows him from behind at the table, without the visor. Read as the visor's display it holds up: the ship's system showing him where he is. If it bothers you when you watch it, the fix is one picture: the Desk's backdrop redrawn with the visor's strap on his head.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>To put it in the game</h2>
+    <ol class="steps">
+      <li>One more clip: the look-away for a lost mission, starting from the dropped pad. The walk and the visor are shared by both outcomes.</li>
+      <li>The two films baked in place of today's, with the ship's sound bed.</li>
+      <li>The handover changes from a fade to the flicker, because the film now ends on black instead of on the room. Reduce motion keeps its plain cross-fade, and Reduce flashes turns the flicker into a fade.</li>
+      <li>The pad's tests and its four browser beats run again, then played by hand from a real mission's end.</li>
+    </ol>
+    <p class="note">About $1.30 of art and half a day. No room is redrawn.</p>
+  </section>
+
+  <section>
+    <h2>Set aside: the first three</h2>
+    <p>You ruled these out on October 4. The window changes in all of them, and the hand laid on the table at the end of B feels staged.</p>
     <div class="grid g3">
       <div class="cell">
         <div class="tabrow"><span class="tab">A &middot; Today</span></div>
         <video controls playsinline preload="metadata" poster="film-A-today-poster.jpg" src="film-A-today.mp4"></video>
-        <p>The camera pulls out of his eyes while he sits at the desk. We watch him get up and walk to the table. The interface arrives with him standing at the left, seen from behind.</p>
-        <div class="cost"><b>Nothing to build.</b> 10 seconds.</div>
+        <p>The camera pulls out of his eyes at the desk and we watch him walk to the table. This is what the game plays now.</p>
       </div>
       <div class="cell">
-        <div class="tabrow"><span class="tab on">B &middot; Through his eyes</span><span class="pick">My pick</span></div>
+        <div class="tabrow"><span class="tab">B &middot; Through his eyes</span></div>
         <video controls playsinline preload="metadata" poster="film-B-first-person-poster.jpg" src="film-B-first-person.mp4"></video>
-        <p>The camera never leaves him. He stands, turns past the window, walks through the hatch and lays his hand on the table. The report comes up over what he is looking at.</p>
-        <div class="cost"><b>Eight rooms redrawn</b>, one new walk clip. About $60 and a day. 10 seconds.</div>
+        <p>First person to the table, where he lays a hand on it. It needed all eight rooms redrawn as what he sees.</p>
       </div>
       <div class="cell">
         <div class="tabrow"><span class="tab">C &middot; Settle back</span></div>
         <video controls playsinline preload="metadata" poster="film-C-settle-back-poster.jpg" src="film-C-settle-back.mp4"></video>
-        <p>First person for the walk. As he reaches the table the camera slides back out of his eyes and he comes into the picture from the left. It lands on today's interface.</p>
-        <div class="cost"><b>Two clips, no room art.</b> About $3 and an hour. 13 seconds.</div>
-      </div>
-    </div>
-    <p class="note">These are test takes at 720p. The stand-and-turn that opens B and C is the clip from October 2 that was set aside when the film was restructured; the walks and the settle are new. The interface at the end of each film is a screenshot of the real game over that backdrop, held for three seconds, so the players read 13 and 16 seconds.</p>
-  </section>
-
-  <section>
-    <h2>The rooms, now and through his eyes</h2>
-    <p>Every picture here is the game's own interface at 1600 by 900. Only the backdrop was swapped. Click a picture to see it full size.</p>
-
-    <div class="room">
-      <h3>AI Core</h3>
-      <p>The clearest gain. Today YOKE stands half behind his back and talks past his shoulder. Through his eyes she stands on her dais and faces you.</p>
-      <div class="grid g2">
-        <figure class="shot"><button type="button" data-full="ui/ai-now.jpg" aria-label="AI Core today, full size"><img src="ui/ai-now.jpg" width="1600" height="900" alt="AI Core today: the man seen from behind at the left, YOKE's hologram partly hidden behind him"></button><figcaption><span class="tab">Today</span>She is talking to him.</figcaption></figure>
-        <figure class="shot"><button type="button" data-full="ui/ai-eyes.jpg" aria-label="AI Core through his eyes, full size"><img src="ui/ai-eyes.jpg" width="1600" height="900" alt="AI Core through his eyes: YOKE's hologram alone on the lit dais, facing the viewer"></button><figcaption><span class="tab on">His eyes</span>She is talking to you.</figcaption></figure>
-      </div>
-    </div>
-
-    <div class="room">
-      <h3>Comms</h3>
-      <p>His hand on the dial does the work his whole body does today, and the three displays get the space his back was taking.</p>
-      <div class="grid g2">
-        <figure class="shot"><button type="button" data-full="ui/comms-now.jpg" aria-label="Comms today, full size"><img src="ui/comms-now.jpg" width="1600" height="900" alt="Comms today: the man seated at the console, seen from behind"></button><figcaption><span class="tab">Today</span></figcaption></figure>
-        <figure class="shot"><button type="button" data-full="ui/comms-eyes.jpg" aria-label="Comms through his eyes, full size"><img src="ui/comms-eyes.jpg" width="1600" height="900" alt="Comms through his eyes: three displays ahead, his right hand on a dial of the console"></button><figcaption><span class="tab on">His eyes</span></figcaption></figure>
-      </div>
-    </div>
-
-    <div class="room">
-      <h3>Gene Bay</h3>
-      <p>The tank fills the left third on its own. In this draft his tablet hand sits half under the panel; in a final picture it moves left, clear of it.</p>
-      <div class="grid g2">
-        <figure class="shot"><button type="button" data-full="ui/genes-now.jpg" aria-label="Gene Bay today, full size"><img src="ui/genes-now.jpg" width="1600" height="900" alt="Gene Bay today: the man standing beside the glass tank, seen from behind"></button><figcaption><span class="tab">Today</span></figcaption></figure>
-        <figure class="shot"><button type="button" data-full="ui/genes-eyes.jpg" aria-label="Gene Bay through his eyes, full size"><img src="ui/genes-eyes.jpg" width="1600" height="900" alt="Gene Bay through his eyes: the glass tank with the red culture close up, his hand holding a tablet at the bottom"></button><figcaption><span class="tab on">His eyes</span></figcaption></figure>
-      </div>
-    </div>
-
-    <div class="room">
-      <h3>Directive Desk</h3>
-      <p>Through his eyes the planet floats over the table it is projected from, which today's view only hints at. This is also the hard room: without him it is a bare black box, so where he looks decides the picture. The next section goes into that.</p>
-      <div class="grid g3">
-        <figure class="shot"><button type="button" data-full="ui/desk-now.jpg" aria-label="Directive Desk today, full size"><img src="ui/desk-now.jpg" width="1600" height="900" alt="Directive Desk today: the man standing at the left, the planet globe in the interface"></button><figcaption><span class="tab">Today</span></figcaption></figure>
-        <figure class="shot"><button type="button" data-full="ui/desk-hands.jpg" aria-label="Directive Desk through his eyes, hands on the rim, full size"><img src="ui/desk-hands.jpg" width="1600" height="900" alt="Directive Desk through his eyes: his hand on the rim of the lit table, the planet globe floating above it"></button><figcaption><span class="tab on">His eyes</span>Standing at the table, hands on its rim.</figcaption></figure>
-        <figure class="shot"><button type="button" data-full="ui/desk-down.jpg" aria-label="Directive Desk through his eyes, looking down, full size"><img src="ui/desk-down.jpg" width="1600" height="900" alt="Directive Desk through his eyes, looking down: his arm across the lit table, the planet globe above its far rim"></button><figcaption><span class="tab on">His eyes</span>Leaning over it, a hand on the top.</figcaption></figure>
+        <p>First person for the walk, then the camera slides back behind him as he arrives.</p>
       </div>
     </div>
   </section>
 
   <section>
-    <h2>Where the film ends: the report at the desk</h2>
-    <p>The report covers the right two thirds and YOKE's intercom takes the lower left corner. Today his back fills what is left. In first person that corner has to be earned, and it took three tries.</p>
-    <div class="grid g3">
-      <figure class="shot"><button type="button" data-full="ui/report-eyes.jpg" aria-label="Report over the desk with no hands, full size"><img src="ui/report-eyes.jpg" width="1600" height="900" alt="The report over the desk seen through his eyes with no hands: the left third is a dark empty wall"></button><figcaption><span class="tab">No hands</span>A dark wall. It reads as a wallpaper, not as you standing there.</figcaption></figure>
-      <figure class="shot"><button type="button" data-full="ui/report-hands.jpg" aria-label="Report over the desk with hands on the rim, full size"><img src="ui/report-hands.jpg" width="1600" height="900" alt="The report over the desk with his hands on the table rim: one hand shows beside YOKE's intercom"></button><figcaption><span class="tab">Hands on the rim</span>Better, but the intercom sits on top of his hand.</figcaption></figure>
-      <figure class="shot"><button type="button" data-full="ui/report-down.jpg" aria-label="Report over the desk looking down, full size"><img src="ui/report-down.jpg" width="1600" height="900" alt="The report over the desk looking down at the lit table, his hand flat on it"></button><figcaption><span class="tab on">Looking down</span>The one I would use. The table is a stop too bright here.</figcaption></figure>
+    <h2>For reference: rooms through his eyes</h2>
+    <p>Drawn for option B. The visor does not need them, since every room stays as it is, but the AI Core is worth a look on its own: through his eyes YOKE faces you. Each picture is the game's own interface with only the backdrop swapped. Click one to see it full size.</p>
+    <div class="grid g2">
+      <figure class="shot wide16"><button type="button" data-full="ui/ai-now.jpg" aria-label="AI Core today, full size"><img src="ui/ai-now.jpg" width="1600" height="900" alt="AI Core today: the man seen from behind at the left, YOKE's hologram partly hidden behind him"></button><figcaption><span class="tab">AI Core today</span></figcaption></figure>
+      <figure class="shot wide16"><button type="button" data-full="ui/ai-eyes.jpg" aria-label="AI Core through his eyes, full size"><img src="ui/ai-eyes.jpg" width="1600" height="900" alt="AI Core through his eyes: YOKE's hologram alone on the lit dais, facing the viewer"></button><figcaption><span class="tab">AI Core, his eyes</span></figcaption></figure>
+      <figure class="shot wide16"><button type="button" data-full="ui/comms-eyes.jpg" aria-label="Comms through his eyes, full size"><img src="ui/comms-eyes.jpg" width="1600" height="900" alt="Comms through his eyes: three displays ahead, his right hand on a dial of the console"></button><figcaption><span class="tab">Comms, his eyes</span></figcaption></figure>
+      <figure class="shot wide16"><button type="button" data-full="ui/genes-eyes.jpg" aria-label="Gene Bay through his eyes, full size"><img src="ui/genes-eyes.jpg" width="1600" height="900" alt="Gene Bay through his eyes: the glass tank with the red culture close up, his hand holding a tablet at the bottom"></button><figcaption><span class="tab">Gene Bay, his eyes</span></figcaption></figure>
     </div>
-    <p>The third one also closes a loop. Part 1 of the film ends with his hand flat on the desk beside the pad. This ends with his hand flat on the table. For comparison, the report as it is today:</p>
-    <div class="grid g3">
-      <figure class="shot"><button type="button" data-full="ui/report-now.jpg" aria-label="Report today, full size"><img src="ui/report-now.jpg" width="1600" height="900" alt="The report today: the man seen from behind fills the left third"></button><figcaption><span class="tab">Today</span></figcaption></figure>
-      <div class="cell">
-        <video controls playsinline preload="metadata" poster="film-B-hands-on-the-rim-poster.jpg" src="film-B-hands-on-the-rim.mp4"></video>
-        <p class="note">Film B ending with his hands on the rim.</p>
-      </div>
-      <div class="cell">
-        <video controls playsinline preload="metadata" poster="film-B-no-hands-poster.jpg" src="film-B-no-hands.mp4"></video>
-        <p class="note">Film B ending with no hands.</p>
-      </div>
-    </div>
-  </section>
-
-  <section>
-    <h2>What goes away</h2>
-    <div class="gone">
-      <p>He does. Today the man is in eight of the nine room backdrops, seen from behind, and his posture changes from room to room: bent over the notebook, seated at Comms, a hand in his pocket in front of YOKE. The Quarters is the one room already seen through his eyes.</p>
-      <p>In first person the player sees his hands, his forearms and the cord on his wrist, and nothing else of him outside the films. That reverses the note the rooms were drawn to on September 30, &ldquo;the hero seen from behind in each room&rdquo;. If seeing him aboard matters more to you than the unbroken viewpoint, stay with A.</p>
-    </div>
-  </section>
-
-  <section>
-    <h2>Why not C</h2>
-    <p>C keeps every room and costs almost nothing, so it is tempting. But it moves the change of viewpoint to the busiest second of the film: he arrives, the table wakes, the interface comes up and the camera leaves his eyes, all at once. A makes the change early, while he is sitting still, then runs one unbroken shot to the interface. If the rooms stay as they are, A is the better film.</p>
-  </section>
-
-  <section>
-    <h2>What each option costs</h2>
-    <div class="tablebox">
-      <table>
-        <colgroup><col class="c0"><col class="c1"><col class="c2"><col class="c3"></colgroup>
-        <thead><tr><th></th><th>A &middot; Today</th><th>B &middot; Through his eyes</th><th>C &middot; Settle back</th></tr></thead>
-        <tbody>
-          <tr><td>Film clips</td><td>None</td><td>One walk, shared by won and lost. Both stand-and-turn clips exist. About $1.30</td><td>The walk and the settle. About $2.60</td></tr>
-          <tr><td>Room art</td><td>None</td><td>Desk, Gene Bay, Locker, Licence, Comms, AI Core, Directives, Notebook: a still and an 8-second loop each, about $5.50 a room</td><td>None</td></tr>
-          <tr><td>Interface</td><td>None</td><td>No code change to the rooms. Each new backdrop checked under the panel at 1280, 1600 and 1920 wide</td><td>None</td></tr>
-          <tr><td>Film length</td><td>10 s</td><td>10 s</td><td>13 s</td></tr>
-          <tr class="sum"><td>Total</td><td>$0</td><td>About $60 with re-rolls, one day</td><td>About $3, one hour</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
-
-  <section>
-    <h2>If you pick B, the order of work</h2>
-    <ol>
-      <li>The Desk first, looking down at the table with its light brought down, then the film's new ending for won and lost, and the handover from film to report checked in the game.</li>
-      <li>AI Core, Comms and Gene Bay redrawn at full quality from these drafts, each with anything of him kept inside the left third.</li>
-      <li>Locker, Licence, Directives and Notebook drawn the same way. The Quarters stays as it is.</li>
-      <li>The loops: his hands rest and the room moves (the tank, the displays, the planet, YOKE's ring), with a slow drift of the whole picture so it breathes like a head, not a tripod.</li>
-      <li>Today's room loops are kept beside the new ones, so one line switches the ship back.</li>
-    </ol>
-    <p class="note">Two things the test takes showed. The first two walks drew a window in the table room that is not there; describing the room's walls fixed it on the second take. And YOKE's greeting intercom covers the lower left of every room while she speaks, today and in first person alike, so his hands should sit above it.</p>
   </section>
 
   <section>
     <h2>Where the files are</h2>
     <div class="paths">
-      <span>This page, the films, the room pictures and the screenshots</span>
+      <span>The visor film and this page</span>
+      <code>C:\Users\Merry\dev\space-derelict\games\broodfall\notes\art-review\fp-options\film-D-visor.mp4</code>
       <code>C:\Users\Merry\dev\space-derelict\games\broodfall\notes\art-review\fp-options\first-person-options.html</code>
+      <span>The first three films</span>
       <code>C:\Users\Merry\dev\space-derelict\games\broodfall\notes\art-review\fp-options\film-A-today.mp4</code>
       <code>C:\Users\Merry\dev\space-derelict\games\broodfall\notes\art-review\fp-options\film-B-first-person.mp4</code>
       <code>C:\Users\Merry\dev\space-derelict\games\broodfall\notes\art-review\fp-options\film-C-settle-back.mp4</code>
-      <code>C:\Users\Merry\dev\space-derelict\games\broodfall\notes\art-review\fp-options\ui</code>
       <span>The tools that made them</span>
       <code>C:\Users\Merry\dev\space-derelict\games\broodfall\tools\art\fp-options.mjs</code>
       <code>C:\Users\Merry\dev\space-derelict\games\broodfall\tools\shot-fp-options.mjs</code>
       <span>The raw stills and clips (not in git)</span>
       <code>C:\Users\Merry\dev\sd-wt-pad2\games\broodfall\art-src-new\fp-options</code>
     </div>
-    <p class="note">Test art for this page: 6 stills and 7 clips, $9.68 of RFab tokens.</p>
+    <p class="note">Test art: $9.68 on October 3 for the first three, about $7 on October 4 for the visor (2 stills, 5 clips, one sound take that was not used).</p>
   </section>
 
 </div>

@@ -8,7 +8,7 @@
  * it, seen from behind. Staying first person means the rooms are seen through his eyes instead.
  *
  *   node tools/art/fp-options.mjs --stills [ids]   the rooms through his eyes (LOOK before paying for clips)
- *   node tools/art/fp-options.mjs --clips [ids]    the walk in first person, and the camera settling back behind him
+ *   node tools/art/fp-options.mjs --clips [ids]    the walk in first person, the camera settling back behind him, the visor put on
  *   node tools/art/fp-options.mjs --bake           the option films (free), from the clips and tools/shot-fp-options.mjs's screenshots
  *
  * Raw: art-src-new/fp-options/ (to draw one again, MOVE its file into art-src-new/fp-options/v1/, never delete).
@@ -81,6 +81,31 @@ export const ROOMS = [
       'across the lower left and the lower middle of the picture, its centre left of the middle of the frame; the air above ' +
       'it is empty and dark. Beyond it, far back, the rows of black processing columns with their tiny lights recede into ' +
       `the dark; the pale panelled wall with the small gear symbol at the right. ${ALONE}`) },
+  // THE VISOR (Collins, Oct 4 2026: "it all feels so forced like the hand at the end ... maybe you could have him pick up
+  // and put on a vr like headset in that room?" "and the screen like flickers on"). He walks to the table, where a visor
+  // lies; he puts it on, the picture goes black, and the ship's interface is the visor's screen coming on.
+  //
+  // And his other reason, "the window changes in the same way mid vid in all of them": every film left the desk by a clip
+  // whose END picture was a second, separately drawn view of the window (the TURN still: a thicker frame, a far redder
+  // planet), so the video model morphed one window into the other as he turned (today's third-person walk did the same
+  // from its own angle). TURN2 has NO window in it: the desk's window slides out of the picture and is never drawn twice.
+  { id: 'turn2', refs: () => [path.join(PADSHIP, 'turn.png')], plain: true,
+    prompt: `${REAL} A wide 16:9 frame, first-person point of view, standing, eye level. Keep exactly the room of the reference ` +
+      'picture, seen from the same place, but the camera has turned further to the right, so that the long window and the ' +
+      'desk under it are now behind the viewer and out of the picture: there is no window anywhere in the picture. In the ' +
+      'middle of the picture, in the thick matte black bulkhead, the heavy rounded hatchway stands open; through it a small ' +
+      'dark room is seen with one round table whose top glows softly white, and on that table top lies one small black ' +
+      'object, a visor headset. Left and right of the hatch: flat matte black bulkhead panels, thin white light strips ' +
+      'recessed along the base of the walls, ribbed dark metal deck plating. A faint red glow from behind the viewer lies ' +
+      `on the deck at the lower left. Nobody in the picture; no hands, no body. ${NONE}` },
+  { id: 'visor-table', refs: () => [raw('desk.png')], plain: true,
+    prompt: `${REAL} A wide 16:9 frame, first-person point of view. Keep the reference picture exactly: the same dark room, the ` +
+      'same round table with its softly glowing white top, the same walls, bench, light strips, light and framing. Add one ' +
+      'thing only. Lying on the glowing table top, near the viewer and in the middle of the picture, a sleek virtual-reality ' +
+      'visor headset in the plain exact style of the ship: a smooth curved opaque matte black visor shell, soft black face ' +
+      'padding around its open inside, one simple black head strap, and a single thin line of white light along the upper ' +
+      'edge of the shell. It lies with its open padded inside turned toward the viewer, ready to be picked up and put on, ' +
+      `lit from below by the table. Nobody in the picture; no hands, no body. ${NONE}` },
 ];
 
 /** The room's loop poster as a PNG (the reference: the same room with him in it). */
@@ -96,13 +121,14 @@ async function stills(only) {
   const items = ROOMS.filter((r) => !only.length || only.includes(r.id));
   const res = await pool(items, 5, (r) => makeStill({
     slug: `fp ${r.id}`, out: raw(`${r.id}.png`), prompt: r.prompt, key: null, width: 1536, height: 864,
-    quality: process.env.FP_QUALITY || 'medium', refFiles: [poster(r.ref)],
+    quality: process.env.FP_QUALITY || 'medium', refFiles: r.refs ? r.refs() : [poster(r.ref)],
   }));
   res.forEach((x, i) => { if (!x.ok) console.warn(`[fp] ${items[i].id}: ${x.error.message.slice(0, 300)}`); });
   for (const r of ROOMS) {
     if (!fs.existsSync(raw(`${r.id}.png`))) continue;
-    // Side by side: the room as it is now | through his eyes.
-    ffmpeg(['-i', poster(r.ref), '-i', raw(`${r.id}.png`), '-filter_complex', '[0:v]scale=960:540[a];[1:v]scale=960:540[b];[a][b]hstack', '-q:v', '3',
+    // Side by side: the room as it is now | through his eyes (a film's own still: itself, to look at).
+    if (r.plain) ffmpeg(['-i', raw(`${r.id}.png`), '-vf', 'scale=1280:720', '-q:v', '3', path.join(LOOK, `still-${r.id}.jpg`)], `${r.id} look`);
+    else ffmpeg(['-i', poster(r.ref), '-i', raw(`${r.id}.png`), '-filter_complex', '[0:v]scale=960:540[a];[1:v]scale=960:540[b];[a][b]hstack', '-q:v', '3',
       path.join(LOOK, `room-${r.id}-now-vs-eyes.jpg`)], `${r.id} pair`);
     ffmpeg(['-i', raw(`${r.id}.png`), '-vf', `scale=${W}:${H}:flags=lanczos`, raw(`${r.id}-720.png`)], `${r.id} 720`);
   }
@@ -150,12 +176,56 @@ export const CLIPS = [
       'short dark messy hair and a pale stylus tucked behind his right ear, in a plain black high-collared shirt with the ' +
       'sleeves pushed up to the elbows and black trousers. He stands nearly still. The clip ends exactly on the second ' +
       'picture: the same single table, the same dim light, the same framing. No text anywhere.' },
+  // THE VISOR FILM (Oct 4 2026). Three clips, first person throughout, and the desk's window is never drawn a second time:
+  // RISE2 ends on TURN2 (no window in it), so the window only slides out of the picture; no prompt names it.
+  // First take (v1/rise2-face.mp4): he stood up FACING the window, and the model redrew it as he rose (a taller lit frame, a
+  // field of stars) with a stranger's face reflected in the glass. He now LOOKS AWAY first, then stands facing the hatch.
+  { id: 'rise2', start: () => path.join(PADSHIP, 'won-start.png'), end: () => raw('turn2-720.png'), seconds: 5,
+    prompt: 'Aboard a dark starship in orbit. He has just set his data pad down calmly. Strictly first person the whole time: ' +
+      'the camera IS his eyes; we never see his face, his head or his body, only his own hand and forearm at the start; ' +
+      'nobody else is in the room at any moment and no face is seen anywhere, not even as a reflection. The data pad stays ' +
+      'lying flat on the desk where it is, its screen black: he lets go of it and leaves it there. In the first second he ' +
+      'turns his head to the right, away from the desk: the desk and everything above it slide straight out of the left ' +
+      'side of the picture, unchanged, and stay behind him; they do not come back into the picture. Now facing the heavy ' +
+      'rounded hatchway that stands open in the black bulkhead, through which a small dark room with a softly glowing round ' +
+      'table is seen, he pushes his chair back and stands up, his eyes rising, and stands still facing the hatch. The ' +
+      'deliberate weight of a man in the artificial gravity of a ship, natural hand-held camera, no cuts. The clip ends ' +
+      'exactly on the second picture. No text anywhere.' },
+  { id: 'walk2', start: () => raw('turn2-720.png'), end: () => raw('visor-table-720.png'), seconds: 5,
+    prompt: `Aboard a small dark starship in orbit. ${POV}He walks forward across the dark room, through the open rounded ` +
+      `hatchway into the small dark room beyond, ${BOX} He walks straight up to the round table and stops at it, looking down ` +
+      'at the black visor headset that lies on its softly glowing white top. The low black bench stands against the wall at ' +
+      'the right. The unhurried gait of a man walking in the artificial gravity of a ship, a slight natural sway of the ' +
+      'head, one continuous shot, no cuts. No hands or arms in the picture. The clip ends exactly on the second picture. ' +
+      'No text anywhere.' },
+  // He puts it on: the picture ends black (END = a black frame), and the interface is the visor's screen coming on.
+  { id: 'visor', start: () => raw('visor-table-720.png'), end: () => blackFrame(), seconds: 5, prompt: PUT_ON() },
+  // The same with the end left free, to see which the model does better.
+  { id: 'visor-free', start: () => raw('visor-table-720.png'), end: null, seconds: 5, prompt: PUT_ON() },
 ];
+
+function PUT_ON() {
+  return 'Aboard a small dark starship. Strictly first person the whole time: the camera IS his eyes; we never see his face or ' +
+    'his head; nobody else is in the room. He stands at the round table. His own two hands and bare forearms (plain black ' +
+    'sleeves pushed up to the elbows, a thin cord bracelet on the right wrist) come up from the bottom of the picture, take ' +
+    'the black visor headset by its two sides, lift it off the glowing table, turn its open padded inside toward his face ' +
+    'and raise it up to his eyes in one calm, natural, unhurried movement. The dark padded inside of the visor comes ' +
+    'straight toward the camera, grows until it fills the whole picture and closes over his eyes, shutting out the room: ' +
+    'the picture goes completely black and stays black. One continuous shot, no cuts. The clip ends on a completely black ' +
+    'picture. No text anywhere.';
+}
+
+/** The visor closed over his eyes: a black frame for a clip to end on. */
+function blackFrame() {
+  const out = raw('black-720.png');
+  if (!fs.existsSync(out)) ffmpeg(['-f', 'lavfi', '-i', `color=c=0x020304:s=${W}x${H}`, '-frames:v', '1', out], 'black frame');
+  return out;
+}
 
 async function clips(only) {
   const items = CLIPS.filter((c) => !only.length || only.includes(c.id));
-  const res = await pool(items, 3, (c) => makeClip({
-    slug: `fp ${c.id}`, stillFile: c.start(), endFile: c.end(), prompt: c.prompt, seconds: c.seconds, out: raw(`${c.id}.mp4`),
+  const res = await pool(items, 4, (c) => makeClip({
+    slug: `fp ${c.id}`, stillFile: c.start(), ...(c.end ? { endFile: c.end() } : { loop: false }), prompt: c.prompt, seconds: c.seconds, out: raw(`${c.id}.mp4`),
     raw: true, resolution: '720p', aspect: '16:9', models: (process.env.FP_VIDEO_MODELS || 'seegen:wan3.0-video').split(','),
   }));
   res.forEach((x, i) => { if (!x.ok) console.warn(`[fp] ${items[i].id}: ${x.error.message.slice(0, 300)}`); });
@@ -189,13 +259,20 @@ function bake() {
     { id: 'B-hands-on-the-rim', parts: [{ f: turn }, { f: raw('walk-hands.mp4') }], ui: 'report-hands', stand: 0.2, hatch: 6.6, poster: 9.9 },
     { id: 'B-no-hands', parts: [{ f: turn }, { f: raw('walk.mp4') }], ui: 'report-eyes', stand: 0.2, hatch: 6.6, poster: 7.2 },
     { id: 'C-settle-back', parts: [{ f: turn }, { f: raw('walk.mp4') }, { f: raw('settle.mp4'), speed: 1.6 }], ui: 'report-now', stand: 0.2, hatch: 6.6, poster: 11.2 },
+    // The visor: the window leaves the picture and is not drawn again; he puts the visor on, black, and the interface (today's,
+    // unchanged) is its screen flickering on. VISOR_TAKE picks the put-on clip (visor-free: the end left free, the room stays put behind the visor; visor: ended on a
+    // black frame, the room tips over as it comes up), VISOR_KEEP where it is cut (it is black by then).
+    { id: 'D-visor', parts: [{ f: raw('rise2.mp4'), speed: 1.3 }, { f: raw('walk2.mp4'), speed: 1.1 }, { f: raw(`${process.env.VISOR_TAKE || 'visor-free'}.mp4`), keep: Number(process.env.VISOR_KEEP || 4.6), speed: 1.1 }],
+      ui: 'report-now', boot: true, stand: 1.0, hatch: 5.5, poster: -2.0 },
   ];
+  const onlyFilm = process.argv.slice(2).filter((a) => !a.startsWith('--'));
   for (const film of FILMS) {
+    if (onlyFilm.length && !onlyFilm.includes(film.id)) continue;
     if (!film.parts.every((p) => fs.existsSync(p.f))) { console.log(`[fp] ${film.id}: clips missing, not baked`); continue; }
     const norm = film.parts.map((p, i) => {
       const out = path.join(tmp, `${film.id}-${i}.mp4`);
       const pts = p.speed ? `setpts=PTS/${p.speed},` : '';
-      ffmpeg(['-i', p.f, '-vf', `${pts}scale=${W}:${H}:flags=lanczos,fps=${FPS},format=yuv420p`, '-an', '-c:v', 'libx264', '-crf', '16', '-preset', 'medium', out], `${film.id} norm ${i}`);
+      ffmpeg([...(p.keep ? ['-t', String(p.keep)] : []), '-i', p.f, '-vf', `${pts}scale=${W}:${H}:flags=lanczos,fps=${FPS},format=yuv420p`, '-an', '-c:v', 'libx264', '-crf', '16', '-preset', 'medium', out], `${film.id} norm ${i}`);
       return out;
     });
     const list = path.join(tmp, `${film.id}-list.txt`);
@@ -207,7 +284,18 @@ function bake() {
     const HOLD = 3.5, FADE = 0.9;
     const ui = shot(film.ui);
     const withUi = path.join(tmp, `${film.id}-ui.mp4`);
-    if (fs.existsSync(ui)) {
+    if (film.boot && fs.existsSync(ui)) {
+      // The film ends black (the visor is over his eyes); the interface is its screen FLICKERING ON (Collins: "and the screen
+      // like flickers on"): dark, a dim flash, dark, a dimmer one, dark, then it catches, dips once and steadies. Held 3 s.
+      // Truly black between the flashes (a darkened picture keeps a ghost of its colours).
+      const dark = "drawbox=x=0:y=0:w=iw:h=ih:color=black:t=fill:enable='lt(t,0.30)+between(t,0.37,0.529)+between(t,0.60,0.699)'";
+      const dim = [[0.30, 0.369, -0.25], [0.53, 0.599, -0.45], [0.70, 0.799, -0.3], [0.80, 0.869, -0.5], [0.87, 0.999, -0.15], [1.0, 1.099, -0.06]]
+        .map(([a, b, v]) => `eq=brightness=${v}:enable='between(t,${a},${b})'`).join(',');
+      const TAIL = 1.1 + 3.0;
+      ffmpeg(['-i', joined, '-loop', '1', '-t', String(TAIL), '-i', ui, '-filter_complex',
+        `[1:v]scale=${W}:${H},fps=${FPS},format=yuv420p,${dark},${dim}[tail];[0:v][tail]concat=n=2:v=1:a=0,format=yuv420p`,
+        '-an', '-c:v', 'libx264', '-crf', '20', '-preset', 'medium', withUi], `${film.id} flickers on`);
+    } else if (fs.existsSync(ui)) {
       ffmpeg(['-i', joined, '-loop', '1', '-t', String(d + HOLD), '-i', ui, '-filter_complex',
         `[0:v]tpad=stop_mode=clone:stop_duration=${HOLD}[v];[1:v]scale=${W}:${H},fps=${FPS},format=yuva420p,fade=t=in:st=${d.toFixed(3)}:d=${FADE}:alpha=1[s];[v][s]overlay=shortest=1,format=yuv420p`,
         '-an', '-c:v', 'libx264', '-crf', '20', '-preset', 'medium', '-t', String(d + HOLD), withUi], `${film.id} interface`);
@@ -227,6 +315,19 @@ function bake() {
     add('ship-amb', 9.5, 1.0); // the hum is 10 s long: a second lap under the held interface
     add('stand', film.stand, 3.0);
     add('hatch', film.hatch, 1.6);
+    // The screen's own sound, made here so it falls on the flicker to the frame (a video model's take of "a headset put on,
+    // a display powering up" came back as a flat hum with no events): a crackle on each dim flash, a soft rising tone as
+    // it catches, a faint hum once it is on.
+    if (film.boot) {
+      const boot = path.join(tmp, 'boot.wav');
+      const expr = "(random(0)*2-1)*0.11*(between(t,0.30,0.37)+between(t,0.53,0.60))" +
+        "+0.032*sin(2*PI*(200*(t-0.7)+330*(t-0.7)*(t-0.7)))*between(t,0.7,1.15)*min(1,(1.15-t)/0.15)" +
+        "+0.004*sin(2*PI*70*t)*gte(t,0.7)*min(1,(t-0.7)/0.4)+0.002*sin(2*PI*140*t)*gte(t,0.7)*min(1,(t-0.7)/0.4)";
+      ffmpeg(['-f', 'lavfi', '-i', `aevalsrc='${expr}':d=4.1:s=44100`, '-ac', '2', boot], 'boot sound');
+      inputs.push('-i', boot);
+      const n = inputs.filter((x) => x === '-i').length, at = Math.round(d * 1000);
+      parts.push(`[${n}:a]volume=1.6,adelay=${at}|${at},apad[s${n}]`);
+    }
     const out = path.join(LOOK, `film-${film.id}.mp4`);
     const labels = parts.map((p) => p.match(/\[s\d+\]$/)[0]).join('');
     ffmpeg(['-i', withUi, ...inputs, '-filter_complex',
@@ -234,9 +335,13 @@ function bake() {
       '-map', '0:v', '-map', '[a]', '-c:v', 'copy', '-c:a', 'aac', '-b:a', '112k', '-t', String(total), '-movflags', '+faststart', out], `${film.id} mix`);
     ffmpeg(['-i', out, '-vf', `fps=${(8 / total).toFixed(4)},scale=320:-2,tile=8x1`, '-frames:v', '1', '-q:v', '3', path.join(LOOK, `film-${film.id}-strip.jpg`)], `${film.id} strip`);
     // The picture a player's page shows before it is played: the moment that tells this film from the others.
-    ffmpeg(['-ss', String(film.poster), '-i', out, '-frames:v', '1', '-q:v', '3', path.join(LOOK, `film-${film.id}-poster.jpg`)], `${film.id} poster`);
+    ffmpeg(['-ss', String(film.poster < 0 ? d + film.poster : film.poster), '-i', out, '-frames:v', '1', '-q:v', '3', path.join(LOOK, `film-${film.id}-poster.jpg`)], `${film.id} poster`);
     console.log(`[fp] ${film.id}: ${total.toFixed(1)} s -> ${out}`);
   }
+  // Why the window changed (Collins, Oct 4 2026): the old opening clip's first frame beside its last (two drawings of one
+  // window), and the new clip's window as it leaves the picture (the one drawing, sliding out).
+  if (fs.existsSync(turn)) ffmpeg(['-i', turn, '-filter_complex', "[0:v]select='eq(n,0)+eq(n,149)',scale=800:450,tile=2x1", '-vsync', '0', '-frames:v', '1', '-q:v', '3', path.join(LOOK, 'window-old-first-last.jpg')], 'window old');
+  if (fs.existsSync(raw('rise2.mp4'))) ffmpeg(['-i', raw('rise2.mp4'), '-filter_complex', "[0:v]select='eq(n,0)+eq(n,68)',scale=800:450,tile=2x1", '-vsync', '0', '-frames:v', '1', '-q:v', '3', path.join(LOOK, 'window-new-first-leaving.jpg')], 'window new');
 }
 
 const args = process.argv.slice(2);
