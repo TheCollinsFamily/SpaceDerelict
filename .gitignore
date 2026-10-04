@@ -24,3 +24,7 @@ games/broodfall/tools/screenshots/corpses/
 # Broodfall: the sound beat's working files (tools/shot-audio.mjs; its finished proof goes to notes/screens/)
 games/broodfall/tools/screenshots/audio-proof/
 games/broodfall/tools/screenshots/shot-audio.log
+
+# Broodfall comics: the links of pictures the comic CLI uploaded (one set per backend it talked to), and takes pulled to look at
+games/broodfall/comics/**/*.uploads.json
+games/broodfall/comics/**/take*/
