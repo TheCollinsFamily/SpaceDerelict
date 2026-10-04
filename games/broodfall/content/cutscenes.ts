@@ -20,7 +20,15 @@
  *   rubs the back of his neck" put one sparkle on him that every later clip multiplied until the room was snowing. So
  *   `you(voice)` with no move says he stands still, and the tool stops a take whose specks grow (tools/media/cutscenes.ts).
  *
- * How a film is made (tools/media/cutscenes.ts; SPENDS RFab tokens):
+ *   4. THE LINES ARE ACTED, SEVERAL TO A CLIP (Collins, later on Oct 4, of the take made one line a clip on the cheapest
+ *      Veo: "the words sound like they were generated with AI then the video was created around them; that sounds
+ *      stilted ... all the frontier video models can do talking"). The shot list below stays one line a shot, with its
+ *      direction; the tool gathers the shots into exchanges and has a model that talks play each as one clip (`talk`).
+ *
+ * How a film is made NOW: `talk`, `talkcheck`, `talkbake` (HANDOFF.md "A FILM IS MADE OF ACTED EXCHANGES"). The older way,
+ * one clip a shot, is below and still runs; it is what sounded stilted.
+ *
+ * How a film was made, one clip a shot (tools/media/cutscenes.ts; SPENDS RFab tokens):
  *   stills   the picture each place starts from (STILLS below), drawn in its look with its reference pictures
  *   clips    one clip per shot, IN ORDER, image-to-video WITH SOUND: the speaker says the line; each clip is transcribed,
  *            cut half a second after its last word, and the frame at that cut is the next clip's first frame

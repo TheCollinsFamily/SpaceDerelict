@@ -1321,9 +1321,15 @@ text is kept word for word in `notes/CUTSCENES-2026-10-03.md`, and the story as 
      starts only when the place changes (the creep bursting in, then the archive; the feed cut, then him alone aboard).
   3. **His feelings are in his voice.** His lines are directed by how he SOUNDS (perplexed, thinking it through, at his
      wits' end); his hologram is given no gesture at all (a gesture turned him to show his face).
+  4. **The lines are ACTED, several to a clip, by a model that talks** (Collins, later on Oct 4, of the remake made one
+     line a clip on the cheapest Veo: "the words sound like they were generated with AI then the video was created
+     around them; that sounds stilted and is not good for voice acting; all the frontier video models can do talking";
+     and of its end: "it's like the video goes static in the last 20 seconds"). A film is a few EXCHANGES, each a clip
+     of up to 30 seconds in which the model plays the turn-taking, the pauses and the listening itself (Seedance 2.5).
+     Never one line a clip, never a cut half a second after a line's last word.
   `content/cutscenes.ts` is written to these (its header carries them; `tests/cutscenes.test.ts` holds them). What a
-  chained take needs so that it does not rot as it goes (colour held, drifting motes taken out, every link looked at)
-  is in HANDOFF.md "The cut scenes as films".
+  chained take needs so that it does not rot as it goes (colour, sharpness, drifting motes, every link looked at) is
+  in HANDOFF.md "The cut scenes as films".
 - **First contact.** YOKE announces that groups on the planet are trying to contact the ship and could be useful; she
   states the Institute's and the Faithful's methods plainly and adds, embarrassed, as an afterthought, "and someone
   left coloured cards in a field". Then, "at the planet where you choose a mission, you can play through the first

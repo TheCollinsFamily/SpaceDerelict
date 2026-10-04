@@ -242,6 +242,9 @@ const NO_FIX: Fix = { k: [1, 1, 1], o: [0, 0, 0] };
 function colourOf(file: string, frame: number): Colour {
   const r = spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-i', file, '-vf', `select=eq(n\\,${frame}),scale=320:180`, '-frames:v', '1', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-'], { maxBuffer: 1 << 26 });
   const px = r.stdout;
+  // A frame that is not there (an index one past the end) must not be measured as a black picture: the "correction" for
+  // black is +45 and x1.3 on every channel, and one clip of the first film was started from a frame bleached that way.
+  if (!px || px.length < 320 * 180 * 3) throw new Error(`colourOf: ${path.basename(file)} has no frame ${frame}`);
   const n = Math.max(1, px.length / 3);
   const mean = [0, 0, 0], sd = [0, 0, 0];
   for (let i = 0; i + 2 < px.length; i += 3) for (let c = 0; c < 3; c++) mean[c] += px[i + c];
@@ -813,6 +816,8 @@ function alignLines(lines: string[], words: Word[]): Array<{ start: number; end:
   return out;
 }
 
+/** How many frames a clip really has (counted, not its length times its rate: that is one too many as often as not). */
+const frameCount = (file: string): number => Math.max(2, Number(spawnSync('ffprobe', ['-v', 'error', '-count_frames', '-select_streams', 'v:0', '-show_entries', 'stream=nb_read_frames', '-of', 'csv=p=0', file], { encoding: 'utf8' }).stdout.trim()) || 2);
 const fpsOf = (file: string): number => {
   const r = spawnSync('ffprobe', ['-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=r_frame_rate', '-of', 'csv=p=0', file], { encoding: 'utf8' }).stdout.trim();
   const [a, b] = r.split('/').map(Number);
@@ -842,10 +847,10 @@ async function talkCut(film: Film, exs: Exchange[], k: number): Promise<TalkCut>
   const h = await hearWords(f);
   const spans = alignLines(spoken.map((i) => wordsOf(film, film.shots[i])), h.words);
   const fps = fpsOf(f);
-  const frames = Math.max(2, Math.round(duration(f) * fps));
+  const frames = frameCount(f);
   const lastEnd = Math.max(0, ...spans.filter(Boolean).map((x) => x!.end));
   // A beat after the last word (the listener's reaction is part of the performance); the film's last clip runs out.
-  const frame = Math.min(frames - 2, Math.max(1, Math.round((lastEnd ? lastEnd + 0.9 : duration(f)) * fps)));
+  const frame = Math.min(frames - 1, Math.max(1, Math.round((lastEnd ? lastEnd + 0.9 : duration(f)) * fps)));
   const ref = colourOf(talkFile(film, exs[talkTakeStart(exs, k)]), 0);
   const cut: TalkCut = {
     frame, fps, fix: process.env.CUTSCENE_NO_COLOUR_HOLD ? NO_FIX : fixOf(ref, colourOf(f, frame)),
@@ -1000,7 +1005,7 @@ async function talkBake(film: Film) {
     const src = talkFile(film, ex);
     const cut = await talkCut(film, exs, k);
     const fps = cut.fps;
-    const frames = Math.max(2, Math.round(duration(src) * fps));
+    const frames = frameCount(src);
     const goesOn = exs[k + 1]?.from === '^';
     const lastEnd = Math.max(0, ...cut.lines.filter((l) => !('missing' in l)).map((l) => (l as { end: number }).end));
     // Cut where the next clip was started from; the last clip of a place (or of the film) keeps a breath after its last word.

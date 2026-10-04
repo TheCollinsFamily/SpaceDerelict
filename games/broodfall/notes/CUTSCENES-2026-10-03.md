@@ -54,6 +54,28 @@ What changed, for this film and for the other shot lists:
   (not his face); a few motes of light still drift in the last clips, on the hologram itself; her greeting is pitched
   well above her other lines.
 
+## 2b. Remade again the same evening: acted exchanges on a model that talks
+
+Collins, of the remake above: "the last 20 seconds of the video are a complete mess ... it's like the video goes
+static"; and "the words sound like they were generated with AI then the video was created around them; that sounds
+stilted and is not good for voice acting; all the frontier video models can do talking".
+
+Both were mine. The static was specks of light that built up clip by clip (I had seen them in the frames and written
+"a few motes"). The voices were the video model's own, with no separate voice track; but it was the cheapest Veo, given
+one line a clip, each clip cut half a second after its last word and levelled to the same loudness: twelve readings in
+a row, and nobody acting a conversation.
+
+- **A comparison first** (`tools/media/talk-test.mjs`): her greeting and his reply, in ONE clip, on six models. The six
+  are on his Desktop (`C:\Users\Merry\Desktop\Broodfall cut scenes\voice test (Oct 4)\`). Seedance 2.5 was chosen
+  by what can be measured; his ear has the last word.
+- **The film is four acted exchanges** (26, 25, 24 and 20 s; 95.1 s in all), three joins. He is seen from behind in
+  every frame; there are no specks anywhere in it; brightness and sharpness are measured steady through it
+  (`tools/measure/film-steady.py`).
+- **What is still not right in it:** its last clip was made through another provider (ImageRouter's account ran out of
+  credits) and is a little softer than the first three; in it she walks up close to him. Her voice sits near 160 to 180
+  Hz in her calm lines and near 240 to 260 Hz in her two excited ones. Nobody has listened to it: I cannot.
+- **Cost:** the four clips about $44; the evening about $97 with the comparison and the clips made again.
+
 ## 2. The FIRST test film (Oct 3; rejected Oct 4): how it was made, what it cost
 
 - **Method** (the Roach King's, generalised): a still per camera position, drawn from the faction leader's portrait

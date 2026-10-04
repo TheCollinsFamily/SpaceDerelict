@@ -3,7 +3,7 @@
   "delegation-understand": {
    "video": "media/scenes/delegation-understand.mp4",
    "poster": "media/scenes/delegation-understand.webp",
-   "seconds": 95.132,
+   "seconds": 95.133,
    "cues": [
     {
      "shot": "open",
@@ -48,14 +48,14 @@
      "who": "Delegate",
      "text": "On our planet, technological and moral advancement have almost always gone hand in hand. Was it not the same on yours?",
      "t0": 26,
-     "t1": 39.343
+     "t1": 40.873
     },
     {
      "shot": "l05",
      "line": 5,
      "who": "You",
      "text": "I don't see why the two would be inherently linked. But yes, we had that pattern on our home planet as well.",
-     "t0": 39.343,
+     "t0": 40.873,
      "t1": 51
     },
     {
@@ -64,22 +64,22 @@
      "who": "You",
      "text": "Well. I guess technological advancement is the physical manifestation of a civilisation that has the environment for encouraging ordered thought.",
      "t0": 51,
-     "t1": 62.33
+     "t1": 61.73
     },
     {
      "shot": "l07",
      "line": 7,
      "who": "You",
      "text": "That would likely correlate with moral development as well. So the link isn't crazy.",
-     "t0": 62.33,
-     "t1": 69.735
+     "t0": 61.73,
+     "t1": 69.645
     },
     {
      "shot": "l08",
      "line": 8,
      "who": "Delegate",
      "text": "Yes! Exactly! That is exactly it!",
-     "t0": 69.735,
+     "t0": 69.645,
      "t1": 75
     },
     {
@@ -88,22 +88,22 @@
      "who": "You",
      "text": "So. How can you help?",
      "t0": 75,
-     "t1": 78.77
+     "t1": 78.61
     },
     {
      "shot": "l10",
      "line": 10,
      "who": "Delegate",
      "text": "We have sympathisers all around the world. We can sabotage the supply lines.",
-     "t0": 78.77,
-     "t1": 87.049
+     "t0": 78.61,
+     "t1": 86.495
     },
     {
      "shot": "l11",
      "line": 11,
      "who": "Delegate",
      "text": "Before each of your missions, name one kind of unit. It will not arrive.",
-     "t0": 87.049,
+     "t0": 86.495,
      "t1": 95.1
     }
    ]

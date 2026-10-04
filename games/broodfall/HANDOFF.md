@@ -189,7 +189,36 @@ is the story as played.
   stillprompts <film>`. `clips <film>` runs IN ORDER: each clip is transcribed, cut 0.55 s after its last word on a
   whole frame (`<shot>.cut.json`), and the frame at the cut is the next clip's first frame. `clips <film> <shot>` makes
   one. `redo <film> <shot>` moves that clip AND every clip that went on from it aside (`vN/`).
-- **A CHAINED TAKE ROTS UNLESS IT IS HELD (four takes of the first film, Oct 4 2026; all in the tool now):**
+- **A FILM IS MADE OF ACTED EXCHANGES (Collins, Oct 4 2026, of the remake made one line a clip on Veo 3.1 Lite: "the
+  words sound like they were generated with AI then the video was created around them; that sounds stilted ... all the
+  frontier video models can do talking"; "it's like the video goes static in the last 20 seconds").** The way that
+  stands: `npx vite-node tools/media/cutscenes.ts -- talk <film> [tNN]`, then `talkcheck`, `talkbake`, `desk`
+  (`talkprompts`, `talkstart`, `talkredo` beside them). The shot list stays one line a shot; `exchangesOf` gathers its
+  shots, in order, into clips of at most `TALK_WORDS` (44) words, a new clip at every new place: the first film is 4
+  clips (26, 25, 24, 20 s) with 3 joins, not 13 with 12. `talkPrompt` asks for a performance (who is where, each line
+  inside its action, "the way actors play a scene together"); the cues (which line is said when) come from the words'
+  own times in the transcript (`alignLines`).
+  - **The model:** `imagerouter:seedance-2.5-i2v` at 720p (4 to 30 s a clip; 23,200 tokens a second: about $0.46).
+    `node tools/media/talk-test.mjs make | measure | desk` is the comparison that chose it: the same two-line exchange
+    on six models. Seedance 2.5, Kling 3.0 Turbo, Wan 3.0 Prime and Gemini Omni kept him from behind; BOTH Veos turned
+    him round. Seedance left the longest pause between the two lines (1.1 s) and its delegate's pitch moved the most.
+    An agent cannot hear: Collins's ear decides, and the six clips are on his Desktop. `atlascloud:seedance-2.5-i2v`
+    is the same model through another provider (`CUTSCENE_TALK_MODEL=`): the last clip of the first film was made on
+    it when ImageRouter's own account ran out of credits ("this model needs minimum $12 credits": Collins's to refill).
+  - **Do not go back to** one line a clip, a cut 0.55 s after a line's last word, loudness levelled line by line, or
+    Veo 3.1 Lite for speech: that is what sounded stilted.
+- **THE STEADINESS OF A FILM IS MEASURED:** `python tools/measure/film-steady.py <film> [join,join,...]` prints
+  sharpness, brightness and specks through the baked film and either side of each join. The first film: brightness 57
+  to 61 from first frame to last, sharpness 270 to 330 (its last clip 212 to 280), specks never rising.
+  - **Sharpness is held** (`talkStartFrame`): a model softens the picture it is handed in its first half second (to
+    about 0.7 of it) and holds that, so clip after clip the film went soft (the fourth clip had 17% of the first's fine
+    detail). The frame a clip starts from is sharpened back to its take's first frame (an unsharp mask, its amount found
+    by measuring); the bake softens the first half second of such a clip a little (`TALK_HEAD_BLUR`) so the join does
+    not pulse.
+  - **A frame index one past the end bleaches a film.** `colourOf` on a frame that is not there measured black, and the
+    "correction" for black (+45, x1.3) was painted into the next clip's start frame and ramped over two clips. Frames
+    are counted now (`frameCount`), and a missing frame is an error.
+- **A CHAINED TAKE ROTS UNLESS IT IS HELD (four takes of the first film on the old line-a-clip way, Oct 4 2026):**
   1. **Colour.** Whatever the model does to the colour in a clip is handed on with the frame: after twelve links the
      blue channel's contrast was 1.46 times the first frame's. Each clip is measured at its cut against its take's
      first frame, the next clip's start frame is corrected back (`fix` in the cut file), and the bake ramps the same
@@ -208,7 +237,15 @@ is the story as played.
   `clips` also stops a take when a clip's SPECKS at its cut pass 1.6 times the take's first frame. Raw: `art-src-new/cutscenes/` (stills are shared between films;
   clips per film; v1/ holds what was remade). Baked: `public/media/scenes/<film>.mp4` + `.webp` + `scenes.json` (its
   OWN manifest: the bake never touches media.json or roach.json).
-- **Made:** `delegation-understand`, twice. The first try (Oct 3: 14 shots intercut, 88.6 s, about $8.80) is kept raw in
+- **Made (the take in the game, Oct 4 2026 evening):** `delegation-understand` as four acted exchanges on Seedance 2.5 at
+  720p: 95.1 s, he is seen from behind in every frame, no specks, the picture steady (numbers above). Every line was
+  heard (the lowest 83%: an "Um" the transcriber did not write); his pitch 113 to 139 Hz; hers 157 to 262 Hz (the high
+  ones are her greeting and "Yes! Exactly!"). Its last clip is on the other provider and is a little softer, and in it
+  she walks up close to him. NOBODY HAS LISTENED TO IT. Cost: the four clips in it about $44; with the comparison
+  ($12) and the clips made again on the way (a bleached start frame, the sharpness hold) about $97 that evening. The
+  other 18 films are about 1,500 to 1,650 s: about $700 to $760 at 720p for one clean take of each, about $320 at 480p.
+  The line-a-clip takes are kept raw in `art-src-new/cutscenes/delegation-understand/lite-take-oct4/`.
+- **Made before it, and replaced:** `delegation-understand`, twice. The first try (Oct 3: 14 shots intercut, 88.6 s, about $8.80) is kept raw in
   `art-src-new/cutscenes/delegation-understand-first-try-intercut/`. The one in the game is the remake of Oct 4 to his
   rules: 1 picture, 13 shots in one take, 81.8 s. The clips in it are about $5.60; the four takes it took to learn the
   list above made 49 clips, about $26.50 (the set-aside ones are in `art-src-new/cutscenes/delegation-understand/v1..v6/`).
