@@ -1,5 +1,6 @@
 {
   "title": "A Message From the Boss",
+  "cover": "hello",
   "story": "The message from the boss arrives while the Technician is still at his console. YOKE mentions it like an afterthought. The screen opens on a nose: the boss is far too close to the camera. He backs off, turns a circle on his chair the way dogs do, and sits. He is Supervisor Barnabas of the Clearance Office, Sector Nine, a golden retriever in the Empire's black jacket, and he has read the first field report, the whole thing, twice; it is on his desk with tooth marks in one corner. He says his piece about honest work as solemnly as a dog holding a stay. Then a ball rolls across the back of his office and he is gone, all of him, for the length of one panel. He comes back sheepish and says the kindest thing in the message. By the time he gets to how much he loves reports his tail has cleared the desk. He signs off with 'Good boy', and ends the call with his nose. YOKE, who adores him, has the last word. Every spoken line is the game's own (content/boss.ts); the only new words are sounds.",
   "nsfw": false,
   "content": "Science-fiction satire for adults, work-safe: no nudity, no sex, no gore.",
@@ -36,98 +37,188 @@
     {
       "id": "bridge",
       "picture": "The ship's operations room. YOKE's hologram stands on the black console, waist up, one hand lifted in an offhand 'by the way' gesture, a small amused smile. The Technician stands at the console at the left edge of the frame, seen from behind. The upper left of the frame is plain dark wall.",
-      "cast": ["yoke", "tech"],
+      "cast": [
+        "yoke",
+        "tech"
+      ],
       "camera": "medium, over his shoulder",
-      "words": [{ "who": "yoke", "text": "Oh, and we got a message from the boss." }]
+      "words": [
+        {
+          "who": "yoke",
+          "text": "Oh, and we got a message from the boss."
+        }
+      ]
     },
     {
       "id": "nose",
-      "picture": "The ship's operations room: a large razor-thin display floats above the black console and fills most of the frame. The whole display is filled by an enormous, slightly out-of-focus wet black dog nose and one warm brown eye, far too close to the camera. At the bottom left of the frame, small and dark, the back of the Technician's head, leaning back a little in surprise.",
-      "cast": ["barnabas", "tech"],
+      "picture": "The ship's operations room: a large flat glowing display floats above the black console and fills most of the frame. On the display, the video feed: an enormous, slightly out-of-focus wet black dog nose and one warm brown eye, far too close to the camera. At the bottom left of the frame, small and dark, the back of the Technician's head, leaning back a little in surprise. The only dog is the one on the display: there is no dog in the room, and nobody else in the room.",
+      "cast": [
+        "barnabas",
+        "tech"
+      ],
       "camera": "from behind the Technician, the display large in frame",
-      "words": [{ "kind": "sound", "text": "SNFF. SNFF." }]
+      "words": [
+        {
+          "kind": "sound",
+          "text": "SNFF. SNFF."
+        }
+      ]
     },
     {
       "id": "settle",
       "picture": "The video feed, full frame: a plain pale ceramic office, a bare pale desk, one grey office chair. Supervisor Barnabas has backed away from the camera and is turning a circle on the seat of the chair before sitting, the way dogs do: caught mid-turn, side-on to us, all four paws on the seat, tail up, looking over his shoulder at the camera.",
-      "cast": ["barnabas"],
+      "cast": [
+        "barnabas"
+      ],
       "camera": "wide, the whole office"
     },
     {
       "id": "hello",
       "picture": "The video feed: Supervisor Barnabas now sits on the chair as a dog sits, haunches down, front paws up on the edge of the bare desk, ears up, mouth open in a happy pant, looking straight into the camera. The upper right of the frame is bare pale wall.",
-      "cast": ["barnabas"],
+      "cast": [
+        "barnabas"
+      ],
       "camera": "medium, at the dog's eye level",
-      "words": [{ "who": "barnabas", "text": "Technician! Supervisor Barnabas here, Clearance Office, Sector Nine." }]
+      "words": [
+        {
+          "who": "barnabas",
+          "text": "Technician! Supervisor Barnabas here, Clearance Office, Sector Nine."
+        }
+      ]
     },
     {
       "id": "twice",
       "picture": "The video feed, closer: on the bare desk lies a thin grey report tablet with clear tooth marks in one corner. Supervisor Barnabas holds it down with one front paw and nudges it toward the camera with his nose, eyes rolled up to the lens, bright and proud.",
-      "cast": ["barnabas"],
+      "cast": [
+        "barnabas"
+      ],
       "camera": "close, slightly above the desk",
-      "words": [{ "who": "barnabas", "text": "I just read your first field report, and I want you to know I read the whole thing. Twice!" }]
+      "words": [
+        {
+          "who": "barnabas",
+          "text": "I just read your first field report, and I want you to know I read the whole thing. Twice!"
+        }
+      ]
     },
     {
       "id": "honest",
       "picture": "The video feed: Supervisor Barnabas sits very straight and perfectly still on his chair, chin up, ears forward, solemn and proud, the way a dog holds a 'stay'. The right third of the frame is bare pale wall.",
-      "cast": ["barnabas"],
+      "cast": [
+        "barnabas"
+      ],
       "camera": "medium, straight on",
-      "words": [{ "who": "barnabas", "text": "Pest clearance is honest work, and honest work is the best work there is." }]
+      "words": [
+        {
+          "who": "barnabas",
+          "text": "Pest clearance is honest work, and honest work is the best work there is."
+        }
+      ]
     },
     {
       "id": "ball",
       "picture": "The video feed: something has caught his attention. Supervisor Barnabas's whole head has snapped to one side, ears pricked, body rigid, one front paw lifted off the desk, staring at a small plain grey ball rolling slowly across the floor at the back of the office. His mouth is closed. He has completely forgotten the camera.",
-      "cast": ["barnabas"],
+      "cast": [
+        "barnabas"
+      ],
       "camera": "medium wide, the ball small in the background",
-      "words": [{ "kind": "sound", "text": "tok... tok... tok..." }]
+      "words": [
+        {
+          "kind": "sound",
+          "text": "tok... tok... tok..."
+        }
+      ]
     },
     {
       "id": "goodegg",
-      "picture": "The video feed: Supervisor Barnabas has turned back to the camera, a little sheepish, ears back, head tilted to one side, looking up at the lens from under his brows. The left third of the frame is bare pale wall.",
-      "cast": ["barnabas"],
+      "picture": "The same office, the same chair and desk, a moment later: Supervisor Barnabas has turned back to the camera from his chair behind the desk, a little sheepish, ears back, head tilted to one side, looking up at the lens from under his brows, front paws on the desk. The left third of the frame is bare pale wall.",
+      "cast": [
+        "barnabas"
+      ],
       "camera": "medium, straight on",
       "words": [
-        { "who": "barnabas", "text": "The Board says only the numbers matter, and the Board is very wise." },
-        { "who": "barnabas", "text": "But I say you are a good egg." }
-      ]
+        {
+          "who": "barnabas",
+          "text": "The Board says only the numbers matter, and the Board is very wise."
+        },
+        {
+          "who": "barnabas",
+          "text": "But I say you are a good egg."
+        }
+      ],
+      "from": "honest"
     },
     {
       "id": "reports",
       "picture": "The video feed, wider: Supervisor Barnabas is up on his feet on the chair with excitement, front paws planted on the desk, mouth open in a wide dog grin. His tail is a golden blur behind him and has just swept a cup of styluses off the end of the desk: the cup and the styluses are in mid-air.",
-      "cast": ["barnabas"],
+      "cast": [
+        "barnabas"
+      ],
       "camera": "wide, the whole desk",
       "words": [
-        { "who": "barnabas", "text": "Keep it up! I will be watching every report. I love reports." },
-        { "kind": "sound", "text": "THUMP THUMP THUMP" }
+        {
+          "who": "barnabas",
+          "text": "Keep it up! I will be watching every report. I love reports."
+        },
+        {
+          "kind": "sound",
+          "text": "THUMP THUMP THUMP"
+        }
       ]
     },
     {
       "id": "goodboy",
-      "picture": "The ship's operations room, over the Technician's shoulder: on the large floating display Supervisor Barnabas leans right into the camera, tongue out, eyes squeezed half shut with joy. The Technician, seen from behind at the left edge of the frame, stands a little straighter than before.",
-      "cast": ["barnabas", "tech"],
+      "picture": "The ship's operations room, over the Technician's shoulder: a large flat glowing display floats above the black console, showing the video feed. On the feed Supervisor Barnabas leans right into the camera, tongue out, eyes squeezed half shut with joy, his face filling most of the display. The Technician, seen from behind at the left edge of the frame, stands a little straighter than before. The only dog is the one on the display: there is no dog in the room.",
+      "cast": [
+        "barnabas",
+        "tech"
+      ],
       "camera": "over his shoulder, the display large in frame",
-      "words": [{ "who": "barnabas", "text": "Good boy. Good work! Good work." }]
+      "words": [
+        {
+          "who": "barnabas",
+          "text": "Good boy. Good work! Good work."
+        }
+      ]
     },
     {
       "id": "out",
       "picture": "The video feed, full frame: Supervisor Barnabas is ending the call with his nose. The frame is filled again by the big wet black nose pressing against the lens, slightly squashed, one eye crossed with concentration above it.",
-      "cast": ["barnabas"],
+      "cast": [
+        "barnabas"
+      ],
       "camera": "extreme close, the nose on the lens",
       "words": [
-        { "who": "barnabas", "text": "Barnabas out." },
-        { "kind": "sound", "text": "boop" }
+        {
+          "who": "barnabas",
+          "text": "Barnabas out."
+        },
+        {
+          "kind": "sound",
+          "text": "boop"
+        }
       ]
     },
     {
       "id": "after",
       "picture": "The ship's operations room again, the display gone dark. YOKE's hologram on the console turns to the Technician with a wry, fond half-smile, one eyebrow up, a hand on her hip. The Technician, seen from behind at the left edge of the frame, has not moved.",
-      "cast": ["yoke", "tech"],
+      "cast": [
+        "yoke",
+        "tech"
+      ],
       "camera": "medium, over his shoulder",
       "words": [
-        { "who": "yoke", "text": "A dog for a boss. Lucky you, honestly, they're lovely." },
-        { "who": "yoke", "text": "Just don't let him anywhere near the budget." }
+        {
+          "who": "yoke",
+          "text": "A dog for a boss. Lucky you, honestly, they're lovely."
+        },
+        {
+          "who": "yoke",
+          "text": "Just don't let him anywhere near the budget."
+        }
       ]
     }
   ],
-  "pages": { "perPage": 6 }
+  "pages": {
+    "perPage": 6
+  }
 }

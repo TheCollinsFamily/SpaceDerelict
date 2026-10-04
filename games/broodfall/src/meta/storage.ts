@@ -158,6 +158,25 @@ export function markRevealSeen(): void {
   try { localStorage.setItem(REVEAL, '1'); } catch { /* ok */ }
 }
 
+// ------------------------------------------------------------------ the comics he keeps (src/meta/comics.ts)
+
+const COMICS = 'broodfall-comics';
+
+/** The comics on his shelf and the ones he has opened. Kept apart from the campaign: a new campaign does not empty it. */
+export interface ComicShelf { have: string[]; read: string[] }
+
+export function loadComics(): ComicShelf {
+  try {
+    const raw = JSON.parse(localStorage.getItem(COMICS) || 'null') as Partial<ComicShelf> | null;
+    const list = (v: unknown) => (Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : []);
+    return { have: list(raw?.have), read: list(raw?.read) };
+  } catch { return { have: [], read: [] }; }
+}
+
+export function saveComics(shelf: ComicShelf): void {
+  try { localStorage.setItem(COMICS, JSON.stringify(shelf)); } catch { /* private mode: earned again from the save next time */ }
+}
+
 /** This browser played before the campaign existed (skirmish records): it is not a first launch. */
 export function veteran(): boolean {
   try { return !!localStorage.getItem('broodfall-meta'); } catch { return false; }

@@ -42,3 +42,24 @@ Assessed against live play (`node tools/shot-ship-arrivals.mjs`) and `notes/scre
 | 20 | The person on screen is the same person in every transition | YES by eye (black shirt, sleeves up, the stylus behind his ear) | `notes/art-review/ship-arrivals/*-strip.jpg` |
 | 21 | Leaving is shown as well as arriving | NO (he is in one room, then walks into the next: a cut) | persona notes, Breaker |
 | 22 | A repeated transition varies | NO (one take a room) | persona notes, Veteran |
+
+## A collection he keeps, and a reader for it (the comics shelf, Oct 4 2026)
+
+References: Hades' codex (every entry there is, the locked ones saying what fills them), a vault of unlockables on a
+game's hub screen (the door carries the count of what is new), a comic reader's guided view (one control reads on,
+the end of an issue offers the next). Collins: "somewhere in the ship interface where people can unlock comics they
+can go back through as they play".
+
+Assessed against live play (`node tools/shot-comics.mjs`) and `notes/screens/2026-10-04/comics-*.jpg`.
+
+| # | Convention | Status Oct 4 2026 | Evidence |
+|---|---|---|---|
+| 23 | A collection shows how much there is in all, and what is missing | YES ("1 OF 3 UNLOCKED", a tile for every comic) | walk A, `comics-a-shelf-one-of-three.jpg` |
+| 24 | A locked entry says how it is earned and gives nothing of itself away | YES (no cover, no title, one line of what to do) | walk A, `tests/comics.test.ts` |
+| 25 | What is new is marked until it is opened, and the door to the collection carries the count | YES (NEW on the tile, the number on COMICS; gone when opened, still gone after a reload) | walks A, B |
+| 26 | An unlock is said at the moment it happens | YES (a notice in the corner names the comic; a click on it opens the shelf) | walk D, `comics-d-after-the-call.jpg` |
+| 27 | A reader says where you are, and one control reads forward through everything | YES (PAGE 1 OF 2; a click, Space or the down arrow goes down the page and turns it at its foot) | walk B |
+| 28 | The end of one hands on to the next | YES ("NEXT: SHIP'S NIGHT ▶"; "BACK TO THE SHELF" after the last) | walk B |
+| 29 | A collection outlives a run | YES (kept apart from the campaign; a new campaign leaves it whole) | walk C, `tests/comics.test.ts` |
+| 30 | Reading resumes where it was left | NO (a comic opens on its first page every time) | persona notes, Veteran |
+

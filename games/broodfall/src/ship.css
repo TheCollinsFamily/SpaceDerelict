@@ -41,6 +41,9 @@
 #campaign .cp-tools .cp-room.cp-call { margin-left: 0; }
 #campaign .cp-tools .cp-room.quit { margin-left: 0; }
 #campaign .cp-tool[data-act="settings"] { font-size: 14px; line-height: 1; padding-left: 9px; padding-right: 9px; }
+/* COMICS in the room bar (src/ui/comics.ts): the count is how many he has unlocked and not opened yet. */
+#campaign .cp-comics .cp-pip { font-style: normal; display: inline-block; margin-left: 6px; min-width: 15px; padding: 0 4px; line-height: 15px; font-size: 10px; letter-spacing: 0; text-align: center; background: #e9eef0; color: #07090b; }
+#campaign .cp-comics.fresh { border-color: #e9eef0; }
 #campaign .cp-count { font-style: normal; display: inline-block; min-width: 15px; margin-left: 6px; padding: 0 3px; font-size: 9.5px; line-height: 14px; text-align: center; letter-spacing: 0; background: var(--holo, #9fe8f5); color: #07090b; }
 /* The screen's width sets the bar's size (it is narrower in the AI Core, where YOKE stands beside it). */
 #campaign .cp-card { container-type: inline-size; }

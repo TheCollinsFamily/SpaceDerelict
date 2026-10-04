@@ -1,0 +1,75 @@
+/* COMICS (src/ui/comics.ts), in the ship's look as the Limb Codex is: black glass, razor-thin white lines, Bahnschrift.
+   The only pictures on it are the comics themselves. */
+#comics {
+  --cm-line: rgba(235, 245, 248, 0.34); --cm-faint: rgba(255, 255, 255, 0.08); --cm-dim: rgba(233, 238, 240, 0.6);
+  position: fixed; inset: 0; z-index: 8900; display: flex; align-items: center; justify-content: center;
+  background: rgba(2, 3, 4, 0.8); backdrop-filter: blur(3px);
+  font-family: Bahnschrift, "DIN Alternate", "Segoe UI", Arial, sans-serif; color: #e9eef0;
+}
+#comics.hidden { display: none; }
+#comics button { font-family: inherit; cursor: pointer; color: inherit; }
+#comics .cm-card {
+  width: min(1180px, 96vw); max-height: 94vh; display: flex; flex-direction: column; zoom: var(--ui-scale, 1);
+  background: rgba(7, 9, 11, 0.96); border: 1px solid var(--cm-line); padding: 16px 20px 18px;
+}
+#comics .cm-head { display: flex; justify-content: space-between; align-items: flex-start; }
+#comics .cm-kicker { font-size: 11px; letter-spacing: 3px; color: var(--cm-dim); }
+#comics .cm-title { font-size: 26px; font-weight: 300; letter-spacing: 6px; }
+#comics .cm-small { margin: 4px 0 0; font-size: 12px; color: var(--cm-dim); }
+#comics .cm-headr { display: flex; align-items: center; gap: 14px; }
+#comics .cm-total { font-size: 11px; letter-spacing: 2px; color: var(--cm-dim); }
+#comics .cm-close { background: none; border: 1px solid var(--cm-line); font-size: 16px; width: 34px; height: 34px; flex: 0 0 auto; }
+#comics .cm-close:hover, #comics .cm-btn:hover:not(:disabled) { background: rgba(233, 238, 240, 0.12); }
+
+/* the shelf */
+#comics .cm-shelf { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--cm-faint); overflow: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; }
+#comics .cm-tile { display: flex; flex-direction: column; gap: 5px; padding: 8px 8px 10px; text-align: left; background: rgba(255, 255, 255, 0.025); border: 1px solid rgba(235, 245, 248, 0.14); transition: border-color 0.12s, background 0.12s; }
+#comics button.cm-tile:hover, #comics button.cm-tile:focus-visible { border-color: #e9eef0; background: rgba(233, 238, 240, 0.07); outline: none; }
+#comics .cm-tile.fresh { border-color: rgba(235, 245, 248, 0.6); }
+#comics .cm-cover { position: relative; aspect-ratio: 4 / 3; background: #050607; border: 1px solid var(--cm-faint); overflow: hidden; display: flex; align-items: center; justify-content: center; }
+#comics .cm-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+#comics .cm-new { position: absolute; top: 6px; left: 6px; font-style: normal; font-size: 10px; letter-spacing: 2px; padding: 2px 7px; background: #e9eef0; color: #07090b; }
+#comics .cm-name { font-size: 15px; letter-spacing: 1.5px; text-transform: uppercase; }
+#comics .cm-about { font-size: 12px; line-height: 1.4; color: var(--cm-dim); min-height: 2.8em; }
+#comics .cm-pages { font-size: 10px; letter-spacing: 2px; color: var(--cm-dim); }
+/* one he has not earned: no picture, no title, only how it is earned */
+#comics .cm-tile.locked { cursor: default; border-style: dashed; }
+#comics .cm-tile.locked .cm-cover span { font-size: 11px; letter-spacing: 4px; color: rgba(233, 238, 240, 0.34); }
+#comics .cm-tile.locked .cm-name { color: rgba(233, 238, 240, 0.34); }
+#comics .cm-tile.locked .cm-about { font-style: italic; }
+
+/* the reader: the page as wide as the screen allows, scrolled down */
+#comics .cm-card.reading { width: min(1500px, 98vw); height: 96vh; max-height: none; padding: 10px 12px 12px; }
+#comics .cm-bar { display: flex; align-items: center; gap: 12px; padding-bottom: 9px; border-bottom: 1px solid var(--cm-faint); }
+#comics .cm-barmid { flex: 1; min-width: 0; display: flex; align-items: baseline; gap: 14px; }
+#comics .cm-reading { font-size: 16px; letter-spacing: 3px; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#comics .cm-count { font-size: 11px; letter-spacing: 2px; color: var(--cm-dim); white-space: nowrap; font-variant-numeric: tabular-nums; }
+#comics .cm-turn { display: flex; align-items: center; gap: 6px; }
+#comics .cm-btn { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--cm-line); font-size: 11px; letter-spacing: 2px; padding: 0 12px; height: 34px; white-space: nowrap; }
+#comics .cm-btn:disabled { opacity: 0.3; cursor: default; }
+#comics .cm-scroll { flex: 1; min-height: 0; overflow: auto; margin-top: 10px; text-align: center; outline: none; }
+#comics .cm-page { display: block; width: 100%; height: auto; margin: 0 auto; cursor: pointer; }
+
+@media (max-width: 760px) {
+  #comics .cm-card { padding: 12px 12px 14px; }
+  #comics .cm-title { font-size: 20px; letter-spacing: 4px; }
+  #comics .cm-bar { flex-wrap: wrap; }
+  #comics .cm-barmid { order: 3; flex-basis: 100%; }
+  #comics .cm-turn { margin-left: auto; }
+}
+
+#comics .cm-missing { margin: 18vh auto 0; max-width: 520px; font-size: 14px; line-height: 1.5; color: var(--cm-dim); }
+
+/* The notice when a comic is earned (announceComics): one line in the corner of the ship, gone by itself. */
+#comics-note {
+  /* bottom right: the top right of the ship is its wallet and its room bar */
+  position: fixed; bottom: 16px; right: 16px; z-index: 8800; display: flex; flex-direction: column; align-items: flex-start; gap: 3px;
+  max-width: min(420px, 92vw); padding: 10px 14px 11px; text-align: left; cursor: pointer;
+  font-family: Bahnschrift, "DIN Alternate", "Segoe UI", Arial, sans-serif; color: #e9eef0;
+  background: rgba(7, 9, 11, 0.96); border: 1px solid #e9eef0;
+}
+#comics-note.hidden { display: none; }
+#comics-note:hover { background: rgba(26, 30, 34, 0.98); }
+#comics-note .cn-kicker { font-size: 10px; letter-spacing: 3px; color: rgba(233, 238, 240, 0.6); }
+#comics-note .cn-title { font-size: 15px; letter-spacing: 1.5px; text-transform: uppercase; }
+#comics-note .cn-go { font-size: 10px; letter-spacing: 2px; color: rgba(233, 238, 240, 0.6); }

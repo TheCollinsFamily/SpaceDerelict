@@ -43,6 +43,8 @@ import { directivesHtml, ordersDebriefHtml } from './directives';
 import { hobbyClick, hobbyDebriefHtml, hobbyHtml } from './hobby';
 import { openSettings } from './settings';
 import { openCodex } from './codex';
+import { announceComics, openComics } from './comics';
+import { shelfNow } from '../meta/comics';
 import { attachScene } from './sceneVoice';
 import { attachLines, stopLine } from './lineVoice';
 import { LEADER_VOICES, lineKey, speakerOf, spokenText } from '../../content/media';
@@ -301,6 +303,25 @@ export class CampaignUi {
     if (opts.greet) this.welcome();
   }
 
+  /**
+   * COMICS, in the room bar beside the Limb Codex (Collins, Oct 4 2026: "somewhere in the ship interface where people can
+   * unlock comics they can go back through as they play"). It says how many he has; a comic not opened yet shows as a
+   * count on the button. What is earned is worked out here, from the save (src/meta/comics.ts).
+   */
+  private openComicsScreen(): void {
+    openComics({ state: this.state, onClose: () => { if (!this.el.classList.contains('hidden')) this.render(); } });
+  }
+
+  private comicsButton(): string {
+    const shelf = shelfNow(this.state);
+    // earned by this very look at the save: said once, in the corner (the count on the button stays until it is opened)
+    if (shelf.fresh.length) announceComics(shelf.fresh, () => this.openComicsScreen());
+    const fresh = shelf.unread.length;
+    const title = !shelf.have.length ? 'Comics: none yet. They are unlocked as you play.'
+      : `Comics: ${shelf.have.length} unlocked${fresh ? `, ${fresh} you have not read` : ''}`;
+    return `<button class="cp-room cp-tool cp-comics${fresh ? ' fresh' : ''}" data-act="comics" title="${title}" aria-label="${title}">COMICS${fresh ? `<i class="cp-pip">${fresh}</i>` : ''}</button>`;
+  }
+
   /** Her greeting for this return: prewritten, chosen by what just happened, never the same twice in a row. */
   private welcome(): void {
     const s = structuredClone(this.state);
@@ -332,7 +353,11 @@ export class CampaignUi {
       // The first landing: a message from the boss, with her words around it (content/boss.ts).
       if (g.boss && this.greeting === g) {
         await this.yokeSays(BOSS_BRIDGE, CUES.surprised, said);
-        if (this.greeting === g) { this.el.dataset.boss = 'on'; await playBossCall(this.intro ?? await loadIntroArt()); delete this.el.dataset.boss; }
+        if (this.greeting === g) {
+          this.el.dataset.boss = 'on'; await playBossCall(this.intro ?? await loadIntroArt()); delete this.el.dataset.boss;
+          // He has heard the boss: kept with the campaign (the comic of the call is earned by it: content/comics.ts)
+          if (!(this.state.said ?? []).includes('boss')) { const heard = structuredClone(this.state); heard.said = [...(heard.said ?? []), 'boss']; this.state = heard; saveCampaign(heard); }
+        }
         if (this.greeting === g) await this.yokeSays(BOSS_AFTER, CUES.teasing, said);
       }
       over();
@@ -400,6 +425,7 @@ export class CampaignUi {
         <div class="cp-rooms">${rooms.map(([id, name, full]) => `<button class="cp-room${this.room === id ? ' on' : ''}${this.beckon?.room === id && this.room !== id ? ' beckon' : ''}" data-room="${id}" title="${full}"${id === 'desk' && !deskOpen(s) ? ' data-dark="1"' : ''}>${name}</button>`).join('')}
           <span class="cp-tools">${this.room === 'ai' ? '' : `<button class="cp-room cp-call${this.icom ? ' on' : ''}" data-act="yoke-call" title="Call YOKE here">◉ YOKE</button>`}
           <button class="cp-room cp-tool" data-act="codex" title="Limb Codex: every limb, what it does and how it evolves" aria-label="Limb Codex">▤</button>
+          ${this.comicsButton()}
           <button class="cp-room cp-tool" data-act="settings" title="Settings" aria-label="Settings">⚙</button>
           <button class="cp-room cp-tool quit" data-act="quit" title="Back to the main menu">Menu</button></span></div>
         <div class="cp-body${this.wordsIn ? ' walk-in' : ''}">${this.roomHtml()}</div>
@@ -1147,6 +1173,7 @@ export class CampaignUi {
         openSettings({ where: 'ship', onClose: () => { this.yoke = loadYoke(); this.avatar?.setMuted(this.yoke.muted); this.render(); if (this.yoke.mode !== 'scripted' && playerTokenStore.load()) void this.account.refresh(); } });
         return;
       case 'codex': openCodex({ where: 'ship' }); return;
+      case 'comics': this.openComicsScreen(); return;
       case 'new': this.hooks.newCampaign(); return;
       case 'spin-l': if (this.globe3d) { this.globe3d.turn(-30); return; } this.spin -= 30; this.render(); return;
       case 'spin-r': if (this.globe3d) { this.globe3d.turn(30); return; } this.spin += 30; this.render(); return;

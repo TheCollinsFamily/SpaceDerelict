@@ -7,11 +7,27 @@ from the pictures of the people in it, letters the words as written and lays out
 | Comic | What is in it | Page |
 |---|---|---|
 | Ship's Night | YOKE and the Technician, YOKE's lines word for word from the lorebook | `ships-night/pages/page_01.jpg` |
-| A Message From the Boss | the boss scene (`content/boss.ts`), every line as written; Barnabas was drawn from a description | `a-message-from-the-boss/pages/page_01.jpg` |
+| A Message From the Boss | the boss scene (`content/boss.ts`), every line as written, over two pages; Barnabas is a real dog in a jacket cut for a dog, drawn once from a description | `a-message-from-the-boss/pages/page_01.jpg`, `page_02.jpg` |
 | The Thing From the Sky | the B-movie look, an insect couple drawn from descriptions alone | `the-thing-from-the-sky/pages/page_01.jpg` |
 
 Each folder: `script.json` (the whole comic: edit it and run again), `pages/` (the page with words and without),
 `panels/` (each picture, clean and with its words).
+
+## In the game
+
+The player unlocks these on the ship and reads them again whenever he likes: COMICS in the room bar
+(`src/ui/comics.ts`). `content/comics.ts` lists the comics the game has and what earns each; the pages it loads are
+baked from this folder:
+
+```
+node tools/comics/bake.mjs            comics/<id>/pages + a cover  ->  public/art/ship/comics/<id>/
+npx vitest run tests/comics.test.ts   the shipped folder against content/comics.ts
+node tools/shot-comics.mjs            the shelf walked in the real page
+```
+
+To put a new comic in the game: make it here, add its row to `content/comics.ts` (its id, its pages, one line about
+it, how it is earned, and the fact that earns it), bake, run the test and the walk. `"cover": "<panel id>"` in a
+`script.json` picks the picture on its tile (the first panel when it is left out).
 
 ## Make one
 
@@ -44,6 +60,13 @@ Six panels cost about 26,000 tokens ($0.52): $0.08 a picture on GPT Image 2, a s
   Technicolor), the board, the map units. One comic, one look.
 - Every person in the film look is an insect: say so in the look, or the engine draws humans.
 - Leave the balloons room: ask for plain wall or sky where the words will go.
+- **A character who is an animal is an animal.** Barnabas first came out as a retriever's head on a man's shoulders
+  (the game's own still is that too). Collins: "really cute but it could be a little more natural". His description now
+  says a real dog in every way, a dog's body and posture, in a jacket tailored for a dog, "never a human body"; his
+  panels are things a dog does (circling the chair before sitting, a bite out of the report, watching a ball, ending
+  the call with his nose).
+- Something on a screen is drawn in the room as well unless told not to: "the only dog is the one on the display:
+  there is no dog in the room".
 - The engine improvises when a panel is vague (it drew a giant spider for "the creep is climbing the houses"). Say
   what is there and what is not, then run again: only that panel is redrawn.
 - YOKE's lines are quoted, not written: `content/lore/ship-ai-lorebook.md`, `content/boss.ts`, `content/yokeScenes.ts`.
