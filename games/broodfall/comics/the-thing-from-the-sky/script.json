@@ -1,126 +1,250 @@
 {
   "title": "The Thing From the Sky",
+  "cover": "porch",
+  "story": "Luckwell Gardens is a company suburb where nothing ever happens. Two worker sisters, Dot and Marge Luckwell, are on their porch swing when one red star gets bigger, and something comes down between the school and the laundromat. The Civil Watch goes up to look and tells everyone it is a rock. Their radio says there is something in the crater and it is moving; after that there is only a flashlight rolling on the pavement. By morning the Watch post is empty with the kettle still warm, and the paper calls it a meteor. So the street does what streets do: the Home Levy is raised, six from every street, in house dresses and orange sashes, and they shoot at it, and it is not even annoyed. A researcher from the ministry arrives delighted, because it is on no chart and it is growing and she got here first. That night the drive-in shows a monster picture while the real one climbs the back of the screen, and the bells on the Temple Terraces start and do not stop. In week one the Host rolls in to cheers, tells the ladies to stand back, and fires everything it has. The thing eats the shells, and then a tank. The researcher begs them not to shoot it: six academies have put in for a sample. The sisters rope the porch swing to the roof of the car and leave with everyone else. They left the porch light on. They leave it on. It is a classic 1950s monster picture told from the town's side, and it ends the way those do: THE END, with a question mark. Nobody in it learns what fell. The three narrator lines on page one and the Watch's radio call are the opening film's own (notes/BMOVIE-SHOTLIST.md); the rest is new.",
   "nsfw": false,
-  "content": "A 1950s B-movie monster comic, work-safe: dread and a creeping monster are fine; no gore, no nudity, no sex.",
+  "content": "A 1950s B-movie monster comic, work-safe: dread, a creeping monster and a town that loses are fine; nobody is shown being hurt; no gore, no nudity, no sex.",
   "style": {
     "modelId": "seegen:gpt-image-2",
-    "look": "A frame from a 1950s colour science-fiction monster film, shot on a studio backlot at night: saturated three-strip Technicolor, theatrical studio lighting with deep black shadows and coloured gels, a painted-backdrop night sky, the slight softness of old lenses, film grain. The town is a pastel insect suburb: rounded single-storey houses of pale wasp paper and wax in mint, butter yellow, powder blue and salmon pink, round windows, striped awnings, white picket fences of wax, small beetle-shaped cars with white-wall tyres. Every person in this world is an insect with human posture: there are no humans and no human faces anywhere. No crosses, no religious symbols.",
+    "look": "A frame from a 1950s colour science-fiction monster film shot on a studio backlot: lurid saturated three-strip Technicolor, hard theatrical key light with deep black shadows, toxic green and magenta rim light from coloured gels off screen, a painted backdrop sky, film grain, the slight softness of old lenses. The town is a pastel insect suburb: rounded single-storey houses of pale wasp paper and wax in mint, butter yellow, powder blue and salmon pink, round windows, striped awnings, white picket fences of wax, dandelion-clock trees, small beetle-shaped cars with white-wall tyres, a civil-defence siren on a pole at the corner. Every person in this world is an insect with human posture and human body language: two legs, four arms with small hands, an insect head with large expressive pale amber eyes, small mandibles like a mouth, antennae that move like eyebrows, dark umber chitin instead of skin. There are no humans and no human faces anywhere. Any sign, newspaper or screen carries abstract glyphs, never readable lettering. No crosses, no stars of any religion, no religious symbols.",
     "width": 1536,
     "height": 1024
   },
   "cast": [
     {
-      "id": "mabel",
-      "name": "Mabel",
-      "description": "an insect townswoman: human posture, four arms with small hands, an insect head with large expressive dark eyes, small mandibles, antennae that move like eyebrows, dark umber chitin. She wears a 1950s mint-green polka-dot house dress with a white apron and a string of pearls",
+      "id": "dot",
+      "name": "Dot",
+      "description": "an insect townswoman, cheerful and domestic. She wears a 1950s mint-green polka-dot house dress with a white apron and a string of pearls",
       "balloon": "white"
     },
     {
-      "id": "earl",
-      "name": "Earl",
-      "description": "an insect townsman, Mabel's husband: human posture, four arms with small hands, an insect head with large expressive dark eyes, small mandibles, short antennae, dark umber chitin. He wears a 1950s short-sleeved checked shirt, a narrow tie, high-waisted trousers and a trilby hat, and holds a pipe in his mandibles",
+      "id": "marge",
+      "name": "Marge",
+      "description": "an insect townswoman, Dot's sister, dry and unbothered. She wears a 1950s checked work shirt with the sleeves rolled up, high-waisted brown slacks and a knotted headscarf, and holds a short pipe in her mandibles",
       "balloon": "amber"
+    },
+    {
+      "id": "watch",
+      "name": "the Watch captain",
+      "description": "an insect woman of the Civil Watch, the town's volunteer responders: a white dome helmet, a dark armband, a belted raincoat thrown on over a nightdress, a heavy flashlight in one hand and a walkie-talkie in another",
+      "balloon": "blue"
+    },
+    {
+      "id": "doc",
+      "name": "Doctor Sheaf",
+      "description": "a tall thin insect scientist from the ministry, delighted by everything: a white lab coat with a teal lanyard and badge, safety goggles pushed up on her forehead, a clear specimen jar with steel clamps in one hand, a clipboard in another and a pencil in a third",
+      "balloon": "blue"
+    },
+    {
+      "id": "colonel",
+      "name": "the Colonel",
+      "description": "an insect officer of the Host, the regular army, very upright: a long orange kaftan with gold braid under a dark armoured vest, a gilded pointed dome helmet with its clear visor pushed up, a small plain gold hexagon badge, field glasses on a strap",
+      "balloon": "white"
     }
   ],
   "panels": [
     {
+      "id": "town",
+      "picture": "Night over the pastel suburb, seen from above the rooftops: porch lights glowing, television aerials, a water tower, the siren pole on the corner, a painted sky full of stars. Nobody is in the street. The upper third of the frame is calm starry sky.",
+      "cast": [],
+      "camera": "high, wide, looking down the street",
+      "words": [{ "kind": "narration", "text": "Luckwell Gardens. A quiet little town, on a quiet summer night." }]
+    },
+    {
       "id": "porch",
-      "picture": "A quiet street of the insect suburb at night, porch lights glowing. Mabel and Earl sit side by side on the porch swing of a butter-yellow house; Earl holds an open newspaper in two hands, Mabel knits with all four. The upper half of the frame is the painted night sky, empty and calm.",
-      "cast": [
-        "mabel",
-        "earl"
-      ],
-      "camera": "wide, from the street",
+      "picture": "The porch of a butter-yellow house at night. Dot and Marge sit side by side on the porch swing with glasses of lemonade; Dot knits with two of her hands, Marge reads a newspaper held in two of hers. The blue glow of a television comes from the round window behind them. The upper left of the frame is dark sky.",
+      "cast": ["dot", "marge"],
+      "camera": "medium wide, from the front path",
+      "words": [{ "kind": "narration", "text": "Where the porch lights glow, the neighbours wave, and nothing, ever happens." }]
+    },
+    {
+      "id": "star",
+      "picture": "On the porch: Dot has stood up and points at the sky with two of her arms, antennae straight up. Marge stays on the swing behind her newspaper and does not look. In the painted night sky above the rooftops there is one small red star, brighter than the rest.",
+      "cast": ["dot", "marge"],
+      "camera": "medium, slightly low, the sky large above them",
       "words": [
-        {
-          "kind": "narration",
-          "text": "Nothing ever happened in Honeycomb Heights."
-        }
+        { "who": "dot", "text": "Marge. That star is getting bigger." },
+        { "who": "marge", "text": "Stars do that, Dot." }
       ]
     },
     {
-      "id": "streak",
-      "picture": "On the porch: Mabel has stood up and points at the sky with two of her arms, antennae straight up in alarm. Earl stays on the swing and lowers his newspaper a little, unbothered. Across the painted night sky above the rooftops, a bright green streak with a long tail.",
-      "cast": [
-        "mabel",
-        "earl"
-      ],
-      "camera": "medium, slightly low",
-      "words": [
-        {
-          "who": "mabel",
-          "text": "Earl. Earl, the sky is doing something."
-        },
-        {
-          "who": "earl",
-          "text": "The sky does that, dear."
-        }
-      ]
+      "id": "fall",
+      "picture": "A burning living meteor, red and wet inside its fire, tears across the night sky low over the pastel rooftops, trailing flame. In the street below, townswomen in nightdresses and hair curlers dive to the pavement; a hat is blowing away; the windows of a beetle-shaped car are lit orange.",
+      "cast": [],
+      "camera": "wide, from street level, the meteor crossing the top of the frame",
+      "words": [{ "kind": "narration", "text": "Until something came down, out of the sky!" }]
     },
     {
       "id": "impact",
-      "picture": "The far end of the street: a glowing, steaming crater in the middle of the road, a beetle-shaped car tipped on its side, the wax picket fences nearby melted and sagging. Insect neighbours in dressing gowns and hair curlers stand in a frightened group at a distance, lit pink by the glow from the crater.",
+      "picture": "The far end of the street: a fireball blooming between a brick schoolhouse and a lit laundromat, debris in the air, the water tower in black silhouette against the fire.",
       "cast": [],
-      "camera": "wide, high angle",
-      "words": [
-        {
-          "kind": "sound",
-          "text": "KRA-KOOM"
-        }
-      ]
+      "camera": "wide, down the length of the street",
+      "words": [{ "kind": "sound", "text": "KRA-KOOM" }]
+    },
+    {
+      "id": "rock",
+      "picture": "Smoke rolling down the street toward a red glow. The Watch captain stands at the edge of the smoke with her back half turned to it, one hand raised flat to wave the neighbours back, her flashlight in another. Behind her two more Civil Watch volunteers in white helmets walk on into the smoke, their flashlight beams swinging. In the foreground the backs of a few townswomen in nightdresses.",
+      "cast": ["watch"],
+      "camera": "medium, from among the neighbours",
+      "words": [{ "who": "watch", "text": "Civil Watch. Back indoors, ladies. It's a rock." }]
     },
     {
       "id": "crater",
-      "picture": "Mabel and Earl stand at the rim of the crater in their night clothes over their day clothes, lit from below by a sickly pink glow, looking down. In the crater lies a lump the size of a barrel of salmon-pink wet muscle armoured with plates of dark chitin and ivory bone, pulsing. The upper third of the frame is dark sky.",
-      "cast": [
-        "mabel",
-        "earl"
-      ],
-      "camera": "low, from inside the crater looking up at them",
+      "picture": "The crater in the middle of the street, steaming. The Watch captain crouches at its rim with her walkie-talkie raised to her mandibles and her flashlight beam pointed down into it. In the crater a living pod the size of a barrel has split open: salmon-pink wet muscle armoured with plates of dark chitin and ivory bone, glowing red from inside. The upper third of the frame is black smoke.",
+      "cast": ["watch"],
+      "camera": "low, from inside the crater looking up at her",
+      "words": [{ "who": "watch", "text": "Civil Watch to base. We are at the crater now. There is something in it. It is moving." }]
+    },
+    {
+      "id": "beam",
+      "picture": "Close: a single wet red tendril rises out of thick smoke into the white cone of a flashlight beam. Nothing else is in the frame but smoke and the beam.",
+      "cast": [],
+      "camera": "close, the beam cutting across the frame"
+    },
+    {
+      "id": "flashlight",
+      "picture": "The pavement at the crater's edge, a moment later. A heavy flashlight lies on its side, still lit, its beam raking across rubble. Beside it a white dome helmet rocks on its crown. A walkie-talkie lies face up. Nobody is there. A thin film of dark maroon veined skin is creeping across the pavement toward them.",
+      "cast": [],
+      "camera": "ground level, very low",
+      "words": [{ "kind": "sound", "text": "kssshhhh..." }]
+    },
+    {
+      "id": "post",
+      "picture": "Just before dawn. The Civil Watch post on the corner: a small booth of pale wax with its door standing open and its lamp on. Inside, a row of empty hooks where helmets hang, a radio set hissing, a kettle on a little stove with steam still rising from it. Dot and Marge stand in the doorway looking in; Dot has her hands to her mandibles.",
+      "cast": ["dot", "marge"],
+      "camera": "medium, from inside the booth looking out at them",
       "words": [
-        {
-          "who": "earl",
-          "text": "Well. It's not from the hardware store."
-        }
+        { "who": "marge", "text": "Three of them went up there." },
+        { "who": "dot", "text": "And the kettle's still warm." }
       ]
     },
     {
-      "id": "creep",
-      "from": "crater",
-      "picture": "The same place a few seconds later: thin dark maroon veins of creep, matte and branching, have spread out of the crater across the road to their feet. Mabel grips Earl's arm with three of her hands. Earl's pipe has dropped from his mandibles.",
-      "cast": [
-        "mabel",
-        "earl"
-      ],
-      "camera": "low, from inside the crater looking up at them",
+      "id": "paper",
+      "picture": "Morning on the porch. A folded newspaper lies on the top step: its front page is one big photograph of a smoking crater under a headline of abstract glyphs. Marge has picked up a second copy and reads it standing, pipe in her mandibles; Dot looks over her shoulder. At the end of the street behind them, a low red glow that has not gone out with the sunrise.",
+      "cast": ["dot", "marge"],
+      "camera": "medium, from the lawn",
       "words": [
-        {
-          "who": "mabel",
-          "text": "Earl. It's GROWING."
-        }
+        { "kind": "narration", "text": "The morning papers called it a meteor." },
+        { "who": "marge", "text": "Meteors don't have a pulse, Dot." }
       ]
     },
     {
-      "id": "run",
-      "picture": "Mabel and Earl run down the middle of the street toward us, all eight arms pumping, Earl holding his trilby on with one hand. Behind them thin dark maroon veins of creep climb the walls of the pastel houses like ivy and spread across the road, flat as a stain. There is no giant creature anywhere: the only monster is the creep. Insect neighbours scatter in every direction. The top left of the frame is dark sky.",
-      "cast": [
-        "mabel",
-        "earl"
-      ],
-      "camera": "wide, low, the street running away behind them",
+      "id": "sash",
+      "picture": "The front lawn in daylight. Dot is tying an orange sash across Marge's checked shirt; Marge holds an old pump shotgun with a small orange pennant tied to its barrel and wears a pointed dome helmet far too big for her. In the street behind them neighbours in house dresses and aprons, each with an orange sash, are forming two lines with shotguns, garden forks and a rolling pin beside a parked ice-cream van.",
+      "cast": ["dot", "marge"],
+      "camera": "medium wide",
       "words": [
-        {
-          "kind": "narration",
-          "text": "It came down, out of the sky."
-        },
-        {
-          "kind": "sound",
-          "text": "EEEEEEEE"
-        }
+        { "who": "dot", "text": "The Watch board says every street sends six." },
+        { "who": "marge", "text": "Then our street sends six." }
       ]
+    },
+    {
+      "id": "line",
+      "picture": "The end of the street. Marge and five neighbours in orange sashes and oversized dome helmets kneel in a line behind two overturned beetle-shaped cars and a wax picket fence, firing shotguns. Coming toward them across the lawns, slow as a tide: a living skin that is dark maroon, matte and veined, thick on the rooftops behind it and a thin film on the road.",
+      "cast": ["marge"],
+      "camera": "wide, from behind the barricade",
+      "words": [{ "kind": "sound", "text": "BLAM BLAM BLAM" }]
+    },
+    {
+      "id": "annoyed",
+      "from": "line",
+      "picture": "The same barricade, a little later: the maroon veined skin has climbed the overturned cars to their roofs and is folding over the picket fence. The neighbours are backing away. Marge has lowered her shotgun and stands looking at it, pipe still in her mandibles, more insulted than afraid.",
+      "cast": ["marge"],
+      "camera": "wide, from behind the barricade",
+      "words": [{ "who": "marge", "text": "It isn't even annoyed." }]
+    },
+    {
+      "id": "ministry",
+      "picture": "A black official beetle-shaped car has pulled up at the kerb with its door open. Doctor Sheaf has stepped out of it beaming, jar and clipboard held high, looking past everyone at the red glow up the street. Marge stands in front of her with the shotgun over her shoulder and the orange sash still on, unimpressed. The upper right of the frame is pale sky.",
+      "cast": ["doc", "marge"],
+      "camera": "medium, at the kerb",
+      "words": [
+        { "who": "doc", "text": "Doctor Sheaf, the ministry! I'm here to look at the crater." },
+        { "who": "marge", "text": "Stand still. It's coming to look at you." }
+      ]
+    },
+    {
+      "id": "sample",
+      "picture": "Doctor Sheaf crouches at the edge of the maroon veined skin on the pavement, holding a pair of steel tongs in one hand and her open specimen jar in another, writing on her clipboard with a third, antennae quivering with delight. A thin red tendril is curling up out of the skin toward her shoe. She has not noticed.",
+      "cast": ["doc"],
+      "camera": "low and close, at the level of the pavement",
+      "words": [
+        { "who": "doc", "text": "Remarkable. It isn't on any chart we have. And it's growing!" },
+        { "who": "doc", "text": "Oh, the academies will be furious I got here first." }
+      ]
+    },
+    {
+      "id": "drivein",
+      "picture": "Evening at the town's drive-in: rows of beetle-shaped cars facing a huge outdoor screen. On the screen, a black-and-white monster picture: a rubber-suit monster looms over a model city. In the cars, insect townswomen watch with paper cups and popcorn. Nobody is looking at the back of the screen, where dark maroon veined skin is climbing the scaffolding and has just curled over the top edge.",
+      "cast": [],
+      "camera": "wide, from behind the last row of cars",
+      "words": [{ "kind": "sound", "text": "RAAAGH!" }]
+    },
+    {
+      "id": "bells",
+      "picture": "Night. Dot at her kitchen window, seen from outside through the round window: she is folding a dress into an open suitcase on the table and has stopped to look out and up. Reflected in the glass and rising on the hill behind the houses: terraces of domed towers with plain gold hexagons at their tops, every bell in them swinging. At the end of the street, the red glow, nearer.",
+      "cast": ["dot"],
+      "camera": "medium, from the garden looking in",
+      "words": [
+        { "kind": "narration", "text": "The bells on the Temple Terraces started that night. They did not stop." },
+        { "kind": "sound", "text": "DONG... DONG... DONG..." }
+      ]
+    },
+    {
+      "id": "host",
+      "picture": "Dawn on the main street. A column of the Host rolls into town: ironclad beetle tanks whose shells are gilded onion domes in six armour segments with an orange band around the base and a stubby gun barrel, and behind them ranks of soldiers in long orange kaftans and pointed dome helmets. The Colonel stands very upright in the lead tank's hatch. Townswomen line the pavement cheering and waving handkerchiefs.",
+      "cast": ["colonel"],
+      "camera": "low, wide, the column coming toward us",
+      "words": [
+        { "kind": "narration", "text": "Week one." },
+        { "who": "colonel", "text": "Stand back, ladies. The Host has the matter in hand." }
+      ]
+    },
+    {
+      "id": "fire",
+      "picture": "The tanks are drawn up in a line across the lawns of the suburb, all firing at once, flame at every barrel. Their target fills the far end of the street and rises over the rooftops: a great pulsing hill of salmon-pink wet muscle armoured with plates of dark chitin and ivory bone, tendrils unfurling from it. The Colonel watches through her field glasses from the lead tank.",
+      "cast": ["colonel"],
+      "camera": "wide, from behind the line of tanks",
+      "words": [{ "kind": "sound", "text": "BOOM BOOM BOOM" }]
+    },
+    {
+      "id": "shells",
+      "from": "fire",
+      "picture": "The same line of tanks as the smoke clears. The great hill of muscle and bone is bigger than before, and the shell holes in it are closing over. Two thick tendrils have wrapped the nearest beetle tank and are lifting it off the ground. The Colonel has lowered her field glasses and stares, perfectly still.",
+      "cast": ["colonel"],
+      "camera": "wide, from behind the line of tanks",
+      "words": [
+        { "who": "colonel", "text": "It is eating the shells." },
+        { "who": "Gunner", "text": "Ma'am. It's eating the tank." }
+      ]
+    },
+    {
+      "id": "forms",
+      "picture": "Doctor Sheaf has run out in front of the guns and stands between the Colonel and the monster with all four arms spread wide, a thick sheaf of official forms flying loose from her clipboard. The Colonel, on foot now beside her tank, looks down at her without expression. Behind the doctor, very large and out of focus, the pink hill of muscle.",
+      "cast": ["doc", "colonel"],
+      "camera": "medium, the two of them face to face",
+      "words": [
+        { "who": "doc", "text": "Don't shoot it! Six academies have put in for a sample!" },
+        { "who": "colonel", "text": "Doctor. It has put in for us." }
+      ]
+    },
+    {
+      "id": "leaving",
+      "picture": "Dusk. A long line of beetle-shaped cars is leaving town, loaded with suitcases. In the nearest one Marge drives, pipe in her mandibles, with the wooden porch swing roped to the roof. Dot is turned around in the passenger seat looking back through the rear window. Behind them the pastel houses are wrapped in dark maroon veined skin and the siren pole on the corner is wound with it.",
+      "cast": ["dot", "marge"],
+      "camera": "medium, from the roadside as the car passes",
+      "words": [
+        { "who": "dot", "text": "Marge. We left the porch light on." },
+        { "who": "marge", "text": "Leave it on, Dot." }
+      ]
+    },
+    {
+      "id": "end",
+      "picture": "Night. The porch of the butter-yellow house, empty: two hooks in the ceiling where the swing hung, two glasses of lemonade still on the rail. The porch light is on, the only light in the street. Dark maroon veined skin has covered the lawn and the picket fence and is climbing the porch steps toward the light. The upper half of the frame is black sky.",
+      "cast": [],
+      "camera": "medium wide, from the front path, the same view as the first night",
+      "words": [{ "kind": "narration", "text": "THE END?" }]
     }
   ],
-  "pages": {
-    "perPage": 6
-  }
+  "pages": { "perPage": 6 }
 }
