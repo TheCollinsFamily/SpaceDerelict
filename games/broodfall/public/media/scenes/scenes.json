@@ -3,108 +3,136 @@
   "delegation-understand": {
    "video": "media/scenes/delegation-understand.mp4",
    "poster": "media/scenes/delegation-understand.webp",
-   "seconds": 95.133,
+   "seconds": 87.483,
    "cues": [
     {
      "shot": "open",
      "t0": 0,
-     "t1": 1.61
+     "t1": 1.611
     },
     {
      "shot": "l00",
      "line": 0,
      "who": "Delegate",
      "text": "Visitor! Welcome, welcome. We are so happy you came.",
-     "t0": 1.61,
-     "t1": 9.97
+     "t0": 1.611,
+     "t1": 9.973
     },
     {
      "shot": "l01",
      "line": 1,
      "who": "You",
      "text": "You are happy to see me. Why?",
-     "t0": 9.97,
-     "t1": 13.805
+     "t0": 9.973,
+     "t1": 13.81
     },
     {
      "shot": "l02",
      "line": 2,
      "who": "Delegate",
      "text": "A species that has come as far as yours in technology has obviously evolved past cruelty and violence.",
-     "t0": 13.805,
-     "t1": 23.045
+     "t0": 13.81,
+     "t1": 23.053
     },
     {
      "shot": "l03",
      "line": 3,
      "who": "You",
      "text": "Um. Why would you think that?",
-     "t0": 23.045,
-     "t1": 26
+     "t0": 23.053,
+     "t1": 25.967
     },
     {
      "shot": "l04",
      "line": 4,
      "who": "Delegate",
      "text": "On our planet, technological and moral advancement have almost always gone hand in hand. Was it not the same on yours?",
-     "t0": 26,
-     "t1": 40.873
+     "t0": 25.967,
+     "t1": 35.58
     },
     {
      "shot": "l05",
      "line": 5,
      "who": "You",
      "text": "I don't see why the two would be inherently linked. But yes, we had that pattern on our home planet as well.",
-     "t0": 40.873,
-     "t1": 51
+     "t0": 35.58,
+     "t1": 44.707
     },
     {
      "shot": "l06",
      "line": 6,
      "who": "You",
      "text": "Well. I guess technological advancement is the physical manifestation of a civilisation that has the environment for encouraging ordered thought.",
-     "t0": 51,
-     "t1": 61.73
+     "t0": 44.707,
+     "t1": 54.881
     },
     {
      "shot": "l07",
      "line": 7,
      "who": "You",
      "text": "That would likely correlate with moral development as well. So the link isn't crazy.",
-     "t0": 61.73,
-     "t1": 69.645
+     "t0": 54.881,
+     "t1": 62.458
     },
     {
      "shot": "l08",
      "line": 8,
      "who": "Delegate",
      "text": "Yes! Exactly! That is exactly it!",
-     "t0": 69.645,
-     "t1": 75
+     "t0": 62.458,
+     "t1": 67.815
     },
     {
      "shot": "l09",
      "line": 9,
      "who": "You",
      "text": "So. How can you help?",
-     "t0": 75,
-     "t1": 78.61
+     "t0": 67.815,
+     "t1": 71.046
     },
     {
      "shot": "l10",
      "line": 10,
      "who": "Delegate",
      "text": "We have sympathisers all around the world. We can sabotage the supply lines.",
-     "t0": 78.61,
-     "t1": 86.495
+     "t0": 71.046,
+     "t1": 78.933
     },
     {
      "shot": "l11",
      "line": 11,
      "who": "Delegate",
      "text": "Before each of your missions, name one kind of unit. It will not arrive.",
-     "t0": 86.495,
-     "t1": 95.1
+     "t0": 78.933,
+     "t1": 87.483
+    }
+   ]
+  },
+  "delegation-pledge": {
+   "video": "media/scenes/delegation-pledge.mp4",
+   "poster": "media/scenes/delegation-pledge.webp",
+   "seconds": 12.084,
+   "cues": [
+    {
+     "shot": "l00",
+     "line": 0,
+     "who": "You",
+     "text": "People of this planet. This is the Visitor.",
+     "t0": 0,
+     "t1": 4.81
+    },
+    {
+     "shot": "l01",
+     "line": 1,
+     "who": "You",
+     "text": "We come in peace.",
+     "t0": 4.81,
+     "t1": 7.042
+    },
+    {
+     "shot": "cheer",
+     "t0": 7.042,
+     "t1": 12.084
     }
    ]
   }

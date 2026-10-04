@@ -132,12 +132,36 @@ try {
   await page.evaluate(() => localStorage.setItem('broodfall-media-auto', 'on'));
   await page.locator('.cp-signals [data-meet="delegation"]').click();
   await page.waitForSelector('#newsreel.cs-film video', { timeout: 15000 });
+  // BY DEFAULT NO WORDS ARE SET OVER THE PICTURE (Collins, Oct 4 2026: "the words over the screen look dumb ... make the
+  // default no and have it an option in settings"): while her first line is being said, nothing is in type under it.
+  await page.waitForFunction(() => window.__bfScenes.state().playing?.cue === 'l00', null, { timeout: 40000 });
+  await page.waitForTimeout(1500);
+  const plain = await page.evaluate(() => ({ cue: window.__bfScenes.state().playing?.cue, on: !!document.querySelector('.cs-sub.on'), text: document.querySelector('.cs-sub')?.innerText ?? '' }));
+  check(plain.cue === 'l00' && !plain.on && !plain.text.trim(), 'by default no words are set over the film (the line is heard, not read)');
+  await shot(page, '3a-film-no-words');
+  await page.keyboard.press('Escape');
+  await page.waitForSelector('#newsreel', { state: 'detached', timeout: 10000 }).catch(() => {});
+  // Settings → Subtitles on films: the same film again, with the line being said in type under it.
+  // (Turned on the way he would: back to the planet, the gear, the switch, close; then the first contact again.)
+  await page.locator('.cp-scene [data-act="scene-later"]').click();
+  await page.waitForTimeout(300);
+  await page.locator('[data-act="settings"]').first().click();
+  const sw = page.locator('.st-toggle[data-toggle="subtitles"]');
+  await sw.waitFor({ timeout: 10000 });
+  check((await sw.innerText()).trim() === 'OFF', 'Settings: "Subtitles on films" is there, and OFF by default');
+  await sw.click();
+  check((await page.locator('.st-toggle[data-toggle="subtitles"]').innerText()).trim() === 'ON', 'a click turns it on');
+  await shot(page, '3b-settings-subtitles');
+  await page.locator('.st-close').click();
+  await page.waitForTimeout(300);
+  await page.locator('.cp-signals [data-meet="delegation"]').click();
+  await page.waitForSelector('#newsreel.cs-film video', { timeout: 15000 });
   // (By the line itself, not by the clock: the film's timing changes when it is made again.)
   await page.waitForFunction(() => { const s = document.querySelector('.cs-sub'); return s?.classList.contains('on') && /Welcome, welcome/.test(s.innerText); }, null, { timeout: 40000 });
   const st = await page.evaluate(() => { const v = document.querySelector('#newsreel.cs-film video'); return { t: v.currentTime, muted: v.muted, paused: v.paused, w: v.videoWidth, film: document.querySelector('#newsreel').dataset.film, sub: document.querySelector('.cs-sub')?.innerText ?? '', on: document.querySelector('.cs-sub')?.classList.contains('on') }; });
   check(st.film === 'delegation-understand' && st.w === 1280 && !st.paused, `the film plays full screen: ${st.film}, ${st.w} px wide, at ${st.t.toFixed(1)} s`);
   check(!st.muted, 'with its sound (not muted)');
-  check(st.on && /DELEGATE/i.test(st.sub) && /Welcome, welcome/.test(st.sub), `the line being said is set in type under it: "${brief(st.sub)}"`);
+  check(st.on && /DELEGATE/i.test(st.sub) && /Welcome, welcome/.test(st.sub), `with Subtitles on in Settings, the line being said is set in type under it: "${brief(st.sub)}"`);
   await shot(page, '3-film-delegate');
   await page.waitForFunction(() => /You are happy to see me/.test(document.querySelector('.cs-sub')?.innerText ?? ''), null, { timeout: 30000 });
   const sub2 = await page.locator('.cs-sub').innerText();
@@ -170,9 +194,19 @@ try {
 
   // ---- Side with the Delegation, publicly.
   await page.locator('.cp-signals [data-ally="delegation"]').click();
+  // His broadcast is a film too since Oct 4 2026 (made by the film system at 480p): it plays by itself, then its card.
+  await page.waitForSelector('#newsreel.cs-film video', { timeout: 15000 });
+  await page.waitForFunction(() => document.querySelector('#newsreel.cs-film video')?.currentTime > 2, null, { timeout: 40000 });
+  const pf = await page.evaluate(() => { const v = document.querySelector('#newsreel.cs-film video'); return { film: document.querySelector('#newsreel').dataset.film, muted: v.muted, paused: v.paused, sub: document.querySelector('.cs-sub')?.innerText ?? '' }; });
+  check(pf.film === 'delegation-pledge' && !pf.paused && !pf.muted, `siding with them plays his broadcast as a film (${pf.film}), with its sound`);
+  check(/People of this planet/.test(pf.sub), `and, with Subtitles on, its words: "${brief(pf.sub)}"`);
+  await shot(page, '7a-pledge-film');
+  await page.keyboard.press('Escape');
+  await page.waitForSelector('#newsreel', { state: 'detached', timeout: 5000 });
   await page.waitForSelector('.cp-scene', { timeout: 5000 });
-  const pledge = await page.locator('.cp-scene').innerText();
-  check(/YOUR BROADCAST TO THE PLANET · SIDING WITH THE FRIENDSHIP DELEGATION/.test(pledge) && /We come in peace\./.test(pledge), `his broadcast to the planet: "${brief(pledge)}"`);
+  // The card: its words are folded under THE WORDS (they were just heard); the text content has them.
+  const pledge = await page.locator('.cp-scene').evaluate((el) => el.textContent ?? '');
+  check(/YOUR BROADCAST TO THE PLANET · SIDING WITH THE FRIENDSHIP DELEGATION/i.test(pledge) && /We come in peace\./.test(pledge), `then its card: "${brief(pledge)}"`);
   check(!(await page.locator('.cp-scene .tl-band').count()), 'his own broadcast carries no translation band (nobody is being translated)');
   await shot(page, '7-pledge');
   await page.locator('.cp-scene [data-act="scene-ok"]').click();

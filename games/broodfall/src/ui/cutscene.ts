@@ -12,7 +12,7 @@
  */
 import './cutscene.css';
 import { routeMedia } from '../audio/engine';
-import { gain } from '../meta/storage';
+import { gain, loadSettings } from '../meta/storage';
 import { showLoader, watchBuffering } from './loader';
 import { mediaUrl } from './newsreel';
 import type { Scene } from '../../content/campaign';
@@ -92,7 +92,10 @@ export function playCutscene(id: string, scene: Scene, opts: { kicker?: string }
   window.addEventListener('keydown', onKey, true);
   el.addEventListener('click', (ev) => { ev.stopPropagation(); close('skipped'); });
 
-  // The line being said, by the film's own clock.
+  // The line being said, by the film's own clock: set in type over the picture only when Settings ask for it (off by
+  // default: Collins, Oct 4 2026, "the words over the screen look dumb"). The scene's card has its words either way.
+  const subtitles = loadSettings().subtitles;
+  el.classList.toggle('cs-nosub', !subtitles);
   let shown = '';
   const tick = () => {
     const t = v.currentTime;
@@ -101,7 +104,7 @@ export function playCutscene(id: string, scene: Scene, opts: { kicker?: string }
     if (playing) { playing.t = t; playing.cue = f.cues.find((x) => t >= x.t0 && t < x.t1)?.shot ?? ''; }
     if (key === shown) return;
     shown = key;
-    const html = c ? cueHtml(scene, c) : '';
+    const html = c && subtitles ? cueHtml(scene, c) : '';
     if (html) { sub.innerHTML = html; sub.classList.add('on'); } else sub.classList.remove('on');
   };
   v.addEventListener('timeupdate', tick);

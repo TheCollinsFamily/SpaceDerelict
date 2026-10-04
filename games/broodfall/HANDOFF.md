@@ -189,6 +189,45 @@ is the story as played.
   stillprompts <film>`. `clips <film>` runs IN ORDER: each clip is transcribed, cut 0.55 s after its last word on a
   whole frame (`<shot>.cut.json`), and the frame at the cut is the next clip's first frame. `clips <film> <shot>` makes
   one. `redo <film> <shot>` moves that clip AND every clip that went on from it aside (`vN/`).
+- **THE FILM SYSTEM (Collins, Oct 4 2026: "truly truly well done; we need to build a system for handling videos like
+  this and getting them right on the first try going forward").** One command:
+  `npx vite-node tools/media/cutscenes.ts -- make <film>` (and `gates <film>` for the checks alone, on what is made).
+  1. **Its pictures** are drawn if they are not (`stills`).
+  2. **Each exchange** (several lines in one clip: next bullet) is generated IN ORDER on `atlascloud:seedance-2.5-i2v`
+     (ImageRouter's own account was out of credits that day; it is the second choice) at **480p**, the lowest quality,
+     by his word ("feel free to try at lowest quality with the next one; I usually use it and have not run into issues
+     and it would save us a ton"); `CUTSCENE_TALK_RES=720p` for the other (2.25 times the price).
+  3. **THE GATES** on every clip before the next is built on it (`talkGates`); a clip that fails is moved to
+     `talk/rejected/` with why, and made again, up to `TALK_TRIES` (3) times:
+     WORDS (every line heard, 80% or more), AD-LIB (nothing much said that is not written), HIS VOICE (his lines under
+     175 Hz), HIS FACE (eight frames of the clip are shown to a model that sees, rfab.ai's chat, and it is asked whether
+     his face shows: it caught both Veo clips where he turned and passed the clean one), STATIC (the same question, and
+     the specks counted), BRIGHT, SOFT, SILENCE (a clip that is mostly dead air).
+  4. **The join is made by RFab's video editor** (`editorAssemble`): the clips are uploaded as made
+     (`POST /api/video-editor/upload-clip`), and one `POST /api/video-editor/assemble-async` with the kept ranges of
+     each clip in order (`preserveOrder: true`) renders the film; `GET /assemble-status/:id` is polled and `finalUrl`
+     downloaded. About 1,500 tokens a film. Hard cuts, picture and sound, as every Transcript Editor export gets.
+     NOTHING is cut, faded, dissolved or blurred here: a bake that did (a dissolve from a held frame at every cut, a
+     blur ramp at each join, the sound faded to nothing and back) was sent back the same hour ("NOT clean at all, it
+     makes like a whooshing sound there now and the film blurs").
+  5. **NO DEAD AIR** (`deadAir`, `keepRanges`): the head of a clip that goes on from another is cut to 0.5 s before
+     its first word; a silence of 1.4 s or more between two words is cut down to 0.9 s from its middle. How long a
+     silence is, is measured in the sound; where a cut may go is bounded by the words' own times, so no cut can touch
+     a word (one went through "Well."). A sound of 0.3 s or more between two silences is kept (an "um" the transcript
+     dropped). The prompt also says the first line comes at once and no silence is long, and a clip is not given
+     seconds to spare (it fills them with silence).
+  6. **THE FILM'S GATES** (`filmGates`, `filmWords`): its cues are its shots in order; no silence over 1.65 s is left;
+     brightness and sharpness steady within each place; and the baked film itself is HEARD: every line in it, in order.
+  7. **The Desktop** (`desk`): the film and its sheet. No copy with the words burned in unless asked (`desk <film> words`).
+  - **First run:** `make delegation-pledge` (a new place, him alone aboard, then a crowd): both clips passed every
+    gate the first time, 12.1 s, $2.68 with its two pictures.
+  - **TOOLS THE RFAB API LACKS, TO BUILD INTO IT** (his word: "the more tools we build into the api and make sure work
+    the better"; all three are worked round or done without today): (a) **dead air found by the server** (an option
+    on `/assemble-async`, or a route, that takes a clip and returns or applies the tightened ranges: today only the
+    browser computes them, `transcript-editor.component.ts` GAP_KEEP_SECONDS); (b) **an audio crossfade at a cut**
+    (`assembleFromRanges` declares `crossfadeMs = 20` and never reads it; the wiki lists it as open); (c) **an output
+    size and quality** (the render is the first source's size at CRF 23: the first film went from 24 MB to 9 MB).
+    Each is a backend change and a deploy, which is Collins's.
 - **A FILM IS MADE OF ACTED EXCHANGES (Collins, Oct 4 2026, of the remake made one line a clip on Veo 3.1 Lite: "the
   words sound like they were generated with AI then the video was created around them; that sounds stilted ... all the
   frontier video models can do talking"; "it's like the video goes static in the last 20 seconds").** The way that
@@ -208,13 +247,13 @@ is the story as played.
   - **Do not go back to** one line a clip, a cut 0.55 s after a line's last word, loudness levelled line by line, or
     Veo 3.1 Lite for speech: that is what sounded stilted.
 - **THE STEADINESS OF A FILM IS MEASURED:** `python tools/measure/film-steady.py <film> [join,join,...]` prints
-  sharpness, brightness and specks through the baked film and either side of each join. The first film: brightness 57
-  to 61 from first frame to last, sharpness 270 to 330 (its last clip 212 to 280), specks never rising.
+  sharpness, brightness and specks through the baked film and either side of each join. The first film: brightness 59
+  to 61 from first frame to last, specks never rising.
   - **Sharpness is held** (`talkStartFrame`): a model softens the picture it is handed in its first half second (to
     about 0.7 of it) and holds that, so clip after clip the film went soft (the fourth clip had 17% of the first's fine
     detail). The frame a clip starts from is sharpened back to its take's first frame (an unsharp mask, its amount found
-    by measuring); the bake softens the first half second of such a clip a little (`TALK_HEAD_BLUR`) so the join does
-    not pulse.
+    by measuring). (The bake used to blur the head of such a clip so the join did not pulse: that blur is gone with the
+    rest of the hand-made join; the head is cut to half a second before the first word instead.)
   - **A frame index one past the end bleaches a film.** `colourOf` on a frame that is not there measured black, and the
     "correction" for black (+45, x1.3) was painted into the next clip's start frame and ramped over two clips. Frames
     are counted now (`frameCount`), and a missing frame is an error.
@@ -237,8 +276,13 @@ is the story as played.
   `clips` also stops a take when a clip's SPECKS at its cut pass 1.6 times the take's first frame. Raw: `art-src-new/cutscenes/` (stills are shared between films;
   clips per film; v1/ holds what was remade). Baked: `public/media/scenes/<film>.mp4` + `.webp` + `scenes.json` (its
   OWN manifest: the bake never touches media.json or roach.json).
-- **Made (the take in the game, Oct 4 2026 evening):** `delegation-understand` as four acted exchanges on Seedance 2.5 at
-  720p: 95.1 s, he is seen from behind in every frame, no specks, the picture steady (numbers above). Every line was
+- **Made by the system:** `delegation-pledge` ("We Come in Peace"), 480p, 12.1 s, first try.
+- **Subtitles are OFF by default** (Collins: "the words over the screen look dumb, I don't think we need that, or at
+  least make the default no and have it an option in settings"): Settings → SOUND → "Subtitles on films"
+  (`Settings.subtitles`, `src/ui/cutscene.ts`, and the Roach King's addresses in `src/ui/roachKing.ts`). A scene's words
+  are on its card either way. `tools/shot-cutscenes.mjs` checks both states.
+- **Made (the take in the game, Oct 4 2026 evening; its dead air out and joined by the editor: 87.5 s):**
+  `delegation-understand` as four acted exchanges on Seedance 2.5 at 720p: 95.1 s as generated, he is seen from behind in every frame, no specks, the picture steady (numbers above). Every line was
   heard (the lowest 83%: an "Um" the transcriber did not write); his pitch 113 to 139 Hz; hers 157 to 262 Hz (the high
   ones are her greeting and "Yes! Exactly!"). Its last clip is on the other provider and is a little softer, and in it
   she walks up close to him. NOBODY HAS LISTENED TO IT. Cost: the four clips in it about $44; with the comparison

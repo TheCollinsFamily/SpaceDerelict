@@ -1327,6 +1327,9 @@ text is kept word for word in `notes/CUTSCENES-2026-10-03.md`, and the story as 
      and of its end: "it's like the video goes static in the last 20 seconds"). A film is a few EXCHANGES, each a clip
      of up to 30 seconds in which the model plays the turn-taking, the pauses and the listening itself (Seedance 2.5).
      Never one line a clip, never a cut half a second after a line's last word.
+  5. **No dead air** ("there is a long period of dead space before she says ...", "and a gap before ..."): no silence
+     over about a second; cuts go between two words and are made by RFab's own video editor, not by hand.
+  6. **No words over the picture** unless Settings turn subtitles on ("the words over the screen look dumb").
   `content/cutscenes.ts` is written to these (its header carries them; `tests/cutscenes.test.ts` holds them). What a
   chained take needs so that it does not rot as it goes (colour, sharpness, drifting motes, every link looked at) is
   in HANDOFF.md "The cut scenes as films".

@@ -119,6 +119,7 @@ function render(): void {
         ${slider('sfx', 'Effects', 'the body, the hive, the console')}
         ${toggle('yoke-voice', !y.muted, 'YOKE\'s voice', 'off: her words are read, not heard')}
         ${toggle('unfocused', s.muteUnfocused, 'Mute when away', 'silent while another window is in front')}
+        ${toggle('subtitles', s.subtitles, 'Subtitles on films', 'the words set in type over a film as they are said')}
       </section>
       <section><h3>THE SCREEN</h3>
         <div class="st-row col"><span>HUD style<small>how a deployment's screen is drawn</small></span>
@@ -204,6 +205,7 @@ function onClick(ev: MouseEvent): void {
     if (d.toggle === 'flashes') s.reduceFlashes = !s.reduceFlashes;
     if (d.toggle === 'edge') s.edgeScroll = !s.edgeScroll;
     if (d.toggle === 'unfocused') s.muteUnfocused = !s.muteUnfocused;
+    if (d.toggle === 'subtitles') s.subtitles = !s.subtitles;
     change(s);
     return;
   }

@@ -135,7 +135,8 @@ export function playAddress(a: RoachAddress): RoachHandle {
     const advance = () => { if (advanced) return; advanced = true; next(); };
     const go = () => {
       v.classList.add('on'); layers[top].classList.remove('on'); layers[top].pause(); top = 1 - top;
-      if (s.line) {
+      // His words in type under the picture: only when Settings ask for subtitles (off by default, Oct 4 2026).
+      if (s.line && loadSettings().subtitles) {
         sub.innerHTML = lineHtml(`${SPEAKER}: ${s.line}`);
         sub.classList.add('on');
         decode(sub, 520);

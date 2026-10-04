@@ -76,6 +76,26 @@ a row, and nobody acting a conversation.
   Hz in her calm lines and near 240 to 260 Hz in her two excited ones. Nobody has listened to it: I cannot.
 - **Cost:** the four clips about $44; the evening about $97 with the comparison and the clips made again.
 
+## 2c. What he said of that take, and the system
+
+Collins: "wow this is like 500% better; one issue to fix and look for in future videos: there is a long period of dead
+space before she says 'On our planet, technological and moral ...'", "and a gap before 'That would likely correlate
+with moral ...'", "but other than that truly truly well done; we need to build a system for handling videos like this
+and getting them right on the first try going forward", "feel free to try at lowest quality with the next one", "the
+words over the screen look dumb ... make the default no and have it an option in settings". And of my first fix of the
+dead air: "where you made the cut and fix at 0:44 was NOT clean at all, it makes like a whooshing sound there now and
+the film blurs ... look at our editing system for the rfab video editor ... it never breaks with that (and the more
+tools we build into the api and make sure work the better)".
+
+- **Dead air:** the 4.8 s before "On our planet" and the pause before "That would likely correlate" are cut, with three
+  others the same rule found; the film is 87.5 s. The whoosh at 0:44 was a cut of mine that went through the word
+  "Well." (two silences with one word between them, treated as one), under a dissolve and a blur of mine.
+- **The join is the RFab editor's now**, over its API: the clips uploaded as made, one assemble call with the kept
+  ranges. Nothing is cut, faded or blurred by this repo's tools.
+- **The system:** `make <film>` (HANDOFF.md "THE FILM SYSTEM"). Its first run made the second film,
+  `delegation-pledge`, at 480p: both clips through every gate the first time.
+- **Subtitles** are off by default, with a switch in Settings.
+
 ## 2. The FIRST test film (Oct 3; rejected Oct 4): how it was made, what it cost
 
 - **Method** (the Roach King's, generalised): a still per camera position, drawn from the faction leader's portrait

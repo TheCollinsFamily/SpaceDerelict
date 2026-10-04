@@ -78,6 +78,8 @@ async function player(browser, name, { record = false } = {}) {
     localStorage.setItem('broodfall-yoke', JSON.stringify({ mode: 'scripted' }));
     localStorage.setItem('broodfall-intro-seen', '1');
     localStorage.setItem('broodfall-media-auto', 'on');
+    // His line in type under the picture is a Settings option now (off by default, Oct 4 2026): on, for the checks that read it.
+    localStorage.setItem('broodfall-settings', JSON.stringify({ subtitles: true }));
   });
   await page.route('**/rfab-api/**', (r) => r.fulfill({ status: 404, body: '{}' }));
   return { ctx, page, errors, name, opened: Date.now() };

@@ -38,6 +38,12 @@ export interface Settings {
   muteUnfocused: boolean;
   /** The landing film before a deployment (src/ui/landing.ts): every time, the first time on each tile set, or never. */
   landingFilms: LandingFilms;
+  /**
+   * The words of a film set in type over the picture as they are said (cut scenes, the Roach King's addresses). OFF
+   * unless he turns it on (Collins, Oct 4 2026: "the words over the screen look dumb, I don't think we need that, or at
+   * least make the default no and have it an option in settings"). A scene's words can always be read on its card.
+   */
+  subtitles: boolean;
 }
 
 export type LandingFilms = 'always' | 'first' | 'never';
@@ -55,6 +61,7 @@ export const DEFAULT_SETTINGS: Settings = {
   casteTints: 'standard',
   muteUnfocused: true,
   landingFilms: 'always',
+  subtitles: false,
 };
 
 /**
@@ -98,6 +105,7 @@ export function settingsFrom(raw: unknown): Settings {
     casteTints: r.casteTints === 'safe' ? 'safe' : 'standard',
     muteUnfocused: r.muteUnfocused !== false,
     landingFilms: r.landingFilms === 'first' || r.landingFilms === 'never' ? r.landingFilms : 'always',
+    subtitles: r.subtitles === true,
   };
 }
 

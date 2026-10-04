@@ -9,6 +9,7 @@ import { FACTIONS, type Scene } from '../content/campaign';
 import { FILMS, STILLS, filmOf } from '../content/cutscenes';
 import { ROACH_SCENES } from '../content/roachKing';
 import { scenesOf, speakerOf, spokenText } from '../content/media';
+import { DEFAULT_SETTINGS, settingsFrom } from '../src/meta/settings';
 
 const filmed: Array<{ faction: string; scene: Scene }> = [
   ...FACTIONS.flatMap((f) => scenesOf(f).filter((s) => s.film).map((scene) => ({ faction: f.id as string, scene }))),
@@ -112,6 +113,15 @@ describe('the films of the cut scenes: the shot lists', () => {
     const summit = sceneOfFilm('delegation-understand').scene.lines.join(' ');
     expect(summit).not.toMatch(/snack/i);
     expect(summit).toMatch(/We are so happy you came\./);
+  });
+});
+
+describe('the words over a film', () => {
+  it('are off unless Settings turn them on (Collins, Oct 4 2026: "the words over the screen look dumb ... make the default no")', () => {
+    expect(DEFAULT_SETTINGS.subtitles).toBe(false);
+    expect(settingsFrom({}).subtitles).toBe(false);
+    expect(settingsFrom({ subtitles: true }).subtitles).toBe(true);
+    expect(settingsFrom({ subtitles: 'yes' }).subtitles).toBe(false);
   });
 });
 
