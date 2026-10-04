@@ -118,7 +118,11 @@ export const SFX = [
     prompt: FOLEY + 'A glass tablet is set down calmly on a metal desk: a soft solid clack.' + REPEAT(2) },
   { id: 'pad-lost', for: 'the data pad dropped (lost)', seconds: 6, cut: 'each', max: 2,
     prompt: FOLEY + 'A glass tablet is dropped from a hand onto a metal desk: a hard clattering drop and a short rattle.' + REPEAT(2) },
-  { id: 'intercom-open', for: 'YOKE\'s intercom opens', seconds: 6, cut: 'each', max: 3,
+  // He walks into a room of the ship (src/ui/campaignUi.ts playArrival, Oct 4 2026): single steps, so the game can lay
+  // four of them under the walk at its own pace, no two alike.
+  { id: 'ship-step', for: 'he walks into a room of the ship: one step on the deck plating', seconds: 8, cut: 'each', max: 6,
+    prompt: FOLEY + 'Inside a quiet starship, one single unhurried footstep of a soft-soled boot on ribbed metal deck plating: soft, close, a little hollow.' + REPEAT(6) },
+  { id: 'intercom-open', for:'YOKE\'s intercom opens', seconds: 6, cut: 'each', max: 3,
     prompt: CONSOLE + 'A starship intercom channel opens: a short burst of soft static and a clean two-note rising chime.' + REPEAT(3) },
   { id: 'intercom-close', for: 'YOKE\'s intercom closes', seconds: 6, cut: 'each', max: 3,
     prompt: CONSOLE + 'A starship intercom channel closes: a descending two-note chime and a soft click of static.' + REPEAT(3) },

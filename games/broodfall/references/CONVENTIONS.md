@@ -41,7 +41,7 @@ Assessed against live play (`node tools/shot-ship-arrivals.mjs`) and `notes/scre
 | 19 | It is short, and it can be turned off | YES (3.7 to 3.8 s, in his place by about 2 s; Settings > Reduce motion shows the room's still) | beat `calm` |
 | 20 | The person on screen is the same person in every transition | YES by eye (black shirt, sleeves up, the stylus behind his ear) | `notes/art-review/ship-arrivals/*-strip.jpg` |
 | 21 | Leaving is shown as well as arriving | NO (he is in one room, then walks into the next: a cut) | persona notes, Breaker |
-| 22 | A repeated transition varies | NO (one take a room) | persona notes, Veteran |
+| 22 | A repeated transition varies | YES (two takes a room, played in turn; his steps are picked from six, never the same one twice running) | beat `takes`, `tests/shipArrivals.test.ts` |
 
 ## A collection he keeps, and a reader for it (the comics shelf, Oct 4 2026)
 

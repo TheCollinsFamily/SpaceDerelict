@@ -15,7 +15,8 @@
  *    its picture where he was is laid into frame 0 (found by comparing the two, feathered). Everything else stays
  *    frame 0's own pixels: a clip between two separately drawn pictures of one room morphs the room as it runs (the
  *    pad film's window, Oct 4 2026), and here start and end differ in him alone.
- * 3. THE CLIP (<id>-arrive.mp4): START = the empty room, END = frame 0, camera locked, 1080p like the loops.
+ * 3. THE CLIPS (<id>-arrive.mp4, <id>-arrive-2.mp4): START = the empty room, END = frame 0, camera locked, 1080p like
+ *    the loops. Two takes a room, the second asked for with a different manner, so one walk is not seen every visit.
  * 4. THE BAKE (public/art/ship/loops/arrive-<id>.mp4 + arrive-<id>.webp, its first frame, and `arrive` in loops.json):
  *    the uploaded still's frame dropped, the pace set, the last half second blended into frame 0 so it ends ON it (a
  *    model lands near its end picture, never on it). The landing is measured first (the clip's REAL last frame against
@@ -37,6 +38,17 @@ const MODEL = process.env.SHIP_ARRIVE_MODEL || 'seegen:wan3.0-video';
 const RES = process.env.SHIP_ARRIVE_RES || '1080p';
 const W = 1920, H = 1080, FPS = 24;
 const raw = (id, what) => path.join(DIR, `${id}${what}`);
+/**
+ * Two takes a room, so the same walk is not seen on every visit (the game plays them in turn). Both start on the same
+ * empty room and end on the same first frame of the loop; the second is asked for with a different manner. Take 1 keeps
+ * the plain names (<id>-arrive.mp4, arrive-<id>.mp4); take n > 1 carries its number.
+ */
+const TAKES = Number(process.env.SHIP_ARRIVE_TAKES || 2);
+const tag = (n) => (n > 1 ? `-${n}` : '');
+const MANNER = {
+  1: '',
+  2: ' This time he comes in at a brisker pace and glances once toward the far wall on his way to his place.',
+};
 
 const NONE = 'No text anywhere: no letters, no words, no numbers, no logos. Keep the one small plain gear symbol on the wall ' +
   'exactly as it is.';
@@ -179,12 +191,14 @@ async function stills(items) {
 }
 
 async function clips(items) {
-  const go = items.filter((r) => fs.existsSync(raw(r.id, '-empty.png')));
-  const res = await pool(go, 4, (r) => makeClip({
-    slug: `ship-arrive-${r.id}`, stillFile: raw(r.id, '-empty.png'), endFile: frame0(r), out: raw(r.id, '-arrive.mp4'), models: [MODEL],
-    prompt: r.clip, seconds: 5, raw: true, resolution: RES, aspect: '16:9',
+  const go = items.filter((r) => fs.existsSync(raw(r.id, '-empty.png')))
+    .flatMap((r) => Array.from({ length: TAKES }, (_, k) => ({ r, n: k + 1 })));
+  const res = await pool(go, 4, ({ r, n }) => makeClip({
+    slug: `ship-arrive-${r.id}${tag(n)}`, stillFile: raw(r.id, '-empty.png'), endFile: frame0(r), out: raw(r.id, `-arrive${tag(n)}.mp4`), models: [MODEL],
+    // The manner goes before the locked-camera rule, which stays the prompt's last word.
+    prompt: r.clip.replace(` ${LOCK}`, `${MANNER[n] ?? ''} ${LOCK}`), seconds: 5, raw: true, resolution: RES, aspect: '16:9',
   }));
-  res.forEach((x, i) => { if (!x.ok) console.warn(`[arrive] ${go[i].id} clip failed: ${x.error.message.slice(0, 200)}`); });
+  res.forEach((x, i) => { if (!x.ok) console.warn(`[arrive] ${go[i].r.id} take ${go[i].n} clip failed: ${x.error.message.slice(0, 200)}`); });
 }
 
 /**
@@ -235,53 +249,66 @@ const ENC = ['-an', '-c:v', 'libx264', '-preset', 'slow', '-crf', '20', '-pix_fm
 /** Below this the take did not land on the loop's first frame, and half a second of blending would show as a ghost. */
 const LANDS = Number(process.env.SHIP_ARRIVE_LANDS || 27);
 
-function bake(r) {
-  const clip = raw(r.id, '-arrive.mp4');
+function bake(r, n = 1) {
+  const clip = raw(r.id, `-arrive${tag(n)}.mp4`);
   if (!fs.existsSync(clip)) return null;
   fs.mkdirSync(REV, { recursive: true });
   // The join, measured on the clip's REAL last frame (never assumed from the picture it was aimed at).
   const lands = psnr(lastFrameOf(clip), frame0(r));
   const starts = psnr(clip, raw(r.id, '-empty.png'));
-  if (lands < LANDS) { console.log(`[arrive] ${r.id}: its last frame is ${lands.toFixed(1)} dB from the loop's first (needs ${LANDS}): NOT baked, draw it again`); return { id: r.id, lands, baked: false }; }
-  const plain = raw(r.id, '-plain.mp4');
+  if (lands < LANDS) { console.log(`[arrive] ${r.id} take ${n}: its last frame is ${lands.toFixed(1)} dB from the loop's first (needs ${LANDS}): NOT baked, draw it again`); return { id: r.id, take: n, lands, baked: false }; }
+  const plain = raw(r.id, `-plain${tag(n)}.mp4`);
   ffmpeg(['-i', clip, '-vf', `trim=start_frame=1,setpts=(PTS-STARTPTS)/${r.pace},scale=${W}:${H}:flags=lanczos,fps=${FPS},format=yuv420p`, '-an', '-c:v', 'libx264', '-crf', '14', '-pix_fmt', 'yuv420p', plain], `${r.id} plain`);
   const L = seconds(plain), D = 0.5;
-  const out = path.join(OUT, `arrive-${r.id}.mp4`);
+  const out = path.join(OUT, `arrive-${r.id}${tag(n)}.mp4`);
   ffmpeg(['-i', plain, '-loop', '1', '-t', String(L), '-i', frame0(r), '-filter_complex',
     `[1:v]scale=${W}:${H},fps=${FPS},format=yuva420p,fade=t=in:st=${(L - D).toFixed(3)}:d=${D}:alpha=1[s];[0:v][s]overlay=shortest=1,format=yuv420p`,
     ...ENC, out], `${r.id} lands on the loop`);
-  ffmpeg(['-i', out, '-frames:v', '1', '-c:v', 'libwebp', '-quality', '86', path.join(OUT, `arrive-${r.id}.webp`)], `${r.id} first frame`);
+  // One picture of the empty room for every take (they all start on it): take 1's first frame.
+  if (n === 1) ffmpeg(['-i', out, '-frames:v', '1', '-c:v', 'libwebp', '-quality', '86', path.join(OUT, `arrive-${r.id}.webp`)], `${r.id} first frame`);
   const secs = Math.round(seconds(out) * 1000) / 1000;
-  ffmpeg(['-i', out, '-vf', `fps=${(8 / secs).toFixed(4)},scale=320:-2,tile=8x1`, '-frames:v', '1', '-q:v', '3', path.join(REV, `${r.id}-strip.jpg`)], `${r.id} strip`);
+  ffmpeg(['-i', out, '-vf', `fps=${(8 / secs).toFixed(4)},scale=320:-2,tile=8x1`, '-frames:v', '1', '-q:v', '3', path.join(REV, `${r.id}${tag(n)}-strip.jpg`)], `${r.id} strip`);
   // The hand-over as the game makes it: the arrival's last frame beside the loop's first, and their difference.
   // (Its last frame is kept with the raw art, never beside the baked clip: everything in public/ ships.)
-  const bakedLast = raw(r.id, '-baked-last.png');
+  const bakedLast = raw(r.id, `-baked-last${tag(n)}.png`);
   ffmpeg(['-sseof', '-0.06', '-i', out, '-update', '1', '-frames:v', '1', bakedLast], `${r.id} baked last`);
   ffmpeg(['-i', bakedLast, '-i', frame0(r), '-filter_complex',
-    '[0:v]scale=640:360,split[a][a2];[1:v]scale=640:360,split[b][b2];[a2][b2]blend=all_mode=difference,eq=contrast=3[d];[a][b][d]hstack=inputs=3', '-q:v', '3', path.join(REV, `${r.id}-join.jpg`)], `${r.id} join`);
+    '[0:v]scale=640:360,split[a][a2];[1:v]scale=640:360,split[b][b2];[a2][b2]blend=all_mode=difference,eq=contrast=3[d];[a][b][d]hstack=inputs=3', '-q:v', '3', path.join(REV, `${r.id}${tag(n)}-join.jpg`)], `${r.id} join`);
   const ends = psnr(bakedLast, frame0(r));
-  console.log(`[arrive] ${r.id}: ${secs}s; the take landed ${lands.toFixed(1)} dB from the loop's first frame, baked ${ends.toFixed(1)} dB; starts ${starts.toFixed(1)} dB from the empty room`);
-  return { id: r.id, baked: true, seconds: secs, lands: +lands.toFixed(1), ends: +ends.toFixed(1), starts: +starts.toFixed(1) };
+  console.log(`[arrive] ${r.id} take ${n}: ${secs}s; the take landed ${lands.toFixed(1)} dB from the loop's first frame, baked ${ends.toFixed(1)} dB; starts ${starts.toFixed(1)} dB from the empty room`);
+  return { id: r.id, take: n, baked: true, seconds: secs, lands: +lands.toFixed(1), ends: +ends.toFixed(1), starts: +starts.toFixed(1) };
 }
+
+/** Every take of a room that is on disk, baked. */
+const bakeAll = (r) => Array.from({ length: TAKES }, (_, k) => bake(r, k + 1)).filter(Boolean);
 
 function writeManifest(done) {
   const mf = path.join(OUT, 'loops.json');
   const m = JSON.parse(fs.readFileSync(mf, 'utf8'));
-  for (const d of done) {
-    if (!d?.baked || !m.rooms[d.id]) continue;
-    m.rooms[d.id].arrive = { video: `ship/loops/arrive-${d.id}.mp4`, poster: `ship/loops/arrive-${d.id}.webp`, seconds: d.seconds };
-  }
-  fs.writeFileSync(mf, JSON.stringify(m, null, 2) + '\n');
   const rf = path.join(REV, 'arrivals.json');
   const old = fs.existsSync(rf) ? JSON.parse(fs.readFileSync(rf, 'utf8')) : {};
-  for (const d of done) if (d) old[d.id] = d;
+  for (const takes of done) {
+    const id = takes[0]?.id;
+    if (!id || !m.rooms[id]) continue;
+    for (const d of takes) old[`${id}${tag(d.take)}`] = d;
+    const good = takes.filter((d) => d.baked);
+    const first = good.find((d) => d.take === 1);
+    // Take 1 is the room's arrival; `takes` lists every baked take, played in turn (the game falls back to take 1).
+    if (first) {
+      m.rooms[id].arrive = {
+        video: `ship/loops/arrive-${id}.mp4`, poster: `ship/loops/arrive-${id}.webp`, seconds: first.seconds,
+        takes: good.map((d) => ({ video: `ship/loops/arrive-${id}${tag(d.take)}.mp4`, seconds: d.seconds })),
+      };
+    }
+  }
+  fs.writeFileSync(mf, JSON.stringify(m, null, 2) + '\n');
   fs.writeFileSync(rf, JSON.stringify(old, null, 1) + '\n');
 }
 
 const args = process.argv.slice(2);
 const only = args.filter((a) => !a.startsWith('--'));
 const items = ROOMS.filter((r) => !only.length || only.includes(r.id));
-if (args.includes('--bake')) writeManifest(items.map(bake));
+if (args.includes('--bake')) writeManifest(items.map(bakeAll));
 else if (args.includes('--leave')) {
   ready();
   // A copy of the loop with the raw art: the tail and last frame cut from it are written beside it, never into public/.
@@ -292,7 +319,7 @@ else if (args.includes('--leave')) {
   ready();
   const before = await balance();
   await stills(items);
-  if (!args.includes('--stills')) { await clips(items); writeManifest(items.map(bake)); }
+  if (!args.includes('--stills')) { await clips(items); writeManifest(items.map(bakeAll)); }
   const after = await balance();
   console.log(`[arrive] asked for ${spent.stills} stills, ${spent.clips} clips; ${before - after} tokens ($${((before - after) / 50000).toFixed(2)}) left the account in that time; balance ${after}`);
 }

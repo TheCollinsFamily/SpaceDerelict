@@ -46,6 +46,8 @@ export const SFX_RULES: Record<string, SfxRule> = {
   'ui-deny': R(0.45, 0.15, 1, 0), 'card-draw': R(0.45, 0.06, 3), 'card-pick': R(0.45, 0.05, 2),
   'pad-won': R(0.8, 1, 1, 0), 'pad-lost': R(0.85, 1, 1, 0),
   'intercom-open': R(0.55, 0.3, 1, 0), 'intercom-close': R(0.5, 0.3, 1, 0), 'print-body': R(0.7, 5, 1, 0),
+  // his steps as he walks into a room of the ship: quiet under the ship's music; four are laid at once (src/ui/campaignUi.ts)
+  'ship-step': R(0.3, 0.3, 4, 1),
 };
 /** A sound with no rule of its own. */
 export const DEFAULT_RULE: SfxRule = R(0.5, 0.1, 2);

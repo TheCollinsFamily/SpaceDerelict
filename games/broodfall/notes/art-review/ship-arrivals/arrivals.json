@@ -1,6 +1,7 @@
 {
  "desk": {
   "id": "desk",
+  "take": 1,
   "baked": true,
   "seconds": 3.667,
   "lands": 38.6,
@@ -9,6 +10,7 @@
  },
  "genes": {
   "id": "genes",
+  "take": 1,
   "baked": true,
   "seconds": 3.667,
   "lands": 35,
@@ -17,6 +19,7 @@
  },
  "locker": {
   "id": "locker",
+  "take": 1,
   "baked": true,
   "seconds": 3.833,
   "lands": 38.1,
@@ -25,6 +28,7 @@
  },
  "board": {
   "id": "board",
+  "take": 1,
   "baked": true,
   "seconds": 3.667,
   "lands": 38.7,
@@ -33,6 +37,7 @@
  },
  "comms": {
   "id": "comms",
+  "take": 1,
   "baked": true,
   "seconds": 3.833,
   "lands": 36,
@@ -41,6 +46,7 @@
  },
  "ai": {
   "id": "ai",
+  "take": 1,
   "baked": true,
   "seconds": 3.667,
   "lands": 36.7,
@@ -49,6 +55,7 @@
  },
  "orders": {
   "id": "orders",
+  "take": 1,
   "baked": true,
   "seconds": 3.667,
   "lands": 37.1,
@@ -57,10 +64,83 @@
  },
  "hobby": {
   "id": "hobby",
+  "take": 1,
   "baked": true,
   "seconds": 3.833,
   "lands": 37.9,
   "ends": 44.9,
   "starts": 29.9
+ },
+ "desk-2": {
+  "id": "desk",
+  "take": 2,
+  "baked": true,
+  "seconds": 3.667,
+  "lands": 38.7,
+  "ends": 46,
+  "starts": 30.2
+ },
+ "genes-2": {
+  "id": "genes",
+  "take": 2,
+  "baked": true,
+  "seconds": 3.667,
+  "lands": 34.6,
+  "ends": 41.8,
+  "starts": 25.9
+ },
+ "locker-2": {
+  "id": "locker",
+  "take": 2,
+  "baked": true,
+  "seconds": 3.833,
+  "lands": 38.1,
+  "ends": 44.9,
+  "starts": 28.6
+ },
+ "board-2": {
+  "id": "board",
+  "take": 2,
+  "baked": true,
+  "seconds": 3.667,
+  "lands": 37.7,
+  "ends": 42.7,
+  "starts": 29.2
+ },
+ "comms-2": {
+  "id": "comms",
+  "take": 2,
+  "baked": true,
+  "seconds": 3.833,
+  "lands": 35.4,
+  "ends": 42.8,
+  "starts": 29.8
+ },
+ "ai-2": {
+  "id": "ai",
+  "take": 2,
+  "baked": true,
+  "seconds": 3.667,
+  "lands": 37.1,
+  "ends": 42.8,
+  "starts": 28.1
+ },
+ "orders-2": {
+  "id": "orders",
+  "take": 2,
+  "baked": true,
+  "seconds": 3.667,
+  "lands": 36.8,
+  "ends": 42.1,
+  "starts": 25.9
+ },
+ "hobby-2": {
+  "id": "hobby",
+  "take": 2,
+  "baked": true,
+  "seconds": 3.833,
+  "lands": 37.3,
+  "ends": 44.9,
+  "starts": 29.6
  }
 }

@@ -634,6 +634,24 @@
    "seconds": [
     8.007
    ]
+  },
+  "ship-step": {
+   "files": [
+    "audio/ship-step-1.ogg",
+    "audio/ship-step-2.ogg",
+    "audio/ship-step-3.ogg",
+    "audio/ship-step-4.ogg",
+    "audio/ship-step-5.ogg",
+    "audio/ship-step-6.ogg"
+   ],
+   "seconds": [
+    0.157,
+    0.267,
+    0.257,
+    0.176,
+    0.167,
+    0.286
+   ]
   }
  },
  "voice": {

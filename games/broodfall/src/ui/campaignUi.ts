@@ -54,6 +54,7 @@ import { roachBeforeLastMission } from './roachKing';
 import { LAST_MISSION } from '../../content/campaign';
 import { shipLoop, showLoader, type LoaderHandle } from './loader';
 import { aliveAllowed, loadAlive, wake } from './alive';
+import { sfx } from '../audio/engine';
 
 type Room = 'desk' | 'genes' | 'locker' | 'board' | 'comms' | 'ai' | 'quarters' | 'orders' | 'hobby';
 /** Rooms with no picture of their own borrow one (the standing orders are read at the Board; the notebook lives in the Locker). */
@@ -148,7 +149,7 @@ export class CampaignUi {
    */
   private globe3d: Globe3D | null = null;
   /** The rooms' slow loops (tools/art/ship-loops.mjs): public/art/ship/loops/loops.json, paths made whole. */
-  private loops: Record<string, { video: string; poster: string; arrive?: { video: string; poster: string } }> = {};
+  private loops: Record<string, { video: string; poster: string; arrive?: { poster: string; takes: string[] } }> = {};
   /** The one video that plays the room's loop behind the screen; kept across drawings of the screen. */
   private loopVideo: HTMLVideoElement | null = null;
   /**
@@ -158,6 +159,9 @@ export class CampaignUi {
    */
   private arriving: Room | null = null;
   private arriveVideo: HTMLVideoElement | null = null;
+  /** Which take of the room's arrival this walk is (a room has two, played in turn, so one walk is not seen every visit). */
+  private arriveTake: { room: Room; video: string } | null = null;
+  private arriveTurn: Partial<Record<Room, number>> = {};
   /** The room's words come up softly once, on the drawing that follows a change of room. */
   private wordsIn = false;
   /** The post-deployment report is up: the rooms must not be drawn over it. */
@@ -221,11 +225,15 @@ export class CampaignUi {
     // The stills that come alive (src/ui/alive.ts): the scene cards, the landing sites, the report's lead, her photograph.
     void loadAlive().then(() => { if (!this.el.classList.contains('hidden')) wake(this.el); });
     void fetch(artUrl('ship/loops/loops.json'), { cache: 'no-cache' }).then((r) => (r.ok ? r.json() : null)).then((j) => {
-      const rooms = (j?.rooms ?? {}) as Record<string, { video: string; poster: string; arrive?: { video?: string; poster?: string } }>;
+      const rooms = (j?.rooms ?? {}) as Record<string, { video: string; poster: string; arrive?: { video?: string; poster?: string; takes?: Array<{ video?: string }> } }>;
       const whole = (f: string) => new URL(artUrl(f), document.baseURI).href;
       this.loops = Object.fromEntries(Object.entries(rooms).filter(([, v]) => v?.video && v?.poster).map(([k, v]) => [k, {
         video: whole(v.video), poster: whole(v.poster),
-        ...(v.arrive?.video && v.arrive?.poster ? { arrive: { video: whole(v.arrive.video), poster: whole(v.arrive.poster) } } : {}),
+        ...(v.arrive?.video && v.arrive?.poster ? { arrive: {
+          poster: whole(v.arrive.poster),
+          // Every baked take; a list without them (or with none usable) is the one arrival.
+          takes: ((v.arrive.takes ?? []).map((t) => t?.video).filter((f): f is string => !!f).map(whole).concat([whole(v.arrive.video)])).filter((f, i, all) => all.indexOf(f) === i),
+        } } : {}),
       }]));
       // The empty rooms' pictures are fetched now: the one he walks into is there the moment he goes.
       for (const l of Object.values(this.loops)) if (l.arrive) new Image().src = l.arrive.poster;
@@ -484,11 +492,18 @@ export class CampaignUi {
     const arrive = this.arriving === this.room && !loadSettings().reduceMotion ? this.loops[this.room]?.arrive : undefined;
     // No arrival for this room: he is simply there. (Not yet known while the pictures or the loops' list are still coming.)
     if (!arrive && art && Object.keys(this.loops).length) this.arriving = null;
+    // The take is chosen once for a walk (the screen is drawn many times while he walks), the room's takes in turn.
+    if (!arrive) this.arriveTake = null;
+    else if (this.arriveTake?.room !== this.room) {
+      const n = this.arriveTurn[this.room] ?? 0;
+      this.arriveTurn[this.room] = n + 1;
+      this.arriveTake = { room: this.room, video: arrive.takes[n % arrive.takes.length] };
+    }
     this.el.style.setProperty('--room', arrive ? `url("${arrive.poster}")` : loop ? `url("${loop.poster}")` : this.room === 'quarters'
       ? (this.intro?.quarters ? `url("${this.intro.quarters}")` : at(art?.rooms.board))
       : at(art?.rooms[(ROOM_PICTURE[this.room] ?? this.room) as Exclude<Room, 'quarters' | 'orders' | 'hobby'>]));
     this.playLoop(loop?.video ?? null, !!arrive);
-    this.playArrival(arrive?.video ?? null);
+    this.playArrival(arrive ? this.arriveTake!.video : null);
     this.el.style.setProperty('--sketches', at(art?.sketches?.atlas));
     this.el.style.setProperty('--yoke', at(art?.yoke?.atlas));
     const box3d = this.globe3d ? this.el.querySelector<HTMLElement>('.globe-box.g3d') : null;
@@ -573,7 +588,15 @@ export class CampaignUi {
       made.className = 'room-loop room-arrive';
       made.muted = true; made.playsInline = true; made.preload = 'auto';
       made.setAttribute('aria-hidden', 'true');
-      made.addEventListener('playing', () => { if (made.dataset.src) made.classList.add('on'); });
+      made.addEventListener('playing', () => {
+        if (!made.dataset.src) return;
+        made.classList.add('on');
+        // His steps on the deck plating, once a walk: four, each a little further off (he walks away from us).
+        if (made.dataset.steps === '1') {
+          made.dataset.steps = '0';
+          [0.25, 0.75, 1.25, 1.75].forEach((at, i) => sfx('ship-step', { delay: at, gain: 1 - i * 0.14, pan: -0.25 }));
+        }
+      });
       // He is in his place (or the clip could not play): the room's loop takes over.
       const arrived = (): void => {
         if (!made.dataset.src || !this.arriving) return;
@@ -584,7 +607,7 @@ export class CampaignUi {
       made.addEventListener('error', arrived);
       this.arriveVideo = v = made;
     }
-    if (v.dataset.src !== src) { v.classList.remove('on'); v.dataset.src = src; v.src = src; }
+    if (v.dataset.src !== src) { v.classList.remove('on'); v.dataset.src = src; v.dataset.steps = '1'; v.src = src; }
     // Over the loop: after it in the screen (the loop is always put first).
     const loop = this.loopVideo;
     if (loop?.isConnected) { if (loop.nextSibling !== v) loop.after(v); } else if (this.el.firstChild !== v) this.el.prepend(v);

@@ -1856,10 +1856,16 @@ Collins: "can you build some of the other transitions between different parts of
   without him, silent; the Quarters have none; the shipped folder holds only what the game loads);
   `node tools/shot-ship-arrivals.mjs [tour switch none calm report aboard break]` (dev server 5431, real clicks; the
   hand-over is WATCHED: the largest change between two pictures in a row as the loop takes over was 0.66 to 2.40 of 255,
-  where a real jump would be 15 and up; 86 checks);
+  where a real jump would be 15 and up; 95 checks);
   stills and the tour's film in `notes/screens/2026-10-04/arrivals/`; persona notes `notes/PERSONA-SHIP-ARRIVALS-2026-10-04.md`.
-- **Open:** no sound of his steps; the same walk every visit (a second take a room would vary it); he is never seen
-  LEAVING (a take of him leaving the Desk is made by `--leave desk`, not in the game).
+- **Two takes a room, and his steps (later on Oct 4; Collins: "do the stuff that needs doing"):** every room has a second
+  take (`<id>-arrive-2.mp4` -> `arrive-<id>-2.mp4`, asked for with a brisker manner; `loops.json` `arrive.takes`), and the
+  game plays a room's takes in turn (`arriveTurn`), so one walk is not seen on every visit; all sixteen takes end on their
+  loop's first frame (34.6 to 38.7 dB as generated). His steps are the game's own cue: `ship-step` (`tools/audio/cues.mjs`,
+  six single steps cut from one take; rule in `src/audio/cues.ts`), four of them laid under each walk when its clip starts
+  playing, each a little quieter. The clips stay silent. The beat counts them: four asked and four sounded per walk. NOT
+  listened to by a person yet: the take was checked for speech (none) and for length (0.16 to 0.29 s a step) only.
+- **Open:** he is never seen LEAVING (a take of him leaving the Desk is made by `--leave desk`, not in the game).
 - **Under automation** (`navigator.webdriver`) he walks in only when `localStorage['broodfall-arrivals']` is `'on'` (the
   arrivals beat sets it), as the pad's film does: every other browser beat photographs a room the moment it clicks it.
 - **A loop baked again needs its arrival made again** (its first frame is new): `tools/art/ship-loops.mjs` keeps the

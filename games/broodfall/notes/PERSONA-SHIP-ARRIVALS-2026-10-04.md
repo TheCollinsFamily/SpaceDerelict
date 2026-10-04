@@ -1,7 +1,7 @@
 # Persona passes: he walks into the room (Oct 4 2026)
 
 PLAYTEST_PROTOCOL.md, step 3. Played in the real page on the dev server (what `npm start` and `Play Broodfall.bat` run),
-by real clicks: `node tools/shot-ship-arrivals.mjs` (tour, switch, none, calm, report, aboard, break: 86 checks, all pass).
+by real clicks: `node tools/shot-ship-arrivals.mjs` (tour, switch, none, calm, report, aboard, takes, break: 95 checks, all pass).
 Screens and the film of the whole tour: `notes/screens/2026-10-04/arrivals/` (`<room>-1-empty.jpg`, `-2-walking.jpg`,
 `-3-in-place.jpg`, `tour.mp4`). The clips themselves: `notes/art-review/ship-arrivals/<room>-strip.jpg`.
 
@@ -18,8 +18,9 @@ Screens and the film of the whole tour: `notes/screens/2026-10-04/arrivals/` (`<
   behind it and I see his head and shoulders above it. The walk still reads.
 - FOUND, left as it is: on a narrow window (1024 wide) the card takes most of the room; the walk is a strip at the left
   (`break-narrow-mid-walk.jpg`). Nothing is cut off that matters, he ends up where the room always had him.
-- OPEN: no sound. The ship's music carries on under it; his steps on the deck plating are not heard. A footstep cue
-  would need a take cut for it (the pad film's `stand` take has chair noise in it).
+- FOUND and FIXED (later the same day): there was no sound; his steps on the deck plating were not heard. Four single
+  steps are now laid under each walk (`ship-step`), each a little quieter as he walks away. Counted by the beat (four
+  asked, four sounded, every room); not yet listened to by a person.
 
 ## Genre veteran (a base screen with rooms: XCOM 2's Avenger, Darkest Dungeon's hamlet, Hades' House)
 
@@ -33,8 +34,8 @@ Walked against `references/CONVENTIONS.md` items 16 to 20 (added this iteration)
   motion shows the room's still with him in it, as before.
 - 20, the same person in every transition: YES by eye across the eight strips (black shirt, sleeves up, the stylus
   behind his ear where the frame shows it).
-- FOUND, OPEN: the walk is the same clip every time a room is entered. On the tenth visit to the Gene Bay it is the
-  tenth identical walk. A second take per room, picked in turn, would vary it (about $2.63 a take).
+- FOUND and FIXED (later the same day): the walk was the same clip every time a room was entered. Every room now has
+  two takes, played in turn (beat `takes`: three visits to the Gene Bay play take 1, take 2, take 1).
 
 ## Breaker (trying to make it look wrong)
 

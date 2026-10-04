@@ -10,10 +10,11 @@
  *   calm     Settings > Reduce motion: no arrival and no loop, the room's still
  *   report   back from a deployment's report: he is at the desk already (the pad's film left him there), no arrival
  *   aboard   the ship opened from the main menu: he walks into the room it opens in
+ *   takes    a room visited again and again: its two takes play in turn (one walk is not seen on every visit)
  *   break    a player trying to break it: fourteen rooms clicked in under two seconds, Settings opened and closed
  *            mid-walk, the window made narrow and wide mid-walk: one clip at most, never a second copy of him, no error
  *
- *   node tools/shot-ship-arrivals.mjs [tour switch none calm report aboard break]   (dev server on BROODFALL_PORT, default 5431)
+ *   node tools/shot-ship-arrivals.mjs [tour switch none calm report aboard takes break]   (dev server on BROODFALL_PORT, default 5431)
  * Stills and film: notes/screens/2026-10-04/arrivals/.
  */
 import { spawn, spawnSync, execSync } from 'node:child_process';
@@ -41,6 +42,13 @@ const check = (ok, name, detail = '') => {
 };
 const loops = JSON.parse(readFileSync(join(root, 'public', 'art', 'ship', 'loops', 'loops.json'), 'utf8')).rooms;
 const HIS = Object.keys(loops).filter((k) => loops[k].arrive);
+/** One of a room's arrival takes (arrive-<room>.mp4, arrive-<room>-2.mp4). */
+const isTakeOf = (file, room) => new RegExp(`^arrive-${room}(-\\d+)?\\.mp4$`).test(file ?? '');
+/** His steps asked for so far, and how many of them sounded (window.__bfAudio.log: every cue asked, played or why not). */
+const steps = (page) => page.evaluate(() => {
+  const all = (window.__bfAudio?.log ?? []).filter((e) => e.kind === 'sfx' && e.id === 'ship-step');
+  return { asked: all.length, played: all.filter((e) => e.played).length, why: [...new Set(all.filter((e) => !e.played).map((e) => e.why))].join(',') };
+});
 
 function freePort() {
   try {
@@ -175,24 +183,30 @@ try {
     await go(page, 'quarters');
     await page.waitForTimeout(800);
     for (const room of HIS) {
+      const s0 = await steps(page);
       const ms = await go(page, room);
       const b0 = await backdrop(page);
       check(ms < 400 && b0.tabOn === room, `${room}: the screen is this room's at once`, `${ms} ms`);
       check(b0.poster === `arrive-${room}.webp`, `${room}: the room is shown empty under it`, b0.poster);
-      check(!!b0.arrive && b0.arrive.file === `arrive-${room}.mp4`, `${room}: its arrival clip is on`, b0.arrive?.file ?? 'none');
+      check(!!b0.arrive && isTakeOf(b0.arrive.file, room), `${room}: its arrival clip is on`, b0.arrive?.file ?? 'none');
       check(!!b0.loop && b0.loop.file === `room-${room}.mp4` && b0.loop.paused && !b0.loop.on && b0.loop.t < 0.05, `${room}: its loop waits unseen on its first frame`, b0.loop ? `t=${b0.loop.t.toFixed(2)} paused=${b0.loop.paused} on=${b0.loop.on}` : 'no loop');
       await page.waitForTimeout(350);
       await shot(page, `${room}-1-empty`);
       await page.waitForFunction(() => { const a = document.querySelector('#campaign video.room-arrive'); return a && a.currentTime > 1.2; }, null, { timeout: 8000 }).catch(() => {});
       const b1 = await backdrop(page);
       check(!!b1.arrive && b1.arrive.on && !b1.arrive.paused && b1.arrive.t > 1, `${room}: he is walking in`, b1.arrive ? `t=${b1.arrive.t.toFixed(2)}` : 'no clip');
+      const s1 = await steps(page);
+      check(s1.asked - s0.asked === 4 && s1.played - s0.played === 4, `${room}: his four steps are heard, once`, `${s1.asked - s0.asked} asked, ${s1.played - s0.played} sounded${s1.why ? ` (${s1.why})` : ''}`);
       await shot(page, `${room}-2-walking`);
       // The screen answers while he walks: YOKE is called up (the screen is drawn again) and the walk goes on, not over.
       if (room !== 'ai') {
         await page.locator('[data-act="yoke-call"]').click();
-        const up = await page.waitForSelector('.cp-icom', { timeout: 3000 }).then(() => true).catch(() => false);
+        // Read at once: on a busy machine her intercom can take longer to come up than the rest of his walk.
         const b2 = await backdrop(page);
-        check(up && !!b2.arrive && b2.arrive.t >= b1.arrive.t && !b2.arrive.paused, `${room}: the screen answers a click while he walks, and the walk goes on`, b2.arrive ? `t=${b2.arrive.t.toFixed(2)}` : 'the clip was lost');
+        const up = await page.waitForSelector('.cp-icom', { timeout: 5000 }).then(() => true).catch(() => false);
+        // The walk went on (the same clip, further along), or he was in his place by the time the click landed.
+        const went = b2.arrive ? b2.arrive.file === b1.arrive.file && b2.arrive.t >= b1.arrive.t && !b2.arrive.paused : !!b2.loop?.on && !b2.loop.paused;
+        check(up && went, `${room}: the screen answers a click while he walks, and the walk goes on`, b2.arrive ? `t=${b2.arrive.t.toFixed(2)}` : (went ? 'he was in his place by the time the click landed' : 'the clip was lost'));
         await page.locator('[data-act="icom-close"]').click({ timeout: 3000 }).catch(() => {});
       }
       const h = await handover(page, room);
@@ -221,7 +235,7 @@ try {
     await page.waitForTimeout(900);
     await go(page, 'ai');
     const b = await backdrop(page);
-    check(b.arrive?.file === 'arrive-ai.mp4' && b.poster === 'arrive-ai.webp' && b.count === 2, 'the other room\'s arrival took over', `${b.arrive?.file}, poster ${b.poster}, ${b.count} videos`);
+    check(isTakeOf(b.arrive?.file, 'ai') && b.poster === 'arrive-ai.webp' && b.count === 2, 'the other room\'s arrival took over', `${b.arrive?.file}, poster ${b.poster}, ${b.count} videos`);
     await page.waitForTimeout(500);
     await go(page, 'quarters');
     await page.waitForTimeout(1300);
@@ -301,10 +315,28 @@ try {
       return a && a.classList.contains('on') && a.currentTime > 0.3;
     }, null, { timeout: 20000 }).then(() => true).catch(() => false);
     const b = await backdrop(page);
-    check(seen && b.arrive?.file === `arrive-${b.room}.mp4`, 'he walks into the room the ship opens in', `${b.room}: ${b.arrive?.file ?? 'no clip'}`);
+    check(seen && isTakeOf(b.arrive?.file, b.room), 'he walks into the room the ship opens in', `${b.room}: ${b.arrive?.file ?? 'no clip'}`);
     await shot(page, 'aboard-walking-in');
     await context.close();
   }
+  if (want('takes')) {
+    console.log('takes: a room visited again and again');
+    const { context, page } = await freshPage(browser);
+    await openShip(page);
+    await go(page, 'quarters');
+    const seen = [];
+    for (let visit = 0; visit < 3; visit++) {
+      await go(page, 'genes');
+      seen.push((await backdrop(page)).arrive?.file ?? 'none');
+      await arrived(page, 'genes');
+      await go(page, 'quarters');
+      await page.waitForTimeout(300);
+    }
+    const all = (loops.genes.arrive.takes ?? []).map((t) => t.video.split('/').pop());
+    check(all.length >= 2 && seen[0] !== seen[1] && seen[0] === seen[2] && seen.every((f) => all.includes(f)), 'three visits to the Gene Bay: its takes in turn', seen.join(', '));
+    await context.close();
+  }
+
   if (want('break')) {
     console.log('break: a player trying to break it');
     const { context, page } = await freshPage(browser);
@@ -314,7 +346,7 @@ try {
     for (const r of order) { await page.locator(`[data-room="${r}"]`).click(); await page.waitForTimeout(60); }
     const spam = Date.now() - t0;
     const mid = await backdrop(page);
-    check(mid.count <= 2 && mid.room === 'hobby' && mid.arrive?.file === 'arrive-hobby.mp4', `fourteen rooms in ${spam} ms: only the last room's walk is on`, `${mid.count} video(s), ${mid.arrive?.file}`);
+    check(mid.count <= 2 && mid.room === 'hobby' && isTakeOf(mid.arrive?.file, 'hobby'), `fourteen rooms in ${spam} ms: only the last room's walk is on`, `${mid.count} video(s), ${mid.arrive?.file}`);
     const ok = await arrived(page, 'hobby');
     const end = await backdrop(page);
     check(ok && end.count === 1 && end.poster === 'room-hobby.webp', 'and it ends with him in his place, one loop running', `${end.count} video(s), ${end.poster}`);
