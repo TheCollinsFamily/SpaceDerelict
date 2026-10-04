@@ -3,108 +3,108 @@
   "delegation-understand": {
    "video": "media/scenes/delegation-understand.mp4",
    "poster": "media/scenes/delegation-understand.webp",
-   "seconds": 81.839,
+   "seconds": 95.132,
    "cues": [
     {
      "shot": "open",
      "t0": 0,
-     "t1": 3.833
+     "t1": 1.61
     },
     {
      "shot": "l00",
      "line": 0,
      "who": "Delegate",
      "text": "Visitor! Welcome, welcome. We are so happy you came.",
-     "t0": 3.833,
-     "t1": 9.667
+     "t0": 1.61,
+     "t1": 9.97
     },
     {
      "shot": "l01",
      "line": 1,
      "who": "You",
      "text": "You are happy to see me. Why?",
-     "t0": 9.667,
-     "t1": 14.25
+     "t0": 9.97,
+     "t1": 13.805
     },
     {
      "shot": "l02",
      "line": 2,
      "who": "Delegate",
      "text": "A species that has come as far as yours in technology has obviously evolved past cruelty and violence.",
-     "t0": 14.25,
-     "t1": 22.167
+     "t0": 13.805,
+     "t1": 23.045
     },
     {
      "shot": "l03",
      "line": 3,
      "who": "You",
      "text": "Um. Why would you think that?",
-     "t0": 22.167,
-     "t1": 26.959
+     "t0": 23.045,
+     "t1": 26
     },
     {
      "shot": "l04",
      "line": 4,
      "who": "Delegate",
      "text": "On our planet, technological and moral advancement have almost always gone hand in hand. Was it not the same on yours?",
-     "t0": 26.959,
-     "t1": 34.876
+     "t0": 26,
+     "t1": 39.343
     },
     {
      "shot": "l05",
      "line": 5,
      "who": "You",
      "text": "I don't see why the two would be inherently linked. But yes, we had that pattern on our home planet as well.",
-     "t0": 34.876,
-     "t1": 42.793
+     "t0": 39.343,
+     "t1": 51
     },
     {
      "shot": "l06",
      "line": 6,
      "who": "You",
      "text": "Well. I guess technological advancement is the physical manifestation of a civilisation that has the environment for encouraging ordered thought.",
-     "t0": 42.793,
-     "t1": 50.793
+     "t0": 51,
+     "t1": 62.33
     },
     {
      "shot": "l07",
      "line": 7,
      "who": "You",
      "text": "That would likely correlate with moral development as well. So the link isn't crazy.",
-     "t0": 50.793,
-     "t1": 57.126
+     "t0": 62.33,
+     "t1": 69.735
     },
     {
      "shot": "l08",
      "line": 8,
      "who": "Delegate",
      "text": "Yes! Exactly! That is exactly it!",
-     "t0": 57.126,
-     "t1": 63.026
+     "t0": 69.735,
+     "t1": 75
     },
     {
      "shot": "l09",
      "line": 9,
      "who": "You",
      "text": "So. How can you help?",
-     "t0": 63.026,
-     "t1": 66.526
+     "t0": 75,
+     "t1": 78.77
     },
     {
      "shot": "l10",
      "line": 10,
      "who": "Delegate",
      "text": "We have sympathisers all around the world. We can sabotage the supply lines.",
-     "t0": 66.526,
-     "t1": 73.818
+     "t0": 78.77,
+     "t1": 87.049
     },
     {
      "shot": "l11",
      "line": 11,
      "who": "Delegate",
      "text": "Before each of your missions, name one kind of unit. It will not arrive.",
-     "t0": 73.818,
-     "t1": 81.818
+     "t0": 87.049,
+     "t1": 95.1
     }
    ]
   }

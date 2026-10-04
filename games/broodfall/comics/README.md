@@ -8,7 +8,7 @@ from the pictures of the people in it, letters the words as written and lays out
 |---|---|---|
 | Ship's Night | YOKE and the Technician, YOKE's lines word for word from the lorebook | `ships-night/pages/page_01.jpg` |
 | A Message From the Boss | the boss scene (`content/boss.ts`), every line as written, over two pages; Barnabas is a real dog in a jacket cut for a dog, drawn once from a description | `a-message-from-the-boss/pages/page_01.jpg`, `page_02.jpg` |
-| The Thing From the Sky | the B-movie look, an insect couple drawn from descriptions alone | `the-thing-from-the-sky/pages/page_01.jpg` |
+| The Thing From the Sky | the opening film grown into a classic 1950s monster picture, told from the town's side, over four pages (24 panels): Luckwell Gardens, the sisters Dot and Marge, the Civil Watch that does not come back, the Home Levy shooting at it, Doctor Sheaf of the ministry, the bells, the Host, the car leaving. Five people drawn from descriptions alone. The three narrator lines of page 1 and the Watch's radio call are the film's own (`notes/BMOVIE-SHOTLIST.md`); every other line is new (the `story` in its `script.json` says which) | `the-thing-from-the-sky/pages/page_01.jpg` to `page_04.jpg` |
 
 Each folder: `script.json` (the whole comic: edit it and run again), `pages/` (the page with words and without),
 `panels/` (each picture, clean and with its words).
@@ -47,12 +47,25 @@ To change a panel: edit its `picture` (or its words) in `script.json`, `save <sc
 Only what changed is drawn again. `run <id> pictures --reroll <panel>` draws one again as it is written.
 
 Six panels cost about 26,000 tokens ($0.52): $0.08 a picture on GPT Image 2, a small look per picture for the balloons.
+The four pages of The Thing From the Sky (5 cast pictures, 24 panels, the words) cost 124,359 tokens ($2.49), with no
+panel drawn twice.
 
 ## What works for Broodfall
 
 - **Copy the cast block** from `ships-night/script.json`: YOKE from `notes/concepts/2026-09-29/r4-yoke-colour.png`, the
   Technician from `hero-behind-desk.png` (always from behind). A character with art in the repo gives `image`; one
-  without gives a `description` and the cast phase draws them once (Barnabas, Mabel, Earl).
+  without gives a `description` and the cast phase draws them once (Barnabas; Dot, Marge, the Watch captain, Doctor
+  Sheaf and the Colonel of The Thing From the Sky).
+- **Read the lore before the script.** The first Thing From the Sky set it in "Honeycomb Heights" with a husband
+  called Earl. The town of the opening film is Luckwell Gardens, and its people are worker sisters (males are rare and
+  royal: no husbands, no "sir"). `notes/BMOVIE-SHOTLIST.md`, `content/cutscenes.ts` and `DESIGN.md` are where it is.
+- **Tell it in prose first.** A longer comic has a `story` in its `script.json`: the whole plot in plain sentences,
+  written before any panel. The 24 panels of The Thing From the Sky were cut from that, six to a page, each page
+  ending on its own turn (the fall, the empty post, the bells, THE END?).
+- **A crowd is a group, not a cast.** The Home Levy, the drive-in audience and the Host's tank crews are described in
+  the panel and belong to nobody's picture; only the five who speak more than once are cast.
+- **A panel that follows another gives `from`.** "It isn't even annoyed" is drawn `from` the firing line, and the
+  eaten shells `from` the barrage: the place, the light and the monster stay the same across the two.
 - **The look says how the world is drawn, never who is in it.** The first take's look said "the one drawn thing aboard
   is the ship's AI, a hologram" and the engine put a hologram in the one panel YOKE was not in. That YOKE is a drawn
   hologram in a photoreal room is in HER description.

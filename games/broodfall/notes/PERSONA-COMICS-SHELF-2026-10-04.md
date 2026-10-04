@@ -8,8 +8,15 @@ pass). Screens: `notes/screens/2026-10-04/comics-*.jpg`, each looked at. Permane
 **The player's path.** The game was started by `Play Broodfall.bat` (port 5199) and entered from the MAIN MENU by
 CONTINUE, no shortcut in the address: `node tools/shot-comics-player.mjs` (7 checks, all pass;
 `comics-player-1-menu.jpg` to `-4-reading.jpg`). The ship's room bar has COMICS, a save from before the shelf existed
-is told what it has earned, the three comics open, Space reads through all four pages and ends back at the shelf.
-The whole suite: `npx vitest run`, 64 files, 774 tests, all pass.
+is told what it has earned, the three comics open, Space reads on from the boss's comic to the end of the last one
+and ends back at the shelf. The whole suite: `npx vitest run`, all pass.
+
+**Later the same day: The Thing From the Sky went from one page to four** (Collins: "expand the comic on the people
+(insects) fleeing from the first fall and expand it with a classic B movie plot"). Both walks were run again on the
+four-page comic (`tools/shot-comics.mjs` 51 checks, `tools/shot-comics-player.mjs` 7): the tile says 4 PAGES, the
+reader says PAGE 1 OF 4, the right arrow turns through all four and each loads, the last page hands back to the shelf
+(`comics-a-reading.jpg`, `comics-a-reading-last-page.jpg`, both looked at). The notes below were written when it was
+one page; where a number changed it is said.
 
 What was built: COMICS in the ship's room bar (beside the Limb Codex), a shelf of every comic there is, a reader, a
 notice when one is earned. Three comics: The Thing From the Sky (the opening film gives it), A Message From the Boss
@@ -19,7 +26,7 @@ notice when one is earned. Three comics: The Thing From the Sky (the opening fil
 
 - **Do I find it?** The room bar has a word, COMICS, with a `1` on it, beside the codex's glyph. A notice in the bottom
   right says NEW COMIC UNLOCKED and names it (`comics-d-after-the-call.jpg`). Either gets me there. PASS.
-- **Do I understand the shelf?** Three tiles. One has a picture, a title, a line about it, NEW and "1 PAGE". Two are
+- **Do I understand the shelf?** Three tiles. One has a picture, a title, a line about it, NEW and "4 PAGES". Two are
   dark, say LOCKED, and each says what to do: "Take the boss's call when you come back from your first landing.",
   "Win a deployment." I know there are three and how to get the other two (`comics-a-shelf-one-of-three.jpg`). PASS.
 - **Can I read it?** The page fills the window (1474 px of its 1800 at 1600 across, 1228 at 1280): the balloons are
@@ -46,8 +53,9 @@ Walked against `references/CONVENTIONS.md` items 23 to 30 (added this iteration)
 - 28, the end of one hands on to the next: YES ("NEXT: SHIP'S NIGHT ▶" on the last page; "BACK TO THE SHELF" on the
   last comic).
 - 29, a collection outlives a run: YES (kept apart from the campaign; a new campaign leaves all three, walk C).
-- 30, reading resumes where I left off: NO. A comic opens on page 1 every time. With one and two pages it costs a
-  click; it will matter when a comic is ten pages.
+- 30, reading resumes where I left off: NO. A comic opens on page 1 every time. With one and two pages it cost a
+  click; The Thing From the Sky is four pages now, and closing it on page 3 means three turns to get back. OPEN, and
+  the first thing to build next on this screen.
 - FOUND, OPEN: the shelf is reachable from the ship only. The Limb Codex is also on the main menu and in a deployment.
 - FOUND, OPEN: no zoom. The page is as wide as the window and no wider; on a 1024-wide window the lettering is small
   (about 15 px), readable, not comfortable.

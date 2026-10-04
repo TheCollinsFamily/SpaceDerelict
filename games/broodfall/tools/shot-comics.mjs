@@ -116,9 +116,14 @@ try {
   let r = await reader();
   check(r.page?.ok === true, 'the page opens', JSON.stringify(r.page));
   check(r.page && r.page.shown >= 1100, 'wide enough to read the lettering at 1600 across', `${r.page?.shown}px of ${r.page?.natural}px`);
-  check(r.count === 'PAGE 1 OF 1' && r.prevOff, 'PAGE 1 OF 1, nothing before it', r.count);
-  check(/SHELF/.test(r.next), 'the only comic he has: the last page hands back to the shelf', r.next);
+  check(r.count === 'PAGE 1 OF 4' && r.prevOff && /NEXT PAGE/.test(r.next), 'PAGE 1 OF 4, nothing before it, NEXT PAGE after it', `${r.count} / ${r.next}`);
   await shot('a-reading');
+  // the four pages of it, each one a picture that loads
+  const seen = [];
+  for (let n = 2; n <= 4; n++) { await page.keyboard.press('ArrowRight'); await loaded(); r = await reader(); seen.push(`${r.count}:${r.page?.ok ? 'ok' : 'broken'}`); }
+  check(seen.join() === 'PAGE 2 OF 4:ok,PAGE 3 OF 4:ok,PAGE 4 OF 4:ok', 'the right arrow turns through all four pages, each one loads', seen.join(' '));
+  check(/SHELF/.test(r.next), 'the only comic he has: the last page hands back to the shelf', r.next);
+  await shot('a-reading-last-page');
   await page.keyboard.press('Escape');
   check(await page.locator('#comics .cm-shelf').count() === 1, 'Esc in the reader goes back to the shelf');
   t = await tiles();
@@ -160,7 +165,9 @@ try {
   const scrolled = async () => page.evaluate(() => Math.round(document.querySelector('#comics .cm-scroll').scrollTop));
   const lastComic = (title) => title.toUpperCase().startsWith('SHIP');
   await onPage();
-  await page.waitForTimeout(700);
+  // the scroll is a smooth one: on a busy machine it is still moving at 700 ms, so wait for it, not for the clock
+  await page.waitForFunction(() => document.querySelector('#comics .cm-scroll').scrollTop > 100, null, { timeout: 6000 }).catch(() => {});
+  await page.waitForTimeout(500);
   check(await scrolled() > 100 && (await reader()).count === 'PAGE 1 OF 2', 'a click on the page reads on DOWN it first (the page is taller than the screen)', `scrolled ${await scrolled()}px, ${(await reader()).count}`);
   await shot('b-boss-page-1-lower');
   let clicks = 1;

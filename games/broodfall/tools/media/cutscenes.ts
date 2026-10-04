@@ -646,6 +646,11 @@ function bake(film: Film) {
     t += real;
     parts.push(part);
   });
+  finishBake(film, tmp, parts, cues);
+}
+
+/** The parts joined, one quiet room tone under them, the poster, and the film's entry in the manifest (its cues). */
+function finishBake(film: Film, tmp: string, parts: string[], cues: Cue[]) {
   const list = path.join(tmp, 'list.txt');
   fs.writeFileSync(list, parts.map((p) => `file '${p.replace(/\\/g, '/')}'`).join('\n'));
   const joined = path.join(tmp, 'joined.mp4');
@@ -664,6 +669,385 @@ function bake(film: Film) {
   fs.writeFileSync(manFile, JSON.stringify(man, null, 1));
   fs.rmSync(tmp, { recursive: true, force: true });
   console.log(`[cut] baked ${film.id}: ${film.shots.length} shots, ${duration(dest).toFixed(1)} s, ${(fs.statSync(dest).size / 1e6).toFixed(1)} MB → ${dest}`);
+}
+
+// ------------------------------------------------------------------ a film as ACTED EXCHANGES (Oct 4 2026)
+/**
+ * Collins, of the film made one line a clip on Veo 3.1 Lite: "the words sound like they were generated with AI then the
+ * video was created around them; that sounds stilted and is not good for voice acting; all the frontier video models
+ * can do talking". And of its end: "it's like the video goes static in the last 20 seconds" (twelve joins: every clip
+ * added a few motes of light to the frame it was handed).
+ *
+ * So a film is made of EXCHANGES: several lines of its scene played in ONE clip by a model that acts (Seedance 2.5:
+ * clips of 4 to 30 seconds; tools/media/talk-test.mjs is the comparison), so that the turn-taking, the pauses and the
+ * listening are the model's own performance and not a cut after every line. A shot list (content/cutscenes.ts) stays
+ * what it was, one line a shot with its direction; here its shots are gathered, in order, into as few clips as their
+ * words allow (TALK_WORDS a clip), a new clip at every new place. Each clip still starts on the frame the one before it
+ * was cut on (colour held, what drifts taken out), but a film of a dozen lines has three joins, not twelve.
+ *
+ *   talk <film> [tNN]   (SPENDS) the exchanges, in order; one when named
+ *   talkcheck <film>    each line against what was heard, where in its clip it is, each speaker's pitch
+ *   talkbake <film>     joined at their cuts; the cues (which line is said when) from the words' own times
+ * The clips: art-src-new/cutscenes/<film>/talk/tNN.mp4. The baked film and its cues are what `bake` writes.
+ */
+const TALK_MODEL = process.env.CUTSCENE_TALK_MODEL || 'imagerouter:seedance-2.5-i2v';
+const TALK_RES = process.env.CUTSCENE_TALK_RES || '720p';
+const TALK_WORDS = Number(process.env.CUTSCENE_TALK_WORDS || 44);
+const TALK_MAX_SECS = Number(process.env.CUTSCENE_TALK_MAX_SECS || 30);
+/** The softening of the head of a clip that goes on from another (talkBake): how much, and over how long. */
+const TALK_HEAD_BLUR = Number(process.env.CUTSCENE_TALK_HEAD_BLUR || 0.9);
+const TALK_HEAD_SECS = Number(process.env.CUTSCENE_TALK_HEAD_SECS || 0.5);
+
+interface Exchange { id: string; shots: number[]; from: string }
+function exchangesOf(film: Film): Exchange[] {
+  const out: Exchange[] = [];
+  let cur: Exchange | null = null;
+  let words = 0;
+  film.shots.forEach((s, i) => {
+    const w = wordCount(wordsOf(film, s));
+    const place = s.from !== '^';
+    if (!cur || place || (w > 0 && words + w > TALK_WORDS)) {
+      cur = { id: `t${String(out.length).padStart(2, '0')}`, shots: [], from: place ? s.from : '^' };
+      out.push(cur);
+      words = 0;
+    }
+    cur.shots.push(i);
+    words += w;
+  });
+  return out;
+}
+const talkDir = (film: Film) => path.join(dirOf(film.id), 'talk');
+const talkFile = (film: Film, ex: Exchange) => path.join(talkDir(film), `${ex.id}.mp4`);
+const talkCutFile = (film: Film, ex: Exchange) => talkFile(film, ex).replace(/\.mp4$/, '.cut.json');
+
+/** How long an exchange runs: its words at a talking pace, a beat for every change of speaker, its silent shots, a breath at each end. */
+function talkSecs(film: Film, ex: Exchange): number {
+  let words = 0, turns = 0, silent = 0, last = '';
+  for (const i of ex.shots) {
+    const s = film.shots[i];
+    const w = wordCount(wordsOf(film, s));
+    if (!w) { silent += Math.min(3, s.secs ?? 3); continue; }
+    words += w;
+    const who = whoOf(film, s);
+    if (last && who !== last) turns++;
+    last = who;
+  }
+  // Measured on the first exchange (Seedance 2.5): about two words a second with its pauses; its last line ended 0.1 s before the clip did.
+  return Math.max(4, Math.min(TALK_MAX_SECS, Math.ceil(words / 2.0 + turns * 1.0 + silent + 2.5)));
+}
+
+/** A performance, not a read-out: who is where, then the scene beat by beat with each line inside its action. */
+function talkPrompt(film: Film, ex: Exchange): string {
+  const st = STILLS[stillOfShot(film, ex.shots[0])];
+  const holo = st.shows.includes('HOLO');
+  const him = holo || st.shows.includes('TECH');
+  // "Hologram" is not said: the picture shows what he is, and the word invites sparkles (the takes of Oct 4 2026).
+  const he = holo ? 'the pale blue translucent figure of the young man in the foreground' : 'the young man in the foreground';
+  const speakers = new Set<string>();
+  const beats = ex.shots.map((i, k) => {
+    const s = film.shots[i];
+    const words = wordsOf(film, s);
+    if (!words) return `${s.action}${s.sound ? ` (heard: ${s.sound})` : ''}`;
+    const who = whoOf(film, s);
+    speakers.add(who);
+    const spoken = assertSpeakable(words.replace(/\b[A-Z]{2,}\b/g, (w) => (w === 'AI' ? w : w.toLowerCase())));
+    if (who === 'You') {
+      const voice = (s.action.match(/His voice is ([^.]*)\./) ?? [])[1];
+      // Two of his lines in a row are one speech: he goes on.
+      const prev = k > 0 ? film.shots[ex.shots[k - 1]] : null;
+      if (prev && wordsOf(film, prev) && whoOf(film, prev) === 'You') return `He goes on${voice ? `, ${voice}` : ''}: "${spoken}"`;
+      return `${k ? 'Then, without' : 'Without'} turning round, he ${k ? 'answers' : 'speaks'}${voice ? `, ${voice}` : ''}: "${spoken}"`;
+    }
+    const [subject] = SUBJECT[who] ?? ['The speaker'];
+    return `${s.action} ${subject.replace(/,$/, '')} says: "${spoken}"`;
+  });
+  const voices = [...speakers].map((w) => (VOICES[w] ?? '').replace(' It is always exactly this same voice.', '')).filter(Boolean).join(' ');
+  return [
+    `One continuous locked-off shot${him ? ' over his shoulder' : ''}: the camera never moves and never cuts.`,
+    him ? `${he[0].toUpperCase()}${he.slice(1)} keeps his back to the camera for the whole shot: only the back of his head and his shoulders are seen, never his face, and he does not turn round.` : '',
+    ...beats,
+    voices,
+    'They play it the way actors play a scene together: unhurried, with real pauses, breaths and reactions; whoever is listening reacts while the other speaks.',
+    `Only the lines written here are spoken, each once, in this order, by the one named${speakers.size > 1 ? '' : ''}; nobody else speaks.`,
+    st.look === 'ship' ? '' : 'The insect people keep their insect heads and four arms.',
+    'The room and everyone in it stay exactly as they are in the first frame. Quiet room tone; no music; no text on screen.',
+  ].filter(Boolean).join(' ').replace(/\s+/g, ' ');
+}
+
+interface Word { w: string; start: number; end: number }
+/** What a clip says, word by word with its times (kept beside the clip). */
+async function hearWords(file: string): Promise<{ text: string; words: Word[] }> {
+  const cache = file.replace(/\.mp4$/, '.words.json');
+  if (fs.existsSync(cache) && fs.statSync(cache).mtimeMs >= fs.statSync(file).mtimeMs) return JSON.parse(fs.readFileSync(cache, 'utf8'));
+  const wav = file.replace(/\.mp4$/, '.wav');
+  ff(['-i', file, '-vn', '-ac', '1', '-ar', '16000', wav], 'wav');
+  const r = await api('/api/audio/transcribe', { method: 'POST', body: JSON.stringify({ audioBase64: fs.readFileSync(wav).toString('base64') }) });
+  fs.rmSync(wav, { force: true });
+  const text = String(r.transcript ?? r.text ?? '').trim();
+  const words: Word[] = ((r.words ?? []) as Array<{ word?: string; punctuated_word?: string; text?: string; start: number; end: number }>)
+    .map((x) => ({ w: norm(String(x.word ?? x.punctuated_word ?? x.text ?? ''))[0] ?? '', start: x.start, end: x.end })).filter((x) => x.w);
+  const out = { text, words };
+  fs.writeFileSync(cache, JSON.stringify(out));
+  return out;
+}
+
+/** Where each line of an exchange is in what was heard: the stretch of words that fits it best, in order. */
+function alignLines(lines: string[], words: Word[]): Array<{ start: number; end: number; heard: number } | null> {
+  const out: Array<{ start: number; end: number; heard: number } | null> = [];
+  let pos = 0;
+  for (const line of lines) {
+    const want = norm(line);
+    let best: { e: number; score: number; hit: number } | null = null;
+    for (let e = Math.max(pos + 1, pos + want.length - 4); e <= Math.min(words.length, pos + want.length + 4); e++) {
+      const bag = words.slice(pos, e).map((x) => x.w);
+      let hit = 0;
+      for (const w of want) { const i = bag.indexOf(w); if (i >= 0) { hit++; bag.splice(i, 1); } }
+      // The stretch that holds the most of the line's words and the fewest that are not its own; it must end on the line's last word if it can.
+      const score = hit - bag.length * 0.6 + (words[e - 1]?.w === want[want.length - 1] ? 0.75 : 0);
+      if (!best || score > best.score) best = { e, score, hit };
+    }
+    if (!best || best.hit === 0 || pos >= words.length) { out.push(null); continue; }
+    out.push({ start: words[pos].start, end: words[best.e - 1].end, heard: best.hit / Math.max(1, want.length) });
+    pos = best.e;
+  }
+  return out;
+}
+
+const fpsOf = (file: string): number => {
+  const r = spawnSync('ffprobe', ['-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=r_frame_rate', '-of', 'csv=p=0', file], { encoding: 'utf8' }).stdout.trim();
+  const [a, b] = r.split('/').map(Number);
+  return a && b ? a / b : FPS;
+};
+
+/** The pitch of a stretch of a clip (its median, Hz). */
+function pitchOfSpan(file: string, a: number, b: number): number {
+  const tmp = file.replace(/\.mp4$/, `.span.wav`);
+  ff(['-ss', Math.max(0, a).toFixed(3), '-to', b.toFixed(3), '-i', file, '-vn', '-ac', '1', '-ar', '16000', tmp], 'span');
+  const hz = pitchOf(tmp);
+  fs.rmSync(tmp, { force: true });
+  return hz;
+}
+
+interface TalkCut { frame: number; fps: number; fix: Fix; lines: Array<{ shot: string; start: number; end: number; heard: number } | { shot: string; missing: true }> }
+/** The first clip of the take (place) an exchange belongs to: its first frame is the colour the take is held to. */
+function talkTakeStart(exs: Exchange[], k: number): number { let i = k; while (i > 0 && exs[i].from === '^') i--; return i; }
+
+/** Hear an exchange's clip, find its lines in it, and say where it is cut (a beat after its last word). */
+async function talkCut(film: Film, exs: Exchange[], k: number): Promise<TalkCut> {
+  const ex = exs[k];
+  const f = talkFile(film, ex);
+  const side = talkCutFile(film, ex);
+  if (fs.existsSync(side) && fs.statSync(side).mtimeMs >= fs.statSync(f).mtimeMs) return JSON.parse(fs.readFileSync(side, 'utf8')) as TalkCut;
+  const spoken = ex.shots.filter((i) => wordsOf(film, film.shots[i]));
+  const h = await hearWords(f);
+  const spans = alignLines(spoken.map((i) => wordsOf(film, film.shots[i])), h.words);
+  const fps = fpsOf(f);
+  const frames = Math.max(2, Math.round(duration(f) * fps));
+  const lastEnd = Math.max(0, ...spans.filter(Boolean).map((x) => x!.end));
+  // A beat after the last word (the listener's reaction is part of the performance); the film's last clip runs out.
+  const frame = Math.min(frames - 2, Math.max(1, Math.round((lastEnd ? lastEnd + 0.9 : duration(f)) * fps)));
+  const ref = colourOf(talkFile(film, exs[talkTakeStart(exs, k)]), 0);
+  const cut: TalkCut = {
+    frame, fps, fix: process.env.CUTSCENE_NO_COLOUR_HOLD ? NO_FIX : fixOf(ref, colourOf(f, frame)),
+    lines: spoken.map((i, n) => (spans[n] ? { shot: film.shots[i].id, start: +spans[n]!.start.toFixed(3), end: +spans[n]!.end.toFixed(3), heard: +spans[n]!.heard.toFixed(2) } : { shot: film.shots[i].id, missing: true as const })),
+  };
+  fs.writeFileSync(side, JSON.stringify(cut));
+  return cut;
+}
+
+/** The frame an exchange is cut on, in its take's first colour and with what drifted through the air taken out: where the next starts. */
+async function talkStartFrame(film: Film, exs: Exchange[], k: number): Promise<string> {
+  const prev = exs[k - 1];
+  const f = talkFile(film, prev);
+  const cut = await talkCut(film, exs, k - 1);
+  const out = path.join(talkDir(film), `${exs[k].id}-start.png`);
+  if (fs.existsSync(out) && fs.statSync(out).mtimeMs >= fs.statSync(talkCutFile(film, prev)).mtimeMs) return out;
+  const W = 1280, H = 720, N = W * H * 3;
+  const step = Math.max(1, Math.round(cut.fps / 6));
+  const a = Math.max(0, cut.frame - step * 4);
+  const r = spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-i', f, '-vf', `select=between(n\\,${a}\\,${cut.frame + step * 4}),${lut(cut.fix)},scale=${W}:${H}`, '-vsync', '0', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-'], { maxBuffer: 1 << 30 });
+  if (!r.stdout || r.stdout.length < N) throw new Error(`the frame ${prev.id} is cut on: ${String(r.stderr).slice(-300)}`);
+  const all: Buffer[] = [];
+  for (let o = 0; o + N <= r.stdout.length; o += N) all.push(r.stdout.subarray(o, o + N));
+  const at = Math.min(cut.frame - a, all.length - 1);
+  const px = Buffer.from(all[at]);
+  const drifted = undrift(px, all.filter((_, i) => (i - at) % step === 0), W, H);
+  // (No point filter here: on a clean model it only took the white petals out of the garlands.)
+  // THE SHARPNESS IS HELD (Oct 4 2026). A model softens whatever picture it is handed in its first half second (measured
+  // on Seedance 2.5: to about 0.7 of it) and then holds that; handed the soft last frame of the clip before, the next
+  // clip is softer again, and the fourth clip of the first film had 17% of the first one's fine detail. So the frame a
+  // clip starts from is sharpened back to its take's first frame (an unsharp mask, its amount found by measuring), and
+  // every clip settles at the same sharpness. The bake softens the first half second of a clip that goes on from another
+  // (sharper than what came before it) so that the join does not pulse.
+  const ref = sharpOf(readRgb(talkFile(film, exs[talkTakeStart(exs, k - 1)]), 0, W, H), W, H);
+  const have = sharpOf(px, W, H);
+  let sharp = px;
+  let amount = 0;
+  if (have < ref * 0.97 && !process.env.CUTSCENE_NO_SHARP_HOLD) {
+    let lo = 0, hi = 2.5;
+    for (let n = 0; n < 7; n++) {
+      amount = (lo + hi) / 2;
+      const u = spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-s', `${W}x${H}`, '-i', '-', '-vf', `unsharp=5:5:${amount.toFixed(3)}:5:5:0`, '-frames:v', '1', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-'], { input: px, maxBuffer: 1 << 27 });
+      if (!u.stdout || u.stdout.length < N) break;
+      sharp = Buffer.from(u.stdout.subarray(0, N));
+      if (sharpOf(sharp, W, H) < ref) lo = amount; else hi = amount;
+    }
+  }
+  const w = spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-s', `${W}x${H}`, '-i', '-', '-frames:v', '1', '-update', '1', out], { input: sharp, maxBuffer: 1 << 27 });
+  if (w.status !== 0) throw new Error(`writing ${out}: ${String(w.stderr).slice(-300)}`);
+  console.log(`[talk] ${prev.id} → ${exs[k].id}: the start frame's sharpness ${Math.round(have)} → ${Math.round(sharpOf(sharp, W, H))} (the take began at ${Math.round(ref)}; unsharp ${amount.toFixed(2)})${drifted > 0.002 ? `; ${(drifted * 100).toFixed(1)}% of it was drifting light, taken out` : ''}`);
+  return out;
+}
+
+/** One frame of a clip, raw (rgb24). */
+function readRgb(file: string, frame: number, W: number, H: number): Buffer {
+  const r = spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-i', file, '-vf', `select=eq(n\\,${frame}),scale=${W}:${H}`, '-frames:v', '1', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-'], { maxBuffer: 1 << 27 });
+  return Buffer.from(r.stdout.subarray(0, W * H * 3));
+}
+/** How sharp a picture is: the variance of its luminance's Laplacian (its fine detail). */
+function sharpOf(px: Buffer, W: number, H: number): number {
+  const lum = (i: number) => 0.299 * px[i * 3] + 0.587 * px[i * 3 + 1] + 0.114 * px[i * 3 + 2];
+  let sum = 0, n = 0;
+  for (let y = 1; y < H - 1; y += 2) for (let x = 1; x < W - 1; x += 2) {
+    const i = y * W + x;
+    const l = 4 * lum(i) - lum(i - 1) - lum(i + 1) - lum(i - W) - lum(i + W);
+    sum += l * l;
+    n++;
+  }
+  return sum / Math.max(1, n);
+}
+
+function talkReport(film: Film, ex: Exchange, cut: TalkCut): void {
+  const f = talkFile(film, ex);
+  for (const l of cut.lines) {
+    const s = film.shots.find((x) => x.id === l.shot)!;
+    if ('missing' in l) { console.log(`   ${ex.id} ${l.shot.padEnd(4)} ${whoOf(film, s).padEnd(12)} NOT HEARD   "${wordsOf(film, s)}"`); continue; }
+    const hz = Math.round(pitchOfSpan(f, l.start, l.end));
+    const who = whoOf(film, s);
+    const flag = l.heard < 0.8 ? 'WORDS' : who === 'You' && hz > 175 ? 'NOT-HIS-VOICE' : 'ok';
+    console.log(`   ${ex.id} ${l.shot.padEnd(4)} ${who.padEnd(12)} ${flag.padEnd(13)} ${String(Math.round(l.heard * 100)).padStart(3)}%  ${String(hz).padStart(3)} Hz  ${l.start.toFixed(1)}-${l.end.toFixed(1)} s`);
+  }
+}
+
+async function talk(film: Film) {
+  const exs = exchangesOf(film);
+  fs.mkdirSync(talkDir(film), { recursive: true });
+  let made = 0;
+  for (let k = 0; k < exs.length; k++) {
+    const ex = exs[k];
+    const out = talkFile(film, ex);
+    if (fs.existsSync(out) || !want(ex.id)) continue;
+    let start: string;
+    if (ex.from === '^') {
+      if (!fs.existsSync(talkFile(film, exs[k - 1]))) { console.warn(`[talk] ${ex.id}: the exchange before it is not made; stopping here`); break; }
+      start = await talkStartFrame(film, exs, k);
+    } else {
+      if (!fs.existsSync(stillFile(ex.from))) { console.warn(`[talk] ${ex.id}: its picture ${ex.from} is not drawn (run stills)`); break; }
+      start = still169(ex.from);
+    }
+    const prompt = talkPrompt(film, ex);
+    const seconds = talkSecs(film, ex);
+    try {
+      await makeClip({ slug: `talk-${film.id}-${ex.id}`, stillFile: start, out, models: [TALK_MODEL], prompt, seconds, loop: false, raw: true, resolution: TALK_RES, aspect: '16:9', audio: true });
+    } catch (e) { console.warn(`[talk] ${ex.id} failed: ${(e as Error).message.slice(0, 300)}; stopping here`); break; }
+    fs.writeFileSync(out.replace(/\.mp4$/, '.txt'), `${ex.shots.map((i) => film.shots[i].id).join(' ')}\n---\n${prompt}\n`);
+    made++;
+    const cut = await talkCut(film, exs, k);
+    console.log(`[talk] ${ex.id} (${ex.shots.map((i) => film.shots[i].id).join(' ')}), ${duration(out).toFixed(1)} s, cut at ${(cut.frame / cut.fps).toFixed(1)} s:`);
+    talkReport(film, ex, cut);
+  }
+  console.log(`[talk] ${film.id}: ${made} clips made on ${TALK_MODEL} at ${TALK_RES} (${exs.length} exchanges: ${exs.map((e) => `${e.id}=${talkSecs(film, e)}s`).join(' ')})`);
+}
+
+async function talkCheck(film: Film) {
+  const exs = exchangesOf(film);
+  for (let k = 0; k < exs.length; k++) {
+    if (!fs.existsSync(talkFile(film, exs[k]))) { console.log(`   ${exs[k].id} not made`); continue; }
+    talkReport(film, exs[k], await talkCut(film, exs, k));
+  }
+}
+
+/** Move an exchange's clip aside, and every one that went on from it. */
+function talkRedo(film: Film) {
+  const exs = exchangesOf(film);
+  const from = exs.findIndex((e) => only.includes(e.id));
+  if (from < 0) { console.warn('[talk] talkredo: name an exchange (t00, t01 ...)'); return; }
+  let to = from;
+  while (exs[to + 1]?.from === '^') to++;
+  let n = 1;
+  while (fs.existsSync(path.join(talkDir(film), `v${n}`))) n++;
+  fs.mkdirSync(path.join(talkDir(film), `v${n}`), { recursive: true });
+  for (let k = from; k <= to; k++) {
+    const base = talkFile(film, exs[k]).replace(/\.mp4$/, '');
+    for (const g of [`${base}.mp4`, `${base}.json`, `${base}.txt`, `${base}.cut.json`, `${base}.words.json`, `${base}-start.png`]) if (fs.existsSync(g)) fs.renameSync(g, path.join(talkDir(film), `v${n}`, path.basename(g)));
+  }
+  console.log(`[talk] ${film.id}: ${exs.slice(from, to + 1).map((e) => e.id).join(' ')} → talk/v${n}/`);
+}
+
+async function talkBake(film: Film) {
+  const exs = exchangesOf(film);
+  const missing = exs.filter((e) => !fs.existsSync(talkFile(film, e)));
+  if (missing.length) { console.warn(`[talk] ${film.id}: not baked, ${missing.map((e) => e.id).join(' ')} not made`); return; }
+  const tmp = path.join(dirOf(film.id), 'bake');
+  fs.rmSync(tmp, { recursive: true, force: true });
+  fs.mkdirSync(tmp, { recursive: true });
+  fs.mkdirSync(OUT, { recursive: true });
+  const cues: Cue[] = [];
+  const parts: string[] = [];
+  let t = 0;
+  for (let k = 0; k < exs.length; k++) {
+    const ex = exs[k];
+    const src = talkFile(film, ex);
+    const cut = await talkCut(film, exs, k);
+    const fps = cut.fps;
+    const frames = Math.max(2, Math.round(duration(src) * fps));
+    const goesOn = exs[k + 1]?.from === '^';
+    const lastEnd = Math.max(0, ...cut.lines.filter((l) => !('missing' in l)).map((l) => (l as { end: number }).end));
+    // Cut where the next clip was started from; the last clip of a place (or of the film) keeps a breath after its last word.
+    const fb = goesOn ? cut.frame : Math.min(frames, Math.round((lastEnd ? lastEnd + 1.6 : duration(src)) * fps));
+    const b = fb / fps;
+    const part = path.join(tmp, `${String(k).padStart(2, '0')}-${ex.id}.mp4`);
+    const ln = loudnorm(src, 0, b, -16);
+    const af = [`atrim=start=0:end=${b.toFixed(4)}`, 'asetpts=PTS-STARTPTS', ln, 'afade=t=in:d=0.03', `afade=t=out:st=${Math.max(0, b - 0.06).toFixed(3)}:d=0.06`].filter(Boolean).join(',');
+    const rise = `min(1\\,T/${(cut.frame / fps).toFixed(4)})`;
+    // A clip that goes on from another starts on a frame sharpened back to the take's first (talkStartFrame), which the
+    // model softens over its first half second: that head is softened here, most at its first frame, so the join does not pulse.
+    const head = ex.from === '^' && !process.env.CUTSCENE_NO_SHARP_HOLD
+      ? `,split[sh][so];[so]gblur=sigma=${TALK_HEAD_BLUR}[sob];[sh][sob]blend=all_expr='A*(1-max(0\\,1-T/${TALK_HEAD_SECS}))+B*max(0\\,1-T/${TALK_HEAD_SECS})'` : '';
+    ff(['-i', src, '-filter_complex',
+      `[0:v]trim=start_frame=0:end_frame=${fb},setpts=PTS-STARTPTS,format=gbrp,split[plain][tofix];[tofix]${lut(cut.fix)}[fixed];`
+      + `[plain][fixed]blend=all_expr='A*(1-${rise})+B*${rise}'${head},scale=1280:720:flags=lanczos,fps=${FPS},format=yuv420p[v]`,
+      '-map', '[v]', '-map', '0:a', '-af', `${af},aresample=48000`, '-ac', '2',
+      '-c:v', 'libx264', '-preset', 'slow', '-crf', '19', '-c:a', 'aac', '-b:a', '160k', '-video_track_timescale', '12288', part], `part ${ex.id}`);
+    const real = duration(part);
+    // The cues: each shot of the exchange in order; a line from the end of the one before it to midway to the next.
+    const timed = ex.shots.map((i) => {
+      const s = film.shots[i];
+      const l = cut.lines.find((x) => x.shot === s.id);
+      return { s, span: l && !('missing' in l) ? { start: l.start, end: l.end } : null };
+    });
+    let at = 0;
+    timed.forEach((x, n) => {
+      const next = timed.slice(n + 1).find((y) => y.span);
+      let end = n === timed.length - 1 ? real
+        : x.span ? (next?.span ? (x.span.end + next.span.start) / 2 : Math.min(real, x.span.end + 0.4))
+          : next?.span ? Math.max(at + 0.2, next.span.start - 0.15) : real;
+      end = Math.min(real, Math.max(at + 0.2, end));
+      const words = wordsOf(film, x.s);
+      cues.push({ shot: x.s.id, ...(words ? { line: x.s.line, who: whoOf(film, x.s), text: words } : {}), t0: +(t + at).toFixed(3), t1: +(t + end).toFixed(3) });
+      at = end;
+    });
+    t += real;
+    parts.push(part);
+  }
+  finishBake(film, tmp, parts, cues);
+  // The sheet to LOOK at: the baked film itself, a frame every three seconds.
+  const out = path.join(REVIEW, film.id, 'sheet.jpg');
+  fs.mkdirSync(path.dirname(out), { recursive: true });
+  const total = duration(path.join(OUT, `${film.id}.mp4`));
+  const n = Math.ceil(total / 3);
+  ff(['-i', path.join(OUT, `${film.id}.mp4`), '-vf', `fps=1/3,scale=480:270,tile=6x${Math.ceil(n / 6)}`, '-frames:v', '1', '-q:v', '4', out], 'sheet');
+  console.log(`[talk] sheet: ${out} (a frame every 3 s, left to right, top to bottom)`);
 }
 
 /** Every shot as three frames (start, middle, end) with its id: LOOK at it. */
@@ -745,11 +1129,17 @@ if (!process.env.VITEST) {
     if (step === 'list') { list(); return; }
     const film = FILMS.find((f) => f.id === filmId);
     if (!film) { console.error(`no film "${filmId}" (films: ${FILMS.map((f) => f.id).join(', ')})`); process.exit(1); }
-    const paid = step === 'stills' || step === 'clips' || step === 'check';
+    const paid = step === 'stills' || step === 'clips' || step === 'check' || step === 'talk';
     const before = paid ? await balance() : 0;
     if (step === 'stills') await stills(film);
     else if (step === 'clips') await clips(film);
     else if (step === 'redo') redo(film);
+    // A film as acted exchanges (several lines a clip, on a model that talks).
+    else if (step === 'talk') await talk(film);
+    else if (step === 'talkcheck') await talkCheck(film);
+    else if (step === 'talkredo') talkRedo(film);
+    else if (step === 'talkbake') await talkBake(film);
+    else if (step === 'talkprompts') exchangesOf(film).forEach((ex) => console.log(`--- ${ex.id} [${ex.shots.map((i) => film.shots[i].id).join(' ')}] ${talkSecs(film, ex)} s from ${ex.from}\n${talkPrompt(film, ex)}\n`));
     // Free: the frame a shot would start from (the shot before it at its cut, colour held, specks out), to look at.
     else if (step === 'start') for (const id of only) { const i = film.shots.findIndex((x) => x.id === id); if (i > 0) console.log(await cutFrame(film, i - 1, path.join(dirOf(film.id), `${id}-start.png`))); }
     else if (step === 'check') await check(film);

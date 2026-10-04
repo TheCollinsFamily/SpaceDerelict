@@ -171,7 +171,8 @@ const SHIP_TONE = 'the low steady hum of a small starship: air handling, a faint
 const HALL_TONE = 'the huge hushed echo of an empty domed prayer hall, a faint draught, oil lamps guttering';
 const CHAMBER_TONE = 'the quiet of a grand old room: a slow clock, a faint draught in heavy curtains';
 const MEADOW_TONE = 'a warm meadow: soft wind in long grass, far birdsong, a faint shimmering tone';
-const APPEAR = 'The hologram of the young man flickers faintly and steadies, his back to the camera.';
+// (Not "hologram", not "flickers": the picture shows what he is, and those words invite sparkles that grow down a take.)
+const APPEAR = 'The pale blue figure of the young man has just appeared in the room, his back to the camera.';
 const KING_OFFICE_TONE = 'the quiet of a big panelled office at night: a slow clock, a faint electric hum, far traffic';
 const STEPS_TONE = 'a great crowd in the open air, hushed: flags snapping in the wind, a faint echo off stone, a public address system\'s hum';
 

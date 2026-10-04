@@ -67,7 +67,7 @@ try {
   await page.waitForFunction(() => { const i = document.querySelector('#comics .cm-page'); return i && i.complete && i.naturalWidth > 0; }, null, { timeout: 15000 });
   await shot('4-reading');
   let turns = 0;
-  for (; turns < 12 && await page.locator('#comics .cm-page').count(); turns++) { await page.keyboard.press(' '); await page.waitForTimeout(650); }
+  for (; turns < 30 && await page.locator('#comics .cm-page').count(); turns++) { await page.keyboard.press(' '); await page.waitForTimeout(650); }
   check(await page.locator('#comics .cm-shelf').count() === 1, 'Space reads on through every page of every comic and ends back at the shelf', `${turns} presses`);
   await page.keyboard.press('Escape');
   check(await page.locator('#comics.hidden').count() === 1 && await page.locator('#campaign:not(.hidden) .cp-room').count() > 0, 'Esc closes it: the ship is as it was');

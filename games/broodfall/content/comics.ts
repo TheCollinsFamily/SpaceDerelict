@@ -36,8 +36,8 @@ export interface ComicDef {
 
 export const COMICS: ComicDef[] = [
   {
-    id: 'the-thing-from-the-sky', title: 'The Thing From the Sky', pages: 1,
-    about: 'Honeycomb Heights, the night it came down.',
+    id: 'the-thing-from-the-sky', title: 'The Thing From the Sky', pages: 4,
+    about: 'Luckwell Gardens, the night it came down, and the week after.',
     locked: 'Watch the opening film.',
     earned: (f) => f.introSeen,
   },
