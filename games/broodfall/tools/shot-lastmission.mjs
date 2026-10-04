@@ -41,6 +41,9 @@ const GO = { waitUntil: 'domcontentloaded', timeout: 180000 };
 let failed = 0;
 const check = (ok, what) => { console.log(`  ${ok ? 'PASS' : 'FAIL'}  ${what}`); if (!ok) failed++; };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+/** BEAT_TRACE=1: where it is, with the clock (for a run that stalls). */
+const T0 = Date.now();
+const trace = (what) => { if (process.env.BEAT_TRACE) console.log(`  .. ${((Date.now() - T0) / 1000).toFixed(1)} s ${what}`); };
 const ff = (args) => { const r = spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', ...args], { encoding: 'utf8' }); if (r.status) console.warn(r.stderr.slice(0, 400)); return r.status === 0; };
 
 function freePort() {
@@ -96,7 +99,8 @@ async function aboard(page) {
     if (await page.locator('#newsreel').count()) return;
     if (await page.locator('.cp-scene-card').count()) return;
     const x = page.locator('.cp-icom [data-act="icom-close"]');
-    if (await x.count()) await x.click().catch(() => {});
+    // Only when it is there to be closed: the intercom stays in the page, hidden, when she has nothing to say.
+    if (await x.count() && await x.isVisible()) await x.click({ timeout: 3000 }).catch((e) => trace(`the intercom would not close: ${String(e).slice(0, 200)}`));
     else if (i > 3) return;
     await sleep(500);
   }
@@ -261,7 +265,7 @@ try {
     await page.evaluate(() => window.broodfall.play({ kind: 'call-early' }));
     await sleep(700);
     const banner1 = await page.locator('#banner').innerText();
-    check(/THE COURT AND THE SCIENCE CASTE/.test(banner1) && /THE HOST IN 4 TURNS/.test(banner1), `wave 1's banner ("${banner1}")`);
+    check(/THE COURT AND THE SCIENCE CASTE/.test(banner1) && /THE HOST IN 5 TURNS/.test(banner1), `wave 1's banner, the same count as the order ("${banner1}")`);
     await shot(page, 'b8-wave1');
     // Through wave 1 (stepped): no war body on the field at any time; the clear pays the shelter's ration.
     const w1 = await page.evaluate(() => {
@@ -315,11 +319,16 @@ try {
     await shot(page, 'b10-host');
     // Won (forced): the report, the news and the end of his broadcast, then the ship: the campaign is complete.
     await forceEnd(page, true);
+    trace('report up');
     await shot(page, 'b11-report');
     await page.locator('[data-act="back"]').click();
+    trace('back clicked');
     await skipUntil(page, '#campaign:not(.hidden) .cp-ended, #campaign:not(.hidden) .cp-desk, #campaign:not(.hidden) .cp-rooms', 45000);
+    trace('the ship is up (or 45 s passed)');
     for (let i = 0; i < 12 && await page.locator('#newsreel').count(); i++) { await page.keyboard.press('Escape'); await sleep(900); }
+    trace('nothing is playing');
     await aboard(page);
+    trace('aboard');
     const s = await page.evaluate(() => JSON.parse(localStorage.getItem('broodfall-campaign')));
     check(s.ended === 'delegation' && s.held.includes('hive-house'), 'the campaign is over, on the route whose finale came before it');
     const desk2 = page.locator('[data-room="desk"], [data-act="room-desk"]').first();

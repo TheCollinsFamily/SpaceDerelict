@@ -1,0 +1,88 @@
+{
+  "title": "A Message From the Boss",
+  "nsfw": false,
+  "content": "Science-fiction satire for adults, work-safe: no nudity, no sex, no gore.",
+  "style": {
+    "modelId": "seegen:gpt-image-2",
+    "look": "A cinematic photoreal frame of hard science fiction aboard an austere starship of an ascetic far-future empire: matte black and bare pale ceramic surfaces, flush seams, even white strip light, razor-thin holographic displays, extreme plainness, no ornament, no neon, no clutter. The only marking anywhere is one small plain black gear symbol.",
+    "width": 1536,
+    "height": 1024
+  },
+  "cast": [
+    {
+      "id": "yoke",
+      "name": "YOKE",
+      "image": "../../notes/concepts/2026-09-29/r4-yoke-colour.png",
+      "description": "the ship's AI. She is a HOLOGRAM and the only drawn thing in a photoreal room: a waist-up projection rendered as a flat-colour anime illustration with crisp linework, glowing pale blue, slightly translucent, with faint scan lines. An adult woman of about twenty-four with a calm, intelligent face, long straight pale silver hair with a faint blue tint falling well past her shoulders, a side-swept fringe, amber-gold eyes, fair skin, one small plain black gear-shaped hair clip, a plain black high-collared long-sleeved dress with a narrow white inner collar",
+      "balloon": "blue"
+    },
+    {
+      "id": "tech",
+      "name": "the Technician",
+      "image": "../../notes/concepts/2026-09-29/hero-behind-desk.png",
+      "description": "a slight young man of about twenty-five, photoreal, always seen from behind: untidy dark hair, a stylus tucked behind his right ear, a plain black high-collared uniform with a narrow white collar, the sleeves pushed up to the elbows. His face is never shown",
+      "balloon": "white"
+    },
+    {
+      "id": "barnabas",
+      "name": "Supervisor Barnabas",
+      "description": "an uplifted dog who is a bureaucrat of the empire, photoreal: a golden retriever with a kind, eager, trusting face, sitting upright at a desk like a person, both front paws resting neatly on the desk, wearing a plain black high-collared uniform jacket with a narrow white inner collar and nothing else: no badge, no medal, no insignia",
+      "sheet": "A lifelike photograph, the look of hard science fiction: a still from a video call. Supervisor Barnabas, an uplifted dog who is a bureaucrat of an ascetic far-future empire, sits upright at a bare pale desk in a plain grey office, facing the camera, both front paws resting neatly on the desk. He is a golden retriever with a kind, eager, trusting face, wearing a plain black high-collared uniform jacket with a narrow white inner collar and nothing else: no badge, no medal, no insignia. Even soft light. One dog only.",
+      "balloon": "amber"
+    }
+  ],
+  "panels": [
+    {
+      "id": "bridge",
+      "picture": "The ship's operations room. YOKE's hologram stands on the black console, waist up, one hand lifted in an offhand 'by the way' gesture, a small amused smile. The Technician stands at the console at the left edge of the frame, seen from behind. The upper left of the frame is plain dark wall.",
+      "cast": ["yoke", "tech"],
+      "camera": "medium, over his shoulder",
+      "words": [{ "who": "yoke", "text": "Oh, and we got a message from the boss." }]
+    },
+    {
+      "id": "hello",
+      "picture": "A large razor-thin display floats above the console and fills most of the frame: on it, the video call. Supervisor Barnabas sits upright at his desk facing the camera, ears up, mouth open in a delighted grin. At the bottom left edge of the frame, small and dark, the back of the Technician's head as he watches.",
+      "cast": ["barnabas", "tech"],
+      "camera": "from behind the Technician, the display large in frame",
+      "words": [{ "who": "barnabas", "text": "Technician! Supervisor Barnabas here, Clearance Office, Sector Nine." }]
+    },
+    {
+      "id": "twice",
+      "picture": "Close on the display: Supervisor Barnabas leans toward the camera, holding up a thin report tablet proudly in both front paws, eyes bright, tail a blur behind his chair.",
+      "cast": ["barnabas"],
+      "camera": "close on the screen",
+      "words": [{ "who": "barnabas", "text": "I just read your first field report, and I want you to know I read the whole thing. Twice!" }]
+    },
+    {
+      "id": "goodegg",
+      "picture": "The display again: Supervisor Barnabas sits very straight, one front paw raised solemnly like a speaker making an official point, his expression earnest and serious. The right third of the frame is the plain grey wall of his office.",
+      "cast": ["barnabas"],
+      "camera": "medium, on the screen",
+      "words": [
+        { "who": "barnabas", "text": "The Board says only the numbers matter, and the Board is very wise." },
+        { "who": "barnabas", "text": "But I say you are a good egg." }
+      ]
+    },
+    {
+      "id": "goodboy",
+      "picture": "The display, close: Supervisor Barnabas beams at the camera, tongue out, eyes squeezed half shut with happiness, one paw reaching toward the lens to end the call.",
+      "cast": ["barnabas"],
+      "camera": "close on the screen",
+      "words": [
+        { "who": "barnabas", "text": "Keep it up! I will be watching every report. I love reports." },
+        { "who": "barnabas", "text": "Good boy. Good work! Good work. Barnabas out." }
+      ]
+    },
+    {
+      "id": "after",
+      "picture": "The operations room again, the display gone dark. YOKE's hologram on the console turns to the Technician with a wry, fond half-smile, one eyebrow up, a hand on her hip. The Technician, seen from behind at the left edge of the frame, has not moved.",
+      "cast": ["yoke", "tech"],
+      "camera": "medium, over his shoulder",
+      "words": [
+        { "who": "yoke", "text": "A dog for a boss. Lucky you, honestly, they're lovely." },
+        { "who": "yoke", "text": "Just don't let him anywhere near the budget." }
+      ]
+    }
+  ],
+  "pages": { "perPage": 6 }
+}

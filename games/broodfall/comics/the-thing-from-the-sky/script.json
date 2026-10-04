@@ -1,0 +1,126 @@
+{
+  "title": "The Thing From the Sky",
+  "nsfw": false,
+  "content": "A 1950s B-movie monster comic, work-safe: dread and a creeping monster are fine; no gore, no nudity, no sex.",
+  "style": {
+    "modelId": "seegen:gpt-image-2",
+    "look": "A frame from a 1950s colour science-fiction monster film, shot on a studio backlot at night: saturated three-strip Technicolor, theatrical studio lighting with deep black shadows and coloured gels, a painted-backdrop night sky, the slight softness of old lenses, film grain. The town is a pastel insect suburb: rounded single-storey houses of pale wasp paper and wax in mint, butter yellow, powder blue and salmon pink, round windows, striped awnings, white picket fences of wax, small beetle-shaped cars with white-wall tyres. Every person in this world is an insect with human posture: there are no humans and no human faces anywhere. No crosses, no religious symbols.",
+    "width": 1536,
+    "height": 1024
+  },
+  "cast": [
+    {
+      "id": "mabel",
+      "name": "Mabel",
+      "description": "an insect townswoman: human posture, four arms with small hands, an insect head with large expressive dark eyes, small mandibles, antennae that move like eyebrows, dark umber chitin. She wears a 1950s mint-green polka-dot house dress with a white apron and a string of pearls",
+      "balloon": "white"
+    },
+    {
+      "id": "earl",
+      "name": "Earl",
+      "description": "an insect townsman, Mabel's husband: human posture, four arms with small hands, an insect head with large expressive dark eyes, small mandibles, short antennae, dark umber chitin. He wears a 1950s short-sleeved checked shirt, a narrow tie, high-waisted trousers and a trilby hat, and holds a pipe in his mandibles",
+      "balloon": "amber"
+    }
+  ],
+  "panels": [
+    {
+      "id": "porch",
+      "picture": "A quiet street of the insect suburb at night, porch lights glowing. Mabel and Earl sit side by side on the porch swing of a butter-yellow house; Earl holds an open newspaper in two hands, Mabel knits with all four. The upper half of the frame is the painted night sky, empty and calm.",
+      "cast": [
+        "mabel",
+        "earl"
+      ],
+      "camera": "wide, from the street",
+      "words": [
+        {
+          "kind": "narration",
+          "text": "Nothing ever happened in Honeycomb Heights."
+        }
+      ]
+    },
+    {
+      "id": "streak",
+      "picture": "On the porch: Mabel has stood up and points at the sky with two of her arms, antennae straight up in alarm. Earl stays on the swing and lowers his newspaper a little, unbothered. Across the painted night sky above the rooftops, a bright green streak with a long tail.",
+      "cast": [
+        "mabel",
+        "earl"
+      ],
+      "camera": "medium, slightly low",
+      "words": [
+        {
+          "who": "mabel",
+          "text": "Earl. Earl, the sky is doing something."
+        },
+        {
+          "who": "earl",
+          "text": "The sky does that, dear."
+        }
+      ]
+    },
+    {
+      "id": "impact",
+      "picture": "The far end of the street: a glowing, steaming crater in the middle of the road, a beetle-shaped car tipped on its side, the wax picket fences nearby melted and sagging. Insect neighbours in dressing gowns and hair curlers stand in a frightened group at a distance, lit pink by the glow from the crater.",
+      "cast": [],
+      "camera": "wide, high angle",
+      "words": [
+        {
+          "kind": "sound",
+          "text": "KRA-KOOM"
+        }
+      ]
+    },
+    {
+      "id": "crater",
+      "picture": "Mabel and Earl stand at the rim of the crater in their night clothes over their day clothes, lit from below by a sickly pink glow, looking down. In the crater lies a lump the size of a barrel of salmon-pink wet muscle armoured with plates of dark chitin and ivory bone, pulsing. The upper third of the frame is dark sky.",
+      "cast": [
+        "mabel",
+        "earl"
+      ],
+      "camera": "low, from inside the crater looking up at them",
+      "words": [
+        {
+          "who": "earl",
+          "text": "Well. It's not from the hardware store."
+        }
+      ]
+    },
+    {
+      "id": "creep",
+      "from": "crater",
+      "picture": "The same place a few seconds later: thin dark maroon veins of creep, matte and branching, have spread out of the crater across the road to their feet. Mabel grips Earl's arm with three of her hands. Earl's pipe has dropped from his mandibles.",
+      "cast": [
+        "mabel",
+        "earl"
+      ],
+      "camera": "low, from inside the crater looking up at them",
+      "words": [
+        {
+          "who": "mabel",
+          "text": "Earl. It's GROWING."
+        }
+      ]
+    },
+    {
+      "id": "run",
+      "picture": "Mabel and Earl run down the middle of the street toward us, all eight arms pumping, Earl holding his trilby on with one hand. Behind them thin dark maroon veins of creep climb the walls of the pastel houses like ivy and spread across the road, flat as a stain. There is no giant creature anywhere: the only monster is the creep. Insect neighbours scatter in every direction. The top left of the frame is dark sky.",
+      "cast": [
+        "mabel",
+        "earl"
+      ],
+      "camera": "wide, low, the street running away behind them",
+      "words": [
+        {
+          "kind": "narration",
+          "text": "It came down, out of the sky."
+        },
+        {
+          "kind": "sound",
+          "text": "EEEEEEEE"
+        }
+      ]
+    }
+  ],
+  "pages": {
+    "perPage": 6
+  }
+}

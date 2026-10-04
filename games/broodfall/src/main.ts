@@ -445,7 +445,8 @@ function handleEvents(events: SimEvent[]): void {
   if (started) boardEvents(events);
   for (const e of events) {
     if (e.kind === 'wave-start') banner(e.court
-      ? `WAVE ${e.wave} — THE COURT AND THE SCIENCE CASTE, FROM ${e.sides} · ${e.hostIn ? `THE HOST IN ${e.hostIn} TURN${e.hostIn === 1 ? '' : 'S'}` : 'THE HOST IS NEXT'}`
+      // The same count as the order on the HUD: the turns left with this one in them (`hostIn` is those after it).
+      ? `WAVE ${e.wave} — THE COURT AND THE SCIENCE CASTE, FROM ${e.sides} · THE HOST IN ${(e.hostIn ?? 0) + 1} TURN${e.hostIn ? 'S' : ''}`
       : `WAVE ${e.wave} — ASSAULT FROM ${e.sides}`);
     // THE LAST MISSION (Oct 4 2026): the shelter that is his from the start; the Host's arrival.
     if (e.kind === 'shelter-start') banner(e.taken ? 'THE SHELTER BY THE BODY IS YOURS — PROTECT IT: IT IS YOUR WAR MEAT UNTIL THE HOST ARRIVES' : 'A SHELTER STANDS BY THE BODY — AN INFESTOR CAN TAKE IT');

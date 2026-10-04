@@ -254,7 +254,7 @@ AND THE ROACH KING OFF THE AIR".
   the two scenes; `lastMissionHtml` on its briefing; ONE LANDING IS LEFT; the ♛ on the planet); `src/ui/hud.ts` (the
   countdown in the order, short enough to be read whole); `src/main.ts` (banners).
 - **Tests:** `tests/lastMission.test.ts` (9), `tests/roachKing.test.ts` (5 more), `tests/cutscenes.test.ts` (19 films).
-  **Beat:** `node tools/shot-lastmission.mjs --build` (51 checks: the briefing after a deployment; the desk, the
+  **Beat:** `node tools/shot-lastmission.mjs --build` (52 checks; `BEAT_TRACE=1` prints where it is: the briefing after a deployment; the desk, the
   briefing, the call, the address, the mission with its shelter, countdown, court waves, ration and the Host's arrival,
   the campaign complete; a second try goes straight in). **Measure:** `npx vite-node tools/measure/last-mission.measure.ts`.
 - **Not done:** the three films (the shot lists run: `npx vite-node tools/media/cutscenes.ts -- prompts rk-briefing`);
