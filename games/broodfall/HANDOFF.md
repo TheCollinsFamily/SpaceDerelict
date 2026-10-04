@@ -1958,7 +1958,10 @@ rfab api? if not update it so you can ... those are probably better".
   `makeClip({ continueFrom: clip, tailSeconds })` cuts the tail (`tailOf`), uploads it (`uploadVideo`) and sends it;
   `lastFrameOf(clip)` gives a clip's real last frame. A continued clip takes NO end frame (the API drops the clip when a
   start AND an end picture are given), so `continueFrom` with `endFile` throws.
-- **Added to rfab.ai** (backend `66fa6fe0`, note `docs/notes/SEEGEN_VIDEO_EXTEND_2026-10-04.md`; DEPLOY OWED, Collins's):
+- **Added to rfab.ai** (backend `66fa6fe0`, note `docs/notes/SEEGEN_VIDEO_EXTEND_2026-10-04.md`; DEPLOYED by Collins Oct 4,
+  live on every instance by 16:23, and checked live with this game's own tool: `makeClip({ continueFrom, continueMode:
+  'extend' })`, 4 s of sd2-fast at 480p from the last 5 s of the Desk walk-in, came back and was charged 44,370 tokens
+  as "4s + 5s of the clip it was given"; first frame 31.6 dB from the source's last):
   the provider's own extend mode, asked for with `continuationMode: "extend"` (`makeClip({ continueMode: 'extend' })`);
   and the seconds of clip a SeeGen request is GIVEN are now billed (the provider bills out + in; rfab.ai charged out only).
 - **Measured** (the Desk loop's last 5 s, "he turns and walks out", one take each; the new clip's first frame against the
