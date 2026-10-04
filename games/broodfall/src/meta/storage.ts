@@ -1,6 +1,6 @@
 /** The campaign save and the pending deployment, in localStorage (never trusted to exist). */
 import type { EnemyKind } from '../sim/types';
-import type { CampaignState } from './campaign';
+import { migrateFinale, type CampaignState } from './campaign';
 import { YOKE_AVATAR, type YokeMode } from './yokeAvatar';
 import { gainOf, settingsFrom, type Channel, type Settings } from './settings';
 import { migrateDefence } from './defence';
@@ -23,6 +23,8 @@ export function loadCampaign(): CampaignState | null {
     if (!s || s.version !== 1) return null;
     // A counter-attack launched with no warning (a save from before Oct 1 2026) is staged again instead.
     migrateDefence(s);
+    // A save that ended at its ally's finale, from before the last mission existed: the last mission is open to it.
+    migrateFinale(s);
     return s;
   } catch { return null; }
 }

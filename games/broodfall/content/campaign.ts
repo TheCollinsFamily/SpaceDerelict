@@ -189,9 +189,31 @@ export interface TerritoryDef {
   hidden?: boolean;
   /** A faction's finale: only open on that faction's route, at its last beat. */
   finaleOf?: FactionId;
+  /** THE LAST MISSION (LAST_MISSION below): not on the planet until the ally's finale has been played; then the only landing left. */
+  last?: boolean;
 }
 
 export const HOME = 'crash-site';
+
+/**
+ * THE LAST MISSION, AGAINST THE ROACH KING (Collins, Oct 3 2026: "each of their finales takes place before the last
+ * mission against the roach king"; Oct 4 2026: "the final mission ... is unique in that it starts with a turn count down
+ * timer until the military arrives; until then it's only science and royals ... you will have to start them with a
+ * shelter every time on this map because otherwise there will be no way to get the basic meat they need to build any
+ * limbs"). His own plan, heard in his last call (content/roachKing.ts `rk-transports`): the Host's transports are
+ * sabotaged so that, for once, the war caste is not feeding the asset from the start.
+ *
+ *   turns      the countdown: waves of the science caste and the court alone (content/data.ts COURT_WAVES)
+ *   hostWaves  the waves to hold once the Host has arrived (the directive is a hold of turns + hostWaves)
+ *   minTier    the wave table's row the Host comes at, at least
+ *   ration     war meat the shelter by the body gives at every wave clear it was protected through, by its stage. It
+ *              stands there from the start and is the asset's already. MY READING of "start them with a shelter": a
+ *              shelter as built pays a share of the meat BANKED in a wave, and with no war body there is none to share,
+ *              so on this map it also gives up the people inside it. DESIGN.md "THE LAST MISSION" has the open decisions.
+ * Measured: tools/measure/last-mission.measure.ts.
+ */
+export const LAST = 'hive-house';
+export const LAST_MISSION = { turns: 5, hostWaves: 4, minTier: 6, ration: [45, 60, 80] as readonly number[] };
 
 export const TERRITORIES: TerritoryDef[] = [
   { id: 'crash-site', name: 'The Crash Site', lat: 12, lon: 0, neighbours: ['cul-de-sac', 'granary', 'harbor'], tier: 0, entrances: 1,
@@ -242,6 +264,10 @@ export const TERRITORIES: TerritoryDef[] = [
   { id: 'glass-spires', name: 'The Glass Spires', lat: 40, lon: 130, neighbours: ['university'], tier: 4, entrances: 3, finaleOf: 'institute',
     directive: { kind: 'hold', waves: 12 }, unlocks: [],
     story: 'Their AI labs. The Institute would like them gone, and the Director would like a word afterwards.' },
+  // THE LAST MISSION (LAST_MISSION above): the seat of the Commonwealth, on Founding Day.
+  { id: LAST, name: 'The Hive House', lat: -6, lon: 128, neighbours: ['queens-hollow'], tier: 4, entrances: 3, last: true,
+    directive: { kind: 'hold', waves: LAST_MISSION.turns + LAST_MISSION.hostWaves }, unlocks: [],
+    story: 'The seat of the Commonwealth, on Founding Day. The flags are out and the Host is not: its transports are late. For once they mean to fight you without feeding you.' },
 ];
 
 // ---------------------------------------------------------------------------
@@ -442,7 +468,7 @@ export const FACTIONS: FactionDef[] = [
     contact: { title: 'Coloured Cards in a Field', lines: [
       'YOKE: The Granary Belt. Eleven thousand of them are standing in a field, holding coloured cards over their heads for our survey cameras. It spells a letter. To you.',
       'YOKE: It says they want to understand you. And that some of their pilots have stopped flying.',
-      'You: (log) Eleven thousand of the local fauna have spelled me a letter. YOKE finds it embarrassing. They are holding a summit. There will be snacks.',
+      'You: (log) Eleven thousand of the local fauna have spelled me a letter. YOKE finds it embarrassing. They are holding a summit.',
     ] },
     signal: { lat: -17, lon: 12, how: 'coloured cards in a field' },
     beats: [
@@ -451,7 +477,7 @@ export const FACTIONS: FactionDef[] = [
       // on your moral status, and it also gives a deeper insight into the player character as someone still figuring things out
       // and open to ideas from others."
       { id: 'understand', title: 'Understand the Visitor', afterCaptures: 0, perks: ['objectors1'], scene: { title: 'The First Summit', film: 'delegation-understand', lines: [
-        'Delegate: Visitor! Welcome, welcome. We are so happy you came. Please, there are snacks.',
+        'Delegate: Visitor! Welcome, welcome. We are so happy you came.',
         'You: (by hologram, perplexed) You are happy to see me. Why?',
         'Delegate: A species that has come as far as yours in technology has obviously evolved past cruelty and violence.',
         'You: Um. Why would you think that?',

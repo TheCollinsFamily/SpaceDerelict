@@ -65,11 +65,47 @@ describe('the films of the cut scenes: the shot lists', () => {
     }
   });
 
-  it('on the planet he is a hologram; aboard he is alone', () => {
+  it('one camera position per place, behind him; every other shot goes on from the frame before it (Collins, Oct 4 2026)', () => {
+    // "The moving between looking at him and her doesn't really work ... it's better to see him from behind and make sure
+    // every next video is created with the last video's last frame as its starting point."
+    for (const f of FILMS) {
+      const places = f.shots.filter((s) => s.from !== '^');
+      expect(places.length, `${f.id}: places`).toBeLessThanOrEqual(4);
+      // A new picture means a new PLACE: never the same picture twice, so a conversation is never cut back to.
+      expect(new Set(places.map((s) => s.from)).size, `${f.id}: ${places.map((s) => s.from).join(', ')}`).toBe(places.length);
+      // Most of a film is one take: far more shots go on from the one before them than start from a picture.
+      if (f.shots.length > 4) expect(f.shots.filter((s) => s.from === '^').length).toBeGreaterThanOrEqual(f.shots.length - 4);
+    }
     for (const [id, st] of Object.entries(STILLS)) {
+      expect(st.shows, id).not.toMatch(/from the front|facing the camera, of (HOLO|TECH)/);
+      const him = /HOLO|TECH/.test(st.shows);
+      // Wherever he is in a picture, the camera is behind him, and his reference is the approved picture of him from behind.
+      if (him) { expect(st.shows, id).toMatch(/over-the-shoulder|from directly behind/i); expect(st.refs, id).toContain('hero'); }
       if (st.look === 'ship') { expect(st.shows, id).toMatch(/TECH/); expect(st.shows, id).not.toMatch(/WHO|HOLO/); }
+      else if (st.look === 'call') { expect(st.shows, id).toMatch(/TECH/); expect(st.shows, id).toMatch(/WHO/); expect(st.shows, id).not.toMatch(/HOLO/); }
       else expect(st.shows, id).not.toMatch(/TECH/);
     }
+  });
+
+  it('his feelings are in his voice: each of his spoken lines says how he sounds', () => {
+    // "For his emotions, those can be conveyed in his voice."
+    for (const f of FILMS) {
+      const scene = sceneOfFilm(f.id).scene;
+      for (const s of f.shots) {
+        if (s.line === undefined) continue;
+        const l = scene.lines[s.line];
+        if (speakerOf(l) !== 'You' || !spokenText(l)) continue;
+        expect(s.action, `${f.id}/${s.id}`).toMatch(/His voice is [a-z]/);
+        // Seen from behind: nothing a shot of his asks for needs his face.
+        expect(s.action, `${f.id}/${s.id}`).not.toMatch(/\b(eyes|eyebrows|brow|mouth|blinks|grin|smiles?|frowns?|stares?|squints?)\b/i);
+      }
+    }
+  });
+
+  it('the snacks line is out of the first summit (Collins, Oct 4 2026)', () => {
+    const summit = sceneOfFilm('delegation-understand').scene.lines.join(' ');
+    expect(summit).not.toMatch(/snack/i);
+    expect(summit).toMatch(/We are so happy you came\./);
   });
 });
 

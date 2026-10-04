@@ -50,7 +50,7 @@ export function stagingGrounds(s: Pick<DefenceState, 'held' | 'revealed'>, targe
   if (!t) return [];
   return t.neighbours.filter((n) => {
     const o = byId(n);
-    return !!o && !s.held.includes(n) && !o.finaleOf && (!o.hidden || s.revealed.includes(n));
+    return !!o && !s.held.includes(n) && !o.finaleOf && !o.last && (!o.hidden || s.revealed.includes(n));
   });
 }
 

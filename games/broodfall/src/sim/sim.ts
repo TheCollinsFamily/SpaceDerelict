@@ -20,7 +20,7 @@ type Edge = 'n' | 's' | 'e' | 'w';
 export interface BurrowSite { slot: number; edge: Edge; mouth: number[]; carve: number[]; blocked: boolean }
 import { PLATE_FEATURES, geneById } from '../../content/plates';
 import {
-  BALANCE as B, ENEMIES, TOWERS, WAVE_TABLE,
+  BALANCE as B, COURT_WAVES, ENEMIES, TOWERS, WAVE_TABLE,
 } from '../../content/data';
 import type {
   Broodling, Broodmother, BroodSnap, SporeMule, Shelter, Infestor, Harrier, Caltrop, CardInstance, Caste, Cloud, Command, Corpse, CreepSource, Directive, Enemy, UnitOrder,
@@ -490,6 +490,66 @@ export class Sim {
     this.flow = this.computeFlowField();
     this.pickIncomingGates();
     while (this.hand.length < B.handSize) this.hand.push(this.drawCard(cfg.firstHand));
+    if (cfg.startShelter && !snap) this.raiseStartShelter(cfg.startShelter === 'infested');
+  }
+
+  /**
+   * THE SHELTER THAT STANDS FROM THE START (the last mission; Collins, Oct 4 2026: "you will have to start them with a
+   * shelter every time on this map because otherwise there will be no way to get the basic meat they need to build any
+   * limbs"). In the district nearest the body that can hold one; when none on the starting board can, the city is grown
+   * by a district that can, so there is one EVERY time (tests/lastMission.test.ts). `taken`: it is the asset's already,
+   * at stage 1, as if an Infestor had burrowed in. On its own dice: the run's other draws fall as they would.
+   */
+  private raiseStartShelter(taken: boolean): void {
+    const sx = this.map.slotsX;
+    const core = this.map.coreCell;
+    const coreSlot = Math.floor(Math.floor(core / this.map.w) / PLATE) * sx + Math.floor((core % this.map.w) / PLATE);
+    const far = (i: number) => Math.hypot((i % sx) - (coreSlot % sx), Math.floor(i / sx) - Math.floor(coreSlot / sx));
+    const raise = (): boolean => {
+      const near = this.map.slots.map((x, i) => (x && i !== coreSlot ? i : -1)).filter((i) => i >= 0).sort((a, b) => far(a) - far(b) || a - b);
+      for (const slot of near) { this.raiseShelter(slot); if (this.shelters.length) return true; }
+      return false;
+    };
+    const dice = new Rng((this.cfg.seed ^ 0x5be17e4) >>> 0);
+    for (let grown = 0; !raise() && grown < 8; grown++) {
+      const offers = draftOffers(this.map, dice, 12);
+      if (offers.length === 0) break;
+      const can = offers.filter((o) => {
+        const copy = { ...this.map, cells: this.map.cells.slice(), heights: this.map.heights.slice(), plinths: this.map.plinths.slice(), slots: this.map.slots.slice() };
+        stampPlate(copy, o.pattern, o.slot, o.feature, new Rng(1));
+        return shelterSite(copy, o.slot) !== null;
+      });
+      const pick = (can.length ? can : offers).sort((a, b) => far(a.slot) - far(b.slot) || a.slot - b.slot)[0];
+      stampPlate(this.map, pick.pattern, pick.slot, pick.feature, dice);
+      this.gates = frontierGates(this.map);
+      this.refreshRouting();
+    }
+    const sh = this.shelters[0];
+    if (!sh) return;
+    if (taken) this.takeShelter(sh);
+    // It is not news of a draft: one event of its own.
+    this.events = this.events.filter((e) => e.kind !== 'shelter-raised');
+    this.events.push({ kind: 'shelter-start', shelterId: sh.id, taken });
+    this.pickIncomingGates();
+  }
+
+  // ---------- the last mission: the Host is late ----------
+
+  /** Is wave `n` one of the court's (the last mission: no war body until the Host arrives)? */
+  private courtWaveAt(n: number): boolean {
+    const l = this.cfg.lateHost;
+    return !!l && n >= 1 && n <= l.turns;
+  }
+
+  /** The last mission: turns left before the war caste arrives (0 once it is due); null in every other run. */
+  get hostTurnsLeft(): number | null {
+    const l = this.cfg.lateHost;
+    return l ? Math.max(0, l.turns - this.wavesCleared) : null;
+  }
+
+  /** What wave `n` is made of: the wave table's row for the tier, or the court's row while the Host is late. */
+  private waveComp(n: number): Partial<Record<string, number>> {
+    return this.courtWaveAt(n) ? COURT_WAVES[Math.min(n - 1, COURT_WAVES.length - 1)] : WAVE_TABLE[this.tier];
   }
 
   // ---------- derived ----------
@@ -618,7 +678,9 @@ export class Sim {
   get tier(): number {
     const t = Math.floor(this.threat / B.threatPerTier);
     // A defence's one siege comes at least this hard (src/meta/defence.ts).
-    const floor = Math.min(WAVE_TABLE.length - 1, this.cfg.oneWave?.minTier ?? 0);
+    // ...and the Host, once it arrives late (the last mission), comes at least this hard.
+    const late = this.cfg.lateHost && this.wavesCleared >= this.cfg.lateHost.turns ? this.cfg.lateHost.minTier : 0;
+    const floor = Math.min(WAVE_TABLE.length - 1, Math.max(this.cfg.oneWave?.minTier ?? 0, late));
     // The last row is the hive's desperation — gated behind real escalation,
     // not something a standard hold order walks into by wave 11.
     if (t >= WAVE_TABLE.length - 1 && this.threat < B.tier6Threat) return Math.max(floor, WAVE_TABLE.length - 2);
@@ -2785,16 +2847,20 @@ export class Sim {
 
   /** What the next wave will bring (the same law startSiege uses), for the Translator / skirmish HUD. */
   previewNextWave(): Partial<Record<EnemyKind, number>> {
-    const comp = WAVE_TABLE[this.tier];
+    const court = this.courtWaveAt(this.waveNumber + 1);
+    const comp = this.waveComp(this.waveNumber + 1);
     const scale = 1 + this.waveDepth * B.waveCountScale;
     const out: Partial<Record<EnemyKind, number>> = {};
     for (const [kind, n] of Object.entries(comp)) {
       if ((this.cfg.bannedEnemies ?? []).includes(kind as EnemyKind)) continue;
       const spec = enemySpec(kind as EnemyKind);
-      const growth = 1 + (scale - 1) * (B.riskBaseline / spec.risk);
+      // A court wave is its row as written: the clock does not multiply it.
+      const growth = court ? 1 : 1 + (scale - 1) * (B.riskBaseline / spec.risk);
       const scaled = Math.round((n ?? 0) * growth * (this.cfg.waveScale ?? 1));
       if (scaled > 0) out[kind as EnemyKind] = scaled;
     }
+    // No war body answers anything while the Host is late.
+    if (court) return out;
     const born = Math.floor(this.mateBacklog);
     if (born > 0) out.militia = (out.militia ?? 0) + born;
     const flamers = this.flamerAnswer();
@@ -2825,7 +2891,8 @@ export class Sim {
     }
     // Consort's Favour reads each limb's kills in this wave.
     for (const t of this.towers) t.waveKillsAt = t.kills;
-    const comp = WAVE_TABLE[this.tier];
+    const court = this.courtWaveAt(this.waveNumber);
+    const comp = this.waveComp(this.waveNumber);
     const scale = 1 + this.waveDepth * B.waveCountScale;
     this.spawnQueue = [];
     const counts: Partial<Record<EnemyKind, number>> = {};
@@ -2836,23 +2903,24 @@ export class Sim {
       // bodies + higher types" without ever becoming eight sappers eating the
       // player's board — the rejected investment-destruction in uniform.
       const spec = enemySpec(kind as EnemyKind);
-      const growth = 1 + (scale - 1) * (B.riskBaseline / spec.risk);
+      // A court wave (the last mission, the Host late) is its row as written: the clock does not multiply it.
+      const growth = court ? 1 : 1 + (scale - 1) * (B.riskBaseline / spec.risk);
       const banned = (this.cfg.bannedEnemies ?? []).includes(kind as EnemyKind);
       const scaled = banned ? 0 : Math.round((n ?? 0) * growth * (this.cfg.waveScale ?? 1));
       counts[kind as EnemyKind] = scaled;
       waveRisk += scaled * spec.risk;
       for (let i = 0; i < scaled; i++) this.spawnQueue.push(kind as EnemyKind);
     }
-    // Mating musk: every pair that paired off last wave is one more body now.
-    const born = Math.floor(this.mateBacklog);
+    // Mating musk: every pair that paired off last wave is one more body now (war bodies: not while the Host is late).
+    const born = court ? 0 : Math.floor(this.mateBacklog);
     this.mateBacklog -= born;
     for (let i = 0; i < born; i++) this.spawnQueue.push('militia');
     // The hive answers your walking units: one more Flametrooper per flamerPerUnits of them on the board.
-    const flamers = this.flamerAnswer();
+    const flamers = court ? 0 : this.flamerAnswer();
     for (let i = 0; i < flamers; i++) this.spawnQueue.push('flametrooper');
     if (flamers > 0) { counts.flametrooper = (counts.flametrooper ?? 0) + flamers; waveRisk += flamers * enemySpec('flametrooper').risk; }
     // ...and a tower-heavy defence with Aegis Deacons, whose domes your limbs cannot crack fast: units can.
-    const deacons = this.domeAnswer();
+    const deacons = court ? 0 : this.domeAnswer();
     for (let i = 0; i < deacons; i++) this.spawnQueue.push('aegis');
     if (deacons > 0) { counts.aegis = (counts.aegis ?? 0) + deacons; waveRisk += deacons * enemySpec('aegis').risk; }
     this.waveRisk = waveRisk;
@@ -2864,7 +2932,9 @@ export class Sim {
     }
     this.spawnTimer = 0;
     const sides = [...new Set(this.incomingGates.map((g) => this.gateSide(g)))].join('+');
-    this.events.push({ kind: 'wave-start', tier: this.tier, wave: this.waveNumber, counts, sides, risk: waveRisk });
+    const late = this.cfg.lateHost;
+    this.events.push({ kind: 'wave-start', tier: this.tier, wave: this.waveNumber, counts, sides, risk: waveRisk, ...(court ? { court: true, hostIn: late!.turns - this.waveNumber } : {}) });
+    if (late && this.waveNumber === late.turns + 1) this.events.push({ kind: 'host-arrived' });
   }
 
   // ---------- tick ----------
@@ -2985,7 +3055,7 @@ export class Sim {
     // Royal event.
     const royalDue = this.threat >= B.royalThreat
       || (this.directive.kind === 'royal' && this.waveNumber >= B.royalGuaranteeWave);
-    if (this.phase === 'siege' && !this.royalSpawned && royalDue) {
+    if (this.phase === 'siege' && !this.royalSpawned && royalDue && !this.courtWaveAt(this.waveNumber)) {
       this.royalSpawned = true;
       const lane = this.incomingGates[0] ?? this.gates[0];
       this.spawnEnemy('royal', lane);
@@ -5221,13 +5291,16 @@ export class Sim {
    */
   private payShelters(): void {
     const pct = this.shelterBoostNow();
-    if (pct > 0) {
-      const war = Math.floor(this.waveBanked.war * pct);
+    // The ration (the last mission: cfg.shelterRation): the people inside a protected shelter, war meat by its stage.
+    let ration = 0;
+    for (const sh of this.shelters) if (this.shelterProtected(sh)) ration += this.cfg.shelterRation?.[sh.stage - 1] ?? 0;
+    if (pct > 0 || ration > 0) {
+      const war = Math.floor(this.waveBanked.war * pct) + ration;
       const science = Math.floor(this.waveBanked.science * pct);
       this.meat.war += war;
       this.meat.science += science;
       this.stats.shelterMeat = (this.stats.shelterMeat ?? 0) + war + science;
-      this.events.push({ kind: 'shelter-paid', war, science, pct });
+      this.events.push({ kind: 'shelter-paid', war, science, pct, ...(ration > 0 ? { ration } : {}) });
     }
     for (const sh of this.shelters) {
       if (sh.state !== 'infested') continue;
@@ -5338,6 +5411,13 @@ export class Sim {
   /** The Infestor is spent: the shelter is YOURS, stage 1, seeping creep round its door. */
   private infestShelter(sh: Shelter, u: Infestor): void {
     this.infestors = this.infestors.filter((x) => x !== u);
+    this.takeShelter(sh);
+    this.stats.sheltersInfested = (this.stats.sheltersInfested ?? 0) + 1;
+    this.events.push({ kind: 'shelter-infested', shelterId: sh.id });
+  }
+
+  /** A shelter becomes the asset's: stage 1, its body whole, its creep seeping round its door. */
+  private takeShelter(sh: Shelter): void {
     sh.state = 'infested';
     sh.burrowBy = undefined;
     sh.burrowT = 0;
@@ -5348,8 +5428,6 @@ export class Sim {
     this.setShelterStage(sh, 1);
     sh.hp = sh.maxHp;
     this.shelterFlows.delete(sh.id);
-    this.stats.sheltersInfested = (this.stats.sheltersInfested ?? 0) + 1;
-    this.events.push({ kind: 'shelter-infested', shelterId: sh.id });
   }
 
   hurtInfestor(u: Infestor, amount: number): void {

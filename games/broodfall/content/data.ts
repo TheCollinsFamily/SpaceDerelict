@@ -451,6 +451,20 @@ export const WAVE_TABLE: readonly Partial<Record<string, number>>[] = [
   { elite: 10, flier: 8, sapper: 5, phalanx: 3, drummer: 2, tender: 3, tunneler: 4, bomber: 4, carapace: 3, mortar: 3, splitter: 4, cannon: 2, stalker: 4, shadewing: 3, ghostsapper: 2, flametrooper: 3, aegis: 3 }, // tier 6: everything they have
 ];
 
+/**
+ * THE LAST MISSION, WHILE THE HOST IS LATE (Collins, Oct 4 2026: "until then it's only science and royals"). One row a
+ * turn (the last row again if the countdown is longer): the science caste in strength (it steals limbs and walks the
+ * gaps in your fire) and the court on the march (it chews like the war caste, and a wave is not over while one of the
+ * court stands). No war kind in any row: tests/lastMission.test.ts.
+ */
+export const COURT_WAVES: readonly Partial<Record<string, number>>[] = [
+  { researcher: 6, thief: 1, consort: 1 },
+  { researcher: 8, thief: 2, infiltrator: 1, consort: 1, matron: 1 },
+  { researcher: 9, thief: 2, infiltrator: 2, dartgun: 1, consort: 2, matron: 1 },
+  { researcher: 10, thief: 3, infiltrator: 2, dartgun: 1, lensbearer: 1, consort: 2, matron: 2 },
+  { researcher: 12, thief: 3, infiltrator: 3, dartgun: 2, lensbearer: 2, royal: 1, consort: 2, matron: 2 },
+];
+
 export const BALANCE = {
   startMeat: { war: 30, science: 0, royal: 0 },
   coreHp: 1500,

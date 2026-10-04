@@ -3,50 +3,58 @@
  * for all of them"). One film per scene of content/campaign.ts that names a `film`: every beat, every finale, every
  * pledge. The WORDS are the scene's own lines there (one source); this file says how each line is shot.
  *
+ * THE RULES OF A FILM (Collins, Oct 4 2026, of the first test film, which cut between a shot of him and a shot of her):
+ *   "the moving between looking at him and her doesn't really work, leads to too much jumpiness and character
+ *    inconsistency; it's better to see him from behind and make sure every next video is created with the last video's
+ *    last frame as its starting point ... for his emotions, those can be conveyed in his voice."
+ *   1. ONE CAMERA POSITION PER PLACE, BEHIND HIM. We look over his shoulder at whoever he is talking to: his back is to
+ *      the camera and his face is never seen (the style bible's rule 9 too). On the planet he is a hologram, standing in
+ *      the left foreground; on a call he sits at his console and they are on the screen in front of him.
+ *   2. EVERY CLIP GOES ON FROM THE FRAME THE ONE BEFORE IT ENDED ON ('^'). A film is one take per place: no cut from a
+ *      shot of her to a shot of him, ever. A new picture starts only when the PLACE changes (the creep bursting in, then
+ *      the archive; the feed cut, then him alone aboard).
+ *   3. HIS FEELINGS ARE IN HIS VOICE. His lines say how he SOUNDS (perplexed, thinking it through, at his wits' end) and
+ *      at most a small movement seen from behind. Theirs say what they DO, facing him and the camera.
+ *
  * How a film is made (tools/media/cutscenes.ts; SPENDS RFab tokens):
- *   stills   the pictures its shots start from (STILLS below), each drawn in its look with its reference pictures
- *   clips    one clip per shot, image-to-video WITH SOUND: the speaker says the line on camera (a video model that
- *            performs the voice, as the Roach King's addresses); a shot with no line is action and room sound only
- *   check    every clip transcribed and compared with its line; each speaker's pitch compared across the film
- *   bake     each clip cut to its words, levelled, joined over one room tone → public/media/scenes/<film>.mp4, its
- *            poster, and the cues (which line is said when) in public/media/scenes/scenes.json
+ *   stills   the picture each place starts from (STILLS below), drawn in its look with its reference pictures
+ *   clips    one clip per shot, IN ORDER, image-to-video WITH SOUND: the speaker says the line; each clip is transcribed,
+ *            cut half a second after its last word, and the frame at that cut is the next clip's first frame
+ *   check    every clip's words against its line; each speaker's pitch across the film
+ *   bake     the clips joined at their cuts, levelled, over one room tone → public/media/scenes/<film>.mp4, its poster,
+ *            and the cues (which line is said when) in public/media/scenes/scenes.json
  * The game (src/ui/cutscene.ts) plays the baked film full screen with the line in type under it, then shows the
  * scene's card. A film that is not baked yet is simply its card.
  *
- * Rules (tests/cutscenes.test.ts): every line of a filmed scene is spoken by exactly one shot, in order; a spoken
- * line is at most 22 words (a clip is 8 s) and has no word in capitals (a video voice spells it out).
- *
- * WHO IS SEEN. The insect people are those of the scene pictures (1950s science-fiction film people, the leaders'
- * portraits as references). The technician is seen FROM THE FRONT in these films, because the scripts are written on
- * his reactions (he pinches his nose, his mouth falls open); the style bible's rule 9 ("we usually only see him from
- * behind") is kept everywhere else. His face is the approved portrait (notes/concepts/2026-09-29/r4-hero-portrait.png).
- * On the planet he is a HOLOGRAM (DESIGN.md "no direct contact"); on calls he is at his console on the ship.
+ * Rules checked (tests/cutscenes.test.ts): every line of a filmed scene is said by exactly one shot, in order; a spoken
+ * line is at most 22 words (a clip is 8 s) and has no word in capitals (a video voice spells it out); a film has one
+ * picture per place and every other shot continues the one before it; no picture shows him from the front.
  */
 import type { FactionId } from './campaign';
 
 /** The look a picture is drawn in. */
 export type FilmLook =
-  | 'colony'    // their world: a 1950s colour science-fiction film (the scene pictures' look)
-  | 'feed'      // their world as it reaches the ship on a video feed (the same look, framed by a fixed camera)
-  | 'ship'      // aboard the Merciful Yoke: lifelike hard science fiction, dark and exact
-  | 'archive';  // inside the archive: the same film as a dream sequence, radiant
+  | 'colony'    // their world: a 1950s colour science-fiction film (the leaders' portraits' look); he is a hologram, from behind
+  | 'archive'   // inside the archive: the same film as a dream sequence, radiant; he is a hologram, from behind
+  | 'ship'      // aboard the Merciful Yoke, alone: lifelike hard science fiction, dark and exact; he is seen from behind
+  | 'call';     // aboard, over his shoulder: their video feed (their world's look) on the screen in front of him
 
 export interface FilmStill {
   look: FilmLook;
-  /** What the picture shows. WHO / HOLO / TECH stand for the leader, his hologram, and him in the flesh. */
+  /** What the picture shows. WHO / HOLO / TECH stand for the leader, his hologram seen from behind, and him aboard seen from behind. */
   shows: string;
-  /** Reference pictures: 'leader' (the faction's portrait), 'hero' (his portrait), or another still's id. */
+  /** Reference pictures: 'leader' (the faction's portrait), 'hero' (him from behind: the approved concept), or another still's id. */
   refs: string[];
 }
 
 export interface FilmShot {
   /** The clip's id inside its film. A spoken shot is `l<line>`; a silent one is named. */
   id: string;
-  /** The still it starts from; '^' continues from the last frame of the shot before (one take cut in two). */
+  /** The picture a place starts from; '^' goes on from the frame the shot before it was cut on (the same take). */
   from: string;
   /** The scene line it speaks (its place in the scene's lines); none: nobody speaks. */
   line?: number;
-  /** What happens in the shot, for the video model. */
+  /** What happens in the shot, for the video model: what THEY do; for HIS lines, how his voice sounds and a small movement. */
   action: string;
   /** Seconds, for a shot with no line (a spoken shot's length follows its words). */
   secs?: 4 | 6 | 8;
@@ -57,17 +65,22 @@ export interface FilmShot {
 export interface Film {
   id: string;
   faction: FactionId;
-  /** The room tone laid under the whole film (a few words for the sound model; the bake loops it quietly). */
+  /** The room tone laid under the whole film (a few words; the bake lays a quiet bed under the cuts). */
   room: string;
   shots: FilmShot[];
 }
 
-/** A spoken shot: its line is its place among the film's spoken shots (numbered below), so a line split in two is one more `say`. */
-const say = (from: string, action: string): FilmShot => ({ id: '', from, line: -1, action });
+/** One of HIS lines. He is seen from behind, so the line is carried by his VOICE: how it sounds, and at most a small movement. */
+const you = (voice: string, move = ''): FilmShot => ({ id: '', from: '^', line: -1, action: [move, voice ? `His voice is ${voice}.` : ''].filter(Boolean).join(' ') });
+/** One of THEIR lines: what the speaker does, facing him and the camera. */
+const they = (action: string): FilmShot => ({ id: '', from: '^', line: -1, action });
+/** A new place: this shot starts from its picture (the first shot of a film, or the shot after the place changes). */
+const at = (still: string, shot: FilmShot): FilmShot => ({ ...shot, from: still });
+/** A shot in which nobody speaks. */
 const cut = (id: string, from: string, action: string, secs: 4 | 6 | 8, sound: string): FilmShot => ({ id, from, action, secs, sound });
 
 // ---------------------------------------------------------------------------
-// The pictures. An id is shared between films when the place is the same (his console, the delegates' camera).
+// The pictures: one per place. A place is shared between films (his console with their feed on it; the preacher's chambers).
 // ---------------------------------------------------------------------------
 const HOTEL =
   'a rentable conference room in a provincial hotel, and heavy with it: a low ceiling of square acoustic tiles with flat ' +
@@ -96,328 +109,310 @@ const OFFICE =
 const MEADOW =
   'a serene meadow of impossible beauty under a golden sky: soft light, long grass and wild flowers that glow faintly, a ' +
   'gentle pastel heaven, and a faint honeycomb pattern of light in the sky, as if the sky were made of cells';
-const CONSOLE =
-  'his long matte black console desk aboard the ship, a curved window behind him onto the night side of the planet with ' +
-  'its spreading red stain';
+const CONSOLE = 'his long matte black console desk aboard the ship';
+const WINDOW = 'the long curved window of the ship and, through it, the night side of the planet with its spreading red stain';
+/** Over his shoulder at the console: what the rest of the picture is. */
+const OVER_CONSOLE =
+  `An over-the-shoulder shot aboard the ship. In the left foreground, dark and a little out of focus, the back of the head and one shoulder of TECH, seated at ${CONSOLE}. ` +
+  'He is looking at a large flat screen that stands on the console in front of him and fills most of the picture. On the screen, a video feed in the saturated colour of a 1950s film:';
 
 export const STILLS: Record<string, FilmStill> = {
-  // ---- the technician aboard (shared by the calls, the pledges and the ends of the finales)
-  'ship-desk': { look: 'ship', refs: ['hero'], shows: `A medium shot, from the front, of TECH, seated at ${CONSOLE}, lit from below by the pale glow of a screen that is out of frame in front of him, looking at it.` },
-  'ship-close': { look: 'ship', refs: ['hero', 'ship-desk'], shows: `A close-up, head and shoulders, from the front, of TECH, exactly the man and the room of the second reference picture, seated at ${CONSOLE}, lit by the pale glow of a screen out of frame in front of him.` },
-  'ship-pace': { look: 'ship', refs: ['hero', 'ship-desk'], shows: 'A medium-wide shot of TECH, exactly the man of the reference pictures, on his feet in the dark operations bay of the ship beside his black console desk and pushed-back chair, one hand in his hair, mid-stride, the curved window onto the red-stained planet behind him.' },
-  'ship-headset': { look: 'ship', refs: ['hero', 'ship-desk'], shows: 'A medium shot, from the front, of TECH, exactly the man of the reference pictures, seated in a black chair in the dark operations bay of the ship, lifting a slim matte black visor headset up off his eyes with both hands, the curved window onto the planet behind him.' },
-  'ship-broadcast': { look: 'ship', refs: ['hero', 'ship-desk'], shows: 'A medium shot, from the front, of TECH, exactly the man of the reference pictures, standing very straight behind his black console as if at a lectern, hands flat on it, looking directly into the camera, a single small red light glowing on the console in front of him, the curved window and the whole planet behind him.' },
+  // ---- aboard, alone (after a feed is cut; the pledges; the end of a finale)
+  'ship-behind': { look: 'ship', refs: ['hero'], shows: `A medium shot from directly behind TECH, standing in the dark operations bay of the ship beside ${CONSOLE} and his pushed-back black chair; in front of him ${WINDOW}.` },
+  'ship-headset': { look: 'ship', refs: ['hero'], shows: `A medium shot from directly behind TECH, seated in a black chair in the dark operations bay of the ship, wearing a slim matte black visor headset whose band runs round the back of his head, both hands rising to it; in front of him ${WINDOW}.` },
+  'ship-broadcast': { look: 'ship', refs: ['hero'], shows: `A medium shot from directly behind TECH, standing very straight at ${CONSOLE} as if at a lectern, his hands flat on it; on the console in front of him a small recording lens on a thin stalk with a single red light glowing beside it; beyond it ${WINDOW.replace('the night side of the planet with its spreading red stain', 'the whole planet, its night side stained red')}.` },
 
   // ---- the Delegation
-  'summit-wide': { look: 'colony', refs: ['leader', 'hero'], shows: `A wide shot of ${HOTEL}. In the middle of the room stands WHO with her upper arms open in welcome, and around her a dozen delegates, elderly insect people in cardigans and flower garlands, all beaming. In the left foreground, seen from behind, stands HOLO above a small matte black projector pod on the carpet, facing them.` },
-  'summit-del': { look: 'colony', refs: ['leader', 'summit-wide'], shows: `A medium shot, from the front, of WHO, standing in ${HOTEL}, exactly the room of the second reference picture, beaming, the refreshments table and four delighted delegates in cardigans and garlands behind her.` },
-  'summit-you': { look: 'colony', refs: ['hero', 'summit-wide'], shows: `A medium shot, from the front, waist up, of HOLO, standing in ${HOTEL}, exactly the room of the second reference picture: the patterned carpet, the banquet chairs and the fluorescent ceiling are seen faintly through his translucent body. He stands in the middle of the frame, facing the camera, and is by far the largest figure in the picture, filling it from the waist to just above his head; the chief delegate is not in this picture. Behind him, small and out of focus, a few delegates by the far wall.` },
-  'summit-you-close': { look: 'colony', refs: ['hero', 'summit-you'], shows: 'A close-up, head and shoulders, from the front, of HOLO, exactly the hologram and the hotel conference room of the second reference picture, the fluorescent ceiling seen faintly through him, thinking.' },
-  'summit-del-close': { look: 'colony', refs: ['leader', 'summit-del'], shows: 'A close-up, head and shoulders, from the front, of WHO, exactly as in the second reference picture and in the same hotel conference room, smiling proudly, the refreshments table out of focus behind her.' },
-  'summit-two': { look: 'colony', refs: ['leader', 'hero', 'summit-wide'], shows: `A two-shot from the side in ${HOTEL}, exactly the room of the third reference picture: on the right WHO, holding a plate of biscuits out in two hands, and on the left HOLO, facing her, looking down at the plate; the refreshments table behind them, delegates watching fondly.` },
-  'del-feed': { look: 'feed', refs: ['leader'], shows: `WHO, close to the lens in the middle, with five excited delegates in cardigans and flower garlands squeezed in behind and beside her to get into the picture, in ${COMMITTEE}.` },
-  'del-feed-close': { look: 'feed', refs: ['leader', 'del-feed'], shows: 'A close-up of WHO, exactly as in the second reference picture and in the same room, very near the lens, serene and certain, two delegates\' faces just in frame behind her shoulders.' },
+  'summit-ots': { look: 'colony', refs: ['leader', 'hero'], shows: `An over-the-shoulder shot in ${HOTEL}. In the left foreground, seen from the waist up and a little out of focus, stands HOLO. Facing him and the camera, in the middle of the picture a few steps away and seen from the knees up, stands WHO, beaming, her upper arms opening in welcome. Behind her stand ten delegates, elderly insect people in cardigans and flower garlands, delighted; the refreshments table runs along the wall at the right.` },
+  'call-del': { look: 'call', refs: ['hero', 'leader'], shows: `${OVER_CONSOLE} WHO, close to the lens in the middle, with five excited delegates in cardigans and flower garlands squeezed in behind and beside her to get into the picture, in ${COMMITTEE}.` },
   'del-lastroom': { look: 'colony', refs: ['leader'], shows: `A small upper room, the last one: WHO and a dozen delegates in cardigans and garlands huddled together in the middle of ${COMMITTEE.replace('their committee room', 'a committee room')}, while the dark maroon veined living skin of a giant creature and its glistening dark-red tendrils burst in through the cracking walls and the door on every side.` },
-  'del-field-wide': { look: 'archive', refs: ['leader', 'hero'], shows: `A wide shot of ${MEADOW}. A crowd of delegates in cardigans and flower garlands stand about in it, bewildered, looking at their own hands; in front WHO, furious, strides toward HOLO, who has just appeared in the grass on the left and stands with his hands half raised.` },
-  'del-field-del': { look: 'archive', refs: ['leader', 'del-field-wide'], shows: `A medium shot, from the front, of WHO, furious, antennae flat back, in ${MEADOW}, exactly the meadow of the second reference picture, bewildered delegates behind her.` },
-  'del-field-you': { look: 'archive', refs: ['hero', 'del-field-wide'], shows: `A medium shot, from the front, waist up, of HOLO, standing in ${MEADOW}, exactly the meadow of the second reference picture, the glowing grass seen faintly through him, mildly confused.` },
-  'pledge-del': { look: 'colony', refs: ['leader', 'summit-wide'], shows: `WHO and a crowd of delegates in cardigans and garlands, in ${HOTEL}, exactly the room of the second reference picture, all gathered round a big 1950s wooden television set on a trolley whose screen glows pale blue (nothing can be made out on it), hands clasped, rapt.` },
+  'del-field-ots': { look: 'archive', refs: ['leader', 'hero'], shows: `An over-the-shoulder shot in ${MEADOW}. In the left foreground, seen from the waist up, stands HOLO. Storming toward him and the camera through the glowing grass, a few steps away, comes WHO, furious, her antennae flat back; behind her a crowd of delegates in cardigans and flower garlands stand about bewildered, looking at their own hands.` },
+  'pledge-del': { look: 'colony', refs: ['leader'], shows: `WHO and a crowd of delegates in cardigans and garlands, in ${HOTEL}, all gathered round a big 1950s wooden television set on a trolley whose screen glows pale blue (nothing can be made out on it), hands clasped, rapt.` },
 
   // ---- the Faithful
-  'hall-wide': { look: 'colony', refs: ['leader', 'hero'], shows: `A wide shot of ${PRAYER_HALL}, empty but for two figures in the middle of the carpet: WHO, bowed low to the floor on his knees, and in front of him HOLO, standing above a small matte black projector pod, looking around.` },
-  'hall-voice': { look: 'colony', refs: ['leader', 'hall-wide'], shows: `A medium shot, from the front and a little above, of WHO, kneeling on the carpet of ${PRAYER_HALL}, exactly the hall of the second reference picture, his head raised from a deep bow, two hands flat on the carpet, eyes shining.` },
-  'hall-you': { look: 'colony', refs: ['hero', 'hall-wide'], shows: `A medium shot, from the front, waist up, of HOLO, standing in ${PRAYER_HALL}, exactly the hall of the second reference picture, the columns and hanging lamps seen faintly through him, taken aback.` },
-  'hall-vests': { look: 'colony', refs: ['leader', 'hall-wide'], shows: `WHO, standing with his upper arms raised in ${PRAYER_HALL}, exactly the hall of the second reference picture, one lower hand held out toward a great heap of canvas vests with rows of pouches and loops of wire piled on the carpet beside a column.` },
-  'chambers-wide': { look: 'colony', refs: ['leader', 'hero'], shows: `A wide shot of ${CHAMBERS}. WHO stands by his desk with one hand on his chest, bowing a little; facing him across the carpet stands HOLO, above a small matte black projector pod, arms out in exasperation.` },
-  'chambers-voice': { look: 'colony', refs: ['leader', 'chambers-wide'], shows: `A medium shot, from the front, of WHO, standing by the gilded desk in ${CHAMBERS}, exactly the room of the second reference picture, one hand on his chest, a small knowing smile.` },
-  'chambers-you': { look: 'colony', refs: ['hero', 'chambers-wide'], shows: `A medium shot, from the front, waist up, of HOLO, standing in ${CHAMBERS}, exactly the room of the second reference picture, the red damask and the candlesticks seen faintly through him, exasperated.` },
+  'hall-ots': { look: 'colony', refs: ['leader', 'hero'], shows: `An over-the-shoulder shot in ${PRAYER_HALL}. In the left foreground, seen from the waist up, stands HOLO. In front of him on the carpet, facing him and the camera, kneels WHO, bowed low with two hands flat on the carpet, his head just raised. The vast hall is empty but for the two of them; beside a column at the right lies a great heap of canvas vests with rows of pouches and loops of wire.` },
+  'chambers-ots': { look: 'colony', refs: ['leader', 'hero'], shows: `An over-the-shoulder shot in ${CHAMBERS}. In the left foreground, seen from the waist up, stands HOLO. Facing him and the camera, a few steps away beside the gilded desk, stands WHO, one hand on his chest, a small knowing smile.` },
   'church-creep': { look: 'colony', refs: ['leader'], shows: `${CHURCH.replace('the great', 'Inside the great')}, WHO in the pulpit with his arms raised; the dark maroon veined living skin of a giant creature and its glistening dark-red tendrils are bursting in through the tall windows and the doors, plaster and coloured glass falling, the worshippers on their feet.` },
-  'church-whole-wide': { look: 'archive', refs: ['leader', 'hero', 'church-creep'], shows: `${CHURCH.replace('the great', 'A wide shot inside the great')}, exactly the church of the third reference picture but whole, clean and full of golden light, no creature anywhere: every worshipper sits in her pew exactly where she was, looking about in wonder; WHO stands in the aisle; and at the altar stands HOLO, one hand raised in a small wave.` },
-  'church-voice': { look: 'archive', refs: ['leader', 'church-whole-wide'], shows: 'A medium shot, from the front, of WHO, standing in the aisle of the church of the second reference picture, golden light on him, worshippers in the pews behind him, looking up toward the altar.' },
-  'church-you': { look: 'archive', refs: ['hero', 'church-whole-wide'], shows: 'A medium shot, from the front, waist up, of HOLO, standing at the altar of the church of the second reference picture under its canopy and three lamps, golden light, the altar seen faintly through him, relaxed.' },
-  'pledge-fai': { look: 'colony', refs: ['leader', 'hall-wide'], shows: `WHO and a great congregation of insect people in dark robes and headscarves on their knees on the carpet of ${PRAYER_HALL}, exactly the hall of the second reference picture, all turned toward a big 1950s wooden radio set that stands on the pulpit steps, hands raised.` },
+  'church-ots': { look: 'archive', refs: ['leader', 'hero', 'church-creep'], shows: `${CHURCH.replace('the great', 'Inside the great')}, exactly the church of the third reference picture but whole, clean and full of golden light, no creature anywhere. An over-the-shoulder shot from the altar, looking down the nave: in the left foreground, seen from the waist up, stands HOLO. Facing him and the camera, a few steps away in the aisle, stands WHO; behind him every worshipper sits in her pew exactly where she was, looking about in wonder.` },
+  'pledge-fai': { look: 'colony', refs: ['leader'], shows: `WHO and a great congregation of insect people in dark robes and headscarves on their knees on the carpet of ${PRAYER_HALL}, all turned toward a big 1950s wooden radio set that stands on the pulpit steps, hands raised.` },
 
   // ---- the Institute
-  'dir-feed': { look: 'feed', refs: ['leader'], shows: `WHO, leaning far back in a gaming chair with both feet up on the desk and a handheld game console in two of his hands, half turned to grin at someone off screen, in ${OFFICE}.` },
-  'dir-feed-up': { look: 'feed', refs: ['leader', 'dir-feed'], shows: 'WHO, exactly as in the second reference picture and in the same office, now sitting upright at the desk with his feet off it, leaning toward the lens on his elbows, the game console lying on the desk beside a paper file.' },
-  'dir-feed-mag': { look: 'feed', refs: ['leader', 'dir-feed'], shows: 'WHO, exactly as in the second reference picture and in the same office, holding a pulp science-fiction magazine up to the lens with one hand and pointing at its cover with another: the painted cover shows a heroic insect starship captain in a gold tunic with a green-skinned insect woman and a blue-skinned insect woman draped on his arms (no title, no lettering on it).' },
+  'call-dir': { look: 'call', refs: ['hero', 'leader'], shows: `${OVER_CONSOLE} WHO, leaning far back in a gaming chair with both feet up on the desk and a handheld game console in two of his hands, in ${OFFICE}.` },
   'spire-creep': { look: 'colony', refs: [], shows: 'A tall tower of glass and chrome among other glass spires at dusk, and the dark maroon veined living skin of a giant creature climbing it on every side, its glistening dark-red tendrils wrapping the lower floors, lights going out floor by floor. Painted orange and violet sky.' },
   'spire-saferoom': { look: 'colony', refs: ['leader'], shows: 'A corridor of glass and chrome inside the tower, red emergency light: WHO shoving two insect colleagues in lab coats aside with all four arms as he squeezes first through a heavy round vault door into a small steel safe room where several staff already crouch; dark-red tendrils coming round the far corner of the corridor.' },
-  'ins-meadow-wide': { look: 'archive', refs: ['leader', 'hero'], shows: `A wide shot of ${MEADOW}. A handful of insect staff in lab coats sit up in the grass, dazed; in front WHO, on his feet and angry, marches toward HOLO, who has just appeared in the grass on the left.` },
-  'ins-meadow-dir': { look: 'archive', refs: ['leader', 'ins-meadow-wide'], shows: `A medium shot, from the front, of WHO, livid, jabbing a finger forward, in ${MEADOW}, exactly the meadow of the second reference picture, dazed staff in lab coats in the grass behind him.` },
-  'ins-meadow-you': { look: 'archive', refs: ['hero', 'ins-meadow-wide'], shows: `A medium shot, from the front, waist up, of HOLO, standing in ${MEADOW}, exactly the meadow of the second reference picture, the glowing grass seen faintly through him, puzzled and patient.` },
-  'pledge-ins': { look: 'feed', refs: ['leader', 'dir-feed'], shows: 'WHO, exactly as in the second reference picture and in the same office, sitting forward and watching a monitor at the side of his desk whose screen glows pale (nothing can be made out on it), one fist half raised, delighted with himself.' },
+  'ins-meadow-ots': { look: 'archive', refs: ['leader', 'hero'], shows: `An over-the-shoulder shot in ${MEADOW}. In the left foreground, seen from the waist up, stands HOLO. Marching toward him and the camera through the grass, a few steps away, comes WHO, angry, jabbing a finger; behind him a handful of insect staff in lab coats sit up in the grass, dazed.` },
+  'pledge-ins': { look: 'colony', refs: ['leader'], shows: `WHO, in ${OFFICE}, sitting forward and watching a monitor at the side of his desk whose screen glows pale (nothing can be made out on it), one fist half raised, delighted with himself.` },
 };
 
 // ---------------------------------------------------------------------------
-// The films. Line numbers are places in the scene's `lines` (content/campaign.ts).
+// The films. A spoken shot takes the next line of its scene (content/campaign.ts), in order.
 // ---------------------------------------------------------------------------
-const HOTEL_TONE = 'the flat hum of fluorescent lights and an air conditioner in a carpeted hotel conference room, a faint murmur of a small polite crowd, a cup set down now and then';
+const HOTEL_TONE = 'the flat hum of fluorescent lights and an air conditioner in a carpeted hotel conference room, a faint murmur of a small polite crowd';
 const SHIP_TONE = 'the low steady hum of a small starship: air handling, a faint electrical tone, nothing else';
 const HALL_TONE = 'the huge hushed echo of an empty domed prayer hall, a faint draught, oil lamps guttering';
 const CHAMBER_TONE = 'the quiet of a grand old room: a slow clock, a faint draught in heavy curtains';
 const MEADOW_TONE = 'a warm meadow: soft wind in long grass, far birdsong, a faint shimmering tone';
+const APPEAR = 'The hologram of the young man flickers faintly and steadies, his back to the camera.';
 
 export const FILMS: Film[] = [
   // ======================================================================== THE FRIENDSHIP DELEGATION
   { id: 'delegation-understand', faction: 'delegation', room: HOTEL_TONE, shots: [
-    cut('open', 'summit-wide', 'The small black pod on the carpet hums, and the hologram of the young man flickers and steadies above it. The delegates gasp with delight and clap their hands; the chief delegate, the insect woman in the blue-grey cardigan, opens her upper arms wide in welcome and nods, her antennae lifting. Every delegate has an insect head with antennae and large amber eyes the whole time: no human face is seen anywhere in the room.', 6, 'the rising hum of a projector, gasps of delight, warm applause from a dozen people, the buzz of fluorescent lights'),
-    say('summit-del', 'She steps forward beaming with her upper arms spread in welcome, then waves two hands at the refreshments table behind her.'),
-    say('summit-you', 'He looks round the room, perplexed, then back at her with his brow furrowed.'),
-    say('summit-del', 'She presses two hands together, serene and certain, nodding as she explains; the delegates behind her nod along.'),
-    say('summit-you', 'He blinks and tilts his head, honestly puzzled.'),
-    say('summit-del', 'She opens her upper hands like a patient teacher, then leans in with a questioning tilt of her antennae.'),
-    say('summit-you', 'He looks up and aside, thinking it over, then nods slowly and admits it.'),
-    say('summit-you-close', 'He strokes his chin and works it out as he speaks, eyes unfocused, slowly persuading himself.'),
-    say('summit-you', 'His eyebrows go up; he nods, a little surprised to find that he agrees, and opens one hand.'),
-    say('summit-del', 'She claps all four hands in delight, and the delegates behind her burst into applause, nodding hard.'),
-    say('summit-you', 'He shifts his weight, practical now, and spreads his hands in a small asking gesture.'),
-    say('summit-del', 'She leans in and lowers her voice like someone sharing good gossip, sweeping one hand in a wide circle.'),
-    say('summit-del-close', 'She holds up one finger, smiling proudly, then flicks her hand as if brushing something off a table.'),
-    cut('end', 'summit-two', 'She holds the plate of biscuits out to him, insisting kindly. He does not touch the plate: he lifts one open hand in a polite no-thank-you and gestures down at his own see-through body of light with an apologetic little shrug. She looks at the plate, nods warmly, takes a biscuit herself with a lower hand and nibbles it, delighted anyway.', 6, 'the hum of the projector, a fond murmur from the delegates, a paper cup set down'),
+    cut('open', 'summit-ots', `${APPEAR} The delegates gasp with delight and clap their hands; the chief delegate opens her upper arms wide in welcome and nods, her antennae lifting.`, 4, 'the hum of a projector, gasps of delight, warm applause from a dozen people, the buzz of fluorescent lights'),
+    they('She steps a little closer to him, beaming, her upper arms spread in welcome.'),
+    you('perplexed and a little wary, honestly asking', 'His head tilts a little to one side.'),
+    they('She presses two hands together, serene and certain, nodding as she explains; the delegates behind her nod along.'),
+    you('puzzled and hesitant, the "um" drawn out', 'He lifts one open hand a little.'),
+    they('She opens her upper hands like a patient teacher, then leans toward him with a questioning tilt of her antennae.'),
+    you('slow and thoughtful, thinking it through after a short pause, then conceding the point', 'He rubs the back of his neck with one hand.'),
+    you('slower still, thinking aloud, gradually persuading himself', 'He folds his arms and rocks back a little on his heels.'),
+    you('brighter, a little surprised to find that he agrees', 'He lets his arms fall and nods once.'),
+    they('She claps all four hands in delight, and the delegates behind her burst into applause, nodding hard.'),
+    you('practical and plain, getting down to business', 'He shifts his weight.'),
+    they('She leans toward him and lowers her voice like someone sharing good gossip, sweeping one hand in a wide circle.'),
+    they('She holds up one finger, smiling proudly, then flicks her hand as if brushing something off a table. When she has said it she folds her hands and beams at him, and the delegates behind her nod.'),
   ] },
   { id: 'delegation-pledge', faction: 'delegation', room: SHIP_TONE, shots: [
-    say('ship-broadcast', 'He clears his throat, stands a little straighter and addresses the camera, stiff and formal, like a man reading a notice.'),
-    say('^', 'A small pause; he says it plainly, then glances off to one side, unsure whether that was all right.'),
+    at('ship-broadcast', you('stiff and formal, like a man reading a public notice', 'He clears his throat and stands a little straighter.')),
+    you('plain and flat, with a breath of doubt after it', 'He holds still, then glances down at the console.'),
     cut('cheer', 'pledge-del', 'The delegates round the television burst into applause, hugging one another, garlands swinging; the chief delegate dabs her eyes.', 4, 'a room of people cheering and clapping, happy sobbing'),
   ] },
   { id: 'delegation-stop-war', faction: 'delegation', room: SHIP_TONE, shots: [
-    say('del-feed', 'She waves at the lens with two hands, bursting with good news; the delegates behind her wave too and jostle to be seen.'),
-    say('^', 'She holds a thick paper folder up to the lens with both upper hands, proud as a schoolgirl.'),
-    say('ship-desk', 'He leans toward the screen, squinting at it, confused.'),
-    say('del-feed-close', 'She says it simply and sweetly, with a small serene nod, as if it explained everything.'),
-    say('ship-desk', 'He raises one finger and works through it slowly, sure he must have missed something.'),
-    say('del-feed-close', 'She shakes her head gently, smiling, and counts three things off on three hands.'),
-    say('^', 'She opens her hands wide, reasonable and warm; the delegates behind her nod firmly.'),
-    say('ship-close', 'He shuts his eyes and pinches the bridge of his nose, lets out a breath, and gives up.'),
+    at('call-del', they('On the screen she waves at the lens with two hands, bursting with good news; the delegates behind her wave too and jostle to be seen.')),
+    they('On the screen she holds a thick paper folder up to the lens with both upper hands, proud as a schoolgirl.'),
+    you('confused, slowly', 'He leans a little toward the screen.'),
+    they('On the screen she says it simply and sweetly, with a small serene nod, as if it explained everything.'),
+    you('careful and puzzled, working through it, sure he has missed something', 'He raises one hand from the console.'),
+    they('On the screen she shakes her head gently, smiling, and counts three things off on three hands.'),
+    they('On the screen she opens her hands wide, reasonable and warm; the delegates behind her nod firmly.'),
+    you('weary and flat, giving up, on a long breath out', 'He bows his head and lifts a hand to pinch the bridge of his nose.'),
   ] },
   { id: 'delegation-gaia', faction: 'delegation', room: SHIP_TONE, shots: [
-    say('del-feed', 'She leans into the lens, thrilled; the delegates crowd in behind her.'),
-    say('^', 'She nods along with her own words and ends with a triumphant little lift of her antennae.'),
-    say('del-feed-close', 'She unrolls a paper map in two hands and taps points on it with a third, like a detective.'),
-    say('^', 'She shakes her head slowly and happily, one finger raised.'),
-    say('del-feed', 'She lays two hands on her chest, moved; a delegate behind her wipes an eye.'),
-    say('ship-desk', 'He frowns at the screen and half raises a hand, trying to be helpful.'),
-    say('del-feed-close', 'She wags a finger, pleased to be a step ahead of him.'),
-    say('^', 'She sweeps two hands across the map and piles an invisible heap with the others.'),
-    say('del-feed', 'She beams, blows a kiss at the lens with two hands and reaches forward; the picture cuts to black.'),
-    say('ship-close', 'He stares at the dead screen, then says it to nobody, flatly.'),
-    say('^', 'He rubs his jaw and turns to look away at the window, thoughtful.'),
+    at('call-del', they('On the screen she leans into the lens, thrilled; the delegates crowd in behind her.')),
+    they('On the screen she nods along with her own words and ends with a triumphant little lift of her antennae.'),
+    they('On the screen she unrolls a paper map in two hands and taps points on it with a third, like a detective.'),
+    they('On the screen she shakes her head slowly and happily, one finger raised.'),
+    they('On the screen she lays two hands on her chest, moved; a delegate behind her wipes an eye.'),
+    you('confused, trying to be helpful', 'He half raises a hand from the console.'),
+    they('On the screen she wags a finger, pleased to be a step ahead of him.'),
+    they('On the screen she sweeps two hands across the map and piles an invisible heap with the others.'),
+    they('On the screen she beams, blows a kiss at the lens with two hands and reaches forward; then the screen goes dark.'),
+    you('flat disbelief, said to nobody', 'The screen in front of him is dark. He sits back in his chair.'),
+    you('musing, curious in spite of himself', 'He turns his head toward the window.'),
   ] },
   { id: 'delegation-reveal', faction: 'delegation', room: SHIP_TONE, shots: [
-    say('del-feed', 'She leans into the lens, delighted, a sheaf of notes in two hands.'),
-    say('ship-desk', 'He cuts across her with one flat hand raised, tired.'),
-    say('del-feed', 'She stops, looks left and right at the delegates beside her, who look back at her, all of them lost.'),
-    say('ship-desk', 'He leans back and explains it like a man quoting a history book, one hand turning in the air.'),
-    say('^', 'The same shot goes on: the rest of the thought, in the same breath.'),
-    say('^', 'He goes on, counting it out on his fingers.'),
-    say('ship-close', 'He shakes his head slowly at the memory of the textbook.'),
-    say('^', 'He opens one hand, as if setting something down on the desk.'),
-    say('ship-desk', 'He leans forward and says it straight at the screen, as plainly as he can.'),
-    say('^', 'He taps the desk with one finger on each point.'),
-    say('^', 'The same shot goes on: the rest of the thought, in the same breath.'),
-    say('del-feed-close', 'She chuckles warmly and pats her chest with one hand, relieved; the delegates behind her smile.'),
-    say('ship-close', 'His eyes go wide; he throws both hands up.'),
-    say('del-feed-close', 'She nods kindly, as if confirming a booking.'),
-    say('del-feed', 'She brightens and holds up a pamphlet in two hands; a delegate behind her holds up a chart of a single rising curve.'),
-    say('^', 'She raises one finger and leans in, the beginning of a long lecture.'),
-    say('ship-pace', 'He slaps a control without looking and paces away from the desk, shaking his head, hands in his hair.'),
-    say('^', 'He stops, shuts his eyes, breathes in through his nose and lowers his hands, palms down.'),
+    at('call-del', they('On the screen she leans into the lens, delighted, a sheaf of notes in two hands.')),
+    you('tired and blunt, cutting across her', 'He raises one flat hand.'),
+    they('On the screen she stops, looks left and right at the delegates beside her, who look back at her, all of them lost.'),
+    you('dry, like a man about to quote a history book', 'He leans back in his chair.'),
+    you('even and patient, lecturing', 'He turns one hand in the air.'),
+    you('even and patient, counting it out', 'He counts on the fingers of one raised hand.'),
+    you('the same patient lecturing tone, with a shake of the head in it', 'He shakes his head slowly.'),
+    you('flat, as if setting something down on the desk'),
+    you('plain and deliberate, every word clear', 'He leans toward the screen.'),
+    you('short and hard'),
+    you('firm, a teacher making his point', 'He taps the console once with a finger.'),
+    they('On the screen she chuckles warmly and pats her chest with one hand, relieved; the delegates behind her smile.'),
+    you('incredulous, his voice cracking upward', 'He throws both hands up.'),
+    they('On the screen she nods kindly, as if confirming a booking.'),
+    they('On the screen she brightens and holds up a pamphlet in two hands; a delegate behind her holds up a chart of a single rising curve.'),
+    they('On the screen she raises one finger and leans in, the beginning of a long lecture.'),
+    you('fast and rattled, muttering', 'He slaps a control and the screen goes dark; he gets up out of his chair and walks a few steps toward the window with his hands in his hair, his back still to the camera.'),
+    you('slow, forced calm, reciting it to steady himself', 'He stops at the window, lowers his hands and breathes out.'),
   ] },
   { id: 'delegation-finale', faction: 'delegation', room: MEADOW_TONE, shots: [
     cut('burst', 'del-lastroom', 'The walls crack and the dark red living skin pours through them; tendrils whip across the room; the delegates cling to one another; the picture floods with red and goes to white.', 6, 'timber and plaster cracking, a wet tearing roar, cries, then silence'),
-    cut('wake', 'del-field-wide', 'The delegates stand in the glowing grass looking at their own hands. The hologram flickers into being on the left. The chief delegate turns, sees him and strides at him, furious.', 6, 'soft wind in long grass, far birdsong, a faint shimmer, a gasp'),
-    say('del-field-del', 'She storms up to the camera, antennae flat back, jabbing a finger.'),
-    say('del-field-you', 'He looks about the meadow and back at her, mildly confused that she is asking.'),
-    say('del-field-del', 'She spreads all four arms at the meadow, appalled.'),
-    say('del-field-you', 'He explains it reasonably, turning one hand over.'),
-    say('^', 'He goes on, nodding, as if listing features.'),
-    say('^', 'He holds out his palm; a red apple made of pale light draws itself into being on it; he offers it.'),
-    say('del-field-del', 'She clutches her head with two hands and cries it out.'),
-    say('del-field-you', 'He shrugs, lightly.'),
-    say('del-field-del', 'She points at her own chest, shaking with anger.'),
-    say('del-field-you', 'He tilts his head and lifts one shoulder.'),
-    say('del-field-del', 'She stamps a foot in the grass.'),
-    say('del-field-you', 'He says it mildly, as a plain fact.'),
-    say('del-field-del', 'She throws her head back and screams it at the golden sky, all four fists clenched.'),
-    say('del-field-you', 'He recoils a little, shocked, then holds up both hands, backing out of the conversation; he flickers and is gone.'),
-    say('ship-headset', 'He lifts the visor off his eyes, blinks, and lets out a long breath.'),
-    say('^', 'He sets the headset down on his knee and shakes his head, relieved.'),
-    say('^', 'The same shot goes on: the rest of the thought, in the same breath.'),
+    cut('wake', 'del-field-ots', `${APPEAR} The delegates look at their own hands in wonder. The chief delegate storms up to him through the grass, furious, and stops in front of him.`, 4, 'soft wind in long grass, far birdsong, a faint shimmer, a gasp'),
+    they('She jabs a finger at his chest, her antennae flat back.'),
+    you('mildly confused that she is asking', 'He turns his head to look across the meadow and back.'),
+    they('She spreads all four arms at the meadow, appalled.'),
+    you('reasonable and unhurried, explaining something obvious', 'He turns one hand over.'),
+    you('the same easy tone, as if listing features'),
+    you('helpful, offering', 'He holds one open hand out to the side; a red apple of pale light draws itself into being on his palm, and he offers it to her.'),
+    they('She clutches her head with two hands and cries it out.'),
+    you('light and nonchalant', 'He lets his hand fall; the apple fades.'),
+    they('She points at her own chest, shaking with anger.'),
+    you('offhand, a shrug in his voice', 'He lifts one shoulder.'),
+    they('She stamps a foot in the grass.'),
+    you('mild, stating a plain fact'),
+    they('She throws her head back and screams it at the golden sky, all four fists clenched.'),
+    you('shocked at first, then brisk, backing out of the conversation', 'He takes half a step back and raises both hands; when he has said it he flickers and is gone.'),
+    at('ship-headset', you('relieved and a little shaken, on a long breath out', 'He lifts the visor headset up off his head and lets his head fall back.')),
+    you('dry relief', 'He lowers the headset into his lap.'),
+    you('thoughtful, consoling himself', 'He sets the headset down on the console.'),
   ] },
 
   // ======================================================================== THE FAITHFUL OF THE LAST HOUR
   { id: 'faithful-signs', faction: 'faithful', room: HALL_TONE, shots: [
-    cut('open', 'hall-wide', 'The pod hums and the hologram steadies above it. The preacher, bowed to the carpet, does not move. The young man looks up at the dome and round the empty hall.', 6, 'the hum of a projector echoing in a huge empty hall, oil lamps guttering'),
-    say('hall-voice', 'He raises his head from the carpet and speaks with slow, joyful gravity.'),
-    say('^', 'He lifts one hand toward the dome, then draws it down like a blade.'),
-    say('hall-you', 'He glances about, taken aback, and holds up his hands, trying to be kind.'),
-    say('hall-voice', 'Without a pause he lays a hand on his chest and bows his head.'),
-    say('hall-you', 'He leans forward, earnest, encouraging.'),
-    say('hall-voice', 'He looks up with a small knowing smile and opens two hands.'),
-    say('hall-you', 'He scratches his chin, thinks, and concedes it with a nod.'),
-    say('hall-vests', 'He rises to his full height and lifts his upper arms to the dome.'),
-    say('^', 'He turns and points with two hands at the great heap of vests, proud.'),
-    say('ship-pace', 'He walks in a tight circle beside his desk with both hands in his hair.'),
+    cut('open', 'hall-ots', `${APPEAR} He turns his head to look up at the dome. The preacher, bowed low on the carpet before him, does not move.`, 4, 'the hum of a projector echoing in a huge empty hall, oil lamps guttering'),
+    they('He raises his head from the carpet and speaks with slow, joyful gravity.'),
+    they('He lifts one hand toward the dome, then draws it down like a blade.'),
+    you('taken aback, trying to be kind', 'He raises both hands a little.'),
+    they('Without a pause he lays a hand on his chest and bows his head.'),
+    you('earnest and encouraging', 'He leans forward a little.'),
+    they('He looks up with a small knowing smile and opens two hands.'),
+    you('thoughtful, conceding it', 'He lifts a hand to his chin.'),
+    they('He rises to his full height and lifts his upper arms to the dome.'),
+    they('He turns and points with two hands at the great heap of vests beside the column, proud.'),
+    at('ship-behind', you('rising panic, fast and under his breath, the last words tumbling out', 'He walks in a tight circle beside his desk with both hands in his hair, his back to the camera.')),
   ] },
   { id: 'faithful-pledge', faction: 'faithful', room: SHIP_TONE, shots: [
-    say('ship-broadcast', 'He addresses the camera, stiff and formal, reading it as much as saying it.'),
-    say('^', 'He hesitates, then says the last words firmly and nods once.'),
+    at('ship-broadcast', you('stiff and formal, reading it as much as saying it', 'He stands a little straighter.')),
+    you('hesitant, then firm on the last four words', 'He nods once.'),
     cut('kneel', 'pledge-fai', 'The congregation round the radio cry out and bow to the carpet in a wave; the preacher lifts his arms to the dome.', 4, 'a great crowd crying out in joy in a huge echoing hall'),
   ] },
   { id: 'faithful-prophecy', faction: 'faithful', room: CHAMBER_TONE, shots: [
-    say('chambers-you', 'He appears mid-sentence, arms out, exasperated.'),
-    say('^', 'He points a finger, trying to be firm.'),
-    say('chambers-voice', 'He lays a hand on his chest and bows a little, quite calm.'),
-    say('chambers-you', 'He looks away and admits it through his teeth.'),
-    say('chambers-voice', 'He lifts one finger gently and tilts his head, asking.'),
-    say('chambers-you', 'He looks at the floor, sheepish.'),
-    say('^', 'He looks up again and offers it with open hands, meaning it.'),
-    say('^', 'The same shot goes on: the rest of the thought, in the same breath.'),
-    say('chambers-voice', 'He smirks and weighs two things in two hands.'),
-    say('^', 'He folds his hands, the smile fading into thought.'),
-    say('chambers-voice', 'He walks a slow step toward the window, thinking aloud.'),
-    say('chambers-you', 'He starts out reasonable and trips over the last words, wincing.'),
-    say('chambers-voice', 'He turns back, serene, one hand raised toward heaven.'),
-    say('^', 'The same shot goes on: the rest of the thought, in the same breath.'),
-    say('chambers-you', 'He shrugs, beaten.'),
-    say('chambers-voice', 'He nods once, closing the matter, and bows.'),
+    at('chambers-ots', you('exasperated and loud', 'He throws his arms out to the sides.')),
+    you('firm, trying to sound in charge', 'He points a finger at him.'),
+    they('He lays a hand on his chest and bows a little, quite calm.'),
+    you('grudging, through his teeth', 'He turns his head away toward the window.'),
+    they('He lifts one finger gently and tilts his head, asking.'),
+    you('sheepish and quiet', 'He lowers his head.'),
+    you('sincere, almost pleading', 'He opens his hands.'),
+    you('earnest and gentle, offering it'),
+    they('He smirks and weighs two things in two hands.'),
+    they('He folds his hands, the smile fading into thought.'),
+    they('He walks a slow step toward the window, thinking aloud.'),
+    you('reasonable at first, then stumbling and wincing over the last words', 'He rubs the back of his neck.'),
+    they('He turns back to him, serene, one hand raised toward heaven.'),
+    they('He lowers the hand to his own chest.'),
+    you('beaten and flat', 'He shrugs.'),
+    they('He nods once, closing the matter, and bows.'),
   ] },
   { id: 'faithful-prepare', faction: 'faithful', room: CHAMBER_TONE, shots: [
-    say('chambers-you', 'He appears with his hands together, asking nicely this time.'),
-    say('chambers-voice', 'He smirks and raises one hand, wise and unhurried.'),
-    say('chambers-you', 'He shakes his head.'),
-    say('chambers-voice', 'He tilts his head, as if it were the most natural question.'),
-    say('chambers-you', 'He squints and turns one hand over.'),
-    say('chambers-voice', 'He lays one hand on a great bound book on the desk and lifts the other.'),
-    say('^', 'He traces an arc across the ceiling with one hand.'),
-    say('chambers-you', 'He thinks about it, tips his head from side to side, and accepts it.'),
-    say('chambers-voice', 'He smiles, satisfied, and folds his hands into his sleeves.'),
+    at('chambers-ots', you('polite and hopeful, asking nicely this time', 'He presses his hands together.')),
+    they('He smirks and raises one hand, wise and unhurried.'),
+    you('plain and a little small', 'He shakes his head.'),
+    they('He tilts his head, as if it were the most natural question.'),
+    you('wary and puzzled', 'He turns one hand over.'),
+    they('He lays one hand on a great bound book on the desk and lifts the other.'),
+    they('He traces an arc across the ceiling with one hand.'),
+    you('thinking it over, then accepting it with a small laugh in his voice', 'He tips his head from side to side.'),
+    they('He smiles, satisfied, and folds his hands into his sleeves.'),
   ] },
   { id: 'faithful-finale', faction: 'faithful', room: 'the hush of a great church full of people holding their breath, a faint golden shimmer', shots: [
     cut('burst', 'church-creep', 'The windows burst and the dark red living skin pours down the walls; the vault cracks and falls; the worshippers cry out; the picture floods with red and goes to white.', 6, 'glass bursting, stone falling, a wet roar, a congregation crying out, then silence'),
-    cut('whole', 'church-whole-wide', 'The church is whole and golden. Every worshipper sits in her pew where she was, looking at her hands and at her neighbours. At the altar the hologram flickers into being and gives a small wave.', 6, 'a held breath in a great church, a soft shimmer, pews creaking'),
-    say('church-you', 'He claps his hands once and rubs them together, cheerful, like a man closing a meeting.'),
-    say('church-voice', 'He looks at his own hands, then up, quiet and hopeful.'),
-    say('church-you', 'He tips his hand from side to side.'),
-    say('church-voice', 'He recites it, one hand on his chest.'),
-    say('church-you', 'He nods, looking round the church approvingly.'),
-    say('church-voice', 'He staggers back a step in horror, hands rising.'),
-    say('church-you', 'He frowns, honestly asking.'),
-    say('^', 'He gestures round at the golden church.'),
-    say('church-voice', 'He thrusts a finger at the altar, shaking.'),
-    say('church-you', 'He folds his arms and says it down to him, coolly.'),
-    say('^', 'He lifts one finger and lets it fall.'),
-    say('church-voice', 'He comes forward up the aisle, furious, jabbing two fingers.'),
-    say('^', 'He beats his chest once with a fist and throws the hand out at the altar.'),
-    say('church-you', 'His arms drop; he stares, wholly thrown.'),
-    say('^', 'He shakes his head slowly, one hand out toward the vault.'),
-    say('^', 'He lets out a breath, waves the whole thing away, flickers and is gone.'),
+    cut('whole', 'church-ots', `${APPEAR} The church is whole and golden. Every worshipper sits in her pew where she was, looking at her hands and at her neighbours; the preacher in the aisle looks up at him.`, 4, 'a held breath in a great church, a soft shimmer, pews creaking'),
+    you('cheerful and brisk, like a man closing a meeting', 'He claps his hands once.'),
+    they('He looks at his own hands, then up at him, quiet and hopeful.'),
+    you('easy, weighing it', 'He tips one hand from side to side.'),
+    they('He recites it, one hand on his chest.'),
+    you('approving and matter-of-fact', 'He nods and looks round the church.'),
+    they('He staggers back a step in horror, hands rising.'),
+    you('honestly asking, puzzled'),
+    you('reasonable, pressing the point', 'He gestures round at the golden church.'),
+    they('He thrusts a finger at the altar, shaking.'),
+    you('cool and condescending', 'He folds his arms.'),
+    you('quiet and final', 'He lifts one finger and lets it fall.'),
+    they('He comes forward up the aisle, furious, jabbing two fingers.'),
+    they('He beats his chest once with a fist and throws the hand out at him.'),
+    you('genuinely shocked, his voice rising', 'His arms drop to his sides.'),
+    you('earnest and a little hurt, slowly', 'He shakes his head.'),
+    you('tired, giving up, on a breath out', 'He waves the whole thing away, flickers and is gone.'),
   ] },
 
   // ======================================================================== THE INSTITUTE FOR LONG-TERM HIVE FLOURISHING
   { id: 'institute-machines', faction: 'institute', room: SHIP_TONE, shots: [
-    say('dir-feed', 'He grins over his shoulder at someone off screen and points a thumb at the lens.'),
-    say('ship-desk', 'He frowns at the screen.'),
-    say('dir-feed', 'He turns to the lens, smug, and shoots a finger gun.'),
-    say('ship-desk', 'He shakes his head, bewildered.'),
-    say('^', 'He explains it with small precise movements of two fingers.'),
-    say('dir-feed', 'He holds up one knowing finger and taps his temple with another hand.'),
-    say('ship-close', 'He shakes his head and gives up on it.'),
-    say('dir-feed', 'He goes back to his game, thumbs working, talking without looking up.'),
-    say('dir-feed-up', 'He sets the game down, swings his feet off the desk, and announces it with a flourish of two hands.'),
-    say('^', 'He picks up a paper file and taps a line of pale powder out of it onto the desk as he talks.'),
-    say('^', 'He bends to the desk and snuffs the line up, sits back blinking, and points at the lens.'),
-    say('dir-feed-up', 'He rolls his eyes and waves a hand at the world outside his window.'),
-    say('^', 'He rubs two fingers together, disgusted.'),
-    say('dir-feed-up', 'He gets animated, pointing at the lens with one hand, bouncing in the chair.'),
-    say('^', 'The same shot goes on: the rest of the thought, in the same breath.'),
-    say('^', 'He spreads all four hands, generous.'),
-    say('ship-desk', 'He draws back a little, faintly horrified, choosing his words.'),
-    say('dir-feed-up', 'He lights up and slaps the desk, delighted.'),
-    say('ship-close', 'His eyebrows shoot up.'),
-    say('dir-feed-up', 'He chuckles and shrugs with all four arms.'),
-    say('ship-close', 'He stares, worried.'),
-    say('^', 'He rubs his forehead and waves it through.'),
+    at('call-dir', they('On the screen he grins over his shoulder at someone out of the picture and points a thumb at the lens.')),
+    you('flat and unimpressed'),
+    they('On the screen he turns to the lens, smug, and shoots a finger gun.'),
+    you('bewildered', 'He shakes his head.'),
+    you('patient and precise, explaining', 'He raises one hand from the console.'),
+    they('On the screen he holds up one knowing finger and taps his temple with another hand.'),
+    you('tired, giving up on it', 'He shakes his head.'),
+    they('On the screen he goes back to his game, thumbs working, talking without looking up.'),
+    they('On the screen he sets the game down, swings his feet off the desk, and announces it with a flourish of two hands.'),
+    they('On the screen he picks up a paper file and taps a line of pale powder out of it onto the desk as he talks.'),
+    they('On the screen he bends to the desk and snuffs the line up, sits back blinking, and points at the lens.'),
+    they('On the screen he rolls his eyes and waves a hand at the world outside his window.'),
+    they('On the screen he rubs two fingers together, disgusted.'),
+    they('On the screen he gets animated, pointing at the lens with one hand, bouncing in the chair.'),
+    they('On the screen he nods, pleased with himself.'),
+    they('On the screen he spreads all four hands, generous.'),
+    you('faintly horrified, choosing his words', 'He draws back a little in his chair.'),
+    they('On the screen he lights up and slaps the desk, delighted.'),
+    you('shocked and sharp'),
+    they('On the screen he chuckles and shrugs with all four arms.'),
+    you('worried, slowly'),
+    you('uneasy, waving it through', 'He rubs his forehead.'),
   ] },
   { id: 'institute-pledge', faction: 'institute', room: SHIP_TONE, shots: [
-    say('ship-broadcast', 'He addresses the camera, stiff and formal, like a public notice.'),
-    say('^', 'He finishes it and nods once, uncertain how it went.'),
+    at('ship-broadcast', you('stiff and formal, like a public notice', 'He stands a little straighter.')),
+    you('firmer, then unsure how it went', 'He nods once.'),
     cut('fist', 'pledge-ins', 'The Director pumps a fist at his monitor, spins his chair once and points at the screen with two hands.', 4, 'a chair spinning, a whoop'),
   ] },
   { id: 'institute-pipeline', faction: 'institute', room: SHIP_TONE, shots: [
-    say('ship-desk', 'He leans toward the screen, wary.'),
-    say('dir-feed', 'He shoots two finger guns at the lens without putting the game down.'),
-    say('^', 'He squints at the lens over the game.'),
-    say('ship-desk', 'He glances left and right as if for help.'),
-    say('dir-feed', 'He shrugs, grinning, man to man.'),
-    say('ship-close', 'He recoils.'),
-    say('dir-feed-mag', 'He holds the magazine up to the lens and taps its cover.'),
-    say('^', 'He taps the two painted women on the cover in turn.'),
-    say('ship-desk', 'He explains it patiently, as to a child.'),
-    say('dir-feed-up', 'He sets the game down and leans in on his elbows, coaxing.'),
-    say('^', 'He leans back and grins at the ceiling.'),
-    say('ship-desk', 'He shakes his head and counts the problem out on his fingers.'),
-    say('^', 'He lets his hands fall.'),
-    say('dir-feed-up', 'He laughs and waves the whole idea away.'),
-    say('^', 'The same shot goes on: the rest of the thought, in the same breath.'),
-    say('^', 'He explains it with a circle of one hand, very pleased.'),
-    say('^', 'He points up at the ceiling with two thumbs.'),
-    say('ship-close', 'He sputters, both hands up.'),
-    say('dir-feed-up', 'He pats the air with two hands, soothing.'),
-    say('ship-close', 'His mouth hangs open; then something dawns on him and he leans slowly toward the screen.'),
-    say('dir-feed-up', 'He throws his head back and laughs.'),
-    say('ship-close', 'He reaches forward and kills the feed, sits very still, and says it under his breath.'),
+    at('call-dir', you('wary', 'He leans a little toward the screen.')),
+    they('On the screen he shoots two finger guns at the lens without putting his game down.'),
+    they('On the screen he squints at the lens over the game.'),
+    you('uncertain, almost worried', 'He glances left and right.'),
+    they('On the screen he shrugs, grinning, man to man.'),
+    you('horrified', 'He recoils in his chair.'),
+    they('On the screen he holds a pulp science-fiction magazine up to the lens and taps its painted cover: a heroic insect starship captain in a gold tunic with a green-skinned insect woman and a blue-skinned insect woman on his arms (no lettering on it).'),
+    they('On the screen he taps the two painted women on the cover in turn.'),
+    you('patient, as to a child'),
+    they('On the screen he puts the magazine and the game down and leans in on his elbows, coaxing.'),
+    they('On the screen he leans back and grins at the ceiling.'),
+    you('earnest, explaining the real problem', 'He shakes his head.'),
+    you('plain and final'),
+    they('On the screen he laughs and waves the whole idea away.'),
+    they('On the screen he shrugs, amused.'),
+    they('On the screen he explains it with a circle of one hand, very pleased.'),
+    they('On the screen he points up at the ceiling with two thumbs.'),
+    you('sputtering, scandalised', 'He raises both hands.'),
+    they('On the screen he pats the air with two hands, soothing.'),
+    you('stunned at first, then slow as it dawns on him', 'He leans slowly toward the screen.'),
+    they('On the screen he throws his head back and laughs.'),
+    you('very quiet, under his breath, shaken', 'He reaches forward and the screen goes dark; he sits very still.'),
   ] },
   { id: 'institute-ultimatum', faction: 'institute', room: SHIP_TONE, shots: [
-    say('ship-desk', 'He leans toward the screen, resigned.'),
-    say('dir-feed-up', 'He opens two hands wide, expansive.'),
-    say('^', 'He leans on his elbows and points lazily at the lens.'),
-    say('^', 'The same shot goes on: the rest of the thought, in the same breath.'),
-    say('ship-close', 'He does not speak aloud: his eyes narrow a little and he gives the smallest nod, thinking it.'),
-    say('dir-feed-up', 'He lays a hand on his chest, then turns two palms up.'),
-    say('^', 'He shrugs it off.'),
-    say('dir-feed-up', 'He bounces in the chair and grabs a marker.'),
-    say('^', 'The same shot goes on: the rest of the thought, in the same breath.'),
-    say('^', 'He draws boxes in the air with two hands.'),
-    say('dir-feed-up', 'He stops, blinks, and comes back to the lens with a grin.'),
-    say('^', 'He points at the lens and then at himself.'),
-    say('^', 'The same shot goes on: the rest of the thought, in the same breath.'),
-    say('dir-feed-up', 'He rubs the back of his neck and counts on his fingers.'),
-    say('^', 'He holds up one finger like a man with a plan.'),
-    say('^', 'He waves it off, obvious.'),
-    say('ship-close', 'He shakes his head and lets it go.'),
+    at('call-dir', you('resigned', 'He leans a little toward the screen.')),
+    they('On the screen he opens two hands wide, expansive.'),
+    they('On the screen he leans on his elbows.'),
+    they('On the screen he points lazily at the lens.'),
+    you('low and dry: a thought, said under his breath to himself, that the man on the screen does not hear', 'He does not move.'),
+    they('On the screen he lays a hand on his chest, then turns two palms up.'),
+    they('On the screen he shrugs it off.'),
+    they('On the screen he bounces in his chair and grabs a marker.'),
+    they('On the screen he points the marker at the lens.'),
+    they('On the screen he draws boxes in the air with two hands.'),
+    they('On the screen he stops, blinks, and comes back to the lens with a grin.'),
+    they('On the screen he points at the lens and then at himself.'),
+    they('On the screen he nods, magnanimous.'),
+    they('On the screen he rubs the back of his neck and counts on his fingers.'),
+    they('On the screen he holds up one finger like a man with a plan.'),
+    they('On the screen he waves it off as obvious.'),
+    you('weary, letting it go', 'He shakes his head.'),
   ] },
   { id: 'institute-finale', faction: 'institute', room: MEADOW_TONE, shots: [
     cut('tower', 'spire-creep', 'The dark red living skin climbs the glass tower floor by floor and the lights go out behind it.', 4, 'a low wet roar, glass creaking, distant alarms'),
     cut('shove', 'spire-saferoom', 'He shoves the two in lab coats aside and squeezes through the vault door first; it swings shut; the tendrils reach it; the picture floods with red and goes to white.', 6, 'alarms, shouts, a heavy door slamming, a wet roar, then silence'),
-    cut('wake', 'ins-meadow-wide', 'The staff sit up dazed in the glowing grass. The hologram flickers into being on the left. The Director gets to his feet, sees him and marches at him.', 6, 'soft wind in long grass, far birdsong, a faint shimmer'),
-    say('ins-meadow-dir', 'He marches up, jabbing a finger at the camera.'),
-    say('^', 'He spreads all four arms at the meadow.'),
-    say('ins-meadow-you', 'He nods, pleasant and matter-of-fact.'),
-    say('ins-meadow-dir', 'He squints.'),
-    say('ins-meadow-you', 'He explains it gently, as if it were obvious.'),
-    say('ins-meadow-dir', 'He waves that away with two hands and jabs a finger again.'),
-    say('ins-meadow-you', 'He looks puzzled that it needs saying.'),
-    say('^', 'He tilts his head, honestly asking.'),
-    say('^', 'He turns one hand over.'),
-    say('ins-meadow-you', 'He lifts the other hand, a second example.'),
-    say('^', 'He shakes his head and points up at the sky.'),
-    say('^', 'He taps his own chest lightly.'),
-    say('ins-meadow-you', 'He goes on like a lecturer.'),
-    say('^', 'He ends it with an open hand toward him.'),
-    say('ins-meadow-dir', 'He is shaking with rage, all four fists clenched.'),
-    say('ins-meadow-you', 'He looks around, confused that it is a question.'),
-    say('^', 'He shrugs a little.'),
-    say('ins-meadow-dir', 'He throws two arms wide.'),
-    say('ins-meadow-you', 'He explains it practically, counting on his fingers.'),
-    say('^', 'The same shot goes on: the rest of the thought, in the same breath.'),
-    say('^', 'He winces a little, apologetic about the last part.'),
-    say('^', 'The same shot goes on: the rest of the thought, in the same breath.'),
-    say('ins-meadow-dir', 'He laughs in disbelief and throws a hand at the sky.'),
-    say('^', 'The same shot goes on: the rest of the thought, in the same breath.'),
-    say('^', 'He spits the last words.'),
-    say('ins-meadow-you', 'He says nothing: he looks slowly round at the golden meadow, lifts both hands at it, looks back at him, flickers and is gone.'),
+    cut('wake', 'ins-meadow-ots', `${APPEAR} The staff sit up dazed in the glowing grass. The Director marches up to him and stops in front of him.`, 4, 'soft wind in long grass, far birdsong, a faint shimmer'),
+    they('He jabs a finger at him.'),
+    they('He spreads all four arms at the meadow.'),
+    you('pleasant and matter-of-fact'),
+    they('He squints.'),
+    you('gentle, as if it were obvious'),
+    they('He waves that away with two hands and jabs a finger again.'),
+    you('puzzled that it needs saying'),
+    you('honestly asking', 'He tilts his head.'),
+    you('even, a first example', 'He turns one hand over.'),
+    you('even, a second example', 'He lifts the other hand.'),
+    you('patient and a little incredulous', 'He shakes his head and points up at the sky.'),
+    you('plain'),
+    you('like a lecturer'),
+    you('quiet and sure', 'He opens a hand toward him.'),
+    they('He is shaking with rage, all four fists clenched.'),
+    you('confused that it is a question', 'He looks about the meadow.'),
+    you('simple, a small shrug in it'),
+    they('He throws two arms wide.'),
+    you('practical'),
+    you('practical and matter-of-fact'),
+    you('reasonable, a little apologetic at the end'),
+    you('mild, as if it explained everything'),
+    they('He laughs in disbelief and throws a hand at the sky.'),
+    they('He counts it off on his fingers, sneering.'),
+    they('He spits the last words.'),
+    you('', 'He says nothing: he turns his head slowly to look round the golden meadow, lifts both hands toward it, looks back at him, flickers and is gone.'),
   ] },
 ];
 

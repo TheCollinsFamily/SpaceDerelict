@@ -3,10 +3,13 @@
  *
  *   npx vite-node tools/media/cutscenes.ts -- list                 every film: shots, pictures, what is made, what it would cost
  *   npx vite-node tools/media/cutscenes.ts -- stills <film>        the pictures its shots start from (LOOK: notes/art-review/cutscenes/<film>/)
- *   npx vite-node tools/media/cutscenes.ts -- clips <film> [shots] one clip per shot, image-to-video WITH SOUND (the speaker says the line)
+ *   npx vite-node tools/media/cutscenes.ts -- clips <film> [shots] one clip per shot, IN ORDER, image-to-video WITH SOUND (the speaker says the line);
+ *                                                                  each clip is heard, cut just after its last word, and the frame at the cut starts the next
+ *   npx vite-node tools/media/cutscenes.ts -- redo <film> <shot>   move that clip AND every clip that went on from it aside (v1/, v2/ ...), to be made again
  *   npx vite-node tools/media/cutscenes.ts -- check <film>         every clip transcribed against its line; each speaker's pitch across the film
  *   npx vite-node tools/media/cutscenes.ts -- bake <film>          public/media/scenes/<film>.mp4 + poster + cues in scenes.json (free)
  *   npx vite-node tools/media/cutscenes.ts -- sheet <film>         every shot as three frames, to look at (free)
+ *   npx vite-node tools/media/cutscenes.ts -- desk <film>          the baked film to the Desktop: as it is, with the words burned in, and its sheet (free)
  *
  * SPENDS RFab tokens (RFAB_API_KEY): a still about $0.12 (medium; CUTSCENE_STILL_QUALITY=high for $0.45), a spoken clip on
  * Veo 3.1 Lite image-to-video about $0.3-0.6. Every step skips a file already on disk: to make one again, MOVE its raw
@@ -17,6 +20,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
 import { spawnSync } from 'node:child_process';
 import { makeClip, makeStill, pool } from '../art/rfab.mjs';
 import { ROOT, api, assertSpeakable, balance, duration, ff, ffStderr, speechSpan } from './lib.mjs';
@@ -30,7 +34,11 @@ const OUT = path.join(ROOT, 'public', 'media', 'scenes');
 const REVIEW = path.join(ROOT, 'notes', 'art-review', 'cutscenes');
 const VIDEO_MODEL = process.env.CUTSCENE_VIDEO_MODEL || 'imagerouter:veo-3.1-lite-i2v';
 const STILL_QUALITY = process.env.CUTSCENE_STILL_QUALITY || 'medium';
-const HERO = path.join(CONCEPTS, 'r4-hero-portrait.png');
+// He is seen from behind (Collins, Oct 4 2026; the style bible's rule 9): the approved concept of him from behind is his reference.
+const HERO = path.join(CONCEPTS, 'hero-behind-desk.png');
+/** The clips' frame rate (Veo 3.1: 24), and how long after a line's last word its clip is cut (the next clip starts on that frame). */
+const FPS = 24;
+const CUT_AFTER = 0.55;
 const W = 1536, H = 864;
 
 const argv = process.argv.slice(2).filter((a) => a !== '--');
@@ -55,12 +63,13 @@ export const secsFor = (words: string): 4 | 6 | 8 => (wordCount(words) <= 5 ? 4 
 const SHIP = 'a small, dark, exact starship in orbit: matte black bulkheads in big flat panels, thin white light strips recessed along the base of the walls, ribbed dark metal deck plating, cool white light and deep shadow, everything spare, clean and precise';
 const LOOKS: Record<FilmLook, string> = {
   colony: 'A film still from a 1950s colour science-fiction film, in a wide 16:9 frame: saturated Technicolor, theatrical light with deep shadows, a studio set, film grain, the softness of old lenses.',
-  feed: 'A film still from a 1950s colour science-fiction film, in a wide 16:9 frame: saturated Technicolor, theatrical light, a studio set, film grain. It is the picture a fixed camera on a desk sends on a video call: a slightly wide lens at eye level, the person nearest it looking straight into the lens.',
   archive: 'A film still from a 1950s colour science-fiction film, a dream sequence, in a wide 16:9 frame: saturated Technicolor, radiant soft golden light, painted backdrops, film grain, the softness of old lenses.',
   ship: `Photoreal and lifelike, like a frame from a serious hard science-fiction film shot on a real set, natural film grain, in a wide 16:9 frame. Aboard ${SHIP}.`,
+  call: `Photoreal and lifelike, like a frame from a serious hard science-fiction film shot on a real set, natural film grain, in a wide 16:9 frame. Aboard ${SHIP}.`,
 };
 const ORD = ['first', 'second', 'third', 'fourth'];
-const MAN = 'about twenty-five, slight, with short dark messy hair and a pale stylus tucked behind his right ear, in a plain black high-collared tunic with a narrow white collar, its sleeves pushed up to the elbows';
+/** Him, as he is seen from behind (the approved concept: notes/concepts/2026-09-29/hero-behind-desk.png). */
+const BACK = 'short dark messy hair, a pale stylus tucked behind his right ear, a plain black high-collared tunic with a narrow white collar showing at the neck, its sleeves pushed up to the elbows';
 /** No lettering; no real religious symbol (the Faith has its own: hexagons, gold balls, lamps). */
 const CLEAN_FAITH = CLEAN.replace(/There is no religious[^.]*\./, 'There is no real religious or political symbol of any kind: no cross, no plus-shaped sign, no star shape, no crescent; the only symbols are plain hexagons, plain gold balls and oil lamps.');
 const NO_TEXT = 'No text, no lettering, no numbers, no logos, no emblems, no symbols, no icons anywhere in the picture.';
@@ -73,12 +82,15 @@ function stillPrompt(id: string): string {
   const ord = (r: string) => ORD[st.refs.indexOf(r)] ?? 'first';
   let shows = st.shows;
   const holo = shows.includes('HOLO');
+  const him = `the young man of the ${ord('hero')} reference picture (seen from behind as he is there, so that only the back of his head is seen and never his face: ${BACK}; his hands empty)`;
   if (fac) shows = shows.replace(/WHO/g, WHO[fac].replace('the reference picture', `the ${ord('leader')} reference picture`));
-  shows = shows.replace(/HOLO/g, `a life-size hologram of exactly the young man in the ${ord('hero')} reference picture (the same face; ${MAN}): he is made of pale blue-white light, translucent so that the room shows faintly through him, with fine horizontal scan lines and a soft glow at his edges; his face, hair and clothes are all the same pale blue light; his hands are empty and he carries nothing`);
-  shows = shows.replace(/TECH/g, `exactly the young man in the ${ord('hero')} reference picture, the same face: ${MAN}; his hands are empty and he carries nothing`);
-  if (st.look === 'ship') return `${LOOKS.ship} ${shows} He is alone: nobody else is in the picture. ${NO_TEXT}`;
+  shows = shows.replace(/HOLO/g, `a life-size hologram of ${him}, made of pale blue-white light, translucent so that the room shows faintly through him, with fine horizontal scan lines and a soft glow at his edges`);
+  shows = shows.replace(/TECH/g, him);
+  const never = 'The young man faces away from the camera: his face is not seen anywhere in the picture.';
+  if (st.look === 'ship') return `${LOOKS.ship} ${shows} He is alone: nobody else is in the picture. ${never} ${NO_TEXT}`;
+  if (st.look === 'call') return `${LOOKS.call} ${shows} Every person on the screen is one of the ${CROWD}. Each has exactly four arms and two legs, never more. The young man is the only human being in the picture. ${never} ${fac === 'faithful' ? CLEAN_FAITH : CLEAN}`;
   const cast = holo
-    ? `Every other person in the picture is one of the ${CROWD}. Each has exactly four arms and two legs, never more. The hologram is the only human being in the picture.`
+    ? `Every other person in the picture is one of the ${CROWD}. Each has exactly four arms and two legs, never more. The hologram is the only human being in the picture. ${never}`
     : `Every person in the picture is one of the ${CROWD}. Each has exactly four arms and two legs, never more. There are no human beings anywhere.`;
   return `${LOOKS[st.look]} ${shows} ${cast} ${fac === 'faithful' ? CLEAN_FAITH : CLEAN}`;
 }
@@ -146,16 +158,18 @@ const VOICES: Record<string, string> = {
   'The Director': 'He speaks English in a fast, lazy, confident young man\'s voice, a nasal Californian drawl, always amused with himself. It is always exactly this same voice.',
 };
 const SUBJECT: Record<string, [string, string]> = {
-  'You': ['The young man', ''],
   'Delegate': ['The chief delegate, the elderly insect woman in the cardigan and the flower garland,', 'Her small mandibles move like a mouth with her words.'],
   'The Voice': ['The preacher in the black robes', 'His small mandibles move like a mouth with his words.'],
   'The Director': ['The lanky young insect man in the grey t-shirt', 'His small mandibles move like a mouth with his words.'],
 };
-function tail(look: FilmLook, holo: boolean): string {
-  if (look === 'ship') return 'One continuous shot, no cuts, the camera almost still. He is alone, and only he speaks. He keeps the same face, the same dark messy hair and the same black tunic in every frame; nothing morphs. No text appears on screen. No music, no subtitles.';
-  return 'One continuous shot, no cuts, the camera almost still. Only this one person speaks; nobody else says a word. It keeps the same film look and grain throughout. '
-    + 'The insect people keep their insect heads, exactly four arms and the same clothes in every frame; nothing morphs or duplicates. '
-    + (holo ? 'The young man stays a translucent pale blue hologram of light in every frame, and never becomes solid. ' : '')
+/** He is seen from behind, always (Collins, Oct 4 2026). */
+const BEHIND = 'The young man keeps his back to the camera in every frame: his face is never seen, and he never turns round.';
+function tail(look: FilmLook, holo: boolean, him: boolean): string {
+  const cam = 'One continuous shot, no cuts; the camera does not move at all.';
+  if (look === 'ship') return `${cam} He is alone. ${BEHIND} He keeps the same dark messy hair and the same black tunic in every frame; nothing morphs. No text appears on screen. No music, no subtitles.`;
+  if (look === 'call') return `${cam} ${BEHIND} The screen stays where it is, and the insect people on it keep their insect heads, exactly four arms and the same clothes in every frame; nothing morphs or duplicates. No text appears on screen. No music, no subtitles.`;
+  return `${cam} It keeps the same film look and grain throughout. The insect people keep their insect heads, exactly four arms and the same clothes in every frame; nothing morphs or duplicates. `
+    + (holo ? `The young man stays a translucent pale blue hologram of light in every frame, and never becomes solid. ${BEHIND} ` : him ? `${BEHIND} ` : '')
     + 'No text appears on screen. No music, no subtitles.';
 }
 /** The still a shot stands in ('^' looks back to the still its take began from). */
@@ -167,56 +181,148 @@ export function clipPrompt(film: Film, i: number): string {
   const s = film.shots[i];
   const st = STILLS[stillOfShot(film, i)];
   const holo = st.shows.includes('HOLO');
-  const t = tail(st.look, holo);
+  const him = holo || st.shows.includes('TECH');
+  const t = tail(st.look, holo, him);
   const words = wordsOf(film, s);
-  if (!words) return `${s.action} Nobody speaks: not a word is said. ${s.sound ? `Heard: ${s.sound}. ` : ''}${t.replace('Only this one person speaks; nobody else says a word. ', '').replace('He is alone, and only he speaks. ', 'He is alone. ')}`;
+  if (!words) return `${s.action} Nobody speaks: not a word is said. ${s.sound ? `Heard: ${s.sound}. ` : ''}${t}`.replace(/\s+/g, ' ');
   const who = whoOf(film, s);
+  const spoken = assertSpeakable(words.replace(/\b[A-Z]{2,}\b/g, (w) => (w === 'AI' ? w : w.toLowerCase())));
+  if (who === 'You') {
+    // His line: he is seen from behind, so it is his VOICE that carries it; nobody whose face is seen moves a mouth.
+    const he = holo ? 'The hologram of the young man' : 'The young man';
+    const hush = st.look === 'ship' ? '' : `The insect people${st.look === 'call' ? ' on the screen' : ''} listen in silence, their mandibles closed and still: none of them speaks.`;
+    return `${s.action} ${he}, his back to the camera, says: "${spoken}" ${VOICES.You} ${hush} ${t}`.replace(/\s+/g, ' ');
+  }
   const [subject, mouth] = SUBJECT[who] ?? ['The speaker', ''];
-  const spoken = words.replace(/\b[A-Z]{2,}\b/g, (w) => (w === 'AI' ? w : w.toLowerCase()));
-  const sub = who === 'You' && holo ? 'The hologram of the young man' : subject;
-  return `${s.action} ${sub} says: "${assertSpeakable(spoken)}" ${mouth} ${VOICES[who] ?? ''} ${t}`.replace(/\s+/g, ' ');
+  const hush = him ? 'The young man says nothing and stays as he is, his back to the camera.' : '';
+  return `${s.action} ${subject} says: "${spoken}" ${mouth} ${VOICES[who] ?? ''} ${hush} ${t}`.replace(/\s+/g, ' ');
 }
 
-function lastFrame(clip: string, out: string): string {
-  if (fs.existsSync(out) && fs.statSync(out).mtimeMs >= fs.statSync(clip).mtimeMs) return out;
-  ff(['-sseof', '-0.12', '-i', clip, '-frames:v', '1', '-update', '1', '-vf', 'scale=1280:720', out], 'last frame');
+const cutFile = (film: string, shot: string) => clipFile(film, shot).replace(/\.mp4$/, '.cut.json');
+
+/**
+ * THE COLOUR OF A TAKE IS HELD (Oct 4 2026). Every clip starts on the frame the one before it was cut on, so whatever
+ * the video model does to the colour inside a clip is handed on to the next: measured on the first chained take
+ * (tools/measure/cutscene-drift.mjs), the contrast of the blue channel had grown 1.46 times and the red had sunk by a
+ * fifth after twelve links. So each clip is measured at its cut against the take's first frame, the frame the next clip
+ * starts from is corrected back to it (per channel: out = in * k + o), and the bake applies the same correction to the
+ * clip itself, rising from nothing at its first frame to all of it at the cut. The drift cannot add up.
+ */
+interface Colour { mean: number[]; sd: number[] }
+interface Fix { k: number[]; o: number[] }
+interface Cut { t: number; frame: number; fix?: Fix }
+const NO_FIX: Fix = { k: [1, 1, 1], o: [0, 0, 0] };
+/** The mean and spread of red, green and blue in one frame of a clip (read small). */
+function colourOf(file: string, frame: number): Colour {
+  const r = spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-i', file, '-vf', `select=eq(n\\,${frame}),scale=320:180`, '-frames:v', '1', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-'], { maxBuffer: 1 << 26 });
+  const px = r.stdout;
+  const n = Math.max(1, px.length / 3);
+  const mean = [0, 0, 0], sd = [0, 0, 0];
+  for (let i = 0; i + 2 < px.length; i += 3) for (let c = 0; c < 3; c++) mean[c] += px[i + c];
+  for (let c = 0; c < 3; c++) mean[c] /= n;
+  for (let i = 0; i + 2 < px.length; i += 3) for (let c = 0; c < 3; c++) sd[c] += (px[i + c] - mean[c]) ** 2;
+  return { mean, sd: sd.map((x) => Math.sqrt(x / n)) };
+}
+const clamp = (x: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, x));
+/** What brings `got` back to `ref`, held to a modest range (the people in the picture move: the measure is of the whole frame). */
+function fixOf(ref: Colour, got: Colour): Fix {
+  const k = got.sd.map((v, c) => clamp(ref.sd[c] / Math.max(1, v), 0.7, 1.3));
+  const o = k.map((kc, c) => clamp(ref.mean[c] - got.mean[c] * kc, -45, 45));
+  return { k: k.map((x) => +x.toFixed(4)), o: o.map((x) => +x.toFixed(2)) };
+}
+const lut = (f: Fix) => `lutrgb=${['r', 'g', 'b'].map((ch, c) => `${ch}='clip(val*${f.k[c]}+${f.o[c]},0,255)'`).join(':')}`;
+/** The first shot of the take a shot belongs to, and that take's first frame's colour. */
+function takeStart(film: Film, i: number): number { let k = i; while (k > 0 && film.shots[k].from === '^') k--; return k; }
+const refCache = new Map<string, Colour>();
+function refColour(film: Film, i: number): Colour {
+  const first = film.shots[takeStart(film, i)];
+  const key = `${film.id}/${first.id}`;
+  if (!refCache.has(key)) refCache.set(key, colourOf(clipFile(film.id, first.id), 0));
+  return refCache.get(key)!;
+}
+/** The correction a clip needs at one of its frames to be the colour its take began with. */
+const fixAt = (film: Film, i: number, frame: number): Fix => (process.env.CUTSCENE_NO_COLOUR_HOLD ? NO_FIX : fixOf(refColour(film, i), colourOf(clipFile(film.id, film.shots[i].id), frame)));
+
+/**
+ * WHERE A CLIP IS CUT when the next shot goes on from it: just after its last word (its whole length when nothing is
+ * said in it), on a whole frame. The frame at the cut is the next clip's first frame, so the join cannot be seen, and
+ * the pause the model leaves after a line is not in the film. Written beside the clip, with its colour correction;
+ * the bake reads it.
+ */
+async function cutOf(film: Film, i: number): Promise<Cut> {
+  const s = film.shots[i];
+  const f = clipFile(film.id, s.id);
+  const side = cutFile(film.id, s.id);
+  if (fs.existsSync(side) && fs.statSync(side).mtimeMs >= fs.statSync(f).mtimeMs) { const j = JSON.parse(fs.readFileSync(side, 'utf8')) as Cut; if (j.fix) return j; }
+  const d = duration(f);
+  let t = d;
+  if (wordsOf(film, s)) { const h = await hear(f); if (h.last !== undefined) t = Math.min(d, h.last + CUT_AFTER); }
+  const frames = Math.max(2, Math.round(d * FPS));
+  const frame = Math.min(frames - 2, Math.max(1, Math.round(t * FPS)));
+  const cut: Cut = { t: frame / FPS, frame, fix: fixAt(film, i, frame) };
+  fs.writeFileSync(side, JSON.stringify(cut));
+  return cut;
+}
+/** The frame a clip is cut on, brought back to the take's first colour: the picture the next shot starts from. */
+async function cutFrame(film: Film, i: number, out: string): Promise<string> {
+  const f = clipFile(film.id, film.shots[i].id);
+  const { frame, fix } = await cutOf(film, i);
+  if (fs.existsSync(out) && fs.statSync(out).mtimeMs >= fs.statSync(cutFile(film.id, film.shots[i].id)).mtimeMs) return out;
+  ff(['-i', f, '-vf', `select=eq(n\\,${frame}),${lut(fix ?? NO_FIX)},scale=1280:720`, '-frames:v', '1', '-update', '1', out], 'the frame at the cut');
   return out;
 }
 
 async function clips(film: Film) {
   fs.mkdirSync(dirOf(film.id), { recursive: true });
-  const todo = (chained: boolean) => film.shots.map((s, i) => ({ s, i })).filter(({ s }) => want(s.id) && (s.from === '^') === chained && !fs.existsSync(clipFile(film.id, s.id)));
-  const make = ({ s, i }: { s: FilmShot; i: number }) => {
+  let made = 0;
+  // In order: a shot that goes on from the one before it needs that clip made, heard and cut first.
+  for (let i = 0; i < film.shots.length; i++) {
+    const s = film.shots[i];
+    const out = clipFile(film.id, s.id);
+    if (fs.existsSync(out) || !want(s.id)) continue;
     const words = wordsOf(film, s);
-    const start = s.from === '^' ? lastFrame(clipFile(film.id, film.shots[i - 1].id), path.join(dirOf(film.id), `${s.id}-start.png`)) : still169(s.from);
-    return makeClip({
-      slug: `cut-${film.id}-${s.id}`, stillFile: start, out: clipFile(film.id, s.id), models: [VIDEO_MODEL], prompt: clipPrompt(film, i),
-      seconds: words ? secsFor(words) : s.secs ?? 6, loop: false, raw: true, resolution: '720p', aspect: '16:9', audio: true,
-    }).then((f: string) => { fs.writeFileSync(f.replace(/\.mp4$/, '.txt'), `${words}\n---\n${clipPrompt(film, i)}\n`); return f; });
-  };
-  const first = todo(false).filter(({ s }) => fs.existsSync(stillFile(s.from)));
-  console.log(`[cut] ${film.id}: ${first.length} clips to make on ${VIDEO_MODEL}`);
-  const res = await pool(first, 4, make);
-  res.forEach((r: { ok: boolean; error?: Error }, k: number) => { if (!r.ok) console.warn(`[cut] clip ${first[k].s.id} failed: ${r.error!.message.slice(0, 300)}`); });
-  // A shot that continues the one before it starts from that clip's last frame: made in order, after it.
-  for (const job of todo(true)) {
-    if (!fs.existsSync(clipFile(film.id, film.shots[job.i - 1].id))) { console.warn(`[cut] ${job.s.id}: the shot before it is not made yet`); continue; }
-    try { await make(job); } catch (e) { console.warn(`[cut] clip ${job.s.id} failed: ${(e as Error).message.slice(0, 300)}`); }
+    let start: string;
+    if (s.from === '^') {
+      if (!fs.existsSync(clipFile(film.id, film.shots[i - 1].id))) { console.warn(`[cut] ${s.id}: the shot before it (${film.shots[i - 1].id}) is not made; stopping here`); break; }
+      start = await cutFrame(film, i - 1, path.join(dirOf(film.id), `${s.id}-start.png`));
+    } else {
+      if (!fs.existsSync(stillFile(s.from))) { console.warn(`[cut] ${s.id}: its picture ${s.from} is not drawn (run stills)`); break; }
+      start = still169(s.from);
+    }
+    try {
+      await makeClip({
+        slug: `cut-${film.id}-${s.id}`, stillFile: start, out, models: [VIDEO_MODEL], prompt: clipPrompt(film, i),
+        seconds: words ? secsFor(words) : s.secs ?? 6, loop: false, raw: true, resolution: '720p', aspect: '16:9', audio: true,
+      });
+    } catch (e) { console.warn(`[cut] clip ${s.id} failed: ${(e as Error).message.slice(0, 300)}; stopping here`); break; }
+    fs.writeFileSync(out.replace(/\.mp4$/, '.txt'), `${words}\n---\n${clipPrompt(film, i)}\n`);
+    made++;
+    if (words) {
+      const h = await hear(out).catch(() => ({ text: '' } as Heard));
+      const hz = Math.round(pitchOf(out));
+      console.log(`[cut] ${s.id} ${whoOf(film, s)}: heard ${Math.round(heard(words, h.text) * 100)}% at ${hz} Hz: "${h.text}"`);
+    }
   }
+  console.log(`[cut] ${film.id}: ${made} clips made on ${VIDEO_MODEL}`);
 }
 
-/** Move a clip aside (v1/, v2/ ...) so that `clips` makes it again. */
+/** Move a clip aside (v1/, v2/ ...), and every clip that went on from it (their first frames came from it), so that `clips` makes them again. */
 function redo(film: Film) {
-  for (const s of film.shots) {
-    if (!only.includes(s.id)) continue;
+  const from = film.shots.findIndex((s) => only.includes(s.id));
+  if (from < 0) { console.warn('[cut] redo: name a shot of the film'); return; }
+  let to = from;
+  while (film.shots[to + 1]?.from === '^') to++;
+  let n = 1;
+  while (fs.existsSync(path.join(dirOf(film.id), `v${n}`))) n++;
+  fs.mkdirSync(path.join(dirOf(film.id), `v${n}`), { recursive: true });
+  for (let i = from; i <= to; i++) {
+    const s = film.shots[i];
     const f = clipFile(film.id, s.id);
-    if (!fs.existsSync(f)) continue;
-    let n = 1;
-    while (fs.existsSync(path.join(dirOf(film.id), `v${n}`, `${s.id}.mp4`))) n++;
-    fs.mkdirSync(path.join(dirOf(film.id), `v${n}`), { recursive: true });
-    for (const ext of ['.mp4', '.json', '.txt']) if (fs.existsSync(f.replace(/\.mp4$/, ext))) fs.renameSync(f.replace(/\.mp4$/, ext), path.join(dirOf(film.id), `v${n}`, `${s.id}${ext}`));
-    console.log(`[cut] ${film.id}/${s.id} → v${n}/`);
+    for (const g of [f, f.replace(/\.mp4$/, '.json'), f.replace(/\.mp4$/, '.txt'), cutFile(film.id, s.id), path.join(dirOf(film.id), `${s.id}-start.png`)]) {
+      if (fs.existsSync(g)) fs.renameSync(g, path.join(dirOf(film.id), `v${n}`, path.basename(g)));
+    }
   }
+  console.log(`[cut] ${film.id}: ${film.shots.slice(from, to + 1).map((s) => s.id).join(' ')} → v${n}/`);
 }
 
 // ------------------------------------------------------------------ check: the words, and the voices
@@ -311,7 +417,9 @@ async function check(film: Film): Promise<Row[]> {
     for (const r of rows.filter((x) => x.who === who && x.pitch > 0)) r.off = med ? +((r.pitch - med) / med).toFixed(2) : 0;
   }
   for (const r of rows) {
-    const flags = [r.line && r.heard < 0.85 ? 'WORDS' : '', r.line && r.extra > 0.25 ? 'EXTRA' : '', !r.line && r.said ? 'SPEAKS' : '', Math.abs(r.off ?? 0) > 0.2 ? 'VOICE' : ''].filter(Boolean);
+    // He is seen from behind: a line of his said by the wrong mouth comes out in the other's voice (a woman's, far above his).
+    const notHim = r.who === 'You' && r.pitch > 175;
+    const flags = [r.line && r.heard < 0.85 ? 'WORDS' : '', r.line && r.extra > 0.25 ? 'EXTRA' : '', !r.line && r.said ? 'SPEAKS' : '', Math.abs(r.off ?? 0) > 0.2 ? 'VOICE' : '', notHim ? 'NOT-HIS-VOICE' : ''].filter(Boolean);
     if (flags.length) r.flag = flags.join('+');
     console.log(`${(r.flag ?? 'ok').padEnd(12)} ${r.id.padEnd(6)} ${(r.who || '-').padEnd(12)} ${String(Math.round(r.heard * 100)).padStart(3)}%  ${String(r.pitch).padStart(3)} Hz ${r.off !== undefined ? `${r.off > 0 ? '+' : ''}${Math.round(r.off * 100)}%` : ''}  said: ${r.said}`);
   }
@@ -343,24 +451,37 @@ function bake(film: Film) {
   film.shots.forEach((s, i) => {
     const src = clipFile(film.id, s.id);
     const d = duration(src);
+    const frames = Math.max(2, Math.round(d * FPS));
     const words = wordsOf(film, s);
-    let a = 0.08, b = d;
-    if (words) {
-      // Cut to the words: a beat before them, and a beat after (longer when the next shot goes on from this one's last frame).
-      // By the transcript's own word times (a room that claps or murmurs fools a loudness threshold); by loudness when it was not heard.
-      // The start is the earlier of the two (the transcript drops an "um"; the loudness does not).
-      const ws = wordSpan(src);
-      const es = speechSpan(src);
-      const sp = ws ? { start: es ? Math.min(ws.start, es.start) : ws.start, end: ws.end } : es;
-      const next = film.shots[i + 1];
-      if (sp) { a = Math.max(0.08, sp.start - 0.3); b = next?.from === '^' ? d : Math.min(d, sp.end + 0.45); }
-      if (b - a < 1.4) { a = Math.max(0.08, Math.min(a, d - 1.4)); b = Math.min(d, a + 1.4); }
-    }
+    const next = film.shots[i + 1];
+    const ws = wordSpan(src);
+    const es = words ? speechSpan(src) : null;
+    // The head: a shot that goes on from the one before it starts on its first frame (the frame that one was cut on);
+    // the first shot of a place starts a beat before its words (the transcript drops an "um"; the loudness does not).
+    let fa = 0;
+    if (s.from !== '^') fa = words && ws ? Math.max(2, Math.round((Math.min(ws.start, es?.start ?? ws.start) - 0.3) * FPS)) : 2;
+    // The tail: cut where the next shot was started from; the last shot of a place a beat after its words; the film's
+    // last shot keeps a little longer, to end on.
+    let fb = frames;
+    const side = cutFile(film.id, s.id);
+    let cutAt: Cut | null = null;
+    if (next?.from === '^') { if (fs.existsSync(side)) { cutAt = JSON.parse(fs.readFileSync(side, 'utf8')) as Cut; fb = cutAt.frame; } }
+    else if (words && ws) fb = Math.min(frames, Math.round((ws.end + (next ? 0.5 : 1.6)) * FPS));
+    if (fb - fa < 12) fb = Math.min(frames, fa + 12);
+    // The colour held: the correction measured at this clip's cut (at its last frame used, when nothing goes on from it),
+    // rising from none at the clip's first frame to all of it there.
+    const at = cutAt?.frame ?? Math.max(1, fb - 1);
+    const fix = cutAt?.fix ?? fixAt(film, i, at);
+    const a = fa / FPS, b = fb / FPS;
     const part = path.join(tmp, `${String(i).padStart(2, '0')}-${s.id}.mp4`);
     const ln = loudnorm(src, a, b, words ? -16 : -24);
     const len = b - a;
-    const af = [ln, `afade=t=in:d=0.04`, `afade=t=out:st=${Math.max(0, len - 0.06).toFixed(3)}:d=0.06`].filter(Boolean).join(',');
-    ff(['-ss', a.toFixed(3), '-to', b.toFixed(3), '-i', src, '-vf', 'scale=1280:720,fps=24,format=yuv420p', '-af', `${af},aresample=48000`, '-ac', '2',
+    const af = [`atrim=start=${a.toFixed(4)}:end=${b.toFixed(4)}`, 'asetpts=PTS-STARTPTS', ln, 'afade=t=in:d=0.03', `afade=t=out:st=${Math.max(0, len - 0.05).toFixed(3)}:d=0.05`].filter(Boolean).join(',');
+    const rise = `min(1\\,(T+${(fa / FPS).toFixed(4)})/${(at / FPS).toFixed(4)})`;
+    ff(['-i', src, '-filter_complex',
+      `[0:v]trim=start_frame=${fa}:end_frame=${fb},setpts=PTS-STARTPTS,format=gbrp,split[plain][tofix];[tofix]${lut(fix)}[fixed];`
+      + `[plain][fixed]blend=all_expr='A*(1-${rise})+B*${rise}',scale=1280:720,fps=${FPS},format=yuv420p[v]`,
+      '-map', '[v]', '-map', '0:a', '-af', `${af},aresample=48000`, '-ac', '2',
       '-c:v', 'libx264', '-preset', 'slow', '-crf', '20', '-c:a', 'aac', '-b:a', '160k', '-video_track_timescale', '12288', part], `part ${s.id}`);
     const real = duration(part);
     cues.push({ shot: s.id, ...(words ? { line: s.line, who: whoOf(film, s), text: words } : {}), t0: +t.toFixed(3), t1: +(t + real).toFixed(3) });
@@ -421,6 +542,34 @@ function sheet(film: Film) {
   console.log(`[cut] sheet: ${out} (rows, top to bottom then the second column: ${film.shots.filter((s) => fs.existsSync(clipFile(film.id, s.id))).map((s) => s.id).join(' ')})`);
 }
 
+/**
+ * A baked film put where Collins looks (his Desktop): the film as the game plays it, a copy with the words burned in
+ * (the game sets them in type; a player outside the game does not), and the sheet of its shots.
+ */
+function desk(film: Film) {
+  const src = path.join(OUT, `${film.id}.mp4`);
+  const manFile = path.join(OUT, 'scenes.json');
+  if (!fs.existsSync(src) || !fs.existsSync(manFile)) { console.warn(`[cut] ${film.id} is not baked`); return; }
+  const cues = (JSON.parse(fs.readFileSync(manFile, 'utf8')).films[film.id]?.cues ?? []) as Cue[];
+  const ts = (x: number) => `${String(Math.floor(x / 3600)).padStart(2, '0')}:${String(Math.floor((x % 3600) / 60)).padStart(2, '0')}:${String(Math.floor(x % 60)).padStart(2, '0')},${String(Math.round((x % 1) * 1000)).padStart(3, '0')}`;
+  const NL = String.fromCharCode(10);
+  const srt = cues.filter((c) => c.text).map((c, i) => [String(i + 1), `${ts(c.t0 + 0.05)} --> ${ts(c.t1 - 0.05)}`, `${(c.who === 'You' ? 'YOU' : (c.who ?? '').toUpperCase())}: ${c.text}`, ''].join(NL)).join(NL);
+  fs.mkdirSync(dirOf(film.id), { recursive: true });
+  fs.writeFileSync(path.join(dirOf(film.id), 'film.srt'), srt);
+  const dir = path.join(os.homedir(), 'Desktop', 'Broodfall cut scenes');
+  fs.mkdirSync(dir, { recursive: true });
+  const who = { delegation: 'Delegation', faithful: 'Faithful', institute: 'Institute' }[film.faction];
+  const name = `${String(FILMS.indexOf(film) + 1).padStart(2, '0')} ${who} - ${sceneOf(film).title.replace(/[^A-Za-z0-9 ,']/g, '')}`;
+  fs.copyFileSync(src, path.join(dir, `${name}.mp4`));
+  // The subtitles filter takes a path relative to where ffmpeg runs (a drive letter's colon breaks its option syntax).
+  const r = spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-i', src, '-vf', "subtitles=film.srt:force_style='FontName=Georgia,FontSize=20,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,BorderStyle=1,Outline=2,Shadow=1,MarginV=28'",
+    '-c:v', 'libx264', '-preset', 'medium', '-crf', '20', '-c:a', 'copy', '-movflags', '+faststart', path.join(dir, `${name} (with the words).mp4`)], { cwd: dirOf(film.id), encoding: 'utf8' });
+  if (r.status !== 0) console.warn(`[cut] the copy with the words failed: ${(r.stderr || '').slice(0, 300)}`);
+  const sheetFile = path.join(REVIEW, film.id, 'sheet.jpg');
+  if (fs.existsSync(sheetFile)) fs.copyFileSync(sheetFile, path.join(dir, `${name} - every shot.jpg`));
+  console.log(`[cut] on the Desktop: ${path.join(dir, name)}.mp4 (and "with the words", and "every shot")`);
+}
+
 function list() {
   for (const f of FILMS) {
     const st = stillsOf(f);
@@ -446,6 +595,7 @@ if (!process.env.VITEST) {
     else if (step === 'check') await check(film);
     else if (step === 'bake') bake(film);
     else if (step === 'sheet') sheet(film);
+    else if (step === 'desk') desk(film);
     else if (step === 'review') review(film);
     else if (step === 'prompts') film.shots.forEach((s, i) => console.log(`--- ${s.id}\n${clipPrompt(film, i)}\n`));
     else if (step === 'stillprompts') stillsOf(film).forEach((id) => console.log(`--- ${id} [${STILLS[id].refs.join(', ')}]\n${stillPrompt(id)}\n`));

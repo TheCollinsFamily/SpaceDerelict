@@ -833,7 +833,11 @@ export type SimEvent =
   | { kind: 'shelter-grew'; shelterId: number; stage: number }
   | { kind: 'shelter-lost'; shelterId: number }
   /** A wave cleared with infested shelters protected: the meat they added (pct: the total boost). */
-  | { kind: 'shelter-paid'; war: number; science: number; pct: number }
+  | { kind: 'shelter-paid'; war: number; science: number; pct: number; ration?: number }
+  /** The last mission: the shelter that stands by the body from the start (`taken`: it is yours already). */
+  | { kind: 'shelter-start'; shelterId: number; taken: boolean }
+  /** The last mission: the war caste has arrived (the countdown is over). */
+  | { kind: 'host-arrived' }
   /** A Broodmother lost the creep under her: she can brood only on creep, so she is in fight mode now. */
   | { kind: 'mother-off-creep'; motherId: number }
   | { kind: 'mother-lost'; denId: number; motherId: number }
@@ -842,7 +846,7 @@ export type SimEvent =
   | { kind: 'kill'; enemy: EnemyKind; caste: Caste }
   | { kind: 'banked'; caste: Caste; amount: number }
   | { kind: 'digested'; corpse: number; pos: Vec; meat: Record<Caste, number>; bodies: number }
-  | { kind: 'wave-start'; tier: number; wave: number; counts: Partial<Record<EnemyKind, number>>; sides: string; risk: number }
+  | { kind: 'wave-start'; tier: number; wave: number; counts: Partial<Record<EnemyKind, number>>; sides: string; risk: number; /** The last mission: a wave of the court and the science caste alone; the turns left before the Host after it. */ court?: boolean; hostIn?: number }
   | { kind: 'meat-stolen'; amount: number }
   | { kind: 'meat-recovered'; amount: number }
   | { kind: 'tower-stolen'; family: TowerFamily }
@@ -987,6 +991,24 @@ export interface SimConfig {
   coreLevel?: number;
   /** ONE siege only: as big as this wave of a full deployment, at least this tier, after this long to re-arm (a defence). */
   oneWave?: { asWave: number; minTier: number; armSeconds?: number; lanes?: number; creepPx?: number };
+  // ---- the last mission (content/campaign.ts LAST_MISSION; DESIGN.md "THE LAST MISSION") ----
+  /**
+   * THE HOST IS LATE (Collins, Oct 4 2026: "it starts with a turn count down timer until the military arrives; until
+   * then it's only science and royals"). For the first `turns` waves no war body comes: each of those waves is the
+   * science caste and the court alone (content/data.ts COURT_WAVES). From the wave after, the war caste comes, at
+   * `minTier` of the wave table at least.
+   */
+  lateHost?: { turns: number; minTier: number };
+  /**
+   * A shelter stands from the start in the district nearest the body (Collins, Oct 4 2026: "you will have to start them
+   * with a shelter every time on this map"). 'infested': it is the asset's already, at stage 1.
+   */
+  startShelter?: 'intact' | 'infested';
+  /**
+   * War meat an infested shelter gives at every wave clear it was protected through, by its stage: the people inside it
+   * ("otherwise there will be no way to get the basic meat they need to build any limbs"). Unset: none (every other run).
+   */
+  shelterRation?: readonly number[];
 }
 
 /**

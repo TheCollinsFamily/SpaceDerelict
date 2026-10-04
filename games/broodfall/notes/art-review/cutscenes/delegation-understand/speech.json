@@ -6,7 +6,7 @@
   "extra": 0,
   "said": "",
   "line": "",
-  "secs": 6.02,
+  "secs": 4.01,
   "pitch": 0
  },
  {
@@ -14,11 +14,12 @@
   "who": "Delegate",
   "heard": 1,
   "extra": 0,
-  "said": "Visitor. Welcome. Welcome. We are so happy you came. Please, there are snacks.",
-  "line": "Visitor! Welcome, welcome. We are so happy you came. Please, there are snacks.",
-  "secs": 8,
-  "pitch": 211,
-  "off": 0.03
+  "said": "Visitor, welcome. Welcome. We are so happy you came.",
+  "line": "Visitor! Welcome, welcome. We are so happy you came.",
+  "secs": 6.02,
+  "pitch": 271,
+  "off": 0.25,
+  "flag": "VOICE"
  },
  {
   "id": "l01",
@@ -28,8 +29,8 @@
   "said": "You are happy to see me. Why?",
   "line": "You are happy to see me. Why?",
   "secs": 6.02,
-  "pitch": 125,
-  "off": 0.03
+  "pitch": 113,
+  "off": -0.12
  },
  {
   "id": "l02",
@@ -39,8 +40,8 @@
   "said": "A species that has come as far as yours in technology has obviously evolved past cruelty and violence.",
   "line": "A species that has come as far as yours in technology has obviously evolved past cruelty and violence.",
   "secs": 8,
-  "pitch": 178,
-  "off": -0.13
+  "pitch": 176,
+  "off": -0.19
  },
  {
   "id": "l03",
@@ -50,8 +51,8 @@
   "said": "Why would you think that?",
   "line": "Um. Why would you think that?",
   "secs": 6.02,
-  "pitch": 112,
-  "off": -0.07,
+  "pitch": 147,
+  "off": 0.14,
   "flag": "WORDS"
  },
  {
@@ -62,19 +63,19 @@
   "said": "On our planet, technological and moral advancement have almost always gone hand in hand. Was it not the same on yours?",
   "line": "On our planet, technological and moral advancement have almost always gone hand in hand. Was it not the same on yours?",
   "secs": 8,
-  "pitch": 205,
-  "off": 0
+  "pitch": 193,
+  "off": -0.11
  },
  {
   "id": "l05",
   "who": "You",
   "heard": 1,
   "extra": 0,
-  "said": "I don't see why the two would be inherently linked. But yes, we had that pattern on our home planet as well.",
+  "said": "I don't see why the two would be inherently linked. But, yes, we had that pattern on our home planet as well.",
   "line": "I don't see why the two would be inherently linked. But yes, we had that pattern on our home planet as well.",
   "secs": 8,
-  "pitch": 118,
-  "off": -0.02
+  "pitch": 120,
+  "off": -0.07
  },
  {
   "id": "l06",
@@ -84,8 +85,9 @@
   "said": "Well, I guess technological advancement is the physical manifestation of a civilization that has the environment for encouraging ordered thought.",
   "line": "Well. I guess technological advancement is the physical manifestation of a civilisation that has the environment for encouraging ordered thought.",
   "secs": 8,
-  "pitch": 119,
-  "off": -0.02
+  "pitch": 99,
+  "off": -0.23,
+  "flag": "VOICE"
  },
  {
   "id": "l07",
@@ -95,7 +97,7 @@
   "said": "That would likely correlate with moral development as well. So the link isn't crazy.",
   "line": "That would likely correlate with moral development as well. So the link isn't crazy.",
   "secs": 8,
-  "pitch": 121,
+  "pitch": 129,
   "off": 0
  },
  {
@@ -106,8 +108,8 @@
   "said": "Yes. Yes. Exactly. That is exactly it.",
   "line": "Yes! Exactly! That is exactly it!",
   "secs": 6.02,
-  "pitch": 246,
-  "off": 0.2
+  "pitch": 225,
+  "off": 0.04
  },
  {
   "id": "l09",
@@ -117,8 +119,8 @@
   "said": "So, how can you help?",
   "line": "So. How can you help?",
   "secs": 4.01,
-  "pitch": 145,
-  "off": 0.2
+  "pitch": 139,
+  "off": 0.08
  },
  {
   "id": "l10",
@@ -128,8 +130,8 @@
   "said": "We have sympathizers all around the world. We can sabotage the supply lines.",
   "line": "We have sympathisers all around the world. We can sabotage the supply lines.",
   "secs": 8,
-  "pitch": 195,
-  "off": -0.05
+  "pitch": 216,
+  "off": 0
  },
  {
   "id": "l11",
@@ -140,16 +142,6 @@
   "line": "Before each of your missions, name one kind of unit. It will not arrive.",
   "secs": 8,
   "pitch": 203,
-  "off": -0.01
- },
- {
-  "id": "end",
-  "who": "",
-  "heard": 1,
-  "extra": 0,
-  "said": "",
-  "line": "",
-  "secs": 6.02,
-  "pitch": 0
+  "off": -0.06
  }
 ]

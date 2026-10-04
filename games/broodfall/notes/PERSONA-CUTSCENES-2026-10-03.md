@@ -56,3 +56,17 @@ Run as part of `tools/shot-cutscenes.mjs` (the last sixteen checks):
   until he sides, and siding is exclusive (`tests/campaign.test.ts`).
 - NOT TRIED: a film playing when the tab is hidden and shown again; a phone-sized window; Reduce motion (the film has no
   motion setting: it is a film).
+
+## Oct 4 2026: Collins watched the first film, and it was remade
+
+His verdict on the film the passes above were made with: "this video needs to be rethought". The cutting between a
+shot of him and a shot of her was the fault ("too much jumpiness and character inconsistency"); he wants him seen from
+behind, every clip started from the frame the last one ended on, his feelings in his voice, and the snacks line out.
+
+What the genre-veteran pass above got WRONG: it marked "the speaker looks at you and talks to you ... he is cut to for
+each answer" as a YES. Shot / reverse-shot is a convention of films shot with one actor and one camera; here every cut
+to a new picture is a new drawing of the same person, and a cut back to him is a third. The convention that holds for
+generated clips is the opposite one: ONE picture per place, and one take from it. It is now a rule of
+`content/cutscenes.ts` and a test (`tests/cutscenes.test.ts`).
+
+The remade film is one take over his shoulder. Looked at one frame a second, clip by clip, before it was joined.

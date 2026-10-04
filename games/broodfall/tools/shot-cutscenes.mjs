@@ -132,13 +132,14 @@ try {
   await page.evaluate(() => localStorage.setItem('broodfall-media-auto', 'on'));
   await page.locator('.cp-signals [data-meet="delegation"]').click();
   await page.waitForSelector('#newsreel.cs-film video', { timeout: 15000 });
-  await page.waitForFunction(() => { const v = document.querySelector('#newsreel.cs-film video'); return v && v.currentTime > 7.5; }, null, { timeout: 40000 });
+  // (By the line itself, not by the clock: the film's timing changes when it is made again.)
+  await page.waitForFunction(() => { const s = document.querySelector('.cs-sub'); return s?.classList.contains('on') && /Welcome, welcome/.test(s.innerText); }, null, { timeout: 40000 });
   const st = await page.evaluate(() => { const v = document.querySelector('#newsreel.cs-film video'); return { t: v.currentTime, muted: v.muted, paused: v.paused, w: v.videoWidth, film: document.querySelector('#newsreel').dataset.film, sub: document.querySelector('.cs-sub')?.innerText ?? '', on: document.querySelector('.cs-sub')?.classList.contains('on') }; });
   check(st.film === 'delegation-understand' && st.w === 1280 && !st.paused, `the film plays full screen: ${st.film}, ${st.w} px wide, at ${st.t.toFixed(1)} s`);
   check(!st.muted, 'with its sound (not muted)');
   check(st.on && /DELEGATE/i.test(st.sub) && /Welcome, welcome/.test(st.sub), `the line being said is set in type under it: "${brief(st.sub)}"`);
   await shot(page, '3-film-delegate');
-  await page.waitForFunction(() => document.querySelector('#newsreel.cs-film video')?.currentTime > 15, null, { timeout: 30000 });
+  await page.waitForFunction(() => /You are happy to see me/.test(document.querySelector('.cs-sub')?.innerText ?? ''), null, { timeout: 30000 });
   const sub2 = await page.locator('.cs-sub').innerText();
   check(/YOU/i.test(sub2) && /You are happy to see me\. Why\?/.test(sub2), `and his answer after it: "${brief(sub2)}"`);
   await shot(page, '4-film-you');

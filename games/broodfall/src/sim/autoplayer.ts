@@ -279,7 +279,11 @@ export class Autoplayer {
     if (sim.meat.royal >= 1 + (this.stage3Ready(sim) ? 1 : 0)) this.spendRoyal(sim);
 
     // The organ stage (between waves): unlock themes, then spend what the wave would clear.
-    if (sim.cfg.organStage && organTurn(sim)) return;
+    // The last mission while the Host is late (cfg.lateHost): war meat is scarce (the shelter's ration and the clearing
+    // wage: no body pays any), so limbs come before organs: an organ is grown only when no limb in hand can be paid for.
+    const scarce = (sim.hostTurnsLeft ?? 0) > 0 && sim.phaseElapsed < sim.growthLength - 4
+      && sim.hand.some((c) => !towerSpec(c.family).engine && sim.canAfford(towerSpec(c.family).cost));
+    if (sim.cfg.organStage && !scarce && organTurn(sim)) return;
     if (placeNode(sim)) return;
     if (placePlinth(sim)) return;
 

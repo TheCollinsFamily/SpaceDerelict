@@ -11,7 +11,7 @@ import { Rng } from '../sim/rng';
 import type { EnemyKind, OrganId, SimConfig, TowerFamily } from '../sim/types';
 import {
   DARES, EXPERIMENTS, FACTIONS, HOME, LICENCE_STANDING, LINEAGES, LOGS_LOST, LOGS_WON, PROFILES,
-  REQUISITIONS, TERRITORIES, BOARD_LETTERS, MIDPOINT_CAPTURES, SWITCH_HEAD_START,
+  REQUISITIONS, TERRITORIES, BOARD_LETTERS, MIDPOINT_CAPTURES, SWITCH_HEAD_START, LAST_MISSION,
   type BeatDef, type ExperimentDef, type FactionDef, type FactionId, type PerkId, type Scene, type TerritoryDef,
 } from '../../content/campaign';
 import { evaluate, instance, type GoalInstance, type GoalResult, type RunReport } from './goals';
@@ -62,6 +62,13 @@ export interface CampaignState {
   choices: Record<string, string>;
   experimentsDone: string[];
   daresDone: string[];
+  /**
+   * The ally whose FINALE has been played (its last landing taken, the creep reaching them, the archive): from then on
+   * the only landing left is the last mission, against the Roach King (content/campaign.ts LAST_MISSION). None on saves
+   * from before Oct 4 2026; one of those that had `ended` at the finale is given the last mission (`migrateFinale`).
+   */
+  finale?: FactionId | null;
+  /** The campaign is over: the last mission is won (the route it was won on). */
   ended: FactionId | null;
   licence: boolean;
   /** Everything the ally has sent between beats, oldest first (optional: older saves have none). */
@@ -143,9 +150,12 @@ export function evolutionCaps(s: CampaignState): Record<string, number> {
 /** Where you can land now: next to what you hold (anywhere with Seed Labs), your faction's finale at the end of its route. */
 export function targets(s: CampaignState): TerritoryDef[] {
   if (s.ended) return [];
+  // After the ally's finale there is one landing left: the last mission (Collins: "each of their finales takes place
+  // before the last mission against the roach king").
+  if (s.finale) return TERRITORIES.filter((t) => t.last && !s.held.includes(t.id));
   const seed = perksOf(s).includes('seedlabs');
   return TERRITORIES.filter((t) => {
-    if (s.held.includes(t.id)) return false;
+    if (s.held.includes(t.id) || t.last) return false;
     if (t.hidden && !s.revealed.includes(t.id)) return false;
     if (t.finaleOf) {
       if (t.finaleOf !== s.faction) return false;
@@ -224,6 +234,12 @@ export function plan(s: CampaignState, territoryId: string, opts: { dares?: stri
     ...(first ? { firstHand: ['spitter', 'lasher'] as TowerFamily[] } : {}),
     // A defence (src/meta/defence.ts): one all-out siege, a grown core, a full larder, the board won there.
     ...(defence ? { ...defenceConfig(s, territoryId), startBonus: defenceMeat(bonus) } : {}),
+    // The last mission (content/campaign.ts LAST_MISSION): the Host is late, and a shelter by the body is his from the start.
+    ...(t.last && !defence ? {
+      lateHost: { turns: LAST_MISSION.turns, minTier: LAST_MISSION.minTier },
+      startShelter: 'infested' as const,
+      shelterRation: LAST_MISSION.ration,
+    } : {}),
   };
   const dares = (opts.dares ?? []).slice(0, 2).map((id) => DARES.find((d) => d.id === id)!).filter(Boolean).map((d) => instance(d, t.tier));
   // Mission 1 carries no forms, no dares and no experiment: it is only a game of tower defence.
@@ -370,7 +386,7 @@ export function finish(prev: CampaignState, p: DeploymentPlan, r: RunReport): { 
   // The colony pushes back after you take new ground: it MASSES first, on ground next to one of your
   // territories, drawn on the globe a whole deployment ahead (src/meta/defence.ts; Collins, Oct 1 2026).
   let staged: CounterAttack | null = null;
-  if (captured && !s.underAttack && !s.staging && !preempted && s.captures >= 2 && !s.ended) {
+  if (captured && !s.underAttack && !s.staging && !preempted && s.captures >= 2 && !s.ended && !s.finale && !t.finaleOf) {
     const next = stageCounterAttack(s, captured, rng);
     if (next) {
       if (perksOf(s).includes('garrison')) s.log.push(`The Faithful's militants held ${territory(next.target).name} against a counter-attack.`);
@@ -399,17 +415,19 @@ export function finish(prev: CampaignState, p: DeploymentPlan, r: RunReport): { 
       s.pendingScenes.push({ faction: f.id, beat: b.id, scene: b.scene, choice: b.choice });
       if (b.id === 'reveal' || b.id === 'ultimatum' || b.id === 'prepare') s.ai.queue = queueDiscussion(s.ai.queue, 'midpoint', s.ai.seen);
     }
-    // Between beats the ally keeps in touch: a letter, a broadcast, a call.
-    if (!s.ended && f.asides.length) {
+    // Between beats the ally keeps in touch: a letter, a broadcast, a call (until its finale: it is in the archive then).
+    if (!s.ended && !s.finale && !(captured && t.finaleOf === f.id) && f.asides.length) {
       s.comms = s.comms ?? [];
       aside = f.asides[asideIndex(s.seed, f.id, s.comms.length, f.asides.length)];
       s.comms.push(aside);
     }
     if (captured && t.finaleOf === f.id) {
-      s.ended = f.id;
       // The finale (Collins, Oct 3 2026): the creep reaches them, they wake in the archive, and he tells them what a
-      // broodfall is. It is the ending and the reveal (DESIGN.md "The reveal") in one scene.
+      // broodfall is. It is the ally's ending and the reveal (DESIGN.md "The reveal") in one scene, and it comes BEFORE
+      // the last mission against the Roach King, which is the only landing left from here.
+      s.finale = f.id;
       s.pendingScenes.push({ faction: f.id, scene: f.ending });
+      s.log.push('One landing is left: the Hive House. The President is giving a speech there.');
       // The ally he left at the midpoint writes once more.
       if (s.midpoint?.status === 'switched' && s.midpoint.from) {
         s.pendingScenes.push({ faction: s.midpoint.from, scene: faction(s.midpoint.from).midpoint.coda });
@@ -417,7 +435,7 @@ export function finish(prev: CampaignState, p: DeploymentPlan, r: RunReport): { 
       s.ai.queue = queueDiscussion(s.ai.queue, 'ending', s.ai.seen);
     }
     // The midpoint: the two other factions make their offers (once a campaign).
-    if (!s.ended && !s.midpoint && s.captures - s.factionSince >= MIDPOINT_CAPTURES) {
+    if (!s.ended && !s.finale && !s.midpoint && s.captures - s.factionSince >= MIDPOINT_CAPTURES) {
       s.midpoint = { status: 'offered', at: s.captures };
       for (const rival of FACTIONS.filter((x) => x.id !== f.id)) {
         const scene = rival.midpoint.offers[f.id];
@@ -427,6 +445,12 @@ export function finish(prev: CampaignState, p: DeploymentPlan, r: RunReport): { 
       }
       s.log.push(`The other two factions have made offers. ${f.name} does not know yet.`);
     }
+  }
+
+  // The last mission won: the campaign is over, on the route whose finale came before it.
+  if (captured && t.last) {
+    s.ended = s.finale ?? s.faction;
+    s.log.push('The Hive House is quiet. So is the planet.');
   }
 
   // Command's standing orders and his own notebook (src/meta/directives.ts, src/meta/hobby.ts).
@@ -460,6 +484,18 @@ export function finish(prev: CampaignState, p: DeploymentPlan, r: RunReport): { 
   };
   s.greet = momentAfter(prev, s, debrief, false);
   return { state: s, debrief };
+}
+
+/**
+ * A save from before the last mission existed (Oct 4 2026) ended at its ally's finale: it is given the last mission
+ * instead of the end (nothing it had is lost: the finale stays seen). The browser's loader calls this.
+ */
+export function migrateFinale(s: CampaignState): CampaignState {
+  if (s.ended && s.finale === undefined && !s.held.some((h) => TERRITORIES.find((t) => t.id === h)?.last)) {
+    s.finale = s.ended;
+    s.ended = null;
+  }
+  return s;
 }
 
 /** A faction's first interaction: the beat that plays before any territory is taken for it. */
@@ -586,6 +622,7 @@ export function summaryFor(s: CampaignState): string {
     ...(s.midpoint?.status === 'stayed' ? ['At the midpoint the other two factions made him offers; he stayed with his ally.'] : []),
     ...(s.midpoint?.status === 'offered' ? ['The other two factions have just made him offers; he has not answered yet.'] : []),
     ...(s.underAttack ? [`Under attack: ${territory(s.underAttack).name}.`] : []),
+    ...(s.finale && !s.ended ? [`${faction(s.finale).name} has had its finale: it is in the archive now. One landing is left, the Hive House, against the Roach King.`] : []),
     ...(s.ended ? [`The campaign has ended on the ${faction(s.ended).name} route.`] : []),
     ...(s.comms?.length ? [`Latest from the ally: ${s.comms[s.comms.length - 1]}`] : []),
     ...(s.log.length ? [`Last log: ${s.log[s.log.length - 1]}`] : []),
