@@ -9,7 +9,9 @@ balance is not judged here (a script kept the core alive to reach the Host): tha
 
 - **Do I know there is more?** The desk says ONE LANDING IS LEFT, names the Hive House and says it is the last mission;
   one marker on the planet is open, with a crown. PASS.
-  - OPEN: the Hive House has no picture on its briefing (every other landing has one).
+  - FOUND and FIXED (later the same day): the Hive House had no picture on its briefing (every other landing has one).
+    It has one now, in the capital's look (the President's house dressed for a parade, the parade ground empty), and
+    its loop; `tests/territoryPictures.test.ts` fails for any landing added without one.
 - **Do I know this mission is different before I am in it?** Its briefing has a gold box, THE LAST MISSION — THE HOST IS
   LATE: five turns, who comes until then, that the shelter is already mine and what it gives, and what happens after.
   PASS: three short paragraphs, the numbers in bold.
@@ -25,9 +27,14 @@ balance is not judged here (a script kept the core alive to reach the Host): tha
   - FOUND and FIXED: the countdown was cut off on the HUD ("THE HOST ARRIVE…") whenever the phase line beside it was
     long, which is every build phase. It is shorter now ("HOLD 9 WAVES · THE HOST IN 5 TURNS") and the beat checks it
     is not cut off.
-  - OPEN: nothing on the board points at the shelter. A newcomer who has never infested one has to find a building with
-    red tendrils among the district's landmarks. A marker over it for the first seconds would do it. Not built.
-  - OPEN: the start banner is long and scrolls; half of it is off the picture at any moment.
+  - FOUND and FIXED (later the same day): nothing on the board pointed at the shelter. A newcomer who has never infested
+    one had to find a building with red tendrils among the district's landmarks. The board now marks it until the first
+    wave is under way: a breathing ring round its lot and a chevron over its roof (`sim.openingShelter`,
+    `src/render/isoRender.ts` syncShelters; green when it is his, pale when it is theirs).
+  - FOUND and FIXED (later the same day): the start banner ran off both sides of the picture. It did not scroll: EVERY
+    banner was one line whatever its length (`white-space: nowrap`), so any long one was cut at both ends (a dozen
+    banners in `src/main.ts` are longer than the screen at 1280 wide). A banner now wraps onto a second line, balanced,
+    inside 94% of the picture, and stands as long as it takes to read (1.2 s + a twentieth of a second a letter, 2.6 to 7 s).
 
 ## Genre veteran (knows the campaign; has infested shelters)
 
@@ -42,7 +49,9 @@ balance is not judged here (a script kept the core alive to reach the Host): tha
   - OPEN: the win is a hold. After his speech a veteran expects the man himself on the field.
 - **The scripted player needed teaching** (it spent the ration on organs and stood with no limbs): a human who levels
   organs out of habit will do the same in turn one, and nothing warns him. The briefing says "it is your war meat
-  until the Host comes"; the organ stage does not repeat it. OPEN.
+  until the Host comes"; the organ stage did not repeat it. FIXED (later the same day): while the Host is late the
+  organ stage's note opens with "The Host is N turns away. Until it comes the shelter's ration is the only war meat you
+  get: leave enough of it for limbs." (`src/main.ts` openUnder).
 
 ## Breaker
 

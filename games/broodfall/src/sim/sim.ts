@@ -543,6 +543,17 @@ export class Sim {
     return !!l && n >= 1 && n <= l.turns;
   }
 
+  /**
+   * The shelter the opening points at: the one that stands from the start (cfg.startShelter), until the first wave is
+   * under way. The opening banner names it, and a player who has never infested one has to find it among the
+   * district's landmarks (persona notes, Oct 4 2026): the board marks it (src/render/isoRender.ts syncShelters).
+   */
+  get openingShelter(): Shelter | null {
+    if (!this.cfg.startShelter || this.waveNumber > 0) return null;
+    const sh = this.shelters[0];
+    return sh && sh.state !== 'ruin' ? sh : null;
+  }
+
   /** The last mission: turns left before the war caste arrives (0 once it is due); null in every other run. */
   get hostTurnsLeft(): number | null {
     const l = this.cfg.lateHost;

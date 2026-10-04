@@ -253,12 +253,34 @@ AND THE ROACH KING OFF THE AIR".
   `roachAfterDeployment` plays the briefing); `src/ui/campaignUi.ts` (`launch`: the last mission is launched through
   the two scenes; `lastMissionHtml` on its briefing; ONE LANDING IS LEFT; the ♛ on the planet); `src/ui/hud.ts` (the
   countdown in the order, short enough to be read whole); `src/main.ts` (banners).
-- **Tests:** `tests/lastMission.test.ts` (9), `tests/roachKing.test.ts` (5 more), `tests/cutscenes.test.ts` (19 films).
-  **Beat:** `node tools/shot-lastmission.mjs --build` (52 checks; `BEAT_TRACE=1` prints where it is: the briefing after a deployment; the desk, the
+- **Tests:** `tests/lastMission.test.ts` (10), `tests/territoryPictures.test.ts` (18), `tests/roachKing.test.ts` (5 more), `tests/cutscenes.test.ts` (19 films).
+  **Beat:** `node tools/shot-lastmission.mjs --build` (58 checks; `BEAT_TRACE=1` prints where it is: the briefing after a deployment; the desk, the
   briefing, the call, the address, the mission with its shelter, countdown, court waves, ration and the Host's arrival,
   the campaign complete; a second try goes straight in). **Measure:** `npx vite-node tools/measure/last-mission.measure.ts`.
+- **The small open items, closed later on Oct 4** (Collins: "do the stuff that needs doing"):
+  - *The Hive House has its picture and its loop.* `tools/art/templates/ship.mjs` TERRITORIES `hive-house` (the
+    President's house dressed for a parade, the parade ground empty), `tools/art/stills-alive.mjs` `territory:hive-house`.
+    The loop's first take tilted the camera up: its prompt asked for rolling clouds, of which the cut shows a sliver
+    (kept in `art-src/stills-alive/territory/v1/hive-house-clip-tilted.mp4`; maxStep 19.6 where the others are under 1.2).
+    The clouds are out of the prompt; the second take measures like the others.
+  - *A territory named by id is baked ON ITS OWN:* `node tools/art/make.mjs ship hive-house` (ship.mjs `bakeTerritories`).
+    The whole bake (`bakeShip`) builds the ship's entry again from every raw picture in `art-src/ship`, so in a worktree
+    that has none of them it would empty the entry. The raw pictures are in the MAIN checkout's `art-src`, so from a
+    worktree: `BROODFALL_ART_SRC="C:/Users/Merry/dev/space-derelict/games/broodfall/art-src" node tools/art/make.mjs ship <id>`
+    (the same for `stills-alive.mjs territory:<id>`).
+  - *`tests/territoryPictures.test.ts`* fails for any territory in `content/campaign.ts` without its picture and loop
+    (the Hive House was added without one and nothing said so).
+  - *Banners are read whole.* Every banner was one line whatever its length (`white-space: nowrap`), so a long one was
+    cut at both ends: twelve of the twenty in `src/main.ts` are longer than 1280 px holds. A banner now wraps inside 94%
+    of the picture, a long one (over 40 letters) is set smaller so it is two lines at most, a dash never starts a line,
+    and it stands 1.2 s + a twentieth of a second a letter (2.6 to 7 s). `src/main.ts` `banner`, `src/style.css`,
+    `src/hud/themes/ship.css` (`#banner.long`).
+  - *The board points at the shelter that stands from the start* until the first wave is under way: `sim.openingShelter`,
+    drawn in `src/render/isoRender.ts` `syncShelters` (a breathing ring round its lot, a chevron over its roof).
+  - *The organ stage says what the ration is for* while the Host is late (`src/main.ts` `openUnder`; `#under-note`).
+  - The beat is 58 checks now (`b7-start`, `b7b-organ-stage`, `b7c-shelter-marked`, `b2-brief-alive`).
 - **Not done:** the three films (the shot lists run: `npx vite-node tools/media/cutscenes.ts -- prompts rk-briefing`);
-  the Hive House has no picture on the desk and no landing film of its own (it takes the deep hive's tile set); the Roach
+  no landing film of its own for the Hive House (it takes the deep hive's tile set); the Roach
   King is not on the field; his profanity may be refused or mangled by the video model's voice (untested).
 
 ## The campaign (built Sep 28; audited against Collins's words the same day)

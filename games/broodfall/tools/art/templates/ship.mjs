@@ -14,6 +14,8 @@
  *   node tools/art/make.mjs ship rooms planet    some of it
  *   node tools/art/make.mjs ship scenes          every scene picture that is not on disk yet
  *   node tools/art/make.mjs ship territories     every territory picture that is not on disk yet (or name ids)
+ *   node tools/art/make.mjs ship hive-house      territories named by id only: drawn, and baked ON THEIR OWN (nothing
+ *                                                else of the ship is baked again, and no other raw picture is needed)
  *   node tools/art/make.mjs ship faithful-contact institute-ending     scene pictures by id
  *   node tools/art/make.mjs ship --bake          bake again from the pictures on disk (free)
  *
@@ -25,7 +27,7 @@ import path from 'node:path';
 import { makeStill, pool } from '../rfab.mjs';
 import { blank, crop, paste, readImage, resize, toWebp, writeJpg, writePng } from '../lib/img.mjs';
 import { cutGrid } from '../lib/sheet.mjs';
-import { ART, REVIEW, ROOT, SRC, putEntry } from '../lib/manifest.mjs';
+import { ART, REVIEW, ROOT, SRC, putEntry, readManifest } from '../lib/manifest.mjs';
 import { BIOMES, SPECIES } from '../biomes.mjs';
 
 const DIR = path.join(SRC, 'ship');
@@ -257,7 +259,7 @@ export const scenePrompt = (id) => {
  * header of its briefing. id = the territory's id in content/campaign.ts; each picture tells
  * that territory's `story`.
  *
- * All sixteen are ONE set: the same framing (from high in the air, a whole district to the
+ * All seventeen are ONE set: the same framing (from high in the air, a whole district to the
  * horizon, as an aircraft coming in to land sees it) and the same treatment as the scene stills
  * (a 1950s colour film opening on a matte painting). Each is built in the look of ITS tile set
  * (tools/art/biomes.mjs, `territories`): the set's review sheet (notes/art-review/biomes/<set>.jpg)
@@ -350,6 +352,12 @@ const TERRITORIES = {
   'glass-spires': {
     what: 'A forest of immensely tall spires of black glass and smoked resin in honeycomb frames, rising out of a megacity into a storm: the laboratories of their artificial intelligence. Thin lines of cyan and gold light run up every spire, rows of cooling towers and data halls glow cyan at their feet, lightning strikes the tallest spire. Far below, the streets are empty.',
     none: 'The neon and holograms show abstract glyphs only: no letters of any alphabet, no numerals.',
+    finale: true,
+  },
+  // THE LAST MISSION: the President's house in the capital, on Founding Day (content/campaign.ts LAST).
+  'hive-house': {
+    what: 'The house of a President on the national holiday of his country, in the middle of a great capital city: a huge pale mansion grown like a hive, with a wide round dome of layered wax and paper, a long colonnade of ribbed columns of amber comb and a broad flight of white steps, standing alone at the head of an immense round parade ground of pale polished wax. It is dressed for a parade: hundreds of plain pennants and long streamers of gold and amber cloth along every avenue and from every lamp post, garlands on the colonnade, a small stand for a speaker with a cluster of microphones at the top of the steps, a bandstand, and long neat blocks of empty chairs set out in front of the steps. The parade ground is EMPTY where an army should be standing: row upon row of white squares painted on the ground for the regiments, and nobody in them. A thin crowd of tiny figures waits behind rope barriers at the edges, and a few tiny figures stand on the steps looking up at an empty sky. Three wide avenues run away from the parade ground to the horizon, empty too. Round it stand the pale towers and great wax combs of the capital.',
+    none: `${DOMES} The pennants, streamers and garlands are plain gold and amber cloth with nothing on them. The one emblem on the house is a plain gold hexagon. The squares painted on the ground are plain white outlines with no lettering and no numbers. There is nothing in the sky: no aircraft, no balloons.`,
     finale: true,
   },
 };
@@ -486,6 +494,46 @@ function wrap(img, band = 0.06) {
   return out;
 }
 
+/** One territory picture, from its raw picture to the header of its briefing: its size on disk, or 0 when it is not drawn. */
+function bakeTerritory(id) {
+  const file = path.join(DIR, 'territories', `${id}.png`);
+  if (!fs.existsSync(file)) return 0;
+  return save(readImage(file, TERRITORY_SIZE), path.join(ART, 'ship', 'territories', `${id}.webp`), 84);
+}
+
+/** To look at: every territory picture on one sheet, in the order of the campaign (only when every drawn one is on disk here). */
+function territorySheet() {
+  const files = TERRITORY_IDS.map((id) => path.join(DIR, 'territories', `${id}.png`)).filter((f) => fs.existsSync(f));
+  if (!files.length) return;
+  const cols = 4;
+  const sheet = blank(cols * 512, Math.ceil(files.length / cols) * 341, [0, 0, 0, 255]);
+  files.forEach((f, i) => paste(sheet, resize(readImage(f, TERRITORY_SIZE), 512, 341), (i % cols) * 512, Math.floor(i / cols) * 341));
+  fs.mkdirSync(path.join(REVIEW, 'ship'), { recursive: true });
+  writeJpg(path.join(REVIEW, 'ship', 'territories.jpg'), sheet, 3);
+}
+
+/**
+ * Territory pictures by id, baked ON THEIR OWN: the rest of the ship's entry is kept as it is. The whole bake
+ * (bakeShip) builds the entry again from every raw picture of the ship, so where those are not on disk (a worktree,
+ * a second machine) it would empty the entry; this needs the named pictures only.
+ */
+export function bakeTerritories(ids) {
+  const entry = readManifest().ship?.ship;
+  if (!entry) throw new Error('[ship] no ship entry in the manifest yet: bake the whole ship first');
+  const have = { ...(entry.territories ?? {}) };
+  for (const id of ids) {
+    if (bakeTerritory(id)) have[id] = `ship/territories/${id}.webp`;
+    else console.warn(`[ship] territory ${id}: no picture on disk (${path.join(DIR, 'territories', `${id}.png`)})`);
+  }
+  // In the order of the campaign, as the whole bake writes them.
+  const territories = Object.fromEntries(TERRITORY_IDS.filter((id) => have[id]).map((id) => [id, have[id]]));
+  // The sheet shows them all: made again only where every one in the game has its raw picture here.
+  if (Object.keys(territories).every((id) => fs.existsSync(path.join(DIR, 'territories', `${id}.png`)))) territorySheet();
+  putEntry('ship', 'ship', { ...entry, territories });
+  console.log(`[ship] baked ${ids.join(', ')}: ${Object.keys(territories).length} of ${TERRITORY_IDS.length} territory pictures`);
+  return entry;
+}
+
 /** Rooms whose picture was corrected after approval (ship-loops.mjs `fix`): see bakeShip. */
 const CORRECTED = new Set(['comms']);
 
@@ -529,22 +577,13 @@ export function bakeShip() {
     writeJpg(path.join(REVIEW, 'ship', `scenes-${faction}.jpg`), sheet, 3);
   }
   // The territory pictures: the header of a briefing, 1024 wide.
-  const lands = [];
   for (const id of TERRITORY_IDS) {
-    const file = path.join(DIR, 'territories', `${id}.png`);
-    if (!fs.existsSync(file)) continue;
-    const img = readImage(file, TERRITORY_SIZE);
-    total += save(img, path.join(out, 'territories', `${id}.webp`), 84);
+    const size = bakeTerritory(id);
+    if (!size) continue;
+    total += size;
     (entry.territories ??= {})[id] = `ship/territories/${id}.webp`;
-    lands.push(resize(img, 512, 341));
   }
-  // To look at: all of them on one sheet, in the order of the campaign.
-  if (lands.length) {
-    const cols = 4;
-    const sheet = blank(cols * 512, Math.ceil(lands.length / cols) * 341, [0, 0, 0, 255]);
-    lands.forEach((img, i) => paste(sheet, img, (i % cols) * 512, Math.floor(i / cols) * 341));
-    writeJpg(path.join(REVIEW, 'ship', 'territories.jpg'), sheet, 3);
-  }
+  territorySheet();
   if (fs.existsSync(path.join(DIR, 'exterior.png'))) {
     total += save(readImage(path.join(DIR, 'exterior.png'), { w: 1536, h: 1024 }), path.join(out, 'exterior.webp'), 84);
     entry.exterior = 'ship/exterior.webp';
@@ -609,5 +648,7 @@ export function bakeShip() {
 export async function makeShip({ bakeOnly = false, only } = {}) {
   fs.mkdirSync(DIR, { recursive: true });
   if (!bakeOnly) await generate(only);
+  // Territories named by id are baked on their own: nothing else of the ship is touched.
+  if (only?.length && only.every((id) => TERRITORY_IDS.includes(id))) return bakeTerritories(only);
   return bakeShip();
 }

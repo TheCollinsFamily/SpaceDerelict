@@ -210,6 +210,13 @@
       "h": 496,
       "seconds": 4.292
     },
+    "territory:hive-house": {
+      "video": "alive/territory-hive-house.mp4",
+      "poster": "alive/territory-hive-house.webp",
+      "w": 864,
+      "h": 496,
+      "seconds": 4.417
+    },
     "territory:mirewater": {
       "video": "alive/territory-mirewater.mp4",
       "poster": "alive/territory-mirewater.webp",

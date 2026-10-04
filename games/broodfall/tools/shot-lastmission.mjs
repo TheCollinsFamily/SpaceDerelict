@@ -212,7 +212,35 @@ try {
     check(/5 turns/.test(brief) && /science caste/.test(brief) && /court/.test(brief), 'the countdown, and who comes until then');
     check(/shelter/i.test(brief) && /already yours/.test(brief) && /\+45 war meat/.test(brief), 'the shelter that is his from the start, and what it gives');
     check(/Hold for 9 waves/.test(brief), 'the order: hold for 9 waves');
+    // Its picture over the story, like every other landing (the still, or the loop the still is swapped for).
+    await page.waitForFunction(() => {
+      const pic = document.querySelector('.cp-brief .cp-territory-pic[data-territory="hive-house"]');
+      return !!pic && (pic instanceof HTMLVideoElement ? pic.readyState >= 2 : pic.complete && pic.naturalWidth > 0);
+    }, null, { timeout: 10000 }).catch(() => {});
+    const pic = await page.evaluate(() => {
+      const el = document.querySelector('.cp-brief .cp-territory-pic[data-territory="hive-house"]');
+      if (!el) return null;
+      const r = el.getBoundingClientRect();
+      const video = el instanceof HTMLVideoElement;
+      return { video, w: Math.round(r.width), h: Math.round(r.height), drawn: video ? el.readyState >= 2 && el.videoWidth > 0 : el.complete && el.naturalWidth > 0, src: (el.currentSrc || el.src || '').split('/').pop() };
+    });
+    check(!!pic && pic.drawn && pic.w > 200 && pic.h > 80, `its briefing has its picture (${pic ? `${pic.video ? 'loop' : 'still'} ${pic.src}, ${pic.w}x${pic.h}` : 'none'})`);
     await shot(page, 'b2-brief');
+    // And it comes alive. Under automation the loops play only when asked for (src/ui/alive.ts); the briefing is drawn
+    // again by picking the landing again, and put back to stills after, as the rest of the beat reads its screens.
+    const pickAgain = (alive) => page.evaluate((on) => {
+      if (on) localStorage.setItem('broodfall-alive', 'on'); else localStorage.removeItem('broodfall-alive');
+      document.querySelector('.globe .site[data-site="hive-house"]')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    }, alive);
+    await pickAgain(true);
+    const moving = await page.waitForFunction(() => {
+      const v = document.querySelector('.cp-brief video.cp-territory-pic[data-territory="hive-house"]');
+      return v instanceof HTMLVideoElement && !v.paused && v.currentTime > 0.3;
+    }, null, { timeout: 15000 }).then(() => true, () => false);
+    check(moving, 'and its picture comes alive (its loop plays over the briefing)');
+    await shot(page, 'b2-brief-alive');
+    await pickAgain(false);
+    await page.waitForSelector('.cp-brief img.cp-territory-pic[data-territory="hive-house"]', { timeout: 10000 }).catch(() => {});
     await page.locator('[data-act="deploy"]').click();
     // The Delegation's Objectors: the pick shows at the start of the mission.
     if (await page.locator('[data-act="obj-go"]').count()) { await shot(page, 'b3-objectors'); await page.locator('[data-act="obj-go"]').click(); }
@@ -246,16 +274,37 @@ try {
     // ...and read whole: it is not cut off beside the phase line (it was, at 1280 wide, when it was a longer sentence).
     check(await page.locator('#biomass-label').evaluate((el) => el.scrollWidth <= el.clientWidth + 1), 'the countdown is not cut off on the HUD');
     check(start.biome === 'deephive', `the capital's tile set (${start.biome})`);
+    // The start banner is read whole: a banner was one line whatever its length, and this one ran off both sides.
+    const ban = await page.locator('#banner').evaluate((el) => { const r = el.getBoundingClientRect(); return { text: el.textContent ?? '', left: Math.round(r.left), right: Math.round(r.right), w: innerWidth, lines: Math.round(r.height) }; });
+    check(/SHELTER BY THE BODY IS YOURS/.test(ban.text) && ban.left >= 0 && ban.right <= ban.w && ban.lines < 110, `the start banner is inside the picture, on two lines at most (${ban.left} to ${ban.right} of ${ban.w}, ${ban.lines} px high)`);
+    // And the board points at the shelter it names, until the first wave.
+    check(await page.evaluate(() => { const s = window.broodfall.sim; return !!s.openingShelter && s.openingShelter === s.shelters[0]; }), 'the board points at the shelter (a ring and a chevron over it)');
     await shot(page, 'b7-start');
+    // The organ stage, opened by hand in turn one: it says what the ration is for while the Host is late.
+    await page.locator('#open-under').click();
+    await page.waitForFunction(() => !document.getElementById('under').classList.contains('hidden'), null, { timeout: 8000 }).catch(() => {});
+    await sleep(1400);
+    const note = await page.locator('#under-note').innerText();
+    check(/the host is 5 turns away/i.test(note) && /only war meat/i.test(note) && /limbs/i.test(note), `the organ stage: the ration is the only war meat, leave some for limbs ("${note.slice(0, 70)}...")`);
+    await shot(page, 'b7b-organ-stage');
+    await page.locator('#under-done').click();
+    // The banner gone, the board is seen: the ring round the shelter and the chevron over it.
+    await page.waitForFunction(() => getComputedStyle(document.getElementById('banner')).opacity === '0', null, { timeout: 9000 }).catch(() => {});
+    await sleep(400);
+    await shot(page, 'b7c-shelter-marked');
     // Play: limbs with the starting meat, then the first wave.
     const built = await page.evaluate(() => {
       const b = window.broodfall; let n = 0;
+      // Whatever limb the hand was dealt (it is dealt afresh every run: a run with no Spitter and no Lasher grew
+      // nothing when the script knew only those two), on the nearest ground that takes it.
       for (let i = 0; i < 6; i++) {
         const s = b.sim;
-        const k = s.hand.findIndex((c) => c.family === 'spitter' || c.family === 'lasher');
-        if (k < 0) break;
-        const cell = b.buildableCells(60).sort((x, y) => s.creepDistOf(x) - s.creepDistOf(y))[n + 2];
-        if (cell === undefined || !b.play({ kind: 'build', cardIndex: k, cell }).ok) break;
+        const cells = b.buildableCells(60).sort((x, y) => s.creepDistOf(x) - s.creepDistOf(y)).slice(n + 2, n + 14);
+        let grown = false;
+        for (let k = 0; k < s.hand.length && !grown; k++) {
+          for (const cell of cells) { if (b.play({ kind: 'build', cardIndex: k, cell }).ok) { grown = true; break; } }
+        }
+        if (!grown) break;
         n++;
       }
       return n;
@@ -266,6 +315,7 @@ try {
     await sleep(700);
     const banner1 = await page.locator('#banner').innerText();
     check(/THE COURT AND THE SCIENCE CASTE/.test(banner1) && /THE HOST IN 5 TURNS/.test(banner1), `wave 1's banner, the same count as the order ("${banner1}")`);
+    check(await page.evaluate(() => window.broodfall.sim.openingShelter === null), 'the wave is under way: the shelter is no longer pointed at');
     await shot(page, 'b8-wave1');
     // Through wave 1 (stepped): no war body on the field at any time; the clear pays the shelter's ration.
     const w1 = await page.evaluate(() => {

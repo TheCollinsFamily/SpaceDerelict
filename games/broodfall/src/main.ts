@@ -431,13 +431,20 @@ let lastCoach = '';
 // ---------- banners ----------
 
 const bannerEl = document.getElementById('banner')!;
+/** How long a banner stands: long enough to be read (about 20 letters a second), never under the 2.6 s of a short one. */
+const bannerSeconds = (text: string): number => Math.min(7, Math.max(2.6, 1.2 + text.length / 20));
 function banner(text: string): void {
-  bannerEl.textContent = text;
+  // A dash stays with the words before it: a second line never starts with one.
+  bannerEl.textContent = text.replace(/ — /g, ' — ');
+  // A long one is set smaller, so that it is two lines at most (style.css #banner.long).
+  bannerEl.classList.toggle('long', text.length > 40);
   bannerEl.classList.remove('hidden');
   // retrigger the CSS animation
   bannerEl.style.animation = 'none';
   void (bannerEl as HTMLElement).offsetWidth;
   bannerEl.style.animation = '';
+  // A long banner wraps onto a second line and stands longer: it used to run off both sides of the screen.
+  bannerEl.style.animationDuration = `${bannerSeconds(text).toFixed(2)}s`;
 }
 
 function handleEvents(events: SimEvent[]): void {
@@ -449,7 +456,7 @@ function handleEvents(events: SimEvent[]): void {
       ? `WAVE ${e.wave} — THE COURT AND THE SCIENCE CASTE, FROM ${e.sides} · THE HOST IN ${(e.hostIn ?? 0) + 1} TURN${e.hostIn ? 'S' : ''}`
       : `WAVE ${e.wave} — ASSAULT FROM ${e.sides}`);
     // THE LAST MISSION (Oct 4 2026): the shelter that is his from the start; the Host's arrival.
-    if (e.kind === 'shelter-start') banner(e.taken ? 'THE SHELTER BY THE BODY IS YOURS — PROTECT IT: IT IS YOUR WAR MEAT UNTIL THE HOST ARRIVES' : 'A SHELTER STANDS BY THE BODY — AN INFESTOR CAN TAKE IT');
+    if (e.kind === 'shelter-start') banner(e.taken ? 'THE SHELTER BY THE BODY IS YOURS — PROTECT IT\nIT IS YOUR WAR MEAT UNTIL THE HOST ARRIVES' : 'A SHELTER STANDS BY THE BODY — AN INFESTOR CAN TAKE IT');
     if (e.kind === 'host-arrived') banner('THE HOST HAS ARRIVED — EVERYTHING THEY HAVE');
     if (e.kind === 'wave-start' && !AUTO) preloadPadOutro(PAD_PART2()); // the end's clips, fetched while the run is on
     if (e.kind === 'wave-cleared') banner(`WAVE ${e.wave} CLEARED · +${e.bonus} WAR MEAT`);
@@ -704,7 +711,16 @@ function underArt(): Promise<unknown> {
   });
   return underArtReady;
 }
+/** The organ stage's standing note (index.html), and what the last mission adds to it while the Host is late. */
+const underNoteEl = document.getElementById('under-note');
+const UNDER_NOTE = underNoteEl?.textContent ?? '';
 function openUnder(): void {
+  // The last mission while the Host is late: no war body comes, so the shelter's ration is all the war meat there is,
+  // and a player who levels organs out of habit stands with no limbs (persona notes, Oct 4 2026). Said here, where it is spent.
+  const late = sim.hostTurnsLeft;
+  if (underNoteEl) underNoteEl.textContent = late
+    ? `The Host is ${late} turn${late === 1 ? '' : 's'} away. Until it comes the shelter's ration is the only war meat you get: leave enough of it for limbs. ${UNDER_NOTE}`
+    : UNDER_NOTE;
   under.show();
   const grid = document.getElementById('under-right');
   void withLoader(underArt(), 'scan', { host: grid ?? undefined, label: 'THE ORGAN STAGE', lines: ['Mapping the ground under the town.', 'Waking the organs.', 'Counting the cellars.'] });

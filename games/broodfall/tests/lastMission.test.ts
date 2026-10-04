@@ -80,6 +80,18 @@ describe('the last mission: in the sim', () => {
     const sim = new Sim({ ...base, seed: 99 });
     expect(sim.shelters).toHaveLength(0);
     expect(sim.hostTurnsLeft).toBeNull();
+    expect(sim.openingShelter).toBeNull();
+  });
+
+  it('the board points at it until the first wave is under way, and not after', () => {
+    for (const startShelter of ['infested', 'intact'] as const) {
+      const sim = new Sim({ ...base, seed: 5150, entrances: 3, startShelter });
+      expect(sim.openingShelter, startShelter).toBe(sim.shelters[0]);
+      const auto = new Autoplayer(3);
+      for (let i = 0; i < 30000 && sim.outcome === 'playing' && sim.waveNumber === 0; i++) { auto.act(sim, DT); sim.tick(); }
+      expect(sim.waveNumber).toBeGreaterThan(0);
+      expect(sim.openingShelter, `${startShelter}, wave ${sim.waveNumber}`).toBeNull();
+    }
   });
 
   it('through the countdown no war body comes; then the Host arrives at its tier, and the countdown says so', () => {

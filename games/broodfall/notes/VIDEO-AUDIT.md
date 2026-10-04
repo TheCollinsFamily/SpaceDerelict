@@ -14,7 +14,7 @@ Reduce motion. Proof: `notes/screens/2026-10-01/README.md`. Frames looked at: `n
 | Faction scene pictures (contact + every beat: 14) | the parchment scene card on the ship (`campaignUi.sceneHtml`) | 20-60 s: every line is voiced or read beside it | **ANIMATED** (`tools/art/stills-alive.mjs` group `scene`, 4:3, 720p) |
 | The three reveal pictures | the reveal card (picture from `public/media/pictures/`) | 20-60 s, the end of a route | **ANIMATED** (group `reveal`) |
 | Ending cards (4) | the ending card | after the ending film, the card loops that film | already video: left alone |
-| The 16 territory pictures | over the briefing and the dark desk's assignment | 10-60 s while dares and experiments are picked | **ANIMATED** (group `territory`, 16:9 cut where the 16:7 crop shows, 480p: it is about 460 px wide) |
+| The 17 territory pictures (the Hive House added Oct 4) | over the briefing and the dark desk's assignment | 10-60 s while dares and experiments are picked | **ANIMATED** (group `territory`, 16:9 cut where the 16:7 crop shows, 480p: it is about 460 px wide) |
 | Debrief won / lost / held | the report's lead band (skirmish and campaign) | 10-30 s while the report is read | **ANIMATED** (group `debrief`; a `<video>` over the band's still, the shade and the verdict over it) |
 | Title key art (`screens/title.webp`) | nowhere: `#menu.title-art` is never set; the menu plays its own viewport loop | 0 | not needed (the menu is already a loop) |
 | The emblem | logos, the loading screen | the loading screen's emblem is the loader session's loop | other session (loading): skipped |

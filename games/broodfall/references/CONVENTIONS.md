@@ -63,3 +63,16 @@ Assessed against live play (`node tools/shot-comics.mjs`) and `notes/screens/202
 | 29 | A collection outlives a run | YES (kept apart from the campaign; a new campaign leaves it whole) | walk C, `tests/comics.test.ts` |
 | 30 | Reading resumes where it was left | NO (a comic opens on its first page every time) | persona notes, Veteran |
 
+## A mission that opens with a rule of its own (the last mission, Oct 4 2026)
+
+References: Into the Breach (a mission's bonus objective is marked on the board before the first turn), StarCraft II
+campaign missions (an objective named in the opening line is pinged on the map), XCOM 2 (the objective marker stands
+until it is reached). Assessed against live play (`node tools/shot-lastmission.mjs --build`) and
+`notes/screens/2026-10-04/last-b7*.jpg`.
+
+| # | Convention | Status Oct 4 2026 | Evidence |
+|---|---|---|---|
+| 31 | A message on the screen is read whole: inside the picture, and up long enough to read | YES since Oct 4 (a banner wraps, a long one is set smaller, it stands by its length; before, twelve of twenty banners ran off both sides) | `tools/shot-lastmission.mjs` B (`b7-start`) |
+| 32 | A thing the opening text names is pointed at on the board | YES for the last mission's shelter (a ring and a chevron until the first wave) | `tests/lastMission.test.ts`, `b7c-shelter-marked` |
+| 33 | Every destination has its picture | YES (17 of 17 landings, each with its loop) | `tests/territoryPictures.test.ts` |
+

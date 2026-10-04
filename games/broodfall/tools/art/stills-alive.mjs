@@ -6,7 +6,7 @@
  *   node tools/art/stills-alive.mjs --bake [group|group:id ...]    bake again from what is on disk (free)
  *   node tools/art/stills-alive.mjs --list                         the surfaces and their prompts
  *
- * Groups: scene (the faction scenes' lobby cards), reveal (the three reveal pictures), territory (the 16 landing
+ * Groups: scene (the faction scenes' lobby cards), reveal (the three reveal pictures), territory (the 17 landing
  * sites over the briefing), debrief (won / lost / held, the report's lead), partner (her file photograph on the pad).
  * The ending cards are NOT here: they already loop their ending film (src/ui/sceneVoice.ts).
  *
@@ -115,6 +115,9 @@ export const SURFACES = [
     ['assembly', 'The smoke on the horizon drifts; the red clouds roll slowly; the red growth at the edges of the city pulses slowly.'],
     ['seventh-city', 'The red lights on the masts blink; the rings in the sky pulse outward softly; the red growth over the ground pulses slowly; the clouds drift.'],
     ['glass-spires', 'Lightning flickers in the red storm clouds; the neon lights of the spires pulse; steam drifts from the vents.'],
+    // The last mission (content/campaign.ts LAST): dressed for a parade, and the parade ground stays empty. Its first take
+    // was asked for rolling clouds, of which the cut shows a sliver: the camera tilted up to find them (v1/hive-house-clip-tilted.mp4).
+    ['hive-house', 'A wind stirs the long gold streamers and the pennants; thin smoke drifts over the far rooftops; the tiny figures at the edges of the great empty square shift a little where they stand. The square itself stays empty and still. The picture is held exactly as it is, the same distance and angle the whole time: the camera does not tilt up and shows no more of the sky than the first picture does.'],
   ].map(([id, what]) => ({ group: 'territory', id, from: terr, aspect: '16:9', y: 0.6, res: '480p', prompt: VIEW(what) })),
   // ---- the report's lead (src/ui/debrief.ts; a wide band from 40% down) ----
   { group: 'debrief', id: 'won', from: (id) => path.join(SRC, 'screens', `${id}.png`), aspect: '16:9', y: 0.4,

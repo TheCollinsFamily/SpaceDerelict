@@ -2809,6 +2809,27 @@ export class IsoRenderer extends Renderer {
       const d = this.onGround(sim, door.x, door.y);
       const dx = d.x / K;
       const dy = d.y / K;
+      // The shelter that stands from the start is pointed at until the first wave (sim.openingShelter): a ring round
+      // its lot with a ping going out from it, and a chevron over its roof; in the green of a protected shelter when it
+      // is his, pale when it is theirs. The chevron and the lines keep their size ON SCREEN (the board opens zoomed out
+      // to show the whole city: drawn in board units they were a few pixels).
+      if (sim.openingShelter === sh) {
+        // One screen pixel, in the marks' units (the canvas is drawn larger than it is shown).
+        const u = (this.app.renderer.width / Math.max(1, this.app.canvas.clientWidth)) / (this.camScale * K);
+        const cx = p.x / K;
+        const cy = p.y / K;
+        const beat = (Math.sin(this.pulse * 2) + 1) / 2;
+        const colour = sh.state === 'infested' ? 0x9ce07a : 0xf0e2c8;
+        // Round its 2x2 lot (a diamond four half-tiles wide), and never under 30 pixels across on screen.
+        const rx = Math.max((this.geo.a * 2.4) / K, 30 * u);
+        const ry = rx * (this.geo.b / this.geo.a);
+        g.ellipse(cx, cy, rx, ry).stroke({ width: 2.5 * u, color: colour, alpha: 0.6 + beat * 0.35 });
+        const ping = (this.pulse / 5) % 1;
+        g.ellipse(cx, cy, rx * (1 + ping * 0.9), ry * (1 + ping * 0.9)).stroke({ width: 2 * u, color: colour, alpha: 0.55 * (1 - ping) });
+        const roof = (tex ? p.y - v.height * 0.94 : p.y - this.geo.a * 2) / K;
+        const tip = roof - (8 + beat * 8) * u;
+        g.poly([cx - 13 * u, tip - 20 * u, cx + 13 * u, tip - 20 * u, cx, tip]).fill({ color: colour, alpha: 0.96 }).stroke({ width: 2 * u, color: 0x10140c, alpha: 0.9 });
+      }
       if (sh.state === 'intact' && sh.burrowBy !== undefined) {
         const f = Math.min(1, (sh.burrowT ?? 0) / BALANCE.infestChannel);
         g.circle(dx, dy, 14).stroke({ width: 2, color: 0x2a1a30, alpha: 0.8 });

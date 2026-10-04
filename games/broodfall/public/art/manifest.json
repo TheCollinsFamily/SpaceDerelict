@@ -20628,7 +20628,8 @@
   "deephive": {
    "name": "The Deep Hive",
    "territories": [
-    "queens-hollow", "hive-house"
+    "queens-hollow",
+    "hive-house"
    ],
    "roofTint": [
     12893352,
@@ -22684,7 +22685,8 @@
     "hidden-campus": "ship/territories/hidden-campus.webp",
     "assembly": "ship/territories/assembly.webp",
     "seventh-city": "ship/territories/seventh-city.webp",
-    "glass-spires": "ship/territories/glass-spires.webp"
+    "glass-spires": "ship/territories/glass-spires.webp",
+    "hive-house": "ship/territories/hive-house.webp"
    },
    "exterior": "ship/exterior.webp",
    "planet": "ship/planet.webp",
