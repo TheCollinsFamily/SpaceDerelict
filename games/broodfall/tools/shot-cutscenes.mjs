@@ -184,11 +184,16 @@ try {
   await page.waitForTimeout(200);
   check(!(await page.locator('.cp-scene').count()) && (await page.locator('.cp-signals [data-ally="delegation"]').count()) === 1, 'back at the planet: the Delegation can now be sided with');
 
-  // ---- Answer the Faithful: no film baked yet, so its card, the words read.
+  // ---- Answer the Faithful: its first contact is a film too since Oct 5 2026 (made by the film system); then its card.
   await page.locator('.cp-signals [data-meet="faithful"]').click();
+  await page.waitForSelector('#newsreel.cs-film video', { timeout: 15000 });
+  await page.waitForFunction(() => document.querySelector('#newsreel.cs-film video')?.currentTime > 2, null, { timeout: 40000 });
+  check(await page.evaluate(() => document.querySelector('#newsreel')?.dataset.film) === 'faithful-signs', 'the first contact of the Faithful plays as its film');
+  await page.keyboard.press('Escape');
+  await page.waitForSelector('#newsreel', { state: 'detached', timeout: 5000 });
   await page.waitForSelector('.cp-scene', { timeout: 5000 });
-  const fai = await page.locator('.cp-scene').innerText();
-  check(!(await page.locator('#newsreel').count()) && /Your coming was prophesied in our texts/.test(fai) && /suicide vests/.test(fai), `a scene whose film is not made yet is its card, the words on it: "${brief(fai)}"`);
+  const fai = await page.locator('.cp-scene').evaluate((el) => el.textContent ?? '');
+  check(/Your coming was prophesied in our texts/.test(fai) && /suicide vests/.test(fai), `then its card, its words under THE WORDS: "${brief(fai)}"`);
   await shot(page, '6-card-no-film');
   await page.locator('.cp-scene [data-act="scene-later"]').click();
 
@@ -298,11 +303,12 @@ try {
   check((await page.locator('.cp-body [data-ally="institute"]').count()) === 0 && (await page.locator('.cp-body [data-meet="institute"]').count()) === 1 && (await page.locator('.cp-body [data-ally="delegation"]').count()) === 1,
     'Comms: the Institute can only be answered; the Delegation, answered, can be sided with');
   await page.locator('.cp-body [data-meet="institute"]').click();
+  // (Films are off in this part: the cards are what is checked. A scene with a film folds its words under THE WORDS.)
   await page.waitForSelector('.cp-scene');
-  check(/A LITTLE CHAT/.test(await page.locator('.cp-scene').innerText()), 'answering from Comms plays the first contact there');
+  check(/A LITTLE CHAT/.test(await page.locator('.cp-scene').evaluate((el) => el.textContent ?? '')), 'answering from Comms plays the first contact there');
   await page.locator('.cp-scene [data-ally="institute"]').click();
   await page.waitForTimeout(200);
-  const pledge2 = await page.locator('.cp-scene').innerText();
+  const pledge2 = await page.locator('.cp-scene').evaluate((el) => el.textContent ?? '');
   check(/FOR YOUR OWN SAFETY/.test(pledge2) && /greedy corporations/.test(pledge2), 'siding from its card: his broadcast for the Institute');
   await page.locator('.cp-scene [data-act="scene-ok"]').click();
   // 4. An Institute route saved before Oct 3: the ultimatum's choice made, the old reveal card waiting.
