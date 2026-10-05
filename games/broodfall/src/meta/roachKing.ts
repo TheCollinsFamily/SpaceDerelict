@@ -42,8 +42,11 @@ export function isDue(a: RoachAddress, s: CampaignState): boolean {
     case 'stand': {
       // Not once the ally's finale is played: his last words are the call and the Founding Day address (ROACH_SCENES).
       if (s.ended || s.finale) return false;
+      // Near the end: the ally's beats all seen AND the war well on (the beats all come within a few captures, so on
+      // the beats alone his last stand played at the 4th mission of 14 to 19: tools/measure/after-mission.measure.ts).
+      if (heldOut(s) < STAND_HELD) return false;
       if (s.faction) { const f = FACTIONS.find((x) => x.id === s.faction); return !!f && f.beats.every((b) => s.beatsSeen.includes(b.id)); }
-      return heldOut(s) >= STAND_HELD;
+      return true;
     }
     case 'offline': return !!s.ended;
   }

@@ -317,6 +317,21 @@ is the story as played.
   written); the asides, midpoint cards, the Delegation's clipping and the Roach King's wheat line still speak of the
   scenes before (all voiced: a changed word is a new take).
 
+## What plays after a mission (Oct 5 2026; Collins: "make sure they get one unique thing after every mission")
+
+`src/meta/afterMission.ts` decides it; `npx vite-node tools/measure/after-mission.measure.ts -- --run --table` prints a
+whole campaign per ally, return by return; `tests/afterMission.test.ts` holds the rules.
+- Every return: the planet's news, then YOKE's greeting. She says no greeting twice in a campaign while she has one she
+  has not said (`CampaignState.greetingsSaid`; Earth news items the same).
+- ONE story film at most: the ally's scenes this mission made due play on the ship; a Roach King piece that is due WAITS
+  for a return with none (the end of his broadcast excepted). Before: 1 to 2 returns a campaign had both.
+- His last stand needs STAND_HELD (8) territories as well as every beat seen: on the beats alone it played at the 4th
+  mission of 14 to 19 (the beats all come within four captures). Now missions 9 to 11, before the finale.
+- **The gap, his to fill:** between the last Roach King piece (about mission 9) and the finale (13 to 18) a return brings
+  the news and a greeting and nothing else: 5 to 9 returns a campaign. YOKE has 6 lines for a win, so from about the 10th
+  win she repeats. The three comics are all earned in the first two missions. Filling it is content: more beats or wider
+  spacing (`afterCaptures`), more of his pieces, comics earned later, more greetings.
+
 ## The last mission, and the Roach King off the air (Oct 4 2026)
 
 Collins's text is in `notes/ROACH-KING-2026-10-04.md`; the design and the open decisions in DESIGN.md "THE LAST MISSION,

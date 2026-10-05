@@ -24,6 +24,7 @@ import { mediaAllowed, mediaUrl } from './newsreel';
 import { bandHtml, decode, lineHtml } from './translation';
 import { filmArt, loadScenes, playCutscene } from './cutscene';
 import { ROACH_ADDRESSES, ROACH_KING, ROACH_SCENES, type RoachAddress, type RoachScene, type RoachShot } from '../../content/roachKing';
+import { afterMission } from '../meta/afterMission';
 import { dueAddress, dueAfterDeployment, dueScene, emptyRoachLog, lastMissionScenes, logRoach, type RoachLog } from '../meta/roachKing';
 import { cardConfidence } from '../../content/translation';
 import type { CampaignState } from '../meta/campaign';
@@ -250,9 +251,11 @@ function loadLog(seed: number): RoachLog {
 function saveLog(l: RoachLog): void { try { localStorage.setItem(LOG_KEY, JSON.stringify(l)); } catch { /* private mode */ } }
 
 /** His address after this deployment, if one is due (resolves at once when none is). */
-export async function roachAfterDeployment(next: CampaignState): Promise<void> {
+export async function roachAfterDeployment(next: CampaignState, prev?: CampaignState): Promise<void> {
   if (!mediaAllowed()) return;
   const log = loadLog(next.seed);
+  // One story film a return (src/meta/afterMission.ts): a piece that is due waits while a faction scene has this return.
+  if (prev && afterMission(prev, next, log).roachWaits) return;
   const due = dueAfterDeployment(next, log);
   if (!due) return;
   // A scene off the air (the briefing): its film, or its transcript; it needs no baked art.

@@ -92,6 +92,8 @@ export interface CampaignState {
   greet?: GreetMoment | null;
   /** The greeting she said last (she never says the same one twice in a row). */
   lastGreeting?: string;
+  /** Every greeting YOKE has said this campaign: none is said again while she has one she has not (src/meta/onboarding.ts). */
+  greetingsSaid?: string[];
   /** Greetings said once in a campaign that are not said again (the mate review). */
   said?: string[];
   /** Command's standing orders (src/meta/directives.ts); none until the desk clears. */

@@ -69,7 +69,10 @@ describe('the Roach King: when he comes on the air', () => {
   });
   it('the last stand when the ally\'s finale opens (or deep in with no ally); offline at the end', () => {
     const f = FACTIONS.find((x) => x.id === 'faithful')!;
-    const all = at({ deployments: 9, faction: 'faithful', beatsSeen: f.beats.map((b) => b.id) });
+    // Every beat seen is not enough on its own (they all come within four captures): the war must be well on too.
+    const early = at({ deployments: 5, faction: 'faithful', beatsSeen: f.beats.map((b) => b.id), held: held(3) });
+    expect(dueAddress(early, seen('rk-address', 'rk-faithful', 'rk-draft'))?.id ?? null).not.toBe('rk-stand');
+    const all = at({ deployments: 9, faction: 'faithful', beatsSeen: f.beats.map((b) => b.id), held: held(STAND_HELD) });
     expect(dueAddress(all, seen('rk-address', 'rk-faithful'))?.id).toBe('rk-stand');
     expect(dueAddress(at({ deployments: 12, held: held(STAND_HELD) }), seen('rk-address', 'rk-draft'))?.id).toBe('rk-stand');
     const ended = at({ deployments: 10, faction: 'faithful', beatsSeen: f.beats.map((b) => b.id), ended: 'faithful' });

@@ -679,7 +679,7 @@ function campaignDebrief(): void {
     // The planet's news of it first (src/ui/newsreel.ts): a newsreel or one of their papers, skippable;
     // then, from the third deployment, the Roach King's address when one is due (src/ui/roachKing.ts).
     void newsAfterDeployment(prev, state, debrief).catch(() => {})
-      .then(() => roachAfterDeployment(state)).catch(() => {})
+      .then(() => roachAfterDeployment(state, prev)).catch(() => {})
       .then(() => ui.show({ greet: true }));
   };
   // The report waits for its pictures: a loop meanwhile (src/ui/loader.ts), never a still board.

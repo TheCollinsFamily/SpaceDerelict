@@ -337,6 +337,7 @@ export class CampaignUi {
     if (EARLY_ONCE.includes(moment)) s.said = [...(s.said ?? []), moment];
     s.greet = null;
     s.lastGreeting = g.id;
+    s.greetingsSaid = [...new Set([...(s.greetingsSaid ?? []), g.id])];
     this.state = s;
     saveCampaign(s);
     this.greeting = g;

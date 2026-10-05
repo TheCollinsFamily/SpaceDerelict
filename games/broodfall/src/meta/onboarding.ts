@@ -71,13 +71,14 @@ export function momentAfter(prev: CampaignState, next: CampaignState, d: Debrief
 }
 
 /**
- * One greeting for a moment: never the one she said last time (no repeats in a row), and
- * otherwise chosen by the campaign's seed and how far it has come, so a replay of the same
- * campaign hears the same words.
+ * One greeting for a moment: one she has not said this campaign while there is one (`said`), never the one she said last
+ * time, and otherwise chosen by the campaign's seed and how far it has come, so a replay of the same campaign hears the
+ * same words.
  */
-export function pickGreeting(moment: GreetMoment, seed: number, turn: number, last?: string | null, pool: Greeting[] = GREETINGS): Greeting {
+export function pickGreeting(moment: GreetMoment, seed: number, turn: number, last?: string | null, pool: Greeting[] = GREETINGS, said: readonly string[] = []): Greeting {
   const fits = pool.filter((g) => g.moment === moment);
-  const fresh = fits.filter((g) => g.id !== last);
+  const unsaid = fits.filter((g) => !said.includes(g.id) && g.id !== last);
+  const fresh = unsaid.length ? unsaid : fits.filter((g) => g.id !== last);
   const from = fresh.length ? fresh : fits.length ? fits : pool.filter((g) => g.moment === 'back');
   let h = (seed ^ Math.imul(turn + 1, 2654435761)) >>> 0;
   h = Math.imul(h ^ (h >>> 15), 2246822507) >>> 0;
@@ -159,9 +160,11 @@ export function greetingFor(s: CampaignState, lore = ''): { moment: GreetMoment;
       const pool = earthNewsFrom(lore);
       const news = pool.length ? pool : EARTH_NEWS_FALLBACK;
       let i = (h >>> 8) % news.length;
+      // The first item she has not read out this campaign (then any but the last one).
+      for (let k = 0; k < news.length && ((s.greetingsSaid ?? []).includes(`earth-${i}`) || `earth-${i}` === s.lastGreeting); k++) i = (i + 1) % news.length;
       if (`earth-${i}` === s.lastGreeting && news.length > 1) i = (i + 1) % news.length;
       return { moment, greeting: { id: `earth-${i}`, moment, beats: [{ say: news[i], face: 'teasing', then: 'wink' }] } };
     }
   }
-  return { moment, greeting: pickGreeting(moment, s.seed, s.deployments, s.lastGreeting) };
+  return { moment, greeting: pickGreeting(moment, s.seed, s.deployments, s.lastGreeting, GREETINGS, s.greetingsSaid ?? []) };
 }
