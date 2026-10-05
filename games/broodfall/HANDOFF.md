@@ -1049,6 +1049,11 @@ the option to change the model she runs on."
   proxy (this PC's key); the AI Core then shows **"DEV: talking to the owner's YOKE"** (one mind
   for every campaign, on the owner's money). Anywhere else that rung is refused
   (`OWNER_YOKE_DEV_ONLY`, sticky) and the ladder goes on to Kimi / scripted.
+- **rfab.ai never refuses a player for a count (Oct 5 2026; backend deploy owed).** It used to refuse the
+  4th new install from one network in a day, which on a school, dorm or phone-carrier network locks
+  people out and stops them linking an account. Now past 10 a network a day he is made with no free talk
+  (`allowance.why` 'network', or 'busy' past the fleet's 2000; `src/ui/yokeAccount.ts` words both) and
+  sees the link prompt at once. Only 500 a day from one address is refused.
 - **YOKE gave the game no player: nobody's account is used (Oct 4 2026).** Collins found YOKE in his
   own RFab autosaves and had linked nothing ("I thought it used a separate ghost account"). The row
   was her star, talked to from this PC on Sep 29-30. But the same thing could still happen: when

@@ -206,6 +206,85 @@
      "t1": 45.208
     }
    ]
+  },
+  "rk-briefing": {
+   "video": "media/scenes/rk-briefing.mp4",
+   "poster": "media/scenes/rk-briefing.webp",
+   "seconds": 60.199,
+   "cues": [
+    {
+     "shot": "l00",
+     "line": 0,
+     "who": "Aide",
+     "text": "Roach King, the Alliance of Nations have lost another territory.",
+     "t0": 0,
+     "t1": 6.554
+    },
+    {
+     "shot": "l01",
+     "line": 1,
+     "who": "The Roach King",
+     "text": "Of course they have.",
+     "t0": 6.554,
+     "t1": 9.01
+    },
+    {
+     "shot": "l02",
+     "line": 2,
+     "who": "Aide",
+     "text": "Every time they make landfall, they have been sending troops at them as soon as they can get there.",
+     "t0": 9.01,
+     "t1": 15.61
+    },
+    {
+     "shot": "l03",
+     "line": 3,
+     "who": "The Roach King",
+     "text": "Are you fucking kidding me?",
+     "t0": 15.61,
+     "t1": 18.167
+    },
+    {
+     "shot": "l04",
+     "line": 4,
+     "who": "The Roach King",
+     "text": "So they just send an endless wave of troops to an enemy that appears to grow more powerful the more it kills?",
+     "t0": 18.167,
+     "t1": 27.801
+    },
+    {
+     "shot": "l05",
+     "line": 5,
+     "who": "The Roach King",
+     "text": "Why don't they just batch them? Or better yet, send nothing, and wait until you have enough troops to absolutely kill them?",
+     "t0": 27.801,
+     "t1": 37.996
+    },
+    {
+     "shot": "l06",
+     "line": 6,
+     "who": "Aide",
+     "text": "Well, we might be able to get the science caste or the royals to do that.",
+     "t0": 37.996,
+     "t1": 44.75
+    },
+    {
+     "shot": "l07",
+     "line": 7,
+     "who": "Aide",
+     "text": "But the warrior caste have a long tradition of honor.",
+     "t0": 44.75,
+     "t1": 49.903
+    },
+    {
+     "shot": "l08",
+     "line": 8,
+     "who": "The Roach King",
+     "text": "They have a long tradition of being retards, is more like it. They are going to get us all killed.",
+     "t0": 49.903,
+     "t1": 60.199
+    }
+   ]
   }
  }
 }

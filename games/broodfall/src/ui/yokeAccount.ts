@@ -123,7 +123,11 @@ export class YokeAccountUi {
         <div class="cp-acct-btns"><button class="screen-btn" data-act="acct-open" data-url="${esc(url)}">TOP UP ON RFAB.AI</button><button data-act="acct-refresh">I HAVE TOPPED UP</button></div></div>`;
     }
     const times = bonusTimes(s.bonusTokens, s.allowance.capTokens);
-    const head = this.cut === 'resting' ? 'YOKE IS RESTING' : s.allowance.why === 'network' ? 'THE FREE TALK FROM THIS NETWORK IS USED UP' : 'YOUR FREE TALK WITH YOKE IS USED UP';
+    // 'busy': rfab.ai made him a player with no free talk (today's free players are all given out).
+    const head = this.cut === 'resting' ? 'YOKE IS RESTING'
+      : s.allowance.why === 'network' ? 'THE FREE TALK FROM THIS NETWORK IS USED UP'
+        : s.allowance.why === 'busy' ? 'TODAY\'S FREE TALK WITH YOKE IS ALL GIVEN OUT'
+          : 'YOUR FREE TALK WITH YOKE IS USED UP';
     return `<div class="cp-acct-cut${compact ? ' compact' : ''}">
       <div class="cp-acct-h">${head}</div>
       <p>Link an RFab account to keep talking to her. Linking gives you <b>${tokensText(s.bonusTokens)} free tokens (${dollars(s.bonusTokens)})</b> — ${times}× the free talk you had. After that her words and voice are paid from your RFab balance, and you choose the model she thinks with.</p>
