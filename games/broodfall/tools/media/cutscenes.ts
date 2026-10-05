@@ -1261,7 +1261,10 @@ async function talkGates(film: Film, exs: Exchange[], k: number): Promise<Gate[]
     const s = film.shots.find((x) => x.id === l.shot)!;
     want += wordCount(wordsOf(film, s));
     if ('missing' in l) { fail('WORDS', `${l.shot} was not heard ("${wordsOf(film, s).slice(0, 50)}")`); continue; }
-    if (l.heard < 0.8) fail('WORDS', `${l.shot}: ${Math.round(l.heard * 100)}% of its words heard`);
+    // A short line is judged by the words missed, not the share: "Oh. Um." heard as "Oh." is half its words, and the
+    // transcriber never writes down an "um" (delegation-reveal failed three good takes on it, Oct 5 2026).
+    const n = wordCount(wordsOf(film, s));
+    if (l.heard < 0.8 && Math.round(n * (1 - l.heard)) > (n <= 4 ? 1 : 0)) fail('WORDS', `${l.shot}: ${Math.round(l.heard * 100)}% of its words heard`);
     if (whoOf(film, s) === 'You') { const hz = pitchOfSpan(f, l.start, l.end); if (hz > 175) fail('HIS VOICE', `${l.shot} is at ${Math.round(hz)} Hz: not a man's voice`); }
   }
   // AD-LIB
@@ -1271,14 +1274,16 @@ async function talkGates(film: Film, exs: Exchange[], k: number): Promise<Gate[]
   const end = exs[k + 1]?.from === '^' ? cut.frame / cut.fps : duration(f);
   const dead = deadAir(film, ex, cut, f, end).reduce((a, d) => a + (d.to - d.from), 0);
   if (dead > end * 0.4) fail('SILENCE', `${dead.toFixed(1)} s of its ${end.toFixed(1)} s is dead air`);
-  // BRIGHT, SOFT, STATIC (measured)
+  // BRIGHT, SOFT, STATIC (measured, and seen): not for a clip in which nobody speaks, whose action is the effect itself
+  // ("the picture floods with red and goes to white": delegation-finale's opening failed three good takes on it).
+  const wordless = !ex.shots.some((i) => wordsOf(film, film.shots[i]));
   const W = 640, H = 360;
   const first = readRgb(f, 0, W, H), settled = readRgb(f, Math.min(cut.frame, Math.round(cut.fps)), W, H), last = readRgb(f, cut.frame, W, H);
   const lum = (px: Buffer) => { let s = 0; for (let i = 0; i < px.length; i += 39) s += 0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2]; return s / Math.ceil(px.length / 39); };
-  if (Math.abs(lum(last) - lum(first)) > 14) fail('BRIGHT', `its brightness goes from ${lum(first).toFixed(0)} to ${lum(last).toFixed(0)}`);
-  if (sharpOf(last, W, H) < sharpOf(settled, W, H) * 0.45) fail('SOFT', `its sharpness falls from ${Math.round(sharpOf(settled, W, H))} to ${Math.round(sharpOf(last, W, H))}`);
+  if (!wordless && Math.abs(lum(last) - lum(first)) > 14) fail('BRIGHT', `its brightness goes from ${lum(first).toFixed(0)} to ${lum(last).toFixed(0)}`);
+  if (!wordless && sharpOf(last, W, H) < sharpOf(settled, W, H) * 0.45) fail('SOFT', `its sharpness falls from ${Math.round(sharpOf(settled, W, H))} to ${Math.round(sharpOf(last, W, H))}`);
   const s0 = Math.max(200, specksOf(f, 0)), s1 = specksOf(f, cut.frame);
-  if (s1 > s0 * SPECK_GROWTH) fail('STATIC', `its specks go from ${s0} to ${s1}`);
+  if (!wordless && s1 > s0 * SPECK_GROWTH) fail('STATIC', `its specks go from ${s0} to ${s1}`);
   // HIS FACE, STATIC (seen)
   const st = STILLS[stillOfShot(film, ex.shots[0])];
   const him = /HOLO|TECH/.test(st.shows);
@@ -1293,7 +1298,7 @@ async function talkGates(film: Film, exs: Exchange[], k: number): Promise<Gate[]
     const a = await look(strip, q);
     const frames = (a.match(/FRAMES=([^;.\n]*)/) ?? [])[1]?.trim() ?? '?';
     if (him && /FACE=YES/i.test(a)) fail('HIS FACE', `his face is seen (frames ${frames} of ${n})`);
-    if (/STATIC=YES/i.test(a)) fail('STATIC', `snow or sparkle is seen over the picture (frames ${frames} of ${n})`);
+    if (!wordless && /STATIC=YES/i.test(a)) fail('STATIC', `snow or sparkle is seen over the picture (frames ${frames} of ${n})`);
     if (!/STATIC=(YES|NO)/i.test(a)) console.warn(`[make] ${ex.id}: the vision check gave no answer ("${a.slice(0, 80)}")`);
   } catch (e) { console.warn(`[make] ${ex.id}: the vision check could not be made (${(e as Error).message.slice(0, 120)}); the measured gates stand`); }
   return fails;
@@ -1315,11 +1320,14 @@ function filmGates(film: Film): Gate[] {
   // ...within each PLACE (a ship's dark bay and a lit hall are not one picture: the first run of this gate failed a
   // film for having two places in it).
   const places: Array<[number, number]> = [];
+  const talks: boolean[] = [];
   film.shots.forEach((s, i) => {
     const c = man.cues[i];
     if (!c) return;
-    if (s.from !== '^' || !places.length) places.push([c.t0, c.t1]); else places[places.length - 1][1] = c.t1;
+    if (s.from !== '^' || !places.length) { places.push([c.t0, c.t1]); talks.push(!!wordsOf(film, s)); } else { places[places.length - 1][1] = c.t1; if (wordsOf(film, s)) talks[talks.length - 1] = true; }
   });
+  // A place in which nobody speaks is an effect shot (a flood of red to white): its picture is meant to change.
+  for (let n = places.length - 1; n >= 0; n--) if (!talks[n]) places.splice(n, 1);
   console.log(`[make] ${film.id}: ${man.seconds.toFixed(1)} s, ${places.length} place${places.length > 1 ? 's' : ''}`);
   places.forEach(([p0, p1], n) => {
     const m = Math.min(1, (p1 - p0) / 4);

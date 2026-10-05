@@ -324,6 +324,126 @@
      "t1": 33.715
     }
    ]
+  },
+  "faithful-signs": {
+   "video": "media/scenes/faithful-signs.mp4",
+   "poster": "media/scenes/faithful-signs.webp",
+   "seconds": 63.625,
+   "cues": [
+    {
+     "shot": "open",
+     "t0": 0,
+     "t1": 4.492
+    },
+    {
+     "shot": "l00",
+     "line": 0,
+     "who": "The Voice",
+     "text": "Your coming was prophesied in our texts.",
+     "t0": 4.492,
+     "t1": 8.933
+    },
+    {
+     "shot": "l01",
+     "line": 1,
+     "who": "The Voice",
+     "text": "They told of a great figure who would come in a chariot of fire, to cull the rotten people of this world.",
+     "t0": 8.933,
+     "t1": 19.522
+    },
+    {
+     "shot": "l02",
+     "line": 2,
+     "who": "You",
+     "text": "Well, come on. You are not that rotten, are you? Not all of you.",
+     "t0": 19.522,
+     "t1": 24.008
+    },
+    {
+     "shot": "l03",
+     "line": 3,
+     "who": "The Voice",
+     "text": "No. Truly, we, even I, have the heart of a sinner.",
+     "t0": 24.008,
+     "t1": 31.201
+    },
+    {
+     "shot": "l04",
+     "line": 4,
+     "who": "You",
+     "text": "But you try, with all the capacity God has gifted you. Do you not?",
+     "t0": 31.201,
+     "t1": 36.532
+    },
+    {
+     "shot": "l05",
+     "line": 5,
+     "who": "The Voice",
+     "text": "And yet you are still here to reap us, are you not? We all have our part in God's plan.",
+     "t0": 36.532,
+     "t1": 45.385
+    },
+    {
+     "shot": "l06",
+     "line": 6,
+     "who": "You",
+     "text": "True enough.",
+     "t0": 45.385,
+     "t1": 47.086
+    },
+    {
+     "shot": "l07",
+     "line": 7,
+     "who": "The Voice",
+     "text": "The faithful will take part in your glorious mission.",
+     "t0": 47.086,
+     "t1": 52.269
+    },
+    {
+     "shot": "l08",
+     "line": 8,
+     "who": "The Voice",
+     "text": "We have prepared tools to see your mission fulfilled.",
+     "t0": 52.269,
+     "t1": 57.582
+    },
+    {
+     "shot": "l09",
+     "line": 9,
+     "who": "You",
+     "text": "Oh, fuck. Were those suicide vests? Fuck. Fuck, fuck, fuck.",
+     "t0": 57.582,
+     "t1": 63.625
+    }
+   ]
+  },
+  "faithful-pledge": {
+   "video": "media/scenes/faithful-pledge.mp4",
+   "poster": "media/scenes/faithful-pledge.webp",
+   "seconds": 17.85,
+   "cues": [
+    {
+     "shot": "l00",
+     "line": 0,
+     "who": "You",
+     "text": "People of this planet. Your scriptures told of one who would come in a chariot of fire.",
+     "t0": 0,
+     "t1": 7.913
+    },
+    {
+     "shot": "l01",
+     "line": 1,
+     "who": "You",
+     "text": "I am told that is me. The Hour is near.",
+     "t0": 7.913,
+     "t1": 12.807
+    },
+    {
+     "shot": "kneel",
+     "t0": 12.807,
+     "t1": 17.85
+    }
+   ]
   }
  }
 }
