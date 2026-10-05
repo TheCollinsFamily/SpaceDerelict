@@ -96,3 +96,23 @@ faction), a comic earned, the boss's message (first landing only).
 12. [ ] **Decide what a return must always bring.** The rule today is the news + a greeting + one story film when one is
     due. If "one unique thing after every mission" means a story film or a comic EVERY time, the pacing in 1 and the
     comics in 9 are what get there.
+
+## To do: the between-mission economy (Collins, Oct 5 2026: "have we balanced the between game point system so you will earn most of the roguelite unlocks in a single play through?")
+
+Nothing carries over from one campaign to the next except the comics: every unlock below is earned again each campaign.
+Arithmetic from the content tables (not yet a measured run), for a campaign of about 14 deployments:
+
+| Unlock | Cost | Earned in one campaign | Verdict |
+|---|---|---|---|
+| Evolution stages (the territories' unlocks) | a capture each | every one is on an ordinary landing; 11 to 12 of the 12 are taken | all, yes |
+| Experiments (5): a gene, the Atrophy lineage, the Hidden Campus, the Spore and Brood strains | one deployment each, from capture 1 to 4 | 5 of about 13 deployments needed | all, yes |
+| Strains (profiles) | a dare or an experiment | yes | all, yes |
+| Unsanctioned lineages (Marrow 5, Resonance 6) | 11 field notes | experiments alone pay 18; dares pay 2 to 3 every time | all by mid-campaign; **notes pile up with nothing to buy** |
+| Sanctioned lineages (17) | **65 standing** | the board pays 1 to 2 a form (3 forms a mission: about 2 to 4.7 a mission), Command's 13 orders 47 in all (perhaps 7 to 9 of them met), the first mission 4: **about 65 to 80** | just about all, IF nothing else is bought with standing |
+| The procreation licence | **60 standing held at once** (it reads the balance) | the same 65 to 80 | **competes with the lineages**: spend standing and the licence slips back |
+
+13. [ ] **The licence and the lineages compete for one wallet.** In a campaign a player gets most of the lineages OR the
+    licence. Decide: count the licence on standing EARNED (a career total, spending does not lower it), or keep the
+    tension on purpose.
+14. [ ] **Field notes have nothing to buy after mid-campaign.** More unsanctioned lineages, or a second use for notes.
+15. [ ] **Measure it on real runs** (the scripted player, a whole campaign) before tuning the numbers.
