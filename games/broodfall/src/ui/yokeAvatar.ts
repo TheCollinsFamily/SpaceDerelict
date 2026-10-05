@@ -56,7 +56,7 @@ export interface ScriptLine {
 
 /** Her face for each kind of talk, until she has said something with a face of its own. */
 const FACE: Record<string, string> = {
-  'first-deployment': 'curious', 'faction-allied': 'amused', midpoint: 'concerned', licence: 'calm', ending: 'sad', idle: 'calm',
+  'first-deployment': 'curious', 'faction-allied': 'amused', midpoint: 'concerned', partner: 'concerned', licence: 'calm', ending: 'sad', idle: 'calm',
   curious: 'curious', calm: 'calm', thinking: 'thinking',
 };
 

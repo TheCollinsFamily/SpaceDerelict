@@ -63,7 +63,9 @@ export function momentAfter(prev: CampaignState, next: CampaignState, d: Debrief
   if (first) return next.onboard?.mission1 === 'won' ? 'first-won' : 'first-lost';
   if (next.ended && !prev.ended) return 'ended';
   if (next.licence && !prev.licence) return 'licence';
-  if (d.deskOpened) return 'unlock';
+  // The desk on the first try after mission 1 (deployment 2), or later (Collins, Oct 5 2026: "it needs something a bit
+  // different if it's more than turn one").
+  if (d.deskOpened) return prev.deployments >= 2 ? 'unlock-late' : 'unlock';
   if (d.repelled) return 'defended';
   if (d.lost && !d.captured) return 'fell';
   if (d.captured) return 'won';
@@ -127,7 +129,45 @@ export function momentNow(s: CampaignState): GreetMoment {
   const m = s.greet ?? 'back';
   if (!s.onboard || s.onboard.mission1 === 'pending' || !s.lastGreeting || !ORDINARY.includes(m)) return m;
   // The early beats, one an ordinary return, in their order: the mate review, then the cat girl (who plays off it).
-  return EARLY_ONCE.find((id) => !(s.said ?? []).includes(id)) ?? m;
+  const early = EARLY_ONCE.find((id) => !(s.said ?? []).includes(id));
+  if (early) return early;
+  // The personal plot, from its capture on (the first ordinary return that has reached it).
+  return STORY_ONCE.find((b) => s.captures >= b.captures && !(s.said ?? []).includes(b.id))?.id ?? m;
+}
+
+/**
+ * THE PERSONAL PLOT (Collins, Oct 5 2026): the third thread beside the ally's and the Roach King's, carried by YOKE's
+ * greeting, once each, from its capture on: why the Index assigning him a partner matters (capture 5, the slot between
+ * the ally's 4th and the main plot's next), then how it is going (capture 9). content/greetings.ts has the lines.
+ */
+export const STORY_ONCE: Array<{ id: GreetMoment; captures: number }> = [
+  { id: 'partner-index', captures: 5 },
+  { id: 'partner-progress', captures: 9 },
+];
+
+/**
+ * THE ONCE INTROS (Collins, Oct 5 2026: "a collection of intros that won't accidentally be used twice in a mission if
+ * you lose"): one-off greetings for ordinary returns, each said once a campaign (CampaignState.greetingsSaid, which a
+ * lost mission does not undo), in this order, each from its capture on, and never two returns running, so her ordinary
+ * lines still come between. `needs`: what must have happened first (the duck is a callback to the first-mission win;
+ * the second cat girl plays off the first; the dad's names off the Board moving the file).
+ */
+export const INTROS: Array<{ id: string; captures: number; needs?: (s: CampaignState) => boolean }> = [
+  { id: 'back-5', captures: 2 },
+  { id: 'intro-barnabas', captures: 3 },
+  { id: 'intro-duck', captures: 4, needs: (s) => s.onboard?.mission1 === 'won' },
+  { id: 'intro-board', captures: 6 },
+  { id: 'intro-catgirl', captures: 7, needs: (s) => (s.said ?? []).includes('catgirl') },
+  { id: 'intro-audit', captures: 8 },
+  { id: 'intro-dad', captures: 10, needs: (s) => (s.said ?? []).includes('partner-progress') },
+];
+
+/** The intro for this ordinary return, or null. */
+export function introFor(s: CampaignState, pool: Greeting[] = GREETINGS): Greeting | null {
+  const said = s.greetingsSaid ?? [];
+  if (s.lastGreeting && INTROS.some((i) => i.id === s.lastGreeting)) return null;
+  const next = INTROS.find((i) => !said.includes(i.id) && s.captures >= i.captures && (!i.needs || i.needs(s)));
+  return (next && pool.find((g) => g.id === next.id)) ?? null;
 }
 
 /** Greetings said once each, early, on ordinary returns, in this order (Collins, Sep 30 2026). */
@@ -153,6 +193,10 @@ export const EARTH_NEWS_EVERY = 3;
  */
 export function greetingFor(s: CampaignState, lore = ''): { moment: GreetMoment; greeting: Greeting } {
   const moment = momentNow(s);
+  if (ORDINARY.includes(moment)) {
+    const intro = introFor(s);
+    if (intro) return { moment: 'intro', greeting: intro };
+  }
   if (ORDINARY.includes(moment) && earthNewsOpen(s)) {
     let h = (s.seed ^ Math.imul(s.deployments + 7, 2246822519)) >>> 0;
     h = Math.imul(h ^ (h >>> 13), 3266489917) >>> 0;

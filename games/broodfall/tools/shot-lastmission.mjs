@@ -176,8 +176,8 @@ try {
     console.log('A  five territories held: the briefing is caught after a deployment');
     const p = await player(browser, 'A');
     const { page } = p;
-    // The 9th capture is the main plot's 4th slot (src/meta/roachKing.ts); three of his pieces seen, the briefing is next.
-    await campaign(page, { held: HELD5.slice(0, 5), captures: 8, deployments: 9, staging: null, underAttack: null }, ['rk-address', 'rk-draft', 'rk-counter']);
+    // The 10th capture is the main plot's 4th slot (src/meta/roachKing.ts); three of his pieces seen, the briefing is next.
+    await campaign(page, { held: HELD5.slice(0, 5), captures: 9, deployments: 10, staging: null, underAttack: null }, ['rk-address', 'rk-draft', 'rk-counter']);
     await deployForced(page, 'temple', true);
     await page.locator('[data-act="back"]').click();
     check(await skipUntil(page, '#newsreel.cs-film[data-film="rk-briefing"]'), 'after the news, the briefing plays');

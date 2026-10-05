@@ -54,6 +54,8 @@ Declined discussions stay available on the AI Core terminal.
 - `faction-allied` — after choosing a faction: YOKE asks what the choice says about you.
 - `midpoint` — the Delegation's reveal, the Faithful's contingency, the Director's
   ultimatum: YOKE asks whether the character noticed what just happened.
+- `partner` — the personal plot's first beat (capture 5): he will be matched through the Index and go down to the
+  Index office to sign, in person, off this ship. YOKE helps him think it through; underneath, the posting ends.
 - `licence` — standing reaches the licence: YOKE asks what the character will teach
   the child about this job.
 - `ending` — after a faction's finale: YOKE's last question.
@@ -66,6 +68,8 @@ Declined discussions stay available on the AI Core terminal.
   logging. Would you like me to log your reasons, too?"
 - midpoint: "They told you it was no problem at all. Does it bother you that it was
   no problem at all?"
+- partner: "When the Board calls you down to sign, will you want me to pack your things, or will you want to do it
+  yourself? I am asking for the logistics. Only the logistics."
 - licence: "The Board will approve you. The child will ask what you did. What will you
   say?"
 - ending: "The planet is quiet now. I have one more question, and then I will stop

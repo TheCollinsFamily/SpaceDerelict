@@ -3,7 +3,7 @@
  *
  * The game runs two plots that take turns (Collins, Oct 5 2026: "lets build in the pacing ... better to leave them
  * wanting more than less"): the ally's on the odd captures after the pledge (content/campaign.ts), his on the captures
- * between. From the third capture, every second capture earns the main plot one piece, played after that deployment's
+ * between. From the third capture, then every second capture from the sixth (the fifth is the personal plot's), the main plot earns one piece, played after that deployment's
  * news (src/ui/roachKing.ts), in the order of MAIN_PLOT. A counter-attack massing takes the next slot with Operation Take
  * It Back. Nothing of his once the ally's finale is played but the two scenes before the last mission and, at the very
  * end, the broadcast going off the air. A slot with nothing left in MAIN_PLOT stays empty: those slots are the ones still
@@ -24,9 +24,11 @@ export const MAIN_PLOT = ['rk-address', 'rk-draft', 'rk-briefing', 'ally', 'rk-s
 /** Every piece that takes a main-plot slot (the order's, every ally's, the counter-attack's). */
 const SLOT_PIECES = new Set<string>([...MAIN_PLOT, 'rk-counter', ...ROACH_ADDRESSES.filter((a) => a.when === 'ally').map((a) => a.id)]);
 
-/** The main-plot slots the campaign has reached. */
+/** Capture 5 is the personal plot's alone (src/meta/onboarding.ts STORY_ONCE): the main plot steps over it. */
+export const PERSONAL_CAPTURE = 5;
+/** The main-plot slots the campaign has reached: captures 3, then 6, 8, 10, 12... */
 export const mainPlotSlots = (s: CampaignState): number =>
-  s.captures < MAIN_PLOT_FIRST ? 0 : 1 + Math.floor((s.captures - MAIN_PLOT_FIRST) / MAIN_PLOT_EVERY);
+  s.captures < MAIN_PLOT_FIRST ? 0 : s.captures <= PERSONAL_CAPTURE ? 1 : 1 + Math.floor((s.captures - PERSONAL_CAPTURE - 1) / MAIN_PLOT_EVERY) + 1;
 
 const allyPiece = (s: CampaignState): RoachAddress | undefined => (s.faction ? ROACH_ADDRESSES.find((a) => a.when === 'ally' && a.faction === s.faction) : undefined);
 

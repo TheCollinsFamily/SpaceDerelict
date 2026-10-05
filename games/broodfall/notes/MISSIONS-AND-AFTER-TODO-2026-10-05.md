@@ -30,28 +30,40 @@ Counted in captures from the start (the crash site is not one; he sides with an 
 for this slot: **needs writing**. The table is what `npx vite-node tools/measure/after-mission.measure.ts -- --run --table`
 prints; re-run it after a film is baked or a scene is written.
 
+Updated later on Oct 5 (Collins: "a general beat between what is now 4 and 5 that with YOKE text introduces the
+motivation of being assigned a partner through the index ... on what is now 8, will be nine, you can add progress"): a
+third thread, **the personal plot**, carried by YOKE's greeting; everything after capture 4 moved one capture later.
+**YOKE** = her written lines carry the slot (no film needed).
+
 | Capture | Plot | Delegation | Faithful | Institute |
 |---|---|---|---|---|
-| 1 | ally | First Summit + pledge: FILMED | The Sign + pledge: FILMED | A Little Chat + pledge: CARD |
-| 2 | ally | The Leaked Plans: FILMED | It Is Agreed, Then: CARD | Sex for Fun: CARD |
+| 1 | ally | Her desk-opening speech (the late version if the desk took more than one try), then First Summit + pledge: FILMED | The Sign + pledge: FILMED | A Little Chat + pledge: CARD |
+| 2 | ally | The Leaked Plans: FILMED | It Is Agreed, Then: CARD | Sex for Fun: FILMED |
 | 3 | main | His first address: FILMED | same | same |
-| 4 | ally | For the Planet: CARD | A Slave to God's Will: CARD | Running Out of Frosties: CARD |
-| 5 | main | The home levy (or Operation Take It Back, if a counter-attack is massing): FILMED | same | same |
-| 6 | ally | The midpoint: the two rivals' offers: CARD (a letter and a call; needs video if they should be films) | same | same |
-| 7 | main | Another Territory (the briefing): FILMED | same | same |
-| 8 | ally | Why Don't You Just Ask Me: CARD | **EMPTY** | **EMPTY** |
-| 9 | main | His piece on your ally: FILMED | same | same |
-| 10 | ally | **EMPTY** | **EMPTY** | **EMPTY** |
-| 11 | main | The Last Stand: FILMED | same | same |
-| 12 | ally | **EMPTY** | **EMPTY** | **EMPTY** |
-| 13 on | main / ally | **EMPTY** (a slot of his is used up early when a counter-attack takes one) | same | same |
-| the finale | ally | The finale: CARD | CARD | CARD |
+| 4 | ally | For the Planet: FILMED | A Slave to God's Will: CARD | Running Out of Frosties: FILMED |
+| 5 | **personal** | **YOKE: the Index** (why the Board assigning him a partner matters; signing at the Index office, in person, off the ship); opens a discussion in the AI Core | same | same |
+| 6 | main | The home levy (or Operation Take It Back, if a counter-attack is massing): FILMED | same | same |
+| 7 | ally | The midpoint: the two rivals' offers: CARD (a letter and a call) | same | same |
+| 8 | main | Another Territory (the briefing): FILMED | same | same |
+| 9 | ally + **personal** | Why Don't You Just Ask Me: FILMED; **YOKE: the progress** (the file moves, Maren's twenty words) | **YOKE: the progress**; the ally's slot otherwise **EMPTY** | same as the Faithful |
+| 10 | main | His piece on your ally: FILMED | same | same |
+| 11 | ally | **EMPTY** | **EMPTY** | **EMPTY** |
+| 12 | main | The Last Stand: FILMED | same | same |
+| 13 on | ally / main | **EMPTY** | same | same |
+| the finale | ally | The finale: CARD | FILMED | FILMED |
 | the last mission | main | The Transports: FILMED; Founding Day: CARD (the provider refuses the speech as written) | same | same |
 | after it | main | Off the air: FILMED | same | same |
 
+Besides the story, every return has YOKE's greeting, and none is said twice in a campaign while she has an unsaid one.
+**The once intros** (`src/meta/onboarding.ts` INTROS; lines in `content/greetings.ts`) each play once, on an ordinary
+return, never two returns running, and a lost mission does not bring one back: the boss's message (first landing) and the
+mate review and the cat girl (early) as before; then his dad's message (Collins's line, from capture 2), the boss writes
+again (3), the duck (4, if the first mission was won), the Board's eligibility statement (6), a second cat girl (7), the
+audit (8), his dad drafting a hundred names (10, after the progress beat). The new lines are written to match Collins's,
+not his words: his to edit.
+
 A campaign reaches its finale at about capture 12 to 13 when the player heads for it (later when they take every other
-landing first), so the slots to write are mostly **8 (Faithful, Institute), 10 and 12 for the ally, and 13 for the main
-plot**. The other session's film batch is turning the CARDs into films (`tools/media/make-all.mjs`).
+landing first), so the slots to write are mostly **the ally's 9 (Faithful, Institute; YOKE's progress beat is there), 11 and 13**. The other session's film batch is turning the CARDs into films (`tools/media/make-all.mjs`).
 
 ## To do: pacing
 

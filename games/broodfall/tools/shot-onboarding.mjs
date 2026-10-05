@@ -296,10 +296,11 @@ try {
     await endRun(page, 'won');
     await page.waitForSelector('#campaign:not(.hidden) [data-act="back"]', { timeout: 15000 });
     const g3 = await aboard(page, '[data-act="back"]');
-    check(g3 === 'unlock', `the win clears the desk, and she says so: ${g3}`);
+    // Two tries at the desk lost first: her late version of the speech (Collins, Oct 5 2026).
+    check(g3 === 'unlock-late', `the win clears the desk, and she says so (late: two tries lost first): ${g3}`);
     check(await page.locator('.cp-scene').count() === 0, 'no scene comes up over her greeting');
     await greeted(page);
-    check(/Broh, that was sick/.test(await icomText(page)), 'Collins\'s unlock lines');
+    check(/Broh\. Finally\. That was sick\.\.\. eventually\./.test(await icomText(page)) && /while you were finding your feet/i.test(await icomText(page)), 'the late version of Collins\'s unlock lines (two tries lost first: his lines, a new opening)');
     // Since Oct 3 2026 nobody calls: she has announced them, and they are signals on the planet at the desk.
     check(/someone left coloured cards in a field/.test(await icomText(page)), 'she announces the three groups, the cards last');
     await page.locator('[data-room="desk"]').click();

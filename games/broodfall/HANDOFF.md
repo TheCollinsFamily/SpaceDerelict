@@ -329,6 +329,13 @@ whole campaign per ally, return by return; `tests/afterMission.test.ts` holds th
   (afterCaptures 1, 3, 7; MIDPOINT_CAPTURES 5); the main plot from the 3rd capture, every 2nd (`MAIN_PLOT`: address,
   draft, briefing, his piece on the ally, last stand; a counter-attack massing takes the next slot). The slot map, with
   each slot FILMED / CARD (needs video) / EMPTY (needs writing): notes/MISSIONS-AND-AFTER-TODO-2026-10-05.md.
+- THE PERSONAL PLOT (later still on Oct 5): YOKE's greeting carries it, `STORY_ONCE` in src/meta/onboarding.ts: the Index
+  at capture 5 (the slot between the ally's 4 and the main plot's next; it queues the AI Core discussion `partner`, its
+  seed in the lorebook) and its progress at 9. Everything after capture 4 moved one later: in captures after the pledge
+  the beats at 1, 3, 8, MIDPOINT_CAPTURES 6; the main plot at captures 3, 6, 8, 10, 12 (`PERSONAL_CAPTURE` in roachKing.ts).
+  The desk-opening speech has a late version (`unlock-late`) when the desk took more than one try. The ONCE intros
+  (`INTROS`, `introFor`): each once a campaign, on an ordinary return, never two running. Tests `tests/personalPlot.test.ts`;
+  beat `node tools/shot-personal.mjs` (the dev server; screenshots notes/screens/2026-10-05/personal-*.jpg).
 
 ## The last mission, and the Roach King off the air (Oct 4 2026)
 

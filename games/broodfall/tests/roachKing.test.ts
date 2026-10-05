@@ -49,7 +49,10 @@ describe('the Roach King: when he comes on the air (the main plot, paced Oct 5 2
     expect(mainPlotSlots(after(MAIN_PLOT_FIRST - 1))).toBe(0);
     expect(dueAfterDeployment(after(MAIN_PLOT_FIRST - 1), emptyRoachLog(7))).toBeNull();
     expect(mainPlotSlots(after(MAIN_PLOT_FIRST))).toBe(1);
-    expect(mainPlotSlots(after(MAIN_PLOT_FIRST + MAIN_PLOT_EVERY))).toBe(2);
+    // Capture 5 is the personal plot's: his second slot is capture 6, then every second capture.
+    expect(mainPlotSlots(after(5))).toBe(1);
+    expect(mainPlotSlots(after(6))).toBe(2);
+    expect(mainPlotSlots(after(6 + MAIN_PLOT_EVERY))).toBe(3);
     // One piece per slot: after his first, nothing until the next slot is reached.
     expect(dueAddress(after(4), seen('rk-address'))).toBeNull();
   });
@@ -61,8 +64,8 @@ describe('the Roach King: when he comes on the air (the main plot, paced Oct 5 2
   });
   it('a counter-attack massing takes the next slot, after his introduction', () => {
     expect(dueAddress(after(3, { underAttack: 'harbor' }), emptyRoachLog(7))?.id).toBe('rk-address');
-    expect(dueAddress(after(5, { underAttack: 'harbor' }), seen('rk-address'))?.id).toBe('rk-counter');
-    expect(dueAddress(after(7), seen('rk-address', 'rk-counter'))?.id).toBe('rk-draft');
+    expect(dueAddress(after(6, { underAttack: 'harbor' }), seen('rk-address'))?.id).toBe('rk-counter');
+    expect(dueAddress(after(8), seen('rk-address', 'rk-counter'))?.id).toBe('rk-draft');
   });
   it('a lost mission earns nothing: the slot count is in captures', () => {
     const s = after(3);
@@ -116,9 +119,9 @@ describe('the Roach King off the air (Collins, Oct 4 2026): the central plot', (
     ]) expect(all, said).toContain(said);
   });
 
-  it('the briefing is the third piece of the main plot (capture 7 when no counter-attack came)', () => {
-    expect(dueScene(at({ captures: 7, deployments: 7 }), seen('rk-address', 'rk-draft'))?.id).toBe('rk-briefing');
-    expect(dueScene(at({ captures: 6, deployments: 6 }), seen('rk-address', 'rk-draft'))).toBeNull();
+  it('the briefing is the third piece of the main plot (capture 8 when no counter-attack came)', () => {
+    expect(dueScene(at({ captures: 8, deployments: 8 }), seen('rk-address', 'rk-draft'))?.id).toBe('rk-briefing');
+    expect(dueScene(at({ captures: 7, deployments: 7 }), seen('rk-address', 'rk-draft'))).toBeNull();
   });
 
   it('the call, then his last message, when the last mission is launched: each once', () => {

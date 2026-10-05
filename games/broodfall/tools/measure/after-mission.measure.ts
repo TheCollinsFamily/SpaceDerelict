@@ -14,9 +14,9 @@ import { FACTIONS, HOME, LAST } from '../../content/campaign';
 import type { FactionId } from '../../content/campaign';
 import { ROACH_ADDRESSES } from '../../content/roachKing';
 import { ally, dismissScene, finish, newCampaign, plan, stayLoyal, targets, type CampaignState } from '../../src/meta/campaign';
-import { greetingFor } from '../../src/meta/onboarding';
+import { EARLY_ONCE, STORY_ONCE, greetingFor } from '../../src/meta/onboarding';
 import { afterMission } from '../../src/meta/afterMission';
-import { MAIN_PLOT_EVERY, MAIN_PLOT_FIRST, emptyRoachLog, lastMissionScenes, logRoach, type RoachLog } from '../../src/meta/roachKing';
+import { MAIN_PLOT_EVERY, MAIN_PLOT_FIRST, PERSONAL_CAPTURE, emptyRoachLog, lastMissionScenes, logRoach, type RoachLog } from '../../src/meta/roachKing';
 import type { RunReport } from '../../src/meta/goals';
 import type { RunStats } from '../../src/sim/types';
 
@@ -43,17 +43,19 @@ const stats = (): RunStats => ({
 const won: RunReport = { won: true, wavesCleared: 9, coreEndFrac: 0.6, scienceBanked: 0, stats: stats() };
 
 export interface Return {
-  n: number; where: string; capture: number | null; slot: 'ally' | 'main' | 'end' | null;
+  n: number; where: string; capture: number | null; slot: 'ally' | 'main' | 'personal' | 'end' | null;
   faction: string[]; roach: string | null; waits: string | null;
-  status: 'FILMED' | 'CARD' | 'EMPTY' | null; greeting: string; greetingNew: boolean;
+  status: 'FILMED' | 'CARD' | 'YOKE' | 'EMPTY' | null; greeting: string; greetingNew: boolean;
 }
 
-/** Whose slot a capture is: the main plot's from the third capture, every second one; the ally's between. */
-export const slotOf = (capture: number): 'ally' | 'main' => (capture >= MAIN_PLOT_FIRST && (capture - MAIN_PLOT_FIRST) % MAIN_PLOT_EVERY === 0 ? 'main' : 'ally');
+/** Whose slot a capture is: the main plot's at 3, 6, 8, 10...; the personal plot's at 5; the ally's between. */
+export const slotOf = (capture: number): 'ally' | 'main' | 'personal' =>
+  capture === PERSONAL_CAPTURE ? 'personal' : capture === MAIN_PLOT_FIRST || (capture > PERSONAL_CAPTURE && (capture - PERSONAL_CAPTURE - 1) % MAIN_PLOT_EVERY === 0) ? 'main' : 'ally';
 
 /** One campaign, allied with `with` from its first capture, every mission won, staying loyal at the midpoint. */
 export function campaign(seed: number, withFaction: FactionId): { returns: Return[]; ended: boolean } {
-  let s: CampaignState = newCampaign(seed);
+  // Past the first mission (won), the desk open: as a campaign is when its captures begin.
+  let s: CampaignState = { ...newCampaign(seed), onboard: { mission1: 'won', deskOpen: true } };
   let log: RoachLog = emptyRoachLog(seed);
   const said = new Set<string>();
   const returns: Return[] = [];
@@ -75,14 +77,18 @@ export function campaign(seed: number, withFaction: FactionId): { returns: Retur
     if (!s.faction && s.captures >= 1) { const before = s.pendingScenes.length; s = ally(s, withFaction); pledged = s.pendingScenes.slice(before); }
     const faction = [...plays.faction, ...pledged].map((p) => p.scene.film ?? `card:${p.scene.title}`);
     const slot = capture === null ? null : end ? 'end' : slotOf(capture);
-    const story = [...faction, ...(plays.roach ? [plays.roach] : [])];
-    const status = slot === null ? null : !story.length ? 'EMPTY' : story.every((x) => !x.startsWith('card:') && statusOf(x) === 'FILMED') ? 'FILMED' : 'CARD';
     if (s.midpoint?.status === 'offered') s = stayLoyal(s);
     while (s.pendingScenes.length) s = dismissScene(s);
-    const g = greetingFor(s, LORE).greeting;
+    // Her greeting, as the ship says it (src/ui/campaignUi.ts welcome): a once-only moment is marked said.
+    const { moment, greeting: g } = greetingFor(s, LORE);
     const fresh = !said.has(g.id);
     said.add(g.id);
-    s = { ...s, lastGreeting: g.id, greetingsSaid: [...said] };
+    const once = EARLY_ONCE.includes(moment) || STORY_ONCE.some((b) => b.id === moment);
+    s = { ...s, greet: null, lastGreeting: g.id, greetingsSaid: [...said], said: once ? [...(s.said ?? []), moment] : s.said };
+    // The story of this return: the films, and the personal plot's beat when YOKE carries it (her text: written).
+    const story = [...faction, ...(plays.roach ? [plays.roach] : [])];
+    const personal = STORY_ONCE.some((b) => b.id === moment);
+    const status = slot === null ? null : !story.length ? (personal ? 'YOKE' : 'EMPTY') : story.every((x) => !x.startsWith('card:') && statusOf(x) === 'FILMED') ? 'FILMED' : 'CARD';
     returns.push({ n, where: pick.id === HOME ? 'home' : pick.id, capture, slot, faction, roach: plays.roach, waits: plays.roachWaits, status, greeting: g.id, greetingNew: fresh });
   }
   return { returns, ended: !!s.ended };
@@ -94,7 +100,7 @@ if (process.argv.includes('--run')) {
     const both = returns.filter((r) => r.faction.length && r.roach).length;
     const count = (st: string) => returns.filter((r) => r.status === st).length;
     const stale = returns.filter((r) => !r.greetingNew).length;
-    console.log(`\n${f.id}: ${returns.length} missions${ended ? ', campaign ended' : ''}; two story films on one return: ${both}; FILMED ${count('FILMED')}, CARD (needs video) ${count('CARD')}, EMPTY (needs writing) ${count('EMPTY')}; a greeting heard before: ${stale}`);
+    console.log(`\n${f.id}: ${returns.length} missions${ended ? ', campaign ended' : ''}; two story films on one return: ${both}; FILMED ${count('FILMED')}, CARD (needs video) ${count('CARD')}, YOKE text only ${count('YOKE')}, EMPTY (needs writing) ${count('EMPTY')}; a greeting heard before: ${stale}`);
     if (process.argv.includes('--table')) {
       for (const r of returns) {
         const what = [...r.faction, ...(r.roach ? [r.roach] : []), ...(r.waits ? [`(${r.waits} waits)`] : [])].join(', ') || '-';

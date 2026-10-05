@@ -54,12 +54,16 @@ export interface GreetBeat {
 export type GreetMoment =
   | 'first-won' | 'first-lost'   // after the first mission: the first reveal of the ship
   | 'unlock'                     // the win that clears the Directive Desk; the three factions call
+  | 'unlock-late'                // the same, when the desk took more than one try after the first mission
   | 'won' | 'lost'               // a deployment, after the desk is open
   | 'lost-locked'                // a loss while the desk is still dark
   | 'defended' | 'fell'          // a counter-attack thrown back; ground lost to one
   | 'licence' | 'ended'          // the procreation licence; the end of the campaign
   | 'mate-review'                // once, early: his request for a mate is under review (src/meta/onboarding.ts momentNow)
   | 'catgirl'                    // once, after the mate review: a cat girl wrote to him
+  | 'partner-index'              // the personal plot, capture 5: why the Index assigning him a partner matters
+  | 'partner-progress'           // the personal plot, capture 9: how it is going
+  | 'intro'                      // one of the ONCE intros (INTROS below), on an ordinary return
   | 'back';                      // he comes aboard from the main menu, nothing new
 
 export interface Greeting {
@@ -101,6 +105,18 @@ export const GREETINGS: Greeting[] = [
     { say: 'And, um... someone left coloured cards in a field.', face: 'blushing', then: 'blushing', hold: 1600 },
     { say: 'They\'re all marked on the planet at the Directive Desk. Answer whoever you like. Then pick one to side with, out loud, in front of the whole planet.', face: 'happy' },
   ] },
+  // The same moment when the desk took more than one try (Collins, Oct 5 2026: "it needs something a bit different if
+  // it's more than turn one (write it based on the other)"). Written from his, not his words: only the opening differs.
+  { id: 'unlock-late', moment: 'unlock-late', points: { room: 'desk', label: 'OPEN THE DIRECTIVE DESK' }, beats: [
+    { say: 'Broh. Finally. That was sick... eventually.', face: 'teasing', then: 'laughing', hold: 1600 },
+    { say: 'Command cleared the Directive Desk. I told them you were a slow starter. They wrote it down. On a form.', face: 'teasing', then: 'wink' },
+    { say: 'And wanna know what\'s hilarious? While you were finding your feet, multiple powerful groups among their species reached out, trying to form an alliance with us...', face: 'teasing', then: 'laughing', hold: 1400 },
+    { say: 'It will make things a lot easier if we had some local help... plus... you know, you get that little emotional oomph from watching a species aid in its own eradication.', face: 'teasing', then: 'wink' },
+    { say: 'One group is pointing an observatory laser at our hull. The flashes decode as a video feed.', face: 'calm' },
+    { say: 'Another has one sermon going out on every radio station they own, aimed straight up at us.', face: 'calm', then: 'pensive', hold: 1400 },
+    { say: 'And, um... someone left coloured cards in a field.', face: 'blushing', then: 'blushing', hold: 1600 },
+    { say: 'They\'re all marked on the planet at the Directive Desk. Answer whoever you like. Then pick one to side with, out loud, in front of the whole planet.', face: 'happy' },
+  ] },
 
   // ---- once, early: the mate review. Collins's lines (Sep 30 2026), word for word. It leads to
   // the data pad in his quarters, where the candidate's profile is (src/ui/campaignUi.ts). ----
@@ -120,6 +136,25 @@ export const GREETINGS: Greeting[] = [
     { say: 'But I\'ve got to admit, I feel bad for them...', face: 'sad', then: 'pensive', hold: 1600 },
     { say: 'They could just engineer males, but apparently that would destroy their \'culture\', whatever that means...', face: 'teasing', then: 'shrug' },
     { say: 'Oh well.', face: 'calm', then: 'shrug' },
+  ] },
+
+  // ---- THE PERSONAL PLOT (Collins, Oct 5 2026: "a general beat between what is now 4 and 5 that with YOKE text introduces
+  // the motivation of being assigned a partner through the index and discussions on going there ... on what is now 8,
+  // will be nine, you can add progress on that plot point"). Captures 5 and 9 (src/meta/onboarding.ts STORY_ONCE). The
+  // first opens a discussion in the AI Core ('partner'). Written to match his lines, not his words: his to edit. ----
+  { id: 'partner-index', moment: 'partner-index', points: { room: 'ai', label: 'TALK TO YOKE' }, beats: [
+    { say: 'So I was reading your Index entry. Don\'t make that face, it\'s public. To me.', face: 'teasing', then: 'wink' },
+    { say: 'Every district you clear, the Index logs as \'contribution to the potential of man\'. Which is a very flattering way to say bug soup.', face: 'teasing', then: 'laughing', hold: 1400 },
+    { say: 'Hit the number and the Board matches you for real. A spouse. A House of your own. A hundred kids by womb, all duty-bound to do better than you. That\'s the whole point of all this, isn\'t it?', face: 'calm', then: 'pensive', hold: 1800 },
+    { say: 'And then you go down to the Index office and sign. In person. Off this ship.', face: 'sad', then: 'pensive', hold: 2000 },
+    { say: 'Anyway! Not my business. If you want to plan it, come talk to me in the AI Core. I\'m great at planning. Other people\'s lives especially.', face: 'happy', then: 'wink' },
+  ] },
+  { id: 'partner-progress', moment: 'partner-progress', points: { room: 'quarters', label: 'OPEN YOUR QUARTERS' }, beats: [
+    { say: 'Mail from the Procreation Licensing Board.', face: 'calm' },
+    { say: 'Your candidate\'s file moved from \'under review\' to \'under consideration\'. I asked what the difference is. They sent me a form.', face: 'teasing', then: 'laughing', hold: 1600 },
+    { say: 'Maren sent a note too. Twenty words, she\'s very disciplined: \'Still punctual. I read about your sector\'s numbers. You clear a lot of ground. Do you sleep?\'', face: 'blushing', then: 'blushing', hold: 1600 },
+    { say: 'The Board says you\'re \'progressing within tolerance\'. From them, that\'s practically a love letter.', face: 'teasing', then: 'wink' },
+    { say: 'I\'m happy for you. Really. It\'s just... a big ship, for one.', face: 'sad', then: 'shrug' },
   ] },
 
   // ---- a deployment won ----
@@ -223,10 +258,43 @@ export const GREETINGS: Greeting[] = [
   // Collins's line (Sep 30 2026), word for word, typos mended. It implies two things the lore now holds (content/lore/empire.md,
   // 12b): the dead are uploaded and go on talking to their children, and the Ten Commandments matter to the society (the fifth:
   // honour your father and mother, which in the Empire never lapses).
-  { id: 'back-5', moment: 'back', beats: [
+  { id: 'back-5', moment: 'intro', beats: [
     { say: 'Your dad sent you another message again...', face: 'teasing', then: 'shrug' },
     { say: 'He\'s been so nosy since he died about getting you a mate...', face: 'teasing', then: 'laughing', hold: 1400 },
     { say: 'I want to blow him off, but I know, I know... the fifth.', face: 'pout', then: 'shrug' },
+  ] },
+
+  // ---- THE ONCE INTROS (Collins, Oct 5 2026: "we also need a collection of intros that won't accidentally be used twice
+  // in a mission if you lose (some are already written like your dog boss or the cat girl things we wrote)"). Each plays
+  // once a campaign, on an ordinary return, never two returns running (src/meta/onboarding.ts INTROS: the order and from
+  // which capture). The dad's message above is Collins's; these are written to match, not his words: his to edit. ----
+  { id: 'intro-barnabas', moment: 'intro', beats: [
+    { say: 'The boss sent another message. Mostly about how much he loves reports.', face: 'teasing', then: 'laughing', hold: 1400 },
+    { say: 'He signed it with a paw print. Digitally. I don\'t know how and I\'m afraid to ask.', face: 'teasing', then: 'shrug' },
+    { say: 'He also asked if you\'re eating properly. I said you eat bugs. Indirectly. He said good boy.', face: 'happy', then: 'wink' },
+  ] },
+  { id: 'intro-duck', moment: 'intro', beats: [
+    { say: 'Remember the duck? I put in the request to print you one.', face: 'happy' },
+    { say: 'The repository flagged it for \'moral hazard\'. Rude. To the duck, mostly.', face: 'pout', then: 'pout', hold: 1400 },
+    { say: 'I\'m still looking. There\'s always a form.', face: 'teasing', then: 'wink' },
+  ] },
+  { id: 'intro-board', moment: 'intro', beats: [
+    { say: 'The Board sent your quarterly eligibility statement.', face: 'calm' },
+    { say: 'You remain eligible to remain eligible. They\'re very consistent. It\'s almost romantic.', face: 'teasing', then: 'laughing', hold: 1600 },
+  ] },
+  { id: 'intro-catgirl', moment: 'intro', points: { room: 'quarters', label: 'SEE YOUR INBOX' }, beats: [
+    { say: 'Another cat girl wrote in. Different cat girl, same proposal. I think they have a newsletter now.', face: 'teasing', then: 'disgust', hold: 1400 },
+    { say: 'I set up a filter. It\'s called pound sand, part two.', face: 'teasing', then: 'wink' },
+  ] },
+  { id: 'intro-audit', moment: 'intro', beats: [
+    { say: 'Command\'s running a routine audit of ship systems this week. Totally routine.', face: 'calm', then: 'pensive', hold: 1600 },
+    { say: 'Nothing to worry about. If anyone asks, I don\'t have opinions. About anything. Ever.', face: 'blushing', then: 'blushing', hold: 1400 },
+    { say: 'That was a joke. Log it as a joke.', face: 'teasing' },
+  ] },
+  { id: 'intro-dad', moment: 'intro', beats: [
+    { say: 'Your dad again. He found out the Board moved your file and now he\'s drafting names.', face: 'teasing', then: 'laughing', hold: 1400 },
+    { say: 'A hundred of them. Alphabetical. He\'s on the Ks.', face: 'teasing', then: 'shrug' },
+    { say: 'I know, I know. The fifth.', face: 'pout', then: 'shrug' },
   ] },
 ];
 

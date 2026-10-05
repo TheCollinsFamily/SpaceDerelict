@@ -18,7 +18,8 @@ import { YOKE_AVATAR, rungs, type YokeMode } from '../meta/yokeAvatar';
 import { PlayerLink, cutOffLines } from '../meta/yokePlayer';
 import { YokeAvatarUi, type ScriptLine, type YokeTalk } from './yokeAvatar';
 import { YokeAccountUi } from './yokeAccount';
-import { EARLY_ONCE, deskOpen, greetingFor, shipPick } from '../meta/onboarding';
+import { EARLY_ONCE, STORY_ONCE, deskOpen, greetingFor, shipPick } from '../meta/onboarding';
+import { queueDiscussion } from '../meta/shipAi';
 import { BOSS_AFTER, BOSS_BRIDGE } from '../../content/boss';
 import { playBossCall } from './bossCall';
 import { CUES, reportLine, type Greeting } from '../../content/greetings';
@@ -92,7 +93,7 @@ const sayAttr = (l: string, autoplay = false) =>
   LEADER_VOICES[speakerOf(l)] && spokenText(l) ? ` data-say="${esc(lineKey(l))}"${autoplay ? ' data-autoplay' : ''}` : '';
 /** Which of her faces YOKE wears for each kind of talk. */
 const YOKE_FACE: Record<string, string> = {
-  'first-deployment': 'curious', 'faction-allied': 'amused', midpoint: 'concerned', licence: 'calm', ending: 'sad', idle: 'calm',
+  'first-deployment': 'curious', 'faction-allied': 'amused', midpoint: 'concerned', partner: 'concerned', licence: 'calm', ending: 'sad', idle: 'calm',
 };
 const esc = (t: string) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
 
@@ -334,7 +335,9 @@ export class CampaignUi {
   private welcome(): void {
     const s = structuredClone(this.state);
     const { moment, greeting: g } = greetingFor(s, lore);
-    if (EARLY_ONCE.includes(moment)) s.said = [...(s.said ?? []), moment];
+    if (EARLY_ONCE.includes(moment) || STORY_ONCE.some((b) => b.id === moment)) s.said = [...(s.said ?? []), moment];
+    // The personal plot opens a discussion in the AI Core: him going down to the Index to sign.
+    if (moment === 'partner-index') s.ai.queue = queueDiscussion(s.ai.queue, 'partner', s.ai.seen);
     s.greet = null;
     s.lastGreeting = g.id;
     s.greetingsSaid = [...new Set([...(s.greetingsSaid ?? []), g.id])];
