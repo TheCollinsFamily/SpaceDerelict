@@ -28,6 +28,7 @@ import { CLEAN, CONCEPTS, CROWD, LEADER_REF, WHO } from './prompts.mjs';
 import { FILMS, STILLS, type Film, type FilmLook, type FilmShot } from '../../content/cutscenes';
 import { FACTIONS, type FactionId, type Scene } from '../../content/campaign';
 import { ROACH_SCENES } from '../../content/roachKing';
+import { SUBJECT, VOICES } from '../../content/cast';
 import { scenesOf, speakerOf, spokenText } from '../../content/media';
 
 const RAW = path.join(ROOT, 'art-src-new', 'cutscenes');
@@ -165,24 +166,6 @@ function review(film: Film) {
 }
 
 // ------------------------------------------------------------------ the words of every clip
-const VOICES: Record<string, string> = {
-  'You': 'He speaks English in a mild, earnest young man\'s voice: a light, clear tenor, soft-spoken and thoughtful, a little dry, with a neutral American accent. It is always exactly this same voice.',
-  'Delegate': 'She speaks English in a warm, bright, elderly woman\'s voice, gentle and delighted, like a kindly retired schoolteacher, with a soft mid-Atlantic accent of the 1950s. It is always exactly this same voice.',
-  'The Voice': 'He speaks English in the booming, fervent, gravelly baritone of an American radio evangelist of the 1950s, about sixty, rolling and rising like a preacher. It is always exactly this same voice.',
-  'The Director': 'He speaks English in a fast, lazy, confident young man\'s voice, a nasal Californian drawl, always amused with himself. It is always exactly this same voice.',
-  // Off the air (content/roachKing.ts): the showman's big voice, without the show.
-  'The Roach King': 'He speaks English in a big, deep, gravelly man\'s voice with a Texas drawl, a showman\'s voice used quietly and sharply, tired and exact. It is always exactly this same voice.',
-  'Aide': 'He speaks English in a thin, careful, nervous man\'s voice, a junior civil servant, with a soft mid-Atlantic accent. It is always exactly this same voice.',
-  'General': 'She speaks English in a hoarse, loud, furious woman\'s voice, a parade-ground bark. It is always exactly this same voice.',
-};
-const SUBJECT: Record<string, [string, string]> = {
-  'Delegate': ['The chief delegate, the elderly insect woman in the cardigan and the flower garland,', 'Her small mandibles move like a mouth with her words.'],
-  'The Voice': ['The preacher in the black robes', 'His small mandibles move like a mouth with his words.'],
-  'The Director': ['The lanky young insect man in the grey t-shirt', 'His small mandibles move like a mouth with his words.'],
-  'The Roach King': ['The President, the huge cockroach-man in the green coat with the gold braid,', 'His small mandibles move like a mouth with his words.'],
-  'Aide': ['The aide, the thin insect man in the grey suit,', 'His small mandibles move like a mouth with his words.'],
-  'General': ['The general on the screen', 'Her small mandibles move like a mouth with her words.'],
-};
 /** He is seen from behind, always (Collins, Oct 4 2026). */
 const BEHIND = 'The young man keeps his back square to the camera in every frame: only the back of his head and shoulders are seen, never his face, not even in profile; he never turns round or sideways.';
 /** A hologram stays clean: a sparkle the model adds is handed down the take with the frame and multiplies into snow (the second take, Oct 4 2026). */
@@ -1423,7 +1406,8 @@ async function make(film: Film) {
   const ff_ = [...filmGates(film), ...await filmWords(film)];
   console.log(`[make] the film ${ff_.length ? `FAILS: ${ff_.map((x) => `${x.gate} (${x.why})`).join('; ')}` : 'passes its gates'}`);
   for (let k = 0; k < exs.length; k++) talkDeadAir(film, exs, k, await talkCut(film, exs, k));
-  desk(film);
+  // (Not copied to his Desktop: the film is in the game, public/media/scenes/. Collins, Oct 5 2026: "why are they on my
+  // desktop?". `desk <film>` still does it when asked.)
   console.log(report.join('\n'));
 }
 

@@ -135,6 +135,77 @@
      "t1": 12.084
     }
    ]
+  },
+  "delegation-stop-war": {
+   "video": "media/scenes/delegation-stop-war.mp4",
+   "poster": "media/scenes/delegation-stop-war.webp",
+   "seconds": 45.208,
+   "cues": [
+    {
+     "shot": "l00",
+     "line": 0,
+     "who": "Delegate",
+     "text": "Visitor! Wonderful news. Our generals are organising a major counter-attack against your forces.",
+     "t0": 0,
+     "t1": 8.218
+    },
+    {
+     "shot": "l01",
+     "line": 1,
+     "who": "Delegate",
+     "text": "And we have all of the plans for you.",
+     "t0": 8.218,
+     "t1": 11.922
+    },
+    {
+     "shot": "l02",
+     "line": 2,
+     "who": "You",
+     "text": "Why would you do this?",
+     "t0": 11.922,
+     "t1": 14.427
+    },
+    {
+     "shot": "l03",
+     "line": 3,
+     "who": "Delegate",
+     "text": "Because violence is always wrong.",
+     "t0": 14.427,
+     "t1": 17.498
+    },
+    {
+     "shot": "l04",
+     "line": 4,
+     "who": "You",
+     "text": "But presumably the way I will use this is to attack your generals first. Which is still violence.",
+     "t0": 17.498,
+     "t1": 25.516
+    },
+    {
+     "shot": "l05",
+     "line": 5,
+     "who": "Delegate",
+     "text": "Ah, but you are the other. The immigrant. The guest.",
+     "t0": 25.516,
+     "t1": 32.513
+    },
+    {
+     "shot": "l06",
+     "line": 6,
+     "who": "Delegate",
+     "text": "Any violence you do against our people is justified. Did they not start shooting the moment you first landed?",
+     "t0": 32.513,
+     "t1": 41.663
+    },
+    {
+     "shot": "l07",
+     "line": 7,
+     "who": "You",
+     "text": "Sure. I guess that makes sense.",
+     "t0": 41.663,
+     "t1": 45.208
+    }
+   ]
   }
  }
 }
