@@ -140,7 +140,8 @@ try {
     await page.goto(`${URL0}?campaign=ship&open=1`, GO);
     await page.waitForSelector('#campaign:not(.hidden)', { timeout: 180000 });
     await aboard(page);
-    await patchCampaign(page, { deployments: 1, onboard: undefined });
+    // His pieces come from the third capture (src/meta/roachKing.ts MAIN_PLOT_FIRST): this is the 2nd.
+    await patchCampaign(page, { deployments: 1, captures: 1, onboard: undefined });
     await deploy(page, 'harbor', true);
     await page.locator('[data-act="back"]').click();
     // The news may play; skip it, and nothing of his follows.
@@ -157,7 +158,7 @@ try {
     await page.goto(`${URL0}?campaign=ship&open=1`, GO);
     await page.waitForSelector('#campaign:not(.hidden)', { timeout: 180000 });
     await aboard(page);
-    await patchCampaign(page, { deployments: 2, onboard: undefined });
+    await patchCampaign(page, { deployments: 2, captures: 2, onboard: undefined });
     await deploy(page, 'harbor', true);
     await record(p);
     await page.locator('[data-act="back"]').click();

@@ -286,11 +286,17 @@ export type PerkId = 'objectors1' | 'objectors2' | 'translator' | 'sleepers1' | 
  * to one, or stays. Nobody turns on him either way (DESIGN.md: "none of them ever turns against you");
  * the one he leaves takes it in character, and writes once more after the end.
  *   Going over: the old ally's perks go (the beats he saw stay seen), its finale closes, and the new
- *   route starts with SWITCH_HEAD_START captures already counted, so its first two beats play at once.
+ *   route starts with SWITCH_HEAD_START captures already counted, so its first beat after the meeting plays at once.
  *   Staying: every perk is kept and the ally adds its loyalty perk.
  * Rules: src/meta/campaign.ts (finish, switchAlly, stayLoyal).
  */
-export const MIDPOINT_CAPTURES = 2;
+/**
+ * THE PACING (Collins, Oct 5 2026: "lets build in the pacing ... better to leave them wanting more than less"): the two
+ * plots take turns, one story film a return. The ally's plot on the odd captures after the pledge (beats at 1, 3 and 7;
+ * the midpoint's offers at 5), the main plot (the Roach King) on the captures between (src/meta/roachKing.ts MAIN_PLOT).
+ * The slots, and which are still empty: notes/MISSIONS-AND-AFTER-TODO-2026-10-05.md, tools/measure/after-mission.measure.ts.
+ */
+export const MIDPOINT_CAPTURES = 5;
 export const SWITCH_HEAD_START = 1;
 
 export interface MidpointDef {
@@ -502,7 +508,7 @@ export const FACTIONS: FactionDef[] = [
         'Delegate: Any violence you do against our people is justified. Did they not start shooting the moment you first landed?',
         'You: (pinching the bridge of his nose) Sure. I guess that makes sense.',
       ] } },
-      { id: 'gaia', title: 'The Greater Plan', afterCaptures: 2, scene: { title: 'For the Planet', film: 'delegation-gaia', lines: [
+      { id: 'gaia', title: 'The Greater Plan', afterCaptures: 3, scene: { title: 'For the Planet', film: 'delegation-gaia', lines: [
         'Delegate: (on a video call, excited) Visitor! We have held a number of internal conversations.',
         'Delegate: We wanted to explain why you keep expanding in what appears to be a violent manner. And we have figured it out.',
         'Delegate: Look at the pattern of your attacks. You hit the centres of industry and of military power.',
@@ -516,7 +522,7 @@ export const FACTIONS: FactionDef[] = [
         'You: I heard there were humans like this in Earth\'s history. I should look into them.',
       ] } },
       // "(note he is using the language of history books as written by the technopuritan tradition, thus the wording)"
-      { id: 'reveal', title: 'Nobody\'s Perfect', afterCaptures: 3, perks: ['objectors2'], scene: { title: 'Why Don\'t You Just Ask Me', film: 'delegation-reveal', lines: [
+      { id: 'reveal', title: 'Nobody\'s Perfect', afterCaptures: 7, perks: ['objectors2'], scene: { title: 'Why Don\'t You Just Ask Me', film: 'delegation-reveal', lines: [
         'Delegate: (calling again, excited) Visitor! We have talked further, and we have learned so much more about your plans.',
         'You: (cutting in) Why don\'t you just ask me?',
         'Delegate: (looking around, confused) Oh. Um.',
@@ -823,7 +829,7 @@ export const FACTIONS: FactionDef[] = [
       ] } },
       // The ultimatum is no longer a choice (Collins's script of Oct 3 2026: he asks for both things in one breath, and the
       // answer is "sure, I guess, do that"). The id stays for saved games.
-      { id: 'ultimatum', title: 'Rule the Rest', afterCaptures: 2, perks: ['volunteers2'], scene: { title: 'Running Out of Frosties', film: 'institute-ultimatum', lines: [
+      { id: 'ultimatum', title: 'Rule the Rest', afterCaptures: 3, perks: ['volunteers2'], scene: { title: 'Running Out of Frosties', film: 'institute-ultimatum', lines: [
         'You: You were trying to get in touch with me?',
         'The Director: My man. Let\'s have a chat.',
         'The Director: So. I have sent you a lot of frosties.',

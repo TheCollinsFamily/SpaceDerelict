@@ -98,10 +98,12 @@ try {
   await clearPlain(page);
   await page.locator('[data-room="comms"]').click();
   check(/Halfway along, the other two will make you an offer/i.test(await page.locator('.cp-body').innerText()), 'Comms tells him, when he allies, that an offer will come halfway');
-  // Two territories into the alliance.
-  await takeOne(page);
-  await clearPlain(page);
-  check(!(await page.locator('.cp-scene [data-switch]').count()), 'one territory in: no offer yet');
+  // Five territories into the alliance (content/campaign.ts MIDPOINT_CAPTURES: the ally's plot takes the odd captures).
+  for (let k = 1; k < 5; k++) {
+    await takeOne(page);
+    await clearPlain(page);
+    if (k === 4) check(!(await page.locator('.cp-scene [data-switch]').count()), 'four territories in: no offer yet');
+  }
   await takeOne(page);
   await clearPlain(page);
   await page.waitForSelector('.cp-scene [data-switch]', { timeout: 5000 }).catch(() => {});

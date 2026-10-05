@@ -325,12 +325,10 @@ whole campaign per ally, return by return; `tests/afterMission.test.ts` holds th
   has not said (`CampaignState.greetingsSaid`; Earth news items the same).
 - ONE story film at most: the ally's scenes this mission made due play on the ship; a Roach King piece that is due WAITS
   for a return with none (the end of his broadcast excepted). Before: 1 to 2 returns a campaign had both.
-- His last stand needs STAND_HELD (8) territories as well as every beat seen: on the beats alone it played at the 4th
-  mission of 14 to 19 (the beats all come within four captures). Now missions 9 to 11, before the finale.
-- **The gap, his to fill:** between the last Roach King piece (about mission 9) and the finale (13 to 18) a return brings
-  the news and a greeting and nothing else: 5 to 9 returns a campaign. YOKE has 6 lines for a win, so from about the 10th
-  win she repeats. The three comics are all earned in the first two missions. Filling it is content: more beats or wider
-  spacing (`afterCaptures`), more of his pieces, comics earned later, more greetings.
+- THE PACING (later on Oct 5): the plots alternate, in captures. The ally's beats on the odd captures after the pledge
+  (afterCaptures 1, 3, 7; MIDPOINT_CAPTURES 5); the main plot from the 3rd capture, every 2nd (`MAIN_PLOT`: address,
+  draft, briefing, his piece on the ally, last stand; a counter-attack massing takes the next slot). The slot map, with
+  each slot FILMED / CARD (needs video) / EMPTY (needs writing): notes/MISSIONS-AND-AFTER-TODO-2026-10-05.md.
 
 ## The last mission, and the Roach King off the air (Oct 4 2026)
 

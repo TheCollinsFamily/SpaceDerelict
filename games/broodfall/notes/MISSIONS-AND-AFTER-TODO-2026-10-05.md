@@ -19,37 +19,47 @@ So a campaign is about **12 to 14 captures**, plus whatever counter-attacks the 
 every mission won: 14 missions allied with the Faithful, 19 with the Delegation or the Institute (the extra ones are
 counter-attacks).
 
-## When the plot points come today
+## The pacing (built Oct 5 2026)
 
-The thresholds are cumulative, not 5 per point. The main plot (the Roach King):
+Collins: "lets build in the pacing wire the beats into the right places and mark which are still empty (need video or
+writing) ... better to leave them wanting more than less". The two plots take turns, one story film a return
+(`content/campaign.ts` beat timings and MIDPOINT_CAPTURES, `src/meta/roachKing.ts` MAIN_PLOT, `src/meta/afterMission.ts`).
+Counted in captures from the start (the crash site is not one; he sides with an ally after capture 1).
 
-| Plot point | Trigger | Comes at, simulated |
-|---|---|---|
-| His first address (`rk-address`) | the 3rd deployment | mission 4 or 5 (waits one if the ally has a scene) |
-| The home levy (`rk-draft`) | 3 territories held | missions 7 to 9 |
-| Operation Take It Back (`rk-counter`) | a counter-attack is massing | missions 5 or 6 |
-| On your ally (`rk-delegation`/`-faithful`/`-institute`) | 2 of the ally's beats seen | missions 6 to 8 |
-| Another Territory (`rk-briefing`, the film) | **5 territories held** | missions 6 or 7 |
-| The Last Stand (`rk-stand`) | 8 held and every ally beat seen | missions 9 to 11 |
-| The Transports + Founding Day (films) | the last mission is launched | after the finale |
-| Off the air (`rk-offline`) | the last mission won | the end |
+**FILMED** = its film is in the game. **CARD** = written, plays as its card: **needs video**. **EMPTY** = nothing written
+for this slot: **needs writing**. The table is what `npx vite-node tools/measure/after-mission.measure.ts -- --run --table`
+prints; re-run it after a film is baked or a scene is written.
 
-The faction plot: the first interaction (from the signal), the pledge, then a beat at captures 1, 2 and 3 after the
-pledge (the Delegation; the Faithful at 1 and 3, the Institute at 1 and 2), the midpoint offers at 2, the finale on its territory.
+| Capture | Plot | Delegation | Faithful | Institute |
+|---|---|---|---|---|
+| 1 | ally | First Summit + pledge: FILMED | The Sign + pledge: FILMED | A Little Chat + pledge: CARD |
+| 2 | ally | The Leaked Plans: FILMED | It Is Agreed, Then: CARD | Sex for Fun: CARD |
+| 3 | main | His first address: FILMED | same | same |
+| 4 | ally | For the Planet: CARD | A Slave to God's Will: CARD | Running Out of Frosties: CARD |
+| 5 | main | The home levy (or Operation Take It Back, if a counter-attack is massing): FILMED | same | same |
+| 6 | ally | The midpoint: the two rivals' offers: CARD (a letter and a call; needs video if they should be films) | same | same |
+| 7 | main | Another Territory (the briefing): FILMED | same | same |
+| 8 | ally | Why Don't You Just Ask Me: CARD | **EMPTY** | **EMPTY** |
+| 9 | main | His piece on your ally: FILMED | same | same |
+| 10 | ally | **EMPTY** | **EMPTY** | **EMPTY** |
+| 11 | main | The Last Stand: FILMED | same | same |
+| 12 | ally | **EMPTY** | **EMPTY** | **EMPTY** |
+| 13 on | main / ally | **EMPTY** (a slot of his is used up early when a counter-attack takes one) | same | same |
+| the finale | ally | The finale: CARD | CARD | CARD |
+| the last mission | main | The Transports: FILMED; Founding Day: CARD (the provider refuses the speech as written) | same | same |
+| after it | main | Off the air: FILMED | same | same |
 
-**The shape this gives:** everything is crowded into missions 2 to 11, and from about mission 10 to the finale (13 to 18)
-a return brings the news and a greeting and nothing else: **5 to 9 empty returns a campaign**.
+A campaign reaches its finale at about capture 12 to 13 when the player heads for it (later when they take every other
+landing first), so the slots to write are mostly **8 (Faithful, Institute), 10 and 12 for the ally, and 13 for the main
+plot**. The other session's film batch is turning the CARDs into films (`tools/media/make-all.mjs`).
 
-## To do: pacing (decisions for Collins)
+## To do: pacing
 
-1. [ ] **Space the two plots across the whole campaign, alternating.** Recommended: with 12 captures, the faction plot on
-   one capture and the main plot on the next, so every return has one story film and none has two. That needs the
-   faction beats spread out (now at captures 1 to 3 after the pledge; for instance 1, 3, 5, 7) and the main plot's
-   triggers counted in captures (for instance 2, 4, 6, 8, 10) instead of 3, 5 and 8 held.
-2. [ ] **How many main-plot points?** Today 6 before the finale. Alternating over 12 captures leaves room for 6, so it
-   fits, but there is no slack for a lost mission.
+1. [x] **The two plots alternate**, one story film a return (built Oct 5).
+2. [ ] **Write the EMPTY slots** above, or leave them empty on purpose ("leave them wanting more"). The game copes: an
+   empty slot is the news and YOKE's greeting.
 3. [ ] **What a counter-attack return brings** (it is not a capture, so it moves neither plot): today, only the news
-   and a greeting. A Roach King line about it (`rk-counter` is the only one) or nothing.
+   and a greeting.
 
 ## To do: how missions differ
 

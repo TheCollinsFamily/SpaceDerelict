@@ -5,7 +5,7 @@ import { speakerOf, spokenText } from '../content/media';
 import { CHANNELS, channelOfLine, noteFor } from '../content/translation';
 import { FACTIONS } from '../content/campaign';
 import {
-  BRIEFING_HELD, DRAFT_HELD, FIRST_ADDRESS_AFTER, STAND_HELD, dueAddress, dueAfterDeployment, dueScene, emptyRoachLog, lastMissionScenes, logRoach,
+  MAIN_PLOT, MAIN_PLOT_EVERY, MAIN_PLOT_FIRST, dueAddress, dueAfterDeployment, dueScene, emptyRoachLog, lastMissionScenes, logRoach, mainPlotSlots,
   type RoachLog,
 } from '../src/meta/roachKing';
 import { newCampaign, type CampaignState } from '../src/meta/campaign';
@@ -40,48 +40,43 @@ describe('the Roach King: content', () => {
   });
 });
 
-describe('the Roach King: when he comes on the air', () => {
-  it('never before the third deployment', () => {
-    expect(dueAddress(at({ deployments: 0 }), emptyRoachLog(7))).toBeNull();
-    expect(dueAddress(at({ deployments: FIRST_ADDRESS_AFTER - 1, held: held(4), underAttack: 'harbor' }), emptyRoachLog(7))).toBeNull();
+describe('the Roach King: when he comes on the air (the main plot, paced Oct 5 2026)', () => {
+  // Captures 3, 5, 7, 9, 11 are his; the ally's are between (content/campaign.ts).
+  const after = (captures: number, patch: Partial<CampaignState> = {}) => at({ captures, deployments: captures, held: held(captures), ...patch });
+  const play = (s: CampaignState, log: RoachLog) => { const d = dueAfterDeployment(s, log); const id = d ? ('scene' in d ? d.scene.id : d.address.id) : null; return { id, log: id ? logRoach(log, { id }) : log }; };
+
+  it('nothing before the third capture; then one piece every second capture', () => {
+    expect(mainPlotSlots(after(MAIN_PLOT_FIRST - 1))).toBe(0);
+    expect(dueAfterDeployment(after(MAIN_PLOT_FIRST - 1), emptyRoachLog(7))).toBeNull();
+    expect(mainPlotSlots(after(MAIN_PLOT_FIRST))).toBe(1);
+    expect(mainPlotSlots(after(MAIN_PLOT_FIRST + MAIN_PLOT_EVERY))).toBe(2);
+    // One piece per slot: after his first, nothing until the next slot is reached.
+    expect(dueAddress(after(4), seen('rk-address'))).toBeNull();
   });
-  it('introduces himself first, whatever else is due', () => {
-    const s = at({ deployments: FIRST_ADDRESS_AFTER, held: held(DRAFT_HELD), underAttack: 'harbor' });
-    expect(dueAddress(s, emptyRoachLog(7))?.id).toBe('rk-address');
-    // Then the counter-attack before the draft.
-    expect(dueAddress(s, seen('rk-address'))?.id).toBe('rk-counter');
-    expect(dueAddress(s, seen('rk-address', 'rk-counter'))?.id).toBe('rk-draft');
-    expect(dueAddress(s, seen('rk-address', 'rk-counter', 'rk-draft'))).toBeNull();
+  it('in the order of the main plot; the piece on the ally is about his own ally', () => {
+    let log = emptyRoachLog(7);
+    const order: (string | null)[] = [];
+    for (let c = 1; c <= 13; c++) { const r = play(after(c, { faction: 'faithful' }), log); log = r.log; if (r.id) order.push(r.id); }
+    expect(order).toEqual(MAIN_PLOT.map((x) => (x === 'ally' ? 'rk-faithful' : x)));
   });
-  it('the draft at three territories held, not two', () => {
-    expect(dueAddress(at({ deployments: 5, held: held(DRAFT_HELD - 1) }), seen('rk-address'))).toBeNull();
-    expect(dueAddress(at({ deployments: 5, held: held(DRAFT_HELD) }), seen('rk-address'))?.id).toBe('rk-draft');
+  it('a counter-attack massing takes the next slot, after his introduction', () => {
+    expect(dueAddress(after(3, { underAttack: 'harbor' }), emptyRoachLog(7))?.id).toBe('rk-address');
+    expect(dueAddress(after(5, { underAttack: 'harbor' }), seen('rk-address'))?.id).toBe('rk-counter');
+    expect(dueAddress(after(7), seen('rk-address', 'rk-counter'))?.id).toBe('rk-draft');
   });
-  it('speaks of the ally once two of its beats are seen; a switched ally gets its own', () => {
-    const f = FACTIONS.find((x) => x.id === 'delegation')!;
-    const one = at({ deployments: 4, faction: 'delegation', beatsSeen: [f.beats[0].id] });
-    expect(dueAddress(one, seen('rk-address'))).toBeNull();
-    const two = at({ deployments: 5, faction: 'delegation', beatsSeen: f.beats.slice(0, 2).map((b) => b.id) });
-    expect(dueAddress(two, seen('rk-address'))?.id).toBe('rk-delegation');
-    const g = FACTIONS.find((x) => x.id === 'institute')!;
-    const switched = at({ deployments: 7, faction: 'institute', beatsSeen: [...f.beats.slice(0, 2), ...g.beats.slice(0, 2)].map((b) => b.id) });
-    expect(dueAddress(switched, seen('rk-address', 'rk-delegation'))?.id).toBe('rk-institute');
+  it('a lost mission earns nothing: the slot count is in captures', () => {
+    const s = after(3);
+    const log = seen('rk-address');
+    expect(dueAfterDeployment({ ...s, deployments: s.deployments + 3 }, log)).toBeNull();
   });
-  it('the last stand when the ally\'s finale opens (or deep in with no ally); offline at the end', () => {
-    const f = FACTIONS.find((x) => x.id === 'faithful')!;
-    // Every beat seen is not enough on its own (they all come within four captures): the war must be well on too.
-    const early = at({ deployments: 5, faction: 'faithful', beatsSeen: f.beats.map((b) => b.id), held: held(3) });
-    expect(dueAddress(early, seen('rk-address', 'rk-faithful', 'rk-draft'))?.id ?? null).not.toBe('rk-stand');
-    const all = at({ deployments: 9, faction: 'faithful', beatsSeen: f.beats.map((b) => b.id), held: held(STAND_HELD) });
-    expect(dueAddress(all, seen('rk-address', 'rk-faithful'))?.id).toBe('rk-stand');
-    expect(dueAddress(at({ deployments: 12, held: held(STAND_HELD) }), seen('rk-address', 'rk-draft'))?.id).toBe('rk-stand');
-    const ended = at({ deployments: 10, faction: 'faithful', beatsSeen: f.beats.map((b) => b.id), ended: 'faithful' });
-    expect(dueAddress(ended, seen('rk-address', 'rk-faithful'))?.id).toBe('rk-offline');
-    // Nothing after the broadcast has ended.
-    expect(dueAddress(ended, seen('rk-address', 'rk-faithful', 'rk-stand', 'rk-offline', 'rk-draft'))).toBeNull();
+  it('nothing of his once the finale is played; off the air when the last mission is won', () => {
+    expect(dueAfterDeployment(after(13, { faction: 'faithful', finale: 'faithful' }), seen('rk-address'))).toBeNull();
+    const ended = after(14, { faction: 'faithful', finale: 'faithful', ended: 'faithful' });
+    expect(dueAddress(ended, seen('rk-address'))?.id).toBe('rk-offline');
+    expect(dueAddress(ended, seen('rk-address', 'rk-offline'))).toBeNull();
   });
   it('each plays once', () => {
-    const s = at({ deployments: 3 });
+    const s = after(3);
     const a = dueAddress(s, emptyRoachLog(7))!;
     expect(dueAddress(s, logRoach(emptyRoachLog(7), a))).toBeNull();
   });
@@ -121,18 +116,9 @@ describe('the Roach King off the air (Collins, Oct 4 2026): the central plot', (
     ]) expect(all, said).toContain(said);
   });
 
-  it('the briefing is caught after a deployment once five territories are held and he has introduced himself', () => {
-    const five = at({ deployments: 8, held: held(BRIEFING_HELD) });
-    expect(dueScene(at({ deployments: 8, held: held(BRIEFING_HELD - 1) }), seen('rk-address'))).toBeNull();
-    expect(dueScene(five, emptyRoachLog(7))).toBeNull();
-    expect(dueScene(five, seen('rk-address'))?.id).toBe('rk-briefing');
-    expect(dueScene(five, seen('rk-address', 'rk-briefing'))).toBeNull();
-    // It comes before his ordinary addresses (it is the plot), never before his introduction.
-    expect(dueAfterDeployment(five, seen('rk-address'))).toMatchObject({ scene: { id: 'rk-briefing' } });
-    expect(dueAfterDeployment(five, emptyRoachLog(7))).toMatchObject({ address: { id: 'rk-address' } });
-    expect(dueAfterDeployment(five, seen('rk-address', 'rk-briefing'))).toMatchObject({ address: { id: 'rk-draft' } });
-    // Not once the ally's finale is played.
-    expect(dueScene(at({ deployments: 12, held: held(BRIEFING_HELD), faction: 'faithful', finale: 'faithful' }), seen('rk-address'))).toBeNull();
+  it('the briefing is the third piece of the main plot (capture 7 when no counter-attack came)', () => {
+    expect(dueScene(at({ captures: 7, deployments: 7 }), seen('rk-address', 'rk-draft'))?.id).toBe('rk-briefing');
+    expect(dueScene(at({ captures: 6, deployments: 6 }), seen('rk-address', 'rk-draft'))).toBeNull();
   });
 
   it('the call, then his last message, when the last mission is launched: each once', () => {
@@ -141,10 +127,4 @@ describe('the Roach King off the air (Collins, Oct 4 2026): the central plot', (
     expect(lastMissionScenes(seen('rk-transports', 'rk-founding'))).toEqual([]);
   });
 
-  it('his last stand is not given once the finale is played; the broadcast ends when the last mission is won', () => {
-    const f = FACTIONS.find((x) => x.id === 'faithful')!;
-    const after = at({ deployments: 11, faction: 'faithful', beatsSeen: f.beats.map((b) => b.id), finale: 'faithful' });
-    expect(dueAddress(after, seen('rk-address', 'rk-faithful', 'rk-draft'))).toBeNull();
-    expect(dueAddress({ ...after, ended: 'faithful' }, seen('rk-address', 'rk-faithful', 'rk-draft'))?.id).toBe('rk-offline');
-  });
 });
