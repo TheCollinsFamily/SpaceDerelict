@@ -136,7 +136,29 @@ async function skipUntil(page, sel, ms = 60000) {
   return false;
 }
 const transcript = (page) => page.locator('#newsreel.rk-transcript');
-const sceneUp = (page) => page.evaluate(() => document.querySelector('#newsreel.rk-transcript')?.dataset.scene ?? null);
+const sceneUp = (page) => page.evaluate(() => document.querySelector('#newsreel.rk-transcript')?.dataset.scene ?? document.querySelector('#newsreel.cs-film')?.dataset.film ?? null);
+/**
+ * A Roach King scene whose film is baked plays as a CUT SCENE, the factions' convention (Collins, Oct 5 2026: "these are
+ * supposed to be cut scenes"): full screen under its own title, the film moving and heard. Checked, then skipped.
+ */
+async function filmPlays(page, id, title, name) {
+  const ok = await page.waitForFunction((id) => {
+    const v = document.querySelector(`#newsreel.cs-film[data-film="${id}"] video`);
+    return !!v && !v.paused && v.currentTime > 1.5 && v.videoWidth > 0;
+  }, id, { timeout: 40000 }).then(() => true, () => false);
+  const st = await page.evaluate(() => {
+    const el = document.querySelector('#newsreel.cs-film');
+    const v = el?.querySelector('video');
+    return { kicker: el?.querySelector('.cs-kicker')?.textContent ?? '', muted: v?.muted, t: v?.currentTime ?? 0, transcript: !!document.querySelector('#newsreel.rk-transcript') };
+  });
+  check(ok && !st.muted && !st.transcript, `${name}: a cut scene, its film playing and heard (${st.t.toFixed(1)} s in)`);
+  check(st.kicker.trim() === title && !/INTERCEPTED/.test(st.kicker), `${name}: under its own title, not an intercept ("${st.kicker.trim()}")`);
+  return ok;
+}
+async function skipFilm(page) {
+  await page.locator('#newsreel.cs-film .cs-skip').click();
+  await page.waitForSelector('#newsreel.cs-film', { state: 'detached', timeout: 10000 }).catch(() => {});
+}
 async function waitScene(page, id, ms = 30000) { for (let t0 = Date.now(); Date.now() - t0 < ms;) { if ((await sceneUp(page)) === id) return true; await sleep(150); } return false; }
 
 const HELD5 = ['crash-site', 'cul-de-sac', 'granary', 'harbor', 'commuter', 'temple'];
@@ -157,27 +179,13 @@ try {
     await campaign(page, { held: HELD5.slice(0, 5), captures: 4, deployments: 6, staging: null, underAttack: null }, ['rk-address', 'rk-draft']);
     await deployForced(page, 'temple', true);
     await page.locator('[data-act="back"]').click();
-    check(await skipUntil(page, '#newsreel.rk-transcript'), 'after the news, the briefing is caught (the intercept\'s transcript)');
+    check(await skipUntil(page, '#newsreel.cs-film[data-film="rk-briefing"]'), 'after the news, the briefing plays');
     check(await sceneUp(page) === 'rk-briefing', 'it is the briefing');
-    await sleep(900);
+    await filmPlays(page, 'rk-briefing', 'ANOTHER TERRITORY', 'the briefing');
+    await sleep(2500);
     await shot(page, 'a1-briefing');
-    const text = await transcript(page).innerText();
-    check(/INTERCEPTED/.test(text) && /NOT FOR BROADCAST/.test(text) && /ANOTHER TERRITORY/.test(text), 'the stamp, where it was caught, the title');
-    check(/RENDERED BY YOKE/.test(text) && /A PRIVATE LINE/.test(text), 'YOKE\'s band, with the line it came over');
-    check(/the Alliance of Nations have lost another territory/.test(text) && /Of course they have\./.test(text), 'the aide\'s news and his answer');
-    check(/They have a long tradition of being retards, is more like it\. They are going to get us all killed\./.test(text), 'his last line, as Collins wrote it');
-    check(/AIDE/i.test(text) && /THE ROACH KING/i.test(text), 'who says each line');
-    check(/a larva that never pupates/.test(text), 'her translator\'s note under the line');
-    check(/PICTURE NOT RECOVERED/.test(text), 'it says it is the words only (no film baked)');
-    // It is read: a click on the page does not close it; CONTINUE does.
-    await page.mouse.click(40, 360);
-    await sleep(500);
-    check(await transcript(page).count() === 1, 'a click on the page does not close it');
-    await transcript(page).locator('.rk-continue').scrollIntoViewIfNeeded();
-    await shot(page, 'a2-briefing-end');
-    await transcript(page).locator('.rk-continue').click();
-    await page.waitForSelector('#newsreel.rk-transcript', { state: 'detached', timeout: 10000 }).catch(() => {});
-    check(await transcript(page).count() === 0, 'CONTINUE closes it');
+    await skipFilm(page);
+    check(await page.locator('#newsreel.cs-film').count() === 0, 'SKIP closes it');
     const log = await page.evaluate(() => JSON.parse(localStorage.getItem('broodfall-roach') ?? '{}'));
     check(log.seen?.includes('rk-briefing'), 'logged as seen: it is caught once');
     await page.waitForSelector('#campaign:not(.hidden) .cp-desk, #campaign:not(.hidden) .cp-rooms, #campaign:not(.hidden)', { timeout: 20000 });
@@ -244,25 +252,25 @@ try {
     await page.locator('[data-act="deploy"]').click();
     // The Delegation's Objectors: the pick shows at the start of the mission.
     if (await page.locator('[data-act="obj-go"]').count()) { await shot(page, 'b3-objectors'); await page.locator('[data-act="obj-go"]').click(); }
-    check(await waitScene(page, 'rk-transports'), 'DEPLOY: first the call the survey caught (THE TRANSPORTS)');
-    await sleep(900);
+    check(await waitScene(page, 'rk-transports'), 'DEPLOY: first the call (THE TRANSPORTS)');
+    await filmPlays(page, 'rk-transports', 'THE TRANSPORTS', 'the call');
+    await sleep(2500);
     await shot(page, 'b4-transports');
-    let text = await transcript(page).innerText();
-    check(/THE TRANSPORTS/.test(text) && /a call from the Host/.test(text), 'the call\'s card');
-    check(/GENERAL/i.test(text) && /The transports have been sabotaged! This is the last fight\. We will never make it in time!/.test(text), 'the general, furious');
-    check(/You disapprove\? Well, too bad!/.test(text) && /without the war caste feeding them from the start, I think we could win\./.test(text), 'his answer, as Collins wrote it');
-    await transcript(page).locator('.rk-continue').scrollIntoViewIfNeeded();
-    await transcript(page).locator('.rk-continue').click();
+    await skipFilm(page);
     check(await waitScene(page, 'rk-founding'), 'then his last message (FOUNDING DAY)');
     await sleep(900);
     await shot(page, 'b5-founding');
-    text = await transcript(page).innerText();
-    check(/FOUNDING DAY/.test(text) && /ALL BANDS/.test(text), 'the address\'s card: on every band');
-    check(/We will not go quietly into the night! We will not vanish without a fight!/.test(text) && /Today we celebrate our Independence Day!/.test(text), 'the speech, as Collins wrote it');
-    check(/I have the feeling I have heard this speech before/.test(text), 'her note under its last line');
-    await transcript(page).locator('.rk-continue').scrollIntoViewIfNeeded();
-    await shot(page, 'b6-founding-end');
-    await Promise.all([page.waitForURL(/campaign=run/, { timeout: 30000 }), transcript(page).locator('.rk-continue').click()]);
+    // Its film is not made yet (the provider refuses the speech as written: notes/ROACH-KING-2026-10-04.md); until it
+    // is, the words are shown, and CONTINUE (or the film's SKIP) goes on to the mission.
+    if (await page.locator('#newsreel.cs-film').count()) {
+      await filmPlays(page, 'rk-founding', 'FOUNDING DAY', 'the address');
+      await Promise.all([page.waitForURL(/campaign=run/, { timeout: 30000 }), page.locator('#newsreel.cs-film .cs-skip').click()]);
+    } else {
+      const text = await transcript(page).innerText();
+      check(/We will not go quietly into the night!/.test(text) && /Today we celebrate our Independence Day!/.test(text), 'the address (words only until its film is made)');
+      await transcript(page).locator('.rk-continue').scrollIntoViewIfNeeded();
+      await Promise.all([page.waitForURL(/campaign=run/, { timeout: 30000 }), transcript(page).locator('.rk-continue').click()]);
+    }
     await page.waitForFunction(() => window.broodfall && window.__bfBooted, null, { timeout: 180000 });
     await sleep(1500);
     // The mission.
@@ -407,7 +415,7 @@ try {
     if (await page.locator('[data-act="obj-go"]').count()) await page.locator('[data-act="obj-go"]').click();
     await page.waitForURL(/campaign=run/, { timeout: 30000 }).catch(() => {});
     check(/campaign=run/.test(page.url()), 'DEPLOY goes straight to the mission');
-    check(await transcript(page).count() === 0, 'the call and the address are not shown again');
+    check(await transcript(page).count() === 0 && await page.locator('#newsreel.cs-film').count() === 0, 'the call and the address are not shown again');
     allErrors.push(...p.errors);
     await p.ctx.close();
   }

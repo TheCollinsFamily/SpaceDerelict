@@ -48,7 +48,17 @@ Each is caught by the ship's survey: the first two off a private line ("NOT FOR 
 once. YOKE renders them, as she renders everything they say; she has a note under "a long tradition of being retards"
 and under "Today we celebrate our Independence Day!".
 
-**How they are shown today:** as the intercept's transcript (the stamp, where it was caught, the title, her band, every
+**Oct 5 2026: they are CUT SCENES, like the factions'** (Collins: "These are not meant to be text ... the game has two plots
+that run in coordinance: the main plot that only has a few escalations, with the roach king adversary (based off of a
+combination of President Camacho and Asmongold), and then the faction plots"; "these are supposed to be cut scenes
+(conventions established with the faction cutscenes)"). Made by the film system (`cutscenes.ts make`, 480p, acted on
+Seedance 2.5): `rk-briefing` (60.2 s, 9 of 9 lines heard, every gate passed) and `rk-transports` (33.7 s, 4 of 4). A baked
+one plays full screen under its own title, like a faction film (`src/ui/roachKing.ts`), not as an intercept.
+**`rk-founding` cannot be made as written:** Atlas Cloud refuses its audio twice ("The generated audio may be related to
+copyright restrictions and was blocked by the provider policy"; the speech follows the Independence Day speech, point 6
+below), and the other Seedance pathway (ImageRouter) is out of credit. Until it is made, its words are shown.
+
+**How they were shown before (Oct 4):** as the intercept's transcript (the stamp, where it was caught, the title, her band, every
 line with who says it, CONTINUE). Each has a film's shot list ready (`content/cutscenes.ts`: `rk-briefing` 9 shots,
 `rk-transports` 4, `rk-founding` 9; one camera position each, one take, both speakers in the picture, so there is no
 cut from one to the other), and plays as that film once it is baked. **No film of them is made**: the remade test film
