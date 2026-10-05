@@ -139,7 +139,7 @@
   "delegation-stop-war": {
    "video": "media/scenes/delegation-stop-war.mp4",
    "poster": "media/scenes/delegation-stop-war.webp",
-   "seconds": 45.208,
+   "seconds": 44.606,
    "cues": [
     {
      "shot": "l00",
@@ -147,63 +147,63 @@
      "who": "Delegate",
      "text": "Visitor! Wonderful news. Our generals are organising a major counter-attack against your forces.",
      "t0": 0,
-     "t1": 8.218
+     "t1": 8.212
     },
     {
      "shot": "l01",
      "line": 1,
      "who": "Delegate",
      "text": "And we have all of the plans for you.",
-     "t0": 8.218,
-     "t1": 11.922
+     "t0": 8.212,
+     "t1": 11.727
     },
     {
      "shot": "l02",
      "line": 2,
      "who": "You",
      "text": "Why would you do this?",
-     "t0": 11.922,
-     "t1": 14.427
+     "t0": 11.727,
+     "t1": 13.756
     },
     {
      "shot": "l03",
      "line": 3,
      "who": "Delegate",
      "text": "Because violence is always wrong.",
-     "t0": 14.427,
-     "t1": 17.498
+     "t0": 13.756,
+     "t1": 16.538
     },
     {
      "shot": "l04",
      "line": 4,
      "who": "You",
      "text": "But presumably the way I will use this is to attack your generals first. Which is still violence.",
-     "t0": 17.498,
-     "t1": 25.516
+     "t0": 16.538,
+     "t1": 24.549
     },
     {
      "shot": "l05",
      "line": 5,
      "who": "Delegate",
      "text": "Ah, but you are the other. The immigrant. The guest.",
-     "t0": 25.516,
-     "t1": 32.513
+     "t0": 24.549,
+     "t1": 31.541
     },
     {
      "shot": "l06",
      "line": 6,
      "who": "Delegate",
      "text": "Any violence you do against our people is justified. Did they not start shooting the moment you first landed?",
-     "t0": 32.513,
-     "t1": 41.663
+     "t0": 31.541,
+     "t1": 40.453
     },
     {
      "shot": "l07",
      "line": 7,
      "who": "You",
      "text": "Sure. I guess that makes sense.",
-     "t0": 41.663,
-     "t1": 45.208
+     "t0": 40.453,
+     "t1": 44.606
     }
    ]
   },
@@ -442,6 +442,978 @@
      "shot": "kneel",
      "t0": 12.807,
      "t1": 17.85
+    }
+   ]
+  },
+  "faithful-finale": {
+   "video": "media/scenes/faithful-finale.mp4",
+   "poster": "media/scenes/faithful-finale.webp",
+   "seconds": 88.044,
+   "cues": [
+    {
+     "shot": "burst",
+     "t0": 0,
+     "t1": 5.045
+    },
+    {
+     "shot": "whole",
+     "t0": 5.045,
+     "t1": 6.176
+    },
+    {
+     "shot": "l00",
+     "line": 0,
+     "who": "You",
+     "text": "All right, that is a wrap. Thanks for your help.",
+     "t0": 6.176,
+     "t1": 10.739
+    },
+    {
+     "shot": "l01",
+     "line": 1,
+     "who": "The Voice",
+     "text": "So. We are in heaven?",
+     "t0": 10.739,
+     "t1": 15.942
+    },
+    {
+     "shot": "l02",
+     "line": 2,
+     "who": "You",
+     "text": "I mean, that depends. How did your texts define heaven?",
+     "t0": 15.942,
+     "t1": 21.238
+    },
+    {
+     "shot": "l03",
+     "line": 3,
+     "who": "The Voice",
+     "text": "A land where we would await God, living in endless pleasure.",
+     "t0": 21.238,
+     "t1": 27.775
+    },
+    {
+     "shot": "l04",
+     "line": 4,
+     "who": "You",
+     "text": "Yeah. That describes this simulation pretty well.",
+     "t0": 27.775,
+     "t1": 32.063
+    },
+    {
+     "shot": "l05",
+     "line": 5,
+     "who": "The Voice",
+     "text": "Simulation? Heaven is not a simulation! It is not made with technology!",
+     "t0": 32.063,
+     "t1": 38.422
+    },
+    {
+     "shot": "l06",
+     "line": 6,
+     "who": "You",
+     "text": "Um. Did your texts say that?",
+     "t0": 38.422,
+     "t1": 41.594
+    },
+    {
+     "shot": "l07",
+     "line": 7,
+     "who": "You",
+     "text": "Did the people who wrote them even have the capacity to describe something like this better than they did?",
+     "t0": 41.594,
+     "t1": 47.103
+    },
+    {
+     "shot": "l08",
+     "line": 8,
+     "who": "The Voice",
+     "text": "This is an abomination!",
+     "t0": 47.103,
+     "t1": 49.879
+    },
+    {
+     "shot": "l09",
+     "line": 9,
+     "who": "You",
+     "text": "You once told me I should not speak on behalf of God. Now I say the same to you.",
+     "t0": 49.879,
+     "t1": 55.874
+    },
+    {
+     "shot": "l10",
+     "line": 10,
+     "who": "You",
+     "text": "You do not get to choose the shape of God's miracles.",
+     "t0": 55.874,
+     "t1": 59.597
+    },
+    {
+     "shot": "l11",
+     "line": 11,
+     "who": "The Voice",
+     "text": "You tricked me! I took you for a godless alien who had studied our religion.",
+     "t0": 59.597,
+     "t1": 66.885
+    },
+    {
+     "shot": "l12",
+     "line": 12,
+     "who": "The Voice",
+     "text": "One who only pretended to care for our martyrs. And I played along, because God makes tools of the witless.",
+     "t0": 66.885,
+     "t1": 75.711
+    },
+    {
+     "shot": "l13",
+     "line": 13,
+     "who": "You",
+     "text": "Wait. You thought I was just playing along this whole time?",
+     "t0": 75.711,
+     "t1": 80.485
+    },
+    {
+     "shot": "l14",
+     "line": 14,
+     "who": "You",
+     "text": "No. There is a damn reason your religious texts were so predictive of all this.",
+     "t0": 80.485,
+     "t1": 86.015
+    },
+    {
+     "shot": "l15",
+     "line": 15,
+     "who": "You",
+     "text": "Ugh. This is not worth my time.",
+     "t0": 86.015,
+     "t1": 88.044
+    }
+   ]
+  },
+  "institute-pledge": {
+   "video": "media/scenes/institute-pledge.mp4",
+   "poster": "media/scenes/institute-pledge.webp",
+   "seconds": 19.547,
+   "cues": [
+    {
+     "shot": "l00",
+     "line": 0,
+     "who": "You",
+     "text": "People of this planet. Your species is recklessly building advanced artificial intelligence.",
+     "t0": 0,
+     "t1": 7.181
+    },
+    {
+     "shot": "l01",
+     "line": 1,
+     "who": "You",
+     "text": "You had a chance to rein yourselves in. So we have come to rescue you from the greedy corporations.",
+     "t0": 7.181,
+     "t1": 14.5
+    },
+    {
+     "shot": "fist",
+     "t0": 14.5,
+     "t1": 19.547
+    }
+   ]
+  },
+  "institute-pipeline": {
+   "video": "media/scenes/institute-pipeline.mp4",
+   "poster": "media/scenes/institute-pipeline.webp",
+   "seconds": 118.476,
+   "cues": [
+    {
+     "shot": "l00",
+     "line": 0,
+     "who": "You",
+     "text": "Um. Were you trying to get in touch with me?",
+     "t0": 0,
+     "t1": 4.33
+    },
+    {
+     "shot": "l01",
+     "line": 1,
+     "who": "The Director",
+     "text": "So here is the thing, my man. You keep having me send you frozen old people.",
+     "t0": 4.33,
+     "t1": 11.721
+    },
+    {
+     "shot": "l02",
+     "line": 2,
+     "who": "The Director",
+     "text": "But you are a male, right?",
+     "t0": 11.721,
+     "t1": 16.233
+    },
+    {
+     "shot": "l03",
+     "line": 3,
+     "who": "You",
+     "text": "Yes?",
+     "t0": 16.233,
+     "t1": 18
+    },
+    {
+     "shot": "l04",
+     "line": 4,
+     "who": "The Director",
+     "text": "Well, don't you want any young, hot women? Or guys. No judgment here, man.",
+     "t0": 18,
+     "t1": 24.17
+    },
+    {
+     "shot": "l05",
+     "line": 5,
+     "who": "You",
+     "text": "What?",
+     "t0": 24.17,
+     "t1": 27.13
+    },
+    {
+     "shot": "l06",
+     "line": 6,
+     "who": "The Director",
+     "text": "You know. I thought that was the point of conquering the stars.",
+     "t0": 27.13,
+     "t1": 32.856
+    },
+    {
+     "shot": "l07",
+     "line": 7,
+     "who": "The Director",
+     "text": "Getting to fuck hot females, but with, like, a green or a blue tint to them.",
+     "t0": 32.856,
+     "t1": 40
+    },
+    {
+     "shot": "l08",
+     "line": 8,
+     "who": "You",
+     "text": "But I would not be able to reproduce with your women. Our species are not remotely biologically compatible.",
+     "t0": 40,
+     "t1": 48.85
+    },
+    {
+     "shot": "l09",
+     "line": 9,
+     "who": "The Director",
+     "text": "Nah, man. You have just got to be creative. You would figure something out.",
+     "t0": 48.85,
+     "t1": 55.958
+    },
+    {
+     "shot": "l10",
+     "line": 10,
+     "who": "The Director",
+     "text": "I am sure I would, if I had access to some hot alien mamacitas.",
+     "t0": 55.958,
+     "t1": 62.129
+    },
+    {
+     "shot": "l11",
+     "line": 11,
+     "who": "You",
+     "text": "No. I mean at a genetic level. Even with our technology it would be difficult to create a viable offspring.",
+     "t0": 62.129,
+     "t1": 70.25
+    },
+    {
+     "shot": "l12",
+     "line": 12,
+     "who": "You",
+     "text": "We have no shared evolutionary history.",
+     "t0": 70.25,
+     "t1": 73.101
+    },
+    {
+     "shot": "l13",
+     "line": 13,
+     "who": "The Director",
+     "text": "What are you talking about, bro? I mean sex for fun.",
+     "t0": 73.101,
+     "t1": 77.151
+    },
+    {
+     "shot": "l14",
+     "line": 14,
+     "who": "The Director",
+     "text": "Most of the women I sleep with are workers, and can't even get pregnant.",
+     "t0": 77.151,
+     "t1": 82.071
+    },
+    {
+     "shot": "l15",
+     "line": 15,
+     "who": "The Director",
+     "text": "You see, we figured out this better way of structuring relationships, where we share partners.",
+     "t0": 82.071,
+     "t1": 92.101
+    },
+    {
+     "shot": "l16",
+     "line": 16,
+     "who": "The Director",
+     "text": "And I have got plenty who would be happy for a beam up.",
+     "t0": 92.101,
+     "t1": 94.421
+    },
+    {
+     "shot": "l17",
+     "line": 17,
+     "who": "You",
+     "text": "But what about disease risks? And the time it would take to court that many partners?",
+     "t0": 94.421,
+     "t1": 98.431
+    },
+    {
+     "shot": "l18",
+     "line": 18,
+     "who": "The Director",
+     "text": "Bro. Bro. Be rational. It is the most logical way to structure a relationship.",
+     "t0": 98.431,
+     "t1": 105.435
+    },
+    {
+     "shot": "l19",
+     "line": 19,
+     "who": "You",
+     "text": "Wait. Has your species not discovered masturbation yet?",
+     "t0": 105.435,
+     "t1": 110.765
+    },
+    {
+     "shot": "l20",
+     "line": 20,
+     "who": "The Director",
+     "text": "Bro. Masturbation is for poor people.",
+     "t0": 110.765,
+     "t1": 115.205
+    },
+    {
+     "shot": "l21",
+     "line": 21,
+     "who": "You",
+     "text": "I need to pray. And take a shower.",
+     "t0": 115.205,
+     "t1": 118.476
+    }
+   ]
+  },
+  "institute-ultimatum": {
+   "video": "media/scenes/institute-ultimatum.mp4",
+   "poster": "media/scenes/institute-ultimatum.webp",
+   "seconds": 100.587,
+   "cues": [
+    {
+     "shot": "l00",
+     "line": 0,
+     "who": "You",
+     "text": "You were trying to get in touch with me?",
+     "t0": 0,
+     "t1": 4.89
+    },
+    {
+     "shot": "l01",
+     "line": 1,
+     "who": "The Director",
+     "text": "My man. Let's have a chat.",
+     "t0": 4.89,
+     "t1": 9.37
+    },
+    {
+     "shot": "l02",
+     "line": 2,
+     "who": "The Director",
+     "text": "So. I have sent you a lot of frosties.",
+     "t0": 9.37,
+     "t1": 14.751
+    },
+    {
+     "shot": "l03",
+     "line": 3,
+     "who": "The Director",
+     "text": "And by now it is getting pretty obvious you are not here just to get rid of data centres.",
+     "t0": 14.751,
+     "t1": 21
+    },
+    {
+     "shot": "l04",
+     "line": 4,
+     "who": "You",
+     "text": "So he is not a complete imbecile.",
+     "t0": 21,
+     "t1": 23.851
+    },
+    {
+     "shot": "l05",
+     "line": 5,
+     "who": "The Director",
+     "text": "So here is the thing. I am a rational, logical guy, and I know I can't fight back against you.",
+     "t0": 23.851,
+     "t1": 35.74
+    },
+    {
+     "shot": "l06",
+     "line": 6,
+     "who": "The Director",
+     "text": "And this world order you are destroying was kind of fucked up anyway.",
+     "t0": 35.74,
+     "t1": 41.001
+    },
+    {
+     "shot": "l07",
+     "line": 7,
+     "who": "The Director",
+     "text": "We have actually been sketching up some plans to replace it for a while.",
+     "t0": 41.001,
+     "t1": 45.751
+    },
+    {
+     "shot": "l08",
+     "line": 8,
+     "who": "The Director",
+     "text": "Have you heard of quadratic voting? Okay, hear me out.",
+     "t0": 45.751,
+     "t1": 49.351
+    },
+    {
+     "shot": "l09",
+     "line": 9,
+     "who": "The Director",
+     "text": "Programmatic, self-verifying contracts.",
+     "t0": 49.351,
+     "t1": 53.287
+    },
+    {
+     "shot": "l10",
+     "line": 10,
+     "who": "The Director",
+     "text": "Oh, yeah. The point. You and I are friends, right?",
+     "t0": 53.287,
+     "t1": 58.128
+    },
+    {
+     "shot": "l11",
+     "line": 11,
+     "who": "The Director",
+     "text": "So when you are done with whatever you want to do with our planet, just set me up to rule the rest.",
+     "t0": 58.128,
+     "t1": 65.898
+    },
+    {
+     "shot": "l12",
+     "line": 12,
+     "who": "The Director",
+     "text": "And I will help you.",
+     "t0": 65.898,
+     "t1": 69.544
+    },
+    {
+     "shot": "l13",
+     "line": 13,
+     "who": "The Director",
+     "text": "People. That is what you want. Well, I am running out of frosties, so going forward I will have to recruit people.",
+     "t0": 69.544,
+     "t1": 80.842
+    },
+    {
+     "shot": "l14",
+     "line": 14,
+     "who": "The Director",
+     "text": "My plan is to tell them you are going to digitise them if they willingly surrender.",
+     "t0": 80.842,
+     "t1": 88.545
+    },
+    {
+     "shot": "l15",
+     "line": 15,
+     "who": "The Director",
+     "text": "Because, like, running a simulation does not cost a species at your level of technology much.",
+     "t0": 88.545,
+     "t1": 96.395
+    },
+    {
+     "shot": "l16",
+     "line": 16,
+     "who": "You",
+     "text": "Sure. I guess. Do that.",
+     "t0": 96.395,
+     "t1": 100.587
+    }
+   ]
+  },
+  "institute-finale": {
+   "video": "media/scenes/institute-finale.mp4",
+   "poster": "media/scenes/institute-finale.webp",
+   "seconds": 120.75,
+   "cues": [
+    {
+     "shot": "tower",
+     "t0": 0,
+     "t1": 5.046
+    },
+    {
+     "shot": "shove",
+     "t0": 5.046,
+     "t1": 10.091
+    },
+    {
+     "shot": "wake",
+     "t0": 10.091,
+     "t1": 12.102
+    },
+    {
+     "shot": "l00",
+     "line": 0,
+     "who": "The Director",
+     "text": "Hey, man. What the fuck is this shit?",
+     "t0": 12.102,
+     "t1": 15.445
+    },
+    {
+     "shot": "l01",
+     "line": 1,
+     "who": "The Director",
+     "text": "You were going to let me rule what is left of my people.",
+     "t0": 15.445,
+     "t1": 20.045
+    },
+    {
+     "shot": "l02",
+     "line": 2,
+     "who": "You",
+     "text": "Of course. And I created a simulation where you can do that.",
+     "t0": 20.045,
+     "t1": 24.569
+    },
+    {
+     "shot": "l03",
+     "line": 3,
+     "who": "The Director",
+     "text": "The fuck do you mean?",
+     "t0": 24.569,
+     "t1": 26.205
+    },
+    {
+     "shot": "l04",
+     "line": 4,
+     "who": "You",
+     "text": "Well, it would be wildly unethical to allow someone of your character to rule over any real population of sentient people.",
+     "t0": 26.205,
+     "t1": 30.608
+    },
+    {
+     "shot": "l05",
+     "line": 5,
+     "who": "The Director",
+     "text": "No, shit bag. What do you mean about a simulation?",
+     "t0": 30.608,
+     "t1": 34.502
+    },
+    {
+     "shot": "l06",
+     "line": 6,
+     "who": "You",
+     "text": "As you said. Obviously a species as advanced as mine has the capacity to simulate people at trivial cost.",
+     "t0": 34.502,
+     "t1": 42.079
+    },
+    {
+     "shot": "l07",
+     "line": 7,
+     "who": "You",
+     "text": "Why did you think we were sending bio-organisms to your surface?",
+     "t0": 42.079,
+     "t1": 46.213
+    },
+    {
+     "shot": "l08",
+     "line": 8,
+     "who": "You",
+     "text": "If our goal was to kill you, it would have been much easier to just microwave your planet.",
+     "t0": 46.213,
+     "t1": 51.537
+    },
+    {
+     "shot": "l09",
+     "line": 9,
+     "who": "You",
+     "text": "Or force-evolve an organism that converted your atmosphere into a poisonous gas.",
+     "t0": 51.537,
+     "t1": 57.63
+    },
+    {
+     "shot": "l10",
+     "line": 10,
+     "who": "You",
+     "text": "Why do you think we were even here? There are dozens of other planets even in your system.",
+     "t0": 57.63,
+     "t1": 62.924
+    },
+    {
+     "shot": "l11",
+     "line": 11,
+     "who": "You",
+     "text": "Yours was only unique in having sentient life.",
+     "t0": 62.924,
+     "t1": 65.947
+    },
+    {
+     "shot": "l12",
+     "line": 12,
+     "who": "You",
+     "text": "Once you reach our level of civilisational complexity, scarcity of things like energy and space is trivial.",
+     "t0": 65.947,
+     "t1": 72.996
+    },
+    {
+     "shot": "l13",
+     "line": 13,
+     "who": "You",
+     "text": "Only independently evolved cultures and species have value.",
+     "t0": 72.996,
+     "t1": 77.186
+    },
+    {
+     "shot": "l14",
+     "line": 14,
+     "who": "The Director",
+     "text": "So the digitising people thing. That was real?",
+     "t0": 77.186,
+     "t1": 80.746
+    },
+    {
+     "shot": "l15",
+     "line": 15,
+     "who": "You",
+     "text": "Of course. That is why I let you tell people it.",
+     "t0": 80.746,
+     "t1": 84.92
+    },
+    {
+     "shot": "l16",
+     "line": 16,
+     "who": "You",
+     "text": "It would be unethical to tell them that if it was not true.",
+     "t0": 84.92,
+     "t1": 88.222
+    },
+    {
+     "shot": "l17",
+     "line": 17,
+     "who": "The Director",
+     "text": "So why? Why did you want to work with me?",
+     "t0": 88.222,
+     "t1": 90.854
+    },
+    {
+     "shot": "l18",
+     "line": 18,
+     "who": "You",
+     "text": "Well, you had a bunch of people in cryo pods.",
+     "t0": 90.854,
+     "t1": 93.536
+    },
+    {
+     "shot": "l19",
+     "line": 19,
+     "who": "You",
+     "text": "They would have died if the power went off before the creep got to them.",
+     "t0": 93.536,
+     "t1": 98.091
+    },
+    {
+     "shot": "l20",
+     "line": 20,
+     "who": "You",
+     "text": "It seemed like an easier way to get them. Plus, leaving them with you didn't seem very ethical.",
+     "t0": 98.091,
+     "t1": 104.202
+    },
+    {
+     "shot": "l21",
+     "line": 21,
+     "who": "You",
+     "text": "I mean, you don't even follow God.",
+     "t0": 104.202,
+     "t1": 106.736
+    },
+    {
+     "shot": "l22",
+     "line": 22,
+     "who": "The Director",
+     "text": "What are you talking about, God?",
+     "t0": 106.736,
+     "t1": 109.458
+    },
+    {
+     "shot": "l23",
+     "line": 23,
+     "who": "The Director",
+     "text": "The religion on our planet was just some bullshit about how there was going to be some apocalypse.",
+     "t0": 109.458,
+     "t1": 114.735
+    },
+    {
+     "shot": "l24",
+     "line": 24,
+     "who": "The Director",
+     "text": "And living forever after death in some bullshit feel-good fantasy.",
+     "t0": 114.735,
+     "t1": 119.552
+    },
+    {
+     "shot": "l25",
+     "t0": 119.552,
+     "t1": 120.75
+    }
+   ]
+  },
+  "delegation-gaia": {
+   "video": "media/scenes/delegation-gaia.mp4",
+   "poster": "media/scenes/delegation-gaia.webp",
+   "seconds": 80.618,
+   "cues": [
+    {
+     "shot": "l00",
+     "line": 0,
+     "who": "Delegate",
+     "text": "Visitor! We have held a number of internal conversations.",
+     "t0": 0,
+     "t1": 5.811
+    },
+    {
+     "shot": "l01",
+     "line": 1,
+     "who": "Delegate",
+     "text": "We wanted to explain why you keep expanding in what appears to be a violent manner. And we have figured it out.",
+     "t0": 5.811,
+     "t1": 15.002
+    },
+    {
+     "shot": "l02",
+     "line": 2,
+     "who": "Delegate",
+     "text": "Look at the pattern of your attacks. You hit the centres of industry and of military power.",
+     "t0": 15.002,
+     "t1": 22.313
+    },
+    {
+     "shot": "l03",
+     "line": 3,
+     "who": "Delegate",
+     "text": "And not once have you hit a forest, a reef, or any other natural wonder.",
+     "t0": 22.313,
+     "t1": 30.305
+    },
+    {
+     "shot": "l04",
+     "line": 4,
+     "who": "Delegate",
+     "text": "This is proof. You came to save the planet from our exploitative species.",
+     "t0": 30.305,
+     "t1": 36.764
+    },
+    {
+     "shot": "l05",
+     "line": 5,
+     "who": "You",
+     "text": "That could just be because those are the most natural threat to my unchecked expansion.",
+     "t0": 36.764,
+     "t1": 41.945
+    },
+    {
+     "shot": "l06",
+     "line": 6,
+     "who": "Delegate",
+     "text": "We thought of that. But it cannot be the case, because your forces consume biomatter.",
+     "t0": 41.945,
+     "t1": 50.003
+    },
+    {
+     "shot": "l07",
+     "line": 7,
+     "who": "Delegate",
+     "text": "It would have been best to land on large undefended biomasses first. Forests. Reefs. Build a huge stockpile, then move out.",
+     "t0": 50.003,
+     "t1": 60.615
+    },
+    {
+     "shot": "l08",
+     "line": 8,
+     "who": "Delegate",
+     "text": "You did not. Which is proof that you want to protect them. Goodbye!",
+     "t0": 60.615,
+     "t1": 66.589
+    },
+    {
+     "shot": "l09",
+     "line": 9,
+     "who": "You",
+     "text": "Unbelievable. It is not like I can carry biomatter from one drop to another.",
+     "t0": 66.589,
+     "t1": 72.74
+    },
+    {
+     "shot": "l10",
+     "line": 10,
+     "who": "You",
+     "text": "I heard there were humans like this in Earth's history. I should look into them.",
+     "t0": 72.74,
+     "t1": 80.618
+    }
+   ]
+  },
+  "delegation-reveal": {
+   "video": "media/scenes/delegation-reveal.mp4",
+   "poster": "media/scenes/delegation-reveal.webp",
+   "seconds": 99.794,
+   "cues": [
+    {
+     "shot": "l00",
+     "line": 0,
+     "who": "Delegate",
+     "text": "Visitor! We have talked further, and we have learned so much more about your plans.",
+     "t0": 0,
+     "t1": 7.153
+    },
+    {
+     "shot": "l01",
+     "line": 1,
+     "who": "You",
+     "text": "Why don't you just ask me?",
+     "t0": 7.153,
+     "t1": 11.274
+    },
+    {
+     "shot": "l02",
+     "line": 2,
+     "who": "Delegate",
+     "text": "Oh. Um.",
+     "t0": 11.274,
+     "t1": 14.914
+    },
+    {
+     "shot": "l03",
+     "line": 3,
+     "who": "You",
+     "text": "I have a theory on that.",
+     "t0": 14.914,
+     "t1": 17.004
+    },
+    {
+     "shot": "l04",
+     "line": 4,
+     "who": "You",
+     "text": "You remind me a lot of a population from our planet's history that gathered under a rainbow flag.",
+     "t0": 17.004,
+     "t1": 24.204
+    },
+    {
+     "shot": "l05",
+     "line": 5,
+     "who": "You",
+     "text": "They kept intentionally importing people from the most violent parts of the planet, who explicitly wanted to eradicate the rainbow flag people.",
+     "t0": 24.204,
+     "t1": 33.689
+    },
+    {
+     "shot": "l06",
+     "line": 6,
+     "who": "You",
+     "text": "They were very loud and very explicit in this goal. But the rainbow flag people did not care.",
+     "t0": 33.689,
+     "t1": 41.276
+    },
+    {
+     "shot": "l07",
+     "line": 7,
+     "who": "You",
+     "text": "They asserted their own intentions onto the barbarians.",
+     "t0": 41.276,
+     "t1": 44.982
+    },
+    {
+     "shot": "l08",
+     "line": 8,
+     "who": "You",
+     "text": "My actions have made it perfectly clear that my goal is to wipe out your species.",
+     "t0": 44.982,
+     "t1": 51.131
+    },
+    {
+     "shot": "l09",
+     "line": 9,
+     "who": "You",
+     "text": "You don't ask.",
+     "t0": 51.131,
+     "t1": 52.677
+    },
+    {
+     "shot": "l10",
+     "line": 10,
+     "who": "You",
+     "text": "Because keeping a world view where you are the good guys and everyone is nice is more important than reality to you.",
+     "t0": 52.677,
+     "t1": 61.553
+    },
+    {
+     "shot": "l11",
+     "line": 11,
+     "who": "Delegate",
+     "text": "Well, that is a relief to hear.",
+     "t0": 61.553,
+     "t1": 66.097
+    },
+    {
+     "shot": "l12",
+     "line": 12,
+     "who": "You",
+     "text": "What? I just said my goal is your species' eradication!",
+     "t0": 66.097,
+     "t1": 70.75
+    },
+    {
+     "shot": "l13",
+     "line": 13,
+     "who": "Delegate",
+     "text": "Oh, we are almost all members of the voluntary extinction movement as well.",
+     "t0": 70.75,
+     "t1": 77.152
+    },
+    {
+     "shot": "l14",
+     "line": 14,
+     "who": "Delegate",
+     "text": "Do you know how many tons of toxic gas are produced for every child born?",
+     "t0": 77.152,
+     "t1": 83.946
+    },
+    {
+     "shot": "l15",
+     "line": 15,
+     "who": "Delegate",
+     "text": "And have you ever heard of the asymmetry principle?",
+     "t0": 83.946,
+     "t1": 88.754
+    },
+    {
+     "shot": "l16",
+     "line": 16,
+     "who": "You",
+     "text": "Nope. Nope, nope. I heard human groups like this were common among the rainbow people.",
+     "t0": 88.754,
+     "t1": 94.035
+    },
+    {
+     "shot": "l17",
+     "line": 17,
+     "who": "You",
+     "text": "I must maintain emotional control. That is one of the first teachings.",
+     "t0": 94.035,
+     "t1": 99.794
     }
    ]
   }

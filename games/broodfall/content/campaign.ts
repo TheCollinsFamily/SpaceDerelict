@@ -538,7 +538,8 @@ export const FACTIONS: FactionDef[] = [
         'You: (at his wits\' end) What? I just said my goal is your species\' eradication!',
         'Delegate: Oh, we are almost all members of the voluntary extinction movement as well.',
         'Delegate: Do you know how many tons of toxic gas are produced for every child born?',
-        'Delegate: And have you ever heard of the asymmetry principle?',
+        // (Collins, Oct 5 2026: "it's the asymmetry argument, not the asymmetry principle".)
+        'Delegate: And have you ever heard of the asymmetry argument?',
         'You: (cuts the monitor, pacing) Nope. Nope, nope. I heard human groups like this were common among the rainbow people.',
         'You: I must maintain emotional control. That is one of the first teachings.',
       ] } },

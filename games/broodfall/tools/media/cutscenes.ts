@@ -498,7 +498,8 @@ function wordSpan(file: string): { start: number; end: number } | null {
   const j = JSON.parse(fs.readFileSync(cache, 'utf8')) as Heard;
   return j.first !== undefined && j.last !== undefined ? { start: j.first, end: j.last } : null;
 }
-const norm = (t: string) => t.toLowerCase().replace(/[’']/g, '').replace(/[^a-z0-9 ]+/g, ' ').split(/\s+/).filter(Boolean);
+// Hyphens are dropped, not spaced: the script's "pre-millennial" is the transcript's "premillennial".
+const norm = (t: string) => t.toLowerCase().replace(/[’']/g, '').replace(/-/g, '').replace(/[^a-z0-9 ]+/g, ' ').split(/\s+/).filter(Boolean);
 /** The share of the line's words that were heard, in any order. */
 export function heard(line: string, got: string): number {
   const want_ = norm(line);
@@ -683,13 +684,18 @@ const TALK_MAX_SECS = Number(process.env.CUTSCENE_TALK_MAX_SECS || 30);
 
 interface Exchange { id: string; shots: number[]; from: string }
 function exchangesOf(film: Film): Exchange[] {
+  talkFilm = film;
   const out: Exchange[] = [];
   let cur: Exchange | null = null;
   let words = 0;
   film.shots.forEach((s, i) => {
     const w = wordCount(wordsOf(film, s));
     const place = s.from !== '^';
-    if (!cur || place || (w > 0 && words + w > TALK_WORDS)) {
+    // A call ending (a shot named `hangup`) closes its exchange: what comes after starts from the dark screen, in a clip
+    // of its own (Collins, Oct 5 2026, of delegation-gaia: "the aliens are still talking and say bye after the screen
+    // shuts off"; of delegation-reveal: "he cuts it before his final dialog to himself").
+    const afterHangup = i > 0 && film.shots[i - 1].id === 'hangup';
+    if (!cur || place || afterHangup || (w > 0 && words + w > TALK_WORDS)) {
       cur = { id: `t${String(out.length).padStart(2, '0')}`, shots: [], from: place ? s.from : '^' };
       out.push(cur);
       words = 0;
@@ -746,9 +752,12 @@ function talkPrompt(film: Film, ex: Exchange): string {
     return `${s.action} ${subject.replace(/,$/, '')} says: "${spoken}"`;
   });
   const voices = [...speakers].map((w) => (VOICES[w] ?? '').replace(' It is always exactly this same voice.', '')).filter(Boolean).join(' ');
+  const first = ex.shots[0];
+  const darkScreen = first > 0 && film.shots[first - 1].id === 'hangup';
   return [
     `One continuous locked-off shot${him ? ' over his shoulder' : ''}: the camera never moves and never cuts.`,
     him ? `${he[0].toUpperCase()}${he.slice(1)} keeps his back to the camera for the whole shot: only the back of his head and his shoulders are seen, never his face, and he does not turn round.` : '',
+    darkScreen ? 'The screen in front of him is dark and stays dark for the whole shot: nobody is on it, and nobody on it speaks or is heard. He is alone.' : '',
     ...beats,
     voices,
     // (It said "unhurried, with real pauses": the model took seconds of silence, and opened a clip with five of them.)
@@ -818,7 +827,17 @@ function pitchOfSpan(file: string, a: number, b: number): number {
 
 interface TalkCut { frame: number; fps: number; fix: Fix; lines: Array<{ shot: string; start: number; end: number; heard: number } | { shot: string; missing: true }> }
 /** The first clip of the take (place) an exchange belongs to: its first frame is the colour the take is held to. */
-function talkTakeStart(exs: Exchange[], k: number): number { let i = k; while (i > 0 && exs[i].from === '^') i--; return i; }
+/**
+ * The clip a take's colour and sharpness are held to: the first of its place, or the first after a call ends (holding
+ * a dark screen to the lit one before it brightened the last clip of delegation-gaia: Collins, "significantly higher
+ * brightness than the rest of it").
+ */
+let talkFilm: Film | null = null;
+function talkTakeStart(exs: Exchange[], k: number): number {
+  let i = k;
+  while (i > 0 && exs[i].from === '^' && !(talkFilm && talkFilm.shots[exs[i].shots[0] - 1]?.id === 'hangup')) i--;
+  return i;
+}
 
 /** Hear an exchange's clip, find its lines in it, and say where it is cut (a beat after its last word). */
 async function talkCut(film: Film, exs: Exchange[], k: number): Promise<TalkCut> {
@@ -994,7 +1013,7 @@ function talkRedo(film: Film) {
  * The cuts themselves are made by the editor (editorAssemble): hard, between two words. `talkcheck` lists what was found and
  * cut, and `talk` says in its prompt that the first line comes at once and no silence is long, so that less needs cutting.
  */
-const TALK_LEAD_MAX = Number(process.env.CUTSCENE_TALK_LEAD_MAX || 0.5);
+const TALK_LEAD_MAX = Number(process.env.CUTSCENE_TALK_LEAD_MAX || 0.3); // (0.5 left 1.9 s of quiet across a join: the beat after one clip's last line is 0.9 s)
 const TALK_GAP_MAX = Number(process.env.CUTSCENE_TALK_GAP_MAX || 0.9);
 /** A cut is made only when it takes out at least this much (a dissolve for a quarter of a second saved is not worth it). */
 const TALK_CUT_MIN = 0.5;
@@ -1039,17 +1058,21 @@ function deadAir(film: Film, ex: Exchange, cut: TalkCut, file: string, end: numb
     if (z - a < TALK_GAP_MAX) continue;
     // The silences inside this gap; two with only a breath or a click between them (under 0.3 s of sound) are one. A
     // longer sound between them is kept whole (an "um" the transcript did not write down is still his line).
-    const inside: Array<[number, number]> = [];
+    // Each keeps its full length (what is HEARD: the film's gate measures the same) and where a cut may go (inside the
+    // words' bounds). faithful-finale had 1.9 s of silence measured as 1.3 s, because the words' times overlap it.
+    const inside: Array<{ full: [number, number]; cut: [number, number] }> = [];
     for (const [s, e] of silences) {
       const s1 = Math.max(s, a), e1 = Math.min(e, z);
       if (e1 - s1 < 0.2) continue;
-      if (inside.length && s1 - inside[inside.length - 1][1] < 0.3) inside[inside.length - 1][1] = e1; else inside.push([s1, e1]);
+      const last = inside[inside.length - 1];
+      if (last && s1 - last.cut[1] < 0.3) { last.cut[1] = e1; last.full[1] = e; } else inside.push({ full: [s, e], cut: [s1, e1] });
     }
-    const best = inside.sort((x, y) => (y[1] - y[0]) - (x[1] - x[0]))[0] ?? null;
-    if (!best || best[1] - best[0] < TALK_GAP_MAX + TALK_CUT_MIN) continue;
-    const over = best[1] - best[0] - TALK_GAP_MAX;
-    const mid = (best[0] + best[1]) / 2;
-    out.push({ from: mid - over / 2, to: mid + over / 2, why: `${(best[1] - best[0]).toFixed(1)} s of silence before "${words[i + 1].w}" (${lineAt(words[i + 1].start)})` });
+    const best = inside.sort((x, y) => (y.full[1] - y.full[0]) - (x.full[1] - x.full[0]))[0] ?? null;
+    if (!best || best.full[1] - best.full[0] < TALK_GAP_MAX + TALK_CUT_MIN) continue;
+    const over = Math.min(best.full[1] - best.full[0] - TALK_GAP_MAX, best.cut[1] - best.cut[0] - 0.1);
+    if (over < 0.2) continue;
+    const mid = (best.cut[0] + best.cut[1]) / 2;
+    out.push({ from: mid - over / 2, to: mid + over / 2, why: `${(best.full[1] - best.full[0]).toFixed(1)} s of silence before "${words[i + 1].w}" (${lineAt(words[i + 1].start)})` });
   }
   return out;
 }
@@ -1263,8 +1286,11 @@ async function talkGates(film: Film, exs: Exchange[], k: number): Promise<Gate[]
     if ('missing' in l) { fail('WORDS', `${l.shot} was not heard ("${wordsOf(film, s).slice(0, 50)}")`); continue; }
     // A short line is judged by the words missed, not the share: "Oh. Um." heard as "Oh." is half its words, and the
     // transcriber never writes down an "um" (delegation-reveal failed three good takes on it, Oct 5 2026).
+    // One word may always be missed (a made-up name heard as a real word, "Ablim" as "album"; an "um" or "huh" never
+    // written down), and a fifth of a long line.
     const n = wordCount(wordsOf(film, s));
-    if (l.heard < 0.8 && Math.round(n * (1 - l.heard)) > (n <= 4 ? 1 : 0)) fail('WORDS', `${l.shot}: ${Math.round(l.heard * 100)}% of its words heard`);
+    const missed = Math.round(n * (1 - l.heard));
+    if (missed > Math.max(1, Math.floor(n * 0.2))) fail('WORDS', `${l.shot}: ${Math.round(l.heard * 100)}% of its words heard`);
     if (whoOf(film, s) === 'You') { const hz = pitchOfSpan(f, l.start, l.end); if (hz > 175) fail('HIS VOICE', `${l.shot} is at ${Math.round(hz)} Hz: not a man's voice`); }
   }
   // AD-LIB
@@ -1276,7 +1302,9 @@ async function talkGates(film: Film, exs: Exchange[], k: number): Promise<Gate[]
   if (dead > end * 0.4) fail('SILENCE', `${dead.toFixed(1)} s of its ${end.toFixed(1)} s is dead air`);
   // BRIGHT, SOFT, STATIC (measured, and seen): not for a clip in which nobody speaks, whose action is the effect itself
   // ("the picture floods with red and goes to white": delegation-finale's opening failed three good takes on it).
-  const wordless = !ex.shots.some((i) => wordsOf(film, film.shots[i]));
+  // ...nor for one whose action is a fade or blackout as written ("then the screen goes dark": delegation-gaia).
+  const wordless = !ex.shots.some((i) => wordsOf(film, film.shots[i]))
+    || ex.shots.some((i) => /goes (dark|black|to white|white)|fades? (out|to)|cuts? (off|out)|screen goes/i.test(film.shots[i].action));
   const W = 640, H = 360;
   const first = readRgb(f, 0, W, H), settled = readRgb(f, Math.min(cut.frame, Math.round(cut.fps)), W, H), last = readRgb(f, cut.frame, W, H);
   const lum = (px: Buffer) => { let s = 0; for (let i = 0; i < px.length; i += 39) s += 0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2]; return s / Math.ceil(px.length / 39); };
@@ -1293,11 +1321,14 @@ async function talkGates(film: Film, exs: Exchange[], k: number): Promise<Gate[]
   const q = `These are ${n} frames of one video shot, in time order, left to right. `
     + (him ? 'A young man stands in the foreground with his back to the camera. RULE 1: he is seen from BEHIND in every frame (the back of his head; his face is not visible, not even in profile). ' : '')
     + 'RULE 2: the picture is clean in every frame: no snow, sparkles, floating specks or static over it. '
-    + `Answer in exactly this form and nothing else: ${him ? 'FACE=YES or FACE=NO (YES if any of his face is visible in any frame); ' : ''}STATIC=YES or STATIC=NO; FRAMES=<the numbers of the frames that break a rule, or none>.`;
+    // (Collins, Oct 5 2026, of delegation-stop-war: "when she expands her hands, weird table legs pop out of her; that breaks the whole thing".)
+    + 'RULE 3: every body stays whole and natural in every frame: nothing grows, sprouts or morphs out of anyone (no extra limbs, legs, sticks or objects coming out of a body), and nobody melts, stretches or merges with anything. '
+    + `Answer in exactly this form and nothing else: ${him ? 'FACE=YES or FACE=NO (YES if any of his face is visible in any frame); ' : ''}STATIC=YES or STATIC=NO; BODY=YES or BODY=NO (YES if rule 3 is broken in any frame); FRAMES=<the numbers of the frames that break a rule, or none>.`;
   try {
     const a = await look(strip, q);
     const frames = (a.match(/FRAMES=([^;.\n]*)/) ?? [])[1]?.trim() ?? '?';
     if (him && /FACE=YES/i.test(a)) fail('HIS FACE', `his face is seen (frames ${frames} of ${n})`);
+    if (/BODY=YES/i.test(a)) fail('BODY', `a body grows or morphs (frames ${frames} of ${n})`);
     if (!wordless && /STATIC=YES/i.test(a)) fail('STATIC', `snow or sparkle is seen over the picture (frames ${frames} of ${n})`);
     if (!/STATIC=(YES|NO)/i.test(a)) console.warn(`[make] ${ex.id}: the vision check gave no answer ("${a.slice(0, 80)}")`);
   } catch (e) { console.warn(`[make] ${ex.id}: the vision check could not be made (${(e as Error).message.slice(0, 120)}); the measured gates stand`); }
@@ -1311,8 +1342,9 @@ function filmGates(film: Film): Gate[] {
   const man = JSON.parse(fs.readFileSync(path.join(OUT, 'scenes.json'), 'utf8')).films[film.id] as { seconds: number; cues: Cue[] } | undefined;
   if (!man || !fs.existsSync(dest)) return [{ gate: 'BAKED', why: 'the film is not baked' }];
   if (man.cues.map((c) => c.shot).join(' ') !== film.shots.map((s) => s.id).join(' ')) fails.push({ gate: 'CUES', why: 'its cues are not its shots, in order' });
-  // No dead air left (the last second of the film is its ending, not a gap).
-  for (const [a, z] of silencesOf(dest)) if (z - a > TALK_GAP_MAX + TALK_CUT_MIN + 0.25 && z < man.seconds - 0.5) fails.push({ gate: 'SILENCE', why: `${(z - a).toFixed(1)} s of silence at ${a.toFixed(1)} s` });
+  // No dead air left (the last second of the film is its ending, not a gap). 1.8 s: the gaps Collins named were 2.0 s
+  // and 4.8 s, and a join between two clips holds about 1.5 s (the beat after a line, the lead-in to the next).
+  for (const [a, z] of silencesOf(dest)) if (z - a > 1.8 && z < man.seconds - 0.5) fails.push({ gate: 'SILENCE', why: `${(z - a).toFixed(1)} s of silence at ${a.toFixed(1)} s` });
   // Steady from first frame to last.
   const W = 640, H = 360;
   const at = (t: number) => { const r = spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-ss', t.toFixed(2), '-i', dest, '-vf', `scale=${W}:${H}`, '-frames:v', '1', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-'], { maxBuffer: 1 << 27 }); return Buffer.from(r.stdout.subarray(0, W * H * 3)); };
@@ -1326,6 +1358,9 @@ function filmGates(film: Film): Gate[] {
     if (!c) return;
     if (s.from !== '^' || !places.length) { places.push([c.t0, c.t1]); talks.push(!!wordsOf(film, s)); } else { places[places.length - 1][1] = c.t1; if (wordsOf(film, s)) talks[talks.length - 1] = true; }
   });
+  // A place whose action fades or goes dark as written ("then the screen goes dark") is meant to change its light.
+  const fades = (n: number) => film.shots.some((s, i) => man.cues[i] && man.cues[i].t0 >= places[n][0] - 0.01 && man.cues[i].t1 <= places[n][1] + 0.01 && /goes (dark|black|to white|white)|fades? (out|to)|screen goes/i.test(s.action));
+  for (let n = places.length - 1; n >= 0; n--) if (fades(n)) { places.splice(n, 1); talks.splice(n, 1); }
   // A place in which nobody speaks is an effect shot (a flood of red to white): its picture is meant to change.
   for (let n = places.length - 1; n >= 0; n--) if (!talks[n]) places.splice(n, 1);
   console.log(`[make] ${film.id}: ${man.seconds.toFixed(1)} s, ${places.length} place${places.length > 1 ? 's' : ''}`);
@@ -1347,18 +1382,27 @@ function filmGates(film: Film): Gate[] {
  */
 async function filmWords(film: Film): Promise<Gate[]> {
   const dest = path.join(OUT, `${film.id}.mp4`);
+  // Heard in pieces of 40 s (overlapping by 4 s): heard whole, a two-minute film lost a stretch of its words in the
+  // transcriber (institute-pipeline, Oct 5 2026: four lines "not heard" that were plainly there).
   const wav = path.join(dirOf(film.id), 'film.wav');
-  ff(['-i', dest, '-vn', '-ac', '1', '-ar', '16000', wav], 'wav');
-  const r = await api('/api/audio/transcribe', { method: 'POST', body: JSON.stringify({ audioBase64: fs.readFileSync(wav).toString('base64') }) });
+  const total = duration(dest);
+  const words: Word[] = [];
+  for (let at = 0; at < total; at += 36) {
+    ff(['-ss', at.toFixed(2), '-t', '40', '-i', dest, '-vn', '-ac', '1', '-ar', '16000', wav], 'wav');
+    const r = await api('/api/audio/transcribe', { method: 'POST', body: JSON.stringify({ audioBase64: fs.readFileSync(wav).toString('base64') }) });
+    const lastEnd = words.length ? words[words.length - 1].end : -1;
+    for (const x of (r.words ?? []) as Array<{ word?: string; punctuated_word?: string; text?: string; start: number; end: number }>) {
+      const w = { w: norm(String(x.word ?? x.punctuated_word ?? x.text ?? ''))[0] ?? '', start: x.start + at, end: x.end + at };
+      if (w.w && w.start > lastEnd - 0.05) words.push(w);
+    }
+  }
   fs.rmSync(wav, { force: true });
-  const words: Word[] = ((r.words ?? []) as Array<{ word?: string; punctuated_word?: string; text?: string; start: number; end: number }>)
-    .map((x) => ({ w: norm(String(x.word ?? x.punctuated_word ?? x.text ?? ''))[0] ?? '', start: x.start, end: x.end })).filter((x) => x.w);
   const spoken = film.shots.filter((s) => wordsOf(film, s));
   const spans = alignLines(spoken.map((s) => wordsOf(film, s)), words);
   const fails: Gate[] = [];
   spans.forEach((sp, i) => {
     if (!sp) fails.push({ gate: 'WORDS', why: `${spoken[i].id} is not heard in the film ("${wordsOf(film, spoken[i]).slice(0, 40)}")` });
-    else if (sp.heard < 0.8) fails.push({ gate: 'WORDS', why: `${spoken[i].id}: ${Math.round(sp.heard * 100)}% of its words heard in the film` });
+    else if (Math.round(wordCount(wordsOf(film, spoken[i])) * (1 - sp.heard)) > Math.max(1, Math.floor(wordCount(wordsOf(film, spoken[i])) * 0.2))) fails.push({ gate: 'WORDS', why: `${spoken[i].id}: ${Math.round(sp.heard * 100)}% of its words heard in the film` });
   });
   console.log(`[make] the film, heard: ${spans.filter(Boolean).length} of ${spoken.length} lines, the lowest ${Math.round(100 * Math.min(1, ...spans.map((x) => x?.heard ?? 0)))}%`);
   return fails;
@@ -1389,6 +1433,7 @@ async function make(film: Film) {
   for (let k = 0; k < exs.length; k++) {
     const ex = exs[k];
     const out = talkFile(film, ex);
+    const tries: Array<{ attempt: number; fails: Gate[] }> = [];
     for (let attempt = 1; ; attempt++) {
       if (!fs.existsSync(out)) {
         let start: string;
@@ -1401,7 +1446,26 @@ async function make(film: Film) {
       const fails = await talkGates(film, exs, k);
       if (!fails.length) { report.push(`${ex.id}: passed every gate${attempt > 1 ? ` on try ${attempt}` : ' first time'}`); console.log(`[make] ${ex.id}: passes every gate${attempt > 1 ? ` (try ${attempt})` : ''}`); break; }
       console.warn(`[make] ${ex.id}: try ${attempt} FAILS: ${fails.map((x) => `${x.gate} (${x.why})`).join('; ')}`);
-      if (attempt >= TALK_TRIES) { report.push(`${ex.id}: FAILED ${TALK_TRIES} times: ${fails.map((x) => x.gate).join(', ')}`); console.error(`[make] ${film.id} stops at ${ex.id}: it failed its gates ${TALK_TRIES} times. Look at ${out}.`); console.log(report.join('\n')); return; }
+      // GO WITH WHAT YOU GET (Collins, Oct 5 2026: "AI video will never be perfect; you often have to go with what you
+      // get"): after the last try, the take with the fewest failures is kept, the film goes on, and what is wrong with
+      // it is in the report. (It used to stop the film: five of sixteen stopped on the first run.)
+      if (attempt >= TALK_TRIES) {
+        tries.push({ attempt, fails });
+        const keep = tries.reduce((b, t) => (t.fails.length < b.fails.length ? t : b));
+        if (keep.attempt !== attempt) {
+          const rej = path.join(talkDir(film), 'rejected');
+          const base = out.replace(/\.mp4$/, '');
+          for (const ext of ['.mp4', '.json', '.txt', '.cut.json', '.words.json', '-gate.jpg']) {
+            fs.rmSync(`${base}${ext}`, { force: true });
+            const kept = path.join(rej, `${ex.id}-try${keep.attempt}${ext}`);
+            if (fs.existsSync(kept)) fs.renameSync(kept, `${base}${ext}`);
+          }
+        }
+        report.push(`${ex.id}: KEPT try ${keep.attempt} of ${TALK_TRIES}, not perfect: ${keep.fails.map((x) => `${x.gate} (${x.why})`).join('; ')}`);
+        console.warn(`[make] ${ex.id}: kept try ${keep.attempt} of ${TALK_TRIES} as it is (${keep.fails.map((x) => x.gate).join(', ')})`);
+        break;
+      }
+      tries.push({ attempt, fails });
       // Set the failed clip aside, with why, and make it again (nothing was built on it).
       const rej = path.join(talkDir(film), 'rejected');
       fs.mkdirSync(rej, { recursive: true });
