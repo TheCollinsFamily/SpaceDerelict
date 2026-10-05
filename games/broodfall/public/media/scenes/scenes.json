@@ -621,7 +621,7 @@
   "institute-pipeline": {
    "video": "media/scenes/institute-pipeline.mp4",
    "poster": "media/scenes/institute-pipeline.webp",
-   "seconds": 118.476,
+   "seconds": 120.845,
    "cues": [
     {
      "shot": "l00",
@@ -629,175 +629,175 @@
      "who": "You",
      "text": "Um. Were you trying to get in touch with me?",
      "t0": 0,
-     "t1": 4.33
+     "t1": 3.491
     },
     {
      "shot": "l01",
      "line": 1,
      "who": "The Director",
      "text": "So here is the thing, my man. You keep having me send you frozen old people.",
-     "t0": 4.33,
-     "t1": 11.721
+     "t0": 3.491,
+     "t1": 10.513
     },
     {
      "shot": "l02",
      "line": 2,
      "who": "The Director",
      "text": "But you are a male, right?",
-     "t0": 11.721,
-     "t1": 16.233
+     "t0": 10.513,
+     "t1": 14.196
     },
     {
      "shot": "l03",
      "line": 3,
      "who": "You",
      "text": "Yes?",
-     "t0": 16.233,
-     "t1": 18
+     "t0": 14.196,
+     "t1": 15.504
     },
     {
      "shot": "l04",
      "line": 4,
      "who": "The Director",
      "text": "Well, don't you want any young, hot women? Or guys. No judgment here, man.",
-     "t0": 18,
-     "t1": 24.17
+     "t0": 15.504,
+     "t1": 22.416
     },
     {
      "shot": "l05",
      "line": 5,
      "who": "You",
      "text": "What?",
-     "t0": 24.17,
-     "t1": 27.13
+     "t0": 22.416,
+     "t1": 25.349
     },
     {
      "shot": "l06",
      "line": 6,
      "who": "The Director",
      "text": "You know. I thought that was the point of conquering the stars.",
-     "t0": 27.13,
-     "t1": 32.856
+     "t0": 25.349,
+     "t1": 31.202
     },
     {
      "shot": "l07",
      "line": 7,
      "who": "The Director",
      "text": "Getting to fuck hot females, but with, like, a green or a blue tint to them.",
-     "t0": 32.856,
-     "t1": 40
+     "t0": 31.202,
+     "t1": 37.09
     },
     {
      "shot": "l08",
      "line": 8,
      "who": "You",
      "text": "But I would not be able to reproduce with your women. Our species are not remotely biologically compatible.",
-     "t0": 40,
-     "t1": 48.85
+     "t0": 37.09,
+     "t1": 46.914
     },
     {
      "shot": "l09",
      "line": 9,
      "who": "The Director",
      "text": "Nah, man. You have just got to be creative. You would figure something out.",
-     "t0": 48.85,
-     "t1": 55.958
+     "t0": 46.914,
+     "t1": 53.835
     },
     {
      "shot": "l10",
      "line": 10,
      "who": "The Director",
      "text": "I am sure I would, if I had access to some hot alien mamacitas.",
-     "t0": 55.958,
-     "t1": 62.129
+     "t0": 53.835,
+     "t1": 59.166
     },
     {
      "shot": "l11",
      "line": 11,
      "who": "You",
      "text": "No. I mean at a genetic level. Even with our technology it would be difficult to create a viable offspring.",
-     "t0": 62.129,
-     "t1": 70.25
+     "t0": 59.166,
+     "t1": 67.678
     },
     {
      "shot": "l12",
      "line": 12,
      "who": "You",
      "text": "We have no shared evolutionary history.",
-     "t0": 70.25,
-     "t1": 73.101
+     "t0": 67.678,
+     "t1": 71.29
     },
     {
      "shot": "l13",
      "line": 13,
      "who": "The Director",
      "text": "What are you talking about, bro? I mean sex for fun.",
-     "t0": 73.101,
-     "t1": 77.151
+     "t0": 71.29,
+     "t1": 75.681
     },
     {
      "shot": "l14",
      "line": 14,
      "who": "The Director",
      "text": "Most of the women I sleep with are workers, and can't even get pregnant.",
-     "t0": 77.151,
-     "t1": 82.071
+     "t0": 75.681,
+     "t1": 80.402
     },
     {
      "shot": "l15",
      "line": 15,
      "who": "The Director",
      "text": "You see, we figured out this better way of structuring relationships, where we share partners.",
-     "t0": 82.071,
-     "t1": 92.101
+     "t0": 80.402,
+     "t1": 88.674
     },
     {
      "shot": "l16",
      "line": 16,
      "who": "The Director",
      "text": "And I have got plenty who would be happy for a beam up.",
-     "t0": 92.101,
-     "t1": 94.421
+     "t0": 88.674,
+     "t1": 93.146
     },
     {
      "shot": "l17",
      "line": 17,
      "who": "You",
      "text": "But what about disease risks? And the time it would take to court that many partners?",
-     "t0": 94.421,
-     "t1": 98.431
+     "t0": 93.146,
+     "t1": 100.168
     },
     {
      "shot": "l18",
      "line": 18,
      "who": "The Director",
      "text": "Bro. Bro. Be rational. It is the most logical way to structure a relationship.",
-     "t0": 98.431,
-     "t1": 105.435
+     "t0": 100.168,
+     "t1": 109.52
     },
     {
      "shot": "l19",
      "line": 19,
      "who": "You",
      "text": "Wait. Has your species not discovered masturbation yet?",
-     "t0": 105.435,
-     "t1": 110.765
+     "t0": 109.52,
+     "t1": 114.372
     },
     {
      "shot": "l20",
      "line": 20,
      "who": "The Director",
      "text": "Bro. Masturbation is for poor people.",
-     "t0": 110.765,
-     "t1": 115.205
+     "t0": 114.372,
+     "t1": 117.993
     },
     {
      "shot": "l21",
      "line": 21,
      "who": "You",
      "text": "I need to pray. And take a shower.",
-     "t0": 115.205,
-     "t1": 118.476
+     "t0": 117.993,
+     "t1": 120.845
     }
    ]
   },
@@ -1222,14 +1222,14 @@
      "who": "You",
      "text": "That could just be because those are the most natural threat to my unchecked expansion.",
      "t0": 36.472,
-     "t1": 41.764
+     "t1": 41.765
     },
     {
      "shot": "l06",
      "line": 6,
      "who": "Delegate",
      "text": "We thought of that. But it cannot be the case, because your forces consume biomatter.",
-     "t0": 41.764,
+     "t0": 41.765,
      "t1": 49.821
     },
     {
@@ -1259,14 +1259,14 @@
      "who": "You",
      "text": "Unbelievable. It is not like I can carry biomatter from one drop to another.",
      "t0": 67.906,
-     "t1": 73.476
+     "t1": 73.477
     },
     {
      "shot": "l10",
      "line": 10,
      "who": "You",
      "text": "I heard there were humans like this in Earth's history. I should look into them.",
-     "t0": 73.476,
+     "t0": 73.477,
      "t1": 79.208
     }
    ]
@@ -1583,7 +1583,7 @@
   "faithful-prophecy": {
    "video": "media/scenes/faithful-prophecy.mp4",
    "poster": "media/scenes/faithful-prophecy.webp",
-   "seconds": 86.668,
+   "seconds": 85.647,
    "cues": [
     {
      "shot": "l00",
@@ -1591,127 +1591,127 @@
      "who": "You",
      "text": "Do you know how hard it has been to fucking contact you?",
      "t0": 0,
-     "t1": 4.283
+     "t1": 4.471
     },
     {
      "shot": "l01",
      "line": 1,
      "who": "You",
      "text": "Look. Knock off the suicide vest thing.",
-     "t0": 4.283,
-     "t1": 8.435
+     "t0": 4.471,
+     "t1": 8.811
     },
     {
      "shot": "l02",
      "line": 2,
      "who": "The Voice",
      "text": "Does it not make your job easier?",
-     "t0": 8.435,
-     "t1": 12.435
+     "t0": 8.811,
+     "t1": 12.477
     },
     {
      "shot": "l03",
      "line": 3,
      "who": "You",
      "text": "Yes.",
-     "t0": 12.435,
-     "t1": 14.473
+     "t0": 12.477,
+     "t1": 14.182
     },
     {
      "shot": "l04",
      "line": 4,
      "who": "The Voice",
      "text": "Then it is the will of God. Has God given you authority to speak on His behalf?",
-     "t0": 14.473,
-     "t1": 22.952
+     "t0": 14.182,
+     "t1": 22.658
     },
     {
      "shot": "l05",
      "line": 5,
      "who": "You",
      "text": "No. He has not.",
-     "t0": 22.952,
-     "t1": 25.524
+     "t0": 22.658,
+     "t1": 25.428
     },
     {
      "shot": "l06",
      "line": 6,
      "who": "You",
      "text": "Look, I just want to help you guys.",
-     "t0": 25.524,
-     "t1": 27.747
+     "t0": 25.428,
+     "t1": 28.028
     },
     {
      "shot": "l07",
      "line": 7,
      "who": "You",
      "text": "Maybe I could uplift your congregations before other people, so you don't have to suffer.",
-     "t0": 27.747,
-     "t1": 33.565
+     "t0": 28.028,
+     "t1": 34.023
     },
     {
      "shot": "l08",
      "line": 8,
      "who": "The Voice",
      "text": "Ah. So pre-millennial or post-millennial. Both were possible, because it was a choice.",
-     "t0": 33.565,
-     "t1": 40.824
+     "t0": 34.023,
+     "t1": 41.28
     },
     {
      "shot": "l09",
      "line": 9,
      "who": "The Voice",
      "text": "And one I must make, none the less.",
-     "t0": 40.824,
-     "t1": 42.775
+     "t0": 41.28,
+     "t1": 43.23
     },
     {
      "shot": "l10",
      "line": 10,
      "who": "The Voice",
      "text": "Is the soul not edified through suffering? Is the deed not made more glorious by its difficulty?",
-     "t0": 42.775,
-     "t1": 53.49
+     "t0": 43.23,
+     "t1": 53.381
     },
     {
      "shot": "l11",
      "line": 11,
      "who": "You",
      "text": "Well, I really don't think you should be making that decision for other people. Or, um. Well. Weird insect monsters.",
-     "t0": 53.49,
-     "t1": 63.536
+     "t0": 53.381,
+     "t1": 62.513
     },
     {
      "shot": "l12",
      "line": 12,
      "who": "The Voice",
      "text": "But God has put me in a position where I must, has He not?",
-     "t0": 63.536,
-     "t1": 69.451
+     "t0": 62.513,
+     "t1": 68.426
     },
     {
      "shot": "l13",
      "line": 13,
      "who": "The Voice",
      "text": "Meaning it is His will that it is my decision.",
-     "t0": 69.451,
-     "t1": 74.05
+     "t0": 68.426,
+     "t1": 73.024
     },
     {
      "shot": "l14",
      "line": 14,
      "who": "You",
      "text": "Sure. I guess.",
-     "t0": 74.05,
-     "t1": 76.897
+     "t0": 73.024,
+     "t1": 75.874
     },
     {
      "shot": "l15",
      "line": 15,
      "who": "The Voice",
      "text": "It is agreed, then. We will send militants to help you hold your territories, so that your mission may not be retarded.",
-     "t0": 76.897,
-     "t1": 86.668
+     "t0": 75.874,
+     "t1": 85.647
     }
    ]
   },
@@ -1791,6 +1791,189 @@
      "text": "And you are as much a slave to God's will as we are. Our scholars had long debated that point.",
      "t0": 36.113,
      "t1": 45.5
+    }
+   ]
+  },
+  "institute-machines": {
+   "video": "media/scenes/institute-machines.mp4",
+   "poster": "media/scenes/institute-machines.webp",
+   "seconds": 119.717,
+   "cues": [
+    {
+     "shot": "l00",
+     "line": 0,
+     "who": "The Director",
+     "text": "Told you I could do it.",
+     "t0": 0,
+     "t1": 3.533
+    },
+    {
+     "shot": "l01",
+     "line": 1,
+     "who": "You",
+     "text": "Do what?",
+     "t0": 3.533,
+     "t1": 5.894
+    },
+    {
+     "shot": "l02",
+     "line": 2,
+     "who": "The Director",
+     "text": "Hack your comms system. So we could have a little chat, my man.",
+     "t0": 5.894,
+     "t1": 11.118
+    },
+    {
+     "shot": "l03",
+     "line": 3,
+     "who": "You",
+     "text": "You didn't hack anything.",
+     "t0": 11.118,
+     "t1": 13.69
+    },
+    {
+     "shot": "l04",
+     "line": 4,
+     "who": "You",
+     "text": "You sent a simple set of laser flashes that corresponded to audio and video layers, and I sent one back.",
+     "t0": 13.69,
+     "t1": 20.545
+    },
+    {
+     "shot": "l05",
+     "line": 5,
+     "who": "The Director",
+     "text": "But we are talking now, aren't we? You see, hacking is as much a mental game as one of technology.",
+     "t0": 20.545,
+     "t1": 28.972
+    },
+    {
+     "shot": "l06",
+     "line": 6,
+     "who": "You",
+     "text": "Sure. I guess. What do you want?",
+     "t0": 28.972,
+     "t1": 33.881
+    },
+    {
+     "shot": "l07",
+     "line": 7,
+     "who": "The Director",
+     "text": "Here is the thing, my man. The most intelligent and ethically disciplined among our species have formed an organisation, if you will.",
+     "t0": 33.881,
+     "t1": 43.205
+    },
+    {
+     "shot": "l08",
+     "line": 8,
+     "who": "The Director",
+     "text": "The Institute for Long-Term Hive Flourishing.",
+     "t0": 43.205,
+     "t1": 46.645
+    },
+    {
+     "shot": "l09",
+     "line": 9,
+     "who": "The Director",
+     "text": "We dedicate every moment of our existence to the most rational and goal-oriented decision in that moment.",
+     "t0": 46.645,
+     "t1": 54.561
+    },
+    {
+     "shot": "l10",
+     "line": 10,
+     "who": "The Director",
+     "text": "You get me?",
+     "t0": 54.561,
+     "t1": 56.182
+    },
+    {
+     "shot": "l11",
+     "line": 11,
+     "who": "The Director",
+     "text": "Anyway. Some idiot corpos, who only care about pleasure and money, and what they can extract from the world.",
+     "t0": 56.182,
+     "t1": 63.23
+    },
+    {
+     "shot": "l12",
+     "line": 12,
+     "who": "The Director",
+     "text": "They are recklessly building out impossible-to-control artificial intelligences. Just so they will have more money.",
+     "t0": 63.23,
+     "t1": 72.447
+    },
+    {
+     "shot": "l13",
+     "line": 13,
+     "who": "The Director",
+     "text": "Well, you took out one of their biggest data centres in your first fall.",
+     "t0": 72.447,
+     "t1": 77.76
+    },
+    {
+     "shot": "l14",
+     "line": 14,
+     "who": "The Director",
+     "text": "Which makes it clear to me we are on the same page.",
+     "t0": 77.76,
+     "t1": 82.953
+    },
+    {
+     "shot": "l15",
+     "line": 15,
+     "who": "The Director",
+     "text": "Anything you need, man. I can get it for you.",
+     "t0": 82.953,
+     "t1": 86.806
+    },
+    {
+     "shot": "l16",
+     "line": 16,
+     "who": "You",
+     "text": "Um. Well. The only thing I really need are the bodies of your people.",
+     "t0": 86.806,
+     "t1": 93.691
+    },
+    {
+     "shot": "l17",
+     "line": 17,
+     "who": "The Director",
+     "text": "That works out great, man! I have got a few facilities full of tons of us on ice.",
+     "t0": 93.691,
+     "t1": 99.915
+    },
+    {
+     "shot": "l18",
+     "line": 18,
+     "who": "You",
+     "text": "You what?",
+     "t0": 99.915,
+     "t1": 101.241
+    },
+    {
+     "shot": "l19",
+     "line": 19,
+     "who": "The Director",
+     "text": "Yeah. People will do anything to get out of dying. Like they had not even heard of crystallisation.",
+     "t0": 101.241,
+     "t1": 105.625
+    },
+    {
+     "shot": "l20",
+     "line": 20,
+     "who": "You",
+     "text": "And they trusted people like you with their frozen bodies?",
+     "t0": 105.625,
+     "t1": 110.999
+    },
+    {
+     "shot": "l21",
+     "line": 21,
+     "who": "You",
+     "text": "Um. Yeah. Sure. Send them. That will be useful on future broodfalls.",
+     "t0": 110.999,
+     "t1": 119.717
     }
    ]
   }
