@@ -181,7 +181,10 @@ export function playAddress(a: RoachAddress): RoachHandle {
  * Enter, Space) closes it: a stray click does not.
  */
 export function playRoachScene(def: RoachScene): RoachHandle {
-  if (def.scene.film && filmArt(def.scene.film)) return playCutscene(def.scene.film, def.scene, { kicker: def.kicker });
+  // A cut scene like the factions' (Collins, Oct 5 2026: "these are supposed to be cut scenes (conventions established
+  // with the faction cutscenes)"): the film full screen under its own title, not an intercept. The transcript below is
+  // only for a film not baked yet.
+  if (def.scene.film && filmArt(def.scene.film)) return playCutscene(def.scene.film, def.scene);
   let finish: (h: 'ended' | 'skipped') => void = () => {};
   const done = new Promise<'ended' | 'skipped'>((r) => { finish = r; });
   const reduce = loadSettings().reduceMotion;
