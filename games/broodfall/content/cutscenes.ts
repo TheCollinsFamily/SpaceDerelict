@@ -379,7 +379,7 @@ export const FILMS: Film[] = [
     you('uncertain, almost worried', 'He glances left and right.'),
     they('On the screen he shrugs, grinning, man to man.'),
     you('horrified', 'He recoils in his chair.'),
-    they('On the screen he holds a pulp science-fiction magazine up to the lens and taps its painted cover: a heroic insect starship captain in a gold tunic with a green-skinned insect woman and a blue-skinned insect woman on his arms (no lettering on it).'),
+    they('On the screen he holds a pulp science-fiction magazine up to the lens and taps its painted cover, in the style of an old pulp science-fiction magazine: a heroic starship captain who is an insect like him (an insect head with antennae, four arms) in a gold tunic, and at his side an insect woman whose chitin is painted green and blue (an insect head with antennae, four arms). Everyone on the cover is an insect: there is no human being on it anywhere. No lettering on it.'),
     they('On the screen he taps the two painted women on the cover in turn.'),
     you('patient, as to a child'),
     they('On the screen he puts the magazine and the game down and leans in on his elbows, coaxing.'),

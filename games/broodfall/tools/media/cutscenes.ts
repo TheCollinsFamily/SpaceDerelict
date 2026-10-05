@@ -1019,12 +1019,49 @@ const TALK_GAP_MAX = Number(process.env.CUTSCENE_TALK_GAP_MAX || 0.9);
 const TALK_CUT_MIN = 0.5;
 
 /** The silences of a clip, from its sound: stretches of half a second or more below -32 dB. */
+/**
+ * Where a clip is QUIET: below 12 dB under its own speech (the loud tenth of its 50 ms stretches), and never above
+ * -22 dB. A fixed -32 dB missed every pause that had room tone or hum in it: Collins, Oct 5 2026, "there is a lot of
+ * audio dead space in the Institute and Faithful videos" (pauses of 2.4 to 3.2 s between words were left in).
+ */
+const loudCache = new Map<string, number[]>();
+/** A clip's loudness every 50 ms (dB, RMS). */
+function loudnessOf(file: string): number[] {
+  if (!loudCache.has(file)) {
+    const r = spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-i', file, '-vn', '-ac', '1', '-ar', '8000', '-f', 's16le', '-'], { maxBuffer: 1 << 27 });
+    const x = r.stdout;
+    const n = Math.floor(x.length / 2), win = 400;
+    const db: number[] = [];
+    for (let o = 0; o + win <= n; o += win) {
+      let e = 0;
+      for (let k = 0; k < win; k++) { const v = x.readInt16LE((o + k) * 2) / 32768; e += v * v; }
+      db.push(10 * Math.log10(e / win + 1e-12));
+    }
+    loudCache.set(file, db);
+  }
+  return loudCache.get(file)!;
+}
+function quietDbOf(file: string): number {
+  const db = [...loudnessOf(file)].sort((p, q) => p - q);
+  const speech = db.length ? db[Math.floor(db.length * 0.9)] : -20;
+  // 12 dB under speech: room tone and hum fall under it, an "um" or a breath of a word does not.
+  return Math.min(-22, speech - 12);
+}
+/**
+ * The quiet stretches of a clip (0.5 s or more), from its average loudness every 50 ms: a blip of 0.15 s or less does
+ * not end one. (silencedetect works on sample peaks, and a hum's peaks hid pauses of 3 s in institute-ultimatum.)
+ */
 function silencesOf(file: string): Array<[number, number]> {
-  const err = ffStderr(['-i', file, '-vn', '-af', 'silencedetect=noise=-32dB:d=0.5', '-f', 'null', '-']);
+  const db = loudnessOf(file);
+  const q = quietDbOf(file);
   const out: Array<[number, number]> = [];
-  const re = /silence_start: ([0-9.]+)[\s\S]*?silence_end: ([0-9.]+)/g;
-  for (let m = re.exec(err); m; m = re.exec(err)) {
-    out.push([Number(m[1]), Number(m[2])]);
+  let start = -1, blip = 0;
+  for (let k = 0; k <= db.length; k++) {
+    const quiet = k < db.length && db[k] < q;
+    if (quiet) { if (start < 0) start = k; blip = 0; continue; }
+    if (start >= 0 && k < db.length && blip < 3) { blip++; continue; }
+    if (start >= 0) { const end = k - blip; if ((end - start) * 0.05 >= 0.5) out.push([start * 0.05, end * 0.05]); }
+    start = -1; blip = 0;
   }
   return out;
 }
@@ -1052,10 +1089,26 @@ function deadAir(film: Film, ex: Exchange, cut: TalkCut, file: string, end: numb
   if (ex.from === '^' && !opens && words[0].start - TALK_LEAD_MAX >= 0.12) {
     out.push({ from: 0, to: words[0].start - TALK_LEAD_MAX, why: `${words[0].start.toFixed(1)} s before its first word (${lineAt(words[0].start)})` });
   }
+  // The first clip of a place opens on its picture a moment: one second before its first word, no more (unless its
+  // first shot is one in which nobody speaks: that is a visual beat, and kept whole).
+  else if (ex.from !== '^' && !opens && words[0].start - 1.0 >= TALK_CUT_MIN) {
+    out.push({ from: 0, to: words[0].start - 1.0, why: `${words[0].start.toFixed(1)} s before its first word, at the start of a place (${lineAt(words[0].start)})` });
+  }
   // Every gap between one word and the next: the silence inside it, cut down to TALK_GAP_MAX from its middle.
   for (let i = 0; i + 1 < words.length; i++) {
     const a = words[i].end + 0.08, z = words[i + 1].start - 0.08;
     if (z - a < TALK_GAP_MAX) continue;
+    // A SILENCE THAT SHOWS SOMETHING IS KEPT WHOLE (Collins, Oct 5 2026: "don't accidentally make a cut where the dead
+    // space is there because something is being conveyed visually"): a pause that holds a shot in which nobody speaks
+    // (her unrolling a map, a feed cutting off), or whose picture is moving more than the clip does at rest.
+    const lineA = lineAt(words[i].start), lineB = lineAt(words[i + 1].start);
+    if (lineA !== lineB) {
+      const ia = ex.shots.findIndex((k) => film.shots[k].id === lineA), ib = ex.shots.findIndex((k) => film.shots[k].id === lineB);
+      if (ia >= 0 && ib > ia && ex.shots.slice(ia + 1, ib).some((k) => !wordsOf(film, film.shots[k]))) { dbg(`${a.toFixed(1)}-${z.toFixed(1)} kept: a silent shot between ${lineA} and ${lineB}`); continue; }
+    }
+    const mo = motionOf(file, a, z), rest = restingMotion(file);
+    // (1.6 times kept every pause in which a listener only nodded: real action is far more than that.)
+    if (mo > rest * 2.5) { dbg(`${a.toFixed(1)}-${z.toFixed(1)} kept: the picture moves (${mo.toFixed(2)} against ${rest.toFixed(2)} at rest)`); continue; }
     // The silences inside this gap; two with only a breath or a click between them (under 0.3 s of sound) are one. A
     // longer sound between them is kept whole (an "um" the transcript did not write down is still his line).
     // Each keeps its full length (what is HEARD: the film's gate measures the same) and where a cut may go (inside the
@@ -1068,13 +1121,38 @@ function deadAir(film: Film, ex: Exchange, cut: TalkCut, file: string, end: numb
       if (last && s1 - last.cut[1] < 0.3) { last.cut[1] = e1; last.full[1] = e; } else inside.push({ full: [s, e], cut: [s1, e1] });
     }
     const best = inside.sort((x, y) => (y.full[1] - y.full[0]) - (x.full[1] - x.full[0]))[0] ?? null;
-    if (!best || best.full[1] - best.full[0] < TALK_GAP_MAX + TALK_CUT_MIN) continue;
-    const over = Math.min(best.full[1] - best.full[0] - TALK_GAP_MAX, best.cut[1] - best.cut[0] - 0.1);
+    if (best) best.full = [Math.max(best.full[0], words[i].end), Math.min(best.full[1], words[i + 1].start)];
+    if (!best || best.full[1] - best.full[0] < TALK_GAP_MAX + TALK_CUT_MIN) { dbg(`${a.toFixed(1)}-${z.toFixed(1)} kept: not quiet long enough (${best ? (best.full[1] - best.full[0]).toFixed(1) : 0} s quiet, below ${quietDbOf(file).toFixed(0)} dB)`); continue; }
+    // Never less than TALK_GAP_MAX left between the two words (the quiet can run on into a soft word).
+    const over = Math.min(best.full[1] - best.full[0] - TALK_GAP_MAX, best.cut[1] - best.cut[0] - 0.1, (words[i + 1].start - words[i].end) - TALK_GAP_MAX);
     if (over < 0.2) continue;
     const mid = (best.cut[0] + best.cut[1]) / 2;
     out.push({ from: mid - over / 2, to: mid + over / 2, why: `${(best.full[1] - best.full[0]).toFixed(1)} s of silence before "${words[i + 1].w}" (${lineAt(words[i + 1].start)})` });
   }
   return out;
+}
+
+const dbg = (m: string) => { if (process.env.CUTSCENE_DEBUG_GAPS) console.log(`   gap ${m}`); };
+/** How much a stretch of a clip's picture moves: the mean change between frames, 8 a second, at 160x90. */
+function motionOf(file: string, a: number, z: number): number {
+  const W = 160, H = 90, N = W * H;
+  const r = spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-ss', a.toFixed(3), '-t', Math.max(0.2, z - a).toFixed(3), '-i', file, '-vf', `fps=8,scale=${W}:${H}`, '-f', 'rawvideo', '-pix_fmt', 'gray', '-'], { maxBuffer: 1 << 26 });
+  const px = r.stdout;
+  let sum = 0, n = 0;
+  for (let o = N; o + N <= px.length; o += N) { let d = 0; for (let k = 0; k < N; k += 3) d += Math.abs(px[o + k] - px[o - N + k]); sum += d / (N / 3); n++; }
+  return n ? sum / n : 0;
+}
+const resting = new Map<string, number>();
+/** How much a clip's picture moves at rest: the median of its half-second stretches. */
+function restingMotion(file: string): number {
+  if (!resting.has(file)) {
+    const d = duration(file);
+    const m: number[] = [];
+    for (let t = 0; t + 0.5 <= d; t += 0.5) m.push(motionOf(file, t, t + 0.5));
+    m.sort((x, y) => x - y);
+    resting.set(file, m.length ? m[m.length >> 1] : 1);
+  }
+  return resting.get(file)!;
 }
 
 /** The stretches of a clip that are kept, in order. */
@@ -1322,12 +1400,14 @@ async function talkGates(film: Film, exs: Exchange[], k: number): Promise<Gate[]
     + (him ? 'A young man stands in the foreground with his back to the camera. RULE 1: he is seen from BEHIND in every frame (the back of his head; his face is not visible, not even in profile). ' : '')
     + 'RULE 2: the picture is clean in every frame: no snow, sparkles, floating specks or static over it. '
     // (Collins, Oct 5 2026, of delegation-stop-war: "when she expands her hands, weird table legs pop out of her; that breaks the whole thing".)
+    + 'RULE 4: apart from the young man, there is no human being anywhere: every person, and every figure on a screen, poster, cover or picture, is an insect person with an insect head and antennae. '
     + 'RULE 3: every body stays whole and natural in every frame: nothing grows, sprouts or morphs out of anyone (no extra limbs, legs, sticks or objects coming out of a body), and nobody melts, stretches or merges with anything. '
-    + `Answer in exactly this form and nothing else: ${him ? 'FACE=YES or FACE=NO (YES if any of his face is visible in any frame); ' : ''}STATIC=YES or STATIC=NO; BODY=YES or BODY=NO (YES if rule 3 is broken in any frame); FRAMES=<the numbers of the frames that break a rule, or none>.`;
+    + `Answer in exactly this form and nothing else: ${him ? 'FACE=YES or FACE=NO (YES if any of his face is visible in any frame); ' : ''}STATIC=YES or STATIC=NO; BODY=YES or BODY=NO (YES if rule 3 is broken in any frame); HUMAN=YES or HUMAN=NO (YES if rule 4 is broken in any frame); FRAMES=<the numbers of the frames that break a rule, or none>.`;
   try {
     const a = await look(strip, q);
     const frames = (a.match(/FRAMES=([^;.\n]*)/) ?? [])[1]?.trim() ?? '?';
     if (him && /FACE=YES/i.test(a)) fail('HIS FACE', `his face is seen (frames ${frames} of ${n})`);
+    if (/HUMAN=YES/i.test(a)) fail('HUMAN', `a human being (not him) is seen, on a screen or a poster perhaps (frames ${frames} of ${n})`);
     if (/BODY=YES/i.test(a)) fail('BODY', `a body grows or morphs (frames ${frames} of ${n})`);
     if (!wordless && /STATIC=YES/i.test(a)) fail('STATIC', `snow or sparkle is seen over the picture (frames ${frames} of ${n})`);
     if (!/STATIC=(YES|NO)/i.test(a)) console.warn(`[make] ${ex.id}: the vision check gave no answer ("${a.slice(0, 80)}")`);
@@ -1342,27 +1422,27 @@ function filmGates(film: Film): Gate[] {
   const man = JSON.parse(fs.readFileSync(path.join(OUT, 'scenes.json'), 'utf8')).films[film.id] as { seconds: number; cues: Cue[] } | undefined;
   if (!man || !fs.existsSync(dest)) return [{ gate: 'BAKED', why: 'the film is not baked' }];
   if (man.cues.map((c) => c.shot).join(' ') !== film.shots.map((s) => s.id).join(' ')) fails.push({ gate: 'CUES', why: 'its cues are not its shots, in order' });
-  // No dead air left (the last second of the film is its ending, not a gap). 1.8 s: the gaps Collins named were 2.0 s
-  // and 4.8 s, and a join between two clips holds about 1.5 s (the beat after a line, the lead-in to the next).
-  for (const [a, z] of silencesOf(dest)) if (z - a > 1.8 && z < man.seconds - 0.5) fails.push({ gate: 'SILENCE', why: `${(z - a).toFixed(1)} s of silence at ${a.toFixed(1)} s` });
+  // (Dead air is checked by the words' own gaps, in filmWords: a loudness measure on a whole film counts the soft end
+  // of every word as quiet.)
   // Steady from first frame to last.
   const W = 640, H = 360;
   const at = (t: number) => { const r = spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-ss', t.toFixed(2), '-i', dest, '-vf', `scale=${W}:${H}`, '-frames:v', '1', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-'], { maxBuffer: 1 << 27 }); return Buffer.from(r.stdout.subarray(0, W * H * 3)); };
   const lum = (px: Buffer) => { let s = 0; for (let i = 0; i < px.length; i += 39) s += 0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2]; return s / Math.ceil(px.length / 39); };
   // ...within each PLACE (a ship's dark bay and a lit hall are not one picture: the first run of this gate failed a
   // film for having two places in it).
+  // The stretches whose light must hold: each place, split at a shot that fades or cuts a screen dark (that shot is
+  // left out: its light is meant to change), and only stretches in which someone speaks.
   const places: Array<[number, number]> = [];
   const talks: boolean[] = [];
+  const FADE = /goes (dark|black|to white|white)|fades? (out|to)|screen goes/i;
   film.shots.forEach((s, i) => {
     const c = man.cues[i];
     if (!c) return;
-    if (s.from !== '^' || !places.length) { places.push([c.t0, c.t1]); talks.push(!!wordsOf(film, s)); } else { places[places.length - 1][1] = c.t1; if (wordsOf(film, s)) talks[talks.length - 1] = true; }
+    if (FADE.test(s.action) || s.id === 'hangup') { places.push([c.t1, c.t1]); talks.push(false); return; }
+    if (s.from !== '^' || !places.length) { places.push([c.t0, c.t1]); talks.push(!!wordsOf(film, s)); }
+    else { places[places.length - 1][1] = c.t1; if (wordsOf(film, s)) talks[talks.length - 1] = true; }
   });
-  // A place whose action fades or goes dark as written ("then the screen goes dark") is meant to change its light.
-  const fades = (n: number) => film.shots.some((s, i) => man.cues[i] && man.cues[i].t0 >= places[n][0] - 0.01 && man.cues[i].t1 <= places[n][1] + 0.01 && /goes (dark|black|to white|white)|fades? (out|to)|screen goes/i.test(s.action));
-  for (let n = places.length - 1; n >= 0; n--) if (fades(n)) { places.splice(n, 1); talks.splice(n, 1); }
-  // A place in which nobody speaks is an effect shot (a flood of red to white): its picture is meant to change.
-  for (let n = places.length - 1; n >= 0; n--) if (!talks[n]) places.splice(n, 1);
+  for (let n = places.length - 1; n >= 0; n--) if (!talks[n] || places[n][1] - places[n][0] < 2) { places.splice(n, 1); talks.splice(n, 1); }
   console.log(`[make] ${film.id}: ${man.seconds.toFixed(1)} s, ${places.length} place${places.length > 1 ? 's' : ''}`);
   places.forEach(([p0, p1], n) => {
     const m = Math.min(1, (p1 - p0) / 4);
@@ -1404,6 +1484,18 @@ async function filmWords(film: Film): Promise<Gate[]> {
     if (!sp) fails.push({ gate: 'WORDS', why: `${spoken[i].id} is not heard in the film ("${wordsOf(film, spoken[i]).slice(0, 40)}")` });
     else if (Math.round(wordCount(wordsOf(film, spoken[i])) * (1 - sp.heard)) > Math.max(1, Math.floor(wordCount(wordsOf(film, spoken[i])) * 0.2))) fails.push({ gate: 'WORDS', why: `${spoken[i].id}: ${Math.round(sp.heard * 100)}% of its words heard in the film` });
   });
+  // NO DEAD AIR, as heard: no gap between two words over 2.5 s, except where a shot in which nobody speaks (or a call
+  // cut off) lies between them, which is a visual beat. Gaps over 1.5 s are listed.
+  const cues = (JSON.parse(fs.readFileSync(path.join(OUT, 'scenes.json'), 'utf8')).films[film.id]?.cues ?? []) as Cue[];
+  const silentShot = (a: number, z: number) => cues.some((c) => !c.text && c.t0 < z - 0.2 && c.t1 > a + 0.2);
+  const long: string[] = [];
+  for (let k = 0; k + 1 < words.length; k++) {
+    const g = words[k + 1].start - words[k].end;
+    if (g <= 1.5 || silentShot(words[k].end, words[k + 1].start)) continue;
+    long.push(`${g.toFixed(1)} s at ${words[k].end.toFixed(1)} s ("${words[k].w}" … "${words[k + 1].w}")`);
+    if (g > 2.5) fails.push({ gate: 'SILENCE', why: `${g.toFixed(1)} s between "${words[k].w}" and "${words[k + 1].w}" at ${words[k].end.toFixed(1)} s` });
+  }
+  if (long.length) console.log(`[make] the film's pauses over 1.5 s: ${long.join('; ')}`);
   console.log(`[make] the film, heard: ${spans.filter(Boolean).length} of ${spoken.length} lines, the lowest ${Math.round(100 * Math.min(1, ...spans.map((x) => x?.heard ?? 0)))}%`);
   return fails;
 }
