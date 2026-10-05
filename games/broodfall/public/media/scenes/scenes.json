@@ -285,6 +285,45 @@
      "t1": 60.199
     }
    ]
+  },
+  "rk-transports": {
+   "video": "media/scenes/rk-transports.mp4",
+   "poster": "media/scenes/rk-transports.webp",
+   "seconds": 33.715,
+   "cues": [
+    {
+     "shot": "l00",
+     "line": 0,
+     "who": "General",
+     "text": "The transports have been sabotaged! This is the last fight. We will never make it in time!",
+     "t0": 0,
+     "t1": 8.733
+    },
+    {
+     "shot": "l01",
+     "line": 1,
+     "who": "The Roach King",
+     "text": "You disapprove? Well, too bad! We're in this war for the species. It's simple numbers. They have more.",
+     "t0": 8.733,
+     "t1": 18
+    },
+    {
+     "shot": "l02",
+     "line": 2,
+     "who": "The Roach King",
+     "text": "And every day I have to make decisions that send hundreds of people like you to their deaths.",
+     "t0": 18,
+     "t1": 24.97
+    },
+    {
+     "shot": "l03",
+     "line": 3,
+     "who": "The Roach King",
+     "text": "If we could have just one confrontation without the war caste feeding them from the start, I think we could win.",
+     "t0": 24.97,
+     "t1": 33.715
+    }
+   ]
   }
  }
 }

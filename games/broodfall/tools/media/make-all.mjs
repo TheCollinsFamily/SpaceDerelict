@@ -33,12 +33,13 @@ const done = [], failed = [];
 for (const f of todo) {
   const need = Math.round(f.secs * 0.8 * TOKENS_PER_SEC);
   let bal = await balance();
-  while (bal < need * 1.2) {
+  // Other sessions spend from the same balance: keep the film's cost and $60 besides in hand.
+  while (bal < need * 1.2 + 3000000) {
     const ref = `broodfall-films-oct5-${granted}`;
     const g = spawnSync('node', ['C:/Users/Merry/agent-tools/rfab-grant.js', COLLINS, '--usd', '100', '--ref', ref, '--reason', 'Broodfall: the cut scene films at 480p (the film system)', '--apply'], { encoding: 'utf8' });
     console.log(`[all] top-up $100 (${ref}): ${(g.stdout.match(/RESULT.*/) ?? [g.stderr.slice(0, 200)])[0]}`);
     granted++;
-    if (granted > 6) { console.error('[all] stopping: more than $600 granted in this run'); process.exit(1); }
+    if (granted > 7) { console.error('[all] stopping: more than $700 granted in this run'); process.exit(1); }
     bal = await balance();
   }
   console.log(`[all] ${f.id} (~${f.secs} s of shots), balance ${bal}`);
