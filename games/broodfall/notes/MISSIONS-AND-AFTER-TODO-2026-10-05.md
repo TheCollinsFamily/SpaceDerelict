@@ -99,12 +99,13 @@ Roach King piece if the ally has none; `src/meta/afterMission.ts`) → **YOKE's 
 while she has something new). Also, sometimes: a letter or call from the ally between beats (`asides`: 7 to 9 per
 faction), a comic earned, the boss's message (first landing only).
 
-8. [ ] **YOKE has 6 greetings for a win** (and 5 for an ordinary return); a campaign has 12 or more wins, so she repeats
-   from about the 10th. About 10 more win lines would make every one new.
+8. [x] **YOKE repeating herself:** fixed Oct 5. With the once intros and the Earth news, a simulated campaign hears no
+   greeting twice. She still has only 6 lines for an ordinary win; past about capture 16 she would start over.
 9. [ ] **The 3 comics are all earned in the first two missions.** More comics, earned through the campaign (one per
    plot point?), would fill the empty returns.
 10. [ ] **Founding Day has no film:** the provider refuses the speech as written (Collins is handling it).
-11. [ ] **15 faction films are being made** by another session's batch (`tools/media/make-all.mjs`).
+11. [x] **The faction films:** all 15 baked by Oct 5 (the other session's batch), plus his briefing and the call. Left as
+    cards: Founding Day (10) and the midpoint's offers (a letter and a call each; a film only if you want them as films).
 12. [ ] **Decide what a return must always bring.** The rule today is the news + a greeting + one story film when one is
     due. If "one unique thing after every mission" means a story film or a comic EVERY time, the pacing in 1 and the
     comics in 9 are what get there.
