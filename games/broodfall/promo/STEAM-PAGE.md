@@ -128,3 +128,5 @@ afterwards.
   redirects to the public landing page and no app can be created. Check
   https://partner.steamgames.com/newpartner/ ; when "Complete Account Creation" unlocks, create the
   app, fill this file's fields in, upload the images, and submit the store page for review.
+- Checked Oct 9 2026: still "Identity Verification Pending" (last upload Oct 1), "Complete Account
+  Creation" still locked. Valve asks not to contact support during the 10–15 business days.
