@@ -2062,3 +2062,18 @@ rfab api? if not update it so you can ... those are probably better".
   started on a PICTURE of the last frame 38 to 40. Both kept the room, the man and the framing and did the action; wan
   lifts the exposure at the join, sd2-fast shifts the picture a few pixels. **So for a join that must not show, start on
   the real last frame; a clip start is for carrying MOVEMENT across a join** (not shown by this source: he stands still).
+
+## YOKE's lines: Collins's pass and his brief (Oct 12 2026)
+- THE LINES PAGE: `npx vite-node tools/yoke-lines.ts` writes notes/YOKE-LINES.html (every prewritten line of hers, grouped by
+  when it plays, with where it lives); published as an artifact he edits in place (Cut, notes, inline edits) and exports.
+  An export is a list by id; apply it to the files, regenerate, republish, and tell him to press Reset edits.
+- HIS BRIEF (the header of content/greetings.ts): a line of hers names one real thing of their world, often against what
+  the insects do (21st-century life), and leaves a thread he can pull. `Greeting.aside` is what she knows behind it, sent
+  to her live mind with the campaign summary (campaignUi greetNote) and never shown; `Greeting.hook` is the reply box's
+  prompt under her ("Ask her about ..."); `Greeting.repeats` plays again when the pool is dry (locked-4, the dark desk).
+  The Earth news (lore book, "Earth news") carries its lore as an indented "> ..." line under each item (`earthNews`), and a
+  "[shrug]" inside a line splits it into beats (`newsBeats`). Tests: tests/greetingPools.test.ts.
+- THE LORE HE GAVE THAT DAY: ageing and euthanasia (empire.md 7b: looks stop at 23, the cap of 120, the childless at 40),
+  Earth's trajectory (empire.md 9: dysgenics, the extinctions, why they left: the covenant), the Temple class (Israel), the
+  Index raising children of parents found wanting (he was), the dead uploaded to "the world to come". Her brain on RFab
+  (content/lore/yoke-brain.md, both parts under 4,000 characters) was republished with it: `node tools/art/make.mjs yoke --publish`.

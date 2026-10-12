@@ -166,5 +166,8 @@ The board (`claude.ai/artifact/GaEEiXWtpEPhjv1AHaSqq9`, drawn from this file) wa
   Cheap VARIANTS rather than kinds, one `SimConfig` flag each: night (no fliers), flood (slow ground), fire ban, the Host
   early, the Host late, no eating. Build 1, 2, 5, 6 first (measures and configs exist), then 3, 4, 7 (unit behaviours).
 - **#13 The licence against the lineages:** explained; his call (count the licence on standing EARNED, or keep the tension).
+- **Later on Oct 12:** Collins went through her lines on the page (two exports applied) and gave the brief for what a line
+  is for (the header of ); every ordinary pool was rewritten to it, with the lore behind each line for
+  her live mind and a prompt in the reply box. HANDOFF.md, "YOKE's lines".
 - **#2, #5, #9, #12, #6, #15:** recommendations given in the session; nothing built.
 

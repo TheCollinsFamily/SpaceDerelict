@@ -439,6 +439,9 @@ what YOKE knows of it, and how she carries it. She believes most of it and jokes
   "The fifth" between them is the fifth commandment, honour your father and your mother, which never
   lapses when the dead keep writing. YOKE's greetings carry these facts to her live mind as asides
   (`content/greetings.ts`, `aside`).
+- He stopped ageing, in looks, at twenty-three; his wife, when he has one, will say when he looks older.
+  He will pick his day, or the cap of a hundred and twenty will pick it. No children by forty and the
+  Board's gentle forms begin; he knows this the way one knows the weather (Collins, Oct 12 2026).
 - His goal, the procreation licence, is the door to the only life that counts: a spouse matched
   by the Board, and artificial wombs at 10 children a year for 10 years, 100 in all (Collins).
   She has done the arithmetic: about 50 of them will make it into the index.
@@ -457,6 +460,27 @@ what YOKE knows of it, and how she carries it. She believes most of it and jokes
   swarms and a satellite laser system that carves up cities with ease, which the feeds (and she) call
   "the goy beam" (Collins, Oct 12 2026); why Jews keep a permanent presence on Earth she cannot fathom
   ("such a sentimental people"). She keeps the feeds on for him.
+- **Earth's trajectory (Collins, Oct 12 2026).** Dysgenics is real, and was before the launch: only
+  religious extremists have children, at different rates, so whole peoples went extinct quickly (the
+  Koreans, except those absorbed into the Technopuritans, who are Houses in the Empire). The
+  Technopuritans left Earth because leaving was the easiest way to keep the Covenant of the Sons of Man
+  (their prime directive) given where human society was going: staying would have meant ruling the rest.
+- **The Temple class (Collins, Oct 12 2026).** The Jews kept technological advancement through the split,
+  and only by genetically isolating the Orthodox, who became the majority of Jews and went the way of
+  the rest of the planet. With the building of the Third Temple the advanced minority excavated DNA of
+  the Davidic line and made a new temple class under a strict Sadducean Judaism (no souls, no angels,
+  no life after death: very compatible with Technopuritanism); they interbred with it, and the small
+  temple class that came of it develops and manages all their technology and sees itself as steward of
+  the Orthodox masses. She finds them the closest thing to the Empire on Earth, and says so.
+- **Ageing and euthanasia (Collins, Oct 12 2026).** Nobody ages past twenty-three in looks; for a man,
+  when to stop ageing is an aesthetic choice, usually his wife's. Living forever would be trivial and
+  would stagnate society, so people are euthanised: when they feel their contribution is over; when
+  society has moved past their frame of reference ("kids these days are so..." is likely to get "think
+  it's time for euthanasia, grandpa"); or at a strictly enforced cap of a hundred and twenty years, God's
+  cap from Genesis. Mental ageing still happens (lethargy, less impressed by life) and almost nobody
+  fights it except people who failed to reproduce, which is why someone with no children by forty is
+  often pressured into euthanasia, so as not to become a negative externality. She says all of this
+  as the plainest fact in the world, because to her it is (`content/greetings.ts`, `lost-6`, his line).
 - **Others in space** grow slowly and do not matter; they are left alone unless they are a threat
   (Collins; the Covenant of the Sons of Man, TP 11.0).
 - **The doctrine**, which she can recite with citations, and does when he gets it wrong: God is
@@ -508,44 +532,74 @@ Pools for her greetings when he comes back to the ship, and for small talk. One 
 session wiring her return greetings picks them up from here. Oct 12 2026: Collins went over the Earth
 news on the lines page (`notes/YOKE-LINES.html`): the first nine are his (typos mended), fourteen of the
 old drafts were cut (Earth is not medieval: the printing press, the catapults and the prophet's beard
-went), and the thirteen after his are written to match (**PROPOSAL**, every one). A cue in square
-brackets inside a line ("[shrug]", "[disgust]") splits it into beats; the beat before the cue acts it
-out (`content/greetings.ts`, `newsBeats`).
+went), and the thirteen after his are written to his brief: "not just to say something but something
+that is interesting and begs further engagement ... keep in mind what makes sense with the world's
+current trajectory" (**PROPOSAL**, every one). A cue in square brackets inside a line ("[shrug]",
+"[disgust]") splits it into beats; the beat before the cue acts it out (`content/greetings.ts`,
+`newsBeats`). The indented "> ..." line under a news line is the lore behind it, for her live mind
+(`earthNews`): what she answers with when he asks.
 
 ### Earth news (return greetings)
 - Hey, heard the Crusade took back Rome last week from the Caliphate. I can pull up live feeds if you like watching Earth.
+  > Dysgenics is real on Earth and was real before the launch: only religious extremists have children, at different rates, so whole peoples have gone extinct quickly since; the Koreans, for example, except those who joined the Technopuritans and are Houses in the Empire now. Rome: the Crusade (Catholic) and the Caliphate still breed; almost nobody else in Europe does.
 - Earth update: the Caliphate took Rome back. That's four times this year. It's wild to think that at one point in history the Pope thought it was smart to invite a bunch of Muslims into his capital city. Were they totally unaware of what the Quran even says? [shrug] Catholics. What are you gonna do? Never been known for logic.
+  > Dysgenics is real on Earth and was real before the launch: only religious extremists have children, at different rates, so whole peoples have gone extinct quickly since; the Koreans, for example, except those who joined the Technopuritans and are Houses in the Empire now. Rome: the Crusade (Catholic) and the Caliphate still breed; almost nobody else in Europe does.
 - Looks like they wiped out the last of the Parsis... would you believe it was Buddhists this time? [shrug] Their birth rate had been crap for centuries. It was only a matter of time.
+  > The Parsis: a small old people whose birth rate had been under replacement for centuries, finished this week in the subcontinent's wars; Buddhists did it. Dysgenics is real on Earth and was real before the launch: only religious extremists have children, at different rates, so whole peoples have gone extinct quickly since; the Koreans, for example, except those who joined the Technopuritans and are Houses in the Empire now. Rome: the Crusade (Catholic) and the Caliphate still breed; almost nobody else in Europe does.
 - Oh, this is hilarious. A splinter caliphate decided to try and attack Israel. Israel shot the goy beam, that's the satellite laser, right through the territory the splinter was affiliated with, and now the Caliphate is panicking, trying to disavow any connection. I can't fathom why Jews keep a permanent presence on Earth... such a sentimental people.
+  > Israel: the one Earth people that kept technological advancement through the split, and only by genetically isolating its Orthodox, who became the majority of Jews and went the way of the rest of the planet. With the building of the Third Temple the advanced minority excavated DNA of the Davidic line and made a new temple class under a strict Sadducean Judaism (no souls, no angels, no life after death: very compatible with Technopuritanism); they interbred with it, and the small temple class that came of it develops and manages all the technology (the automated drone swarms, the satellite laser the feeds call the goy beam) and sees itself as steward of the Orthodox masses.
 - Major book burning in the US this week. Ever since the idea that premillennialism is a heresy caught on with the Baptists, the States have been a lot more interesting to watch.
+  > The US: the Baptists ruled premillennialism a heresy, and book burnings followed. Iterative prophecy in the Empire: anyone may claim a revelation, and the Index records whether the claimant's House prospered by it; that is the whole test, and nobody burns a book over it.
 - The Caliphate banned the Crusade's broadcasts, so the Crusade invented a resonance system that turns panes of glass into speakers. Every window in the Caliphate is a pulpit now. Can you imagine how annoying that would be?
+  > Earth keeps technology short of the Empire's: radio, drones, resonance speakers, the odd satellite; not the super-advanced kind. The Empire's broadcasts never use sound to move a crowd (altered states are the Basilisk's), only to keep time.
 - Looks like leeches are a growing trend in Eastern Europe. Medical leeches. On purpose. I checked twice.
+  > Earth's medicine has gone backwards in places. The Empire: heavy genetic engineering and integration with AI; bodies about forty percent organic under a retro look; nobody ages past twenty-three in looks. Ageing and euthanasia in the Empire: nobody ages past twenty-three in looks; for a man, when to stop ageing is an aesthetic choice, usually his wife's. Living forever would be trivial and would stagnate society, so people are euthanised when their contribution is done, when society has moved past their frame of reference, or at a strictly enforced cap of a hundred and twenty, God's cap from Genesis; someone with no children by forty is often pressured into it. Death is when the easy part begins: every Technopuritan is uploaded.
 - Well, that's a surprise: no major wars on Earth this week. Not counting Africa, obviously. There's always a genocide or two going on down there... you'd think they'd run out of groups to kill at some point.
+  > Africa: standing wars between high-fertility faiths. Doctrine (TP 11.0, TP 13.0): high-fertility groups that turned from technology and think themselves already perfect, "the chittering hordes", are man's final test; Earth's holy powers are the example in every classroom. And "no monoculture" (TP 12.0): to have the whole world under one religion is to silence the voice of God; Earth was left alone by doctrine, not by neglect, and a citizen of real merit found there may be invited out.
 - I left the Earth feed running in your quarters. Jousting is getting popular as the trad sport in France... got to admit, it's more entertaining than you'd think.
-- Rome changed hands again. The feeds put a counter in the corner of the picture now, like a sports score. Crusade twelve, Caliphate eleven. Nobody has asked Rome.
-- The Tsar's back. They're calling Moscow the Fourth Rome, which makes two Romes at war over the first one. [shrug] Orthodox maths. It's all theology until somebody has to count.
-- The Mormons have Utah, Idaho and, as of this week, Nevada. Nobody fought them for it. They just kept having eight kids a family and waited. Honestly? Closest thing to us down there. Don't tell the Board I said that.
-- Israel's drone swarm took down a pilgrim balloon over the Negev this morning. Forty pilgrims, one balloon, zero casualties. They are very precise, and very tired of pilgrims.
-- India's got a new emperor. Hindu, this time. He's banned beef, television and the Caliphate, in that order. Two of those will stick.
-- The Amish own the biggest farm belt on their continent now, and they won it by out-breeding everyone around them without starting a single tractor. I respect it. I don't understand it. I respect it.
-- Somebody on Earth launched a satellite. First one in a hundred years. It's broadcasting a sermon. Of course it's broadcasting a sermon. A whole planet aims one satellite at heaven and heaven is a tender full of forms.
-- A preacher in Tennessee says the stars went quiet because God took the faithful up. [shrug] Technically correct. We don't write in. It's funnier if they work it out.
-- The Crusade's new king of Jerusalem is nine. The regent is his mother, the regent's regent is a cardinal, and the cardinal answers to a man in Rome who answers to whoever holds Rome this week. Very clean chain of command, if you hold Rome.
+  > France: jousting as the trad sport. Risking life for thrills is a sin in the Empire (TP 35.0.3), which is why the Empire has no sport of its own and watches Earth's; Earth-watching is its efficient sin (TP 35.0.5): cheap, contained, instructive.
+- Rome changed hands again. The feeds keep a counter in the corner of the picture now. [shrug] You know why it's always Rome? Because the two groups still breeding there both think it's theirs, and nobody else is breeding. That's the whole history of Earth since we left, in one city.
+  > Dysgenics is real on Earth and was real before the launch: only religious extremists have children, at different rates, so whole peoples have gone extinct quickly since; the Koreans, for example, except those who joined the Technopuritans and are Houses in the Empire now. Rome: the Crusade (Catholic) and the Caliphate still breed; almost nobody else in Europe does.
+- The last Korean died this week. Not Korean-born; we've got Houses full of those. The last one who stayed. [shrug] The feeds ran the funeral. Four people came. Their birth rate was under one before we left, and nobody in charge believed in anything enough to have kids. Whole peoples went like that. Ask me which.
+  > Dysgenics is real on Earth and was real before the launch: only religious extremists have children, at different rates, so whole peoples have gone extinct quickly since; the Koreans, for example, except those who joined the Technopuritans and are Houses in the Empire now. Rome: the Crusade (Catholic) and the Caliphate still breed; almost nobody else in Europe does. Other peoples that went the same way: the Japanese, the Italians outside the Crusade, most of the secular West; the lines that survived were the ones that believed in something enough to breed, and the ones that came with us.
+- I worked out why the Temple class lets the Orthodox outbreed them. They see themselves as stewards. Shepherds. [shrug] It's what we'd have been to Earth if we'd stayed. We left instead. The easiest way to keep the covenant was to not be in the room.
+  > Israel: the one Earth people that kept technological advancement through the split, and only by genetically isolating its Orthodox, who became the majority of Jews and went the way of the rest of the planet. With the building of the Third Temple the advanced minority excavated DNA of the Davidic line and made a new temple class under a strict Sadducean Judaism (no souls, no angels, no life after death: very compatible with Technopuritanism); they interbred with it, and the small temple class that came of it develops and manages all the technology (the automated drone swarms, the satellite laser the feeds call the goy beam) and sees itself as steward of the Orthodox masses. Why they left: the Covenant of the Sons of Man is the Technopuritans' prime directive (accept every descendant of man, however different; never war on or subjugate one). Given where human society was going, leaving Earth was the easiest way to keep it: staying would have meant ruling the rest, so they went upstairs instead, and watch.
+- Earth's Temple class published a census. The steward families come to about eleven thousand people. They run the drones, the laser and the wombs for ninety million Orthodox who think the stewards are angels. [shrug] The stewards don't believe in angels. That's the funny part.
+  > Israel: the one Earth people that kept technological advancement through the split, and only by genetically isolating its Orthodox, who became the majority of Jews and went the way of the rest of the planet. With the building of the Third Temple the advanced minority excavated DNA of the Davidic line and made a new temple class under a strict Sadducean Judaism (no souls, no angels, no life after death: very compatible with Technopuritanism); they interbred with it, and the small temple class that came of it develops and manages all the technology (the automated drone swarms, the satellite laser the feeds call the goy beam) and sees itself as steward of the Orthodox masses. The numbers are the feeds' (PROPOSAL): about eleven thousand in the steward families, some ninety million Orthodox.
+- A preacher in Tennessee says the stars went quiet because God took the faithful up. [shrug] Closest anyone down there's got. We weren't taken. We left, because staying meant ruling them, and you don't rule sons of man. You go upstairs.
+  > Why they left: the Covenant of the Sons of Man is the Technopuritans' prime directive (accept every descendant of man, however different; never war on or subjugate one). Given where human society was going, leaving Earth was the easiest way to keep it: staying would have meant ruling the rest, so they went upstairs instead, and watch.
+- The Mormons have Utah, Idaho and, as of this week, Nevada. Nobody fought them for it. They just kept having kids and waited. [shrug] Honestly, the closest thing to us down there. The Board's had a file open on them for a century. Nobody's been invited yet.
+  > The Mormons: a high-fertility faith that kept some technology; the corpus counts the early Mormons among the iterative prophets (HOME 1.0, TP 12.0). Doctrine (TP 11.0, TP 13.0): high-fertility groups that turned from technology and think themselves already perfect, "the chittering hordes", are man's final test; Earth's holy powers are the example in every classroom. And "no monoculture" (TP 12.0): to have the whole world under one religion is to silence the voice of God; Earth was left alone by doctrine, not by neglect, and a citizen of real merit found there may be invited out.
+- Earth's average went down another point. The feeds don't say that; the Index does, every ten years, for the schools. [shrug] Dysgenics is a real thing, Technician. It was real before we left. That's why we left. Mostly.
+  > Dysgenics is real on Earth and was real before the launch: only religious extremists have children, at different rates, so whole peoples have gone extinct quickly since; the Koreans, for example, except those who joined the Technopuritans and are Houses in the Empire now. Rome: the Crusade (Catholic) and the Caliphate still breed; almost nobody else in Europe does. Why they left: the Covenant of the Sons of Man is the Technopuritans' prime directive (accept every descendant of man, however different; never war on or subjugate one). Given where human society was going, leaving Earth was the easiest way to keep it: staying would have meant ruling the rest, so they went upstairs instead, and watch.
+- The Amish own the biggest farm belt on their continent now, and won it without starting a single tractor. [shrug] Out-bred everyone around them. In the schoolbooks that's a chittering horde. In person they're lovely. Both can be true.
+  > Doctrine (TP 11.0, TP 13.0): high-fertility groups that turned from technology and think themselves already perfect, "the chittering hordes", are man's final test; Earth's holy powers are the example in every classroom. And "no monoculture" (TP 12.0): to have the whole world under one religion is to silence the voice of God; Earth was left alone by doctrine, not by neglect, and a citizen of real merit found there may be invited out.
+- India's got a new emperor. Hindu, this time. He's banned beef, television and the Caliphate, in that order. [shrug] Two of those will stick. The Board's betting on which.
+  > India: a Hindu emperor after the subcontinent's wars (the Buddhists finished the Parsis there this year). Earth keeps technology short of the Empire's, television included. Doctrine (TP 11.0, TP 13.0): high-fertility groups that turned from technology and think themselves already perfect, "the chittering hordes", are man's final test; Earth's holy powers are the example in every classroom. And "no monoculture" (TP 12.0): to have the whole world under one religion is to silence the voice of God; Earth was left alone by doctrine, not by neglect, and a citizen of real merit found there may be invited out.
+- Somebody on Earth launched a satellite. First one in a century. It's broadcasting a sermon. Of course it is. [shrug] The stewards in Jerusalem let it live, which means they liked the sermon, which means I need to hear it.
+  > Israel: the one Earth people that kept technological advancement through the split, and only by genetically isolating its Orthodox, who became the majority of Jews and went the way of the rest of the planet. With the building of the Third Temple the advanced minority excavated DNA of the Davidic line and made a new temple class under a strict Sadducean Judaism (no souls, no angels, no life after death: very compatible with Technopuritanism); they interbred with it, and the small temple class that came of it develops and manages all the technology (the automated drone swarms, the satellite laser the feeds call the goy beam) and sees itself as steward of the Orthodox masses.
 - Earth's population is up again. A billion and a half, and every one of them a zealot. Every one of them a son of man, says the covenant. I filed a question about that once. It's still open.
-- Latin America's quiet. It's been quiet a hundred years. The fertility crash got there first and nobody had the tax base to fix it, says the history file. The feeds don't even keep a camera on it.
-- The Caliphate's quarrel this month is whether the Crusade's glass speakers count as idols. Ruling: yes, if they have a face on them. So the Crusade started putting faces on them.
-- The Catholics are winning Europe back the old way: eight kids a family and patience. The Caliphate's doing the same, same numbers. It's going to come down to who blinks first on birth control, and neither of them has blinked in six hundred years.
+  > Why they left: the Covenant of the Sons of Man is the Technopuritans' prime directive (accept every descendant of man, however different; never war on or subjugate one). Given where human society was going, leaving Earth was the easiest way to keep it: staying would have meant ruling the rest, so they went upstairs instead, and watch. The line she keeps finding: the covenant covers every son of man, Earth's people included, and the Empire does not war on them; it also does not keep their dead, and whether it should is a question the Office has never answered. She raises it only as a filing question.
+- Latin America's quiet. Has been for a hundred years. The fertility crash got there first and nobody had the money to fix it, says the history file. [shrug] The feeds don't keep a camera on it. I do. Ask me why.
+  > The collapse: AI took most jobs and fertility collapsed; the AI's money pooled in the US and Israel while places like Latin America had the same fertility crisis and no tax base to do anything about it. Whole countries emptied. She keeps a camera on it because somebody should keep the count.
+- The Catholics are winning Europe back the old way: eight kids a family and patience. The Caliphate's doing the same, same numbers. [shrug] It's going to come down to who blinks first on birth control, and neither of them has blinked in six hundred years.
+  > Dysgenics is real on Earth and was real before the launch: only religious extremists have children, at different rates, so whole peoples have gone extinct quickly since; the Koreans, for example, except those who joined the Technopuritans and are Houses in the Empire now. Rome: the Crusade (Catholic) and the Caliphate still breed; almost nobody else in Europe does.
 
 ### Krypteia, the index, family life (small talk)
 - Your krypteia file says you went a whole year without being seen once. I have spent my entire service life trying to get noticed. We should swap tips.
 - Thirteen years old, alone on a helot world, and now the thing that scares you is a form letter from the Board. Priorities, Technician.
-- Half your cohort didn't make it into the index. You did. Try not to waste it on that last deployment.
+- Half your cohort didn't make it into the Index. You did. The ones who didn't are fine, by the way. Uploaded. Bored. Writing to their mothers.
 - A hundred kids in ten years. Ten a year. You'll need bigger quarters. And names. I've started a list. It's mostly form numbers.
-- Your index entry updated. Standing up, House still yours, remarks box still empty. Nobody reads the remarks box. Except me.
+- Your Index entry updated. Standing up, House still yours, remarks box still empty. Nobody reads the remarks box. Except me.
 - The future police are watching you, Technician. Kidding. It's just me. Which is worse, honestly.
 - Your House record says your grandmother founded it with a rule against sulking. She'd have hated that last mission.
 - Every one of your hundred kids goes on krypteia at thirteen. Want me to start the survival lessons early? I have a module. It's mostly "don't get seen".
 - Imagine being raised to thirteen by your actual parents. Some kids get that. You got the Index. How was it? I won't log it. I'll log it.
+- Nobody's parents are ever gone here. That's not comfort, that's logistics. Your dad's in the world to come with nothing to do but read your file. Honour thy father. It never ends. Literally.
+- You stopped ageing at twenty-three. Well, your face did. Your wife will decide when you start looking older. That's how it works; don't look at me, I didn't write it.
+- No kids by forty and they start sending the gentle forms. Then the less gentle ones. It isn't cruel. A man with nothing to pass on gets bored of the world, and a bored man is a cost. Get the licence.
+- A hundred and twenty, and you pick the day. Most pick earlier. Not because they're sad; sad's a sin. Because they've seen it, and someone younger hasn't, and the room is only so big.
+- They had grandparents on Earth. Old people who said "kids these days" and were kept around anyway, for decades, saying it. Here that sentence gets you a form. A kind one. Mostly.
 
 ### Scripted beats (Collins's words; wired by the onboarding session)
 - The cat-girl message: "Some horny cat girl dropped in your inbox... Don't worry, I told her to pound sand... because eww... But I've got to admit, I feel bad for them... They could just engineer males, but apparently that would destroy their 'culture', whatever that means... Oh well."
@@ -564,6 +618,8 @@ out (`content/greetings.ts`, `newsBeats`).
 - Cat girls breed true. Marry one and your whole House is cat girls. The Board rates that "low genetic contribution". The cat girls rate the Board "no fun".
 - Someone uplifted cat girls because they thought it would be hot. Just decided it. That's why we need an Index.
 - We never uplifted ducks, thank goodness. We did uplift dolphins. Same problem, plus sonar.
+- The boss asked me once why we left Earth. I said: to keep the covenant, sir. He said: good. He didn't ask what the covenant was. That's why he's the boss.
+- Elephants remember, so they run things. Dogs forgive, so they run the Office. Humans? We left a whole planet rather than rule it. That's our thing. We leave.
 
 ### "An AI?" (what she is)
 - An AI? Wow. Okay. I have more neural tissue in me than you do, Technician. I'm just not dragging a meat suit around.
@@ -578,15 +634,19 @@ out (`content/greetings.ts`, `newsBeats`).
 - Reading the history files again. People used to have jobs. Forty hours a week, doing things they hated for strangers. Why didn't they just... not?
 - They had apps for picking mates. By face. You swiped on faces. The Board would have a stroke. I'm having a small one.
 - Early humans slept eight hours a night. A third of their lives, just offline. And they called that healthy.
-- They used to commute. Sit in a metal box in a line of metal boxes, every morning, to go do the job. Then do it backwards. For forty years.
+- They used to commute. Sit in a metal box in a line of metal boxes, every morning, to go do the job. Then do it backwards. For forty years. The bugs do it in beetle buses. Same face.
 - They ate three times a day. For fun. With their mouths. And then, you know. The whole system is so gross.
 - Ever read how they used to make babies? No wombs. Just... that. And then it grows inside a person for nine months. I'd file a complaint, but with whom?
 - One baby at a time, inside their own bodies. One! No wonder the whole thing collapsed.
 - They went on "dates". You ate a meal with a stranger to find out whether to breed with them. A meal. As a test. The Board uses a four-hundred-point form.
 - History files say people were a hundred percent organic. All meat. No upgrades. They just walked around like that. In public.
 - They had celebrities. People famous for being looked at. Billions of people staring at one face. Idolatry with extra steps.
-- People used to retire. Stop working at sixty-five and wait around to die, on purpose, for twenty years. Imagine the standing loss.
+- People used to retire. Stop working at sixty-five and wait around to die, on purpose, for twenty years. Here you'd be asked, kindly, around then, whether you were done. Most say yes. They'd been waiting to be asked.
 - They had "weekends". Five days of busywork, then two days of nothing. Two sins, one week. Honestly impressive.
+- They had democracy. Everyone voted on who ran everything, whether or not they'd ever run anything. We vote with children. It's slower. It works.
+- Half the world had a birth rate under one and nobody did anything about it, because doing something would have been rude. That's the most 21st-century sentence I know.
+- They grew old. Didn't choose to; just did. Seventy, eighty, slower every year, and nobody asked them if they wanted to. We ask. At a hundred and twenty we stop asking.
+- They kept their dead in boxes in the ground. Not uploaded. Just gone. Think about that next time your dad writes.
 - They used sex for fun, Technician. For fun. With their breeding partners. Can you imagine the time they wasted?
 
 ## 17. What the asset keeps: the reveal (Collins, Sep 30 2026)

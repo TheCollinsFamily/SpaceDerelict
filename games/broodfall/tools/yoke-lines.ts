@@ -8,7 +8,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import { EARTH_NEWS_FALLBACK, GREETINGS, REPORT_LINES, earthNewsFrom, newsBeats, type GreetMoment, type Greeting } from '../content/greetings';
+import { EARTH_NEWS_FALLBACK, GREETINGS, REPORT_LINES, earthNews, newsBeats, type GreetMoment, type Greeting } from '../content/greetings';
 import { PRINT_BODY } from '../content/yokeScenes';
 import { BOSS_AFTER, BOSS_BRIDGE } from '../content/boss';
 import { CHANNELS, TRANSLATOR_NOTES } from '../content/translation';
@@ -20,7 +20,7 @@ const ABS = (rel: string) => path.join('C:\\Users\\Merry\\dev\\space-derelict\\g
 const read = (rel: string) => fs.readFileSync(path.join(ROOT, rel), 'utf8');
 
 type Author = 'collins' | 'draft' | 'lore';
-interface Line { id: string; text: string[]; faces?: string[]; ctx?: string[]; author: Author; aside?: string }
+interface Line { id: string; text: string[]; faces?: string[]; ctx?: string[]; author: Author; aside?: string; hook?: string }
 interface Group { id: string; kind: string; name: string; when: string; where: string; lines: Line[] }
 
 /** Which greetings are Collins's own words (the comments in content/greetings.ts say so). */
@@ -32,12 +32,12 @@ const greeting = (g: Greeting): Line => ({
   id: g.id, author: COLLINS_GREETINGS.has(g.id) ? 'collins' : 'draft',
   text: g.beats.map((b) => b.say),
   faces: g.beats.map((b) => [b.face ?? 'calm', ...(b.then ? (Array.isArray(b.then) ? b.then : [b.then]).map((c) => `then ${c}`) : [])].join(' · ') + (g.points ? '' : '')),
-  aside: g.aside,
+  aside: g.aside, hook: g.hook,
 });
 /** A line of news as the beats she plays it in (a "[shrug]" in the text splits it). */
-const newsLine = (t: string, i: number): Line => {
-  const beats = newsBeats(t);
-  return { id: `earth-${i + 1}`, text: beats.map((b) => b.say), faces: beats.map((b) => `${b.face ?? 'calm'} · then ${b.then}`), author: i < COLLINS_NEWS ? 'collins' : 'draft' };
+const newsLine = (n: { text: string; aside?: string }, i: number): Line => {
+  const beats = newsBeats(n.text);
+  return { id: `earth-${i + 1}`, text: beats.map((b) => b.say), faces: beats.map((b) => `${b.face ?? 'calm'} · then ${b.then}`), author: i < COLLINS_NEWS ? 'collins' : 'draft', aside: n.aside };
 };
 const of = (moment: GreetMoment, ids?: string[]): Line[] => GREETINGS.filter((g) => g.moment === moment && (!ids || ids.includes(g.id))).map(greeting);
 const plain = (prefix: string, texts: string[], author: Author, ctx?: string[]): Line[] => texts.map((t, i) => ({ id: `${prefix}-${i + 1}`, text: [t], author, ctx: ctx ? [ctx[i]] : undefined }));
@@ -93,7 +93,7 @@ function arrayIn(src: string, name: string): string[] {
 const lore = read('content/lore/ship-ai-lorebook.md');
 const loader = read('src/ui/loader.ts');
 const player = read('src/meta/yokePlayer.ts');
-const news = earthNewsFrom(lore);
+const news = earthNews(lore);
 const introWhen = INTROS.map((i) => `${i.id} from capture ${i.captures}${i.needs ? ' (when its callback has happened)' : ''}`).join('; ');
 
 const G = (rel: string) => ABS(rel);

@@ -163,6 +163,27 @@ fashion these days, which is why it is not obvious.
 - **PROPOSAL:** the fashion for the retro look is tolerated because it signals nothing (a status
   display would be a sin); a visibly chrome body would be showing off.
 
+## 7b. Ageing and euthanasia (Collins, Oct 12 2026)
+
+Collins: in their society nobody ages past 23 (women); for men, when to stop ageing is more of an
+aesthetic choice, usually made by the wife. Because it would be trivial to live forever, and that would
+lead to societal stagnation, people are euthanised: when they feel their contribution is over; when
+society has moved past their frame of reference (saying "kids these days are so..." is likely to get
+"think it's time for euthanasia, grandpa"); or at a strictly enforced cap of **120 years**, from God's
+cap at that age in Genesis. Mental ageing still happens, to the extent that people become lethargic and
+less impressed by life as they age, and almost nobody fights this except people who failed to
+reproduce, which is why someone without kids by 40 will often be pressured into euthanasia, as a
+failure, so as not to become a negative externality for society.
+
+- **Where it meets 12b:** death is when the easy part begins (every Technopuritan is uploaded), so
+  euthanasia is not dreaded; it is the day a life's impact is judged spent. The cap of 120 is Genesis
+  6:3 read literally, as the corpus reads scripture.
+- **PROPOSAL, the forms:** the Board's "gentle forms" begin at 40 for the childless; the Index records
+  the day chosen as it records krypteia, because it is the other thing that changes.
+- **In the game:** YOKE's `lost-6` ("obviously you'll be euthanised at a hundred and twenty", Collins's
+  line) and the lines around it (`content/greetings.ts`, `won-18`, `back-6`); she says it as the
+  plainest fact in the world.
+
 ## 8. Ship intelligences, and YOKE
 
 Collins, Sep 30: YOKE, the "AI" the technician talks to, is a combination of layered AI models,
@@ -196,11 +217,26 @@ story for why the Technopuritans live the way they do.
 - **Still has technology** (Collins, Oct 12 2026: "Earth still has tech, just not the super advanced tech
   you would expect"): radio, drones, resonance speakers, the odd satellite. Not medieval; the news lines
   about a rediscovered printing press and catapults were cut for this.
-- **Israel** (Collins, Oct 12 2026): one of the only technologically advanced civilisations left on
-  Earth, protected by automated drone swarms and a satellite laser system that can carve up cities with
-  ease. Earth's feeds call the laser "the goy beam", and so does YOKE. A splinter caliphate that attacked
-  Israel learned about it the hard way, and the Caliphate disavowed the splinter in a panic. Why Jews keep
-  a permanent presence on Earth is, to YOKE, sentiment ("such a sentimental people").
+- **Dysgenics and the extinctions** (Collins, Oct 12 2026): dysgenics is real, and was before the
+  launch. Increasingly only religious extremists have children, but not at the same rates, and many
+  groups went extinct quite quickly: the Koreans, for example, except those absorbed into the
+  Technopuritans (who are Houses in the Empire now). The feeds are, among other things, a record of who
+  is left.
+- **Why they left** (Collins, Oct 12 2026): the Technopuritans left the planet because it was the
+  easiest way to keep the Covenant of the Sons of Man (their idea of a prime directive) given the
+  direction human society was going: staying would have meant ruling, or warring on, sons of man.
+- **Israel and the Temple class** (Collins, Oct 12 2026): the Jews are the one group that, through the
+  splitting, maintained technological advancement, and that was only possible by genetically isolating
+  the Orthodox, who came to make up the majority of Jews and followed the same path as the rest of
+  society. The genetically advanced Jews rule the rest: with the building of the Third Temple they
+  excavated DNA of the Davidic line and created a new temple class that follows a strict form of
+  Sadducean Judaism (no souls, no angels, no life after death: very compatible with Technopuritanism);
+  they interbred with this class and created a new, small temple class that develops and manages all
+  their technology and sees itself as steward of the Orthodox masses. The technology: automated drone
+  swarms, and a satellite laser system that can carve up cities with ease, which Earth's feeds call
+  "the goy beam", and so does YOKE. A splinter caliphate that attacked Israel learned about it the hard
+  way, and the Caliphate disavowed the splinter in a panic. Why Jews keep a permanent presence on Earth
+  is, to YOKE, sentiment ("such a sentimental people"); the stewards would say stewardship.
 - **Named in her news** (Collins, Oct 12 2026): the Crusade and the Caliphate over Rome; Israel; the US,
   where the Baptists now hold premillennialism a heresy and burn books over it; the Buddhists who
   finished the Parsis; Eastern Europe's leeches; France's jousting; Africa's standing genocides.

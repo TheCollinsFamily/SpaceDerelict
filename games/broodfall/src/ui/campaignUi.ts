@@ -188,6 +188,8 @@ export class CampaignUi {
   private greetSaid: string[] = [];
   /** What she knows behind the greeting she just gave (Greeting.aside): for her live mind, never shown. */
   private greetAside = '';
+  /** The prompt in the reply box under her, from the greeting (Greeting.hook), until the next greeting. */
+  private greetHook = '';
   /** His quarters' picture and the partner candidate's portrait (public/art/intro/, not the manifest). */
   private intro: IntroArt | null = null;
   /** The ship's art (its rooms, the planet for the globe) is still arriving: a loop over the screen meanwhile (src/ui/loader.ts). */
@@ -348,6 +350,7 @@ export class CampaignUi {
     this.greeting = g;
     this.greetSaid = [];
     this.greetAside = g.aside ?? '';
+    this.greetHook = g.hook ?? '';
     this.icom = { talk: this.freeTalk() };
     this.render();
     const lines: ScriptLine[] = g.beats.map((b) => ({
@@ -482,7 +485,7 @@ export class CampaignUi {
         ${this.account.cut
           // Nobody pays for her live mind: linking an account is done in her room (the button takes him there).
           ? this.account.html('say')
-          : `<div class="cp-say"><input id="icom-input" placeholder="Say something to her, or just walk away" autocomplete="off"${this.waiting ? ' disabled' : ''}/><button data-act="icom-send"${this.waiting ? ' disabled' : ''}>SAY</button>${this.avatar?.muteHtml() ?? ''}</div>`}
+          : `<div class="cp-say"><input id="icom-input" placeholder="${esc(this.greetHook || 'Say something to her, or just walk away')}" autocomplete="off"${this.waiting ? ' disabled' : ''}/><button data-act="icom-send"${this.waiting ? ' disabled' : ''}>SAY</button>${this.avatar?.muteHtml() ?? ''}</div>`}
       </div></div>`;
   }
 

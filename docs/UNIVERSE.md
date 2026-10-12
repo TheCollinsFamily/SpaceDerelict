@@ -51,8 +51,13 @@ Broodfall: see "What a broodfall is for", below.)
 4. **Earth left behind.** The Technopuritans largely left other earthlings alone, as part of their
    ideology (doctrine 10 below). With only religious extremists still breeding, Earth is low-tech
    compared with most of the human empire and constantly at holy war. It still has technology, just not
-   the super-advanced kind; Israel alone stays advanced, behind automated drone swarms and a satellite
-   laser the feeds call "the goy beam" (Collins, Oct 12 2026).
+   the super-advanced kind. Dysgenics is real and was before the launch: only religious extremists have
+   children, at different rates, and many peoples went extinct quickly (the Koreans, except those absorbed
+   into the Technopuritans). The Technopuritans left because leaving was the easiest way to keep the
+   Covenant of the Sons of Man given where society was going. Israel alone stays advanced: the Jews kept
+   technology by genetically isolating their Orthodox majority, and with the Third Temple made a small
+   Sadducean temple class from excavated Davidic DNA that runs the drone swarms, the satellite laser the
+   feeds call "the goy beam", and the rest, as steward of the Orthodox masses (Collins, Oct 12 2026).
 5. **Earth as the zoo.** The rest of the Empire, which is mostly Technopuritan, watches Earth as
    entertainment ("Hey, heard the Crusade took back Rome last week from the Caliphate. I can pull up
    live feeds if you like watching Earth."). It is treated essentially as a zoo, and as the
@@ -77,6 +82,11 @@ doctrine 11 (the chittering hordes).
 - **Testing and education.** Those who survive the year face a brutal testing and education
   process that prepares them to enter **the index**, the wider imperial system.
 - **About half survive** krypteia and testing together.
+- **Ageing and the cap** (Collins, Oct 12 2026): nobody ages past 23 in looks (for men it is an aesthetic
+  choice, usually the wife's). Living forever would be trivial and would stagnate society, so people are
+  euthanised when their contribution is over, when society has moved past their frame of reference, or at
+  a strict cap of 120 years (God's cap in Genesis); mental ageing still happens, and the childless at 40
+  are pressured into it, so as not to become a negative externality.
 - **The arithmetic.** About 50 of a couple's 100 children become adults of the index: about 50 per
   couple per generation (Collins: "a growth rate of 50 per generation"), which is a 25-fold
   increase in people every generation (50 adults from 2 parents). One founding couple's line

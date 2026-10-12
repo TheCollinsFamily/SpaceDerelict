@@ -15,7 +15,7 @@
  *   5. Later launches: the ship's own console menu.
  */
 import { HOME, TERRITORIES } from '../../content/campaign';
-import { EARTH_NEWS_FALLBACK, GREETINGS, earthNewsFrom, newsBeats, type GreetMoment, type Greeting } from '../../content/greetings';
+import { EARTH_NEWS_FALLBACK, GREETINGS, earthNews, newsBeats, type EarthNews, type GreetMoment, type Greeting } from '../../content/greetings';
 import type { CampaignState, Debrief } from './campaign';
 
 /** Where a campaign is in its unfolding (older saves have none: everything is open for them). */
@@ -75,11 +75,14 @@ export function momentAfter(prev: CampaignState, next: CampaignState, d: Debrief
 /**
  * One greeting for a moment: one she has not said this campaign while there is one (`said`), never the one she said last
  * time, and otherwise chosen by the campaign's seed and how far it has come, so a replay of the same campaign hears the
- * same words.
+ * same words. When every line is said and one of them `repeats`, that one, again and again (Collins, Oct 12 2026: the
+ * desk stays dark).
  */
 export function pickGreeting(moment: GreetMoment, seed: number, turn: number, last?: string | null, pool: Greeting[] = GREETINGS, said: readonly string[] = []): Greeting {
   const fits = pool.filter((g) => g.moment === moment);
   const unsaid = fits.filter((g) => !said.includes(g.id) && g.id !== last);
+  const again = fits.find((g) => g.repeats);
+  if (!unsaid.length && again) return again;
   const fresh = unsaid.length ? unsaid : fits.filter((g) => g.id !== last);
   const from = fresh.length ? fresh : fits.length ? fits : pool.filter((g) => g.moment === 'back');
   let h = (seed ^ Math.imul(turn + 1, 2654435761)) >>> 0;
@@ -218,13 +221,13 @@ export function greetingFor(s: CampaignState, lore = ''): { moment: GreetMoment;
  * any but the last one said. `freshOnly`: null once every line has been read (her own lines repeat before the news does).
  */
 function newsLine(s: CampaignState, lore: string, h: number, moment: GreetMoment, freshOnly: boolean): Greeting | null {
-  const pool = earthNewsFrom(lore);
-  const news = pool.length ? pool : EARTH_NEWS_FALLBACK;
+  const pool = earthNews(lore);
+  const news: EarthNews[] = pool.length ? pool : EARTH_NEWS_FALLBACK.map((text) => ({ text }));
   const said = s.greetingsSaid ?? [];
   let i = (h >>> 8) % news.length;
   let k = 0;
   for (; k < news.length && (said.includes(`earth-${i}`) || `earth-${i}` === s.lastGreeting); k++) i = (i + 1) % news.length;
   if (k >= news.length && freshOnly) return null;
   if (`earth-${i}` === s.lastGreeting && news.length > 1) i = (i + 1) % news.length;
-  return { id: `earth-${i}`, moment, beats: newsBeats(news[i]) };
+  return { id: `earth-${i}`, moment, beats: newsBeats(news[i].text), aside: news[i].aside, hook: news[i].aside ? 'Ask her about it' : undefined };
 }

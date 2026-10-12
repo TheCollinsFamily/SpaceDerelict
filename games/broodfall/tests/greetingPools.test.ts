@@ -6,8 +6,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { CUES, GREETINGS, earthNewsFrom, newsBeats, type GreetMoment } from '../content/greetings';
-import { EARLY_ONCE, STORY_ONCE, greetingFor } from '../src/meta/onboarding';
+import { CUES, GREETINGS, earthNews, earthNewsFrom, newsBeats, type GreetMoment } from '../content/greetings';
+import { EARLY_ONCE, STORY_ONCE, greetingFor, pickGreeting } from '../src/meta/onboarding';
 import { newCampaign, type CampaignState } from '../src/meta/campaign';
 
 const LORE = fs.readFileSync(path.join(__dirname, '..', 'content', 'lore', 'ship-ai-lorebook.md'), 'utf8');
@@ -15,12 +15,13 @@ const size = (m: GreetMoment) => GREETINGS.filter((g) => g.moment === m).length;
 
 describe('the depth of her pools', () => {
   it('each ordinary moment has lines enough for a long campaign', () => {
-    expect(size('won')).toBeGreaterThanOrEqual(6); // twelve until Oct 12 2026, when Collins cut six on the lines page
+    // Oct 12 2026: Collins cut what did not carry their world; what carries it was written in its place.
+    expect(size('won')).toBeGreaterThanOrEqual(10);
     expect(size('lost')).toBeGreaterThanOrEqual(10);
-    expect(size('defended')).toBeGreaterThanOrEqual(6);
-    expect(size('fell')).toBeGreaterThanOrEqual(4);
+    expect(size('defended')).toBeGreaterThanOrEqual(5);
+    expect(size('fell')).toBeGreaterThanOrEqual(5);
     expect(size('lost-locked')).toBeGreaterThanOrEqual(4);
-    expect(size('back')).toBeGreaterThanOrEqual(6);
+    expect(size('back')).toBeGreaterThanOrEqual(8);
     expect(earthNewsFrom(LORE).length).toBeGreaterThanOrEqual(20);
   });
   it('every greeting has words, a face on every beat, and an id of its own', () => {
@@ -37,6 +38,22 @@ describe('the depth of her pools', () => {
       expect(GREETINGS.find((g) => g.id === id)?.aside?.length ?? 0, id).toBeGreaterThan(40);
     }
   });
+  it('the lines that carry their world have the lore behind them and a prompt for the reply box', () => {
+    const carry = GREETINGS.filter((g) => g.hook);
+    expect(carry.length).toBeGreaterThanOrEqual(18);
+    for (const g of carry) expect(g.aside?.length ?? 0, g.id).toBeGreaterThan(80);
+    // Every ordinary pool has at least two.
+    for (const m of ['won', 'lost', 'defended', 'fell', 'back'] as GreetMoment[]) expect(carry.filter((g) => g.moment === m).length, m).toBeGreaterThanOrEqual(2);
+  });
+  it('while the desk stays dark, once her lines are said, the one that repeats plays again and again (Collins, Oct 12 2026)', () => {
+    const pool = GREETINGS.filter((g) => g.moment === 'lost-locked');
+    const all = pool.map((g) => g.id);
+    expect(pool.filter((g) => g.repeats).map((g) => g.id)).toEqual(['locked-4']);
+    expect(pickGreeting('lost-locked', 5, 9, 'locked-4', GREETINGS, all).id).toBe('locked-4');
+    expect(pickGreeting('lost-locked', 5, 10, 'locked-4', GREETINGS, all).id).toBe('locked-4');
+    // Not before the others are said.
+    expect(pickGreeting('lost-locked', 5, 3, 'locked-4', GREETINGS, ['locked-4']).id).not.toBe('locked-4');
+  });
 });
 
 describe('a line of news as her beats', () => {
@@ -47,6 +64,13 @@ describe('a line of news as her beats', () => {
     ]);
     expect(newsBeats('Quiet week.')).toEqual([{ say: 'Quiet week.', face: 'teasing', then: 'wink' }]);
     expect(newsBeats('Eww. [nonsense] Fine.')[0].then).toBe('shrug');
+  });
+  it('most lines of news carry the lore behind them, for her live mind', () => {
+    const news = earthNews(LORE);
+    expect(news.filter((n) => n.aside && n.aside.length > 60).length).toBeGreaterThanOrEqual(Math.floor(news.length * 0.8));
+    for (const n of news) expect(n.text, n.text).not.toMatch(/^>/);
+    const sample = earthNews('# L\n## Earth news\n- One line.\n  > behind it\n  > and more\n- Two more lines.\n## Next\n- not news\n');
+    expect(sample).toEqual([{ text: 'One line.', aside: 'behind it and more' }, { text: 'Two more lines.' }]);
   });
   it('every line of the lore book reads as beats with words, and only cues her body knows', () => {
     for (const line of earthNewsFrom(LORE)) {

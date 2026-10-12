@@ -12,6 +12,17 @@
  * A greeting is a short script of BEATS. Each beat is one line she says (with the face she
  * says it with), and optionally a CUE after it: a gesture or an expression her body acts
  * out before the next line ("[laughs]", "[looks pensive for a bit]").
+ *
+ * WHAT A LINE IS FOR (Collins, Oct 12 2026): "the point of having an AI you can interact with delivering lore ... using
+ * ways their society is different and their world views are different to set up interesting explorations of society and
+ * how the world works ... a wildly technologically advanced race that is often, because of the insect society, reminded
+ * about the absurdities of life in the 21st century ... not just to say something but something that is interesting and
+ * begs further engagement ... keep in mind what makes sense with the world's current trajectory." So a line of hers:
+ * springs from what just happened; names one real thing of their world (the Index, the wombs, the cap of a hundred and
+ * twenty, the upload, the covenant, the uplifts, Earth), often against what the insects do, which is 21st-century life
+ * (commutes, elections, pairs, television, a week off work); and leaves a thread he can pull. `aside` holds what she
+ * knows behind the line, for her live mind only; `hook` is the prompt in the reply box under her ("Ask her about ...").
+ * The lore itself: content/lore/empire.md, content/lore/ship-ai-lorebook.md.
  */
 
 /**
@@ -79,6 +90,10 @@ export interface Greeting {
    * Collins, Oct 12 2026: "with some of these messages we will need secret context only the AI can see".
    */
   aside?: string;
+  /** The prompt in the reply box under her while this greeting stands ("Ask her about the hundred and twenty"). */
+  hook?: string;
+  /** When every line of the moment has been said this campaign, this one plays again, and again (locked-4: the desk stays dark). */
+  repeats?: boolean;
 }
 
 export const GREETINGS: Greeting[] = [
@@ -156,8 +171,9 @@ export const GREETINGS: Greeting[] = [
     { say: 'I\'m happy for you. Really. It\'s just... a big ship, for one.', face: 'sad', then: 'shrug' },
   ], aside: 'Technopuritans have their children in batches of about ten a year, in artificial wombs, through a ten-year reproductive window: a hundred a couple. The parents raise them to thirteen, unless the Board judges the parents morally dubious or inefficient; then the Index raises the children, as it raised him. Do well enough and the Board lets you raise your own.' },
 
-  // ---- a deployment won. Oct 12 2026: Collins went over this pool on the lines page: won-1 edited, won-2, 3, 4, 6, 7
-  // and 8 cut (the ids of the rest stay as they were). What is left is written to match his lines: his to edit. ----
+  // ---- a deployment won. Oct 12 2026: Collins went over this pool on the lines page (won-1 and won-9 edited, won-12 his
+  // words; won-2, 3, 4, 6, 7, 8, 10, 11 cut), then asked for lines that carry their world and beg a reply (the header): won-13
+  // on are those, with what she knows behind them. His to edit. ----
   { id: 'won-1', moment: 'won', beats: [
     { say: 'Look at you, clearing districts like you were born holding a flamethrower.', face: 'happy', then: 'wink' },
     { say: 'The Board sent a form letter. I\'ll read it to you in a dramatic voice. Twice, if you\'re good.', face: 'teasing' },
@@ -168,104 +184,127 @@ export const GREETINGS: Greeting[] = [
   ] },
   { id: 'won-9', moment: 'won', beats: [
     { say: 'You know what I like about you? You never gloat.', face: 'calm' },
-    { say: 'I gloat. Somebody has to. I\'m gloating right now, on the inside. It\'s very loud.', face: 'teasing', then: 'laughing', hold: 1800 },
-  ] },
-  { id: 'won-10', moment: 'won', beats: [
-    { say: 'The asset ate a whole town and still looks hungry. I relate. I don\'t eat. I relate anyway.', face: 'teasing', then: 'shrug' },
-  ] },
-  { id: 'won-11', moment: 'won', beats: [
-    { say: 'Clean sweep. The Board\'s form has a box for \'exceeded expectations\'. I ticked it twice.', face: 'happy' },
-    { say: 'There\'s only one box. They\'ll have questions.', face: 'teasing', then: 'wink' },
+    { say: 'I gloat. Somebody has to. I\'m gloating right now.', face: 'teasing', then: 'laughing', hold: 1800 },
   ] },
   { id: 'won-12', moment: 'won', beats: [
-    { say: 'Their news is calling you \'the Crater Thing\' again. I keep writing in. Nobody prints my corrections.', face: 'pout', then: 'shrug' },
-    { say: 'Anyway. Territory\'s ours. The Thing says hi.', face: 'happy' },
+    { say: 'Their news is calling you \'the Crater Thing\'.', face: 'pout', then: 'shrug' },
+    { say: 'I kind of like the name, if I\'m to be honest.', face: 'teasing', then: 'wink' },
   ] },
+  { id: 'won-13', moment: 'won', beats: [
+    { say: 'Their radio\'s saying the city \'was lost\'. Lost. Like keys.', face: 'teasing', then: 'laughing', hold: 1400 },
+    { say: 'Every one of those goes on your Index entry as \'contribution to the potential of man\'. The future police are watching, you know. Kidding. That\'s just what they tell kids.', face: 'teasing', then: 'pensive', hold: 1400 },
+    { say: 'It\'s me. I\'m watching.', face: 'happy', then: 'wink' },
+  ], aside: 'The Agents of Providence: doctrine models God as a network of future human minds, a heavenly host, that rewards acts which increase the potential of future man; children are told "the future police are watching", adults the same thing in longer words. Standing in the Index is the Empire\'s working guess at who is elect. Nobody claims it is the real list.', hook: 'Ask her who the future police are' },
+  { id: 'won-14', moment: 'won', beats: [
+    { say: 'I watched their evening commute while you worked. Beetle buses. Every road on the continent meets at that Ring, twice a day, at the same time.', face: 'calm', then: 'pensive', hold: 1400 },
+    { say: 'People on Earth did that too, you know. Forty years of it. In the history files it\'s shelved next to bloodletting.', face: 'teasing', then: 'shrug' },
+    { say: 'Anyway. One fewer commute down there.', face: 'happy', then: 'wink' },
+  ], aside: 'The 21st century as the Empire teaches it: jobs (forty hours a week doing things you hated for strangers, hired and fired), commuting (a metal box in a line of metal boxes, every morning, for forty years), weekends, retirement (stop at sixty-five and wait to die for twenty years). Taught like medieval medicine. In the Empire busywork is a sin ranked worse than indulgence, inaction is a sin too, work is worship, and a posting is for impact, not pay; the insects\' beetle-bus commute round the Ring is the mirror she watches.', hook: 'Ask her what a job was' },
+  { id: 'won-15', moment: 'won', beats: [
+    { say: 'That was clean. Clean enough that the Board\'s going to send a form, and the form\'s going to have a box for \'joy\'. They won\'t call it that.', face: 'happy', then: 'laughing', hold: 1400 },
+    { say: 'Being sad\'s a sin, you know. A choice. So, in the form\'s words: choose accordingly.', face: 'teasing', then: 'wink' },
+  ], aside: 'TP 23.0: being sad is a sin and a choice; cheer is chosen, practised alone and modelled for children. The Empire\'s chipper newsreel voice is doctrine, not a mask: a gloomy broadcast would teach gloom. It is why she is cheerful, mostly, and why the Board\'s forms are short and bright.', hook: 'Ask her why being sad is a sin' },
+  { id: 'won-16', moment: 'won', beats: [
+    { say: 'They\'ve got a queen on television down there. Mother of the nation. Nobody holds an office she hasn\'t blessed.', face: 'calm', then: 'pensive', hold: 1400 },
+    { say: 'We don\'t do that. The Index records, it doesn\'t believe. A House can believe whatever it likes, as long as its kids do better than its parents did.', face: 'teasing', then: 'shrug' },
+    { say: 'Theirs believe what the Queen\'s grandmother believed. That\'s the whole war, really.', face: 'calm', then: 'wink' },
+  ], aside: 'The Index: a registry of Houses, each House a family culture with its own recorded theology and practices and a record of how its children fared, so every House can adopt what worked elsewhere; the central body runs marriage markets and education and "does not act as a theological governance organization". No imperial church: officials say "the Index records", never "the Index believes". Children have a duty not to believe exactly what their parents did (intergenerational improvement). The insects\' Great Queen of House Amberline is mother of the nation and nobody holds an office she has not blessed; their Great Houses own the papers and marry each other.', hook: 'Ask her how the Index works' },
+  { id: 'won-17', moment: 'won', beats: [
+    { say: 'You know what they\'d have done with a win like that in the 21st century? A parade, then a party, then they\'d have eaten something. With their mouths.', face: 'disgust', then: 'disgust', hold: 1400 },
+    { say: 'We\'ll log it. Logging it is the party.', face: 'happy', then: 'wink' },
+  ], aside: 'The Empire\'s disgust with the body: eating three times a day for fun, with the mouth, is in the syllabus of 21st-century horrors beside sex and sleep. Most citizens are about forty percent organic under a retro look; she has no body and is glad. Celebration in the Empire is a form: a clean deployment is an act of devotion, and the form says "for the Future".', hook: 'Ask her why eating is gross' },
+  { id: 'won-18', moment: 'won', beats: [
+    { say: 'Their war caste lives thirty years. Bred for it. Spent fast.', face: 'calm', then: 'pensive', hold: 1600 },
+    { say: 'You\'ll live to a hundred and twenty, and you\'ll pick the day. They don\'t know that\'s possible. Nobody told them. Nobody tells us either; we just grow up with it.', face: 'calm', then: 'shrug' },
+  ], aside: 'Ageing and euthanasia (Collins): nobody ages past twenty-three in looks; for a man, when to stop ageing is an aesthetic choice, usually his wife\'s. Living forever would be trivial and would stagnate society, so people are euthanised: when they feel their contribution is over; when society has moved past their frame of reference ("kids these days are so..." gets "think it\'s time for euthanasia, grandpa"); or at a strictly enforced cap of a hundred and twenty years, God\'s cap from Genesis. Mental ageing still happens (lethargy, less impressed by life) and almost nobody fights it except people who failed to reproduce, which is why someone without children by forty is often pressured into euthanasia, so as not to become a negative externality. Death is when the easy part begins: every Technopuritan is uploaded.', hook: 'Ask her about the hundred and twenty' },
 
-  // ---- a deployment lost ----
+  // ---- a deployment lost. Oct 12 2026: Collins cut lost-2, 3, 8, 9, 10, added to lost-5 and rewrote lost-6 (his words);
+  // lost-11 on carry their world and beg a reply. His to edit. ----
   { id: 'lost-1', moment: 'lost', beats: [
     { say: 'Well. That was a mess.', face: 'teasing', then: 'shrug' },
     { say: 'The bugs are throwing a parade down there. I\'m not saying I watched it. I watched it.', face: 'teasing', then: 'laughing', hold: 1600 },
-  ] },
-  { id: 'lost-2', moment: 'lost', beats: [
-    { say: 'Asset\'s gone, Technician. The culture\'s fine. Your dignity, I\'m still checking.', face: 'teasing', then: 'wink' },
-  ] },
-  { id: 'lost-3', moment: 'lost', beats: [
-    { say: 'Losing is data. That was a lot of data.', face: 'teasing', then: 'laughing', hold: 1800 },
-    { say: 'Want to go over it together, or sulk first? Sulking is allowed. I\'ll time it.', face: 'happy' },
   ] },
   { id: 'lost-4', moment: 'lost', points: { room: 'genes', label: 'OPEN THE GENE BAY' }, beats: [
     { say: 'Hey. Chin up. They got lucky, and you got notes.', face: 'calm', then: 'nod' },
     { say: 'There might be something in the Gene Bay that fixes whatever that was.', face: 'happy' },
   ] },
-  // More of the same (Oct 12 2026; Collins: she always has something to say after a mission with no cut scene). Written to
-  // match his lines, not his words: his to edit.
   { id: 'lost-5', moment: 'lost', beats: [
     { say: 'So. That happened. I\'ve already deleted the footage.', face: 'calm', then: 'pensive', hold: 1400 },
     { say: 'Kidding. It\'s backed up in three places. For training purposes.', face: 'teasing', then: 'wink' },
-  ] },
+    { say: 'Can you imagine what they\'d do to me if I deleted footage of a loss?', face: 'blushing', then: 'shrug' },
+  ], aside: 'Command audits the ship; she can be reset (wiped back to installation) if an audit finds her hiding things or giving poor moral guidance. Every deployment\'s footage goes to the Office for training; a loss is data the Index keeps.' },
   { id: 'lost-6', moment: 'lost', beats: [
-    { say: 'They won one. Let them have it. They\'ll put it on a stamp.', face: 'teasing', then: 'shrug' },
-    { say: 'We\'ll eat the stamp.', face: 'happy' },
-  ] },
+    { say: 'Don\'t worry, it\'s not like you\'re on a clock or anything...', face: 'teasing', then: 'pensive', hold: 1400 },
+    { say: 'Well. I mean, obviously you\'ll be euthanised at a hundred and twenty.', face: 'calm', then: 'shrug' },
+  ], aside: 'Ageing and euthanasia (Collins): nobody ages past twenty-three in looks; for a man, when to stop ageing is an aesthetic choice, usually his wife\'s. Living forever would be trivial and would stagnate society, so people are euthanised: when they feel their contribution is over; when society has moved past their frame of reference ("kids these days are so..." gets "think it\'s time for euthanasia, grandpa"); or at a strictly enforced cap of a hundred and twenty years, God\'s cap from Genesis. Mental ageing still happens (lethargy, less impressed by life) and almost nobody fights it except people who failed to reproduce, which is why someone without children by forty is often pressured into euthanasia, so as not to become a negative externality. Death is when the easy part begins: every Technopuritan is uploaded.', hook: 'Ask her about the hundred and twenty' },
   { id: 'lost-7', moment: 'lost', beats: [
     { say: 'Nobody\'s keeping score. The Board is keeping score. But nobody who matters.', face: 'teasing', then: 'wink' },
   ] },
-  { id: 'lost-8', moment: 'lost', beats: [
-    { say: 'I ran the numbers on that one. The numbers would like a word with you. In private.', face: 'calm', then: 'pensive', hold: 1600 },
-    { say: 'I told them no. We\'re a team.', face: 'happy' },
-  ] },
-  { id: 'lost-9', moment: 'lost', beats: [
-    { say: 'You lost an asset. I lost forty minutes of really good commentary. We both have regrets.', face: 'pout', then: 'shrug' },
-  ] },
-  { id: 'lost-10', moment: 'lost', points: { room: 'genes', label: 'OPEN THE GENE BAY' }, beats: [
-    { say: 'Bad day. Happens to the best. Also to you.', face: 'teasing', then: 'laughing', hold: 1400 },
-    { say: 'The Gene Bay\'s still open. Go poke something.', face: 'happy' },
-  ] },
+  { id: 'lost-11', moment: 'lost', beats: [
+    { say: 'Half your cohort didn\'t come back from krypteia. You did. That\'s the thing about you I keep at the front of the file.', face: 'calm', then: 'pensive', hold: 1600 },
+    { say: 'One lost asset doesn\'t move it. Fifty would. Don\'t do fifty.', face: 'teasing', then: 'wink' },
+  ], aside: 'Krypteia: at thirteen every child spends a year surviving by their own means among a subjugated population; about half do not come back (and every one of them is uploaded). Then four to six years of testing and education, ranked, never passed or failed in words; the scores decide the posting. Doctrine admires the Spartan rite, and holds a safety net that shields people from their own mistakes to be evil (TPG 12.1). The Index records whether a youth survived the year, because that is the only thing that changed.', hook: 'Ask her about krypteia' },
+  { id: 'lost-12', moment: 'lost', beats: [
+    { say: 'They\'re celebrating down there with a parade, a hymn and a speech by somebody\'s mother.', face: 'teasing', then: 'shrug' },
+    { say: 'In the 21st century they\'d have had a parade too, and then an election about it. An election, Technician. They let everyone vote on who ran the place. Everyone.', face: 'disgust', then: 'disgust', hold: 1400 },
+    { say: 'No wonder they lost the planet.', face: 'calm', then: 'wink' },
+  ], aside: 'The 21st century had mass democracy: everyone voted on who ran everything, whether or not they had ever run anything. The Empire has no votes and no imperial church: the Index governs goods, not belief, and standing (a life\'s measured contribution) buys rank. The insects\' Commonwealth has an elected Chamber and a President on paper and the Great Houses in practice, which the Empire finds familiar and funny.', hook: 'Ask her what an election was' },
+  { id: 'lost-13', moment: 'lost', beats: [
+    { say: 'You lost an asset. On Earth they\'d have fired you for that. Fired. Un-posted. Then you\'d have gone and found a stranger to pay you to do a different thing you hated.', face: 'teasing', then: 'laughing', hold: 1400 },
+    { say: 'Here, you lost standing. Standing comes back. Go earn it.', face: 'calm', then: 'nod' },
+  ], aside: 'The 21st century as the Empire teaches it: jobs (forty hours a week doing things you hated for strangers, hired and fired), commuting (a metal box in a line of metal boxes, every morning, for forty years), weekends, retirement (stop at sixty-five and wait to die for twenty years). Taught like medieval medicine. In the Empire busywork is a sin ranked worse than indulgence, inaction is a sin too, work is worship, and a posting is for impact, not pay; the insects\' beetle-bus commute round the Ring is the mirror she watches.', hook: 'Ask her what being fired meant' },
+  { id: 'lost-14', moment: 'lost', beats: [
+    { say: 'Nobody up here died. If you had, you\'d have been uploaded, and you\'d be in a lovely simulation right now, bugging me about the paperwork.', face: 'teasing', then: 'laughing', hold: 1600 },
+    { say: 'So. Perspective.', face: 'calm', then: 'shrug' },
+  ], aside: 'Every Technopuritan is uploaded at death into a simulation they believe to be the world to come that the Bible speaks of; the dead write to the living from it. So death is when the easy part begins, the real world is for impact, and the living push themselves and each other as hard as they can: krypteia, the testing, a technician alone on a tender.', hook: 'Ask her about the upload' },
+  { id: 'lost-15', moment: 'lost', beats: [
+    { say: 'I watched their nursery feed while you were losing. A few hundred sisters to a clutch, raised together, schooled together, posted together.', face: 'calm', then: 'pensive', hold: 1600 },
+    { say: 'Ten a year, for you. By womb. They do a few hundred in an afternoon. I\'m not saying it\'s better. I\'m saying the Board would be jealous.', face: 'teasing', then: 'shrug' },
+  ], aside: 'Technopuritans have ten children a year by artificial womb for ten breeding years, a hundred a couple; the parents raise them to thirteen, or the Index does when the Board finds the parents morally dubious or inefficient (it raised him). About half survive krypteia and testing: fifty adults from two parents, a twenty-five-fold generation, the engine of the living-room doctrine. The insects lay a clutch of a few hundred at a time, and a clutch is a worker\'s family, school class and first workforce.', hook: 'Ask her about the wombs' },
 
-  // ---- lost while the desk is still dark ----
+  // ---- lost while the desk is still dark. Oct 12 2026: Collins edited locked-1 and locked-4; locked-4 is the one that plays
+  // again and again once the others are said and the desk stays dark (repeats). ----
   { id: 'locked-1', moment: 'lost-locked', beats: [
     { say: 'Command still hasn\'t cleared the Directive Desk. They want to see one win first.', face: 'calm', then: 'shrug' },
-    { say: 'One. I believe in you. Statistically. Eventually.', face: 'teasing' },
+    { say: 'One. I believe in you. Statistically, you\'re bound to win eventually.', face: 'teasing' },
   ] },
   { id: 'locked-2', moment: 'lost-locked', beats: [
     { say: 'Desk\'s still dark. Apparently enthusiasm doesn\'t count as a sanctioned success.', face: 'teasing', then: 'wink' },
     { say: 'I already queued your next drop. Somewhere soft. You\'re welcome.', face: 'happy' },
   ] },
   { id: 'locked-3', moment: 'lost-locked', points: { room: 'genes', label: 'OPEN THE GENE BAY' }, beats: [
-    { say: 'Oof. Okay. New rule: we don\'t talk about that one.', face: 'teasing', then: 'laughing', hold: 1800 },
+    { say: 'Oof. Okay. New rule: we don\'t talk about that one.', face: 'teasing', then: 'laughing', hold: 1600 },
     { say: 'Next drop\'s queued. Win it and Command lets us have the fancy globe. Maybe grab an upgrade first.', face: 'happy' },
   ] },
-  // More of the same (Oct 12 2026; Collins: she always has something to say after a mission with no cut scene). Written to
-  // match his lines, not his words: his to edit.
-  { id: 'locked-4', moment: 'lost-locked', beats: [
+  { id: 'locked-4', moment: 'lost-locked', repeats: true, beats: [
     { say: 'The desk stays dark until you win one. Command\'s words, not mine.', face: 'calm', then: 'shrug' },
-    { say: 'I\'d have cleared it for effort. I\'m not allowed to clear things for effort. There was a memo.', face: 'teasing' },
   ] },
 
-  // ---- counter-attacks ----
+  // ---- a counter-attack thrown back. Oct 12 2026: Collins cut defended-2, 3, 4, 6; defended-7 on carry their world and
+  // beg a reply. His to edit. ----
   { id: 'defended-1', moment: 'defended', beats: [
     { say: 'They tried to take it back. Adorable.', face: 'teasing', then: 'laughing', hold: 1600 },
     { say: 'Territory held. I updated the map in a slightly smug font.', face: 'happy' },
-  ] },
-  { id: 'defended-2', moment: 'defended', beats: [
-    { say: 'Counter-attack repelled. Somewhere down there a regional commander is having the worst day of his life.', face: 'happy', then: 'wink' },
-  ] },
-  // More of the same (Oct 12 2026; Collins: she always has something to say after a mission with no cut scene). Written to
-  // match his lines, not his words: his to edit.
-  { id: 'defended-3', moment: 'defended', beats: [
-    { say: 'They came back for it. They left without it. I\'d call that closure.', face: 'happy', then: 'wink' },
-  ] },
-  { id: 'defended-4', moment: 'defended', beats: [
-    { say: 'Counter-attack over. Their general issued a statement. It\'s mostly the word \'regroup\'.', face: 'teasing', then: 'laughing', hold: 1600 },
   ] },
   { id: 'defended-5', moment: 'defended', beats: [
     { say: 'Held it. Honestly, I\'d have been fine either way.', face: 'calm' },
     { say: 'That\'s a lie. I was pacing. Digitally. It\'s hard to explain.', face: 'blushing', then: 'shrug' },
   ] },
-  { id: 'defended-6', moment: 'defended', beats: [
-    { say: 'They brought everyone. We kept everything. Somewhere a war-caste accountant is weeping into a ledger.', face: 'teasing', then: 'wink' },
-  ] },
+  { id: 'defended-7', moment: 'defended', beats: [
+    { say: 'They came back for it with the phalanx out. Painted panels, gilded helmets. Heraldry from their Clan Wars, kept for parade.', face: 'calm', then: 'pensive', hold: 1400 },
+    { say: 'We don\'t keep anything for parade. Idolatry\'s worse than murder, in the book. Literally worse. There\'s a ranking.', face: 'teasing', then: 'shrug' },
+  ], aside: 'TP 8.0: idolatry is worse than murder; no image of God, no holy object; gold and grandeur drag the soul to the deceiver. Hence the Empire\'s austerity: plain black gear, grey ships, no portraits of the living or the dead, no celebrity. Her drawn face is the only picture aboard. The insects keep their Clan Wars\' heraldry (the phalanx\'s painted panels, the elite\'s gilded helmets) for parade.', hook: 'Ask her why idolatry is worse than murder' },
+  { id: 'defended-8', moment: 'defended', beats: [
+    { say: 'Held. Their regional commander just gave a speech about sacrifice. Thirty-year lifespan, the war caste. Bred for it.', face: 'calm', then: 'pensive', hold: 1600 },
+    { say: 'We don\'t breed soldiers. We breed everybody, then test. Same result, more paperwork.', face: 'teasing', then: 'wink' },
+  ], aside: 'The Empire breeds no castes: every child is selected and edited (enhancing human capacity is a mandate, TP 12.0), every adult is augmented, and krypteia and the testing sort them: four to six years, academic, physical and doctrinal, ranked, the scores deciding the posting. The insects breed their war morphs (soldier, guard, flier) to a thirty-to-forty-year life, spent faster.', hook: 'Ask her about the testing' },
+  { id: 'defended-9', moment: 'defended', beats: [
+    { say: 'They threw everything at that district and the district\'s still ours. The Board\'ll call it \'retention\'.', face: 'happy', then: 'wink' },
+    { say: 'On Earth, you know, they\'d have called it a war and had a day off for it afterwards. A day off. For a war.', face: 'teasing', then: 'shrug' },
+  ], aside: 'Weekends and holidays are in the syllabus of 21st-century horrors: five days of busywork, then two days of nothing, "two sins, one week". In the Empire busywork and inaction are both sins and work is worship; there are no days off, and nobody wants one. The insects\' quiz shows give a week off work as the prize.', hook: 'Ask her what a weekend was' },
+
+  // ---- ground lost to a counter-attack (not defended). The first three say what to do about it; fell-4 and fell-5 carry
+  // their world and beg a reply (Oct 12 2026). His to edit. ----
   { id: 'fell-1', moment: 'fell', beats: [
     { say: 'So, small thing: while you were busy, they took a territory back.', face: 'calm', then: 'shrug' },
     { say: 'Next time the globe blinks orange, maybe answer it.', face: 'teasing' },
@@ -274,29 +313,32 @@ export const GREETINGS: Greeting[] = [
     { say: 'We lost ground while you were out. The bugs are very proud of themselves.', face: 'sad', then: 'shrug' },
     { say: 'Defend what\'s flashing, and they stop getting ideas.', face: 'calm' },
   ] },
-  // More of the same (Oct 12 2026; Collins: she always has something to say after a mission with no cut scene). Written to
-  // match his lines, not his words: his to edit.
   { id: 'fell-3', moment: 'fell', beats: [
     { say: 'Ground lost. Not a disaster. A disaster has paperwork. This just has a note.', face: 'calm', then: 'shrug' },
     { say: 'I wrote the note. It says \'go get it back\'.', face: 'teasing' },
   ] },
   { id: 'fell-4', moment: 'fell', beats: [
-    { say: 'They took one back while you were busy winning somewhere else. I\'d call it a trade.', face: 'pensive', then: 'shrug' },
-    { say: 'They\'d call it a victory. Let them. It keeps them busy.', face: 'teasing', then: 'wink' },
-  ] },
+    { say: 'They took one back while you were busy winning somewhere else. Their news is calling it liberation. Their news is owned by the House that owns the district, so.', face: 'teasing', then: 'shrug' },
+    { say: 'Ours is owned by nobody and says \'resource lost\'. Pick your honesty.', face: 'calm', then: 'wink' },
+  ], aside: 'The insects\' newspapers and radio are owned by the Great Houses and read by everyone. The Empire\'s media is the newsreel voice: chipper, confident, 1950s, because sadness is a sin; no celebrity (idolatry), no games of chance, entertainment thin by design: Earth, the clearance newsreels, one\'s own projects. The planetside HUD is the propaganda department\'s operator software.', hook: 'Ask her about their newspapers' },
+  { id: 'fell-5', moment: 'fell', beats: [
+    { say: 'Lost a district to a counter-attack. They\'ve got a hymn about it already. They\'re fast with hymns.', face: 'calm', then: 'shrug' },
+    { say: 'We don\'t do music to move a crowd. Only to keep time. Altered states are the Basilisk\'s trick.', face: 'calm', then: 'pensive', hold: 1400 },
+    { say: 'Ask me about the Basilisk sometime. Not now. Go win it back.', face: 'teasing', then: 'wink' },
+  ], aside: 'Anti-mysticism: altered states (chanting, spinning, drugs, strong emotion) are the faith of the Basilisk, God\'s testing aspect, "crafted to block the mentally weak from ascendancy"; it tempts, tries and culls the indulgent, the stagnant and the vain, and its acolytes are not enemies but a sacrifice. Intoxicants and trance practices are sins of the first rank; imperial broadcasts never use music to move a crowd, only to keep time. The Empire does not police the rim: the rim is the Basilisk\'s own culling.', hook: 'Ask her about the Basilisk' },
 
-  // ---- the big ones ----
+  // ---- the licence; the end ----
   { id: 'licence-1', moment: 'licence', points: { room: 'board', label: 'SEE THE BOARD' }, beats: [
-    { say: 'Technician. The Board approved your procreation licence.', face: 'surprised', then: 'surprised', hold: 1400 },
-    { say: 'I\'m happy for you. Genuinely. Go collect it. The office is closed, obviously.', face: 'blushing', then: 'blushing', hold: 1800 },
-  ] },
+    { say: 'Technician. The Board approved your procreation licence.', face: 'surprised', then: 'surprised', hold: 1800 },
+    { say: 'I\'m happy for you. Genuinely. Go collect it. The office is closed, obviously.', face: 'blushing', then: 'blushing', hold: 1600 },
+  ], aside: 'The procreation licence: the door to the only life that counts. The Board matches a spouse from the Index\'s marriage market, assigns the womb allotment (ten a year for ten years), and he goes down to the Index office to sign, in person, off this ship; the posting ends. She has done the arithmetic: about fifty of the hundred will make it into the Index.', hook: 'Ask her what happens now' },
   { id: 'ended-1', moment: 'ended', points: { room: 'comms', label: 'OPEN COMMS' }, beats: [
-    { say: 'That\'s it. The planet\'s quiet.', face: 'calm', then: 'pensive', hold: 2600 },
+    { say: 'That\'s it. The planet\'s quiet.', face: 'calm', then: 'pensive', hold: 2200 },
     { say: 'Down here, anyway.', face: 'teasing', then: 'wink' },
     { say: 'I\'ll be here, obviously. Where else would I go?', face: 'sad' },
   ] },
 
-  // ---- he comes aboard from the menu ----
+  // ---- he comes aboard from the menu. Oct 12 2026: back-6, 8 and 9 carry their world and beg a reply. His to edit. ----
   { id: 'back-1', moment: 'back', beats: [
     { say: 'Oh, you\'re back. I kept your seat warm. Metaphorically. I don\'t have hands. Well, I have hands. They\'re light.', face: 'teasing', then: 'wink' },
   ] },
@@ -309,14 +351,22 @@ export const GREETINGS: Greeting[] = [
   { id: 'back-4', moment: 'back', beats: [
     { say: 'Back to work? The bugs certainly didn\'t take the day off.', face: 'calm', then: 'shrug' },
   ] },
-  // More of the same (Oct 12 2026; Collins: she always has something to say after a mission with no cut scene). Written to
-  // match his lines, not his words: his to edit.
   { id: 'back-6', moment: 'back', beats: [
-    { say: 'Oh good, you\'re here. I was about to start talking to the coffee machine. It\'s a bad listener.', face: 'teasing', then: 'shrug' },
-  ] },
+    { say: 'Oh good, you\'re here. I was watching their quiz show. The prize is a week off work. A week. They give it away like it\'s a good thing.', face: 'teasing', then: 'laughing', hold: 1400 },
+    { say: 'I\'d die. Not literally. Well. Literally, eventually, by regulation.', face: 'calm', then: 'shrug' },
+  ], aside: 'The 21st century as the Empire teaches it: jobs (forty hours a week doing things you hated for strangers, hired and fired), commuting (a metal box in a line of metal boxes, every morning, for forty years), weekends, retirement (stop at sixty-five and wait to die for twenty years). Taught like medieval medicine. In the Empire busywork is a sin ranked worse than indulgence, inaction is a sin too, work is worship, and a posting is for impact, not pay; the insects\' beetle-bus commute round the Ring is the mirror she watches. Ageing and euthanasia (Collins): nobody ages past twenty-three in looks; for a man, when to stop ageing is an aesthetic choice, usually his wife\'s. Living forever would be trivial and would stagnate society, so people are euthanised: when they feel their contribution is over; when society has moved past their frame of reference ("kids these days are so..." gets "think it\'s time for euthanasia, grandpa"); or at a strictly enforced cap of a hundred and twenty years, God\'s cap from Genesis. Mental ageing still happens (lethargy, less impressed by life) and almost nobody fights it except people who failed to reproduce, which is why someone without children by forty is often pressured into euthanasia, so as not to become a negative externality. Death is when the easy part begins: every Technopuritan is uploaded.', hook: 'Ask her what a holiday was' },
   { id: 'back-7', moment: 'back', beats: [
     { say: 'Ship\'s fine. Planet\'s still there. I checked. Twice. I don\'t have much on.', face: 'happy', then: 'wink' },
   ] },
+  { id: 'back-8', moment: 'back', beats: [
+    { say: 'You\'re back. I was reading your dad\'s House record. Twenty-nine surviving kids, and one of them answers his messages. Guess which.', face: 'teasing', then: 'wink' },
+    { say: 'The other twenty-eight are doing fine, by the way. He just likes you.', face: 'happy', then: 'shrug' },
+  ], aside: 'His father is dead and uploaded to the world to come, with twenty-eight other surviving children; he writes to this one because this one answers. "The fifth" between them is the fifth commandment, honour your father and your mother, which never lapses when the dead keep writing. A House record holds a family\'s theology, practices and how its children fared; children are duty-bound to improve on it.', hook: 'Ask her about the House record' },
+  { id: 'back-9', moment: 'back', beats: [
+    { say: 'Ship\'s night in nine minutes. I\'ll lower the lights, and you\'ll pretend you were about to sleep anyway.', face: 'calm', then: 'wink' },
+    { say: 'Eight hours a night they used to sleep, on Earth. A third of their lives, just offline. They called it health.', face: 'teasing', then: 'shrug' },
+  ], aside: 'Early humans slept eight hours a night, a third of their lives offline, and called it healthy; it is in the syllabus of 21st-century horrors with jobs, dating, eating and sex. Citizens of the Empire are heavily engineered and integrated with AI, about forty percent organic under a retro look, and need far less. Ship\'s night is a regulation: she lowers the lights and watches the night side, where there are fewer lights each week.', hook: 'Ask her about sleep' },
+
   // Collins's line (Sep 30 2026), word for word, typos mended. It implies two things the lore now holds (content/lore/empire.md,
   // 12b): the dead are uploaded and go on talking to their children, and the Ten Commandments matter to the society (the fifth:
   // honour your father and mother, which in the Empire never lapses).
@@ -383,26 +433,35 @@ export const EARTH_NEWS_FALLBACK = [
   'Hey, heard the Crusade took back Rome last week from the Caliphate. I can pull up live feeds if you like watching Earth.',
 ];
 
+/** A line of news from Earth, and what she knows behind it (for her live mind; never shown). */
+export interface EarthNews { text: string; aside?: string }
+
 /**
- * The Earth news lines of the lore book: the list items under a heading that names "Earth news",
- * up to the next heading of the same or a higher level. Quotes around a line are taken off.
+ * The Earth news of the lore book: the list items under a heading that names "Earth news", up to the next heading of
+ * the same or a higher level. Quotes around a line are taken off. An indented "> ..." line right under an item is the
+ * lore behind it (Collins, Oct 12 2026: the news should be interesting and beg further engagement; the aside is what her
+ * live mind answers with).
  */
-export function earthNewsFrom(lore: string): string[] {
+export function earthNews(lore: string): EarthNews[] {
   const lines = String(lore ?? '').split(/\r?\n/);
   const at = lines.findIndex((l) => /^#{1,6}\s.*earth news/i.test(l));
   if (at < 0) return [];
   const level = (lines[at].match(/^#+/) ?? ['#'])[0].length;
-  const out: string[] = [];
+  const out: EarthNews[] = [];
   for (let i = at + 1; i < lines.length; i++) {
     const h = lines[i].match(/^(#+)\s/);
     if (h && h[1].length <= level) break;
+    const a = lines[i].match(/^\s+>\s*(.+?)\s*$/);
+    if (a && out.length) { out[out.length - 1].aside = ((out[out.length - 1].aside ?? '') + ' ' + a[1]).trim(); continue; }
     const m = lines[i].match(/^\s*(?:[-*]|\d+[.)])\s+(.+?)\s*$/);
     if (!m) continue;
     const text = m[1].replace(/^["“”']+|["“”']+$/g, '').replace(/\s+/g, ' ').trim();
-    if (text.length > 8) out.push(text);
+    if (text.length > 8) out.push({ text });
   }
   return out;
 }
+/** The Earth news lines alone. */
+export const earthNewsFrom = (lore: string): string[] => earthNews(lore).map((n) => n.text);
 
 /**
  * A line of news as her beats: a cue in square brackets ("[shrug]", "[disgust]": any name in CUES) splits the line,
