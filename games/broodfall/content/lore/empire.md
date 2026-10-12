@@ -225,18 +225,44 @@ story for why the Technopuritans live the way they do.
 - **Why they left** (Collins, Oct 12 2026): the Technopuritans left the planet because it was the
   easiest way to keep the Covenant of the Sons of Man (their idea of a prime directive) given the
   direction human society was going: staying would have meant ruling, or warring on, sons of man.
-- **Israel and the Temple class** (Collins, Oct 12 2026): the Jews are the one group that, through the
-  splitting, maintained technological advancement, and that was only possible by genetically isolating
-  the Orthodox, who came to make up the majority of Jews and followed the same path as the rest of
-  society. The genetically advanced Jews rule the rest: with the building of the Third Temple they
-  excavated DNA of the Davidic line and created a new temple class that follows a strict form of
-  Sadducean Judaism (no souls, no angels, no life after death: very compatible with Technopuritanism);
-  they interbred with this class and created a new, small temple class that develops and manages all
-  their technology and sees itself as steward of the Orthodox masses. The technology: automated drone
-  swarms, and a satellite laser system that can carve up cities with ease, which Earth's feeds call
-  "the goy beam", and so does YOKE. A splinter caliphate that attacked Israel learned about it the hard
-  way, and the Caliphate disavowed the splinter in a panic. Why Jews keep a permanent presence on Earth
-  is, to YOKE, sentiment ("such a sentimental people"); the stewards would say stewardship.
+- **Israel, the Sadducees and the Technopuritan Jews** (Collins, Oct 12 2026): the Jews are the one
+  group that, through the splitting, maintained technological advancement, and that was only possible
+  by genetically isolating the Orthodox (the Satmar, in the Empire's shorthand), who came to make up the
+  majority of Jews and followed the same path as the rest of society. The advanced but, beside the
+  Satmar, low-fertility Jews knew that if they kept intermixing they would come under dysgenic pressure,
+  and split in two:
+  - **The Technopuritan Jews** sided with the Technopuritan principle of non-interference and became
+    just a sub-category of Technopuritans, since the doctrine allows for Jews (iterative prophecy, HOME
+    1.0); Jewish Houses sit in the Index like any other.
+  - **The Sadducees** genetically rebuilt the Davidic line with the building of the Third Temple, then
+    used gene drives to quietly wipe out the Levites in the other Jewish groups, essentially recreating
+    the temple caste. They follow a strict Sadducean Judaism (no souls, no angels, no life after death:
+    very compatible with Technopuritanism), and the small temple class develops and manages all of
+    Israel's technology (automated drone swarms; the satellite laser that carves up cities with ease,
+    which Earth's feeds call "the goy beam", and so does YOKE; the wombs) and sees itself as steward of
+    the Orthodox masses.
+  - **The ideological fracture.** To the Technopuritans this goes strictly against the Covenant of the
+    Sons of Man: they define the Sadducees and the Satmar as two separate groups, and say the Sadducees
+    treat the Satmar like pets and second-class citizens. The Sadducees argue (1) that Judaism is
+    inherently a caste-based religion with different religious structures for different castes (in the
+    days of the temple the Sadducees ran the temple while most ordinary Jews followed the Pharisees),
+    and (2) why should the Empire care if they are keeping their own people from suffering, when the
+    Technopuritans could stop all the fighting on Earth among the Christians, or help them wipe out
+    their enemies, and do not, because that would limit their autonomy; and "that's the way it was in
+    the time of the temple; what are we supposed to do, give them power? Abandon them?"
+  - **The war that stayed small.** There was a brief war of scuffles between the groups. Given the
+    technology involved it never got large: the Technopuritans could easily wipe Israel off the map, but
+    the Sadducees could never wipe out all the Technopuritan Dyson spheres; and the Technopuritans do
+    not want it to escalate, because there would still be tons of Sadducee space colonies to create
+    problems for them in the future (section 13).
+  - **The cold war now.** The Sadducees want to wipe out the Caliphate and the Technopuritans forbid it.
+    So Israel expands its borders every time it is attacked (a splinter caliphate that attacked it
+    learned about the laser the hard way, and the Caliphate disavowed the splinter in a panic), and
+    lives mostly walled off from the world.
+  - **Freighters.** Sadducee freighters are normally fully automated, as they rarely leave the planet,
+    but aggression sometimes occurs; a tender primes its weapons when one comes through (YOKE's
+    `back-10`, Collins's line). Why Jews keep a permanent presence on Earth is, to YOKE, sentiment
+    ("such a sentimental people"); the stewards would say stewardship.
 - **Named in her news** (Collins, Oct 12 2026): the Crusade and the Caliphate over Rome; Israel; the US,
   where the Baptists now hold premillennialism a heresy and burn books over it; the Buddhists who
   finished the Parsis; Eastern Europe's leeches; France's jousting; Africa's standing genocides.
@@ -464,6 +490,10 @@ they died, and how important the Ten Commandments are to the society".
 - **YOKE** answers either question plainly if asked (`ship-ai-lorebook.md`, section 17).
 
 ## 13. Other spacefarers
+
+- **The Sadducee colonies** (Collins, Oct 12 2026): the Sadducees have many space colonies, enough that
+  the Empire, which could glass Israel in an afternoon, will not: the colonies would be trouble for
+  centuries. Section 9 has the split, the quarrel over the covenant and the cold war.
 
 - **Slow growers** (Collins): religions and secular groups that reached space, grow slowly, do not
   matter, and are left alone unless they threaten. **PROPOSAL:** Space Derelict's Holy Empire and

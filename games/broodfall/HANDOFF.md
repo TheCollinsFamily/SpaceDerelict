@@ -2075,5 +2075,7 @@ rfab api? if not update it so you can ... those are probably better".
   "[shrug]" inside a line splits it into beats (`newsBeats`). Tests: tests/greetingPools.test.ts.
 - THE LORE HE GAVE THAT DAY: ageing and euthanasia (empire.md 7b: looks stop at 23, the cap of 120, the childless at 40),
   Earth's trajectory (empire.md 9: dysgenics, the extinctions, why they left: the covenant), the Temple class (Israel), the
-  Index raising children of parents found wanting (he was), the dead uploaded to "the world to come". Her brain on RFab
+  Index raising children of parents found wanting (he was), the dead uploaded to "the world to come"; then the Sadducees
+  (empire.md 9: the split into Technopuritan Jews and Sadducees, the gene drives, the covenant quarrel, the short war, the
+  cold war over the Caliphate, the automated freighters: back-10). Her brain on RFab
   (content/lore/yoke-brain.md, both parts under 4,000 characters) was republished with it: `node tools/art/make.mjs yoke --publish`.

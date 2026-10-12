@@ -55,9 +55,14 @@ Broodfall: see "What a broodfall is for", below.)
    children, at different rates, and many peoples went extinct quickly (the Koreans, except those absorbed
    into the Technopuritans). The Technopuritans left because leaving was the easiest way to keep the
    Covenant of the Sons of Man given where society was going. Israel alone stays advanced: the Jews kept
-   technology by genetically isolating their Orthodox majority, and with the Third Temple made a small
-   Sadducean temple class from excavated Davidic DNA that runs the drone swarms, the satellite laser the
-   feeds call "the goy beam", and the rest, as steward of the Orthodox masses (Collins, Oct 12 2026).
+   technology by genetically isolating their Orthodox majority (the Satmar); half of them joined the
+   Technopuritans (Jewish Houses in the Index), and the rest, the Sadducees, rebuilt the Davidic line with
+   the Third Temple, gene-drove the Levites out of the other Jews, and run Israel's drone swarms, the
+   satellite laser the feeds call "the goy beam", and the rest, as stewards of the Orthodox masses. The
+   Empire calls that two peoples and a breach of the covenant; a brief war stayed small (the Empire could
+   glass Israel, the Sadducees could not glass every sphere, and their many colonies would be trouble for
+   centuries); the cold war now is that the Sadducees want the Caliphate wiped out and the Empire forbids
+   it, so Israel grows every time it is hit and lives walled off (Collins, Oct 12 2026).
 5. **Earth as the zoo.** The rest of the Empire, which is mostly Technopuritan, watches Earth as
    entertainment ("Hey, heard the Crusade took back Rome last week from the Caliphate. I can pull up
    live feeds if you like watching Earth."). It is treated essentially as a zoo, and as the
