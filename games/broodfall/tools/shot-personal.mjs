@@ -2,8 +2,8 @@
  * THE PERSONAL PLOT, PLAYED (Collins, Oct 5 2026: "a general beat between what is now 4 and 5 that with YOKE text
  * introduces the motivation of being assigned a partner through the index and discussions on going there ... on what
  * is now 8, will be nine, you can add progress on that plot point"). Real page, real clicks, the outcome forced:
- *   A  four territories taken; the 5th won → YOKE's Index beat, then its discussion waits in the AI Core
- *   B  eight taken, the Index beat said; the 9th won → her progress beat (Maren's note), pointing at the quarters
+ *   A  four territories taken; the 5th won → an ordinary line (the Index beat at 5 was cut, Collins, Oct 12 2026)
+ *   B  eight taken; the 9th won → her progress beat (Maren's note), then its discussion waits in the AI Core
  *   C  after an intro, the next ordinary return is never another intro
  *
  *   node tools/shot-personal.mjs [A] [B] [C]   (the game's own dev server, as `npm start` runs it, on BROODFALL_PORT, default 5244)
@@ -79,23 +79,16 @@ const errors = [];
 const held = ['crash-site', 'cul-de-sac', 'granary', 'harbor', 'commuter', 'foundry', 'mirewater', 'university', 'ossuary'];
 try {
   if (want('A')) {
-    console.log('A  the 5th territory: the Index');
+    console.log('A  the 5th territory: an ordinary line');
     const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 } });
     const page = await ctx.newPage();
     page.on('pageerror', (e) => errors.push(String(e)));
     const g = await winFrom(page, { held: held.slice(0, 5), captures: 4, deployments: 6, faction: 'delegation', factionSince: 1, contacted: ['delegation', 'faithful', 'institute'], met: ['delegation'], beatsSeen: ['understand', 'stop-war', 'gaia'], lastGreeting: 'won-1', greetingsSaid: ['won-1', 'back-5'] });
-    check(g === 'partner-index', `her greeting on the 5th capture: the Index (${g})`);
-    await page.waitForSelector('.cp-icom:not(.greeting)', { timeout: 120000 }).catch(() => {});
-    const text = await page.locator('.cp-icom').innerText();
-    check(/Index entry/.test(text) && /go down to the Index office and sign/.test(text), 'her lines: his Index entry, signing at the Index office in person');
-    await shot(page, 'a1-index');
+    check(g !== 'partner-index' && !g.startsWith('partner'), `her greeting on the 5th capture: an ordinary line, not the Index beat (${g})`);
+    await shot(page, 'a1-fifth');
     await page.locator('.cp-icom [data-act="icom-close"]').click().catch(() => {});
     const s = await page.evaluate(() => JSON.parse(localStorage.getItem('broodfall-campaign')));
-    check(s.said.includes('partner-index') && s.ai.queue.includes('partner'), `said once, and the discussion waits (queue: ${s.ai.queue.join(', ')})`);
-    await page.locator('[data-room="ai"]').click();
-    await page.waitForTimeout(800);
-    check(await page.locator('[data-engage="partner"]').count() === 1, 'the AI Core offers the discussion (ENGAGE / NOT NOW)');
-    await shot(page, 'a2-ai-core');
+    check(!s.said.includes('partner-index') && !s.ai.queue.includes('partner'), `nothing said for the plot yet, no discussion queued (queue: ${s.ai.queue.join(', ')})`);
     await ctx.close();
   }
   if (want('B')) {
@@ -103,12 +96,19 @@ try {
     const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 } });
     const page = await ctx.newPage();
     page.on('pageerror', (e) => errors.push(String(e)));
-    const g = await winFrom(page, { held, captures: 8, deployments: 10, faction: 'faithful', factionSince: 1, contacted: ['delegation', 'faithful', 'institute'], met: ['faithful'], beatsSeen: ['signs', 'prophecy', 'prepare'], midpoint: { status: 'stayed', at: 7 }, said: ['mate-review', 'catgirl', 'partner-index'], lastGreeting: 'won-3', greetingsSaid: ['won-3', 'back-5', 'intro-barnabas', 'intro-duck'] });
+    const g = await winFrom(page, { held, captures: 8, deployments: 10, faction: 'faithful', factionSince: 1, contacted: ['delegation', 'faithful', 'institute'], met: ['faithful'], beatsSeen: ['signs', 'prophecy', 'prepare'], midpoint: { status: 'stayed', at: 7 }, said: ['mate-review', 'catgirl'], lastGreeting: 'won-3', greetingsSaid: ['won-3', 'back-5', 'intro-barnabas', 'intro-duck'] });
     check(g === 'partner-progress', `her greeting on the 9th capture: the progress (${g})`);
     await page.waitForSelector('.cp-icom:not(.greeting)', { timeout: 120000 }).catch(() => {});
     const text = await page.locator('.cp-icom').innerText();
     check(/under consideration/.test(text) && /Do you sleep\?/.test(text), 'her lines: the file moved, and Maren\'s twenty words');
     await shot(page, 'b1-progress');
+    await page.locator('.cp-icom [data-act="icom-close"]').click().catch(() => {});
+    const s = await page.evaluate(() => JSON.parse(localStorage.getItem('broodfall-campaign')));
+    check(s.said.includes('partner-progress') && s.ai.queue.includes('partner'), `said once, and the discussion waits (queue: ${s.ai.queue.join(', ')})`);
+    await page.locator('[data-room="ai"]').click();
+    await page.waitForTimeout(800);
+    check(await page.locator('[data-engage="partner"]').count() === 1, 'the AI Core offers the discussion (ENGAGE / NOT NOW)');
+    await shot(page, 'b2-ai-core');
     await ctx.close();
   }
   if (want('C')) {

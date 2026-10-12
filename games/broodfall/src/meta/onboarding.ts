@@ -140,11 +140,11 @@ export function momentNow(s: CampaignState): GreetMoment {
 
 /**
  * THE PERSONAL PLOT (Collins, Oct 5 2026): the third thread beside the ally's and the Roach King's, carried by YOKE's
- * greeting, once each, from its capture on: why the Index assigning him a partner matters (capture 5, the slot between
- * the ally's 4th and the main plot's next), then how it is going (capture 9). content/greetings.ts has the lines.
+ * greeting, once each, from its capture on. Oct 12 2026: the capture-5 beat (why the Index assigning him a partner
+ * matters, 'partner-index') was cut on the lines page (Collins: "not needed"); what stays is how it is going (capture 9),
+ * which also opens the discussion in the AI Core. content/greetings.ts has the lines.
  */
 export const STORY_ONCE: Array<{ id: GreetMoment; captures: number }> = [
-  { id: 'partner-index', captures: 5 },
   { id: 'partner-progress', captures: 9 },
 ];
 

@@ -52,8 +52,10 @@ Broodfall: see "What a broodfall is for", below.)
    ideology (doctrine 10 below). With only religious extremists still breeding, Earth is low-tech
    compared with most of the human empire and constantly at holy war. It still has technology, just not
    the super-advanced kind. Dysgenics is real and was before the launch: only religious extremists have
-   children, at different rates, and many peoples went extinct quickly (the Koreans, except those absorbed
-   into the Technopuritans). The Technopuritans left because leaving was the easiest way to keep the
+   children, at different rates, and many peoples went extinct quickly (the Japanese, most of the secular
+   West; Korea went strange instead: a cult that began as a scam gacha game, and chaebols breeding their
+   staff toward a eusocial species, with idol-styled spokeswomen retired at twenty-five; the exodus after
+   the North-South integration is where the Technopuritans' Koreans come from). The Technopuritans left because leaving was the easiest way to keep the
    Covenant of the Sons of Man given where society was going. Israel alone stays advanced: the Jews kept
    technology by genetically isolating their Orthodox majority (the Satmar); half of them joined the
    Technopuritans (Jewish Houses in the Index), and the rest, the Sadducees, rebuilt the Davidic line with
@@ -62,7 +64,11 @@ Broodfall: see "What a broodfall is for", below.)
    Empire calls that two peoples and a breach of the covenant; a brief war stayed small (the Empire could
    glass Israel, the Sadducees could not glass every sphere, and their many colonies would be trouble for
    centuries); the cold war now is that the Sadducees want the Caliphate wiped out and the Empire forbids
-   it, so Israel grows every time it is hit and lives walled off (Collins, Oct 12 2026).
+   it, so Israel grows every time it is hit and lives walled off (Collins, Oct 12 2026). The Sadducees' allies
+   are America's Baptists, whom they supply, which keeps America peaceful and capable; the Mormons expand by
+   police state, not fertility; the Amish were wiped out when law and order went; Latin America emptied after
+   China's collapse and America walled it off (Collins, Oct 12 2026). Inside the Empire the Technopuritan
+   Jews are the Sons of Israel and the Mormons the Sons of Utah, each with its own structure and sphere.
 5. **Earth as the zoo.** The rest of the Empire, which is mostly Technopuritan, watches Earth as
    entertainment ("Hey, heard the Crusade took back Rome last week from the Caliphate. I can pull up
    live feeds if you like watching Earth."). It is treated essentially as a zoo, and as the

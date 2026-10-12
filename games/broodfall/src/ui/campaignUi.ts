@@ -340,8 +340,9 @@ export class CampaignUi {
     const s = structuredClone(this.state);
     const { moment, greeting: g } = greetingFor(s, lore);
     if (EARLY_ONCE.includes(moment) || STORY_ONCE.some((b) => b.id === moment)) s.said = [...(s.said ?? []), moment];
-    // The personal plot opens a discussion in the AI Core: him going down to the Index to sign.
-    if (moment === 'partner-index') s.ai.queue = queueDiscussion(s.ai.queue, 'partner', s.ai.seen);
+    // The personal plot opens a discussion in the AI Core: him going down to the Index to sign (Oct 12 2026: from the
+    // progress beat, since the Index beat was cut).
+    if (moment === 'partner-progress') s.ai.queue = queueDiscussion(s.ai.queue, 'partner', s.ai.seen);
     s.greet = null;
     s.lastGreeting = g.id;
     s.greetingsSaid = [...new Set([...(s.greetingsSaid ?? []), g.id])];

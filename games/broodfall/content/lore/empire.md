@@ -163,6 +163,12 @@ fashion these days, which is why it is not obvious.
 - **PROPOSAL:** the fashion for the retro look is tolerated because it signals nothing (a status
   display would be a sin); a visibly chrome body would be showing off.
 
+- **The tanks, and what was engineered away** (Collins, Oct 12 2026): Technopuritans breed using artificial
+  wombs, so nobody is ever pregnant, and a pregnancy (a cat girl's, say) looks to them grotesque: "their
+  abdomens distend inhumanly ... it did not look safe". Women have very small breasts, having had them
+  engineered away as inefficient (YOKE reaches for the word: "udders?"); the same happened to male body
+  hair and body odour.
+
 ## 7b. Ageing and euthanasia (Collins, Oct 12 2026)
 
 Collins: in their society nobody ages past 23 (women); for men, when to stop ageing is more of an
@@ -219,9 +225,34 @@ story for why the Technopuritans live the way they do.
   about a rediscovered printing press and catapults were cut for this.
 - **Dysgenics and the extinctions** (Collins, Oct 12 2026): dysgenics is real, and was before the
   launch. Increasingly only religious extremists have children, but not at the same rates, and many
-  groups went extinct quite quickly: the Koreans, for example, except those absorbed into the
-  Technopuritans (who are Houses in the Empire now). The feeds are, among other things, a record of who
-  is left.
+  groups went extinct quite quickly: the Japanese, the Italians outside the Crusade, most of the secular
+  West. The feeds are, among other things, a record of who is left.
+- **Korea** (Collins, Oct 12 2026: "tons of cults come out of Korea"): went strange rather than extinct.
+  After the North and South integrated, many of the North's totalitarian ideologies infected the chaebols
+  and Korean democracy, which is how they went the way they went; the integration also led to a large
+  exodus to America, the source of the Korean ethnicity among the Technopuritans. Korean culture ended up
+  divided between a fanatical cult that started as a scam gacha game, and chaebols that started breeding
+  their own employees and evolved in the direction of a eusocial species, with the only females being
+  their human face for speaking, styled after idols, who do not live past twenty-five "as a statement on
+  idol culture". Neither group travels in space.
+- **America** (Collins, Oct 12 2026): the Baptists are the group that became most powerful in the USA,
+  which is still one of the more religiously diverse places on Earth, but rabidly anti-Rome. Something
+  now thought of as a small disagreement in Baptist communities, pre- versus post-millennialism, becomes
+  something of import (the book burnings in her news). The Sadducees' closest allies are the Baptists:
+  Israel has worked to maintain in Baptist culture the old Protestant belief that Israel must be
+  protected, and sends them tech, supplies and so on, which is why America is mostly peaceful and
+  technologically capable for the world at large. **The Mormons** have a huge fertility problem even now;
+  their steady expansion (Utah, Idaho, Nevada, a county at a time) is the work of a totalitarian police
+  state that controls every aspect of the lives of people in Mormon territory. **The Amish** were
+  eradicated as soon as law and order broke down, with the collapse of the social-security and welfare
+  system: pacifists in a world where anyone can walk up, shoot you and take your stuff. (In the lore; not
+  a news line.)
+- **Latin America** (Collins, Oct 12 2026): population collapsed significantly, with mass governmental
+  collapse after the collapse of China, which had been a huge buyer of raw resources; America built a giant
+  wall. The Catholic Church keeps marginal operations there but sees nothing in the Americas worth the
+  focus of the Crusade. The surviving groups are some trad Catholics, a cult of Santa Muerte, and "that
+  weird Catholic spiritualist cult out of Brazil", all of which broadly get along, like the American
+  Protestant factions.
 - **Why they left** (Collins, Oct 12 2026): the Technopuritans left the planet because it was the
   easiest way to keep the Covenant of the Sons of Man (their idea of a prime directive) given the
   direction human society was going: staying would have meant ruling, or warring on, sons of man.
@@ -263,9 +294,23 @@ story for why the Technopuritans live the way they do.
     but aggression sometimes occurs; a tender primes its weapons when one comes through (YOKE's
     `back-10`, Collins's line). Why Jews keep a permanent presence on Earth is, to YOKE, sentiment
     ("such a sentimental people"); the stewards would say stewardship.
-- **Named in her news** (Collins, Oct 12 2026): the Crusade and the Caliphate over Rome; Israel; the US,
-  where the Baptists now hold premillennialism a heresy and burn books over it; the Buddhists who
-  finished the Parsis; Eastern Europe's leeches; France's jousting; Africa's standing genocides.
+  - **The Sons of Israel, the Sons of Utah, and the Council** (Collins, Oct 12 2026). The Technopuritan Jews
+    inside the Empire are organised as the Sons of Israel, the Mormons who came up as the Sons of Utah; each
+    keeps its own structure and its own dedicated Dyson sphere (the Sons of Israel's second, in her news,
+    "puts them on equal footing with the Sons of Utah"). The Empire allows completely separate
+    organisational structures for groups that might have their own goals on purpose: the belief is that
+    God favours a group making the right choice by allowing it to out-produce or outwit the others. YOKE
+    "has always questioned the wisdom" of it, "but I get it". **The Council** is Collins's word for the
+    body that would act if the Sadducees were found to be engineering the Caliphate's attacks on Israel
+    ("too risky if the Council found out"); the Index records and does not act. **PROPOSAL:** the Council
+    rules on the covenant between peoples; nothing else about it is set.
+- **Named in her news** (Collins, Oct 12 2026): the Crusade and the Caliphate over Rome; Israel, its wall and
+  its freighters; the US, where the Baptists now hold premillennialism a heresy and burn books over it, and
+  the Mormons' Deseret; the Buddhists who finished the Parsis; Eastern Europe's leeches; France's jousting;
+  Africa's standing genocides; Korea's gacha cult and chaebol hives; a Hindu emperor; Latin America's quiet;
+  the Sons of Israel's second sphere. Her lines are written to his pattern (Oct 12 2026): a thing she heard,
+  her side of it, and a question that opens it; the lore behind each is the "> " aside under it in the lore
+  book, in plain words.
 - **PROPOSAL, the feeds:** the Earth feeds are relayed from old orbital cameras the Empire never
   took down. They are commentated, like sport, with odds. They are free: the Index counts them
   as instruction.

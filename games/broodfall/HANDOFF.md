@@ -2079,3 +2079,21 @@ rfab api? if not update it so you can ... those are probably better".
   (empire.md 9: the split into Technopuritan Jews and Sadducees, the gene drives, the covenant quarrel, the short war, the
   cold war over the Caliphate, the automated freighters: back-10). Her brain on RFab
   (content/lore/yoke-brain.md, both parts under 4,000 characters) was republished with it: `node tools/art/make.mjs yoke --publish`.
+
+### YOKE's lines: Collins's third pass (Oct 12 2026)
+
+His export of the once lines, the personal plot, the intros and the Earth news, with a brief: "your religious adds are
+mostly ai gibberish even I struggle to understand and your starts are sometimes good but too often just say the thing
+rather than invite a discussion on something germane from their perspective caused by it."
+- `partner-index` (capture 5) cut: "not needed". `STORY_ONCE` is the progress beat alone, which now also queues the
+  AI Core discussion ('partner'); `tests/personalPlot.test.ts` and `tools/shot-personal.mjs` follow.
+- His edits: mate-review ("for sexual release?"), partner-progress's closer (she will be doing most of the work),
+  intro-barnabas's last line (the report, "dogs really are just that sweet"), intro-catgirl (the tanks, the pregnancy
+  she saw, "udders?") with the wombs-and-what-was-engineered-away lore as its aside.
+- Earth news: the thirteen after his nine rewritten to his pattern (a thing she heard, her side, a question that opens
+  it); three cut (the Tennessee preacher, the billion and a half, Catholics vs Caliphate), his two examples in (the
+  monkey with the AK; the Sons of Israel's second sphere), new lore in (Korea's gacha cult and chaebol hives, the
+  Baptists as the Sadducees' allies, the Mormon police state, Latin America's emptying, the Amish gone, the Sons of
+  Israel and of Utah, the Council). Every aside in plain words: no doctrine numbers, no "(Collins)".
+- Lore recorded: `content/lore/empire.md` (section 7 the tanks; section 9 Korea, America, Latin America, the Sons and
+  the Council), `content/lore/ship-ai-lorebook.md`, `docs/UNIVERSE.md`, her brain (republished).

@@ -1,6 +1,6 @@
 /**
- * THE PERSONAL PLOT, THE LATE DESK SPEECH AND THE ONCE INTROS (Collins, Oct 5 2026): the Index beat at capture 5 and its
- * progress at 9, carried by YOKE; her desk-opening speech in its late version when the desk took more than one try; and
+ * THE PERSONAL PLOT, THE LATE DESK SPEECH AND THE ONCE INTROS (Collins, Oct 5 2026): the Index beat at capture 5 (cut on
+ * Oct 12 2026, "not needed") and its progress at 9, carried by YOKE; her desk-opening speech in its late version when the desk took more than one try; and
  * the one-off intros, each once a campaign, never two returns running, whatever is lost.
  */
 import { describe, expect, it } from 'vitest';
@@ -19,18 +19,20 @@ describe('the personal plot', () => {
     // Oct 12 2026: the late version of the desk-opening speech was cut (Collins: "the first works for both").
     expect(GREETINGS.some((g) => g.id === 'unlock-late')).toBe(false);
   });
-  it('the Index beat from capture 5, its progress from capture 9, once each, after the early ones', () => {
+  it('the progress beat from capture 9, once, after the early ones; nothing at 5 any more (Collins, Oct 12 2026)', () => {
     expect(momentNow(at({ captures: 4, greet: 'won' }))).toBe('won');
-    expect(momentNow(at({ captures: 5, greet: 'won' }))).toBe('partner-index');
-    expect(momentNow(at({ captures: 6, greet: 'won', said: ['mate-review', 'catgirl', 'partner-index'] }))).toBe('won');
-    expect(momentNow(at({ captures: 9, greet: 'won', said: ['mate-review', 'catgirl', 'partner-index'] }))).toBe('partner-progress');
+    expect(momentNow(at({ captures: 5, greet: 'won' }))).toBe('won');
+    expect(STORY_ONCE.some((b) => b.id === ('partner-index' as string))).toBe(false);
+    expect(momentNow(at({ captures: 8, greet: 'won' }))).toBe('won');
+    expect(momentNow(at({ captures: 9, greet: 'won' }))).toBe('partner-progress');
+    expect(momentNow(at({ captures: 10, greet: 'won', said: ['mate-review', 'catgirl', 'partner-progress'] }))).toBe('won');
     // A weighty moment keeps its own greeting (the licence, ground lost to a counter-attack is ordinary).
     expect(momentNow(at({ captures: 5, greet: 'licence' }))).toBe('licence');
   });
   for (const f of FACTIONS) {
-    it(`${f.id}: in a whole campaign the Index at capture 5 and its progress at 9; no greeting twice`, () => {
+    it(`${f.id}: in a whole campaign the progress at capture 9, no Index beat at 5; no greeting twice`, () => {
       const { returns } = campaign(1234, f.id);
-      expect(returns.find((r) => r.greeting === 'partner-index')?.capture).toBe(5);
+      expect(returns.find((r) => r.greeting === 'partner-index')).toBeUndefined();
       expect(returns.find((r) => r.greeting === 'partner-progress')?.capture).toBe(9);
       expect(returns.filter((r) => !r.greetingNew).map((r) => r.greeting)).toEqual([]);
       // Never two intros running.
