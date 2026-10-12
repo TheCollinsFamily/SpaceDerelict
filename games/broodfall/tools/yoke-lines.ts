@@ -8,7 +8,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import { EARTH_NEWS_FALLBACK, GREETINGS, REPORT_LINES, earthNewsFrom, type GreetMoment, type Greeting } from '../content/greetings';
+import { EARTH_NEWS_FALLBACK, GREETINGS, REPORT_LINES, earthNewsFrom, newsBeats, type GreetMoment, type Greeting } from '../content/greetings';
 import { PRINT_BODY } from '../content/yokeScenes';
 import { BOSS_AFTER, BOSS_BRIDGE } from '../content/boss';
 import { CHANNELS, TRANSLATOR_NOTES } from '../content/translation';
@@ -20,17 +20,25 @@ const ABS = (rel: string) => path.join('C:\\Users\\Merry\\dev\\space-derelict\\g
 const read = (rel: string) => fs.readFileSync(path.join(ROOT, rel), 'utf8');
 
 type Author = 'collins' | 'draft' | 'lore';
-interface Line { id: string; text: string[]; faces?: string[]; ctx?: string[]; author: Author }
+interface Line { id: string; text: string[]; faces?: string[]; ctx?: string[]; author: Author; aside?: string }
 interface Group { id: string; kind: string; name: string; when: string; where: string; lines: Line[] }
 
 /** Which greetings are Collins's own words (the comments in content/greetings.ts say so). */
 const COLLINS_GREETINGS = new Set(['first-lost', 'first-won', 'unlock', 'mate-review', 'catgirl', 'back-5']);
+/** The first lines of the Earth news are his (Oct 12 2026: he rewrote the list on this page; the rest were written to match). */
+const COLLINS_NEWS = 9;
 
 const greeting = (g: Greeting): Line => ({
   id: g.id, author: COLLINS_GREETINGS.has(g.id) ? 'collins' : 'draft',
   text: g.beats.map((b) => b.say),
   faces: g.beats.map((b) => [b.face ?? 'calm', ...(b.then ? (Array.isArray(b.then) ? b.then : [b.then]).map((c) => `then ${c}`) : [])].join(' · ') + (g.points ? '' : '')),
+  aside: g.aside,
 });
+/** A line of news as the beats she plays it in (a "[shrug]" in the text splits it). */
+const newsLine = (t: string, i: number): Line => {
+  const beats = newsBeats(t);
+  return { id: `earth-${i + 1}`, text: beats.map((b) => b.say), faces: beats.map((b) => `${b.face ?? 'calm'} · then ${b.then}`), author: i < COLLINS_NEWS ? 'collins' : 'draft' };
+};
 const of = (moment: GreetMoment, ids?: string[]): Line[] => GREETINGS.filter((g) => g.moment === moment && (!ids || ids.includes(g.id))).map(greeting);
 const plain = (prefix: string, texts: string[], author: Author, ctx?: string[]): Line[] => texts.map((t, i) => ({ id: `${prefix}-${i + 1}`, text: [t], author, ctx: ctx ? [ctx[i]] : undefined }));
 
@@ -97,8 +105,8 @@ const groups: Group[] = [
     when: 'Her bridge into the boss\'s transmission on that first landing, and her line after it.',
     lines: [{ id: 'BOSS_BRIDGE', text: [BOSS_BRIDGE], author: 'draft', faces: ['surprised'] }, { id: 'BOSS_AFTER', text: [BOSS_AFTER], author: 'draft', faces: ['teasing'] }] },
   { id: 'unlock', kind: 'greet', name: 'The desk opens', where: G('content/greetings.ts'),
-    when: 'The win that clears the Directive Desk: "unlock" when it is the first try after mission 1 (deployment 2), "unlock-late" when it took longer. Once. It sends him to the desk, where the three signals are.',
-    lines: [...of('unlock'), ...of('unlock-late')] },
+    when: 'The win that clears the Directive Desk, on the first try after mission 1 or later (its late version was cut Oct 12 2026). Once. It sends him to the desk, where the three signals are.',
+    lines: of('unlock') },
   { id: 'early', kind: 'greet', name: 'Once, early', where: G('content/greetings.ts'),
     when: `The first ordinary returns after the first mission\'s greeting, in this order: ${EARLY_ONCE.join(', then ')}. Each once; they take the place of the ordinary line that return.`,
     lines: EARLY_ONCE.flatMap((m) => of(m)) },
@@ -110,7 +118,7 @@ const groups: Group[] = [
     lines: INTROS.map((i) => GREETINGS.find((g) => g.id === i.id)!).map(greeting) },
   { id: 'news', kind: 'greet', name: 'News from Earth', where: G('content/lore/ship-ai-lorebook.md') + '  (section "Earth news (return greetings)"; the fallback line: ' + G('content/greetings.ts') + ')',
     when: `One ordinary return in ${EARTH_NEWS_EVERY}, once the early beats have played; and, since Oct 12 2026, whenever the return\'s own pool has all been said this campaign, so she never repeats a line while unread news remains. A line never twice in a campaign. The list grows in the lore book with no code.`,
-    lines: [...plain('earth', news, 'draft').map((l, i) => (i === 0 ? { ...l, author: 'collins' as Author } : l)), { id: 'EARTH_NEWS_FALLBACK', text: EARTH_NEWS_FALLBACK, author: 'collins', ctx: ['when the lore book has no list'] }] },
+    lines: [...news.map(newsLine), { id: 'EARTH_NEWS_FALLBACK', text: EARTH_NEWS_FALLBACK, author: 'collins', ctx: ['when the lore book has no list'] }] },
   { id: 'won', kind: 'greet', name: 'A deployment won', where: G('content/greetings.ts'),
     when: 'An ordinary return after a capture, when no once-only beat, intro or news takes the slot. A line she has not said this campaign while there is one, never the last one said.',
     lines: of('won') },

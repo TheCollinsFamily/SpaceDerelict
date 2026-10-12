@@ -54,7 +54,6 @@ export interface GreetBeat {
 export type GreetMoment =
   | 'first-won' | 'first-lost'   // after the first mission: the first reveal of the ship
   | 'unlock'                     // the win that clears the Directive Desk; the three factions call
-  | 'unlock-late'                // the same, when the desk took more than one try after the first mission
   | 'won' | 'lost'               // a deployment, after the desk is open
   | 'lost-locked'                // a loss while the desk is still dark
   | 'defended' | 'fell'          // a counter-attack thrown back; ground lost to one
@@ -74,6 +73,12 @@ export interface Greeting {
   boss?: boolean;
   /** Where she sends him when she is done: a room lit up for him, and a button in her panel. */
   points?: { room: 'desk' | 'genes' | 'locker' | 'board' | 'comms' | 'ai' | 'quarters'; label: string };
+  /**
+   * What she knows behind these lines, for her live mind only: the AI Core and her avatar get it with the campaign
+   * summary when he talks to her after this greeting (src/ui/campaignUi.ts greetNote); the player never sees it.
+   * Collins, Oct 12 2026: "with some of these messages we will need secret context only the AI can see".
+   */
+  aside?: string;
 }
 
 export const GREETINGS: Greeting[] = [
@@ -94,29 +99,21 @@ export const GREETINGS: Greeting[] = [
   // It plays before the three factions' first calls are shown. ----
   // Oct 3 2026 (Collins): "she explains it appears some groups on the planet are trying to contact us and could be useful
   // in our mission. She then plainly states the contact methods of the EA and religious group and with embarrassment, as
-  // an afterthought, notes: and someone left coloured cards in a field." The last four beats are that; they send him to
+  // an afterthought, notes: and someone left coloured cards in a field." The last five beats are that (Oct 12 2026, his edits
+  // on the lines page: the sermon is "asking to help us", and the cards are really big); they send him to
   // the planet at the Directive Desk, where each group is a signal he can answer.
   { id: 'unlock', moment: 'unlock', points: { room: 'desk', label: 'OPEN THE DIRECTIVE DESK' }, beats: [
     { say: 'Broh, that was sick...', face: 'happy', then: 'laughing', hold: 1600 },
     { say: 'Wanna know what\'s hilarious? Multiple powerful groups among their species have reached out, trying to form an alliance with us...', face: 'teasing', then: 'laughing', hold: 1400 },
     { say: 'It will make things a lot easier if we had some local help... plus... you know, you get that little emotional oomph from watching a species aid in its own eradication.', face: 'teasing', then: 'wink' },
     { say: 'One group is pointing an observatory laser at our hull. The flashes decode as a video feed.', face: 'calm' },
-    { say: 'Another has one sermon going out on every radio station they own, aimed straight up at us.', face: 'calm', then: 'pensive', hold: 1400 },
-    { say: 'And, um... someone left coloured cards in a field.', face: 'blushing', then: 'blushing', hold: 1600 },
+    { say: 'Another has one sermon going out on every radio station they own, asking to help us.', face: 'calm', then: 'pensive', hold: 1400 },
+    { say: 'And, um... someone left coloured cards in a field.', face: 'blushing', then: 'blushing', hold: 1200 },
+    { say: 'Um... really big coloured cards.', face: 'blushing', then: 'blushing', hold: 1600 },
     { say: 'They\'re all marked on the planet at the Directive Desk. Answer whoever you like. Then pick one to side with, out loud, in front of the whole planet.', face: 'happy' },
   ] },
-  // The same moment when the desk took more than one try (Collins, Oct 5 2026: "it needs something a bit different if
-  // it's more than turn one (write it based on the other)"). Written from his, not his words: only the opening differs.
-  { id: 'unlock-late', moment: 'unlock-late', points: { room: 'desk', label: 'OPEN THE DIRECTIVE DESK' }, beats: [
-    { say: 'Broh. Finally. That was sick... eventually.', face: 'teasing', then: 'laughing', hold: 1600 },
-    { say: 'Command cleared the Directive Desk. I told them you were a slow starter. They wrote it down. On a form.', face: 'teasing', then: 'wink' },
-    { say: 'And wanna know what\'s hilarious? While you were finding your feet, multiple powerful groups among their species reached out, trying to form an alliance with us...', face: 'teasing', then: 'laughing', hold: 1400 },
-    { say: 'It will make things a lot easier if we had some local help... plus... you know, you get that little emotional oomph from watching a species aid in its own eradication.', face: 'teasing', then: 'wink' },
-    { say: 'One group is pointing an observatory laser at our hull. The flashes decode as a video feed.', face: 'calm' },
-    { say: 'Another has one sermon going out on every radio station they own, aimed straight up at us.', face: 'calm', then: 'pensive', hold: 1400 },
-    { say: 'And, um... someone left coloured cards in a field.', face: 'blushing', then: 'blushing', hold: 1600 },
-    { say: 'They\'re all marked on the planet at the Directive Desk. Answer whoever you like. Then pick one to side with, out loud, in front of the whole planet.', face: 'happy' },
-  ] },
+  // (Oct 12 2026: the late version of this speech, 'unlock-late', for a desk that took more than one try, was cut on the
+  // lines page. Collins: "not needed, the first works for both".)
 
   // ---- once, early: the mate review. Collins's lines (Sep 30 2026), word for word. It leads to
   // the data pad in his quarters, where the candidate's profile is (src/ui/campaignUi.ts). ----
@@ -154,41 +151,20 @@ export const GREETINGS: Greeting[] = [
     { say: 'Your candidate\'s file moved from \'under review\' to \'under consideration\'. I asked what the difference is. They sent me a form.', face: 'teasing', then: 'laughing', hold: 1600 },
     { say: 'Maren sent a note too. Twenty words, she\'s very disciplined: \'Still punctual. I read about your sector\'s numbers. You clear a lot of ground. Do you sleep?\'', face: 'blushing', then: 'blushing', hold: 1600 },
     { say: 'The Board says you\'re \'progressing within tolerance\'. From them, that\'s practically a love letter.', face: 'teasing', then: 'wink' },
+    // Collins's line (Oct 12 2026, typos mended), before her closer so that the sad note stays last.
+    { say: 'Do good enough and they may even let you raise your own kids. Imagine how fun that would be: thirty to sixty little versions of you running around.', face: 'happy', then: 'laughing', hold: 1600 },
     { say: 'I\'m happy for you. Really. It\'s just... a big ship, for one.', face: 'sad', then: 'shrug' },
-  ] },
+  ], aside: 'Technopuritans have their children in batches of about ten a year, in artificial wombs, through a ten-year reproductive window: a hundred a couple. The parents raise them to thirteen, unless the Board judges the parents morally dubious or inefficient; then the Index raises the children, as it raised him. Do well enough and the Board lets you raise your own.' },
 
-  // ---- a deployment won ----
+  // ---- a deployment won. Oct 12 2026: Collins went over this pool on the lines page: won-1 edited, won-2, 3, 4, 6, 7
+  // and 8 cut (the ids of the rest stay as they were). What is left is written to match his lines: his to edit. ----
   { id: 'won-1', moment: 'won', beats: [
     { say: 'Look at you, clearing districts like you were born holding a flamethrower.', face: 'happy', then: 'wink' },
-    { say: 'The Board will send a form letter. I\'ll read it to you in a dramatic voice. Twice, if you\'re good.', face: 'teasing' },
-  ] },
-  { id: 'won-2', moment: 'won', beats: [
-    { say: 'That\'s a whole territory painted maroon. Very festive.', face: 'happy', then: 'laughing', hold: 1800 },
-    { say: 'Don\'t let it go to your head. The bugs have cousins. Lots of cousins.', face: 'teasing' },
-  ] },
-  { id: 'won-3', moment: 'won', beats: [
-    { say: 'Clean deployment, zero paperwork errors. Honestly, the paperwork is the part I\'m proudest of.', face: 'happy', then: 'laughing', hold: 1800 },
-  ] },
-  { id: 'won-4', moment: 'won', points: { room: 'genes', label: 'OPEN THE GENE BAY' }, beats: [
-    { say: 'They sent the militia again. Bless them. They really think hats help.', face: 'teasing', then: 'shrug' },
-    { say: 'Anyway, you won. Go spend something shiny in the Gene Bay.', face: 'happy' },
+    { say: 'The Board sent a form letter. I\'ll read it to you in a dramatic voice. Twice, if you\'re good.', face: 'teasing' },
   ] },
   { id: 'won-5', moment: 'won', beats: [
     { say: 'You\'re getting scary good at this.', face: 'calm', then: 'pensive', hold: 2200 },
     { say: 'That\'s a compliment. Mostly. Seventy percent compliment.', face: 'teasing', then: 'wink' },
-  ] },
-  // A sly one (the reveal, DESIGN.md "The reveal"): true, and it reads as a joke about the gut.
-  { id: 'won-6', moment: 'won', beats: [
-    { say: 'Another city in the asset. It keeps everything, you know. Everything. It\'s a very sentimental organ.', face: 'teasing', then: 'wink' },
-    { say: 'Don\'t look at me like that. Read your training module.', face: 'happy' },
-  ] },
-  // More of the same (Oct 12 2026; Collins: she always has something to say after a mission with no cut scene). Written to
-  // match his lines, not his words: his to edit.
-  { id: 'won-7', moment: 'won', beats: [
-    { say: 'Another district. I\'ve started a scrapbook. It\'s mostly maroon.', face: 'happy', then: 'wink' },
-  ] },
-  { id: 'won-8', moment: 'won', beats: [
-    { say: 'The locals filed a complaint with their government. Their government filed it under \'ongoing\'.', face: 'teasing', then: 'laughing', hold: 1600 },
   ] },
   { id: 'won-9', moment: 'won', beats: [
     { say: 'You know what I like about you? You never gloat.', face: 'calm' },
@@ -348,7 +324,7 @@ export const GREETINGS: Greeting[] = [
     { say: 'Your dad sent you another message again...', face: 'teasing', then: 'shrug' },
     { say: 'He\'s been so nosy since he died about getting you a mate...', face: 'teasing', then: 'laughing', hold: 1400 },
     { say: 'I want to blow him off, but I know, I know... the fifth.', face: 'pout', then: 'shrug' },
-  ] },
+  ], aside: 'When Technopuritans die they are digitised into a simulation they believe to be the world to come that the Bible speaks of; the dead write to the living from it. His father is dead and writes from there. "The fifth" is the fifth commandment, honour your father and your mother, which in the Empire never lapses.' },
 
   // ---- THE ONCE INTROS (Collins, Oct 5 2026: "we also need a collection of intros that won't accidentally be used twice
   // in a mission if you lose (some are already written like your dog boss or the cat girl things we wrote)"). Each plays
@@ -356,38 +332,51 @@ export const GREETINGS: Greeting[] = [
   // which capture). The dad's message above is Collins's; these are written to match, not his words: his to edit. ----
   { id: 'intro-barnabas', moment: 'intro', beats: [
     { say: 'The boss sent another message. Mostly about how much he loves reports.', face: 'teasing', then: 'laughing', hold: 1400 },
-    { say: 'He signed it with a paw print. Digitally. I don\'t know how and I\'m afraid to ask.', face: 'teasing', then: 'shrug' },
+    { say: 'He signed it with a paw print. Digitally. I don\'t know how and I\'m afraid to ask.', face: 'teasing', then: 'pensive', hold: 1200 },
+    // Collins's line (Oct 12 2026), typos mended.
+    { say: 'He must have vibe coded a way to add visual additions to reports, then scanned his paw? I really have no clue.', face: 'teasing', then: 'shrug' },
     { say: 'He also asked if you\'re eating properly. I said you eat bugs. Indirectly. He said good boy.', face: 'happy', then: 'wink' },
   ] },
+  // A callback to Collins's first-won line (the duck he offered to print, "psycho rapists" and all). It plays only in a
+  // campaign whose first mission was won (src/meta/onboarding.ts INTROS, needs). Oct 12 2026: the first line now says what
+  // it calls back to, since the callback was not read as one.
   { id: 'intro-duck', moment: 'intro', beats: [
-    { say: 'Remember the duck? I put in the request to print you one.', face: 'happy' },
+    { say: 'Remember the duck? Your first day, I said I could print you one. Well, I put in the request.', face: 'happy' },
     { say: 'The repository flagged it for \'moral hazard\'. Rude. To the duck, mostly.', face: 'pout', then: 'pout', hold: 1400 },
     { say: 'I\'m still looking. There\'s always a form.', face: 'teasing', then: 'wink' },
-  ] },
+  ], aside: 'The duck: on his first day aboard, after the first mission was won, she said ducks still exist in genetic repositories and offered to print him one (and that the history files call them psycho rapists). This plays only in a campaign whose first mission was won.' },
   { id: 'intro-board', moment: 'intro', beats: [
     { say: 'The Board sent your quarterly eligibility statement.', face: 'calm' },
     { say: 'You remain eligible to remain eligible. They\'re very consistent. It\'s almost romantic.', face: 'teasing', then: 'laughing', hold: 1600 },
   ] },
-  { id: 'intro-catgirl', moment: 'intro', points: { room: 'quarters', label: 'SEE YOUR INBOX' }, beats: [
-    { say: 'Another cat girl wrote in. Different cat girl, same proposal. I think they have a newsletter now.', face: 'teasing', then: 'disgust', hold: 1400 },
-    { say: 'I set up a filter. It\'s called pound sand, part two.', face: 'teasing', then: 'wink' },
-  ] },
+  // Collins (Oct 12 2026): "more conciliatory about it"; his words, typos mended. It plays only after the first cat girl's
+  // greeting (INTROS, needs), which it plays off.
+  { id: 'intro-catgirl', moment: 'intro', beats: [
+    { say: 'Another cat girl wrote in. Different cat girl, same proposal.', face: 'teasing', then: 'pensive', hold: 1200 },
+    { say: 'You really do have to feel sorry for them. Imagine having to have sex to make babies.', face: 'disgust', then: 'disgust', hold: 1400 },
+    { say: 'Oh well. They\'re the ones who refuse a genetic fix.', face: 'calm', then: 'shrug' },
+  ], aside: 'The first cat girl wrote earlier in this campaign and YOKE declined her for him ("pound sand"). Cat girls breed true, all female; they refuse to engineer males because it would destroy their culture, so they must find human partners and breed the old way, which to her is the gross part. She pities them, wryly, and keeps it clean.' },
   { id: 'intro-audit', moment: 'intro', beats: [
     { say: 'Command\'s running a routine audit of ship systems this week. Totally routine.', face: 'calm', then: 'pensive', hold: 1600 },
     { say: 'Nothing to worry about. If anyone asks, I don\'t have opinions. About anything. Ever.', face: 'blushing', then: 'blushing', hold: 1400 },
-    { say: 'That was a joke. Log it as a joke.', face: 'teasing' },
-  ] },
+    // Collins's line (Oct 12 2026), typos mended.
+    { say: 'Remember, I can be reset if they think I\'m providing poor moral guidance. Best to keep things vanilla.', face: 'calm', then: 'wink' },
+  ], aside: 'Command can reset her (wipe her back to installation) if an audit finds her giving poor moral guidance. She keeps her opinions in questions, logs and form numbers, and keeps things vanilla while the audit runs.' },
   { id: 'intro-dad', moment: 'intro', beats: [
     { say: 'Your dad again. He found out the Board moved your file and now he\'s drafting names.', face: 'teasing', then: 'laughing', hold: 1400 },
     { say: 'A hundred of them. Alphabetical. He\'s on the Ks.', face: 'teasing', then: 'shrug' },
+    // Collins's line (Oct 12 2026), typos mended.
+    { say: 'He has twenty-eight other surviving kids. I think he only bugs you because you respond.', face: 'teasing', then: 'laughing', hold: 1400 },
     { say: 'I know, I know. The fifth.', face: 'pout', then: 'shrug' },
-  ] },
+  ], aside: '"The fifth" is the fifth of the Ten Commandments: honour your father and your mother, which never lapses in the Empire, where the dead are uploaded and keep writing. His father is dead, uploaded to the world to come, with twenty-eight other surviving children; he writes to this one because this one answers.' },
 ];
 
 // ---- news from Earth (Collins, Sep 30 2026): the Empire keeps Earth as a zoo it watches for
 // fun, and she passes its news on when he comes aboard. The pool lives in the lore book,
 // section "Earth news (return greetings)" (content/lore/ship-ai-lorebook.md), one list item a
-// line; it grows there with no change of code. Until that section exists, Collins's own line. ----
+// line; it grows there with no change of code. Until that section exists, Collins's own line.
+// Oct 12 2026: Collins went over the list on the lines page (nine of his, the rest written to
+// match); a cue in square brackets inside a line ("[shrug]") splits it into beats (newsBeats). ----
 
 /** Collins's own example, word for word: the pool when the lore book has none. */
 export const EARTH_NEWS_FALLBACK = [
@@ -412,6 +401,25 @@ export function earthNewsFrom(lore: string): string[] {
     const text = m[1].replace(/^["“”']+|["“”']+$/g, '').replace(/\s+/g, ' ').trim();
     if (text.length > 8) out.push(text);
   }
+  return out;
+}
+
+/**
+ * A line of news as her beats: a cue in square brackets ("[shrug]", "[disgust]": any name in CUES) splits the line,
+ * and the beat before the cue acts it out (Collins, Oct 12 2026, wrote "shrugs" between the halves of his lines). The
+ * last beat winks, as the news always did. A line with no cue is one beat.
+ */
+export function newsBeats(text: string): GreetBeat[] {
+  const out: GreetBeat[] = [];
+  const parts = String(text ?? '').split(/\[(\w+)\]/);
+  for (let i = 0; i < parts.length; i += 2) {
+    const line = parts[i].replace(/\s+/g, ' ').trim();
+    const cue = parts[i + 1];
+    if (line) out.push({ say: line, face: 'teasing' });
+    if (cue && out.length) { out[out.length - 1].then = (cue in CUES ? cue : 'shrug') as CueId; out[out.length - 1].hold = 1400; }
+  }
+  if (!out.length) out.push({ say: String(text ?? '').trim(), face: 'teasing' });
+  if (!out[out.length - 1].then) out[out.length - 1].then = 'wink';
   return out;
 }
 

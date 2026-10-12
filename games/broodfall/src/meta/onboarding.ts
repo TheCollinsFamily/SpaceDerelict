@@ -15,7 +15,7 @@
  *   5. Later launches: the ship's own console menu.
  */
 import { HOME, TERRITORIES } from '../../content/campaign';
-import { EARTH_NEWS_FALLBACK, GREETINGS, earthNewsFrom, type GreetMoment, type Greeting } from '../../content/greetings';
+import { EARTH_NEWS_FALLBACK, GREETINGS, earthNewsFrom, newsBeats, type GreetMoment, type Greeting } from '../../content/greetings';
 import type { CampaignState, Debrief } from './campaign';
 
 /** Where a campaign is in its unfolding (older saves have none: everything is open for them). */
@@ -63,9 +63,9 @@ export function momentAfter(prev: CampaignState, next: CampaignState, d: Debrief
   if (first) return next.onboard?.mission1 === 'won' ? 'first-won' : 'first-lost';
   if (next.ended && !prev.ended) return 'ended';
   if (next.licence && !prev.licence) return 'licence';
-  // The desk on the first try after mission 1 (deployment 2), or later (Collins, Oct 5 2026: "it needs something a bit
-  // different if it's more than turn one").
-  if (d.deskOpened) return prev.deployments >= 2 ? 'unlock-late' : 'unlock';
+  // The desk opens: his speech, on the first try after mission 1 or later (Oct 12 2026: the late version was cut;
+  // Collins: "not needed, the first works for both").
+  if (d.deskOpened) return 'unlock';
   if (d.repelled) return 'defended';
   if (d.lost && !d.captured) return 'fell';
   if (d.captured) return 'won';
@@ -226,5 +226,5 @@ function newsLine(s: CampaignState, lore: string, h: number, moment: GreetMoment
   for (; k < news.length && (said.includes(`earth-${i}`) || `earth-${i}` === s.lastGreeting); k++) i = (i + 1) % news.length;
   if (k >= news.length && freshOnly) return null;
   if (`earth-${i}` === s.lastGreeting && news.length > 1) i = (i + 1) % news.length;
-  return { id: `earth-${i}`, moment, beats: [{ say: news[i], face: 'teasing', then: 'wink' }] };
+  return { id: `earth-${i}`, moment, beats: newsBeats(news[i]) };
 }

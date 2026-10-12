@@ -110,8 +110,9 @@ describe('the Directive Desk opens at the first win that is not mission 1; the t
     const { state, debrief } = deploy(s, true);
     expect(debrief.deskOpened).toBe(true);
     expect(deskOpen(state)).toBe(true);
-    // Two tries at the desk before this one: her late version (Collins, Oct 5 2026).
-    expect(state.greet).toBe('unlock-late');
+    // Two tries at the desk before this one: the same speech (Oct 12 2026: its late version was cut; Collins: "the
+    // first works for both").
+    expect(state.greet).toBe('unlock');
     // All three reach out at once; since Oct 3 2026 they are signals at the desk, not calls waiting.
     expect(state.contacted).toEqual(['delegation', 'faithful', 'institute']);
     expect(state.pendingScenes).toEqual([]);

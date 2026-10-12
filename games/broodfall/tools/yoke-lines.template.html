@@ -61,6 +61,8 @@
   .src { font-family: var(--mono); font-size: 11.5px; color: var(--mute); word-break: break-all; margin-top: 2px; }
   .row { display: grid; grid-template-columns: 150px minmax(0, 1fr) 150px; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--line); align-items: start; }
   .row.cut .beats { opacity: 0.45; text-decoration: line-through; }
+  .aside { margin-top: 6px; font-size: 12.5px; color: var(--mute); font-style: italic; }
+  .aside b { font-style: normal; font-weight: 600; }
   .row.cut .id { color: var(--cut); }
   .row[hidden] { display: none; }
   .id { font-family: var(--mono); font-size: 12.5px; color: var(--mute); word-break: break-all; display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
@@ -113,7 +115,7 @@
 <div class="wrap">
   <nav class="rail" id="rail" aria-label="Groups"></nav>
   <main>
-    <p class="intro">Every prewritten line of hers, grouped by when it plays, in the order a campaign meets them. Click a line to edit it in place, mark a line <b>Cut</b>, or leave a note. Your edits stay in this browser; <b>Export changes</b> turns them into a list a session can apply to the files named on the left.</p>
+    <p class="intro">Every prewritten line of hers, grouped by when it plays, in the order a campaign meets them. Click a line to edit it in place, mark a line <b>Cut</b>, or leave a note. Your edits stay in this browser; <b>Export changes</b> turns them into a list a session can apply to the files named on the left (then press <b>Reset edits</b> once they are in). An italic line under a greeting is what she knows behind it: her live mind gets it, the player never sees it.</p>
     <div class="export" id="exportBox" hidden>
       <h3>Changes</h3>
       <p>Copied to the clipboard when the button is pressed; this is the same text, for pasting into a session.</p>
@@ -160,7 +162,7 @@
             return '<div class="beat">' + (l.ctx && l.ctx[i] ? '<span class="ctx">' + esc(l.ctx[i]) + '</span>' : '') +
               '<span class="t' + (e.text[i] != null ? ' edited' : '') + '" contenteditable="true" spellcheck="false" data-i="' + i + '" data-orig="' + esc(t) + '">' + esc(cur) + '</span>' +
               (l.faces && l.faces[i] ? '<span class="face">' + esc(l.faces[i]) + '</span>' : '') + '</div>';
-          }).join('') + '</div>' +
+          }).join('') + (l.aside ? '<div class="aside"><b>Behind it, for her live mind only:</b> ' + esc(l.aside) + '</div>' : '') + '</div>' +
           '<div class="ctl"><button type="button" class="cut" aria-pressed="' + (e.cut ? 'true' : 'false') + '">' + (e.cut ? 'Cut' : 'Keep') + '</button>' +
           '<input type="text" class="note" id="note-' + esc(l.id) + '" placeholder="Note" value="' + esc(e.note || '') + '" aria-label="Note on ' + esc(l.id) + '"></div></div>';
       }).join('') + '</section>';

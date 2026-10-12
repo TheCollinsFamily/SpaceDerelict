@@ -50,7 +50,9 @@ Broodfall: see "What a broodfall is for", below.)
    Its heavy emphasis on fertility and technology made it colonise space quickly.
 4. **Earth left behind.** The Technopuritans largely left other earthlings alone, as part of their
    ideology (doctrine 10 below). With only religious extremists still breeding, Earth is low-tech
-   compared with most of the human empire and constantly at holy war.
+   compared with most of the human empire and constantly at holy war. It still has technology, just not
+   the super-advanced kind; Israel alone stays advanced, behind automated drone swarms and a satellite
+   laser the feeds call "the goy beam" (Collins, Oct 12 2026).
 5. **Earth as the zoo.** The rest of the Empire, which is mostly Technopuritan, watches Earth as
    entertainment ("Hey, heard the Crusade took back Rome last week from the Caliphate. I can pull up
    live feeds if you like watching Earth."). It is treated essentially as a zoo, and as the
@@ -68,7 +70,8 @@ doctrine 11 (the chittering hordes).
 
 - **Spouses and wombs.** Technopuritans live with spouses, but babies are had through artificial
   wombs: **10 a year for 10 breeding years = 100 children per couple.**
-- **Raised to 13.** The parents raise them to the age of 13.
+- **Raised to 13.** The parents raise them to the age of 13, unless the Board judges the parents morally
+  dubious or inefficient: then the Index raises them (Collins, Oct 12 2026; Broodfall's technician was).
 - **Krypteia (one year).** At 13 each child goes on krypteia: a year of surviving by their own
   means, living among a subjugated population.
 - **Testing and education.** Those who survive the year face a brutal testing and education

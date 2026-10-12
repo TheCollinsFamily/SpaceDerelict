@@ -100,6 +100,11 @@ empire, the Index is the state.
 Collins: Technopuritans live with spouses, but babies are had through artificial wombs, **10 per
 year for 10 breeding years**; the parents raise them to 13.
 
+Collins, Oct 12 2026: that is the normal case. If the Board judges the parents morally dubious or
+inefficient, the Index raises the children; the player's technician was raised by the Index. Do well
+enough and the Board may let you raise your own ("thirty to sixty little versions of you running
+around": YOKE's `partner-progress` line).
+
 - **The arithmetic.** 10 × 10 = **100 children per couple.** About half survive krypteia and
   testing, so **about 50 per couple enter the index**: Collins's "growth rate of 50 per
   generation". In people that is **25 times per generation** (50 grown children from 2 parents).
@@ -188,6 +193,17 @@ story for why the Technopuritans live the way they do.
 - **Known powers:** **the Crusade** and **the Caliphate** (Collins), fighting over Rome.
   **PROPOSAL:** dozens more, rising and falling faster than the Empire's schoolbooks can be
   reprinted; borders on Earth change weekly and the feeds keep a live map.
+- **Still has technology** (Collins, Oct 12 2026: "Earth still has tech, just not the super advanced tech
+  you would expect"): radio, drones, resonance speakers, the odd satellite. Not medieval; the news lines
+  about a rediscovered printing press and catapults were cut for this.
+- **Israel** (Collins, Oct 12 2026): one of the only technologically advanced civilisations left on
+  Earth, protected by automated drone swarms and a satellite laser system that can carve up cities with
+  ease. Earth's feeds call the laser "the goy beam", and so does YOKE. A splinter caliphate that attacked
+  Israel learned about it the hard way, and the Caliphate disavowed the splinter in a panic. Why Jews keep
+  a permanent presence on Earth is, to YOKE, sentiment ("such a sentimental people").
+- **Named in her news** (Collins, Oct 12 2026): the Crusade and the Caliphate over Rome; Israel; the US,
+  where the Baptists now hold premillennialism a heresy and burn books over it; the Buddhists who
+  finished the Parsis; Eastern Europe's leeches; France's jousting; Africa's standing genocides.
 - **PROPOSAL, the feeds:** the Earth feeds are relayed from old orbital cameras the Empire never
   took down. They are commentated, like sport, with odds. They are free: the Index counts them
   as instruction.
@@ -358,7 +374,8 @@ extremely desensitised to death, as it's when the easy part begins (in a very re
   shield anyone from their own choices. It stops them making those choices *on someone else*.
 
 ### Why the Empire is brutal to its own: death is when the easy part begins
-- **Every Technopuritan is uploaded on death** (Collins). Most of a life, counted in experience,
+- **Every Technopuritan is uploaded on death** (Collins; Oct 12 2026: digitised into a simulation they
+  believe to be the world to come that the Bible speaks of). Most of a life, counted in experience,
   is the part afterwards, and it will be good.
 - **So the real world is for impact** (Collins). It is the one place where what you do is the
   first time it happened. Technopuritans push themselves and each other as hard as they can while
@@ -487,7 +504,8 @@ Having a dog for a boss is the one enviable thing about a pest-control posting.
 
 - Who exactly the subjugated population of krypteia is (section 5 proposes two kinds).
 - How long testing and education lasts (section 6 proposes four to six years).
-- Whether any Earth power beyond the Crusade and the Caliphate should be named.
+- ~~Whether any Earth power beyond the Crusade and the Caliphate should be named.~~ Answered Oct 12 2026
+  (section 9: Israel, the US Baptists, Buddhists, the Parsis, France, Eastern Europe, Africa).
 - Whether the Empire has a calendar era (section 1 proposes one counted from the first womb-born
   child).
 - **Earth and section 12b.** If leaving a primitive people alone is unethical because of what its

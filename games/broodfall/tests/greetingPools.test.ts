@@ -6,7 +6,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { GREETINGS, earthNewsFrom, type GreetMoment } from '../content/greetings';
+import { CUES, GREETINGS, earthNewsFrom, newsBeats, type GreetMoment } from '../content/greetings';
 import { EARLY_ONCE, STORY_ONCE, greetingFor } from '../src/meta/onboarding';
 import { newCampaign, type CampaignState } from '../src/meta/campaign';
 
@@ -15,7 +15,7 @@ const size = (m: GreetMoment) => GREETINGS.filter((g) => g.moment === m).length;
 
 describe('the depth of her pools', () => {
   it('each ordinary moment has lines enough for a long campaign', () => {
-    expect(size('won')).toBeGreaterThanOrEqual(12);
+    expect(size('won')).toBeGreaterThanOrEqual(6); // twelve until Oct 12 2026, when Collins cut six on the lines page
     expect(size('lost')).toBeGreaterThanOrEqual(10);
     expect(size('defended')).toBeGreaterThanOrEqual(6);
     expect(size('fell')).toBeGreaterThanOrEqual(4);
@@ -30,6 +30,33 @@ describe('the depth of her pools', () => {
       ids.add(g.id);
       expect(g.beats.length, g.id).toBeGreaterThan(0);
       for (const b of g.beats) expect(b.say.trim().length, g.id).toBeGreaterThan(2);
+    }
+  });
+  it('the greetings Collins asked secret context for carry it, for her live mind (Oct 12 2026)', () => {
+    for (const id of ['partner-progress', 'back-5', 'intro-dad', 'intro-duck', 'intro-catgirl', 'intro-audit']) {
+      expect(GREETINGS.find((g) => g.id === id)?.aside?.length ?? 0, id).toBeGreaterThan(40);
+    }
+  });
+});
+
+describe('a line of news as her beats', () => {
+  it('a cue in square brackets splits the line, and the beat before it acts it out; the last beat winks', () => {
+    expect(newsBeats('Rome fell again. [shrug] Catholics.')).toEqual([
+      { say: 'Rome fell again.', face: 'teasing', then: 'shrug', hold: 1400 },
+      { say: 'Catholics.', face: 'teasing', then: 'wink' },
+    ]);
+    expect(newsBeats('Quiet week.')).toEqual([{ say: 'Quiet week.', face: 'teasing', then: 'wink' }]);
+    expect(newsBeats('Eww. [nonsense] Fine.')[0].then).toBe('shrug');
+  });
+  it('every line of the lore book reads as beats with words, and only cues her body knows', () => {
+    for (const line of earthNewsFrom(LORE)) {
+      const beats = newsBeats(line);
+      expect(beats.length, line).toBeGreaterThan(0);
+      for (const b of beats) {
+        expect(b.say.length, line).toBeGreaterThan(8);
+        expect(typeof b.then === 'string' && b.then in CUES, line).toBe(true);
+      }
+      for (const cue of line.match(/\[(\w+)\]/g) ?? []) expect(cue.slice(1, -1) in CUES, line).toBe(true);
     }
   });
 });

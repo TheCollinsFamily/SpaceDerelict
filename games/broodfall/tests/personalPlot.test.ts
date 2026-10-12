@@ -16,7 +16,8 @@ describe('the personal plot', () => {
   it('every beat and intro has its lines', () => {
     for (const b of STORY_ONCE) expect(GREETINGS.some((g) => g.id === b.id && g.moment === b.id), b.id).toBe(true);
     for (const i of INTROS) expect(GREETINGS.find((g) => g.id === i.id)?.moment, i.id).toBe('intro');
-    expect(GREETINGS.some((g) => g.moment === 'unlock-late')).toBe(true);
+    // Oct 12 2026: the late version of the desk-opening speech was cut (Collins: "the first works for both").
+    expect(GREETINGS.some((g) => g.id === 'unlock-late')).toBe(false);
   });
   it('the Index beat from capture 5, its progress from capture 9, once each, after the early ones', () => {
     expect(momentNow(at({ captures: 4, greet: 'won' }))).toBe('won');
@@ -41,10 +42,10 @@ describe('the personal plot', () => {
 
 describe('the desk opening, on the first try or later', () => {
   const opened = { deskOpened: true } as unknown as Debrief;
-  it('the first try after mission 1 hears the speech as Collins wrote it; a later one, its late version', () => {
+  it('the first try after mission 1 and a later one both hear the speech as Collins wrote it (Oct 12 2026)', () => {
     const next = at({});
     expect(momentAfter(at({ deployments: 1 }), next, opened, false)).toBe('unlock');
-    expect(momentAfter(at({ deployments: 3 }), next, opened, false)).toBe('unlock-late');
+    expect(momentAfter(at({ deployments: 3 }), next, opened, false)).toBe('unlock');
   });
 });
 

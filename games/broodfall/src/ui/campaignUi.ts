@@ -186,6 +186,8 @@ export class CampaignUi {
   private beckon: Greeting['points'] | null = null;
   /** The last thing she said to him unprompted, for her mind to know when he answers it. */
   private greetSaid: string[] = [];
+  /** What she knows behind the greeting she just gave (Greeting.aside): for her live mind, never shown. */
+  private greetAside = '';
   /** His quarters' picture and the partner candidate's portrait (public/art/intro/, not the manifest). */
   private intro: IntroArt | null = null;
   /** The ship's art (its rooms, the planet for the globe) is still arriving: a loop over the screen meanwhile (src/ui/loader.ts). */
@@ -345,6 +347,7 @@ export class CampaignUi {
     saveCampaign(s);
     this.greeting = g;
     this.greetSaid = [];
+    this.greetAside = g.aside ?? '';
     this.icom = { talk: this.freeTalk() };
     this.render();
     const lines: ScriptLine[] = g.beats.map((b) => ({
@@ -1324,7 +1327,10 @@ export class CampaignUi {
 
   /** What she said to him when he came aboard, for her mind: he may be answering it. */
   private greetNote(): string {
-    return this.greetSaid.length ? ` When he came aboard just now, YOKE greeted him with: "${this.greetSaid.join(' ')}"` : '';
+    if (!this.greetSaid.length) return '';
+    // Collins, Oct 12 2026: "secret context only the AI can see" behind some of her greetings (content/greetings.ts, aside).
+    const behind = this.greetAside ? ` Behind those lines (YOKE knows this; he may not): ${this.greetAside}` : '';
+    return ` When he came aboard just now, YOKE greeted him with: "${this.greetSaid.join(' ')}"${behind}`;
   }
 
   /** His line to her in the intercom: her live answer (her mind on rfab.ai, or the next rung down). */

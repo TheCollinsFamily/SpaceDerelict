@@ -333,7 +333,7 @@ whole campaign per ally, return by return; `tests/afterMission.test.ts` holds th
   at capture 5 (the slot between the ally's 4 and the main plot's next; it queues the AI Core discussion `partner`, its
   seed in the lorebook) and its progress at 9. Everything after capture 4 moved one later: in captures after the pledge
   the beats at 1, 3, 8, MIDPOINT_CAPTURES 6; the main plot at captures 3, 6, 8, 10, 12 (`PERSONAL_CAPTURE` in roachKing.ts).
-  The desk-opening speech has a late version (`unlock-late`) when the desk took more than one try. The ONCE intros
+  The desk-opening speech had a late version (`unlock-late`), cut on Oct 12 2026 (Collins: "the first works for both"). The ONCE intros
   (`INTROS`, `introFor`): each once a campaign, on an ordinary return, never two running. Tests `tests/personalPlot.test.ts`;
   beat `node tools/shot-personal.mjs` (the dev server; screenshots notes/screens/2026-10-05/personal-*.jpg).
 

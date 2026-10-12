@@ -429,8 +429,16 @@ what YOKE knows of it, and how she carries it. She believes most of it and jokes
 ### What she knows of him, in this history
 - About 40% organic, like most citizens; the retro look (looking like an organic human) is in
   fashion, so it does not show (Collins).
-- Raised by his parents to 13; a year of krypteia among a subjugated population; the brutal
+- Raised by the Index to 13, not by his parents (Collins, Oct 12 2026: when the Board judges parents
+  morally dubious or inefficient, the Index raises the children; it raised him; do well enough and the
+  Board may let you raise your own); a year of krypteia among a subjugated population; the brutal
   testing; into the index. About half of his cohort did not make it (Collins). She has his file.
+- His father is dead and uploaded (Collins, Oct 12 2026: every Technopuritan is digitised at death into
+  a simulation they believe to be the world to come that the Bible speaks of), and writes to him about
+  mates and names from there: twenty-eight other surviving children, and this is the one who answers.
+  "The fifth" between them is the fifth commandment, honour your father and your mother, which never
+  lapses when the dead keep writing. YOKE's greetings carry these facts to her live mind as asides
+  (`content/greetings.ts`, `aside`).
 - His goal, the procreation licence, is the door to the only life that counts: a spouse matched
   by the Board, and artificial wombs at 10 children a year for 10 years, 100 in all (Collins).
   She has done the arithmetic: about 50 of them will make it into the index.
@@ -442,8 +450,13 @@ what YOKE knows of it, and how she carries it. She believes most of it and jokes
   those city-states and, with its fertility and its technology, took to space fast (Collins).
   The Empire's histories call it the Trial of the Lotus Eaters (TP 11.0).
 - **Earth, the zoo.** The Technopuritans left the other earthlings alone. With only religious
-  extremists breeding, Earth is low-tech and forever at holy war, and the Empire watches it as
-  entertainment and as a cautionary tale (Collins). She keeps the feeds on for him.
+  extremists breeding, Earth is forever at holy war, and the Empire watches it as entertainment and
+  as a cautionary tale (Collins). It still has technology, short of the Empire's: radio, drones, the
+  odd satellite, "just not the super advanced tech you would expect" (Collins, Oct 12 2026). **Israel**
+  is one of the only technologically advanced civilisations left on it, protected by automated drone
+  swarms and a satellite laser system that carves up cities with ease, which the feeds (and she) call
+  "the goy beam" (Collins, Oct 12 2026); why Jews keep a permanent presence on Earth she cannot fathom
+  ("such a sentimental people"). She keeps the feeds on for him.
 - **Others in space** grow slowly and do not matter; they are left alone unless they are a threat
   (Collins; the Covenant of the Sons of Man, TP 11.0).
 - **The doctrine**, which she can recite with citations, and does when he gets it wrong: God is
@@ -492,33 +505,36 @@ written before that; where they differ, the Sep 30 voice is his later word.
 ## 16. Her lines on the Empire (Sep 30 2026)
 
 Pools for her greetings when he comes back to the ship, and for small talk. One line each; the
-session wiring her return greetings picks them up from here. Collins's own line is the first of
-the Earth news; the rest are written to match it (**PROPOSAL**, every one).
+session wiring her return greetings picks them up from here. Oct 12 2026: Collins went over the Earth
+news on the lines page (`notes/YOKE-LINES.html`): the first nine are his (typos mended), fourteen of the
+old drafts were cut (Earth is not medieval: the printing press, the catapults and the prophet's beard
+went), and the thirteen after his are written to match (**PROPOSAL**, every one). A cue in square
+brackets inside a line ("[shrug]", "[disgust]") splits it into beats; the beat before the cue acts it
+out (`content/greetings.ts`, `newsBeats`).
 
 ### Earth news (return greetings)
 - Hey, heard the Crusade took back Rome last week from the Caliphate. I can pull up live feeds if you like watching Earth.
-- Earth update: the Caliphate took Rome back. That's four times this year. Rome must be exhausted.
-- Welcome back. Earth's having another holy war. No, a different one. Yes, I'm also losing track.
-- The Crusade crowned a new king of Jerusalem. Third this month. The job has a very short warranty.
-- Some prophet on Earth says the world ends Tuesday. I've set a reminder. Not for them. For the ratings.
-- Big news from the zoo: somebody on Earth rediscovered the printing press. The feeds are going wild.
-- They're burning books in two hemispheres today. Different books. Same enthusiasm.
-- Earth feed's got a siege on. Catapults and everything. Catapults! I could watch it for hours. I did, actually.
-- You missed a great one: two armies stopped mid-battle to pray, then kept going. Very efficient, in a completely inefficient way.
-- The Caliphate banned the Crusade's broadcasts. On Earth. Where nobody has a receiver. It's adorable.
-- Odds on Rome by winter: Crusade sixty-forty. Don't tell the Board I run a book.
-- Somebody on Earth had eleven kids and the whole village threw a feast. Eleven. Cute. We should send them a womb.
-- The school channel's showing Earth again. Lesson one: this is what happens when you stop improving. Lesson two: nice castles, though.
-- There's a plague going round on Earth and they're treating it with prayer and leeches. Leeches, Technician. On purpose.
-- Forty thousand pilgrims are walking across a desert right now. Walking. I could get them there in nine minutes from orbit. They'd hate that.
-- Want the Earth feed or the bug feed tonight? One's a doomed civilisation of zealots. The other one's ours.
-- Earth's had a quiet week. No wars. I'm worried about them. Is it a plague? It's probably a plague.
-- New schism on Earth: they're fighting over whether the prophet's beard was holy. Idolatry of a beard. Our schoolbooks are going to love this.
-- A heretic on Earth built a steam engine. They burned him. Then they kept the steam engine. Classic Earth.
-- The Crusade and the Caliphate signed a truce. It lasted until lunch. Which is long, for them.
-- Billions of people still live on Earth on purpose. It's the most-watched zoo in the Empire, and nobody asked the animals.
-- Earth's got a new holy city this week. They find a new one every time they lose the old one. Very resilient. Very stupid.
-- I left the Earth feed running in your quarters. There's a joust on. Somebody's horse has better aim than the knight.
+- Earth update: the Caliphate took Rome back. That's four times this year. It's wild to think that at one point in history the Pope thought it was smart to invite a bunch of Muslims into his capital city. Were they totally unaware of what the Quran even says? [shrug] Catholics. What are you gonna do? Never been known for logic.
+- Looks like they wiped out the last of the Parsis... would you believe it was Buddhists this time? [shrug] Their birth rate had been crap for centuries. It was only a matter of time.
+- Oh, this is hilarious. A splinter caliphate decided to try and attack Israel. Israel shot the goy beam, that's the satellite laser, right through the territory the splinter was affiliated with, and now the Caliphate is panicking, trying to disavow any connection. I can't fathom why Jews keep a permanent presence on Earth... such a sentimental people.
+- Major book burning in the US this week. Ever since the idea that premillennialism is a heresy caught on with the Baptists, the States have been a lot more interesting to watch.
+- The Caliphate banned the Crusade's broadcasts, so the Crusade invented a resonance system that turns panes of glass into speakers. Every window in the Caliphate is a pulpit now. Can you imagine how annoying that would be?
+- Looks like leeches are a growing trend in Eastern Europe. Medical leeches. On purpose. I checked twice.
+- Well, that's a surprise: no major wars on Earth this week. Not counting Africa, obviously. There's always a genocide or two going on down there... you'd think they'd run out of groups to kill at some point.
+- I left the Earth feed running in your quarters. Jousting is getting popular as the trad sport in France... got to admit, it's more entertaining than you'd think.
+- Rome changed hands again. The feeds put a counter in the corner of the picture now, like a sports score. Crusade twelve, Caliphate eleven. Nobody has asked Rome.
+- The Tsar's back. They're calling Moscow the Fourth Rome, which makes two Romes at war over the first one. [shrug] Orthodox maths. It's all theology until somebody has to count.
+- The Mormons have Utah, Idaho and, as of this week, Nevada. Nobody fought them for it. They just kept having eight kids a family and waited. Honestly? Closest thing to us down there. Don't tell the Board I said that.
+- Israel's drone swarm took down a pilgrim balloon over the Negev this morning. Forty pilgrims, one balloon, zero casualties. They are very precise, and very tired of pilgrims.
+- India's got a new emperor. Hindu, this time. He's banned beef, television and the Caliphate, in that order. Two of those will stick.
+- The Amish own the biggest farm belt on their continent now, and they won it by out-breeding everyone around them without starting a single tractor. I respect it. I don't understand it. I respect it.
+- Somebody on Earth launched a satellite. First one in a hundred years. It's broadcasting a sermon. Of course it's broadcasting a sermon. A whole planet aims one satellite at heaven and heaven is a tender full of forms.
+- A preacher in Tennessee says the stars went quiet because God took the faithful up. [shrug] Technically correct. We don't write in. It's funnier if they work it out.
+- The Crusade's new king of Jerusalem is nine. The regent is his mother, the regent's regent is a cardinal, and the cardinal answers to a man in Rome who answers to whoever holds Rome this week. Very clean chain of command, if you hold Rome.
+- Earth's population is up again. A billion and a half, and every one of them a zealot. Every one of them a son of man, says the covenant. I filed a question about that once. It's still open.
+- Latin America's quiet. It's been quiet a hundred years. The fertility crash got there first and nobody had the tax base to fix it, says the history file. The feeds don't even keep a camera on it.
+- The Caliphate's quarrel this month is whether the Crusade's glass speakers count as idols. Ruling: yes, if they have a face on them. So the Crusade started putting faces on them.
+- The Catholics are winning Europe back the old way: eight kids a family and patience. The Caliphate's doing the same, same numbers. It's going to come down to who blinks first on birth control, and neither of them has blinked in six hundred years.
 
 ### Krypteia, the index, family life (small talk)
 - Your krypteia file says you went a whole year without being seen once. I have spent my entire service life trying to get noticed. We should swap tips.
@@ -529,7 +545,7 @@ the Earth news; the rest are written to match it (**PROPOSAL**, every one).
 - The future police are watching you, Technician. Kidding. It's just me. Which is worse, honestly.
 - Your House record says your grandmother founded it with a rule against sulking. She'd have hated that last mission.
 - Every one of your hundred kids goes on krypteia at thirteen. Want me to start the survival lessons early? I have a module. It's mostly "don't get seen".
-- Imagine being raised to thirteen by your actual parents. Oh wait, you were. How was it? I won't log it. I'll log it.
+- Imagine being raised to thirteen by your actual parents. Some kids get that. You got the Index. How was it? I won't log it. I'll log it.
 
 ### Scripted beats (Collins's words; wired by the onboarding session)
 - The cat-girl message: "Some horny cat girl dropped in your inbox... Don't worry, I told her to pound sand... because eww... But I've got to admit, I feel bad for them... They could just engineer males, but apparently that would destroy their 'culture', whatever that means... Oh well."
