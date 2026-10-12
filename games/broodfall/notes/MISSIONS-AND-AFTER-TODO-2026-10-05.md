@@ -51,7 +51,7 @@ third thread, **the personal plot**, carried by YOKE's greeting; everything afte
 | 12 | main | The Last Stand: FILMED | same | same |
 | 13 on | ally / main | **EMPTY** | same | same |
 | the finale | ally | The finale: CARD | FILMED | FILMED |
-| the last mission | main | The Transports: FILMED; Founding Day: CARD (the provider refuses the speech as written) | same | same |
+| the last mission | main | The Transports: FILMED; Founding Day: FILMED (Oct 12, reworded) | same | same |
 | after it | main | Off the air: FILMED | same | same |
 
 Besides the story, every return has YOKE's greeting, and none is said twice in a campaign while she has an unsaid one.
@@ -103,9 +103,10 @@ faction), a comic earned, the boss's message (first landing only).
    greeting twice. She still has only 6 lines for an ordinary win; past about capture 16 she would start over.
 9. [ ] **The 3 comics are all earned in the first two missions.** More comics, earned through the campaign (one per
    plot point?), would fill the empty returns.
-10. [ ] **Founding Day has no film:** the provider refuses the speech as written (Collins is handling it).
+10. [x] **Founding Day has no film:** the speech was reworded on Oct 12 2026 (Collins's choice: St Crispin's Day in his
+    voice; `notes/ROACH-KING-2026-10-04.md`). The film is made (Oct 12 2026): `public/media/scenes/rk-founding.mp4`, 84 s at 480p, five exchanges, every line heard. Four exchanges on Seedance 2.5 through Atlas Cloud; the fifth on Seedance 2.0 mini (the API's lowest-tier rule for a 12 s clip). The fifth took seven tries: the last line's "We few. We happy few. We band of sisters." trips BOTH providers' filters (Atlas: "may be related to copyright restrictions"; ByteDance through ImageRouter: "invalid content"), public domain or not; it now reads "The lucky few. Sisters of one clutch. Happy Founding Day. Go home and sleep. I will see you at dawn.", said over a crowd gone quiet. One lesson for the film system: `make` re-runs the vision gates on clips that already passed, and the HUMAN gate flipped on three good takes on the third run and remade them (about $21 for nothing); `talk <film> <exchange>` then `talkbake` makes one missing exchange without that.
 11. [x] **The faction films:** all 15 baked by Oct 5 (the other session's batch), plus his briefing and the call. Left as
-    cards: Founding Day (10) and the midpoint's offers (a letter and a call each; a film only if you want them as films).
+    cards: the midpoint's offers (a letter and a call each; a film only if you want them as films).
 12. [ ] **Decide what a return must always bring.** The rule today is the news + a greeting + one story film when one is
     due. If "one unique thing after every mission" means a story film or a comic EVERY time, the pacing in 1 and the
     comics in 9 are what get there.
@@ -124,8 +125,46 @@ Arithmetic from the content tables (not yet a measured run), for a campaign of a
 | Sanctioned lineages (17) | **65 standing** | the board pays 1 to 2 a form (3 forms a mission: about 2 to 4.7 a mission), Command's 13 orders 47 in all (perhaps 7 to 9 of them met), the first mission 4: **about 65 to 80** | just about all, IF nothing else is bought with standing |
 | The procreation licence | **60 standing held at once** (it reads the balance) | the same 65 to 80 | **competes with the lineages**: spend standing and the licence slips back |
 
-13. [ ] **The licence and the lineages compete for one wallet.** In a campaign a player gets most of the lineages OR the
+13. [ ] **The licence and the lineages compete for one wallet.** (Explained to Collins Oct 12 2026; his call. Note the
+    screen already says "Every requisition you spend standing on delays the licence": it was built as a tension.) In a campaign a player gets most of the lineages OR the
     licence. Decide: count the licence on standing EARNED (a career total, spending does not lower it), or keep the
     tension on purpose.
 14. [ ] **Field notes have nothing to buy after mid-campaign.** More unsanctioned lineages, or a second use for notes.
 15. [ ] **Measure it on real runs** (the scripted player, a whole campaign) before tuning the numbers.
+
+## Oct 12 2026: the board gone over with Collins
+
+The board (`claude.ai/artifact/GaEEiXWtpEPhjv1AHaSqq9`, drawn from this file) was read item by item. What he said and what was done:
+
+- **#10 Founding Day's film:** done (above).
+- **#3 What a counter-attack return brings.** Collins: "yoke is supposed to always have something to say after a mission
+  without a cinematic ... how many more lines of hers do we need and what's the best way to build that out". BUILT: every
+  ordinary pool deepened (`content/greetings.ts`: won 6→12, lost 4→10, defended 2→6, fell 2→4, lost-locked 3→4, back 4→6;
+  drafts, his to edit), and `greetingFor` reads a line of Earth news she has not read out whenever a pool is dry, before any
+  line of hers is said twice (`src/meta/onboarding.ts`). `tests/greetingPools.test.ts`: thirty-six returns with losses and
+  counter-attacks hear no greeting twice; the pools' depth is pinned. Her lines cost nothing to add (her voice is spoken live,
+  not baked), and the lorebook's Earth-news list (23 lines) grows with no code.
+- **#7 Hide the side orders on the last mission:** DROPPED. Collins: "that's a bad idea we just haven't built the post game
+  yet". The post-game is designed in `notes/POSTGAME-2026-10-12.md` (the Roach King's simulation: his rematches from the
+  archive, field notes as the stake, his arc from disappointed to at peace, the one place he can be on the field).
+- **#14 Something to spend field notes on:** the post-game's stake (rule cards, the zoo); see that note.
+- **#4 More kinds of mission** (brainstorm, for him to pick from; the post-game's rule cards are where to try them first):
+  1. *Burn the depot* (sabotage): a structure behind their lines must fall before wave N; `kills:fieldstation` and
+     `gateBurnKills` exist; new: the target on the plate and its win check. Foundry Plains (where the transports are built).
+  2. *Until the evac* (survive a timer): no wave count, a stream, the clock is the win; `lateHost` and the last mission's HUD
+     countdown exist. The Pilgrim Road.
+  3. *The courier* (interception): stop K of N science-caste couriers before their field station; `limbsCarriedOff` and the
+     experiment exist; new: a route. University Hill, the Hidden Campus.
+  4. *Walk the mule* (escort): the Spore Mule must reach a point and plant a node; the waves come at it; the Mule lineage
+     exists; new: the destination and the check. Mirewater Delta.
+  5. *Eat the town* (siege): no war meat from kills, only from infested shelters (the last mission's ration rule
+     generalised); Infestor and shelters exist. Cul-de-Sac Heights, the Commuter Ring.
+  6. *Cage her* (capture alive): the trap cage as a directive: catch a royal and hold her N turns while her court comes;
+     `trapCage` exists. The Temple Terraces.
+  7. *Breakout* (reverse hold): walled in by the Host, the creep must reach the map's edge; `nodesPlaced` exists; new: a
+     path check. Old Harbor.
+  Cheap VARIANTS rather than kinds, one `SimConfig` flag each: night (no fliers), flood (slow ground), fire ban, the Host
+  early, the Host late, no eating. Build 1, 2, 5, 6 first (measures and configs exist), then 3, 4, 7 (unit behaviours).
+- **#13 The licence against the lineages:** explained; his call (count the licence on standing EARNED, or keep the tension).
+- **#2, #5, #9, #12, #6, #15:** recommendations given in the session; nothing built.
+

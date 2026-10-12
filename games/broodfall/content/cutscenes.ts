@@ -475,7 +475,7 @@ export const FILMS: Film[] = [
     they('He sweeps one arm out over the crowd.'),
     they('He thunders it, both upper fists raised; the crowd begins to roar.'),
     they('He pounds the podium on each sentence; the crowd roars louder.'),
-    they('He throws all four arms up; the crowd erupts, flags waving, the soldiers cheering.'),
+    they('He lets the crowd go quiet, rests both upper hands on the podium, and says it plainly, almost to himself; the crowd listens, still.'),
   ] },
 ];
 

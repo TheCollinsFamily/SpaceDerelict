@@ -71,7 +71,8 @@ export const TRANSLATOR_NOTES: Array<{ match: string; note: string }> = [
   { match: 'The wheat has a family.', note: 'It does not. I checked.' },
   // Off the air (content/roachKing.ts ROACH_SCENES).
   { match: 'a long tradition of being retards', note: 'His word is a nursery term for a larva that never pupates. Rendered as he meant it.' },
-  { match: 'Today we celebrate our Independence Day!', note: 'Their word is "the day we are not eaten". "Independence Day" is my closest. I have the feeling I have heard this speech before.' },
+  { match: 'Sisters of one clutch.', note: 'Their word is "clutch-mates": hatched from one clutch, raised in one cell. I have the feeling I have heard this speech before. Older.' },
+  { match: 'You are not the Host.', note: 'The castes he names are the ones left in the city tonight. The transports are late. You know why. They do not.' },
 ];
 
 /** FNV-1a, 32 bits: a line's confidence is the same every time it is shown. */

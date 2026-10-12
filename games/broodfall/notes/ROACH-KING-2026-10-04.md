@@ -54,9 +54,14 @@ combination of President Camacho and Asmongold), and then the faction plots"; "t
 (conventions established with the faction cutscenes)"). Made by the film system (`cutscenes.ts make`, 480p, acted on
 Seedance 2.5): `rk-briefing` (60.2 s, 9 of 9 lines heard, every gate passed) and `rk-transports` (33.7 s, 4 of 4). A baked
 one plays full screen under its own title, like a faction film (`src/ui/roachKing.ts`), not as an intercept.
-**`rk-founding` cannot be made as written:** Atlas Cloud refuses its audio twice ("The generated audio may be related to
-copyright restrictions and was blocked by the provider policy"; the speech follows the Independence Day speech, point 6
-below), and the other Seedance pathway (ImageRouter) is out of credit. Until it is made, its words are shown.
+**`rk-founding` could not be made as first written:** Atlas Cloud refused its audio twice ("The generated audio may be related to
+copyright restrictions and was blocked by the provider policy"; the speech followed the Independence Day speech, point 6
+below). **Oct 12 2026: reworded, Collins's choice** out of three pitched (a riff on the same speech in his own words; Starship
+Troopers inverted; St Crispin's Day): **St Crispin's Day (Henry V, public domain) in his voice**, nine lines for the nine shots,
+in `content/roachKing.ts`. The crowd hears a holiday speech; the player, who has just watched him sabotage the transports,
+hears why they are few ("the fewer we are, the bigger each sister's share of the honour"; "the big girls, stuck on their
+transports tonight, will curse themselves that they were not here"). YOKE's notes moved with the words (`content/translation.ts`).
+The film is made (Oct 12 2026): `public/media/scenes/rk-founding.mp4`, 84 s at 480p, five exchanges, every line heard. Four exchanges on Seedance 2.5 through Atlas Cloud; the fifth on Seedance 2.0 mini (the API's lowest-tier rule for a 12 s clip). The fifth took seven tries: the last line's "We few. We happy few. We band of sisters." trips BOTH providers' filters (Atlas: "may be related to copyright restrictions"; ByteDance through ImageRouter: "invalid content"), public domain or not; it now reads "The lucky few. Sisters of one clutch. Happy Founding Day. Go home and sleep. I will see you at dawn.", said over a crowd gone quiet. One lesson for the film system: `make` re-runs the vision gates on clips that already passed, and the HUMAN gate flipped on three good takes on the third run and remade them (about $21 for nothing); `talk <film> <exchange>` then `talkbake` makes one missing exchange without that.
 
 **How they were shown before (Oct 4):** as the intercept's transcript (the stamp, where it was caught, the title, her band, every
 line with who says it, CONTINUE). Each has a film's shot list ready (`content/cutscenes.ts`: `rk-briefing` 9 shots,
@@ -92,6 +97,5 @@ campaign. `content/campaign.ts` `LAST_MISSION = { turns: 5, hostWaves: 4, minTie
    the empire" and "an imperial holiday", and show a sharp, tired man. I read it as: in public the showman, in private
    this; the Commonwealth was founded as an empire of his House, and is one of the allied nations
    (`content/lore/roach-king.md` "Off the air"). The older addresses are left as they are. Say if any should go.
-6. **Founding Day follows a famous film speech almost word for word.** Fine as a joke between friends; say if it should
-   be reworded before the game is sold.
+6. ~~**Founding Day follows a famous film speech almost word for word.**~~ Resolved Oct 12 2026: reworded (above).
 7. **A campaign with no ally** has no finale, so it never reaches the last mission.

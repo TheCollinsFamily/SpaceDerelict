@@ -199,15 +199,19 @@ export const ROACH_SCENES: RoachScene[] = [
     ] } },
   { id: 'rk-founding', when: 'last-address', kicker: 'ALL BANDS · LIVE FROM THE STEPS OF THE HIVE HOUSE', source: 'COMMONWEALTH TELEVISION, EVERY BAND AT ONCE · INTERCEPTED',
     small: 'the President\'s Founding Day address', end: 'FOUNDING DAY · THE HIVE HOUSE',
+    // Oct 12 2026: the speech as Collins first wrote it followed the Independence Day speech almost word for word, and the
+    // film's audio provider refused it as copyrighted text (notes/ROACH-KING-2026-10-04.md, point 6). He chose this one
+    // instead: St Crispin's Day (Henry V, public domain) in his own voice. The nine shots of content/cutscenes.ts stand.
+    // The crowd hears a holiday speech; the player, who has just watched him sabotage the transports, hears why they are few.
     scene: { title: 'Founding Day', film: 'rk-founding', lines: [
-      'The Roach King: We can\'t be consumed by our petty differences anymore. We will be united in our common interests.',
-      'The Roach King: Perhaps it\'s fate that today is the founding day of the empire, and you will once again be fighting for our freedom.',
-      'The Roach King: Not from tyranny, oppression, or persecution, but from annihilation.',
-      'The Roach King: We\'re fighting for our right to live, to exist.',
-      'The Roach King: And should we win the day, the founding day will no longer be known as an imperial holiday.',
-      'The Roach King: But as the day when the world declared in one voice:',
-      'The Roach King: We will not go quietly into the night! We will not vanish without a fight!',
-      'The Roach King: We\'re going to live on! We\'re going to survive!',
-      'The Roach King: Today we celebrate our Independence Day!',
+      'The Roach King: Sisters. Today is Founding Day. On these steps, my House founded this empire. I am not going to talk about that.',
+      'The Roach King: The Host is late. You have heard. So today it is the rest of us. The few of us.',
+      'The Roach King: And I say: good. The fewer we are, the bigger each sister\'s share of the honour. I would not add one more.',
+      'The Roach King: Whoever lives through today will roll up her sleeve every Founding Day and show her scars. And tell it. Longer every year.',
+      'The Roach King: Her name will be a household word. Her daughters will know it. Their daughters too. Founding Day will be her day.',
+      'The Roach King: Look who is here. Clerks. Lab sisters. Consorts. Matrons. No sash. No training. You are not the Host.',
+      'The Roach King: After today, nobody will ever say that again. Whoever bleeds beside me today is my sister, whatever caste she was born.',
+      'The Roach King: And the big girls, stuck on their transports tonight, will curse themselves that they were not here. That they missed it!',
+      'The Roach King: The lucky few. Sisters of one clutch. Happy Founding Day. Go home and sleep. I will see you at dawn.',
     ] } },
 ];

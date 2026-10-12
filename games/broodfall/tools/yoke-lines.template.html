@@ -1,0 +1,249 @@
+<title>YOKE's Lines</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+  /* Layout: a sticky console bar (search, filters, export) over a two-column body: a rail of groups on the left,
+     the groups themselves on the right as rows you can read down, edit in place and mark cut. One column on a phone. */
+  :root {
+    --bg: #f6f4ee;          /* warm paper, a shade toward her amber */
+    --panel: #fffdf8;
+    --ink: #1f1d1a;
+    --mute: #6b655b;
+    --line: #dcd6c8;
+    --accent: #b5541c;      /* the ship's amber-rust, her projection's colour */
+    --accent-ink: #ffffff;
+    --chip: #ece7da;
+    --cut: #8a2a2a;
+    --cut-bg: #f3dcdc;
+    --ok: #2f6b3a;
+    --sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --mono: "IBM Plex Mono", Consolas, "Courier New", monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #17161a; --panel: #1f1e23; --ink: #ece8df; --mute: #a39d91; --line: #35333a;
+      --accent: #e3843f; --accent-ink: #17161a; --chip: #2a282e; --cut: #ff8a8a; --cut-bg: #3a2222; --ok: #7fcf8e;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #17161a; --panel: #1f1e23; --ink: #ece8df; --mute: #a39d91; --line: #35333a;
+    --accent: #e3843f; --accent-ink: #17161a; --chip: #2a282e; --cut: #ff8a8a; --cut-bg: #3a2222; --ok: #7fcf8e;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 15px; line-height: 1.45; }
+  a { color: var(--accent); }
+  button, input { font: inherit; }
+  .bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--panel); border-bottom: 1px solid var(--line); padding: 10px 16px; display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
+  .bar h1 { font-size: 17px; font-weight: 600; margin: 0; letter-spacing: 0.01em; }
+  .bar .sub { color: var(--mute); font-size: 13px; }
+  .bar input[type=search] { flex: 1 1 220px; min-width: 0; padding: 6px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--ink); }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chips button { border: 1px solid var(--line); background: var(--chip); color: var(--ink); border-radius: 999px; padding: 3px 10px; font-size: 13px; cursor: pointer; }
+  .chips button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .bar .act { border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); border-radius: 6px; padding: 6px 12px; cursor: pointer; font-weight: 500; }
+  .bar .act.quiet { background: transparent; color: var(--ink); border-color: var(--line); }
+  .wrap { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 24px; padding-block: 18px; padding-inline: 16px; max-width: 1240px; margin: 0 auto; }
+  .rail { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 64px); align-self: start; max-height: calc(100vh - 80px); overflow: auto; font-size: 13px; }
+  .rail a { display: flex; justify-content: space-between; gap: 8px; color: var(--ink); text-decoration: none; padding: 4px 6px; border-radius: 4px; }
+  .rail a:hover { background: var(--chip); }
+  .rail a .n { color: var(--mute); font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  .rail .where { margin-top: 14px; color: var(--mute); font-family: var(--mono); font-size: 11.5px; word-break: break-all; line-height: 1.5; }
+  .rail .where b { display: block; font-family: var(--sans); font-weight: 600; color: var(--ink); margin-top: 8px; }
+  main { min-width: 0; }
+  .intro { color: var(--mute); max-width: 70ch; margin: 0 0 18px; }
+  section { margin-bottom: 30px; scroll-margin-top: 80px; }
+  section > header { border-bottom: 2px solid var(--accent); padding-bottom: 6px; margin-bottom: 8px; }
+  section h2 { font-size: 16px; font-weight: 600; margin: 0; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; text-wrap: balance; }
+  section h2 .n { font-family: var(--mono); color: var(--mute); font-size: 13px; font-weight: 400; }
+  .when { color: var(--mute); font-size: 13.5px; margin: 4px 0 0; max-width: 90ch; }
+  .when b { color: var(--ink); font-weight: 600; }
+  .src { font-family: var(--mono); font-size: 11.5px; color: var(--mute); word-break: break-all; margin-top: 2px; }
+  .row { display: grid; grid-template-columns: 150px minmax(0, 1fr) 150px; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--line); align-items: start; }
+  .row.cut .beats { opacity: 0.45; text-decoration: line-through; }
+  .row.cut .id { color: var(--cut); }
+  .row[hidden] { display: none; }
+  .id { font-family: var(--mono); font-size: 12.5px; color: var(--mute); word-break: break-all; display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
+  .tag { font-family: var(--sans); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; padding: 1px 6px; border-radius: 3px; background: var(--chip); color: var(--mute); }
+  .tag.collins { background: var(--accent); color: var(--accent-ink); }
+  .beats { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .beat { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+  .beat .t { flex: 1 1 320px; min-width: 0; padding: 2px 6px; margin: -2px -6px; border-radius: 4px; border: 1px solid transparent; white-space: pre-wrap; }
+  .beat .t:focus { outline: none; border-color: var(--accent); background: var(--panel); }
+  .beat .t.edited { background: var(--panel); border-color: var(--line); box-shadow: inset 3px 0 0 var(--accent); }
+  .beat .face { font-family: var(--mono); font-size: 11px; color: var(--mute); white-space: nowrap; }
+  .beat .ctx { font-size: 12.5px; color: var(--mute); flex-basis: 100%; }
+  .ctl { display: flex; flex-direction: column; gap: 6px; }
+  .ctl button { border: 1px solid var(--line); background: var(--chip); color: var(--ink); border-radius: 5px; padding: 3px 8px; font-size: 12.5px; cursor: pointer; text-align: left; }
+  .ctl button[aria-pressed="true"] { background: var(--cut-bg); color: var(--cut); border-color: var(--cut); }
+  .ctl input { border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 5px; padding: 3px 7px; font-size: 12.5px; min-width: 0; width: 100%; }
+  .export { margin: 0 0 18px; border: 1px solid var(--line); background: var(--panel); border-radius: 8px; padding: 12px 14px; }
+  .export[hidden] { display: none; }
+  .export h3 { margin: 0 0 6px; font-size: 14px; }
+  .export p { margin: 0 0 8px; color: var(--mute); font-size: 13px; }
+  .export textarea { width: 100%; min-height: 160px; font-family: var(--mono); font-size: 12px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 6px; padding: 8px; }
+  .toast { position: fixed; bottom: calc(env(safe-area-inset-bottom, 0px) + 16px); left: 50%; transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 8px 14px; border-radius: 6px; font-size: 13px; opacity: 0; transition: opacity 0.2s; pointer-events: none; }
+  .toast.on { opacity: 1; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  @media (max-width: 860px) {
+    .wrap { grid-template-columns: minmax(0, 1fr); }
+    .rail { position: static; max-height: none; display: flex; flex-wrap: wrap; gap: 2px 10px; }
+    .rail .where { flex-basis: 100%; }
+    .row { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+    .ctl { flex-direction: row; }
+    .ctl input { flex: 1; }
+  }
+  @media (prefers-reduced-motion: reduce) { .toast { transition: none; } }
+</style>
+
+<div class="bar">
+  <div><h1>YOKE's Lines</h1><div class="sub" id="sub"></div></div>
+  <input type="search" id="q" placeholder="Search her words, ids, groups" aria-label="Search">
+  <div class="chips" id="filters">
+    <button type="button" data-f="all" aria-pressed="true">All</button>
+    <button type="button" data-f="collins" aria-pressed="false">Collins's words</button>
+    <button type="button" data-f="draft" aria-pressed="false">Drafts</button>
+    <button type="button" data-f="lore" aria-pressed="false">Lorebook pools</button>
+    <button type="button" data-f="changed" aria-pressed="false">Changed or cut</button>
+  </div>
+  <button type="button" class="act" id="export">Export changes</button>
+  <button type="button" class="act quiet" id="reset">Reset edits</button>
+</div>
+
+<div class="wrap">
+  <nav class="rail" id="rail" aria-label="Groups"></nav>
+  <main>
+    <p class="intro">Every prewritten line of hers, grouped by when it plays, in the order a campaign meets them. Click a line to edit it in place, mark a line <b>Cut</b>, or leave a note. Your edits stay in this browser; <b>Export changes</b> turns them into a list a session can apply to the files named on the left.</p>
+    <div class="export" id="exportBox" hidden>
+      <h3>Changes</h3>
+      <p>Copied to the clipboard when the button is pressed; this is the same text, for pasting into a session.</p>
+      <textarea id="exportText" readonly aria-label="Exported changes"></textarea>
+    </div>
+    <div id="groups"></div>
+  </main>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script id="data" type="application/json">__DATA__</script>
+<script>
+(function () {
+  var DATA = JSON.parse(document.getElementById('data').textContent);
+  var KEY = 'yoke-lines-edits';
+  var edits = {};
+  try { edits = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { edits = {}; }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(edits)); } catch (e) { /* no storage: edits live for this view only */ } }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function entry(id) { return edits[id] || (edits[id] = { cut: false, note: '', text: {} }); }
+  function changed(id) { var e = edits[id]; return !!e && (e.cut || (e.note && e.note.trim()) || Object.keys(e.text).length > 0); }
+
+  var total = 0;
+  DATA.groups.forEach(function (g) { total += g.lines.length; });
+  document.getElementById('sub').textContent = total + ' lines in ' + DATA.groups.length + ' groups · as of ' + DATA.asOf;
+
+  // The rail.
+  var rail = document.getElementById('rail');
+  rail.innerHTML = DATA.groups.map(function (g) {
+    return '<a href="#' + g.id + '"><span>' + esc(g.name) + '</span><span class="n">' + g.lines.length + '</span></a>';
+  }).join('') + '<div class="where"><b>Where the words live</b>' + DATA.files.map(function (f) { return esc(f.what) + '<br>' + esc(f.path) + '<br>'; }).join('') + '</div>';
+
+  // The groups.
+  var groups = document.getElementById('groups');
+  groups.innerHTML = DATA.groups.map(function (g) {
+    return '<section id="' + g.id + '" data-kind="' + g.kind + '"><header><h2>' + esc(g.name) + ' <span class="n">' + g.lines.length + '</span></h2>' +
+      '<p class="when"><b>When:</b> ' + esc(g.when) + '</p><div class="src">' + esc(g.where) + '</div></header>' +
+      g.lines.map(function (l) {
+        var e = edits[l.id] || { cut: false, note: '', text: {} };
+        return '<div class="row' + (e.cut ? ' cut' : '') + '" id="row-' + l.id + '" data-id="' + esc(l.id) + '" data-author="' + l.author + '" data-search="' + esc((l.id + ' ' + g.name + ' ' + l.text.join(' ') + ' ' + (l.ctx || [])).toLowerCase()) + '">' +
+          '<div class="id"><span>' + esc(l.id) + '</span><span class="tag ' + l.author + '">' + (l.author === 'collins' ? "Collins's words" : l.author === 'lore' ? 'lorebook' : 'draft') + '</span></div>' +
+          '<div class="beats">' + l.text.map(function (t, i) {
+            var cur = e.text[i] != null ? e.text[i] : t;
+            return '<div class="beat">' + (l.ctx && l.ctx[i] ? '<span class="ctx">' + esc(l.ctx[i]) + '</span>' : '') +
+              '<span class="t' + (e.text[i] != null ? ' edited' : '') + '" contenteditable="true" spellcheck="false" data-i="' + i + '" data-orig="' + esc(t) + '">' + esc(cur) + '</span>' +
+              (l.faces && l.faces[i] ? '<span class="face">' + esc(l.faces[i]) + '</span>' : '') + '</div>';
+          }).join('') + '</div>' +
+          '<div class="ctl"><button type="button" class="cut" aria-pressed="' + (e.cut ? 'true' : 'false') + '">' + (e.cut ? 'Cut' : 'Keep') + '</button>' +
+          '<input type="text" class="note" id="note-' + esc(l.id) + '" placeholder="Note" value="' + esc(e.note || '') + '" aria-label="Note on ' + esc(l.id) + '"></div></div>';
+      }).join('') + '</section>';
+  }).join('');
+
+  // Edits.
+  groups.addEventListener('input', function (ev) {
+    var t = ev.target;
+    var row = t.closest('.row'); if (!row) return;
+    var id = row.dataset.id;
+    if (t.classList.contains('t')) {
+      var i = t.dataset.i, now = t.textContent;
+      var e = entry(id);
+      if (now === t.dataset.orig) { delete e.text[i]; t.classList.remove('edited'); } else { e.text[i] = now; t.classList.add('edited'); }
+      save();
+    } else if (t.classList.contains('note')) { entry(id).note = t.value; save(); }
+  });
+  groups.addEventListener('click', function (ev) {
+    var b = ev.target.closest('button.cut'); if (!b) return;
+    var row = b.closest('.row'), id = row.dataset.id, e = entry(id);
+    e.cut = !e.cut; save();
+    row.classList.toggle('cut', e.cut);
+    b.setAttribute('aria-pressed', e.cut ? 'true' : 'false');
+    b.textContent = e.cut ? 'Cut' : 'Keep';
+  });
+  groups.addEventListener('keydown', function (ev) { if (ev.key === 'Enter' && ev.target.classList.contains('t')) { ev.preventDefault(); ev.target.blur(); } });
+
+  // Filters and search.
+  var filter = 'all', q = '';
+  function apply() {
+    var rows = groups.querySelectorAll('.row');
+    for (var k = 0; k < rows.length; k++) {
+      var r = rows[k], ok = true;
+      if (filter === 'collins' || filter === 'draft' || filter === 'lore') ok = r.dataset.author === filter;
+      else if (filter === 'changed') ok = changed(r.dataset.id);
+      if (ok && q) ok = r.dataset.search.indexOf(q) >= 0;
+      r.hidden = !ok;
+    }
+    var secs = groups.querySelectorAll('section');
+    for (var s = 0; s < secs.length; s++) secs[s].hidden = !secs[s].querySelector('.row:not([hidden])');
+  }
+  document.getElementById('filters').addEventListener('click', function (ev) {
+    var b = ev.target.closest('button'); if (!b) return;
+    filter = b.dataset.f;
+    var bs = this.querySelectorAll('button');
+    for (var k = 0; k < bs.length; k++) bs[k].setAttribute('aria-pressed', bs[k] === b ? 'true' : 'false');
+    apply();
+  });
+  document.getElementById('q').addEventListener('input', function () { q = this.value.trim().toLowerCase(); apply(); });
+
+  // Export.
+  function toast(msg) { var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('on'); setTimeout(function () { t.classList.remove('on'); }, 1800); }
+  function exportText() {
+    var out = ['# YOKE lines: changes (' + new Date().toISOString().slice(0, 10) + ')', ''];
+    var n = 0;
+    DATA.groups.forEach(function (g) {
+      var lines = g.lines.filter(function (l) { return changed(l.id); });
+      if (!lines.length) return;
+      out.push('## ' + g.name + '  (' + g.where + ')');
+      lines.forEach(function (l) {
+        var e = edits[l.id]; n++;
+        out.push('- `' + l.id + '`' + (e.cut ? ' CUT' : ''));
+        Object.keys(e.text).forEach(function (i) { out.push('  - beat ' + (Number(i) + 1) + ': "' + l.text[i] + '" -> "' + e.text[i] + '"'); });
+        if (e.note && e.note.trim()) out.push('  - note: ' + e.note.trim());
+      });
+      out.push('');
+    });
+    if (!n) out.push('(no changes yet: edit a line, press Cut, or write a note)');
+    return out.join('\n');
+  }
+  document.getElementById('export').addEventListener('click', function () {
+    var text = exportText();
+    var box = document.getElementById('exportBox'), ta = document.getElementById('exportText');
+    box.hidden = false; ta.value = text;
+    var done = function () { toast('Copied'); };
+    var fail = function () { ta.focus(); ta.select(); toast('Select and copy the text below'); };
+    try { navigator.clipboard.writeText(text).then(done, fail); } catch (e) { fail(); }
+  });
+  document.getElementById('reset').addEventListener('click', function () {
+    var b = this;
+    if (b.dataset.armed !== '1') { b.dataset.armed = '1'; b.textContent = 'Press again to reset'; setTimeout(function () { b.dataset.armed = ''; b.textContent = 'Reset edits'; }, 2500); return; }
+    edits = {}; save(); location.reload();
+  });
+  apply();
+})();
+</script>

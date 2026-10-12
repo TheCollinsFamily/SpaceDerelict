@@ -182,6 +182,29 @@ export const GREETINGS: Greeting[] = [
     { say: 'Another city in the asset. It keeps everything, you know. Everything. It\'s a very sentimental organ.', face: 'teasing', then: 'wink' },
     { say: 'Don\'t look at me like that. Read your training module.', face: 'happy' },
   ] },
+  // More of the same (Oct 12 2026; Collins: she always has something to say after a mission with no cut scene). Written to
+  // match his lines, not his words: his to edit.
+  { id: 'won-7', moment: 'won', beats: [
+    { say: 'Another district. I\'ve started a scrapbook. It\'s mostly maroon.', face: 'happy', then: 'wink' },
+  ] },
+  { id: 'won-8', moment: 'won', beats: [
+    { say: 'The locals filed a complaint with their government. Their government filed it under \'ongoing\'.', face: 'teasing', then: 'laughing', hold: 1600 },
+  ] },
+  { id: 'won-9', moment: 'won', beats: [
+    { say: 'You know what I like about you? You never gloat.', face: 'calm' },
+    { say: 'I gloat. Somebody has to. I\'m gloating right now, on the inside. It\'s very loud.', face: 'teasing', then: 'laughing', hold: 1800 },
+  ] },
+  { id: 'won-10', moment: 'won', beats: [
+    { say: 'The asset ate a whole town and still looks hungry. I relate. I don\'t eat. I relate anyway.', face: 'teasing', then: 'shrug' },
+  ] },
+  { id: 'won-11', moment: 'won', beats: [
+    { say: 'Clean sweep. The Board\'s form has a box for \'exceeded expectations\'. I ticked it twice.', face: 'happy' },
+    { say: 'There\'s only one box. They\'ll have questions.', face: 'teasing', then: 'wink' },
+  ] },
+  { id: 'won-12', moment: 'won', beats: [
+    { say: 'Their news is calling you \'the Crater Thing\' again. I keep writing in. Nobody prints my corrections.', face: 'pout', then: 'shrug' },
+    { say: 'Anyway. Territory\'s ours. The Thing says hi.', face: 'happy' },
+  ] },
 
   // ---- a deployment lost ----
   { id: 'lost-1', moment: 'lost', beats: [
@@ -199,6 +222,30 @@ export const GREETINGS: Greeting[] = [
     { say: 'Hey. Chin up. They got lucky, and you got notes.', face: 'calm', then: 'nod' },
     { say: 'There might be something in the Gene Bay that fixes whatever that was.', face: 'happy' },
   ] },
+  // More of the same (Oct 12 2026; Collins: she always has something to say after a mission with no cut scene). Written to
+  // match his lines, not his words: his to edit.
+  { id: 'lost-5', moment: 'lost', beats: [
+    { say: 'So. That happened. I\'ve already deleted the footage.', face: 'calm', then: 'pensive', hold: 1400 },
+    { say: 'Kidding. It\'s backed up in three places. For training purposes.', face: 'teasing', then: 'wink' },
+  ] },
+  { id: 'lost-6', moment: 'lost', beats: [
+    { say: 'They won one. Let them have it. They\'ll put it on a stamp.', face: 'teasing', then: 'shrug' },
+    { say: 'We\'ll eat the stamp.', face: 'happy' },
+  ] },
+  { id: 'lost-7', moment: 'lost', beats: [
+    { say: 'Nobody\'s keeping score. The Board is keeping score. But nobody who matters.', face: 'teasing', then: 'wink' },
+  ] },
+  { id: 'lost-8', moment: 'lost', beats: [
+    { say: 'I ran the numbers on that one. The numbers would like a word with you. In private.', face: 'calm', then: 'pensive', hold: 1600 },
+    { say: 'I told them no. We\'re a team.', face: 'happy' },
+  ] },
+  { id: 'lost-9', moment: 'lost', beats: [
+    { say: 'You lost an asset. I lost forty minutes of really good commentary. We both have regrets.', face: 'pout', then: 'shrug' },
+  ] },
+  { id: 'lost-10', moment: 'lost', points: { room: 'genes', label: 'OPEN THE GENE BAY' }, beats: [
+    { say: 'Bad day. Happens to the best. Also to you.', face: 'teasing', then: 'laughing', hold: 1400 },
+    { say: 'The Gene Bay\'s still open. Go poke something.', face: 'happy' },
+  ] },
 
   // ---- lost while the desk is still dark ----
   { id: 'locked-1', moment: 'lost-locked', beats: [
@@ -213,6 +260,12 @@ export const GREETINGS: Greeting[] = [
     { say: 'Oof. Okay. New rule: we don\'t talk about that one.', face: 'teasing', then: 'laughing', hold: 1800 },
     { say: 'Next drop\'s queued. Win it and Command lets us have the fancy globe. Maybe grab an upgrade first.', face: 'happy' },
   ] },
+  // More of the same (Oct 12 2026; Collins: she always has something to say after a mission with no cut scene). Written to
+  // match his lines, not his words: his to edit.
+  { id: 'locked-4', moment: 'lost-locked', beats: [
+    { say: 'The desk stays dark until you win one. Command\'s words, not mine.', face: 'calm', then: 'shrug' },
+    { say: 'I\'d have cleared it for effort. I\'m not allowed to clear things for effort. There was a memo.', face: 'teasing' },
+  ] },
 
   // ---- counter-attacks ----
   { id: 'defended-1', moment: 'defended', beats: [
@@ -222,6 +275,21 @@ export const GREETINGS: Greeting[] = [
   { id: 'defended-2', moment: 'defended', beats: [
     { say: 'Counter-attack repelled. Somewhere down there a regional commander is having the worst day of his life.', face: 'happy', then: 'wink' },
   ] },
+  // More of the same (Oct 12 2026; Collins: she always has something to say after a mission with no cut scene). Written to
+  // match his lines, not his words: his to edit.
+  { id: 'defended-3', moment: 'defended', beats: [
+    { say: 'They came back for it. They left without it. I\'d call that closure.', face: 'happy', then: 'wink' },
+  ] },
+  { id: 'defended-4', moment: 'defended', beats: [
+    { say: 'Counter-attack over. Their general issued a statement. It\'s mostly the word \'regroup\'.', face: 'teasing', then: 'laughing', hold: 1600 },
+  ] },
+  { id: 'defended-5', moment: 'defended', beats: [
+    { say: 'Held it. Honestly, I\'d have been fine either way.', face: 'calm' },
+    { say: 'That\'s a lie. I was pacing. Digitally. It\'s hard to explain.', face: 'blushing', then: 'shrug' },
+  ] },
+  { id: 'defended-6', moment: 'defended', beats: [
+    { say: 'They brought everyone. We kept everything. Somewhere a war-caste accountant is weeping into a ledger.', face: 'teasing', then: 'wink' },
+  ] },
   { id: 'fell-1', moment: 'fell', beats: [
     { say: 'So, small thing: while you were busy, they took a territory back.', face: 'calm', then: 'shrug' },
     { say: 'Next time the globe blinks orange, maybe answer it.', face: 'teasing' },
@@ -229,6 +297,16 @@ export const GREETINGS: Greeting[] = [
   { id: 'fell-2', moment: 'fell', beats: [
     { say: 'We lost ground while you were out. The bugs are very proud of themselves.', face: 'sad', then: 'shrug' },
     { say: 'Defend what\'s flashing, and they stop getting ideas.', face: 'calm' },
+  ] },
+  // More of the same (Oct 12 2026; Collins: she always has something to say after a mission with no cut scene). Written to
+  // match his lines, not his words: his to edit.
+  { id: 'fell-3', moment: 'fell', beats: [
+    { say: 'Ground lost. Not a disaster. A disaster has paperwork. This just has a note.', face: 'calm', then: 'shrug' },
+    { say: 'I wrote the note. It says \'go get it back\'.', face: 'teasing' },
+  ] },
+  { id: 'fell-4', moment: 'fell', beats: [
+    { say: 'They took one back while you were busy winning somewhere else. I\'d call it a trade.', face: 'pensive', then: 'shrug' },
+    { say: 'They\'d call it a victory. Let them. It keeps them busy.', face: 'teasing', then: 'wink' },
   ] },
 
   // ---- the big ones ----
@@ -254,6 +332,14 @@ export const GREETINGS: Greeting[] = [
   ] },
   { id: 'back-4', moment: 'back', beats: [
     { say: 'Back to work? The bugs certainly didn\'t take the day off.', face: 'calm', then: 'shrug' },
+  ] },
+  // More of the same (Oct 12 2026; Collins: she always has something to say after a mission with no cut scene). Written to
+  // match his lines, not his words: his to edit.
+  { id: 'back-6', moment: 'back', beats: [
+    { say: 'Oh good, you\'re here. I was about to start talking to the coffee machine. It\'s a bad listener.', face: 'teasing', then: 'shrug' },
+  ] },
+  { id: 'back-7', moment: 'back', beats: [
+    { say: 'Ship\'s fine. Planet\'s still there. I checked. Twice. I don\'t have much on.', face: 'happy', then: 'wink' },
   ] },
   // Collins's line (Sep 30 2026), word for word, typos mended. It implies two things the lore now holds (content/lore/empire.md,
   // 12b): the dead are uploaded and go on talking to their children, and the Ten Commandments matter to the society (the fifth:

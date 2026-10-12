@@ -1539,7 +1539,9 @@ the roach king".
   The last two play, in that order, when the last mission is launched (once a campaign). Each is a film (shot lists in
   `content/cutscenes.ts`: one camera, one take, both speakers in the picture); until a film is baked the scene is the
   intercept's TRANSCRIPT (`src/ui/roachKing.ts` playRoachScene): the stamp, where the survey caught it, YOKE's band,
-  every line with who says it. No film of these three is made yet (the test film's approach is his to approve first).
+  every line with who says it. The briefing and the call were filmed Oct 5 2026; Founding Day was reworded on Oct 12 (St
+  Crispin's Day in his voice, Collins's choice; the Independence Day version was refused by the audio provider as copyrighted
+  text) and filmed the same day.
 
 **The last mission** (`content/campaign.ts` LAST_MISSION; the Hive House, `last: true`):
 - **When:** capturing the ally's finale no longer ends the campaign. It plays the finale scene (`CampaignState.finale`),
@@ -1565,8 +1567,7 @@ the roach king".
   take it; (2) whether the ration should be a rule of every shelter in the game or only of this map; (3) the countdown
   (5 turns) and the hold after it (4 waves); (4) the win is a hold: the Roach King himself is not on the field (a boss
   body would need its own art); (5) a campaign with no ally has no finale, so it does not reach the last mission;
-  (6) "Founding Day" follows a famous film speech almost word for word (YOKE's note under its last line winks at it):
-  say if it should be reworded before the game ships.
+  (6) resolved Oct 12 2026: "Founding Day" reworded (it followed the Independence Day speech almost word for word).
 
 ### The reveal (Collins, Sep 30 2026 — BUILT Sep 30)
 

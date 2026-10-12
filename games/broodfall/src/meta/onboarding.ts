@@ -197,18 +197,34 @@ export function greetingFor(s: CampaignState, lore = ''): { moment: GreetMoment;
     const intro = introFor(s);
     if (intro) return { moment: 'intro', greeting: intro };
   }
+  const said = s.greetingsSaid ?? [];
   if (ORDINARY.includes(moment) && earthNewsOpen(s)) {
     let h = (s.seed ^ Math.imul(s.deployments + 7, 2246822519)) >>> 0;
     h = Math.imul(h ^ (h >>> 13), 3266489917) >>> 0;
-    if (h % EARTH_NEWS_EVERY === 0) {
-      const pool = earthNewsFrom(lore);
-      const news = pool.length ? pool : EARTH_NEWS_FALLBACK;
-      let i = (h >>> 8) % news.length;
-      // The first item she has not read out this campaign (then any but the last one).
-      for (let k = 0; k < news.length && ((s.greetingsSaid ?? []).includes(`earth-${i}`) || `earth-${i}` === s.lastGreeting); k++) i = (i + 1) % news.length;
-      if (`earth-${i}` === s.lastGreeting && news.length > 1) i = (i + 1) % news.length;
-      return { moment, greeting: { id: `earth-${i}`, moment, beats: [{ say: news[i], face: 'teasing', then: 'wink' }] } };
+    // One return in three; and whenever the moment's own lines have all been said this campaign (Collins, Oct 12 2026:
+    // she always has something to say after a mission with no cut scene), a line of news she has not read out comes
+    // before any line of hers is said twice.
+    const dry = !GREETINGS.some((g) => g.moment === moment && !said.includes(g.id) && g.id !== s.lastGreeting);
+    if (h % EARTH_NEWS_EVERY === 0 || dry) {
+      const news = newsLine(s, lore, h, moment, dry);
+      if (news) return { moment, greeting: news };
     }
   }
-  return { moment, greeting: pickGreeting(moment, s.seed, s.deployments, s.lastGreeting, GREETINGS, s.greetingsSaid ?? []) };
+  return { moment, greeting: pickGreeting(moment, s.seed, s.deployments, s.lastGreeting, GREETINGS, said) };
+}
+
+/**
+ * A line of news from Earth, as a greeting: the first after the roll's pick that she has not read out this campaign, then
+ * any but the last one said. `freshOnly`: null once every line has been read (her own lines repeat before the news does).
+ */
+function newsLine(s: CampaignState, lore: string, h: number, moment: GreetMoment, freshOnly: boolean): Greeting | null {
+  const pool = earthNewsFrom(lore);
+  const news = pool.length ? pool : EARTH_NEWS_FALLBACK;
+  const said = s.greetingsSaid ?? [];
+  let i = (h >>> 8) % news.length;
+  let k = 0;
+  for (; k < news.length && (said.includes(`earth-${i}`) || `earth-${i}` === s.lastGreeting); k++) i = (i + 1) % news.length;
+  if (k >= news.length && freshOnly) return null;
+  if (`earth-${i}` === s.lastGreeting && news.length > 1) i = (i + 1) % news.length;
+  return { id: `earth-${i}`, moment, beats: [{ say: news[i], face: 'teasing', then: 'wink' }] };
 }

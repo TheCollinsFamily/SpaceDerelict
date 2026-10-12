@@ -107,7 +107,7 @@ describe('the Roach King off the air (Collins, Oct 4 2026): the central plot', (
     }
   });
 
-  it('his words are the ones Collins wrote', () => {
+  it('his words are the ones Collins wrote (Founding Day: the speech he chose on Oct 12 2026)', () => {
     const all = ROACH_SCENES.flatMap((x) => x.scene.lines.map(spokenText)).join(' ');
     for (const said of [
       'the Alliance of Nations have lost another territory', 'Of course they have', 'Are you fucking kidding me',
@@ -115,7 +115,9 @@ describe('the Roach King off the air (Collins, Oct 4 2026): the central plot', (
       'They have a long tradition of being retards, is more like it', 'They are going to get us all killed',
       'The transports have been sabotaged', 'We will never make it in time', 'You disapprove? Well, too bad!',
       'without the war caste feeding them from the start, I think we could win',
-      'today is the founding day of the empire', 'no longer be known as an imperial holiday', 'Today we celebrate our Independence Day!',
+      // Founding Day was reworded on Oct 12 2026 (Collins's choice: St Crispin's Day in his voice; the first version was refused
+      // by the film's audio provider as copyrighted text). Its anchors are the new speech's.
+      'Today is Founding Day', 'The fewer we are, the bigger each sister\'s share of the honour', 'The lucky few. Sisters of one clutch.',
     ]) expect(all, said).toContain(said);
   });
 

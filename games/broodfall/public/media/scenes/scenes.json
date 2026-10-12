@@ -1976,6 +1976,85 @@
      "t1": 119.717
     }
    ]
+  },
+  "rk-founding": {
+   "video": "media/scenes/rk-founding.mp4",
+   "poster": "media/scenes/rk-founding.webp",
+   "seconds": 84.417,
+   "cues": [
+    {
+     "shot": "l00",
+     "line": 0,
+     "who": "The Roach King",
+     "text": "Sisters. Today is Founding Day. On these steps, my House founded this empire. I am not going to talk about that.",
+     "t0": 0,
+     "t1": 10.659
+    },
+    {
+     "shot": "l01",
+     "line": 1,
+     "who": "The Roach King",
+     "text": "The Host is late. You have heard. So today it is the rest of us. The few of us.",
+     "t0": 10.659,
+     "t1": 18.225
+    },
+    {
+     "shot": "l02",
+     "line": 2,
+     "who": "The Roach King",
+     "text": "And I say: good. The fewer we are, the bigger each sister's share of the honour. I would not add one more.",
+     "t0": 18.225,
+     "t1": 28.285
+    },
+    {
+     "shot": "l03",
+     "line": 3,
+     "who": "The Roach King",
+     "text": "Whoever lives through today will roll up her sleeve every Founding Day and show her scars. And tell it. Longer every year.",
+     "t0": 28.285,
+     "t1": 38.49
+    },
+    {
+     "shot": "l04",
+     "line": 4,
+     "who": "The Roach King",
+     "text": "Her name will be a household word. Her daughters will know it. Their daughters too. Founding Day will be her day.",
+     "t0": 38.49,
+     "t1": 47.898
+    },
+    {
+     "shot": "l05",
+     "line": 5,
+     "who": "The Roach King",
+     "text": "Look who is here. Clerks. Lab sisters. Consorts. Matrons. No sash. No training. You are not the Host.",
+     "t0": 47.898,
+     "t1": 54.67
+    },
+    {
+     "shot": "l06",
+     "line": 6,
+     "who": "The Roach King",
+     "text": "After today, nobody will ever say that again. Whoever bleeds beside me today is my sister, whatever caste she was born.",
+     "t0": 54.67,
+     "t1": 65.175
+    },
+    {
+     "shot": "l07",
+     "line": 7,
+     "who": "The Roach King",
+     "text": "And the big girls, stuck on their transports tonight, will curse themselves that they were not here. That they missed it!",
+     "t0": 65.175,
+     "t1": 73.895
+    },
+    {
+     "shot": "l08",
+     "line": 8,
+     "who": "The Roach King",
+     "text": "The lucky few. Sisters of one clutch. Happy Founding Day. Go home and sleep. I will see you at dawn.",
+     "t0": 73.895,
+     "t1": 84.417
+    }
+   ]
   }
  }
 }
