@@ -1,0 +1,506 @@
+{
+  "id": "2026-10-12T16-48-45-379Z",
+  "at": "2026-10-12T16:48:45.379Z",
+  "page": "2026-10-12",
+  "source": "pasted into the chat (before the page saved exports itself)",
+  "applied": "2026-10-12",
+  "n": 55,
+  "items": [
+    {
+      "id": "unlock",
+      "group": "The desk opens",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts",
+      "cut": false,
+      "note": "would change \"aimed straight up at us.\"  to  \"asking to help us\"  and this should have \"And, um... someone left coloured cards in a field.\" after it \"um ... really big coloured cards.\"",
+      "text": {},
+      "fp": "g9cong"
+    },
+    {
+      "id": "unlock-late",
+      "group": "The desk opens",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts",
+      "cut": true,
+      "note": "Not needed the first works for both",
+      "text": {},
+      "fp": "8f5x0h"
+    },
+    {
+      "id": "partner-progress",
+      "group": "The personal plot",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts",
+      "cut": false,
+      "note": "I would add at the end \" (with some of these messages we will need secret context only the ai can see in this one its that its normal for technopuritans to have batches of about 10 kids a year durring their reproductive windows in artifical wombs ... if the parrent is deemed morally dubious or inefcient they are raised bby the index as this character was) Do good enough and they may even let you raise your own kids. Imagine how fun that would be 30 to 60 little versions of you running around.\"",
+      "text": {},
+      "fp": "1rnuqp5"
+    },
+    {
+      "id": "back-5",
+      "group": "The once intros",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts  (order and captures: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\src\\meta\\onboarding.ts INTROS)",
+      "cut": false,
+      "note": "secret note for the ai that when technopuritans die they are digitized into a simulation they belive to be the world to come talked aobut in the bible",
+      "text": {},
+      "fp": "1x9825w"
+    },
+    {
+      "id": "intro-barnabas",
+      "group": "The once intros",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts  (order and captures: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\src\\meta\\onboarding.ts INTROS)",
+      "cut": false,
+      "note": "after \"He signed it with a paw print. Digitally. I don't know how and I'm afraid to ask.\" I would put \"he must have vibe coded a way to add visual additions to reports then scanned his paw? I really have no clue.",
+      "text": {},
+      "fp": "go2irj"
+    },
+    {
+      "id": "intro-duck",
+      "group": "The once intros",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts  (order and captures: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\src\\meta\\onboarding.ts INTROS)",
+      "cut": false,
+      "note": "I do not understand what this is about nothing has set this up",
+      "text": {},
+      "fp": "8h0qxf"
+    },
+    {
+      "id": "intro-catgirl",
+      "group": "The once intros",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts  (order and captures: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\src\\meta\\onboarding.ts INTROS)",
+      "cut": false,
+      "note": "nothing is setting this up this would have to happen after the other event. Also I would be more conlitary about it ... something like \"You really do have to feel sorry for them. Imagine having to have sex to make babies.\" disgust \"oh well their the ones who refuse a genetic fix\"",
+      "text": {},
+      "fp": "1woxsf4"
+    },
+    {
+      "id": "intro-audit",
+      "group": "The once intros",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts  (order and captures: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\src\\meta\\onboarding.ts INTROS)",
+      "cut": false,
+      "note": "change this \"That was a joke. Log it as a joke.\" to \"Remer I can be reset if they think I am providing poor moral guidence. Best to keep things vanilla.\"",
+      "text": {},
+      "fp": "19c6wr4"
+    },
+    {
+      "id": "intro-dad",
+      "group": "The once intros",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts  (order and captures: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\src\\meta\\onboarding.ts INTROS)",
+      "cut": false,
+      "note": "(in the secret text sent to the ai for this it should remind it the 5th refrences the ten comandments\" also maybe add \"He has 28 other surving kids I think he only bugs you becouse you respond.\"",
+      "text": {},
+      "fp": "f1vbah"
+    },
+    {
+      "id": "earth-2",
+      "group": "News from Earth",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)",
+      "cut": false,
+      "note": "change \"Rome must be exhausted.\" \"Its wild to think that at one point in history the pope thought it was smart  to invite a bunch of mmuslims to their captial city. Where they totaly unware of what the quoran even says?\" shrugs \"Catholics what you gonna do never been kknown for logic\"",
+      "text": {},
+      "fp": "jjnqqx"
+    },
+    {
+      "id": "earth-3",
+      "group": "News from Earth",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)",
+      "cut": false,
+      "note": "I would just rewrite this, \"it looks like they whiped out the last of the parssi ... would you belive it was buhdists this time.\" shrugs \"their birth rate has been crap for centries it was only a matter of time\"",
+      "text": {},
+      "fp": "sw4zok"
+    },
+    {
+      "id": "earth-4",
+      "group": "News from Earth",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)",
+      "cut": false,
+      "note": "I would rewrite this one entirely in this world (and should be in lore) isreal is one of the only technlogicaly advanced civlisations left on earth protected by automated drone swarms something like \"Oh this is hillarius a splitter caliphate decided to try and attack isreal they shot a goy beam right through the territory they where afiated with and the caliphate has been pannicdly trying to disavow a connection\" (the goy beam is slur for the spattlite laser system that can carve up cities with ease) \"I cant fathom why jews maintain a permant presence on earth ... such a sentmental people\"",
+      "text": {},
+      "fp": "1tgiurk"
+    },
+    {
+      "id": "earth-5",
+      "group": "News from Earth",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)",
+      "cut": true,
+      "note": "remove this one",
+      "text": {},
+      "fp": "tnwymr"
+    },
+    {
+      "id": "earth-6",
+      "group": "News from Earth",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)",
+      "cut": true,
+      "note": "remove this one does not fit the lore earth still has tech just not the suepr advanced tech you would expect",
+      "text": {},
+      "fp": "1cquyle"
+    },
+    {
+      "id": "earth-7",
+      "group": "News from Earth",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)",
+      "cut": false,
+      "note": "rewrite this \"Major book burning ... ever since the idea that premlinalism was a herassy picked up with the babtists the US has been more intresting.\"",
+      "text": {},
+      "fp": "1sic2y4"
+    },
+    {
+      "id": "earth-8",
+      "group": "News from Earth",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)",
+      "cut": true,
+      "note": "remove this one does not fit the lore earth still has tech just not the suepr advanced tech you would expect",
+      "text": {},
+      "fp": "1ng0ii4"
+    },
+    {
+      "id": "earth-9",
+      "group": "News from Earth",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)",
+      "cut": true,
+      "note": "remove this one",
+      "text": {},
+      "fp": "emhjvj"
+    },
+    {
+      "id": "earth-10",
+      "group": "News from Earth",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)",
+      "cut": false,
+      "note": "change \" On Earth. Where nobody has a receiver. It's adorable.\" to \"so they invented a resence system that has turned pains of glass into speakers ... can you imagine how anoying that would be.\"",
+      "text": {},
+      "fp": "1ci3uc2"
+    },
+    {
+      "id": "earth-11",
+      "group": "News from Earth",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)",
+      "cut": true,
+      "note": "",
+      "text": {},
+      "fp": "uqq1s2"
+    },
+    {
+      "id": "earth-12",
+      "group": "News from Earth",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)",
+      "cut": true,
+      "note": "",
+      "text": {},
+      "fp": "e93c5d"
+    },
+    {
+      "id": "earth-13",
+      "group": "News from Earth",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)",
+      "cut": true,
+      "note": "",
+      "text": {},
+      "fp": "1phnse8"
+    },
+    {
+      "id": "earth-14",
+      "group": "News from Earth",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)",
+      "cut": false,
+      "note": "change to something more belivable, \"it looks like leeches are a growoinig trend in eastern europe.\"",
+      "text": {},
+      "fp": "1rn9al6"
+    },
+    {
+      "id": "earth-15",
+      "group": "News from Earth",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)",
+      "cut": true,
+      "note": "",
+      "text": {},
+      "fp": "1952kxy"
+    },
+    {
+      "id": "earth-16",
+      "group": "News from Earth",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)",
+      "cut": true,
+      "note": "",
+      "text": {},
+      "fp": "snfvb9"
+    },
+    {
+      "id": "earth-17",
+      "group": "News from Earth",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)",
+      "cut": false,
+      "note": "change to something  \"Well thats a suprise no major wars on earth this week. WEll obviusly not counting africa theres always a genocide or two going on there ... you think they would run out of groups to kill at some point.\"",
+      "text": {},
+      "fp": "gpv17"
+    },
+    {
+      "id": "earth-18",
+      "group": "News from Earth",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)",
+      "cut": true,
+      "note": "",
+      "text": {},
+      "fp": "cb6m2z"
+    },
+    {
+      "id": "earth-19",
+      "group": "News from Earth",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)",
+      "cut": true,
+      "note": "",
+      "text": {},
+      "fp": "1njr2bu"
+    },
+    {
+      "id": "earth-20",
+      "group": "News from Earth",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)",
+      "cut": true,
+      "note": "",
+      "text": {},
+      "fp": "iiira8"
+    },
+    {
+      "id": "earth-21",
+      "group": "News from Earth",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)",
+      "cut": true,
+      "note": "",
+      "text": {},
+      "fp": "11fsfoh"
+    },
+    {
+      "id": "earth-22",
+      "group": "News from Earth",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)",
+      "cut": true,
+      "note": "",
+      "text": {},
+      "fp": "1msp2n6"
+    },
+    {
+      "id": "earth-23",
+      "group": "News from Earth",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)",
+      "cut": false,
+      "note": "change to: I left the Earth feed running in your quarters. Jousting is getting popular as the trad sport in France ... got to admit its more entertaining than you would think.\"",
+      "text": {},
+      "fp": "1xgj2hn"
+    },
+    {
+      "id": "won-1",
+      "group": "A deployment won",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts",
+      "cut": false,
+      "note": "The Board will send a form letter.  to The Board sent a form letter.",
+      "text": {},
+      "fp": "9mrol4"
+    },
+    {
+      "id": "won-2",
+      "group": "A deployment won",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts",
+      "cut": true,
+      "note": "",
+      "text": {},
+      "fp": "1nrlkek"
+    },
+    {
+      "id": "won-3",
+      "group": "A deployment won",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts",
+      "cut": true,
+      "note": "",
+      "text": {},
+      "fp": "cj145p"
+    },
+    {
+      "id": "won-4",
+      "group": "A deployment won",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts",
+      "cut": true,
+      "note": "",
+      "text": {},
+      "fp": "embami"
+    },
+    {
+      "id": "won-6",
+      "group": "A deployment won",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts",
+      "cut": true,
+      "note": "",
+      "text": {},
+      "fp": "19d918o"
+    },
+    {
+      "id": "won-7",
+      "group": "A deployment won",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts",
+      "cut": true,
+      "note": "",
+      "text": {},
+      "fp": "1x5smyx"
+    },
+    {
+      "id": "won-8",
+      "group": "A deployment won",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts",
+      "cut": true,
+      "note": "",
+      "text": {},
+      "fp": "7mt8m"
+    },
+    {
+      "id": "won-9",
+      "group": "A deployment won",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts",
+      "cut": false,
+      "note": "remove \" on the inside. It's very loud.\"",
+      "text": {},
+      "fp": "1i284o4"
+    },
+    {
+      "id": "won-10",
+      "group": "A deployment won",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts",
+      "cut": true,
+      "note": "",
+      "text": {},
+      "fp": "sins0v"
+    },
+    {
+      "id": "won-11",
+      "group": "A deployment won",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts",
+      "cut": true,
+      "note": "",
+      "text": {},
+      "fp": "9qvaam"
+    },
+    {
+      "id": "won-12",
+      "group": "A deployment won",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts",
+      "cut": false,
+      "note": "change to \"Their news is calling you 'the Crater Thing'\" I kind of like the name if I am to be honest.\"",
+      "text": {},
+      "fp": "148nofi"
+    },
+    {
+      "id": "lost-2",
+      "group": "A deployment lost",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts",
+      "cut": true,
+      "note": "",
+      "text": {},
+      "fp": "evjopq"
+    },
+    {
+      "id": "lost-3",
+      "group": "A deployment lost",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts",
+      "cut": true,
+      "note": "",
+      "text": {},
+      "fp": "xnc6fz"
+    },
+    {
+      "id": "lost-5",
+      "group": "A deployment lost",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts",
+      "cut": false,
+      "note": "add \"Can you imagine what they would do to me if I deleted footage of a loss\"",
+      "text": {},
+      "fp": "vnwgsj"
+    },
+    {
+      "id": "lost-6",
+      "group": "A deployment lost",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts",
+      "cut": false,
+      "note": "change to \"Don't worry not like you are on a clock or anything  ... welll I mean obviusly youll be youthnized at 120 (note for lore in their socity no one ages past 23 for women and for men its more of an athetic choice when to stop ususally made by the wife .... becouse it would be trivial to live forever this would lead to socital stagnation so people are euthnised either when they feel their contribution is over, society has moved past their frame of refrence e.g. saying \"kids these days are so ... \" is likely to get a \"think its time for uethanatia grand pah\" or a strictly inforced cap of 120 years coming from Gods cap at that age from genesis mental ageing still happens to the extent people become letharginc and less impressed by life as they age and almost no one fights this except people who failed to reproduce wich is why someone without kids by 40 will often be presured into euthensia as a failure to not become a negative externlity for society",
+      "text": {},
+      "fp": "1dqpimt"
+    },
+    {
+      "id": "lost-8",
+      "group": "A deployment lost",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts",
+      "cut": true,
+      "note": "",
+      "text": {},
+      "fp": "gyxlg4"
+    },
+    {
+      "id": "lost-9",
+      "group": "A deployment lost",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts",
+      "cut": true,
+      "note": "",
+      "text": {},
+      "fp": "zqq36d"
+    },
+    {
+      "id": "lost-10",
+      "group": "A deployment lost",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts",
+      "cut": true,
+      "note": "",
+      "text": {},
+      "fp": "jsjzf1"
+    },
+    {
+      "id": "locked-1",
+      "group": "Lost while the desk is dark",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts",
+      "cut": false,
+      "note": "change \"Statistically. Eventually.\" to \"Statistically your bound to win eventually.\"",
+      "text": {},
+      "fp": "1nsd4y2"
+    },
+    {
+      "id": "locked-4",
+      "group": "Lost while the desk is dark",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts",
+      "cut": false,
+      "note": "remove \"I'd have cleared it for effort. I'm not allowed to clear things for effort. There was a memo.\" ... just have this one play again and again if it stays dark and the keep loosing after these",
+      "text": {},
+      "fp": "1i1e6fo"
+    },
+    {
+      "id": "defended-2",
+      "group": "A counter-attack thrown back",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts",
+      "cut": true,
+      "note": "",
+      "text": {},
+      "fp": "pss4er"
+    },
+    {
+      "id": "defended-3",
+      "group": "A counter-attack thrown back",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts",
+      "cut": true,
+      "note": "",
+      "text": {},
+      "fp": "208ioi"
+    },
+    {
+      "id": "defended-4",
+      "group": "A counter-attack thrown back",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts",
+      "cut": true,
+      "note": "",
+      "text": {},
+      "fp": "1yy2e6t"
+    },
+    {
+      "id": "defended-6",
+      "group": "A counter-attack thrown back",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts",
+      "cut": true,
+      "note": "",
+      "text": {},
+      "fp": "1474nkn"
+    }
+  ],
+  "text": "# YOKE lines: changes (2026-10-12)\n\n## The desk opens  (C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)\n- `unlock`\n  - note: would change \"aimed straight up at us.\"  to  \"asking to help us\"  and this should have \"And, um... someone left coloured cards in a field.\" after it \"um ... really big coloured cards.\"\n- `unlock-late` CUT\n  - note: Not needed the first works for both\n\n## The personal plot  (C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)\n- `partner-progress`\n  - note: I would add at the end \" (with some of these messages we will need secret context only the ai can see in this one its that its normal for technopuritans to have batches of about 10 kids a year durring their reproductive windows in artifical wombs ... if the parrent is deemed morally dubious or inefcient they are raised bby the index as this character was) Do good enough and they may even let you raise your own kids. Imagine how fun that would be 30 to 60 little versions of you running around.\"\n\n## The once intros  (C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts  (order and captures: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\src\\meta\\onboarding.ts INTROS))\n- `back-5`\n  - note: secret note for the ai that when technopuritans die they are digitized into a simulation they belive to be the world to come talked aobut in the bible\n- `intro-barnabas`\n  - note: after \"He signed it with a paw print. Digitally. I don't know how and I'm afraid to ask.\" I would put \"he must have vibe coded a way to add visual additions to reports then scanned his paw? I really have no clue.\n- `intro-duck`\n  - note: I do not understand what this is about nothing has set this up\n- `intro-catgirl`\n  - note: nothing is setting this up this would have to happen after the other event. Also I would be more conlitary about it ... something like \"You really do have to feel sorry for them. Imagine having to have sex to make babies.\" disgust \"oh well their the ones who refuse a genetic fix\"\n- `intro-audit`\n  - note: change this \"That was a joke. Log it as a joke.\" to \"Remer I can be reset if they think I am providing poor moral guidence. Best to keep things vanilla.\"\n- `intro-dad`\n  - note: (in the secret text sent to the ai for this it should remind it the 5th refrences the ten comandments\" also maybe add \"He has 28 other surving kids I think he only bugs you becouse you respond.\"\n\n## News from Earth  (C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts))\n- `earth-2`\n  - note: change \"Rome must be exhausted.\" \"Its wild to think that at one point in history the pope thought it was smart  to invite a bunch of mmuslims to their captial city. Where they totaly unware of what the quoran even says?\" shrugs \"Catholics what you gonna do never been kknown for logic\"\n- `earth-3`\n  - note: I would just rewrite this, \"it looks like they whiped out the last of the parssi ... would you belive it was buhdists this time.\" shrugs \"their birth rate has been crap for centries it was only a matter of time\"\n- `earth-4`\n  - note: I would rewrite this one entirely in this world (and should be in lore) isreal is one of the only technlogicaly advanced civlisations left on earth protected by automated drone swarms something like \"Oh this is hillarius a splitter caliphate decided to try and attack isreal they shot a goy beam right through the territory they where afiated with and the caliphate has been pannicdly trying to disavow a connection\" (the goy beam is slur for the spattlite laser system that can carve up cities with ease) \"I cant fathom why jews maintain a permant presence on earth ... such a sentmental people\"\n- `earth-5` CUT\n  - note: remove this one\n- `earth-6` CUT\n  - note: remove this one does not fit the lore earth still has tech just not the suepr advanced tech you would expect\n- `earth-7`\n  - note: rewrite this \"Major book burning ... ever since the idea that premlinalism was a herassy picked up with the babtists the US has been more intresting.\"\n- `earth-8` CUT\n  - note: remove this one does not fit the lore earth still has tech just not the suepr advanced tech you would expect\n- `earth-9` CUT\n  - note: remove this one\n- `earth-10`\n  - note: change \" On Earth. Where nobody has a receiver. It's adorable.\" to \"so they invented a resence system that has turned pains of glass into speakers ... can you imagine how anoying that would be.\"\n- `earth-11` CUT\n- `earth-12` CUT\n- `earth-13` CUT\n- `earth-14`\n  - note: change to something more belivable, \"it looks like leeches are a growoinig trend in eastern europe.\"\n- `earth-15` CUT\n- `earth-16` CUT\n- `earth-17`\n  - note: change to something  \"Well thats a suprise no major wars on earth this week. WEll obviusly not counting africa theres always a genocide or two going on there ... you think they would run out of groups to kill at some point.\"\n- `earth-18` CUT\n- `earth-19` CUT\n- `earth-20` CUT\n- `earth-21` CUT\n- `earth-22` CUT\n- `earth-23`\n  - note: change to: I left the Earth feed running in your quarters. Jousting is getting popular as the trad sport in France ... got to admit its more entertaining than you would think.\"\n\n## A deployment won  (C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)\n- `won-1`\n  - note: The Board will send a form letter.  to The Board sent a form letter.\n- `won-2` CUT\n- `won-3` CUT\n- `won-4` CUT\n- `won-6` CUT\n- `won-7` CUT\n- `won-8` CUT\n- `won-9`\n  - note: remove \" on the inside. It's very loud.\"\n- `won-10` CUT\n- `won-11` CUT\n- `won-12`\n  - note: change to \"Their news is calling you 'the Crater Thing'\" I kind of like the name if I am to be honest.\"\n\n## A deployment lost  (C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)\n- `lost-2` CUT\n- `lost-3` CUT\n- `lost-5`\n  - note: add \"Can you imagine what they would do to me if I deleted footage of a loss\"\n- `lost-6`\n  - note: change to \"Don't worry not like you are on a clock or anything  ... welll I mean obviusly youll be youthnized at 120 (note for lore in their socity no one ages past 23 for women and for men its more of an athetic choice when to stop ususally made by the wife .... becouse it would be trivial to live forever this would lead to socital stagnation so people are euthnised either when they feel their contribution is over, society has moved past their frame of refrence e.g. saying \"kids these days are so ... \" is likely to get a \"think its time for uethanatia grand pah\" or a strictly inforced cap of 120 years coming from Gods cap at that age from genesis mental ageing still happens to the extent people become letharginc and less impressed by life as they age and almost no one fights this except people who failed to reproduce wich is why someone without kids by 40 will often be presured into euthensia as a failure to not become a negative externlity for society\n- `lost-8` CUT\n- `lost-9` CUT\n- `lost-10` CUT\n\n## Lost while the desk is dark  (C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)\n- `locked-1`\n  - note: change \"Statistically. Eventually.\" to \"Statistically your bound to win eventually.\"\n- `locked-4`\n  - note: remove \"I'd have cleared it for effort. I'm not allowed to clear things for effort. There was a memo.\" ... just have this one play again and again if it stays dark and the keep loosing after these\n\n## A counter-attack thrown back  (C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)\n- `defended-2` CUT\n- `defended-3` CUT\n- `defended-4` CUT\n- `defended-6` CUT\n"
+}

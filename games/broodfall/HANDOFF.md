@@ -2097,3 +2097,26 @@ rather than invite a discussion on something germane from their perspective caus
   Israel and of Utah, the Council). Every aside in plain words: no doctrine numbers, no "(Collins)".
 - Lore recorded: `content/lore/empire.md` (section 7 the tanks; section 9 Korea, America, Latin America, the Sons and
   the Council), `content/lore/ship-ai-lorebook.md`, `docs/UNIVERSE.md`, her brain (republished).
+
+### YOKE's lines page: exports go to the page's store; applied edits clear (Oct 13 2026)
+
+Collins: "every time you go through it all my old cuts and edits are still there, as they are addressed they should be
+removed ... when I hit export save to some external document you can reference, dumping here seems like context waste."
+
+- The page (https://claude.ai/artifact/CbXWLvxqcNYzq4GhjmS1Ye, version 7) declares the artifact `db` capability. EXPORT
+  CHANGES writes one document per press to collection `exports` (id = the time; fields at, page, n, items, text) and shows
+  an Exports box: when, how many, "waiting for a session" or "applied <date>". Nothing to paste. If the store is
+  unreachable the old clipboard path still runs. `state/draft` mirrors his unexported edits as he makes them.
+- A session reads exports with the ArtifactData tool (query `exports`, order_by at desc, out_dir = scratchpad: the files
+  land on disk, not in the context), applies them, copies the file to `notes/yoke-exports/<id>.json` with `"applied"`
+  added, marks the document applied (ArtifactData update, if_version), re-runs `npx vite-node tools/yoke-lines.ts`,
+  publishes to the url above (omit `capabilities` to keep `db`), commits. The full flow is in the header of
+  `tools/yoke-lines.ts`.
+- Clearing: the generator embeds the fingerprints of every item in an applied export; the page drops the same edit from
+  the browser on the next visit (toast "N applied edits cleared"), and also drops an edit whose line is gone and a beat
+  now reading as he rewrote it. A line rewritten after he wrote a note gets a "line changed since your note" tag. His
+  two exports pasted into chat on Oct 12 2026 are recorded as `notes/yoke-exports/2026-10-12T16-48-45-379Z.json` and
+  `2026-10-12T21-36-56-159Z.json` (82 items, 80 fingerprints), so they clear too: the "Changed or cut" filter showed
+  nothing left in his browser after the publish.
+- Verified end to end in his Chrome: a test note, Export, the document read back with ArtifactData, the draft mirror read
+  back, both deleted, the note cleared.

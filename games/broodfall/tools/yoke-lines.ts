@@ -5,6 +5,26 @@
  * note, and export the changes as a list a session can apply. Re-run after the lines change.
  *
  *   npx vite-node tools/yoke-lines.ts            → notes/YOKE-LINES.html
+ *
+ * The page is published at https://claude.ai/artifact/CbXWLvxqcNYzq4GhjmS1Ye (keep the link: publish with the Artifact tool and
+ * `url` set; the `db` capability is declared on it, omit `capabilities` on a republish to keep it). His edits live in his browser.
+ * EXPORT CHANGES writes them to the artifact's database (Collins, Oct 13 2026: "when I hit export save to some external document
+ * you can reference, dumping here seems like context waste"), collection `exports`, one document per press, id = the time:
+ *   { at, page, n, items: [{ id, group, where, cut, note, text: { <beat index>: { from, to } }, fp }], text }
+ * where `text` is the same markdown the page used to copy to the clipboard and `fp` is the edit's fingerprint. A session picks
+ * exports up with the ArtifactData tool, never by asking him to paste:
+ *   1. ArtifactData action=query url=<the page> collection=exports query={ order_by: { field: 'at', direction: 'desc' }, limit: 5 }
+ *      out_dir=<scratchpad>  → one JSON file per export (the result lists them, nothing lands in the context). Read the ones
+ *      without `applied`.
+ *   2. Apply the items to the files named in them; answer his questions in the reply.
+ *   3. Copy the file to notes/yoke-exports/<id>.json and add "applied": "<date>" to it. Its fingerprints then clear those edits
+ *      from his page on his next visit (Collins, Oct 13 2026: "my old cuts and edits are still there, as they are addressed they
+ *      should be removed"). An item you did not act on: delete it from the copy, and its edit stays on the page.
+ *   4. ArtifactData action=update collection=exports doc_id=<id> data={ applied: '<date>' } if_version=<the version the query showed>,
+ *      so the page's Exports box shows it applied.
+ *   5. Re-run this tool, publish notes/YOKE-LINES.html to the url above, commit.
+ * `state/draft` in the same database mirrors his edits as he makes them (a safety net: read it only when he says he edited but
+ * did not export). The page also clears, on its own, an edit whose line is gone and a rewritten beat now reading as he wrote it.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -179,6 +199,16 @@ const groups: Group[] = [
     lines: plain('c21', loreList(lore, /The 21st century/), 'lore') },
 ];
 
+/** The exports a session has applied (notes/yoke-exports/*.json, each a document from the page's store with "applied" added):
+ *  their fingerprints clear the same edits from his browser on his next visit. One not yet applied leaves its edits alone. */
+const EXPORTS = path.join(ROOT, 'notes', 'yoke-exports');
+const processed = new Set<string>();
+for (const f of fs.existsSync(EXPORTS) ? fs.readdirSync(EXPORTS).filter((n) => n.endsWith('.json')).sort() : []) {
+  const j = JSON.parse(fs.readFileSync(path.join(EXPORTS, f), 'utf8')) as { applied?: string; items?: { fp?: string }[] };
+  if (!j.applied) continue;
+  for (const it of j.items ?? []) if (it.fp) processed.add(it.fp);
+}
+
 const data = {
   asOf: new Date().toISOString().slice(0, 10),
   files: [
@@ -192,8 +222,10 @@ const data = {
     { what: 'When the money stops', path: ABS('src/meta/yokePlayer.ts') },
     { what: 'While she dances', path: ABS('src/ui/loader.ts') },
     { what: 'This page is made by', path: ABS('tools/yoke-lines.ts') },
+    { what: 'Exports a session applied (each clears its edits from this page)', path: ABS('notes/yoke-exports') },
   ],
   groups,
+  processed: [...processed],
 };
 
 const template = read('tools/yoke-lines.template.html');
@@ -201,5 +233,5 @@ const json = JSON.stringify(data).replace(/</g, '\\u003c');
 const out = path.join(ROOT, 'notes', 'YOKE-LINES.html');
 fs.writeFileSync(out, template.replace('__DATA__', json));
 const total = groups.reduce((a, g) => a + g.lines.length, 0);
-console.log(`${out}: ${total} lines in ${groups.length} groups`);
+console.log(`${out}: ${total} lines in ${groups.length} groups; ${processed.size} applied edits will clear from the page`);
 for (const g of groups) console.log(`  ${String(g.lines.length).padStart(3)}  ${g.name}`);

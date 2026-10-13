@@ -1,0 +1,254 @@
+{
+  "id": "2026-10-12T21-36-56-159Z",
+  "at": "2026-10-12T21:36:56.159Z",
+  "page": "2026-10-12",
+  "source": "pasted into the chat (before the page saved exports itself)",
+  "applied": "2026-10-12",
+  "n": 27,
+  "items": [
+    {
+      "id": "unlock",
+      "group": "The desk opens",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts",
+      "cut": false,
+      "note": "would change \"aimed straight up at us.\"  to  \"asking to help us\"  and this should have \"And, um... someone left coloured cards in a field.\" after it \"um ... really big coloured cards.\"",
+      "text": {},
+      "fp": "g9cong"
+    },
+    {
+      "id": "mate-review",
+      "group": "Once, early",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts",
+      "cut": false,
+      "note": "lets chaange this \"I kid, of course. Can you believe early humans actually used their breeding partners for sexual release and companionship?\" to just \"I kid, of course. Can you believe early humans actually used their breeding partners for sexual release?\"",
+      "text": {},
+      "fp": "z1ba9q"
+    },
+    {
+      "id": "partner-index",
+      "group": "The personal plot",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts",
+      "cut": true,
+      "note": "not needed",
+      "text": {},
+      "fp": "1jxmgna"
+    },
+    {
+      "id": "partner-progress",
+      "group": "The personal plot",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts",
+      "cut": false,
+      "note": "change \"It's just... a big ship, for one.\" \"Well I will be doing most of the work wich is dam more exciting then waiting her alone.\"",
+      "text": {},
+      "fp": "qj7xi2"
+    },
+    {
+      "id": "intro-barnabas",
+      "group": "The once intros",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts  (order and captures: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\src\\meta\\onboarding.ts INTROS)",
+      "cut": false,
+      "note": "change \"I said you eat bugs. Indirectly. He said good boy.\" to \"I said I would send a report if you weren't ... dogs really are just that sweet right?\"",
+      "text": {},
+      "fp": "z8wn4e"
+    },
+    {
+      "id": "intro-duck",
+      "group": "The once intros",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts  (order and captures: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\src\\meta\\onboarding.ts INTROS)",
+      "cut": false,
+      "note": "well did you program it to only apear if they won the first misssion ...",
+      "text": {},
+      "fp": "1stxo7j"
+    },
+    {
+      "id": "intro-catgirl",
+      "group": "The once intros",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts  (order and captures: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\src\\meta\\onboarding.ts INTROS)",
+      "cut": false,
+      "note": "does this always actually come after the others  ... oh and change \"a genetic fix.\" \"the tanks. You know I saw one\" disgusted \"prenant once it was grotest their abdomons distend inhumanly  ... it did not look safe. And don't get me started on her ... what where those things called again ... udders? they looked enlarged even for a cat girl.\" (for the secret text technopuritans breed using artifical wombs and femails have very small breasts having them engineeered away as inefcient ... same thing happened to male body hair and BO\"",
+      "text": {},
+      "fp": "fdfox1"
+    },
+    {
+      "id": "earth-4",
+      "group": "News from Earth",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)",
+      "cut": false,
+      "note": "why do you have it say  (Collins) this is lore for the lore section I expected you to clean up",
+      "text": {},
+      "fp": "1qk15xz"
+    },
+    {
+      "id": "earth-5",
+      "group": "News from Earth",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)",
+      "cut": false,
+      "note": "the note here makes no sense the babtists are the group that became most powerfull in the USA (one of the more religioiusly diverse laces on earth still but rabidly anti rome ... the point here being is soemthing now thought of as a mall disgrment in batist comunities could become something of import in the future pre-vs post minialism",
+      "text": {},
+      "fp": "jf348a"
+    },
+    {
+      "id": "earth-6",
+      "group": "News from Earth",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)",
+      "cut": false,
+      "note": "\"this is not relvant \" The Empire's broadcasts never use sound to move a crowd (altered states are the Basilisk's), only to keep time.\"",
+      "text": {},
+      "fp": "1quapee"
+    },
+    {
+      "id": "earth-8",
+      "group": "News from Earth",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)",
+      "cut": false,
+      "note": "ok this is gibberish \"Behind it, for her live mind only: Africa: standing wars between high-fertility faiths. Doctrine (TP 11.0, TP 13.0): high-fertility groups that turned from technology and think themselves already perfect, \"the chittering hordes\", are man's final test; Earth's holy powers are the example in every classroom. And \"no monoculture\" (TP 12.0): to have the whole world under one religion is to silence the voice of God; Earth was left alone by doctrine, not by neglect, and a citizen of real merit found there may be invited out.\"",
+      "text": {},
+      "fp": "15cxn81"
+    },
+    {
+      "id": "earth-10",
+      "group": "News from Earth",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)",
+      "cut": false,
+      "note": "change \" On Earth. Where nobody has a receiver. It's adorable.\" to \"so they invented a resence system that has turned pains of glass into speakers ... can you imagine how anoying that would be.\"",
+      "text": {},
+      "fp": "1ci3uc2"
+    },
+    {
+      "id": "earth-11",
+      "group": "News from Earth",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)",
+      "cut": false,
+      "note": "this is a borring direction for korea ... tons of cults come out of korea I would have korean culture end up divided between a fantaical cult that started as a scam gatcha game and cheabols that started breeding their own employees and evolved in the direction of a uesocial species with a the only femails being their human face for speaking and stiled after idols who don't live paste 25 as a statment on idol culture (neither of these groups space travel as after the north and south integrated many of the totaltarian idiologies of the north infected the cheabols and korean democracy wich is how they went in that direction(it was the north south integration that lead to a large exedus wich came to america and became the source of the korean ethnicity in the technopuritans",
+      "text": {},
+      "fp": "h5mq4y"
+    },
+    {
+      "id": "earth-12",
+      "group": "News from Earth",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)",
+      "cut": false,
+      "note": "again what the hell: (Collins)",
+      "text": {},
+      "fp": "19nw3ku"
+    },
+    {
+      "id": "earth-13",
+      "group": "News from Earth",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)",
+      "cut": false,
+      "note": "well don't just say it it needs to comoe out organicly through questions when talking about some world event down stream of this",
+      "text": {},
+      "fp": "1s9h8i6"
+    },
+    {
+      "id": "earth-14",
+      "group": "News from Earth",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)",
+      "cut": true,
+      "note": "",
+      "text": {},
+      "fp": "1wxm6o7"
+    },
+    {
+      "id": "earth-15",
+      "group": "News from Earth",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)",
+      "cut": false,
+      "note": "Mormons actually have a huge ferlity problum even now. I do like the idea of steady momron expansion but its becouse of a totaltarian police state that controls every aspect of lthe lives in people in momrom territory",
+      "text": {},
+      "fp": "1gci0kl"
+    },
+    {
+      "id": "earth-16",
+      "group": "News from Earth",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)",
+      "cut": false,
+      "note": "this is stupid you need to explain through story telling ... ok example \"I was listening to an earth cast recently on the recent Rome conquest and only its getting hard to make senese of what they are sayinig these days. I somtimes wonder if we couldn't just zap away only their guns leaving a monkey with an AK and is the outcome not partially your responsiblity.... I kno I know then they would just use swords again wich would be worse I get it\"\"",
+      "text": {},
+      "fp": "1wmzks"
+    },
+    {
+      "id": "earth-17",
+      "group": "News from Earth",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)",
+      "cut": false,
+      "note": "Oh the amish where eradicated as soon as law and order borked down due to a collapse in the social security and welfair systm due to being pacifists in a world where anyone can just walk up shoot you and take your stuff this can be in the lore doesnt need to be here",
+      "text": {},
+      "fp": "1afyx5p"
+    },
+    {
+      "id": "earth-18",
+      "group": "News from Earth",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)",
+      "cut": false,
+      "note": "\"Two of those will stick. The Board's betting on which.\" change to \"the hindu have had a touch time of it lately nice to see\"",
+      "text": {},
+      "fp": "1l0n6j9"
+    },
+    {
+      "id": "earth-19",
+      "group": "News from Earth",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)",
+      "cut": false,
+      "note": "\"means I need to hear it.\" to \"means you might want to check it out.\" and then something in the secret that the sermon contains peices of that standard whatever that prostant belilfe is in some part of the us about wantito protect isreal and likely add that you wonder if this intentional to keep it from being shot down / as a note the saduces closest allies are the babtists in america and they have worked to maintain these beliefes in their culture (the saducies) sending them techh supllies ect wich is why america is  mostly peicefull and technlogicaly capable for the world at large",
+      "text": {},
+      "fp": "1f5zyyi"
+    },
+    {
+      "id": "earth-20",
+      "group": "News from Earth",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)",
+      "cut": true,
+      "note": "stupid",
+      "text": {},
+      "fp": "m1it3j"
+    },
+    {
+      "id": "earth-21",
+      "group": "News from Earth",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)",
+      "cut": false,
+      "note": "this is kind of a lame take I would have lattam population collapse signficantly and have mass govermental collapse after the dollapse of china wich was a huge raw resource buyer leading to america building a giant wall. the catholic church keeps marginal operations there but it sees nothing in the americas as worth the focus of the cursade as such the surving groups are some trad catchs, a cult of anta merute, and that weird catholic spiratlist cult out of brazil all of wich broadly get along like the american prostant factions",
+      "text": {},
+      "fp": "1bfli94"
+    },
+    {
+      "id": "earth-22",
+      "group": "News from Earth",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)",
+      "cut": true,
+      "note": "stupid not an expanding story just saying somthing",
+      "text": {},
+      "fp": "1g3ggmk"
+    },
+    {
+      "id": "earth-23",
+      "group": "News from Earth",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)",
+      "cut": false,
+      "note": "again not intresting would say something uppout isreal expanded again thing the index is going to do anything about it ... do you think they are engineering these attacks? PRobably not too risky if the coinil found out",
+      "text": {},
+      "fp": "1y4dd9a"
+    },
+    {
+      "id": "earth-24",
+      "group": "News from Earth",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)",
+      "cut": false,
+      "note": "this shouold be obvius from the lore not said \"There was a war once. Short. We can glass Israel in an afternoon, they can't glass a thousand spheres, and neither of us wants to find out what their colonies would do about it. So: a freighter, and manners.\"",
+      "text": {},
+      "fp": "nv0u0h"
+    },
+    {
+      "id": "earth-25",
+      "group": "News from Earth",
+      "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)",
+      "cut": true,
+      "note": "again not good story telling ....  ok example, \"looks like Son's of Isreal set up a second dedicated dyson sphere that puts them on equal footing with the sons of utah ... I have always questioned the wisdom of allowing completly seprate orginsational structures for groups that might have their own goals but I get it I get it. (the implied being that in technoputanism the belife is god would favor a group making the right choice by allowing them to out produce or outwit others",
+      "text": {},
+      "fp": "g5jiiq"
+    }
+  ],
+  "text": "# YOKE lines: changes (2026-10-12)\n\n## The desk opens  (C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)\n- `unlock`\n  - note: would change \"aimed straight up at us.\"  to  \"asking to help us\"  and this should have \"And, um... someone left coloured cards in a field.\" after it \"um ... really big coloured cards.\"\n\n## Once, early  (C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)\n- `mate-review`\n  - note: lets chaange this \"I kid, of course. Can you believe early humans actually used their breeding partners for sexual release and companionship?\" to just \"I kid, of course. Can you believe early humans actually used their breeding partners for sexual release?\"\n\n## The personal plot  (C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts)\n- `partner-index` CUT\n  - note: not needed\n- `partner-progress`\n  - note: change \"It's just... a big ship, for one.\" \"Well I will be doing most of the work wich is dam more exciting then waiting her alone.\"\n\n## The once intros  (C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts  (order and captures: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\src\\meta\\onboarding.ts INTROS))\n- `intro-barnabas`\n  - note: change \"I said you eat bugs. Indirectly. He said good boy.\" to \"I said I would send a report if you weren't ... dogs really are just that sweet right?\"\n- `intro-duck`\n  - note: well did you program it to only apear if they won the first misssion ...\n- `intro-catgirl`\n  - note: does this always actually come after the others  ... oh and change \"a genetic fix.\" \"the tanks. You know I saw one\" disgusted \"prenant once it was grotest their abdomons distend inhumanly  ... it did not look safe. And don't get me started on her ... what where those things called again ... udders? they looked enlarged even for a cat girl.\" (for the secret text technopuritans breed using artifical wombs and femails have very small breasts having them engineeered away as inefcient ... same thing happened to male body hair and BO\"\n\n## News from Earth  (C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall\\content\\greetings.ts))\n- `earth-4`\n  - note: why do you have it say  (Collins) this is lore for the lore section I expected you to clean up\n- `earth-5`\n  - note: the note here makes no sense the babtists are the group that became most powerfull in the USA (one of the more religioiusly diverse laces on earth still but rabidly anti rome ... the point here being is soemthing now thought of as a mall disgrment in batist comunities could become something of import in the future pre-vs post minialism\n- `earth-6`\n  - note: \"this is not relvant \" The Empire's broadcasts never use sound to move a crowd (altered states are the Basilisk's), only to keep time.\"\n- `earth-8`\n  - note: ok this is gibberish \"Behind it, for her live mind only: Africa: standing wars between high-fertility faiths. Doctrine (TP 11.0, TP 13.0): high-fertility groups that turned from technology and think themselves already perfect, \"the chittering hordes\", are man's final test; Earth's holy powers are the example in every classroom. And \"no monoculture\" (TP 12.0): to have the whole world under one religion is to silence the voice of God; Earth was left alone by doctrine, not by neglect, and a citizen of real merit found there may be invited out.\"\n- `earth-10`\n  - note: change \" On Earth. Where nobody has a receiver. It's adorable.\" to \"so they invented a resence system that has turned pains of glass into speakers ... can you imagine how anoying that would be.\"\n- `earth-11`\n  - note: this is a borring direction for korea ... tons of cults come out of korea I would have korean culture end up divided between a fantaical cult that started as a scam gatcha game and cheabols that started breeding their own employees and evolved in the direction of a uesocial species with a the only femails being their human face for speaking and stiled after idols who don't live paste 25 as a statment on idol culture (neither of these groups space travel as after the north and south integrated many of the totaltarian idiologies of the north infected the cheabols and korean democracy wich is how they went in that direction(it was the north south integration that lead to a large exedus wich came to america and became the source of the korean ethnicity in the technopuritans\n- `earth-12`\n  - note: again what the hell: (Collins)\n- `earth-13`\n  - note: well don't just say it it needs to comoe out organicly through questions when talking about some world event down stream of this\n- `earth-14` CUT\n- `earth-15`\n  - note: Mormons actually have a huge ferlity problum even now. I do like the idea of steady momron expansion but its becouse of a totaltarian police state that controls every aspect of lthe lives in people in momrom territory\n- `earth-16`\n  - note: this is stupid you need to explain through story telling ... ok example \"I was listening to an earth cast recently on the recent Rome conquest and only its getting hard to make senese of what they are sayinig these days. I somtimes wonder if we couldn't just zap away only their guns leaving a monkey with an AK and is the outcome not partially your responsiblity.... I kno I know then they would just use swords again wich would be worse I get it\"\"\n- `earth-17`\n  - note: Oh the amish where eradicated as soon as law and order borked down due to a collapse in the social security and welfair systm due to being pacifists in a world where anyone can just walk up shoot you and take your stuff this can be in the lore doesnt need to be here\n- `earth-18`\n  - note: \"Two of those will stick. The Board's betting on which.\" change to \"the hindu have had a touch time of it lately nice to see\"\n- `earth-19`\n  - note: \"means I need to hear it.\" to \"means you might want to check it out.\" and then something in the secret that the sermon contains peices of that standard whatever that prostant belilfe is in some part of the us about wantito protect isreal and likely add that you wonder if this intentional to keep it from being shot down / as a note the saduces closest allies are the babtists in america and they have worked to maintain these beliefes in their culture (the saducies) sending them techh supllies ect wich is why america is  mostly peicefull and technlogicaly capable for the world at large\n- `earth-20` CUT\n  - note: stupid\n- `earth-21`\n  - note: this is kind of a lame take I would have lattam population collapse signficantly and have mass govermental collapse after the dollapse of china wich was a huge raw resource buyer leading to america building a giant wall. the catholic church keeps marginal operations there but it sees nothing in the americas as worth the focus of the cursade as such the surving groups are some trad catchs, a cult of anta merute, and that weird catholic spiratlist cult out of brazil all of wich broadly get along like the american prostant factions\n- `earth-22` CUT\n  - note: stupid not an expanding story just saying somthing\n- `earth-23`\n  - note: again not intresting would say something uppout isreal expanded again thing the index is going to do anything about it ... do you think they are engineering these attacks? PRobably not too risky if the coinil found out\n- `earth-24`\n  - note: this shouold be obvius from the lore not said \"There was a war once. Short. We can glass Israel in an afternoon, they can't glass a thousand spheres, and neither of us wants to find out what their colonies would do about it. So: a freighter, and manners.\"\n- `earth-25` CUT\n  - note: again not good story telling ....  ok example, \"looks like Son's of Isreal set up a second dedicated dyson sphere that puts them on equal footing with the sons of utah ... I have always questioned the wisdom of allowing completly seprate orginsational structures for groups that might have their own goals but I get it I get it. (the implied being that in technoputanism the belife is god would favor a group making the right choice by allowing them to out produce or outwit others\n"
+}
