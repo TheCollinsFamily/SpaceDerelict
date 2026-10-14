@@ -2243,3 +2243,9 @@ the companion's affection level for her to let you talk to Atlas directly."
   tools/art/mirelle-options.mjs in art-src/letters/options/ (16,000 tokens), each a different degree of feline, on the
   portrait page (built by tools/art/partner-page.mjs, pictures scaled to 900 px JPEG to stay under the artifact limit).
   WAITING ON HIS PICK; then it goes beside her thread in the Letters room (a picture slot there is still to build).
+- `back-12` (Collins, Oct 14 2026, his words): Prime spaced at school; adolescents of the late twentieth century rarely
+  died; a society built on recreation and avoiding suffering. With it the world history is corrected: only about 20% of
+  adolescents survive school (through what we would call a PhD) and why (honest fitness testing against faked fitness and
+  the dysgenic crisis; breeding most is no measure of use to God; nepotism killed by status in taking out the well-born;
+  no cruelty since the dead come back). `empire.md` sections 4 (the arithmetic: 20 per couple, ten times a generation),
+  5 and 6, `docs/UNIVERSE.md`, the lorebook, and the aside on the line.

@@ -105,10 +105,11 @@ inefficient, the Index raises the children; the player's technician was raised b
 enough and the Board may let you raise your own ("thirty to sixty little versions of you running
 around": YOKE's `partner-progress` line).
 
-- **The arithmetic.** 10 × 10 = **100 children per couple.** About half survive krypteia and
-  testing, so **about 50 per couple enter the index**: Collins's "growth rate of 50 per
-  generation". In people that is **25 times per generation** (50 grown children from 2 parents).
-  One couple's line passes ten billion in seven generations.
+- **The arithmetic.** 10 × 10 = **100 children per couple.** Collins, Oct 14 2026: only about **20%** of
+  adolescents survive school (krypteia through what we would call a PhD), so **about 20 per couple enter the
+  index**: **10 times per generation** (20 grown children from 2 parents). One couple's line passes ten billion
+  in ten generations. (Before Oct 14 2026 these notes said half survive and 50 enter, from his "growth rate of 50
+  per generation" of Sep 30; the 20% is the later word and stands.)
 - **Spouses** are matched by the Board's marriage market (HOME 1.0; TPG 2.6) and live together as
   partners in a House. **Collins, Sep 30 (YOKE's mate-review greeting in `content/greetings.ts`):**
   the Empire finds it strange that early humans used their breeding partners "for sexual release
@@ -178,16 +179,27 @@ would reject a self-sufficiency rite for one sex only (TPG 12.1). The Empire mad
 - **PROPOSAL, the record:** the Index records whether a youth survived the year, not how. The
   corpus hoped for a "non-murdery" version (TPG 12.1); the Empire's form has no box for the
   question.
-- About half of each cohort does not come back from krypteia and testing together (Collins).
+- Only about a fifth of each cohort comes through krypteia and school together (Collins, Oct 14 2026; it was "about
+  half" in his notes of Sep 30).
 
 ## 6. Testing and education
 
-Collins: those who survive a year of krypteia face a brutal testing and education process to
-prepare them to enter the index; only about half survive krypteia and testing.
+Collins, Oct 14 2026 (replacing his Sep 30 note that about half survive): "only about 20% of adolescents survive
+through 'school', which goes up through what we consider a PhD and is a brutal series of tests to attempt to honestly
+test 'fitness', under the belief that if this was not done people would either find ways to fake fitness and recreate
+the dysgenic crisis of the 20th century (it's how they maintain 'fairness' of judging), and that if this did not happen
+the most genetically successful people would just be the ones that bred the most, which is not a good metric of how
+useful they are to God, e.g. the Empire; and it prevents nepotism, as it's generally higher status to take out students
+with higher-status parents, who are presumably more fit. Given that you just come back in a simulation after being
+killed, they struggle to see any cruelty in this and instead treat deferring the long-term thriving of humanity for
+your own moral purity as the cruel thing to do." Students kill students, and it counts: the technician spaced a
+classmate called Prime (YOKE's `back-12` line); the partner candidate's file records her kills, and "never by physical
+violence" is a notable entry.
 
-**PROPOSAL:** four to six years; academic, physical and doctrinal; ranked, never passed or failed
-in words (the Index records scores, and the scores decide the posting). A youth enters the index
-at about 18 to 20. The Broodfall technician, about twenty-five, is some six years past it.
+**PROPOSAL:** school runs from the end of krypteia, at about 14, to about 24, academic, physical and doctrinal, with
+the survival camp (months alone, content/partner.ts) inside it; ranked, never passed or failed in words (the Index
+records scores, and the scores decide the posting). A youth enters the index at about 24. The Broodfall technician is
+a year or two past it.
 
 ## 7. Bodies
 

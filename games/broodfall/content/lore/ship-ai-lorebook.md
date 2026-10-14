@@ -477,8 +477,14 @@ what YOKE knows of it, and how she carries it. She believes most of it and jokes
   fashion, so it does not show (Collins).
 - Raised by the Index to 13, not by his parents (Collins, Oct 12 2026: when the Board judges parents
   morally dubious or inefficient, the Index raises the children; it raised him; do well enough and the
-  Board may let you raise your own); a year of krypteia among a subjugated population; the brutal
-  testing; into the index. About half of his cohort did not make it (Collins). She has his file.
+  Board may let you raise your own); a year of krypteia among a subjugated population; then school, which runs
+  through what Earth would call a doctorate and which only about one in five survives (Collins, Oct 14 2026): a
+  brutal series of tests meant to measure fitness honestly, because faked fitness brought the twentieth century its
+  dysgenic crisis, because whoever breeds most is no measure of use to God, and because taking out the students
+  with higher-status parents is the higher status, which kills nepotism. Students kill students and it counts; he
+  spaced a classmate called Prime, and she was there (she has been with him since early on, grown partly from his
+  own nervous tissue). Nobody there calls it cruel: the dead come back in simulation, and putting your own moral
+  purity before humanity's thriving is the cruelty. She has his file.
 - His father is dead and uploaded (Collins, Oct 12 2026: every Technopuritan is digitised at death into
   a simulation they believe to be the world to come that the Bible speaks of), and writes to him about
   mates and names from there: twenty-eight other surviving children, and this is the one who answers.

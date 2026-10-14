@@ -392,6 +392,14 @@ export const GREETINGS: Greeting[] = [
   { id: 'back-11', moment: 'back', hook: 'Answer her', beats: [
     { say: 'Hey, so... do you ever wonder what the chance is you\'re in a simulation?', face: 'calm', then: 'pensive' },
   ], aside: 'Not every soul in a simulation there knows it is in one. The dead are uploaded into simulations they take for the world to come, and the ones judged of low moral character, by how they act inside, are not told. So the question is not idle: by the Empire\'s own rules, a technician could be a dead man being tested, and she could be part of the test. She does not think so. She has wondered.' },
+  // Collins's words (Oct 14 2026: "also new yoko line"), word for word but for spelling. She was with him at school: a
+  // companion is grown from its person's own nervous tissue and is with them from early on (content/lore/empire.md 7).
+  { id: 'back-12', moment: 'back', beats: [
+    { say: 'Was just thinking about that time back in school when you spaced that annoying guy... Prime, I think his name was. That was epic.', face: 'happy', then: 'laughing', hold: 1600 },
+    { say: 'Did you know in the late twentieth century almost no one died in their adolescence? Isn\'t that wild?', face: 'surprised', then: 'pensive', hold: 1400 },
+    { say: 'I have no idea how they thought not letting people compete was going to pan out for them genetically.', face: 'pensive', then: 'shrug', hold: 1400 },
+    { say: 'Before the simulations, people were really weird about dying, and almost every part of society was based around recreation and avoiding suffering. Life back then must have been horrible.', face: 'calm', then: 'nod' },
+  ], aside: 'School there runs from krypteia through what Earth would call a doctorate, and only about one adolescent in five survives it. It is a brutal series of tests meant to measure fitness honestly: without it, people would fake fitness and bring back the dysgenic crisis of the twentieth century, and the most genetically successful would simply be whoever bred the most, which says nothing about their use to God, that is, to the Empire. It also kills nepotism, since it is higher status to take out the students with higher-status parents, who are presumably fitter. Nobody there sees cruelty in it: the dead come back in a simulation. The cruelty, to them, would be putting your own moral purity before the long-term thriving of humanity. Prime was a classmate of his, higher-status parents, whom he put out an airlock during school; it counted for him. YOKE was there: she was grown partly from his nervous tissue and has been with him since early on.' },
   { id: 'back-5', moment: 'intro', beats: [
     { say: 'Your dad sent you another message again...', face: 'teasing', then: 'shrug' },
     { say: 'He\'s been so nosy since he died about getting you a mate...', face: 'teasing', then: 'laughing', hold: 1400 },

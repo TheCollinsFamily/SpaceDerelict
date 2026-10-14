@@ -90,9 +90,15 @@ doctrine 11 (the chittering hordes).
   dubious or inefficient: then the Index raises them (Collins, Oct 12 2026; Broodfall's technician was).
 - **Krypteia (one year).** At 13 each child goes on krypteia: a year of surviving by their own
   means, living among a subjugated population.
-- **Testing and education.** Those who survive the year face a brutal testing and education
-  process that prepares them to enter **the index**, the wider imperial system.
-- **About half survive** krypteia and testing together.
+- **School.** Those who survive the year face school, which runs through what we would call a PhD: a brutal
+  series of tests meant to measure fitness honestly, that prepares them to enter **the index**, the wider imperial
+  system. Students kill students, and it counts for the killer.
+- **About one in five survives** krypteia and school together (Collins, Oct 14 2026; earlier notes said half).
+  The Empire's reasons: without honest testing people would fake fitness and bring back the twentieth century's
+  dysgenic crisis; otherwise the most genetically successful would simply be those who bred most, no measure of
+  use to God; and it kills nepotism, since taking out the students with higher-status parents is the higher
+  status. With the dead coming back in simulation they see no cruelty in it; putting one's own moral purity before
+  humanity's long-term thriving is the cruelty.
 - **Ageing and the cap** (Collins, Oct 12 2026): nobody ages past 23 in looks (for men it is an aesthetic
   choice, usually the wife's). Living forever would be trivial and would stagnate society, so people are
   euthanised when their contribution is over, when society has moved past their frame of reference, or at
