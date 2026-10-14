@@ -122,12 +122,16 @@ around": YOKE's `partner-progress` line).
   themselves), which listed her as DANGEROUSLY SENTIMENTAL: not given command of a ship. She does not mind and enjoys
   her job. Under genetic modifications: a prehensile tail and significant olfactory modifications, marked as inherited
   from modifications to one of her ancestors, not changes made to her directly; she is open to having the tail amputated
-  if that is her partner's preference. One robotic arm: she lost the real one during an assassination attempt at school,
-  which this society considers normal. Drawn flat-chested, as Technopuritan women are (section 7). (The name and the
-  concordance figure, 93.1%, are the session's; the rest is his.)
+  if that is her partner's preference. One robotic arm, bare ("just the bare bones needed", the circuitry exposed): she
+  lost the real one on her class's camping trip, where students are left for a few months to learn to survive on their
+  own, when a classmate with venomous spit spat at her face; she blocked it with her hand, which went necrotic, and she
+  amputated and cauterised it herself. Her glasses are an eccentricity she saw in a history class once and thought
+  looked "cute" (her eyes are standard). Drawn slightly skinny and flat-chested, as Technopuritan women are (section 7).
+  (The name and the concordance figure, 93.1%, are the session's; the rest is his.)
   - *What the file shows about the Empire* (**PROPOSAL** from his facts): modifications run in families and are recorded
-    by origin (made to you, or inherited); assassination attempts at school are within the normal range; a prosthetic is
-    a line on a form.
+    by origin (made to you, or inherited); some classmates carry venom; the schools' survival camp leaves students alone
+    for months and what happens there is within the normal range; a prosthetic is a line on a form; sight is standard,
+    so glasses are an affectation.
 - **Raising 100 children.** **PROPOSAL:** a couple's breeding decade is spent in a family habitat,
   with the household's intelligence running the nursery (AI integration) and older siblings
   teaching younger. At the end of the decade the eldest are ten years from krypteia and the

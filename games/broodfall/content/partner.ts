@@ -13,9 +13,12 @@
  * ending themselves). That got her listed as DANGEROUSLY SENTIMENTAL, which is why she was not given command of a ship.
  * She does not mind; she enjoys her job. Later the same day: under genetic modifications, a prehensile tail and
  * significant olfactory modifications, marked as inherited from an ancestor's modifications rather than changes to her,
- * and she is open to having the tail amputated if that is her partner's preference; and one robotic arm, the real one
- * lost during an assassination attempt at school (considered normal in this society). Drawn flat-chested, as
- * Technopuritan women are (content/lore/empire.md, section 7: breasts were engineered away).
+ * and she is open to having the tail amputated if that is her partner's preference; and one robotic arm, bare, "just the
+ * bare bones needed" with the circuitry exposed. How she lost it (his later note): her class was on its camping trip,
+ * where students are left for a few months to learn to survive on their own; a classmate with venomous spit spat at her
+ * face, she blocked it with her hand, the hand went necrotic, and she amputated and cauterised it herself. The glasses are
+ * an eccentricity: she saw them in a history class once and thought they looked "cute". Drawn slightly skinny and
+ * flat-chested, as Technopuritan women are (content/lore/empire.md, section 7: breasts were engineered away).
  */
 export const PARTNER = {
   form: 'FORM PL-7 · CANDIDATE PARTNER PROFILE',
@@ -33,7 +36,8 @@ export const PARTNER = {
     ['Schooling', 'Notable for technical skill. No classmate killed by physical violence. One classmate\'s life support cut off during a training exercise; one classmate talked into ending themselves.'],
     ['Command assessment', 'DANGEROUSLY SENTIMENTAL. Not to be given command of a ship. The candidate has stated she does not mind and enjoys her post.'],
     ['Genetic modifications', 'A prehensile tail; significant olfactory modifications. Both INHERITED, from modifications made to an ancestor; no modification has been made to the candidate directly. The candidate is open to having the tail amputated if that is her partner\'s preference.'],
-    ['Prosthetics', 'Left arm, robotic. The original was lost during an assassination attempt at school (within the normal range).'],
+    ['Prosthetics', 'Left arm, robotic, bare: the frame and circuitry needed and nothing over them. The original was lost on her class\'s survival camp (students are left for some months to learn to survive on their own): a classmate with venomous spit spat at her face, she blocked it with her hand, the hand went necrotic, and she amputated and cauterised it herself. Within the normal range.'],
+    ['Eccentricities', 'Wears glasses. Her eyes are standard; she saw glasses in a history class once and thought they looked "cute".'],
   ] as Array<[string, string]>,
   statement: 'Statement of the candidate (twenty words at most): "I am better with the dead than the living. I would try with you. Sorry. That was too many words."',
   boardNote: 'The Board will decide on the match when the applicant\'s standing reaches {need} (now {standing}). The Board congratulates you on your continued eligibility to remain eligible.',

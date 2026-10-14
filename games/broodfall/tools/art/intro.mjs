@@ -200,16 +200,18 @@ export const PICTURES = [
     width: 1024, height: 1024,
     refs: () => [path.join(CONCEPTS, 'r4-hero-portrait.png')],
     // Collins, Oct 14 2026: ginger, freckles, glasses, shy and blushing, looks twenty-three; flat-chested, as Technopuritan
-    // women are; one robotic arm (content/partner.ts). The tail is in the file, not the photograph.
+    // women are; one robotic arm, bare, its circuitry showing; slightly skinny (content/partner.ts, his notes later the
+    // same day). The tail is in the file, not the photograph.
     still: 'An official identification photograph, lifelike, from a far-future austere, ultra-efficient human society: ' +
       'a portrait of a cute young woman who looks about twenty-three, facing the camera straight on, centred, framed a ' +
       'little wider than a passport photo: from the top of her head to her waist, her hands folded in front of her at the ' +
       'bottom of the frame. Plain even pale grey backdrop, flat even ' +
       'studio light, sharp focus, no retouching glamour. She is modestly and fully dressed in the same uniform as the man in ' +
       'the reference: a plain black high-necked tunic with a narrow white collar, buttoned to the throat. The tunic hangs ' +
-      'straight and flat: she is flat-chested, as the women of this society are. Her left forearm and hand are a plain ' +
-      'matte dark-grey machined prosthetic, functional and unadorned, the tunic sleeve ending above it; her right hand is ' +
-      'her own, pale and freckled. Ginger hair, a ' +
+      'straight and flat on a slight, slender frame: she is thin and flat-chested, as the women of this society are. Her ' +
+      'left forearm and hand are a bare-bones prosthetic: an open skeletal frame of dark machined struts with the ' +
+      'circuitry, cables and actuators exposed between them, nothing covered that need not be, functional and unadorned, ' +
+      'the tunic sleeve ending above it; her right hand is her own, pale and freckled. Ginger hair, a ' +
       'warm red-orange, pulled back neatly into a low bun with a few fine wisps loose at the temples; pale skin with ' +
       'freckles across her nose and cheeks; round thin-rimmed glasses; no jewellery, no makeup. A shy expression: a faint ' +
       'blush on her cheeks, eyes meeting the camera a little uncertainly, lips pressed in a small nervous almost-smile, as ' +

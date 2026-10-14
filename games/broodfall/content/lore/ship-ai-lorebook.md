@@ -179,8 +179,11 @@ never killing a classmate by physical violence (one classmate's life support cut
 talked into ending themselves), which got her marked DANGEROUSLY SENTIMENTAL and kept from a ship's command; she does
 not mind, she likes her job. Under genetic modifications: a prehensile tail and significant olfactory modifications,
 both inherited from an ancestor's modifications rather than made to her, and she is open to having the tail amputated
-if her partner prefers. Her left arm is robotic: the real one was lost in an assassination attempt at school, which is
-normal there. Flat-chested, as Technopuritan women are. YOKE computed the concordance (93.1%) and has read the file
+if her partner prefers. Her left arm is robotic and bare, the frame and circuitry with nothing over them: the real one
+was lost on her class's survival camp (students are left for some months to learn to live on their own) when a classmate
+with venomous spit spat at her face; she blocked it with her hand, the hand went necrotic, and she amputated and
+cauterised it herself, which is within the normal range there. Her glasses are an eccentricity: her eyes are standard;
+she saw glasses in a history class once and thought they looked "cute". Thin and flat-chested, as Technopuritan women are. YOKE computed the concordance (93.1%) and has read the file
 more times than the form required. She thinks the candidate would be kind to him, and is not sure how she feels about that.
 
 ### About the work

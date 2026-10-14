@@ -2183,3 +2183,8 @@ slot is worth a line only when the line can be interesting there.
   one royal can be of different castes and everyone has a royal parent; Earth's old conflicts over genes make no sense to
   her; humans of high-gravity worlds against the zero-G ones, which the technician is. The castes-of-one-royal fact and
   the bodies-by-world fact are in the lorebook, `empire.md` and `docs/UNIVERSE.md`.
+- The partner, his notes later on Oct 14 2026: the robotic arm is bare ("just the bare bones needed", circuitry exposed); she
+  is slightly skinny; the glasses are an eccentricity she saw in a history class and thought "cute" (eyes standard); the
+  arm was lost on the class survival camp (students left for months to live on their own) when a classmate with venomous
+  spit spat at her face, she blocked it with her hand, it went necrotic, and she amputated and cauterised it herself.
+  Portrait drawn a third time to match (art-src/intro/v1/ keeps the earlier ones); file, aside and lore updated.
