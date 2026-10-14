@@ -760,7 +760,8 @@ doing this to escape danger, and loved the fighting, but wanted purpose, and the
 ring seemed to have it." Her pitch (Collins): "you have 40 kids with some nice little girl born to the church and those
 kids will have status, but how many of them are going to survive school? Breed with me and I can guarantee you they
 all will." Her name (the session's): Rook, her ring name, Halloran for the Index; Keelhaul Station
-(the session's) is her ring. She opens her thread in the Letters room once the Board's quarterly statement has played
+(the session's) is her ring. Collins, later: she would not know what YOKE thinks of her; YOKE's LOW STATUS note sits
+under her letter as under the cat girl's, and Rook argues against the Empire's view, not YOKE's. She opens her thread in the Letters room once the Board's quarterly statement has played
 (content/letters.ts). **PROPOSAL:** the rim's gladiatorial stations breed their fighters and free the winners; a
 fighter's stock is cut with orca for the aggression, which is the rim's use of the Empire's one mistake.
 
