@@ -2261,3 +2261,6 @@ the companion's affection level for her to let you talk to Atlas directly."
 - The exit (Collins, Oct 14 2026): whoever will not live by the Index's rules leaves Technopuritan space for the rim,
   Space Derelict's setting, the other post-scarcity society (no morality or purpose, blood sports, piracy). `empire.md`
   6b, `docs/UNIVERSE.md`, the lorebook.
+- Mirelle, round three (Collins corrected himself: NOT a selfie; the cabin like the technician's own ship, same culture; the
+  girl of D in a different fur colour): mirelle-options.mjs ship → art-src/letters/options/mirelle-f1 (ginger tabby), f2
+  (black), f3 (white), 12,000 tokens, on the portrait page. The selfies (s1-s3) are superseded. WAITING ON HIS PICK.
