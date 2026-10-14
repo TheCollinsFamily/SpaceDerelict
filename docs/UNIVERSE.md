@@ -211,6 +211,9 @@ are **the Sons of Man**, and the covenant (doctrine 14) covers them all; the cor
 synthetic minds and cyborgs (TP 11.0); Collins's definition names humans and uplifts, and the two
 are read together. Uplifts look anthro, like the cat girls (Collins).
 
+- **Bodies by world** (Collins, Oct 14 2026): humans optimised for high-gravity planets are nothing like those
+  optimised for life in zero G (Broodfall's technician is zero-G optimised). The Empire holds no animosity over
+  genetic difference; it kills over belief and morality, and finds Earth's ethnic conflicts strange.
 - **The Lipptors, a human class, not an uplift** (Collins, Oct 14 2026): Technopuritans genetically specialised
   for advanced mathematics and extensive AI integration, so far that their organs begin to shut down if they are
   not integrated with an AI within a few days of birth. Genetically further from the rest of the Empire than

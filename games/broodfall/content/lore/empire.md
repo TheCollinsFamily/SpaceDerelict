@@ -178,6 +178,11 @@ fashion these days, which is why it is not obvious.
 - **PROPOSAL:** the fashion for the retro look is tolerated because it signals nothing (a status
   display would be a sin); a visibly chrome body would be showing off.
 
+- **Bodies by world** (Collins, Oct 14 2026): humans who live on high-gravity planets are nothing like those optimised
+  for life in zero G, as Broodfall's technician is. No animosity attaches to it: killing over religion, belief and
+  morality makes perfect sense to the Empire; killing over genetic difference makes none (YOKE's `won-20` line, which
+  also allows that a breed worse at cognition or more impulsive, breeding fast, ought to sterilise itself for the common
+  good). **PROPOSAL:** the zero-G line crews the ships and the spheres' outer works; the high-gravity line the heavy worlds.
 - **The Lipptors** (Collins, Oct 14 2026): a class genetically specialised for advanced mathematics and extensive AI
   integration, to the extent that their organs begin to shut down if they are not integrated with an AI within a few
   days of birth: their brains outsource that much lower-order processing to the AI. Technopuritans are genetically

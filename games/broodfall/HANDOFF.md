@@ -2179,3 +2179,7 @@ slot is worth a line only when the line can be interesting there.
   by a gate, the engineer's spawn beside its site, the first two buildable cells, enemies counted at one tick, the mule
   seeds) and now hold whatever the creep is. The enemy's forward bases now stand near their own gate on a city this
   small: a consequence to watch.
+- `won-20` (Collins, Oct 14 2026, his words): ethnic conflict down there refocused on caste and shallow, since brothers of
+  one royal can be of different castes and everyone has a royal parent; Earth's old conflicts over genes make no sense to
+  her; humans of high-gravity worlds against the zero-G ones, which the technician is. The castes-of-one-royal fact and
+  the bodies-by-world fact are in the lorebook, `empire.md` and `docs/UNIVERSE.md`.
