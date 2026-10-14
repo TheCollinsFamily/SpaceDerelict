@@ -129,12 +129,13 @@ around": YOKE's `partner-progress` line).
   looked "cute" (her eyes are standard). Notable relatives: a war hero from the Sabbatean Skirmishes, and a heretic,
   as a figure of a saint was found among their belongings after death (section 2: idolatry is worse than murder; the
   Board lists both without comment). Attachments: a notable lack of living friends, but her best friend is the girl she
-  talked into killing herself back in school; they speak most days. Collins: "really meant to highlight how different a
+  talked into killing herself back in school. Collins: "really meant to highlight how different a
   society where people can talk to the dead and death doesn't mean the same thing would be". Her companion (what YOKE
   is to the technician) is that dead friend rather than a grown one, "considered a pretty weird thing to do in this
   world" but part of the deal the two made: the friend was to be transferred to another class, had a crush on Atlas,
   knew Atlas would benefit from a higher kill count and that it would let her stay closer to her; the event first turned
-  Atlas to simulation work. (Her name is his, Oct 14 2026; the surname stays the session's.) Drawn slightly skinny and
+  Atlas to simulation work. The Board's file on it, his wording: "Irregular; under observation to study effects. Noted as
+  a potential social technology for wider deployment." (Her name is his, Oct 14 2026; the surname stays the session's.) Drawn slightly skinny and
   flat-chested, as Technopuritan women are (section 7).
   (The name and the concordance figure, 93.1%, are the session's; the rest is his.)
   - *What the file shows about the Empire* (**PROPOSAL** from his facts): modifications run in families and are recorded

@@ -187,9 +187,10 @@ she saw glasses in a history class once and thought they looked "cute". Thin and
 Two notable relatives on the file, listed without comment: a war hero of the Sabbatean Skirmishes, and a heretic, a
 figure of a saint having been found among their belongings after death (idolatry, the worst of sins there). Under
 attachments: a notable lack of living friends; her best friend is the classmate she talked into ending themselves at
-school, with whom she speaks most days, the dead being uploaded. Nobody there finds that strange; YOKE knows that an
+school, the dead being uploaded. Nobody there finds that strange; YOKE knows that an
 Earth human would, and finds the thought of that strange in turn. What people there do find weird: Atlas's companion,
-what YOKE is to him, is that dead friend rather than a grown one. It was part of the deal the two made at school: the
+what YOKE is to him, is that dead friend rather than a grown one; the Board has it as irregular, under observation to
+study the effects, and noted as a potential social technology for wider deployment. It was part of the deal the two made at school: the
 friend was to be moved to another class, had a crush on Atlas, knew Atlas would gain by a higher kill count and that
 dying by her hand would keep her close, and proposed it; the event is what first turned Atlas to simulation work.
 
