@@ -918,7 +918,9 @@ export class CampaignUi {
     const c = open ? correspondent(open) : null;
     // Their picture beside the thread (content/letters.ts `picture`): the candidate's file photograph, or a baked still.
     const picSrc = !c?.picture ? '' : c.picture === 'partner' ? (this.intro?.partner ?? '') : artUrl(c.picture);
-    const pic = picSrc ? `<img class="cp-letter-pic" src="${picSrc}" alt="${esc(c!.name)}">` : '';
+    // The still swaps for its loop (src/ui/alive.ts wake): the candidate's is the pad's own, the others are letters:<id>.
+    const aliveKey = c?.picture === 'partner' ? 'partner:partner' : c ? `letters:${c.id}` : '';
+    const pic = picSrc ? `<img class="cp-letter-pic" data-alive="${aliveKey}" src="${picSrc}" alt="${esc(c!.name)}">` : '';
     const turns = t ? t.turns.map((turn, i) => `<div class="cp-letter ${turn.who}"><div class="cp-letter-from">${turn.who === 'you' ? 'YOU' : esc((turn.from ?? '').toUpperCase())}</div>${turn.text.map((l) => `<p>${esc(l)}</p>`).join('')}${i === 0 && c?.note ? `<p class="cp-note">${esc(c.note)}</p>` : ''}</div>`).join('') : '';
     const compose = !t ? '' : awaiting(t)
       ? `<p class="cp-note cp-letter-wait">Sent. The reply comes with your next report.</p>`

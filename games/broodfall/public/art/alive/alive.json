@@ -21,6 +21,20 @@
       "h": 720,
       "seconds": 4.292
     },
+    "letters:mirelle": {
+      "video": "alive/letters-mirelle.mp4",
+      "poster": "alive/letters-mirelle.webp",
+      "w": 640,
+      "h": 640,
+      "seconds": 4.417
+    },
+    "letters:rook": {
+      "video": "alive/letters-rook.mp4",
+      "poster": "alive/letters-rook.webp",
+      "w": 640,
+      "h": 640,
+      "seconds": 4.417
+    },
     "partner:partner": {
       "video": "alive/partner-partner.mp4",
       "poster": "alive/partner-partner.webp",

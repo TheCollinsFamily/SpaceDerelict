@@ -132,6 +132,17 @@ export const SURFACES = [
       'breathes softly and blinks once, slowly; the faintest shift of her shoulders. Her face, expression, hair and ' +
       'collar stay exactly the same; she does not smile more, speak or turn. Camera completely locked: no zoom, no pan. ' +
       'No text appears. The clip ends exactly on the first picture again.' },
+  // ---- the letters' pictures, beside each thread (campaignUi lettersHtml; content/letters.ts picture) ----
+  { group: 'letters', id: 'mirelle', from: () => path.join(SRC, 'letters', 'pictures', 'mirelle.png'), aspect: '1:1',
+    prompt: 'This photograph comes subtly alive, like a living portrait. The cat-eared young woman breathes softly and ' +
+      'blinks once, slowly; one of her cat ears twitches; the tip of her tail sways a little. Her face, expression, hair ' +
+      'and clothes stay the same; she does not speak or turn. Camera completely locked: no zoom, no pan. No text appears. ' +
+      'The clip ends exactly on the first picture again.' },
+  { group: 'letters', id: 'rook', from: () => path.join(SRC, 'letters', 'pictures', 'rook.png'), aspect: '1:1',
+    prompt: 'This photograph comes subtly alive, like a living portrait. The scarred woman breathes slowly, her stare ' +
+      'fixed on the camera, unblinking; the red point of her mechanical eye pulses faintly; the work light behind her ' +
+      'flickers once. Her face, expression, hair and clothes stay the same; she does not speak or turn. Camera completely ' +
+      'locked: no zoom, no pan. No text appears. The clip ends exactly on the first picture again.' },
 ];
 
 const CUT = { '4:3': [1365, 1024], '16:9': [1536, 864], '1:1': [1024, 1024] };

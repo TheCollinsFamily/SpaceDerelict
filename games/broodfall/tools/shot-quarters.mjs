@@ -84,10 +84,42 @@ try {
   await page.click('.cp-thread[data-thread="mirelle"]');
   await page.waitForTimeout(200);
   check(await page.evaluate(() => (document.querySelector('.cp-letters-thread')?.textContent ?? '').includes('pound sand')), 'Mirelle\'s thread opens on her proposal, with YOKE\'s note under it');
-  check(await page.evaluate(() => { const i = document.querySelector('.cp-letters-thread img.cp-letter-pic'); return !!i && i.getAttribute('src')?.includes('letters/mirelle.webp') && i.naturalWidth > 0; }), 'her picture is beside the thread, and loads');
+  await page.waitForTimeout(1500);
+  check(await page.evaluate(() => { const v = document.querySelector('.cp-letters-thread video.cp-letter-pic'); return !!v && (v.currentSrc || v.src).includes('letters-mirelle.mp4'); }), 'her picture beside the thread plays its loop');
   await page.waitForTimeout(400);
   await page.screenshot({ path: join(out, 'letters-mirelle.jpg'), type: 'jpeg', quality: 85 });
   console.log(`  shots: ${join(out, 'letters-room.jpg')} and ${join(out, 'letters-mirelle.jpg')}`);
+
+  // A reply, end to end in the real page (scripted mind): he asks Rook about her skin, a deployment passes, he comes
+  // aboard; her letter arrives with the orca, the thread is marked, and on the next return YOKE says it before the briefing.
+  await page.click('.cp-thread[data-thread="rook"]');
+  await page.waitForTimeout(200);
+  await page.waitForTimeout(1500);
+  check(await page.evaluate(() => { const v = document.querySelector('.cp-letters-thread video.cp-letter-pic'); return !!v && (v.currentSrc || v.src).includes('letters-rook.mp4'); }), 'Rook\'s picture beside her thread plays its loop');
+  await page.fill('#letter-text', 'Straight question. What is with the black and white skin?');
+  await page.click('[data-act="letter-send"]');
+  await page.waitForTimeout(300);
+  await page.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem('broodfall-campaign'));
+    s.deployments += 1; s.greet = 'won'; s.lastGreeting = 'won-1';
+    s.greetingsSaid = [...new Set([...(s.greetingsSaid ?? []), 'letter-rook'])];
+    localStorage.setItem('broodfall-campaign', JSON.stringify(s));
+  });
+  await page.goto(`${URL0}?campaign=ship`, GO);
+  await page.waitForSelector('#campaign:not(.hidden)', { timeout: 180000 });
+  await page.waitForFunction(() => { const s = JSON.parse(localStorage.getItem('broodfall-campaign')); const t = s.letters?.threads?.rook; return t && t.turns[t.turns.length - 1].who === 'them'; }, null, { timeout: 30000 }).catch(() => {});
+  const rook = await page.evaluate(() => JSON.parse(localStorage.getItem('broodfall-campaign')).letters.threads.rook);
+  const reply = rook.turns[rook.turns.length - 1];
+  check(reply.who === 'them' && /orca/i.test(reply.text.join(' ')), `her reply came with the return: "${reply.text[0]}"`);
+  check((rook.revealed ?? []).includes('orca') && rook.regard >= 1, `the thread is marked revealed (regard ${rook.regard})`);
+  check(rook.unread >= 1 && await page.evaluate(() => !!document.querySelector('button.cp-room[data-room="letters"] .cp-count')), `her letter is unread (${rook.unread}) and the Letters button shows a count`);
+  await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('broodfall-campaign')); s.greet = 'won'; s.deployments += 1; localStorage.setItem('broodfall-campaign', JSON.stringify(s)); });
+  await page.goto(`${URL0}?campaign=ship`, GO);
+  await page.waitForSelector('#campaign:not(.hidden)', { timeout: 180000 });
+  await page.waitForTimeout(1500);
+  const g = await page.evaluate(() => document.getElementById('campaign').dataset.greeting);
+  check(g === 'letter-rook-orca', `YOKE's greeting on the next return: ${g}`);
+  await page.screenshot({ path: join(out, 'letters-yoke-orca.jpg'), type: 'jpeg', quality: 85 });
 } finally {
   await browser.close();
   dev.kill();

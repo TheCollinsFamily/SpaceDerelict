@@ -2278,3 +2278,8 @@ the companion's affection level for her to let you talk to Atlas directly."
   greetingsSaid too); YOKE's LOW STATUS note under her first letter; persona and three scripted letters; the lore in
   `empire.md` 4 (Houses need marriage) and 15, the lorebook, `docs/UNIVERSE.md`. Her picture: tools/art/rook-options.mjs,
   four options in art-src/letters/options/rook-a..d.png, WAITING ON HIS PICK.
+- Letters, verified end to end (Oct 14 2026): Mirelle and Rook loop beside their threads (stills-alive.mjs group letters, 480p,
+  49,300 tokens; data-alive letters:<id>); tools/shot-quarters.mjs now sends Rook a letter about her skin, passes a deployment,
+  comes aboard, sees her orca letter arrive and the thread marked, and on the next return YOKE's letter-rook-orca line.
+  The LIVE writer is not deployed: prod rfab.ai rejects trigger "letter" (BAD_TRIGGER) until the backend deploy with
+  9e0c04fc/78acaa43; until then every reply is scripted.

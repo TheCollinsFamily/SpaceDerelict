@@ -1,0 +1,14 @@
+{
+  "id": "letters:rook",
+  "model": "seegen:sd2-fast",
+  "seconds": 4.417,
+  "size": "640x640",
+  "bytes": 376987,
+  "medianStep": 0.26,
+  "maxStep": 8.82,
+  "seamBefore": 0.82,
+  "seamAfter": 0.51,
+  "maxDrift": 11.5,
+  "fixed": "crossfade 0.6s",
+  "tiles": "the still it started from | then 8 frames across the loop"
+}
