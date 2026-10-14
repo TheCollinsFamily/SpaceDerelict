@@ -278,6 +278,9 @@ To ascend is to be uploaded; early is before one's contribution is judged over. 
 candidate's companion, who thinks the technician "just an exterminator" and beneath Atlas, needs the match to work all
 the same: Atlas's eccentricities make a partner hard to secure (content/letters.ts).
 
+Collins, Oct 14 2026, on the rim too: "all women even in the outer rim stop ageing young": Broodfall's Rook looks about
+23 and is about 30.
+
 Collins: in their society nobody ages past 23 (women); for men, when to stop ageing is more of an
 aesthetic choice, usually made by the wife. Because it would be trivial to live forever, and that would
 lead to societal stagnation, people are euthanised: when they feel their contribution is over; when
