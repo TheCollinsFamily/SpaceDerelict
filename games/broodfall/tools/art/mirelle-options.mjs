@@ -35,8 +35,29 @@ const LOOKS = {
   d: 'Taken by herself, close and a little from above, as a message photo: eyes wide and bright, mouth in a small cat-like :3 shape, one ear flicked, the tail curling up into the corner of the frame; silver-grey hair.',
 };
 
+/**
+ * Collins, Oct 14 2026, on the four: "A and D came out best but she would be taking a selfie and would have larger breasts
+ * (remember the nekos do reproduce sexually); I would also give her a black gear pendant and have her background be a
+ * spaceship room." `settle N` draws N from A and D as the references: mirelle-s1.png, -s2.png...
+ */
+const SETTLE =
+  'A lifelike selfie a young woman took of herself and attached to a flirtatious letter: her arm reaching out of frame to ' +
+  'hold the camera, close and a little from above, from the top of her head to her waist, warm light. Behind her, a ' +
+  'small cabin aboard a spaceship: curved panels, soft indicator lights, a narrow bunk, a round viewport with stars. She ' +
+  'is the cat girl of the reference pictures, the same face as the first reference: a young woman of about twenty-two, ' +
+  'short black hair in a bob, large furred cat ears in place of human ears, feline slit-pupil green eyes, a long expressive ' +
+  'cat tail curling into the frame, one eye winking, a small mischievous smile. She is fuller in figure than the ' +
+  'references, with a generous bust under her clothes, and fully and modestly dressed in the Felid Concord\'s consular ' +
+  'clothing: a fitted high-collared jacket in deep teal with a narrow cream sash across it. At her throat, on a fine ' +
+  'chain, a small black gear pendant, matte, the one ornament she wears. Tasteful: charming, nothing revealing. No text ' +
+  'anywhere: no letters, no numbers, no frame or border.';
+
 fs.mkdirSync(OUT, { recursive: true });
 if (typeof ready === 'function') await ready();
-const items = Object.entries(LOOKS);
-await pool(items, 2, ([id, look]) => makeStill({ slug: `mirelle option ${id}`, out: path.join(OUT, `mirelle-${id}.png`), prompt: BASE(look), key: null, width: 1024, height: 1024 }));
+const [mode, count] = process.argv.slice(2);
+const items = mode === 'settle'
+  ? Array.from({ length: Number(count ?? 3) }, (_, i) => [`s${i + 1}`, SETTLE])
+  : Object.entries(LOOKS);
+const refs = mode === 'settle' ? ['a', 'd'].map((o) => path.join(OUT, `mirelle-${o}.png`)).filter((f) => fs.existsSync(f)) : [];
+await pool(items, 2, ([id, look]) => makeStill({ slug: `mirelle option ${id}`, out: path.join(OUT, `mirelle-${id}.png`), prompt: mode === 'settle' ? look : BASE(look), key: null, width: 1024, height: 1024, refFiles: refs }));
 for (const [id] of items) console.log(`option ${id}: ${path.join(OUT, `mirelle-${id}.png`)} ${fs.existsSync(path.join(OUT, `mirelle-${id}.png`)) ? 'ok' : 'MISSING'}`);

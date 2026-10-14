@@ -2249,3 +2249,8 @@ the companion's affection level for her to let you talk to Atlas directly."
   the dysgenic crisis; breeding most is no measure of use to God; nepotism killed by status in taking out the well-born;
   no cruelty since the dead come back). `empire.md` sections 4 (the arithmetic: 20 per couple, ten times a generation),
   5 and 6, `docs/UNIVERSE.md`, the lorebook, and the aside on the line.
+- Mirelle, round two (Collins: "A and D came out best but she would be taking a selfie and would have larger breasts
+  (remember the nekos do reproduce sexually); a black gear pendant; her background a spaceship room"): three selfies drawn
+  from A and D as references (mirelle-options.mjs settle 3 → art-src/letters/options/mirelle-s1..s3.png, 12,000 tokens),
+  on the portrait page. WAITING ON HIS PICK. Lore to note when he picks: cat girls keep their breasts (they reproduce
+  sexually), and she wears a black gear, which the Empire would call an idol.
