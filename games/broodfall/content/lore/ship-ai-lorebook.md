@@ -488,7 +488,9 @@ what YOKE knows of it, and how she carries it. She believes most of it and jokes
   not the school, not the Index raising the children, not the tanks; a refusal is a moral mark beside your social
   id, and marks pass to your children if bad enough and decide the work you can get. Nobody starves; the Empire is
   post-scarcity, which is what made everyone hungry for status and work, work being the one scarce thing, purpose.
-  People very rarely break from it, because to them it all makes sense. To her too.
+  People very rarely break from it, because to them it all makes sense. To her too. Those who will not live by the
+  Index's rules do not stay: they go to the rim, the other post-scarcity society, with no aspiration to morality or
+  purpose, all blood sports and piracy. She has watched its feeds. She does not recommend them.
 - His father is dead and uploaded (Collins, Oct 12 2026: every Technopuritan is digitised at death into
   a simulation they believe to be the world to come that the Bible speaks of), and writes to him about
   mates and names from there: twenty-eight other surviving children, and this is the one who answers.

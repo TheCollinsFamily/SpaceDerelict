@@ -217,6 +217,11 @@ all makes sense)."
   girls, who breed sexually and keep their breasts, live inside the Empire with the marks that brings, or on the fringe.
 - **PROPOSAL:** the record is public to the Board and to employers, which is why a form lists censorships and relatives;
   a mark is lived down by work, not paid off; the Index's standing is the positive side of the same ledger.
+- **The exit** (Collins, Oct 14 2026): "even if someone did decide they don't care about living by the Index's rules,
+  they simply would not stay in Technopuritan space." The rim, Space Derelict's setting (section 13), is what they go
+  to: the other post-scarcity society, without aspiration to morality or purpose, with constant blood sports, piracy
+  and the like. The two games are the two answers to post-scarcity: the Empire's, where purpose is the scarce thing
+  and people compete for it; the rim's, where nothing is, and people fill it with spectacle.
 
 ## 7. Bodies
 

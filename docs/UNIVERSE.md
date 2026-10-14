@@ -98,7 +98,10 @@ doctrine 11 (the chittering hordes).
   (hence the cat people, who breed sexually). Moral failings are marked beside one's social id, pass to the next
   generation if bad enough, and decide what work one can get. Nobody starves: the society is wholly post-scarcity,
   and that is exactly what made people hungry for status and work, since work confers the one scarce thing, purpose.
-  So people very rarely break from the society; to them it all makes sense.
+  So people very rarely break from the society; to them it all makes sense. Anyone who did decide not to live by
+  the Index's rules would simply not stay in Technopuritan space: the rim, Space Derelict's setting, is the other
+  post-scarcity society, without aspiration to morality or purpose, with constant blood sports, piracy and the like
+  (Collins, Oct 14 2026).
   The Empire's reasons: without honest testing people would fake fitness and bring back the twentieth century's
   dysgenic crisis; otherwise the most genetically successful would simply be those who bred most, no measure of
   use to God; and it kills nepotism, since taking out the students with higher-status parents is the higher

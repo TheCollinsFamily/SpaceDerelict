@@ -2258,3 +2258,6 @@ the companion's affection level for her to let you talk to Atlas directly."
   choices, not law; moral failings are marked beside the social id, pass down if bad enough, and decide the work one can
   get; post-scarcity made purpose the one scarce thing, so people rarely break from the society. `empire.md` 6b,
   `docs/UNIVERSE.md`, the lorebook.
+- The exit (Collins, Oct 14 2026): whoever will not live by the Index's rules leaves Technopuritan space for the rim,
+  Space Derelict's setting, the other post-scarcity society (no morality or purpose, blood sports, piracy). `empire.md`
+  6b, `docs/UNIVERSE.md`, the lorebook.

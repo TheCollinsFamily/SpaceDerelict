@@ -52,12 +52,35 @@ const SETTLE =
   'chain, a small black gear pendant, matte, the one ornament she wears. Tasteful: charming, nothing revealing. No text ' +
   'anywhere: no letters, no numbers, no frame or border.';
 
+/**
+ * Collins, Oct 14 2026, correcting himself: "I meant NOT taking a selfie; and the interior would not look dissimilar from
+ * your own ship, as she is from the same culture. Have the girl in D, different fur colour, and no selfie." `ship` draws
+ * the girl of D (with the pendant and the fuller figure of the selfies) in a cabin of the ship's own look, three fur
+ * colours: mirelle-f1.png (ginger tabby), -f2 (black), -f3 (white).
+ */
+const SHIP = 'The ship\'s own look: matte black panels and bare pale ceramic with flush seams and exact edges, even cool white light, perfect order; nothing soft, no ornament, no pattern, no coloured accent light, no screens with writing.';
+const FUR = { f1: 'ginger-tabby fur on the ears and the tail, with faint darker stripes, and auburn hair', f2: 'black fur on the ears and the tail and black hair', f3: 'snow-white fur on the ears and the tail and white-blonde hair' };
+const SHIPSHOT = (fur) =>
+  'A lifelike photograph, taken by someone else with the camera at eye level, of the cat girl of the first reference ' +
+  'picture, the same face: a young woman of about twenty-two with wide bright green feline slit-pupil eyes, a small ' +
+  `cat-like :3 mouth, one ear flicked, large furred cat ears in place of human ears and a long expressive cat tail; ${fur}. ` +
+  'She is not holding the camera; her hands are at her sides or one rests on a ledge. She stands in a small cabin aboard ' +
+  `a spaceship of her own people, which look like the technician's: ${SHIP} ` +
+  'Portrait from the top of her head to her waist, centred, warm expression. She is fuller in figure than the first ' +
+  'reference, with a generous bust under her clothes, as in the second reference, and fully and modestly dressed in the ' +
+  'Felid Concord\'s consular clothing: a fitted high-collared jacket in deep teal with a narrow cream sash across it. ' +
+  'At her throat, on a fine chain, a small black gear pendant, matte, the one ornament she wears. Tasteful: charming, ' +
+  'nothing revealing. No text anywhere: no letters, no numbers, no frame or border.';
+
 fs.mkdirSync(OUT, { recursive: true });
 if (typeof ready === 'function') await ready();
 const [mode, count] = process.argv.slice(2);
 const items = mode === 'settle'
   ? Array.from({ length: Number(count ?? 3) }, (_, i) => [`s${i + 1}`, SETTLE])
+  : mode === 'ship' ? Object.entries(FUR).map(([id, fur]) => [id, SHIPSHOT(fur)])
   : Object.entries(LOOKS);
-const refs = mode === 'settle' ? ['a', 'd'].map((o) => path.join(OUT, `mirelle-${o}.png`)).filter((f) => fs.existsSync(f)) : [];
-await pool(items, 2, ([id, look]) => makeStill({ slug: `mirelle option ${id}`, out: path.join(OUT, `mirelle-${id}.png`), prompt: mode === 'settle' ? look : BASE(look), key: null, width: 1024, height: 1024, refFiles: refs }));
+const refs = mode === 'settle' ? ['a', 'd'].map((o) => path.join(OUT, `mirelle-${o}.png`)).filter((f) => fs.existsSync(f))
+  : mode === 'ship' ? ['d', 's1'].map((o) => path.join(OUT, `mirelle-${o}.png`)).filter((f) => fs.existsSync(f))
+  : [];
+await pool(items, 2, ([id, look]) => makeStill({ slug: `mirelle option ${id}`, out: path.join(OUT, `mirelle-${id}.png`), prompt: mode === 'settle' || mode === 'ship' ? look : BASE(look), key: null, width: 1024, height: 1024, refFiles: refs }));
 for (const [id] of items) console.log(`option ${id}: ${path.join(OUT, `mirelle-${id}.png`)} ${fs.existsSync(path.join(OUT, `mirelle-${id}.png`)) ? 'ok' : 'MISSING'}`);
