@@ -216,7 +216,7 @@ try {
   }
 
   // ---------------- PART 2 (Oct 2 2026): a campaign deployment ends → the pad → he gets up and walks into the ship → the
-  // interface takes over from the film's last frame → the report at the Directive Desk, YOKE presenting it.
+  // interface takes over from the film's last frame → the report at the Directive Desk.
   const notes2 = join(root, 'notes', 'screens', '2026-10-02', 'pad');
   mkdirSync(notes2, { recursive: true });
   const shot2 = async (page, name) => {
