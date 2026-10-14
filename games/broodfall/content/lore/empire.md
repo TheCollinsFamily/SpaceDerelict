@@ -768,8 +768,12 @@ under her letter as under the cat girl's, and Rook argues against the Empire's v
 (content/letters.ts). **PROPOSAL:** the rim's gladiatorial stations breed their fighters and free the winners; a
 fighter's stock is cut with orca for the aggression, which is the rim's use of the Empire's one mistake.
 She lost part of her face and her left eye in the rings to an uplifted gorilla (Collins, Oct 14 2026), replaced with a
-poorly fitting mechanical eye. **PROPOSAL:** the rim uplifts what the Empire would not (gorillas for the rings) and
-nobody in the Empire counts them among the Sons of Man, which is the rim's problem and the Basilisk's.
+poorly fitting mechanical eye.
+
+**The rim's uplifts** (Collins, Oct 14 2026): the uplifted animals on the rim are not there because the Empire would not
+uplift them. All of them descend from animals uplifted in the early days of human space travel, while Earth still had a
+diverse ecosystem; they went to the outer rim either because their species built a bad reputation in the Empire or
+because it was unable to live by Technopuritan values, like the dolphins and orcas. The gorilla who took Rook's eye is one.
 
 ## 16. Open (Collins's calls)
 
