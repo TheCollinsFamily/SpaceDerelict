@@ -2120,3 +2120,16 @@ removed ... when I hit export save to some external document you can reference, 
   nothing left in his browser after the publish.
 - Verified end to end in his Chrome: a test note, Export, the document read back with ArtifactData, the draft mirror read
   back, both deleted, the note cleared.
+
+### YOKE's lines page: one campaign, step by step (Oct 14 2026)
+
+Collins: "its not clear to me when this happens ... I think its much better just to have a list of messages/events in
+order this is confusing." The page (version 8) is now 26 numbered steps in six parts, in the order a player meets them:
+the first return (her first greeting, won or lost; the boss's message with Barnabas's own words shown between her bridge
+and her line after, not editable), every return after that (the walk-in report line, won / held / lost), until the desk
+opens (mate review, cat girl, the locked pool, the desk opening, the three signals), the campaign in order of precedence
+(the personal plot at capture 9, the once intros with their captures, the news rule, then the pool by outcome, the licence,
+the end), any time (print a body, the money, the dance, the data pad, the notes, the band), and her live mind's pools.
+Each step says what happens in one or two sentences, then its lines; a step with cases shows them as "If he won mission 1"
+sub-headings. Line ids are unchanged, so edits, exports and the applied-export fingerprints carry over.
+`tools/yoke-lines.ts` holds the steps (`steps`, in order); `tools/yoke-lines.template.html` renders them.
