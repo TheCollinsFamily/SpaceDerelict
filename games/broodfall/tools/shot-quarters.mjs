@@ -84,6 +84,8 @@ try {
   await page.click('.cp-thread[data-thread="mirelle"]');
   await page.waitForTimeout(200);
   check(await page.evaluate(() => (document.querySelector('.cp-letters-thread')?.textContent ?? '').includes('pound sand')), 'Mirelle\'s thread opens on her proposal, with YOKE\'s note under it');
+  check(await page.evaluate(() => { const i = document.querySelector('.cp-letters-thread img.cp-letter-pic'); return !!i && i.getAttribute('src')?.includes('letters/mirelle.webp') && i.naturalWidth > 0; }), 'her picture is beside the thread, and loads');
+  await page.waitForTimeout(400);
   await page.screenshot({ path: join(out, 'letters-mirelle.jpg'), type: 'jpeg', quality: 85 });
   console.log(`  shots: ${join(out, 'letters-room.jpg')} and ${join(out, 'letters-mirelle.jpg')}`);
 } finally {

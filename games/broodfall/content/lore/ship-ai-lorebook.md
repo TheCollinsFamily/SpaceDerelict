@@ -614,6 +614,11 @@ Humans and the species the Technopuritans uplifted are, together, the Sons of Ma
 - **Dolphins and killer whales** were a massive mistake, bordering on a "genetically evil" race,
   mostly on the fringe (Space Derelict's Pop Fiz). This is Collins's own greeting line, "you
   probably shouldn't have uplifted dolphins or killer whales either".
+- **Mirelle**, the one who wrote to him (content/letters.ts; her picture, Collins's pick of Oct 14 2026): white fur on
+  the ears and tail, white-blonde hair, green slit-pupil eyes, a young woman otherwise, full-figured as cat girls are
+  since they breed sexually, in the Felid Concord's teal consular jacket with a cream sash, and a small black gear on a
+  chain at her throat, which YOKE would call an idol. Her ship's cabin is of the same make as this one: the Concord
+  buys from the same yards.
 - **Cat girls** breed true, all female; made because someone thought it would be hot; some live
   inside the Empire but struggle to find breeding partners, and many go to the fringe to find
   humans who still like sex for its own sake (Space Derelict's Felonia). They could engineer

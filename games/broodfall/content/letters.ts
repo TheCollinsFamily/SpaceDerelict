@@ -40,6 +40,11 @@ export interface Correspondent {
   openingFrom?: string;
   /** A line of the ship's under the opening (YOKE's note on the cat girl's letter). */
   note?: string;
+  /**
+   * Their picture beside the thread: a file under public/art/ (tools/art/letters.mjs bakes art-src/letters/pictures/), or
+   * 'partner' for the candidate's file photograph (public/art/intro/partner.webp, the one on his data pad).
+   */
+  picture?: string;
   /** Who writes back at first. */
   via: Writer;
   /** Who writes back once `via`'s regard reaches `gate`: the handover letter comes from `via`, then this one writes. */
@@ -51,7 +56,7 @@ const FILE = PARTNER.fields.map(([k, v]) => `${k}: ${v}`).join(' ');
 
 export const CORRESPONDENTS: Correspondent[] = [
   {
-    id: 'atlas', name: 'Atlas Vell', sub: 'the candidate on the Board\'s form, through her companion', unlock: 'mate-review',
+    id: 'atlas', name: 'Atlas Vell', sub: 'the candidate on the Board\'s form, through her companion', unlock: 'mate-review', picture: 'partner',
     opening: [
       'Hello. I am writing for Atlas Vell. You have her file, so you know which line I am: the friend. Dead, yes.',
       'She has read your file eleven times. She will not write to a living stranger, so you get me.',
@@ -94,7 +99,10 @@ export const CORRESPONDENTS: Correspondent[] = [
     },
   },
   {
-    id: 'mirelle', name: 'Mirelle', sub: 'Felid Concord, consular mission', unlock: 'catgirl',
+    // Her picture (Collins, Oct 14 2026, "let's go with 3 white"): white fur and white-blonde hair, green slit eyes, the
+    // Concord's teal consular jacket with the cream sash, a black gear pendant (an idol, to the Empire), fuller in figure
+    // than Technopuritan women since cat girls breed sexually, in a cabin of the same make as his own ship.
+    id: 'mirelle', name: 'Mirelle', sub: 'Felid Concord, consular mission', unlock: 'catgirl', picture: 'letters/mirelle.webp',
     opening: [
       'Technician! Mirelle, Felid Concord, consular mission. I have seen your deployment footage. All of it.',
       'A proposal: non-procreative, obviously; nobody is asking for anything that grows. Dinner. Your ship. My cultural-exchange budget.',

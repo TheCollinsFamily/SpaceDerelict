@@ -2263,4 +2263,8 @@ the companion's affection level for her to let you talk to Atlas directly."
   6b, `docs/UNIVERSE.md`, the lorebook.
 - Mirelle, round three (Collins corrected himself: NOT a selfie; the cabin like the technician's own ship, same culture; the
   girl of D in a different fur colour): mirelle-options.mjs ship → art-src/letters/options/mirelle-f1 (ginger tabby), f2
-  (black), f3 (white), 12,000 tokens, on the portrait page. The selfies (s1-s3) are superseded. WAITING ON HIS PICK.
+  (black), f3 (white), 12,000 tokens, on the portrait page. The selfies (s1-s3) are superseded. 
+- Mirelle's picture is f3, white (Collins: "let's go with 3 white"): art-src/letters/pictures/mirelle.png, baked by
+  tools/art/letters.mjs to public/art/letters/mirelle.webp, shown beside her thread in the Letters room (content/letters.ts
+  `picture`; Atlas's thread shows her file photograph the same way). A still; no loop yet. Her look is in the lorebook
+  and empire.md 15.

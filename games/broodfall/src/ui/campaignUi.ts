@@ -31,13 +31,14 @@ import { ORGAN_BY_ID } from '../../content/underground';
 import { ENEMIES } from '../../content/data';
 import type { EnemyKind, OrganId } from '../sim/types';
 import lore from '../../content/lore/ship-ai-lorebook.md?raw';
-import { artUrl, loadManifest, type ShipArt } from '../render/art';
+import { loadManifest, type ShipArt } from '../render/art';
 import { GLOBE, Globe, heldGrowth, projectSite, type Zone } from './globe';
 import { briefBanner, debriefLines, defenceFacts, deskLine, pushSvg, siteClasses, siteTag } from './defenceUi';
 import { Globe3D } from './globe3d';
 import { loadSettings } from '../meta/storage';
 import { loadIntroArt, type IntroArt } from './intro';
 import { PARTNER } from '../../content/partner';
+import { artUrl } from '../render/art';
 import { correspondent, type CorrespondentId } from '../../content/letters';
 import { awaiting, dueThreads, historyFor, lettersUnlocked, markRead, openLetters, personaFor, receiveLetter, scriptedReply, sendLetter, standing as letterStanding, thread as letterThread, unlockedCorrespondents, unreadLetters } from '../meta/letters';
 import { PRINT_BODY } from '../../content/yokeScenes';
@@ -915,13 +916,16 @@ export class CampaignUi {
     }).join('');
     const t = open ? letterThread(s, open) : undefined;
     const c = open ? correspondent(open) : null;
+    // Their picture beside the thread (content/letters.ts `picture`): the candidate's file photograph, or a baked still.
+    const picSrc = !c?.picture ? '' : c.picture === 'partner' ? (this.intro?.partner ?? '') : artUrl(c.picture);
+    const pic = picSrc ? `<img class="cp-letter-pic" src="${picSrc}" alt="${esc(c!.name)}">` : '';
     const turns = t ? t.turns.map((turn, i) => `<div class="cp-letter ${turn.who}"><div class="cp-letter-from">${turn.who === 'you' ? 'YOU' : esc((turn.from ?? '').toUpperCase())}</div>${turn.text.map((l) => `<p>${esc(l)}</p>`).join('')}${i === 0 && c?.note ? `<p class="cp-note">${esc(c.note)}</p>` : ''}</div>`).join('') : '';
     const compose = !t ? '' : awaiting(t)
       ? `<p class="cp-note cp-letter-wait">Sent. The reply comes with your next report.</p>`
       : `<div class="cp-compose"><textarea id="letter-text" maxlength="600" rows="4" placeholder="Write to ${esc(t.direct && c?.direct ? c.direct.name : c?.via.name ?? '')}. It goes when you deploy; the answer comes with the report." aria-label="Your letter"></textarea><button class="screen-btn" data-act="letter-send">SEND</button></div>`;
     const note = this.letterNote ? `<p class="cp-note">${esc(this.letterNote)}</p>` : '';
     return `<div class="cp-cols cp-letters"><div><div class="cp-label">LETTERS</div>${list}<p class="cp-note">Between deployments only: a letter of yours is answered when you come back from the next one.</p></div>
-      <div>${t && c ? `<div class="cp-label">${esc(c.name.toUpperCase())} · ${esc(letterStanding(t))}</div><div class="cp-letters-thread">${turns}</div>${compose}${note}` : '<p class="cp-note">Nobody to write to yet.</p>'}</div></div>`;
+      <div>${t && c ? `<div class="cp-label">${esc(c.name.toUpperCase())} · ${esc(letterStanding(t))}</div><div class="cp-letters-thread">${pic}${turns}</div>${compose}${note}` : '<p class="cp-note">Nobody to write to yet.</p>'}</div></div>`;
   }
 
   /** Who writes the letters back: rfab.ai as the correspondent, in every mode but the scripted one; else the scripted letters. */

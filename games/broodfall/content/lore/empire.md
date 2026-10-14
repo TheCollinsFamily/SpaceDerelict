@@ -722,6 +722,14 @@ scene). **PROPOSAL:** the boss is a clearance supervisor in the Office, sincerel
 every clean deployment, signing directives whose procurement language someone above him wrote.
 Having a dog for a boss is the one enviable thing about a pest-control posting.
 
+### Broodfall: Mirelle, the cat girl who writes to him
+Collins's pick of her picture (Oct 14 2026, "3 white"; tools/art/mirelle-options.mjs, public/art/letters/mirelle.webp):
+a young woman with large white-furred cat ears and tail, white-blonde hair, green slit-pupil eyes, full-figured (cat
+girls breed sexually, so they keep what Technopuritan women engineered away), in the Felid Concord's teal consular
+jacket with a cream sash, and a black gear pendant. Not a selfie: a photograph taken of her in a ship's cabin that
+looks like the technician's own, "as she is from the same culture" (Collins). **PROPOSAL:** the Concord's ships come
+from the Empire's yards; the gear is the old Technopuritan sign, worn on the fringe as the Empire never would.
+
 ## 16. Open (Collins's calls)
 
 - Who exactly the subjugated population of krypteia is (section 5 proposes two kinds).
