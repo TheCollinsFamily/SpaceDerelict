@@ -24,8 +24,8 @@
     "partner:partner": {
       "video": "alive/partner-partner.mp4",
       "poster": "alive/partner-partner.webp",
-      "w": 960,
-      "h": 960,
+      "w": 640,
+      "h": 640,
       "seconds": 4.417
     },
     "reveal:delegation-reveal-end": {
