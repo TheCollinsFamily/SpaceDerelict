@@ -4,7 +4,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import { newCampaign } from '../src/meta/campaign';
-import { awaiting, dueThreads, historyFor, lettersUnlocked, markRead, openLetters, personaFor, receiveLetter, scriptedReply, sendLetter, standing, thread, unlockedCorrespondents, unreadLetters } from '../src/meta/letters';
+import { awaiting, dueThreads, historyFor, lettersUnlocked, markRead, mergeLetters, openLetters, personaFor, receiveLetter, scriptedReply, sendLetter, standing, thread, unlockedCorrespondents, unreadLetters } from '../src/meta/letters';
 import { CORRESPONDENTS, correspondent } from '../content/letters';
 import { RfabShipAi, reasonFor, ShipAiError } from '../src/meta/shipAi';
 
@@ -147,5 +147,32 @@ describe('Rook tells of the orca only when asked, and YOKE answers it once, befo
     s = { ...s, letters: { threads: { ...s.letters!.threads, rook: { ...thread(s, 'rook')!, revealed: ['orca'] } } } };
     expect(letterBeatFor(s)!.id).toBe('letter-rook-orca');
     expect(letterBeatFor(s)!.beats.map((b) => b.say).join(' ')).toMatch(/twenty-five bodies/);
+  });
+});
+
+describe('the letters kept on the RFab account merge with the save (Oct 14 2026)', () => {
+  it('the longer thread wins, regard and reveals are kept from both, a thread one side lacks is kept', () => {
+    const a = openLetters(past(['mate-review', 'catgirl'])).letters!;
+    const longer = { ...a.threads.atlas!, turns: [...a.threads.atlas!.turns, { who: 'you' as const, text: ['hi'], at: 3 }], regard: 1 };
+    const remote = { threads: { atlas: longer, rook: { id: 'rook' as const, turns: [], regard: 2, direct: false, unread: 0, revealed: ['orca'] } } };
+    const m = mergeLetters({ threads: { ...a.threads, atlas: { ...a.threads.atlas!, regard: 2 } } }, remote)!;
+    expect(m.threads.atlas!.turns).toHaveLength(2);
+    expect(m.threads.atlas!.regard).toBe(2);
+    expect(m.threads.mirelle).toBeDefined();
+    expect(m.threads.rook!.revealed).toEqual(['orca']);
+    expect(mergeLetters(a, null)).toBe(a);
+  });
+  it('the player link reads and keeps them on /api/broodfall/yoke/letters with the campaign header', async () => {
+    const { PlayerLink } = await import('../src/meta/yokePlayer');
+    const calls: Array<{ url: string; method: string; headers: Record<string, string>; body?: string }> = [];
+    const link = new PlayerLink({ base: 'https://api.rfab.ai', campaignId: 'c7', store: { load: () => 'tok', save: () => {}, clear: () => {} },
+      fetcher: async (url, init) => { calls.push({ url: String(url), method: init?.method ?? 'GET', headers: init?.headers as Record<string, string>, body: init?.body as string });
+        return new Response(JSON.stringify(init?.method === 'PUT' ? { success: true, kept: 1 } : { success: true, letters: { threads: { atlas: { id: 'atlas', turns: [], regard: 0, direct: false, unread: 0 } } } }), { status: 200 }); } });
+    expect(await link.saveLetters({ threads: {} })).toBe(true);
+    const got = await link.letters<{ threads: Record<string, unknown> }>();
+    expect(Object.keys(got!.threads)).toEqual(['atlas']);
+    expect(calls[0]).toMatchObject({ url: 'https://api.rfab.ai/api/broodfall/yoke/letters', method: 'PUT' });
+    expect(calls[0].headers['X-Broodfall-Campaign']).toBe('c7');
+    expect(calls[0].headers['X-Broodfall-Player']).toBe('tok');
   });
 });

@@ -2283,3 +2283,8 @@ the companion's affection level for her to let you talk to Atlas directly."
   comes aboard, sees her orca letter arrive and the thread marked, and on the next return YOKE's letter-rook-orca line.
   The LIVE writer is not deployed: prod rfab.ai rejects trigger "letter" (BAD_TRIGGER) until the backend deploy with
   9e0c04fc/78acaa43; until then every reply is scripted.
+- Letters on the RFab account, like YOKE (Collins, Oct 14 2026: "their history can all get attached to an rfab account right?
+  to up the model etc same as yoke"): a letter from a player runs on the model the account chose for YOKE (backend
+  letterModel; guests on Kimi); each campaign's letters are kept on its broodfall_minds row (letters JSONB, GET/PUT
+  /api/broodfall/yoke/letters), carried to the account on link; the game pulls and merges once a show (mergeLetters) and
+  pushes when they change, in every mode but scripted. Backend b7fbf44c, NOT DEPLOYED (with 9e0c04fc and 78acaa43).

@@ -40,7 +40,7 @@ import { loadIntroArt, type IntroArt } from './intro';
 import { PARTNER } from '../../content/partner';
 import { artUrl } from '../render/art';
 import { correspondent, type CorrespondentId } from '../../content/letters';
-import { awaiting, dueThreads, historyFor, lettersUnlocked, markRead, openLetters, personaFor, receiveLetter, scriptedReply, sendLetter, standing as letterStanding, thread as letterThread, unlockedCorrespondents, unreadLetters } from '../meta/letters';
+import { awaiting, dueThreads, historyFor, lettersUnlocked, markRead, mergeLetters, openLetters, personaFor, receiveLetter, scriptedReply, sendLetter, standing as letterStanding, thread as letterThread, unlockedCorrespondents, unreadLetters } from '../meta/letters';
 import { PRINT_BODY } from '../../content/yokeScenes';
 import { YokeSceneOverlay, sceneMedia } from './yokeScene';
 import { directivesHtml, ordersDebriefHtml } from './directives';
@@ -195,6 +195,9 @@ export class CampaignUi {
   private letterOpen: CorrespondentId | null = null;
   private letterNote = '';
   private lettersBusy = false;
+  /** The letters last kept on rfab.ai (JSON), so a push goes only when they changed; pulled once a show. */
+  private lettersKept = '';
+  private lettersPulled = false;
   /** The prompt in the reply box under her, from the greeting (Greeting.hook), until the next greeting. */
   private greetHook = '';
   /** His quarters' picture and the partner candidate's portrait (public/art/intro/, not the manifest). */
@@ -946,6 +949,13 @@ export class CampaignUi {
     if (this.lettersBusy) return;
     this.lettersBusy = true;
     try {
+      if (!this.lettersPulled && this.yoke.mode !== 'scripted') {
+        this.lettersPulled = true;
+        const remote = await this.player.letters<NonNullable<CampaignState['letters']>>();
+        const merged = mergeLetters(this.state.letters, remote);
+        if (merged !== this.state.letters) { this.state = openLetters({ ...this.state, letters: merged }); saveCampaign(this.state); }
+        this.lettersKept = JSON.stringify(remote ?? null);
+      }
       const mind = this.letterMind();
       for (const id of dueThreads(this.state)) {
         const t = letterThread(this.state, id)!;
@@ -963,7 +973,15 @@ export class CampaignUi {
         this.letterNote = `Last reply: ${how}.`;
         if (!this.debriefing && !this.el.classList.contains('hidden')) this.render();
       }
-    } finally { this.lettersBusy = false; }
+    } finally { this.lettersBusy = false; void this.keepLetters(); }
+  }
+
+  /** Keep the letters on rfab.ai when they changed (not in the scripted mode: it asks rfab.ai nothing). */
+  private async keepLetters(): Promise<void> {
+    if (this.yoke.mode === 'scripted' || !this.state.letters) return;
+    const now = JSON.stringify(this.state.letters);
+    if (now === this.lettersKept) return;
+    if (await this.player.saveLetters(this.state.letters)) this.lettersKept = now;
   }
 
   private genesHtml(): string {
@@ -1305,7 +1323,7 @@ export class CampaignUi {
       case 'letter-send': {
         const box = this.el.querySelector<HTMLTextAreaElement>('#letter-text');
         const id = this.letterOpen && unlockedCorrespondents(s).includes(this.letterOpen) ? this.letterOpen : unlockedCorrespondents(s)[0];
-        if (box && id) this.setState(sendLetter(s, id, box.value));
+        if (box && id) { this.setState(sendLetter(s, id, box.value)); void this.keepLetters(); }
         return;
       }
       case 'ai-end': this.aiEnd(); return;

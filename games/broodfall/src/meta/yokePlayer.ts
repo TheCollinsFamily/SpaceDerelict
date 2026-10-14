@@ -199,6 +199,21 @@ export class PlayerLink {
     return r.model;
   }
 
+  /**
+   * The campaign's letters as rfab.ai keeps them (Oct 14 2026: on the install, or the linked account, like her memory),
+   * or null: none kept, no player, or no letters route on this RFab.
+   */
+  async letters<T>(): Promise<T | null> {
+    if (this.legacy || !this.token || !this.o.campaignId) return null;
+    try { return (await this.call<{ letters?: T | null }>('/letters')).letters ?? null; } catch { return null; }
+  }
+
+  /** Keep the campaign's letters on rfab.ai. False when it could not (no player, no route, refused). */
+  async saveLetters(letters: unknown): Promise<boolean> {
+    if (this.legacy || !this.o.campaignId || !(await this.ensure())) return false;
+    try { await this.call('/letters', { method: 'PUT', body: JSON.stringify(letters) }); return true; } catch { return false; }
+  }
+
   async disconnect(): Promise<void> {
     await this.call('/disconnect', { method: 'POST', body: '{}' });
   }

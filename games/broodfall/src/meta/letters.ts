@@ -150,3 +150,22 @@ export function standing(t: LetterThread): string {
   if (t.direct) return `${c.direct.name} writes to you herself now (${c.via.name}'s regard: ${t.regard})`;
   return `${c.via.name}'s regard: ${t.regard} of ${c.direct.gate} before she lets you write to ${c.direct.name} directly`;
 }
+
+/**
+ * The letters kept on rfab.ai and the ones in this save, made one (Oct 14 2026): for each thread the copy with more letters
+ * wins (the other install wrote more), the higher regard and the reveals of both are kept; a thread only one side has is kept.
+ */
+export function mergeLetters(local: LettersState | undefined, remote: LettersState | null | undefined): LettersState | undefined {
+  if (!remote?.threads) return local;
+  if (!local?.threads) return remote;
+  const threads: LettersState['threads'] = { ...local.threads };
+  for (const [id, r] of Object.entries(remote.threads) as Array<[CorrespondentId, LetterThread | undefined]>) {
+    const l = threads[id];
+    if (!r) continue;
+    if (!l) { threads[id] = r; continue; }
+    const win = r.turns.length > l.turns.length ? r : l;
+    threads[id] = { ...win, regard: Math.max(l.regard, r.regard), direct: l.direct || r.direct, revealed: [...new Set([...(l.revealed ?? []), ...(r.revealed ?? [])])] };
+    if (!threads[id]!.revealed!.length) delete threads[id]!.revealed;
+  }
+  return { threads };
+}
