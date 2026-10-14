@@ -185,7 +185,10 @@ with venomous spit spat at her face; she blocked it with her hand, the hand went
 cauterised it herself, which is within the normal range there. Her glasses are an eccentricity: her eyes are standard;
 she saw glasses in a history class once and thought they looked "cute". Thin and flat-chested, as Technopuritan women are.
 Two notable relatives on the file, listed without comment: a war hero of the Sabbatean Skirmishes, and a heretic, a
-figure of a saint having been found among their belongings after death (idolatry, the worst of sins there). YOKE computed the concordance (93.1%) and has read the file
+figure of a saint having been found among their belongings after death (idolatry, the worst of sins there). Under
+attachments: a notable lack of living friends; her best friend is the classmate she talked into ending themselves at
+school, with whom she speaks most days, the dead being uploaded. Nobody there finds that strange; YOKE knows that an
+Earth human would, and finds the thought of that strange in turn. YOKE computed the concordance (93.1%) and has read the file
 more times than the form required. She thinks the candidate would be kind to him, and is not sure how she feels about that.
 
 ### About the work

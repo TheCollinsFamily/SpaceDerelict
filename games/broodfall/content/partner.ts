@@ -19,7 +19,10 @@
  * face, she blocked it with her hand, the hand went necrotic, and she amputated and cauterised it herself. The glasses are
  * an eccentricity: she saw them in a history class once and thought they looked "cute". Notable relatives (his note): one a
  * war hero from the Sabbatean Skirmishes, another a heretic, as a figure of a saint was found among their belongings after
- * death (idolatry is worse than murder there; a saint's figure is an idol). Drawn slightly skinny and
+ * death (idolatry is worse than murder there; a saint's figure is an idol). Attachments (his note): a notable lack of
+ * living friends, but her best friend is the girl she talked into killing herself back in school. Collins: "really meant
+ * to highlight how different a society where people can talk to the dead and death doesn't mean the same thing would be".
+ * Drawn slightly skinny and
  * flat-chested, as Technopuritan women are (content/lore/empire.md, section 7: breasts were engineered away).
  */
 export const PARTNER = {
@@ -41,6 +44,7 @@ export const PARTNER = {
     ['Prosthetics', 'Left arm, robotic, bare: the frame and circuitry needed and nothing over them. The original was lost on her class\'s survival camp (students are left for some months to learn to survive on their own): a classmate with venomous spit spat at her face, she blocked it with her hand, the hand went necrotic, and she amputated and cauterised it herself. Within the normal range.'],
     ['Eccentricities', 'Wears glasses. Her eyes are standard; she saw glasses in a history class once and thought they looked "cute".'],
     ['Notable relatives', 'One: a war hero of the Sabbatean Skirmishes. One: a heretic; a figure of a saint was found among their belongings after death.'],
+    ['Attachments', 'A notable lack of living friends. Her best friend is the classmate she talked into ending themselves at school; they speak most days.'],
   ] as Array<[string, string]>,
   statement: 'Statement of the candidate (twenty words at most): "I am better with the dead than the living. I would try with you. Sorry. That was too many words."',
   boardNote: 'The Board will decide on the match when the applicant\'s standing reaches {need} (now {standing}). The Board congratulates you on your continued eligibility to remain eligible.',

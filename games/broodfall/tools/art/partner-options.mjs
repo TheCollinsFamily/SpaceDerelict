@@ -4,6 +4,10 @@
  * art-src/intro/options/partner-<a-d>.png (a draw already there is kept; move it away to draw again).
  *
  *   node tools/art/partner-options.mjs            → the four options
+ *   node tools/art/partner-options.mjs settle d 2  → two redraws of option d with the hands down (partner-d1.png, -d2.png),
+ *                                                    drawn from option d as the reference so the face holds (Collins: "D is
+ *                                                    perfect except for the hand position not being down, which will look
+ *                                                    bad in a looping video")
  *
  * The one he picks: copy it over art-src/intro/pictures/partner.png (move the old one into art-src/intro/v1/ first, never
  * delete) and run `node tools/art/intro.mjs partner` to bake public/art/intro/partner.webp.
@@ -42,9 +46,13 @@ const LOOKS = {
 
 fs.mkdirSync(OUT, { recursive: true });
 if (typeof ready === 'function') await ready();
-const items = Object.entries(LOOKS);
+const [mode, pick, count] = process.argv.slice(2);
+const items = mode === 'settle'
+  ? Array.from({ length: Number(count ?? 2) }, (_, i) => [`${pick}${i + 1}`, LOOKS[pick].replace(/caught pushing her round glasses up with the knuckle of the prosthetic hand at the moment of the photograph, her other hand at her side, /, 'both arms down and her hands folded in front of her at the bottom of the frame, the bare prosthetic forearm in plain view, the same face as the reference photograph, ')])
+  : Object.entries(LOOKS);
+const refs = (id) => [mode === 'settle' ? path.join(OUT, `partner-${pick}.png`) : null, REF].filter((r) => r && fs.existsSync(r));
 await pool(items, 2, ([id, look]) => makeStill({
   slug: `partner option ${id}`, out: path.join(OUT, `partner-${id}.png`), prompt: BASE(look), key: null,
-  width: 1024, height: 1024, refFiles: fs.existsSync(REF) ? [REF] : [],
+  width: 1024, height: 1024, refFiles: refs(id),
 }));
 for (const [id] of items) console.log(`option ${id}: ${path.join(OUT, `partner-${id}.png`)} ${fs.existsSync(path.join(OUT, `partner-${id}.png`)) ? 'ok' : 'MISSING'}`);

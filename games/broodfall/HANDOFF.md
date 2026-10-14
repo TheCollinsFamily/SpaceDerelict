@@ -2191,7 +2191,11 @@ slot is worth a line only when the line can be interesting there.
 - The partner's notable relatives (Collins, Oct 14 2026): a war hero of the Sabbatean Skirmishes, and a heretic found with a
   figure of a saint after death; on the file, in the mate-review aside, in the lorebook, `empire.md` and `docs/UNIVERSE.md`
   (the Skirmishes recorded by name only, open).
-- Portrait options (Collins, Oct 14 2026: "draw me a few options and I will pick one and go for a nerdy shy look"): four
-  draws in art-src/intro/options/partner-{a,b,c,d}.png by tools/art/partner-options.mjs (16,000 tokens at the default tier),
-  on https://claude.ai/artifact/2U3zdWWQAeVzK7qghScsYE beside the draw in the game. WAITING ON HIS PICK: then move
-  art-src/intro/pictures/partner.png into art-src/intro/v1/, copy the pick over it, run node tools/art/intro.mjs partner.
+- Portrait (Collins, Oct 14 2026): four nerdy-shy looks drawn by tools/art/partner-options.mjs (art-src/intro/options/); he
+  chose D "except for the hand position not being down, which will look bad in a looping video", so D was redrawn twice
+  with the hands down from D as the reference (settle mode; partner-d1, partner-d2). D1 is on the data pad
+  (public/art/intro/partner.webp; the earlier draws in art-src/intro/v1/) and its looping clip was remade with
+  tools/art/stills-alive.mjs at 480p (the old Maren loop in art-src/stills-alive/partner/v1/). D2 is a one-line swap. All
+  on https://claude.ai/artifact/2U3zdWWQAeVzK7qghScsYE. Her file now also has Attachments: no living friends, her best
+  friend the classmate she talked into ending themselves (Collins: a society that talks to its dead); in her secret and
+  the lore too.
