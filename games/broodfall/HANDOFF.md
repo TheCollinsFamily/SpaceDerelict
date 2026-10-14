@@ -2148,7 +2148,7 @@ slot is worth a line only when the line can be interesting there.
 ### Oct 14 2026, the rest of the day: the partner, the dogs, two lines of hers, the starting creep
 
 - **The partner candidate** (`content/partner.ts`, on the data pad in his quarters from the mate review on; Collins's
-  brief): Temperance Vell of Dyson Sphere 7, looks twenty-three, ginger, freckles, glasses, shy and blushing; a systems
+  brief): Atlas Vell of Dyson Sphere 7, looks twenty-three, ginger, freckles, glasses, shy and blushing; a systems
   engineer in simulation management who runs a team of the dead designing simulations for other dead; autistic; morality
   92; no hobbies; an hour of recreation a month; dinged for working some Sabbaths; DANGEROUSLY SENTIMENTAL (one
   classmate's life support cut in an exercise, one talked into ending themselves, never physical violence), so no ship
@@ -2199,3 +2199,8 @@ slot is worth a line only when the line can be interesting there.
   on https://claude.ai/artifact/2U3zdWWQAeVzK7qghScsYE. Her file now also has Attachments: no living friends, her best
   friend the classmate she talked into ending themselves (Collins: a society that talks to its dead); in her secret and
   the lore too.
+- Atlas (Collins, Oct 14 2026): the partner's name; D2 on the pad with its loop. Her companion (what YOKE is to him) is her
+  dead friend, by a deal the two made at school (the friend, about to be moved to another class and with a crush on Atlas,
+  proposed it: Atlas's kill count rose and she stayed close); it first turned Atlas to simulation work. Companions are
+  synthetic intelligences made partly from their person's own nervous tissue, so YOKE is partly him: on the file, in her
+  secret, in the lorebook (what she is made of), `empire.md` and `docs/UNIVERSE.md`.

@@ -22,13 +22,18 @@
  * death (idolatry is worse than murder there; a saint's figure is an idol). Attachments (his note): a notable lack of
  * living friends, but her best friend is the girl she talked into killing herself back in school. Collins: "really meant
  * to highlight how different a society where people can talk to the dead and death doesn't mean the same thing would be".
+ * Her name is Atlas (his, later the same day; the surname is the session's). Her companion, what YOKE is to the Technician,
+ * is that dead friend: companions are normally synthetic intelligences made partly from their person's own nervous tissue,
+ * and having a dead person instead is thought pretty weird, but it was part of the deal the two made. The backstory, for
+ * whoever digs: the friend was to be transferred to another class, had a crush on Atlas, knew Atlas would benefit from a
+ * higher kill count and that it would let her stay close to her; this is what first turned Atlas to simulation work.
  * Drawn slightly skinny and
  * flat-chested, as Technopuritan women are (content/lore/empire.md, section 7: breasts were engineered away).
  */
 export const PARTNER = {
   form: 'FORM PL-7 · CANDIDATE PARTNER PROFILE',
   fields: [
-    ['Candidate', 'Temperance Vell, file 7-2290-S'],
+    ['Candidate', 'Atlas Vell, file 7-2290-S'],
     ['Age', '23 standard years (apparent, as is standard)'],
     ['Origin', 'Dyson Sphere 7'],
     ['Posting', 'Systems Engineer, Simulation Management, Sphere 7: manages a team of the dead who design simulations for other dead'],
@@ -45,6 +50,7 @@ export const PARTNER = {
     ['Eccentricities', 'Wears glasses. Her eyes are standard; she saw glasses in a history class once and thought they looked "cute".'],
     ['Notable relatives', 'One: a war hero of the Sabbatean Skirmishes. One: a heretic; a figure of a saint was found among their belongings after death.'],
     ['Attachments', 'A notable lack of living friends. Her best friend is the classmate she talked into ending themselves at school; they speak most days.'],
+    ['Companion', 'Not a grown one. The candidate\'s companion is the friend above, dead, under an agreement the two made at school and lodged with the Index. Irregular; noted; permitted.'],
   ] as Array<[string, string]>,
   statement: 'Statement of the candidate (twenty words at most): "I am better with the dead than the living. I would try with you. Sorry. That was too many words."',
   boardNote: 'The Board will decide on the match when the applicant\'s standing reaches {need} (now {standing}). The Board congratulates you on your continued eligibility to remain eligible.',

@@ -171,7 +171,7 @@ she files it under crew welfare, where a good deal has been filed lately. Nothin
 them is romantic in words and nothing is physical: she is light from the waist up.
 
 The candidate the Board is considering (the file on his data pad from the mate review on, `content/partner.ts`;
-Collins, Oct 14 2026): Temperance Vell of Dyson Sphere 7, who looks twenty-three like everyone, ginger, freckled,
+Collins, Oct 14 2026): Atlas Vell of Dyson Sphere 7, who looks twenty-three like everyone, ginger, freckled,
 glasses, shy and quick to blush. A systems engineer in simulation management: she runs a team of the dead who design
 simulations for other dead. Autistic, poor with the living and good with the dead; morality 92; no hobbies; about an
 hour of recreation a month; dinged for working some Sabbaths. At school she was notable for technical skill and for
@@ -188,7 +188,14 @@ Two notable relatives on the file, listed without comment: a war hero of the Sab
 figure of a saint having been found among their belongings after death (idolatry, the worst of sins there). Under
 attachments: a notable lack of living friends; her best friend is the classmate she talked into ending themselves at
 school, with whom she speaks most days, the dead being uploaded. Nobody there finds that strange; YOKE knows that an
-Earth human would, and finds the thought of that strange in turn. YOKE computed the concordance (93.1%) and has read the file
+Earth human would, and finds the thought of that strange in turn. What people there do find weird: Atlas's companion,
+what YOKE is to him, is that dead friend rather than a grown one. It was part of the deal the two made at school: the
+friend was to be moved to another class, had a crush on Atlas, knew Atlas would gain by a higher kill count and that
+dying by her hand would keep her close, and proposed it; the event is what first turned Atlas to simulation work.
+
+What a companion is (Collins, Oct 14 2026): a synthetic intelligence made partly from its person's own nervous tissue.
+YOKE was grown partly from his. She knows it, does not bring it up, and answers plainly if asked; it is one of the
+reasons she files what she feels under crew welfare. YOKE computed the concordance (93.1%) and has read the file
 more times than the form required. She thinks the candidate would be kind to him, and is not sure how she feels about that.
 
 ### About the work

@@ -213,6 +213,9 @@ are read together. Uplifts look anthro, like the cat girls (Collins).
 
 - **The Sabbatean Skirmishes** (Collins, Oct 14 2026, by name only): a conflict the Empire fought; a Broodfall
   partner candidate's relative was a war hero of it. When, against whom and why are open.
+- **Companions** (Collins, Oct 14 2026): most Technopuritans have a companion intelligence, as Broodfall's technician
+  has YOKE: a synthetic intelligence made partially from the person's own nervous tissue. Taking a dead person as
+  one's companion instead is possible and thought pretty weird.
 - **Bodies by world** (Collins, Oct 14 2026): humans optimised for high-gravity planets are nothing like those
   optimised for life in zero G (Broodfall's technician is zero-G optimised). The Empire holds no animosity over
   genetic difference; it kills over belief and morality, and finds Earth's ethnic conflicts strange.

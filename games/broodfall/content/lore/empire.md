@@ -113,7 +113,7 @@ around": YOKE's `partner-progress` line).
   partners in a House. **Collins, Sep 30 (YOKE's mate-review greeting in `content/greetings.ts`):**
   the Empire finds it strange that early humans used their breeding partners "for sexual release
   and companionship". Marriage is a working partnership for raising a House.
-- **Broodfall's candidate** (Collins, Oct 14 2026; `content/partner.ts`, on the data pad in his quarters): Temperance
+- **Broodfall's candidate** (Collins, Oct 14 2026; `content/partner.ts`, on the data pad in his quarters): Atlas
   Vell of Dyson Sphere 7, looks twenty-three like everyone, ginger, freckles, glasses, shy and blushing. A systems
   engineer in Simulation Management: she manages a team of the dead who themselves design simulations for other dead.
   Autistic, struggles with the living; morality score 92; no hobbies; about an hour of recreation a month; her one ding
@@ -130,7 +130,11 @@ around": YOKE's `partner-progress` line).
   as a figure of a saint was found among their belongings after death (section 2: idolatry is worse than murder; the
   Board lists both without comment). Attachments: a notable lack of living friends, but her best friend is the girl she
   talked into killing herself back in school; they speak most days. Collins: "really meant to highlight how different a
-  society where people can talk to the dead and death doesn't mean the same thing would be". Drawn slightly skinny and
+  society where people can talk to the dead and death doesn't mean the same thing would be". Her companion (what YOKE
+  is to the technician) is that dead friend rather than a grown one, "considered a pretty weird thing to do in this
+  world" but part of the deal the two made: the friend was to be transferred to another class, had a crush on Atlas,
+  knew Atlas would benefit from a higher kill count and that it would let her stay closer to her; the event first turned
+  Atlas to simulation work. (Her name is his, Oct 14 2026; the surname stays the session's.) Drawn slightly skinny and
   flat-chested, as Technopuritan women are (section 7).
   (The name and the concordance figure, 93.1%, are the session's; the rest is his.)
   - *What the file shows about the Empire* (**PROPOSAL** from his facts): modifications run in families and are recorded
@@ -195,6 +199,10 @@ fashion these days, which is why it is not obvious.
   morality makes perfect sense to the Empire; killing over genetic difference makes none (YOKE's `won-20` line, which
   also allows that a breed worse at cognition or more impulsive, breeding fast, ought to sterilise itself for the common
   good). **PROPOSAL:** the zero-G line crews the ships and the spheres' outer works; the high-gravity line the heavy worlds.
+- **Companions** (Collins, Oct 14 2026): most Technopuritans have one, what YOKE is to the technician: a synthetic
+  intelligence made partially from the person's own nervous tissue. Having a dead person as one's companion instead is
+  possible and thought pretty weird. **PROPOSAL:** the tissue is taken at the companion's making and gives it its
+  person's cast of mind without their memories; a companion outlives its person and is uploaded with them.
 - **The Lipptors** (Collins, Oct 14 2026): a class genetically specialised for advanced mathematics and extensive AI
   integration, to the extent that their organs begin to shut down if they are not integrated with an AI within a few
   days of birth: their brains outsource that much lower-order processing to the AI. Technopuritans are genetically
