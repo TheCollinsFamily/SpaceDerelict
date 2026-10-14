@@ -2191,3 +2191,7 @@ slot is worth a line only when the line can be interesting there.
 - The partner's notable relatives (Collins, Oct 14 2026): a war hero of the Sabbatean Skirmishes, and a heretic found with a
   figure of a saint after death; on the file, in the mate-review aside, in the lorebook, `empire.md` and `docs/UNIVERSE.md`
   (the Skirmishes recorded by name only, open).
+- Portrait options (Collins, Oct 14 2026: "draw me a few options and I will pick one and go for a nerdy shy look"): four
+  draws in art-src/intro/options/partner-{a,b,c,d}.png by tools/art/partner-options.mjs (16,000 tokens at the default tier),
+  on https://claude.ai/artifact/2U3zdWWQAeVzK7qghScsYE beside the draw in the game. WAITING ON HIS PICK: then move
+  art-src/intro/pictures/partner.png into art-src/intro/v1/, copy the pick over it, run node tools/art/intro.mjs partner.
