@@ -165,6 +165,24 @@ export const INTROS: Array<{ id: string; captures: number; needs?: (s: CampaignS
   { id: 'intro-dad', captures: 10, needs: (s) => (s.said ?? []).includes('partner-progress') },
 ];
 
+/**
+ * YOKE'S LINES ON THE LETTERS (Collins, Oct 14 2026): once each, on the first ordinary return after the turn in the Letters
+ * room they speak to (src/meta/letters.ts), ahead of the intros: a new correspondent's first letter, Atlas writing herself,
+ * a writer telling him what he asked (Rook's orca, before the briefing).
+ */
+export const LETTER_BEATS: Array<{ id: string; when: (s: CampaignState) => boolean }> = [
+  { id: 'letter-rook', when: (s) => !!s.letters?.threads.rook },
+  { id: 'letter-atlas-direct', when: (s) => !!s.letters?.threads.atlas?.direct },
+  { id: 'letter-rook-orca', when: (s) => (s.letters?.threads.rook?.revealed ?? []).includes('orca') },
+];
+
+/** The letters' line for this ordinary return, or null. */
+export function letterBeatFor(s: CampaignState, pool: Greeting[] = GREETINGS): Greeting | null {
+  const said = s.greetingsSaid ?? [];
+  const next = LETTER_BEATS.find((b) => !said.includes(b.id) && b.when(s));
+  return (next && pool.find((g) => g.id === next.id)) ?? null;
+}
+
 /** The intro for this ordinary return, or null. */
 export function introFor(s: CampaignState, pool: Greeting[] = GREETINGS): Greeting | null {
   const said = s.greetingsSaid ?? [];
@@ -197,6 +215,8 @@ export const EARTH_NEWS_EVERY = 3;
 export function greetingFor(s: CampaignState, lore = ''): { moment: GreetMoment; greeting: Greeting } {
   const moment = momentNow(s);
   if (ORDINARY.includes(moment)) {
+    const letter = letterBeatFor(s);
+    if (letter) return { moment: 'intro', greeting: letter };
     const intro = introFor(s);
     if (intro) return { moment: 'intro', greeting: intro };
   }

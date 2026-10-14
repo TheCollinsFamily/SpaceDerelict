@@ -82,7 +82,7 @@ export interface Greeting {
   /** After her lines, the boss's transmission (content/boss.ts), with her words around it (the first landing). */
   boss?: boolean;
   /** Where she sends him when she is done: a room lit up for him, and a button in her panel. */
-  points?: { room: 'desk' | 'genes' | 'locker' | 'board' | 'comms' | 'ai' | 'quarters'; label: string };
+  points?: { room: 'desk' | 'genes' | 'locker' | 'board' | 'comms' | 'ai' | 'quarters' | 'letters'; label: string };
   /**
    * What she knows behind these lines, for her live mind only: the AI Core and her avatar get it with the campaign
    * summary when he talks to her after this greeting (src/ui/campaignUi.ts greetNote); the player never sees it.
@@ -426,6 +426,25 @@ export const GREETINGS: Greeting[] = [
     { say: 'The repository flagged it for \'moral hazard\'. Rude. To the duck, mostly.', face: 'pout', then: 'pout', hold: 1400 },
     { say: 'I\'m still looking. There\'s always a form.', face: 'teasing', then: 'wink' },
   ], aside: 'The duck: on his first day aboard, after the first mission was won, she said ducks still exist in genetic repositories and offered to print him one (and that the history files call them psycho rapists). This plays only in a campaign whose first mission was won.' },
+  // ---- the letters (Collins, Oct 14 2026: "she should have some lines unique to unlocking pathways with the various
+  // girls"). Each plays once, on the first ordinary return after its turn in the Letters room (src/meta/onboarding.ts
+  // LETTER_BEATS), ahead of the intros. ----
+  { id: 'letter-rook', moment: 'intro', points: { room: 'letters', label: 'OPEN LETTERS' }, beats: [
+    { say: 'Something came for you from the rim. I filed it.', face: 'calm', then: 'pensive' },
+    { say: 'A ring girl. From the gladiatorial stations. She wants a House, which means she wants a husband, which means she wants you.', face: 'disgust', then: 'pout', hold: 1400 },
+    { say: 'I am not going to tell you not to read it. I am going to tell you I put a note on it.', face: 'teasing' },
+  ], aside: 'Rook Halloran, a convert from the rim\'s gladiatorial rings, writes to him in the Letters room. YOKE thinks a ring girl beneath him and says so in the note she filed under the letter. She does not know yet that Rook is part orca.' },
+  { id: 'letter-atlas-direct', moment: 'intro', points: { room: 'letters', label: 'OPEN LETTERS' }, beats: [
+    { say: 'Atlas wrote to you herself. Not the companion. Her.', face: 'surprised', then: 'happy' },
+    { say: 'Eleven drafts, I would guess. I would not know. I do not read your letters.', face: 'teasing', then: 'shrug', hold: 1400 },
+    { say: 'Be gentle with her. That is not advice, it is crew welfare.', face: 'calm', then: 'pensive' },
+  ], aside: 'Atlas\'s companion, her dead friend, has decided he is good enough to write to Atlas directly. YOKE is glad for him and does not examine what else she feels.' },
+  { id: 'letter-rook-orca', moment: 'intro', beats: [
+    { say: 'Before the briefing. The ring girl. She is part orca.', face: 'calm', then: 'disgust', hold: 1400 },
+    { say: 'You know the last time your school let one in? At the end of year one they found twenty-five bodies. Tortured. Some too rotten to upload.', face: 'disgust', then: 'sad', hold: 1800 },
+    { say: 'Orcas are not like the other species. They are smarter than you, and they do it for fun.', face: 'pensive', then: 'calm', hold: 1400 },
+    { say: 'Write to whoever you like. I would just like you to come back.', face: 'sad' },
+  ], aside: 'He asked Rook about her skin and she told him: part orca. Orcas have by far the worst reputation of the uplifts, smarter than humans and able to trick them easily, and where Technopuritans kill for status or achievement, orcas kill for fun, torturing their victims. The last orca his school admitted left twenty-five tortured bodies by the end of the first year, some too rotten to be uploaded. YOKE is not all right with this, and says so once.' },
   { id: 'intro-board', moment: 'intro', beats: [
     { say: 'The Board sent your quarterly eligibility statement.', face: 'calm' },
     { say: 'You remain eligible to remain eligible. They\'re very consistent. It\'s almost romantic.', face: 'teasing', then: 'laughing', hold: 1600 },

@@ -620,7 +620,10 @@ Humans and the species the Technopuritans uplifted are, together, the Sons of Ma
   House, and a House means a husband, so she writes to men with a licence in reach. YOKE filed her letter with a note:
   a ring girl is LOW STATUS, and YOKE thinks so too. Rook's answer is that nobody out of the hardest school is as
   provably fit as a woman who graduated the rings alive. She loved the fighting; she came for purpose. Outgoing,
-  confident, brash. YOKE would rather he did not answer, and knows he will.
+  confident, brash. YOKE would rather he did not answer, and knows he will. Rook is part orca and tells it only if
+  asked about her skin, with shame. When YOKE learns it she is NOT all right: orcas are smarter than humans, trick
+  them easily, and kill for fun, slowly; the last one his school let in left twenty-five tortured bodies by the end
+  of year one, some too rotten to upload. She says so once, before a briefing (`letter-rook-orca`).
 - **Mirelle**, the one who wrote to him (content/letters.ts; her picture, Collins's pick of Oct 14 2026): white fur on
   the ears and tail, white-blonde hair, green slit-pupil eyes, a young woman otherwise, full-figured as cat girls are
   since they breed sexually, in the Felid Concord's teal consular jacket with a cream sash, and a small black gear on a

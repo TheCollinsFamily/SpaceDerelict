@@ -29,6 +29,8 @@ export interface LetterThread {
   direct: boolean;
   /** Letters of theirs he has not opened. */
   unread: number;
+  /** What a writer has told him only because he asked (Writer.ask ids): YOKE reacts to it (src/meta/onboarding.ts). */
+  revealed?: string[];
 }
 
 export interface LettersState { threads: Partial<Record<CorrespondentId, LetterThread>> }
@@ -99,8 +101,10 @@ export function historyFor(t: LetterThread): Array<{ speaker: 'YOKE' | 'You'; te
 }
 
 /** The scripted reply for a thread, in turn, when there is no live mind (regard +1 each, so the gate opens in time). */
-export function scriptedReply(t: LetterThread): { lines: string[]; regard: number } {
+export function scriptedReply(t: LetterThread): { lines: string[]; regard: number; reveal?: string } {
   const w = writerFor(t);
+  const last = t.turns[t.turns.length - 1];
+  if (w.ask && !(t.revealed ?? []).includes(w.ask.id) && last?.who === 'you' && w.ask.when.test(last.text.join(' '))) return { lines: [...w.ask.lines], regard: 1, reveal: w.ask.id };
   const n = t.turns.filter((x) => x.who === 'them' && x.from === w.name).length - (t.direct ? 0 : 1);
   const lines = w.scripted[Math.max(0, Math.min(w.scripted.length - 1, n))];
   return { lines: [...lines], regard: 1 };
@@ -110,13 +114,21 @@ export function scriptedReply(t: LetterThread): { lines: string[]; regard: numbe
  * A reply arrives: their letter, the writer's regard added (the sum never below zero), the letter unread. When the
  * companion's regard reaches the gate, her handover letter follows and Atlas writes from the next reply on.
  */
+/** What a reply gives away: the ask letter's id when the writer told it (scripted, or the live mind naming it). */
+export function revealIn(t: LetterThread, lines: string[]): string | undefined {
+  const w = writerFor(t);
+  if (!w.ask || (t.revealed ?? []).includes(w.ask.id)) return undefined;
+  return new RegExp(`\\b${w.ask.id}\\b`, 'i').test(lines.join(' ')) ? w.ask.id : undefined;
+}
+
 export function receiveLetter(s: CampaignState, id: CorrespondentId, lines: string[], regard: number | null): CampaignState {
   const t = thread(s, id);
   if (!t) return s;
   const c = correspondent(id);
   const w = writerFor(t);
   const delta = Math.max(-2, Math.min(2, Math.round(regard ?? 1)));
-  let next: LetterThread = { ...t, turns: [...t.turns, { who: 'them', from: w.name, text: lines.filter(Boolean), at: s.deployments }], regard: Math.max(0, t.regard + delta), unread: t.unread + 1 };
+  const shown = revealIn(t, lines);
+  let next: LetterThread = { ...t, turns: [...t.turns, { who: 'them', from: w.name, text: lines.filter(Boolean), at: s.deployments }], regard: Math.max(0, t.regard + delta), unread: t.unread + 1, ...(shown ? { revealed: [...(t.revealed ?? []), shown] } : {}) };
   if (!t.direct && c.direct && next.regard >= c.direct.gate) {
     next = { ...next, direct: true, turns: [...next.turns, { who: 'them', from: c.via.name, text: [...c.direct.handover], at: s.deployments }], unread: next.unread + 1 };
   }

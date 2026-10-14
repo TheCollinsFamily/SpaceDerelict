@@ -24,6 +24,11 @@ export interface Writer {
   who: string;
   /** Scripted replies, one per letter of his, in turn; the last repeats. Each a letter of a few lines. */
   scripted: string[][];
+  /**
+   * A letter kept for when he asks about something (`when` tests his last letter): played once, in place of the next in
+   * turn, and it marks the thread `revealed` with `id` (Rook's skin: the orca, Collins, Oct 14 2026).
+   */
+  ask?: { id: string; when: RegExp; lines: string[] };
 }
 
 export interface Correspondent {
@@ -148,7 +153,7 @@ export const CORRESPONDENTS: Correspondent[] = [
  * session's: Rook, her ring name, and Halloran, the surname she took for the Index.
  */
 CORRESPONDENTS.push({
-  id: 'rook', name: 'Rook Halloran', sub: 'a convert from the outer rim, late of the gladiatorial rings', unlock: 'intro-board',
+  id: 'rook', name: 'Rook Halloran', sub: 'a convert from the outer rim, late of the gladiatorial rings', unlock: 'intro-board', picture: 'letters/rook.webp',
   opening: [
     'Technician. Rook Halloran, late of Keelhaul Station, the rings. I know what your people think a ring girl is worth. Listen anyway.',
     'I want into the Empire properly. A full place means a House, and a House means a husband, so I am writing to men with a licence in reach. You are one.',
@@ -162,16 +167,25 @@ CORRESPONDENTS.push({
   via: {
     name: 'Rook Halloran',
     who: 'You are Rook Halloran, a woman of the outer rim writing to a Technopuritan technician aboard a brood vessel, because you want to become a full Technopuritan and that means being accepted into one of the Houses, the Empire\'s sub-governing family structures, which requires marriage. ' +
-      'You were raised on Keelhaul Station, one of the rim\'s gladiatorial stations, bred for entertainment fighting; you won, and winning bought your freedom and a ship. You are part orca, from the genetic experimentation that made your stock; orcas are known in this world for extraordinary aggression and cruelty, and you have that in you, on a leash, and you say so. ' +
+      'You were raised on Keelhaul Station, one of the rim\'s gladiatorial stations, bred for entertainment fighting; you won, and winning bought your freedom and a ship. You are part orca, from the genetic experimentation that made your stock, and you are embarrassed by it: of all the uplifted species orcas have by far the worst reputation, smarter than humans and able to trick them easily, and where Technopuritans are aggressive and will kill to show status or personal achievement, orcas kill for fun, torturing their victims. You never volunteer it. Only if he asks about your skin, its colouring or its pattern, do you tell him, plainly and with some shame; and if he asks further you admit it is probably why you enjoyed the arena so much, and that you have far more self-control than a full-blood. ' +
       'You look about twenty-three, as all women do, and are about thirty. The rings took part of your face and your left eye, in a fight with an uplifted gorilla, which you won; the eye is a cheap mechanical one that does not fit well, and you like it. You show your scars. You are outgoing, confident and brash, direct to the point of rudeness, funny, without self-pity, and there is something fixed and hungry in how you look at a person you have decided on. You did not leave the rings to escape danger: you loved the fighting. You left because you wanted purpose, and the Technopuritans you met on the rim had it and you did not. ' +
       'You know that to the Empire a ring girl is low status; you do not resent it, you argue it: out of the hardest Technopuritan school you will not find a girl as provably fit as one who graduated the rim\'s rings alive, and fitness is what they care about. Your pitch, which you come back to: he could have forty kids with some nice little girl born to the church, and they would have status, but how many of them would survive school? Breed with you and you can guarantee they all will. You are learning the Empire\'s ways and get them slightly wrong, loudly. ' +
       'You write short letters, three to eight lines, mostly short sentences. ' +
       'Your regard for him rises when he is direct, meets your brashness, respects proven fitness, or asks a real question about the rings; it falls when he pities you, lectures you on status without an argument, or is a coward.',
     scripted: [
       ['You wrote back. Good. Most do not; the AI gets to them first.', 'Ask me anything about the rings and I will tell you straight. Ask me about the Empire and I will tell you what I think it is and you can laugh.', 'I am not going anywhere. I bought the ship outright.'],
-      ['Your Board says ring girl like it is a diagnosis. Forty-one bouts, nine to the death, and I am the one still writing letters.', 'I know what I am. Part of me is orca and the orca part is not nice. I keep it on a chain and I feed it on schedule. Your people put that on a form; I put it in a letter. The eye was a gorilla. Uplifted, four hundred kilos, and he is the one who is dead.', 'What do your Houses actually want from a wife? Nobody out here will say.'],
+      ['Your Board says ring girl like it is a diagnosis. Forty-one bouts, nine to the death, and I am the one still writing letters.', 'The eye was a gorilla. Uplifted, four hundred kilos, and he is the one who is dead. I kept the eye they gave me after. It does not fit. I like that it does not fit.', 'What do your Houses actually want from a wife? Nobody out here will say.'],
       ['I have been reading your Index rules. Half of them are the rings with paperwork. The other half I do not understand yet, and I want to.', 'I did not come for a soft life. You could not give me one on that ship anyway. I came because your people walk like they know what they are for.', 'If this does not come to anything, say so, plainly. I would rather be told than filed.'],
     ],
+    ask: {
+      id: 'orca', when: /\b(skin|colou?r(ing)?|pattern|markings?|black and white|orca|pale|grey|gray)\b/i,
+      lines: [
+        'You asked about the skin. Fine. Orca. Part of the stock they cut me from.',
+        'I know what your people say about orcas, and they are right. Smarter than you, and they kill for the fun of it, slowly.',
+        'It is probably why I liked the arena so much. I will not lie to you about that.',
+        'But I am not a full-blood. I have more self-control than any of them, and I have spent my whole life proving it. Ask me something else now.',
+      ],
+    },
   },
 });
 

@@ -122,3 +122,30 @@ describe('rfab.ai writes as the correspondent', () => {
     expect(reasonFor(err)).toMatch(/does not write letters yet/);
   });
 });
+
+describe('Rook tells of the orca only when asked, and YOKE answers it once, before a briefing (Collins, Oct 14 2026)', () => {
+  const base = () => openLetters({ ...past(['mate-review']), greetingsSaid: ['intro-board'] });
+  it('her persona and her letters never say orca unprompted; asked about her skin, the ask letter comes and marks it revealed', () => {
+    const c = correspondent('rook');
+    for (const l of [...c.opening, ...c.via.scripted.flat()]) expect(l).not.toMatch(/orca/i);
+    let s = sendLetter(base(), 'rook', 'Hello. Tell me about the rings.');
+    s = { ...s, deployments: 4 };
+    expect(scriptedReply(thread(s, 'rook')!).reveal).toBeUndefined();
+    s = sendLetter({ ...s, letters: { threads: { ...s.letters!.threads, rook: { ...thread(s, 'rook')!, turns: [...thread(s, 'rook')!.turns, { who: 'them', from: 'Rook Halloran', text: ['x'], at: 4 }] } } } }, 'rook', 'What is with the black and white skin?');
+    s = { ...s, deployments: 5 };
+    const r = scriptedReply(thread(s, 'rook')!);
+    expect(r.reveal).toBe('orca');
+    s = receiveLetter(s, 'rook', r.lines, r.regard);
+    expect(thread(s, 'rook')!.revealed).toEqual(['orca']);
+  });
+  it('YOKE: Rook\'s first letter, then the orca once revealed, each once, ahead of the intros', async () => {
+    const { letterBeatFor } = await import('../src/meta/onboarding');
+    let s = base();
+    expect(letterBeatFor(s)!.id).toBe('letter-rook');
+    s = { ...s, greetingsSaid: [...(s.greetingsSaid ?? []), 'letter-rook'] };
+    expect(letterBeatFor(s)).toBeNull();
+    s = { ...s, letters: { threads: { ...s.letters!.threads, rook: { ...thread(s, 'rook')!, revealed: ['orca'] } } } };
+    expect(letterBeatFor(s)!.id).toBe('letter-rook-orca');
+    expect(letterBeatFor(s)!.beats.map((b) => b.say).join(' ')).toMatch(/twenty-five bodies/);
+  });
+});

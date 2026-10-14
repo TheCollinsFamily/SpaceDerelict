@@ -257,6 +257,10 @@ are read together. Uplifts look anthro, like the cat girls (Collins).
   a "genetically evil" race, and mostly live on the fringes of the Empire. Space Derelict's **Pop
   Fiz** are them: manic, "murder-happy", fond of reminding people that 21st-century orcas tossed
   baby seals in the air for fun (Space Derelict `space_derelict/model.py`).
+- **Orcas' reputation** (Collins, Oct 14 2026): by far the worst of the uplifts: smarter than humans and able to trick
+  them easily; where Technopuritans kill to show status or achievement, orcas kill for fun, torturing their victims. The
+  last orca admitted to a Technopuritan school left twenty-five tortured bodies by the end of year one, some too
+  rotten to upload.
 - **The rim's uplifts** (Collins, Oct 14 2026): every uplifted species on the rim descends from animals uplifted in
   the early days of human space travel, while Earth still had a diverse ecosystem. They are on the rim because their
   species built a bad reputation in the Empire or could not live by Technopuritan values, like the dolphins and orcas.

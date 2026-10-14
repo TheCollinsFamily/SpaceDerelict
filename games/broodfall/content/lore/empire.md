@@ -775,6 +775,15 @@ uplift them. All of them descend from animals uplifted in the early days of huma
 diverse ecosystem; they went to the outer rim either because their species built a bad reputation in the Empire or
 because it was unable to live by Technopuritan values, like the dolphins and orcas. The gorilla who took Rook's eye is one.
 
+**Orcas, and Rook's shame** (Collins, Oct 14 2026): she volunteers that she is part orca only if asked about her skin;
+she is embarrassed about it, "as of all the uplifted species they have by far the worst reputation, as being smarter
+than humans and able to trick them easily, but while Technopuritans are aggressive and will kill to show status or
+personal achievement, orcas do it for fun while torturing their victims". If asked, it is probably why she enjoyed the
+arena so much, but she has more self-control than a full-blood. YOKE, once she learns it, is NOT all right with it and
+brings it up before a mission briefing: the last time his school allowed an orca in, they found twenty-five tortured
+bodies at the end of just year one, some too rotten to be uploaded; "orcas are not like the other species"
+(`letter-rook-orca`).
+
 ## 16. Open (Collins's calls)
 
 - Who exactly the subjugated population of krypteia is (section 5 proposes two kinds).
