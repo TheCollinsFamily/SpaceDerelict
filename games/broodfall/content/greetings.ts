@@ -388,6 +388,10 @@ export const GREETINGS: Greeting[] = [
   // Collins's line (Sep 30 2026), word for word, typos mended. It implies two things the lore now holds (content/lore/empire.md,
   // 12b): the dead are uploaded and go on talking to their children, and the Ten Commandments matter to the society (the fifth:
   // honour your father and mother, which in the Empire never lapses).
+  // Collins's words (Oct 14 2026: "for another yoko line"): a question, and the reply box is open for his answer.
+  { id: 'back-11', moment: 'back', hook: 'Answer her', beats: [
+    { say: 'Hey, so... do you ever wonder what the chance is you\'re in a simulation?', face: 'calm', then: 'pensive' },
+  ], aside: 'Not every soul in a simulation there knows it is in one. The dead are uploaded into simulations they take for the world to come, and the ones judged of low moral character, by how they act inside, are not told. So the question is not idle: by the Empire\'s own rules, a technician could be a dead man being tested, and she could be part of the test. She does not think so. She has wondered.' },
   { id: 'back-5', moment: 'intro', beats: [
     { say: 'Your dad sent you another message again...', face: 'teasing', then: 'shrug' },
     { say: 'He\'s been so nosy since he died about getting you a mate...', face: 'teasing', then: 'laughing', hold: 1400 },

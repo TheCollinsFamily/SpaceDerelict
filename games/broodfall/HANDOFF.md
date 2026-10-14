@@ -2204,3 +2204,6 @@ slot is worth a line only when the line can be interesting there.
   proposed it: Atlas's kill count rose and she stayed close); it first turned Atlas to simulation work. Companions are
   synthetic intelligences made partly from their person's own nervous tissue, so YOKE is partly him: on the file, in her
   secret, in the lorebook (what she is made of), `empire.md` and `docs/UNIVERSE.md`.
+- `back-11` (Collins, Oct 14 2026, his words): "do you ever wonder what the chance is you're in a simulation?", a
+  back-aboard opener with the reply box open; its secret and the lore: not every soul in a simulation knows it, least of
+  all those judged of low moral character by how they act inside (lorebook, `empire.md`, `docs/UNIVERSE.md`).

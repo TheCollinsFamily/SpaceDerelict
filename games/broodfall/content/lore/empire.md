@@ -531,6 +531,9 @@ extremely desensitised to death, as it's when the easy part begins (in a very re
 - **Every Technopuritan is uploaded on death** (Collins; Oct 12 2026: digitised into a simulation they
   believe to be the world to come that the Bible speaks of). Most of a life, counted in experience,
   is the part afterwards, and it will be good.
+  - *Not every soul knows* (Collins, Oct 14 2026): not all souls in simulations are aware they are in one, especially
+    those considered to be of low moral character from how they act in the simulation (YOKE's `back-11` line asks him
+    the odds).
   - *The dead work* (Collins, Oct 14 2026): teams of the dead design simulations for other dead, and the living manage
     them. Broodfall's partner candidate is a systems engineer in Simulation Management on Dyson Sphere 7 doing exactly
     that. The spheres are numbered (his "Dyson Sphere 7").

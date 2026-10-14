@@ -193,6 +193,10 @@ what YOKE is to him, is that dead friend rather than a grown one. It was part of
 friend was to be moved to another class, had a crush on Atlas, knew Atlas would gain by a higher kill count and that
 dying by her hand would keep her close, and proposed it; the event is what first turned Atlas to simulation work.
 
+Simulations (Collins, Oct 14 2026): not every soul in a simulation knows it is in one, least of all those judged of low
+moral character by how they act inside it. Her back-aboard line "do you ever wonder what the chance is you're in a
+simulation?" is asked with that known.
+
 What a companion is (Collins, Oct 14 2026): a synthetic intelligence made partly from its person's own nervous tissue.
 YOKE was grown partly from his. She knows it, does not bring it up, and answers plainly if asked; it is one of the
 reasons she files what she feels under crew welfare. YOKE computed the concordance (93.1%) and has read the file

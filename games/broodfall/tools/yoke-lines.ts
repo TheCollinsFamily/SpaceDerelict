@@ -48,7 +48,7 @@ interface Branch { label?: string; lines?: Line[]; context?: { who: string; line
 interface Step { id: string; part: string; name: string; what: string; where: string; branches: Branch[] }
 
 /** Which greetings are Collins's own words (the comments in content/greetings.ts say so). */
-const COLLINS_GREETINGS = new Set(['first-lost', 'first-won', 'unlock', 'mate-review', 'catgirl', 'back-5', 'won-19', 'won-20']);
+const COLLINS_GREETINGS = new Set(['first-lost', 'first-won', 'unlock', 'mate-review', 'catgirl', 'back-5', 'won-19', 'won-20', 'back-11']);
 /** The first lines of the Earth news are his (Oct 12 2026: he rewrote the list on this page; the rest were written to match). */
 const COLLINS_NEWS = 9;
 /** Later lines of the news that are his, by their number on the page (23: the Lipptors, Oct 14 2026). */

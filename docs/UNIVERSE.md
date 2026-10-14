@@ -213,6 +213,8 @@ are read together. Uplifts look anthro, like the cat girls (Collins).
 
 - **The Sabbatean Skirmishes** (Collins, Oct 14 2026, by name only): a conflict the Empire fought; a Broodfall
   partner candidate's relative was a war hero of it. When, against whom and why are open.
+- **The simulated dead** (Collins, Oct 14 2026): not every soul in a simulation knows it is in one, especially those
+  judged of low moral character by how they act inside it.
 - **Companions** (Collins, Oct 14 2026): most Technopuritans have a companion intelligence, as Broodfall's technician
   has YOKE: a synthetic intelligence made partially from the person's own nervous tissue. Taking a dead person as
   one's companion instead is possible and thought pretty weird.
