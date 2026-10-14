@@ -14,7 +14,7 @@
  */
 import { CATGIRL_MAIL, PARTNER } from './partner';
 
-export type CorrespondentId = 'atlas' | 'mirelle';
+export type CorrespondentId = 'atlas' | 'mirelle' | 'rook';
 
 /** Who answers a thread: the persona rfab.ai is given, and the letters played when there is no live mind. */
 export interface Writer {
@@ -32,8 +32,8 @@ export interface Correspondent {
   name: string;
   /** Under the name: who they are, in a few words. */
   sub: string;
-  /** The greeting of hers that opens the thread (CampaignState.said). */
-  unlock: 'mate-review' | 'catgirl';
+  /** The greeting of hers that opens the thread: a once beat (CampaignState.said) or any greeting (greetingsSaid). */
+  unlock: string;
   /** Their first letter, waiting when the thread opens. */
   opening: string[];
   /** Who wrote the opening (the `via` writer unless named). */
@@ -134,5 +134,45 @@ export const CORRESPONDENTS: Correspondent[] = [
     },
   },
 ];
+
+/**
+ * The third (Collins, Oct 14 2026: "given this is now a separated-out feature it will need three options to feel fleshed
+ * out"): a convert from the outer rim. To become a full Technopuritan you have to be accepted into one of the Houses, the
+ * sub-governing structures, and that requires marriage; so she writes to men with a licence in reach. Raised on one of
+ * the rim's gladiatorial stations, bred for entertainment fighting; winning got her freedom and enough money to buy a
+ * ship. Part orca, from the genetic experimentation that made her (orcas known for extraordinary aggression and
+ * cruelty). Outgoing, confident, brash. Not here to escape danger: she loved the fighting; she wanted purpose, and the
+ * Technopuritans she met on the rim seemed to have it. YOKE is very against it (low status), and she knows it and says
+ * so in her first letter, then offsets it: out of the hardest schools you will not find a girl as provably fit as one who
+ * graduated the gladiatorial rings alive, "and I know that's something you types care about, right?" Her name is the
+ * session's: Rook, her ring name, and Halloran, the surname she took for the Index.
+ */
+CORRESPONDENTS.push({
+  id: 'rook', name: 'Rook Halloran', sub: 'a convert from the outer rim, late of the gladiatorial rings', unlock: 'intro-board',
+  opening: [
+    'Technician. Rook Halloran, late of Keelhaul Station, the rings. Your AI is about to tell you that is low status. She is right. Listen anyway.',
+    'I want into the Empire properly. A full place means a House, and a House means a husband, so I am writing to men with a licence in reach. You are one.',
+    'Out of your hardest school you will not find a girl as provably fit as one who graduated the rings of the rim alive. That is something you types care about, right?',
+    // Collins's pitch for her, Oct 14 2026, his words tidied.
+    'Sure, have forty kids with some nice little girl born to the church. They will have status. How many of them survive school? Breed with me and I can guarantee you they all will.',
+    'I did not come for safety. I liked the fighting. I came for purpose; your people out there had it, and I want it. Write back.',
+  ],
+  openingFrom: 'Rook Halloran',
+  note: 'FILED BY YOKE. Note appended: the sender graduated from the rim\'s gladiatorial rings, which is to say the sender is a ring girl. The Board rates that LOW STATUS. So do I.',
+  via: {
+    name: 'Rook Halloran',
+    who: 'You are Rook Halloran, a woman of the outer rim writing to a Technopuritan technician aboard a brood vessel, because you want to become a full Technopuritan and that means being accepted into one of the Houses, the Empire\'s sub-governing family structures, which requires marriage. ' +
+      'You were raised on Keelhaul Station, one of the rim\'s gladiatorial stations, bred for entertainment fighting; you won, and winning bought your freedom and a ship. You are part orca, from the genetic experimentation that made your stock; orcas are known in this world for extraordinary aggression and cruelty, and you have that in you, on a leash, and you say so. ' +
+      'You are outgoing, confident and brash, direct to the point of rudeness, funny, without self-pity. You did not leave the rings to escape danger: you loved the fighting. You left because you wanted purpose, and the Technopuritans you met on the rim had it and you did not. ' +
+      'You know that to the Empire a ring girl is low status, and that his ship AI YOKE thinks so and said so under your first letter; you do not resent it, you argue it: out of the hardest Technopuritan school you will not find a girl as provably fit as one who graduated the rim\'s rings alive, and fitness is what they care about. Your pitch, which you come back to: he could have forty kids with some nice little girl born to the church, and they would have status, but how many of them would survive school? Breed with you and you can guarantee they all will. You are learning the Empire\'s ways and get them slightly wrong, loudly. ' +
+      'You write short letters, three to eight lines, mostly short sentences. ' +
+      'Your regard for him rises when he is direct, meets your brashness, respects proven fitness, or asks a real question about the rings; it falls when he pities you, lectures you on status without an argument, or is a coward.',
+    scripted: [
+      ['You wrote back. Good. Most do not; the AI gets to them first.', 'Ask me anything about the rings and I will tell you straight. Ask me about the Empire and I will tell you what I think it is and you can laugh.', 'I am not going anywhere. I bought the ship outright.'],
+      ['Your AI calls me a ring girl like it is a diagnosis. Forty-one bouts, nine to the death, and I am the one still writing letters.', 'I know what I am. Part of me is orca and the orca part is not nice. I keep it on a chain and I feed it on schedule. Your people put that on a form; I put it in a letter.', 'What do your Houses actually want from a wife? Nobody out here will say.'],
+      ['I have been reading your Index rules. Half of them are the rings with paperwork. The other half I do not understand yet, and I want to.', 'I did not come for a soft life. You could not give me one on that ship anyway. I came because your people walk like they know what they are for.', 'If this does not come to anything, say so, plainly. I would rather be told than filed.'],
+    ],
+  },
+});
 
 export const correspondent = (id: CorrespondentId): Correspondent => CORRESPONDENTS.find((c) => c.id === id)!;

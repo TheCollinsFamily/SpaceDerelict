@@ -614,6 +614,13 @@ Humans and the species the Technopuritans uplifted are, together, the Sons of Ma
 - **Dolphins and killer whales** were a massive mistake, bordering on a "genetically evil" race,
   mostly on the fringe (Space Derelict's Pop Fiz). This is Collins's own greeting line, "you
   probably shouldn't have uplifted dolphins or killer whales either".
+- **Rook Halloran**, who also writes to him (content/letters.ts; from the Board's quarterly statement on): a convert
+  from the outer rim, raised on a gladiatorial station and bred to fight for entertainment, part orca, which is where
+  the aggression comes from; she won her freedom and a ship. To become a full Technopuritan she must be taken into a
+  House, and a House means a husband, so she writes to men with a licence in reach. YOKE filed her letter with a note:
+  a ring girl is LOW STATUS, and YOKE thinks so too. Rook's answer is that nobody out of the hardest school is as
+  provably fit as a woman who graduated the rings alive. She loved the fighting; she came for purpose. Outgoing,
+  confident, brash. YOKE would rather he did not answer, and knows he will.
 - **Mirelle**, the one who wrote to him (content/letters.ts; her picture, Collins's pick of Oct 14 2026): white fur on
   the ears and tail, white-blonde hair, green slit-pupil eyes, a young woman otherwise, full-figured as cat girls are
   since they breed sexually, in the Felid Concord's teal consular jacket with a cream sash, and a small black gear on a

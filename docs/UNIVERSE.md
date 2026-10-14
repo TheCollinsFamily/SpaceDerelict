@@ -257,6 +257,10 @@ are read together. Uplifts look anthro, like the cat girls (Collins).
   a "genetically evil" race, and mostly live on the fringes of the Empire. Space Derelict's **Pop
   Fiz** are them: manic, "murder-happy", fond of reminding people that 21st-century orcas tossed
   baby seals in the air for fun (Space Derelict `space_derelict/model.py`).
+- **The rim's gladiatorial stations** (Collins, Oct 14 2026, through Broodfall's Rook): fighters bred for
+  entertainment, part orca for the aggression; a winner gets freedom and money enough for a ship. A convert from the
+  rim becomes a full Technopuritan only by acceptance into a House, which requires marriage; the Empire rates a
+  ring girl low status, and she answers that nobody out of its hardest school is as provably fit.
 - **The cat girls' own case** (Collins, Oct 14 2026, through Broodfall's Mirelle): they keep sexual reproduction as
   cultural preservation, not pleasure; were it wrong they would be extinct, so God approves. Against the tanks they
   are offset by breeding true, in litters of three or four, all female, with mothers raising their own until school.

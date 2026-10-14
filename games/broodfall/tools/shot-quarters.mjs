@@ -45,7 +45,7 @@ try {
   await page.waitForSelector('#campaign:not(.hidden)', { timeout: 180000 });
   await page.evaluate(() => {
     const s = JSON.parse(localStorage.getItem('broodfall-campaign'));
-    Object.assign(s, { onboard: { mission1: 'won', deskOpen: true }, said: ['mate-review', 'catgirl'], greet: null, staging: null, underAttack: null, standing: 31 });
+    Object.assign(s, { onboard: { mission1: 'won', deskOpen: true }, said: ['mate-review', 'catgirl'], greetingsSaid: ['intro-board'], greet: null, staging: null, underAttack: null, standing: 31 });
     localStorage.setItem('broodfall-campaign', JSON.stringify(s));
     localStorage.setItem('broodfall-yoke', JSON.stringify({ mode: 'scripted' }));
     localStorage.setItem('broodfall-alive', 'on'); // the loops are off under webdriver unless asked for (src/ui/alive.ts)
@@ -71,7 +71,7 @@ try {
   await page.click('button.cp-room[data-room="letters"]');
   await page.waitForSelector('.cp-letters', { timeout: 30000 });
   const threads = await page.$$eval('.cp-thread b', (bs) => bs.map((b) => b.textContent));
-  check(threads.join('|') === 'Atlas Vell|Mirelle', `the people: ${threads.join(', ')}`);
+  check(threads.join('|') === 'Atlas Vell|Mirelle|Rook Halloran', `the people: ${threads.join(', ')}`);
   const first = await page.evaluate(() => document.querySelector('.cp-letters-thread .cp-letter')?.textContent ?? '');
   check(first.includes('I am writing for Atlas Vell'), 'her companion\'s first letter waits in the open thread');
   check(await page.evaluate(() => [...document.querySelectorAll('.cp-letters .cp-label')].some((l) => l.textContent?.includes('regard: 0 of 3'))), 'the gate is shown: regard 0 of 3');

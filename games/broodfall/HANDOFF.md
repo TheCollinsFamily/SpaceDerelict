@@ -2273,3 +2273,8 @@ the companion's affection level for her to let you talk to Atlas directly."
   of three or four, all girls, mothers raising them till school; the rim as the dangerous place to find a mate; more
   pious than most because watched; playful, insecure, four human girls at school. In her persona, two scripted
   letters, the lorebook, `empire.md` 15 and `docs/UNIVERSE.md`.
+- The third correspondent (Collins, Oct 14 2026: the feature needs three): Rook Halloran, a convert from the rim's
+  gladiatorial rings, part orca, who needs a House and so a husband; her thread opens with intro-board (unlock now checks
+  greetingsSaid too); YOKE's LOW STATUS note under her first letter; persona and three scripted letters; the lore in
+  `empire.md` 4 (Houses need marriage) and 15, the lorebook, `docs/UNIVERSE.md`. Her picture: tools/art/rook-options.mjs,
+  four options in art-src/letters/options/rook-a..d.png, WAITING ON HIS PICK.

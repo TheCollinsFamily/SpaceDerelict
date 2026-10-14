@@ -88,7 +88,9 @@ empire, the Index is the state.
 - **The Procreation Licensing Board** is the Index office that runs the marriage market. A licence
   admits you to it; the Board matches a spouse and assigns the womb allotment.
 - **Houses.** A new couple stays in a parent House or founds a new one (TPG 2.6). Their children
-  inherit the House record and are duty-bound to improve on it (HOME 1.0).
+  inherit the House record and are duty-bound to improve on it (HOME 1.0). Collins, Oct 14 2026: "to become
+  a full Technopuritan you have to be accepted into one of the Houses, sub-governing structures, and that
+  requires marriage"; a convert from outside has no House and so must marry into one.
 - **No imperial church.** The Index governs goods, not belief. Theology lives in each House's
   record. That is how an authoritarian empire can also be doctrinally decentralised, and why
   imperial officials are so careful to say "the Index records" rather than "the Index believes".
@@ -744,6 +746,23 @@ seen with suspicion and as outsiders. She is playful and outgoing but under it d
 species as less pious or purpose-driven; for example if you are looking down on her she will point out she made it
 through school just like you and killed four human girls, so clearly she's fitter than them." All of it is in her
 persona (content/letters.ts) and her scripted letters.
+
+### Broodfall: Rook, the convert from the rim
+Collins, Oct 14 2026, his words kept: "she is a convert from the outer rim, but to become a full Technopuritan you
+have to be accepted into one of the Houses, sub-governing structures, that requires marriage. She was raised on one of
+the gladiatorial stations, bred for entertainment fighting, and for winning she got freedom and enough money to buy a
+ship (YOKE is obviously very against this, as it would be a low-status thing to do, and she knows this as well in her
+starting communique) but offsets it by pointing out that even out of the hardest schools you won't find a girl as
+provably fit as one who survived and graduated out of the gladiatorial rings of the outer rim, 'and I know that's
+something you types care about, right?' She is outgoing, confident and brash, and part orca from the genetic
+experimentation needed to make her (known in the world for their extraordinary aggression and cruelty). She is not
+doing this to escape danger, and loved the fighting, but wanted purpose, and the Technopuritans she had met in the outer
+ring seemed to have it." Her pitch (Collins): "you have 40 kids with some nice little girl born to the church and those
+kids will have status, but how many of them are going to survive school? Breed with me and I can guarantee you they
+all will." Her name (the session's): Rook, her ring name, Halloran for the Index; Keelhaul Station
+(the session's) is her ring. She opens her thread in the Letters room once the Board's quarterly statement has played
+(content/letters.ts). **PROPOSAL:** the rim's gladiatorial stations breed their fighters and free the winners; a
+fighter's stock is cut with orca for the aggression, which is the rim's use of the Empire's one mistake.
 
 ## 16. Open (Collins's calls)
 

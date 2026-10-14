@@ -11,10 +11,14 @@ import { RfabShipAi, reasonFor, ShipAiError } from '../src/meta/shipAi';
 const past = (said: string[], deployments = 3) => ({ ...newCampaign(7), said, deployments });
 
 describe('the threads open with her greetings', () => {
-  it('nothing to write to before the mate review; Atlas after it; Mirelle after the cat girl', () => {
+  it('nothing to write to before the mate review; Atlas after it; Mirelle after the cat girl; Rook after the Board\'s statement', () => {
     expect(lettersUnlocked(past([]))).toBe(false);
     expect(unlockedCorrespondents(past(['mate-review']))).toEqual(['atlas']);
     expect(unlockedCorrespondents(past(['mate-review', 'catgirl']))).toEqual(['atlas', 'mirelle']);
+    expect(unlockedCorrespondents({ ...past(['mate-review', 'catgirl']), greetingsSaid: ['won-1', 'intro-board'] })).toEqual(['atlas', 'mirelle', 'rook']);
+    const s = openLetters({ ...past(['mate-review']), greetingsSaid: ['intro-board'] });
+    expect(thread(s, 'rook')!.turns[0].from).toBe('Rook Halloran');
+    expect(correspondent('rook').note).toMatch(/LOW STATUS/);
   });
   it('opening a thread leaves their first letter waiting, unread, from the right hand', () => {
     const s = openLetters(past(['mate-review', 'catgirl']));
