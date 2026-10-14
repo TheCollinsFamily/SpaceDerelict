@@ -52,7 +52,8 @@ export const PARTNER = {
     ['Attachments', 'A notable lack of living friends. Her best friend is the classmate she talked into ending themselves at school.'],
     ['Companion', 'Not a grown one. The candidate\'s companion is the friend above, dead, under an agreement the two made at school and lodged with the Index. Irregular; under observation to study effects. Noted as a potential social technology for wider deployment.'],
   ] as Array<[string, string]>,
-  statement: 'Statement of the candidate (twenty words at most): "I am better with the dead than the living. I would try with you. Sorry. That was too many words."',
+  // Collins's words (Oct 14 2026), spelling tidied.
+  statement: 'Statement of the candidate (twenty words at most): "I will admit it has been some time since I interacted with the living, so please have patience with me."',
   boardNote: 'The Board will decide on the match when the applicant\'s standing reaches {need} (now {standing}). The Board congratulates you on your continued eligibility to remain eligible.',
 };
 
