@@ -2254,3 +2254,7 @@ the companion's affection level for her to let you talk to Atlas directly."
   from A and D as references (mirelle-options.mjs settle 3 → art-src/letters/options/mirelle-s1..s3.png, 12,000 tokens),
   on the portrait page. WAITING ON HIS PICK. Lore to note when he picks: cat girls keep their breasts (they reproduce
   sexually), and she wears a black gear, which the Empire would call an idol.
+- Nothing is forced (Collins, Oct 14 2026): the school, the Index raising children and the tanks are the respectable
+  choices, not law; moral failings are marked beside the social id, pass down if bad enough, and decide the work one can
+  get; post-scarcity made purpose the one scarce thing, so people rarely break from the society. `empire.md` 6b,
+  `docs/UNIVERSE.md`, the lorebook.

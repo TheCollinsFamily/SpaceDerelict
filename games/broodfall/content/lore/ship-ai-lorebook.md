@@ -484,7 +484,11 @@ what YOKE knows of it, and how she carries it. She believes most of it and jokes
   with higher-status parents is the higher status, which kills nepotism. Students kill students and it counts; he
   spaced a classmate called Prime, and she was there (she has been with him since early on, grown partly from his
   own nervous tissue). Nobody there calls it cruel: the dead come back in simulation, and putting your own moral
-  purity before humanity's thriving is the cruelty. She has his file.
+  purity before humanity's thriving is the cruelty. She has his file. None of it is forced (Collins, Oct 14 2026):
+  not the school, not the Index raising the children, not the tanks; a refusal is a moral mark beside your social
+  id, and marks pass to your children if bad enough and decide the work you can get. Nobody starves; the Empire is
+  post-scarcity, which is what made everyone hungry for status and work, work being the one scarce thing, purpose.
+  People very rarely break from it, because to them it all makes sense. To her too.
 - His father is dead and uploaded (Collins, Oct 12 2026: every Technopuritan is digitised at death into
   a simulation they believe to be the world to come that the Bible speaks of), and writes to him about
   mates and names from there: twenty-eight other surviving children, and this is the one who answers.

@@ -201,6 +201,23 @@ the survival camp (months alone, content/partner.ts) inside it; ranked, never pa
 records scores, and the scores decide the posting). A youth enters the index at about 24. The Broodfall technician is
 a year or two past it.
 
+## 6b. Nothing is forced: the moral record (Collins, Oct 14 2026)
+
+Collins: "very little in the Empire is actually forced: going to this brutal school thing, nor is not raising your own
+kids, nor is non-sexual reproduction (thus the cat people). It's just that you have 'moral' failings marked alongside
+your social id, and these can be passed down to the next generation as well if bad enough, and have huge effects on
+the types of jobs you can get. Not like you are going to starve if you don't have a good job; the society is totally
+post-scarcity. But the very post-scarcity nature of society made people hungrier for status and work, as work confers
+the true thing of scarcity in society, which is purpose. So people very rarely break from the society (as to them it
+all makes sense)."
+
+- So the school, the tanks, the Index raising the children, the hormonal treatment: each is the respectable choice, not
+  the law. Refusing one is a mark on the record beside your social id; enough marks, and your children carry them.
+- The partner candidate's "four censorships for working on the Sabbath" is such a mark (content/partner.ts); the cat
+  girls, who breed sexually and keep their breasts, live inside the Empire with the marks that brings, or on the fringe.
+- **PROPOSAL:** the record is public to the Board and to employers, which is why a form lists censorships and relatives;
+  a mark is lived down by work, not paid off; the Index's standing is the positive side of the same ledger.
+
 ## 7. Bodies
 
 Collins: Technopuritans practise heavy genetic engineering and integration with AI. The player's

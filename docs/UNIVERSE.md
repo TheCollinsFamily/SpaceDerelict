@@ -94,6 +94,11 @@ doctrine 11 (the chittering hordes).
   series of tests meant to measure fitness honestly, that prepares them to enter **the index**, the wider imperial
   system. Students kill students, and it counts for the killer.
 - **About one in five survives** krypteia and school together (Collins, Oct 14 2026; earlier notes said half).
+- **Nothing is forced** (Collins, Oct 14 2026): not the school, not giving the children to the Index, not the tanks
+  (hence the cat people, who breed sexually). Moral failings are marked beside one's social id, pass to the next
+  generation if bad enough, and decide what work one can get. Nobody starves: the society is wholly post-scarcity,
+  and that is exactly what made people hungry for status and work, since work confers the one scarce thing, purpose.
+  So people very rarely break from the society; to them it all makes sense.
   The Empire's reasons: without honest testing people would fake fitness and bring back the twentieth century's
   dysgenic crisis; otherwise the most genetically successful would simply be those who bred most, no measure of
   use to God; and it kills nepotism, since taking out the students with higher-status parents is the higher
