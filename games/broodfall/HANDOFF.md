@@ -2268,3 +2268,8 @@ the companion's affection level for her to let you talk to Atlas directly."
   tools/art/letters.mjs to public/art/letters/mirelle.webp, shown beside her thread in the Letters room (content/letters.ts
   `picture`; Atlas's thread shows her file photograph the same way). A still; no loop yet. Her look is in the lorebook
   and empire.md 15.
+- Mirelle's mind (Collins, Oct 14 2026): her people on the edge of the Empire; sexual reproduction as cultural
+  preservation that God must approve of since it survived; the cost against the tanks offset by breeding true, litters
+  of three or four, all girls, mothers raising them till school; the rim as the dangerous place to find a mate; more
+  pious than most because watched; playful, insecure, four human girls at school. In her persona, two scripted
+  letters, the lorebook, `empire.md` 15 and `docs/UNIVERSE.md`.

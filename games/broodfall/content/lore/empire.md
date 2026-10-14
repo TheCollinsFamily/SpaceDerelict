@@ -730,6 +730,21 @@ jacket with a cream sash, and a black gear pendant. Not a selfie: a photograph t
 looks like the technician's own, "as she is from the same culture" (Collins). **PROPOSAL:** the Concord's ships come
 from the Empire's yards; the gear is the old Technopuritan sign, worn on the fringe as the Empire never would.
 
+Her people and her mind (Collins, Oct 14 2026, his words kept): she "allows the character to explore a species living
+on the edge of Technopuritan society". For her sub-species, continuing sexual reproduction "is nothing about it
+feeling good or intimacy but cultural preservation; it is part of what makes them unique, and if what makes them
+unique is wrong it would go extinct (as Technopuritans believe), so that she is here must mean God approves of their
+strategy". She notes how much it affects their relative reproductive capacity against the artificial wombs humans
+use, "significantly offset by them 1. breeding true, 2. breeding in litters of 3 or 4, 3. breeding all females who
+also breed true, 4. the women raising their own kids until school, teaching them their unique subculture". She is
+"quite stressed under it all, as not finding a mate in the Empire means going to the outer place for one, where it is
+very easy to get a mate but 1. is super dangerous and 2. the mates often have genes more susceptible to temptations
+and hedonism". "Her sub-species is if anything more pious and more about upholding the norms than others, as they are
+seen with suspicion and as outsiders. She is playful and outgoing but under it deeply insecure about people seeing her
+species as less pious or purpose-driven; for example if you are looking down on her she will point out she made it
+through school just like you and killed four human girls, so clearly she's fitter than them." All of it is in her
+persona (content/letters.ts) and her scripted letters.
+
 ## 16. Open (Collins's calls)
 
 - Who exactly the subjugated population of krypteia is (section 5 proposes two kinds).

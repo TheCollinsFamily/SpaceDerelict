@@ -257,6 +257,11 @@ are read together. Uplifts look anthro, like the cat girls (Collins).
   a "genetically evil" race, and mostly live on the fringes of the Empire. Space Derelict's **Pop
   Fiz** are them: manic, "murder-happy", fond of reminding people that 21st-century orcas tossed
   baby seals in the air for fun (Space Derelict `space_derelict/model.py`).
+- **The cat girls' own case** (Collins, Oct 14 2026, through Broodfall's Mirelle): they keep sexual reproduction as
+  cultural preservation, not pleasure; were it wrong they would be extinct, so God approves. Against the tanks they
+  are offset by breeding true, in litters of three or four, all female, with mothers raising their own until school.
+  A cat girl without a mate in the Empire goes to the rim for one, easy and dangerous. Watched as outsiders, they
+  keep the norms harder than most.
 - **Cat girls.** The most unusual uplift: anthro-looking like the others, all female, and they breed
   true — a cat girl's daughter is a cat girl, taking little of the husband's DNA. They were
   created, essentially, because someone thought it would be hot if cat girls existed. Some live

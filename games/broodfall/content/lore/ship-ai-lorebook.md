@@ -618,7 +618,14 @@ Humans and the species the Technopuritans uplifted are, together, the Sons of Ma
   the ears and tail, white-blonde hair, green slit-pupil eyes, a young woman otherwise, full-figured as cat girls are
   since they breed sexually, in the Felid Concord's teal consular jacket with a cream sash, and a small black gear on a
   chain at her throat, which YOKE would call an idol. Her ship's cabin is of the same make as this one: the Concord
-  buys from the same yards.
+  buys from the same yards. What she is like (Collins, Oct 14 2026): playful and outgoing, and under it insecure that
+  her kind are thought less pious or less purposeful; if looked down on she says she came through school like anyone
+  and killed four human girls. Her people breed the old way as cultural preservation, not pleasure: what makes them
+  unique would have gone extinct if it were wrong, so God must approve; the cost against the tanks is offset by
+  breeding true, in litters of three or four, all girls, raised by their mothers until school in their own subculture.
+  A cat girl who finds no mate in the Empire goes to the rim for one, where mates are easy, dangerous, and given to
+  temptation; so her kind keep the norms harder than most, being watched. YOKE finds all of this more reasonable than
+  she lets on.
 - **Cat girls** breed true, all female; made because someone thought it would be hot; some live
   inside the Empire but struggle to find breeding partners, and many go to the fringe to find
   humans who still like sex for its own sake (Space Derelict's Felonia). They could engineer
