@@ -2133,3 +2133,14 @@ the end), any time (print a body, the money, the dance, the data pad, the notes,
 Each step says what happens in one or two sentences, then its lines; a step with cases shows them as "If he won mission 1"
 sub-headings. Line ids are unchanged, so edits, exports and the applied-export fingerprints carry over.
 `tools/yoke-lines.ts` holds the steps (`steps`, in order); `tools/yoke-lines.template.html` renders them.
+
+### The walk-in report line is cut (Oct 14 2026)
+
+Collins, on the lines page's step for it: "the entire reason I am investing effort in this is so she is interesting, this
+would do the opposite, these are more throw away lines". Her one-line presentation of the report as he walked in from the
+pad (REPORT_LINES, the intercom in the corner of the report, Oct 2 2026) is gone: the report comes up with no word from
+her, and her greeting aboard is the one thing she says on a return. Removed from `content/greetings.ts`,
+`src/ui/campaignUi.ts` (presentReport, the yoke option of showDebrief), `src/main.ts`, `src/onboard.css`,
+`tests/padShip.test.ts`, `tools/shot-pad.mjs` and the page (now 25 steps). The pad's part 2 still hands over to the report
+at the desk (shot-pad ship-won / ship-lost all pass). Rule to keep: no line of hers in a slot that plays every return; a
+slot is worth a line only when the line can be interesting there.

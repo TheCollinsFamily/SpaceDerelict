@@ -686,7 +686,7 @@ function campaignDebrief(): void {
   void withLoader(debriefPictures(runPictures(outcome, verdict,
     outcome === 'lost' ? `${where} · the asset was lost after ${sim.wavesCleared} wave${sim.wavesCleared === 1 ? '' : 's'}` : `${where} · ${sim.wavesCleared} wave${sim.wavesCleared === 1 ? '' : 's'} held`,
     [['waves held', String(sim.wavesCleared)], ['districts taken', String(sim.map.slots.filter(Boolean).length)], ['limbs grown', String(sim.stats.limbsGrown)], ['standing earned', `+${debrief.standing}`]])), shipLoop(), { label: 'THE REPORT' })
-    .then((pics) => ui.showDebrief(debrief, back, pics, { yoke: true }), () => ui.showDebrief(debrief, back, undefined, { yoke: true }));
+    .then((pics) => ui.showDebrief(debrief, back, pics), () => ui.showDebrief(debrief, back));
 }
 
 /**

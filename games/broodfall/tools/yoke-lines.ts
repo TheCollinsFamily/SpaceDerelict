@@ -29,7 +29,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import { EARTH_NEWS_FALLBACK, GREETINGS, REPORT_LINES, earthNews, newsBeats, type GreetMoment, type Greeting } from '../content/greetings';
+import { EARTH_NEWS_FALLBACK, GREETINGS, earthNews, newsBeats, type GreetMoment, type Greeting } from '../content/greetings';
 import { PRINT_BODY } from '../content/yokeScenes';
 import { BOSS, BOSS_AFTER, BOSS_BRIDGE } from '../content/boss';
 import { CHANNELS, TRANSLATOR_NOTES } from '../content/translation';
@@ -133,8 +133,7 @@ const introOrder = INTROS.map((i) => `${i.id} (capture ${i.captures})`).join(', 
 const story = STORY_ONCE[0];
 
 const PART_FIRST = 'The first return: mission 1 is over';
-const PART_EVERY = 'Every return after that begins the same way';
-const PART_DARK = 'Until the desk opens: the ship picks the targets';
+const PART_DARK = 'Every return after that, until the desk opens: the ship picks the targets';
 const PART_CAMPAIGN = 'The campaign: every ordinary return, in this order of precedence';
 const PART_ANY = 'Any time';
 const PART_MIND = 'Her live mind: pools not tied to a moment';
@@ -151,15 +150,8 @@ const steps: Step[] = [
       { lines: [{ id: 'BOSS_AFTER', text: [BOSS_AFTER], author: 'draft', faces: ['teasing'] }] },
     ] },
 
-  { id: 'report', part: PART_EVERY, name: 'He walks in from the pad: the report line', where: GREET + '  (REPORT_LINES)',
-    what: 'From the second deployment on. He sets the pad down and crosses to the Directive Desk; the report comes up and she presents it in one line, by how it went, in turn through the list, never the same twice running. Then the planet\'s news of it (a newsreel or one of their papers), the Roach King\'s address when one is due, and he is aboard: her full greeting, picked from the steps below.',
-    branches: (['won', 'held', 'lost'] as const).map((k) => ({
-      label: k === 'won' ? 'If the deployment took the ground' : k === 'held' ? 'If a counter-attack was thrown back' : 'If the deployment was lost',
-      lines: REPORT_LINES[k].map((b, i) => ({ id: `report-${k}-${i + 1}`, text: [b.say], faces: [b.face ?? 'calm'], author: 'draft' as Author })),
-    })) },
-
   { id: 'mate', part: PART_DARK, name: 'The first ordinary return: the mate review', where: GREET,
-    what: 'The first return after the first greeting with nothing weightier to say (a loss while the desk is dark, or the first return after it opened): this takes the place of the ordinary line. Once. It points him at the data pad in his quarters, where the candidate\'s profile is.',
+    what: 'Every return from the second deployment on: the report of it comes up at the desk (she says nothing there, since Oct 14 2026), then the planet\'s news (a newsreel or one of their papers), the Roach King\'s address when one is due, and he is aboard: her greeting, picked from the steps from here on. The first return with nothing weightier to say (a loss while the desk is dark, or the first return after it opened) gets this one in place of the ordinary line. Once. It points him at the data pad in his quarters, where the candidate\'s profile is.',
     branches: one(of('mate-review')) },
   { id: 'catgirl', part: PART_DARK, name: 'The ordinary return after that: the cat girl', where: GREET,
     what: 'The next ordinary return, playing off the mate review. Once. It lights the data pad again.',

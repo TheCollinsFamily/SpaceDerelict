@@ -22,7 +22,7 @@ import { EARLY_ONCE, STORY_ONCE, deskOpen, greetingFor, shipPick } from '../meta
 import { queueDiscussion } from '../meta/shipAi';
 import { BOSS_AFTER, BOSS_BRIDGE } from '../../content/boss';
 import { playBossCall } from './bossCall';
-import { CUES, reportLine, type Greeting } from '../../content/greetings';
+import { CUES, type Greeting } from '../../content/greetings';
 import {
   DARES, EXPERIMENTS, FACTIONS, LICENCE_STANDING, LINEAGES, PROFILES, TERRITORIES,
   type FactionDef, type FactionId, type Scene, type TerritoryDef,
@@ -305,7 +305,6 @@ export class CampaignUi {
     if (this.debriefing) this.room = 'desk';
     // Coming aboard he walks into the room he is shown in; from a report he is at the desk already (the pad's film left him there).
     if (!fromReport && this.el.classList.contains('hidden')) this.walkInto(this.room);
-    delete this.el.dataset.report; // the report's intercom is gone with the report
     this.debriefing = false;
     document.body.classList.add('in-ship');
     this.el.classList.remove('hidden');
@@ -1366,7 +1365,7 @@ export class CampaignUi {
   // ------------------------------------------------------------ the debrief
 
   /** `pictures`: what happened, in pictures (src/ui/debrief.ts); it leads the report and carries its verdict. */
-  showDebrief(d: Debrief, onBack: () => void, pictures?: HTMLElement, opts: { yoke?: boolean } = {}): void {
+  showDebrief(d: Debrief, onBack: () => void, pictures?: HTMLElement): void {
     document.body.classList.add('in-ship');
     const row = (g: { def: { title: string; pays: number }; met: boolean; value: number; target: number }, cur: string, text: string) =>
       `<div class="cp-goal ${g.met ? 'met' : 'miss'}"><b>${g.met ? '✔' : '✘'} ${esc(g.def.title)}</b> ${esc(text)} — ${Math.round(g.value)}/${g.target} ${g.met ? `<i>+${g.def.pays} ${cur}</i>` : ''}</div>`;
@@ -1397,37 +1396,5 @@ export class CampaignUi {
     attachLines(this.el);
     const btn = this.el.querySelector('[data-act="back"]') as HTMLElement;
     btn.addEventListener('click', (ev) => { ev.stopPropagation(); stopLine(); onBack(); }, { once: true });
-    if (opts.yoke) this.presentReport(d);
-  }
-
-  /**
-   * She presents the report as he walks in (Collins, Oct 2 2026: "with the AI character talking to you"): one line by how
-   * it went (content/greetings.ts REPORT_LINES), her body on the intercom's stage, voiced when her voice can be had. A
-   * light intercom (no input, no close: those draw the screen again and would take the report away); her full greeting
-   * comes when he is back aboard.
-   */
-  private presentReport(d: Debrief): void {
-    const outcome = d.captured ? 'won' : d.repelled ? 'held' : 'lost';
-    let n = 0;
-    try { n = Number(localStorage.getItem('broodfall-report-line') ?? '0') || 0; localStorage.setItem('broodfall-report-line', String(n + 1)); } catch { /* private mode */ }
-    const beat = reportLine(outcome, n);
-    this.el.insertAdjacentHTML('beforeend', `<div class="cp-icom cp-icom-report" role="status" aria-label="YOKE">
-      <div class="cp-icom-stage"></div>
-      <div class="cp-icom-panel"><div class="cp-icom-head"><span class="screen-kicker">YOKE · SHIPBOARD INTERCOM</span></div>
-        <div class="cp-talk"></div></div></div>`);
-    const panel = this.el.querySelector<HTMLElement>('.cp-icom-report');
-    const box = panel?.querySelector<HTMLElement>('.cp-icom-stage');
-    if (box) this.avatar?.mount(true, 'calm', box);
-    const talk = panel?.querySelector<HTMLElement>('.cp-talk');
-    // Her avatar writes her line into the talk on the screen itself (yokeAvatar.ts `line`); written here only without it.
-    const said = (text: string) => {
-      if (this.avatar || !talk || !talk.isConnected) return;
-      const line = document.createElement('div');
-      line.className = 'yoke';
-      line.innerHTML = `<b>YOKE:</b> ${esc(text)}`;
-      talk.appendChild(line);
-    };
-    this.el.dataset.report = outcome;
-    void this.yokeSays(beat.say, beat.face ? CUES[beat.face] : CUES.calm, said);
   }
 }

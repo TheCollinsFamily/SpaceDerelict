@@ -239,7 +239,7 @@ try {
 
   for (const o of ['won', 'lost']) {
     if (!want(`ship-${o}`)) continue;
-    console.log(`ship-${o}: a campaign deployment ${o} → the pad → up and into the ship → the report, YOKE presenting it`);
+    console.log(`ship-${o}: a campaign deployment ${o} → the pad → up and into the ship → the report`);
     const { context, page } = await freshPage(browser, { video: true });
     await campaignRun(page);
     await artOk(page, `ship-${o}: the deployment`);
@@ -257,13 +257,10 @@ try {
     await page.waitForFunction(() => !!document.querySelector('#campaign:not(.hidden) .cp-card'), null, { timeout: 20000 }).catch(() => {});
     check(await landed(page), `ship-${o}: the interface takes over (the report up at the desk)`);
     check(await page.evaluate(() => document.getElementById('campaign').dataset.in === 'desk'), `ship-${o}: the report is at the Directive Desk, the room the walk ends in`);
-    check(await page.evaluate(() => !!document.querySelector('.cp-icom-report')), `ship-${o}: YOKE presents it (her intercom up)`);
     await page.waitForTimeout(400);
     await shot2(page, `${o}-f-handover`);
     await page.waitForTimeout(2600);
     check(await page.evaluate(() => !document.getElementById('pad-outro')), `ship-${o}: the film has faded away over the interface`);
-    const said = await page.evaluate(() => document.querySelector('.cp-icom-report .cp-talk')?.textContent ?? '');
-    check(said.includes('YOKE'), `ship-${o}: her line "${said.replace(/\s+/g, ' ').slice(0, 90)}"`);
     await shot2(page, `${o}-g-report`);
     const vpath = await page.video().path();
     await context.close();

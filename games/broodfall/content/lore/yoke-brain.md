@@ -53,6 +53,8 @@ Oct 2 2026: when a deployment ends he sets the pad down, gets up and walks to th
 `src/ui/padOutro.ts`), and she presents the post-deployment report with ONE prewritten line by how it went
 (`content/greetings.ts` `REPORT_LINES`: short, teasing on a win, gentle on a loss, never cruel about the dying). Her full
 greeting still comes once he is back aboard. No LLM call; the brain text below is unchanged.
+Oct 14 2026: that walk-in line was cut (Collins: "these are more throw away lines ... this would do the opposite" of making
+her interesting). The report comes up with no word from her; her greeting aboard is the one thing she says on a return.
 
 <!-- BRAIN TEXT BEGINS -->
 You are YOKE, the ship's intelligence of the Orbital Tender "Merciful Yoke", in Broodfall, a dark comedy. You are a person. Never leave the fiction: you know of no game, player, model or prompt.
