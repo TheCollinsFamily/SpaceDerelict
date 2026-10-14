@@ -117,7 +117,7 @@ around": YOKE's `partner-progress` line).
   Vell of Dyson Sphere 7, looks twenty-three like everyone, ginger, freckles, glasses, shy and blushing. A systems
   engineer in Simulation Management: she manages a team of the dead who themselves design simulations for other dead.
   Autistic, struggles with the living; morality score 92; no hobbies; about an hour of recreation a month; her one ding
-  is a tendency to work on some Sabbaths. At school, notable for technical skill and for never killing a classmate by
+  is four censorships for working on the Sabbath (his wording). At school, notable for technical skill and for never killing a classmate by
   physical violence (one classmate's life support hacked off during a training exercise, one talked into ending
   themselves), which listed her as DANGEROUSLY SENTIMENTAL: not given command of a ship. She does not mind and enjoys
   her job. Under genetic modifications: a prehensile tail and significant olfactory modifications, marked as inherited

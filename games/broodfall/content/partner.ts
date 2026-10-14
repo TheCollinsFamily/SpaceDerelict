@@ -7,8 +7,8 @@
  * Who she is (Collins, Oct 14 2026): a cute girl who looks twenty-three, ginger, freckles, glasses, a shy blushing
  * expression, from Dyson Sphere 7. A systems engineer in simulation management: she manages a team of dead people who
  * themselves design simulations for other dead people. Autistic; struggles to interact with the living. Scores 92 on
- * morality, has no hobbies and spends only an hour or so a month on recreation; her one ding is a tendency to work on
- * some Sabbaths. At school she was notable for her technical skills and for never killing a classmate with physical
+ * morality, has no hobbies and spends only an hour or so a month on recreation; her one ding is four censorships for working on the
+ * Sabbath (his wording, Oct 14 2026). At school she was notable for her technical skills and for never killing a classmate with physical
  * violence (though she did hack off one classmate's life support during a training exercise, and talked another into
  * ending themselves). That got her listed as DANGEROUSLY SENTIMENTAL, which is why she was not given command of a ship.
  * She does not mind; she enjoys her job. Later the same day: under genetic modifications, a prehensile tail and
@@ -42,7 +42,7 @@ export const PARTNER = {
     ['Temperament', 'Autistic. Interacts poorly with the living; interacts well with the dead. Blushes when addressed.'],
     ['Declared hobbies', 'None'],
     ['Recreation', 'About one hour a month'],
-    ['Notation', 'A tendency to work on some Sabbaths'],
+    ['Notation', 'Four censorships for working on the Sabbath.'],
     ['Schooling', 'Notable for technical skill. No classmate killed by physical violence. One classmate\'s life support cut off during a training exercise; one classmate talked into ending themselves.'],
     ['Command assessment', 'DANGEROUSLY SENTIMENTAL. Not to be given command of a ship. The candidate has stated she does not mind and enjoys her post.'],
     ['Genetic modifications', 'A prehensile tail; significant olfactory modifications. Both INHERITED, from modifications made to an ancestor; no modification has been made to the candidate directly. The candidate is open to having the tail amputated if that is her partner\'s preference.'],

@@ -174,7 +174,7 @@ The candidate the Board is considering (the file on his data pad from the mate r
 Collins, Oct 14 2026): Atlas Vell of Dyson Sphere 7, who looks twenty-three like everyone, ginger, freckled,
 glasses, shy and quick to blush. A systems engineer in simulation management: she runs a team of the dead who design
 simulations for other dead. Autistic, poor with the living and good with the dead; morality 92; no hobbies; about an
-hour of recreation a month; dinged for working some Sabbaths. At school she was notable for technical skill and for
+hour of recreation a month; four censorships for working on the Sabbath. At school she was notable for technical skill and for
 never killing a classmate by physical violence (one classmate's life support cut off during a training exercise, one
 talked into ending themselves), which got her marked DANGEROUSLY SENTIMENTAL and kept from a ship's command; she does
 not mind, she likes her job. Under genetic modifications: a prehensile tail and significant olfactory modifications,
