@@ -494,6 +494,9 @@ body.view-iso #view-controls { display: flex; }
 .cp-pick.exp { border-color: #1d5c58; }
 .cp-brief .screen-btn { margin-top: 10px; }
 .cp-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+/* His quarters: the data pad wide, the log and the inbox in a narrower column beside it (Oct 14 2026). */
+.cp-cols.cp-quarters { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); align-items: start; }
+.cp-quarters .cp-inbox { margin-top: 16px; }
 .cp-lin { display: grid; grid-template-columns: 160px 1fr auto; gap: 8px; align-items: center; font-size: 11px; padding: 5px 7px; margin: 3px 0; background: #c7b788; border: 2px solid var(--panel-edge); }
 .cp-lin.have { background: #b9c98f; }
 .cp-lin i { font-style: normal; font-weight: bold; font-size: 9px; }

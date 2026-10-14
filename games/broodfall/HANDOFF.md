@@ -2207,3 +2207,6 @@ slot is worth a line only when the line can be interesting there.
 - `back-11` (Collins, Oct 14 2026, his words): "do you ever wonder what the chance is you're in a simulation?", a
   back-aboard opener with the reply box open; its secret and the lore: not every soul in a simulation knows it, least of
   all those judged of low moral character by how they act inside (lorebook, `empire.md`, `docs/UNIVERSE.md`).
+- The quarters layout (Collins, Oct 14 2026: "a lot of dead screen space ... on whatever the personal log is"): the pad
+  takes three fifths of the room, his log (last ten entries) and the inbox share the column beside it (.cp-quarters in
+  src/style.css; quartersHtml). The log is the campaign's diary, one line per deployment, so it is one line on day one.

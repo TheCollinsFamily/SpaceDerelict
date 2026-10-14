@@ -887,8 +887,10 @@ export class CampaignUi {
           <div class="cp-pad-row"><span>${esc(CATGIRL_MAIL.from)}</span><b>${esc(CATGIRL_MAIL.subject)}</b></div>
           <p class="cp-note">${esc(CATGIRL_MAIL.status)}</p></div>`
       : '';
-    return `<div class="cp-cols cp-quarters"><div>${pad}${inbox}</div>
-      <div><div class="cp-label">PERSONAL LOG</div><div class="cp-log">${s.log.slice(-6).reverse().map((l) => `<div>${esc(l)}</div>`).join('')}</div></div></div>`;
+    // The pad takes most of the room; his log and his inbox share the narrower column beside it, sized to what they hold
+    // (Collins, Oct 14 2026: "a lot of dead screen space ... on whatever the personal log is").
+    return `<div class="cp-cols cp-quarters"><div>${pad}</div>
+      <div><div class="cp-label">PERSONAL LOG</div><div class="cp-log">${s.log.slice(-10).reverse().map((l) => `<div>${esc(l)}</div>`).join('')}</div>${inbox}</div></div>`;
   }
 
   private genesHtml(): string {
