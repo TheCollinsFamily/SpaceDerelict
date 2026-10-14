@@ -478,7 +478,11 @@ export const BALANCE = {
   biomassPerEat: 6,
   biomassPerKill: 0.8,
   /** Creep radius in px: base + growth/sec (hearts multiply growth). */
-  creepBase: 135,
+  // Oct 14 2026 (Collins, watching an opening): "the starting creep spread should be about twice as far as it is, this is
+  // far too limiting to opening moves". Was 135 (5 street-hops, 30% of the city's 200 active cells at the start). Twice, 270,
+  // is 10 hops and two thirds of the city at the start, and by 90 s the enemy finds no site for a forward base on half the
+  // seeds (tools/creep-measure.ts). 200 is 7 hops, about half the city, the most the map takes with the stations intact.
+  creepBase: 200,
   creepPerSec: 1.0,
   creepPerHeartBonus: 0.5,
   bodyBase: 70,

@@ -70,6 +70,10 @@ describe('corpses: the creep digests the dead', () => {
     quiet(s);
     const { off } = cells(s);
     expect(off).toBeDefined();
+    // The creep held at its present reach while the body waits (Oct 14 2026: with a larger starting creep it gains a cell
+    // inside the twenty seconds and would reach the body on its own).
+    const r = s.creepRangeCells;
+    Object.defineProperty(s, 'creepRangeCells', { get: () => r, configurable: true });
     killAt(s, off, 'researcher');
     const meat = { ...s.corpses[0].meat };
     expect(meat.science).toBeGreaterThan(0);
@@ -79,7 +83,6 @@ describe('corpses: the creep digests the dead', () => {
     expect(total(s)).toBe(0);
     expect(s.unclaimedMeat().science).toBe(meat.science);
     // The creep reaches it (one cell further, as an organ or a node would carry it).
-    const r = s.creepRangeCells;
     Object.defineProperty(s, 'creepRangeCells', { get: () => r + 1, configurable: true });
     expect(s.isCreeped(s.corpses[0].cell)).toBe(true);
     ticks(s, DONE + 0.2);

@@ -31,7 +31,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { EARTH_NEWS_FALLBACK, GREETINGS, earthNews, newsBeats, type GreetMoment, type Greeting } from '../content/greetings';
 import { PRINT_BODY } from '../content/yokeScenes';
-import { BOSS, BOSS_AFTER, BOSS_BRIDGE } from '../content/boss';
+import { BOSS, BOSS_AFTER, BOSS_ASIDE, BOSS_BRIDGE } from '../content/boss';
 import { CHANNELS, TRANSLATOR_NOTES } from '../content/translation';
 import { FACTIONS, LICENCE_STANDING } from '../content/campaign';
 import { EARLY_ONCE, EARTH_NEWS_EVERY, INTROS, STORY_ONCE } from '../src/meta/onboarding';
@@ -48,9 +48,11 @@ interface Branch { label?: string; lines?: Line[]; context?: { who: string; line
 interface Step { id: string; part: string; name: string; what: string; where: string; branches: Branch[] }
 
 /** Which greetings are Collins's own words (the comments in content/greetings.ts say so). */
-const COLLINS_GREETINGS = new Set(['first-lost', 'first-won', 'unlock', 'mate-review', 'catgirl', 'back-5']);
+const COLLINS_GREETINGS = new Set(['first-lost', 'first-won', 'unlock', 'mate-review', 'catgirl', 'back-5', 'won-19']);
 /** The first lines of the Earth news are his (Oct 12 2026: he rewrote the list on this page; the rest were written to match). */
 const COLLINS_NEWS = 9;
+/** Later lines of the news that are his, by their number on the page (23: the Lipptors, Oct 14 2026). */
+const COLLINS_NEWS_ALSO = new Set([23]);
 
 const greeting = (g: Greeting, ctx?: string): Line => ({
   id: g.id, author: COLLINS_GREETINGS.has(g.id) ? 'collins' : 'draft',
@@ -62,7 +64,7 @@ const greeting = (g: Greeting, ctx?: string): Line => ({
 /** A line of news as the beats she plays it in (a "[shrug]" in the text splits it). */
 const newsLine = (n: { text: string; aside?: string }, i: number): Line => {
   const beats = newsBeats(n.text);
-  return { id: `earth-${i + 1}`, text: beats.map((b) => b.say), faces: beats.map((b) => `${b.face ?? 'calm'} · then ${b.then}`), author: i < COLLINS_NEWS ? 'collins' : 'draft', aside: n.aside };
+  return { id: `earth-${i + 1}`, text: beats.map((b) => b.say), faces: beats.map((b) => `${b.face ?? 'calm'} · then ${b.then}`), author: i < COLLINS_NEWS || COLLINS_NEWS_ALSO.has(i + 1) ? 'collins' : 'draft', aside: n.aside };
 };
 const of = (moment: GreetMoment, ids?: string[]): Line[] => GREETINGS.filter((g) => g.moment === moment && (!ids || ids.includes(g.id))).map((g) => greeting(g));
 const plain = (prefix: string, texts: string[], author: Author, ctx?: string[]): Line[] => texts.map((t, i) => ({ id: `${prefix}-${i + 1}`, text: [t], author, ctx: ctx ? [ctx[i]] : undefined }));
@@ -147,7 +149,7 @@ const steps: Step[] = [
     branches: [
       { lines: [{ id: 'BOSS_BRIDGE', text: [BOSS_BRIDGE], author: 'draft', faces: ['surprised'] }] },
       { context: { who: `${BOSS.name}, on the screen`, lines: BOSS.lines, where: G('content/boss.ts') } },
-      { lines: [{ id: 'BOSS_AFTER', text: [BOSS_AFTER], author: 'draft', faces: ['teasing'] }] },
+      { lines: [{ id: 'BOSS_AFTER', text: [BOSS_AFTER], author: 'draft', faces: ['teasing'], aside: BOSS_ASIDE }] },
     ] },
 
   { id: 'mate', part: PART_DARK, name: 'The first ordinary return: the mate review', where: GREET,

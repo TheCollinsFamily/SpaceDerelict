@@ -2144,3 +2144,38 @@ her, and her greeting aboard is the one thing she says on a return. Removed from
 `tests/padShip.test.ts`, `tools/shot-pad.mjs` and the page (now 25 steps). The pad's part 2 still hands over to the report
 at the desk (shot-pad ship-won / ship-lost all pass). Rule to keep: no line of hers in a slot that plays every return; a
 slot is worth a line only when the line can be interesting there.
+
+### Oct 14 2026, the rest of the day: the partner, the dogs, two lines of hers, the starting creep
+
+- **The partner candidate** (`content/partner.ts`, on the data pad in his quarters from the mate review on; Collins's
+  brief): Temperance Vell of Dyson Sphere 7, looks twenty-three, ginger, freckles, glasses, shy and blushing; a systems
+  engineer in simulation management who runs a team of the dead designing simulations for other dead; autistic; morality
+  92; no hobbies; an hour of recreation a month; dinged for working some Sabbaths; DANGEROUSLY SENTIMENTAL (one
+  classmate's life support cut in an exercise, one talked into ending themselves, never physical violence), so no ship
+  command; a prehensile tail and olfactory modifications inherited from an ancestor (tail amputation offered); a robotic
+  left arm from an assassination attempt at school. The name and the 93.1% concordance are the session's. Her portrait
+  was drawn twice (tools/art/intro.mjs `partner`, the API's default tier, 4,000 tokens each): the second, with the arm and
+  flat-chested as Technopuritan women are, is in the game (`public/art/intro/partner.webp`); the first and the old Maren
+  Oste file are in `art-src/intro/v1/`. Both are on https://claude.ai/artifact/2U3zdWWQAeVzK7qghScsYE. The mate-review
+  greeting now carries her file as its aside; the lorebook, `empire.md` and `docs/UNIVERSE.md` have her and "the dead
+  work" (teams of the dead design simulations for other dead; the living manage them).
+- **The image tool's quality tier** (`tools/art/rfab.mjs` makeStill): no longer sent unless a caller gives one, so the
+  API's default applies (the global rule of Oct 4 2026); `intro.mjs` no longer asks for `high`.
+- **The dogs, behind the boss** (`content/boss.ts` BOSS_ASIDE, joined to the greeting's note after his message plays):
+  the most common uplift and the first (only a few breeds; pit bulls and their like eradicated), overly generous, bad at
+  the ruthless call, and for that trusted near-universally in middle management and elected at unusually high rates.
+  Also in the lorebook's boss bullet, `empire.md`'s dogs row and `docs/UNIVERSE.md`.
+- **Two lines of hers, his words:** `won-19` (the tsundere impression and the monthly bleeding; aside: the cycle went
+  with the internal womb, "tsundere" is from the archive's cartoons) and Earth news 23 (are we still one species in
+  their minds; aside: the Lipptors, a class engineered for mathematics and AI integration whose organs shut down if not
+  integrated within days of birth; recorded in the lorebook, `empire.md` section 7 and `docs/UNIVERSE.md`).
+- **The starting creep** (`content/data.ts` creepBase, Collins: "should be about twice as far ... far too limiting to
+  opening moves"): 135 → 200 px (5 → 7 street-hops, 30% → about half of the city's 200 active cells at the start).
+  Twice, 270, is 10 hops and two thirds of the city, and by 90 s the enemy finds no site for a forward base on half the
+  seeds (`tools/creep-measure.ts`), so 200 is the most the map takes. The naive autoplayer put its spine "as far out as
+  the creep reaches" and lost (2/10 hold-12 wins at 200 against 5/10 at 135); capped at 6 hops
+  (`src/sim/autoplayer.ts` FORWARD_CAP) it wins 7/10 at 135 and 8/10 at 200 (`tools/creep-diag-runs.ts <base>
+  fullrun|mules`). Seven sim tests assumed the old size (a corpse's cell, a lance's anchor after turning, a move target
+  by a gate, the engineer's spawn beside its site, the first two buildable cells, enemies counted at one tick, the mule
+  seeds) and now hold whatever the creep is. The enemy's forward bases now stand near their own gate on a city this
+  small: a consequence to watch.

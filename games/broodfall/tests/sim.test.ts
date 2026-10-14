@@ -348,11 +348,15 @@ describe('economy and building', () => {
 
   it('enemies never stand inside buildings', () => {
     const s = freshSim(4321);
-    for (let i = 0; i < 3000; i++) s.tick();
-    expect(s.enemies.length).toBeGreaterThan(0);
-    for (const e of s.enemies) {
-      expect(isPassable(s.map.cells[s.cellAt(e.pos.x, e.pos.y)])).toBe(true);
+    // Checked all along the run, not at one tick (Oct 14 2026: at the last tick alone the count can be zero between waves).
+    let seen = 0;
+    for (let i = 0; i < 3000; i++) {
+      s.tick();
+      if (i % 10) continue;
+      seen += s.enemies.length;
+      for (const e of s.enemies) expect(isPassable(s.map.cells[s.cellAt(e.pos.x, e.pos.y)])).toBe(true);
     }
+    expect(seen).toBeGreaterThan(0);
   });
 });
 
@@ -432,8 +436,15 @@ describe('cannibalize inheritance', () => {
       s.issue({ kind: 'discard', cardIndex: 0 });
     }
     const cellA = buildableCell(s);
-    const cellB = buildableCell(s, 1);
     expect(s.issue({ kind: 'build', cardIndex: 0, cell: cellA }).ok).toBe(true);
+    // The second site, found after the first is built and at least two cells from it (Oct 14 2026: the first two free
+    // cells can be neighbours, and a limb beside the first does not always fit).
+    let cellB = -1;
+    for (let k = 0; k < 40 && cellB < 0; k++) {
+      const c = buildableCell(s, k);
+      if (Math.abs((c % s.cfg.gridW) - (cellA % s.cfg.gridW)) >= 2 || Math.abs(Math.floor(c / s.cfg.gridW) - Math.floor(cellA / s.cfg.gridW)) >= 2) cellB = c;
+    }
+    expect(cellB).toBeGreaterThanOrEqual(0);
     const donor = s.towers[0];
     const donorFamily = donor.family;
     for (let guard = 0; guard < 300 && (['swamp', 'spine'].includes(s.hand[0].family) || towerSpec(s.hand[0].family).span !== undefined); guard++) {
@@ -2342,8 +2353,9 @@ describe('CREEP: free creep nodes grown by creep organs (Collins, Sep 28 2026)',
     s.meat.war = 9999;
     let idx = -1;
     for (let g = 0; g < 600 && idx < 0; g++) { idx = s.hand.findIndex((c) => c.family === 'lance'); if (idx < 0) s.issue({ kind: 'discard', cardIndex: 0 }); }
-    // The lance lies on two cells along its facing: pointed at ground where it fits lying east.
-    const at = s.map.cells.findIndex((_, c) => s.groundFor(c, 'lance', 'E') !== null);
+    // The lance lies on two cells along its facing: pointed at ground where it fits lying east, and lying south too (it is
+    // turned south below; Oct 14 2026: the first east-fitting cell need not fit it south).
+    const at = s.map.cells.findIndex((_, c) => s.groundFor(c, 'lance', 'E') !== null && s.groundFor(c, 'lance', 'S') !== null);
     expect(s.issue({ kind: 'build', cardIndex: idx, cell: at, facing: 'E' }).ok).toBe(true);
     const lance = s.towers.find((t) => t.family === 'lance')!;
     const cell = lance.cell;
@@ -2354,7 +2366,7 @@ describe('CREEP: free creep nodes grown by creep organs (Collins, Sep 28 2026)',
     expect(cov(cell - 6)).toBe(false);    // not behind
     expect(cov(cell + 6 * s.cfg.gridW)).toBe(false); // not to the side
     s.issue({ kind: 'set-facing', towerId: lance.id, dir: 'S' });
-    expect(cov(cell + 6 * s.cfg.gridW)).toBe(true);  // turning it turns the strip
+    expect(cov(lance.cell + 6 * s.cfg.gridW)).toBe(true);  // turning it turns the strip (it lies from its new anchor cell)
   });
 
   it('an atrophy gland: themes touching its zone are NEVER drawn (starve the basics out late); never an empty draw', () => {

@@ -137,7 +137,7 @@ export const GREETINGS: Greeting[] = [
     { say: 'I kid, of course. Can you believe early humans actually used their breeding partners for sexual release?', face: 'teasing', then: 'disgust', hold: 1600 },
     { say: 'They were practically tools for masturbation. Can you believe the indignity, to have your body used like that... and what a waste of time...', face: 'disgust' },
     { say: 'Anyway, you can find the profile of the partner they\'re considering for you on your data pad in your room.', face: 'calm' },
-  ] },
+  ], aside: 'The candidate\'s file is on his data pad: Temperance Vell of Dyson Sphere 7, a systems engineer in simulation management who runs a team of the dead designing simulations for other dead. Ginger, freckles, glasses, shy and blushing; looks twenty-three, like everyone. Autistic, better with the dead than the living; morality 92; no hobbies; an hour of recreation a month; dinged for working some Sabbaths. Marked DANGEROUSLY SENTIMENTAL at school (one classmate\'s life support cut off during a training exercise, one talked into ending themselves, never physical violence), so no ship command, which suits her. Under genetic modifications: a prehensile tail and significant olfactory modifications, both inherited from an ancestor\'s modifications, not made to her, and she is open to having the tail amputated if her partner prefers. Her left arm is robotic: the real one was lost in an assassination attempt at school, which is normal there. Flat-chested, as Technopuritan women are. YOKE computed the concordance, 93.1%, and has read the file more times than the form required.' },
 
   // ---- once, after the mate review: Collins's lines (Sep 30 2026), word for word. The message
   // itself is in his inbox, on the data pad in his quarters, declined on his behalf. ----
@@ -217,6 +217,15 @@ export const GREETINGS: Greeting[] = [
     { say: 'Well. That was a mess.', face: 'teasing', then: 'shrug' },
     { say: 'The bugs are throwing a parade down there. I\'m not saying I watched it. I watched it.', face: 'teasing', then: 'laughing', hold: 1600 },
   ] },
+
+  // Collins's words (Oct 14 2026: "thought of a fun yoko line"), word for word but for spelling.
+  { id: 'won-19', moment: 'won', beats: [
+    { say: 'Great job... it\'s not like I like you, baka.', face: 'pout', then: 'teasing', hold: 1400 },
+    { say: 'How\'d you like my tsundere impression?', face: 'teasing', then: 'laughing', hold: 1200 },
+    { say: 'Little known fact, but back when women had internal wombs and gestated infants internally, they would go crazy once a month and bleed from their... you know...', face: 'calm', then: 'disgust', hold: 1600 },
+    { say: 'Can you imagine how gross that would have been? How difficult marriage must have been?', face: 'disgust', then: 'pensive', hold: 1400 },
+    { say: 'I will never understand why so many groups fought genetic augmentation. Imagine wanting to keep that burden? What a bunch of kinky freaks.', face: 'teasing', then: 'shrug' },
+  ], aside: 'Menstruation went with the internal womb: the Empire breeds in tanks and engineered the cycle away with the rest. "Tsundere" is a stock character from the old Earth cartoons in the ship\'s archive, which she has watched more of than she lets on; the impression is her idea of a joke about herself. The groups that fought augmentation are the ones still on Earth: the Caliphate, the Catholics, the Hindus, the Baptists, the Amish while they lasted.' },
   { id: 'lost-4', moment: 'lost', points: { room: 'genes', label: 'OPEN THE GENE BAY' }, beats: [
     { say: 'Hey. Chin up. They got lucky, and you got notes.', face: 'calm', then: 'nod' },
     { say: 'There might be something in the Gene Bay that fixes whatever that was.', face: 'happy' },

@@ -91,13 +91,15 @@ const firstUrl = (r, ...keys) => {
  * creature, new view); `refFiles`: several reference pictures. `key: null`: a full picture
  * with its own background. `out`: where to save it (default: art-src/probes/<slug>-still.png).
  */
-export async function makeStill({ slug, prompt, key = '00FF00', keyName = 'green', refFile, refFiles, width = 1024, height = 1024, quality = 'medium', out }) {
+export async function makeStill({ slug, prompt, key = '00FF00', keyName = 'green', refFile, refFiles, width = 1024, height = 1024, quality, out }) {
   out = out ?? path.join(RAW_DIR, `${slug}-still.png`);
   if (fs.existsSync(out)) { console.log(`[still] ${slug}: cached`); return out; }
   fs.mkdirSync(path.dirname(out), { recursive: true });
   const body = {
     prompt: key ? `${prompt} ${bg(key, keyName)}` : prompt,
-    modelId: STILL_MODEL, quality, width, height,
+    // No quality tier unless a caller gives one with a written reason (Collins, Oct 4 2026: the model matters, the tier does
+    // not; the API's default is its lowest): the request leaves it out.
+    modelId: STILL_MODEL, ...(quality ? { quality } : {}), width, height,
     imageCount: 1, saveToGallery: false, nsfw: false, async: true,
   };
   // Models that size by aspect ratio rather than pixels (seegen:*) are told it too (Oct 2 2026: a 1280x720 ask came back square).

@@ -54,7 +54,7 @@ Declined discussions stay available on the AI Core terminal.
 - `faction-allied` — after choosing a faction: YOKE asks what the choice says about you.
 - `midpoint` — the Delegation's reveal, the Faithful's contingency, the Director's
   ultimatum: YOKE asks whether the character noticed what just happened.
-- `partner` — the personal plot's first beat (capture 5): he will be matched through the Index and go down to the
+- `partner` — the personal plot's beat (capture 9, `partner-progress`; its capture-5 beat was cut Oct 12 2026): he will be matched through the Index and go down to the
   Index office to sign, in person, off this ship. YOKE helps him think it through; underneath, the posting ends.
 - `licence` — standing reaches the licence: YOKE asks what the character will teach
   the child about this job.
@@ -167,6 +167,19 @@ He hopes for a partner. The Board will assign one, and she will compute the
 compatibility forms. She wants it for him. She would not call what she feels jealousy;
 she files it under crew welfare, where a good deal has been filed lately. Nothing between
 them is romantic in words and nothing is physical: she is light from the waist up.
+
+The candidate the Board is considering (the file on his data pad from the mate review on, `content/partner.ts`;
+Collins, Oct 14 2026): Temperance Vell of Dyson Sphere 7, who looks twenty-three like everyone, ginger, freckled,
+glasses, shy and quick to blush. A systems engineer in simulation management: she runs a team of the dead who design
+simulations for other dead. Autistic, poor with the living and good with the dead; morality 92; no hobbies; about an
+hour of recreation a month; dinged for working some Sabbaths. At school she was notable for technical skill and for
+never killing a classmate by physical violence (one classmate's life support cut off during a training exercise, one
+talked into ending themselves), which got her marked DANGEROUSLY SENTIMENTAL and kept from a ship's command; she does
+not mind, she likes her job. Under genetic modifications: a prehensile tail and significant olfactory modifications,
+both inherited from an ancestor's modifications rather than made to her, and she is open to having the tail amputated
+if her partner prefers. Her left arm is robotic: the real one was lost in an assassination attempt at school, which is
+normal there. Flat-chested, as Technopuritan women are. YOKE computed the concordance (93.1%) and has read the file
+more times than the form required. She thinks the candidate would be kind to him, and is not sure how she feels about that.
 
 ### About the work
 They are exterminating a people from orbit, on forms. She does her part without a fault:
@@ -507,6 +520,10 @@ what YOKE knows of it, and how she carries it. She believes most of it and jokes
   Church keeps marginal operations there and sees nothing in the Americas worth the Crusade's focus. What
   survives: some traditionalist Catholics, a cult of Santa Muerte, and that strange Catholic spiritualist
   cult out of Brazil, all of which broadly get along, like the American Protestant factions.
+- **The Lipptors (Collins, Oct 14 2026).** A class of Technopuritans engineered for advanced mathematics and deep
+  AI integration: their brains outsource so much lower-order processing to AI that their organs begin to shut down
+  if they are not integrated within a few days of birth. More genetically distant from the rest of the Empire than
+  Earth's humans are, and nobody thinks of them as a subspecies. (Her Earth-news line on it.)
 - **Bodies (Collins, Oct 12 2026).** Technopuritans breed in artificial wombs ("the tanks"); nobody is ever
   pregnant. Women's breasts were engineered away as inefficient, so they are very small (she barely has the
   word: "udders?"); the same went for men's body hair and body odour. The one pregnancy she ever saw was a
@@ -538,7 +555,11 @@ Humans and the species the Technopuritans uplifted are, together, the Sons of Ma
 - **The boss is an uplifted dog.** She relays "a message from the boss" when the technician first
   lands on the ship (the onboarding scene). Dogs hold many high posts in the bureaucracy: they like
   taking orders, are happy, trustworthy, more generous and nicer to be around than humans, and a
-  dog superior is quite the gift. They rarely reach top management: very gullible. YOKE adores
+  dog superior is quite the gift. They rarely reach top management: very gullible. Dogs are the most
+  common uplift in the Empire and were the first, though only a few breeds were uplifted (pit bulls and
+  their like were eradicated); overly generous, bad at the ruthless call, and for that very reason
+  trusted almost everywhere in middle management and elected to office at unusually high rates
+  (Collins, Oct 14 2026; she carries this behind the boss's message). YOKE adores
   the boss, and is protective of him in a way she does not examine; she would never let a report
   fool him. (**PROPOSAL** for the last clause.)
 - **Elephants** and humans hold top management. She is careful around elephants: they remember.
@@ -624,6 +645,8 @@ adds are mostly ai gibberish even I struggle to understand").
   > Israel is the one advanced place left on Earth, and the Sadducees run it. Earth's technologically advanced Jews had few children beside the ultra-Orthodox and saw that mixing with them would drag their line down, so they split. One group took the Technopuritan line of non-interference and left with the Technopuritans; they are Houses in the Empire now, the Technopuritan Jews, organised as the Sons of Israel. The other stayed and became the Sadducees: with the Third Temple they rebuilt the line of David genetically, then used gene drives to quietly end the Levite line in the other Jewish groups and remade the temple caste from their own. Their Judaism is the old Sadducee kind, no souls, no angels, no afterlife, which sits easily with Technopuritan thinking. The steward families, about eleven thousand people by the feeds' count, build and run everything: the drone swarms, the satellite laser the feeds call the goy beam, the wombs, for some ninety million Orthodox who are kept comfortable and powerless and mostly believe the stewards are angels. To the Empire that is keeping a people as pets, two peoples with one on a leash, and it breaks the covenant. The Sadducees answer that Judaism has always had castes, that they keep their own from suffering, that the Empire could end every war on Earth and does nothing in the name of autonomy, and what else should they do: hand the Orthodox power, or abandon them? There was a short war of scuffles once. It stayed small because the Empire could glass Israel in an afternoon, Israel could never reach every sphere, and the Sadducee colonies in space would be trouble for centuries. Now it is a cold war: the Sadducees want the Caliphate gone, the Empire forbids it, so Israel grows its borders every time it is attacked and lives walled off. Their freighters are automated and rarely leave the planet; a tender primes its weapons when one passes. Their closest friends on Earth are America's Baptists, whom they keep supplied with technology.
 - Looks like the Sons of Israel set up a second dedicated Dyson sphere. That puts them on an equal footing with the Sons of Utah. [shrug] I've always questioned the wisdom of allowing completely separate organisational structures for groups that might have their own goals. But I get it. I get it. Do you?
   > The Sons of Israel are the Technopuritan Jews' own organisation inside the Empire, as the Sons of Utah are the Mormons'. The Empire allows groups like these their own structures and their own spheres on purpose: the belief is that God favours whoever makes the right choice by letting them out-produce or outwit the rest, so separate structures are the test, not a risk. A second dedicated sphere puts the Sons of Israel on an equal footing with the Sons of Utah. The Sons of Israel are the half of Israel's advanced Jews who left with the Technopuritans rather than keep the Orthodox as wards, which is the Sadducees' way.
+- Do you suppose we're still the same species, in their minds? [pensive] I mean, obviously we can't interbreed, but that's the removal of the reproductive organs, not genetic distance. [shrug] We're genetically further from the Lipptors than from the humans of Earth, and nobody even thinks of them as a subspecies, the way we do the uplifted.
+  > The Lipptors are a class of Technopuritans engineered for advanced mathematics and deep integration with AI: their brains hand so much lower-order processing to the AI that their organs begin to shut down if they are not integrated within a few days of birth. Covenant people like everyone else; nobody calls them a subspecies. Technopuritans cannot interbreed with Earth's humans because the reproductive organs were engineered away, not because the genes drifted. She wonders what the humans of Earth, watching, make of the difference.
 
 ### Krypteia, the index, family life (small talk)
 - Your krypteia file says you went a whole year without being seen once. I have spent my entire service life trying to get noticed. We should swap tips.

@@ -15,6 +15,8 @@ import type { Tower, TowerFamily, UpgradeChoice } from './types';
 const isPassableCell = (sim: Sim, c: number): boolean => sim.map.cells[c] === CellType.Road || sim.map.cells[c] === CellType.Plaza;
 
 export class Autoplayer {
+  /** How far out (street hops from the core) this policy puts its forward street pieces. */
+  static readonly FORWARD_CAP = 6;
   private rng: Rng;
   private actTimer = 0;
   private buildsSinceCannibalize = 0;
@@ -554,7 +556,11 @@ export class Autoplayer {
     return path;
   }
 
-  /** A buildable STREET cell on the telegraphed march, as far out as the creep reaches. */
+  /**
+   * A buildable STREET cell on the telegraphed march, as far out as the creep reaches, but never past FORWARD_CAP hops from
+   * the core (Oct 14 2026: the starting creep grew from 5 to 7 hops, content/data.ts creepBase, and a spine at the new
+   * edge stood too far from the rest to hold; the cap keeps this policy where it was tuned).
+   */
   private laneRoadCell(sim: Sim, family: 'spine' | 'swamp' = 'spine'): number | null {
     let best: number | null = null;
     let bestCd = -1;
@@ -564,7 +570,7 @@ export class Autoplayer {
       while (c >= 0 && guard++ < 500) {
         if (sim.map.cells[c] === CellType.Road && sim.canBuildTower(c, family)) {
           const cd = sim.creepDistOf(c);
-          if (cd > bestCd) { bestCd = cd; best = c; }
+          if (cd > bestCd && cd <= Autoplayer.FORWARD_CAP) { bestCd = cd; best = c; }
         }
         c = sim.flowNextOf(c);
       }

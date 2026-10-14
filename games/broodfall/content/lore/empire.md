@@ -113,6 +113,21 @@ around": YOKE's `partner-progress` line).
   partners in a House. **Collins, Sep 30 (YOKE's mate-review greeting in `content/greetings.ts`):**
   the Empire finds it strange that early humans used their breeding partners "for sexual release
   and companionship". Marriage is a working partnership for raising a House.
+- **Broodfall's candidate** (Collins, Oct 14 2026; `content/partner.ts`, on the data pad in his quarters): Temperance
+  Vell of Dyson Sphere 7, looks twenty-three like everyone, ginger, freckles, glasses, shy and blushing. A systems
+  engineer in Simulation Management: she manages a team of the dead who themselves design simulations for other dead.
+  Autistic, struggles with the living; morality score 92; no hobbies; about an hour of recreation a month; her one ding
+  is a tendency to work on some Sabbaths. At school, notable for technical skill and for never killing a classmate by
+  physical violence (one classmate's life support hacked off during a training exercise, one talked into ending
+  themselves), which listed her as DANGEROUSLY SENTIMENTAL: not given command of a ship. She does not mind and enjoys
+  her job. Under genetic modifications: a prehensile tail and significant olfactory modifications, marked as inherited
+  from modifications to one of her ancestors, not changes made to her directly; she is open to having the tail amputated
+  if that is her partner's preference. One robotic arm: she lost the real one during an assassination attempt at school,
+  which this society considers normal. Drawn flat-chested, as Technopuritan women are (section 7). (The name and the
+  concordance figure, 93.1%, are the session's; the rest is his.)
+  - *What the file shows about the Empire* (**PROPOSAL** from his facts): modifications run in families and are recorded
+    by origin (made to you, or inherited); assassination attempts at school are within the normal range; a prosthetic is
+    a line on a form.
 - **Raising 100 children.** **PROPOSAL:** a couple's breeding decade is spent in a family habitat,
   with the household's intelligence running the nursery (AI integration) and older siblings
   teaching younger. At the end of the decade the eldest are ten years from krypteia and the
@@ -163,6 +178,13 @@ fashion these days, which is why it is not obvious.
 - **PROPOSAL:** the fashion for the retro look is tolerated because it signals nothing (a status
   display would be a sin); a visibly chrome body would be showing off.
 
+- **The Lipptors** (Collins, Oct 14 2026): a class genetically specialised for advanced mathematics and extensive AI
+  integration, to the extent that their organs begin to shut down if they are not integrated with an AI within a few
+  days of birth: their brains outsource that much lower-order processing to the AI. Technopuritans are genetically
+  more distant from the Lipptors than from the humans of Earth, and do not think of them as a subspecies, as they do
+  the uplifted; the Empire cannot interbreed with Earth's humans because the reproductive organs were removed, not for
+  genetic distance (YOKE's Earth-news line). **PROPOSAL:** other such classes exist; a class is a specialisation of the
+  one people, not a people.
 - **The tanks, and what was engineered away** (Collins, Oct 12 2026): Technopuritans breed using artificial
   wombs, so nobody is ever pregnant, and a pregnancy (a cat girl's, say) looks to them grotesque: "their
   abdomens distend inhumanly ... it did not look safe". Women have very small breasts, having had them
@@ -484,6 +506,9 @@ extremely desensitised to death, as it's when the easy part begins (in a very re
 - **Every Technopuritan is uploaded on death** (Collins; Oct 12 2026: digitised into a simulation they
   believe to be the world to come that the Bible speaks of). Most of a life, counted in experience,
   is the part afterwards, and it will be good.
+  - *The dead work* (Collins, Oct 14 2026): teams of the dead design simulations for other dead, and the living manage
+    them. Broodfall's partner candidate is a systems engineer in Simulation Management on Dyson Sphere 7 doing exactly
+    that. The spheres are numbered (his "Dyson Sphere 7").
 - **So the real world is for impact** (Collins). It is the one place where what you do is the
   first time it happened. Technopuritans push themselves and each other as hard as they can while
   they are in it: krypteia, the testing, the 25-fold generations, a technician alone on a tender.
@@ -590,7 +615,7 @@ Space Derelict's details (Pop Fiz, Felonia) are kept.
 | Who | Where they sit (Collins) | In practice (**PROPOSAL** unless quoted) |
 |---|---|---|
 | **Humans** | Top management, with the elephants. | Every rank. The retro human look is in fashion even among the heavily augmented (section 7). |
-| **Dogs** | Many high-level posts in the bureaucracy: they like taking orders, are generally happy and trustworthy, and are thought more generous and nicer to be around than humans. A dog as your superior is quite the gift. Rarely top management: very gullible. | The Office runs on dogs: middle and upper-middle management, inspectors, Board clerks. A dog's directive is sincere; the fine print above it was written by someone else. Nobody lies to a dog superior; it would be like kicking one. |
+| **Dogs** | Many high-level posts in the bureaucracy: they like taking orders, are generally happy and trustworthy, and are thought more generous and nicer to be around than humans. A dog as your superior is quite the gift. Rarely top management: very gullible. **Oct 14 2026:** the most common uplifted species in the Empire, and the first, though only a few breeds were uplifted (breeds like pit bulls were eradicated). Overly generous, often failing to make the ruthless decisions necessary, and for that near-universally trusted in middle management and elected to office at unusually high rates. | The Office runs on dogs: middle and upper-middle management, inspectors, Board clerks. A dog's directive is sincere; the fine print above it was written by someone else. Nobody lies to a dog superior; it would be like kicking one. |
 | **Elephants** | Top management, with humans. | Long memories, long horizons: the Index's senior offices, Command, the planning of worlds. They remember every entry. |
 | **Dolphins and killer whales** | A massive mistake; bordering on a "genetically evil" race; mostly on the fringes. | Inside the covenant, so not wiped out; outside every office. On the fringe they are Space Derelict's Pop Fiz. Schoolbooks cite them as the proof that uplift must be tested before it is done (the corpus: "prove all things", TP 12.0). |
 | **Cat girls** | Anthro-looking like other uplifts; all female; breed true, taking little of the husband's DNA; made because someone thought cat girls would be hot. Some live within Technopuritan society, but they struggle to find breeding partners and often go to the fringes to find humans who still like sex for its own sake. They could engineer males, but refuse: it would "destroy their culture". | Inside: a House that marries a cat girl gets cat-girl daughters, so the Board's market rates the match low, and the Board is the marriage market (section 3). On the fringe: Space Derelict's Felonia prides, who hail passing crews to "breed". The Empire's body-disgust (section 14) makes the fringe cat girls a scandal and a punchline at once. |

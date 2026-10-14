@@ -234,7 +234,9 @@ describe('the scripted player with mules', () => {
     // domes changed every run's course): of seeds 1-12 the scripted player roots a mule on 10 and on 8, on no other.
     let rooted = 0;
     let sac = false;
-    for (const seed of [10, 8, 4]) {
+    // Re-measured Oct 14 2026 (the starting creep grew, content/data.ts creepBase, and the autoplayer's forward cap): of
+    // seeds 1-12 the scripted player roots a mule on 3 alone (tools/creep-diag-runs.ts <base> mules).
+    for (const seed of [3, 11, 12]) {
       const s = new Sim({ ...CFG, seed, organStage: true, directive: { kind: 'hold', waves: 12 } });
       const bot = new Autoplayer(seed + 1);
       bot.mules = true;

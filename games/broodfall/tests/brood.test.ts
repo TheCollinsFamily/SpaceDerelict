@@ -6,7 +6,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import { Sim, towerSpec } from '../src/sim/sim';
-import { isPassable } from '../src/sim/citymap';
+import { allDistance, isPassable } from '../src/sim/citymap';
 import { BALANCE as B } from '../content/data';
 import type { Broodmother, Enemy, SimConfig, Tower, TowerFamily, Vec } from '../src/sim/types';
 
@@ -46,8 +46,15 @@ function run(s: Sim, seconds: number): void {
 
 /** A street cell centre at least `far` px from a point (for sending units somewhere). */
 function streetAway(s: Sim, from: Vec, far: number): Vec {
+  // A street inside the board (not its border row or column, where the gates are) that the streets reach from here
+  // (Oct 14 2026: the first street at that distance can be a border cell, and units sent there never settle).
+  const hops = allDistance(s.map, s.cellAt(from.x, from.y));
   for (let c = 0; c < s.map.cells.length; c++) {
     if (!isPassable(s.map.cells[c])) continue;
+    const x = c % s.cfg.gridW, y = Math.floor(c / s.cfg.gridW);
+    if (x === 0 || y === 0 || x === s.cfg.gridW - 1 || y === s.cfg.gridH - 1 || s.gates.includes(c) || hops[c] < 0) continue;
+    // And clear of every gate: a wave spawning beside their post pulls guarding warriors a step each tick before hush().
+    if (s.gates.some((g) => { const q = s.cellCenter(g); return Math.hypot(q.x - s.cellCenter(c).x, q.y - s.cellCenter(c).y) < 120; })) continue;
     const p = s.cellCenter(c);
     if (Math.hypot(p.x - from.x, p.y - from.y) >= far && Math.hypot(p.x - from.x, p.y - from.y) <= far + 60) return p;
   }

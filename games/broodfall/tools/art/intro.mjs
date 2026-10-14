@@ -199,16 +199,24 @@ export const PICTURES = [
     id: 'partner',
     width: 1024, height: 1024,
     refs: () => [path.join(CONCEPTS, 'r4-hero-portrait.png')],
+    // Collins, Oct 14 2026: ginger, freckles, glasses, shy and blushing, looks twenty-three; flat-chested, as Technopuritan
+    // women are; one robotic arm (content/partner.ts). The tail is in the file, not the photograph.
     still: 'An official identification photograph, lifelike, from a far-future austere, ultra-efficient human society: ' +
-      'a head-and-shoulders portrait of a young woman of about twenty-four, facing the camera straight on, centred, ' +
-      'the top of her head and her shoulders inside the square frame. Plain even pale grey backdrop, flat even studio ' +
-      'light, sharp focus, no retouching glamour. She is modestly and fully dressed in the same uniform as the man in ' +
-      'the reference: a plain black high-necked tunic with a narrow white collar, buttoned to the throat. Her dark ' +
-      'brown hair is pulled back neatly into a low bun; no jewellery, no makeup to speak of. An intelligent, calm, ' +
-      'slightly earnest face with the smallest hint of a polite smile, as if told to hold still. Tasteful and ' +
-      'respectable: an ID card photo, not a glamour shot. Not the man of the reference: only his uniform and the ' +
-      'photographic look are borrowed. No text anywhere: no letters, no numbers, no name, no badge, no insignia, no ' +
-      'logo, no symbol of any kind (no crosses, no gears, no religious symbol), no frame or border.',
+      'a portrait of a cute young woman who looks about twenty-three, facing the camera straight on, centred, framed a ' +
+      'little wider than a passport photo: from the top of her head to her waist, her hands folded in front of her at the ' +
+      'bottom of the frame. Plain even pale grey backdrop, flat even ' +
+      'studio light, sharp focus, no retouching glamour. She is modestly and fully dressed in the same uniform as the man in ' +
+      'the reference: a plain black high-necked tunic with a narrow white collar, buttoned to the throat. The tunic hangs ' +
+      'straight and flat: she is flat-chested, as the women of this society are. Her left forearm and hand are a plain ' +
+      'matte dark-grey machined prosthetic, functional and unadorned, the tunic sleeve ending above it; her right hand is ' +
+      'her own, pale and freckled. Ginger hair, a ' +
+      'warm red-orange, pulled back neatly into a low bun with a few fine wisps loose at the temples; pale skin with ' +
+      'freckles across her nose and cheeks; round thin-rimmed glasses; no jewellery, no makeup. A shy expression: a faint ' +
+      'blush on her cheeks, eyes meeting the camera a little uncertainly, lips pressed in a small nervous almost-smile, as ' +
+      'if told to hold still and not sure she is doing it right. Sweet and respectable: an ID card photo, not a glamour ' +
+      'shot. Not the man of the reference: only his uniform and the photographic look are borrowed. No text anywhere: no ' +
+      'letters, no numbers, no name, no badge, no insignia, no logo, no symbol of any kind (no crosses, no gears, no ' +
+      'religious symbol), no frame or border.',
   },
 ];
 const PIC_DIR = path.join(DIR, 'pictures');
@@ -229,14 +237,14 @@ async function pictures(items) {
   for (const p of items.filter((q) => q.edit)) {
     const from = path.join(PIC_DIR, `${p.edit.from}.png`);
     if (!fs.existsSync(from)) await makeStill({ slug: `intro ${p.edit.from}`, out: from, prompt: p.still, key: null,
-      width: p.width, height: p.height, quality: 'high', refFiles: p.refs().filter((f) => fs.existsSync(f)) });
+      width: p.width, height: p.height, refFiles: p.refs().filter((f) => fs.existsSync(f)) });
   }
   const res = await pool(items, 2, (p) => p.edit ? makeStill({
     slug: `intro ${p.id}`, out: path.join(PIC_DIR, `${p.file}.png`), prompt: p.edit.prompt, key: null,
-    width: p.width, height: p.height, quality: 'high', refFiles: [path.join(PIC_DIR, `${p.edit.from}.png`)],
+    width: p.width, height: p.height, refFiles: [path.join(PIC_DIR, `${p.edit.from}.png`)],
   }) : makeStill({
     slug: `intro ${p.id}`, out: path.join(PIC_DIR, `${p.file ?? p.id}.png`), prompt: p.still, key: null,
-    width: p.width, height: p.height, quality: 'high', refFiles: p.refs().filter((f) => fs.existsSync(f)),
+    width: p.width, height: p.height, refFiles: p.refs().filter((f) => fs.existsSync(f)),
   }));
   res.forEach((r, i) => { if (!r.ok) console.warn(`[intro] ${items[i].id} picture failed: ${r.error.message.slice(0, 200)}`); });
 }
@@ -258,7 +266,7 @@ function menuRefs() {
 async function stills(items) {
   const res = await pool(items, 4, (s) => makeStill({
     slug: `intro ${s.id}`, out: raw(s.id, '.png'), prompt: s.still, key: null,
-    width: 1536, height: 1024, quality: 'high',
+    width: 1536, height: 1024, 
     refFiles: (s.id === 'menu' ? menuRefs() : [...FILM_REFS, TITLE]).filter((f) => fs.existsSync(f)),
   }));
   res.forEach((r, i) => { if (!r.ok) console.warn(`[intro] ${items[i].id} still failed: ${r.error.message.slice(0, 200)}`); });

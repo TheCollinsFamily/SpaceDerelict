@@ -7,7 +7,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import { Sim } from '../src/sim/sim';
-import { CellType } from '../src/sim/citymap';
+import { CellType, allDistance } from '../src/sim/citymap';
 import { BALANCE as B } from '../content/data';
 import type { Enemy, Harrier, SimConfig, Vec } from '../src/sim/types';
 
@@ -176,6 +176,13 @@ describe('the engineer', () => {
   it('runs when it is hit with no escort left', () => {
     const s = board();
     const eng = engineerAt(s);
+    // Set out from a street well down the road from its site, so it is still travelling when hit (Oct 14 2026: with a
+    // larger creep the site can be a step from the one gate it spawns at).
+    const hops = allDistance(s.map, eng.siteCell!);
+    let far = -1;
+    s.map.cells.forEach((t, c) => { if (t === CellType.Road && hops[c] > (far < 0 ? 5 : hops[far])) far = c; });
+    expect(far).toBeGreaterThanOrEqual(0);
+    eng.pos = { ...s.cellCenter(far) };
     run(s, 0.1);
     expect(eng.engState).toBe('travel');
     eng.hp -= 10;

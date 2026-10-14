@@ -20,7 +20,7 @@ import { YokeAvatarUi, type ScriptLine, type YokeTalk } from './yokeAvatar';
 import { YokeAccountUi } from './yokeAccount';
 import { EARLY_ONCE, STORY_ONCE, deskOpen, greetingFor, shipPick } from '../meta/onboarding';
 import { queueDiscussion } from '../meta/shipAi';
-import { BOSS_AFTER, BOSS_BRIDGE } from '../../content/boss';
+import { BOSS_AFTER, BOSS_ASIDE, BOSS_BRIDGE } from '../../content/boss';
 import { playBossCall } from './bossCall';
 import { CUES, type Greeting } from '../../content/greetings';
 import {
@@ -373,6 +373,8 @@ export class CampaignUi {
         await this.yokeSays(BOSS_BRIDGE, CUES.surprised, said);
         if (this.greeting === g) {
           this.el.dataset.boss = 'on'; await playBossCall(this.intro ?? await loadIntroArt()); delete this.el.dataset.boss;
+          // What she knows about dogs goes behind this greeting for her live mind (content/boss.ts BOSS_ASIDE).
+          this.greetAside = [this.greetAside, BOSS_ASIDE].filter(Boolean).join(' ');
           // He has heard the boss: kept with the campaign (the comic of the call is earned by it: content/comics.ts)
           if (!(this.state.said ?? []).includes('boss')) { const heard = structuredClone(this.state); heard.said = [...(heard.said ?? []), 'boss']; this.state = heard; saveCampaign(heard); }
         }

@@ -2,20 +2,40 @@
  * The partner candidate's file, on the data pad in his quarters (Collins, Sep 30 2026: "you can
  * find the profile of the partner they're considering for you on your data pad in your room").
  * In the Procreation Licensing Board's voice: procurement, not romance. Her portrait is
- * public/art/intro/partner.webp (tools/art/intro.mjs `partner`), when it has been made.
+ * public/art/intro/partner.webp (tools/art/intro.mjs `partner`).
+ *
+ * Who she is (Collins, Oct 14 2026): a cute girl who looks twenty-three, ginger, freckles, glasses, a shy blushing
+ * expression, from Dyson Sphere 7. A systems engineer in simulation management: she manages a team of dead people who
+ * themselves design simulations for other dead people. Autistic; struggles to interact with the living. Scores 92 on
+ * morality, has no hobbies and spends only an hour or so a month on recreation; her one ding is a tendency to work on
+ * some Sabbaths. At school she was notable for her technical skills and for never killing a classmate with physical
+ * violence (though she did hack off one classmate's life support during a training exercise, and talked another into
+ * ending themselves). That got her listed as DANGEROUSLY SENTIMENTAL, which is why she was not given command of a ship.
+ * She does not mind; she enjoys her job. Later the same day: under genetic modifications, a prehensile tail and
+ * significant olfactory modifications, marked as inherited from an ancestor's modifications rather than changes to her,
+ * and she is open to having the tail amputated if that is her partner's preference; and one robotic arm, the real one
+ * lost during an assassination attempt at school (considered normal in this society). Drawn flat-chested, as
+ * Technopuritan women are (content/lore/empire.md, section 7: breasts were engineered away).
  */
 export const PARTNER = {
   form: 'FORM PL-7 · CANDIDATE PARTNER PROFILE',
   fields: [
-    ['Candidate', 'Maren Oste, file 4471-C'],
-    ['Age', '24 standard years'],
-    ['Posting', 'Hydroponics Compliance, Orbital Yard 12'],
-    ['Genetic concordance with the applicant', '91.4% (acceptable)'],
-    ['Temperament', 'Even. Recorded laughter within tolerance.'],
-    ['Declared interests', 'Efficient irrigation; choral readings; the upkeep of small machines'],
-    ['Punctuality', 'Exemplary'],
+    ['Candidate', 'Temperance Vell, file 7-2290-S'],
+    ['Age', '23 standard years (apparent, as is standard)'],
+    ['Origin', 'Dyson Sphere 7'],
+    ['Posting', 'Systems Engineer, Simulation Management, Sphere 7: manages a team of the dead who design simulations for other dead'],
+    ['Morality score', '92'],
+    ['Genetic concordance with the applicant', '93.1% (acceptable)'],
+    ['Temperament', 'Autistic. Interacts poorly with the living; interacts well with the dead. Blushes when addressed.'],
+    ['Declared hobbies', 'None'],
+    ['Recreation', 'About one hour a month'],
+    ['Notation', 'A tendency to work on some Sabbaths'],
+    ['Schooling', 'Notable for technical skill. No classmate killed by physical violence. One classmate\'s life support cut off during a training exercise; one classmate talked into ending themselves.'],
+    ['Command assessment', 'DANGEROUSLY SENTIMENTAL. Not to be given command of a ship. The candidate has stated she does not mind and enjoys her post.'],
+    ['Genetic modifications', 'A prehensile tail; significant olfactory modifications. Both INHERITED, from modifications made to an ancestor; no modification has been made to the candidate directly. The candidate is open to having the tail amputated if that is her partner\'s preference.'],
+    ['Prosthetics', 'Left arm, robotic. The original was lost during an assassination attempt at school (within the normal range).'],
   ] as Array<[string, string]>,
-  statement: 'Statement of the candidate (twenty words at most): "I am told you are punctual. I am punctual. That seems a good place to start."',
+  statement: 'Statement of the candidate (twenty words at most): "I am better with the dead than the living. I would try with you. Sorry. That was too many words."',
   boardNote: 'The Board will decide on the match when the applicant\'s standing reaches {need} (now {standing}). The Board congratulates you on your continued eligibility to remain eligible.',
 };
 

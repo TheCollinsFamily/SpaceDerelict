@@ -27,3 +27,9 @@ export const BOSS = {
 /** What YOKE says around him: before (her bridge into it) and after (wry, about having a dog for a boss). */
 export const BOSS_BRIDGE = 'Oh, and we got a message from the boss.';
 export const BOSS_AFTER = 'A dog for a boss. Lucky you, honestly, they\'re lovely. Just don\'t let him anywhere near the budget.';
+
+/**
+ * What she knows behind the boss, for her live mind only (Collins, Oct 14 2026, "for secret ai context"): the AI Core and her
+ * avatar get it with the first greeting's note once his message has played (src/ui/campaignUi.ts welcome); the player never sees it.
+ */
+export const BOSS_ASIDE = 'Uplifted dogs are the most common uplifted species in the Technopuritan Empire. They can be overly generous and often fail to make the ruthless decisions necessary (hence her line about the budget), but they are near-universally trusted in middle-management positions and are elected to office at unusually high rates. They were the first species uplifted, though only a few breeds were; breeds like pit bulls were eradicated.';

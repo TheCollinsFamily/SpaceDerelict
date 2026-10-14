@@ -211,11 +211,18 @@ are **the Sons of Man**, and the covenant (doctrine 14) covers them all; the cor
 synthetic minds and cyborgs (TP 11.0); Collins's definition names humans and uplifts, and the two
 are read together. Uplifts look anthro, like the cat girls (Collins).
 
+- **The Lipptors, a human class, not an uplift** (Collins, Oct 14 2026): Technopuritans genetically specialised
+  for advanced mathematics and extensive AI integration, so far that their organs begin to shut down if they are
+  not integrated with an AI within a few days of birth. Genetically further from the rest of the Empire than
+  Earth's humans are, and nobody calls them a subspecies; the uplifted are thought of differently.
 - **Dogs.** Uplifted dogs rose into many high-level positions in the imperial bureaucracy: they
   like taking orders, are generally happy and trustworthy, and are generally thought more generous
   and nicer to be around than humans. Having one as a superior is considered quite the gift. They
-  rarely hold top management, because they are very gullible. (Broodfall: the player's boss is an
-  uplifted dog.)
+  rarely hold top management, because they are very gullible. They are the most common uplifted
+  species in the Empire and were the first, though only a few breeds were uplifted; breeds like pit
+  bulls were eradicated. Overly generous and often unable to make the ruthless decision, they are for
+  that very reason near-universally trusted in middle management and elected to office at unusually
+  high rates (Collins, Oct 14 2026). (Broodfall: the player's boss is an uplifted dog.)
 - **Elephants.** Top management is usually held by humans or uplifted elephants.
 - **Dolphins and killer whales.** Generally thought to have been a massive mistake: they border on
   a "genetically evil" race, and mostly live on the fringes of the Empire. Space Derelict's **Pop
