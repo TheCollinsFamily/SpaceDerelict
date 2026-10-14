@@ -199,6 +199,8 @@ fashion these days, which is why it is not obvious.
   morality makes perfect sense to the Empire; killing over genetic difference makes none (YOKE's `won-20` line, which
   also allows that a breed worse at cognition or more impulsive, breeding fast, ought to sterilise itself for the common
   good). **PROPOSAL:** the zero-G line crews the ships and the spheres' outer works; the high-gravity line the heavy worlds.
+- **Years are Sol years** (Collins, Oct 14 2026): the Empire counts age in Sol years, never "standard years"; a form says
+  "23 Sol years" and nothing about apparent age, since everyone looks about that.
 - **Companions** (Collins, Oct 14 2026): most Technopuritans have one, what YOKE is to the technician: a synthetic
   intelligence made partially from the person's own nervous tissue. Having a dead person as one's companion instead is
   possible and thought pretty weird. **PROPOSAL:** the tissue is taken at the companion's making and gives it its

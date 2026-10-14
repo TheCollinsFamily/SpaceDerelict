@@ -34,7 +34,7 @@ export const PARTNER = {
   form: 'FORM PL-7 · CANDIDATE PARTNER PROFILE',
   fields: [
     ['Candidate', 'Atlas Vell, file 7-2290-S'],
-    ['Age', '23 standard years (apparent, as is standard)'],
+    ['Age', '23 Sol years'],
     ['Origin', 'Dyson Sphere 7'],
     ['Posting', 'Systems Engineer, Simulation Management, Sphere 7: manages a team of the dead who design simulations for other dead'],
     ['Morality score', '92'],
