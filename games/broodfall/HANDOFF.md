@@ -2188,3 +2188,6 @@ slot is worth a line only when the line can be interesting there.
   arm was lost on the class survival camp (students left for months to live on their own) when a classmate with venomous
   spit spat at her face, she blocked it with her hand, it went necrotic, and she amputated and cauterised it herself.
   Portrait drawn a third time to match (art-src/intro/v1/ keeps the earlier ones); file, aside and lore updated.
+- The partner's notable relatives (Collins, Oct 14 2026): a war hero of the Sabbatean Skirmishes, and a heretic found with a
+  figure of a saint after death; on the file, in the mate-review aside, in the lorebook, `empire.md` and `docs/UNIVERSE.md`
+  (the Skirmishes recorded by name only, open).

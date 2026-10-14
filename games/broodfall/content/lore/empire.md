@@ -126,12 +126,17 @@ around": YOKE's `partner-progress` line).
   lost the real one on her class's camping trip, where students are left for a few months to learn to survive on their
   own, when a classmate with venomous spit spat at her face; she blocked it with her hand, which went necrotic, and she
   amputated and cauterised it herself. Her glasses are an eccentricity she saw in a history class once and thought
-  looked "cute" (her eyes are standard). Drawn slightly skinny and flat-chested, as Technopuritan women are (section 7).
+  looked "cute" (her eyes are standard). Notable relatives: a war hero from the Sabbatean Skirmishes, and a heretic,
+  as a figure of a saint was found among their belongings after death (section 2: idolatry is worse than murder; the
+  Board lists both without comment). Drawn slightly skinny and flat-chested, as Technopuritan women are (section 7).
   (The name and the concordance figure, 93.1%, are the session's; the rest is his.)
   - *What the file shows about the Empire* (**PROPOSAL** from his facts): modifications run in families and are recorded
     by origin (made to you, or inherited); some classmates carry venom; the schools' survival camp leaves students alone
     for months and what happens there is within the normal range; a prosthetic is a line on a form; sight is standard,
-    so glasses are an affectation.
+    so glasses are an affectation; a file names a family's heroes and its heretics alike, and a heretic in the line does
+    not bar a match. **The Sabbatean Skirmishes** (Collins's name, Oct 14 2026): a conflict the Empire fought, with a war
+    hero in her family; when, against whom and why are his to say (the Sadducees' short war is the one armed clash with
+    Earth on record in section 9, and may or may not be it).
 - **Raising 100 children.** **PROPOSAL:** a couple's breeding decade is spent in a family habitat,
   with the household's intelligence running the nursery (AI integration) and older siblings
   teaching younger. At the end of the decade the eldest are ten years from krypteia and the

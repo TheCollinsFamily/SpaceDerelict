@@ -211,6 +211,8 @@ are **the Sons of Man**, and the covenant (doctrine 14) covers them all; the cor
 synthetic minds and cyborgs (TP 11.0); Collins's definition names humans and uplifts, and the two
 are read together. Uplifts look anthro, like the cat girls (Collins).
 
+- **The Sabbatean Skirmishes** (Collins, Oct 14 2026, by name only): a conflict the Empire fought; a Broodfall
+  partner candidate's relative was a war hero of it. When, against whom and why are open.
 - **Bodies by world** (Collins, Oct 14 2026): humans optimised for high-gravity planets are nothing like those
   optimised for life in zero G (Broodfall's technician is zero-G optimised). The Empire holds no animosity over
   genetic difference; it kills over belief and morality, and finds Earth's ethnic conflicts strange.

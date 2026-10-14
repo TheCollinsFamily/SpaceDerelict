@@ -183,7 +183,9 @@ if her partner prefers. Her left arm is robotic and bare, the frame and circuitr
 was lost on her class's survival camp (students are left for some months to learn to live on their own) when a classmate
 with venomous spit spat at her face; she blocked it with her hand, the hand went necrotic, and she amputated and
 cauterised it herself, which is within the normal range there. Her glasses are an eccentricity: her eyes are standard;
-she saw glasses in a history class once and thought they looked "cute". Thin and flat-chested, as Technopuritan women are. YOKE computed the concordance (93.1%) and has read the file
+she saw glasses in a history class once and thought they looked "cute". Thin and flat-chested, as Technopuritan women are.
+Two notable relatives on the file, listed without comment: a war hero of the Sabbatean Skirmishes, and a heretic, a
+figure of a saint having been found among their belongings after death (idolatry, the worst of sins there). YOKE computed the concordance (93.1%) and has read the file
 more times than the form required. She thinks the candidate would be kind to him, and is not sure how she feels about that.
 
 ### About the work
