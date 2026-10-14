@@ -213,6 +213,11 @@ are read together. Uplifts look anthro, like the cat girls (Collins).
 
 - **The Sabbatean Skirmishes** (Collins, Oct 14 2026, by name only): a conflict the Empire fought; a Broodfall
   partner candidate's relative was a war hero of it. When, against whom and why are open.
+- **Ascending early** (Collins, Oct 14 2026): most people without a partner by forty are pushed to ascend early,
+  which is to say to end themselves and be uploaded before their time.
+- **Same-sex attraction** (Collins, Oct 14 2026): generally dealt with through hormonal treatment and genetic
+  modification; a part that resists is rare, and the person may judge themselves morally compromised by it. "The meat
+  world" is their slang for the living world, as against the simulations of the dead.
 - **The simulated dead** (Collins, Oct 14 2026): not every soul in a simulation knows it is in one, especially those
   judged of low moral character by how they act inside it.
 - **Companions** (Collins, Oct 14 2026): most Technopuritans have a companion intelligence, as Broodfall's technician

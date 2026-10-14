@@ -135,7 +135,13 @@ around": YOKE's `partner-progress` line).
   world" but part of the deal the two made: the friend was to be transferred to another class, had a crush on Atlas,
   knew Atlas would benefit from a higher kill count and that it would let her stay closer to her; the event first turned
   Atlas to simulation work. The Board's file on it, his wording: "Irregular; under observation to study effects. Noted as
-  a potential social technology for wider deployment." (Her name is his, Oct 14 2026; the surname stays the session's.) Drawn slightly skinny and
+  a potential social technology for wider deployment." The companion, more of her (Collins, later the same day): "a bit
+  yandere for Atlas, but this same desire makes her really want to meet and help with Atlas's kids". Why she killed
+  herself: "she recognised she had a crush on Atlas and same-sex attraction is generally dealt with in their society
+  through hormonal treatment and genetic modification; she found a part of herself was resistant to that and as such
+  deemed herself too morally compromised to burden the meat world (the slang for the living world) with her wretched
+  mind." In the game she answers his letters for Atlas (content/letters.ts) until her regard opens the gate. (Her name is
+  his, Oct 14 2026; the surname stays the session's.) Drawn slightly skinny and
   flat-chested, as Technopuritan women are (section 7).
   (The name and the concordance figure, 93.1%, are the session's; the rest is his.)
   - *What the file shows about the Empire* (**PROPOSAL** from his facts): modifications run in families and are recorded
@@ -202,6 +208,16 @@ fashion these days, which is why it is not obvious.
   good). **PROPOSAL:** the zero-G line crews the ships and the spheres' outer works; the high-gravity line the heavy worlds.
 - **Years are Sol years** (Collins, Oct 14 2026): the Empire counts age in Sol years, never "standard years"; a form says
   "23 Sol years" and nothing about apparent age, since everyone looks about that.
+- **Same-sex attraction** (Collins, Oct 14 2026): generally dealt with through hormonal treatment and genetic
+  modification. A person in whom part of it resists the treatment may judge themselves morally compromised; the
+  companion of Broodfall's partner candidate did, and chose to leave "the meat world" (the living world, in slang) by
+  a classmate's hand rather than burden it. **PROPOSAL:** the treatment is routine and unremarked, like the tanks; the
+  resistant case is rare and is the person's own to judge.
+  The society's own argument, in the companion's mouth (Collins, Oct 14 2026): the genetic technology to reproduce
+  same-sex exists, but males and females are born with different proficiencies meant to be mutually compatible and to
+  create a more stable whole; not to be satisfied with the conditions and role of one's birth is deeply selfish and
+  indulgent. She is fully bought in, and is disgusted and confused by anyone who suggests same-sex attraction is fine.
+- **"The meat world"** (Collins, Oct 14 2026): slang for the living world, as against the simulations the dead live in.
 - **Companions** (Collins, Oct 14 2026): most Technopuritans have one, what YOKE is to the technician: a synthetic
   intelligence made partially from the person's own nervous tissue. Having a dead person as one's companion instead is
   possible and thought pretty weird. **PROPOSAL:** the tissue is taken at the companion's making and gives it its
@@ -220,6 +236,11 @@ fashion these days, which is why it is not obvious.
   hair and body odour.
 
 ## 7b. Ageing and euthanasia (Collins, Oct 12 2026)
+
+Collins, Oct 14 2026: "most people without partners by 40 are pushed to ascend early ... essentially kill themselves."
+To ascend is to be uploaded; early is before one's contribution is judged over. It is why Broodfall's partner
+candidate's companion, who thinks the technician "just an exterminator" and beneath Atlas, needs the match to work all
+the same: Atlas's eccentricities make a partner hard to secure (content/letters.ts).
 
 Collins: in their society nobody ages past 23 (women); for men, when to stop ageing is more of an
 aesthetic choice, usually made by the wife. Because it would be trivial to live forever, and that would

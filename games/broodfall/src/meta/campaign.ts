@@ -7,6 +7,7 @@
  * an experiment, faction perks) → the deployment → debrief (credits, the territory,
  * faction beats, the colony's pushback) → the ship.
  */
+import type { LettersState } from './letters';
 import { Rng } from '../sim/rng';
 import type { EnemyKind, OrganId, SimConfig, TowerFamily } from '../sim/types';
 import {
@@ -100,6 +101,8 @@ export interface CampaignState {
   orders?: OrdersState;
   /** His notebook of hobby missions and the genes they paid (src/meta/hobby.ts); none until the desk clears. */
   hobby?: HobbyState;
+  /** Letters between missions (src/meta/letters.ts, content/letters.ts); none until a thread opens (Oct 14 2026). */
+  letters?: LettersState;
 }
 
 /** `onboarding`: a campaign that unfolds (mission 1 first, the Directive Desk dark until a win); every new one the game starts is. */

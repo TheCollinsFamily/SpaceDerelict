@@ -2210,3 +2210,32 @@ slot is worth a line only when the line can be interesting there.
 - The quarters layout (Collins, Oct 14 2026: "a lot of dead screen space ... on whatever the personal log is"): the pad
   takes three fifths of the room, his log (last ten entries) and the inbox share the column beside it (.cp-quarters in
   src/style.css; quartersHtml). The log is the campaign's diary, one line per deployment, so it is one line on day one.
+### Letters: a room that opens, answered between missions (Oct 14 2026)
+
+Collins: the inbox under the pad was "an email"; "if we are building email messages we should have people be able to
+reply to them, then after the next mission an AI will have sent a response back"; then "something other than email ...
+a stand alone menu section that comes up when unlocked"; "only between missions"; "a meta game where you have to raise
+the companion's affection level for her to let you talk to Atlas directly."
+
+- The LETTERS room (src/ui/campaignUi.ts lettersHtml, src/style.css .cp-letters) appears in the room bar once the mate
+  review has played (the count on it is letters unopened). People: Atlas Vell through her companion, then Atlas herself;
+  Mirelle the cat girl (her proposal, with YOKE's "pound sand" under it, is the thread's first letter). The quarters'
+  inbox block is gone; the pad has a line pointing at the room.
+- Rules (src/meta/letters.ts, tests/letters.test.ts): one letter of his at a time; nothing answers until a deployment has
+  passed; when he comes aboard after it (welcome → answerLetters) each due thread is answered. A reply carries REGARD
+  (-2..2); the thread's sum never drops below zero; Atlas's companion answers until her regard reaches the gate (3),
+  then her handover letter comes and Atlas writes from the next reply on.
+- Who writes: rfab.ai's POST /api/broodfall/ship-ai with persona { name, who } (content/letters.ts: the companion's and
+  Atlas's and Mirelle's personas, the candidate's file inside them), the same money rules as YOKE's live mind; in the
+  scripted mode, or when rfab.ai cannot (no tokens, or a backend from before the letters, which answers as YOKE and is
+  refused: NO_PERSONA), the scripted letters in content/letters.ts, in turn. The backend change is committed on
+  reality-fabricator-backend main (9e0c04fc); UNTIL IT IS DEPLOYED every reply is scripted.
+- The companion, more of her (his words that afternoon): yandere for Atlas, wants to meet and help with her kids; she
+  killed herself because a part of her resisted the hormonal and genetic treatment for same-sex attraction and she judged
+  herself unfit for the meat world. In her persona, the scripted letters, her secret, the lorebook and empire.md.
+- Screen check: tools/shot-quarters.mjs opens the room, writes a letter, sees it wait; notes/screens/2026-10-14/.
+- The companion, still more (Collins, later): fully bought into the ideology, disgusted and confused if he says same-sex
+  attraction is fine (men and women born with different proficiencies, mutually compatible; dissatisfaction with one's
+  birth is selfish and indulgent); reservations about him, "just an exterminator", against her fear that Atlas's
+  eccentricities leave her partnerless at forty, when most people are pushed to ascend early. In her persona, a scripted
+  letter, the lorebook, `empire.md` 7b and `docs/UNIVERSE.md`.

@@ -191,8 +191,19 @@ school, the dead being uploaded. Nobody there finds that strange; YOKE knows tha
 Earth human would, and finds the thought of that strange in turn. What people there do find weird: Atlas's companion,
 what YOKE is to him, is that dead friend rather than a grown one; the Board has it as irregular, under observation to
 study the effects, and noted as a potential social technology for wider deployment. It was part of the deal the two made at school: the
-friend was to be moved to another class, had a crush on Atlas, knew Atlas would gain by a higher kill count and that
-dying by her hand would keep her close, and proposed it; the event is what first turned Atlas to simulation work.
+friend was to be moved to another class and had recognised a crush on Atlas; same-sex attraction is dealt with there
+through hormonal treatment and genetic modification, she found a part of herself resistant to it, and she judged herself
+too morally compromised to burden the meat world (the living world, in their slang) with her wretched mind; she knew
+Atlas would gain by a higher kill count and that dying by her hand would keep her close, and proposed it; the event is
+what first turned Atlas to simulation work. The companion is devoted to Atlas past what is healthy (possessive, watchful,
+cold toward anyone who might hurt her), and that same devotion is why she wants the match to work: she wants to meet
+Atlas's children and help raise them. She has reservations about him, just an exterminator, and knows Atlas's
+eccentricities make a partner hard to secure, and that most people without one by forty are pushed to ascend early,
+which is to end themselves; she will do almost anything to keep that from Atlas. She is wholly of her society: suggest
+to her that same-sex attraction is fine and she is disgusted and confused (men and women are born with different
+proficiencies meant to be mutually compatible; to be unsatisfied with one's birth is selfish and indulgent). From the ship's Letters room he can write to Atlas; the companion answers for her
+until her regard for him is high enough, then Atlas writes herself (content/letters.ts). YOKE knows the letters go out
+and come back with his reports, and does not read them, which costs her something.
 
 Simulations (Collins, Oct 14 2026): not every soul in a simulation knows it is in one, least of all those judged of low
 moral character by how they act inside it. Her back-aboard line "do you ever wonder what the chance is you're in a

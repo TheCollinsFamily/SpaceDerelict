@@ -15,7 +15,7 @@
  * never goes silent.
  */
 
-export type AiTrigger = 'first-deployment' | 'faction-allied' | 'midpoint' | 'partner' | 'licence' | 'ending' | 'idle';
+export type AiTrigger = 'first-deployment' | 'faction-allied' | 'midpoint' | 'partner' | 'licence' | 'ending' | 'idle' | 'letter';
 
 export interface AiContext {
   trigger: AiTrigger;
@@ -23,6 +23,11 @@ export interface AiContext {
   summary: string;
   /** The lore book (content/lore/ship-ai-lorebook.md). */
   lore: string;
+  /**
+   * Someone other than YOKE answers (the letters between missions, Oct 14 2026: content/letters.ts): rfab.ai is given
+   * this name and who they are instead of YOKE, writes one letter, and reports the writer's regard for him (`lastRegard`).
+   */
+  persona?: { name: string; who: string };
 }
 
 export interface AiTurn {
@@ -71,6 +76,7 @@ export function reasonFor(err: unknown): string {
     if (err.status === 401 || err.status === 403) return 'no RFab API key linked';
     if (err.status === 402) return 'out of RFab tokens';
     if (err.code === PLAYER_LINK_OFF) return 'rfab.ai gave this game no player this session';
+    if (err.code === 'NO_PERSONA') return 'rfab.ai does not write letters yet';
     if (err.status === 404) return 'rfab.ai does not have YOKE yet';
     if (err.status === 0) return 'rfab.ai is unreachable';
     return err.message || `rfab.ai answered ${err.status}`;
@@ -99,6 +105,8 @@ export const PLAYER_LINK_OFF = 'PLAYER_LINK_OFF';
 export class RfabShipAi implements ShipAiProvider {
   /** RFab tokens the last reply cost. */
   lastCharge = 0;
+  /** With a persona: how the last letter changed the writer's regard for him (-2..2), or null when the model said nothing. */
+  lastRegard: number | null = null;
   constructor(private link: RfabLink, private fetcher: typeof fetch = (...a) => fetch(...a)) {}
 
   async reply(ctx: AiContext, history: AiTurn[], playerLine?: string): Promise<string[]> {
@@ -117,16 +125,19 @@ export class RfabShipAi implements ShipAiProvider {
       res = await this.fetcher(`${this.link.base.replace(/\/$/, '')}/api/broodfall/ship-ai`, {
         method: 'POST',
         headers,
-        body: JSON.stringify({ campaignId: this.link.campaignId, trigger: ctx.trigger, summary: ctx.summary, lore: ctx.lore, history: past, playerLine }),
+        body: JSON.stringify({ campaignId: this.link.campaignId, trigger: ctx.trigger, summary: ctx.summary, lore: ctx.lore, history: past, playerLine, ...(ctx.persona ? { persona: ctx.persona } : {}) }),
       });
     } catch {
       throw new ShipAiError(0, 'NETWORK', 'rfab.ai is unreachable');
     }
-    let body: { lines?: unknown; tokensCharged?: number; code?: string; error?: string } | null = null;
+    let body: { lines?: unknown; tokensCharged?: number; code?: string; error?: string; persona?: unknown; regard?: unknown } | null = null;
     try { body = await res.json(); } catch { /* not JSON: a proxy page or an HTML 404 */ }
     const lines = Array.isArray(body?.lines) ? (body!.lines as unknown[]).filter((l): l is string => typeof l === 'string' && !!l.trim()) : [];
     if (!res.ok || !lines.length) throw new ShipAiError(res.ok ? 502 : res.status, body?.code, body?.error ?? '');
+    // A backend from before the letters answers as YOKE whatever is asked: those lines are not the letter wanted.
+    if (ctx.persona && body?.persona !== ctx.persona.name) throw new ShipAiError(502, 'NO_PERSONA', 'rfab.ai does not write letters yet');
     this.lastCharge = Number(body?.tokensCharged) || 0;
+    this.lastRegard = ctx.persona && typeof body?.regard === 'number' ? Math.max(-2, Math.min(2, body.regard)) : null;
     return lines;
   }
 }

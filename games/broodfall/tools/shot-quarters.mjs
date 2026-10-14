@@ -65,6 +65,27 @@ try {
   const el = await page.$('.cp-pad');
   if (el) await el.screenshot({ path: join(out, 'quarters-pad.jpg'), type: 'jpeg', quality: 88 });
   console.log(`  shots: ${join(out, 'quarters-room.jpg')} and ${join(out, 'quarters-pad.jpg')}`);
+
+  // The Letters room (Oct 14 2026): the two threads, their first letters waiting, a letter of his sent and waiting.
+  check(await page.$('button.cp-room[data-room="letters"]') !== null, 'the Letters room is in the bar once the mate review has played');
+  await page.click('button.cp-room[data-room="letters"]');
+  await page.waitForSelector('.cp-letters', { timeout: 30000 });
+  const threads = await page.$$eval('.cp-thread b', (bs) => bs.map((b) => b.textContent));
+  check(threads.join('|') === 'Atlas Vell|Mirelle', `the people: ${threads.join(', ')}`);
+  const first = await page.evaluate(() => document.querySelector('.cp-letters-thread .cp-letter')?.textContent ?? '');
+  check(first.includes('I am writing for Atlas Vell'), 'her companion\'s first letter waits in the open thread');
+  check(await page.evaluate(() => [...document.querySelectorAll('.cp-letters .cp-label')].some((l) => l.textContent?.includes('regard: 0 of 3'))), 'the gate is shown: regard 0 of 3');
+  await page.fill('#letter-text', 'Hello. I read the file. Tell her the glasses are a good choice.');
+  await page.click('[data-act="letter-send"]');
+  await page.waitForTimeout(300);
+  check(await page.evaluate(() => !!document.querySelector('.cp-letter-wait')), 'the letter is sent and the thread waits for the next report');
+  check(await page.evaluate(() => document.querySelectorAll('.cp-letter.you').length === 1), 'his letter is in the thread');
+  await page.screenshot({ path: join(out, 'letters-room.jpg'), type: 'jpeg', quality: 85 });
+  await page.click('.cp-thread[data-thread="mirelle"]');
+  await page.waitForTimeout(200);
+  check(await page.evaluate(() => (document.querySelector('.cp-letters-thread')?.textContent ?? '').includes('pound sand')), 'Mirelle\'s thread opens on her proposal, with YOKE\'s note under it');
+  await page.screenshot({ path: join(out, 'letters-mirelle.jpg'), type: 'jpeg', quality: 85 });
+  console.log(`  shots: ${join(out, 'letters-room.jpg')} and ${join(out, 'letters-mirelle.jpg')}`);
 } finally {
   await browser.close();
   dev.kill();

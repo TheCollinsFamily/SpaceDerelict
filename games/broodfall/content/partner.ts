@@ -27,6 +27,11 @@
  * and having a dead person instead is thought pretty weird, but it was part of the deal the two made. The backstory, for
  * whoever digs: the friend was to be transferred to another class, had a crush on Atlas, knew Atlas would benefit from a
  * higher kill count and that it would let her stay close to her; this is what first turned Atlas to simulation work.
+ * More of her (his notes, later): a bit yandere for Atlas, and that same desire makes her want to meet and help with
+ * Atlas's kids. Why she killed herself: she recognised she had a crush on Atlas; same-sex attraction is generally dealt
+ * with there through hormonal treatment and genetic modification; she found a part of herself was resistant to that,
+ * and so deemed herself too morally compromised to burden the meat world (the slang for the living world) with her
+ * wretched mind. She writes his letters back (content/letters.ts) until her regard lets Atlas write herself.
  * Drawn slightly skinny and
  * flat-chested, as Technopuritan women are (content/lore/empire.md, section 7: breasts were engineered away).
  */

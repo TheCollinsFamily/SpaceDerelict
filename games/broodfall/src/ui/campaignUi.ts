@@ -12,7 +12,7 @@ import {
   selectProfile, stayLoyal, summaryFor, switchAlly, targets, territory, type CampaignState, type Debrief,
 } from '../meta/campaign';
 import { goalText } from '../meta/goals';
-import { FallbackShipAi, RfabShipAi, campaignIdFor, type AiTrigger, type AiTurn, type ShipAiProvider, type ShipAiStatus } from '../meta/shipAi';
+import { FallbackShipAi, RfabShipAi, campaignIdFor, type AiTrigger, type AiTurn, type ShipAiProvider, type ShipAiStatus, reasonFor } from '../meta/shipAi';
 import { loadYoke, ownerYokeAllowed, playerTokenStore, saveCampaign, saveYoke, type PendingDeployment, type YokeSettings } from '../meta/storage';
 import { YOKE_AVATAR, rungs, type YokeMode } from '../meta/yokeAvatar';
 import { PlayerLink, cutOffLines } from '../meta/yokePlayer';
@@ -37,7 +37,9 @@ import { briefBanner, debriefLines, defenceFacts, deskLine, pushSvg, siteClasses
 import { Globe3D } from './globe3d';
 import { loadSettings } from '../meta/storage';
 import { loadIntroArt, type IntroArt } from './intro';
-import { CATGIRL_MAIL, PARTNER } from '../../content/partner';
+import { PARTNER } from '../../content/partner';
+import { correspondent, type CorrespondentId } from '../../content/letters';
+import { awaiting, dueThreads, historyFor, lettersUnlocked, markRead, openLetters, personaFor, receiveLetter, scriptedReply, sendLetter, standing as letterStanding, thread as letterThread, unlockedCorrespondents, unreadLetters } from '../meta/letters';
 import { PRINT_BODY } from '../../content/yokeScenes';
 import { YokeSceneOverlay, sceneMedia } from './yokeScene';
 import { directivesHtml, ordersDebriefHtml } from './directives';
@@ -57,7 +59,7 @@ import { shipLoop, showLoader, type LoaderHandle } from './loader';
 import { aliveAllowed, loadAlive, wake } from './alive';
 import { sfx } from '../audio/engine';
 
-type Room = 'desk' | 'genes' | 'locker' | 'board' | 'comms' | 'ai' | 'quarters' | 'orders' | 'hobby';
+type Room = 'desk' | 'genes' | 'locker' | 'board' | 'comms' | 'ai' | 'quarters' | 'orders' | 'hobby' | 'letters';
 /** Rooms with no picture of their own borrow one (the standing orders are read at the Board; the notebook lives in the Locker). */
 const ROOM_PICTURE: Partial<Record<Room, 'board' | 'locker'>> = { orders: 'board', hobby: 'locker' };
 /** The ship's pictures as this screen reads them: with the scene pictures, which the manifest lists as `scenes`. */
@@ -188,6 +190,10 @@ export class CampaignUi {
   private greetSaid: string[] = [];
   /** What she knows behind the greeting she just gave (Greeting.aside): for her live mind, never shown. */
   private greetAside = '';
+  /** The Letters room: the thread open, a note on how the last reply was written, a reply being written. */
+  private letterOpen: CorrespondentId | null = null;
+  private letterNote = '';
+  private lettersBusy = false;
   /** The prompt in the reply box under her, from the greeting (Greeting.hook), until the next greeting. */
   private greetHook = '';
   /** His quarters' picture and the partner candidate's portrait (public/art/intro/, not the manifest). */
@@ -345,8 +351,9 @@ export class CampaignUi {
     s.greet = null;
     s.lastGreeting = g.id;
     s.greetingsSaid = [...new Set([...(s.greetingsSaid ?? []), g.id])];
-    this.state = s;
-    saveCampaign(s);
+    this.state = openLetters(s);
+    saveCampaign(this.state);
+    void this.answerLetters();
     this.greeting = g;
     this.greetSaid = [];
     this.greetAside = g.aside ?? '';
@@ -417,6 +424,8 @@ export class CampaignUi {
   // ------------------------------------------------------------ rendering
 
   private render(): void {
+    // A thread opens the moment its correspondent is unlocked (their first letter waits).
+    if (lettersUnlocked(this.state) && this.state !== openLetters(this.state)) { this.state = openLetters(this.state); saveCampaign(this.state); }
     const s = this.state;
     // [room, the name on its button, its full name]. The bar is one line from 1280 px up (Sep 30 2026):
     // the buttons carry the short name, the full one is their tooltip.
@@ -425,6 +434,8 @@ export class CampaignUi {
       ['board', 'Licence', 'Procreation Board: the licence'], ['comms', 'Comms', 'Comms'],
       ['ai', `AI Core${s.ai.queue.length ? `<i class="cp-count">${s.ai.queue.length}</i>` : ''}`, `AI Core${s.ai.queue.length ? `: ${s.ai.queue.length} waiting` : ''}`],
       ['quarters', 'Quarters', 'Quarters'],
+      // Letters (src/meta/letters.ts) open with the first person he can write to; the count is letters he has not opened.
+      ...(lettersUnlocked(s) ? [['letters', `Letters${unreadLetters(s) ? `<i class="cp-count">${unreadLetters(s)}</i>` : ''}`, `Letters${unreadLetters(s) ? `: ${unreadLetters(s)} unread` : ''}: write to people; the replies come with your next report`]] as Array<[Room, string, string]> : []),
       // Empire Directives and his Notebook open with the Directive Desk (src/meta/onboarding.ts deskOpen).
       ...(deskOpen(s) ? [['orders', 'Directives', 'Empire Directives'], ['hobby', 'Notebook', 'Notebook']] as Array<[Room, string, string]> : []),
     ];
@@ -680,6 +691,7 @@ export class CampaignUi {
       case 'comms': return this.commsHtml();
       case 'ai': return this.aiHtml();
       case 'quarters': return this.quartersHtml();
+      case 'letters': return this.lettersHtml();
       case 'orders': return directivesHtml(this.state);
       case 'hobby': return hobbyHtml(this.state);
     }
@@ -881,16 +893,71 @@ export class CampaignUi {
           <p class="cp-pad-quote">${esc(PARTNER.statement)}</p>
           <p class="cp-note">${esc(PARTNER.boardNote.replace('{standing}', String(Math.min(s.standing, LICENCE_STANDING))).replace('{need}', String(LICENCE_STANDING)))}</p></div>`
       : `<div class="cp-pad"><div class="cp-pad-head">DATA PAD</div><p class="cp-note">No new correspondence. Licence application on file; standing ${s.standing} / ${LICENCE_STANDING}.</p></div>`;
-    // His inbox: what came for him, and what became of it (the cat girl's letter, declined for him by YOKE).
-    const inbox = (s.said ?? []).includes('catgirl')
-      ? `<div class="cp-pad cp-inbox"><div class="cp-pad-head">INBOX</div>
-          <div class="cp-pad-row"><span>${esc(CATGIRL_MAIL.from)}</span><b>${esc(CATGIRL_MAIL.subject)}</b></div>
-          <p class="cp-note">${esc(CATGIRL_MAIL.status)}</p></div>`
-      : '';
-    // The pad takes most of the room; his log and his inbox share the narrower column beside it, sized to what they hold
-    // (Collins, Oct 14 2026: "a lot of dead screen space ... on whatever the personal log is").
+    // The pad takes most of the room; his log sits in the narrower column beside it (Collins, Oct 14 2026: "a lot of dead
+    // screen space ... on whatever the personal log is"). What came for him is in the Letters room, where he can answer it.
+    const letters = lettersUnlocked(s) ? `<p class="cp-note">Letters: ${unreadLetters(s) ? `${unreadLetters(s)} unread` : 'nothing new'}. <button class="cp-link" data-room="letters">OPEN</button></p>` : '';
     return `<div class="cp-cols cp-quarters"><div>${pad}</div>
-      <div><div class="cp-label">PERSONAL LOG</div><div class="cp-log">${s.log.slice(-10).reverse().map((l) => `<div>${esc(l)}</div>`).join('')}</div>${inbox}</div></div>`;
+      <div><div class="cp-label">PERSONAL LOG</div><div class="cp-log">${s.log.slice(-10).reverse().map((l) => `<div>${esc(l)}</div>`).join('')}</div>${letters}</div></div>`;
+  }
+
+  /**
+   * LETTERS (Collins, Oct 14 2026; content/letters.ts, src/meta/letters.ts): the people he can write to, one thread open at a
+   * time. A letter of his is answered only after a deployment has passed; until then the thread says so. Atlas's thread is
+   * answered by her companion until the companion's regard opens the gate, and the room shows how far he is.
+   */
+  private lettersHtml(): string {
+    const s = this.state;
+    const ids = unlockedCorrespondents(s);
+    const open = this.letterOpen && ids.includes(this.letterOpen) ? this.letterOpen : ids[0];
+    const list = ids.map((id) => {
+      const c = correspondent(id), t = letterThread(s, id);
+      return `<button class="cp-thread${id === open ? ' on' : ''}" data-act="letter-open" data-thread="${id}"><b>${esc(c.name)}</b>${t?.unread ? `<i class="cp-count">${t.unread}</i>` : ''}<span>${esc(c.sub)}</span></button>`;
+    }).join('');
+    const t = open ? letterThread(s, open) : undefined;
+    const c = open ? correspondent(open) : null;
+    const turns = t ? t.turns.map((turn, i) => `<div class="cp-letter ${turn.who}"><div class="cp-letter-from">${turn.who === 'you' ? 'YOU' : esc((turn.from ?? '').toUpperCase())}</div>${turn.text.map((l) => `<p>${esc(l)}</p>`).join('')}${i === 0 && c?.note ? `<p class="cp-note">${esc(c.note)}</p>` : ''}</div>`).join('') : '';
+    const compose = !t ? '' : awaiting(t)
+      ? `<p class="cp-note cp-letter-wait">Sent. The reply comes with your next report.</p>`
+      : `<div class="cp-compose"><textarea id="letter-text" maxlength="600" rows="4" placeholder="Write to ${esc(t.direct && c?.direct ? c.direct.name : c?.via.name ?? '')}. It goes when you deploy; the answer comes with the report." aria-label="Your letter"></textarea><button class="screen-btn" data-act="letter-send">SEND</button></div>`;
+    const note = this.letterNote ? `<p class="cp-note">${esc(this.letterNote)}</p>` : '';
+    return `<div class="cp-cols cp-letters"><div><div class="cp-label">LETTERS</div>${list}<p class="cp-note">Between deployments only: a letter of yours is answered when you come back from the next one.</p></div>
+      <div>${t && c ? `<div class="cp-label">${esc(c.name.toUpperCase())} · ${esc(letterStanding(t))}</div><div class="cp-letters-thread">${turns}</div>${compose}${note}` : '<p class="cp-note">Nobody to write to yet.</p>'}</div></div>`;
+  }
+
+  /** Who writes the letters back: rfab.ai as the correspondent, in every mode but the scripted one; else the scripted letters. */
+  private letterMind(): RfabShipAi | null {
+    const y = this.yoke;
+    if (!rungs(y.mode, !!YOKE_AVATAR).includes('kimi')) return null;
+    return new RfabShipAi({ base: y.base, key: y.key || undefined, campaignId: campaignIdFor(this.state.seed), player: this.player });
+  }
+
+  /**
+   * The replies due (a deployment has passed since his letter): each written as its correspondent on rfab.ai, or by the
+   * scripted letters when rfab.ai cannot (no live mind, no tokens, a backend from before the letters). One at a time;
+   * the room and the count on its button update as each arrives.
+   */
+  private async answerLetters(): Promise<void> {
+    if (this.lettersBusy) return;
+    this.lettersBusy = true;
+    try {
+      const mind = this.letterMind();
+      for (const id of dueThreads(this.state)) {
+        const t = letterThread(this.state, id)!;
+        const last = t.turns[t.turns.length - 1];
+        let lines: string[] | null = null, regard: number | null = null, how = 'scripted';
+        if (mind) {
+          try {
+            lines = await mind.reply({ trigger: 'letter', summary: summaryFor(this.state), lore, persona: personaFor(t) }, historyFor(t).slice(0, -1), last.text.join('\n'));
+            regard = mind.lastRegard; how = `Kimi K2.6 via rfab.ai, ${mind.lastCharge} tokens`;
+          } catch (err) { how = `scripted: ${reasonFor(err)}`; }
+        }
+        if (!lines) { const r = scriptedReply(t); lines = r.lines; regard = r.regard; }
+        const s = receiveLetter(this.state, id, lines, regard);
+        this.state = s; saveCampaign(s);
+        this.letterNote = `Last reply: ${how}.`;
+        if (!this.debriefing && !this.el.classList.contains('hidden')) this.render();
+      }
+    } finally { this.lettersBusy = false; }
   }
 
   private genesHtml(): string {
@@ -1228,6 +1295,13 @@ export class CampaignUi {
       case 'icom-close': this.icom = null; this.greeting = null; this.render(); return;
       case 'icom-skip': this.avatar?.skip(); return;
       case 'icom-send': void this.icomSend(); return;
+      case 'letter-open': { const id = (el as HTMLElement).dataset.thread as CorrespondentId; this.letterOpen = id; this.setState(markRead(s, id)); return; }
+      case 'letter-send': {
+        const box = this.el.querySelector<HTMLTextAreaElement>('#letter-text');
+        const id = this.letterOpen && unlockedCorrespondents(s).includes(this.letterOpen) ? this.letterOpen : unlockedCorrespondents(s)[0];
+        if (box && id) this.setState(sendLetter(s, id, box.value));
+        return;
+      }
       case 'ai-end': this.aiEnd(); return;
       case 'yoke-mode': this.setYoke({ ...this.yoke, mode: this.nextMode() }); return;
       // Her voice, on and off: the one setting that must not make her anew (she would lose her place in a sentence).
