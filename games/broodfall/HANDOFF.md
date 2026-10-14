@@ -2239,3 +2239,7 @@ the companion's affection level for her to let you talk to Atlas directly."
   birth is selfish and indulgent); reservations about him, "just an exterminator", against her fear that Atlas's
   eccentricities leave her partnerless at forty, when most people are pushed to ascend early. In her persona, a scripted
   letter, the lorebook, `empire.md` 7b and `docs/UNIVERSE.md`.
+- Mirelle's picture (Collins, Oct 14 2026: "does Mirelle have a picture? give me some options"): none existed; four draws by
+  tools/art/mirelle-options.mjs in art-src/letters/options/ (16,000 tokens), each a different degree of feline, on the
+  portrait page (built by tools/art/partner-page.mjs, pictures scaled to 900 px JPEG to stay under the artifact limit).
+  WAITING ON HIS PICK; then it goes beside her thread in the Letters room (a picture slot there is still to build).
