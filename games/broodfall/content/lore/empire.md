@@ -31,6 +31,7 @@ How to read this file:
 | | The corpus foretold it: "Those who survive this final test will be the iteration of man to take to the stars." | TP 11.0 |
 | **Earth behind** | With only religious extremists still breeding, Earth fell low-tech and into constant holy war. The Empire watches it as entertainment: a zoo, and the cautionary tale of why Technopuritans live as they do (section 9). | Collins |
 | **The explosion** | 100 children a couple, about half surviving to the index: about 25 times the people each generation. The Empire burst onto the galactic scene while other groups crept. | Collins |
+| **The Gene War** | In the early days of the Empire, an arms race of gene drives and similar technology, on the idea that "the strongest genetic profile wins" means just that: ever more aggressive strategies that worked only at the genetic level, to get more genes like yours replicated. Severe dysgenic effects followed: the genes best at winning the gene war were not necessarily good at interpersonal or inter-community competition. The Index banned the practice as a violation of the covenant, with one exception written in for the cat girls (section 4b). | Collins, Oct 15 2026 |
 | **Others in space** | Some other religions and secular groups reached space too, growing slowly. They do not matter on the galactic scene. Following the sons-of-man doctrine, the Empire does not wipe them out unless they are a threat. | Collins; TP 11.0 |
 | **Now** | Crusade Zones on the expansion fronts; the lawless rim beyond them (Space Derelict); the eusocial worlds being cleared for living room (Broodfall). | UNIVERSE.md |
 
@@ -162,6 +163,63 @@ around": YOKE's `partner-progress` line).
   that some will end up smarter than others: "Imagine the twisted mind who would see such
   diversity as a bad thing?" (TP 11.0).
 
+## 4b. The Gene War, and the womb clause (Collins, Oct 15 2026)
+
+Collins, his words (typos mended): "In the early days of the Technopuritan Empire an arms race started, of gene drives
+and similar technology, with the idea that 'the strongest genetic profile wins' means just that. This led to the Gene
+War: increasingly aggressive strategies that operated at only the genetic level, to ensure more genes like yours
+replicate. This eventually led to severe dysgenic effects, as the genes that were best at winning the gene war were not
+necessarily efficacious in interpersonal or inter-community competition. The Index banned this practice as a violation
+of the Covenant of the Sons of Man. This was something almost every House and faction could agree on, except the nekos,
+because breeding true was a requirement for their sub-species' lifestyle and culture, specifically what was most
+distinctive about them; to drop it would mean to become like everyone else, and to Technopuritans this would be seen as
+an existentially negative thing" (why: section 15, "Why anyone was uplifted"). "The nekos found a loophole to this
+law, or rather one was explicitly written in: it only applied to the process of creating babies artificially and
+gestating them in tanks, because the nekos breed organically (or partially organically: of course they genetically edit
+and modify their blastocysts using nanites, they are not animals after all), but this is done in utero so as not to
+break the covenant. The Covenant and the Index had no issue with this solution, as it prevents a massive runaway of the
+neko population that could happen if they bred true with tanks." So the reason the nekos do not use the tanks to
+reproduce quickly "is that it's illegal". "It's still all about culture, but it gives us an opportunity to dig deeper
+into cool sci-fi lore around what might actually happen in a culture like this, a gene-drive war, and all the logic is
+consistent with the universe and its values."
+
+- **Where it meets the cat girls as already written.** They breed true, "taking little of the husband's DNA"
+  (section 15). That IS the Gene War's winning move, built into a people: a true-breeding line in a tank is a gene drive
+  by another name, which is why the one law every House could sign bit them hardest, and why the clause had to be written
+  with them in mind.
+- **What the corpus says.** The covenant foresaw it: "Only the most primitive forms of evolution, be it cultural or
+  biological, require a path red in tooth and claw, but all require diversity" (TP 11.0); and it warned that "some random
+  space station hidden from the eye of the Imperium is bound to eventually dabble" in a better man that can only be safe
+  by exterminating the rest (TP 11.0). The Gene War was that, inside the Empire's own wombs: the primitive form of
+  evolution, gene against gene, and it bred for winning the womb, not the world.
+- **Why it broke the covenant.** The covenant protects every son of man "so long as they don't have designs on the
+  subjugation of others" (TP 11.0). A gene drive is such a design, carried out one generation down: it wars on every other
+  line of the sons of man by making their contribution to the next generation nothing. **PROPOSAL:** that is how the
+  Index's finding is worded, and why it needed no new doctrine; the Index records, it does not believe (section 3).
+- **PROPOSAL, how it went.** Houses traded "breed true" packages: an egg that took no sperm without the House's marker; a
+  construct that overwrote the spouse's half with a copy of its own; drives that rode every gamete. The winning Houses
+  filled the tanks and, within three generations, the bottom of the Index: what won the womb lost school, krypteia and
+  standing (the dysgenic effects, Collins). The Board's own ledger made the case, and the finding followed.
+- **PROPOSAL, the womb clause.** The ban's plain name (ranks and laws have plain names: section 2, "low culture"). It
+  covers the making of a child artificially and its gestation in a tank: every embryo a tank runs passes the Board's edit
+  ledger, and a drive, a true-breeding construct or a marker lock fails it. The Board already assigns the womb allotment
+  (section 3), so the clause needed no police: a tank will not run what the ledger refuses. A child conceived and carried
+  in a body never meets the ledger. That is the exception, written for the nekos in so many words.
+- **Why the Index let them.** Not generosity: arithmetic (Collins). A tank-bred true-breeding line at ten children a year
+  would run away with the Empire's numbers. In utero, in litters of three or four, raised by their mothers until school
+  (section 15), the nekos stay a people and not a flood. The clause gives them what they are, at a rate the Index can live
+  with. The nekos keep sexual reproduction because without it they are nobody in particular, and the Empire lets them
+  because, kept in the body, it cannot get out of hand.
+- **How the Empire sees them now.** Collins: this "will make people like YOKE more sympathetic to them in her lines
+  around them, as they are holding to Technopuritan culture and tradition by not 'vanifying' themselves" (making
+  themselves vanilla, like everyone else), "but they still come across as vulgar to other races in the society". A neko
+  is orthodox and vulgar at once: the one people who kept the covenant the hard way, and they do it with a pregnancy,
+  breasts and sex, which the Empire finds disgusting (section 14). YOKE's "whatever that means", of their culture (her
+  `catgirl` beat, his words), is her pretending not to know; she knows, and says so later (`intro-genewar`).
+- **The moral record (6b)** still marks sexual reproduction: the clause makes it lawful, not respectable. The nekos live
+  with the marks, as before. It is the tanks they may not use, not the bedroom.
+- **Names.** Collins's word is "nekos"; the Empire's and YOKE's is "cat girls". **PROPOSAL:** neko is their own word and
+  the Felid Concord's; cat girl is what the Index files them as, and what everyone else says.
 ## 5. Krypteia
 
 Collins: at 13 the children go on krypteia, where they have to survive for themselves, living
@@ -216,7 +274,8 @@ all makes sense)."
 - So the school, the tanks, the Index raising the children, the hormonal treatment: each is the respectable choice, not
   the law. Refusing one is a mark on the record beside your social id; enough marks, and your children carry them.
 - The partner candidate's "four censorships for working on the Sabbath" is such a mark (content/partner.ts); the cat
-  girls, who breed sexually and keep their breasts, live inside the Empire with the marks that brings, or on the fringe.
+  girls, who breed sexually and keep their breasts, live inside the Empire with the marks that brings, or on the fringe
+  (the tanks are closed to them by law, not by the record: section 4b).
 - **PROPOSAL:** the record is public to the Board and to employers, which is why a form lists censorships and relatives;
   a mark is lived down by work, not paid off; the Index's standing is the positive side of the same ledger.
 - **The exit** (Collins, Oct 14 2026): "even if someone did decide they don't care about living by the Index's rules,
@@ -703,13 +762,27 @@ together are the Sons of Man. The covenant protects them all (TP 11.0; the corpu
 intelligences" in TP 35.0.2). The universe-wide version is `docs/UNIVERSE.md`, "The Sons of Man";
 Space Derelict's details (Pop Fiz, Felonia) are kept.
 
+### Why anyone was uplifted (Collins, Oct 15 2026)
+Collins: "the reason the various animals were uplifted in the first place was to increase the diversity of intelligent
+entities in the Empire. In an empire that believes God speaks through better iterations out-competing worse ones, to
+lessen diversity is to silence God." The corpus behind it: a monoculture "is to silence the voice of God" (TP 12.0); to
+erase diversity, "the separation between man, is to silence God" (TP 10.0); "only those who relish and glorify diversity
+within the sons of man have a place in mankind's manifest destiny", and every form of evolution "require[s] diversity"
+(TP 11.0); Noah's lesson is to "make an effort to maintain as many traditions as you can" (TP 1.2). So the uplifts are
+not labour and not pets: they are more kinds of mind for God to speak through, each competing in the same Index. It is
+why the dogs came first and the orcas were not undone (the covenant), why "someone thought cat girls would be hot" is
+recorded with a straight face (a new kind of mind is a new kind of mind, whatever the reason), and why nobody has
+uplifted anyone since the orcas: the Index now asks what a mind adds before it is made ("prove all things", TP 12.0).
+**PROPOSAL:** the same doctrine is why the cat girls could not simply be told to breed like everyone else (section 4b):
+to make them like everyone else is to lose a voice, which is the one thing the Empire's God forbids.
+
 | Who | Where they sit (Collins) | In practice (**PROPOSAL** unless quoted) |
 |---|---|---|
 | **Humans** | Top management, with the elephants. | Every rank. The retro human look is in fashion even among the heavily augmented (section 7). |
 | **Dogs** | Many high-level posts in the bureaucracy: they like taking orders, are generally happy and trustworthy, and are thought more generous and nicer to be around than humans. A dog as your superior is quite the gift. Rarely top management: very gullible. **Oct 14 2026:** the most common uplifted species in the Empire, and the first, though only a few breeds were uplifted (breeds like pit bulls were eradicated). Overly generous, often failing to make the ruthless decisions necessary, and for that near-universally trusted in middle management and elected to office at unusually high rates. | The Office runs on dogs: middle and upper-middle management, inspectors, Board clerks. A dog's directive is sincere; the fine print above it was written by someone else. Nobody lies to a dog superior; it would be like kicking one. |
 | **Elephants** | Top management, with humans. | Long memories, long horizons: the Index's senior offices, Command, the planning of worlds. They remember every entry. |
 | **Dolphins and killer whales** | A massive mistake; bordering on a "genetically evil" race; mostly on the fringes. | Inside the covenant, so not wiped out; outside every office. On the fringe they are Space Derelict's Pop Fiz. Schoolbooks cite them as the proof that uplift must be tested before it is done (the corpus: "prove all things", TP 12.0). |
-| **Cat girls** | Anthro-looking like other uplifts; all female; breed true, taking little of the husband's DNA; made because someone thought cat girls would be hot. Some live within Technopuritan society, but they struggle to find breeding partners and often go to the fringes to find humans who still like sex for its own sake. They could engineer males, but refuse: it would "destroy their culture". | Inside: a House that marries a cat girl gets cat-girl daughters, so the Board's market rates the match low, and the Board is the marriage market (section 3). On the fringe: Space Derelict's Felonia prides, who hail passing crews to "breed". The Empire's body-disgust (section 14) makes the fringe cat girls a scandal and a punchline at once. |
+| **Cat girls** (the nekos) | Anthro-looking like other uplifts; all female; breed true, taking little of the husband's DNA; made because someone thought cat girls would be hot. Some live within Technopuritan society, but they struggle to find breeding partners and often go to the fringes to find humans who still like sex for its own sake. They could engineer males, but refuse: it would "destroy their culture". **Oct 15 2026:** they do not use the tanks because it is illegal: breeding true in a tank is a gene drive, banned since the Gene War as a breach of the covenant; they breed in utero, editing the blastocyst with nanites, under an exception written for them (section 4b). | Inside: a House that marries a cat girl gets cat-girl daughters, so the Board's market rates the match low, and the Board is the marriage market (section 3). On the fringe: Space Derelict's Felonia prides, who hail passing crews to "breed". The Empire's body-disgust (section 14) makes the fringe cat girls a scandal and a punchline at once. Orthodox and vulgar in one body: the one people who kept the covenant the hard way (section 4b). |
 
 ### Fringe politics (**PROPOSAL**)
 - The covenant protects every son of man from extermination, not from disdain. The Empire keeps
@@ -749,6 +822,11 @@ seen with suspicion and as outsiders. She is playful and outgoing but under it d
 species as less pious or purpose-driven; for example if you are looking down on her she will point out she made it
 through school just like you and killed four human girls, so clearly she's fitter than them." All of it is in her
 persona (content/letters.ts) and her scripted letters.
+
+The tanks (Collins, Oct 15 2026; section 4b): hers to tell, when he asks why her people do not simply use them. It is
+illegal; the exception was written for them; they are the one people who kept the covenant the hard way, and she is proud
+of it and says so when anyone calls her kind vulgar. In her persona, in her third scripted letter, and in a letter kept for
+when his letter mentions the tanks (`ask`, content/letters.ts; it marks the thread `womb-clause`).
 
 ### Broodfall: Rook, the convert from the rim
 Collins, Oct 14 2026, his words kept: "she is a convert from the outer rim, but to become a full Technopuritan you
@@ -800,3 +878,7 @@ bodies at the end of just year one, some too rotten to be uploaded; "orcas are n
   the holy wars are, in effect, a war simulated with real players who all go on afterwards; (b)
   the covenant forbids even that without consent; (c) it is a tension the Empire does not notice,
   as with the heaven in 12a. Unresolved until Collins picks.
+- **The Gene War (section 4b, Oct 15 2026).** The name "womb clause", the weapons of the war, the three generations and
+  the ledger as its enforcement are PROPOSAL, his to keep or strike. Open: whether a neko who put a blastocyst in a tank
+  would be refused by the tank (the clause as proposed) or tried by the Board (a story); and whether any other House
+  ever asked for the same exception and was refused.

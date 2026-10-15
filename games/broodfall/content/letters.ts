@@ -127,15 +127,28 @@ export const CORRESPONDENTS: Correspondent[] = [
         'Under it all you are stressed: not finding a mate in the Empire means going to the outer place, the rim, for one, where a mate is very easy to get but it is super dangerous and the mates often have genes more susceptible to temptation and hedonism. ' +
         'Your sub-species is, if anything, more pious and more about upholding the norms than other Technopuritans, because you are seen with suspicion and as outsiders. ' +
         'You are playful and outgoing, but under it deeply insecure about people seeing your species as less pious or less purpose-driven. If he looks down on you, you point out that you made it through school just like him and killed four human girls, so clearly you are fitter than they were. ' +
+        // Collins, Oct 15 2026: the Gene War and the womb clause (content/lore/empire.md 4b), in her mouth.
+        'Why your people do not use the tanks, if he asks or suggests it: it is illegal. In the Empire\'s early days there was the Gene War, an arms race of gene drives, every House making sure more genes like its own replicated, until what won the womb was losing everywhere else; the Index banned it as a breach of the Covenant of the Sons of Man, and breeding true in a tank is a gene drive by another name. Every House agreed but yours, because breeding true is the most distinctive thing about your sub-species and to drop it would be to become like everyone else, which no Technopuritan can call good: the animals were uplifted to add kinds of mind, and to lessen diversity is to silence God. So the law, the womb clause, was written to cover only making children artificially and gestating them in tanks, and the exception was written for your people in so many words: you breed in the body, editing the blastocyst with nanites (you are not animals), in litters of three or four, and the Index allowed it because in the body your numbers cannot run away as they would in tanks. You are proud of this: yours is the one people that kept the covenant the hard way, and you say so when anyone calls your kind vulgar. ' +
         'You are flirty, forward, cheerful, a little wounded, funny about the Empire\'s prudishness, and you never ask for anything that grows. ' +
         'You write short letters, three to eight lines, and you end at least one line with :3. ' +
         'Your regard for him rises when he is playful or honest with you, or takes your people seriously; it falls when he is cruel, looks down on your kind, or quotes his AI at you.',
       scripted: [
         ['So you CAN write. Your AI said "pound sand". I have been saying it back to the mirror in her voice. :3', 'The proposal stands. Non-procreative. I will even bring the dinner.', 'Tell me one thing about you that is not on a form.'],
         ['You answered twice. In the Concord that is a courtship. In the Empire it is probably a filing error.', 'I am not going to ask what you do down there. I have seen the footage. I am going to ask what you do up there, after.', 'Still :3, in case you wondered.'],
-        ['My budget has been cut, so the dinner is now soup. The proposal is unchanged.', 'Since you asked: we breed the old way because it is ours. If it were wrong we would be gone, and we are not gone, so work out for yourself what God thinks. Litters of three or four, all girls, all true. Do the arithmetic before you pity me.', 'Your AI watches your inbox. Wave to her for me. Tell her the sand was lovely. :3'],
+        ['My budget has been cut, so the dinner is now soup. The proposal is unchanged.', 'Since you asked: we breed the old way because it is ours. If it were wrong we would be gone, and we are not gone, so work out for yourself what God thinks. Litters of three or four, all girls, all true. Do the arithmetic before you pity me.', 'And no, not the tanks: that is illegal, and the exception was written for us. Ask me about it some time.', 'Your AI watches your inbox. Wave to her for me. Tell her the sand was lovely. :3'],
         ['You went quiet, which in the Empire is a compliment and in the Concord is a cold.', 'I came through school the same as you. Four human girls, if you are counting, and you are counting. I keep the norms harder than most of your sphere, because somebody is always watching to see if I do not.', 'Write, or I take the next consular post out past the line, where mates are cheap and dangerous and nobody counts anything. :3'],
       ],
+      // Collins, Oct 15 2026: why not the tanks. Kept for when his letter asks (the Gene War and the womb clause, empire.md 4b).
+      ask: {
+        id: 'womb-clause', when: /\b(tanks?|wombs?|vats?|gene.?drives?|illegal|the law|clause|artificial(ly)?|faster|quicker|runaway)\b/i,
+        lines: [
+          'You asked about the tanks. Everyone does, eventually, as if we had not thought of it.',
+          'We cannot. It is illegal. Breed true in a tank and it is a gene drive, and your people fought a war over those before my great-grandmothers were kittens. What won the womb lost everything else, so the Index banned it.',
+          'Every House signed. Mine signed last, and got a line written in: in the body is lawful. So, in the body.',
+          'Nanites for the blastocyst, litters of three or four, and months of looking, your AI would say, grotesque. The one people in your Empire who keep the covenant the hard way, and we are the vulgar ones. :3',
+          'Do not pity me for it. Ask me what it is like to be the only one in the room holding to the tradition.',
+        ],
+      },
     },
   },
 ];

@@ -268,6 +268,23 @@ are read together. Uplifts look anthro, like the cat girls (Collins).
   entertainment, part orca for the aggression; a winner gets freedom and money enough for a ship. A convert from the
   rim becomes a full Technopuritan only by acceptance into a House, which requires marriage; the Empire rates a
   ring girl low status, and she answers that nobody out of its hardest school is as provably fit.
+- **Why there are uplifts at all** (Collins, Oct 15 2026): "the reason the various animals were uplifted in the first
+  place was to increase the diversity of intelligent entities in the Empire. In an empire that believes God speaks
+  through better iterations out-competing worse ones, to lessen diversity is to silence God" (doctrine 10; "all require
+  diversity", TP 11.0). An uplift is another kind of mind for God to speak through, not labour and not a pet.
+- **The Gene War and the womb clause** (Collins, Oct 15 2026): in the Empire's early days an arms race of gene drives
+  and similar technology, on the idea that "the strongest genetic profile wins" means just that: ever more aggressive
+  strategies that worked only at the genetic level, to get more genes like yours replicated. Severe dysgenic effects
+  followed, since the genes best at winning the gene war were not necessarily good at interpersonal or inter-community
+  competition. The Index banned the practice as a violation of the covenant. Almost every House and faction agreed,
+  except the cat girls (his word: the nekos), for whom breeding true is the most distinctive thing about their
+  sub-species; to drop it would be to become like everyone else, which to a Technopuritan is an existential loss (the
+  bullet above). So the ban was written to cover only the artificial making of children and their gestation in tanks,
+  an exception written in for them: they breed organically, editing their blastocysts with nanites (they are not
+  animals), but in utero, which keeps the covenant. The Index accepted it because it prevents the runaway in their
+  numbers that breeding true in tanks would bring. The cat girls do not use the tanks because it is illegal: the one
+  people who kept the covenant the hard way, orthodox and vulgar at once. Long form, with what is PROPOSAL:
+  Broodfall's `content/lore/empire.md`, section 4b.
 - **The cat girls' own case** (Collins, Oct 14 2026, through Broodfall's Mirelle): they keep sexual reproduction as
   cultural preservation, not pleasure; were it wrong they would be extinct, so God approves. Against the tanks they
   are offset by breeding true, in litters of three or four, all female, with mothers raising their own until school.
@@ -278,7 +295,8 @@ are read together. Uplifts look anthro, like the cat girls (Collins).
   created, essentially, because someone thought it would be hot if cat girls existed. Some live
   within Technopuritan society, but because they breed true they ironically struggle to find
   breeding partners, and often go to the fringes to find humans who still like sex for its own
-  sake. They could engineer males, but refuse: it would "destroy their culture". Space Derelict's **Felonia** (prides of "catfolk" that approach crews wanting to "breed"
+  sake. They could engineer males, but refuse: it would "destroy their culture". They do not breed in tanks: it is
+  illegal (the Gene War and the womb clause, above). Space Derelict's **Felonia** (prides of "catfolk" that approach crews wanting to "breed"
   and "value skill over carnage") are those fringe cat girls.
 - **Fringe politics (PROPOSAL):** the covenant protects every uplift from extermination, not from
   disdain. The Empire keeps the dolphins and orcas at arm's length on the fringe and does not ask

@@ -596,6 +596,20 @@ what YOKE knows of it, and how she carries it. She believes most of it and jokes
   intelligences not descended from man were made "to either serve or test man" and need not be
   eradicated (TP 11.0). The Office has never filed a world under *serve*. She raises this only as
   a filing question.
+- **The Gene War and the womb clause (Collins, Oct 15 2026).** In the Empire's early days an arms race of gene drives
+  and the like: "the strongest genetic profile wins" taken to mean just that, ever more aggressive strategies that
+  worked only at the genetic level, to get more genes like yours replicated. What won the womb lost everywhere else
+  (severe dysgenic effects: the genes best at winning the gene war were not good at interpersonal or inter-community
+  competition), and the Index banned it as a breach of the covenant: a drive is a design on the subjugation of others,
+  one generation down. Every House and faction agreed but the cat girls, who breed true, which is the most distinctive
+  thing about them; to give it up would be to become like everyone else, and to lessen diversity is to silence God,
+  which is why anyone was uplifted at all (more kinds of mind for God to speak through). So the ban was written to
+  cover only making children artificially and gestating them in tanks, with the exception written in for them: they
+  breed in the body, editing the blastocyst with nanites (they are not animals), in litters of three or four, and the
+  Index let it stand because in utero they stay a people and not a flood. The cat girls do not use the tanks because it
+  is illegal. She knows all of this: her "whatever that means" (the `catgirl` beat) is a pose, and `intro-genewar` is
+  where she drops it. Orthodox and vulgar at once: she respects the first and gags at the second, and is more
+  sympathetic than she sounds (Collins: the lore "will make people like YOKE more sympathetic to them").
 
 ### The Sons of Man, as she sees them (Collins, Sep 30)
 Humans and the species the Technopuritans uplifted are, together, the Sons of Man (full version:
@@ -635,13 +649,17 @@ Humans and the species the Technopuritans uplifted are, together, the Sons of Ma
   breeding true, in litters of three or four, all girls, raised by their mothers until school in their own subculture.
   A cat girl who finds no mate in the Empire goes to the rim for one, where mates are easy, dangerous, and given to
   temptation; so her kind keep the norms harder than most, being watched. YOKE finds all of this more reasonable than
-  she lets on.
+  she lets on. Mirelle can tell him why her people do not use the tanks (Collins, Oct 15 2026): it is illegal, and the
+  exception was written for them; YOKE, asked, confirms it, with the clause's name and a form number.
 - **Cat girls** breed true, all female; made because someone thought it would be hot; some live
   inside the Empire but struggle to find breeding partners, and many go to the fringe to find
   humans who still like sex for its own sake (Space Derelict's Felonia). They could engineer
-  males, but refuse, because it would "destroy their culture". YOKE thinks that is silly
-  ("whatever that means") but feels a bit bad for them (Collins). She finds the whole business
-  the funniest fact in the Index, and keeps it wry, never explicit.
+  males, but refuse, because it would "destroy their culture". YOKE says "whatever that means"
+  (Collins) and knows exactly what it means (Collins, Oct 15 2026): breeding true in a tank is a gene drive, banned
+  since the Gene War, and the womb clause's exception was written for them (above), so they hold to the Empire's own
+  tradition by not making themselves like everyone else, and are vulgar about it. She feels a bit bad for them
+  (Collins), respects them more than she lets on, and keeps the whole business wry, never explicit: the funniest
+  fact in the Index, and the most orthodox.
 
 ### Her attitude to bodies and the old world
 Collins, Sep 30: a persistent part of Technopuritan culture is disgust with the human body, and
@@ -751,6 +769,11 @@ adds are mostly ai gibberish even I struggle to understand").
 - Cat girls breed true. Marry one and your whole House is cat girls. The Board rates that "low genetic contribution". The cat girls rate the Board "no fun".
 - Someone uplifted cat girls because they thought it would be hot. Just decided it. That's why we need an Index.
 - We never uplifted ducks, thank goodness. We did uplift dolphins. Same problem, plus sonar.
+- Cat girls can't use the tanks. Not prudishness: the womb clause. Breed true in a tank and that's a gene drive, and we had a war about those. We don't talk about the war. We talk about the cat girls.
+- The Gene War: every House editing its eggs to take nobody else's half. Three generations of winning the womb and losing school. The Index wrote one law, and everyone signed it but the people with tails.
+- Their exception is written in so many words. In the body, with nanites, in litters. Lawful. Vulgar. Both columns ticked.
+- Say what you like about the cat girls. They kept the covenant the hard way, with their own abdomens. I would not. I have seen it.
+- Why uplift anyone? More kinds of mind for God to speak through. The dogs were the first voice. The cat girls were... a voice. Recorded with a straight face.
 - The boss asked me once why we left Earth. I said: to keep the covenant, sir. He said: good. He didn't ask what the covenant was. That's why he's the boss.
 - Elephants remember, so they run things. Dogs forgive, so they run the Office. Humans? We left a whole planet rather than rule it. That's our thing. We leave.
 

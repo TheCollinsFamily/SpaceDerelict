@@ -128,7 +128,7 @@ const one = (lines: Line[]): Branch[] => [{ lines }];
 
 /** The intros, each with when it can first play. */
 const introLine = (i: (typeof INTROS)[number]): Line => {
-  const needs = i.id === 'intro-duck' ? ', only if mission 1 was won' : i.id === 'intro-catgirl' ? ', after the cat girl wrote (step 5)' : i.id === 'intro-dad' ? ', after the personal plot (step 9)' : '';
+  const needs = i.id === 'intro-duck' ? ', only if mission 1 was won' : i.id === 'intro-catgirl' ? ', after the cat girl wrote (step 5)' : i.id === 'intro-genewar' ? ', after the second cat girl line' : i.id === 'intro-dad' ? ', after the personal plot (step 9)' : '';
   return greeting(GREETINGS.find((g) => g.id === i.id)!, `from capture ${i.captures}${needs}`);
 };
 const introOrder = INTROS.map((i) => `${i.id} (capture ${i.captures})`).join(', ');

@@ -2303,3 +2303,32 @@ playing ... sure, would be good practice ... the map resets, you keep your upgra
   call); lines 8, 9, 12, 13 are his words. Not wired in, not filmed: his read first. The post-game is ANOTHER LAP (reset
   the globe, carry everything bought, every difficulty knob a `SimConfig` field that exists); the Oct 12 design's rule
   cards and field-note stake sit inside a lap. Six calls for him at the end of the note.
+
+### The Gene War: why the nekos do not use the tanks (Oct 15 2026)
+
+Collins's lore, his words kept in `content/lore/empire.md` 4b: in the Empire's early days an arms race of gene drives
+("the strongest genetic profile wins" taken literally) bred severe dysgenics, what won the womb losing everywhere else;
+the Index banned it as a breach of the covenant; every House and faction agreed but the nekos (the cat girls), whose
+breeding true is the most distinctive thing about them, and to drop it would be to become like everyone else, which to a
+Technopuritan is an existential loss. Why anyone was uplifted at all (his words, same day): to increase the diversity of
+intelligent entities; in an empire that believes God speaks through better iterations out-competing worse ones, to lessen
+diversity is to silence God (`empire.md` 15, "Why anyone was uplifted", with the corpus behind it). The ban covers only
+the artificial making of children and tank gestation; the exception was written in for them: in utero, the blastocyst
+edited with nanites, which the Index allowed because it caps their numbers. So the nekos do not use the tanks because it
+is illegal: orthodox and vulgar at once, which is why YOKE can be more sympathetic in her lines around them.
+- Where it landed: `empire.md` (timeline row; NEW 4b; 6b; 15: the rationale, the cat-girl row, Mirelle; 16: open calls);
+  `docs/UNIVERSE.md` ("The Sons of Man": why uplifts, the Gene War and the womb clause, the cat-girl bullet); the lorebook
+  (15: what she knows; the cat-girl and Mirelle bullets; 16 "The uplifts": five new lines); `content/greetings.ts`
+  (intro-catgirl's aside carries it; NEW `intro-genewar`, capture 9, after intro-catgirl, aside + hook "Ask her about the
+  Gene War": draft lines, his to edit); `src/meta/onboarding.ts` INTROS; `content/letters.ts` (Mirelle's persona, a line in
+  her third letter, and an `ask` letter `womb-clause` when his letter mentions tanks, wombs, gene drives or the law);
+  `content/lore/yoke-brain.md` notes; DESIGN.md's lore pointer. 837 tests pass.
+- Her brain notes were published to her agent (c0aaebdf-9095-4183-8b0f-c522493f8114) by `node tools/art/make.mjs yoke
+  --publish`, Oct 15 2026. The notes are now 3,998 of their 4,000 characters: the box is FULL. The next addition to them
+  must cut something first (tests/yokeAvatar.test.ts fails otherwise).
+- `notes/YOKE-LINES.html` was regenerated (the new intro is on it). The published page
+  (https://claude.ai/artifact/CbXWLvxqcNYzq4GhjmS1Ye, see tools/yoke-lines.ts) could NOT be read from the claude-biz
+  account (not found / not shared), so it was not republished and is one line behind the file; a session on the account
+  that owns it republishes it from the file, `url` set, `capabilities` omitted.
+- PROPOSAL (his to keep or strike, `empire.md` 16): the name "womb clause"; the Gene War's weapons and the three
+  generations; the Board's edit ledger as the enforcement; "neko" as their own word and "cat girl" the Index's.

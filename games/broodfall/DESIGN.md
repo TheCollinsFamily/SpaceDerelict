@@ -1016,7 +1016,7 @@ film before its card; each reveal card shows what that faction woke into.
 
 ## Meta story: the deck of the ship
 
-Setting: the Technopuritan Empire (shared universe, see /docs/UNIVERSE.md). Broodfall is set inside the Empire; its fuller history, doctrine (ported from technopuritan.com with citation ids), the index, krypteia, family life, Earth as the zoo, the Sons of Man (the uplifts; the boss is an uplifted dog) and how the Empire looks back on the 21st century are in `content/lore/empire.md` (Sep 30 2026).
+Setting: the Technopuritan Empire (shared universe, see /docs/UNIVERSE.md). Broodfall is set inside the Empire; its fuller history, doctrine (ported from technopuritan.com with citation ids), the index, krypteia, family life, Earth as the zoo, the Sons of Man (the uplifts; the boss is an uplifted dog) and how the Empire looks back on the 21st century are in `content/lore/empire.md` (Sep 30 2026). Why anyone was uplifted (more kinds of mind for God to speak through) and the Gene War, whose womb clause is why the cat girls may not breed in tanks (Collins, Oct 15 2026), are its sections 15 and 4b.
 
 The insects themselves (Collins, Sep 30 2026: a eusocial species of large clans with an economy
 like Korea's chaebols, run by royals who alone breed and lay hundreds of eggs; a barren female

@@ -153,7 +153,7 @@ export const STORY_ONCE: Array<{ id: GreetMoment; captures: number }> = [
  * you lose"): one-off greetings for ordinary returns, each said once a campaign (CampaignState.greetingsSaid, which a
  * lost mission does not undo), in this order, each from its capture on, and never two returns running, so her ordinary
  * lines still come between. `needs`: what must have happened first (the duck is a callback to the first-mission win;
- * the second cat girl plays off the first; the dad's names off the Board moving the file).
+ * the second cat girl plays off the first, the Gene War off the second; the dad's names off the Board moving the file).
  */
 export const INTROS: Array<{ id: string; captures: number; needs?: (s: CampaignState) => boolean }> = [
   { id: 'back-5', captures: 2 },
@@ -162,6 +162,7 @@ export const INTROS: Array<{ id: string; captures: number; needs?: (s: CampaignS
   { id: 'intro-board', captures: 6 },
   { id: 'intro-catgirl', captures: 7, needs: (s) => (s.said ?? []).includes('catgirl') },
   { id: 'intro-audit', captures: 8 },
+  { id: 'intro-genewar', captures: 9, needs: (s) => (s.greetingsSaid ?? []).includes('intro-catgirl') },
   { id: 'intro-dad', captures: 10, needs: (s) => (s.said ?? []).includes('partner-progress') },
 ];
 
