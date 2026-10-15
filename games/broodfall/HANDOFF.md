@@ -2229,7 +2229,7 @@ the companion's affection level for her to let you talk to Atlas directly."
   Atlas's and Mirelle's personas, the candidate's file inside them), the same money rules as YOKE's live mind; in the
   scripted mode, or when rfab.ai cannot (no tokens, or a backend from before the letters, which answers as YOKE and is
   refused: NO_PERSONA), the scripted letters in content/letters.ts, in turn. The backend change is committed on
-  reality-fabricator-backend main (9e0c04fc); UNTIL IT IS DEPLOYED every reply is scripted.
+  reality-fabricator-backend main (9e0c04fc); DEPLOYED Oct 14 2026 evening (verified Oct 15: prod answers trigger "letter" with a persona), so live replies run on rfab.ai.
 - The companion, more of her (his words that afternoon): yandere for Atlas, wants to meet and help with her kids; she
   killed herself because a part of her resisted the hormonal and genetic treatment for same-sex attraction and she judged
   herself unfit for the meat world. In her persona, the scripted letters, her secret, the lorebook and empire.md.
@@ -2281,10 +2281,11 @@ the companion's affection level for her to let you talk to Atlas directly."
 - Letters, verified end to end (Oct 14 2026): Mirelle and Rook loop beside their threads (stills-alive.mjs group letters, 480p,
   49,300 tokens; data-alive letters:<id>); tools/shot-quarters.mjs now sends Rook a letter about her skin, passes a deployment,
   comes aboard, sees her orca letter arrive and the thread marked, and on the next return YOKE's letter-rook-orca line.
-  The LIVE writer is not deployed: prod rfab.ai rejects trigger "letter" (BAD_TRIGGER) until the backend deploy with
-  9e0c04fc/78acaa43; until then every reply is scripted.
+  The LIVE writer went out with the backend deploy of Oct 14 2026 (label manual-20261014-182349); verified Oct 15 2026: prod
+  answers trigger "letter" with the persona's name, and GET /api/broodfall/yoke/letters exists (401 without a player, not 404).
 - Letters on the RFab account, like YOKE (Collins, Oct 14 2026: "their history can all get attached to an rfab account right?
   to up the model etc same as yoke"): a letter from a player runs on the model the account chose for YOKE (backend
   letterModel; guests on Kimi); each campaign's letters are kept on its broodfall_minds row (letters JSONB, GET/PUT
   /api/broodfall/yoke/letters), carried to the account on link; the game pulls and merges once a show (mergeLetters) and
-  pushes when they change, in every mode but scripted. Backend b7fbf44c, NOT DEPLOYED (with 9e0c04fc and 78acaa43).
+  pushes when they change, in every mode but scripted. Backend b7fbf44c: DEPLOYED Oct 14 2026 (with 9e0c04fc and 78acaa43; verified Oct 15). The rfab.ai /connect page is in the
+  deployed frontend bundle too (BroodfallConnectComponent, checked Oct 15).
