@@ -2361,7 +2361,10 @@ Collins's lore, his words kept in `content/lore/empire.md` 6c, 9, 12b and 5:
   fears, the sanctified, the line to the dead and the companion fashion, trimmed to fit: **3,999 of 4,000 characters**.
   The three-lives question did not fit; it lives in `back-15`'s aside. Published to her agent with
   `node tools/art/make.mjs yoke --publish`.
-- OPEN for him (`empire.md` 16): `back-13` has YOKE say Sadducees believe in a better afterlife; the Oct 12 lore has their
-  creed deny one. Written as YOKE being wrong and checking; whether Sadducees upload too is his call. PROPOSAL: the
-  schoolbook answer to the three lives (the third), the heart's (the second).
+- **The Sadducees and death, settled by Collins (Oct 15 2026):** they believe in God and a SUPERNATURAL heaven, do not
+  upload, and fear death anyway; the point of `back-13` is that Technopuritans cannot understand why someone who genuinely
+  believes in heaven and God would fear death. The Oct 12 "no souls, no angels, no afterlife" is superseded everywhere
+  (`empire.md` 9 and 16, `docs/UNIVERSE.md`, the lorebook's Sadducee bullet and every Earth-news aside, `back-10`'s and
+  `back-13`'s asides, her brain notes). PROPOSAL: the schoolbook answer to the three lives (the third), the heart's
+  (the second).
 - `notes/YOKE-LINES.html` regenerated; its published page still cannot be reached from this account (see above).

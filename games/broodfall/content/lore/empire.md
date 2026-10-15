@@ -507,8 +507,9 @@ story for why the Technopuritans live the way they do.
     1.0); Jewish Houses sit in the Index like any other.
   - **The Sadducees** genetically rebuilt the Davidic line with the building of the Third Temple, then
     used gene drives to quietly wipe out the Levites in the other Jewish groups, essentially recreating
-    the temple caste. They follow a strict Sadducean Judaism (no souls, no angels, no life after death:
-    very compatible with Technopuritanism), and the small temple class develops and manages all of
+    the temple caste. They follow a strict Sadducean Judaism (Oct 12: no souls, no angels, no life after death;
+    **superseded Oct 15 2026**, Collins: they believe in God and a supernatural heaven, do not upload, and fear death
+    anyway, which is YOKE's puzzle in `back-13`), and the small temple class develops and manages all of
     Israel's technology (automated drone swarms; the satellite laser that carves up cities with ease,
     which Earth's feeds call "the goy beam", and so does YOKE; the wombs) and sees itself as steward of
     the Orthodox masses.
@@ -531,7 +532,13 @@ story for why the Technopuritans live the way they do.
     taught) that imbues human life with value." Nor do the Sadducees "get the Technopuritan obsession with diversity, or
     why they uplifted animals" (section 15). So "to Sadducees Technopuritans are kid killers, and to Technopuritans
     Sadducees are eugenicists who, out of lower-order fears, override the will of God." YOKE's `won-21` and `back-13`
-    (his words) are the Empire's side of it, said as the plainest thing in the world.
+    (his words) are the Empire's side of it, said as the plainest thing in the world. And the thing the Empire finds
+    hardest to understand (Collins, Oct 15 2026, the point of `back-13`): the Sadducees genuinely believe in God and a
+    heaven, a supernatural one (they do not upload), and fear death anyway. To a Technopuritan, whose heaven is a
+    machine he can point at, for whom death is when the easy part begins and the fear of it was engineered out, a
+    believer who fears death is either not a believer or is ruled by a lower-order fear; the temple's eugenics and the
+    fear are, to the Empire, one failing. **PROPOSAL:** the Sadducees return the puzzle: a heaven you built is not
+    heaven, and a people that cannot fear death has edited out the thing that made it human.
   - **The war that stayed small.** There was a brief war of scuffles between the groups. Given the
     technology involved it never got large: the Technopuritans could easily wipe Israel off the map, but
     the Sadducees could never wipe out all the Technopuritan Dyson spheres; and the Technopuritans do
@@ -997,7 +1004,7 @@ bodies at the end of just year one, some too rotten to be uploaded; "orcas are n
   the ledger as its enforcement are PROPOSAL, his to keep or strike. Open: whether a neko who put a blastocyst in a tank
   would be refused by the tank (the clause as proposed) or tried by the Board (a story); and whether any other House
   ever asked for the same exception and was refused.
-- **The Sadducees and the afterlife (`back-13`, Oct 15 2026).** Collins's line has YOKE say Sadducees "believe in an
-  afterlife better than this life, right?"; section 9 (Oct 12) has their creed hold no souls and no life after death. As
-  written here, YOKE is wrong and checking ("right?"), which is also why a Sadducee has only this life to lose; whether
-  the Sadducees in fact upload too, as they could, is his call.
+- ~~The Sadducees and the afterlife (`back-13`).~~ Answered Oct 15 2026 (Collins): the Sadducees believe in God and a
+  supernatural heaven, do not upload, and fear death anyway; the point of `back-13` is that Technopuritans cannot
+  understand why someone who genuinely believes in heaven and God would fear death (section 9, "The second fracture").
+  The Oct 12 "no life after death" is superseded.

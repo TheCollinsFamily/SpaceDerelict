@@ -69,7 +69,9 @@ Broodfall: see "What a broodfall is for", below.)
    is eugenics, a council claiming to know better than God which genes are good, the highest sin; so Sadducee culture
    has no school that kills. The Sadducees, who hold a life precious in itself, call the Technopuritans kid killers, and
    do not understand the Empire's obsession with diversity or why it uplifted animals; the Technopuritans call them
-   eugenicists who override the will of God out of lower-order fears. The Sadducees' allies
+   eugenicists who override the will of God out of lower-order fears. The Sadducees believe in God and a supernatural
+   heaven, do not upload, and fear death anyway, which no Technopuritan understands (Collins, Oct 15 2026; this
+   supersedes the Oct 12 note that their creed denied an afterlife). The Sadducees' allies
    are America's Baptists, whom they supply, which keeps America peaceful and capable; the Mormons expand by
    police state, not fertility; the Amish were wiped out when law and order went; Latin America emptied after
    China's collapse and America walled it off (Collins, Oct 12 2026). Inside the Empire the Technopuritan
