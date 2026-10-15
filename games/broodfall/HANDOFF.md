@@ -2383,4 +2383,9 @@ Collins's lore, his words kept in `content/lore/empire.md` 6c, 9, 12b and 5:
   human settlement in space. `empire.md` 1 (timeline), 9 (Earth), 13 (a bullet, with a PROPOSAL); `docs/UNIVERSE.md`
   (Earth paragraph and the spacefarers list); the lorebook (15, two bullets; 16, one line); `won-19`'s aside. Not in
   her brain notes: no room.
+- **`won-22` (Collins, Oct 15 2026, his words):** the Sadducees think the Empire "murderous nut jobs" for the school
+  deaths; she gets it, no afterlife; what she cannot understand is why they will not "just use ours... they're
+  perfectly functional". Its aside carries the Sadducee lore and tells her live mind never to bring up the kept
+  uploads, and to say "not a thing that leaves the ship" if asked. COLLINS_GREETINGS updated; `empire.md` 9 and 6c
+  point at it.
 - `notes/YOKE-LINES.html` regenerated; its published page still cannot be reached from this account (see above).

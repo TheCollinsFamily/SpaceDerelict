@@ -342,8 +342,9 @@ choices, which in Technopuritanism is like the highest sin possible."
   everything. A weakness left in a child is a hand nobody cut off; the corpus already asks for the genetic removal of
   arousal where it is sin (TP 2.0 on "vile bodies"; the "efficient sins", TP 35.0.5) and for "removing sin, our animal
   instincts" by technology (TP 2.0, Tract 9). Section 7 has what was removed.
-- **In the game.** `won-21`, `back-13` and `back-15` (content/greetings.ts, Collins's words, the lore behind each in its
-  aside); the school and Sadducee lines in `ship-ai-lorebook.md`, section 16; her live mind's notes (`yoke-brain.md`).
+- **In the game.** `won-21`, `won-22`, `back-13` and `back-15` (content/greetings.ts, Collins's words, the lore behind
+  each in its aside); the school and Sadducee lines in `ship-ai-lorebook.md`, section 16; her live mind's notes
+  (`yoke-brain.md`).
 ## 7. Bodies
 
 Collins: Technopuritans practise heavy genetic engineering and integration with AI. The player's
@@ -545,7 +546,11 @@ story for why the Technopuritans live the way they do.
     for whom death is when the easy part begins and the fear of it was engineered out, a believer who fears death is
     either not a believer or is ruled by a lower-order fear; the temple's eugenics and the Satmar's fear are, to the
     Empire, one failing in two castes. **PROPOSAL:** the Sadducees return it: a kept dead man is a corpse made to talk,
-    and a people that cannot fear death has edited out the thing that made it human.
+    and a people that cannot fear death has edited out the thing that made it human. YOKE's `won-22` (Collins, Oct 15
+    2026, his words) is the whole quarrel in three lines: the Sadducees think the Empire "murderous nut jobs, just
+    because so many die during the trials at school"; she gets it, "if I didn't believe in an afterlife I would be
+    freaked out by death too"; what she cannot understand is "why they won't just use ours... they're perfectly
+    functional". The deletions (below) sit under that line, and she never says them.
   - **The war that stayed small.** There was a brief war of scuffles between the groups. Given the
     technology involved it never got large: the Technopuritans could easily wipe Israel off the map, but
     the Sadducees could never wipe out all the Technopuritan Dyson spheres; and the Technopuritans do
