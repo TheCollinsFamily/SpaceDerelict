@@ -507,9 +507,10 @@ story for why the Technopuritans live the way they do.
     1.0); Jewish Houses sit in the Index like any other.
   - **The Sadducees** genetically rebuilt the Davidic line with the building of the Third Temple, then
     used gene drives to quietly wipe out the Levites in the other Jewish groups, essentially recreating
-    the temple caste. They follow a strict Sadducean Judaism (Oct 12: no souls, no angels, no life after death;
-    **superseded Oct 15 2026**, Collins: they believe in God and a supernatural heaven, do not upload, and fear death
-    anyway, which is YOKE's puzzle in `back-13`), and the small temple class develops and manages all of
+    the temple caste. They follow a strict Sadducean Judaism (no souls, no angels, no life after death, as the
+    historical Sadducees held; Collins, Oct 15 2026, after a wobble the same day: "Sadducees don't believe in an
+    afterlife at all, and historically did not; they still think uploading the dead is gruesome"), and the small temple
+    class develops and manages all of
     Israel's technology (automated drone swarms; the satellite laser that carves up cities with ease,
     which Earth's feeds call "the goy beam", and so does YOKE; the wombs) and sees itself as steward of
     the Orthodox masses.
@@ -532,13 +533,16 @@ story for why the Technopuritans live the way they do.
     taught) that imbues human life with value." Nor do the Sadducees "get the Technopuritan obsession with diversity, or
     why they uplifted animals" (section 15). So "to Sadducees Technopuritans are kid killers, and to Technopuritans
     Sadducees are eugenicists who, out of lower-order fears, override the will of God." YOKE's `won-21` and `back-13`
-    (his words) are the Empire's side of it, said as the plainest thing in the world. And the thing the Empire finds
-    hardest to understand (Collins, Oct 15 2026, the point of `back-13`): the Sadducees genuinely believe in God and a
-    heaven, a supernatural one (they do not upload), and fear death anyway. To a Technopuritan, whose heaven is a
-    machine he can point at, for whom death is when the easy part begins and the fear of it was engineered out, a
-    believer who fears death is either not a believer or is ruled by a lower-order fear; the temple's eugenics and the
-    fear are, to the Empire, one failing. **PROPOSAL:** the Sadducees return the puzzle: a heaven you built is not
-    heaven, and a people that cannot fear death has edited out the thing that made it human.
+    (his words) are the Empire's side of it, said as the plainest thing in the world. The Sadducees themselves believe
+    in no afterlife at all, do not upload, and find the uploading of the dead gruesome (Collins, Oct 15 2026), so their
+    fear of death is the plain fear of a people with one life. What the Empire finds hardest to understand (Collins, the
+    point of `back-13`, which names them) is a believer who fears death: **the Satmar**, the Orthodox majority of
+    Israel's surviving Jews, some ninety million under the eleven thousand of the temple caste, believe in a world to
+    come and fear death anyway; so do Earth's Christians. To a Technopuritan, whose heaven is a machine he can point at,
+    for whom death is when the easy part begins and the fear of it was engineered out, a believer who fears death is
+    either not a believer or is ruled by a lower-order fear; the temple's eugenics and the Satmar's fear are, to the
+    Empire, one failing in two castes. **PROPOSAL:** the Sadducees return it: a kept dead man is a corpse made to talk,
+    and a people that cannot fear death has edited out the thing that made it human.
   - **The war that stayed small.** There was a brief war of scuffles between the groups. Given the
     technology involved it never got large: the Technopuritans could easily wipe Israel off the map, but
     the Sadducees could never wipe out all the Technopuritan Dyson spheres; and the Technopuritans do
@@ -547,8 +551,9 @@ story for why the Technopuritans live the way they do.
     **The deletions (Collins, Oct 15 2026, his words tidied):** the skirmishes "were heightened when the Sadducees found
     out the Technopuritans were uploading those they killed, and they asked them to delete them, even though one of the
     uploaded Sadducees did not want to be deleted. The result was lying to them and saying it had been done, and only
-    deleting the ones who also wanted it; but if this is discovered it would reignite conflicts." To the Sadducees an
-    upload is not their dead in heaven; heaven is elsewhere (above), and this is a copy held by the enemy. To the Empire
+    deleting the ones who also wanted it; but if this is discovered it would reignite conflicts." To the Sadducees, who
+    hold that nothing follows death, an upload is not their dead anywhere: it is a corpse kept talking, gruesome
+    (Collins), and held by the enemy. To the Empire
     a pattern carried whole is the person (12a), and a person is deleted at their own request and nobody else's (the
     archive's ethical protocol, 12a: "delete all their members if they want"); so the Office kept the ones who asked to
     stay, and told Israel otherwise. **PROPOSAL:** they are few, a handful of soldiers and one freighter crew, kept in a
@@ -1014,7 +1019,8 @@ bodies at the end of just year one, some too rotten to be uploaded; "orcas are n
   the ledger as its enforcement are PROPOSAL, his to keep or strike. Open: whether a neko who put a blastocyst in a tank
   would be refused by the tank (the clause as proposed) or tried by the Board (a story); and whether any other House
   ever asked for the same exception and was refused.
-- ~~The Sadducees and the afterlife (`back-13`).~~ Answered Oct 15 2026 (Collins): the Sadducees believe in God and a
-  supernatural heaven, do not upload, and fear death anyway; the point of `back-13` is that Technopuritans cannot
-  understand why someone who genuinely believes in heaven and God would fear death (section 9, "The second fracture").
-  The Oct 12 "no life after death" is superseded.
+- ~~The Sadducees and the afterlife (`back-13`).~~ Answered Oct 15 2026 (Collins, in three steps): the Sadducees
+  believe in no afterlife at all, as the historical ones did not, do not upload, and find uploading the dead gruesome;
+  the point of `back-13` is that Technopuritans cannot understand why someone who genuinely believes in heaven and God
+  would fear death; so the line now names the Satmar, the Orthodox majority the Sadducees steward, who believe in a
+  world to come (section 9, "The second fracture").
