@@ -2367,4 +2367,11 @@ Collins's lore, his words kept in `content/lore/empire.md` 6c, 9, 12b and 5:
   (`empire.md` 9 and 16, `docs/UNIVERSE.md`, the lorebook's Sadducee bullet and every Earth-news aside, `back-10`'s and
   `back-13`'s asides, her brain notes). PROPOSAL: the schoolbook answer to the three lives (the third), the heart's
   (the second).
+- **The skirmishes' secret (Collins, Oct 15 2026):** the Sadducee skirmishes were heightened when the Sadducees found
+  out the Empire was uploading those it killed and demanded deletion; one of the uploaded refused; the Office lied,
+  said it was done, and deleted only those who asked. Discovered, it would reignite the conflict. `empire.md` 9 ("The
+  deletions", with a PROPOSAL on how few and where), `docs/UNIVERSE.md`, the lorebook's Sadducee bullet (she knows from
+  the Office's record and never says it: the one secret she keeps from him on purpose) and one new Earth-news line. Not
+  in her brain notes: no room (3995 of 4,000 after a trim; the earlier push had them at 4,044 with the avatar test
+  failing, fixed in the next commit).
 - `notes/YOKE-LINES.html` regenerated; its published page still cannot be reached from this account (see above).

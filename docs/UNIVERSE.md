@@ -71,7 +71,10 @@ Broodfall: see "What a broodfall is for", below.)
    do not understand the Empire's obsession with diversity or why it uplifted animals; the Technopuritans call them
    eugenicists who override the will of God out of lower-order fears. The Sadducees believe in God and a supernatural
    heaven, do not upload, and fear death anyway, which no Technopuritan understands (Collins, Oct 15 2026; this
-   supersedes the Oct 12 note that their creed denied an afterlife). The Sadducees' allies
+   supersedes the Oct 12 note that their creed denied an afterlife). The skirmishes were heightened when the Sadducees
+   learned the Empire was uploading the Sadducees it killed, and demanded they be deleted; one of the uploaded did not
+   want to be. The Empire said it was done and deleted only those who asked for it; were that discovered, the conflict
+   would reignite (Collins, Oct 15 2026). The Sadducees' allies
    are America's Baptists, whom they supply, which keeps America peaceful and capable; the Mormons expand by
    police state, not fertility; the Amish were wiped out when law and order went; Latin America emptied after
    China's collapse and America walled it off (Collins, Oct 12 2026). Inside the Empire the Technopuritan

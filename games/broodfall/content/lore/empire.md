@@ -544,6 +544,16 @@ story for why the Technopuritans live the way they do.
     the Sadducees could never wipe out all the Technopuritan Dyson spheres; and the Technopuritans do
     not want it to escalate, because there would still be tons of Sadducee space colonies to create
     problems for them in the future (section 13).
+    **The deletions (Collins, Oct 15 2026, his words tidied):** the skirmishes "were heightened when the Sadducees found
+    out the Technopuritans were uploading those they killed, and they asked them to delete them, even though one of the
+    uploaded Sadducees did not want to be deleted. The result was lying to them and saying it had been done, and only
+    deleting the ones who also wanted it; but if this is discovered it would reignite conflicts." To the Sadducees an
+    upload is not their dead in heaven; heaven is elsewhere (above), and this is a copy held by the enemy. To the Empire
+    a pattern carried whole is the person (12a), and a person is deleted at their own request and nobody else's (the
+    archive's ethical protocol, 12a: "delete all their members if they want"); so the Office kept the ones who asked to
+    stay, and told Israel otherwise. **PROPOSAL:** they are few, a handful of soldiers and one freighter crew, kept in a
+    world of their own; the record of them is the one file in the Office that is not a form; a technician never sees it,
+    and YOKE knows it exists and keeps it (the lorebook, section 15).
   - **The cold war now.** The Sadducees want to wipe out the Caliphate and the Technopuritans forbid it.
     So Israel expands its borders every time it is attacked (a splinter caliphate that attacked it
     learned about the laser the hard way, and the Caliphate disavowed the splinter in a panic), and

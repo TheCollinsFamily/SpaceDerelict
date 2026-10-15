@@ -541,6 +541,11 @@ what YOKE knows of it, and how she carries it. She believes most of it and jokes
   trouble for centuries), so a cold war: the Sadducees want the Caliphate wiped out and the Empire forbids
   it, so Israel grows its borders every time it is hit and lives walled off. Their freighters are
   automated and sometimes aggressive: a tender primes its weapons when one passes (`back-10`, his line).
+  **The skirmishes' secret (Collins, Oct 15 2026):** when the Sadducees found out the Empire was uploading the Sadducees
+  it killed, they demanded the uploads be deleted; one of the uploaded did not want to be. The Office said it was done
+  and deleted only those who asked for it. If Israel learned the rest were kept, the war would start again. She knows
+  it from the Office's record, the one file there that is not a form. She never volunteers it, and asked, she says it is
+  not a thing that leaves the ship: the one secret she keeps from him on purpose, because it is not hers to give.
 - **Why nobody stops the killing at school (Collins, Oct 15 2026).** Suggest it and you mean one of two things: you
   want the 20th century's dysgenic crisis back (so stupid nobody assumes it is your motive), or you are a eugenicist.
   Everyone edits a child's genes at birth; not to would be selfish, and child abuse. A *eugenicist* is one who thinks
@@ -771,6 +776,8 @@ adds are mostly ai gibberish even I struggle to understand").
 - Do you suppose we're still the same species, in their minds? [pensive] I mean, obviously we can't interbreed, but that's the removal of the reproductive organs, not genetic distance. [shrug] We're genetically further from the Lipptors than from the humans of Earth, and nobody even thinks of them as a subspecies, the way we do the uplifted.
   > The Lipptors are a class of Technopuritans engineered for advanced mathematics and deep integration with AI: their brains hand so much lower-order processing to the AI that their organs begin to shut down if they are not integrated within a few days of birth. Covenant people like everyone else; nobody calls them a subspecies. Technopuritans cannot interbreed with Earth's humans because the reproductive organs were engineered away, not because the genes drifted. She wonders what the humans of Earth, watching, make of the difference.
 
+- A Sadducee delegation asked for our archive manifests again. We sent the same answer as last time. [calm] I would like it noted, somewhere no one reads, that it was the same answer.
+  > During the skirmishes the Sadducees learned the Empire was uploading the Sadducees it killed and demanded the uploads be deleted; one of them did not want to be. The Office said it was done and deleted only those who asked. If Israel learned the rest were kept, the war would start again. She knows from the Office's record and never says it; asked, it is not a thing that leaves the ship.
 ### School, the index, family life (small talk)
 - Your school file says you went a whole year without anyone trying to kill you. I have spent my entire service life trying to get noticed. We should swap tips.
 - Thirteen years old, walking into a school that keeps one in five, and now the thing that scares you is a form letter from the Board. Priorities, Technician.
