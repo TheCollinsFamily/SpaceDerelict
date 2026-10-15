@@ -2289,3 +2289,17 @@ the companion's affection level for her to let you talk to Atlas directly."
   /api/broodfall/yoke/letters), carried to the account on link; the game pulls and merges once a show (mergeLetters) and
   pushes when they change, in every mode but scripted. Backend b7fbf44c: DEPLOYED Oct 14 2026 (with 9e0c04fc and 78acaa43; verified Oct 15). The rfab.ai /connect page is in the
   deployed frontend bundle too (BroodfallConnectComponent, checked Oct 15).
+
+### The Roach King in the archive: his last film drafted, the post-game as laps (Oct 15 2026)
+
+Collins: "sketch out how a post game would work / we also need a short end vid with roach king ... I never reviewed the
+designs or last vids for him ... draft a script ... digitizes in a field, you're talking to him ... so my civilisation is
+fine ... a chunk of the population is living in isolated simulations due to lower moral character ... do you want to keep
+playing ... sure, would be good practice ... the map resets, you keep your upgrades and everything is harder."
+- The review page (an artifact, "Roach King Review", https://claude.ai/artifact/EWzmndW73JuAVe4cNK14vp): how he was drawn,
+  all 24 address clips and the three off-the-air films playable, the draft script of THE FIELD, the post-game sketch, every
+  path. He had not watched any of them before.
+- The script and the sketch: `notes/ROACH-KING-ARCHIVE-2026-10-15.md`. THE FIELD bends the never-met rule of Oct 1 (his
+  call); lines 8, 9, 12, 13 are his words. Not wired in, not filmed: his read first. The post-game is ANOTHER LAP (reset
+  the globe, carry everything bought, every difficulty knob a `SimConfig` field that exists); the Oct 12 design's rule
+  cards and field-note stake sit inside a lap. Six calls for him at the end of the note.
