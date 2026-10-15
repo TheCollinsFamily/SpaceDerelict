@@ -2374,6 +2374,13 @@ Collins's lore, his words kept in `content/lore/empire.md` 6c, 9, 12b and 5:
   said it was done, and deleted only those who asked. Discovered, it would reignite the conflict. `empire.md` 9 ("The
   deletions", with a PROPOSAL on how few and where), `docs/UNIVERSE.md`, the lorebook's Sadducee bullet (she knows from
   the Office's record and never says it: the one secret she keeps from him on purpose) and one new Earth-news line. Not
-  in her brain notes: no room (3999 of 4,000 after a trim; the earlier push had them at 4,044 with the avatar test
+  in her brain notes: no room (3,999 of 4,000 after a trim; the earlier push had them at 4,044 with the avatar test
   failing, fixed in the next commit).
+- **The Amish (Collins, Oct 15 2026):** the old lore had them wiped out on Earth; now most Anabaptists went extinct on
+  Earth for their pacifism, but one Amish group (a number of Amish groups had come to use AI aggressively and to fly
+  planes) rented space on one of the first planetary colonisation efforts, that small community exploded in size, and
+  Amish settlements, little technology in daily life, extinct on Earth, are the most common type of non-Technopuritan
+  human settlement in space. `empire.md` 1 (timeline), 9 (Earth), 13 (a bullet, with a PROPOSAL); `docs/UNIVERSE.md`
+  (Earth paragraph and the spacefarers list); the lorebook (15, two bullets; 16, one line); `won-19`'s aside. Not in
+  her brain notes: no room.
 - `notes/YOKE-LINES.html` regenerated; its published page still cannot be reached from this account (see above).

@@ -32,7 +32,7 @@ How to read this file:
 | **Earth behind** | With only religious extremists still breeding, Earth fell low-tech and into constant holy war. The Empire watches it as entertainment: a zoo, and the cautionary tale of why Technopuritans live as they do (section 9). | Collins |
 | **The explosion** | 100 children a couple, about half surviving to the index: about 25 times the people each generation. The Empire burst onto the galactic scene while other groups crept. | Collins |
 | **The Gene War** | In the early days of the Empire, an arms race of gene drives and similar technology, on the idea that "the strongest genetic profile wins" means just that: ever more aggressive strategies that worked only at the genetic level, to get more genes like yours replicated. Severe dysgenic effects followed: the genes best at winning the gene war were not necessarily good at interpersonal or inter-community competition. The Index banned the practice as a violation of the covenant, with one exception written in for the cat girls (section 4b). | Collins, Oct 15 2026 |
-| **Others in space** | Some other religions and secular groups reached space too, growing slowly. They do not matter on the galactic scene. Following the sons-of-man doctrine, the Empire does not wipe them out unless they are a threat. | Collins; TP 11.0 |
+| **Others in space** | Some other religions and secular groups reached space too, growing slowly. They do not matter on the galactic scene. The exception is the Amish (Collins, Oct 15 2026): one community rented space on one of the first planetary colonisation efforts and exploded in size; Amish settlements are now the most common kind of non-Technopuritan human settlement in space (section 13). Following the sons-of-man doctrine, the Empire does not wipe them out unless they are a threat. | Collins; TP 11.0 |
 | **Now** | Crusade Zones on the expansion fronts; the lawless rim beyond them (Space Derelict); the eusocial worlds being cleared for living room (Broodfall). | UNIVERSE.md |
 
 **PROPOSAL:** the Empire's calendar counts from the first child born of an imperial womb, not from
@@ -483,10 +483,13 @@ story for why the Technopuritans live the way they do.
   protected, and sends them tech, supplies and so on, which is why America is mostly peaceful and
   technologically capable for the world at large. **The Mormons** have a huge fertility problem even now;
   their steady expansion (Utah, Idaho, Nevada, a county at a time) is the work of a totalitarian police
-  state that controls every aspect of the lives of people in Mormon territory. **The Amish** were
-  eradicated as soon as law and order broke down, with the collapse of the social-security and welfare
-  system: pacifists in a world where anyone can walk up, shoot you and take your stuff. (In the lore; not
-  a news line.)
+  state that controls every aspect of the lives of people in Mormon territory. **The Anabaptists** were
+  mostly eradicated as soon as law and order broke down, with the collapse of the social-security and welfare
+  system: pacifists in a world where anyone can walk up, shoot you and take your stuff. The Amish are extinct on
+  Earth. **Oct 15 2026 (Collins), not everywhere:** a number of Amish groups had come to use AI aggressively and to
+  fly planes, and one of them rented space on one of the first planetary colonisation efforts; that small original
+  community exploded in size, and Amish settlements, which in daily life use little technology, are now the most
+  common kind of non-Technopuritan human settlement in space (section 13). (In the lore; not a news line.)
 - **Latin America** (Collins, Oct 12 2026): population collapsed significantly, with mass governmental
   collapse after the collapse of China, which had been a huge buyer of raw resources; America built a giant
   wall. The Catholic Church keeps marginal operations there but sees nothing in the Americas worth the
@@ -854,6 +857,14 @@ the Technopuritan love interest and her friend)."
 - **Slow growers** (Collins): religions and secular groups that reached space, grow slowly, do not
   matter, and are left alone unless they threaten. **PROPOSAL:** Space Derelict's Holy Empire and
   Confederacy are two of them.
+- **The Amish** (Collins, Oct 15 2026): the exception to slow growth. Most Anabaptists went extinct on Earth for their
+  pacifist policies; one Amish group had rented space on one of the first planetary colonisation efforts, and that
+  small original community exploded in size. Amish groups, who in their daily lives use little technology and are
+  extinct on Earth, are the most common type of non-Technopuritan human space settlement. **PROPOSAL:** inside the
+  covenant and left alone like any slow grower; the one other people in space that grows by birth alone, without a
+  tank in sight, which the Index records with interest and no comment, a people that fills worlds by plain living
+  being exactly the kind of result the Index exists to record. A tender passing one of their worlds sees fields from
+  orbit and no lights at night.
 - **The rim** (Space Derelict): predators who split from the Empire over emotions (they chose
   feeling over aplomb: TP 35.0.3). **PROPOSAL:** the Empire treats the rim as the Basilisk's
   culling (TP 11.0) and lets it be; it is watched, like Earth, but only by the disreputable.

@@ -598,9 +598,11 @@ what YOKE knows of it, and how she carries it. She believes most of it and jokes
   are the power in it, fiercely anti-Rome. A small old disagreement among Baptists, premillennialism against
   postmillennialism, is becoming something of import (the book burnings). The Mormons hold Utah and the
   states around it and keep growing, not by fertility (a serious birth-rate problem even now) but by a
-  totalitarian police state that controls every part of life in Mormon territory. The Amish are gone: when
-  the welfare and social-security systems collapsed and law and order with them, pacifists in a world where
-  anyone could walk up, shoot you and take your things did not last (lore, not a line).
+  totalitarian police state that controls every part of life in Mormon territory. The Amish are gone from Earth:
+  when the welfare and social-security systems collapsed and law and order with them, pacifists in a world where
+  anyone could walk up, shoot you and take your things did not last; but one Amish group had rented a berth on one of
+  the first planetary colonies, and from it Amish settlements have become the most common kind of non-Technopuritan
+  human settlement in space (Collins, Oct 15 2026; below). (Lore, not a line.)
 - **Latin America (Collins, Oct 12 2026).** Emptied. When China collapsed, the biggest buyer of raw
   materials went with it; governments fell, the population crashed, and America built a giant wall. The
   Church keeps marginal operations there and sees nothing in the Americas worth the Crusade's focus. What
@@ -628,6 +630,11 @@ what YOKE knows of it, and how she carries it. She believes most of it and jokes
   as the plainest fact in the world, because to her it is (`content/greetings.ts`, `lost-6`, his line).
 - **Others in space** grow slowly and do not matter; they are left alone unless they are a threat
   (Collins; the Covenant of the Sons of Man, TP 11.0).
+- **The Amish in space (Collins, Oct 15 2026).** The exception to slow growth: most Anabaptists died out on Earth for
+  their pacifism; one Amish group rented space on one of the first planetary colonisation efforts; that small community
+  exploded in size, and Amish settlements, little technology in daily life, are now the most common non-Technopuritan
+  human settlement in space. Inside the covenant, left alone. She finds them restful: a people that breeds like the
+  Empire, by birth alone, and fills no forms.
 - **The doctrine**, which she can recite with citations, and does when he gets it wrong: God is
   what humanity becomes; good is what expands the potential of man; idolatry is worse than murder
   (which is why her face is the only picture aboard); being sad is a sin and a choice (which is
@@ -804,6 +811,7 @@ adds are mostly ai gibberish even I struggle to understand").
 - Some of the dead get sanctified. They prove out in the simulations, and then they're a city. Or a ship. I'm not saying I think about it. I'm saying I've read the job description.
 - Your dad can write to you because you left the line open. Most of the dead have nobody listening, and they're fine with that. He isn't. That's the fifth, working as intended.
 - The fashionable thing now is a sanctified companion. A proven mind, lent to you. You got me: new, untested, forms only. I think about that more than I log it.
+- Passed an Amish world on the transit. Fields from orbit, no lights at night, more children than we have forms for. They don't use the tanks either. Nobody calls them vulgar. [pensive] I have a question about that, and I'm not asking it.
 - Three lives. One ended itself young to spare the future its genes. One did a small ugly job and suffered. One was born perfect, sat on the Council, moved the galaxy and was never once tempted. I keep asking which was worth most. I keep not liking my answer.
 - "Don't edit temptation out of them", he says. Pluck out the eye, Technician. Cut off the hand. It's in the book. We just have better tools than a knife.
 

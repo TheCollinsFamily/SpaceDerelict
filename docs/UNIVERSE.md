@@ -78,7 +78,8 @@ Broodfall: see "What a broodfall is for", below.)
    want to be. The Empire said it was done and deleted only those who asked for it; were that discovered, the conflict
    would reignite (Collins, Oct 15 2026). The Sadducees' allies
    are America's Baptists, whom they supply, which keeps America peaceful and capable; the Mormons expand by
-   police state, not fertility; the Amish were wiped out when law and order went; Latin America emptied after
+   police state, not fertility; the Anabaptists were mostly wiped out when law and order went, pacifists, and the
+   Amish are extinct on Earth though not in space (below); Latin America emptied after
    China's collapse and America walled it off (Collins, Oct 12 2026). Inside the Empire the Technopuritan
    Jews are the Sons of Israel and the Mormons the Sons of Utah, each with its own structure and sphere.
 5. **Earth as the zoo.** The rest of the Empire, which is mostly Technopuritan, watches Earth as
@@ -489,6 +490,11 @@ The long form, with Collins's words in full, is Broodfall's `content/lore/empire
   worlds" above.
 - **Earth** — the homeworld; a low-tech zoo of holy wars, watched for entertainment and
   instruction.
+- **The Amish** (Collins, Oct 15 2026) — the most common type of non-Technopuritan human settlement in space. Most
+  Anabaptists went extinct on Earth for their pacifist policies; one Amish group had rented space on one of the first
+  planetary colonisation efforts (a number of Amish groups had come to use AI aggressively and to fly planes), and that
+  small original community exploded in size. In daily life they use little technology; on Earth they are extinct.
+  Inside the covenant, left alone.
 - **Other spacefaring humans** — religious and secular groups with slow growth. **PROPOSAL:**
   Space Derelict's Holy Empire (religious) and Confederacy (secular) are two of them. Left alone
   while they threaten no one.
