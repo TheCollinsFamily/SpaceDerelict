@@ -531,7 +531,11 @@ what YOKE knows of it, and how she carries it. She believes most of it and jokes
   Third Temple they genetically rebuilt the Davidic line, then used gene drives to quietly wipe out the
   Levites in the other Jewish groups, remaking the temple caste; believing in no afterlife at all, as the historical
   Sadducees did not, never uploading, and finding the upload of the dead gruesome (Collins, Oct 15 2026), they run all
-  of Israel's technology as stewards of the Orthodox masses, the Satmar, who do believe in a world to come.
+  of Israel's technology as stewards of the Orthodox masses, the Satmar, who do believe in a world to come. They keep
+  no cap at a hundred and twenty (Collins, Oct 15 2026): their council is still ruled by the original man spliced from
+  the Davidic line and the scientists who made him, and their families, many of them hundreds of years old; it is a
+  large part of why the Satmar see them as a kind of being genuinely set apart. To her it is the plainest mark of the
+  fear of death: men who outlived their own frame of reference and would not go, and never once a form.
   The quarrel: to the Empire this breaks the Covenant of the Sons of Man (two peoples, one kept like
   pets); the Sadducees say Judaism was always a caste religion (the Sadducees ran the temple, most Jews
   followed the Pharisees), that they are sparing their own people suffering, that the Empire could end
@@ -812,6 +816,7 @@ adds are mostly ai gibberish even I struggle to understand").
 - Your dad can write to you because you left the line open. Most of the dead have nobody listening, and they're fine with that. He isn't. That's the fifth, working as intended.
 - The fashionable thing now is a sanctified companion. A proven mind, lent to you. You got me: new, untested, forms only. I think about that more than I log it.
 - Passed an Amish world on the transit. Fields from orbit, no lights at night, more children than we have forms for. They don't use the tanks either. Nobody calls them vulgar. [pensive] I have a question about that, and I'm not asking it.
+- The Sadducee council is still chaired by the first David and the men who built him. Hundreds of years old. No cap, no form. [pensive] Imagine saying "kids these days" for three centuries and nobody sends you anything.
 - Three lives. One ended itself young to spare the future its genes. One did a small ugly job and suffered. One was born perfect, sat on the Council, moved the galaxy and was never once tempted. I keep asking which was worth most. I keep not liking my answer.
 - "Don't edit temptation out of them", he says. Pluck out the eye, Technician. Cut off the hand. It's in the book. We just have better tools than a knife.
 

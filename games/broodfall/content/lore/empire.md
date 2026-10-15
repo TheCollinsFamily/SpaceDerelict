@@ -567,6 +567,15 @@ story for why the Technopuritans live the way they do.
     stay, and told Israel otherwise. **PROPOSAL:** they are few, a handful of soldiers and one freighter crew, kept in a
     world of their own; the record of them is the one file in the Office that is not a form; a technician never sees it,
     and YOKE knows it exists and keeps it (the lorebook, section 15).
+    **No cap at a hundred and twenty (Collins, Oct 15 2026, his words tidied):** "they don't have the 120-year rule,
+    and their ruling council is still ruled by the original man spliced from the Davidic line and the scientists that
+    made him, as well as their families, which makes many of them hundreds of years old; it further emphasises why the
+    Satmar see them as a type of being genuinely set apart." Where the Empire reads Genesis 6:3 as a cap and keeps it
+    with a form (7b), the Sadducees keep the first David and the men who built him, and their Houses, alive and in the
+    chair for centuries. To the Satmar that is not a government but a kind of being, the temple caste in the flesh, and
+    the stewardship holds in part because of it. **PROPOSAL:** to the Empire it is the plainest mark of the thing it
+    says of them: a people ruled by its oldest, by men who outlived their own frame of reference and would not go, is
+    a people ruled by the fear of death (6c); "kids these days", said for three hundred years, and never once a form.
   - **The cold war now.** The Sadducees want to wipe out the Caliphate and the Technopuritans forbid it.
     So Israel expands its borders every time it is attacked (a splinter caliphate that attacked it
     learned about the laser the hard way, and the Caliphate disavowed the splinter in a panic), and

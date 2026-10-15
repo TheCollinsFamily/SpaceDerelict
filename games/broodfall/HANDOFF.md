@@ -2388,4 +2388,8 @@ Collins's lore, his words kept in `content/lore/empire.md` 6c, 9, 12b and 5:
   perfectly functional". Its aside carries the Sadducee lore and tells her live mind never to bring up the kept
   uploads, and to say "not a thing that leaves the ship" if asked. COLLINS_GREETINGS updated; `empire.md` 9 and 6c
   point at it.
+- **The Sadducees keep no cap at 120 (Collins, Oct 15 2026):** their ruling council is still ruled by the original man
+  spliced from the Davidic line and the scientists who made him, and their families, many hundreds of years old; it is
+  a large part of why the Satmar see them as a kind of being genuinely set apart. `empire.md` 9 ("No cap", with a
+  PROPOSAL tying it to the fear of death), `docs/UNIVERSE.md`, the lorebook's Sadducee bullet and one line in 16.
 - `notes/YOKE-LINES.html` regenerated; its published page still cannot be reached from this account (see above).

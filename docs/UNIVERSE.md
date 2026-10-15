@@ -76,7 +76,10 @@ Broodfall: see "What a broodfall is for", below.)
    `back-13`). The skirmishes were heightened when the Sadducees
    learned the Empire was uploading the Sadducees it killed, and demanded they be deleted; one of the uploaded did not
    want to be. The Empire said it was done and deleted only those who asked for it; were that discovered, the conflict
-   would reignite (Collins, Oct 15 2026). The Sadducees' allies
+   would reignite (Collins, Oct 15 2026). The Sadducees keep no cap at a hundred and twenty: their ruling council is
+   still ruled by the original man spliced from the Davidic line and the scientists who made him, and their families,
+   many of them hundreds of years old, which is a large part of why the Satmar see them as a kind of being genuinely
+   set apart (Collins, Oct 15 2026). The Sadducees' allies
    are America's Baptists, whom they supply, which keeps America peaceful and capable; the Mormons expand by
    police state, not fertility; the Anabaptists were mostly wiped out when law and order went, pacifists, and the
    Amish are extinct on Earth though not in space (below); Latin America emptied after
