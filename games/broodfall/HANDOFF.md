@@ -2332,3 +2332,36 @@ is illegal: orthodox and vulgar at once, which is why YOKE can be more sympathet
   that owns it republishes it from the file, `url` set, `capabilities` omitted.
 - PROPOSAL (his to keep or strike, `empire.md` 16): the name "womb clause"; the Gene War's weapons and the three
   generations; the Board's edit ledger as the enforcement; "neko" as their own word and "cat girl" the Index's.
+
+### Eugenicists, the Sadducee quarrel, the sanctified, krypteia removed, four new YOKE lines (Oct 15 2026, later)
+
+Collins's lore, his words kept in `content/lore/empire.md` 6c, 9, 12b and 5:
+- **Why nobody stops the killing at school**: to suggest it means you want the dysgenic crisis back (so stupid nobody
+  assumes it) or you are a eugenicist, which in the Empire means one who claims to know, in the abstract, which genes
+  society should have (the word's real meaning; everyone edits, not to is child abuse): claiming to know better than God,
+  the highest sin, since refusing both the dysgenic spiral and death-as-selection leaves only a council that chooses.
+  The fears of dying and pain were engineered away as adaptations to another world. Sadducees hold a life precious in
+  itself; Technopuritans hold that the capacity to sacrifice (what Jesus taught) gives a life value. 6c, with the corpus.
+- **The Sadducees**: their temple makes the genetic decisions for their people, so no school that kills; to them we are
+  kid killers, to us they are eugenicists overriding God's will out of lower-order fears; they do not get the diversity
+  obsession or the uplifts. 9, "The second fracture".
+- **The sanctified** (1 Corinthians 6:3, "judge angels"): the most moral dead, proven in heaven's simulations, run cities
+  and great ships; processing is cheap, moral minds are scarce, and finding them is part of what heaven is for. **The dead
+  reach the living only down a line the living open** (his dad; Atlas and her friend). **Sanctified companions are now
+  the fashion**; the technician had YOKE built new. 12b, 7 (Companions).
+- **Krypteia is REMOVED** (Collins: "the Technopuritans don't really have any groups to rule over, the way the lore has
+  played out, and the schools serve the same brutalist function"): `empire.md` 5 is a stub saying so, every live mention
+  in `empire.md`, `docs/UNIVERSE.md`, the lorebook, the brain text and notes, greetings asides and DESIGN.md now says
+  school from 13; four in five do not come out. `lost-11` rewritten (hook "Ask her about school").
+- **Four YOKE lines, his words** (`content/greetings.ts`, COLLINS_GREETINGS in tools/yoke-lines.ts): `won-21` (Sadducees
+  reach adulthood without killing), `back-13` (Sadducees fear death; sanctified), `back-14` (thanks for choosing a
+  new-built companion), `back-15` (the three lives, "Answer her"; if he says temptation should not be edited away she
+  quotes Matthew 5:29-30, pluck out the eye). Each aside carries the lore for her live mind.
+- Her brain: `he survived school` in the brain text; the notes rewritten to carry eugenicists, the Sadducee quarrel, the
+  fears, the sanctified, the line to the dead and the companion fashion, trimmed to fit: **3,999 of 4,000 characters**.
+  The three-lives question did not fit; it lives in `back-15`'s aside. Published to her agent with
+  `node tools/art/make.mjs yoke --publish`.
+- OPEN for him (`empire.md` 16): `back-13` has YOKE say Sadducees believe in a better afterlife; the Oct 12 lore has their
+  creed deny one. Written as YOKE being wrong and checking; whether Sadducees upload too is his call. PROPOSAL: the
+  schoolbook answer to the three lives (the third), the heart's (the second).
+- `notes/YOKE-LINES.html` regenerated; its published page still cannot be reached from this account (see above).

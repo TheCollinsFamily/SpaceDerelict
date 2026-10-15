@@ -48,7 +48,7 @@ interface Branch { label?: string; lines?: Line[]; context?: { who: string; line
 interface Step { id: string; part: string; name: string; what: string; where: string; branches: Branch[] }
 
 /** Which greetings are Collins's own words (the comments in content/greetings.ts say so). */
-const COLLINS_GREETINGS = new Set(['first-lost', 'first-won', 'unlock', 'mate-review', 'catgirl', 'back-5', 'won-19', 'won-20', 'back-11', 'back-12']);
+const COLLINS_GREETINGS = new Set(['first-lost', 'first-won', 'unlock', 'mate-review', 'catgirl', 'back-5', 'won-19', 'won-20', 'back-11', 'back-12', 'won-21', 'back-13', 'back-14', 'back-15']);
 /** The first lines of the Earth news are his (Oct 12 2026: he rewrote the list on this page; the rest were written to match). */
 const COLLINS_NEWS = 9;
 /** Later lines of the news that are his, by their number on the page (23: the Lipptors, Oct 14 2026). */
@@ -226,9 +226,9 @@ const steps: Step[] = [
   { id: 'mood', part: PART_MIND, name: 'Lorebook: her lines, by mood', where: LORE + '  (section 12)',
     what: 'Examples of her voice for each face her body has, for the live mind. Not wired to any moment.',
     branches: one(moodLines(lore)) },
-  { id: 'smalltalk', part: PART_MIND, name: 'Lorebook: Krypteia, the Index, family life', where: LORE + '  (section 16)',
+  { id: 'smalltalk', part: PART_MIND, name: 'Lorebook: School, the Index, family life', where: LORE + '  (section 16)',
     what: 'Small-talk pool for the live mind. Not wired to any moment (the Earth news is the only lore-book pool the greetings read).',
-    branches: one(plain('krypteia', loreList(lore, /Krypteia, the index, family life/), 'lore')) },
+    branches: one(plain('krypteia', loreList(lore, /School, the index, family life/), 'lore')) },
   { id: 'uplifts', part: PART_MIND, name: 'Lorebook: the uplifts', where: LORE + '  (section 16)',
     what: 'The boss, the elephants, the orcas, the cat girls: a small-talk pool for the live mind. Not wired.',
     branches: one(plain('uplift', loreList(lore, /The uplifts/), 'lore')) },

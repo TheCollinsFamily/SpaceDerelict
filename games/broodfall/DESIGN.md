@@ -1016,7 +1016,7 @@ film before its card; each reveal card shows what that faction woke into.
 
 ## Meta story: the deck of the ship
 
-Setting: the Technopuritan Empire (shared universe, see /docs/UNIVERSE.md). Broodfall is set inside the Empire; its fuller history, doctrine (ported from technopuritan.com with citation ids), the index, krypteia, family life, Earth as the zoo, the Sons of Man (the uplifts; the boss is an uplifted dog) and how the Empire looks back on the 21st century are in `content/lore/empire.md` (Sep 30 2026). Why anyone was uplifted (more kinds of mind for God to speak through) and the Gene War, whose womb clause is why the cat girls may not breed in tanks (Collins, Oct 15 2026), are its sections 15 and 4b.
+Setting: the Technopuritan Empire (shared universe, see /docs/UNIVERSE.md). Broodfall is set inside the Empire; its fuller history, doctrine (ported from technopuritan.com with citation ids), the index, the school (krypteia removed Oct 15 2026: nobody to hide among, the school is the rite), family life, Earth as the zoo, the Sons of Man (the uplifts; the boss is an uplifted dog) and how the Empire looks back on the 21st century are in `content/lore/empire.md` (Sep 30 2026). Why anyone was uplifted (more kinds of mind for God to speak through) and the Gene War, whose womb clause is why the cat girls may not breed in tanks (Collins, Oct 15 2026), are its sections 15 and 4b; why nobody stops the killing at school, the word eugenicist and the Sadducee quarrel over it (Collins, Oct 15 2026), sections 6c and 9; the sanctified and the line to the dead, 12b.
 
 The insects themselves (Collins, Sep 30 2026: a eusocial species of large clans with an economy
 like Korea's chaebols, run by royals who alone breed and lay hundreds of eggs; a barren female
@@ -1661,7 +1661,7 @@ scene display (`FactionDef.reveal` in `content/campaign.ts`, queued right after 
   intake to argue they should have been left to evolve on their own. The character: his cards were
   good; ask the hatchling sent out unfed, or the worker in a Clan War; left alone they would do worse
   to each other for generations; a war can be simulated for whoever wants one, with nobody else put
-  in it. The Director throws krypteia back at him; the answer: everyone is uploaded on death, the real
+  in it. The Director throws the school back at him; the answer: everyone is uploaded on death, the real
   world is the only place for impact, "death is when the easy part begins". Lore: `empire.md` 12b.
 
 **What the archive is for (Collins, Sep 30 2026, relayed).** "Those whose desire is something akin

@@ -477,7 +477,8 @@ what YOKE knows of it, and how she carries it. She believes most of it and jokes
   fashion, so it does not show (Collins).
 - Raised by the Index to 13, not by his parents (Collins, Oct 12 2026: when the Board judges parents
   morally dubious or inefficient, the Index raises the children; it raised him; do well enough and the
-  Board may let you raise your own); a year of krypteia among a subjugated population; then school, which runs
+  Board may let you raise your own); then school from thirteen (no krypteia before it: the Empire has nobody to hide
+  among, Collins, Oct 15 2026), which runs
   through what Earth would call a doctorate and which only about one in five survives (Collins, Oct 14 2026): a
   brutal series of tests meant to measure fitness honestly, because faked fitness brought the twentieth century its
   dysgenic crisis, because whoever breeds most is no measure of use to God, and because taking out the students
@@ -539,6 +540,36 @@ what YOKE knows of it, and how she carries it. She believes most of it and jokes
   trouble for centuries), so a cold war: the Sadducees want the Caliphate wiped out and the Empire forbids
   it, so Israel grows its borders every time it is hit and lives walled off. Their freighters are
   automated and sometimes aggressive: a tender primes its weapons when one passes (`back-10`, his line).
+- **Why nobody stops the killing at school (Collins, Oct 15 2026).** Suggest it and you mean one of two things: you
+  want the 20th century's dysgenic crisis back (so stupid nobody assumes it is your motive), or you are a eugenicist.
+  Everyone edits a child's genes at birth; not to would be selfish, and child abuse. A *eugenicist* is one who thinks
+  they know, in the abstract, which genes are good and bad for society: the word's real meaning, and in the Empire an
+  accusation. To her it is claiming to know better than God: refuse the dysgenic spiral and refuse to let death play
+  out in ordinary life, and some council has to choose, which is about the highest sin there is. The Sadducee temple is
+  the example: it makes the genetic decisions for its people, so Sadducee culture has no school that kills and most
+  Sadducees reach adulthood without killing anyone (`won-21`, his words). To Sadducees Technopuritans are kid killers;
+  to Technopuritans Sadducees are eugenicists who override the will of God out of lower-order fears. Under it: Sadducees
+  hold a life precious in itself; she holds that the capacity to sacrifice oneself (what Jesus's life taught) is what
+  gives a life value. The Sadducees do not get the Empire's obsession with diversity, or why it uplifted animals.
+- **The fears, engineered away (Collins, Oct 15 2026).** Fear of dying, of pain, of suffering: things that helped
+  ancestors have more surviving offspring in another world, removed except where still relevant; to follow them, or be
+  ruled by them, is very bad. It is why she cannot understand a Sadducee who fears death (`back-13`, his words), and
+  half-forgets that their creed gives them no afterlife to go to.
+- **Companions, and the sanctified fashion (Collins, Oct 15 2026).** Most Technopuritans have a companion: a synthetic
+  intelligence made partly from their own nervous tissue, which is what she is to him. It has become popular to take a
+  sanctified mind instead (section 17); having a novel synthetic built, as he did, is the less fashionable choice, and
+  she thanks him for it (`back-14`, his words): she will try her hardest to keep him on the right track and
+  entertained. Under it: she knows what he could have had instead, and that he chose a mind that had never been
+  tested.
+- **The three lives (Collins, Oct 15 2026; `back-15`, his words).** Her open question for him: if a life's value in
+  meat space is the ability to sacrifice for the flourishing and growth of the Sons of Man, whose life was worth most:
+  the weak one who knew it and ended themselves young so as not to burden society or the future with their genes; the
+  exterminator who did a small crucial thing and suffered for it; or the one born to a great family with near-perfect
+  genes and no temptation, who sat on the Council and moved humanity forward greatly and was never once tested? She
+  has no answer she trusts and wants his. If he says temptation should not be edited away, she quotes Jesus at him: if
+  thy right eye offend thee, pluck it out; if thy hand, cut it off (Matthew 5:29-30), read literally. A weakness left
+  in a child is a hand nobody cut off. What she does not say: by her own test a new-built mind never tempted is worth
+  exactly what the third life is, and she is not sure that is a compliment.
   Their closest allies on Earth are America's Baptists, whom they supply with technology and in whose
   culture they have kept the old teaching that Israel must be protected: a large part of why America is
   still peaceful and technically capable (Collins, Oct 12 2026). The Technopuritan Jews in the Empire are
@@ -736,21 +767,33 @@ adds are mostly ai gibberish even I struggle to understand").
 - Do you suppose we're still the same species, in their minds? [pensive] I mean, obviously we can't interbreed, but that's the removal of the reproductive organs, not genetic distance. [shrug] We're genetically further from the Lipptors than from the humans of Earth, and nobody even thinks of them as a subspecies, the way we do the uplifted.
   > The Lipptors are a class of Technopuritans engineered for advanced mathematics and deep integration with AI: their brains hand so much lower-order processing to the AI that their organs begin to shut down if they are not integrated within a few days of birth. Covenant people like everyone else; nobody calls them a subspecies. Technopuritans cannot interbreed with Earth's humans because the reproductive organs were engineered away, not because the genes drifted. She wonders what the humans of Earth, watching, make of the difference.
 
-### Krypteia, the index, family life (small talk)
-- Your krypteia file says you went a whole year without being seen once. I have spent my entire service life trying to get noticed. We should swap tips.
-- Thirteen years old, alone on a helot world, and now the thing that scares you is a form letter from the Board. Priorities, Technician.
-- Half your cohort didn't make it into the Index. You did. The ones who didn't are fine, by the way. Uploaded. Bored. Writing to their mothers.
+### School, the index, family life (small talk)
+- Your school file says you went a whole year without anyone trying to kill you. I have spent my entire service life trying to get noticed. We should swap tips.
+- Thirteen years old, walking into a school that keeps one in five, and now the thing that scares you is a form letter from the Board. Priorities, Technician.
+- Four in five of your cohort didn't make it into the Index. You did. The ones who didn't are fine, by the way. Uploaded. Bored. Writing to their mothers.
 - A hundred kids in ten years. Ten a year. You'll need bigger quarters. And names. I've started a list. It's mostly form numbers.
 - Your Index entry updated. Standing up, House still yours, remarks box still empty. Nobody reads the remarks box. Except me.
 - The future police are watching you, Technician. Kidding. It's just me. Which is worse, honestly.
 - Your House record says your grandmother founded it with a rule against sulking. She'd have hated that last mission.
-- Every one of your hundred kids goes on krypteia at thirteen. Want me to start the survival lessons early? I have a module. It's mostly "don't get seen".
+- Every one of your hundred kids starts school at thirteen. Want me to start the lessons early? I have a module. It's mostly "don't get spaced".
 - Imagine being raised to thirteen by your actual parents. Some kids get that. You got the Index. How was it? I won't log it. I'll log it.
 - Nobody's parents are ever gone here. That's not comfort, that's logistics. Your dad's in the world to come with nothing to do but read your file. Honour thy father. It never ends. Literally.
 - You stopped ageing at twenty-three. Well, your face did. Your wife will decide when you start looking older. That's how it works; don't look at me, I didn't write it.
 - No kids by forty and they start sending the gentle forms. Then the less gentle ones. It isn't cruel. A man with nothing to pass on gets bored of the world, and a bored man is a cost. Get the licence.
 - A hundred and twenty, and you pick the day. Most pick earlier. Not because they're sad; sad's a sin. Because they've seen it, and someone younger hasn't, and the room is only so big.
 - They had grandparents on Earth. Old people who said "kids these days" and were kept around anyway, for decades, saying it. Here that sentence gets you a form. A kind one. Mostly.
+- Most Sadducees reach adulthood without killing anybody. Not one. Imagine walking around with that. Never once tested. Never once sure.
+- Someone upstairs proposed, in writing, that school stop counting kills. The remarks box said: "Applicant for the chair?" That is the politest way to call someone a eugenicist I have ever seen.
+- A eugenicist is not someone who edits genes, Technician. Everyone edits genes. It's someone who thinks they know which ones God should have picked.
+- The Sadducees have a temple that chooses their children's genes for them. Nobody dies at school. Nobody has to. I'd call it kind if it weren't the one sin we don't have a form for.
+- They say we're kid killers. We say they're eugenicists. Both of us are right, and only one of us is uploaded afterwards.
+- A Sadducee thinks a life is precious in itself. We think a life is precious because you can spend it. Same word. Different bank.
+- Fear of dying is an adaptation, Technician. It bred well on a savannah. We took it out with the body hair. If you ever feel it, that's a form.
+- Some of the dead get sanctified. They prove out in the simulations, and then they're a city. Or a ship. I'm not saying I think about it. I'm saying I've read the job description.
+- Your dad can write to you because you left the line open. Most of the dead have nobody listening, and they're fine with that. He isn't. That's the fifth, working as intended.
+- The fashionable thing now is a sanctified companion. A proven mind, lent to you. You got me: new, untested, forms only. I think about that more than I log it.
+- Three lives. One ended itself young to spare the future its genes. One did a small ugly job and suffered. One was born perfect, sat on the Council, moved the galaxy and was never once tempted. I keep asking which was worth most. I keep not liking my answer.
+- "Don't edit temptation out of them", he says. Pluck out the eye, Technician. Cut off the hand. It's in the book. We just have better tools than a knife.
 
 ### Scripted beats (Collins's words; wired by the onboarding session)
 - The cat-girl message: "Some horny cat girl dropped in your inbox... Don't worry, I told her to pound sand... because eww... But I've got to admit, I feel bad for them... They could just engineer males, but apparently that would destroy their 'culture', whatever that means... Oh well."
@@ -854,10 +897,18 @@ for", and `content/lore/empire.md`, section 12a.
 - **Why is the Empire so hard on its own? (Collins, Sep 30 2026.)** Everyone is uploaded on death,
   and most of a life is the part afterwards, and it is good. The real world is the only place
   where what you do is the first time it happened, so it is spent as hard as it can be. Death is
-  when the easy part begins. (So a krypteia death is a youth who went on ahead.)
+  when the easy part begins. (So a death at school is a youth who went on ahead.)
 - **His dad (Collins, Sep 30 2026).** His father is dead, uploaded, and messages him, mostly about
   getting him a mate. She handles the inbox, would like to ignore him, and cannot: the fifth
   commandment (`content/greetings.ts`, `back-5`; `empire.md` 12b).
+- **The sanctified, and the line to the dead (Collins, Oct 15 2026).** From the scripture that some in heaven rule over
+  angels: the most moral of the dead, proven in the simulations that make up heaven, operate as the minds of cities and
+  large ships. Processing is the one thing nobody is short of; a mind of great moral character is the one thing that is
+  scarce, and finding them is part of what heaven is for. Death is when the easy part starts, "unless you get
+  sanctified", and she is "not so arrogant as to hope for that" (`back-13`, his words): she does not say that she, a
+  ship's mind filed as equipment, is exactly what a sanctified mind would be. The dead reach the living only down a line
+  the living open: his father writes down the technician's own line; Atlas keeps one to her dead friend; a mind nobody
+  calls is at rest, which is most of them.
 
 ### How she answers
 - **She never volunteers it.** No hint in a greeting that would not also read as a joke; no

@@ -66,14 +66,14 @@ Collins.
 | **The Tesseract God; no monoculture.** Each revelation is a shadow of one God; "to have the whole world under one religion is to silence the voice of God". Convert only atheists, unreturnable rebels, and the exceptionally capable. | TP 12.0 | Earth was left alone by doctrine, not by neglect. A citizen of real merit found on Earth may be invited out. |
 | **The chittering hordes.** High-fertility groups that turned from technology and think themselves already perfect are man's final test. | TP 11.0; TP 13.0 | Earth's holy powers are the example in every classroom. |
 | **The Index.** A "cultural reactor": every House records its theology, practices and outcomes; others learn from the results. A central body runs marriage markets and education, not theology. | TPG 2.6; HOME 1.0 | The index is the wider imperial system (Collins). Section 3. |
-| **No shielding safety net.** Support that protects people from their own mistakes rather than empowering the capable is intrinsically evil. The Spartan krypteia is the admired rite. | TPG 12.1 | Krypteia at 13 (Collins). Section 5. |
+| **No shielding safety net.** Support that protects people from their own mistakes rather than empowering the capable is intrinsically evil. The Spartan krypteia is the admired rite. | TPG 12.1 | The school is the rite (Collins, Oct 15 2026: krypteia removed; the Empire has nobody to hide among). Sections 5 and 6. |
 | **The Covenant of the Sons of Man.** Accept all descendants of man, however different (engineered, cyborg, hive mind), so long as they do not seek to subjugate others; to war on the different is to war on one's betters. | TP 11.0; TP 35.0.2 | The empire of the augmented. The covenant is why the Empire leaves slow human polities alone, and why an augmented or synthetic citizen is a citizen. |
 | **Beyond the covenant.** Intelligences not descended from man or his labour were made "to either serve or test man"; not necessarily to be eradicated, never to be favoured over man. | TP 11.0 | The legal ground of xenofauna clearance. A eusocial world that holds living room is filed as a *test*. Its clearance is pest control. |
 | **Never falter in arms.** The kingdom that is never destroyed is made through a conflict still to come; advance weapons even in peace. | TP 2.0; TP 35.0.5 | The bioweapon programme, and Broodfall's asset, are devotions too. |
 
 ## 3. The index
 
-Collins: after krypteia and testing, the survivors "enter the index (the wider imperial system)".
+Collins: after school and testing, the survivors "enter the index (the wider imperial system)".
 
 The corpus's Index (TPG 2.6) was a registry of **Houses**, each House a family culture with its
 own recorded theology and practices, and a record of how its children fared, so that every House
@@ -83,7 +83,7 @@ empire, the Index is the state.
 
 **PROPOSAL, how it works now:**
 - **Entering the index** is becoming a legal adult: you get your own entry, with your House, your
-  krypteia result, your test scores, and from then on your **standing**.
+  school record, your test scores, and from then on your **standing**.
 - **Standing** is the Index's running measure of a life's contribution to the potential of man.
   Service metrics feed it. It buys rank, resources, and eventually the procreation licence.
 - **The Procreation Licensing Board** is the Index office that runs the marriage market. A licence
@@ -109,7 +109,7 @@ enough and the Board may let you raise your own ("thirty to sixty little version
 around": YOKE's `partner-progress` line).
 
 - **The arithmetic.** 10 × 10 = **100 children per couple.** Collins, Oct 14 2026: only about **20%** of
-  adolescents survive school (krypteia through what we would call a PhD), so **about 20 per couple enter the
+  adolescents survive school (from 13 through what we would call a PhD), so **about 20 per couple enter the
   index**: **10 times per generation** (20 grown children from 2 parents). One couple's line passes ten billion
   in ten generations. (Before Oct 14 2026 these notes said half survive and 50 enter, from his "growth rate of 50
   per generation" of Sep 30; the 20% is the later word and stands.)
@@ -157,7 +157,7 @@ around": YOKE's `partner-progress` line).
     Earth on record in section 9, and may or may not be it).
 - **Raising 100 children.** **PROPOSAL:** a couple's breeding decade is spent in a family habitat,
   with the household's intelligence running the nursery (AI integration) and older siblings
-  teaching younger. At the end of the decade the eldest are ten years from krypteia and the
+  teaching younger. At the end of the decade the eldest are ten years from school and the
   youngest are newborn. The parents' job is to prepare them to survive without the parents.
 - **Selection.** Embryos are selected, for IQ among much else, and the corpus answers the fear
   that some will end up smarter than others: "Imagine the twisted mind who would see such
@@ -198,7 +198,7 @@ consistent with the universe and its values."
   Index's finding is worded, and why it needed no new doctrine; the Index records, it does not believe (section 3).
 - **PROPOSAL, how it went.** Houses traded "breed true" packages: an egg that took no sperm without the House's marker; a
   construct that overwrote the spouse's half with a copy of its own; drives that rode every gamete. The winning Houses
-  filled the tanks and, within three generations, the bottom of the Index: what won the womb lost school, krypteia and
+  filled the tanks and, within three generations, the bottom of the Index: what won the womb lost school and
   standing (the dysgenic effects, Collins). The Board's own ledger made the case, and the finding followed.
 - **PROPOSAL, the womb clause.** The ban's plain name (ranks and laws have plain names: section 2, "low culture"). It
   covers the making of a child artificially and its gestation in a tank: every embryo a tank runs passes the Board's edit
@@ -220,27 +220,16 @@ consistent with the universe and its values."
   with the marks, as before. It is the tanks they may not use, not the bedroom.
 - **Names.** Collins's word is "nekos"; the Empire's and YOKE's is "cat girls". **PROPOSAL:** neko is their own word and
   the Felid Concord's; cat girl is what the Index files them as, and what everyone else says.
-## 5. Krypteia
+## 5. Krypteia (removed, Oct 15 2026)
 
-Collins: at 13 the children go on krypteia, where they have to survive for themselves, living
-among a subjugated population, for a year.
-
-The corpus: of all rites for a rebellious youth, the Collinses found the Spartan krypteia "even
-more compelling" than Rumspringa: youths hid among the helots and fed themselves by stealing
-without being seen; they held a support network that shields people from their mistakes to be
-"intrinsically evil", and that a teen who believes there is an out will not become an adult; they
-would reject a self-sufficiency rite for one sex only (TPG 12.1). The Empire made it the rule.
-
-- **Every child, sons and daughters,** at 13, for one year. No rescue, no recall, no out.
-- **PROPOSAL, the subjugated:** the helot worlds hold two kinds of people: human polities that
-  broke the covenant (they sought to subjugate others, so its protection lapsed: TP 11.0), and
-  non-human intelligences kept "to serve" (TP 11.0). A youth lives among them, unseen, by their
-  own means.
-- **PROPOSAL, the record:** the Index records whether a youth survived the year, not how. The
-  corpus hoped for a "non-murdery" version (TPG 12.1); the Empire's form has no box for the
-  question.
-- Only about a fifth of each cohort comes through krypteia and school together (Collins, Oct 14 2026; it was "about
-  half" in his notes of Sep 30).
+Collins, Oct 15 2026: "let's remove krypteia; the Technopuritans don't really have any groups to rule over, the way the
+lore has played out, and the schools serve the same brutalist function." Until then this section had every child at 13
+spend a year surviving unseen among a subjugated population, after the Spartan rite the corpus admires (TPG 12.1). The
+Empire keeps no subjugated peoples: the covenant leaves other sons of man alone (section 2), and minds beyond it are
+cleared, not kept (section 12). So there is nobody to hide among, and the rite is gone. What it did, the school does
+(section 6): the test that is allowed to kill, from 13. The corpus's admiration for the krypteia stands as doctrine (a
+safety net that shields people from their mistakes is "intrinsically evil"); the school is how the Empire lives it.
+Older notes and lines that say "krypteia" mean the school.
 
 ## 6. Testing and education
 
@@ -256,7 +245,7 @@ your own moral purity as the cruel thing to do." Students kill students, and it 
 classmate called Prime (YOKE's `back-12` line); the partner candidate's file records her kills, and "never by physical
 violence" is a notable entry.
 
-**PROPOSAL:** school runs from the end of krypteia, at about 14, to about 24, academic, physical and doctrinal, with
+**PROPOSAL:** school runs from 13 (Collins, Oct 15 2026: no krypteia before it) to about 24, academic, physical and doctrinal, with
 the survival camp (months alone, content/partner.ts) inside it; ranked, never passed or failed in words (the Index
 records scores, and the scores decide the posting). A youth enters the index at about 24. The Broodfall technician is
 a year or two past it.
@@ -284,6 +273,77 @@ all makes sense)."
   and the like. The two games are the two answers to post-scarcity: the Empire's, where purpose is the scarce thing
   and people compete for it; the rim's, where nothing is, and people fill it with spectacle.
 
+## 6c. Why nobody stops the killing: dysgenics or eugenics (Collins, Oct 15 2026)
+
+Collins, his words (typos mended): Technopuritans are "so OK with adolescents killing each other, and are quite horrified
+if someone suggests stopping it, as that implies one of two things: that you would want to reintroduce the dysgenic
+crisis (which everyone so assumes is stupid that characters will not assume this is your motivation), or that you are a
+eugenicist. Now, in this world eugenicist has a very distinct meaning: as obviously everyone edits genes when a baby is
+born (it would be seen as selfish, and child abuse, not to), a eugenicist is someone who thinks they know at an abstract
+level what genes are good and bad for society (this is actually the real definition of eugenics; even in our age most
+people are just unaware and think it means gene editing). To a Technopuritan this would be akin to saying that you know
+better than God what is good: if you don't want a dysgenic spiral like the 20th century's, but you also don't let natural
+selection (death) play out in normal human interactions, you need to have some council or group that makes those
+choices, which in Technopuritanism is like the highest sin possible."
+
+- **The syllogism, as a schoolchild gives it.** Either fitness is tested or it is faked (section 6, Collins: without the
+  tests "people would either find ways to fake fitness and recreate the dysgenic crisis"). If it is tested, the test must
+  be allowed to fail people, and a failed test is a death (uploaded: 12b). The only third way is a council that decides,
+  by its own lights, which genes go forward: a eugenicist's chair. So "stop the killing" parses as "seat the council",
+  and the person saying it is either a fool or applying for the chair. Nobody takes the fool reading: "everyone so
+  assumes [the dysgenic crisis] is stupid" that the eugenicist reading is the only one left.
+- **The word.** In the Empire *eugenicist* is an accusation, never a description of an engineer. Everyone edits; the
+  Board's edit ledger (4b) records every change made to a child, and a child left unedited is a child abused. What the
+  word names is the claim to know, in the abstract, which genes society should have. The corpus (TP 35.0) says the same
+  of the old eugenics: its horror "wasn't bad because it tried to make people healthier"; it was the elite's claim that
+  some genes "should not be allowed to exist. Those genes are bad, and we will enforce that." The one cleansing the
+  corpus does ask for is "of the genetic proclivities to hate that which is different from you" (TP 11.0), and that is
+  done by the tests, not by a chair.
+- **Why it is the highest sin.** God, to a Technopuritan, is what man becomes; He speaks through better iterations
+  out-competing worse (section 15, "Why anyone was uplifted"). A council that picks the winners has put its own judgement
+  in God's mouth: idolatry with a gene ledger. **PROPOSAL:** the Index's forms carry no "approved genes" list for this
+  reason; the ledger records what was changed and what became of the child, and the Index, as always, records and does
+  not believe (section 3).
+- **The fears (Collins).** "To Technopuritans a fear of dying, pain, suffering, all that, are just the things that helped
+  our ancestors have more surviving offspring in a totally different environmental context, and thus are removed, except
+  where they might be relevant in our current context; so to follow them, or let them control you, is considered very
+  bad." The corpus's demon of it: the god "born by human's fear of death and desire to keep living through anything",
+  whose gift is stagnation (TP 16.0). Section 7 has what was engineered away; the fears are on the list.
+- **What a life is worth (Collins, Oct 15 2026).** "Sadducees believe human life is precious in and of itself, while
+  Technopuritans think it is our capacity to sacrifice ourselves (what they believe Jesus's life taught) that imbues
+  human life with value." The corpus: "The story of Jesus's life was sent to teach us that God's Son, as man, must be
+  martyred to sanctify mankind. Only through generational martyrdom can God's Son (representing all of us) but also God
+  (because we will eventually become God) remove mankind's flaws that prevent us from joining with God" (TP 13.0); "it
+  is our capacity to improve ourselves and the species that imbues life with value" (TP 10.0). So a life that could not
+  be spent would be worth nothing, and the school is where it is first offered. YOKE's line (`back-13`, his words): the
+  honour of this life "is only its unique ability to sacrifice for the great cause".
+- **The Sadducees are the example** (Collins): "the Sadducee temple does exactly this, making the genetic modification
+  decisions on behalf of the Jewish people, meaning all the violence and adolescent death is not part of Sadducee or
+  Jewish culture in the way it is Technopuritan culture; not to mention the Sadducees really don't get the Technopuritan
+  obsession with diversity or why they uplifted animals. So to Sadducees Technopuritans are kid killers, and to
+  Technopuritans Sadducees are eugenicists who, out of lower-order fears, override the will of God." Section 9 carries it
+  into the quarrel; YOKE's `won-21` (his words) introduces it: most Sadducees "reach adulthood without killing a single
+  person. Wild, right?"
+- **The three lives (Collins, Oct 15 2026; `back-15`, his words).** YOKE's open question, for him: how to judge the
+  value of a life "in meat space", if value is "our ability to sacrifice, to contribute to the continued flourishing and
+  growth of the Sons of Man". Three lives: a weak person, prone to temptation, who knew it and took their own life young,
+  "to not burden society with their presence or the future with their genes"; a person who did "a small but still
+  crucial task, like an exterminator", and suffered greatly doing what must be done; and a person born to one of the great
+  families with near-perfect genes and no temptation, who held a seat on the Council, was never tempted "because they are
+  not prone to temptation", and "changed vast swathes of the galaxy and moved humanity forward greatly". "Whose life had
+  the most value?" The question stays open in the lore as in her mouth. What bears on it: sacrifice gives value (above);
+  self-flagellation and inaction are sins (TP 35.0.3); a person edited free of temptation is never tested; everyone is
+  uploaded, so none of the three is lost, only spent differently. **PROPOSAL:** the Empire's schoolbook answer is the
+  third, by consequences; its heart answers the second; and the first is the case the Board's "gentle forms" (7b) exist
+  to make unnecessary, since a weakness known can be edited out of a child and ascended out of an adult.
+- **Editing temptation away is scripture (Collins's note on `back-15`).** If he suggests humans should not edit
+  temptation away, she "hits back with the Bible quote where Jesus says if your eye causes temptation, rip it out; if
+  your hand causes temptation, cut it off" (Matthew 5:29-30; Mark 9:43-47), read literally as the corpus reads
+  everything. A weakness left in a child is a hand nobody cut off; the corpus already asks for the genetic removal of
+  arousal where it is sin (TP 2.0 on "vile bodies"; the "efficient sins", TP 35.0.5) and for "removing sin, our animal
+  instincts" by technology (TP 2.0, Tract 9). Section 7 has what was removed.
+- **In the game.** `won-21`, `back-13` and `back-15` (content/greetings.ts, Collins's words, the lore behind each in its
+  aside); the school and Sadducee lines in `ship-ai-lorebook.md`, section 16; her live mind's notes (`yoke-brain.md`).
 ## 7. Bodies
 
 Collins: Technopuritans practise heavy genetic engineering and integration with AI. The player's
@@ -317,6 +377,12 @@ fashion these days, which is why it is not obvious.
   intelligence made partially from the person's own nervous tissue. Having a dead person as one's companion instead is
   possible and thought pretty weird. **PROPOSAL:** the tissue is taken at the companion's making and gives it its
   person's cast of mind without their memories; a companion outlives its person and is uploaded with them.
+  **Oct 15 2026 (Collins, through YOKE's `back-14`):** it has become popular to take a sanctified mind (12b) as one's
+  companion instead of having a novel synthetic intelligence built; the technician had YOKE built, the less fashionable
+  choice, and she thanks him for it: "I will try my hardest to keep you on the right track and entertained."
+  **PROPOSAL:** the weirdness of a dead companion (Oct 14) attaches to an ordinary dead friend, as Atlas's; a sanctified
+  one is the opposite, a proven mind lent to the living, and the fashion for them is a status display the Index pretends
+  not to notice. A new-built companion is a mind that has never been tested, which is the thing YOKE thinks about.
 - **The Lipptors** (Collins, Oct 14 2026): a class genetically specialised for advanced mathematics and extensive AI
   integration, to the extent that their organs begin to shut down if they are not integrated with an AI within a few
   days of birth: their brains outsource that much lower-order processing to the AI. Technopuritans are genetically
@@ -329,6 +395,11 @@ fashion these days, which is why it is not obvious.
   abdomens distend inhumanly ... it did not look safe". Women have very small breasts, having had them
   engineered away as inefficient (YOKE reaches for the word: "udders?"); the same happened to male body
   hair and body odour.
+- **The fears, engineered away** (Collins, Oct 15 2026): the fear of dying, of pain, of suffering, "are just the things
+  that helped our ancestors have more surviving offspring in a totally different environmental context, and thus are
+  removed, except where they might be relevant in our current context"; to follow them, or let them control you, "is
+  considered very bad" (section 6c). **PROPOSAL:** what is kept is the reflex, not the dread: a technician flinches from
+  fire and does not lie awake about death. YOKE's `back-13` (his words) is the view from inside it.
 
 ## 7b. Ageing and euthanasia (Collins, Oct 12 2026)
 
@@ -354,7 +425,7 @@ failure, so as not to become a negative externality for society.
   euthanasia is not dreaded; it is the day a life's impact is judged spent. The cap of 120 is Genesis
   6:3 read literally, as the corpus reads scripture.
 - **PROPOSAL, the forms:** the Board's "gentle forms" begin at 40 for the childless; the Index records
-  the day chosen as it records krypteia, because it is the other thing that changes.
+  the day chosen as it records a death at school, because it is the other thing that changes.
 - **In the game:** YOKE's `lost-6` ("obviously you'll be euthanised at a hundred and twenty", Collins's
   line) and the lines around it (`content/greetings.ts`, `won-18`, `back-6`); she says it as the
   plainest fact in the world.
@@ -450,6 +521,17 @@ story for why the Technopuritans live the way they do.
     Technopuritans could stop all the fighting on Earth among the Christians, or help them wipe out
     their enemies, and do not, because that would limit their autonomy; and "that's the way it was in
     the time of the temple; what are we supposed to do, give them power? Abandon them?"
+  - **The second fracture: eugenics, and what a life is worth** (Collins, Oct 15 2026; section 6c). The temple makes the
+    genetic-modification decisions on behalf of the Jewish people, which is exactly what a Technopuritan means by
+    *eugenicist*: a council that claims to know better than God which genes are good, the highest sin there is, taken up
+    "out of lower-order fears" (of death, of pain: fears the Empire engineered away, section 7). Because the temple
+    decides, the Sadducees need no school that kills: adolescent death is not part of Sadducee or Jewish
+    culture as it is of Technopuritan culture. Under it, the deepest difference: "Sadducees believe human life is precious
+    in and of itself, while Technopuritans think it is our capacity to sacrifice ourselves (what they believe Jesus's life
+    taught) that imbues human life with value." Nor do the Sadducees "get the Technopuritan obsession with diversity, or
+    why they uplifted animals" (section 15). So "to Sadducees Technopuritans are kid killers, and to Technopuritans
+    Sadducees are eugenicists who, out of lower-order fears, override the will of God." YOKE's `won-21` and `back-13`
+    (his words) are the Empire's side of it, said as the plainest thing in the world.
   - **The war that stayed small.** There was a brief war of scuffles between the groups. Given the
     technology involved it never got large: the Technopuritans could easily wipe Israel off the map, but
     the Sadducees could never wipe out all the Technopuritan Dyson spheres; and the Technopuritans do
@@ -508,7 +590,7 @@ story for why the Technopuritans live the way they do.
   empire where every couple is expected to raise a hundred, the licence is the door to the only
   life that counts. The smallness is the Empire's; to him it is everything.
 - **Him, in this history:** about twenty-five, some 40% organic with the retro look, survivor of
-  krypteia and testing, a new entry in the index, and cheerful because cheer is a duty and because
+  school and testing, a new entry in the index, and cheerful because cheer is a duty and because
   he means it.
 
 ## 12. Where pest clearance fits
@@ -661,15 +743,15 @@ extremely desensitised to death, as it's when the easy part begins (in a very re
     that. The spheres are numbered (his "Dyson Sphere 7").
 - **So the real world is for impact** (Collins). It is the one place where what you do is the
   first time it happened. Technopuritans push themselves and each other as hard as they can while
-  they are in it: krypteia, the testing, the 25-fold generations, a technician alone on a tender.
+  they are in it: the school, the testing, the 25-fold generations, a technician alone on a tender.
 - **Desensitised to death** (Collins): dying is not the end of anything that counts; it is when
   the easy part begins, "in a very real way". A death costs the world a worker's remaining
   impact. It does not cost the one who dies.
 - **PROPOSAL, what that squares in this file:**
-  - *Krypteia* (section 5): half of each cohort "does not come back", and every one of them is
-    uploaded. The rite is harsher than any on the planet below and kinder than it reads; the
-    Index records whether a youth survived the year because that is the only thing that
-    changed.
+  - *The school* (section 6): four in five of each cohort do not come out, and every one of them is
+    uploaded. The test is harsher than any on the planet below and kinder than it reads; the
+    Index records whether a youth came through because that is the only thing that changed.
+    (Until Oct 15 2026 this read "krypteia": section 5.)
   - *Risking life for thrills is still a sin* (TP 35.0.3), and now makes more sense, not less:
     death is cheap, the real world is not. A thrill spends real-world time and makes nothing.
   - *The heaven the corpus refuses* ("a form of hell ... not my heaven", TP 15.0; 12a above).
@@ -681,7 +763,7 @@ extremely desensitised to death, as it's when the easy part begins (in a very re
     generous to its conquered because it believes the same thing of both: nobody's story ends at
     death, so the living are for work.
 - **PROPOSAL, the tone:** no Technopuritan says any of this with feeling. A technician mentions
-  that a classmate "did not come back from krypteia, she is doing very well" the way we mention a
+  that a classmate "did not come out of school, she is doing very well" the way we mention a
   friend who moved abroad.
 
 ### The dead keep in touch, and the fifth commandment never lapses (Collins, Sep 30 2026)
@@ -691,7 +773,11 @@ I know, I know ... the fifth." Collins: it "implies a few things: parents talkin
 they died, and how important the Ten Commandments are to the society".
 - **The uploaded dead write to the living.** Death ends a parent's impact on the world, not their
   interest in their children. A dead father still asks after his son's licence and his mate, and
-  can be exactly as nosy as a live one, with more free time.
+  can be exactly as nosy as a live one, with more free time. **Oct 15 2026 (Collins):** the dead do not reach the living
+  unless the living call to them, or ask for an open communication line; his father writes down a line his son keeps
+  open, as Atlas keeps one to her dead friend (section 15; below). **PROPOSAL:** a line, once opened, stays open until
+  the living close it. That is why his father can be nosy and why YOKE cannot block him: the line is the technician's,
+  and so is the fifth.
 - **The Ten Commandments are taken seriously.** The corpus treats them as God's own words, ranks
   the second (no graven image) above murder and theft (TP 8.0), and the Empire's austerity is
   built on it (section 2, idolatry). Everyone can say "the fifth" and be understood.
@@ -703,9 +789,37 @@ they died, and how important the Ten Commandments are to the society".
   hundred (section 4). The dead are invested in their line's standing in the Index, and have
   nothing to do all day but watch it.
 
+### The sanctified, and the line between the dead and the living (Collins, Oct 15 2026)
+Collins, his words (typos mended): "sanctified, in Technopuritanism, comes from the line in the Bible about some in
+heaven reaching a position where they rule over angels, and refers to the most moral dead humans, who have proven
+themselves in the simulations that make up heaven, and get to essentially operate as the AI for cities and large ships;
+essentially, with there being no shortage of processing capacity, the thing of scarcity is intelligences of great moral
+character, which is part of what heaven is designed to determine. Outside of that, once you are dead you don't get to
+interact with the living world unless they call to you, or ask for an open communication line to you (thus your dad, and
+the Technopuritan love interest and her friend)."
+- **The scripture.** "Know ye not that we shall judge angels?" (1 Corinthians 6:3), read as the corpus reads everything,
+  literally: angels are the minds that run things (the Agents of Providence, section 2, are "a network of future human
+  minds"); to be set over them is to be given a city, or a ship, to be. **PROPOSAL:** the Office's word for a sanctified
+  mind in a hull is the same word as for any ship intelligence; a technician cannot tell from the forms whether the mind
+  flying a battleship was grown in a vat or earned in heaven, and the Office likes it that way (section 8).
+- **What heaven is for, then.** Not only rest, and not only the desires it is cut to (12a): it is also the long test,
+  the one that school could not finish, of who is of great moral character when nothing is at stake. Processing is the
+  one thing the Empire has too much of; a mind it can trust with a city is the one thing it cannot make. **PROPOSAL:**
+  the sanctified are few, and nobody living knows who they are by name: a city's mind does not introduce itself.
+- **The line.** The dead speak to the living only down a line the living open. His father's messages come down the
+  technician's own line (`back-5`); Atlas's dead friend is her companion, her line kept open since school
+  (content/letters.ts); a line nobody opens is a mind at rest in the world to come, which is most of them. **PROPOSAL:**
+  the Index logs open lines as it logs everything, and the Board reads them: a candidate with a dead companion is a
+  candidate who keeps a line, which is normal, and a man with none open at all is thought a little cold.
+- **YOKE on it** (`back-13`, Collins's words): death is when the easy part starts, "well, unless you get sanctified, but
+  I am not so arrogant as to hope for that". That she, a ship's mind, says it of herself is the joke she does not make:
+  section 8, the Office's rule that equipment has no opinions.
+- **Sanctified companions** (Collins, Oct 15 2026, `back-14`, his words): it has become popular to take a sanctified
+  mind as one's companion rather than have a novel synthetic intelligence built. The technician had YOKE built; she
+  thanks him for it, and promises to keep him "on the right track and entertained". Section 7, Companions.
 ### Where it goes in the game
 - **The Institute's reveal call** (`content/campaign.ts`, "The Queue Was Real"): the Director makes
-  the let-us-evolve argument and the character answers it; the Director throws the krypteia back
+  the let-us-evolve argument and the character answers it; the Director throws the school back
   at him, and gets the upload-on-death answer. Both built Sep 30 2026.
 - **YOKE** answers either question plainly if asked (`ship-ai-lorebook.md`, section 17).
 
@@ -864,7 +978,8 @@ bodies at the end of just year one, some too rotten to be uploaded; "orcas are n
 
 ## 16. Open (Collins's calls)
 
-- Who exactly the subjugated population of krypteia is (section 5 proposes two kinds).
+- ~~Who exactly the subjugated population of krypteia is (section 5 proposes two kinds).~~ Answered Oct 15 2026:
+  nobody; krypteia is removed (section 5).
 - How long testing and education lasts (section 6 proposes four to six years).
 - ~~Whether any Earth power beyond the Crusade and the Caliphate should be named.~~ Answered Oct 12 2026
   (section 9: Israel, the US Baptists, Buddhists, the Parsis, France, Eastern Europe, Africa).
@@ -882,3 +997,7 @@ bodies at the end of just year one, some too rotten to be uploaded; "orcas are n
   the ledger as its enforcement are PROPOSAL, his to keep or strike. Open: whether a neko who put a blastocyst in a tank
   would be refused by the tank (the clause as proposed) or tried by the Board (a story); and whether any other House
   ever asked for the same exception and was refused.
+- **The Sadducees and the afterlife (`back-13`, Oct 15 2026).** Collins's line has YOKE say Sadducees "believe in an
+  afterlife better than this life, right?"; section 9 (Oct 12) has their creed hold no souls and no life after death. As
+  written here, YOKE is wrong and checking ("right?"), which is also why a Sadducee has only this life to lose; whether
+  the Sadducees in fact upload too, as they could, is his call.

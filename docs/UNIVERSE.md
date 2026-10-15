@@ -64,7 +64,12 @@ Broodfall: see "What a broodfall is for", below.)
    Empire calls that two peoples and a breach of the covenant; a brief war stayed small (the Empire could
    glass Israel, the Sadducees could not glass every sphere, and their many colonies would be trouble for
    centuries); the cold war now is that the Sadducees want the Caliphate wiped out and the Empire forbids
-   it, so Israel grows every time it is hit and lives walled off (Collins, Oct 12 2026). The Sadducees' allies
+   it, so Israel grows every time it is hit and lives walled off (Collins, Oct 12 2026). The deeper quarrel
+   (Collins, Oct 15 2026): the Sadducee temple makes the genetic decisions on behalf of its people, which to the Empire
+   is eugenics, a council claiming to know better than God which genes are good, the highest sin; so Sadducee culture
+   has no school that kills. The Sadducees, who hold a life precious in itself, call the Technopuritans kid killers, and
+   do not understand the Empire's obsession with diversity or why it uplifted animals; the Technopuritans call them
+   eugenicists who override the will of God out of lower-order fears. The Sadducees' allies
    are America's Baptists, whom they supply, which keeps America peaceful and capable; the Mormons expand by
    police state, not fertility; the Amish were wiped out when law and order went; Latin America emptied after
    China's collapse and America walled it off (Collins, Oct 12 2026). Inside the Empire the Technopuritan
@@ -82,22 +87,35 @@ Broodfall: see "What a broodfall is for", below.)
 How the Empire's own histories read these events is doctrine 3 (the Trial of the Lotus Eaters) and
 doctrine 11 (the chittering hordes).
 
-## Family, krypteia and the index (Collins, Sep 30 2026)
+## Family, the school and the index (Collins, Sep 30 2026)
 
 - **Spouses and wombs.** Technopuritans live with spouses, but babies are had through artificial
   wombs: **10 a year for 10 breeding years = 100 children per couple.**
 - **Raised to 13.** The parents raise them to the age of 13, unless the Board judges the parents morally
   dubious or inefficient: then the Index raises them (Collins, Oct 12 2026; Broodfall's technician was).
-- **Krypteia (one year).** At 13 each child goes on krypteia: a year of surviving by their own
-  means, living among a subjugated population.
-- **School.** Those who survive the year face school, which runs through what we would call a PhD: a brutal
+- **Krypteia: removed** (Collins, Oct 15 2026): "the Technopuritans don't really have any groups to rule over, the way
+  the lore has played out, and the schools serve the same brutalist function." Nobody to hide among; the school is
+  the rite.
+- **School.** At 13 the children enter school, which runs through what we would call a PhD: a brutal
   series of tests meant to measure fitness honestly, that prepares them to enter **the index**, the wider imperial
   system. Students kill students, and it counts for the killer.
-- **About one in five survives** krypteia and school together (Collins, Oct 14 2026; earlier notes said half).
+- **About one in five survives** school (Collins, Oct 14 2026; earlier notes said half).
 - **Nothing is forced** (Collins, Oct 14 2026): not the school, not giving the children to the Index, not the tanks
   (hence the cat people, who breed sexually). Moral failings are marked beside one's social id, pass to the next
   generation if bad enough, and decide what work one can get. Nobody starves: the society is wholly post-scarcity,
   and that is exactly what made people hungry for status and work, since work confers the one scarce thing, purpose.
+- **Why nobody stops the killing** (Collins, Oct 15 2026): to suggest it implies one of two things, that you want the
+  20th century's dysgenic crisis back (so stupid that nobody assumes it is your motive) or that you are a eugenicist. In
+  the Empire everyone edits a child's genes at birth (not to would be selfish, and child abuse); a *eugenicist* is one
+  who thinks they know, at an abstract level, which genes are good and bad for society, the word's real meaning. To a
+  Technopuritan that is claiming to know better than God: if you refuse the dysgenic spiral and also refuse to let
+  natural selection, death, play out in ordinary human interaction, some council must make those choices, and that is
+  about the highest sin there is. The fears of dying, pain and suffering are held to be adaptations to another world,
+  removed except where still relevant; to follow them, or let them rule you, is very bad. Sadducees hold a human life
+  precious in itself; Technopuritans hold that it is the capacity to sacrifice oneself, which they believe Jesus's life
+  taught, that gives a life its value (Broodfall's `content/lore/empire.md`, 6c). Editing temptation out of a child is
+  scripture to them, read literally: if thy right eye offend thee, pluck it out; if thy hand, cut it off (Matthew
+  5:29-30; Collins, Oct 15 2026). A weakness left in a child is a hand nobody cut off.
   So people very rarely break from the society; to them it all makes sense. Anyone who did decide not to live by
   the Index's rules would simply not stay in Technopuritan space: the rim, Space Derelict's setting, is the other
   post-scarcity society, without aspiration to morality or purpose, with constant blood sports, piracy and the like
@@ -200,7 +218,7 @@ across nearly every House.
 13. **No safety net that shields the incapable.** Support that protects people from their own
     mistakes rather than empowering the capable is held intrinsically evil; a youth who believes
     there is a way out does not grow up. The Spartan krypteia, hiding among the helots, is the
-    model rite (TPG 12.1). Under the Empire it is mandatory, and not only for sons: the source
+    model rite (TPG 12.1). The Empire has no helots (Collins, Oct 15 2026), so its school is the rite, and not only for sons: the source
     rejects any rite of self-sufficiency that is for one sex only (TPG 12.1).
 14. **The Covenant of the Sons of Man.** Before leaving the homeworld, man covenants to accept all
     the sons of man — including radically different ones: engineered specialists, human–AI
@@ -234,9 +252,20 @@ are read together. Uplifts look anthro, like the cat girls (Collins).
   world" is their slang for the living world, as against the simulations of the dead.
 - **The simulated dead** (Collins, Oct 14 2026): not every soul in a simulation knows it is in one, especially those
   judged of low moral character by how they act inside it.
+- **The sanctified** (Collins, Oct 15 2026): from the scripture that some in heaven come to rule over angels; the most
+  moral of the dead, proven in the simulations that make up heaven, operate as the minds of cities and large ships.
+  Processing is in no short supply; intelligences of great moral character are, and finding them is part of what
+  heaven is designed to do.
+- **The dead speak only when called** (Collins, Oct 15 2026): once dead you do not interact with the living world unless
+  the living call to you or ask for an open communication line (Broodfall's technician and his father; Atlas and her
+  dead friend).
+- **The fears, engineered away** (Collins, Oct 15 2026): the fear of dying, of pain and of suffering helped ancestors
+  have more surviving offspring in another environment, and are removed except where still relevant; to be ruled by
+  them is very bad.
 - **Companions** (Collins, Oct 14 2026): most Technopuritans have a companion intelligence, as Broodfall's technician
   has YOKE: a synthetic intelligence made partially from the person's own nervous tissue. Taking a dead person as
-  one's companion instead is possible and thought pretty weird.
+  one's companion instead is possible and thought pretty weird. Oct 15 2026: taking a *sanctified* one (below) has
+  become popular; having a novel synthetic built, as the technician did, is now the less common choice.
 - **Bodies by world** (Collins, Oct 14 2026): humans optimised for high-gravity planets are nothing like those
   optimised for life in zero G (Broodfall's technician is zero-G optimised). The Empire holds no animosity over
   genetic difference; it kills over belief and morality, and finds Earth's ethnic conflicts strange.
@@ -413,9 +442,9 @@ The long form, with Collins's words in full, is Broodfall's `content/lore/empire
 - **On death every Technopuritan is uploaded.** Most of a life's experience is the part
   afterwards, and it will be good. So the real world, the one place where what you do is the first
   time it happened, is for impact: they push themselves and each other as hard as possible in it.
-  That is why the Empire is brutal to its own (krypteia, the testing), and why it is extremely
+  That is why the Empire is brutal to its own (the school, the testing), and why it is extremely
   desensitised to death: death is "when the easy part begins, in a very real way".
-- **PROPOSAL, consequences:** krypteia's dead are uploaded like anyone else; risking life for
+- **PROPOSAL, consequences:** the school's dead are uploaded like anyone else; risking life for
   thrills stays a sin (death is cheap, real-world time is not); the easy heaven the corpus calls
   "not my heaven" (TP 15.0) is not refused, only taken last, after the work.
 - **The dead keep in touch** (Collins, Sep 30 2026): the uploaded dead message the living. A dead
