@@ -8,7 +8,14 @@
  *   npx vite-node tools/yoke-lines.ts            → notes/YOKE-LINES.html
  *
  * The page is published at https://claude.ai/artifact/CbXWLvxqcNYzq4GhjmS1Ye (keep the link: publish with the Artifact tool and
- * `url` set; the `db` capability is declared on it, omit `capabilities` on a republish to keep it). His edits live in his browser.
+ * `url` set; `db` and `user` (scope profile) are declared on it, omit `capabilities` on a republish to keep them).
+ * SHARED REVIEW (Collins, Oct 16 2026: "make it a web page so we can share it between claude accounts"): every edit, cut, note
+ * and "reviewed" tick lives in the artifact's database, not the browser, so anyone he shares the page with (his other Claude
+ * account, as Contributor or Editor from the page's Share menu) sees and adds to the same review, live:
+ *   edits/<line id>    { cut, note, text: { <beat index>: <new words> }, base, at, by }   (by = the viewer's opaque user id)
+ *   reviewed/<line id> { base, at, by }   a tick that holds while the line's words hash to `base`; a rewrite clears it
+ * Each line carries `since`, the date its current wording first appeared (notes/yoke-lines-seen.json, kept by this tool), so
+ * the page can show what is new since a reviewer last looked.
  * EXPORT CHANGES writes them to the artifact's database (Collins, Oct 13 2026: "when I hit export save to some external document
  * you can reference, dumping here seems like context waste"), collection `exports`, one document per press, id = the time:
  *   { at, page, n, items: [{ id, group, where, cut, note, text: { <beat index>: { from, to } }, fp }], text }
@@ -22,10 +29,11 @@
  *      from his page on his next visit (Collins, Oct 13 2026: "my old cuts and edits are still there, as they are addressed they
  *      should be removed"). An item you did not act on: delete it from the copy, and its edit stays on the page.
  *   4. ArtifactData action=update collection=exports doc_id=<id> data={ applied: '<date>' } if_version=<the version the query showed>,
- *      so the page's Exports box shows it applied.
+ *      so the page's Exports box shows it applied; and action=batch delete edits/<line id> for each item applied (pin each to the
+ *      version a list of `edits` shows), so the shared review clears at once for everyone, not on the next visit.
  *   5. Re-run this tool, publish notes/YOKE-LINES.html to the url above, commit.
- * `state/draft` in the same database mirrors his edits as he makes them (a safety net: read it only when he says he edited but
- * did not export). The page also clears, on its own, an edit whose line is gone and a rewritten beat now reading as he wrote it.
+ * Unexported edits: list `edits` (they are already shared; `state/draft` is the old pre-Oct-16 mirror). The page also clears,
+ * on its own, an edit whose line is gone and a rewritten beat now reading as he wrote it.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -250,8 +258,23 @@ for (const f of fs.existsSync(EXPORTS) ? fs.readdirSync(EXPORTS).filter((n) => n
   for (const it of j.items ?? []) if (it.fp) processed.add(it.fp);
 }
 
+/** When each line took its current wording: unchanged words keep their date, new or rewritten ones get today. */
+const SEEN = path.join(ROOT, 'notes', 'yoke-lines-seen.json');
+const builtAt = new Date().toISOString();
+const hash = (t: string[]) => { const s = t.join('\u0001'); let x = 5381; for (let i = 0; i < s.length; i++) x = ((x * 33) ^ s.charCodeAt(i)) >>> 0; return x.toString(36); };
+const seen = (fs.existsSync(SEEN) ? JSON.parse(fs.readFileSync(SEEN, 'utf8')) : { lines: {} }) as { note?: string; lines: Record<string, { hash: string; since: string; baseline?: boolean }> };
+const seenNext: typeof seen.lines = {};
+for (const s of steps) for (const b of s.branches) for (const l of b.lines ?? []) {
+  const hsh = hash(l.text), was = seen.lines[l.id];
+  seenNext[l.id] = was && was.hash === hsh ? was : { hash: hsh, since: builtAt };
+  (l as Line & { since?: string; baseline?: boolean }).since = seenNext[l.id].since;
+  if (seenNext[l.id].baseline) (l as Line & { baseline?: boolean }).baseline = true;
+}
+fs.writeFileSync(SEEN, JSON.stringify({ note: seen.note ?? 'When each line took its current wording (tools/yoke-lines.ts keeps it).', lines: seenNext }, null, 1));
+
 const data = {
-  asOf: new Date().toISOString().slice(0, 10),
+  asOf: builtAt.slice(0, 10),
+  builtAt,
   files: [
     { what: 'Her greetings (every return), the report lines, the Earth-news fallback', path: ABS('content/greetings.ts') },
     { what: 'When each greeting plays (the moments, the once intros, the news rule)', path: ABS('src/meta/onboarding.ts') },
@@ -264,6 +287,7 @@ const data = {
     { what: 'While she dances', path: ABS('src/ui/loader.ts') },
     { what: 'This page is made by', path: ABS('tools/yoke-lines.ts') },
     { what: 'Exports a session applied (each clears its edits from this page)', path: ABS('notes/yoke-exports') },
+    { what: 'When each line took its current wording (the "new" marks)', path: ABS('notes/yoke-lines-seen.json') },
   ],
   steps: steps.map((s, i) => ({ ...s, n: i + 1 })),
   processed: [...processed],

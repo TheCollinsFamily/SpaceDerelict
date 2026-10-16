@@ -1,0 +1,19 @@
+{
+  "id": "2026-10-14T12-41-15-872Z",
+  "at": "2026-10-14T12:41:15.872Z",
+  "page": "2026-10-14",
+  "source": "the page's draft mirror (state/draft), never exported; already in content/boss.ts BOSS_ASIDE",
+  "applied": "2026-10-16",
+  "n": 1,
+  "items": [
+    {
+      "id": "BOSS_AFTER",
+      "group": "2. The message from the boss",
+      "where": "C:UsersMerrydevspace-derelictgames\broodfallcontent\boss.ts",
+      "cut": false,
+      "note": "for secret ai context: Uplifted dogs are the most common uplilfited species in the technopuritan empire in large part becouse while they can be overly generus and often fail to make the ruthleess decisionis necisary (thus the budget comment) they are near universally trusted in middle managment positions and elected to office as unusualy high rates (they where the first uplifited species but only a few breeds where uplifited breeds like pitbulls where eradicated)",
+      "text": {},
+      "fp": "149gxb2"
+    }
+  ]
+}

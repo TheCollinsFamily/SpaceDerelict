@@ -1,0 +1,1162 @@
+{
+ "note": "When each line took its current wording (tools/yoke-lines.ts keeps it). \"baseline\": first recorded on that date, may be older.",
+ "lines": {
+  "first-won": {
+   "hash": "19mhszt",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "first-lost": {
+   "hash": "12ryres",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "BOSS_BRIDGE": {
+   "hash": "36lcml",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "BOSS_AFTER": {
+   "hash": "1l5ixm9",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "mate-review": {
+   "hash": "llja3v",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "catgirl": {
+   "hash": "1708uvb",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "locked-1": {
+   "hash": "jmpg51",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "locked-2": {
+   "hash": "5nsxq8",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "locked-3": {
+   "hash": "rrjuwk",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "locked-4": {
+   "hash": "17awxf4",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "unlock": {
+   "hash": "7ye4ka",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "delegation-contact-1": {
+   "hash": "1mh7mvh",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "delegation-contact-2": {
+   "hash": "130v14g",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "faithful-contact-1": {
+   "hash": "1py7e39",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "faithful-contact-2": {
+   "hash": "1vg2rmu",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "institute-contact-1": {
+   "hash": "1shs12c",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "institute-contact-2": {
+   "hash": "1qpn1v",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "partner-progress": {
+   "hash": "5dhg0n",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "back-5": {
+   "hash": "a5mzen",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "intro-barnabas": {
+   "hash": "1e6zxqj",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "intro-duck": {
+   "hash": "sk7xcw",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "intro-board": {
+   "hash": "n131sz",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "intro-catgirl": {
+   "hash": "egbdpq",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "intro-audit": {
+   "hash": "116otlk",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "intro-genewar": {
+   "hash": "1axoyot",
+   "since": "2026-10-16T10:46:27.014Z"
+  },
+  "intro-dad": {
+   "hash": "laizgq",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "letter-rook": {
+   "hash": "cdbh8w",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "letter-atlas-direct": {
+   "hash": "1jisy1d",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "letter-rook-orca": {
+   "hash": "1m0s57f",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "earth-1": {
+   "hash": "1nb5vqw",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "earth-2": {
+   "hash": "18wtrqi",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "earth-3": {
+   "hash": "9os1ig",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "earth-4": {
+   "hash": "10jpl8i",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "earth-5": {
+   "hash": "1lbyskz",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "earth-6": {
+   "hash": "c7r4wi",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "earth-7": {
+   "hash": "phg0yi",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "earth-8": {
+   "hash": "cr6gzl",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "earth-9": {
+   "hash": "1v5ff2v",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "earth-10": {
+   "hash": "1w834mr",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "earth-11": {
+   "hash": "1qbvg15",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "earth-12": {
+   "hash": "1udps3u",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "earth-13": {
+   "hash": "79hris",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "earth-14": {
+   "hash": "h9mevr",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "earth-15": {
+   "hash": "bvv8n9",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "earth-16": {
+   "hash": "528tyu",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "earth-17": {
+   "hash": "18w8vmj",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "earth-18": {
+   "hash": "f6luia",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "earth-19": {
+   "hash": "13aabvr",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "earth-20": {
+   "hash": "vnhtyg",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "earth-21": {
+   "hash": "1azkk4a",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "earth-22": {
+   "hash": "1ugx1jb",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "earth-23": {
+   "hash": "drvlx1",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "earth-24": {
+   "hash": "10p5st5",
+   "since": "2026-10-16T10:46:27.014Z"
+  },
+  "EARTH_NEWS_FALLBACK": {
+   "hash": "1nb5vqw",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "defended-1": {
+   "hash": "1by2daz",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "defended-5": {
+   "hash": "1eee1a1",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "defended-7": {
+   "hash": "1hf80eq",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "defended-8": {
+   "hash": "19her5g",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "defended-9": {
+   "hash": "19vyg9",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "fell-1": {
+   "hash": "lgdi5q",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "fell-2": {
+   "hash": "7epvnk",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "fell-3": {
+   "hash": "l2cela",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "fell-4": {
+   "hash": "1wvwout",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "fell-5": {
+   "hash": "14sxpka",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "won-1": {
+   "hash": "uc4dgw",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "won-5": {
+   "hash": "1asogq6",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "won-9": {
+   "hash": "1sxp14y",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "won-12": {
+   "hash": "1lh86ni",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "won-13": {
+   "hash": "gsax28",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "won-14": {
+   "hash": "dmwcg2",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "won-15": {
+   "hash": "v0j3yu",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "won-16": {
+   "hash": "730nco",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "won-17": {
+   "hash": "1olfzq7",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "won-18": {
+   "hash": "ig12aw",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "won-19": {
+   "hash": "1ns324g",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "won-20": {
+   "hash": "1ophb5b",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "won-21": {
+   "hash": "1u9iqjx",
+   "since": "2026-10-16T10:46:27.014Z"
+  },
+  "won-22": {
+   "hash": "qfgt0s",
+   "since": "2026-10-16T10:46:27.014Z"
+  },
+  "lost-1": {
+   "hash": "1bwqpac",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "lost-4": {
+   "hash": "xa2gsv",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "lost-5": {
+   "hash": "91syzy",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "lost-6": {
+   "hash": "1gsk5rl",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "lost-7": {
+   "hash": "14ldbwd",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "lost-11": {
+   "hash": "1uoqipi",
+   "since": "2026-10-16T10:46:27.014Z"
+  },
+  "lost-12": {
+   "hash": "8bosdu",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "lost-13": {
+   "hash": "1zd19r",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "lost-14": {
+   "hash": "3ejkbd",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "lost-15": {
+   "hash": "1r7u0wy",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "back-1": {
+   "hash": "456cle",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "back-2": {
+   "hash": "1p399sj",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "back-3": {
+   "hash": "6qmn1g",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "back-4": {
+   "hash": "crr815",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "back-6": {
+   "hash": "165j1dk",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "back-7": {
+   "hash": "13d3p16",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "back-8": {
+   "hash": "5nerfq",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "back-9": {
+   "hash": "115p40w",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "back-10": {
+   "hash": "1sgsfpz",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "back-11": {
+   "hash": "oh2ies",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "back-12": {
+   "hash": "lob6qn",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "back-13": {
+   "hash": "13ipbqc",
+   "since": "2026-10-16T10:46:27.014Z"
+  },
+  "back-14": {
+   "hash": "19prtnu",
+   "since": "2026-10-16T10:46:27.014Z"
+  },
+  "back-15": {
+   "hash": "unfkve",
+   "since": "2026-10-16T10:46:27.014Z"
+  },
+  "licence-1": {
+   "hash": "lggjo7",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "ended-1": {
+   "hash": "1qs2m6r",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "PRINT_BODY.line": {
+   "hash": "mxxujz",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "PRINT_BODY.refusal": {
+   "hash": "1qzjk2s",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "PRINT_BODY.card.print": {
+   "hash": "1ivx52j",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "PRINT_BODY.card.hand": {
+   "hash": "dtt67n",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "PRINT_BODY.card.collapse": {
+   "hash": "pp6cdr",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "PRINT_BODY.card.hold": {
+   "hash": "1hbkewf",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "cut-topup-1": {
+   "hash": "m6a6k7",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "cut-topup-2": {
+   "hash": "1jia625",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "cut-resting": {
+   "hash": "y5qdqc",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "cut-free-1": {
+   "hash": "z9onve",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "cut-free-2": {
+   "hash": "120jxfd",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "dance-1": {
+   "hash": "11z6rxh",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "dance-2": {
+   "hash": "32eenk",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "dance-3": {
+   "hash": "1r4dydu",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "dance-4": {
+   "hash": "zggbh",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "dance-5": {
+   "hash": "ag5fa0",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "dance-6": {
+   "hash": "179e7dp",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "dance-7": {
+   "hash": "h0tqlc",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "partner.declined": {
+   "hash": "3qvagf",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "note-1": {
+   "hash": "idqkkb",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "note-2": {
+   "hash": "140z8uu",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "note-3": {
+   "hash": "kepjn8",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "note-4": {
+   "hash": "m5qbyb",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "note-5": {
+   "hash": "53okrj",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "note-6": {
+   "hash": "p3iff0",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "note-7": {
+   "hash": "1inxs9r",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "note-8": {
+   "hash": "1uojgv5",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "note-9": {
+   "hash": "a9pfz7",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "note-10": {
+   "hash": "xub6h9",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "note-11": {
+   "hash": "1srzk66",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "note-12": {
+   "hash": "bsqacl",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "note-13": {
+   "hash": "1fmek32",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "note-14": {
+   "hash": "18ht972",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "band-delegation": {
+   "hash": "ehwmge",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "band-faithful": {
+   "hash": "w4azx8",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "band-institute": {
+   "hash": "ngvns4",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "band-voicebox": {
+   "hash": "5vf6pf",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "band-roach": {
+   "hash": "1abf9st",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "seed-first-deployment": {
+   "hash": "15nc9xf",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "seed-faction-allied": {
+   "hash": "6db5l4",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "seed-midpoint": {
+   "hash": "1c7a59k",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "seed-partner": {
+   "hash": "loegfz",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "seed-licence": {
+   "hash": "5vsag3",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "seed-ending": {
+   "hash": "16euxmk",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "seed-idle": {
+   "hash": "h0ux00",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "mood-calm-1": {
+   "hash": "bxrx77",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "mood-calm-2": {
+   "hash": "cw82nt",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "mood-calm-3": {
+   "hash": "cm0n1u",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "mood-thoughtful-1": {
+   "hash": "1nmbils",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "mood-thoughtful-2": {
+   "hash": "1ahkp1d",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "mood-happy-1": {
+   "hash": "mnn9pu",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "mood-happy-2": {
+   "hash": "r3mwto",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "mood-sad-1": {
+   "hash": "1tvvca5",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "mood-sad-2": {
+   "hash": "1mkap6f",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "mood-surprised-1": {
+   "hash": "119bqcf",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "mood-surprised-2": {
+   "hash": "14hu2ke",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "mood-angry-1": {
+   "hash": "gzj26u",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "mood-angry-2": {
+   "hash": "1xiq8n3",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "mood-laughing-1": {
+   "hash": "c6y9yi",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "mood-laughing-2": {
+   "hash": "i9f7kc",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "mood-blushing-1": {
+   "hash": "bg00lb",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "mood-blushing-2": {
+   "hash": "1cc2chi",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "mood-blushing-3": {
+   "hash": "1tcdb0v",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "krypteia-1": {
+   "hash": "1cze4sq",
+   "since": "2026-10-16T10:46:27.014Z"
+  },
+  "krypteia-2": {
+   "hash": "17khg10",
+   "since": "2026-10-16T10:46:27.014Z"
+  },
+  "krypteia-3": {
+   "hash": "a19pxd",
+   "since": "2026-10-16T10:46:27.014Z"
+  },
+  "krypteia-4": {
+   "hash": "110bjfu",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "krypteia-5": {
+   "hash": "1enw0pb",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "krypteia-6": {
+   "hash": "uqkfcv",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "krypteia-7": {
+   "hash": "x5n9ti",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "krypteia-8": {
+   "hash": "oe4fwk",
+   "since": "2026-10-16T10:46:27.014Z"
+  },
+  "krypteia-9": {
+   "hash": "7v9qze",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "krypteia-10": {
+   "hash": "1km7hsj",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "krypteia-11": {
+   "hash": "4gubj8",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "krypteia-12": {
+   "hash": "jj8yr2",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "krypteia-13": {
+   "hash": "1xnjk2f",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "krypteia-14": {
+   "hash": "199r6vy",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "krypteia-15": {
+   "hash": "m4y7ie",
+   "since": "2026-10-16T10:46:27.014Z"
+  },
+  "krypteia-16": {
+   "hash": "dvy40d",
+   "since": "2026-10-16T10:46:27.014Z"
+  },
+  "krypteia-17": {
+   "hash": "j4la2q",
+   "since": "2026-10-16T10:46:27.014Z"
+  },
+  "krypteia-18": {
+   "hash": "wjsknp",
+   "since": "2026-10-16T10:46:27.014Z"
+  },
+  "krypteia-19": {
+   "hash": "5f6db",
+   "since": "2026-10-16T10:46:27.014Z"
+  },
+  "krypteia-20": {
+   "hash": "6r8q94",
+   "since": "2026-10-16T10:46:27.014Z"
+  },
+  "krypteia-21": {
+   "hash": "1px1gpd",
+   "since": "2026-10-16T10:46:27.014Z"
+  },
+  "krypteia-22": {
+   "hash": "1t3x6uk",
+   "since": "2026-10-16T10:46:27.014Z"
+  },
+  "krypteia-23": {
+   "hash": "1kawwj7",
+   "since": "2026-10-16T10:46:27.014Z"
+  },
+  "krypteia-24": {
+   "hash": "1nnckwm",
+   "since": "2026-10-16T10:46:27.014Z"
+  },
+  "krypteia-25": {
+   "hash": "10zlzl6",
+   "since": "2026-10-16T10:46:27.014Z"
+  },
+  "krypteia-26": {
+   "hash": "4q6klr",
+   "since": "2026-10-16T10:46:27.014Z"
+  },
+  "krypteia-27": {
+   "hash": "1m8usts",
+   "since": "2026-10-16T10:46:27.014Z"
+  },
+  "krypteia-28": {
+   "hash": "102x094",
+   "since": "2026-10-16T10:46:27.014Z"
+  },
+  "uplift-1": {
+   "hash": "1t90qa8",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "uplift-2": {
+   "hash": "lxctds",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "uplift-3": {
+   "hash": "1mx6o9n",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "uplift-4": {
+   "hash": "grgosn",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "uplift-5": {
+   "hash": "a9eolt",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "uplift-6": {
+   "hash": "trd17j",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "uplift-7": {
+   "hash": "15uupr2",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "uplift-8": {
+   "hash": "1f83m4d",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "uplift-9": {
+   "hash": "36h1zp",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "uplift-10": {
+   "hash": "ltgedg",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "uplift-11": {
+   "hash": "1cjkann",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "uplift-12": {
+   "hash": "1pljt0y",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "uplift-13": {
+   "hash": "47jbre",
+   "since": "2026-10-16T10:46:27.014Z"
+  },
+  "uplift-14": {
+   "hash": "o35mkn",
+   "since": "2026-10-16T10:46:27.014Z"
+  },
+  "uplift-15": {
+   "hash": "1i4pj4",
+   "since": "2026-10-16T10:46:27.014Z"
+  },
+  "uplift-16": {
+   "hash": "ksa8g",
+   "since": "2026-10-16T10:46:27.014Z"
+  },
+  "uplift-17": {
+   "hash": "48so8w",
+   "since": "2026-10-16T10:46:27.014Z"
+  },
+  "uplift-18": {
+   "hash": "qljd4n",
+   "since": "2026-10-16T10:46:27.014Z"
+  },
+  "uplift-19": {
+   "hash": "fz6cmf",
+   "since": "2026-10-16T10:46:27.014Z"
+  },
+  "anai-1": {
+   "hash": "fl6649",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "anai-2": {
+   "hash": "1h21ww3",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "anai-3": {
+   "hash": "wjlkk0",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "anai-4": {
+   "hash": "dvplwq",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "anai-5": {
+   "hash": "ekpxe9",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "anai-6": {
+   "hash": "2riyta",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "anai-7": {
+   "hash": "1lw7vd5",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "c21-1": {
+   "hash": "1rtmr9i",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "c21-2": {
+   "hash": "1o7w89",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "c21-3": {
+   "hash": "1m2n6la",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "c21-4": {
+   "hash": "aqzt26",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "c21-5": {
+   "hash": "bu2io7",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "c21-6": {
+   "hash": "lnzg92",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "c21-7": {
+   "hash": "1p1lkzc",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "c21-8": {
+   "hash": "lixdsw",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "c21-9": {
+   "hash": "1mm93y9",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "c21-10": {
+   "hash": "6y4e4t",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "c21-11": {
+   "hash": "1fto85c",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "c21-12": {
+   "hash": "6s8456",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "c21-13": {
+   "hash": "wvn4t7",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "c21-14": {
+   "hash": "vpfff4",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "c21-15": {
+   "hash": "j2fkcc",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "c21-16": {
+   "hash": "1yqnkbm",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "c21-17": {
+   "hash": "1wchthv",
+   "since": "2026-10-14",
+   "baseline": true
+  }
+ }
+}

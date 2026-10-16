@@ -105,6 +105,24 @@
   .export summary { cursor: pointer; font-size: 13px; color: var(--mute); }
   .export textarea { width: 100%; min-height: 160px; font-family: var(--mono); font-size: 12px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 6px; padding: 8px; margin: 8px 0; }
   .export .act { border: 1px solid var(--line); background: transparent; color: var(--ink); border-radius: 6px; padding: 5px 10px; cursor: pointer; font-size: 13px; }
+  .chips .cnt { font-family: var(--mono); font-size: 11.5px; opacity: 0.8; }
+  .progress { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--mute); font-variant-numeric: tabular-nums; }
+  .meter { width: 90px; height: 6px; border-radius: 3px; background: var(--chip); overflow: hidden; display: inline-block; }
+  .meter span { display: block; height: 100%; width: 0; background: var(--ok); }
+  .mode { font-size: 12px; color: var(--mute); border: 1px solid var(--line); border-radius: 999px; padding: 2px 9px; }
+  .mode.live { color: var(--ok); border-color: var(--ok); }
+  .mode.local { color: var(--cut); border-color: var(--cut); }
+  .intro.share { color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; }
+  .tag.new { background: var(--accent); color: var(--accent-ink); text-transform: none; letter-spacing: 0; }
+  .tag.ok { background: transparent; color: var(--ok); border: 1px solid var(--ok); text-transform: none; letter-spacing: 0; }
+  .by { font-family: var(--sans); font-size: 11.5px; color: var(--mute); }
+  .row.reviewed { background: linear-gradient(90deg, color-mix(in srgb, var(--ok) 7%, transparent), transparent 40%); }
+  .ctl button.rev[aria-pressed="true"] { background: transparent; color: var(--ok); border-color: var(--ok); }
+  .rail a .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); align-self: center; flex: 0 0 7px; visibility: hidden; }
+  .rail a .dot.on { visibility: visible; }
+  .rail a.done .name { color: var(--mute); }
+  .rail a.done .n { color: var(--ok); }
+  .readonly .beat .t { cursor: default; }
   .toast { position: fixed; bottom: calc(env(safe-area-inset-bottom, 0px) + 16px); left: 50%; transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 8px 14px; border-radius: 6px; font-size: 13px; opacity: 0; transition: opacity 0.2s; pointer-events: none; max-width: calc(100vw - 32px); text-align: center; }
   .toast.on { opacity: 1; }
   :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -127,15 +145,20 @@
     <button type="button" data-f="draft" aria-pressed="false">Drafts</button>
     <button type="button" data-f="lore" aria-pressed="false">Lorebook pools</button>
     <button type="button" data-f="changed" aria-pressed="false">Changed or cut</button>
+    <button type="button" data-f="new" aria-pressed="false">New since you looked <span class="cnt" id="cntNew"></span></button>
+    <button type="button" data-f="todo" aria-pressed="false">Not reviewed <span class="cnt" id="cntTodo"></span></button>
   </div>
+  <div class="progress" id="progress" title="Lines ticked Reviewed, by anyone the page is shared with"><span class="meter"><span id="meterFill"></span></span><span id="progressText"></span></div>
+  <span class="mode" id="mode">Connecting…</span>
   <button type="button" class="act" id="export">Export changes</button>
-  <button type="button" class="act quiet" id="reset">Reset edits</button>
+  <button type="button" class="act quiet" id="reset">Clear my edits</button>
 </div>
 
 <div class="wrap">
   <nav class="rail" id="rail" aria-label="Steps"></nav>
   <main>
-    <p class="intro">One campaign, step by step, in the order a player meets her: each step is an event, what happens is said under it, then every line she can say there. Click a line to edit it in place, mark a line <b>Cut</b>, or leave a note. <b>Export changes</b> saves your edits to this page's own store, where the next session picks them up: nothing to paste. Once a change is in the files, it clears from here on your next visit; what you have not exported stays. An italic line under a greeting is what she knows behind it: her live mind gets it, the player never sees it.</p>
+    <p class="intro">One campaign, step by step, in the order a player meets her: each step is an event, what happens is said under it, then every line she can say there. Click a line to edit it in place, mark it <b>Cut</b>, leave a note, or tick it <b>Reviewed</b>. <b>The review is shared:</b> everyone this page is shared with (your other Claude account too) sees the same edits, notes and ticks, live, with who made each. <b>Export changes</b> hands them to the next session: nothing to paste. Once a change is in the files it clears from here for everyone. A tick holds until the line is rewritten. <b>New</b> marks a line whose words changed since you last opened the page. An italic line under a greeting is what she knows behind it: her live mind gets it, the player never sees it.</p>
+    <p class="intro share" id="shareHint" hidden>To review from another Claude account: open this page's <b>Share</b> menu (top right) and invite that account's email as <b>Contributor</b> or <b>Editor</b>. A Viewer can read but not edit.</p>
     <div class="export" id="exportBox" hidden>
       <h3>Exports</h3>
       <ul id="exportStatus"></ul>
@@ -155,7 +178,7 @@
 <script>
 (function () {
   var DATA = JSON.parse(document.getElementById('data').textContent);
-  var KEY = 'yoke-lines-edits';
+  var LOCAL_KEY = 'yoke-lines-edits', VISIT_KEY = 'yoke-lines-last-build';
   /* Every line by id, with the step and the case it plays in. */
   var LINES = {};
   DATA.steps.forEach(function (s) {
@@ -176,87 +199,243 @@
   }
   function baseOf(l) { return h(l.text.join('\u0001')); }
   function live(e) { return !!e && (e.cut || (e.note && e.note.trim()) || Object.keys(e.text || {}).length > 0); }
-
-  var edits = {};
-  try { edits = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { edits = {}; }
-  function save() { try { localStorage.setItem(KEY, JSON.stringify(edits)); } catch (e) { /* no storage: edits live for this view only */ } mirror(); }
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
-  function entry(id) { return edits[id] || (edits[id] = { cut: false, note: '', text: {}, base: LINES[id] ? baseOf(LINES[id]) : '', at: '' }); }
-  function touch(id) { var e = entry(id); e.at = new Date().toISOString(); return e; }
-  function changed(id) { return live(edits[id]); }
+  function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function lsSet(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { /* no storage */ } }
+  function when(iso) { var d = new Date(iso); return isNaN(d) ? String(iso || '') : d.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }); }
+  function day(iso) { var d = new Date(String(iso).length <= 10 ? iso + 'T12:00:00Z' : iso); return isNaN(d) ? String(iso) : d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }); }
+  /* A line id as a database document id (the store allows letters, digits and _ - . ~ : @ +). */
+  function docId(id) { return id.replace(/[^A-Za-z0-9_\-.~:@+]/g, '_'); }
 
-  /* Clear what has been applied: a line that is gone, an edit a session marked done, a beat now reading as he rewrote it. */
-  var cleared = 0;
-  Object.keys(edits).forEach(function (id) {
-    var e = edits[id], l = LINES[id];
-    if (!e || typeof e !== 'object') { delete edits[id]; return; }
-    e.text = e.text || {};
-    if (!l) { delete edits[id]; cleared++; return; }
-    if (PROCESSED[fp(id, e)]) { delete edits[id]; cleared++; return; }
-    Object.keys(e.text).forEach(function (i) { if (e.text[i] === l.text[i]) delete e.text[i]; });
-    if (PROCESSED[fp(id, e)] || !live(e)) { delete edits[id]; cleared++; }
-  });
+  /* What changed since this viewer last opened the page: a line whose words took their form after that build. First visit:
+     everything after the first recorded baseline. */
+  var lastBuild = lsGet(VISIT_KEY);
+  function isNew(l) { return lastBuild ? (l.since || '') > lastBuild : !l.baseline; }
+  lsSet(VISIT_KEY, DATA.builtAt || DATA.asOf);
+
+  /* The review: edits (cut, note, rewritten beats) and ticks. In the shared store when it is reachable, else this browser. */
+  var edits = {}, reviewed = {}, mode = 'local', me = null, canWrite = true, names = {};
+  var localEdits = {};
+  try { localEdits = JSON.parse(lsGet(LOCAL_KEY) || '{}') || {}; } catch (e) { localEdits = {}; }
+  Object.keys(localEdits).forEach(function (id) { if (localEdits[id] && typeof localEdits[id] === 'object') { localEdits[id].text = localEdits[id].text || {}; edits[id] = localEdits[id]; } });
+  function entry(id) { return edits[id] || (edits[id] = { id: id, cut: false, note: '', text: {}, base: LINES[id] ? baseOf(LINES[id]) : '', at: '', by: me }); }
+  function touch(id) { var e = entry(id); e.at = new Date().toISOString(); e.by = me; e.id = id; return e; }
+  function changed(id) { return live(edits[id]); }
+  function isReviewed(id) { var r = reviewed[id], l = LINES[id]; return !!(r && l && r.base === baseOf(l)); }
+  function wasReviewed(id) { var r = reviewed[id], l = LINES[id]; return !!(r && l && r.base !== baseOf(l)); }
+  /* An edit that has been applied, whose line is gone, or whose rewritten beats now read as written. */
+  function settled(id, e) {
+    var l = LINES[id];
+    if (!l || PROCESSED[fp(id, e)]) return true;
+    Object.keys(e.text || {}).forEach(function (i) { if (e.text[i] === l.text[i]) delete e.text[i]; });
+    return PROCESSED[fp(id, e)] || !live(e);
+  }
+  var clearedLocal = 0;
+  Object.keys(edits).forEach(function (id) { if (settled(id, edits[id])) { delete edits[id]; clearedLocal++; } });
 
   var total = 0;
   DATA.steps.forEach(function (s) { total += stepLines(s).length; });
-  document.getElementById('sub').textContent = total + ' lines in ' + DATA.steps.length + ' steps · as of ' + DATA.asOf;
+  document.getElementById('sub').textContent = total + ' lines in ' + DATA.steps.length + ' steps · from the game files of ' + day(DATA.builtAt || DATA.asOf);
 
-  // The rail: the parts, the steps under them.
-  var rail = document.getElementById('rail'), lastPart = '';
-  rail.innerHTML = DATA.steps.map(function (s) {
-    var head = s.part !== lastPart ? '<b class="part">' + esc(s.part) + '</b>' : '';
-    lastPart = s.part;
-    return head + '<a href="#' + s.id + '"><span class="num">' + s.n + '</span><span class="name">' + esc(s.name) + '</span><span class="n">' + stepLines(s).length + '</span></a>';
-  }).join('') + '<div class="where"><b>Where the words live</b>' + DATA.files.map(function (f) { return esc(f.what) + '<br>' + esc(f.path) + '<br>'; }).join('') + '</div>';
+  function who(id) { return id && id === me ? 'you' : (id && names[id]) || (id ? 'someone' : ''); }
+
+  // The rail: the parts, the steps under them, how many of each are reviewed, a dot where something is new.
+  var rail = document.getElementById('rail');
+  function drawRail() {
+    var lastPart = '';
+    rail.innerHTML = DATA.steps.map(function (s) {
+      var head = s.part !== lastPart ? '<b class="part">' + esc(s.part) + '</b>' : '';
+      lastPart = s.part;
+      var ls = stepLines(s), done = ls.filter(function (l) { return isReviewed(l.id); }).length, fresh = ls.some(isNew);
+      return head + '<a href="#' + s.id + '"' + (done === ls.length && ls.length ? ' class="done"' : '') + '><span class="num">' + s.n + '</span><span class="name">' + esc(s.name) + '</span>' +
+        '<span class="dot' + (fresh ? ' on' : '') + '" title="New since you last looked"></span><span class="n">' + done + '/' + ls.length + '</span></a>';
+    }).join('') + '<div class="where"><b>Where the words live</b>' + DATA.files.map(function (f) { return esc(f.what) + '<br>' + esc(f.path) + '<br>'; }).join('') + '</div>';
+  }
 
   // The steps.
-  function row(l, s) {
-    var e = edits[l.id] || { cut: false, note: '', text: {} };
-    var stale = !!(e.base && e.base !== baseOf(l));
-    return '<div class="row' + (e.cut ? ' cut' : '') + '" id="row-' + l.id + '" data-id="' + esc(l.id) + '" data-author="' + l.author + '" data-search="' + esc((l.id + ' ' + s.name + ' ' + (l.branch || '') + ' ' + l.text.join(' ') + ' ' + (l.ctx || [])).toLowerCase()) + '">' +
-      '<div class="id"><span>' + esc(l.id) + '</span><span class="tag ' + l.author + '">' + (l.author === 'collins' ? "Collins's words" : l.author === 'lore' ? 'lorebook' : 'draft') + '</span>' +
-      (stale ? '<span class="tag stale" title="The line was rewritten after you wrote this; read it again">line changed since your note</span>' : '') + '</div>' +
+  function row(l) {
+    var s = l.step, e = edits[l.id] || { cut: false, note: '', text: {} };
+    var stale = !!(live(e) && e.base && e.base !== baseOf(l)), rv = isReviewed(l.id), r = reviewed[l.id];
+    var tags = '<span class="tag ' + l.author + '">' + (l.author === 'collins' ? "Collins's words" : l.author === 'lore' ? 'lorebook' : 'draft') + '</span>' +
+      (isNew(l) ? '<span class="tag new" title="Its words took this form after you last opened the page">new ' + esc(day(l.since)) + '</span>' : '') +
+      (rv ? '<span class="tag ok" title="' + esc(when(r.at)) + '">✓ ' + esc(who(r.by)) + '</span>' : wasReviewed(l.id) ? '<span class="tag stale" title="Ticked, then the line was rewritten">rewritten since the tick</span>' : '') +
+      (stale ? '<span class="tag stale" title="The line was rewritten after this edit was written; read it again">line changed since this edit</span>' : '') +
+      (live(e) && e.by ? '<span class="by">edited by ' + esc(who(e.by)) + (e.at ? ' · ' + esc(when(e.at)) : '') + '</span>' : '');
+    return '<div class="row' + (e.cut ? ' cut' : '') + (rv ? ' reviewed' : '') + '" id="row-' + esc(l.id) + '" data-id="' + esc(l.id) + '" data-author="' + l.author + '" data-new="' + (isNew(l) ? '1' : '') + '" data-search="' + esc((l.id + ' ' + s.name + ' ' + (l.branch || '') + ' ' + l.text.join(' ') + ' ' + (l.ctx || []) + ' ' + (e.note || '')).toLowerCase()) + '">' +
+      '<div class="id"><span>' + esc(l.id) + '</span>' + tags + '</div>' +
       '<div class="beats">' + l.text.map(function (t, i) {
-        var cur = e.text[i] != null ? e.text[i] : t;
+        var cur = e.text && e.text[i] != null ? e.text[i] : t;
         return '<div class="beat">' + (l.ctx && l.ctx[i] ? '<span class="ctx">' + esc(l.ctx[i]) + '</span>' : '') +
-          '<span class="t' + (e.text[i] != null ? ' edited' : '') + '" contenteditable="true" spellcheck="false" data-i="' + i + '" data-orig="' + esc(t) + '">' + esc(cur) + '</span>' +
+          '<span class="t' + (e.text && e.text[i] != null ? ' edited' : '') + '" contenteditable="' + (canWrite ? 'true' : 'false') + '" spellcheck="false" data-i="' + i + '" data-orig="' + esc(t) + '">' + esc(cur) + '</span>' +
           (l.faces && l.faces[i] ? '<span class="face">' + esc(l.faces[i]) + '</span>' : '') + '</div>';
       }).join('') + (l.aside ? '<div class="aside"><b>Behind it, for her live mind only:</b> ' + esc(l.aside) + (l.hook ? ' <span class="hook">reply box: “' + esc(l.hook) + '”</span>' : '') + '</div>' : '') + '</div>' +
-      '<div class="ctl"><button type="button" class="cut" aria-pressed="' + (e.cut ? 'true' : 'false') + '">' + (e.cut ? 'Cut' : 'Keep') + '</button>' +
-      '<input type="text" class="note" id="note-' + esc(l.id) + '" placeholder="Note" value="' + esc(e.note || '') + '" aria-label="Note on ' + esc(l.id) + '"></div></div>';
+      '<div class="ctl"><button type="button" class="rev" aria-pressed="' + (rv ? 'true' : 'false') + '"' + (canWrite ? '' : ' disabled') + '>' + (rv ? '✓ Reviewed' : 'Mark reviewed') + '</button>' +
+      '<button type="button" class="cut" aria-pressed="' + (e.cut ? 'true' : 'false') + '"' + (canWrite ? '' : ' disabled') + '>' + (e.cut ? 'Cut' : 'Keep') + '</button>' +
+      '<input type="text" class="note" id="note-' + esc(l.id) + '" placeholder="Note" value="' + esc(e.note || '') + '" aria-label="Note on ' + esc(l.id) + '"' + (canWrite ? '' : ' disabled') + '></div></div>';
   }
   var steps = document.getElementById('steps');
-  lastPart = '';
-  steps.innerHTML = DATA.steps.map(function (s) {
-    var head = s.part !== lastPart ? '<h2 class="part" id="part-' + s.n + '">' + esc(s.part) + '</h2>' : '';
-    lastPart = s.part;
-    return head + '<section id="' + s.id + '"><header><h3><span class="num">' + s.n + '.</span> ' + esc(s.name) + ' <span class="n">' + stepLines(s).length + '</span></h3>' +
-      '<p class="what">' + esc(s.what) + '</p><div class="src">' + esc(s.where) + '</div></header>' +
-      s.branches.map(function (b) {
-        if (b.context) return '<div class="context"><b>' + esc(b.context.who) + '</b>' + b.context.lines.map(function (t) { return '<div>' + esc(t) + '</div>'; }).join('') + '<div class="src">' + esc(b.context.where) + '</div></div>';
-        return (b.label ? '<h4 class="branch">' + esc(b.label) + '</h4>' : '') + (b.lines || []).map(function (l) { return row(l, s); }).join('');
-      }).join('') + '</section>';
-  }).join('');
+  function drawAll() {
+    var lastPart = '';
+    steps.innerHTML = DATA.steps.map(function (s) {
+      var head = s.part !== lastPart ? '<h2 class="part" id="part-' + s.n + '">' + esc(s.part) + '</h2>' : '';
+      lastPart = s.part;
+      return head + '<section id="' + s.id + '"><header><h3><span class="num">' + s.n + '.</span> ' + esc(s.name) + ' <span class="n">' + stepLines(s).length + '</span></h3>' +
+        '<p class="what">' + esc(s.what) + '</p><div class="src">' + esc(s.where) + '</div></header>' +
+        s.branches.map(function (b) {
+          if (b.context) return '<div class="context"><b>' + esc(b.context.who) + '</b>' + b.context.lines.map(function (t) { return '<div>' + esc(t) + '</div>'; }).join('') + '<div class="src">' + esc(b.context.where) + '</div></div>';
+          return (b.label ? '<h4 class="branch">' + esc(b.label) + '</h4>' : '') + (b.lines || []).map(row).join('');
+        }).join('') + '</section>';
+    }).join('');
+  }
+  /* Redraw one line, unless someone is typing in it right now (their words win; the store catches up). */
+  function redraw(id) {
+    var el = document.getElementById('row-' + id), l = LINES[id];
+    if (!el || !l || el.contains(document.activeElement)) return;
+    var hid = el.hidden, tmp = document.createElement('div');
+    tmp.innerHTML = row(l);
+    var nu = tmp.firstChild; nu.hidden = hid; el.replaceWith(nu);
+  }
+  function counts() {
+    var all = Object.keys(LINES), done = all.filter(isReviewed).length, fresh = all.filter(function (id) { return isNew(LINES[id]); }).length;
+    document.getElementById('cntNew').textContent = fresh;
+    document.getElementById('cntTodo').textContent = all.length - done;
+    document.getElementById('progressText').textContent = done + ' / ' + all.length + ' reviewed';
+    document.getElementById('meterFill').style.width = (all.length ? Math.round(100 * done / all.length) : 0) + '%';
+    drawRail();
+  }
+
+  // The shared store.
+  var dbp = (window.claude && typeof window.claude.use === 'function') ? window.claude.use('db').catch(function () { return null; }) : Promise.resolve(null);
+  var up = (window.claude && typeof window.claude.use === 'function') ? window.claude.use('user').catch(function () { return null; }) : Promise.resolve(null);
+  var DB = null, timers = {};
+  function saveLocal() { if (mode !== 'local') return; lsSet(LOCAL_KEY, JSON.stringify(edits)); }
+  function persist(id) {
+    if (mode === 'local') { saveLocal(); return; }
+    if (!DB) return;
+    clearTimeout(timers[id]);
+    timers[id] = setTimeout(function () {
+      delete timers[id];
+      var e = edits[id], ref = DB.doc('edits/' + docId(id));
+      var p = live(e) ? ref.set({ id: id, cut: !!e.cut, note: e.note || '', text: e.text || {}, base: e.base || '', at: e.at || new Date().toISOString(), by: e.by || me || null }) : ref.delete();
+      p.catch(failed);
+    }, 700);
+  }
+  function failed(err) {
+    var c = err && err.code;
+    if (c === 'not_granted') { setReadonly(); toast('This page is shared with you to read only: ask for Contributor access to edit'); }
+    else toast('Could not save (' + (c || 'error') + '): try again in a moment');
+  }
+  function setMode(m, label) { mode = m; var el = document.getElementById('mode'); el.className = 'mode ' + m; el.textContent = label; }
+  function setReadonly() { canWrite = false; setMode('readonly', 'Read only'); document.body.classList.add('readonly'); drawAll(); apply(); }
+
+  function resolveNames(ids) {
+    up.then(function (u) {
+      if (!u || typeof u.profiles !== 'function') return;
+      var want = ids.filter(function (x) { return x && x !== me && !(x in names); });
+      if (!want.length) return;
+      u.profiles(want).then(function (ps) {
+        var any = false;
+        want.forEach(function (x) { names[x] = (ps && ps[x] && ps[x].name) || 'someone'; any = true; });
+        if (any) { Object.keys(LINES).forEach(redraw); }
+      }, function () {});
+    });
+  }
+
+  Promise.all([dbp, up]).then(function (r) {
+    var db = r[0], u = r[1];
+    if (!db) { setMode('local', 'This browser only'); toast('The shared store is not reachable here: edits stay in this browser'); return; }
+    DB = db;
+    var who0 = u && typeof u.id === 'function' ? u.id().catch(function () { return null; }) : Promise.resolve(null);
+    var can0 = u && typeof u.can === 'function' ? u.can('data.write').catch(function () { return null; }) : Promise.resolve(null);
+    var own0 = u && typeof u.isOwner === 'function' ? u.isOwner().catch(function () { return false; }) : Promise.resolve(false);
+    Promise.all([who0, can0, own0]).then(function (x) {
+      me = x[0]; if (x[2]) document.getElementById('shareHint').hidden = false;
+      var local = edits; edits = {};
+      setMode('live', 'Shared · live');
+      if (x[1] === false) setReadonly();
+      var first = true;
+      db.collection('edits').onSnapshot(function (snap) {
+        var cleared = 0, ids = {};
+        var next = {};
+        snap.docs.forEach(function (d) { var v = d.data() || {}; if (v.id) { v.text = v.text || {}; next[v.id] = v; } });
+        Object.keys(next).forEach(function (id) {
+          if (timers[id]) return; /* our own newer words are on the way */
+          var e = next[id];
+          if (settled(id, e)) { if (canWrite) { db.doc('edits/' + docId(id)).delete().catch(function () {}); cleared++; } return; }
+          ids[e.by] = 1;
+          if (JSON.stringify(edits[id]) !== JSON.stringify(e)) { edits[id] = e; redraw(id); }
+        });
+        Object.keys(edits).forEach(function (id) { if (!next[id] && !timers[id]) { delete edits[id]; redraw(id); } });
+        if (first) {
+          first = false;
+          /* Edits made in this browser before the review was shared: move them into the store, then forget the local copy. */
+          var moved = 0;
+          if (canWrite) Object.keys(local).forEach(function (id) {
+            if (next[id] || !live(local[id])) return;
+            var e = local[id]; e.by = me; e.id = id; edits[id] = e; persist(id); redraw(id); moved++;
+          });
+          if (moved || Object.keys(local).length) { lsSet(LOCAL_KEY + '-backup', JSON.stringify(local)); lsSet(LOCAL_KEY, null); }
+          if (moved) toast(moved + ' edit' + (moved === 1 ? '' : 's') + ' from this browser moved into the shared review');
+        }
+        if (cleared) toast(cleared + ' applied edit' + (cleared === 1 ? '' : 's') + ' cleared');
+        resolveNames(Object.keys(ids));
+        counts(); apply();
+      }, function (err) { failed(err); });
+      db.collection('reviewed').onSnapshot(function (snap) {
+        var next = {}, ids = {};
+        snap.docs.forEach(function (d) { var v = d.data() || {}; if (v.id) { next[v.id] = v; ids[v.by] = 1; } });
+        var touched = {};
+        Object.keys(next).forEach(function (id) { if (JSON.stringify(reviewed[id]) !== JSON.stringify(next[id])) touched[id] = 1; });
+        Object.keys(reviewed).forEach(function (id) { if (!next[id]) touched[id] = 1; });
+        reviewed = next;
+        Object.keys(touched).forEach(redraw);
+        resolveNames(Object.keys(ids));
+        counts(); apply();
+      }, function () {});
+      db.collection('exports').orderBy('at', 'desc').limit(3).onSnapshot(function (snap) {
+        var box = document.getElementById('exportBox'), el = document.getElementById('exportStatus');
+        if (snap.empty) { if (!box.hidden) el.innerHTML = '<li>No export saved yet.</li>'; return; }
+        box.hidden = false;
+        el.innerHTML = snap.docs.map(function (d) {
+          var v = d.data() || {};
+          return '<li>' + esc(when(v.at)) + ': ' + (v.n || 0) + ' change' + (v.n === 1 ? '' : 's') + (v.by ? ' by ' + esc(who(v.by)) : '') +
+            (v.applied ? ' · <span class="ok">applied ' + esc(v.applied) + '</span>' : ' · <span class="wait">waiting for a session</span>') + '</li>';
+        }).join('');
+      }, function () {});
+    });
+  });
 
   // Edits.
   steps.addEventListener('input', function (ev) {
-    var t = ev.target;
-    var r = t.closest('.row'); if (!r) return;
+    var t = ev.target, r = t.closest('.row'); if (!r || !canWrite) return;
     var id = r.dataset.id;
     if (t.classList.contains('t')) {
-      var i = t.dataset.i, now = t.textContent;
-      var e = touch(id);
+      var i = t.dataset.i, now = t.textContent, e = touch(id);
       if (now === t.dataset.orig) { delete e.text[i]; t.classList.remove('edited'); } else { e.text[i] = now; t.classList.add('edited'); }
-      save();
-    } else if (t.classList.contains('note')) { touch(id).note = t.value; save(); }
+      persist(id);
+    } else if (t.classList.contains('note')) { touch(id).note = t.value; persist(id); }
+  });
+  steps.addEventListener('focusout', function (ev) {
+    var r = ev.target.closest && ev.target.closest('.row'); if (!r) return;
+    var id = r.dataset.id;
+    setTimeout(function () { if (!r.contains(document.activeElement)) { redraw(id); counts(); apply(); } }, 0);
   });
   steps.addEventListener('click', function (ev) {
-    var b = ev.target.closest('button.cut'); if (!b) return;
-    var r = b.closest('.row'), id = r.dataset.id, e = touch(id);
-    e.cut = !e.cut; save();
-    r.classList.toggle('cut', e.cut);
-    b.setAttribute('aria-pressed', e.cut ? 'true' : 'false');
-    b.textContent = e.cut ? 'Cut' : 'Keep';
+    var b = ev.target.closest('button'); if (!b || !canWrite) return;
+    var r = b.closest('.row'); if (!r) return;
+    var id = r.dataset.id, l = LINES[id];
+    if (b.classList.contains('cut')) {
+      var e = touch(id); e.cut = !e.cut; persist(id); redraw(id);
+    } else if (b.classList.contains('rev')) {
+      var on = !isReviewed(id);
+      if (on) reviewed[id] = { id: id, base: baseOf(l), at: new Date().toISOString(), by: me }; else delete reviewed[id];
+      if (DB && mode !== 'local') {
+        var ref = DB.doc('reviewed/' + docId(id));
+        (on ? ref.set(reviewed[id]) : ref.delete()).catch(failed);
+      }
+      redraw(id);
+    }
+    counts(); apply();
   });
   steps.addEventListener('keydown', function (ev) { if (ev.key === 'Enter' && ev.target.classList.contains('t')) { ev.preventDefault(); ev.target.blur(); } });
 
@@ -265,9 +444,11 @@
   function apply() {
     var rows = steps.querySelectorAll('.row');
     for (var k = 0; k < rows.length; k++) {
-      var r = rows[k], ok = true;
+      var r = rows[k], ok = true, id = r.dataset.id;
       if (filter === 'collins' || filter === 'draft' || filter === 'lore') ok = r.dataset.author === filter;
-      else if (filter === 'changed') ok = changed(r.dataset.id);
+      else if (filter === 'changed') ok = changed(id);
+      else if (filter === 'new') ok = r.dataset.new === '1';
+      else if (filter === 'todo') ok = !isReviewed(id) || r.contains(document.activeElement);
       if (ok && q) ok = r.dataset.search.indexOf(q) >= 0;
       r.hidden = !ok;
     }
@@ -301,38 +482,8 @@
   });
   document.getElementById('q').addEventListener('input', function () { q = this.value.trim().toLowerCase(); apply(); });
 
-  // The page's store (the artifact's database): exports go there, and a mirror of the edits as he makes them.
-  var dbp = (window.claude && typeof window.claude.use === 'function') ? window.claude.use('db').catch(function () { return null; }) : Promise.resolve(null);
-  var writing = Promise.resolve(), mirrorT = 0;
-  function mirror() {
-    clearTimeout(mirrorT);
-    mirrorT = setTimeout(function () {
-      dbp.then(function (db) {
-        if (!db) return;
-        var body = { at: new Date().toISOString(), page: DATA.asOf, edits: edits };
-        writing = writing.then(function () { return db.doc('state/draft').set(body); }).catch(function () {});
-      });
-    }, 2500);
-  }
-  function when(iso) { var d = new Date(iso); return isNaN(d) ? String(iso) : d.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }); }
-  function status() {
-    dbp.then(function (db) {
-      if (!db) return;
-      db.collection('exports').orderBy('at', 'desc').limit(3).get().then(function (snap) {
-        var box = document.getElementById('exportBox'), el = document.getElementById('exportStatus');
-        if (snap.empty) { if (!box.hidden) el.innerHTML = '<li>No export saved yet.</li>'; return; }
-        box.hidden = false;
-        el.innerHTML = snap.docs.map(function (d) {
-          var x = d.data() || {};
-          return '<li>' + esc(when(x.at)) + ': ' + (x.n || 0) + ' change' + (x.n === 1 ? '' : 's') +
-            (x.applied ? ' · <span class="ok">applied ' + esc(x.applied) + '</span>' : ' · <span class="wait">waiting for a session</span>') + '</li>';
-        }).join('');
-      }, function () {});
-    });
-  }
-
   // Export.
-  function toast(msg) { var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('on'); setTimeout(function () { t.classList.remove('on'); }, 2600); }
+  function toast(msg) { var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(function () { t.classList.remove('on'); }, 3200); }
   function buildExport() {
     var at = new Date().toISOString();
     var items = [], out = ['# YOKE lines: changes (' + at.slice(0, 10) + ')', ''];
@@ -343,7 +494,7 @@
       out.push('## ' + group + '  (' + s.where + ')');
       lines.forEach(function (l) {
         var e = edits[l.id];
-        var it = { id: l.id, group: group + (l.branch ? ' · ' + l.branch : ''), where: s.where, cut: !!e.cut, note: (e.note || '').trim(), text: {}, fp: fp(l.id, e) };
+        var it = { id: l.id, group: group + (l.branch ? ' · ' + l.branch : ''), where: s.where, cut: !!e.cut, note: (e.note || '').trim(), text: {}, fp: fp(l.id, e), by: e.by || null };
         out.push('- `' + l.id + '`' + (l.branch ? ' (' + l.branch + ')' : '') + (e.cut ? ' CUT' : ''));
         Object.keys(e.text).sort(function (a, b) { return a - b; }).forEach(function (i) { it.text[i] = { from: l.text[i], to: e.text[i] }; out.push('  - beat ' + (Number(i) + 1) + ': "' + l.text[i] + '" -> "' + e.text[i] + '"'); });
         if (it.note) out.push('  - note: ' + it.note);
@@ -367,25 +518,26 @@
     var ex = buildExport();
     if (!ex.n) { toast('Nothing to export yet: edit a line, press Cut, or write a note'); return; }
     showText(ex.text);
-    dbp.then(function (db) {
-      if (!db) { document.getElementById('exportDetails').open = true; copy(ex.text, 'Copied. The page\'s store is not reachable here, so paste this into a session'); return; }
-      db.doc('exports/' + ex.id).set({ at: ex.at, page: ex.page, n: ex.n, items: ex.items, text: ex.text }).then(function () {
-        toast('Saved for the next session: ' + ex.n + ' change' + (ex.n === 1 ? '' : 's'));
-        status();
-      }, function (err) {
-        document.getElementById('exportDetails').open = true;
-        copy(ex.text, 'Could not save (' + ((err && err.code) || 'error') + '). Copied instead, so paste it into a session');
-      });
+    if (!DB || mode === 'local') { document.getElementById('exportDetails').open = true; copy(ex.text, 'Copied. The shared store is not reachable here, so paste this into a session'); return; }
+    DB.doc('exports/' + ex.id).set({ at: ex.at, page: ex.page, n: ex.n, items: ex.items, text: ex.text, by: me }).then(function () {
+      toast('Saved for the next session: ' + ex.n + ' change' + (ex.n === 1 ? '' : 's'));
+    }, function (err) {
+      document.getElementById('exportDetails').open = true;
+      copy(ex.text, 'Could not save (' + ((err && err.code) || 'error') + '). Copied instead, so paste it into a session');
     });
   });
   document.getElementById('copy').addEventListener('click', function () { copy(document.getElementById('exportText').value); });
   document.getElementById('reset').addEventListener('click', function () {
     var b = this;
-    if (b.dataset.armed !== '1') { b.dataset.armed = '1'; b.textContent = 'Press again to reset'; setTimeout(function () { b.dataset.armed = ''; b.textContent = 'Reset edits'; }, 2500); return; }
-    edits = {}; save(); location.reload();
+    if (b.dataset.armed !== '1') { b.dataset.armed = '1'; b.textContent = 'Press again: clears only your own edits'; setTimeout(function () { b.dataset.armed = ''; b.textContent = 'Clear my edits'; }, 3000); return; }
+    b.dataset.armed = ''; b.textContent = 'Clear my edits';
+    Object.keys(edits).forEach(function (id) { var e = edits[id]; if (mode === 'local' || e.by === me) { delete edits[id]; persist(id); redraw(id); } });
+    saveLocal(); counts(); apply(); toast('Your edits are cleared');
   });
+
+  drawAll();
+  counts();
   apply();
-  status();
-  if (cleared) { save(); toast(cleared + ' applied edit' + (cleared === 1 ? '' : 's') + ' cleared from this page'); }
+  if (clearedLocal) { saveLocal(); toast(clearedLocal + ' applied edit' + (clearedLocal === 1 ? '' : 's') + ' cleared from this page'); }
 })();
 </script>
