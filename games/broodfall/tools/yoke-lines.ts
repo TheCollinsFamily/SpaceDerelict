@@ -7,7 +7,12 @@
  *
  *   npx vite-node tools/yoke-lines.ts            → notes/YOKE-LINES.html
  *
- * The page is published at https://claude.ai/artifact/CbXWLvxqcNYzq4GhjmS1Ye (keep the link: publish with the Artifact tool and
+ * THE PAGE IS A PLAIN WEB PAGE ON THIS PC (Collins, Oct 16 2026: "make it an html and not a claude whatever"):
+ *   node tools/yoke-review-server.cjs  → http://localhost:8792/ (autostarts at login: tools/yoke-review-autostart.ps1)
+ * The review lives in notes/yoke-review.json (same shapes as the edits/ reviewed/ exports/ collections below): a session
+ * reads that file, applies what is in it, deletes the applied entries from it (or PUT/DELETE /api/doc/...), and commits.
+ * The old claude.ai copy below is RETIRED (it says so on the page); do not republish it.
+ * Old copy: https://claude.ai/artifact/CbXWLvxqcNYzq4GhjmS1Ye (keep the link: publish with the Artifact tool and
  * `url` set; `db` and `user` (scope profile) are declared on it, omit `capabilities` on a republish to keep them).
  * SHARED REVIEW (Collins, Oct 16 2026: "make it a web page so we can share it between claude accounts"): every edit, cut, note
  * and "reviewed" tick lives in the artifact's database, not the browser, so anyone he shares the page with (his other Claude
@@ -287,6 +292,8 @@ const data = {
     { what: 'While she dances', path: ABS('src/ui/loader.ts') },
     { what: 'This page is made by', path: ABS('tools/yoke-lines.ts') },
     { what: 'Exports a session applied (each clears its edits from this page)', path: ABS('notes/yoke-exports') },
+    { what: 'The review (edits, cuts, notes, ticks, exports) the page saves', path: ABS('notes/yoke-review.json') },
+    { what: 'The page, served on this PC (http://localhost:8792/)', path: ABS('tools/yoke-review-server.cjs') },
     { what: 'When each line took its current wording (the "new" marks)', path: ABS('notes/yoke-lines-seen.json') },
   ],
   steps: steps.map((s, i) => ({ ...s, n: i + 1 })),

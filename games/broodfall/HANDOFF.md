@@ -2107,6 +2107,9 @@ removed ... when I hit export save to some external document you can reference, 
   CHANGES writes one document per press to collection `exports` (id = the time; fields at, page, n, items, text) and shows
   an Exports box: when, how many, "waiting for a session" or "applied <date>". Nothing to paste. If the store is
   unreachable the old clipboard path still runs. `state/draft` mirrors his unexported edits as he makes them.
+- PLAIN WEB PAGE (Oct 16 2026, "make it an html and not a claude whatever"): `node tools/yoke-review-server.cjs` serves it at
+  http://localhost:8792/ (LAN too; autostarts at login via tools/yoke-review-autostart.ps1) and saves the review to
+  notes/yoke-review.json, the file a session reads and clears. The claude.ai copy is retired.
 - SHARED REVIEW (Oct 16 2026, Collins: "share it between claude accounts"): since version 23 the page declares `db` + `user`
   (scope profile). Edits, cuts and notes live in `edits/<line id>`, Reviewed ticks in `reviewed/<line id>` (a tick holds while
   the words hash to its `base`), each with `by` (viewer id); live for everyone the page is shared with as Contributor or
