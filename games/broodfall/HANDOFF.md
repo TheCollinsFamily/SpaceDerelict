@@ -2107,6 +2107,11 @@ removed ... when I hit export save to some external document you can reference, 
   CHANGES writes one document per press to collection `exports` (id = the time; fields at, page, n, items, text) and shows
   an Exports box: when, how many, "waiting for a session" or "applied <date>". Nothing to paste. If the store is
   unreachable the old clipboard path still runs. `state/draft` mirrors his unexported edits as he makes them.
+- SHARED REVIEW (Oct 16 2026, Collins: "share it between claude accounts"): since version 23 the page declares `db` + `user`
+  (scope profile). Edits, cuts and notes live in `edits/<line id>`, Reviewed ticks in `reviewed/<line id>` (a tick holds while
+  the words hash to its `base`), each with `by` (viewer id); live for everyone the page is shared with as Contributor or
+  Editor (Viewers read only). `state/draft` is retired. Lines carry `since` (notes/yoke-lines-seen.json) and the page
+  marks lines new since the viewer last opened it. When applying an export, also delete its `edits/<id>` docs.
 - A session reads exports with the ArtifactData tool (query `exports`, order_by at desc, out_dir = scratchpad: the files
   land on disk, not in the context), applies them, copies the file to `notes/yoke-exports/<id>.json` with `"applied"`
   added, marks the document applied (ArtifactData update, if_version), re-runs `npx vite-node tools/yoke-lines.ts`,
