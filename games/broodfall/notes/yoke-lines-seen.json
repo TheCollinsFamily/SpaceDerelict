@@ -55,33 +55,18 @@
    "since": "2026-10-14",
    "baseline": true
   },
-  "delegation-contact-1": {
-   "hash": "1mh7mvh",
+  "delegation-contact": {
+   "hash": "1bn09h5",
    "since": "2026-10-14",
    "baseline": true
   },
-  "delegation-contact-2": {
-   "hash": "130v14g",
+  "faithful-contact": {
+   "hash": "xkv48n",
    "since": "2026-10-14",
    "baseline": true
   },
-  "faithful-contact-1": {
-   "hash": "1py7e39",
-   "since": "2026-10-14",
-   "baseline": true
-  },
-  "faithful-contact-2": {
-   "hash": "1vg2rmu",
-   "since": "2026-10-14",
-   "baseline": true
-  },
-  "institute-contact-1": {
-   "hash": "1shs12c",
-   "since": "2026-10-14",
-   "baseline": true
-  },
-  "institute-contact-2": {
-   "hash": "1qpn1v",
+  "institute-contact": {
+   "hash": "1yk59sj",
    "since": "2026-10-14",
    "baseline": true
   },

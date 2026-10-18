@@ -182,8 +182,12 @@ const steps: Step[] = [
     what: 'The return after the first ground taken, on the second try or the twentieth. Once. The Directive Desk lights up and the three factions call; she sends him there.',
     branches: one(of('unlock')) },
   { id: 'signals', part: PART_DARK, name: 'At the desk, ANSWER THEM: the three signals', where: G('content/campaign.ts') + '  (each faction\'s `contact` scene)',
-    what: 'On a signal at the Directive Desk, her two lines open the group\'s contact card before its first scene. Three groups, three cards.',
-    branches: one(FACTIONS.flatMap((f) => (f.contact?.lines ?? []).filter((l: string) => l.startsWith('YOKE:')).map((l: string, i: number) => ({ id: `${f.id}-contact-${i + 1}`, text: [l.replace(/^YOKE:\s*/, '')], author: 'draft' as Author, ctx: [`${f.name}: "${f.contact!.title}"`] })))) },
+    what: 'Once the desk is open, each group has a card at the Directive Desk, and her lines are written on it, all at once, above the ANSWER THEM button (the first contact film plays when he presses it). One card per group, read together, not two messages.',
+    // One row per card (Collins, Oct 18 2026, of two rows a faction: "when do you get the second message?"): the card shows them together.
+    branches: one(FACTIONS.filter((f) => f.contact).map((f) => {
+      const yoke = f.contact!.lines.filter((l: string) => l.startsWith('YOKE:')).map((l: string) => l.replace(/^YOKE:\s*/, ''));
+      return { id: `${f.id}-contact`, text: yoke, author: 'draft' as Author, ctx: [`${f.name}: "${f.contact!.title}", on its card at the desk`] };
+    })) },
 
   { id: 'personal', part: PART_CAMPAIGN, name: `From capture ${story.captures}, once: the personal plot`, where: GREET,
     what: `The first ordinary return on or after capture ${story.captures}: how it is going with the partner the Index assigned him. Once. It also opens the discussion in the AI Core (him going down to the Index to sign). Outranks the intros and the news below.`,
