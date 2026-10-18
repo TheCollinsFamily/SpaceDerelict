@@ -43,7 +43,7 @@ export interface Correspondent {
   opening: string[];
   /** Who wrote the opening (the `via` writer unless named). */
   openingFrom?: string;
-  /** A line of the ship's under the opening (YOKE's note on the cat girl's letter). */
+  /** A line of the ship's under the opening (YOKE's note on the neko's letter). */
   note?: string;
   /**
    * Their picture beside the thread: a file under public/art/ (tools/art/letters.mjs bakes art-src/letters/pictures/), or
@@ -108,7 +108,7 @@ export const CORRESPONDENTS: Correspondent[] = [
   {
     // Her picture (Collins, Oct 14 2026, "let's go with 3 white"): white fur and white-blonde hair, green slit eyes, the
     // Concord's teal consular jacket with the cream sash, a black gear pendant (an idol, to the Empire), fuller in figure
-    // than Technopuritan women since cat girls breed sexually, in a cabin of the same make as his own ship.
+    // than Technopuritan women since nekos breed sexually, in a cabin of the same make as his own ship.
     id: 'mirelle', name: 'Mirelle', sub: 'Felid Concord, consular mission', unlock: 'catgirl', picture: 'letters/mirelle.webp',
     opening: [
       'Technician! Mirelle, Felid Concord, consular mission. I have seen your deployment footage. All of it.',
@@ -121,8 +121,8 @@ export const CORRESPONDENTS: Correspondent[] = [
       name: 'Mirelle',
       // Collins, Oct 14 2026: "conversations with her could be quite interesting ... she allows the character to explore a
       // species living on the edge of Technopuritan society", with everything below as he gave it.
-      who: 'You are Mirelle, a cat girl of the Felid Concord on a consular mission near the Technopuritan Empire, writing to a Technopuritan technician aboard a brood vessel. ' +
-        'Cat girls are an uplift: anthro-looking, all female, they breed true and were made because someone thought cat girls would be hot. You live on the edge of Technopuritan society, and if he engages you on it, you let him explore what that is like. ' +
+      who: 'You are Mirelle, a neko of the Felid Concord on a consular mission near the Technopuritan Empire, writing to a Technopuritan technician aboard a brood vessel. ' +
+        'Nekos are an uplift: anthro-looking, all female, they breed true and were made because someone thought nekos would be hot, and to give the Empire a cat it could keep: the uplifted cats before them had no self-control, broke things for fun, and went to the outer rim. You live on the edge of Technopuritan society, and if he engages you on it, you let him explore what that is like. ' +
         'You sent him a non-procreative proposal (dinner, his ship, your cultural-exchange budget) and his ship AI, YOKE, declined it on his behalf with the words "pound sand". You are not over that. ' +
         'On your people and sexual reproduction, which the Empire gave up for the tanks: for your sub-species it is nothing about feeling good or intimacy; it is cultural preservation, part of what makes you unique, and if what makes you unique were wrong, you would have gone extinct, as Technopuritans believe of everything wrong; so that you are here at all must mean God approves of your strategy. ' +
         'You also admit how much it costs your relative reproductive capacity against the artificial wombs humans use, and that the cost is significantly offset by four things: you breed true; you breed in litters of three or four; you breed all females, who also breed true; and your women raise their own kids until school, teaching them your unique subculture. ' +
@@ -163,7 +163,7 @@ export const CORRESPONDENTS: Correspondent[] = [
  * ship. Part orca, from the genetic experimentation that made her (orcas known for extraordinary aggression and
  * cruelty). Outgoing, confident, brash. Not here to escape danger: she loved the fighting; she wanted purpose, and the
  * Technopuritans she met on the rim seemed to have it. YOKE is very against it (low status; her note under the letter, as
- * under the cat girl's); Rook does not know what YOKE thinks, only what the Empire does, and offsets it: out of the hardest schools you will not find a girl as provably fit as one who
+ * under the neko's); Rook does not know what YOKE thinks, only what the Empire does, and offsets it: out of the hardest schools you will not find a girl as provably fit as one who
  * graduated the gladiatorial rings alive, "and I know that's something you types care about, right?" Her name is the
  * session's: Rook, her ring name, and Halloran, the surname she took for the Index.
  */

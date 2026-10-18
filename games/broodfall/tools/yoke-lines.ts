@@ -145,7 +145,7 @@ const one = (lines: Line[]): Branch[] => [{ lines }];
 
 /** The intros, each with when it can first play. */
 const introLine = (i: (typeof INTROS)[number]): Line => {
-  const needs = i.id === 'intro-duck' ? ', only if mission 1 was won' : i.id === 'intro-catgirl' ? ', after the cat girl wrote (step 5)' : i.id === 'intro-genewar' ? ', after the second cat girl line' : i.id === 'intro-dad' ? ', after the personal plot (step 9)' : '';
+  const needs = i.id === 'intro-duck' ? ', only if mission 1 was won' : i.id === 'intro-catgirl' ? ', after the neko wrote (step 5)' : i.id === 'intro-genewar' ? ', after the second neko line' : i.id === 'intro-dad' ? ', after the personal plot (step 9)' : '';
   return greeting(GREETINGS.find((g) => g.id === i.id)!, `from capture ${i.captures}${needs}`);
 };
 const introOrder = INTROS.map((i) => `${i.id} (capture ${i.captures})`).join(', ');
@@ -172,7 +172,7 @@ const steps: Step[] = [
   { id: 'mate', part: PART_DARK, name: 'The first ordinary return: the mate review', where: GREET,
     what: 'Every return from the second deployment on: the report of it comes up at the desk (she says nothing there, since Oct 14 2026), then the planet\'s news (a newsreel or one of their papers), the Roach King\'s address when one is due, and he is aboard: her greeting, picked from the steps from here on. The first return with nothing weightier to say (a loss while the desk is dark, or the first return after it opened) gets this one in place of the ordinary line. Once. It points him at the data pad in his quarters, where the candidate\'s profile is.',
     branches: one(of('mate-review')) },
-  { id: 'catgirl', part: PART_DARK, name: 'The ordinary return after that: the cat girl', where: GREET,
+  { id: 'catgirl', part: PART_DARK, name: 'The ordinary return after that: the neko', where: GREET,
     what: 'The next ordinary return, playing off the mate review. Once. It lights the data pad again.',
     branches: one(of('catgirl')) },
   { id: 'locked', part: PART_DARK, name: 'A loss while the desk is still dark', where: GREET,
@@ -195,7 +195,7 @@ const steps: Step[] = [
     what: 'The first ordinary return after a turn in the Letters room, ahead of the intros: Rook\'s first letter arrives; Atlas writes herself; Rook tells him she is part orca (he asked about her skin), before the briefing.',
     branches: one(['letter-rook', 'letter-atlas-direct', 'letter-rook-orca'].map((id) => greeting(GREETINGS.find((g) => g.id === id)!))) },
   { id: 'news', part: PART_CAMPAIGN, name: 'News from Earth', where: LORE + '  (section "Earth news (return greetings)"; the fallback line: ' + GREET + ')',
-    what: `One ordinary return in ${EARTH_NEWS_EVERY}, once the desk is open and the mate review and the cat girl have played; and whenever her own lines for the moment have all been said this campaign, so she never repeats a line while unread news remains. Each line once a campaign. The list grows in the lore book with no code.`,
+    what: `One ordinary return in ${EARTH_NEWS_EVERY}, once the desk is open and the mate review and the neko have played; and whenever her own lines for the moment have all been said this campaign, so she never repeats a line while unread news remains. Each line once a campaign. The list grows in the lore book with no code.`,
     branches: one([...news.map(newsLine), { id: 'EARTH_NEWS_FALLBACK', text: EARTH_NEWS_FALLBACK, author: 'collins', ctx: ['when the lore book has no list'] }]) },
   { id: 'outcome', part: PART_CAMPAIGN, name: 'Otherwise: by what the deployment did', where: GREET,
     what: 'The ordinary line, when no step above takes the return. The weightiest thing that happened picks the pool: a counter-attack thrown back, ground lost to one, ground taken, a loss; from the main menu with nothing new, the last pool. Within a pool, a line she has not said this campaign while there is one, never the last one said.',
@@ -228,7 +228,7 @@ const steps: Step[] = [
     what: 'In type under her dancing, now and then in place of the scan on the ship\'s waits. Never twice in a row.',
     branches: one(plain('dance', arrayIn(loader, 'DANCE_LINES'), 'draft')) },
   { id: 'inbox', part: PART_ANY, name: 'On the data pad', where: G('content/partner.ts'),
-    what: 'The status line on the cat girl\'s message in his inbox.',
+    what: 'The status line on the neko\'s message in his inbox.',
     branches: one([{ id: 'partner.declined', text: ['DECLINED ON YOUR BEHALF BY YOKE. Reason given: "pound sand."'], author: 'draft' }]) },
   { id: 'notes', part: PART_ANY, name: 'Her notes under translated lines', where: G('content/translation.ts') + '  (TRANSLATOR_NOTES)',
     what: 'Read (never voiced) under a line of a scene\'s card whose words contain the match. A line rewritten so the words are gone loses its note.',
@@ -247,7 +247,7 @@ const steps: Step[] = [
     what: 'Small-talk pool for the live mind. Not wired to any moment (the Earth news is the only lore-book pool the greetings read).',
     branches: one(plain('krypteia', loreList(lore, /School, the index, family life/), 'lore')) },
   { id: 'uplifts', part: PART_MIND, name: 'Lorebook: the uplifts', where: LORE + '  (section 16)',
-    what: 'The boss, the elephants, the orcas, the cat girls: a small-talk pool for the live mind. Not wired.',
+    what: 'The boss, the elephants, the orcas, the nekos: a small-talk pool for the live mind. Not wired.',
     branches: one(plain('uplift', loreList(lore, /The uplifts/), 'lore')) },
   { id: 'anai', part: PART_MIND, name: 'Lorebook: "An AI?"', where: LORE + '  (section 16)',
     what: 'What she says when called an AI; the last line is how her live mind agrees to print a body. Not wired.',

@@ -2423,3 +2423,21 @@ The PC file's one open edit (catgirl: "call them nekos", more context) was copie
 From now on, read and clear the review with ArtifactData on that url (steps in the header of `tools/yoke-lines.ts`), not
 `notes/yoke-review.json`. After a rebuild, republish the page to the url with `capabilities` left out. Re-send a film
 under `files` only when it was re-baked. The PC server still works but its store is separate. Treat it as a backup.
+
+### Lore: dogs get a pass at school, cats left for the rim, "cat girl" is now "neko" (Oct 18 2026, later still)
+
+Collins's lore, kept in his words in `content/lore/empire.md` 15 ("Why the dogs get a pass at school, and why sentiment
+is a sin"; the Cats and Nekos rows), and in `docs/UNIVERSE.md` (Dogs, Cats, Nekos) and the lorebook:
+- Dogs kill the fewest at school. In a human that would bring suspicion, but dogs get a pass: compassion is the
+  perspective they were uplifted to add, and in a dog it shows on the face. Sentimentality is feared because it leads
+  to deontology: feeling pure while others pay (refuse to shoot one to save fifty). So even dogs never make the final
+  call, and they distrust their own moral instincts. `content/boss.ts` BOSS_ASIDE carries it for her live mind.
+- Cats were uplifted early, like the dogs, but could not work within the culture (no self-control, broke things for
+  fun), so they mostly live in the outer rim. The nekos were made partly to give the Empire a cat that could work in it.
+- "Cat girl" is now "neko" in every visible line, aside, persona and lore file. Code ids (`catgirl`,
+  `intro-catgirl`, `CATGIRL_MAIL`) are unchanged.
+- The `catgirl` greeting now has an aside (who the nekos are, Mirelle, the womb clause, the cats). That was his
+  Oct 16 note, which was applied and then cleared from the page and from notes/yoke-review.json.
+- OPEN for him (empire.md 15, "Fringe politics"): nekos before or after the orcas ("nobody has uplifted anyone since
+  the orcas"; proposal: nekos are a re-engineering of the cats, not a new species), and whether Space Derelict's
+  Felonia are the nekos or the rim's uplifted cats.

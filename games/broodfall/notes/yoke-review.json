@@ -1,16 +1,6 @@
 {
- "version": 5,
- "edits": {
-  "catgirl": {
-   "id": "catgirl",
-   "cut": false,
-   "note": "um this being the first time cat girls are brought up means you probably have a heavy amount of additional context to give to the ai ... and lets call them nekos not cat girls ",
-   "text": {},
-   "base": "1708uvb",
-   "at": "2026-10-16T17:34:35.157Z",
-   "by": null
-  }
- },
+ "version": 6,
+ "edits": {},
  "reviewed": {},
  "exports": {}
 }

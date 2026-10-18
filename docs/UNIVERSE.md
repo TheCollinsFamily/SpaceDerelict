@@ -252,7 +252,7 @@ The Technopuritans uplifted a number of other Earth species. Collectively, human
 are **the Sons of Man**, and the covenant (doctrine 14) covers them all; the corpus already names
 "uplifted intelligences" among the protected (TP 35.0.2). The corpus's covenant also takes in
 synthetic minds and cyborgs (TP 11.0); Collins's definition names humans and uplifts, and the two
-are read together. Uplifts look anthro, like the cat girls (Collins).
+are read together. Uplifts look anthro, like the nekos (Collins).
 
 - **The Sabbatean Skirmishes** (Collins, Oct 14 2026, by name only): a conflict the Empire fought; a Broodfall
   partner candidate's relative was a war hero of it. When, against whom and why are open.
@@ -292,6 +292,14 @@ are read together. Uplifts look anthro, like the cat girls (Collins).
   bulls were eradicated. Overly generous and often unable to make the ruthless decision, they are for
   that very reason near-universally trusted in middle management and elected to office at unusually
   high rates (Collins, Oct 14 2026). (Broodfall: the player's boss is an uplifted dog.)
+  **Dogs kill the fewest at school** (Collins, Oct 18 2026). In anyone else that would bring suspicion; dogs are given a
+  pass, as part of the "optimisation": the uplifts were made to add a diversity of cognitive perspectives to the Empire,
+  and a mind that optimises for compassion is thought "safe" in a dog, because you know that "prejudice" the moment you
+  see one, unlike a human who is overly sentimental. Sentimentality is feared because it primes a person for
+  deontological moral framings, one of the worst sins a Technopuritan knows: it lets you feel pure and good while you
+  pass the cost to others (refuse to shoot one person to save fifty and you have handed the cost of your purity to the
+  fifty), and an interstellar empire's costs are on another scale. So although dogs reach power at unusual rates, even
+  they know not to make the final call, and they generally distrust their own moral instincts.
 - **Elephants.** Top management is usually held by humans or uplifted elephants.
 - **Dolphins and killer whales.** Generally thought to have been a massive mistake: they border on
   a "genetically evil" race, and mostly live on the fringes of the Empire. Space Derelict's **Pop
@@ -317,30 +325,35 @@ are read together. Uplifts look anthro, like the cat girls (Collins).
   strategies that worked only at the genetic level, to get more genes like yours replicated. Severe dysgenic effects
   followed, since the genes best at winning the gene war were not necessarily good at interpersonal or inter-community
   competition. The Index banned the practice as a violation of the covenant. Almost every House and faction agreed,
-  except the cat girls (his word: the nekos), for whom breeding true is the most distinctive thing about their
+  except the nekos, for whom breeding true is the most distinctive thing about their
   sub-species; to drop it would be to become like everyone else, which to a Technopuritan is an existential loss (the
   bullet above). So the ban was written to cover only the artificial making of children and their gestation in tanks,
   an exception written in for them: they breed organically, editing their blastocysts with nanites (they are not
   animals), but in utero, which keeps the covenant. The Index accepted it because it prevents the runaway in their
-  numbers that breeding true in tanks would bring. The cat girls do not use the tanks because it is illegal: the one
+  numbers that breeding true in tanks would bring. The nekos do not use the tanks because it is illegal: the one
   people who kept the covenant the hard way, orthodox and vulgar at once. Long form, with what is PROPOSAL:
   Broodfall's `content/lore/empire.md`, section 4b.
-- **The cat girls' own case** (Collins, Oct 14 2026, through Broodfall's Mirelle): they keep sexual reproduction as
+- **The nekos' own case** (Collins, Oct 14 2026, through Broodfall's Mirelle): they keep sexual reproduction as
   cultural preservation, not pleasure; were it wrong they would be extinct, so God approves. Against the tanks they
   are offset by breeding true, in litters of three or four, all female, with mothers raising their own until school.
-  A cat girl without a mate in the Empire goes to the rim for one, easy and dangerous. Watched as outsiders, they
+  A neko without a mate in the Empire goes to the rim for one, easy and dangerous. Watched as outsiders, they
   keep the norms harder than most.
-- **Cat girls.** The most unusual uplift: anthro-looking like the others, all female, and they breed
-  true — a cat girl's daughter is a cat girl, taking little of the husband's DNA. They were
-  created, essentially, because someone thought it would be hot if cat girls existed. Some live
+- **Cats** (Collins, Oct 18 2026). Cats were uplifted early, like the dogs, but they were one of the species, like the
+  dolphins and orcas, that could not bring themselves to work within Technopuritan culture: they lacked self-control and
+  liked breaking things for fun at too high a rate. Uplifted cats mostly live in the outer rim now.
+- **Nekos.** The most unusual uplift: anthro-looking like the others, all female, and they breed
+  true — a neko's daughter is a neko, taking little of the husband's DNA. They were
+  created, essentially, because someone thought it would be hot if nekos existed, and in part out of frustration that one
+  of humanity's longest partner species was not in the Empire: the nekos were engineered as a cat variant that could work
+  within it (Collins, Oct 18 2026). Some live
   within Technopuritan society, but because they breed true they ironically struggle to find
   breeding partners, and often go to the fringes to find humans who still like sex for its own
   sake. They could engineer males, but refuse: it would "destroy their culture". They do not breed in tanks: it is
   illegal (the Gene War and the womb clause, above). Space Derelict's **Felonia** (prides of "catfolk" that approach crews wanting to "breed"
-  and "value skill over carnage") are those fringe cat girls.
+  and "value skill over carnage") are those fringe nekos.
 - **Fringe politics (PROPOSAL):** the covenant protects every uplift from extermination, not from
   disdain. The Empire keeps the dolphins and orcas at arm's length on the fringe and does not ask
-  what happens out there; the cat girls come and go.
+  what happens out there; the nekos come and go.
 
 ## The eusocial worlds (Collins, Sep 30 2026)
 
@@ -502,7 +515,7 @@ The long form, with Collins's words in full, is Broodfall's `content/lore/empire
   Space Derelict's Holy Empire (religious) and Confederacy (secular) are two of them. Left alone
   while they threaten no one.
 - **Uplifts on the fringe** — Space Derelict's **Pop Fiz** (uplifted dolphins and whales) and
-  **Felonia** (the cat girls' fringe prides): see "The Sons of Man" above.
+  **Felonia** (the nekos' fringe prides): see "The Sons of Man" above.
 - **PROPOSAL:** Space Derelict's **Ascendancy** (an AI death cult) is the kind of son of man whose
   designs on others forfeit the covenant.
 
@@ -518,9 +531,9 @@ The long form, with Collins's words in full, is Broodfall's `content/lore/empire
   synthetic sons of man inside the covenant. **PROPOSAL:** it is an Office classification — a
   tender's intelligence is filed as ship's equipment, and equipment is not asked. YOKE is,
   besides, not "an AI" but layered models, neural tissue and the ship itself (Collins, Sep 30).
-- **Felonia as "aliens".** Space Derelict's asset prompts call Felonia "sexy cat-girl aliens"
+- **Felonia as "aliens".** Space Derelict's asset prompts call Felonia "sexy neko aliens"
   (`games/space-derelict/generate_event_assets.py`). Collins's Sep 30
-  word is that cat girls are an Earth uplift, so Felonia are uplifted cat girls, not aliens. The
+  word is that nekos are an Earth uplift, so Felonia are uplifted nekos, not aliens. The
   prompts only describe pictures and were left unchanged; every other Space Derelict detail
   (prides, "breed" offers, skill over carnage, Pop Fiz's seal-tossing orcas) stands.
 - **"The index"** (Collins: the wider imperial system) and **the Index** (the corpus: a registry of

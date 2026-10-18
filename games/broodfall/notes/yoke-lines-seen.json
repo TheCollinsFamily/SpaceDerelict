@@ -27,9 +27,8 @@
    "baseline": true
   },
   "catgirl": {
-   "hash": "1708uvb",
-   "since": "2026-10-14",
-   "baseline": true
+   "hash": "1nb1966",
+   "since": "2026-10-18T17:35:09.519Z"
   },
   "locked-1": {
    "hash": "jmpg51",
@@ -112,9 +111,8 @@
    "baseline": true
   },
   "intro-catgirl": {
-   "hash": "egbdpq",
-   "since": "2026-10-14",
-   "baseline": true
+   "hash": "r16pfr",
+   "since": "2026-10-18T17:35:09.519Z"
   },
   "intro-audit": {
    "hash": "116otlk",
@@ -122,8 +120,8 @@
    "baseline": true
   },
   "intro-genewar": {
-   "hash": "1axoyot",
-   "since": "2026-10-16T10:46:27.014Z"
+   "hash": "sv6j2s",
+   "since": "2026-10-18T17:35:09.519Z"
   },
   "intro-dad": {
    "hash": "laizgq",
@@ -991,19 +989,16 @@
    "baseline": true
   },
   "uplift-9": {
-   "hash": "36h1zp",
-   "since": "2026-10-14",
-   "baseline": true
+   "hash": "wetwz5",
+   "since": "2026-10-18T17:35:09.519Z"
   },
   "uplift-10": {
-   "hash": "ltgedg",
-   "since": "2026-10-14",
-   "baseline": true
+   "hash": "ww3wbx",
+   "since": "2026-10-18T17:35:09.519Z"
   },
   "uplift-11": {
-   "hash": "1cjkann",
-   "since": "2026-10-14",
-   "baseline": true
+   "hash": "lnzdmi",
+   "since": "2026-10-18T17:35:09.519Z"
   },
   "uplift-12": {
    "hash": "1pljt0y",
@@ -1011,8 +1006,8 @@
    "baseline": true
   },
   "uplift-13": {
-   "hash": "47jbre",
-   "since": "2026-10-16T10:46:27.014Z"
+   "hash": "15ga1l6",
+   "since": "2026-10-18T17:35:09.519Z"
   },
   "uplift-14": {
    "hash": "o35mkn",
@@ -1023,12 +1018,12 @@
    "since": "2026-10-16T10:46:27.014Z"
   },
   "uplift-16": {
-   "hash": "ksa8g",
-   "since": "2026-10-16T10:46:27.014Z"
+   "hash": "bng6jd",
+   "since": "2026-10-18T17:35:09.519Z"
   },
   "uplift-17": {
-   "hash": "48so8w",
-   "since": "2026-10-16T10:46:27.014Z"
+   "hash": "10cdpft",
+   "since": "2026-10-18T17:35:09.519Z"
   },
   "uplift-18": {
    "hash": "qljd4n",

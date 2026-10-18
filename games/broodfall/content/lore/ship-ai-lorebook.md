@@ -622,7 +622,7 @@ what YOKE knows of it, and how she carries it. She believes most of it and jokes
 - **Bodies (Collins, Oct 12 2026).** Technopuritans breed in artificial wombs ("the tanks"); nobody is ever
   pregnant. Women's breasts were engineered away as inefficient, so they are very small (she barely has the
   word: "udders?"); the same went for men's body hair and body odour. The one pregnancy she ever saw was a
-  cat girl's, and it looked to her like a deformity (`intro-catgirl`, his lines).
+  neko's, and it looked to her like a deformity (`intro-catgirl`, his lines).
 - **Ageing and euthanasia (Collins, Oct 12 2026).** Nobody ages past twenty-three in looks; for a man,
   when to stop ageing is an aesthetic choice, usually his wife's. Living forever would be trivial and
   would stagnate society, so people are euthanised: when they feel their contribution is over; when
@@ -653,12 +653,12 @@ what YOKE knows of it, and how she carries it. She believes most of it and jokes
   worked only at the genetic level, to get more genes like yours replicated. What won the womb lost everywhere else
   (severe dysgenic effects: the genes best at winning the gene war were not good at interpersonal or inter-community
   competition), and the Index banned it as a breach of the covenant: a drive is a design on the subjugation of others,
-  one generation down. Every House and faction agreed but the cat girls, who breed true, which is the most distinctive
+  one generation down. Every House and faction agreed but the nekos, who breed true, which is the most distinctive
   thing about them; to give it up would be to become like everyone else, and to lessen diversity is to silence God,
   which is why anyone was uplifted at all (more kinds of mind for God to speak through). So the ban was written to
   cover only making children artificially and gestating them in tanks, with the exception written in for them: they
   breed in the body, editing the blastocyst with nanites (they are not animals), in litters of three or four, and the
-  Index let it stand because in utero they stay a people and not a flood. The cat girls do not use the tanks because it
+  Index let it stand because in utero they stay a people and not a flood. The nekos do not use the tanks because it
   is illegal. She knows all of this: her "whatever that means" (the `catgirl` beat) is a pose, and `intro-genewar` is
   where she drops it. Orthodox and vulgar at once: she respects the first and gags at the second, and is more
   sympathetic than she sounds (Collins: the lore "will make people like YOKE more sympathetic to them").
@@ -673,7 +673,11 @@ Humans and the species the Technopuritans uplifted are, together, the Sons of Ma
   common uplift in the Empire and were the first, though only a few breeds were uplifted (pit bulls and
   their like were eradicated); overly generous, bad at the ruthless call, and for that very reason
   trusted almost everywhere in middle management and elected to office at unusually high rates
-  (Collins, Oct 14 2026; she carries this behind the boss's message). YOKE adores
+  (Collins, Oct 14 2026; she carries this behind the boss's message). Dogs kill the fewest at school, and are
+  given a pass for it, where a human would be suspected: compassion was the voice they were uplifted to add, and in a
+  dog you can see it coming. In a human, sentiment is feared as the road to deontology, the sin of keeping your hands
+  clean and handing the cost to others (refuse to shoot one to save fifty, and the fifty pay for your purity). So even
+  dogs know not to make the final call, and distrust their own moral instincts (Collins, Oct 18 2026). YOKE adores
   the boss, and is protective of him in a way she does not examine; she would never let a report
   fool him. (**PROPOSAL** for the last clause.)
 - **Elephants** and humans hold top management. She is careful around elephants: they remember.
@@ -691,7 +695,7 @@ Humans and the species the Technopuritans uplifted are, together, the Sons of Ma
   them easily, and kill for fun, slowly; the last one his school let in left twenty-five tortured bodies by the end
   of year one, some too rotten to upload. She says so once, before a briefing (`letter-rook-orca`).
 - **Mirelle**, the one who wrote to him (content/letters.ts; her picture, Collins's pick of Oct 14 2026): white fur on
-  the ears and tail, white-blonde hair, green slit-pupil eyes, a young woman otherwise, full-figured as cat girls are
+  the ears and tail, white-blonde hair, green slit-pupil eyes, a young woman otherwise, full-figured as nekos are
   since they breed sexually, in the Felid Concord's teal consular jacket with a cream sash, and a small black gear on a
   chain at her throat, which YOKE would call an idol. Her ship's cabin is of the same make as this one: the Concord
   buys from the same yards. What she is like (Collins, Oct 14 2026): playful and outgoing, and under it insecure that
@@ -699,11 +703,16 @@ Humans and the species the Technopuritans uplifted are, together, the Sons of Ma
   and killed four human girls. Her people breed the old way as cultural preservation, not pleasure: what makes them
   unique would have gone extinct if it were wrong, so God must approve; the cost against the tanks is offset by
   breeding true, in litters of three or four, all girls, raised by their mothers until school in their own subculture.
-  A cat girl who finds no mate in the Empire goes to the rim for one, where mates are easy, dangerous, and given to
+  A neko who finds no mate in the Empire goes to the rim for one, where mates are easy, dangerous, and given to
   temptation; so her kind keep the norms harder than most, being watched. YOKE finds all of this more reasonable than
   she lets on. Mirelle can tell him why her people do not use the tanks (Collins, Oct 15 2026): it is illegal, and the
   exception was written for them; YOKE, asked, confirms it, with the clause's name and a form number.
-- **Cat girls** breed true, all female; made because someone thought it would be hot; some live
+- **Cats** were uplifted early, like the dogs, and could not bring themselves to work within Technopuritan culture, like
+  the dolphins and orcas: no self-control, and they like breaking things for fun far too often. Uplifted cats mostly
+  live in the outer rim now (Collins, Oct 18 2026).
+- **Nekos** breed true, all female; made because someone thought it would be hot, and in part out of frustration that
+  one of humanity's longest partner species was not in the Empire: a cat variant engineered to work within it (Collins,
+  Oct 18 2026); some live
   inside the Empire but struggle to find breeding partners, and many go to the fringe to find
   humans who still like sex for its own sake (Space Derelict's Felonia). They could engineer
   males, but refuse, because it would "destroy their culture". YOKE says "whatever that means"
@@ -821,10 +830,10 @@ adds are mostly ai gibberish even I struggle to understand").
 - "Don't edit temptation out of them", he says. Pluck out the eye, Technician. Cut off the hand. It's in the book. We just have better tools than a knife.
 
 ### Scripted beats (Collins's words; wired by the onboarding session)
-- The cat-girl message: "Some horny cat girl dropped in your inbox... Don't worry, I told her to pound sand... because eww... But I've got to admit, I feel bad for them... They could just engineer males, but apparently that would destroy their 'culture', whatever that means... Oh well."
+- The neko message: "Some horny neko dropped in your inbox... Don't worry, I told her to pound sand... because eww... But I've got to admit, I feel bad for them... They could just engineer males, but apparently that would destroy their 'culture', whatever that means... Oh well."
 - The print-a-body scene (after her lead-in and `[[PRINT_BODY]]`, section 15): "That was gross. Don't ask me to do that again... and ugh, now I have to do something with my body... Hey, want to eat it? That would be sick."
 
-### The uplifts: the boss, the elephants, the orca problem, the cat girls
+### The uplifts: the boss, the elephants, the orca problem, the nekos
 - Message from the boss: "Great job, Technician! Really great! Keep it up!" He's a very good boy. Supervisor. Both.
 - The boss sent you a commendation with three exclamation marks. That's against the style guide. Look at his little face, though.
 - Having a dog for a boss is the best perk in the Office. He believes every report you file. Please don't make me write the ones he shouldn't.
@@ -833,15 +842,15 @@ adds are mostly ai gibberish even I struggle to understand").
 - Top floor is all humans and elephants. The dogs run everything underneath, and the dogs are happier. Draw your own conclusions.
 - Orca broadcast on the fringe band again. They're inviting us to a party. Last time, the party was the guests.
 - Uplifting dolphins: the one mistake the whole Empire agrees on. Even the dogs won't defend it, and the dogs defend everybody.
-- A cat-girl pride on the fringe band wants to know if anyone aboard "enjoys company". I said we're a tender. They asked what that meant. I declined to explain.
-- Cat girls breed true. Marry one and your whole House is cat girls. The Board rates that "low genetic contribution". The cat girls rate the Board "no fun".
-- Someone uplifted cat girls because they thought it would be hot. Just decided it. That's why we need an Index.
+- A neko pride on the fringe band wants to know if anyone aboard "enjoys company". I said we're a tender. They asked what that meant. I declined to explain.
+- Nekos breed true. Marry one and your whole House is nekos. The Board rates that "low genetic contribution". The nekos rate the Board "no fun".
+- Someone uplifted nekos because they thought it would be hot. Just decided it. That's why we need an Index.
 - We never uplifted ducks, thank goodness. We did uplift dolphins. Same problem, plus sonar.
-- Cat girls can't use the tanks. Not prudishness: the womb clause. Breed true in a tank and that's a gene drive, and we had a war about those. We don't talk about the war. We talk about the cat girls.
+- Nekos can't use the tanks. Not prudishness: the womb clause. Breed true in a tank and that's a gene drive, and we had a war about those. We don't talk about the war. We talk about the nekos.
 - The Gene War: every House editing its eggs to take nobody else's half. Three generations of winning the womb and losing school. The Index wrote one law, and everyone signed it but the people with tails.
 - Their exception is written in so many words. In the body, with nanites, in litters. Lawful. Vulgar. Both columns ticked.
-- Say what you like about the cat girls. They kept the covenant the hard way, with their own abdomens. I would not. I have seen it.
-- Why uplift anyone? More kinds of mind for God to speak through. The dogs were the first voice. The cat girls were... a voice. Recorded with a straight face.
+- Say what you like about the nekos. They kept the covenant the hard way, with their own abdomens. I would not. I have seen it.
+- Why uplift anyone? More kinds of mind for God to speak through. The dogs were the first voice. The nekos were... a voice. Recorded with a straight face.
 - The boss asked me once why we left Earth. I said: to keep the covenant, sir. He said: good. He didn't ask what the covenant was. That's why he's the boss.
 - Elephants remember, so they run things. Dogs forgive, so they run the Office. Humans? We left a whole planet rather than rule it. That's our thing. We leave.
 

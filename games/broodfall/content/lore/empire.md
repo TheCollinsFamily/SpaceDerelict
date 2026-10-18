@@ -31,7 +31,7 @@ How to read this file:
 | | The corpus foretold it: "Those who survive this final test will be the iteration of man to take to the stars." | TP 11.0 |
 | **Earth behind** | With only religious extremists still breeding, Earth fell low-tech and into constant holy war. The Empire watches it as entertainment: a zoo, and the cautionary tale of why Technopuritans live as they do (section 9). | Collins |
 | **The explosion** | 100 children a couple, about half surviving to the index: about 25 times the people each generation. The Empire burst onto the galactic scene while other groups crept. | Collins |
-| **The Gene War** | In the early days of the Empire, an arms race of gene drives and similar technology, on the idea that "the strongest genetic profile wins" means just that: ever more aggressive strategies that worked only at the genetic level, to get more genes like yours replicated. Severe dysgenic effects followed: the genes best at winning the gene war were not necessarily good at interpersonal or inter-community competition. The Index banned the practice as a violation of the covenant, with one exception written in for the cat girls (section 4b). | Collins, Oct 15 2026 |
+| **The Gene War** | In the early days of the Empire, an arms race of gene drives and similar technology, on the idea that "the strongest genetic profile wins" means just that: ever more aggressive strategies that worked only at the genetic level, to get more genes like yours replicated. Severe dysgenic effects followed: the genes best at winning the gene war were not necessarily good at interpersonal or inter-community competition. The Index banned the practice as a violation of the covenant, with one exception written in for the nekos (section 4b). | Collins, Oct 15 2026 |
 | **Others in space** | Some other religions and secular groups reached space too, growing slowly. They do not matter on the galactic scene. The exception is the Amish (Collins, Oct 15 2026): one community rented space on one of the first planetary colonisation efforts and exploded in size; Amish settlements are now the most common kind of non-Technopuritan human settlement in space (section 13). Following the sons-of-man doctrine, the Empire does not wipe them out unless they are a threat. | Collins; TP 11.0 |
 | **Now** | Crusade Zones on the expansion fronts; the lawless rim beyond them (Space Derelict); the eusocial worlds being cleared for living room (Broodfall). | UNIVERSE.md |
 
@@ -183,7 +183,7 @@ reproduce quickly "is that it's illegal". "It's still all about culture, but it 
 into cool sci-fi lore around what might actually happen in a culture like this, a gene-drive war, and all the logic is
 consistent with the universe and its values."
 
-- **Where it meets the cat girls as already written.** They breed true, "taking little of the husband's DNA"
+- **Where it meets the nekos as already written.** They breed true, "taking little of the husband's DNA"
   (section 15). That IS the Gene War's winning move, built into a people: a true-breeding line in a tank is a gene drive
   by another name, which is why the one law every House could sign bit them hardest, and why the clause had to be written
   with them in mind.
@@ -218,8 +218,8 @@ consistent with the universe and its values."
   `catgirl` beat, his words), is her pretending not to know; she knows, and says so later (`intro-genewar`).
 - **The moral record (6b)** still marks sexual reproduction: the clause makes it lawful, not respectable. The nekos live
   with the marks, as before. It is the tanks they may not use, not the bedroom.
-- **Names.** Collins's word is "nekos"; the Empire's and YOKE's is "cat girls". **PROPOSAL:** neko is their own word and
-  the Felid Concord's; cat girl is what the Index files them as, and what everyone else says.
+- **Names** (Collins, Oct 18 2026: "we should call them nekos and not cat girls"): they are **nekos**, in the Empire, in
+  YOKE's mouth and in every file. "Cat girl" is retired.
 ## 5. Krypteia (removed, Oct 15 2026)
 
 Collins, Oct 15 2026: "let's remove krypteia; the Technopuritans don't really have any groups to rule over, the way the
@@ -392,7 +392,7 @@ fashion these days, which is why it is not obvious.
   genetic distance (YOKE's Earth-news line). **PROPOSAL:** other such classes exist; a class is a specialisation of the
   one people, not a people.
 - **The tanks, and what was engineered away** (Collins, Oct 12 2026): Technopuritans breed using artificial
-  wombs, so nobody is ever pregnant, and a pregnancy (a cat girl's, say) looks to them grotesque: "their
+  wombs, so nobody is ever pregnant, and a pregnancy (a neko's, say) looks to them grotesque: "their
   abdomens distend inhumanly ... it did not look safe". Women have very small breasts, having had them
   engineered away as inefficient (YOKE reaches for the word: "udders?"); the same happened to male body
   hair and body odour.
@@ -883,7 +883,7 @@ the Technopuritan love interest and her friend)."
   feeling over aplomb: TP 35.0.3). **PROPOSAL:** the Empire treats the rim as the Basilisk's
   culling (TP 11.0) and lets it be; it is watched, like Earth, but only by the disreputable.
 - **Uplifts on the fringe:** Space Derelict's Pop Fiz (the dolphins and killer whales) and Felonia
-  (the cat girls' fringe prides). Section 15.
+  (the nekos' fringe prides). Section 15.
 - **Threats:** a son of man who seeks to subjugate others forfeits the covenant (TP 11.0).
   **PROPOSAL:** Space Derelict's Ascendancy (an AI death cult) is the textbook case.
 
@@ -931,10 +931,10 @@ erase diversity, "the separation between man, is to silence God" (TP 10.0); "onl
 within the sons of man have a place in mankind's manifest destiny", and every form of evolution "require[s] diversity"
 (TP 11.0); Noah's lesson is to "make an effort to maintain as many traditions as you can" (TP 1.2). So the uplifts are
 not labour and not pets: they are more kinds of mind for God to speak through, each competing in the same Index. It is
-why the dogs came first and the orcas were not undone (the covenant), why "someone thought cat girls would be hot" is
+why the dogs came first and the orcas were not undone (the covenant), why "someone thought nekos would be hot" is
 recorded with a straight face (a new kind of mind is a new kind of mind, whatever the reason), and why nobody has
 uplifted anyone since the orcas: the Index now asks what a mind adds before it is made ("prove all things", TP 12.0).
-**PROPOSAL:** the same doctrine is why the cat girls could not simply be told to breed like everyone else (section 4b):
+**PROPOSAL:** the same doctrine is why the nekos could not simply be told to breed like everyone else (section 4b):
 to make them like everyone else is to lose a voice, which is the one thing the Empire's God forbids.
 
 | Who | Where they sit (Collins) | In practice (**PROPOSAL** unless quoted) |
@@ -943,7 +943,31 @@ to make them like everyone else is to lose a voice, which is the one thing the E
 | **Dogs** | Many high-level posts in the bureaucracy: they like taking orders, are generally happy and trustworthy, and are thought more generous and nicer to be around than humans. A dog as your superior is quite the gift. Rarely top management: very gullible. **Oct 14 2026:** the most common uplifted species in the Empire, and the first, though only a few breeds were uplifted (breeds like pit bulls were eradicated). Overly generous, often failing to make the ruthless decisions necessary, and for that near-universally trusted in middle management and elected to office at unusually high rates. | The Office runs on dogs: middle and upper-middle management, inspectors, Board clerks. A dog's directive is sincere; the fine print above it was written by someone else. Nobody lies to a dog superior; it would be like kicking one. |
 | **Elephants** | Top management, with humans. | Long memories, long horizons: the Index's senior offices, Command, the planning of worlds. They remember every entry. |
 | **Dolphins and killer whales** | A massive mistake; bordering on a "genetically evil" race; mostly on the fringes. | Inside the covenant, so not wiped out; outside every office. On the fringe they are Space Derelict's Pop Fiz. Schoolbooks cite them as the proof that uplift must be tested before it is done (the corpus: "prove all things", TP 12.0). |
-| **Cat girls** (the nekos) | Anthro-looking like other uplifts; all female; breed true, taking little of the husband's DNA; made because someone thought cat girls would be hot. Some live within Technopuritan society, but they struggle to find breeding partners and often go to the fringes to find humans who still like sex for its own sake. They could engineer males, but refuse: it would "destroy their culture". **Oct 15 2026:** they do not use the tanks because it is illegal: breeding true in a tank is a gene drive, banned since the Gene War as a breach of the covenant; they breed in utero, editing the blastocyst with nanites, under an exception written for them (section 4b). | Inside: a House that marries a cat girl gets cat-girl daughters, so the Board's market rates the match low, and the Board is the marriage market (section 3). On the fringe: Space Derelict's Felonia prides, who hail passing crews to "breed". The Empire's body-disgust (section 14) makes the fringe cat girls a scandal and a punchline at once. Orthodox and vulgar in one body: the one people who kept the covenant the hard way (section 4b). |
+| **Cats** | **Oct 18 2026:** uplifted early, like the dogs, but one of the species, like the dolphins and orcas, that "couldn't bring themselves to work within Technopuritan culture: they lacked self-control and like breaking things for fun at too high a rate, so mostly live in the outer rim now." | Inside the covenant, outside every office, like the cetaceans. The Empire's lost partner species: humanity kept cats for ten thousand years and could not keep them in the Index. |
+| **Nekos** | Anthro-looking like other uplifts; all female; breed true, taking little of the husband's DNA; made because someone thought nekos would be hot. **Oct 18 2026:** and "in part from the frustration that one of humanity's longest partner species was not in the Empire... the nekos were born to try to engineer a cat variant that could work within the Empire." Some live within Technopuritan society, but they struggle to find breeding partners and often go to the fringes to find humans who still like sex for its own sake. They could engineer males, but refuse: it would "destroy their culture". **Oct 15 2026:** they do not use the tanks because it is illegal: breeding true in a tank is a gene drive, banned since the Gene War as a breach of the covenant; they breed in utero, editing the blastocyst with nanites, under an exception written for them (section 4b). | Inside: a House that marries a neko gets neko daughters, so the Board's market rates the match low, and the Board is the marriage market (section 3). On the fringe: Space Derelict's Felonia prides, who hail passing crews to "breed". The Empire's body-disgust (section 14) makes the fringe nekos a scandal and a punchline at once. Orthodox and vulgar in one body: the one people who kept the covenant the hard way (section 4b). |
+
+### Why the dogs get a pass at school, and why sentiment is a sin (Collins, Oct 18 2026)
+Collins, his words (typos mended): "dogs are the ones that kill the least during the school. Normally this would cause
+someone to be seen with suspicion, but dogs are generally given a pass, as it's part of the 'optimisation' (the idea being
+that the whole reason for uplifting animals was to add a diversity of cognitive perspectives to the Empire, and that dogs
+optimise for compassion is thought of as 'safe', given you can visually know this 'prejudice' the moment you see them,
+unlike say a human who was overly sentimental). As to why they see sentimentality as bad: it's seen as priming a person to
+deontological moral framings, which to a Technopuritan is one of the worst sins possible, as it allows you to feel pure
+and good while passing on the cost to others. E.g. if you are unwilling to shoot one person to save 50, you pass the
+'cost' of your moral purity on to those 50 people... but scale this up to the types of costs seen in an interstellar
+empire... which is why, while dogs get into positions of power at unusual rates, even they know not to make final calls
+and generally distrust their own moral instincts."
+- **The pass.** A low kill count at school (section 6) marks a human; in a dog it is the point of the dog, the voice the
+  uplift was made to add ("Why anyone was uplifted", above). What makes it safe is that it is worn on the face: nobody is
+  fooled by a dog, and so nobody is betrayed by one. A sentimental human looks like everyone else until the hard call.
+- **The sin.** Deontology, to a Technopuritan, is purity bought with someone else's life: the rule kept, the fifty dead,
+  and the keeper feeling clean. It is the moral form of the claim 6c condemns, knowing better than the outcome.
+  It is why Atlas Vell was marked DANGEROUSLY SENTIMENTAL and kept from a ship's command (section 4), and why the school
+  counts a kill for the killer.
+- **The dog's own answer.** Dogs know all this about themselves. They take posts and rarely the top one (the table's
+  "rarely top management"), defer the final call upward, and distrust their own moral instincts, which is exactly why
+  they are trusted. **PROPOSAL:** Barnabas's "The Board says only the numbers matter, and the Board is very wise. But I
+  say you are a good egg" is that deference spoken aloud: his heart, offered, and then the decision left to the Board.
 
 ### Fringe politics (**PROPOSAL**)
 - The covenant protects every son of man from extermination, not from disdain. The Empire keeps
@@ -952,7 +976,10 @@ to make them like everyone else is to lose a voice, which is the one thing the E
 - The rim's game-show predators (Space Derelict) hunt Felonia and Pop Fiz for ratings. The Empire
   does not intervene: the rim is the Basilisk's culling (section 13).
 - Nobody in the Empire has proposed uplifting another species since the orcas. The dogs would
-  like to; nobody has told them no in a way they understood.
+  like to; nobody has told them no in a way they understood. **PROPOSAL (Oct 18 2026, his to settle):** the nekos do not
+  break this, because they are not a new species but a re-engineering of the cats, already uplifted and under the covenant.
+  Open: did the nekos come before or after the orcas, and are Space Derelict's Felonia the nekos (as filed) or the
+  uplifted cats of the outer rim?
 
 ### Broodfall: the boss is a dog
 Collins, Sep 30: the player's boss is an uplifted dog. YOKE relays "a message from the boss" in an
@@ -961,7 +988,7 @@ scene). **PROPOSAL:** the boss is a clearance supervisor in the Office, sincerel
 every clean deployment, signing directives whose procurement language someone above him wrote.
 Having a dog for a boss is the one enviable thing about a pest-control posting.
 
-### Broodfall: Mirelle, the cat girl who writes to him
+### Broodfall: Mirelle, the neko who writes to him
 Collins's pick of her picture (Oct 14 2026, "3 white"; tools/art/mirelle-options.mjs, public/art/letters/mirelle.webp):
 a young woman with large white-furred cat ears and tail, white-blonde hair, green slit-pupil eyes, full-figured (cat
 girls breed sexually, so they keep what Technopuritan women engineered away), in the Felid Concord's teal consular
@@ -1003,7 +1030,7 @@ ring seemed to have it." Her pitch (Collins): "you have 40 kids with some nice l
 kids will have status, but how many of them are going to survive school? Breed with me and I can guarantee you they
 all will." Her name (the session's): Rook, her ring name, Halloran for the Index; Keelhaul Station
 (the session's) is her ring. Collins, later: she would not know what YOKE thinks of her; YOKE's LOW STATUS note sits
-under her letter as under the cat girl's, and Rook argues against the Empire's view, not YOKE's. She opens her thread in the Letters room once the Board's quarterly statement has played
+under her letter as under the neko's, and Rook argues against the Empire's view, not YOKE's. She opens her thread in the Letters room once the Board's quarterly statement has played
 (content/letters.ts). **PROPOSAL:** the rim's gladiatorial stations breed their fighters and free the winners; a
 fighter's stock is cut with orca for the aggression, which is the rim's use of the Empire's one mistake.
 She lost part of her face and her left eye in the rings to an uplifted gorilla (Collins, Oct 14 2026), replaced with a

@@ -131,7 +131,7 @@ const ORDINARY: GreetMoment[] = ['won', 'lost', 'lost-locked', 'back', 'defended
 export function momentNow(s: CampaignState): GreetMoment {
   const m = s.greet ?? 'back';
   if (!s.onboard || s.onboard.mission1 === 'pending' || !s.lastGreeting || !ORDINARY.includes(m)) return m;
-  // The early beats, one an ordinary return, in their order: the mate review, then the cat girl (who plays off it).
+  // The early beats, one an ordinary return, in their order: the mate review, then the neko (who plays off it).
   const early = EARLY_ONCE.find((id) => !(s.said ?? []).includes(id));
   if (early) return early;
   // The personal plot, from its capture on (the first ordinary return that has reached it).
@@ -153,7 +153,7 @@ export const STORY_ONCE: Array<{ id: GreetMoment; captures: number }> = [
  * you lose"): one-off greetings for ordinary returns, each said once a campaign (CampaignState.greetingsSaid, which a
  * lost mission does not undo), in this order, each from its capture on, and never two returns running, so her ordinary
  * lines still come between. `needs`: what must have happened first (the duck is a callback to the first-mission win;
- * the second cat girl plays off the first, the Gene War off the second; the dad's names off the Board moving the file).
+ * the second neko plays off the first, the Gene War off the second; the dad's names off the Board moving the file).
  */
 export const INTROS: Array<{ id: string; captures: number; needs?: (s: CampaignState) => boolean }> = [
   { id: 'back-5', captures: 2 },
