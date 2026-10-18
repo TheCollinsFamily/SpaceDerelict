@@ -159,7 +159,7 @@
 <div class="wrap">
   <nav class="rail" id="rail" aria-label="Steps"></nav>
   <main>
-    <p class="intro">One campaign, step by step, in the order a player meets her: each step is an event, what happens is said under it, then every line she can say there. Click a line to edit it in place, mark it <b>Cut</b>, leave a note, or tick it <b>Reviewed</b>. <b>The review is shared:</b> everyone who opens it (any browser, any Claude account) sees the same edits, notes and ticks, kept in one shared store that every session reads (on claude.ai, the page's own store; on the PC, notes/yoke-review.json). <b>Export changes</b> hands them to the next session: nothing to paste. Once a change is in the files it clears from here for everyone. A tick holds until the line is rewritten. <b>New</b> marks a line whose words changed since you last opened the page. An italic line under a greeting is what she knows behind it: her live mind gets it, the player never sees it. <b>The films</b> come last: every cut scene with its film to play and every line of it, edited the same way (a changed line means that film is re-shot).</p>
+    <p class="intro">One campaign, step by step, in the order a player meets her: each step is an event, what happens is said under it, then every line she can say there. Click a line to edit it in place, switch <b>Keep</b> to <b>Remove</b> to cut it, leave a note, or tick it <b>Reviewed</b>. <b>The review is shared:</b> everyone who opens it (any browser, any Claude account) sees the same edits, notes and ticks, kept in one shared store that every session reads (on claude.ai, the page's own store; on the PC, notes/yoke-review.json). <b>Export changes</b> hands them to the next session: nothing to paste. Once a change is in the files it clears from here for everyone. A tick holds until the line is rewritten. <b>New</b> marks a line whose words changed since you last opened the page. An italic line under a greeting is what she knows behind it: her live mind gets it, the player never sees it. <b>The films</b> come last: every cut scene with its film to play and every line of it, edited the same way (a changed line means that film is re-shot).</p>
     <p class="intro share" id="shareHint" hidden>This is the cloud copy, for any computer (Oct 18 2026). Its review is kept in this page's own store on claude.ai, which every Claude session reads. It is separate from the PC copy (http://localhost:8792/, notes/yoke-review.json).</p>
     <div class="export" id="exportBox" hidden>
       <h3>Exports</h3>
@@ -272,7 +272,7 @@
           (l.faces && l.faces[i] ? '<span class="face">' + esc(l.faces[i]) + '</span>' : '') + '</div>';
       }).join('') + (l.aside ? '<div class="aside"><b>Behind it, for her live mind only:</b> ' + esc(l.aside) + (l.hook ? ' <span class="hook">reply box: “' + esc(l.hook) + '”</span>' : '') + '</div>' : '') + '</div>' +
       '<div class="ctl"><button type="button" class="rev" aria-pressed="' + (rv ? 'true' : 'false') + '"' + (canWrite ? '' : ' disabled') + '>' + (rv ? '✓ Reviewed' : 'Mark reviewed') + '</button>' +
-      '<button type="button" class="cut" aria-pressed="' + (e.cut ? 'true' : 'false') + '"' + (canWrite ? '' : ' disabled') + '>' + (e.cut ? 'Cut' : 'Keep') + '</button>' +
+      '<button type="button" class="cut" aria-pressed="' + (e.cut ? 'true' : 'false') + '"' + (canWrite ? '' : ' disabled') + ' title="' + (e.cut ? 'Removed: click to keep it' : 'Kept: click to remove it') + '">' + (e.cut ? 'Remove' : 'Keep') + '</button>' +
       '<input type="text" class="note" id="note-' + esc(l.id) + '" placeholder="Note" value="' + esc(e.note || '') + '" aria-label="Note on ' + esc(l.id) + '"' + (canWrite ? '' : ' disabled') + '></div></div>';
   }
   var steps = document.getElementById('steps');
@@ -290,13 +290,18 @@
         }).join('') + '</section>';
     }).join('');
   }
-  /* Redraw one line, unless someone is typing in it right now (their words win; the store catches up). */
+  /* Redraw one line, unless someone is typing in it right now (their words win; the store catches up). Only typing holds
+     it: a clicked button keeps focus in most browsers, and holding for that left Keep/Remove and Reviewed unchanged
+     (Collins, Oct 18 2026: "the keep button when clicked on is not changing to remove"). Focus goes back to the same
+     button after the redraw. */
   function redraw(id) {
-    var el = document.getElementById('row-' + id), l = LINES[id];
-    if (!el || !l || el.contains(document.activeElement)) return;
+    var el = document.getElementById('row-' + id), l = LINES[id], a = document.activeElement;
+    if (!el || !l || (el.contains(a) && a.matches('.t, input'))) return;
+    var btn = el.contains(a) && a.tagName === 'BUTTON' ? a.className : '';
     var hid = el.hidden, tmp = document.createElement('div');
     tmp.innerHTML = row(l);
     var nu = tmp.firstChild; nu.hidden = hid; el.replaceWith(nu);
+    if (btn) { var b = nu.querySelector('button.' + btn.split(' ')[0]); if (b) b.focus(); }
   }
   function counts() {
     var all = Object.keys(LINES), done = all.filter(isReviewed).length, fresh = all.filter(function (id) { return isNew(LINES[id]); }).length;
@@ -458,7 +463,8 @@
   steps.addEventListener('focusout', function (ev) {
     var r = ev.target.closest && ev.target.closest('.row'); if (!r) return;
     var id = r.dataset.id;
-    setTimeout(function () { if (!r.contains(document.activeElement)) { redraw(id); counts(); apply(); } }, 0);
+    /* A row just replaced by redraw() fires this too; it is gone, so leave it (or the two redraw each other forever). */
+    setTimeout(function () { if (r.isConnected && !r.contains(document.activeElement)) { redraw(id); counts(); apply(); } }, 0);
   });
   steps.addEventListener('click', function (ev) {
     var b = ev.target.closest('button'); if (!b || !canWrite) return;
