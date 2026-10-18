@@ -2411,3 +2411,15 @@ playable at the top of the step, and every line editable like hers (ids `film-<f
 A step says "NOT FILMED YET" or "N line(s) no longer match the film: re-shoot it" when the script and the bake part.
 On Oct 18 every film matched its script. `tools/yoke-review-server.cjs` serves `/media/scenes/*` (with Range) for it.
 The server is installed to start at login on the new desktop too (`tools/yoke-review-autostart.ps1`).
+
+### YOKE's Lines is on claude.ai again: the cloud copy is the one he uses (Oct 18 2026, later)
+
+Collins, switching computers: "get this working from a cloud account". The retired claude.ai copy,
+https://claude.ai/artifact/CbXWLvxqcNYzq4GhjmS1Ye (owned by collinsmalcolm@gmail.com), is republished from
+`notes/YOKE-LINES.html` (version 26). It has all 19 films as published files `media/scenes/*.mp4|webp`, copied from
+`public/media/scenes`, so the page's relative paths play as they are. That is 75 MB, over the 64 MB limit for one
+publish, so it went up in two: the page plus the 11 biggest mp4s, then the rest. Its banner now says it is the cloud copy.
+The PC file's one open edit (catgirl: "call them nekos", more context) was copied into the page's `edits` collection.
+From now on, read and clear the review with ArtifactData on that url (steps in the header of `tools/yoke-lines.ts`), not
+`notes/yoke-review.json`. After a rebuild, republish the page to the url with `capabilities` left out. Re-send a film
+under `files` only when it was re-baked. The PC server still works but its store is separate. Treat it as a backup.

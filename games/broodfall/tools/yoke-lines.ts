@@ -11,8 +11,10 @@
  *   node tools/yoke-review-server.cjs  → http://localhost:8792/ (autostarts at login: tools/yoke-review-autostart.ps1)
  * The review lives in notes/yoke-review.json (same shapes as the edits/ reviewed/ exports/ collections below): a session
  * reads that file, applies what is in it, deletes the applied entries from it (or PUT/DELETE /api/doc/...), and commits.
- * The old claude.ai copy below is RETIRED (it says so on the page); do not republish it.
- * Old copy: https://claude.ai/artifact/CbXWLvxqcNYzq4GhjmS1Ye (keep the link: publish with the Artifact tool and
+ * THE CLOUD COPY IS LIVE AGAIN AND IS THE ONE HE USES (Collins, Oct 18 2026, switching computers: "get this working from a
+ * cloud account"). After every rebuild a session republishes notes/YOKE-LINES.html to it, with the films as files
+ * (media/scenes/*.mp4|webp from public/media/scenes; over 64 MB, so two publishes), and reads the review with ArtifactData.
+ * Cloud copy: https://claude.ai/artifact/CbXWLvxqcNYzq4GhjmS1Ye (keep the link: publish with the Artifact tool and
  * `url` set; `db` and `user` (scope profile) are declared on it, omit `capabilities` on a republish to keep them).
  * SHARED REVIEW (Collins, Oct 16 2026: "make it a web page so we can share it between claude accounts"): every edit, cut, note
  * and "reviewed" tick lives in the artifact's database, not the browser, so anyone he shares the page with (his other Claude
