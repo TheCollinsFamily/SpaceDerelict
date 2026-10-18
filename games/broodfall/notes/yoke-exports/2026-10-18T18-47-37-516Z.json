@@ -1,0 +1,206 @@
+{
+ "at": "2026-10-18T18:47:37.516Z",
+ "by": "u_lxTKnJ9snVtWHGigDLZJZA",
+ "items": [
+  {
+   "by": "u_lxTKnJ9snVtWHGigDLZJZA",
+   "cut": true,
+   "fp": "1x2gt4v",
+   "group": "9. The once intros, in this order",
+   "id": "intro-duck",
+   "note": "",
+   "text": {},
+   "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall/content\\greetings.ts  (order and captures: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall/src\\meta\\onboarding.ts INTROS)"
+  },
+  {
+   "by": "u_lxTKnJ9snVtWHGigDLZJZA",
+   "cut": true,
+   "fp": "1c248f0",
+   "group": "9. The once intros, in this order",
+   "id": "intro-board",
+   "note": "",
+   "text": {},
+   "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall/content\\greetings.ts  (order and captures: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall/src\\meta\\onboarding.ts INTROS)"
+  },
+  {
+   "by": "u_lxTKnJ9snVtWHGigDLZJZA",
+   "cut": false,
+   "fp": "3ym4t9",
+   "group": "9. The once intros, in this order",
+   "id": "intro-catgirl",
+   "note": "\"Another neko wrote in. Different neko, same proposal.\" change to \"I was tthinking about the Neko who reached out. What an unfortanant existance.\" - also move later this is super early and the character may  not be introduced yet",
+   "text": {},
+   "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall/content\\greetings.ts  (order and captures: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall/src\\meta\\onboarding.ts INTROS)"
+  },
+  {
+   "by": "u_lxTKnJ9snVtWHGigDLZJZA",
+   "cut": true,
+   "fp": "1mh7dc6",
+   "group": "9. The once intros, in this order",
+   "id": "intro-genewar",
+   "note": "this is lore that comes up around nekos not a stand aalone thing",
+   "text": {
+    "0": {
+     "from": "I looked something up after the neko. For the file. Did you know they can't use the tanks? Not won't. Can't.",
+     "to": "  "
+    }
+   },
+   "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall/content\\greetings.ts  (order and captures: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall/src\\meta\\onboarding.ts INTROS)"
+  },
+  {
+   "by": "u_lxTKnJ9snVtWHGigDLZJZA",
+   "cut": false,
+   "fp": "14i9dtt",
+   "group": "9. The once intros, in this order",
+   "id": "intro-dad",
+   "note": "remove this \"A hundred of them. Alphabetical. He's on the Ks.\" chaange to \"He must relize the chance your partner is cool with that will be low right?\"",
+   "text": {},
+   "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall/content\\greetings.ts  (order and captures: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall/src\\meta\\onboarding.ts INTROS)"
+  },
+  {
+   "by": "u_lxTKnJ9snVtWHGigDLZJZA",
+   "cut": false,
+   "fp": "16f7kqq",
+   "group": "10. On the letters, once each",
+   "id": "letter-rook",
+   "note": "\"I am not going to tell you not to read it. I am going to tell you I put a note on it.\" \"I am not going to tell you not to read it. I will say if you seriusly considder anything I think your disgusting.\" \"She does not know yet that Rook is part orca.\" that is not needed in the secret she just doesnt know",
+   "text": {},
+   "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall/content\\greetings.ts  (when: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall/src\\meta\\onboarding.ts LETTER_BEATS)"
+  },
+  {
+   "by": "u_lxTKnJ9snVtWHGigDLZJZA",
+   "cut": false,
+   "fp": "xmc5v4",
+   "group": "10. On the letters, once each",
+   "id": "letter-atlas-direct",
+   "note": "WTF is this? its not bad but it makes sense as something after the mini game around getting alcie to talk (so why is it here) not as the intro message from her",
+   "text": {},
+   "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall/content\\greetings.ts  (when: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall/src\\meta\\onboarding.ts LETTER_BEATS)"
+  },
+  {
+   "by": "u_lxTKnJ9snVtWHGigDLZJZA",
+   "cut": false,
+   "fp": "1ysb60p",
+   "group": "10. On the letters, once each",
+   "id": "letter-rook-orca",
+   "note": "what do you mean \"before the breifing\" also this should be triggerd when you the caracter learn this as the next after mission yoko talk ... you understand these are just altnerate yoko talks with specific triggers right? also \"Before the briefing. The ring girl. She is part orca.\" \"WTF that ring savage is part orca.\"  also remove \"Orcas are not like the other species. They are smarter than you, and they do it for fun.\" and change \"Write to whoever you like. I would just like you to come back.\"  \"Look I take back what I said about thtat neko girl if you going to be a degen at least be safe about it.\"",
+   "text": {},
+   "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall/content\\greetings.ts  (when: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall/src\\meta\\onboarding.ts LETTER_BEATS)"
+  },
+  {
+   "by": "u_lxTKnJ9snVtWHGigDLZJZA",
+   "cut": false,
+   "fp": "1k185bq",
+   "group": "11. News from Earth",
+   "id": "earth-1",
+   "note": "to clarrify these should be in the regular after mission yoko voice lines not their own unique thing   ... also jesus man that note is so ai brained it will mess with all the text generated write it like a human and fix it on these",
+   "text": {},
+   "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall/content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall/content\\greetings.ts)"
+  },
+  {
+   "by": "u_lxTKnJ9snVtWHGigDLZJZA",
+   "cut": false,
+   "fp": "iv3cfu",
+   "group": "11. News from Earth",
+   "id": "earth-2",
+   "note": "remove \"Never been known for logic.\"",
+   "text": {},
+   "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall/content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall/content\\greetings.ts)"
+  },
+  {
+   "by": "u_lxTKnJ9snVtWHGigDLZJZA",
+   "cut": false,
+   "fp": "1pz8szb",
+   "group": "11. News from Earth",
+   "id": "earth-4",
+   "note": "\" that's the satellite laser, \" remove that that should be in the secret ... after this \"territory the splinter was affiliated with, \" \"whiped a city right off the map its just a smoking pit now\"",
+   "text": {},
+   "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall/content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall/content\\greetings.ts)"
+  },
+  {
+   "by": "u_lxTKnJ9snVtWHGigDLZJZA",
+   "cut": false,
+   "fp": "4reawt",
+   "group": "11. News from Earth",
+   "id": "earth-5",
+   "note": "I would dalso add that as america beccame more religious eventually an extreamly brutal remigration campaigan was run that targeted non-prostant, non mormon, and non jewish groups (catholics, muslims, hindus, etc. with the argument that they had their own countries and had no buisenss in america) ... after this the \"witch hunt\" also known ass the \"second reformation\"started in wich prostant denomitions that practiced any form of magic (with charasmatic chistianity was seen as) where exectured en mass and their places of worship defaced (some of the most agressive witch hunters where mormons wich is part of why they have largely been accepted by american society)",
+   "text": {},
+   "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall/content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall/content\\greetings.ts)"
+  },
+  {
+   "by": "u_lxTKnJ9snVtWHGigDLZJZA",
+   "cut": false,
+   "fp": "1naddv7",
+   "group": "11. News from Earth",
+   "id": "earth-7",
+   "note": "change to \"Looks like medical leeches are a growing trend in Eastern Europe. I read they don't hurt but its hard to belive want me to replicate some to test?\"\"",
+   "text": {},
+   "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall/content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall/content\\greetings.ts)"
+  },
+  {
+   "by": "u_lxTKnJ9snVtWHGigDLZJZA",
+   "cut": false,
+   "fp": "1f06n4x",
+   "group": "11. News from Earth",
+   "id": "earth-8",
+   "note": "god the secret is so ai brained I can barely make out what its saying please fix it",
+   "text": {},
+   "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall/content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall/content\\greetings.ts)"
+  },
+  {
+   "by": "u_lxTKnJ9snVtWHGigDLZJZA",
+   "cut": false,
+   "fp": "179rfaq",
+   "group": "11. News from Earth",
+   "id": "earth-9",
+   "note": "change \"it's more entertaining than you'd think.\" \"we would have a lot less new entertainment if it where not for earths blood sports.\" ... also add to the secret as it might come up the biggest of the blood sports is  what tthe modern \"Enhanced Games\" evolved into wich is a gladatorial fight to the death all doping allowed carried out by the crusade once evry other year and people of all faiths come to partipate (it took the place of the olymics",
+   "text": {},
+   "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall/content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall/content\\greetings.ts)"
+  },
+  {
+   "by": "u_lxTKnJ9snVtWHGigDLZJZA",
+   "cut": false,
+   "fp": "1xea34c",
+   "group": "11. News from Earth",
+   "id": "earth-10",
+   "note": "all of this needs to go history comes from talking not context dumps \"A Korean cult held a prayer rally this week. Ten million people. The whole religion started as a scam gacha game, if you can believe it; the pull rates are scripture now. And before you laugh: how does the Index decide whose revelation was real? Somebody's House prospers, and everyone agrees it was God. Don't repeat that to the Board.\" .... \"Broh! The games are on this week want to watch? Did you  know people used to think Korea would be the first of the cultures to die out?\" and add to the context the games are held by the religion in korea wich evoled from a gatcha and is basicly squid games with contenstents from around the world and amost as popular as the gadiatorial games (korea is still a world enteranimiet super power but mostly specialises in over the top games of life an deeath held by the cult)",
+   "text": {},
+   "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall/content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall/content\\greetings.ts)"
+  },
+  {
+   "by": "u_lxTKnJ9snVtWHGigDLZJZA",
+   "cut": false,
+   "fp": "1ti472d",
+   "group": "11. News from Earth",
+   "id": "earth-11",
+   "note": "ok this entire thing is garbage remember show don't tell lets have the gatchang cult called Ge-im \"Ge-im and the Chebols are at eachother thoats ... it looks like one of their idols one one of Ge-ims games and asked not to be retrired now ge-im is protecting her an the cheabols are pisised. Hey I get it  not a great precident to set.\"",
+   "text": {},
+   "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall/content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall/content\\greetings.ts)"
+  },
+  {
+   "by": "u_lxTKnJ9snVtWHGigDLZJZA",
+   "cut": false,
+   "fp": "148pl38",
+   "group": "11. News from Earth",
+   "id": "earth-12",
+   "note": "compltely rewrite come on  man not the way we story tell \"Its pilgramge time in the holy lands so expect things to get spicy. Don't know why the saducies dodn't shut it down but whatever at least its entertaining.\" (for one month a year both jews and christians are allowed to visit holy sites under strict gaurd in the totherwise mostly closed to the outside world isreal",
+   "text": {},
+   "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall/content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall/content\\greetings.ts)"
+  },
+  {
+   "by": "u_lxTKnJ9snVtWHGigDLZJZA",
+   "cut": false,
+   "fp": "ehg5lw",
+   "group": "11. News from Earth",
+   "id": "earth-13",
+   "note": "remove",
+   "text": {},
+   "where": "C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall/content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall/content\\greetings.ts)"
+  }
+ ],
+ "n": 19,
+ "page": "2026-10-18",
+ "text": "# YOKE lines: changes (2026-10-18)\n\n## 9. The once intros, in this order  (C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall/content\\greetings.ts  (order and captures: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall/src\\meta\\onboarding.ts INTROS))\n- `intro-duck` CUT\n- `intro-board` CUT\n- `intro-catgirl`\n  - note: \"Another neko wrote in. Different neko, same proposal.\" change to \"I was tthinking about the Neko who reached out. What an unfortanant existance.\" - also move later this is super early and the character may  not be introduced yet\n- `intro-genewar` CUT\n  - beat 1: \"I looked something up after the neko. For the file. Did you know they can't use the tanks? Not won't. Can't.\" -> \"  \"\n  - note: this is lore that comes up around nekos not a stand aalone thing\n- `intro-dad`\n  - note: remove this \"A hundred of them. Alphabetical. He's on the Ks.\" chaange to \"He must relize the chance your partner is cool with that will be low right?\"\n\n## 10. On the letters, once each  (C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall/content\\greetings.ts  (when: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall/src\\meta\\onboarding.ts LETTER_BEATS))\n- `letter-rook`\n  - note: \"I am not going to tell you not to read it. I am going to tell you I put a note on it.\" \"I am not going to tell you not to read it. I will say if you seriusly considder anything I think your disgusting.\" \"She does not know yet that Rook is part orca.\" that is not needed in the secret she just doesnt know\n- `letter-atlas-direct`\n  - note: WTF is this? its not bad but it makes sense as something after the mini game around getting alcie to talk (so why is it here) not as the intro message from her\n- `letter-rook-orca`\n  - note: what do you mean \"before the breifing\" also this should be triggerd when you the caracter learn this as the next after mission yoko talk ... you understand these are just altnerate yoko talks with specific triggers right? also \"Before the briefing. The ring girl. She is part orca.\" \"WTF that ring savage is part orca.\"  also remove \"Orcas are not like the other species. They are smarter than you, and they do it for fun.\" and change \"Write to whoever you like. I would just like you to come back.\"  \"Look I take back what I said about thtat neko girl if you going to be a degen at least be safe about it.\"\n\n## 11. News from Earth  (C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall/content\\lore\\ship-ai-lorebook.md  (section \"Earth news (return greetings)\"; the fallback line: C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall/content\\greetings.ts))\n- `earth-1`\n  - note: to clarrify these should be in the regular after mission yoko voice lines not their own unique thing   ... also jesus man that note is so ai brained it will mess with all the text generated write it like a human and fix it on these\n- `earth-2`\n  - note: remove \"Never been known for logic.\"\n- `earth-4`\n  - note: \" that's the satellite laser, \" remove that that should be in the secret ... after this \"territory the splinter was affiliated with, \" \"whiped a city right off the map its just a smoking pit now\"\n- `earth-5`\n  - note: I would dalso add that as america beccame more religious eventually an extreamly brutal remigration campaigan was run that targeted non-prostant, non mormon, and non jewish groups (catholics, muslims, hindus, etc. with the argument that they had their own countries and had no buisenss in america) ... after this the \"witch hunt\" also known ass the \"second reformation\"started in wich prostant denomitions that practiced any form of magic (with charasmatic chistianity was seen as) where exectured en mass and their places of worship defaced (some of the most agressive witch hunters where mormons wich is part of why they have largely been accepted by american society)\n- `earth-7`\n  - note: change to \"Looks like medical leeches are a growing trend in Eastern Europe. I read they don't hurt but its hard to belive want me to replicate some to test?\"\"\n- `earth-8`\n  - note: god the secret is so ai brained I can barely make out what its saying please fix it\n- `earth-9`\n  - note: change \"it's more entertaining than you'd think.\" \"we would have a lot less new entertainment if it where not for earths blood sports.\" ... also add to the secret as it might come up the biggest of the blood sports is  what tthe modern \"Enhanced Games\" evolved into wich is a gladatorial fight to the death all doping allowed carried out by the crusade once evry other year and people of all faiths come to partipate (it took the place of the olymics\n- `earth-10`\n  - note: all of this needs to go history comes from talking not context dumps \"A Korean cult held a prayer rally this week. Ten million people. The whole religion started as a scam gacha game, if you can believe it; the pull rates are scripture now. And before you laugh: how does the Index decide whose revelation was real? Somebody's House prospers, and everyone agrees it was God. Don't repeat that to the Board.\" .... \"Broh! The games are on this week want to watch? Did you  know people used to think Korea would be the first of the cultures to die out?\" and add to the context the games are held by the religion in korea wich evoled from a gatcha and is basicly squid games with contenstents from around the world and amost as popular as the gadiatorial games (korea is still a world enteranimiet super power but mostly specialises in over the top games of life an deeath held by the cult)\n- `earth-11`\n  - note: ok this entire thing is garbage remember show don't tell lets have the gatchang cult called Ge-im \"Ge-im and the Chebols are at eachother thoats ... it looks like one of their idols one one of Ge-ims games and asked not to be retrired now ge-im is protecting her an the cheabols are pisised. Hey I get it  not a great precident to set.\"\n- `earth-12`\n  - note: compltely rewrite come on  man not the way we story tell \"Its pilgramge time in the holy lands so expect things to get spicy. Don't know why the saducies dodn't shut it down but whatever at least its entertaining.\" (for one month a year both jews and christians are allowed to visit holy sites under strict gaurd in the totherwise mostly closed to the outside world isreal\n- `earth-13`\n  - note: remove\n",
+ "applied": "2026-10-18",
+ "id": "2026-10-18T18-47-37-516Z"
+}

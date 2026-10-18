@@ -38,7 +38,7 @@ export interface LettersState { threads: Partial<Record<CorrespondentId, LetterT
 /** The correspondents whose threads are open for this campaign. */
 export function unlockedCorrespondents(s: CampaignState): CorrespondentId[] {
   const said = [...(s.said ?? []), ...(s.greetingsSaid ?? [])];
-  return CORRESPONDENTS.filter((c) => said.includes(c.unlock)).map((c) => c.id);
+  return CORRESPONDENTS.filter((c) => said.includes(c.unlock) || (c.unlockCaptures != null && s.captures >= c.unlockCaptures)).map((c) => c.id);
 }
 
 export const lettersUnlocked = (s: CampaignState): boolean => unlockedCorrespondents(s).length > 0;

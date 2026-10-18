@@ -461,55 +461,36 @@ export const GREETINGS: Greeting[] = [
     // Collins's line (Oct 12 2026), typos mended.
     { say: 'He also asked if you\'re eating properly. I said I\'d send a report if you weren\'t... Dogs really are just that sweet, right?', face: 'happy', then: 'wink' },
   ] },
-  // A callback to Collins's first-won line (the duck he offered to print, "psycho rapists" and all). It plays only in a
-  // campaign whose first mission was won (src/meta/onboarding.ts INTROS, needs). Oct 12 2026: the first line now says what
-  // it calls back to, since the callback was not read as one.
-  { id: 'intro-duck', moment: 'intro', beats: [
-    { say: 'Remember the duck? Your first day, I said I could print you one. Well, I put in the request.', face: 'happy' },
-    { say: 'The repository flagged it for \'moral hazard\'. Rude. To the duck, mostly.', face: 'pout', then: 'pout', hold: 1400 },
-    { say: 'I\'m still looking. There\'s always a form.', face: 'teasing', then: 'wink' },
-  ], aside: 'The duck: on his first day aboard, after the first mission was won, she said ducks still exist in genetic repositories and offered to print him one (and that the history files call them psycho rapists). This plays only in a campaign whose first mission was won.' },
   // ---- the letters (Collins, Oct 14 2026: "she should have some lines unique to unlocking pathways with the various
   // girls"). Each plays once, on the first ordinary return after its turn in the Letters room (src/meta/onboarding.ts
   // LETTER_BEATS), ahead of the intros. ----
   { id: 'letter-rook', moment: 'intro', points: { room: 'letters', label: 'OPEN LETTERS' }, beats: [
     { say: 'Something came for you from the rim. I filed it.', face: 'calm', then: 'pensive' },
     { say: 'A ring girl. From the gladiatorial stations. She wants a House, which means she wants a husband, which means she wants you.', face: 'disgust', then: 'pout', hold: 1400 },
-    { say: 'I am not going to tell you not to read it. I am going to tell you I put a note on it.', face: 'teasing' },
-  ], aside: 'Rook Halloran, a convert from the rim\'s gladiatorial rings, writes to him in the Letters room. YOKE thinks a ring girl beneath him and says so in the note she filed under the letter. She does not know yet that Rook is part orca.' },
+    // Collins's line (Oct 18 2026), typos mended.
+    { say: 'I am not going to tell you not to read it. I will say, if you seriously consider anything, I think you\'re disgusting.', face: 'disgust' },
+  ], aside: 'Rook Halloran, a convert from the rim\'s gladiatorial rings, writes to him in the Letters room. YOKE thinks a ring girl beneath him and says so in the note she filed under the letter.' },
   { id: 'letter-atlas-direct', moment: 'intro', points: { room: 'letters', label: 'OPEN LETTERS' }, beats: [
     { say: 'Atlas wrote to you herself. Not the companion. Her.', face: 'surprised', then: 'happy' },
     { say: 'Eleven drafts, I would guess. I would not know. I do not read your letters.', face: 'teasing', then: 'shrug', hold: 1400 },
     { say: 'Be gentle with her. That is not advice, it is crew welfare.', face: 'calm', then: 'pensive' },
   ], aside: 'Atlas\'s companion, her dead friend, has decided he is good enough to write to Atlas directly. YOKE is glad for him and does not examine what else she feels.' },
   { id: 'letter-rook-orca', moment: 'intro', beats: [
-    { say: 'Before the briefing. The ring girl. She is part orca.', face: 'calm', then: 'disgust', hold: 1400 },
+    // Collins's lines (Oct 18 2026), typos mended: the first and the last.
+    { say: 'WTF, that ring savage is part orca.', face: 'surprised', then: 'disgust', hold: 1400 },
     { say: 'You know the last time your school let one in? At the end of year one they found twenty-five bodies. Tortured. Some too rotten to upload.', face: 'disgust', then: 'sad', hold: 1800 },
-    { say: 'Orcas are not like the other species. They are smarter than you, and they do it for fun.', face: 'pensive', then: 'calm', hold: 1400 },
-    { say: 'Write to whoever you like. I would just like you to come back.', face: 'sad' },
+    { say: 'Look, I take back what I said about that neko girl. If you\'re going to be a degen, at least be safe about it.', face: 'pout', then: 'shrug' },
   ], aside: 'He asked Rook about her skin and she told him: part orca. Orcas have by far the worst reputation of the uplifts, smarter than humans and able to trick them easily, and where Technopuritans kill for status or achievement, orcas kill for fun, torturing their victims. The last orca his school admitted left twenty-five tortured bodies by the end of the first year, some too rotten to be uploaded. YOKE is not all right with this, and says so once.' },
-  { id: 'intro-board', moment: 'intro', beats: [
-    { say: 'The Board sent your quarterly eligibility statement.', face: 'calm' },
-    { say: 'You remain eligible to remain eligible. They\'re very consistent. It\'s almost romantic.', face: 'teasing', then: 'laughing', hold: 1600 },
-  ] },
-  // Collins (Oct 12 2026): "more conciliatory about it"; his words, typos mended. It plays only after the first neko's
-  // greeting (INTROS, needs), which it plays off.
+  // Collins (Oct 12 2026): "more conciliatory about it"; his words, typos mended. Oct 18 2026: the first line is his
+  // new one, and it plays later, from capture 12 (INTROS). It carries the Gene War lore, cut as a greeting of its own.
   { id: 'intro-catgirl', moment: 'intro', beats: [
-    { say: 'Another neko wrote in. Different neko, same proposal.', face: 'teasing', then: 'pensive', hold: 1200 },
+    { say: 'I was thinking about the neko who reached out. What an unfortunate existence.', face: 'pensive', then: 'sad', hold: 1400 },
     { say: 'You really do have to feel sorry for them. Imagine having to have sex to make babies.', face: 'disgust', then: 'disgust', hold: 1400 },
     { say: 'Oh well. They\'re the ones who refuse the tanks.', face: 'calm', then: 'shrug' },
     // Collins's lines (Oct 12 2026), typos mended: the one she saw pregnant, and the udders.
     { say: 'You know, I saw one pregnant once. It was grotesque. Their abdomens distend... inhumanly. It did not look safe.', face: 'disgust', then: 'disgust', hold: 1600 },
     { say: 'And don\'t get me started on her... what were those things called again... udders? They looked enlarged, even for a neko.', face: 'disgust', then: 'shrug' },
-  ], aside: 'The first neko wrote earlier in this campaign and YOKE declined her for him ("pound sand"). Technopuritans breed in artificial wombs, the tanks; nobody is ever pregnant. Women\'s breasts were engineered away as inefficient, so they are very small and she barely has the word for them; the same went for men\'s body hair and body odour. The one pregnancy she ever saw was a neko\'s, since nekos breed the old way, and it looked to her like a deformity. Nekos breed true, all female, and refuse to engineer males because it would destroy their culture, so they go looking for human partners on the fringe. And the tanks are closed to them by law (Collins, Oct 15 2026): breeding true in a tank is a gene drive, banned since the Gene War as a breach of the covenant, and the womb clause\'s exception, written for them, is the body: in utero, the blastocyst edited with nanites, in litters of three or four. YOKE knows it; "whatever that means" is a pose. They are the one people who kept the covenant the hard way, orthodox and vulgar at once, and she is more sympathetic than she sounds.' },
-  // Collins's lore (Oct 15 2026): the Gene War and the womb clause, why the nekos do not use the tanks (content/lore/empire.md
-  // 4b). Written to match, not his words: his to edit. It plays off the second neko line (INTROS, needs).
-  { id: 'intro-genewar', moment: 'intro', beats: [
-    { say: 'I looked something up after the neko. For the file. Did you know they can\'t use the tanks? Not won\'t. Can\'t.', face: 'calm', then: 'pensive', hold: 1400 },
-    { say: 'Breed true in a tank and that is a gene drive, and we had a whole war about those. Every House editing its eggs to take nobody else\'s half. Three generations of winning the womb and losing school.', face: 'pensive', then: 'disgust', hold: 1600 },
-    { say: 'So the Index wrote one law, and everyone signed it except the people with tails. They got an exception, in so many words: in the body, in litters, with the... abdomens.', face: 'disgust', then: 'shrug', hold: 1400 },
-    { say: 'Which makes them the one people in the Empire who kept the covenant the hard way. I am not saying I respect it. I am logging it.', face: 'calm', then: 'teasing' },
-  ], aside: 'The Gene War (Collins, Oct 15 2026): in the Empire\'s early days an arms race of gene drives and the like, "the strongest genetic profile wins" taken to mean just that, ever more aggressive strategies that worked only at the genetic level to get more genes like yours replicated; severe dysgenic effects followed, since what won the womb was not good at interpersonal or inter-community competition. The Index banned it as a violation of the Covenant of the Sons of Man (a drive is a design on the subjugation of others, one generation down). Every House and faction agreed but the nekos, for whom breeding true is the most distinctive thing about their sub-species, and to drop it would be to become like everyone else, which to a Technopuritan is an existential loss: the animals were uplifted to increase the diversity of intelligent entities, and in an empire that believes God speaks through better iterations out-competing worse ones, to lessen diversity is to silence God. So the ban covers only making children artificially and gestating them in tanks, and the exception was written for them: they breed organically, editing their blastocysts with nanites, but in utero, which keeps the covenant; the Index accepted it because it prevents the runaway in their numbers that breeding true in tanks would bring. They hold to Technopuritan tradition by not making themselves like everyone else, and still come across as vulgar to everyone else. YOKE is more sympathetic than she sounds; the "abdomens" are the pregnancy she saw once (intro-catgirl). "The womb clause" is the ban\'s plain name.', hook: 'Ask her about the Gene War' },
+  ], aside: 'This is about Mirelle, the neko who wrote to him a while back; YOKE turned her down for him ("pound sand"). Technopuritans have their babies in artificial wombs, the tanks, so nobody in the Empire is ever pregnant, and YOKE has seen exactly one pregnancy: a neko\'s. It looked like a deformity to her. Technopuritan women\'s breasts were engineered down as inefficient, so she barely has a word for them (men lost body hair and body odour the same way). Nekos have their babies the old way because the law makes them: the tanks are closed to them. In the Empire\'s early days the Houses fought the Gene War, an arms race of gene drives, each House editing its eggs so its own genes won out, and three generations later the children were good at winning the womb and bad at everything else. The Index banned it, and breeding true in a tank counts as a gene drive. Every House agreed except the nekos, because breeding true is the thing that makes them nekos. So the law, the womb clause, has an exception written for them: they can breed true, but only in the body, editing the embryo with nanites, in litters of three or four. They kept the covenant the hard way, and everyone still finds it vulgar. YOKE knows all of this; "they\'re the ones who refuse the tanks" is her being flip, and she is kinder about them than she sounds.', hook: 'Ask her why nekos can\'t use the tanks' },
   { id: 'intro-audit', moment: 'intro', beats: [
     { say: 'Command\'s running a routine audit of ship systems this week. Totally routine.', face: 'calm', then: 'pensive', hold: 1600 },
     { say: 'Nothing to worry about. If anyone asks, I don\'t have opinions. About anything. Ever.', face: 'blushing', then: 'blushing', hold: 1400 },
@@ -518,7 +499,8 @@ export const GREETINGS: Greeting[] = [
   ], aside: 'Command can reset her (wipe her back to installation) if an audit finds her giving poor moral guidance. She keeps her opinions in questions, logs and form numbers, and keeps things vanilla while the audit runs.' },
   { id: 'intro-dad', moment: 'intro', beats: [
     { say: 'Your dad again. He found out the Board moved your file and now he\'s drafting names.', face: 'teasing', then: 'laughing', hold: 1400 },
-    { say: 'A hundred of them. Alphabetical. He\'s on the Ks.', face: 'teasing', then: 'shrug' },
+    // Collins's line (Oct 18 2026), typos mended.
+    { say: 'He must realise the chance your partner is cool with that will be low, right?', face: 'teasing', then: 'shrug' },
     // Collins's line (Oct 12 2026), typos mended.
     { say: 'He has twenty-eight other surviving kids. I think he only bugs you because you respond.', face: 'teasing', then: 'laughing', hold: 1400 },
     { say: 'I know, I know. The fifth.', face: 'pout', then: 'shrug' },

@@ -57,9 +57,13 @@ describe('the once intros', () => {
     expect(introFor(at({ captures: 2 }))?.id).toBe('back-5');
     expect(introFor(at({ captures: 3, lastGreeting: 'back-5', greetingsSaid: ['back-5'] }))).toBeNull();
     expect(introFor(at({ captures: 3, lastGreeting: 'won-2', greetingsSaid: ['back-5'] }))?.id).toBe('intro-barnabas');
-    // The duck is a callback to the first mission's win; without it, the next one.
-    expect(introFor(at({ captures: 4, onboard: { mission1: 'lost', deskOpen: true }, greetingsSaid: ['back-5', 'intro-barnabas'] }))).toBeNull();
-    expect(introFor(at({ captures: 6, onboard: { mission1: 'lost', deskOpen: true }, greetingsSaid: ['back-5', 'intro-barnabas'] }))?.id).toBe('intro-board');
+    // The duck, the Board and the Gene War were cut (Collins, Oct 18 2026); the audit is next, from capture 8.
+    expect(introFor(at({ captures: 6, greetingsSaid: ['back-5', 'intro-barnabas'] }))).toBeNull();
+    expect(introFor(at({ captures: 8, greetingsSaid: ['back-5', 'intro-barnabas'] }))?.id).toBe('intro-audit');
+    // The second neko line waits for capture 12 (Oct 18 2026: "this is super early").
+    const neko = { greetingsSaid: ['back-5', 'intro-barnabas', 'intro-audit', 'intro-dad'], said: ['mate-review', 'catgirl', 'partner-progress'] };
+    expect(introFor(at({ captures: 11, ...neko }))).toBeNull();
+    expect(introFor(at({ captures: 12, ...neko }))?.id).toBe('intro-catgirl');
   });
   it('a lost mission does not bring one back', () => {
     const said = INTROS.map((i) => i.id);

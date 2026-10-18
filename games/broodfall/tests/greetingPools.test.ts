@@ -34,7 +34,7 @@ describe('the depth of her pools', () => {
     }
   });
   it('the greetings Collins asked secret context for carry it, for her live mind (Oct 12 2026)', () => {
-    for (const id of ['partner-progress', 'back-5', 'intro-dad', 'intro-duck', 'intro-catgirl', 'intro-audit']) {
+    for (const id of ['partner-progress', 'back-5', 'intro-dad', 'catgirl', 'intro-catgirl', 'intro-audit']) {
       expect(GREETINGS.find((g) => g.id === id)?.aside?.length ?? 0, id).toBeGreaterThan(40);
     }
   });

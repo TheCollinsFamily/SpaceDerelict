@@ -158,18 +158,20 @@ export const STORY_ONCE: Array<{ id: GreetMoment; captures: number }> = [
 export const INTROS: Array<{ id: string; captures: number; needs?: (s: CampaignState) => boolean }> = [
   { id: 'back-5', captures: 2 },
   { id: 'intro-barnabas', captures: 3 },
-  { id: 'intro-duck', captures: 4, needs: (s) => s.onboard?.mission1 === 'won' },
-  { id: 'intro-board', captures: 6 },
-  { id: 'intro-catgirl', captures: 7, needs: (s) => (s.said ?? []).includes('catgirl') },
   { id: 'intro-audit', captures: 8 },
-  { id: 'intro-genewar', captures: 9, needs: (s) => (s.greetingsSaid ?? []).includes('intro-catgirl') },
   { id: 'intro-dad', captures: 10, needs: (s) => (s.said ?? []).includes('partner-progress') },
+  // Collins, Oct 18 2026: "move later, this is super early and the character may not be introduced yet": not before
+  // capture 12 (was 7), and only after Mirelle's letter came (the catgirl greeting).
+  { id: 'intro-catgirl', captures: 12, needs: (s) => (s.said ?? []).includes('catgirl') },
 ];
+// Cut by Collins, Oct 18 2026: intro-duck, intro-board, intro-genewar ("this is lore that comes up around nekos, not a
+// stand-alone thing": it is in the neko greetings' asides now).
 
 /**
  * YOKE'S LINES ON THE LETTERS (Collins, Oct 14 2026): once each, on the first ordinary return after the turn in the Letters
  * room they speak to (src/meta/letters.ts), ahead of the intros: a new correspondent's first letter, Atlas writing herself,
- * a writer telling him what he asked (Rook's orca, before the briefing).
+ * a writer telling him what he asked (Rook's orca: Collins, Oct 18 2026, "triggered when you learn this, as the next after
+ * mission YOKE talk"). They come first on an ordinary return, before the intros and the news.
  */
 export const LETTER_BEATS: Array<{ id: string; when: (s: CampaignState) => boolean }> = [
   { id: 'letter-rook', when: (s) => !!s.letters?.threads.rook },

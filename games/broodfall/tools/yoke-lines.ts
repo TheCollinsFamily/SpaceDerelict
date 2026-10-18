@@ -47,6 +47,7 @@ import path from 'node:path';
 import { EARTH_NEWS_FALLBACK, GREETINGS, earthNews, newsBeats, type GreetMoment, type Greeting } from '../content/greetings';
 import { PRINT_BODY } from '../content/yokeScenes';
 import { BOSS, BOSS_AFTER, BOSS_ASIDE, BOSS_BRIDGE } from '../content/boss';
+import { CORRESPONDENTS } from '../content/letters';
 import { CHANNELS, TRANSLATOR_NOTES } from '../content/translation';
 import { FACTIONS, LICENCE_STANDING, type Scene } from '../content/campaign';
 import { ROACH_SCENES } from '../content/roachKing';
@@ -67,9 +68,9 @@ interface Step { id: string; part: string; name: string; what: string; where: st
 /** Which greetings are Collins's own words (the comments in content/greetings.ts say so). */
 const COLLINS_GREETINGS = new Set(['first-lost', 'first-won', 'unlock', 'mate-review', 'catgirl', 'back-5', 'won-19', 'won-20', 'back-11', 'back-12', 'won-21', 'won-22', 'back-13', 'back-14', 'back-15']);
 /** The first lines of the Earth news are his (Oct 12 2026: he rewrote the list on this page; the rest were written to match). */
-const COLLINS_NEWS = 9;
+const COLLINS_NEWS = 12;
 /** Later lines of the news that are his, by their number on the page (23: the Lipptors, Oct 14 2026). */
-const COLLINS_NEWS_ALSO = new Set([23]);
+const COLLINS_NEWS_ALSO = new Set([22]);
 
 const greeting = (g: Greeting, ctx?: string): Line => ({
   id: g.id, author: COLLINS_GREETINGS.has(g.id) ? 'collins' : 'draft',
@@ -143,79 +144,89 @@ const GREET = G('content/greetings.ts');
 const LORE = G('content/lore/ship-ai-lorebook.md');
 const one = (lines: Line[]): Branch[] => [{ lines }];
 
-/** The intros, each with when it can first play. */
-const introLine = (i: (typeof INTROS)[number]): Line => {
-  const needs = i.id === 'intro-duck' ? ', only if mission 1 was won' : i.id === 'intro-catgirl' ? ', after the neko wrote (step 5)' : i.id === 'intro-genewar' ? ', after the second neko line' : i.id === 'intro-dad' ? ', after the personal plot (step 9)' : '';
-  return greeting(GREETINGS.find((g) => g.id === i.id)!, `from capture ${i.captures}${needs}`);
+/** When each intro can play, said in full on its line. */
+const introNeeds: Record<string, string> = {
+  'intro-dad': ', and only after the personal plot (rank 1) has played',
+  'intro-catgirl': ', and only after the neko\'s letter came (story line 4)',
 };
+const introLine = (i: (typeof INTROS)[number]): Line =>
+  greeting(GREETINGS.find((g) => g.id === i.id)!, `TRIGGER: from capture ${i.captures}${introNeeds[i.id] ?? ''}`);
 const introOrder = INTROS.map((i) => `${i.id} (capture ${i.captures})`).join(', ');
 const story = STORY_ONCE[0];
+/** What sets off each letter beat (src/meta/onboarding.ts LETTER_BEATS). */
+const LETTER_TRIGGER: Record<string, string> = {
+  'letter-rook': `TRIGGER: Rook's first letter has arrived in the Letters room (her thread opens from capture ${CORRESPONDENTS.find((c) => c.id === 'rook')?.unlockCaptures ?? 6})`,
+  'letter-atlas-direct': 'TRIGGER: the companion\'s regard has reached the point where she hands the thread over, so Atlas writes to him herself (the end of the letters minigame with the companion; never the opening of the thread)',
+  'letter-rook-orca': 'TRIGGER: he has just learnt, in the Letters room, that Rook is part orca (he asked about her skin)',
+};
 
-const PART_FIRST = 'The first return: mission 1 is over';
-const PART_DARK = 'Every return after that, until the desk opens: the ship picks the targets';
-const PART_CAMPAIGN = 'The campaign: every ordinary return, in this order of precedence';
-const PART_ANY = 'Any time';
-const PART_MIND = 'Her live mind: pools not tied to a moment';
+// THE ORDER OF THE PAGE (Collins, Oct 18 2026: "you separated the lines YOKE gets by... theme? it makes it very hard to tell
+// what order they come in. We should have just the unique lines at the beginning, then a list of lines by when they appear
+// in order, then finally the lines triggered by specific things based on their hierarchy, and a description of what
+// triggers each"). The hierarchy is src/meta/onboarding.ts greetingFor and momentNow, read top to bottom.
+const PART_STORY = 'Part 1. The story lines: each plays once a campaign, in this order';
+const PART_EVERY = 'Part 2. Her everyday after-mission lines: what she says when nothing in part 3 is due';
+const PART_TRIG = 'Part 3. Triggered lines, by rank: when two are due on one return, the higher rank plays and the other waits for the next return';
+const PART_ANY = 'Part 4. Outside the after-mission talk';
+const PART_MIND = 'Part 5. Her live mind: pools not tied to a moment';
 
 const steps: Step[] = [
-  { id: 'first', part: PART_FIRST, name: 'Her first greeting', where: GREET,
-    what: 'Mission 1 is over, won or lost. The plain report of it, then the reveal (the ship fires the asset: "...AND YOU ARE THE ONE WHO SENT IT"), then the ship for the first time and this. Once a campaign. It ends by lighting the Gene Bay for him.',
+  { id: 'first', part: PART_STORY, name: 'Her first greeting', where: GREET,
+    what: 'TRIGGER: mission 1 is over, won or lost. The plain report of it, then the reveal (the ship fires the asset: "...AND YOU ARE THE ONE WHO SENT IT"), then the ship for the first time and this. It ends by lighting the Gene Bay for him.',
     branches: [{ label: 'If he won mission 1', lines: of('first-won') }, { label: 'If he lost mission 1', lines: of('first-lost') }] },
-  { id: 'boss', part: PART_FIRST, name: 'The message from the boss', where: G('content/boss.ts'),
-    what: 'Straight after that first greeting, won or lost: her bridge into it, then Supervisor Barnabas on the screen (his words below, not hers), then her line after him.',
+  { id: 'boss', part: PART_STORY, name: 'The message from the boss', where: G('content/boss.ts'),
+    what: 'TRIGGER: straight after that first greeting, won or lost. Her bridge into it, then Supervisor Barnabas on the screen (his words below, not hers), then her line after him.',
     branches: [
       { lines: [{ id: 'BOSS_BRIDGE', text: [BOSS_BRIDGE], author: 'draft', faces: ['surprised'] }] },
       { context: { who: `${BOSS.name}, on the screen`, lines: BOSS.lines, where: G('content/boss.ts') } },
       { lines: [{ id: 'BOSS_AFTER', text: [BOSS_AFTER], author: 'draft', faces: ['teasing'], aside: BOSS_ASIDE }] },
     ] },
-
-  { id: 'mate', part: PART_DARK, name: 'The first ordinary return: the mate review', where: GREET,
-    what: 'Every return from the second deployment on: the report of it comes up at the desk (she says nothing there, since Oct 14 2026), then the planet\'s news (a newsreel or one of their papers), the Roach King\'s address when one is due, and he is aboard: her greeting, picked from the steps from here on. The first return with nothing weightier to say (a loss while the desk is dark, or the first return after it opened) gets this one in place of the ordinary line. Once. It points him at the data pad in his quarters, where the candidate\'s profile is.',
+  { id: 'mate', part: PART_STORY, name: 'The mate review', where: GREET,
+    what: 'TRIGGER: the next return after mission 1, whatever happened on it (only the desk opening, story line 5, comes before it). Every return from here on: the report comes up at the desk (she says nothing there), then the planet\'s news, the Roach King\'s address when one is due, then her greeting. It points him at the data pad in his quarters, where the candidate\'s profile is.',
     branches: one(of('mate-review')) },
-  { id: 'catgirl', part: PART_DARK, name: 'The ordinary return after that: the neko', where: GREET,
-    what: 'The next ordinary return, playing off the mate review. Once. It lights the data pad again.',
+  { id: 'catgirl', part: PART_STORY, name: 'The neko writes', where: GREET,
+    what: 'TRIGGER: the return after the mate review. It plays off the mate review, lights the data pad again, and opens Mirelle\'s thread in the Letters room.',
     branches: one(of('catgirl')) },
-  { id: 'locked', part: PART_DARK, name: 'A loss while the desk is still dark', where: GREET,
-    what: 'Every loss before the first win after mission 1, once the two beats above have played. One she has not said this campaign while there is one; when all four are said, the last one again, every time, until he wins.',
-    branches: one(of('lost-locked')) },
-  { id: 'unlock', part: PART_DARK, name: 'The first win after mission 1: the desk opens', where: GREET,
-    what: 'The return after the first ground taken, on the second try or the twentieth. Once. The Directive Desk lights up and the three factions call; she sends him there.',
+  { id: 'unlock', part: PART_STORY, name: 'The desk opens', where: GREET,
+    what: 'TRIGGER: the first win after mission 1, on the second try or the twentieth. The Directive Desk lights up and the three groups call; she sends him there.',
     branches: one(of('unlock')) },
-  { id: 'signals', part: PART_DARK, name: 'At the desk, ANSWER THEM: the three signals', where: G('content/campaign.ts') + '  (each faction\'s `contact` scene)',
-    what: 'Once the desk is open, each group has a card at the Directive Desk, and her lines are written on it, all at once, above the ANSWER THEM button (the first contact film plays when he presses it). One card per group, read together, not two messages.',
+  { id: 'signals', part: PART_STORY, name: 'At the desk, ANSWER THEM: the three signals', where: G('content/campaign.ts') + '  (each faction\'s `contact` scene)',
+    what: 'TRIGGER: the desk is open. Each group has a card at the Directive Desk with her lines written on it, all at once, above the ANSWER THEM button (the first contact film plays when he presses it). One card per group, read together, not two messages.',
     // One row per card (Collins, Oct 18 2026, of two rows a faction: "when do you get the second message?"): the card shows them together.
     branches: one(FACTIONS.filter((f) => f.contact).map((f) => {
       const yoke = f.contact!.lines.filter((l: string) => l.startsWith('YOKE:')).map((l: string) => l.replace(/^YOKE:\s*/, ''));
       return { id: `${f.id}-contact`, text: yoke, author: 'draft' as Author, ctx: [`${f.name}: "${f.contact!.title}", on its card at the desk`] };
     })) },
+  { id: 'licence', part: PART_STORY, name: `The licence: standing reaches ${LICENCE_STANDING}`, where: GREET,
+    what: 'TRIGGER: the return on which the Board approves the procreation licence. It outranks everything but the end.',
+    branches: one(of('licence')) },
+  { id: 'ended', part: PART_STORY, name: 'The end: the last mission won', where: GREET,
+    what: 'TRIGGER: the return that ends the campaign. It outranks everything.',
+    branches: one(of('ended')) },
 
-  { id: 'personal', part: PART_CAMPAIGN, name: `From capture ${story.captures}, once: the personal plot`, where: GREET,
-    what: `The first ordinary return on or after capture ${story.captures}: how it is going with the partner the Index assigned him. Once. It also opens the discussion in the AI Core (him going down to the Index to sign). Outranks the intros and the news below.`,
-    branches: one(of('partner-progress')) },
-  { id: 'intros', part: PART_CAMPAIGN, name: 'The once intros, in this order', where: GREET + '  (order and captures: ' + G('src/meta/onboarding.ts') + ' INTROS)',
-    what: `Each once a campaign, from its capture on, the next unsaid one in this order, never two returns running (so her ordinary lines still come between), and a lost mission does not bring one back: ${introOrder}. Each line says what it waits for.`,
-    branches: one(INTROS.map(introLine)) },
-  { id: 'letterbeats', part: PART_CAMPAIGN, name: 'On the letters, once each', where: GREET + '  (when: ' + G('src/meta/onboarding.ts') + ' LETTER_BEATS)',
-    what: 'The first ordinary return after a turn in the Letters room, ahead of the intros: Rook\'s first letter arrives; Atlas writes herself; Rook tells him she is part orca (he asked about her skin), before the briefing.',
-    branches: one(['letter-rook', 'letter-atlas-direct', 'letter-rook-orca'].map((id) => greeting(GREETINGS.find((g) => g.id === id)!))) },
-  { id: 'news', part: PART_CAMPAIGN, name: 'News from Earth', where: LORE + '  (section "Earth news (return greetings)"; the fallback line: ' + GREET + ')',
-    what: `One ordinary return in ${EARTH_NEWS_EVERY}, once the desk is open and the mate review and the neko have played; and whenever her own lines for the moment have all been said this campaign, so she never repeats a line while unread news remains. Each line once a campaign. The list grows in the lore book with no code.`,
-    branches: one([...news.map(newsLine), { id: 'EARTH_NEWS_FALLBACK', text: EARTH_NEWS_FALLBACK, author: 'collins', ctx: ['when the lore book has no list'] }]) },
-  { id: 'outcome', part: PART_CAMPAIGN, name: 'Otherwise: by what the deployment did', where: GREET,
-    what: 'The ordinary line, when no step above takes the return. The weightiest thing that happened picks the pool: a counter-attack thrown back, ground lost to one, ground taken, a loss; from the main menu with nothing new, the last pool. Within a pool, a line she has not said this campaign while there is one, never the last one said.',
+  { id: 'outcome', part: PART_EVERY, name: 'By what the deployment did', where: GREET,
+    what: 'TRIGGER: an ordinary return with nothing in part 3 due. The weightiest thing that happened picks the pool: a counter-attack thrown back, ground lost to one, ground taken, a loss; from the main menu with nothing new, the last pool. Within a pool she picks a line she has not said this campaign while there is one, and never the line she said last time. One return in three she gives a line of news from Earth instead (below).',
     branches: [
-      { label: 'A counter-attack thrown back', lines: of('defended') },
-      { label: 'Ground lost to a counter-attack', lines: of('fell') },
+      { label: 'A loss before the desk opens (in place of the ordinary loss pool, until he wins once)', lines: of('lost-locked') },
       { label: 'A deployment won', lines: of('won') },
       { label: 'A deployment lost', lines: of('lost') },
+      { label: 'A counter-attack thrown back', lines: of('defended') },
+      { label: 'Ground lost to a counter-attack', lines: of('fell') },
       { label: 'Back aboard from the menu, nothing new', lines: of('back') },
     ] },
-  { id: 'licence', part: PART_CAMPAIGN, name: `Standing reaches ${LICENCE_STANDING}: the licence`, where: GREET,
-    what: 'The return on which the Board approves the procreation licence. Once; it outranks every step above but the end.',
-    branches: one(of('licence')) },
-  { id: 'ended', part: PART_CAMPAIGN, name: 'The last mission won: the end', where: GREET,
-    what: 'The return that ends the campaign. Once; it outranks everything.',
-    branches: one(of('ended')) },
+  { id: 'news', part: PART_EVERY, name: 'News from Earth: in place of the line above, one return in three', where: LORE + '  (section "Earth news (return greetings)"; the fallback line: ' + GREET + ')',
+    what: `TRIGGER: one ordinary return in ${EARTH_NEWS_EVERY} with nothing in part 3 due, once the desk is open and the mate review and the neko have played; also whenever her own lines for that kind of return have all been said this campaign, so she never repeats a line while unread news is left. These are ordinary after-mission lines like the ones above, each once a campaign. The list grows in the lore book with no code.`,
+    branches: one([...news.map(newsLine), { id: 'EARTH_NEWS_FALLBACK', text: EARTH_NEWS_FALLBACK, author: 'collins', ctx: ['when the lore book has no list'] }]) },
+
+  { id: 'personal', part: PART_TRIG, name: `Rank 1. The personal plot (from capture ${story.captures})`, where: GREET,
+    what: `TRIGGER: the first ordinary return on or after capture ${story.captures}. Once. How it is going with the partner the Index assigned him; it also opens the discussion in the AI Core (him going down to the Index to sign). Only the story lines outrank it.`,
+    branches: one(of('partner-progress')) },
+  { id: 'letterbeats', part: PART_TRIG, name: 'Rank 2. On the letters, once each', where: GREET + '  (when: ' + G('src/meta/onboarding.ts') + ' LETTER_BEATS)',
+    what: 'TRIGGER: something has just happened in the Letters room; the line is said on the very next ordinary return, ahead of the intros and the news. If two are due at once, the first in this list goes now and the next on the return after. Each says what sets it off.',
+    branches: one(['letter-rook', 'letter-atlas-direct', 'letter-rook-orca'].map((id) => greeting(GREETINGS.find((g) => g.id === id)!, LETTER_TRIGGER[id]))) },
+  { id: 'intros', part: PART_TRIG, name: 'Rank 3. The once intros, in this order', where: GREET + '  (order and captures: ' + G('src/meta/onboarding.ts') + ' INTROS)',
+    what: `TRIGGER: an ordinary return with nothing of rank 1 or 2 due; each once a campaign, the next one not yet said whose capture has been reached, and never on two returns running (so her everyday lines still come between). A lost mission does not bring one back. Order: ${introOrder}. Each line says what it waits for.`,
+    branches: one(INTROS.map(introLine)) },
 
   { id: 'body', part: PART_ANY, name: 'Print a body', where: G('content/yokeScenes.ts'),
     what: 'When he asks her to print herself a body (or her live mind agrees to it): the hold prints one, it dies on the floor, then her voice from the speakers. Once a campaign; asked again, the refusal.',
@@ -268,7 +279,7 @@ const steps: Step[] = [
  * Line ids are `film-<film>-<n>` (n from 1). An edit here is to the scene's line in its file; a changed line is no longer
  * what the film says, so the film is re-shot: `npx vite-node tools/media/cutscenes.ts -- make <film>` (SPENDS RFab tokens).
  */
-const PART_FILMS = 'The films: every cut scene, in the order he meets them';
+const PART_FILMS = 'Part 6. The films: every cut scene, in the order he meets them';
 type Baked = { video: string; poster: string; seconds: number; cues: { line?: number; text?: string }[] };
 const BAKED = ((): Record<string, Baked> => { try { return JSON.parse(read('public/media/scenes/scenes.json')).films ?? {}; } catch { return {}; } })();
 const norm = (t: string) => t.toLowerCase().replace(/\([^)]*\)/g, '').replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ').trim();

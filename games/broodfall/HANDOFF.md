@@ -2441,3 +2441,26 @@ is a sin"; the Cats and Nekos rows), and in `docs/UNIVERSE.md` (Dogs, Cats, Neko
 - OPEN for him (empire.md 15, "Fringe politics"): nekos before or after the orcas ("nobody has uplifted anyone since
   the orcas"; proposal: nekos are a re-engineering of the cats, not a new species), and whether Space Derelict's
   Felonia are the nekos or the rim's uplifted cats.
+
+### YOKE's Lines review applied, intros up to earth-13 (Oct 18 2026, evening)
+
+Export `notes/yoke-exports/2026-10-18T18-47-37-516Z.json` (19 items) was applied and cleared from the page:
+- Cut: intro-duck, intro-board, intro-genewar. The Gene War lore now rides on intro-catgirl's aside, with the hook "Ask her
+  why nekos can't use the tanks". Rook's thread used to open on intro-board; it now opens from capture 6
+  (`unlockCaptures` in content/letters.ts; saves that already heard intro-board still unlock).
+- intro-catgirl: his new first line; it moved from capture 7 to 12, after the INTROS for the audit and the dad.
+- intro-dad, letter-rook, letter-rook-orca: his lines in. Two lines he asked for were removed: the "Orcas are not
+  like the other species" line in letter-rook-orca, and "She does not know yet" in letter-rook's aside.
+  letter-atlas-direct was unchanged: it already plays only once the companion hands the thread over (he asked why it is
+  there); the page now says what triggers each letter beat.
+- Earth news 1-12 (lorebook): his line changes, plus asides rewritten short and plain. He called the old ones "AI brained".
+  The new lore is in them: America's remigration and the witch hunt (the "Second Reformation", Mormons among the
+  hunters); the Enhanced Games became the Crusade's gladiatorial games; Ge-im, Korea's gacha-born religion, runs
+  Squid-Game-style games; the chaebol idol who won and asked not to be retired; the pilgrimage month in Israel. Item 13
+  is removed, so the items after it moved up one (game ids earth-13+ shift; COLLINS_NEWS = 12, ALSO 22).
+- The page is laid out the way he asked: 1 story lines in order, 2 everyday lines (pools + news), 3 triggered lines by
+  rank (personal plot, letter beats, intros), 4 outside the talk, 5 live-mind pools, 6 films; every step opens with
+  TRIGGER. The rank is greetingFor/momentNow in src/meta/onboarding.ts. Keep the page in step if that changes.
+- Page bug: Keep/Remove flipped back after a note was written on the line. A stale copy from the store overwrote the
+  click. The page now ignores the store for a line while its write is pending or in the 5 s after, and ignores any
+  copy older than its own (`mine()`, `at`).

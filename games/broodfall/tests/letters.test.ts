@@ -176,3 +176,10 @@ describe('the letters kept on the RFab account merge with the save (Oct 14 2026)
     expect(calls[0].headers['X-Broodfall-Player']).toBe('tok');
   });
 });
+
+describe('Rook without the Board line (Collins cut intro-board, Oct 18 2026)', () => {
+  it('her thread still opens, from capture 6', () => {
+    expect(unlockedCorrespondents({ ...past(['mate-review']), captures: 5 })).not.toContain('rook');
+    expect(unlockedCorrespondents({ ...past(['mate-review']), captures: 6 })).toContain('rook');
+  });
+});
