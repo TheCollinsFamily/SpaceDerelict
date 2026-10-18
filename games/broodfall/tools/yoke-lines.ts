@@ -46,7 +46,9 @@ import { EARTH_NEWS_FALLBACK, GREETINGS, earthNews, newsBeats, type GreetMoment,
 import { PRINT_BODY } from '../content/yokeScenes';
 import { BOSS, BOSS_AFTER, BOSS_ASIDE, BOSS_BRIDGE } from '../content/boss';
 import { CHANNELS, TRANSLATOR_NOTES } from '../content/translation';
-import { FACTIONS, LICENCE_STANDING } from '../content/campaign';
+import { FACTIONS, LICENCE_STANDING, type Scene } from '../content/campaign';
+import { ROACH_SCENES } from '../content/roachKing';
+import { speakerOf } from '../content/media';
 import { EARLY_ONCE, EARTH_NEWS_EVERY, INTROS, STORY_ONCE } from '../src/meta/onboarding';
 
 const ROOT = path.resolve(__dirname, '..');
@@ -58,7 +60,7 @@ interface Line { id: string; text: string[]; faces?: string[]; ctx?: string[]; a
 /** One case of a step (won / lost / held), or words that are not hers but fix the order (the boss's transmission). */
 interface Branch { label?: string; lines?: Line[]; context?: { who: string; lines: string[]; where: string } }
 /** One event of a campaign, in the order he meets them; what happens, then what she says there. */
-interface Step { id: string; part: string; name: string; what: string; where: string; branches: Branch[] }
+interface Step { id: string; part: string; name: string; what: string; where: string; branches: Branch[]; video?: { src: string; poster: string; seconds: number } }
 
 /** Which greetings are Collins's own words (the comments in content/greetings.ts say so). */
 const COLLINS_GREETINGS = new Set(['first-lost', 'first-won', 'unlock', 'mate-review', 'catgirl', 'back-5', 'won-19', 'won-20', 'back-11', 'back-12', 'won-21', 'won-22', 'back-13', 'back-14', 'back-15']);
@@ -253,6 +255,45 @@ const steps: Step[] = [
     branches: one(plain('c21', loreList(lore, /The 21st century/), 'lore')) },
 ];
 
+/**
+ * THE FILMS (Collins, Oct 18 2026: "the latest yoke lines and cinematics ... I want to get to work on finishing those"):
+ * every filmed scene (content/campaign.ts beats / pledge / ending, content/roachKing.ts ROACH_SCENES), in the order a
+ * player meets them, one line per spoken shot, with the baked film (public/media/scenes/<film>.mp4) playable on the page.
+ * Line ids are `film-<film>-<n>` (n from 1). An edit here is to the scene's line in its file; a changed line is no longer
+ * what the film says, so the film is re-shot: `npx vite-node tools/media/cutscenes.ts -- make <film>` (SPENDS RFab tokens).
+ */
+const PART_FILMS = 'The films: every cut scene, in the order he meets them';
+type Baked = { video: string; poster: string; seconds: number; cues: { line?: number; text?: string }[] };
+const BAKED = ((): Record<string, Baked> => { try { return JSON.parse(read('public/media/scenes/scenes.json')).films ?? {}; } catch { return {}; } })();
+const norm = (t: string) => t.toLowerCase().replace(/\([^)]*\)/g, '').replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ').trim();
+function filmStep(film: string, sc: Scene, name: string, what: string, where: string): Step {
+  const b = BAKED[film];
+  const all = sc.lines.map((l, i) => {
+    const who = speakerOf(l);
+    return { i, line: { id: `film-${film}-${i + 1}`, text: [who ? l.slice(l.indexOf(':') + 1).trim() : l], ctx: [who || '(no speaker)'], author: 'collins' as Author } as Line };
+  }).filter((x) => x.line.text[0].trim());
+  const lines = all.map((x) => x.line);
+  // A line the baked film does not say as written (rewritten since the bake, or added): the film needs re-shooting.
+  const off = b ? all.filter(({ i, line }) => { const c = b.cues.find((q) => q.line === i); return norm(line.text[0]) && (!c || norm(c.text ?? '') !== norm(line.text[0])); }).length : 0;
+  const state = !b ? ' NOT FILMED YET: the game shows its card with these lines.' : off ? ` ${off} line(s) no longer match the film: re-shoot it.` : '';
+  return { id: `film-${film}`, part: PART_FILMS, name: `${name}: "${sc.title}"`, what: what + state, where: `${where}  ·  shot list: ${G('content/cutscenes.ts')} (${film})`,
+    branches: one(lines), video: b ? { src: b.video, poster: b.poster, seconds: Math.round(b.seconds) } : undefined };
+}
+const THE: Record<string, string> = { delegation: 'the Delegation', faithful: 'the Faithful', institute: 'the Institute' };
+for (const f of FACTIONS) {
+  const them = THE[f.id] ?? f.name;
+  f.beats.forEach((bt, i) => {
+    if (!bt.scene.film) return;
+    steps.push(filmStep(bt.scene.film, bt.scene, `${f.name}, ${i === 0 ? 'first interaction' : `beat ${i + 1}`}`,
+      i === 0 ? `The first time he answers ${them}' signal at the Directive Desk (or when he first sides with them, if he never answered).`
+        : `Plays once he has taken ${bt.afterCaptures} captures working with ${them}.` + (bt.choice ? ` Ends on a choice: ${bt.choice.prompt}` : ''),
+      G('content/campaign.ts') + `  (${f.id} beats, "${bt.id}")`));
+  });
+  if (f.pledge.film) steps.push(filmStep(f.pledge.film, f.pledge, `${f.name}, the pledge`, `His broadcast when he sides with ${them} publicly.`, G('content/campaign.ts') + `  (${f.id} pledge)`));
+  if (f.ending.film) steps.push(filmStep(f.ending.film, f.ending, `${f.name}, the finale`, `The ending, if he finishes the campaign on the side of ${them}.`, G('content/campaign.ts') + `  (${f.id} ending)`));
+}
+for (const r of ROACH_SCENES) if (r.scene.film) steps.push(filmStep(r.scene.film, r.scene, `The Roach King, ${r.small}`, `${r.kicker}. Plays at "${r.when}". After it: ${r.end}.`, G('content/roachKing.ts') + `  (ROACH_SCENES "${r.id}")`));
+
 /** The exports a session has applied (notes/yoke-exports/*.json, each a document from the page's store with "applied" added):
  *  their fingerprints clear the same edits from his browser on his next visit. One not yet applied leaves its edits alone. */
 const EXPORTS = path.join(ROOT, 'notes', 'yoke-exports');
@@ -290,6 +331,10 @@ const data = {
     { what: 'Her notes and her band', path: ABS('content/translation.ts') },
     { what: 'When the money stops', path: ABS('src/meta/yokePlayer.ts') },
     { what: 'While she dances', path: ABS('src/ui/loader.ts') },
+    { what: 'The films\' words (beats, pledges, finales)', path: ABS('content/campaign.ts') },
+    { what: 'The Roach King\'s films\' words', path: ABS('content/roachKing.ts') },
+    { what: 'How each film is shot (the shot lists)', path: ABS('content/cutscenes.ts') },
+    { what: 'The baked films', path: ABS('public/media/scenes') },
     { what: 'This page is made by', path: ABS('tools/yoke-lines.ts') },
     { what: 'Exports a session applied (each clears its edits from this page)', path: ABS('notes/yoke-exports') },
     { what: 'The review (edits, cuts, notes, ticks, exports) the page saves', path: ABS('notes/yoke-review.json') },

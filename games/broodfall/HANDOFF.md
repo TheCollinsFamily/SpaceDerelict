@@ -2401,3 +2401,13 @@ Collins's lore, his words kept in `content/lore/empire.md` 6c, 9, 12b and 5:
   a large part of why the Satmar see them as a kind of being genuinely set apart. `empire.md` 9 ("No cap", with a
   PROPOSAL tying it to the fear of death), `docs/UNIVERSE.md`, the lorebook's Sadducee bullet and one line in 16.
 - `notes/YOKE-LINES.html` regenerated; its published page still cannot be reached from this account (see above).
+
+### YOKE's Lines page now carries the films (Oct 18 2026)
+
+Collins: "the latest yoke lines and cinematics ... I want to get to work on finishing those". The page
+(`notes/YOKE-LINES.html`, http://localhost:8792/) has a last part, "The films": one step per filmed scene (19: each
+faction's beats, pledge and finale, then the Roach King's three) in the order a player meets them, the baked film
+playable at the top of the step, and every line editable like hers (ids `film-<film>-<n>`, speaker shown beside each).
+A step says "NOT FILMED YET" or "N line(s) no longer match the film: re-shoot it" when the script and the bake part.
+On Oct 18 every film matched its script. `tools/yoke-review-server.cjs` serves `/media/scenes/*` (with Range) for it.
+The server is installed to start at login on the new desktop too (`tools/yoke-review-autostart.ps1`).

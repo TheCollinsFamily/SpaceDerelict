@@ -43,6 +43,22 @@ http.createServer((req, res) => {
     catch { return send(res, 500, 'notes/YOKE-LINES.html is missing: run npx vite-node tools/yoke-lines.ts', 'text/plain'); }
   }
   if (req.method === 'GET' && url.pathname === '/api/state') return send(res, 200, load());
+  // The baked films and their posters (the page's films part): public/media/scenes/<file>, with Range so a film seeks.
+  const media = url.pathname.match(/^\/media\/scenes\/([a-z0-9-]+\.(mp4|webp))$/);
+  if (req.method === 'GET' && media) {
+    const file = path.join(ROOT, 'public', 'media', 'scenes', media[1]);
+    let size; try { size = fs.statSync(file).size; } catch { return send(res, 404, { error: 'not found' }); }
+    const type = media[2] === 'mp4' ? 'video/mp4' : 'image/webp';
+    const r = /^bytes=(\d*)-(\d*)$/.exec(req.headers.range || '');
+    if (r && (r[1] || r[2])) {
+      const start = r[1] ? Number(r[1]) : Math.max(0, size - Number(r[2])), end = r[1] && r[2] ? Math.min(Number(r[2]), size - 1) : size - 1;
+      if (start >= size || start > end) { res.writeHead(416, { 'Content-Range': `bytes */${size}` }); return res.end(); }
+      res.writeHead(206, { 'Content-Type': type, 'Accept-Ranges': 'bytes', 'Content-Range': `bytes ${start}-${end}/${size}`, 'Content-Length': end - start + 1 });
+      return fs.createReadStream(file, { start, end }).pipe(res);
+    }
+    res.writeHead(200, { 'Content-Type': type, 'Accept-Ranges': 'bytes', 'Content-Length': size });
+    return fs.createReadStream(file).pipe(res);
+  }
   const m = url.pathname.match(/^\/api\/doc\/(edits|reviewed|exports)\/([A-Za-z0-9_\-.~:@+]{1,200})$/);
   if (m && (req.method === 'PUT' || req.method === 'DELETE')) {
     let body = '';
