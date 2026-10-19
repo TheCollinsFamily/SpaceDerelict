@@ -39,8 +39,8 @@ export interface Correspondent {
   sub: string;
   /** The greeting of hers that opens the thread: a once beat (CampaignState.said) or any greeting (greetingsSaid). */
   unlock: string;
-  /** Or, from this capture on, with no greeting to open it (Rook, since intro-board was cut on Oct 18 2026). */
-  unlockCaptures?: number;
+  /** Older greetings that also opened it, for saves made before it moved (Rook opened on intro-board until Oct 18 2026). */
+  unlockAlso?: string[];
   /** Their first letter, waiting when the thread opens. */
   opening: string[];
   /** Who wrote the opening (the `via` writer unless named). */
@@ -170,7 +170,7 @@ export const CORRESPONDENTS: Correspondent[] = [
  * session's: Rook, her ring name, and Halloran, the surname she took for the Index.
  */
 CORRESPONDENTS.push({
-  id: 'rook', name: 'Rook Halloran', sub: 'a convert from the outer rim, late of the gladiatorial rings', unlock: 'intro-board', unlockCaptures: 6, picture: 'letters/rook.webp',
+  id: 'rook', name: 'Rook Halloran', sub: 'a convert from the outer rim, late of the gladiatorial rings', unlock: 'letter-rook', unlockAlso: ['intro-board'], picture: 'letters/rook.webp',
   opening: [
     'Technician. Rook Halloran, late of Keelhaul Station, the rings. I know what your people think a ring girl is worth. Listen anyway.',
     'I want into the Empire properly. A full place means a House, and a House means a husband, so I am writing to men with a licence in reach. You are one.',

@@ -16,12 +16,12 @@ const size = (m: GreetMoment) => GREETINGS.filter((g) => g.moment === m).length;
 describe('the depth of her pools', () => {
   it('each ordinary moment has lines enough for a long campaign', () => {
     // Oct 12 2026: Collins cut what did not carry their world; what carries it was written in its place.
-    expect(size('won')).toBeGreaterThanOrEqual(10);
-    expect(size('lost')).toBeGreaterThanOrEqual(10);
+    // Oct 19 2026: once the desk is open, won or lost draw on one pool, her everyday talk.
+    expect(size('talk')).toBeGreaterThanOrEqual(25);
+    expect(size('won') + size('lost') + size('back')).toBe(0);
     expect(size('defended')).toBeGreaterThanOrEqual(5);
     expect(size('fell')).toBeGreaterThanOrEqual(5);
     expect(size('lost-locked')).toBeGreaterThanOrEqual(4);
-    expect(size('back')).toBeGreaterThanOrEqual(8);
     expect(earthNewsFrom(LORE).length).toBeGreaterThanOrEqual(20);
   });
   it('every greeting has words, a face on every beat, and an id of its own', () => {
@@ -43,7 +43,7 @@ describe('the depth of her pools', () => {
     expect(carry.length).toBeGreaterThanOrEqual(18);
     for (const g of carry) expect(g.aside?.length ?? 0, g.id).toBeGreaterThan(80);
     // Every ordinary pool has at least two.
-    for (const m of ['won', 'lost', 'defended', 'fell', 'back'] as GreetMoment[]) expect(carry.filter((g) => g.moment === m).length, m).toBeGreaterThanOrEqual(2);
+    for (const m of ['talk', 'defended', 'fell'] as GreetMoment[]) expect(carry.filter((g) => g.moment === m).length, m).toBeGreaterThanOrEqual(2);
   });
   it('while the desk stays dark, once her lines are said, the one that repeats plays again and again (Collins, Oct 12 2026)', () => {
     const pool = GREETINGS.filter((g) => g.moment === 'lost-locked');

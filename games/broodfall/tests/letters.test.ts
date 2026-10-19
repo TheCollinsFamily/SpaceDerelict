@@ -138,11 +138,9 @@ describe('Rook tells of the orca only when asked, and YOKE answers it once, befo
     s = receiveLetter(s, 'rook', r.lines, r.regard);
     expect(thread(s, 'rook')!.revealed).toEqual(['orca']);
   });
-  it('YOKE: Rook\'s first letter, then the orca once revealed, each once, ahead of the intros', async () => {
+  it('YOKE: the orca once revealed, once, ahead of the intros (her first letter is an opening now: THREAD_OPENS)', async () => {
     const { letterBeatFor } = await import('../src/meta/onboarding');
     let s = base();
-    expect(letterBeatFor(s)!.id).toBe('letter-rook');
-    s = { ...s, greetingsSaid: [...(s.greetingsSaid ?? []), 'letter-rook'] };
     expect(letterBeatFor(s)).toBeNull();
     s = { ...s, letters: { threads: { ...s.letters!.threads, rook: { ...thread(s, 'rook')!, revealed: ['orca'] } } } };
     expect(letterBeatFor(s)!.id).toBe('letter-rook-orca');
@@ -177,9 +175,10 @@ describe('the letters kept on the RFab account merge with the save (Oct 14 2026)
   });
 });
 
-describe('Rook without the Board line (Collins cut intro-board, Oct 18 2026)', () => {
-  it('her thread still opens, from capture 6', () => {
-    expect(unlockedCorrespondents({ ...past(['mate-review']), captures: 5 })).not.toContain('rook');
-    expect(unlockedCorrespondents({ ...past(['mate-review']), captures: 6 })).toContain('rook');
+describe('Rook opens on YOKE\'s line from the rim (Oct 19 2026); a save that heard the Board line keeps her', () => {
+  it('letter-rook opens her thread; intro-board still does on an old save', () => {
+    expect(unlockedCorrespondents(past(['mate-review']))).not.toContain('rook');
+    expect(unlockedCorrespondents({ ...past(['mate-review']), greetingsSaid: ['letter-rook'] })).toContain('rook');
+    expect(unlockedCorrespondents({ ...past(['mate-review']), greetingsSaid: ['intro-board'] })).toContain('rook');
   });
 });

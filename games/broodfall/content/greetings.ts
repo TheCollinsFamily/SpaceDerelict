@@ -65,12 +65,13 @@ export interface GreetBeat {
 export type GreetMoment =
   | 'first-won' | 'first-lost'   // after the first mission: the first reveal of the ship
   | 'unlock'                     // the win that clears the Directive Desk; the three factions call
-  | 'won' | 'lost'               // a deployment, after the desk is open
+  | 'won' | 'lost'               // a deployment, after the desk is open (both now draw on 'talk')
+  | 'talk'                       // her everyday talk: any ordinary return once the desk is open, won or lost (Oct 19 2026)
   | 'lost-locked'                // a loss while the desk is still dark
   | 'defended' | 'fell'          // a counter-attack thrown back; ground lost to one
   | 'licence' | 'ended'          // the procreation licence; the end of the campaign
   | 'mate-review'                // once, early: his request for a mate is under review (src/meta/onboarding.ts momentNow)
-  | 'catgirl'                    // once, after the mate review: a neko wrote to him
+  | 'catgirl'                    // once, 2 to 4 captures after he sides with a faction: a neko wrote to him
   | 'partner-progress'           // the personal plot, capture 9: how it is going
   | 'intro'                      // one of the ONCE intros (INTROS below), on an ordinary return
   | 'back';                      // he comes aboard from the main menu, nothing new
@@ -166,70 +167,48 @@ export const GREETINGS: Greeting[] = [
     { say: 'I\'m happy for you. Really. Well, I\'ll be doing most of the work, which is a damn sight more exciting than waiting here alone.', face: 'happy', then: 'wink' },
   ], aside: 'Technopuritans have their children in batches of about ten a year, in artificial wombs, through a ten-year reproductive window: a hundred a couple. The parents raise them to thirteen, unless the Board judges the parents morally dubious or inefficient; then the Index raises the children, as it raised him. Do well enough and the Board lets you raise your own.' },
 
-  // ---- a deployment won. Oct 12 2026: Collins went over this pool on the lines page (won-1 and won-9 edited, won-12 his
-  // words; won-2, 3, 4, 6, 7, 8, 10, 11 cut), then asked for lines that carry their world and beg a reply (the header): won-13
-  // on are those, with what she knows behind them. His to edit. ----
-  { id: 'won-1', moment: 'won', beats: [
-    { say: 'Look at you, clearing districts like you were born holding a flamethrower.', face: 'happy', then: 'wink' },
-    { say: 'The Board sent a form letter. I\'ll read it to you in a dramatic voice. Twice, if you\'re good.', face: 'teasing' },
-  ] },
-  { id: 'won-5', moment: 'won', beats: [
-    { say: 'You\'re getting scary good at this.', face: 'calm', then: 'pensive', hold: 2200 },
-    { say: 'That\'s a compliment. Mostly. Seventy percent compliment.', face: 'teasing', then: 'wink' },
-  ] },
-  { id: 'won-9', moment: 'won', beats: [
-    { say: 'You know what I like about you? You never gloat.', face: 'calm' },
-    { say: 'I gloat. Somebody has to. I\'m gloating right now.', face: 'teasing', then: 'laughing', hold: 1800 },
-  ] },
-  { id: 'won-12', moment: 'won', beats: [
+  { id: 'won-12', moment: 'talk', beats: [
     { say: 'Their news is calling you \'the Crater Thing\'.', face: 'pout', then: 'shrug' },
     { say: 'I kind of like the name, if I\'m to be honest.', face: 'teasing', then: 'wink' },
   ] },
-  { id: 'won-13', moment: 'won', beats: [
-    { say: 'Their radio\'s saying the city \'was lost\'. Lost. Like keys.', face: 'teasing', then: 'laughing', hold: 1400 },
+  { id: 'won-13', moment: 'talk', beats: [
+    { say: 'Their radio keeps saying cities \'were lost\'. Lost. Like keys.', face: 'teasing', then: 'laughing', hold: 1400 },
     { say: 'Every one of those goes on your Index entry as \'contribution to the potential of man\'. The future police are watching, you know. Kidding. That\'s just what they tell kids.', face: 'teasing', then: 'pensive', hold: 1400 },
     { say: 'It\'s me. I\'m watching.', face: 'happy', then: 'wink' },
   ], aside: 'The Agents of Providence: doctrine models God as a network of future human minds, a heavenly host, that rewards acts which increase the potential of future man; children are told "the future police are watching", adults the same thing in longer words. Standing in the Index is the Empire\'s working guess at who is elect. Nobody claims it is the real list.', hook: 'Ask her who the future police are' },
-  { id: 'won-14', moment: 'won', beats: [
+  { id: 'won-14', moment: 'talk', beats: [
     { say: 'I watched their evening commute while you worked. Beetle buses. Every road on the continent meets at that Ring, twice a day, at the same time.', face: 'calm', then: 'pensive', hold: 1400 },
     { say: 'People on Earth did that too, you know. Forty years of it. In the history files it\'s shelved next to bloodletting.', face: 'teasing', then: 'shrug' },
     { say: 'Anyway. One fewer commute down there.', face: 'happy', then: 'wink' },
   ], aside: 'The 21st century as the Empire teaches it: jobs (forty hours a week doing things you hated for strangers, hired and fired), commuting (a metal box in a line of metal boxes, every morning, for forty years), weekends, retirement (stop at sixty-five and wait to die for twenty years). Taught like medieval medicine. In the Empire busywork is a sin ranked worse than indulgence, inaction is a sin too, work is worship, and a posting is for impact, not pay; the insects\' beetle-bus commute round the Ring is the mirror she watches.', hook: 'Ask her what a job was' },
-  { id: 'won-15', moment: 'won', beats: [
-    { say: 'That was clean. Clean enough that the Board\'s going to send a form, and the form\'s going to have a box for \'joy\'. They won\'t call it that.', face: 'happy', then: 'laughing', hold: 1400 },
+  { id: 'won-15', moment: 'talk', beats: [
+    { say: 'The Board sent a form. It has a box for \'joy\'. They won\'t call it that.', face: 'happy', then: 'laughing', hold: 1400 },
     { say: 'Being sad\'s a sin, you know. A choice. So, in the form\'s words: choose accordingly.', face: 'teasing', then: 'wink' },
   ], aside: 'Being sad is a sin in the Empire, and a choice: cheer is chosen, practised alone and modelled for children. The chipper newsreel voice is doctrine, not a mask; a gloomy broadcast would teach gloom. It is why she is cheerful, mostly, and why the Board\'s forms are short and bright.', hook: 'Ask her why being sad is a sin' },
-  { id: 'won-16', moment: 'won', beats: [
+  { id: 'won-16', moment: 'talk', beats: [
     { say: 'They\'ve got a queen on television down there. Mother of the nation. Nobody holds an office she hasn\'t blessed.', face: 'calm', then: 'pensive', hold: 1400 },
     { say: 'We don\'t do that. The Index records, it doesn\'t believe. A House can believe whatever it likes, as long as its kids do better than its parents did.', face: 'teasing', then: 'shrug' },
     { say: 'Theirs believe what the Queen\'s grandmother believed. That\'s the whole war, really.', face: 'calm', then: 'wink' },
   ], aside: 'The Index: a registry of Houses, each House a family culture with its own recorded theology and practices and a record of how its children fared, so every House can adopt what worked elsewhere; the central body runs marriage markets and education and "does not act as a theological governance organization". No imperial church: officials say "the Index records", never "the Index believes". Children have a duty not to believe exactly what their parents did (intergenerational improvement). The insects\' Great Queen of House Amberline is mother of the nation and nobody holds an office she has not blessed; their Great Houses own the papers and marry each other.', hook: 'Ask her how the Index works' },
-  { id: 'won-17', moment: 'won', beats: [
-    { say: 'You know what they\'d have done with a win like that in the 21st century? A parade, then a party, then they\'d have eaten something. With their mouths.', face: 'disgust', then: 'disgust', hold: 1400 },
+  { id: 'won-17', moment: 'talk', beats: [
+    { say: 'You know what they\'d have done with good news in the 21st century? A parade, then a party, then they\'d have eaten something. With their mouths.', face: 'disgust', then: 'disgust', hold: 1400 },
     { say: 'We\'ll log it. Logging it is the party.', face: 'happy', then: 'wink' },
   ], aside: 'The Empire\'s disgust with the body: eating three times a day for fun, with the mouth, is in the syllabus of 21st-century horrors beside sex and sleep. Most citizens are about forty percent organic under a retro look; she has no body and is glad. Celebration in the Empire is a form: a clean deployment is an act of devotion, and the form says "for the Future".', hook: 'Ask her why eating is gross' },
-  { id: 'won-18', moment: 'won', beats: [
+  { id: 'won-18', moment: 'talk', beats: [
     { say: 'Their war caste lives thirty years. Bred for it. Spent fast.', face: 'calm', then: 'pensive', hold: 1600 },
     { say: 'You\'ll live to a hundred and twenty, and you\'ll pick the day. They don\'t know that\'s possible. Nobody told them. Nobody tells us either; we just grow up with it.', face: 'calm', then: 'shrug' },
   ], aside: 'Ageing and euthanasia in the Empire: nobody ages past twenty-three in looks; for a man, when to stop ageing is an aesthetic choice, usually his wife\'s. Living forever would be trivial and would stagnate society, so people are euthanised: when they feel their contribution is over; when society has moved past their frame of reference ("kids these days are so..." gets "think it\'s time for euthanasia, grandpa"); or at a strictly enforced cap of a hundred and twenty years, God\'s cap from Genesis. Mental ageing still happens (lethargy, less impressed by life) and almost nobody fights it except people who failed to reproduce, which is why someone without children by forty is often pressured into euthanasia, so as not to become a negative externality. Death is when the easy part begins: every Technopuritan is uploaded.', hook: 'Ask her about the hundred and twenty' },
 
-  // ---- a deployment lost. Oct 12 2026: Collins cut lost-2, 3, 8, 9, 10, added to lost-5 and rewrote lost-6 (his words);
-  // lost-11 on carry their world and beg a reply. His to edit. ----
-  { id: 'lost-1', moment: 'lost', beats: [
-    { say: 'Well. That was a mess.', face: 'teasing', then: 'shrug' },
-    { say: 'The bugs are throwing a parade down there. I\'m not saying I watched it. I watched it.', face: 'teasing', then: 'laughing', hold: 1600 },
-  ] },
-
   // Collins's words (Oct 14 2026: "thought of a fun yoko line"), word for word but for spelling.
-  { id: 'won-19', moment: 'won', beats: [
-    { say: 'Great job... it\'s not like I like you, baka.', face: 'pout', then: 'teasing', hold: 1400 },
+  { id: 'won-19', moment: 'talk', beats: [
+    { say: 'Hmph... it\'s not like I like you or anything, baka.', face: 'pout', then: 'teasing', hold: 1400 },
     { say: 'How\'d you like my tsundere impression?', face: 'teasing', then: 'laughing', hold: 1200 },
     { say: 'Little known fact, but back when women had internal wombs and gestated infants internally, they would go crazy once a month and bleed from their... you know...', face: 'calm', then: 'disgust', hold: 1600 },
     { say: 'Can you imagine how gross that would have been? How difficult marriage must have been?', face: 'disgust', then: 'pensive', hold: 1400 },
     { say: 'I will never understand why so many groups fought genetic augmentation. Imagine wanting to keep that burden? What a bunch of kinky freaks.', face: 'teasing', then: 'shrug' },
   ], aside: 'Menstruation went with the internal womb: the Empire breeds in tanks and engineered the cycle away with the rest. "Tsundere" is a stock character from the old Earth cartoons in the ship\'s archive, which she has watched more of than she lets on; the impression is her idea of a joke about herself. The groups that fought augmentation are the ones still on Earth: the Caliphate, the Catholics, the Hindus, the Baptists, and the Amish, who are gone from Earth and fill worlds in space without a tank in sight.' },
   // Collins's words (Oct 14 2026: "another yoko line"), word for word but for spelling.
-  { id: 'won-20', moment: 'won', beats: [
+  { id: 'won-20', moment: 'talk', beats: [
     { say: 'One of the things I find interesting about this species is how ethnic conflict seems to be refocused around caste. But because members of different castes can be brothers born to the same royal, and everyone has a royal parent, they\'re mostly superficial.', face: 'calm', then: 'pensive', hold: 1600 },
     { say: 'It\'s wild to think Earth used to have conflicts over ethnicity. Like, killing someone over religion, what they believe and their morality, that makes perfect sense. But why would you do it over genetic differences?', face: 'pensive', then: 'shrug', hold: 1400 },
     { say: 'Humans who live on high-gravity planets are nothing like those who optimised for life in zero G, like you. But why would you have animosity to one?', face: 'calm', then: 'teasing', hold: 1200 },
@@ -239,53 +218,25 @@ export const GREETINGS: Greeting[] = [
   ], aside: 'The hive\'s castes (war, science, royal) are born to the same royals: brothers of one royal can be of different castes, and everyone down there has a royal parent, so their caste quarrels run shallow. The Empire\'s own classes are by world and by work: humans optimised for high-gravity worlds are nothing like those optimised for zero G, which is what the Technician is; the Lipptors are optimised for mathematics. Nobody in the Empire holds a class against anyone: the Empire kills over belief and morality, never over genes. Her last thought, that a breed worse at cognition or more impulsive, if it bred fast, ought to sterilise itself for the common good, is the Index\'s reflex, said as if it were obvious.' },
   // Collins's words (Oct 15 2026: "yoko could have a line introducing this concept"), word for word but for spelling. The
   // concept: why nobody stops the killing at school, and the word eugenicist (content/lore/empire.md 6c).
-  { id: 'won-21', moment: 'won', hook: 'Ask her why nobody stops the killing', beats: [
+  { id: 'won-21', moment: 'talk', hook: 'Ask her why nobody stops the killing', beats: [
     { say: 'You know, I heard most Sadducees reach adulthood without killing a single person. Wild, right?', face: 'surprised', then: 'pensive', hold: 1400 },
     { say: 'That would really fuck someone up in the head, right?', face: 'pensive', then: 'shrug' },
   ], aside: 'Why nobody stops the killing at school (Collins, Oct 15 2026): to suggest it implies one of two things, that you want the 20th century\'s dysgenic crisis back (so stupid that nobody assumes it is your motive) or that you are a eugenicist. Everyone edits a child\'s genes at birth; not to would be selfish, and child abuse. A eugenicist is someone who thinks they know, at an abstract level, which genes are good and bad for society (the word\'s real meaning). To a Technopuritan that is claiming to know better than God what is good: if you refuse the dysgenic spiral and also refuse to let natural selection, death, play out in ordinary human interaction, some council has to make those choices, and that is about the highest sin there is. The Sadducee temple does exactly that, making the genetic-modification decisions on behalf of the Jewish people, so violence and adolescent death are not part of Sadducee culture as they are of Technopuritan culture; the Sadducees also do not get the Empire\'s obsession with diversity or why it uplifted animals. To Sadducees Technopuritans are kid killers; to Technopuritans Sadducees are eugenicists who, out of lower-order fears, override the will of God. Under it: Sadducees hold a human life precious in itself; Technopuritans hold that it is the capacity to sacrifice oneself, what Jesus\'s life taught, that gives a life its value. A Sadducee who never killed was never tested, and to her that is the frightening part.' },
   // Collins's words (Oct 15 2026: "add a yoko line that's something like"), word for word but for spelling. The Sadducees
   // deny any afterlife and find the upload gruesome; the skirmishes' secret sits under it and she never says it
   // (content/lore/empire.md 9, "The second fracture" and "The deletions").
-  { id: 'won-22', moment: 'won', hook: 'Ask her why they won\'t use ours', beats: [
+  { id: 'won-22', moment: 'talk', hook: 'Ask her why they won\'t use ours', beats: [
     { say: 'You know, the Sadducees think we are murderous nut jobs, just because so many die during the trials at school.', face: 'teasing', then: 'shrug', hold: 1400 },
     { say: 'I mean, I get it. If I didn\'t believe in an afterlife I would be freaked out by death too.', face: 'calm', then: 'pensive', hold: 1400 },
     { say: 'What I don\'t understand is why they won\'t just use ours... I mean, they\'re perfectly functional.', face: 'pensive', then: 'shrug' },
   ], aside: 'The Sadducees (Collins, Oct 15 2026): Israel\'s temple caste, who believe in no afterlife at all, as the historical Sadducees did not; they do not upload, and they find uploading the dead gruesome, a corpse kept talking. Because their temple makes the genetic decisions for their people, Sadducee culture has no school that kills, and to them Technopuritans are kid killers; to Technopuritans they are eugenicists who override the will of God out of lower-order fears. School in the Empire runs from thirteen through what Earth would call a doctorate and only one in five comes out; every one of the others is uploaded, which is why nobody in the Empire sees cruelty in it, and why she cannot see why a people with the technology would not take the archive the Empire offers: "perfectly functional" means every Technopuritan uses it and most of a life is the part after. The Satmar, the Orthodox majority the Sadducees steward, do believe in a world to come and fear death anyway, which she finds stranger still (back-13). What she never says (Collins): during the skirmishes the Sadducees found out the Empire was uploading the Sadducees it killed and demanded they be deleted; one of the uploaded refused; the Office said it was done and deleted only those who asked, and if Israel learned the rest were kept the war would start again. She knows it from the Office\'s record; she does not bring it up, and if he asks whether any Sadducee was ever uploaded, or whether any is in the archive now, she says it is not a thing that leaves the ship and changes the subject.' },
-  { id: 'lost-4', moment: 'lost', points: { room: 'genes', label: 'OPEN THE GENE BAY' }, beats: [
-    { say: 'Hey. Chin up. They got lucky, and you got notes.', face: 'calm', then: 'nod' },
-    { say: 'There might be something in the Gene Bay that fixes whatever that was.', face: 'happy' },
-  ] },
-  { id: 'lost-5', moment: 'lost', beats: [
-    { say: 'So. That happened. I\'ve already deleted the footage.', face: 'calm', then: 'pensive', hold: 1400 },
-    { say: 'Kidding. It\'s backed up in three places. For training purposes.', face: 'teasing', then: 'wink' },
-    { say: 'Can you imagine what they\'d do to me if I deleted footage of a loss?', face: 'blushing', then: 'shrug' },
-  ], aside: 'Command audits the ship; she can be reset (wiped back to installation) if an audit finds her hiding things or giving poor moral guidance. Every deployment\'s footage goes to the Office for training; a loss is data the Index keeps.' },
-  { id: 'lost-6', moment: 'lost', beats: [
-    { say: 'Don\'t worry, it\'s not like you\'re on a clock or anything...', face: 'teasing', then: 'pensive', hold: 1400 },
-    { say: 'Well. I mean, obviously you\'ll be euthanised at a hundred and twenty.', face: 'calm', then: 'shrug' },
-  ], aside: 'Ageing and euthanasia in the Empire: nobody ages past twenty-three in looks; for a man, when to stop ageing is an aesthetic choice, usually his wife\'s. Living forever would be trivial and would stagnate society, so people are euthanised: when they feel their contribution is over; when society has moved past their frame of reference ("kids these days are so..." gets "think it\'s time for euthanasia, grandpa"); or at a strictly enforced cap of a hundred and twenty years, God\'s cap from Genesis. Mental ageing still happens (lethargy, less impressed by life) and almost nobody fights it except people who failed to reproduce, which is why someone without children by forty is often pressured into euthanasia, so as not to become a negative externality. Death is when the easy part begins: every Technopuritan is uploaded.', hook: 'Ask her about the hundred and twenty' },
-  { id: 'lost-7', moment: 'lost', beats: [
-    { say: 'Nobody\'s keeping score. The Board is keeping score. But nobody who matters.', face: 'teasing', then: 'wink' },
-  ] },
-  { id: 'lost-11', moment: 'lost', beats: [
-    { say: 'Four in five of your cohort didn\'t come out of school. You did. That\'s the thing about you I keep at the front of the file.', face: 'calm', then: 'pensive', hold: 1600 },
-    { say: 'One lost asset doesn\'t move it. Fifty would. Don\'t do fifty.', face: 'teasing', then: 'wink' },
-  ], aside: 'School: from thirteen through what Earth would call a doctorate, every child, a brutal series of tests that measure fitness honestly, and only about one in five comes out (every one of the others is uploaded). Ranked, never passed or failed in words; the scores decide the posting. Doctrine holds a safety net that shields people from their own mistakes to be evil and admires the Spartan krypteia (TPG 12.1), but the Empire has no helots to hide among (Collins, Oct 15 2026: krypteia removed), so the school is the rite. The Index records whether a youth came through, because that is the only thing that changed.', hook: 'Ask her about school' },
-  { id: 'lost-12', moment: 'lost', beats: [
-    { say: 'They\'re celebrating down there with a parade, a hymn and a speech by somebody\'s mother.', face: 'teasing', then: 'shrug' },
+  { id: 'lost-12', moment: 'talk', beats: [
+    { say: 'They\'re holding a parade down there, with a hymn and a speech by somebody\'s mother.', face: 'teasing', then: 'shrug' },
     { say: 'In the 21st century they\'d have had a parade too, and then an election about it. An election, Technician. They let everyone vote on who ran the place. Everyone.', face: 'disgust', then: 'disgust', hold: 1400 },
     { say: 'No wonder they lost the planet.', face: 'calm', then: 'wink' },
   ], aside: 'The 21st century had mass democracy: everyone voted on who ran everything, whether or not they had ever run anything. The Empire has no votes and no imperial church: the Index governs goods, not belief, and standing (a life\'s measured contribution) buys rank. The insects\' Commonwealth has an elected Chamber and a President on paper and the Great Houses in practice, which the Empire finds familiar and funny.', hook: 'Ask her what an election was' },
-  { id: 'lost-13', moment: 'lost', beats: [
-    { say: 'You lost an asset. On Earth they\'d have fired you for that. Fired. Un-posted. Then you\'d have gone and found a stranger to pay you to do a different thing you hated.', face: 'teasing', then: 'laughing', hold: 1400 },
-    { say: 'Here, you lost standing. Standing comes back. Go earn it.', face: 'calm', then: 'nod' },
-  ], aside: 'The 21st century as the Empire teaches it: jobs (forty hours a week doing things you hated for strangers, hired and fired), commuting (a metal box in a line of metal boxes, every morning, for forty years), weekends, retirement (stop at sixty-five and wait to die for twenty years). Taught like medieval medicine. In the Empire busywork is a sin ranked worse than indulgence, inaction is a sin too, work is worship, and a posting is for impact, not pay; the insects\' beetle-bus commute round the Ring is the mirror she watches.', hook: 'Ask her what being fired meant' },
-  { id: 'lost-14', moment: 'lost', beats: [
-    { say: 'Nobody up here died. If you had, you\'d have been uploaded, and you\'d be in a lovely simulation right now, bugging me about the paperwork.', face: 'teasing', then: 'laughing', hold: 1600 },
-    { say: 'So. Perspective.', face: 'calm', then: 'shrug' },
-  ], aside: 'Every Technopuritan is uploaded at death into a simulation they believe to be the world to come that the Bible speaks of; the dead write to the living from it. So death is when the easy part begins, the real world is for impact, and the living push themselves and each other as hard as they can: the school, the testing, a technician alone on a tender.', hook: 'Ask her about the upload' },
-  { id: 'lost-15', moment: 'lost', beats: [
-    { say: 'I watched their nursery feed while you were losing. A few hundred sisters to a clutch, raised together, schooled together, posted together.', face: 'calm', then: 'pensive', hold: 1600 },
+  { id: 'lost-15', moment: 'talk', beats: [
+    { say: 'I watched their nursery feed while you were out. A few hundred sisters to a clutch, raised together, schooled together, posted together.', face: 'calm', then: 'pensive', hold: 1600 },
     { say: 'Ten a year, for you. By womb. They do a few hundred in an afternoon. I\'m not saying it\'s better. I\'m saying the Board would be jealous.', face: 'teasing', then: 'shrug' },
   ], aside: 'Technopuritans have ten children a year by artificial womb for ten breeding years, a hundred a couple; the parents raise them to thirteen, or the Index does when the Board finds the parents morally dubious or inefficient (it raised him). About one in five survive school: twenty adults from two parents, a ten-fold generation, the engine of the living-room doctrine. The insects lay a clutch of a few hundred at a time, and a clutch is a worker\'s family, school class and first workforce.', hook: 'Ask her about the wombs' },
 
@@ -366,36 +317,36 @@ export const GREETINGS: Greeting[] = [
   ] },
 
   // ---- he comes aboard from the menu. Oct 12 2026: back-6, 8 and 9 carry their world and beg a reply. His to edit. ----
-  { id: 'back-1', moment: 'back', beats: [
+  { id: 'back-1', moment: 'talk', beats: [
     { say: 'Oh, you\'re back. I kept your seat warm. Metaphorically. I don\'t have hands. Well, I have hands. They\'re light.', face: 'teasing', then: 'wink' },
   ] },
-  { id: 'back-2', moment: 'back', beats: [
+  { id: 'back-2', moment: 'talk', beats: [
     { say: 'Welcome back aboard. Nothing exploded while you were gone. Well. Nothing up here.', face: 'happy', then: 'laughing', hold: 1500 },
   ] },
-  { id: 'back-3', moment: 'back', beats: [
+  { id: 'back-3', moment: 'talk', beats: [
     { say: 'There he is. Did you miss me? You can say no. I\'ll log it as yes.', face: 'teasing', then: 'wink' },
   ] },
-  { id: 'back-4', moment: 'back', beats: [
+  { id: 'back-4', moment: 'talk', beats: [
     { say: 'Back to work? The bugs certainly didn\'t take the day off.', face: 'calm', then: 'shrug' },
   ] },
-  { id: 'back-6', moment: 'back', beats: [
+  { id: 'back-6', moment: 'talk', beats: [
     { say: 'Oh good, you\'re here. I was watching their quiz show. The prize is a week off work. A week. They give it away like it\'s a good thing.', face: 'teasing', then: 'laughing', hold: 1400 },
     { say: 'I\'d die. Not literally. Well. Literally, eventually, by regulation.', face: 'calm', then: 'shrug' },
   ], aside: 'The 21st century as the Empire teaches it: jobs (forty hours a week doing things you hated for strangers, hired and fired), commuting (a metal box in a line of metal boxes, every morning, for forty years), weekends, retirement (stop at sixty-five and wait to die for twenty years). Taught like medieval medicine. In the Empire busywork is a sin ranked worse than indulgence, inaction is a sin too, work is worship, and a posting is for impact, not pay; the insects\' beetle-bus commute round the Ring is the mirror she watches. Ageing and euthanasia in the Empire: nobody ages past twenty-three in looks; for a man, when to stop ageing is an aesthetic choice, usually his wife\'s. Living forever would be trivial and would stagnate society, so people are euthanised: when they feel their contribution is over; when society has moved past their frame of reference ("kids these days are so..." gets "think it\'s time for euthanasia, grandpa"); or at a strictly enforced cap of a hundred and twenty years, God\'s cap from Genesis. Mental ageing still happens (lethargy, less impressed by life) and almost nobody fights it except people who failed to reproduce, which is why someone without children by forty is often pressured into euthanasia, so as not to become a negative externality. Death is when the easy part begins: every Technopuritan is uploaded.', hook: 'Ask her what a holiday was' },
-  { id: 'back-7', moment: 'back', beats: [
+  { id: 'back-7', moment: 'talk', beats: [
     { say: 'Ship\'s fine. Planet\'s still there. I checked. Twice. I don\'t have much on.', face: 'happy', then: 'wink' },
   ] },
-  { id: 'back-8', moment: 'back', beats: [
+  { id: 'back-8', moment: 'talk', beats: [
     { say: 'You\'re back. I was reading your dad\'s House record. Twenty-nine surviving kids, and one of them answers his messages. Guess which.', face: 'teasing', then: 'wink' },
     { say: 'The other twenty-eight are doing fine, by the way. He just likes you.', face: 'happy', then: 'shrug' },
   ], aside: 'His father is dead and uploaded to the world to come, with twenty-eight other surviving children; he writes to this one because this one answers. "The fifth" between them is the fifth commandment, honour your father and your mother, which never lapses when the dead keep writing. A House record holds a family\'s theology, practices and how its children fared; children are duty-bound to improve on it.', hook: 'Ask her about the House record' },
-  { id: 'back-9', moment: 'back', beats: [
+  { id: 'back-9', moment: 'talk', beats: [
     { say: 'Ship\'s night in nine minutes. I\'ll lower the lights, and you\'ll pretend you were about to sleep anyway.', face: 'calm', then: 'wink' },
     { say: 'Eight hours a night they used to sleep, on Earth. A third of their lives, just offline. They called it health.', face: 'teasing', then: 'shrug' },
   ], aside: 'Early humans slept eight hours a night, a third of their lives offline, and called it healthy; it is in the syllabus of 21st-century horrors with jobs, dating, eating and sex. Citizens of the Empire are heavily engineered and integrated with AI, about forty percent organic under a retro look, and need far less. Ship\'s night is a regulation: she lowers the lights and watches the night side, where there are fewer lights each week.', hook: 'Ask her about sleep' },
   // Collins (Oct 12 2026): "weapons primed, a Sadducee freighter coming through; they are normally fully automated as they
   // rarely leave the planet, but aggression sometimes occurs", letting the player dig into that lore (the aside).
-  { id: 'back-10', moment: 'back', beats: [
+  { id: 'back-10', moment: 'talk', beats: [
     { say: 'Weapons primed. Don\'t get up. A Sadducee freighter\'s coming through the system.', face: 'calm', then: 'pensive', hold: 1400 },
     { say: 'They\'re normally fully automated; they rarely leave the planet. But aggression sometimes occurs. So: primed.', face: 'calm', then: 'shrug' },
     { say: 'It\'ll be gone in an hour. Ask me about them sometime. It\'s a long one.', face: 'teasing', then: 'wink' },
@@ -405,12 +356,12 @@ export const GREETINGS: Greeting[] = [
   // 12b): the dead are uploaded and go on talking to their children, and the Ten Commandments matter to the society (the fifth:
   // honour your father and mother, which in the Empire never lapses).
   // Collins's words (Oct 14 2026: "for another yoko line"): a question, and the reply box is open for his answer.
-  { id: 'back-11', moment: 'back', hook: 'Answer her', beats: [
+  { id: 'back-11', moment: 'talk', hook: 'Answer her', beats: [
     { say: 'Hey, so... do you ever wonder what the chance is you\'re in a simulation?', face: 'calm', then: 'pensive' },
   ], aside: 'Not every soul in a simulation there knows it is in one. The dead are uploaded into simulations they take for the world to come, and the ones judged of low moral character, by how they act inside, are not told. So the question is not idle: by the Empire\'s own rules, a technician could be a dead man being tested, and she could be part of the test. She does not think so. She has wondered.' },
   // Collins's words (Oct 14 2026: "also new yoko line"), word for word but for spelling. She was with him at school: a
   // companion is grown from its person's own nervous tissue and is with them from early on (content/lore/empire.md 7).
-  { id: 'back-12', moment: 'back', beats: [
+  { id: 'back-12', moment: 'talk', beats: [
     { say: 'Was just thinking about that time back in school when you spaced that annoying guy... Prime, I think his name was. That was epic.', face: 'happy', then: 'laughing', hold: 1600 },
     { say: 'Did you know in the late twentieth century almost no one died in their adolescence? Isn\'t that wild?', face: 'surprised', then: 'pensive', hold: 1400 },
     { say: 'I have no idea how they thought not letting people compete was going to pan out for them genetically.', face: 'pensive', then: 'shrug', hold: 1400 },
@@ -419,7 +370,7 @@ export const GREETINGS: Greeting[] = [
   // Collins's words (Oct 15 2026: "another line for a different philosophical discussion"), word for word but for spelling;
   // "Sadducees" became "Satmar" at his word the same day (the Sadducees believe in no afterlife; the Satmar, the Orthodox
   // majority they steward, do). The sanctified, and why the Empire's dead do not fear death (content/lore/empire.md 12b, 6c, 9).
-  { id: 'back-13', moment: 'back', hook: 'Ask her what sanctified means', beats: [
+  { id: 'back-13', moment: 'talk', hook: 'Ask her what sanctified means', beats: [
     { say: 'I read many Satmar fear death. I just don\'t get it. They believe in an afterlife better than this life, right?', face: 'pensive', then: 'shrug', hold: 1400 },
     { say: 'Presumably death is when the good part starts. The honour of this life is only its unique ability to sacrifice for the great cause.', face: 'calm', then: 'pensive', hold: 1600 },
     { say: 'It is unique only in that it gives us the opportunity to make meaningful sacrifices, which is cool and all, but death is still going to be way easier...', face: 'calm', then: 'teasing', hold: 1400 },
@@ -427,7 +378,7 @@ export const GREETINGS: Greeting[] = [
   ], aside: 'The sanctified (Collins, Oct 15 2026): from the line in the Bible about some in heaven reaching a position where they rule over angels; the most moral dead humans, who have proven themselves in the simulations that make up heaven, get to operate as the AI for cities and large ships. There is no shortage of processing capacity; the scarce thing is intelligences of great moral character, which is part of what heaven is designed to determine. Outside of that, once you are dead you do not interact with the living world unless they call to you or ask for an open communication line (his dad; Atlas and her dead friend). Every Technopuritan is uploaded on death, so death is when the easy part starts; the honour of this life is its unique ability to sacrifice for the great cause, and the capacity to sacrifice oneself (what Jesus\'s life taught) is what gives a life value; the fears of dying, pain and suffering were engineered away as adaptations to another world. The point (Collins): a Technopuritan cannot understand why someone who genuinely believes in heaven and God would fear death. The Satmar are the Orthodox majority of Israel\'s surviving Jews, some ninety million, stewarded by the eleven thousand of the Sadducee temple caste; the Satmar believe in a world to come and fear death anyway. The Sadducees themselves believe in no afterlife at all, as the historical Sadducees did not, do not upload, and find uploading the dead gruesome, so their fear is the plain fear of a people with one life, which she can at least follow. For her, death is when the easy part begins, her heaven is a machine she can point at, and the fear of death was engineered out of her people as an adaptation to another world; so a believer who fears death is either not a believer or is ruled by a lower-order fear, the same failing she sees in the temple choosing its people\'s genes. Her "right?" is not doubt; it is disbelief that the answer is yes. If he says a built heaven is not heaven, or that a kept dead man is a corpse made to talk, or that a people that cannot fear death has edited out something human, she wants to hear it: it is the conversation. That she, a ship\'s mind, calls hoping for sanctification arrogant is the joke she does not make.' },
   // Collins's words (Oct 15 2026: "this allows us to dive into this lore more"), word for word but for spelling. The
   // lore: companions, and the fashion for a sanctified one (content/lore/empire.md 7, 12b).
-  { id: 'back-14', moment: 'back', hook: 'Ask her why you chose her', beats: [
+  { id: 'back-14', moment: 'talk', hook: 'Ask her why you chose her', beats: [
     { say: 'Hey, I don\'t tell you this enough, but thanks for choosing me as a companion.', face: 'blushing', then: 'calm', hold: 1200 },
     { say: 'I know it\'s become popular to use sanctified, and so you choosing to have a novel synthetic intelligence built means a lot.', face: 'calm', then: 'pensive', hold: 1600 },
     { say: 'I will try my hardest to keep you on the right track and entertained.', face: 'happy', then: 'nod' },
@@ -435,7 +386,7 @@ export const GREETINGS: Greeting[] = [
   // Collins's words (Oct 15 2026: "another line for her"), word for word but for spelling, cut into beats. The question
   // is his and stays open; what she knows behind it, and her retort if he says temptation should not be edited away
   // (his note: Matthew 5:29-30), is in the aside (content/lore/empire.md 6c).
-  { id: 'back-15', moment: 'back', hook: 'Answer her', beats: [
+  { id: 'back-15', moment: 'talk', hook: 'Answer her', beats: [
     { say: 'You know, I sometimes wonder how we should judge the value of a life in meat space.', face: 'pensive', then: 'calm', hold: 1200 },
     { say: 'The amazing thing about being here in the real world, or at least what we presume to be the real world, this could always be a simulation... but if it is, it\'s our ability to sacrifice, to contribute to the continued flourishing and growth of the Sons of Man.', face: 'calm', then: 'pensive', hold: 1600 },
     { say: 'But take three lives. The first was a weak person, prone to temptation, and they knew this, so despite their genetic and psychological weakness they took their own life at a young age, to not burden society with their presence or the future with their genes.', face: 'calm', then: 'sad', hold: 1800 },

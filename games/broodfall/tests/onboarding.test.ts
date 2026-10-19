@@ -101,11 +101,12 @@ describe('the Directive Desk opens at the first win that is not mission 1; the t
     s = deploy(s, false).state;
     expect(s.greet).toBe('lost-locked');
     expect(deskOpen(s)).toBe(false);
-    // The first ordinary return after the first greeting: the mate review; the next: the cat girl.
+    // The first ordinary return after the first greeting: the mate review. The neko no longer follows it: she waits for
+    // her window, after he sides with a faction (Collins, Oct 19 2026: "the neko before even choosing a faction?").
     expect(momentNow(s)).toBe('mate-review');
     s = board(s);
     s = deploy(s, false).state;
-    expect(momentNow(s)).toBe('catgirl');
+    expect(momentNow(s)).toBe('lost-locked');
     s = board(s);
     const { state, debrief } = deploy(s, true);
     expect(debrief.deskOpened).toBe(true);

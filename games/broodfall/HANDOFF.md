@@ -2464,3 +2464,26 @@ Export `notes/yoke-exports/2026-10-18T18-47-37-516Z.json` (19 items) was applied
 - Page bug: Keep/Remove flipped back after a note was written on the line. A stale copy from the store overwrote the
   click. The page now ignores the store for a line while its write is pending or in the 5 s after, and ignores any
   copy older than its own (`mine()`, `at`).
+
+### YOKE's ordering: one pool, drip-fed love interests, replayable (Oct 19 2026)
+
+Collins: "the only time she has unique lines on a loss are tied to the first mission and before the console opens... its
+mission -> YOKE line -> mission -> YOKE line"; "the romantic interests are drip fed throughout the campaign, you have them
+all coming in right at the beginning (the neko before even choosing a faction?)"; "it is good having the first approved
+Technopuritan love interest introduced earlier"; "think about ordering... and give it replayability". His picks: one
+pool, the windows as proposed, a shuffled pool said once each, seeded windows. All in `src/meta/onboarding.ts`:
+- **One pool, 'talk'** (`poolOf`): won, lost and back aboard all draw on it once the desk is open. Lines of its own
+  are kept only for losses before the desk opens (lost-locked) and for counter-attacks (defended, fell).
+  Cut: won-1, won-5, won-9 (pure win banter) and lost-1, 4, 5, 6, 7, 11, 13, 14 (loss commentary; "mostly just junk").
+  Reworded to fit either result: won-13, won-15, won-17, lost-12, lost-15 ("while you were out"), and won-19's opener.
+  won-19 is his, so check it: "Great job..." became "Hmph... it's not like I like you or anything, baka."
+- **Shuffle** (`pickGreeting`, `seeded`): unsaid lines in a seed-shuffled order, each once a campaign; a repeat only
+  when all are said. A campaign of about 20 returns uses roughly 8 of 27 talk lines and 3 of 24 news lines.
+- **Drip** (`THREAD_OPENS`, `threadSlot`, `threadDue`): Atlas stays at the mate review. Mirelle (`catgirl`) opens 2 to 4
+  captures after he sides with a faction, and Rook (`letter-rook`, which now opens her thread: content/letters.ts
+  unlock; `intro-board` kept as `unlockAlso` for old saves) from 6 to 8, each at a seeded capture. At most one
+  love-interest line a return and never two returns running (`threadBeatLast`: the mate review, openings, letter beats).
+  The order is now: story moments > mate review > personal plot > the neko > Rook's opening > letter beats > intros >
+  news (1 in 3) > the pool.
+- `tests/yokeOrder.test.ts` pins all of it. The lines page shows the new shape and builds two sample campaigns, return by
+  return ("How it plays"). Not yet played by hand in the game: the sample campaigns run the real campaign code, not the UI.

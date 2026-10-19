@@ -18,7 +18,7 @@ import { YOKE_AVATAR, rungs, type YokeMode } from '../meta/yokeAvatar';
 import { PlayerLink, cutOffLines } from '../meta/yokePlayer';
 import { YokeAvatarUi, type ScriptLine, type YokeTalk } from './yokeAvatar';
 import { YokeAccountUi } from './yokeAccount';
-import { EARLY_ONCE, STORY_ONCE, deskOpen, greetingFor, shipPick } from '../meta/onboarding';
+import { EARLY_ONCE, STORY_ONCE, THREAD_OPENS, deskOpen, greetingFor, shipPick } from '../meta/onboarding';
 import { queueDiscussion } from '../meta/shipAi';
 import { BOSS_AFTER, BOSS_ASIDE, BOSS_BRIDGE } from '../../content/boss';
 import { playBossCall } from './bossCall';
@@ -348,7 +348,7 @@ export class CampaignUi {
   private welcome(): void {
     const s = structuredClone(this.state);
     const { moment, greeting: g } = greetingFor(s, lore);
-    if (EARLY_ONCE.includes(moment) || STORY_ONCE.some((b) => b.id === moment)) s.said = [...(s.said ?? []), moment];
+    if (EARLY_ONCE.includes(moment) || STORY_ONCE.some((b) => b.id === moment) || THREAD_OPENS.some((t) => t.id === moment)) s.said = [...(s.said ?? []), moment];
     // The personal plot opens a discussion in the AI Core: him going down to the Index to sign (Oct 12 2026: from the
     // progress beat, since the Index beat was cut).
     if (moment === 'partner-progress') s.ai.queue = queueDiscussion(s.ai.queue, 'partner', s.ai.seen);

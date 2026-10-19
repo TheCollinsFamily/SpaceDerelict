@@ -14,7 +14,7 @@
  *   4. Every return to the ship: a prewritten YOKE greeting that fits what just happened.
  *   5. Later launches: the ship's own console menu.
  */
-import { HOME, TERRITORIES } from '../../content/campaign';
+import { HOME, MIDPOINT_CAPTURES, TERRITORIES } from '../../content/campaign';
 import { EARTH_NEWS_FALLBACK, GREETINGS, earthNews, newsBeats, type EarthNews, type GreetMoment, type Greeting } from '../../content/greetings';
 import type { CampaignState, Debrief } from './campaign';
 
@@ -78,16 +78,35 @@ export function momentAfter(prev: CampaignState, next: CampaignState, d: Debrief
  * same words. When every line is said and one of them `repeats`, that one, again and again (Collins, Oct 12 2026: the
  * desk stays dark).
  */
+/**
+ * Which pool a moment draws on. Once the desk is open her everyday talk is one pool, won or lost (Collins, Oct 19 2026:
+ * "its mission -> YOKE line -> mission -> YOKE line"; the loss lines were "mostly just junk and the win lines rarely
+ * reference a win"). A counter-attack held or lost keeps its own lines: they say what happened.
+ */
+export const poolOf = (m: GreetMoment): GreetMoment => (m === 'won' || m === 'lost' || m === 'back' ? 'talk' : m);
+
+/** A number from the campaign's seed and a name: the same campaign always gets the same one. */
+export function seeded(seed: number, name: string): number {
+  let h = (seed ^ 0x9e3779b9) >>> 0;
+  for (let i = 0; i < name.length; i++) h = Math.imul(h ^ name.charCodeAt(i), 2654435761) >>> 0;
+  return Math.imul(h ^ (h >>> 15), 2246822507) >>> 0;
+}
+
+/**
+ * A line for the moment. Lines not yet said this campaign come first, in an order shuffled by the campaign's seed, so
+ * each is said once and every campaign meets them in a different order (Collins, Oct 19 2026: "give it replayability";
+ * the pool is bigger than a campaign, so a replay hears lines the last one did not). Only once all are said does one repeat,
+ * never the last one said.
+ */
 export function pickGreeting(moment: GreetMoment, seed: number, turn: number, last?: string | null, pool: Greeting[] = GREETINGS, said: readonly string[] = []): Greeting {
-  const fits = pool.filter((g) => g.moment === moment);
+  const fits = pool.filter((g) => g.moment === poolOf(moment));
   const unsaid = fits.filter((g) => !said.includes(g.id) && g.id !== last);
   const again = fits.find((g) => g.repeats);
   if (!unsaid.length && again) return again;
-  const fresh = unsaid.length ? unsaid : fits.filter((g) => g.id !== last);
-  const from = fresh.length ? fresh : fits.length ? fits : pool.filter((g) => g.moment === 'back');
-  let h = (seed ^ Math.imul(turn + 1, 2654435761)) >>> 0;
-  h = Math.imul(h ^ (h >>> 15), 2246822507) >>> 0;
-  return from[h % from.length];
+  if (unsaid.length) return unsaid.reduce((a, b) => (seeded(seed, b.id) < seeded(seed, a.id) ? b : a));
+  const fresh = fits.filter((g) => g.id !== last);
+  const from = fresh.length ? fresh : fits.length ? fits : pool.filter((g) => g.moment === 'talk');
+  return from[seeded(seed, `turn-${turn}`) % from.length];
 }
 
 // ------------------------------------------------------------------ the launch
@@ -135,7 +154,10 @@ export function momentNow(s: CampaignState): GreetMoment {
   const early = EARLY_ONCE.find((id) => !(s.said ?? []).includes(id));
   if (early) return early;
   // The personal plot, from its capture on (the first ordinary return that has reached it).
-  return STORY_ONCE.find((b) => s.captures >= b.captures && !(s.said ?? []).includes(b.id))?.id ?? m;
+  const plot = STORY_ONCE.find((b) => s.captures >= b.captures && !(s.said ?? []).includes(b.id))?.id;
+  if (plot) return plot;
+  // The neko, when her window comes (THREAD_OPENS).
+  return threadDue(s) === 'catgirl' ? 'catgirl' : m;
 }
 
 /**
@@ -174,14 +196,51 @@ export const INTROS: Array<{ id: string; captures: number; needs?: (s: CampaignS
  * mission YOKE talk"). They come first on an ordinary return, before the intros and the news.
  */
 export const LETTER_BEATS: Array<{ id: string; when: (s: CampaignState) => boolean }> = [
-  { id: 'letter-rook', when: (s) => !!s.letters?.threads.rook },
   { id: 'letter-atlas-direct', when: (s) => !!s.letters?.threads.atlas?.direct },
   { id: 'letter-rook-orca', when: (s) => (s.letters?.threads.rook?.revealed ?? []).includes('orca') },
 ];
 
+/**
+ * THE LOVE INTERESTS, DRIP-FED (Collins, Oct 19 2026: "the romantic interests are drip fed throughout the campaign, you
+ * have them all coming in right at the beginning (the neko before even choosing a faction?)"; Atlas, the Board's
+ * candidate, stays early, at the mate review: "it is good having the first approved Technopuritan love interest introduced
+ * earlier"). Each other one opens once, on an ordinary return inside its window, counted in captures from the day he sided
+ * with a faction (the first win opens the desk; he sides after that). Where in the window is seeded per campaign, so two
+ * campaigns meet them at different points. Her opening line opens the thread in the Letters room (content/letters.ts unlock).
+ *   catgirl      Mirelle, the neko: 2 to 4 captures after he sides
+ *   letter-rook  Rook, from the rim: from the midpoint to the reveal (6 to 8)
+ */
+export const THREAD_OPENS: Array<{ id: string; after: number; until: number }> = [
+  { id: 'catgirl', after: 2, until: 4 },
+  { id: 'letter-rook', after: MIDPOINT_CAPTURES, until: 8 },
+];
+
+/** The capture this campaign opens the thread on, or null before he has sided with anyone. */
+export function threadSlot(s: CampaignState, id: string): number | null {
+  const t = THREAD_OPENS.find((x) => x.id === id);
+  if (!t || !s.faction) return null;
+  return s.factionSince + t.after + (seeded(s.seed, id) % (t.until - t.after + 1));
+}
+
+/**
+ * One love-interest line a return, and never two returns running (the drip): the mate review, the openings and the letter
+ * beats. A line
+ * held back by this plays on the next return.
+ */
+export const threadBeatLast = (s: CampaignState): boolean =>
+  !!s.lastGreeting && (s.lastGreeting === 'mate-review' || THREAD_OPENS.some((t) => t.id === s.lastGreeting) || LETTER_BEATS.some((b) => b.id === s.lastGreeting));
+
+/** The thread to open this return, or null. */
+export function threadDue(s: CampaignState): string | null {
+  if (threadBeatLast(s)) return null;
+  const said = [...(s.said ?? []), ...(s.greetingsSaid ?? [])];
+  return THREAD_OPENS.find((t) => { const at = threadSlot(s, t.id); return at != null && s.captures >= at && !said.includes(t.id); })?.id ?? null;
+}
+
 /** The letters' line for this ordinary return, or null. */
 export function letterBeatFor(s: CampaignState, pool: Greeting[] = GREETINGS): Greeting | null {
   const said = s.greetingsSaid ?? [];
+  if (threadBeatLast(s)) return null;
   const next = LETTER_BEATS.find((b) => !said.includes(b.id) && b.when(s));
   return (next && pool.find((g) => g.id === next.id)) ?? null;
 }
@@ -195,7 +254,7 @@ export function introFor(s: CampaignState, pool: Greeting[] = GREETINGS): Greeti
 }
 
 /** Greetings said once each, early, on ordinary returns, in this order (Collins, Sep 30 2026). */
-export const EARLY_ONCE: GreetMoment[] = ['mate-review', 'catgirl'];
+export const EARLY_ONCE: GreetMoment[] = ['mate-review'];
 
 /**
  * News from Earth may be told on an ordinary return once the early beats have all played (the
@@ -218,6 +277,9 @@ export const EARTH_NEWS_EVERY = 3;
 export function greetingFor(s: CampaignState, lore = ''): { moment: GreetMoment; greeting: Greeting } {
   const moment = momentNow(s);
   if (ORDINARY.includes(moment)) {
+    const opens = threadDue(s);
+    const thread = opens && opens !== 'catgirl' ? GREETINGS.find((g) => g.id === opens) : null;
+    if (thread) return { moment: 'intro', greeting: thread };
     const letter = letterBeatFor(s);
     if (letter) return { moment: 'intro', greeting: letter };
     const intro = introFor(s);
@@ -230,7 +292,7 @@ export function greetingFor(s: CampaignState, lore = ''): { moment: GreetMoment;
     // One return in three; and whenever the moment's own lines have all been said this campaign (Collins, Oct 12 2026:
     // she always has something to say after a mission with no cut scene), a line of news she has not read out comes
     // before any line of hers is said twice.
-    const dry = !GREETINGS.some((g) => g.moment === moment && !said.includes(g.id) && g.id !== s.lastGreeting);
+    const dry = !GREETINGS.some((g) => g.moment === poolOf(moment) && !said.includes(g.id) && g.id !== s.lastGreeting);
     if (h % EARTH_NEWS_EVERY === 0 || dry) {
       const news = newsLine(s, lore, h, moment, dry);
       if (news) return { moment, greeting: news };

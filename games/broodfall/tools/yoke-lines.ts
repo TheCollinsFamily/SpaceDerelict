@@ -47,12 +47,13 @@ import path from 'node:path';
 import { EARTH_NEWS_FALLBACK, GREETINGS, earthNews, newsBeats, type GreetMoment, type Greeting } from '../content/greetings';
 import { PRINT_BODY } from '../content/yokeScenes';
 import { BOSS, BOSS_AFTER, BOSS_ASIDE, BOSS_BRIDGE } from '../content/boss';
-import { CORRESPONDENTS } from '../content/letters';
 import { CHANNELS, TRANSLATOR_NOTES } from '../content/translation';
 import { FACTIONS, LICENCE_STANDING, type Scene } from '../content/campaign';
 import { ROACH_SCENES } from '../content/roachKing';
 import { speakerOf } from '../content/media';
-import { EARLY_ONCE, EARTH_NEWS_EVERY, INTROS, STORY_ONCE } from '../src/meta/onboarding';
+import { EARLY_ONCE, EARTH_NEWS_EVERY, INTROS, STORY_ONCE, THREAD_OPENS, greetingFor, shipPick } from '../src/meta/onboarding';
+import { ally, finish, newCampaign, plan, targets, type CampaignState } from '../src/meta/campaign';
+import type { RunReport } from '../src/meta/goals';
 
 const ROOT = path.resolve(__dirname, '..');
 const ABS = (rel: string) => path.join('C:\\Users\\Merry\\dev\\space-derelict\\games\\broodfall', rel.replace(/\//g, '\\'));
@@ -147,7 +148,7 @@ const one = (lines: Line[]): Branch[] => [{ lines }];
 /** When each intro can play, said in full on its line. */
 const introNeeds: Record<string, string> = {
   'intro-dad': ', and only after the personal plot (rank 1) has played',
-  'intro-catgirl': ', and only after the neko\'s letter came (story line 4)',
+  'intro-catgirl': ', and only after the neko has opened (rank 2)',
 };
 const introLine = (i: (typeof INTROS)[number]): Line =>
   greeting(GREETINGS.find((g) => g.id === i.id)!, `TRIGGER: from capture ${i.captures}${introNeeds[i.id] ?? ''}`);
@@ -155,7 +156,6 @@ const introOrder = INTROS.map((i) => `${i.id} (capture ${i.captures})`).join(', 
 const story = STORY_ONCE[0];
 /** What sets off each letter beat (src/meta/onboarding.ts LETTER_BEATS). */
 const LETTER_TRIGGER: Record<string, string> = {
-  'letter-rook': `TRIGGER: Rook's first letter has arrived in the Letters room (her thread opens from capture ${CORRESPONDENTS.find((c) => c.id === 'rook')?.unlockCaptures ?? 6})`,
   'letter-atlas-direct': 'TRIGGER: the companion\'s regard has reached the point where she hands the thread over, so Atlas writes to him herself (the end of the letters minigame with the companion; never the opening of the thread)',
   'letter-rook-orca': 'TRIGGER: he has just learnt, in the Letters room, that Rook is part orca (he asked about her skin)',
 };
@@ -170,6 +170,32 @@ const PART_TRIG = 'Part 3. Triggered lines, by rank: when two are due on one ret
 const PART_ANY = 'Part 4. Outside the after-mission talk';
 const PART_MIND = 'Part 5. Her live mind: pools not tied to a moment';
 
+/**
+ * Two campaigns played out in code (Collins, Oct 19 2026: "think about ordering, how do we handle this"): which line she
+ * says on each return, so the order can be read off the page. He sides with a faction as soon as the desk opens and wins
+ * about two missions in three; the Letters room is left alone, so its follow-ups do not show.
+ */
+function sample(seed: number): string[] {
+  const stats = { kills: {}, killsByFamily: {}, killsByCause: {}, healed: 0, limbsGrown: 0, evolutions: 0, limbsLost: 0, cannibalized: 0, coreMinFrac: 1, depositsClaimed: 0, earlyCalls: 0, maxLimbs: 0, maxBurning: 0, maxPips: 0, families: [], pacifistWaves: 0, lastWaveKillsByCause: {}, royalsEaten: 0, matingStuns: 0, limbsCarriedOff: 0, gateBurnKills: 0, royalsCaptured: 0, nodesPlaced: 0, nodesLost: 0 } as unknown as RunReport['stats'];
+  const run = (won: boolean): RunReport => ({ won, wavesCleared: won ? 5 : 2, coreEndFrac: won ? 0.8 : 0, scienceBanked: 0, stats });
+  let s: CampaignState = newCampaign(seed, { onboarding: true });
+  let r = (seed * 9301 + 49297) % 233280;
+  const rnd = () => (r = (r * 9301 + 49297) % 233280) / 233280;
+  const out: string[] = [];
+  for (let i = 1; i <= 30 && !s.ended; i++) {
+    const won = i === 1 ? rnd() < 0.5 : rnd() < 0.67;
+    const t = targets(s); const pick = shipPick(s, t) ?? t[0];
+    if (!pick) break;
+    s = finish(s, plan(s, pick), run(won)).state;
+    if (!s.faction && s.onboard?.deskOpen && s.captures >= 1) s = ally(s, 'faithful');
+    const { moment, greeting } = greetingFor(s, lore);
+    const rec = EARLY_ONCE.includes(moment) || STORY_ONCE.some((b) => b.id === moment) || THREAD_OPENS.some((x) => x.id === moment);
+    s = { ...s, greet: null, lastGreeting: greeting.id, said: rec ? [...(s.said ?? []), moment] : s.said, greetingsSaid: [...new Set([...(s.greetingsSaid ?? []), greeting.id])] };
+    out.push(`${i}. ${won ? 'won' : 'lost'}, capture ${s.captures}: ${greeting.id}: "${greeting.beats[0].say.slice(0, 80)}${greeting.beats[0].say.length > 80 ? '…' : ''}"`);
+  }
+  return out;
+}
+
 const steps: Step[] = [
   { id: 'first', part: PART_STORY, name: 'Her first greeting', where: GREET,
     what: 'TRIGGER: mission 1 is over, won or lost. The plain report of it, then the reveal (the ship fires the asset: "...AND YOU ARE THE ONE WHO SENT IT"), then the ship for the first time and this. It ends by lighting the Gene Bay for him.',
@@ -182,11 +208,8 @@ const steps: Step[] = [
       { lines: [{ id: 'BOSS_AFTER', text: [BOSS_AFTER], author: 'draft', faces: ['teasing'], aside: BOSS_ASIDE }] },
     ] },
   { id: 'mate', part: PART_STORY, name: 'The mate review', where: GREET,
-    what: 'TRIGGER: the next return after mission 1, whatever happened on it (only the desk opening, story line 5, comes before it). Every return from here on: the report comes up at the desk (she says nothing there), then the planet\'s news, the Roach King\'s address when one is due, then her greeting. It points him at the data pad in his quarters, where the candidate\'s profile is.',
+    what: 'TRIGGER: the next return after mission 1, whatever happened on it (only the desk opening comes before it). Atlas, the Board\'s candidate, the first love interest, on purpose early. Every return from here on: the report comes up at the desk (she says nothing there), then the planet\'s news, the Roach King\'s address when one is due, then her greeting. It points him at the data pad in his quarters, where the candidate\'s profile is.',
     branches: one(of('mate-review')) },
-  { id: 'catgirl', part: PART_STORY, name: 'The neko writes', where: GREET,
-    what: 'TRIGGER: the return after the mate review. It plays off the mate review, lights the data pad again, and opens Mirelle\'s thread in the Letters room.',
-    branches: one(of('catgirl')) },
   { id: 'unlock', part: PART_STORY, name: 'The desk opens', where: GREET,
     what: 'TRIGGER: the first win after mission 1, on the second try or the twentieth. The Directive Desk lights up and the three groups call; she sends him there.',
     branches: one(of('unlock')) },
@@ -204,30 +227,34 @@ const steps: Step[] = [
     what: 'TRIGGER: the return that ends the campaign. It outranks everything.',
     branches: one(of('ended')) },
 
-  { id: 'outcome', part: PART_EVERY, name: 'By what the deployment did', where: GREET,
-    what: 'TRIGGER: an ordinary return with nothing in part 3 due. The weightiest thing that happened picks the pool: a counter-attack thrown back, ground lost to one, ground taken, a loss; from the main menu with nothing new, the last pool. Within a pool she picks a line she has not said this campaign while there is one, and never the line she said last time. One return in three she gives a line of news from Earth instead (below).',
+  { id: 'outcome', part: PART_EVERY, name: 'Her everyday talk: one pool, won or lost', where: GREET,
+    what: 'TRIGGER: any ordinary return with nothing in part 3 due: mission, her line, mission, her line (Collins, Oct 19 2026). Won or lost makes no difference once the desk is open. The pool is shuffled by the campaign\'s seed and each line is said once a campaign, so every campaign hears them in a different order, and a pool bigger than a campaign means a replay hears lines the last one did not. One return in three she gives a line of news from Earth instead (below). Two kinds of return keep lines of their own: a loss before the desk opens, and a counter-attack, since those say what happened.',
     branches: [
-      { label: 'A loss before the desk opens (in place of the ordinary loss pool, until he wins once)', lines: of('lost-locked') },
-      { label: 'A deployment won', lines: of('won') },
-      { label: 'A deployment lost', lines: of('lost') },
+      { label: 'Any return once the desk is open (and back aboard from the menu)', lines: of('talk') },
+      { label: 'A loss before the desk opens (until he wins once; the last one repeats)', lines: of('lost-locked') },
       { label: 'A counter-attack thrown back', lines: of('defended') },
       { label: 'Ground lost to a counter-attack', lines: of('fell') },
-      { label: 'Back aboard from the menu, nothing new', lines: of('back') },
     ] },
   { id: 'news', part: PART_EVERY, name: 'News from Earth: in place of the line above, one return in three', where: LORE + '  (section "Earth news (return greetings)"; the fallback line: ' + GREET + ')',
-    what: `TRIGGER: one ordinary return in ${EARTH_NEWS_EVERY} with nothing in part 3 due, once the desk is open and the mate review and the neko have played; also whenever her own lines for that kind of return have all been said this campaign, so she never repeats a line while unread news is left. These are ordinary after-mission lines like the ones above, each once a campaign. The list grows in the lore book with no code.`,
+    what: `TRIGGER: one ordinary return in ${EARTH_NEWS_EVERY} with nothing in part 3 due, once the desk is open and the mate review has played; also whenever her own lines for that kind of return have all been said this campaign, so she never repeats a line while unread news is left. These are ordinary after-mission lines like the ones above, each once a campaign. The list grows in the lore book with no code.`,
     branches: one([...news.map(newsLine), { id: 'EARTH_NEWS_FALLBACK', text: EARTH_NEWS_FALLBACK, author: 'collins', ctx: ['when the lore book has no list'] }]) },
 
   { id: 'personal', part: PART_TRIG, name: `Rank 1. The personal plot (from capture ${story.captures})`, where: GREET,
     what: `TRIGGER: the first ordinary return on or after capture ${story.captures}. Once. How it is going with the partner the Index assigned him; it also opens the discussion in the AI Core (him going down to the Index to sign). Only the story lines outrank it.`,
     branches: one(of('partner-progress')) },
-  { id: 'letterbeats', part: PART_TRIG, name: 'Rank 2. On the letters, once each', where: GREET + '  (when: ' + G('src/meta/onboarding.ts') + ' LETTER_BEATS)',
-    what: 'TRIGGER: something has just happened in the Letters room; the line is said on the very next ordinary return, ahead of the intros and the news. If two are due at once, the first in this list goes now and the next on the return after. Each says what sets it off.',
-    branches: one(['letter-rook', 'letter-atlas-direct', 'letter-rook-orca'].map((id) => greeting(GREETINGS.find((g) => g.id === id)!, LETTER_TRIGGER[id]))) },
+  { id: 'letterbeats', part: PART_TRIG, name: 'Rank 2. The love interests, drip-fed', where: GREET + '  (when: ' + G('src/meta/onboarding.ts') + ' THREAD_OPENS, LETTER_BEATS)',
+    what: 'TRIGGER: each says its own. Atlas comes first, at the mate review (part 1). The others open one at a time in a window counted from the capture on which he sided with a faction; the exact capture is picked by the campaign\'s seed, so every campaign meets them at a different point. After that, a line follows what he does in the Letters room, on the very next return. At most one of these a return and never two returns running, the mate review included: one held back plays on the next return.',
+    branches: [
+      { label: 'Openings', lines: THREAD_OPENS.map((t) => greeting(GREETINGS.find((g) => g.id === t.id)!, `TRIGGER: ${t.after} to ${t.until} captures after he sides with a faction (seeded per campaign)${t.id === 'catgirl' ? '; it lights the data pad and opens Mirelle\'s thread' : '; it opens Rook\'s thread in the Letters room'}`)) },
+      { label: 'Then, from the Letters room', lines: ['letter-atlas-direct', 'letter-rook-orca'].map((id) => greeting(GREETINGS.find((g) => g.id === id)!, LETTER_TRIGGER[id])) },
+    ] },
   { id: 'intros', part: PART_TRIG, name: 'Rank 3. The once intros, in this order', where: GREET + '  (order and captures: ' + G('src/meta/onboarding.ts') + ' INTROS)',
     what: `TRIGGER: an ordinary return with nothing of rank 1 or 2 due; each once a campaign, the next one not yet said whose capture has been reached, and never on two returns running (so her everyday lines still come between). A lost mission does not bring one back. Order: ${introOrder}. Each line says what it waits for.`,
     branches: one(INTROS.map(introLine)) },
 
+  { id: 'samples', part: PART_TRIG, name: 'How it plays: two campaigns, return by return', where: G('src/meta/onboarding.ts') + '  (greetingFor)',
+    what: 'TRIGGER: none; this is a read-out. Two campaigns played in code with the rules above, to show the order: the mission, won or lost, the capture count after it, then the line she says. He sides with the Faithful the moment the desk opens. The two differ because the pool and the love-interest windows are seeded per campaign.',
+    branches: [11, 42].map((seed) => ({ context: { who: `Campaign ${seed === 11 ? 'A' : 'B'} (seed ${seed})`, lines: sample(seed), where: 'played in code by tools/yoke-lines.ts each time the page is built' } })) },
   { id: 'body', part: PART_ANY, name: 'Print a body', where: G('content/yokeScenes.ts'),
     what: 'When he asks her to print herself a body (or her live mind agrees to it): the hold prints one, it dies on the floor, then her voice from the speakers. Once a campaign; asked again, the refusal.',
     branches: one([{ id: 'PRINT_BODY.line', text: [PRINT_BODY.line], author: 'collins' }, { id: 'PRINT_BODY.refusal', text: [PRINT_BODY.refusal], author: 'draft' }, ...PRINT_BODY.stages.map((s) => ({ id: `PRINT_BODY.card.${s.id}`, text: [s.card], author: 'draft' as Author, ctx: ['a storyboard card until the clips exist'] }))]) },
