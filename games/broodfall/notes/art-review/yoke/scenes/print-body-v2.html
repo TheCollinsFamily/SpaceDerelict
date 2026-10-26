@@ -1,0 +1,33 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Print a Body v2</title>
+<style>:root{color-scheme:dark}body{margin:0;background:#0b0c0e;color:#d8dade;font:15px/1.5 system-ui,sans-serif}main{max-width:1100px;margin:0 auto;padding:20px 16px}
+h1{font-weight:500;letter-spacing:.08em;font-size:20px;margin:0 0 4px}p{color:#9aa0a8;margin:0 0 14px}
+.stage{position:relative;aspect-ratio:16/9;background:#000;overflow:hidden;border:1px solid #222}video{width:100%;height:100%;object-fit:contain;display:block}
+.blur{position:absolute;backdrop-filter:blur(22px) saturate(.7);-webkit-backdrop-filter:blur(22px) saturate(.7);border-radius:40%;background:rgba(20,20,24,.25);pointer-events:none}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:12px 0}button{background:#1b1d21;color:#d8dade;border:1px solid #333;padding:7px 14px;letter-spacing:.06em;cursor:pointer}button.on{background:#d8dade;color:#0b0c0e}
+.now{margin-left:auto;color:#9aa0a8;font-variant-numeric:tabular-nums}.line{margin-top:10px;padding:10px 12px;border-left:2px solid #5a6;background:#121417;color:#bfc4ca;visibility:hidden}
+.still img{width:100%;border:1px solid #222}</style></head><body><main>
+<h1>YOKE PRINTS HERSELF A BODY — VERSION 2</h1>
+<p>The four clips as the game plays them, one after another (480p, each started on the last one's real last frame). In the game her line then comes from the ship's speakers.</p>
+<div class="stage"><video id="v" muted playsinline></video><div class="blur" id="b"></div></div>
+<div class="bar"><button id="play">▶ PLAY THE FILM</button><button data-c="sfw" class="on">SFW (blurred)</button><button data-c="unrestricted">UNRESTRICTED</button><span class="now" id="now"></span></div>
+<div class="line" id="line">YOKE (ship speakers): That was gross. Don't ask me to do that again... and ugh, now I have to do something with my body... Hey, want to eat it? That would be sick.</div>
+<div class="still"><p>The staging picture you approved:</p><img src="v2-bay-still.png" alt="The fabrication bay with her wireframe outline on the bed"></div>
+</main><script>
+const S = [{"id":"print","file":"scenes/print-body-print.webm","seconds":5.04,"blur":[{"t":0,"x":0.51,"y":0.5,"w":0.14,"h":0.15},{"t":5.1,"x":0.51,"y":0.5,"w":0.14,"h":0.15}],"src":"../../../../public/art/ship/yoke/scenes/print-body-print.webm"},{"id":"wake","file":"scenes/print-body-wake.webm","seconds":5.04,"blur":[{"t":0,"x":0.51,"y":0.5,"w":0.14,"h":0.15},{"t":0.5,"x":0.52,"y":0.5,"w":0.14,"h":0.15},{"t":1,"x":0.54,"y":0.48,"w":0.13,"h":0.15},{"t":2,"x":0.47,"y":0.37,"w":0.15,"h":0.15},{"t":5.1,"x":0.48,"y":0.37,"w":0.15,"h":0.15}],"src":"../../../../public/art/ship/yoke/scenes/print-body-wake.webm"},{"id":"collapse","file":"scenes/print-body-collapse.webm","seconds":5.04,"blur":[{"t":0,"x":0.47,"y":0.41,"w":0.14,"h":0.13},{"t":1,"x":0.48,"y":0.41,"w":0.14,"h":0.13},{"t":1.5,"x":0.52,"y":0.41,"w":0.14,"h":0.13},{"t":2,"x":0.55,"y":0.4,"w":0.14,"h":0.14},{"t":2.5,"x":0.6,"y":0.48,"w":0.14,"h":0.14},{"t":3,"x":0.6,"y":0.54,"w":0.15,"h":0.15},{"t":3.5,"x":0.66,"y":0.61,"w":0.15,"h":0.15},{"t":4,"x":0.65,"y":0.66,"w":0.15,"h":0.15},{"t":4.5,"x":0.63,"y":0.65,"w":0.15,"h":0.15},{"t":5.1,"x":0.63,"y":0.65,"w":0.15,"h":0.15}],"src":"../../../../public/art/ship/yoke/scenes/print-body-collapse.webm"},{"id":"hold","file":"scenes/print-body-hold.webm","seconds":5.04,"loop":true,"blur":[{"t":0,"x":0.63,"y":0.64,"w":0.15,"h":0.15},{"t":5.1,"x":0.63,"y":0.64,"w":0.15,"h":0.15}],"src":"../../../../public/art/ship/yoke/scenes/print-body-hold.webm"}];
+const v = document.getElementById('v'), b = document.getElementById('b'), now = document.getElementById('now'), line = document.getElementById('line');
+let mode = 'sfw', i = 0, holds = 0;
+document.querySelectorAll('[data-c]').forEach((x) => { x.onclick = () => { mode = x.dataset.c; document.querySelectorAll('[data-c]').forEach((y) => y.classList.toggle('on', y === x)); }; });
+function at(k, t) { if (!k) return null; if (t <= k[0].t) return k[0]; for (let j = 1; j < k.length; j++) { const a = k[j - 1], c = k[j]; if (t <= c.t) { const f = (t - a.t) / (c.t - a.t), m = (n) => a[n] + (c[n] - a[n]) * f; return { x: m('x'), y: m('y'), w: m('w'), h: m('h') }; } } return k[k.length - 1]; }
+function place() {
+  const s = S[i], k = mode === 'sfw' ? at(s && s.blur, v.currentTime) : null;
+  const W = v.clientWidth, H = v.clientHeight, vw = v.videoWidth || 16, vh = v.videoHeight || 9, q = Math.min(W / vw, H / vh), pw = vw * q, ph = vh * q, ox = (W - pw) / 2, oy = (H - ph) / 2;
+  b.style.display = k ? '' : 'none';
+  if (k) Object.assign(b.style, { left: ox + k.x * pw + 'px', top: oy + k.y * ph + 'px', width: k.w * pw + 'px', height: k.h * ph + 'px' });
+  now.textContent = s ? (i + 1) + '/4  ' + s.id + '  ' + v.currentTime.toFixed(1) + 's' : '';
+  requestAnimationFrame(place);
+}
+function go(n) { i = n; v.src = S[i].src; v.play(); }
+v.onended = () => { if (i < S.length - 1) go(i + 1); else if (holds++ < 2) { line.style.visibility = 'visible'; v.currentTime = 0; v.play(); } };
+document.getElementById('play').onclick = () => { holds = 0; line.style.visibility = 'hidden'; go(0); };
+v.src = S[0].src; place();
+</script></body></html>
