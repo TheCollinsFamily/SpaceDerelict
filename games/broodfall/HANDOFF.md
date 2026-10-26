@@ -2655,3 +2655,28 @@ Collins's line for "the turn after you print her body" is `after-print-body` (co
 hook "Answer her": she asks why he lives in a body at all instead of uploading). `onboarding.ts afterPrintFor` puts it
 first on the next ordinary return once `said` holds 'print-body' (campaignUi printBody marks it), once a campaign.
 Played in the real game: a save with 'print-body' said comes aboard to it. Test: tests/yokeOrder.test.ts.
+
+### The experiments, made playable (Oct 26 2026)
+
+Collins: "Are the special building used in the exprimental missions made and tested?" Measured on real runs
+(`tools/measure/economy.measure.ts`, part `experiments`): before this, only the Puppet Queen issued its tool. Love Gas
+needed lure glands (the Brood Womb, a bought lineage), Nursery Visit something that burns (the Venom Sac, bought), Royal
+Diet a maw that could swallow a royal (a maw swallows at 25 hp, so never one), and Follow the Courier a courier nobody
+shoots (limbs only PRIORITISE a caste, they never hold fire). Three of the five could not be met by a player who had not
+bought the right lineage, and one could not be met at all. Now:
+- `SimConfig.issue`: free cards in the first hand. Love Gas: two lures. Nursery Visit: two flamethrowers (Ember Sacs).
+  Royal Diet: a maw, and `royalDiet: 0.3` (a maw swallows a royal worn down to 30%). Each pitch says what is packed.
+- `followCourier`: the first science body to go for a limb is `tagged`. Limbs hold fire and nothing of the body's hurts
+  it; the feed says "COURIER TAGGED". **Bug fixed:** a courier slipping out into the unclaimed city (the second way off
+  the field) never counted its limb; both ways go through `Sim.escape()` now (Homing Tissue too).
+- Trap Cage puppets: her own do not strike her for `puppetGrace` (15 s), her bite is `puppetBite` (x2.5) her own, and the
+  goal is 3 kills (was 10). Measured: she was caught in the middle of her court and dead in about 4 s with no kill. She
+  still fights inside the real royal's aura, which armours her court: the hardest experiment by design (met 3/10 by the
+  naive scripted player).
+- `Autoplayer.experimenter`: plays the flamethrowers by a gate and the maw on the lanes. Holding the cage for a royal,
+  or growing it deep on her road, measured worse than the naive placement and was taken out.
+- Measured over 10 seeds, the naive player / the experimenter: Puppet Queen 3/10, Love Gas 4/10, Follow the Courier
+  5/10 (5/10), Nursery Visit 1/10 (4/10), Royal Diet 4/10 (5/10). A person who TRIES does better than either bot.
+- In the real page: `npx vite-node tools/shot-experiments.ts` (after `npm run build`): the Locker lists every experiment
+  with its sketch and what it issues; each one deployed through `?campaign=run` has its gear in the first hand, the gear
+  grows, its art is loaded. Screens `notes/screens/2026-10-26/experiments-*.jpg`.
