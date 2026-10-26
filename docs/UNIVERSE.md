@@ -284,6 +284,10 @@ are read together. Uplifts look anthro, like the nekos (Collins).
 - **Bodies by world** (Collins, Oct 14 2026): humans optimised for high-gravity planets are nothing like those
   optimised for life in zero G (Broodfall's technician is zero-G optimised). The Empire kills over belief and
   morality, never over genes, and finds Earth's ethnic wars strange (prejudice over genes is another matter: below).
+- **The Migration** (Collins, Oct 26 2026): man leaving Earth to take his manifest destiny among the stars. Before it
+  the peoples that became the Houses were called ethnic groups, and in much of the old world it was offensive to notice,
+  talk about or research the differences between them (the fear was that knowing would lead to killing, or to favouring
+  one's own). The Empire finds that backwards: each House takes pride in what makes it distinct.
 - **Prejudice by genes, and the Hologs** (Collins, Oct 26 2026): prejudice over genetic difference is normal in
   Technopuritan society, and it is mild near the middle: someone close to the central curve of human variation finds
   allies easily and allies with others naturally, which is why humans still look fairly human. A people far off the curve
