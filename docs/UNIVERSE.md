@@ -283,27 +283,29 @@ are read together. Uplifts look anthro, like the nekos (Collins).
   become popular; having a novel synthetic built, as the technician did, is now the less common choice.
 - **Bodies by world** (Collins, Oct 14 2026): humans optimised for high-gravity planets are nothing like those
   optimised for life in zero G (Broodfall's technician is zero-G optimised). The Empire kills over belief and
-  morality, never over genes, and finds Earth's ethnic wars strange (prejudice over genes is another matter: below).
+  morality, never over genes, holds no animosity over genetic difference, and finds Earth's ethnic wars strange.
 - **The Migration** (Collins, Oct 26 2026): man leaving Earth to take his manifest destiny among the stars. Before it
   the peoples that became the Houses were called ethnic groups, and in much of the old world it was offensive to notice,
   talk about or research the differences between them (the fear was that knowing would lead to killing, or to favouring
   one's own). The Empire finds that backwards: each House takes pride in what makes it distinct.
-- **Prejudice by genes, and the Hologs** (Collins, Oct 26 2026): prejudice over genetic difference is normal in
-  Technopuritan society, and it is mild near the middle: someone close to the central curve of human variation finds
-  allies easily and allies with others naturally, which is why humans still look fairly human. A people far off the curve
-  is everyone's outgroup, and the others team up against it. The Hologs are the lesson: a House that used genetics
+- **Favouring one's own, and the Hologs** (Collins, Oct 26 2026): "animosity and prejudice are two totally different
+  things." Most Houses favour their own, because that is evolutionarily beneficial; that is neither animosity nor a belief
+  that one's own are objectively better. No House thinks it is in a place to judge that: it can only be determined
+  through competition (the Empire's own philosophy: God favours the group that makes the right choice by letting it
+  out-produce or outwit the others). Since everyone leans toward their own, someone near the central curve of human
+  variation finds allies easily and allies with others naturally, which is why humans still look fairly human; a people
+  far off the curve is everyone's outgroup, and the others team up against it. The Hologs are the lesson: a House that used genetics
   without restraint, aiming wholly at intelligence and efficiency, and became giant floating brains the size of
   spaceships. Its founder's hypothesis about fitness was wildly wrong: with the computing and the organic and synthetic
   companions every Technopuritan already has, more intelligence was only marginally useful, and it put a target on their
   backs. Religion backs it up: even when nobody can say why, God gave man these bodies for a reason, and changing them too
   much tends to turn out strictly less efficient (the people who engineered out defecation and urination needed a
-  blood-filtering system every night instead). Prejudice is not killing: the Empire kills over belief and morality,
-  never over genes.
+  blood-filtering system every night instead).
 - **Houses by ancestry** (Collins, Oct 26 2026): peoples keep to Houses by ancestry (the Sons of Korea, the Sons of
   Igbo, the Sons of Israel, the Sons of Utah) so the sons of man stay distinct. Marrying across two needs approval and
   both Houses read it as genetic dilution; the children may have to found their own House or join a looser one (the
   nekos'). Mixing was normal on old Earth until the Mesoamerican ethnic group mixed into extinction. Keeping lines
-  distinct is ordinary prejudice, not war.
+  distinct is favouring one's own, not animosity, and not a claim to be better.
 - **The Lipptors, a human class, not an uplift** (Collins, Oct 14 2026): Technopuritans genetically specialised
   for advanced mathematics and extensive AI integration, so far that their organs begin to shut down if they are
   not integrated with an AI within a few days of birth. Genetically further from the rest of the Empire than

@@ -614,7 +614,8 @@ story for why the Technopuritans live the way they do.
   two such Houses needs approval, and both Houses tend to read it as an attempt at genetic dilution, so the couple's
   children may need to found a House of their own or join one of the looser Houses, like the nekos'. Race mixing was
   normal on old Earth until the Mesoamerican ethnic group mixed into total extinction; that is when the risk became
-  apparent. This is ordinary prejudice to keep lines distinct, not war: the Empire never kills over genes. The Hologs, a
+  apparent. This is favouring one's own to keep lines distinct, not animosity, and no House claims to be objectively better: only
+  competition can show that. The Empire never kills over genes. The Hologs, a
   House that bred itself into spaceship-sized brains, are what happens far off the curve (docs/UNIVERSE.md). YOKE thinks hybrid vigour is never worth the ostracism.
 - **Named in her news** (Collins, Oct 12 2026): the Crusade and the Caliphate over Rome; Israel, its wall and
   its freighters; the US, where the Baptists now hold premillennialism a heresy and burn books over it, and
