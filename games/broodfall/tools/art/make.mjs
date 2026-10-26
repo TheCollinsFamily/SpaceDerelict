@@ -135,8 +135,9 @@ const TEMPLATES = {
     return Promise.allSettled([makePadShip({ framesOnly: flags.has('--frames'), stillsOnly: flags.has('--stills'), bakeOnly: flags.has('--bake'), only: ids })]);
   },
   yokescene: async () => {
-    const { makeYokeScenes } = await import('./templates/yoke-scenes.mjs');
-    return Promise.allSettled([makeYokeScenes({ bakeOnly: flags.has('--bake') })]);
+    const { makeYokeScenes, makeYokeSceneStills } = await import('./templates/yoke-scenes.mjs');
+    // --stills: the staging still only, to approve before any clip is paid for.
+    return Promise.allSettled([flags.has('--stills') ? makeYokeSceneStills() : makeYokeScenes({ bakeOnly: flags.has('--bake') })]);
   },
   yoke: async () => {
     const { makeYoke } = await import('./templates/yoke.mjs');

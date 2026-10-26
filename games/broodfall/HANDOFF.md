@@ -2600,3 +2600,17 @@ bucket Remove on the page.
 - Still on his side to decide: her motives in the lorebook and yoke-brain.md still speak of "his licence" (it ends the
   posting), which is his design of the character's goal. With her live mind off, typing to her gets only the scripted
   YOKE's three generic lines.
+
+### Print a body, version 2 (Oct 26 2026): written, not yet made
+
+Collins: "that film needs to be redone, she looks like an old lady; YOKE would be around 23 (as all women of this society
+are) and petite"; "remember you only make staging and transition pictures, and most pics come from the last frame of
+the last clip". `tools/art/templates/yoke-scenes.mjs` describes her now as her avatar's template does (yoke.mjs HER),
+made flesh: petite, about twenty-three, her black high-collared dress and gear clip. She dies sliding off the bed to the
+floor, at 480p, in art-src/yoke/scenes/v2/. Steps:
+1. `node tools/art/make.mjs yokescene --stills`: the staging still only (notes/art-review/yoke/scenes/v2-bay-still.png).
+   Show it to him.
+2. On his OK: `node tools/art/make.mjs yokescene`. Each clip starts on the last one's real last frame; show him each
+   last frame before the next is made.
+The cloud session could not run either: no RFAB_API_KEY in the environment, and its network policy refuses
+api.rfab.ai.
