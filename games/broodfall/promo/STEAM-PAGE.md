@@ -130,3 +130,10 @@ afterwards.
   app, fill this file's fields in, upload the images, and submit the store page for review.
 - Checked Oct 9 2026: still "Identity Verification Pending" (last upload Oct 1), "Complete Account
   Creation" still locked. Valve asks not to contact support during the 10–15 business days.
+- Oct 26 2026: Collins is signed in to Steamworks as partner **The Pragmatist Foundation**
+  (PartnerID 304682, login `pragmatistfoundation`), not the `merrymilkman` individual account
+  above. It has **no apps yet and 1 app credit** (https://partner.steamgames.com/apps/). Creating
+  the app ("Create new app...", type Game, name Broodfall, not free) spends that credit and
+  gives the App ID; the agent's click on "Create Now" was refused by the auto-mode classifier
+  as an unrequested commit, so Collins has to click it or OK it. After that, everything in
+  this file goes in via the browser.
