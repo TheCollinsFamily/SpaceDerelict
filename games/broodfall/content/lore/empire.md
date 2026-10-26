@@ -121,9 +121,9 @@ around": YOKE's `partner-progress` line).
   Vell of Dyson Sphere 7, looks twenty-three like everyone, ginger, freckles, glasses, shy and blushing. A systems
   engineer in Simulation Management: she manages a team of the dead who themselves design simulations for other dead.
   Autistic, struggles with the living; morality score 92; no hobbies; about an hour of recreation a month; her one ding
-  is four censorships for working on the Sabbath (his wording). At school, notable for technical skill and for killing only two
-  classmates, neither in a fight (one classmate's life support hacked off during a training exercise; her best friend,
-  below), which listed her as DANGEROUSLY SENTIMENTAL: not given command of a ship. She does not mind and enjoys
+  is four censorships for working on the Sabbath (his wording). At school, notable for technical skill and because her only kill by
+  physical violence was consensual (her best friend, below; Collins, Oct 26 2026; she also hacked off one classmate's life
+  support during a training exercise), which listed her as DANGEROUSLY SENTIMENTAL: not given command of a ship. She does not mind and enjoys
   her job. Under genetic modifications: a prehensile tail and significant olfactory modifications, marked as inherited
   from modifications to one of her ancestors, not changes made to her directly; she is open to having the tail amputated
   if that is her partner's preference. One robotic arm, bare ("just the bare bones needed", the circuitry exposed): she
@@ -346,6 +346,12 @@ choices, which in Technopuritanism is like the highest sin possible."
   everything. A weakness left in a child is a hand nobody cut off; the corpus already asks for the genetic removal of
   arousal where it is sin (TP 2.0 on "vile bodies"; the "efficient sins", TP 35.0.5) and for "removing sin, our animal
   instincts" by technology (TP 2.0, Tract 9). Section 7 has what was removed.
+- **Arousal, engineered out, and back by the school** (Collins, Oct 26 2026). Technopuritans are engineered not to feel
+  arousal: it is seen as leading to indecency and as a waste of time, which is why they are so confused that anyone would
+  want to be sexual. But it re-emerged through natural evolution, tied to extreme aggression and violence, because of the
+  way the school works and the behaviour it rewards. They are generally embarrassed about it, and they will not engineer
+  it out, because it was shown to help true fitness in the system they set up. Atlas was extremely turned on killing her
+  friend, and is very embarrassed about it (section 4; it comes out only if he pries about the moment).
 - **In the game.** `won-21`, `won-22`, `back-13` and `back-15` (content/greetings.ts, Collins's words, the lore behind
   each in its aside); the school and Sadducee lines in `ship-ai-lorebook.md`, section 16; her live mind's notes
   (`yoke-brain.md`).

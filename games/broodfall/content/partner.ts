@@ -8,9 +8,9 @@
  * expression, from Dyson Sphere 7. A systems engineer in simulation management: she manages a team of dead people who
  * themselves design simulations for other dead people. Autistic; struggles to interact with the living. Scores 92 on
  * morality, has no hobbies and spends only an hour or so a month on recreation; her one ding is four censorships for working on the
- * Sabbath (his wording, Oct 14 2026). At school she was notable for her technical skills and for killing only two classmates,
- * neither in a fight (she hacked off one classmate's life support during a training exercise; the other was her best
- * friend, below). That got her listed as DANGEROUSLY SENTIMENTAL, which is why she was not given command of a ship.
+ * Sabbath (his wording, Oct 14 2026). At school she was notable for her technical skills and because her only kill by physical
+ * violence was consensual (Collins, Oct 26 2026): her best friend, below; she also hacked off one classmate's life support
+ * during a training exercise. That got her listed as DANGEROUSLY SENTIMENTAL, which is why she was not given command of a ship.
  * She does not mind; she enjoys her job. Later the same day: under genetic modifications, a prehensile tail and
  * significant olfactory modifications, marked as inherited from an ancestor's modifications rather than changes to her,
  * and she is open to having the tail amputated if that is her partner's preference; and one robotic arm, bare, "just the
@@ -50,7 +50,7 @@ export const PARTNER = {
     ['Declared hobbies', 'None'],
     ['Recreation', 'About one hour a month'],
     ['Notation', 'Four censorships for working on the Sabbath.'],
-    ['Schooling', 'Notable for technical skill. Two classmates killed, neither in combat: one\'s life support cut off during a training exercise; one with a knife, in the candidate\'s quarters, at the classmate\'s own request.'],
+    ['Schooling', 'Notable for technical skill. One classmate killed by physical violence, and that one consensual: with a knife, in the candidate\'s quarters, at the classmate\'s own request. One classmate\'s life support cut off during a training exercise.'],
     ['Command assessment', 'DANGEROUSLY SENTIMENTAL. Not to be given command of a ship. The candidate has stated she does not mind and enjoys her post.'],
     ['Genetic modifications', 'A prehensile tail; significant olfactory modifications. Both INHERITED, from modifications made to an ancestor; no modification has been made to the candidate directly. The candidate is open to having the tail amputated if that is her partner\'s preference.'],
     ['Prosthetics', 'Left arm, robotic, bare: the frame and circuitry needed and nothing over them. The original was lost on her class\'s survival camp (students are left for some months to learn to survive on their own): a classmate with venomous spit spat at her face, she blocked it with her hand, the hand went necrotic, and she amputated and cauterised it herself. Within the normal range.'],

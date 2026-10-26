@@ -2502,3 +2502,10 @@ in it, and says so plainly in her shy voice), the mate-review aside in `content/
 (section 4, his words kept), and the lorebook. Knock-on, his to check: she was "DANGEROUSLY SENTIMENTAL" because she
 "never killed a classmate by physical violence". She now has, so the file reads "killing only two classmates, neither in a
 fight". The yoke-brain notes and the Partner Candidate page did not carry the story and are unchanged.
+- Same day, his follow-up: her only kill by physical violence was consensual, and that is the sentimental mark (the file's
+  Schooling row). New lore (`docs/UNIVERSE.md` "Culture: disgust with the body"; `empire.md` section 7): Technopuritans
+  are engineered not to feel arousal (indecent, a waste of time: hence their confusion at anyone wanting to be sexual), but
+  it came back through natural evolution tied to extreme aggression and violence, because of the school; they are
+  embarrassed by it and keep it because it helps true fitness. Atlas was extremely turned on killing her friend and is very
+  embarrassed. In Atlas's prompt she admits it only if he keeps prying about the moment. The companion knows but never tells
+  it for her ("ask her yourself"), and YOKE knows only the general fact (lorebook).

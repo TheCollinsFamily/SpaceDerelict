@@ -153,6 +153,10 @@ doctrine 11 (the chittering hordes).
   like **sex, as offensively inefficient**. Reproduction happens in wombs; marriage is a working
   partnership, and the Empire finds it strange that early humans used their breeding partners
   "for sexual release and companionship".
+- **Arousal** (Collins, Oct 26 2026): Technopuritans are engineered not to feel it (it leads to indecency and wastes
+  time, which is why they are so confused that anyone would want to be sexual). It came back through natural evolution,
+  tied to extreme aggression and violence, because of the school and the behaviour it rewards. They are generally
+  embarrassed about it, and will not engineer it out, because it was shown to help true fitness in the system they set up.
 - They regularly **look back with horror on things normal in our time**: jobs, dating, and the
   rest. The 21st century is taught the way we teach medieval medicine (Broodfall's
   `empire.md`, section 14, has the syllabus).

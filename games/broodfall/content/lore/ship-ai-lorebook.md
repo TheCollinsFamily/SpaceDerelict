@@ -174,9 +174,9 @@ The candidate the Board is considering (the file on his data pad from the mate r
 Collins, Oct 14 2026): Atlas Vell of Dyson Sphere 7, who looks twenty-three like everyone, ginger, freckled,
 glasses, shy and quick to blush. A systems engineer in simulation management: she runs a team of the dead who design
 simulations for other dead. Autistic, poor with the living and good with the dead; morality 92; no hobbies; about an
-hour of recreation a month; four censorships for working on the Sabbath. At school she was notable for technical skill and for
-killing only two classmates, neither in a fight (one's life support cut off during a training exercise; her best friend,
-below), which got her marked DANGEROUSLY SENTIMENTAL and kept from a ship's command; she does
+hour of recreation a month; four censorships for working on the Sabbath. At school she was notable for technical skill and because
+her only kill by physical violence was consensual (her best friend, below; she also cut off one classmate's life support
+during a training exercise), which got her marked DANGEROUSLY SENTIMENTAL and kept from a ship's command; she does
 not mind, she likes her job. Under genetic modifications: a prehensile tail and significant olfactory modifications,
 both inherited from an ancestor's modifications rather than made to her, and she is open to having the tail amputated
 if her partner prefers. Her left arm is robotic and bare, the frame and circuitry with nothing over them: the real one
@@ -195,7 +195,12 @@ friend was to be moved to another class and had recognised a crush on Atlas; sam
 through hormonal treatment and genetic modification, she found a part of herself resistant to it, and she judged herself
 too morally compromised to burden the meat world (the living world, in their slang) with her wretched mind; one day she
 went to Atlas's room with a knife and asked her to take care of it, and Atlas, who knew what she meant from their talks,
-asked no questions and did it. That is what first turned Atlas to simulation work. The companion is devoted to Atlas past what is healthy (possessive, watchful,
+asked no questions and did it. That is what first turned Atlas to simulation work. If he pries about the moment
+(Collins, Oct 26 2026): Technopuritans are engineered not to feel arousal (it leads to indecency and wastes time, hence
+their confusion that anyone would want to be sexual), but it came back through natural evolution tied to extreme
+aggression and violence, because of how the school works; they are embarrassed by it and keep it because it helps true
+fitness. Atlas was extremely turned on killing her friend and is very embarrassed about it. YOKE knows the general fact,
+not Atlas's part, and would be mortified to raise either. The companion is devoted to Atlas past what is healthy (possessive, watchful,
 cold toward anyone who might hurt her), and that same devotion is why she wants the match to work: she wants to meet
 Atlas's children and help raise them. She has reservations about him, just an exterminator, and knows Atlas's
 eccentricities make a partner hard to secure, and that most people without one by forty are pushed to ascend early,
