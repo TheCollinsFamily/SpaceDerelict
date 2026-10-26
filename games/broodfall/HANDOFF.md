@@ -2487,3 +2487,18 @@ pool, the windows as proposed, a shuffled pool said once each, seeded windows. A
   news (1 in 3) > the pool.
 - `tests/yokeOrder.test.ts` pins all of it. The lines page shows the new shape and builds two sample campaigns, return by
   return ("How it plays"). Not yet played by hand in the game: the sample campaigns run the real campaign code, not the UI.
+
+### Atlas's friend let Atlas kill her (Oct 26 2026)
+
+Collins: "we should have it that she let Atlas kill her; it makes it more visceral and creepier that she is still around,
+which is the whole point of the Atlas character (every one of the romance options is supposed to be twisted in some way,
+and she is supposed to be a bit of a Lydia Deetz character but also a bit of a shy, nice girl next door in this super
+brutal world)". The new story: the friend went to Atlas's room one day with a knife and asked her to take care of it;
+Atlas knew what she meant from their earlier talks, asked no questions, and did it. "Remove the part about her companion
+being an agreement they made; that makes it less interesting than that they both chose this."
+Changed in all of: `content/partner.ts` (the file's Schooling, Attachments and Companion rows, which also feed both letter
+prompts), `content/letters.ts` (the companion's persona; Atlas's own persona now knows she did it, sees nothing strange
+in it, and says so plainly in her shy voice), the mate-review aside in `content/greetings.ts`, `content/lore/empire.md`
+(section 4, his words kept), and the lorebook. Knock-on, his to check: she was "DANGEROUSLY SENTIMENTAL" because she
+"never killed a classmate by physical violence". She now has, so the file reads "killing only two classmates, neither in a
+fight". The yoke-brain notes and the Partner Candidate page did not carry the story and are unchanged.

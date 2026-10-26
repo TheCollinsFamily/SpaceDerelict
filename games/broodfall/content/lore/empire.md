@@ -121,9 +121,9 @@ around": YOKE's `partner-progress` line).
   Vell of Dyson Sphere 7, looks twenty-three like everyone, ginger, freckles, glasses, shy and blushing. A systems
   engineer in Simulation Management: she manages a team of the dead who themselves design simulations for other dead.
   Autistic, struggles with the living; morality score 92; no hobbies; about an hour of recreation a month; her one ding
-  is four censorships for working on the Sabbath (his wording). At school, notable for technical skill and for never killing a classmate by
-  physical violence (one classmate's life support hacked off during a training exercise, one talked into ending
-  themselves), which listed her as DANGEROUSLY SENTIMENTAL: not given command of a ship. She does not mind and enjoys
+  is four censorships for working on the Sabbath (his wording). At school, notable for technical skill and for killing only two
+  classmates, neither in a fight (one classmate's life support hacked off during a training exercise; her best friend,
+  below), which listed her as DANGEROUSLY SENTIMENTAL: not given command of a ship. She does not mind and enjoys
   her job. Under genetic modifications: a prehensile tail and significant olfactory modifications, marked as inherited
   from modifications to one of her ancestors, not changes made to her directly; she is open to having the tail amputated
   if that is her partner's preference. One robotic arm, bare ("just the bare bones needed", the circuitry exposed): she
@@ -133,15 +133,19 @@ around": YOKE's `partner-progress` line).
   looked "cute" (her eyes are standard). Notable relatives: a war hero from the Sabbatean Skirmishes, and a heretic,
   as a figure of a saint was found among their belongings after death (section 2: idolatry is worse than murder; the
   Board lists both without comment). Attachments: a notable lack of living friends, but her best friend is the girl she
-  talked into killing herself back in school. Collins: "really meant to highlight how different a
+  killed back in school, at the girl's own asking. Collins: "really meant to highlight how different a
   society where people can talk to the dead and death doesn't mean the same thing would be". Her companion (what YOKE
   is to the technician) is that dead friend rather than a grown one, "considered a pretty weird thing to do in this
-  world" but part of the deal the two made: the friend was to be transferred to another class, had a crush on Atlas,
-  knew Atlas would benefit from a higher kill count and that it would let her stay closer to her; the event first turned
-  Atlas to simulation work. The Board's file on it, his wording: "Irregular; under observation to study effects. Noted as
+  world", and something they both chose. **Oct 26 2026, his rewrite:** the friend let Atlas kill her ("it makes it more
+  visceral and creepier that she is still around, which is the whole point of the Atlas character"): she was to be
+  transferred to another class and had a crush on Atlas; she went to Atlas's room one day with a knife and asked her to
+  take care of it, and Atlas, knowing what she meant from their earlier conversations, asked no further questions and
+  did it. No agreement between them ("that makes it less interesting than that they both chose this"). The event first
+  turned Atlas to simulation work. Every romance option is twisted in some way; Atlas is "a bit of a Lydia Deetz
+  character, but also a bit of a shy, nice girl next door in this super brutal world". The Board's file on it, his wording: "Irregular; under observation to study effects. Noted as
   a potential social technology for wider deployment." The companion, more of her (Collins, later the same day): "a bit
-  yandere for Atlas, but this same desire makes her really want to meet and help with Atlas's kids". Why she killed
-  herself: "she recognised she had a crush on Atlas and same-sex attraction is generally dealt with in their society
+  yandere for Atlas, but this same desire makes her really want to meet and help with Atlas's kids". Why she wanted to
+  die: "she recognised she had a crush on Atlas and same-sex attraction is generally dealt with in their society
   through hormonal treatment and genetic modification; she found a part of herself was resistant to that and as such
   deemed herself too morally compromised to burden the meat world (the slang for the living world) with her wretched
   mind." In the game she answers his letters for Atlas (content/letters.ts) until her regard opens the gate. (Her name is

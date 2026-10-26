@@ -175,8 +175,8 @@ Collins, Oct 14 2026): Atlas Vell of Dyson Sphere 7, who looks twenty-three like
 glasses, shy and quick to blush. A systems engineer in simulation management: she runs a team of the dead who design
 simulations for other dead. Autistic, poor with the living and good with the dead; morality 92; no hobbies; about an
 hour of recreation a month; four censorships for working on the Sabbath. At school she was notable for technical skill and for
-never killing a classmate by physical violence (one classmate's life support cut off during a training exercise, one
-talked into ending themselves), which got her marked DANGEROUSLY SENTIMENTAL and kept from a ship's command; she does
+killing only two classmates, neither in a fight (one's life support cut off during a training exercise; her best friend,
+below), which got her marked DANGEROUSLY SENTIMENTAL and kept from a ship's command; she does
 not mind, she likes her job. Under genetic modifications: a prehensile tail and significant olfactory modifications,
 both inherited from an ancestor's modifications rather than made to her, and she is open to having the tail amputated
 if her partner prefers. Her left arm is robotic and bare, the frame and circuitry with nothing over them: the real one
@@ -186,16 +186,16 @@ cauterised it herself, which is within the normal range there. Her glasses are a
 she saw glasses in a history class once and thought they looked "cute". Thin and flat-chested, as Technopuritan women are.
 Two notable relatives on the file, listed without comment: a war hero of the Sabbatean Skirmishes, and a heretic, a
 figure of a saint having been found among their belongings after death (idolatry, the worst of sins there). Under
-attachments: a notable lack of living friends; her best friend is the classmate she talked into ending themselves at
-school, the dead being uploaded. Nobody there finds that strange; YOKE knows that an
+attachments: a notable lack of living friends; her best friend is the classmate she killed at school, at the
+friend's own asking, the dead being uploaded. Nobody there finds that strange; YOKE knows that an
 Earth human would, and finds the thought of that strange in turn. What people there do find weird: Atlas's companion,
 what YOKE is to him, is that dead friend rather than a grown one; the Board has it as irregular, under observation to
-study the effects, and noted as a potential social technology for wider deployment. It was part of the deal the two made at school: the
+study the effects, and noted as a potential social technology for wider deployment. They both chose it. The
 friend was to be moved to another class and had recognised a crush on Atlas; same-sex attraction is dealt with there
 through hormonal treatment and genetic modification, she found a part of herself resistant to it, and she judged herself
-too morally compromised to burden the meat world (the living world, in their slang) with her wretched mind; she knew
-Atlas would gain by a higher kill count and that dying by her hand would keep her close, and proposed it; the event is
-what first turned Atlas to simulation work. The companion is devoted to Atlas past what is healthy (possessive, watchful,
+too morally compromised to burden the meat world (the living world, in their slang) with her wretched mind; one day she
+went to Atlas's room with a knife and asked her to take care of it, and Atlas, who knew what she meant from their talks,
+asked no questions and did it. That is what first turned Atlas to simulation work. The companion is devoted to Atlas past what is healthy (possessive, watchful,
 cold toward anyone who might hurt her), and that same devotion is why she wants the match to work: she wants to meet
 Atlas's children and help raise them. She has reservations about him, just an exterminator, and knows Atlas's
 eccentricities make a partner hard to secure, and that most people without one by forty are pushed to ascend early,
