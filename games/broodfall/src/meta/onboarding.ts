@@ -301,13 +301,19 @@ export function earthNewsOpen(s: CampaignState): boolean {
   return s.onboard.mission1 !== 'pending' && s.onboard.deskOpen && EARLY_ONCE.every((id) => (s.said ?? []).includes(id));
 }
 
-/** One return in three, once it is open, she tells him the news from Earth instead. */
-export const EARTH_NEWS_EVERY = 3;
+/**
+ * The news from Earth as lines of hers (Collins, Oct 26 2026: "the news from earth is PART OF WHAT SHE SAYS"): each one
+ * an everyday line in her one pool, shuffled in with the rest (`lore`: the lore book's text, which holds the list).
+ */
+export function newsGreetings(lore: string): Greeting[] {
+  const pool = earthNews(lore);
+  const news: EarthNews[] = pool.length ? pool : EARTH_NEWS_FALLBACK.map((text) => ({ text }));
+  return news.map((n, i) => ({ id: `earth-${i}`, moment: 'talk', beats: newsBeats(n.text), aside: n.aside, hook: n.aside ? 'Ask her about it' : undefined }));
+}
 
 /**
- * The greeting for coming aboard now: the moment's (momentNow), or on an ordinary return, now
- * and then a line of news from Earth out of the lore book (`lore`: its text). Never the line she
- * said last time.
+ * The greeting for coming aboard now: the moment's (momentNow); on an ordinary return, a line from her one everyday pool,
+ * her own lines and the news from Earth together. Never the line she said last time, nor one on the same topic.
  */
 export function greetingFor(s: CampaignState, lore = ''): { moment: GreetMoment; greeting: Greeting } {
   const moment = momentNow(s);
@@ -324,47 +330,11 @@ export function greetingFor(s: CampaignState, lore = ''): { moment: GreetMoment;
   // What the last thing she said was about: the next everyday line or news is about something else.
   const lastG = s.lastGreeting ? GREETINGS.find((g) => g.id === s.lastGreeting) ?? newsById(lore, s.lastGreeting) : null;
   const avoid = lastG ? topicsOf(words(lastG)) : [];
-  if (ORDINARY.includes(moment) && earthNewsOpen(s)) {
-    let h = (s.seed ^ Math.imul(s.deployments + 7, 2246822519)) >>> 0;
-    h = Math.imul(h ^ (h >>> 13), 3266489917) >>> 0;
-    // One return in three; and whenever the moment's own lines have all been said this campaign (Collins, Oct 12 2026:
-    // she always has something to say after a mission with no cut scene), a line of news she has not read out comes
-    // before any line of hers is said twice.
-    const dry = !GREETINGS.some((g) => g.moment === poolOf(moment) && !said.includes(g.id) && g.id !== s.lastGreeting);
-    if (h % EARTH_NEWS_EVERY === 0 || dry) {
-      const news = newsLine(s, lore, h, moment, dry, avoid);
-      if (news) return { moment, greeting: news };
-    }
-  }
-  return { moment, greeting: pickGreeting(moment, s.seed, s.deployments, s.lastGreeting, GREETINGS, said, avoid) };
+  const pool = ORDINARY.includes(moment) && poolOf(moment) === 'talk' && earthNewsOpen(s) ? [...GREETINGS, ...newsGreetings(lore)] : GREETINGS;
+  return { moment, greeting: pickGreeting(moment, s.seed, s.deployments, s.lastGreeting, pool, said, avoid) };
 }
 
 /** A line of news said before, by its id (to know what it was about). */
 function newsById(lore: string, id: string): Greeting | null {
-  const m = /^earth-(\d+)$/.exec(id); if (!m) return null;
-  const n = earthNews(lore)[Number(m[1])];
-  return n ? { id, moment: 'won', beats: [{ say: n.text }], aside: n.aside } : null;
-}
-
-/**
- * A line of news from Earth, as a greeting: the first after the roll's pick that she has not read out this campaign, then
- * any but the last one said. `freshOnly`: null once every line has been read (her own lines repeat before the news does).
- */
-function newsLine(s: CampaignState, lore: string, h: number, moment: GreetMoment, freshOnly: boolean, avoid: string[] = []): Greeting | null {
-  const pool = earthNews(lore);
-  const news: EarthNews[] = pool.length ? pool : EARTH_NEWS_FALLBACK.map((text) => ({ text }));
-  if (!news.length) return null;
-  const said = s.greetingsSaid ?? [];
-  const start = (h >>> 8) % news.length;
-  const at = (m: number) => (start + m) % news.length;
-  const unread = (j: number) => !said.includes(`earth-${j}`) && `earth-${j}` !== s.lastGreeting;
-  const elsewhere = (j: number) => !shares(topicsOf(`${news[j].text} ${news[j].aside ?? ''}`), avoid);
-  const order = news.map((_, m) => at(m));
-  // An unread one about something else than her last line; else any unread one; else (unless freshOnly) any but the last.
-  let i = order.find((j) => unread(j) && elsewhere(j)) ?? order.find(unread) ?? -1;
-  if (i < 0) {
-    if (freshOnly) return null;
-    i = order.find((j) => `earth-${j}` !== s.lastGreeting) ?? start;
-  }
-  return { id: `earth-${i}`, moment, beats: newsBeats(news[i].text), aside: news[i].aside, hook: news[i].aside ? 'Ask her about it' : undefined };
+  return /^earth-\d+$/.test(id) ? newsGreetings(lore).find((g) => g.id === id) ?? null : null;
 }

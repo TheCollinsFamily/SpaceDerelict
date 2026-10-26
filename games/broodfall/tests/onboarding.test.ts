@@ -182,16 +182,17 @@ describe('YOKE\'s greetings', () => {
     expect(earthNewsOpen(s)).toBe(false);
     s = { ...s, said: [...EARLY_ONCE], onboard: { mission1: 'lost', deskOpen: true } };
     expect(earthNewsOpen(s)).toBe(true);
-    // Over many returns, one in three or so is news from Earth, and never the same line twice running.
-    let news = 0;
+    // The news is part of her one everyday pool (Collins, Oct 26 2026): shuffled in with her own lines, each said once.
+    const heard: string[] = [];
     let last: string | undefined;
-    for (let d = 0; d < 30; d++) {
-      const g = greetingFor({ ...s, deployments: d, greet: 'won', lastGreeting: last }, lore).greeting;
-      if (g.id.startsWith('earth-')) { news++; expect(g.id).not.toBe(last); }
+    const talk = GREETINGS.filter((g) => g.moment === 'talk' && !g.notBefore).length;
+    for (let d = 0; d < talk + 2; d++) {
+      const g = greetingFor({ ...s, deployments: d, greet: 'won', lastGreeting: last, greetingsSaid: heard }, lore).greeting;
+      expect(heard).not.toContain(g.id);
+      heard.push(g.id);
       last = g.id;
     }
-    expect(news).toBeGreaterThan(3);
-    expect(news).toBeLessThan(20);
+    expect(heard.filter((id) => id.startsWith('earth-')).sort()).toEqual(['earth-0', 'earth-1']);
   });
 
   it('"print yourself a body": his words ask for it; other talk does not', () => {

@@ -23,8 +23,8 @@ describe('her everyday talk', () => {
   it('each line once, in an order that differs between campaigns', () => {
     const run = (seed: number) => {
       const said: string[] = []; let last: string | null = null;
-      const talk = GREETINGS.filter((g) => g.moment === 'talk').length;
-      for (let i = 0; i < talk; i++) { const g = pickGreeting('won', seed, i, last, GREETINGS, said); said.push(g.id); last = g.id; }
+      const talk = GREETINGS.filter((g) => g.moment === 'talk').length; // from capture 20, past every held-back line's notBefore
+      for (let i = 0; i < talk; i++) { const g = pickGreeting('won', seed, 20 + i, last, GREETINGS, said); said.push(g.id); last = g.id; }
       return said;
     };
     const a = run(1), b = run(2);

@@ -50,7 +50,7 @@ import { BOSS, BOSS_AFTER, BOSS_ASIDE, BOSS_BRIDGE } from '../content/boss';
 import { FACTIONS, type Scene } from '../content/campaign';
 import { ROACH_SCENES } from '../content/roachKing';
 import { speakerOf } from '../content/media';
-import { EARLY_ONCE, EARTH_NEWS_EVERY, INTROS, STORY_ONCE, THREAD_OPENS, greetingFor, shipPick, topicsOf } from '../src/meta/onboarding';
+import { EARLY_ONCE, INTROS, STORY_ONCE, THREAD_OPENS, greetingFor, newsGreetings, seeded, shipPick, topicsOf } from '../src/meta/onboarding';
 import { ally, finish, newCampaign, plan, targets, type CampaignState } from '../src/meta/campaign';
 import type { RunReport } from '../src/meta/goals';
 
@@ -98,10 +98,18 @@ function apart(gs: Greeting[]): Greeting[] {
 }
 /** A pool's lines; the ones held back (`notBefore`) go last, latest last, and say what they wait for. */
 const of = (moment: GreetMoment, ids?: string[]): Line[] => {
-  const now = GREETINGS.filter((g) => g.moment === moment && (!ids || ids.includes(g.id)));
+  // Her everyday talk is one pool: her own lines and the news from Earth together (as onboarding.ts greetingFor plays it).
+  const now = [...GREETINGS.filter((g) => g.moment === moment && (!ids || ids.includes(g.id))), ...(moment === 'talk' && !ids ? newsGreetings(lore) : [])];
   const held = now.filter((g) => g.notBefore).sort((a, b) => a.notBefore! - b.notBefore!);
-  return [...apart(now.filter((g) => !g.notBefore)), ...held]
-    .map((g) => greeting(g, g.notBefore ? `HELD BACK: not before capture ${g.notBefore}, then in the shuffle with the rest` : undefined));
+  // In one campaign's shuffled order (seed 1, as pickGreeting shuffles), so the news falls among her lines as it does in play.
+  const shuffled = moment === 'talk' && !ids ? [...now].sort((x, y) => seeded(1, x.id) - seeded(1, y.id)) : now;
+  return [...apart(shuffled.filter((g) => !g.notBefore)), ...held]
+    .map((g) => {
+      const n = /^earth-(\d+)$/.exec(g.id);
+      // The news keeps its page number (earth-1 is the lore book's first), which is how the page's edits find it.
+      return n ? { ...newsLine(news[Number(n[1])], Number(n[1])), ctx: ['News from Earth (its words are kept in the lore book)'] }
+        : greeting(g, g.notBefore ? `HELD BACK: not before capture ${g.notBefore}, then in the shuffle with the rest` : undefined);
+    });
 };
 const plain = (prefix: string, texts: string[], author: Author, ctx?: string[]): Line[] => texts.map((t, i) => ({ id: `${prefix}-${i + 1}`, text: [t], author, ctx: ctx ? [ctx[i]] : undefined }));
 
@@ -219,17 +227,13 @@ const steps: Step[] = [
     })) },
 
   { id: 'outcome', part: PART_EVERY, name: 'Her everyday talk: one pool, won or lost', where: GREET,
-    what: 'TRIGGER: any ordinary return with nothing in part 3 due: mission, her line, mission, her line (Collins, Oct 19 2026). Won or lost makes no difference once the desk is open. The pool is shuffled by the campaign\'s seed and each line is said once a campaign, so every campaign hears them in a different order, and a pool bigger than a campaign means a replay hears lines the last one did not. One return in three she gives a line of news from Earth instead (below). Two kinds of return keep lines of their own: a loss before the desk opens, and a counter-attack, since those say what happened.',
+    what: 'TRIGGER: any ordinary return with nothing in part 3 due: mission, her line, mission, her line (Collins, Oct 19 2026). Won or lost makes no difference once the desk is open. The pool is shuffled by the campaign\'s seed and each line is said once a campaign, so every campaign hears them in a different order, and a pool bigger than a campaign means a replay hears lines the last one did not. Her lines and the news from Earth are one pool: the news is just more of what she says, shuffled in with the rest (Collins, Oct 26 2026). The list below is the order one campaign plays them in (every campaign shuffles its own), never two lines on one topic running; the held-back lines come last. Two kinds of return keep lines of their own: a loss before the desk opens, and a counter-attack, since those say what happened.',
     branches: [
       { label: 'Any return once the desk is open (and back aboard from the menu)', lines: of('talk') },
       { label: 'A loss before the desk opens (until he wins once; the last one repeats)', lines: of('lost-locked') },
       { label: 'A counter-attack thrown back', lines: of('defended') },
       { label: 'Ground lost to a counter-attack', lines: of('fell') },
     ] },
-  { id: 'news', part: PART_EVERY, name: 'News from Earth: in place of the line above, one return in three', where: LORE + '  (section "Earth news (return greetings)"; the fallback line: ' + GREET + ')',
-    what: `TRIGGER: one ordinary return in ${EARTH_NEWS_EVERY} with nothing in part 3 due, once the desk is open and the mate review has played; also whenever her own lines for that kind of return have all been said this campaign, so she never repeats a line while unread news is left. These are ordinary after-mission lines like the ones above, each once a campaign. The list grows in the lore book with no code.`,
-    branches: one(news.map(newsLine)) },
-
   { id: 'letterbeats', part: PART_TRIG, name: 'Rank 1. The love interests, drip-fed', where: GREET + '  (when: ' + G('src/meta/onboarding.ts') + ' THREAD_OPENS, LETTER_BEATS)',
     what: 'TRIGGER: each says its own. Atlas comes first, at the mate review (part 1). The others open one at a time in a window counted from the capture on which he sided with a faction; the exact capture is picked by the campaign\'s seed, so every campaign meets them at a different point. After that, a line follows what he does in the Letters room, on the very next return. At most one of these a return and never two returns running, the mate review included: one held back plays on the next return.',
     branches: [

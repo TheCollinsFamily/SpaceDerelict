@@ -43,51 +43,144 @@
    "hash": "16r66ss",
    "since": "2026-10-26T12:02:25.403Z"
   },
+  "earth-18": {
+   "hash": "13aabvr",
+   "since": "2026-10-18T19:00:50.585Z"
+  },
+  "earth-8": {
+   "hash": "cr6gzl",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "earth-5": {
+   "hash": "1lbyskz",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "earth-22": {
+   "hash": "cq17ml",
+   "since": "2026-10-26T12:59:57.883Z"
+  },
   "won-19": {
    "hash": "1v4tdsx",
    "since": "2026-10-26T15:52:00.145Z"
-  },
-  "won-21": {
-   "hash": "1u9iqjx",
-   "since": "2026-10-16T10:46:27.014Z"
   },
   "back-9": {
    "hash": "1axj366",
    "since": "2026-10-26T12:35:34.887Z"
   },
-  "lost-15": {
-   "hash": "vasohe",
-   "since": "2026-10-26T12:35:34.887Z"
+  "earth-4": {
+   "hash": "2ybsqt",
+   "since": "2026-10-26T12:59:57.883Z"
   },
   "back-6": {
    "hash": "15jery0",
    "since": "2026-10-26T12:35:34.887Z"
   },
-  "back-10": {
-   "hash": "vobgp7",
-   "since": "2026-10-26T12:35:34.887Z"
+  "earth-21": {
+   "hash": "li25e2",
+   "since": "2026-10-26T12:59:57.883Z"
+  },
+  "back-14": {
+   "hash": "19prtnu",
+   "since": "2026-10-16T10:46:27.014Z"
+  },
+  "earth-12": {
+   "hash": "k5dg6o",
+   "since": "2026-10-26T12:59:57.883Z"
+  },
+  "earth-3": {
+   "hash": "9os1ig",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "earth-15": {
+   "hash": "528tyu",
+   "since": "2026-10-18T19:00:50.585Z"
   },
   "back-11": {
    "hash": "oh2ies",
    "since": "2026-10-14",
    "baseline": true
   },
-  "back-12": {
-   "hash": "lob6qn",
-   "since": "2026-10-14",
-   "baseline": true
+  "earth-14": {
+   "hash": "j0qgir",
+   "since": "2026-10-26T12:59:57.883Z"
+  },
+  "won-21": {
+   "hash": "1u9iqjx",
+   "since": "2026-10-16T10:46:27.014Z"
+  },
+  "earth-2": {
+   "hash": "11yoy72",
+   "since": "2026-10-26T12:59:57.883Z"
   },
   "back-13": {
    "hash": "4696m",
    "since": "2026-10-26T12:35:34.887Z"
   },
-  "back-14": {
-   "hash": "19prtnu",
-   "since": "2026-10-16T10:46:27.014Z"
+  "earth-1": {
+   "hash": "1nb5vqw",
+   "since": "2026-10-14",
+   "baseline": true
   },
   "back-15": {
    "hash": "unfkve",
    "since": "2026-10-16T10:46:27.014Z"
+  },
+  "earth-11": {
+   "hash": "z4gl4o",
+   "since": "2026-10-18T19:00:50.585Z"
+  },
+  "earth-20": {
+   "hash": "1azkk4a",
+   "since": "2026-10-18T19:00:50.585Z"
+  },
+  "earth-9": {
+   "hash": "1uvywlk",
+   "since": "2026-10-18T19:00:50.585Z"
+  },
+  "earth-13": {
+   "hash": "h9mevr",
+   "since": "2026-10-18T19:00:50.585Z"
+  },
+  "earth-10": {
+   "hash": "rs93e9",
+   "since": "2026-10-18T19:00:50.585Z"
+  },
+  "back-10": {
+   "hash": "vobgp7",
+   "since": "2026-10-26T12:35:34.887Z"
+  },
+  "back-12": {
+   "hash": "lob6qn",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "earth-7": {
+   "hash": "60vmvy",
+   "since": "2026-10-18T19:00:50.585Z"
+  },
+  "lost-15": {
+   "hash": "vasohe",
+   "since": "2026-10-26T12:35:34.887Z"
+  },
+  "earth-17": {
+   "hash": "vl4pp6",
+   "since": "2026-10-26T12:59:57.883Z"
+  },
+  "earth-19": {
+   "hash": "vnhtyg",
+   "since": "2026-10-18T19:00:50.585Z"
+  },
+  "earth-6": {
+   "hash": "c7r4wi",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "earth-16": {
+   "hash": "18w8vmj",
+   "since": "2026-10-18T19:00:50.585Z"
   },
   "won-22": {
    "hash": "6pntq1",
@@ -121,99 +214,6 @@
    "hash": "17awxf4",
    "since": "2026-10-14",
    "baseline": true
-  },
-  "earth-1": {
-   "hash": "1nb5vqw",
-   "since": "2026-10-14",
-   "baseline": true
-  },
-  "earth-2": {
-   "hash": "11yoy72",
-   "since": "2026-10-26T12:59:57.883Z"
-  },
-  "earth-3": {
-   "hash": "9os1ig",
-   "since": "2026-10-14",
-   "baseline": true
-  },
-  "earth-4": {
-   "hash": "2ybsqt",
-   "since": "2026-10-26T12:59:57.883Z"
-  },
-  "earth-5": {
-   "hash": "1lbyskz",
-   "since": "2026-10-14",
-   "baseline": true
-  },
-  "earth-6": {
-   "hash": "c7r4wi",
-   "since": "2026-10-14",
-   "baseline": true
-  },
-  "earth-7": {
-   "hash": "60vmvy",
-   "since": "2026-10-18T19:00:50.585Z"
-  },
-  "earth-8": {
-   "hash": "cr6gzl",
-   "since": "2026-10-14",
-   "baseline": true
-  },
-  "earth-9": {
-   "hash": "1uvywlk",
-   "since": "2026-10-18T19:00:50.585Z"
-  },
-  "earth-10": {
-   "hash": "rs93e9",
-   "since": "2026-10-18T19:00:50.585Z"
-  },
-  "earth-11": {
-   "hash": "z4gl4o",
-   "since": "2026-10-18T19:00:50.585Z"
-  },
-  "earth-12": {
-   "hash": "k5dg6o",
-   "since": "2026-10-26T12:59:57.883Z"
-  },
-  "earth-13": {
-   "hash": "h9mevr",
-   "since": "2026-10-18T19:00:50.585Z"
-  },
-  "earth-14": {
-   "hash": "j0qgir",
-   "since": "2026-10-26T12:59:57.883Z"
-  },
-  "earth-15": {
-   "hash": "528tyu",
-   "since": "2026-10-18T19:00:50.585Z"
-  },
-  "earth-16": {
-   "hash": "18w8vmj",
-   "since": "2026-10-18T19:00:50.585Z"
-  },
-  "earth-17": {
-   "hash": "vl4pp6",
-   "since": "2026-10-26T12:59:57.883Z"
-  },
-  "earth-18": {
-   "hash": "13aabvr",
-   "since": "2026-10-18T19:00:50.585Z"
-  },
-  "earth-19": {
-   "hash": "vnhtyg",
-   "since": "2026-10-18T19:00:50.585Z"
-  },
-  "earth-20": {
-   "hash": "1azkk4a",
-   "since": "2026-10-18T19:00:50.585Z"
-  },
-  "earth-21": {
-   "hash": "li25e2",
-   "since": "2026-10-26T12:59:57.883Z"
-  },
-  "earth-22": {
-   "hash": "cq17ml",
-   "since": "2026-10-26T12:59:57.883Z"
   },
   "catgirl": {
    "hash": "a2toeu",

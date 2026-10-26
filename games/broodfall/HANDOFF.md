@@ -2638,3 +2638,13 @@ then "all that stuff should be in settings not cluttering the ui".
 - Page notes applied: won-12 ("move this later") was already held to capture 12 in the game but the page did not show it;
   the page now lists held-back lines last with "HELD BACK: not before capture N". won-20 ("move this further down") is held
   to capture 16. won-19's two edited lines are in (spelling mended; his "tubes" kept), and its aside matches them.
+
+### The news from Earth is part of her everyday talk (Oct 26 2026)
+
+Collins: "the news from earth is PART OF WHAT SHE SAYS"; "it's still a separate carved out section". The one-return-in-three
+news roll (`EARTH_NEWS_EVERY`, `newsLine`) is gone. `onboarding.ts newsGreetings(lore)` makes each news item an ordinary
+`talk` line (id `earth-N`, N from 0 in the game, from 1 on the page), and `greetingFor` hands pickGreeting one pool: her
+lines plus the news, seeded shuffle, each once a campaign, never two on one topic running. The news still waits until the
+desk is open and the mate review has played (`earthNewsOpen`). The page's separate News section is gone: Part 2 is one
+list in seed 1's shuffled order, held-back lines last. Tests: onboarding (each line once, both news items heard in the
+pool), yokeOrder (run from capture 20, past the held-back lines).
