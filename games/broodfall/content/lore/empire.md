@@ -615,7 +615,11 @@ story for why the Technopuritans live the way they do.
   children may need to found a House of their own or join one of the looser Houses, like the nekos'. Race mixing was
   normal on old Earth until the Mesoamerican ethnic group mixed into total extinction; that is when the risk became
   apparent. This is favouring one's own to keep lines distinct, not animosity, and no House claims to be objectively better: only
-  competition can show that. The Empire never kills over genes. The Hologs, a
+  competition can show that. The Empire never kills over genes. Why mixed children have it so hard (Collins, Oct 26 2026): after the Gene War, mixture is
+  fought over at the level of the genes, down to junk DNA, and each House hones variants of its own ancestors' tradition
+  against the others'. If the Sons of Igbo take in a mixed child, Korean genes dilute the Igbo line, a strict win for
+  the Sons of Korea, unless they are exceptionally strong Korean genes, which the Igbo would then be "stealing"; and
+  would a Korean who married in adopt the House's ways, or impart their own? The Hologs, a
   House that bred itself into spaceship-sized brains, are what happens far off the curve (docs/UNIVERSE.md). YOKE thinks hybrid vigour is never worth the ostracism.
 - **Named in her news** (Collins, Oct 12 2026): the Crusade and the Caliphate over Rome; Israel, its wall and
   its freighters; the US, where the Baptists now hold premillennialism a heresy and burn books over it, and

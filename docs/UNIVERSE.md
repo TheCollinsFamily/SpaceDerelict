@@ -312,6 +312,13 @@ are read together. Uplifts look anthro, like the nekos (Collins).
   both Houses read it as genetic dilution; the children may have to found their own House or join a looser one (the
   nekos'). Mixing was normal on old Earth until the Mesoamerican ethnic group mixed into extinction. Keeping lines
   distinct is favouring one's own, not animosity, and not a claim to be better.
+  **Why mixed children have it so hard** (Collins, Oct 26 2026): this is a world after the Gene War (below), where wars
+  over genetic mixture were fought at the level of the genes themselves, down to junk DNA. Each House hones variants of
+  its own ancestors' tradition and competes them against the others', to make the best of what its ancestors were. Say
+  the Sons of Igbo take in a mixed child: Korean genes now dilute the Igbo line, which is a strict win for the Sons of
+  Korea, unless they are exceptionally strong Korean genes, in which case the Igbo are "stealing" them from the Koreans.
+  Either way one House loses, so neither wants the child. And would a Korean who married in really adopt the House's
+  ways and traditions, or impart their own?
 - **The Lipptors, a human class, not an uplift** (Collins, Oct 14 2026): Technopuritans genetically specialised
   for advanced mathematics and extensive AI integration, so far that their organs begin to shut down if they are
   not integrated with an AI within a few days of birth. Genetically further from the rest of the Empire than
