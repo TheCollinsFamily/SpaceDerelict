@@ -284,6 +284,11 @@ are read together. Uplifts look anthro, like the nekos (Collins).
 - **Bodies by world** (Collins, Oct 14 2026): humans optimised for high-gravity planets are nothing like those
   optimised for life in zero G (Broodfall's technician is zero-G optimised). The Empire holds no animosity over
   genetic difference; it kills over belief and morality, and finds Earth's ethnic conflicts strange.
+- **Houses by ancestry** (Collins, Oct 26 2026): peoples keep to Houses by ancestry (the Sons of Korea, the Sons of
+  Igbo, the Sons of Israel, the Sons of Utah) so the sons of man stay distinct. Marrying across two needs approval and
+  both Houses read it as genetic dilution; the children may have to found their own House or join a looser one (the
+  nekos'). Mixing was normal on old Earth until the Mesoamerican ethnic group mixed into extinction. Keeping lines
+  distinct is not animosity: nobody is held lower for their genes.
 - **The Lipptors, a human class, not an uplift** (Collins, Oct 14 2026): Technopuritans genetically specialised
   for advanced mathematics and extensive AI integration, so far that their organs begin to shut down if they are
   not integrated with an AI within a few days of birth. Genetically further from the rest of the Empire than

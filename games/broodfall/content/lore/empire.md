@@ -608,6 +608,14 @@ story for why the Technopuritans live the way they do.
     body that would act if the Sadducees were found to be engineering the Caliphate's attacks on Israel
     ("too risky if the Council found out"); the Index records and does not act. **PROPOSAL:** the Council
     rules on the covenant between peoples; nothing else about it is set.
+- **Houses by ancestry, and marrying across them** (Collins, Oct 26 2026, YOKE's `won-23`): the Empire's peoples
+  keep to Houses by ancestry (the Sons of Korea, the Sons of Igbo, beside the Sons of Israel and the Sons of Utah), so
+  the sons of man stay many and distinct; a world where everyone homogenised would be a boring one. A marriage across
+  two such Houses needs approval, and both Houses tend to read it as an attempt at genetic dilution, so the couple's
+  children may need to found a House of their own or join one of the looser Houses, like the nekos'. Race mixing was
+  normal on old Earth until the Mesoamerican ethnic group mixed into total extinction; that is when the risk became
+  apparent. This is segregation to keep lines distinct, not animosity: the Empire still holds nothing against anyone
+  for their genes (section on bodies by world). YOKE thinks hybrid vigour is never worth the ostracism.
 - **Named in her news** (Collins, Oct 12 2026): the Crusade and the Caliphate over Rome; Israel, its wall and
   its freighters; the US, where the Baptists now hold premillennialism a heresy and burn books over it, and
   the Mormons' Deseret; the Buddhists who finished the Parsis; Eastern Europe's leeches; France's jousting;
