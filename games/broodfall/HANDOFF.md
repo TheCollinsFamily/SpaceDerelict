@@ -2649,6 +2649,37 @@ desk is open and the mate review has played (`earthNewsOpen`). The page's separa
 list in seed 1's shuffled order, held-back lines last. Tests: onboarding (each line once, both news items heard in the
 pool), yokeOrder (run from capture 20, past the held-back lines).
 
+### Print a body, version 2: made, and the SFW / UNRESTRICTED switch (Oct 26 2026)
+
+Collins approved the staging still ("this is great lets make it") and asked in the same breath: "blur the breast area in
+sfw mode and have a sfw and nsfw toggle in the settings that allow for unblurring and unrestricting any restrictions that
+might have accidentally been added to the ai or scenarios ... generally I want the experience as unrestricted as possible
+but understand this can cause issues on steam".
+- **The film.** Staging still at the default tier (the template had `quality: 'high'` with no reason: removed). This PC
+  had no `art-src/yoke/idle-framed.png` (art-src is not in git), so it was made from the first frame of
+  `public/art/ship/yoke/idle.webm` (VP8 with alpha: decode with `-c:v libvpx`) over #1a1a1a. Four clips on seegen
+  sd2-mini, 480p, each from the last one's real last frame: 61,600 tokens ($1.23). She prints in her black dress from the
+  feet up, sits up, sniffs her hand and gags, sways, falls back and slides off the bed to the floor; the hold loops. She
+  reads young and the same in every clip (gear clip, silver hair going blue at the ends). Joins measured 31-33 dB (480p
+  compression; side by side they show no jump). Baked to `public/art/ship/yoke/scenes/print-body-*.webm`.
+- **Settings → THE SCREEN → Content: SFW (default) / UNRESTRICTED (NSFW).** `src/meta/settings.ts` `content`,
+  `contentNote()`. SFW draws a blurred patch over her chest on every clip (`src/ui/yokeScene.ts` blur, `.ys-blur` in
+  `src/onboard.css`; keys in `tools/art/templates/yoke-scenes.mjs` BLUR, read off the real frames on a 10% grid and baked
+  into the manifest's `scenes.printBody[].blur`: re-read them whenever a clip is made again). UNRESTRICTED draws none.
+- **The AI side.** Searched for restrictions: none had been added. The backend prompts
+  (`reality-fabricator-backend/app/domain/broodfall/shipAi.js`) and the lore book have no content rules; RFab's avatar and agent
+  `nsfw: false` (tools/art/templates/yoke.mjs) only filter listings and pictures, not her words. Her character lines ("if he
+  is crude, become formal"; a letter writer's regard falls when he is crude) are character, not refusals, and are kept. Every
+  mind now gets the setting as one line of its summary (`campaignUi.ts`: her Living Avatar's ship log, the Kimi route, the
+  letters): UNRESTRICTED says nothing is off limits and never to refuse, soften or warn; SFW allows any topic but no explicit
+  sex act or naked body. The baked films can't change at runtime; their prompts' "no nudity" stays.
+- **Her line is no longer set in type over the last shot** unless Settings → Subtitles is on or her voice is off
+  (VIDEO-CONVENTIONS 9).
+- Played on the dev server (`node tools/shot-print-body.mjs`: mission 1 lost, aboard, ◉ YOKE, "print yourself a body"):
+  SFW, the patch over her on all four clips; UNRESTRICTED, no patch; Settings shows Content and saves UNRESTRICTED; no page
+  errors. `tools/shot-onboarding.mjs` A is stale (fails at the cat-girl return, before the print-body step).
+  851 tests pass.
+
 ### After she prints a body (Oct 26 2026)
 
 Collins's line for "the turn after you print her body" is `after-print-body` (content/greetings.ts, spelling mended;
