@@ -480,6 +480,7 @@ export class Sim {
     for (let i = 0; i < this.geneMods.startNodes; i++) this.nodeStock.push(this.plainStrain());
     for (const [c, n] of Object.entries(cfg.startBonus ?? {})) this.meat[c as Caste] += n as number;
     if (cfg.trapCage || this.geneMods.trapCage) this.hand.push({ id: this.nextId++, family: 'cage', free: true });
+    for (const f of cfg.issue ?? []) this.hand.push({ id: this.nextId++, family: f, free: true });
     // A remembered board brings its organs back where they grew (they include the profile's); else the profile's own.
     if (snap) for (const o of snap.organs) this.regrowOrgan(o);
     else for (const id of cfg.startOrgans ?? []) this.growFree(id);
@@ -3225,7 +3226,7 @@ export class Sim {
    * detection aura over the body, or a mark (pheromone, mist) still on it.
    */
   canTarget(t: Tower, s: TowerStats, e: Enemy): boolean {
-    if (e.burrowed) return false;
+    if (e.burrowed || e.tagged) return false;
     if (this.isAirborne(e) ? !s.hitsAir : !s.hitsGround) return false;
     if (!this.isCloaked(e)) return true;
     return s.trueSight || this.isRevealed(e);
@@ -3741,6 +3742,11 @@ export class Sim {
     if (!prey) {
       prey = this.vulnerableTower() ?? undefined;
       e.extractId = prey?.id;
+      // Follow the Courier: the first one to go for a limb is tagged, and let go.
+      if (prey && this.cfg.followCourier && !this.enemies.some((o) => o.tagged) && !this.stats.limbsCarriedOff) {
+        e.tagged = true;
+        this.events.push({ kind: 'courier-tagged' });
+      }
     }
     if (!prey) {
       this.updateResearcher(e, spec);
@@ -5768,7 +5774,8 @@ export class Sim {
     }
 
     if (t.family === 'lasher' || t.family === 'maw') {
-      if (t.family === 'maw' && target.hp <= s.eatThreshold) {
+      if (t.family === 'maw' && (target.hp <= s.eatThreshold
+        || (!!this.cfg.royalDiet && enemySpec(target.kind).caste === 'royal' && target.hp <= target.maxHp * this.cfg.royalDiet))) {
         this.eatEnemy(target, t.id);
         return;
       }
@@ -6182,6 +6189,7 @@ export class Sim {
    * clouds, fire, poison) is soaked out of the dome's pool first. An emptied dome BREAKS.
    */
   private domeSoak(e: Enemy, dmg: number): number {
+    if (e.tagged) return 0; // the tagged courier (Follow the Courier): nothing of yours hurts it
     if (dmg <= 0 || this.unitStrike > 0 || this.domeBearers.length === 0) return dmg;
     const b = this.domeOver(e);
     if (!b) return dmg;
@@ -6240,6 +6248,7 @@ export class Sim {
   }
 
   private damageEnemy(e: Enemy, dmg: number, yieldMult: number, capBonus = 0, srcId?: number, quiet = false): void {
+    if (e.tagged) return; // the tagged courier (Follow the Courier)
     // A DOME over it soaks what your limbs throw; your walking units' blows pass straight through (unitStrike).
     dmg = this.domeSoak(e, dmg);
     if (dmg <= 0) return;

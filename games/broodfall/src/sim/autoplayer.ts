@@ -12,6 +12,9 @@ import { CellType } from './citymap';
 import { BALANCE as B } from '../../content/data';
 import type { Tower, TowerFamily, UpgradeChoice } from './types';
 
+/** The free cards an experiment issues (content/campaign.ts EXPERIMENTS setup): the experimenter plays them itself. */
+const GEAR = new Set<TowerFamily>(['cage', 'lure', 'maw', 'ember']);
+
 const isPassableCell = (sim: Sim, c: number): boolean => sim.map.cells[c] === CellType.Road || sim.map.cells[c] === CellType.Plaza;
 
 export class Autoplayer {
@@ -49,6 +52,13 @@ export class Autoplayer {
    * selecting units and ordering them (2 per individual order), a group order (2: the portrait, the board), a SEND (1).
    */
   roster = false;
+  /**
+   * THE EXPERIMENTER (Oct 26 2026): off by default. On: it plays an experiment's gear first, the free cards a
+   * deployment is issued (the trap cage, the love-gas lures, the royal diet's maw, the nursery's flamethrowers): the
+   * flamethrowers on the creep nearest a spawn gate (held until the creep gets within reach, or wave 4), the rest where
+   * the lanes run thickest. tools/measure/economy.measure.ts plays each experiment with it.
+   */
+  experimenter = false;
   clicks = 0;
   private muleGoal = new Map<number, number>();
   private parked = new Set<number>();
@@ -271,6 +281,7 @@ export class Autoplayer {
     if (this.actTimer > 0) return;
     this.actTimer = 1.5;
     this.strikeStations(sim);
+    if (this.experimenter && this.placeGear(sim)) return;
     if (this.stack) this.manageStack(sim);
     if (this.mules && this.manageMules(sim)) return;
     if (this.expansion && this.manageExpansion(sim)) return;
@@ -408,6 +419,7 @@ export class Autoplayer {
     });
     for (let i = 0; i < sim.hand.length; i++) {
       const fam = sim.hand[i].family;
+      if (this.experimenter && sim.hand[i].free && GEAR.has(fam)) continue; // placeGear's
       if (!sim.canAfford(towerSpec(fam).cost)) continue;
       // Support limbs are placed by their OWN logic, never on a gun's perch:
       // the ward behind the guns it shields, the bombard deep in the body.
@@ -474,6 +486,30 @@ export class Autoplayer {
         }
       }
     }
+  }
+
+  /** The experimenter's gear (see `experimenter`): one free gear card played, or false. */
+  private placeGear(sim: Sim): boolean {
+    const i = sim.hand.findIndex((c) => c.free && GEAR.has(c.family));
+    if (i < 0) return false;
+    const fam = sim.hand[i].family;
+    const big = isMultiCell(towerSpec(fam)) ? fam : undefined;
+    let cell: number | null = null;
+    if (fam === 'ember') {
+      let bd = Infinity;
+      for (let c = 0; c < sim.map.cells.length; c++) {
+        if (!sim.canBuildTower(c, big)) continue;
+        const p = sim.cellCenter(c);
+        for (const g of sim.gates) {
+          const q = sim.cellCenter(g);
+          const d = Math.hypot(p.x - q.x, p.y - q.y);
+          if (d < bd) { bd = d; cell = c; }
+        }
+      }
+      if (cell !== null && bd > 6 * sim.cfg.cellPx && sim.wavesCleared < 4) return false;
+    } else cell = this.findTowerCell(sim, false, false, big);
+    if (cell === null) return false;
+    return sim.issue({ kind: 'build', cardIndex: i, cell }).ok;
   }
 
   /** Is there ground anywhere on the board that a limb of this family could be built on? */

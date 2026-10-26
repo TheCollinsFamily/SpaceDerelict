@@ -77,7 +77,7 @@ async function still() {
   const room = path.join(DIR, 'ref-room.png');
   if (!fs.existsSync(room)) ffmpeg(['-i', path.join(ART, 'ship', 'room-genes.webp'), room]);
   await makeStill({
-    slug: 'yoke print-body bay', out: stillFile, width: 1280, height: 720, quality: 'high', key: null,
+    slug: 'yoke print-body bay', out: stillFile, width: 1280, height: 720, key: null,
     refFiles: [room, path.join(SRC, 'yoke', 'idle-framed.png')],
     prompt: `${ROOM} On the bed lies only the faint, glowing, translucent white wireframe outline of a lying woman, head ` +
       'toward the right, as if the printer has only drawn her guide lines so far: no skin and no cloth yet, just thin white ' +

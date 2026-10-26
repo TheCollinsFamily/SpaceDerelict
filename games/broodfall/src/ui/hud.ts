@@ -95,6 +95,8 @@ const FEED_LINES: Partial<Record<SimEvent['kind'], (e: SimEvent) => { text: stri
   'tower-stolen': (e) => e.kind === 'tower-stolen'
     ? { text: `SPECIMEN LOSS: a ${e.family} is being carried off — intercept`, cls: 'hot' }
     : { text: '', cls: '' },
+  'courier-tagged': () => ({ text: 'COURIER TAGGED — your limbs hold fire on it: let it run home with a limb', cls: 'sci' }),
+  'royal-captured': (e) => e.kind === 'royal-captured' ? { text: `ROYAL CAGED: the ${e.enemy} is grafted and walks for you now`, cls: 'royal' } : { text: '', cls: '' },
   'tower-recovered': (e) => e.kind === 'tower-recovered'
     ? { text: e.refunded ? `${e.family} recovered — ground taken, biomass refunded` : `${e.family} recovered and re-rooted`, cls: 'sci' }
     : { text: '', cls: '' },

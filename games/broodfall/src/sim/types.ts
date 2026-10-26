@@ -508,6 +508,8 @@ export interface Enemy {
   sleeperAt?: number;
   /** Mating musk: this body has already paired off. */
   mated?: boolean;
+  /** Follow the Courier: the tagged courier. Your limbs hold fire on it and nothing of yours hurts it. */
+  tagged?: boolean;
   pos: Vec;
   hp: number;
   maxHp: number;
@@ -850,6 +852,7 @@ export type SimEvent =
   | { kind: 'meat-stolen'; amount: number }
   | { kind: 'meat-recovered'; amount: number }
   | { kind: 'tower-stolen'; family: TowerFamily }
+  | { kind: 'courier-tagged' }
   | { kind: 'tower-recovered'; family: TowerFamily; refunded: boolean }
   | { kind: 'promoted'; from: EnemyKind; to: EnemyKind }
   | { kind: 'cannon-deployed'; enemy: EnemyKind }
@@ -974,6 +977,16 @@ export interface SimConfig {
   matingMusk?: boolean;
   /** Experiment: start with a free Trap Cage card. */
   trapCage?: boolean;
+  /**
+   * An experiment's own gear (Oct 26 2026): free cards in the first hand, placed like any card and paid by nobody (the
+   * Love Gas lures, the Nursery Visit's flamethrowers, the Royal Diet's maw), so an experiment never needs a lineage the
+   * campaign has not bought yet. The Trap Cage has its own flag above, kept for its gene.
+   */
+  issue?: TowerFamily[];
+  /** Experiment (Follow the Courier): the first science body to go for a limb is TAGGED; nothing of yours hurts it, so it gets away with the limb. */
+  followCourier?: boolean;
+  /** Experiment (Royal Diet): a maw swallows a royal worn down to this share of her hp (an ordinary maw: 25 hp, never a royal). */
+  royalDiet?: number;
   /**
    * The families the FIRST hand is drawn from (mission 1: the plain limbs a new player can read at a
    * glance). Only the weights change: each card is still one rng draw, so the rng's order is the same.
