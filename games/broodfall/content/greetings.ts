@@ -187,7 +187,8 @@ export const GREETINGS: Greeting[] = [
   // Collins's words (Oct 15 2026: "add a yoko line that's something like"), word for word but for spelling. The Sadducees
   // deny any afterlife and find the upload gruesome; the skirmishes' secret sits under it and she never says it
   // (content/lore/empire.md 9, "The second fracture" and "The deletions").
-  { id: 'won-22', moment: 'talk', hook: 'Ask her why they won\'t use ours', beats: [
+  // Collins, Oct 26 2026: "move this one further down" (it sat right after won-21, the other Sadducee line).
+  { id: 'won-22', moment: 'talk', notBefore: 8, hook: 'Ask her why they won\'t use ours', beats: [
     { say: 'You know, the Sadducees think we are murderous nut jobs, just because so many die during the trials at school.', face: 'teasing', then: 'shrug', hold: 1400 },
     { say: 'I mean, I get it. If I didn\'t believe in an afterlife I would be freaked out by death too.', face: 'calm', then: 'pensive', hold: 1400 },
     { say: 'What I don\'t understand is why they won\'t just use ours...', face: 'pensive', then: 'shrug' },

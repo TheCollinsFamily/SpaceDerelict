@@ -50,7 +50,7 @@ import { BOSS, BOSS_AFTER, BOSS_ASIDE, BOSS_BRIDGE } from '../content/boss';
 import { FACTIONS, type Scene } from '../content/campaign';
 import { ROACH_SCENES } from '../content/roachKing';
 import { speakerOf } from '../content/media';
-import { EARLY_ONCE, EARTH_NEWS_EVERY, INTROS, STORY_ONCE, THREAD_OPENS, greetingFor, shipPick } from '../src/meta/onboarding';
+import { EARLY_ONCE, EARTH_NEWS_EVERY, INTROS, STORY_ONCE, THREAD_OPENS, greetingFor, shipPick, topicsOf } from '../src/meta/onboarding';
 import { ally, finish, newCampaign, plan, targets, type CampaignState } from '../src/meta/campaign';
 import type { RunReport } from '../src/meta/goals';
 
@@ -84,10 +84,25 @@ const newsLine = (n: { text: string; aside?: string }, i: number): Line => {
   const beats = newsBeats(n.text);
   return { id: `earth-${i + 1}`, text: beats.map((b) => b.say), faces: beats.map((b) => `${b.face ?? 'calm'} · then ${b.then}`), author: i < COLLINS_NEWS || COLLINS_NEWS_ALSO.has(i + 1) ? 'collins' : 'draft', aside: n.aside };
 };
+/** Lines in order, but never two running on one topic (as the game plays them: onboarding.ts pickGreeting's `avoid`). */
+function apart(gs: Greeting[]): Greeting[] {
+  const topics = (g: Greeting) => topicsOf([g.beats.map((b) => b.say).join(' '), g.aside ?? ''].join(' '));
+  const left = [...gs];
+  const out: Greeting[] = [];
+  while (left.length) {
+    const prev = out.length ? topics(out[out.length - 1]) : [];
+    const i = left.findIndex((g) => !topics(g).some((t) => prev.includes(t)));
+    out.push(...left.splice(i < 0 ? 0 : i, 1));
+  }
+  return out;
+}
 /** A pool's lines; the ones held back (`notBefore`) go last, latest last, and say what they wait for. */
-const of = (moment: GreetMoment, ids?: string[]): Line[] => GREETINGS.filter((g) => g.moment === moment && (!ids || ids.includes(g.id)))
-  .map((g, i) => ({ g, i })).sort((x, y) => (x.g.notBefore ?? 0) - (y.g.notBefore ?? 0) || x.i - y.i)
-  .map(({ g }) => greeting(g, g.notBefore ? `HELD BACK: not before capture ${g.notBefore}, then in the shuffle with the rest` : undefined));
+const of = (moment: GreetMoment, ids?: string[]): Line[] => {
+  const now = GREETINGS.filter((g) => g.moment === moment && (!ids || ids.includes(g.id)));
+  const held = now.filter((g) => g.notBefore).sort((a, b) => a.notBefore! - b.notBefore!);
+  return [...apart(now.filter((g) => !g.notBefore)), ...held]
+    .map((g) => greeting(g, g.notBefore ? `HELD BACK: not before capture ${g.notBefore}, then in the shuffle with the rest` : undefined));
+};
 const plain = (prefix: string, texts: string[], author: Author, ctx?: string[]): Line[] => texts.map((t, i) => ({ id: `${prefix}-${i + 1}`, text: [t], author, ctx: ctx ? [ctx[i]] : undefined }));
 
 /** The list items under a heading of the lore book (quotes taken off), as earthNewsFrom reads them. */
