@@ -288,13 +288,14 @@ are read together. Uplifts look anthro, like the nekos (Collins).
   Catholic converts, it struggled to gain prominence because of the early Technopuritans' prejudice against Catholics.
   It is old in its continuity and an amalgam of northern European genetic contributions from groups that did not fit
   neatly into anything ("northern European mutts"). Now one of the oldest continuous Houses, with about 24% of a Dyson
-  sphere dedicated to it: much smaller than the large Houses. How it governs itself is not set yet.
+  sphere dedicated to it: much smaller than the large Houses. It weights each vote by the voter's individual contribution (YOKE's "our Houses'
+  votes", set against the Sons of Loxodonta's AI).
 - **How Houses govern themselves** (Collins, Oct 26 2026): every House is Technopuritan, the uplifts' Houses too, and
   the Index is made up of all of them, governed through electors the Houses name (below; Malcolm and Simone Collins's
   writings, the corpus: TPG 11.1, TPG 2.6, HOME 1.0). Within itself, a House may use any method of
   governance and voting it likes. That is the wider Technopuritan philosophy: let people try things their own way, and
   let competition prove what is best. So the Houses differ. Many weight a vote by the voter's individual contribution
-  (YOKE's preference); **the Sons of Loxodonta**, the uplifted elephants' House, are governed by a purely synthetic
+  (House Constantine does; YOKE's preference); **the Sons of Loxodonta**, the uplifted elephants' House, are governed by a purely synthetic
   token-predicting AI trained on the House's collective output, conversations and personal journal entries, so the House
   decides as the whole House would. One person, one vote, which some Baptist conventions in America still use, YOKE
   thinks morally appalling, since it gives one who has built nothing the same say as one who has built a world; a House

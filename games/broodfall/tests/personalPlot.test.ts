@@ -51,10 +51,13 @@ describe('the once intros', () => {
     expect(introFor(at({ captures: 3, lastGreeting: 'back-5', greetingsSaid: ['back-5'] }))).toBeNull();
     expect(introFor(at({ captures: 3, lastGreeting: 'won-2', greetingsSaid: ['back-5'] }))?.id).toBe('intro-barnabas');
     // The duck, the Board and the Gene War were cut (Collins, Oct 18 2026); the audit is next, from capture 8.
-    expect(introFor(at({ captures: 6, greetingsSaid: ['back-5', 'intro-barnabas'] }))).toBeNull();
-    expect(introFor(at({ captures: 8, greetingsSaid: ['back-5', 'intro-barnabas'] }))?.id).toBe('intro-audit');
+    // Print a body as a conversation, from capture 5 (Oct 26 2026).
+    expect(introFor(at({ captures: 4, greetingsSaid: ['back-5', 'intro-barnabas'] }))).toBeNull();
+    expect(introFor(at({ captures: 5, greetingsSaid: ['back-5', 'intro-barnabas'] }))?.id).toBe('intro-body');
+    expect(introFor(at({ captures: 6, greetingsSaid: ['back-5', 'intro-barnabas', 'intro-body'] }))).toBeNull();
+    expect(introFor(at({ captures: 8, greetingsSaid: ['back-5', 'intro-barnabas', 'intro-body'] }))?.id).toBe('intro-audit');
     // The second neko line waits for capture 12 (Oct 18 2026: "this is super early").
-    const neko = { greetingsSaid: ['back-5', 'intro-barnabas', 'intro-audit', 'intro-dad'], said: ['mate-review', 'catgirl', 'partner-progress'] };
+    const neko = { greetingsSaid: ['back-5', 'intro-barnabas', 'intro-body', 'intro-audit', 'intro-dad'], said: ['mate-review', 'catgirl', 'partner-progress'] };
     expect(introFor(at({ captures: 11, ...neko }))).toBeNull();
     expect(introFor(at({ captures: 12, ...neko }))?.id).toBe('intro-catgirl');
   });

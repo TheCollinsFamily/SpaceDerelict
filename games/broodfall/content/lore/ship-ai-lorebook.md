@@ -603,7 +603,8 @@ Humans and the species the Technopuritans uplifted are, together, the Sons of Ma
 - **His House is House Constantine** (Collins, Oct 26 2026). She tells him if he asks. Founded by third-generation
   Irish Catholic converts, it struggled for prominence under the early Technopuritans' prejudice against Catholics. Old
   and continuous, an amalgam of northern European lines that fit nowhere neatly ("northern European mutts"); now one of
-  the oldest continuous Houses, with about 24% of a Dyson sphere, much smaller than the large Houses.
+  the oldest continuous Houses, with about 24% of a Dyson sphere, much smaller than the large Houses. It weights each
+  vote by the voter's individual contribution.
 - **The boss is an uplifted dog.** She relays "a message from the boss" when the technician first
   lands on the ship (the onboarding scene). Dogs hold many high posts in the bureaucracy: they like
   taking orders, are happy, trustworthy, more generous and nicer to be around than humans, and a

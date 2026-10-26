@@ -2719,3 +2719,11 @@ brain text and notes) is gone from tools/art/templates/yoke.mjs brainText and te
 to fit it were for nothing. The brain text now holds House Constantine in full (4,202 characters). It needs republishing
 from the PC: `node tools/art/make.mjs yoke --publish`. If RFab refuses or cuts a long hardCodedPersonality, that is a
 limit to remove in RFab, not to trim around here.
+
+### Print a body is a conversation (Oct 26 2026)
+
+Collins: the humanisation "is only unique in that it's a conversation with an optional cinematic". New once intro
+`intro-body` (capture 5, after intro-barnabas; a DRAFT of three lines for him to edit): she raises the fabrication bay
+printing her a body, hook "Ask her to print herself a body"; if he asks, the film plays as before. Played in the real
+game: a save at capture 5 comes aboard to it, and "print yourself a body" in the intercom starts the printBody scene.
+House Constantine weights votes by contribution (won-27's "our Houses' votes"; the elephants are the contrast).

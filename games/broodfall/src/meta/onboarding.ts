@@ -209,6 +209,8 @@ export const STORY_ONCE: Array<{ id: GreetMoment; captures: number }> = [
 export const INTROS: Array<{ id: string; captures: number; needs?: (s: CampaignState) => boolean }> = [
   { id: 'back-5', captures: 2 },
   { id: 'intro-barnabas', captures: 3 },
+  // Print a body as a conversation (Collins, Oct 26 2026): she raises it; the film plays only if he asks.
+  { id: 'intro-body', captures: 5 },
   { id: 'intro-audit', captures: 8 },
   { id: 'intro-dad', captures: 10, needs: (s) => (s.said ?? []).includes('mate-review') },
   // Collins, Oct 18 2026: "move later, this is super early and the character may not be introduced yet": not before
