@@ -2509,3 +2509,20 @@ fight". The yoke-brain notes and the Partner Candidate page did not carry the st
   embarrassed by it and keep it because it helps true fitness. Atlas was extremely turned on killing her friend and is very
   embarrassed. In Atlas's prompt she admits it only if he keeps prying about the moment. The companion knows but never tells
   it for her ("ask her yourself"), and YOKE knows only the general fact (lorebook).
+
+### Live edits from the YOKE's Lines page go straight into the files (Oct 26 2026)
+
+He edits in the page's boxes and asks for it to be "reflected wherever this stuff is recorded". Do it this way:
+ArtifactData list `edits` with out_dir, then `node tools/yoke-apply.mjs <out_dir>`. It writes every rewritten beat into
+the file it came from (only where the words occur exactly once) and lists what is left for you: Remove marks, notes, and
+beats it could not place. Then rebuild (tools/yoke-lines.ts) and republish. A beat that now matches, or a line that is
+gone, clears from the page by itself; clear a note you acted on with ArtifactData delete.
+Applied today:
+- the three signal cards: his rewrites. The Director is unnamed on the card, and "pilots" and "the matching sequence"
+  are cut. Tests updated.
+- won-20: reworded.
+- Removed: won-13 through won-18. Also removed: licence-1 and ended-1. He called them "legacy" and said "lines are supposed
+  to spark interesting conversation not a simple you won or lost". momentAfter no longer returns 'licence' or 'ended',
+  so those returns get everyday talk. The licence MECHANIC is still there (standing 60, the Board bar on the ship, the
+  AI Core 'licence' discussion); he said "we don't have any mechanic that would trigger this", so ask before removing it.
+- won-12 "move this way later": new `notBefore` on a talk line (deployments). won-12 is notBefore 12.

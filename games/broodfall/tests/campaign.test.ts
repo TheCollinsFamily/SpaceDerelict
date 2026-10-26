@@ -334,7 +334,8 @@ describe('the factions keep in touch, and choices change the route (audit, Sep 2
     const all = inst.asides.join(' ');
     expect(all).toMatch(/League of Larvae|mid-match/);
     expect(all).toMatch(/females/);
-    expect(inst.contact.lines.join(' ')).toMatch(/Eli Bankfried/);
+    // Collins, Oct 26 2026: the card names him by title only now ("the Director of the Institute").
+    expect(inst.contact.lines.join(' ')).toMatch(/Director of the Institute/);
   });
 
   it('a smaller wave scale really sends fewer bodies (the sim reads waveScale; no perk sets it since Oct 3 2026)', () => {
@@ -377,11 +378,11 @@ describe('how the factions reach him, and the picture of every scene', () => {
     // Collins, Oct 3 2026: 11,000 members spell a letter with coloured cards in a field; a radio preacher; a laser whose
     // flashes decode as a video feed, answered with the matching sequence.
     expect(by('delegation').contact.lines.join(' ')).toMatch(/Eleven thousand of them are standing in a field, holding coloured cards/);
-    expect(by('delegation').contact.lines.join(' ')).toMatch(/pilots have stopped flying/);
+    // Oct 26 2026: he cut the pilots from the card (the delegate still says it in their scenes).
     expect(by('faithful').contact.lines.join(' ')).toMatch(/every station/);
     expect(by('faithful').contact.lines.join(' ')).toMatch(/you are the sign/);
     expect(by('institute').contact.lines.join(' ')).toMatch(/decodes as a video feed/);
-    expect(by('institute').contact.lines.join(' ')).toMatch(/matching sequence back down the beam/);
+    // Oct 26 2026: he cut the answering sequence from the card.
     for (const f of FACTIONS) {
       // A signal's card is the ship's own words: no leader speaks on it (their first words are their first interaction).
       for (const l of f.contact.lines) expect(l, f.id).toMatch(/^(YOKE|You): /);

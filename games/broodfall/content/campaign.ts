@@ -474,8 +474,8 @@ export const FACTIONS: FactionDef[] = [
     // They want to understand you, and some of their pilots have stopped flying." YOKE gives this one last, embarrassed
     // ("and someone left coloured cards in a field").
     contact: { title: 'Coloured Cards in a Field', lines: [
-      'YOKE: The Granary Belt. Eleven thousand of them are standing in a field, holding coloured cards over their heads for our survey cameras. It spells a letter. To you.',
-      'YOKE: It says they want to understand you. And that some of their pilots have stopped flying.',
+      'YOKE: Eleven thousand of them are standing in a field, holding coloured cards over their heads for our survey cameras. It spells a letter. To you.',
+      'YOKE: It says they want to understand you.',
       'You: (log) Eleven thousand of the local fauna have spelled me a letter. YOKE finds it embarrassing. They are holding a summit.',
     ] },
     signal: { lat: -17, lon: 12, how: 'coloured cards in a field' },
@@ -633,8 +633,8 @@ export const FACTIONS: FactionDef[] = [
     // come. Let us help you end it." (His note says 40 stations; on Oct 1 he had it as tens of thousands in sync, so that
     // the ship would notice. The card names no number: OPEN, notes/CAMPAIGN-BEATS.md.)
     contact: { title: 'A Sermon on Every Station', lines: [
-      'YOKE: Radio. One preacher, the same sermon on every station he has at the same second, pointed straight up. He calls himself the Voice.',
-      'YOKE: He says you are the sign. That the world must end for the Awaited One to come. And that they would like to help you end it.',
+      'YOKE: A radio preacher is playing the same sermon on every station in a fairly large network.',
+      'YOKE: He says you are the sign they have waited for that the world must end for the Awaited One to come.',
       'You: (log) The fauna have a radio preacher, and he is expecting me. I will go down by hologram and hear him out.',
     ] },
     signal: { lat: 54, lon: 9, how: 'a sermon on every radio station' },
@@ -776,8 +776,8 @@ export const FACTIONS: FactionDef[] = [
     // Collins, Oct 3 2026: "you get a laser directed at your ship beaming a pattern that's decodable as a video feed ... you
     // open it up and send a corresponding laser sequence back to its source".
     contact: { title: 'A Laser on the Hull', lines: [
-      'YOKE: A laser, from an observatory on the surface, aimed at our hull. It is flashing a pattern, and the pattern decodes as a video feed.',
-      'YOKE: The feed names its sender: Eli Bankfried, Director of the Institute for Long-Term Hive Flourishing. To open it I send the matching sequence back down the beam.',
+      'YOKE: A laser, from an observatory on the surface, aimed at our hull. It is flashing a pattern that decodes as a video feed.',
+      'YOKE: The sender is the Director of the Institute for Long-Term Hive Flourishing.',
       'You: (log) Somebody down there has made a video call out of a laser. Opening it.',
     ] },
     signal: { lat: 51, lon: 82, how: 'a laser on the hull' },

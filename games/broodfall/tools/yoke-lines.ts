@@ -48,7 +48,7 @@ import { EARTH_NEWS_FALLBACK, GREETINGS, earthNews, newsBeats, type GreetMoment,
 import { PRINT_BODY } from '../content/yokeScenes';
 import { BOSS, BOSS_AFTER, BOSS_ASIDE, BOSS_BRIDGE } from '../content/boss';
 import { CHANNELS, TRANSLATOR_NOTES } from '../content/translation';
-import { FACTIONS, LICENCE_STANDING, type Scene } from '../content/campaign';
+import { FACTIONS, type Scene } from '../content/campaign';
 import { ROACH_SCENES } from '../content/roachKing';
 import { speakerOf } from '../content/media';
 import { EARLY_ONCE, EARTH_NEWS_EVERY, INTROS, STORY_ONCE, THREAD_OPENS, greetingFor, shipPick } from '../src/meta/onboarding';
@@ -220,12 +220,6 @@ const steps: Step[] = [
       const yoke = f.contact!.lines.filter((l: string) => l.startsWith('YOKE:')).map((l: string) => l.replace(/^YOKE:\s*/, ''));
       return { id: `${f.id}-contact`, text: yoke, author: 'draft' as Author, ctx: [`${f.name}: "${f.contact!.title}", on its card at the desk`] };
     })) },
-  { id: 'licence', part: PART_STORY, name: `The licence: standing reaches ${LICENCE_STANDING}`, where: GREET,
-    what: 'TRIGGER: the return on which the Board approves the procreation licence. It outranks everything but the end.',
-    branches: one(of('licence')) },
-  { id: 'ended', part: PART_STORY, name: 'The end: the last mission won', where: GREET,
-    what: 'TRIGGER: the return that ends the campaign. It outranks everything.',
-    branches: one(of('ended')) },
 
   { id: 'outcome', part: PART_EVERY, name: 'Her everyday talk: one pool, won or lost', where: GREET,
     what: 'TRIGGER: any ordinary return with nothing in part 3 due: mission, her line, mission, her line (Collins, Oct 19 2026). Won or lost makes no difference once the desk is open. The pool is shuffled by the campaign\'s seed and each line is said once a campaign, so every campaign hears them in a different order, and a pool bigger than a campaign means a replay hears lines the last one did not. One return in three she gives a line of news from Earth instead (below). Two kinds of return keep lines of their own: a loss before the desk opens, and a counter-attack, since those say what happened.',

@@ -17,7 +17,7 @@ describe('the depth of her pools', () => {
   it('each ordinary moment has lines enough for a long campaign', () => {
     // Oct 12 2026: Collins cut what did not carry their world; what carries it was written in its place.
     // Oct 19 2026: once the desk is open, won or lost draw on one pool, her everyday talk.
-    expect(size('talk')).toBeGreaterThanOrEqual(25);
+    expect(size('talk')).toBeGreaterThanOrEqual(15);
     expect(size('won') + size('lost') + size('back')).toBe(0);
     expect(size('defended')).toBeGreaterThanOrEqual(5);
     expect(size('fell')).toBeGreaterThanOrEqual(5);

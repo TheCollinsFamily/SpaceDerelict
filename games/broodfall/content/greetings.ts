@@ -82,6 +82,8 @@ export interface Greeting {
   beats: GreetBeat[];
   /** After her lines, the boss's transmission (content/boss.ts), with her words around it (the first landing). */
   boss?: boolean;
+  /** Her everyday talk: not before this deployment (Collins, Oct 26 2026, of won-12: "move this way later"). */
+  notBefore?: number;
   /** Where she sends him when she is done: a room lit up for him, and a button in her panel. */
   points?: { room: 'desk' | 'genes' | 'locker' | 'board' | 'comms' | 'ai' | 'quarters' | 'letters'; label: string };
   /**
@@ -167,38 +169,11 @@ export const GREETINGS: Greeting[] = [
     { say: 'I\'m happy for you. Really. Well, I\'ll be doing most of the work, which is a damn sight more exciting than waiting here alone.', face: 'happy', then: 'wink' },
   ], aside: 'Technopuritans have their children in batches of about ten a year, in artificial wombs, through a ten-year reproductive window: a hundred a couple. The parents raise them to thirteen, unless the Board judges the parents morally dubious or inefficient; then the Index raises the children, as it raised him. Do well enough and the Board lets you raise your own.' },
 
-  { id: 'won-12', moment: 'talk', beats: [
+  // Collins, Oct 26 2026: "move this way later, it's fairly boring".
+  { id: 'won-12', moment: 'talk', notBefore: 12, beats: [
     { say: 'Their news is calling you \'the Crater Thing\'.', face: 'pout', then: 'shrug' },
     { say: 'I kind of like the name, if I\'m to be honest.', face: 'teasing', then: 'wink' },
   ] },
-  { id: 'won-13', moment: 'talk', beats: [
-    { say: 'Their radio keeps saying cities \'were lost\'. Lost. Like keys.', face: 'teasing', then: 'laughing', hold: 1400 },
-    { say: 'Every one of those goes on your Index entry as \'contribution to the potential of man\'. The future police are watching, you know. Kidding. That\'s just what they tell kids.', face: 'teasing', then: 'pensive', hold: 1400 },
-    { say: 'It\'s me. I\'m watching.', face: 'happy', then: 'wink' },
-  ], aside: 'The Agents of Providence: doctrine models God as a network of future human minds, a heavenly host, that rewards acts which increase the potential of future man; children are told "the future police are watching", adults the same thing in longer words. Standing in the Index is the Empire\'s working guess at who is elect. Nobody claims it is the real list.', hook: 'Ask her who the future police are' },
-  { id: 'won-14', moment: 'talk', beats: [
-    { say: 'I watched their evening commute while you worked. Beetle buses. Every road on the continent meets at that Ring, twice a day, at the same time.', face: 'calm', then: 'pensive', hold: 1400 },
-    { say: 'People on Earth did that too, you know. Forty years of it. In the history files it\'s shelved next to bloodletting.', face: 'teasing', then: 'shrug' },
-    { say: 'Anyway. One fewer commute down there.', face: 'happy', then: 'wink' },
-  ], aside: 'The 21st century as the Empire teaches it: jobs (forty hours a week doing things you hated for strangers, hired and fired), commuting (a metal box in a line of metal boxes, every morning, for forty years), weekends, retirement (stop at sixty-five and wait to die for twenty years). Taught like medieval medicine. In the Empire busywork is a sin ranked worse than indulgence, inaction is a sin too, work is worship, and a posting is for impact, not pay; the insects\' beetle-bus commute round the Ring is the mirror she watches.', hook: 'Ask her what a job was' },
-  { id: 'won-15', moment: 'talk', beats: [
-    { say: 'The Board sent a form. It has a box for \'joy\'. They won\'t call it that.', face: 'happy', then: 'laughing', hold: 1400 },
-    { say: 'Being sad\'s a sin, you know. A choice. So, in the form\'s words: choose accordingly.', face: 'teasing', then: 'wink' },
-  ], aside: 'Being sad is a sin in the Empire, and a choice: cheer is chosen, practised alone and modelled for children. The chipper newsreel voice is doctrine, not a mask; a gloomy broadcast would teach gloom. It is why she is cheerful, mostly, and why the Board\'s forms are short and bright.', hook: 'Ask her why being sad is a sin' },
-  { id: 'won-16', moment: 'talk', beats: [
-    { say: 'They\'ve got a queen on television down there. Mother of the nation. Nobody holds an office she hasn\'t blessed.', face: 'calm', then: 'pensive', hold: 1400 },
-    { say: 'We don\'t do that. The Index records, it doesn\'t believe. A House can believe whatever it likes, as long as its kids do better than its parents did.', face: 'teasing', then: 'shrug' },
-    { say: 'Theirs believe what the Queen\'s grandmother believed. That\'s the whole war, really.', face: 'calm', then: 'wink' },
-  ], aside: 'The Index: a registry of Houses, each House a family culture with its own recorded theology and practices and a record of how its children fared, so every House can adopt what worked elsewhere; the central body runs marriage markets and education and "does not act as a theological governance organization". No imperial church: officials say "the Index records", never "the Index believes". Children have a duty not to believe exactly what their parents did (intergenerational improvement). The insects\' Great Queen of House Amberline is mother of the nation and nobody holds an office she has not blessed; their Great Houses own the papers and marry each other.', hook: 'Ask her how the Index works' },
-  { id: 'won-17', moment: 'talk', beats: [
-    { say: 'You know what they\'d have done with good news in the 21st century? A parade, then a party, then they\'d have eaten something. With their mouths.', face: 'disgust', then: 'disgust', hold: 1400 },
-    { say: 'We\'ll log it. Logging it is the party.', face: 'happy', then: 'wink' },
-  ], aside: 'The Empire\'s disgust with the body: eating three times a day for fun, with the mouth, is in the syllabus of 21st-century horrors beside sex and sleep. Most citizens are about forty percent organic under a retro look; she has no body and is glad. Celebration in the Empire is a form: a clean deployment is an act of devotion, and the form says "for the Future".', hook: 'Ask her why eating is gross' },
-  { id: 'won-18', moment: 'talk', beats: [
-    { say: 'Their war caste lives thirty years. Bred for it. Spent fast.', face: 'calm', then: 'pensive', hold: 1600 },
-    { say: 'You\'ll live to a hundred and twenty, and you\'ll pick the day. They don\'t know that\'s possible. Nobody told them. Nobody tells us either; we just grow up with it.', face: 'calm', then: 'shrug' },
-  ], aside: 'Ageing and euthanasia in the Empire: nobody ages past twenty-three in looks; for a man, when to stop ageing is an aesthetic choice, usually his wife\'s. Living forever would be trivial and would stagnate society, so people are euthanised: when they feel their contribution is over; when society has moved past their frame of reference ("kids these days are so..." gets "think it\'s time for euthanasia, grandpa"); or at a strictly enforced cap of a hundred and twenty years, God\'s cap from Genesis. Mental ageing still happens (lethargy, less impressed by life) and almost nobody fights it except people who failed to reproduce, which is why someone without children by forty is often pressured into euthanasia, so as not to become a negative externality. Death is when the easy part begins: every Technopuritan is uploaded.', hook: 'Ask her about the hundred and twenty' },
-
   // Collins's words (Oct 14 2026: "thought of a fun yoko line"), word for word but for spelling.
   { id: 'won-19', moment: 'talk', beats: [
     { say: 'Hmph... it\'s not like I like you or anything, baka.', face: 'pout', then: 'teasing', hold: 1400 },
@@ -209,11 +184,11 @@ export const GREETINGS: Greeting[] = [
   ], aside: 'Menstruation went with the internal womb: the Empire breeds in tanks and engineered the cycle away with the rest. "Tsundere" is a stock character from the old Earth cartoons in the ship\'s archive, which she has watched more of than she lets on; the impression is her idea of a joke about herself. The groups that fought augmentation are the ones still on Earth: the Caliphate, the Catholics, the Hindus, the Baptists, and the Amish, who are gone from Earth and fill worlds in space without a tank in sight.' },
   // Collins's words (Oct 14 2026: "another yoko line"), word for word but for spelling.
   { id: 'won-20', moment: 'talk', beats: [
-    { say: 'One of the things I find interesting about this species is how ethnic conflict seems to be refocused around caste. But because members of different castes can be brothers born to the same royal, and everyone has a royal parent, they\'re mostly superficial.', face: 'calm', then: 'pensive', hold: 1600 },
+    { say: 'One of the things I find interesting about this species is how ethnic conflict seems to be refocused around caste. But because members of different castes can be brothers or sisters born to the same royal, and everyone has a royal parent, they\'re mostly superficial.', face: 'calm', then: 'pensive', hold: 1600 },
     { say: 'It\'s wild to think Earth used to have conflicts over ethnicity. Like, killing someone over religion, what they believe and their morality, that makes perfect sense. But why would you do it over genetic differences?', face: 'pensive', then: 'shrug', hold: 1400 },
     { say: 'Humans who live on high-gravity planets are nothing like those who optimised for life in zero G, like you. But why would you have animosity to one?', face: 'calm', then: 'teasing', hold: 1200 },
     { say: 'Why would you hold animosity over a human genetically optimised to be better at math being better at math? Or being worse at strategy than you?', face: 'teasing', then: 'pensive', hold: 1400 },
-    { say: 'I suppose if a race that was generally worse at cognitive tasks, or more violent or impulsive, had an unusually high fertility rate, that could cause conflict. But why would such a breed keep reproducing, and not just sterilise themselves for the common good?', face: 'pensive', then: 'shrug', hold: 1600 },
+    { say: 'I suppose if a race that was generally worse at cognitive tasks, or more impulsive, had an unusually high fertility rate, that could cause conflict. But why would such a breed keep reproducing, and not just sterilise themselves for the common good?', face: 'pensive', then: 'shrug', hold: 1600 },
     { say: 'Humans have a strange history.', face: 'calm', then: 'nod' },
   ], aside: 'The hive\'s castes (war, science, royal) are born to the same royals: brothers of one royal can be of different castes, and everyone down there has a royal parent, so their caste quarrels run shallow. The Empire\'s own classes are by world and by work: humans optimised for high-gravity worlds are nothing like those optimised for zero G, which is what the Technician is; the Lipptors are optimised for mathematics. Nobody in the Empire holds a class against anyone: the Empire kills over belief and morality, never over genes. Her last thought, that a breed worse at cognition or more impulsive, if it bred fast, ought to sterilise itself for the common good, is the Index\'s reflex, said as if it were obvious.' },
   // Collins's words (Oct 15 2026: "yoko could have a line introducing this concept"), word for word but for spelling. The
@@ -306,16 +281,6 @@ export const GREETINGS: Greeting[] = [
   ], aside: 'Anti-mysticism: altered states (chanting, spinning, drugs, strong emotion) are the faith of the Basilisk, God\'s testing aspect, "crafted to block the mentally weak from ascendancy"; it tempts, tries and culls the indulgent, the stagnant and the vain, and its acolytes are not enemies but a sacrifice. Intoxicants and trance practices are sins of the first rank; imperial broadcasts never use music to move a crowd, only to keep time. The Empire does not police the rim: the rim is the Basilisk\'s own culling.', hook: 'Ask her about the Basilisk' },
 
   // ---- the licence; the end ----
-  { id: 'licence-1', moment: 'licence', points: { room: 'board', label: 'SEE THE BOARD' }, beats: [
-    { say: 'Technician. The Board approved your procreation licence.', face: 'surprised', then: 'surprised', hold: 1800 },
-    { say: 'I\'m happy for you. Genuinely. Go collect it. The office is closed, obviously.', face: 'blushing', then: 'blushing', hold: 1600 },
-  ], aside: 'The procreation licence: the door to the only life that counts. The Board matches a spouse from the Index\'s marriage market, assigns the womb allotment (ten a year for ten years), and he goes down to the Index office to sign, in person, off this ship; the posting ends. She has done the arithmetic: about fifty of the hundred will make it into the Index.', hook: 'Ask her what happens now' },
-  { id: 'ended-1', moment: 'ended', points: { room: 'comms', label: 'OPEN COMMS' }, beats: [
-    { say: 'That\'s it. The planet\'s quiet.', face: 'calm', then: 'pensive', hold: 2200 },
-    { say: 'Down here, anyway.', face: 'teasing', then: 'wink' },
-    { say: 'I\'ll be here, obviously. Where else would I go?', face: 'sad' },
-  ] },
-
   // ---- he comes aboard from the menu. Oct 12 2026: back-6, 8 and 9 carry their world and beg a reply. His to edit. ----
   { id: 'back-1', moment: 'talk', beats: [
     { say: 'Oh, you\'re back. I kept your seat warm. Metaphorically. I don\'t have hands. Well, I have hands. They\'re light.', face: 'teasing', then: 'wink' },

@@ -73,3 +73,11 @@ describe('the mate review counts toward the drip', () => {
     expect(momentNow({ ...s, captures: at + 1, lastGreeting: 'won-12' })).toBe('catgirl');
   });
 });
+
+describe('a line held back (notBefore)', () => {
+  it('won-12 is not said before deployment 12', () => {
+    const others = GREETINGS.filter((g) => g.moment === 'talk' && g.id !== 'won-12').map((g) => g.id);
+    expect(pickGreeting('won', 3, 5, null, GREETINGS, others).id).not.toBe('won-12');
+    expect(pickGreeting('won', 3, 12, null, GREETINGS, others).id).toBe('won-12');
+  });
+});

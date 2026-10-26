@@ -61,8 +61,8 @@ export function shipPick(s: CampaignState, open: Array<{ id: string; tier: numbe
  */
 export function momentAfter(prev: CampaignState, next: CampaignState, d: Debrief, first: boolean): GreetMoment {
   if (first) return next.onboard?.mission1 === 'won' ? 'first-won' : 'first-lost';
-  if (next.ended && !prev.ended) return 'ended';
-  if (next.licence && !prev.licence) return 'licence';
+  // The licence and the ending no longer get a line of their own (Collins, Oct 26 2026: "legacy"; "lines are supposed to
+  // spark interesting conversation, not a simple you won or lost"): those returns get her everyday talk.
   // The desk opens: his speech, on the first try after mission 1 or later (Oct 12 2026: the late version was cut;
   // Collins: "not needed, the first works for both").
   if (d.deskOpened) return 'unlock';
@@ -99,7 +99,7 @@ export function seeded(seed: number, name: string): number {
  * never the last one said.
  */
 export function pickGreeting(moment: GreetMoment, seed: number, turn: number, last?: string | null, pool: Greeting[] = GREETINGS, said: readonly string[] = []): Greeting {
-  const fits = pool.filter((g) => g.moment === poolOf(moment));
+  const fits = pool.filter((g) => g.moment === poolOf(moment) && (g.notBefore == null || turn >= g.notBefore));
   const unsaid = fits.filter((g) => !said.includes(g.id) && g.id !== last);
   const again = fits.find((g) => g.repeats);
   if (!unsaid.length && again) return again;
