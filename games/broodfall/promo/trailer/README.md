@@ -1,4 +1,4 @@
-# Broodfall: the trailer (Oct 1 2026)
+# Broodfall: the trailer (Oct 1 2026) and the gameplay trailer (Oct 26 2026)
 
 | File | What | Length | Size |
 |---|---|---|---|
@@ -14,6 +14,64 @@ Mbit/s (30 s, vertical).
 
 Everything is rebuilt by `tools/promo/trailer.mjs` (`capture`, `record`, `gen`, `titles`, `cut`,
 `sheet`); raw footage, frames, segments and masters are in `art-src/trailer/`.
+
+## The gameplay cut (Oct 26 2026)
+
+| File | What | Length | Size |
+|---|---|---|---|
+| `broodfall-trailer-gameplay.mp4` | The second store trailer, pure gameplay: 1920x1080, 60 fps, H.264 High (CRF 19, capped 8 Mbit/s) + AAC 320k | 55.9 s | 44.4 MB |
+| `broodfall-trailer-gameplay-steam-upload-720p.mp4` | The same for a browser upload capped at 10 MB: 1280x720, 30 fps, two-pass x264 at 1267 kbit/s, AAC 96k | 55.9 s | 9.67 MB |
+
+Collins: "focused on gameplay of the tower defence, global map, choosing map pieces, and monster building (not much
+of the ship, just pure gameplay) so we don't have just one trailer." Every shot is the real game except the landing
+film, which is the game's own (it plays before every deployment). No ship rooms, no faction films, no voices but the
+game's narrator over the royal. Loudness -14.0 LUFS, true peak -1.4 dBTP (upload copy -14.7 LUFS, -1.4 dBTP).
+
+Four cards in the genre line's type, in the upper third so the play stays visible: EVERY LIMB A TOWER, GROW THE BODY,
+CONSUME THE MAP, TAKE THE PLANET; the end is the logo, TOWER DEFENCE + ROGUELITE, GENOCIDE SIMULATOR.
+
+**Played by hand** (new, `p-*` in `tools/promo/trailer.mjs`): the scripted player is off and the page's real mouse
+(`page.mouse`) picks cards, hovers and clicks, on the frozen clock like every other shot. A headless page draws no
+pointer, so those shots draw a plain arrow that follows the mouse events (`CURSOR`); nothing of the game is changed.
+The hint line stays on in them (it says what a hover does). Sound: `siege-assault` throughout, placed so its drop
+(61.2 s into the track) lands on the montage; `sting-wave` at the top, `sting-core` and the menu hum under the logo;
+and the game's OWN effects where the game asked for them while each shot was filmed (`film()` now logs the page's
+audio cues to `cap/<id>.sfx.json`; `gameCues()` lays them with the game's gains and gaps from `src/audio/cues.ts`).
+
+| Start (s) | Length (s) | Shot | What | Source |
+|---|---|---|---|---|
+| 0.00 | 3.60 | g-open | The whole board in a wave: a small tower defence (EVERY LIMB A TOWER) | real game, captured |
+| 3.60 | 3.00 | g-maw | The Maw's tongue catches a soldier and swallows it | real game, captured |
+| 6.60 | 2.60 | g-temple | The Temple Cities under siege: shield domes, lightning and shot | real game, captured |
+| 9.20 | 3.60 | g-boss | A royal and her consort wade into the limbs (the narrator: "And here she comes...") | real game, captured |
+| 12.80 | 5.60 | p-build | By hand: three limb cards picked and grown on the creep, the ghost and its reach shown (GROW THE BODY) | real game, played by hand |
+| 18.40 | 4.40 | p-eat | Cannibalize: a limb hovered (lit; the hint says what eating it gives), eaten, its trait grown into a new limb | real game, played by hand |
+| 22.80 | 4.40 | p-organ | The organ stage: two organs picked, their ghosts over the body, grown | real game, played by hand |
+| 27.20 | 1.80 | g-core | The core evolves | real game, captured |
+| 29.00 | 2.20 | g-looks | Limbs in their upgrade looks, firing | real game, captured |
+| 31.20 | 2.28 | p-draft | THE BODY IS READY TO GROW: three districts hovered, one clicked (close on the panel) | real game, played by hand |
+| 33.48 | 2.60 | p-draft-b | DISTRICT CONSUMED: the camera goes to the new district (CONSUME THE MAP) | real game, played by hand |
+| 36.08 | 2.40 | g-creep | Creep nodes put down past the edge; the creep spreads over the new district | real game, captured |
+| 38.48 | 3.20 | g-late | Late in a run: the whole body across its districts, in a wave | real game, captured |
+| 41.68 | 2.60 | p-globe | The planet at the Directive Desk (cropped to the globe and the briefing): a territory hovered, picked, the globe turns to it | real game, played by hand |
+| 44.28 | 2.60 | landing | The brood falls on the new territory (TAKE THE PLANET) | the game's landing film, public/art/landing/industrial.mp4 |
+| 46.88 | 3.50 | m-* | Montage on the music's drop: the whole body, the Maw, the royal, the Temple Cities, the upgrade looks | real game, captured |
+| 50.38 | 5.50 | end | The name, TOWER DEFENCE + ROGUELITE, GENOCIDE SIMULATOR | key art, titles set in type |
+
+Rebuild (in `games/broodfall`; raw footage in `art-src/trailer/`, git-ignored):
+
+```
+node tools/promo/trailer.mjs capture g-open g-maw g-temple g-boss g-core g-looks g-creep g-late p-build p-eat p-organ p-draft p-globe
+node tools/promo/trailer.mjs titles
+node tools/promo/trailer.mjs cut gameplay      # the 1080p file AND the under-9.8 MB 720p upload copy
+```
+
+`cut gameplay` is asked for by name; a bare `cut` still builds only the 90 s, 30 s and vertical cuts. Learnt on the
+way: the old `g-late` (seed 14, top-up 10) now LOSES by wave 8, so it tries seeds until one is alive and grown; a
+mouse press that moves on a picture drags it instead of clicking it (the hand now stays still while pressed); taking
+a district opens the organ stage by itself (the draft shot presses TO THE SURFACE at once, as a player would); and
+a mix whose voice bus ends early dropped the music for seconds or hung ffmpeg, so every bus now runs on a full-length
+bed of silence.
 
 ## How it unfolds (Collins's philosophy: a small tower defence that turns out to be bigger)
 

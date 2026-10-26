@@ -181,6 +181,13 @@ const HELPERS = () => {
       if (snap) r.camInit = false;
     },
     home(zoom = 1, snap = false) { const r = R(); r.zoom = zoom; r.pan = { x: 0, y: 0 }; if (snap) r.camInit = false; },
+    /** A world point -> page (client) pixels, where a mouse would point at it. */
+    client(x, y) {
+      const s = B().worldToScreen(x, y), r = document.querySelector('#stage canvas').getBoundingClientRect();
+      return [r.x + (s.x / s.vw) * r.width, r.y + (s.y / s.vh) * r.height];
+    },
+    /** The middle of an element on the page, in client pixels. */
+    mid(sel) { const el = typeof sel === 'string' ? document.querySelector(sel) : sel; if (!el) return null; const r = el.getBoundingClientRect(); return [r.x + r.width / 2, r.y + r.height / 2]; },
     /** The middle of the thickest knot of enemies (of a kind). */
     fight(kind = null, radius = 140) {
       const es = B().sim.enemies.filter((e) => !e.leaving && (!kind || e.kind === kind));
@@ -194,8 +201,9 @@ const HELPERS = () => {
 };
 
 /** Dress the board for a 16:9 picture: the drawing surface fills the stage; the demo line is hidden. */
-async function dress(page) {
-  await page.addStyleTag({ content: '#hint{visibility:hidden!important} #shot-cursor{display:none!important}' });
+async function dress(page, { hint = false } = {}) {
+  // The hint line carries the scripted player's demo line; a shot played by hand (no auto=1) keeps it: it says what a hover does.
+  await page.addStyleTag({ content: `${hint ? '' : '#hint{visibility:hidden!important} '}#shot-cursor{display:none!important}` });
   await page.evaluate(() => {
     const wrap = document.getElementById('stage-wrap');
     const r = window.broodfall.renderer;
@@ -258,6 +266,7 @@ async function film(page, ctx, id, frames, each = null, { quality = 92, preroll 
   // A moment of the game before the first frame: the camera is there, the clock is running.
   for (let i = 0; i < preroll; i++) { if (each) await each(0); await page.evaluate(() => window.__advance(1000 / 60)); }
   const t0 = Date.now();
+  const clock0 = await page.evaluate(() => performance.now());
   for (let i = 0; i < frames; i++) {
     if (each) await each(i);
     await page.evaluate(() => window.__advance(1000 / 60));
@@ -267,6 +276,10 @@ async function film(page, ctx, id, frames, each = null, { quality = 92, preroll 
     if (i % 60 === 59) process.stdout.write(`  ${id}: ${i + 1}/${frames} (${((Date.now() - t0) / (i + 1)).toFixed(0)} ms/frame)\r`);
   }
   console.log('');
+  // Every effect the game asked for while it was filmed (src/audio/engine.ts logs each cue on the page's clock, heard
+  // or not): seconds into the clip, so the edit can lay the game's own sounds where the game played them.
+  const cues = await page.evaluate((c0) => (window.__bfAudio?.log ?? []).filter((e) => e.kind === 'sfx' && e.t >= c0).map((e) => ({ at: +((e.t - c0) / 1000).toFixed(3), id: e.id })), clock0).catch(() => []);
+  fs.writeFileSync(path.join(CAP, `${id}.sfx.json`), JSON.stringify(cues));
   if (thaw) await page.evaluate(() => window.__thaw());
   const mp4 = path.join(CAP, `${id}.mp4`);
   ff(['-framerate', String(FPS), '-i', path.join(dir, 'f%05d.jpg'), '-vf', 'format=yuv420p', '-c:v', 'libx264', '-preset', 'slow', '-crf', '12', mp4], `${id} encode`);
@@ -286,6 +299,54 @@ function follow(page, frames, { z0, z1, kind = null, every = 20, lead = null } =
     }
     if (aim) await page.evaluate(([a, z, snap]) => window.__T.camTo(a.x, a.y, z, snap), [aim, z, first]);
     first = false;
+  };
+}
+
+/**
+ * THE PLAYER'S HAND (the gameplay cut, Oct 26 2026). A headless page draws no mouse pointer, so the shots played by
+ * hand draw one: a plain arrow that follows the page's real mouse events (page.mouse: the game gets the same moves,
+ * hovers and clicks a player's mouse gives it). Nothing of the game is changed.
+ */
+const CURSOR = () => {
+  const el = () => {
+    let d = document.getElementById('tr-cursor');
+    if (!d && document.documentElement) {
+      d = document.createElement('div');
+      d.id = 'tr-cursor';
+      d.style.cssText = 'position:fixed;left:-200px;top:-200px;width:30px;height:36px;z-index:2147483647;pointer-events:none;transform-origin:2px 2px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.7))';
+      d.innerHTML = '<svg width="30" height="36" viewBox="0 0 15 18"><path d="M1 1 L1 14.6 L4.6 11.4 L7.1 17 L9.6 15.9 L7.2 10.5 L12 10.5 Z" fill="#fff" stroke="#160a06" stroke-width="1" stroke-linejoin="round"/></svg>';
+      document.documentElement.appendChild(d);
+    }
+    return d;
+  };
+  window.addEventListener('mousemove', (e) => { const d = el(); if (d) { d.style.left = `${e.clientX - 2}px`; d.style.top = `${e.clientY - 2}px`; } }, true);
+  window.addEventListener('mousedown', () => { const d = el(); if (d) d.style.transform = 'scale(0.82)'; }, true);
+  window.addEventListener('mouseup', () => { const d = el(); if (d) d.style.transform = ''; }, true);
+};
+
+/**
+ * The mouse moved through keys [{ f, at: [x, y], click?, right?, hold? }] (client pixels, frame numbers): it eases from
+ * key to key; a click is pressed on its key's frame and let go 5 frames later (hold: left pressed). For film()'s `each`.
+ */
+function hand(page, keys0, also = null) {
+  // The hand is still while a button is down (a press that moves drags a picture instead of clicking it).
+  const keys = [];
+  keys0.forEach((k, j) => { keys.push(k); const n = keys0[j + 1]; if (k.click && !k.hold && (!n || n.f > k.f + 6)) keys.push({ f: k.f + 6, at: k.at }); });
+  const ease = (u) => (u < 0.5 ? 2 * u * u : 1 - ((-2 * u + 2) ** 2) / 2);
+  let last = null;
+  return async (i) => {
+    const k = keys.findIndex((x) => x.f > i);
+    const a = keys[Math.max(0, (k < 0 ? keys.length : k) - 1)], b = k < 0 ? a : keys[k];
+    const u = b === a ? 1 : ease(Math.min(1, Math.max(0, (i - a.f) / (b.f - a.f))));
+    const x = a.at[0] + (b.at[0] - a.at[0]) * u, y = a.at[1] + (b.at[1] - a.at[1]) * u;
+    if (!last || Math.abs(last[0] - x) > 0.05 || Math.abs(last[1] - y) > 0.05) { await page.mouse.move(x, y); last = [x, y]; }
+    for (const key of keys) {
+      if (!key.click || i === 0) continue;
+      const button = key.right ? 'right' : 'left';
+      if (key.f === i) await page.mouse.down({ button });
+      if (key.f + 5 === i && !key.hold) await page.mouse.up({ button });
+    }
+    if (also) await also(i);
   };
 }
 
@@ -442,10 +503,18 @@ const SHOTS = {
   },
   /** Late in a run: the whole body grown across its districts; the camera pulls back. */
   'g-late': async (browser) => {
-    const { ctx, page } = await freshGame(browser);
-    await page.goto(`${BASE}?seed=14&auto=1&autostart=1&speed=1&directive=hold&biome=deephive`);
-    await ready(page); await dress(page);
-    console.log('  ', JSON.stringify(await grow(page, 10, 10)));
+    // Oct 26 2026: seed 14 at a top-up of 10 now LOSES by wave 8 (one limb left): the first seed that is still alive and grown is filmed.
+    let ctx, page;
+    for (const seed of [14, 5, 12, 3, 21]) {
+      ({ ctx, page } = await freshGame(browser));
+      await page.goto(`${BASE}?seed=${seed}&auto=1&autostart=1&speed=1&directive=hold&biome=deephive`);
+      await ready(page); await dress(page);
+      const g = await grow(page, 10, 30);
+      console.log('  seed', seed, JSON.stringify(g));
+      if (g.outcome === 'playing' && g.towers >= 15) break;
+      await ctx.close(); ctx = null;
+    }
+    if (!ctx) throw new Error('g-late: no seed grew a whole body');
     await page.waitForFunction(() => window.broodfall.sim.enemies.length >= 8, null, { timeout: 30000 }).catch(() => {});
     await artOk(page, 'g-late');
     const n = 360;
@@ -587,7 +656,267 @@ const SHOTS = {
     await film(page, ctx, 's-globe', 360, null, { preroll: 20, quality: 90, dpr: 2 });
     await ctx.close();
   },
+
+  // ---------------- PLAYED BY HAND, for the gameplay cut (Oct 26 2026): the mouse picks a card, hovers, clicks.
+  /** Growing the body: three limb cards picked from the hand and grown on the creep, one after another. */
+  'p-build': async (browser) => {
+    const { ctx, page } = await freshGame(browser, { init: CURSOR });
+    await page.goto(`${BASE}?seed=5&autostart=1&speed=1&directive=hold&biome=suburb`);
+    await ready(page); await dress(page, { hint: true });
+    const plan = await handBoard(page, { prebuilt: 3, families: ['lasher', 'spitter', 'burster', 'tangler'] });
+    console.log('  ', JSON.stringify({ hand: plan.hand, targets: plan.targets.length, built: plan.built, avail: plan.avail }));
+    if (plan.targets.length < 3) throw new Error('p-build: not three places to grow');
+    await artOk(page, 'p-build');
+    const card = await page.evaluate(() => window.__T.mid('#hand .card'));
+    const T = plan.targets.map((t) => t.at);
+    const rest = [card[0] - 260, card[1] - 330];
+    const keys = [{ f: 0, at: rest }];
+    let f = 18;
+    for (let k = 0; k < 3; k++) {
+      keys.push({ f, at: card }, { f: f + 4, at: card, click: true });
+      const via = [(card[0] + T[k][0]) / 2 + 60, (card[1] + T[k][1]) / 2 - 40];
+      keys.push({ f: f + 26, at: via }, { f: f + 44, at: [T[k][0] + 14, T[k][1] + 10] }, { f: f + 54, at: T[k] }, { f: f + 58, at: T[k], click: true });
+      f += 96;
+    }
+    keys.push({ f: f + 30, at: [T[2][0] + 70, T[2][1] + 60] });
+    const before = await page.evaluate(() => window.broodfall.sim.towers.length);
+    await film(page, ctx, 'p-build', f + 80, hand(page, keys), { preroll: 20 });
+    const after = await page.evaluate(() => window.broodfall.sim.towers.length);
+    console.log(`  limbs grown by hand while filming: ${after - before}`);
+    await ctx.close();
+  },
+  /** Cannibalize: a card picked, a limb hovered (it lights; the hint says what eating it gives), clicked (eaten), and the new limb grown carrying its trait. */
+  'p-eat': async (browser) => {
+    const { ctx, page } = await freshGame(browser, { init: CURSOR });
+    await page.goto(`${BASE}?seed=5&autostart=1&speed=1&directive=hold&biome=suburb`);
+    await ready(page); await dress(page, { hint: true });
+    const plan = await handBoard(page, { prebuilt: 4, families: ['burster', 'spitter', 'lasher'], zoom: 3.0 });
+    if (!plan.targets.length || !plan.donors.length) throw new Error('p-eat: no donor or no place');
+    await artOk(page, 'p-eat');
+    const card = await page.evaluate(() => window.__T.mid('#hand .card'));
+    const D = plan.donors[0].at, P = plan.targets[0].at;
+    const keys = [
+      { f: 0, at: [card[0] - 300, card[1] - 300] },
+      { f: 16, at: card }, { f: 20, at: card, click: true },
+      { f: 50, at: [D[0] + 70, D[1] - 50] }, { f: 66, at: D },
+      { f: 112, at: [D[0] + 3, D[1] + 2] }, { f: 116, at: [D[0] + 3, D[1] + 2], click: true },
+      { f: 150, at: [(D[0] + P[0]) / 2, (D[1] + P[1]) / 2 - 30] }, { f: 172, at: P }, { f: 176, at: P, click: true },
+      { f: 230, at: [P[0] + 70, P[1] + 60] },
+    ];
+    await film(page, ctx, 'p-eat', 330, hand(page, keys), { preroll: 20 });
+    console.log('  ', JSON.stringify(await page.evaluate(() => { const s = window.broodfall.sim; return { cannibalized: s.stats.cannibalized, grafted: s.towers.filter((t) => t.pips?.length).length }; })));
+    await ctx.close();
+  },
+  /** The organ stage: opened by its button, an organ picked from the palette, its ghost hovered over the body, grown. */
+  'p-organ': async (browser) => {
+    const { ctx, page } = await freshGame(browser, { init: CURSOR });
+    await page.goto(`${BASE}?seed=3&autostart=1&speed=1&directive=hold&biome=megacity`);
+    await ready(page); await dress(page, { hint: true });
+    await handBoard(page, { prebuilt: 6, families: ['spitter', 'lasher'] });
+    await page.evaluate(() => { const s = window.broodfall.sim; s.meat.war = 600; s.meat.science = 300; s.meat.royal = 2; });
+    await page.locator('#open-under').click();
+    await page.waitForSelector('#under:not(.hidden)', { timeout: 10000 });
+    await page.waitForTimeout(2500);
+    // Which organs can be grown, and where each fits (its ghost goes green): probed with the mouse before filming.
+    const fits = [];
+    const organs = await page.evaluate(() => [...document.querySelectorAll('#under-palette .under-organ:not(.built):not(.locked):not(.poor)')].map((b) => b.dataset.organ));
+    for (const id of organs) {
+      if (fits.length >= 2) break;
+      await page.locator(`#under-palette [data-organ="${id}"]`).click();
+      const cells = await page.evaluate(() => [...document.querySelectorAll('#under-grid [data-cell]')].map((c) => { const r = c.getBoundingClientRect(); return { cell: c.dataset.cell, x: r.x + r.width / 2, y: r.y + r.height / 2 }; }));
+      const mid = cells.reduce((a, c) => [a[0] + c.x / cells.length, a[1] + c.y / cells.length], [0, 0]);
+      cells.sort((a, b) => Math.hypot(a.x - mid[0], a.y - mid[1]) - Math.hypot(b.x - mid[0], b.y - mid[1]));
+      for (const c of cells.slice(0, 400)) {
+        if (fits.some((o) => Math.hypot(o.x - c.x, o.y - c.y) < 140)) continue;
+        await page.mouse.move(c.x, c.y);
+        if (await page.evaluate((n) => document.querySelector(`#under-grid [data-cell="${n}"]`)?.classList.contains('ghost-ok') && !document.querySelector('#under-grid .ghost-bad'), c.cell)) { fits.push({ id, ...c }); break; }
+      }
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(200);
+    }
+    console.log('  organs that fit:', JSON.stringify(fits.map((o) => o.id)));
+    if (!fits.length) throw new Error('p-organ: no organ fits');
+    await page.mouse.move(1700, 300);
+    await page.waitForTimeout(800);
+    const keys = [{ f: 0, at: [1500, 260] }];
+    let f = 14;
+    for (const o of fits) {
+      const btn = await page.evaluate((id) => window.__T.mid(`#under-palette [data-organ="${id}"]`), o.id);
+      keys.push({ f, at: btn }, { f: f + 4, at: btn, click: true }, { f: f + 30, at: [o.x + 60, o.y - 70] }, { f: f + 52, at: [o.x, o.y] }, { f: f + 66, at: [o.x, o.y], click: true });
+      f += 110;
+    }
+    keys.push({ f: f + 20, at: [keys.at(-1).at[0] + 220, keys.at(-1).at[1] - 160] });
+    await film(page, ctx, 'p-organ', f + 70, hand(page, keys), { preroll: 10 });
+    console.log('  organs grown:', JSON.stringify(await page.evaluate(() => window.broodfall.sim.organs?.length ?? null)));
+    await ctx.close();
+  },
+  /** The district draft by hand: THE BODY IS READY TO GROW, three plates hovered, one consumed; the camera goes to the new district. */
+  'p-draft': async (browser) => {
+    // Twice the pixels: the cut crops in on the draft's panel before the click, and shows the whole board after it.
+    const { ctx, page } = await freshGame(browser, { init: CURSOR, dpr: 2 });
+    await page.goto(`${BASE}?seed=9&autostart=1&speed=1&directive=hold&biome=suburb`);
+    await ready(page); await dress(page, { hint: true });
+    const r = await toDraft(page);
+    console.log('  ', JSON.stringify(r));
+    await page.waitForSelector('#draft:not(.hidden)', { timeout: 10000 });
+    await page.waitForTimeout(1200);
+    await artOk(page, 'p-draft');
+    const cards = await page.evaluate(() => [...document.querySelectorAll('#draft-options .draft-option')].map((c) => window.__T.mid(c)));
+    if (cards.length < 3) throw new Error(`p-draft: ${cards.length} plates offered`);
+    fs.writeFileSync(path.join(CAP, 'p-draft.json'), JSON.stringify({ panel: await page.locator('#draft-card-wrap').boundingBox(), dpr: 2 }));
+    const slot = await page.evaluate(() => {
+      const s = window.broodfall.sim, P = 10, W = s.cfg.gridW, o = s.pendingDraft[1].slot;
+      const sx = o % s.map.slotsX, sy = Math.floor(o / s.map.slotsX);
+      return { ...s.cellCenter((sy * P + P / 2) * W + sx * P + P / 2), name: s.pendingDraft[1].feature };
+    });
+    const keys = [
+      { f: 0, at: [cards[0][0] - 120, cards[0][1] + 330] },
+      { f: 24, at: [cards[0][0], cards[0][1] + 40] }, { f: 58, at: [cards[0][0] + 10, cards[0][1] + 30] },
+      { f: 84, at: [cards[2][0] - 10, cards[2][1] + 40] }, { f: 112, at: [cards[2][0], cards[2][1] + 50] },
+      { f: 136, at: [cards[1][0], cards[1][1] + 40] }, { f: 150, at: [cards[1][0], cards[1][1] + 40], click: true },
+      { f: 200, at: [cards[1][0] + 380, cards[1][1] - 260] },
+    ];
+    await page.evaluate(() => window.__T.home(1, true));
+    await film(page, ctx, 'p-draft', 330, hand(page, keys, async (i) => {
+      if (i === 160) await page.evaluate(([s]) => window.__T.camTo(s.x, s.y, 1.45), [slot]);
+      // The draft taken, the organ stage opens by itself (the next wave's setup): the player goes straight back to the surface.
+      if (i > 150) await page.evaluate(() => { const u = document.getElementById('under'); if (u && !u.classList.contains('hidden')) document.getElementById('under-done')?.click(); });
+    }), { preroll: 10, dpr: 2 });
+    console.log('  ', JSON.stringify(await page.evaluate(() => ({ phase: window.broodfall.sim.phase, districts: window.broodfall.sim.map.slots.filter(Boolean).length }))), slot.name);
+    await ctx.close();
+  },
+  /** The planet: it turns; the hand hovers a territory (it lights, its tooltip), clicks it (the planet turns to face it, its briefing), and goes for DEPLOY. */
+  'p-globe': async (browser) => {
+    const { ctx, page } = await freshGame(browser, { dpr: 2, init: CURSOR });
+    await page.goto(`${BASE}?campaign=ship&open=1`, { waitUntil: 'domcontentloaded', timeout: 300000 });
+    await page.waitForSelector('#campaign:not(.hidden) .cp-card', { timeout: 240000 });
+    await page.evaluate(() => {
+      const s = JSON.parse(localStorage.getItem('broodfall-campaign'));
+      s.held = [...new Set([...(s.held ?? []), 'crash-site', 'cul-de-sac', 'granary'])];
+      localStorage.setItem('broodfall-campaign', JSON.stringify(s));
+    });
+    await page.goto(`${BASE}?campaign=ship&open=1`, { waitUntil: 'domcontentloaded', timeout: 300000 });
+    await page.waitForSelector('#campaign:not(.hidden) .cp-card', { timeout: 240000 });
+    await page.locator('[data-room="desk"]').click();
+    await page.waitForSelector('.globe-box.g3d canvas.globe-3d', { timeout: 20000 });
+    await page.waitForTimeout(2500);
+    await page.mouse.move(1900, 1060);
+    const box = await page.locator('.globe-box').boundingBox();
+    // Turn it (the arrows, as a player may) until an open site sits left of the middle: the planet's own turning carries it in.
+    const openNear = () => page.evaluate(() => {
+      const b = document.querySelector('.globe-box').getBoundingClientRect();
+      const all = [...document.querySelectorAll('.globe .site.open:not(.behind)')].map((g) => { const r = g.getBoundingClientRect(); return { id: g.dataset.site, x: r.x + r.width / 2, y: r.y + r.height / 2 }; });
+      all.forEach((a) => { a.d = Math.hypot(a.x - (b.x + b.width * 0.5), a.y - (b.y + b.height * 0.5)); });
+      all.sort((a, c) => a.d - c.d);
+      return all[0] && all[0].d < b.width * 0.28 ? all[0] : null;
+    });
+    for (let i = 0; i < 2; i++) { await page.keyboard.press('ArrowDown'); await page.waitForTimeout(400); }
+    let target = await openNear();
+    for (let i = 0; i < 16 && !target; i++) { await page.keyboard.press('ArrowLeft'); await page.waitForTimeout(600); target = await openNear(); }
+    if (!target) throw new Error('p-globe: no open site faces us');
+    console.log('  target:', JSON.stringify(target));
+    fs.writeFileSync(path.join(CAP, 'p-globe.json'), JSON.stringify({ box, vw: 1920, vh: 1080, dpr: 2, target }));
+    await page.evaluate(() => window.__freeze());
+    // The site moves as the planet turns: the hand follows it live, then clicks; then goes to DEPLOY.
+    const live = async () => page.evaluate((id) => { const g = document.querySelector(`.globe .site[data-site="${id}"]`); if (!g) return null; const r = g.getBoundingClientRect(); return [r.x + r.width / 2 + 12, r.y + r.height / 2 + 14]; }, target.id);
+    let at = [box.x + box.width + 120, box.y + box.height * 0.8], clicked = false, deploy = null;
+    await film(page, ctx, 'p-globe', 330, async (i) => {
+      if (i < 110) {
+        const t = await live();
+        if (t) { const u = Math.min(1, i / 70); at = [at[0] + (t[0] - at[0]) * (0.06 + 0.25 * u * u), at[1] + (t[1] - at[1]) * (0.06 + 0.25 * u * u)]; }
+        await page.mouse.move(at[0], at[1]);
+        if (i === 104) await page.mouse.down();
+      } else {
+        if (!clicked) { await page.mouse.up(); clicked = true; }
+        if (i === 190) deploy = await page.evaluate(() => window.__T?.mid?.('[data-act="deploy"]') ?? (() => { const el = document.querySelector('[data-act="deploy"]'); if (!el) return null; const r = el.getBoundingClientRect(); return [r.x + r.width / 2, r.y + r.height / 2]; })());
+        if (i >= 190 && deploy) { const u = Math.min(1, (i - 190) / 60), e = u < 0.5 ? 2 * u * u : 1 - ((-2 * u + 2) ** 2) / 2; await page.mouse.move(at[0] + (deploy[0] - at[0]) * e, at[1] + (deploy[1] - at[1]) * e); }
+        if (i === 290 && deploy) await page.mouse.down();
+      }
+    }, { preroll: 10, quality: 90, dpr: 2, frozen: true });
+    console.log('  picked:', JSON.stringify(await page.evaluate(() => ({ sel: document.querySelector('.globe .site.sel')?.dataset.site, brief: document.querySelector('.cp-brief .cp-sub')?.textContent?.slice(0, 80) }))), 'deploy at', JSON.stringify(deploy));
+    await ctx.close();
+  },
 };
+
+/**
+ * A board to play by hand: the scripted player is off; a few limbs already stand on the creep (the body is not bare), the
+ * wallet is topped up, the hand is dealt the given families, and for each card in turn a place it grows on (clear of every
+ * limb, so the hover shows the ghost, not the eat highlight). The camera is put over them. Returns client pixels.
+ */
+async function handBoard(page, { prebuilt = 3, families = ['spitter', 'lasher', 'burster'], zoom = 2.6 } = {}) {
+  const plan = await page.evaluate(([prebuilt, families]) => {
+    const b = window.broodfall, s = b.sim, W = s.cfg.gridW, core = s.map.coreCell;
+    b.step(30);
+    s.meat.war = 140; s.meat.science = 30;
+    const xy = (c) => [c % W, Math.floor(c / W)];
+    const d = (a, o) => Math.hypot(xy(a)[0] - xy(o)[0], xy(a)[1] - xy(o)[1]);
+    const clear = (c, taken, gap) => taken.every((t) => d(c, t) >= gap) && s.towers.every((t) => (t.cells ?? [t.cell]).every((tc) => d(c, tc) >= gap));
+    // The limbs already grown, on single cells near the core.
+    const built = [];
+    for (let k = 0; k < prebuilt; k++) {
+      const fam = ['spitter', 'lasher', 'burster', 'tangler', 'spitter', 'lasher'][k % 6];
+      let best = null;
+      for (let c = 0; c < s.map.cells.length; c++) {
+        if (!s.canBuildTower(c, fam) || d(c, core) < 2 || !clear(c, built, 2.5)) continue;
+        const g = s.groundFor(c, fam); if (!g || g.length !== 1) continue;
+        if (!best || d(c, core) < d(best, core)) best = c;
+      }
+      if (best === null) break;
+      s.hand.unshift({ id: 990000 + k, family: fam, free: true });
+      if (s.issue({ kind: 'build', cardIndex: 0, cell: best }).ok) built.push(best);
+    }
+    b.step(120);
+    // The hand dealt; where each card in turn grows.
+    const hand = [];
+    families.forEach((fam, k) => { hand.push({ id: 991000 + k, family: fam, free: false }); });
+    s.hand.splice(0, Math.min(s.hand.length, families.length), ...hand);
+    const targets = [];
+    families.slice(0, 3).forEach((fam) => {
+      let best = null;
+      const anchor = targets[0]?.cell ?? (built[0] ?? core);
+      for (let c = 0; c < s.map.cells.length; c++) {
+        if (!s.canBuildTower(c, fam) || d(c, core) < 2 || !clear(c, targets.map((t) => t.cell), 2)) continue;
+        const g = s.groundFor(c, fam); if (!g || g.length !== 1) continue;
+        if (!best || d(c, anchor) < d(best, anchor)) best = c;
+      }
+      if (best !== null) targets.push({ cell: best, fam, ...s.cellCenter(best) });
+    });
+    const donors = s.towers.filter((t) => built.includes(t.cell)).map((t) => ({ id: t.id, x: t.pos.x, y: t.pos.y }));
+    const pts = [...targets, ...donors.slice(0, 2)];
+    const mid = pts.length ? { x: pts.reduce((a, p) => a + p.x, 0) / pts.length, y: pts.reduce((a, p) => a + p.y, 0) / pts.length } : s.core;
+    const avail = Object.fromEntries(families.map((f) => { let n = 0, one = 0; for (let c = 0; c < s.map.cells.length; c++) if (s.canBuildTower(c, f)) { n++; if (s.groundFor(c, f)?.length === 1) one++; } return [f, `${n}/${one}`]; }));
+    return { built: built.length, targets, donors, mid, hand: s.hand.map((h) => h.family), avail };
+  }, [prebuilt, families]);
+  await page.evaluate(([m, z]) => window.__T.camTo(m.x, m.y, z, true, 60), [plan.mid, zoom]);
+  await page.waitForTimeout(900);
+  const toClient = (p) => page.evaluate(([x, y]) => window.__T.client(x, y), [p.x, p.y]);
+  for (const t of plan.targets) t.at = await toClient(t);
+  // A limb is pointed at a little above its foot (its body stands up off the ground).
+  for (const t of plan.donors) { t.at = await toClient(t); t.at[1] -= 10; }
+  return plan;
+}
+
+/** Play (without the scripted player) to the district draft: limbs grown on open ground, waves called early. */
+const toDraft = (page) => page.evaluate(() => {
+  const b = window.broodfall, s = b.sim;
+  b.surface();
+  for (let round = 0; round < 12 && s.phase !== 'draft' && s.outcome === 'playing'; round++) {
+    s.meat.war = Math.max(s.meat.war, 500);
+    const cells = b.buildableCells(80);
+    let built = 0;
+    for (let g = 0; g < 60 && built < 4; g++) {
+      if (!s.hand.length) break;
+      const cell = cells.find((c) => s.canBuildTower(c, s.hand[0].family));
+      if (cell === undefined) { s.issue({ kind: 'discard', cardIndex: 0 }); continue; }
+      if (s.issue({ kind: 'build', cardIndex: 0, cell }).ok) built++; else s.issue({ kind: 'discard', cardIndex: 0 });
+    }
+    s.issue({ kind: 'call-early' });
+    const w0 = s.wavesCleared;
+    for (let k = 0; k < 8000 && s.phase !== 'draft' && s.wavesCleared === w0 && s.outcome === 'playing'; k++) b.step(1);
+    b.surface();
+  }
+  return { phase: s.phase, waves: s.wavesCleared, towers: s.towers.length };
+});
 
 if (cmd === 'capture') {
   await withGame(async (browser) => {
@@ -805,6 +1134,8 @@ export const CAPTIONS = {
   empire: { who: 'THE CLEARANCE REVIEW', line: 'And nothing goes to waste. Nothing at all!' },
   colony: { who: 'THE COMMONWEALTH NEWSREEL', line: 'The Host marches, to take back what is ours!' },
 };
+/** The gameplay cut's cards. */
+const PLAY_CARDS = { 'p-1': 'EVERY LIMB A TOWER', 'p-2': 'GROW THE BODY', 'p-3': 'CONSUME THE MAP', 'p-4': 'TAKE THE PLANET' };
 const FILM_TITLES = {
   quiet: { big: 'IT WAS A QUIET NIGHT', small: 'in a quiet little town' },
   hungry: { big: 'IT WAS HUNGRY' },
@@ -852,6 +1183,8 @@ function titlePages(W, H) {
   pages['g-1'] = g('TOWER DEFENCE');
   pages['g-2'] = g('<span class="plus">+</span> ROGUELITE');
   pages['g-3'] = v ? g('<span class="plus">+</span> DEEP NARRATIVE<br>LORE') : g('<span class="plus">+</span> DEEP NARRATIVE LORE');
+  // The gameplay cut's cards (Oct 26 2026): what the player does, in the genre line's type.
+  for (const [id, words] of Object.entries(PLAY_CARDS)) pages[id] = page(`<div class="c" style="justify-content:flex-start;padding-top:${v ? 380 : 190}px;text-align:center"><div class="genre" style="font-size:${gsz}px;line-height:1.1">${words}</div></div>`);
   for (const [id, c] of Object.entries(CAPTIONS)) {
     pages[`c-${id}`] = page(`<div class="cap" style="bottom:${v ? 15 : 17}%"><div class="box"><div class="who">${c.who}</div><div class="line">${c.line}</div></div></div>`);
   }
@@ -860,6 +1193,7 @@ function titlePages(W, H) {
   pages['end-shade'] = page(`<div style="position:absolute;inset:0;${shade}"></div>`);
   pages['end-logo'] = page(`<div class="c" style="justify-content:center;${v ? 'padding-bottom:180px' : 'padding-bottom:130px'}">${logo(v ? 150 : 170, v ? 300 : 280, v)}</div>`);
   pages['end-genre'] = page(`<div class="c" style="justify-content:center;${v ? 'padding-top:640px' : 'padding-top:330px'}"><div class="genre" style="font-size:${v ? 50 : 58}px;text-align:center;${v ? 'white-space:normal;line-height:1.25;max-width:1000px' : ''}">${v ? 'TOWER DEFENCE <span class="plus">+</span> ROGUELITE<br><span class="plus">+</span> DEEP NARRATIVE LORE' : GENRE.replace(/\+/g, '<span class="plus">+</span>')}</div></div>`);
+  pages['end-genre-play'] = page(`<div class="c" style="justify-content:center;${v ? 'padding-top:640px' : 'padding-top:330px'}"><div class="genre" style="font-size:${v ? 50 : 58}px;text-align:center">TOWER DEFENCE <span class="plus">+</span> ROGUELITE</div></div>`);
   pages['end-tag'] = page(`<div class="c" style="justify-content:center;${v ? 'padding-top:1010px' : 'padding-top:520px'}"><div class="tag" style="font-size:${v ? 52 : 52}px">${TAGLINE}</div></div>`);
   return pages;
 }
@@ -1051,6 +1385,121 @@ function sound30(at) {
   ];
 }
 
+/**
+ * THE GAMEPLAY CUT (Oct 26 2026; Collins: "focused on gameplay of the tower defence, global map, choosing map pieces, and
+ * monster building (not much of the ship, just pure gameplay) so we don't have just one trailer"). Every shot is the
+ * real game; the only picture not filmed from the page is the game's own landing film (public/art/landing/), which plays
+ * in the game before a deployment. No ship rooms, no faction films: the planet is shown as the Directive Desk's globe,
+ * cropped to the planet and its briefing. Four cards say what the player does; the end is the logo.
+ */
+const PICK_SET = process.env.TRAILER_LANDING ?? 'industrial';
+/** A crop from a capture's saved box (CSS pixels, times its dpr), widened to 16:9 around `pad`. */
+function boxCrop(file, key, pad = 60) {
+  try {
+    const g = JSON.parse(fs.readFileSync(path.join(CAP, file), 'utf8'));
+    const k = g.dpr ?? 1, b = g[key];
+    let w = (b.width + pad * 2) * k, h = (b.height + pad * 2) * k;
+    if (w / h > 16 / 9) h = w * 9 / 16; else w = h * 16 / 9;
+    const cx = (b.x + b.width / 2) * k, cy = (b.y + b.height / 2) * k;
+    const W = 1920 * k, H = 1080 * k;
+    const x = Math.max(0, Math.min(W - w, cx - w / 2)), y = Math.max(0, Math.min(H - h, cy - h / 2));
+    return [Math.round(x), Math.round(y), Math.round(w / 2) * 2, Math.round(h / 2) * 2];
+  } catch { return null; }
+}
+/** The organ stage's panel and grid (p-organ, 1920x1080: looked at frame by frame). */
+const ORGAN_CROP = [310, 80, 1300, 732];
+/** The desk's planet and the picked territory's picture and briefing (p-globe, 3840x2160): no ship around it. */
+const GLOBE_PICK_CROP = [1420, 230, 2360, 1328];
+function shotsGameplay() {
+  const C = (id) => CAPF(id);
+  return [
+    // I. It is a tower defence: the board, the fight.
+    { id: 'g-open', src: C('g-open'), ss: 1.0, dur: 3.6, fadeIn: 0.3, zoom: [1.0, 1.05], titles: [T('p-1', 0.35, 3.4)], cues: true, what: 'The whole board in a wave: a small tower defence', from: 'real game, captured (g-open)' },
+    { id: 'g-maw', src: C('g-maw'), ss: MAW_SS, crop: MAW_CROP, dur: 3.0, cues: true, what: 'The Maw\'s tongue catches a soldier and swallows it', from: 'real game, captured (g-maw)' },
+    { id: 'g-temple', src: C('g-temple'), ss: 1.0, dur: 2.6, cues: true, what: 'The Temple Cities under siege: shield domes, lightning and shot', from: 'real game, captured (g-temple)' },
+    { id: 'g-boss', src: C('g-boss'), ss: 1.0, dur: 3.6, cues: true, what: 'A royal and her consort wade into the limbs', from: 'real game, captured (g-boss)' },
+    // II. Grow the body: limbs by hand, eating a limb into a new one, the organ stage, the core.
+    { id: 'p-build', src: C('p-build'), ss: 0.2, dur: 5.6, titles: [T('p-2', 0.3, 2.4)], cues: true, what: 'By hand: three limb cards picked and grown on the creep (the ghost, its reach)', from: 'real game, played by hand (p-build)' },
+    { id: 'p-eat', src: C('p-eat'), ss: 0.15, dur: 4.4, cues: true, what: 'Cannibalize: a limb hovered (lit; the hint says what eating it gives), eaten, its trait grown into a new limb', from: 'real game, played by hand (p-eat)' },
+    { id: 'p-organ', src: C('p-organ'), ss: 0.1, dur: 4.4, crop: ORGAN_CROP, cues: true, what: 'The organ stage: two organs picked, their ghosts over the body, grown', from: 'real game, played by hand (p-organ)' },
+    { id: 'g-core', src: C('g-core'), ss: 2.5, dur: 1.8, cues: true, what: 'The core evolves', from: 'real game, captured (g-core)' },
+    { id: 'g-looks', src: C('g-looks'), ss: 1.0, dur: 2.2, cues: true, what: 'Limbs in their upgrade looks, firing', from: 'real game, captured (g-looks)' },
+    // III. Consume the map: the district draft by hand (close on the plates, then the whole board), the creep, the grown body.
+    { id: 'p-draft', src: C('p-draft'), ss: 0.3, dur: 2.28, crop: boxCrop('p-draft.json', 'panel', 50), zoom: [1, 1.03], cues: true, what: 'THE BODY IS READY TO GROW: three districts hovered, one clicked', from: 'real game, played by hand (p-draft)' },
+    { id: 'p-draft-b', src: C('p-draft'), ss: 2.75, dur: 2.6, titles: [T('p-3', 0.2, 2.5)], cues: true, what: 'The district consumed: the camera goes to it', from: 'real game, played by hand (p-draft)' },
+    { id: 'g-creep', src: C('g-creep'), ss: CREEP_SS, dur: 2.4, cues: true, what: 'Creep nodes put down past the edge; the creep spreads over the new district', from: 'real game, captured (g-creep)' },
+    { id: 'g-late', src: C('g-late'), ss: 0.8, dur: 3.2, cues: true, what: 'Late in a run: the whole body across its districts, in a wave', from: 'real game, captured (g-late)' },
+    // IV. Take the planet: the globe, a landing site picked, the landing.
+    { id: 'p-globe', src: C('p-globe'), ss: 0.8, dur: 2.6, crop: GLOBE_PICK_CROP, cues: true, what: 'The planet: a territory hovered (lit, its tooltip) and picked; the globe turns to it; its briefing', from: 'real game, played by hand (p-globe)' },
+    { id: 'landing', src: A(`public/art/landing/${PICK_SET}.mp4`), ss: 3.3, dur: 2.6, titles: [T('p-4', 0.15, 2.5)], what: 'The landing: the brood falls on the new territory', from: `the game's landing film, public/art/landing/${PICK_SET}.mp4` },
+    // The end: a fast montage on the music's drop, the logo.
+    { id: 'm-late', src: C('g-late'), ss: 4.0, dur: 0.7, what: 'montage: the whole body', from: 'real game, captured (g-late)' },
+    { id: 'm-maw', src: C('g-maw'), ss: MAW_SS2, crop: MAW_CROP, dur: 0.7, what: 'montage: the Maw', from: 'real game, captured (g-maw)' },
+    { id: 'm-boss', src: C('g-boss'), ss: 4.6, dur: 0.7, what: 'montage: the royal', from: 'real game, captured (g-boss)' },
+    { id: 'm-temple', src: C('g-temple'), ss: 4.2, dur: 0.7, what: 'montage: the Temple Cities', from: 'real game, captured (g-temple)' },
+    { id: 'm-looks', src: C('g-looks'), ss: 3.5, dur: 0.7, what: 'montage: limbs in their upgrade looks', from: 'real game, captured (g-looks)' },
+    { id: 'end', src: SRC.keyart, image: true, dur: 5.5, zoom: [1, 1.06], end: true, endGenre: 'end-genre-play', fadeOut: 0.8, what: 'The name, TOWER DEFENCE + ROGUELITE, GENOCIDE SIMULATOR', from: 'key art promo/key-art/broodfall-keyart-meteor-2048x1152.jpg, titles set in type' },
+  ];
+}
+/** The game's own rules for its effects (src/audio/cues.ts SFX_RULES: gain, gap), read from the source. */
+function sfxRules() {
+  const txt = fs.readFileSync(A('src/audio/cues.ts'), 'utf8');
+  const out = {};
+  for (const m of txt.matchAll(/'([a-z-]+)':\s*R\(([\d.]+),\s*([\d.]+),\s*(\d+)/g)) out[m[1]] = { gain: +m[2], gap: +m[3], poly: +m[4] };
+  return out;
+}
+/**
+ * The game's own effects, where the game asked for them while each shot was filmed (film() logs them: <id>.sfx.json),
+ * a variant of each picked as the game picks (never the same one twice running), thinned as the game thins them
+ * (each effect's gap) and a little more, so the music still leads.
+ */
+function gameCues(shots, at, { db = -7, maxPerHalf = 4 } = {}) {
+  const man = JSON.parse(fs.readFileSync(A('public/audio/manifest.json'), 'utf8')).sfx;
+  const rules = sfxRules();
+  let seed = 11;
+  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const last = {}, lastVar = {}, out = [];
+  for (const s of shots) {
+    if (!s.cues) continue;
+    const id = path.basename(s.src, '.mp4');
+    const f = path.join(CAP, `${id}.sfx.json`);
+    if (!fs.existsSync(f)) continue;
+    const rate = s.rate ?? 1, t0 = at(s.id);
+    const cues = JSON.parse(fs.readFileSync(f, 'utf8'))
+      .map((c) => ({ ...c, t: (c.at - (s.ss ?? 0)) / rate }))
+      .filter((c) => c.t >= 0.03 && c.t <= s.dur - 0.12 && man[c.id]?.files?.length);
+    const placed = [];
+    for (const c of cues) {
+      const r = rules[c.id] ?? { gain: 0.5, gap: 0.1 };
+      const T0 = t0 + c.t;
+      if (T0 - (last[c.id] ?? -99) < Math.max(r.gap, 0.14)) continue;
+      if (placed.filter((p) => T0 - p < 0.5).length >= maxPerHalf) continue;
+      const files = man[c.id].files;
+      let v = Math.floor(rnd() * files.length);
+      if (files.length > 1 && v === lastVar[c.id]) v = (v + 1) % files.length;
+      lastVar[c.id] = v; last[c.id] = T0; placed.push(T0);
+      out.push({ f: A(`public/${files[v]}`), t: T0, bus: 's', db: db + 20 * Math.log10(Math.max(0.05, r.gain)) });
+    }
+  }
+  return out;
+}
+function soundGameplay(at, shots) {
+  const mStart = at('m-late');
+  // The music's drop (61.2 s into siege-assault, the 90 s cut's montage) lands on the montage.
+  const ss = Math.max(0, 61.2 - mStart);
+  return [
+    { f: AU('sting-wave'), t: 0, bus: 'm', db: -3 },
+    { f: AU('siege-assault'), t: 0, ss, dur: at('end') + 0.2, fi: 0.6, fo: 0.25, bus: 'm', db: -1 },
+    { f: AU('sting-core'), t: at('end'), bus: 'm', db: 0, fo: 1.0 },
+    { f: AU('theme-menu'), t: at('end') + 0.4, ss: 0, dur: 5.0, fi: 1.2, fo: 1.2, bus: 'm', db: -8 },
+    { f: AU('nar-royal'), t: at('g-boss') + 0.1, bus: 'v' },
+    { f: AU('boss-roar'), t: at('g-boss') + 0.4, bus: 's', db: -5 },
+    { f: AU('land-roar'), t: at('landing') - 0.3, ss: 1.2, bus: 's', db: -3, fo: 0.4, dur: 1.9 },
+    { f: AU('land-impact'), t: at('landing') + (4.791 - 3.3), bus: 's', db: -1 },
+    ...(process.env.TRAILER_NO_CUES ? [] : gameCues(shots, at)),
+  ];
+}
+
 const sh = (s) => crypto.createHash('sha1').update(s).digest('hex').slice(0, 10);
 /** One shot, rendered: 60 fps, exact frame count, its titles over it. `fmt` 'h' (1920x1080) or 'v' (1080x1920). */
 function renderShot(s, fmt) {
@@ -1060,7 +1509,7 @@ function renderShot(s, fmt) {
   const rate = s.rate ?? 1;
   const tdir = path.join(RAW, 'titles', fmt);
   const titles = [...(s.titles ?? [])];
-  if (s.end) titles.push(['end-shade', 0, 99], ['end-logo', 0.25, 99], ['end-genre', 1.1, 99], ['end-tag', 2.0, 99]);
+  if (s.end) titles.push(['end-shade', 0, 99], ['end-logo', 0.25, 99], [s.endGenre ?? 'end-genre', 1.1, 99], ['end-tag', 2.0, 99]);
   const key = sh(JSON.stringify({ s, fmt, v: 3, mt: fs.existsSync(s.src) ? fs.statSync(s.src).mtimeMs : 0 }));
   const out = path.join(dir, `${s.id}-${fmt}-${key}.mp4`);
   if (fs.existsSync(out)) return out;
@@ -1123,6 +1572,14 @@ function mix(events, total, out) {
     f.push(c);
     by[e.bus ?? 'm'].push(`[a${i}]`);
   });
+  // Every bus runs the whole length on a bed of silence: a bus whose last sound ends early (the gameplay cut's one voice)
+  // made the ducking and the final amix drop the music for seconds at a time (Oct 26 2026), or hang.
+  ['m', 'v', 's'].forEach((k, j) => {
+    const n = events.length + j;
+    args.push('-f', 'lavfi', '-t', (total + 0.5).toFixed(3), '-i', 'anullsrc=r=48000:cl=stereo');
+    f.push(`[${n}:a]aformat=sample_fmts=fltp:channel_layouts=stereo[z${k}]`);
+    by[k].unshift(`[z${k}]`);
+  });
   const bus = (k, name) => by[k].length > 1 ? f.push(`${by[k].join('')}amix=inputs=${by[k].length}:normalize=0:dropout_transition=0[${name}]`) : f.push(`${by[k][0] ?? 'anullsrc'}anull[${name}]`);
   bus('m', 'mus'); bus('v', 'vox'); bus('s', 'sfx');
   f.push('[vox]asplit[vx1][vx2]');
@@ -1145,7 +1602,7 @@ function measure(file) {
   return { lufs: I, truePeak: tp };
 }
 
-function build(name, shots, sound, fmt, outFile) {
+function build(name, shots, sound, fmt, outFile, { cap = '4.0M' } = {}) {
   console.log(`cut ${name} (${fmt})`);
   let t = 0;
   const at = {};
@@ -1156,7 +1613,7 @@ function build(name, shots, sound, fmt, outFile) {
   fs.writeFileSync(list, files.map((x) => `file '${x.split(path.sep).join('/')}'`).join('\n'));
   const video = path.join(RAW, `${name}-${fmt}-video.mp4`);
   ff(['-f', 'concat', '-safe', '0', '-i', list, '-c', 'copy', video], 'concat');
-  const wav = mix(sound((id) => { if (!(id in at)) throw new Error(`no shot ${id}`); return at[id]; }), total, path.join(RAW, `${name}-${fmt}.wav`));
+  const wav = mix(sound((id) => { if (!(id in at)) throw new Error(`no shot ${id}`); return at[id]; }, placed), total, path.join(RAW, `${name}-${fmt}.wav`));
   const W = fmt === 'h' ? 1920 : 1080, H = fmt === 'h' ? 1080 : 1920;
   // The master (high quality, art-src/trailer/, git-ignored) and the file to publish (promo/trailer/, kept
   // under about 50 MB for the repo and for upload: H.264 High, capped bitrate, 60 fps).
@@ -1164,7 +1621,7 @@ function build(name, shots, sound, fmt, outFile) {
   const enc = (crf, cap, file) => ff(['-i', video, '-i', wav, '-map', '0:v', '-map', '1:a', '-c:v', 'libx264', '-preset', 'slow', '-crf', String(crf), ...(cap ? ['-maxrate', cap, '-bufsize', '9M'] : []), '-profile:v', 'high', '-level', '4.2',
     '-pix_fmt', 'yuv420p', '-r', String(FPS), '-s', `${W}x${H}`, '-g', '120', '-movflags', '+faststart', '-c:a', 'aac', '-b:a', '320k', '-ar', '48000', '-t', total.toFixed(3), file], 'final');
   enc(16, null, master);
-  enc(21, '4.0M', outFile);
+  enc(cap === '4.0M' ? 21 : 19, cap, outFile);
   const m = measure(outFile);
   const size = fs.statSync(outFile).size;
   console.log(`  ${outFile}: ${total.toFixed(2)} s, ${(size / 1048576).toFixed(1)} MB, ${m.lufs} LUFS, true peak ${m.truePeak} dBTP`);
@@ -1177,6 +1634,21 @@ if (cmd === 'cut') {
   if (want2('full')) results.push(build('full', shotsFull(), soundFull, 'h', path.join(OUT, 'broodfall-trailer-90s.mp4')));
   if (want2('30')) results.push(build('30', shots30(), sound30, 'h', path.join(OUT, 'broodfall-trailer-30s.mp4')));
   if (want2('vertical')) results.push(build('vertical', shots30(), sound30, 'v', path.join(OUT, 'broodfall-trailer-vertical.mp4')));
+  // The gameplay cut is asked for by name (not part of a bare `cut`): `cut gameplay`.
+  if (want.has('gameplay')) {
+    const r = build('gameplay', shotsGameplay(), soundGameplay, 'h', path.join(OUT, 'broodfall-trailer-gameplay.mp4'), { cap: '8.0M' });
+    results.push(r);
+    // The copy for a browser upload capped at 10 MB: 1280x720 30 fps, two-pass x264 at the rate that lands it under 9.8 MB.
+    const up = path.join(OUT, 'broodfall-trailer-gameplay-steam-upload-720p.mp4');
+    const kbps = Math.floor(((9.8 * 1e6 * 8) / r.total - 96000) / 1000 * 0.97);
+    const passlog = path.join(RAW, 'gameplay-2pass');
+    const v = ['-i', r.file, '-vf', 'scale=1280:720:flags=lanczos,fps=30', '-c:v', 'libx264', '-preset', 'slow', '-b:v', `${kbps}k`, '-profile:v', 'high', '-pix_fmt', 'yuv420p', '-g', '60', '-passlogfile', passlog];
+    ff([...v, '-pass', '1', '-an', '-f', 'mp4', process.platform === 'win32' ? 'NUL' : '/dev/null'], 'upload pass 1');
+    ff([...v, '-pass', '2', '-af', 'volume=-0.7dB', '-c:a', 'aac', '-b:a', '96k', '-ar', '48000', '-movflags', '+faststart', up], 'upload pass 2');
+    const size = fs.statSync(up).size;
+    console.log(`  ${up}: ${(size / 1e6).toFixed(2)} MB (${kbps} kbit/s video), ${JSON.stringify(measure(up))}`);
+    if (size >= 9.8e6) throw new Error(`upload copy is ${(size / 1e6).toFixed(2)} MB, over 9.8 MB`);
+  }
   const log = path.join(RAW, 'cuts.json');
   const prev = fs.existsSync(log) ? JSON.parse(fs.readFileSync(log, 'utf8')) : {};
   for (const r of results) prev[r.name] = r;
