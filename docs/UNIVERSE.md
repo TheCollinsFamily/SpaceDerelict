@@ -284,6 +284,14 @@ are read together. Uplifts look anthro, like the nekos (Collins).
 - **Bodies by world** (Collins, Oct 14 2026): humans optimised for high-gravity planets are nothing like those
   optimised for life in zero G (Broodfall's technician is zero-G optimised). The Empire kills over belief and
   morality, never over genes, holds no animosity over genetic difference, and finds Earth's ethnic wars strange.
+- **The rainbow people** (Collins, Oct 26 2026; Broodfall's Delegation films): the Technopuritan history books' name
+  for the culture that ruled most of the old world before the Migration, after the rainbow flag it gathered under. It
+  held that society is improved by making everyone equal and treating everyone the same, which the Empire finds one of
+  the oddest chapters of human history: if everyone were the same there would be no point to other people or to being
+  an individual, and if they are not the same, treating them as equal puts the artist in charge and the leader at the
+  easel. They ruled the only planet humans were on, then within one generation stopped breeding and let themselves be
+  replaced (and imported people who said openly that they wanted them gone). The wording is the history books', not a
+  neutral one.
 - **The Migration** (Collins, Oct 26 2026): man leaving Earth to take his manifest destiny among the stars. Before it
   the peoples that became the Houses were called ethnic groups, and in much of the old world it was offensive to notice,
   talk about or research the differences between them (the fear was that knowing would lead to killing, or to favouring
