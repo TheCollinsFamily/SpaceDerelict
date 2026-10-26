@@ -88,7 +88,7 @@ export const EXPERIMENTS: ExperimentDef[] = [
   { id: 'puppet-queen', name: 'Puppet Queen',
     pitch: 'Capture a royal and see what happens if I patch into her nervous system and send her back against her own. I\'ve built a cage!',
     setup: { trapCage: true, directive: { kind: 'royal', count: 1 } },
-    goal: { id: 'puppet', title: 'Puppet Queen', text: 'Catch a royal in the trap cage and let her make {n} kills.', measure: 'family:cage', target: 10, tierScale: 0, pays: 4 },
+    goal: { id: 'puppet', title: 'Puppet Queen', text: 'Catch a royal in the trap cage and let her make {n} kills.', measure: 'family:cage', target: 3, tierScale: 0, pays: 4 },
     unlocks: { gene: 'royal-graft' }, requires: { captures: 2 } },
   { id: 'love-gas', name: 'Love Gas',
     pitch: 'What if the lure glands put out THEIR mating pheromone instead of poison? Science says: they stop fighting. Science also says: more of them next week. I\'ve packed two lures.',

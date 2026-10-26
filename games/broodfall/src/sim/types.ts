@@ -725,7 +725,8 @@ export interface Broodling {
   snap?: BroodSnap;
   /** A grafted royal fighting its own (Puppet Queen): no leash, its own bite and speed. */
   /** kind: which royal it was (the board draws her grafted: tools/art/units.mjs ALLIES). */
-  puppet?: { bite: number; rate: number; speed: number; kind?: EnemyKind };
+  /** `until`: her own still take her for their royal until then (sim time): they do not strike her (Oct 26 2026). */
+  puppet?: { bite: number; rate: number; speed: number; kind?: EnemyKind; until?: number };
   pos: Vec;
   hp: number;
   maxHp: number;

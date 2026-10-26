@@ -4056,6 +4056,8 @@ export class Sim {
         let bl: Broodling | null = null;
         let bd = B.broodEngageDist + ENEMY_RADIUS;
         for (const b of this.broodlings) {
+          // A fresh puppet still smells of a royal: her own do not raise a claw against her yet.
+          if (b.puppet?.until !== undefined && this.time < b.puppet.until) continue;
           const d = dist(e.pos, b.pos);
           if (d < bd) { bd = d; bl = b; }
         }
@@ -4154,22 +4156,29 @@ export class Sim {
     this.applySeparation();
   }
 
+  /**
+   * A body gets off the field, at the map's edge or into the unclaimed city past the frontier (Oct 26 2026: the second
+   * way out never counted a courier's limb, so Follow the Courier could not be met that way).
+   */
+  private escape(e: Enemy): void {
+    const i = this.enemies.indexOf(e);
+    if (i >= 0) this.enemies.splice(i, 1);
+    if (!e.carrying) return;
+    this.stats.limbsCarriedOff += 1; // a courier got away with one of yours
+    // Homing Tissue (a hobby gene): what it cost comes home anyway.
+    if (this.geneMods.homingRefund) {
+      const cost = towerSpec(e.carrying.family).cost;
+      for (const k of ['war', 'science', 'royal'] as Caste[]) this.meat[k] += cost[k] ?? 0;
+    }
+  }
+
   /** Walk back up the flow field (away from the core) and slip out at the edge. */
   private leaveField(e: Enemy, speed: number): void {
     const cell = this.cellAt(e.pos.x, e.pos.y);
     const cx = cell % this.cfg.gridW;
     const cy = Math.floor(cell / this.cfg.gridW);
     if (cx <= 1 || cy <= 1 || cx >= this.cfg.gridW - 2 || cy >= this.cfg.gridH - 2) {
-      const i = this.enemies.indexOf(e);
-      if (i >= 0) this.enemies.splice(i, 1);
-      if (e.carrying) {
-        this.stats.limbsCarriedOff += 1; // a courier got away with one of yours
-        // Homing Tissue (a hobby gene): what it cost comes home anyway.
-        if (this.geneMods.homingRefund) {
-          const cost = towerSpec(e.carrying.family).cost;
-          for (const k of ['war', 'science', 'royal'] as Caste[]) this.meat[k] += cost[k] ?? 0;
-        }
-      }
+      this.escape(e);
       return;
     }
     let best = -1;
@@ -4189,8 +4198,7 @@ export class Sim {
       this.stepConstrained(e, this.cellCenter(best), speed);
     } else if (nearVoid) {
       // Top of the flow field at the frontier: slip out into the unclaimed city.
-      const i = this.enemies.indexOf(e);
-      if (i >= 0) this.enemies.splice(i, 1);
+      this.escape(e);
     } else {
       this.stepConstrained(e, { x: e.pos.x < this.worldW / 2 ? 0 : this.worldW, y: e.pos.y }, speed);
     }
@@ -5938,7 +5946,7 @@ export class Sim {
           this.stats.royalsCaptured += 1;
           this.broodlings.push({
             id: this.nextId++, motherId: t.id, pos: { ...royal.pos }, hp: royal.maxHp * 0.6, maxHp: royal.maxHp * 0.6,
-            cooldown: 0, puppet: { bite: rs.damage, rate: rs.rate, speed: rs.speed * 1.4, kind: royal.kind },
+            cooldown: 0, puppet: { bite: rs.damage * B.puppetBite, rate: rs.rate, speed: rs.speed * 1.4, kind: royal.kind, until: this.time + B.puppetGrace },
           });
           this.events.push({ kind: 'royal-captured', enemy: royal.kind });
         }

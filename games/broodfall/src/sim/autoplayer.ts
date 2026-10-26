@@ -13,7 +13,7 @@ import { BALANCE as B } from '../../content/data';
 import type { Tower, TowerFamily, UpgradeChoice } from './types';
 
 /** The free cards an experiment issues (content/campaign.ts EXPERIMENTS setup): the experimenter plays them itself. */
-const GEAR = new Set<TowerFamily>(['cage', 'lure', 'maw', 'ember']);
+const GEAR = new Set<TowerFamily>(['maw', 'ember']);
 
 const isPassableCell = (sim: Sim, c: number): boolean => sim.map.cells[c] === CellType.Road || sim.map.cells[c] === CellType.Plaza;
 
@@ -54,9 +54,10 @@ export class Autoplayer {
   roster = false;
   /**
    * THE EXPERIMENTER (Oct 26 2026): off by default. On: it plays an experiment's gear first, the free cards a
-   * deployment is issued (the trap cage, the love-gas lures, the royal diet's maw, the nursery's flamethrowers): the
-   * flamethrowers on the creep nearest a spawn gate (held until the creep gets within reach, or wave 4), the rest where
-   * the lanes run thickest. tools/measure/economy.measure.ts plays each experiment with it.
+   * deployment is issued: the Nursery Visit's flamethrowers on the creep nearest a spawn gate (held until the creep gets
+   * within reach, or wave 4), the Royal Diet's maw where the lanes run thickest. The cage and the lures are played as the
+   * naive player plays them: holding the cage for a royal, or growing it deep on her road, measured WORSE (Oct 26 2026).
+   * tools/measure/economy.measure.ts plays each experiment with it.
    */
   experimenter = false;
   clicks = 0;

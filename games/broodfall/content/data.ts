@@ -673,6 +673,13 @@ export const BALANCE = {
   sleeperDamage: 70,
   /** Mating musk: a paired-off body stands still this long; each pair adds a body next wave. */
   mateStun: 4,
+  /**
+   * Trap Cage: seconds a grafted royal is still taken for one by her own (they do not strike her). Without it she was
+   * caught in the middle of her court and killed in about 4 s, before a single kill (measured Oct 26 2026).
+   */
+  puppetGrace: 15,
+  /** ...and her bite, times her own: a consort's 20 took six bites to fell a shield bearer, and the limbs got there first. */
+  puppetBite: 2.5,
   /** Broodmother Den and Brood Pit: their warriors (and the Trap Cage's puppets walk the same way). */
   broodHp: 34,
   broodDamage: 7,
