@@ -171,3 +171,26 @@ The board (`claude.ai/artifact/GaEEiXWtpEPhjv1AHaSqq9`, drawn from this file) wa
   her live mind and a prompt in the reply box. HANDOFF.md, "YOKE's lines".
 - **#2, #5, #9, #12, #6, #15:** recommendations given in the session; nothing built.
 
+
+## Oct 26 2026: the between-mission economy measured on real runs (item 15)
+
+Collins: "I dont remember building out the economy for how you earn roguelite and special points between missions or how
+you spend them is that built and mapped out?" It is built (DESIGN.md "Two credits from two kinds of mission"); this is it
+played. `tools/measure/economy.measure.ts` (part `campaign`): a whole campaign through the game's own rules, a real Sim
+for every deployment, the scripted player (`experimenter` on), the experiment tried least so far and two dares not yet
+done each time, the cheapest lineage bought the moment it can be paid. One campaign (Delegation, seed 5000), 39
+deployments (23 won; the bot lost the Assembly Hall five times), log in the measure's `ECON_LOG`:
+
+- **Standing:** 119 in all (74 from the Requisition Board, the rest from Command's standing orders). All **17 of 17**
+  sanctioned lineages (65) were bought by **deployment 16**; **54 standing went unspent**.
+- **Field notes:** 29 in all (experiments 20, dares the rest). All **3 of 3** unsanctioned lineages by **deployment 7**;
+  **15 notes unspent**. Dares done 5 of 9 (the bot cannot do "only the ground eats them", "one stupidly powerful limb",
+  "let them in" on purpose).
+- **Experiments:** all **5 of 5** by deployment 12 (since the fixes the same day: HANDOFF.md "The experiments, made
+  playable"). Profiles: Spore and Brood from them; Venom (dare "Everything burns") not.
+- **The licence** was cut on Oct 26 2026, so item 13 is closed: standing buys lineages only.
+
+So the answer to the Oct 5 question is yes, and more than yes: every unlock is earned by about deployment 16 of a campaign
+that runs 14 to 20 (more with losses), and both currencies then pile up with nothing to buy (items 14 and 15). Collins's
+call: raise the prices (the sanctioned catalogue at about 1.8x would last to the finale), or give the late currency a
+use (the post-game's rule cards, `notes/POSTGAME-2026-10-12.md`), or leave it for the playtest to judge.

@@ -1362,7 +1362,10 @@ ${contentNote(loadSettings().content)}`, lore }, talk.turns, said);
     const scene = new YokeSceneOverlay(await sceneMedia('printBody'), PRINT_BODY.stages);
     this.el.dataset.scene = 'printBody';
     await scene.run();
-    await say(PRINT_BODY.line, CUES.disgust, (t) => { push(t); scene.subtitle(t); });
+    // The film is pictures only (docs/VIDEO-CONVENTIONS.md 9): her words go over it only with Settings → Subtitles on, or
+    // with her voice off, when there would be nothing to hear.
+    const words = loadSettings().subtitles || loadYoke().muted;
+    await say(PRINT_BODY.line, CUES.disgust, (t) => { push(t); if (words) scene.subtitle(t); });
     await new Promise((r) => setTimeout(r, 900));
     scene.close();
     delete this.el.dataset.scene;

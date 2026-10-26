@@ -132,6 +132,17 @@ try {
     const line = await page.locator('#yoke-scene .ys-sub').innerText();
     check(/gross/i.test(line), `her line over the last shot: "${line.slice(0, 70)}"`);
     await shot(page, `${content}-line`);
+    if (content === 'sfw') {
+      // Settings → THE SCREEN → Content: SFW is lit; UNRESTRICTED is one click and is kept.
+      await page.waitForFunction(() => !document.getElementById('yoke-scene'), null, { timeout: 30000 });
+      await page.locator('[data-act="settings"]').first().click();
+      await page.waitForSelector('#settings [data-choice="content"]', { timeout: 10000 });
+      check(await page.locator('#settings [data-choice="content"][data-value="sfw"].on').count() === 1, 'Settings: Content shows SFW chosen');
+      await page.locator('#settings [data-choice="content"][data-value="unrestricted"]').click();
+      await page.waitForTimeout(300);
+      await shot(page, 'settings-unrestricted');
+      check(await page.evaluate(() => JSON.parse(localStorage.getItem('broodfall-settings') ?? '{}').content) === 'unrestricted', 'Settings: UNRESTRICTED is saved');
+    }
     check(!errors.length, `no page errors${errors.length ? `: ${errors.slice(0, 3).join(' | ')}` : ''}`);
     await ctx.close();
   }
