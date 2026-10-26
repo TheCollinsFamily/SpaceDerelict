@@ -137,3 +137,21 @@ afterwards.
   gives the App ID; the agent's click on "Create Now" was refused by the auto-mode classifier
   as an unrequested commit, so Collins has to click it or OK it. After that, everything in
   this file goes in via the browser.
+- Oct 26 2026 (later): **App created: Broodfall, App ID 5509240** (store item 1406224), on The
+  Pragmatist Foundation. Store page editor: https://partner.steamgames.com/admin/game/edit/1406224
+  Done and saved: Basic Info (developer/publisher The Pragmatist Foundation, Windows, English
+  interface + full audio + subtitles, single-player, genres Strategy (primary) + Indie + Simulation,
+  support email Partners@pragmatistfoundation.com), 20 tags (Collins, in the wizard), both
+  descriptions (this file's copy), all 5 store graphics, 8 screenshots (04, 06, 07, 08 marked all
+  ages; 01-06 gameplay, 07-08 in-game menu), library capsule/header/hero/logo, and the content
+  survey, PUBLISHED: General Mature + Frequent Violence/Gore (Violent, Gore), moderate crude language,
+  adult humour with sexual connotations, unrealistic blood / cartoon violence / killing, mention of
+  illegal drugs (the Empire's anti-mysticism lore line), sexual innuendo; AI: pre-generated art,
+  films, music and voices + live YOKE text and voice via rfab.ai (Kimi K2.6), billed to a linked
+  rfab.ai account. Generated ratings: Brazil 14. The moderation answer describes only what
+  content/lore/yoke-brain.md actually says; an explicit content-rules block in YOKE's prompt
+  (no real-world hate, no harm instructions) would make that answer stronger before review.
+  Still open: release date "Coming soon", controller wizard (keyboard and mouse only: there is no
+  gamepad code), library logo placement (all three open Steamworks pop-up windows an agent's
+  browser tool cannot see), the trailer upload (43 MB, over the agent's 10 MB upload cap), then
+  Publish tab -> request review.
