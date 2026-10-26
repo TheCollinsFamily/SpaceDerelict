@@ -106,6 +106,7 @@ const TOPICS: Array<[string, RegExp]> = [
   ['india', /India|Hindu|Parsi/],
   ['nekos', /neko/i],
   ['rainbow', /rainbow|equal/i],
+  ['dogs', /canine|\bdogs?\b/i],
   ['govern', /one.person.one.vote|governance|Loxodonta/i],
   ['death', /\bschool\b|afterlife|\bdeath\b|dying|value of a life|simulation/i],
   ['planet', /this species|their (news|radio|nursery|quiz)|caste|war caste|sisters|Crater Thing/i],

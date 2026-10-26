@@ -353,6 +353,10 @@ are read together. Uplifts look anthro, like the nekos (Collins).
   pass the cost to others (refuse to shoot one person to save fifty and you have handed the cost of your purity to the
   fifty), and an interstellar empire's costs are on another scale. So although dogs reach power at unusual rates, even
   they know not to make the final call, and they generally distrust their own moral instincts.
+  **No prisons, except a dog House's** (Collins, Oct 26 2026): the Empire does not imprison; a criminal is executed and
+  uploaded. Keeping one in prison in the hope they improve spends resources stolen from a potential child who has yet
+  to break any norms, which is thought strictly and obviously immoral. One of the canine Houses still operates prisons
+  for its criminals; YOKE thinks the Empire gives the canines a little too much slack.
 - **Elephants.** Top management is usually held by humans or uplifted elephants.
 - **Dolphins and killer whales.** Generally thought to have been a massive mistake: they border on
   a "genetically evil" race, and mostly live on the fringes of the Empire. Space Derelict's **Pop
