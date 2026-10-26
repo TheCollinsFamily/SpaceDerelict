@@ -132,36 +132,41 @@ export const PROFILES: ProfileDef[] = [
 ];
 
 export type Catalogue = 'start' | 'sanctioned' | 'unsanctioned';
-/** Every organ lineage: which catalogue it is in and its price (standing or field notes). */
+/**
+ * Every organ lineage: which catalogue it is in and its price (standing or field notes).
+ * Oct 26 2026: sanctioned x1.5 (65 -> 101 in all), unsanctioned 14 -> 23. At the old prices a whole campaign of real
+ * runs (tools/measure/economy.measure.ts) had bought everything by deployment 16 and left 54 standing and 15 notes
+ * unspent; Collins (Oct 5 2026): "earn most of the roguelite unlocks in a single play through".
+ */
 export const LINEAGES: Partial<Record<OrganId, { catalogue: Catalogue; price: number }>> = {
   gut: { catalogue: 'start', price: 0 },
   forge: { catalogue: 'start', price: 0 },
   heart: { catalogue: 'start', price: 0 },
   root: { catalogue: 'start', price: 0 },
   bladder: { catalogue: 'start', price: 0 },
-  venom: { catalogue: 'sanctioned', price: 4 },
-  lattice: { catalogue: 'sanctioned', price: 3 },
-  nerve: { catalogue: 'sanctioned', price: 5 },
-  womb: { catalogue: 'sanctioned', price: 4 },
-  brain: { catalogue: 'sanctioned', price: 4 },
-  gland: { catalogue: 'sanctioned', price: 3 },
-  cyst: { catalogue: 'sanctioned', price: 2 },
-  pacemaker: { catalogue: 'sanctioned', price: 3 },
-  budder: { catalogue: 'sanctioned', price: 4 },
-  swell: { catalogue: 'sanctioned', price: 3 },
-  catapult: { catalogue: 'sanctioned', price: 4 },
-  runner: { catalogue: 'sanctioned', price: 4 },
+  venom: { catalogue: 'sanctioned', price: 6 },
+  lattice: { catalogue: 'sanctioned', price: 5 },
+  nerve: { catalogue: 'sanctioned', price: 8 },
+  womb: { catalogue: 'sanctioned', price: 6 },
+  brain: { catalogue: 'sanctioned', price: 6 },
+  gland: { catalogue: 'sanctioned', price: 5 },
+  cyst: { catalogue: 'sanctioned', price: 3 },
+  pacemaker: { catalogue: 'sanctioned', price: 5 },
+  budder: { catalogue: 'sanctioned', price: 6 },
+  swell: { catalogue: 'sanctioned', price: 5 },
+  catapult: { catalogue: 'sanctioned', price: 6 },
+  runner: { catalogue: 'sanctioned', price: 6 },
   // Oct 2 2026: the Spore Mule's sac is a mid-campaign purchase, beside the other creep-reach organs (sling, lance).
-  mule: { catalogue: 'sanctioned', price: 4 },
+  mule: { catalogue: 'sanctioned', price: 6 },
   // Oct 2 2026: the Harrier answers the science caste's raids, a mid-campaign worry; the Infestor (and the shelters it
   // takes) is the late expansion, after walking units, creep nodes and the Broodmother are all known.
-  harrier: { catalogue: 'sanctioned', price: 3 },
-  infestor: { catalogue: 'sanctioned', price: 6 },
-  mire: { catalogue: 'sanctioned', price: 4 },
-  acid: { catalogue: 'sanctioned', price: 5 },
-  marrow: { catalogue: 'unsanctioned', price: 5 },
-  resonance: { catalogue: 'unsanctioned', price: 6 },
-  atrophy: { catalogue: 'unsanctioned', price: 3 },
+  harrier: { catalogue: 'sanctioned', price: 5 },
+  infestor: { catalogue: 'sanctioned', price: 9 },
+  mire: { catalogue: 'sanctioned', price: 6 },
+  acid: { catalogue: 'sanctioned', price: 8 },
+  marrow: { catalogue: 'unsanctioned', price: 8 },
+  resonance: { catalogue: 'unsanctioned', price: 10 },
+  atrophy: { catalogue: 'unsanctioned', price: 5 },
 };
 
 
