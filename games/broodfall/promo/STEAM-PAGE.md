@@ -166,3 +166,13 @@ afterwards.
   tool's 10 MB cap, so Collins drags it in); after approval, press "Post as Coming Soon".
   Note for agents: Steamworks' pencil/"Start Wizard" buttons open in-page dialogs; a coordinate
   click can miss them silently. Click by element ref.
+- Oct 26 2026 (night): **two trailers on the Trailers tab**, both visible and shown before the
+  screenshots, neither marked all-ages (combat): "Broodfall Gameplay" (category Gameplay, listed
+  first, `promo/trailer/broodfall-trailer-gameplay-steam-upload-720p.mp4`, 55.9 s, pure gameplay)
+  and "Broodfall Trailer" (General/Cinematic, `promo/trailer/broodfall-trailer-90s-steam-upload-720p.mp4`).
+  The uploaded copies are 720p two-pass re-encodes under 10 MB because the agent browser tool caps
+  uploads at 10 MB; to put the 1080p masters (`broodfall-trailer-gameplay.mp4`,
+  `broodfall-trailer-90s.mp4`) up instead, drag them onto each trailer's "Replace" by hand.
+  Steamworks trailer flow: "Create New Trailer" (name) -> drop the file on that entry's drop zone ->
+  wait for "Converting..." to finish (a few minutes, server side) -> only then do category and the
+  check boxes appear; set them and press that entry's own Save.
