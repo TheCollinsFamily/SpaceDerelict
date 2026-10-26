@@ -202,8 +202,10 @@ body.first-mission.m1-surge #royal-surge, body.first-mission.m1-cannibal #pendin
 /* ---- a scene she acts out over the whole ship (src/ui/yokeScene.ts): the print-body ---- */
 #yoke-scene { position: fixed; inset: 0; z-index: 58; background: #030405; display: flex; align-items: center; justify-content: center; transition: opacity 0.4s; }
 #yoke-scene.leaving { opacity: 0; pointer-events: none; }
-.ys-stage { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+.ys-stage { position: absolute; inset: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; }
 .ys-media { width: 100%; height: 100%; object-fit: cover; }
+/* SFW (Settings → Content): the patch over a film where its keys say (src/ui/yokeScene.ts blur). */
+.ys-blur { position: absolute; pointer-events: none; backdrop-filter: blur(22px) saturate(0.7); -webkit-backdrop-filter: blur(22px) saturate(0.7); border-radius: 40%; background: rgba(20, 20, 24, 0.25); }
 .ys-card {
   max-width: 640px; padding: 26px 30px; border: 1px dashed rgba(235, 245, 248, 0.35); color: rgba(233, 238, 240, 0.85);
   font: italic 20px/1.5 Georgia, "Times New Roman", serif; text-align: center; animation: ys-in 0.6s ease-out;

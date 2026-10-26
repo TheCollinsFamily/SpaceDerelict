@@ -4,23 +4,51 @@
  * the screen. Until the clips exist, storyboard cards stand in for them, one per stage.
  */
 import { artUrl, loadManifest } from '../render/art';
+import { loadSettings } from '../meta/storage';
 
 export interface SceneStage { id: string; card: string; ms: number }
 
+/**
+ * Where a clip is blurred in SFW mode (Settings → Content): at `t` seconds, a box in fractions of the picture
+ * (x, y its top left). Between two keys the box slides; before the first and after the last it holds.
+ */
+export interface BlurKey { t: number; x: number; y: number; w: number; h: number }
+
 /** One piece of a scene: a clip or a still; `loop`: it keeps playing (the last, under her voice). */
-export interface SceneMedia { src: string; loop?: boolean; seconds?: number }
+export interface SceneMedia { src: string; loop?: boolean; seconds?: number; blur?: BlurKey[] }
+
+/** The blur box at time t (null: none at that moment, or no keys). */
+export function blurAt(keys: BlurKey[] | undefined, t: number): Omit<BlurKey, 't'> | null {
+  if (!keys?.length) return null;
+  if (t <= keys[0].t) return keys[0];
+  for (let i = 1; i < keys.length; i++) {
+    const a = keys[i - 1], b = keys[i];
+    if (t <= b.t) {
+      const f = (t - a.t) / Math.max(1e-6, b.t - a.t);
+      const mix = (k: 'x' | 'y' | 'w' | 'h') => a[k] + (b[k] - a[k]) * f;
+      return { x: mix('x'), y: mix('y'), w: mix('w'), h: mix('h') };
+    }
+  }
+  return keys[keys.length - 1];
+}
+
+const blurKeys = (v: unknown): BlurKey[] | undefined => {
+  if (!Array.isArray(v)) return undefined;
+  const keys = v.filter((k): k is BlurKey => !!k && typeof k === 'object' && ['t', 'x', 'y', 'w', 'h'].every((n) => Number.isFinite((k as Record<string, unknown>)[n])));
+  return keys.length ? keys.sort((a, b) => a.t - b.t) : undefined;
+};
 
 /**
  * The pieces of a scene, from YOKE's own manifest (`scenes.<key>`: file names, or {file, seconds, loop},
  * relative to public/art/ship/yoke/) or the main one (`ship.yoke.scenes.<key>`, relative to public/art/).
  */
 export async function sceneMedia(key: string): Promise<SceneMedia[]> {
-  const list = (v: unknown): Array<{ file: string; loop?: boolean; seconds?: number }> => {
+  const list = (v: unknown): Array<{ file: string; loop?: boolean; seconds?: number; blur?: BlurKey[] }> => {
     if (typeof v === 'string') return [{ file: v }];
     if (Array.isArray(v)) {
       return v.flatMap((x) => (typeof x === 'string' ? [{ file: x }]
         : x && typeof x === 'object' && typeof (x as { file?: unknown }).file === 'string'
-          ? [{ file: (x as { file: string }).file, loop: (x as { loop?: unknown }).loop === true, seconds: Number((x as { seconds?: unknown }).seconds) || undefined }]
+          ? [{ file: (x as { file: string }).file, loop: (x as { loop?: unknown }).loop === true, seconds: Number((x as { seconds?: unknown }).seconds) || undefined, blur: blurKeys((x as { blur?: unknown }).blur) }]
           : []));
     }
     if (v && typeof v === 'object') return list((v as { clips?: unknown; files?: unknown }).clips ?? (v as { files?: unknown }).files);
@@ -81,9 +109,31 @@ export class YokeSceneOverlay {
       if (!v.loop) v.onended = end;
       v.onerror = end;
       this.stageEl.replaceChildren(v);
+      if (piece.blur && loadSettings().content !== 'unrestricted') this.blur(v, piece.blur);
       void v.play().catch(end);
       setTimeout(end, last ? 1600 : Math.max(2000, ((piece.seconds ?? 6) + 2) * 1000));
     });
+  }
+
+  /**
+   * SFW: a blurred patch over the clip where its keys say, following the picture as it plays. The video is drawn
+   * `object-fit: cover` (src/onboard.css), so the box is placed on the picture as scaled and cropped, not on the stage.
+   */
+  private blur(v: HTMLVideoElement, keys: BlurKey[]): void {
+    const box = document.createElement('div');
+    box.className = 'ys-blur';
+    this.stageEl.appendChild(box);
+    const place = () => {
+      if (!box.isConnected) return;
+      const b = blurAt(keys, v.currentTime);
+      const W = v.clientWidth, H = v.clientHeight, vw = v.videoWidth || 16, vh = v.videoHeight || 9;
+      const k = Math.max(W / vw, H / vh), pw = vw * k, ph = vh * k;
+      const ox = v.offsetLeft + (W - pw) / 2, oy = v.offsetTop + (H - ph) / 2;
+      box.style.display = b ? '' : 'none';
+      if (b) Object.assign(box.style, { left: `${ox + b.x * pw}px`, top: `${oy + b.y * ph}px`, width: `${b.w * pw}px`, height: `${b.h * ph}px` });
+      requestAnimationFrame(place);
+    };
+    place();
   }
 
   private still(src: string, ms: number): Promise<void> {

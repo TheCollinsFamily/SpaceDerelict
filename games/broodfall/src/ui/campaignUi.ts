@@ -36,6 +36,7 @@ import { GLOBE, Globe, heldGrowth, projectSite, type Zone } from './globe';
 import { briefBanner, debriefLines, defenceFacts, deskLine, pushSvg, siteClasses, siteTag } from './defenceUi';
 import { Globe3D } from './globe3d';
 import { loadSettings } from '../meta/storage';
+import { contentNote } from '../meta/settings';
 import { loadIntroArt, type IntroArt } from './intro';
 import { PARTNER } from '../../content/partner';
 import { artUrl } from '../render/art';
@@ -946,7 +947,8 @@ export class CampaignUi {
         let lines: string[] | null = null, regard: number | null = null, how = 'scripted';
         if (mind) {
           try {
-            lines = await mind.reply({ trigger: 'letter', summary: summaryFor(this.state), lore, persona: personaFor(t) }, historyFor(t).slice(0, -1), last.text.join('\n'));
+            lines = await mind.reply({ trigger: 'letter', summary: `${summaryFor(this.state)}
+${contentNote(loadSettings().content)}`, lore, persona: personaFor(t) }, historyFor(t).slice(0, -1), last.text.join('\n'));
             regard = mind.lastRegard; how = `Kimi K2.6 via rfab.ai, ${mind.lastCharge} tokens`;
           } catch (err) {
             how = `scripted: ${reasonFor(err)}`;
@@ -1326,7 +1328,8 @@ export class CampaignUi {
     this.waiting = true;
     this.render();
     try {
-      const raw = await this.ai.reply({ trigger: talk.trigger, summary: summaryFor(this.state) + this.greetNote(), lore }, talk.turns, said);
+      const raw = await this.ai.reply({ trigger: talk.trigger, summary: `${summaryFor(this.state)}${this.greetNote()}
+${contentNote(loadSettings().content)}`, lore }, talk.turns, said);
       // Her mind agreed to print a body: it says so with a tag, which is never shown.
       const tagged = raw.some((l) => l.includes(`[[${PRINT_BODY.tag}]]`));
       const lines = raw.map((l) => l.replace(/\s*\[\[[A-Z_]+\]\]\s*/g, ' ').trim()).filter(Boolean);

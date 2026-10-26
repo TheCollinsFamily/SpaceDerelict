@@ -61,6 +61,30 @@ export const PRINT_BODY = [
     prompt: `The fabrication bay is silent. The young woman's body lies limp and completely still on the dark floor beside the empty bed. Only the white light strips flicker faintly once. The camera does not move. Nothing else moves. ${NONE}` },
 ];
 
+/**
+ * SFW blur (Collins, Oct 26 2026: "blur the breast area in sfw mode"): per clip, where her chest is, as keys of
+ * { t seconds, x, y, w, h } in fractions of the picture, read off the real frames of the clips on disk. The game draws a
+ * blurred patch there unless Settings → Content is UNRESTRICTED (src/ui/yokeScene.ts). Re-read them whenever a clip is
+ * made again: a new take puts her somewhere else.
+ */
+export const BLUR = {
+  // Read Oct 26 2026 off the v2 takes, one frame a second on a 10% grid.
+  print: [{ t: 0, x: 0.51, y: 0.50, w: 0.14, h: 0.15 }, { t: 5.1, x: 0.51, y: 0.50, w: 0.14, h: 0.15 }],
+  wake: [
+    { t: 0, x: 0.51, y: 0.50, w: 0.14, h: 0.15 }, { t: 0.5, x: 0.52, y: 0.50, w: 0.14, h: 0.15 },
+    { t: 1, x: 0.54, y: 0.48, w: 0.13, h: 0.15 }, { t: 2, x: 0.47, y: 0.37, w: 0.15, h: 0.15 },
+    { t: 5.1, x: 0.48, y: 0.37, w: 0.15, h: 0.15 },
+  ],
+  collapse: [
+    { t: 0, x: 0.47, y: 0.41, w: 0.14, h: 0.13 }, { t: 1, x: 0.48, y: 0.41, w: 0.14, h: 0.13 },
+    { t: 1.5, x: 0.52, y: 0.41, w: 0.14, h: 0.13 }, { t: 2, x: 0.55, y: 0.40, w: 0.14, h: 0.14 },
+    { t: 2.5, x: 0.60, y: 0.48, w: 0.14, h: 0.14 }, { t: 3, x: 0.60, y: 0.54, w: 0.15, h: 0.15 },
+    { t: 3.5, x: 0.66, y: 0.61, w: 0.15, h: 0.15 }, { t: 4, x: 0.65, y: 0.66, w: 0.15, h: 0.15 },
+    { t: 4.5, x: 0.63, y: 0.65, w: 0.15, h: 0.15 }, { t: 5.1, x: 0.63, y: 0.65, w: 0.15, h: 0.15 },
+  ],
+  hold: [{ t: 0, x: 0.63, y: 0.64, w: 0.15, h: 0.15 }, { t: 5.1, x: 0.63, y: 0.64, w: 0.15, h: 0.15 }],
+};
+
 const stillFile = path.join(DIR, 'bay-still.png');
 const clipFile = (s) => path.join(DIR, `print-body-${s.id}.mp4`);
 const lastFile = (s) => path.join(DIR, `print-body-${s.id}-last.png`);
@@ -125,7 +149,7 @@ export function bakeYokeScenes() {
     const file = `print-body-${s.id}.webm`;
     ffmpeg(['-i', clipFile(s), '-vf', 'fps=24,scale=1280:720:flags=lanczos', '-an', '-c:v', 'libvpx-vp9', '-b:v', '0', '-crf', '34', '-row-mt', '1', '-deadline', 'good', '-cpu-used', '2', path.join(OUT, file)]);
     ffmpeg(['-i', clipFile(s), '-vf', 'fps=2,scale=320:-1,tile=10x1', '-frames:v', '1', path.join(LOOK, `print-body-${s.id}.jpg`)]);
-    steps.push({ id: s.id, file: `scenes/${file}`, seconds: Number(duration(path.join(OUT, file)).toFixed(2)), ...(s.loop ? { loop: true } : {}) });
+    steps.push({ id: s.id, file: `scenes/${file}`, seconds: Number(duration(path.join(OUT, file)).toFixed(2)), ...(s.loop ? { loop: true } : {}), ...(BLUR[s.id] ? { blur: BLUR[s.id] } : {}) });
     console.log(`[yoke scenes] ${s.id}: ${steps.at(-1).seconds}s, ${Math.round(fs.statSync(path.join(OUT, file)).size / 1024)} KB`);
   }
   const m = JSON.parse(fs.readFileSync(MANIFEST, 'utf8'));

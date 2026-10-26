@@ -69,6 +69,15 @@ try {
   const sketches = await page.locator('#campaign .cp-sketch').count();
   check(sketches >= EXPERIMENTS.length, `the experiments' sketches are drawn (${sketches})`);
   await shot(page, 'locker');
+  // The Gene Bay: where standing and field notes are spent. Every lineage for sale carries its organ's picture.
+  await page.locator('.cp-rooms [data-room="genes"]').first().click();
+  await page.waitForTimeout(1500);
+  const lineages = await page.locator('#campaign .cp-lin [data-buy]').count();
+  const pics = await page.locator('#campaign .cp-lin:has([data-buy]) .cp-organ-pic').count();
+  check(lineages > 0 && pics === lineages, `every lineage for sale has its organ's picture (${pics} of ${lineages})`);
+  const broken = await page.evaluate(() => [...document.querySelectorAll<HTMLImageElement>('#campaign img.cp-organ-pic')].filter((i) => i.complete && i.naturalWidth === 0).length);
+  check(broken === 0, `no organ picture fails to load (${broken} broken)`);
+  await shot(page, 'genebay');
 
   for (const e of EXPERIMENTS) {
     console.log(e.name.toUpperCase());

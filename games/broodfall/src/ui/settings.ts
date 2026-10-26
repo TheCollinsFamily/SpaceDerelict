@@ -6,7 +6,8 @@
  *   SOUND          master / music / effects / voice (src/audio/engine.ts reads them as they move;
  *                  voice also levels YOKE's lines and the boss's message); YOKE's voice on/off;
  *                  mute when the window is not in front
- *   THE SCREEN     HUD style (src/hud/themes.ts), text size, reduce motion, reduce flashes,
+ *   THE SCREEN     HUD style (src/hud/themes.ts), text size, reduce motion, reduce flashes, content
+ *                  (SFW: films blurred where they show nudity, every AI mind kept clean; UNRESTRICTED: neither),
  *                  caste colours (the colour-blind-safe set)
  *   THE BOARD      turn keys, edge scroll, zoom speed, the speed a deployment starts at
  *   YOKE           her live mind on/off, his own RFab key, and her account and model: a SLOT, filled by
@@ -136,6 +137,8 @@ function render(): void {
         <div class="st-row col"><span>Text size</span>${choice('text', [['0.9', 'SMALL'], ['1', 'NORMAL'], ['1.15', 'LARGE'], ['1.3', 'LARGER']], String(s.textScale))}</div>
         ${toggle('motion', s.reduceMotion, 'Reduce motion', 'panels and banners do not slide or pulse')}
         ${toggle('flashes', s.reduceFlashes, 'Reduce flashes', 'no bright flash when something is hit')}
+        <div class="st-row col"><span>Content<small>${s.content === 'unrestricted' ? 'nothing blurred, and YOKE and the letters hold nothing back' : 'nudity in the films is blurred, and YOKE and the letters keep it clean'}</small></span>
+          ${choice('content', [['sfw', 'SFW'], ['unrestricted', 'UNRESTRICTED (NSFW)']], s.content)}</div>
         <div class="st-row col"><span>Caste colours<small>war · science · royal</small></span>
           ${choice('tints', [['standard', 'THE GAME\'S'], ['safe', 'COLOUR-BLIND SAFE']], s.casteTints)}
           <div class="st-swatches">${sw(tint.war, 'WAR')}${sw(tint.science, 'SCIENCE')}${sw(tint.royal, 'ROYAL')}</div></div>
@@ -231,6 +234,7 @@ function onClick(ev: MouseEvent): void {
     const v = d.value ?? '';
     if (d.choice === 'hud') { applyHud(v, true); render(); return; }
     if (d.choice === 'text') s.textScale = Number(v);
+    if (d.choice === 'content') s.content = v === 'unrestricted' ? 'unrestricted' : 'sfw';
     if (d.choice === 'tints') s.casteTints = v === 'safe' ? 'safe' : 'standard';
     if (d.choice === 'landing') s.landingFilms = v === 'first' || v === 'never' ? v : 'always';
     if (d.choice === 'speed') s.speed = (Number(v) === 3 ? 3 : Number(v) === 8 ? 8 : 1);

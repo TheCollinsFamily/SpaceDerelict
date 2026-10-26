@@ -14,7 +14,9 @@
  *
  *   npx vitest run --config tools/measure/vitest.config.ts tools/measure/economy.measure.ts
  *   ECON_PART=experiments | campaign   (one part only)   ECON_SEEDS=10   ECON_CAMPAIGNS=3
+ *   ECON_LOG=<file>: each deployment's line is appended there as it is played (a campaign takes many minutes)
  */
+import { appendFileSync } from 'node:fs';
 import { it } from 'vitest';
 import { Autoplayer } from '../../src/sim/autoplayer';
 import { DT, Sim } from '../../src/sim/sim';
@@ -70,15 +72,18 @@ it.runIf(!part || part === 'campaign')('whole campaigns on real runs', () => {
     let s: CampaignState = { ...newCampaign(5000 + c), onboard: { mission1: 'won', deskOpen: true } };
     let standingEarned = 0, notesEarned = 0, wins = 0, deploys = 0;
     const bought: string[] = [];
+    const tried: Record<string, number> = {};
     const lines: string[] = [];
     for (let n = 1; n <= 40 && !s.ended; n++) {
       const open = targets(s);
       if (!open.length) break;
       const pick = (s.underAttack ? open.find((t) => t.id === s.underAttack) : undefined)
         ?? open.find((t) => t.id === LAST) ?? open.find((t) => !t.finaleOf) ?? open.find((t) => t.finaleOf === s.faction) ?? open[0];
-      // A player who plays the meta: the first experiment on offer, and two dares not yet done.
-      const exp = experimentsAvailable(s)[0]?.id;
-      const dares = DARES.filter((d) => !s.daresDone.includes(d.id)).slice(0, 2).map((d) => d.id);
+      // A player who plays the meta: the experiment on offer tried least so far, and two dares not yet done.
+      const exp = experimentsAvailable(s).map((e) => e.id).sort((a, b) => (tried[a] ?? 0) - (tried[b] ?? 0))[0];
+      if (exp) tried[exp] = (tried[exp] ?? 0) + 1;
+      const dares = DARES.filter((d) => !s.daresDone.includes(d.id)).map((d) => d.id).sort((a, b) => (tried[a] ?? 0) - (tried[b] ?? 0)).slice(0, 2);
+      for (const d of dares) tried[d] = (tried[d] ?? 0) + 1;
       const p = plan(s, pick.id, { experiment: exp, dares });
       const { report } = play(p, 7000 + c * 100 + n);
       const { state, debrief } = finish(s, p, report);
@@ -99,7 +104,10 @@ it.runIf(!part || part === 'campaign')('whole campaigns on real runs', () => {
         if (!r.ok) break;
         s = r.state; bought.push(`${can[0][0]}@${deploys}`);
       }
-      lines.push(`  ${String(n).padStart(2)} ${pick.id.padEnd(16)} ${report.won ? 'WON ' : 'lost'} +${debrief.standing} standing (board ${debrief.board.filter((g) => g.met).length}/3${debrief.orders ? '' : ''}) +${debrief.notes} notes${p.experiment ? ` exp ${p.experiment.def.id}:${debrief.experiment?.met ? 'MET' : 'no'}` : ''}  wallet ${s.standing}s/${s.notes}n`);
+      const line = `  ${String(n).padStart(2)} ${pick.id.padEnd(16)} ${report.won ? 'WON ' : 'lost'} +${debrief.standing} standing (board ${debrief.board.filter((g) => g.met).length}/3${debrief.orders ? '' : ''}) +${debrief.notes} notes${p.experiment ? ` exp ${p.experiment.def.id}:${debrief.experiment?.met ? 'MET' : 'no'}` : ''}  wallet ${s.standing}s/${s.notes}n`;
+      lines.push(line);
+      if (process.env.ECON_LOG) appendFileSync(process.env.ECON_LOG, `c${c + 1} ${line}
+`);
     }
     const sanctioned = Object.entries(LINEAGES).filter(([, l]) => l!.catalogue === 'sanctioned');
     const unsanctioned = Object.entries(LINEAGES).filter(([, l]) => l!.catalogue === 'unsanctioned');

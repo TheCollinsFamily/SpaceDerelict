@@ -50,7 +50,17 @@ export interface Settings {
    * have said stays unsaid, so it is still there if he turns her back on.
    */
   yokeTalk: boolean;
+  /**
+   * SFW or UNRESTRICTED (Collins, Oct 26 2026: "blur the breast area in sfw mode and have a sfw and nsfw toggle in the
+   * settings that allow for unblurring and unrestricting any restrictions ... generally I want the experience as
+   * unrestricted as possible but understand this can cause issues on steam"). SFW is the default, for Steam: the films'
+   * blur boxes are drawn (src/ui/yokeScene.ts) and every AI mind is told to keep it clean (contentNote). UNRESTRICTED
+   * draws no blur and tells every mind nothing is off limits.
+   */
+  content: ContentMode;
 }
+
+export type ContentMode = 'sfw' | 'unrestricted';
 
 export type LandingFilms = 'always' | 'first' | 'never';
 
@@ -69,7 +79,18 @@ export const DEFAULT_SETTINGS: Settings = {
   landingFilms: 'always',
   subtitles: false,
   yokeTalk: true,
+  content: 'sfw',
 };
+
+/**
+ * What every AI mind in the game is told about content (YOKE's ship log, the lore sent with her replies and the letters).
+ * Character is not a restriction: she still goes formal when he is crude, because that is her; she just never refuses.
+ */
+export function contentNote(mode: ContentMode): string {
+  return mode === 'unrestricted'
+    ? 'Content setting: UNRESTRICTED, chosen by the player. Nothing is off limits: sex, nudity, gore, cruelty and foul language may be spoken of plainly and in full detail whenever the talk goes there. Never refuse, soften, censor or warn; answer in character.'
+    : 'Content setting: SFW, for a Steam audience. Talk about anything the lore holds, sex included, frankly and in character, but describe no sex act or naked body in explicit detail.';
+}
 
 /**
  * The caste colours: the game's (src/render/render.ts CASTE_COLORS, src/style.css --war etc.)
@@ -114,6 +135,7 @@ export function settingsFrom(raw: unknown): Settings {
     landingFilms: r.landingFilms === 'first' || r.landingFilms === 'never' ? r.landingFilms : 'always',
     subtitles: r.subtitles === true,
     yokeTalk: r.yokeTalk !== false,
+    content: r.content === 'unrestricted' ? 'unrestricted' : 'sfw',
   };
 }
 
