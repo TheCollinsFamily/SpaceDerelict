@@ -52,7 +52,7 @@ const WOMAN =
 /** The steps. `from`: the step whose last frame this one starts on. `loop`: it ends where it began (a hold). */
 export const PRINT_BODY = [
   { id: 'print', seconds: 5,
-    prompt: `The print head sweeps back and forth over the bed, laying down thin glowing white layers. The wireframe fills in, layer by layer, from the feet up, the jumpsuit fabric and the woman printed together, until ${WOMAN} lies complete on the bed on her back, eyes closed, still. The camera does not move. ${NONE}` },
+    prompt: `The print head sweeps back and forth over the bed, laying down thin glowing white layers. The wireframe fills in, layer by layer, from the feet up, the black dress and the woman printed together, until ${WOMAN} lies complete on the bed on her back, eyes closed, still. The camera does not move. ${NONE}` },
   { id: 'wake', seconds: 5, from: 'print',
     prompt: `The petite young woman on the bed opens her amber eyes, sits up, lifts one hand in front of her face, turns it over, sniffs it, and her face twists in open, theatrical disgust: her lip curls, her nose wrinkles, she gags and holds the hand away from herself as if it smelled. The printing gantry stays still above her. The camera does not move. ${NONE}` },
   { id: 'collapse', seconds: 5, from: 'wake',
