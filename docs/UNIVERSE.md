@@ -284,6 +284,11 @@ are read together. Uplifts look anthro, like the nekos (Collins).
 - **Bodies by world** (Collins, Oct 14 2026): humans optimised for high-gravity planets are nothing like those
   optimised for life in zero G (Broodfall's technician is zero-G optimised). The Empire kills over belief and
   morality, never over genes, holds no animosity over genetic difference, and finds Earth's ethnic wars strange.
+- **House Constantine** (Collins, Oct 26 2026; Broodfall's technician's House): founded by third-generation Irish
+  Catholic converts, it struggled to gain prominence because of the early Technopuritans' prejudice against Catholics.
+  It is old in its continuity and an amalgam of northern European genetic contributions from groups that did not fit
+  neatly into anything ("northern European mutts"). Now one of the oldest continuous Houses, with about 24% of a Dyson
+  sphere dedicated to it: much smaller than the large Houses. How it governs itself is not set yet.
 - **How Houses govern themselves** (Collins, Oct 26 2026): every House is Technopuritan, the uplifts' Houses too, and
   the Index is made up of all of them: its members are people selected by the Houses (its structure is the one in
   Malcolm and Simone Collins's writings, the corpus: TPG 2.6, HOME 1.0). Within itself, a House may use any method of

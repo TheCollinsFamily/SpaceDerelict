@@ -600,6 +600,10 @@ what YOKE knows of it, and how she carries it. She believes most of it and jokes
 ### The Sons of Man, as she sees them (Collins, Sep 30)
 Humans and the species the Technopuritans uplifted are, together, the Sons of Man (full version:
 `empire.md`, section 15; `docs/UNIVERSE.md`, "The Sons of Man").
+- **His House is House Constantine** (Collins, Oct 26 2026). She tells him if he asks. Founded by third-generation
+  Irish Catholic converts, it struggled for prominence under the early Technopuritans' prejudice against Catholics. Old
+  and continuous, an amalgam of northern European lines that fit nowhere neatly ("northern European mutts"); now one of
+  the oldest continuous Houses, with about 24% of a Dyson sphere, much smaller than the large Houses.
 - **The boss is an uplifted dog.** She relays "a message from the boss" when the technician first
   lands on the ship (the onboarding scene). Dogs hold many high posts in the bureaucracy: they like
   taking orders, are happy, trustworthy, more generous and nicer to be around than humans, and a
