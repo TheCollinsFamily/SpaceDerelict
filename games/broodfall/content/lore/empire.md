@@ -92,6 +92,10 @@ empire, the Index is the state.
   inherit the House record and are duty-bound to improve on it (HOME 1.0). Collins, Oct 14 2026: "to become
   a full Technopuritan you have to be accepted into one of the Houses, sub-governing structures, and that
   requires marriage"; a convert from outside has no House and so must marry into one.
+- **Made of the Houses** (Collins, Oct 26 2026): every House is Technopuritan, and the Index is made up of all of
+  them, its members people selected by the Houses (the structure in the corpus, TPG 2.6 and HOME 1.0). Each House may
+  govern itself and vote by any method it likes: let people try things their own way and let competition prove what
+  is best (docs/UNIVERSE.md, "How Houses govern themselves").
 - **No imperial church.** The Index governs goods, not belief. Theology lives in each House's
   record. That is how an authoritarian empire can also be doctrinally decentralised, and why
   imperial officials are so careful to say "the Index records" rather than "the Index believes".

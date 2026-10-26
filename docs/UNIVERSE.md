@@ -284,12 +284,16 @@ are read together. Uplifts look anthro, like the nekos (Collins).
 - **Bodies by world** (Collins, Oct 14 2026): humans optimised for high-gravity planets are nothing like those
   optimised for life in zero G (Broodfall's technician is zero-G optimised). The Empire kills over belief and
   morality, never over genes, holds no animosity over genetic difference, and finds Earth's ethnic wars strange.
-- **How Houses govern themselves** (Collins, Oct 26 2026): each House sets its own governance. In the Technopuritan
-  Houses a vote is weighted by the voter's individual contribution; one person, one vote (still used by some Baptist
-  conventions in America) is thought morally appalling, since it gives one who has built nothing the same say as one who
-  has built a world. **The Sons of Loxodonta**, the uplifted elephants' House, are governed by a purely synthetic
-  token-predicting AI trained on the House's collective output, conversations and personal journal entries: the House
-  decides as the whole House would.
+- **How Houses govern themselves** (Collins, Oct 26 2026): every House is Technopuritan, the uplifts' Houses too, and
+  the Index is made up of all of them: its members are people selected by the Houses (its structure is the one in
+  Malcolm and Simone Collins's writings, the corpus: TPG 2.6, HOME 1.0). Within itself, a House may use any method of
+  governance and voting it likes. That is the wider Technopuritan philosophy: let people try things their own way, and
+  let competition prove what is best. So the Houses differ. Many weight a vote by the voter's individual contribution
+  (YOKE's preference); **the Sons of Loxodonta**, the uplifted elephants' House, are governed by a purely synthetic
+  token-predicting AI trained on the House's collective output, conversations and personal journal entries, so the House
+  decides as the whole House would. One person, one vote, which some Baptist conventions in America still use, YOKE
+  thinks morally appalling, since it gives one who has built nothing the same say as one who has built a world; a House
+  could still choose it.
 - **The rainbow people** (Collins, Oct 26 2026; Broodfall's Delegation films): the Technopuritan history books' name
   for the culture that ruled most of the old world before the Migration, after the rainbow flag it gathered under. It
   held that society is improved by making everyone equal and treating everyone the same, which the Empire finds one of
