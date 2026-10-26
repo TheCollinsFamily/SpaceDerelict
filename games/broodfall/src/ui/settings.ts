@@ -9,14 +9,15 @@
  *   THE SCREEN     HUD style (src/hud/themes.ts), text size, reduce motion, reduce flashes,
  *                  caste colours (the colour-blind-safe set)
  *   THE BOARD      turn keys, edge scroll, zoom speed, the speed a deployment starts at
- *   YOKE           her account and model: a SLOT, filled by the YOKE connect session
- *                  (`registerSettingsSection('yoke-account', …)`), not built here
+ *   YOKE           her live mind on/off, his own RFab key, and her account and model: a SLOT, filled by
+ *                  src/ui/yokeAccount.ts (`registerSettingsSection('yoke-account', …)`). All of it is here and only
+ *                  here (Collins, Oct 26 2026: "all that stuff should be in settings not cluttering the ui")
  *   THE GAME       replay the opening film, play landing films (always / first time per tile set /
  *                  never: src/ui/landing.ts), forget everything (twice, to be sure)
  */
 import './settings.css';
 import { CALM, CASTE_TINTS, RESERVED_KEYS, type Channel, type Settings } from '../meta/settings';
-import { forgetEverything, loadSettings, loadYoke, saveSettings, saveYoke } from '../meta/storage';
+import { DEFAULT_YOKE, forgetEverything, loadSettings, loadYoke, saveSettings, saveYoke } from '../meta/storage';
 import { CASTE_COLORS } from '../render/render';
 import { HUD_THEMES, applyHud, currentHud } from '../hud/themes';
 import { loadIntroArt, playIntro, type IntroHandle } from './intro';
@@ -27,14 +28,16 @@ export interface SettingsOpen {
   where: SettingsPlace;
   /** Called when the screen closes (the caller re-reads what it shows: her voice, the speed). */
   onClose?: () => void;
+  /** 'yoke-link': open on her account with the link code asked for (the money pop-up's LINK AN RFAB ACCOUNT). */
+  focus?: 'yoke-link';
   /** The opening film started from here (a deployment waits for it before it goes on). */
   onIntro?: (h: IntroHandle) => void;
 }
 
 /** Sections other sessions fill (YOKE's account and model): id → a function that draws into its box. */
-const sections = new Map<string, (box: HTMLElement) => void>();
+const sections = new Map<string, (box: HTMLElement, focus?: string) => void>();
 /** The YOKE connect session registers its section here; until it does, the slot says what will be there. */
-export function registerSettingsSection(id: 'yoke-account' | string, draw: (box: HTMLElement) => void): void {
+export function registerSettingsSection(id: 'yoke-account' | string, draw: (box: HTMLElement, focus?: string) => void): void {
   sections.set(id, draw);
 }
 
@@ -107,7 +110,12 @@ function render(): void {
   const tint = CASTE_TINTS[s.casteTints];
   const sw = (n: number, l: string) => `<span class="st-swatch" style="background:#${n.toString(16).padStart(6, '0')}">${l}</span>`;
   const yokeSlot = sections.has('yoke-account') ? '<div class="st-slot" data-slot="yoke-account"></div>'
-    : '<div class="st-slot empty" data-slot="yoke-account">Her rfab.ai account and which mind answers as her are set here once the YOKE connect screen is in. Until then: the AI Core room on the ship.</div>';
+    : '';
+  // Her live mind: off is the scripted YOKE (her written lines, free, nothing asked of rfab.ai).
+  const live = y.mode !== 'scripted';
+  const mind = `${toggle('yoke-mind', live, 'YOKE\'s live mind', live ? 'on: she answers what you say (free up to $3, then your RFab account)' : 'off: her written lines only; free, nothing sent to rfab.ai')}
+        ${live ? `<div class="st-row col"><span>Your own RFab key<small>optional: rfab.ai → Settings → API keys. Kept on this PC only.</small></span>
+          <span class="st-keyrow"><input id="st-yoke-key" type="password" placeholder="${y.key ? 'Key saved — paste to replace' : 'RFab API key'}" autocomplete="off"><button class="st-btn" data-act="yoke-key">SAVE</button>${y.key ? '<button class="st-btn" data-act="yoke-forget">FORGET</button>' : ''}</span></div>` : ''}`;
   root.innerHTML = `<div class="st-card">
     <div class="st-head"><div><div class="st-kicker">ORBITAL TENDER "MERCIFUL YOKE" — ${PLACE[current.where]}</div><div class="st-title">SETTINGS</div></div>
       <button class="st-close" data-act="close" title="Close (Esc)">✕</button></div>
@@ -142,7 +150,7 @@ function render(): void {
         <div class="st-row col"><span>A deployment starts at<small>the ❚❚ 1× 3× 8× buttons still change it in play</small></span>
           ${choice('speed', [['1', '1×'], ['3', '3×'], ['8', '8×']], String(s.speed))}</div>
       </section>
-      <section><h3>YOKE — ACCOUNT &amp; MIND</h3>${yokeSlot}
+      <section><h3>YOKE — ACCOUNT &amp; MIND</h3>${mind}${live ? yokeSlot : ''}
         <h3>THE GAME</h3>
         <div class="st-row"><span>The opening film</span><button class="st-btn" data-act="intro">REPLAY THE OPENING</button></div>
         <div class="st-row col"><span>Play landing films<small>the asset falling on the city, before a deployment</small></span>
@@ -153,7 +161,8 @@ function render(): void {
     </div>
     <div class="st-foot">Esc closes${current.where === 'run' ? ' and the deployment goes on' : ''}.</div></div>`;
   const slot = root.querySelector<HTMLElement>('.st-slot[data-slot="yoke-account"]:not(.empty)');
-  if (slot) sections.get('yoke-account')!(slot);
+  if (slot) sections.get('yoke-account')!(slot, current.focus);
+  current.focus = undefined;
 }
 
 function change(next: Settings): void {
@@ -187,6 +196,12 @@ function onClick(ev: MouseEvent): void {
   const s = structuredClone(loadSettings());
   if (d.act !== 'reset') confirmReset = false;
   if (d.act === 'close') { closeSettings(); return; }
+  if (d.act === 'yoke-key') {
+    const key = root.querySelector<HTMLInputElement>('#st-yoke-key')?.value.trim() ?? '';
+    if (key) { saveYoke({ ...loadYoke(), key, mode: 'kimi' }); render(); }
+    return;
+  }
+  if (d.act === 'yoke-forget') { saveYoke({ ...loadYoke(), key: '', mode: DEFAULT_YOKE.mode }); render(); return; }
   if (d.act === 'intro') {
     const o = current;
     closeSettings();
@@ -201,6 +216,7 @@ function onClick(ev: MouseEvent): void {
   }
   if (d.key) { listening = d.key as 'turnLeft' | 'turnRight'; render(); return; }
   if (d.toggle) {
+    if (d.toggle === 'yoke-mind') { const y = loadYoke(); saveYoke({ ...y, mode: y.mode === 'scripted' ? DEFAULT_YOKE.mode : 'scripted' }); render(); return; }
     if (d.toggle === 'yoke-voice') { const y = loadYoke(); saveYoke({ ...y, muted: !y.muted }); render(); return; }
     if (d.toggle === 'motion') s.reduceMotion = !s.reduceMotion;
     if (d.toggle === 'flashes') s.reduceFlashes = !s.reduceFlashes;

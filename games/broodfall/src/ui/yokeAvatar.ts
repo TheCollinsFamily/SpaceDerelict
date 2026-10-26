@@ -1,5 +1,5 @@
 /**
- * YOKE in the AI Core, as her Living Avatar: her body (clips that lie in
+ * YOKE in the intercom, as her Living Avatar: her body (clips that lie in
  * public/art/ship/yoke/, so she is seen with no network), her voice (rfab.ai reads each
  * sentence aloud), and her words as they arrive. What she is asked and how her answer is
  * read is src/meta/yokeAvatar.ts; this file is what the player sees and hears.
@@ -19,7 +19,7 @@ import {
   type YokeAvatarIds, type YokeBody,
 } from '../meta/yokeAvatar';
 
-/** A talk in the AI Core. `free`: not a discussion the campaign queued, but him coming in to talk. */
+/** A talk with her. `free`: not a discussion the campaign queued, but him coming in to talk. */
 export interface YokeTalk { trigger: AiTrigger; turns: AiTurn[]; free?: boolean }
 
 export interface YokeAvatarOptions {
@@ -118,7 +118,7 @@ export class YokeAvatarUi implements ShipAiProvider {
   /** Cuts short what she is doing now (a click skips ahead in a script). */
   private cut: (() => void) | null = null;
   private skipped = false;
-  /** The element her stage stands in: the host (the AI Core) or the intercom's stage box. */
+  /** The element her stage stands in: the host or the intercom's stage box. */
   private place: HTMLElement | null = null;
 
   constructor(private host: HTMLElement, private o: YokeAvatarOptions) {

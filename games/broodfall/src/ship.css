@@ -45,7 +45,7 @@
 #campaign .cp-comics .cp-pip { font-style: normal; display: inline-block; margin-left: 6px; min-width: 15px; padding: 0 4px; line-height: 15px; font-size: 10px; letter-spacing: 0; text-align: center; background: #e9eef0; color: #07090b; }
 #campaign .cp-comics.fresh { border-color: #e9eef0; }
 #campaign .cp-count { font-style: normal; display: inline-block; min-width: 15px; margin-left: 6px; padding: 0 3px; font-size: 9.5px; line-height: 14px; text-align: center; letter-spacing: 0; background: var(--holo, #9fe8f5); color: #07090b; }
-/* The screen's width sets the bar's size (it is narrower in the AI Core, where YOKE stands beside it). */
+/* The screen's width sets the bar's size . */
 #campaign .cp-card { container-type: inline-size; }
 @container (max-width: 1000px) {
   #campaign.ship-art .cp-room { letter-spacing: 1.2px; padding: 6px 7px; font-size: 10.5px; }
@@ -243,7 +243,7 @@ body:has(#menu.ship-art:not(.hidden)) #topbar, body:has(#menu.ship-art:not(.hidd
 html.reduce-motion .globe-box.g3d .site.attack circle { animation: none; }
 
 /* ---------- interface fix pass (Sep 30 2026): small misfits found clicking through every room ---------- */
-/* A row's buttons side by side in its last column (the AI Core's ENGAGE / NOT NOW). */
+/* A row's buttons side by side in its last column. */
 .cp-btns { display: flex; gap: 4px; justify-content: flex-end; }
 .cp-lin button, .cp-lin .cp-btns button { white-space: nowrap; }
 /* Comms: the ally's perks under its route, not a stray row of their own. */

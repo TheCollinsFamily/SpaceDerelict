@@ -82,7 +82,7 @@ export const RFAB_API_BASE: string = rfabApiBase();
  * The dev server on this PC (`npm start`, `vite preview`): the page is on localhost and talks to
  * rfab.ai through the /rfab-api proxy, which adds this PC's RFAB_API_KEY. Only there may YOKE fall
  * back to the avatar owner's own star when rfab.ai has no player route yet (src/meta/yokeAvatar.ts
- * AvatarLink ownerFallback) — the AI Core then says "DEV: talking to the owner's YOKE". A build
+ * AvatarLink ownerFallback) — the intercom's console then says "DEV: talking to the owner's YOKE". A build
  * served anywhere else never does.
  */
 export function ownerYokeAllowed(base: string, host?: string): boolean {

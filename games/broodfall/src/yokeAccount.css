@@ -1,4 +1,4 @@
-/* YOKE's account in the AI Core (src/ui/yokeAccount.ts): the free-talk meter, the link prompt,
+/* YOKE's account in Settings (src/ui/yokeAccount.ts): the free-talk meter, the link prompt,
    the code screen, the linked account and the model picker. */
 .cp-acct { margin: 8px 0 4px; font-size: 12px; }
 .cp-acct-note { margin: 4px 0; padding: 5px 8px; border-left: 3px solid var(--holo, #9fe8f5); background: rgba(159, 232, 245, 0.08); }

@@ -2614,3 +2614,27 @@ floor, at 480p, in art-src/yoke/scenes/v2/. Steps:
    last frame before the next is made.
 The cloud session could not run either: no RFAB_API_KEY in the environment, and its network policy refuses
 api.rfab.ai.
+
+### No AI Core: YOKE is the intercom, her controls are in Settings (Oct 26 2026)
+
+Collins: "the ai core is not a thing yoko just appears in an intercom window over your desk there is not [a] separate core";
+then "all that stuff should be in settings not cluttering the ui".
+- **The AI Core room is gone** (`campaignUi.ts`: the room, aiHtml, yokeLinkHtml, the mode switch, the queued-discussion
+  handlers, ownTalk, `this.talk`). YOKE is only the intercom over whatever room he is in: after a mission (her greeting)
+  and with ◉ YOKE, which is now on every room's bar. Without her avatar the intercom shows her face sprite.
+- **The intercom is her and the reply box only**: no account meter, no link panel, no VOICE ON/OFF button.
+- **Settings → YOKE — ACCOUNT & MIND** holds all of it: YOKE's live mind ON/OFF (off = scripted, free, nothing sent to
+  rfab.ai), his own RFab key (SAVE / FORGET; shown while her mind is live), and her account panel (free talk meter, link
+  code, linked account, model). Her voice and talk toggles were already in SOUND. Closing Settings makes her anew only if
+  the mind or key changed.
+- **The money pop-up's LINK AN RFAB ACCOUNT opens Settings with the link code already asked for** (`SettingsOpen.focus =
+  'yoke-link'`); its fine print says she can be turned back on in Settings.
+- Played in the real dev server against a faked rfab.ai (Playwright): rooms Desk · Gene Bay · Locker · Comms · Quarters ·
+  Directives · Notebook, no "AI Core" anywhere on the ship, the intercom stays over every room, a reply after the free talk is
+  spent brings the pop-up, LINK opens Settings with the code (ABCD-1234 from the fake), the live-mind switch saves
+  `mode: scripted` and she answers from her written lines, switched back on the key field returns. 847 tests pass.
+- `tools/shot-yoke-connect.mjs` (the paid local-backend run) still clicks `[data-room="ai"]`: it needs moving to Settings
+  before it is next run.
+- Page notes applied: won-12 ("move this later") was already held to capture 12 in the game but the page did not show it;
+  the page now lists held-back lines last with "HELD BACK: not before capture N". won-20 ("move this further down") is held
+  to capture 16. won-19's two edited lines are in (spelling mended; his "tubes" kept), and its aside matches them.

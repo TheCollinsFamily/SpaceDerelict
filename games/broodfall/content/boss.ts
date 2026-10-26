@@ -29,7 +29,7 @@ export const BOSS_BRIDGE = 'Oh, and we got a message from the boss.';
 export const BOSS_AFTER = 'A dog for a boss. Lucky you, honestly, they\'re lovely. Just don\'t let him anywhere near the budget.';
 
 /**
- * What she knows behind the boss, for her live mind only (Collins, Oct 14 2026, "for secret ai context"): the AI Core and her
- * avatar get it with the first greeting's note once his message has played (src/ui/campaignUi.ts welcome); the player never sees it.
+ * What she knows behind the boss, for her live mind only (Collins, Oct 14 2026, "for secret ai context"): her
+ * avatar gets it with the first greeting's note once his message has played (src/ui/campaignUi.ts welcome); the player never sees it.
  */
 export const BOSS_ASIDE = 'Uplifted dogs are the most common uplifted species in the Technopuritan Empire. They can be overly generous and often fail to make the ruthless decisions necessary (hence her line about the budget), but they are near-universally trusted in middle-management positions and are elected to office at unusually high rates. They were the first species uplifted, though only a few breeds were; breeds like pit bulls were eradicated. Dogs kill the fewest at school, which in a human would bring suspicion; dogs get a pass, because compassion is the cognitive perspective they were uplifted to add, and in a dog you can see that bias the moment you meet one, unlike an overly sentimental human. Sentimentality is feared as the road to deontology, one of the worst Technopuritan sins: feeling pure while passing the cost to others (refuse to shoot one person to save fifty, and the fifty pay for your purity), at the scale of an interstellar empire. So even dogs know not to make the final call, and distrust their own moral instincts.';

@@ -1,5 +1,5 @@
 /**
- * YOKE's account, in the AI Core (Collins, Sep 30 2026): what is left of the free talk, the
+ * YOKE's account, in Settings (Collins, Sep 30 2026; moved out of the ship's screens Oct 26 2026): what is left of the free talk, the
  * prompt when it is spent, the code that links an RFab account, and — once linked — the
  * balance, a top-up link and the model her mind runs on. What happens is src/meta/yokePlayer.ts;
  * this file is what the player sees. Clicks come in through `click(act, el)` (data-act="acct-…").
@@ -44,7 +44,7 @@ export class YokeAccountUi {
   /** rfab.ai has the player route (false on an RFab whose deploy is owed: nothing is shown). */
   get available(): boolean { return !this.link.legacy && !!this.state; }
 
-  /** Read the account again (after every reply of hers, and when the AI Core opens). */
+  /** Read the account again (after every reply of hers, and when Settings opens). */
   async refresh(): Promise<void> {
     const was = this.cut;
     try {
@@ -84,7 +84,7 @@ export class YokeAccountUi {
   // ------------------------------------------------------------ what he sees
 
   /**
-   * `where`: 'core' is the AI Core's panel (the meter, the prompt, the code, the account);
+   * `where`: 'core' is the Settings panel (the meter, the prompt, the code, the account);
    * 'say' replaces the line he types to her, when she is cut off.
    */
   html(where: 'core' | 'say' = 'core', opts: { prompt?: boolean } = {}): string {
@@ -275,14 +275,14 @@ export class YokeAccountUi {
 // ------------------------------------------------------------ in Settings (src/ui/settings.ts's slot)
 
 /**
- * Her account in the Settings screen (its "YOKE — ACCOUNT & MIND" slot): the same panel as the
- * AI Core's. It never makes a player: until he has talked to her there is nothing to show.
+ * Her account in the Settings screen (its "YOKE — ACCOUNT & MIND" slot), the one place it is shown: the free talk
+ * left, the link code, the linked account and her model. It never makes a player: until he has talked to her there is
+ * nothing to show.
  */
-function drawSettings(box: HTMLElement): void {
+function drawSettings(box: HTMLElement, focus?: string): void {
   const y = loadYoke();
   const note = (t: string) => { box.innerHTML = `<p class="cp-note">${esc(t)}</p>`; };
-  if (y.mode === 'scripted') { note('YOKE is scripted: she spends nothing and asks rfab.ai nothing. Switch her live in the AI Core on the ship.'); return; }
-  if (!playerTokenStore.load()) { note('Talk to her in the AI Core on the ship first: her free talk (paid by the ship, up to $3) starts there.'); return; }
+  if (!playerTokenStore.load()) { note('Her free talk (paid by the ship, up to $3) starts the first time she answers you on the ship.'); return; }
   const ui = new YokeAccountUi(new PlayerLink({ base: y.base, store: playerTokenStore }), {
     changed: () => { if (box.isConnected) box.innerHTML = ui.html('core') || '<p class="cp-note">rfab.ai does not have her account yet.</p>'; },
     resumed: () => {},
@@ -292,6 +292,6 @@ function drawSettings(box: HTMLElement): void {
     if (el) ui.click(el.dataset.act, el);
   });
   note('Reading her account…');
-  void ui.refresh();
+  void ui.refresh().then(() => { if (focus === 'yoke-link' && box.isConnected) ui.click('acct-link', box); });
 }
 registerSettingsSection('yoke-account', drawSettings);

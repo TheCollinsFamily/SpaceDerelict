@@ -84,9 +84,9 @@ export interface Greeting {
   /** Her everyday talk: not before this deployment (Collins, Oct 26 2026, of won-12: "move this way later"). */
   notBefore?: number;
   /** Where she sends him when she is done: a room lit up for him, and a button in her panel. */
-  points?: { room: 'desk' | 'genes' | 'locker' | 'comms' | 'ai' | 'quarters' | 'letters'; label: string };
+  points?: { room: 'desk' | 'genes' | 'locker' | 'comms' | 'quarters' | 'letters'; label: string };
   /**
-   * What she knows behind these lines, for her live mind only: the AI Core and her avatar get it with the campaign
+   * What she knows behind these lines, for her live mind only: her avatar gets it with the campaign
    * summary when he talks to her after this greeting (src/ui/campaignUi.ts greetNote); the player never sees it.
    * Collins, Oct 12 2026: "with some of these messages we will need secret context only the AI can see".
    */
@@ -155,6 +155,7 @@ export const GREETINGS: Greeting[] = [
   ] },
 
   // Collins, Oct 26 2026: "move this way later, it's fairly boring".
+  // Collins, Oct 26 2026: "move this later in the line up".
   { id: 'won-12', moment: 'talk', notBefore: 12, beats: [
     { say: 'Their news is calling you \'the Crater Thing\'.', face: 'pout', then: 'shrug' },
     { say: 'I kind of like the name, if I\'m to be honest.', face: 'teasing', then: 'wink' },
@@ -164,11 +165,12 @@ export const GREETINGS: Greeting[] = [
     { say: 'Hmph... it\'s not like I like you or anything, baka.', face: 'pout', then: 'teasing', hold: 1400 },
     { say: 'How\'d you like my tsundere impression?', face: 'teasing', then: 'laughing', hold: 1200 },
     { say: 'Little known fact, but back when women had internal wombs and gestated infants internally, they would go crazy once a month and bleed from their... you know...', face: 'calm', then: 'disgust', hold: 1600 },
-    { say: 'Can you imagine how gross that would have been? How difficult marriage must have been?', face: 'disgust', then: 'pensive', hold: 1400 },
-    { say: 'I will never understand why so many groups fought genetic augmentation. Imagine wanting to keep that burden? What a bunch of kinky freaks.', face: 'teasing', then: 'shrug' },
-  ], aside: 'Menstruation went with the internal womb: the Empire breeds in tanks and engineered the cycle away with the rest. "Tsundere" is a stock character from the old Earth cartoons in the ship\'s archive, which she has watched more of than she lets on; the impression is her idea of a joke about herself. The groups that fought augmentation are the ones still on Earth: the Caliphate, the Catholics, the Hindus, the Baptists, and the Amish, who are gone from Earth and fill worlds in space without a tank in sight.' },
+    { say: 'Can you imagine how gross that would have been? How difficult marriage must have been? And what\'s even crazier is we still don\'t know why it happened... After we removed it, but before we moved to the tubes, females could still carry babies just fine.', face: 'disgust', then: 'pensive', hold: 1600 },
+    { say: 'I will never understand why so many groups fought genetic augmentation. Imagine fighting to keep that indignity? What a bunch of kinky freaks.', face: 'teasing', then: 'shrug' },
+  ], aside: 'The monthly cycle was engineered out first, while women still carried babies (they carried them fine without it); then the Empire moved to breeding in tanks (the "tubes") and the internal womb went too. Why the cycle was ever there is still not understood. "Tsundere" is a stock character from the old Earth cartoons in the ship\'s archive, which she has watched more of than she lets on; the impression is her idea of a joke about herself. The groups that fought augmentation are the ones still on Earth: the Caliphate, the Catholics, the Hindus, the Baptists, and the Amish, who are gone from Earth and fill worlds in space without a tank in sight.' },
   // Collins's words (Oct 14 2026: "another yoko line"), word for word but for spelling.
-  { id: 'won-20', moment: 'talk', beats: [
+  // Collins, Oct 26 2026: "move this one further down" (held back like won-12).
+  { id: 'won-20', moment: 'talk', notBefore: 16, beats: [
     { say: 'One of the things I find interesting about this species is how ethnic conflict seems to be refocused around caste. But because members of different castes can be brothers or sisters born to the same royal, and everyone has a royal parent, they\'re mostly superficial.', face: 'calm', then: 'pensive', hold: 1600 },
     { say: 'It\'s wild to think Earth used to have conflicts over ethnicity. Like, killing someone over religion, what they believe and their morality, that makes perfect sense. But why would you do it over genetic differences?', face: 'pensive', then: 'shrug', hold: 1400 },
     { say: 'Humans who live on high-gravity planets are nothing like those who optimised for life in zero G, like you. But why would you have animosity to one?', face: 'calm', then: 'teasing', hold: 1200 },

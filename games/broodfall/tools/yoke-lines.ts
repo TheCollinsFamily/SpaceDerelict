@@ -84,7 +84,10 @@ const newsLine = (n: { text: string; aside?: string }, i: number): Line => {
   const beats = newsBeats(n.text);
   return { id: `earth-${i + 1}`, text: beats.map((b) => b.say), faces: beats.map((b) => `${b.face ?? 'calm'} · then ${b.then}`), author: i < COLLINS_NEWS || COLLINS_NEWS_ALSO.has(i + 1) ? 'collins' : 'draft', aside: n.aside };
 };
-const of = (moment: GreetMoment, ids?: string[]): Line[] => GREETINGS.filter((g) => g.moment === moment && (!ids || ids.includes(g.id))).map((g) => greeting(g));
+/** A pool's lines; the ones held back (`notBefore`) go last, latest last, and say what they wait for. */
+const of = (moment: GreetMoment, ids?: string[]): Line[] => GREETINGS.filter((g) => g.moment === moment && (!ids || ids.includes(g.id)))
+  .map((g, i) => ({ g, i })).sort((x, y) => (x.g.notBefore ?? 0) - (y.g.notBefore ?? 0) || x.i - y.i)
+  .map(({ g }) => greeting(g, g.notBefore ? `HELD BACK: not before capture ${g.notBefore}, then in the shuffle with the rest` : undefined));
 const plain = (prefix: string, texts: string[], author: Author, ctx?: string[]): Line[] => texts.map((t, i) => ({ id: `${prefix}-${i + 1}`, text: [t], author, ctx: ctx ? [ctx[i]] : undefined }));
 
 /** The list items under a heading of the lore book (quotes taken off), as earthNewsFrom reads them. */
@@ -272,7 +275,7 @@ for (const r of ROACH_SCENES) if (r.scene.film) steps.push(filmStep(r.scene.film
 // "should probably be a cut scene that can be chosen if you engage with the print a body option"). Its clips play in order.
 const PRINT_CLIPS = ((): { id: string; file: string }[] => { try { return JSON.parse(read('public/art/ship/yoke/manifest.json')).scenes?.printBody ?? []; } catch { return []; } })();
 steps.push({ id: 'film-print-body', part: PART_FILMS, name: 'YOKE prints herself a body (only if he asks)', where: G('content/yokeScenes.ts') + '  (PRINT_BODY; clips: ' + G('public/art/ship/yoke/scenes') + ')',
-  what: 'TRIGGER: he asks her, in the AI Core or over the intercom, to print herself a body, or to meet her in the flesh (or her live mind agrees to it). Once a campaign. The four clips play in order, then her line from the ship\'s speakers. Asked again in the same campaign, she refuses instead.',
+  what: 'TRIGGER: he asks her, over the intercom, to print herself a body, or to meet her in the flesh (or her live mind agrees to it). Once a campaign. The four clips play in order, then her line from the ship\'s speakers. Asked again in the same campaign, she refuses instead.',
   clips: PRINT_CLIPS.map((c) => ({ src: 'art/ship/yoke/' + c.file, label: c.id })),
   branches: [
     { context: { who: 'The shots, in order (what each clip shows)', lines: PRINT_BODY.stages.map((st, k) => `${k + 1}. ${st.card}`), where: G('content/yokeScenes.ts') + '  (PRINT_BODY.stages)' } },

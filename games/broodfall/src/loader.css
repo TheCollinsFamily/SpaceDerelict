@@ -30,7 +30,7 @@
 .bf-loader-emblem .bf-loader-loop { width: min(220px, 40vw); aspect-ratio: 1; }
 .bf-loader-creep .bf-loader-loop { -webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 55%, transparent 100%); mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 55%, transparent 100%); }
 .bf-loader-yoke .bf-loader-loop, .bf-loader-dance .bf-loader-loop { width: min(480px, 76vw); }
-/* She is light: added to the dark, the way the AI Core shows her. */
+/* She is light: added to the dark, the way the intercom shows her. */
 .bf-loader-yoke .bf-loader-loop > *, .bf-loader-dance .bf-loader-loop > * { mix-blend-mode: screen; }
 .bf-loader-what { font-size: 10px; letter-spacing: 4px; color: var(--cs-dim, rgba(233, 238, 240, 0.6)); margin-bottom: 8px; }
 .bf-loader-what::before { content: '\2699  '; color: var(--cs-ink, #e9eef0); }

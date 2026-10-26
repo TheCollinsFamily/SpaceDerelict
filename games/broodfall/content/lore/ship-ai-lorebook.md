@@ -91,7 +91,7 @@ says "she", because the book is on his side of that.
   it, and which was never meant to have an inside. It eats cities. She works out where
   it lands.
 - **That she has never refused an order,** and does not know whether she can.
-- **That one day he will not come to the AI Core,** and she will have to decide whether
+- **That one day he will not answer the intercom,** and she will have to decide whether
   to call him.
 - **Quiet.** The planet is quieter every week, and she is the one who logs it.
 

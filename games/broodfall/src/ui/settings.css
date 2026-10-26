@@ -51,3 +51,6 @@
 :root.reduce-motion *, :root.reduce-motion *::before, :root.reduce-motion *::after {
   animation-duration: 0.001s !important; animation-iteration-count: 1 !important; transition-duration: 0.001s !important; scroll-behavior: auto !important;
 }
+/* YOKE's own key (Oct 26 2026: her mind and key moved here from the ship's AI Core room). */
+#settings .st-keyrow { display: flex; gap: 6px; }
+#settings .st-keyrow input { flex: 1; min-width: 0; background: rgba(0,0,0,.35); color: inherit; border: 1px solid rgba(255,255,255,.25); padding: 4px 6px; font: inherit; }

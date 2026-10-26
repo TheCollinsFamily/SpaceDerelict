@@ -4,7 +4,7 @@
  * lore book it will use to play out scenarios; we will build that later but want
  * the wiring now").
  *
- * The campaign queues discussions on triggers; the ship's AI Core shows them;
+ * The campaign queues discussions on triggers; the ship's intercom shows them;
  * the player engages or says "not now". A provider turns (trigger, campaign
  * summary, lore book, history, the player's line) into YOKE's next lines.
  *
@@ -64,7 +64,7 @@ export function queueDiscussion(queue: AiTrigger[], trigger: AiTrigger, seen: Ai
   return [...queue, trigger];
 }
 
-/** Why the model could not answer, in the player's words (shown in the AI Core). */
+/** Why the model could not answer, in the player's words (the console's). */
 export class ShipAiError extends Error {
   constructor(readonly status: number, readonly code: string | undefined, message: string) { super(message); }
   /** A failure that will not fix itself this session (no key, no route): stop asking. */
@@ -149,7 +149,7 @@ export class FallbackShipAi implements ShipAiProvider {
   status: ShipAiStatus = { live: false, note: 'not asked yet' };
   private off = false;
   constructor(private primary: RfabShipAi | null, private fallback: ShipAiProvider = new ScriptedShipAi()) {
-    if (!primary) this.status = { live: false, note: 'scripted (set in the AI Core)' };
+    if (!primary) this.status = { live: false, note: 'scripted (set in Settings)' };
   }
 
   async reply(ctx: AiContext, history: AiTurn[], playerLine?: string): Promise<string[]> {

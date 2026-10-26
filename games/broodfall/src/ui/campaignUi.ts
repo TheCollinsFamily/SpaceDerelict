@@ -2,7 +2,8 @@
  * THE SHIP — the campaign's screens (Collins, Sep 28 2026; DESIGN.md "THE CAMPAIGN").
  * Rooms: the Directive Desk (the globe + the briefing), the Gene Bay (lineages and
  * starting profiles), the Specimen Locker (experiments, dares), the Procreation
- * Board (standing, letters, logs), Comms (the factions), and the AI Core (YOKE's
+ * Board (standing, letters, logs), Comms (the factions). YOKE has no room (Collins, Oct 26 2026: "there is not
+ * [a] separate core"): she appears in the intercom over whatever room he is in (YOKE's
  * discussions). Faction scenes play as modals when you come back to the ship.
  */
 import { lineHtml as tlLine } from './translation';
@@ -12,7 +13,7 @@ import {
   selectProfile, stayLoyal, summaryFor, switchAlly, targets, territory, type CampaignState, type Debrief,
 } from '../meta/campaign';
 import { goalText } from '../meta/goals';
-import { FallbackShipAi, RfabShipAi, campaignIdFor, type AiTrigger, type AiTurn, type ShipAiProvider, type ShipAiStatus, reasonFor } from '../meta/shipAi';
+import { FallbackShipAi, RfabShipAi, campaignIdFor, type ShipAiProvider, type ShipAiStatus, reasonFor } from '../meta/shipAi';
 import { loadYoke, ownerYokeAllowed, playerTokenStore, saveCampaign, saveYoke, type PendingDeployment, type YokeSettings } from '../meta/storage';
 import { YOKE_AVATAR, rungs, type YokeMode } from '../meta/yokeAvatar';
 import { PlayerLink, cutKindOf, moneyText, type CutKind } from '../meta/yokePlayer';
@@ -59,7 +60,7 @@ import { shipLoop, showLoader, type LoaderHandle } from './loader';
 import { aliveAllowed, loadAlive, wake } from './alive';
 import { sfx } from '../audio/engine';
 
-type Room = 'desk' | 'genes' | 'locker' | 'comms' | 'ai' | 'quarters' | 'orders' | 'hobby' | 'letters';
+type Room = 'desk' | 'genes' | 'locker' | 'comms' | 'quarters' | 'orders' | 'hobby' | 'letters';
 /** Rooms with no picture of their own borrow one (the standing orders are read at the Board; the notebook lives in the Locker). */
 const ROOM_PICTURE: Partial<Record<Room, 'board' | 'locker'>> = { orders: 'board', hobby: 'locker' };
 /** The ship's pictures as this screen reads them: with the scene pictures, which the manifest lists as `scenes`. */
@@ -93,10 +94,6 @@ const speakLine = (l: string) => tlLine(l);
 /** A leader's loose line (an aside) can be heard: its voice's key on the element (src/ui/lineVoice.ts), or nothing. */
 const sayAttr = (l: string, autoplay = false) =>
   LEADER_VOICES[speakerOf(l)] && spokenText(l) ? ` data-say="${esc(lineKey(l))}"${autoplay ? ' data-autoplay' : ''}` : '';
-/** Which of her faces YOKE wears for each kind of talk. */
-const YOKE_FACE: Record<string, string> = {
-  'first-deployment': 'curious', 'faction-allied': 'amused', midpoint: 'concerned', ending: 'sad', idle: 'calm',
-};
 const esc = (t: string) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
 
 /**
@@ -130,7 +127,6 @@ export class CampaignUi {
   private ai: ShipAiProvider & { status: ShipAiStatus };
   /** YOKE as her Living Avatar (src/ui/yokeAvatar.ts), when that is who answers; she is then `ai` too. */
   private avatar: YokeAvatarUi | null = null;
-  private talk: YokeTalk | null = null;
   /** A YOKE reply is on its way (a live call takes a second or two). */
   private waiting = false;
   /** The ship's pictures, once they have loaded; null when there are none (the screens are plain then). */
@@ -210,7 +206,7 @@ export class CampaignUi {
     this.player = new PlayerLink({ base: this.yoke.base, store: playerTokenStore, campaignId: campaignIdFor(this.state.seed) });
     this.player.tokenChanged = () => this.avatar?.reconnect();
     this.account = new YokeAccountUi(this.player, {
-      changed: () => { if (!this.waiting && !this.debriefing && !this.el.classList.contains('hidden') && (this.room === 'ai' || this.icom)) this.render(); },
+      changed: () => { if (!this.waiting && !this.debriefing && !this.el.classList.contains('hidden') && this.icom) this.render(); },
       resumed: () => this.avatar?.uncut(),
       cut: (kind) => { this.showMoney(kind); this.avatar?.announceCut(kind); },
     });
@@ -292,7 +288,6 @@ export class CampaignUi {
       window.addEventListener('pointerup', up);
     });
     this.el.addEventListener('keydown', (ev) => {
-      if ((ev.target as HTMLElement).id === 'ai-input' && ev.key === 'Enter') void this.aiSend();
       if ((ev.target as HTMLElement).id === 'icom-input' && ev.key === 'Enter') void this.icomSend();
     });
   }
@@ -348,8 +343,6 @@ export class CampaignUi {
       return;
     }
     if (EARLY_ONCE.includes(moment) || STORY_ONCE.some((b) => b.id === moment) || THREAD_OPENS.some((t) => t.id === moment)) s.said = [...(s.said ?? []), moment];
-    // The personal plot opens a discussion in the AI Core: him going down to the Index to sign (Oct 12 2026: from the
-    // progress beat, since the Index beat was cut).
     s.greet = null;
     s.lastGreeting = g.id;
     s.greetingsSaid = [...new Set([...(s.greetingsSaid ?? []), g.id])];
@@ -400,7 +393,7 @@ export class CampaignUi {
     if (!heard) { onLine(text); await new Promise((r) => setTimeout(r, Math.min(7000, 900 + text.length * 55))); }
   }
 
-  /** His talk with her anywhere on the ship (the same one the AI Core shows). */
+  /** His talk with her anywhere on the ship (the intercom's). */
   private freeTalk(): YokeTalk {
     return this.avatar?.freeTalk() ?? (this.localTalk ??= { trigger: 'idle', turns: [], free: true });
   }
@@ -435,7 +428,6 @@ export class CampaignUi {
       ['desk', 'Desk', 'Directive Desk'], ['genes', 'Gene Bay', 'Gene Bay'], ['locker', 'Locker', 'Specimen Locker'],
       // The Licence room (the Board's standing bar) was cut on Oct 26 2026 (Collins: the licence system "goes"); its log is in Quarters.
       ['comms', 'Comms', 'Comms'],
-      ['ai', 'AI Core', 'AI Core: talk to YOKE'],
       ['quarters', 'Quarters', 'Quarters'],
       // Letters (src/meta/letters.ts) open with the first person he can write to; the count is letters he has not opened.
       ...(lettersUnlocked(s) ? [['letters', `Letters${unreadLetters(s) ? `<i class="cp-count">${unreadLetters(s)}</i>` : ''}`, `Letters${unreadLetters(s) ? `: ${unreadLetters(s)} unread` : ''}: write to people; the replies come with your next report`]] as Array<[Room, string, string]> : []),
@@ -443,8 +435,7 @@ export class CampaignUi {
       ...(deskOpen(s) ? [['orders', 'Directives', 'Empire Directives'], ['hobby', 'Notebook', 'Notebook']] as Array<[Room, string, string]> : []),
     ];
     const fac = s.faction ? faction(s.faction).name : 'no allies';
-    const face = this.room !== 'ai' ? '' : this.talk ? (this.waiting ? 'thinking' : YOKE_FACE[this.talk.trigger] ?? 'calm') : s.ai.queue.length ? 'curious' : 'calm';
-    this.el.innerHTML = `${face && !this.avatar ? this.yokeHtml(face) : ''}
+    this.el.innerHTML = `
       <div class="cp-card">
         <div class="cp-head">
           <div><div class="screen-kicker">ORBITAL TENDER "MERCIFUL YOKE" — XENOFAUNA CLEARANCE, SECTOR 9</div>
@@ -456,7 +447,7 @@ export class CampaignUi {
           </div>
         </div>
         <div class="cp-rooms">${rooms.map(([id, name, full]) => `<button class="cp-room${this.room === id ? ' on' : ''}${this.beckon?.room === id && this.room !== id ? ' beckon' : ''}" data-room="${id}" title="${full}"${id === 'desk' && !deskOpen(s) ? ' data-dark="1"' : ''}>${name}</button>`).join('')}
-          <span class="cp-tools">${this.room === 'ai' ? '' : `<button class="cp-room cp-call${this.icom ? ' on' : ''}" data-act="yoke-call" title="Call YOKE here">◉ YOKE</button>`}
+          <span class="cp-tools"><button class="cp-room cp-call${this.icom ? ' on' : ''}" data-act="yoke-call" title="Call YOKE here">◉ YOKE</button>
           <button class="cp-room cp-tool" data-act="codex" title="Limb Codex: every limb, what it does and how it evolves" aria-label="Limb Codex">▤</button>
           ${this.comicsButton()}
           <button class="cp-room cp-tool" data-act="settings" title="Settings" aria-label="Settings">⚙</button>
@@ -474,8 +465,7 @@ export class CampaignUi {
     wake(this.el);
     // Her stage is the same element in every drawing of the screen: put back, not made again.
     const box = this.el.querySelector<HTMLElement>('.cp-icom-stage');
-    if (this.room === 'ai') this.avatar?.mount(!!face, face);
-    else if (box) this.avatar?.mount(true, 'calm', box);
+    if (box) this.avatar?.mount(true, 'calm', box);
     else this.avatar?.mount(false, '');
     const talk = this.el.querySelector('.cp-icom .cp-talk');
     if (talk) talk.scrollTop = talk.scrollHeight;
@@ -483,24 +473,21 @@ export class CampaignUi {
 
   /** YOKE over the room he is in: her stage, what she has said, and a line to answer her. */
   private icomHtml(): string {
-    if (!this.icom || this.room === 'ai') return '';
+    if (!this.icom) return '';
     const t = this.icom.talk;
     const lines = t.turns.slice(-12).map((x) => `<div class="${x.speaker === 'YOKE' ? 'yoke' : 'you'}"><b>${x.speaker}:</b> ${esc(x.text)}</div>`).join('');
     const pend = this.waiting ? `${this.avatar?.pendingHtml() ?? ''}<div class="yoke thinking"><b>YOKE:</b> …</div>` : '';
     const go = !this.greeting && this.beckon && this.beckon.room !== this.room
       ? `<button class="screen-btn cp-icom-go" data-room="${this.beckon.room}">${esc(this.beckon.label)}</button>` : '';
     return `<div class="cp-icom${this.greeting ? ' greeting' : ''}" role="dialog" aria-label="YOKE">
-      <div class="cp-icom-stage"></div>
+      <div class="cp-icom-stage">${this.avatar ? '' : this.yokeHtml(this.waiting ? 'thinking' : 'calm')}</div>
       <div class="cp-icom-panel">
         <div class="cp-icom-head"><span class="screen-kicker">YOKE · SHIPBOARD INTERCOM</span>
           <button class="cp-icom-x" data-act="icom-close" title="Close (she stays aboard)">✕</button></div>
         <div class="cp-talk" data-act="${this.greeting ? 'icom-skip' : ''}" title="${this.greeting ? 'Click to skip ahead' : ''}">${lines}${pend}</div>
         ${this.greeting ? '<div class="cp-icom-hint">click her words to skip ahead</div>' : ''}
         ${go}
-        ${this.account.cut
-          // Nobody pays for her live mind: linking an account is done in her room (the button takes him there).
-          ? this.account.html('say')
-          : `<div class="cp-say"><input id="icom-input" placeholder="${esc(this.greetHook || 'Say something to her, or just walk away')}" autocomplete="off"${this.waiting ? ' disabled' : ''}/><button data-act="icom-send"${this.waiting ? ' disabled' : ''}>SAY</button>${this.avatar?.muteHtml() ?? ''}</div>`}
+        <div class="cp-say"><input id="icom-input" placeholder="${esc(this.greetHook || 'Say something to her, or just walk away')}" autocomplete="off"${this.waiting ? ' disabled' : ''}/><button data-act="icom-send"${this.waiting ? ' disabled' : ''}>SAY</button></div>
       </div></div>`;
   }
 
@@ -690,7 +677,6 @@ export class CampaignUi {
       case 'genes': return this.genesHtml();
       case 'locker': return this.lockerHtml();
       case 'comms': return this.commsHtml();
-      case 'ai': return this.aiHtml();
       case 'quarters': return this.quartersHtml();
       case 'letters': return this.lettersHtml();
       case 'orders': return directivesHtml(this.state);
@@ -1082,7 +1068,7 @@ export class CampaignUi {
         // No words on an RFab without the player route (the old way: a 402 there falls to the next rung, as it always did).
         // No words of hers about money (Oct 26 2026): the game's pop-up says it (showMoney). null: no player route, the old way.
         cutOff: () => (this.player.legacy ? null : []),
-        changed: () => { if ((this.room === 'ai' || this.icom) && !this.waiting && !this.debriefing && !this.el.classList.contains('hidden')) this.render(); },
+        changed: () => { if (this.icom && !this.waiting && !this.debriefing && !this.el.classList.contains('hidden')) this.render(); },
       })
       : null;
     if (this.icom) this.icom = { talk: this.freeTalk() };
@@ -1109,7 +1095,7 @@ export class CampaignUi {
     pop.style.zIndex = '50';
     pop.innerHTML = `<div class="cp-objectors-card" role="dialog" aria-label="${esc(head)}">
       <div class="cp-acct-h">${esc(head)}</div><p>${esc(body)}</p>
-      <p class="cp-acct-fine">Or turn her live mind off: YOKE and the letters then use their written lines, which are free. You can turn it back on in the AI Core.</p>
+      <p class="cp-acct-fine">Or turn her live mind off: YOKE and the letters then use their written lines, which are free. You can turn it back on in Settings.</p>
       <div class="cp-acct-btns">${kind === 'topup' ? `<button class="screen-btn" data-act="acct-open" data-url="${esc(url)}">TOP UP ON RFAB.AI</button>` : '<button class="screen-btn" data-act="acct-link">LINK AN RFAB ACCOUNT</button>'}
         <button data-money="off">TURN OFF HER LIVE MIND</button><button data-money="close">NOT NOW</button></div></div>`;
     pop.addEventListener('click', (ev) => {
@@ -1118,69 +1104,29 @@ export class CampaignUi {
       const act = t.closest<HTMLElement>('[data-act]');
       if (act || m) pop.remove();
       if (m === 'off') this.setYoke({ ...this.yoke, mode: 'scripted' });
-      // LINK / TOP UP: the ship's own handlers (the AI Core's link code, the top-up page), as from its panel.
+      // LINK / TOP UP: the ship's own handlers (the link code in the intercom, the top-up page), as from its panel.
       if (act) this.onClick({ target: act } as unknown as MouseEvent);
     });
     document.body.appendChild(pop);
   }
 
-  /** The switch goes round: her avatar (when there is one), Kimi, the scripted YOKE. */
-  private nextMode(): YokeMode {
-    const order: YokeMode[] = YOKE_AVATAR ? ['avatar', 'kimi', 'scripted'] : ['kimi', 'scripted'];
-    return order[(order.indexOf(this.yoke.mode) + 1) % order.length];
-  }
-
-  /** His own talk with her, which is open whenever he is in her room and she is her avatar. */
-  private ownTalk(): YokeTalk | null {
-    return this.room === 'ai' ? this.avatar?.freeTalk() ?? null : null;
-  }
-
-  /** Where YOKE's words come from right now, and the switch. */
-  private yokeLinkHtml(): string {
-    const y = this.yoke;
-    const st = this.ai.status;
-    const name: Record<YokeMode, string> = { avatar: 'her Living Avatar on rfab.ai', kimi: 'Kimi K2.6 via rfab.ai', scripted: 'scripted' };
-    const next = this.nextMode();
-    // Her avatar gives no note: when she cannot answer, the next rung does, and the player is not told (the console is).
-    // The one exception is the dev server's fallback to the owner's own YOKE: that must never pass for a player's.
-    const dev = y.mode === 'avatar' && this.player.legacy && !!this.avatar?.owners;
-    return `<div class="cp-yoke-link"><span class="cp-yoke-dot ${st.live ? 'live' : ''}"></span>
-      <span>YOKE: <b>${name[y.mode]}</b>${st.note ? ` — ${esc(st.note)}` : ''}</span>
-      ${dev ? '<span class="cp-yoke-dev" title="rfab.ai has no player route yet (the backend deploy is owed). On this PC\'s dev server she is the avatar owner\'s own YOKE, on this PC\'s key: one mind for every campaign. A build served anywhere else never does this.">DEV: talking to the owner\'s YOKE</span>' : ''}
-      <button data-act="yoke-mode">${next === 'avatar' ? 'USE THE AVATAR' : next === 'kimi' ? 'USE KIMI' : 'USE SCRIPTED'}</button></div>`;
-  }
-
-  private aiHtml(): string {
-    const s = this.state;
-    // A discussion the campaign queued takes the room. His own talk with her stands above the list of what is waiting.
-    const own = !!this.talk?.free;
-    const talk = !this.talk ? '' : `<div class="cp-label">AI CORE — YOKE</div><div class="cp-talk">${this.talk.turns.map((t) => `<div class="${t.speaker === 'YOKE' ? 'yoke' : 'you'}"><b>${t.speaker}:</b> ${esc(t.text)}</div>`).join('')}${this.waiting ? `${this.avatar?.pendingHtml() ?? ''}<div class="yoke thinking"><b>YOKE:</b> …</div>` : ''}</div>
-        ${own && this.account.cut
-          // Nobody pays for her live mind: the line he would type to her is the link prompt (src/ui/yokeAccount.ts).
-          ? this.account.html('say')
-          : `<div class="cp-say"><input id="ai-input" placeholder="${own ? 'Say something to her' : 'Answer, or say nothing'}" autocomplete="off"${this.waiting ? ' disabled' : ''}/><button data-act="ai-send"${this.waiting ? ' disabled' : ''}>SAY</button>${own ? '' : '<button data-act="ai-end">END</button>'}${this.avatar?.muteHtml() ?? ''}</div>`}`;
-    // Her account (the free talk left, the code, the linked account and her model), when rfab.ai has it.
-    const account = this.account.html('core', { prompt: !(own && this.account.cut) });
-    if (this.talk && !own) return `${talk}
-        ${this.yokeLinkHtml()}${account}`;
-    return `${talk}${own ? account : ''}
-      <!-- The queued discussions ("YOKE wants to talk") were cut on Oct 26 2026 with their scripted openers. -->
-      <div class="cp-label">PAST DISCUSSIONS</div>
-      ${s.ai.transcripts.map((t) => `<div class="cp-log"><b>${t.trigger}</b> — ${t.turns.map((x) => `${x.speaker}: ${esc(x.text)}`).join(' / ')}</div>`).join('') || '<p class="cp-note">None yet.</p>'}
-      <div class="cp-label">YOKE'S LINK</div>
-      ${this.yokeLinkHtml()}${own ? '' : account}
-      ${this.account.available ? '' : `<p class="cp-note">${this.player.legacy && !this.player.noRoute
-        // rfab.ai has her and gave this game no player (a daily cap, a failure): the truth, not the old way's words.
-        ? 'rfab.ai gave this game no player this session (it takes three new games a day from one network, or it is not answering), so the scripted YOKE answers and nobody is billed. The game asks again the next time it starts. To talk to her now on Kimi, paste your own RFab API key (rfab.ai → Settings → API keys).'
-        : 'Live YOKE bills your rfab.ai account a few tokens a reply. Started from the launcher, it uses this PC\'s RFAB_API_KEY; otherwise paste your own key (rfab.ai → Settings → API keys).'}</p>
-      <div class="cp-say"><input id="yoke-key" type="password" placeholder="${this.yoke.key ? 'Key saved — paste to replace' : 'RFab API key (optional)'}" autocomplete="off"/><button data-act="yoke-key">SAVE KEY</button>${this.yoke.key ? '<button data-act="yoke-forget">FORGET KEY</button>' : ''}</div>`}`;
+  /**
+   * Settings from the ship. Her voice, her live mind and her own key are switched there: she hears of it when the screen
+   * closes (a new mind or key makes her anew; the voice alone must not, or she loses her place in a sentence).
+   */
+  private openShipSettings(focus?: 'yoke-link'): void {
+    openSettings({ where: 'ship', focus, onClose: () => {
+      const y = loadYoke();
+      if (y.mode !== this.yoke.mode || y.key !== this.yoke.key) this.setYoke(y);
+      else { this.yoke = y; this.avatar?.setMuted(y.muted); this.render(); }
+      if (this.yoke.mode !== 'scripted' && playerTokenStore.load()) void this.account.refresh();
+    } });
   }
 
   private setYoke(y: YokeSettings): void {
     this.yoke = y;
     saveYoke(y);
     this.ai = this.buildAi();
-    if (!this.talk || this.talk.free) this.talk = this.ownTalk();
     this.render();
   }
 
@@ -1261,7 +1207,7 @@ export class CampaignUi {
   // ------------------------------------------------------------ input
 
   private onClick(ev: MouseEvent): void {
-    const el = (ev.target as HTMLElement).closest<HTMLElement>('[data-act],[data-room],[data-site],[data-dare],[data-exp],[data-obj],[data-buy],[data-profile],[data-meet],[data-ally],[data-switch],[data-choice],[data-engage],[data-replay],[data-picture],[data-hpin],[data-hsplice],[data-signal]');
+    const el = (ev.target as HTMLElement).closest<HTMLElement>('[data-act],[data-room],[data-site],[data-dare],[data-exp],[data-obj],[data-buy],[data-profile],[data-meet],[data-ally],[data-switch],[data-choice],[data-replay],[data-picture],[data-hpin],[data-hsplice],[data-signal]');
     if (!el) return;
     const d = el.dataset;
     let s = this.state;
@@ -1271,11 +1217,6 @@ export class CampaignUi {
     if (d.room) {
       this.goTo(d.room as Room);
       if (this.beckon?.room === this.room) this.beckon = null;
-      // In her own room she is there already: the intercom gives way to it (the talk goes on in it).
-      // Her account is read only once she has a player on rfab.ai (made lazily, the first time she speaks live);
-      // scripted, she asks rfab.ai nothing at all.
-      if (this.room === 'ai') { this.icom = null; if (this.yoke.mode !== 'scripted' && playerTokenStore.load()) void this.account.refresh(); }
-      this.talk = this.ownTalk();
       this.render();
       return;
     }
@@ -1318,19 +1259,16 @@ export class CampaignUi {
       this.state = s;
       this.render(); return;
     }
-    if (d.engage) { void this.aiEngage(d.engage as AiTrigger); return; }
-    // Her account (src/ui/yokeAccount.ts). Linking from the intercom takes him to her room, where the code is shown.
+    // Her account (src/ui/yokeAccount.ts) lives in Settings (Collins, Oct 26 2026: "all that stuff should be in settings
+    // not cluttering the ui"): the money pop-up's LINK opens Settings with the code; TOP UP opens rfab.ai.
     if (d.act?.startsWith('acct-')) {
-      if (d.act === 'acct-link' && this.room !== 'ai') { this.goTo('ai'); this.icom = null; this.talk = this.ownTalk(); }
+      if (d.act === 'acct-link') { this.openShipSettings('yoke-link'); return; }
       this.account.click(d.act, el);
       return;
     }
     switch (d.act) {
       case 'quit': this.hooks.quit(); return;
-      case 'settings':
-        // Her voice may be switched there: she hears of it when the screen closes.
-        openSettings({ where: 'ship', onClose: () => { this.yoke = loadYoke(); this.avatar?.setMuted(this.yoke.muted); this.render(); if (this.yoke.mode !== 'scripted' && playerTokenStore.load()) void this.account.refresh(); } });
-        return;
+      case 'settings': this.openShipSettings(); return;
       case 'codex': openCodex({ where: 'ship' }); return;
       case 'comics': this.openComicsScreen(); return;
       case 'new': this.hooks.newCampaign(); return;
@@ -1338,8 +1276,6 @@ export class CampaignUi {
       case 'spin-r': if (this.globe3d) { this.globe3d.turn(30); return; } this.spin += 30; this.render(); return;
       case 'scene-ok': case 'scene-later': this.setState(dismissScene(s)); return;
       case 'stay': this.setState(stayLoyal(s)); return;
-      case 'ai-later': this.goTo('desk'); this.talk = null; this.render(); return;
-      case 'ai-send': void this.aiSend(); return;
       case 'yoke-call':
         if (this.icom) { this.icom = null; this.greeting = null; } else this.icom = { talk: this.freeTalk() };
         this.render();
@@ -1352,16 +1288,6 @@ export class CampaignUi {
         const box = this.el.querySelector<HTMLTextAreaElement>('#letter-text');
         const id = this.letterOpen && unlockedCorrespondents(s).includes(this.letterOpen) ? this.letterOpen : unlockedCorrespondents(s)[0];
         if (box && id) { this.setState(sendLetter(s, id, box.value)); void this.keepLetters(); if (this.account.cut) this.showMoney(this.account.cut, true); }
-        return;
-      }
-      case 'ai-end': this.aiEnd(); return;
-      case 'yoke-mode': this.setYoke({ ...this.yoke, mode: this.nextMode() }); return;
-      // Her voice, on and off: the one setting that must not make her anew (she would lose her place in a sentence).
-      case 'yoke-mute': this.yoke = { ...this.yoke, muted: !this.yoke.muted }; saveYoke(this.yoke); this.avatar?.setMuted(this.yoke.muted); this.render(); return;
-      case 'yoke-forget': this.setYoke({ ...this.yoke, key: '' }); return;
-      case 'yoke-key': {
-        const key = (document.getElementById('yoke-key') as HTMLInputElement | null)?.value.trim() ?? '';
-        if (key) this.setYoke({ ...this.yoke, key, mode: 'kimi' });
         return;
       }
       case 'film': this.playSceneFilm(true); return;
@@ -1395,24 +1321,6 @@ export class CampaignUi {
 
   // ------------------------------------------------------------ YOKE
 
-  private async aiEngage(trigger: AiTrigger): Promise<void> {
-    const talk = { trigger, turns: [] as AiTurn[] };
-    this.talk = talk;
-    await this.aiAsk(talk);
-  }
-
-  private async aiSend(): Promise<void> {
-    const talk = this.talk;
-    if (!talk || this.waiting) return;
-    const input = document.getElementById('ai-input') as HTMLInputElement | null;
-    const said = input?.value.trim() ?? '';
-    if (said) talk.turns.push({ speaker: 'You', text: said });
-    // He asks her to print herself a body: the ship does it (content/yokeScenes.ts), no mind is asked.
-    if (said && PRINT_BODY.asks.test(said)) { await this.printBody(talk); return; }
-    await this.aiAsk(talk, said || undefined);
-    (document.getElementById('ai-input') as HTMLInputElement | null)?.focus();
-  }
-
   /** One YOKE reply into this conversation (dropped if the player ended or left it meanwhile). */
   private async aiAsk(talk: YokeTalk, said?: string): Promise<void> {
     this.waiting = true;
@@ -1422,11 +1330,11 @@ export class CampaignUi {
       // Her mind agreed to print a body: it says so with a tag, which is never shown.
       const tagged = raw.some((l) => l.includes(`[[${PRINT_BODY.tag}]]`));
       const lines = raw.map((l) => l.replace(/\s*\[\[[A-Z_]+\]\]\s*/g, ' ').trim()).filter(Boolean);
-      if (this.talk === talk || this.icom?.talk === talk) for (const l of lines) talk.turns.push({ speaker: 'YOKE', text: l });
+      if (this.icom?.talk === talk) for (const l of lines) talk.turns.push({ speaker: 'YOKE', text: l });
       if (tagged) void this.printBody(talk);
     } finally {
       this.waiting = false;
-      if (this.talk === talk || !this.talk) this.render();
+      this.render();
       // What is left of his free talk (or his balance), from rfab.ai's own meter.
       if (this.yoke.mode !== 'scripted' && playerTokenStore.load()) void this.account.refresh();
     }
@@ -1479,17 +1387,6 @@ export class CampaignUi {
     if (PRINT_BODY.asks.test(said)) { await this.printBody(talk); return; }
     await this.aiAsk(talk, said);
     (document.getElementById('icom-input') as HTMLInputElement | null)?.focus();
-  }
-
-  private aiEnd(): void {
-    // His own talk with her is never ended and never filed: rfab.ai keeps it, and it is there when he comes back.
-    if (!this.talk || this.talk.free) return;
-    const s = structuredClone(this.state);
-    s.ai.queue = s.ai.queue.filter((q) => q !== this.talk!.trigger);
-    if (!s.ai.seen.includes(this.talk.trigger)) s.ai.seen.push(this.talk.trigger);
-    s.ai.transcripts.push(this.talk);
-    this.talk = this.ownTalk();
-    this.setState(s);
   }
 
   // ------------------------------------------------------------ the debrief
