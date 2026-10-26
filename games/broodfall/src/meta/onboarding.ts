@@ -102,7 +102,7 @@ const TOPICS: Array<[string, RegExp]> = [
   ['europe', /\bRome\b|Crusade|Caliphate|\bPope\b|Europe|France|Catholic/],
   ['america', /America|Baptist|Mormon|the States|Utah/],
   ['korea', /Korea|Ge-im|chaebol/i],
-  ['houses', /Sons of (Korea|Igbo)|race mixing|genetic dilution|ethnic/i],
+  ['houses', /Sons of (Korea|Igbo)|race mixing|genetic dilution|ethnic|Hologs?/i],
   ['india', /India|Hindu|Parsi/],
   ['nekos', /neko/i],
   ['death', /\bschool\b|afterlife|\bdeath\b|dying|value of a life|simulation/i],

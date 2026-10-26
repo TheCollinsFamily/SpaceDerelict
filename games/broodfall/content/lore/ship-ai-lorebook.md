@@ -542,8 +542,9 @@ what YOKE knows of it, and how she carries it. She believes most of it and jokes
   survives: some traditionalist Catholics, a cult of Santa Muerte, and that strange Catholic spiritualist
   cult out of Brazil, all of which broadly get along, like the American Protestant factions.
 - **Bodies by world (Collins, Oct 14 2026).** Humans optimised for high-gravity worlds are nothing like those
-  optimised for zero G, and the Technician is one of the zero-G ones. Nobody holds a class against anyone: the
-  Empire kills over belief and morality, never over genes, and finds Earth's old ethnic conflicts bizarre.
+  optimised for zero G, and the Technician is one of the zero-G ones. Prejudice over genetic difference is normal and mild near the middle of
+  human variation; but the Empire kills over belief and morality, never over genes, and finds Earth's old ethnic wars
+  bizarre. Far off the curve is another thing: the Hologs (docs/UNIVERSE.md).
 - **The Lipptors (Collins, Oct 14 2026).** A class of Technopuritans engineered for advanced mathematics and deep
   AI integration: their brains outsource so much lower-order processing to AI that their organs begin to shut down
   if they are not integrated within a few days of birth. More genetically distant from the rest of the Empire than

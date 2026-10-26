@@ -282,13 +282,24 @@ are read together. Uplifts look anthro, like the nekos (Collins).
   one's companion instead is possible and thought pretty weird. Oct 15 2026: taking a *sanctified* one (below) has
   become popular; having a novel synthetic built, as the technician did, is now the less common choice.
 - **Bodies by world** (Collins, Oct 14 2026): humans optimised for high-gravity planets are nothing like those
-  optimised for life in zero G (Broodfall's technician is zero-G optimised). The Empire holds no animosity over
-  genetic difference; it kills over belief and morality, and finds Earth's ethnic conflicts strange.
+  optimised for life in zero G (Broodfall's technician is zero-G optimised). The Empire kills over belief and
+  morality, never over genes, and finds Earth's ethnic wars strange (prejudice over genes is another matter: below).
+- **Prejudice by genes, and the Hologs** (Collins, Oct 26 2026): prejudice over genetic difference is normal in
+  Technopuritan society, and it is mild near the middle: someone close to the central curve of human variation finds
+  allies easily and allies with others naturally, which is why humans still look fairly human. A people far off the curve
+  is everyone's outgroup, and the others team up against it. The Hologs are the lesson: a House that used genetics
+  without restraint, aiming wholly at intelligence and efficiency, and became giant floating brains the size of
+  spaceships. Its founder's hypothesis about fitness was wildly wrong: with the computing and the organic and synthetic
+  companions every Technopuritan already has, more intelligence was only marginally useful, and it put a target on their
+  backs. Religion backs it up: even when nobody can say why, God gave man these bodies for a reason, and changing them too
+  much tends to turn out strictly less efficient (the people who engineered out defecation and urination needed a
+  blood-filtering system every night instead). Prejudice is not killing: the Empire kills over belief and morality,
+  never over genes.
 - **Houses by ancestry** (Collins, Oct 26 2026): peoples keep to Houses by ancestry (the Sons of Korea, the Sons of
   Igbo, the Sons of Israel, the Sons of Utah) so the sons of man stay distinct. Marrying across two needs approval and
   both Houses read it as genetic dilution; the children may have to found their own House or join a looser one (the
   nekos'). Mixing was normal on old Earth until the Mesoamerican ethnic group mixed into extinction. Keeping lines
-  distinct is not animosity: nobody is held lower for their genes.
+  distinct is ordinary prejudice, not war.
 - **The Lipptors, a human class, not an uplift** (Collins, Oct 14 2026): Technopuritans genetically specialised
   for advanced mathematics and extensive AI integration, so far that their organs begin to shut down if they are
   not integrated with an AI within a few days of birth. Genetically further from the rest of the Empire than
