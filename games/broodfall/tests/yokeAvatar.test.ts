@@ -148,14 +148,14 @@ describe('who she is on rfab.ai', () => {
     expect(YOKE_AVATAR?.liveModelId).toMatch(/^vm_/);
   });
 
-  it('keeps her brain text under the 4,000 characters of her page on rfab.ai', () => {
+  it('has her brain text and her notes between their marks (no length cap: Collins, Oct 26 2026)', () => {
     const raw = readFileSync(join(root, 'content', 'lore', 'yoke-brain.md'), 'utf8').replace(/\r\n/g, '\n');
     const brain = raw.match(/<!-- BRAIN TEXT BEGINS -->\n([\s\S]*?)\n<!-- BRAIN TEXT ENDS -->/);
     const notes = raw.match(/<!-- NOTES BEGIN -->\n([\s\S]*?)\n<!-- NOTES END -->/);
     expect(brain).not.toBeNull();
     expect(notes).not.toBeNull();
-    expect(brain![1].trim().length).toBeLessThan(4000);
-    expect(notes![1].trim().length).toBeLessThan(4000);
+    expect(brain![1].trim().length).toBeGreaterThan(0);
+    expect(notes![1].trim().length).toBeGreaterThan(0);
     // She is told to keep to the faces her body has, and to read the ship log without quoting it.
     expect(brain![1]).toMatch(/SHIP LOG/);
   });

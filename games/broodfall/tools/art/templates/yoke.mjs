@@ -540,7 +540,7 @@ export function brainText() {
   const brain = raw.match(/<!-- BRAIN TEXT BEGINS -->\n([\s\S]*?)\n<!-- BRAIN TEXT ENDS -->/);
   const notes = raw.match(/<!-- NOTES BEGIN -->\n([\s\S]*?)\n<!-- NOTES END -->/);
   if (!brain || !notes) throw new Error('content/lore/yoke-brain.md has lost its marks');
-  if (brain[1].trim().length >= 4000) throw new Error(`the brain text is ${brain[1].trim().length} characters: the box on her page holds 4,000`);
+  // No length cap (Collins, Oct 26 2026: "we run rfab ... there are no limits"): the old 4,000-character check is gone.
   return { brain: brain[1].trim(), notes: notes[1].trim() };
 }
 

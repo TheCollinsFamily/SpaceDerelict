@@ -2680,3 +2680,11 @@ bought the right lineage, and one could not be met at all. Now:
 - In the real page: `npx vite-node tools/shot-experiments.ts` (after `npm run build`): the Locker lists every experiment
   with its sketch and what it issues; each one deployed through `?campaign=run` has its gear in the first hand, the gear
   grows, its art is loaded. Screens `notes/screens/2026-10-26/experiments-*.jpg`.
+
+### No length cap on her brain text (Oct 26 2026)
+
+Collins: "we run rfab ... we make the limits ... there are no limits". The 4,000-character check on yoke-brain.md (its
+brain text and notes) is gone from tools/art/templates/yoke.mjs brainText and tests/yokeAvatar.test.ts; earlier trims made
+to fit it were for nothing. The brain text now holds House Constantine in full (4,202 characters). It needs republishing
+from the PC: `node tools/art/make.mjs yoke --publish`. If RFab refuses or cuts a long hardCodedPersonality, that is a
+limit to remove in RFab, not to trim around here.
