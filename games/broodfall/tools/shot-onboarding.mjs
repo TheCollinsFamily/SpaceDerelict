@@ -273,21 +273,8 @@ try {
     check(/CANDIDATE PARTNER PROFILE/.test(pad) && /UNDER REVIEW/.test(pad), 'the data pad holds the candidate\'s file');
     await shot(page, '11-quarters-data-pad');
     check(await page.evaluate(() => !!document.querySelector('.cp-desk-dark') || !!document.querySelector('[data-room="desk"][data-dark="1"]')), 'the desk is still dark after a loss');
-    // ---- lost once more: the cat girl (after the mate review, which it plays off) ----
-    await page.locator('[data-room="desk"]').click();
-    await Promise.all([page.waitForURL(/campaign=run/), page.locator('[data-act="deploy-assigned"]').click()]);
-    await board(page);
-    await page.waitForTimeout(600);
-    await endRun(page, 'lost');
-    await page.waitForSelector('#campaign:not(.hidden) [data-act="back"]', { timeout: 15000 });
-    const gc = await aboard(page, '[data-act="back"]');
-    check(gc === 'catgirl', `the next return: the cat girl (${gc})`);
-    await greeted(page);
-    check(/pound sand/.test(await icomText(page)) && /Oh well/.test(await icomText(page)), 'Collins\'s cat-girl lines, to the last one');
-    await page.locator('.cp-icom-go').click();
-    await page.waitForSelector('.cp-inbox');
-    check(/DECLINED ON YOUR BEHALF/.test(await page.locator('.cp-inbox').innerText()), 'her letter is in his inbox, declined for him');
-    await shot(page, '11b-quarters-inbox');
+    // (The neko is no longer the third return: since Oct 19 2026 she comes 2 to 4 captures after he sides with a faction,
+    // src/meta/onboarding.ts THREAD_OPENS; tests/yokeOrder.test.ts holds her place.)
     // ---- a win clears the desk ----
     await page.locator('[data-room="desk"]').click();
     await Promise.all([page.waitForURL(/campaign=run/), page.locator('[data-act="deploy-assigned"]').click()]);
@@ -336,10 +323,10 @@ try {
     await page.waitForTimeout(1500);
     const real = await page.evaluate(() => document.getElementById('yoke-scene').dataset.placeholder !== '1');
     await shot(page, '14b-print-body-scene');
-    await page.waitForFunction(() => document.querySelector('#yoke-scene .ys-sub.on'), null, { timeout: 30000 });
-    check(/That was gross/.test(await page.locator('#yoke-scene .ys-sub').innerText()), `the body is printed, dies, and her voice comes from the speakers (${real ? 'the real clips' : 'storyboard cards: the clips are not made yet'})`);
-    await shot(page, '14c-print-body-voice');
-    await page.waitForFunction(() => !document.getElementById('yoke-scene'), null, { timeout: 30000 });
+    // Her words go over the film only with Settings → Subtitles on (docs/VIDEO-CONVENTIONS.md 9; off by default): her
+    // line is checked in the talk once the scene is over.
+    await page.waitForFunction(() => !document.getElementById('yoke-scene'), null, { timeout: 120000 });
+    check(/That was gross/.test(await icomText(page)), `the body is printed, dies, and her voice comes from the speakers (${real ? 'the real clips' : 'storyboard cards: the clips are not made yet'})`);
     check(state.sent.length === beforeSent && /want to eat it/.test(await icomText(page)), 'no mind was asked; her line is in the talk afterwards');
     await page.locator('#icom-input').fill('Print a body again?');
     await page.locator('[data-act="icom-send"]').click();
@@ -385,7 +372,14 @@ try {
     await page.waitForTimeout(1200);
     check(/THE TOWN IS YOURS/.test(await page.locator('#debrief').innerText()), 'mission 1 won: its plain report');
     await shot(page, '18-mission1-won-report');
-    const g = await aboard(page, '#debrief-ship');
+    // He closes the game on the report, before CONTINUE: the next launch is the reveal and the ship, never the menu
+    // first (the menu is the ship's console; seen first it gives the reveal away). Oct 26 2026.
+    await page.goto(URL0, { waitUntil: 'load', timeout: 180000 });
+    await page.waitForSelector('#reveal', { timeout: 20000 });
+    check(await page.evaluate(() => document.getElementById('menu')?.classList.contains('hidden') ?? true), 'closed on the report, relaunched: the reveal plays, no menu');
+    await page.locator('#reveal').click().catch(() => {});
+    await page.waitForSelector('#campaign:not(.hidden) .cp-icom', { timeout: 60000 });
+    const g = await page.evaluate(() => document.getElementById('campaign').dataset.greeting);
     check(g === 'first-won', `YOKE: ${g}`);
     await page.waitForFunction(() => /duck to water/.test(document.querySelector('.cp-icom .cp-talk')?.textContent ?? ''), null, { timeout: 20000 });
     await shot(page, '19-ship-first-won-greeting');

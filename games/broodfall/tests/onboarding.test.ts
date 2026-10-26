@@ -37,6 +37,8 @@ describe('the first launch', () => {
     expect(launchKind({ hasCampaign: false, mission1Pending: false, introSeen: false, veteran: false })).toBe('first');
     expect(launchKind({ hasCampaign: true, mission1Pending: true, introSeen: true, veteran: false })).toBe('mission1');
     expect(launchKind({ hasCampaign: true, mission1Pending: false, introSeen: true, veteran: false })).toBe('menu');
+    // Closed on mission 1's report: the reveal and the ship, never the menu first (it is the ship's console).
+    expect(launchKind({ hasCampaign: true, mission1Pending: false, introSeen: true, veteran: false, revealDue: true })).toBe('reveal');
     // A player from before the campaign, or one who reset only the campaign: the menu.
     expect(launchKind({ hasCampaign: false, mission1Pending: false, introSeen: false, veteran: true })).toBe('menu');
     expect(launchKind({ hasCampaign: false, mission1Pending: false, introSeen: true, veteran: false })).toBe('menu');

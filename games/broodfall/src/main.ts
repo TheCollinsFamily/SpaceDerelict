@@ -74,12 +74,12 @@ const BARE = !location.search || location.search === '?';
 let launch: Launch | null = null;
 if (BARE) {
   const saved = loadCampaign();
-  launch = launchKind({ hasCampaign: !!saved, mission1Pending: !!saved && isFirstMission(saved), introSeen: introSeen(), veteran: veteran() });
+  launch = launchKind({ hasCampaign: !!saved, mission1Pending: !!saved && isFirstMission(saved), introSeen: introSeen(), veteran: veteran(), revealDue: revealDue(saved, revealSeen()) });
   if (launch === 'first') startOnboarding();
   else if (launch === 'mission1' && !loadPending()) savePending({ territory: FIRST_MISSION, dares: [], objectors: [] });
 }
 /** 'ship' = open the ship; 'run' = play the pending campaign deployment. */
-const CAMPAIGN = params.get('campaign') ?? (launch === 'first' || launch === 'mission1' ? 'run' : null);
+const CAMPAIGN = params.get('campaign') ?? (launch === 'first' || launch === 'mission1' ? 'run' : launch === 'reveal' ? 'ship' : null);
 /** The opening cinematic plays in front of this page: on the first launch (until it has been seen once), or asked for (?intro=1). */
 const PLAY_INTRO = params.get('intro') === '1' || ((launch === 'first' || launch === 'mission1') && !introSeen());
 const AUTOSTART = AUTO || params.get('autostart') === '1' || CAMPAIGN === 'run';

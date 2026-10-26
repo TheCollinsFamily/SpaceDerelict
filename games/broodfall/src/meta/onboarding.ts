@@ -140,7 +140,7 @@ export function pickGreeting(moment: GreetMoment, seed: number, turn: number, la
 // ------------------------------------------------------------------ the launch
 
 /** What the page opens to when it is started with no address of its own. */
-export type Launch = 'first' | 'mission1' | 'menu';
+export type Launch = 'first' | 'mission1' | 'reveal' | 'menu';
 
 /**
  * `hasCampaign`: a campaign is saved; `mission1Pending`: its first mission never finished;
@@ -149,10 +149,13 @@ export type Launch = 'first' | 'mission1' | 'menu';
  *   first     nothing on record: the cinematic, then mission 1
  *   mission1  the first mission was left before it ended: straight back into it (the ship,
  *             and the menu that shows it, are not seen before mission 1 is over)
+ *   reveal    mission 1 is over but the page was closed on its report (`revealDue`): the reveal, then the ship, as
+ *             CONTINUE would have played them. The menu is the ship's console: seen first, it would give the reveal away
+ *             (Collins, Oct 26 2026: "only go to a menu after they have completed at least one play through")
  *   menu      the ship's console
  */
-export function launchKind(o: { hasCampaign: boolean; mission1Pending: boolean; introSeen: boolean; veteran: boolean }): Launch {
-  if (o.hasCampaign) return o.mission1Pending ? 'mission1' : 'menu';
+export function launchKind(o: { hasCampaign: boolean; mission1Pending: boolean; introSeen: boolean; veteran: boolean; revealDue?: boolean }): Launch {
+  if (o.hasCampaign) return o.mission1Pending ? 'mission1' : o.revealDue ? 'reveal' : 'menu';
   if (o.introSeen || o.veteran) return 'menu';
   return 'first';
 }
