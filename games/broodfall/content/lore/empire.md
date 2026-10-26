@@ -353,6 +353,9 @@ choices, which in Technopuritanism is like the highest sin possible."
   everything. A weakness left in a child is a hand nobody cut off; the corpus already asks for the genetic removal of
   arousal where it is sin (TP 2.0 on "vile bodies"; the "efficient sins", TP 35.0.5) and for "removing sin, our animal
   instincts" by technology (TP 2.0, Tract 9). Section 7 has what was removed.
+- **The nekos and masochism** (Collins, Oct 26 2026): breeding in the body, the nekos need their partners aroused,
+  and a Technopuritan's arousal is tied to aggression, so the nekos evolved down a path of extreme masochism. Uncouth to
+  talk about, and known to everyone (Mirelle, content/letters.ts).
 - **Arousal, engineered out, and back by the school** (Collins, Oct 26 2026). Technopuritans are engineered not to feel
   arousal: it is seen as leading to indecency and as a waste of time, which is why they are so confused that anyone would
   want to be sexual. But it re-emerged through natural evolution, tied to extreme aggression and violence, because of the

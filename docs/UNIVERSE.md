@@ -157,6 +157,10 @@ doctrine 11 (the chittering hordes).
   time, which is why they are so confused that anyone would want to be sexual). It came back through natural evolution,
   tied to extreme aggression and violence, because of the school and the behaviour it rewards. They are generally
   embarrassed about it, and will not engineer it out, because it was shown to help true fitness in the system they set up.
+  **The nekos and masochism** (Collins, Oct 26 2026): the nekos breed in the body, so they need their partners to
+  become aroused, and the only arousal a Technopuritan man has is the one tied to aggression. So the nekos evolved down
+  a path of extreme masochism. It is uncouth to talk about; everyone knows. (Broodfall's Mirelle will say so if asked,
+  and may sell mating to the technician as a novel experience that would help him understand the historic documents.)
 - They regularly **look back with horror on things normal in our time**: jobs, dating, and the
   rest. The 21st century is taught the way we teach medieval medicine (Broodfall's
   `empire.md`, section 14, has the syllabus).
