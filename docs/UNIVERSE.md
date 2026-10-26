@@ -294,7 +294,13 @@ are read together. Uplifts look anthro, like the nekos (Collins).
   through competition (the Empire's own philosophy: God favours the group that makes the right choice by letting it
   out-produce or outwit the others). Since everyone leans toward their own, someone near the central curve of human
   variation finds allies easily and allies with others naturally, which is why humans still look fairly human; a people
-  far off the curve is everyone's outgroup, and the others team up against it. The Hologs are the lesson: a House that used genetics
+  far off the curve is everyone's outgroup, and the others team up against it.
+  **Why Earth's racism confuses them** (Collins, Oct 26 2026): favouring your own group is so natural a part of everyday
+  life that it is strange to imagine it not existing, and at the same time wanting there to be ONLY your group is just as
+  bizarre. It is like a sport: you love it, you have your team and you grr at every other team; but if someone
+  suggested every other team be eradicated, or that teams not be allowed to compete, or that one compete with a
+  handicap, you would look at them as if they had grown a second head, because then the sport that makes you love your
+  team would not exist. The Houses compete; nobody wants the competition gone or rigged. The Hologs are the lesson: a House that used genetics
   without restraint, aiming wholly at intelligence and efficiency, and became giant floating brains the size of
   spaceships. Its founder's hypothesis about fitness was wildly wrong: with the computing and the organic and synthetic
   companions every Technopuritan already has, more intelligence was only marginally useful, and it put a target on their

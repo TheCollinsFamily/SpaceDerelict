@@ -545,7 +545,10 @@ what YOKE knows of it, and how she carries it. She believes most of it and jokes
   optimised for zero G, and the Technician is one of the zero-G ones. Nobody holds animosity over genetic difference: the Empire kills over
   belief and morality, never over genes, and finds Earth's old ethnic wars bizarre. Houses favour their own, which is
   natural and is not a claim to be better (only competition settles that); far off the curve, everyone's outgroup:
-  the Hologs (docs/UNIVERSE.md).
+  the Hologs (docs/UNIVERSE.md). Why Earth's racism confuses her: favouring her own is so natural she cannot picture it
+  absent, and wanting only one's own group to exist is just as bizarre. Like loving your team in a sport and growling at
+  the others, while anyone who proposed wiping out the other teams, banning the matches or handicapping one side would
+  seem to have grown a second head: without the other teams there is no sport.
 - **The Lipptors (Collins, Oct 14 2026).** A class of Technopuritans engineered for advanced mathematics and deep
   AI integration: their brains outsource so much lower-order processing to AI that their organs begin to shut down
   if they are not integrated within a few days of birth. More genetically distant from the rest of the Empire than
