@@ -155,3 +155,14 @@ afterwards.
   gamepad code), library logo placement (all three open Steamworks pop-up windows an agent's
   browser tool cannot see), the trailer upload (43 MB, over the agent's 10 MB upload cap), then
   Publish tab -> request review.
+- Oct 26 2026 (evening): **store page submitted to Valve review** (queue, 3-5 business days; reply
+  comes by email and on https://help.steampowered.com). Since the entry above: release date set
+  (intended Jun 29 2027, a placeholder after June 2027 Next Fest; customers see "Coming Soon"),
+  controller support = mouse and keyboard only, logo placement done, Windows minimum requirements
+  (Win 10 64-bit, dual-core 2.5 GHz, 8 GB, WebGL 2 GPU with 2 GB VRAM / GTX 960 class, DX11, 2 GB
+  disk: estimates, the public folder is 787 MB before an Electron wrap), shortcut + app icon from
+  `games/broodfall/broodfall.ico`. Store checklist: complete. Still to do: upload
+  `promo/trailer/broodfall-trailer-90s.mp4` on the Trailers tab (43 MB, over the agent browser
+  tool's 10 MB cap, so Collins drags it in); after approval, press "Post as Coming Soon".
+  Note for agents: Steamworks' pencil/"Start Wizard" buttons open in-page dialogs; a coordinate
+  click can miss them silently. Click by element ref.
