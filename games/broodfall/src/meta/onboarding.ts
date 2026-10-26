@@ -81,9 +81,9 @@ export function momentAfter(prev: CampaignState, next: CampaignState, d: Debrief
 /**
  * Which pool a moment draws on. Once the desk is open her everyday talk is one pool, won or lost (Collins, Oct 19 2026:
  * "its mission -> YOKE line -> mission -> YOKE line"; the loss lines were "mostly just junk and the win lines rarely
- * reference a win"). A counter-attack held or lost keeps its own lines: they say what happened.
+ * reference a win"). Oct 26 2026: he cut every counter-attack line too, so a counter-attack held or lost draws on it as well.
  */
-export const poolOf = (m: GreetMoment): GreetMoment => (m === 'won' || m === 'lost' || m === 'back' ? 'talk' : m);
+export const poolOf = (m: GreetMoment): GreetMoment => (m === 'won' || m === 'lost' || m === 'back' || m === 'defended' || m === 'fell' ? 'talk' : m);
 
 /** A number from the campaign's seed and a name: the same campaign always gets the same one. */
 export function seeded(seed: number, name: string): number {
@@ -235,6 +235,16 @@ export function threadDue(s: CampaignState): string | null {
   if (threadBeatLast(s)) return null;
   const said = [...(s.said ?? []), ...(s.greetingsSaid ?? [])];
   return THREAD_OPENS.find((t) => { const at = threadSlot(s, t.id); return at != null && s.captures >= at && !said.includes(t.id); })?.id ?? null;
+}
+
+/**
+ * With YOKE's talk off in Settings, the lines she keeps quiet: her everyday talk, the news, the once intros, the letter
+ * beats and the losses before the desk opens. The story still plays (the first greeting and the boss, the mate review,
+ * the desk opening, the personal plot, the love interests' openings), since each opens something on the ship.
+ */
+export function quietSkips(g: Greeting): boolean {
+  return g.moment === 'talk' || g.moment === 'lost-locked' || /^earth-/.test(g.id) || g.id === 'EARTH_NEWS_FALLBACK'
+    || INTROS.some((i) => i.id === g.id) || LETTER_BEATS.some((b) => b.id === g.id);
 }
 
 /** The letters' line for this ordinary return, or null. */

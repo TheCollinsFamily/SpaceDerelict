@@ -44,6 +44,12 @@ export interface Settings {
    * least make the default no and have it an option in settings"). A scene's words can always be read on its card.
    */
   subtitles: boolean;
+  /**
+   * YOKE's talk when he comes aboard (Collins, Oct 26 2026: "we should have an option to turn off the YOKE bits if the
+   * user wants to"). OFF: she says nothing on a return but the story (src/meta/onboarding.ts quietSkips); what she would
+   * have said stays unsaid, so it is still there if he turns her back on.
+   */
+  yokeTalk: boolean;
 }
 
 export type LandingFilms = 'always' | 'first' | 'never';
@@ -62,6 +68,7 @@ export const DEFAULT_SETTINGS: Settings = {
   muteUnfocused: true,
   landingFilms: 'always',
   subtitles: false,
+  yokeTalk: true,
 };
 
 /**
@@ -106,6 +113,7 @@ export function settingsFrom(raw: unknown): Settings {
     muteUnfocused: r.muteUnfocused !== false,
     landingFilms: r.landingFilms === 'first' || r.landingFilms === 'never' ? r.landingFilms : 'always',
     subtitles: r.subtitles === true,
+    yokeTalk: r.yokeTalk !== false,
   };
 }
 

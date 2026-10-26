@@ -2526,3 +2526,17 @@ Applied today:
   so those returns get everyday talk. The licence MECHANIC is still there (standing 60, the Board bar on the ship, the
   AI Core 'licence' discussion); he said "we don't have any mechanic that would trigger this", so ask before removing it.
 - won-12 "move this way later": new `notBefore` on a talk line (deployments). won-12 is notBefore 12.
+- Later the same day, the second sync (tools/yoke-apply.mjs, typos in his typed lines mended, as always):
+  - His rewrites: back-6 (Sabbath, dormancy), back-9, back-10 (its last beat cut), back-13, lost-15 (the eusocial workers),
+    and won-22.
+  - Removed: back-1, 2, 3, 4, 7 and 8, every counter-attack line (defended-*, fell-*) and lost-12. A counter-attack now draws
+    on the everyday pool (`poolOf`). The talk pool is 14 lines; the news (23) fills in behind it.
+  - "The Satmar" are now "the Pharisees" everywhere (his note on back-13), with his note in UNIVERSE.md and empire.md:
+    three groups each claim to be the real Jews (the Technopuritan Jews, the Sadducees, the Pharisees), and a
+    Technopuritan saying "Jews" means only the Technopuritan Jews. yoke-brain.md changed with it: her rfab.ai notes
+    need `node tools/art/make.mjs yoke --publish` from a PC with the RFab key (not done from the cloud session).
+- **YOKE's talk** switch in Settings ("we should have an option to turn off the YOKE bits"): `Settings.yokeTalk`,
+  default on. Off: `quietSkips` keeps her quiet for everyday talk, news, intros, letter beats and losses before the desk
+  opens. The story still plays: first greeting and boss, mate review, desk opening, personal plot, the love interests'
+  openings. A skipped line stays unsaid. Clicked in the real game (npm start, Settings, the toggle saves). A quiet return
+  aboard was not played by hand; the tests cover it.

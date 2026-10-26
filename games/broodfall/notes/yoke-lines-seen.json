@@ -61,61 +61,24 @@
    "since": "2026-10-16T10:46:27.014Z"
   },
   "won-22": {
-   "hash": "qfgt0s",
-   "since": "2026-10-16T10:46:27.014Z"
-  },
-  "lost-12": {
-   "hash": "jp0otz",
-   "since": "2026-10-19T17:19:19.264Z"
+   "hash": "6pntq1",
+   "since": "2026-10-26T12:35:34.887Z"
   },
   "lost-15": {
-   "hash": "kmd1vg",
-   "since": "2026-10-19T17:19:19.264Z"
-  },
-  "back-1": {
-   "hash": "456cle",
-   "since": "2026-10-14",
-   "baseline": true
-  },
-  "back-2": {
-   "hash": "1p399sj",
-   "since": "2026-10-14",
-   "baseline": true
-  },
-  "back-3": {
-   "hash": "6qmn1g",
-   "since": "2026-10-14",
-   "baseline": true
-  },
-  "back-4": {
-   "hash": "crr815",
-   "since": "2026-10-14",
-   "baseline": true
+   "hash": "vasohe",
+   "since": "2026-10-26T12:35:34.887Z"
   },
   "back-6": {
-   "hash": "165j1dk",
-   "since": "2026-10-14",
-   "baseline": true
-  },
-  "back-7": {
-   "hash": "13d3p16",
-   "since": "2026-10-14",
-   "baseline": true
-  },
-  "back-8": {
-   "hash": "5nerfq",
-   "since": "2026-10-14",
-   "baseline": true
+   "hash": "15jery0",
+   "since": "2026-10-26T12:35:34.887Z"
   },
   "back-9": {
-   "hash": "115p40w",
-   "since": "2026-10-14",
-   "baseline": true
+   "hash": "1axj366",
+   "since": "2026-10-26T12:35:34.887Z"
   },
   "back-10": {
-   "hash": "1sgsfpz",
-   "since": "2026-10-14",
-   "baseline": true
+   "hash": "vobgp7",
+   "since": "2026-10-26T12:35:34.887Z"
   },
   "back-11": {
    "hash": "oh2ies",
@@ -128,8 +91,8 @@
    "baseline": true
   },
   "back-13": {
-   "hash": "13ipbqc",
-   "since": "2026-10-16T10:46:27.014Z"
+   "hash": "4696m",
+   "since": "2026-10-26T12:35:34.887Z"
   },
   "back-14": {
    "hash": "19prtnu",
@@ -156,56 +119,6 @@
   },
   "locked-4": {
    "hash": "17awxf4",
-   "since": "2026-10-14",
-   "baseline": true
-  },
-  "defended-1": {
-   "hash": "1by2daz",
-   "since": "2026-10-14",
-   "baseline": true
-  },
-  "defended-5": {
-   "hash": "1eee1a1",
-   "since": "2026-10-14",
-   "baseline": true
-  },
-  "defended-7": {
-   "hash": "1hf80eq",
-   "since": "2026-10-14",
-   "baseline": true
-  },
-  "defended-8": {
-   "hash": "19her5g",
-   "since": "2026-10-14",
-   "baseline": true
-  },
-  "defended-9": {
-   "hash": "19vyg9",
-   "since": "2026-10-14",
-   "baseline": true
-  },
-  "fell-1": {
-   "hash": "lgdi5q",
-   "since": "2026-10-14",
-   "baseline": true
-  },
-  "fell-2": {
-   "hash": "7epvnk",
-   "since": "2026-10-14",
-   "baseline": true
-  },
-  "fell-3": {
-   "hash": "l2cela",
-   "since": "2026-10-14",
-   "baseline": true
-  },
-  "fell-4": {
-   "hash": "1wvwout",
-   "since": "2026-10-14",
-   "baseline": true
-  },
-  "fell-5": {
-   "hash": "14sxpka",
    "since": "2026-10-14",
    "baseline": true
   },

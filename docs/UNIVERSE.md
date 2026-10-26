@@ -57,7 +57,7 @@ Broodfall: see "What a broodfall is for", below.)
    staff toward a eusocial species, with idol-styled spokeswomen retired at twenty-five; the exodus after
    the North-South integration is where the Technopuritans' Koreans come from). The Technopuritans left because leaving was the easiest way to keep the
    Covenant of the Sons of Man given where society was going. Israel alone stays advanced: the Jews kept
-   technology by genetically isolating their Orthodox majority (the Satmar); half of them joined the
+   technology by genetically isolating their Orthodox majority (the Pharisees); half of them joined the
    Technopuritans (Jewish Houses in the Index), and the rest, the Sadducees, rebuilt the Davidic line with
    the Third Temple, gene-drove the Levites out of the other Jews, and run Israel's drone swarms, the
    satellite laser the feeds call "the goy beam", and the rest, as stewards of the Orthodox masses. The
@@ -71,15 +71,15 @@ Broodfall: see "What a broodfall is for", below.)
    do not understand the Empire's obsession with diversity or why it uplifted animals; the Technopuritans call them
    eugenicists who override the will of God out of lower-order fears. The Sadducees believe in no afterlife at all, as
    the historical Sadducees did not, do not upload, and find uploading the dead gruesome (Collins, Oct 15 2026). What
-   no Technopuritan understands is a believer who fears death: the Satmar, the Orthodox majority of Israel's surviving
+   no Technopuritan understands is a believer who fears death: the Pharisees, the Orthodox majority of Israel's surviving
    Jews under the stewards, believe in a world to come and fear it anyway, as do Earth's Christians (Broodfall's YOKE,
    `back-13`). The skirmishes were heightened when the Sadducees
    learned the Empire was uploading the Sadducees it killed, and demanded they be deleted; one of the uploaded did not
    want to be. The Empire said it was done and deleted only those who asked for it; were that discovered, the conflict
    would reignite (Collins, Oct 15 2026). The Sadducees keep no cap at a hundred and twenty: their ruling council is
    still ruled by the original man spliced from the Davidic line and the scientists who made him, and their families,
-   many of them hundreds of years old, which is a large part of why the Satmar see them as a kind of being genuinely
-   set apart (Collins, Oct 15 2026). The Sadducees' allies
+   many of them hundreds of years old, which is a large part of why the Pharisees see them as a kind of being genuinely
+   set apart (Collins, Oct 15 2026). Who the real Jews are (Collins, Oct 26 2026): three groups claim it, the Technopuritan Jews (the Sons of Israel), the Sadducees and the Pharisees, and each of the three thinks it is the real one. When a Technopuritan says "Jews" they mean only the Technopuritan Jews. "The Pharisees" is the Empire's name for Israel's Orthodox majority (it was "the Satmar" until Oct 26 2026). The Sadducees' allies
    are America's Baptists, whom they supply, which keeps America peaceful and capable; the Mormons expand by
    police state, not fertility; the Anabaptists were mostly wiped out when law and order went, pacifists, and the
    Amish are extinct on Earth though not in space (below); Latin America emptied after

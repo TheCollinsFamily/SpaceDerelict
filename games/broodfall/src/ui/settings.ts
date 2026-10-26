@@ -118,6 +118,7 @@ function render(): void {
         ${slider('music', 'Music', 'the ship, the siege, the organ stage, the fanfares')}
         ${slider('sfx', 'Effects', 'the body, the hive, the console')}
         ${toggle('yoke-voice', !y.muted, 'YOKE\'s voice', 'off: her words are read, not heard')}
+        ${toggle('yoke-talk', s.yokeTalk, 'YOKE\'s talk', 'off: she stays quiet when you come aboard, except for the story')}
         ${toggle('unfocused', s.muteUnfocused, 'Mute when away', 'silent while another window is in front')}
         ${toggle('subtitles', s.subtitles, 'Subtitles on films', 'the words set in type over a film as they are said')}
       </section>
@@ -206,6 +207,7 @@ function onClick(ev: MouseEvent): void {
     if (d.toggle === 'edge') s.edgeScroll = !s.edgeScroll;
     if (d.toggle === 'unfocused') s.muteUnfocused = !s.muteUnfocused;
     if (d.toggle === 'subtitles') s.subtitles = !s.subtitles;
+    if (d.toggle === 'yoke-talk') s.yokeTalk = !s.yokeTalk;
     change(s);
     return;
   }

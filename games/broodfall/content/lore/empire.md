@@ -512,9 +512,9 @@ story for why the Technopuritans live the way they do.
   direction human society was going: staying would have meant ruling, or warring on, sons of man.
 - **Israel, the Sadducees and the Technopuritan Jews** (Collins, Oct 12 2026): the Jews are the one
   group that, through the splitting, maintained technological advancement, and that was only possible
-  by genetically isolating the Orthodox (the Satmar, in the Empire's shorthand), who came to make up the
+  by genetically isolating the Orthodox (the Pharisees, in the Empire's shorthand), who came to make up the
   majority of Jews and followed the same path as the rest of society. The advanced but, beside the
-  Satmar, low-fertility Jews knew that if they kept intermixing they would come under dysgenic pressure,
+  Pharisees, low-fertility Jews knew that if they kept intermixing they would come under dysgenic pressure,
   and split in two:
   - **The Technopuritan Jews** sided with the Technopuritan principle of non-interference and became
     just a sub-category of Technopuritans, since the doctrine allows for Jews (iterative prophecy, HOME
@@ -528,9 +528,10 @@ story for why the Technopuritans live the way they do.
     Israel's technology (automated drone swarms; the satellite laser that carves up cities with ease,
     which Earth's feeds call "the goy beam", and so does YOKE; the wombs) and sees itself as steward of
     the Orthodox masses.
+  - **Who the real Jews are** (Collins, Oct 26 2026): three groups claim it, the Technopuritan Jews (the Sons of Israel), the Sadducees and the Pharisees, and each of the three thinks it is the real one. When a Technopuritan says "Jews" they mean only the Technopuritan Jews. "The Pharisees" is the Empire's name for Israel's Orthodox majority (it was "the Satmar" until Oct 26 2026).
   - **The ideological fracture.** To the Technopuritans this goes strictly against the Covenant of the
-    Sons of Man: they define the Sadducees and the Satmar as two separate groups, and say the Sadducees
-    treat the Satmar like pets and second-class citizens. The Sadducees argue (1) that Judaism is
+    Sons of Man: they define the Sadducees and the Pharisees as two separate groups, and say the Sadducees
+    treat the Pharisees like pets and second-class citizens. The Sadducees argue (1) that Judaism is
     inherently a caste-based religion with different religious structures for different castes (in the
     days of the temple the Sadducees ran the temple while most ordinary Jews followed the Pharisees),
     and (2) why should the Empire care if they are keeping their own people from suffering, when the
@@ -550,11 +551,11 @@ story for why the Technopuritans live the way they do.
     (his words) are the Empire's side of it, said as the plainest thing in the world. The Sadducees themselves believe
     in no afterlife at all, do not upload, and find the uploading of the dead gruesome (Collins, Oct 15 2026), so their
     fear of death is the plain fear of a people with one life. What the Empire finds hardest to understand (Collins, the
-    point of `back-13`, which names them) is a believer who fears death: **the Satmar**, the Orthodox majority of
+    point of `back-13`, which names them) is a believer who fears death: **the Pharisees**, the Orthodox majority of
     Israel's surviving Jews, some ninety million under the eleven thousand of the temple caste, believe in a world to
     come and fear death anyway; so do Earth's Christians. To a Technopuritan, whose heaven is a machine he can point at,
     for whom death is when the easy part begins and the fear of it was engineered out, a believer who fears death is
-    either not a believer or is ruled by a lower-order fear; the temple's eugenics and the Satmar's fear are, to the
+    either not a believer or is ruled by a lower-order fear; the temple's eugenics and the Pharisees' fear are, to the
     Empire, one failing in two castes. **PROPOSAL:** the Sadducees return it: a kept dead man is a corpse made to talk,
     and a people that cannot fear death has edited out the thing that made it human. YOKE's `won-22` (Collins, Oct 15
     2026, his words) is the whole quarrel in three lines: the Sadducees think the Empire "murderous nut jobs, just
@@ -580,9 +581,9 @@ story for why the Technopuritans live the way they do.
     **No cap at a hundred and twenty (Collins, Oct 15 2026, his words tidied):** "they don't have the 120-year rule,
     and their ruling council is still ruled by the original man spliced from the Davidic line and the scientists that
     made him, as well as their families, which makes many of them hundreds of years old; it further emphasises why the
-    Satmar see them as a type of being genuinely set apart." Where the Empire reads Genesis 6:3 as a cap and keeps it
+    Pharisees see them as a type of being genuinely set apart." Where the Empire reads Genesis 6:3 as a cap and keeps it
     with a form (7b), the Sadducees keep the first David and the men who built him, and their Houses, alive and in the
-    chair for centuries. To the Satmar that is not a government but a kind of being, the temple caste in the flesh, and
+    chair for centuries. To the Pharisees that is not a government but a kind of being, the temple caste in the flesh, and
     the stewardship holds in part because of it. **PROPOSAL:** to the Empire it is the plainest mark of the thing it
     says of them: a people ruled by its oldest, by men who outlived their own frame of reference and would not go, is
     a people ruled by the fear of death (6c); "kids these days", said for three hundred years, and never once a form.
@@ -1084,5 +1085,5 @@ bodies at the end of just year one, some too rotten to be uploaded; "orcas are n
 - ~~The Sadducees and the afterlife (`back-13`).~~ Answered Oct 15 2026 (Collins, in three steps): the Sadducees
   believe in no afterlife at all, as the historical ones did not, do not upload, and find uploading the dead gruesome;
   the point of `back-13` is that Technopuritans cannot understand why someone who genuinely believes in heaven and God
-  would fear death; so the line now names the Satmar, the Orthodox majority the Sadducees steward, who believe in a
+  would fear death; so the line now names the Pharisees, the Orthodox majority the Sadducees steward, who believe in a
   world to come (section 9, "The second fracture").
