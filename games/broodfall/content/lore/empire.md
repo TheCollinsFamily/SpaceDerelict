@@ -93,7 +93,10 @@ empire, the Index is the state.
   a full Technopuritan you have to be accepted into one of the Houses, sub-governing structures, and that
   requires marriage"; a convert from outside has no House and so must marry into one.
 - **Made of the Houses** (Collins, Oct 26 2026): every House is Technopuritan, and the Index is made up of all of
-  them, its members people selected by the Houses (the structure in the corpus, TPG 2.6 and HOME 1.0). Each House may
+  them. The Index is run by a single Governor (overturnable by the two previous Governors together), chosen every
+  five years by three representatives who must agree unanimously, one from each pool: Continuity (past Governors),
+  Sacrifice (House electors weighted by wealth donated to the Index) and the Future (House electors weighted by
+  children raised) (the corpus, TPG 11.1; docs/UNIVERSE.md). Each House may
   govern itself and vote by any method it likes: let people try things their own way and let competition prove what
   is best (docs/UNIVERSE.md, "How Houses govern themselves").
 - **No imperial church.** The Index governs goods, not belief. Theology lives in each House's

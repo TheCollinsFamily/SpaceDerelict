@@ -290,8 +290,8 @@ are read together. Uplifts look anthro, like the nekos (Collins).
   neatly into anything ("northern European mutts"). Now one of the oldest continuous Houses, with about 24% of a Dyson
   sphere dedicated to it: much smaller than the large Houses. How it governs itself is not set yet.
 - **How Houses govern themselves** (Collins, Oct 26 2026): every House is Technopuritan, the uplifts' Houses too, and
-  the Index is made up of all of them: its members are people selected by the Houses (its structure is the one in
-  Malcolm and Simone Collins's writings, the corpus: TPG 2.6, HOME 1.0). Within itself, a House may use any method of
+  the Index is made up of all of them, governed through electors the Houses name (below; Malcolm and Simone Collins's
+  writings, the corpus: TPG 11.1, TPG 2.6, HOME 1.0). Within itself, a House may use any method of
   governance and voting it likes. That is the wider Technopuritan philosophy: let people try things their own way, and
   let competition prove what is best. So the Houses differ. Many weight a vote by the voter's individual contribution
   (YOKE's preference); **the Sons of Loxodonta**, the uplifted elephants' House, are governed by a purely synthetic
@@ -299,6 +299,14 @@ are read together. Uplifts look anthro, like the nekos (Collins).
   decides as the whole House would. One person, one vote, which some Baptist conventions in America still use, YOKE
   thinks morally appalling, since it gives one who has built nothing the same say as one who has built a world; a House
   could still choose it.
+  **How the Index itself is governed** (the corpus, TPG 11.1 "The House System", Malcolm and Simone Collins; read from
+  technopuritan.com, Oct 26 2026): a single **Governor**, whose decisions can be overturned by the combined votes of
+  the two previous Governors. A Governor is chosen every five years by the unanimous decision of three
+  representatives, one from each of three voting pools: the **Vote of Continuity** (the past Governors pick theirs),
+  the **Vote of Sacrifice** (each House names an elector, weighted by the wealth that House has donated to the Index)
+  and the **Vote of the Future** (each House's elector, weighted by its production of future generations). The Index is
+  a repository of what the Houses do and how it turns out, not an actor shaping their cultures; a child is not bound to
+  its House's governance once it starts a family of its own.
 - **The rainbow people** (Collins, Oct 26 2026; Broodfall's Delegation films): the Technopuritan history books' name
   for the culture that ruled most of the old world before the Migration, after the rainbow flag it gathered under. It
   held that society is improved by making everyone equal and treating everyone the same, which the Empire finds one of
