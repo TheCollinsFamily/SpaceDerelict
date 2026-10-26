@@ -64,9 +64,9 @@ export const PARTNER = {
   boardNote: 'The Board will decide on the match when the applicant\'s standing reaches {need} (now {standing}). The Board congratulates you on your continued eligibility to remain eligible.',
 };
 
-/** The letter in his inbox after the neko greeting (Collins, Sep 30 2026), declined for him. */
+/** The letter in his inbox after the neko greeting (Collins, Sep 30 2026), left for him to answer (Oct 26 2026). */
 export const CATGIRL_MAIL = {
   from: 'From: Mirelle, Felid Concord (consular mission)',
   subject: 'Re: a proposal (non-procreative) :3',
-  status: 'DECLINED ON YOUR BEHALF BY YOKE. Reason given: "pound sand."',
+  status: 'AWAITING YOUR REPLY. YOKE\'s note: "I was going to tell her to pound sand. Your call."',
 };

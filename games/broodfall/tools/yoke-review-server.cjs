@@ -44,11 +44,12 @@ http.createServer((req, res) => {
   }
   if (req.method === 'GET' && url.pathname === '/api/state') return send(res, 200, load());
   // The baked films and their posters (the page's films part): public/media/scenes/<file>, with Range so a film seeks.
-  const media = url.pathname.match(/^\/media\/scenes\/([a-z0-9-]+\.(mp4|webp))$/);
+  // ...and YOKE's own scene clips (print a body): public/art/ship/yoke/scenes/<file>.webm.
+  const media = url.pathname.match(/^\/media\/scenes\/([a-z0-9-]+\.(mp4|webp))$/) || url.pathname.match(/^\/art\/ship\/yoke\/scenes\/([a-z0-9-]+\.(webm))$/);
   if (req.method === 'GET' && media) {
-    const file = path.join(ROOT, 'public', 'media', 'scenes', media[1]);
+    const file = url.pathname.startsWith('/art/') ? path.join(ROOT, 'public', 'art', 'ship', 'yoke', 'scenes', media[1]) : path.join(ROOT, 'public', 'media', 'scenes', media[1]);
     let size; try { size = fs.statSync(file).size; } catch { return send(res, 404, { error: 'not found' }); }
-    const type = media[2] === 'mp4' ? 'video/mp4' : 'image/webp';
+    const type = media[2] === 'mp4' ? 'video/mp4' : media[2] === 'webm' ? 'video/webm' : 'image/webp';
     const r = /^bytes=(\d*)-(\d*)$/.exec(req.headers.range || '');
     if (r && (r[1] || r[2])) {
       const start = r[1] ? Number(r[1]) : Math.max(0, size - Number(r[2])), end = r[1] && r[2] ? Math.min(Number(r[2]), size - 1) : size - 1;

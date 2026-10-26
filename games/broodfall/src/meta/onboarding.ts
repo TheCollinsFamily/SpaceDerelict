@@ -167,7 +167,8 @@ export function momentNow(s: CampaignState): GreetMoment {
  * which also opens the discussion in the AI Core. content/greetings.ts has the lines.
  */
 export const STORY_ONCE: Array<{ id: GreetMoment; captures: number }> = [
-  { id: 'partner-progress', captures: 9 },
+  // partner-progress (capture 9) was cut on Oct 26 2026 (Collins: "this is pointless, she comes in in that third message
+  // where it mentions someone is under review": the mate review already brings Atlas in).
 ];
 
 /**
@@ -181,7 +182,7 @@ export const INTROS: Array<{ id: string; captures: number; needs?: (s: CampaignS
   { id: 'back-5', captures: 2 },
   { id: 'intro-barnabas', captures: 3 },
   { id: 'intro-audit', captures: 8 },
-  { id: 'intro-dad', captures: 10, needs: (s) => (s.said ?? []).includes('partner-progress') },
+  { id: 'intro-dad', captures: 10, needs: (s) => (s.said ?? []).includes('mate-review') },
   // Collins, Oct 18 2026: "move later, this is super early and the character may not be introduced yet": not before
   // capture 12 (was 7), and only after Mirelle's letter came (the catgirl greeting).
   { id: 'intro-catgirl', captures: 12, needs: (s) => (s.said ?? []).includes('catgirl') },
@@ -318,6 +319,7 @@ export function greetingFor(s: CampaignState, lore = ''): { moment: GreetMoment;
 function newsLine(s: CampaignState, lore: string, h: number, moment: GreetMoment, freshOnly: boolean): Greeting | null {
   const pool = earthNews(lore);
   const news: EarthNews[] = pool.length ? pool : EARTH_NEWS_FALLBACK.map((text) => ({ text }));
+  if (!news.length) return null;
   const said = s.greetingsSaid ?? [];
   let i = (h >>> 8) % news.length;
   let k = 0;

@@ -76,6 +76,10 @@
   .context .src { margin-top: 4px; }
   .row { display: grid; grid-template-columns: 150px minmax(0, 1fr) 150px; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--line); align-items: start; }
   .row.cut .beats { opacity: 0.45; text-decoration: line-through; }
+  .clips { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin-top: 10px; }
+  .clips figure { margin: 0; }
+  .clips video { width: 100%; border-radius: 6px; background: #000; }
+  .clips figcaption { font-size: 12px; color: var(--mute); margin-top: 4px; }
   .aside { margin-top: 6px; font-size: 12.5px; color: var(--mute); font-style: italic; }
   .aside b { font-style: normal; font-weight: 600; }
   .aside .hook { font-style: normal; font-family: var(--mono); font-size: 11.5px; opacity: 0.85; }
@@ -283,7 +287,8 @@
       lastPart = s.part;
       return head + '<section id="' + s.id + '"><header><h3><span class="num">' + s.n + '.</span> ' + esc(s.name) + ' <span class="n">' + stepLines(s).length + '</span></h3>' +
         '<p class="what">' + esc(s.what) + '</p><div class="src">' + esc(s.where) + '</div>' +
-        (s.video ? '<video class="film" controls preload="none" src="' + esc(s.video.src) + '" poster="' + esc(s.video.poster) + '"></video><div class="filmlen">' + s.video.seconds + ' s · ' + esc(s.video.src) + '</div>' : '') + '</header>' +
+        (s.video ? '<video class="film" controls preload="none" src="' + esc(s.video.src) + '" poster="' + esc(s.video.poster) + '"></video><div class="filmlen">' + s.video.seconds + ' s · ' + esc(s.video.src) + '</div>' : '') +
+        (s.clips && s.clips.length ? '<div class="clips">' + s.clips.map(function (c, k) { return '<figure><video controls preload="metadata" muted src="' + esc(c.src) + '"></video><figcaption>' + (k + 1) + '. ' + esc(c.label) + '</figcaption></figure>'; }).join('') + '</div>' : '') + '</header>' +
         s.branches.map(function (b) {
           if (b.context) return '<div class="context"><b>' + esc(b.context.who) + '</b>' + b.context.lines.map(function (t) { return '<div>' + esc(t) + '</div>'; }).join('') + '<div class="src">' + esc(b.context.where) + '</div></div>';
           return (b.label ? '<h4 class="branch">' + esc(b.label) + '</h4>' : '') + (b.lines || []).map(row).join('');

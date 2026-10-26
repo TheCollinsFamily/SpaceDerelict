@@ -12,7 +12,7 @@
  */
 import { describe, expect, it, vi } from 'vitest';
 import {
-  PlayerLink, allowanceText, bonusTimes, costText, cutKindOf, cutOffLines, memoryText, watchConnect,
+  PlayerLink, allowanceText, bonusTimes, costText, cutKindOf, moneyText, memoryText, watchConnect,
   type TokenStore,
 } from '../src/meta/yokePlayer';
 import { AvatarError, AvatarLink, AvatarTalk, OWNER_YOKE_DEV_ONLY, PLAYER_LINK_OFF, YokeLadder } from '../src/meta/yokeAvatar';
@@ -318,20 +318,19 @@ describe('the cut-off', () => {
     expect(cutKindOf(404, 'X')).toBeNull();
   });
 
-  it('when the $3 is spent she says so once, no paid rung is asked, and the scripted YOKE answers after', async () => {
+  it('when the $3 is spent she says nothing about money (the game\'s pop-up does), no paid rung is asked, and the scripted YOKE answers', async () => {
     const rest = { reply: vi.fn(async () => ['kimi line']) } as ShipAiProvider;
     const ladder = new YokeLadder(spentTalk('GUEST_ALLOWANCE_SPENT'), rest, () => {}, new ScriptedShipAi());
     const onCut = vi.fn();
     ladder.onCut = onCut;
-    ladder.cutOff = (kind) => cutOffLines(kind, 400000, 150000);
+    ladder.cutOff = () => [];
     const first = await ladder.reply(ctx, [], 'hello?');
-    expect(first.join(' ')).toMatch(/Link your own RFab account/);
-    expect(first.join(' ')).toMatch(/400,000 free tokens/);
+    expect(first.length).toBeGreaterThan(0);
+    expect(first.join(' ')).not.toMatch(/RFab|tokens|Link/);
     expect(onCut).toHaveBeenCalledWith('allowance');
     expect(rest.reply).not.toHaveBeenCalled();
     const second = await ladder.reply(ctx, [{ speaker: 'YOKE', text: first[0] }], 'still there?');
     expect(second.length).toBeGreaterThan(0);
-    expect(second.join(' ')).not.toMatch(/Link your own/);
     expect(rest.reply).not.toHaveBeenCalled();
     expect(ladder.cut).toBe('allowance');
   });
@@ -340,8 +339,9 @@ describe('the cut-off', () => {
     let paid = false;
     const talk = { open: true, enter: async () => [], ask: async () => { if (!paid) throw new AvatarError(402, 'INSUFFICIENT_TOKENS', ''); return ['Back.']; }, leave() {} } as unknown as AvatarTalk;
     const ladder = new YokeLadder(talk, { reply: async () => ['x'] }, () => {}, new ScriptedShipAi());
-    ladder.cutOff = (kind) => cutOffLines(kind, 400000, 150000);
-    expect((await ladder.reply(ctx, [])).join(' ')).toMatch(/Top it up on rfab\.ai/);
+    ladder.cutOff = () => [];
+    expect((await ladder.reply(ctx, [])).join(' ')).not.toMatch(/Back\./);
+    expect(ladder.cut).toBe('topup');
     paid = true;
     ladder.uncut();
     expect(await ladder.reply(ctx, [])).toEqual(['Back.']);
@@ -358,7 +358,10 @@ describe('the words', () => {
 
   it('state the bonus plainly: more than double the free talk', () => {
     expect(bonusTimes(400000, 150000)).toBeGreaterThan(2);
-    expect(cutOffLines('allowance', 400000, 150000).join(' ')).toContain('$8.00');
+    expect(moneyText('allowance', 400000).body).toContain('$8.00');
+    // His explanation (Oct 26 2026): the credits came with the game, the AI costs us money, link an account.
+    expect(moneyText('allowance', 400000).body).toMatch(/credits with the game.*costs us real money.*link an RFab account/);
+    expect(moneyText('topup', 400000).head).toMatch(/OUT OF TOKENS/);
     expect(allowanceText({ capTokens: 150000, spentTokens: 29500, remainingTokens: 120500, spent: false })).toBe('$2.41 of $3.00 left');
     expect(costText({ id: 'k', label: 'Kimi', exchangeTokens: 1266, exchangeUsd: 0.0253 })).toBe('~1,266 tokens (~$0.03) a reply');
     expect(costText({ id: 'k', label: 'x', exchangeTokens: null, exchangeUsd: null })).toBe('price on rfab.ai');

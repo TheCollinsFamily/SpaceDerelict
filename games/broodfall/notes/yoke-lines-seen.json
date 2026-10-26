@@ -36,8 +36,8 @@
    "since": "2026-10-26T12:02:25.403Z"
   },
   "faithful-contact": {
-   "hash": "xlq4o0",
-   "since": "2026-10-26T12:02:25.403Z"
+   "hash": "ngxzyy",
+   "since": "2026-10-26T12:59:57.883Z"
   },
   "institute-contact": {
    "hash": "16r66ss",
@@ -128,8 +128,8 @@
    "baseline": true
   },
   "earth-2": {
-   "hash": "nsom90",
-   "since": "2026-10-18T19:00:50.585Z"
+   "hash": "11yoy72",
+   "since": "2026-10-26T12:59:57.883Z"
   },
   "earth-3": {
    "hash": "9os1ig",
@@ -137,8 +137,8 @@
    "baseline": true
   },
   "earth-4": {
-   "hash": "1qf6bkp",
-   "since": "2026-10-18T19:00:50.585Z"
+   "hash": "2ybsqt",
+   "since": "2026-10-26T12:59:57.883Z"
   },
   "earth-5": {
    "hash": "1lbyskz",
@@ -172,16 +172,16 @@
    "since": "2026-10-18T19:00:50.585Z"
   },
   "earth-12": {
-   "hash": "gpvl6n",
-   "since": "2026-10-18T19:00:50.585Z"
+   "hash": "k5dg6o",
+   "since": "2026-10-26T12:59:57.883Z"
   },
   "earth-13": {
    "hash": "h9mevr",
    "since": "2026-10-18T19:00:50.585Z"
   },
   "earth-14": {
-   "hash": "bvv8n9",
-   "since": "2026-10-18T19:00:50.585Z"
+   "hash": "j0qgir",
+   "since": "2026-10-26T12:59:57.883Z"
   },
   "earth-15": {
    "hash": "528tyu",
@@ -192,8 +192,8 @@
    "since": "2026-10-18T19:00:50.585Z"
   },
   "earth-17": {
-   "hash": "f6luia",
-   "since": "2026-10-18T19:00:50.585Z"
+   "hash": "vl4pp6",
+   "since": "2026-10-26T12:59:57.883Z"
   },
   "earth-18": {
    "hash": "13aabvr",
@@ -208,43 +208,28 @@
    "since": "2026-10-18T19:00:50.585Z"
   },
   "earth-21": {
-   "hash": "1ugx1jb",
-   "since": "2026-10-18T19:00:50.585Z"
+   "hash": "li25e2",
+   "since": "2026-10-26T12:59:57.883Z"
   },
   "earth-22": {
-   "hash": "drvlx1",
-   "since": "2026-10-18T19:00:50.585Z"
-  },
-  "earth-23": {
-   "hash": "10p5st5",
-   "since": "2026-10-18T19:00:50.585Z"
-  },
-  "EARTH_NEWS_FALLBACK": {
-   "hash": "1nb5vqw",
-   "since": "2026-10-14",
-   "baseline": true
-  },
-  "partner-progress": {
-   "hash": "5dhg0n",
-   "since": "2026-10-14",
-   "baseline": true
+   "hash": "cq17ml",
+   "since": "2026-10-26T12:59:57.883Z"
   },
   "catgirl": {
-   "hash": "1nb1966",
-   "since": "2026-10-18T17:35:09.519Z"
+   "hash": "a2toeu",
+   "since": "2026-10-26T12:59:57.883Z"
   },
   "letter-rook": {
-   "hash": "2bv9b4",
-   "since": "2026-10-18T19:00:50.585Z"
+   "hash": "19g57g4",
+   "since": "2026-10-26T12:59:57.883Z"
   },
   "letter-atlas-direct": {
-   "hash": "1jisy1d",
-   "since": "2026-10-14",
-   "baseline": true
+   "hash": "18jn0f",
+   "since": "2026-10-26T12:59:57.883Z"
   },
   "letter-rook-orca": {
-   "hash": "1arfman",
-   "since": "2026-10-18T19:00:50.585Z"
+   "hash": "fki9wy",
+   "since": "2026-10-26T12:59:57.883Z"
   },
   "back-5": {
    "hash": "a5mzen",
@@ -257,72 +242,24 @@
    "baseline": true
   },
   "intro-audit": {
-   "hash": "116otlk",
-   "since": "2026-10-14",
-   "baseline": true
+   "hash": "1moqvkv",
+   "since": "2026-10-26T13:13:42.720Z"
   },
   "intro-dad": {
-   "hash": "fyk0vq",
-   "since": "2026-10-18T19:00:50.585Z"
+   "hash": "yztjra",
+   "since": "2026-10-26T13:13:42.720Z"
   },
   "intro-catgirl": {
-   "hash": "1v3gzf2",
-   "since": "2026-10-18T19:00:50.585Z"
+   "hash": "hso193",
+   "since": "2026-10-26T13:13:42.720Z"
   },
-  "PRINT_BODY.line": {
-   "hash": "mxxujz",
-   "since": "2026-10-14",
-   "baseline": true
+  "money-free": {
+   "hash": "1cs6wf6",
+   "since": "2026-10-26T13:13:42.720Z"
   },
-  "PRINT_BODY.refusal": {
-   "hash": "1qzjk2s",
-   "since": "2026-10-14",
-   "baseline": true
-  },
-  "PRINT_BODY.card.print": {
-   "hash": "1ivx52j",
-   "since": "2026-10-14",
-   "baseline": true
-  },
-  "PRINT_BODY.card.hand": {
-   "hash": "dtt67n",
-   "since": "2026-10-14",
-   "baseline": true
-  },
-  "PRINT_BODY.card.collapse": {
-   "hash": "pp6cdr",
-   "since": "2026-10-14",
-   "baseline": true
-  },
-  "PRINT_BODY.card.hold": {
-   "hash": "1hbkewf",
-   "since": "2026-10-14",
-   "baseline": true
-  },
-  "cut-topup-1": {
-   "hash": "m6a6k7",
-   "since": "2026-10-14",
-   "baseline": true
-  },
-  "cut-topup-2": {
-   "hash": "1jia625",
-   "since": "2026-10-14",
-   "baseline": true
-  },
-  "cut-resting": {
-   "hash": "y5qdqc",
-   "since": "2026-10-14",
-   "baseline": true
-  },
-  "cut-free-1": {
-   "hash": "z9onve",
-   "since": "2026-10-14",
-   "baseline": true
-  },
-  "cut-free-2": {
-   "hash": "120jxfd",
-   "since": "2026-10-14",
-   "baseline": true
+  "money-topup": {
+   "hash": "1mus6d9",
+   "since": "2026-10-26T13:13:42.720Z"
   },
   "dance-1": {
    "hash": "11z6rxh",
@@ -360,9 +297,8 @@
    "baseline": true
   },
   "partner.declined": {
-   "hash": "3qvagf",
-   "since": "2026-10-14",
-   "baseline": true
+   "hash": "1l4ls79",
+   "since": "2026-10-26T12:59:57.883Z"
   },
   "note-1": {
    "hash": "idqkkb",
@@ -1838,6 +1774,16 @@
   "film-rk-founding-9": {
    "hash": "7fu0x4",
    "since": "2026-10-18T15:27:19.458Z"
+  },
+  "PRINT_BODY.line": {
+   "hash": "mxxujz",
+   "since": "2026-10-14",
+   "baseline": true
+  },
+  "PRINT_BODY.refusal": {
+   "hash": "1qzjk2s",
+   "since": "2026-10-14",
+   "baseline": true
   }
  }
 }

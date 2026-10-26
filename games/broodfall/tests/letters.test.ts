@@ -144,7 +144,7 @@ describe('Rook tells of the orca only when asked, and YOKE answers it once, befo
     expect(letterBeatFor(s)).toBeNull();
     s = { ...s, letters: { threads: { ...s.letters!.threads, rook: { ...thread(s, 'rook')!, revealed: ['orca'] } } } };
     expect(letterBeatFor(s)!.id).toBe('letter-rook-orca');
-    expect(letterBeatFor(s)!.beats.map((b) => b.say).join(' ')).toMatch(/twenty-five bodies/);
+    expect(letterBeatFor(s)!.beats.map((b) => b.say).join(' ')).toMatch(/twelve bodies/);
   });
 });
 

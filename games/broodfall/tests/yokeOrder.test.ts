@@ -88,7 +88,7 @@ describe('YOKE\'s talk off (Settings)', () => {
     const g = (id: string) => GREETINGS.find((x) => x.id === id)!;
     for (const id of ['back-6', 'intro-audit', 'letter-rook-orca', 'locked-1']) expect(quietSkips(g(id)), id).toBe(true);
     expect(quietSkips({ id: 'earth-3', moment: 'won', beats: [{ say: 'x' }] } as never)).toBe(true);
-    for (const id of ['first-won', 'mate-review', 'unlock', 'catgirl', 'letter-rook', 'partner-progress']) expect(quietSkips(g(id)), id).toBe(false);
+    for (const id of ['first-won', 'mate-review', 'unlock', 'catgirl', 'letter-rook']) expect(quietSkips(g(id)), id).toBe(false);
   });
   it('the setting is on unless he turns it off, and an old save keeps it on', async () => {
     const { settingsFrom, DEFAULT_SETTINGS } = await import('../src/meta/settings');

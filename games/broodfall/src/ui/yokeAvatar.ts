@@ -42,7 +42,7 @@ export interface YokeAvatarOptions {
   /** Nobody pays for her any more: the screen shows the link prompt (src/ui/yokeAccount.ts). */
   onCut?(kind: CutKind): void;
   /** What she says when the money stops (src/meta/yokePlayer.ts cutOffLines). */
-  cutOff?(kind: CutKind): string[];
+  cutOff?(kind: CutKind): string[] | null;
 }
 
 /** One line of a prewritten script (a greeting): her face while she says it, and what she does after it. */
@@ -126,7 +126,7 @@ export class YokeAvatarUi implements ShipAiProvider {
     };
     // While nobody pays for her, the scripted YOKE answers (it costs nothing): never Kimi, which would bill the same account.
     this.ladder = new YokeLadder(o.mind === false ? null : this.talk, o.rest, undefined, new ScriptedShipAi());
-    this.ladder.cutOff = (kind) => o.cutOff?.(kind) ?? [];
+    this.ladder.cutOff = (kind) => (o.cutOff ? o.cutOff(kind) : null);
     this.ladder.onCut = (kind) => { this.voiceless = true; o.onCut?.(kind); };
     this.stage = document.createElement('div');
     this.stage.className = 'cp-yoke cp-yoke-live';

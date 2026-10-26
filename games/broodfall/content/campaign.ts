@@ -634,7 +634,7 @@ export const FACTIONS: FactionDef[] = [
     // the ship would notice. The card names no number: OPEN, notes/CAMPAIGN-BEATS.md.)
     contact: { title: 'A Sermon on Every Station', lines: [
       'YOKE: A radio preacher is playing the same sermon on every station in a fairly large network.',
-      'YOKE: He says you are the sign they have waited for that the world must end for the Awaited One to come.',
+      'YOKE: He says you are the sign they have waited for: that the world must end for the Awaited One to come.',
       'You: (log) The fauna have a radio preacher, and he is expecting me. I will go down by hologram and hear him out.',
     ] },
     signal: { lat: 54, lon: 9, how: 'a sermon on every radio station' },

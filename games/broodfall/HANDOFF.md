@@ -2540,3 +2540,31 @@ Applied today:
   opens. The story still plays: first greeting and boss, mate review, desk opening, personal plot, the love interests'
   openings. A skipped line stays unsaid. Clicked in the real game (npm start, Settings, the toggle saves). A quiet return
   aboard was not played by hand; the tests cover it.
+- Third and fourth syncs, same day. **Always mend his spelling and punctuation in what he types** (he: "I assumed fixing
+  spelling was obvious"). After `tools/yoke-apply.mjs`, delete the applied edits from the page's store (ArtifactData
+  batch delete, pinned), or a mended line no longer matches his typed text and the next run writes the typo back.
+  The tool now escapes ' in .ts strings (an unescaped one broke greetings.ts once).
+  - Earth news: his rewrites of 2, 4 ("Sadducees"), 12, 14, 17 (second beat cut), 21 and 22. Item 23 (the archive
+    manifests) and EARTH_NEWS_FALLBACK cut; with no list she gives no news.
+  - Lore: the Dome of the Rock was moved for the Third Temple, not destroyed, which the Sadducees see as quite the
+    concession. Only the Lipptors have their reproductive organs removed; other Technopuritans keep theirs and only feel no
+    arousal (empire.md 7 fixed, lorebook earth-22 aside).
+  - partner-progress (the personal plot, capture 9) cut: "pointless, she comes in in that third message" (the mate
+    review). STORY_ONCE is empty, intro-dad now needs the mate review, and the AI Core's 'partner' discussion is no longer
+    queued. The Roach King's schedule still keeps capture 5 free for the old personal plot (roachKing.ts PERSONAL_CAPTURE).
+  - catgirl (his words): "I was going to tell her to pound sand... but it's your call". YOKE no longer declines Mirelle:
+    the inbox status, Mirelle's persona and the asides say so. Rook's orca: twelve bodies, not twenty-five, everywhere.
+  - His rewrites of letter-rook, letter-atlas-direct, intro-audit, intro-catgirl (anatomically normal pregnancy; small
+    breasts or none, hence no word for them) and intro-dad (last two beats cut).
+- **Print a body** is shown on the page as a scene (part 6, its four clips playable, uploaded with the page as
+  art/ship/yoke/scenes/*.webm; the PC server serves them too). In the game it was already a scene: it plays when he asks
+  her to print herself a body.
+- **When the money stops** (his ask: "just explain to them we tried to give enough credits for a playthrough on game
+  purchase, but them using AI costs us money... there should also be an option to turn off YOKE with the pop-up; trying
+  to interact with a romance target will also bring this up"). YOKE no longer says anything about money (cutOffLines
+  removed; the ladder's `cutOff` is [] or null). The game shows a pop-up (`campaignUi.showMoney`, words in `yokePlayer
+  moneyText`) with LINK AN RFAB ACCOUNT / TOP UP, TURN OFF HER LIVE MIND (mode scripted) and NOT NOW. It comes up on the
+  account's cut, including a refusal of her voice (`YokeAccountUi.setCut` now calls the cut hook), on sending a letter
+  while cut, and when a letter reply is refused for money. It sits on document.body because the ship redraws its screen
+  whole. Played in the real game against a faked rfab.ai: the pop-up appears on entering the AI Core, TURN OFF sets
+  scripted, LINK brings up the code. The letter path is not played by hand.

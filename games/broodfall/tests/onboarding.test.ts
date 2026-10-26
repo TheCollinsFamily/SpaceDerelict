@@ -155,7 +155,7 @@ describe('YOKE\'s greetings', () => {
     expect(say('first-lost')).toContain('Top ten.');
     expect(say('unlock')).toContain('Broh, that was sick...');
     expect(say('mate-review')).toContain('on your data pad in your room.');
-    expect(say('catgirl')).toContain('told her to pound sand');
+    expect(say('catgirl')).toContain('tell her to pound sand');
     expect(GREETINGS.find((g) => g.id === 'first-won')!.boss).toBe(true);
     expect(GREETINGS.find((g) => g.id === 'first-lost')!.boss).toBe(true);
     expect(BOSS.lines.length).toBeGreaterThan(2);
@@ -175,8 +175,8 @@ describe('YOKE\'s greetings', () => {
     // The lore book's own section (content/lore/ship-ai-lorebook.md), Collins's line first.
     const book = earthNewsFrom(readFileSync('content/lore/ship-ai-lorebook.md', 'utf8'));
     expect(book.length).toBeGreaterThanOrEqual(10);
-    expect(book[0]).toBe(EARTH_NEWS_FALLBACK[0]);
-    expect(EARTH_NEWS_FALLBACK[0]).toMatch(/took back Rome/);
+    expect(book[0]).toMatch(/took back Rome/);
+    expect(EARTH_NEWS_FALLBACK).toEqual([]);
     let s = deploy(newCampaign(6, { onboarding: true }), false).state;
     s = board(s);
     expect(earthNewsOpen(s)).toBe(false);

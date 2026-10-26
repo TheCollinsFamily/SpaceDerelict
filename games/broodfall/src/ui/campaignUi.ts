@@ -15,11 +15,10 @@ import { goalText } from '../meta/goals';
 import { FallbackShipAi, RfabShipAi, campaignIdFor, type AiTrigger, type AiTurn, type ShipAiProvider, type ShipAiStatus, reasonFor } from '../meta/shipAi';
 import { loadYoke, ownerYokeAllowed, playerTokenStore, saveCampaign, saveYoke, type PendingDeployment, type YokeSettings } from '../meta/storage';
 import { YOKE_AVATAR, rungs, type YokeMode } from '../meta/yokeAvatar';
-import { PlayerLink, cutOffLines } from '../meta/yokePlayer';
+import { PlayerLink, cutKindOf, moneyText, type CutKind } from '../meta/yokePlayer';
 import { YokeAvatarUi, type ScriptLine, type YokeTalk } from './yokeAvatar';
 import { YokeAccountUi } from './yokeAccount';
 import { EARLY_ONCE, STORY_ONCE, THREAD_OPENS, deskOpen, quietSkips, greetingFor, shipPick } from '../meta/onboarding';
-import { queueDiscussion } from '../meta/shipAi';
 import { BOSS_AFTER, BOSS_ASIDE, BOSS_BRIDGE } from '../../content/boss';
 import { playBossCall } from './bossCall';
 import { CUES, type Greeting } from '../../content/greetings';
@@ -223,7 +222,7 @@ export class CampaignUi {
     this.account = new YokeAccountUi(this.player, {
       changed: () => { if (!this.waiting && !this.debriefing && !this.el.classList.contains('hidden') && (this.room === 'ai' || this.icom)) this.render(); },
       resumed: () => this.avatar?.uncut(),
-      cut: (kind) => this.avatar?.announceCut(kind),
+      cut: (kind) => { this.showMoney(kind); this.avatar?.announceCut(kind); },
     });
     this.ai = this.buildAi();
     // The campaign media (src/ui/newsreel.ts): a scene card waiting may have a picture there (the reveals').
@@ -361,7 +360,6 @@ export class CampaignUi {
     if (EARLY_ONCE.includes(moment) || STORY_ONCE.some((b) => b.id === moment) || THREAD_OPENS.some((t) => t.id === moment)) s.said = [...(s.said ?? []), moment];
     // The personal plot opens a discussion in the AI Core: him going down to the Index to sign (Oct 12 2026: from the
     // progress beat, since the Index beat was cut).
-    if (moment === 'partner-progress') s.ai.queue = queueDiscussion(s.ai.queue, 'partner', s.ai.seen);
     s.greet = null;
     s.lastGreeting = g.id;
     s.greetingsSaid = [...new Set([...(s.greetingsSaid ?? []), g.id])];
@@ -975,7 +973,13 @@ export class CampaignUi {
           try {
             lines = await mind.reply({ trigger: 'letter', summary: summaryFor(this.state), lore, persona: personaFor(t) }, historyFor(t).slice(0, -1), last.text.join('\n'));
             regard = mind.lastRegard; how = `Kimi K2.6 via rfab.ai, ${mind.lastCharge} tokens`;
-          } catch (err) { how = `scripted: ${reasonFor(err)}`; }
+          } catch (err) {
+            how = `scripted: ${reasonFor(err)}`;
+            // A refusal for money (rfab.ai's 402/503, a ShipAiError): the same pop-up as hers.
+            const e = err as { status?: number; code?: string };
+            const kind = cutKindOf(e.status ?? 0, e.code);
+            if (kind) { this.account.setCut(kind); this.showMoney(kind, true); }
+          }
         }
         if (!lines) { const r = scriptedReply(t); lines = r.lines; regard = r.regard; }
         const s = receiveLetter(this.state, id, lines, regard);
@@ -1095,13 +1099,48 @@ export class CampaignUi {
         player: y.mode === 'scripted' ? undefined : this.player,
         onCut: (kind) => this.account.setCut(kind),
         // No words on an RFab without the player route (the old way: a 402 there falls to the next rung, as it always did).
-        cutOff: (kind) => (this.player.legacy ? [] : cutOffLines(kind, this.account.state?.bonusTokens ?? 400000, this.account.state?.allowance.capTokens ?? 150000)),
+        // No words of hers about money (Oct 26 2026): the game's pop-up says it (showMoney). null: no player route, the old way.
+        cutOff: () => (this.player.legacy ? null : []),
         changed: () => { if ((this.room === 'ai' || this.icom) && !this.waiting && !this.debriefing && !this.el.classList.contains('hidden')) this.render(); },
       })
       : null;
     if (this.icom) this.icom = { talk: this.freeTalk() };
     // She answers through her body in every mode: in the avatar mode her own mind speaks, in the others the next rung's words.
     return this.avatar ?? rest;
+  }
+
+  /**
+   * The pop-up when nobody pays for her live mind any more (src/meta/yokePlayer.ts moneyText): link an account (or top up),
+   * turn her live mind off (the scripted YOKE and the scripted letters answer, and cost nothing), or not now. Once a
+   * session for each reason, unless he is writing a letter (`again`), which asks every time.
+   */
+  private moneyShown = new Set<CutKind>();
+  private showMoney(kind: CutKind, again = false): void {
+    if (this.yoke.mode === 'scripted' || this.player.legacy || document.querySelector('.cp-money')) return;
+    if (this.moneyShown.has(kind) && !again) return;
+    this.moneyShown.add(kind);
+    const { head, body } = moneyText(kind, this.account.state?.bonusTokens ?? 400000);
+    const url = this.account.state?.account?.topUpUrl ?? 'https://rfab.ai/tokens/purchase';
+    const pop = document.createElement('div');
+    // On the page, not in the ship's screen: the ship redraws its screen whole (render), which would take the pop-up with it.
+    pop.className = 'cp-objectors cp-money';
+    pop.style.position = 'fixed';
+    pop.style.zIndex = '50';
+    pop.innerHTML = `<div class="cp-objectors-card" role="dialog" aria-label="${esc(head)}">
+      <div class="cp-acct-h">${esc(head)}</div><p>${esc(body)}</p>
+      <p class="cp-acct-fine">Or turn her live mind off: YOKE and the letters then use their written lines, which are free. You can turn it back on in the AI Core.</p>
+      <div class="cp-acct-btns">${kind === 'topup' ? `<button class="screen-btn" data-act="acct-open" data-url="${esc(url)}">TOP UP ON RFAB.AI</button>` : '<button class="screen-btn" data-act="acct-link">LINK AN RFAB ACCOUNT</button>'}
+        <button data-money="off">TURN OFF HER LIVE MIND</button><button data-money="close">NOT NOW</button></div></div>`;
+    pop.addEventListener('click', (ev) => {
+      const t = ev.target as HTMLElement;
+      const m = t.closest<HTMLElement>('[data-money]')?.dataset.money;
+      const act = t.closest<HTMLElement>('[data-act]');
+      if (act || m) pop.remove();
+      if (m === 'off') this.setYoke({ ...this.yoke, mode: 'scripted' });
+      // LINK / TOP UP: the ship's own handlers (the AI Core's link code, the top-up page), as from its panel.
+      if (act) this.onClick({ target: act } as unknown as MouseEvent);
+    });
+    document.body.appendChild(pop);
   }
 
   /** The switch goes round: her avatar (when there is one), Kimi, the scripted YOKE. */
@@ -1333,7 +1372,7 @@ export class CampaignUi {
       case 'letter-send': {
         const box = this.el.querySelector<HTMLTextAreaElement>('#letter-text');
         const id = this.letterOpen && unlockedCorrespondents(s).includes(this.letterOpen) ? this.letterOpen : unlockedCorrespondents(s)[0];
-        if (box && id) { this.setState(sendLetter(s, id, box.value)); void this.keepLetters(); }
+        if (box && id) { this.setState(sendLetter(s, id, box.value)); void this.keepLetters(); if (this.account.cut) this.showMoney(this.account.cut, true); }
         return;
       }
       case 'ai-end': this.aiEnd(); return;

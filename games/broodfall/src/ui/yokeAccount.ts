@@ -68,7 +68,10 @@ export class YokeAccountUi {
   /** The server refused her for money (src/meta/yokeAvatar.ts YokeLadder.onCut). */
   setCut(kind: CutKind): void {
     if (this.link.legacy) return;
+    const was = this.cut;
     this.cut = kind;
+    // Newly cut by a refusal (her voice or her mind): the screen is told, as when the meter finds it spent (the pop-up).
+    if (!was) this.hooks.cut?.(kind);
     this.hooks.changed();
     void this.refresh();
   }

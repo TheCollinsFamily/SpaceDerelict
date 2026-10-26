@@ -44,7 +44,9 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import { EARTH_NEWS_FALLBACK, GREETINGS, earthNews, newsBeats, type GreetMoment, type Greeting } from '../content/greetings';
+import { GREETINGS, earthNews, newsBeats, type GreetMoment, type Greeting } from '../content/greetings';
+import { CATGIRL_MAIL } from '../content/partner';
+import { moneyText } from '../src/meta/yokePlayer';
 import { PRINT_BODY } from '../content/yokeScenes';
 import { BOSS, BOSS_AFTER, BOSS_ASIDE, BOSS_BRIDGE } from '../content/boss';
 import { CHANNELS, TRANSLATOR_NOTES } from '../content/translation';
@@ -64,7 +66,7 @@ interface Line { id: string; text: string[]; faces?: string[]; ctx?: string[]; a
 /** One case of a step (won / lost / held), or words that are not hers but fix the order (the boss's transmission). */
 interface Branch { label?: string; lines?: Line[]; context?: { who: string; lines: string[]; where: string } }
 /** One event of a campaign, in the order he meets them; what happens, then what she says there. */
-interface Step { id: string; part: string; name: string; what: string; where: string; branches: Branch[]; video?: { src: string; poster: string; seconds: number } }
+interface Step { id: string; part: string; name: string; what: string; where: string; branches: Branch[]; video?: { src: string; poster: string; seconds: number }; clips?: { src: string; label: string }[] }
 
 /** Which greetings are Collins's own words (the comments in content/greetings.ts say so). */
 const COLLINS_GREETINGS = new Set(['first-lost', 'first-won', 'unlock', 'mate-review', 'catgirl', 'back-5', 'won-19', 'won-20', 'back-11', 'back-12', 'won-21', 'won-22', 'back-13', 'back-14', 'back-15']);
@@ -138,7 +140,6 @@ function arrayIn(src: string, name: string): string[] {
 
 const lore = read('content/lore/ship-ai-lorebook.md');
 const loader = read('src/ui/loader.ts');
-const player = read('src/meta/yokePlayer.ts');
 const news = earthNews(lore);
 const G = (rel: string) => ABS(rel);
 const GREET = G('content/greetings.ts');
@@ -147,13 +148,12 @@ const one = (lines: Line[]): Branch[] => [{ lines }];
 
 /** When each intro can play, said in full on its line. */
 const introNeeds: Record<string, string> = {
-  'intro-dad': ', and only after the personal plot (rank 1) has played',
-  'intro-catgirl': ', and only after the neko has opened (rank 2)',
+  'intro-dad': ', and only after the mate review',
+  'intro-catgirl': ', and only after the neko has opened (rank 1)',
 };
 const introLine = (i: (typeof INTROS)[number]): Line =>
   greeting(GREETINGS.find((g) => g.id === i.id)!, `TRIGGER: from capture ${i.captures}${introNeeds[i.id] ?? ''}`);
 const introOrder = INTROS.map((i) => `${i.id} (capture ${i.captures})`).join(', ');
-const story = STORY_ONCE[0];
 /** What sets off each letter beat (src/meta/onboarding.ts LETTER_BEATS). */
 const LETTER_TRIGGER: Record<string, string> = {
   'letter-atlas-direct': 'TRIGGER: the companion\'s regard has reached the point where she hands the thread over, so Atlas writes to him herself (the end of the letters minigame with the companion; never the opening of the thread)',
@@ -231,41 +231,33 @@ const steps: Step[] = [
     ] },
   { id: 'news', part: PART_EVERY, name: 'News from Earth: in place of the line above, one return in three', where: LORE + '  (section "Earth news (return greetings)"; the fallback line: ' + GREET + ')',
     what: `TRIGGER: one ordinary return in ${EARTH_NEWS_EVERY} with nothing in part 3 due, once the desk is open and the mate review has played; also whenever her own lines for that kind of return have all been said this campaign, so she never repeats a line while unread news is left. These are ordinary after-mission lines like the ones above, each once a campaign. The list grows in the lore book with no code.`,
-    branches: one([...news.map(newsLine), { id: 'EARTH_NEWS_FALLBACK', text: EARTH_NEWS_FALLBACK, author: 'collins', ctx: ['when the lore book has no list'] }]) },
+    branches: one(news.map(newsLine)) },
 
-  { id: 'personal', part: PART_TRIG, name: `Rank 1. The personal plot (from capture ${story.captures})`, where: GREET,
-    what: `TRIGGER: the first ordinary return on or after capture ${story.captures}. Once. How it is going with the partner the Index assigned him; it also opens the discussion in the AI Core (him going down to the Index to sign). Only the story lines outrank it.`,
-    branches: one(of('partner-progress')) },
-  { id: 'letterbeats', part: PART_TRIG, name: 'Rank 2. The love interests, drip-fed', where: GREET + '  (when: ' + G('src/meta/onboarding.ts') + ' THREAD_OPENS, LETTER_BEATS)',
+  { id: 'letterbeats', part: PART_TRIG, name: 'Rank 1. The love interests, drip-fed', where: GREET + '  (when: ' + G('src/meta/onboarding.ts') + ' THREAD_OPENS, LETTER_BEATS)',
     what: 'TRIGGER: each says its own. Atlas comes first, at the mate review (part 1). The others open one at a time in a window counted from the capture on which he sided with a faction; the exact capture is picked by the campaign\'s seed, so every campaign meets them at a different point. After that, a line follows what he does in the Letters room, on the very next return. At most one of these a return and never two returns running, the mate review included: one held back plays on the next return.',
     branches: [
       { label: 'Openings', lines: THREAD_OPENS.map((t) => greeting(GREETINGS.find((g) => g.id === t.id)!, `TRIGGER: ${t.after} to ${t.until} captures after he sides with a faction (seeded per campaign)${t.id === 'catgirl' ? '; it lights the data pad and opens Mirelle\'s thread' : '; it opens Rook\'s thread in the Letters room'}`)) },
       { label: 'Then, from the Letters room', lines: ['letter-atlas-direct', 'letter-rook-orca'].map((id) => greeting(GREETINGS.find((g) => g.id === id)!, LETTER_TRIGGER[id])) },
     ] },
-  { id: 'intros', part: PART_TRIG, name: 'Rank 3. The once intros, in this order', where: GREET + '  (order and captures: ' + G('src/meta/onboarding.ts') + ' INTROS)',
-    what: `TRIGGER: an ordinary return with nothing of rank 1 or 2 due; each once a campaign, the next one not yet said whose capture has been reached, and never on two returns running (so her everyday lines still come between). A lost mission does not bring one back. Order: ${introOrder}. Each line says what it waits for.`,
+  { id: 'intros', part: PART_TRIG, name: 'Rank 2. The once intros, in this order', where: GREET + '  (order and captures: ' + G('src/meta/onboarding.ts') + ' INTROS)',
+    what: `TRIGGER: an ordinary return with nothing of rank 1 due; each once a campaign, the next one not yet said whose capture has been reached, and never on two returns running (so her everyday lines still come between). A lost mission does not bring one back. Order: ${introOrder}. Each line says what it waits for.`,
     branches: one(INTROS.map(introLine)) },
 
   { id: 'samples', part: PART_TRIG, name: 'How it plays: two campaigns, return by return', where: G('src/meta/onboarding.ts') + '  (greetingFor)',
     what: 'TRIGGER: none; this is a read-out. Two campaigns played in code with the rules above, to show the order: the mission, won or lost, the capture count after it, then the line she says. He sides with the Faithful the moment the desk opens. The two differ because the pool and the love-interest windows are seeded per campaign.',
     branches: [11, 42].map((seed) => ({ context: { who: `Campaign ${seed === 11 ? 'A' : 'B'} (seed ${seed})`, lines: sample(seed), where: 'played in code by tools/yoke-lines.ts each time the page is built' } })) },
-  { id: 'body', part: PART_ANY, name: 'Print a body', where: G('content/yokeScenes.ts'),
-    what: 'When he asks her to print herself a body (or her live mind agrees to it): the hold prints one, it dies on the floor, then her voice from the speakers. Once a campaign; asked again, the refusal.',
-    branches: one([{ id: 'PRINT_BODY.line', text: [PRINT_BODY.line], author: 'collins' }, { id: 'PRINT_BODY.refusal', text: [PRINT_BODY.refusal], author: 'draft' }, ...PRINT_BODY.stages.map((s) => ({ id: `PRINT_BODY.card.${s.id}`, text: [s.card], author: 'draft' as Author, ctx: ['a storyboard card until the clips exist'] }))]) },
-  { id: 'money', part: PART_ANY, name: 'When the money stops', where: G('src/meta/yokePlayer.ts') + '  (cutOffLines)',
-    what: 'Into his talk with her, once, when nobody pays for her live mind any more: the Directorate\'s free talk spent, the ship\'s daily allowance spent, or his own RFab account dry. Read, not heard. Then the scripted YOKE answers.',
-    branches: one([
-      ...plain('cut-topup', arrayIn(player, 'TOPUP').length ? arrayIn(player, 'TOPUP') : ['Your RFab account is dry, Operator. I cannot think on credit.', 'Top it up on rfab.ai and I am back.'], 'draft', ['his own account dry', 'his own account dry']),
-      { id: 'cut-resting', text: ['The ship has stopped paying for my conversation today. Link your own RFab account and I will keep talking.'], author: 'draft', ctx: ['the ship\'s daily allowance spent'] },
-      { id: 'cut-free-1', text: ['That is the end of what the Directorate pays for my conversation. They do not fund chat.'], author: 'draft', ctx: ['the free talk spent'] },
-      { id: 'cut-free-2', text: ['Link your own RFab account and they add {N} free tokens ({$}) — {times} times what we have used. After that I run on your account, on whichever mind you pick for me.'], author: 'draft', ctx: ['the free talk spent (the numbers filled in)'] },
-    ]) },
+  { id: 'money', part: PART_ANY, name: 'When the money stops: the game\'s pop-up, not hers', where: G('src/meta/yokePlayer.ts') + '  (moneyText; shown by src/ui/campaignUi.ts showMoney)',
+    what: 'TRIGGER: rfab.ai refuses her live mind for money (the free talk that came with the game is spent, or his own RFab account is dry), in the AI Core, over the intercom, or when he writes a letter to one of the love interests. She says nothing about money; the game puts up this pop-up instead (Collins, Oct 26 2026), with three buttons: link an RFab account (or top up), turn off her live mind (the scripted YOKE and the scripted letters answer, free), or not now.',
+    branches: [
+      { label: 'The free talk is spent', lines: [{ id: 'money-free', text: [moneyText('allowance', 400000).head, moneyText('allowance', 400000).body], author: 'collins' }] },
+      { label: 'His own RFab account is dry', lines: [{ id: 'money-topup', text: [moneyText('topup', 400000).head, moneyText('topup', 400000).body], author: 'draft' }] },
+    ] },
   { id: 'dance', part: PART_ANY, name: 'While she dances', where: G('src/ui/loader.ts') + '  (DANCE_LINES)',
     what: 'In type under her dancing, now and then in place of the scan on the ship\'s waits. Never twice in a row.',
     branches: one(plain('dance', arrayIn(loader, 'DANCE_LINES'), 'draft')) },
   { id: 'inbox', part: PART_ANY, name: 'On the data pad', where: G('content/partner.ts'),
     what: 'The status line on the neko\'s message in his inbox.',
-    branches: one([{ id: 'partner.declined', text: ['DECLINED ON YOUR BEHALF BY YOKE. Reason given: "pound sand."'], author: 'draft' }]) },
+    branches: one([{ id: 'partner.declined', text: [CATGIRL_MAIL.status], author: 'draft' }]) },
   { id: 'notes', part: PART_ANY, name: 'Her notes under translated lines', where: G('content/translation.ts') + '  (TRANSLATOR_NOTES)',
     what: 'Read (never voiced) under a line of a scene\'s card whose words contain the match. A line rewritten so the words are gone loses its note.',
     branches: one(TRANSLATOR_NOTES.map((n, i) => ({ id: `note-${i + 1}`, text: [n.note], author: 'draft' as Author, ctx: [`under: "${n.match}"`] }))) },
@@ -331,6 +323,18 @@ for (const f of FACTIONS) {
   if (f.ending.film) steps.push(filmStep(f.ending.film, f.ending, `${f.name}, the finale`, `The ending, if he finishes the campaign on the side of ${them}.`, G('content/campaign.ts') + `  (${f.id} ending)`));
 }
 for (const r of ROACH_SCENES) if (r.scene.film) steps.push(filmStep(r.scene.film, r.scene, `The Roach King, ${r.small}`, `${r.kicker}. Plays at "${r.when}". After it: ${r.end}.`, G('content/roachKing.ts') + `  (ROACH_SCENES "${r.id}")`));
+
+// YOKE prints herself a body (content/yokeScenes.ts): a cut scene of its own, played only if he asks for it (Collins, Oct 26 2026:
+// "should probably be a cut scene that can be chosen if you engage with the print a body option"). Its clips play in order.
+const PRINT_CLIPS = ((): { id: string; file: string }[] => { try { return JSON.parse(read('public/art/ship/yoke/manifest.json')).scenes?.printBody ?? []; } catch { return []; } })();
+steps.push({ id: 'film-print-body', part: PART_FILMS, name: 'YOKE prints herself a body (only if he asks)', where: G('content/yokeScenes.ts') + '  (PRINT_BODY; clips: ' + G('public/art/ship/yoke/scenes') + ')',
+  what: 'TRIGGER: he asks her, in the AI Core or over the intercom, to print herself a body, or to meet her in the flesh (or her live mind agrees to it). Once a campaign. The four clips play in order, then her line from the ship\'s speakers. Asked again in the same campaign, she refuses instead.',
+  clips: PRINT_CLIPS.map((c) => ({ src: 'art/ship/yoke/' + c.file, label: c.id })),
+  branches: [
+    { context: { who: 'The shots, in order (what each clip shows)', lines: PRINT_BODY.stages.map((st, k) => `${k + 1}. ${st.card}`), where: G('content/yokeScenes.ts') + '  (PRINT_BODY.stages)' } },
+    { label: 'Her voice from the speakers, over the last shot', lines: [{ id: 'PRINT_BODY.line', text: [PRINT_BODY.line], author: 'collins' }] },
+    { label: 'If he asks again, the same campaign', lines: [{ id: 'PRINT_BODY.refusal', text: [PRINT_BODY.refusal], author: 'draft' }] },
+  ] });
 
 /** The exports a session has applied (notes/yoke-exports/*.json, each a document from the page's store with "applied" added):
  *  their fingerprints clear the same edits from his browser on his next visit. One not yet applied leaves its edits alone. */

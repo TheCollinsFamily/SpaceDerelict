@@ -40,7 +40,8 @@ for (const f of fs.readdirSync(path.join(dir, 'edits')).filter((x) => x.endsWith
       if (n) { count += n; hit = { file, form }; }
     }
     if (count !== 1) { todo.push(`${e.id} beat ${+i + 1}: found ${count} times, not changed. "${from.slice(0, 60)}"`); continue; }
-    const esc = hit.form === from ? to : hit.form.includes("\\'") ? to.replace(/'/g, "\\'") : to.replace(/"/g, '\\"');
+    // In a .ts file the words sit in a single-quoted string: escape every ' (an unescaped one broke greetings.ts, Oct 26 2026).
+    const esc = hit.file.endsWith('.ts') ? (hit.form.includes('\\"') && !hit.form.includes("\\'") ? to.replace(/"/g, '\\"') : to.replace(/'/g, "\\'")) : to;
     text[hit.file] = text[hit.file].replace(hit.form, esc);
     done.push(`${e.id} beat ${+i + 1} (${hit.file}): "${from}" -> "${to}"`);
   }

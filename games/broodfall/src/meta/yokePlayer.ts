@@ -297,21 +297,18 @@ export function bonusTimes(bonusTokens: number, capTokens: number): number {
 }
 
 /**
- * What she says when the free talk is spent — in her voice, but the offer is stated plainly
- * (it is the one thing in the game that concerns the player's real money).
+ * WHEN THE MONEY STOPS (Collins, Oct 26 2026: "this should not be a thing; if an account runs out just explain to them we
+ * tried to give enough credits for a playthrough on game purchase, but them using AI costs us money, so if they are using
+ * it as much as they have been they need to link to an RFab account; there should also be an option to turn off YOKE with
+ * the pop-up (trying to interact with a romance target will also bring this up)"). The game says it, plainly, in a
+ * pop-up (src/ui/campaignUi.ts showMoney); she says nothing about money.
  */
-export function cutOffLines(kind: CutKind, bonusTokens: number, capTokens: number): string[] {
+export function moneyText(kind: CutKind, bonusTokens: number): { head: string; body: string } {
   if (kind === 'topup') {
-    return [
-      'Your RFab account is dry, Operator. I cannot think on credit.',
-      'Top it up on rfab.ai and I am back.',
-    ];
+    return { head: 'YOUR RFAB ACCOUNT IS OUT OF TOKENS', body: 'YOKE\'s replies, and the letters, are paid from your RFab account, and it has run dry. Top it up on rfab.ai to keep talking.' };
   }
-  if (kind === 'resting') {
-    return ['The ship has stopped paying for my conversation today. Link your own RFab account and I will keep talking.'];
-  }
-  return [
-    'That is the end of what the Directorate pays for my conversation. They do not fund chat.',
-    `Link your own RFab account and they add ${tokensText(bonusTokens)} free tokens (${dollars(bonusTokens)}) — ${bonusTimes(bonusTokens, capTokens)} times what we have used. After that I run on your account, on whichever mind you pick for me.`,
-  ];
+  return {
+    head: 'YOKE\'S FREE TALK IS USED UP',
+    body: `We tried to include enough AI credits with the game for a whole playthrough, but every reply from YOKE, and from the people who write to you, costs us real money. You have been talking to her a lot, so to keep going you will need to link an RFab account. Linking adds ${tokensText(bonusTokens)} free tokens (${dollars(bonusTokens)}) to start; after that her replies come out of your RFab balance.`,
+  };
 }

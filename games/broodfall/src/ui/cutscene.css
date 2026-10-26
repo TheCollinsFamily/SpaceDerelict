@@ -59,3 +59,6 @@ html.reduce-motion .globe .signal .ring { animation: none; }
 .cp-objectors-card .cp-pick { text-align: left; padding: 9px 10px; }
 .cp-objectors-card .cp-pick.on { outline: 2px solid #ffd257; }
 .cp-objectors-card .cp-pick small { display: block; opacity: 0.7; font-size: 10.5px; margin-top: 2px; }
+/* When the money stops (src/ui/campaignUi.ts showMoney): the game's pop-up, not hers. */
+.cp-money .cp-objectors-card p { margin: 10px 0; line-height: 1.45; }
+.cp-money .cp-acct-btns { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 14px; }

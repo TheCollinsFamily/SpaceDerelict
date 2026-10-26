@@ -398,8 +398,9 @@ fashion these days, which is why it is not obvious.
   integration, to the extent that their organs begin to shut down if they are not integrated with an AI within a few
   days of birth: their brains outsource that much lower-order processing to the AI. Technopuritans are genetically
   more distant from the Lipptors than from the humans of Earth, and do not think of them as a subspecies, as they do
-  the uplifted; the Empire cannot interbreed with Earth's humans because the reproductive organs were removed, not for
-  genetic distance (YOKE's Earth-news line). **PROPOSAL:** other such classes exist; a class is a specialisation of the
+  the uplifted; nobody can interbreed with the Lipptors because their reproductive organs are removed, not for genetic distance
+  (YOKE's Earth-news line); they are the only ones (Collins, Oct 26 2026): other Technopuritans keep theirs and are only
+  engineered not to feel arousal (section 7). **PROPOSAL:** other such classes exist; a class is a specialisation of the
   one people, not a people.
 - **The tanks, and what was engineered away** (Collins, Oct 12 2026): Technopuritans breed using artificial
   wombs, so nobody is ever pregnant, and a pregnancy (a neko's, say) looks to them grotesque: "their
@@ -519,6 +520,8 @@ story for why the Technopuritans live the way they do.
   - **The Technopuritan Jews** sided with the Technopuritan principle of non-interference and became
     just a sub-category of Technopuritans, since the doctrine allows for Jews (iterative prophecy, HOME
     1.0); Jewish Houses sit in the Index like any other.
+  - **The Dome of the Rock** (Collins, Oct 26 2026): when the Third Temple was built the Dome was moved rather than
+    destroyed, which the Sadducees see as quite the concession, given that it defaced their holiest site for centuries.
   - **The Sadducees** genetically rebuilt the Davidic line with the building of the Third Temple, then
     used gene drives to quietly wipe out the Levites in the other Jewish groups, essentially recreating
     the temple caste. They follow a strict Sadducean Judaism (no souls, no angels, no life after death, as the
@@ -1057,7 +1060,7 @@ she is embarrassed about it, "as of all the uplifted species they have by far th
 than humans and able to trick them easily, but while Technopuritans are aggressive and will kill to show status or
 personal achievement, orcas do it for fun while torturing their victims". If asked, it is probably why she enjoyed the
 arena so much, but she has more self-control than a full-blood. YOKE, once she learns it, is NOT all right with it and
-brings it up before a mission briefing: the last time his school allowed an orca in, they found twenty-five tortured
+brings it up before a mission briefing: the last time his school allowed an orca in, they found twelve tortured
 bodies at the end of just year one, some too rotten to be uploaded; "orcas are not like the other species"
 (`letter-rook-orca`).
 

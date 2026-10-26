@@ -589,7 +589,7 @@ export class YokeLadder implements ShipAiProvider {
   cut: CutKind | null = null;
   private cutSaid = false;
   /** Her words when the money stops. */
-  cutOff: (kind: CutKind) => string[] = () => [];
+  cutOff: (kind: CutKind) => string[] | null = () => null;
   /** The screen is told (it shows the link prompt). */
   onCut: (kind: CutKind) => void = () => {};
 
@@ -612,7 +612,7 @@ export class YokeLadder implements ShipAiProvider {
     this.cut = kind;
     this.cutSaid = true;
     this.onCut(kind);
-    return first ? this.cutOff(kind) : [];
+    return first ? this.cutOff(kind) ?? [] : [];
   }
 
   /** The avatar is the one answering. */
@@ -641,7 +641,7 @@ export class YokeLadder implements ShipAiProvider {
         // Nobody pays: she says so, and the rest of the ladder (which would bill the same account) is not asked.
         // (Only where there are words for it: without a player link — the avatar's own star — a 402 falls to the next rung, as before.)
         const kind = err instanceof AvatarError ? cutKindOf(err.status, err.code) : null;
-        if (kind && this.cutOff(kind).length) return this.cutNow(kind);
+        if (kind && this.cutOff(kind) !== null) { const said = this.cutNow(kind); return said.length ? said : (this.free ?? this.rest).reply(ctx, history, playerLine); }
         this.note(err);
       }
     }

@@ -19,21 +19,16 @@ describe('the personal plot', () => {
     // Oct 12 2026: the late version of the desk-opening speech was cut (Collins: "the first works for both").
     expect(GREETINGS.some((g) => g.id === 'unlock-late')).toBe(false);
   });
-  it('the progress beat from capture 9, once, after the early ones; nothing at 5 any more (Collins, Oct 12 2026)', () => {
-    expect(momentNow(at({ captures: 4, greet: 'won' }))).toBe('won');
-    expect(momentNow(at({ captures: 5, greet: 'won' }))).toBe('won');
-    expect(STORY_ONCE.some((b) => b.id === ('partner-index' as string))).toBe(false);
-    expect(momentNow(at({ captures: 8, greet: 'won' }))).toBe('won');
-    expect(momentNow(at({ captures: 9, greet: 'won' }))).toBe('partner-progress');
-    expect(momentNow(at({ captures: 10, greet: 'won', said: ['mate-review', 'catgirl', 'partner-progress'] }))).toBe('won');
+  it('no personal-plot beat any more (Oct 12 2026: the Index beat cut; Oct 26 2026: the progress beat cut, "pointless")', () => {
+    expect(STORY_ONCE).toEqual([]);
+    for (const c of [4, 5, 8, 9, 10]) expect(momentNow(at({ captures: c, greet: 'won' }))).toBe('won');
     // A weighty moment keeps its own greeting (the licence, ground lost to a counter-attack is ordinary).
     expect(momentNow(at({ captures: 5, greet: 'licence' }))).toBe('licence');
   });
   for (const f of FACTIONS) {
-    it(`${f.id}: in a whole campaign the progress at capture 9, no Index beat at 5; no greeting twice`, () => {
+    it(`${f.id}: in a whole campaign no personal-plot beat; no greeting twice`, () => {
       const { returns } = campaign(1234, f.id);
-      expect(returns.find((r) => r.greeting === 'partner-index')).toBeUndefined();
-      expect(returns.find((r) => r.greeting === 'partner-progress')?.capture).toBe(9);
+      expect(returns.find((r) => r.greeting === 'partner-index' || r.greeting === 'partner-progress')).toBeUndefined();
       expect(returns.filter((r) => !r.greetingNew).map((r) => r.greeting)).toEqual([]);
       // Never two intros running.
       const intro = (g: string) => INTROS.some((i) => i.id === g);
