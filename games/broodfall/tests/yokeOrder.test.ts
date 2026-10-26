@@ -113,3 +113,14 @@ describe('never the same topic twice running (Collins, Oct 26 2026)', () => {
     }
   });
 });
+
+describe('after she prints a body', () => {
+  it('her line comes on the next ordinary return, once', async () => {
+    const { afterPrintFor, greetingFor } = await import('../src/meta/onboarding');
+    const s = { ...sided(5), greet: 'won' as const };
+    expect(afterPrintFor(s)).toBeNull();
+    const printed = { ...s, said: [...(s.said ?? []), 'print-body'] };
+    expect(greetingFor(printed).greeting.id).toBe('after-print-body');
+    expect(afterPrintFor({ ...printed, greetingsSaid: [...(printed.greetingsSaid ?? []), 'after-print-body'] })).toBeNull();
+  });
+});

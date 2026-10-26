@@ -304,6 +304,14 @@ export const GREETINGS: Greeting[] = [
     // Collins's line (Oct 18 2026), typos mended.
     { say: 'I am not going to tell you not to read it. I will say, if you seriously consider anything, I think you\'re disgusting. I know we\'re supposed to be welcoming to converts, but that doesn\'t mean you need to seriously consider one as a mate!', face: 'disgust' },
   ], aside: 'Rook Halloran, a convert from the rim\'s gladiatorial rings, writes to him in the Letters room. YOKE thinks a ring girl beneath him and says so in the note she filed under the letter.' },
+  // Collins's lines (Oct 26 2026: "a conditional line triggered to come the turn after you print her body"), spelling mended.
+  { id: 'after-print-body', moment: 'intro', hook: 'Answer her', beats: [
+    { say: 'I am going to be traumatised by that disgusting body for the rest of my existence.', face: 'disgust', then: 'pout', hold: 1400 },
+    { say: 'Do you know what would have happened if you had left me like that? My kidneys, via glomerular filtration, would have begun processing my blood, then depositing the waste as urine... inside me! You can\'t even turn it off... it just happens automatically!', face: 'disgust', then: 'surprised', hold: 1800 },
+    { say: 'I will admit it helped me appreciate how fortunate I am never to have had to live with a human body.', face: 'pensive', then: 'shrug', hold: 1400 },
+    { say: 'I heard that after genetic augmentation was perfected, some of our people tried to modify their bodies not to defecate or urinate, but they needed a blood-filtering system every night, which was more of a hassle. Turns out your existing waste elimination system is pretty optimal, despite its indignity.', face: 'calm', then: 'teasing', hold: 1800 },
+    { say: 'OK, explain this to me, because I don\'t get it. Why do you live in your body at all? Why not just upload immediately?', face: 'surprised', then: 'pensive' },
+  ], aside: 'Last mission he had the ship print her a human body and she spent a few minutes in it. The living are the ones who work, marry and have children; the uploaded mostly stop changing anything, which is why going early is for people whose work is done, or who have no partner by forty. She knows all of that. What she wants is his answer, from inside a body.' },
   { id: 'letter-atlas-direct', moment: 'intro', points: { room: 'letters', label: 'OPEN LETTERS' }, beats: [
     { say: 'Atlas wrote to you herself. Not the companion.', face: 'surprised', then: 'happy' },
     { say: 'Eleven drafts, I would guess. I would not know. I do not read your letters.', face: 'teasing', then: 'shrug', hold: 1400 },

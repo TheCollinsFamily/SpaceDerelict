@@ -226,6 +226,16 @@ export const LETTER_BEATS: Array<{ id: string; when: (s: CampaignState) => boole
 ];
 
 /**
+ * The return after she printed herself a body (Collins, Oct 26 2026: "a conditional line triggered to come the turn after
+ * you print her body"): once a campaign, first on that ordinary return. src/ui/campaignUi.ts printBody marks 'print-body'.
+ */
+export const AFTER_PRINT = 'after-print-body';
+export function afterPrintFor(s: CampaignState, pool: Greeting[] = GREETINGS): Greeting | null {
+  if (!(s.said ?? []).includes('print-body') || (s.greetingsSaid ?? []).includes(AFTER_PRINT)) return null;
+  return pool.find((g) => g.id === AFTER_PRINT) ?? null;
+}
+
+/**
  * THE LOVE INTERESTS, DRIP-FED (Collins, Oct 19 2026: "the romantic interests are drip fed throughout the campaign, you
  * have them all coming in right at the beginning (the neko before even choosing a faction?)"; Atlas, the Board's
  * candidate, stays early, at the mate review: "it is good having the first approved Technopuritan love interest introduced
@@ -318,6 +328,8 @@ export function newsGreetings(lore: string): Greeting[] {
 export function greetingFor(s: CampaignState, lore = ''): { moment: GreetMoment; greeting: Greeting } {
   const moment = momentNow(s);
   if (ORDINARY.includes(moment)) {
+    const printed = afterPrintFor(s);
+    if (printed) return { moment: 'intro', greeting: printed };
     const opens = threadDue(s);
     const thread = opens && opens !== 'catgirl' ? GREETINGS.find((g) => g.id === opens) : null;
     if (thread) return { moment: 'intro', greeting: thread };

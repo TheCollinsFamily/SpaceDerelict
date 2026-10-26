@@ -2648,3 +2648,10 @@ lines plus the news, seeded shuffle, each once a campaign, never two on one topi
 desk is open and the mate review has played (`earthNewsOpen`). The page's separate News section is gone: Part 2 is one
 list in seed 1's shuffled order, held-back lines last. Tests: onboarding (each line once, both news items heard in the
 pool), yokeOrder (run from capture 20, past the held-back lines).
+
+### After she prints a body (Oct 26 2026)
+
+Collins's line for "the turn after you print her body" is `after-print-body` (content/greetings.ts, spelling mended;
+hook "Answer her": she asks why he lives in a body at all instead of uploading). `onboarding.ts afterPrintFor` puts it
+first on the next ordinary return once `said` holds 'print-body' (campaignUi printBody marks it), once a campaign.
+Played in the real game: a save with 'print-body' said comes aboard to it. Test: tests/yokeOrder.test.ts.
