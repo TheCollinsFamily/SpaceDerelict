@@ -137,7 +137,7 @@ function render(): void {
         <div class="st-row col"><span>Text size</span>${choice('text', [['0.9', 'SMALL'], ['1', 'NORMAL'], ['1.15', 'LARGE'], ['1.3', 'LARGER']], String(s.textScale))}</div>
         ${toggle('motion', s.reduceMotion, 'Reduce motion', 'panels and banners do not slide or pulse')}
         ${toggle('flashes', s.reduceFlashes, 'Reduce flashes', 'no bright flash when something is hit')}
-        <div class="st-row col"><span>Content<small>${s.content === 'unrestricted' ? 'nothing blurred, and YOKE and the letters hold nothing back' : 'nudity in the films is blurred, and YOKE and the letters keep it clean'}</small></span>
+        <div class="st-row col"><span>Content<small>${s.content === 'unrestricted' ? 'YOKE and the letters hold nothing back, and nothing in a film is blurred' : 'YOKE and the letters keep it clean, and anything explicit in a film is blurred'}</small></span>
           ${choice('content', [['sfw', 'SFW'], ['unrestricted', 'UNRESTRICTED (NSFW)']], s.content)}</div>
         <div class="st-row col"><span>Caste colours<small>war · science · royal</small></span>
           ${choice('tints', [['standard', 'THE GAME\'S'], ['safe', 'COLOUR-BLIND SAFE']], s.casteTints)}

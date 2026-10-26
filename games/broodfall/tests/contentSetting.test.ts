@@ -17,12 +17,13 @@ describe('content setting', () => {
 });
 
 describe('the SFW blur box follows its keys', () => {
-  it('holds before the first key and after the last, and slides between', async () => {
+  it('holds before the first key, slides between, and is gone after the last', async () => {
     const { blurAt } = await import('../src/ui/yokeScene');
     const keys = [{ t: 1, x: 0, y: 0, w: 0.1, h: 0.1 }, { t: 3, x: 0.4, y: 0.2, w: 0.3, h: 0.1 }];
     expect(blurAt(undefined, 2)).toBeNull();
     expect(blurAt(keys, 0)).toMatchObject({ x: 0, w: 0.1 });
     expect(blurAt(keys, 2)).toMatchObject({ x: 0.2, y: 0.1, w: 0.2 });
-    expect(blurAt(keys, 9)).toMatchObject({ x: 0.4, w: 0.3 });
+    expect(blurAt(keys, 3)).toMatchObject({ x: 0.4, w: 0.3 });
+    expect(blurAt(keys, 3.01)).toBeNull();
   });
 });

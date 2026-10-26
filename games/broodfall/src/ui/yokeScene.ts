@@ -10,7 +10,7 @@ export interface SceneStage { id: string; card: string; ms: number }
 
 /**
  * Where a clip is blurred in SFW mode (Settings → Content): at `t` seconds, a box in fractions of the picture
- * (x, y its top left). Between two keys the box slides; before the first and after the last it holds.
+ * (x, y its top left). Between two keys the box slides; before the first it holds; after the last there is none.
  */
 export interface BlurKey { t: number; x: number; y: number; w: number; h: number }
 
@@ -29,7 +29,7 @@ export function blurAt(keys: BlurKey[] | undefined, t: number): Omit<BlurKey, 't
       return { x: mix('x'), y: mix('y'), w: mix('w'), h: mix('h') };
     }
   }
-  return keys[keys.length - 1];
+  return null;
 }
 
 const blurKeys = (v: unknown): BlurKey[] | undefined => {

@@ -3,8 +3,8 @@
  * player loses mission 1, comes aboard, opens the intercom (◉ YOKE) and types "print yourself a body". The four clips
  * play (public/art/ship/yoke/scenes/print-body-*.webm), then her line comes up over the last one.
  *
- *   SFW  (Settings → Content, the default): the blurred patch is over her chest on every clip.
- *   UNRESTRICTED: the same film with no patch.
+ *   SFW and UNRESTRICTED (Settings → Content) play it alike: it needs no blur (Collins, Oct 26 2026: "all you see is like a
+ *   medical outline and it's only for a flash second"). Settings shows Content and keeps UNRESTRICTED.
  *
  * Her mind is scripted (nothing is sent to rfab.ai, nothing is spent); the print-body trigger is the game's own.
  *
@@ -119,15 +119,14 @@ try {
     await page.waitForSelector('#yoke-scene video', { timeout: 10000 });
     check(await page.evaluate(() => document.getElementById('yoke-scene').dataset.placeholder !== '1'), 'the real clips play, not storyboard cards');
     const seen = [];
-    for (const [stage, at] of [['print', 3.5], ['wake', 3], ['collapse', 4.5], ['hold', 1.5]]) {
+    for (const [stage, at] of [['print', 1.2], ['print', 3.5], ['wake', 3], ['collapse', 4.5], ['hold', 1.5]]) {
       await page.waitForFunction(([stage, at]) => document.getElementById('yoke-scene')?.dataset.stage && (document.querySelector('#yoke-scene video')?.src ?? '').includes(`print-body-${stage}`) && document.querySelector('#yoke-scene video').currentTime >= at, [stage, at], { timeout: 30000 });
       const p = await patch(page);
       seen.push(p.shown);
-      await shot(page, `${content}-${stage}`);
+      await shot(page, `${content}-${stage}-${at}`);
       console.log(`    ${stage} at ${p.t?.toFixed(2)}s: ${p.shown ? `patch ${Math.round(p.w)}x${Math.round(p.h)} at ${Math.round(p.x)},${Math.round(p.y)}` : 'no patch'}`);
     }
-    if (content === 'sfw') check(seen.every(Boolean), 'SFW: the blurred patch is over her on all four clips');
-    else check(seen.every((s) => !s), 'UNRESTRICTED: no patch on any clip');
+    check(seen.every((s) => !s), `${content.toUpperCase()}: no patch on any clip (the film needs none: Collins, Oct 26 2026)`);
     await page.waitForFunction(() => document.querySelector('#yoke-scene .ys-sub.on'), null, { timeout: 30000 });
     const line = await page.locator('#yoke-scene .ys-sub').innerText();
     check(/gross/i.test(line), `her line over the last shot: "${line.slice(0, 70)}"`);

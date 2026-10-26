@@ -2663,9 +2663,11 @@ but understand this can cause issues on steam".
   reads young and the same in every clip (gear clip, silver hair going blue at the ends). Joins measured 31-33 dB (480p
   compression; side by side they show no jump). Baked to `public/art/ship/yoke/scenes/print-body-*.webm`.
 - **Settings → THE SCREEN → Content: SFW (default) / UNRESTRICTED (NSFW).** `src/meta/settings.ts` `content`,
-  `contentNote()`. SFW draws a blurred patch over her chest on every clip (`src/ui/yokeScene.ts` blur, `.ys-blur` in
-  `src/onboard.css`; keys in `tools/art/templates/yoke-scenes.mjs` BLUR, read off the real frames on a 10% grid and baked
-  into the manifest's `scenes.printBody[].blur`: re-read them whenever a clip is made again). UNRESTRICTED draws none.
+  `contentNote()`. In SFW a film's clip can carry blur keys (`src/ui/yokeScene.ts` blur, `.ys-blur` in `src/onboard.css`,
+  keys in the manifest's `scenes.<film>[].blur`, written from `tools/art/templates/yoke-scenes.mjs` BLUR); UNRESTRICTED
+  draws none. The print-body film has NO keys: a patch was drawn over her chest while she was printed, then Collins:
+  "you don't really need it at all, all you see is like a medical outline and it's only for a flash second ... it would be
+  like pausing to try to see the tits in Diablo 2". So the switch today governs the AI only.
 - **The AI side.** Searched for restrictions: none had been added. The backend prompts
   (`reality-fabricator-backend/app/domain/broodfall/shipAi.js`) and the lore book have no content rules; RFab's avatar and agent
   `nsfw: false` (tools/art/templates/yoke.mjs) only filter listings and pictures, not her words. Her character lines ("if he
@@ -2676,7 +2678,7 @@ but understand this can cause issues on steam".
 - **Her line is no longer set in type over the last shot** unless Settings → Subtitles is on or her voice is off
   (VIDEO-CONVENTIONS 9).
 - Played on the dev server (`node tools/shot-print-body.mjs`: mission 1 lost, aboard, ◉ YOKE, "print yourself a body"):
-  SFW, the patch over her on all four clips; UNRESTRICTED, no patch; Settings shows Content and saves UNRESTRICTED; no page
+  both modes play it without a patch; Settings shows Content and saves UNRESTRICTED; no page
   errors. `tools/shot-onboarding.mjs` A is stale (fails at the cat-girl return, before the print-body step).
   851 tests pass.
 
