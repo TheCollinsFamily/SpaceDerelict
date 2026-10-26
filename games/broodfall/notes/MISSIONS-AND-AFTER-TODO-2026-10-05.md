@@ -194,3 +194,12 @@ So the answer to the Oct 5 question is yes, and more than yes: every unlock is e
 that runs 14 to 20 (more with losses), and both currencies then pile up with nothing to buy (items 14 and 15). Collins's
 call: raise the prices (the sanctioned catalogue at about 1.8x would last to the finale), or give the late currency a
 use (the post-game's rule cards, `notes/POSTGAME-2026-10-12.md`), or leave it for the playtest to judge.
+
+**Done the same day: the prices were raised** (`content/campaign.ts` LINEAGES: sanctioned 65 -> 101, unsanctioned
+15 -> 23; the cheap ones stay cheap, the strong ones cost 6 to 10). Re-measured the same way (Delegation, seed 5000,
+40 deployments, 23 won, the bot stuck at Queen's Hollow and never reached the finale):
+- Sanctioned 17/17 by **deployment 25** (was 16), bought steadily from 1 to 25: cyst@1, lattice@3, gland@5 ... acid@25,
+  infestor@27. Standing 94 earned, **30 unspent** at the end (was 54), all of it piled up after the last buy.
+- Unsanctioned 3/3 by **deployment 26** (was 7): atrophy@5, marrow@12, resonance@26. Notes 24 earned, **1 unspent** (was 15).
+- So the unlocks now last most of a campaign. What is left over comes only after everything is bought, which is the
+  post-game's question (rule cards), not a price question. Playtest to judge whether 25 feels slow.

@@ -2713,6 +2713,9 @@ bought the right lineage, and one could not be met at all. Now:
 - In the real page: `npx vite-node tools/shot-experiments.ts` (after `npm run build`): the Locker lists every experiment
   with its sketch and what it issues; each one deployed through `?campaign=run` has its gear in the first hand, the gear
   grows, its art is loaded. Screens `notes/screens/2026-10-26/experiments-*.jpg`.
+- Lineage prices raised (sanctioned 65 -> 101, unsanctioned 15 -> 23) after a whole-campaign measure showed everything
+  bought by deployment 16 of ~40; now the last buys land at 25-27. Numbers: `notes/MISSIONS-AND-AFTER-TODO-2026-10-05.md`
+  "Oct 26 2026: the between-mission economy".
 
 ### No length cap on her brain text (Oct 26 2026)
 
