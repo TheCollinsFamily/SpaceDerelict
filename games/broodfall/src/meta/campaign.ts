@@ -11,12 +11,12 @@ import type { LettersState } from './letters';
 import { Rng } from '../sim/rng';
 import type { EnemyKind, OrganId, SimConfig, TowerFamily } from '../sim/types';
 import {
-  DARES, EXPERIMENTS, FACTIONS, HOME, LICENCE_STANDING, LINEAGES, LOGS_LOST, LOGS_WON, PROFILES,
+  DARES, EXPERIMENTS, FACTIONS, HOME, LINEAGES, LOGS_LOST, LOGS_WON, PROFILES,
   REQUISITIONS, TERRITORIES, BOARD_LETTERS, MIDPOINT_CAPTURES, SWITCH_HEAD_START, LAST_MISSION,
   type BeatDef, type ExperimentDef, type FactionDef, type FactionId, type PerkId, type Scene, type TerritoryDef,
 } from '../../content/campaign';
 import { evaluate, instance, type GoalInstance, type GoalResult, type RunReport } from './goals';
-import { queueDiscussion, type AiTrigger, type AiTurn } from './shipAi';
+import { type AiTrigger, type AiTurn } from './shipAi';
 import { FIRST_MISSION, FIRST_MISSION_STANDING, deskOpen, isFirstMission, momentAfter, type Onboard } from './onboarding';
 import type { GreetMoment } from '../../content/greetings';
 import { applyOrders, ordersSetup, type OrdersReport, type OrdersState } from './directives';
@@ -71,7 +71,6 @@ export interface CampaignState {
   finale?: FactionId | null;
   /** The campaign is over: the last mission is won (the route it was won on). */
   ended: FactionId | null;
-  licence: boolean;
   /** Everything the ally has sent between beats, oldest first (optional: older saves have none). */
   comms?: string[];
   /**
@@ -112,7 +111,7 @@ export function newCampaign(seed: number, opts: { onboarding?: boolean } = {}): 
   return {
     version: 1, seed, standing: 0, notes: 0, lineages: start, profiles: ['standard'], profile: 'standard',
     held: [HOME], revealed: [], captures: 0, deployments: 0, underAttack: null, staging: null, attackFrom: null, faction: null, factionSince: 0,
-    contacted: [], beatsSeen: [], choices: {}, experimentsDone: [], daresDone: [], ended: null, licence: false,
+    contacted: [], beatsSeen: [], choices: {}, experimentsDone: [], daresDone: [], ended: null,
     pendingScenes: [], ai: { queue: [], seen: [], transcripts: [] },
     log: ['Personal log. Assigned to xenofauna clearance, sector 9. Asset BF-7 is cultured and viable. Here we go!'],
     ...(opts.onboarding ? { onboard: { mission1: 'pending' as const, deskOpen: false } } : {}),
@@ -343,7 +342,6 @@ export function finish(prev: CampaignState, p: DeploymentPlan, r: RunReport): { 
     s.onboard.mission1 = r.won ? 'won' : 'lost';
     s.standing += FIRST_MISSION_STANDING;
     s.log.push(r.won ? 'First drop: the asset took the crash site and held it. The telemetry is extraordinary.' : 'First drop: the asset was lost at the crash site. The telemetry is still extraordinary.');
-    if (s.deployments === 1) s.ai.queue = queueDiscussion(s.ai.queue, 'first-deployment', s.ai.seen);
     const debrief: Debrief = {
       board: [], dares: [], standing: FIRST_MISSION_STANDING, notes: 0, captured: null, lost: null, repelled: null,
       unlocked, log: s.log[s.log.length - 1], first: true,
@@ -418,7 +416,6 @@ export function finish(prev: CampaignState, p: DeploymentPlan, r: RunReport): { 
       if (s.beatsSeen.includes(b.id) || s.captures - s.factionSince < b.afterCaptures) continue;
       s.beatsSeen.push(b.id);
       s.pendingScenes.push({ faction: f.id, beat: b.id, scene: b.scene, choice: b.choice });
-      if (b.id === 'reveal' || b.id === 'ultimatum' || b.id === 'prepare') s.ai.queue = queueDiscussion(s.ai.queue, 'midpoint', s.ai.seen);
     }
     // Between beats the ally keeps in touch: a letter, a broadcast, a call (until its finale: it is in the archive then).
     if (!s.ended && !s.finale && !(captured && t.finaleOf === f.id) && f.asides.length) {
@@ -437,7 +434,6 @@ export function finish(prev: CampaignState, p: DeploymentPlan, r: RunReport): { 
       if (s.midpoint?.status === 'switched' && s.midpoint.from) {
         s.pendingScenes.push({ faction: s.midpoint.from, scene: faction(s.midpoint.from).midpoint.coda });
       }
-      s.ai.queue = queueDiscussion(s.ai.queue, 'ending', s.ai.seen);
     }
     // The midpoint: the two other factions make their offers (once a campaign).
     if (!s.ended && !s.finale && !s.midpoint && s.captures - s.factionSince >= MIDPOINT_CAPTURES) {
@@ -472,15 +468,10 @@ export function finish(prev: CampaignState, p: DeploymentPlan, r: RunReport): { 
     ideas = h.sparked;
   }
 
-  // The licence and the Board.
-  if (!s.licence && s.standing >= LICENCE_STANDING) {
-    s.licence = true;
-    s.log.push('The Board is pleased to APPROVE your procreation licence. Please collect it in person. The office is closed.');
-    s.ai.queue = queueDiscussion(s.ai.queue, 'licence', s.ai.seen);
-  } else if (standing > 0) {
+  // The Board writes when standing is earned (the licence it once approved at 60 was cut, Oct 26 2026).
+  if (standing > 0) {
     s.log.push(BOARD_LETTERS[rng.int(0, BOARD_LETTERS.length - 1)]);
   }
-  if (s.deployments === 1) s.ai.queue = queueDiscussion(s.ai.queue, 'first-deployment', s.ai.seen);
 
   const debrief: Debrief = {
     board, dares, experiment: exp, standing, notes, captured, lost, repelled, staged, preempted: preempted ?? null, launched: launched ?? null,
@@ -540,7 +531,6 @@ export function ally(prev: CampaignState, id: FactionId): CampaignState {
   if (!(s.met ?? []).includes(id)) s.met = [...(s.met ?? []), id];
   s.pendingScenes.push({ faction: id, scene: faction(id).pledge, pledge: true });
   s.log.push(`Sided with ${faction(id).name}, publicly: a broadcast to the whole planet.`);
-  s.ai.queue = queueDiscussion(s.ai.queue, 'faction-allied', s.ai.seen);
   return s;
 }
 
@@ -619,7 +609,7 @@ export function summaryFor(s: CampaignState): string {
   return [
     `Deployments: ${s.deployments}. Territories held: ${s.held.map((h) => territory(h).name).join(', ')}.`,
     `Faction: ${s.faction ? faction(s.faction).name : 'none'}. Standing ${s.standing}, field notes ${s.notes}.`,
-    `Licence: ${s.licence ? 'approved' : 'pending'}. Experiments done: ${s.experimentsDone.join(', ') || 'none'}.`,
+    `Experiments done: ${s.experimentsDone.join(', ') || 'none'}.`,
     // What a live YOKE (Kimi) needs to talk about the story so far; the scripted one ignores it.
     ...(s.faction ? [`Route so far: ${faction(s.faction).beats.filter((b) => s.beatsSeen.includes(b.id)).map((b) => b.title).join(' → ') || 'just allied'}.`] : []),
     ...(Object.keys(s.choices).length ? [`Choices made: ${Object.entries(s.choices).map(([b, o]) => `${b}=${o}`).join(', ')}.`] : []),

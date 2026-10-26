@@ -15,7 +15,7 @@
  * never goes silent.
  */
 
-export type AiTrigger = 'first-deployment' | 'faction-allied' | 'midpoint' | 'partner' | 'licence' | 'ending' | 'idle' | 'letter';
+export type AiTrigger = 'first-deployment' | 'faction-allied' | 'midpoint' | 'ending' | 'idle' | 'letter';
 
 export interface AiContext {
   trigger: AiTrigger;

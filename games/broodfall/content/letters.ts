@@ -12,7 +12,7 @@
  * Atlas Vell (content/partner.ts) is written to through her companion, her dead friend, until the companion's regard
  * reaches `gate`; then the companion hands over and Atlas writes herself. The rules are in src/meta/letters.ts.
  */
-import { CATGIRL_MAIL, PARTNER } from './partner';
+import { PARTNER } from './partner';
 
 export type CorrespondentId = 'atlas' | 'mirelle' | 'rook';
 
@@ -122,7 +122,6 @@ export const CORRESPONDENTS: Correspondent[] = [
       'Say yes before your AI reads this. :3',
     ],
     openingFrom: 'Mirelle',
-    note: CATGIRL_MAIL.status,
     via: {
       name: 'Mirelle',
       // Collins, Oct 14 2026: "conversations with her could be quite interesting ... she allows the character to explore a

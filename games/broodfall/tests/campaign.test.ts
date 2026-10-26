@@ -169,7 +169,8 @@ describe('the factions: contact, beats, perks, the finale', () => {
     expect(s.beatsSeen).toContain('reveal');
     expect(s.pendingScenes.some((p) => p.beat === 'reveal' && p.scene.lines.some((l) => l.includes('that is a relief to hear')))).toBe(true);
     expect(perksOf(s)).toContain('objectors2');
-    expect(s.ai.queue).toContain('midpoint');
+    // Oct 26 2026: no discussion is queued any more (Collins cut the AI Core's openers).
+    expect(s.ai.queue).toEqual([]);
     const finale = targets(s).find((t) => t.finaleOf === 'delegation');
     expect(finale?.id).toBe('assembly');
     s = finish(s, plan(s, 'assembly'), report(true)).state;
@@ -271,14 +272,14 @@ describe('goals and the ship AI wiring', () => {
     expect(sim.waveIntelHidden).toBe(true);
   });
 
-  it('the ship AI: triggers queue discussions; the scripted provider plays the lore book\'s seeds', async () => {
+  it('the ship AI: nothing is queued (the openers were cut, Oct 26 2026); the scripted YOKE still answers his talk', async () => {
     const s = winAt(newCampaign(11));
-    expect(s.ai.queue).toContain('first-deployment');
+    expect(s.ai.queue).toEqual([]);
     const lore = readFileSync('content/lore/ship-ai-lorebook.md', 'utf8');
-    expect(seedFor(lore, 'first-deployment')).toMatch(/telemetry/);
+    expect(seedFor(lore, 'first-deployment')).toBeNull();
     const ai = new ScriptedShipAi();
     const first = await ai.reply({ trigger: 'first-deployment', summary: '', lore }, []);
-    expect(first[0]).toMatch(/telemetry/);
+    expect(first[0].length).toBeGreaterThan(5);
     const second = await ai.reply({ trigger: 'first-deployment', summary: '', lore }, [{ speaker: 'YOKE', text: first[0] }], 'I do not.');
     expect(second[0]).toMatch(/logged/);
   });

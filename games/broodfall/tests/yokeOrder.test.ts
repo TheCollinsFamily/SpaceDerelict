@@ -97,3 +97,19 @@ describe('YOKE\'s talk off (Settings)', () => {
     expect(settingsFrom({ yokeTalk: false }).yokeTalk).toBe(false);
   });
 });
+
+describe('never the same topic twice running (Collins, Oct 26 2026)', () => {
+  it('lines are tagged by their words', async () => {
+    const { topicsOf } = await import('../src/meta/onboarding');
+    expect(topicsOf('A Sadducee freighter is coming through.')).toContain('israel');
+    expect(topicsOf('The Caliphate took Rome back.')).toContain('europe');
+    expect(topicsOf('Ge-im and the chaebols are at each other\'s throats.')).toContain('korea');
+  });
+  it('after a Sadducee line, the next everyday line is about something else', () => {
+    const avoid = ['israel'];
+    for (let seed = 1; seed <= 30; seed++) {
+      const g = pickGreeting('won', seed, 5, 'won-21', GREETINGS, ['won-21'], avoid);
+      expect(g.beats.map((b) => b.say).join(' '), `seed ${seed}`).not.toMatch(/Sadducee|Pharisee|Israel/);
+    }
+  });
+});

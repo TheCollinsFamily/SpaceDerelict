@@ -5,7 +5,7 @@
  * Board (standing, letters, logs), Comms (the factions), and the AI Core (YOKE's
  * discussions). Faction scenes play as modals when you come back to the ship.
  */
-import { bandHtml as tlBand, lineHtml as tlLine } from './translation';
+import { lineHtml as tlLine } from './translation';
 import { channelOfLine } from '../../content/translation';
 import {
   ally, buyLineage, choose, dismissScene, evolutionCaps, experimentsAvailable, faction, firstBeat, meet, objectorPool, objectorsAllowed, perksOf, plan,
@@ -23,7 +23,7 @@ import { BOSS_AFTER, BOSS_ASIDE, BOSS_BRIDGE } from '../../content/boss';
 import { playBossCall } from './bossCall';
 import { CUES, type Greeting } from '../../content/greetings';
 import {
-  DARES, EXPERIMENTS, FACTIONS, LICENCE_STANDING, LINEAGES, PROFILES, TERRITORIES,
+  DARES, EXPERIMENTS, FACTIONS, LINEAGES, PROFILES, TERRITORIES,
   type FactionDef, type FactionId, type Scene, type TerritoryDef,
 } from '../../content/campaign';
 import { ORGAN_BY_ID } from '../../content/underground';
@@ -59,7 +59,7 @@ import { shipLoop, showLoader, type LoaderHandle } from './loader';
 import { aliveAllowed, loadAlive, wake } from './alive';
 import { sfx } from '../audio/engine';
 
-type Room = 'desk' | 'genes' | 'locker' | 'board' | 'comms' | 'ai' | 'quarters' | 'orders' | 'hobby' | 'letters';
+type Room = 'desk' | 'genes' | 'locker' | 'comms' | 'ai' | 'quarters' | 'orders' | 'hobby' | 'letters';
 /** Rooms with no picture of their own borrow one (the standing orders are read at the Board; the notebook lives in the Locker). */
 const ROOM_PICTURE: Partial<Record<Room, 'board' | 'locker'>> = { orders: 'board', hobby: 'locker' };
 /** The ship's pictures as this screen reads them: with the scene pictures, which the manifest lists as `scenes`. */
@@ -95,7 +95,7 @@ const sayAttr = (l: string, autoplay = false) =>
   LEADER_VOICES[speakerOf(l)] && spokenText(l) ? ` data-say="${esc(lineKey(l))}"${autoplay ? ' data-autoplay' : ''}` : '';
 /** Which of her faces YOKE wears for each kind of talk. */
 const YOKE_FACE: Record<string, string> = {
-  'first-deployment': 'curious', 'faction-allied': 'amused', midpoint: 'concerned', partner: 'concerned', licence: 'calm', ending: 'sad', idle: 'calm',
+  'first-deployment': 'curious', 'faction-allied': 'amused', midpoint: 'concerned', ending: 'sad', idle: 'calm',
 };
 const esc = (t: string) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
 
@@ -111,16 +111,6 @@ function lastMissionHtml(): string {
     <p>A <b>shelter</b> stands by the body and is already yours. Every turn it is protected through, it gives up the people inside it: <b>+${m.ration[0]} war meat</b> (${m.ration[1]}, then ${m.ration[2]}, as it grows). It is your war meat until the Host comes.</p>
     <p>Then the Host arrives with everything it has, and goes for the shelter first. Hold <b>${m.hostWaves} more waves</b>.</p></div>`;
 }
-/** The band over a translated aside: its own channel (src/ui/translation.ts); none for his own lines. */
-const tlAsideBand = (l: string) => { const ch = channelOfLine(l); return ch ? tlBand(ch, [l]) : ''; };
-/** The inbox's bands: one per channel its lines came in on (after a switch at the midpoint, two factions write). */
-const inboxBands = (lines: string[]) => [...new Set(lines.map(channelOfLine).filter((c) => c))].map((ch) => tlBand(ch!, lines.filter((l) => channelOfLine(l) === ch))).join('');
-/** Comms' entry on the translation layer (content/lore/ship-ai-lorebook.md section 18), in the ship's own form voice. */
-const TRANSLATION_NOTE = `<div class="tl-codex"><div class="cp-label">TRANSLATION LAYER — FORM 22-T</div>
-  <p>Fauna signal (card fields, stridulation on their radio carrier, the antennal channel of their video) is rendered live into Standard by the ship's intelligence. Register: mid-century, per the Office's style guide. Voices: the Empire's stock library, cast by her. They sound like a rendering because they are one.</p>
-  <p>Confidence is printed per transmission. Terms with no Standard equivalent are flagged in brackets.</p>
-  <p class="tl-sig-off"><b>YOKE:</b> I am not putting words in their mouths. I am putting their words in words.</p></div>`;
-
 export class CampaignUi {
   private el = document.getElementById('campaign')!;
   private room: Room = 'desk';
@@ -443,8 +433,9 @@ export class CampaignUi {
     // the buttons carry the short name, the full one is their tooltip.
     const rooms: Array<[Room, string, string]> = [
       ['desk', 'Desk', 'Directive Desk'], ['genes', 'Gene Bay', 'Gene Bay'], ['locker', 'Locker', 'Specimen Locker'],
-      ['board', 'Licence', 'Procreation Board: the licence'], ['comms', 'Comms', 'Comms'],
-      ['ai', `AI Core${s.ai.queue.length ? `<i class="cp-count">${s.ai.queue.length}</i>` : ''}`, `AI Core${s.ai.queue.length ? `: ${s.ai.queue.length} waiting` : ''}`],
+      // The Licence room (the Board's standing bar) was cut on Oct 26 2026 (Collins: the licence system "goes"); its log is in Quarters.
+      ['comms', 'Comms', 'Comms'],
+      ['ai', 'AI Core', 'AI Core: talk to YOKE'],
       ['quarters', 'Quarters', 'Quarters'],
       // Letters (src/meta/letters.ts) open with the first person he can write to; the count is letters he has not opened.
       ...(lettersUnlocked(s) ? [['letters', `Letters${unreadLetters(s) ? `<i class="cp-count">${unreadLetters(s)}</i>` : ''}`, `Letters${unreadLetters(s) ? `: ${unreadLetters(s)} unread` : ''}: write to people; the replies come with your next report`]] as Array<[Room, string, string]> : []),
@@ -461,7 +452,6 @@ export class CampaignUi {
           <div class="cp-wallet">
             <span class="cp-cur std">STANDING <b>${s.standing}</b></span>
             <span class="cp-cur notes">FIELD NOTES <b>${s.notes}</b></span>
-            <span class="cp-cur">LICENCE <b>${s.licence ? 'APPROVED' : `${Math.min(s.standing, LICENCE_STANDING)}/${LICENCE_STANDING}`}</b></span>
             <span class="cp-cur">${esc(fac.toUpperCase())}</span>
           </div>
         </div>
@@ -699,7 +689,6 @@ export class CampaignUi {
       case 'desk': return this.deskHtml();
       case 'genes': return this.genesHtml();
       case 'locker': return this.lockerHtml();
-      case 'board': return this.boardHtml();
       case 'comms': return this.commsHtml();
       case 'ai': return this.aiHtml();
       case 'quarters': return this.quartersHtml();
@@ -896,15 +885,15 @@ export class CampaignUi {
    */
   private quartersHtml(): string {
     const s = this.state;
-    const review = (s.said ?? []).includes('mate-review') || s.licence;
+    const review = (s.said ?? []).includes('mate-review');
     const pad = review
       ? `<div class="cp-pad"><div class="cp-pad-head">DATA PAD · PROCREATION LICENSING BOARD</div>
-          <div class="cp-label">${esc(PARTNER.form)} — STATUS: ${s.licence ? 'APPROVED' : 'UNDER REVIEW'}</div>
+          <div class="cp-label">${esc(PARTNER.form)} — STATUS: UNDER REVIEW</div>
           ${this.intro?.partner ? `<img class="cp-pad-pic" data-alive="partner:partner" src="${this.intro.partner}" alt="The candidate's file photograph">` : ''}
           ${PARTNER.fields.map(([k, v]) => `<div class="cp-pad-row"><span>${esc(k)}</span><b>${esc(v)}</b></div>`).join('')}
           <p class="cp-pad-quote">${esc(PARTNER.statement)}</p>
-          <p class="cp-note">${esc(PARTNER.boardNote.replace('{standing}', String(Math.min(s.standing, LICENCE_STANDING))).replace('{need}', String(LICENCE_STANDING)))}</p></div>`
-      : `<div class="cp-pad"><div class="cp-pad-head">DATA PAD</div><p class="cp-note">No new correspondence. Licence application on file; standing ${s.standing} / ${LICENCE_STANDING}.</p></div>`;
+          <p class="cp-note">${esc(PARTNER.boardNote)}</p></div>`
+      : `<div class="cp-pad"><div class="cp-pad-head">DATA PAD</div><p class="cp-note">No new correspondence.</p></div>`;
     // The pad takes most of the room; his log sits in the narrower column beside it (Collins, Oct 14 2026: "a lot of dead
     // screen space ... on whatever the personal log is"). What came for him is in the Letters room, where he can answer it.
     const letters = lettersUnlocked(s) ? `<p class="cp-note">Letters: ${unreadLetters(s) ? `${unreadLetters(s)} unread` : 'nothing new'}. <button class="cp-link" data-room="letters">OPEN</button></p>` : '';
@@ -1042,14 +1031,6 @@ export class CampaignUi {
       </div></div>`;
   }
 
-  private boardHtml(): string {
-    const s = this.state;
-    return `<div class="cp-label">PROCREATION LICENSING BOARD — standing ${s.standing} / ${LICENCE_STANDING}${s.licence ? ' — APPROVED' : ''}</div>
-      <div class="cp-bar"><div style="width:${Math.min(100, (s.standing / LICENCE_STANDING) * 100)}%"></div></div>
-      <p class="cp-note">Every requisition you spend standing on delays the licence.</p>
-      <div class="cp-label">LOG</div><div class="cp-log">${s.log.slice().reverse().map((l) => `<div>${esc(l)}</div>`).join('')}</div>`;
-  }
-
   private commsHtml(): string {
     const s = this.state;
     const cards = FACTIONS.map((f) => {
@@ -1076,8 +1057,8 @@ export class CampaignUi {
       ? 'COMMS — THE MIDPOINT. The other two want you. Go over to one (you lose your ally’s perks; its route ends here) or stay (your ally adds a perk of thanks).'
       : 'COMMS — three groups on the planet. Answer any of them (their signals are on the planet at the Directive Desk too), then side with ONE, publicly; it decides your route and your ending. Halfway along, the other two will make you an offer.';
     return `<div class="cp-label">${head}</div>${cards.join('')}
-      ${inbox.length ? `<div class="cp-label">${s.midpoint?.status === 'switched' ? 'LETTERS, BROADCASTS AND CALLS' : 'FROM YOUR ALLY'}</div>${inboxBands(inbox)}<div class="cp-log cp-comms">${inbox.map((l) => `<div${sayAttr(l)}>${speakLine(l)}</div>`).join('')}</div>` : ''}
-      ${s.contacted.length ? TRANSLATION_NOTE : ''}`;
+      ${inbox.length ? `<div class="cp-label">${s.midpoint?.status === 'switched' ? 'LETTERS, BROADCASTS AND CALLS' : 'FROM YOUR ALLY'}</div><div class="cp-log cp-comms">${inbox.map((l) => `<div${sayAttr(l)}>${speakLine(l)}</div>`).join('')}</div>` : ''}
+`;
   }
 
   /** Who answers as YOKE: the ladder of her mode (her avatar, Kimi, the scripted YOKE), each rung falling to the next. */
@@ -1182,9 +1163,8 @@ export class CampaignUi {
     const account = this.account.html('core', { prompt: !(own && this.account.cut) });
     if (this.talk && !own) return `${talk}
         ${this.yokeLinkHtml()}${account}`;
-    return `${talk}${own ? account : ''}<div class="cp-label">AI CORE — YOKE wants to talk${s.ai.queue.length ? '' : ' (nothing waiting)'}</div>
-      ${s.ai.queue.map((q) => `<div class="cp-lin"><b>${q.replace('-', ' ').toUpperCase()}</b><span>YOKE has started a discussion.</span>
-        <span class="cp-btns"><button data-engage="${q}">ENGAGE</button><button data-act="ai-later">NOT NOW</button></span></div>`).join('')}
+    return `${talk}${own ? account : ''}
+      <!-- The queued discussions ("YOKE wants to talk") were cut on Oct 26 2026 with their scripted openers. -->
       <div class="cp-label">PAST DISCUSSIONS</div>
       ${s.ai.transcripts.map((t) => `<div class="cp-log"><b>${t.trigger}</b> — ${t.turns.map((x) => `${x.speaker}: ${esc(x.text)}`).join(' / ')}</div>`).join('') || '<p class="cp-note">None yet.</p>'}
       <div class="cp-label">YOKE'S LINK</div>
@@ -1234,7 +1214,6 @@ export class CampaignUi {
       ${filmed ? `<div class="cp-scene-poster" data-act="film" title="Watch it again"><img src="${filmPosterUrl(scene.film)}" alt=""></div>` : this.scenePictureHtml(f.id, scene)}
       <div class="screen-kicker">${next.offer ? `THE MIDPOINT — OFFER ${3 - offers.length} OF 2 · ` : next.meeting ? 'FIRST CONTACT · ' : next.pledge ? 'YOUR BROADCAST TO THE PLANET · SIDING WITH ' : ''}${esc(f.name.toUpperCase())}</div>
       <div class="cp-sub">${esc(scene.title.toUpperCase())}</div>
-      ${scene.lines.some((l) => channelOfLine(l)) ? tlBand(f.id, scene.lines) : ''}
       ${filmed ? `<details class="cp-transcript"><summary>THE WORDS</summary>${words}</details>` : words}
       ${perk}
       ${next.choice ? `<div class="cp-label">${esc(next.choice.prompt)}</div>` : ''}
@@ -1530,7 +1509,7 @@ export class CampaignUi {
       ${hobbyDebriefHtml(d)}${ordersDebriefHtml(d.orders)}
       <div class="cp-facts">Earned: <b>+${d.standing} standing</b> · <b>+${d.notes} field notes</b>${d.unlocked.length ? ` · unlocked: ${d.unlocked.map((u) => esc(u.split(':')[1])).join(', ')}` : ''}</div>
       <p class="cp-story">${esc(d.log)}</p>
-      ${d.aside ? `${tlAsideBand(d.aside)}<p class="cp-story cp-aside"${sayAttr(d.aside, true)}>${speakLine(d.aside)}</p>` : ''}
+      ${d.aside ? `<p class="cp-story cp-aside"${sayAttr(d.aside, true)}>${speakLine(d.aside)}</p>` : ''}
       <button class="screen-btn" data-act="back">RETURN TO THE SHIP</button></div>`;
     if (pictures) {
       const titleEl = this.el.querySelector('.cp-title') as HTMLElement;

@@ -2568,3 +2568,35 @@ Applied today:
   while cut, and when a letter reply is refused for money. It sits on document.body because the ship redraws its screen
   whole. Played in the real game against a faked rfab.ai: the pop-up appears on entering the AI Core, TURN OFF sets
   scripted, LINK brings up the code. The letter path is not played by hand.
+
+### The full clean-up of YOKE's lines (Oct 26 2026, last)
+
+Collins: "this is full of short random stuff that doesn't add anything or lead to interesting conversations"; "YOKE's lines
+are the stuff at the beginning, then stuff that is in queue or stuff that's triggered by something, not a bunch of random
+buckets"; "1. clean this up 2. fix whatever cleaning it up breaks 3. keep the stuff at the beginning I already reviewed or
+edited 4. reorder stuff so we don't have the same conversation or topic multiple times in a row". He then marked every
+bucket Remove on the page.
+- **Kept:** the story lines, the everyday talk and the news, the love interests, the once intros, the films, print a body.
+- **Cut from the game:**
+  - The licence system: LICENCE_STANDING, `licence` in the save, the Licence room (its log is already in Quarters),
+    the header counter, the approval and its log line, the AI 'licence' trigger, and "license review at 200" on the
+    skirmish screen.
+  - The dance's lines.
+  - The translation band ("SOURCE ... CONFIDENCE n%"), the translator's notes, the "FORM 22-T" box in Comms, and
+    confidenceOf/cardConfidence/noteFor.
+  - The AI Core's queued discussions ("YOKE wants to talk", the count on its button, every queueDiscussion call) and
+    their openers (lorebook sections 3 and 4).
+  - The 'partner' trigger.
+  - The neko mail's status line (CATGIRL_MAIL).
+  - From the lorebook: her lines by mood, the school and uplift small-talk pools, "An AI?", "The 21st century",
+    "Scripted beats", the reveal's "Example lines" and section 18 (translation). Also the Topics line of yoke-brain.md.
+- **Same topic twice:** `topicsOf` (src/meta/onboarding.ts) tags a line by its words (israel, europe, america, korea,
+  india, nekos, death, planet). `pickGreeting` and `newsLine` skip a line that shares a topic with the last one said
+  whenever another is left.
+- **She dances when left alone:** in her projection after 45 s with no click, key, scroll or touch, while she is not
+  talking (a speaking or _talk clip on her stage) or thinking. It stops at any input and when she talks again
+  (`YokeAvatarUi.idleCheck`; the ship.css rule hiding stage videos is overridden for the dance in loader.css). Played in
+  the real game: dancing at 50 s, stopped by a key.
+- Still on his side to decide: her motives in the lorebook and yoke-brain.md still speak of "his licence" (it ends the
+  posting), which is his design of the character's goal. With her live mind off, typing to her gets only the scripted
+  YOKE's three generic lines.

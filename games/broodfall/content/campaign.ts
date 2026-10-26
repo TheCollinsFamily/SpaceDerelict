@@ -164,8 +164,6 @@ export const LINEAGES: Partial<Record<OrganId, { catalogue: Catalogue; price: nu
   atrophy: { catalogue: 'unsanctioned', price: 3 },
 };
 
-/** The licence (Collins's frame: the character's goal is the right to a mate). */
-export const LICENCE_STANDING = 60;
 
 // ---------------------------------------------------------------------------
 // The globe.

@@ -3,7 +3,7 @@
  * the beats can pin it. The page side (every wait shows a moving loop) is tools/shot-loading.mjs.
  */
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { DANCE_LINES, LOADER_DELAY_MS, shipLoop } from '../src/ui/loader';
+import { LOADER_DELAY_MS, shipLoop } from '../src/ui/loader';
 
 function store(): Storage {
   const m = new Map<string, string>();
@@ -41,10 +41,7 @@ describe('the ship\'s loaders', () => {
     expect([shipLoop(), shipLoop(), shipLoop()]).toEqual(['dance', 'dance', 'dance']);
   });
 
-  it('a wait under 400 ms shows nothing; her lines are hers, several of them', () => {
+  it('a wait under 400 ms shows nothing (her dance has no words since Oct 26 2026)', () => {
     expect(LOADER_DELAY_MS).toBe(400);
-    expect(DANCE_LINES.length).toBeGreaterThanOrEqual(4);
-    expect(new Set(DANCE_LINES).size).toBe(DANCE_LINES.length);
-    expect(DANCE_LINES).toContain("Loading. I'm not dancing. This is calibration.");
   });
 });

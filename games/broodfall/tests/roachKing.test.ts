@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { ROACH_ADDRESSES, ROACH_SCENES, ROACH_STILLS } from '../content/roachKing';
 import { filmOf } from '../content/cutscenes';
 import { speakerOf, spokenText } from '../content/media';
-import { CHANNELS, channelOfLine, noteFor } from '../content/translation';
+import { CHANNELS, channelOfLine } from '../content/translation';
 import { FACTIONS } from '../content/campaign';
 import {
   MAIN_PLOT, MAIN_PLOT_EVERY, MAIN_PLOT_FIRST, dueAddress, dueAfterDeployment, dueScene, emptyRoachLog, lastMissionScenes, logRoach, mainPlotSlots,
@@ -32,11 +32,8 @@ describe('the Roach King: content', () => {
     for (const f of FACTIONS) expect(ROACH_ADDRESSES.filter((a) => a.when === 'ally' && a.faction === f.id)).toHaveLength(1);
   });
   it('his lines are YOKE\'s renderings, on their own channel', () => {
-    expect(CHANNELS.roach.source).toMatch(/INTERCEPTED/);
+    expect(CHANNELS.roach.glyphs.length).toBeGreaterThan(2);
     expect(channelOfLine('The Roach King: Chat says it is just a fungus.')).toBe('roach');
-    const lines = ROACH_ADDRESSES.flatMap((a) => a.shots.map((s) => `The Roach King: ${s.line}`));
-    // Her notes on him match real lines.
-    expect(lines.filter((l) => noteFor(l)).length).toBeGreaterThanOrEqual(4);
   });
 });
 

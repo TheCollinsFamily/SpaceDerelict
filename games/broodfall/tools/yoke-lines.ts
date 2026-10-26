@@ -45,11 +45,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { GREETINGS, earthNews, newsBeats, type GreetMoment, type Greeting } from '../content/greetings';
-import { CATGIRL_MAIL } from '../content/partner';
-import { moneyText } from '../src/meta/yokePlayer';
 import { PRINT_BODY } from '../content/yokeScenes';
 import { BOSS, BOSS_AFTER, BOSS_ASIDE, BOSS_BRIDGE } from '../content/boss';
-import { CHANNELS, TRANSLATOR_NOTES } from '../content/translation';
 import { FACTIONS, type Scene } from '../content/campaign';
 import { ROACH_SCENES } from '../content/roachKing';
 import { speakerOf } from '../content/media';
@@ -108,22 +105,6 @@ function loreList(lore: string, heading: RegExp): string[] {
   flush();
   return out;
 }
-/** "Her lines, by mood": a bold mood, then quoted lines under it. */
-function moodLines(lore: string): Line[] {
-  const lines = lore.split(/\r?\n/);
-  const at = lines.findIndex((l) => /^## 12\. Her lines, by mood/.test(l));
-  const out: Line[] = [];
-  let mood = '', cur = '', n = 0;
-  const flush = () => { if (cur) { out.push({ id: `mood-${mood}-${++n}`, text: [cur.replace(/^["“”']+|["“”']+$/g, '').replace(/\s+/g, ' ').trim()], author: 'lore', ctx: [mood] }); cur = ''; } };
-  for (let i = at + 1; i < lines.length && !/^## /.test(lines[i]); i++) {
-    const m = lines[i].match(/^\*\*(\w+)\*\*/);
-    if (m) { flush(); mood = m[1]; n = 0; continue; }
-    const b = lines[i].match(/^\s*-\s+(.+?)\s*$/);
-    if (b) { flush(); cur = b[1]; } else if (cur && /^\s{2,}\S/.test(lines[i])) cur += ' ' + lines[i].trim(); else if (cur) flush();
-  }
-  flush();
-  return out;
-}
 /** The scripted AI Core openers: "- trigger: "line"". */
 function seeds(lore: string): Line[] {
   return loreList(lore, /Scenario seeds/).map((t) => {
@@ -167,8 +148,6 @@ const LETTER_TRIGGER: Record<string, string> = {
 const PART_STORY = 'Part 1. The story lines: each plays once a campaign, in this order';
 const PART_EVERY = 'Part 2. Her everyday after-mission lines: what she says when nothing in part 3 is due';
 const PART_TRIG = 'Part 3. Triggered lines, by rank: when two are due on one return, the higher rank plays and the other waits for the next return';
-const PART_ANY = 'Part 4. Outside the after-mission talk';
-const PART_MIND = 'Part 5. Her live mind: pools not tied to a moment';
 
 /**
  * Two campaigns played out in code (Collins, Oct 19 2026: "think about ordering, how do we handle this"): which line she
@@ -246,43 +225,8 @@ const steps: Step[] = [
   { id: 'samples', part: PART_TRIG, name: 'How it plays: two campaigns, return by return', where: G('src/meta/onboarding.ts') + '  (greetingFor)',
     what: 'TRIGGER: none; this is a read-out. Two campaigns played in code with the rules above, to show the order: the mission, won or lost, the capture count after it, then the line she says. He sides with the Faithful the moment the desk opens. The two differ because the pool and the love-interest windows are seeded per campaign.',
     branches: [11, 42].map((seed) => ({ context: { who: `Campaign ${seed === 11 ? 'A' : 'B'} (seed ${seed})`, lines: sample(seed), where: 'played in code by tools/yoke-lines.ts each time the page is built' } })) },
-  { id: 'money', part: PART_ANY, name: 'When the money stops: the game\'s pop-up, not hers', where: G('src/meta/yokePlayer.ts') + '  (moneyText; shown by src/ui/campaignUi.ts showMoney)',
-    what: 'TRIGGER: rfab.ai refuses her live mind for money (the free talk that came with the game is spent, or his own RFab account is dry), in the AI Core, over the intercom, or when he writes a letter to one of the love interests. She says nothing about money; the game puts up this pop-up instead (Collins, Oct 26 2026), with three buttons: link an RFab account (or top up), turn off her live mind (the scripted YOKE and the scripted letters answer, free), or not now.',
-    branches: [
-      { label: 'The free talk is spent', lines: [{ id: 'money-free', text: [moneyText('allowance', 400000).head, moneyText('allowance', 400000).body], author: 'collins' }] },
-      { label: 'His own RFab account is dry', lines: [{ id: 'money-topup', text: [moneyText('topup', 400000).head, moneyText('topup', 400000).body], author: 'draft' }] },
-    ] },
-  { id: 'dance', part: PART_ANY, name: 'While she dances', where: G('src/ui/loader.ts') + '  (DANCE_LINES)',
-    what: 'In type under her dancing, now and then in place of the scan on the ship\'s waits. Never twice in a row.',
-    branches: one(plain('dance', arrayIn(loader, 'DANCE_LINES'), 'draft')) },
-  { id: 'inbox', part: PART_ANY, name: 'On the data pad', where: G('content/partner.ts'),
-    what: 'The status line on the neko\'s message in his inbox.',
-    branches: one([{ id: 'partner.declined', text: [CATGIRL_MAIL.status], author: 'draft' }]) },
-  { id: 'notes', part: PART_ANY, name: 'Her notes under translated lines', where: G('content/translation.ts') + '  (TRANSLATOR_NOTES)',
-    what: 'Read (never voiced) under a line of a scene\'s card whose words contain the match. A line rewritten so the words are gone loses its note.',
-    branches: one(TRANSLATOR_NOTES.map((n, i) => ({ id: `note-${i + 1}`, text: [n.note], author: 'draft' as Author, ctx: [`under: "${n.match}"`] }))) },
-  { id: 'band', part: PART_ANY, name: 'Her band over a scene', where: G('content/translation.ts') + '  (CHANNELS)',
-    what: 'The source line of her rendering, over a scene\'s card: where the signal came from.',
-    branches: one(Object.entries(CHANNELS).map(([k, c]) => ({ id: `band-${k}`, text: [c.source], author: 'draft' as Author, ctx: [`${k} · confidence ${c.confidence[0]}–${c.confidence[1]}%`] }))) },
-
-  { id: 'seeds', part: PART_MIND, name: 'AI Core: the scripted openers', where: LORE + '  (section 4, Scenario seeds)',
-    what: 'The scripted stand-in for her live mind opens a discussion in the AI Core with the seed for its trigger (first deployment, allied, the midpoint, the partner, the licence, the ending, idle). The live mind (Kimi or her avatar on rfab.ai) writes its own.',
-    branches: one(seeds(lore)) },
-  { id: 'mood', part: PART_MIND, name: 'Lorebook: her lines, by mood', where: LORE + '  (section 12)',
-    what: 'Examples of her voice for each face her body has, for the live mind. Not wired to any moment.',
-    branches: one(moodLines(lore)) },
-  { id: 'smalltalk', part: PART_MIND, name: 'Lorebook: School, the Index, family life', where: LORE + '  (section 16)',
-    what: 'Small-talk pool for the live mind. Not wired to any moment (the Earth news is the only lore-book pool the greetings read).',
-    branches: one(plain('krypteia', loreList(lore, /School, the index, family life/), 'lore')) },
-  { id: 'uplifts', part: PART_MIND, name: 'Lorebook: the uplifts', where: LORE + '  (section 16)',
-    what: 'The boss, the elephants, the orcas, the nekos: a small-talk pool for the live mind. Not wired.',
-    branches: one(plain('uplift', loreList(lore, /The uplifts/), 'lore')) },
-  { id: 'anai', part: PART_MIND, name: 'Lorebook: "An AI?"', where: LORE + '  (section 16)',
-    what: 'What she says when called an AI; the last line is how her live mind agrees to print a body. Not wired.',
-    branches: one(plain('anai', loreList(lore, /"An AI\?"/), 'lore')) },
-  { id: 'c21', part: PART_MIND, name: 'Lorebook: the 21st century, with horror', where: LORE + '  (section 16)',
-    what: 'Small-talk pool for the live mind. Not wired.',
-    branches: one(plain('c21', loreList(lore, /The 21st century/), 'lore')) },
+  // Oct 26 2026: the small-talk pools, the data pad status, her translation band and notes, the money pop-up's words and
+  // the AI Core's queued discussions and their openers are gone (Collins marked every one Remove).
 ];
 
 /**
@@ -292,7 +236,7 @@ const steps: Step[] = [
  * Line ids are `film-<film>-<n>` (n from 1). An edit here is to the scene's line in its file; a changed line is no longer
  * what the film says, so the film is re-shot: `npx vite-node tools/media/cutscenes.ts -- make <film>` (SPENDS RFab tokens).
  */
-const PART_FILMS = 'Part 6. The films: every cut scene, in the order he meets them';
+const PART_FILMS = 'Part 4. The films: every cut scene, in the order he meets them';
 type Baked = { video: string; poster: string; seconds: number; cues: { line?: number; text?: string }[] };
 const BAKED = ((): Record<string, Baked> => { try { return JSON.parse(read('public/media/scenes/scenes.json')).films ?? {}; } catch { return {}; } })();
 const norm = (t: string) => t.toLowerCase().replace(/\([^)]*\)/g, '').replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ').trim();

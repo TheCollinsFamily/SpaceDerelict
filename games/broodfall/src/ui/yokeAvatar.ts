@@ -56,7 +56,7 @@ export interface ScriptLine {
 
 /** Her face for each kind of talk, until she has said something with a face of its own. */
 const FACE: Record<string, string> = {
-  'first-deployment': 'curious', 'faction-allied': 'amused', midpoint: 'concerned', partner: 'concerned', licence: 'calm', ending: 'sad', idle: 'calm',
+  'first-deployment': 'curious', 'faction-allied': 'amused', midpoint: 'concerned', ending: 'sad', idle: 'calm',
   curious: 'curious', calm: 'calm', thinking: 'thinking',
 };
 
@@ -76,6 +76,16 @@ export class YokeAvatarUi implements ShipAiProvider {
   private talk: AvatarTalk;
   private link: AvatarLink;
   private stage: HTMLElement;
+  /**
+   * Left on screen with nobody answering, she dances (Collins, Oct 26 2026: "you should also have her start dancing if the
+   * user leaves her on screen for a while without responding"): after IDLE_DANCE_MS with no click, key or scroll, and
+   * while she is neither speaking nor thinking, the loading screens' dance plays on her stage until he does anything.
+   */
+  static IDLE_DANCE_MS = 45_000;
+  private idleSince = Date.now();
+  private idleTick = 0;
+  private dance: HTMLElement | null = null;
+  private readonly poke = (): void => { this.idleSince = Date.now(); this.stopDance(); };
   private layers: HTMLVideoElement[] = [];
   private top = 0;
   private body: YokeBody | null = null;
@@ -135,6 +145,8 @@ export class YokeAvatarUi implements ShipAiProvider {
     // her stage is never an empty box while she connects.
     this.stage.dataset.loading = 'yoke';
     this.stage.appendChild(loopEl('yoke', { miniOnly: true, cls: 'cp-yoke-wait' }));
+    for (const ev of ['pointerdown', 'keydown', 'wheel', 'touchstart'] as const) document.addEventListener(ev, this.poke, { passive: true, capture: true });
+    this.idleTick = window.setInterval(() => this.idleCheck(), 2000);
     for (let i = 0; i < 2; i++) {
       const v = document.createElement('video');
       v.muted = true;
@@ -225,6 +237,24 @@ export class YokeAvatarUi implements ShipAiProvider {
     return this.kept.get(file) ?? new URL(artUrl(`ship/yoke/${file}`), document.baseURI).href;
   }
 
+  /** Time to dance? On stage, nothing said or thought for a while, and nobody has touched anything. */
+  private idleCheck(): void {
+    if (this.dance || !this.stage.isConnected || this.stage.dataset.loading) return;
+    // Talking (a speaking clip on her stage) or thinking: not idle. (Her script queue can stay non-empty after a greeting.)
+    if (this.thinking || /speaking|_talk$/.test(this.stage.dataset.state ?? '')) { this.idleSince = Date.now(); return; }
+    if (Date.now() - this.idleSince < YokeAvatarUi.IDLE_DANCE_MS) return;
+    this.dance = loopEl('dance', { cls: 'cp-yoke-dance' });
+    this.stage.dataset.dancing = '1';
+    this.stage.appendChild(this.dance);
+  }
+
+  private stopDance(): void {
+    if (!this.dance) return;
+    this.dance.remove();
+    this.dance = null;
+    delete this.stage.dataset.dancing;
+  }
+
   /** Put a clip on stage. `once`: a gesture, played once; `then` is called when it has ended (or could not be played). */
   private show(state: string, once = false, then?: () => void): void {
     const src = this.src(state);
@@ -232,6 +262,7 @@ export class YokeAvatarUi implements ShipAiProvider {
     if (state === this.shownState && !once) { then?.(); return; }
     this.shownState = state;
     this.stage.dataset.state = state;
+    if (/speaking|_talk$/.test(state)) { this.idleSince = Date.now(); this.stopDance(); }
     const next = this.layers[1 - this.top];
     const now = this.layers[this.top];
     let ended = false;
@@ -327,12 +358,15 @@ export class YokeAvatarUi implements ShipAiProvider {
     this.beats = [];
     this.playing = false;
     this.ladder.leave();
+    this.stopDance();
     this.stage.remove();
     for (const v of this.layers) v.pause();
     this.shownState = '';
   }
 
   dispose(): void {
+    clearInterval(this.idleTick);
+    for (const ev of ['pointerdown', 'keydown', 'wheel', 'touchstart'] as const) document.removeEventListener(ev, this.poke, { capture: true });
     this.leaveRoom();
     this.gone = true;
     for (const url of this.kept.values()) URL.revokeObjectURL(url);

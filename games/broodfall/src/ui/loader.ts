@@ -9,7 +9,7 @@
  *   creep   veins crawling across living flesh (the board's and the organ stage's waits; the boot's backdrop)
  *   scan    the ship console's loader: the asset's outline pulsing on a scan grid (the ship's waits, films buffering)
  *   yoke    YOKE thinking (her own clip): while her mind answers
- *   dance   YOKE dancing, now and then in place of the scan on the ship's waits, with a line of hers in type
+ *   dance   YOKE dancing, now and then in place of the scan on the ship's waits (no words since Oct 26 2026)
  *
  * A loop is never the thing still loading: its FIRST PAINT is a small animated WebP (`<kind>-mini.webp`, a few dozen
  * KB, the boot screen's embedded in index.html), and the full loop (`.webm`) takes over once it plays. Settings > Reduce motion (or
@@ -60,16 +60,6 @@ export const SHIP_LINES = [
   'Warming the projection plinth.',
 ];
 
-/** YOKE, while she dances (Collins, Oct 1 2026: "a dancing version of your AI"). In her voice; never twice in a row. */
-export const DANCE_LINES = [
-  "Loading. I'm not dancing. This is calibration.",
-  'This is a diagnostic routine. Do not look at it.',
-  "The ship's gyroscopes need exercise. So do I.",
-  "If anyone asks, I was defragmenting.",
-  'Rhythm test passed. Dignity test pending.',
-  "Don't tell Command. They think I only compute.",
-  "The loading bar is slow. I'm not.",
-];
 
 const reduced = (): boolean => {
   try { if (loadSettings().reduceMotion) return true; } catch { /* no settings yet */ }
@@ -204,7 +194,8 @@ const open = new Set<LoaderHandle>();
  * least 350 ms, so that it is a screen and not a flicker. hide() is safe to call any number of times.
  */
 export function showLoader(kind: LoaderKind, opts: LoaderOpts = {}): LoaderHandle {
-  const lines = opts.lines ?? (kind === 'dance' ? DANCE_LINES : kind === 'scan' || kind === 'yoke' ? SHIP_LINES : LOADING_LINES);
+  // She dances without words (Collins, Oct 26 2026: "she doesn't need lines for dancing"): no line under her.
+  const lines = opts.lines ?? (kind === 'dance' ? [] : kind === 'scan' || kind === 'yoke' ? SHIP_LINES : LOADING_LINES);
   let el: HTMLElement | null = null;
   let shownAt = 0;
   let gone = false;
@@ -222,11 +213,11 @@ export function showLoader(kind: LoaderKind, opts: LoaderOpts = {}): LoaderHandl
     if (!opts.corner) {
       card.insertAdjacentHTML('beforeend', `${opts.label ? `<div class="bf-loader-what">PREPARING ${opts.label}</div>` : ''}`
         + '<div class="bf-loader-bar hidden"><div class="bf-loader-fill"></div></div><div class="bf-loader-count"></div>'
-        + `<div class="bf-loader-line${kind === 'dance' ? ' her' : ''}"></div>`);
-      const line = card.querySelector<HTMLElement>('.bf-loader-line')!;
-      line.textContent = nextLine(lines);
-      // Her line stays (she said it); the Navy's rotate.
-      if (kind !== 'dance') timer = window.setInterval(() => { line.textContent = nextLine(lines); }, 2200);
+        + (lines.length ? '<div class="bf-loader-line"></div>' : ''));
+      const line = card.querySelector<HTMLElement>('.bf-loader-line');
+      if (line) line.textContent = nextLine(lines);
+      // The Navy's lines rotate.
+      if (line) timer = window.setInterval(() => { line.textContent = nextLine(lines); }, 2200);
     }
     el.append(card);
     if (opts.host && getComputedStyle(opts.host).position === 'static') opts.host.style.position = 'relative';

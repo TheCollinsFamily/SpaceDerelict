@@ -61,12 +61,6 @@ export const PARTNER = {
   ] as Array<[string, string]>,
   // Collins's words (Oct 14 2026), spelling tidied.
   statement: 'Statement of the candidate (twenty words at most): "I will admit it has been some time since I interacted with the living, so please have patience with me."',
-  boardNote: 'The Board will decide on the match when the applicant\'s standing reaches {need} (now {standing}). The Board congratulates you on your continued eligibility to remain eligible.',
+  boardNote: 'The Board congratulates you on your continued eligibility to remain eligible.',
 };
 
-/** The letter in his inbox after the neko greeting (Collins, Sep 30 2026), left for him to answer (Oct 26 2026). */
-export const CATGIRL_MAIL = {
-  from: 'From: Mirelle, Felid Concord (consular mission)',
-  subject: 'Re: a proposal (non-procreative) :3',
-  status: 'AWAITING YOUR REPLY. YOKE\'s note: "I was going to tell her to pound sand. Your call."',
-};

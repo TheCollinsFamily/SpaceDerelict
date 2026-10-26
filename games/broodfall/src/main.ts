@@ -861,7 +861,7 @@ function showShip(): void {
   meta.runs += 1;
   saveMeta(meta);
   document.getElementById('ship-standing')!.textContent =
-    `Service standing: ${meta.standing}. Procreation license review at 200. `
+    `Service standing: ${meta.standing}. `
     + 'One splice is authorized for the replacement organism.';
   wireEntrancePicker('ship-entrances');
   const wrap = document.getElementById('ship-genes')!;

@@ -93,17 +93,41 @@ export function seeded(seed: number, name: string): number {
 }
 
 /**
+ * WHAT A LINE IS ABOUT (Collins, Oct 26 2026: "reorder stuff so we don't have the same conversation or topic multiple times
+ * in a row"). Read off the words, so a line added later is tagged without anyone tagging it. Her everyday talk and the
+ * news never follow a line with one that shares a topic with it (when there is any other choice).
+ */
+const TOPICS: Array<[string, RegExp]> = [
+  ['israel', /Sadducee|Pharisee|Israel|Jerusalem|goy beam|Third Temple|Dome of the Rock|holy lands/i],
+  ['europe', /\bRome\b|Crusade|Caliphate|\bPope\b|Europe|France|Catholic/],
+  ['america', /America|Baptist|Mormon|the States|Utah/],
+  ['korea', /Korea|Ge-im|chaebol/i],
+  ['india', /India|Hindu|Parsi/],
+  ['nekos', /neko/i],
+  ['death', /\bschool\b|afterlife|\bdeath\b|dying|value of a life|simulation/i],
+  ['planet', /this species|their (news|radio|nursery|quiz)|caste|war caste|sisters|Crater Thing/i],
+];
+export function topicsOf(text: string): string[] {
+  return TOPICS.filter(([, re]) => re.test(text)).map(([t]) => t);
+}
+const words = (g: Greeting): string => [g.beats.map((b) => b.say).join(' '), g.aside ?? ''].join(' ');
+const shares = (a: string[], b: string[]): boolean => a.some((t) => b.includes(t));
+
+/**
  * A line for the moment. Lines not yet said this campaign come first, in an order shuffled by the campaign's seed, so
  * each is said once and every campaign meets them in a different order (Collins, Oct 19 2026: "give it replayability";
  * the pool is bigger than a campaign, so a replay hears lines the last one did not). Only once all are said does one repeat,
  * never the last one said.
  */
-export function pickGreeting(moment: GreetMoment, seed: number, turn: number, last?: string | null, pool: Greeting[] = GREETINGS, said: readonly string[] = []): Greeting {
+export function pickGreeting(moment: GreetMoment, seed: number, turn: number, last?: string | null, pool: Greeting[] = GREETINGS, said: readonly string[] = [], avoid: string[] = []): Greeting {
   const fits = pool.filter((g) => g.moment === poolOf(moment) && (g.notBefore == null || turn >= g.notBefore));
   const unsaid = fits.filter((g) => !said.includes(g.id) && g.id !== last);
   const again = fits.find((g) => g.repeats);
   if (!unsaid.length && again) return again;
-  if (unsaid.length) return unsaid.reduce((a, b) => (seeded(seed, b.id) < seeded(seed, a.id) ? b : a));
+  if (unsaid.length) {
+    const order = [...unsaid].sort((a, b) => seeded(seed, a.id) - seeded(seed, b.id));
+    return order.find((g) => !shares(topicsOf(words(g)), avoid)) ?? order[0];
+  }
   const fresh = fits.filter((g) => g.id !== last);
   const from = fresh.length ? fresh : fits.length ? fits : pool.filter((g) => g.moment === 'talk');
   return from[seeded(seed, `turn-${turn}`) % from.length];
@@ -297,6 +321,9 @@ export function greetingFor(s: CampaignState, lore = ''): { moment: GreetMoment;
     if (intro) return { moment: 'intro', greeting: intro };
   }
   const said = s.greetingsSaid ?? [];
+  // What the last thing she said was about: the next everyday line or news is about something else.
+  const lastG = s.lastGreeting ? GREETINGS.find((g) => g.id === s.lastGreeting) ?? newsById(lore, s.lastGreeting) : null;
+  const avoid = lastG ? topicsOf(words(lastG)) : [];
   if (ORDINARY.includes(moment) && earthNewsOpen(s)) {
     let h = (s.seed ^ Math.imul(s.deployments + 7, 2246822519)) >>> 0;
     h = Math.imul(h ^ (h >>> 13), 3266489917) >>> 0;
@@ -305,26 +332,39 @@ export function greetingFor(s: CampaignState, lore = ''): { moment: GreetMoment;
     // before any line of hers is said twice.
     const dry = !GREETINGS.some((g) => g.moment === poolOf(moment) && !said.includes(g.id) && g.id !== s.lastGreeting);
     if (h % EARTH_NEWS_EVERY === 0 || dry) {
-      const news = newsLine(s, lore, h, moment, dry);
+      const news = newsLine(s, lore, h, moment, dry, avoid);
       if (news) return { moment, greeting: news };
     }
   }
-  return { moment, greeting: pickGreeting(moment, s.seed, s.deployments, s.lastGreeting, GREETINGS, said) };
+  return { moment, greeting: pickGreeting(moment, s.seed, s.deployments, s.lastGreeting, GREETINGS, said, avoid) };
+}
+
+/** A line of news said before, by its id (to know what it was about). */
+function newsById(lore: string, id: string): Greeting | null {
+  const m = /^earth-(\d+)$/.exec(id); if (!m) return null;
+  const n = earthNews(lore)[Number(m[1])];
+  return n ? { id, moment: 'won', beats: [{ say: n.text }], aside: n.aside } : null;
 }
 
 /**
  * A line of news from Earth, as a greeting: the first after the roll's pick that she has not read out this campaign, then
  * any but the last one said. `freshOnly`: null once every line has been read (her own lines repeat before the news does).
  */
-function newsLine(s: CampaignState, lore: string, h: number, moment: GreetMoment, freshOnly: boolean): Greeting | null {
+function newsLine(s: CampaignState, lore: string, h: number, moment: GreetMoment, freshOnly: boolean, avoid: string[] = []): Greeting | null {
   const pool = earthNews(lore);
   const news: EarthNews[] = pool.length ? pool : EARTH_NEWS_FALLBACK.map((text) => ({ text }));
   if (!news.length) return null;
   const said = s.greetingsSaid ?? [];
-  let i = (h >>> 8) % news.length;
-  let k = 0;
-  for (; k < news.length && (said.includes(`earth-${i}`) || `earth-${i}` === s.lastGreeting); k++) i = (i + 1) % news.length;
-  if (k >= news.length && freshOnly) return null;
-  if (`earth-${i}` === s.lastGreeting && news.length > 1) i = (i + 1) % news.length;
+  const start = (h >>> 8) % news.length;
+  const at = (m: number) => (start + m) % news.length;
+  const unread = (j: number) => !said.includes(`earth-${j}`) && `earth-${j}` !== s.lastGreeting;
+  const elsewhere = (j: number) => !shares(topicsOf(`${news[j].text} ${news[j].aside ?? ''}`), avoid);
+  const order = news.map((_, m) => at(m));
+  // An unread one about something else than her last line; else any unread one; else (unless freshOnly) any but the last.
+  let i = order.find((j) => unread(j) && elsewhere(j)) ?? order.find(unread) ?? -1;
+  if (i < 0) {
+    if (freshOnly) return null;
+    i = order.find((j) => `earth-${j}` !== s.lastGreeting) ?? start;
+  }
   return { id: `earth-${i}`, moment, beats: newsBeats(news[i].text), aside: news[i].aside, hook: news[i].aside ? 'Ask her about it' : undefined };
 }

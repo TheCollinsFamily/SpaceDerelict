@@ -21,12 +21,11 @@ import { routeMedia, translateIn, SIGNAL_LEAD_MS } from '../audio/engine';
 import { gain, loadSettings } from '../meta/storage';
 import { showLoader, watchBuffering } from './loader';
 import { mediaAllowed, mediaUrl } from './newsreel';
-import { bandHtml, decode, lineHtml } from './translation';
+import { decode, lineHtml } from './translation';
 import { filmArt, loadScenes, playCutscene } from './cutscene';
 import { ROACH_ADDRESSES, ROACH_KING, ROACH_SCENES, type RoachAddress, type RoachScene, type RoachShot } from '../../content/roachKing';
 import { afterMission } from '../meta/afterMission';
 import { dueAddress, dueAfterDeployment, dueScene, emptyRoachLog, lastMissionScenes, logRoach, type RoachLog } from '../meta/roachKing';
-import { cardConfidence } from '../../content/translation';
 import type { CampaignState } from '../meta/campaign';
 
 interface RoachArt { flag?: string; flagWave?: string; clips: Record<string, { video: string; poster: string; seconds: number }> }
@@ -76,7 +75,6 @@ export function playAddress(a: RoachAddress): RoachHandle {
           <div class="rk-channel">${esc(ROACH_KING.channel)}</div>
           <div class="rk-title">${esc(a.title)}</div>
           <div class="rk-small">${esc(a.small)}</div>
-          ${bandHtml('roach', a.shots.filter((s) => s.line).map((s) => `${SPEAKER}: ${s.line}`))}
         </div>
       </div>
       <div class="rk-card rk-end" style="${flagWave ? `background-image:url('${flagWave}')` : ''}"><div class="rk-card-in"><div class="rk-endline">${esc(a.end)}</div></div></div>
@@ -206,7 +204,6 @@ export function playRoachScene(def: RoachScene): RoachHandle {
           <div class="rk-channel">${esc(def.kicker)}</div>
           <div class="rk-title">${esc(def.scene.title.toUpperCase())}</div>
           <div class="rk-small">${esc(def.small)}</div>
-          <div class="tl-band" data-tl="roach"><span class="tl-sig" aria-hidden="true"></span><span class="tl-src">SOURCE: ${esc(def.source)}</span><span class="tl-by">RENDERED BY YOKE · CONFIDENCE ${cardConfidence(lines, 'roach')}%</span></div>
           <div class="rk-lines">${lines.map((l, i) => `<p${i > 0 && who(l) === who(lines[i - 1]) ? ' class="rk-same"' : ''}>${lineHtml(l)}</p>`).join('')}</div>
           <div class="rk-nofilm">PICTURE NOT RECOVERED · THE WORDS ONLY</div>
           <div class="rk-endline rk-script-end">${esc(def.end)}</div>

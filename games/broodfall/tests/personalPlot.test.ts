@@ -22,8 +22,6 @@ describe('the personal plot', () => {
   it('no personal-plot beat any more (Oct 12 2026: the Index beat cut; Oct 26 2026: the progress beat cut, "pointless")', () => {
     expect(STORY_ONCE).toEqual([]);
     for (const c of [4, 5, 8, 9, 10]) expect(momentNow(at({ captures: c, greet: 'won' }))).toBe('won');
-    // A weighty moment keeps its own greeting (the licence, ground lost to a counter-attack is ordinary).
-    expect(momentNow(at({ captures: 5, greet: 'licence' }))).toBe('licence');
   });
   for (const f of FACTIONS) {
     it(`${f.id}: in a whole campaign no personal-plot beat; no greeting twice`, () => {

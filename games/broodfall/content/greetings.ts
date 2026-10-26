@@ -69,7 +69,6 @@ export type GreetMoment =
   | 'talk'                       // her everyday talk: any ordinary return once the desk is open, won or lost (Oct 19 2026)
   | 'lost-locked'                // a loss while the desk is still dark
   | 'defended' | 'fell'          // a counter-attack thrown back; ground lost to one
-  | 'licence' | 'ended'          // the procreation licence; the end of the campaign
   | 'mate-review'                // once, early: his request for a mate is under review (src/meta/onboarding.ts momentNow)
   | 'catgirl'                    // once, 2 to 4 captures after he sides with a faction: a neko wrote to him
   | 'partner-progress'           // the personal plot, capture 9: how it is going
@@ -85,7 +84,7 @@ export interface Greeting {
   /** Her everyday talk: not before this deployment (Collins, Oct 26 2026, of won-12: "move this way later"). */
   notBefore?: number;
   /** Where she sends him when she is done: a room lit up for him, and a button in her panel. */
-  points?: { room: 'desk' | 'genes' | 'locker' | 'board' | 'comms' | 'ai' | 'quarters' | 'letters'; label: string };
+  points?: { room: 'desk' | 'genes' | 'locker' | 'comms' | 'ai' | 'quarters' | 'letters'; label: string };
   /**
    * What she knows behind these lines, for her live mind only: the AI Core and her avatar get it with the campaign
    * summary when he talks to her after this greeting (src/ui/campaignUi.ts greetNote); the player never sees it.
