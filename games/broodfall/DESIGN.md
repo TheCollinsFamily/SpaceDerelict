@@ -850,6 +850,7 @@ types → our kinds, with risk values and the faction audit).
 - Towers buildable each round come from CARDS DRAWN with modified probability. Organs and roguelite (gene bank) unlocks shape the draw odds. The gene bank is your deck; organs decide which genes get expressed. You engineer your own randomness.
 - Each card carries a DISCARD button (small war-meat fee): hand-clog with unaffordable cards is a deadlock, and the discard is a real decision (found via autoplayer runs, seed 3 locked its whole hand on science-cost cards).
 - The asset has BASE INTEREST: researchers trickle in from minute one — a crashed alien bioweapon is inherently fascinating — so science meat exists before the first lure.
+- **THE TURN (Collins, Oct 29 2026): set up, wave, build the body, set up, wave ...** "right now I open a game and troops just start coming without a tower set up phase": a researcher party walked in at second 20 of the 27 s setup. Since then NOTHING of the enemy's arrives during the setup (only the townsfolk running away): the researcher parties, engineers and field-station study parties all come during the waves, and science visitors still walking when a wave is cleared go home. Guardrail: tests/turns.test.ts.
 - **REJECTED (Collins): "instability" — random tower death/mutation on over-modification.** Torching a run-long plan at the payoff moment is the one sin the genre cannot commit. No RNG destruction of player investment, ever.
 
 ### BIG limbs: towers that stand on several cells (Collins, Sep 29 2026 — BUILT Sep 29)

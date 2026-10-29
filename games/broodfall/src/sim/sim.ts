@@ -2992,6 +2992,13 @@ export class Sim {
         const bonus = Math.round((B.waveBonusBase + this.waveNumber * B.waveBonusPerWave) * this.entranceMeatMult);
         this.meat.war += bonus;
         this.events.push({ kind: 'wave-cleared', wave: this.waveNumber, bonus });
+        // The setup is the body's alone: science visitors still walking the streets go home (an engineer at its
+        // station stays with it; the station and its turrets stand).
+        for (const e of this.enemies) {
+          if (enemySpec(e.kind).caste !== 'science' || enemySpec(e.kind).fixed || e.leaving) continue;
+          if (e.kind === 'engineer' && (e.engState === 'build' || e.engState === 'tend')) continue;
+          e.leaving = true;
+        }
         for (const n of this.creepSources) if (n.kind === 'node') n.hp = n.maxHp ?? NODE_HP;
         // A new turn: every spore bladder grows its nodes, every scaffold gland counts toward its plinth.
         this.growCreepNodes('turn');
@@ -3037,9 +3044,10 @@ export class Sim {
       }
     }
 
-    // Researchers, drawn by interest — only while the streets are quiet,
-    // so sieges stay discrete, legible events.
-    if (this.phase === 'growth') this.researcherTimer -= DT;
+    // Researchers, drawn by interest — they come WITH the waves, never in the setup between them (Collins, Oct 29
+    // 2026: a turn is "1. tower set up ... 2. wave 3. build body"; a party walking in at second 20 of the setup read
+    // as the wave starting early, "troops just start coming without a tower set up phase").
+    if (this.phase === 'siege') this.researcherTimer -= DT;
     if (this.researcherTimer <= 0) {
       const interval = Math.max(
         B.researcherMinInterval,
@@ -4442,10 +4450,10 @@ export class Sim {
    * "the enemy can also build bases ... or they spawn more and more through the new bases"; "the builders will need
    * a bit more thought than the other units in terms of their own intelligence ... my guess is just in a spot on the
    * side of any lane?"). From engineerMinWave, once interest reaches engineerInterestMin, an ENGINEER is sent every
-   * engineerEvery seconds of quiet, with an escort, while fewer than stationMax stations stand or one stands untended.
+   * engineerEvery seconds of a wave (never in the setup), with an escort, while fewer than stationMax stations stand or one stands untended.
    */
   private sendEngineers(): void {
-    if (this.phase !== 'growth' || this.cfg.oneWave) return;
+    if (this.phase !== 'siege' || this.cfg.oneWave) return;
     if ((this.cfg.bannedEnemies ?? []).includes('engineer')) return;
     if (this.waveNumber < B.engineerMinWave || this.interest < B.engineerInterestMin) return;
     this.engineerTimer -= DT;
@@ -4796,8 +4804,8 @@ export class Sim {
       }
       if (n > 0) this.events.push({ kind: 'station-sent', enemyId: e.id, count: n, squad: true });
     }
-    // Study parties from close by, in the quiet between waves; quicker and bigger as it grows.
-    if (this.phase !== 'growth') return;
+    // Study parties from close by, during the waves (never in the setup: see the researchers in tick()); quicker and bigger as it grows.
+    if (this.phase !== 'siege') return;
     e.stationTimer = (e.stationTimer ?? 0) - DT;
     if (e.stationTimer > 0) return;
     e.stationTimer = B.stationPartyEvery[stage - 1] ?? 20;

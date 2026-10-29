@@ -99,7 +99,7 @@ describe('station sites: a whole block beside a lane, never the lane', () => {
 describe('the engineer', () => {
   it('is sent with an escort once interest and the wave allow it, telegraphed with its site', () => {
     const s = board();
-    P(s).phase = 'growth';
+    P(s).phase = 'siege';
     P(s).engineerTimer = 0;
     P(s).sendEngineers();
     const eng = s.enemies.find((e) => e.kind === 'engineer')!;
@@ -112,14 +112,14 @@ describe('the engineer', () => {
 
   it('is not sent before engineerMinWave, nor with low interest', () => {
     const s = board();
-    P(s).phase = 'growth';
+    P(s).phase = 'siege';
     P(s).waveNumber = B.engineerMinWave - 1;
     P(s).engineerTimer = 0;
     P(s).sendEngineers();
     expect(s.enemies.some((e) => e.kind === 'engineer')).toBe(false);
     const t = board();
     Object.defineProperty(t, 'interest', { get: () => 0, configurable: true });
-    P(t).phase = 'growth';
+    P(t).phase = 'siege';
     P(t).engineerTimer = 0;
     P(t).sendEngineers();
     expect(t.enemies.some((e) => e.kind === 'engineer')).toBe(false);
@@ -196,7 +196,7 @@ describe('the engineer', () => {
     let st: Enemy | undefined;
     for (let i = 0; i < 1200 && !st; i++) { run(s, 0.1); st = s.enemies.find((e) => e.kind === 'fieldstation'); }
     s.enemies.splice(s.enemies.indexOf(eng), 1);
-    P(s).phase = 'growth';
+    P(s).phase = 'siege';
     P(s).engineerTimer = 0;
     P(s).sendEngineers();
     const second = s.enemies.find((e) => e.kind === 'engineer')!;
@@ -213,10 +213,12 @@ describe('the field station', () => {
     return { st: st!, eng };
   }
 
-  it('sends study parties from close by in the quiet, bigger and quicker as it grows (and spawns more and more)', () => {
+  it('sends study parties from close by during the waves (never in the setup), bigger and quicker as it grows (and spawns more and more)', () => {
     const s = board();
     const { st } = builtStation(s);
-    P(s).phase = 'growth';
+    P(s).phase = 'siege';
+    // A soldier on the board holds the wave open (a wave with none left is cleared at once).
+    (s as unknown as { spawnMinion(k: string, at: { x: number; y: number }): Enemy }).spawnMinion('militia', { ...st.pos });
     st.stationTimer = 0;
     const before = s.enemies.length;
     s.tick();
