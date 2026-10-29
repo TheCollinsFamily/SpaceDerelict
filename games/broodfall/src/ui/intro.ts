@@ -78,7 +78,7 @@ export const INTRO_TITLES: Record<string, { text: string; small?: string; at?: n
 const NARRATION: Record<string, string> = { sky: 'nar-film-1', lookup: 'nar-film-2', crater: 'nar-film-3', creep: 'nar-film-4', militia: 'nar-film-5', rise: 'nar-film-6' };
 
 /** The last card, over black: the name, and who the player is. */
-export const INTRO_LAST = 'YOU ARE THE THING THAT FELL.';
+export const INTRO_LAST = 'GENOCIDE SIMULATOR';
 
 export interface IntroHandle { skip(): void; done: Promise<'ended' | 'skipped'> }
 

@@ -299,6 +299,8 @@ export class Sim {
   /** Kills made by the creep itself (Hitchhiker Spores buds a node every Nth). */
   private creepKillCount = 0;
   private researcherTimer = 20;
+  /** sim.time when the last soldier or courtier came onto the board this wave (the wave's end is counted from it). */
+  private lastEntryAt = 0;
   /** Seconds of quiet until the next engineer is sent (science forward bases). */
   private engineerTimer = 12;
   private baseRng: Rng;
@@ -2369,7 +2371,8 @@ export class Sim {
       }
       case 'call-early': {
         if (this.phase !== 'growth') return { ok: false, err: 'no wave to call' };
-        const bonus = Math.floor(Math.max(0, B.growthSeconds - this.phaseElapsed) * B.callEarlyRate);
+        // No clock to beat when the player starts every wave: no bonus for hurrying.
+        const bonus = this.cfg.playerCallsWaves ? 0 : Math.floor(Math.max(0, B.growthSeconds - this.phaseElapsed) * B.callEarlyRate);
         this.stats.earlyCalls += 1;
         this.startSiege();
         if (bonus > 0) this.meat.war += bonus; // after the wave starts, so it is not cleared
@@ -2818,6 +2821,8 @@ export class Sim {
 
   private spawnEnemyRaw(kind: EnemyKind, atGate?: number, rng: Rng = this.rng): Enemy {
     const spec = enemySpec(kind);
+    // The war and the court count (a science party sent while a soldier is stuck must not keep the wave going).
+    if (spec.caste !== 'science') this.lastEntryAt = this.time;
     const gate = atGate ?? this.gates[rng.int(0, this.gates.length - 1)];
     const c = this.cellCenter(gate);
     const e: Enemy = {
@@ -2884,9 +2889,28 @@ export class Sim {
     return out;
   }
 
+  /**
+   * The science parties' clock (researchers, engineers, the stations' study parties) runs in the first growthSeconds of
+   * a wave, while its war (or court) is still coming or on the board: the same seconds of it a turn as when they came in
+   * the setup, so the science economy is what it was tuned to; never after the last soldier, or a party would hold the
+   * wave open for ever.
+   */
+  private get warOn(): boolean {
+    return this.phase === 'siege' && this.phaseElapsed < B.scienceWindowSeconds
+      && (this.spawnQueue.length > 0 || this.enemies.some((e) => !e.leaving && enemySpec(e.kind).caste !== 'science'));
+  }
+
+  /** A science visitor still walking about (not going home, not a station or turret, not an engineer at its station). */
+  private wanders(e: Enemy): boolean {
+    const spec = enemySpec(e.kind);
+    if (spec.caste !== 'science' || spec.fixed || e.leaving) return false;
+    return !(e.kind === 'engineer' && (e.engState === 'build' || e.engState === 'tend'));
+  }
+
   private startSiege(): void {
     this.phase = 'siege';
     this.phaseElapsed = 0;
+    this.lastEntryAt = this.time;
     this.waveNumber += 1;
     this.waveBanked = { war: 0, science: 0, royal: 0 };
     for (const sh of this.shelters) sh.harmThisWave = 0;
@@ -2956,6 +2980,8 @@ export class Sim {
   tick(): void {
     if (this.outcome !== 'playing') return;
     if (this.phase === 'draft') return; // the world holds its breath while you choose
+    // The setup, once settled, waits for the player to call the wave: nothing moves, nothing accrues.
+    if (this.phase === 'growth' && this.cfg.playerCallsWaves && this.phaseElapsed >= this.growthLength) return;
     this.tickCount += 1;
     this.time += DT;
     this.phaseElapsed += DT;
@@ -2966,7 +2992,7 @@ export class Sim {
 
     // Phase machine.
     if (this.phase === 'growth') {
-      if (this.phaseElapsed >= this.growthLength) this.startSiege();
+      if (this.phaseElapsed >= this.growthLength && !this.cfg.playerCallsWaves) this.startSiege();
     } else {
       if (this.spawnQueue.length > 0) {
         this.spawnTimer -= DT;
@@ -2979,12 +3005,14 @@ export class Sim {
           }
         }
       }
-      // The wave is the war (and royal) caste; science visitors come and go on their own clock.
-      const hostiles = this.enemies.some((e) => enemySpec(e.kind).caste !== 'science');
-      // A defence's one siege is over when it is beaten, not when a normal turn's clock runs out
-      // (a big city's long streets would otherwise let it end with the column still marching).
-      const siegeMax = this.cfg.oneWave ? B.siegeMaxSeconds * 5 : B.siegeMaxSeconds;
-      if ((this.spawnQueue.length === 0 && !hostiles) || this.phaseElapsed > siegeMax) {
+      // The wave is over when it is beaten (B.straggleSeconds): the war and the court all dead, and the science
+      // visitors gone or straggleSeconds past the last entry; called off stuckSeconds past it whatever is left.
+      const hostiles = this.enemies.some((e) => !e.leaving && enemySpec(e.kind).caste !== 'science');
+      const visitors = this.enemies.some((e) => this.wanders(e));
+      const since = this.time - this.lastEntryAt;
+      const done = this.spawnQueue.length === 0
+        && ((!hostiles && (!visitors || since >= B.straggleSeconds)) || since >= B.stuckSeconds);
+      if (done) {
         this.phaseElapsed = 0;
         this.wavesCleared += 1;
         if (this.waveLimbDamage === 0) this.stats.pacifistWaves += 1;
@@ -2992,13 +3020,9 @@ export class Sim {
         const bonus = Math.round((B.waveBonusBase + this.waveNumber * B.waveBonusPerWave) * this.entranceMeatMult);
         this.meat.war += bonus;
         this.events.push({ kind: 'wave-cleared', wave: this.waveNumber, bonus });
-        // The setup is the body's alone: science visitors still walking the streets go home (an engineer at its
+        // The setup is the body's alone: whoever is still walking the streets goes home (an engineer at its
         // station stays with it; the station and its turrets stand).
-        for (const e of this.enemies) {
-          if (enemySpec(e.kind).caste !== 'science' || enemySpec(e.kind).fixed || e.leaving) continue;
-          if (e.kind === 'engineer' && (e.engState === 'build' || e.engState === 'tend')) continue;
-          e.leaving = true;
-        }
+        for (const e of this.enemies) if (this.wanders(e) || (e.kind !== 'engineer' && !enemySpec(e.kind).fixed)) e.leaving = true;
         for (const n of this.creepSources) if (n.kind === 'node') n.hp = n.maxHp ?? NODE_HP;
         // A new turn: every spore bladder grows its nodes, every scaffold gland counts toward its plinth.
         this.growCreepNodes('turn');
@@ -3047,7 +3071,8 @@ export class Sim {
     // Researchers, drawn by interest — they come WITH the waves, never in the setup between them (Collins, Oct 29
     // 2026: a turn is "1. tower set up ... 2. wave 3. build body"; a party walking in at second 20 of the setup read
     // as the wave starting early, "troops just start coming without a tower set up phase").
-    if (this.phase === 'siege') this.researcherTimer -= DT;
+    // (Only while the war is on: a party after the last soldier would hold the wave open for ever.)
+    if (this.warOn) this.researcherTimer -= DT;
     if (this.researcherTimer <= 0) {
       const interval = Math.max(
         B.researcherMinInterval,
@@ -3835,6 +3860,8 @@ export class Sim {
       if (spec.fixed) { this.updateFixed(e, spec); continue; }
       if (spec.engineer) { this.updateEngineer(e); continue; }
       if (e.escortOf !== undefined && this.updateEscort(e, spec)) continue;
+      // Sent home (a wave cleared or called off): it walks off the board, whatever it is (the researchers have their own way out).
+      if (e.leaving && !spec.stealsLimbs) { this.leaveField(e, this.moveSpeedOf(e)); continue; }
 
       // THE CANNON (both castes): walk, deploy, shell until destroyed.
       if (spec.cannon && this.updateCannon(e, spec)) continue;
@@ -4453,7 +4480,7 @@ export class Sim {
    * engineerEvery seconds of a wave (never in the setup), with an escort, while fewer than stationMax stations stand or one stands untended.
    */
   private sendEngineers(): void {
-    if (this.phase !== 'siege' || this.cfg.oneWave) return;
+    if (!this.warOn || this.cfg.oneWave) return;
     if ((this.cfg.bannedEnemies ?? []).includes('engineer')) return;
     if (this.waveNumber < B.engineerMinWave || this.interest < B.engineerInterestMin) return;
     this.engineerTimer -= DT;
@@ -4798,14 +4825,18 @@ export class Sim {
     if (this.phase === 'siege' && (e.stationSiegeSent ?? -1) !== this.waveNumber) {
       e.stationSiegeSent = this.waveNumber;
       const squad = B.stationSquad[stage - 1] ?? {};
+      // Out of its street door: spawned on the station itself (a building) a squad could find no way out and stood
+      // there for ever (Oct 29 2026, found when a wave stopped ending on a clock: three soldiers held every wave open).
+      const door = this.stationDoor(this.cellAt(e.pos.x, e.pos.y));
+      const out = door >= 0 ? this.cellCenter(door) : e.pos;
       let n = 0;
       for (const [kind, count] of Object.entries(squad)) {
-        for (let i = 0; i < (count ?? 0); i++) { this.spawnMinion(kind as EnemyKind, e.pos, this.baseRng); n++; }
+        for (let i = 0; i < (count ?? 0); i++) { this.spawnMinion(kind as EnemyKind, out, this.baseRng); n++; }
       }
       if (n > 0) this.events.push({ kind: 'station-sent', enemyId: e.id, count: n, squad: true });
     }
     // Study parties from close by, during the waves (never in the setup: see the researchers in tick()); quicker and bigger as it grows.
-    if (this.phase !== 'siege') return;
+    if (!this.warOn) return;
     e.stationTimer = (e.stationTimer ?? 0) - DT;
     if (e.stationTimer > 0) return;
     e.stationTimer = B.stationPartyEvery[stage - 1] ?? 20;

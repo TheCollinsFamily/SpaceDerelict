@@ -1003,6 +1003,13 @@ export interface SimConfig {
   coreStage?: number;
   /** The meteor's starting level (a defence: the body has been here a while). */
   coreLevel?: number;
+  /**
+   * The player starts every wave (Collins, Oct 29 2026: "in no tower defence game is any stage timed ... stages are ended
+   * by pressing a button / key"): the setup's world runs its growthLength (the townsfolk run, the creep settles), then
+   * holds, the clock stopped, until a 'call-early' order. Off (the tests, the autoplayer, the trailers): the wave comes
+   * when growthLength is up.
+   */
+  playerCallsWaves?: boolean;
   /** ONE siege only: as big as this wave of a full deployment, at least this tier, after this long to re-arm (a defence). */
   oneWave?: { asWave: number; minTier: number; armSeconds?: number; lanes?: number; creepPx?: number };
   // ---- the last mission (content/campaign.ts LAST_MISSION; DESIGN.md "THE LAST MISSION") ----

@@ -14,6 +14,7 @@ import { YOKE_AVATAR, type YokeMode } from '../meta/yokeAvatar';
 import { loadIntroArt } from './intro';
 import { openSettings } from './settings';
 import { openCodex } from './codex';
+import { loadRunSave } from '../meta/runSave';
 
 export interface MenuHooks {
   /** CONTINUE: to the ship (or back into mission 1, if it never finished). */
@@ -37,6 +38,13 @@ export class ConsoleMenu {
     this.el.classList.add('console-menu');
     this.el.addEventListener('click', (ev) => this.onClick(ev));
     if ('broodfallDesktop' in window) document.getElementById('menu-quit')?.classList.remove('hidden');
+    // A deployment saved mid-run (the settings' SAVE AND EXIT, or the window closed): first on the list.
+    const run = loadRunSave();
+    const resume = document.getElementById('menu-resume');
+    if (resume && run) {
+      resume.classList.remove('hidden');
+      resume.textContent = `RESUME DEPLOYMENT — WAVE ${Math.max(1, run.wave)}`;
+    }
     this.status();
     this.dressVideo();
   }
@@ -103,6 +111,11 @@ export class ConsoleMenu {
     this.confirming = null;
     switch (b.id) {
       case 'menu-campaign': this.hooks.continueCampaign(); return;
+      case 'menu-resume': {
+        const run = loadRunSave();
+        if (run) location.href = `${location.pathname}${run.search}${run.search.includes('?') ? '&' : '?'}resume=1`;
+        return;
+      }
       case 'menu-new':
         // A campaign on record is not thrown away by one click.
         if (this.saved && was !== 'new') { this.confirming = 'new'; this.status(); return; }

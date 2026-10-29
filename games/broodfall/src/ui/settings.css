@@ -54,3 +54,8 @@
 /* YOKE's own key (Oct 26 2026: her mind and key moved here from the ship's AI Core room). */
 #settings .st-keyrow { display: flex; gap: 6px; }
 #settings .st-keyrow input { flex: 1; min-width: 0; background: rgba(0,0,0,.35); color: inherit; border: 1px solid rgba(255,255,255,.25); padding: 4px 6px; font: inherit; }
+/* A deployment's way out (Oct 29 2026): resume, or save and leave for the main menu or the desktop. */
+#settings .st-exit { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 4px 0 18px; padding: 12px 14px; border: 1px solid rgba(235, 245, 248, 0.22); background: rgba(235, 245, 248, 0.04); }
+#settings .st-exit .st-btn { font-size: 14px; padding: 9px 16px; letter-spacing: .08em; }
+#settings .st-exit .st-btn[data-act="resume"] { border-color: #e9eef0; }
+#settings .st-exit small { flex-basis: 100%; opacity: .6; }

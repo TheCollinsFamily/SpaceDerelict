@@ -48,7 +48,7 @@ HANDOFF.md.
 | 13 | flee | 4.0 | The street: townsfolk running toward the camera in panic, the red veined living skin spreading behind them over lawns and fences | they run past the camera | crowd screams, the siren starts (narration and title cut) |
 | 14 | siren | 3.5 | The civil-defence siren on its pole, wailing, house fronts behind it covered in red veined skin | the skin climbs the pole | the siren |
 | 15 | stir | 5.0 | The crater: the pod has swollen into a great pulsing heart of red flesh and bone, tendrils unfurling, glow from inside | it heaves and swells, something huge stirs | the heartbeat swells to a roar, brass + theremin swell (narration and title cut) |
-| — | (card) | 5.0 | Black: BROODFALL, and under it "YOU ARE THE THING THAT FELL." (set by the game) | | the held final chord |
+| — | (card) | 5.0 | Black: BROODFALL, and under it "GENOCIDE SIMULATOR" (was "YOU ARE THE THING THAT FELL.", Collins Oct 29 2026: "so hokey") (set by the game) | | the held final chord |
 
 About 68 s.
 

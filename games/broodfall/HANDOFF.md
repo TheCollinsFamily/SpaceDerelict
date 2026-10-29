@@ -495,7 +495,7 @@ that replace the intro vid for the very first mission (not revealing the ship an
   `cardAt`, the two opening titles the game sets in type; none after the impact). Night 0 at the Crash Site in the Suburbs set ("Luckwell Gardens",
   the meteor falls between the school and the laundromat, content/lore/insects.md): porch, laundromat, kitchen, the
   street looking up, the fall, the strike, the Civil Watch walking into the smoke, the tendril, the flight, the siren,
-  the heart waking. No ship, no Empire, no YOKE. Its card: BROODFALL / "YOU ARE THE THING THAT FELL."
+  the heart waking. No ship, no Empire, no YOKE. Its card: BROODFALL / "GENOCIDE SIMULATOR" (was "YOU ARE THE THING THAT FELL.", Collins Oct 29 2026: "so hokey")
 - **Colour, not black and white:** probed on one still (`notes/art-review/bmovie/probe-colour-vs-bw.jpg`): in B&W the
   red glow from the sky (the threat), the pastel suburb that matches the board and the amber eyes all go; the style
   bible's films are "1950s colour horror".

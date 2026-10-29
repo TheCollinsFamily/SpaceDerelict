@@ -203,7 +203,7 @@ function sample(seed: number): string[] {
 
 const steps: Step[] = [
   { id: 'first', part: PART_STORY, name: 'Her first greeting', where: GREET,
-    what: 'TRIGGER: mission 1 is over, won or lost. The plain report of it, then the reveal (the ship fires the asset: "...AND YOU ARE THE ONE WHO SENT IT"), then the ship for the first time and this. It ends by lighting the Gene Bay for him.',
+    what: 'TRIGGER: mission 1 is over, won or lost. The plain report of it, then the reveal (the ship fires the asset: "YOU SENT IT"), then the ship for the first time and this. It ends by lighting the Gene Bay for him.',
     branches: [{ label: 'If he won mission 1', lines: of('first-won') }, { label: 'If he lost mission 1', lines: of('first-lost') }] },
   { id: 'boss', part: PART_STORY, name: 'The message from the boss', where: G('content/boss.ts'),
     what: 'TRIGGER: straight after that first greeting, won or lost. Her bridge into it, then Supervisor Barnabas on the screen (his words below, not hers), then her line after him.',

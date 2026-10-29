@@ -4,7 +4,7 @@
  *
  *   A  first launch: "THE THING FROM THE SKY" plays (its own mix in the file, titles set in type on its clock, the
  *      end card); nothing in it speaks of the ship; Esc → mission 1 with no landing film and the town's loading
- *      lines; mission 1 won → CONTINUE → the REVEAL (the ship fires the asset; "…AND YOU ARE THE ONE WHO SENT IT.")
+ *      lines; mission 1 won → CONTINUE → the REVEAL (the ship fires the asset; "YOU SENT IT.")
  *      → the ship, YOKE greeting. The reveal is marked seen.
  *   B  mission 1 left and reopened (landing films on): the landing starts at the fall, no ship in it.
  *   C  ?intro=1 (the menu's and Settings' REPLAY THE OPENING): the same film again.
@@ -114,7 +114,7 @@ try {
       await shot(page, name);
     }
     await seek(page, film.cardAt + 1.2);
-    check(await page.evaluate(() => document.querySelector('#intro .intro-last').classList.contains('on')), 'the end card: the name, "YOU ARE THE THING THAT FELL."');
+    check(await page.evaluate(() => document.querySelector('#intro .intro-last').classList.contains('on')), 'the end card: the name, "GENOCIDE SIMULATOR"');
     await shot(page, 'A07-card');
     const words = await page.evaluate(() => document.getElementById('intro').innerText);
     check(!SHIP_WORDS.test(words.replace(/SKIP|BEGIN/g, '')), 'nothing in the film speaks of the ship, the empire or a campaign');
@@ -138,7 +138,7 @@ try {
     await page.waitForFunction(() => document.getElementById('reveal')?.classList.contains('carded'), null, { timeout: 15000 });
     await page.waitForTimeout(1100);
     const card = await page.evaluate(() => document.querySelector('#reveal .rv-card').innerText);
-    check(/ONE WHO SENT IT/.test(card), `its card: "${card}"`);
+    check(/YOU SENT IT/.test(card), `its card: "${card}"`);
     await shot(page, 'A10-reveal-card');
     await page.waitForSelector('#campaign:not(.hidden) .cp-icom', { timeout: 20000 });
     await page.waitForFunction(() => !document.getElementById('reveal'), null, { timeout: 3000 }).catch(() => {});

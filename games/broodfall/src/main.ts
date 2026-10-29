@@ -17,6 +17,7 @@ import { UndergroundScreen } from './ui/underground';
 import { CampaignUi } from './ui/campaignUi';
 import { finish, newCampaign, plan, territory as territoryDef, type CampaignState, type DeploymentPlan } from './meta/campaign';
 import { goalText, measure, type RunReport } from './meta/goals';
+import { clearRunSave, loadRunSave, replayRun, saveRunSave, type RunSave } from './meta/runSave';
 import { clearCampaign, clearPending, forgetEverything, introSeen, loadCampaign, loadPending, markIntroSeen, markRevealSeen, revealSeen, saveCampaign, savePending, veteran } from './meta/storage';
 import { FIRST_MISSION, isFirstMission, launchKind, revealDue, type Launch } from './meta/onboarding';
 import { loadIntroArt, playIntro } from './ui/intro';
@@ -133,6 +134,8 @@ const ENTRANCES = Math.max(1, Math.min(3,
 const CFG: SimConfig = {
   gridW: 50, gridH: 40, cellPx: 26, seed: SEED, directive, genes: meta.genes,
   entrances: ENTRANCES, organStage: true,
+  // The player starts every wave (the START THE WAVE button, or Space); the demo's autoplayer keeps the old clock.
+  playerCallsWaves: !AUTO,
 };
 
 // A campaign deployment: the pending plan (territory, dares, experiment, perks) shapes the run.
@@ -153,12 +156,50 @@ if (CAMPAIGN === 'run') {
     });
   }
 }
+/**
+ * A run saved mid-deployment (src/meta/runSave.ts) is gone back into: asked for (?resume=1, the menu's RESUME
+ * DEPLOYMENT), or mission 1 opened again from the launcher after the window was closed in the middle of it.
+ * Any other deployment that starts replaces the save.
+ */
+const RESUME: RunSave | null = (() => {
+  if (AUTO || !AUTOSTART) return null;
+  const r = loadRunSave();
+  if (!r) return null;
+  if (params.get('resume') === '1') return r;
+  if (BARE && launch === 'mission1' && r.kind === 'campaign' && r.territory === loadPending()?.territory) return r;
+  return null;
+})();
+if (RESUME) {
+  for (const k of Object.keys(CFG)) delete (CFG as unknown as Record<string, unknown>)[k];
+  Object.assign(CFG, RESUME.cfg);
+} else if (AUTOSTART && !AUTO) clearRunSave();
 /** Mission 1 (src/meta/onboarding.ts): a plain tower-defence game; nothing on its screen speaks of the ship. */
 const FIRST = !!campaignPlan?.first;
 let sim = new Sim(CFG);
+/** Every order the player gives, at its tick: the save of this run (src/meta/runSave.ts). */
+const runOrders: RunSave['cmds'] = [];
+{
+  const issue0 = sim.issue.bind(sim);
+  if (RESUME) { replayRun({ get tickCount() { return sim.tickCount; }, get outcome() { return sim.outcome; }, tick: () => sim.tick(), issue: issue0 }, RESUME); sim.takeEvents(); runOrders.push(...RESUME.cmds); }
+  sim.issue = (c) => { runOrders.push({ t: sim.tickCount, c: JSON.parse(JSON.stringify(c)) }); return issue0(c); };
+}
+/** Keep the run as it stands (the settings' SAVE AND EXIT, the window closing, every new setup). */
+function saveRun(): void {
+  if (AUTO || !started || sim.outcome !== 'playing') return;
+  const q = new URLSearchParams(location.search);
+  if (CAMPAIGN === 'run') q.set('campaign', 'run');
+  q.set('seed', String(SEED));
+  for (const k of ['intro', 'resume']) q.delete(k);
+  saveRunSave({
+    v: 1, search: `?${q.toString()}`, kind: CAMPAIGN === 'run' ? 'campaign' : 'skirmish', territory: territory ?? undefined,
+    cfg: JSON.parse(JSON.stringify(CFG)), cmds: runOrders, ticks: sim.tickCount, speed: speed || 1, wave: sim.waveNumber, savedAt: Date.now(),
+  });
+}
+window.addEventListener('pagehide', () => saveRun());
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveRun(); });
 const auto = AUTO ? new Autoplayer(SEED + 1) : null;
 // The address's ?speed= wins; otherwise the speed the settings say a deployment starts at.
-let speed = params.has('speed') && Number.isFinite(START_SPEED) && START_SPEED >= 0 ? START_SPEED : loadSettings().speed;
+let speed = RESUME ? RESUME.speed : params.has('speed') && Number.isFinite(START_SPEED) && START_SPEED >= 0 ? START_SPEED : loadSettings().speed;
 /** The run's clock is going. Behind the cinematic it waits until the film is over. */
 let started = AUTOSTART && !PLAY_INTRO;
 let debriefShown = false;
@@ -387,7 +428,7 @@ function updateHint(): void {
     hud.setHint(AUTO
       ? 'demo mode: the asset is piloting itself'
       : sim.phase === 'growth' && sim.waveNumber > 0
-        ? 'WAVE SETUP: place limbs — unspent war and science are lost when the wave starts'
+        ? 'WAVE SETUP: place limbs, then START THE WAVE (Space) — unspent war and science are lost when it starts'
         : 'select a limb card below, then click a creeped block by a street — the assault forms at the glowing gate');
   }
 }
@@ -401,16 +442,16 @@ function updateHint(): void {
  */
 function coachText(): string {
   if (sim.outcome !== 'playing') return '';
-  const left = Math.max(0, Math.ceil(sim.growthLength - sim.phaseElapsed));
+  // No clock in the setup (Collins, Oct 29 2026): the wave comes when the player starts it.
   if (sim.waveNumber === 0 && sim.phase === 'growth') {
-    if (!sim.towers.length) return `YOUR FIRST LIMB: pick a card below, then click a dark red block beside a street — the townsfolk march in from the glowing gate in ${left}s`;
+    if (!sim.towers.length) return 'YOUR FIRST LIMB: pick a card below, then click a dark red block beside a street — the townsfolk will march in from the glowing gate';
     const affordable = sim.hand.some((c) => c.free || sim.canAfford(towerSpec(c.family).cost));
-    if (!affordable) return `GOOD. That is all the meat you have: kills pay more. Wait for them (${left}s), or CALL THE WAVE now (top right) for a bonus`;
-    if (sim.towers.length < 3) return `GOOD. Grow more limbs beside the street they will walk down (${left}s) — or CALL THE WAVE early for extra meat`;
-    return `READY? They come in ${left}s — or CALL THE WAVE now (top right) for extra meat`;
+    if (!affordable) return 'GOOD. That is all the meat you have: kills pay more. START THE WAVE (top right, or Space) when you are ready';
+    if (sim.towers.length < 3) return 'GOOD. Grow more limbs beside the street they will walk down, then START THE WAVE (Space)';
+    return 'READY? START THE WAVE (top right, or Space)';
   }
   if (sim.waveNumber === 1 && sim.phase === 'siege') return 'Your limbs fight on their own. Every kill pays WAR meat (top left): spend it on more cards';
-  if (sim.waveNumber === 1 && sim.phase === 'growth' && sim.towers.length < 5) return `Wave cleared. Place more limbs with the meat you earned — the next wave is bigger (${left}s)`;
+  if (sim.waveNumber === 1 && sim.phase === 'growth' && sim.towers.length < 5) return 'Wave cleared. Place more limbs with the meat you earned — the next wave is bigger. Space starts it';
   if (sim.waveNumber === 2 && sim.phase === 'siege') return 'Click one of your limbs to see it: its health, and EVOLVE when you have science';
   return '';
 }
@@ -481,6 +522,7 @@ function handleEvents(events: SimEvent[]): void {
     if (e.kind === 'net-cast' && renderer instanceof IsoRenderer) renderer.nets.push({ at: e.at, r: e.radius, t: 0 });
     if (e.kind === 'surgery-under-fire') banner(`SURGERY UNDER FIRE — GRAFTING ${e.seconds.toFixed(0)}s`);
     if ((e.kind === 'won' || e.kind === 'lost') && !AUTO) {
+      clearRunSave();
       endSnapshot = snapshotBoard();
       // The hero sets the pad down (src/ui/padOutro.ts: this very view on its screen), then the report.
       const report = FIRST ? firstDebrief : campaignPlan ? campaignDebrief : showDebrief;
@@ -1060,6 +1102,14 @@ function openRunSettings(): void {
   openSettings({
     where: 'run',
     onClose: () => { speed = was; markSpeed(speed); },
+    // SAVE AND EXIT (src/meta/runSave.ts): the run kept as it stands, then the main menu or the desktop.
+    onSaveExit: (to) => {
+      speed = was;
+      saveRun();
+      const desk = (window as unknown as { broodfallDesktop?: { quit(): void } }).broodfallDesktop;
+      if (to === 'desktop' && desk) desk.quit();
+      else location.href = `${location.pathname}?menu=1`;
+    },
     onIntro: (h) => { speed = 0; void h.done.then(() => { speed = was; markSpeed(speed); }); },
   });
 }
@@ -1172,7 +1222,7 @@ let lastPhase = sim.phase;
 function underLifecycle(): void {
   if (AUTO || !started || sim.outcome !== 'playing') return;
   // The run starts at wave setup; the organ stage comes after every wave.
-  if (sim.phase === 'growth' && lastPhase !== 'growth') openUnder();
+  if (sim.phase === 'growth' && lastPhase !== 'growth') { saveRun(); openUnder(); }
   lastPhase = sim.phase;
   openUnderBtn.classList.toggle('disabled', sim.phase === 'siege');
 }
@@ -1232,7 +1282,8 @@ async function landThenStart(afterOpening = false): Promise<void> {
   if (landing) return;
   landing = true;
   started = false;
-  const pick = await landingFilmFor(afterOpening).catch(() => null);
+  // A run gone back into lands at once: its landing was seen when it began.
+  const pick = RESUME ? null : await landingFilmFor(afterOpening).catch(() => null);
   if (pick) {
     const s = loadSettings();
     // Mission 1 (reopened, so not straight after the film) lands without the ship: the fall and the strike only.
@@ -1529,6 +1580,15 @@ async function boot(): Promise<void> {
 
   const callEarlyBtn = document.getElementById('call-early')! as HTMLButtonElement;
   callEarlyBtn.addEventListener('click', () => sim.issue({ kind: 'call-early' }));
+  // Space starts the wave from the setup (not over the organ stage, the settings or a report).
+  window.addEventListener('keydown', (ev) => {
+    if (ev.key !== ' ' || ev.repeat || ev.ctrlKey || ev.metaKey || ev.altKey) return;
+    if ((ev.target as HTMLElement).tagName === 'INPUT' || (ev.target as HTMLElement).tagName === 'TEXTAREA') return;
+    if (!started || AUTO || debriefShown || settingsOpen() || codexOpen() || under.open) return;
+    if (sim.phase !== 'growth' || sim.outcome !== 'playing') return;
+    ev.preventDefault();
+    callEarlyBtn.click();
+  });
 
   // The hint line says what to do from the first second (it was empty until the first action).
   updateHint();

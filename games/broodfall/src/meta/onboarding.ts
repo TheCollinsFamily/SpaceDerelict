@@ -161,7 +161,7 @@ export function launchKind(o: { hasCampaign: boolean; mission1Pending: boolean; 
 }
 
 /**
- * The reveal (src/ui/bmovie.ts playReveal: the ship fires the asset, "…AND YOU ARE THE ONE WHO SENT IT.") plays as
+ * The reveal (src/ui/bmovie.ts playReveal: the ship fires the asset, "YOU SENT IT.") plays as
  * he comes aboard for the first time: mission 1 over, nothing deployed since, not seen before. A save from before
  * the unfolding (no `onboard`) or one past its first return never gets it.
  */

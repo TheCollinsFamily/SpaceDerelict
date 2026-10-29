@@ -31,6 +31,8 @@ export interface SettingsOpen {
   onClose?: () => void;
   /** 'yoke-link': open on her account with the link code asked for (the money pop-up's LINK AN RFAB ACCOUNT). */
   focus?: 'yoke-link';
+  /** A deployment's SAVE AND EXIT: the caller keeps the run and leaves for the main menu or the desktop. */
+  onSaveExit?: (to: 'menu' | 'desktop') => void;
   /** The opening film started from here (a deployment waits for it before it goes on). */
   onIntro?: (h: IntroHandle) => void;
 }
@@ -120,6 +122,11 @@ function render(): void {
   root.innerHTML = `<div class="st-card">
     <div class="st-head"><div><div class="st-kicker">ORBITAL TENDER "MERCIFUL YOKE" — ${PLACE[current.where]}</div><div class="st-title">SETTINGS</div></div>
       <button class="st-close" data-act="close" title="Close (Esc)">✕</button></div>
+    ${current.where === 'run' && current.onSaveExit ? `<div class="st-exit">
+      <button class="st-btn" data-act="resume">RESUME</button>
+      <button class="st-btn" data-act="exit-menu">SAVE AND EXIT TO MAIN MENU</button>
+      ${'broodfallDesktop' in window ? '<button class="st-btn" data-act="exit-desktop">SAVE AND QUIT TO DESKTOP</button>' : ''}
+      <small>Your deployment is kept as it stands: RESUME DEPLOYMENT on the main menu goes back into it.</small></div>` : ''}
     <div class="st-cols">
       <section><h3>SOUND</h3>
         ${slider('master', 'Master', 'everything')}
@@ -198,7 +205,13 @@ function onClick(ev: MouseEvent): void {
   const d = el.dataset;
   const s = structuredClone(loadSettings());
   if (d.act !== 'reset') confirmReset = false;
-  if (d.act === 'close') { closeSettings(); return; }
+  if (d.act === 'close' || d.act === 'resume') { closeSettings(); return; }
+  if (d.act === 'exit-menu' || d.act === 'exit-desktop') {
+    const go = current?.onSaveExit;
+    current = null; // left, not closed: the run's own onClose is not wanted
+    go?.(d.act === 'exit-menu' ? 'menu' : 'desktop');
+    return;
+  }
   if (d.act === 'yoke-key') {
     const key = root.querySelector<HTMLInputElement>('#st-yoke-key')?.value.trim() ?? '';
     if (key) { saveYoke({ ...loadYoke(), key, mode: 'kimi' }); render(); }

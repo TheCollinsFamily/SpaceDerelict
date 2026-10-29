@@ -851,6 +851,8 @@ types → our kinds, with risk values and the faction audit).
 - Each card carries a DISCARD button (small war-meat fee): hand-clog with unaffordable cards is a deadlock, and the discard is a real decision (found via autoplayer runs, seed 3 locked its whole hand on science-cost cards).
 - The asset has BASE INTEREST: researchers trickle in from minute one — a crashed alien bioweapon is inherently fascinating — so science meat exists before the first lure.
 - **THE TURN (Collins, Oct 29 2026): set up, wave, build the body, set up, wave ...** "right now I open a game and troops just start coming without a tower set up phase": a researcher party walked in at second 20 of the 27 s setup. Since then NOTHING of the enemy's arrives during the setup (only the townsfolk running away): the researcher parties, engineers and field-station study parties all come during the waves, and science visitors still walking when a wave is cleared go home. Guardrail: tests/turns.test.ts.
+- **NO STAGE IS TIMED (Collins, Oct 29 2026): "in no tower defence game is any stage timed ... stages are ended by pressing a button / key".** The setup runs its settling seconds (the townsfolk run) and then holds, the world stopped, until START THE WAVE (top right, or Space); no bonus for hurrying. A wave is over when the war and the court are all dead; science visitors still about end it BALANCE.straggleSeconds (20) after the last soldier came on, and go home; a wave somehow not over BALANCE.stuckSeconds (60) after the last soldier is called off, everyone left going home. The science parties come in a wave's first scienceWindowSeconds (36, measured to keep a run's science meat where it was: 4,505 against 4,644 over five seeds). The sim's playerCallsWaves (set by the game, off for the tests and the autoplayer) is the switch.
+- **SAVE AND EXIT (Collins, Oct 29 2026).** Esc in a deployment: RESUME, SAVE AND EXIT TO MAIN MENU, SAVE AND QUIT TO DESKTOP (the desktop game). The run is saved as its config and every order at its tick (src/meta/runSave.ts; the sim is deterministic) and played back on RESUME DEPLOYMENT (the main menu) in about a second; it is also saved at every setup and when the window closes. Guardrail: tests/runSave.test.ts.
 - **REJECTED (Collins): "instability" — random tower death/mutation on over-modification.** Torching a run-long plan at the payoff moment is the one sin the genre cannot commit. No RNG destruction of player investment, ever.
 
 ### BIG limbs: towers that stand on several cells (Collins, Sep 29 2026 — BUILT Sep 29)
@@ -1081,7 +1083,7 @@ of the whole thing is `tools/shot-onboarding.mjs` (screenshots `notes/screens/20
    screaming townsfolk and a theremin score, all mixed in the one file (`src/ui/bmovie.ts`, art
    `tools/art/bmovie.mjs`, shot list `notes/BMOVIE-SHOTLIST.md`). It is Night 0 at the Crash Site
    itself, the Suburbs tile set (Luckwell Gardens, the meteor falls between the school and the
-   laundromat), told from the street; it ends on its card "YOU ARE THE THING THAT FELL." The
+   laundromat), told from the street; it ends on its card "GENOCIDE SIMULATOR" (was "YOU ARE THE THING THAT FELL.", Collins Oct 29 2026: "so hokey") The
    eight-shot film is its fallback when its file is missing.
 2. **Mission 1** is the crash site (the film ends there): hold 5 waves, the assault's gate shown
    (as in any tower-defence game; the campaign hides it later), no Requisition Board, no dares,

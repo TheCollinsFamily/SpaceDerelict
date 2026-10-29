@@ -32,7 +32,8 @@ export function titleAt(film: Pick<Bmovie, 'titles' | 'cardAt'>, t: number): Bmo
 }
 
 /** The end card's words (the same as the eight-shot opening's). */
-export const FILM_LAST = 'YOU ARE THE THING THAT FELL.';
+// Collins, Oct 29 2026: "Genocide Simulator" (the old "YOU ARE THE THING THAT FELL" was "so hokey and over done").
+export const FILM_LAST = 'GENOCIDE SIMULATOR';
 /** What the loaders say while the reel arrives: the cinema's side, never the ship's. */
 export const PICTURE_LINES = ['Threading the reel.', 'The projector is warming up.', 'Please take your seats.', 'Coming soon to this theatre.'];
 /** Mission 1's loading lines (src/ui/screens.ts plain): the town's radio on Night 0, never the Navy's voice. */
@@ -156,12 +157,12 @@ export function playBmovie(film: Bmovie): FilmHandle {
 
 /** The words over the reveal, in two beats: where we are, then who he is. */
 export const REVEAL_WHERE = 'MEANWHILE, HIGH ABOVE LUCKWELL GARDENS';
-export const REVEAL_LAST = '…AND YOU ARE THE ONE WHO SENT IT.';
+export const REVEAL_LAST = 'YOU SENT IT.';
 
 /**
- * THE REVEAL after mission 1. The film ended "YOU ARE THE THING THAT FELL"; mission 1 is fought with nothing on screen
+ * THE REVEAL after mission 1. The film ended on its card, BROODFALL / GENOCIDE SIMULATOR; mission 1 is fought with nothing on screen
  * that speaks of a ship. Its CONTINUE plays this before the ship opens: the release shot, lifelike and cold after the
- * Technicolor, under the ship's own sting, then the second half of the line. Once (storage `broodfall-reveal-seen`,
+ * Technicolor, under the ship's own sting, then its line, "YOU SENT IT." Once (storage `broodfall-reveal-seen`,
  * main.ts); skippable; Reduce motion shows its still instead of the shot.
  */
 export function playReveal(film: Bmovie | null | undefined, o: { reduceMotion?: boolean } = {}): FilmHandle {

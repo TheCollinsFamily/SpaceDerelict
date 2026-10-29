@@ -490,7 +490,20 @@ export const BALANCE = {
   /** Phases. */
   growthSeconds: 27,
   siegeSpawnSeconds: 14,
-  siegeMaxSeconds: 70,
+  /**
+   * When a wave is over (Collins, Oct 29 2026: "waves are not timed either they are done ... some amount of seconds
+   * after the last enemy enters the board or when all enemies are dead (like in case you have a pesky scientists hiding
+   * stoping a game from ending)"): the war and the court all dead ends it; science visitors still about end it
+   * straggleSeconds after the last enemy came onto the board (they go home); and a wave that has somehow not ended
+   * stuckSeconds after the last entry is called off, everyone left going home (a body stuck on a wall never holds a game).
+   */
+  straggleSeconds: 20,
+  stuckSeconds: 60,
+  /**
+   * The science parties come in a wave's first this-many seconds (they came in the 27 s setup until Oct 29 2026). Set
+   * so the science meat a run earns stays near what it was: measured over seeds 3, 5, 11, 12, 21 (hold 12, the autoplayer).
+   */
+  scienceWindowSeconds: 36,
   /** District drafting (map expansion) and wave rhythm. */
   draftEveryWaves: 3,
   draftCreepSurge: 45,
