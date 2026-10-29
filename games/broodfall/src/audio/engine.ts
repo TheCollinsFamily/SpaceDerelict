@@ -31,6 +31,8 @@ interface Manifest {
   music: Record<string, { file: string; seconds: number; loop?: boolean; loopStart?: number; loopEnd?: number }>;
   sfx: Record<string, { files: string[]; seconds?: number[] }>;
   voice: Record<string, { file: string; seconds: number; line?: string }>;
+  /** Named lists of music ids, played one after another in a shuffled order (SCENE_TRACK `playlist:<name>`). */
+  playlists?: Record<string, string[]>;
 }
 export interface CueLog { t: number; kind: 'sfx' | 'music' | 'sting' | 'voice' | 'duck' | 'scene' | 'film'; id: string; played: boolean; why?: string }
 
@@ -146,7 +148,7 @@ function afterUnlock(): void {
 /** Fetch and decode a scene's loop before the page may play (a suspended context decodes too): the click then only starts it. */
 function prefetchScene(next: MusicScene): void {
   const id = SCENE_TRACK[next];
-  if (!id || !ctx) return;
+  if (!id || !ctx || id.startsWith('playlist:')) return;
   void loadManifest().then((m) => { const e = m?.music[id]; if (e) void buffer(e.file, true); });
 }
 
@@ -398,6 +400,8 @@ interface Playing {
   id: string; file: string; src?: AudioBufferSourceNode; gain: GainNode; startedAt: number; offset: number; seconds: number;
   /** A loop STREAMED from its file while its buffer decodes (startScene): where it is is the element's own clock. */
   el?: HTMLAudioElement; loopStart?: number;
+  /** A playlist's track: the list's name, whose place is kept when the music leaves (fadeOut). */
+  list?: string;
 }
 let loopNow: Playing | null = null;
 const fading = new Set<Playing>();
@@ -421,6 +425,8 @@ const positionOf = (p: Playing) => {
 function fadeOut(p: Playing, secs: number): void {
   if (!ctx) return;
   resumeAt.set(p.id, positionOf(p));
+  const list = p.list ? lists.get(p.list) : undefined;
+  if (list && p.el) list.pos = p.el.currentTime;
   const t = ctx.currentTime;
   p.gain.gain.cancelScheduledValues(t);
   p.gain.gain.setValueAtTime(p.gain.gain.value, t);
@@ -460,6 +466,60 @@ function streamLoop(id: string, file: string, loopStart: number, seconds: number
   } catch { return null; }
 }
 
+/** Where each playlist is: its shuffled order, the track, and how far into it (kept while another scene plays). */
+const lists = new Map<string, { order: string[]; i: number; pos: number }>();
+
+/** A fresh shuffle of a playlist, not starting on the track that just played. */
+function shuffle(ids: string[], last?: string): string[] {
+  const a = [...ids];
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  if (a.length > 1 && a[0] === last) [a[0], a[1]] = [a[1], a[0]];
+  return a;
+}
+
+/**
+ * A playlist (SCENE_TRACK `playlist:<name>`), streamed track by track through the music bus: where it left off,
+ * faded in; each track's end starts the next; after the last, a new shuffle. Tracks are songs, not loops.
+ */
+function startPlaylist(m: Manifest, id: string, fade: number, token: number): void {
+  const name = id.slice('playlist:'.length);
+  const ids = (m.playlists?.[name] ?? []).filter((x) => m.music[x]);
+  if (!ids.length) { note({ kind: 'music', id, played: false, why: 'no-file' }); return; }
+  let st = lists.get(name);
+  if (!st || !st.order.length) { st = { order: shuffle(ids), i: 0, pos: 0 }; lists.set(name, st); }
+  const list = st;
+  const play = (fadeIn: number): void => {
+    if (token !== sceneToken || !ctx) return;
+    const track = list.order[list.i];
+    const e = m.music[track];
+    try {
+      const el = new Audio();
+      el.preload = 'auto';
+      el.src = url(e.file);
+      el.currentTime = list.pos;
+      const gain = ctx.createGain();
+      ctx.createMediaElementSource(el).connect(gain).connect(musicDuck);
+      const t = ctx.currentTime;
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(1, t + fadeIn);
+      const p: Playing = { id, file: e.file, el, gain, startedAt: t, offset: list.pos, seconds: e.seconds, loopStart: 0, list: name };
+      const next = () => {
+        if (loopNow !== p) return;
+        try { gain.disconnect(); } catch { /* gone */ }
+        list.pos = 0;
+        if (++list.i >= list.order.length) { list.order = shuffle(ids, track); list.i = 0; }
+        play(0.05);
+      };
+      el.onended = next;
+      el.onerror = next;
+      loopNow = p;
+      void el.play().catch(() => {});
+      note({ kind: 'music', id: track, played: true, why: id });
+    } catch { note({ kind: 'music', id: track, played: false, why: 'cannot stream' }); }
+  };
+  play(fade);
+}
+
 /** The scene the game is in; its loop is crossfaded in (a scene with none fades the music out). */
 export function setScene(next: MusicScene): void {
   if (next === scene) return;
@@ -481,6 +541,7 @@ function startScene(next: MusicScene, fromUnlock = false): Promise<void> {
   if (loopNow) { fadeOut(loopNow, secs); loopNow = null; }
   if (!id) return Promise.resolve();
   return loadManifest().then(async (m) => {
+    if (id.startsWith('playlist:')) { if (m && token === sceneToken) startPlaylist(m, id, fromUnlock ? 1.5 : secs, token); return; }
     const e = m?.music[id];
     if (!e) { note({ kind: 'music', id, played: false, why: m ? 'no-file' : 'no-manifest' }); return; }
     const pending = buffer(e.file, true);

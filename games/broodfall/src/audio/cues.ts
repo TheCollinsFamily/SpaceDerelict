@@ -85,9 +85,16 @@ export function deathOf(kind: EnemyKind): string {
 /** What the music is doing: one scene at a time; the engine crossfades between them. */
 export type MusicScene = 'silent' | 'film' | 'menu' | 'ship' | 'build' | 'assault' | 'organ' | 'end';
 
-/** Which loop plays in a scene (null: none; the film's score is started by the film itself). */
+/**
+ * Which loop plays in a scene (null: none; the film's score is started by the film itself). `playlist:<name>`: the
+ * manifest's playlist of that name, track after track (src/audio/engine.ts). Collins made the music (Oct 29 2026,
+ * 1940s electro swing): "Flag of Doom" for the main menu; a playlist for the board, placing limbs and the waves
+ * alike, running on through both (the same id, so no crossfade between them); "The Mutant from the Deep" for the
+ * organ stage, where the monster is built; and the ship's quiet hum. The old theme-menu, siege-build, siege-assault,
+ * theme-ship and organ loops stay in public/audio for the trailers.
+ */
 export const SCENE_TRACK: Record<MusicScene, string | null> = {
-  silent: null, film: null, menu: 'theme-menu', ship: 'theme-ship', build: 'siege-build', assault: 'siege-assault', organ: 'organ', end: null,
+  silent: null, film: null, menu: 'menu-flag-of-doom', ship: 'ship-ambient', build: 'playlist:mission', assault: 'playlist:mission', organ: 'playlist:organ', end: null,
 };
 /** Seconds each crossfade INTO a scene takes (the assault comes in fast, the rest breathe). */
 export const SCENE_FADE: Record<MusicScene, number> = {

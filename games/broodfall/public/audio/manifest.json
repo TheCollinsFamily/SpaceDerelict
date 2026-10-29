@@ -70,6 +70,110 @@
    "file": "audio/film.ogg",
    "seconds": 36.106,
    "loop": false
+  },
+  "mission-flag-of-doom-1": {
+   "file": "audio/mission/flag-of-doom-1.ogg",
+   "seconds": 155.2,
+   "loop": false
+  },
+  "mission-flag-of-doom-2": {
+   "file": "audio/mission/flag-of-doom-2.ogg",
+   "seconds": 134.4,
+   "loop": false
+  },
+  "mission-flag-of-doom-3": {
+   "file": "audio/mission/flag-of-doom-3.ogg",
+   "seconds": 151.2,
+   "loop": false
+  },
+  "mission-flag-of-doom-4": {
+   "file": "audio/mission/flag-of-doom-4.ogg",
+   "seconds": 151.2,
+   "loop": false
+  },
+  "mission-flag-of-doom-5": {
+   "file": "audio/mission/flag-of-doom-5.ogg",
+   "seconds": 70.8,
+   "loop": false
+  },
+  "mission-flag-of-doom-6": {
+   "file": "audio/mission/flag-of-doom-6.ogg",
+   "seconds": 129.5,
+   "loop": false
+  },
+  "mission-flag-of-doom-7": {
+   "file": "audio/mission/flag-of-doom-7.ogg",
+   "seconds": 110,
+   "loop": false
+  },
+  "mission-flag-of-doom-8": {
+   "file": "audio/mission/flag-of-doom-8.ogg",
+   "seconds": 147.9,
+   "loop": false
+  },
+  "mission-red-alert-1940-1": {
+   "file": "audio/mission/red-alert-1940-1.ogg",
+   "seconds": 56.8,
+   "loop": false
+  },
+  "mission-red-alert-1940-2": {
+   "file": "audio/mission/red-alert-1940-2.ogg",
+   "seconds": 76.8,
+   "loop": false
+  },
+  "mission-haunted-level-1": {
+   "file": "audio/mission/haunted-level-1.ogg",
+   "seconds": 142.9,
+   "loop": false
+  },
+  "mission-haunted-level-2": {
+   "file": "audio/mission/haunted-level-2.ogg",
+   "seconds": 96.4,
+   "loop": false
+  },
+  "ship-ambient": {
+   "file": "audio/ship-ambient.ogg",
+   "seconds": 23.2,
+   "loop": true,
+   "loopStart": 0,
+   "loopEnd": 23.107
+  },
+  "organ-mutant-from-the-deep-1": {
+   "file": "audio/organ-stage/mutant-from-the-deep-1.ogg",
+   "seconds": 68.9,
+   "loop": false
+  },
+  "organ-mutant-from-the-deep-2": {
+   "file": "audio/organ-stage/mutant-from-the-deep-2.ogg",
+   "seconds": 117.2,
+   "loop": false
+  },
+  "organ-mutant-from-the-deep-3": {
+   "file": "audio/organ-stage/mutant-from-the-deep-3.ogg",
+   "seconds": 130,
+   "loop": false
+  },
+  "organ-mutant-from-the-deep-4": {
+   "file": "audio/organ-stage/mutant-from-the-deep-4.ogg",
+   "seconds": 134,
+   "loop": false
+  },
+  "organ-mutant-from-the-deep-5": {
+   "file": "audio/organ-stage/mutant-from-the-deep-5.ogg",
+   "seconds": 103.4,
+   "loop": false
+  },
+  "organ-mutant-from-the-deep-6": {
+   "file": "audio/organ-stage/mutant-from-the-deep-6.ogg",
+   "seconds": 92,
+   "loop": false
+  },
+  "menu-flag-of-doom": {
+   "file": "audio/mission/flag-of-doom-1.ogg",
+   "seconds": 155.2,
+   "loop": true,
+   "loopStart": 0,
+   "loopEnd": 155.2
   }
  },
  "sfx": {
@@ -705,5 +809,29 @@
    "seconds": 3.756,
    "line": "It was hungry."
   }
+ },
+ "playlists": {
+  "mission": [
+   "mission-flag-of-doom-1",
+   "mission-flag-of-doom-2",
+   "mission-flag-of-doom-3",
+   "mission-flag-of-doom-4",
+   "mission-flag-of-doom-5",
+   "mission-flag-of-doom-6",
+   "mission-flag-of-doom-7",
+   "mission-flag-of-doom-8",
+   "mission-red-alert-1940-1",
+   "mission-red-alert-1940-2",
+   "mission-haunted-level-1",
+   "mission-haunted-level-2"
+  ],
+  "organ": [
+   "organ-mutant-from-the-deep-1",
+   "organ-mutant-from-the-deep-2",
+   "organ-mutant-from-the-deep-3",
+   "organ-mutant-from-the-deep-4",
+   "organ-mutant-from-the-deep-5",
+   "organ-mutant-from-the-deep-6"
+  ]
  }
 }

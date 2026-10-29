@@ -1242,6 +1242,12 @@ const SRC = {
   keyart: A('promo/key-art/broodfall-keyart-meteor-2048x1152.jpg'),
 };
 const AU = (f) => A(`public/audio/${f}.ogg`);
+/**
+ * The trailer's song (Collins, Oct 29 2026: "Flag of Doom", his 1940s electro swing, also the main menu's music).
+ * SONG_DROP: 0.6 s before it comes back from its one silence (136.0-137.3 s) for the last surge; the montage lands on it.
+ */
+const SONG = () => A('public/audio/mission/flag-of-doom-1.ogg');
+const SONG_DROP = 136.8;
 const VO = (f) => A(`public/media/voice/${f}.ogg`);
 const MU = (f) => A(`public/media/music/${f}.ogg`);
 
@@ -1331,15 +1337,15 @@ function soundFull(at) {
   return [
     // music
     { f: AU('film'), t: at('sky'), ss: 0, dur: at('g-open') - at('sky') + 0.1, fo: 0.25, bus: 'm', db: -1 },
-    { f: AU('siege-assault'), t: at('g-open'), ss: 0, dur: at('menu') - at('g-open'), fi: 0.05, fo: 0.35, bus: 'm', db: -1 },
+    { f: SONG(), t: at('g-open'), ss: 0, dur: at('menu') - at('g-open'), fi: 0.05, fo: 0.35, bus: 'm', db: -1 },
     { f: AU('sting-wave'), t: at('g-open'), bus: 'm', db: -4 },
     { f: AU('sting-desk'), t: at('menu'), bus: 'm', db: -2 },
     { f: AU('theme-ship'), t: at('menu') + 0.5, ss: 4, dur: at('e-orbit') - at('menu') - 0.2, fi: 1.0, fo: 0.4, bus: 'm', db: -3 },
     { f: MU('m-empire'), t: at('e-orbit'), ss: 0, dur: 3.9, fi: 0.1, fo: 0.2, bus: 'm', db: -4 },
     { f: MU('m-colony'), t: at('c-march'), ss: 0, dur: 3.9, fi: 0.1, fo: 0.3, bus: 'm', db: -4 },
-    { f: AU('siege-assault'), t: at('m-late'), ss: 61.2, dur: at('end') - at('m-late') + 0.15, fi: 0.02, fo: 0.15, bus: 'm', db: 0 },
+    { f: SONG(), t: at('m-late'), ss: SONG_DROP, dur: at('end') - at('m-late') + 0.15, fi: 0.02, fo: 0.15, bus: 'm', db: 0 },
     { f: AU('sting-core'), t: at('end'), bus: 'm', db: 0, fo: 1.0 },
-    { f: AU('theme-menu'), t: at('end') + 0.4, ss: 0, dur: 6.0, fi: 1.5, fo: 1.2, bus: 'm', db: -8 },
+    { f: SONG(), t: at('end') + 0.4, ss: 0, dur: 6.0, fi: 1.5, fo: 1.2, bus: 'm', db: -8 },
     // voices
     { f: AU('nar-film-1'), t: at('sky') + 0.5, bus: 'v' },
     { f: AU('nar-film-2'), t: at('lookup') + 0.3, bus: 'v' },
@@ -1370,13 +1376,13 @@ function sound30(at) {
   const yl = (() => { try { return JSON.parse(fs.readFileSync(path.join(CAP, 'r-yoke.json'), 'utf8')); } catch { return {}; } })();
   return [
     { f: AU('film'), t: at('lookup'), ss: 8.6, dur: at('g-open') - at('lookup') + 0.1, fi: 0.2, fo: 0.2, bus: 'm', db: -1 },
-    { f: AU('siege-assault'), t: at('g-open'), ss: 0, dur: at('menu') - at('g-open'), fo: 0.3, bus: 'm', db: -1 },
+    { f: SONG(), t: at('g-open'), ss: 0, dur: at('menu') - at('g-open'), fo: 0.3, bus: 'm', db: -1 },
     { f: AU('sting-wave'), t: at('g-open'), bus: 'm', db: -4 },
     { f: AU('sting-desk'), t: at('menu'), bus: 'm', db: -2 },
     { f: AU('theme-ship'), t: at('menu') + 0.3, ss: 4, dur: at('m-maw') - at('menu') - 0.3, fi: 0.6, fo: 0.3, bus: 'm', db: -3 },
-    { f: AU('siege-assault'), t: at('m-maw'), ss: 61.2, dur: at('end') - at('m-maw') + 0.15, fo: 0.15, bus: 'm', db: 0 },
+    { f: SONG(), t: at('m-maw'), ss: SONG_DROP, dur: at('end') - at('m-maw') + 0.15, fo: 0.15, bus: 'm', db: 0 },
     { f: AU('sting-core'), t: at('end'), bus: 'm', db: 0, fo: 1.0 },
-    { f: AU('theme-menu'), t: at('end') + 0.3, ss: 0, dur: 4.0, fi: 1.0, fo: 1.0, bus: 'm', db: -8 },
+    { f: SONG(), t: at('end') + 0.3, ss: 0, dur: 4.0, fi: 1.0, fo: 1.0, bus: 'm', db: -8 },
     { f: path.join(RAW, 'voice', 'yoke-suck.mp3'), t: at('r-yoke') - (yl.voiceLead ?? 0.1), bus: 'v', db: 1 },
     { f: VO('institute__a-video-call-mid-game__5'), t: at('institute') + 0.15, ss: 3.45, dur: 2.5, bus: 'v' },
     { f: AU('fire-bite-2'), t: at('g-maw') + Math.min(MAW_BITE, 2.0), bus: 's', db: -3 },
@@ -1485,13 +1491,13 @@ function gameCues(shots, at, { db = -7, maxPerHalf = 4 } = {}) {
 }
 function soundGameplay(at, shots) {
   const mStart = at('m-late');
-  // The music's drop (61.2 s into siege-assault, the 90 s cut's montage) lands on the montage.
-  const ss = Math.max(0, 61.2 - mStart);
+  // The song's drop (SONG_DROP, the 90 s cut's montage) lands on the montage.
+  const ss = Math.max(0, SONG_DROP - mStart);
   return [
     { f: AU('sting-wave'), t: 0, bus: 'm', db: -3 },
-    { f: AU('siege-assault'), t: 0, ss, dur: at('end') + 0.2, fi: 0.6, fo: 0.25, bus: 'm', db: -1 },
+    { f: SONG(), t: 0, ss, dur: at('end') + 0.2, fi: 0.6, fo: 0.25, bus: 'm', db: -1 },
     { f: AU('sting-core'), t: at('end'), bus: 'm', db: 0, fo: 1.0 },
-    { f: AU('theme-menu'), t: at('end') + 0.4, ss: 0, dur: 5.0, fi: 1.2, fo: 1.2, bus: 'm', db: -8 },
+    { f: SONG(), t: at('end') + 0.4, ss: 0, dur: 5.0, fi: 1.2, fo: 1.2, bus: 'm', db: -8 },
     { f: AU('nar-royal'), t: at('g-boss') + 0.1, bus: 'v' },
     { f: AU('boss-roar'), t: at('g-boss') + 0.4, bus: 's', db: -5 },
     { f: AU('land-roar'), t: at('landing') - 0.3, ss: 1.2, bus: 's', db: -3, fo: 0.4, dur: 1.9 },

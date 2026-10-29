@@ -201,13 +201,13 @@ try {
     hasAny(got, /^voice:nar-film-/, 'the narrator read the titles');
     await board(page);
     await sleep(2500);
-    check((await audio(page)).loop === 'siege-build', `mission 1: the build music (${(await audio(page)).loop})`);
+    check((await audio(page)).loop === 'playlist:mission', `mission 1: the build music (${(await audio(page)).loop})`);
     await page.locator('#speed-box [data-speed="3"]').click();
     const n = await grow(page, 3);
     check(n > 0, `limbs grown (${n})`);
     await page.evaluate(() => window.broodfall.play({ kind: 'call-early' }));
-    await page.waitForFunction(() => window.__bfAudio.state().loop === 'siege-assault', null, { timeout: 30000 }).catch(() => {});
-    check((await audio(page)).loop === 'siege-assault', 'the wave: the assault music crossfaded in');
+    await page.waitForFunction(() => window.__bfAudio.state().loop === 'playlist:mission', null, { timeout: 30000 }).catch(() => {});
+    check((await audio(page)).loop === 'playlist:mission', 'the wave: the playlist runs on into the wave');
     await sleep(14000);
     got = await played(page);
     has(got, 'sting:sting-wave', 'the wave\'s fanfare');
@@ -227,7 +227,7 @@ try {
     await page.waitForSelector('#campaign:not(.hidden) .cp-icom', { timeout: 20000 });
     await sleep(2500);
     const s1 = await audio(page);
-    check(s1.scene === 'ship' && s1.loop === 'theme-ship', `the ship: its music (${s1.loop})`);
+    check(s1.scene === 'ship' && s1.loop === 'ship-ambient', `the ship: its music (${s1.loop})`);
     got = await played(page);
     has(got, 'sfx:intercom-open', 'YOKE\'s intercom opens');
     has(got, 'sfx:ui-confirm', 'CONTINUE confirms');
@@ -264,22 +264,22 @@ try {
     check(await startRecording(p), 'the mix is recorded');
     // What a player hears: the hum starts within a couple of seconds of the click. Waited on the loop
     // actually PLAYING (window.__bfAudio.state().loop), not a fixed delay; the time it took is reported.
-    const humAt = await page.waitForFunction(() => window.__bfAudio.state().loop === 'theme-menu' && performance.now(), null, { timeout: 10000, polling: 50 })
+    const humAt = await page.waitForFunction(() => window.__bfAudio.state().loop === 'menu-flag-of-doom' && performance.now(), null, { timeout: 10000, polling: 50 })
       .then((h) => h.jsonValue(), () => null);
     const m = await audio(page);
     const took = humAt == null ? null : Math.round(humAt - clickedAt);
     if (m.loop !== 'theme-menu' || took > 2500) console.log('    the menu music after the click: ' + JSON.stringify(await page.evaluate((t0) => ({
       state: window.__bfAudio.state(), log: window.__bfAudio.log.filter((e) => e.kind === 'music' || e.kind === 'scene').map((e) => ({ ...e, t: e.t - t0 })),
       audioFetches: performance.getEntriesByType('resource').filter((r) => r.name.includes('/audio/')).length,
-      menuFile: performance.getEntriesByType('resource').filter((r) => r.name.includes('theme-menu')).map((r) => ({ start: Math.round(r.startTime - t0), end: Math.round(r.responseEnd - t0) })),
+      menuFile: performance.getEntriesByType('resource').filter((r) => r.name.includes('flag-of-doom-1')).map((r) => ({ start: Math.round(r.startTime - t0), end: Math.round(r.responseEnd - t0) })),
     }), clickedAt)));
-    check(m.scene === 'menu' && m.loop === 'theme-menu', `the menu's music: the ship's hum (${m.loop})`);
+    check(m.scene === 'menu' && m.loop === 'menu-flag-of-doom', `the menu's music: Flag of Doom (${m.loop})`);
     check(took != null && took <= 2500, `the hum starts within a couple of seconds of the click (${took} ms)`);
     await sleep(Math.max(0, 1000 - (took ?? 0)));
     const menuLevel = await meterMax(page, 1500);
     check(menuLevel > -60, `it is heard (meter peak ${menuLevel.toFixed(1)} dBFS)`);
     // Streamed from the file while its buffer decoded: the seamless loop takes over once it has.
-    const handed = await page.waitForFunction(() => window.__bfAudio.state().loop === 'theme-menu' && !window.__bfAudio.state().streamed, null, { timeout: 15000 }).then(() => true, () => false);
+    const handed = await page.waitForFunction(() => window.__bfAudio.state().loop === 'menu-flag-of-doom' && !window.__bfAudio.state().streamed, null, { timeout: 15000 }).then(() => true, () => false);
     check(handed, 'the decoded loop takes over from the streamed file (seamless loop points)');
     for (const id of ['#menu-campaign', '#menu-settings', '#menu-intro']) { await page.hover(id).catch(() => {}); await sleep(250); }
     await page.locator('#menu-settings').click();
@@ -316,7 +316,7 @@ try {
     await page.waitForSelector('#campaign:not(.hidden)', { timeout: 20000 });
     await sleep(4000);
     const s = await audio(page);
-    check(s.scene === 'ship' && s.loop === 'theme-ship', `CONTINUE → the ship's music crossfades in (${s.loop})`);
+    check(s.scene === 'ship' && s.loop === 'ship-ambient', `CONTINUE → the ship's music crossfades in (${s.loop})`);
     for (const r of ['gene', 'comms', 'ai']) { const b = page.locator(`#campaign [data-room="${r}"]`).first(); if (await b.count()) { await b.hover(); await sleep(200); await b.click(); await sleep(900); } }
     const got = await played(page);
     hasAny(got, /^sfx:ui-hover$/, 'buttons answer the pointer');
@@ -337,21 +337,21 @@ try {
     check(await startRecording(p), 'the mix is recorded');
     await page.evaluate(() => { window.broodfall.sim.directive = { kind: 'hold', waves: 2 }; });
     await sleep(3000);
-    check((await audio(page)).loop === 'siege-build', 'wave setup: the build music');
+    check((await audio(page)).loop === 'playlist:mission', 'wave setup: the build music');
     const g1 = await grow(page, 5);
     check(g1 >= 3, `limbs grown (${g1})`);
     await sleep(1500);
     for (let wave = 1; wave <= 2; wave++) {
       await page.evaluate(() => window.broodfall.play({ kind: 'call-early' }));
-      await page.waitForFunction(() => window.__bfAudio.state().loop === 'siege-assault', null, { timeout: 30000 }).catch(() => {});
-      check((await audio(page)).loop === 'siege-assault', `wave ${wave}: the assault music`);
+      await page.waitForFunction(() => window.__bfAudio.state().loop === 'playlist:mission', null, { timeout: 30000 }).catch(() => {});
+      check((await audio(page)).loop === 'playlist:mission', `wave ${wave}: the assault music`);
       if (wave === 1) { await sleep(4000); await page.evaluate(() => { window.broodfall.sim.events.push({ kind: 'royal-incoming' }); }); }
       // The wave plays out; its end opens the organ stage (or the run is won).
       await page.waitForFunction(() => window.broodfall.sim.outcome !== 'playing' || window.__bfAudio.state().scene === 'organ', null, { timeout: 180000 }).catch(() => {});
       if (await page.evaluate(() => window.broodfall.sim.outcome !== 'playing')) break;
       await sleep(3500);
       const o = await audio(page);
-      check(o.scene === 'organ' && o.loop === 'organ', `between waves: the organ stage's music (${o.loop})`);
+      check(o.scene === 'organ' && o.loop === 'playlist:organ', `between waves: the organ stage's music (${o.loop})`);
       // An organ grown by the hand of the scripted player's own rules is not needed: the sim's organ commands are.
       await page.evaluate(() => {
         const b = window.broodfall;

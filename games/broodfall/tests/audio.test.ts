@@ -69,8 +69,16 @@ describe('the music follows the screen', () => {
     expect(prev).toBe('assault');
     expect(sceneOf({ ...s, enemies: 0 }, prev)).toBe('build');
   });
-  it('has a loop for every scene that plays one', () => {
-    for (const id of Object.values(SCENE_TRACK)) if (id) expect(MUSIC.find((m: { id: string }) => m.id === id)?.loop, id).toBe(true);
+  it('has a loop, or a playlist of tracks that are there, for every scene that plays one', () => {
+    const baked = JSON.parse(readFileSync(join(here, '..', 'public', 'audio', 'manifest.json'), 'utf8'));
+    for (const id of Object.values(SCENE_TRACK)) {
+      if (!id) continue;
+      if (id.startsWith('playlist:')) {
+        const list: string[] = baked.playlists?.[id.slice(9)] ?? [];
+        expect(list.length, id).toBeGreaterThan(0);
+        for (const t of list) expect(existsSync(join(here, '..', 'public', baked.music[t]?.file ?? '-')), t).toBe(true);
+      } else expect(baked.music[id]?.loop, id).toBe(true);
+    }
   });
 });
 
