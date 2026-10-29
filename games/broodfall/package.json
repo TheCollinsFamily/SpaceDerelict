@@ -3,6 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "main": "desktop/main.cjs",
   "scripts": {
     "start": "vite --open",
     "dev": "vite",
@@ -11,7 +12,8 @@
     "test": "vitest run",
     "test:visual": "node tools/visual-check.mjs",
     "test:input": "node tools/input-check.mjs",
-    "test:endgame": "node tools/endgame-check.mjs"
+    "test:endgame": "node tools/endgame-check.mjs",
+    "desktop": "electron ."
   },
   "dependencies": {
     "pixi.js": "^8.6.6",
@@ -21,9 +23,13 @@
     "@playwright/test": "^1.49.0",
     "@types/pngjs": "^6.0.5",
     "@types/three": "^0.170.0",
+    "electron": "^45.1.0",
     "pngjs": "^7.0.0",
     "typescript": "^5.7.2",
     "vite": "^6.0.7",
     "vitest": "^2.1.8"
+  },
+  "allowScripts": {
+    "electron@45.1.0": true
   }
 }

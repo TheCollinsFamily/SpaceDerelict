@@ -36,6 +36,7 @@ export class ConsoleMenu {
   constructor(private saved: CampaignState | null, private hooks: MenuHooks) {
     this.el.classList.add('console-menu');
     this.el.addEventListener('click', (ev) => this.onClick(ev));
+    if ('broodfallDesktop' in window) document.getElementById('menu-quit')?.classList.remove('hidden');
     this.status();
     this.dressVideo();
   }
@@ -114,6 +115,8 @@ export class ConsoleMenu {
       case 'menu-settings':
         openSettings({ where: 'menu', onClose: () => { this.yoke = loadYoke(); this.status(); } });
         return;
+      // The desktop game only (desktop/preload.cjs): a browser tab is closed by its own browser.
+      case 'menu-quit': (window as unknown as { broodfallDesktop?: { quit(): void } }).broodfallDesktop?.quit(); return;
       case 'menu-voice': this.setYoke({ ...this.yoke, muted: !this.yoke.muted }); return;
       case 'menu-yoke-mode': {
         const order: YokeMode[] = YOKE_AVATAR ? ['avatar', 'kimi', 'scripted'] : ['kimi', 'scripted'];
