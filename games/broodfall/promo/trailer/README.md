@@ -62,8 +62,8 @@ node tools/promo/intro.mjs titles sd25    # the type, 763 frames
 node tools/promo/intro.mjs cut sd25       # the intro, then both demo files (checks frame counts and lengths)
 ```
 
-Cost: her picture 4,000 tokens, the two takes 159,720 (2.5: about 124,000; mini: about 36,000), transcripts and the vision
-checks under 1,500: about 165,000 tokens ($3.30). No top-up was needed.
+Cost, by the balance before and after: about 187,000 tokens ($3.75): her picture 4,000, the two takes 159,720 (2.5: about 124,000;
+mini: about 36,000), the rest the four transcripts and the two vision checks. No top-up was needed.
 
 ## The gameplay cut (Oct 26 2026)
 
