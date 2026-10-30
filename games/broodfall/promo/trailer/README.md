@@ -74,9 +74,11 @@ node tools/promo/intro.mjs cut omni       # the intro, then both demo files (che
 
 (`clips` still makes the acted Seedance takes, for a line with no brand name in it.)
 
-Cost, by the balance before and after: about 400,000 tokens ($8.00) for the whole day: her picture 4,000; the two acted
-takes 159,720 (the first intro); the three voices 258; the two lip-synced takes 210,800 (OmniHuman about 102,000, Seedance
-2.5 r2v about 109,000); the rest the transcripts and the vision checks. No top-up was needed.
+Cost, by the balance before and after: 494,000 tokens ($9.90) over the day, of which the work itself asked for 375,000:
+her picture 4,000; the two acted takes 159,720 (the first intro); the three voices 258; the two lip-synced takes 210,800
+(OmniHuman about 102,000, Seedance 2.5 r2v about 109,000). The other 119,000 is the ten transcripts, the three vision
+checks (a picture to rfab.ai's chat each) and whatever other sessions spent from the same balance meanwhile. No top-up
+was needed (683,682 tokens left).
 
 ## The gameplay cut (Oct 26 2026)
 
