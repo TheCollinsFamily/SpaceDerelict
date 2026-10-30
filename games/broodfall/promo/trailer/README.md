@@ -15,6 +15,56 @@ Mbit/s (30 s, vertical).
 Everything is rebuilt by `tools/promo/trailer.mjs` (`capture`, `record`, `gen`, `titles`, `cut`,
 `sheet`); raw footage, frames, segments and masters are in `art-src/trailer/`.
 
+## The demo intro (Oct 30 2026): the trailers with Neko Voss in front, for Y Combinator
+
+Collins: "the game trailer for broodfall needs a thing in front of it before I submit it to Y Combinator as our demo ...
+a short thing at the beginning with animation saying Claude Code + The RFab API built this game + trailer with only
+limited human interaction. This is what Reality Fabricator unlocks. (have Neko Voss say it)".
+
+| File | What | Length | Size |
+|---|---|---|---|
+| `broodfall-trailer-yc-demo.mp4` | The 12.7 s intro, then the 88 s store trailer: 1920x1080, 60 fps, H.264 High + AAC 320k | 100.7 s | 46.7 MB |
+| `broodfall-trailer-yc-demo-gameplay.mp4` | The same intro, then the 56 s gameplay trailer | 68.6 s | 43.7 MB |
+
+The store trailers above are not changed. Both demo files: -14.0 LUFS, true peak -1.5 dBTP, picture and sound the same length
+to the frame. Masters (CRF 16) in `art-src/trailer/intro/` (git-ignored).
+
+**The intro.** Neko Voss (rfab.ai's mascot, the cyberpunk catgirl nerd) stands at the left of a dark hacker den and says
+Collins's line to camera in one acted take; the words are set in type beside her, in step with her own words:
+CLAUDE CODE / + THE RFAB API type themselves in (a terminal caret) as she says them, "built this game + trailer" and "with
+only limited human interaction." come up as she reaches them, then the panel clears for THIS IS WHAT / REALITY FABRICATOR
+/ UNLOCKS. word by word, the RFab wordmark under it. From black, to black, and the trailer's own fade from black follows.
+
+- **Her picture** (`art-src/trailer/intro/neko-169.png`, 1280x720): drawn by rfab.ai's image API (GPT Image 2, the default
+  tier) from her public portrait `https://rfab.ai/assets/beat-brief/persona-neko.webp` as the reference, in the left third
+  of a wide frame with the right two thirds dark for the type.
+- **Her take** (`take-sd25.mp4`, 12.06 s): Seedance 2.5 image-to-video at 480p (the lowest), the line in the prompt, the
+  model's own voice (Collins's film rule: acted, never a voice track with a picture made round it). Two takes were made at
+  once, the other on the default Seedance 2.0 mini (`take-mini.mp4`, the first measurement of the default tier for speech):
+  both passed every gate; 2.5 was heard word-perfect (23/23), mini heard "Cloud Code" (22/23), so 2.5 is the one used. Her
+  voice: 211 Hz, bright, a 0.96 s beat before "This is what". Nobody has listened to it: the gates measure, Collins's ear decides.
+- **The gates** (`hear`): every written word heard (rfab.ai transcription, word times), no ad-lib, no pause over 1.3 s, not
+  cut off, a woman's pitch, brightness and sharpness steady, and eight frames shown to a model that sees (on model, no
+  lettering in the picture, no static, nothing growing out of her).
+- **The type**: Oswald 700 and Bahnschrift (the trailer's faces), rendered frame by frame at 60 fps in headless Chromium as
+  transparent PNGs (`titles/sd25/`, 763 frames), each line cued to the time her word was heard, over the take scaled to
+  1080p. The take is cut 0.14 s in (her first word lands at 0.7 s, after the fade) and held 1.1 s after her last word; her
+  last frame is cloned over the hold (the first build let the picture stop at the end of the take, 0.8 s before the sound:
+  the whole trailer ran out of sync, caught by counting frames, which `cut` now does).
+
+Rebuild (in `games/broodfall`):
+
+```
+node tools/promo/intro.mjs still          # her picture (skips what is on disk)
+node tools/promo/intro.mjs clips          # both takes at once
+node tools/promo/intro.mjs hear           # transcripts + gates; writes art-src/trailer/intro/chosen.txt
+node tools/promo/intro.mjs titles sd25    # the type, 763 frames
+node tools/promo/intro.mjs cut sd25       # the intro, then both demo files (checks frame counts and lengths)
+```
+
+Cost: her picture 4,000 tokens, the two takes 159,720 (2.5: about 124,000; mini: about 36,000), transcripts and the vision
+checks under 1,500: about 165,000 tokens ($3.30). No top-up was needed.
+
 ## The gameplay cut (Oct 26 2026)
 
 | File | What | Length | Size |
