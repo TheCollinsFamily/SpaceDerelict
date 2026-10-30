@@ -9,6 +9,8 @@
  *
  *   node tools/promo/intro.mjs still          her picture, 16:9, drawn from her portrait (RFab; SPENDS tokens, skips what is on disk)
  *   node tools/promo/intro.mjs clips          two takes AT ONCE of her saying the line: Seedance 2.5 and Seedance 2.0 mini, 480p, 12 s
+ *   node tools/promo/intro.mjs voice          her line as text-to-speech, three voices at once (the word "Fabricator" said from a lexicon)
+ *   node tools/promo/intro.mjs sync           two takes AT ONCE of her picture speaking THAT track: OmniHuman 1.5 lip-sync, Seedance 2.5 r2v
  *   node tools/promo/intro.mjs hear           what each take says, word by word (rfab.ai transcription), and THE GATES
  *   node tools/promo/intro.mjs titles <take>  the animated type, frame by frame at 60 fps (headless Chromium), timed to her words
  *   node tools/promo/intro.mjs cut <take>     the intro segment, then the two trailers with it in front: promo/trailer/*-yc-demo*.mp4
@@ -44,9 +46,25 @@ const LINE_WORDS = ['claude', 'code', 'and', 'the', 'rfab', 'api', 'built', 'thi
 const SECONDS = 12;
 /** Two takes, made at once: the model the film system measured for acted speech, and the default tier beside it (untested for speech until now). */
 const TAKES = {
-  sd25: { models: ['atlascloud:seedance-2.5-i2v', 'imagerouter:seedance-2.5-i2v'], tierReason: 'a 23-word line acted to camera by the character in one take: Seedance 2.5 is the model the Broodfall film system measured for acted speech (tools/media/talk-test.mjs, Oct 4 2026); the default Seedance 2.0 mini is untested for speech and is made beside it in the same run' },
-  mini: { models: ['atlascloud:seedance-2.0-mini-i2v'] },
+  sd25: { kind: 'i2v', models: ['atlascloud:seedance-2.5-i2v', 'imagerouter:seedance-2.5-i2v'], tierReason: 'a 23-word line acted to camera by the character in one take: Seedance 2.5 is the model the Broodfall film system measured for acted speech (tools/media/talk-test.mjs, Oct 4 2026); the default Seedance 2.0 mini is untested for speech and is made beside it in the same run' },
+  mini: { kind: 'i2v', models: ['atlascloud:seedance-2.0-mini-i2v'] },
+  // Oct 30 2026, Collins on the sd25 take: "she is mispronouncing fabricator". A video model invents the saying of a word it
+  // does not know; a TTS voice says it from a lexicon. So the line is spoken by TTS and her picture is made to speak THAT track.
+  omni: { kind: 'sync', model: 'replicate:bytedance/omni-human' },
+  r2v: { kind: 'sync', model: 'atlascloud:seedance-2.5-r2v', tierReason: 'the Seedance 2.5 i2v take said "Fabricator" wrong (Collins, Oct 30 2026): the line must be the given TTS track, lip-synced; a reference sound is taken only by the 2.5 r2v row, not by the default mini' },
 };
+/** Her line for text-to-speech: "R-Fab" as the site says it, a beat before the last sentence. */
+const LINE_TTS = 'Claude Code and the R-Fab API built this game, and this trailer, with only limited human interaction. <short pause> This is what Reality Fabricator unlocks.';
+const TTS_DIRECTION = 'bright, warm and confident; quick but every word clear; a smile in the voice, like a host opening a show';
+/** Three of the directable voices, in the order preferred for her (youthful, bright, upbeat); the first that is heard whole is used. */
+const VOICES = ['gem-leda', 'gem-zephyr', 'gem-laomedeia'];
+const SYNC_PROMPT_OMNI = 'She talks to the camera, bright and animated, gesturing with her raised hand as she speaks and grinning proudly on the last sentence; her cat-ear headphones glow softly; the camera is locked.';
+const SYNC_PROMPT_R2V = [
+  'One continuous locked-off shot: the camera never moves and never cuts.',
+  `${LOOK}, stands at the left of the frame and speaks straight to the camera. Her words, her voice and her lip movements are exactly @Audio1, which is the only sound of the clip, played once from the first frame, with nothing added and nothing else said.`,
+  'She gestures with her raised hand as she speaks and gives a proud little grin on the last sentence; her cat-ear headphones glow softly in time with her voice.',
+  'The right side of the picture stays dark and empty exactly as in the first frame; nothing new appears; no text, letters or writing appear anywhere.',
+].join(' ');
 
 const STILL_PROMPT = [
   'Detailed anime illustration, crisp linework, expressive eyes, never chibi, never western cartoon. Exactly one character.',
@@ -149,6 +167,8 @@ function loudnorm(raw, out) {
 }
 
 // ------------------------------------------------------------------ files
+/** Words as compared: lower case, no hyphens or punctuation. */
+const norm = (t) => t.toLowerCase().replace(/[’']/g, '').replace(/-/g, '').replace(/[^a-z0-9 ]+/g, ' ').split(/\s+/).filter(Boolean);
 const STILL = path.join(RAW, 'neko-169.png');
 const PORTRAIT = path.join(RAW, 'persona-neko.png');
 const takeFile = (take) => path.join(RAW, `take-${take}.mp4`);
@@ -213,15 +233,109 @@ if (cmd === 'clips') {
   if (!fs.existsSync(STILL)) throw new Error('her picture is not drawn yet: node tools/promo/intro.mjs still');
   const before = await balance();
   const imageUrl = await uploadImage(STILL, 'broodfall-intro-neko-169');
-  const want = Object.keys(TAKES).filter((t) => !TAKE || t === TAKE);
+  const want = Object.keys(TAKES).filter((t) => TAKES[t].kind === 'i2v' && (!TAKE || t === TAKE));
   // Independent generations go out together, never one after another (Collins, Oct 29 2026).
   const results = await Promise.allSettled(want.map((t) => makeTake(t, imageUrl)));
   results.forEach((r, i) => { if (r.status === 'rejected') console.warn(`  ${want[i]}: FAILED: ${r.reason.message.slice(0, 300)}`); });
   console.log(`  tokens spent by clips: ${before - await balance()}`);
 }
 
+// ------------------------------------------------------------------ VOICE: her line as text-to-speech
+const voiceFile = (id) => path.join(RAW, `voice-${id}.mp3`);
+const chosenVoice = () => {
+  const f = path.join(RAW, 'voice.txt');
+  const id = rest.find((a) => a.startsWith('--voice='))?.slice(8) ?? (fs.existsSync(f) ? fs.readFileSync(f, 'utf8').trim() : null);
+  if (!id || !fs.existsSync(voiceFile(id))) throw new Error('no voice is made yet: node tools/promo/intro.mjs voice');
+  return id;
+};
+async function makeVoice(id) {
+  const out = voiceFile(id);
+  if (fs.existsSync(out)) { console.log(`  ${id}: cached`); return out; }
+  const r = await api('/api/audio/synthesize', { method: 'POST', body: JSON.stringify({ text: LINE_TTS, voice: id, direction: TTS_DIRECTION, format: 'mp3', returnUrl: true }) });
+  if (!r.url) throw new Error(`${id}: no url in ${JSON.stringify(r).slice(0, 200)}`);
+  fs.writeFileSync(out, await download(r.url, `${id} voice`));
+  fs.writeFileSync(out.replace(/\.mp3$/, '.json'), JSON.stringify({ voice: id, url: r.url, tokensBilled: r.tokensBilled ?? null, text: LINE_TTS, direction: TTS_DIRECTION }, null, 1));
+  return out;
+}
+if (cmd === 'voice') {
+  const before = await balance();
+  const want = VOICES.filter((v) => !TAKE || v === TAKE);
+  const made = await Promise.allSettled(want.map(makeVoice));
+  made.forEach((r, i) => { if (r.status === 'rejected') console.warn(`  ${want[i]}: FAILED: ${r.reason.message.slice(0, 300)}`); });
+  const rows = [];
+  for (const id of want) {
+    if (!fs.existsSync(voiceFile(id))) continue;
+    const heard = await hearWords(voiceFile(id));
+    const al = alignWords(LINE_WORDS, heard.words);
+    const hit = al.filter(Boolean).length;
+    const ws = heard.words;
+    let gap = 0; for (let i = 1; i < ws.length; i++) gap = Math.max(gap, ws[i].start - ws[i - 1].end);
+    const row = { id, dur: +duration(voiceFile(id)).toFixed(2), hit, missed: LINE_WORDS.filter((w, i) => !al[i]), gap: +gap.toFixed(2), hz: Math.round(pitchOf(voiceFile(id))), heard: heard.text };
+    rows.push(row);
+    console.log(`  ${id}: ${row.dur} s, ${hit}/${LINE_WORDS.length} words${row.missed.length ? ` (missed ${row.missed.join(' ')})` : ''}, longest pause ${row.gap} s, ${row.hz} Hz: "${row.heard}"`);
+  }
+  const ok = rows.filter((r) => r.hit === LINE_WORDS.length && r.gap <= 1.3 && r.dur >= 8 && r.dur <= 14);
+  const pick = VOICES.map((v) => ok.find((r) => r.id === v)).find(Boolean);
+  if (pick) { fs.writeFileSync(path.join(RAW, 'voice.txt'), pick.id); console.log(`  chosen (first preferred voice heard whole): ${pick.id}`); }
+  else console.log('  no voice was heard whole');
+  console.log(`  tokens spent by voice: ${before - await balance()}`);
+}
+
+// ------------------------------------------------------------------ SYNC: her picture speaking the TTS track, two ways at once
+/** How alike two sounds are: the peak of their normalized cross-correlation over the first 6 s (1 = the same track). */
+function sameSound(a, b) {
+  const SR = 8000;
+  const pcm = (f) => { const r = spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-t', '6', '-i', f, '-vn', '-ac', '1', '-ar', String(SR), '-f', 'f32le', '-'], { maxBuffer: 1 << 26 }); return new Float32Array(r.stdout.buffer, r.stdout.byteOffset, Math.floor(r.stdout.byteLength / 4)); };
+  const x = pcm(a), y = pcm(b);
+  const n = Math.min(x.length, y.length) - SR; // a lag of up to 1 s either way
+  if (n < SR) return 0;
+  const norm = (v, o) => { let e = 0; for (let i = 0; i < n; i++) e += v[o + i] * v[o + i]; return Math.sqrt(e) || 1; };
+  let best = 0;
+  for (let lag = -SR; lag <= SR; lag += 8) {
+    const ox = Math.max(0, lag), oy = Math.max(0, -lag);
+    let c = 0; for (let i = 0; i < n; i += 1) c += x[ox + i] * y[oy + i];
+    best = Math.max(best, Math.abs(c) / (norm(x, ox) * norm(y, oy)));
+  }
+  return best;
+}
+async function makeSync(take, imageUrl, voiceId) {
+  const t = TAKES[take];
+  const out = takeFile(take);
+  if (fs.existsSync(out)) { console.log(`  ${take}: cached`); return out; }
+  const v = JSON.parse(fs.readFileSync(voiceFile(voiceId).replace(/\.mp3$/, '.json'), 'utf8'));
+  const secs = duration(voiceFile(voiceId));
+  const t0 = Date.now();
+  let d;
+  if (take === 'omni') {
+    console.log(`  ${take}: ${secs.toFixed(1)} s of ${voiceId} on ${t.model}`);
+    d = await api('/api/image-generation/generate-lip-sync', { method: 'POST', body: JSON.stringify({ imageUrl, audioUrl: v.url, lipSyncModelId: t.model, prompt: SYNC_PROMPT_OMNI, async: true }) });
+  } else {
+    const dur = Math.min(30, Math.max(4, Math.ceil(secs + 0.5)));
+    console.log(`  ${take}: ${dur} s on ${t.model} at 480p, @Audio1 = ${voiceId}`);
+    d = await api('/api/image-generation/generate-video', { method: 'POST', body: JSON.stringify({ imageUrl, audioUrls: [v.url], prompt: SYNC_PROMPT_R2V, videoModelId: t.model, duration: dur, resolution: '480p', aspect_ratio: '16:9', audio: true, nsfw: false, variationCount: 1, tierReason: t.tierReason }) });
+  }
+  const result = d.jobId ? await poll(d.jobId, `${take}`, 360) : d;
+  const url = firstUrl(result, 'videoUrl', 'imageUrl');
+  if (!url) throw new Error(`${take}: no clip URL in ${JSON.stringify(result).slice(0, 200)}`);
+  const buf = await download(url, `${take} clip`);
+  fs.writeFileSync(out, buf);
+  fs.writeFileSync(out.replace(/\.mp4$/, '.json'), JSON.stringify({ model: t.model, voice: voiceId, seconds: secs, tookSec: Math.round((Date.now() - t0) / 1000), url }, null, 1));
+  const alike = sameSound(out, voiceFile(voiceId));
+  console.log(`  ${take}: saved ${(buf.length / 1048576).toFixed(1)} MB in ${Math.round((Date.now() - t0) / 1000)} s (${probe(out, 'stream=width,height,r_frame_rate')}, ${duration(out).toFixed(2)} s); its sound is ${alike >= 0.5 ? 'the TTS track' : 'NOT the TTS track'} (correlation ${alike.toFixed(2)})`);
+  return out;
+}
+if (cmd === 'sync') {
+  if (!fs.existsSync(STILL)) throw new Error('her picture is not drawn yet: node tools/promo/intro.mjs still');
+  const voiceId = chosenVoice();
+  const before = await balance();
+  const imageUrl = await uploadImage(STILL, 'broodfall-intro-neko-169');
+  const want = Object.keys(TAKES).filter((t) => TAKES[t].kind === 'sync' && (!TAKE || t === TAKE));
+  const results = await Promise.allSettled(want.map((t) => makeSync(t, imageUrl, voiceId)));
+  results.forEach((r, i) => { if (r.status === 'rejected') console.warn(`  ${want[i]}: FAILED: ${r.reason.message.slice(0, 400)}`); });
+  console.log(`  tokens spent by sync: ${before - await balance()}`);
+}
+
 // ------------------------------------------------------------------ HEAR: the words and the gates
-const norm = (t) => t.toLowerCase().replace(/[’']/g, '').replace(/-/g, '').replace(/[^a-z0-9 ]+/g, ' ').split(/\s+/).filter(Boolean);
 /** Two words are the same word as heard: exactly, one letter apart, or one the other plus an ending ("fabricators"). */
 function sameWord(a, b) {
   if (a === b) return true;
@@ -236,9 +350,9 @@ function sameWord(a, b) {
   return d + (a.length - i) + (b.length - j) <= 1;
 }
 async function hearWords(file) {
-  const cache = file.replace(/\.mp4$/, '.words.json');
+  const cache = file.replace(/\.(mp4|mp3|wav)$/, '.words.json');
   if (fs.existsSync(cache) && fs.statSync(cache).mtimeMs >= fs.statSync(file).mtimeMs) return JSON.parse(fs.readFileSync(cache, 'utf8'));
-  const wav = file.replace(/\.mp4$/, '.16k.wav');
+  const wav = file.replace(/\.(mp4|mp3|wav)$/, '.16k.wav');
   ff(['-i', file, '-vn', '-ac', '1', '-ar', '16000', wav], 'wav');
   const r = await api('/api/audio/transcribe', { method: 'POST', body: JSON.stringify({ audioBase64: fs.readFileSync(wav).toString('base64') }) });
   fs.rmSync(wav, { force: true });
@@ -313,7 +427,8 @@ function sharpOf(px, W, H) {
 const HEAD = 0.7, HOLD = 1.1;
 function cutOf(words) {
   const first = words[0]?.start ?? 0, last = words[words.length - 1]?.end ?? SECONDS;
-  const hs = Math.max(0, first - HEAD);
+  // A negative head is a pad: her first frame held (and silence) so the first word still lands at HEAD s, after the fade.
+  const hs = first - HEAD;
   return { hs, first, last, dur: Math.round((last - hs + HOLD) * FPS) / FPS };
 }
 async function gatesOf(take) {
@@ -370,7 +485,12 @@ async function gatesOf(take) {
     if (named && /BODY=YES/i.test(seen)) fails.push(`BODY: something grows or morphs (frames ${frames} of ${n})`);
     if (!/STATIC=(YES|NO)/i.test(seen)) notes.push(`the vision check gave no answer ("${seen.slice(0, 80)}")`);
   } catch (e) { notes.push(`the vision check could not be made (${e.message.slice(0, 120)}); the measured gates stand`); }
-  const report = { take, model: JSON.parse(fs.readFileSync(f.replace(/\.mp4$/, '.json'), 'utf8')).model, clipSeconds: +clipDur.toFixed(2), heard: heard.text, words: heard.words.length, hit, missed, cut, pass: !fails.length, fails, notes, seen, strip };
+  const meta = JSON.parse(fs.readFileSync(f.replace(/\.mp4$/, '.json'), 'utf8'));
+  if (meta.voice && fs.existsSync(voiceFile(meta.voice))) {
+    const alike = sameSound(f, voiceFile(meta.voice));
+    if (alike < 0.5) fails.push(`TRACK: its sound is not the TTS track (correlation ${alike.toFixed(2)})`); else notes.push(`its sound is the TTS track ${meta.voice} (correlation ${alike.toFixed(2)})`);
+  }
+  const report = { take, model: meta.model, voice: meta.voice ?? null, clipSeconds: +clipDur.toFixed(2), heard: heard.text, words: heard.words.length, hit, missed, cut, pass: !fails.length, fails, notes, seen, strip };
   fs.writeFileSync(f.replace(/\.mp4$/, '.gates.json'), JSON.stringify(report, null, 1));
   return report;
 }
@@ -526,18 +646,19 @@ function introSegment(take) {
   const wav = path.join(RAW, `intro-${take}.wav`);
   // The sound: her voice, in from the cut head, out over the hold, at the trailers' loudness.
   const raw = path.join(RAW, `intro-${take}-raw.wav`);
-  ff(['-ss', cut.hs.toFixed(3), '-t', D.toFixed(3), '-i', clip, '-vn', '-af', `aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,afade=t=in:st=0:d=0.12,afade=t=out:st=${(D - 0.55).toFixed(3)}:d=0.55,apad=whole_dur=${D.toFixed(3)},atrim=0:${D.toFixed(3)}`, '-c:a', 'pcm_f32le', raw], 'intro sound');
+  const pad = Math.max(0, -cut.hs), ss = Math.max(0, cut.hs), padMs = Math.round(pad * 1000);
+  ff(['-ss', ss.toFixed(3), '-t', D.toFixed(3), '-i', clip, '-vn', '-af', `aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,afade=t=in:st=0:d=0.12,adelay=${padMs}|${padMs},afade=t=out:st=${(D - 0.55).toFixed(3)}:d=0.55,apad=whole_dur=${D.toFixed(3)},atrim=0:${D.toFixed(3)}`, '-c:a', 'pcm_f32le', raw], 'intro sound');
   loudnorm(raw, wav);
   // The picture: the take scaled to the frame, the type over it, from black and to black.
   const f = [
     // The take ends before the hold after her last word does: her last frame is held (cloned) to the end, so the picture
     // runs exactly as long as the sound. (The first build let the overlay stop at the shorter input: 48 frames short, and
     // the whole trailer's picture 0.8 s ahead of its sound.)
-    `[0:v]setpts=PTS-STARTPTS,fps=${FPS},tpad=stop_mode=clone:stop_duration=3,scale=1920:1080:flags=lanczos,setsar=1,format=rgba[v]`,
+    `[0:v]setpts=PTS-STARTPTS,fps=${FPS},${pad ? `tpad=start_mode=clone:start_duration=${pad.toFixed(3)},` : ''}tpad=stop_mode=clone:stop_duration=3,scale=1920:1080:force_original_aspect_ratio=increase:flags=lanczos,crop=1920:1080,setsar=1,format=rgba[v]`,
     '[1:v]format=rgba[t]',
     `[v][t]overlay=0:0:shortest=0,fade=t=in:st=0:d=0.5,fade=t=out:st=${(D - 0.35).toFixed(3)}:d=0.35,format=yuv420p[out]`,
   ];
-  ff(['-ss', cut.hs.toFixed(3), '-t', (D + 0.5).toFixed(3), '-i', clip, '-framerate', String(FPS), '-start_number', '0', '-i', path.join(dir, 'f%05d.png'), '-filter_complex', f.join(';'), '-map', '[out]', '-frames:v', String(N), '-r', String(FPS), '-c:v', 'libx264', '-preset', 'medium', '-crf', '14', '-pix_fmt', 'yuv420p', '-an', video], 'intro picture');
+  ff(['-ss', ss.toFixed(3), '-t', (D + 0.5).toFixed(3), '-i', clip, '-framerate', String(FPS), '-start_number', '0', '-i', path.join(dir, 'f%05d.png'), '-filter_complex', f.join(';'), '-map', '[out]', '-frames:v', String(N), '-r', String(FPS), '-c:v', 'libx264', '-preset', 'medium', '-crf', '14', '-pix_fmt', 'yuv420p', '-an', video], 'intro picture');
   const got = frameCount(video), wavDur = duration(wav);
   if (got !== N) throw new Error(`the intro picture is ${got} frames, not ${N}`);
   if (Math.abs(wavDur - D) > 0.02) throw new Error(`the intro sound is ${wavDur.toFixed(3)} s, not ${D.toFixed(3)}`);
