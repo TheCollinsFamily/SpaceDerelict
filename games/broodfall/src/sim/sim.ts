@@ -76,6 +76,47 @@ export function themeOf(family: TowerFamily): OrganId | 'core' {
   return d ? d.id : 'core';
 }
 
+/** The highest evolution stage a family may reach under the deployment's caps (unset theme = 3). */
+export function evolutionCap(caps: SimConfig['evolutionCap'], family: TowerFamily): number {
+  // A limb no organ unlocks (the trap cage) is capped under its own name (content/campaign.ts
+  // territory unlocks `{ theme: 'cage' }`), not the meteor's.
+  if (caps && themeOf(family) === 'core' && caps[family] !== undefined) return caps[family]!;
+  return caps?.[themeOf(family)] ?? 3;
+}
+
+/**
+ * THE CASTES COME WHEN THEIR MEAT IS SPENDABLE (Collins, Oct 30 2026: "mission one should be only war type and
+ * science type + royals should not come until you can use their currency ... I dont even think you start with any
+ * limbs that use their currency (or at least you shouldn't)"). War is the generic currency: warriors come because you
+ * exist. The science caste comes only once this run can SPEND science: a limb can evolve (every stage costs science;
+ * mission 1 caps every theme at 0, src/meta/campaign.ts NO_EVOLUTION), an organ the organ stage may grow or a limb one
+ * unlocks is priced in science, or the directive is a harvest. The court comes only once this run can spend royal
+ * points: a third evolution stage is reachable (it costs a point), the directive is a royal hunt, the run starts with
+ * points (a faction's volunteers), or the Host is late (the last mission's court waves). Pure, from the deployment's
+ * orders alone, so it is settled before the first tick: the dig's labs and tombs, the Research Quarter plates, the
+ * researchers' parties, the engineers, the royal event and the decree box all follow these two switches, and no meat
+ * ever lands that nothing could spend. tests/castes.test.ts.
+ */
+export function castesOpen(cfg: SimConfig, directive: Directive): { science: boolean; royal: boolean } {
+  const pool = cfg.organPool;
+  const start = cfg.startOrgans ?? [];
+  const growable = ORGAN_DEFS.filter((d) => !pool || pool.includes(d.id) || start.includes(d.id));
+  const themes = new Set<OrganId | 'core'>(['core', ...growable.filter((d) => d.kind === 'theme').map((d) => d.id)]);
+  const limbs = TOWERS.filter((t) => themes.has(themeOf(t.family)));
+  const stages: ReadonlyArray<{ science?: number; royal?: number }> = UPGRADE_COST;
+  const evolvesWith = (meat: 'science' | 'royal') =>
+    limbs.some((t) => stages.some((c, i) => i < evolutionCap(cfg.evolutionCap, t.family) && (c[meat] ?? 0) > 0));
+  const science = directive.kind === 'harvest'
+    || evolvesWith('science')
+    || limbs.some((t) => (t.cost.science ?? 0) > 0)
+    || growable.some((d) => (d.cost.science ?? 0) > 0);
+  const royal = directive.kind === 'royal'
+    || (cfg.startBonus?.royal ?? 0) > 0
+    || !!cfg.lateHost
+    || evolvesWith('royal');
+  return { science, royal };
+}
+
 /** Derived stats of a tower after its inheritance pips. Deterministic; no RNG. */
 /**
  * Derived stats of a tower after its inheritance pips. Deterministic; no RNG.
@@ -305,6 +346,9 @@ export class Sim {
   private engineerTimer = 12;
   private baseRng: Rng;
   private royalSpawned = false;
+  /** The caste gate (castesOpen above): whether the science caste / the court can come this deployment. */
+  readonly scienceOpen: boolean;
+  readonly royalOpen: boolean;
 
   private threatKills = 0;
   private threatChallenge = 0;
@@ -445,8 +489,6 @@ export class Sim {
       this.map = createBoard(slotsX, slotsY, startSlot, this.rng, this.entrances, crash, Math.imul((cfg.seed ^ 0x7e11a5) >>> 0, 0x9e3779b1) >>> 0);
       if (cfg.pregrown) pregrow(this.map, this.rng, cfg.pregrown);
     }
-    this.underSeed = snap ? snap.underSeed : cfg.seed;
-    this.under = createUnderground(this.underSeed, TOWERS.filter((t) => !t.engine).map((t) => t.family));
     this.core = this.cellCenter(this.map.coreCell);
     this.gates = frontierGates(this.map);
     for (const id of cfg.genes ?? []) {
@@ -476,6 +518,13 @@ export class Sim {
       { kind: 'royal', count: 1 },
       { kind: 'harvest', science: B.harvestScience },
     ]);
+    const open = castesOpen(cfg, this.directive);
+    this.scienceOpen = open.science;
+    this.royalOpen = open.royal;
+    // The dig is drawn from its own stream (it never moves the surface's dice), after the orders: a closed caste's
+    // deposits are dug up as carrion seams instead.
+    this.underSeed = snap ? snap.underSeed : cfg.seed;
+    this.under = createUnderground(this.underSeed, TOWERS.filter((t) => !t.engine).map((t) => t.family), open);
     this.meat = { ...B.startMeat };
     this.meat.war += this.geneMods.startWar;
     this.meat.science += this.geneMods.startScience;
@@ -515,7 +564,7 @@ export class Sim {
     };
     const dice = new Rng((this.cfg.seed ^ 0x5be17e4) >>> 0);
     for (let grown = 0; !raise() && grown < 8; grown++) {
-      const offers = draftOffers(this.map, dice, 12);
+      const offers = draftOffers(this.map, dice, 12, this.scienceOpen);
       if (offers.length === 0) break;
       const can = offers.filter((o) => {
         const copy = { ...this.map, cells: this.map.cells.slice(), heights: this.map.heights.slice(), plinths: this.map.plinths.slice(), slots: this.map.slots.slice() };
@@ -1429,11 +1478,7 @@ export class Sim {
 
   /** Highest evolution stage a limb may reach (the campaign's globe unlocks; skirmish = 3). */
   evolutionCapOf(family: TowerFamily): number {
-    // A limb no organ unlocks (the trap cage) is capped under its own name (content/campaign.ts
-    // territory unlocks `{ theme: 'cage' }`), not the meteor's.
-    const caps = this.cfg.evolutionCap;
-    if (caps && themeOf(family) === 'core' && caps[family] !== undefined) return caps[family]!;
-    return caps?.[themeOf(family)] ?? 3;
+    return evolutionCap(this.cfg.evolutionCap, family);
   }
 
   /** The board and the body under it as they stand (kept by the campaign when a deployment is won). */
@@ -2298,6 +2343,7 @@ export class Sim {
       case 'decree': {
         const def = DECREE_BY_ID[cmd.decree];
         if (!def) return { ok: false, err: 'no such decree' };
+        if (!this.royalOpen) return { ok: false, err: 'no decrees here: the court has not come for you yet' };
         const price = this.decreeCost(cmd.decree);
         if (this.meat.royal < price) return { ok: false, err: `it takes ${price} royal point${price === 1 ? '' : 's'}` };
         let family: TowerFamily | undefined;
@@ -3052,7 +3098,7 @@ export class Sim {
         if (this.outcome !== 'playing') return;
         // Every few cleared waves: the body is ready to grow into a new district.
         if (this.wavesCleared % B.draftEveryWaves === 0) {
-          const offers = draftOffers(this.map, this.rng, 3);
+          const offers = draftOffers(this.map, this.rng, 3, this.scienceOpen);
           this.markShelterOffer(offers);
           if (offers.length > 0) {
             this.phase = 'draft';
@@ -3072,7 +3118,8 @@ export class Sim {
     // 2026: a turn is "1. tower set up ... 2. wave 3. build body"; a party walking in at second 20 of the setup read
     // as the wave starting early, "troops just start coming without a tower set up phase").
     // (Only while the war is on: a party after the last soldier would hold the wave open for ever.)
-    if (this.warOn) this.researcherTimer -= DT;
+    // ...and never while the science caste is closed (nothing here could spend its meat: scienceOpen).
+    if (this.warOn && this.scienceOpen) this.researcherTimer -= DT;
     if (this.researcherTimer <= 0) {
       const interval = Math.max(
         B.researcherMinInterval,
@@ -3100,8 +3147,9 @@ export class Sim {
     }
 
     // Royal event.
-    const royalDue = this.threat >= B.royalThreat
-      || (this.directive.kind === 'royal' && this.waveNumber >= B.royalGuaranteeWave);
+    // The court comes only once a royal point could be spent here (royalOpen).
+    const royalDue = this.royalOpen && (this.threat >= B.royalThreat
+      || (this.directive.kind === 'royal' && this.waveNumber >= B.royalGuaranteeWave));
     if (this.phase === 'siege' && !this.royalSpawned && royalDue && !this.courtWaveAt(this.waveNumber)) {
       this.royalSpawned = true;
       const lane = this.incomingGates[0] ?? this.gates[0];
@@ -4480,7 +4528,7 @@ export class Sim {
    * engineerEvery seconds of a wave (never in the setup), with an escort, while fewer than stationMax stations stand or one stands untended.
    */
   private sendEngineers(): void {
-    if (!this.warOn || this.cfg.oneWave) return;
+    if (!this.warOn || this.cfg.oneWave || !this.scienceOpen) return;
     if ((this.cfg.bannedEnemies ?? []).includes('engineer')) return;
     if (this.waveNumber < B.engineerMinWave || this.interest < B.engineerInterestMin) return;
     this.engineerTimer -= DT;

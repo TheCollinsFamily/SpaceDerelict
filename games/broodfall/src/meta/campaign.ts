@@ -142,9 +142,16 @@ export function objectorsAllowed(perks: PerkId[]): number {
 }
 
 /** Highest evolution stage per theme: 1 everywhere, raised by the territories you hold. */
+const THEMES = ['core', 'forge', 'venom', 'gut', 'nerve', 'lattice', 'womb', 'marrow', 'resonance', 'catapult', 'runner', 'cage'];
+/**
+ * Mission 1: no limb evolves. Every evolution stage costs science, and the science caste comes only where science can
+ * be spent (Collins, Oct 30 2026: "mission one should be only war type"; src/sim/sim.ts castesOpen), so the first
+ * mission is war meat and war bodies only; the first stage opens with mission 2.
+ */
+export const NO_EVOLUTION: Record<string, number> = Object.fromEntries(THEMES.map((th) => [th, 0]));
 export function evolutionCaps(s: CampaignState): Record<string, number> {
   const caps: Record<string, number> = {};
-  for (const th of ['core', 'forge', 'venom', 'gut', 'nerve', 'lattice', 'womb', 'marrow', 'resonance', 'catapult', 'runner', 'cage']) caps[th] = 1;
+  for (const th of THEMES) caps[th] = 1;
   for (const id of s.held) {
     for (const u of territory(id).unlocks) caps[u.theme] = Math.max(caps[u.theme] ?? 1, u.stage);
   }
@@ -221,7 +228,8 @@ export function plan(s: CampaignState, territoryId: string, opts: { dares?: stri
     organStage: true,
     organPool: [...s.lineages, ...orders.trial.filter((l) => !s.lineages.includes(l))],
     startOrgans: profile.organs,
-    evolutionCap: evolutionCaps(s),
+    // Mission 1 is war only (src/sim/sim.ts castesOpen): nothing evolves, so no science to spend, so no science caste.
+    evolutionCap: first ? NO_EVOLUTION : evolutionCaps(s),
     // Mission 1 shows where the assault comes from, as any tower-defence game does; the campaign hides it (the Translator's perk).
     waveIntel: first || perks.includes('translator') ? 'full' : 'hidden',
     sleepers: perks.includes('sleepers2') ? 0.15 : perks.includes('sleepers1') ? 0.08 : 0,

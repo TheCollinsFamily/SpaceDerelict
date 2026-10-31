@@ -77,6 +77,14 @@ body {
 .dial b { font-family: "Courier New", monospace; font-size: 15px; }
 #dial-threat b { color: var(--accent); }
 #dial-interest b { color: #2b6c68; }
+/* A closed caste (src/ui/hud.ts, Sim.scienceOpen / royalOpen): nothing this deployment could spend its meat, so its
+   dial, its counter and the decree button are not shown. */
+body.science-closed #dial-interest, body.science-closed #meat-science,
+body.royal-closed #meat-royal, body.royal-closed #royal-surge { display: none; }
+/* ...nor a caste priority for a caste that cannot come, nor an evolution ladder where nothing evolves (mission 1). */
+body.science-closed #inspect-castes [data-caste="science"], body.royal-closed #inspect-castes [data-caste="royal"],
+body.science-closed.royal-closed #inspect-castes, body.science-closed.royal-closed .inspect-castes-label,
+#inspect.no-evolve .inspect-evolve-label, #inspect.no-evolve #inspect-evolve { display: none; }
 
 #speed-box { display: flex; gap: 4px; }
 #speed-box button {

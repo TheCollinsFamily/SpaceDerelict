@@ -117,7 +117,7 @@ const FEED_LINES: Partial<Record<SimEvent['kind'], (e: SimEvent) => { text: stri
     ? { text: `mitosis: a ${e.family} buds`, cls: 'sci' }
     : { text: '', cls: '' },
   'meat-cleared': (e) => e.kind === 'meat-cleared'
-    ? { text: `unspent meat spoiled: ${e.war} war, ${e.science} science`, cls: 'hot' }
+    ? { text: `unspent meat spoiled: ${e.war} war${e.science > 0 ? `, ${e.science} science` : ''}`, cls: 'hot' }
     : { text: '', cls: '' },
   'node-grown': (e) => e.kind === 'node-grown'
     ? { text: `spore bladder: +${e.count} creep node${e.count > 1 ? 's' : ''}`, cls: 'sci' }
@@ -387,6 +387,10 @@ export class Hud {
     this.lastEvolveKey = key;
     document.getElementById('inspect-path')!.textContent = path.length ? `· ${path.join('')}` : '';
     const box = document.getElementById('inspect-evolve')!;
+    // Nothing to evolve and no decree to buy (mission 1: war only): the panel is health and targeting, no locked ladder.
+    const bare = cap <= 0 && !sim.royalOpen;
+    document.getElementById('inspect')!.classList.toggle('no-evolve', bare);
+    if (bare) { box.innerHTML = ''; return; }
     const priceText = (c: { science?: number; royal?: number }) =>
       [c.science ? `${c.science}S` : '', c.royal ? `${c.royal}R` : ''].filter(Boolean).join(' + ');
     const rows: string[] = [];
@@ -403,12 +407,13 @@ export class Hud {
           title="${o.text}"><b>${c} · ${o.name}</b><span>${o.text}</span><i>${price}</i></button>`;
         rows.push(`<div class="evo-stage">${opt(a, 'A')}${opt(b, 'B')}</div>`);
       } else {
-        rows.push(`<div class="evo-later">${i + 1}: ${a.name} / ${b.name}${i >= cap ? ' — LOCKED on the globe' : i === 2 ? ' (needs a royal point)' : ''}</div>`);
+        rows.push(`<div class="evo-later">${i + 1}: ${a.name} / ${b.name}${i >= cap ? ` — LOCKED${this.plain ? '' : ' on the globe'}` : i === 2 ? ' (needs a royal point)' : ''}</div>`);
       }
     }
     if (stage >= 3) rows.push('<div class="evo-later">fully evolved</div>');
     // ROYAL DECREE on this limb: the crown (content/royal.ts). Every other limb near it is sheltered and hits harder.
-    if (!this.plain) {
+    // Only where the court can come (royalOpen): a point can be spent there and nowhere else.
+    if (!this.plain && sim.royalOpen) {
       const owned = t.crowns ?? 0;
       rows.push(`<div class="evo-stage evo-royal"><button class="evo-opt${sim.meat.royal >= crownCost ? '' : ' off'}" data-crown="1"
         title="Royal decree"><b>♛ ${owned ? `crown again (×${owned + 1})` : 'crown this limb'}</b><span>every OTHER limb within 120px takes 30% less harm and hits 25% harder${owned ? ' — crowns add' : ''}</span><i>${crownCost}R</i></button></div>`);
@@ -565,6 +570,9 @@ export class Hud {
       + (next ? ` · NEXT: ${next}` : sim.waveIntelHidden && sim.phase === 'growth' ? ' · NEXT: unknown' : '');
     this.el.threat.textContent = String(Math.floor(sim.threat));
     this.el.interest.textContent = String(Math.floor(sim.interest));
+    // A closed caste (Sim.scienceOpen / royalOpen, Oct 30 2026): its dial, its meat and its button say nothing this deployment.
+    document.body.classList.toggle('science-closed', !sim.scienceOpen && sim.meat.science <= 0);
+    document.body.classList.toggle('royal-closed', !sim.royalOpen && sim.meat.royal <= 0);
 
     const coreFrac = Math.max(0, sim.coreHp / sim.coreMaxHp);
     this.el.coreFill.style.width = `${(coreFrac * 100).toFixed(1)}%`;

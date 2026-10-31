@@ -8,10 +8,10 @@
  * finished intro is put in front of the two store trailers; the store trailers themselves are left as they are.
  *
  *   node tools/promo/intro.mjs still          her picture, 16:9, drawn from her portrait (RFab; SPENDS tokens, skips what is on disk)
- *   node tools/promo/intro.mjs clips          two takes AT ONCE of her saying the line: Seedance 2.5 and Seedance 2.0 mini, 480p, 12 s
+ *   node tools/promo/intro.mjs clips          acted takes AT ONCE, one per row of TAKES: video models that SPEAK the line themselves, each at its lowest tier
  *   node tools/promo/intro.mjs voice          her line as text-to-speech, three voices at once (the word "Fabricator" said from a lexicon)
  *   node tools/promo/intro.mjs sync           two takes AT ONCE of her picture speaking THAT track: OmniHuman 1.5 lip-sync, Seedance 2.5 r2v
- *   node tools/promo/intro.mjs hear           what each take says, word by word (rfab.ai transcription), and THE GATES
+ *   node tools/promo/intro.mjs hear           what each take says, word by word (rfab.ai transcription), and THE GATES, incl. a model that LISTENS
  *   node tools/promo/intro.mjs titles <take>  the animated type, frame by frame at 60 fps (headless Chromium), timed to her words
  *   node tools/promo/intro.mjs cut <take>     the intro segment, then the two trailers with it in front: promo/trailer/*-yc-demo*.mp4
  *   node tools/promo/intro.mjs sheet <take>   a strip of frames of the finished intro, to look at
@@ -44,12 +44,30 @@ const PORTRAIT_URL = 'https://rfab.ai/assets/beat-brief/persona-neko.webp';
 const LINE_SPOKEN = 'Claude Code and the R-Fab API built this game, and this trailer, with only limited human interaction. This is what Reality Fabricator unlocks.';
 const LINE_WORDS = ['claude', 'code', 'and', 'the', 'rfab', 'api', 'built', 'this', 'game', 'and', 'this', 'trailer', 'with', 'only', 'limited', 'human', 'interaction', 'this', 'is', 'what', 'reality', 'fabricator', 'unlocks'];
 const SECONDS = 12;
-/** Two takes, made at once: the model the film system measured for acted speech, and the default tier beside it (untested for speech until now). */
+/**
+ * The takes. Oct 30 2026: the first two (sd25, mini: the plain line, no note on how to say it) both said "Fabricator" as
+ * "FAB-ri-ker", three syllables (Collins heard it; a model that listens, the LISTEN gate below, hears the same). A lip-synced
+ * TTS track (omni, r2v) said it right and looked awful (Collins: "whatever ai you used for the video looks AWFUL ... you can just
+ * use video models that speak"). So: acted takes from SEVERAL models that speak, all at once, each told how the brand words are
+ * said (`pronounce`) or given the word respelled so its own voice lands on the right syllables (`say: 'respelled'`), each at
+ * its lowest tier (no `resolution`: the API's default), each judged by the gates, the LISTEN gate first.
+ */
+const TIER_SD25 = 'the default Seedance 2.0 mini take of this line at 480p (take-mini.mp4, Oct 30 2026) said "Fabricator" as "FAB-ri-ker" (a model that listens heard it) and warped her right hand; Seedance 2.5 follows a spoken-pronunciation instruction better and is made beside new mini takes carrying the same instruction';
 const TAKES = {
-  sd25: { kind: 'i2v', models: ['atlascloud:seedance-2.5-i2v', 'imagerouter:seedance-2.5-i2v'], tierReason: 'a 23-word line acted to camera by the character in one take: Seedance 2.5 is the model the Broodfall film system measured for acted speech (tools/media/talk-test.mjs, Oct 4 2026); the default Seedance 2.0 mini is untested for speech and is made beside it in the same run' },
-  mini: { kind: 'i2v', models: ['atlascloud:seedance-2.0-mini-i2v'] },
-  // Oct 30 2026, Collins on the sd25 take: "she is mispronouncing fabricator". A video model invents the saying of a word it
-  // does not know; a TTS voice says it from a lexicon. So the line is spoken by TTS and her picture is made to speak THAT track.
+  'sd25-say':   { kind: 'i2v', models: ['atlascloud:seedance-2.5-i2v', 'imagerouter:seedance-2.5-i2v'], say: 'plain', pronounce: true, seconds: 12, tierReason: TIER_SD25 },
+  'sd25-spell': { kind: 'i2v', models: ['atlascloud:seedance-2.5-i2v', 'imagerouter:seedance-2.5-i2v'], say: 'respelled', seconds: 12, tierReason: TIER_SD25 },
+  'mini-say':   { kind: 'i2v', models: ['atlascloud:seedance-2.0-mini-i2v'], say: 'plain', pronounce: true, seconds: 12 },
+  'mini-spell': { kind: 'i2v', models: ['atlascloud:seedance-2.0-mini-i2v'], say: 'respelled', seconds: 12 },
+  'grok':       { kind: 'i2v', models: ['grok:grok-imagine-video-1.5-lite'], say: 'plain', seconds: 12 },
+  'grok-say':   { kind: 'i2v', models: ['grok:grok-imagine-video-1.5-lite'], say: 'plain', pronounce: true, seconds: 12 },
+  'wan-say':    { kind: 'i2v', models: ['atlascloud:wan-3.0-i2v'], say: 'plain', pronounce: true, seconds: 15 },
+  'kling-say':  { kind: 'i2v', models: ['replicate:kwaivgi/kling-v3-video'], say: 'plain', pronounce: true, seconds: 12 },
+  'h3-say':     { kind: 'i2v', models: ['atlascloud:h3-developer-i2v'], say: 'plain', pronounce: true, seconds: 12 },
+  'veo-say':    { kind: 'i2v', models: ['imagerouter:veo-3.1-lite-i2v'], say: 'plain', pronounce: true, seconds: 8, quick: true },
+  // The first takes (the plain line, nothing on how to say it): both said "FAB-ri-ker". Kept for the record; cached on disk.
+  sd25: { kind: 'i2v', models: ['atlascloud:seedance-2.5-i2v', 'imagerouter:seedance-2.5-i2v'], say: 'plain', seconds: 12, tierReason: 'a 23-word line acted to camera by the character in one take: Seedance 2.5 is the model the Broodfall film system measured for acted speech (tools/media/talk-test.mjs, Oct 4 2026); the default Seedance 2.0 mini is untested for speech and is made beside it in the same run' },
+  mini: { kind: 'i2v', models: ['atlascloud:seedance-2.0-mini-i2v'], say: 'plain', seconds: 12 },
+  // The TTS-and-lip-sync pair (rejected: it looked awful).
   omni: { kind: 'sync', model: 'replicate:bytedance/omni-human' },
   r2v: { kind: 'sync', model: 'atlascloud:seedance-2.5-r2v', tierReason: 'the Seedance 2.5 i2v take said "Fabricator" wrong (Collins, Oct 30 2026): the line must be the given TTS track, lip-synced; a reference sound is taken only by the 2.5 r2v row, not by the default mini' },
 };
@@ -74,15 +92,25 @@ const STILL_PROMPT = [
   'No text, no letters, no numbers, no writing, no logos anywhere in the picture, not even on the panels.',
 ].join(' ');
 
-const CLIP_PROMPT = [
-  'One continuous locked-off shot: the camera never moves and never cuts.',
-  `${LOOK}, stands at the left of the frame and speaks straight to the camera, the way a host opens a show: bright, warm and confident, in a clear young woman's voice, quick but never rushed, with a smile in it.`,
-  `She says: "${LINE_SPOKEN}"`,
-  'She gestures with her raised hand as she speaks and gives a proud little grin on the last sentence; her cat-ear headphones glow softly in time with her voice.',
-  'She begins speaking at once, in the first second of the shot, with natural timing, and there is never a silence of more than a moment.',
-  'Only these words are spoken, once, in this order; nobody else speaks, and nothing else is heard but quiet room tone; no music.',
-  'The right side of the picture stays dark and empty exactly as in the first frame; nothing new appears; no text, letters or writing appear anywhere.',
-].join(' ');
+/** The line as given to the video model: as written, or with "Fabricator" respelled so a voice that reads letters lands on FAB-ri-kay-ter. */
+const SAY = { plain: LINE_SPOKEN, respelled: LINE_SPOKEN.replace('Fabricator', 'Fabricaytor') };
+/** How the brand words are said, told to the model outside the quotes (Seedance said "FAB-ri-ker" without it). */
+const PRONOUNCE = 'She says "Fabricator" the standard American way, FAB-rih-kay-ter: four clear syllables with the stress on the first, the word "fabric" and then "ay-ter". "Claude" is one syllable, said like "clawed". "R-Fab" is the letter R and then "fab". "API" is the three letters A, P, I.';
+function clipPrompt(t = {}) {
+  return [
+    'One continuous locked-off shot: the camera never moves and never cuts.',
+    `${LOOK}, stands at the left of the frame and speaks straight to the camera, the way a host opens a show: bright, warm and confident, in a clear young woman's voice, quick but never rushed, with a smile in it.`,
+    `She says: "${SAY[t.say ?? 'plain']}"`,
+    ...(t.pronounce ? [PRONOUNCE] : []),
+    'She gestures with her raised hand as she speaks and gives a proud little grin on the last sentence; her cat-ear headphones glow softly in time with her voice.',
+    t.quick
+      ? 'She begins speaking in the very first moment of the shot and speaks briskly, so the whole line is finished before the shot ends; no silence of more than a moment.'
+      : 'She begins speaking at once, in the first second of the shot, with natural timing, and there is never a silence of more than a moment.',
+    'Only these words are spoken, once, in this order; nobody else speaks, and nothing else is heard but quiet room tone; no music.',
+    'The right side of the picture stays dark and empty exactly as in the first frame; nothing new appears; no text, letters or writing appear anywhere.',
+  ].join(' ');
+}
+const CLIP_PROMPT = clipPrompt();
 
 // ------------------------------------------------------------------ rfab.ai
 async function api(pathname, opts = {}) {
@@ -205,24 +233,27 @@ if (cmd === 'still') {
   }
 }
 
-// ------------------------------------------------------------------ CLIPS: two takes at once
+// ------------------------------------------------------------------ CLIPS: the acted takes, all at once
 async function makeTake(take, imageUrl) {
   const t = TAKES[take];
   const out = takeFile(take);
   if (fs.existsSync(out)) { console.log(`  ${take}: cached`); return out; }
+  const secs = t.seconds ?? SECONDS;
+  const prompt = clipPrompt(t);
   let lastErr;
   for (const model of t.models) {
     try {
       const t0 = Date.now();
-      console.log(`  ${take}: ${SECONDS} s on ${model} at 480p`);
-      const body = { imageUrl, prompt: CLIP_PROMPT, videoModelId: model, duration: SECONDS, resolution: '480p', aspect_ratio: '16:9', audio: true, nsfw: false, variationCount: 1, ...(t.tierReason ? { tierReason: t.tierReason } : {}) };
+      console.log(`  ${take}: ${secs} s on ${model} at its lowest tier (${t.say ?? 'plain'}${t.pronounce ? ', told how to say it' : ''})`);
+      // No `resolution`: the API's default is the model's lowest tier (Collins, Oct 4 2026: the model matters, the tier does not).
+      const body = { imageUrl, prompt, videoModelId: model, duration: secs, aspect_ratio: '16:9', audio: true, nsfw: false, variationCount: 1, ...(t.tierReason ? { tierReason: t.tierReason } : {}) };
       const d = await api('/api/image-generation/generate-video', { method: 'POST', body: JSON.stringify(body) });
       const result = d.jobId ? await poll(d.jobId, `${take} clip`) : d;
       const url = firstUrl(result, 'videoUrl', 'imageUrl');
       if (!url) throw new Error(`${take}: no clip URL`);
       const buf = await download(url, `${take} clip`);
       fs.writeFileSync(out, buf);
-      fs.writeFileSync(out.replace(/\.mp4$/, '.json'), JSON.stringify({ model, seconds: SECONDS, resolution: '480p', tookSec: Math.round((Date.now() - t0) / 1000), url, prompt: CLIP_PROMPT }, null, 1));
+      fs.writeFileSync(out.replace(/\.mp4$/, '.json'), JSON.stringify({ model, seconds: secs, say: t.say ?? 'plain', pronounce: !!t.pronounce, tookSec: Math.round((Date.now() - t0) / 1000), url, prompt }, null, 1));
       console.log(`  ${take}: saved ${(buf.length / 1048576).toFixed(1)} MB in ${Math.round((Date.now() - t0) / 1000)} s (${probe(out, 'stream=width,height,r_frame_rate')}, ${duration(out).toFixed(2)} s)`);
       return out;
     } catch (e) { lastErr = e; console.warn(`  ${take}: ${model} failed: ${e.message.slice(0, 300)}`); }
@@ -431,6 +462,16 @@ function cutOf(words) {
   const hs = first - HEAD;
   return { hs, first, last, dur: Math.round((last - hs + HOLD) * FPS) / FPS };
 }
+/** What the listening model is asked (its answer is read line by line; the labels are the keys). */
+const LISTEN_Q = 'This clip shows one character speaking a single line to camera. Answer in short labelled lines, each on its own line, in this order.\n'
+  + 'HEARD: write exactly what she says, word for word, as you hear it (not what you expect).\n'
+  + 'FABRICATOR: the line contains the brand name "Reality Fabricator". Listen closely to the word she says right after "Reality" and write it phonetically, syllable by syllable, stressed syllable in capitals. Standard American English for "fabricator" is FAB-ri-kay-ter (four syllables, stress on the first). Then on the next line write PRONUNCIATION: OK if what she says is that standard pronunciation, or PRONUNCIATION: WRONG and say exactly what differs (a dropped syllable, a different vowel, a different stress, a different word).\n'
+  + 'CLAUDE: how she says "Claude" (standard: one syllable, KLAWD, rhymes with "flawed"): OK or WRONG and why.\n'
+  + 'API: how she says "API" (standard: the three letters A, P, I): OK or WRONG and why.\n'
+  + 'RFAB: how she says the name after "the" near the start (standard: "R-Fab", the letter R then "fab"): OK or WRONG and why.\n'
+  + 'VOICE: is it a natural young woman\'s voice, clear, without robotic artifacts? Describe briefly.\n'
+  + 'SYNC: does her mouth move in time with the words? YES or NO, then why.\n'
+  + 'PICTURE: any visual defects: a warped face or hands, extra limbs, text or letters appearing anywhere, a second person, jump cuts, the camera moving? List them, or write NONE.';
 async function gatesOf(take) {
   const f = takeFile(take);
   const heard = await hearWords(f);
@@ -441,6 +482,9 @@ async function gatesOf(take) {
   if (hit < LINE_WORDS.length * 0.8) fails.push(`WORDS: ${hit} of ${LINE_WORDS.length} heard (missed: ${missed.join(' ')})`);
   else if (missed.length) notes.push(`words not heard: ${missed.join(' ')}`);
   if (heard.words.length > LINE_WORDS.length * 1.25 + 3) fails.push(`AD-LIB: ${heard.words.length} words heard for ${LINE_WORDS.length} written`);
+  // ORDER: the brand sentence is heard whole and in order ("This, what is Reality Fabricator, unlocks" passed the count, Oct 30 2026).
+  const tail = LINE_WORDS.indexOf('this', 13);
+  if (al.slice(tail).some((x) => !x)) fails.push(`ORDER: the last sentence is not heard whole and in order ("${heard.text.split(/[.!?]\s*/).filter(Boolean).pop() ?? ''}")`);
   const ws = heard.words;
   const clipDur = duration(f);
   if (!ws.length) fails.push('SILENCE: nothing heard');
@@ -486,11 +530,31 @@ async function gatesOf(take) {
     if (!/STATIC=(YES|NO)/i.test(seen)) notes.push(`the vision check gave no answer ("${seen.slice(0, 80)}")`);
   } catch (e) { notes.push(`the vision check could not be made (${e.message.slice(0, 120)}); the measured gates stand`); }
   const meta = JSON.parse(fs.readFileSync(f.replace(/\.mp4$/, '.json'), 'utf8'));
+  // LISTEN: a model that HEARS the clip judges how the brand words are said. Transcription forgave "FAB-ri-ker" (it wrote
+  // "Fabricator" for both Seedance takes, Oct 30 2026); Gemini watching the same clips heard the dropped syllable, and heard the
+  // TTS track's four syllables as right: calibrated both ways before it became the gate. The clip is sent by its hosted link.
+  let listen = '';
+  if (meta.url && /^https?:/.test(meta.url)) {
+    try {
+      const r = await api('/api/tools/watch-video', { method: 'POST', body: JSON.stringify({ videoUrl: meta.url, question: LISTEN_Q }) });
+      listen = String(r.answer ?? '').replace(/\*\*/g, '');
+      const line = (k) => (listen.match(new RegExp(`${k}:\\s*([^\\n]*)`, 'i')) ?? [])[1]?.trim() ?? '';
+      const pron = (listen.match(/PRONUNCIATION:\s*(OK|WRONG)/i) ?? [])[1]?.toUpperCase();
+      if (pron === 'WRONG') fails.push(`FABRICATOR: ${line('FABRICATOR')} ${line('PRONUNCIATION')}`.trim());
+      else if (pron === 'OK') notes.push(`"Fabricator" heard as ${line('FABRICATOR').replace(/\s*PRONUNCIATION.*$/i, '')}`);
+      else notes.push('the listening check gave no verdict on "Fabricator"');
+      for (const w of ['CLAUDE', 'API', 'RFAB']) { const v = line(w); if (/^wrong\b/i.test(v)) fails.push(`${w}: ${v}`); }
+      const sync = line('SYNC'); if (/^no\b/i.test(sync)) fails.push(`SYNC: ${sync}`);
+      const pic = line('PICTURE'); if (pic && !/^none\b/i.test(pic)) notes.push(`seen while listening: ${pic}`);
+      const voice = line('VOICE'); if (voice) notes.push(`voice: ${voice}`);
+      notes.push(`heard (listening model): ${line('HEARD')}`);
+    } catch (e) { notes.push(`the listening check could not be made (${e.message.slice(0, 120)})`); }
+  } else notes.push('no hosted link for this take: the listening check was not made');
   if (meta.voice && fs.existsSync(voiceFile(meta.voice))) {
     const alike = sameSound(f, voiceFile(meta.voice));
     if (alike < 0.5) fails.push(`TRACK: its sound is not the TTS track (correlation ${alike.toFixed(2)})`); else notes.push(`its sound is the TTS track ${meta.voice} (correlation ${alike.toFixed(2)})`);
   }
-  const report = { take, model: meta.model, voice: meta.voice ?? null, clipSeconds: +clipDur.toFixed(2), heard: heard.text, words: heard.words.length, hit, missed, cut, pass: !fails.length, fails, notes, seen, strip };
+  const report = { take, model: meta.model, say: meta.say ?? null, pronounce: meta.pronounce ?? null, voice: meta.voice ?? null, clipSeconds: +clipDur.toFixed(2), heard: heard.text, words: heard.words.length, hit, missed, cut, pass: !fails.length, fails, notes, seen, listen, strip };
   fs.writeFileSync(f.replace(/\.mp4$/, '.gates.json'), JSON.stringify(report, null, 1));
   return report;
 }
@@ -505,6 +569,7 @@ if (cmd === 'hear') {
     for (const f of r.fails) console.log(`   FAIL ${f}`);
     for (const n of r.notes) console.log(`   note ${n}`);
     console.log(`   seen: ${r.seen.replace(/\s+/g, ' ').slice(0, 160)}`);
+    if (r.listen) console.log(`   listened: ${r.listen.replace(/\s+/g, ' ').slice(0, 400)}`);
     console.log(`   strip: ${r.strip}`);
   }
   const passing = reports.filter((r) => r.pass).sort((a, b) => b.hit - a.hit || a.cut.first - b.cut.first);

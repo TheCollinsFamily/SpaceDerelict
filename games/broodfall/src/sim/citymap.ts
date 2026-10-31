@@ -393,7 +393,7 @@ export function frontierGates(map: CityMap): number[] {
  * exists anywhere, it is always offerable. Prefers distinct slots so the
  * choice is usually about WHERE to grow, not only what shape.
  */
-export function draftOffers(map: CityMap, rng: Rng, count: number): DraftOffer[] {
+export function draftOffers(map: CityMap, rng: Rng, count: number, science = true): DraftOffer[] {
   const features: PlateFeature[] = ['plain', 'science', 'meat', 'highground'];
   const legal = legalDrafts(map);
   for (let i = legal.length - 1; i > 0; i--) {
@@ -412,6 +412,9 @@ export function draftOffers(map: CityMap, rng: Rng, count: number): DraftOffer[]
     if (options.some((o) => o.slot === cand.slot && o.pattern.id === cand.pattern.id)) continue;
     options.push({ ...cand, feature: features[rng.int(0, features.length - 1)] });
   }
+  // The science caste closed (Sim.scienceOpen: nothing this run could spend its meat on): a Research Quarter is offered
+  // as a plain warren, after the draw, so the dice fall as they would have.
+  if (!science) for (const o of options) if (o.feature === 'science') o.feature = 'plain';
   return options;
 }
 

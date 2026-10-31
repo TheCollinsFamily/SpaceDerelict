@@ -452,7 +452,8 @@ function coachText(): string {
   }
   if (sim.waveNumber === 1 && sim.phase === 'siege') return 'Your limbs fight on their own. Every kill pays WAR meat (top left): spend it on more cards';
   if (sim.waveNumber === 1 && sim.phase === 'growth' && sim.towers.length < 5) return 'Wave cleared. Place more limbs with the meat you earned — the next wave is bigger. Space starts it';
-  if (sim.waveNumber === 2 && sim.phase === 'siege') return 'Click one of your limbs to see it: its health, and EVOLVE when you have science';
+  // Mission 1 is war only (Collins, Oct 30 2026): nothing evolves here, so the panel is about health and targeting.
+  if (sim.waveNumber === 2 && sim.phase === 'siege') return 'Click one of your limbs to see it: its health, what it does, and what it shoots first';
   return '';
 }
 let coachAt = 0;

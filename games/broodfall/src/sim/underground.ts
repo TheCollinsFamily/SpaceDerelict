@@ -57,7 +57,9 @@ function reachableFromMeteor(u: Underground): Set<number> {
   return seen;
 }
 
-export function createUnderground(seed: number, pipPool: readonly TowerFamily[]): Underground {
+export function createUnderground(
+  seed: number, pipPool: readonly TowerFamily[], open: { science: boolean; royal: boolean } = { science: true, royal: true },
+): Underground {
   const rng = new Rng((seed ^ 0x5eed_b0d1) >>> 0);
   const u: Underground = {
     w: UNDER_W, h: UNDER_H,
@@ -83,9 +85,12 @@ export function createUnderground(seed: number, pipPool: readonly TowerFamily[])
     for (let k = 0; k < DEPOSITS[kind].count; k++) {
       const opts = inRows(DEPOSITS[kind].rows);
       if (!opts.length) continue;
-      const cell: UnderCell = { kind: 'deposit', deposit: kind };
+      // A closed caste's deposit (Sim.scienceOpen / royalOpen: nothing this run could spend its meat on) is dug up as a
+      // carrion seam in the same cell, so the dig's layout and the rest of its dice are as they were.
+      const dug: DepositKind = (kind === 'lab' && !open.science) || (kind === 'ossuary' && !open.royal) ? 'seam' : kind;
+      const cell: UnderCell = { kind: 'deposit', deposit: dug };
       const at = rng.pick(opts);
-      cell.pay = depositPayAt(DEPOSITS[kind], Math.floor(at / u.w));
+      cell.pay = depositPayAt(DEPOSITS[dug], Math.floor(at / u.w));
       if (kind === 'cache') {
         cell.pips = Array.from({ length: DEPOSITS.cache.now.pips ?? 0 }, () => ({ family: rng.pick(pipPool) }));
       }
