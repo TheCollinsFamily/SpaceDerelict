@@ -9,8 +9,8 @@
  *
  *   node tools/promo/intro.mjs still          her picture, 16:9, drawn from her portrait (RFab; SPENDS tokens, skips what is on disk)
  *   node tools/promo/intro.mjs clips          acted takes AT ONCE, one per row of TAKES: video models that SPEAK the line themselves, each at its lowest tier
- *   node tools/promo/intro.mjs voice          her line as text-to-speech, three voices at once (the word "Fabricator" said from a lexicon)
- *   node tools/promo/intro.mjs sync           two takes AT ONCE of her picture speaking THAT track: OmniHuman 1.5 lip-sync, Seedance 2.5 r2v
+ *   node tools/promo/intro.mjs voice          (the rejected path, kept) her line as text-to-speech, three voices at once
+ *   node tools/promo/intro.mjs sync           (the rejected path, kept) her picture speaking THAT track: OmniHuman 1.5 lip-sync, Seedance 2.5 r2v
  *   node tools/promo/intro.mjs hear           what each take says, word by word (rfab.ai transcription), and THE GATES, incl. a model that LISTENS
  *   node tools/promo/intro.mjs titles <take>  the animated type, frame by frame at 60 fps (headless Chromium), timed to her words
  *   node tools/promo/intro.mjs cut <take>     the intro segment, then the two trailers with it in front: promo/trailer/*-yc-demo*.mp4

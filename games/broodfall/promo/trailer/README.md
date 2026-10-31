@@ -23,62 +23,82 @@ limited human interaction. This is what Reality Fabricator unlocks. (have Neko V
 
 | File | What | Length | Size |
 |---|---|---|---|
-| `broodfall-trailer-yc-demo.mp4` | The 10.7 s intro, then the 88 s store trailer: 1920x1080, 60 fps, H.264 High + AAC 320k | 98.7 s | 47.2 MB |
-| `broodfall-trailer-yc-demo-gameplay.mp4` | The same intro, then the 56 s gameplay trailer | 66.5 s | 43.9 MB |
+| `broodfall-trailer-yc-demo.mp4` | The 11.6 s intro, then the 88 s store trailer: 1920x1080, 60 fps, H.264 High + AAC 320k | 99.6 s | 47.9 MB |
+| `broodfall-trailer-yc-demo-gameplay.mp4` | The same intro, then the 56 s gameplay trailer | 67.5 s | 44.5 MB |
 
 The store trailers above are not changed. Both demo files: -14.0 LUFS, true peak -1.5 dBTP, picture and sound the same length
-to the frame. Masters (CRF 16) in `art-src/trailer/intro/` (git-ignored).
+to the frame (`cut` counts them). Masters (CRF 16) and every take in `art-src/trailer/intro/` (git-ignored).
 
 **The intro.** Neko Voss (rfab.ai's mascot, the cyberpunk catgirl nerd) stands at the left of a dark hacker den and says
-Collins's line to camera; the words are set in type beside her, in step with her own words: CLAUDE CODE / + THE RFAB API
-type themselves in (a terminal caret) as she says them, "built this game + trailer" and "with only limited human
-interaction." come up as she reaches them, then the panel clears for THIS IS WHAT / REALITY FABRICATOR / UNLOCKS. word by
-word, the RFab wordmark under it. From black, to black, and the trailer's own fade from black follows.
+Collins's line to camera, acted and spoken by one video model in one take; the words are set in type beside her, in step
+with her own words: CLAUDE CODE / + THE RFAB API type themselves in (a terminal caret) as she says them, "built this game +
+trailer" and "with only limited human interaction." come up as she reaches them, then the panel clears for THIS IS WHAT /
+REALITY FABRICATOR / UNLOCKS. word by word, the RFab wordmark under it. From black, to black, and the trailer's own fade
+from black follows.
 
-- **Her picture** (`art-src/trailer/intro/neko-169.png`, 1280x720): drawn by rfab.ai's image API (GPT Image 2, the default
-  tier) from her public portrait `https://rfab.ai/assets/beat-brief/persona-neko.webp` as the reference, in the left third
-  of a wide frame with the right two thirds dark for the type.
-- **Her voice is text-to-speech** (`voice-gem-leda.mp3`, 9.5 s): rfab.ai's directable Gemini voice Leda, directed "bright,
-  warm and confident; quick but every word clear; a smile in the voice, like a host opening a show". **Why not the video
-  model's own voice:** the first intro was one acted Seedance 2.5 take with the line in the prompt (`take-sd25.mp4`; a
-  Seedance 2.0 mini take beside it); it passed every gate, the transcript heard all 23 words, and Collins heard it say
-  "Fabricator" wrong. A video model invents the saying of a word it does not know, a transcriber forgives it, and an agent
-  cannot hear; a TTS voice says the word from a lexicon. So the brand line is TTS, and her picture is made to speak that
-  track. Three voices were made at once (Leda, Zephyr, Laomedeia; 258 tokens in all) and all three were heard whole; Leda
-  is the first in the order preferred for her.
-- **Her take** (`take-omni.mp4`, 1472x800, 25 fps, 9.6 s): OmniHuman 1.5 lip-sync (`replicate:bytedance/omni-human`, the
-  model Collins ranked first for a solo performance, Oct 11 2026) from her picture and that track; its sound IS the track
-  (cross-correlation 1.00, checked). Made at the same time: Seedance 2.5 reference-to-video with the track as `@Audio1`
-  (`take-r2v.mp4`): it re-voiced the line (correlation 0.09 with the track), so it is not usable for a brand name and was
-  not used. Nobody has listened to the finished intro: the gates measure, Collins's ear decides.
-- **The gates** (`hear`): every written word heard (rfab.ai transcription, word times; 22/23 here, "R-Fab" heard as "r5"),
-  no ad-lib, no pause over 1.3 s, not cut off, a woman's pitch (239 Hz), the sound is the TTS track, brightness and
-  sharpness steady, and eight frames shown to a model that sees (on model, no lettering in the picture, no static, nothing
-  growing out of her).
+- **Her picture** (`neko-169.png`, 1280x720): drawn by rfab.ai's image API (GPT Image 2, the default tier) from her public
+  portrait `https://rfab.ai/assets/beat-brief/persona-neko.webp` as the reference, in the left third of a wide frame with
+  the right two thirds dark for the type.
+- **Her take** (`take-grok.mp4`, 736x400, 24 fps, 12 s): Grok Imagine Video 1.5 Lite (`grok:grok-imagine-video-1.5-lite`,
+  xAI, 480p, the model's lowest tier), image-to-video from her picture with the line in the prompt: the model acts AND
+  speaks it. Every word heard, "Fabricator" said FAB-ri-kay-ter, the crispest picture of the ten (looked at, frame against
+  frame, at 1080p). A second finished intro from the Seedance 2.5 take with the word respelled is beside it
+  (`intro-sd25-spell-master.mp4`, 12.7 s): softer, more mouth, in case the Grok read is not the one.
+- **How it got here, three versions in a day.** (1) One acted Seedance 2.5 take, the plain line: every gate passed, the
+  transcript wrote all 23 words, and Collins heard "Fabricator" said wrong. (2) The line as text-to-speech (Gemini Leda)
+  lip-synced onto her picture with OmniHuman 1.5 (`take-omni.mp4`): the word right, and Collins: "whatever ai you used for
+  the video looks AWFUL ... you can just use video models that speak". (3) This: ten acted takes from six models that speak,
+  fired at once, each at its lowest tier, each judged by a model that LISTENS before anything else.
+- **The listening gate** (`hear`, the LISTEN check): the clip's hosted link goes to rfab.ai's `POST /api/tools/watch-video`
+  (Gemini watches and hears it) with the question written out: what she says word for word, the word after "Reality"
+  syllable by syllable against FAB-ri-kay-ter, "Claude", "API" and "R-Fab" each OK or WRONG, the voice, whether her mouth
+  moves with the words, and visual defects. **Calibrated before it was trusted:** on the take Collins heard wrong it wrote
+  "FAB-ri-ker, PRONUNCIATION: WRONG, drops the kay syllable"; on the mini take beside it the same; on the TTS track
+  "FAB-ri-kay-ter, OK". Two transcribers (Deepgram nova-2 and nova-3) wrote "Fabricator" for the wrong ones: a transcriber
+  corrects what it hears to the word it expects, so a transcript can never be the pronunciation gate. About 1,000 tokens a
+  clip.
+- **The ten takes and what the gates said** (all 23 words heard unless noted; `take-*.gates.json` has each report):
+  - `grok` (Grok 1.5 Lite, plain line): PASS, FAB-ri-kay-ter. Chosen.
+  - `grok-say` (Grok 1.5 Lite, told how to say the words): PASS, FAB-ri-kay-ter.
+  - `sd25-spell` (Seedance 2.5, "Fabricaytor" in the line): PASS, FAB-ri-kay-ter. The respelling is what fixes Seedance.
+  - `sd25-say` (Seedance 2.5, told how to say it): FAIL, "FAB-ri-ker" again. Telling Seedance how to say a word does nothing.
+  - `mini-spell` (Seedance 2.0 mini, respelled): PASS, FAB-ri-kay-ter; soft, a warped right hand.
+  - `mini-say` (Seedance 2.0 mini, told): FAIL, ORDER: it said "This, what is Reality Fabricator, unlocks" (23 words, wrong
+    order; this is the take that made the ORDER gate).
+  - `h3-say` (MiniMax Hailuo 3.0 Developer): PASS, but a teal shape grows at the bottom left in two frames (seen on the sheet).
+  - `wan-say` (Wan 3.0, 15 s): PASS, but her jacket's pattern changes and the mug comes and goes; the camera drifts in.
+  - `kling-say` (Kling 3.0, API 2; came back 1080p, that pathway's default): FAIL, her mouth never moves, and an extra
+    "Vabicator" after the line. The dearest take of the ten.
+  - `veo-say` (Veo 3.1 Lite, 8 s, the model's longest): PASS, but a caption appears top left and her hair flares white at the end.
+- **The other gates** (`hear`): every written word heard (rfab.ai transcription with word times), the last sentence whole and
+  in order (ORDER), no ad-lib, no pause over 1.3 s, not cut off, a woman's pitch, brightness and sharpness steady from her
+  first word to her last, and eight frames shown to a model that sees (on model, no lettering, no static, nothing growing
+  out of her). On the TTS takes also: the sound IS the TTS track (cross-correlation).
 - **The type**: Oswald 700 and Bahnschrift (the trailer's faces), rendered frame by frame at 60 fps in headless Chromium as
-  transparent PNGs (`titles/omni/`, 639 frames), each line cued to the time her word was heard, over the take fitted to
-  1080p (cover and crop). Her first frame is held 0.42 s so her first word lands at 0.7 s, after the fade from black, and
-  her last frame is held 1.1 s after her last word. (The first build let the picture stop at the end of the take, 0.8 s
-  before the sound, and the whole trailer ran out of sync; `cut` now counts the frames of every file it writes.)
+  transparent PNGs (`titles/grok/`, 695 frames), each line cued to the time her word was heard, over the take fitted to 1080p
+  (cover and crop). Her first frame is held 0.64 s so her first word lands at 0.7 s, after the fade from black; her last frame
+  is held 1.1 s after her last word; the trailer's sound begins at 11.608 s, the join (measured).
+- **The finished intro was listened to as a whole** (`intro-grok-master.mp4` uploaded and put to the same listening model):
+  the line word for word, FAB-ri-kay-ter OK, the type in step with the phrases, a clean end, no picture defects. Nobody has
+  heard her acting: the gates measure, Collins's ear decides.
 
 Rebuild (in `games/broodfall`):
 
 ```
 node tools/promo/intro.mjs still          # her picture (skips what is on disk)
-node tools/promo/intro.mjs voice          # the line as TTS, three voices at once; writes art-src/trailer/intro/voice.txt
-node tools/promo/intro.mjs sync           # her picture speaking that track, two ways at once (OmniHuman, Seedance 2.5 r2v)
-node tools/promo/intro.mjs hear omni      # transcript + gates; writes art-src/trailer/intro/chosen.txt
-node tools/promo/intro.mjs titles omni    # the type, 639 frames
-node tools/promo/intro.mjs cut omni       # the intro, then both demo files (checks frame counts and lengths)
+node tools/promo/intro.mjs clips          # every acted take in TAKES at once, one per model and prompt variant (skips what is on disk)
+node tools/promo/intro.mjs hear           # transcript + gates for every take, the LISTEN gate among them; writes chosen.txt
+node tools/promo/intro.mjs titles grok    # the type, 695 frames, cued to the take's words
+node tools/promo/intro.mjs cut grok       # the intro, then both demo files (checks frame counts and lengths)
+node tools/promo/intro.mjs sheet grok     # a strip of frames of the finished intro, to look at
 ```
 
-(`clips` still makes the acted Seedance takes, for a line with no brand name in it.)
+(`voice` and `sync` are the rejected TTS-and-lip-sync path, kept so the comparison can be rerun.)
 
-Cost, by the balance before and after: 494,000 tokens ($9.90) over the day, of which the work itself asked for 375,000:
-her picture 4,000; the two acted takes 159,720 (the first intro); the three voices 258; the two lip-synced takes 210,800
-(OmniHuman about 102,000, Seedance 2.5 r2v about 109,000). The other 119,000 is the ten transcripts, the three vision
-checks (a picture to rfab.ai's chat each) and whatever other sessions spent from the same balance meanwhile. No top-up
-was needed (683,682 tokens left).
+Cost, by the balance before and after: this third version 810,141 tokens ($16.20): the ten acted takes 782,521 (Kling 3.0
+at its pathway's 1080p default the largest single item; Grok Lite the smallest, about 20,000 each), the gates about 27,600
+(ten transcripts, ten vision strips, fifteen listens). The day's three versions together about 1,300,000 tokens ($26). A
+$50 top-up (2,500,000 tokens) was made before the batch; 2,373,541 tokens remain.
 
 ## The gameplay cut (Oct 26 2026)
 
