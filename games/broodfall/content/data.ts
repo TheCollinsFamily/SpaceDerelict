@@ -574,6 +574,11 @@ export const BALANCE = {
   /** Interest → researcher parties. */
   researcherBaseInterval: 80,
   researcherMinInterval: 18,
+  /** WAVE 1 IS THE WAR CASTE'S (Collins, Oct 31 2026: "generally in a game wave one should be mostly or only war
+   *  caste"). No study party and no royal event before this wave, in any run whose castes are open; a defence's one
+   *  siege stands for the late wave it is sized as (oneWave.asWave) and keeps them. The last mission's court waves are
+   *  his own exception (COURT_WAVES, Oct 4 2026). src/sim/sim.ts castesMayCome; tests/castes.test.ts. */
+  castesFromWave: 2,
   glandLureInterestBonus: 6,
   brainInterest: 3,
   interestPerPip: 0.5,

@@ -763,6 +763,15 @@ export class Sim {
   }
 
   /**
+   * Wave 1 is the war caste's, in every run (Collins, Oct 31 2026: "generally in a game wave one should be mostly or only
+   * war caste"): a study party or the court comes from castesFromWave on. A defence's one siege is the late wave it
+   * stands for (oneWave.asWave), so its parties come.
+   */
+  private get castesMayCome(): boolean {
+    return (this.cfg.oneWave ? this.cfg.oneWave.asWave : this.waveNumber) >= B.castesFromWave;
+  }
+
+  /**
    * A support limb's aura (choir, ward): its reach and splash pips grow the
    * radius, its potency pips grow the strength. No caps.
    */
@@ -3118,8 +3127,9 @@ export class Sim {
     // 2026: a turn is "1. tower set up ... 2. wave 3. build body"; a party walking in at second 20 of the setup read
     // as the wave starting early, "troops just start coming without a tower set up phase").
     // (Only while the war is on: a party after the last soldier would hold the wave open for ever.)
-    // ...and never while the science caste is closed (nothing here could spend its meat: scienceOpen).
-    if (this.warOn && this.scienceOpen) this.researcherTimer -= DT;
+    // ...never while the science caste is closed (nothing here could spend its meat: scienceOpen), and never in wave 1:
+    // the first wave of any run is the war caste's (castesMayCome).
+    if (this.warOn && this.scienceOpen && this.castesMayCome) this.researcherTimer -= DT;
     if (this.researcherTimer <= 0) {
       const interval = Math.max(
         B.researcherMinInterval,
@@ -3147,8 +3157,8 @@ export class Sim {
     }
 
     // Royal event.
-    // The court comes only once a royal point could be spent here (royalOpen).
-    const royalDue = this.royalOpen && (this.threat >= B.royalThreat
+    // The court comes only once a royal point could be spent here (royalOpen), and never in wave 1 (castesMayCome).
+    const royalDue = this.royalOpen && this.castesMayCome && (this.threat >= B.royalThreat
       || (this.directive.kind === 'royal' && this.waveNumber >= B.royalGuaranteeWave));
     if (this.phase === 'siege' && !this.royalSpawned && royalDue && !this.courtWaveAt(this.waveNumber)) {
       this.royalSpawned = true;

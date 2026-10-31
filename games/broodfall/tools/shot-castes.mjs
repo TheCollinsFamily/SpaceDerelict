@@ -7,6 +7,9 @@
  * castesOpen; tests/castes.test.ts has the headless version.
  *
  *   node tools/shot-castes.mjs        (its own dev server on BROODFALL_PORT, default 5277)
+ * Scene 2 (Collins, Oct 31 2026: "generally in a game wave one should be mostly or only war caste"): a SKIRMISH, every
+ * caste open, in a fresh browser: wave 1 is war bodies only, the first study party comes after it (content/data.ts
+ * castesFromWave).
  * Pictures: tools/screenshots/castes-*.png and notes/screens/2026-10-30/castes-*.jpg.
  */
 import { spawn, spawnSync, execSync } from 'node:child_process';
@@ -154,6 +157,43 @@ try {
   check(panel && !panel.evolveLabel && !panel.casteRow, 'the EVOLVE heading and the caste-priority row are not shown (no caste but war can come)', JSON.stringify(panel && { evolveLabel: panel.evolveLabel, casteRow: panel.casteRow }));
   check(errors.length === 0, 'no page errors', errors.slice(0, 3).join(' | '));
   await ctx.close();
+
+  console.log('scene 2: a skirmish (every caste open) in a fresh browser: wave 1 is war bodies only; the researchers come after it');
+  const ctx2 = await browser.newContext({ viewport: { width: 1600, height: 900 } });
+  const page2 = await ctx2.newPage();
+  page2.on('pageerror', (e) => errors.push(String(e)));
+  page2.on('console', (m) => { if (m.type() === 'error' && !/favicon|Failed to load resource|rfab-api/.test(m.text())) errors.push(m.text()); });
+  await page2.route('**/rfab-api/**', (r) => r.fulfill({ status: 404, body: '{}' }));
+  await page2.goto(`${URL0}?auto=1`, { waitUntil: 'load', timeout: 180000 });
+  await page2.waitForFunction(() => window.__bfBooted && window.broodfall, null, { timeout: 90000 });
+  const sk = await page2.evaluate(() => {
+    const s = window.broodfall.sim;
+    return { first: document.body.classList.contains('first-mission'), scienceOpen: s.scienceOpen, royalOpen: s.royalOpen, interest: s.interest };
+  });
+  check(!sk.first && sk.scienceOpen && sk.royalOpen, 'a skirmish: not mission 1, every caste open', JSON.stringify(sk));
+  check(sk.interest > 0, 'the specimen is of interest from the start (a party would be due the moment the timer ran)', `interest ${sk.interest}`);
+  /** wave -> the kinds that stood on the board in it (sampled every 4 s; a body stands far longer than that). */
+  const byWave = new Map();
+  let firstParty = 0, shotWave1 = false, shotParty = false;
+  for (let i = 0; i < 1500; i++) {
+    const r = await page2.evaluate(() => {
+      window.broodfall.step(40);
+      const s = window.broodfall.sim;
+      return { kinds: s.enemies.map((e) => e.kind), wave: s.waveNumber, phase: s.phase, outcome: s.outcome, time: Math.round(s.time) };
+    });
+    if (!byWave.has(r.wave)) byWave.set(r.wave, new Set());
+    for (const k of r.kinds) byWave.get(r.wave).add(k);
+    const sciNow = r.kinds.some((k) => SCIENCE.includes(k) || ROYAL.includes(k));
+    if (sciNow && !firstParty) firstParty = r.wave;
+    if (r.wave === 1 && r.phase === 'siege' && !shotWave1 && r.kinds.length > 3) { shotWave1 = true; await shot(page2, '04-skirmish-wave1'); }
+    if (sciNow && !shotParty) { shotParty = true; await shot(page2, '05-skirmish-first-party'); }
+    if (r.outcome !== 'playing' || r.wave >= 4 || (firstParty && r.wave > firstParty)) break;
+  }
+  const w1 = [...(byWave.get(1) ?? [])];
+  check(w1.length > 0 && w1.every((k) => !SCIENCE.includes(k) && !ROYAL.includes(k)), 'wave 1 of the skirmish: war bodies only', w1.join());
+  check(firstParty >= 2 && firstParty <= 3, 'the first science or royal body came in wave 2 or 3, not before', `wave ${firstParty || 'never'}; by wave: ${[...byWave].map(([w, k]) => `${w}: ${[...k].join('/')}`).join(' | ')}`);
+  check(errors.length === 0, 'no page errors in the skirmish', errors.slice(0, 3).join(' | '));
+  await ctx2.close();
 } finally {
   await browser.close();
   try { process.kill(server.pid); } catch {}

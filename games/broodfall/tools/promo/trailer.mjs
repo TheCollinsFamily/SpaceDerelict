@@ -1270,13 +1270,28 @@ function globeCrop() {
 // source, zoom [z0,z1] (a slow push), titles [[png, from, to]], fadeIn/fadeOut (from/to black, s),
 // vx (where the vertical cut's 4:5 window sits across the frame, 0..1), what/from (the shot list).
 const T = (id, a, b) => [id, a, b];
-function shotsFull() {
+/** The B-movie (0 to 15 s): the plot, from the game's own opening film, with the newsreel narrator. Both store cuts open with it. */
+function shotsBMovie() {
   return [
     { id: 'sky', src: SRC.sky, ss: 0, dur: 4.0, zoom: [1, 1.04], titles: [T('t-quiet', 0.4, 3.8)], fadeIn: 0.6, what: 'A quiet night in a quiet little insect town', from: 'the opening film, public/art/intro/sky.mp4' },
     { id: 'lookup', src: SRC.lookup, ss: 0, dur: 3.6, titles: [T('t-sky', 0.5, 3.5)], what: 'The townsfolk look up: IT CAME FROM THE SKY!', from: 'the opening film, public/art/intro/lookup.mp4' },
     { id: 'fall', src: SRC.fall, ss: 0.6, dur: 2.6, what: 'The living meteor falls on the town', from: 'the opening film, public/art/intro/fall.mp4' },
     { id: 'impact', src: SRC.impact, ss: 0, dur: 2.6, what: 'Impact', from: 'the opening film, public/art/intro/impact.mp4' },
     { id: 'creep', src: SRC.creep, ss: 0.3, dur: 2.4, titles: [T('t-hungry', 0.2, 2.3)], fadeOut: 0.15, what: 'The creep swallows a street and a car', from: 'the opening film, public/art/intro/creep.mp4' },
+  ];
+}
+/** The B-movie's sound: the film's own score under the newsreel narrator's three lines, out as the gameplay begins. */
+function soundBMovie(at, next) {
+  return [
+    { f: AU('film'), t: at('sky'), ss: 0, dur: at(next) - at('sky') + 0.1, fo: 0.25, bus: 'm', db: -1 },
+    { f: AU('nar-film-1'), t: at('sky') + 0.5, bus: 'v' },
+    { f: AU('nar-film-2'), t: at('lookup') + 0.3, bus: 'v' },
+    { f: AU('nar-film-4'), t: at('creep') + 0.15, bus: 'v', dur: 2.2, fo: 0.2 },
+  ];
+}
+function shotsFull() {
+  return [
+    ...shotsBMovie(),
     { id: 'g-open', src: CAPF('g-open'), ss: 1.0, dur: 4.4, titles: [T('g-1', 0.4, 4.2)], vx: 0.55, what: 'GAMEPLAY: wave 2 on a suburb board, the whole board: a small tower defence', from: 'real game, captured' },
     { id: 'g-siege', src: CAPF('g-siege'), ss: 1.5, dur: 3.6, vx: 0.45, what: 'GAMEPLAY: a siege in the Megacity, limbs firing into the column', from: 'real game, captured' },
     { id: 'g-maw', src: CAPF('g-maw'), ss: MAW_SS, crop: MAW_CROP, dur: 3.6, vx: 0.5, what: 'GAMEPLAY: the Maw\'s frog tongue catches a soldier and swallows it', from: 'real game, captured' },
@@ -1335,8 +1350,8 @@ function shots30() {
 function soundFull(at) {
   const yl = (() => { try { return JSON.parse(fs.readFileSync(path.join(CAP, 'r-yoke.json'), 'utf8')); } catch { return {}; } })();
   return [
+    ...soundBMovie(at, 'g-open'),
     // music
-    { f: AU('film'), t: at('sky'), ss: 0, dur: at('g-open') - at('sky') + 0.1, fo: 0.25, bus: 'm', db: -1 },
     { f: SONG(), t: at('g-open'), ss: 0, dur: at('menu') - at('g-open'), fi: 0.05, fo: 0.35, bus: 'm', db: -1 },
     { f: AU('sting-wave'), t: at('g-open'), bus: 'm', db: -4 },
     { f: AU('sting-desk'), t: at('menu'), bus: 'm', db: -2 },
@@ -1347,9 +1362,6 @@ function soundFull(at) {
     { f: AU('sting-core'), t: at('end'), bus: 'm', db: 0, fo: 1.0 },
     { f: SONG(), t: at('end') + 0.4, ss: 0, dur: 6.0, fi: 1.5, fo: 1.2, bus: 'm', db: -8 },
     // voices
-    { f: AU('nar-film-1'), t: at('sky') + 0.5, bus: 'v' },
-    { f: AU('nar-film-2'), t: at('lookup') + 0.3, bus: 'v' },
-    { f: AU('nar-film-4'), t: at('creep') + 0.15, bus: 'v', dur: 2.2, fo: 0.2 },
     { f: AU('nar-royal'), t: at('g-boss') + 0.1, bus: 'v' },
     { f: path.join(RAW, 'voice', 'yoke-suck.mp3'), t: at('r-yoke') - (yl.voiceLead ?? 0.1), bus: 'v', db: 1 },
     { f: A('public/art/intro/boss.mp3'), t: at('r-boss'), ss: yl.bossVoiceFrom ?? 26.6, dur: 3.6, fo: 0.3, bus: 'v', db: 1 },
@@ -1397,7 +1409,12 @@ function sound30(at) {
  * real game; the only picture not filmed from the page is the game's own landing film (public/art/landing/), which plays
  * in the game before a deployment. No ship rooms, no faction films: the planet is shown as the Directive Desk's globe,
  * cropped to the planet and its briefing. Four cards say what the player does; the end is the logo.
+ *
+ * Since Oct 31 2026 it opens with the B-movie (the 90 s cut's first 15 s: the plot) and the gameplay follows. Collins, of
+ * the demo built on the pure cut: "like it a lot better with the updated trailer but you removed the plot elements at the
+ * beginning". `cut gameplay --pure` still builds the plain gameplay cut, to broodfall-trailer-gameplay-pure.mp4.
  */
+const PURE = rest.includes('--pure');
 const PICK_SET = process.env.TRAILER_LANDING ?? 'industrial';
 /** A crop from a capture's saved box (CSS pixels, times its dpr), widened to 16:9 around `pad`. */
 function boxCrop(file, key, pad = 60) {
@@ -1416,11 +1433,13 @@ function boxCrop(file, key, pad = 60) {
 const ORGAN_CROP = [310, 80, 1300, 732];
 /** The desk's planet and the picked territory's picture and briefing (p-globe, 3840x2160): no ship around it. */
 const GLOBE_PICK_CROP = [1420, 230, 2360, 1328];
-function shotsGameplay() {
+function shotsGameplay({ pure = PURE } = {}) {
   const C = (id) => CAPF(id);
   return [
+    // The plot first (the B-movie), then a hard cut to the game; the pure cut opens from black on the board.
+    ...(pure ? [] : shotsBMovie()),
     // I. It is a tower defence: the board, the fight.
-    { id: 'g-open', src: C('g-open'), ss: 1.0, dur: 3.6, fadeIn: 0.3, zoom: [1.0, 1.05], titles: [T('p-1', 0.35, 3.4)], cues: true, what: 'The whole board in a wave: a small tower defence', from: 'real game, captured (g-open)' },
+    { id: 'g-open', src: C('g-open'), ss: 1.0, dur: 3.6, ...(pure ? { fadeIn: 0.3 } : {}), zoom: [1.0, 1.05], titles: [T('p-1', 0.35, 3.4)], cues: true, what: 'The whole board in a wave: a small tower defence', from: 'real game, captured (g-open)' },
     { id: 'g-maw', src: C('g-maw'), ss: MAW_SS, crop: MAW_CROP, dur: 3.0, cues: true, what: 'The Maw\'s tongue catches a soldier and swallows it', from: 'real game, captured (g-maw)' },
     { id: 'g-temple', src: C('g-temple'), ss: 1.0, dur: 2.6, cues: true, what: 'The Temple Cities under siege: shield domes, lightning and shot', from: 'real game, captured (g-temple)' },
     { id: 'g-boss', src: C('g-boss'), ss: 1.0, dur: 3.6, cues: true, what: 'A royal and her consort wade into the limbs', from: 'real game, captured (g-boss)' },
@@ -1490,12 +1509,15 @@ function gameCues(shots, at, { db = -7, maxPerHalf = 4 } = {}) {
   return out;
 }
 function soundGameplay(at, shots) {
+  const bmovie = shots.some((s) => s.id === 'sky');
+  const g0 = at('g-open');
   const mStart = at('m-late');
-  // The song's drop (SONG_DROP, the 90 s cut's montage) lands on the montage.
-  const ss = Math.max(0, SONG_DROP - mStart);
+  // The song's drop (SONG_DROP, the 90 s cut's montage) lands on the montage; the song begins with the gameplay.
+  const ss = Math.max(0, SONG_DROP - (mStart - g0));
   return [
-    { f: AU('sting-wave'), t: 0, bus: 'm', db: -3 },
-    { f: SONG(), t: 0, ss, dur: at('end') + 0.2, fi: 0.6, fo: 0.25, bus: 'm', db: -1 },
+    ...(bmovie ? soundBMovie(at, 'g-open') : []),
+    { f: AU('sting-wave'), t: g0, bus: 'm', db: -3 },
+    { f: SONG(), t: g0, ss, dur: at('end') - g0 + 0.2, fi: bmovie ? 0.3 : 0.6, fo: 0.25, bus: 'm', db: -1 },
     { f: AU('sting-core'), t: at('end'), bus: 'm', db: 0, fo: 1.0 },
     { f: SONG(), t: at('end') + 0.4, ss: 0, dur: 5.0, fi: 1.2, fo: 1.2, bus: 'm', db: -8 },
     { f: AU('nar-royal'), t: at('g-boss') + 0.1, bus: 'v' },
@@ -1640,14 +1662,16 @@ if (cmd === 'cut') {
   if (want2('full')) results.push(build('full', shotsFull(), soundFull, 'h', path.join(OUT, 'broodfall-trailer-90s.mp4')));
   if (want2('30')) results.push(build('30', shots30(), sound30, 'h', path.join(OUT, 'broodfall-trailer-30s.mp4')));
   if (want2('vertical')) results.push(build('vertical', shots30(), sound30, 'v', path.join(OUT, 'broodfall-trailer-vertical.mp4')));
-  // The gameplay cut is asked for by name (not part of a bare `cut`): `cut gameplay`.
+  // The gameplay cut is asked for by name (not part of a bare `cut`): `cut gameplay` (the B-movie in front), `cut gameplay --pure`.
   if (want.has('gameplay')) {
-    const r = build('gameplay', shotsGameplay(), soundGameplay, 'h', path.join(OUT, 'broodfall-trailer-gameplay.mp4'), { cap: '8.0M' });
+    const stem = PURE ? 'broodfall-trailer-gameplay-pure' : 'broodfall-trailer-gameplay';
+    // Capped at 5.5 Mbit/s since the B-movie went in front (71 s; at 8 Mbit/s the file was 54 MiB, over the repo's 50 MiB).
+    const r = build(PURE ? 'gameplay-pure' : 'gameplay', shotsGameplay(), soundGameplay, 'h', path.join(OUT, `${stem}.mp4`), { cap: '5.5M' });
     results.push(r);
     // The copy for a browser upload capped at 10 MB: 1280x720 30 fps, two-pass x264 at the rate that lands it under 9.8 MB.
-    const up = path.join(OUT, 'broodfall-trailer-gameplay-steam-upload-720p.mp4');
+    const up = path.join(OUT, `${stem}-steam-upload-720p.mp4`);
     const kbps = Math.floor(((9.8 * 1e6 * 8) / r.total - 96000) / 1000 * 0.97);
-    const passlog = path.join(RAW, 'gameplay-2pass');
+    const passlog = path.join(RAW, `${PURE ? 'gameplay-pure' : 'gameplay'}-2pass`);
     const v = ['-i', r.file, '-vf', 'scale=1280:720:flags=lanczos,fps=30', '-c:v', 'libx264', '-preset', 'slow', '-b:v', `${kbps}k`, '-profile:v', 'high', '-pix_fmt', 'yuv420p', '-g', '60', '-passlogfile', passlog];
     ff([...v, '-pass', '1', '-an', '-f', 'mp4', process.platform === 'win32' ? 'NUL' : '/dev/null'], 'upload pass 1');
     ff([...v, '-pass', '2', '-af', 'volume=-0.7dB', '-c:a', 'aac', '-b:a', '96k', '-ar', '48000', '-movflags', '+faststart', up], 'upload pass 2');

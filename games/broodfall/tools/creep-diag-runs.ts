@@ -1,12 +1,13 @@
 /** The slow balance checks at a given creepBase: `npx vite-node tools/creep-diag-runs.ts <base> fullrun|mules`.
  *  fullrun: the naive autoplayer's hold-12 wins over seeds 1-10 (tests/fullrun.test.ts wants >= 3).
- *  mules: which of seeds 1-12 the scripted player with mules roots a mule on (tests/mules.test.ts names them). */
+ *  mules: which of seeds 1-N (the fourth argument, default 12) the scripted player with mules roots a mule on (tests/mules.test.ts names them). */
 import { Autoplayer } from '../src/sim/autoplayer';
 import { DT, Sim } from '../src/sim/sim';
 import { BALANCE as B } from '../content/data';
 
 const base = Number(process.argv[2] ?? B.creepBase);
 const mode = process.argv[3] ?? 'fullrun';
+const maxSeed = Number(process.argv[4] ?? 12);
 (B as { creepBase: number }).creepBase = base;
 const CFG = { gridW: 50, gridH: 40, cellPx: 26 };
 console.log(`creepBase ${base}, ${mode}`);
@@ -23,7 +24,7 @@ if (mode === 'fullrun') {
   console.log(`[fullrun] naive hold-12 wins ${wins}/10 (seeds ${won.join(' ')})`);
 } else {
   const roots: number[] = [];
-  for (let seed = 1; seed <= 12; seed++) {
+  for (let seed = 1; seed <= maxSeed; seed++) {
     const s = new Sim({ ...CFG, seed, organStage: true, directive: { kind: 'hold', waves: 12 } });
     const bot = new Autoplayer(seed + 1);
     bot.mules = true;

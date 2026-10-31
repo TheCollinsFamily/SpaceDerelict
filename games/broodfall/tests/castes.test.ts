@@ -14,7 +14,7 @@ import { Rng } from '../src/sim/rng';
 import type { EnemyKind, SimConfig, SimEvent } from '../src/sim/types';
 import { NO_EVOLUTION, evolutionCaps, newCampaign, plan } from '../src/meta/campaign';
 import { FIRST_MISSION } from '../src/meta/onboarding';
-import { TOWERS } from '../content/data';
+import { BALANCE as B, TOWERS } from '../content/data';
 import { HOME } from '../content/campaign';
 
 const GRID = { gridW: 50, gridH: 40, cellPx: 26, entrances: 1, genes: [] as string[] };
@@ -143,6 +143,99 @@ describe('the campaign opens the castes as the currencies become spendable', () 
     const s = { ...newCampaign(3), held: [HOME, 'cul-de-sac', 'commuter'] };
     expect(evolutionCaps(s).core).toBe(3);
     expect(new Sim({ ...GRID, ...plan(s, 'foundry').config } as SimConfig).royalOpen).toBe(true);
+  });
+});
+
+describe('wave 1 is the war caste\'s in every run (Collins, Oct 31 2026: "generally in a game wave one should be mostly or only war caste")', () => {
+  /** The scripted player plays until wave `until` starts; every enemy with the wave it came in, and the wave of the first study party. */
+  function playTo(sim: Sim, until: number) {
+    const auto = new Autoplayer(sim.cfg.seed + 1);
+    const seen = new Map<number, { kind: EnemyKind; wave: number }>();
+    let firstParty = 0;
+    let firstCourt = 0;
+    for (let i = 0; i < 60_000 && sim.outcome === 'playing' && sim.waveNumber < until; i++) {
+      auto.act(sim, DT);
+      sim.tick();
+      for (const e of sim.takeEvents()) {
+        if (e.kind === 'researchers-arrive' && !firstParty) firstParty = sim.waveNumber;
+        if (e.kind === 'royal-incoming' && !firstCourt) firstCourt = sim.waveNumber;
+      }
+      for (const e of sim.enemies) if (!seen.has(e.id)) seen.set(e.id, { kind: e.kind, wave: sim.waveNumber });
+    }
+    const inWave = (n: number) => [...seen.values()].filter((e) => e.wave === n);
+    return { seen, inWave, firstParty, firstCourt };
+  }
+
+  it('the balance names the wave the castes come from: the second', () => {
+    expect(B.castesFromWave).toBe(2);
+  });
+
+  for (const seed of [1, 2, 3]) {
+    it(`seed ${seed}: a skirmish (every caste open) opens on war bodies alone; the first study party walks in with wave 2`, () => {
+      const sim = new Sim({ ...GRID, seed });
+      expect(sim.scienceOpen && sim.royalOpen).toBe(true);
+      const { inWave, firstParty, firstCourt } = playTo(sim, 4);
+      expect(sim.waveNumber, 'wave 4 was reached').toBeGreaterThanOrEqual(3);
+      const wave1 = inWave(1);
+      expect(wave1.length).toBeGreaterThan(0);
+      expect([...new Set(wave1.map((e) => enemySpec(e.kind).caste))], wave1.map((e) => e.kind).join()).toEqual(['war']);
+      // The asset is fascinating from the start (baseInterest), so the party is due 20 s of fighting after wave 1: in
+      // wave 2, or in wave 3 when wave 2 falls in under 20 s (the timer runs only while the war is on).
+      expect([2, 3]).toContain(firstParty);
+      expect(inWave(firstParty).some((e) => enemySpec(e.kind).caste === 'science')).toBe(true);
+      if (firstCourt) expect(firstCourt).toBeGreaterThanOrEqual(2);
+    });
+  }
+
+  it('the study party\'s timer does not run in wave 1, however famous the specimen', () => {
+    const sim = new Sim({ ...GRID, seed: 5 });
+    const inner = sim as unknown as { researcherTimer: number };
+    sim.meat.war = 500;
+    const auto = new Autoplayer(6);
+    for (let i = 0; i < 20_000 && sim.outcome === 'playing' && sim.waveNumber < 2; i++) {
+      auto.act(sim, DT);
+      sim.tick();
+      if (sim.waveNumber >= 2) break; // the tick that opens wave 2 may already run it
+      expect(inner.researcherTimer).toBe(20);
+      for (const e of sim.enemies) expect(enemySpec(e.kind).caste, e.kind).toBe('war');
+    }
+    expect(sim.waveNumber).toBe(2);
+  });
+
+  it('the court never comes in wave 1, even with the threat for it', () => {
+    const sim = new Sim({ ...GRID, seed: 7, startBonus: { royal: 1 } });
+    expect(sim.royalOpen).toBe(true);
+    const inner = sim as unknown as { threatChallenge: number; royalSpawned: boolean };
+    const auto = new Autoplayer(8);
+    // Wave 1 is under way (its row was drawn at tier 0); now the threat for the court is there.
+    for (let i = 0; i < 20_000 && !(sim.waveNumber === 1 && sim.phase === 'siege'); i++) { auto.act(sim, DT); sim.tick(); }
+    expect(sim.waveNumber).toBe(1);
+    inner.threatChallenge = B.royalThreat + 50;
+    expect(sim.threat).toBeGreaterThanOrEqual(B.royalThreat);
+    for (let i = 0; i < 20_000 && sim.outcome === 'playing' && sim.waveNumber < 2; i++) {
+      auto.act(sim, DT);
+      sim.tick();
+      if (sim.waveNumber === 1) expect(inner.royalSpawned).toBe(false);
+    }
+    expect(sim.waveNumber).toBe(2);
+    // From wave 2 the same threat brings it.
+    for (let i = 0; i < 6_000 && sim.outcome === 'playing' && !inner.royalSpawned; i++) { auto.act(sim, DT); sim.tick(); }
+    expect(inner.royalSpawned).toBe(true);
+  });
+
+  it('a defence\'s one siege stands for wave 11: its study parties come', () => {
+    const sim = new Sim({ ...GRID, seed: 9, directive: { kind: 'hold', waves: 1 }, oneWave: { asWave: 11, minTier: 3 } });
+    expect(sim.scienceOpen).toBe(true);
+    const { firstParty } = playTo(sim, 2);
+    expect(firstParty).toBe(1);
+  });
+
+  it('the last mission\'s first turn is the court\'s own wave, by order (COURT_WAVES): the exception stands', () => {
+    const sim = new Sim({ ...GRID, seed: 11, lateHost: { turns: 3, minTier: 2 } });
+    const { inWave } = playTo(sim, 2);
+    const castes = new Set(inWave(1).map((e) => enemySpec(e.kind).caste));
+    expect(castes.has('war')).toBe(false);
+    expect(castes.has('science') || castes.has('royal')).toBe(true);
   });
 });
 

@@ -24,7 +24,7 @@ limited human interaction. This is what Reality Fabricator unlocks. (have Neko V
 | File | What | Length | Size |
 |---|---|---|---|
 | `broodfall-trailer-yc-demo.mp4` | The 11.6 s intro, then the 88 s store trailer: 1920x1080, 60 fps, H.264 High + AAC 320k | 99.6 s | 47.9 MB |
-| `broodfall-trailer-yc-demo-gameplay.mp4` | The same intro, then the 56 s gameplay trailer | 67.5 s | 44.5 MB |
+| `broodfall-trailer-yc-demo-gameplay.mp4` | The same intro, then the 71.1 s gameplay trailer (the B-movie opening, then the gameplay; Oct 31 2026) | 82.7 s | 46.4 MB |
 
 The store trailers above are not changed. Both demo files: -14.0 LUFS, true peak -1.5 dBTP, picture and sound the same length
 to the frame (`cut` counts them). Masters (CRF 16) and every take in `art-src/trailer/intro/` (git-ignored).
@@ -77,7 +77,9 @@ from black follows.
 - **The type**: Oswald 700 and Bahnschrift (the trailer's faces), rendered frame by frame at 60 fps in headless Chromium as
   transparent PNGs (`titles/grok/`, 695 frames), each line cued to the time her word was heard, over the take fitted to 1080p
   (cover and crop). Her first frame is held 0.64 s so her first word lands at 0.7 s, after the fade from black; her last frame
-  is held 1.1 s after her last word; the trailer's sound begins at 11.608 s, the join (measured).
+  is held 1.1 s after her last word; the trailer's sound begins at 11.608 s, the join (measured). The gameplay demo was
+  rebuilt Oct 31 2026 on the gameplay cut with the B-movie in front: 82.7 s, 4960 frames (695 + the trailer's), the
+  plot from 11.6 s, the board from 26.8 s.
 - **The finished intro was listened to as a whole** (`intro-grok-master.mp4` uploaded and put to the same listening model):
   the line word for word, FAB-ri-kay-ter OK, the type in step with the phrases, a clean end, no picture defects. Nobody has
   heard her acting: the gates measure, Collins's ear decides.
@@ -100,17 +102,26 @@ at its pathway's 1080p default the largest single item; Grok Lite the smallest, 
 (ten transcripts, ten vision strips, fifteen listens). The day's three versions together about 1,300,000 tokens ($26). A
 $50 top-up (2,500,000 tokens) was made before the batch; 2,373,541 tokens remain.
 
-## The gameplay cut (Oct 26 2026)
+## The gameplay cut (Oct 26 2026; the B-movie in front since Oct 31 2026)
 
 | File | What | Length | Size |
 |---|---|---|---|
-| `broodfall-trailer-gameplay.mp4` | The second store trailer, pure gameplay: 1920x1080, 60 fps, H.264 High (CRF 19, capped 8 Mbit/s) + AAC 320k | 55.9 s | 44.4 MB |
-| `broodfall-trailer-gameplay-steam-upload-720p.mp4` | The same for a browser upload capped at 10 MB: 1280x720, 30 fps, two-pass x264 at 1267 kbit/s, AAC 96k | 55.9 s | 9.67 MB |
+| `broodfall-trailer-gameplay.mp4` | The second store trailer: the 15 s B-movie opening (the plot), then pure gameplay: 1920x1080, 60 fps, H.264 High (CRF 19, capped 5.5 Mbit/s) + AAC 320k | 71.1 s | 45.8 MB |
+| `broodfall-trailer-gameplay-steam-upload-720p.mp4` | The same for a browser upload capped at 10 MB: 1280x720, 30 fps, two-pass x264 at 976 kbit/s, AAC 96k | 71.1 s | 9.64 MB |
 
 Collins: "focused on gameplay of the tower defence, global map, choosing map pieces, and monster building (not much
 of the ship, just pure gameplay) so we don't have just one trailer." Every shot is the real game except the landing
 film, which is the game's own (it plays before every deployment). No ship rooms, no faction films, no voices but the
-game's narrator over the royal. Loudness -14.0 LUFS, true peak -1.4 dBTP (upload copy -14.7 LUFS, -1.4 dBTP).
+game's narrator over the royal and, since Oct 31 2026, the newsreel narrator over the opening.
+
+**The B-movie in front (Oct 31 2026).** Collins, of the demo built on the pure cut: "like it a lot better with the updated
+trailer but you removed the plot elements at the beginning". The cut now opens as the 90 s cut does, with the plot from
+the game's own opening film: the quiet town (IT WAS A QUIET NIGHT), the townsfolk looking up (IT CAME FROM THE SKY!), the
+meteor, the impact, the creep (IT WAS HUNGRY), the newsreel narrator's three lines over the film's own score; a hard cut
+to the board at 15.2 s, where the song begins. The same five shots and the same sound as the 90 s cut (`shotsBMovie`,
+`soundBMovie` in the script, shared by both). The gameplay after it is unchanged shot for shot, 15.2 s later; the song
+still drops on the montage. The plain cut is still made by `cut gameplay --pure` (to `broodfall-trailer-gameplay-pure.mp4`,
+not kept here).
 
 Four cards in the genre line's type, in the upper third so the play stays visible: EVERY LIMB A TOWER, GROW THE BODY,
 CONSUME THE MAP, TAKE THE PLANET; the end is the logo, TOWER DEFENCE + ROGUELITE, GENOCIDE SIMULATOR.
@@ -125,30 +136,38 @@ audio cues to `cap/<id>.sfx.json`; `gameCues()` lays them with the game's gains 
 
 | Start (s) | Length (s) | Shot | What | Source |
 |---|---|---|---|---|
-| 0.00 | 3.60 | g-open | The whole board in a wave: a small tower defence (EVERY LIMB A TOWER) | real game, captured |
-| 3.60 | 3.00 | g-maw | The Maw's tongue catches a soldier and swallows it | real game, captured |
-| 6.60 | 2.60 | g-temple | The Temple Cities under siege: shield domes, lightning and shot | real game, captured |
-| 9.20 | 3.60 | g-boss | A royal and her consort wade into the limbs (the narrator: "And here she comes...") | real game, captured |
-| 12.80 | 5.60 | p-build | By hand: three limb cards picked and grown on the creep, the ghost and its reach shown (GROW THE BODY) | real game, played by hand |
-| 18.40 | 4.40 | p-eat | Cannibalize: a limb hovered (lit; the hint says what eating it gives), eaten, its trait grown into a new limb | real game, played by hand |
-| 22.80 | 4.40 | p-organ | The organ stage: two organs picked, their ghosts over the body, grown | real game, played by hand |
-| 27.20 | 1.80 | g-core | The core evolves | real game, captured |
-| 29.00 | 2.20 | g-looks | Limbs in their upgrade looks, firing | real game, captured |
-| 31.20 | 2.28 | p-draft | THE BODY IS READY TO GROW: three districts hovered, one clicked (close on the panel) | real game, played by hand |
-| 33.48 | 2.60 | p-draft-b | DISTRICT CONSUMED: the camera goes to the new district (CONSUME THE MAP) | real game, played by hand |
-| 36.08 | 2.40 | g-creep | Creep nodes put down past the edge; the creep spreads over the new district | real game, captured |
-| 38.48 | 3.20 | g-late | Late in a run: the whole body across its districts, in a wave | real game, captured |
-| 41.68 | 2.60 | p-globe | The planet at the Directive Desk (cropped to the globe and the briefing): a territory hovered, picked, the globe turns to it | real game, played by hand |
-| 44.28 | 2.60 | landing | The brood falls on the new territory (TAKE THE PLANET) | the game's landing film, public/art/landing/industrial.mp4 |
-| 46.88 | 3.50 | m-* | Montage on the music's drop: the whole body, the Maw, the royal, the Temple Cities, the upgrade looks | real game, captured |
-| 50.38 | 5.50 | end | The name, TOWER DEFENCE + ROGUELITE, GENOCIDE SIMULATOR | key art, titles set in type |
+| 0.00 | 4.00 | sky | A quiet night in a quiet little insect town (IT WAS A QUIET NIGHT; the narrator: "It was a quiet night in a quiet little town.") | the opening film, public/art/intro/sky.mp4 |
+| 4.00 | 3.60 | lookup | The townsfolk look up: IT CAME FROM THE SKY! ("Until something came down out of the sky.") | the opening film, public/art/intro/lookup.mp4 |
+| 7.60 | 2.60 | fall | The living meteor falls on the town | the opening film, public/art/intro/fall.mp4 |
+| 10.20 | 2.60 | impact | Impact | the opening film, public/art/intro/impact.mp4 |
+| 12.80 | 2.40 | creep | The creep swallows a street and a car (IT WAS HUNGRY; "It was hungry.") | the opening film, public/art/intro/creep.mp4 |
+| 15.20 | 3.60 | g-open | The whole board in a wave: a small tower defence (EVERY LIMB A TOWER); the song begins | real game, captured |
+| 18.80 | 3.00 | g-maw | The Maw's tongue catches a soldier and swallows it | real game, captured |
+| 21.80 | 2.60 | g-temple | The Temple Cities under siege: shield domes, lightning and shot | real game, captured |
+| 24.40 | 3.60 | g-boss | A royal and her consort wade into the limbs (the narrator: "And here she comes...") | real game, captured |
+| 28.00 | 5.60 | p-build | By hand: three limb cards picked and grown on the creep, the ghost and its reach shown (GROW THE BODY) | real game, played by hand |
+| 33.60 | 4.40 | p-eat | Cannibalize: a limb hovered (lit; the hint says what eating it gives), eaten, its trait grown into a new limb | real game, played by hand |
+| 38.00 | 4.40 | p-organ | The organ stage: two organs picked, their ghosts over the body, grown | real game, played by hand |
+| 42.40 | 1.80 | g-core | The core evolves | real game, captured |
+| 44.20 | 2.20 | g-looks | Limbs in their upgrade looks, firing | real game, captured |
+| 46.40 | 2.28 | p-draft | THE BODY IS READY TO GROW: three districts hovered, one clicked (close on the panel) | real game, played by hand |
+| 48.68 | 2.60 | p-draft-b | DISTRICT CONSUMED: the camera goes to the new district (CONSUME THE MAP) | real game, played by hand |
+| 51.28 | 2.40 | g-creep | Creep nodes put down past the edge; the creep spreads over the new district | real game, captured |
+| 53.68 | 3.20 | g-late | Late in a run: the whole body across its districts, in a wave | real game, captured |
+| 56.88 | 2.60 | p-globe | The planet at the Directive Desk (cropped to the globe and the briefing): a territory hovered, picked, the globe turns to it | real game, played by hand |
+| 59.48 | 2.60 | landing | The brood falls on the new territory (TAKE THE PLANET) | the game's landing film, public/art/landing/industrial.mp4 |
+| 62.08 | 3.50 | m-* | Montage on the music's drop: the whole body, the Maw, the royal, the Temple Cities, the upgrade looks | real game, captured |
+| 65.58 | 5.50 | end | The name, TOWER DEFENCE + ROGUELITE, GENOCIDE SIMULATOR | key art, titles set in type |
+
+(The pure cut, `--pure`, is the same from g-open on, 15.2 s earlier, opening from black on the board.)
 
 Rebuild (in `games/broodfall`; raw footage in `art-src/trailer/`, git-ignored):
 
 ```
 node tools/promo/trailer.mjs capture g-open g-maw g-temple g-boss g-core g-looks g-creep g-late p-build p-eat p-organ p-draft p-globe
 node tools/promo/trailer.mjs titles
-node tools/promo/trailer.mjs cut gameplay      # the 1080p file AND the under-9.8 MB 720p upload copy
+node tools/promo/trailer.mjs cut gameplay      # the 1080p file AND the under-9.8 MB 720p upload copy (the B-movie in front)
+node tools/promo/trailer.mjs cut gameplay --pure   # the plain gameplay cut, to broodfall-trailer-gameplay-pure.mp4 (not kept)
 ```
 
 `cut gameplay` is asked for by name; a bare `cut` still builds only the 90 s, 30 s and vertical cuts. Learnt on the

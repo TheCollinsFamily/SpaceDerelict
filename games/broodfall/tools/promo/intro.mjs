@@ -697,7 +697,8 @@ if (cmd === 'titles') {
 /** The two trailers the intro goes in front of; the store files are not touched. */
 const TRAILERS = [
   { src: 'broodfall-trailer-90s.mp4', out: 'broodfall-trailer-yc-demo.mp4', cap: '4.0M', crf: 20 },
-  { src: 'broodfall-trailer-gameplay.mp4', out: 'broodfall-trailer-yc-demo-gameplay.mp4', cap: '6.0M', crf: 19 },
+  // 4.6 Mbit/s, CRF 20 since the gameplay cut opens with the B-movie (Oct 31 2026): 82.7 s, kept under the repo's 50 MiB.
+  { src: 'broodfall-trailer-gameplay.mp4', out: 'broodfall-trailer-yc-demo-gameplay.mp4', cap: '4.6M', crf: 20 },
 ];
 function introSegment(take) {
   const clip = takeFile(take);
