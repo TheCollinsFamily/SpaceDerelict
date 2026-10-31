@@ -166,6 +166,10 @@ afterwards.
   tool's 10 MB cap, so Collins drags it in); after approval, press "Post as Coming Soon".
   Note for agents: Steamworks' pencil/"Start Wizard" buttons open in-page dialogs; a coordinate
   click can miss them silently. Click by element ref.
+- Oct 31 2026: **three Steam demo videos made, not yet uploaded**: `promo/trailer/broodfall-demo-fight.mp4`,
+  `broodfall-demo-body.mp4`, `broodfall-demo-map.mp4` (about 31 s each, 1080p60, each on one part of the game and one
+  of Collins's songs; `promo/trailer/README.md` "The Steam demos") with `*-steam-upload-720p.mp4` copies under 10 MB
+  for the browser upload. Each goes up as its own trailer (category Gameplay) by the flow below.
 - Oct 26 2026 (night): **two trailers on the Trailers tab**, both visible and shown before the
   screenshots, neither marked all-ages (combat): "Broodfall Gameplay" (category Gameplay, listed
   first, `promo/trailer/broodfall-trailer-gameplay-steam-upload-720p.mp4`, 55.9 s, pure gameplay)

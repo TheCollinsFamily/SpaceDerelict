@@ -26,6 +26,7 @@ Useful URLs:
 | Mission 1 (first launch: straight into a plain tower-defence game at the crash site, the coach's hint line) | BUILT (Sep 30; `shot-onboarding.mjs A`) |
 | Mission 1 is WAR ONLY: no evolution, no science caste, no court, no decrees, no labs or tombs in the dig; a caste comes only once its meat can be spent (`castesOpen`, src/sim/sim.ts) | BUILT (Oct 30; `node tools/shot-castes.mjs`, `tests/castes.test.ts`) |
 | Wave 1 of EVERY run is the war caste's: no study party, no royal event before wave 2 (`castesFromWave`, content/data.ts; a defence's one siege keeps its parties, the last mission's court waves are the exception) | BUILT (Oct 31; `node tools/shot-castes.mjs` scene 2, `tests/castes.test.ts`) |
+| Three Steam demo videos, one part of the game each (the fight, the body, the map), each on one of Collins's songs, no intro in front: `promo/trailer/broodfall-demo-{fight,body,map}.mp4` | BUILT (Oct 31; `node tools/promo/trailer.mjs cut demos`, `promo/trailer/README.md` "The Steam demos") |
 | Main menu: the ship's console over the viewport's looping video (continue, new campaign, skirmish, replay the opening, settings) | BUILT (Sep 30; `src/ui/menu.ts`, `shot-onboarding.mjs A`, `shot-screens.mjs title`) |
 | Home menu / title screen (the emblem, the name set in type from `src/ui/screens.ts` GAME_NAME) | BUILT (Sep 30; `node tools/shot-screens.mjs title`) |
 | The dark Directive Desk (AWAITING CLEARANCE, the ship's own pick) until the first win after mission 1 | BUILT (Sep 30; `shot-onboarding.mjs A B`) |

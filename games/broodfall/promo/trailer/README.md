@@ -15,7 +15,95 @@ Mbit/s (30 s, vertical).
 Everything is rebuilt by `tools/promo/trailer.mjs` (`capture`, `record`, `gen`, `titles`, `cut`,
 `sheet`); raw footage, frames, segments and masters are in `art-src/trailer/`.
 
-## The demo intro (Oct 30 2026): the trailers with Neko Voss in front, for Y Combinator
+## The Steam demos (Oct 31 2026): three short videos, one part of the game each, on his songs
+
+Collins: "make a few general demo videos for steam with the new music and focusing on different parts of the game". Three
+gameplay videos of about 31 s, each on one part of the game and each on its own song of his (the 1940s electro swing of
+Oct 29; `public/audio/mission/`, `public/audio/organ-stage/`), the song laid so its measured drop lands on the montage
+(`tools/promo/trailer.mjs` DEMOS: the drop of each track found as the second whose next 4 s are loudest against the 4 s
+before). No film and no intro in front of any of them: each opens from black on the game and ends on the logo, TOWER
+DEFENCE + ROGUELITE, GENOCIDE SIMULATOR. Every shot is the real game (the captures of Oct 26 and one new one), except
+the three landing films, which are the game's own.
+
+| File | What | Song | Length | Size |
+|---|---|---|---|---|
+| `broodfall-demo-fight.mp4` | THE FIGHT: the tower defence itself: the board in a wave, the Megacity siege, the Maw, the Temple Cities, the upgrade looks firing, the royal (the narrator's line, captioned), the body late in a run; montage; logo. 1920x1080, 60 fps, H.264 High (CRF 19, capped 5.5 Mbit/s) + AAC 320k | Flag of Doom 7, from 4.1 s (its entry at 27.5 s on the montage) | 31.9 s | 21.2 MB |
+| `broodfall-demo-body.mp4` | THE BODY: three limbs grown by hand (GROW THE BODY), a limb eaten into a new one (CANNIBALIZE), the organ stage by hand (GROW ORGANS), a limb EVOLVED by hand through its panel and growing into its Swarm look (new shot `p-evolve`), the core evolving, the looks firing; montage; logo | The Mutant from the Deep 1, the organ stage's own music, from 19.8 s (its surge at 43 s on the montage) | 31.0 s | 19.7 MB |
+| `broodfall-demo-map.mp4` | THE MAP: the creep spread (SPREAD THE CREEP), the district draft by hand and the district consumed (CONSUME THE MAP), the body across its districts, the planet picked at the desk (TAKE THE PLANET), the 3D globe with held ground, three landings (the Foundry, the Megacity, the Temple Terraces); montage; logo | Haunted Level 2, from 48.2 s (its return at 71.5 s on the montage) | 31.1 s | 20.2 MB |
+| `broodfall-demo-*-steam-upload-720p.mp4` | The same three for a browser upload capped at 10 MB: 1280x720, 30 fps, two-pass x264, AAC 96k | | | 9.6 to 9.7 MB |
+| `contact-sheet-demo-*.jpg` | One frame of every shot of each demo, with its start time | | | |
+
+All three: -14.0 LUFS integrated, true peak -1.5 dBTP; every frame counted (1914, 1860, 1865 at 60 fps) and the 720p copies
+decoded end to end. The sound: the song from the top (ducked under the narrator in the fight), the game's own effects where
+the game asked for them while the hand-played shots were filmed (`gameCues`), the wave sting at the top of the fight, the
+narrator and the royal's roar on the royal, the core's own sound on the core, the landing roar and impact on each landing,
+the core sting and the song's quiet start under the logo. Nobody has listened to them: the gates measure, Collins's ear decides.
+
+**The new shot, `p-evolve`** (played by hand, twice the pixels, the cut keeps the top-left quarter so the panel and the limb
+share the frame): a spitter clicked (its panel opens at the top left), the first stage's option A hovered and bought (20
+science), and the limb grows into its Swarm look (three heads; content/upgradeLooks.ts: one stage bought is a class look).
+The capture checks the limb's stage went up while it was filmed.
+
+**Retired, Oct 31 2026: the YC demo intro.** Collins: "the ycombinator thing is done and not needed any more so dont include it
+on future ones". No new video carries Neko Voss's intro; the two `*-yc-demo*.mp4` files stay as they were made, and
+`tools/promo/intro.mjs` stays for the record.
+
+### THE FIGHT (`cut demos fight`)
+
+| Start (s) | Length (s) | Shot | What | Source |
+|---|---|---|---|---|
+| 0.00 | 4.00 | g-open | The whole board in a wave: a small tower defence (EVERY LIMB A TOWER) | real game, captured (g-open) |
+| 4.00 | 3.60 | g-siege | A siege in the Megacity: limbs firing into the column | real game, captured (g-siege) |
+| 7.60 | 3.40 | g-maw | The Maw's tongue catches a soldier and swallows it | real game, captured (g-maw) |
+| 11.00 | 3.00 | g-temple | The Temple Cities under siege: shield domes, lightning and shot | real game, captured (g-temple) |
+| 14.00 | 2.60 | g-looks | Limbs in their upgrade looks, firing | real game, captured (g-looks) |
+| 16.60 | 3.80 | g-boss | A royal and her consort wade into the limbs (the narrator: "And here she comes. The royal herself takes the field.", captioned) | real game, captured (g-boss) |
+| 20.40 | 3.00 | g-late | Late in a run: the whole body across its districts, in a wave | real game, captured (g-late) |
+| 23.40 | 3.50 | m-* | Montage on the song's entry: the Megacity siege, the Maw, the Temple Cities, the royal, the looks | real game, captured |
+| 26.90 | 5.00 | end | The name, TOWER DEFENCE + ROGUELITE, GENOCIDE SIMULATOR | key art, titles set in type |
+
+### THE BODY (`cut demos body`)
+
+| Start (s) | Length (s) | Shot | What | Source |
+|---|---|---|---|---|
+| 0.00 | 5.60 | p-build | By hand: three limb cards picked and grown on the creep, the ghost and its reach shown (GROW THE BODY) | real game, played by hand (p-build) |
+| 5.60 | 4.40 | p-eat | Cannibalize: a limb hovered (lit; the hint says what eating it gives), eaten, its trait grown into a new limb (CANNIBALIZE) | real game, played by hand (p-eat) |
+| 10.00 | 4.40 | p-organ | The organ stage: two organs picked, their ghosts over the body, grown (GROW ORGANS) | real game, played by hand (p-organ) |
+| 14.40 | 4.40 | p-evolve | EVOLVE by hand: a limb clicked, its panel opens, the first stage bought; the limb grows into its new look | real game, played by hand (p-evolve) |
+| 18.80 | 2.00 | g-core | The core evolves | real game, captured (g-core) |
+| 20.80 | 2.40 | g-looks | Limbs in their upgrade looks, firing | real game, captured (g-looks) |
+| 23.20 | 2.80 | m-* | Montage on the song's surge: the looks, the core, the new limb growing, the whole body | real game |
+| 26.00 | 5.00 | end | The name, TOWER DEFENCE + ROGUELITE, GENOCIDE SIMULATOR | key art, titles set in type |
+
+### THE MAP (`cut demos map`)
+
+| Start (s) | Length (s) | Shot | What | Source |
+|---|---|---|---|---|
+| 0.00 | 3.00 | g-creep | Creep nodes put down past the edge; the creep spreads (SPREAD THE CREEP) | real game, captured (g-creep) |
+| 3.00 | 2.28 | p-draft | THE BODY IS READY TO GROW: three districts hovered, one clicked | real game, played by hand (p-draft) |
+| 5.28 | 2.60 | p-draft-b | The district consumed: the camera goes to it (CONSUME THE MAP) | real game, played by hand (p-draft) |
+| 7.88 | 3.20 | g-late | Late in a run: the whole body across its districts, in a wave | real game, captured (g-late) |
+| 11.08 | 2.60 | p-globe | The planet: a territory hovered and picked; the globe turns to it; its briefing (TAKE THE PLANET) | real game, played by hand (p-globe) |
+| 13.68 | 3.00 | s-globe | The planet in 3D at the Directive Desk, held ground under the creep | real game, captured (s-globe) |
+| 16.68 | 2.60 | land-1 | The landing: the brood falls on the Foundry | the game's landing film, public/art/landing/industrial.mp4 |
+| 19.28 | 2.00 | land-2 | The landing: the Megacity | public/art/landing/megacity.mp4 |
+| 21.28 | 2.00 | land-3 | The landing: the Temple Terraces | public/art/landing/terraces.mp4 |
+| 23.28 | 2.80 | m-* | Montage on the song's return: the whole body, the creep, the Temple Cities, the Megacity siege | real game, captured |
+| 26.08 | 5.00 | end | The name, TOWER DEFENCE + ROGUELITE, GENOCIDE SIMULATOR | key art, titles set in type |
+
+Rebuild (in `games/broodfall`; the captures are in `art-src/trailer/cap/`, git-ignored):
+
+```
+node tools/promo/trailer.mjs capture p-evolve        # the one new shot (the other sixteen were filmed Oct 26)
+node tools/promo/trailer.mjs titles                   # the cards, four new: CANNIBALIZE, GROW ORGANS, EVOLVE, SPREAD THE CREEP
+node tools/promo/trailer.mjs cut demos                # all three, each with its 720p upload copy (`cut demos fight` for one)
+node tools/promo/trailer.mjs sheet demos --list       # the contact sheets and the shot tables above
+```
+
+Steam: each goes up as its own trailer on the Trailers tab (category Gameplay), the 1080p file dragged on by hand, or the
+720p copy through the browser (under its 10 MB cap). Not uploaded yet.
+
+## The demo intro (Oct 30 2026): the trailers with Neko Voss in front, for Y Combinator (retired Oct 31 2026, see above)
 
 Collins: "the game trailer for broodfall needs a thing in front of it before I submit it to Y Combinator as our demo ...
 a short thing at the beginning with animation saying Claude Code + The RFab API built this game + trailer with only

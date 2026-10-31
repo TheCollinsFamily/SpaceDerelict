@@ -9,7 +9,9 @@
  *                                                skips what is on disk) and YOKE's lines in her voice
  *   node tools/promo/trailer.mjs titles          the title cards, set in the game's type (headless Chromium)
  *   node tools/promo/trailer.mjs cut [full 30 vertical]   the edit, the mix (-14 LUFS, peaks under -1 dBTP)
- *   node tools/promo/trailer.mjs sheet           promo/trailer/contact-sheet.jpg
+ *   node tools/promo/trailer.mjs cut gameplay    the gameplay trailer (the B-movie in front; --pure without it)
+ *   node tools/promo/trailer.mjs cut demos [fight body map]   the Steam demo videos, one part of the game each, his songs (DEMOS)
+ *   node tools/promo/trailer.mjs sheet [demos]   promo/trailer/contact-sheet.jpg (the 90 s cut) or one sheet per demo
  *
  * HOW GAMEPLAY IS FILMED. The game runs on the dev server (its own port, TRAILER_PORT, default 5341),
  * GPU on. An init script takes over the page's clock (performance.now, Date.now, requestAnimationFrame):
@@ -836,6 +838,53 @@ const SHOTS = {
     console.log('  picked:', JSON.stringify(await page.evaluate(() => ({ sel: document.querySelector('.globe .site.sel')?.dataset.site, brief: document.querySelector('.cp-brief .cp-sub')?.textContent?.slice(0, 80) }))), 'deploy at', JSON.stringify(deploy));
     await ctx.close();
   },
+  /**
+   * EVOLVE, by hand (the body demo, Oct 31 2026): a limb clicked (its panel opens at the top left), the first stage's
+   * option hovered and bought, and the limb grows into its new look (content/upgradeLooks.ts: one stage bought is a
+   * class look). Twice the pixels; the cut keeps the top-left quarter, where the panel and the limb both stand.
+   */
+  'p-evolve': async (browser) => {
+    const { ctx, page } = await freshGame(browser, { init: CURSOR, dpr: 2 });
+    await page.goto(`${BASE}?seed=5&autostart=1&speed=1&directive=hold&biome=suburb`);
+    await ready(page); await dress(page, { hint: true });
+    const plan = await handBoard(page, { prebuilt: 4, families: ['spitter', 'lasher', 'burster'], zoom: 3.6 });
+    if (!plan.donors.length) throw new Error('p-evolve: no limb to evolve');
+    await page.evaluate(() => { const s = window.broodfall.sim; s.meat.science = 200; s.meat.war = 200; });
+    const limb = plan.donors[0];
+    // The limb is put at a point of the top-left quarter under the panel's corner (the camera moved until it is there).
+    const target = [600, 400];
+    for (let k = 0; k < 6; k++) {
+      const c = await page.evaluate(([x, y]) => window.__T.client(x, y), [limb.x, limb.y]);
+      const dx = c[0] - target[0], dy = c[1] - target[1];
+      if (Math.abs(dx) < 1.5 && Math.abs(dy) < 1.5) break;
+      await page.evaluate(([dx, dy]) => { const r = window.broodfall.renderer; const k = 1 / (r.fit * r.zoom); r.pan = { x: r.pan.x + dx * k, y: r.pan.y + dy * k }; r.camInit = false; }, [dx, dy]);
+      await page.waitForTimeout(120);
+    }
+    const at = await page.evaluate(([x, y]) => window.__T.client(x, y), [limb.x, limb.y]);
+    at[1] -= 10;
+    // Where the panel's first option sits once the panel is open (probed with a click, then closed again).
+    await page.mouse.click(at[0], at[1]);
+    await page.waitForSelector('#inspect:not(.hidden) #inspect-evolve [data-choice="A"]', { timeout: 5000 });
+    const optA = await page.evaluate(() => window.__T.mid('#inspect-evolve [data-choice="A"]'));
+    const name = await page.evaluate(() => document.getElementById('inspect-name')?.textContent ?? '');
+    await page.locator('#inspect-close').click();
+    await page.waitForTimeout(300);
+    await page.mouse.move(1100, 760);
+    await artOk(page, 'p-evolve');
+    console.log('  ', JSON.stringify({ limb: name, at, optA }));
+    const keys = [
+      { f: 0, at: [1100, 760] },
+      { f: 26, at: [at[0] + 6, at[1] + 4] }, { f: 30, at: [at[0] + 6, at[1] + 4], click: true },
+      { f: 80, at: [optA[0] + 40, optA[1] + 90] }, { f: 104, at: optA }, { f: 112, at: optA, click: true },
+      { f: 160, at: [optA[0] + 140, optA[1] + 260] }, { f: 200, at: [at[0] + 120, at[1] + 110] },
+    ];
+    const before = await page.evaluate((id) => (window.broodfall.sim.towers.find((t) => t.id === id)?.upgrades ?? []).length, limb.id);
+    await film(page, ctx, 'p-evolve', 330, hand(page, keys), { preroll: 20, dpr: 2 });
+    const after = await page.evaluate((id) => { const t = window.broodfall.sim.towers.find((t) => t.id === id); return { stages: (t?.upgrades ?? []).length, look: window.broodfall.limbLooks().find((l) => l.id === id) ?? null }; }, limb.id);
+    console.log('  evolved while filming:', JSON.stringify({ before, ...after }));
+    if (after.stages <= before) throw new Error('p-evolve: the limb did not evolve');
+    await ctx.close();
+  },
 };
 
 /**
@@ -1135,7 +1184,11 @@ export const CAPTIONS = {
   colony: { who: 'THE COMMONWEALTH NEWSREEL', line: 'The Host marches, to take back what is ours!' },
 };
 /** The gameplay cut's cards. */
-const PLAY_CARDS = { 'p-1': 'EVERY LIMB A TOWER', 'p-2': 'GROW THE BODY', 'p-3': 'CONSUME THE MAP', 'p-4': 'TAKE THE PLANET' };
+const PLAY_CARDS = {
+  'p-1': 'EVERY LIMB A TOWER', 'p-2': 'GROW THE BODY', 'p-3': 'CONSUME THE MAP', 'p-4': 'TAKE THE PLANET',
+  // The demos' cards (Oct 31 2026): the game's own words for what the hand does.
+  'p-5': 'CANNIBALIZE', 'p-6': 'GROW ORGANS', 'p-7': 'EVOLVE', 'p-8': 'SPREAD THE CREEP',
+};
 const FILM_TITLES = {
   quiet: { big: 'IT WAS A QUIET NIGHT', small: 'in a quiet little town' },
   hungry: { big: 'IT WAS HUNGRY' },
@@ -1528,6 +1581,117 @@ function soundGameplay(at, shots) {
   ];
 }
 
+/**
+ * THE STEAM DEMOS (Collins, Oct 31 2026: "make a few general demo videos for steam with the new music and focusing on
+ * different parts of the game"). Three short gameplay videos (about 32 s each), one part of the game each, each on its
+ * own song of his, picked by the measured drop that lands on the montage:
+ *   fight  THE FIGHT: the tower defence itself: the board in a wave, the Megacity siege, the Maw, the Temple Cities, the
+ *          upgrade looks firing, the royal, the body late in a run. Flag of Doom 7 (its entry at 27.5 s).
+ *   body   THE BODY: limbs grown by hand, cannibalize, the organ stage, EVOLVE by hand, the core, the looks. The Mutant
+ *          from the Deep 1, the organ stage's own music (its surge at 43 s).
+ *   map    THE MAP: the creep spread, the district draft, the body across its districts, the planet picked, three
+ *          landings. Haunted Level 2 (its return at 71.5 s).
+ * No film and no intro in front of any of them (the YC demo intro is retired, Collins Oct 31 2026: "the ycombinator thing
+ * is done and not needed any more so dont include it on future ones"): each opens from black on the game and ends on
+ * the logo, TOWER DEFENCE + ROGUELITE, GENOCIDE SIMULATOR. `cut demos`, `sheet demos`.
+ */
+const LANDING = (set) => A(`public/art/landing/${set}.mp4`);
+const DEMOS = {
+  fight: {
+    title: 'THE FIGHT', song: 'mission/flag-of-doom-7', drop: 27.5,
+    shots: () => [
+      { id: 'g-open', src: CAPF('g-open'), ss: 1.0, dur: 4.0, fadeIn: 0.3, zoom: [1.0, 1.05], titles: [T('p-1', 0.35, 3.8)], cues: true, what: 'The whole board in a wave: a small tower defence (EVERY LIMB A TOWER)', from: 'real game, captured (g-open)' },
+      { id: 'g-siege', src: CAPF('g-siege'), ss: 1.5, dur: 3.6, cues: true, what: 'A siege in the Megacity: limbs firing into the column', from: 'real game, captured (g-siege)' },
+      { id: 'g-maw', src: CAPF('g-maw'), ss: MAW_SS, crop: MAW_CROP, dur: 3.4, cues: true, what: 'The Maw\'s tongue catches a soldier and swallows it', from: 'real game, captured (g-maw)' },
+      { id: 'g-temple', src: CAPF('g-temple'), ss: 1.0, dur: 3.0, cues: true, what: 'The Temple Cities under siege: shield domes, lightning and shot', from: 'real game, captured (g-temple)' },
+      { id: 'g-looks', src: CAPF('g-looks'), ss: 1.0, dur: 2.6, cues: true, what: 'Limbs in their upgrade looks, firing', from: 'real game, captured (g-looks)' },
+      { id: 'g-boss', src: CAPF('g-boss'), ss: 1.0, dur: 3.8, titles: [T('c-royal', 0.3, 3.6)], cues: true, what: 'A royal and her consort wade into the limbs (the narrator: "And here she comes. The royal herself takes the field.")', from: 'real game, captured (g-boss)' },
+      { id: 'g-late', src: CAPF('g-late'), ss: 0.8, dur: 3.0, cues: true, what: 'Late in a run: the whole body across its districts, in a wave', from: 'real game, captured (g-late)' },
+      { id: 'm-siege', src: CAPF('g-siege'), ss: 5.2, dur: 0.7, what: 'montage: the Megacity siege', from: 'real game, captured (g-siege)' },
+      { id: 'm-maw', src: CAPF('g-maw'), ss: MAW_SS2, crop: MAW_CROP, dur: 0.7, what: 'montage: the Maw', from: 'real game, captured (g-maw)' },
+      { id: 'm-temple', src: CAPF('g-temple'), ss: 4.2, dur: 0.7, what: 'montage: the Temple Cities', from: 'real game, captured (g-temple)' },
+      { id: 'm-boss', src: CAPF('g-boss'), ss: 4.6, dur: 0.7, what: 'montage: the royal', from: 'real game, captured (g-boss)' },
+      { id: 'm-looks', src: CAPF('g-looks'), ss: 3.5, dur: 0.7, what: 'montage: limbs in their upgrade looks', from: 'real game, captured (g-looks)' },
+      { id: 'end', src: SRC.keyart, image: true, dur: 5.0, zoom: [1, 1.06], end: true, endGenre: 'end-genre-play', fadeOut: 0.8, what: 'The name, TOWER DEFENCE + ROGUELITE, GENOCIDE SIMULATOR', from: 'key art promo/key-art/broodfall-keyart-meteor-2048x1152.jpg, titles set in type' },
+    ],
+    sound: (at) => [
+      { f: AU('sting-wave'), t: 0, bus: 'm', db: -3 },
+      { f: AU('nar-royal'), t: at('g-boss') + 0.1, bus: 'v' },
+      { f: AU('boss-roar'), t: at('g-boss') + 0.4, bus: 's', db: -5 },
+    ],
+  },
+  body: {
+    title: 'THE BODY', song: 'organ-stage/mutant-from-the-deep-1', drop: 43.0,
+    shots: () => [
+      { id: 'p-build', src: CAPF('p-build'), ss: 0.2, dur: 5.6, fadeIn: 0.3, titles: [T('p-2', 0.3, 2.6)], cues: true, what: 'By hand: three limb cards picked and grown on the creep, the ghost and its reach shown (GROW THE BODY)', from: 'real game, played by hand (p-build)' },
+      { id: 'p-eat', src: CAPF('p-eat'), ss: 0.15, dur: 4.4, titles: [T('p-5', 0.2, 2.2)], cues: true, what: 'Cannibalize: a limb hovered (lit; the hint says what eating it gives), eaten, its trait grown into a new limb (CANNIBALIZE)', from: 'real game, played by hand (p-eat)' },
+      { id: 'p-organ', src: CAPF('p-organ'), ss: 0.1, dur: 4.4, crop: ORGAN_CROP, titles: [T('p-6', 0.2, 2.2)], cues: true, what: 'The organ stage: two organs picked, their ghosts over the body, grown (GROW ORGANS)', from: 'real game, played by hand (p-organ)' },
+      { id: 'p-evolve', src: CAPF('p-evolve'), ss: 0.1, dur: 4.4, crop: [0, 0, 1920, 1080], titles: [T('p-7', 0.2, 2.2)], cues: true, what: 'EVOLVE by hand: a limb clicked, its panel opens, the first stage bought; the limb grows into its new look', from: 'real game, played by hand (p-evolve)' },
+      { id: 'g-core', src: CAPF('g-core'), ss: 2.5, dur: 2.0, cues: true, what: 'The core evolves', from: 'real game, captured (g-core)' },
+      { id: 'g-looks', src: CAPF('g-looks'), ss: 1.0, dur: 2.4, cues: true, what: 'Limbs in their upgrade looks, firing', from: 'real game, captured (g-looks)' },
+      { id: 'm-looks', src: CAPF('g-looks'), ss: 3.5, dur: 0.7, what: 'montage: limbs in their upgrade looks', from: 'real game, captured (g-looks)' },
+      { id: 'm-core', src: CAPF('g-core'), ss: 4.4, dur: 0.7, what: 'montage: the core', from: 'real game, captured (g-core)' },
+      { id: 'm-eat', src: CAPF('p-eat'), ss: 3.1, dur: 0.7, what: 'montage: the new limb grows', from: 'real game, played by hand (p-eat)' },
+      { id: 'm-late', src: CAPF('g-late'), ss: 4.0, dur: 0.7, what: 'montage: the whole body', from: 'real game, captured (g-late)' },
+      { id: 'end', src: SRC.keyart, image: true, dur: 5.0, zoom: [1, 1.06], end: true, endGenre: 'end-genre-play', fadeOut: 0.8, what: 'The name, TOWER DEFENCE + ROGUELITE, GENOCIDE SIMULATOR', from: 'key art promo/key-art/broodfall-keyart-meteor-2048x1152.jpg, titles set in type' },
+    ],
+    sound: (at) => [
+      { f: AU('core-evolve'), t: at('g-core') + 0.1, bus: 's', db: -5 },
+    ],
+  },
+  map: {
+    title: 'THE MAP', song: 'mission/haunted-level-2', drop: 71.5,
+    shots: () => [
+      { id: 'g-creep', src: CAPF('g-creep'), ss: CREEP_SS, dur: 3.0, fadeIn: 0.3, titles: [T('p-8', 0.3, 2.8)], cues: true, what: 'Creep nodes put down past the edge; the creep spreads (SPREAD THE CREEP)', from: 'real game, captured (g-creep)' },
+      { id: 'p-draft', src: CAPF('p-draft'), ss: 0.3, dur: 2.28, crop: boxCrop('p-draft.json', 'panel', 50), zoom: [1, 1.03], cues: true, what: 'THE BODY IS READY TO GROW: three districts hovered, one clicked', from: 'real game, played by hand (p-draft)' },
+      { id: 'p-draft-b', src: CAPF('p-draft'), ss: 2.75, dur: 2.6, titles: [T('p-3', 0.2, 2.5)], cues: true, what: 'The district consumed: the camera goes to it (CONSUME THE MAP)', from: 'real game, played by hand (p-draft)' },
+      { id: 'g-late', src: CAPF('g-late'), ss: 0.8, dur: 3.2, cues: true, what: 'Late in a run: the whole body across its districts, in a wave', from: 'real game, captured (g-late)' },
+      { id: 'p-globe', src: CAPF('p-globe'), ss: 0.8, dur: 2.6, crop: GLOBE_PICK_CROP, titles: [T('p-4', 0.2, 2.5)], cues: true, what: 'The planet: a territory hovered and picked; the globe turns to it; its briefing (TAKE THE PLANET)', from: 'real game, played by hand (p-globe)' },
+      { id: 's-globe', src: CAPF('s-globe'), ss: 0.5, dur: 3.0, crop: globeCrop(), zoom: [1, 1.06], what: 'The planet in 3D at the Directive Desk, held ground under the creep', from: 'real game, captured (s-globe)' },
+      { id: 'land-1', src: LANDING('industrial'), ss: 3.3, dur: 2.6, what: 'The landing: the brood falls on the Foundry', from: 'the game\'s landing film, public/art/landing/industrial.mp4' },
+      { id: 'land-2', src: LANDING('megacity'), ss: 3.3, dur: 2.0, what: 'The landing: the Megacity', from: 'the game\'s landing film, public/art/landing/megacity.mp4' },
+      { id: 'land-3', src: LANDING('terraces'), ss: 3.3, dur: 2.0, what: 'The landing: the Temple Terraces', from: 'the game\'s landing film, public/art/landing/terraces.mp4' },
+      { id: 'm-late', src: CAPF('g-late'), ss: 4.0, dur: 0.7, what: 'montage: the whole body', from: 'real game, captured (g-late)' },
+      { id: 'm-creep', src: CAPF('g-creep'), ss: 5.0, dur: 0.7, what: 'montage: the creep', from: 'real game, captured (g-creep)' },
+      { id: 'm-temple', src: CAPF('g-temple'), ss: 4.2, dur: 0.7, what: 'montage: the Temple Cities', from: 'real game, captured (g-temple)' },
+      { id: 'm-siege', src: CAPF('g-siege'), ss: 5.2, dur: 0.7, what: 'montage: the Megacity siege', from: 'real game, captured (g-siege)' },
+      { id: 'end', src: SRC.keyart, image: true, dur: 5.0, zoom: [1, 1.06], end: true, endGenre: 'end-genre-play', fadeOut: 0.8, what: 'The name, TOWER DEFENCE + ROGUELITE, GENOCIDE SIMULATOR', from: 'key art promo/key-art/broodfall-keyart-meteor-2048x1152.jpg, titles set in type' },
+    ],
+    sound: (at) => ['land-1', 'land-2', 'land-3'].flatMap((id) => [
+      { f: AU('land-roar'), t: at(id) - 0.3, ss: 1.2, bus: 's', db: -4, fo: 0.4, dur: 1.9 },
+      { f: AU('land-impact'), t: at(id) + (4.791 - 3.3), bus: 's', db: -2 },
+    ]),
+  },
+};
+/** A demo's sound: its song from the top, laid so its drop lands on the montage; the core sting and the song's quiet start under the logo; its own extras; the game's cues. */
+function soundDemo(d) {
+  return (at, shots) => {
+    const song = A(`public/audio/${d.song}.ogg`);
+    const m = shots.find((s) => s.id.startsWith('m-'));
+    const ss = Math.max(0, d.drop - at(m.id));
+    return [
+      { f: song, t: 0, ss, dur: at('end') + 0.2, fi: 0.6, fo: 0.25, bus: 'm', db: -1 },
+      { f: AU('sting-core'), t: at('end'), bus: 'm', db: 0, fo: 1.0 },
+      { f: song, t: at('end') + 0.4, ss: 0, dur: 4.6, fi: 1.2, fo: 1.2, bus: 'm', db: -8 },
+      ...(d.sound ? d.sound(at) : []),
+      ...(process.env.TRAILER_NO_CUES ? [] : gameCues(shots, at)),
+    ];
+  };
+}
+/** The copy for a browser upload capped at 10 MB: 1280x720 30 fps, two-pass x264 at the rate that lands it under 9.8 MB. */
+function uploadCopy(r, stem, passname) {
+  const up = path.join(OUT, `${stem}-steam-upload-720p.mp4`);
+  const kbps = Math.min(4500, Math.floor(((9.8 * 1e6 * 8) / r.total - 96000) / 1000 * 0.97));
+  const passlog = path.join(RAW, `${passname}-2pass`);
+  const v = ['-i', r.file, '-vf', 'scale=1280:720:flags=lanczos,fps=30', '-c:v', 'libx264', '-preset', 'slow', '-b:v', `${kbps}k`, '-profile:v', 'high', '-pix_fmt', 'yuv420p', '-g', '60', '-passlogfile', passlog];
+  ff([...v, '-pass', '1', '-an', '-f', 'mp4', process.platform === 'win32' ? 'NUL' : '/dev/null'], 'upload pass 1');
+  ff([...v, '-pass', '2', '-af', 'volume=-0.7dB', '-c:a', 'aac', '-b:a', '96k', '-ar', '48000', '-movflags', '+faststart', up], 'upload pass 2');
+  const size = fs.statSync(up).size;
+  console.log(`  ${up}: ${(size / 1e6).toFixed(2)} MB (${kbps} kbit/s video), ${JSON.stringify(measure(up))}`);
+  if (size >= 9.8e6) throw new Error(`upload copy is ${(size / 1e6).toFixed(2)} MB, over 9.8 MB`);
+  return up;
+}
+
 const sh = (s) => crypto.createHash('sha1').update(s).digest('hex').slice(0, 10);
 /** One shot, rendered: 60 fps, exact frame count, its titles over it. `fmt` 'h' (1920x1080) or 'v' (1080x1920). */
 function renderShot(s, fmt) {
@@ -1668,16 +1832,17 @@ if (cmd === 'cut') {
     // Capped at 5.5 Mbit/s since the B-movie went in front (71 s; at 8 Mbit/s the file was 54 MiB, over the repo's 50 MiB).
     const r = build(PURE ? 'gameplay-pure' : 'gameplay', shotsGameplay(), soundGameplay, 'h', path.join(OUT, `${stem}.mp4`), { cap: '5.5M' });
     results.push(r);
-    // The copy for a browser upload capped at 10 MB: 1280x720 30 fps, two-pass x264 at the rate that lands it under 9.8 MB.
-    const up = path.join(OUT, `${stem}-steam-upload-720p.mp4`);
-    const kbps = Math.floor(((9.8 * 1e6 * 8) / r.total - 96000) / 1000 * 0.97);
-    const passlog = path.join(RAW, `${PURE ? 'gameplay-pure' : 'gameplay'}-2pass`);
-    const v = ['-i', r.file, '-vf', 'scale=1280:720:flags=lanczos,fps=30', '-c:v', 'libx264', '-preset', 'slow', '-b:v', `${kbps}k`, '-profile:v', 'high', '-pix_fmt', 'yuv420p', '-g', '60', '-passlogfile', passlog];
-    ff([...v, '-pass', '1', '-an', '-f', 'mp4', process.platform === 'win32' ? 'NUL' : '/dev/null'], 'upload pass 1');
-    ff([...v, '-pass', '2', '-af', 'volume=-0.7dB', '-c:a', 'aac', '-b:a', '96k', '-ar', '48000', '-movflags', '+faststart', up], 'upload pass 2');
-    const size = fs.statSync(up).size;
-    console.log(`  ${up}: ${(size / 1e6).toFixed(2)} MB (${kbps} kbit/s video), ${JSON.stringify(measure(up))}`);
-    if (size >= 9.8e6) throw new Error(`upload copy is ${(size / 1e6).toFixed(2)} MB, over 9.8 MB`);
+    uploadCopy(r, stem, PURE ? 'gameplay-pure' : 'gameplay');
+  }
+  // The Steam demos: `cut demos` (all three), `cut demos fight` (one). Each a 1080p file and its under-10 MB upload copy.
+  if (want.has('demos')) {
+    for (const [k, d] of Object.entries(DEMOS)) {
+      if (want.size > 1 && !want.has(k)) continue;
+      const stem = `broodfall-demo-${k}`;
+      const r = build(`demo-${k}`, d.shots(), soundDemo(d), 'h', path.join(OUT, `${stem}.mp4`), { cap: '5.5M' });
+      results.push(r);
+      uploadCopy(r, stem, `demo-${k}`);
+    }
   }
   const log = path.join(RAW, 'cuts.json');
   const prev = fs.existsSync(log) ? JSON.parse(fs.readFileSync(log, 'utf8')) : {};
@@ -1686,24 +1851,37 @@ if (cmd === 'cut') {
 }
 
 // ------------------------------------------------------------------ SHEET: a frame from every shot
-if (cmd === 'sheet') {
-  // Where each shot of the full cut starts (the edit's own durations, frame-exact as build() lays them).
-  let t0 = 0;
-  const full = { file: path.join(OUT, 'broodfall-trailer-90s.mp4'), shots: shotsFull().map((x) => { const p = { ...x, start: t0 }; t0 += Math.round(x.dur * FPS) / FPS; return p; }) };
-  if (process.argv.includes('--list')) for (const x of full.shots) console.log(`| ${x.start.toFixed(2)} | ${x.dur.toFixed(2)} | ${x.id} | ${x.what} | ${x.from} |`);
-  const dir = path.join(RAW, 'sheet');
+/** One frame of every shot of a cut, with its start time, tiled: to look at. `shots` as the cut lays them (start, dur). */
+function contactSheet(name, file, shots, out, cols = 5) {
+  const dir = path.join(RAW, 'sheet', name);
   fs.mkdirSync(dir, { recursive: true });
   const tiles = [];
-  full.shots.forEach((s, i) => {
+  shots.forEach((s, i) => {
     const t = s.start + s.dur * (s.end ? 0.8 : 0.5);
     const png = path.join(dir, `${String(i).padStart(2, '0')}.png`);
     const label = `${String(i + 1).padStart(2, '0')}   ${s.start.toFixed(1)} s   ${s.id}`;
-    ff(['-ss', t.toFixed(3), '-i', full.file, '-frames:v', '1', '-vf', `scale=480:270,drawbox=y=ih-30:w=iw:h=30:color=black@0.7:t=fill,drawtext=fontfile='C\\:/Windows/Fonts/bahnschrift.ttf':text='${label}':x=10:y=h-24:fontsize=17:fontcolor=white`, png], `sheet ${i}`);
+    ff(['-ss', t.toFixed(3), '-i', file, '-frames:v', '1', '-vf', `scale=480:270,drawbox=y=ih-30:w=iw:h=30:color=black@0.7:t=fill,drawtext=fontfile='C\\:/Windows/Fonts/bahnschrift.ttf':text='${label}':x=10:y=h-24:fontsize=17:fontcolor=white`, png], `sheet ${i}`);
     tiles.push(png);
   });
-  const cols = 5, rows = Math.ceil(tiles.length / cols);
+  const rows = Math.ceil(tiles.length / cols);
   const inputs = tiles.flatMap((p) => ['-i', p]);
   const layout = tiles.map((_, i) => `${(i % cols) * 480}_${Math.floor(i / cols) * 270}`).join('|');
-  ff([...inputs, '-filter_complex', `xstack=inputs=${tiles.length}:layout=${layout}:fill=black`, '-q:v', '3', path.join(OUT, 'contact-sheet.jpg')], 'sheet');
-  console.log(`  ${path.join(OUT, 'contact-sheet.jpg')} (${tiles.length} shots, ${cols}x${rows})`);
+  ff([...inputs, '-filter_complex', `xstack=inputs=${tiles.length}:layout=${layout}:fill=black`, '-q:v', '3', out], 'sheet');
+  console.log(`  ${out} (${tiles.length} shots, ${cols}x${rows})`);
+}
+/** Where each shot of a cut starts (the edit's own durations, frame-exact as build() lays them). */
+const laid = (shots) => { let t0 = 0; return shots.map((x) => { const p = { ...x, start: t0 }; t0 += Math.round(x.dur * FPS) / FPS; return p; }); };
+if (cmd === 'sheet') {
+  if (want.has('demos')) {
+    for (const [k, d] of Object.entries(DEMOS)) {
+      if (want.size > 1 && !want.has(k)) continue;
+      const shots = laid(d.shots());
+      if (process.argv.includes('--list')) { console.log(`\n${k} (${d.title}): ${shots.at(-1).start + shots.at(-1).dur} s`); for (const x of shots) console.log(`| ${x.start.toFixed(2)} | ${x.dur.toFixed(2)} | ${x.id} | ${x.what} | ${x.from} |`); }
+      contactSheet(`demo-${k}`, path.join(OUT, `broodfall-demo-${k}.mp4`), shots, path.join(OUT, `contact-sheet-demo-${k}.jpg`));
+    }
+  } else {
+    const shots = laid(shotsFull());
+    if (process.argv.includes('--list')) for (const x of shots) console.log(`| ${x.start.toFixed(2)} | ${x.dur.toFixed(2)} | ${x.id} | ${x.what} | ${x.from} |`);
+    contactSheet('full', path.join(OUT, 'broodfall-trailer-90s.mp4'), shots, path.join(OUT, 'contact-sheet.jpg'));
+  }
 }
