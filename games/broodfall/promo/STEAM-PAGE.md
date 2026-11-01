@@ -196,12 +196,13 @@ afterwards.
   monetisation answers likewise; the new required "content generated in your game" answer written: text and voice only,
   the brief, length cap, no media requests, fallback lines, Steam overlay reporting) and the ratings republished (still
   Brazil 14, Germany 16). The survey's own "Website URL of service" field still holds https://rfab.ai, because the form
-  requires it for an external service. Tried to blank it the same day (Collins: "do this safer option"): with "connects
-  to an external, third party AI service" answered Yes the field turns required (red asterisk, "Section Incomplete"), so
-  the survey cannot be published without a URL there; the draft was discarded, Version 2 stays. The only way to remove it
-  is to answer No, which would be untrue (YOKE calls the RFab API at play time and a player can be billed from a linked
-  account), so it stays unless Valve names that field. That the field is mandatory is itself evidence the reviewer
-  flagged the prose, not the field. The long description expanded
+  requires it for an external service: blanking it turns the field required (red asterisk, "Section Incomplete"), so a
+  URL must stand there while the external-service answer is Yes, and No would be untrue (YOKE calls the API at play time,
+  a linked account is billed). Collins, the same evening: "if its asking external use hardea.org not rfab ... rfab has
+  nsfw stuff which could create issues, they both use the same back end". So **Version 3 published Nov 1 (evening): the
+  address is https://hardea.org and the service name beside the model is "Kimi K2.6 language model (via Hardea)"**;
+  nothing on the Steam page names rfab any more. The in-game link flow (src/ui/yokeAccount.ts, "LINK AN RFAB ACCOUNT")
+  still says RFab; same accounts, same backend, but the wording differs from the page. The long description expanded
   (section "About this game" above). **Three demo trailers uploaded** (the 720p copies, through the drop zone: a file
   input created by script inside the entry's `.drag_and_drop`, the file put on it, then a DragEvent `drop` with its
   DataTransfer dispatched on the zone), each category Gameplay, visible, before the screenshots, not all-ages:
