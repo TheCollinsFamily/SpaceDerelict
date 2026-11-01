@@ -31,44 +31,64 @@ driven by an agent in his signed-in browser.
   Play as the Monster, Base Building, Deckbuilding, Isometric, Sci-fi, Dark Comedy,
   Story Rich, Lore-Rich, Singleplayer, Replay Value, Aliens, Insects, Gore
 
-## Short description (Steam allows 300 characters; this is 278)
+## Short description (Steam allows 300 characters; what is on the page, Collins's own words, 245)
 
 > Genocide simulator. You are the Empire's newest pest-control asset: a living meteor dropped on an
-> insect civilisation. Grow limbs into towers on their rooftops, eat their castes for currency,
-> draft whole districts to consume, and report back to a ship's AI who is not impressed.
+> insect civilisation. Grow limbs into towers on their rooftops, eat their citizens for currency and
+> report back to a ship's AI who is not impressed.
 
-## About this game (long description)
+## About this game (long description, what is on the page since Nov 1 2026)
 
-> **THIS TIME, YOU ARE THE INFESTATION.**
->
-> The Empire has a pest problem. It is not theirs. Somewhere below, an insect civilisation of
-> paper-and-honeycomb towns, temple cities and neon megacities is getting on with its day. You are
-> what the Procurement Office sent instead of a negotiator.
->
-> **EVERY LIMB A TOWER. EVERY STREET A MEAL.**
-> Broodfall is a tower defence roguelite played from the monster's side. Your creep swallows city
-> blocks; you grow limbs on the rooftops (acid spitters, lightning fronds, spore bombards, eye
-> stalks, maws) and hold the streets as the locals march on your core in squads, with tanks, sappers
-> and royals.
->
-> **WASTE NOTHING. NOT EVEN THE ENEMY.**
-> - **Three castes, three currencies.** Warriors pay for the body. Scientists are drawn to the strangest
->   things you grow, and walk the gaps in your fire to steal your limbs. Royals make every army
->   around them worse.
-> - **Feed your own towers into new ones.** Sacrifice a limb and the next one inherits what it
->   learned.
-> - **The map is yours to build.** Every few waves, draft one of three districts to consume, each
->   with its own winding streets, high ground and gates. Wall yourself in, or burrow back out.
-> - **The organ stage.** Between waves, grow organs under the city around your buried meteor. They
->   decide which limbs you can grow and how hard they hit.
->
-> **YOUR SHIP'S AI HAS NOTES.**
-> Between deployments you live aboard the ship with YOKE, who runs it, reads your reports and is
-> not impressed. Take Command's directives across sixteen landing sites, requisition lineages in the
-> Gene Bay, keep a notebook of your own small obsessions, and climb towards the one thing you
-> actually want from the Empire: a licence to have a family.
->
-> A 1950s newsreel of a game about the end of a world, told by the people filing the paperwork.
+Collins rewrote the opening paragraph in his own voice (first person, "Try the demo and let me know") some time after
+Oct 26; Valve failed the page on Oct 28-31 because that paragraph alone "doesn't fully explain what features and
+content a customer can expect". Nov 1 2026: his paragraph kept word for word (two spellings fixed: Inscryption,
+roguelite) and the feature sections below added under it, every claim checked against README.md / DESIGN.md /
+content/campaign.ts (17 limb families and 36 limbs, two dozen enemy kinds, 17 landing sites, the three factions, the
+four strains, 8 hobby pages, hold = 12 waves, a deployment 20 to 30 minutes: the autoplayer wins seeds 1-2 at 19.6 and
+21.2 sim minutes, tests/fullrun.test.ts; 12 siege tracks + 6 organ-stage tracks in public/audio). Steam markup:
+[h2], [b], [list] [*]. The editor only keeps text that was TYPED (its model syncs on key events): setting the
+textarea by script and pressing Save silently keeps the old text, so set the text by script, type one character at
+the end, then Save ("Changes saved" banner).
+
+```
+This is a genocide simulator I built inspired by Inscryption (for gameplay) and Red Alert 2 (for story telling and art). Its a tower defense roguelite that takes place in a far future where you are an exterminator working for a far future Christian extremist human empire. I really wanted to build a game that felt like those experiences I enjoyed in the 90s with RTSs but that draws from modern game design ideas from experiences like Ball X Pit, FTL, and Inscryption. All while doing it with an over the top story that makes you think. Did I pull it off? Try the demo and let me know.
+
+[h2]WHAT YOU DO[/h2]
+You are the Empire's pest control: a living meteor dropped on a city of intelligent insects. Your creep swallows the city blocks, the limbs you grow on the rooftops are your towers, and the locals march on your buried core down the streets between them. Each deployment is one run: grow, hold the streets, draft the next district to consume, grow organs under the city between waves, and finish Command's directive before the city puts you down. Between deployments you live aboard the ship that dropped you, where the story happens.
+
+[h2]THE TOWER DEFENCE[/h2]
+[list]
+[*][b]17 limb families, 36 limbs.[/b] Acid spitters, lightning fronds that chain arcs through a crowd, spore bombards you aim by hand, maws that swallow soldiers whole, snare beds, blight vents, ember sacs that set a column on fire, broodmothers that field their own young, ward membranes that shield their neighbours, and spine walls that plug a street and must be chewed through. Every card says what it can hit: ground, air or both.
+[*][b]Height matters.[/b] Towers perch on city blocks above the traffic, and a taller block shoots further. The land rolls in hills, so the high plateau that fits a big limb is the lucky find.
+[*][b]Waves you can read.[/b] Two dozen enemy kinds: soldiers, sappers, tanks, cannons that besiege from standoff, fliers, splitters that burst into skitterlings, carapace lords that shrug off the first six hits, and cloaked stalkers only an eye stalk can see. Every wave's risk, and the gates it will come through, is telegraphed on the top bar before it forms. Call a wave early for bonus meat.
+[*][b]Three castes, three currencies.[/b] The war caste attacks because you exist, and its meat pays for the body. The science caste comes when you are interesting: researchers read your gun coverage, walk around it, sedate your least-defended limb and carry it off (kill the courier and the limb re-roots). Royals move only when you are a crisis; they make every army around them worse, and their meat is raw mass.
+[*][b]Cannibalize.[/b] Hover any of your limbs to see what eating it gives, then click to eat it: part of its cost comes back and its whole trait history banks into the next limb you grow, as stacking pips. Eat two, and the next limb inherits both.
+[*][b]Evolve.[/b] Every limb has three stages, A or B at each, and the last costs a royal point. A stage bought grows the limb into a new look.
+[*][b]Combo engines.[/b] Science meat buys conduits, amplifiers, mosaic nodes, twinning glands, capacitors and a mitosis node that buds copies: engines that funnel, multiply and copy bonuses between limbs. They chain.
+[/list]
+
+[h2]THE MAP YOU BUILD[/h2]
+Every run starts as one district under smoke. Every third cleared wave you draft one of three hand-made districts to consume, each with its own winding streets, high ground and gates: research quarters, provision districts, temple heights. Wall yourself in, or burrow back out through a wall for a new gate. The camera zooms out as the body spreads. Spore bladders grow free creep nodes on a timer, and the organs touching a bladder set its strain: bigger, doubled, thrown forward, slowing, burning. A node that survives a wave can spread a child of its own.
+
+[h2]THE ORGAN STAGE[/h2]
+After every wave the game goes underground, to a cross-section around your half-buried meteor where you grow shaped organs against it like tiles. Theme organs unlock and level whole groups of limbs (the Bone Forge brings impalers and mortars, the Venom Sac blight and fire, the Nerve Cluster arcs and eyes, the Brood Womb broodmothers and lures), and two organs that touch share their signature verbs, so where you grow the Venom Sac decides whose shots poison. Hearts, brains and glands boost whatever they touch, and buried deposits pay out when you grow over them. Meat you have not spent is lost when the next wave starts.
+
+[h2]THE SHIP, THE GLOBE, THE STORY[/h2]
+Between deployments you live aboard the ship with YOKE, who runs it, reads your reports and is not impressed. You can talk to her, and she talks back. Take Command's directives across a globe of seventeen landing sites, from the Crash Site and the Granary Belt to the Temple Terraces, the Glass Spires and the Hive House itself. Three factions of the locals reach out with signals of their own (the Friendship Delegation, the Faithful of the Last Hour, the Institute for Long-Term Hive Flourishing), each with its own route and ending. Splice genes in the Gene Bay, pick a starting strain (Standard, Venom, Spore or Brood), keep a notebook of eight hobby missions, earn comics, intercept the Roach King's broadcasts, and climb toward the one thing you actually want from the Empire: a licence to have a family.
+
+[h2]MODES, LENGTH AND SOUND[/h2]
+[list]
+[*][b]Campaign:[/b] the globe, the ship, the factions, the last mission. Each deployment rolls one directive: hold for twelve waves, destroy the royal, or bank the science quota.
+[*][b]Quick Deployment:[/b] a skirmish with everything unlocked, on a random or chosen seed.
+[*][b]Defence deployments:[/b] when the locals counter-attack a territory you hold, one siege the size of a late wave, with a grown core and banked meat, warned a turn ahead.
+[*][b]Length:[/b] a deployment is a sitting of twenty to thirty minutes, the organ stage included. The campaign is many of them.
+[*][b]Difficulty:[/b] open two or three gates at deploy for more meat and a harder siege.
+[*][b]Soundtrack:[/b] original 1940s electro swing, twelve tracks for the siege and six for the organ stage, with a newsreel narrator calling the play.
+[*][b]Options:[/b] colour-blind-safe caste colours, reduced motion and flashes, text size, subtitles on films. Keyboard and mouse.
+[/list]
+
+A 1950s newsreel of a game about the end of a world, told by the people filing the paperwork.
+```
 
 ## Images (all in this folder, all checked against Steam's sizes)
 
@@ -166,10 +186,24 @@ afterwards.
   tool's 10 MB cap, so Collins drags it in); after approval, press "Post as Coming Soon".
   Note for agents: Steamworks' pencil/"Start Wizard" buttons open in-page dialogs; a coordinate
   click can miss them silently. Click by element ref.
-- Oct 31 2026: **three Steam demo videos made, not yet uploaded**: `promo/trailer/broodfall-demo-fight.mp4`,
-  `broodfall-demo-body.mp4`, `broodfall-demo-map.mp4` (about 31 s each, 1080p60, each on one part of the game and one
-  of Collins's songs; `promo/trailer/README.md` "The Steam demos") with `*-steam-upload-720p.mp4` copies under 10 MB
-  for the browser upload. Each goes up as its own trailer (category Gameplay) by the flow below.
+- Nov 1 2026: **Valve FAILED the store page review** (seen on https://partner.steamgames.com/apps/landing/5509240, the
+  Store Presence box; no email was looked for). Two failures: (1) the written description "doesn't fully explain what
+  features and content a customer can expect" (story, progression, goals, challenges, mechanics, playtime, genre,
+  soundtrack, modes); (2) the Generative AI survey "contains links to external sites" (https://rfab.ai/). **Both fixed
+  the same day and the page marked ready for re-review** (the queue says 3-5 business days, feedback by email and on help.steampowered.com; "Submitted for review on Nov 1"): the content survey draft
+  (Copy My Published Answers) reworded without the domain in any text field (store description: "Kimi K2.6, run through
+  a third-party AI service"; model name: "Kimi K2.6 language model (via Reality Fabricator)"; moderation and
+  monetisation answers likewise; the new required "content generated in your game" answer written: text and voice only,
+  the brief, length cap, no media requests, fallback lines, Steam overlay reporting) and the ratings republished (still
+  Brazil 14, Germany 16). The survey's own "Website URL of service" field still holds https://rfab.ai, because the form
+  requires it for an external service; if the next review names that field, blank it. The long description expanded
+  (section "About this game" above). **Three demo trailers uploaded** (the 720p copies, through the drop zone: a file
+  input created by script inside the entry's `.drag_and_drop`, the file put on it, then a DragEvent `drop` with its
+  DataTransfer dispatched on the zone), each category Gameplay, visible, before the screenshots, not all-ages:
+  "Broodfall Gameplay: The Fight", "Broodfall Gameplay: The Body", "Broodfall Gameplay: The Map" (new entries land at
+  the top of the list). Not live and not shareable until Valve approves and "Post as Coming Soon" is pressed; the
+  address will be https://store.steampowered.com/app/5509240 . A first form_input into the description editor landed
+  in the hidden French field and was saved; cleared the same day (every other language empty).
 - Oct 26 2026 (night): **two trailers on the Trailers tab**, both visible and shown before the
   screenshots, neither marked all-ages (combat): "Broodfall Gameplay" (category Gameplay, listed
   first, `promo/trailer/broodfall-trailer-gameplay-steam-upload-720p.mp4`, 55.9 s, pure gameplay)

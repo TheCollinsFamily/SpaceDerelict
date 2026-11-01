@@ -101,7 +101,10 @@ node tools/promo/trailer.mjs sheet demos --list       # the contact sheets and t
 ```
 
 Steam: each goes up as its own trailer on the Trailers tab (category Gameplay), the 1080p file dragged on by hand, or the
-720p copy through the browser (under its 10 MB cap). Not uploaded yet.
+720p copy through the browser (under its 10 MB cap). **Uploaded Nov 1 2026** (the 720p copies, through the drop zone by script;
+promo/STEAM-PAGE.md "Nov 1 2026"): "Broodfall Gameplay: The Fight", "The Body", "The Map", category Gameplay, visible, before the
+screenshots, not all-ages, listed first in that order, then the Oct 26 gameplay trailer and the cinematic. To put the 1080p
+masters up instead, drag each onto its entry's "Replace" by hand.
 
 ## The demo intro (Oct 30 2026): the trailers with Neko Voss in front, for Y Combinator (retired Oct 31 2026, see above)
 
