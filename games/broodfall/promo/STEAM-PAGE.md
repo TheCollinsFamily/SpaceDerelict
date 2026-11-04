@@ -220,3 +220,8 @@ afterwards.
   Steamworks trailer flow: "Create New Trailer" (name) -> drop the file on that entry's drop zone ->
   wait for "Converting..." to finish (a few minutes, server side) -> only then do category and the
   check boxes appear; set them and press that entry's own Save.
+- Nov 4 2026: **Valve APPROVED the store page** (landing page shows "APPROVED FOR RELEASE" on Store Presence).
+  "Post as Coming Soon..." opens an inline "Publish as Coming Soon" box (sets the store page public + Community Hub
+  visible) with a green **Publish Now** button. The agent's click on Publish Now was refused by the auto-mode classifier
+  ([Create Public Surface]), so Collins presses it at https://partner.steamgames.com/apps/landing/5509240 . After that the
+  wishlist page is https://store.steampowered.com/app/5509240 . Earliest release = two weeks after it goes public.
