@@ -225,3 +225,8 @@ afterwards.
   visible) with a green **Publish Now** button. The agent's click on Publish Now was refused by the auto-mode classifier
   ([Create Public Surface]), so Collins presses it at https://partner.steamgames.com/apps/landing/5509240 . After that the
   wishlist page is https://store.steampowered.com/app/5509240 . Earliest release = two weeks after it goes public.
+- Nov 4 2026 (later): **Collins pressed Publish Now: the page is LIVE and wishlistable** at
+  https://store.steampowered.com/app/5509240/Broodfall/ . Checked logged in and logged out (no age gate; HTTP 200): header
+  capsule, short + long description, 5 trailers, 8 screenshots, page background, AI disclosure, mature-content note, system
+  requirements, "Coming soon", Add to your wishlist all present; no broken images. Open point: the description's first
+  paragraph says "Try the demo and let me know" but there is no demo on Steam yet.
