@@ -410,7 +410,9 @@ fashion these days, which is why it is not obvious.
   more distant from the Lipptors than from the humans of Earth, and do not think of them as a subspecies, as they do
   the uplifted; nobody can interbreed with the Lipptors because their reproductive organs are removed, not for genetic distance
   (YOKE's Earth-news line); they are the only ones (Collins, Oct 26 2026): other Technopuritans keep theirs and are only
-  engineered not to feel arousal (section 7). **PROPOSAL:** other such classes exist; a class is a specialisation of the
+  engineered not to feel arousal (section 7). By adolescence a Lipptor is mostly synthetic, with only a few organic organs
+  left; they are generally extremely arrogant and often leave it very obvious how much of them is mechanical, as something
+  of a taunt and a fashion statement (Collins, Nov 5 2026). **PROPOSAL:** other such classes exist; a class is a specialisation of the
   one people, not a people.
 - **The tanks, and what was engineered away** (Collins, Oct 12 2026): Technopuritans breed using artificial
   wombs, so nobody is ever pregnant, and a pregnancy (a neko's, say) looks to them grotesque: "their

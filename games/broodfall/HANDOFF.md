@@ -2741,3 +2741,16 @@ placeholder with "Ask her about ...", "Answer her", etc. on 21 greetings and on 
 away". Her line and her aside do the pulling; never steer the player toward a question, in a placeholder, a button, a
 suggested reply or anything else. tests/greetingPools.test.ts fails if a greeting carries `hook` again. Older entries above
 that mention a hook are history.
+
+### His lines pass, Nov 5 2026 (applied from the page's `edits`)
+- First Earth news is always "I left the Earth feed running in your quarters..." (his pick): `FIRST_NEWS_STARTS` /
+  `firstNewsId` in src/meta/onboarding.ts. News can be held back by
+  how it begins: `NEWS_HELD` (the US book burning, not before 16).
+- Topics kept apart over the last `TOPIC_GAP` (3) lines when the pool allows, not just the last one; 'israel' now also
+  matches Jew/Jewish ("a little too close to other jew ones").
+- `Greeting.early` pulls a line toward the front of each campaign's shuffle (`shuffleKey`): won-25.
+- won-22 held to 20 ("move to the end"). earth-20 (the Sadducee freighter docking) cut from the lore book; news numbers
+  after it moved down one (COLLINS_NEWS_ALSO 22 -> 21).
+- Text: back-9 (House of Israel still sleeps; aside: dolphin-DNA half-brain sleep, their law forbids animal DNA), back-10,
+  lost-15, won-19, won-26, earth-15; Lipptors mostly synthetic by adolescence and flaunt it (lore book + empire.md).
+

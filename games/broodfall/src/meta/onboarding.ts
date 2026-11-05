@@ -86,6 +86,11 @@ export function momentAfter(prev: CampaignState, next: CampaignState, d: Debrief
 export const poolOf = (m: GreetMoment): GreetMoment => (m === 'won' || m === 'lost' || m === 'back' || m === 'defended' || m === 'fell' ? 'talk' : m);
 
 /** A number from the campaign's seed and a name: the same campaign always gets the same one. */
+/** A line's place in a campaign's shuffle (lower is sooner); an `early` line's is a third of what it would be. */
+export function shuffleKey(seed: number, g: Greeting): number {
+  return g.early ? seeded(seed, g.id) / 3 : seeded(seed, g.id);
+}
+
 export function seeded(seed: number, name: string): number {
   let h = (seed ^ 0x9e3779b9) >>> 0;
   for (let i = 0; i < name.length; i++) h = Math.imul(h ^ name.charCodeAt(i), 2654435761) >>> 0;
@@ -95,10 +100,12 @@ export function seeded(seed: number, name: string): number {
 /**
  * WHAT A LINE IS ABOUT (Collins, Oct 26 2026: "reorder stuff so we don't have the same conversation or topic multiple times
  * in a row"). Read off the words, so a line added later is tagged without anyone tagging it. Her everyday talk and the
- * news never follow a line with one that shares a topic with it (when there is any other choice).
+ * news never follow a line with one that shares a topic with it (when there is any other choice), and keep clear of the
+ * topics of the last TOPIC_GAP lines when they can (Collins, Nov 5 2026, on an Israel news line two after another:
+ * "a little too close to other jew ones").
  */
 const TOPICS: Array<[string, RegExp]> = [
-  ['israel', /Sadducee|Pharisee|Israel|Jerusalem|goy beam|Third Temple|Dome of the Rock|holy lands/i],
+  ['israel', /Sadducee|Pharisee|Israel|Isreal|Jerusalem|goy beam|Third Temple|Dome of the Rock|holy lands|\bJew(s|ish)?\b/i],
   ['europe', /\bRome\b|Crusade|Caliphate|\bPope\b|Europe|France|Catholic/],
   ['america', /America|Baptist|Mormon|the States|Utah/],
   ['korea', /Korea|Ge-im|chaebol/i],
@@ -111,6 +118,8 @@ const TOPICS: Array<[string, RegExp]> = [
   ['death', /\bschool\b|afterlife|\bdeath\b|dying|value of a life|simulation/i],
   ['planet', /this species|their (news|radio|nursery|quiz)|caste|war caste|sisters|Crater Thing/i],
 ];
+/** How many of her last lines a new one keeps clear of, by topic, when the pool allows. */
+export const TOPIC_GAP = 3;
 export function topicsOf(text: string): string[] {
   return TOPICS.filter(([, re]) => re.test(text)).map(([t]) => t);
 }
@@ -123,14 +132,14 @@ const shares = (a: string[], b: string[]): boolean => a.some((t) => b.includes(t
  * the pool is bigger than a campaign, so a replay hears lines the last one did not). Only once all are said does one repeat,
  * never the last one said.
  */
-export function pickGreeting(moment: GreetMoment, seed: number, turn: number, last?: string | null, pool: Greeting[] = GREETINGS, said: readonly string[] = [], avoid: string[] = []): Greeting {
+export function pickGreeting(moment: GreetMoment, seed: number, turn: number, last?: string | null, pool: Greeting[] = GREETINGS, said: readonly string[] = [], avoid: string[] = [], avoidFar: string[] = []): Greeting {
   const fits = pool.filter((g) => g.moment === poolOf(moment) && (g.notBefore == null || turn >= g.notBefore));
   const unsaid = fits.filter((g) => !said.includes(g.id) && g.id !== last);
   const again = fits.find((g) => g.repeats);
   if (!unsaid.length && again) return again;
   if (unsaid.length) {
-    const order = [...unsaid].sort((a, b) => seeded(seed, a.id) - seeded(seed, b.id));
-    return order.find((g) => !shares(topicsOf(words(g)), avoid)) ?? order[0];
+    const order = [...unsaid].sort((a, b) => shuffleKey(seed, a) - shuffleKey(seed, b));
+    return order.find((g) => !shares(topicsOf(words(g)), [...avoid, ...avoidFar])) ?? order.find((g) => !shares(topicsOf(words(g)), avoid)) ?? order[0];
   }
   const fresh = fits.filter((g) => g.id !== last);
   const from = fresh.length ? fresh : fits.length ? fits : pool.filter((g) => g.moment === 'talk');
@@ -324,13 +333,32 @@ export function earthNewsOpen(s: CampaignState): boolean {
  * The news from Earth as lines of hers (Collins, Oct 26 2026: "the news from earth is PART OF WHAT SHE SAYS"): each one
  * an everyday line in her one pool, shuffled in with the rest (`lore`: the lore book's text, which holds the list).
  */
-/** The news told first, before any other (the lore book's first item: earth-1 on the lines page). */
-export const FIRST_NEWS = 'earth-0';
+/**
+ * The news told first, before any other, found by how it begins (Collins, Nov 5 2026, on the feed left running in his
+ * quarters: "this is a good example of a first earth feed note"). Falls back to the lore book's first item.
+ */
+export const FIRST_NEWS_STARTS = 'I left the Earth feed running';
+export function firstNewsId(lore: string): string {
+  const i = earthNews(lore).findIndex((n) => n.text.startsWith(FIRST_NEWS_STARTS));
+  return `earth-${i < 0 ? 0 : i}`;
+}
+
+/**
+ * News held back until late in a campaign, by how the item begins in the lore book (so a reorder of the list keeps it),
+ * with the deployment it waits for, as Greeting.notBefore. Collins, Nov 5 2026, on the US book burning: "this should be
+ * far later in the chain".
+ */
+export const NEWS_HELD: { starts: string; notBefore: number }[] = [
+  { starts: 'Major book burning in the US', notBefore: 16 },
+];
 
 export function newsGreetings(lore: string): Greeting[] {
   const pool = earthNews(lore);
   const news: EarthNews[] = pool.length ? pool : EARTH_NEWS_FALLBACK.map((text) => ({ text }));
-  return news.map((n, i) => ({ id: `earth-${i}`, moment: 'talk', beats: newsBeats(n.text), aside: n.aside }));
+  return news.map((n, i) => {
+    const held = NEWS_HELD.find((h) => n.text.startsWith(h.starts));
+    return { id: `earth-${i}`, moment: 'talk', beats: newsBeats(n.text), aside: n.aside, ...(held ? { notBefore: held.notBefore } : {}) };
+  });
 }
 
 /**
@@ -354,13 +382,18 @@ export function greetingFor(s: CampaignState, lore = ''): { moment: GreetMoment;
   // What the last thing she said was about: the next everyday line or news is about something else.
   const lastG = s.lastGreeting ? GREETINGS.find((g) => g.id === s.lastGreeting) ?? newsById(lore, s.lastGreeting) : null;
   const avoid = lastG ? topicsOf(words(lastG)) : [];
-  // The first news from Earth he hears is always the lore book's first (Rome, "I can pull up live feeds if you like watching
-  // Earth"), which introduces the feeds; the rest join the shuffle once it is told (Collins, Nov 5 2026, on a campaign whose
-  // first news was an African genocide: "find a more natural first one").
+  // The lines before it, back to TOPIC_GAP: kept clear of too when the pool allows.
+  const earlier = said.filter((id) => id !== s.lastGreeting).slice(-(TOPIC_GAP - 1))
+    .map((id) => GREETINGS.find((g) => g.id === id) ?? newsById(lore, id)).filter((g): g is Greeting => !!g);
+  const avoidFar = earlier.flatMap((g) => topicsOf(words(g)));
+  // The first news from Earth he hears is always FIRST_NEWS_STARTS (the feed left running in his quarters), which
+  // introduces the feeds; the rest join the shuffle once it is told (Collins, Nov 5 2026, on a campaign whose first news was
+  // an African genocide: "find a more natural first one").
   const allNews = newsGreetings(lore);
-  const news = said.includes(FIRST_NEWS) ? allNews : allNews.filter((g) => g.id === FIRST_NEWS);
+  const first = firstNewsId(lore);
+  const news = said.includes(first) ? allNews : allNews.filter((g) => g.id === first);
   const pool = ORDINARY.includes(moment) && poolOf(moment) === 'talk' && earthNewsOpen(s) ? [...GREETINGS, ...news] : GREETINGS;
-  return { moment, greeting: pickGreeting(moment, s.seed, s.deployments, s.lastGreeting, pool, said, avoid) };
+  return { moment, greeting: pickGreeting(moment, s.seed, s.deployments, s.lastGreeting, pool, said, avoid, avoidFar) };
 }
 
 /** A line of news said before, by its id (to know what it was about). */

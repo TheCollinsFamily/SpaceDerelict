@@ -50,7 +50,7 @@ import { BOSS, BOSS_AFTER, BOSS_ASIDE, BOSS_BRIDGE } from '../content/boss';
 import { FACTIONS, type Scene } from '../content/campaign';
 import { ROACH_SCENES } from '../content/roachKing';
 import { speakerOf } from '../content/media';
-import { EARLY_ONCE, FIRST_NEWS, INTROS, STORY_ONCE, THREAD_OPENS, greetingFor, newsGreetings, seeded, shipPick, topicsOf } from '../src/meta/onboarding';
+import { EARLY_ONCE, firstNewsId, INTROS, TOPIC_GAP, STORY_ONCE, THREAD_OPENS, greetingFor, newsGreetings, seeded, shipPick, shuffleKey, topicsOf } from '../src/meta/onboarding';
 import { ally, finish, newCampaign, plan, targets, type CampaignState } from '../src/meta/campaign';
 import type { RunReport } from '../src/meta/goals';
 
@@ -70,7 +70,7 @@ const COLLINS_GREETINGS = new Set(['first-lost', 'first-won', 'unlock', 'mate-re
 /** The first lines of the Earth news are his (Oct 12 2026: he rewrote the list on this page; the rest were written to match). */
 const COLLINS_NEWS = 12;
 /** Later lines of the news that are his, by their number on the page (23: the Lipptors, Oct 14 2026). */
-const COLLINS_NEWS_ALSO = new Set([22]);
+const COLLINS_NEWS_ALSO = new Set([21]);
 
 const greeting = (g: Greeting, ctx?: string): Line => ({
   id: g.id, author: COLLINS_GREETINGS.has(g.id) ? 'collins' : 'draft',
@@ -91,7 +91,9 @@ function apart(gs: Greeting[]): Greeting[] {
   const out: Greeting[] = [];
   while (left.length) {
     const prev = out.length ? topics(out[out.length - 1]) : [];
-    const i = left.findIndex((g) => !topics(g).some((t) => prev.includes(t)));
+    const far = out.slice(-TOPIC_GAP).flatMap(topics);
+    let i = left.findIndex((g) => !topics(g).some((t) => far.includes(t)));
+    if (i < 0) i = left.findIndex((g) => !topics(g).some((t) => prev.includes(t)));
     out.push(...left.splice(i < 0 ? 0 : i, 1));
   }
   return out;
@@ -102,17 +104,17 @@ const of = (moment: GreetMoment, ids?: string[]): Line[] => {
   const now = [...GREETINGS.filter((g) => g.moment === moment && (!ids || ids.includes(g.id))), ...(moment === 'talk' && !ids ? newsGreetings(lore) : [])];
   const held = now.filter((g) => g.notBefore).sort((a, b) => a.notBefore! - b.notBefore!);
   // In one campaign's shuffled order (seed 1, as pickGreeting shuffles), so the news falls among her lines as it does in play.
-  const shuffled = moment === 'talk' && !ids ? [...now].sort((x, y) => seeded(1, x.id) - seeded(1, y.id)) : now;
+  const shuffled = moment === 'talk' && !ids ? [...now].sort((x, y) => shuffleKey(1, x) - shuffleKey(1, y)) : now;
   const ordered = apart(shuffled.filter((g) => !g.notBefore));
-  // The first news he hears is always FIRST_NEWS (onboarding.ts greetingFor): it takes the first news slot.
+  // The first news he hears is always firstNewsId (onboarding.ts greetingFor): it takes the first news slot.
   const firstSlot = ordered.findIndex((g) => /^earth-/.test(g.id));
-  const at = ordered.findIndex((g) => g.id === FIRST_NEWS);
+  const at = ordered.findIndex((g) => g.id === firstNewsId(lore));
   if (firstSlot >= 0 && at > firstSlot) ordered.splice(firstSlot, 0, ...ordered.splice(at, 1));
   return [...ordered, ...held]
     .map((g) => {
       const n = /^earth-(\d+)$/.exec(g.id);
       // The news keeps its page number (earth-1 is the lore book's first), which is how the page's edits find it.
-      return n ? { ...newsLine(news[Number(n[1])], Number(n[1])), ctx: ['News from Earth (its words are kept in the lore book)'] }
+      return n ? { ...newsLine(news[Number(n[1])], Number(n[1])), ctx: [`News from Earth (its words are kept in the lore book)${g.notBefore ? `; HELD BACK: not before capture ${g.notBefore}, then in the shuffle with the rest` : ''}`] }
         : greeting(g, g.notBefore ? `HELD BACK: not before capture ${g.notBefore}, then in the shuffle with the rest` : undefined);
     });
 };

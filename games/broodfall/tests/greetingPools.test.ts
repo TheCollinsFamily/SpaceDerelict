@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { CUES, GREETINGS, earthNews, earthNewsFrom, newsBeats, type GreetMoment } from '../content/greetings';
-import { EARLY_ONCE, FIRST_NEWS, STORY_ONCE, greetingFor, pickGreeting } from '../src/meta/onboarding';
+import { EARLY_ONCE, STORY_ONCE, firstNewsId, greetingFor, newsGreetings, pickGreeting } from '../src/meta/onboarding';
 import { newCampaign, type CampaignState } from '../src/meta/campaign';
 
 const LORE = fs.readFileSync(path.join(__dirname, '..', 'content', 'lore', 'ship-ai-lorebook.md'), 'utf8');
@@ -115,11 +115,22 @@ describe('a long campaign hears no greeting twice', () => {
       expect(heard.filter((id, i) => heard.indexOf(id) !== i)).toEqual([]);
     });
   }
-  it('the first news from Earth is always the Rome one, which introduces the feeds (Collins, Nov 5 2026)', () => {
+  it('the US book burning is held back far into a campaign (Collins, Nov 5 2026)', () => {
+    const burn = newsGreetings(LORE).find((g) => g.beats[0].say.startsWith('Major book burning'));
+    expect(burn?.notBefore).toBe(16);
+    for (const seed of [1, 2, 3, 7, 42, 1234, 98765]) {
+      const heard = hear(seed, mix);
+      const at = heard.indexOf(burn!.id);
+      if (at >= 0) expect(at + 1, String(seed)).toBeGreaterThanOrEqual(16);
+    }
+  });
+  it('the first news from Earth is always the feed left running in his quarters (Collins, Nov 5 2026)', () => {
+    const first = firstNewsId(LORE);
+    expect(newsGreetings(LORE).find((g) => g.id === first)!.beats[0].say).toMatch(/^I left the Earth feed running/);
     for (const seed of [1, 2, 3, 7, 42, 1234, 98765]) {
       const news = hear(seed, mix).filter((id) => /^earth-/.test(id));
       expect(news.length, String(seed)).toBeGreaterThan(1);
-      expect(news[0], String(seed)).toBe(FIRST_NEWS);
+      expect(news[0], String(seed)).toBe(first);
     }
   });
   it('when a pool is dry she reads the news rather than repeat herself', () => {
