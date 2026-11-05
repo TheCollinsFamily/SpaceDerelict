@@ -8,6 +8,13 @@ two weeks before release. Making the app itself needs the Steam Direct fee ($100
 after $1,000 of gross sales) and a Steamworks partner account with tax and bank details done.
 No game build is needed for a Coming Soon page.
 
+## Agents may publish store-page changes themselves (Collins, Nov 5 2026)
+
+"you have total permision to push to public just not to advance the stage (e.g. publishign the final game)". An agent
+presses Publish to public for store-page edits (text, art, trailers, order) itself, then checks the live page. It never
+advances the release stage: no Release / Set Live of the game, no build or package going public, no price or date
+commitment.
+
 ## What only Collins can do
 
 1. Sign in at https://partner.steamgames.com (or join it at https://partner.steamgames.com/steamdirect),
@@ -251,3 +258,5 @@ afterwards.
   "Broodfall Gameplay: The Fight, The Body, The Map" (movie 1426371), SECOND in the list, so all gameplay plays before the
   screenshots. The three separate demo entries hidden (not deleted). Saved order: Gameplay Trailer, the reel, then The Gate
   (after the screenshots). Needs a Publish click to go live.
+  Published by the agent Nov 5 (Collins's standing permission above). Live and checked in the store: Gameplay Trailer
+  (plays first), then the 1:33 reel, then the screenshots, then The Gate at the end.
