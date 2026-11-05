@@ -240,3 +240,8 @@ afterwards.
   `The Gate (extended).mp4` onto that entry's Replace for full quality. Trailer edits reach the live page only via the Publish tab.
   Notes for agents: the "Create" button can raise a browser alert that freezes the tab; call `CreateMovieForApp('#CreateMovieForm')`
   by script with `window.alert` stubbed instead. A localhost fetch from the Steamworks page is blocked (no way past 10 MB by script).
+  Published Nov 5 (Version 3, Collins's click). Live order: Gameplay Trailer, The Fight, The Body, The Map, The Gate.
+  **Steam shows only the first TWO trailers before the screenshots; the rest come after them, whatever "Show before
+  screenshots" says** (partner.steamgames.com/doc/store/trailer, "Manage The Order Of Your Trailers"). To change which two
+  lead, reorder the list (the sortable's update calls ArraySwapAjax; moving the node and calling the sortable's `update` with
+  `{item}` by script works, then reload to confirm) and publish.
