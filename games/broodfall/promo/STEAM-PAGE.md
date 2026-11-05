@@ -260,3 +260,13 @@ afterwards.
   (after the screenshots). Needs a Publish click to go live.
   Published by the agent Nov 5 (Collins's standing permission above). Live and checked in the store: Gameplay Trailer
   (plays first), then the 1:33 reel, then the screenshots, then The Gate at the end.
+- Nov 5 2026 (midday): wishlists at 176 added / 1 removed / 175 net after ~1.5 days
+  (https://partner.steampowered.com/app/wishlist/5509240/ ; the "Lifetime" box lags a day behind the daily rows).
+  Collins had already rewritten the opening of the long description himself (two paragraphs, "tower defense roguelite
+  mixed with a dating game ... passion project of a single dev"); the "Try the demo" line is gone from the page. Added at
+  the end of its first paragraph, Collins's words: "I built this in part as a test of the RFab API for building AI based
+  cinematics, mechanics, and art ... so if you are allergic to AI stay away. If not I think you will be really impressed."
+  He wrote "RFab.ai/api"; **Steam silently strips anything that looks like a URL from the description** (the live page
+  read "a test of  for building"), and the editor forbids links to other sites, so it reads "the RFab API". Also fixed
+  "rouge lite" -> "roguelite" and "for a for a" in that paragraph ("rouge lite" still stands in WHAT YOU DO). Published
+  (revision 8) and checked live: the sentence is there, no "demo" anywhere on the page.
