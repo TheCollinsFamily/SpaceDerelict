@@ -230,3 +230,13 @@ afterwards.
   capsule, short + long description, 5 trailers, 8 screenshots, page background, AI disclosure, mature-content note, system
   requirements, "Coming soon", Add to your wishlist all present; no broken images. Open point: the description's first
   paragraph says "Try the demo and let me know" but there is no demo on Steam yet.
+- Nov 5 2026: **trailers re-done** (Collins: the Oct 31 gameplay trailer "should be the main first video ... leave out the ones
+  with the old music", and add The Gate). New entry "Broodfall Gameplay Trailer" (movie 1426259,
+  `promo/trailer/broodfall-trailer-gameplay-steam-upload-720p.mp4`, the 71 s Oct 31 cut on Flag of Doom), Gameplay, visible,
+  before screenshots, not all-ages, FIRST in the list. Hidden (Visible on Store off, not deleted): "Broodfall Gameplay" (1406478,
+  the Oct 26 56 s cut, old music) and "Broodfall Trailer" (1406402, the Oct 16 90 s cut, old music). New entry "The Gate"
+  (1426278): `C:\Users\Merry\dev\Technopuritan Family Art\Videos\The Gate (extended) - steam-upload-720p.mp4`, a two-pass
+  370k x264 copy of the 52 MB 175 s film made to fit the browser tool's 10 MB cap; drag the full
+  `The Gate (extended).mp4` onto that entry's Replace for full quality. Trailer edits reach the live page only via the Publish tab.
+  Notes for agents: the "Create" button can raise a browser alert that freezes the tab; call `CreateMovieForApp('#CreateMovieForm')`
+  by script with `window.alert` stubbed instead. A localhost fetch from the Steamworks page is blocked (no way past 10 MB by script).
