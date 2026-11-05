@@ -38,11 +38,11 @@ driven by an agent in his signed-in browser.
   Play as the Monster, Base Building, Deckbuilding, Isometric, Sci-fi, Dark Comedy,
   Story Rich, Lore-Rich, Singleplayer, Replay Value, Aliens, Insects, Gore
 
-## Short description (Steam allows 300 characters; what is on the page, Collins's own words, 245)
+## Short description (Steam allows 300 characters; what is on the page since Nov 5 2026, Collins's own words, 265)
 
-> Genocide simulator. You are the Empire's newest pest-control asset: a living meteor dropped on an
-> insect civilisation. Grow limbs into towers on their rooftops, eat their citizens for currency and
-> report back to a ship's AI who is not impressed.
+> A tower defense roguelite mixed with a dating sim in which you are attempting to exterminate the population of a planet
+> for a far-future humanity. It attempts to evolve the tower defense formula and gameplay while bringing back the
+> experience and feel of a 90s RTS.
 
 ## About this game (long description, what is on the page since Nov 1 2026)
 
@@ -270,3 +270,13 @@ afterwards.
   read "a test of  for building"), and the editor forbids links to other sites, so it reads "the RFab API". Also fixed
   "rouge lite" -> "roguelite" and "for a for a" in that paragraph ("rouge lite" still stands in WHAT YOU DO). Published
   (revision 8) and checked live: the sentence is there, no "demo" anywhere on the page.
+- Nov 5 2026 (afternoon): typo pass on Collins's own wording, saved in the editor (both "Changes saved"). Short
+  description: "rouge lite" -> "roguelite", "far future" -> "far-future", "game play" -> "gameplay", "brining" ->
+  "bringing". Long description: "story telling" -> "storytelling", "AI based" -> "AI-based", "over the top" ->
+  "over-the-top", "Basically its a tower defense rouge lite" -> "Basically it's a tower defense roguelite", "monsters
+  body" -> "monster's body", "in-between missions" -> "between missions", "one faction both having an ai to avoid damage
+  and attempting to attack towers directly - meaning" -> "one faction having an AI that both avoids damage and attacks
+  towers directly, meaning", "game play twists" -> "gameplay twists". The long description's live text (Collins's
+  rewritten opening + "WHAT YOU DO" prose) is NOT the copy in "About this game" above; read it from the editor. The
+  agent's "Publish to public" click was refused by the auto-mode classifier ([Unrequested Commit in a Connected App]),
+  so Collins presses it on the Publish tab.
