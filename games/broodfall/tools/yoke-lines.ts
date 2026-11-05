@@ -50,7 +50,7 @@ import { BOSS, BOSS_AFTER, BOSS_ASIDE, BOSS_BRIDGE } from '../content/boss';
 import { FACTIONS, type Scene } from '../content/campaign';
 import { ROACH_SCENES } from '../content/roachKing';
 import { speakerOf } from '../content/media';
-import { EARLY_ONCE, INTROS, STORY_ONCE, THREAD_OPENS, greetingFor, newsGreetings, seeded, shipPick, topicsOf } from '../src/meta/onboarding';
+import { EARLY_ONCE, FIRST_NEWS, INTROS, STORY_ONCE, THREAD_OPENS, greetingFor, newsGreetings, seeded, shipPick, topicsOf } from '../src/meta/onboarding';
 import { ally, finish, newCampaign, plan, targets, type CampaignState } from '../src/meta/campaign';
 import type { RunReport } from '../src/meta/goals';
 
@@ -59,7 +59,7 @@ const ABS = (rel: string) => path.join('C:\\Users\\Merry\\dev\\space-derelict\\g
 const read = (rel: string) => fs.readFileSync(path.join(ROOT, rel), 'utf8');
 
 type Author = 'collins' | 'draft' | 'lore';
-interface Line { id: string; text: string[]; faces?: string[]; ctx?: string[]; author: Author; aside?: string; hook?: string }
+interface Line { id: string; text: string[]; faces?: string[]; ctx?: string[]; author: Author; aside?: string }
 /** One case of a step (won / lost / held), or words that are not hers but fix the order (the boss's transmission). */
 interface Branch { label?: string; lines?: Line[]; context?: { who: string; lines: string[]; where: string } }
 /** One event of a campaign, in the order he meets them; what happens, then what she says there. */
@@ -77,7 +77,7 @@ const greeting = (g: Greeting, ctx?: string): Line => ({
   text: g.beats.map((b) => b.say),
   faces: g.beats.map((b) => [b.face ?? 'calm', ...(b.then ? (Array.isArray(b.then) ? b.then : [b.then]).map((c) => `then ${c}`) : [])].join(' · ')),
   ctx: ctx ? [ctx] : undefined,
-  aside: g.aside, hook: g.hook,
+  aside: g.aside,
 });
 /** A line of news as the beats she plays it in (a "[shrug]" in the text splits it). */
 const newsLine = (n: { text: string; aside?: string }, i: number): Line => {
@@ -103,7 +103,12 @@ const of = (moment: GreetMoment, ids?: string[]): Line[] => {
   const held = now.filter((g) => g.notBefore).sort((a, b) => a.notBefore! - b.notBefore!);
   // In one campaign's shuffled order (seed 1, as pickGreeting shuffles), so the news falls among her lines as it does in play.
   const shuffled = moment === 'talk' && !ids ? [...now].sort((x, y) => seeded(1, x.id) - seeded(1, y.id)) : now;
-  return [...apart(shuffled.filter((g) => !g.notBefore)), ...held]
+  const ordered = apart(shuffled.filter((g) => !g.notBefore));
+  // The first news he hears is always FIRST_NEWS (onboarding.ts greetingFor): it takes the first news slot.
+  const firstSlot = ordered.findIndex((g) => /^earth-/.test(g.id));
+  const at = ordered.findIndex((g) => g.id === FIRST_NEWS);
+  if (firstSlot >= 0 && at > firstSlot) ordered.splice(firstSlot, 0, ...ordered.splice(at, 1));
+  return [...ordered, ...held]
     .map((g) => {
       const n = /^earth-(\d+)$/.exec(g.id);
       // The news keeps its page number (earth-1 is the lore book's first), which is how the page's edits find it.

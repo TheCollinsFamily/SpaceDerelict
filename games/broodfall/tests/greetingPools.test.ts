@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { CUES, GREETINGS, earthNews, earthNewsFrom, newsBeats, type GreetMoment } from '../content/greetings';
-import { EARLY_ONCE, STORY_ONCE, greetingFor, pickGreeting } from '../src/meta/onboarding';
+import { EARLY_ONCE, FIRST_NEWS, STORY_ONCE, greetingFor, pickGreeting } from '../src/meta/onboarding';
 import { newCampaign, type CampaignState } from '../src/meta/campaign';
 
 const LORE = fs.readFileSync(path.join(__dirname, '..', 'content', 'lore', 'ship-ai-lorebook.md'), 'utf8');
@@ -38,12 +38,11 @@ describe('the depth of her pools', () => {
       expect(GREETINGS.find((g) => g.id === id)?.aside?.length ?? 0, id).toBeGreaterThan(40);
     }
   });
-  it('the lines that carry their world have the lore behind them and a prompt for the reply box', () => {
-    const carry = GREETINGS.filter((g) => g.hook);
-    expect(carry.length).toBeGreaterThanOrEqual(10);
-    for (const g of carry) expect(g.aside?.length ?? 0, g.id).toBeGreaterThan(80);
-    // Every ordinary pool has at least two.
-    for (const m of ['talk'] as GreetMoment[]) expect(carry.filter((g) => g.moment === m).length, m).toBeGreaterThanOrEqual(2);
+  it('no line tells the player what to ask: the reply box keeps its plain prompt (Collins, Nov 5 2026)', () => {
+    // "the questions are set up to organically create that behavior we dont guide users like that"
+    for (const g of GREETINGS) expect('hook' in g, g.id).toBe(false);
+    const withLore = GREETINGS.filter((g) => g.moment === 'talk' && (g.aside?.length ?? 0) > 80);
+    expect(withLore.length).toBeGreaterThanOrEqual(2);
   });
   it('while the desk stays dark, once her lines are said, the one that repeats plays again and again (Collins, Oct 12 2026)', () => {
     const pool = GREETINGS.filter((g) => g.moment === 'lost-locked');
@@ -116,6 +115,13 @@ describe('a long campaign hears no greeting twice', () => {
       expect(heard.filter((id, i) => heard.indexOf(id) !== i)).toEqual([]);
     });
   }
+  it('the first news from Earth is always the Rome one, which introduces the feeds (Collins, Nov 5 2026)', () => {
+    for (const seed of [1, 2, 3, 7, 42, 1234, 98765]) {
+      const news = hear(seed, mix).filter((id) => /^earth-/.test(id));
+      expect(news.length, String(seed)).toBeGreaterThan(1);
+      expect(news[0], String(seed)).toBe(FIRST_NEWS);
+    }
+  });
   it('when a pool is dry she reads the news rather than repeat herself', () => {
     // Eleven counter-attacks thrown back in a row: six lines, then the news, never a line twice.
     const heard = hear(7, Array<GreetMoment>(11).fill('defended'));

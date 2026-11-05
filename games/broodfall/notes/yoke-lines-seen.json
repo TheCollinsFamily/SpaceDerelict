@@ -47,6 +47,11 @@
    "hash": "fpv5m6",
    "since": "2026-10-26T16:42:55.382Z"
   },
+  "earth-1": {
+   "hash": "1nb5vqw",
+   "since": "2026-10-14",
+   "baseline": true
+  },
   "earth-18": {
    "hash": "13aabvr",
    "since": "2026-10-18T19:00:50.585Z"
@@ -134,11 +139,6 @@
   "back-13": {
    "hash": "4696m",
    "since": "2026-10-26T12:35:34.887Z"
-  },
-  "earth-1": {
-   "hash": "1nb5vqw",
-   "since": "2026-10-14",
-   "baseline": true
   },
   "back-15": {
    "hash": "unfkve",

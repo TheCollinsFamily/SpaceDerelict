@@ -324,10 +324,13 @@ export function earthNewsOpen(s: CampaignState): boolean {
  * The news from Earth as lines of hers (Collins, Oct 26 2026: "the news from earth is PART OF WHAT SHE SAYS"): each one
  * an everyday line in her one pool, shuffled in with the rest (`lore`: the lore book's text, which holds the list).
  */
+/** The news told first, before any other (the lore book's first item: earth-1 on the lines page). */
+export const FIRST_NEWS = 'earth-0';
+
 export function newsGreetings(lore: string): Greeting[] {
   const pool = earthNews(lore);
   const news: EarthNews[] = pool.length ? pool : EARTH_NEWS_FALLBACK.map((text) => ({ text }));
-  return news.map((n, i) => ({ id: `earth-${i}`, moment: 'talk', beats: newsBeats(n.text), aside: n.aside, hook: n.aside ? 'Ask her about it' : undefined }));
+  return news.map((n, i) => ({ id: `earth-${i}`, moment: 'talk', beats: newsBeats(n.text), aside: n.aside }));
 }
 
 /**
@@ -351,7 +354,12 @@ export function greetingFor(s: CampaignState, lore = ''): { moment: GreetMoment;
   // What the last thing she said was about: the next everyday line or news is about something else.
   const lastG = s.lastGreeting ? GREETINGS.find((g) => g.id === s.lastGreeting) ?? newsById(lore, s.lastGreeting) : null;
   const avoid = lastG ? topicsOf(words(lastG)) : [];
-  const pool = ORDINARY.includes(moment) && poolOf(moment) === 'talk' && earthNewsOpen(s) ? [...GREETINGS, ...newsGreetings(lore)] : GREETINGS;
+  // The first news from Earth he hears is always the lore book's first (Rome, "I can pull up live feeds if you like watching
+  // Earth"), which introduces the feeds; the rest join the shuffle once it is told (Collins, Nov 5 2026, on a campaign whose
+  // first news was an African genocide: "find a more natural first one").
+  const allNews = newsGreetings(lore);
+  const news = said.includes(FIRST_NEWS) ? allNews : allNews.filter((g) => g.id === FIRST_NEWS);
+  const pool = ORDINARY.includes(moment) && poolOf(moment) === 'talk' && earthNewsOpen(s) ? [...GREETINGS, ...news] : GREETINGS;
   return { moment, greeting: pickGreeting(moment, s.seed, s.deployments, s.lastGreeting, pool, said, avoid) };
 }
 

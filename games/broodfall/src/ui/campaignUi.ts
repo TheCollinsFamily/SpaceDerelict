@@ -184,8 +184,6 @@ export class CampaignUi {
   /** The letters last kept on rfab.ai (JSON), so a push goes only when they changed; pulled once a show. */
   private lettersKept = '';
   private lettersPulled = false;
-  /** The prompt in the reply box under her, from the greeting (Greeting.hook), until the next greeting. */
-  private greetHook = '';
   /** His quarters' picture and the partner candidate's portrait (public/art/intro/, not the manifest). */
   private intro: IntroArt | null = null;
   /** The ship's art (its rooms, the planet for the globe) is still arriving: a loop over the screen meanwhile (src/ui/loader.ts). */
@@ -353,7 +351,6 @@ export class CampaignUi {
     this.greeting = g;
     this.greetSaid = [];
     this.greetAside = g.aside ?? '';
-    this.greetHook = g.hook ?? '';
     this.icom = { talk: this.freeTalk() };
     this.render();
     const lines: ScriptLine[] = g.beats.map((b) => ({
@@ -488,7 +485,7 @@ export class CampaignUi {
         <div class="cp-talk" data-act="${this.greeting ? 'icom-skip' : ''}" title="${this.greeting ? 'Click to skip ahead' : ''}">${lines}${pend}</div>
         ${this.greeting ? '<div class="cp-icom-hint">click her words to skip ahead</div>' : ''}
         ${go}
-        <div class="cp-say"><input id="icom-input" placeholder="${esc(this.greetHook || 'Say something to her, or just walk away')}" autocomplete="off"${this.waiting ? ' disabled' : ''}/><button data-act="icom-send"${this.waiting ? ' disabled' : ''}>SAY</button></div>
+        <div class="cp-say"><input id="icom-input" placeholder="Say something to her, or just walk away" autocomplete="off"${this.waiting ? ' disabled' : ''}/><button data-act="icom-send"${this.waiting ? ' disabled' : ''}>SAY</button></div>
       </div></div>`;
   }
 

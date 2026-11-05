@@ -2069,7 +2069,7 @@ rfab api? if not update it so you can ... those are probably better".
   An export is a list by id; apply it to the files, regenerate, republish, and tell him to press Reset edits.
 - HIS BRIEF (the header of content/greetings.ts): a line of hers names one real thing of their world, often against what
   the insects do (21st-century life), and leaves a thread he can pull. `Greeting.aside` is what she knows behind it, sent
-  to her live mind with the campaign summary (campaignUi greetNote) and never shown; `Greeting.hook` is the reply box's
+  to her live mind with the campaign summary (campaignUi greetNote) and never shown; `Greeting.hook` WAS the reply box's (REMOVED Nov 5 2026, see the end of this file)
   prompt under her ("Ask her about ..."); `Greeting.repeats` plays again when the pool is dry (locked-4, the dark desk).
   The Earth news (lore book, "Earth news") carries its lore as an indented "> ..." line under each item (`earthNews`), and a
   "[shrug]" inside a line splits it into beats (`newsBeats`). Tests: tests/greetingPools.test.ts.
@@ -2732,3 +2732,12 @@ Collins: the humanisation "is only unique in that it's a conversation with an op
 printing her a body, hook "Ask her to print herself a body"; if he asks, the film plays as before. Played in the real
 game: a save at capture 5 comes aboard to it, and "print yourself a body" in the intercom starts the printBody scene.
 House Constantine weights votes by contribution (won-27's "our Houses' votes"; the elephants are the contrast).
+
+### No reply-box prompts, ever (Nov 5 2026)
+Collins, reading YOKE's lines and finding `reply box: "Ask her about the Hologs"`: "thats awful the questions are set up to
+organically create that behavior we dont guide users like that". `Greeting.hook` (it replaced the intercom input's grey
+placeholder with "Ask her about ...", "Answer her", etc. on 21 greetings and on every Earth news item) is GONE: the field,
+`campaignUi.greetHook`, the "reply box" label on the lines page. The input always reads "Say something to her, or just walk
+away". Her line and her aside do the pulling; never steer the player toward a question, in a placeholder, a button, a
+suggested reply or anything else. tests/greetingPools.test.ts fails if a greeting carries `hook` again. Older entries above
+that mention a hook are history.
