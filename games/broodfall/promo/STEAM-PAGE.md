@@ -245,3 +245,9 @@ afterwards.
   screenshots" says** (partner.steamgames.com/doc/store/trailer, "Manage The Order Of Your Trailers"). To change which two
   lead, reorder the list (the sortable's update calls ArraySwapAjax; moving the node and calling the sortable's `update` with
   `{item}` by script works, then reload to confirm) and publish.
+- Nov 5 2026 (later): Collins saw the demos and The Gate sitting after the screenshots (the two-trailer cap). Fix: the three
+  demos joined into one reel, `promo/trailer/broodfall-demo-reel.mp4` (1080p60, CRF 19, 94 s) and
+  `promo/trailer/broodfall-demo-reel-steam-upload-720p.mp4` (720p30, two-pass 700k + AAC 96k, 9.5 MB, uploaded), trailer
+  "Broodfall Gameplay: The Fight, The Body, The Map" (movie 1426371), SECOND in the list, so all gameplay plays before the
+  screenshots. The three separate demo entries hidden (not deleted). Saved order: Gameplay Trailer, the reel, then The Gate
+  (after the screenshots). Needs a Publish click to go live.
