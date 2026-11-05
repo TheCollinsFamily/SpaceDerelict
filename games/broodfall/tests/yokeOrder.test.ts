@@ -37,15 +37,15 @@ describe('the love interests, drip-fed', () => {
   it('nobody opens before he sides with a faction', () => {
     expect(threadDue({ ...sided(3), faction: null, captures: 9 })).toBeNull();
   });
-  it('the neko opens 2 to 4 captures after he sides, at a seeded point; Rook from the midpoint to the reveal', () => {
+  it('the neko opens 1 to 2 captures after he sides, at a seeded point; Rook 2 to 4 (Collins, Nov 5 2026)', () => {
     const slots = new Set<number>();
     for (let seed = 1; seed <= 40; seed++) {
       const s = sided(seed);
       const neko = threadSlot(s, 'catgirl')!, rook = threadSlot(s, 'letter-rook')!;
-      expect(neko - s.factionSince).toBeGreaterThanOrEqual(2);
-      expect(neko - s.factionSince).toBeLessThanOrEqual(4);
-      expect(rook - s.factionSince).toBeGreaterThanOrEqual(6);
-      expect(rook - s.factionSince).toBeLessThanOrEqual(8);
+      expect(neko - s.factionSince).toBeGreaterThanOrEqual(1);
+      expect(neko - s.factionSince).toBeLessThanOrEqual(2);
+      expect(rook - s.factionSince).toBeGreaterThanOrEqual(2);
+      expect(rook - s.factionSince).toBeLessThanOrEqual(4);
       slots.add(neko);
     }
     expect(slots.size).toBeGreaterThan(1);
@@ -57,7 +57,7 @@ describe('the love interests, drip-fed', () => {
     expect(momentNow({ ...s, captures: at, lastGreeting: 'won-12' })).toBe('catgirl');
   });
   it('Rook\'s opening plays as her line from the rim, and two love-interest lines never come on two returns running', () => {
-    const s = sided(5, { said: ['mate-review', 'catgirl', 'partner-progress'], greetingsSaid: ['mate-review', 'catgirl', 'partner-progress'] });
+    const s = sided(5, { said: ['mate-review', 'catgirl', 'partner-progress'], greetingsSaid: ['mate-review', 'catgirl', 'partner-progress', 'intro-body'] });
     const at = threadSlot(s, 'letter-rook')!;
     expect(greetingFor({ ...s, captures: at, lastGreeting: 'won-12' }).greeting.id).toBe('letter-rook');
     expect(greetingFor({ ...s, captures: at, lastGreeting: 'catgirl' }).greeting.id).not.toBe('letter-rook');

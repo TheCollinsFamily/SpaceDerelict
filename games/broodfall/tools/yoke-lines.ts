@@ -167,7 +167,6 @@ const introNeeds: Record<string, string> = {
 };
 const introLine = (i: (typeof INTROS)[number]): Line =>
   greeting(GREETINGS.find((g) => g.id === i.id)!, `TRIGGER: from capture ${i.captures}${introNeeds[i.id] ?? ''}`);
-const introOrder = INTROS.map((i) => `${i.id} (capture ${i.captures})`).join(', ');
 /** What sets off each letter beat (src/meta/onboarding.ts LETTER_BEATS). */
 const LETTER_TRIGGER: Record<string, string> = {
   'letter-atlas-direct': 'TRIGGER: the companion\'s regard has reached the point where she hands the thread over, so Atlas writes to him herself (the end of the letters minigame with the companion; never the opening of the thread)',
@@ -241,18 +240,22 @@ const steps: Step[] = [
       { label: 'A counter-attack thrown back', lines: of('defended') },
       { label: 'Ground lost to a counter-attack', lines: of('fell') },
     ] },
-  { id: 'letterbeats', part: PART_TRIG, name: 'Rank 1. The love interests, drip-fed', where: GREET + '  (when: ' + G('src/meta/onboarding.ts') + ' THREAD_OPENS, LETTER_BEATS)',
-    what: 'TRIGGER: each says its own. Atlas comes first, at the mate review (part 1). The others open one at a time in a window counted from the capture on which he sided with a faction; the exact capture is picked by the campaign\'s seed, so every campaign meets them at a different point. After that, a line follows what he does in the Letters room, on the very next return. At most one of these a return and never two returns running, the mate review included: one held back plays on the next return.',
+  { id: 'letterbeats', part: PART_TRIG, name: 'The story beats, in order: the partners, the body, the family, the boss', where: GREET + '  (when: ' + G('src/meta/onboarding.ts') + ' THREAD_OPENS, INTROS)',
+    what: 'HOW THEY SLOT IN (Collins, Nov 5 2026: Mirelle first, print-a-body second, Rook third). A campaign ends at about 13 territories taken, about 22 trips back to the ship. Each trip back she says ONE thing. These lines take the place of her everyday line, one at a time, in the order below, each once a campaign, never two trips running (an everyday line always comes between). Each waits for the one before it and for the territory count shown on it. Atlas is introduced before all of these, at the mate review (part 1). Played in code over 300 campaigns: Mirelle about trip 5, the body 6, Rook 8, dad 10, the neko musing 12, the boss 14, the audit 16, dad again 18.',
     branches: [
-      { label: 'Openings', lines: THREAD_OPENS.map((t) => greeting(GREETINGS.find((g) => g.id === t.id)!, `TRIGGER: ${t.after} to ${t.until} captures after he sides with a faction (seeded per campaign)${t.id === 'catgirl' ? '; it lights the data pad and opens Mirelle\'s thread' : '; it opens Rook\'s thread in the Letters room'}`)) },
-      { label: 'Then, from the Letters room', lines: ['letter-atlas-direct', 'letter-rook-orca'].map((id) => greeting(GREETINGS.find((g) => g.id === id)!, LETTER_TRIGGER[id])) },
+      { lines: [
+        greeting(GREETINGS.find((g) => g.id === 'catgirl')!, `1. MIRELLE, the second partner: ${THREAD_OPENS[0].after} to ${THREAD_OPENS[0].until} territories after he sides with a faction (about territory 3); it lights the data pad and opens her letters`),
+        ...INTROS.slice(0, 1).map((i) => ({ ...introLine(i), ctx: [`2. PRINT A BODY: from territory ${i.captures}, after Mirelle`] })),
+        greeting(GREETINGS.find((g) => g.id === 'letter-rook')!, `3. ROOK, the third partner: ${THREAD_OPENS[1].after} to ${THREAD_OPENS[1].until} territories after he sides (about territory 4), after print-a-body; it opens her letters`),
+        ...INTROS.slice(1).map((i, k) => ({ ...introLine(i), ctx: [`${k + 4}. From territory ${i.captures}${k === 0 ? ', after Rook' : ''}${i.id === 'intro-dad' ? ', after the mate review' : ''}${i.id === 'intro-catgirl' ? ', after Mirelle\'s letter' : ''}`] })),
+      ] },
     ] },
+  { id: 'letterfollow', part: PART_TRIG, name: 'From the Letters room', where: GREET + '  (when: ' + G('src/meta/onboarding.ts') + ' LETTER_BEATS)',
+    what: 'TRIGGER: what he does in the Letters room; the line plays on the very next trip back, ahead of the story beats above.',
+    branches: one(['letter-atlas-direct', 'letter-rook-orca'].map((id) => greeting(GREETINGS.find((g) => g.id === id)!, LETTER_TRIGGER[id]))) },
   { id: 'afterprint', part: PART_TRIG, name: 'After she prints herself a body', where: GREET + '  (when: ' + G('src/meta/onboarding.ts') + ' afterPrintFor)',
     what: 'TRIGGER: the first return from a mission after she printed herself a body (the film, part 4). Once a campaign, ahead of everything else on that return.',
     branches: one([greeting(GREETINGS.find((g) => g.id === 'after-print-body')!)]) },
-  { id: 'intros', part: PART_TRIG, name: 'Rank 2. The once intros, in this order', where: GREET + '  (order and captures: ' + G('src/meta/onboarding.ts') + ' INTROS)',
-    what: `TRIGGER: an ordinary return with nothing of rank 1 due; each once a campaign, the next one not yet said whose capture has been reached, and never on two returns running (so her everyday lines still come between). A lost mission does not bring one back. Order: ${introOrder}. Each line says what it waits for.`,
-    branches: one(INTROS.map(introLine)) },
 
   { id: 'samples', part: PART_TRIG, name: 'How it plays: two campaigns, return by return', where: G('src/meta/onboarding.ts') + '  (greetingFor)',
     what: 'TRIGGER: none; this is a read-out. Two campaigns played in code with the rules above, to show the order: the mission, won or lost, the capture count after it, then the line she says. He sides with the Faithful the moment the desk opens. The two differ because the pool and the love-interest windows are seeded per campaign.',

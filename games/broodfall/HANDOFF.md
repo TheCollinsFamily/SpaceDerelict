@@ -2754,3 +2754,13 @@ that mention a hook are history.
 - Text: back-9 (House of Israel still sleeps; aside: dolphin-DNA half-brain sleep, their law forbids animal DNA), back-10,
   lost-15, won-19, won-26, earth-15; Lipptors mostly synthetic by adolescence and flaunt it (lore book + empire.md).
 
+### The story beats in one order, fitted to a 13-territory campaign (Nov 5 2026)
+Collins: "move the catgirl to first and then the body print to second and then the outer ring girl to third", and the
+partners and the body print should land fairly early. Measured first (300 campaigns played in code with the page's
+sample rules): a campaign ends at 13 territories (10%: 13, 90%: 14), about 22 returns; the old neko musing at capture 12
+came on about return 20, intro-dad at 10 near the end. Now (src/meta/onboarding.ts THREAD_OPENS + INTROS, each waits for
+the one before, with a capture past which it stops waiting): Mirelle's letter 1-2 after siding (about return 5), print a
+body from 3 (6), Rook's letter 2-4 after siding (8), dad 5 (10), neko musing 6 (12), boss 6 (14), audit 7 (16), dad again
+8 (18). intro-dad is still missed in about 5 of 300 of the shortest campaigns. The lines page shows them as ONE section,
+"The story beats, in order", with the Letters-room follow-ups apart. Mid-mission save already exists (runSave.ts, Oct 29).
+

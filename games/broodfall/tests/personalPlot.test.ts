@@ -45,21 +45,24 @@ describe('the desk opening, on the first try or later', () => {
 });
 
 describe('the once intros', () => {
-  it('in order, each from its capture, never right after another, never twice', () => {
-    expect(introFor(at({ captures: 1 }))).toBeNull();
-    expect(introFor(at({ captures: 2 }))?.id).toBe('back-5');
-    expect(introFor(at({ captures: 3, lastGreeting: 'back-5', greetingsSaid: ['back-5'] }))).toBeNull();
-    expect(introFor(at({ captures: 3, lastGreeting: 'won-2', greetingsSaid: ['back-5'] }))?.id).toBe('intro-barnabas');
-    // The duck, the Board and the Gene War were cut (Collins, Oct 18 2026); the audit is next, from capture 8.
-    // Print a body as a conversation, from capture 5 (Oct 26 2026).
-    expect(introFor(at({ captures: 4, greetingsSaid: ['back-5', 'intro-barnabas'] }))).toBeNull();
-    expect(introFor(at({ captures: 5, greetingsSaid: ['back-5', 'intro-barnabas'] }))?.id).toBe('intro-body');
-    expect(introFor(at({ captures: 6, greetingsSaid: ['back-5', 'intro-barnabas', 'intro-body'] }))).toBeNull();
-    expect(introFor(at({ captures: 8, greetingsSaid: ['back-5', 'intro-barnabas', 'intro-body'] }))?.id).toBe('intro-audit');
-    // The second neko line waits for capture 12 (Oct 18 2026: "this is super early").
-    const neko = { greetingsSaid: ['back-5', 'intro-barnabas', 'intro-body', 'intro-audit', 'intro-dad'], said: ['mate-review', 'catgirl', 'partner-progress'] };
-    expect(introFor(at({ captures: 11, ...neko }))).toBeNull();
-    expect(introFor(at({ captures: 12, ...neko }))?.id).toBe('intro-catgirl');
+  it('in order, each from its capture, never right after another, never twice (Collins, Nov 5 2026: Mirelle, body, Rook first)', () => {
+    const met = ['mate-review', 'catgirl'];
+    // Print a body waits for Mirelle's letter (or capture 6).
+    expect(introFor(at({ captures: 3, said: ['mate-review'] }))).toBeNull();
+    expect(introFor(at({ captures: 3, said: met }))?.id).toBe('intro-body');
+    expect(introFor(at({ captures: 6, said: ['mate-review'] }))?.id).toBe('intro-body');
+    expect(introFor(at({ captures: 4, said: met, lastGreeting: 'intro-body', greetingsSaid: ['intro-body'] }))).toBeNull();
+    // Dad's message waits for Rook's letter (or capture 9).
+    expect(introFor(at({ captures: 5, said: met, lastGreeting: 'won-2', greetingsSaid: ['intro-body'] }))).toBeNull();
+    expect(introFor(at({ captures: 5, said: met, lastGreeting: 'won-2', greetingsSaid: ['intro-body', 'letter-rook'] }))?.id).toBe('back-5');
+    const upTo = (n: number) => ({ said: met, lastGreeting: 'won-2', greetingsSaid: ['intro-body', 'letter-rook', 'back-5', 'intro-catgirl', 'intro-barnabas', 'intro-audit', 'intro-dad'].slice(0, n) });
+    expect(introFor(at({ captures: 6, ...upTo(3) }))?.id).toBe('intro-catgirl');
+    expect(introFor(at({ captures: 6, ...upTo(4), lastGreeting: 'intro-catgirl' }))).toBeNull();
+    expect(introFor(at({ captures: 6, ...upTo(4), lastGreeting: 'won-3' }))?.id).toBe('intro-barnabas');
+    expect(introFor(at({ captures: 6, ...upTo(5) }))).toBeNull();
+    expect(introFor(at({ captures: 7, ...upTo(5) }))?.id).toBe('intro-audit');
+    expect(introFor(at({ captures: 8, ...upTo(6) }))?.id).toBe('intro-dad');
+    expect(introFor(at({ captures: 13, ...upTo(7) }))).toBeNull();
   });
   it('a lost mission does not bring one back', () => {
     const said = INTROS.map((i) => i.id);

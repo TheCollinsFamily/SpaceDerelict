@@ -218,16 +218,27 @@ export const STORY_ONCE: Array<{ id: GreetMoment; captures: number }> = [
  * lines still come between. `needs`: what must have happened first (the duck is a callback to the first-mission win;
  * the second neko plays off the first, the Gene War off the second; the dad's names off the Board moving the file).
  */
+/** Whether she has said this line (or played this moment) this campaign. */
+const heard = (s: CampaignState, id: string): boolean => [...(s.said ?? []), ...(s.greetingsSaid ?? [])].includes(id);
+
+/**
+ * THE STORY BEATS IN ONE ORDER (Collins, Nov 5 2026, on a campaign that ends at about 13 captures, in which the neko musing
+ * at 12 came on the last return or two: "move the catgirl to first and then the body print to second and then the outer
+ * ring girl to third"). Mirelle's letter (THREAD_OPENS catgirl) comes first, then print-a-body, then Rook's letter
+ * (THREAD_OPENS letter-rook), then these in this order. Each waits for the one before it, with a capture past which it
+ * stops waiting (a campaign that sides late, or never, still hears them).
+ */
 export const INTROS: Array<{ id: string; captures: number; needs?: (s: CampaignState) => boolean }> = [
-  { id: 'back-5', captures: 2 },
-  { id: 'intro-barnabas', captures: 3 },
-  // Print a body as a conversation (Collins, Oct 26 2026): she raises it; the film plays only if he asks.
-  { id: 'intro-body', captures: 5 },
-  { id: 'intro-audit', captures: 8 },
-  { id: 'intro-dad', captures: 10, needs: (s) => (s.said ?? []).includes('mate-review') },
-  // Collins, Oct 18 2026: "move later, this is super early and the character may not be introduced yet": not before
-  // capture 12 (was 7), and only after Mirelle's letter came (the catgirl greeting).
-  { id: 'intro-catgirl', captures: 12, needs: (s) => (s.said ?? []).includes('catgirl') },
+  // Print a body as a conversation (Collins, Oct 26 2026): she raises it; the film plays only if he asks. After Mirelle.
+  { id: 'intro-body', captures: 3, needs: (s) => heard(s, 'catgirl') || s.captures >= 6 },
+  // After Rook's letter.
+  { id: 'back-5', captures: 5, needs: (s) => heard(s, 'letter-rook') || s.captures >= 9 },
+  // Collins, Oct 18 2026: never before Mirelle's letter came (the catgirl greeting). Nov 5 2026: soon after it, so even a
+  // short campaign hears it (at 12 it came on the last return or two, or not at all).
+  { id: 'intro-catgirl', captures: 6, needs: (s) => (s.said ?? []).includes('catgirl') },
+  { id: 'intro-barnabas', captures: 6 },
+  { id: 'intro-audit', captures: 7 },
+  { id: 'intro-dad', captures: 8, needs: (s) => (s.said ?? []).includes('mate-review') },
 ];
 // Cut by Collins, Oct 18 2026: intro-duck, intro-board, intro-genewar ("this is lore that comes up around nekos, not a
 // stand-alone thing": it is in the neko greetings' asides now).
@@ -260,12 +271,13 @@ export function afterPrintFor(s: CampaignState, pool: Greeting[] = GREETINGS): G
  * earlier"). Each other one opens once, on an ordinary return inside its window, counted in captures from the day he sided
  * with a faction (the first win opens the desk; he sides after that). Where in the window is seeded per campaign, so two
  * campaigns meet them at different points. Her opening line opens the thread in the Letters room (content/letters.ts unlock).
- *   catgirl      Mirelle, the neko: 2 to 4 captures after he sides
- *   letter-rook  Rook, from the rim: from the midpoint to the reveal (6 to 8)
+ * Nov 5 2026 (Collins: Mirelle first, print-a-body second, Rook third; see INTROS):
+ *   catgirl      Mirelle, the neko: 1 to 2 captures after he sides
+ *   letter-rook  Rook, from the rim: 2 to 4 captures after he sides, and only once she has raised print-a-body
  */
-export const THREAD_OPENS: Array<{ id: string; after: number; until: number }> = [
-  { id: 'catgirl', after: 2, until: 4 },
-  { id: 'letter-rook', after: MIDPOINT_CAPTURES, until: 8 },
+export const THREAD_OPENS: Array<{ id: string; after: number; until: number; needs?: (s: CampaignState) => boolean }> = [
+  { id: 'catgirl', after: 1, until: 2 },
+  { id: 'letter-rook', after: 2, until: 4, needs: (s) => [...(s.said ?? []), ...(s.greetingsSaid ?? [])].includes('intro-body') || s.captures >= 9 },
 ];
 
 /** The capture this campaign opens the thread on, or null before he has sided with anyone. */
@@ -287,7 +299,7 @@ export const threadBeatLast = (s: CampaignState): boolean =>
 export function threadDue(s: CampaignState): string | null {
   if (threadBeatLast(s)) return null;
   const said = [...(s.said ?? []), ...(s.greetingsSaid ?? [])];
-  return THREAD_OPENS.find((t) => { const at = threadSlot(s, t.id); return at != null && s.captures >= at && !said.includes(t.id); })?.id ?? null;
+  return THREAD_OPENS.find((t) => { const at = threadSlot(s, t.id); return at != null && s.captures >= at && !said.includes(t.id) && (!t.needs || t.needs(s)); })?.id ?? null;
 }
 
 /**
