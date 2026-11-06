@@ -262,6 +262,8 @@ afterwards.
   (plays first), then the 1:33 reel, then the screenshots, then The Gate at the end.
 - Nov 5 2026 (midday): wishlists at 176 added / 1 removed / 175 net after ~1.5 days
   (https://partner.steampowered.com/app/wishlist/5509240/ ; the "Lifetime" box lags a day behind the daily rows).
+- Nov 6 2026: wishlists 331 added / 4 removed / 327 net in the Lifetime box (through Nov 5), plus 107 added / 2 removed
+  today so far = about 432 net after ~2 days. 94 Windows / 1 Mac / 5 Linux of those that set a platform; 80% US+Canada.
   Collins had already rewritten the opening of the long description himself (two paragraphs, "tower defense roguelite
   mixed with a dating game ... passion project of a single dev"); the "Try the demo" line is gone from the page. Added at
   the end of its first paragraph, Collins's words: "I built this in part as a test of the RFab API for building AI based
