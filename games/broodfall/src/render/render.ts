@@ -78,11 +78,18 @@ const ENGINE_GLYPH: Partial<Record<TowerFamily, (g: Graphics, x: number, y: numb
   },
 };
 
+/**
+ * Each body's radius as drawn (px at a 26 px cell). The ROYAL was 20 and drawn 1.2x on top (unitAnim BOSS_SCALE):
+ * her picture is narrow in the body and tall (crown, train), so she came out three times an elite's height, taller
+ * than the three-storey houses, wider than the street, hiding her whole escort behind her (Collins, Nov 7 2026: "I
+ * think the royals are too big"). Now about 1.8x an elite's picture, the consort 1.4x, the matron 1.4x, the phalanx
+ * 1.1x: still the biggest body on the street, and her escort reads round her.
+ */
 export const ENEMY_SIZE: Record<Enemy['kind'], number> = {
   responder: 5, militia: 6, skitterling: 3.5, soldier: 8, elite: 11, flier: 6, sapper: 7,
   phalanx: 13, drummer: 9, bomber: 6, tunneler: 8, tender: 7,
   splitter: 9, mortar: 9, carapace: 10, stalker: 8, shadewing: 6, ghostsapper: 7, flametrooper: 4.5,
-  researcher: 6, thief: 6, infiltrator: 6, cannon: 10, dartgun: 9, royal: 20, consort: 13, matron: 13,
+  researcher: 6, thief: 6, infiltrator: 6, cannon: 10, dartgun: 9, royal: 14, consort: 12, matron: 13,
   engineer: 6, fieldstation: 14, sciturret: 9, aegis: 6, lensbearer: 5.5,
 };
 

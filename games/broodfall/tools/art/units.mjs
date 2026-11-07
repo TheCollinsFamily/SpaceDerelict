@@ -10,7 +10,7 @@
  * are functionally melee"; "the science caste would be distinctively less orthodox in tone".
  *
  * tier: the first wave tier the kind appears in (content/data.ts WAVE_TABLE).
- * r: its radius on the map in px at a 26 px cell (src/render/render.ts ENEMY_SIZE).
+ * r: its radius on the map in px at a 26 px cell (src/render/render.ts ENEMY_SIZE; the royal 14 since Nov 7 2026).
  * look: what is DRAWN. weapon: what it fights with. attack: what the attack looks like.
  * states: every picture the sprite needs beyond walking and attacking.
  * gait: how it moves when that is not plain from its body (fly, ride, scuttle). one: what
@@ -177,12 +177,12 @@ export const UNITS = [
     design: { refs: ['units/lensbearer/researcher-ref.png'],
       prompt: 'One small figure for a strategy game, drawn exactly in the style, proportions, colours and camera of the reference picture (seen from high above, looking down at an angle; cartoonish, chunky). It is the same kind of tall thin insect scientist as the reference, but it carries on its back a tall slim backpack frame with a round glass lens on a short mast over its head, wears a teal harness and safety goggles over a white lab coat, and holds a small handheld remote. No dome, no bubble, no glow. It faces the lower left, caught mid-stride, its whole body in the picture.' } },
   // ---- ROYAL CASTE (gold). Only with a royal event. ----
-  { kind: 'royal', steep: "Its crown or helmet has plain upright ribs and a plain gold ball on top: no bands that cross each other anywhere on it.", attackMotion: 'The queen stops, raises her small gold pistol and fires twice with small muzzle flashes, then lowers it and returns to exactly her starting pose.', name: 'The royal', caste: 'royal', tier: 'royal event', r: 20, hp: 1100, body: 'human-like',
+  { kind: 'royal', steep: "Its crown or helmet has plain upright ribs and a plain gold ball on top: no bands that cross each other anywhere on it.", attackMotion: 'The queen stops, raises her small gold pistol and fires twice with small muzzle flashes, then lowers it and returns to exactly her starting pose.', name: 'The royal', caste: 'royal', tier: 'royal event', r: 14, hp: 1100, body: 'human-like',
     job: 'The jackpot and the hardest fight. War bodies near her hit harder and take less.',
     look: 'the queen: three times the height of a soldier, an upright torso in a white and gold robe with a jewelled collar, a tall domed jewelled crown, and a huge swollen abdomen carried behind her like the train of a gown, a small ornate gold pistol in her folded hands and a radio pack strapped to her abdomen; regal and tired',
     weapon: 'Ornate gold pistol', attack: SHOT,
     basis: 'termite queen', states: ['caught in the trap cage', 'grafted: marching for you, a red graft on her neck', 'dying'] },
-  { kind: 'consort', steep: "Its helmet has plain upright ribs only, green between them: no bands that cross each other anywhere on it, no cross shape anywhere.", name: 'Consort', caste: 'royal', tier: 'royal event', r: 13, hp: 420, body: 'human-like',
+  { kind: 'consort', steep: "Its helmet has plain upright ribs only, green between them: no bands that cross each other anywhere on it, no cross shape anywhere.", name: 'Consort', caste: 'royal', tier: 'royal event', r: 12, hp: 420, body: 'human-like',
     job: 'Promotes the nearest war body one rank every five seconds.',
     look: 'an upright officer in a dark green dress uniform with gold epaulettes and a gold sash, half the height of the queen, goggles pushed up on his cap, holding a gold dress pistol',
     weapon: 'Dress pistol', attack: SHOT,

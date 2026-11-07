@@ -16,8 +16,11 @@ export const HIT_COOLDOWN = 1.4;
 export const HIT_SHARE = 0.03;
 /** The royal's command, every this many seconds while she fights. */
 export const ROYAL_SPECIAL_EVERY = 9;
-/** How much bigger the bosses are drawn than their radius says. */
-export const BOSS_SCALE: Record<string, number> = { royal: 1.2, consort: 1.2 };
+/**
+ * How much bigger the bosses are drawn than their radius says. 1 since Nov 7 2026: the 1.2 on top of a royal's 20 px
+ * made her three times an elite (src/render/render.ts ENEMY_SIZE); her size is set by her radius alone now.
+ */
+export const BOSS_SCALE: Record<string, number> = { royal: 1, consort: 1 };
 
 /** What the board remembers of one unit between frames, to see what happened to it. */
 export interface UnitFx {
