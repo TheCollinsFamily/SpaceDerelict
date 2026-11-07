@@ -467,6 +467,12 @@ export interface EnemySpec {
    * WALKING UNITS passes straight through it, and your units go for a bearer first.
    */
   dome?: { radius: number; pool: number; recharge: number };
+  /**
+   * GIANT (Nov 7 2026): too big for a Maw's gullet at any hp. A maw that targets it bites it instead of swallowing
+   * it, so the kill is a normal one and pays its meat (an eaten body pays none of its own). Royals, the phalanx and
+   * the science structures. The Royal Diet experiment (SimConfig.royalDiet) is the one exception, for royals.
+   */
+  giant?: boolean;
 }
 
 export interface Enemy {
@@ -986,7 +992,7 @@ export interface SimConfig {
   issue?: TowerFamily[];
   /** Experiment (Follow the Courier): the first science body to go for a limb is TAGGED; nothing of yours hurts it, so it gets away with the limb. */
   followCourier?: boolean;
-  /** Experiment (Royal Diet): a maw swallows a royal worn down to this share of her hp (an ordinary maw: 25 hp, never a royal). */
+  /** Experiment (Royal Diet): a maw swallows a royal worn down to this share of her hp (an ordinary maw: 25 hp, never a royal or any other GIANT: EnemySpec.giant). */
   royalDiet?: number;
   /**
    * The families the FIRST hand is drawn from (mission 1: the plain limbs a new player can read at a

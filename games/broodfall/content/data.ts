@@ -357,7 +357,7 @@ export const ENEMIES: readonly EnemySpec[] = [
   { kind: 'mortar', caste: 'war', hp: 95, speed: 26, damage: 10, rate: 0.45, meat: 5, threatOnKill: 4, risk: 8, standoff: true },
   { kind: 'sapper', caste: 'war', hp: 130, speed: 44, damage: 20, rate: 1.4, meat: 4, threatOnKill: 4, risk: 9, sapper: true },
   { kind: 'carapace', caste: 'war', hp: 160, speed: 28, damage: 18, rate: 1.0, meat: 6, threatOnKill: 5, risk: 8, hitShield: 6 },
-  { kind: 'phalanx', caste: 'war', hp: 750, speed: 20, damage: 26, rate: 0.9, meat: 8, threatOnKill: 6, risk: 10, armorCap: 12 },
+  { kind: 'phalanx', caste: 'war', hp: 750, speed: 20, damage: 26, rate: 0.9, meat: 8, threatOnKill: 6, risk: 10, armorCap: 12, giant: true },
   // Siege cannon: walks until something of yours is in reach, then DEPLOYS and
   // lobs shells over blocks until destroyed. Outranges most limbs.
   // Tuned (measured over 10 seeds): 20 dmg / 2.6s from 165px out-demolished
@@ -416,21 +416,24 @@ export const ENEMIES: readonly EnemySpec[] = [
   // battery and a war escort into every siege, a turret; stage 3: thieves, soldiers, a second turret). TURRETS dart
   // your walking units and stun limbs in reach. Kill the engineer on its way, or mount an attack on the station.
   { kind: 'engineer', caste: 'science', hp: 70, speed: 34, damage: 0, rate: 0, meat: 14, threatOnKill: 1, risk: 6, engineer: true },
-  { kind: 'fieldstation', caste: 'science', hp: 650, speed: 0, damage: 0, rate: 0, meat: 30, threatOnKill: 3, risk: 10, fixed: 'station' },
-  { kind: 'sciturret', caste: 'science', hp: 300, speed: 0, damage: 0, rate: 0, meat: 10, threatOnKill: 1, risk: 4, fixed: 'turret',
+  { kind: 'fieldstation', caste: 'science', hp: 650, speed: 0, damage: 0, rate: 0, meat: 30, threatOnKill: 3, risk: 10, fixed: 'station', giant: true },
+  { kind: 'sciturret', caste: 'science', hp: 300, speed: 0, damage: 0, rate: 0, meat: 10, threatOnKill: 1, risk: 4, fixed: 'turret', giant: true,
     turret: { range: 140, interval: 1.4, damage: 9, stun: 0.9 } },
   // LENS BEARER: the science caste's dome. It walks with a study party or an engineer and keeps them under a glass
   // field your limbs' fire breaks on; smaller than the deacon's, back sooner. Your units walk through it.
   { kind: 'lensbearer', caste: 'science', hp: 60, speed: 36, damage: 0, rate: 0, meat: 10, threatOnKill: 1, risk: 5,
     dome: { radius: 40, pool: 140, recharge: 5 } },
+  // GIANT (Collins, Nov 7 2026: maws were "accidently eating giant units like the royals"): a body a Maw can never
+  // swallow whole however worn down it is (royals, the phalanx, the science structures). The Maw bites it like a
+  // lasher instead, so the kill pays its meat through the creep. Only the Royal Diet experiment lets a royal go down.
   // ROYAL CASTE — only with a royal event. Royals are super-strong WARRIORS
   // (they march and chew like the war caste) whose real weight is empowering
   // the war caste around them: presence aura, and the consort promotes ranks.
-  { kind: 'royal', caste: 'royal', hp: 1100, speed: 17, damage: 34, rate: 0.9, meat: 3, threatOnKill: 0, risk: 40, royalAura: true },
-  { kind: 'consort', caste: 'royal', hp: 420, speed: 24, damage: 20, rate: 0.9, meat: 1, threatOnKill: 4, risk: 14, royalAura: true, promotes: { interval: 5 } },
+  { kind: 'royal', caste: 'royal', hp: 1100, speed: 17, damage: 34, rate: 0.9, meat: 3, threatOnKill: 0, risk: 40, royalAura: true, giant: true },
+  { kind: 'consort', caste: 'royal', hp: 420, speed: 24, damage: 20, rate: 0.9, meat: 1, threatOnKill: 4, risk: 14, royalAura: true, promotes: { interval: 5 }, giant: true },
   // Veil matron: royal power-up-others in its purest form — every war body within
   // 90px of her is CLOAKED while she lives. She is visible; kill her first.
-  { kind: 'matron', caste: 'royal', hp: 380, speed: 22, damage: 16, rate: 0.9, meat: 1, threatOnKill: 4, risk: 13, veilAura: 90 },
+  { kind: 'matron', caste: 'royal', hp: 380, speed: 22, damage: 16, rate: 0.9, meat: 1, threatOnKill: 4, risk: 13, veilAura: 90, giant: true },
 ];
 
 /** Wave composition per threat tier (spawned over the siege's spawn window). */

@@ -5879,8 +5879,7 @@ export class Sim {
     }
 
     if (t.family === 'lasher' || t.family === 'maw') {
-      if (t.family === 'maw' && (target.hp <= s.eatThreshold
-        || (!!this.cfg.royalDiet && enemySpec(target.kind).caste === 'royal' && target.hp <= target.maxHp * this.cfg.royalDiet))) {
+      if (t.family === 'maw' && Sim.mawSwallows(target, s.eatThreshold, this.cfg.royalDiet)) {
         this.eatEnemy(target, t.id);
         return;
       }
@@ -6373,6 +6372,17 @@ export class Sim {
     e.hp -= dealt;
     if (srcId !== undefined && !quiet) this.waveLimbDamage += dealt;
     if (e.hp <= 0) this.killEnemy(e.id, yieldMult, false, srcId);
+  }
+
+  /**
+   * Does a Maw with this gullet (eatThreshold) swallow this body whole? Anything worn down to the gullet's hp, EXCEPT a
+   * GIANT (royals, the phalanx, the science structures: Collins, Nov 7 2026), which is bitten like any other target
+   * so its kill pays its meat. The Royal Diet experiment alone lets a royal worn to its share of her hp go down.
+   */
+  static mawSwallows(e: Enemy, eatThreshold: number, royalDiet?: number): boolean {
+    const spec = enemySpec(e.kind);
+    if (royalDiet && spec.caste === 'royal' && e.hp <= e.maxHp * royalDiet) return true;
+    return !spec.giant && e.hp <= eatThreshold;
   }
 
   private eatEnemy(e: Enemy, byId?: number): void {
