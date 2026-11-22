@@ -95,6 +95,16 @@ interface ScanShape { atlas: string; still: string; count: number; cols: number;
  * performance.now() time at which it shows its first frame), so a cell drawn again carries on
  * where it was, and the dome and the meteor's cells (both anchored at 0) show the same frame.
  */
+/** "+1 from the Sewer Main", "+1 from the Sewer Main" -> "+2 from the Sewer Main"; joined with "and". */
+export function liftText(why: string[]): string {
+  const sum = new Map<string, number>();
+  for (const w of why) {
+    const m = w.match(/^\+(\d+) from (.+)$/);
+    if (m) sum.set(m[2], (sum.get(m[2]) ?? 0) + Number(m[1]));
+  }
+  return [...sum].map(([what, n]) => `+${n} from ${what}`).join(' and ');
+}
+
 function loopStyle(l: ScanLoop, fps: number, anchor: number): string {
   const dur = (l.count / fps) * 1000;
   const period = l.pingpong ? 2 * dur : dur;
@@ -671,7 +681,9 @@ export class UndergroundScreen {
       const counts = new Map<string, number>();
       for (const p of e.pips) counts.set(p.family, (counts.get(p.family) ?? 0) + 1);
       const shared = [...counts].map(([f, n]) => `+${n > 1 ? `${n}× ` : ''}${VERB[f as TowerFamily] ?? f}`).join(', ');
-      rows.push(`<div><b>${name} LV${e.level}</b> → ${fams.map(famName).join(', ')}`
+      // Above the level bought (the card's LV): say where the rest comes from, or the two numbers read as a mistake.
+      const lift = e.level > e.base ? ` <span class="lift">(LV${e.base} bought, ${liftText(e.why)})</span>` : '';
+      rows.push(`<div><b>${name} LV${e.level}</b>${lift} → ${fams.map(famName).join(', ')}`
         + `${e.level > 1 ? ` · +${Math.round(ORGAN_LEVEL_POTENCY * (e.level - 1) * 100)}% power` : ''}`
         + `${shared ? ` · ${shared}` : ''}${e.draw > 1.01 ? ` · drawn ×${e.draw.toFixed(1)}` : ''}${e.draw === 0 ? ' · ATROPHIED: never drawn' : ''}</div>`);
     }

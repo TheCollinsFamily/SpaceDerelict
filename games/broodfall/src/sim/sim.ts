@@ -418,7 +418,7 @@ export class Sim {
   private seederTurns = new Map<number, number>();
   /** Seedlings in the air: shot up from the landing site; the limb is drawn when it lands. */
   seedFlights: Array<{ id: number; towerId: number; from: Vec; to: Vec; ttl: number }> = [];
-  private organCache: Map<OrganId | 'core', { level: number; pips: ModPip[]; draw: number; links: Array<OrganId | 'core'> }> | null = null;
+  private organCache: Map<OrganId | 'core', { level: number; base: number; why: string[]; pips: ModPip[]; draw: number; links: Array<OrganId | 'core'> }> | null = null;
   /** The grown Rumen's terms (null: none grown), rebuilt with the organ cache. */
   private rumenCache: RumenTerms | null | undefined = undefined;
   /** The body below: the underground cross-section organs grow into (between waves). */
@@ -1944,7 +1944,7 @@ export class Sim {
     return r ? Math.min(r.fermentCap, Math.floor(bank / RUMEN_FERMENT_PER)) : 0;
   }
 
-  organEffects(): Map<OrganId | 'core', { level: number; pips: ModPip[]; draw: number; links: Array<OrganId | 'core'> }> {
+  organEffects(): Map<OrganId | 'core', { level: number; base: number; why: string[]; pips: ModPip[]; draw: number; links: Array<OrganId | 'core'> }> {
     if (this.organCache) return this.organCache;
     this.rumenCache = undefined;
     const u = this.under;
@@ -1966,13 +1966,20 @@ export class Sim {
       }
       return roots.filter((r) => seen.has(r.id)).flatMap((r) => r.cells);
     };
-    const out = new Map<OrganId | 'core', { level: number; pips: ModPip[]; draw: number; links: Array<OrganId | 'core'> }>();
+    const out = new Map<OrganId | 'core', { level: number; base: number; why: string[]; pips: ModPip[]; draw: number; links: Array<OrganId | 'core'> }>();
     for (const n of nodes) {
-      let level = n.baseLevel + inZone(n.cells, 'level');
+      // What lifts it above the level bought, named for the organ stage (its card says LV 1 where this says LV 2).
+      const hearts = inZone(n.cells, 'level');
+      const why: string[] = hearts ? [`+${hearts} from ${hearts === 1 ? 'a heart' : `${hearts} hearts`}`] : [];
+      let level = n.baseLevel + hearts;
       for (const c of n.cells) {
         for (const nb of neighbours4(u, c)) {
           const f = u.cells[nb];
-          if (f.kind === 'feature' && f.feature) level += FEATURES[f.feature].favors === n.theme ? FEATURE_FAVORED_LEVEL : FEATURE_LEVEL;
+          if (f.kind === 'feature' && f.feature) {
+            const add = FEATURES[f.feature].favors === n.theme ? FEATURE_FAVORED_LEVEL : FEATURE_LEVEL;
+            level += add;
+            why.push(`+${add} from the ${FEATURES[f.feature].name}`);
+          }
         }
       }
       const reach = [...n.cells, ...reachRoots(n.cells)];
@@ -1985,7 +1992,7 @@ export class Sim {
         for (let k = 0; k < times; k++) pips.push({ family: m.signature });
       }
       const draw = inZone(n.cells, 'suppress') > 0 ? 0 : BRAIN_DRAW_MULT ** inZone(n.cells, 'draw');
-      out.set(n.theme, { level, pips, draw, links });
+      out.set(n.theme, { level, base: n.baseLevel, why, pips, draw, links });
     }
     this.organCache = out;
     return out;
