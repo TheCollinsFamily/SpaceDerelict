@@ -176,7 +176,7 @@ async function generate() {
       } });
     }
     if (j.kind === 'voice') return soundTake({ id: j.id, prompt: j.prompt, model: j.model || VOICE_MODEL, seconds: 4, resolution: '720p', aspect: '16:9' });
-    return soundTake({ id: j.id, prompt: j.prompt, model: j.model || SFX_MODEL, seconds: j.seconds, resolution: '480p', aspect: '16:9' });
+    return soundTake({ id: j.id, prompt: j.prompt, model: j.model || SFX_MODEL, seconds: j.seconds, aspect: '16:9' }); // no resolution: the default (lowest) tier
   });
   const b1 = await balance();
   console.log(`generated: ${spent.videos} clips with sound, ${spent.songs} pieces of music; ${b0 - b1} tokens`);

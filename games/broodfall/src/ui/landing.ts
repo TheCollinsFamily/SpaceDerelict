@@ -31,7 +31,11 @@ export function loadLandingArt(): Promise<LandingArt | null> {
       if (!j?.films) return null;
       const films: Record<string, LandingFilm> = {};
       for (const [id, f] of Object.entries(j.films)) {
-        if (f?.video) films[id] = { ...f, set: id, video: whole(f.video)!, end: whole(f.end)!, start: whole(f.start) };
+        if (!f?.video) continue;
+        const boards = f.boards
+          ? Object.fromEntries(Object.entries(f.boards).map(([k, b]) => [k, { ...b, video: whole(b.video)!, end: whole(b.end)! }]))
+          : undefined;
+        films[id] = { ...f, set: id, video: whole(f.video)!, end: whole(f.end)!, start: whole(f.start), boards };
       }
       return { ...j, films };
     })

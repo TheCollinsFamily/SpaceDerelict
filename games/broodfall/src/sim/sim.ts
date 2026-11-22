@@ -24,7 +24,7 @@ import {
 } from '../../content/data';
 import type {
   Broodling, Broodmother, BroodSnap, SporeMule, Shelter, Infestor, Harrier, Caltrop, CardInstance, Caste, Cloud, Command, Corpse, CreepSource, Directive, Enemy, UnitOrder,
-  EnemyKind, EnemySpec, HitFx, ModPip, Organ, OrganId, Outcome, Phase, Projectile,
+  EnemyKind, EnemySpec, HitBy, HitFx, ModPip, Organ, OrganId, Outcome, Phase, Projectile,
   NodeStrain, RootDir, RunStats, Shell, SimConfig, SimEvent, Tower, TowerFamily, TowerSpec, UpgradeChoice, UpgradeOption, Vec,
 } from './types';
 import { UPGRADES, UPGRADE_COST } from '../../content/upgrades';
@@ -39,6 +39,10 @@ import { DECREE_BY_ID, ROYAL, type DecreeId } from '../../content/royal';
 export const DT = 0.1;
 
 const STRUCTURE_CONTACT = 24;    // px: latch-and-chew distance to a structure
+/** A limb drained every tick (a researcher extracting it) is told as hit at most this often, in seconds. */
+const LIMB_DRAIN_TELL = 0.3;
+/** Who hurt a limb or the core, for its 'limb-hit' / 'core-hit' event. */
+type HitSource = { from: Vec; by: HitBy; enemy?: EnemyKind };
 const CORE_CONTACT = 46;         // px: latch distance to the core
 const ENEMY_RADIUS = 8;
 const SEPARATION_DIST = 13;      // px: enemies shoulder each other apart
@@ -3550,17 +3554,46 @@ export class Sim {
   }
 
   /** The bomber's whole job: area damage to STRUCTURES, then it is gone. */
-  /** All harm to a limb goes through here: its shield soaks first, then hp. */
-  hurtTower(t: Tower, amount: number): void {
+  /**
+   * All harm to a limb goes through here: its shield soaks first, then hp. `src`: who did it (the hive),
+   * told as a 'limb-hit' event for the board's hit reaction and its sound (Nov 22 2026). A drain that harms
+   * every tick (a researcher extracting) is summed and told at most every LIMB_DRAIN_TELL seconds.
+   */
+  hurtTower(t: Tower, amount: number, src?: HitSource): void {
     t.lastHitAt = this.time;
     amount *= this.harmMultOf(t);
     const sh = t.shield ?? 0;
+    const dealt = amount;
     if (sh > 0) {
       const soak = Math.min(sh, amount);
       t.shield = sh - soak;
       amount -= soak;
     }
     t.hp -= amount;
+    if (src && dealt > 0) this.tellLimbHit(t, dealt, amount <= 0, src);
+  }
+
+  /** What a limb has taken since it was last told, by limb id (a drain's ticks summed). */
+  private limbHitAcc = new Map<number, { amount: number; told: number }>();
+  private tellLimbHit(t: Tower, dealt: number, shielded: boolean, src: HitSource): void {
+    let acc = this.limbHitAcc.get(t.id);
+    if (!acc) { acc = { amount: 0, told: -1e9 }; this.limbHitAcc.set(t.id, acc); }
+    acc.amount += dealt;
+    if (src.by === 'extract' && this.time - acc.told < LIMB_DRAIN_TELL) return;
+    this.events.push({ kind: 'limb-hit', towerId: t.id, family: t.family, amount: acc.amount, at: { ...t.pos }, from: { ...src.from }, by: src.by, enemy: src.enemy, shielded });
+    acc.amount = 0;
+    acc.told = this.time;
+    if (this.limbHitAcc.size > this.towers.length + 64) {
+      const alive = new Set(this.towers.map((x) => x.id));
+      for (const id of this.limbHitAcc.keys()) if (!alive.has(id)) this.limbHitAcc.delete(id);
+    }
+  }
+
+  /** All harm the hive does to the core goes through here, told as a 'core-hit' event (Nov 22 2026). */
+  private hurtCore(amount: number, src: HitSource): void {
+    if (amount <= 0) return;
+    this.coreHp -= amount;
+    this.events.push({ kind: 'core-hit', amount, from: { ...src.from }, by: src.by, enemy: src.enemy, frac: Math.max(0, this.coreHp / this.coreMaxHp) });
   }
 
   /**
@@ -3683,19 +3716,19 @@ export class Sim {
       for (const t of [...this.towers]) {
         if (dist(s.to, t.pos) > reach) continue;
         if (s.stun && (t.shield ?? 0) <= 0) t.stunnedUntil = this.time + s.stun; // shields stop darts
-        this.hurtStructure(t, false, s.damage);
+        this.hurtStructure(t, false, s.damage, { from: s.from, by: 'shell' });
       }
       for (const n of this.creepSources.filter((x) => x.kind === 'node')) {
         if (dist(s.to, this.cellCenter(n.cell)) <= reach) this.hurtNode(n, s.damage);
       }
-      if (dist(s.to, this.core) <= reach + 30) this.coreHp -= s.damage;
+      if (dist(s.to, this.core) <= reach + 30) this.hurtCore(s.damage, { from: s.from, by: 'shell' });
     }
     if (landed.length) this.shells = this.shells.filter((s) => !landed.includes(s.id));
   }
 
   /** Hurt a limb and remove it if that finishes it. (Organs live below ground, out of reach.) */
-  private hurtStructure(s: Tower, _isOrgan: boolean, amount: number): void {
-    this.hurtTower(s, amount);
+  private hurtStructure(s: Tower, _isOrgan: boolean, amount: number, src?: HitSource): void {
+    this.hurtTower(s, amount, src);
     if (s.hp <= 0) this.removeTower(s.id, true);
   }
 
@@ -3705,11 +3738,11 @@ export class Sim {
     }
     for (const t of [...this.towers]) {
       if (dist(e.pos, t.pos) <= B.bomberBlastRadius) {
-        this.hurtTower(t, B.bomberBlastDamage);
+        this.hurtTower(t, B.bomberBlastDamage, { from: e.pos, by: 'blast', enemy: e.kind });
         if (t.hp <= 0) this.removeTower(t.id, true);
       }
     }
-    if (dist(e.pos, this.core) <= B.bomberBlastRadius + 30) this.coreHp -= B.bomberBlastDamage;
+    if (dist(e.pos, this.core) <= B.bomberBlastRadius + 30) this.hurtCore(B.bomberBlastDamage, { from: e.pos, by: 'blast', enemy: e.kind });
     const i = this.enemies.indexOf(e);
     if (i >= 0) this.enemies.splice(i, 1);
   }
@@ -3849,7 +3882,7 @@ export class Sim {
       return;
     }
     if (dist(e.pos, prey.pos) <= B.scienceReach) {
-      this.hurtTower(prey, B.scienceExtractDps * DT); // a shield must be stripped first
+      this.hurtTower(prey, B.scienceExtractDps * DT, { from: e.pos, by: 'extract', enemy: e.kind }); // a shield must be stripped first
       if (prey.hp <= 0) {
         e.carrying = {
           family: prey.family, pips: [...prey.pips], cell: prey.cell, facing: prey.facing,
@@ -4040,7 +4073,7 @@ export class Sim {
           e.attackCooldown -= DT;
           if (e.attackCooldown <= 0) {
             e.attackCooldown = 1 / spec.rate;
-            this.hurtStructure(s, e.targetIsOrgan, spec.damage * this.empowerOf(e));
+            this.hurtStructure(s, e.targetIsOrgan, spec.damage * this.empowerOf(e), { from: e.pos, by: 'melee', enemy: e.kind });
             // A spine wall bites back: its payload (thorns + every eaten verb) hits the chewer.
             if (!e.targetIsOrgan && (s as Tower).family === 'spine' && this.towers.includes(s as Tower)) {
               const wall = s as Tower;
@@ -4057,7 +4090,7 @@ export class Sim {
         e.attackCooldown -= DT;
         if (e.attackCooldown <= 0) {
           e.attackCooldown = 1 / spec.rate;
-          this.coreHp -= spec.damage * this.empowerOf(e);
+          this.hurtCore(spec.damage * this.empowerOf(e), { from: e.pos, by: 'melee', enemy: e.kind });
         }
         continue;
       }
@@ -4195,7 +4228,7 @@ export class Sim {
             const s = prey.kind === 't' ? this.towers.find((t) => t.id === prey.id) : undefined;
             if (s) {
               this.arcs.push({ from: { ...e.pos }, to: { ...s.pos }, ttl: 0.12 });
-              this.hurtStructure(s, prey.kind === 'o', spec.damage * this.empowerOf(e));
+              this.hurtStructure(s, prey.kind === 'o', spec.damage * this.empowerOf(e), { from: e.pos, by: 'ranged', enemy: e.kind });
             }
           }
           continue;

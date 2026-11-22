@@ -109,21 +109,33 @@
           <div id="draft-options"></div>
         </div>
       </div>
+      <!-- The organ stage (src/ui/underground.ts): the whole window between waves (Collins, Nov 22 2026). A head row
+           (title, the use-it-or-lose-it note, the meat it is bought with, the way back up), the organ tray on the left,
+           the board as big as the rest allows on the right; the battle HUD is hidden while it is open (src/style.css). -->
       <div id="under" class="hidden">
         <div id="under-card">
-          <div id="under-left">
-            <div class="screen-kicker">BETWEEN WAVES — ORGANS, THEN LIMBS, THEN THE WAVE</div>
-            <div id="under-title">THE ORGAN STAGE</div>
+          <div id="under-head">
+            <div id="under-heading">
+              <div class="screen-kicker">BETWEEN WAVES — ORGANS, THEN LIMBS, THEN THE WAVE</div>
+              <div id="under-title">THE ORGAN STAGE</div>
+            </div>
             <div id="under-note">Unspent war and science are LOST when the next wave starts — spend them here or on limbs.</div>
+            <div id="under-meat"></div>
+            <button id="under-done" class="screen-btn">TO THE SURFACE — PLACE LIMBS ▲</button>
+          </div>
+          <div id="under-left">
             <div id="under-palette"></div>
-            <div class="pal-title">WHAT YOUR ORGANS GIVE THE SURFACE</div>
-            <div id="under-summary"></div>
           </div>
           <div id="under-right">
-            <div id="under-surface"><div id="under-dome"></div><span>STREET LEVEL</span></div>
-            <div id="under-grid"></div>
+            <div id="under-board">
+              <div id="under-surface"><div id="under-dome"></div><span>STREET LEVEL</span></div>
+              <div id="under-grid"></div>
+            </div>
             <div id="under-status"></div>
-            <button id="under-done" class="screen-btn">TO THE SURFACE — PLACE LIMBS ▲</button>
+            <div id="under-give">
+              <div class="pal-title">WHAT YOUR ORGANS GIVE THE SURFACE</div>
+              <div id="under-summary"></div>
+            </div>
           </div>
         </div>
       </div>

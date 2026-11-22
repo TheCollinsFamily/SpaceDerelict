@@ -24,6 +24,16 @@
       "core": {
         "x": 474,
         "y": 717
+      },
+      "boards": {
+        "e1-b6": {
+          "video": "landing/suburb-e1-b6.mp4",
+          "end": "landing/suburb-e1-b6-end.webp",
+          "core": {
+            "x": 886,
+            "y": 717
+          }
+        }
       }
     },
     "megacity": {

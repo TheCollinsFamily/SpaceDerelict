@@ -23,7 +23,7 @@ import { FIRST_MISSION, isFirstMission, launchKind, revealDue, type Launch } fro
 import { loadIntroArt, playIntro } from './ui/intro';
 import { playReveal, TOWN_LINES } from './ui/bmovie';
 import { loadLandingArt, playLanding, type LandingBoard } from './ui/landing';
-import { landingDecision, landingSeen, markLandingSeen, type LandingArt, type LandingFilm } from './meta/landing';
+import { canLandOnBoard, endingFor, landingBoardSeed, landingDecision, landingSeen, markLandingSeen, type LandingArt, type LandingFilm } from './meta/landing';
 import { ConsoleMenu } from './ui/menu';
 import { addRunButton, installEdgeScroll, markSpeed, openSettings, settingsOpen } from './ui/settings';
 import { addCodexRunButton, codexOpen, openCodex } from './ui/codex';
@@ -175,6 +175,15 @@ if (RESUME) {
 } else if (AUTOSTART && !AUTO) clearRunSave();
 /** Mission 1 (src/meta/onboarding.ts): a plain tower-defence game; nothing on its screen speaks of the ship. */
 const FIRST = !!campaignPlan?.first;
+/**
+ * The landing film ends on a picture of a board; a run it lands is built on that board (src/meta/landing.ts
+ * LANDING_BOARDS, Nov 22 2026), so the film flows into the game with no jump. Decided before the board is made.
+ */
+if (landingAsked().mayPlay && !campaignPlan?.defence && loadSettings().landingFilms !== 'never' && canLandOnBoard(CFG, !!RESUME)) {
+  CFG.boardSeed = landingBoardSeed(CFG.seed);
+}
+// ?board=N: the board at minute zero drawn from N (tools/art/landing.mjs pictures the landing boards this way).
+if (params.get('board') !== null && Number.isFinite(Number(params.get('board')))) CFG.boardSeed = Number(params.get('board'));
 let sim = new Sim(CFG);
 /** Every order the player gives, at its tick: the save of this run (src/meta/runSave.ts). */
 const runOrders: RunSave['cmds'] = [];
@@ -1247,22 +1256,32 @@ function musicTick(): void {
 
 /** Which landing film plays before this run, if any (and why not, in window.__bfLandingWhy for the beats). */
 async function landingFilmFor(afterOpening: boolean): Promise<{ film: LandingFilm; art: LandingArt } | null> {
-  const q = params.get('landing');
-  let forced = q === '1';
-  try { forced ||= localStorage.getItem('broodfall-landing') === 'on'; } catch { /* private mode */ }
-  const automated = typeof navigator !== 'undefined' && !!navigator.webdriver;
+  const { off, forced, automated } = landingAsked();
   const note = (why: string) => { (window as unknown as { __bfLandingWhy?: string }).__bfLandingWhy = why; };
   // The cheap answers first: a beat (automation) is not held up by a fetch.
-  if (q === '0') { note('asked-off'); return null; }
+  if (off) { note('asked-off'); return null; }
   if (afterOpening) { note('after-opening'); return null; }
   if (automated && !forced) { note('automation'); return null; }
   const [manifest, art] = await Promise.all([loadManifest(), loadLandingArt()]);
   const set = manifest ? pickBiome(manifest, { biome: params.get('biome'), territory, seed: SEED }) : null;
   const s = loadSettings();
-  const why = landingDecision({ mode: s.landingFilms, set, seen: landingSeen(), hasFilm: !!(set && art?.films[set]),
-    afterOpening, automated, forced, off: false });
+  const film = set ? art?.films[set] : undefined;
+  // Only the film that ends on THIS board plays (one that ends on another board jumps when the game takes over).
+  const ending = film ? endingFor(film, sim.entrances, sim.cfg.boardSeed) : null;
+  const why = landingDecision({ mode: s.landingFilms, set, seen: landingSeen(), hasFilm: !!film,
+    afterOpening, automated, forced, off: false, hasBoard: !!ending, defence: !!campaignPlan?.defence });
   note(why);
-  return why === 'play' && art && set ? { film: art.films[set], art } : null;
+  return why === 'play' && art && film && ending ? { film: { ...film, ...ending }, art } : null;
+}
+
+/** What the address and the page say about landing films: ?landing=0 / ?landing=1 (or a beat's localStorage), automation. */
+function landingAsked(): { off: boolean; forced: boolean; automated: boolean; mayPlay: boolean } {
+  const q = params.get('landing');
+  let forced = q === '1';
+  try { forced ||= localStorage.getItem('broodfall-landing') === 'on'; } catch { /* private mode */ }
+  const automated = typeof navigator !== 'undefined' && !!navigator.webdriver;
+  const off = q === '0';
+  return { off, forced, automated, mayPlay: !off && (!automated || forced) };
 }
 
 /** The board as the landing film hands over to it: the canvas on the screen, the live meteor on it; null until drawn. */

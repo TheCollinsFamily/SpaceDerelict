@@ -804,8 +804,15 @@ export type Phase = 'growth' | 'siege' | 'draft';
 
 export type Outcome = 'playing' | 'won' | 'lost';
 
+/** How the hive hurt a limb or the core: a bite or claw, a shell landing, a bomber going off, a researcher draining it, a shot from range. */
+export type HitBy = 'melee' | 'shell' | 'blast' | 'extract' | 'ranged';
+
 export type SimEvent =
   | { kind: 'built'; family: TowerFamily; pips: number }
+  /** The hive hurt the core (Nov 22 2026: the board's hit reaction and its sound hang on this). `from`: where the blow came from; `frac`: the integrity left, 0..1. */
+  | { kind: 'core-hit'; amount: number; from: Vec; by: HitBy; enemy?: EnemyKind; frac: number }
+  /** The hive hurt a limb (a drain is summed and told about three times a second). `shielded`: its shield took all of it. */
+  | { kind: 'limb-hit'; towerId: number; family: TowerFamily; amount: number; at: Vec; from: Vec; by: HitBy; enemy?: EnemyKind; shielded: boolean }
   | { kind: 'organ-built'; organ: OrganId }
   | { kind: 'organ-upgraded'; organ: OrganId; level: number }
   | { kind: 'meat-cleared'; war: number; science: number }

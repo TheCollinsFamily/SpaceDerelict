@@ -373,14 +373,16 @@ function bakeFilm(id) {
 
 function bake(sets) {
   for (const s of sets) bakeFilm(s.id);
-  // landing.json lists every film on disk (a set without one starts with no film).
+  // landing.json lists every film on disk (a set without one starts with no film); each film's endings (`endings`) are kept.
+  const jsonFile = path.join(OUT, 'landing.json');
+  const kept = fs.existsSync(jsonFile) ? JSON.parse(fs.readFileSync(jsonFile, 'utf8')).films ?? {} : {};
   const films = {};
   for (const s of SETS) {
     const rev = path.join(REV, `${s.id}.json`);
     if (!fs.existsSync(path.join(OUT, `${s.id}.mp4`)) || !fs.existsSync(rev)) continue;
     const r = JSON.parse(fs.readFileSync(rev, 'utf8'));
     films[s.id] = { video: `landing/${s.id}.mp4`, start: `landing/${s.id}-start.webp`, end: `landing/${s.id}-end.webp`,
-      seconds: r.seconds, fallAt: r.fallAt, strikeAt: r.strikeAt, core: r.core };
+      seconds: r.seconds, fallAt: r.fallAt, strikeAt: r.strikeAt, core: r.core, ...(kept[s.id]?.boards ? { boards: kept[s.id].boards } : {}) };
   }
   fs.writeFileSync(path.join(OUT, 'landing.json'), JSON.stringify({ canvas: CANVAS, band: { ...BAND, left: BAND.x, top: BAND.y, width: BAND.w, height: BAND.h }, films }, null, 2) + '\n');
   console.log(`[landing] landing.json: ${Object.keys(films).length} films`);
@@ -411,8 +413,155 @@ function sheet() {
   console.log(`[landing] ${out}: ${rows.length} films`);
 }
 
+// ------------------------------------------------------------------ endings: one strike per board a run lands on (Nov 22 2026)
+//
+// Collins, playtesting (Nov 22 2026): "the animation flows into one way the board could be set but then when gameplay
+// starts the board snaps to a different configuration breaking the immersion of the load in". Every film ended on ONE
+// picture (seed 42, Oct 1, before the four crash sites, the lots, the landmarks and the hills) while every run drew its
+// own board. Now a run that lands is BUILT on one of the landing boards (src/meta/landing.ts LANDING_BOARDS: a board seed
+// per crash site, for 1, 2 and 3 entrances), and each set's film gets an ending on each of them: the release and the fall
+// are the film's own (cut from public/art/landing/<set>.mp4 up to its strike: their raws were lost with art-src), the
+// strike is made again from that board exactly as v1 was (Collins: "chef's kiss"): the board → a HIT still (an edit: the
+// fireball where the meteor stands) → a start-and-end clip hit → board on wan3.0 → the board faded in over its last 0.6 s.
+//
+//   node tools/art/landing.mjs endings [sets]          boards (free) → hits → clips → bake, whatever is missing
+//   node tools/art/landing.mjs endings-boards [sets]   only the boards (free)
+//   node tools/art/landing.mjs endings-hits [sets]     boards + the hit stills (LOOK at notes/art-review/landing/endings-hits-*.jpg)
+//   ENDINGS_ONLY=e1-b6 ...                              only these boards (keys as in landing.json)
+//
+// Raw: art-src/landing/endings/<set>-<key>-board.png|.json, -hit.png, -clip.mp4, head-<set>.mp4.
+// Baked: public/art/landing/<set>-<key>.mp4 + -end.webp; landing.json films[set].boards[key] = { video, end, core }.
+
+/** Same as src/meta/landing.ts LANDING_BOARDS / LANDING_ENTRANCES / boardKey (a test holds them equal). */
+export const LANDING_BOARDS = [6, 1, 2, 4];
+export const LANDING_ENTRANCES = [1, 2, 3];
+const boardKey = (e, bs) => `e${e}-b${bs}`;
+const EDIR = path.join(DIR, 'endings');
+const eraw = (set, key, what) => path.join(EDIR, `${set}-${key}-${what}`);
+const endingKeys = () => {
+  const only = (process.env.ENDINGS_ONLY || '').split(',').filter(Boolean);
+  const keys = LANDING_ENTRANCES.flatMap((e) => LANDING_BOARDS.map((bs) => ({ e, bs, key: boardKey(e, bs) })));
+  return only.length ? keys.filter((k) => only.includes(k.key)) : keys;
+};
+
+/** Every landing board of every set, pictured from the game at minute zero (free). */
+async function endingBoards(ids) {
+  const want = ids.flatMap((id) => endingKeys().map((k) => ({ id, ...k }))).filter((j) => !fs.existsSync(eraw(j.id, j.key, 'board.png')));
+  if (!want.length) { console.log('[endings] boards: all on disk'); return; }
+  fs.mkdirSync(EDIR, { recursive: true });
+  const { chromium } = await import('@playwright/test');
+  const port = Number(process.env.LANDING_PORT || 5317);
+  const game = await startGame(port);
+  const browser = await chromium.launch({ args: ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist', '--enable-webgl'] });
+  try {
+    // Six pages at a time: each is a whole WebGL game booting on THIS machine's GPU and CPU (not a provider's limit).
+    const res = await pool(want, 6, async (j) => {
+      const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
+      try {
+        await page.addInitScript(() => { try { localStorage.setItem('broodfall-intro-seen', '1'); } catch { /* ok */ } });
+        // The run's seed is the board's too here; ?board= makes it explicit (the game: CFG.boardSeed).
+        await page.goto(`http://localhost:${port}/?seed=${j.bs}&board=${j.bs}&entrances=${j.e}&speed=0&autostart=1&biome=${j.id}&landing=0`, { waitUntil: 'load' });
+        await page.waitForFunction(() => window.broodfall !== undefined && window.__bfBooted, null, { timeout: 180000 });
+        await page.waitForTimeout(3500);
+        const got = await page.evaluate(() => ({ biome: window.broodfall.biome(), e: window.broodfall.sim.entrances, bs: window.broodfall.sim.cfg.boardSeed }));
+        if (got.biome !== j.id || got.e !== j.e || got.bs !== j.bs) throw new Error(`${j.id} ${j.key}: the game drew ${JSON.stringify(got)}`);
+        const { url, core } = await page.evaluate(() => {
+          const b = window.broodfall;
+          b.renderer.app.render();
+          const p = b.worldToScreen(b.sim.core.x, b.sim.core.y);
+          return { url: b.renderer.app.canvas.toDataURL('image/png'), core: { x: Math.round(p.x), y: Math.round(p.y) } };
+        });
+        fs.writeFileSync(eraw(j.id, j.key, 'board.png'), Buffer.from(url.split(',')[1], 'base64'));
+        fs.writeFileSync(eraw(j.id, j.key, 'board.json'), JSON.stringify({ seed: j.bs, boardSeed: j.bs, entrances: j.e, canvas: CANVAS, core }) + '\n');
+        ffmpeg(['-y', '-i', eraw(j.id, j.key, 'board.png'), '-vf', `crop=${BAND.w}:${BAND.h}:${BAND.x}:${BAND.y}`, eraw(j.id, j.key, 'band.png')], `${j.id} ${j.key} band`);
+        console.log(`[endings] board ${j.id} ${j.key}: pictured`);
+      } finally { await page.close(); }
+    });
+    res.forEach((r, i) => { if (!r.ok) console.warn(`[endings] board ${want[i].id} ${want[i].key} failed: ${String(r.error?.message ?? r.error).slice(0, 200)}`); });
+  } finally {
+    await browser.close();
+    game.stop();
+  }
+}
+
+/** The hit stills: every one asked for at once (independent generations go out together). */
+async function endingHits(ids) {
+  const jobs = ids.flatMap((id) => endingKeys().map((k) => ({ id, ...k }))).filter((j) => fs.existsSync(eraw(j.id, j.key, 'band.png')));
+  const res = await Promise.allSettled(jobs.map((j) => makeStill({ slug: `landing hit-${j.id}-${j.key}`, out: eraw(j.id, j.key, 'hit.png'), prompt: HIT,
+    key: null, width: W, height: H, refFiles: [eraw(j.id, j.key, 'band.png')] })));
+  res.forEach((r, i) => { if (r.status === 'rejected') console.warn(`[endings] hit ${jobs[i].id} ${jobs[i].key} failed: ${String(r.reason?.message ?? r.reason).slice(0, 200)}`); });
+  // To LOOK at: one row a set, board above its hit.
+  fs.mkdirSync(REV, { recursive: true });
+  const tmp = path.join(DIR, 'tmp');
+  fs.mkdirSync(tmp, { recursive: true });
+  for (const id of ids) {
+    const have = endingKeys().filter((k) => fs.existsSync(eraw(id, k.key, 'hit.png')));
+    if (!have.length) continue;
+    const tiles = have.flatMap((k) => [eraw(id, k.key, 'band.png'), eraw(id, k.key, 'hit.png')]);
+    const n = have.length;
+    const out = path.join(REV, `endings-hits-${id}.jpg`);
+    const scaled = tiles.map((t, i) => `[${i}:v]scale=320:180[t${i}]`).join(';');
+    const top = have.map((_, i) => `[t${i * 2}]`).join('') + `hstack=${n}[a]`;
+    const bot = have.map((_, i) => `[t${i * 2 + 1}]`).join('') + `hstack=${n}[b]`;
+    if (n === 1) ffmpeg(['-y', ...tiles.flatMap((t) => ['-i', t]), '-filter_complex', `${scaled};[t0][t1]vstack[v]`, '-map', '[v]', '-q:v', '4', out], `${id} hits sheet`);
+    else ffmpeg(['-y', ...tiles.flatMap((t) => ['-i', t]), '-filter_complex', `${scaled};${top};${bot};[a][b]vstack[v]`, '-map', '[v]', '-q:v', '4', out], `${id} hits sheet`);
+  }
+}
+
+/** The strike clips hit → board: every one asked for at once. */
+async function endingClips(ids) {
+  const jobs = ids.flatMap((id) => endingKeys().map((k) => ({ id, ...k }))).filter((j) => fs.existsSync(eraw(j.id, j.key, 'hit.png')));
+  // No resolution named: makeClip's default is 480p, the lowest (docs/VIDEO-CONVENTIONS.md 2).
+  const res = await Promise.allSettled(jobs.map((j) => makeClip({ slug: `landing-land-${j.id}-${j.key}`, stillFile: eraw(j.id, j.key, 'hit.png'),
+    endFile: eraw(j.id, j.key, 'band.png'), prompt: LAND_CLIP, out: eraw(j.id, j.key, 'clip.mp4'), models: [MODEL], seconds: 5, raw: true, aspect: '16:9' })));
+  res.forEach((r, i) => { if (r.status === 'rejected') console.warn(`[endings] clip ${jobs[i].id} ${jobs[i].key} failed: ${String(r.reason?.message ?? r.reason).slice(0, 300)}`); });
+}
+
+/** The release and the fall of a set's film: its baked film up to the strike (the hard cut under the game's flash). */
+function endingHead(id, film) {
+  const out = path.join(EDIR, `head-${id}.mp4`);
+  if (fs.existsSync(out)) return out;
+  const frames = Math.round(film.strikeAt * FPS);
+  ffmpeg(['-y', '-i', path.join(OUT, `${id}.mp4`), '-vf', `trim=end_frame=${frames},setpts=PTS-STARTPTS`, ...ENC, out], `${id} head`);
+  return out;
+}
+
+/** Each ending cut onto its set's film: head + strike (the board faded in over its last 0.6 s, as bakeFilm does). */
+function endingBake(ids) {
+  const jsonFile = path.join(OUT, 'landing.json');
+  const json = JSON.parse(fs.readFileSync(jsonFile, 'utf8'));
+  const S = `scale=1280:720:flags=lanczos,fps=${FPS},format=yuv420p`;
+  const l = CUT.land, settle = 0.6;
+  for (const id of ids) {
+    const film = json.films[id];
+    if (!film) { console.warn(`[endings] ${id}: no film in landing.json`); continue; }
+    const head = endingHead(id, film);
+    for (const k of endingKeys()) {
+      const clip = eraw(id, k.key, 'clip.mp4');
+      if (!fs.existsSync(clip)) continue;
+      const out = path.join(OUT, `${id}-${k.key}.mp4`);
+      const endWebp = path.join(OUT, `${id}-${k.key}-end.webp`);
+      const lLen = (duration(clip) - 1 / 30) / l.speed;
+      ffmpeg(['-y', '-i', head, '-i', clip, '-loop', '1', '-i', eraw(id, k.key, 'band.png'), '-filter_complex',
+        `[0:v]${S}[h];` +
+        `[1:v]trim=start_frame=1,setpts=(PTS-STARTPTS)/${l.speed},${S}[l0];` +
+        `[2:v]trim=end=${lLen.toFixed(3)},setpts=PTS-STARTPTS,${S},format=yuva420p,fade=t=in:st=${(lLen - settle).toFixed(3)}:d=${settle}:alpha=1[b];` +
+        `[l0][b]overlay=shortest=1,format=yuv420p[l];[h][l]concat=n=2:v=1[v]`,
+      '-map', '[v]', ...ENC, out], `${id} ${k.key} film`);
+      const endPng = eraw(id, k.key, 'end.png');
+      lastFrame(out, endPng);
+      ffmpeg(['-y', '-i', endPng, '-c:v', 'libwebp', '-lossless', '0', '-q:v', '88', endWebp], `${id} ${k.key} end`);
+      const core = JSON.parse(fs.readFileSync(eraw(id, k.key, 'board.json'), 'utf8')).core;
+      film.boards = { ...(film.boards ?? {}), [k.key]: { video: `landing/${id}-${k.key}.mp4`, end: `landing/${id}-${k.key}-end.webp`, core } };
+      // How near the film's last frame is to the board it must become (bakeFilm's measure; under ~3 is the board).
+      console.log(`[endings] baked ${id} ${k.key}: ${duration(out)} s, last frame vs board ${picDiff(endPng, eraw(id, k.key, 'band.png'))}`);
+    }
+  }
+  fs.writeFileSync(jsonFile, JSON.stringify(json, null, 2) + '\n');
+}
+
 const args = process.argv.slice(2);
-const steps = new Set(['boards', 'stills', 'clips', 'bake', 'sheet', 'design', 'motion', 'probe']);
+const steps = new Set(['boards', 'stills', 'clips', 'bake', 'sheet', 'design', 'motion', 'probe', 'endings', 'endings-boards', 'endings-hits']);
 const step = steps.has(args[0]) ? args[0] : null;
 const only = args.filter((a) => !steps.has(a) && !a.startsWith('--'));
 const ids = SETS.map((s) => s.id).filter((id) => !only.length || only.includes(id));
@@ -420,6 +569,17 @@ const ids = SETS.map((s) => s.id).filter((id) => !only.length || only.includes(i
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
   fs.mkdirSync(DIR, { recursive: true });
   if (step === 'boards') { await boards(ids); process.exit(0); }
+  if (step?.startsWith('endings')) {
+    await endingBoards(ids);
+    if (step !== 'endings-boards') {
+      ready();
+      const before = await balance();
+      await endingHits(ids);
+      if (step === 'endings') { await endingClips(ids); endingBake(ids); }
+      console.log(`[endings] asked for ${spent.stills} stills, ${spent.clips} clips; balance ${before} -> ${await balance()} (the balance moves with other sessions too)`);
+    }
+    process.exit(0);
+  }
   if (step === 'design' || step === 'motion' || step === 'probe') {
     ready();
     const before = await balance();

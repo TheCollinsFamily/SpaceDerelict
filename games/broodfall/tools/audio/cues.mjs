@@ -57,6 +57,11 @@ export const SFX = [
     prompt: FOLEY + 'Small globs of acid splat against a hard insect carapace: a short wet splat and a sizzle.' + REPEAT(6) },
   { id: 'hit-blast', for: 'a shell or glob lands and bursts', seconds: 8, cut: 'each', max: 5,
     prompt: FOLEY + 'An organic spore shell lands on a street and bursts: a muffled wet explosion with spattering debris.' + REPEAT(4) },
+  // --- the hive hurts the body (Nov 22 2026, Collins: "there is no sound effect or hit effect when an enemy unit hits my base") ---
+  { id: 'core-hit', for: 'the hive strikes the core (the living meteor): a bite, a claw, a shell, a bomber', seconds: 8, cut: 'each', max: 6,
+    prompt: FOLEY + 'A heavy club smashes into a huge living boulder of rock and raw flesh: one deep, meaty, thudding impact, a wet crunch of stone and gristle, and a short low groan of pain from the creature.' + REPEAT(5) },
+  { id: 'limb-hit', for: 'the hive strikes a limb (a claw, a bite, a researcher cutting into it)', seconds: 8, cut: 'each', max: 6,
+    prompt: FOLEY + 'A sharp insect claw strikes and cuts into a thick fleshy tentacle: a short wet slapping thwack and a squelch of torn flesh.' + REPEAT(6) },
   { id: 'enemy-cannon', for: 'the insects\' cannon and mortar crews fire', seconds: 8, cut: 'each', max: 4,
     prompt: FOLEY + 'A 1950s army field cannon fires: a deep booming shot with a short metallic echo.' + REPEAT(4) },
   // --- the insects dying ---
