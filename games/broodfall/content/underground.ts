@@ -154,7 +154,7 @@ export const ORGAN_DEFS: readonly OrganDef[] = [
   // PLINTHS (Collins, Sep 29 2026): free, one every two waves.
   // THE RUMEN (Collins, Nov 22 2026: "oh I like the idea of a chyme generating organ think through its agency bonus etc."):
   // the body's fermenting stomach. DESIGN.md "THE RUMEN". One of a kind.
-  { id: 'rumen', name: 'Rumen', kind: 'chyme', shape: L3, cost: { chyme: 45 },
+  { id: 'rumen', name: 'Rumen', kind: 'chyme', shape: L3, cost: { chyme: 60 },
     blurb: 'makes CHYME: every body killed by a limb of a theme it TOUCHES (or reaches by roots) renders +1 more, up to 12 a wave; and at every clear it ferments the chyme you kept, +1 per 10, up to 3 (a heart zone doubles both)' },
   { id: 'scaffold', name: 'Scaffold Gland', kind: 'scaffold', shape: L3, cost: { chyme: 20 },
     blurb: 'grows one free PLINTH every 2 turns (at the wave clear): a pedestal that raises one limb, or one bare roof, by one level' },
@@ -192,7 +192,7 @@ export const LEGACY_ORGAN_COST: Record<OrganId, { war?: number; science?: number
   harrier: { war: 30, science: 10 },
   seeder: { war: 25 },
   scaffold: { war: 20 },
-  rumen: { war: 45 },
+  rumen: { war: 60 },
 };
 
 export const ORGAN_BY_ID = Object.fromEntries(ORGAN_DEFS.map((d) => [d.id, d])) as Record<OrganId, OrganDef>;
@@ -237,7 +237,7 @@ export const METEOR_LEVEL_CHYME = 30;
 /**
  * THE RUMEN (DESIGN.md "THE RUMEN"). FEED: a body killed by a limb of a theme the Rumen touches (edge to edge or along a
  * root chain; the meteor counts) renders RUMEN_PER_BODY more chyme, + RUMEN_GLAND_BONUS for every Pheromone Gland zone the
- * Rumen sits in; it holds at most RUMEN_FEED_CAP x its level a wave (uncapped it made 376 chyme a run for its 45 and was
+ * Rumen sits in; it holds at most RUMEN_FEED_CAP x its level a wave (uncapped it made 376 chyme a run for a price of 45 and was
  * always right: measured, DESIGN.md). FERMENT: at every clear, RUMEN_FERMENT_PER banked chyme ferments into 1 more, up to
  * RUMEN_FERMENT_CAP x the Rumen's level (1 + Auxiliary Heart zones it sits in + features it touches).
  */

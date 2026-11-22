@@ -16,7 +16,10 @@ const here = dirname(fileURLToPath(import.meta.url));
 const ART = join(here, '..', 'public', 'art');
 const file = join(ART, 'manifest.json');
 const manifest = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : null;
-const multi = ORGAN_DEFS.filter((d) => d.shape.length > 1);
+// THE RUMEN (Nov 22 2026, DESIGN.md "THE RUMEN") borrows the Gut's tissue tile cell by cell, turned bile-gold in CSS
+// (src/style.css .o-rumen): it was built with no AI art spend. When its own whole-shape picture is baked, drop it from here.
+const BORROWED_ART = new Set(['rumen']);
+const multi = ORGAN_DEFS.filter((d) => d.shape.length > 1 && !BORROWED_ART.has(d.id));
 
 describe('organ shapes in the art', () => {
   it('every organ of more than one cell has a whole-shape picture and loop, for the shape the game gives it', () => {

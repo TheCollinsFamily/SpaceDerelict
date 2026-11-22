@@ -39,6 +39,7 @@ model('BUILT: per body (war 1, science 2, court 4) + 38 a clear', (n) => bodies.
 model('rejected: 15% of the meat digested + 36 + 3/wave', (n) => 0.15 * meat[n - 1] + 36 + 3 * n);
 
 const SHARE = 0.45;
+const PRICE = 60;
 function rumenRun(name, at, feedCap) {
   const per = (n) => bodies.war[n - 1] + 2 * bodies.sci[n - 1] + 4 * bodies.royal[n - 1] + 38;
   let bank = 0, i = 0, levels = 0, lvl = 30, total = 0, made = 0, grown = false;
@@ -47,13 +48,13 @@ function rumenRun(name, at, feedCap) {
     let got = per(n);
     if (grown) { const feed = Math.min(feedCap, Math.round(SHARE * (bodies.war[n - 1] + bodies.sci[n - 1]))); made += feed + 2; got += feed + 2; }
     total += got; bank += got;
-    if (!grown && at !== null && n >= at && bank >= 45) { bank -= 45; grown = true; }
+    if (!grown && at !== null && n >= at && bank >= PRICE) { bank -= PRICE; grown = true; }
     while (i < list.length && bank >= list[i][1] && (grown || at === null || n < at)) { bank -= list[i][1]; i++; }
     if (i >= list.length) while (bank >= lvl) { bank -= lvl; levels++; lvl += 30; }
   }
   console.log(`  ${name.padEnd(28)} chyme ${total.toFixed(0)} (the Rumen ${made}), ${i}/${list.length} organs, ${levels} levels`);
 }
-console.log('\nTHE RUMEN (45 chyme): uncapped vs capped at 12 a wave');
+console.log('\nTHE RUMEN (60 chyme): uncapped vs capped at 12 a wave');
 for (const cap of [Infinity, 12]) {
   console.log(cap === Infinity ? ' uncapped' : ' capped 12 a wave (built)');
   rumenRun('early (after wave 2)', 2, cap);

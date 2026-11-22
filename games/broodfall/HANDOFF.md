@@ -60,6 +60,23 @@ bought with CHYME only; limbs keep war and science (which still spoil at the wav
 - Tests: `tests/chyme.test.ts` (earned not leftover, banked, priced, old saves); `tests/castes.test.ts` (the Harrier Gland
   no longer opens science on its own).
 
+## The Rumen: the organ that makes chyme (Nov 22 2026; DESIGN.md "THE RUMEN")
+
+Collins: "oh I like the idea of a chyme generating organ think through its agency bonus etc."
+- **Rule:** one of a kind, L of 3, 60 chyme, kind `'chyme'`. FEED: a body killed by a limb of a theme the Rumen touches (edge
+  or root chain; meteor counts) renders +1 (+1 per Pheromone Gland zone), at most 12 x level a wave (counted at the kill,
+  `Sim.rumenFed`). FERMENT: at a clear, +1 per 10 chyme kept, up to 3 x level. Level = 1 + heart zones + features touching.
+  `Sim.rumenFor(cells)` (also the placing readout), `rumen()`, `rumenFerment`, `Corpse.rumen`, `waveRumen`, `rumenEarned`;
+  the tally's `rumen`. Constants `RUMEN_*` in `content/underground.ts`.
+- **UI:** card in "ZONES, TISSUE & THE RUMEN"; placing and hovering it say whose kills feed it, the caps, and what it would
+  ferment now; the tally/banner/feed name "from the Rumen". Art: the Gut's tile, hue-turned to bile-gold (`.o-rumen` in
+  style.css); no new art.
+- **Campaign:** sanctioned lineage, 4 standing (not in mission 1). **Scripted player:** `RUMEN_POLICY.when` (default 'mid').
+- **Measured:** 30 seeds: never 27/30, early 26/30 (makes 279 but starves the first stages), mid 29/30 (151), late 27/30.
+  `ORG_RUMEN=...` in `tools/measure/organ-economy.measure.ts`; model in `tools/measure/chyme-model.mjs`.
+- **Play it:** `node tools/shot-rumen.mjs http://localhost:<port> notes/screens/2026-11-22` -> `economy-organ-*.png`.
+- Tests: `tests/rumen.test.ts` (feed by touch, gland, cap per wave, ferment and its level, tally, old saves, the run bound).
+
 ## The Impaler fires down its rail (Nov 22 2026)
 
 Collins: "the impaler should be more directional in its shot given its design". It is a harpoon rail of three cells with

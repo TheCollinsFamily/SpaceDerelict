@@ -205,9 +205,78 @@ after.
 the old prices and wage (`LEGACY_ORGAN_COST`, `legacyWaveBonus*`), so its orders land as they did; that one deployment is
 finished under the rules it was started under. Saves are v2 from now on. Tested (`tests/chyme.test.ts`).
 
-**COLLINS:** (1) the name and glyph; (2) whether the Gut should also render more chyme (thematically the Gut is where
-chyme forms; left out so no organ feeds the organ economy, which is the one snowball path); (3) the ration as a flat 38
-(the old wage grew with the wave).
+**COLLINS:** (1) the name and glyph; (2) answered Nov 22 2026: "oh I like the idea of a chyme generating organ think
+through its agency bonus etc." — THE RUMEN, next section; (3) the ration as a flat 38 (the old wage grew with the wave).
+
+### THE RUMEN: the organ that makes chyme (Collins, Nov 22 2026 — BUILT Nov 22)
+Collins, reading the chyme decisions (one was "should the Gut also render more chyme? left out: the one snowball path"):
+"oh I like the idea of a chyme generating organ think through its agency bonus etc."
+
+**The name.** In a ruminant the rumen is the fermenting stomach before the true stomach: food stands in it and works.
+That is the organ's two verbs, FEED and FERMENT, in plain anatomy beside the Gut. Glyph ⊛, the chyme colour.
+
+**What it is.** One of a kind, an L of three cells, **60 chyme**. Not a theme: it unlocks no limb, has no signature,
+is not levelled by clicking; its LEVEL comes from where it sits. In the tray under "ZONES, TISSUE & THE RUMEN".
+
+**The levers (the agency).**
+1. **FEED: what it touches decides whose kills feed it** (the grid and the surface together). Every body killed by a
+   limb of a theme organ the Rumen TOUCHES (edge to edge, or along a root chain; the meteor counts, so Spitters,
+   Lashers and Spine Walls) renders **+1 chyme more** when digested (a Maw eating it whole: at once). Beside the meteor
+   and the Gut it eats what the Spitters and the Maws kill; beside the Bone Forge, what the Impalers kill. So it is a
+   question on both boards: which family does the killing on the surface, and can the Rumen sit beside that family's
+   organ, on cells the next theme organ also wants (a theme touching the meteor shares its verb: the Rumen's spot is
+   that spot)? A Pheromone Gland whose zone holds it: +1 more a body (each). Readable: placing it, the readout says
+   "FEEDS ON what Spitter, Lasher, Spine Wall, Maw ... kill (it touches Meteor Core, Gut): +1 ◆ a body, up to 12 a wave".
+2. **FERMENT: what you KEEP works** (the spend-or-bank trade-off). At every clear it ferments the chyme you held
+   through the wave: +1 per 10, up to 3. Spending chyme the moment you have it (growing organs early, which is
+   usually right) forgoes it; holding 30 for a dear level pays a little while you wait. The readout says "kept now 61,
+   so +3".
+3. **Its LEVEL is a heart's choice.** It holds at most **12 a wave** (feed) and ferments at most 3, times its level;
+   level = 1 + Auxiliary Heart zones it sits in + features it touches. So an Auxiliary Heart can raise a theme (+10%
+   power and speed to its limbs) or the Rumen (24 a wave): a real either/or on the grid.
+
+**Why capped (the economics).** Its yield is bounded by construction: never more than (waves x 12 x level) + (clears x 3
+x level), whatever the board (`tests/rumen.test.ts` holds it over a whole run). Levels come only from hearts and
+features, never from chyme, so no chyme buys more chyme-making: the snowball path is closed.
+
+**Measured** (`tools/measure/organ-economy.measure.ts`, `ORG_RUMEN=early|mid|late|never`, the naive scripted player,
+hold-12, 30 seeds each, price 60, cap 12 a wave):
+
+| The Rumen grown | wins | grown after wave | it made a run | chyme a run | organs | levels | limbs |
+|---|---|---|---|---|---|---|---|
+| never | 27/30 | — | 0 | 1,315 | 22.6 | 6.8 | 122 |
+| **early** (first: saving for it) | 26/30 | 2.0 | 279 | 1,568 | 23.7 | 8.4 | 119 |
+| **mid** (once 3 themes stand; the default) | **29/30** | 4.1 | 151 | 1,531 | 24.0 | 8.0 | 133 |
+| late (from wave 8) | 27/30 | 8.0 | 50 | 1,356 | 23.5 | 6.3 | 126 |
+
+**Buying it first is not best:** it makes the most chyme (279) but wins the least (26/30): saving 60 for it leaves the
+first organ stage empty and the second with one theme where the others have two (organs bought after waves 1-3: 0, 1, 3
+against 1, 1, 2), and the limbs' early meat follows the themes (19 war digested in wave 2 against 24). Grown once the
+themes it will feed on stand, it pays its 60 back in about four waves and is the best of the four; grown late it barely
+pays (50). The difference between never and mid is 2 runs in 30, the late-game levels (6.8 → 8.0) and a mid-run surplus,
+not a different game. Before the cap (price 45, 20 seeds): it made 376 a run grown mid, 345 grown first, and the
+scripted player won 19/20 either way against 17/20 without it: always right, no decision. That is why it is capped and
+dearer. The model (`tools/measure/chyme-model.mjs`) says the same in miniature: capped, +110 / +96 / +42 chyme a run
+grown after wave 2 / 4 / 8.
+
+**How it meets the rest.**
+- Royal Larder keeps meat; the Rumen's ferment is the chyme mirror of it (keeping pays). They do not touch.
+- Brain Node, Atrophy Gland: nothing (it draws no limbs). Auxiliary Heart: its level. Pheromone Gland: +1 a body.
+- Features (Sewer Main, Severed Power Main, Aquifer, Geothermal Vent): +1 level each touching it.
+- Mission 1 (war only): not in its pool; it is a sanctioned lineage (4 standing) in the Gene Bay from mission 2, after
+  the player has met chyme itself. Skirmish: in the tray.
+- Defence missions: a remembered board brings it back, it feeds in the one siege; no organ stage follows, so it changes
+  nothing there.
+- The last mission: the court and the science caste's bodies feed it like any (a science body 2 + the Rumen's 1).
+- A run saved before chyme: no Rumen effect (`organEconomy: 'meat'`).
+- The tally: "WAVE 6 EARNED +140 · 76 from the bodies it digested · 26 from the Rumen · 38 for the clear" (the clear's
+  banner and the feed say it too). A body killed late in a wave and digested early in the next counts in the next.
+
+**The scripted player** (`RUMEN_POLICY` in `src/sim/organPolicy.ts`): grows it once it has three themes ('mid', the
+default), on the spot touching the most theme organs (and their limbs). `ORG_RUMEN=early|mid|late|never` in the measure.
+
+**COLLINS:** (1) the name; (2) the cap (12 a wave x level) and price (60); (3) whether a heart on the Rumen should count
+double or not at all.
 
 ### Creep: the core of the organ game (Collins, Sep 28 2026)
 Collins: "creep nodes should be free but produced at intervals by special organs;
