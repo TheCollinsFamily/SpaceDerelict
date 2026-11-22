@@ -67,6 +67,11 @@ export function applySettings(s: Settings = loadSettings()): void {
   CALM.motion = s.reduceMotion;
   // The board reads its caste colours from this object every frame.
   Object.assign(CASTE_COLORS as unknown as Record<string, number>, t);
+  // The view's turn buttons name the keys that turn it (they said Q and E after the keys were changed: bug hunt, Nov 22 2026).
+  const L = s.keys.turnLeft.toUpperCase(), R = s.keys.turnRight.toUpperCase();
+  const left = document.getElementById('view-turn-left'), right = document.getElementById('view-turn-right');
+  if (left) { left.textContent = `⟲ ${L}`; left.title = `Turn the view a quarter turn (${L})`; }
+  if (right) { right.textContent = `${R} ⟳`; right.title = `Turn the view a quarter turn the other way (${R})`; }
 }
 
 export function openSettings(o: SettingsOpen): void {

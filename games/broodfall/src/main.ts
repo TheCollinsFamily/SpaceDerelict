@@ -431,7 +431,7 @@ function updateHint(): void {
     hud.setHint(selectedIsDirectional()
       ? `place it — it faces ${placeFacing ?? (fam && towerSpec(fam).directional ? 'the nearest gate' : 'the way it fits')}${turn}`
       : span
-        ? `a BIG limb: it needs ${footprintName(span)} of one flat creeped roof${placeFacing ? ` · faces ${placeFacing}` : ''}${turn} · Q and E turn the view`
+        ? `a BIG limb: it needs ${footprintName(span)} of one flat creeped roof${placeFacing ? ` · faces ${placeFacing}` : ''}${turn} · ${loadSettings().keys.turnLeft.toUpperCase()} and ${loadSettings().keys.turnRight.toUpperCase()} turn the view`
       : fam === 'spine' || fam === 'swamp'
         ? `plug a street — the swarm must go through it${turn}`
         : `place on a creeped block by a street — higher roofs reach further (+10% a level)${placeFacing ? ` · faces ${placeFacing}` : ''}${turn} — or click one of your limbs to feed it in`);
@@ -440,6 +440,9 @@ function updateHint(): void {
   } else {
     hud.setHint(AUTO
       ? 'demo mode: the asset is piloting itself'
+      // A draft is open over the board (it said WAVE SETUP: place limbs, under the district cards: bug hunt, Nov 22 2026).
+      : sim.phase === 'draft'
+        ? 'THE BODY IS READY TO GROW: choose a district above, then place it on the board (R turns it) — the wave setup comes after'
       : sim.phase === 'growth' && sim.waveNumber > 0
         ? 'WAVE SETUP: place limbs, then START THE WAVE (Space) — unspent war and science are lost when it starts (chyme is kept)'
         : 'select a limb card below, then click a creeped block by a street — the assault forms at the glowing gate');
@@ -595,7 +598,8 @@ function renderDraft(): void {
     // Taken in hand, then placed on the board where the player wants it (src/ui/districtPlace.ts); with no board
     // to place it on (no placer), put down at its own place as before.
     card.addEventListener('click', () => {
-      if (placer) { placer.pick(i); return; }
+      // The wave's banner (WAVE 3 CLEARED · +57 CHYME) stood over the middle of the board, on the ghost being placed.
+      if (placer) { bannerEl.classList.add('hidden'); placer.pick(i); return; }
       sim.issue({ kind: 'choose-plate', index: i });
       draftEl.classList.add('hidden');
       draftRendered = false;
@@ -1653,6 +1657,7 @@ async function boot(): Promise<void> {
 
   let last = performance.now();
   let acc = 0;
+  let hintPhase = sim.phase;
   const frame = (now: number) => {
     const dtReal = Math.min(0.1, (now - last) / 1000);
     last = now;
@@ -1669,6 +1674,8 @@ async function boot(): Promise<void> {
       }
     }
     handleEvents(sim.takeEvents());
+    // The hint line follows the phase (a draft or a wave beginning without an order given would leave the old line).
+    if (sim.phase !== hintPhase) { hintPhase = sim.phase; updateHint(); }
     if (started) watchBoard(sim);
     hud.update(sim);
     decreeBox.update();
