@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Broodfall bug hunt</title>
+<style>
+  :root { --bg: #111214; --card: #1b1d21; --ink: #e9e6df; --dim: #a3a09a; --line: #2e3137; --ok: #4fbf72; --warn: #e0a64b; --bad: #e3625a; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.5 "Segoe UI", system-ui, sans-serif; }
+  main { max-width: 1500px; margin: 0 auto; padding: 28px 20px 60px; }
+  h1 { font-size: 28px; margin: 0 0 4px; letter-spacing: 1px; }
+  h2 { font-size: 21px; margin: 44px 0 6px; border-top: 1px solid var(--line); padding-top: 22px; }
+  .sub { color: var(--dim); margin: 0 0 22px; }
+  .short { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 14px 18px; margin-bottom: 26px; }
+  table { border-collapse: collapse; width: 100%; background: var(--card); border-radius: 8px; overflow: hidden; }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--dim); font-weight: 600; font-size: 13px; letter-spacing: 1px; text-transform: uppercase; }
+  .v { font-weight: 700; white-space: nowrap; }
+  .v.ok { color: var(--ok); } .v.warn { color: var(--warn); } .v.bad { color: var(--bad); }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 12px; }
+  .pair.one { grid-template-columns: 1fr; }
+  figure { margin: 0; background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 10px; }
+  figure img { width: 100%; display: block; border-radius: 4px; }
+  figcaption { font-size: 13px; color: var(--dim); margin-top: 8px; }
+  .tag { display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: 1px; padding: 2px 8px; border-radius: 4px; margin-right: 6px; }
+  .tag.b { background: #4a2523; color: #ffb4ad; } .tag.a { background: #1f4229; color: #a8f0bd; } .tag.x { background: #3d3420; color: #f1d39b; }
+  ul { margin: 6px 0; padding-left: 20px; }
+  .tech { color: var(--dim); font-size: 13px; margin-top: 50px; }
+  @media (max-width: 800px) { .pair { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main>
+<h1>Broodfall: bug hunt</h1>
+<p class="sub">November 22, 2026. I played it in the real page with real clicks and keys at 1366×768, 1920×1080 and your 2781×1401: a new campaign through mission 1, the reveal, the ship and a deployment, skirmishes through the organ stage and a district draft, Settings, save and exit, resume, every room aboard, the codex, comics and a full run to victory. No console errors and no missing files anywhere.</p>
+
+<div class="short">
+<b>Short version.</b> The biggest problem was the board itself. It was a fixed-size picture shrunk into the middle of the window, so on your screen it used less than half the width. It now fills the window, and the landing film still lands exactly on it. I also fixed five smaller things where the screen said something wrong or hid what you were doing. Everything is pushed to main. Nothing here needs a decision from you.
+</div>
+
+<table>
+<tr><th>#</th><th>Problem</th><th>Verdict</th></tr>
+<tr><td>1</td><td>The board did not fill the window: a fixed picture in the middle with black on both sides (1360 of 2781 pixels across on your screen)</td><td class="v ok">Fixed</td></tr>
+<tr><td>1b</td><td>After fix 1, the landing film's last frame would have landed in the wrong place on the board, which would have brought back the snap you reported</td><td class="v ok">Fixed</td></tr>
+<tr><td>2</td><td>On the organ stage the summary said "GUT LV3" while the Gut's card said LV 1, with nothing explaining the difference</td><td class="v ok">Fixed</td></tr>
+<tr><td>3</td><td>While a district draft was open, the line under the board said "WAVE SETUP: place limbs, then START THE WAVE (Space)", but Space does nothing there</td><td class="v ok">Fixed</td></tr>
+<tr><td>4</td><td>The "WAVE 3 CLEARED · +57 CHYME" banner sat on top of the district you were placing</td><td class="v ok">Fixed</td></tr>
+<tr><td>5</td><td>After you change the turn keys in Settings, the turn buttons still said Q and E</td><td class="v ok">Fixed</td></tr>
+<tr><td>6</td><td>At 1366×768 the top bar cut words off: "DIRECTIVE: DESTROY THE…" and "NEXT: 8 RESPON…"</td><td class="v ok">Fixed</td></tr>
+<tr><td>—</td><td>Two automatic tests were failing because of the other session's unfinished Rumen work</td><td class="v ok">Fixed by that session; all tests pass</td></tr>
+</table>
+
+<h2>1. The board now fills the window</h2>
+<p>The board was always drawn as a fixed 1360×1000 picture and then shrunk to fit, so on wide windows it sat in a column with black on both sides. On your screen it used 1360 of 2781 pixels across. Now the board fills the window at every size, and the city looks bigger on your screen. Clicking, zooming and turning work the same as before, and it runs just as smoothly: 60 frames a second in a wave on your window size, the same as the old fixed board.</p>
+<div class="pair">
+  <figure><img src="bughunt-01-board-2781-BEFORE.jpg" alt=""><figcaption><span class="tag b">BEFORE</span>2781×1401, your screen: the board in a column in the middle</figcaption></figure>
+  <figure><img src="bughunt-01-board-2781-AFTER.jpg" alt=""><figcaption><span class="tag a">AFTER</span>2781×1401: the board fills the window</figcaption></figure>
+  <figure><img src="bughunt-01-board-1366-BEFORE.jpg" alt=""><figcaption><span class="tag b">BEFORE</span>1366×768: the board was 711 pixels wide</figcaption></figure>
+  <figure><img src="bughunt-01-board-1366-AFTER.jpg" alt=""><figcaption><span class="tag a">AFTER</span>1366×768</figcaption></figure>
+</div>
+
+<h2>1b. The landing film still lands exactly on the board</h2>
+<p>Each landing film ends on a picture of the board as the old fixed board showed it. When the film ends, that picture has to sit exactly on top of the live board, or you get the snap you reported earlier today. Fix 1 changed the board's size, so I changed the handoff to work from how large the board is actually drawn now, with the film's crater pinned on the live meteor. To check it, I laid the film's last frame over the live board at half strength. The pictures below show where the old calculation would have put it and where the new one does. Where the two line up exactly, you see one board and no double image.</p>
+<div class="pair">
+  <figure><img src="bughunt-01b-landing-1920-unadjusted.jpg" alt=""><figcaption><span class="tag x">OLD CALCULATION ON THE NEW BOARD</span>1920×1080: a double image, the film far too big and in the wrong place</figcaption></figure>
+  <figure><img src="bughunt-01b-landing-1920-AFTER.jpg" alt=""><figcaption><span class="tag a">AFTER</span>1920×1080: the film's last frame (inside the green box) lies exactly on the board</figcaption></figure>
+  <figure><img src="bughunt-01b-landing-2781-unadjusted.jpg" alt=""><figcaption><span class="tag x">OLD CALCULATION ON THE NEW BOARD</span>2781×1401</figcaption></figure>
+  <figure><img src="bughunt-01b-landing-2781-AFTER.jpg" alt=""><figcaption><span class="tag a">AFTER</span>2781×1401: exact</figcaption></figure>
+</div>
+<div class="pair one">
+  <figure><img src="bughunt-01b-landing-1366-handoff.jpg" alt=""><figcaption><span class="tag a">AFTER</span>1366×768, mid-handoff, captured while the film fades into the board: you cannot see where one ends and the other begins</figcaption></figure>
+</div>
+
+<h2>2. The organ stage now says why an organ is above its card's level</h2>
+<p>In mission 1 the Gut sits on a Sewer Main, which it favours, and that adds two levels. Its card showed the level you bought (LV 1), while the summary under the board showed the total (LV3), so the two numbers looked like a mistake. The summary now says where the extra levels come from: "GUT LV3 (LV1 bought, +2 from the Sewer Main)". A heart's zone is named the same way.</p>
+<div class="pair">
+  <figure><img src="bughunt-02-organ-summary-BEFORE.jpg" alt=""><figcaption><span class="tag b">BEFORE</span>The Bone Forge card says LV 1 and the summary says "BONE FORGE LV2", with no reason given</figcaption></figure>
+  <figure><img src="bughunt-02-organ-summary-AFTER.jpg" alt=""><figcaption><span class="tag a">AFTER</span>"GUT LV3 (LV1 bought, +2 from the Sewer Main)"</figcaption></figure>
+</div>
+
+<h2>3. The line under the district draft no longer tells you to start the wave</h2>
+<p>While "The body is ready to grow" was open, the line under the board still showed the wave-setup instruction from before the wave. It now says to choose a district and place it, and it updates whenever the game moves to the next stage.</p>
+<div class="pair">
+  <figure><img src="bughunt-03-hint-line-BEFORE.png" alt=""><figcaption><span class="tag b">BEFORE</span>"WAVE SETUP: place limbs, then START THE WAVE (Space)" under the draft</figcaption></figure>
+  <figure><img src="bughunt-03-hint-line-AFTER.png" alt=""><figcaption><span class="tag a">AFTER</span>"THE BODY IS READY TO GROW: choose a district above, then place it on the board (R turns it)"</figcaption></figure>
+  <figure><img src="bughunt-03-draft-hint-BEFORE.jpg" alt=""><figcaption><span class="tag b">BEFORE</span>The whole screen (mission 1)</figcaption></figure>
+  <figure><img src="bughunt-03-draft-hint-AFTER.jpg" alt=""><figcaption><span class="tag a">AFTER</span>The whole screen (skirmish)</figcaption></figure>
+</div>
+
+<h2>4. The wave banner no longer covers the district you are placing</h2>
+<p>When you picked up a district card, the "wave cleared" banner stayed across the middle of the board, right over the green district you were placing. Picking up the card now clears the banner.</p>
+<div class="pair">
+  <figure><img src="bughunt-04-banner-over-ghost-BEFORE.jpg" alt=""><figcaption><span class="tag b">BEFORE</span>The banner over the district in hand</figcaption></figure>
+  <figure><img src="bughunt-04-banner-over-ghost-AFTER.jpg" alt=""><figcaption><span class="tag a">AFTER</span>The same moment, with the board clear</figcaption></figure>
+</div>
+
+<h2>5. The turn buttons show the keys you chose</h2>
+<p>In Settings I changed the turn key from Q to Z. Z turned the view and Q stopped doing anything, but the buttons beside the board still said Q. They now show the keys you set, and so does the hint for the big limbs.</p>
+<div class="pair">
+  <figure><img src="bughunt-05-turn-keys-BEFORE.png" alt=""><figcaption><span class="tag b">BEFORE</span>Turn key set to Z, button still says Q</figcaption></figure>
+  <figure><img src="bughunt-05-turn-keys-AFTER.png" alt=""><figcaption><span class="tag a">AFTER</span>The button says Z</figcaption></figure>
+</div>
+
+<h2>6. The top bar at 1366×768 shows the directive and the next wave in full</h2>
+<p>The game's title kept its space and the important words were cut off. On smaller windows the title now gives up its space first, and the directive and the wave line wrap onto two lines instead of being cut.</p>
+<div class="pair one">
+  <figure><img src="bughunt-06-topbar-1366-BEFORE.png" alt=""><figcaption><span class="tag b">BEFORE</span>"DIRECTIVE: DESTROY THE…", "NEXT: 8 RESPON…"</figcaption></figure>
+  <figure><img src="bughunt-06-topbar-1366-AFTER.png" alt=""><figcaption><span class="tag a">AFTER</span>"DESTROY THE ROYAL", "NEXT: 8 RESPONDER"</figcaption></figure>
+</div>
+
+<h2>Checked and working, no change needed</h2>
+<ul>
+  <li>Settings, each changed by clicking during a run: the larger text sizes (nothing pushed off screen at 1366), changing the turn keys, edge scrolling, the speed a deployment starts at, and Save and Exit followed by Resume Deployment (same wave, limbs and meat).</li>
+  <li>The organ stage: growing organs by clicking, leveling by clicking the card and by clicking the organ on the board (chyme taken each time), and Space going one step at a time from the organ stage to the surface to the wave.</li>
+  <li>Placing a district with the mouse on the green slot.</li>
+  <li>The campaign from start to finish: new campaign, mission 1 (both won and lost), the report, the reveal, the ship, a deployment, the debrief and back aboard. Every room aboard opens without errors, as do the codex, comics and settings from the ship, and the menu's Continue and Codex.</li>
+  <li>A whole run to victory at your window size with no errors. The end-of-run report shows its picture of the board correctly at the new board size.</li>
+</ul>
+
+<p class="tech">For an engineer or an AI: the technical write-up is C:\Users\Merry\dev\space-derelict\games\broodfall\notes\2026-11-22-bughunt.md. Commits 1eb1e4c0, 74263ebb, 9a2bda2a, 1c4dd372, d47a714f, 965246a7 and the commit that adds this page.</p>
+</main>
+</body>
+</html>
