@@ -1395,6 +1395,10 @@ async function boot(): Promise<void> {
     showFailure({ kind: webglMissing() ? 'no-webgl' : 'crash', detail: String((e as Error)?.stack ?? e) });
     return;
   }
+  // The board fills the window (Nov 22 2026 bug hunt): the canvas was a fixed 1360x1000 picture shrunk into the middle,
+  // so on a 2781x1401 window it took less than half the width and at 1366x768 it was 711 px wide. Both renderers frame
+  // the city from the renderer's own size, so it is resized to the stage and the camera fits the new frame.
+  fitBoardToStage(mount);
   // No WebGL: the board is drawn on a plain canvas instead (PixiJS falls back), slowly. Said once, over the board.
   if ((renderer.app.renderer as { name?: string }).name === 'canvas') showSlowDrawingNotice();
   bootDone = true;
@@ -1844,6 +1848,18 @@ async function boot(): Promise<void> {
     },
   };
   (window as unknown as { broodfall: typeof api }).broodfall = api;
+}
+
+/** Keep the board's canvas the size of the stage it sits in (its CSS pixels), now and whenever the window changes. */
+function fitBoardToStage(stage: HTMLElement): void {
+  const fit = (): void => {
+    const w = Math.round(stage.clientWidth), h = Math.round(stage.clientHeight);
+    if (w < 64 || h < 64) return; // hidden or not laid out yet: keep the size it has
+    const r = renderer.app.renderer;
+    if (r.width !== w || r.height !== h) r.resize(w, h);
+  };
+  fit();
+  new ResizeObserver(fit).observe(stage);
 }
 
 /** No WebGL canvas can be had in this browser (the board cannot be drawn without one). */
