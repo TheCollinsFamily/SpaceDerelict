@@ -134,6 +134,17 @@ for (const facing of ['S', 'E']) {
     summary.push(`rail ${facing === 'S' ? 'N-S' : 'E-W'}, target ${name}: ${fired ? 'fired' : 'did not fire'}`);
     console.log(`  shot  ${out}  (${fired ? 'fired' : 'did not fire'})`);
   }
+  // Selected, as the player sees it with its panel open: its line of fire drawn as two wedges off its ends.
+  await page.evaluate((id) => { window.broodfall.renderer.selectedTowerId = id; window.broodfall.sim.enemies.length = 0; window.broodfall.sim.projectiles.length = 0; }, id);
+  await ticks(1);
+  const png = join(tmp, `impaler-${tag}-${facing}-selected.png`);
+  await page.waitForTimeout(150);
+  await canvas.screenshot({ path: png });
+  const out = join(screens, `impaler-${tag}-rail${facing === 'S' ? 'NS' : 'EW'}-selected.jpg`);
+  spawnSync('python', [join(here, 'shot-impaler-sheet.py'), 'one', png, out]);
+  files.push(out);
+  summary.push(`rail ${facing === 'S' ? 'N-S' : 'E-W'}, selected: its line of fire`);
+  console.log(`  shot  ${out}  (selected)`);
 }
 await browser.close();
 // A contact sheet: rail north-south on the top two rows, rail east-west below.

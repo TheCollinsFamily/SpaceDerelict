@@ -48,8 +48,8 @@ ways, so half the time it was drawn ACROSS its own ground; its muzzle mark was t
   (manifest + tools/art/limbs.mjs, `lying: true`: a muzzle below the foot is allowed, tests/muzzles.test.ts); a bone-pale wake
   behind the harpoon back to the barb (fx.ts `wake`); selected or held, two wedges off its ends instead of a ring (render.ts).
 - **Measured** (`tools/measure/impaler.measure.ts`, naive hold-12, ten seeds, the rail arm vs firing all round): wins 9/10 in
-  every arm and 11.5 waves cleared on average; kills per Impaler built 12.9 all round vs 8.6 / 11.1 / 9.6 at 35 / 45 / 60
-  degrees (noisy: the runs part ways). Placement guardrail unchanged.
+  every arm and 11.5 waves cleared on average; kills per Impaler built 12.9 all round vs 8.9 at the 43 degrees chosen (8.6 / 11.1 / 9.6 at 35 / 45 / 60;
+  noisy: the runs part ways). The game's outcome does not move; the Impaler gives up some side shots. Placement guardrail held.
 - **Look at it:** `node tools/shot-impaler.mjs <tag>` against a served build -> `notes/screens/2026-11-22/impaler-*.jpg`
   (BEFORE and AFTER sheets there).
 
