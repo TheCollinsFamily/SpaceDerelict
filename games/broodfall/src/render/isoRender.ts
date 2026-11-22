@@ -447,8 +447,22 @@ export class IsoRenderer extends Renderer {
   protected updateCamera(sim: Sim, dtReal: number): void {
     const g = this.geo;
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    // A drafted district being placed: the slots it can go (any way round) are framed with the city.
+    const gh = this.districtGhost;
+    // ...and the unclaimed slots beside the city, where the player will look for a place.
+    const framed = gh ? new Set([...gh.fits, ...gh.fitsTurned]) : null;
+    if (framed) {
+      const sxN = sim.map.slotsX;
+      sim.map.slots.forEach((s, i) => {
+        if (s) return;
+        const x = i % sxN;
+        const y = Math.floor(i / sxN);
+        const held = (xx: number, yy: number) => xx >= 0 && yy >= 0 && xx < sxN && yy < sim.map.slotsY && !!sim.map.slots[yy * sxN + xx];
+        if (held(x - 1, y) || held(x + 1, y) || held(x, y - 1) || held(x, y + 1)) framed.add(i);
+      });
+    }
     for (let slot = 0; slot < sim.map.slots.length; slot++) {
-      if (!sim.map.slots[slot]) continue;
+      if (!sim.map.slots[slot] && !framed?.has(slot)) continue;
       const x0 = (slot % sim.map.slotsX) * PLATE * g.cell;
       const y0 = Math.floor(slot / sim.map.slotsX) * PLATE * g.cell;
       const side = PLATE * g.cell;
@@ -2107,11 +2121,11 @@ export class IsoRenderer extends Renderer {
     const pulse = 0.55 + 0.35 * Math.sin(this.pulse * 3);
     for (const slot of gh.fits) {
       if (slot === gh.slot) continue;
-      m.poly(outline(slot, 0.15)).fill({ color: 0x9ad068, alpha: 0.1 * pulse }).stroke({ width: 2.2, color: 0xb8f070, alpha: pulse });
+      m.poly(outline(slot, 0.15)).fill({ color: 0x9ad068, alpha: 0.22 * pulse }).stroke({ width: 3.2, color: 0xc8ff80, alpha: 0.4 + 0.6 * pulse });
     }
     for (const slot of gh.fitsTurned) {
       if (slot === gh.slot) continue;
-      m.poly(outline(slot, 0.3)).stroke({ width: 1.2, color: 0xe0b050, alpha: 0.45 });
+      m.poly(outline(slot, 0.3)).fill({ color: 0xe0b050, alpha: 0.06 }).stroke({ width: 1.6, color: 0xe0b050, alpha: 0.6 });
     }
     if (gh.slot === null) return;
     const ok = gh.ok;

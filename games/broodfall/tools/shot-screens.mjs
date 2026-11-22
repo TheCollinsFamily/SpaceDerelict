@@ -190,12 +190,12 @@ try {
         await shot(page, '06-draft');
         await page.locator('.draft-option').first().hover();
         await page.locator('#draft-card-wrap').screenshot({ path: join(out, 'screens-07-draft-close.jpg'), type: 'jpeg', quality: 88 });
-        await page.locator('.draft-option').first().click();
+        await page.locator('.draft-option').first().click(); await page.evaluate(() => window.broodfall.placer?.()?.place());
         await page.waitForTimeout(1500);
-        check(await page.evaluate(() => window.broodfall.sim.phase !== 'draft'), 'a click on a plate takes it');
+        check(await page.evaluate(() => window.broodfall.sim.phase !== 'draft'), 'a click on a plate, then on its place, takes it');
         await shot(page, '08-after-draft');
       } else {
-        while (await page.evaluate(() => window.broodfall.sim.phase === 'draft')) { await page.locator('.draft-option').first().click(); await page.waitForTimeout(300); }
+        while (await page.evaluate(() => window.broodfall.sim.phase === 'draft')) { await page.locator('.draft-option').first().click(); await page.evaluate(() => window.broodfall.placer?.()?.place()); await page.waitForTimeout(300); }
         await page.evaluate(() => { const s = window.broodfall.sim; for (let i = 0; i < 400; i++) window.broodfall.step(1); return s.time; });
       }
       if (!on('debrief')) { await ctx.close(); continue; }
@@ -255,7 +255,7 @@ try {
       await Promise.all([page.waitForURL(/campaign=run/), page.locator('[data-act="deploy"]').click()]);
       await page.waitForFunction(() => window.broodfall?.view() === 'iso' && document.getElementById('boot').classList.contains('hidden'), null, { timeout: 60000 });
       await playToDraft(page);
-      while (await page.evaluate(() => window.broodfall.sim.phase === 'draft')) { await page.locator('.draft-option').first().click(); await page.waitForTimeout(300); }
+      while (await page.evaluate(() => window.broodfall.sim.phase === 'draft')) { await page.locator('.draft-option').first().click(); await page.evaluate(() => window.broodfall.placer?.()?.place()); await page.waitForTimeout(300); }
       await page.waitForTimeout(600);
       await endRun(page, how);
       await page.waitForSelector('#campaign:not(.hidden) .dbf', { timeout: 15000 }).catch(() => {});

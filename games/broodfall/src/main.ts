@@ -553,19 +553,7 @@ const draftEl = document.getElementById('draft')!;
 const draftOptionsEl = document.getElementById('draft-options')!;
 let draftRendered = false;
 
-function slotCompass(slot: number): string {
-  const sx = (slot % sim.map.slotsX) + 0.5;
-  const sy = Math.floor(slot / sim.map.slotsX) + 0.5;
-  const cx = (sim.core.x / sim.cfg.cellPx) / 10;
-  const cy = (sim.core.y / sim.cfg.cellPx) / 10;
-  const dx = sx - cx;
-  const dy = sy - cy;
-  const ns = dy < -0.4 ? 'N' : dy > 0.4 ? 'S' : '';
-  const ew = dx > 0.4 ? 'E' : dx < -0.4 ? 'W' : '';
-  return (ns + ew) || 'CENTER';
-}
-
-/** Where an offered plate would go: every district of the board, the ones held, the core's, and this one. */
+/** Where an offered plate can go: every district of the board, the ones held, the core's, and every slot it fits. */
 function draftMap(slots: number[]): string {
   const coreSlot = Math.floor(Math.floor(sim.map.coreCell / sim.cfg.gridW) / PLATE) * sim.map.slotsX + Math.floor((sim.map.coreCell % sim.cfg.gridW) / PLATE);
   return sim.map.slots.map((s, i) => `<i class="${slots.includes(i) ? 'here' : i === coreSlot ? 'core' : s ? 'held' : ''}"></i>`).join('');

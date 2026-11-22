@@ -116,6 +116,8 @@ try {
   check(/SHELTER/.test(card), 'its card tells of the shelter', card.replace(/\s+/g, ' ').slice(0, 90));
   await shot('1-draft-card');
   await page.locator('.draft-option.has-shelter').click();
+  // In hand over its own place (src/ui/districtPlace.ts): put down there.
+  await page.evaluate(() => window.broodfall.placer?.()?.place());
   await page.waitForTimeout(800);
   const sh = await page.evaluate(() => { const s = window.broodfall.sim; const x = s.shelters[0]; return x ? { id: x.id, door: x.door, h: x.cells.map((c) => s.map.heights[c]) } : null; });
   check(sh !== null && sh.h.every((h) => h === sh.h[0]), 'drafting it raises the shelter on a level lot', JSON.stringify(sh));

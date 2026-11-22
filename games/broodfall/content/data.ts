@@ -67,8 +67,8 @@ export const TOWERS: readonly TowerSpec[] = [
     // Before it took more than one cell: range 150, damage 34, maxHp 80.
     family: 'impaler', name: 'Impaler', weight: 8,
     cost: { war: 36 }, range: 165, rate: 0.35, damage: 43, aoe: 0,
-    // It fires down its rail (Nov 22 2026): off either end, at most 35 degrees off its length. Lay it along a street.
-    pierce: true, lineOfFire: 0.61,
+    // It fires down its rail (Nov 22 2026): off either end, at most 43 degrees off its length (a quarter of the round each end). Lay it along a street.
+    pierce: true, lineOfFire: 0.75,
     shape: 'line3', maxHp: 128, interest: 2, eatThreshold: 0, advanced: true, hits: 'both',
   },
   {

@@ -2,10 +2,13 @@
  * THE IMPALER'S SHOT, AT EVERY ANGLE (Nov 22 2026, Collins: "the impaler should be more directional in its shot
  * given its design"). Builds one Impaler on a roof (its rail lying north-south, then another east-west), puts one
  * held, tough soldier at each of eight compass points around it in turn, and photographs the harpoon a few ticks
- * after it leaves: does it leave the barb at the tip of the rail, and fly the way the rail points?
+ * after it leaves: does it leave the barb at the tip of the rail, and fly the way the rail points? Since its line of
+ * fire (Sim.inLineOfFire) a soldier off its line is not fired at: "did not fire" is then the right answer.
  *
- * Usage: node tools/shot-impaler.mjs <tag> [--port 5341]   (the dev server must already run on that port)
- * Writes notes/screens/2026-11-22/impaler-<tag>-<facing>-<angle>.jpg and a contact sheet impaler-<tag>-sheet.jpg.
+ * Usage: node tools/shot-impaler.mjs <tag> [--port 5341] [--age 2] [--debug]
+ * The game must already be served on that port: best a build (npx vite build --outDir dist-impaler, then
+ * npx vite preview --outDir dist-impaler --port 5341), as the dev server reloads the page when another session saves.
+ * Writes notes/screens/2026-11-22/impaler-<tag>-rail<NS|EW>-target<point>.jpg and a contact sheet impaler-<tag>-sheet.jpg.
  */
 import { spawnSync } from 'node:child_process';
 import { mkdirSync } from 'node:fs';
@@ -25,13 +28,28 @@ const PORT = pi > 0 ? Number(process.argv[pi + 1]) : 5341;
 const ai = process.argv.indexOf('--age');
 /** How many ticks after it leaves the harpoon is photographed. */
 const AGE = ai > 0 ? Number(process.argv[ai + 1]) : 2;
-const ANGLES =[['E', 0], ['SE', 45], ['S', 90], ['SW', 135], ['W', 180], ['NW', 225], ['N', 270], ['NE', 315]];
+const ANGLES = [['E', 0], ['SE', 45], ['S', 90], ['SW', 135], ['W', 180], ['NW', 225], ['N', 270], ['NE', 315]];
 
 const browser = await chromium.launch({ args: ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist', '--enable-webgl'] });
 const page = await browser.newPage({ viewport: { width: 1400, height: 900 } });
 page.on('pageerror', (e) => console.log(`  page error  ${e}`));
 const canvas = page.locator('#stage canvas');
-const ticks = async (n) => { for (let i = 0; i < n; i++) { await page.evaluate(() => window.broodfall.step(1)); await page.waitForTimeout(25); } };
+// Clearing the board by hand ends the wave, and a district draft would stop the clock: the scene stays in its growth.
+const ticks = async (n) => {
+  for (let i = 0; i < n; i++) {
+    // The soldier is held where it was put (it would walk into or out of the line of fire).
+    await page.evaluate(() => {
+      const s = window.broodfall.sim;
+      if (s.phase === 'draft') s.phase = 'growth';
+      const pin = window.__impalerPin;
+      const hold = () => { const e = pin && s.enemies.find((u) => u.id === pin.id); if (e) { e.pos.x = pin.x; e.pos.y = pin.y; } };
+      hold();
+      window.broodfall.step(1);
+      hold();
+    });
+    await page.waitForTimeout(25);
+  }
+};
 const files = [];
 const summary = [];
 
@@ -77,9 +95,11 @@ for (const facing of ['S', 'E']) {
     await page.keyboard.up('Shift');
     await page.waitForTimeout(500);
   }
-  for (const [name, deg] of ANGLES) {
+  // And two a little off its length (25 degrees), inside its line of fire: it aims at them from the barb.
+  const off = facing === 'S' ? [['S25', 115], ['N25', 295]] : [['E25', 25], ['W25', 205]];
+  for (const [name, deg] of [...off, ...ANGLES]) {
     // One held, tough soldier at this compass point, 120 px out; nothing else on the board.
-    await page.evaluate(([id, deg]) => {
+    const state = await page.evaluate(([id, deg]) => {
       const s = window.broodfall.sim;
       s.enemies.length = 0;
       s.projectiles.length = 0;
@@ -93,14 +113,18 @@ for (const facing of ['S', 'E']) {
       e.speed = 0;
       e.hp *= 50; e.maxHp *= 50;
       e.revealedUntil = s.time + 999;
+      window.__impalerPin = { id: e.id, x: e.pos.x, y: e.pos.y };
+      return { facing: t.facing, inLine: s.inLineOfFire ? s.inLineOfFire(t, e.pos) : true, phase: s.phase, priority: t.priority, stunned: t.stunnedUntil, keys: Object.keys(t).join(',') };
     }, [id, deg]);
+    if (process.argv.includes('--debug')) console.log(`  ${facing} ${name}: ${JSON.stringify(state)}`);
     let fired = false;
     let shotAge = 0;
-    for (let i = 0; i < 90; i++) {
+    for (let i = 0; i < 6; i++) { // it fires on its first tick, or not at all (cooldown 0); the growth's clock stops after ~7 s of this
       await ticks(1);
       const n = await page.evaluate((id) => window.broodfall.sim.projectiles.filter((q) => q.fromFamily === 'impaler').length, id);
       if (n > 0) { fired = true; shotAge++; if (shotAge >= AGE) break; }
     }
+    if (process.argv.includes('--debug')) console.log('   after', JSON.stringify(await page.evaluate((id) => { const s = window.broodfall.sim; const t = s.towers.find((u) => u.id === id); return { out: s.outcome, ph: s.phase, cd: t?.cooldown, towers: s.towers.length, en: s.enemies.map((e) => [Math.round(e.pos.x), Math.round(e.pos.y), e.hp]), t: t?.pos }; }, id)));
     const png = join(tmp, `impaler-${tag}-${facing}-${name}.png`);
     await page.waitForTimeout(150);
     await canvas.screenshot({ path: png });

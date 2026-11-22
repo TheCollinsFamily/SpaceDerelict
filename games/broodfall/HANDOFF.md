@@ -36,6 +36,34 @@ process only verified its own assumptions. The repo's CLAUDE.md carries the stan
   own CLAUDE.md with hard rules. Most important: **never deploy without Collins's explicit
   approval**, billing fails closed, and never log user content.
 
+## The Impaler fires down its rail (Nov 22 2026)
+
+Collins: "the impaler should be more directional in its shot given its design". It is a harpoon rail of three cells with
+the barb at one end, but it shot out of its middle at anything in a circle, and its picture turned to the nearest of four
+ways, so half the time it was drawn ACROSS its own ground; its muzzle mark was the old (two-cell) art's, floating in the air.
+- **Sim:** `TowerSpec.lineOfFire` (content/data.ts: impaler 0.75 rad, 43 degrees) and `Sim.inLineOfFire`: it targets only
+  bodies off either END of its length within that angle (pickTarget, and a focus hold). The scripted player lays it along the
+  streets it can rake (`Autoplayer.railFacing`). `tests/impaler.test.ts`.
+- **Look:** the rail turns end for end along its cells (isoRender facingOfLimb); the muzzle is the barb's tip, front and back
+  (manifest + tools/art/limbs.mjs, `lying: true`: a muzzle below the foot is allowed, tests/muzzles.test.ts); a bone-pale wake
+  behind the harpoon back to the barb (fx.ts `wake`); selected or held, two wedges off its ends instead of a ring (render.ts).
+- **Measured** (`tools/measure/impaler.measure.ts`, naive hold-12, ten seeds, the rail arm vs firing all round): wins 9/10 in
+  every arm and 11.5 waves cleared on average; kills per Impaler built 12.9 all round vs 8.6 / 11.1 / 9.6 at 35 / 45 / 60
+  degrees (noisy: the runs part ways). Placement guardrail unchanged.
+- **Look at it:** `node tools/shot-impaler.mjs <tag>` against a served build -> `notes/screens/2026-11-22/impaler-*.jpg`
+  (BEFORE and AFTER sheets there).
+
+## You place the district (Nov 22 2026; DESIGN.md "YOU PLACE THE DISTRICT")
+
+Collins: "after choosing a tile set it should not auto place it but let me rotate it with R and place it where I want so long as the placement is legal".
+- **Sim** (`src/sim/citymap.ts`): `checkPlacement(map, pattern, slot)` gives the reason in the player's words and what every edge meets (`EdgeFit`: joins / walls / clash / gate / free); `turnedPattern(p, rot)` turns a district clockwise (the pool's own turns, `<plate>-<0..3>`); `placementsOf`. `src/sim/sim.ts`: `draftPlacementProblem(index, slot, rot)` (adds: a shelter offer needs room for its shelter there), `draftPlacements(index)`, `defaultPlacement(index)` (the offer's own place); cached per open draft. The `choose-plate` order takes `slot` and `rot` (absent: the offer's own place, so old saves and old beats replay). No burrow while a draft is open.
+- **UI** (`src/ui/districtPlace.ts` + `districtPlace.css`): a card click takes it in hand (`placer.pick`), the cards step aside, a panel at the top says what it is, why it does or does not fit, the keys, and ⟲ / ⟳ / THE CARDS buttons, with the district's picture turned as it is. R / Shift+R / right-click turn it; Esc back to the cards; a click on a green slot places it. Its listeners are window-capture (click, contextmenu, keydown) so units, limbs and the settings never see those while a district is in hand; main.ts's own board hover returns early (`placer.active()`). The ghost is `Renderer.districtGhost` (`src/render/render.ts` DistrictGhost; drawn in `isoRender.ts` drawDistrictGhost: boxes at the storeys the land will give, mouths lit, fitting slots outlined; the camera frames the city plus the slots beside it while one is in hand).
+- **Scripted play:** `window.broodfall.placer()` → `pick(i)`, `hoverSlot(s)`, `turn(n)`, `place(slot?)`, `cancel()`, `state()`. The scripted player (`autoplayer.ts`) and `growCity` place at `sim.defaultPlacement(i)`. Beats that clicked a card now also call `placer()?.place()` (shot-screens, shot-expansion, the trailer).
+- **Proof:** `tests/districtPlace.test.ts` (120 grown boards, 50x40 and 70x50, 1-3 entrances, shelters on): 977 drafts, 2,915 offers, every offer had a legal place (legal (slot, turn) pairs an offer: min 1, median 4, max 20); each draft put down at a RANDOM legal place: openings meet openings on every shared edge, a gate left, every gate and every street of the new district reach the core, no step over one storey, a promised shelter stands; an illegal place is refused and changes nothing; turns are real; a run with turned, moved districts replays the same from its saved orders.
+- **Balance** (`tools/measure/gaps.measure.ts`, naive hold-12, ten seeds): before (59e81d38) 9/10; after 9/10 (the scripted player places at the offer's own place: its runs are those of before, the per-seed core % moved only by the Impaler change committed alongside, b945465a); `GAPS_MODE=anyplace` (every district at a random legal place and turn) **10/10**; walled in (`sealed-in` events over the ten runs) 8 before and after, 7 at random places. Placement guardrail (`tests/placement.test.ts`) unchanged: smart 7 flips, random 0.
+- **Look:** `node tools/shot-place.mjs` (own dev server on 5388; `ENTRANCES=3 TAG=e3` for a three-gate start) → `notes/screens/2026-11-22/place-*.jpg`.
+- **What the algebra means in play:** a district grows only where a street leaves the city. In a one-gate run the first drafts often fit ONE slot (the choice is which way round); with more gates, or later, there are several. A free slot beside the city across a wall says so ("no street of the city leads here").
+
 ## Cities less samey (Oct 1 2026; Collins: "I guess I thought the cities felt a little samey")
 
 - **Why they were samey:** every run began on the SAME crash district; only five district shapes existed;

@@ -15,7 +15,7 @@ export const CARD_DESC: Record<TowerFamily, string> = {
   lure: 'Bait that bites: toxic clouds that reveal the unseen.',
   tangler: 'Snare mucus. Hit specimens wade, not march.',
   blighter: 'Spore clouds. The blight keeps eating — through armor.',
-  impaler: 'Bone harpoon. Skewers a file, ignores shields.',
+  impaler: 'Bone harpoon down its rail. Skewers a file, ignores shields.',
   choir: 'Resonance organ. Nearby limbs strike faster.',
   sling: 'Hurls creep to chosen ground. Click it to aim.',
   brood: `Bears a BROODMOTHER you command. Parked in brood mode she keeps ${TOWERS.find((t) => t.family === 'brood')!.broodCount} warriors around her; in fight mode she walks, bites and throws a net that slows the hive.`,

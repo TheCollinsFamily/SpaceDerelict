@@ -186,19 +186,20 @@ export class FxLayer {
    * along reads at a glance. At most WAKE board pixels long; it fades as the harpoon flies on (`f`, 0 to 1).
    */
   private wake(from: Pt, to: Pt, f: number): void {
-    const tex = this.tex('beam');
-    if (!tex) return;
     const dx = to.x - from.x, dy = to.y - from.y;
     const len = Math.hypot(dx, dy);
     if (len < 6) return;
     const reach = Math.min(len, WAKE);
-    const s = this.glowPool.take(tex);
-    s.anchor.set(1, 0.5);
-    s.position.set(to.x, to.y);
-    s.rotation = Math.atan2(dy, dx);
-    s.scale.set(reach / tex.width, 7 / tex.height);
-    s.tint = 0xfff0d8;
-    s.alpha = 0.75 * (1 - f * 0.8);
+    // Bone-pale, not light: a soft band and a thin bright core (the effects sheet's beam is the prism's blue).
+    for (const [thick, alpha, tint] of [[7, 0.22, 0xe8d8b8], [2.2, 0.7, 0xfff6e4]] as const) {
+      const s = this.airPool.take(Texture.WHITE);
+      s.anchor.set(1, 0.5);
+      s.position.set(to.x, to.y);
+      s.rotation = Math.atan2(dy, dx);
+      s.scale.set(reach / Texture.WHITE.width, thick / Texture.WHITE.height);
+      s.tint = tint;
+      s.alpha = alpha * (1 - f * 0.8);
+    }
   }
 
   /** The shadow of something in the air, on the ground under it. */

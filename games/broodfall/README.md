@@ -45,6 +45,7 @@ Useful URLs:
 | Fault screens: art list missing (play on without pictures), some pictures missing (a line over the board), no WebGL (drawn on a plain canvas, a line says so), nothing to draw with, the code failing while it loads | BUILT (Sep 30; `shot-screens.mjs faults`, each failure forced) |
 | Deployment (board, waves, drafts) | BUILT |
 | District draft overlay (each plate drawn as the board will draw it, and a map of where it goes) | BUILT (Sep 30; `shot-screens.mjs draft`) |
+| Placing a drafted district (in hand over the board: green / red ghost, R turns it, click places; Esc back to the cards) | BUILT (Nov 22; `src/ui/districtPlace.ts`, `tests/districtPlace.test.ts`, `node tools/shot-place.mjs`) |
 | Debrief screen, skirmish and campaign (the outcome's newsreel still, a photograph of the board at the end, the limbs grown, what the colony sent) | BUILT (Sep 30; `shot-screens.mjs debrief campaign`) |
 | Gene Bay organ cards with each organ's scan picture | BUILT (Sep 30; `shot-screens.mjs genes`) |
 | Ship gene bay (standing + splices, localStorage) | BUILT (prototype persistence; account-side later) |
@@ -68,7 +69,7 @@ Useful URLs:
 - **BIG limbs** (Broodmother, Ward Membrane, Trap Cage) need 2 by 2 cells of one flat roof
   that the creep holds. Point anywhere on such a roof: the preview lights the four cells.
 
-- The map starts as ONE district and grows: every 3rd cleared wave you draft one of three districts to consume. New districts bring new winding streets, high blocks, and new gates. The camera zooms out as the body spreads.
+- The map starts as ONE district and grows: every 3rd cleared wave you draft one of three districts to consume, and place it yourself where its streets meet the city's (R turns it). New districts bring new winding streets, high blocks, and new gates. The camera zooms out as the body spreads.
 - Enemies march the carved street channels in squads; they cannot cross city blocks. Click a card, then click a CREEPED CITY BLOCK overlooking a street (taller blocks shoot further). Spine walls instead plug the street itself and must be chewed through. Right-click cancels. The ✕ on a card discards it for 3 war meat.
 - Watch the top bar during growth: ASSAULT FORMING names the gates, and the gates glow on the map. Reinforce that approach, or CALL THE WAVE early for bonus meat.
 - After a run: debrief, then the ship's gene bay — spend the trip splicing one of three genes into the next organism. Standing accrues toward the procreation license.

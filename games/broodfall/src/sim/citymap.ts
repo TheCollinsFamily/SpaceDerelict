@@ -537,7 +537,8 @@ export function checkPlacement(map: CityMap, pattern: PlatePattern, slot: number
     };
   }
   if (!edges.some((e) => e.fit === 'joins')) {
-    return { problem: edges.some((e) => e.meets === 'mouth' || e.meets === 'wall') ? 'none of its streets joins the city — turn it (R)' : 'it must grow from the city: put it beside a district you hold', edges };
+    // (A street of the city reaching this slot would have clashed above, so none does: turning cannot help.)
+    return { problem: edges.some((e) => e.meets === 'wall') ? 'no street of the city leads here: a district grows where a street leaves the city' : 'it must grow from the city: put it beside a district you hold', edges };
   }
   if (!keepsAGate(map, pattern, slot)) return { problem: 'it would seal the last way in: the hive could not come', edges };
   return { problem: null, edges };

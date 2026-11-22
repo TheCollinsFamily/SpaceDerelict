@@ -780,6 +780,8 @@ const SHOTS = {
     ];
     await page.evaluate(() => window.__T.home(1, true));
     await film(page, ctx, 'p-draft', 330, hand(page, keys, async (i) => {
+      // The card taken is in hand over its own place (src/ui/districtPlace.ts): put down there a beat later.
+      if (i === 156) await page.evaluate(() => window.broodfall.placer?.()?.place());
       if (i === 160) await page.evaluate(([s]) => window.__T.camTo(s.x, s.y, 1.45), [slot]);
       // The draft taken, the organ stage opens by itself (the next wave's setup): the player goes straight back to the surface.
       if (i > 150) await page.evaluate(() => { const u = document.getElementById('under'); if (u && !u.classList.contains('hidden')) document.getElementById('under-done')?.click(); });

@@ -33,6 +33,18 @@ if (MODE.includes('surge')) {
   (Autoplayer.prototype as unknown as { spendRoyal: (sim: Sim) => void }).spendRoyal = (sim: Sim) => { sim.issue({ kind: 'royal-surge' }); };
 }
 
+// anyplace = every drafted district put down at a RANDOM legal place and turn (Nov 22 2026: the player places it), not
+// the offer's own place: the game must hold whatever place the player chooses.
+if (MODE.includes('anyplace')) {
+  const proto = Sim.prototype as unknown as { defaultPlacement(i: number): { slot: number; rot: number } | null; draftPlacements(i: number): Array<{ slot: number; rot: number }> };
+  proto.defaultPlacement = function (this: Sim, i: number) {
+    const all = (this as unknown as typeof proto).draftPlacements(i);
+    // Its own dice (the run's other draws untouched): a hash of the seed and how many districts stand.
+    const k = ((this.cfg.seed * 2654435761) ^ (this.map.slots.filter(Boolean).length * 40503)) >>> 0;
+    return all.length ? all[k % all.length] : null;
+  };
+}
+
 function run(seed: number) {
   // nostations = no science forward bases (no engineers sent, Oct 2 2026): the baseline for them.
   const sim = new Sim({ gridW: 50, gridH: 40, cellPx: 26, seed, directive: { kind: 'hold', waves: 12 }, organStage: true, ...(MODE.includes('nostations') ? { bannedEnemies: ['engineer'] } : {}) });
