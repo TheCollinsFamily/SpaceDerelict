@@ -272,7 +272,9 @@ async function bake() {
       list = list.filter((e) => e.peak >= loud - 14).sort((a, b) => b.peak - a.peak).slice(0, s.max ?? 5).sort((a, b) => a.start - b.start);
       list.forEach((e, i) => {
         const dest = path.join(OUT, `${s.id}-${i + 1}.ogg`);
-        cutSfx(src, e.start, e.end, e.rms, TARGET, dest, samplePeak(x, e.start, e.end));
+        // `maxSeconds` here: each variant cut to its first seconds (faded over `fadeOut`), e.g. a hit without its long groan.
+        const end = s.maxSeconds ? Math.min(e.end, e.start + s.maxSeconds) : e.end;
+        cutSfx(src, e.start, end, e.rms, TARGET, dest, samplePeak(x, e.start, end), s.fadeOut ?? 0);
         files.push(`audio/${s.id}-${i + 1}.ogg`); secs.push(+duration(dest).toFixed(3));
       });
     }

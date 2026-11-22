@@ -148,6 +148,21 @@ insectoid city.
 20. **The doubling rule:** a second copy of any bonus always changes something. The table
     is in DESIGN.md; `tests/evolution.test.ts` enforces it.
 21. **The organ stage** (between waves: wave setup → wave → organ stage → …).
+    - **The whole window** (Collins, Nov 22 2026: "an AWFUL use of screen real estate ... why is it displaying the
+      towers I can place that turn and elements of the main game phase's UI?"). `#under` is fixed over the whole page;
+      the top and bottom bars (limb hand, wave bar, START THE WAVE) are hidden while it is open (`src/style.css`,
+      `body:has(#under:not(.hidden))`). Head row: title, the lose-it note, WAR/SCI (`#under-meat`), TO THE SURFACE.
+      Left: every organ in a three-column tray, no scroll, at 1366x768 to 2781x1401. Right: the board, sized by a
+      container query to the room left (`#under-board`, `--ug-w`/`--ug-h`), the readout and the summary under it.
+      Hovering a card puts its whole text in the readout. Beat: `node tools/shot-organ-layout.mjs <dev url> <out>`.
+    - **A grown theme organ's card is its LEVEL card** (lit in its colour, `✓ LV n`, `▲ LV n+1 · price · gain`) and the
+      Meteor Core has one too; clicking the card levels it, as clicking the organ on the board does (the card used to
+      say "click it to level" and ignore the click). A click on a theme organ while still holding a picked organ puts
+      the pick down (never spends). The board's level tag carries the next price.
+    - **Placing**: the ghost is every placement of the shape that COVERS the hovered cell, legal first, then nearest
+      the pointer (`src/ui/organPlace.ts`; it used to run off to the right of the pointer from its top-left corner, so
+      a heart "under the root" showed red when the cell to its right was rock). Preview and click ask the same
+      function. `tests/organ-place.test.ts`; `node tools/probes/organ-clicks.mjs <dev url> [WxH]` in the real page.
     - Shaped organs grow around the half-buried meteor.
     - THEME organs unlock limb groups and power them. Zone organs boost what they touch.
     - Unspent war and science are LOST when a wave starts; royal points are kept.
@@ -590,6 +605,26 @@ baked into `public/audio/` (Opus .ogg, 11 MB, `manifest.json`). **Listen:**
 - The film's decision: on a page that cannot play sound yet it waits behind "▸ BEGIN" (click or any
   key; Esc still skips); a page that may play (replayed from the menu) starts at once.
 
+## The hive's blows, seen and heard (Nov 22 2026)
+
+Collins: "there is no sound effect or hit effect when an enemy unit hits my base and presumably none when science team
+members are hitting limbs". Root cause: the sim took the hp off (`coreHp -=` in three places, `hurtTower` for limbs)
+without telling anyone: no event, so neither the renderer nor the sound knew. Now:
+- **Sim** (`src/sim/sim.ts` `hurtCore` / `hurtTower(t, amount, src)`): every blow on the core is a `core-hit` event
+  (amount, where it came from, `by` melee/shell/blast, the integrity left), every blow on a limb a `limb-hit` (a
+  researcher's per-tick drain summed and told every 0.3 s). Types in `src/sim/types.ts` (`HitBy`).
+- **Board** (`src/render/hitFx.ts`, `IsoRenderer.hit` / `coreFlinch` / `drawHitRings`; main.ts hands the events over):
+  the struck thing is shoved away from the blow and squashed (not under Reduce motion), lit red (Reduce flashes: a soft
+  tint), a pale ring of impact opens on its side facing the attacker, a splat (a blast for a shell/bomber/big blow)
+  bursts there. The HUD's integrity bar jolts, flushes red, and what was lost lingers as a pale band (`hud.ts coreStruck`).
+- **Sound** (`gameSounds.ts`): new cues `core-hit` (3 variants, 0.95 s; at most one every 150 ms, 2 at once; heavy blows
+  pitched down and louder) and `limb-hit` (6 variants; 90 ms between any two, 250 ms per limb; panned to where the limb
+  is on screen; a shield's knock higher and softer). Made by `node tools/audio/make.mjs core-hit limb-hit` (~203k
+  tokens); `make.mjs` now asks for no video resolution (the default, lowest tier) and cuts `each` variants to
+  `maxSeconds` when a cue sets it.
+- **Checks:** `tests/hits.test.ts`; `node tools/shot-hits.mjs` (dev server on 5341, real click unlocks sound; stills
+  frozen at the blow, a 10 s live swarm filmed WITH its sound: `notes/screens/2026-11-22/hits-*.jpg`, `hits-swarm.mp4`).
+
 ## The data pad at a mission's end (Sep 30 2026)
 
 Collins: "when you are finished with a mission or lose it should have a video that shows your
@@ -645,6 +680,18 @@ about what needs to be changed before upgrade looks". 37 families (35 in the dra
 
 Collins: "for loading into the different biomes, do we have broodfall landing animations to make it seem cohesive that
 would play at the start of any scenario? if not we should."
+- **No jump into the game (Nov 22 2026).** Collins, playtesting: "the animation flows into one way the board could be set
+  but then when gameplay starts the board snaps to a different configuration". The films had ended on ONE picture (seed
+  42, taken Oct 1, before the crash sites, lots, landmarks and hills) while every run drew its own board. Now: a run that
+  will land is BUILT on one of four landing boards (`src/meta/landing.ts` LANDING_BOARDS = board seeds 6/1/2/4, one per
+  crash site; `SimConfig.boardSeed` draws minute zero from it, the run's dice stay its own; `?board=N` pins one), and each
+  set's film has an ending made ON that board for 1, 2 and 3 entrances (`landing.json` films[set].boards["e1-b6"]...).
+  Only the ending made on the run's board plays; with none, NO film (`__bfLandingWhy` 'no-board') rather than a jump;
+  never on a defence ('defence'). Made by `node tools/art/landing.mjs endings [sets]` (boards from the game, free; a hit
+  still and a wan3.0 hit→board clip per ending, ~37k tokens; the release+fall cut from the set's own film up to its
+  strike, since their raws were lost). A change to how the board at minute zero is drawn (plates, terrain, lots,
+  landmarks, props) makes these endings stale: run `endings` again after moving `art-src/landing/endings/` aside.
+  Test: `tests/landing-boards.test.ts`.
 - **What plays** (`src/ui/landing.ts`, rules `src/meta/landing.ts`, hook `landThenStart` in `src/main.ts`): before every
   deployment (a campaign mission from the address, a skirmish from the menu or `?autostart=1`), the tile set's film
   (~8.8 s, lifelike, the Empire's side): the ship fires the asset out of its bay and the camera chases it down (one shot

@@ -344,12 +344,11 @@
   font-family: var(--sc-font); font-size: 0.9em; letter-spacing: 0.3px; border-radius: 0; color: var(--sc-dim);
   background: rgba(255, 255, 255, 0.025); border: 1px solid rgba(235, 245, 248, 0.14);
 }
-[data-hud="ship"] #under .under-organ b { font-weight: 400; letter-spacing: 2px; color: var(--sc-ink); }
+[data-hud="ship"] #under .under-organ b { font-weight: 400; letter-spacing: 1px; color: var(--sc-ink); }
 [data-hud="ship"] #under .under-organ i { color: var(--sc-ink); font-weight: 400; letter-spacing: 1px; }
 [data-hud="ship"] #under.scan .under-organ:hover { border-color: var(--sc-line-hi); }
 [data-hud="ship"] #under.scan .under-organ.on { background: rgba(233, 238, 240, 0.1); border-color: #fff; box-shadow: inset 3px 0 0 #fff; color: var(--sc-ink); }
 [data-hud="ship"] #under.scan .under-organ.poor i { color: #ff9a86; }
-[data-hud="ship"] #under.scan .under-organ.built i { color: var(--sc-ok); }
 [data-hud="ship"] #under-summary, [data-hud="ship"] #under.scan #under-summary { font: 400 0.95em/1.4 var(--sc-font); color: var(--sc-dim); }
 [data-hud="ship"] #under.scan #under-summary b { color: var(--sc-ink); font-weight: 400; letter-spacing: 1px; }
 [data-hud="ship"] #under-status, [data-hud="ship"] #under.scan #under-status { font: 400 1.05em/1.35 var(--sc-font); letter-spacing: 2px; color: var(--sc-holo); }

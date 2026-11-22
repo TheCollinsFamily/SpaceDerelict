@@ -45,7 +45,7 @@ import { installCommand, type Command as UnitCommand } from './ui/command';
 import { installRoster, type Roster } from './ui/roster';
 import type { Directive, OrganId, RootDir, SimConfig, SimEvent, TowerFamily } from './sim/types';
 import { initAudio, setScene } from './audio/engine';
-import { boardEvents, installConsoleSounds, watchBoard } from './audio/gameSounds';
+import { boardEvents, installConsoleSounds, setBoardPan, watchBoard } from './audio/gameSounds';
 import { sceneOf, type MusicScene } from './audio/cues';
 
 const params = new URLSearchParams(location.search);
@@ -530,6 +530,8 @@ function handleEvents(events: SimEvent[]): void {
     if (e.kind === 'station-grew') banner(e.stage >= 3 ? 'FIELD STATION AT FULL STRENGTH — SOLDIERS, THIEVES AND A SECOND TURRET' : 'FIELD STATION GROWING — A TURRET AND A WAR ESCORT INTO EVERY SIEGE');
     if (e.kind === 'station-destroyed') banner('FIELD STATION DESTROYED');
     if (e.kind === 'net-cast' && renderer instanceof IsoRenderer) renderer.nets.push({ at: e.at, r: e.radius, t: 0 });
+    // The hive struck the core or a limb (Nov 22 2026): it flinches, flashes and splats (src/render/hitFx.ts).
+    if ((e.kind === 'core-hit' || e.kind === 'limb-hit') && renderer instanceof IsoRenderer) renderer.hit(sim, e);
     if (e.kind === 'surgery-under-fire') banner(`SURGERY UNDER FIRE — GRAFTING ${e.seconds.toFixed(0)}s`);
     if ((e.kind === 'won' || e.kind === 'lost') && !AUTO) {
       clearRunSave();
@@ -1321,6 +1323,12 @@ async function boot(): Promise<void> {
   // Sound (src/audio/): the buses, the first-click unlock, every console button, the music's scenes.
   initAudio();
   installConsoleSounds();
+  // A blow on the board is heard from where it is on the screen.
+  setBoardPan((p) => {
+    const q = renderer.worldToScreen(p.x, p.y);
+    const seen = q.x >= 0 && q.x <= q.vw && q.y >= 0 && q.y <= q.vh;
+    return { pan: Math.max(-1, Math.min(1, (q.x / Math.max(1, q.vw)) * 2 - 1)), seen };
+  });
   window.setInterval(musicTick, 200);
   applyName();
   // The menu answers at once; the art loads behind it.
@@ -1765,6 +1773,12 @@ async function boot(): Promise<void> {
     /** The effects on screen now (src/render/fx.ts), for the beats: shots, shells, bursts, streaks, bombs. */
     fx() {
       return renderer instanceof IsoRenderer ? renderer.fxNow() : { ready: false };
+    },
+    /** The hive's blows shown (src/render/hitFx.ts): counts and how strongly the core and limbs flinch now; `hold` freezes them (screenshots). */
+    hits(hold?: boolean) {
+      if (!(renderer instanceof IsoRenderer)) return null;
+      if (hold !== undefined) renderer.hitsHeld = hold;
+      return renderer.hitsNow();
     },
     /** The families of the limbs playing their firing or acting clip now. */
     limbsActing(): string[] {

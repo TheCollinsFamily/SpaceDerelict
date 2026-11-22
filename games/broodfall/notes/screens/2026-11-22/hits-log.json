@@ -1,0 +1,33 @@
+{
+ "cues": {
+  "coreHitPlayed": 18,
+  "coreHitDropped": 111,
+  "limbHitPlayed": 29,
+  "limbHitDropped": 58,
+  "why": [
+   "gap",
+   "poly"
+  ]
+ },
+ "hits": {
+  "core": 134,
+  "limb": 89,
+  "splats": 124,
+  "coreNow": 0.5669676041666631,
+  "limbsNow": [
+   {
+    "id": 5,
+    "f": 0.01140350222222319
+   },
+   {
+    "id": 7,
+    "f": 0.01140350222222319
+   },
+   {
+    "id": 9,
+    "f": 0.01140350222222319
+   }
+  ]
+ },
+ "meterMaxDb": -13.6
+}

@@ -25,19 +25,21 @@ try {
   await page.waitForFunction(() => document.getElementById('under').classList.contains('scan'), null, { timeout: 20000 }).catch(() => {});
   await page.waitForTimeout(2500);
 
-  // A root with open soil on all four sides, two deep (so a 2-wide heart fits each way).
+  // A root with open ground beside it (a 2-wide heart fits left or right) and under it (two cells).
   const spot = await page.evaluate(() => {
     const s = window.broodfall.sim;
     const u = s.under;
-    const open = (c) => c >= 0 && c < u.cells.length && (u.cells[c].kind === 'soil') && !s.organAt(c);
+    const open = (c) => c >= 0 && c < u.cells.length && (u.cells[c].kind === 'soil' || u.cells[c].kind === 'deposit') && !s.organAt(c);
+    let best = null, bestN = -1;
     for (let c = 0; c < u.cells.length; c++) {
       const x = c % u.w, y = Math.floor(c / u.w);
-      if (x < 2 || x > u.w - 3 || y < 1 || y > u.h - 3) continue;
+      if (x < 1 || x > u.w - 3 || y > u.h - 2) continue;
       if (!s.canBuildOrgan('root', c, 0)) continue;
-      const need = [c - 1, c - 2, c + 1, c + 2, c + u.w, c + u.w + 1, c + u.w - 1];
-      if (need.every(open)) return c;
+      if (!open(c + u.w) || !open(c + u.w + 1)) continue;
+      const n = (x >= 2 && open(c - 1) && open(c - 2) ? 1 : 0) + (open(c + 1) && open(c + 2) ? 1 : 0);
+      if (n > bestN) { best = c; bestN = n; }
     }
-    return null;
+    return best;
   });
   check(spot !== null, `found a root spot (${spot})`);
   await page.locator('#under-palette [data-organ="root"]').click();
@@ -49,7 +51,7 @@ try {
   await page.locator('#under-palette [data-organ="heart"]').click();
   const w = await page.evaluate(() => window.broodfall.sim.under.w);
   // Cells to hover with the heart (rot 0: it covers the hovered cell and the one to its right).
-  const tries = { left: spot - 2, right: spot + 1, below: spot + w, belowLeft: spot + w - 1 };
+  const tries = { left: spot - 2, right: spot + 1, below: spot + w };
   for (const [name, cell] of Object.entries(tries)) {
     const rule = await page.evaluate((c) => window.broodfall.sim.canBuildOrgan('heart', c, 0), cell);
     const box = await page.locator(`#under-grid [data-cell="${cell}"]`).boundingBox();
@@ -97,7 +99,18 @@ try {
   await page.locator('#under-palette [data-organ="forge"]').click();
   await page.waitForTimeout(150);
   check((await lvl()) === before + 1, `click on the forge's card in the list: level ${before} -> ${await lvl()}`);
-  const meteorBefore = await page.evaluate(() => window.broodfall.sim.coreLevel);
+  // Holding a heart (it stays picked after it grows) and clicking the forge: the first click puts the heart down, the next levels.
+  await page.locator('#under-palette [data-organ="heart"]').click();
+  const held = await lvl();
+  const fbox = await page.locator(`#under-grid [data-cell="${forge.cells[0]}"]`).boundingBox();
+  await page.mouse.click(fbox.x + fbox.width / 2, fbox.y + fbox.height / 2);
+  await page.waitForTimeout(150);
+  check((await lvl()) === held && (await page.locator('#under-palette .under-organ.on').count()) === 0, 'with a heart picked, a click on the forge puts the heart down and spends nothing');
+  await page.waitForTimeout(1500);
+  await page.mouse.click(fbox.x + fbox.width / 2, fbox.y + fbox.height / 2);
+  await page.waitForTimeout(150);
+  check((await lvl()) === held + 1, `the next click levels it (${held} -> ${await lvl()})`);
+  const meteorBefore =await page.evaluate(() => window.broodfall.sim.coreLevel);
   const mc = await page.evaluate(() => window.broodfall.sim.under.cells.findIndex((c) => c.kind === 'meteor'));
   await page.locator(`#under-grid [data-cell="${mc}"]`).click();
   check((await page.evaluate(() => window.broodfall.sim.coreLevel)) === meteorBefore + 1, `click on the meteor levels it (${meteorBefore} -> ${await page.evaluate(() => window.broodfall.sim.coreLevel)})`);

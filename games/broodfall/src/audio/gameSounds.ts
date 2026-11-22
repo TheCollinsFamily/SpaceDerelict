@@ -6,7 +6,8 @@
  *   glob that is gone has landed; a card that is new in the hand was drawn; the core's stage
  *   (src/render/coreStage.ts) going up is the core evolving.
  * - The sim's events: `boardEvents(events)` (main.ts handleEvents): grown, lost, withered, killed,
- *   waves, the royal, the end.
+ *   waves, the royal, the end; the hive hitting the core ('core-hit': a heavy thud, the heavier the deeper) and a
+ *   limb ('limb-hit': a smaller wet thwack, panned to where the limb is on the screen).
  * - The console: `installConsoleSounds()` — every button of every screen clicks, hovers and is
  *   refused alike (one delegated listener, nothing per screen), the intercom opens and closes,
  *   a faction's call and the print-a-body scene are heard.
@@ -14,6 +15,7 @@
 import type { Sim } from '../sim/sim';
 import type { SimEvent } from '../sim/types';
 import { coreStageOf } from '../render/coreStage';
+import { heavyHit } from '../render/hitFx';
 import { FIRE_CLASS, deathOf } from './cues';
 import { say, sfx, sting } from './engine';
 
@@ -80,6 +82,39 @@ export function watchBoard(sim: Sim): void {
   coreStage = stage;
 }
 
+// ----------------------------------------------------------------------------- the body is hurt
+
+/**
+ * Where on the screen a world point is, -1 (left edge) .. 1 (right edge), and whether it is on the screen at all:
+ * set by main.ts from the renderer, so a hit is heard from where it is seen. Unset (the tests): the middle.
+ */
+let panOf: (p: { x: number; y: number }) => { pan: number; seen: boolean } = () => ({ pan: 0, seen: true });
+export function setBoardPan(fn: typeof panOf): void { panOf = fn; }
+
+
+function coreHitSound(e: Extract<SimEvent, { kind: 'core-hit' }>): void {
+  const heavy = heavyHit(e);
+  const { pan } = panOf(e.from);
+  // Heavier blows are louder and pitched down; lower integrity, a little louder still (the danger is heard).
+  const gain = Math.min(1.6, (heavy ? 1.25 : 0.85) + Math.min(0.25, e.amount / 120) + (e.frac < 0.35 ? 0.15 : 0));
+  sfx('core-hit', { gain, rate: heavy ? 0.8 : 1, pan: pan * 0.5 });
+}
+
+/** The least time between two hit sounds of ONE limb, in seconds (the rule's own gap is for all limbs together). */
+const LIMB_GAP = 0.25;
+const limbHeard = new Map<number, number>();
+function limbHitSound(e: Extract<SimEvent, { kind: 'limb-hit' }>): void {
+  const now = performance.now() / 1000;
+  if (now - (limbHeard.get(e.towerId) ?? -99) < LIMB_GAP) return;
+  limbHeard.set(e.towerId, now);
+  if (limbHeard.size > 256) limbHeard.clear();
+  const { pan, seen } = panOf(e.at);
+  const heavy = heavyHit(e);
+  // A shield taking it all is a glancing, higher knock; a limb off the screen is heard, quieter.
+  const gain = (e.shielded ? 0.6 : heavy ? 1.2 : 0.9) * (seen ? 1 : 0.55);
+  sfx('limb-hit', { gain, rate: e.shielded ? 1.3 : heavy ? 0.85 : 1, pan: pan * 0.7 });
+}
+
 let wavesCalled = 0;
 let lastNarration = -1e9;
 /** The newsreel narrator speaks now and then, never twice in a minute. */
@@ -104,6 +139,8 @@ export function boardEvents(events: SimEvent[]): void {
       case 'evolved': sfx('evolve-limb'); break;
       case 'discarded': sfx('card-pick'); break;
       case 'kill': sfx(deathOf(e.enemy)); break;
+      case 'core-hit': coreHitSound(e); break;
+      case 'limb-hit': limbHitSound(e); break;
       case 'martyr': sfx('hit-blast'); break;
       case 'wave-start':
         wavesCalled++;

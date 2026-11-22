@@ -74,6 +74,19 @@ try {
     await page.locator(`#under-grid [data-cell="${spot}"]`).hover();
     await page.waitForTimeout(1500);
     await page.screenshot({ path: join(out, `${prefix}-${w}x${h}.png`) });
+    if (w === 1920) {
+      // The level-up readout: on the grown forge's card, then on the forge itself on the board.
+      if (await page.locator('#under-palette .under-organ.on').count()) await page.keyboard.press('Escape');
+      await page.locator('#under-palette [data-organ="forge"]').hover();
+      await page.waitForTimeout(300);
+      const cardText = await page.locator('#under-status').innerText();
+      check(/LV 2 for \d+W/i.test(cardText), `hovering the grown forge's card says the next level's price and gain ("${cardText.slice(0, 80)}")`);
+      await page.screenshot({ path: join(out, `${prefix}-${w}x${h}-card-hover.png`) });
+      const fc = await page.evaluate(() => window.broodfall.sim.organs.find((o) => o.organ === 'forge').cells[0]);
+      await page.locator(`#under-grid [data-cell="${fc}"]`).hover();
+      await page.waitForTimeout(300);
+      await page.screenshot({ path: join(out, `${prefix}-${w}x${h}-grid-hover.png`) });
+    }
 
     const m = await page.evaluate(() => {
       const r = (s) => { const el = document.querySelector(s); return el ? el.getBoundingClientRect() : null; };
@@ -87,7 +100,7 @@ try {
       return {
         card: card && { w: card.width, h: card.height }, grid: grid && { w: grid.width, h: grid.height },
         allOnScreen, scrollers: scrollers.map((e) => e.id || e.className), nameSize, cards: cards.length,
-        palH: pal.scrollHeight, meat: document.getElementById('under-meat')?.innerText ?? '',
+        palH: pal.scrollHeight, meat: document.getElementById('under-meat')?.innerText ?? '', war: Math.floor(window.broodfall.sim.meat.war),
       };
     });
     console.log('   ', JSON.stringify(m));
@@ -95,7 +108,7 @@ try {
     check(m.allOnScreen && m.scrollers.length === 0, `all ${m.cards} organs are on screen with no scroll`);
     check(m.grid && m.grid.w * m.grid.h >= w * h * 0.25, `the grid is big (${Math.round(m.grid?.w)}x${Math.round(m.grid?.h)})`);
     check(m.nameSize >= 11, `organ names are readable (${m.nameSize}px)`);
-    check(/WAR\s*260/i.test(m.meat), `the war meat shows in the stage ("${m.meat.replace(/\s+/g, ' ')}")`);
+    check(m.meat.replace(/\s+/g, ' ').includes(`WAR ${m.war}`), `the war meat shows in the stage ("${m.meat.replace(/\s+/g, ' ')}")`);
     for (const sel of ['#hand', '#call-early', '#biomass-wrap', '#botbar', '#topbar']) check(!(await visible(page, sel)), `${sel} is not shown in the organ stage`);
     await page.locator('#under-done').click();
     await page.waitForTimeout(400);

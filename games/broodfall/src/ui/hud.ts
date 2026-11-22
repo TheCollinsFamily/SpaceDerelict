@@ -304,6 +304,9 @@ export class Hud {
         continue;
       }
       if (e.kind === 'banked') continue; // too chatty for the feed; the wallet ticks instead
+      // The core struck (Nov 22 2026): the integrity bar jolts and what was lost lingers on it a moment (style.css #core-hp-wrap.hit).
+      if (e.kind === 'core-hit') { this.coreStruck(e.amount); continue; }
+      if (e.kind === 'limb-hit') continue;
       const line = FEED_LINES[e.kind]?.(e);
       if (!line || !line.text) continue;
       const div = document.createElement('div');
@@ -313,6 +316,27 @@ export class Hud {
       window.setTimeout(() => div.remove(), 6500);
       while (this.el.feed.children.length > 9) this.el.feed.lastChild?.remove();
     }
+  }
+
+  /** When the integrity bar last jolted (ms): a swarm keeps it shaking, it does not restart it every bite. */
+  private coreStruckAt = -1e9;
+  private coreStruck(amount: number): void {
+    const wrap = document.getElementById('core-hp-wrap');
+    const bar = document.getElementById('core-hp-bar');
+    if (!wrap || !bar) return;
+    // What was lost: a pale band behind the fill that follows it down a moment later.
+    if (!document.getElementById('core-hp-lag')) {
+      const lag = document.createElement('div');
+      lag.id = 'core-hp-lag';
+      lag.style.width = this.el.coreFill.style.width || '100%';
+      bar.prepend(lag);
+    }
+    const now = performance.now();
+    if (now - this.coreStruckAt < (amount >= 20 ? 120 : 300)) return;
+    this.coreStruckAt = now;
+    wrap.classList.remove('hit', 'hit-heavy');
+    void wrap.offsetWidth;
+    wrap.classList.add(amount >= 20 ? 'hit-heavy' : 'hit');
   }
 
   /** The limb inspect panel: hp, stats, traits, and its targeting controls. */
@@ -576,6 +600,8 @@ export class Hud {
 
     const coreFrac = Math.max(0, sim.coreHp / sim.coreMaxHp);
     this.el.coreFill.style.width = `${(coreFrac * 100).toFixed(1)}%`;
+    const lag = document.getElementById('core-hp-lag');
+    if (lag) lag.style.width = `${(coreFrac * 100).toFixed(1)}%`;
     this.el.coreFill.style.background = coreFrac > 0.4 ? 'var(--ok)' : 'var(--accent)';
 
     // Cards: re-render only when the hand or affordability changes.

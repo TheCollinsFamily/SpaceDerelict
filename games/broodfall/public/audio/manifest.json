@@ -756,6 +756,36 @@
     0.167,
     0.286
    ]
+  },
+  "core-hit": {
+   "files": [
+    "audio/core-hit-1.ogg",
+    "audio/core-hit-2.ogg",
+    "audio/core-hit-3.ogg"
+   ],
+   "seconds": [
+    0.957,
+    0.957,
+    0.957
+   ]
+  },
+  "limb-hit": {
+   "files": [
+    "audio/limb-hit-1.ogg",
+    "audio/limb-hit-2.ogg",
+    "audio/limb-hit-3.ogg",
+    "audio/limb-hit-4.ogg",
+    "audio/limb-hit-5.ogg",
+    "audio/limb-hit-6.ogg"
+   ],
+   "seconds": [
+    0.447,
+    0.157,
+    0.397,
+    0.146,
+    0.617,
+    0.137
+   ]
   }
  },
  "voice": {

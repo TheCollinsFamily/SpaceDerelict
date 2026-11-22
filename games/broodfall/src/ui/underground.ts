@@ -13,15 +13,16 @@ import { organSpec, type Sim } from '../sim/sim';
 import { neighbours4 } from '../sim/underground';
 import {
   DEPOSITS, FEATURES, FEATURE_FAVORED_LEVEL, FEATURE_LEVEL, METEOR_THEME, ORGAN_BY_ID, ORGAN_DEFS,
-  ORGAN_LEVEL_POTENCY,
+  ORGAN_LEVEL_POTENCY, ORGAN_LEVEL_TEMPO,
 } from '../../content/underground';
+import { placementAnchor } from './organPlace';
 import { TOWERS } from '../../content/data';
 import { strainIcons, strainLabel } from './strain';
 import { artUrl, loadManifest } from '../render/art';
 import { coreStageOf } from '../render/coreStage';
 import { UnderAlive } from './underAlive';
 import { skylineLife } from './skylineLife';
-import type { OrganId, TowerFamily } from '../sim/types';
+import type { Organ, OrganId, TowerFamily } from '../sim/types';
 
 const COLOR: Record<OrganId, string> = {
   forge: '#d8cfb0', venom: '#6aa84f', gut: '#b5654a', nerve: '#e0c040', lattice: '#8fc7c0',
@@ -153,6 +154,11 @@ export class UndergroundScreen {
   private status = document.getElementById('under-status')!;
   private summary = document.getElementById('under-summary')!;
   private hoverCell: number | null = null;
+  /** The pointer on the board, in cells (a cell's middle is its column, row): where a picked organ is anchored. */
+  private pointer: { x: number; y: number } | null = null;
+  /** The card in the tray under the pointer ('core' for the meteor's): its whole text goes in the readout. */
+  private paletteHover: string | null = null;
+  private meatBox = document.getElementById('under-meat');
   private lastKey = '';
   /** The scan's pictures (absolute URLs), once loaded; null keeps the old look. */
   private scan: ScanArt | null = null;
@@ -217,7 +223,15 @@ export class UndergroundScreen {
     document.getElementById('under-done')!.addEventListener('click', () => this.hide());
     this.palette.addEventListener('click', (ev) => {
       const b = (ev.target as HTMLElement).closest<HTMLElement>('[data-organ]');
-      if (!b || b.classList.contains('built') || b.classList.contains('locked')) return;
+      if (!b || b.classList.contains('locked')) return;
+      // A grown theme organ's card (or the meteor's) levels it, as clicking it on the board does (Collins, Nov 22
+      // 2026: "how to upgrade it (clicking again) is not working": the card said "click it to level" and ignored it).
+      if (b.classList.contains('built')) {
+        const sim = this.getSim();
+        const o = b.dataset.organ === 'core' ? null : sim.organs.find((x) => x.organ === b.dataset.organ);
+        this.levelUp(o ?? null);
+        return;
+      }
       const id = b.dataset.organ as OrganId;
       this.selected = this.selected === id ? null : id;
       this.rot = 0;
@@ -226,16 +240,26 @@ export class UndergroundScreen {
     });
     this.grid.addEventListener('click', (ev) => {
       const c = (ev.target as HTMLElement).closest<HTMLElement>('[data-cell]');
+      this.pointer = this.pointerOf(ev);
       if (c) this.clickCell(Number(c.dataset.cell));
     });
     this.grid.addEventListener('contextmenu', (ev) => {
       ev.preventDefault();
       if (this.selected) { this.rot = (this.rot + 1) % 4; this.paintGhost(); this.updateStatus(); }
     });
+    this.palette.addEventListener('mouseover', (ev) => {
+      const b = (ev.target as HTMLElement).closest<HTMLElement>('[data-organ]');
+      const id = b?.dataset.organ ?? null;
+      if (id !== this.paletteHover) { this.paletteHover = id; this.updateStatus(); }
+    });
+    this.palette.addEventListener('mouseleave', () => { this.paletteHover = null; this.updateStatus(); });
     this.grid.addEventListener('mousemove', (ev) => {
       const c = (ev.target as HTMLElement).closest<HTMLElement>('[data-cell]');
       const cell = c ? Number(c.dataset.cell) : null;
-      if (cell !== this.hoverCell) {
+      const before = this.selected && this.hoverCell !== null ? this.anchorOf(this.hoverCell) : null;
+      this.pointer = this.pointerOf(ev);
+      const after = this.selected && cell !== null ? this.anchorOf(cell) : null;
+      if (cell !== this.hoverCell || before !== after) {
         this.hoverCell = cell;
         this.status.classList.remove('warn');
         this.paintGhost();
@@ -244,6 +268,7 @@ export class UndergroundScreen {
     });
     this.grid.addEventListener('mouseleave', () => {
       this.hoverCell = null;
+      this.pointer = null;
       this.paintGhost();
       this.updateStatus();
     });
@@ -286,15 +311,46 @@ export class UndergroundScreen {
     return [c.war ? `${c.war}W` : '', c.science ? `${c.science}S` : ''].filter(Boolean).join(' ');
   }
 
+  /** The pointer on the board in cells, from a mouse event over the grid. */
+  private pointerOf(ev: MouseEvent): { x: number; y: number } | null {
+    const r = this.grid.getBoundingClientRect();
+    const u = this.getSim().under;
+    if (!r.width || !r.height) return null;
+    return { x: ((ev.clientX - r.left) / r.width) * u.w - 0.5, y: ((ev.clientY - r.top) / r.height) * u.h - 0.5 };
+  }
+
+  /** Where the picked organ grows for a hovered cell: the same answer for the ghost and the click (src/ui/organPlace.ts). */
+  private anchorOf(cell: number): number {
+    if (!this.selected) return cell;
+    return placementAnchor(this.getSim(), this.selected, cell, this.rot, this.pointer?.x, this.pointer?.y).anchor;
+  }
+
+  /** Level a grown theme organ (null: the meteor), from the board or its card. */
+  private levelUp(o: Organ | null): void {
+    const sim = this.getSim();
+    const r = sim.issue({ kind: 'upgrade-organ', organInstanceId: o ? o.id : -1 });
+    if (!r.ok) this.flash(r.err === 'cannot afford' ? `not enough meat to level it: ${this.priceText(sim.organUpgradeCost(o))} needed` : String(r.err));
+    this.lastKey = '';
+    this.render();
+  }
+
   private clickCell(cell: number): void {
     const sim = this.getSim();
     const organ = sim.organAt(cell);
     const onMeteor = sim.under.cells[cell].kind === 'meteor';
     if (!this.selected && (onMeteor || (organ && ORGAN_BY_ID[organ.organ].kind === 'theme'))) {
-      const r = sim.issue({ kind: 'upgrade-organ', organInstanceId: onMeteor ? -1 : organ!.id });
-      if (!r.ok) this.flash(r.err === 'cannot afford' ? 'not enough meat to level it' : String(r.err));
+      this.levelUp(onMeteor ? null : organ!);
+      return;
+    } else if (this.selected && (onMeteor || (organ && ORGAN_BY_ID[organ.organ].kind === 'theme'))) {
+      // Still holding a heart (a zone organ stays picked after it grows) and clicking a theme organ: nothing can grow
+      // over it, so the click means the organ. Drop the pick and say how to level it (never spend meat on a misclick).
+      this.selected = null;
+      this.lastKey = '';
+      this.render();
+      this.flash('put the picked organ down — click it again to level it');
+      return;
     } else if (this.selected) {
-      const r = sim.issue({ kind: 'build-organ', organ: this.selected, cell, rot: this.rot });
+      const r = sim.issue({ kind: 'build-organ', organ: this.selected, cell: this.anchorOf(cell), rot: this.rot });
       if (r.ok) {
         if (ORGAN_BY_ID[this.selected].kind === 'theme') this.selected = null;
       } else {
@@ -381,26 +437,51 @@ export class UndergroundScreen {
     if (key === this.lastKey) return;
     this.lastKey = key;
 
-    const section = (title: string, ids: OrganId[]) => `<div class="pal-title">${title}</div><div class="pal-row">${ids.map((id) => {
+    // The meat it is bought with, in the stage itself (the top bar is hidden while it is open).
+    if (this.meatBox) {
+      this.meatBox.innerHTML = `<div class="meat um-war"><span class="meat-label">WAR</span><span class="meat-val">${Math.floor(sim.meat.war)}</span></div>`
+        + `<div class="meat um-sci"><span class="meat-label">SCI</span><span class="meat-val">${Math.floor(sim.meat.science)}</span></div>`;
+    }
+    // The board's shape, for the layout that fits it to the window (src/style.css #under-board).
+    this.el.style.setProperty('--ug-w', String(u.w));
+    this.el.style.setProperty('--ug-h', String(u.h));
+
+    // A grown theme organ (and the meteor) is one of a kind: its card turns into its LEVEL card, lit in its own colour,
+    // with the next level's price and what it gives, and a click on it levels it (Collins, Nov 22 2026: "the change when
+    // something that can only have one of it has been placed is not super obvious ... the cost for upgrading it is not
+    // obvious the benefits of upgrading it are not obvious").
+    const levelCard = (key: string, name: string, glyph: string, color: string, glow: string, tile: string | undefined, lvl: number, cost: { war?: number; science?: number }, unlocks: readonly TowerFamily[], verb: string | undefined): string => {
+      const afford = sim.canAfford(cost);
+      return `<button class="under-organ built${afford ? '' : ' poor'}" data-organ="${key}" style="--acc:${glow}" title="Click to level it: ${this.priceText(cost)}">
+        <b><span class="og" style="color:${color}">${glyph}</span> ${name}</b>
+        <em class="own">✓ LV ${lvl}</em>${tile ? `<img class="pal-tile" alt="" src="${tile}" style="--acc:${glow}">` : ''}
+        <span>${unlocks.map(famName).join(', ')}${verb ? ` · shares ${verb}` : ''}</span>
+        <i class="next">▲ LV ${lvl + 1} · ${this.priceText(cost)} · +${Math.round(ORGAN_LEVEL_POTENCY * 100)}% power &amp; speed</i>
+      </button>`;
+    };
+    const section = (title: string, ids: OrganId[], lead = '') => `<div class="pal-title">${title}</div><div class="pal-row">${lead}${ids.map((id) => {
       const d = ORGAN_BY_ID[id];
-      const built = d.kind === 'theme' && sim.organs.some((o) => o.organ === id);
+      const mine = sim.organs.filter((o) => o.organ === id);
+      const glow = GLOW[id] ?? COLOR[id];
+      if (d.kind === 'theme' && mine.length) {
+        return levelCard(id, d.name, GLYPH[id], COLOR[id], glow, this.scan?.tiles[id], mine[0].level, sim.organUpgradeCost(mine[0]), d.unlocks ?? [], d.signature ? VERB[d.signature] ?? d.signature : undefined);
+      }
       const afford = sim.canAfford(d.cost);
       const locked = !!sim.cfg.organPool && !sim.cfg.organPool.includes(id) && !(sim.cfg.startOrgans ?? []).includes(id);
-      const lvl = built ? sim.organs.find((o) => o.organ === id)!.level : 0;
       const what = d.kind === 'theme' && d.unlocks ? d.unlocks.map(famName).join(', ') : d.blurb;
-      return `<button class="under-organ${this.selected === id ? ' on' : ''}${afford ? '' : ' poor'}${built ? ' built' : ''}${locked ? ' locked' : ''}" data-organ="${id}" title="${d.blurb}">
+      return `<button class="under-organ${this.selected === id ? ' on' : ''}${afford ? '' : ' poor'}${locked ? ' locked' : ''}${mine.length ? ' has' : ''}" data-organ="${id}" style="--acc:${glow}" title="${d.blurb}">
         <b><span class="og" style="color:${COLOR[id]}">${GLYPH[id]}</span> ${d.name}</b>
-        ${this.shapeSvg(id)}${this.scan?.tiles[id] ? `<img class="pal-tile" alt="" src="${this.scan.tiles[id]}" style="--acc:${GLOW[id] ?? COLOR[id]}">` : ""}
+        ${mine.length ? `<em class="own count">×${mine.length}</em>` : this.shapeSvg(id)}${this.scan?.tiles[id] ? `<img class="pal-tile" alt="" src="${this.scan.tiles[id]}" style="--acc:${glow}">` : ''}
         <span>${what}</span>
-        <i>${locked ? (this.plain ? 'LOCKED' : 'LOCKED — get it in the Gene Bay on the ship') : built ? `GROWN · LV ${lvl} — click it to level` : this.priceText(d.cost)}${d.signature ? ` · shares ${VERB[d.signature] ?? d.signature}` : ''}</i>
+        <i>${locked ? (this.plain ? 'LOCKED' : 'LOCKED — get it in the Gene Bay on the ship') : this.priceText(d.cost)}${d.signature ? ` · shares ${VERB[d.signature] ?? d.signature}` : ''}</i>
       </button>`;
     }).join('')}</div>`;
-    this.palette.innerHTML = section('THEMES — unlock limbs, power them by level', ORGAN_DEFS.filter((d) => d.kind === 'theme').map((d) => d.id))
+    const core = levelCard('core', METEOR_THEME.name, '☄', '#ff6a50', '#ff6a50', this.scan?.meteor ?? undefined, sim.coreLevel, sim.organUpgradeCost(null), METEOR_THEME.unlocks, VERB[METEOR_THEME.signature]);
+    this.palette.innerHTML = section('THEMES — unlock limbs, power them by level', ORGAN_DEFS.filter((d) => d.kind === 'theme').map((d) => d.id), core)
       + section('ZONES & TISSUE', ORGAN_DEFS.filter((d) => d.kind === 'zone' || d.kind === 'root').map((d) => d.id))
       + section('CREEP — organs that make FREE creep nodes', ORGAN_DEFS.filter((d) => d.kind === 'creep').map((d) => d.id))
-      + section('SCAFFOLD — FREE plinths: raise a limb, or level a roof for a big one', ORGAN_DEFS.filter((d) => d.kind === 'scaffold').map((d) => d.id))
-      + section('SEEDING — must touch the SURFACE: shoots a free Seedling limb up every 2 turns', ORGAN_DEFS.filter((d) => d.kind === 'seeder').map((d) => d.id))
-      + section('FIELD UNITS — grow units you command (born at the body at the wave clear, paid for then)', ORGAN_DEFS.filter((d) => d.kind === 'unit').map((d) => d.id));
+      // Three small kinds share one block, so the whole tray fits the window (each card says what it is; the readout says the rest).
+      + section('MORE — free plinths, free seedlings, units you command', ORGAN_DEFS.filter((d) => d.kind === 'scaffold' || d.kind === 'seeder' || d.kind === 'unit').map((d) => d.id));
 
     const cells: string[] = [];
     for (let i = 0; i < u.cells.length; i++) {
@@ -424,7 +505,7 @@ export class UndergroundScreen {
         inner = `<span class="glyph">${d.glyph}</span><span class="tag">${d.name}</span>`;
         cls += ` d-${c.deposit}`;
       } else if (c.kind === 'meteor' && i === u.cells.findIndex((x) => x.kind === 'meteor')) {
-        inner = `<span class="tag core">METEOR CORE · LV ${sim.coreLevel}</span>`;
+        inner = `<span class="tag core">METEOR CORE · LV ${sim.coreLevel} <em class="up">▲ ${this.priceText(sim.organUpgradeCost(null))}</em></span>`;
       }
       const scan = this.scan;
       if (scan) {
@@ -520,7 +601,7 @@ export class UndergroundScreen {
         ].filter(Boolean).join(' ');
         cls += ` ${edge}`;
         if (i === organ.cells[0]) {
-          const lv = ORGAN_BY_ID[organ.organ].kind === 'theme' ? `<span class="pow">LV${organ.level}</span>` : '';
+          const lv = ORGAN_BY_ID[organ.organ].kind === 'theme' ? `<span class="pow">LV${organ.level} <em class="up">▲ ${this.priceText(sim.organUpgradeCost(organ))}</em></span>` : '';
           inner += `<span class="organ">${GLYPH[organ.organ]}</span>${lv}`;
         } else if (organ.organ === 'bladder' && i === organ.cells[1]) {
           // The bladder's RECIPE, in the same marks as its nodes on the map and in the tray.
@@ -595,9 +676,9 @@ export class UndergroundScreen {
   private ghostCells(): { cells: number[]; ok: boolean } | null {
     if (!this.selected || this.hoverCell === null) return null;
     const sim = this.getSim();
-    const cells = sim.organFootprint(this.selected, this.hoverCell, this.rot);
-    if (!cells) return null;
-    return { cells, ok: sim.canBuildOrgan(this.selected, this.hoverCell, this.rot) };
+    const p = placementAnchor(sim, this.selected, this.hoverCell, this.rot, this.pointer?.x, this.pointer?.y);
+    if (!p.cells) return null;
+    return { cells: p.cells, ok: p.ok };
   }
 
   private paintGhost(): void {
@@ -639,20 +720,18 @@ export class UndergroundScreen {
     const sim = this.getSim();
     const u = sim.under;
     const i = this.hoverCell;
+    if (i === null && this.paletteHover) { this.status.textContent = this.cardText(this.paletteHover); return; }
     if (i === null) {
       this.status.textContent = this.selected
         ? `${organSpec(this.selected).name}: hover the board — RIGHT-CLICK (or R) rotates — it must touch the meteor or an organ`
-        : 'Pick an organ above. Click a grown theme organ (or the meteor) to LEVEL it.';
+        : 'Pick an organ on the left, then click the board. Click a grown theme organ, the meteor, or its card to LEVEL it.';
       return;
     }
     const c = u.cells[i];
     const organ = sim.organAt(i);
     if (!this.selected) {
       if (c.kind === 'meteor' || (organ && ORGAN_BY_ID[organ.organ].kind === 'theme')) {
-        const cost = sim.organUpgradeCost(organ ?? null);
-        const lv = organ ? organ.level : sim.coreLevel;
-        const name = organ ? organSpec(organ.organ).name : METEOR_THEME.name;
-        this.status.textContent = `CLICK TO LEVEL ${name.toUpperCase()} to LV${lv + 1} for ${this.priceText(cost)}: its limbs +${Math.round(ORGAN_LEVEL_POTENCY * 100)}% potency and tempo, drawn more often`;
+        this.status.textContent = this.levelText(organ ?? null);
         return;
       }
       if (organ && organ.organ === 'bladder') {
@@ -720,6 +799,41 @@ export class UndergroundScreen {
     const deps = g.cells.map((x) => u.cells[x]).filter((x) => x.kind === 'deposit' && x.deposit && !x.claimed);
     for (const dep of deps) parts.push(`covers ${dep === undefined ? '' : this.depositText(dep.deposit!, dep.pips?.map((p) => p.family), dep.pay)}`);
     this.status.textContent = `GROW ${d.name.toUpperCase()} HERE (${this.priceText(d.cost)}): ${parts.join(' · ')}`;
+  }
+
+  /** A grown theme organ (null: the meteor) under the pointer or its card: its level now, the next one's price and what it gives. */
+  private levelText(organ: Organ | null): string {
+    const sim = this.getSim();
+    const cost = sim.organUpgradeCost(organ);
+    const lv = organ ? organ.level : sim.coreLevel;
+    const name = organ ? organSpec(organ.organ).name : METEOR_THEME.name;
+    const fams = (organ ? ORGAN_BY_ID[organ.organ].unlocks ?? [] : METEOR_THEME.unlocks).map(famName).join(', ');
+    const p = Math.round(ORGAN_LEVEL_POTENCY * 100), t = Math.round(ORGAN_LEVEL_TEMPO * 100);
+    const now = lv > 1 ? ` (now +${p * (lv - 1)}% power, +${t * (lv - 1)}% speed)` : '';
+    const pay = sim.canAfford(cost) ? 'CLICK TO LEVEL IT' : `NOT ENOUGH MEAT YET (you have ${Math.floor(sim.meat.war)}W${sim.meat.science ? ` ${Math.floor(sim.meat.science)}S` : ''})`;
+    return `${name.toUpperCase()} LV ${lv}${now} → LV ${lv + 1} for ${this.priceText(cost)}: ${fams} +${p}% power, +${t}% speed, drawn more often. ${pay}.`;
+  }
+
+  /** The whole of a card in the tray, for the readout while the pointer is on it. */
+  private cardText(key: string): string {
+    const sim = this.getSim();
+    if (key === 'core') return this.levelText(null);
+    const id = key as OrganId;
+    const d = ORGAN_BY_ID[id];
+    if (!d) return '';
+    const mine = sim.organs.filter((o) => o.organ === id);
+    if (d.kind === 'theme' && mine.length) return this.levelText(mine[0]);
+    const locked = !!sim.cfg.organPool && !sim.cfg.organPool.includes(id) && !(sim.cfg.startOrgans ?? []).includes(id);
+    const kind: Record<string, string> = {
+      theme: `one of a kind: unlocks ${(d.unlocks ?? []).map(famName).join(', ')} into your draw${d.signature ? `, and shares ${VERB[d.signature] ?? d.signature} with the theme organs it touches` : ''}`,
+      seeder: 'must touch the SURFACE (a cell in the top row): shoots a free Seedling limb up every 2 turns',
+      unit: 'grows units you command: born at the body at the wave clear, paid for then',
+      scaffold: 'FREE plinths: raise a limb, or level a roof for a big one',
+    };
+    const parts = [`${d.name.toUpperCase()} (${this.priceText(d.cost)})`, kind[d.kind] ?? '', d.blurb];
+    if (mine.length) parts.push(`you have ${mine.length}`);
+    parts.push(locked ? (this.plain ? 'LOCKED' : 'LOCKED — get it in the Gene Bay on the ship') : 'click to pick it, then click the board');
+    return parts.filter(Boolean).join(' — ');
   }
 
   private depositText(kind: keyof typeof DEPOSITS, pips?: string[], pay?: { war?: number; science?: number; royal?: number; biomass?: number }): string {

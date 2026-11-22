@@ -13,7 +13,8 @@ import { Application, Assets, Container, Graphics, Matrix, Rectangle, Sprite, Te
 import { CellType, PLATE } from '../sim/citymap';
 import { Sim, enemySpec, towerSpec, towerStats } from '../sim/sim';
 import { footprintOf } from '../sim/footprint';
-import type { Broodling, Broodmother, Caste, CreepSource, Enemy, EnemyKind, RootDir, Tower, TowerFamily, UnitOrder } from '../sim/types';
+import type { Broodling, Broodmother, Caste, CreepSource, Enemy, EnemyKind, RootDir, SimEvent, Tower, TowerFamily, UnitOrder } from '../sim/types';
+import { HitMarks, heavyHit, hitRing, hitStrength, type HitMark } from './hitFx';
 import { BoardArtSet, artUrl, type Clip, type LimbArt, type LimbSide, type LoadedUnit, type UnitArt } from './art';
 import { BOSS_SCALE, choose, newFx, observe, playFor, skinOf, type UnitFx } from './unitAnim';
 import {
@@ -248,6 +249,22 @@ export class IsoRenderer extends Renderer {
   rallyFor = new Set<number>();
   /** Nets thrown lately (from 'net-cast' events): drawn as a closing ring of strands. */
   nets: Array<{ at: { x: number; y: number }; r: number; t: number }> = [];
+  /** The hive's blows being shown (src/render/hitFx.ts): the core and the limbs flinch, flash and splat. */
+  private hitMarks = new HitMarks();
+  /** When a splat last burst on the core / on each limb (real seconds): a swarm does not paint it solid. */
+  private coreSplatAt = -1e9;
+  private limbSplatAt = new Map<number, number>();
+  /** The core as drawn last frame: its width on the screen (board pixels) and the light laid over it when struck. */
+  private coreWidth = 0;
+  private coreFlash: Sprite | null = null;
+  /** For the beats (tools/shot-hits.mjs): every blow shown, and the splats burst. */
+  hitLog = { core: 0, limb: 0, splats: 0 };
+  /** For the beats' screenshots: the flinches stand still at the moment they are (a screenshot takes longer than one). */
+  hitsHeld = false;
+  /** For the beats: the blows shown so far, and how strongly the core and each limb flinch now. */
+  hitsNow(): { core: number; limb: number; splats: number; coreNow: number; limbsNow: Array<{ id: number; f: number }> } {
+    return { ...this.hitLog, coreNow: this.hitMarks.coreNow(), limbsNow: [...this.hitMarks.limbs.keys()].map((id) => ({ id, f: this.hitMarks.limbNow(id) })) };
+  }
   /** The townsfolk fleeing the crash, by the crowd's id (src/sim/civilians.ts; stepped by the base class). */
   private civViews = new Map<number, CivView>();
   private limbs = new Map<number, LimbView>();
@@ -634,6 +651,7 @@ export class IsoRenderer extends Renderer {
     this.smoothDt = this.idleClock - this.tongueClock;
     this.tongueClock = this.idleClock;
     this.fx.begin(dt);
+    if (!this.hitsHeld) this.hitMarks.step(dtReal);
 
     this.updateCamera(sim, dtReal);
     this.syncMap(sim);
@@ -651,6 +669,7 @@ export class IsoRenderer extends Renderer {
     this.syncCore(sim, dtReal);
     this.syncNodes(sim);
     this.syncLimbs(sim, dt);
+    this.drawHitRings();
     this.throwers = [];
     this.syncUnits(sim, dt);
     // The Flametroopers' fire, from the nozzles just placed; flames on your units in a stream.
@@ -668,6 +687,129 @@ export class IsoRenderer extends Renderer {
     this.fx.end();
     this.drawAim(this.aimG, sim);
     this.syncPlaceGhost(sim);
+  }
+
+  /**
+   * THE HIVE STRUCK (a 'core-hit' or 'limb-hit' from the sim, handed over by main.ts): the struck thing flinches
+   * away from the blow and is lit red for a moment (drawn in syncCore / syncLimbs), and a splat bursts on its side
+   * facing the attacker; a shell or a bomber's blast bursts as a blast. Reduce flashes: no light, no glowing blast.
+   */
+  hit(sim: Sim, e: Extract<SimEvent, { kind: 'core-hit' } | { kind: 'limb-hit' }>): void {
+    if (!this.geo) return;
+    const core = e.kind === 'core-hit';
+    const at = core ? (this.square ?? sim.core) : e.at;
+    let dx = e.from.x - at.x;
+    let dy = e.from.y - at.y;
+    const n = Math.hypot(dx, dy);
+    if (n < 1e-3) { dx = 0; dy = 1; } else { dx /= n; dy /= n; }
+    const shielded = !core && e.shielded;
+    const k = hitStrength(e) * (shielded ? 0.7 : 1);
+    const g = this.geo;
+    const heavy = heavyHit(e);
+    // Where it lands on the screen: on the core's rim toward the blow, half way up the rock; on a limb's body.
+    let q: Pt;
+    let ring: number;
+    if (core) {
+      const rim = sim.cfg.cellPx * 1.05;
+      const p = project(g, at.x + dx * rim, at.y + dy * rim, this.heightAt(sim, at.x, at.y));
+      const w = this.coreWidth || g.a * 3;
+      q = { x: p.x, y: p.y - w * 0.28 };
+      ring = w * (heavy ? 0.36 : 0.26);
+    } else {
+      const off = sim.cfg.cellPx * 0.35;
+      const p = project(g, at.x + dx * off, at.y + dy * off, this.heightAt(sim, at.x, at.y));
+      q = { x: p.x, y: p.y - g.a * 0.45 };
+      ring = g.a * (heavy ? 0.62 : 0.46);
+    }
+    const mark: HitMark = { t: 0, dx, dy, k, shielded, p: q, ring };
+    if (core) { this.hitMarks.hitCore(mark); this.hitLog.core++; } else { this.hitMarks.hitLimb(e.towerId, mark); this.hitLog.limb++; }
+    if (!this.fx.ready()) return;
+    const now = performance.now() / 1000;
+    if (core) {
+      if (now - this.coreSplatAt < (heavy ? 0.05 : 0.11)) return;
+      this.coreSplatAt = now;
+      const w = this.coreWidth || g.a * 3;
+      if (heavy && !CALM.flashes) this.fx.burst('blast', q, w * 0.42 * k, 0.42, 0.6);
+      this.fx.burst('flesh-splat', q, w * 0.4 * k, 0.5, 0.55);
+    } else {
+      if (now - (this.limbSplatAt.get(e.towerId) ?? -1e9) < 0.2) return;
+      this.limbSplatAt.set(e.towerId, now);
+      if (this.limbSplatAt.size > 256) this.limbSplatAt.clear();
+      if (shielded) this.fx.burst('mist-cloud', q, g.a * 0.7, 0.35, 0.7); // the shield took it: a pale puff, no blood
+      else {
+        if (heavy && !CALM.flashes) this.fx.burst('blast', q, g.a * 0.8 * k, 0.4, 0.6);
+        this.fx.burst('flesh-splat', q, g.a * 0.7 * k, 0.45, 0.55);
+      }
+    }
+    this.hitLog.splats++;
+  }
+
+  /** The rings of impact where the hive's blows landed (pale bone; a shield's knock pale blue), over the board. */
+  private drawHitRings(): void {
+    const draw = (m: HitMark | null | undefined) => {
+      if (!m?.p || !m.ring) return;
+      const { r, a } = hitRing(m.t, m.k, CALM.motion);
+      if (a <= 0.01) return;
+      const alpha = a * (CALM.flashes ? 0.55 : 1);
+      const rad = (m.ring * r) / K;
+      const color = m.shielded ? 0xa8dcff : 0xffe2c4;
+      // Flattened like the ground it is seen across; a dark edge under the pale one so it reads on red flesh and on stone.
+      this.marksG.ellipse(m.p.x / K, m.p.y / K, rad, rad * 0.62).stroke({ width: 4.2, color: 0x1a0606, alpha: alpha * 0.55 });
+      this.marksG.ellipse(m.p.x / K, m.p.y / K, rad, rad * 0.62).stroke({ width: 2.2, color, alpha });
+    };
+    draw(this.hitMarks.core);
+    for (const m of this.hitMarks.limbs.values()) draw(m);
+  }
+
+  /** The way a world direction points on the screen (unit vector), from a world point. */
+  private screenDir(at: Pt, dx: number, dy: number): Pt {
+    const a = project(this.geo, at.x, at.y);
+    const b = project(this.geo, at.x + dx * 10, at.y + dy * 10);
+    const n = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+    return { x: (b.x - a.x) / n, y: (b.y - a.y) / n };
+  }
+
+  /** The core struck: shoved away from the blow, squashed, lit red (src/render/hitFx.ts). */
+  private coreFlinch(sim: Sim, sq: Pt): void {
+    const core = this.core;
+    if (!core) return;
+    const f = this.hitMarks.coreNow();
+    const m = this.hitMarks.core;
+    if (!this.coreFlash) {
+      this.coreFlash = new Sprite(core.texture);
+      this.coreFlash.blendMode = 'add';
+      this.coreFlash.visible = false;
+      this.sorted.addChild(this.coreFlash);
+    }
+    const flash = this.coreFlash;
+    core.tint = 0xffffff;
+    if (this.coreOver) this.coreOver.tint = 0xffffff;
+    if (!m || f <= 0.01) { flash.visible = false; return; }
+    if (!CALM.motion) {
+      const d = this.screenDir(sq, m.dx, m.dy);
+      const push = Math.min(1.6, f) * this.geo.a * 0.07;
+      core.position.set(core.position.x - d.x * push, core.position.y - d.y * push * 0.6);
+      const sx = 1 + 0.045 * Math.min(1.4, f);
+      const sy = 1 - 0.06 * Math.min(1.4, f);
+      core.scale.set(core.scale.x * sx, core.scale.y * sy);
+      if (this.coreOver?.visible) { this.coreOver.position.copyFrom(core.position); this.coreOver.scale.copyFrom(core.scale); }
+    }
+    if (CALM.flashes) {
+      // No light: a soft warm tint while the blow is fresh.
+      const tint = f > 0.25 ? 0xffc8bc : 0xffffff;
+      core.tint = tint;
+      if (this.coreOver) this.coreOver.tint = tint;
+      flash.visible = false;
+      return;
+    }
+    flash.visible = true;
+    flash.texture = core.texture;
+    flash.anchor.copyFrom(core.anchor);
+    flash.scale.copyFrom(core.scale);
+    flash.position.copyFrom(core.position);
+    flash.zIndex = core.zIndex + 0.2;
+    flash.tint = 0xff4a30;
+    flash.alpha = Math.min(0.85, 0.7 * f);
   }
 
   /** Where things are on the screen, for the effects (board pixels, before the camera). */
@@ -1360,6 +1502,8 @@ export class IsoRenderer extends Renderer {
       this.coreShade.height = width * 1.3 * (this.geo.b / this.geo.a);
       this.coreShade.zIndex = this.core.zIndex - 1;
     }
+    this.coreWidth = width;
+    this.coreFlinch(sim, sq);
   }
 
   /** The stage the core is drawn at (0 until the first frame), the one it is growing into, and how far that clip is. */
@@ -1733,6 +1877,17 @@ export class IsoRenderer extends Renderer {
       v.shade.height = width * 1.5 * (g.b / g.a);
       v.shade.zIndex = v.sprite.zIndex - 1;
       v.sprite.tint = held ? 0x9a90a8 : 0xffffff;
+      // Struck by the hive (src/render/hitFx.ts): shoved away from the blow, lit red (a shield's knock: pale blue).
+      const hitF = this.hitMarks.limbNow(t.id);
+      const hitM = hitF > 0.01 ? this.hitMarks.limbs.get(t.id) : undefined;
+      if (hitM && !art.flat) {
+        if (!CALM.motion && art.on !== 'street') {
+          const d = this.screenDir(t.pos, hitM.dx, hitM.dy);
+          const push = Math.min(1.6, hitF) * g.a * 0.09;
+          v.sprite.position.set(v.sprite.position.x - d.x * push, v.sprite.position.y - d.y * push * 0.6);
+        }
+        if (CALM.flashes && hitF > 0.2) v.sprite.tint = hitM.shielded ? 0xd0e8ff : 0xffc0b4;
+      }
       // A seedling in the air is not on its roof yet.
       const flying = sim.seedFlights.some((f) => f.towerId === t.id);
       v.sprite.visible = !flying;
@@ -1748,11 +1903,12 @@ export class IsoRenderer extends Renderer {
         v.over.tint = v.sprite.tint;
       }
       v.shade.visible = !flying && !art.flat;
-      v.flash.visible = !flying && glow > 0.01;
+      const hitGlow = hitM && !CALM.flashes && glow <= 0.01 ? Math.min(0.85, 0.75 * hitF) : 0;
+      v.flash.visible = !flying && (glow > 0.01 || hitGlow > 0.01);
       if (v.flash.visible) {
         v.flash.texture = tex;
-        v.flash.alpha = glow;
-        v.flash.tint = 0xffd9a0;
+        v.flash.alpha = glow > 0.01 ? glow : hitGlow;
+        v.flash.tint = glow > 0.01 ? 0xffd9a0 : hitM?.shielded ? 0x70b8ff : 0xff4a30;
         v.flash.anchor.copyFrom(v.sprite.anchor);
         v.flash.scale.copyFrom(v.sprite.scale);
         v.flash.position.copyFrom(v.sprite.position);

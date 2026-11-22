@@ -130,7 +130,19 @@ body.view-iso #view-controls { display: flex; }
 #core-hp-wrap { position: absolute; left: 10px; top: 10px; width: 190px; }
 #core-hp-label { font-size: 9px; letter-spacing: 2px; color: #cbb; }
 #core-hp-bar { height: 12px; background: #1d130f; border: 2px solid #52422c; border-radius: 3px; overflow: hidden; }
-#core-hp-fill { height: 100%; width: 100%; background: var(--ok); transition: width 0.3s, background 0.3s; }
+#core-hp-bar { position: relative; }
+#core-hp-fill { position: relative; height: 100%; width: 100%; background: var(--ok); transition: width 0.3s, background 0.3s; }
+/* The core struck (src/ui/hud.ts coreStruck): what was lost lingers as a pale band, the bar jolts and flushes red. */
+#core-hp-lag { position: absolute; left: 0; top: 0; bottom: 0; background: #f3d6c8; transition: width 0.5s ease-in 0.35s; }
+#core-hp-wrap.hit, #core-hp-wrap.hit-heavy { animation: core-jolt 0.32s ease-out; }
+#core-hp-wrap.hit-heavy { animation-duration: 0.45s; }
+#core-hp-wrap.hit #core-hp-bar, #core-hp-wrap.hit-heavy #core-hp-bar { animation: core-flush 0.4s ease-out; }
+#core-hp-wrap.hit #core-hp-label, #core-hp-wrap.hit-heavy #core-hp-label { animation: core-label 0.4s ease-out; }
+@keyframes core-jolt { 0% { transform: translate(0, 0); } 15% { transform: translate(-3px, 1px); } 35% { transform: translate(3px, -1px); } 55% { transform: translate(-2px, 0); } 75% { transform: translate(1px, 0); } 100% { transform: translate(0, 0); } }
+@keyframes core-flush { 0% { border-color: #ff4a30; box-shadow: 0 0 10px #ff4a30; } 100% { box-shadow: 0 0 0 transparent; } }
+@keyframes core-label { 0% { color: #ff7a5c; } 100% { } }
+html.reduce-motion #core-hp-wrap.hit, html.reduce-motion #core-hp-wrap.hit-heavy { animation: none; }
+html.reduce-flashes #core-hp-wrap.hit #core-hp-bar, html.reduce-flashes #core-hp-wrap.hit-heavy #core-hp-bar { animation: none; }
 
 #hint {
   position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
@@ -346,7 +358,7 @@ body.view-iso #view-controls { display: flex; }
 body:has(#under:not(.hidden)) #topbar, body:has(#under:not(.hidden)) #botbar { visibility: hidden; }
 #under-card {
   flex: 1; min-width: 0; min-height: 0; box-sizing: border-box; overflow: hidden;
-  display: grid; grid-template-columns: clamp(450px, 32vw, 900px) minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr);
+  display: grid; grid-template-columns: clamp(450px, 40vw, 1000px) minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr);
   grid-template-areas: "head head" "tray board"; gap: 10px clamp(14px, 1.4vw, 32px);
   background: var(--panel); border: 3px double var(--panel-edge);
   padding: 10px clamp(12px, 1.2vw, 28px) 12px; color: var(--ink); font-size: var(--u-fs);
@@ -358,7 +370,7 @@ body:has(#under:not(.hidden)) #topbar, body:has(#under:not(.hidden)) #botbar { v
 /* The board: as wide as the column, unless that would make it taller than the column leaves room for (the street strip
    is 7.4% of the width, a row of cells is a column of the width / 1.25; 150px stays for the readout under it). */
 #under-board {
-  --ub-tall: calc(0.074 + var(--uh, 9) / (var(--uw, 13) * 1.25));
+  --ub-tall: calc(0.074 + var(--ug-h, 9) / (var(--ug-w, 13) * 1.25));
   width: min(100cqw, calc((100cqh - 150px) / var(--ub-tall))); flex: 0 0 auto; margin: 0 auto;
   container-type: inline-size;
 }
@@ -387,8 +399,12 @@ body.science-closed #under-meat .um-sci, body.first-mission:not(.m1-science) #un
 .under-organ .shape { grid-area: shape; margin-top: 2px; }
 /* What it does: one line on a short window, two on most, three on a tall one (the whole of it is in the readout under the board on hover). */
 .under-organ span:not(.og) { grid-area: what; line-height: 1.25; opacity: 0.85; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
-@media (max-height: 860px) { .under-organ span:not(.og) { -webkit-line-clamp: 1; } }
-@media (min-height: 1250px) { .under-organ span:not(.og) { -webkit-line-clamp: 3; } }
+@media (max-height: 1150px) { .under-organ span:not(.og) { -webkit-line-clamp: 1; } }
+@media (max-height: 820px) { .under-organ span:not(.og) { display: none; } }
+/* A laptop: the tile pictures give their width to the names, and the blocks sit closer. */
+@media (max-width: 1500px) { #under.scan .under-organ .pal-tile { display: none; } }
+@media (max-height: 820px) { #under .pal-title { margin: 5px 0 3px; } .under-organ { padding-top: 4px; padding-bottom: 4px; } }
+@media (min-height: 1500px) { .under-organ span:not(.og) { -webkit-line-clamp: 3; } }
 .under-organ i { grid-area: price; font-style: normal; font-weight: bold; font-size: 0.95em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 @media (max-width: 900px) {
   #under-card { grid-template-columns: 1fr; grid-template-rows: auto auto auto; grid-template-areas: "head" "board" "tray"; overflow: auto; }
@@ -398,8 +414,27 @@ body.science-closed #under-meat .um-sci, body.first-mission:not(.m1-science) #un
 }
 .under-organ.on { background: var(--ink); color: var(--panel); }
 .under-organ.poor i { color: var(--accent); }
-.under-organ.built { opacity: 0.7; cursor: default; border-style: dashed; }
-.under-organ.built i { color: #1d5c58; }
+/* A grown theme organ (and the meteor): its LEVEL card, lit in its own colour, a ✓ LV badge where its shape was, and the
+   next level's price and gain on its last line; a click levels it. Unaffordable: the price line dims. */
+#under #under-palette .under-organ.built {
+  cursor: pointer; opacity: 1; border: 1px solid var(--acc); color: var(--sc-ink, var(--ink));
+  background: linear-gradient(90deg, color-mix(in srgb, var(--acc) 22%, transparent), color-mix(in srgb, var(--acc) 6%, transparent));
+  box-shadow: inset 3px 0 0 var(--acc), 0 0 10px -4px var(--acc);
+}
+#under #under-palette .under-organ.built:hover { box-shadow: inset 3px 0 0 var(--acc), 0 0 14px -2px var(--acc); border-color: #fff; }
+#under #under-palette .under-organ.built i.next { color: #eaffd8; font-weight: 600; }
+#under #under-palette .under-organ.built.poor i.next { color: #ff9a86; opacity: 0.9; }
+.under-organ .own {
+  grid-area: shape; font-style: normal; font-weight: bold; font-size: 0.95em; letter-spacing: 1px; white-space: nowrap;
+  padding: 1px 6px; border-radius: 2px; background: var(--acc, #444); color: #07090b;
+}
+.under-organ .own.count { background: transparent; color: var(--acc, inherit); border: 1px solid var(--acc, currentColor); }
+.under-organ.has { border-color: color-mix(in srgb, var(--acc) 55%, transparent); }
+/* On the board: a theme organ's level tag carries the next level's price. */
+.uc .pow .up, .uc .tag.core .up { font-style: normal; opacity: 0.85; font-weight: normal; }
+/* The level tags grow with the board (they were 9px and 7px on a board three times the size it was made for). */
+#under-grid .uc .pow { font-size: clamp(9px, 0.95cqw, 15px); }
+#under-grid .uc .tag.core { font-size: clamp(7px, 0.8cqw, 13px); }
 .og { display: inline-block; width: 14px; text-align: center; text-shadow: 0 0 1px #26200f; }
 #under-summary { font-size: 0.95em; line-height: 1.4; }
 #under-summary b { text-transform: uppercase; }
@@ -621,15 +656,14 @@ body.in-ship #topbar, body.in-ship #botbar { visibility: hidden; }
 #under.scan #under-note { color: #ff9a6a; }
 #under.scan .under-organ {
   background: #0c1215; color: #b9cdd0; border: 1px solid #243238; border-radius: 3px;
-  grid-template-columns: 1fr auto auto; grid-template-areas: "name shape tile" "what shape tile" "price price price";
+  grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "tile name shape" "tile what what" "tile price price";
 }
 #under.scan .under-organ:hover { border-color: #4b6a72; }
 #under.scan .under-organ.on { background: #13232a; color: #e8f8fa; border-color: #9ad8e0; box-shadow: 0 0 10px rgba(120, 220, 230, 0.35); }
 #under.scan .under-organ.poor i { color: #ff8a6a; }
-#under.scan .under-organ.built i { color: #7fd8c8; }
 #under.scan .under-organ .shape rect { stroke: #070a0c; }
 #under.scan .og { text-shadow: 0 0 6px currentColor; }
-#under.scan .pal-tile { grid-area: tile; width: 3.4em; height: 3.4em; border-radius: 3px; object-fit: cover; box-shadow: 0 0 0 1px var(--acc), 0 0 8px -2px var(--acc); opacity: 0.9; }
+#under.scan .pal-tile { grid-area: tile; align-self: center; width: 3em; height: 3em; border-radius: 3px; object-fit: cover; box-shadow: 0 0 0 1px var(--acc), 0 0 8px -2px var(--acc); opacity: 0.9; }
 #under.scan #under-summary { color: #9ab8bc; }
 #under.scan #under-summary b { color: #d8eef0; }
 #under.scan #under-status { color: #9ad8e0; font-family: "Courier New", monospace; }

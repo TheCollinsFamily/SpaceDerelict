@@ -29,6 +29,9 @@ export const SFX_RULES: Record<string, SfxRule> = {
   'fire-lash': R(0.36, 0.1, 3), 'fire-hiss': R(0.28, 0.14, 2),
   // what lands
   'hit-splat': R(0.26, 0.06, 4, 2), 'hit-blast': R(0.5, 0.1, 3), 'enemy-cannon': R(0.5, 0.2, 2, 1),
+  // the hive hurting the body (Nov 22 2026): the core is a heavy thud at most every 150 ms however many bite it (a swarm is
+  // a drumming, never a buzz); a limb's is smaller and quicker; each limb also has its own gap (gameSounds.ts LIMB_GAP)
+  'core-hit': R(0.85, 0.15, 2, 1.5), 'limb-hit': R(0.5, 0.09, 3, 2),
   // the insects dying
   'die-bug': R(0.42, 0.06, 4, 2), 'die-soldier': R(0.5, 0.1, 3, 1.5), 'die-flier': R(0.5, 0.15, 2),
   'die-boss': R(0.95, 2, 1, 0), 'boss-roar': R(1, 3, 1, 0),
