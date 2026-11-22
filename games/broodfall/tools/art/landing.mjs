@@ -427,6 +427,7 @@ function sheet() {
 //   node tools/art/landing.mjs endings [sets]          boards (free) → hits → clips → bake, whatever is missing
 //   node tools/art/landing.mjs endings-boards [sets]   only the boards (free)
 //   node tools/art/landing.mjs endings-hits [sets]     boards + the hit stills (LOOK at notes/art-review/landing/endings-hits-*.jpg)
+//   node tools/art/landing.mjs endings-bake [sets]     cut the endings again from their raws (free)
 //   ENDINGS_ONLY=e1-b6 ...                              only these boards (keys as in landing.json)
 //
 // Raw: art-src/landing/endings/<set>-<key>-board.png|.json, -hit.png, -clip.mp4, head-<set>.mp4.
@@ -531,7 +532,9 @@ function endingBake(ids) {
   const jsonFile = path.join(OUT, 'landing.json');
   const json = JSON.parse(fs.readFileSync(jsonFile, 'utf8'));
   const S = `scale=1280:720:flags=lanczos,fps=${FPS},format=yuv420p`;
-  const l = CUT.land, settle = 0.6;
+  // The board is fully in 0.1 s before the end (bakeFilm's fade only reached it on the very last frame, ~7% of the clip
+  // still showing: suburb e2-b1 ended 4.19 from its board), so the film's last frames ARE the board the game starts on.
+  const l = CUT.land, settle = 0.6, held = 0.1;
   for (const id of ids) {
     const film = json.films[id];
     if (!film) { console.warn(`[endings] ${id}: no film in landing.json`); continue; }
@@ -545,7 +548,7 @@ function endingBake(ids) {
       ffmpeg(['-y', '-i', head, '-i', clip, '-loop', '1', '-i', eraw(id, k.key, 'band.png'), '-filter_complex',
         `[0:v]${S}[h];` +
         `[1:v]trim=start_frame=1,setpts=(PTS-STARTPTS)/${l.speed},${S}[l0];` +
-        `[2:v]trim=end=${lLen.toFixed(3)},setpts=PTS-STARTPTS,${S},format=yuva420p,fade=t=in:st=${(lLen - settle).toFixed(3)}:d=${settle}:alpha=1[b];` +
+        `[2:v]trim=end=${lLen.toFixed(3)},setpts=PTS-STARTPTS,${S},format=yuva420p,fade=t=in:st=${(lLen - settle - held).toFixed(3)}:d=${settle}:alpha=1[b];` +
         `[l0][b]overlay=shortest=1,format=yuv420p[l];[h][l]concat=n=2:v=1[v]`,
       '-map', '[v]', ...ENC, out], `${id} ${k.key} film`);
       const endPng = eraw(id, k.key, 'end.png');
@@ -561,7 +564,7 @@ function endingBake(ids) {
 }
 
 const args = process.argv.slice(2);
-const steps = new Set(['boards', 'stills', 'clips', 'bake', 'sheet', 'design', 'motion', 'probe', 'endings', 'endings-boards', 'endings-hits']);
+const steps = new Set(['boards', 'stills', 'clips', 'bake', 'sheet', 'design', 'motion', 'probe', 'endings', 'endings-boards', 'endings-hits', 'endings-bake']);
 const step = steps.has(args[0]) ? args[0] : null;
 const only = args.filter((a) => !steps.has(a) && !a.startsWith('--'));
 const ids = SETS.map((s) => s.id).filter((id) => !only.length || only.includes(id));
@@ -569,6 +572,7 @@ const ids = SETS.map((s) => s.id).filter((id) => !only.length || only.includes(i
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
   fs.mkdirSync(DIR, { recursive: true });
   if (step === 'boards') { await boards(ids); process.exit(0); }
+  if (step === 'endings-bake') { endingBake(ids); process.exit(0); }
   if (step?.startsWith('endings')) {
     await endingBoards(ids);
     if (step !== 'endings-boards') {

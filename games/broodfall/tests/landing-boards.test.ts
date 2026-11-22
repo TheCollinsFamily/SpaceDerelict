@@ -10,6 +10,7 @@ import { START_PLATES } from '../content/plates';
 import {
   LANDING_BOARDS, LANDING_ENTRANCES, boardKey, canLandOnBoard, endingFor, landingBoardSeed, landingDecision, type LandingFilm,
 } from '../src/meta/landing';
+// @ts-expect-error: a plain .mjs tool with no types (only its two lists are read)
 import * as tool from '../tools/art/landing.mjs';
 
 const CFG = { gridW: 50, gridH: 40, cellPx: 26, directive: { kind: 'hold' as const, waves: 5 }, organStage: true, genes: [] as string[] };
