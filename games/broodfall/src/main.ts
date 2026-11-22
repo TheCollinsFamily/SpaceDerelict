@@ -1296,7 +1296,9 @@ function landingBoard(): LandingBoard | null {
   const c = renderer.app.canvas.getBoundingClientRect();
   if (c.width < 2) return null;
   const p = renderer instanceof IsoRenderer ? renderer.worldToScreen(sim.core.x, sim.core.y) : null;
-  return { canvas: { left: c.left, top: c.top, width: c.width, height: c.height }, core: p ? { x: p.x, y: p.y } : null };
+  const r = renderer;
+  const view = r instanceof IsoRenderer ? { canvasW: r.app.renderer.width, liveScale: r.scaleNow(), fitAt: (w: number, h: number) => r.fitAt(w, h) } : undefined;
+  return { canvas: { left: c.left, top: c.top, width: c.width, height: c.height }, core: p ? { x: p.x, y: p.y } : null, view };
 }
 
 let landing = false;

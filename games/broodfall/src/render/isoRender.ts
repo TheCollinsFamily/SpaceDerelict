@@ -288,6 +288,8 @@ export class IsoRenderer extends Renderer {
   /** The scale that frames the claimed districts, and the middle of them on the board. */
   private fit = 1;
   private mid: Pt = { x: 0, y: 0 };
+  /** The size of what is framed (projected pixels at scale 1), so the framing at another canvas size can be told. */
+  private framed = { w: 0, h: 0 };
 
   /** What flies, bursts and hangs in the air (src/render/fx.ts). */
   private fx: FxLayer;
@@ -478,7 +480,8 @@ export class IsoRenderer extends Renderer {
     minX -= m; maxX += m; minY -= m; maxY += m;
     const vw = this.app.renderer.width;
     const vh = this.app.renderer.height;
-    this.fit = Math.min(vw / (maxX - minX), vh / (maxY - minY), 1.1);
+    this.framed = { w: maxX - minX, h: maxY - minY };
+    this.fit = this.fitAt(vw, vh);
     this.mid = { x: (minX + maxX) / 2, y: (minY + maxY) / 2 };
     if (this.keep) {
       // After a turn: the place that was in the middle of the screen is in the middle of it still.
@@ -499,6 +502,20 @@ export class IsoRenderer extends Renderer {
     }
     this.world.scale.set(this.camScale);
     this.world.position.set(this.camX, this.camY);
+  }
+
+  /**
+   * The scale the board would be framed at (zoom 1) on a canvas of this size. The landing films were pictured on the
+   * old fixed 1360x1000 canvas: their last frame is laid on the live board by this (src/meta/landing.ts filmBoxOnBoard).
+   */
+  fitAt(vw: number, vh: number): number {
+    if (!(this.framed.w > 0 && this.framed.h > 0)) return 1;
+    return Math.min(vw / this.framed.w, vh / this.framed.h, 1.1);
+  }
+
+  /** Board pixels on the canvas per world pixel, as drawn now. */
+  scaleNow(): number {
+    return this.camScale;
   }
 
   /** Zoom in or out, keeping the point under the pointer where it is. */

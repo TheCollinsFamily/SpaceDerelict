@@ -99,12 +99,31 @@ export function landingDecision(o: {
   return 'play';
 }
 
+/** How the live board is drawn, against how it was drawn when the films' last frames were pictured. */
+export interface BoardView {
+  /** The canvas's own width in pixels (the renderer's, not its box on the screen). */
+  canvasW: number;
+  /** Canvas pixels per world pixel now. */
+  liveScale: number;
+  /** Canvas pixels per world pixel the same board was framed at on the films' canvas (`LandingArt.canvas`). */
+  filmScale: number;
+}
+
 /**
  * Where the film's picture must lie on the screen so that its last frame lies on the live board: the band of the
  * board's canvas it shows, mapped through the canvas's box on the screen, moved so that the film's crater is on the
  * live meteor (another seed puts the crash district elsewhere on the canvas).
  */
-export function filmBoxOnBoard(canvasBox: Rect, art: Pick<LandingArt, 'canvas' | 'band'>, film: Pick<LandingFilm, 'core'>, liveCore: Pt | null): Rect {
+export function filmBoxOnBoard(canvasBox: Rect, art: Pick<LandingArt, 'canvas' | 'band'>, film: Pick<LandingFilm, 'core'>, liveCore: Pt | null, view?: BoardView): Rect {
+  // The canvas fills the window since Nov 22 2026 (it was the films' own 1360x1000): the picture is scaled by how big
+  // the board is drawn on the screen against how big it was drawn in the film, and its crater put on the live meteor.
+  if (view && liveCore && view.canvasW > 0 && view.filmScale > 0) {
+    const kc = canvasBox.width / view.canvasW; // screen pixels per canvas pixel
+    const s = (view.liveScale * kc) / view.filmScale; // screen pixels per film pixel
+    const cx = canvasBox.left + liveCore.x * kc;
+    const cy = canvasBox.top + liveCore.y * kc;
+    return { left: cx + (art.band.x - film.core.x) * s, top: cy + (art.band.y - film.core.y) * s, width: art.band.w * s, height: art.band.h * s };
+  }
   const k = canvasBox.width / art.canvas.w;
   const dx = liveCore ? liveCore.x - film.core.x : 0;
   const dy = liveCore ? liveCore.y - film.core.y : 0;

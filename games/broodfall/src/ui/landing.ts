@@ -47,6 +47,8 @@ export interface LandingBoard {
   /** The board's canvas on the screen, and the live meteor on that canvas (canvas pixels); null while not ready. */
   canvas: Rect;
   core: Pt | null;
+  /** How the board is drawn now: its canvas width, its scale, and the scale it would frame at on another canvas. */
+  view?: { canvasW: number; liveScale: number; fitAt(w: number, h: number): number };
 }
 export interface LandingOpts {
   /** The board, once it is drawn and the run can start; null until then. */
@@ -114,7 +116,8 @@ export function playLanding(film: LandingFilm, land: LandingArt, o: LandingOpts)
     state.phase = 'handoff';
     report(state);
     corner?.hide();
-    const target = filmBoxOnBoard(b.canvas, land, film, b.core);
+    const target = filmBoxOnBoard(b.canvas, land, film, b.core, b.view
+      ? { canvasW: b.view.canvasW, liveScale: b.view.liveScale, filmScale: b.view.fitAt(land.canvas.w, land.canvas.h) } : undefined);
     const gentle = !!o.reduceMotion;
     const move = gentle || how === 'skipped' ? 0 : 700;
     el.classList.add('handing');
