@@ -129,7 +129,7 @@ const FEED_LINES: Partial<Record<SimEvent['kind'], (e: SimEvent) => { text: stri
   'mule-lost': () => ({ text: 'SPORE MULE LOST before it rooted — escort the next one', cls: 'hot' }),
   'mother-off-creep': () => ({ text: 'the creep under a Broodmother is gone: she stops brooding and fights', cls: 'hot' }),
   'chyme-tally': (e) => e.kind === 'chyme-tally'
-    ? { text: `◆ chyme rendered: +${e.earned} (${e.digested} digested, ${e.ration} for the clear) · ${e.bank} for organs`, cls: 'sci' }
+    ? { text: `◆ chyme rendered: +${e.earned} (${e.digested} digested${e.rumen ? `, ${e.rumen} from the Rumen` : ''}, ${e.ration} for the clear) · ${e.bank} for organs`, cls: 'sci' }
     : { text: '', cls: '' },
   'organ-upgraded': (e) => e.kind === 'organ-upgraded'
     ? { text: `organ levelled: ${e.organ} → LV${e.level}`, cls: 'sci' }

@@ -518,7 +518,7 @@ function handleEvents(events: SimEvent[]): void {
     if (e.kind === 'wave-cleared' && sim.meatOrgans) banner(`WAVE ${e.wave} CLEARED · +${e.bonus} WAR MEAT`);
     if (e.kind === 'chyme-tally') {
       const wage = sim.warWage(e.wave);
-      banner(`WAVE ${e.wave} CLEARED${wage > 0 ? ` · +${wage} WAR` : ''} · +${e.earned} ◆ CHYME FOR ORGANS\n${e.digested} FROM THE BODIES THE CREEP DIGESTED · ${e.ration} FOR THE CLEAR`);
+      banner(`WAVE ${e.wave} CLEARED${wage > 0 ? ` · +${wage} WAR` : ''} · +${e.earned} ◆ CHYME FOR ORGANS\n${e.digested} FROM THE BODIES THE CREEP DIGESTED${e.rumen ? ` · ${e.rumen} FROM THE RUMEN` : ''} · ${e.ration} FOR THE CLEAR`);
     }
     if (e.kind === 'royal-incoming') banner('THE ROYAL TAKES THE FIELD');
     if (e.kind === 'plate-drafted') banner(`DISTRICT CONSUMED: ${e.name.toUpperCase()}`);

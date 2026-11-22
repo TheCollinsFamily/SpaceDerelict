@@ -13,6 +13,7 @@
 import { writeFileSync } from 'node:fs';
 import { it } from 'vitest';
 import { Autoplayer } from '../../src/sim/autoplayer';
+import { RUMEN_POLICY } from '../../src/sim/organPolicy';
 import { DT, Sim } from '../../src/sim/sim';
 import { ORGAN_BY_ID } from '../../content/underground';
 import { BALANCE } from '../../content/data';
@@ -22,10 +23,15 @@ import type { Command, SimConfig } from '../../src/sim/types';
 if (process.env.ORG_BAL) Object.assign(BALANCE as Record<string, unknown>, JSON.parse(process.env.ORG_BAL));
 // ORG_ECON=meat: the economy before chyme (organs bought with war and science), for the before/after comparison.
 const ECON = process.env.ORG_ECON === 'meat' ? 'meat' : undefined;
+// ORG_RUMEN=early|mid|late|never: when the scripted player grows THE RUMEN (DESIGN.md "THE RUMEN"; default mid).
+if (process.env.ORG_RUMEN) RUMEN_POLICY.when = process.env.ORG_RUMEN as typeof RUMEN_POLICY.when;
 
 type Wave = { earnedWar: number; earnedSci: number; wage: number; chymeIn: number; organs: number; levels: number; organSpend: number; limbSpend: number; limbs: number; spoiled: number };
 const blank = (): Wave => ({ earnedWar: 0, earnedSci: 0, wage: 0, chymeIn: 0, organs: 0, levels: 0, organSpend: 0, limbSpend: 0, limbs: 0, spoiled: 0 });
 const sumCost = (c: Record<string, number | undefined>) => Object.values(c).reduce<number>((a, b) => a + (b ?? 0), 0);
+
+/** The wave after which the Rumen was grown (-1: never). */
+function rumenAt(sim: Sim, waves: unknown[]): number { void waves; return sim.organs.some((o) => o.organ === 'rumen') ? (sim as unknown as { rumenWave: number }).rumenWave ?? -1 : -1; }
 
 function run(seed: number, hold: number) {
   const sim = new Sim({ gridW: 50, gridH: 40, cellPx: 26, seed, directive: { kind: 'hold', waves: hold }, organStage: true, ...(ECON ? { organEconomy: ECON } : {}) } as SimConfig);
@@ -44,7 +50,7 @@ function run(seed: number, hold: number) {
     const before = sim.meat.war + sim.meat.science;
     const r = orig(cmd);
     if (r.ok) {
-      if (cmd.kind === 'build-organ') { cur().organs++; cur().organSpend += organCost; }
+      if (cmd.kind === 'build-organ') { cur().organs++; cur().organSpend += organCost; if (cmd.organ === 'rumen') (sim as unknown as { rumenWave: number }).rumenWave = sim.wavesCleared; }
       if (cmd.kind === 'upgrade-organ') { cur().levels++; cur().organSpend += organCost; }
       if (cmd.kind === 'build') { cur().limbs++; cur().limbSpend += Math.max(0, before - (sim.meat.war + sim.meat.science)); }
     }
@@ -67,7 +73,7 @@ function run(seed: number, hold: number) {
   }
   const themes = sim.organs.filter((o) => ORGAN_BY_ID[o.organ].kind === 'theme').length;
   const levels = sim.organs.reduce((a, o) => a + (o.level - 1), 0) + (sim.coreLevel - 1);
-  return { sim, waves, themes, levels, chymeEarned, chymeLeft: Number(s.chyme ?? 0) };
+  return { sim, waves, themes, levels, chymeEarned, chymeLeft: Number(s.chyme ?? 0), rumenAt: rumenAt(sim, waves), rumen: Math.floor(sim.rumenEarned) };
 }
 
 it('organ economy: naive hold-12 over ten seeds', () => {
@@ -76,6 +82,7 @@ it('organ economy: naive hold-12 over ten seeds', () => {
   const rows: string[] = [];
   const all: Wave[][] = [];
   let wins = 0;
+  let rumenSum = 0, rumenRuns = 0, rumenWaveSum = 0;
   const tot = { organs: 0, levels: 0, limbs: 0, organSpend: 0, limbSpend: 0, spoiled: 0, themes: 0, chyme: 0, chymeLeft: 0, cleared: 0 };
   for (let seed = 1; seed <= seeds; seed++) {
     const r = run(seed, hold);
@@ -83,14 +90,16 @@ it('organ economy: naive hold-12 over ten seeds', () => {
     if (r.sim.outcome === 'won') wins++;
     const w = r.waves.reduce((a, x) => { for (const k of Object.keys(a) as (keyof Wave)[]) a[k] += x[k]; return a; }, blank());
     tot.organs += w.organs; tot.levels += w.levels; tot.limbs += w.limbs; tot.organSpend += w.organSpend; tot.limbSpend += w.limbSpend;
+    if (r.rumenAt >= 0) { rumenRuns++; rumenSum += r.rumen; rumenWaveSum += r.rumenAt; }
     tot.spoiled += w.spoiled; tot.themes += r.themes; tot.chyme += r.chymeEarned; tot.chymeLeft += r.chymeLeft; tot.cleared += r.sim.wavesCleared;
     rows.push(`seed ${String(seed).padStart(2)} ${r.sim.outcome.padEnd(5)} cleared ${String(r.sim.wavesCleared).padStart(2)} core ${String(Math.round(Math.max(0, r.sim.coreHp) / r.sim.coreMaxHp * 100)).padStart(3)}%`
       + ` limbs ${String(w.limbs).padStart(3)} (spent ${w.limbSpend}) organs ${String(w.organs).padStart(2)} themes ${r.themes} levels ${String(w.levels).padStart(2)} (spent ${w.organSpend})`
-      + ` spoiled ${w.spoiled} war-in ${w.earnedWar}+${w.wage} wage sci-in ${w.earnedSci} chyme ${r.chymeEarned} left ${r.chymeLeft} meat-left ${r.sim.meat.war}/${r.sim.meat.science}`);
+      + ` spoiled ${w.spoiled} war-in ${w.earnedWar}+${w.wage} wage sci-in ${w.earnedSci} chyme ${r.chymeEarned} left ${r.chymeLeft} meat-left ${r.sim.meat.war}/${r.sim.meat.science} rumen ${r.rumenAt >= 0 ? `after wave ${r.rumenAt}, made ${r.rumen}` : 'none'}`);
   }
   const n = seeds;
   rows.push(`\nwins ${wins}/${n}  per run: cleared ${(tot.cleared / n).toFixed(1)} limbs ${(tot.limbs / n).toFixed(1)} organs ${(tot.organs / n).toFixed(1)} themes ${(tot.themes / n).toFixed(1)} levels ${(tot.levels / n).toFixed(1)}`
-    + ` limb-spend ${(tot.limbSpend / n).toFixed(0)} organ-spend ${(tot.organSpend / n).toFixed(0)} spoiled ${(tot.spoiled / n).toFixed(0)} chyme ${(tot.chyme / n).toFixed(0)} chyme-left ${(tot.chymeLeft / n).toFixed(0)}`);
+    + ` limb-spend ${(tot.limbSpend / n).toFixed(0)} organ-spend ${(tot.organSpend / n).toFixed(0)} spoiled ${(tot.spoiled / n).toFixed(0)} chyme ${(tot.chyme / n).toFixed(0)} chyme-left ${(tot.chymeLeft / n).toFixed(0)}`
+    + ` rumen (${RUMEN_POLICY.when}) grown in ${rumenRuns}/${n} runs, after wave ${rumenRuns ? (rumenWaveSum / rumenRuns).toFixed(1) : '-'}, made ${rumenRuns ? (rumenSum / rumenRuns).toFixed(0) : 0} a run`);
   rows.push('\nper wave (means over the runs that reached it): the organ stage AFTER wave n is counted in row n');
   rows.push('wave runs  war-in sci-in  wage chyme-in  limbs limb$  organs levels organ$  spoiled');
   const maxW = Math.max(...all.map((w) => w.length));

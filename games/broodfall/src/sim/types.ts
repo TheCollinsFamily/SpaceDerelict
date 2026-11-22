@@ -5,6 +5,19 @@ import type { DecreeId } from '../../content/royal';
 export type Caste = 'war' | 'science' | 'royal';
 /** What an organ costs: CHYME since Nov 22 2026 (DESIGN.md "Chyme"); war and science only in a run saved before it. */
 export type OrganPrice = { chyme?: number; war?: number; science?: number };
+/** THE RUMEN's terms where it stands (or would stand): DESIGN.md "THE RUMEN". */
+export interface RumenTerms {
+  /** The themes whose limbs' kills feed it ('core' = the meteor's). */
+  feeds: Array<OrganId | 'core'>;
+  /** Extra chyme per body those limbs kill. */
+  perBody: number;
+  /** 1 + heart zones it sits in + features it touches. */
+  level: number;
+  /** The most it ferments at a clear. */
+  fermentCap: number;
+  /** The most it feeds on in one wave. */
+  feedCap: number;
+}
 
 export type TowerFamily =
   | 'spitter' | 'burster' | 'lasher' | 'maw' | 'spine' | 'lure'
@@ -67,7 +80,7 @@ export type CasteFocus = 'any' | Caste;
 export type OrganId = 'forge' | 'venom' | 'gut' | 'nerve' | 'lattice' | 'womb' | 'marrow' | 'resonance'
   | 'heart' | 'brain' | 'gland' | 'root' | 'atrophy'
   | 'bladder' | 'pacemaker' | 'budder' | 'cyst' | 'swell' | 'catapult' | 'mire' | 'acid' | 'runner'
-  | 'scaffold' | 'seeder' | 'mule' | 'infestor' | 'harrier';
+  | 'scaffold' | 'seeder' | 'mule' | 'infestor' | 'harrier' | 'rumen';
 
 export type GlandMode = 'calm' | 'lure' | 'challenge';
 
@@ -791,6 +804,8 @@ export interface Corpse {
   meat: Record<Caste, number>;
   /** The CHYME it renders when digested (by its caste, decided at the kill; summed in a heap). DESIGN.md "Chyme". */
   chyme?: number;
+  /** The extra chyme the RUMEN renders from it (killed by a limb of a theme the Rumen touches; DESIGN.md "THE RUMEN"). */
+  rumen?: number;
   /** Sim time it fell. */
   born: number;
   /** Seconds the creep has been at it (its fall, then the dissolve); absent while it lies off the creep. */
@@ -903,7 +918,7 @@ export type SimEvent =
   | { kind: 'discarded'; family: TowerFamily }
   | { kind: 'wave-cleared'; wave: number; bonus: number }
   /** The clear's tally of CHYME (DESIGN.md "Chyme"): rendered from this wave's digesting, the clear's ration, and the bank now. */
-  | { kind: 'chyme-tally'; wave: number; digested: number; ration: number; earned: number; bank: number }
+  | { kind: 'chyme-tally'; wave: number; digested: number; ration: number; earned: number; bank: number; /** The Rumen's share: what it fed on and fermented. */ rumen?: number }
   | { kind: 'draft-open' }
   | { kind: 'plate-drafted'; name: string; feature: string }
   | { kind: 'royal-decree'; decree: DecreeId; name: string; family?: TowerFamily }
@@ -1112,6 +1127,8 @@ export interface RunStats {
   shelterMeat?: number;
   /** CHYME rendered over the run (DESIGN.md "Chyme"). */
   chymeEarned?: number;
+  /** What the Rumen made over the run (DESIGN.md "THE RUMEN"). */
+  rumenEarned?: number;
   shelterTopStage?: number;
   harriersBorn?: number;
   harriersLost?: number;

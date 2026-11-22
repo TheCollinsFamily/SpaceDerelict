@@ -399,6 +399,8 @@ body:has(#under:not(.hidden)) #topbar, body:has(#under:not(.hidden)) #botbar { v
 #under-meat .um-tally b { color: var(--chyme); font-size: 22px; letter-spacing: 0; }
 @keyframes tally-in { 0% { background: rgba(200, 207, 85, 0.35); } 100% { background: transparent; } }
 #under-meat .um-tally span { color: #b7b38a; letter-spacing: 0; }
+/* THE RUMEN (DESIGN.md "THE RUMEN"): drawn as the Gut's tissue, fermented bile-gold (no art of its own). */
+#under-grid .o-rumen, #under-palette .under-organ[data-organ="rumen"] .pal-tile { filter: hue-rotate(65deg) saturate(1.5) brightness(1.1); }
 body.science-closed #under-meat .um-sci, body.first-mission:not(.m1-science) #under-meat .um-sci { display: none; }
 .pal-title { font-size: 0.82em; letter-spacing: 2px; margin: 8px 0 4px; opacity: 0.8; }
 #under-palette > .pal-title:first-child { margin-top: 0; }

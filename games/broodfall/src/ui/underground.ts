@@ -31,7 +31,7 @@ const COLOR: Record<OrganId, string> = {
   bladder: '#a8c878', pacemaker: '#e89a6a', budder: '#c8e0a0', cyst: '#98b060', swell: '#b8d890', catapult: '#d0b070',
   mire: '#7a9a70', acid: '#c8d040', runner: '#a0c070',
   scaffold: '#e6dcc0',
-  seeder: '#e8a0a0', mule: '#c0d870', infestor: '#b06ad0', harrier: '#e0e070',
+  seeder: '#e8a0a0', mule: '#c0d870', infestor: '#b06ad0', harrier: '#e0e070', rumen: '#c8cf55',
 };
 const GLYPH: Record<OrganId, string> = {
   forge: '⚒', venom: '☣', gut: '∞', nerve: 'ϟ', lattice: '▦', womb: '◉', marrow: '⊞', resonance: '◎',
@@ -39,7 +39,7 @@ const GLYPH: Record<OrganId, string> = {
   bladder: '✿', pacemaker: '♪', budder: '❀', cyst: '•', swell: '◍', catapult: '➶',
   mire: '≋', acid: '☠', runner: '⇶',
   scaffold: '▲',
-  seeder: '⇡', mule: '♞', infestor: '⛫', harrier: '➹',
+  seeder: '⇡', mule: '♞', infestor: '⛫', harrier: '➹', rumen: '⊛',
 };
 const VERB: Partial<Record<TowerFamily, string>> = {
   spitter: 'tempo', impaler: 'armor-pierce', blighter: 'poison', maw: 'richer meat', frond: 'arcs',
@@ -60,7 +60,7 @@ const GLOW: Record<string, string> = {
   gland: '#40e0c0', root: '#d05050', atrophy: '#9a8a80',
   bladder: '#a8f060', pacemaker: '#ff8030', budder: '#b8f080', cyst: '#c0d040', swell: '#b8f090', catapult: '#e8c080',
   mire: '#70b050', acid: '#f0e040', runner: '#80e050',
-  scaffold: '#f0e8d0', seeder: '#ff6a50',
+  scaffold: '#f0e8d0', seeder: '#ff6a50', rumen: '#e0ec50',
 };
 interface ScanArt {
   tile: number; tiles: Record<string, string>; meteor: string | null;
@@ -187,7 +187,7 @@ export class UndergroundScreen {
       const abs = (f: string) => new URL(artUrl(f), document.baseURI).href;
       this.scan = {
         tile: art.tile,
-        tiles: Object.fromEntries(Object.entries(art.tiles).map(([k, f]) => [k, abs(f)])),
+        tiles: Object.fromEntries([...Object.entries(art.tiles), ...(art.tiles.gut && !art.tiles.rumen ? [['rumen', art.tiles.gut]] : [])].map(([k, f]) => [k, abs(f as string)])),
         meteor: art.meteor ? abs(art.meteor) : null,
         skylines: Object.fromEntries(Object.entries(art.skylines ?? {}).map(([k, f]) => [k, abs(f)])),
         dome: art.dome ? abs(art.dome) : null,
@@ -454,7 +454,7 @@ export class UndergroundScreen {
       } else {
         const t = sim.lastChymeTally;
         const tally = t && t.wave === sim.waveNumber
-          ? `<div class="um-tally" title="Chyme is rendered from what the body EARNED: every body the creep digested (war 1, science 2, the court 4), plus the ration for clearing the wave. Meat left unspent renders nothing. It is kept from wave to wave.">WAVE ${t.wave} EARNED <b>+${t.earned}</b><span>${t.digested} from the bodies it digested · ${t.ration} for the clear</span></div>`
+          ? `<div class="um-tally" title="Chyme is rendered from what the body EARNED: every body the creep digested (war 1, science 2, the court 4), plus the ration for clearing the wave. Meat left unspent renders nothing. It is kept from wave to wave.">WAVE ${t.wave} EARNED <b>+${t.earned}</b><span>${t.digested} from the bodies it digested${t.rumen ? ` · ${t.rumen} from the Rumen` : ''} · ${t.ration} for the clear</span></div>`
           : `<div class="um-tally"><span>Chyme comes from what the body earns: every body the creep digests, and every wave it clears.</span></div>`;
         this.meatBox.innerHTML = tally
           + `<div class="meat um-chyme" title="CHYME: what the body renders from what it digests. Organs are bought with it, and it is KEPT from wave to wave."><span class="meat-label">◆ CHYME</span><span class="meat-val">${Math.floor(sim.chyme)}</span></div>`;
@@ -497,7 +497,7 @@ export class UndergroundScreen {
     }).join('')}</div>`;
     const core = levelCard('core', METEOR_THEME.name, '☄', '#ff6a50', '#ff6a50', this.scan?.meteor ?? undefined, sim.coreLevel, sim.organUpgradeCost(null), METEOR_THEME.unlocks, VERB[METEOR_THEME.signature]);
     this.palette.innerHTML = section('THEMES — unlock limbs, power them by level', ORGAN_DEFS.filter((d) => d.kind === 'theme').map((d) => d.id), core)
-      + section('ZONES & TISSUE', ORGAN_DEFS.filter((d) => d.kind === 'zone' || d.kind === 'root').map((d) => d.id))
+      + section('ZONES, TISSUE & THE RUMEN', ORGAN_DEFS.filter((d) => d.kind === 'zone' || d.kind === 'root' || d.kind === 'chyme').map((d) => d.id))
       + section('CREEP — organs that make FREE creep nodes', ORGAN_DEFS.filter((d) => d.kind === 'creep').map((d) => d.id))
       // Three small kinds share one block, so the whole tray fits the window (each card says what it is; the readout says the rest).
       + section('MORE — free plinths, free seedlings, units you command', ORGAN_DEFS.filter((d) => d.kind === 'scaffold' || d.kind === 'seeder' || d.kind === 'unit').map((d) => d.id));
@@ -562,7 +562,7 @@ export class UndergroundScreen {
         if (row === 0 && this.selected && (ORGAN_BY_ID[this.selected] as { surface?: boolean }).surface) cls += ' surface-lane';
       }
       if (organ) {
-        cls += ' has-organ';
+        cls += ` has-organ o-${organ.organ}`;
         style = `background:${COLOR[organ.organ]};`;
         if (scan) {
           // An organ of several cells: this cell's piece of the one picture of the whole organ, turned with it.
@@ -758,6 +758,7 @@ export class UndergroundScreen {
         this.status.textContent = `SPORE BLADDER: grows ${r.per} node${r.per > 1 ? 's' : ''} every ${r.every === 1 ? 'turn' : `${r.every} turns`} (next in ${sim.bladderTurnsLeft(organ)})${r.atWaveStart ? ` (+${r.atWaveStart} when the wave starts)` : ''} — ${strainIcons(sim.bladderStrain(organ))} ${strainLabel(sim.bladderStrain(organ))} (lit: the organs shaping it)`;
         return;
       }
+      if (organ && organ.organ === 'rumen') { this.status.textContent = this.rumenText(organ.cells, true); return; }
       if (organ) { this.status.textContent = `${organSpec(organ.organ).name}: ${ORGAN_BY_ID[organ.organ].blurb}`; return; }
       if (c.kind === 'feature' && c.feature) {
         const f = FEATURES[c.feature];
@@ -803,6 +804,7 @@ export class UndergroundScreen {
     if (d.kind === 'theme' && touched.size) parts.push(`touches ${[...touched].join(', ')} — sharing ${VERB[d.signature!] ?? d.signature}`);
     else if (touched.size) parts.push(`touches ${[...touched].join(', ')}`);
     if (d.kind === 'zone') parts.push(d.blurb);
+    if (sel === 'rumen') { this.status.textContent = `GROW THE RUMEN HERE (${this.priceText(sim.organCost(d.id))}): ${this.rumenText(g.cells, false)}`; return; }
     if (d.kind === 'creep') {
       const bladders = new Set<number>();
       for (const cell of g.cells) for (const n of neighbours4(u, cell)) { const o = sim.organAt(n); if (o && o.organ === 'bladder') bladders.add(o.id); }
@@ -818,6 +820,25 @@ export class UndergroundScreen {
     const deps = g.cells.map((x) => u.cells[x]).filter((x) => x.kind === 'deposit' && x.deposit && !x.claimed);
     for (const dep of deps) parts.push(`covers ${dep === undefined ? '' : this.depositText(dep.deposit!, dep.pips?.map((p) => p.family), dep.pay)}`);
     this.status.textContent = `GROW ${d.name.toUpperCase()} HERE (${this.priceText(sim.organCost(d.id))}): ${parts.join(' · ')}`;
+  }
+
+  /**
+   * THE RUMEN where it stands (or would): which limbs' kills feed it, how much a body, and its ferment (DESIGN.md "THE RUMEN").
+   * Its yield is all placement and play, so the readout says it in those terms.
+   */
+  private rumenText(cells: number[], grown: boolean): string {
+    const sim = this.getSim();
+    const r = sim.rumenFor(cells);
+    const themeName = (t: OrganId | 'core') => (t === 'core' ? METEOR_THEME.name : organSpec(t).name);
+    const fams = r.feeds.flatMap((t) => (t === 'core' ? METEOR_THEME.unlocks : ORGAN_BY_ID[t].unlocks ?? []));
+    const feed = r.feeds.length
+      ? `FEEDS ON what ${fams.map(famName).join(', ')} kill (it touches ${r.feeds.map(themeName).join(', ')}): +${r.perBody} ◆ a body, up to ${r.feedCap} a wave${grown ? ` (${Math.min(sim.rumenFed, r.feedCap)} this wave)` : ''}`
+      : 'touches NO theme organ: no limb feeds it (grow it beside the meteor or a theme, or reach one with roots)';
+    const bank = Math.floor(sim.chyme);
+    const fermentNow = Math.min(r.fermentCap, Math.floor(bank / 10));
+    const ferment = `FERMENTS what you keep: +1 ◆ per 10 banked at every clear, up to ${r.fermentCap} (level ${r.level}${r.level > 1 ? ': hearts and features raise both caps' : ': a heart zone or a feature raises both caps'}) — kept now ${bank}, so +${fermentNow}`;
+    const made = grown ? ` · made ${Math.floor(sim.rumenEarned)} ◆ this run` : '';
+    return `RUMEN: ${feed} · ${ferment}${made}`;
   }
 
   /** A grown theme organ (null: the meteor) under the pointer or its card: its level now, the next one's price and what it gives. */
@@ -842,6 +863,7 @@ export class UndergroundScreen {
     if (!d) return '';
     const mine = sim.organs.filter((o) => o.organ === id);
     if (d.kind === 'theme' && mine.length) return this.levelText(mine[0]);
+    if (id === 'rumen' && mine.length) return this.rumenText(mine[0].cells, true);
     const locked = !!sim.cfg.organPool && !sim.cfg.organPool.includes(id) && !(sim.cfg.startOrgans ?? []).includes(id);
     const kind: Record<string, string> = {
       theme: `one of a kind: unlocks ${(d.unlocks ?? []).map(famName).join(', ')} into your draw${d.signature ? `, and shares ${VERB[d.signature] ?? d.signature} with the theme organs it touches` : ''}`,

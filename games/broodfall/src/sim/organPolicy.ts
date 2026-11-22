@@ -45,6 +45,11 @@ export function bestOrganSpot(sim: Sim, organ: OrganId, random?: Rng): { cell: n
     for (const n of nodes) {
       if (kind === 'zone' ? near(s.cells, n.cells, 2) : near(s.cells, n.cells, 1)) score += 10;
     }
+    // The Rumen feeds on the kills of the themes it touches: the more theme organs (and the more of their limbs) the better.
+    if (organ === 'rumen') {
+      const feeds = sim.rumenFor(s.cells).feeds;
+      score += feeds.length * 25 + sim.towers.filter((t) => feeds.includes(themeOf(t.family))).length;
+    }
     // Pacemakers and budding glands only work on the bladders they touch.
     if (organ === 'pacemaker' || organ === 'budder') {
       const bl = sim.organs.filter((o) => o.organ === 'bladder');
@@ -103,11 +108,21 @@ export function placeNode(sim: Sim, random?: Rng): boolean {
   return best >= 0 && sim.issue({ kind: 'place-node', cell: best }).ok;
 }
 
+/**
+ * When the scripted player grows THE RUMEN (DESIGN.md "THE RUMEN"; the measures set it to compare): 'early' = before
+ * anything else, 'mid' = once it has three themes (the default: by then the themes it touches have limbs on the board to
+ * feed it), 'late' = from wave 8, 'never'.
+ */
+export const RUMEN_POLICY: { when: 'early' | 'mid' | 'late' | 'never' } = { when: 'mid' };
+
 /** The organs the scripted player wants next, in the order it buys them (themes, free-thing organs, creep, hearts). */
 function wantedOrgans(sim: Sim): OrganId[] {
   const have = (id: OrganId) => sim.organs.some((o) => o.organ === id);
   const themes = sim.organs.filter((o) => ORGAN_BY_ID[o.organ].kind === 'theme').length;
   const out: OrganId[] = [];
+  const w = RUMEN_POLICY.when;
+  const rumenDue = (w === 'early') || (w === 'mid' && themes >= 3) || (w === 'late' && sim.wavesCleared >= 8);
+  if (rumenDue && !have('rumen') && (!sim.cfg.organPool || sim.cfg.organPool.includes('rumen'))) out.push('rumen');
   // The organs that make free things (plinths, seedlings), one each, after the fourth theme (measured:
   // after the second they starve the themes, 4/10; after the eighth they come at wave 8 and barely pay):
   // what they make pays back over the waves that are left, so early is worth more than late.
@@ -127,7 +142,11 @@ export function organTurn(sim: Sim, random?: Rng): boolean {
   const wanted = wantedOrgans(sim);
   if (!late) {
     for (const id of wanted) {
-      if (!sim.canAffordOrgan(sim.organCost(id))) continue;
+      if (!sim.canAffordOrgan(sim.organCost(id))) {
+        // 'early': the Rumen FIRST, saving for it rather than buying anything else meanwhile.
+        if (id === 'rumen' && RUMEN_POLICY.when === 'early') return false;
+        continue;
+      }
       const spot = bestOrganSpot(sim, id, random);
       if (spot && sim.issue({ kind: 'build-organ', organ: id, ...spot }).ok) return true;
     }

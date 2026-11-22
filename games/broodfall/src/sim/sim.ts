@@ -24,14 +24,14 @@ import {
 } from '../../content/data';
 import type {
   Broodling, Broodmother, BroodSnap, SporeMule, Shelter, Infestor, Harrier, Caltrop, CardInstance, Caste, Cloud, Command, Corpse, CreepSource, Directive, Enemy, UnitOrder,
-  EnemyKind, EnemySpec, HitBy, HitFx, ModPip, Organ, OrganId, OrganPrice, Outcome, Phase, Projectile,
+  EnemyKind, EnemySpec, HitBy, HitFx, ModPip, Organ, OrganId, OrganPrice, Outcome, Phase, Projectile, RumenTerms,
   NodeStrain, RootDir, RunStats, Shell, SimConfig, SimEvent, Tower, TowerFamily, TowerSpec, UpgradeChoice, UpgradeOption, Vec,
 } from './types';
 import { UPGRADES, UPGRADE_COST } from '../../content/upgrades';
 import {
   BRAIN_DRAW_MULT, CATAPULT_REACH, REVEAL_RANGE, DEPOSITS, FEATURES, FEATURE_FAVORED_LEVEL, FEATURE_LEVEL, METEOR_THEME,
   BLADDER_TURNS, PLINTH_MAX_HEIGHT, PLINTH_TURNS, SEEDLING_FLIGHT, SEEDLING_TURNS, CYST_NODES, LINING_DPS, MIRE_SLOW, NODE_HP, NODE_RADIUS, NODE_TRAMPLE, NODE_REACH, ORGAN_BY_ID, ORGAN_DEFS, ORGAN_LEVEL_POTENCY, ORGAN_LEVEL_TEMPO,
-  LEGACY_ORGAN_COST, METEOR_LEVEL_CHYME,
+  LEGACY_ORGAN_COST, METEOR_LEVEL_CHYME, RUMEN_FEED_CAP, RUMEN_FERMENT_CAP, RUMEN_FERMENT_PER, RUMEN_GLAND_BONUS, RUMEN_PER_BODY,
   type OrganDef,
 } from '../../content/underground';
 import { createUnderground, neighbours4, type Underground } from './underground';
@@ -313,8 +313,13 @@ export class Sim {
   /** Chyme rendered this run, and from this wave's digesting so far (the HUD's accrual and the clear's tally read it). */
   chymeEarned = 0;
   waveChyme = 0;
+  /** What the Rumen made this wave (its feed as bodies are digested, its ferment at the clear) and over the run. */
+  waveRumen = 0;
+  rumenEarned = 0;
+  /** What the Rumen has taken to feed on this wave, counted at the kills (its feed cap). */
+  rumenFed = 0;
   /** The last clear's chyme tally (the organ stage shows what the wave earned, and why). */
-  lastChymeTally: { wave: number; digested: number; ration: number; earned: number } | null = null;
+  lastChymeTally: { wave: number; digested: number; ration: number; earned: number; rumen?: number } | null = null;
   biomass = 0;
   coreHp: number = B.coreHp;
   coreMaxHp: number = B.coreHp;
@@ -414,6 +419,8 @@ export class Sim {
   /** Seedlings in the air: shot up from the landing site; the limb is drawn when it lands. */
   seedFlights: Array<{ id: number; towerId: number; from: Vec; to: Vec; ttl: number }> = [];
   private organCache: Map<OrganId | 'core', { level: number; pips: ModPip[]; draw: number; links: Array<OrganId | 'core'> }> | null = null;
+  /** The grown Rumen's terms (null: none grown), rebuilt with the organ cache. */
+  private rumenCache: RumenTerms | null | undefined = undefined;
   /** The body below: the underground cross-section organs grow into (between waves). */
   under: Underground;
   enemies: Enemy[] = [];
@@ -1895,8 +1902,51 @@ export class Sim {
    * chain; doubled from any organ in a gland's zone), and its DRAW multiplier
    * (brain zones). Cached; rebuilt whenever an organ is grown or upgraded.
    */
+  /**
+   * THE RUMEN's terms for a footprint (DESIGN.md "THE RUMEN"): the themes whose limbs feed it (those its cells touch, edge
+   * to edge or along a root chain, the meteor included), the chyme per body they kill, its level and its ferment cap.
+   * For the grown one (rumen()) and for a ghost being placed (the readout says what it would make there).
+   */
+  rumenFor(cells: number[]): RumenTerms {
+    const u = this.under;
+    const roots = this.organs.filter((o) => o.organ === 'root');
+    const touches = (a: number[], b: number[]) => a.some((c) => neighbours4(u, c).some((n) => b.includes(n)));
+    const seen = new Set<number>();
+    const stack = roots.filter((r) => touches(cells, r.cells));
+    while (stack.length) {
+      const r = stack.pop()!;
+      if (seen.has(r.id)) continue;
+      seen.add(r.id);
+      for (const r2 of roots) if (!seen.has(r2.id) && touches(r.cells, r2.cells)) stack.push(r2);
+    }
+    const reach = [...cells, ...roots.filter((r) => seen.has(r.id)).flatMap((r) => r.cells)];
+    const feeds = this.themeNodes().filter((n) => touches(reach, n.cells)).map((n) => n.theme);
+    const inZone = (effect: string) => this.organs.filter((o) => ORGAN_BY_ID[o.organ].zone === effect && cells.some((c) => this.zoneOf(o.cells).has(c))).length;
+    let features = 0;
+    for (const c of cells) for (const n of neighbours4(u, c)) if (u.cells[n].kind === 'feature' && !cells.includes(n)) features++;
+    const level = 1 + inZone('level') + features;
+    return { feeds, perBody: RUMEN_PER_BODY + RUMEN_GLAND_BONUS * inZone('share'), level, fermentCap: RUMEN_FERMENT_CAP * level, feedCap: RUMEN_FEED_CAP * level };
+  }
+
+  /** The grown Rumen's terms, or null. */
+  rumen(): RumenTerms | null {
+    this.organEffects();
+    if (this.rumenCache === undefined) {
+      const o = this.organs.find((x) => x.organ === 'rumen');
+      this.rumenCache = o && !this.meatOrgans ? this.rumenFor(o.cells) : null;
+    }
+    return this.rumenCache;
+  }
+
+  /** What the Rumen ferments at a clear from a bank of `bank` chyme. */
+  rumenFerment(bank: number): number {
+    const r = this.rumen();
+    return r ? Math.min(r.fermentCap, Math.floor(bank / RUMEN_FERMENT_PER)) : 0;
+  }
+
   organEffects(): Map<OrganId | 'core', { level: number; pips: ModPip[]; draw: number; links: Array<OrganId | 'core'> }> {
     if (this.organCache) return this.organCache;
+    this.rumenCache = undefined;
     const u = this.under;
     const nodes = this.themeNodes();
     const zones = this.organs.filter((o) => ORGAN_BY_ID[o.organ].kind === 'zone')
@@ -3084,6 +3134,7 @@ export class Sim {
     this.lastEntryAt = this.time;
     this.waveNumber += 1;
     this.waveBanked = { war: 0, science: 0, royal: 0 };
+    this.rumenFed = 0;
     for (const sh of this.shelters) sh.harmThisWave = 0;
     // The limbs' economy: war and science you did not spend between waves are lost
     // when the next wave starts. The starting meat carries into wave 1; royal
@@ -3193,14 +3244,24 @@ export class Sim {
         this.events.push({ kind: 'wave-cleared', wave: this.waveNumber, bonus });
         // CHYME (DESIGN.md "Chyme"): the clear's ration on top of what the wave's digesting rendered; then the tally.
         if (!this.meatOrgans) {
+          // The Rumen ferments what was KEPT through the wave (the bank before this clear pays), then the ration.
+          const ferment = this.rumenFerment(this.chyme);
+          this.chyme += ferment;
+          this.chymeEarned += ferment;
+          this.waveRumen += ferment;
+          this.rumenEarned += ferment;
           const ration = this.chymeRation(this.waveNumber);
           this.chyme += ration;
           this.chymeEarned += ration;
           const digested = Math.floor(this.waveChyme);
-          this.lastChymeTally = { wave: this.waveNumber, digested, ration, earned: digested + ration };
-          this.events.push({ kind: 'chyme-tally', wave: this.waveNumber, digested, ration, earned: digested + ration, bank: Math.floor(this.chyme) });
+          const rumen = Math.floor(this.waveRumen);
+          const earned = digested + rumen + ration;
+          this.lastChymeTally = { wave: this.waveNumber, digested, ration, earned, rumen };
+          this.events.push({ kind: 'chyme-tally', wave: this.waveNumber, digested, ration, earned, bank: Math.floor(this.chyme), ...(this.rumen() ? { rumen } : {}) });
           this.stats.chymeEarned = Math.floor(this.chymeEarned);
+          this.stats.rumenEarned = Math.floor(this.rumenEarned);
           this.waveChyme = 0;
+          this.waveRumen = 0;
         }
         // The setup is the body's alone: whoever is still walking the streets goes home (an engineer at its
         // station stays with it; the station and its turrets stand).
@@ -6678,19 +6739,34 @@ export class Sim {
     }
     // CHYME (DESIGN.md "Chyme"): what this body renders for the organs when it is digested, by who it was.
     const chyme = this.meatOrgans ? 0 : B.chymePerBody[spec.caste];
+    // THE RUMEN feeds on the bodies the limbs of the themes it touches kill (DESIGN.md "THE RUMEN").
+    let rumen = 0;
+    const r = this.rumen();
+    if (r) {
+      const fam = killer?.family ?? (creditId !== undefined ? this.towers.find((t) => t.id === creditId)?.family ?? this.creditFamilyOf.get(creditId) : undefined);
+      if (fam && r.feeds.includes(themeOf(fam))) rumen = Math.max(0, Math.min(r.perBody, r.feedCap - this.rumenFed));
+      this.rumenFed += rumen;
+    }
     // Eaten whole (a Maw): the asset digests it itself, so its meat is banked now. Otherwise the body falls
     // where it died and waits for the creep.
-    if (eaten) this.bankMeat(body, chyme);
-    else this.layCorpse(e, body, chyme);
+    if (eaten) this.bankMeat(body, chyme, rumen);
+    else this.layCorpse(e, body, chyme, rumen);
   }
 
   /** Bank meat the creep (or a Maw) has digested: the wallet, the science tally and the HUD's tick; and the body's chyme. */
-  private bankMeat(meat: Record<Caste, number>, chyme = 0): void {
+  private bankMeat(meat: Record<Caste, number>, chyme = 0, rumen = 0): void {
     // The body renders CHYME, the organs' currency, from every body it digests: EARNED, never left over.
     if (chyme > 0) {
       this.chyme += chyme;
       this.chymeEarned += chyme;
       this.waveChyme += chyme;
+    }
+    // ...and the Rumen what it feeds on (kept apart so the tally can say what it made).
+    if (rumen > 0) {
+      this.chyme += rumen;
+      this.chymeEarned += rumen;
+      this.waveRumen += rumen;
+      this.rumenEarned += rumen;
     }
     for (const c of ['war', 'science', 'royal'] as Caste[]) {
       const n = meat[c];
@@ -6707,9 +6783,9 @@ export class Sim {
   }
 
   /** A body falls where it died; past a cell's or the board's cap the oldest merge into heaps (meat summed). */
-  private layCorpse(e: Enemy, meat: Record<Caste, number>, chyme = 0): void {
+  private layCorpse(e: Enemy, meat: Record<Caste, number>, chyme = 0, rumen = 0): void {
     const cell = this.cellAt(e.pos.x, e.pos.y);
-    this.corpses.push({ id: this.nextId++, unitId: e.id, kind: e.kind, pos: { ...e.pos }, cell, meat, born: this.time, ...(chyme ? { chyme } : {}) });
+    this.corpses.push({ id: this.nextId++, unitId: e.id, kind: e.kind, pos: { ...e.pos }, cell, meat, born: this.time, ...(chyme ? { chyme } : {}), ...(rumen ? { rumen } : {}) });
     // Only bodies still lying count toward the caps: one already dissolving is nearly gone.
     const lying = (c: Corpse) => c.digest === undefined && !c.heap;
     const here = this.corpses.filter((c) => c.cell === cell && lying(c));
@@ -6731,6 +6807,7 @@ export class Sim {
     }
     for (const k of ['war', 'science', 'royal'] as Caste[]) heap.meat[k] += c.meat[k];
     if (c.chyme) heap.chyme = (heap.chyme ?? 0) + c.chyme;
+    if (c.rumen) heap.rumen = (heap.rumen ?? 0) + c.rumen;
     heap.heap = (heap.heap ?? 1) + 1;
     if ((heap.kinds ??= [heap.kind]).length < 4) heap.kinds.push(c.kind);
     this.corpses.splice(this.corpses.indexOf(c), 1);
@@ -6748,7 +6825,7 @@ export class Sim {
       }
       c.digest += DT;
       if (c.digest < done) { keep.push(c); continue; }
-      this.bankMeat(c.meat, c.chyme ?? 0);
+      this.bankMeat(c.meat, c.chyme ?? 0, c.rumen ?? 0);
       if (c.waited) this.stats.bodiesReclaimed = (this.stats.bodiesReclaimed ?? 0) + (c.heap ?? 1);
       this.events.push({ kind: 'digested', corpse: c.id, pos: { ...c.pos }, meat: { ...c.meat }, bodies: c.heap ?? 1, ...(c.chyme ? { chyme: c.chyme } : {}) });
     }

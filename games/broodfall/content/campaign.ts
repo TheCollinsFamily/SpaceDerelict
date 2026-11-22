@@ -167,6 +167,9 @@ export const LINEAGES: Partial<Record<OrganId, { catalogue: Catalogue; price: nu
   marrow: { catalogue: 'unsanctioned', price: 8 },
   resonance: { catalogue: 'unsanctioned', price: 10 },
   atrophy: { catalogue: 'unsanctioned', price: 5 },
+  // Nov 22 2026 (DESIGN.md "THE RUMEN"): the chyme-making organ, an early Gene Bay purchase after mission 1 (mission 1 shows
+  // chyme itself first; a second thing that makes it comes once the first is understood).
+  rumen: { catalogue: 'sanctioned', price: 4 },
 };
 
 
