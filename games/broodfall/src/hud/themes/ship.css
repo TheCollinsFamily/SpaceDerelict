@@ -374,6 +374,11 @@
   [data-hud="ship"] #brand-title { font-size: 13px; letter-spacing: 4px; }
   [data-hud="ship"] .organ-btn { min-width: 92px; padding: 6px 8px; }
   [data-hud="ship"] #creep-nodes, [data-hud="ship"] #plinths { min-width: 120px; }
+  /* The directive and the next wave are the words that matter: two lines, never cut ("DESTROY THE…", "NEXT: 8 RESPON"
+     at 1366x768: bug hunt, Nov 22 2026). The brand gives up its room first. */
+  [data-hud="ship"] #brand { flex: 0 1 150px; min-width: 0; }
+  [data-hud="ship"] #biomass-label { white-space: normal; line-height: 1.25; }
+  [data-hud="ship"] #wave-info { white-space: normal; max-width: 260px; }
 }
 @media (max-width: 1280px) {
   [data-hud="ship"] #topbar { gap: 7px; padding: 6px 10px; }
