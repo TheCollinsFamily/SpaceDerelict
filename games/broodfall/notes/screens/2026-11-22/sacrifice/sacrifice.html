@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Paying with a sacrifice</title>
+<style>
+:root{--bg:#121416;--ink:#e6e9ea;--dim:#9aa3a6;--line:#2c3236;--ok:#7fd08a;--warn:#ff6a55}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,sans-serif;margin:0;padding:24px 16px}
+main{max-width:980px;margin:auto}h1{font-size:26px;margin:0 0 6px}h2{font-size:19px;margin:32px 0 8px}
+.short{border-left:4px solid var(--ok);padding:8px 14px;background:#1a1f21}
+img{max-width:100%;border:1px solid var(--line);display:block;margin:8px 0}
+table{border-collapse:collapse;width:100%}td,th{border:1px solid var(--line);padding:6px 10px;text-align:left}
+.v{color:var(--ok);font-weight:bold}.cap{color:var(--dim);font-size:14px}
+</style></head><body><main>
+<h1>Paying for a limb with another limb</h1>
+<p class="cap">Broodfall, Nov 22 2026, from your playtest note.</p>
+<div class="short"><b>Short version:</b> a card you can pay for only by eating one of your limbs now gets its own colour: a red dashed frame with an <b>EAT A LIMB</b> tag on its price. Cards that nothing can pay for stay grey. When you pick one, the hint line names the limb to eat. <span class="v">Works</span>: checked in the real game, and all tests pass.</div>
+
+<h2>Before and after (same hand, 6 war meat in the bank, one Spitter on the board)</h2>
+<table><tr><th>Card state</th><th>Before</th><th>Now</th></tr>
+<tr><td>Bank pays</td><td>normal</td><td>normal</td></tr>
+<tr><td>Only eating a limb pays (Spitter, 13 war: 6 in the bank + 7 back from eating a Spitter)</td><td>grey, same as "cannot"</td><td class="v">red dashed frame + EAT A LIMB</td></tr>
+<tr><td>Nothing pays (Lasher, 19 war)</td><td>grey</td><td>grey</td></tr></table>
+<h3>Now: the hand</h3>
+<img src="hand-default.png" alt="The hand: two Spitters marked EAT A LIMB, two Lashers grey">
+<h3>Now: picking the Spitter, with the hint line at the bottom</h3>
+<img src="full-default.png" alt="Whole screen with the hint naming the Spitter to eat">
+
+<h2>How much a sacrifice loses</h2>
+<p>Eating a limb gives back <b>60% of its price</b>, so you <b>lose 40%</b>. That is more than the 25% loss you guessed. You also keep its bonuses: the eaten limb and everything it had inherited carry into the next limb you build. So a sacrifice costs 40% of the meat and nothing of what the limb had grown. That is why the meat refund is lower than you guessed. If it paid back 75% on top of keeping every bonus, eating limbs would be close to free.</p>
+<p>The gene <b>Grudge Marrow</b> raises it to 90% back. Mid-wave, the new limb also has to graft (it can't fire, and it takes double damage for a few seconds), which is a second cost.</p>
+<p class="cap">Technical notes for an engineer or an AI: Sim.sacrificeDonorsFor in src/sim/sim.ts, the card class in src/ui/hud.ts, tests/sacrifice-pay.test.ts.</p>
+</main></body></html>

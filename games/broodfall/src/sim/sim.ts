@@ -2799,6 +2799,21 @@ export class Sim {
   }
 
   /**
+   * The limbs whose eating would pay for `cost` when the bank alone does not (Nov 22 2026). Collins, playtesting: "if a
+   * limb could be paid for not with what you had in the bank but with another limb's sacrifice it would show as greyed
+   * out; it should get a unique colour". Empty when the bank already pays, or when no single limb's salvage closes the
+   * gap. A marrow tap is milked, not eaten (no salvage), so it never counts.
+   */
+  sacrificeDonorsFor(cost: Partial<Record<Caste, number>>): Tower[] {
+    if (this.canAfford(cost)) return [];
+    return this.towers.filter((t) => {
+      if (t.family === 'tap') return false;
+      const salv = this.salvageOf(t.family);
+      return (['war', 'science', 'royal'] as Caste[]).every((c) => this.meat[c] + (salv[c] ?? 0) >= (cost[c] ?? 0));
+    });
+  }
+
+  /**
    * Eat a limb on the spot: its salvage is credited immediately and its whole
    * trait history (plus itself) is banked for the next build. Butchering twice
    * before building stacks the traits — a two-course meal.

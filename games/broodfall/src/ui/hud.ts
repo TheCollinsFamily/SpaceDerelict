@@ -624,7 +624,8 @@ export class Hud {
     this.el.coreFill.style.background = coreFrac > 0.4 ? 'var(--ok)' : 'var(--accent)';
 
     // Cards: re-render only when the hand or affordability changes.
-    const handKey = sim.hand.map((c) => `${c.id}:${c.free || sim.canAfford(towerSpec(c.family).cost) ? 1 : 0}`).join(',')
+    const payState = (c: (typeof sim.hand)[number]) => (c.free || sim.canAfford(towerSpec(c.family).cost) ? 1 : sim.sacrificeDonorsFor(towerSpec(c.family).cost).length ? 2 : 0);
+    const handKey = sim.hand.map((c) => `${c.id}:${payState(c)}`).join(',')
       + `|${this.selectedCard}`;
     if (handKey !== this.lastHandKey) {
       this.lastHandKey = handKey;
@@ -633,9 +634,15 @@ export class Hud {
         const spec = towerSpec(card.family);
         const div = document.createElement('div');
         const affordable = !!card.free || sim.canAfford(spec.cost);
+        // Not in the bank, but eating one of your limbs would pay for it: its own colour, not the grey of "cannot".
+        const donors = affordable ? [] : sim.sacrificeDonorsFor(spec.cost);
         div.className = 'card'
           + (this.selectedCard === i ? ' selected' : '')
-          + (affordable ? '' : ' unaffordable');
+          + (affordable ? '' : donors.length ? ' by-sacrifice' : ' unaffordable');
+        if (donors.length) {
+          const names = [...new Set(donors.map((t) => towerSpec(t.family).name))];
+          div.title = `Not enough meat in the bank, but eating one of your limbs pays for it: pick this card, then click ${names.length > 3 ? 'one of your limbs' : names.join(' or ')} to eat it (a limb pays back ${Math.round(B.salvageRate * 100)}% of its cost, and its bonuses carry into this one)`;
+        }
         div.innerHTML = `<div class="card-top"><div class="card-name"></div><button class="card-discard" title="Discard (3 war meat)">✕</button></div><div class="card-tag"></div><div class="card-art"></div><div class="card-desc"></div><div class="card-cost"></div>`;
         (div.querySelector('.card-name') as HTMLElement).textContent = spec.name;
         const tag = layerTag(card.family);

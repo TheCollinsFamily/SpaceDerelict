@@ -889,3 +889,11 @@ body.in-ship #topbar, body.in-ship #botbar { visibility: hidden; }
 @keyframes ua-in { from { transform: translateX(-12px); opacity: 0; } to { transform: none; opacity: 1; } }
 .unit-roster-mark { position: fixed; z-index: 30; pointer-events: none; transform: translate(-50%, -150%); padding: 2px 6px; font: 700 11px/1 Impact, "Arial Black", sans-serif; letter-spacing: 1px; color: #0d1416; background: #ffd36a; border-radius: 3px; box-shadow: 0 2px 0 rgba(0,0,0,0.4); }
 .unit-roster-mark::after { content: ""; position: absolute; left: 50%; top: 100%; width: 10px; height: 10px; margin-left: -5px; border: 2px solid #ffd36a; border-radius: 50%; transform: translateY(14px) scaleY(0.5); }
+
+/* A card the bank cannot pay for but eating one of your limbs can (Nov 22 2026): its own colour, not the grey of "cannot".
+   Blood red for "pay in flesh", full strength, with a small EAT A LIMB tag on its price. */
+.card.by-sacrifice { background: #f0d2c2; border-color: #a8402a; border-style: dashed; }
+.card.by-sacrifice .card-cost::after {
+  content: 'EAT A LIMB'; white-space: nowrap; margin-left: 4px; padding: 0 3px; font-size: 8px; letter-spacing: 1px;
+  background: #a8402a; color: #fff3e6; border-radius: 2px; vertical-align: 1px;
+}

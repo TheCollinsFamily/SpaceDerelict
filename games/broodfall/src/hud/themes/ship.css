@@ -416,3 +416,10 @@
   [data-hud="ship"] #inspect { max-height: calc(100% - 20px); overflow-y: auto; }
   [data-hud="ship"] #view-controls { left: auto; right: 10px; }
 }
+
+/* A card only a sacrifice pays for (Nov 22 2026): the ship's alert colour, full strength, EAT A LIMB on its price. */
+[data-hud="ship"] .card.by-sacrifice { border-color: var(--sc-alert); border-style: dashed; background: var(--sc-sheen), var(--sc-scan), radial-gradient(ellipse at 50% 55%, #3a1712, #0b0505 70%); }
+[data-hud="ship"] .card.by-sacrifice .card-cost::after {
+  content: 'EAT A LIMB'; white-space: nowrap; margin-left: auto; padding: 0 4px; font: 400 8px/1.5 var(--sc-font); letter-spacing: 1.5px;
+  background: var(--sc-alert); color: #fff;
+}

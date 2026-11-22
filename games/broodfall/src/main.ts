@@ -45,7 +45,7 @@ import { platePicture } from './render/platePreview';
 import { installCommand, type Command as UnitCommand } from './ui/command';
 import { installDistrictPlacer, type DistrictPlacer } from './ui/districtPlace';
 import { installRoster, type Roster } from './ui/roster';
-import type { Directive, OrganId, RootDir, SimConfig, SimEvent, TowerFamily } from './sim/types';
+import type { Directive, OrganId, RootDir, SimConfig, SimEvent, Tower, TowerFamily } from './sim/types';
 import { initAudio, setScene } from './audio/engine';
 import { boardEvents, installConsoleSounds, setBoardPan, watchBoard } from './audio/gameSounds';
 import { sceneOf, type MusicScene } from './audio/cues';
@@ -382,6 +382,13 @@ const decreeBox = new DecreeBox(() => sim, (cmd) => sim.issue(cmd), (text) => hu
 /** A wall of the body facing the smoke under the pointer (between waves): hovering it offers the burrow. */
 let hoverBurrow = false;
 
+/** The limbs whose eating would pay for the card in hand slot `i` when the bank alone cannot (empty otherwise). */
+function sacrificeOnly(i: number): Tower[] {
+  const card = sim.hand[i];
+  if (!card || card.free) return [];
+  return sim.sacrificeDonorsFor(card.family === 'spine' ? sim.wallCost(1) : towerSpec(card.family).cost);
+}
+
 function updateHint(): void {
   // The TURN button shows while a limb that turns its ground or its aim is in hand.
   document.getElementById('place-turn')?.classList.toggle('hidden', !(selectedCard !== null && armedOrgan === null && selectedIsDirectional()));
@@ -424,6 +431,10 @@ function updateHint(): void {
     hud.setHint(`${sim.pendingPips.length} trait${sim.pendingPips.length > 1 ? 's' : ''} banked — `
       + 'place the new limb to inherit them (or eat another)'
       + (sim.phase === 'siege' ? ` · SURGERY UNDER FIRE: grafting mid-siege takes ${(B.graftSeconds + B.graftPerPip * sim.pendingPips.length).toFixed(1)}s — it holds fire and bleeds double (between waves the graft takes at once)` : ''));
+  } else if (selectedCard !== null && sacrificeOnly(selectedCard).length) {
+    // Not in the bank, but eating a limb pays for it (the card's own colour says so too: Nov 22 2026).
+    const names = [...new Set(sacrificeOnly(selectedCard).map((t) => towerSpec(t.family).name.toUpperCase()))];
+    hud.setHint(`NOT ENOUGH MEAT IN THE BANK — eat ${names.length > 3 ? 'one of your limbs' : `your ${names.join(' or ')}`} to pay for it: click it (it pays back ${Math.round(B.salvageRate * 100)}% of its cost, and its bonuses carry into the new limb) · Esc cancels`);
   } else if (selectedCard !== null) {
     const fam = sim.hand[selectedCard]?.family;
     const span = fam && isMultiCell(towerSpec(fam)) ? towerSpec(fam) : undefined;
