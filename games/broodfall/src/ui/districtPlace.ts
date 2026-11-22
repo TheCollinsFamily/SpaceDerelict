@@ -13,6 +13,7 @@
 import { PLATE_FEATURES, checkPlacement, draftHeights, slotOfCell, turnedPattern, type DraftOffer, type PlatePattern } from '../sim/citymap';
 import type { Sim } from '../sim/sim';
 import type { Renderer } from '../render/render';
+import './districtPlace.css';
 
 export interface PlacerDeps {
   sim: () => Sim;
@@ -68,7 +69,7 @@ export function installDistrictPlacer(deps: PlacerDeps): DistrictPlacer {
         </div>
       </div>
     </div>`;
-  (deps.canvas.parentElement ?? document.body).appendChild(panel);
+  (deps.canvas.closest('#stage-wrap') ?? deps.canvas.parentElement ?? document.body).appendChild(panel);
   const q = <T extends HTMLElement>(sel: string) => panel.querySelector(sel) as T;
   q<HTMLButtonElement>('.pd-cw').addEventListener('click', () => turn(1));
   q<HTMLButtonElement>('.pd-ccw').addEventListener('click', () => turn(-1));

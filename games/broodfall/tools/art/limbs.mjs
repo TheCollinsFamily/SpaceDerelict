@@ -96,6 +96,11 @@ export const AWAY = ' It faces away from the camera, toward the upper right, the
  * <family> [--back], read the grid of tenths; then --bake. A limb that fires without a mark fails
  * its bake (tests/muzzles.test.ts).
  *
+ * lying: its shot leaves the near END of something lying along its ground, not a mouth held up over it
+ * (the Impaler's barb, Nov 22 2026: its old mark, of the art before the rail of three, floated in the air
+ * over the rail). Seen from the front the barb is nearer the camera than where it stands, so its muzzle
+ * may be drawn lower on the screen than its foot (tests/muzzles.test.ts).
+ *
  * big: a BIG limb stands on four cells (content/data.ts, span) and is drawn two cells wide: its
  * frames are baked half again as large. tests/iso.test.ts holds the two lists to each other.
  */
@@ -123,7 +128,7 @@ export const LIMBS = [
     idle: `${CALM} The spines flex very slightly.`,
     fire: 'The row of spines bristles outward sharply, all at once, then settles back to exactly its starting pose.' },
   // ---- Bone Forge ----
-  { family: 'impaler', long: true, foot: [0.66, 0.78, 0.52], backFoot: [0.42, 0.74, 0.67], muzzle: [[0.28, 0.3]], backMuzzle: [[0.78, 0.15]], name: 'Impaler', theme: 'forge', on: 'roof', job: 'A long harpoon that skewers a whole file and ignores shields.',
+  { family: 'impaler', long: true, foot: [0.66, 0.78, 0.52], backFoot: [0.42, 0.74, 0.67], muzzle: [[0.09, 0.79]], backMuzzle: [[0.9, 0.04]], lying: true, name: 'Impaler', theme: 'forge', on: 'roof', job: 'A long harpoon that skewers a whole file and ignores shields.',
     back: 'The harpoon points away toward the upper right, its tip far from the camera and its butt end nearest us; we see the back of the mound that cradles it.',
     look: 'a squat mound of muscle cradling one long ivory bone harpoon, drawn back under tension like the bolt of a ballista, pointing forward and slightly up',
     idle: `${CALM} The harpoon trembles under tension.`,

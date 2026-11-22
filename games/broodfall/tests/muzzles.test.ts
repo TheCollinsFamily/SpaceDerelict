@@ -44,10 +44,12 @@ describe('muzzles', () => {
   it.skipIf(!manifest)('every firing family has its muzzle baked, above its foot', () => {
     for (const f of FIRES_FROM) {
       const e = manifest.limbs[f];
+      // A limb whose shot leaves the near end of what lies along its ground (the Impaler's barb: `lying`) may fire from below its foot, from the front.
+      const lying = !!LIMBS.find((x: { family: string; lying?: boolean }) => x.family === f)?.lying;
       expect(e?.muzzle?.length, `${f}: baked muzzle (node tools/art/make.mjs limb ${f} --bake)`).toBeGreaterThan(0);
       for (const m of e.muzzle as Mark[]) {
         expect(m.every((v) => v >= 0 && v <= 1), `${f}: ${m} inside its frame`).toBe(true);
-        expect(m[1], `${f}: its muzzle is above where it stands`).toBeLessThan(e.anchor[1]);
+        if (!lying) expect(m[1], `${f}: its muzzle is above where it stands`).toBeLessThan(e.anchor[1]);
       }
       if (e.back) {
         expect(e.back.muzzle?.length, `${f}: baked muzzle from behind`).toBeGreaterThan(0);

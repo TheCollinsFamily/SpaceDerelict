@@ -1,0 +1,28 @@
+/* The drafted district in hand, being placed (src/ui/districtPlace.ts, Nov 22 2026). */
+#place-district {
+  position: absolute; top: 12px; left: 50%; transform: translateX(-50%); z-index: 5;
+  background: var(--panel, #b8a878); border: 3px double var(--panel-edge, #4a3c24); padding: 8px 12px 9px;
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.45); color: var(--ink, #26200f); min-width: 440px; max-width: 560px;
+}
+#place-district.hidden { display: none; }
+#place-district .pd-head { font-family: Impact, "Arial Black", sans-serif; letter-spacing: 2px; font-size: 15px; }
+#place-district .pd-kicker { opacity: 0.7; font-size: 11px; letter-spacing: 3px; margin-right: 6px; }
+#place-district .pd-body { display: flex; gap: 12px; align-items: center; margin-top: 4px; }
+#place-district .pd-pic { width: 150px; height: 98px; object-fit: contain; filter: drop-shadow(0 3px 3px rgba(0, 0, 0, 0.35)); }
+#place-district .pd-side { flex: 1; min-width: 0; }
+#place-district .pd-why {
+  font-size: 13px; font-weight: bold; padding: 5px 8px; border-radius: 3px;
+  background: #5a1a12; color: #ffd8c8; min-height: 18px;
+}
+#place-district .pd-why.ok { background: #2c4a1a; color: #e0ffc0; }
+#place-district .pd-why.shake { animation: pd-shake 0.35s ease-out; }
+@keyframes pd-shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 50% { transform: translateX(5px); } 75% { transform: translateX(-3px); } }
+html.reduce-motion #place-district .pd-why.shake { animation: none; }
+#place-district .pd-keys { font-size: 10px; margin: 6px 0; opacity: 0.9; }
+#place-district .pd-green { color: #2c6a10; }
+#place-district .pd-btns { display: flex; gap: 6px; }
+#place-district button {
+  font-family: Impact, "Arial Black", sans-serif; letter-spacing: 1px; font-size: 12px;
+  background: var(--ink, #26200f); color: var(--panel, #b8a878); border: none; padding: 5px 10px; cursor: pointer;
+}
+#place-district button:hover { background: #3a3118; color: #fff; }
