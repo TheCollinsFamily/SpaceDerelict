@@ -924,7 +924,8 @@ export type Command =
   /** Burrow through a claimed district's wall into the unclaimed city next to it (between waves). */
   | { kind: 'burrow'; cell: number }
   | { kind: 'discard'; cardIndex: number }
-  | { kind: 'choose-plate'; index: number }
+  /** Take offer `index` of the open draft; `slot` and `rot` (quarter turns clockwise): where and which way round (Nov 22 2026; absent: the offer's own place). */
+  | { kind: 'choose-plate'; index: number; slot?: number; rot?: number }
   | { kind: 'call-early' }
   /** Orders for your walking units (warriors and Broodmothers, by id). queue: after the orders they have (shift). */
   | { kind: 'unit-order'; ids: number[]; order: UnitOrder; queue?: boolean }

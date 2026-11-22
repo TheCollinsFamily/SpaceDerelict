@@ -275,7 +275,10 @@ export class Autoplayer {
     // District draft: take the first offer (policies stay comparable).
     if (sim.phase === 'draft') {
       const withShelter = this.expansion ? (sim.pendingDraft ?? []).findIndex((o) => o.shelter) : -1;
-      sim.issue({ kind: 'choose-plate', index: withShelter >= 0 ? withShelter : 0 });
+      const index = withShelter >= 0 ? withShelter : 0;
+      // It places the district itself (Nov 22 2026: the player chooses where): the offer's own place, always legal.
+      const at = sim.defaultPlacement(index);
+      sim.issue({ kind: 'choose-plate', index, ...(at ?? {}) });
       return;
     }
     this.actTimer -= dt;

@@ -27,6 +27,7 @@ import { canLandOnBoard, endingFor, landingBoardSeed, landingDecision, landingSe
 import { ConsoleMenu } from './ui/menu';
 import { addRunButton, installEdgeScroll, markSpeed, openSettings, settingsOpen } from './ui/settings';
 import { addCodexRunButton, codexOpen, openCodex } from './ui/codex';
+import { SpaceLatch, spaceStep } from './ui/phaseKeys';
 import { turnOf } from './meta/settings';
 import { loadSettings } from './meta/storage';
 import { strainIcons, strainKey, strainLabel } from './ui/strain';
@@ -1608,14 +1609,21 @@ async function boot(): Promise<void> {
 
   const callEarlyBtn = document.getElementById('call-early')! as HTMLButtonElement;
   callEarlyBtn.addEventListener('click', () => sim.issue({ kind: 'call-early' }));
-  // Space starts the wave from the setup (not over the organ stage, the settings or a report).
+  // Space is ONE step forward between waves (src/ui/phaseKeys.ts): the organ stage -> the surface (place limbs) ->
+  // the wave. One press one step: it must come up before it can step again.
+  const spaceLatch = new SpaceLatch();
+  window.addEventListener('keyup', (ev) => { if (ev.key === ' ') spaceLatch.release(); });
   window.addEventListener('keydown', (ev) => {
-    if (ev.key !== ' ' || ev.repeat || ev.ctrlKey || ev.metaKey || ev.altKey) return;
+    if (ev.key !== ' ' || ev.ctrlKey || ev.metaKey || ev.altKey) return;
     if ((ev.target as HTMLElement).tagName === 'INPUT' || (ev.target as HTMLElement).tagName === 'TEXTAREA') return;
-    if (!started || AUTO || debriefShown || settingsOpen() || codexOpen() || under.open) return;
-    if (sim.phase !== 'growth' || sim.outcome !== 'playing') return;
+    const step = spaceStep({ started, auto: AUTO, blocked: debriefShown || settingsOpen() || codexOpen(), underOpen: under.open, phase: sim.phase, outcome: sim.outcome });
+    if (!step) return;
+    // Space is ours here: a focused card or button must not take it as its own click as well.
     ev.preventDefault();
-    callEarlyBtn.click();
+    if (!spaceLatch.press(ev.repeat)) return;
+    (document.activeElement as HTMLElement | null)?.blur?.();
+    if (step === 'surface') document.getElementById('under-done')!.click();
+    else callEarlyBtn.click();
   });
 
   // The hint line says what to do from the first second (it was empty until the first action).

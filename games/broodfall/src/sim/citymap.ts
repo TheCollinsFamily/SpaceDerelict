@@ -7,7 +7,7 @@
  */
 import { Rng } from './rng';
 import {
-  DRAFT_ONLY, PLATE_FEATURES, PlateFeature, PlatePattern, START_PLATES, platePool,
+  DRAFT_ONLY, PLATE_FEATURES, PlateFeature, PlatePattern, START_PLATES, platePool, rotatePlate,
 } from '../../content/plates';
 
 export const PLATE = 10;
@@ -419,6 +419,22 @@ export function draftOffers(map: CityMap, rng: Rng, count: number, science = tru
 }
 
 /**
+ * The frontier must survive: a plate that bridges the last open gates shut would leave the hive no way in (and the
+ * run no waves). Gates consumed by its connections vs gates its own openings add.
+ */
+function keepsAGate(map: CityMap, pattern: PlatePattern, slot: number, currentGates = frontierGates(map).length): boolean {
+  let consumed = 0;
+  let added = 0;
+  for (const edge of EDGES) {
+    if (!pattern.ports[edge]) continue;
+    const nb = neighborSlot(map, slot, edge);
+    if (nb !== null && map.slots[nb] !== null) consumed += 1; // mates with a former frontier port
+    else added += 1;                                         // new frontier opening (empty or off-board)
+  }
+  return currentGates - consumed + added > 0;
+}
+
+/**
  * Every legal (pattern, slot) pair under the connection algebra, in a fixed order (no rng):
  * what a draft may offer. Empty with unclaimed city left = the body has walled itself in.
  */
@@ -430,24 +446,113 @@ export function legalDrafts(map: CityMap): Array<{ pattern: PlatePattern; slot: 
     if (map.slots[slot] !== null) continue;
     for (const pattern of pool) {
       if (canPlace(map, pattern, slot) !== null) continue;
-      // The frontier must survive: a plate that bridges the last open gates
-      // shut would leave the hive no way in (and the run no waves). Count
-      // gates consumed by its connections vs gates its own openings add.
-      let consumed = 0;
-      let added = 0;
-      for (const edge of EDGES) {
-        const nb = neighborSlot(map, slot, edge);
-        const nbActive = nb !== null && map.slots[nb] !== null;
-        if (pattern.ports[edge]) {
-          if (nbActive) consumed += 1; // mates with a former frontier port
-          else added += 1;             // new frontier opening (empty or off-board)
-        }
-      }
-      if (currentGates - consumed + added <= 0) continue;
+      if (!keepsAGate(map, pattern, slot, currentGates)) continue;
       legal.push({ pattern, slot });
     }
   }
   return legal;
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// THE PLAYER PLACES THE DISTRICT (Nov 22 2026). Collins: "after choosing a tile set it should not auto place it but
+// let me rotate it with R and place it where I want so long as the placement is legal". A drafted district is
+// carried over the board, turned in quarter turns and put down on any slot where the connection algebra above
+// holds. The offer's own (pattern, slot) is one of them by construction (draftOffers draws only legal pairs), so
+// every district a draft offers has at least one legal place (tests/districtPlace.test.ts).
+// ---------------------------------------------------------------------------------------------------------------
+
+export type Edge = 'n' | 's' | 'e' | 'w';
+
+const POOL_BY_ID = new Map<string, PlatePattern>();
+function poolEntry(id: string): PlatePattern | undefined {
+  if (!POOL_BY_ID.size) for (const p of platePool()) POOL_BY_ID.set(p.id, p);
+  return POOL_BY_ID.get(id);
+}
+
+/**
+ * A pattern turned `rot` quarter turns CLOCKWISE (as seen from above, north up). A drafted pattern is one of the
+ * pool's four turns of a plate (`<plate>-<0..3>`); turning it gives the pool's own entry, so a turned district is
+ * the same district the draft could have offered that way round. Anything else is turned cell by cell.
+ */
+export function turnedPattern(p: PlatePattern, rot: number): PlatePattern {
+  const k = ((Math.round(rot) % 4) + 4) % 4;
+  if (k === 0) return p;
+  const m = /^(.*)-([0-3])$/.exec(p.id);
+  const hit = m ? poolEntry(`${m[1]}-${(Number(m[2]) + k) % 4}`) : undefined;
+  if (hit) return hit;
+  let cur = p;
+  for (let i = 0; i < k; i++) cur = rotatePlate(cur);
+  return cur;
+}
+
+/** One edge of a district held over a slot: what its side is, and what it meets there. */
+export interface EdgeFit {
+  edge: Edge;
+  /** The district has a street mouth on this edge. */
+  open: boolean;
+  /** What is across it: a claimed district (with or without a mouth facing back), unclaimed city, or the board's edge. */
+  meets: 'mouth' | 'wall' | 'city' | 'border';
+  /** mouth-mouth (a street joins), wall-wall: fine; a mouth into a wall either way: a clash. */
+  fit: 'joins' | 'walls' | 'clash' | 'gate' | 'free';
+}
+
+export interface PlacementCheck {
+  /** null: it can go here. Else the reason, in the player's words. */
+  problem: string | null;
+  edges: EdgeFit[];
+}
+
+const EDGE_WORD: Record<Edge, string> = { n: 'north', s: 'south', e: 'east', w: 'west' };
+
+/**
+ * Can this district (already turned) go on this slot? The rules, in order:
+ *   1. the slot is unclaimed city (and on the board);
+ *   2. every edge it shares with a claimed district agrees: a street mouth meets a street mouth, a wall meets a wall
+ *      (an edge facing unclaimed city or the board's edge is free: a mouth there becomes a new frontier gate);
+ *   3. at least one of its streets joins the city's (it grows out of the body, never beside it);
+ *   4. the hive keeps a way in (it may not seal the last open gate).
+ * The land under it never makes a place illegal: its blocks are settled against their neighbours when it is put
+ * down (settleTerrain: no step of more than one storey, no lone peak).
+ */
+export function checkPlacement(map: CityMap, pattern: PlatePattern, slot: number): PlacementCheck {
+  const edges: EdgeFit[] = [];
+  if (slot < 0 || slot >= map.slots.length) return { problem: 'off the board', edges };
+  for (const edge of EDGES) {
+    const nb = neighborSlot(map, slot, edge);
+    const open = !!pattern.ports[edge];
+    if (nb === null) { edges.push({ edge, open, meets: 'border', fit: open ? 'gate' : 'free' }); continue; }
+    const there = map.slots[nb];
+    if (!there) { edges.push({ edge, open, meets: 'city', fit: open ? 'gate' : 'free' }); continue; }
+    const theirs = !!there.pattern.ports[OPPOSITE[edge]];
+    edges.push({ edge, open, meets: theirs ? 'mouth' : 'wall', fit: open === theirs ? (open ? 'joins' : 'walls') : 'clash' });
+  }
+  if (map.slots[slot] !== null) return { problem: 'a district already stands here', edges };
+  const clash = edges.find((e) => e.fit === 'clash');
+  if (clash) {
+    return {
+      problem: clash.open
+        ? `its ${EDGE_WORD[clash.edge]} street would run into a wall — turn it (R)`
+        : `it would wall off the street coming from the ${EDGE_WORD[clash.edge]} — turn it (R)`,
+      edges,
+    };
+  }
+  if (!edges.some((e) => e.fit === 'joins')) {
+    return { problem: edges.some((e) => e.meets === 'mouth' || e.meets === 'wall') ? 'none of its streets joins the city — turn it (R)' : 'it must grow from the city: put it beside a district you hold', edges };
+  }
+  if (!keepsAGate(map, pattern, slot)) return { problem: 'it would seal the last way in: the hive could not come', edges };
+  return { problem: null, edges };
+}
+
+/** Every (slot, quarter turn) where an offered district can go, slot by slot, turns 0-3 (no rng). */
+export function placementsOf(map: CityMap, pattern: PlatePattern): Array<{ slot: number; rot: number }> {
+  const out: Array<{ slot: number; rot: number }> = [];
+  for (let slot = 0; slot < map.slots.length; slot++) {
+    if (map.slots[slot] !== null) continue;
+    for (let rot = 0; rot < 4; rot++) {
+      if (checkPlacement(map, turnedPattern(pattern, rot), slot).problem === null) out.push({ slot, rot });
+    }
+  }
+  return out;
 }
 
 export { PLATE_FEATURES };

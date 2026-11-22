@@ -11,7 +11,7 @@ import { footprintOf, footprintName, isMultiCell, turnsItsGround } from './footp
 import { Groups } from './groups';
 import {
   CellType, CityMap, DraftOffer, allDistance, computeFlow, createBoard,
-  PLATE, carveShelter, draftOffers, frontierGates, isPassable, legalDrafts, shelterSite, slotOfCell, stampPlate,
+  PLATE, carveShelter, checkPlacement, draftOffers, frontierGates, isPassable, legalDrafts, shelterSite, slotOfCell, stampPlate, turnedPattern,
 } from './citymap';
 import { pregrow, restoreMap, snapshotBoard, validSnapshot, type BoardSnapshot } from './boardSnapshot';
 
@@ -2398,6 +2398,8 @@ export class Sim {
       }
       case 'burrow': {
         if (this.phase === 'siege') return { ok: false, err: 'the body digs between waves' };
+        // Not while a drafted district is being placed: the openings it is placed against would move under it.
+        if (this.phase === 'draft') return { ok: false, err: 'place the district first' };
         const site = this.burrowSiteAt(cmd.cell);
         if (!site) return { ok: false, err: 'no wall of yours faces the city here' };
         if (site.blocked) return { ok: false, err: 'something of yours stands in the way' };
@@ -2416,9 +2418,15 @@ export class Sim {
         if (this.phase !== 'draft' || !this.pendingDraft) return { ok: false, err: 'no draft open' };
         const offer = this.pendingDraft[cmd.index];
         if (!offer) return { ok: false, err: 'no such offer' };
-        stampPlate(this.map, offer.pattern, offer.slot, offer.feature, this.rng);
+        // WHERE and WHICH WAY ROUND (Nov 22 2026: the player places the district): absent, the offer's own place,
+        // as every order before this was (old saves replay unchanged).
+        const slot = cmd.slot ?? offer.slot;
+        const rot = cmd.rot ?? 0;
+        const problem = this.draftPlacementProblem(cmd.index, slot, rot);
+        if (problem) return { ok: false, err: problem };
+        stampPlate(this.map, turnedPattern(offer.pattern, rot), slot, offer.feature, this.rng);
         this.draftsTaken += 1;
-        if (offer.shelter) this.raiseShelter(offer.slot);
+        if (offer.shelter) this.raiseShelter(slot);
         this.pendingDraft = null;
         this.creepSurgePx += B.draftCreepSurge;
         this.gates = frontierGates(this.map);
@@ -2612,6 +2620,57 @@ export class Sim {
     this.stats.burrows = this.burrows;
     const gate = this.gates.find((g) => site.mouth.includes(g)) ?? site.mouth[0];
     this.events.push({ kind: 'burrowed', cell: site.mouth[0], gate });
+  }
+
+  // ---------- placing a drafted district (Nov 22 2026) ----------
+
+  private placeCache: { draft: DraftOffer[]; checks: Map<string, string | null> } | null = null;
+
+  /**
+   * Why offer `index` of the open draft cannot go on `slot` turned `rot` quarter turns clockwise (null: it can).
+   * The connection algebra (citymap.ts checkPlacement), and for a district that carries a SHELTER, room for it there
+   * with its apron, its door reachable (the card promised one). Cached for the open draft: the board does not change
+   * while a draft is open (no burrow then).
+   */
+  draftPlacementProblem(index: number, slot: number, rot = 0): string | null {
+    const draft = this.pendingDraft;
+    const offer = draft?.[index];
+    if (!draft || !offer) return 'no draft open';
+    if (!this.placeCache || this.placeCache.draft !== draft) this.placeCache = { draft, checks: new Map() };
+    const key = `${index}:${slot}:${((rot % 4) + 4) % 4}`;
+    const hit = this.placeCache.checks.get(key);
+    if (hit !== undefined) return hit;
+    const pattern = turnedPattern(offer.pattern, rot);
+    let problem = checkPlacement(this.map, pattern, slot).problem;
+    if (!problem && offer.shelter && !(slot === offer.slot && pattern === offer.pattern)) {
+      const copy = { ...this.map, cells: this.map.cells.slice(), heights: this.map.heights.slice(), plinths: this.map.plinths.slice(), slots: this.map.slots.slice() };
+      stampPlate(copy, pattern, slot, offer.feature, new Rng(1));
+      if (shelterSite(copy, slot) === null) problem = 'no room here for its shelter — turn it (R) or try another place';
+    }
+    this.placeCache.checks.set(key, problem);
+    return problem;
+  }
+
+  /** Every legal (slot, turn) for offer `index` of the open draft. Never empty for an offer the draft made. */
+  draftPlacements(index: number): Array<{ slot: number; rot: number }> {
+    const out: Array<{ slot: number; rot: number }> = [];
+    if (!this.pendingDraft?.[index]) return out;
+    for (let slot = 0; slot < this.map.slots.length; slot++) {
+      if (this.map.slots[slot] !== null) continue;
+      for (let rot = 0; rot < 4; rot++) if (this.draftPlacementProblem(index, slot, rot) === null) out.push({ slot, rot });
+    }
+    return out;
+  }
+
+  /**
+   * Where a player who does not choose puts offer `index` (the scripted player, the beats, the tests): the offer's
+   * own place when it is legal (always, for an offer this draft made), else the first legal one.
+   */
+  defaultPlacement(index: number): { slot: number; rot: number } | null {
+    const offer = this.pendingDraft?.[index];
+    if (!offer) return null;
+    if (this.draftPlacementProblem(index, offer.slot, 0) === null) return { slot: offer.slot, rot: 0 };
+    return this.draftPlacements(index)[0] ?? null;
   }
 
   /** True when the body can no longer draft any district (it has walled itself in against the city). */

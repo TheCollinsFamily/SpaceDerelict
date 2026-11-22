@@ -1,0 +1,124 @@
+/**
+ * THE IMPALER'S SHOT, AT EVERY ANGLE (Nov 22 2026, Collins: "the impaler should be more directional in its shot
+ * given its design"). Builds one Impaler on a roof (its rail lying north-south, then another east-west), puts one
+ * held, tough soldier at each of eight compass points around it in turn, and photographs the harpoon a few ticks
+ * after it leaves: does it leave the barb at the tip of the rail, and fly the way the rail points?
+ *
+ * Usage: node tools/shot-impaler.mjs <tag> [--port 5341]   (the dev server must already run on that port)
+ * Writes notes/screens/2026-11-22/impaler-<tag>-<facing>-<angle>.jpg and a contact sheet impaler-<tag>-sheet.jpg.
+ */
+import { spawnSync } from 'node:child_process';
+import { mkdirSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { chromium } from '@playwright/test';
+
+const here = dirname(fileURLToPath(import.meta.url));
+const root = join(here, '..');
+const screens = join(root, 'notes', 'screens', '2026-11-22');
+const tmp = join(here, 'screenshots');
+mkdirSync(screens, { recursive: true });
+mkdirSync(tmp, { recursive: true });
+const tag = process.argv[2] ?? 'now';
+const pi = process.argv.indexOf('--port');
+const PORT = pi > 0 ? Number(process.argv[pi + 1]) : 5341;
+const ANGLES = [['E', 0], ['SE', 45], ['S', 90], ['SW', 135], ['W', 180], ['NW', 225], ['N', 270], ['NE', 315]];
+
+const browser = await chromium.launch({ args: ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist', '--enable-webgl'] });
+const page = await browser.newPage({ viewport: { width: 1400, height: 900 } });
+page.on('pageerror', (e) => console.log(`  page error  ${e}`));
+const canvas = page.locator('#stage canvas');
+const ticks = async (n) => { for (let i = 0; i < n; i++) { await page.evaluate(() => window.broodfall.step(1)); await page.waitForTimeout(25); } };
+const files = [];
+const summary = [];
+
+for (const facing of ['S', 'E']) {
+  await page.goto(`http://localhost:${PORT}/?seed=11&autostart=1&speed=0&biome=suburb`);
+  await page.waitForFunction(() => window.broodfall !== undefined && window.broodfall.sim, null, { timeout: 60000 });
+  await page.evaluate(() => { window.broodfall.step(200); const s = window.broodfall.sim; s.meat.war = 9000; });
+  await page.waitForTimeout(500);
+  const id = await page.evaluate((facing) => {
+    const s = window.broodfall.sim;
+    const W = s.cfg.gridW;
+    const core = [s.map.coreCell % W, Math.floor(s.map.coreCell / W)];
+    const cells = [];
+    for (let c = 0; c < s.map.cells.length; c++) if (s.canBuildTower(c, 'impaler', facing)) cells.push(c);
+    const d = (c) => Math.hypot((c % W) - core[0], Math.floor(c / W) - core[1]);
+    cells.sort((a, b) => Math.abs(d(a) - 6) - Math.abs(d(b) - 6));
+    for (const cell of cells) {
+      s.hand[0] = { id: 880000 + cell, family: 'impaler', free: true };
+      const r = s.issue({ kind: 'build', cardIndex: 0, cell, facing });
+      if (r.ok) return s.towers[s.towers.length - 1].id;
+    }
+    return -1;
+  }, facing);
+  if (id < 0) { console.log(`  no ground for an impaler facing ${facing}`); continue; }
+  // Close on it.
+  await page.keyboard.press('Home');
+  await page.waitForTimeout(300);
+  const b = await canvas.boundingBox();
+  const onPage = (at) => ({ x: b.x + (at.x / at.vw) * b.width, y: b.y + (at.y / at.vh) * b.height });
+  const where = () => page.evaluate((id) => { const t = window.broodfall.sim.towers.find((u) => u.id === id); return window.broodfall.worldToScreen(t.pos.x, t.pos.y); }, id);
+  let p = onPage(await where());
+  await page.mouse.move(p.x, p.y);
+  for (let i = 0; i < 6; i++) await page.mouse.wheel(0, -240);
+  await page.waitForTimeout(600);
+  for (let round = 0; round < 4; round++) {
+    p = onPage(await where());
+    if (Math.hypot(p.x - (b.x + b.width / 2), p.y - (b.y + b.height / 2)) < 12) break;
+    await page.keyboard.down('Shift');
+    await page.mouse.move(p.x, p.y);
+    await page.mouse.down();
+    await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2, { steps: 12 });
+    await page.mouse.up();
+    await page.keyboard.up('Shift');
+    await page.waitForTimeout(500);
+  }
+  for (const [name, deg] of ANGLES) {
+    // One held, tough soldier at this compass point, 120 px out; nothing else on the board.
+    await page.evaluate(([id, deg]) => {
+      const s = window.broodfall.sim;
+      s.enemies.length = 0;
+      s.projectiles.length = 0;
+      const t = s.towers.find((u) => u.id === id);
+      t.cooldown = 0;
+      t.lastTargetId = undefined;
+      const e = s.spawnEnemy('soldier', s.gates[0]);
+      const a = (deg * Math.PI) / 180;
+      e.pos.x = t.pos.x + Math.cos(a) * 120;
+      e.pos.y = t.pos.y + Math.sin(a) * 120;
+      e.speed = 0;
+      e.hp *= 50; e.maxHp *= 50;
+      e.revealedUntil = s.time + 999;
+    }, [id, deg]);
+    let fired = false;
+    let shotAge = 0;
+    for (let i = 0; i < 90; i++) {
+      await ticks(1);
+      const n = await page.evaluate((id) => window.broodfall.sim.projectiles.filter((q) => q.fromFamily === 'impaler').length, id);
+      if (n > 0) { fired = true; shotAge++; if (shotAge >= 4) break; }
+    }
+    const png = join(tmp, `impaler-${tag}-${facing}-${name}.png`);
+    await page.waitForTimeout(150);
+    await canvas.screenshot({ path: png });
+    const out = join(screens, `impaler-${tag}-rail${facing === 'S' ? 'NS' : 'EW'}-target${name}.jpg`);
+    spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-i', png, '-vf', 'crop=760:560:320:170', '-q:v', '3', out]);
+    files.push(out);
+    summary.push(`${facing} ${name}: ${fired ? 'fired' : 'DID NOT FIRE'}`);
+    console.log(`  shot  ${out}  (${fired ? 'fired' : 'did not fire'})`);
+  }
+}
+await browser.close();
+// A contact sheet: rail NS on the top two rows, rail EW below.
+if (files.length) {
+  const sheet = join(screens, `impaler-${tag}-sheet.jpg`);
+  const args = ['-hide_banner', '-loglevel', 'error', '-y'];
+  for (const f of files) args.push('-i', f);
+  const scaled = files.map((_, i) => `[${i}:v]scale=380:280,drawtext=text='${summary[i].replace(/:/g, '')}':x=6:y=6:fontsize=18:fontcolor=white:box=1:boxcolor=black@0.6[v${i}]`).join(';');
+  const layout = files.map((_, i) => `${(i % 4) * 380}_${Math.floor(i / 4) * 280}`).join('|');
+  args.push('-filter_complex', `${scaled};${files.map((_, i) => `[v${i}]`).join('')}xstack=inputs=${files.length}:layout=${layout}[o]`, '-map', '[o]', '-q:v', '3', sheet);
+  const r = spawnSync('ffmpeg', args, { encoding: 'utf8' });
+  if (r.status !== 0) console.log(r.stderr);
+  console.log(`  sheet  ${sheet}`);
+}
+console.log(summary.join('\n'));

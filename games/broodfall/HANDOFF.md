@@ -163,6 +163,11 @@ insectoid city.
       the pointer (`src/ui/organPlace.ts`; it used to run off to the right of the pointer from its top-left corner, so
       a heart "under the root" showed red when the cell to its right was rock). Preview and click ask the same
       function. `tests/organ-place.test.ts`; `node tools/probes/organ-clicks.mjs <dev url> [WxH]` in the real page.
+    - **Space is one step forward** (Collins, Nov 22 2026: "space should go from the organ menu to the phase set up and
+      the ui should reflect this right now it says start wave"): in the organ stage Space = TO THE SURFACE (its button
+      carries the `SPACE` key), on the surface Space = START THE WAVE. A held Space is one step (it must come up first),
+      and a focused card never takes the press as its own click. The first wave opens on the surface. Logic:
+      `src/ui/phaseKeys.ts` (`tests/phaseKeys.test.ts`); real page: `node tools/probes/space-steps.mjs <dev url> <out>`.
     - Shaped organs grow around the half-buried meteor.
     - THEME organs unlock limb groups and power them. Zone organs boost what they touch.
     - Unspent war and science are LOST when a wave starts; royal points are kept.

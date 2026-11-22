@@ -379,6 +379,7 @@ body:has(#under:not(.hidden)) #topbar, body:has(#under:not(.hidden)) #botbar { v
 #under-title { font-family: Impact, "Arial Black", sans-serif; font-size: 26px; letter-spacing: 2px; margin: 2px 0 0; white-space: nowrap; }
 #under-note { flex: 1 1 auto; min-width: 0; max-width: 60ch; font-size: 10px; font-weight: bold; color: var(--accent); text-transform: uppercase; }
 #under-done { flex: 0 0 auto; margin-left: auto; }
+#under-done kbd { font: inherit; font-size: .8em; opacity: .75; border: 1px solid currentColor; border-radius: 3px; padding: 0 4px; margin-left: 4px; }
 /* The meat the organs are bought with, in the stage itself (the top bar is hidden while it is open). */
 #under-meat { display: flex; gap: 8px; flex: 0 0 auto; }
 #under-meat .meat { min-width: 84px; }
