@@ -43,6 +43,7 @@ import { padOutroPlaying, playPadOutro, preloadPadOutro } from './ui/padOutro';
 import { shipLoop, withLoader } from './ui/loader';
 import { platePicture } from './render/platePreview';
 import { installCommand, type Command as UnitCommand } from './ui/command';
+import { installDistrictPlacer, type DistrictPlacer } from './ui/districtPlace';
 import { installRoster, type Roster } from './ui/roster';
 import type { Directive, OrganId, RootDir, SimConfig, SimEvent, TowerFamily } from './sim/types';
 import { initAudio, setScene } from './audio/engine';
@@ -218,6 +219,8 @@ let debriefShown = false;
 let renderer: Renderer = new Renderer();
 /** Selecting and ordering your walking units (src/ui/command.ts); made once the board is up. */
 let command: UnitCommand | null = null;
+/** The drafted district in hand, being placed (src/ui/districtPlace.ts, Nov 22 2026). */
+let placer: DistrictPlacer | null = null;
 /** The roster (src/ui/roster.ts): a portrait per unit kind and ALL; one click, then one click on the board. */
 let roster: Roster | null = null;
 /** The board's pictures, once loaded (the district draft draws its plates with them). */
@@ -563,14 +566,16 @@ function slotCompass(slot: number): string {
 }
 
 /** Where an offered plate would go: every district of the board, the ones held, the core's, and this one. */
-function draftMap(slot: number): string {
+function draftMap(slots: number[]): string {
   const coreSlot = Math.floor(Math.floor(sim.map.coreCell / sim.cfg.gridW) / PLATE) * sim.map.slotsX + Math.floor((sim.map.coreCell % sim.cfg.gridW) / PLATE);
-  return sim.map.slots.map((s, i) => `<i class="${i === slot ? 'here' : i === coreSlot ? 'core' : s ? 'held' : ''}"></i>`).join('');
+  return sim.map.slots.map((s, i) => `<i class="${slots.includes(i) ? 'here' : i === coreSlot ? 'core' : s ? 'held' : ''}"></i>`).join('');
 }
 
 function renderDraft(): void {
   if (!sim.pendingDraft) return;
   draftOptionsEl.innerHTML = '';
+  const sub = document.getElementById('draft-sub');
+  if (sub) sub.textContent = placer ? 'Choose the district to consume next, then place it on the board: R turns it. New streets mean new gates.' : 'Choose the district to consume next. New streets mean new gates.';
   sim.pendingDraft.forEach((offer, i) => {
     const card = document.createElement('div');
     card.className = 'draft-option';
@@ -589,11 +594,15 @@ function renderDraft(): void {
     card.innerHTML = `<div class="df-name"></div><div class="df-desc"></div>`
       + (offer.shelter ? `<div class="df-shelter">⛫ SHELTER AT ITS CENTRE — an Infestor can make it a second base</div>` : '')
       + (pic ? `<img class="df-pic" alt="" src="${pic}">` : '')
-      + `<div class="df-grid">${grid}</div><div class="df-map" style="grid-template-columns:repeat(${sim.map.slotsX},9px)">${draftMap(offer.slot)}</div><div class="df-where"></div>`;
+      + `<div class="df-grid">${grid}</div><div class="df-map" style="grid-template-columns:repeat(${sim.map.slotsX},9px)">${draftMap(sim.draftPlacements(i).map((p) => p.slot))}</div><div class="df-where"></div>`;
     (card.querySelector('.df-name') as HTMLElement).textContent = feat.name;
     (card.querySelector('.df-desc') as HTMLElement).textContent = feat.desc;
-    (card.querySelector('.df-where') as HTMLElement).textContent = `GROW ${slotCompass(offer.slot)}`;
+    const fits = new Set(sim.draftPlacements(i).map((p) => p.slot)).size;
+    (card.querySelector('.df-where') as HTMLElement).textContent = `FITS ${fits} ${fits === 1 ? 'PLACE' : 'PLACES'} · YOU PLACE IT`;
+    // Taken in hand, then placed on the board where the player wants it (src/ui/districtPlace.ts); with no board
+    // to place it on (no placer), put down at its own place as before.
     card.addEventListener('click', () => {
+      if (placer) { placer.pick(i); return; }
       sim.issue({ kind: 'choose-plate', index: i });
       draftEl.classList.add('hidden');
       draftRendered = false;
@@ -1403,6 +1412,18 @@ async function boot(): Promise<void> {
 
   // Your walking units (Brood Pits, Broodmothers): selected and ordered by src/ui/command.ts. It is
   // installed first, so its right-click and keys come before the board's own.
+  placer = AUTO ? null : installDistrictPlacer({
+    sim: () => sim,
+    renderer: () => renderer,
+    canvas: renderer.app.canvas,
+    hint: (t) => hud.setHint(t),
+    restoreHint: () => updateHint(),
+    showCards: () => draftEl.classList.remove('hidden'),
+    hideCards: () => draftEl.classList.add('hidden'),
+    picture: (offer, pattern, slot) => (renderer instanceof IsoRenderer && boardArt
+      ? platePicture(renderer.app, boardArt, { gridW: sim.cfg.gridW, slotsX: sim.map.slotsX, slotsY: sim.map.slotsY, coreCell: sim.map.coreCell, seed: sim.cfg.boardSeed ?? sim.cfg.seed }, { pattern, slot, feature: offer.feature }, 300, draftHeights(sim.map, pattern, slot, offer.feature))
+      : null),
+  });
   command = installCommand(renderer.app.canvas, {
     renderer: () => (renderer instanceof IsoRenderer ? renderer : null),
     sim: () => sim,
@@ -1529,6 +1550,7 @@ async function boot(): Promise<void> {
   });
   renderer.app.canvas.addEventListener('pointermove', (ev) => {
     hideReachTip();
+    if (placer?.active()) return; // a drafted district in hand: src/ui/districtPlace.ts answers
     if (armedPlinth) {
       const wp = renderer.toWorld(ev.clientX, ev.clientY);
       const cp = sim.cellAt(wp.x, wp.y);
@@ -1684,6 +1706,8 @@ async function boot(): Promise<void> {
     hud,
     /** Your units' selection (src/ui/command.ts), for beats that check what a click or a box selected. */
     selectedUnits(): number[] { return [...(command?.selected ?? [])]; },
+    /** The drafted district in hand (src/ui/districtPlace.ts): pick(i), hoverSlot(s), turn(n), place(), cancel(), state(). */
+    placer: () => placer,
     /** Close the between-waves organ screen (scripted play). */
     surface(): void {
       if (under.open) under.hide();
@@ -1737,7 +1761,8 @@ async function boot(): Promise<void> {
         if (!offers.length) break;
         sim.phase = 'draft';
         sim.pendingDraft = offers;
-        sim.issue({ kind: 'choose-plate', index: (pick + i) % offers.length });
+        const index = (pick + i) % offers.length;
+        sim.issue({ kind: 'choose-plate', index, ...(sim.defaultPlacement(index) ?? {}) });
       }
       renderer.draw(sim, 0.016);
       return sim.map.slots.filter(Boolean).length;

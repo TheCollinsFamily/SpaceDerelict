@@ -139,6 +139,12 @@ export interface TowerSpec {
   poisonDur?: number;
   /** Impaler: the shot flies through, hitting several in a line, and ignores armor caps. */
   pierce?: boolean;
+  /**
+   * Its LINE OF FIRE (Nov 22 2026, the Impaler; Collins: "the impaler should be more directional in its shot given
+   * its design"): it fires only down its own length, at a body within this many radians of its axis, off either end
+   * (the rail turns end for end to face it). Absent: it fires all round. Sim.inLineOfFire.
+   */
+  lineOfFire?: number;
   /** Choir: +this fraction fire rate to other towers within auraRadius. */
   rateAura?: number;
   auraRadius?: number;

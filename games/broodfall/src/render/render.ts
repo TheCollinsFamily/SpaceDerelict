@@ -4,7 +4,7 @@
  * baked spritesheets later is a per-function change, not a rewrite.
  */
 import { Application, Container, Graphics } from 'pixi.js';
-import { CellType } from '../sim/citymap';
+import { CellType, PLATE, type EdgeFit } from '../sim/citymap';
 import { Sim, towerSpec, towerStats } from '../sim/sim';
 import type { Enemy, RootDir, Tower, TowerFamily } from '../sim/types';
 import { Civilians, type Civilian } from '../sim/civilians';
@@ -109,6 +109,28 @@ export interface PlacementPreview {
   from?: number;
 }
 
+/**
+ * A drafted district carried over the board to be placed (Nov 22 2026; src/ui/districtPlace.ts): the slot under the
+ * pointer, the district as it is turned now, green where it can go and red where it cannot, each edge's mouth lit by
+ * what it meets, and every slot it would fit as it is turned now (and the ones it fits only turned another way).
+ */
+export interface DistrictGhost {
+  /** The slot under the pointer (null: none). */
+  slot: number | null;
+  /** The district as turned now (10 rows of 10: '#' 'A' 'B' block, '.' street, 'P' square). */
+  rows: string[];
+  /** The storeys its blocks would take on that slot (citymap.ts draftHeights; 0 for streets). */
+  heights: number[] | null;
+  ok: boolean;
+  /** Whether the slot under the pointer is unclaimed (a claimed one gets an outline only). */
+  free: boolean;
+  edges: EdgeFit[];
+  /** Slots where it fits turned as it is now. */
+  fits: number[];
+  /** Slots where it fits only turned another way. */
+  fitsTurned: number[];
+}
+
 export class Renderer {
   app!: Application;
   protected world = new Container();
@@ -126,6 +148,8 @@ export class Renderer {
   protected pipDots = true;
 
   preview: PlacementPreview | null = null;
+  /** A drafted district being placed (null: none). */
+  districtGhost: DistrictGhost | null = null;
   /** Tower id highlighted as the cannibalize donor candidate. */
   donorHighlightId: number | null = null;
   /** Armed spore sling: draw its throw range while the player aims. */
@@ -1031,6 +1055,21 @@ export class Renderer {
    */
   protected drawFieldOfFire(g: Graphics, sim: Sim, t: Tower, valid = true, range?: number): void {
     const spec = towerSpec(t.family);
+    if (spec.lineOfFire !== undefined) {
+      // A rail that fires down its length (the Impaler, Sim.inLineOfFire): a wedge off each end, as far as it reaches.
+      const len = range ?? sim.statsOf(t).range;
+      const col = valid ? 0xffb070 : 0xb03a2a;
+      const axis = Math.atan2(Sim.facingVec(t.facing ?? 'S').y, Sim.facingVec(t.facing ?? 'S').x);
+      for (const end of [0, Math.PI]) {
+        const pts: number[] = [t.pos.x, t.pos.y];
+        for (let k = 0; k <= 8; k++) {
+          const a = axis + end - spec.lineOfFire + (2 * spec.lineOfFire * k) / 8;
+          pts.push(t.pos.x + Math.cos(a) * len, t.pos.y + Math.sin(a) * len);
+        }
+        g.poly(pts).fill({ color: col, alpha: 0.1 }).stroke({ width: 1.2, color: col, alpha: 0.55 });
+      }
+      return;
+    }
     if (!spec.directional) return;
     const f = Sim.facingVec(t.facing ?? 'N');
     const eng = spec.engine;
@@ -1182,6 +1221,7 @@ export class Renderer {
 
   /** What the player is aiming or has ordered: markers, ranges, fields of fire, the placement preview. */
   protected drawAim(g: Graphics, sim: Sim): void {
+    if (this.districtGhost) this.drawDistrictGhost(g, sim, this.districtGhost);
     // Bombard markers: the crosshair you ordered it to shell.
     for (const t of sim.towers) {
       if (t.family !== 'bombard' || t.marker === undefined) continue;
@@ -1250,7 +1290,7 @@ export class Renderer {
         // organ bonuses, amps, banked pips. The ring is the reach it will have, never the base.
         const st = sim.previewStats(ghost.family, ground, ghost.facing, ghost.pips);
         const high = st.range > st.groundRange + 0.5;
-        if (spec.directional) {
+        if (spec.directional || spec.lineOfFire !== undefined) {
           this.drawFieldOfFire(g, sim, ghost, ok, spec.engine ? undefined : st.range);
         } else if (st.range > 0 && st.range < 1000) {
           // What height adds shows as the gap between a faint ring (its reach on level 1) and the real one.
@@ -1259,6 +1299,31 @@ export class Renderer {
         }
         this.drawEffectLinks(g, sim, ghost);
       }
+    }
+  }
+
+  /** The district being placed, on the flat board: its cells over the slot, its mouths, the slots it fits. */
+  protected drawDistrictGhost(g: Graphics, sim: Sim, gh: DistrictGhost): void {
+    const px = sim.cfg.cellPx;
+    const sx = sim.map.slotsX;
+    const box = (slot: number) => ({ x: (slot % sx) * PLATE * px, y: Math.floor(slot / sx) * PLATE * px, s: PLATE * px });
+    for (const slot of gh.fits) { const b = box(slot); g.rect(b.x + 3, b.y + 3, b.s - 6, b.s - 6).stroke({ width: 2, color: 0x9ad068, alpha: 0.7 }); }
+    for (const slot of gh.fitsTurned) { const b = box(slot); g.rect(b.x + 5, b.y + 5, b.s - 10, b.s - 10).stroke({ width: 1, color: 0xe0b050, alpha: 0.5 }); }
+    if (gh.slot === null) return;
+    const b = box(gh.slot);
+    const col = gh.ok ? 0x76b04a : 0xb03a2a;
+    if (gh.free) {
+      for (let y = 0; y < PLATE; y++) for (let x = 0; x < PLATE; x++) {
+        const ch = gh.rows[y][x];
+        const street = ch === '.' || ch === 'P';
+        g.rect(b.x + x * px, b.y + y * px, px, px).fill({ color: street ? 0x2a2014 : col, alpha: street ? 0.55 : 0.5 });
+      }
+    }
+    g.rect(b.x, b.y, b.s, b.s).stroke({ width: 3, color: col, alpha: 0.95 });
+    for (const e of gh.edges) for (const c of mouthCellsOf(e.edge)) {
+      if (e.fit === 'walls' || e.fit === 'free') continue;
+      const color = e.fit === 'joins' ? 0xb8f070 : e.fit === 'clash' ? 0xff4030 : 0xf0c050;
+      g.rect(b.x + c[0] * px + 3, b.y + c[1] * px + 3, px - 6, px - 6).fill({ color, alpha: 0.95 });
     }
   }
 
@@ -1288,4 +1353,12 @@ export class Renderer {
     g.moveTo(x - r, y - r).lineTo(x - r + 2 * r * f, y - r)
       .stroke({ width: 3, color: f > 0.4 ? 0x7fae52 : 0xc84b2f, alpha: 0.95 });
   }
+}
+
+/** The two cells of a district's mouth on an edge (x, y inside the district). */
+export function mouthCellsOf(edge: 'n' | 's' | 'e' | 'w'): Array<[number, number]> {
+  if (edge === 'n') return [[4, 0], [5, 0]];
+  if (edge === 's') return [[4, PLATE - 1], [5, PLATE - 1]];
+  if (edge === 'w') return [[0, 4], [0, 5]];
+  return [[PLATE - 1, 4], [PLATE - 1, 5]];
 }

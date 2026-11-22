@@ -5849,6 +5849,20 @@ export class Sim {
    * everything the reflex doesn't claim. Only TARGETABLE bodies count: the
    * right layer (air/ground) and, for cloaked bodies, detection.
    */
+  /**
+   * Whether a limb with a LINE OF FIRE (the Impaler, TowerSpec.lineOfFire) can shoot at a point: within its
+   * half-angle of the axis it lies along, off either end. Any other limb: always.
+   */
+  inLineOfFire(t: Pick<Tower, 'family' | 'facing' | 'pos'>, p: Vec): boolean {
+    const half = towerSpec(t.family).lineOfFire;
+    if (half === undefined) return true;
+    const f = Sim.facingVec(t.facing ?? 'S');
+    const dx = p.x - t.pos.x, dy = p.y - t.pos.y;
+    const d = Math.hypot(dx, dy);
+    if (d < 1) return true;
+    return Math.abs(dx * f.x + dy * f.y) / d >= Math.cos(half);
+  }
+
   private pickTarget(t: Tower, s: TowerStats, exclude?: Set<number>): Enemy | null {
     const range = s.range;
     const mode = t.priority ?? 'auto';
@@ -5856,7 +5870,7 @@ export class Sim {
     // FOCUS: hold the last target while it lives, stays in reach and stays targetable.
     if (mode === 'focus' && t.lastTargetId !== undefined && !exclude) {
       const held = this.enemies.find((e) => e.id === t.lastTargetId);
-      if (held && dist(t.pos, held.pos) <= range && this.canTarget(t, s, held)) return held;
+      if (held && dist(t.pos, held.pos) <= range && this.canTarget(t, s, held) && this.inLineOfFire(t, held.pos)) return held;
     }
     let target: Enemy | null = null;
     let bestKey = -Infinity;
@@ -5865,6 +5879,7 @@ export class Sim {
       const d = dist(t.pos, e.pos);
       if (d > range) continue;
       if (!this.canTarget(t, s, e)) continue;
+      if (!this.inLineOfFire(t, e.pos)) continue;
       const es = enemySpec(e.kind);
       let sub: number;
       if (mode === 'first') {

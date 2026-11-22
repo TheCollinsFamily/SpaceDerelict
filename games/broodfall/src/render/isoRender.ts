@@ -25,7 +25,7 @@ import {
 import { LOT_GUTTER, buildingsOf, lotShade, pickVariant, planGuests, variantName } from './biome';
 import { SEEDLING_FLIGHT } from '../../content/underground';
 import { BALANCE } from '../../content/data';
-import { CASTE_COLORS, ENEMY_SIZE, FAMILY_COLORS, Renderer, type PlacementPreview } from './render';
+import { CASTE_COLORS, ENEMY_SIZE, FAMILY_COLORS, Renderer, mouthCellsOf, type DistrictGhost, type PlacementPreview } from './render';
 import { FxLayer, type FxView } from './fx';
 import { CorpseFx, mainCaste, type BodyView } from './corpseFx';
 import { LimbFates } from './limbFx';
@@ -1685,6 +1685,8 @@ export class IsoRenderer extends Renderer {
    *   ways; a LONG limb (two cells, the Impaler) lies along its two cells, so it turns end for end: of its
    *   facing and the opposite, the one nearer the target. This wins over a facing the player set with a
    *   right-click: that is where it rests; a gun that shoots behind itself never reads right. Render only.
+   *   The Impaler (Nov 22 2026) is a rail of three that fires only down its length (Sim.inLineOfFire): it too
+   *   turns end for end; turned to its nearest of four ways it was drawn ACROSS its own ground.
    * - Otherwise: the way the player (or its long ground) set, else the way it last faced, else south.
    */
   private facingOfLimb(sim: Sim, t: Tower, was: Facing | undefined): Facing {
@@ -1699,7 +1701,8 @@ export class IsoRenderer extends Renderer {
       const e = sim.enemies.find((x) => x.id === t.lastTargetId) ?? this.units.get(t.lastTargetId)?.ent;
       if (e) {
         const dx = e.pos.x - t.pos.x, dy = e.pos.y - t.pos.y;
-        if (t.facing && sim.cellsOf(t).length === 2) {
+        // So does a rail that fires down its length (the Impaler, a line of three: TowerSpec.lineOfFire).
+        if (t.facing && (sim.cellsOf(t).length === 2 || towerSpec(t.family).lineOfFire !== undefined)) {
           const [fx, fy] = FACING_STEP[t.facing];
           return fx * dx + fy * dy >= 0 ? t.facing : OPPOSITE[t.facing];
         }
@@ -2080,6 +2083,88 @@ export class IsoRenderer extends Renderer {
       (p.x + g.a) / K, p.y / K, (p.x + 2 * g.a) / K, (p.y + g.b) / K,
       (p.x + g.a) / K, (p.y + 2 * g.b) / K, p.x / K, (p.y + g.b) / K,
     ]).fill({ color: 0xffe08a, alpha: 0.12 }).stroke({ width: 1.2, color: 0xffe08a, alpha: 0.75 });
+  }
+
+  /**
+   * The district being placed (Nov 22 2026), drawn over the smoke where it would stand: its blocks as raised boxes at
+   * the storeys they would take, its streets sunk dark, green where it can go and red where it cannot; each mouth lit
+   * by what it meets (green: joins a street, red: runs into a wall, amber: a new gate); every slot it fits as it is
+   * turned now outlined green, the ones it fits only turned another way outlined faint amber.
+   */
+  protected drawDistrictGhost(_g: Graphics, sim: Sim, gh: DistrictGhost): void {
+    const m = this.marksG;
+    const g = this.geo;
+    const px = sim.cfg.cellPx;
+    const sx = sim.map.slotsX;
+    const pt = (x: number, y: number, up = 0) => { const q = project(g, x * px, y * px, up); return [q.x / K, q.y / K]; };
+    const outline = (slot: number, inset: number) => {
+      const x0 = (slot % sx) * PLATE + inset;
+      const y0 = Math.floor(slot / sx) * PLATE + inset;
+      const x1 = x0 + PLATE - 2 * inset;
+      const y1 = y0 + PLATE - 2 * inset;
+      return [...pt(x0, y0), ...pt(x1, y0), ...pt(x1, y1), ...pt(x0, y1)];
+    };
+    const pulse = 0.55 + 0.35 * Math.sin(this.pulse * 3);
+    for (const slot of gh.fits) {
+      if (slot === gh.slot) continue;
+      m.poly(outline(slot, 0.15)).fill({ color: 0x9ad068, alpha: 0.1 * pulse }).stroke({ width: 2.2, color: 0xb8f070, alpha: pulse });
+    }
+    for (const slot of gh.fitsTurned) {
+      if (slot === gh.slot) continue;
+      m.poly(outline(slot, 0.3)).stroke({ width: 1.2, color: 0xe0b050, alpha: 0.45 });
+    }
+    if (gh.slot === null) return;
+    const ok = gh.ok;
+    const ox = (gh.slot % sx) * PLATE;
+    const oy = Math.floor(gh.slot / sx) * PLATE;
+    if (gh.free) {
+      const top = ok ? 0xa8d878 : 0xe07a68;
+      const side = ok ? 0x4c7a30 : 0x8a2a20;
+      const street = ok ? 0x22301a : 0x301612;
+      // Nearest last: by the screen depth of each cell's middle.
+      const order: Array<{ x: number; y: number; d: number }> = [];
+      for (let y = 0; y < PLATE; y++) for (let x = 0; x < PLATE; x++) order.push({ x, y, d: project(g, (ox + x + 0.5) * px, (oy + y + 0.5) * px).y });
+      order.sort((a, b) => a.d - b.d);
+      for (const { x, y } of order) {
+        const ch = gh.rows[y][x];
+        const X = ox + x;
+        const Y = oy + y;
+        if (ch === '.' || ch === 'P') {
+          m.poly([...pt(X, Y), ...pt(X + 1, Y), ...pt(X + 1, Y + 1), ...pt(X, Y + 1)]).fill({ color: street, alpha: 0.72 });
+          continue;
+        }
+        const h = Math.max(1, gh.heights?.[y * PLATE + x] ?? (ch === 'B' ? 3 : ch === 'A' ? 2 : 1)) * 0.8;
+        const corners: Array<[number, number]> = [[X, Y], [X + 1, Y], [X + 1, Y + 1], [X, Y + 1]];
+        // The four sides, farthest first, then the roof.
+        const faces = corners.map((c, i) => {
+          const n = corners[(i + 1) % 4];
+          return { poly: [...pt(c[0], c[1]), ...pt(n[0], n[1]), ...pt(n[0], n[1], h), ...pt(c[0], c[1], h)], d: (pt(c[0], c[1])[1] + pt(n[0], n[1])[1]) / 2 };
+        }).sort((a, b) => a.d - b.d);
+        for (const f of faces) m.poly(f.poly).fill({ color: side, alpha: 0.8 });
+        m.poly([...pt(X, Y, h), ...pt(X + 1, Y, h), ...pt(X + 1, Y + 1, h), ...pt(X, Y + 1, h)])
+          .fill({ color: top, alpha: 0.78 }).stroke({ width: 0.6, color: 0x10140a, alpha: 0.35 });
+      }
+    }
+    m.poly(outline(gh.slot, 0)).stroke({ width: 3, color: ok ? 0xc8f090 : 0xff6050, alpha: 0.95 });
+    // The mouths: what each meets.
+    for (const e of gh.edges) {
+      if (e.fit === 'walls' || e.fit === 'free') continue;
+      const color = e.fit === 'joins' ? 0xc8ff80 : e.fit === 'clash' ? 0xff3a28 : 0xf0c050;
+      for (const [cx, cy] of mouthCellsOf(e.edge)) {
+        const X = ox + cx;
+        const Y = oy + cy;
+        m.poly([...pt(X + 0.15, Y + 0.15), ...pt(X + 0.85, Y + 0.15), ...pt(X + 0.85, Y + 0.85), ...pt(X + 0.15, Y + 0.85)])
+          .fill({ color, alpha: 0.95 }).stroke({ width: 1.5, color: 0x0a0806, alpha: 0.8 });
+      }
+      if (e.fit === 'clash') {
+        // A cross over the wrong edge, so the eye finds it.
+        const [ax, ay] = mouthCellsOf(e.edge)[0];
+        const X = ox + ax + (e.edge === 'n' || e.edge === 's' ? 1 : 0.5);
+        const Y = oy + ay + (e.edge === 'n' || e.edge === 's' ? 0.5 : 1);
+        m.moveTo(...(pt(X - 0.9, Y - 0.9, 1.5) as [number, number])).lineTo(...(pt(X + 0.9, Y + 0.9, 1.5) as [number, number])).stroke({ width: 4, color: 0xff3a28, alpha: 0.95 });
+        m.moveTo(...(pt(X + 0.9, Y - 0.9, 1.5) as [number, number])).lineTo(...(pt(X - 0.9, Y + 0.9, 1.5) as [number, number])).stroke({ width: 4, color: 0xff3a28, alpha: 0.95 });
+      }
+    }
   }
 
   protected drawPreviewCell(_g: Graphics, sim: Sim, cell: number, ok: boolean): void {

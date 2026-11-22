@@ -22,7 +22,10 @@ mkdirSync(tmp, { recursive: true });
 const tag = process.argv[2] ?? 'now';
 const pi = process.argv.indexOf('--port');
 const PORT = pi > 0 ? Number(process.argv[pi + 1]) : 5341;
-const ANGLES = [['E', 0], ['SE', 45], ['S', 90], ['SW', 135], ['W', 180], ['NW', 225], ['N', 270], ['NE', 315]];
+const ai = process.argv.indexOf('--age');
+/** How many ticks after it leaves the harpoon is photographed. */
+const AGE = ai > 0 ? Number(process.argv[ai + 1]) : 2;
+const ANGLES =[['E', 0], ['SE', 45], ['S', 90], ['SW', 135], ['W', 180], ['NW', 225], ['N', 270], ['NE', 315]];
 
 const browser = await chromium.launch({ args: ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist', '--enable-webgl'] });
 const page = await browser.newPage({ viewport: { width: 1400, height: 900 } });
@@ -96,28 +99,23 @@ for (const facing of ['S', 'E']) {
     for (let i = 0; i < 90; i++) {
       await ticks(1);
       const n = await page.evaluate((id) => window.broodfall.sim.projectiles.filter((q) => q.fromFamily === 'impaler').length, id);
-      if (n > 0) { fired = true; shotAge++; if (shotAge >= 4) break; }
+      if (n > 0) { fired = true; shotAge++; if (shotAge >= AGE) break; }
     }
     const png = join(tmp, `impaler-${tag}-${facing}-${name}.png`);
     await page.waitForTimeout(150);
     await canvas.screenshot({ path: png });
     const out = join(screens, `impaler-${tag}-rail${facing === 'S' ? 'NS' : 'EW'}-target${name}.jpg`);
-    spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-i', png, '-vf', 'crop=760:560:320:170', '-q:v', '3', out]);
+    spawnSync('python', [join(here, 'shot-impaler-sheet.py'), 'one', png, out]);
     files.push(out);
-    summary.push(`${facing} ${name}: ${fired ? 'fired' : 'DID NOT FIRE'}`);
+    summary.push(`rail ${facing === 'S' ? 'N-S' : 'E-W'}, target ${name}: ${fired ? 'fired' : 'did not fire'}`);
     console.log(`  shot  ${out}  (${fired ? 'fired' : 'did not fire'})`);
   }
 }
 await browser.close();
-// A contact sheet: rail NS on the top two rows, rail EW below.
+// A contact sheet: rail north-south on the top two rows, rail east-west below.
 if (files.length) {
   const sheet = join(screens, `impaler-${tag}-sheet.jpg`);
-  const args = ['-hide_banner', '-loglevel', 'error', '-y'];
-  for (const f of files) args.push('-i', f);
-  const scaled = files.map((_, i) => `[${i}:v]scale=380:280,drawtext=text='${summary[i].replace(/:/g, '')}':x=6:y=6:fontsize=18:fontcolor=white:box=1:boxcolor=black@0.6[v${i}]`).join(';');
-  const layout = files.map((_, i) => `${(i % 4) * 380}_${Math.floor(i / 4) * 280}`).join('|');
-  args.push('-filter_complex', `${scaled};${files.map((_, i) => `[v${i}]`).join('')}xstack=inputs=${files.length}:layout=${layout}[o]`, '-map', '[o]', '-q:v', '3', sheet);
-  const r = spawnSync('ffmpeg', args, { encoding: 'utf8' });
+  const r = spawnSync('python', [join(here, 'shot-impaler-sheet.py'), 'sheet', sheet, ...files.flatMap((f, i) => [f, summary[i]])], { encoding: 'utf8' });
   if (r.status !== 0) console.log(r.stderr);
   console.log(`  sheet  ${sheet}`);
 }

@@ -48,6 +48,9 @@ export interface FxView {
   scale: number;
 }
 
+/** How long the harpoon's wake is drawn at most, in board pixels (FxLayer.wake). */
+const WAKE = 150;
+
 interface Burst { id: string; x: number; y: number; t: number; dur: number; size: number; rot: number; glow: boolean; grow: number }
 interface Streak { kind: 'bolt' | 'beam' | 'stare' | 'relay' | 'flame'; from: Pt; to: Pt; t: number; dur: number; seed: number }
 interface Bomb { from: { x: number; y: number }; to: { x: number; y: number }; t: number; dur: number }
@@ -177,6 +180,27 @@ export class FxLayer {
     s.scale.set(long / tex.width);
   }
 
+  /**
+   * THE HARPOON'S WAKE (Nov 22 2026, Collins: "the impaler should be more directional in its shot given its
+   * design"): a pale streak behind the harpoon, back toward the barb of the rail it left, so the line it skewers
+   * along reads at a glance. At most WAKE board pixels long; it fades as the harpoon flies on (`f`, 0 to 1).
+   */
+  private wake(from: Pt, to: Pt, f: number): void {
+    const tex = this.tex('beam');
+    if (!tex) return;
+    const dx = to.x - from.x, dy = to.y - from.y;
+    const len = Math.hypot(dx, dy);
+    if (len < 6) return;
+    const reach = Math.min(len, WAKE);
+    const s = this.glowPool.take(tex);
+    s.anchor.set(1, 0.5);
+    s.position.set(to.x, to.y);
+    s.rotation = Math.atan2(dy, dx);
+    s.scale.set(reach / tex.width, 7 / tex.height);
+    s.tint = 0xfff0d8;
+    s.alpha = 0.75 * (1 - f * 0.8);
+  }
+
   /** The shadow of something in the air, on the ground under it. */
   private shadow(p: Pt, w: number): void {
     const tex = this.tex('spit');
@@ -220,6 +244,7 @@ export class FxLayer {
       const here = place(at0.x, at0.y, at0 === p.pos ? k : 0);
       const m = Math.hypot(p.vel.x, p.vel.y) || 1;
       const ahead = place(at0.x + (p.vel.x / m) * 6, at0.y + (p.vel.y / m) * 6, Math.min(1, (at0 === p.pos ? k : 0) + 0.012));
+      if (pic === 'harpoon' && st.from) this.wake(place(st.from.x, st.from.y, 0), here, f);
       this.flying(pic, here, ahead);
       if (pic === 'harpoon' || pic === 'quill') this.shadow(v.at(p.pos.x, p.pos.y, v.floor(p.pos.x, p.pos.y)), 10);
     }

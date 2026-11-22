@@ -410,7 +410,9 @@ export class Autoplayer {
           this.buildsSinceCannibalize = 0;
         }
       }
-      if (sim.issue({ kind: 'build', cardIndex: i, cell, cannibalizeTowerId }).ok) {
+      // A limb with a line of fire (the Impaler) is laid along the streets it can rake, as a player lays it.
+      const facing = spec.lineOfFire !== undefined ? this.railFacing(sim, fam, cell) : undefined;
+      if (sim.issue({ kind: 'build', cardIndex: i, cell, cannibalizeTowerId, facing }).ok) {
         this.builds += 1;
         return true;
       }
@@ -783,6 +785,36 @@ export class Autoplayer {
       if (key > bestKey) { bestKey = key; best = dir; }
     }
     if (best) sim.issue({ kind: 'set-facing', towerId: c.id, dir: best });
+  }
+
+  /**
+   * The way to lay a limb with a LINE OF FIRE (the Impaler) on this cell: of the four turns its ground fits, the one
+   * whose line of fire (off either end, within its reach) covers the most street. Undefined: none fits but the default.
+   */
+  private railFacing(sim: Sim, family: TowerFamily, cell: number): 'N' | 'E' | 'S' | 'W' | undefined {
+    const spec = towerSpec(family);
+    const W = sim.cfg.gridW;
+    let best: 'N' | 'E' | 'S' | 'W' | undefined;
+    let bestN = -1;
+    for (const dir of ['S', 'E', 'N', 'W'] as const) {
+      const ground = sim.groundFor(cell, family, dir);
+      if (!ground) continue;
+      const pos = sim.hubPos(family, dir, ground);
+      const reach = spec.range / sim.cfg.cellPx;
+      let n = 0;
+      const cx = Math.floor(pos.x / sim.cfg.cellPx), cy = Math.floor(pos.y / sim.cfg.cellPx);
+      for (let y = Math.max(0, Math.floor(cy - reach)); y <= Math.min(sim.cfg.gridH - 1, Math.ceil(cy + reach)); y++) {
+        for (let x = Math.max(0, Math.floor(cx - reach)); x <= Math.min(W - 1, Math.ceil(cx + reach)); x++) {
+          const c = y * W + x;
+          if (!isPassableCell(sim, c)) continue;
+          const p = sim.cellCenter(c);
+          if (Math.hypot(p.x - pos.x, p.y - pos.y) > spec.range) continue;
+          if (sim.inLineOfFire({ family, facing: dir, pos }, p)) n++;
+        }
+      }
+      if (n > bestN) { bestN = n; best = dir; }
+    }
+    return best;
   }
 
   /** Bombard: deep and high — its reach covers the lanes from the safety of the body. */
