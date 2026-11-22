@@ -128,7 +128,7 @@ async function boards(ids) {
     for (const id of want) {
       const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
       await page.addInitScript(() => { try { localStorage.setItem('broodfall-intro-seen', '1'); } catch { /* ok */ } });
-      await page.goto(`http://localhost:${port}/?seed=${SEED}&speed=0&autostart=1&biome=${id}`, { waitUntil: 'load' });
+      await page.goto(`http://localhost:${port}/?seed=${SEED}&speed=0&autostart=1&biome=${id}&canvas=1360x1000`, { waitUntil: 'load' });
       await page.waitForFunction(() => window.broodfall !== undefined && window.__bfBooted, null, { timeout: 120000 });
       await page.waitForTimeout(3500);
       const drawn = await page.evaluate(() => window.broodfall.biome());
@@ -461,7 +461,7 @@ async function endingBoards(ids) {
       try {
         await page.addInitScript(() => { try { localStorage.setItem('broodfall-intro-seen', '1'); } catch { /* ok */ } });
         // The run's seed is the board's too here; ?board= makes it explicit (the game: CFG.boardSeed).
-        await page.goto(`http://localhost:${port}/?seed=${j.bs}&board=${j.bs}&entrances=${j.e}&speed=0&autostart=1&biome=${j.id}&landing=0`, { waitUntil: 'load' });
+        await page.goto(`http://localhost:${port}/?seed=${j.bs}&board=${j.bs}&entrances=${j.e}&speed=0&autostart=1&biome=${j.id}&landing=0&canvas=1360x1000`, { waitUntil: 'load' });
         await page.waitForFunction(() => window.broodfall !== undefined && window.__bfBooted, null, { timeout: 180000 });
         await page.waitForTimeout(3500);
         const got = await page.evaluate(() => ({ biome: window.broodfall.biome(), e: window.broodfall.sim.entrances, bs: window.broodfall.sim.cfg.boardSeed }));

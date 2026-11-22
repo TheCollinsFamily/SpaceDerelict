@@ -1854,6 +1854,13 @@ async function boot(): Promise<void> {
 
 /** Keep the board's canvas the size of the stage it sits in (its CSS pixels), now and whenever the window changes. */
 function fitBoardToStage(stage: HTMLElement): void {
+  // ?canvas=1360x1000: the old fixed canvas, for tools/art/landing.mjs, which pictures the board the landing films end on.
+  const fixed = (params.get('canvas') ?? '').match(/^(\d{3,4})x(\d{3,4})$/);
+  if (fixed) {
+    renderer.app.renderer.resize(Number(fixed[1]), Number(fixed[2]));
+    renderer.app.canvas.style.cssText += ';width:auto;height:auto;max-width:100%;max-height:100%;';
+    return;
+  }
   const fit = (): void => {
     const w = Math.round(stage.clientWidth), h = Math.round(stage.clientHeight);
     if (w < 64 || h < 64) return; // hidden or not laid out yet: keep the size it has
