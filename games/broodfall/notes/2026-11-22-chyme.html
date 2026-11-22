@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Broodfall: Chyme</title>
+<style>
+  :root { --bg: #14120f; --fg: #ece6d6; --dim: #b4ab95; --chyme: #c8cf55; --war: #d1603c; --ok: #7fc47a; --warn: #e0b04a; --line: #3a352b; }
+  body { background: var(--bg); color: var(--fg); font: 16px/1.5 system-ui, sans-serif; margin: 0; padding: 24px 16px 60px; }
+  main { max-width: 1100px; margin: 0 auto; }
+  h1 { font-size: 30px; margin: 0 0 4px; } h1 b { color: var(--chyme); }
+  h2 { font-size: 21px; margin: 36px 0 10px; border-bottom: 1px solid var(--line); padding-bottom: 4px; }
+  .lead { font-size: 18px; color: var(--dim); }
+  .quote { border-left: 3px solid var(--chyme); padding: 6px 14px; color: var(--dim); font-style: italic; }
+  table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 15px; }
+  th, td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #1f1c17; }
+  .ok { color: var(--ok); font-weight: 600; } .warn { color: var(--warn); font-weight: 600; }
+  figure { margin: 14px 0; } figure img { width: 100%; border: 1px solid var(--line); } figcaption { color: var(--dim); font-size: 14px; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; } @media (max-width: 700px) { .pair { grid-template-columns: 1fr; } }
+  ol li { margin-bottom: 6px; } code { color: var(--chyme); }
+</style>
+</head>
+<body><main>
+<h1>Organs now have their own money: <b>◆ CHYME</b></h1>
+<p class="lead">Built, measured and played on Nov 22 2026. Limbs keep war and science; organs are bought only with chyme, which the body earns from every body it digests and every wave it clears, and keeps from wave to wave.</p>
+<p class="quote">"the organ stage is using the same currency as the limb stage this is not good game design a secondary currency like processed food should build for the organ stage based on what you earned not what you had left"</p>
+
+<h2>The short version</h2>
+<table>
+<tr><th>Question</th><th>Answer</th><th>Verdict</th></tr>
+<tr><td>Name</td><td>CHYME: in a body, literally "processed food", what the gut makes of a meal. The creep digests the dead; the body makes chyme of them.</td><td class="ok">done</td></tr>
+<tr><td>Where it comes from</td><td>Every body the creep digests: a war body 1, a science body 2, one of the court 4. Plus 38 for every wave cleared (this was the old war wage). Meat left unspent gives nothing.</td><td class="ok">earned, not leftover</td></tr>
+<tr><td>Kept?</td><td>Yes, from wave to wave, no cap. War and science still spoil when the wave starts.</td><td class="ok">done</td></tr>
+<tr><td>Prices</td><td>Same numbers as before for war-priced organs (Bone Forge 40, Gut 35...). The two science organs are dearer: Marrow Vault 45, Resonance Chamber 55. A level is price x level.</td><td class="ok">done</td></tr>
+<tr><td>Limbs</td><td>The clearing wage moved from war to chyme, so the limbs' budget stayed where it was (122 limbs a run against 121).</td><td class="ok">surface as tight as before</td></tr>
+<tr><td>Difficulty</td><td>18/20 wins before, 17/20 after; core on the wins 76% against 75%.</td><td class="ok">about the same</td></tr>
+<tr><td>Royal Larder</td><td>Still keeps half the war and science; its job now is saving limb meat for a big limb or an evolution.</td><td class="ok">kept, reworded</td></tr>
+<tr><td>Old saves</td><td>A run saved before today finishes under the old prices.</td><td class="ok">tested</td></tr>
+</table>
+
+<h2>Before and after (the scripted player, 20 runs each)</h2>
+<table>
+<tr><th></th><th>OLD: organs bought with leftover meat</th><th>NEW: organs bought with chyme</th></tr>
+<tr><td>Runs won</td><td>18 / 20</td><td>17 / 20</td></tr>
+<tr><td>Limbs grown a run</td><td>121</td><td>122</td></tr>
+<tr><td>Organs grown a run</td><td>21.6</td><td>22.4</td></tr>
+<tr><td>Organ levels bought a run</td><td>1.8</td><td><b>6.3</b></td></tr>
+<tr><td>Spent on organs a run</td><td>772 meat (taken from limbs)</td><td>1,099 chyme (taken from nothing)</td></tr>
+<tr><td>Chyme earned after waves 1, 4, 8, 11</td><td>none</td><td>43, 70, 176, 167</td></tr>
+</table>
+
+<h2>What it looks like</h2>
+<figure><img src="screens/2026-11-22/economy-m1-a-chyme-revealed.png" alt=""><figcaption>Mission 1: the ◆ CHYME box glows in at the first digested body; the feed says "2 war + 1 ◆ chyme"; the hint explains both.</figcaption></figure>
+<figure><img src="screens/2026-11-22/economy-4-c-organ-stage.png" alt=""><figcaption>The organ stage that opens at the clear: "WAVE 4 EARNED +78 · 40 from the bodies it digested · 38 for the clear", the bank (97), every card priced in ◆.</figcaption></figure>
+<div class="pair">
+<figure><img src="screens/2026-11-22/economy-4-a-accrual-hud.png" alt=""><figcaption>During a wave: the counter and "+10 this wave".</figcaption></figure>
+<figure><img src="screens/2026-11-22/economy-m1-b-organ-stage.png" alt=""><figcaption>Mission 1's first organ stage: +45, enough for a heart, a bladder or a level.</figcaption></figure>
+</div>
+
+<h2>Decisions that are yours</h2>
+<ol>
+<li><b>The name and the ◆ glyph.</b> Recommendation: keep CHYME.</li>
+<li><b>Should the Gut make more chyme?</b> It fits (the gut is where chyme forms), but it would be the one organ that feeds the organ economy, a snowball path. Recommendation: leave it out.</li>
+<li><b>The clear pays a flat 38.</b> The old war wage grew 4 a wave; the bodies already grow with the waves. Recommendation: keep it flat.</li>
+</ol>
+<p style="color:var(--dim);font-size:14px">For an engineer or an AI: DESIGN.md "CHYME" and HANDOFF.md "Chyme" in C:\Users\Merry\dev\space-derelict\games\broodfall.</p>
+</main></body>
+</html>
