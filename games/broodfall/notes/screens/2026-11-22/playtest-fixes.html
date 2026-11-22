@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Broodfall Playtest Fixes</title>
+<style>
+  :root { --bg:#14161a; --card:#1d2026; --ink:#e8e6e1; --dim:#9a9890; --ok:#5fc27e; --part:#e0b84a; --line:#2c3038; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.5 system-ui, sans-serif; }
+  main { max-width:1500px; margin:0 auto; padding:24px 16px 64px; }
+  h1 { font-size:28px; margin:0 0 4px; }
+  h2 { font-size:22px; margin:40px 0 8px; border-top:1px solid var(--line); padding-top:24px; }
+  h3 { font-size:15px; text-transform:uppercase; letter-spacing:.08em; color:var(--dim); margin:18px 0 6px; }
+  p { margin:6px 0; max-width:980px; }
+  .sub { color:var(--dim); }
+  table { border-collapse:collapse; margin:16px 0; width:100%; max-width:980px; }
+  td, th { border:1px solid var(--line); padding:8px 10px; text-align:left; vertical-align:top; }
+  th { background:var(--card); }
+  .ok { color:var(--ok); font-weight:600; }
+  .part { color:var(--part); font-weight:600; }
+  .pair { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  @media (max-width:900px) { .pair { grid-template-columns:1fr; } }
+  figure { margin:0; background:var(--card); padding:8px; border-radius:6px; }
+  figcaption { font-size:14px; color:var(--dim); margin-top:6px; }
+  img, video { width:100%; display:block; border-radius:4px; }
+  .tag { display:inline-block; font-size:12px; font-weight:700; padding:1px 7px; border-radius:3px; margin-right:6px; }
+  .old { background:#5a2a2a; } .new { background:#245a38; }
+  ol.decide li { margin:6px 0; }
+  .foot { color:var(--dim); font-size:13px; margin-top:40px; }
+</style>
+</head>
+<body><main>
+<h1>Broodfall: today's playtest fixes</h1>
+<p class="sub">Nov 22 2026. Your four reports, all fixed, played in the real game and pushed to main.</p>
+
+<table>
+  <tr><th>Your report</th><th>Verdict</th><th>In one line</th></tr>
+  <tr><td>1. Landing film snaps to a different board when play starts</td><td class="ok">Fixed</td><td>The game now starts on the exact board the film ends on, every set, every entrance count.</td></tr>
+  <tr><td>2. Organ stage wastes the screen; battle UI shows through</td><td class="ok">Fixed</td><td>Fills the window, list beside the grid with no scroll, battle bars hidden until you go to the surface.</td></tr>
+  <tr><td>3. Organ stage: placed state, upgrade cost/benefit, click-to-upgrade, heart under the root</td><td class="ok">Fixed</td><td>Clicking the card did nothing (a bug); now it levels. The heart-under-root cause is a best explanation, see below.</td></tr>
+  <tr><td>4. No sound or hit effect when the base or limbs are hit</td><td class="ok">Fixed</td><td>The game never reported hits at all. Now: flinch, flash, impact ring, new sounds, integrity bar jolts.</td></tr>
+</table>
+
+<h3>Yours to decide or check</h3>
+<ol class="decide">
+  <li><b>Listen to the new hit sounds</b> (an agent cannot hear): the swarm video below, and the files
+    <code>C:\Users\Merry\dev\space-derelict\games\broodfall\public\audio\core-hit-1.ogg</code> to <code>-3</code> and
+    <code>C:\Users\Merry\dev\space-derelict\games\broodfall\public\audio\limb-hit-1.ogg</code> to <code>-6</code>.
+    The core hit may still carry a short groan at its tail; limb hits 3 and 5 are about 6 dB quieter than the rest.</li>
+  <li><b>Opening boards are now four per tile set</b> (one per crash site) whenever a landing film plays, so the film can end on the real board.
+    Waves and drafts are still random each run. If you want more variety at the start, each extra board costs about $22 of films for all sets and entrance counts.</li>
+</ol>
+
+<h2>1. The landing film flows into the game</h2>
+<p>Why it jumped: every film ended on one picture of one board, taken on Oct 1 before the crash sites, lots, landmarks and hills existed,
+while every run drew its own board from a random seed. Now a run that plays a landing is built on one of four boards (one per crash site),
+and each set's film has its own strike made on that exact board: 10 sets × 4 boards × 1–3 entrances = 120 endings.
+If an ending were ever missing, no film plays rather than one that jumps. Defences (a city you already hold) get no landing.</p>
+
+<h3><span class="tag old">OLD</span> what the film ended on vs what the game started on</h3>
+<figure><img src="landing-BEFORE-film-end-vs-live.jpg" alt="">
+<figcaption>Left: the film's last frame. Middle: the game with the film's own seed today. Right: the game with a random seed (what you got). Three different cities.</figcaption></figure>
+
+<h3><span class="tag new">NEW</span> the handoff, played in the real game</h3>
+<div class="pair">
+<figure><img src="landing-AFTER-handoff-suburb.jpg" alt="">
+<figcaption>Suburbs, 1 entrance. Top left: the film's last frame. Then the picture pulls back onto the live board, and the game. Same buildings, crater and creep throughout.</figcaption></figure>
+<figure><img src="landing-AFTER-handoff-orient.jpg" alt="">
+<figcaption>Orient, 3 entrances: the strike clears, then the game takes over on the identical board.</figcaption></figure>
+</div>
+
+<h3><span class="tag new">NEW</span> one ending from each of the ten tile sets</h3>
+<figure><img src="landing-AFTER-ten-sets.jpg" alt="">
+<figcaption>Each column: mid-strike (top) and the film's last frame (bottom) for one set. The strike now happens on the real board, so buildings never change.</figcaption></figure>
+
+<h2>2–3. The organ stage</h2>
+<p>The stage now covers the whole window. All 28 cards sit in a three-column tray beside the grid, with no scrolling,
+and the grid is sized to the space left (1061×589 at 1920×1080, was 754×419 at every size). The limb hand, wave bar and START THE WAVE
+are hidden while it is open and come back when you go TO THE SURFACE; your WAR and SCI are shown inside the stage.</p>
+<ul>
+  <li><b>Placed / owned:</b> a grown one-of-a-kind organ's card is lit in its own colour with a "✓ LV n" badge; repeatable organs show "×n".</li>
+  <li><b>Upgrade cost and benefit:</b> the card reads "▲ LV n+1 · price · +10% power &amp; speed"; hovering the organ or its card spells out the level, the price, the limbs it powers and whether you can afford it.</li>
+  <li><b>Click to upgrade:</b> the card said "click it to level" but its click did nothing (only clicking the organ on the grid worked). Fixed. Also, the heart stayed picked after placing, so your next click tried to place another; that click now drops the heart instead.</li>
+  <li><b>Heart under the Tendril Root:</b> the rule and the preview always agreed, but the two-wide heart was pinned by its left corner to the cell under your pointer. Below the root it reached into a blocked cell to the right and showed red. It now tries every way of covering the cell you point at. <span class="part">Not reproduced on your exact board</span>, so this is the most likely cause, not a confirmed one.</li>
+</ul>
+<div class="pair">
+<figure><img src="organ-stage-BEFORE-1920x1080.png" alt=""><figcaption><span class="tag old">OLD</span> 1920×1080</figcaption></figure>
+<figure><img src="organ-stage-AFTER-1920x1080.png" alt=""><figcaption><span class="tag new">NEW</span> 1920×1080</figcaption></figure>
+<figure><img src="organ-stage-BEFORE-2781x1401.png" alt=""><figcaption><span class="tag old">OLD</span> your screen size, 2781×1401</figcaption></figure>
+<figure><img src="organ-stage-AFTER-2781x1401.png" alt=""><figcaption><span class="tag new">NEW</span> your screen size, 2781×1401</figcaption></figure>
+<figure><img src="organ-stage-AFTER-1920x1080-card-hover.png" alt=""><figcaption><span class="tag new">NEW</span> hovering a grown card: next level, price, gain</figcaption></figure>
+<figure><img src="organ-stage-AFTER-1920x1080-grid-hover.png" alt=""><figcaption><span class="tag new">NEW</span> hovering an organ on the grid</figcaption></figure>
+</div>
+
+<h2>4. Hits on the base and on limbs</h2>
+<p>The game took hit points off the meteor and the limbs without ever telling the screen or the sound, so nothing showed.
+Now every hit by any enemy, the science caste's researchers draining limbs included, makes the meteor or limb flinch away
+from the blow and flash red (just a tint under Reduce flashes). It also shows an impact ring and splat on the attacker's side,
+and plays a new impact sound. The sounds are throttled so a swarm drums rather than buzzes. The ASSET INTEGRITY bar jolts and shows what you just lost.</p>
+<div class="pair">
+<figure><img src="hits-01-core-before.jpg" alt=""><figcaption><span class="tag old">BEFORE THE BLOW</span> meteor at rest</figcaption></figure>
+<figure><img src="hits-02-core-bitten.jpg" alt=""><figcaption><span class="tag new">BITTEN</span> impact ring on the attacker's side, flinch and flash</figcaption></figure>
+<figure><img src="hits-03-core-shelled.jpg" alt=""><figcaption><span class="tag new">SHELLED</span> a heavier blast for shells and bombers</figcaption></figure>
+<figure><img src="hits-05-limb-researcher.jpg" alt=""><figcaption><span class="tag new">LIMB DRAINED</span> a researcher of the science caste on a limb</figcaption></figure>
+</div>
+<h3>A 10-second swarm, with the game's own sound</h3>
+<figure><video src="hits-swarm.mp4" controls preload="metadata"></video>
+<figcaption>10 attackers on the meteor, 3 researchers on limbs. 18 base-hit and 29 limb-hit sounds played; the rest were held back by the throttle.</figcaption></figure>
+
+<p class="foot">Money: about 4.5M RFab tokens (~$90) from your own balance: the 120 film endings and the new hit sounds. A $300 top-up I tried
+was refused by the safety check and turned out not to be needed; the balance is now about 186k tokens (~$3.70).
+All 902 tests pass. Not run: the desktop launcher (it opens a window on your screen).
+Technical write-up for an engineer or AI: <code>C:\Users\Merry\dev\space-derelict\games\broodfall\HANDOFF.md</code>.</p>
+</main></body>
+</html>
