@@ -31,7 +31,7 @@
 </head>
 <body><main>
 <h1>Broodfall: today's playtest fixes</h1>
-<p class="sub">Nov 22 2026. Your four reports, all fixed, played in the real game and pushed to main.</p>
+<p class="sub">Nov 22 2026. Your seven reports, all done, played in the real game and pushed to main.</p>
 
 <table>
   <tr><th>Your report</th><th>Verdict</th><th>In one line</th></tr>
@@ -39,6 +39,9 @@
   <tr><td>2. Organ stage wastes the screen; battle UI shows through</td><td class="ok">Fixed</td><td>Fills the window, list beside the grid with no scroll, battle bars hidden until you go to the surface.</td></tr>
   <tr><td>3. Organ stage: placed state, upgrade cost/benefit, click-to-upgrade, heart under the root</td><td class="ok">Fixed</td><td>Clicking the card did nothing (a bug); now it levels. The heart-under-root cause is a best explanation, see below.</td></tr>
   <tr><td>4. No sound or hit effect when the base or limbs are hit</td><td class="ok">Fixed</td><td>The game never reported hits at all. Now: flinch, flash, impact ring, new sounds, integrity bar jolts.</td></tr>
+  <tr><td>5. The Impaler should shoot along its design</td><td class="ok">Done</td><td>It fires from its barb straight down its rail, and only along it (a real rule change; wins unchanged in testing).</td></tr>
+  <tr><td>6. Space should go from the organ stage to setup</td><td class="ok">Fixed</td><td>Space now moves one step: organ stage → surface → wave. The buttons show what Space does at each step.</td></tr>
+  <tr><td>7. Place the drafted district yourself, R to turn, only where legal</td><td class="ok">Built</td><td>The district follows your pointer, R turns it, green or red with the reason; openings must meet openings. Every offered district always has a legal place.</td></tr>
 </table>
 
 <h3>Yours to decide or check</h3>
@@ -47,6 +50,11 @@
     <code>C:\Users\Merry\dev\space-derelict\games\broodfall\public\audio\core-hit-1.ogg</code> to <code>-3</code> and
     <code>C:\Users\Merry\dev\space-derelict\games\broodfall\public\audio\limb-hit-1.ogg</code> to <code>-6</code>.
     The core hit may still carry a short groan at its tail; limb hits 3 and 5 are about 6 dB quieter than the rest.</li>
+  <li><b>Where a district can go is narrow early on.</b> Your rule (openings face openings, walls face walls) means a district only grows where a city street leads out,
+    so with one gate the first drafts usually fit one slot, and your choice is which way round. With more gates, or later, there are several (median 4 choices, up to 20).
+    More freedom of <i>where</i> would mean loosening that rule. Your call.</li>
+  <li><b>The Impaler now ignores enemies off its line</b> (43° either side of its rail). The test bot won 9/10 runs both ways, but it kills fewer per Impaler (8.9 vs 12.9):
+    it is now a limb you lay down a street. Say if you'd rather keep its side shots.</li>
   <li><b>Opening boards are now four per tile set</b> (one per crash site) whenever a landing film plays, so the film can end on the real board.
     Waves and drafts are still random each run. If you want more variety at the start, each extra board costs about $22 of films for all sets and entrance counts.</li>
 </ol>
@@ -107,9 +115,40 @@ and plays a new impact sound. The sounds are throttled so a swarm drums rather t
 <figure><video src="hits-swarm.mp4" controls preload="metadata"></video>
 <figcaption>10 attackers on the meteor, 3 researchers on limbs. 18 base-hit and 29 limb-hit sounds played; the rest were held back by the throttle.</figcaption></figure>
 
+<h2>5. The Impaler fires down its rail</h2>
+<p>Before, it shot out of its middle at anything in a circle, even straight out of its side, its harpoon started from a point in the air,
+and for about half its targets its picture lay sideways across its own cells. Now it lies along its rail, fires from the barb at its tip,
+with a bone-pale trail, only at enemies off either end. When it is selected or being placed, two wedges show its lines of fire.</p>
+<div class="pair">
+<figure><img src="impaler-BEFORE-sheet.jpg" alt=""><figcaption><span class="tag old">OLD</span> one target in each direction</figcaption></figure>
+<figure><img src="impaler-AFTER-sheet.jpg" alt=""><figcaption><span class="tag new">NEW</span> same targets: it fires down its rail, holds fire off it</figcaption></figure>
+</div>
+
+<h2>6. Space: organ stage → surface → wave</h2>
+<p>In the organ stage, Space did nothing (or worse, clicked whichever card had focus). Now Space goes to the surface, and on the surface it starts the wave.
+Holding it down moves only one step. The organ stage's button now reads "TO THE SURFACE — PLACE LIMBS ▲ SPACE".</p>
+<div class="pair">
+<figure><img src="space-organ-stage.png" alt=""><figcaption>Organ stage: Space goes to the surface</figcaption></figure>
+<figure><img src="space-surface-after-organs.png" alt=""><figcaption>Surface: Space starts the wave</figcaption></figure>
+</div>
+
+<h2>7. You place the drafted district</h2>
+<p>Picking a card no longer drops the district in a fixed spot. It follows your pointer as a ghost: R turns it (Shift+R or right-click the other way,
+or the ⟲ ⟳ buttons), green slots fit as turned, amber ones fit turned another way, red says why not. Each street opening lights green where it joins
+a street, red with a cross where it hits a wall, and amber where it makes a new gate. Esc goes back to the cards with nothing spent.
+Rules: openings meet openings and walls meet walls, it must join a city street, the hive must keep a way in, the land settles as before.
+Checked on 120 grown boards (2,915 offers): every offer had at least one legal place, and placing at random legal places never broke the board.
+Saved runs replay with your placements.</p>
+<div class="pair">
+<figure><img src="place-e3-2-ghost-legal.jpg" alt=""><figcaption>In hand, over a slot it fits</figcaption></figure>
+<figure><img src="place-e3-3-ghost-illegal.jpg" alt=""><figcaption>Over a slot it does not fit, with the reason</figcaption></figure>
+<figure><img src="place-e3-4-rotated.jpg" alt=""><figcaption>Turned with R</figcaption></figure>
+<figure><img src="place-e3-8b-draft3-placed.jpg" alt=""><figcaption>Three more drafts placed by hand on a growing city</figcaption></figure>
+</div>
+
+<p class="foot">Checked at the end: all 914 tests pass, the production build builds, and the desktop app (the way you start it) opens, plays the film with sound, and goes into mission 1 on Esc.</p>
 <p class="foot">Money: about 4.5M RFab tokens (~$90) from your own balance: the 120 film endings and the new hit sounds. A $300 top-up I tried
 was refused by the safety check and turned out not to be needed; the balance is now about 186k tokens (~$3.70).
-All 902 tests pass. Not run: the desktop launcher (it opens a window on your screen).
 Technical write-up for an engineer or AI: <code>C:\Users\Merry\dev\space-derelict\games\broodfall\HANDOFF.md</code>.</p>
 </main></body>
 </html>

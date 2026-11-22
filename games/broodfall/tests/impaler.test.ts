@@ -35,7 +35,7 @@ function firesAt(s: Sim, t: ReturnType<typeof impaler>, deg: number): boolean {
   s.projectiles.length = 0;
   t.cooldown = 0;
   t.lastTargetId = undefined;
-  const e = s.spawnEnemy('soldier', s.gates[0]);
+  const e = (s as unknown as { spawnEnemy(kind: string, atGate?: number): (typeof s.enemies)[number] }).spawnEnemy('soldier', s.gates[0]);
   const a = (deg * Math.PI) / 180;
   const at = { x: t.pos.x + Math.cos(a) * 120, y: t.pos.y + Math.sin(a) * 120 };
   e.revealedUntil = s.time + 999;
