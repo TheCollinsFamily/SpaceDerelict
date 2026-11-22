@@ -949,6 +949,12 @@ export interface SimConfig {
   gridH: number;
   cellPx: number;
   seed: number;
+  /**
+   * The seed of the board at minute zero (the crash site, the land, the districts round it, the guests, the townsfolk),
+   * when it is not the run's own (Nov 22 2026): a landing film ends on a picture of the board it was made from, and the
+   * run it lands is built on that board, so the film flows into the game with no jump; the run's dice stay its own.
+   */
+  boardSeed?: number;
   /** Which crash site the run starts on (content/plates.ts START_PLATES, by index); otherwise by the seed. */
   crash?: number;
   /** Force a directive (tests, URL param); otherwise seeded-random. */

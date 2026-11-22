@@ -947,7 +947,7 @@ export class IsoRenderer extends Renderer {
     if (!home) return null;
     const guests = this.art.guests();
     if (!guests.length) return home;
-    if (this.guestPlan?.map !== sim.map || this.guestPlan.guests !== guests.join()) this.guestPlan = { map: sim.map, guests: guests.join(), slots: planGuests({ slotsX: sim.map.slotsX, slotsY: sim.map.slotsY, start: Math.floor(Math.floor(sim.map.coreCell / sim.cfg.gridW) / PLATE) * sim.map.slotsX + Math.floor((sim.map.coreCell % sim.cfg.gridW) / PLATE), seed: sim.cfg.seed | 0 }, guests) };
+    if (this.guestPlan?.map !== sim.map || this.guestPlan.guests !== guests.join()) this.guestPlan = { map: sim.map, guests: guests.join(), slots: planGuests({ slotsX: sim.map.slotsX, slotsY: sim.map.slotsY, start: Math.floor(Math.floor(sim.map.coreCell / sim.cfg.gridW) / PLATE) * sim.map.slotsX + Math.floor((sim.map.coreCell % sim.cfg.gridW) / PLATE), seed: (sim.cfg.boardSeed ?? sim.cfg.seed) | 0 }, guests) };
     return this.guestPlan.slots.get(slot) ?? home;
   }
 

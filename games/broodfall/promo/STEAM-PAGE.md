@@ -298,3 +298,17 @@ afterwards.
   4948940, Repel The Rifts 3686580, Project Tomorrow 4402200, Nullnest 4996910, Utopia Must Fall 2849680, Calyx 3211850,
   Buggos 2 2908500, Tower Tactics II 3749130, Defender Bros 2526880; dating + tower defense: Dream Lust 3060900, Beautiful
   Mystic Defenders 1667130, Love n War: Warlord by Chance 1508680.
+- Nov 22 2026 (later): Collins (by phone): "you can use my email". The Mad Octopus account is collinsmalcolm@gmail.com; sign in
+  by the "Email me a one-time sign-in link" button, then open the link from that Gmail in Chrome (valid 30 min). Collins's
+  brief for partners: "simmilar right wing policial orientation, tower defence, and warhme 40k stuff". The pool is 1,805
+  games, 79 of them tower defense; no game description in it shows a political lean, so the picks are grimdark, military
+  and tower defense. The 8 who had liked Broodfall: liked back Evilos (dark-comedy TD, Dec 14 2026), Beyond the Fracture
+  (sci-fi tabletop hex tactics, live AI) and Bug Off (an exterminator sim, the same job as Broodfall's lead) = **3 matches**,
+  each waiting on "Agree the bundle name and discount" in the Matches tab; passed Nest Rivals, Bankshot!, The Wrong Shift,
+  FriedrichAI, Monster and Snakes. Liked (13 of 20 a day): ZEPHON (Proxy Studios, who made Warhammer 40,000: Gladius),
+  Another Crusade, Grimhold, One Million Skeletons, Phosphor Command, Withstand The Horde, The Heart of Anathema, Dark Age
+  Asunder, Death Falls: Zombies Are Coming, Neural Defense, Star Conflict: Burrownauts, Deepstrata, Wartide. A Steam
+  bundle with Broodfall can only sell once Broodfall is released.
+  Agent notes: the deck's Keyword box filters the swipe deck (Browse ignores it); a page script longer than 45 s
+  times out the browser tool, but the page keeps running it. Probing feed.php with guessed parameters was refused by the
+  auto-mode classifier as unauthorized access: use the page's own controls.

@@ -569,7 +569,7 @@ function renderDraft(): void {
     }).join('')).join('');
     // The plate drawn as the board will draw it (its streets, heights, facades, roofs), when the board's art is up.
     const pic = renderer instanceof IsoRenderer && boardArt
-      ? platePicture(renderer.app, boardArt, { gridW: sim.cfg.gridW, slotsX: sim.map.slotsX, slotsY: sim.map.slotsY, coreCell: sim.map.coreCell, seed: sim.cfg.seed }, offer, 460, draftHeights(sim.map, offer.pattern, offer.slot, offer.feature))
+      ? platePicture(renderer.app, boardArt, { gridW: sim.cfg.gridW, slotsX: sim.map.slotsX, slotsY: sim.map.slotsY, coreCell: sim.map.coreCell, seed: sim.cfg.boardSeed ?? sim.cfg.seed }, offer, 460, draftHeights(sim.map, offer.pattern, offer.slot, offer.feature))
       : null;
     if (pic) card.classList.add('has-pic');
     // A district with a SHELTER at its centre (Oct 2 2026): told on its card, so the player can draft for one.

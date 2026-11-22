@@ -467,6 +467,9 @@ export class Sim {
   /** Hop-distance from the core over passable terrain (creep spread topology). */
   private creepDist: Int32Array;
 
+  /** The seed the board at minute zero is drawn from: the board's own (a landing film's), else the run's. */
+  get boardSeed(): number { return (this.cfg.boardSeed ?? this.cfg.seed) | 0; }
+
   constructor(cfg: SimConfig) {
     this.cfg = cfg;
     this.worldW = cfg.gridW * cfg.cellPx;
@@ -484,9 +487,11 @@ export class Sim {
     if (snap) this.map = restoreMap(snap);
     else {
       // The crash site's layout is drawn from its own stream, so that the rest of the run's dice fall as before.
-      const crash = cfg.crash ?? new Rng((cfg.seed ^ 0x5eed) >>> 0).int(0, 999);
+      // A board seed of its own (a landing film's board): the board is drawn from it alone, the run's dice untouched.
+      const bs = this.boardSeed;
+      const crash = cfg.crash ?? new Rng((bs ^ 0x5eed) >>> 0).int(0, 999);
       // The land under the city is shaped from its own seed too (citymap.ts terrainLevel, Oct 2 2026).
-      this.map = createBoard(slotsX, slotsY, startSlot, this.rng, this.entrances, crash, Math.imul((cfg.seed ^ 0x7e11a5) >>> 0, 0x9e3779b1) >>> 0);
+      this.map = createBoard(slotsX, slotsY, startSlot, cfg.boardSeed != null ? new Rng(bs) : this.rng, this.entrances, crash, Math.imul((bs ^ 0x7e11a5) >>> 0, 0x9e3779b1) >>> 0);
       if (cfg.pregrown) pregrow(this.map, this.rng, cfg.pregrown);
     }
     this.core = this.cellCenter(this.map.coreCell);
@@ -562,7 +567,7 @@ export class Sim {
       for (const slot of near) { this.raiseShelter(slot); if (this.shelters.length) return true; }
       return false;
     };
-    const dice = new Rng((this.cfg.seed ^ 0x5be17e4) >>> 0);
+    const dice = new Rng((this.boardSeed ^ 0x5be17e4) >>> 0);
     for (let grown = 0; !raise() && grown < 8; grown++) {
       const offers = draftOffers(this.map, dice, 12, this.scienceOpen);
       if (offers.length === 0) break;

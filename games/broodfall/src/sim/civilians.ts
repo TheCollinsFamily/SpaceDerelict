@@ -26,7 +26,7 @@ import type { Phase, Vec } from './types';
 
 /** What of the sim the crowd reads. The real Sim satisfies it; nothing here writes to it. */
 export interface CivSimView {
-  readonly cfg: { gridW: number; gridH: number; cellPx: number; seed: number };
+  readonly cfg: { gridW: number; gridH: number; cellPx: number; seed: number; boardSeed?: number };
   readonly map: { cells: CellType[]; coreCell: number };
   readonly core: Vec;
   readonly gates: readonly number[];
@@ -112,7 +112,7 @@ export class Civilians {
     this.w = sim.cfg.gridW;
     this.h = sim.cfg.gridH;
     this.px = sim.cfg.cellPx;
-    this.rng = new Rng((sim.cfg.seed ^ CIV_SEED_XOR) >>> 0);
+    this.rng = new Rng(((sim.cfg.boardSeed ?? sim.cfg.seed) ^ CIV_SEED_XOR) >>> 0);
     this.tick = sim.tickCount;
     const n = sim.map.cells.length;
     this.exitDist = new Int32Array(n).fill(-1);
