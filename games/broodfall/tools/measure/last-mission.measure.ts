@@ -43,6 +43,8 @@ for (const seed of SEEDS) {
   const sim = new Sim({
     gridW: 50, gridH: 40, cellPx: 26, ...p.config, seed: seed * 1000 + 7, waveIntel: 'full',
     directive: { kind: 'hold', waves: TURNS + HOST }, lateHost: { turns: TURNS, minTier: TIER }, shelterRation: RATION,
+    // LAST_ECON=meat: the economy before chyme (Nov 22 2026), organs bought with war and science.
+    ...(process.env.LAST_ECON === 'meat' ? { organEconomy: 'meat' as const } : {}),
   });
   const auto = new Autoplayer(3);
   const rows: string[] = [];

@@ -59,7 +59,8 @@ const FEED_LINES: Partial<Record<SimEvent['kind'], (e: SimEvent) => { text: stri
   digested: (e) => {
     if (e.kind !== 'digested') return { text: '', cls: '' };
     const caste = e.meat.royal > 0 ? 'royal' : e.meat.science > 0 ? 'science' : 'war';
-    const what = (['war', 'science', 'royal'] as const).filter((k) => e.meat[k] > 0).map((k) => `${e.meat[k]} ${k}`).join(' + ');
+    // The chyme the body rendered beside its meat (DESIGN.md "Chyme"): the link between eating and organs, as it happens.
+    const what = [...(['war', 'science', 'royal'] as const).filter((k) => e.meat[k] > 0).map((k) => `${e.meat[k]} ${k}`), ...(e.chyme ? [`${e.chyme} ◆ chyme`] : [])].join(' + ');
     if (!what) return { text: '', cls: '' };
     return { text: e.bodies > 1 ? `resource acquired — ${e.bodies} specimens digested (${what})` : `resource acquired — ${what}`, cls: caste === 'science' ? 'sci' : caste === 'royal' ? 'royal' : '' };
   },
@@ -127,6 +128,9 @@ const FEED_LINES: Partial<Record<SimEvent['kind'], (e: SimEvent) => { text: stri
   'mule-rooted': () => ({ text: 'spore mule rooted: a new creep node', cls: 'sci' }),
   'mule-lost': () => ({ text: 'SPORE MULE LOST before it rooted — escort the next one', cls: 'hot' }),
   'mother-off-creep': () => ({ text: 'the creep under a Broodmother is gone: she stops brooding and fights', cls: 'hot' }),
+  'chyme-tally': (e) => e.kind === 'chyme-tally'
+    ? { text: `◆ chyme rendered: +${e.earned} (${e.digested} digested, ${e.ration} for the clear) · ${e.bank} for organs`, cls: 'sci' }
+    : { text: '', cls: '' },
   'organ-upgraded': (e) => e.kind === 'organ-upgraded'
     ? { text: `organ levelled: ${e.organ} → LV${e.level}`, cls: 'sci' }
     : { text: '', cls: '' },
@@ -173,6 +177,9 @@ export class Hud {
       war: document.querySelector('#meat-war .meat-val') as HTMLElement,
       science: document.querySelector('#meat-science .meat-val') as HTMLElement,
       royal: document.querySelector('#meat-royal .meat-val') as HTMLElement,
+      chyme: document.querySelector('#meat-chyme .meat-val') as HTMLElement,
+      chymeBox: document.getElementById('meat-chyme') as HTMLElement,
+      chymeGain: document.getElementById('chyme-gain') as HTMLElement,
     },
     biomassFill: document.getElementById('biomass-fill')!,
     biomassText: document.getElementById('biomass-text')!,
@@ -216,6 +223,8 @@ export class Hud {
     const now: Array<[string, boolean]> = [
       ['science', sim.meat.science > 0],
       ['royal', sim.meat.royal > 0],
+      // CHYME the moment the first body is digested (wave 1): the link between eating and organs is seen as it happens.
+      ['chyme', sim.chyme >= 1],
       ['dials', sim.wavesCleared >= 1],
       ['organs', sim.wavesCleared >= 1],
       ['nodes', sim.creepNodes > 0 || organ('bladder') || organ('cyst')],
@@ -556,6 +565,16 @@ export class Hud {
     this.el.meat.war.textContent = String(Math.floor(sim.meat.war));
     this.el.meat.science.textContent = String(Math.floor(sim.meat.science));
     this.el.meat.royal.textContent = String(Math.floor(sim.meat.royal));
+    // CHYME accrues as the creep digests (DESIGN.md "Chyme"): the bank, a tick when it grows, and this wave's share so far.
+    document.body.classList.toggle('organ-meat', sim.meatOrgans);
+    const ch = Math.floor(sim.chyme);
+    if (this.el.meat.chyme.textContent !== String(ch)) {
+      const grew = ch > Number(this.el.meat.chyme.textContent || 0);
+      this.el.meat.chyme.textContent = String(ch);
+      if (grew) { this.el.meat.chymeBox.classList.remove('tick'); void this.el.meat.chymeBox.offsetWidth; this.el.meat.chymeBox.classList.add('tick'); }
+    }
+    const wave = Math.floor(sim.waveChyme);
+    this.el.meat.chymeGain.textContent = sim.phase === 'siege' && wave > 0 ? `+${wave} this wave` : '';
 
     // Directive bar: the deployment order is the win condition.
     this.lastDirective = sim.directive.kind;

@@ -10,6 +10,7 @@
   --war: #d1603c;
   --science: #4fa9a4;
   --royal: #d4a72c;
+  --chyme: #c8cf55;
   --ok: #6d8f4e;
 }
 
@@ -45,6 +46,13 @@ body {
 #meat-war .meat-val { color: var(--war); }
 #meat-science .meat-val { color: var(--science); }
 #meat-royal .meat-val { color: var(--royal); }
+/* CHYME, the organs' currency (DESIGN.md "Chyme"): bile-gold, with this wave's rendering under it. */
+#meat-chyme .meat-val { color: var(--chyme); }
+#meat-chyme { position: relative; border-color: #6d6a2a; }
+#meat-chyme .meat-gain { font-family: "Courier New", monospace; font-size: 9px; color: var(--chyme); opacity: 0.85; line-height: 1; min-height: 9px; }
+#meat-chyme.tick .meat-val { animation: chyme-tick 0.5s ease-out 1; }
+@keyframes chyme-tick { 0% { text-shadow: 0 0 10px var(--chyme); transform: scale(1.18); } 100% { text-shadow: none; transform: none; } }
+body.organ-meat #meat-chyme { display: none; }
 
 #biomass-wrap { flex: 1; min-width: 160px; }
 #biomass-label { font-size: 10px; letter-spacing: 2px; font-weight: bold; }
@@ -385,6 +393,12 @@ body:has(#under:not(.hidden)) #topbar, body:has(#under:not(.hidden)) #botbar { v
 #under-meat .meat { min-width: 84px; }
 #under-meat .um-war .meat-val { color: var(--war); }
 #under-meat .um-sci .meat-val { color: var(--science); }
+#under-meat .um-chyme { min-width: 104px; border-color: #6d6a2a; }
+#under-meat .um-chyme .meat-val { color: var(--chyme); font-size: 22px; }
+#under-meat .um-tally { display: flex; flex-direction: column; justify-content: center; max-width: 280px; font-size: 12px; letter-spacing: 1px; color: #d8d3a0; line-height: 1.25; padding: 2px 10px; border-left: 2px solid #6d6a2a; animation: tally-in 1.4s ease-out 1; }
+#under-meat .um-tally b { color: var(--chyme); font-size: 22px; letter-spacing: 0; }
+@keyframes tally-in { 0% { background: rgba(200, 207, 85, 0.35); } 100% { background: transparent; } }
+#under-meat .um-tally span { color: #b7b38a; letter-spacing: 0; }
 body.science-closed #under-meat .um-sci, body.first-mission:not(.m1-science) #under-meat .um-sci { display: none; }
 .pal-title { font-size: 0.82em; letter-spacing: 2px; margin: 8px 0 4px; opacity: 0.8; }
 #under-palette > .pal-title:first-child { margin-top: 0; }

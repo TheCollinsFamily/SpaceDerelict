@@ -42,7 +42,7 @@ try {
   page.on('pageerror', (e) => errors.push(String(e)));
   await page.goto('http://localhost:' + PORT + '/?seed=7&autostart=1', { waitUntil: 'load' });
   await page.waitForSelector('#stage canvas');
-  await page.evaluate(() => { window.broodfall.sim.meat.war = 500; });
+  await page.evaluate(() => { window.broodfall.sim.meat.war = 500; window.broodfall.sim.chyme = 500; });
   await page.locator('#open-under').click();
   await page.waitForSelector('#under:not(.hidden)');
 
@@ -95,7 +95,7 @@ try {
       while (s.phase === "draft") s.issue({ kind: "choose-plate", index: 0 });
     });
   };
-  await page.evaluate(() => { const s = window.broodfall.sim; s.meat.war = 800; const cells = window.broodfall.buildableCells(40); let k = 0; for (let g = 0; g < 300 && k < 6; g++) { const i = s.hand.findIndex((h) => h.family === 'spitter' || h.family === 'lasher'); if (i >= 0) { if (s.issue({ kind: 'build', cardIndex: i, cell: cells[k * 2] }).ok) k++; else s.issue({ kind: 'discard', cardIndex: i }); } else s.issue({ kind: 'discard', cardIndex: 0 }); } });
+  await page.evaluate(() => { const s = window.broodfall.sim; s.meat.war = 800; s.chyme = 800; const cells = window.broodfall.buildableCells(40); let k = 0; for (let g = 0; g < 300 && k < 6; g++) { const i = s.hand.findIndex((h) => h.family === 'spitter' || h.family === 'lasher'); if (i >= 0) { if (s.issue({ kind: 'build', cardIndex: i, cell: cells[k * 2] }).ok) k++; else s.issue({ kind: 'discard', cardIndex: i }); } else s.issue({ kind: 'discard', cardIndex: 0 }); } });
   await clearWave();
   await surface();
   await clearWave();

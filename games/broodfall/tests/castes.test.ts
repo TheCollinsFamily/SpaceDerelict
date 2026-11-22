@@ -60,9 +60,12 @@ describe('castesOpen: a caste comes only once its meat can be spent', () => {
     // A theme not in play (no organ of it can grow here) opens nothing.
     expect(castesOpen({ ...WAR_ONLY, seed: 1, evolutionCap: { ...NO_EVOLUTION, venom: 3 } }, dir)).toEqual({ science: false, royal: false });
   });
-  it('an organ priced in science in the pool, or one whose limbs are, opens science', () => {
+  it('an organ whose limbs are priced in science opens science (organs themselves are chyme since Nov 22 2026)', () => {
     expect(castesOpen({ ...WAR_ONLY, seed: 1, organPool: [...WAR_ONLY.organPool!, 'marrow'] }, dir).science).toBe(true);
-    expect(castesOpen({ ...WAR_ONLY, seed: 1, organPool: [...WAR_ONLY.organPool!, 'harrier'] }, dir).science).toBe(true);
+    // The Harrier Gland cost 10 science before chyme; now it costs chyme, so alone it is no science sink...
+    expect(castesOpen({ ...WAR_ONLY, seed: 1, organPool: [...WAR_ONLY.organPool!, 'harrier'] }, dir).science).toBe(false);
+    // ...except in a run saved before chyme, replayed under the old prices.
+    expect(castesOpen({ ...WAR_ONLY, seed: 1, organEconomy: 'meat', organPool: [...WAR_ONLY.organPool!, 'harrier'] }, dir).science).toBe(true);
   });
   it('the directive: a harvest opens science, a royal hunt opens the court; starting points or the late Host open the court', () => {
     expect(castesOpen({ ...WAR_ONLY, seed: 1 }, { kind: 'harvest', science: 50 })).toEqual({ science: true, royal: false });

@@ -72,7 +72,7 @@ try {
     const s = b.sim;
     b.step(2);
     const quiet = (n) => { for (let i = 0; i < n; i += 10) { b.step(10); s.enemies.length = 0; } };
-    s.meat.war = 9999; s.meat.science = 9999;
+    s.meat.war = 9999; s.chyme = 9999; s.meat.science = 9999;
     // The sac first: organs grow between waves (the growth phase the run opens in).
     let sac = false;
     let why = 'no spot';

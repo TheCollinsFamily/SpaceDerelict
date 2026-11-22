@@ -184,6 +184,7 @@ body.first-mission #hint { font-size: 14px; }
    Each part waits hidden until the run makes it matter (body.m1-<part>), then comes in with a glow and stays. */
 body.first-mission:not(.m1-science) #meat-science,
 body.first-mission:not(.m1-royal) #meat-royal,
+body.first-mission:not(.m1-chyme) #meat-chyme,
 body.first-mission:not(.m1-dials) #dials,
 body.first-mission:not(.m1-organs) #open-under,
 body.first-mission:not(.m1-nodes) #creep-nodes,
@@ -194,7 +195,7 @@ body.first-mission:not(.m1-cannibal) #pending-traits { display: none; }
 body.first-mission #botbar { justify-content: center; }
 body.first-mission:not(.m1-organs):not(.m1-nodes):not(.m1-plinths):not(.m1-surge) #organs { display: none; }
 body.first-mission:not(.m1-cannibal) #feed-controls { display: none; }
-body.first-mission.m1-science #meat-science, body.first-mission.m1-royal #meat-royal, body.first-mission.m1-dials #dials,
+body.first-mission.m1-science #meat-science, body.first-mission.m1-royal #meat-royal, body.first-mission.m1-chyme #meat-chyme, body.first-mission.m1-dials #dials,
 body.first-mission.m1-organs #open-under, body.first-mission.m1-nodes #creep-nodes, body.first-mission.m1-plinths #plinths,
 body.first-mission.m1-surge #royal-surge, body.first-mission.m1-cannibal #pending-traits { animation: m1-reveal 1.6s ease-out 1; }
 @keyframes m1-reveal { 0% { opacity: 0; box-shadow: 0 0 0 2px #9fe8f5, 0 0 24px rgba(159, 232, 245, 0.9); } 30% { opacity: 1; } 100% { box-shadow: 0 0 0 0 transparent; } }

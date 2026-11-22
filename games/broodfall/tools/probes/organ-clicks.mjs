@@ -19,7 +19,7 @@ try {
   page.on('pageerror', (e) => console.log('pageerror', String(e)));
   await page.goto(`${base}/?seed=7&autostart=1&speed=0`, { waitUntil: 'load' });
   await page.waitForSelector('#stage canvas', { timeout: 60000 });
-  await page.evaluate(() => { window.broodfall.sim.meat.war = 2000; window.broodfall.sim.meat.science = 500; });
+  await page.evaluate(() => { window.broodfall.sim.meat.war = 2000; window.broodfall.sim.chyme = 2000; window.broodfall.sim.meat.science = 500; });
   await page.locator('#open-under').click();
   await page.waitForSelector('#under:not(.hidden)');
   await page.waitForFunction(() => document.getElementById('under').classList.contains('scan'), null, { timeout: 20000 }).catch(() => {});

@@ -8,7 +8,12 @@
 import type { Command, SimConfig } from '../sim/types';
 
 export interface RunSave {
-  v: 1;
+  /**
+   * 2 since CHYME (Nov 22 2026: organs bought with chyme, DESIGN.md "Chyme"). A v1 save was played when organs cost war
+   * and science; it is loaded with SimConfig.organEconomy 'meat', so its orders replay into the run it was, and that one
+   * deployment is finished under the rules it was started under. The next deployment is chyme.
+   */
+  v: 1 | 2;
   /** The address the run was played at (its seed set), so the page around the board is the same one. */
   search: string;
   kind: 'campaign' | 'skirmish';
@@ -29,8 +34,14 @@ export function loadRunSave(): RunSave | null {
   try {
     const raw = localStorage.getItem(KEY);
     const r = raw ? (JSON.parse(raw) as RunSave) : null;
-    return r && r.v === 1 && r.cfg && Array.isArray(r.cmds) ? r : null;
+    return r && (r.v === 1 || r.v === 2) && r.cfg && Array.isArray(r.cmds) ? migrateRunSave(r) : null;
   } catch { return null; }
+}
+
+/** A save from before chyme (v1) replays under the economy it was played in. */
+export function migrateRunSave(r: RunSave): RunSave {
+  if (r.v !== 1 || r.cfg.organEconomy) return r;
+  return { ...r, cfg: { ...r.cfg, organEconomy: 'meat' } };
 }
 
 export function saveRunSave(r: RunSave): void {

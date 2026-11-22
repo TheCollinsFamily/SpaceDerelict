@@ -27,6 +27,7 @@ const run = (s: Sim, seconds: number, quiet = true) => { for (let i = 0; i < sec
 
 function grow(s: Sim, organ: OrganId) {
   s.meat.war = 9999;
+  s.chyme = 9999;
   s.meat.science = 9999;
   for (let c = 0; c < s.under.cells.length; c++) {
     for (let rot = 0; rot < 4; rot++) {

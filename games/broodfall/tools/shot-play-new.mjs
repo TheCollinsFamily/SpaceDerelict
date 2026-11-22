@@ -111,7 +111,7 @@ try {
   const canvas = page.locator('#stage canvas');
   await page.evaluate(() => {
     const s = window.broodfall.sim;
-    s.meat.war = 600; s.meat.science = 200;
+    s.meat.war = 600; s.chyme = 600; s.meat.science = 200;
     s.coreMaxHp *= 20; s.coreHp = s.coreMaxHp;
   });
 

@@ -99,7 +99,7 @@ try {
     const b = window.broodfall;
     const s = b.sim;
     b.step(2);
-    s.meat.war = 9999; s.meat.science = 9999;
+    s.meat.war = 9999; s.chyme = 9999; s.meat.science = 9999;
     // Real offers; the shelter marked on the first one that can hold it (Sim.markShelterOffer's own test).
     for (let seed = 1; seed < 40; seed++) {
       s.draftsTaken = 4 + seed; // the shelter roll is the run's seed and the draft count
@@ -248,7 +248,7 @@ try {
   // 7. A Harrier and a far science party.
   await page.evaluate(() => {
     const s = window.broodfall.sim;
-    s.meat.war = 9999; s.meat.science = 9999;
+    s.meat.war = 9999; s.chyme = 9999; s.meat.science = 9999;
     for (let c = 0; c < s.under.cells.length; c++) for (let r = 0; r < 4; r++) if (!s.organs.some((o) => o.organ === 'harrier') && s.canBuildOrgan('harrier', c, r)) s.issue({ kind: 'build-organ', organ: 'harrier', cell: c, rot: r });
     for (let i = 0; i < 2; i++) s.growFieldUnits();
     console.log('harriers', s.harriers.length, s.organs.map((o) => o.organ).join(','));

@@ -514,8 +514,29 @@ export const BALANCE = {
   callEarlyRate: 0.8,
   squadSize: 3,
   squadInterval: 3.1,
-  waveBonusBase: 22,
-  waveBonusPerWave: 4,
+  /**
+   * The clearing wage in WAR meat (the limbs'). Was 22 + 4/wave until CHYME (Nov 22 2026). The organs no longer take war,
+   * so the clear is now paid in chyme (the ration below) and the limbs' war comes from the bodies alone: measured, that
+   * left the limbs' budget where it was (119 limbs a run against 120, the same win rate; halving the wage instead gave
+   * 139 limbs and 10/10). The old numbers stay for a run saved before then (legacyWaveBonus*). DESIGN.md "Chyme".
+   */
+  waveBonusBase: 0,
+  waveBonusPerWave: 0,
+  legacyWaveBonusBase: 22,
+  legacyWaveBonusPerWave: 4,
+  /**
+   * CHYME (Collins, Nov 22 2026: "a secondary currency like processed food should build for the organ stage based on what
+   * you earned not what you had left"). The organs' currency, rendered by the body from what it EARNED, never from what
+   * was left over: every BODY the creep (or a Maw) digests renders chymePerBody by its caste, as it is digested (a body
+   * left lying off the creep renders nothing until the creep reaches it), plus a ration at every cleared wave
+   * (chymeRationBase + chymeRationPerWave x the wave, x the entrances' meat wager). Per body, not a share of its meat: it
+   * is seen from the first wave (+1 a body), and bodies grow about 17-fold over a run where meat grows 40-fold, so the
+   * late waves do not drown the organ stage. Banked from wave to wave: it never spoils. Modelled and measured: DESIGN.md
+   * "Chyme", tools/measure/organ-economy.measure.ts.
+   */
+  chymePerBody: { war: 1, science: 2, royal: 4 } as Record<'war' | 'science' | 'royal', number>,
+  chymeRationBase: 38,
+  chymeRationPerWave: 0,
   /** Verticality: range bonus per block height level above 1. */
   heightRangeBonus: 0.10,
   /** Waves grow with the campaign clock as well as the threat ladder. */

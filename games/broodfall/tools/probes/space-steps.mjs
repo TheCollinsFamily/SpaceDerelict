@@ -36,7 +36,7 @@ try {
   check(s.callEarly, 'the surface shows START THE WAVE');
   await page.screenshot({ path: join(out, 'space-surface-first-wave.png') });
   // A grown limb so the wave has a fight (not needed for the keys).
-  await page.evaluate(() => { window.broodfall.sim.meat.war = 400; });
+  await page.evaluate(() => { window.broodfall.sim.meat.war = 400; window.broodfall.sim.chyme = 400; });
   await page.keyboard.press(' ');
   await page.waitForTimeout(300);
   s = await state();

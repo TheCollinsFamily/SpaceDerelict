@@ -1,8 +1,9 @@
 /**
  * The scripted players' organ-stage policy (shared by the autoplayer and the
  * placement guardrail's random player, so both play the same economy).
- * Early in each between-waves window: unlock the next theme, then a heart.
- * Just before the wave starts: spend what would be lost on theme levels.
+ * Early in each between-waves window: unlock the next theme, then creep organs and hearts, in CHYME (the organs'
+ * currency since Nov 22 2026: it never competes with the limbs' meat). Late in the window: level the busiest theme
+ * with what is left over the price of the next organ wanted (chyme is banked, so nothing is lost by waiting).
  */
 import { BALANCE as B } from '../../content/data';
 import { DEPOSITS, ORGAN_BY_ID } from '../../content/underground';
@@ -102,44 +103,39 @@ export function placeNode(sim: Sim, random?: Rng): boolean {
   return best >= 0 && sim.issue({ kind: 'place-node', cell: best }).ok;
 }
 
+/** The organs the scripted player wants next, in the order it buys them (themes, free-thing organs, creep, hearts). */
+function wantedOrgans(sim: Sim): OrganId[] {
+  const have = (id: OrganId) => sim.organs.some((o) => o.organ === id);
+  const themes = sim.organs.filter((o) => ORGAN_BY_ID[o.organ].kind === 'theme').length;
+  const out: OrganId[] = [];
+  // The organs that make free things (plinths, seedlings), one each, after the fourth theme (measured:
+  // after the second they starve the themes, 4/10; after the eighth they come at wave 8 and barely pay):
+  // what they make pays back over the waves that are left, so early is worth more than late.
+  if (themes >= 4) { const f = FREE_ORDER.find((id) => !have(id)); if (f) out.push(f); }
+  const next = THEME_ORDER.find((id) => !have(id));
+  if (next) out.push(next);
+  if (themes >= 2) { const c = CREEP_ORDER.find((id) => !have(id)); if (c) out.push(c); }
+  const hearts = sim.organs.filter((o) => o.organ === 'heart').length;
+  if (themes >= 2 && hearts < Math.floor(themes / 2)) out.push('heart');
+  return out;
+}
+
 /** One organ-stage decision; true if it acted. */
 export function organTurn(sim: Sim, random?: Rng): boolean {
   if (sim.phase !== 'growth') return false;
   const late = sim.phaseElapsed >= sim.growthLength - 4;
-  const have = (id: OrganId) => sim.organs.some((o) => o.organ === id);
+  const wanted = wantedOrgans(sim);
   if (!late) {
-    // The organs that make free things (plinths, seedlings), one each, after the fourth theme (measured:
-    // after the second they starve the themes, 4/10; after the eighth they come at wave 8 and barely pay):
-    // what they make pays back over the waves that are left, so early is worth more than late.
-    const themesNow = sim.organs.filter((o) => ORGAN_BY_ID[o.organ].kind === 'theme').length;
-    if (themesNow >= 4) {
-      const nextFree = FREE_ORDER.find((id) => !have(id));
-      if (nextFree && sim.canAfford(organSpec(nextFree).cost)) {
-        const spot = bestOrganSpot(sim, nextFree, random);
-        if (spot && sim.issue({ kind: 'build-organ', organ: nextFree, ...spot }).ok) return true;
-      }
-    }
-    const next = THEME_ORDER.find((id) => !have(id));
-    if (next && sim.canAfford(organSpec(next).cost)) {
-      const spot = bestOrganSpot(sim, next, random);
-      if (spot && sim.issue({ kind: 'build-organ', organ: next, ...spot }).ok) return true;
-    }
-    const themes = sim.organs.filter((o) => ORGAN_BY_ID[o.organ].kind === 'theme').length;
-    if (themes >= 2) {
-      const nextCreep = CREEP_ORDER.find((id) => !have(id));
-      if (nextCreep && sim.canAfford(organSpec(nextCreep).cost)) {
-        const spot = bestOrganSpot(sim, nextCreep, random);
-        if (spot && sim.issue({ kind: 'build-organ', organ: nextCreep, ...spot }).ok) return true;
-      }
-    }
-    const hearts = sim.organs.filter((o) => o.organ === 'heart').length;
-    if (themes >= 2 && hearts < Math.floor(themes / 2) && sim.canAfford(organSpec('heart').cost)) {
-      const spot = bestOrganSpot(sim, 'heart', random);
-      if (spot && sim.issue({ kind: 'build-organ', organ: 'heart', ...spot }).ok) return true;
+    for (const id of wanted) {
+      if (!sim.canAffordOrgan(sim.organCost(id))) continue;
+      const spot = bestOrganSpot(sim, id, random);
+      if (spot && sim.issue({ kind: 'build-organ', organ: id, ...spot }).ok) return true;
     }
     return false;
   }
-  // Late: the wave is about to take whatever is left — level the theme with the most limbs.
+  // Late: level the theme with the most limbs, with the chyme over what the next organ wanted costs (chyme is banked:
+  // levelling never takes what the next organ needs, and an organ is worth more the earlier it grows).
+  const reserve = wanted.length ? Math.min(...wanted.map((id) => sim.organCost(id).chyme ?? 0)) : 0;
   const count = new Map<string, number>();
   for (const t of sim.towers) count.set(themeOf(t.family), (count.get(themeOf(t.family)) ?? 0) + 1);
   const order = [...count.entries()].sort((a, b) => b[1] - a[1]).map(([th]) => th);
@@ -147,9 +143,10 @@ export function organTurn(sim: Sim, random?: Rng): boolean {
   for (let guard = 0; guard < 12; guard++) {
     let did = false;
     for (const th of order) {
-      const id = th === 'core' ? -1 : sim.organs.find((o) => o.organ === th)?.id;
-      if (id === undefined) continue;
-      if (sim.issue({ kind: 'upgrade-organ', organInstanceId: id }).ok) { did = true; acted = true; break; }
+      const o = th === 'core' ? null : sim.organs.find((x) => x.organ === th);
+      if (o === undefined) continue;
+      if (sim.chyme - (sim.organUpgradeCost(o).chyme ?? 0) < reserve) continue;
+      if (sim.issue({ kind: 'upgrade-organ', organInstanceId: o ? o.id : -1 }).ok) { did = true; acted = true; break; }
     }
     if (!did) break;
   }

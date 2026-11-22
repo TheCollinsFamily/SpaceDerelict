@@ -15,6 +15,7 @@ function grown(seed = 1234): Sim {
   const s = new Sim({ ...CFG, seed });
   for (let i = 0; i < 600; i++) s.tick();
   s.meat.war = 9999;
+  s.chyme = 9999;
   s.meat.science = 9999;
   return s;
 }
@@ -46,7 +47,7 @@ describe('the scaffold gland', () => {
     expect(d.name).toBe('Scaffold Gland');
     expect(d.kind).toBe('scaffold');
     expect(d.shape.length).toBeGreaterThan(0);
-    expect(organSpec('scaffold').cost.war).toBeGreaterThan(0);
+    expect(organSpec('scaffold').cost.chyme).toBeGreaterThan(0);
   });
 
   it('grows one plinth every two turns, for nothing', () => {

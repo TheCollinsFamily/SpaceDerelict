@@ -1,8 +1,9 @@
 /**
  * THE ORGAN STAGE (Collins, Sep 28 2026): a separate between-waves stage, like
  * the town in BALL x PIT. Flow: wave setup (starting meat) → wave 1 → organ
- * stage → wave setup → wave 2 → … Leftover meat is spent here or on limbs; it
- * is LOST when the next wave starts (royal points are kept).
+ * stage → wave setup → wave 2 → … Organs are bought with CHYME (Nov 22 2026), never with the limbs' meat:
+ * the body renders it from what the creep digested in the wave, plus a ration at every clear, and it is BANKED
+ * from wave to wave (meat left when a wave starts is still lost; royal points are kept). DESIGN.md "Chyme".
  *
  * What organs are FOR: which limbs you can draw, and how strong they are.
  *   THEME organs unlock a group of limbs into your card draw (build the
@@ -42,7 +43,8 @@ export interface OrganDef {
   kind: OrganKind;
   /** Footprint cells [x, y] before rotation. */
   shape: readonly (readonly [number, number])[];
-  cost: { war?: number; science?: number };
+  /** Its price in CHYME (DESIGN.md "Chyme"): organs are never bought with the limbs' meat. */
+  cost: { chyme: number };
   /** Theme organs: the limbs they put into your draw. */
   unlocks?: readonly TowerFamily[];
   /** Theme organs: the verb they share with every organ they touch. */
@@ -79,80 +81,114 @@ export const METEOR_THEME = {
 };
 
 export const ORGAN_DEFS: readonly OrganDef[] = [
-  { id: 'forge', name: 'Bone Forge', kind: 'theme', shape: L4, cost: { war: 40 },
+  { id: 'forge', name: 'Bone Forge', kind: 'theme', shape: L4, cost: { chyme: 40 },
     unlocks: ['impaler', 'quill', 'skipper', 'bombard'], signature: 'impaler',
     blurb: 'grows bone: harpoons, quill fans, skipping and point artillery' },
-  { id: 'venom', name: 'Venom Sac', kind: 'theme', shape: T4, cost: { war: 40 },
+  { id: 'venom', name: 'Venom Sac', kind: 'theme', shape: T4, cost: { chyme: 40 },
     unlocks: ['blighter', 'mister', 'ember'], signature: 'blighter',
     blurb: 'brews chemistry: poison, caustic mist, fire' },
-  { id: 'gut', name: 'Gut', kind: 'theme', shape: S4, cost: { war: 35 },
+  { id: 'gut', name: 'Gut', kind: 'theme', shape: S4, cost: { chyme: 35 },
     unlocks: ['maw', 'swamp', 'burster', 'lobber'], signature: 'maw',
     blurb: 'digests: maws, swamps, bursting polyps, bile' },
-  { id: 'nerve', name: 'Nerve Cluster', kind: 'theme', shape: X5, cost: { war: 45 },
+  { id: 'nerve', name: 'Nerve Cluster', kind: 'theme', shape: X5, cost: { chyme: 45 },
     unlocks: ['frond', 'prism', 'ocular', 'net'], signature: 'frond',
     blurb: 'fires signals: arcs, prisms, the eye, flak nets' },
-  { id: 'lattice', name: 'Mucus Lattice', kind: 'theme', shape: O4, cost: { war: 30 },
+  { id: 'lattice', name: 'Mucus Lattice', kind: 'theme', shape: O4, cost: { chyme: 30 },
     unlocks: ['tangler', 'ward', 'choir'], signature: 'tangler',
     blurb: 'holds the line: snares, shield membranes, the choir' },
-  { id: 'womb', name: 'Brood Womb', kind: 'theme', shape: U5, cost: { war: 40 },
+  { id: 'womb', name: 'Brood Womb', kind: 'theme', shape: U5, cost: { chyme: 40 },
     unlocks: ['brood', 'hatch', 'lure'], signature: 'brood',
     blurb: 'breeds and baits: Broodmother Dens, Brood Pits, lures' },
-  { id: 'marrow', name: 'Marrow Vault', kind: 'theme', shape: I4, cost: { science: 30 },
+  { id: 'marrow', name: 'Marrow Vault', kind: 'theme', shape: I4, cost: { chyme: 45 },
     unlocks: ['conduit', 'tap', 'mitosis', 'reliquary', 'press'], signature: 'spine',
     blurb: 'combo engines that move bonuses: conduit, tap, mitosis, reliquary, press' },
-  { id: 'resonance', name: 'Resonance Chamber', kind: 'theme', shape: P5, cost: { science: 40 },
+  { id: 'resonance', name: 'Resonance Chamber', kind: 'theme', shape: P5, cost: { chyme: 55 },
     unlocks: ['amp', 'mosaic', 'twin', 'capacitor', 'boomerang'], signature: 'prism',
     blurb: 'combo engines that multiply: amplifier, mosaic, twin, capacitor, boomerang' },
-  { id: 'heart', name: 'Auxiliary Heart', kind: 'zone', zone: 'level', shape: D2, cost: { war: 30 },
+  { id: 'heart', name: 'Auxiliary Heart', kind: 'zone', zone: 'level', shape: D2, cost: { chyme: 30 },
     blurb: 'every organ touching its zone is one LEVEL higher' },
-  { id: 'brain', name: 'Brain Node', kind: 'zone', zone: 'draw', shape: D2, cost: { war: 35 },
+  { id: 'brain', name: 'Brain Node', kind: 'zone', zone: 'draw', shape: D2, cost: { chyme: 35 },
     blurb: 'limbs of every organ touching its zone are drawn twice as often' },
-  { id: 'gland', name: 'Pheromone Gland', kind: 'zone', zone: 'share', shape: M1, cost: { war: 25 },
+  { id: 'gland', name: 'Pheromone Gland', kind: 'zone', zone: 'share', shape: M1, cost: { chyme: 25 },
     blurb: 'organs touching its zone share their signature verb TWICE' },
   // Collins, Sep 28 2026: "one that reduces probability to nothing (used to disable basic organs later in the game)".
-  { id: 'atrophy', name: 'Atrophy Gland', kind: 'zone', zone: 'suppress', shape: M1, cost: { war: 20 },
+  { id: 'atrophy', name: 'Atrophy Gland', kind: 'zone', zone: 'suppress', shape: M1, cost: { chyme: 20 },
     blurb: 'limbs of every organ touching its zone are NEVER drawn — starve the basics out of your hand' },
-  { id: 'root', name: 'Tendril Root', kind: 'root', shape: M1, cost: { war: 8 },
+  { id: 'root', name: 'Tendril Root', kind: 'root', shape: M1, cost: { chyme: 8 },
     blurb: 'cheap tissue: reach further, and it CARRIES adjacency between organs at either end' },
   // CREEP (Collins, Sep 28 2026): creep nodes are FREE — these organs make them.
-  { id: 'bladder', name: 'Spore Bladder', kind: 'creep', creep: 'produce', shape: V2, cost: { war: 25 },
+  { id: 'bladder', name: 'Spore Bladder', kind: 'creep', creep: 'produce', shape: V2, cost: { chyme: 25 },
     blurb: 'grows one free CREEP NODE every 2 turns (at the wave clear); the creep organs TOUCHING it decide what kind' },
-  { id: 'pacemaker', name: 'Pacemaker', kind: 'creep', creep: 'pace', shape: M1, cost: { war: 20 },
+  { id: 'pacemaker', name: 'Pacemaker', kind: 'creep', creep: 'pace', shape: M1, cost: { chyme: 20 },
     blurb: 'a bladder TOUCHING it grows EVERY turn instead of every 2; more pacemakers each add a node when the wave starts' },
-  { id: 'budder', name: 'Budding Gland', kind: 'creep', creep: 'bud', shape: L3, cost: { war: 30 },
+  { id: 'budder', name: 'Budding Gland', kind: 'creep', creep: 'bud', shape: L3, cost: { chyme: 30 },
     blurb: 'a bladder TOUCHING it grows one MORE node each time (stacks)' },
-  { id: 'cyst', name: 'Spore Cyst', kind: 'creep', creep: 'cyst', shape: M1, cost: { war: 15 },
+  { id: 'cyst', name: 'Spore Cyst', kind: 'creep', creep: 'cyst', shape: M1, cost: { chyme: 15 },
     blurb: 'a starter stock: 3 plain creep nodes the moment it grows' },
-  { id: 'swell', name: 'Swelling Sac', kind: 'creep', creep: 'swell', shape: D2, cost: { war: 25 },
+  { id: 'swell', name: 'Swelling Sac', kind: 'creep', creep: 'swell', shape: D2, cost: { chyme: 25 },
     blurb: 'nodes from a bladder TOUCHING it spread 1 cell wider; touching the METEOR, the core creep grows wider (stacks)' },
-  { id: 'catapult', name: 'Catapult Sac', kind: 'creep', creep: 'catapult', shape: I3, cost: { war: 30 },
+  { id: 'catapult', name: 'Catapult Sac', kind: 'creep', creep: 'catapult', shape: I3, cost: { chyme: 30 },
     unlocks: ['sling'],
     blurb: 'UNLOCKS the Spore Sling (the creep thrower); nodes from a bladder TOUCHING it are thrown 5 cells further (stacks)' },
-  { id: 'runner', name: 'Runner Gland', kind: 'creep', creep: 'runner', shape: V3, cost: { war: 30 },
+  { id: 'runner', name: 'Runner Gland', kind: 'creep', creep: 'runner', shape: V3, cost: { chyme: 30 },
     unlocks: ['lance'],
     blurb: 'UNLOCKS the Creep Lance: a thrower that shoots creep in a LINE along its facing' },
   // SPORE MULES (Collins, Oct 2 2026: "a unit that can act like a creep node (and an organ that makes them) ... you walk
   // it out and deploy it"). Paced and strained like a bladder: a pacemaker touching it makes it grow every turn, a budding
   // gland one more each time, and the swell/mire/acid organs touching it decide the node each mule becomes.
-  { id: 'mule', name: 'Mule Sac', kind: 'creep', creep: 'mule', shape: M1, cost: { war: 30 },
+  { id: 'mule', name: 'Mule Sac', kind: 'creep', creep: 'mule', shape: M1, cost: { chyme: 30 },
     blurb: 'grows a SPORE MULE every 2 turns (keeps 2 at most): a slow walker you order out and DEPLOY, where it roots into a creep node, even past your creep' },
-  { id: 'mire', name: 'Mire Gland', kind: 'creep', creep: 'mire', shape: V2, cost: { war: 25 },
+  { id: 'mire', name: 'Mire Gland', kind: 'creep', creep: 'mire', shape: V2, cost: { chyme: 25 },
     blurb: 'creep from a bladder TOUCHING it (or the METEOR, if it touches that) slows ground enemies 25% (stacks)' },
-  { id: 'acid', name: 'Digestive Lining', kind: 'creep', creep: 'acid', shape: D2, cost: { war: 30 },
+  { id: 'acid', name: 'Digestive Lining', kind: 'creep', creep: 'acid', shape: D2, cost: { chyme: 30 },
     blurb: 'creep from a bladder TOUCHING it (or the METEOR, if it touches that) burns ground enemies 4/s (stacks)' },
   // FIELD UNITS (Collins, Oct 2 2026): organs that grow units you command, born at the body at the wave clear and
   // paid for then (Sim.growFieldUnits). The INFESTOR takes shelters; the HARRIER hunts the science caste far afield.
-  { id: 'infestor', name: 'Infestor Cyst', kind: 'unit', shape: M1, cost: { war: 50 },
+  { id: 'infestor', name: 'Infestor Cyst', kind: 'unit', shape: M1, cost: { chyme: 50 },
     blurb: 'grows an INFESTOR every 3 turns (one at a time; 60 war each, paid at the wave clear): a big, slow unit you walk to a SHELTER, where it burrows in and makes it yours, a second base that pays a bonus on every wave\'s meat while you protect it' },
-  { id: 'harrier', name: 'Harrier Gland', kind: 'unit', shape: M1, cost: { war: 30, science: 10 },
+  { id: 'harrier', name: 'Harrier Gland', kind: 'unit', shape: M1, cost: { chyme: 40 },
     blurb: 'grows a HARRIER every 2 turns (one a gland, 3 on the board at most; 30 war each): fast, long-ranged and soft, it runs down science parties anywhere in the city' },
   // SEEDLINGS (Collins, Sep 29 2026): must touch the surface; shoots a free weak limb up every two waves.
-  { id: 'seeder', name: 'Seeding Gland', kind: 'seeder', shape: V2, cost: { war: 25 }, surface: true,
+  { id: 'seeder', name: 'Seeding Gland', kind: 'seeder', shape: V2, cost: { chyme: 25 }, surface: true,
     blurb: 'must TOUCH THE SURFACE; every 2 turns it shoots a free SEEDLING limb up into the city (a free card: place it anywhere your creep holds)' },
   // PLINTHS (Collins, Sep 29 2026): free, one every two waves.
-  { id: 'scaffold', name: 'Scaffold Gland', kind: 'scaffold', shape: L3, cost: { war: 20 },
+  { id: 'scaffold', name: 'Scaffold Gland', kind: 'scaffold', shape: L3, cost: { chyme: 20 },
     blurb: 'grows one free PLINTH every 2 turns (at the wave clear): a pedestal that raises one limb, or one bare roof, by one level' },
 ];
+
+/**
+ * The prices before CHYME (Nov 22 2026), in war and science meat. A run saved before then (src/meta/runSave.ts, v1) is
+ * replayed under the economy it was played in (SimConfig.organEconomy 'meat'), so its orders land as they did.
+ */
+export const LEGACY_ORGAN_COST: Record<OrganId, { war?: number; science?: number }> = {
+  forge: { war: 40 },
+  venom: { war: 40 },
+  gut: { war: 35 },
+  nerve: { war: 45 },
+  lattice: { war: 30 },
+  womb: { war: 40 },
+  marrow: { science: 30 },
+  resonance: { science: 40 },
+  heart: { war: 30 },
+  brain: { war: 35 },
+  gland: { war: 25 },
+  atrophy: { war: 20 },
+  root: { war: 8 },
+  bladder: { war: 25 },
+  pacemaker: { war: 20 },
+  budder: { war: 30 },
+  cyst: { war: 15 },
+  swell: { war: 25 },
+  catapult: { war: 30 },
+  runner: { war: 30 },
+  mule: { war: 30 },
+  mire: { war: 25 },
+  acid: { war: 30 },
+  infestor: { war: 50 },
+  harrier: { war: 30, science: 10 },
+  seeder: { war: 25 },
+  scaffold: { war: 20 },
+};
 
 export const ORGAN_BY_ID = Object.fromEntries(ORGAN_DEFS.map((d) => [d.id, d])) as Record<OrganId, OrganDef>;
 
@@ -191,7 +227,8 @@ export const NODE_HP = 140;           // shells, bombers and trampling bodies we
 export const NODE_TRAMPLE = 0.5;     // x a body's damage/s while it stands on a node
 // A placed node MATURES once it survives a wave: from the next turn it can spread its ONE child.
 
-/** Level upgrade price: the organ's cost times its current level. */
+/** Level upgrade price: the organ's cost times its current level (the Meteor Core: METEOR_LEVEL_CHYME × its level). */
+export const METEOR_LEVEL_CHYME = 30;
 export const ORGAN_LEVEL_POTENCY = 0.10;
 export const ORGAN_LEVEL_TEMPO = 0.10;
 /** Brain zone: draw weight multiplier for the themes it touches. */

@@ -47,7 +47,9 @@ setup → wave 2 → organ stage → … The organ stage opens automatically aft
 wave (after any district draft); the clock holds while it is open; "TO THE SURFACE"
 goes to wave setup; the bottom-bar ORGANS button reopens it until the wave starts.
 **Use it or lose it:** war and science left when a wave starts are lost (the
-starting meat carries into wave 1; royal points are kept).
+starting meat carries into wave 1; royal points are kept). **Since Nov 22 2026 organs are not bought with them: they
+cost CHYME, earned from the wave and kept (next section).** Prices below are chyme (they were war, and science for the
+two engine themes).
 
 **The board.** A 13 × 9 cross-section under the city. The meteor it crashed in sits
 half above the street line (the core you defend) and half buried (top middle). An
@@ -62,15 +64,15 @@ meteor) to level it: its cost × its current level. Each has a SIGNATURE verb.
 
 | Organ | Shape | Cost | Unlocks | Signature |
 |---|---|---|---|---|
-| Meteor Core | 3×2, given | — (level: 30 war × level) | Spitter, Lasher, Spine Wall | tempo (spitter) |
-| Bone Forge | L (4) | 40 war | Impaler, Quill Fan, Skipping Mortar, Spore Bombard | armor-pierce (impaler) |
-| Venom Sac | T (4) | 40 war | Blight Vent, Caustic Mister, Ember Sac | poison (blighter) |
-| Gut | S (4) | 35 war | Maw, Digestive Swamp, Burster, Bile Lobber | richer meat (maw) |
-| Nerve Cluster | + (5) | 45 war | Galvanic Frond, Arc Prism, Ocular Stalk, Netcaster | arcs (frond) |
-| Mucus Lattice | square (4) | 30 war | Snare Bed, Ward Membrane, Choir Node | slow (tangler) |
-| Brood Womb | U (5) | 40 war | Broodmother Den, Brood Pit, Spore Sling, Lure Gland | regrowth (brood) |
-| Marrow Vault | I (4) | 30 science | Conduit, Tap, Mitosis, Reliquary, Meat Press | hp + caltrops (spine) |
-| Resonance Chamber | P (5) | 40 science | Amplifier, Mosaic, Twinning Gland, Capacitor, Boomerang | focus ramp (prism) |
+| Meteor Core | 3×2, given | — (level: 30 chyme × level) | Spitter, Lasher, Spine Wall | tempo (spitter) |
+| Bone Forge | L (4) | 40 | Impaler, Quill Fan, Skipping Mortar, Spore Bombard | armor-pierce (impaler) |
+| Venom Sac | T (4) | 40 | Blight Vent, Caustic Mister, Ember Sac | poison (blighter) |
+| Gut | S (4) | 35 | Maw, Digestive Swamp, Burster, Bile Lobber | richer meat (maw) |
+| Nerve Cluster | + (5) | 45 | Galvanic Frond, Arc Prism, Ocular Stalk, Netcaster | arcs (frond) |
+| Mucus Lattice | square (4) | 30 | Snare Bed, Ward Membrane, Choir Node | slow (tangler) |
+| Brood Womb | U (5) | 40 | Broodmother Den, Brood Pit, Spore Sling, Lure Gland | regrowth (brood) |
+| Marrow Vault | I (4) | 45 (was 30 science) | Conduit, Tap, Mitosis, Reliquary, Meat Press | hp + caltrops (spine) |
+| Resonance Chamber | P (5) | 55 (was 40 science) | Amplifier, Mosaic, Twinning Gland, Capacitor, Boomerang | focus ramp (prism) |
 
 **Adjacency.** Two theme organs that touch (edge to edge, or joined by a chain of
 roots) share signatures: every limb of each theme gains +1 of the other's verb (the
@@ -79,11 +81,11 @@ grow the Venom Sac decides whose limbs poison.
 
 **Zone organs** (repeatable; Ball x Pit's Captain's Quarters): each projects a zone
 one cell around its footprint; every organ touching the zone is boosted.
-- Auxiliary Heart (domino, 30 war): +1 level to organs touching its zone.
-- Brain Node (domino, 35 war): limbs of organs touching its zone are drawn ×2.
-- Pheromone Gland (1 cell, 25 war): organs touching its zone share their signature TWICE.
+- Auxiliary Heart (domino, 30 chyme): +1 level to organs touching its zone.
+- Brain Node (domino, 35 chyme): limbs of organs touching its zone are drawn ×2.
+- Pheromone Gland (1 cell, 25 chyme): organs touching its zone share their signature TWICE.
 
-**Tendril Root** (1 cell, 8 war): cheap tissue to reach further, and it CARRIES
+**Tendril Root** (1 cell, 8 chyme): cheap tissue to reach further, and it CARRIES
 adjacency — two themes joined by a root chain share as if touching.
 
 **Terrain.** Features are fixed: +1 level to every organ touching one, +2 to its
@@ -92,6 +94,120 @@ Geothermal Vent → Venom). Deposits pay once when an organ is grown over them
 (Carrion Pocket +20 war, Carrion Seam +45 war, Buried Laboratory +25 science,
 Biomass Bed +150 mass, Royal Ossuary +1 royal point, Gene Cache: two named bonuses
 banked for your next limb); the good ones are deep.
+
+### CHYME: the organ stage's own currency (Collins, Nov 22 2026 — BUILT Nov 22)
+Collins: "the organ stage is using the same currency as the limb stage this is not good game design a secondary currency
+like processed food should build for the organ stage based on what you earned not what you had left (and make sure you
+think through the economics of this)". Until then organs were bought with the limbs' war and science, and only with what
+was LEFT when the wave started (the rest spoiled): limbs and organs competed for one pool, and organs were the thrift
+prize. Now each stage has its own money.
+
+**The name: CHYME.** In a body, chyme is literally "processed food": what the gut has made of a meal before the body
+takes it up. The creep digests the dead (Oct 1 2026); the body processes what it digested into chyme and grows organs
+with it. Plain anatomy, like Gut, Marrow Vault and Spore Bladder, and in the Empire console's register (its operator
+software already says "specimens digested"). Glyph ◆, colour bile-gold (`--chyme`).
+
+**Sources (what EARNED means), and the rate.**
+- **Every body digested** renders chyme by who it was: a war body 1, a science body 2, one of the court 4
+  (`BALANCE.chymePerBody`). Decided at the kill and carried by the body (`Corpse.chyme`, summed in a heap), rendered at
+  the moment the creep (or a Maw, eating it whole) digests it, the same moment its meat is banked. A body lying off the
+  creep renders nothing until the creep reaches it, so pushing the creep after the science caste's bodies pays twice.
+  Per BODY, not a share of its meat: it is legible from the first wave (+1 a body: the HUD ticks with every digestion)
+  and it grows about 17-fold over a run where meat grows 40-fold (measured: 6 war bodies digested in wave 1, ~100 by
+  wave 8), so the late waves do not drown the organ stage.
+- **Every wave cleared** pays a ration of 38 (`chymeRationBase`, x the entrances' wager: +25%/+50% at 2/3 gates). This
+  is the old clearing wage, which was war meat (22 + 4/wave) and is now chyme. It is the floor: a bad wave still buys an
+  organ.
+- Nothing else renders chyme: meat left unspent, a thief's returned loot, a deposit's payout, a shelter's share and the
+  last mission's shelter ration are meat for limbs, not chyme. `tests/chyme.test.ts` holds "a hoarder and a spender earn
+  the same chyme".
+- **Seen accruing.** The top bar has a ◆ CHYME counter beside WAR/SCI/ROYAL; it pulses as it grows and shows "+N this
+  wave" during a wave; the feed's "resource acquired — 2 war + 1 ◆ chyme" names it on each body. At the clear the organ
+  stage opens on its head row: "WAVE 4 EARNED +78 · 40 from the bodies it digested · 38 for the clear", and the bank.
+  (The clear's banner says the same, but the stage opens over it.) Mission 1 shows the counter the moment the first body
+  is digested (`m1-chyme`, the one-thing-at-a-time rule).
+
+**Carry-over: banked, no cap, no decay.** Chyme is kept from wave to wave; war and science still spoil when a wave starts.
+No cap is needed: an organ is worth more the earlier it grows (its limbs fight every wave after), so hoarding chyme only
+costs; saving is for a dear level. A run's chyme ends with the run (it is not a meta currency).
+
+**Sinks: every organ, priced in chyme only** (`content/underground.ts`, `cost: { chyme }`). The war prices carried over
+one for one (the numbers players knew: Bone Forge 40, Gut 35, Nerve 45, Lattice 30, Womb 40, hearts 30, brain 35, gland
+25, atrophy 20, root 8, the creep organs 15-30, scaffold 20, seeder 25, infestor cyst 50, mule sac 30); the two that cost
+science are re-priced dearer, because they no longer come out of a separate pool: Marrow Vault 30 science → 45, Resonance
+Chamber 40 science → 55, Harrier Gland 30 war + 10 science → 40. A level is the organ's price x its level; the Meteor
+Core 30 x its level. The units the unit organs grow (an Infestor 60 war, a Harrier 30 war at the clear) stay war: they are
+surface things. Deposits still pay war, science, royal points and biomass, so digging is spent in chyme and paid in meat:
+the dig now feeds the limbs.
+
+**The numbers (modelled, then measured).** The model (`tools/measure/chyme-model.mjs`): measured bodies per wave x the
+per-body rate, plus the ration, against the scripted player's organ list (8 themes, 9 creep organs, 2 free-thing
+organs, a heart per two themes: 725 chyme) bought greedily. Targets: one theme after wave 1 (~40), an organ a stage
+early, two a stage mid-run, two to three with levels late, every organ a typical run wants by wave 9 and the rest as
+levels. The model said 44, 46, 51, 71, 62, 95, 110, 169, 148, 161, 160 a wave, 1,116 a run, every organ by wave 9, 4
+levels. (A share of the meat, 15% + a ration of 36 + 3/wave, models almost the same totals, 1,054; it was built first
+and dropped after playing it: wave 1 rendered 0-3 from its bodies, so the link between eating and organs was invisible.)
+Measured, the naive scripted player, hold-12, 20 seeds (`tools/measure/organ-economy.measure.ts`):
+
+| | chyme earned (after wave n) | organs bought | levels bought |
+|---|---|---|---|
+| waves 1-3 | 43, 47, 51 | 1, 1, 2 | 0 |
+| waves 4-7 | 70, 71, 94, 120 | 2.9, 2.3, 2.5, 3.3 | 0 |
+| waves 8-11 | 176, 169, 170, 167 | 5.9, 2.1, 0, 0 | 0.1, 2.6, 2.5, 1.9 |
+| a run | 1,260 (wins ~1,340) | 22.4 (of 23 wanted) | 6.3 |
+
+Before (the old economy, same 20 seeds): organs 21.6 and 1.8 levels a run, bought with 772 meat that limbs did not get.
+
+**The limbs after the split.** The organs used to take about 770 meat a run from the limbs (about half of all income in
+waves 1-5). The clearing wage (506 war over a run) now goes to chyme instead, so the war for limbs comes from the bodies
+alone, and the limbs' budget stays where it was. Measured, same 20 seeds: limbs grown 121.3 → 122.3 a run, limb spend
+2,192 → 2,210; early setups the same (limbs bought after waves 1-3: 1.9/1.9/4.0 → 2.0/2.5/4.5). Tried and rejected:
+halving the war wage instead (11 + 2/wave): 139 limbs a run and 10/10 wins, too easy. More meat SPOILS now (309 → 636 a
+run): the scripted player is hand-bound late (it has no organ to pour the rest into); a human can spend it on more cards
+and discards, which is the late-game surplus organs used to absorb.
+
+**Difficulty: about where it was, at most a shade harder.** 18/20 wins before, 17/20 after (the lost seeds differ); mean core on the wins 76% → 75%.
+The placement guardrail (smart beats random) passes; the fullrun test's naive hold-12 (its own ten seeds) 9/10 before, 8/10 after (the floor is 3). The last mission (6 seeds) 5/6 before and
+after.
+
+**The decrees and organs that touched the old economy.**
+- **Royal Larder** ("half of the war and science left when a wave starts is kept"): still the same rule on the limbs'
+  meat, and now its only job is the one that matters: SAVING across a wave for a big limb or an evolution the next
+  setup's meat cannot pay. Chyme needs no larder. Its text says so.
+- **Gut ("richer meat") and the Maw (+30% meat yield):** meat, as before. A Maw eating a body whole renders its chyme at
+  once; the yield pips do not multiply chyme (chyme is per body). The Meat Press turns war kills into science meat; the
+  body still renders a war body's chyme.
+- **Biomass Bed, carrion pockets and seams, labs, tombs, gene caches:** pay what they paid (meat, biomass, points,
+  bonuses), now to the limbs.
+- **startBonus (the Institute's Volunteers), the defence's full larder, genes' starting meat, sleepers, campaign start
+  organs:** all meat or free organs, unchanged. A defence is one siege with its organs remembered: no organ stage follows.
+- **Mission 1 (war only)** and the science caste switch: chyme is no caste. Science opens from an engine limb, an
+  evolution or a harvest; an organ priced in science no longer exists, so the Harrier Gland alone no longer opens it
+  (`castesOpen`).
+- **The last mission:** its organs no longer eat into the shelter's ration; the scripted player's hold-back of organs
+  while a limb could be paid is gone.
+
+**Failure modes, ruled out.**
+- *Snowball* (strong play → more organs → stronger): chyme comes from bodies, and the bodies a wave holds are fixed by the
+  wave, not by the player; the most a perfect wave adds over a sloppy one is the bodies a sloppy one leaves undigested.
+  Levels cost price x level, so the tenth level of one organ is ten times the first.
+- *Death spiral* (a bad wave → no organs): the ration (38) is paid for every clear whatever happened; the runs that lost
+  still earned 500-1,100 chyme.
+- *Farming* (stalling a wave to kill more): a wave's war bodies are a fixed list; the science parties come only in a
+  wave's first 36 s, and a wave is called off 60 s after its last entry. Nothing spawns because a wave is long.
+- *Ignore organs / ignore limbs*: chyme buys nothing on the surface and meat buys no organ, so neither can be poured into
+  the other; ignoring either throws that money away.
+- *An empty or confusing first organ stage:* wave 1 earns 38 + its bodies (measured 43 on average; 41 and 45 in the page on seed 7 and mission 1):
+  every theme but the Nerve Cluster, or a heart and a root, after the first wave. The head row says what was earned and
+  why, and what chyme is for.
+
+**Old saves.** A run saved before chyme (`RunSave.v` 1) is loaded with `SimConfig.organEconomy: 'meat'` and replays under
+the old prices and wage (`LEGACY_ORGAN_COST`, `legacyWaveBonus*`), so its orders land as they did; that one deployment is
+finished under the rules it was started under. Saves are v2 from now on. Tested (`tests/chyme.test.ts`).
+
+**COLLINS:** (1) the name and glyph; (2) whether the Gut should also render more chyme (thematically the Gut is where
+chyme forms; left out so no organ feeds the organ economy, which is the one snowball path); (3) the ration as a flat 38
+(the old wage grew with the wave).
 
 ### Creep: the core of the organ game (Collins, Sep 28 2026)
 Collins: "creep nodes should be free but produced at intervals by special organs;
@@ -217,7 +333,7 @@ and meat being digitisation."** The creep is how the asset absorbs, that is digi
 - tier 3 **fliers**: wing straight over blocks and walls to the core — spine walls and channel-side placement don't answer them; airspace lines from gate to core must be covered.
 - tier 4 **sappers**: climb blocks and chew towers directly — perches are not safe.
 - tier 5 **phalanx**: shield-wall armor caps damage per hit — big single hits are wasted, rapid fire shreds it.
-Economically: bounties are near-flat per kill (2-3 war meat) while wave income is a fixed clearing wage, so defense cannot compound off wave size, and the strength/income gap forces efficient placement (guardrail: informed placement flips 4 seeds to wins, careless flips none).
+Economically: bounties are near-flat per kill (2-3 war meat) while wave income is a fixed clearing wage (since Nov 22 2026 paid in CHYME, the organs' currency: "Chyme" above), so defense cannot compound off wave size, and the strength/income gap forces efficient placement (guardrail: informed placement flips 4 seeds to wins, careless flips none).
 
 ### The roster (built Sep 26 2026 — every entry is a VERB, and every tower family is also a pip)
 
@@ -600,7 +716,8 @@ Next engine candidates (brainstorm, Sep 27): see notes/ITERATION addendum 12.
 ### What science buys (Collins, Sep 28 2026)
 Science is spent ONLY on combo engines, on evolutions (below), on the two engine
 organs (Marrow Vault, Resonance Chamber), and on "certain upgrades we have not
-gotten to yet". Basic limbs and organs cost war
+gotten to yet". (Nov 22 2026: every organ is bought with CHYME since Collins's call that the organ stage have its own
+currency, so the two engine organs are chyme now, priced dearer; the engine LIMBS they unlock still cost science.) Basic limbs and organs cost war
 only. (Their old science share was dropped, not converted: converting 1:1 starved
 war and the scripted player built a quarter as many limbs.)
 
@@ -644,7 +761,7 @@ card; the crown is bought on the limb itself, in its panel under EVOLVE.
 | Crown a Limb | 1R, on a limb | the royal presence aura, turned: every OTHER limb within 120px takes ×0.7 harm and hits +25% | crowns add: ×0.49 and +50% under two |
 | Consort's Favour | 2R (+1 each) | the consort's promotions, turned: at every cleared wave the limb that killed most in it is PROMOTED — one more bonus of its own family, for life (banked if eaten) | promotes the next best killer too |
 | Royal Retinue | 2R (+1 each) | the hand's size: one more card, drawn now and kept | one more again |
-| Royal Larder | 2R (+2 each) | use-it-or-lose-it: half of the war and science left when a wave starts is kept | half of the rest (½ → ¾ → ⅞) |
+| Royal Larder | 2R (+2 each) | use-it-or-lose-it: half of the war and science left when a wave starts is kept (since chyme, Nov 22 2026: the one way to save the limbs' meat for a big limb or an evolution; chyme is always kept) | half of the rest (½ → ¾ → ⅞) |
 | Royal Commission | 1R (+1 each) | the draw: choose any limb your organs unlock — a FREE card of it now (not seedlings, not the cage) | another (a point dearer) |
 | Queen's Heart | 1R | the core: +300 max hp, 300 healed now | +300 again |
 

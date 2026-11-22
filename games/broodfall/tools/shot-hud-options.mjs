@@ -89,7 +89,7 @@ try {
     const built = await page.evaluate(() => {
       const bf = window.broodfall;
       const s = bf.sim;
-      s.meat.war = 900; s.meat.science = 60; s.meat.royal = 2;
+      s.meat.war = 900; s.chyme = 900; s.meat.science = 60; s.meat.royal = 2;
       let n = 0;
       for (let tries = 0; tries < 60 && n < 5; tries++) {
         const cells = bf.buildableCells(80);
@@ -101,7 +101,7 @@ try {
         }
         if (!ok) s.issue({ kind: 'discard', cardIndex: 0 });
       }
-      s.meat.war = 140; s.meat.science = 24; s.meat.royal = 1;
+      s.meat.war = 140; s.chyme = 140; s.meat.science = 24; s.meat.royal = 1;
       bf.step(2);
       return s.towers.map((x) => x.family);
     });

@@ -79,6 +79,7 @@ describe('economy and building', () => {
   it('builds a tower, pays for it, and refills the hand', () => {
     const s = freshSim();
     s.meat.war = 999;
+    s.chyme = 999;
     s.meat.science = 999;
     const family = s.hand[0].family;
     const cost = towerSpec(family).cost;
@@ -94,6 +95,7 @@ describe('economy and building', () => {
   it('refuses to build off-creep, in buildings, on occupied cells, or without meat', () => {
     const s = freshSim();
     s.meat.war = 999;
+    s.chyme = 999;
     s.meat.science = 999;
 
     // A building cell is never buildable, creeped or not.
@@ -117,6 +119,7 @@ describe('economy and building', () => {
   it('organ stage: a whole SHAPE on open ground, touching the meteor or an organ, between waves; themes once', () => {
     const s = freshSim();
     s.meat.war = 9999;
+    s.chyme = 9999;
     const u = s.under;
     expect(u.cells.filter((c) => c.kind === 'meteor').length).toBe(6);
     // A footprint touching nothing is refused; one touching the meteor grows, with its full shape.
@@ -142,24 +145,28 @@ describe('economy and building', () => {
     expect(w0.conduit).toBe(0);
     expect(s.hand.every((c) => ['spitter', 'lasher', 'spine'].includes(c.family))).toBe(true);
     s.meat.war = 999;
+    s.chyme = 60;
     grow(s, 'forge');
     const w1 = s.drawWeights();
     for (const f of ['impaler', 'quill', 'skipper', 'bombard'] as const) expect(w1[f]).toBeGreaterThan(0);
     expect(w1.blighter).toBe(0);
-    // Engine themes cost science.
+    // Organs cost CHYME, never war: 999 war and 20 chyme left cannot grow the 45-chyme Marrow Vault.
     expect(s.issue({ kind: 'build-organ', organ: 'marrow', ...organSpot(s, 'marrow') }).err).toBe('cannot afford');
   });
 
   it('organ stage: LEVELS power a theme\'s limbs (+15% potency and tempo per level)', () => {
     const s = freshSim(4101);
     s.meat.war = 9999;
+    s.chyme = 9999;
     const gut = grow(s, 'gut');
     const b: Tower = { id: 1, family: 'burster', pos: { x: 300, y: 300 }, cell: s.cellAt(300, 300), hp: 70, maxHp: 70, pips: [], cooldown: 9, kills: 0 };
     s.towers.push(b);
     const base = s.statsOf(b).damage;
     const war0 = s.meat.war;
+    const ch0 = s.chyme;
     expect(s.issue({ kind: 'upgrade-organ', organInstanceId: gut.id }).ok).toBe(true);
-    expect(war0 - s.meat.war).toBe(35); // cost x current level
+    expect(ch0 - s.chyme).toBe(35); // cost x current level, in chyme
+    expect(s.meat.war).toBe(war0); // never the limbs' war
     expect(gut.level).toBe(2);
     expect(s.statsOf(b).damage).toBeCloseTo(base * (1 + ORGAN_LEVEL_POTENCY));
     // The meteor levels too (id -1), powering spitters.
@@ -170,6 +177,7 @@ describe('economy and building', () => {
   it('organ stage ADJACENCY: touching themes share signature verbs; roots carry it; a gland doubles it', () => {
     const s = freshSim(4102);
     s.meat.war = 9999;
+    s.chyme = 9999;
     grow(s, 'forge'); // touches the meteor
     const fx = s.organEffects();
     // Forge and the core share: forge limbs get the core's tempo verb, core limbs the forge's pierce.
@@ -195,6 +203,7 @@ describe('economy and building', () => {
   it('organ stage: a ROOT chain carries adjacency between organs that do not touch', () => {
     const s = freshSim(4103);
     s.meat.war = 9999;
+    s.chyme = 9999;
     const u = s.under;
     const md = (a: number, b: number) => Math.abs((a % u.w) - (b % u.w)) + Math.abs(Math.floor(a / u.w) - Math.floor(b / u.w));
     // Run a line of roots straight down from under the meteor, then grow a theme at its end.
@@ -225,6 +234,7 @@ describe('economy and building', () => {
   it('organ stage ZONES: a heart raises the level of organs touching its zone; a brain doubles their draw', () => {
     const s = freshSim(4104);
     s.meat.war = 9999;
+    s.chyme = 9999;
     const forge = grow(s, 'forge');
     const lvl0 = s.organEffects().get('forge')!.level;
     const w = s.under.w;
@@ -252,6 +262,7 @@ describe('economy and building', () => {
   it('organ stage: deposits pay when an organ is grown over them', () => {
     const s = freshSim(4242);
     s.meat.war = 99999;
+    s.chyme = 99999;
     const u = s.under;
     const target = u.cells.findIndex((c) => c.kind === 'deposit' && c.deposit !== 'cache');
     const pay = u.cells[target].pay ?? DEPOSITS[u.cells[target].deposit!].now;
@@ -262,7 +273,7 @@ describe('economy and building', () => {
       const before = { ...s.meat, biomass: s.biomass };
       expect(s.issue({ kind: 'build-organ', organ: 'root', cell: step, rot: 0 }).ok).toBe(true);
       if (step === target) {
-        expect(s.meat.war - before.war).toBe((pay.war ?? 0) - (organSpec('root').cost.war ?? 0));
+        expect(s.meat.war - before.war).toBe(pay.war ?? 0); // the root is paid in chyme; the deposit pays meat
         expect(s.meat.science - before.science).toBe(pay.science ?? 0);
         expect(s.meat.royal - before.royal).toBe(pay.royal ?? 0);
         expect(s.biomass - before.biomass).toBeCloseTo(pay.biomass ?? 0);
@@ -312,6 +323,7 @@ describe('economy and building', () => {
   it('a spine wall in a street raises the flow cost through it (plugging works)', () => {
     const s = freshSim();
     s.meat.war = 9999;
+    s.chyme = 9999;
     s.meat.science = 9999;
     // Draw until a spine card is in hand (discards are deterministic).
     let spineIdx = -1;
@@ -364,6 +376,7 @@ describe('cannibalize inheritance', () => {
   it('donor family becomes a pip and stats shift deterministically', () => {
     const s = freshSim();
     s.meat.war = 999;
+    s.chyme = 999;
     s.meat.science = 999;
     // Force known families into the hand by building whatever is there onto cells,
     // then testing pure stat math directly.
@@ -410,6 +423,7 @@ describe('cannibalize inheritance', () => {
   it('butchering twice stacks both trait histories into one build', () => {
     const s = freshSim(601);
     s.meat.war = 999;
+    s.chyme = 999;
     s.meat.science = 999;
     const blockCard = () => {
       for (let guard = 0; guard < 300 && (['swamp', 'spine'].includes(s.hand[0].family) || towerSpec(s.hand[0].family).span !== undefined || towerSpec(s.hand[0].family).shape !== undefined); guard++) {
@@ -430,6 +444,7 @@ describe('cannibalize inheritance', () => {
   it('cannibalizing removes the donor and carries its pips forward', () => {
     const s = freshSim();
     s.meat.war = 9999;
+    s.chyme = 9999;
     s.meat.science = 9999;
     // Discard until the first card is one that builds on a block (not a street piece).
     for (let guard = 0; guard < 300 && (['swamp', 'spine'].includes(s.hand[0].family) || towerSpec(s.hand[0].family).span !== undefined); guard++) {
@@ -469,6 +484,7 @@ type SpawnSim = {
 describe('the six genre-seat towers', () => {
   function place(s: Sim, family: string, cellPick?: (s: Sim) => number): Tower {
     s.meat.war = 9999;
+    s.chyme = 9999;
     s.meat.science = 9999;
     let idx = -1;
     for (let guard = 0; guard < 500 && idx < 0; guard++) {
@@ -517,6 +533,7 @@ describe('the six genre-seat towers', () => {
   it('digestive swamp: the ANTI-WALL — walked through, bogs and burns everyone, digests the weak IN MASS', () => {
     const s = freshSim(801);
     s.meat.war = 9999;
+    s.chyme = 9999;
     s.meat.science = 9999;
     // Flow must NOT route around a swamp the way it does a wall.
     const road = laneRoad(s);
@@ -687,6 +704,7 @@ describe('new enemy verbs, castes, and the risk law', () => {
   it('mortar besieges structures from standoff range — melee walls cannot answer it', () => {
     const s = freshSim(903);
     s.meat.war = 9999;
+    s.chyme = 9999;
     s.meat.science = 9999;
     let spineIdx = -1;
     for (let guard = 0; guard < 300 && spineIdx < 0; guard++) {
@@ -788,6 +806,7 @@ describe('new enemy verbs, castes, and the risk law', () => {
   it('science caste default: target the LEAST-COVERED limb, sedate it, carry it off; a kill brings it home', () => {
     const s = freshSim(908);
     s.meat.war = 9999;
+    s.chyme = 9999;
     s.meat.science = 9999;
     // Build three limbs a walker can stand beside.
     const stand = (s as unknown as { standCellFor(c: number): number });
@@ -835,6 +854,7 @@ describe('new enemy verbs, castes, and the risk law', () => {
   it('science caste routes AROUND gun coverage: its path is never more exposed than the straight march', () => {
     const s = freshSim(909);
     s.meat.war = 9999;
+    s.chyme = 9999;
     s.meat.science = 9999;
     for (let k = 0; k < 4; k++) {
       for (let g = 0; g < 300 && (['swamp', 'spine'].includes(s.hand[0].family) || towerSpec(s.hand[0].family).span !== undefined); g++) {
@@ -860,6 +880,7 @@ describe('player targeting (click a limb, choose how it picks)', () => {
   function setup(seed: number) {
     const s = freshSim(seed);
     s.meat.war = 9999;
+    s.chyme = 9999;
     s.meat.science = 9999;
     let idx = -1;
     for (let g = 0; g < 400 && idx < 0; g++) {
@@ -1106,6 +1127,7 @@ describe('Sep 27 batch: payload rule, detection, air/ground, dependency, new lim
   it('SLING DEPENDENCY: limbs standing only on a sling\'s thrown creep wither when the sling dies; sling-pipped limbs need no creep', () => {
     const s = freshSim(1102);
     s.meat.war = 9999; s.meat.science = 9999;
+    s.chyme = 9999;
     const sling = mk(s, 10, 'sling', 300, 300);
     s.towers.push(sling);
     // Find an uncreeped block far out and seed a patch there owned by the sling.
@@ -1359,6 +1381,7 @@ describe('MARROW CONDUIT: funnel every nearby bonus into one limb; harvest on sa
   it('sacrificing a conduit HARVESTS its whole pool into the next build, permanently', () => {
     const s = freshSim(1301);
     s.meat.war = 9999; s.meat.science = 9999;
+    s.chyme = 9999;
     const conduit = mk(s, 1, 'conduit', 300, 300);
     conduit.facing = 'E';
     s.towers.push(conduit, mk(s, 3, 'spitter', 300, 250, [{ family: 'blighter' }]), mk(s, 4, 'lasher', 250, 300));
@@ -1718,6 +1741,7 @@ describe('arc prism (focus ramp + relay network)', () => {
   it('ramps on a held target and resets on a switch', () => {
     const s = freshSim(960);
     s.meat.war = 9999;
+    s.chyme = 9999;
     s.meat.science = 9999;
     let idx = -1;
     for (let g = 0; g < 400 && idx < 0; g++) {
@@ -1859,6 +1883,7 @@ describe('creep logistics (sling patches + directional roots)', () => {
   it('a hurled clot seeds distant creep you can build on; cooldown and range are real', () => {
     const s = freshSim(700);
     s.meat.war = 9999;
+    s.chyme = 9999;
     s.meat.science = 9999;
     const idx = forceCard(s, 'sling');
     const slingCell = buildableCell(s);
@@ -1902,6 +1927,7 @@ describe('creep logistics (sling patches + directional roots)', () => {
     // And the sim maintains a seep source for such a limb.
     const s = freshSim(702);
     s.meat.war = 9999;
+    s.chyme = 9999;
     s.meat.science = 9999;
     const blockCard = () => {
       for (let guard = 0; guard < 300 && (['swamp', 'spine'].includes(s.hand[0].family) || towerSpec(s.hand[0].family).span !== undefined); guard++) {
@@ -1921,6 +1947,7 @@ describe('draw odds', () => {
   it('a brain zone doubles the draw odds of the themes it touches', () => {
     const s = freshSim();
     s.meat.war = 999;
+    s.chyme = 999;
     const before = s.drawWeights();
     grow(s, 'brain'); // touches the meteor, so its zone touches the core theme
     const after = s.drawWeights();
@@ -2013,6 +2040,7 @@ describe('higher enemy types (escalation by kind, never hardening)', () => {
   it('bombers detonate against structures (walls are not safe)', () => {
     const s = freshSim(561);
     s.meat.war = 9999;
+    s.chyme = 9999;
     s.meat.science = 9999;
     // Plug a street with a spine wall on the gate lane.
     let spineIdx = -1;
@@ -2135,6 +2163,7 @@ describe('higher enemy types (escalation by kind, never hardening)', () => {
   it('choir nodes speed up the limbs around them', () => {
     const s = freshSim(566);
     s.meat.war = 9999;
+    s.chyme = 9999;
     s.meat.science = 9999;
     const cellA = buildableCell(s);
     // Force a spitter into the hand.
@@ -2158,6 +2187,7 @@ describe('higher enemy types (escalation by kind, never hardening)', () => {
   it('sappers attack towers on blocks (perches are not safe)', () => {
     const s = freshSim(558);
     s.meat.war = 999;
+    s.chyme = 999;
     s.meat.science = 999;
     const cell = buildableCell(s);
     expect(s.issue({ kind: 'build', cardIndex: 0, cell }).ok).toBe(true);
@@ -2204,6 +2234,7 @@ describe('CREEP: free creep nodes grown by creep organs (Collins, Sep 28 2026)',
   it('a spore bladder grows ONE node every 2 turns; a pacemaker touching it makes it every turn; a budding gland makes two; more pacemakers add a node at wave start', () => {
     const s = freshSim(4300);
     s.meat.war = 9999;
+    s.chyme = 9999;
     const bl = growSpot(s, 'bladder');
     run(s, 120);
     expect(s.creepNodes).toBe(0); // time alone grows nothing
@@ -2229,6 +2260,7 @@ describe('CREEP: free creep nodes grown by creep organs (Collins, Sep 28 2026)',
     // A pacemaker that touches no bladder does nothing for it.
     const far = new Sim({ gridW: 50, gridH: 40, cellPx: 26, seed: 4301 });
     far.meat.war = 9999;
+    far.chyme = 9999;
     const b2 = growSpot(far, 'bladder');
     expect(far.bladderRate(b2)).toEqual({ every: 2, per: 1, atWaveStart: 0 });
   });
@@ -2236,6 +2268,7 @@ describe('CREEP: free creep nodes grown by creep organs (Collins, Sep 28 2026)',
   it('a spore cyst is a starter stock of 3 plain nodes; the Seeded Meteor gene starts the run with 3', () => {
     const s = freshSim(4302);
     s.meat.war = 9999;
+    s.chyme = 9999;
     growSpot(s, 'cyst');
     expect(s.creepNodes).toBe(3);
     expect(s.nodeStock.every((n) => n.slow === 1 && n.dps === 0)).toBe(true);
@@ -2246,6 +2279,7 @@ describe('CREEP: free creep nodes grown by creep organs (Collins, Sep 28 2026)',
   it('a node goes down free within reach of the creep and creeps its ground; swelling widens every node; catapults throw them farther', () => {
     const s = freshSim(4304);
     s.meat.war = 9999;
+    s.chyme = 9999;
     s.creepNodes = 3;
     const w = s.cfg.gridW;
     // The first non-void, uncreeped cell at exactly `k` cells from the creep edge.
@@ -2281,6 +2315,7 @@ describe('CREEP: free creep nodes grown by creep organs (Collins, Sep 28 2026)',
     const gated = new Sim({ gridW: 50, gridH: 40, cellPx: 26, seed: 4304, organStage: true });
     expect(gated.drawWeights().sling).toBe(0);
     gated.meat.war = 9999;
+    gated.chyme = 9999;
     growSpot(gated, 'catapult');
     expect(gated.drawWeights().sling).toBeGreaterThan(0);
     // A thrown node reaches ground a plain one cannot.
@@ -2296,6 +2331,7 @@ describe('CREEP: free creep nodes grown by creep organs (Collins, Sep 28 2026)',
   it('mire and burning creep: a gland TOUCHING the meteor strains the core creep; nodes carry the strain of their bladder', () => {
     const s = freshSim(4305);
     s.meat.war = 9999;
+    s.chyme = 9999;
     const e = (s as unknown as { spawnEnemy(k: string, g?: number): Enemy }).spawnEnemy('soldier', s.gates[0]);
     e.pos = { ...s.core };
     const v0 = s.moveSpeedOf(e);
@@ -2348,9 +2384,11 @@ describe('CREEP: free creep nodes grown by creep organs (Collins, Sep 28 2026)',
     const gated = new Sim({ gridW: 50, gridH: 40, cellPx: 26, seed: 4306, organStage: true });
     expect(gated.drawWeights().lance).toBe(0);
     gated.meat.war = 9999;
+    gated.chyme = 9999;
     growSpot(gated, 'runner');
     expect(gated.drawWeights().lance).toBeGreaterThan(0);
     s.meat.war = 9999;
+    s.chyme = 9999;
     let idx = -1;
     for (let g = 0; g < 600 && idx < 0; g++) { idx = s.hand.findIndex((c) => c.family === 'lance'); if (idx < 0) s.issue({ kind: 'discard', cardIndex: 0 }); }
     // The lance lies on two cells along its facing: pointed at ground where it fits lying east, and lying south too (it is
@@ -2372,6 +2410,7 @@ describe('CREEP: free creep nodes grown by creep organs (Collins, Sep 28 2026)',
   it('an atrophy gland: themes touching its zone are NEVER drawn (starve the basics out late); never an empty draw', () => {
     const s = new Sim({ gridW: 50, gridH: 40, cellPx: 26, seed: 4310, organStage: true });
     s.meat.war = 9999;
+    s.chyme = 9999;
     growSpot(s, 'forge');
     // Atrophy against the meteor: spitter/lasher/spine stop coming.
     const u = s.under;
@@ -2399,6 +2438,7 @@ describe('CREEP: free creep nodes grown by creep organs (Collins, Sep 28 2026)',
     expect(depositPayAt(DEPOSITS.lab, 8).science!).toBeGreaterThan(depositPayAt(DEPOSITS.lab, 3).science!);
     const s = freshSim(4320);
     s.meat.war = 99999;
+    s.chyme = 99999;
     const u = s.under;
     const deep = u.cells.findIndex((c, i) => c.kind === 'deposit' && Math.floor(i / u.w) >= 6);
     expect(deep).toBeGreaterThanOrEqual(0);

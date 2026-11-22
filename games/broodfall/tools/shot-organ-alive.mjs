@@ -70,7 +70,7 @@ try {
   // A busy stage: every organ that fits, over and over, around the meteor; the core at its third stage.
   const grown = await page.evaluate(() => {
     const s = window.broodfall.sim;
-    s.meat.war = 99999; s.meat.science = 99999;
+    s.meat.war = 99999; s.chyme = 99999; s.meat.science = 99999;
     s.cfg.organPool = undefined;
     s.stats.limbsGrown = 20;
     const ids = ['forge', 'venom', 'gut', 'nerve', 'lattice', 'womb', 'marrow', 'resonance', 'heart', 'brain', 'gland', 'atrophy',

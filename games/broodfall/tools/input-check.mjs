@@ -58,7 +58,7 @@ try {
   if (startsAtSetup && hand0.every((f) => ['spitter', 'lasher', 'spine'].includes(f))) {
     pass('run starts at wave setup; the draw holds only the meteor\'s limbs');
   } else fail('start state', `under hidden=${startsAtSetup} hand=${hand0}`);
-  await page.evaluate(() => { window.broodfall.sim.meat.war = 500; });
+  await page.evaluate(() => { window.broodfall.sim.meat.war = 500; window.broodfall.sim.chyme = 500; });
   await page.locator('#open-under').click();
   await page.waitForSelector('#under:not(.hidden)', { timeout: 5000 });
   const t0 = await page.evaluate(() => window.broodfall.sim.time);
@@ -94,7 +94,7 @@ try {
   // The later limb checks need every theme's limbs drawable: grow the other themes.
   const grownAll = await page.evaluate(() => {
     const s = window.broodfall.sim;
-    s.meat.war = 9999; s.meat.science = 9999;
+    s.meat.war = 9999; s.chyme = 9999; s.meat.science = 9999;
     for (const id of ['gut', 'venom', 'nerve', 'lattice', 'womb', 'marrow', 'resonance', 'catapult', 'runner']) {
       let done = false;
       for (let c = 0; c < s.under.cells.length && !done; c++) {
@@ -112,7 +112,7 @@ try {
   // generic block-cell clicks below).
   await page.evaluate(() => {
     const s = window.broodfall.sim;
-    s.meat.war = 500; s.meat.science = 500; s.meat.royal = 500;
+    s.meat.war = 500; s.chyme = 500; s.meat.science = 500; s.meat.royal = 500;
     for (let guard = 0; guard < 300 && ['swamp', 'spine'].includes(s.hand[0].family); guard++) {
       s.issue({ kind: 'discard', cardIndex: 0 });
     }
@@ -205,7 +205,7 @@ try {
   {
     const r = await page.evaluate(() => {
       const s = window.broodfall.sim;
-      s.meat.war = 900; s.meat.science = 900;
+      s.meat.war = 900; s.chyme = 900; s.meat.science = 900;
       for (let guard = 0; guard < 400; guard++) {
         const i = s.hand.findIndex((c) => c.family === 'skipper' || c.family === 'conduit');
         if (i >= 0) return i;
@@ -248,7 +248,7 @@ try {
   //    the interactions themselves are real clicks.)
   const slingSetup = await page.evaluate(() => {
     const s = window.broodfall.sim;
-    s.meat.war = 900; s.meat.science = 900;
+    s.meat.war = 900; s.chyme = 900; s.meat.science = 900;
     for (let guard = 0; guard < 400; guard++) {
       const i = s.hand.findIndex((c) => c.family === 'sling');
       if (i >= 0) {
@@ -318,7 +318,7 @@ try {
   {
     const bpos = await page.evaluate(() => {
       const s = window.broodfall.sim;
-      s.meat.war = 900; s.meat.science = 900;
+      s.meat.war = 900; s.chyme = 900; s.meat.science = 900;
       for (let guard = 0; guard < 400; guard++) {
         const i = s.hand.findIndex((c) => c.family === 'bombard');
         if (i >= 0) {
@@ -359,7 +359,7 @@ try {
   {
     const kpos = await page.evaluate(() => {
       const s = window.broodfall.sim;
-      s.meat.war = 900; s.meat.science = 900;
+      s.meat.war = 900; s.chyme = 900; s.meat.science = 900;
       for (let guard = 0; guard < 400; guard++) {
         const i = s.hand.findIndex((c) => c.family === 'skipper');
         if (i >= 0) {
@@ -421,10 +421,10 @@ try {
   }
 
   // 6. The meteor is an organ too: click it in the organ stage to level the core.
-  await page.evaluate(() => { window.broodfall.sim.meat.war = 500; });
+  await page.evaluate(() => { window.broodfall.sim.meat.war = 500; window.broodfall.sim.chyme = 500; });
   // On a slow machine the build timer may have run out during the steps above (it runs in real time):
   // the wave is played out first; its end opens the organ stage by itself.
-  await page.evaluate(() => { const b = window.broodfall; for (let k = 0; k < 20000 && b.sim.phase === 'siege' && b.sim.outcome === 'playing'; k++) b.step(1); b.sim.meat.war = 500; });
+  await page.evaluate(() => { const b = window.broodfall; for (let k = 0; k < 20000 && b.sim.phase === 'siege' && b.sim.outcome === 'playing'; k++) b.step(1); b.sim.meat.war = 500; sim.chyme = 500; });
   await page.waitForTimeout(300);
   if (!(await page.locator('#under:not(.hidden)').count())) await page.locator('#open-under').click();
   await page.waitForSelector('#under:not(.hidden)', { timeout: 3000 });

@@ -157,7 +157,7 @@ export class Autoplayer {
       const shelterWaiting = sim.shelters.some((sh) => sh.state === 'intact');
       for (const [organ, at] of [['harrier', 3], ['infestor', 2]] as const) {
         if (organ === 'infestor' && !shelterWaiting) continue;
-        if (themes < at || sim.organs.some((o) => o.organ === organ) || !sim.canAfford(ORGAN_BY_ID[organ].cost)) continue;
+        if (themes < at || sim.organs.some((o) => o.organ === organ) || !sim.canAffordOrgan(sim.organCost(organ))) continue;
         const spot = bestOrganSpot(sim, organ);
         if (spot && sim.issue({ kind: 'build-organ', organ, ...spot }).ok) return true;
       }
@@ -181,7 +181,7 @@ export class Autoplayer {
     if (sim.cfg.organStage && sim.phase === 'growth' && !sim.organs.some((o) => o.organ === 'mule')) {
       const themes = sim.organs.filter((o) => ORGAN_BY_ID[o.organ].kind === 'theme').length;
       // After the fourth theme, like the free-thing organs: bought at two themes it starved the guns (measured 4/10).
-      if (themes >= 4 && sim.canAfford(ORGAN_BY_ID.mule.cost)) {
+      if (themes >= 4 && sim.canAffordOrgan(sim.organCost('mule'))) {
         const spot = bestOrganSpot(sim, 'mule');
         if (spot && sim.issue({ kind: 'build-organ', organ: 'mule', ...spot }).ok) return true;
       }
@@ -295,10 +295,11 @@ export class Autoplayer {
     if (this.tryEvolve(sim)) return;
     if (sim.meat.royal >= 1 + (this.stage3Ready(sim) ? 1 : 0)) this.spendRoyal(sim);
 
-    // The organ stage (between waves): unlock themes, then spend what the wave would clear.
-    // The last mission while the Host is late (cfg.lateHost): war meat is scarce (the shelter's ration and the clearing
-    // wage: no body pays any), so limbs come before organs: an organ is grown only when no limb in hand can be paid for.
-    const scarce = (sim.hostTurnsLeft ?? 0) > 0 && sim.phaseElapsed < sim.growthLength - 4
+    // The organ stage (between waves): unlock themes, then creep organs and hearts, then levels, all in CHYME. (Until
+    // Nov 22 2026 organs took the limbs' war meat, and the last mission held them back while a limb in hand could be
+    // paid for; with chyme they never take a limb's meat, so nothing waits on the other. A run under the old economy,
+    // sim.meatOrgans, keeps the old hold-back.)
+    const scarce = sim.meatOrgans && (sim.hostTurnsLeft ?? 0) > 0 && sim.phaseElapsed < sim.growthLength - 4
       && sim.hand.some((c) => !towerSpec(c.family).engine && sim.canAfford(towerSpec(c.family).cost));
     if (sim.cfg.organStage && !scarce && organTurn(sim)) return;
     if (placeNode(sim)) return;

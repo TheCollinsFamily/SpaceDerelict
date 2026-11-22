@@ -44,7 +44,7 @@ try {
   await page.waitForSelector('#stage canvas');
   const setup = await page.evaluate(() => {
     const s = window.broodfall.sim;
-    s.meat.war = 9000; s.meat.science = 9000; s.meat.royal = 9000;
+    s.meat.war = 9000; s.chyme = 9000; s.meat.science = 9000; s.meat.royal = 9000;
     // Organ stage: the engines live behind the Marrow Vault and Resonance Chamber (and the burster behind the Gut).
     for (const id of ['gut', 'marrow', 'resonance']) {
       let done = false;

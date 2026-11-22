@@ -36,6 +36,30 @@ process only verified its own assumptions. The repo's CLAUDE.md carries the stan
   own CLAUDE.md with hard rules. Most important: **never deploy without Collins's explicit
   approval**, billing fails closed, and never log user content.
 
+## Chyme: the organ stage's own currency (Nov 22 2026; DESIGN.md "CHYME")
+
+Collins: "the organ stage is using the same currency as the limb stage this is not good game design a secondary currency
+like processed food should build for the organ stage based on what you earned not what you had left". Organs are now
+bought with CHYME only; limbs keep war and science (which still spoil at the wave's start).
+- **Rule:** every body digested renders chyme by caste (war 1, science 2, court 4: `BALANCE.chymePerBody`, carried on
+  `Corpse.chyme`, banked in `Sim.bankMeat`), plus 38 for every wave cleared (`chymeRationBase`, the old war wage, which is
+  now 0). Banked, never spoils. `Sim.chyme`, `waveChyme` (this wave so far), `lastChymeTally`, event `chyme-tally`.
+- **Prices:** `content/underground.ts` `cost: { chyme }` (old meat prices kept as `LEGACY_ORGAN_COST`); `Sim.organCost`,
+  `organUpgradeCost` (price x level; meteor 30 x level), `canAffordOrgan`. Never `canAfford(spec.cost)` for an organ.
+- **Old saves:** runSave v1 loads with `SimConfig.organEconomy: 'meat'` (`migrateRunSave`): old prices, old wage, no chyme,
+  the old autoplayer hold-back; `Sim.meatOrgans`. Saves are v2.
+- **UI:** top bar ◆ CHYME (pulses, "+N this wave"; mission 1 reveals it at the first digested body), the feed names the chyme
+  per body, the organ stage head row shows the clear's tally and the bank, card prices "◆ 40", the readouts say chyme.
+- **Scripted player:** `organPolicy.ts` buys its wanted organs whenever chyme allows; levels late in the setup only with
+  chyme over the next wanted organ's price.
+- **Measured** (`tools/measure/organ-economy.measure.ts`, `ORG_ECON=meat` for the old economy, `ORG_SEEDS`, `ORG_BAL` to try
+  numbers; the model `tools/measure/chyme-model.mjs`): 20 seeds, 18/20 → 17/20 wins, limbs 121 → 122 a run, organs 21.6 →
+  22.4, levels 1.8 → 6.3, chyme 1,260 a run. Last mission (`LAST_ECON=meat`) 5/6 both. Full numbers in DESIGN.md.
+- **Play it:** `node tools/shot-economy.mjs http://localhost:<port> notes/screens/2026-11-22` (seed 7 four waves + mission 1)
+  -> `notes/screens/2026-11-22/economy-*.png`. Notes: `notes/2026-11-22-chyme.md`.
+- Tests: `tests/chyme.test.ts` (earned not leftover, banked, priced, old saves); `tests/castes.test.ts` (the Harrier Gland
+  no longer opens science on its own).
+
 ## The Impaler fires down its rail (Nov 22 2026)
 
 Collins: "the impaler should be more directional in its shot given its design". It is a harpoon rail of three cells with

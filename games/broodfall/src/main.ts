@@ -202,7 +202,7 @@ function saveRun(): void {
   q.set('seed', String(SEED));
   for (const k of ['intro', 'resume']) q.delete(k);
   saveRunSave({
-    v: 1, search: `?${q.toString()}`, kind: CAMPAIGN === 'run' ? 'campaign' : 'skirmish', territory: territory ?? undefined,
+    v: 2, search: `?${q.toString()}`, kind: CAMPAIGN === 'run' ? 'campaign' : 'skirmish', territory: territory ?? undefined,
     cfg: JSON.parse(JSON.stringify(CFG)), cmds: runOrders, ticks: sim.tickCount, speed: speed || 1, wave: sim.waveNumber, savedAt: Date.now(),
   });
 }
@@ -441,7 +441,7 @@ function updateHint(): void {
     hud.setHint(AUTO
       ? 'demo mode: the asset is piloting itself'
       : sim.phase === 'growth' && sim.waveNumber > 0
-        ? 'WAVE SETUP: place limbs, then START THE WAVE (Space) — unspent war and science are lost when it starts'
+        ? 'WAVE SETUP: place limbs, then START THE WAVE (Space) — unspent war and science are lost when it starts (chyme is kept)'
         : 'select a limb card below, then click a creeped block by a street — the assault forms at the glowing gate');
   }
 }
@@ -463,7 +463,7 @@ function coachText(): string {
     if (sim.towers.length < 3) return 'GOOD. Grow more limbs beside the street they will walk down, then START THE WAVE (Space)';
     return 'READY? START THE WAVE (top right, or Space)';
   }
-  if (sim.waveNumber === 1 && sim.phase === 'siege') return 'Your limbs fight on their own. Every kill pays WAR meat (top left): spend it on more cards';
+  if (sim.waveNumber === 1 && sim.phase === 'siege') return 'Your limbs fight on their own. Every body the creep digests pays WAR meat for cards (top left), and ◆ CHYME for organs';
   if (sim.waveNumber === 1 && sim.phase === 'growth' && sim.towers.length < 5) return 'Wave cleared. Place more limbs with the meat you earned — the next wave is bigger. Space starts it';
   // Mission 1 is war only (Collins, Oct 30 2026): nothing evolves here, so the panel is about health and targeting.
   if (sim.waveNumber === 2 && sim.phase === 'siege') return 'Click one of your limbs to see it: its health, what it does, and what it shoots first';
@@ -514,7 +514,12 @@ function handleEvents(events: SimEvent[]): void {
     if (e.kind === 'shelter-start') banner(e.taken ? 'THE SHELTER BY THE BODY IS YOURS — PROTECT IT\nIT IS YOUR WAR MEAT UNTIL THE HOST ARRIVES' : 'A SHELTER STANDS BY THE BODY — AN INFESTOR CAN TAKE IT');
     if (e.kind === 'host-arrived') banner('THE HOST HAS ARRIVED — EVERYTHING THEY HAVE');
     if (e.kind === 'wave-start' && !AUTO) preloadPadOutro(PAD_PART2()); // the end's clips, fetched while the run is on
-    if (e.kind === 'wave-cleared') banner(`WAVE ${e.wave} CLEARED · +${e.bonus} WAR MEAT`);
+    // The clear, and what it earned for the organs (DESIGN.md "Chyme"): a run saved before chyme has no tally.
+    if (e.kind === 'wave-cleared' && sim.meatOrgans) banner(`WAVE ${e.wave} CLEARED · +${e.bonus} WAR MEAT`);
+    if (e.kind === 'chyme-tally') {
+      const wage = sim.warWage(e.wave);
+      banner(`WAVE ${e.wave} CLEARED${wage > 0 ? ` · +${wage} WAR` : ''} · +${e.earned} ◆ CHYME FOR ORGANS\n${e.digested} FROM THE BODIES THE CREEP DIGESTED · ${e.ration} FOR THE CLEAR`);
+    }
     if (e.kind === 'royal-incoming') banner('THE ROYAL TAKES THE FIELD');
     if (e.kind === 'plate-drafted') banner(`DISTRICT CONSUMED: ${e.name.toUpperCase()}`);
     if (e.kind === 'sealed-in' && !AUTO) banner('WALLED IN — BURROW THROUGH A WALL INTO THE SMOKE TO GROW');
@@ -767,12 +772,13 @@ function underArt(): Promise<unknown> {
 const underNoteEl = document.getElementById('under-note');
 const UNDER_NOTE = underNoteEl?.textContent ?? '';
 function openUnder(): void {
-  // The last mission while the Host is late: no war body comes, so the shelter's ration is all the war meat there is,
-  // and a player who levels organs out of habit stands with no limbs (persona notes, Oct 4 2026). Said here, where it is spent.
+  // The last mission while the Host is late: no war body comes, so the shelter's ration is all the war meat there is
+  // (persona notes, Oct 4 2026). Organs are chyme since Nov 22 2026, so they no longer eat into it; said here all the same.
+  // A run saved before chyme keeps the old note (its organs are war and science).
   const late = sim.hostTurnsLeft;
   if (underNoteEl) underNoteEl.textContent = late
-    ? `The Host is ${late} turn${late === 1 ? '' : 's'} away. Until it comes the shelter's ration is the only war meat you get: leave enough of it for limbs. ${UNDER_NOTE}`
-    : UNDER_NOTE;
+    ? `The Host is ${late} turn${late === 1 ? '' : 's'} away. Until it comes the shelter's ration is the only war meat your limbs get. ${UNDER_NOTE}`
+    : sim.meatOrgans ? 'Unspent war and science are LOST when the next wave starts — spend them here or on limbs.' : UNDER_NOTE;
   under.show();
   const grid = document.getElementById('under-right');
   void withLoader(underArt(), 'scan', { host: grid ?? undefined, label: 'THE ORGAN STAGE', lines: ['Mapping the ground under the town.', 'Waking the organs.', 'Counting the cellars.'] });

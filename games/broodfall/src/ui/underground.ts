@@ -22,7 +22,7 @@ import { artUrl, loadManifest } from '../render/art';
 import { coreStageOf } from '../render/coreStage';
 import { UnderAlive } from './underAlive';
 import { skylineLife } from './skylineLife';
-import type { Organ, OrganId, TowerFamily } from '../sim/types';
+import type { Organ, OrganId, OrganPrice, TowerFamily } from '../sim/types';
 
 const COLOR: Record<OrganId, string> = {
   forge: '#d8cfb0', venom: '#6aa84f', gut: '#b5654a', nerve: '#e0c040', lattice: '#8fc7c0',
@@ -307,8 +307,16 @@ export class UndergroundScreen {
     if (this.open) this.render();
   }
 
-  private priceText(c: { war?: number; science?: number }): string {
-    return [c.war ? `${c.war}W` : '', c.science ? `${c.science}S` : ''].filter(Boolean).join(' ');
+  /** An organ's price: chyme (◆), or war/science in a run saved before chyme. */
+  private priceText(c: OrganPrice): string {
+    return [c.chyme ? `◆ ${c.chyme}` : '', c.war ? `${c.war}W` : '', c.science ? `${c.science}S` : ''].filter(Boolean).join(' ');
+  }
+
+  /** What the body has to buy organs with now, in words (the readout when something cannot be paid for). */
+  private walletText(): string {
+    const sim = this.getSim();
+    if (sim.meatOrgans) return `${Math.floor(sim.meat.war)}W${sim.meat.science ? ` ${Math.floor(sim.meat.science)}S` : ''}`;
+    return `◆ ${Math.floor(sim.chyme)} chyme`;
   }
 
   /** The pointer on the board in cells, from a mouse event over the grid. */
@@ -329,7 +337,7 @@ export class UndergroundScreen {
   private levelUp(o: Organ | null): void {
     const sim = this.getSim();
     const r = sim.issue({ kind: 'upgrade-organ', organInstanceId: o ? o.id : -1 });
-    if (!r.ok) this.flash(r.err === 'cannot afford' ? `not enough meat to level it: ${this.priceText(sim.organUpgradeCost(o))} needed` : String(r.err));
+    if (!r.ok) this.flash(r.err === 'cannot afford' ? `not enough ${sim.meatOrgans ? 'meat' : 'chyme'} to level it: ${this.priceText(sim.organUpgradeCost(o))} needed, you have ${this.walletText()}` : String(r.err));
     this.lastKey = '';
     this.render();
   }
@@ -343,7 +351,7 @@ export class UndergroundScreen {
       return;
     } else if (this.selected && (onMeteor || (organ && ORGAN_BY_ID[organ.organ].kind === 'theme'))) {
       // Still holding a heart (a zone organ stays picked after it grows) and clicking a theme organ: nothing can grow
-      // over it, so the click means the organ. Drop the pick and say how to level it (never spend meat on a misclick).
+      // over it, so the click means the organ. Drop the pick and say how to level it (never spend chyme on a misclick).
       this.selected = null;
       this.lastKey = '';
       this.render();
@@ -354,7 +362,7 @@ export class UndergroundScreen {
       if (r.ok) {
         if (ORGAN_BY_ID[this.selected].kind === 'theme') this.selected = null;
       } else {
-        this.flash(r.err === 'cannot afford' ? `not enough meat for the ${organSpec(this.selected).name}` : String(r.err));
+        this.flash(r.err === 'cannot afford' ? `not enough ${sim.meatOrgans ? 'meat' : 'chyme'} for the ${organSpec(this.selected).name}: ${this.priceText(sim.organCost(this.selected))}, you have ${this.walletText()}` : String(r.err));
       }
     }
     this.lastKey = '';
@@ -431,16 +439,26 @@ export class UndergroundScreen {
     const sim = this.getSim();
     const u = sim.under;
     const key = [
-      this.selected, this.rot, Math.floor(sim.meat.war), Math.floor(sim.meat.science), sim.coreLevel, coreStageOf(sim.stats.limbsGrown, sim.cfg.coreStage),
+      this.selected, this.rot, Math.floor(sim.meat.war), Math.floor(sim.meat.science), Math.floor(sim.chyme), sim.lastChymeTally?.wave ?? 0, sim.coreLevel, coreStageOf(sim.stats.limbsGrown, sim.cfg.coreStage),
       sim.organs.map((o) => `${o.cell}${o.organ}${o.rot}${o.level}`).join(','),
     ].join('|');
     if (key === this.lastKey) return;
     this.lastKey = key;
 
-    // The meat it is bought with, in the stage itself (the top bar is hidden while it is open).
+    // What organs are bought with, in the stage itself (the top bar is hidden while it is open): CHYME, and what the
+    // last wave earned of it and why (DESIGN.md "Chyme"). A run saved before chyme still shows its war and science.
     if (this.meatBox) {
-      this.meatBox.innerHTML = `<div class="meat um-war"><span class="meat-label">WAR</span><span class="meat-val">${Math.floor(sim.meat.war)}</span></div>`
-        + `<div class="meat um-sci"><span class="meat-label">SCI</span><span class="meat-val">${Math.floor(sim.meat.science)}</span></div>`;
+      if (sim.meatOrgans) {
+        this.meatBox.innerHTML = `<div class="meat um-war"><span class="meat-label">WAR</span><span class="meat-val">${Math.floor(sim.meat.war)}</span></div>`
+          + `<div class="meat um-sci"><span class="meat-label">SCI</span><span class="meat-val">${Math.floor(sim.meat.science)}</span></div>`;
+      } else {
+        const t = sim.lastChymeTally;
+        const tally = t && t.wave === sim.waveNumber
+          ? `<div class="um-tally" title="Chyme is rendered from what the body EARNED: every body the creep digested (war 1, science 2, the court 4), plus the ration for clearing the wave. Meat left unspent renders nothing. It is kept from wave to wave.">WAVE ${t.wave} EARNED <b>+${t.earned}</b><span>${t.digested} from the bodies it digested · ${t.ration} for the clear</span></div>`
+          : `<div class="um-tally"><span>Chyme comes from what the body earns: every body the creep digests, and every wave it clears.</span></div>`;
+        this.meatBox.innerHTML = tally
+          + `<div class="meat um-chyme" title="CHYME: what the body renders from what it digests. Organs are bought with it, and it is KEPT from wave to wave."><span class="meat-label">◆ CHYME</span><span class="meat-val">${Math.floor(sim.chyme)}</span></div>`;
+      }
     }
     // The board's shape, for the layout that fits it to the window (src/style.css #under-board).
     this.el.style.setProperty('--ug-w', String(u.w));
@@ -450,8 +468,8 @@ export class UndergroundScreen {
     // with the next level's price and what it gives, and a click on it levels it (Collins, Nov 22 2026: "the change when
     // something that can only have one of it has been placed is not super obvious ... the cost for upgrading it is not
     // obvious the benefits of upgrading it are not obvious").
-    const levelCard = (key: string, name: string, glyph: string, color: string, glow: string, tile: string | undefined, lvl: number, cost: { war?: number; science?: number }, unlocks: readonly TowerFamily[], verb: string | undefined): string => {
-      const afford = sim.canAfford(cost);
+    const levelCard = (key: string, name: string, glyph: string, color: string, glow: string, tile: string | undefined, lvl: number, cost: OrganPrice, unlocks: readonly TowerFamily[], verb: string | undefined): string => {
+      const afford = sim.canAffordOrgan(cost);
       return `<button class="under-organ built${afford ? '' : ' poor'}" data-organ="${key}" style="--acc:${glow}" title="Click to level it: ${this.priceText(cost)}">
         <b><span class="og" style="color:${color}">${glyph}</span> ${name}</b>
         <em class="own">✓ LV ${lvl}</em>${tile ? `<img class="pal-tile" alt="" src="${tile}" style="--acc:${glow}">` : ''}
@@ -466,14 +484,15 @@ export class UndergroundScreen {
       if (d.kind === 'theme' && mine.length) {
         return levelCard(id, d.name, GLYPH[id], COLOR[id], glow, this.scan?.tiles[id], mine[0].level, sim.organUpgradeCost(mine[0]), d.unlocks ?? [], d.signature ? VERB[d.signature] ?? d.signature : undefined);
       }
-      const afford = sim.canAfford(d.cost);
+      const price = sim.organCost(id);
+      const afford = sim.canAffordOrgan(price);
       const locked = !!sim.cfg.organPool && !sim.cfg.organPool.includes(id) && !(sim.cfg.startOrgans ?? []).includes(id);
       const what = d.kind === 'theme' && d.unlocks ? d.unlocks.map(famName).join(', ') : d.blurb;
       return `<button class="under-organ${this.selected === id ? ' on' : ''}${afford ? '' : ' poor'}${locked ? ' locked' : ''}${mine.length ? ' has' : ''}" data-organ="${id}" style="--acc:${glow}" title="${d.blurb}">
         <b><span class="og" style="color:${COLOR[id]}">${GLYPH[id]}</span> ${d.name}</b>
         ${mine.length ? `<em class="own count">×${mine.length}</em>` : this.shapeSvg(id)}${this.scan?.tiles[id] ? `<img class="pal-tile" alt="" src="${this.scan.tiles[id]}" style="--acc:${glow}">` : ''}
         <span>${what}</span>
-        <i>${locked ? (this.plain ? 'LOCKED' : 'LOCKED — get it in the Gene Bay on the ship') : this.priceText(d.cost)}${d.signature ? ` · shares ${VERB[d.signature] ?? d.signature}` : ''}</i>
+        <i>${locked ? (this.plain ? 'LOCKED' : 'LOCKED — get it in the Gene Bay on the ship') : this.priceText(price)}${d.signature ? ` · shares ${VERB[d.signature] ?? d.signature}` : ''}</i>
       </button>`;
     }).join('')}</div>`;
     const core = levelCard('core', METEOR_THEME.name, '☄', '#ff6a50', '#ff6a50', this.scan?.meteor ?? undefined, sim.coreLevel, sim.organUpgradeCost(null), METEOR_THEME.unlocks, VERB[METEOR_THEME.signature]);
@@ -798,7 +817,7 @@ export class UndergroundScreen {
     }
     const deps = g.cells.map((x) => u.cells[x]).filter((x) => x.kind === 'deposit' && x.deposit && !x.claimed);
     for (const dep of deps) parts.push(`covers ${dep === undefined ? '' : this.depositText(dep.deposit!, dep.pips?.map((p) => p.family), dep.pay)}`);
-    this.status.textContent = `GROW ${d.name.toUpperCase()} HERE (${this.priceText(d.cost)}): ${parts.join(' · ')}`;
+    this.status.textContent = `GROW ${d.name.toUpperCase()} HERE (${this.priceText(sim.organCost(d.id))}): ${parts.join(' · ')}`;
   }
 
   /** A grown theme organ (null: the meteor) under the pointer or its card: its level now, the next one's price and what it gives. */
@@ -810,7 +829,7 @@ export class UndergroundScreen {
     const fams = (organ ? ORGAN_BY_ID[organ.organ].unlocks ?? [] : METEOR_THEME.unlocks).map(famName).join(', ');
     const p = Math.round(ORGAN_LEVEL_POTENCY * 100), t = Math.round(ORGAN_LEVEL_TEMPO * 100);
     const now = lv > 1 ? ` (now +${p * (lv - 1)}% power, +${t * (lv - 1)}% speed)` : '';
-    const pay = sim.canAfford(cost) ? 'CLICK TO LEVEL IT' : `NOT ENOUGH MEAT YET (you have ${Math.floor(sim.meat.war)}W${sim.meat.science ? ` ${Math.floor(sim.meat.science)}S` : ''})`;
+    const pay = sim.canAffordOrgan(cost) ? 'CLICK TO LEVEL IT' : `NOT ENOUGH ${sim.meatOrgans ? 'MEAT' : 'CHYME'} YET (you have ${this.walletText()})`;
     return `${name.toUpperCase()} LV ${lv}${now} → LV ${lv + 1} for ${this.priceText(cost)}: ${fams} +${p}% power, +${t}% speed, drawn more often. ${pay}.`;
   }
 
@@ -830,7 +849,7 @@ export class UndergroundScreen {
       unit: 'grows units you command: born at the body at the wave clear, paid for then',
       scaffold: 'FREE plinths: raise a limb, or level a roof for a big one',
     };
-    const parts = [`${d.name.toUpperCase()} (${this.priceText(d.cost)})`, kind[d.kind] ?? '', d.blurb];
+    const parts = [`${d.name.toUpperCase()} (${this.priceText(sim.organCost(id))})`, kind[d.kind] ?? '', d.blurb];
     if (mine.length) parts.push(`you have ${mine.length}`);
     parts.push(locked ? (this.plain ? 'LOCKED' : 'LOCKED — get it in the Gene Bay on the ship') : 'click to pick it, then click the board');
     return parts.filter(Boolean).join(' — ');

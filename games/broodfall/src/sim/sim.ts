@@ -24,13 +24,14 @@ import {
 } from '../../content/data';
 import type {
   Broodling, Broodmother, BroodSnap, SporeMule, Shelter, Infestor, Harrier, Caltrop, CardInstance, Caste, Cloud, Command, Corpse, CreepSource, Directive, Enemy, UnitOrder,
-  EnemyKind, EnemySpec, HitBy, HitFx, ModPip, Organ, OrganId, Outcome, Phase, Projectile,
+  EnemyKind, EnemySpec, HitBy, HitFx, ModPip, Organ, OrganId, OrganPrice, Outcome, Phase, Projectile,
   NodeStrain, RootDir, RunStats, Shell, SimConfig, SimEvent, Tower, TowerFamily, TowerSpec, UpgradeChoice, UpgradeOption, Vec,
 } from './types';
 import { UPGRADES, UPGRADE_COST } from '../../content/upgrades';
 import {
   BRAIN_DRAW_MULT, CATAPULT_REACH, REVEAL_RANGE, DEPOSITS, FEATURES, FEATURE_FAVORED_LEVEL, FEATURE_LEVEL, METEOR_THEME,
   BLADDER_TURNS, PLINTH_MAX_HEIGHT, PLINTH_TURNS, SEEDLING_FLIGHT, SEEDLING_TURNS, CYST_NODES, LINING_DPS, MIRE_SLOW, NODE_HP, NODE_RADIUS, NODE_TRAMPLE, NODE_REACH, ORGAN_BY_ID, ORGAN_DEFS, ORGAN_LEVEL_POTENCY, ORGAN_LEVEL_TEMPO,
+  LEGACY_ORGAN_COST, METEOR_LEVEL_CHYME,
   type OrganDef,
 } from '../../content/underground';
 import { createUnderground, neighbours4, type Underground } from './underground';
@@ -113,7 +114,7 @@ export function castesOpen(cfg: SimConfig, directive: Directive): { science: boo
   const science = directive.kind === 'harvest'
     || evolvesWith('science')
     || limbs.some((t) => (t.cost.science ?? 0) > 0)
-    || growable.some((d) => (d.cost.science ?? 0) > 0);
+    || (cfg.organEconomy === 'meat' && growable.some((d) => (LEGACY_ORGAN_COST[d.id].science ?? 0) > 0));
   const royal = directive.kind === 'royal'
     || (cfg.startBonus?.royal ?? 0) > 0
     || !!cfg.lateHost
@@ -303,6 +304,17 @@ export class Sim {
   outcome: Outcome = 'playing';
 
   meat: Record<Caste, number> = { war: 0, science: 0, royal: 0 };
+  /**
+   * CHYME (Collins, Nov 22 2026; DESIGN.md "Chyme"): the organ stage's own currency, rendered from what the run EARNED
+   * (every body digested, as it is digested, and a ration at every clear), banked from wave to wave. Never spent on
+   * limbs, and the limbs' meat never buys an organ.
+   */
+  chyme = 0;
+  /** Chyme rendered this run, and from this wave's digesting so far (the HUD's accrual and the clear's tally read it). */
+  chymeEarned = 0;
+  waveChyme = 0;
+  /** The last clear's chyme tally (the organ stage shows what the wave earned, and why). */
+  lastChymeTally: { wave: number; digested: number; ration: number; earned: number } | null = null;
   biomass = 0;
   coreHp: number = B.coreHp;
   coreMaxHp: number = B.coreHp;
@@ -1794,11 +1806,47 @@ export class Sim {
     return false;
   }
 
-  /** Price of the next level: the organ's cost times its current level (the meteor: 30 war per level). */
-  organUpgradeCost(o: Organ | null): { war?: number; science?: number } {
-    if (!o) return { war: 30 * this.coreLevel };
-    const c = organSpec(o.organ).cost;
-    return { war: c.war ? c.war * o.level : undefined, science: c.science ? c.science * o.level : undefined };
+  /** A run saved before chyme (SimConfig.organEconomy 'meat'): organs priced in war and science, as they were. */
+  get meatOrgans(): boolean {
+    return this.cfg.organEconomy === 'meat';
+  }
+
+  /** What growing an organ costs now: chyme (or, replaying a run saved before it, the old war/science price). */
+  organCost(id: OrganId): OrganPrice {
+    if (this.meatOrgans) return { ...LEGACY_ORGAN_COST[id] };
+    return { chyme: organSpec(id).cost.chyme };
+  }
+
+  /** Price of the next level: the organ's cost times its current level (the meteor: 30 chyme per level). */
+  organUpgradeCost(o: Organ | null): OrganPrice {
+    if (!o) return this.meatOrgans ? { war: 30 * this.coreLevel } : { chyme: METEOR_LEVEL_CHYME * this.coreLevel };
+    const c = this.organCost(o.organ);
+    const out: OrganPrice = {};
+    for (const k of ['chyme', 'war', 'science'] as const) if (c[k]) out[k] = c[k]! * o.level;
+    return out;
+  }
+
+  canAffordOrgan(c: OrganPrice): boolean {
+    return this.chyme >= (c.chyme ?? 0) && this.meat.war >= (c.war ?? 0) && this.meat.science >= (c.science ?? 0);
+  }
+
+  private payOrgan(c: OrganPrice): void {
+    this.chyme -= c.chyme ?? 0;
+    this.meat.war -= c.war ?? 0;
+    this.meat.science -= c.science ?? 0;
+  }
+
+  /** The clear's ration of chyme for wave `n` (BALANCE.chymeRation*, x the entrances' wager); none before chyme. */
+  chymeRation(n: number): number {
+    if (this.meatOrgans) return 0;
+    return Math.round((B.chymeRationBase + B.chymeRationPerWave * n) * this.entranceMeatMult);
+  }
+
+  /** The clear's wage in war meat for wave `n`. */
+  warWage(n: number): number {
+    const base = this.meatOrgans ? B.legacyWaveBonusBase : B.waveBonusBase;
+    const per = this.meatOrgans ? B.legacyWaveBonusPerWave : B.waveBonusPerWave;
+    return Math.round((base + n * per) * this.entranceMeatMult);
   }
 
   /** Meteor cells (the core's buried half — the first theme organ). */
@@ -2174,12 +2222,12 @@ export class Sim {
         return { ok: true };
       }
       case 'build-organ': {
-        const spec = organSpec(cmd.organ);
+        const price = this.organCost(cmd.organ);
         const rot = cmd.rot ?? 0;
         if (this.phase === 'siege') return { ok: false, err: 'organs grow between waves' };
         if (!this.canBuildOrgan(cmd.organ, cmd.cell, rot)) return { ok: false, err: 'must fit on open ground touching the body' };
-        if (!this.canAfford(spec.cost)) return { ok: false, err: 'cannot afford' };
-        this.pay(spec.cost);
+        if (!this.canAffordOrgan(price)) return { ok: false, err: 'cannot afford' };
+        this.payOrgan(price);
         const cells = this.organFootprint(cmd.organ, cmd.cell, rot)!;
         this.organs.push({ id: this.nextId++, organ: cmd.organ, cell: cmd.cell, rot, level: 1, cells });
         this.organCache = null;
@@ -2253,8 +2301,8 @@ export class Sim {
         const o = cmd.organInstanceId === -1 ? null : this.organs.find((x) => x.id === cmd.organInstanceId);
         if (cmd.organInstanceId !== -1 && (!o || ORGAN_BY_ID[o.organ].kind !== 'theme')) return { ok: false, err: 'only theme organs level up' };
         const cost = this.organUpgradeCost(o ?? null);
-        if (!this.canAfford(cost)) return { ok: false, err: 'cannot afford' };
-        this.pay(cost);
+        if (!this.canAffordOrgan(cost)) return { ok: false, err: 'cannot afford' };
+        this.payOrgan(cost);
         if (o) o.level += 1;
         else this.coreLevel += 1;
         this.organCache = null;
@@ -3037,9 +3085,9 @@ export class Sim {
     this.waveNumber += 1;
     this.waveBanked = { war: 0, science: 0, royal: 0 };
     for (const sh of this.shelters) sh.harmThisWave = 0;
-    // The organ stage's economy: what you did not spend between waves is lost
+    // The limbs' economy: war and science you did not spend between waves are lost
     // when the next wave starts. The starting meat carries into wave 1; royal
-    // points are kept.
+    // points are kept, and so is CHYME (the organs' currency, banked: DESIGN.md "Chyme").
     this.growCreepNodes('waveStart');
     if (this.cfg.organStage && this.waveNumber > 1) {
       // A ROYAL LARDER keeps half of what would be lost (each copy half of the rest).
@@ -3140,9 +3188,20 @@ export class Sim {
         this.wavesCleared += 1;
         if (this.waveLimbDamage === 0) this.stats.pacifistWaves += 1;
         this.stats.lastWaveKillsByCause = { ...this.waveKillsByCause };
-        const bonus = Math.round((B.waveBonusBase + this.waveNumber * B.waveBonusPerWave) * this.entranceMeatMult);
+        const bonus = this.warWage(this.waveNumber);
         this.meat.war += bonus;
         this.events.push({ kind: 'wave-cleared', wave: this.waveNumber, bonus });
+        // CHYME (DESIGN.md "Chyme"): the clear's ration on top of what the wave's digesting rendered; then the tally.
+        if (!this.meatOrgans) {
+          const ration = this.chymeRation(this.waveNumber);
+          this.chyme += ration;
+          this.chymeEarned += ration;
+          const digested = Math.floor(this.waveChyme);
+          this.lastChymeTally = { wave: this.waveNumber, digested, ration, earned: digested + ration };
+          this.events.push({ kind: 'chyme-tally', wave: this.waveNumber, digested, ration, earned: digested + ration, bank: Math.floor(this.chyme) });
+          this.stats.chymeEarned = Math.floor(this.chymeEarned);
+          this.waveChyme = 0;
+        }
         // The setup is the body's alone: whoever is still walking the streets goes home (an engineer at its
         // station stays with it; the station and its turrets stand).
         for (const e of this.enemies) if (this.wanders(e) || (e.kind !== 'engineer' && !enemySpec(e.kind).fixed)) e.leaving = true;
@@ -6617,14 +6676,22 @@ export class Sim {
         if (killer.pressed % press.royalEvery === 0) body.royal += 1;
       }
     }
+    // CHYME (DESIGN.md "Chyme"): what this body renders for the organs when it is digested, by who it was.
+    const chyme = this.meatOrgans ? 0 : B.chymePerBody[spec.caste];
     // Eaten whole (a Maw): the asset digests it itself, so its meat is banked now. Otherwise the body falls
     // where it died and waits for the creep.
-    if (eaten) this.bankMeat(body);
-    else this.layCorpse(e, body);
+    if (eaten) this.bankMeat(body, chyme);
+    else this.layCorpse(e, body, chyme);
   }
 
-  /** Bank meat the creep (or a Maw) has digested: the wallet, the science tally and the HUD's tick. */
-  private bankMeat(meat: Record<Caste, number>): void {
+  /** Bank meat the creep (or a Maw) has digested: the wallet, the science tally and the HUD's tick; and the body's chyme. */
+  private bankMeat(meat: Record<Caste, number>, chyme = 0): void {
+    // The body renders CHYME, the organs' currency, from every body it digests: EARNED, never left over.
+    if (chyme > 0) {
+      this.chyme += chyme;
+      this.chymeEarned += chyme;
+      this.waveChyme += chyme;
+    }
     for (const c of ['war', 'science', 'royal'] as Caste[]) {
       const n = meat[c];
       if (n <= 0) continue;
@@ -6640,9 +6707,9 @@ export class Sim {
   }
 
   /** A body falls where it died; past a cell's or the board's cap the oldest merge into heaps (meat summed). */
-  private layCorpse(e: Enemy, meat: Record<Caste, number>): void {
+  private layCorpse(e: Enemy, meat: Record<Caste, number>, chyme = 0): void {
     const cell = this.cellAt(e.pos.x, e.pos.y);
-    this.corpses.push({ id: this.nextId++, unitId: e.id, kind: e.kind, pos: { ...e.pos }, cell, meat, born: this.time });
+    this.corpses.push({ id: this.nextId++, unitId: e.id, kind: e.kind, pos: { ...e.pos }, cell, meat, born: this.time, ...(chyme ? { chyme } : {}) });
     // Only bodies still lying count toward the caps: one already dissolving is nearly gone.
     const lying = (c: Corpse) => c.digest === undefined && !c.heap;
     const here = this.corpses.filter((c) => c.cell === cell && lying(c));
@@ -6663,6 +6730,7 @@ export class Sim {
       return;
     }
     for (const k of ['war', 'science', 'royal'] as Caste[]) heap.meat[k] += c.meat[k];
+    if (c.chyme) heap.chyme = (heap.chyme ?? 0) + c.chyme;
     heap.heap = (heap.heap ?? 1) + 1;
     if ((heap.kinds ??= [heap.kind]).length < 4) heap.kinds.push(c.kind);
     this.corpses.splice(this.corpses.indexOf(c), 1);
@@ -6680,9 +6748,9 @@ export class Sim {
       }
       c.digest += DT;
       if (c.digest < done) { keep.push(c); continue; }
-      this.bankMeat(c.meat);
+      this.bankMeat(c.meat, c.chyme ?? 0);
       if (c.waited) this.stats.bodiesReclaimed = (this.stats.bodiesReclaimed ?? 0) + (c.heap ?? 1);
-      this.events.push({ kind: 'digested', corpse: c.id, pos: { ...c.pos }, meat: { ...c.meat }, bodies: c.heap ?? 1 });
+      this.events.push({ kind: 'digested', corpse: c.id, pos: { ...c.pos }, meat: { ...c.meat }, bodies: c.heap ?? 1, ...(c.chyme ? { chyme: c.chyme } : {}) });
     }
     this.corpses = keep;
   }

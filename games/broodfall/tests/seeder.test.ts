@@ -14,6 +14,7 @@ function grown(): Sim {
   const s = new Sim(CFG);
   for (let i = 0; i < 600; i++) s.tick();
   s.meat.war = 9999;
+  s.chyme = 9999;
   s.meat.science = 9999;
   return s;
 }

@@ -20,6 +20,7 @@ const run = (s: Sim, seconds: number, quiet = true) => { for (let i = 0; i < sec
 
 function grow(s: Sim, organ: OrganId) {
   s.meat.war = 9999;
+  s.chyme = 9999;
   s.meat.science = 9999;
   for (let c = 0; c < s.under.cells.length; c++) {
     for (let rot = 0; rot < 4; rot++) {
@@ -167,6 +168,7 @@ describe('a Broodmother broods only on creep', () => {
   function withMother(): { s: Sim; m: Broodmother } {
     const s = new Sim({ ...CFG });
     s.meat.war = 9999;
+    s.chyme = 9999;
     s.meat.science = 9999;
     let idx = -1;
     for (let g = 0; g < 600 && idx < 0; g++) {

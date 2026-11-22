@@ -399,7 +399,7 @@ const SHOTS = {
     await page.goto(`${BASE}?seed=11&autostart=1&speed=1&biome=suburb`);
     await ready(page); await dress(page);
     await page.addStyleTag({ content: '#banner{display:none!important}' });
-    await page.evaluate(() => { window.broodfall.step(200); const s = window.broodfall.sim; s.meat.war = 9000; s.meat.science = 9000; s.enemies.length = 0; s.projectiles.length = 0; s.coreHp = 1e9; });
+    await page.evaluate(() => { window.broodfall.step(200); const s = window.broodfall.sim; s.meat.war = 9000; s.chyme = 9000; s.meat.science = 9000; s.enemies.length = 0; s.projectiles.length = 0; s.coreHp = 1e9; });
     const mawId = await page.evaluate(() => {
       const s = window.broodfall.sim, W = s.cfg.gridW;
       const at = (c) => [c % W, Math.floor(c / W)];
@@ -715,7 +715,7 @@ const SHOTS = {
     await page.goto(`${BASE}?seed=3&autostart=1&speed=1&directive=hold&biome=megacity`);
     await ready(page); await dress(page, { hint: true });
     await handBoard(page, { prebuilt: 6, families: ['spitter', 'lasher'] });
-    await page.evaluate(() => { const s = window.broodfall.sim; s.meat.war = 600; s.meat.science = 300; s.meat.royal = 2; });
+    await page.evaluate(() => { const s = window.broodfall.sim; s.meat.war = 600; s.chyme = 600; s.meat.science = 300; s.meat.royal = 2; });
     await page.locator('#open-under').click();
     await page.waitForSelector('#under:not(.hidden)', { timeout: 10000 });
     await page.waitForTimeout(2500);
@@ -851,7 +851,7 @@ const SHOTS = {
     await ready(page); await dress(page, { hint: true });
     const plan = await handBoard(page, { prebuilt: 4, families: ['spitter', 'lasher', 'burster'], zoom: 3.6 });
     if (!plan.donors.length) throw new Error('p-evolve: no limb to evolve');
-    await page.evaluate(() => { const s = window.broodfall.sim; s.meat.science = 200; s.meat.war = 200; });
+    await page.evaluate(() => { const s = window.broodfall.sim; s.meat.science = 200; s.meat.war = 200; s.chyme = 200; });
     const limb = plan.donors[0];
     // The limb is put at a point of the top-left quarter under the panel's corner (the camera moved until it is there).
     const target = [600, 400];
@@ -898,7 +898,7 @@ async function handBoard(page, { prebuilt = 3, families = ['spitter', 'lasher', 
   const plan = await page.evaluate(([prebuilt, families]) => {
     const b = window.broodfall, s = b.sim, W = s.cfg.gridW, core = s.map.coreCell;
     b.step(30);
-    s.meat.war = 140; s.meat.science = 30;
+    s.meat.war = 140; s.chyme = 140; s.meat.science = 30;
     const xy = (c) => [c % W, Math.floor(c / W)];
     const d = (a, o) => Math.hypot(xy(a)[0] - xy(o)[0], xy(a)[1] - xy(o)[1]);
     const clear = (c, taken, gap) => taken.every((t) => d(c, t) >= gap) && s.towers.every((t) => (t.cells ?? [t.cell]).every((tc) => d(c, tc) >= gap));

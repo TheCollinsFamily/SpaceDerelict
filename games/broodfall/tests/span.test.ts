@@ -16,6 +16,7 @@ function simWith(family: TowerFamily, seed = 1234): Sim {
   const s = new Sim({ ...CFG, seed });
   for (let i = 0; i < 600; i++) s.tick();
   s.meat.war = 9999;
+  s.chyme = 9999;
   s.meat.science = 9999;
   s.meat.royal = 99;
   s.hand[0] = { id: 9001, family };

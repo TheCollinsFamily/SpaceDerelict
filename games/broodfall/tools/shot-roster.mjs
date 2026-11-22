@@ -68,7 +68,7 @@ try {
     b.step(2);
     const quiet = (n) => { for (let i = 0; i < n; i += 10) { b.step(10); s.enemies.length = 0; } };
     const grow = (family) => {
-      s.meat.war = 9999; s.meat.science = 9999;
+      s.meat.war = 9999; s.chyme = 9999; s.meat.science = 9999;
       for (let tries = 0; tries < 400; tries++) {
         s.hand[0] = { id: 990000 + tries, family, free: true };
         const cell = s.map.cells.findIndex((_, c) => s.canBuildTower(c, family));

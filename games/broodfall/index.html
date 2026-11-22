@@ -27,6 +27,8 @@
       <div class="meat" id="meat-war" title="War meat. Meat is gathered when the creep digests the body: one that falls off the creep waits until the creep reaches it."><span class="meat-label">WAR</span><span class="meat-val">0</span></div>
       <div class="meat" id="meat-science" title="Science meat. Meat is gathered when the creep digests the body: one that falls off the creep waits until the creep reaches it."><span class="meat-label">SCI</span><span class="meat-val">0</span></div>
       <div class="meat" id="meat-royal" title="Royal meat. Meat is gathered when the creep digests the body: one that falls off the creep waits until the creep reaches it."><span class="meat-label">ROYAL</span><span class="meat-val">0</span></div>
+      <!-- CHYME (DESIGN.md "Chyme", Nov 22 2026): the organs' currency, rendered from what the body digests; it ticks up as bodies are digested. -->
+      <div class="meat" id="meat-chyme" title="CHYME, for ORGANS: every body the creep digests renders chyme (a war body 1, a science body 2, one of the court 4), and every wave cleared pays a ration of it. It is kept from wave to wave. War and science are for limbs."><span class="meat-label">◆ CHYME</span><span class="meat-val">0</span><span class="meat-gain" id="chyme-gain"></span></div>
       <div id="biomass-wrap">
         <div id="biomass-label">DIRECTIVE</div>
         <div id="biomass-bar"><div id="biomass-fill"></div><span id="biomass-text"></span></div>
@@ -119,7 +121,7 @@
               <div class="screen-kicker">BETWEEN WAVES — ORGANS, THEN LIMBS, THEN THE WAVE</div>
               <div id="under-title">THE ORGAN STAGE</div>
             </div>
-            <div id="under-note">Unspent war and science are LOST when the next wave starts — spend them here or on limbs.</div>
+            <div id="under-note">Organs cost ◆ CHYME: earned from every body the creep digests and every wave cleared, and KEPT. War and science are for limbs.</div>
             <div id="under-meat"></div>
             <button id="under-done" class="screen-btn" title="Space">TO THE SURFACE — PLACE LIMBS ▲ <kbd>SPACE</kbd></button>
           </div>

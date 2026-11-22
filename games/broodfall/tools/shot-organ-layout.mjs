@@ -39,7 +39,7 @@ try {
     page.on('pageerror', (e) => errors.push(String(e)));
     await page.goto(`${base}/?seed=7&autostart=1&speed=0`, { waitUntil: 'load' });
     await page.waitForSelector('#stage canvas', { timeout: 60000 });
-    await page.evaluate(() => { window.broodfall.sim.meat.war = 260; window.broodfall.sim.meat.science = 40; });
+    await page.evaluate(() => { window.broodfall.sim.meat.war = 260; window.broodfall.sim.chyme = 260; window.broodfall.sim.meat.science = 40; });
     await page.waitForTimeout(400);
     check(await visible(page, '#hand'), 'before: the limb hand is shown at wave setup');
     await page.locator('#open-under').click();

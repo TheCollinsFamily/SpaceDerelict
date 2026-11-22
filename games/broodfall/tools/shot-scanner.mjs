@@ -51,7 +51,7 @@ try {
   page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
   await page.goto(`http://localhost:${PORT}/?seed=7&autostart=1&speed=0`, { waitUntil: 'load' });
   await page.waitForSelector('#stage canvas');
-  await page.evaluate(() => { window.broodfall.sim.meat.war = 2000; window.broodfall.sim.meat.science = 500; });
+  await page.evaluate(() => { window.broodfall.sim.meat.war = 2000; window.broodfall.sim.chyme = 2000; window.broodfall.sim.meat.science = 500; });
   await page.locator('#open-under').click();
   await page.waitForSelector('#under:not(.hidden)');
   await page.waitForFunction(() => document.getElementById('under').classList.contains('scan'), null, { timeout: 15000 }).catch(() => {});

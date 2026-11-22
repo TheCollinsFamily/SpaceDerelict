@@ -47,7 +47,7 @@ try {
   // Wave setup: a handful of meteor limbs, then call the wave at 8x.
   await page.evaluate(() => {
     const s = window.broodfall.sim;
-    s.meat.war = 400;
+    s.meat.war = 400; s.chyme = 400;
     const cells = window.broodfall.buildableCells(40);
     let k = 0;
     for (let g = 0; g < 300 && k < 6; g++) {
@@ -60,7 +60,7 @@ try {
   await page.locator('#call-early').click();
   const opened = await page.waitForSelector('#under:not(.hidden)', { timeout: 120000 }).then(() => true).catch(() => false);
   check(opened, 'after wave 1 the organ stage opens');
-  await page.evaluate(() => { window.broodfall.sim.meat.war = 300; });
+  await page.evaluate(() => { window.broodfall.sim.meat.war = 300; window.broodfall.sim.chyme = 300; });
   await page.waitForTimeout(150);
   await page.screenshot({ path: join(here, 'screenshots', 'beat-organs-open.png') });
 
@@ -110,7 +110,7 @@ try {
   const w = await page.evaluate(() => window.broodfall.sim.drawWeights());
   check(w.impaler > 0 && w.blighter > 0 && w.frond === 0, 'forge + venom limbs are now drawable, nerve limbs still locked');
   // Leftover meat spoils when wave 2 starts.
-  await page.evaluate(() => { window.broodfall.sim.meat.war = 123; window.broodfall.sim.meat.science = 7; });
+  await page.evaluate(() => { window.broodfall.sim.meat.war = 123; window.broodfall.sim.chyme = 123; window.broodfall.sim.meat.science = 7; });
   await page.locator('#speed-box button[data-speed="1"]').click();
   await page.locator('#call-early').click();
   await page.waitForTimeout(300);

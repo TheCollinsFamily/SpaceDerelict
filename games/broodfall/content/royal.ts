@@ -46,7 +46,9 @@ export const DECREES: readonly DecreeDef[] = [
   },
   {
     id: 'larder', name: 'Royal Larder', cost: 2, costStep: 2,
-    text: 'The organ stage\'s rule bent: half of the war and science you have not spent is KEPT when a wave starts.',
+    // Nov 22 2026 (organs cost CHYME, which is always kept: DESIGN.md "Chyme"): the larder is now the one way to SAVE the
+    // limbs' meat across a wave, for a big limb or an evolution the next setup's meat alone cannot pay.
+    text: 'The limbs\' rule bent: half of the war and science you have not spent is KEPT when a wave starts, so you can save for a big limb or an evolution.',
     again: 'Each copy keeps half of what the last one lost (½ → ¾ → ⅞).',
   },
   {

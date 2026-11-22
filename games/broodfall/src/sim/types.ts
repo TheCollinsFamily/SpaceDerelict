@@ -3,6 +3,8 @@ import type { BoardSnapshot } from './boardSnapshot';
 import type { DecreeId } from '../../content/royal';
 
 export type Caste = 'war' | 'science' | 'royal';
+/** What an organ costs: CHYME since Nov 22 2026 (DESIGN.md "Chyme"); war and science only in a run saved before it. */
+export type OrganPrice = { chyme?: number; war?: number; science?: number };
 
 export type TowerFamily =
   | 'spitter' | 'burster' | 'lasher' | 'maw' | 'spine' | 'lure'
@@ -787,6 +789,8 @@ export interface Corpse {
   cell: number;
   /** What the creep banks when it has digested this body. */
   meat: Record<Caste, number>;
+  /** The CHYME it renders when digested (by its caste, decided at the kill; summed in a heap). DESIGN.md "Chyme". */
+  chyme?: number;
   /** Sim time it fell. */
   born: number;
   /** Seconds the creep has been at it (its fall, then the dissolve); absent while it lies off the creep. */
@@ -867,7 +871,7 @@ export type SimEvent =
   | { kind: 'net-cast'; motherId: number; at: Vec; radius: number; hits: number }
   | { kind: 'kill'; enemy: EnemyKind; caste: Caste }
   | { kind: 'banked'; caste: Caste; amount: number }
-  | { kind: 'digested'; corpse: number; pos: Vec; meat: Record<Caste, number>; bodies: number }
+  | { kind: 'digested'; corpse: number; pos: Vec; meat: Record<Caste, number>; bodies: number; /** The chyme it rendered (DESIGN.md "Chyme"). */ chyme?: number }
   | { kind: 'wave-start'; tier: number; wave: number; counts: Partial<Record<EnemyKind, number>>; sides: string; risk: number; /** The last mission: a wave of the court and the science caste alone; the turns left before the Host after it. */ court?: boolean; hostIn?: number }
   | { kind: 'meat-stolen'; amount: number }
   | { kind: 'meat-recovered'; amount: number }
@@ -898,6 +902,8 @@ export type SimEvent =
   | { kind: 'lost' }
   | { kind: 'discarded'; family: TowerFamily }
   | { kind: 'wave-cleared'; wave: number; bonus: number }
+  /** The clear's tally of CHYME (DESIGN.md "Chyme"): rendered from this wave's digesting, the clear's ration, and the bank now. */
+  | { kind: 'chyme-tally'; wave: number; digested: number; ration: number; earned: number; bank: number }
   | { kind: 'draft-open' }
   | { kind: 'plate-drafted'; name: string; feature: string }
   | { kind: 'royal-decree'; decree: DecreeId; name: string; family?: TowerFamily }
@@ -981,6 +987,12 @@ export interface SimConfig {
    * the full-run tests turn this on; unit tests leave every limb drawable.
    */
   organStage?: boolean;
+  /**
+   * What organs are bought with. Unset (every run since Nov 22 2026): CHYME, rendered from what the run earned and
+   * banked from wave to wave (DESIGN.md "Chyme"). 'meat': the economy before it (organs priced in war and science, the
+   * full war wage), kept only so a run saved before then (src/meta/runSave.ts v1) replays exactly as it was played.
+   */
+  organEconomy?: 'chyme' | 'meat';
   /** Starting entrances (1-3). More is a difficulty wager paid in richer meat. */
   entrances?: number;
   // ---- the campaign (src/meta) sets these; skirmish leaves them unset ----
@@ -1098,6 +1110,8 @@ export interface RunStats {
   sheltersInfested?: number;
   sheltersLost?: number;
   shelterMeat?: number;
+  /** CHYME rendered over the run (DESIGN.md "Chyme"). */
+  chymeEarned?: number;
   shelterTopStage?: number;
   harriersBorn?: number;
   harriersLost?: number;

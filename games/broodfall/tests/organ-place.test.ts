@@ -16,6 +16,7 @@ const CFG: SimConfig = { gridW: 50, gridH: 40, cellPx: 26, seed: 1234, organStag
 function board() {
   const s = new Sim(CFG);
   s.meat.war = 9999;
+  s.chyme = 9999;
   s.meat.science = 9999;
   const u = s.under;
   for (const c of u.cells) if (c.kind !== 'meteor') { c.kind = 'soil'; delete (c as { deposit?: unknown }).deposit; delete (c as { feature?: unknown }).feature; }
