@@ -282,3 +282,19 @@ afterwards.
   rewritten opening + "WHAT YOU DO" prose) is NOT the copy in "About this game" above; read it from the editor. The
   agent's "Publish to public" click was refused by the auto-mode classifier ([Unrequested Commit in a Connected App]),
   so Collins presses it on the Publish tab.
+- Nov 22 2026: wishlists 714 added / 11 removed / 703 net (first wishlist Nov 4). About 566 came in Nov 4-7, then 119 in
+  Nov 8-14 and 29 in Nov 15-21 (-76% week on week); 74% US. Collins: "list it for linux and mac we will work on those".
+  **macOS and Linux + SteamOS ticked on Basic Info and published (revision 9, the agent's click)**, with minimum
+  requirements: macOS 12+, Apple M1 or Intel Core i5, 8 GB, WebGL 2 GPU (Apple M1 / Intel Iris Plus), 2 GB; Ubuntu 22.04
+  64-bit or SteamOS 3, dual-core 2.5 GHz, 8 GB, WebGL 2 GPU with 2 GB VRAM (GTX 960 class), 2 GB. These are estimates
+  matching the Windows ones. Live page checked: three requirement tabs. **Mac and Linux builds are now owed before
+  release** (Electron can package both). The same publish carried the Nov 5 typo pass, which had been saved but not published.
+- Nov 22 2026: Collins: Broodfall was "aproved by" https://madoctopus.fun/bundles/ (a Steam bundle matchmaking site:
+  swipe/like games, a mutual like = a match with chat and contacts; 20 likes a day; free plan = 1 game). Sign-in is
+  email + password or an emailed one-time link; that Chrome was not signed in, so Collins signs in. Steam's collaborative
+  bundles: the owner shares a secret URL, every participant approves each change, and the Steamworks guide advises
+  releasing the bundle after every game in it is released (Broodfall: Jun 2027). Shortlist to like, from Steam tag
+  searches (tower defense + roguelite / sci-fi / dating sim, 15-4,000 reviews, 75%+): GRAVHOUNDS 2440760, Swarmbreaker
+  4948940, Repel The Rifts 3686580, Project Tomorrow 4402200, Nullnest 4996910, Utopia Must Fall 2849680, Calyx 3211850,
+  Buggos 2 2908500, Tower Tactics II 3749130, Defender Bros 2526880; dating + tower defense: Dream Lust 3060900, Beautiful
+  Mystic Defenders 1667130, Love n War: Warlord by Chance 1508680.
