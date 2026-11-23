@@ -64,6 +64,7 @@ export function openSacrificeExplainer(video: string, salvagePct: number, onClos
       <ul class="xs-lines">
         <li>With a card in hand, point at one of your limbs: it lights up. Click it to <b>eat it</b> on the spot.</li>
         <li>You get <b>${salvagePct}%</b> of its meat back to pay for the card, and its bonuses carry into the next limb you place.</li>
+        <li>A limb that eats <b>grows</b>: every meal makes it hit harder, faster and tougher, each meal more than the last. Keep feeding one limb and it becomes a <b>monster</b>.</li>
         <li>A card marked <b>EAT A LIMB</b> is one you can only pay for this way.</li>
       </ul>
       <button class="xs-ok" type="button">OK</button>
