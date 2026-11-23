@@ -46,7 +46,9 @@ function run(seed: number, policy: Policy) {
       if (policy === 'tall') {
         delete c.cannibalizeTowerId;
         if (builds % 3 === 0 && sim.towers.length >= 5) {
-          const top = [...armed].sort((a, b) => b.pips.length - a.pips.length)[0];
+          // The fed line runs through ANY limb (a big one too): the one carrying the most is always the next meal's donor.
+          const fed = sim.towers.filter((t) => t.family !== 'tap').sort((a, b) => b.pips.length - a.pips.length)[0];
+          const top = fed && fed.pips.length > 0 ? fed : [...armed].sort((a, b) => b.pips.length - a.pips.length)[0];
           if (top) c.cannibalizeTowerId = top.id;
         }
       }

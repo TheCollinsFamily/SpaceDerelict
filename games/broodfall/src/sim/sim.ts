@@ -136,6 +136,22 @@ export function castesOpen(cfg: SimConfig, directive: Directive): { science: boo
  * and every hit-verb pip (slow, poison, shred, chains, knock, execute, cloud,
  * caltrops, grounding, skips, pierce...) rides whatever the limb touches the hive with.
  */
+/**
+ * GORGED (Nov 23 2026). Collins, on the measured fact that feeding one limb was the losing play: "this is bad it should
+ * feel slightly overpowered not under powered". Every bonus a limb carries from what it ATE (its inherited pips, not its
+ * evolutions or what engines feed it) also swells the limb itself: more damage and more body, a little faster. It grows
+ * faster than the bonuses do, so a limb fed four or five meals is a monster, not a tuned limb; tools/measure/sacrifice.measure.ts
+ * holds the line that feeding one limb is the strongest of the ways to eat, without being the only way to win.
+ */
+export function gorgeOf(eaten: number): { potency: number; tempo: number; hp: number } {
+  const n = Math.max(0, eaten);
+  return {
+    potency: 1 + B.gorgePotency * n + B.gorgeSquare * n * n,
+    tempo: 1 + B.gorgeTempo * n,
+    hp: 1 + B.gorgeHp * n,
+  };
+}
+
 /** The evolution options a limb has bought, in stage order. */
 export function upgradeOptions(t: Tower): UpgradeOption[] {
   if (!t.upgrades || t.upgrades.length === 0) return [];
@@ -317,8 +333,6 @@ export class Sim {
   waveRumen = 0;
   /** Chyme rendered from the science left unspent when this wave started (Nov 23 2026), told in this wave's tally. */
   waveSciChyme = 0;
-  /** New organs knit in this organ stage (an unfolding run allows BALANCE.organsPerStage; roots are free of it). */
-  organsThisStage = 0;
   rumenEarned = 0;
   /** What the Rumen has taken to feed on this wave, counted at the kills (its feed cap). */
   rumenFed = 0;
@@ -1106,6 +1120,11 @@ export class Sim {
     const stack = this.ampStack(t);
     const all = Sim.amplifyStack([...own, ...shared], stack);
     const s = towerStats({ ...t, pips: all }, true);
+    // GORGED (Nov 23 2026): what the body ate makes the limb bigger in itself, past what each bonus teaches.
+    const g = gorgeOf(t.pips.length);
+    s.potency *= g.potency; s.damage *= g.potency;
+    s.tempo *= g.tempo; s.rate *= g.tempo;
+    s.maxHp *= g.hp;
     s.range = s.range * this.geneMods.rangeMult * this.heightRangeFactor(t.cell);
     s.maxHp += t.family === 'spine' ? this.geneMods.spineHpBonus : 0;
     // A wall's body grows with the cells it crosses (Sim.wallHp; its spec is the two-cell wall).
@@ -1509,8 +1528,8 @@ export class Sim {
 
   /**
    * THE WORLD UNFOLDS (Nov 23 2026, Collins: "remember you want an UNFOLDING game world, not dropping everything (science,
-   * royals etc.) at once"): a skirmish's organ shelf opens a block at a time, the body knits at most organsPerStage organs
-   * between waves, and the court comes from courtFromWave. The campaign has its own unlocks (organPool), a defence its one
+   * royals etc.) at once"): a skirmish's organ shelf opens a block at a time, and the court comes from courtFromWave. (A
+   * limit of two new organs a stage was tried the same day and taken out: Collins, "I dont see the point of this restriction".) The campaign has its own unlocks (organPool), a defence its one
    * siege, the last mission its court waves: none of them unfolds.
    */
   get unfolds(): boolean {
@@ -1527,11 +1546,6 @@ export class Sim {
   /** The wave after which an organ not yet on the shelf comes onto it (null: it is on it). */
   organOpensAfter(organ: OrganId): number | null {
     return this.organOnShelf(organ) ? null : SHELF_AFTER[organ] ?? null;
-  }
-
-  /** New organs the body may still knit this organ stage (Infinity in a run that does not unfold). */
-  get organsLeftThisStage(): number {
-    return this.unfolds ? Math.max(0, B.organsPerStage - this.organsThisStage) : Infinity;
   }
 
   /** Is the court on the board's bar yet: a run where it can come, and (unfolding) once it has opened or a point is held. */
@@ -1564,7 +1578,6 @@ export class Sim {
     if (def.kind === 'theme' && this.organs.some((o) => o.organ === organ)) return false;
     if (this.cfg.organPool && !this.cfg.organPool.includes(organ) && !(this.cfg.startOrgans ?? []).includes(organ)) return false;
     if (!this.organOnShelf(organ)) return false;
-    if (def.kind !== 'root' && this.organsLeftThisStage <= 0) return false;
     const cells = this.organFootprint(organ, cell, rot);
     if (!cells) return false;
     for (const c of cells) {
@@ -2347,13 +2360,11 @@ export class Sim {
         const rot = cmd.rot ?? 0;
         if (this.phase === 'siege') return { ok: false, err: 'organs grow between waves' };
         if (!this.organOnShelf(cmd.organ)) return { ok: false, err: `not on the shelf yet: it opens after wave ${SHELF_AFTER[cmd.organ]}` };
-        if (ORGAN_BY_ID[cmd.organ]?.kind !== 'root' && this.organsLeftThisStage <= 0) return { ok: false, err: `the body knits ${B.organsPerStage} new organs between waves: level one, or wait for the next clear` };
         if (!this.canBuildOrgan(cmd.organ, cmd.cell, rot)) return { ok: false, err: 'must fit on open ground touching the body' };
         if (!this.canAffordOrgan(price)) return { ok: false, err: 'cannot afford' };
         this.payOrgan(price);
         const cells = this.organFootprint(cmd.organ, cmd.cell, rot)!;
         this.organs.push({ id: this.nextId++, organ: cmd.organ, cell: cmd.cell, rot, level: 1, cells });
-        if (ORGAN_BY_ID[cmd.organ].kind !== 'root') this.organsThisStage += 1;
         this.organCache = null;
         this.coreStrainCache = null;
         // Grown over deposits: each pays out now.
@@ -3225,7 +3236,6 @@ export class Sim {
     this.waveNumber += 1;
     this.waveBanked = { war: 0, science: 0, royal: 0 };
     this.rumenFed = 0;
-    this.organsThisStage = 0;
     this.waveSciChyme = 0;
     for (const sh of this.shelters) sh.harmThisWave = 0;
     // The limbs' economy: war and science you did not spend between waves are lost

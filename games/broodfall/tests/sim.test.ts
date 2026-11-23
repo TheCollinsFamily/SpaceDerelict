@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../src/sim/rng';
-import { Sim, fxOf, organSpec, towerStats, towerSpec } from '../src/sim/sim';
+import { gorgeOf, Sim, fxOf, organSpec, towerStats, towerSpec } from '../src/sim/sim';
 import { DEPOSITS, ORGAN_LEVEL_POTENCY, depositPayAt } from '../content/underground';
 import { CellType, isPassable } from '../src/sim/citymap';
 import type { Enemy, SimConfig, Tower } from '../src/sim/types';
@@ -1458,10 +1458,10 @@ describe('COMBO ENGINES (science-priced): amplifier (depth) and mosaic (breadth)
     const base = s.statsOf(target).rate;
     s.towers.push(amp);
     // 2 own spitter pips → 3 under one amp.
-    expect(s.statsOf(target).rate).toBeCloseTo(towerSpec('spitter').rate * (1 + B.pipRate * 3));
+    expect(s.statsOf(target).rate).toBeCloseTo(towerSpec('spitter').rate * (1 + B.pipRate * 3) * gorgeOf(2).tempo);
     s.towers.push(conduit, srcA, srcB);
     // Conduit adds 2 spitter family bonuses → 4 spitter pips, amplified → 6.
-    expect(s.statsOf(target).rate).toBeCloseTo(towerSpec('spitter').rate * (1 + B.pipRate * 6));
+    expect(s.statsOf(target).rate).toBeCloseTo(towerSpec('spitter').rate * (1 + B.pipRate * 6) * gorgeOf(2).tempo);
     expect(s.statsOf(target).rate).toBeGreaterThan(base);
     expect(s.ampLayers(target)).toBe(1);
   });
@@ -1482,9 +1482,9 @@ describe('COMBO ENGINES (science-priced): amplifier (depth) and mosaic (breadth)
     expect(s.ampLayers(b)).toBe(1);
     expect(s.ampLayers(far)).toBe(0);
     // 2 spitter pips -> 3 on each limb touching it.
-    expect(s.statsOf(a).rate).toBeCloseTo(towerSpec('spitter').rate * (1 + B.pipRate * 3));
-    expect(s.statsOf(b).rate).toBeCloseTo(towerSpec('spitter').rate * (1 + B.pipRate * 3));
-    expect(s.statsOf(far).rate).toBeCloseTo(towerSpec('spitter').rate * (1 + B.pipRate * 2));
+    expect(s.statsOf(a).rate).toBeCloseTo(towerSpec('spitter').rate * (1 + B.pipRate * 3) * gorgeOf(2).tempo);
+    expect(s.statsOf(b).rate).toBeCloseTo(towerSpec('spitter').rate * (1 + B.pipRate * 3) * gorgeOf(2).tempo);
+    expect(s.statsOf(far).rate).toBeCloseTo(towerSpec('spitter').rate * (1 + B.pipRate * 2) * gorgeOf(2).tempo);
   });
 
   it('mosaic: its target gets ONE of each distinct type around it, never more than one per type', () => {
@@ -1509,11 +1509,11 @@ describe('COMBO ENGINES (science-priced): amplifier (depth) and mosaic (breadth)
     const s = freshSim(1402);
     const eater = mk(s, 1, 'spitter', 300, 300, [{ family: 'amp' }, { family: 'lasher' }, { family: 'lasher' }]);
     s.towers.push(eater);
-    expect(s.statsOf(eater).damage).toBeCloseTo(towerSpec('spitter').damage * (1 + B.pipDamage * 3));
+    expect(s.statsOf(eater).damage).toBeCloseTo(towerSpec('spitter').damage * (1 + B.pipDamage * 3) * gorgeOf(3).potency);
     const weaver = mk(s, 2, 'spitter', 600, 300, [{ family: 'mosaic' }]);
     s.towers.push(weaver, mk(s, 3, 'lasher', 630, 300), mk(s, 4, 'lasher', 600, 330), mk(s, 5, 'tangler', 570, 300));
     const st = s.statsOf(weaver);
-    expect(st.damage).toBeCloseTo(towerSpec('spitter').damage * (1 + B.pipDamage)); // ONE lasher, not two
+    expect(st.damage).toBeCloseTo(towerSpec('spitter').damage * (1 + B.pipDamage) * gorgeOf(1).potency); // ONE lasher, not two
     expect(st.slowMult).toBeLessThan(1);                                             // plus the tangler
   });
 });

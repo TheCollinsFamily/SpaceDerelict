@@ -15,7 +15,7 @@
 import { BALANCE as B } from '../../content/data';
 import { PIP_DESC, CARD_DESC } from '../../content/limbText';
 import { ROYAL } from '../../content/royal';
-import { Sim, organSpec, themeOf, towerSpec, towerStats, upgradeOptions, upgradePips, type TowerStats } from '../sim/sim';
+import { Sim, gorgeOf, organSpec, themeOf, towerSpec, towerStats, upgradeOptions, upgradePips, type TowerStats } from '../sim/sim';
 import type { ModPip, Tower, TowerFamily, UpgradeOption } from '../sim/types';
 
 export interface StatRow {
@@ -188,6 +188,14 @@ function liftOf(sim: Sim, t: Tower, placed: boolean): Lift {
   };
 }
 
+/** GORGED (Nov 23 2026): what the limb ate swells it, past each bonus (src/sim/sim.ts gorgeOf). */
+function gorgeLine(t: Tower, k: 'potency' | 'tempo' | 'hp'): string[] {
+  const n = t.pips.length;
+  if (!n) return [];
+  const g = gorgeOf(n)[k];
+  return [`GORGED on ${n} meal${n === 1 ? '' : 's'}: +${Math.round((g - 1) * 100)}% (every limb it ate swells it, and each meal more than the last)`];
+}
+
 function trend(now: number, base: number): StatRow['trend'] {
   if (Math.abs(now - base) < 1e-6 * Math.max(1, Math.abs(base))) return undefined;
   return now > base ? 'up' : 'down';
@@ -206,7 +214,7 @@ function cardFrom(sim: Sim, t: Tower, s: TowerStats, l: Ledger, lift: Lift, plac
 
   // HP
   {
-    const sources = [...pip('hp'), ...evoLines(ups, 'hp')];
+    const sources = [...pip('hp'), ...evoLines(ups, 'hp'), ...gorgeLine(t, 'hp')];
     if (t.grownHp) sources.push(`grew +${Math.round(t.grownHp)} by healing past full`);
     if (t.family === 'spine' && (t.cells?.length ?? 2) !== 2) sources.push(`a wall's body grows with the ${t.cells?.length ?? 1} cells it crosses`);
     const max = placed ? t.maxHp : s.maxHp;
@@ -232,7 +240,7 @@ function cardFrom(sim: Sim, t: Tower, s: TowerStats, l: Ledger, lift: Lift, plac
     });
     // DAMAGE
     {
-      const sources = [...pip('damage'), ...evoLines(ups, 'damage')];
+      const sources = [...pip('damage'), ...evoLines(ups, 'damage'), ...gorgeLine(t, 'potency')];
       if (lift.organ && lift.organ.potency !== 1) sources.push(`${lift.organ.name} at level ${lift.organ.level}: ${pct(lift.organ.potency)}`);
       if (lift.crowns > 0) sources.push(`crowned limb nearby${times(lift.crowns)}: +${Math.round(ROYAL.crownDamage * 100)}% each`);
       rows.push({
@@ -244,7 +252,7 @@ function cardFrom(sim: Sim, t: Tower, s: TowerStats, l: Ledger, lift: Lift, plac
     }
     // SPEED
     {
-      const sources = [...pip('rate'), ...evoLines(ups, 'rate')];
+      const sources = [...pip('rate'), ...evoLines(ups, 'rate'), ...gorgeLine(t, 'tempo')];
       for (const c of lift.choirs) sources.push(`a ${c.name} nearby: +${Math.round(c.bonus * 100)}%`);
       if (lift.organ && lift.organ.tempo !== 1) sources.push(`${lift.organ.name} at level ${lift.organ.level}: ${pct(lift.organ.tempo)}`);
       if (lift.gentleTaps) sources.push('a gentle tap on it: half speed');
@@ -292,7 +300,7 @@ function cardFrom(sim: Sim, t: Tower, s: TowerStats, l: Ledger, lift: Lift, plac
       });
     }
     {
-      const sources = [...pip('damage'), ...evoLines(ups, 'damage')];
+      const sources = [...pip('damage'), ...evoLines(ups, 'damage'), ...gorgeLine(t, 'potency')];
       if (lift.organ && lift.organ.potency !== 1) sources.push(`${lift.organ.name} at level ${lift.organ.level}: ${pct(lift.organ.potency)}`);
       if (lift.crowns > 0) sources.push(`crowned limb nearby${times(lift.crowns)}: +${Math.round(ROYAL.crownDamage * 100)}% each`);
       if (Math.abs(s.potency - 1) > 1e-6 || sources.length) {
@@ -301,7 +309,7 @@ function cardFrom(sim: Sim, t: Tower, s: TowerStats, l: Ledger, lift: Lift, plac
       }
     }
     {
-      const sources = [...pip('rate'), ...evoLines(ups, 'rate')];
+      const sources = [...pip('rate'), ...evoLines(ups, 'rate'), ...gorgeLine(t, 'tempo')];
       for (const c of lift.choirs) sources.push(`a ${c.name} nearby: +${Math.round(c.bonus * 100)}%`);
       if (lift.organ && lift.organ.tempo !== 1) sources.push(`${lift.organ.name} at level ${lift.organ.level}: ${pct(lift.organ.tempo)}`);
       if (Math.abs(s.tempo - 1) > 1e-6 || sources.length) {

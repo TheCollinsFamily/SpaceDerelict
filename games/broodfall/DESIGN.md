@@ -306,11 +306,11 @@ The enemy's ranks climb the same way: in a skirmish wave 2 is at least tier 1 (t
 (the army) (`Sim.tierFor`, `BALANCE.tierLadder`), then the threat takes over: the air (tier 3+) in wave 4, the shield wall
 in wave 5, everything they have from wave 8 (`tier6Threat` 320).
 
-**The organ shelf and the knit.** Organs not on the shelf yet stand dimmed in the tray saying "OPENS AFTER WAVE N", so the
-next block is always in sight. Between waves the body knits at most **2 new organs** (`organsPerStage`); a Tendril Root
-is tissue and levels are free of it. The head row says "KNIT 1 / 2 NEW ORGANS THIS STAGE", and a full stage's cards say
-"KNIT 2/2 THIS STAGE". So a late stage is a choice (which two, or which theme to level), not a shopping list. Content:
-`ORGAN_SHELF` in `content/underground.ts`. The scripted player wants only what is on the shelf.
+**The organ shelf.** Organs not on the shelf yet stand dimmed in the tray saying "OPENS AFTER WAVE N", so the next block
+is always in sight. Content: `ORGAN_SHELF` in `content/underground.ts`. The scripted player wants only what is on the
+shelf. (A limit of 2 new organs a stage was built the same day and taken out: Collins, "I dont see the point of this
+restriction at all". The shelf opening in blocks and chyme's price are what keep a stage a choice. HOLD stays 12 waves, the
+long order beside the two of about 8: the player picks it, and the picker says how long each runs.)
 
 **Science left unspent becomes chyme.** When a wave starts, the science that would spoil is rendered into chyme, 3 science
 to 1 (`scienceChymeRate`); war still spoils. It is told in the feed ("15 unspent science rendered into +5 ◆ chyme") and in
@@ -1242,6 +1242,19 @@ would get a 'doom effect'" if towers had one picture.
 - **Interaction rule (Collins, Sep 26 2026): no mode toggle, ever.** His words after trying the "FEED A LIMB" button flow: "you have to hit cannibalize first — that's super unintuitive. What I expected: a special UI when I hovered over something that could be cannibalized, and it was removed and its part of the payment cost was made on click." So: with a card armed, hovering one of your towers shows the cannibalize affordance (highlight + salvage preview in the hint); clicking it eats the limb ON THE SPOT — salvage meat (60% of its cost) is credited immediately as part of paying for the build, and its full trait history banks into the next build. Eating two limbs before placing stacks both histories. The general principle: actions live on the object they act on, discovered by hover — never behind an armed mode the player must know to enter first.
 - Inheritance is DETERMINISTIC and VISIBLE on the body: a spitter built from a cannibalized burster has the burster's sacs hanging off it. The silhouette is the build history.
 - Between-wave time is for the big surgery (butchering your own); the tension source is that the upgrade path and the defense line are the same pool of bodies.
+- **GORGED: the fed limb is a monster (Collins, Nov 23 2026 — BUILT Nov 23).** Measured that day, the scripted player
+  feeding ONE limb (every third build eats the limb carrying the most) was the losing way to eat: 3 of 6 wins against 5 of 6
+  eating now and then, because four meals made a limb only about 1.5-2x a fresh one while costing four limbs off the board.
+  Collins: "this is bad it should feel slightly overpowered not under powered". So every bonus a limb carries from what it
+  ATE also swells the limb itself (`gorgeOf` in src/sim/sim.ts, applied in statsOf; evolutions and what engines feed it
+  do not count): damage x(1 + 0.25n + 0.03n²), speed x(1 + 0.1n), body x(1 + 0.25n) (`gorgePotency`, `gorgeSquare`,
+  `gorgeTempo`, `gorgeHp`). Four meals: x2.48 damage, x1.4 speed, x2 hp on top of what the four bonuses teach, so a
+  limb that ate four outfights the five limbs it was (tests/limbStats.test.ts holds > 5x). Each meal is worth more than the
+  last, so the fantasy pays. The hover card names it on damage, speed and HP ("GORGED on 4 meals: +148%").
+  Measured (hold-12, one gate, 10 seeds, tools/measure/sacrifice.measure.ts): never eat 8/10 · now and then 8/10 · greedy
+  (every second build, the cheapest) 7/10 · FEED ONE 9/10, about 24 meals on the fed limb, two thirds of the body's damage.
+  The strongest way to eat, not a sure win: one limb cannot stand on every lane, and the fliers and tunnelers go round it.
+  The naive scripted player (eats now and then) went 7/10 to 8/10 with it.
 - **SURGERY UNDER FIRE (built Sep 30 2026).** Surgery mid-siege is possible, and dramatic: a limb
   built with eaten bonuses DURING a siege GRAFTS for 3 s + 0.5 s per bonus — it holds fire, takes
   DOUBLE harm, and its open wound draws the climbers (sappers go for a grafting limb within 130px

@@ -56,7 +56,8 @@ describe('full headless runs (autoplayer)', () => {
   }
 
   it('royal directive: the royal is guaranteed and the run ends', () => {
-    const { sim, events } = runFull(5, { kind: 'royal', count: 1 });
+    // Seed 4 (was 5): since the first waves bite (Nov 23 2026) the naive player can fall before the royal's wave 8, as on seed 5.
+    const { sim, events } = runFull(4, { kind: 'royal', count: 1 });
     expect(sim.outcome).not.toBe('playing');
     expect(events.some((e) => e.kind === 'royal-incoming')).toBe(true);
     if (sim.outcome === 'won') expect(sim.royalsKilled).toBeGreaterThanOrEqual(1);

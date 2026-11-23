@@ -3,7 +3,7 @@
  * DOUBLING RULE: a second copy of any bonus must change something.
  */
 import { describe, expect, it } from 'vitest';
-import { Sim, towerSpec, towerStats, upgradeOptions } from '../src/sim/sim';
+import { gorgeOf, Sim, towerSpec, towerStats, upgradeOptions } from '../src/sim/sim';
 import type { Enemy, Tower, TowerFamily, UpgradeChoice } from '../src/sim/types';
 import { BALANCE as B, TOWERS } from '../content/data';
 import { UPGRADES, UPGRADE_COST } from '../content/upgrades';
@@ -100,7 +100,7 @@ describe('evolutions: three stages, choose A or B', () => {
     const beside = s.cellCenter(target.cell - 1);
     const amp = mk(s, 2, 'amp', beside.x, beside.y, [], ['A', 'B']); amp.facing = 'E';
     s.towers.push(target, amp);
-    expect(s.statsOf(target).damage).toBeCloseTo(towerSpec('spitter').damage * (1 + B.pipDamage * 2));
+    expect(s.statsOf(target).damage).toBeCloseTo(towerSpec('spitter').damage * (1 + B.pipDamage * 2) * gorgeOf(1).potency);
   });
 
   it('Gentle Tap: its target keeps working at half speed instead of stasis', () => {

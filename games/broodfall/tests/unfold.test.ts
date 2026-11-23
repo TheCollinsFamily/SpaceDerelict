@@ -2,7 +2,6 @@
  * THE WORLD UNFOLDS (Nov 23 2026). Collins: "remember you want an UNFOLDING game world, not dropping everything (science,
  * royals etc.) at once". DESIGN.md "The world unfolds". What these hold, in a skirmish:
  *  - the organ shelf opens a block at a time (content/underground.ts ORGAN_SHELF), each told when it opens;
- *  - the body knits at most BALANCE.organsPerStage new organs between waves (roots and levels free of it);
  *  - the court sends a detachment from BALANCE.courtFromWave, told when it first marches;
  *  - none of it in the campaign (its own pool), and a save from before it replays with the whole shelf open.
  */
@@ -82,26 +81,6 @@ describe('the organ shelf unfolds in a skirmish', () => {
   });
 });
 
-describe('the body knits a few organs between waves', () => {
-  it(`at most ${B.organsPerStage} new organs a stage; a root is free of it; the count starts again at the next wave`, () => {
-    const s = new Sim(CFG);
-    s.chyme = 1000;
-    nextWave(s);
-    const grow = (id: OrganId) => { const at = spot(s, id); return at ? s.issue({ kind: 'build-organ', organ: id, ...at }).ok : false; };
-    expect(grow('gut')).toBe(true);
-    expect(grow('forge')).toBe(true);
-    expect(s.organsLeftThisStage).toBe(0);
-    const third = s.issue({ kind: 'build-organ', organ: 'lattice', cell: 0, rot: 0 });
-    expect(third.ok).toBe(false);
-    expect(spot(s, 'lattice')).toBeNull();
-    expect(grow('root')).toBe(true);
-    // Levels are free of it.
-    expect(s.issue({ kind: 'upgrade-organ', organInstanceId: s.organs.find((o) => o.organ === 'gut')!.id }).ok).toBe(true);
-    nextWave(s);
-    expect(s.organsLeftThisStage).toBe(B.organsPerStage);
-    expect(grow('lattice')).toBe(true);
-  });
-});
 
 describe('the court comes mid-run', () => {
   it(`no court body before wave ${B.courtFromWave}; from it a detachment marches with every wave, told once`, () => {

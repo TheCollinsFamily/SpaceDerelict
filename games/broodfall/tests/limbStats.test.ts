@@ -127,3 +127,19 @@ describe('limb stat card', () => {
     }
   });
 });
+
+describe('GORGED (Nov 23 2026): a fed limb says why it is a monster', () => {
+  it('a limb that ate four carries the gorge on its damage, speed and hp, and outfights the five limbs it was', () => {
+    const s = grown();
+    const cell = spot(s, 'spitter')!;
+    const t = build(s, 'spitter', cell);
+    const fresh = s.statsOf(t).rate * s.statsOf(t).damage;
+    t.pips = [{ family: 'spitter' }, { family: 'lasher' }, { family: 'spitter' }, { family: 'lasher' }];
+    const fed = s.statsOf(t);
+    expect(fed.rate * fed.damage).toBeGreaterThan(5 * fresh);
+    const c = limbCard(s, t);
+    expect(row(c, 'damage').sources.join('|')).toMatch(/GORGED on 4 meals: \+148%/);
+    expect(row(c, 'rate').sources.join('|')).toMatch(/GORGED on 4 meals: \+40%/);
+    expect(row(c, 'hp').sources.join('|')).toMatch(/GORGED on 4 meals: \+100%/);
+  });
+});

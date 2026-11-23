@@ -619,19 +619,27 @@ export const BALANCE = {
   studySeconds: 6,
   /**
    * THE WORLD UNFOLDS IN A SKIRMISH (Nov 23 2026, Collins: "remember you want an UNFOLDING game world, not dropping
-   * everything (science, royals etc.) at once"). Between waves the body knits at most organsPerStage new organs (a
-   * Tendril Root is tissue, not an organ: free of it; levels are free of it), so a late organ stage is a choice, not a
-   * shopping list. From courtFromWave the court sends a detachment with every wave (consorts and veil matrons: royal
+   * everything (science, royals etc.) at once"). The organ shelf opens a block at a time (content/underground.ts
+   * ORGAN_SHELF; a limit of two new organs a stage was tried and taken out the same day). From courtFromWave the court sends a detachment with every wave (consorts and veil matrons: royal
    * meat for the decrees, a mid-run layer), one more body every two waves, at most courtMax. Unspent SCIENCE is
    * rendered into chyme when a wave starts (scienceChymeRate science = 1 chyme) instead of spoiling. Skirmish only
    * (Sim.unfolds); the campaign has its own unlocks. DESIGN.md "The world unfolds".
    */
-  organsPerStage: 2,
   /** An unfolding skirmish's first waves climb a tier a wave up to this one (Sim.tierFor). */
   tierLadder: 2,
   courtFromWave: 6,
   courtMax: 4,
   scienceChymeRate: 3,
+  /**
+   * GORGED (Nov 23 2026, src/sim/sim.ts gorgeOf): per bonus a limb carries from what it ate, its damage grows by
+   * gorgePotency + gorgeSquare x bonuses (so the tenth meal is worth more than the first), its speed by gorgeTempo and
+   * its body by gorgeHp. Four meals: x2.48 damage, x1.4 speed, x2 hp on top of what the four bonuses teach, so a limb
+   * that ate four outfights the five limbs it was (each meal is a limb off the board: it has to be worth more than one).
+   */
+  gorgePotency: 0.25,
+  gorgeSquare: 0.03,
+  gorgeTempo: 0.1,
+  gorgeHp: 0.25,
   /** Royal event. */
   // 240 until Nov 23 2026; the faster tier ladder (threatPerTier 15) would have brought her in wave 6. At 380, wave 8-9.
   royalThreat: 380,
